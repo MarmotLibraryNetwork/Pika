@@ -39,7 +39,7 @@
 			</div>
 			<div class="col-tn-12 col-sm-4 text-center pull-left">
 				<a href="http://lioninc.org" title="Member of Libraries Online Incorporated">
-					<img src="/interface/themes/lion/images/logo_responsive.png" alt="Member of Libraries Online Incorporated" style="max-width: 100%; max-height:140px; margin-left:20px; margin-right:20px">
+					<img src="/interface/themes/lion/images/lion_logo.png" alt="Member of Libraries Online Incorporated" style="max-width: 100%; max-height:140px; margin-left:20px; margin-right:20px">
 				</a>
 				{if $showPikaLogo}
 					<a href="http://marmot.org/pika-discovery/about-pika" title="Proud Pika Partner">
