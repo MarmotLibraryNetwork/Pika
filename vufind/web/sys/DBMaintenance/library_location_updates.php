@@ -1705,5 +1705,13 @@ function getLibraryLocationUpdates(){
 					),
 			),
 
+		'library_increase_abbreviated_display_name' => array(
+			'title' => 'Increase Library Abbreviated Display name',
+			'description' => 'Increase the number of characters allowed for the abbreviated display name to 30.',
+			'sql' => array(
+				"ALTER TABLE `library` CHANGE COLUMN `abbreviatedDisplayName` `abbreviatedDisplayName` VARCHAR(30) NULL DEFAULT '';",
+			),
+		),
+
 	);
 }

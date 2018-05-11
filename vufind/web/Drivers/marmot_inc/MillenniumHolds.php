@@ -123,16 +123,6 @@ class MillenniumHolds{
 
 		if (!isset($xNum)) {
 			$xNum = is_array($cancelId) ? $cancelId : array($cancelId);
-
-			// below requests variables should be deprecated as of now. plb 2-9-2015
-			// PLB commented out 9-29-2015, starting in 2015.11.6
-//			if (isset($_REQUEST['waitingholdselected']) || isset($_REQUEST['availableholdselected'])) {
-//				$waitingHolds   = isset($_REQUEST['waitingholdselected']) ? $_REQUEST['waitingholdselected'] : array();
-//				$availableHolds = isset($_REQUEST['availableholdselected']) ? $_REQUEST['availableholdselected'] : array();
-//				$xNum           = array_merge($waitingHolds, $availableHolds);
-//			} else {
-//				$xNum = is_array($cancelId) ? $cancelId : array($cancelId);
-//			}
 		}
 
 		$location = new Location();
