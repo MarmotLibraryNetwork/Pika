@@ -106,8 +106,9 @@ public class GroupedWorkIndexer {
 			PreparedStatement loadPartialReindexRunning = vufindConn.prepareStatement("SELECT * from variables WHERE name = 'partial_reindex_running'");
 			ResultSet loadPartialReindexRunningRS = loadPartialReindexRunning.executeQuery();
 			if (loadPartialReindexRunningRS.next()){
-				partialReindexRunning = loadPartialReindexRunningRS.getBoolean("value");
 				partialReindexRunningVariableId = loadPartialReindexRunningRS.getLong("id");
+				String value = loadPartialReindexRunningRS.getString("value");
+				partialReindexRunning = (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("1"));
 			}
 			loadPartialReindexRunningRS.close();
 			loadPartialReindexRunning.close();
