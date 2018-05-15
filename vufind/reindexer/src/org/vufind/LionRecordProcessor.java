@@ -33,6 +33,7 @@ class LionRecordProcessor extends IIIRecordProcessor {
 		validCheckedOutStatusCodes.add("c");
 		validCheckedOutStatusCodes.add("o");
 		validCheckedOutStatusCodes.add("y");
+		validCheckedOutStatusCodes.add("u");
 	}
 
 	@Override
@@ -40,7 +41,7 @@ class LionRecordProcessor extends IIIRecordProcessor {
 		boolean available = false;
 		String status = itemInfo.getStatusCode();
 		String dueDate = itemInfo.getDueDate() == null ? "" : itemInfo.getDueDate();
-		String availableStatus = "-&couvy";
+		String availableStatus = "-&covy";
 		if (status.length() > 0 && availableStatus.indexOf(status.charAt(0)) >= 0) {
 			if (dueDate.length() == 0) {
 				available = true;
