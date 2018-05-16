@@ -979,7 +979,7 @@ abstract class IslandoraDriver extends RecordInterface {
 	}
 
 	private $subjectHeadings = null;
-	public function getAllSubjectHeadings() {
+	public function getAllSubjectHeadings($includeTitleAsSubject = true) {
 		if ($this->subjectHeadings == null) {
 			require_once ROOT_DIR . '/sys/ArchiveSubject.php';
 			$archiveSubjects = new ArchiveSubject();
@@ -992,9 +992,11 @@ abstract class IslandoraDriver extends RecordInterface {
 
 			$subjectsWithLinks = $this->getAllSubjectsWithLinks();
 			$relatedSubjects = array();
-			$title = $this->getTitle();
-			if (strlen($title) > 0) {
-				$relatedSubjects[$title] = '"' . $title . '"';
+			if ($includeTitleAsSubject) {
+				$title = $this->getTitle();
+				if (strlen($title) > 0) {
+					$relatedSubjects[$title] = '"' . $title . '"';
+				}
 			}
 			for ($i = 0; $i < 2; $i++){
 				foreach ($subjectsWithLinks as $subject) {

@@ -68,7 +68,8 @@ class API_ArchiveAPI extends Action {
 			}
 
 			$dplaDoc['preview'] = $record->getBookcoverUrl('small');
-			//Reformat back to YYYY-MM-DD
+			$dplaDoc['dateCreated'] = null;
+				//Reformat back to YYYY-MM-DD
 			$formattedDate = DateTime::createFromFormat('m/d/Y', $record->getDateCreated());
 			if ($formattedDate != false) {
 				$dateCreated = $formattedDate->format('Y-m-d');
@@ -83,7 +84,7 @@ class API_ArchiveAPI extends Action {
 			if (count($dplaRelatedPlaces)){
 				$dplaDoc['place'] = $dplaRelatedPlaces;
 			}
-			$subjects = $record->getAllSubjectHeadings();
+			$subjects = $record->getAllSubjectHeadings(false); // DPLA does not want the title included as a subject
 			$dplaDoc['subject'] = array_keys($subjects);
 			if (isset($doc['mods_extension_marmotLocal_hasCreator_entityTitle_ms'])){
 				$dplaDoc['creator'] = $doc['mods_extension_marmotLocal_hasCreator_entityTitle_ms'];
