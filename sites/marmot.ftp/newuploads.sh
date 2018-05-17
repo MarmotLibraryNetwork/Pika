@@ -14,7 +14,7 @@
 # declare variables
 #-------------------------------------------------------------------------
 
-TO="root,lloyd@marmot.org
+TO="root,lloyd@marmot.org,brandon@marmot.org"
 SUBJECT='New uploads on sftp server'
 TMPFILE='/tmp/newuploads'
 
