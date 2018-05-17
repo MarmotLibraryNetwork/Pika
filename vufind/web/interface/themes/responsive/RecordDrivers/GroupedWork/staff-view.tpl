@@ -35,10 +35,31 @@
 <table class="table-striped table table-condensed notranslate">
 	{foreach from=$details key='field' item='values'}
 		<tr>
+			{if strpos($field, "scoping_details") !== false}
+				<td colspan="2">
+					<strong>{$field|escape}</strong>
+				<table id="scoping_details" class="table-striped table table-condensed table-bordered notranslate" style="overflow-x: scroll">{*TODO: style rule should go in css *}
+					<tr>
+						<th>Bib Id</th><th>Item Id</th><th>Grouped Status</th><th>Status</th><th>Locally Owned</th><th>Available</th><th>Holdable</th><th>Bookable</th><th>In Library Use Only</th><th>Library Owned</th><th>Holdable PTypes</th><th>Bookable PTypes</th><th>Local Url</th>
+					</tr>
+					{foreach from=$values item="item"}
+					<tr>
+						{*{assign var="item" value=$item|rtrim:"|"}*}
+						{assign var="details" value="|"|explode:$item}
+						{foreach from=$details item='detail'}
+						{*{foreach from=explode($values, "|") item='detail'}*}
+						<td>{$detail|replace:',':', '}</td>
+					{/foreach}
+					</tr>
+					{/foreach}
+				</table>
+				</td>
+			{else}
 			<th>{$field|escape}</th>
 			<td>
 				{implode subject=$values glue=', ' sort=true}
 			</td>
+			{/if}
 		</tr>
 	{/foreach}
 </table>
