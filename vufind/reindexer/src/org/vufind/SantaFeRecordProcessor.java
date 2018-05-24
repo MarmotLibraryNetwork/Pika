@@ -9,12 +9,11 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 
 /**
- * Custom Record Processing for Arlington
+ * Custom Record Processing for Santa Fe
  *
  * Pika
  * User: Mark Noble
- * Date: 10/15/2015
- * Time: 9:48 PM
+
  */
 class SantaFeRecordProcessor extends IIIRecordProcessor {
 

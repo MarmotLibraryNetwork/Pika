@@ -229,6 +229,9 @@ public class GroupedWorkIndexer {
 						case "SantaFe":
 							ilsRecordProcessors.put(curIdentifier, new SantaFeRecordProcessor(this, vufindConn, indexingProfileRS, logger, fullReindex));
 							break;
+						case "Sacramento":
+							ilsRecordProcessors.put(curIdentifier, new SacramentoRecordProcessor(this, vufindConn, indexingProfileRS, logger, fullReindex));
+							break;
 						case "AACPL":
 							ilsRecordProcessors.put(curIdentifier, new AACPLRecordProcessor(this, vufindConn, indexingProfileRS, logger, fullReindex));
 							break;
