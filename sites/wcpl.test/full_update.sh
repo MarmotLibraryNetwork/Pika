@@ -170,7 +170,7 @@ if [ -n "$FILE1" ]; then
 		fi
 else
 	umount /mnt/ftp
-	echo "Did not find a Horizon full export file from the last 24 hours." >> ${OUTPUT_FILE}
+	echo "Did not find a Horizon full export file from the last 24 hours, Full Regrouping & Full Reindexing skipped." >> ${OUTPUT_FILE}
 fi
 
 # Clean-up Solr Logs

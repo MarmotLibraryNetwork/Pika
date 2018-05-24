@@ -177,11 +177,11 @@ then
 		fi
 
 	else
-		echo "Did not find a Sierra export file (2) from the last 24 hours." >> ${OUTPUT_FILE}
+		echo "Did not find a Sierra export file (2) from the last 24 hours, Full Regrouping & Full Reindexing skipped." >> ${OUTPUT_FILE}
 	fi
 
 else
-	echo "Did not find a Sierra export file (1) from the last 24 hours." >> ${OUTPUT_FILE}
+	echo "Did not find a Sierra export file (1) from the last 24 hours, Full Regrouping & Full Reindexing skipped." >> ${OUTPUT_FILE}
 fi
 
 # Clean-up Solr Logs

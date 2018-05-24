@@ -161,7 +161,7 @@ then
 		fi
 
 else
-	echo "Did not find a CarlX export file from the last 24 hours." >> ${OUTPUT_FILE}
+	echo "Did not find a CarlX export file from the last 24 hours, Full Regrouping & Full Reindexing skipped." >> ${OUTPUT_FILE}
 fi
 
 #Email results
