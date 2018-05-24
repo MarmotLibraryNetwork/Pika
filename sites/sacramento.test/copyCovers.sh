@@ -19,7 +19,7 @@
 # declare variables
 #-------------------------------------------------------------------------
 
-FTPACCOUNT="lion/covers"
+FTPACCOUNT="sacramento/covers"
 PIKASITENAME="sacramento.test"
 
 REMOTE="10.1.2.7:/ftp"
