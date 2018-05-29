@@ -120,4 +120,44 @@ class MergedGroupedWork extends DB_DataObject {
 
 		return $validationResults;
 	}
+
+
+	function update($dataObject = false)
+	{
+		$success = parent::update($dataObject);
+		if ($success) {
+			$this->markForForcedRegrouping();
+		}
+		return $success;
+	}
+
+	function insert()
+	{
+		$success = parent::insert();
+		if ($success) {
+			$this->markForForcedRegrouping();
+		}
+		return $success;
+	}
+
+	function delete($useWhere = false)
+	{
+		$success = parent::delete($useWhere);
+		if ($success) {
+			$this->markForForcedRegrouping();
+		}
+		return $success;
+	}
+
+	private function markForForcedRegrouping() {
+		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+		$groupedWork = new GroupedWork();
+		$groupedWork->permanent_id = $this->destinationGroupedWorkId;
+		if ($groupedWork->find(true)){
+			if (!$groupedWork->forceRegrouping()) {
+				global $logger;
+				$logger->log('Error occurred marking destination grouped work ' . $this->destinationGroupedWorkId .' for forced regrouping', PEAR_LOG_ERR);
+			};
+		}
+	}
 }
