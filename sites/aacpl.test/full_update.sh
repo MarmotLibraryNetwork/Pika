@@ -162,7 +162,7 @@ fi
 mount 10.1.2.7:/ftp/aacpl /mnt/ftp
 
 # Copy Over Holds data
-cp --update --preserve=timestamps /mnt/ftp/symphony-holds/*.csv /data/vufind-plus/${PIKASERVER}/
+#cp --update --preserve=timestamps /mnt/ftp/symphony-holds/*.csv /data/vufind-plus/${PIKASERVER}/
 
 #Copy extracts from FTP Server
 FILE=$(find /mnt/ftp/symphony -name "Pika*.mrc" -mtime -1 | sort -n | tail -1)
