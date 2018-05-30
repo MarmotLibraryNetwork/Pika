@@ -31,10 +31,9 @@ import org.marc4j.marc.Record;
 
 /**
  * Export data to
- * VuFind-Plus
+ * Pika
  * User: Mark Noble
- * Date: 10/15/13
- * Time: 8:59 AM
+ * Date: 1/15/18
  */
 public class SierraExportAPIMain {
 	private static Logger logger = Logger.getLogger(SierraExportAPIMain.class);
