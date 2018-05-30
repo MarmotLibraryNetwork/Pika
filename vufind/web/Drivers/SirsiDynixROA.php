@@ -439,8 +439,10 @@ abstract class SirsiDynixROA extends HorizonAPI
 									$City = substr($cityState, 0, $last_space);
 									$State = substr($cityState, $last_space+1);
 
-								} else {
+								} elseif (strpos($cityState, ' ') !== false) {
 									list($City, $State) = explode(' ', $cityState);
+								} else {
+									$logger->log('SirsiDynixROA Driver: Unable to parse city/state string:'.$cityState, PEAR_LOG_DEBUG);
 								}
 								break;
 							case 'ZIP' :
