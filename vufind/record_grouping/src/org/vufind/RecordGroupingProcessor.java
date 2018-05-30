@@ -105,6 +105,7 @@ class RecordGroupingProcessor {
 				mergedGroupedWorks.put(mergedWorksRS.getString("sourceGroupedWorkId"), mergedWorksRS.getString("destinationGroupedWorkId"));
 			}
 			mergedWorksRS.close();
+//			loadMergedWorksStmt.close(); // Wasn't included plb -5/29/2018
 			PreparedStatement recordsToNotGroupStmt = dbConnection.prepareStatement("SELECT * from nongrouped_records");
 			ResultSet nonGroupedRecordsRS = recordsToNotGroupStmt.executeQuery();
 			while (nonGroupedRecordsRS.next()){
