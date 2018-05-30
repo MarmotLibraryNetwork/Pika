@@ -107,7 +107,10 @@ cd /usr/local/vufind-plus/vufind/record_grouping; java -server -XX:+UseG1GC -jar
 #MDN 4/12/2018 run everyday while we are changing settings
 #if [ "${DAYOFWEEK}" -eq 5 ];
 #then
+
 cd /usr/local/vufind-plus/vufind/reindexer; nice -n -3 java -server -XX:+UseG1GC -jar reindexer.jar ${PIKASERVER} fullReindex >> ${OUTPUT_FILE}
+cd /usr/local/vufind-plus/vufind/reindexer; java -server -XX:+UseG1GC -jar reindexer.jar ${PIKASERVER} fullReindex >> ${OUTPUT_FILE}
+
 #else
 #cd /usr/local/vufind-plus/vufind/reindexer; nice -n -3 java -server -XX:+UseG1GC -jar reindexer.jar ${PIKASERVER} >> ${OUTPUT_FILE}
 #fi
