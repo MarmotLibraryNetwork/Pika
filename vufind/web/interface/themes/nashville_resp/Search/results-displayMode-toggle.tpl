@@ -1,10 +1,5 @@
 {strip}
-
-
 <div class="row">
-
-
-
 {* Sort the results*}{* Moved sort from results-sidebar.tpl to here - JE 6/18/15 *}
 	{if $recordCount}
      {* <span class="sidebar-label">
