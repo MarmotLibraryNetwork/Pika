@@ -64,6 +64,10 @@ class MaterialsRequest_NewRequest extends Action
 			$request                         = new MaterialsRequest();
 			$request->placeHoldWhenAvailable = true; // set the place hold option on by default
 			$request->illItem                = true; // set the place hold option on by default
+
+			// Nashville special request
+			if ($library->displayName == "Nashville Public Library") { $request->illItem = false; }
+
 			if (isset($_REQUEST['lookfor']) && strlen($_REQUEST['lookfor']) > 0) {
 				$searchType = isset($_REQUEST['basicType']) ? $_REQUEST['basicType'] : (isset($_REQUEST['type']) ? $_REQUEST['type'] : 'Keyword');
 				if (strcasecmp($searchType, 'author') == 0) {
