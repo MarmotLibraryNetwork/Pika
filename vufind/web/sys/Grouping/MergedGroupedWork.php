@@ -159,5 +159,13 @@ class MergedGroupedWork extends DB_DataObject {
 				$logger->log('Error occurred marking destination grouped work ' . $this->destinationGroupedWorkId .' for forced regrouping', PEAR_LOG_ERR);
 			};
 		}
+		$groupedWork = new GroupedWork();
+		$groupedWork->permanent_id = $this->sourceGroupedWorkId;
+		if ($groupedWork->find(true)){
+			if (!$groupedWork->forceRegrouping()) {
+				global $logger;
+				$logger->log('Error occurred marking destination grouped work ' . $this->sourceGroupedWorkId .' for forced regrouping', PEAR_LOG_ERR);
+			};
+		}
 	}
 }
