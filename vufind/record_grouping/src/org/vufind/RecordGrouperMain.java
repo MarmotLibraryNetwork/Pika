@@ -739,6 +739,7 @@ public class RecordGrouperMain {
 				System.exit(1);
 			}
 
+			// Main Record Grouping Processing
 			if (indexingProfileToRun == null || indexingProfileToRun.equalsIgnoreCase("overdrive")) {
 				groupOverDriveRecords(configIni, vufindConn, econtentConnection, recordGroupingProcessor, explodeMarcsOnly);
 			}
