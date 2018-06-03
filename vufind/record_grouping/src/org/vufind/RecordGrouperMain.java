@@ -1198,7 +1198,7 @@ public class RecordGrouperMain {
 				logger.debug("Checking if " + curProfile.name + "has had any records marked for regrouping.");
 				if (checkForForcedRegrouping(dbConnection, curProfile.name)) {
 					processProfile = true;
-					addNoteToGroupingLog(curProfile.name + "has no file changes but will be processed because records have been marked for forced regrouping.");
+					addNoteToGroupingLog(curProfile.name + " has no file changes but will be processed because records have been marked for forced regrouping.");
 				}
 			}
 

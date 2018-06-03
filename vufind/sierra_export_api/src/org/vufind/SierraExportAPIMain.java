@@ -239,7 +239,7 @@ public class SierraExportAPIMain {
 			finishedStatement.setLong(2, exportLogId);
 			finishedStatement.executeUpdate();
 		} catch (SQLException e) {
-			logger.error("Unable to update hoopla export log with completion time.", e);
+			logger.error("Unable to update sierra api export log with completion time.", e);
 		}
 
 		if (conn != null){
@@ -1154,6 +1154,7 @@ public class SierraExportAPIMain {
 					if (!processedIds.contains(id)){
 						if (!updateMarcAndRegroupRecordId(ini, id)){
 							//Don't fail the entire process.  We will just reprocess next time the export runs
+							logger.debug("Processing " + id + " failed");
 							addNoteToExportLog("Processing " + id + " failed");
 							bibsWithErrors.add(id);
 							//allPass = false;
