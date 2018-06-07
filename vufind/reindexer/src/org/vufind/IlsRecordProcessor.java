@@ -39,7 +39,6 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	char formatSubfield;
 	char barcodeSubfield;
 	char statusSubfieldIndicator;
-	Pattern statusesToSuppressPattern = null;
 	private Pattern nonHoldableStatuses;
 	char shelvingLocationSubfield;
 	char collectionSubfield;
@@ -51,8 +50,12 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	private String dateAddedFormat;
 	char locationSubfieldIndicator;
 	private Pattern nonHoldableLocations;
+	Pattern statusesToSuppressPattern = null;
 	Pattern locationsToSuppressPattern = null;
 	Pattern collectionsToSuppressPattern = null;
+	Pattern iTypesToSuppressPattern = null;
+	Pattern iCode2sToSuppressPattern = null;
+	Pattern bCode3sToSuppressPattern = null;
 	char subLocationSubfield;
 	char iTypeSubfield;
 	private Pattern nonHoldableITypes;
@@ -63,6 +66,8 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	private char totalCheckoutSubfield;
 	boolean useICode2Suppression;
 	char iCode2Subfield;
+	String sierraRecordFixedFieldsTag;
+	char bCode3Subfield;
 	private boolean useItemBasedCallNumbers;
 	private char callNumberPrestampSubfield;
 	private char callNumberSubfield;
@@ -123,14 +128,30 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			subLocationSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "subLocation");
 			shelvingLocationSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "shelvingLocation");
 			collectionSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "collection");
+
 			String locationsToSuppress = indexingProfileRS.getString("locationsToSuppress");
 			if (locationsToSuppress.length() > 0){
 				locationsToSuppressPattern = Pattern.compile(locationsToSuppress);
 			}
-
 			String collectionsToSuppress = indexingProfileRS.getString("collectionsToSuppress");
 			if (collectionsToSuppress.length() > 0){
 				collectionsToSuppressPattern = Pattern.compile(collectionsToSuppress);
+			}
+			String statusesToSuppress = indexingProfileRS.getString("statusesToSuppress");
+			if (statusesToSuppress.length() > 0){
+				statusesToSuppressPattern = Pattern.compile(statusesToSuppress);
+			}
+			String bCode3sToSuppress = indexingProfileRS.getString("bCode3sToSuppress");
+			if (bCode3sToSuppress.length() > 0){
+				bCode3sToSuppressPattern = Pattern.compile(bCode3sToSuppress);
+			}
+			String iCode2sToSuppress = indexingProfileRS.getString("iCode2sToSuppress");
+			if (iCode2sToSuppress.length() > 0){
+				iCode2sToSuppressPattern = Pattern.compile(iCode2sToSuppress);
+			}
+			String iTypesToSuppress = indexingProfileRS.getString("iTypesToSuppress");
+			if (iTypesToSuppress.length() > 0){
+				iTypesToSuppressPattern = Pattern.compile(iTypesToSuppress);
 			}
 
 			itemUrlSubfieldIndicator = getSubfieldIndicatorFromConfig(indexingProfileRS, "itemUrl");
@@ -142,11 +163,6 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			formatSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "format");
 			barcodeSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "barcode");
 			statusSubfieldIndicator = getSubfieldIndicatorFromConfig(indexingProfileRS, "status");
-			String statusesToSuppress = indexingProfileRS.getString("statusesToSuppress");
-			if (statusesToSuppress.length() > 0){
-				statusesToSuppressPattern = Pattern.compile(statusesToSuppress);
-			}
-
 			try {
 				String pattern = indexingProfileRS.getString("nonHoldableStatuses");
 				if (pattern != null && pattern.length() > 0) {
@@ -184,6 +200,9 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 			iCode2Subfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "iCode2");
 			useICode2Suppression = indexingProfileRS.getBoolean("useICode2Suppression");
+
+			sierraRecordFixedFieldsTag = indexingProfileRS.getString("sierraRecordFixedFieldsTag");
+			bCode3Subfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "bCode3");
 
 			eContentSubfieldIndicator = getSubfieldIndicatorFromConfig(indexingProfileRS, "eContentDescriptor");
 			useEContentSubfield = eContentSubfieldIndicator != ' ';
@@ -321,7 +340,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		try{
 			//If the entire bib is suppressed, update stats and bail out now.
 			if (isBibSuppressed(record)){
-				logger.debug("Bib record " + identifier + " is suppressed skipping");
+				logger.debug("Bib record " + identifier + " is suppressed, skipping");
 				return;
 			}
 
@@ -423,6 +442,19 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	}
 
 	protected boolean isBibSuppressed(Record record) {
+		if (bCode3sToSuppressPattern != null && sierraRecordFixedFieldsTag != null && sierraRecordFixedFieldsTag.length() > 0 && bCode3Subfield != ' ') {
+			DataField sierraFixedField = record.getDataField(sierraRecordFixedFieldsTag);
+			if (sierraFixedField != null){
+				Subfield suppressionSubfield = sierraFixedField.getSubfield(bCode3Subfield);
+				if (suppressionSubfield != null){
+					String bCode3 = suppressionSubfield.getData().toLowerCase().trim();
+					if (bCode3sToSuppressPattern.matcher(bCode3).matches()){
+						logger.debug("Bib record is suppressed due to BCode3 " + bCode3);
+						return true;
+					}
+				}
+			}
+		}
 		return false;
 	}
 
@@ -1288,26 +1320,27 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	protected boolean isItemSuppressed(DataField curItem) {
 		if (statusSubfieldIndicator != ' ') {
 			Subfield statusSubfield = curItem.getSubfield(statusSubfieldIndicator);
-			if (statusSubfield == null) {
+			if (statusSubfield == null) { // suppress if subfield is missing
 				return true;
 			} else {
 				if (statusesToSuppressPattern != null && statusesToSuppressPattern.matcher(statusSubfield.getData()).matches()) {
-
 					return true;
 				}
 			}
 		}
-		Subfield locationSubfield = curItem.getSubfield(locationSubfieldIndicator);
-		if (locationSubfield == null){
-			return true;
-		}else{
-			if (locationsToSuppressPattern != null && locationsToSuppressPattern.matcher(locationSubfield.getData().trim()).matches()){
+		if (locationSubfieldIndicator != ' ') {
+			Subfield locationSubfield = curItem.getSubfield(locationSubfieldIndicator);
+			if (locationSubfield == null){ // suppress if subfield is missing
 				return true;
+			}else{
+				if (locationsToSuppressPattern != null && locationsToSuppressPattern.matcher(locationSubfield.getData().trim()).matches()){
+					return true;
+				}
 			}
 		}
 		if (collectionSubfield != ' '){
 			Subfield collectionSubfieldValue = curItem.getSubfield(collectionSubfield);
-			if (collectionSubfieldValue == null){
+			if (collectionSubfieldValue == null){ // suppress if subfield is missing
 				return true;
 			}else{
 				if (collectionsToSuppressPattern != null && collectionsToSuppressPattern.matcher(collectionSubfieldValue.getData().trim()).matches()){
@@ -1315,6 +1348,31 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				}
 			}
 		}
+		if (iTypeSubfield != ' '){
+			Subfield iTypeSubfieldValue = curItem.getSubfield(iTypeSubfield);
+			if (iTypeSubfieldValue == null){ // suppress if subfield is missing
+				return true;
+			}else{
+				String iType = iTypeSubfieldValue.getData().trim();
+				if (iTypesToSuppressPattern != null && iTypesToSuppressPattern.matcher(iType).matches()){
+					logger.debug("Item record is suppressed due to icode2 " + iType);
+					return true;
+				}
+			}
+		}
+		if (useICode2Suppression && iCode2Subfield != ' ') {
+			Subfield icode2Subfield = curItem.getSubfield(iCode2Subfield);
+			if (icode2Subfield != null) {
+				String iCode2 = icode2Subfield.getData().toLowerCase().trim();
+
+				//Suppress iCode2 codes
+				if (iCode2sToSuppressPattern != null && iCode2sToSuppressPattern.matcher(iCode2).matches()) {
+					logger.debug("Item record is suppressed due to ICode2 " + iCode2);
+					return true;
+				}
+			}
+		}
+
 		return false;
 	}
 
