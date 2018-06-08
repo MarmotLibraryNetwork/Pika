@@ -6852,7 +6852,7 @@ a:hover {
 a.btn-primary,
 a.btn-warning,
 a.btn-info {
-  color: #ffffff;
+  color: #fff;
 }
 @media print {
   a:link:after,
