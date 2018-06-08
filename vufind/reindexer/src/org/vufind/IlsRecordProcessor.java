@@ -130,27 +130,27 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			collectionSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "collection");
 
 			String locationsToSuppress = indexingProfileRS.getString("locationsToSuppress");
-			if (locationsToSuppress.length() > 0){
+			if (locationsToSuppress != null && locationsToSuppress.length() > 0){
 				locationsToSuppressPattern = Pattern.compile(locationsToSuppress);
 			}
 			String collectionsToSuppress = indexingProfileRS.getString("collectionsToSuppress");
-			if (collectionsToSuppress.length() > 0){
+			if (collectionsToSuppress != null && collectionsToSuppress.length() > 0){
 				collectionsToSuppressPattern = Pattern.compile(collectionsToSuppress);
 			}
 			String statusesToSuppress = indexingProfileRS.getString("statusesToSuppress");
-			if (statusesToSuppress.length() > 0){
+			if (statusesToSuppress != null && statusesToSuppress.length() > 0){
 				statusesToSuppressPattern = Pattern.compile(statusesToSuppress);
 			}
 			String bCode3sToSuppress = indexingProfileRS.getString("bCode3sToSuppress");
-			if (bCode3sToSuppress.length() > 0){
+			if (bCode3sToSuppress != null && bCode3sToSuppress.length() > 0){
 				bCode3sToSuppressPattern = Pattern.compile(bCode3sToSuppress);
 			}
 			String iCode2sToSuppress = indexingProfileRS.getString("iCode2sToSuppress");
-			if (iCode2sToSuppress.length() > 0){
+			if (iCode2sToSuppress != null && iCode2sToSuppress.length() > 0){
 				iCode2sToSuppressPattern = Pattern.compile(iCode2sToSuppress);
 			}
 			String iTypesToSuppress = indexingProfileRS.getString("iTypesToSuppress");
-			if (iTypesToSuppress.length() > 0){
+			if (iTypesToSuppress != null && iTypesToSuppress.length() > 0){
 				iTypesToSuppressPattern = Pattern.compile(iTypesToSuppress);
 			}
 
