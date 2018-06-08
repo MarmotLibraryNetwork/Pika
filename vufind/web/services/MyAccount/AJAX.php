@@ -562,11 +562,11 @@ class MyAccount_AJAX
 				$return['message'] = "You must provide a title for the list";
 			} else {
 				//If the record is not valid, skip the whole thing since the title could be bad too
-				if (isset($_REQUEST['recordId']) && !is_array($_REQUEST['recordId'])) {
+				if (!empty($_REQUEST['recordId']) && !is_array($_REQUEST['recordId'])) {
 					$recordToAdd = urldecode($_REQUEST['recordId']);
 					if (!preg_match("/^[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}|[A-Z0-9_-]+:[A-Z0-9_-]+$/i", $recordToAdd)) {
 						$return['success'] = false;
-						$return['message'] = 'The title provided is not valid';
+						$return['message'] = 'The item to add to the list is not valid';
 						return $return;
 					}
 				}
@@ -596,7 +596,7 @@ class MyAccount_AJAX
 					$list->insert();
 				}
 
-				if (isset($_REQUEST['recordId']) && !is_array($_REQUEST['recordId'])) {
+				if (!empty($_REQUEST['recordId']) && !is_array($_REQUEST['recordId'])) {
 					$recordToAdd = urldecode($_REQUEST['recordId']);
 					require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
 					//Check to see if the user has already added the title to the list.

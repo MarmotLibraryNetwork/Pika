@@ -106,8 +106,9 @@ public class GroupedWorkIndexer {
 			PreparedStatement loadPartialReindexRunning = vufindConn.prepareStatement("SELECT * from variables WHERE name = 'partial_reindex_running'");
 			ResultSet loadPartialReindexRunningRS = loadPartialReindexRunning.executeQuery();
 			if (loadPartialReindexRunningRS.next()){
-				partialReindexRunning = loadPartialReindexRunningRS.getBoolean("value");
 				partialReindexRunningVariableId = loadPartialReindexRunningRS.getLong("id");
+				String value = loadPartialReindexRunningRS.getString("value");
+				partialReindexRunning = (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("1"));
 			}
 			loadPartialReindexRunningRS.close();
 			loadPartialReindexRunning.close();
@@ -227,6 +228,9 @@ public class GroupedWorkIndexer {
 							break;
 						case "SantaFe":
 							ilsRecordProcessors.put(curIdentifier, new SantaFeRecordProcessor(this, vufindConn, indexingProfileRS, logger, fullReindex));
+							break;
+						case "Sacramento":
+							ilsRecordProcessors.put(curIdentifier, new SacramentoRecordProcessor(this, vufindConn, indexingProfileRS, logger, fullReindex));
 							break;
 						case "AACPL":
 							ilsRecordProcessors.put(curIdentifier, new AACPLRecordProcessor(this, vufindConn, indexingProfileRS, logger, fullReindex));

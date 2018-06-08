@@ -29,7 +29,7 @@
 
 
 # this version emails script output as a round finishes
-EMAIL=james.staub@nashville.gov,Mark.Noble@nashville.gov,Pascal.Brammeier@nashville.gov
+EMAIL=james.staub@nashville.gov,Pascal.Brammeier@nashville.gov
 PIKASERVER=nashville.test
 PIKADBNAME=vufind
 OUTPUT_FILE="/var/log/pika/${PIKASERVER}/full_update_output.log"
@@ -159,7 +159,7 @@ then
 	fi
 
 else
-	echo "Did not find a CarlX export file from the last 24 hours." >> ${OUTPUT_FILE}
+	echo "Did not find a CarlX export file from the last 24 hours, Full Regrouping & Full Reindexing skipped." >> ${OUTPUT_FILE}
 fi
 
 #Email results

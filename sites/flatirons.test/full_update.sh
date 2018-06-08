@@ -9,12 +9,12 @@
 # For Pika discovery partners using Millennium 2011 1.6_3
 
 # this version emails script output as a round finishes
-EMAIL=mark@marmot.org,pascal@marmot.org
+EMAIL=pikaservers@marmot.org
 PIKASERVER=flatirons.test
 PIKADBNAME=pika
 OUTPUT_FILE="/var/log/vufind-plus/${PIKASERVER}/full_update_output.log"
 
-MINFILE1SIZE=$((1140000000))
+MINFILE1SIZE=$((1110000000))
 
 # Check if full_update is already running
 #TODO: Verify that the PID file doesn't get log-rotated

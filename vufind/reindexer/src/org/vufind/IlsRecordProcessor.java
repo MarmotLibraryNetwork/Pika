@@ -1737,10 +1737,10 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		}
 
 		// Check for formats in the 502 tag
-		DataField dissertaionNoteField = record.getDataField("502");
-		if (dissertaionNoteField != null) {
-			if (dissertaionNoteField.getSubfield('a') != null) {
-				String noteValue = dissertaionNoteField.getSubfield('a').getData().toLowerCase();
+		DataField dissertationNoteField = record.getDataField("502");
+		if (dissertationNoteField != null) {
+			if (dissertationNoteField.getSubfield('a') != null) {
+				String noteValue = dissertationNoteField.getSubfield('a').getData().toLowerCase();
 				if (noteValue.contains("thesis (m.a.)")) {
 					result.add("Thesis");
 				}

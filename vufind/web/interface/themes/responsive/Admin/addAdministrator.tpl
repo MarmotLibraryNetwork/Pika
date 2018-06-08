@@ -13,7 +13,16 @@
 					<input type="text" name="login" id="login" class="form-control">
 				</div>
 			</div>
-			<div class="alert alert-info">Enter the barcode for the user who should be given administration privileges</div>
+			<div class="alert alert-info">
+				<p>Enter the barcode for the user who should be given administration privileges.</p>
+				<div class="alert alert-warning">
+				<ul>
+					<li>The user must have logged in before.</li>
+					<li>The barcode must be entered as it appears in the ILS. (including spaces)</li>
+					<li>If the user's account is linked to multiple barcodes, only one of the barcodes will work here.</li>
+				</ul>
+			</div>
+			</div>
 
 			<div class="form-group">
 				{assign var=property value=$structure.roles}

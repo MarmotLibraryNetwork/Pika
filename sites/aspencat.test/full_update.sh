@@ -81,6 +81,9 @@ cd /usr/local/vufind-plus/sites/${PIKASERVER}; ./${PIKASERVER}.sh restart
 # Cloud Library
 /usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} aspencat/cloudlibrary cloudlibrary/aspencat >> ${OUTPUT_FILE}
 
+# EBSCO (CC of Aurora
+/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} aspencat/ebsco/cca ebsco/cca >> ${OUTPUT_FILE}
+
 #Colorado State Government Documents Updates
 curl --remote-name --remote-time --silent --show-error --compressed --time-cond /data/vufind-plus/colorado_gov_docs/marc/fullexport.mrc https://cassini.marmot.org/colorado_state_docs.mrc
 

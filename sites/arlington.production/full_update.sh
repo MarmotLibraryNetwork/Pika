@@ -9,13 +9,13 @@
 # For Pika discovery partners using Millennium 2011 1.6_3
 
 # this version emails script output as a round finishes
-EMAIL=mark@marmot.org,pascal@marmot.org
+EMAIL=pikaservers@marmot.org
 PIKASERVER=arlington.production
 PIKADBNAME=pika
 OUTPUT_FILE="/var/log/vufind-plus/${PIKASERVER}/full_update_output.log"
 
-MINFILE1SIZE=$((551000000))
-MINFILE2SIZE=$((686000000))
+MINFILE1SIZE=$((774000000))
+MINFILE2SIZE=$((432000000))
 
 # Check for conflicting processes currently running
 function checkConflictingProcesses() {
@@ -177,11 +177,11 @@ then
 		fi
 
 	else
-		echo "Did not find a Sierra export file (2) from the last 24 hours." >> ${OUTPUT_FILE}
+		echo "Did not find a Sierra export file (2) from the last 24 hours, Full Regrouping & Full Reindexing skipped." >> ${OUTPUT_FILE}
 	fi
 
 else
-	echo "Did not find a Sierra export file (1) from the last 24 hours." >> ${OUTPUT_FILE}
+	echo "Did not find a Sierra export file (1) from the last 24 hours, Full Regrouping & Full Reindexing skipped." >> ${OUTPUT_FILE}
 fi
 
 # Clean-up Solr Logs

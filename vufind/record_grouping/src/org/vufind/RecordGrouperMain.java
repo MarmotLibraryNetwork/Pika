@@ -739,6 +739,7 @@ public class RecordGrouperMain {
 				System.exit(1);
 			}
 
+			// Main Record Grouping Processing
 			if (indexingProfileToRun == null || indexingProfileToRun.equalsIgnoreCase("overdrive")) {
 				groupOverDriveRecords(configIni, vufindConn, econtentConnection, recordGroupingProcessor, explodeMarcsOnly);
 			}
@@ -1193,6 +1194,13 @@ public class RecordGrouperMain {
 			if (curProfile.groupUnchangedFiles){
 				processProfile = true;
 			}
+			if (!processProfile) {
+				logger.debug("Checking if " + curProfile.name + "has had any records marked for regrouping.");
+				if (checkForForcedRegrouping(dbConnection, curProfile.name)) {
+					processProfile = true;
+					addNoteToGroupingLog(curProfile.name + " has no file changes but will be processed because records have been marked for forced regrouping.");
+				}
+			}
 
 			if (!processProfile) {
 				addNoteToGroupingLog("Skipping processing profile " + curProfile.name + " because nothing has changed");
@@ -1242,6 +1250,7 @@ public class RecordGrouperMain {
 									if (controlNumber != null) {
 										suppressedControlNumbersInExport.add(controlNumber);
 									}else{
+										//TODO: give more info to identify the record
 										logger.warn("Bib did not have control number or identifier");
 									}
 								}else if (recordIdentifier.isSuppressed()) {
@@ -1687,4 +1696,21 @@ public class RecordGrouperMain {
 		return stringToTrim.trim();
 	}
 
+	private static boolean checkForForcedRegrouping(Connection vufindConn, String indexingProfile) {
+		PreparedStatement checkForRecordsMarkedForRegrouping;
+
+		try {
+			checkForRecordsMarkedForRegrouping = vufindConn.prepareStatement("SELECT COUNT(*) from ils_marc_checksums where source like ? AND checksum = 0", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			checkForRecordsMarkedForRegrouping.setString(1, indexingProfile);
+			ResultSet checkForRecordsMarkedForRegroupingRS = checkForRecordsMarkedForRegrouping.executeQuery();
+			checkForRecordsMarkedForRegroupingRS.next();
+			long numMarkedChecksums = checkForRecordsMarkedForRegroupingRS.getLong(1);
+			if (numMarkedChecksums > 0) {
+				return true;
+			}
+			} catch (SQLException e) {
+			logger.error("Error checking for grouped works marked for forced regrouping", e);
+		}
+		return false;
+	}
 }

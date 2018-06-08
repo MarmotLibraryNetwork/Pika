@@ -20,6 +20,7 @@
 		<div class="related-manifestation-shelf-status availableOther">Available at another branch</div>
 	{else}
 		<div class="related-manifestation-shelf-status available">{translate text='On Shelf'}</div>
+		{*TODO:  Need a condition when all the holdable copies are checked out and the remaining copies are library use only*}
 	{/if}
 {elseif $statusInformation.availableOnline}
 	<div class="related-manifestation-shelf-status available">Available Online</div>

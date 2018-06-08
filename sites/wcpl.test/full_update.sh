@@ -9,7 +9,7 @@
 # For Pika discovery partners using Millennium 2011 1.6_3
 
 # this version emails script output as a round finishes
-EMAIL=mark@marmot.org,pascal@marmot.org
+EMAIL=pikaservers@marmot.org
 PIKASERVER=wcpl.test
 PIKADBNAME=pika
 OUTPUT_FILE="/var/log/vufind-plus/${PIKASERVER}/full_update_output.log"
@@ -170,7 +170,7 @@ if [ -n "$FILE1" ]; then
 		fi
 else
 	umount /mnt/ftp
-	echo "Did not find a Horizon full export file from the last 24 hours." >> ${OUTPUT_FILE}
+	echo "Did not find a Horizon full export file from the last 24 hours, Full Regrouping & Full Reindexing skipped." >> ${OUTPUT_FILE}
 fi
 
 # Clean-up Solr Logs

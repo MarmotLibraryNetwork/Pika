@@ -31,10 +31,9 @@ import org.marc4j.marc.Record;
 
 /**
  * Export data to
- * VuFind-Plus
+ * Pika
  * User: Mark Noble
- * Date: 10/15/13
- * Time: 8:59 AM
+ * Date: 1/15/18
  */
 public class SierraExportAPIMain {
 	private static Logger logger = Logger.getLogger(SierraExportAPIMain.class);
@@ -240,7 +239,7 @@ public class SierraExportAPIMain {
 			finishedStatement.setLong(2, exportLogId);
 			finishedStatement.executeUpdate();
 		} catch (SQLException e) {
-			logger.error("Unable to update hoopla export log with completion time.", e);
+			logger.error("Unable to update sierra api export log with completion time.", e);
 		}
 
 		if (conn != null){
@@ -1155,6 +1154,7 @@ public class SierraExportAPIMain {
 					if (!processedIds.contains(id)){
 						if (!updateMarcAndRegroupRecordId(ini, id)){
 							//Don't fail the entire process.  We will just reprocess next time the export runs
+							logger.debug("Processing " + id + " failed");
 							addNoteToExportLog("Processing " + id + " failed");
 							bibsWithErrors.add(id);
 							//allPass = false;

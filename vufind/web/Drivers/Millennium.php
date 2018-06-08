@@ -1463,6 +1463,7 @@ class Millennium extends ScreenScrapingDriver
 		$middleName = trim($_REQUEST['middleName']);
 		$lastName = trim($_REQUEST['lastName']);
 		$address = trim($_REQUEST['address']);
+		$physicalAddress = trim($_REQUEST['physicalAddress']);
 		$city = trim($_REQUEST['city']);
 		$state = trim($_REQUEST['state']);
 		$zip = trim($_REQUEST['zip']);
@@ -1483,6 +1484,9 @@ class Millennium extends ScreenScrapingDriver
 		$post_data['nfirst'] = $middleName ? $firstName.' '.$middleName : $firstName; // add middle name onto first name;
 		$post_data['nlast'] = $lastName;
 		$post_data['stre_aaddress'] = $address;
+		if (!empty($physicalAddress)) {
+			$post_data['stre_haddress2'] = $physicalAddress;
+		}
 		if ($this->combineCityStateZipInSelfRegistration()){
 			$post_data['city_aaddress'] = "$city, $state $zip";
 		}else{

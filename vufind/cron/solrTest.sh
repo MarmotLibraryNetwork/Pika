@@ -67,7 +67,7 @@ function emailAlert(){
         local nameEmail=$1
         local emailText=$2
         local emailSubject="**RECOVERY** Apache Solr $nameEmail was restarted."
-        local emailAddress="root@marmot.org, mark@marmot.org, pascal@marmot.org"
+        local emailAddress="root@marmot.org, pikaservers@marmot.org"
         mail -s "$emailSubject" "$emailAddress" <<< $emailText
 
 } # end emailAlert func

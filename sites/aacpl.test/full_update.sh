@@ -9,7 +9,7 @@
 # For Pika discovery partners using Millennium 2011 1.6_3
 
 # this version emails script output as a round finishes
-EMAIL=mark@marmot.org,pascal@marmot.org
+EMAIL=pikaservers@marmot.org
 PIKASERVER=aacpl.test
 PIKADBNAME=pika
 OUTPUT_FILE="/var/log/vufind-plus/${PIKASERVER}/full_update_output.log"
@@ -162,7 +162,7 @@ fi
 mount 10.1.2.7:/ftp/aacpl /mnt/ftp
 
 # Copy Over Holds data
-cp --update --preserve=timestamps /mnt/ftp/symphony-holds/*.csv /data/vufind-plus/${PIKASERVER}/
+#cp --update --preserve=timestamps /mnt/ftp/symphony-holds/*.csv /data/vufind-plus/${PIKASERVER}/
 
 #Copy extracts from FTP Server
 FILE=$(find /mnt/ftp/symphony -name "Pika*.mrc" -mtime -1 | sort -n | tail -1)
