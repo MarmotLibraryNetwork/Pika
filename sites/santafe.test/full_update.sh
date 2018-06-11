@@ -117,7 +117,8 @@ rm /data/vufind-plus/${PIKASERVER}/grouped_work_primary_identifiers.sql
 cd /usr/local/vufind-plus/sites/${PIKASERVER}; ./${PIKASERVER}.sh restart
 
 # OneClick digital Marc Updates
-/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} santafe/oneclickdigital oneclickdigital/santafe >> ${OUTPUT_FILE}
+#/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} santafe/oneclickdigital oneclickdigital/santafe >> ${OUTPUT_FILE}
+# santa fe no longer subscribes. pascal 6/11/2018
 
 
 #Get the updated volume information
