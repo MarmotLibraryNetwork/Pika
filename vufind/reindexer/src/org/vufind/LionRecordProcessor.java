@@ -140,7 +140,7 @@ class LionRecordProcessor extends IIIRecordProcessor {
 	}
 
 	protected void loadTargetAudiences(GroupedWorkSolr groupedWork, Record record, HashSet<ItemInfo> printItems, String identifier) {
-		//For Anythink, load audiences based on collection code rather than based on the 008 and 006 fields
+		//For LION, Anythink, load audiences based on collection code rather than based on the 008 and 006 fields
 		HashSet<String> targetAudiences = new HashSet<>();
 		for (ItemInfo printItem : printItems){
 			String collection = printItem.getShelfLocationCode();

@@ -463,10 +463,7 @@ abstract class MarcRecordProcessor {
 					&& (bibLevel == 'A' || bibLevel == 'C' || bibLevel == 'D' || bibLevel == 'M') /* Books */
 					|| (recordType == 'M') /* Computer Files */
 					|| (recordType == 'C' || recordType == 'D' || recordType == 'I' || recordType == 'J') /* Music */
-					|| (recordType == 'G' || recordType == 'K' || recordType == 'O' || recordType == 'R') /*
-																																																 * Visual
-																																																 * Materials
-																																																 */
+					|| (recordType == 'G' || recordType == 'K' || recordType == 'O' || recordType == 'R') /* Visual  Materials */
 					) {
 				char targetAudienceChar;
 				if (ohOhSixField != null && ohOhSixField.getData().length() > 5) {

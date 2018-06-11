@@ -1,6 +1,7 @@
 package org.vufind;
 
 import org.apache.log4j.Logger;
+import org.marc4j.marc.Record;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -67,6 +68,21 @@ class SacramentoRecordProcessor extends IIIRecordProcessor {
 
     protected boolean determineLibraryUseOnly(ItemInfo itemInfo, Scope curScope) {
         return itemInfo.getStatusCode().equals("o");
+    }
+
+    protected void loadTargetAudiences(GroupedWorkSolr groupedWork, Record record, HashSet<ItemInfo> printItems, String identifier) {
+        //For Sacramento, LION, Anythink, load audiences based on collection code rather than based on the 008 and 006 fields
+        HashSet<String> targetAudiences = new HashSet<>();
+        for (ItemInfo printItem : printItems){
+            String collection = printItem.getShelfLocationCode();
+            if (collection != null) {
+                targetAudiences.add(collection.toLowerCase());
+            }
+        }
+
+        HashSet<String> translatedAudiences = translateCollection("target_audience", targetAudiences, identifier);
+        groupedWork.addTargetAudiences(translatedAudiences);
+        groupedWork.addTargetAudiencesFull(translatedAudiences);
     }
 
 }
