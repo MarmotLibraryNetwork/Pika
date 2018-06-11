@@ -14,7 +14,7 @@ import java.util.Date;
 
 
 /**
- * Reindex Grouped Records for display within VuFind
+ * Reindex Grouped Records for display within Pika
  * 
  * @author Mark Noble <mark@marmot.org>
  * 
