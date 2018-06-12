@@ -19,7 +19,7 @@ class LoanRule extends DB_DataObject
 	public $shippable;
 
 	function keys() {
-		return array('iId');
+		return array('id');
 	}
 
 	function getObjectStructure(){
