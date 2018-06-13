@@ -199,12 +199,12 @@ public class GroupedWorkIndexer {
 						case "Marmot":
 							ilsRecordProcessors.put(curIdentifier, new MarmotRecordProcessor(this, vufindConn, indexingProfileRS, logger, fullReindex));
 							break;
-						case "Nashville":
-							ilsRecordProcessors.put(curIdentifier, new NashvilleRecordProcessor(this, vufindConn, indexingProfileRS, logger, fullReindex));
-							break;
-						case "NashvilleSchools":
-							ilsRecordProcessors.put(curIdentifier, new NashvilleSchoolsRecordProcessor(this, vufindConn, indexingProfileRS, logger, fullReindex));
-							break;
+//						case "Nashville":
+//							ilsRecordProcessors.put(curIdentifier, new NashvilleRecordProcessor(this, vufindConn, indexingProfileRS, logger, fullReindex));
+//							break;
+//						case "NashvilleSchools":
+//							ilsRecordProcessors.put(curIdentifier, new NashvilleSchoolsRecordProcessor(this, vufindConn, indexingProfileRS, logger, fullReindex));
+//							break;
 						case "WCPL":
 							ilsRecordProcessors.put(curIdentifier, new WCPLRecordProcessor(this, vufindConn, indexingProfileRS, logger, fullReindex));
 							break;
