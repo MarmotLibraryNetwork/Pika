@@ -1355,7 +1355,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			}else{
 				String iType = iTypeSubfieldValue.getData().trim();
 				if (iTypesToSuppressPattern != null && iTypesToSuppressPattern.matcher(iType).matches()){
-					logger.debug("Item record is suppressed due to icode2 " + iType);
+					logger.debug("Item record is suppressed due to Itype " + iType);
 					return true;
 				}
 			}
