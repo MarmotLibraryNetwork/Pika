@@ -1,6 +1,7 @@
 package org.vufind;
 
 import org.apache.log4j.Logger;
+import org.marc4j.marc.DataField;
 import org.marc4j.marc.Record;
 
 import java.sql.Connection;
@@ -84,5 +85,94 @@ class SacramentoRecordProcessor extends IIIRecordProcessor {
         groupedWork.addTargetAudiences(translatedAudiences);
         groupedWork.addTargetAudiencesFull(translatedAudiences);
     }
+
+/*
+    @Override
+    protected List<RecordInfo> loadUnsuppressedEContentItems(GroupedWorkSolr groupedWork, String identifier, Record record){
+        List<RecordInfo> unsuppressedEcontentRecords = new ArrayList<>();
+        //For arlington and sacramento, eContent will always have no items on the bib record.
+        List<DataField> items = MarcUtil.getDataFields(record, itemTag);
+        if (items.size() > 0){
+            return unsuppressedEcontentRecords;
+        }else{
+            //No items so we can continue on.
+            //Check the mat type
+            String matType = MarcUtil.getFirstFieldVal(record, "998d");
+            //Get the bib location
+            String bibLocation = null;
+            Set<String> bibLocations = MarcUtil.getFieldList(record, "998a");
+            for (String tmpBibLocation : bibLocations){
+                if (tmpBibLocation.matches("[a-zA-Z]{1,5}")){
+                    bibLocation = tmpBibLocation;
+                    break;
+                }else if (tmpBibLocation.matches("\\(\\d+\\)([a-zA-Z]{1,5})")){
+                    bibLocation = tmpBibLocation.replaceAll("\\(\\d+\\)", "");
+                    break;
+                }
+            }
+            //Get the url
+            String url = MarcUtil.getFirstFieldVal(record, "856u");
+
+            if (url != null && !url.toLowerCase().contains("lib.overdrive.com")){
+                //Get the econtent source
+                String urlLower = url.toLowerCase();
+                String econtentSource;
+                String specifiedSource = MarcUtil.getFirstFieldVal(record, "856x");
+                if (specifiedSource != null){
+                    econtentSource = specifiedSource;
+                }else {
+                    String urlText = MarcUtil.getFirstFieldVal(record, "856z");
+                    if (urlText != null) {
+                        urlText = urlText.toLowerCase();
+                        if (urlText.contains("gale virtual reference library")) {
+                            econtentSource = "Gale Virtual Reference Library";
+                        } else if (urlText.contains("gale directory library")) {
+                            econtentSource = "Gale Directory Library";
+                        } else if (urlText.contains("hoopla")) {
+                            econtentSource = "Hoopla";
+                        } else if (urlText.contains("national geographic virtual library")) {
+                            econtentSource = "National Geographic Virtual Library";
+                        } else if ((urlText.contains("ebscohost") || urlLower.contains("netlibrary") || urlLower.contains("ebsco"))) {
+                            econtentSource = "EbscoHost";
+                        } else {
+                            econtentSource = "Premium Sites";
+                        }
+                    } else {
+                        econtentSource = "Premium Sites";
+                    }
+                }
+
+                ItemInfo itemInfo = new ItemInfo();
+                itemInfo.setIsEContent(true);
+                itemInfo.setLocationCode(bibLocation);
+                itemInfo.seteContentProtectionType("external");
+                itemInfo.setCallNumber("Online");
+                itemInfo.seteContentSource(econtentSource);
+                itemInfo.setShelfLocation(econtentSource);
+                itemInfo.setIType("eCollection");
+                RecordInfo relatedRecord = groupedWork.addRelatedRecord("external_econtent", identifier);
+                relatedRecord.setSubSource(profileType);
+                relatedRecord.addItem(itemInfo);
+                itemInfo.seteContentUrl(url);
+
+                //Set the format based on the material type
+                itemInfo.setFormat(translateValue("format", matType, identifier));
+                itemInfo.setFormatCategory(translateValue("format_category", matType, identifier));
+                String boostStr = translateValue("format_boost", matType, identifier);
+                try{
+                    int boost = Integer.parseInt(boostStr);
+                    relatedRecord.setFormatBoost(boost);
+                } catch (Exception e){
+                    logger.warn("Unable to load boost for " + identifier + " got boost " + boostStr);
+                }
+
+                itemInfo.setDetailedStatus("Available Online");
+
+                unsuppressedEcontentRecords.add(relatedRecord);
+            }
+        }
+        return unsuppressedEcontentRecords;
+    }
+    */
 
 }
