@@ -2,7 +2,7 @@
 # Script restores the nightly index that is saved as tar archive file production in the full_update script
 #
 # Requires .my.cnf settings for mysqldump
-	if [ $# = 2 ];then
+if [ $# = 2 ];then
 	PIKASERVER=$1
 	PIKADB=$2
 	echo "Please ensure continuous and full re-indexing are off."
