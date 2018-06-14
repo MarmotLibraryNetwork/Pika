@@ -23,7 +23,7 @@
 		<div class="col-sm-9 col-xs-12">
 			<div class="row">
 				<div class="col-lg-1 col-md-1 col-sm-2 col-xs-12">
-					<label id="horizontal-search-label" for="lookfor" class="">Search for </label>
+					<label id="horizontal-search-label" for="lookfor" class="">{translate text="Search for"} </label>
 				</div>
 				<div class="
 				{if $hiddenSearchSource}
