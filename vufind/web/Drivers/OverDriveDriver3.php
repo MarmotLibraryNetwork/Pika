@@ -230,12 +230,18 @@ class OverDriveDriver3 {
 		return $this->requirePin;
 	}
 
+	/**
+	 * @param $user User
+	 * @param $url
+	 * @param null $postParams
+	 * @return bool|mixed
+	 */
 	public function _callPatronUrl($user, $url, $postParams = null){
 		global $configArray;
 
-		$barcodeProperty = $configArray['Catalog']['barcodeProperty'];
-		$userBarcode = $user->$barcodeProperty;
+		$userBarcode = $user->getBarcode();
 		if ($this->getRequirePin($user)){
+			$barcodeProperty = $configArray['Catalog']['barcodeProperty'];
 			$userPin = ($barcodeProperty == 'cat_username') ? $user->cat_password : $user->cat_username;
 				// determine which column is the pin by using the opposing field to the barcode. (between pin & username)
 			$tokenData = $this->_connectToPatronAPI($user, $userBarcode, $userPin, false);
