@@ -462,13 +462,13 @@ class OverDriveDriver3 {
 				$bookshelfItem = array();
 				//Load data from api
 				$bookshelfItem['checkoutSource'] = 'OverDrive';
-				$bookshelfItem['overDriveId'] = $curTitle->reserveId;
-				$bookshelfItem['expiresOn'] = $curTitle->expires;
-				$expirationDate = new DateTime($curTitle->expires);
-				$bookshelfItem['dueDate'] = $expirationDate->getTimestamp();
-				$checkOutDate = new DateTime($curTitle->checkoutDate);
-				$bookshelfItem['checkoutdate'] = $checkOutDate->getTimestamp();
-				$bookshelfItem['overdriveRead'] = false;
+				$bookshelfItem['overDriveId']    = $curTitle->reserveId;
+				$bookshelfItem['expiresOn']      = $curTitle->expires;
+				$expirationDate                  = new DateTime($curTitle->expires);
+				$bookshelfItem['dueDate']        = $expirationDate->getTimestamp();
+				$checkOutDate                    = new DateTime($curTitle->checkoutDate);
+				$bookshelfItem['checkoutdate']   = $checkOutDate->getTimestamp();
+				$bookshelfItem['overdriveRead']  = false;
 				if (isset($curTitle->isFormatLockedIn) && $curTitle->isFormatLockedIn == 1){
 					$bookshelfItem['formatSelected'] = true;
 				}else{
@@ -542,7 +542,7 @@ class OverDriveDriver3 {
 					$bookshelfItem['recordId'] = $overDriveRecord->getUniqueID();
 					$groupedWorkId = $overDriveRecord->getGroupedWorkId();
 					if ($groupedWorkId != null){
-						$bookshelfItem['groupedWorkId'] = $overDriveRecord->getGroupedWorkId();
+						$bookshelfItem['groupedWorkId'] = $groupedWorkId;
 					}
 					$formats = $overDriveRecord->getFormats();
 					$bookshelfItem['format']     = reset($formats);
@@ -913,9 +913,9 @@ class OverDriveDriver3 {
 	public function isUserValidForOverDrive($user){
 		global $configArray;
 		global $timer;
-		$barcodeProperty = $configArray['Catalog']['barcodeProperty'];
 		$userBarcode = $user->getBarcode();
 		if ($this->getRequirePin($user)){
+			$barcodeProperty = $configArray['Catalog']['barcodeProperty'];
 			$userPin = ($barcodeProperty == 'cat_username') ? $user->cat_password : $user->cat_username;
 			// determine which column is the pin by using the opposing field to the barcode. (between catalog password & username)
 			$tokenData = $this->_connectToPatronAPI($user, $userBarcode, $userPin, false);
