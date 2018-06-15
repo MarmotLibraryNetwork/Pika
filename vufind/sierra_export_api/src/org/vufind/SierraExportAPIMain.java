@@ -1126,6 +1126,8 @@ public class SierraExportAPIMain {
 						logger.debug("Starting to process the next marc Record");
 
 						Record marcRecord = marcReader.next();
+						logger.debug("Got the next marc Record data");
+
 						RecordIdentifier identifier = recordGroupingProcessor.getPrimaryIdentifierFromMarcRecord(marcRecord, indexingProfile.name, indexingProfile.doAutomaticEcontentSuppression);
 						logger.debug("Writing marc record for " + identifier.getIdentifier());
 
