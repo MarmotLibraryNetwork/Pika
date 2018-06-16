@@ -75,15 +75,48 @@ class SacramentoRecordProcessor extends IIIRecordProcessor {
         //For Sacramento, LION, Anythink, load audiences based on collection code rather than based on the 008 and 006 fields
         HashSet<String> targetAudiences = new HashSet<>();
         for (ItemInfo printItem : printItems){
-            String collection = printItem.getShelfLocationCode();
-            if (collection != null) {
-                targetAudiences.add(collection.toLowerCase());
+            String shelfLocationCode = printItem.getShelfLocationCode();
+            if (shelfLocationCode != null) {
+                targetAudiences.add(shelfLocationCode.toLowerCase());
             }
         }
 
         HashSet<String> translatedAudiences = translateCollection("target_audience", targetAudiences, identifier);
         groupedWork.addTargetAudiences(translatedAudiences);
         groupedWork.addTargetAudiencesFull(translatedAudiences);
+    }
+
+
+    public void loadPrintFormatInformation(RecordInfo recordInfo, Record record){
+        String matType = MarcUtil.getFirstFieldVal(record, sierraRecordFixedFieldsTag + "d");
+        if (matType != null) {
+            if (!matType.equals("-") && !matType.equals(" ")) {
+                String translatedFormat = translateValue("format", matType, recordInfo.getRecordIdentifier());
+                if (!translatedFormat.equals(matType)) {
+                    String translatedFormatCategory = translateValue("format_category", matType, recordInfo.getRecordIdentifier());
+                    recordInfo.addFormat(translatedFormat);
+                    if (translatedFormatCategory != null) {
+                        recordInfo.addFormatCategory(translatedFormatCategory);
+                    }
+                    // use translated value
+                    String formatBoost = translateValue("format_boost", matType, recordInfo.getRecordIdentifier());
+                    try {
+                        Long tmpFormatBoostLong = Long.parseLong(formatBoost);
+                        recordInfo.setFormatBoost(tmpFormatBoostLong);
+                        return;
+                    } catch (NumberFormatException e) {
+                        logger.warn("Could not load format boost for format " + formatBoost + " profile " + profileType);
+                    }
+                } else {
+                    logger.warn("Material Type "+ matType + " had no translation, falling back to default format determination.");
+                }
+            } else {
+                logger.info("Material Type for " + recordInfo.getRecordIdentifier() +" has empty value '"+ matType + "', falling back to default format determination.");
+            }
+        } else {
+            logger.info(recordInfo.getRecordIdentifier() + " did not have a material type, falling back to default format determination.");
+        }
+        super.loadPrintFormatInformation(recordInfo, record);
     }
 
 /*
