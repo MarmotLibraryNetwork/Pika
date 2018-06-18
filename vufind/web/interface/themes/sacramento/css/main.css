@@ -8439,9 +8439,9 @@ hr.menu {
   border-right: 2px solid #d9d8d8;
 }
 #library-name-header {
-  font-size: 30px;
+  font-size: 25px;
   color: #4D5F79;
-  font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-weight: bold;
   white-space: normal;
   padding-top: 5px;
@@ -8556,7 +8556,7 @@ hr.menu {
 }
 #vertical-menu-bar .menu-bar-option.menu-icon-selected {
   background-color: #F1CB92;
-  color: #FFF;
+  color: #4D5F79;
 }
 #vertical-menu-bar .menu-icon {
   padding: 5px;
@@ -10796,7 +10796,7 @@ fieldset[disabled] .btn-masquerade.active {
   border: 0;
   border-radius: 0.5em;
   color: #fff !important;
-  background-color: #89A09E;
+  background-color: #84B199;
   margin-top: 20px;
   line-height: 60px !important;
   text-shadow: none;
@@ -10805,6 +10805,17 @@ fieldset[disabled] .btn-masquerade.active {
   text-decoration: underline;
   border-bottom: 0;
   box-shadow: 2px 2px 5px #fff;
+}
+#headingInfo:before {
+  content: '';
+  display: inline-block;
+  height: 100%;
+  vertical-align: middle;
+  margin-right: -0.25em;
+}
+#headingInfo {
+  display: inline-block;
+  vertical-align: middle;
 }
 #browse-label {
   background-color: #ffffff;
@@ -10882,4 +10893,7 @@ fieldset[disabled] .btn-masquerade.active {
 }
 #browse-sub-category-menu button.selected {
   background-color: #84B199;
+}
+#vertical-menu-bar .menu-bar-option.menu-icon-selected .menu-bar-label {
+  color: #4D5F79;
 }
