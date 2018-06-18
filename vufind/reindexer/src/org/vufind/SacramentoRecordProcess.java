@@ -21,6 +21,7 @@ import java.util.*;
 
 class SacramentoRecordProcessor extends IIIRecordProcessor {
     private HashSet<String> recordsWithVolumes = new HashSet<>();
+    private String materialTypeSubField = "d";
 
     SacramentoRecordProcessor(GroupedWorkIndexer indexer, Connection vufindConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
         super(indexer, vufindConn, indexingProfileRS, logger, fullReindex);
@@ -88,7 +89,7 @@ class SacramentoRecordProcessor extends IIIRecordProcessor {
 
 
     public void loadPrintFormatInformation(RecordInfo recordInfo, Record record){
-        String matType = MarcUtil.getFirstFieldVal(record, sierraRecordFixedFieldsTag + "d");
+        String matType = MarcUtil.getFirstFieldVal(record, sierraRecordFixedFieldsTag + materialTypeSubField);
         if (matType != null) {
             if (!matType.equals("-") && !matType.equals(" ")) {
                 String translatedFormat = translateValue("format", matType, recordInfo.getRecordIdentifier());
@@ -119,7 +120,7 @@ class SacramentoRecordProcessor extends IIIRecordProcessor {
         super.loadPrintFormatInformation(recordInfo, record);
     }
 
-/*
+
     @Override
     protected List<RecordInfo> loadUnsuppressedEContentItems(GroupedWorkSolr groupedWork, String identifier, Record record){
         List<RecordInfo> unsuppressedEcontentRecords = new ArrayList<>();
@@ -129,18 +130,17 @@ class SacramentoRecordProcessor extends IIIRecordProcessor {
             return unsuppressedEcontentRecords;
         }else{
             //No items so we can continue on.
-            //Check the mat type
-            String matType = MarcUtil.getFirstFieldVal(record, "998d");
+
             //Get the bib location
             String bibLocation = null;
-            Set<String> bibLocations = MarcUtil.getFieldList(record, "998a");
+            Set<String> bibLocations = MarcUtil.getFieldList(record, sierraRecordFixedFieldsTag + "a");
             for (String tmpBibLocation : bibLocations){
                 if (tmpBibLocation.matches("[a-zA-Z]{1,5}")){
                     bibLocation = tmpBibLocation;
                     break;
-                }else if (tmpBibLocation.matches("\\(\\d+\\)([a-zA-Z]{1,5})")){
-                    bibLocation = tmpBibLocation.replaceAll("\\(\\d+\\)", "");
-                    break;
+//                }else if (tmpBibLocation.matches("\\(\\d+\\)([a-zA-Z]{1,5})")){
+//                    bibLocation = tmpBibLocation.replaceAll("\\(\\d+\\)", "");
+//                    break;
                 }
             }
             //Get the url
@@ -156,6 +156,7 @@ class SacramentoRecordProcessor extends IIIRecordProcessor {
                 }else {
                     String urlText = MarcUtil.getFirstFieldVal(record, "856z");
                     if (urlText != null) {
+                        // Searching URL to determine econtent Source
                         urlText = urlText.toLowerCase();
                         if (urlText.contains("gale virtual reference library")) {
                             econtentSource = "Gale Virtual Reference Library";
@@ -189,6 +190,7 @@ class SacramentoRecordProcessor extends IIIRecordProcessor {
                 itemInfo.seteContentUrl(url);
 
                 //Set the format based on the material type
+                String matType = MarcUtil.getFirstFieldVal(record, sierraRecordFixedFieldsTag + materialTypeSubField);
                 itemInfo.setFormat(translateValue("format", matType, identifier));
                 itemInfo.setFormatCategory(translateValue("format_category", matType, identifier));
                 String boostStr = translateValue("format_boost", matType, identifier);
@@ -196,7 +198,7 @@ class SacramentoRecordProcessor extends IIIRecordProcessor {
                     int boost = Integer.parseInt(boostStr);
                     relatedRecord.setFormatBoost(boost);
                 } catch (Exception e){
-                    logger.warn("Unable to load boost for " + identifier + " got boost " + boostStr);
+                    logger.warn("Unable to load boost for " + identifier + " got boost " + boostStr + " for matType " + matType);
                 }
 
                 itemInfo.setDetailedStatus("Available Online");
@@ -206,6 +208,5 @@ class SacramentoRecordProcessor extends IIIRecordProcessor {
         }
         return unsuppressedEcontentRecords;
     }
-    */
 
 }
