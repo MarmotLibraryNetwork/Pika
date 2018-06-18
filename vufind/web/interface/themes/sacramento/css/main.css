@@ -8556,6 +8556,8 @@ hr.menu {
 }
 #vertical-menu-bar .menu-bar-option.menu-icon-selected {
   background-color: #F1CB92;
+}
+#vertical-menu-bar .menu-bar-option.menu-icon-selected .menu-bar-label {
   color: #4D5F79;
 }
 #vertical-menu-bar .menu-icon {
@@ -10893,7 +10895,4 @@ fieldset[disabled] .btn-masquerade.active {
 }
 #browse-sub-category-menu button.selected {
   background-color: #89A09E;
-}
-#vertical-menu-bar .menu-bar-option.menu-icon-selected .menu-bar-label {
-  color: #4D5F79;
 }

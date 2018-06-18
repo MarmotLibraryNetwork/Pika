@@ -238,7 +238,9 @@ hr.menu{
     border-top: 3px solid @content-bg;
     &.menu-icon-selected {
       background-color: @menu-bar-selected-background-color;
-      color: @menu-bar-selected-color;
+      .menu-bar-label {
+        color: @menu-bar-selected-color;
+      }
     }
 
     // To Get Labeling to display Nicely
