@@ -18,7 +18,6 @@ import java.util.*;
  */
 
 class SacramentoRecordProcessor extends IIIRecordProcessor {
-    private HashSet<String> recordsWithVolumes = new HashSet<>();
     private String materialTypeSubField = "d";
 
     SacramentoRecordProcessor(GroupedWorkIndexer indexer, Connection vufindConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
@@ -171,6 +170,7 @@ class SacramentoRecordProcessor extends IIIRecordProcessor {
                 itemInfo.seteContentSource(econtentSource);
                 itemInfo.setShelfLocation(econtentSource);
                 itemInfo.setIType("eCollection");
+                itemInfo.setDetailedStatus("Available Online");
                 RecordInfo relatedRecord = groupedWork.addRelatedRecord("external_econtent", identifier);
                 relatedRecord.setSubSource(profileType);
                 relatedRecord.addItem(itemInfo);

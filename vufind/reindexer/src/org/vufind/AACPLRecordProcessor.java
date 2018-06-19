@@ -12,9 +12,7 @@ import java.io.FileReader;
 import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.sql.ResultSet;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.*;
 import java.util.regex.Pattern;
 
 /**
@@ -216,5 +214,50 @@ class AACPLRecordProcessor extends IlsRecordProcessor {
 				logger.debug("Skipping order item because there are print or order records available");
 			}
 		}
+	}
+
+	@Override
+	protected List<RecordInfo> loadUnsuppressedEContentItems(GroupedWorkSolr groupedWork, String identifier, Record record) {
+		List<RecordInfo> unsuppressedEcontentRecords = new ArrayList<>();
+		List<DataField> itemRecords = MarcUtil.getDataFields(record, itemTag);
+
+		// AACPL should only have 1 item record on a eContent record
+		if (itemRecords.size() == 1){
+			for (DataField itemField : itemRecords){
+				String location = itemField.getSubfield(locationSubfieldIndicator).getData();
+				if (location != null){
+					if (location.equalsIgnoreCase("Z-ELIBRARY") || location.equalsIgnoreCase("Z-ONLINEBK ")) {
+//						RecordInfo eContentRecord = getEContentIlsRecord(groupedWork, record, identifier, itemField);
+						// TODO: don't use the above.
+
+						//Get the url
+						String url = MarcUtil.getFirstFieldVal(record, "856u");
+						String econtentSource = MarcUtil.getFirstFieldVal(record, "092a");
+
+
+						ItemInfo itemInfo = new ItemInfo();
+						itemInfo.setIsEContent(true);
+//						itemInfo.setLocationCode(bibLocation); // not sure what to do with this.
+						itemInfo.seteContentProtectionType("external");
+						itemInfo.setCallNumber("Online");
+						itemInfo.seteContentSource(econtentSource);
+						itemInfo.setShelfLocation(econtentSource);
+						itemInfo.setDetailedStatus("Available Online");
+						itemInfo.setIType("eCollection");
+						RecordInfo eContentRecord = groupedWork.addRelatedRecord("external_econtent", identifier);
+						eContentRecord.setSubSource(profileType);
+						eContentRecord.addItem(itemInfo);
+						itemInfo.seteContentUrl(url);
+
+						//Set the format based on the material type
+
+						if (eContentRecord != null) {
+							unsuppressedEcontentRecords.add(eContentRecord);
+						}
+					}
+				}
+			}
+		}
+		return unsuppressedEcontentRecords;
 	}
 }

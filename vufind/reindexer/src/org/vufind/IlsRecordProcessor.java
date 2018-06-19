@@ -115,6 +115,8 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			callNumberSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "callNumber");
 			callNumberCutterSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "callNumberCutter");
 			callNumberPoststampSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "callNumberPoststamp");
+			useItemBasedCallNumbers = indexingProfileRS.getBoolean("useItemBasedCallNumbers");
+			volumeSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "volume");
 
 			locationSubfieldIndicator = getSubfieldIndicatorFromConfig(indexingProfileRS, "location");
 			try {
@@ -207,8 +209,6 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			eContentSubfieldIndicator = getSubfieldIndicatorFromConfig(indexingProfileRS, "eContentDescriptor");
 			useEContentSubfield = eContentSubfieldIndicator != ' ';
 
-			useItemBasedCallNumbers = indexingProfileRS.getBoolean("useItemBasedCallNumbers");
-			volumeSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "volume");
 
 
 			orderTag = indexingProfileRS.getString("orderTag");
