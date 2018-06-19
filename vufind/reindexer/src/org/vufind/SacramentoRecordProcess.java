@@ -5,14 +5,12 @@ import org.marc4j.marc.DataField;
 import org.marc4j.marc.Record;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.*;
 
 
 /**
- * Custom Record Processing for Santa Fe
+ * Custom Record Processing for Sacramento
  *
  * Pika
  * User: Pascal Brammeier
@@ -28,26 +26,10 @@ class SacramentoRecordProcessor extends IIIRecordProcessor {
 
         loadOrderInformationFromExport();
 
-        loadVolumesFromExport(vufindConn);
-
         validCheckedOutStatusCodes.add("d");
         validCheckedOutStatusCodes.add("o");
-
     }
 
-    private void loadVolumesFromExport(Connection vufindConn){
-        try{
-            PreparedStatement loadVolumesStmt = vufindConn.prepareStatement("SELECT distinct(recordId) FROM ils_volume_info", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-            ResultSet volumeInfoRS = loadVolumesStmt.executeQuery();
-            while (volumeInfoRS.next()){
-                String recordId = volumeInfoRS.getString(1);
-                recordsWithVolumes.add(recordId);
-            }
-            volumeInfoRS.close();
-        }catch (SQLException e){
-            logger.error("Error loading volumes from the export", e);
-        }
-    }
 
     @Override
     protected boolean loanRulesAreBasedOnCheckoutLocation() {
@@ -156,9 +138,14 @@ class SacramentoRecordProcessor extends IIIRecordProcessor {
                 }else {
                     String urlText = MarcUtil.getFirstFieldVal(record, "856z");
                     if (urlText != null) {
-                        // Searching URL to determine econtent Source
+                        // Searching URL to determine eContent Source
                         urlText = urlText.toLowerCase();
-                        if (urlText.contains("gale virtual reference library")) {
+//                        if (urlText.contains("gpo.gov")) {
+//                            econtentSource = "Federal Government Documents";
+//                        }else
+                            if (urlText.contains("gale virtual reference library")) {
+                            econtentSource = "Gale Virtual Reference Library";
+                        }else if (urlText.contains("gale virtual reference library")) {
                             econtentSource = "Gale Virtual Reference Library";
                         } else if (urlText.contains("gale directory library")) {
                             econtentSource = "Gale Directory Library";
