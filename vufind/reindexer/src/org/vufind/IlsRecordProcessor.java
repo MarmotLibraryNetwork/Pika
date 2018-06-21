@@ -1146,10 +1146,10 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			}
 			// Sacramento - look in the 932
 			if (callNumber == null) {
-				DataField deweyCallNumberField = record.getDataField("932");
-				if (deweyCallNumberField != null) {
+				DataField sacramentoCallNumberField = record.getDataField("932");
+				if (sacramentoCallNumberField != null) {
 					callNumber = "";
-					for (Subfield curSubfield : deweyCallNumberField.getSubfields()) {
+					for (Subfield curSubfield : sacramentoCallNumberField.getSubfields()) {
 						callNumber += " " + curSubfield.getData().trim();
 					}
 				}
