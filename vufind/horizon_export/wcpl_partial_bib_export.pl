@@ -39,7 +39,8 @@ my $dev_ftp_server = $properties->requireProperty('dev.ftp.server');
 my $dev_ftp_path = $properties->requireProperty('dev.ftp.path');
 
 my $marcout_exe = $utils_dir . "marcout.exe";
-my $marcout_command_line_no_file = "$marcout_exe /s$hz_server/p$hz_password/u$hz_user/d$hz_database/tbibs_to_export_for_pika/xi949vu/y/q999/b1/e0";
+my $marcout_command_line_no_file = "$marcout_exe /s$hz_server/p$hz_password/u$hz_user/d$hz_database/tbibs_to_export_for_pika/xi949vu2/w'(bib# not in (223047, 223045))'/y/q999/b1/e0";
+# /w'(bib# not in (223047, 223045))'  -to exclude the bibs that cause trouble.
 
 my $start_cycle_time;
 my $end_cycle_time;
