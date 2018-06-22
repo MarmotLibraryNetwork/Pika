@@ -94,7 +94,7 @@ class IndexingProfile extends DB_DataObject{
 		$structure = array(
 			'id'                         => array('property'=>'id', 'type'=>'label', 'label'=>'Id', 'description'=>'The unique id within the database'),
 			'name'                       => array('property' => 'name', 'type' => 'text', 'label' => 'Name', 'maxLength' => 50, 'description' => 'A name for this indexing profile', 'required' => true),
-			'recordUrlComponent'         => array('property' => 'recordUrlComponent', 'type' => 'text', 'label' => 'Record URL Component', 'maxLength' => 50, 'description' => 'The Module to use within the URL', 'required' => true, 'default' => 'Record'),
+			'recordUrlComponent'         => array('property' => 'recordUrlComponent', 'type' => 'text', 'label' => 'Record URL Component', 'maxLength' => 50, 'description' => 'The Module to use within the URL', 'required' => true, 'default' => 'Record', 'serverValidation' => 'validateRecordUrlComponent'),
 			'recordNumberTag'            => array('property' => 'recordNumberTag', 'type' => 'text', 'label' => 'Record Number Tag', 'maxLength' => 3, 'description' => 'The MARC tag where the record number can be found', 'required' => true),
 			'recordNumberPrefix'         => array('property' => 'recordNumberPrefix', 'type' => 'text', 'label' => 'Record Number Prefix', 'maxLength' => 10, 'description' => 'A prefix to identify the bib record number if multiple MARC tags exist'),
 			'sierraRecordFixedFieldsTag' => array('property' => 'sierraRecordFixedFieldsTag', 'type' => 'text', 'label' => 'Sierra Record/Bib level Fixed Fields Tag', 'maxLength' => 3, 'description' => 'The MARC tag where the Sierra fixed fields can be found, specifically the bcode3'),
@@ -444,4 +444,23 @@ class IndexingProfile extends DB_DataObject{
 			}
 		}
 	}
+
+	public function validateRecordUrlComponent(){
+		//Setup validation return array
+		$validationResults = array(
+			'validatedOk' => true,
+			'errors' => array(),
+		);
+
+		$indexingProfile = new IndexingProfile();
+		if ($indexingProfile->get('recordUrlComponent', trim($this->recordUrlComponent))) {
+			$validationResults = array(
+				'validatedOk' => false,
+				'errors' => array('The Record Url Component is already in use by another indexing profile'),
+			);
+
+		}
+		return $validationResults;
+	}
+
 }
