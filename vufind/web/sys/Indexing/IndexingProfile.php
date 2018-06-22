@@ -453,7 +453,9 @@ class IndexingProfile extends DB_DataObject{
 		);
 
 		$indexingProfile = new IndexingProfile();
-		if ($indexingProfile->get('recordUrlComponent', trim($this->recordUrlComponent))) {
+		$count = $indexingProfile->get('recordUrlComponent', trim($this->recordUrlComponent));
+		if (!$count || ($count == 1 && $this->id != $indexingProfile->id)) {
+
 			$validationResults = array(
 				'validatedOk' => false,
 				'errors' => array('The Record Url Component is already in use by another indexing profile'),
