@@ -564,6 +564,10 @@ class Millennium extends ScreenScrapingDriver
 		return $patronDump;
 	}
 
+	/**
+	 * @param $patron
+	 * @return bool
+	 */
 	public function _curl_login($patron) {
 		global $logger;
 		$loginResult = false;
