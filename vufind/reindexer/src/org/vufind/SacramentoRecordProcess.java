@@ -112,55 +112,59 @@ class SacramentoRecordProcessor extends IIIRecordProcessor {
         }else{
             //No items so we can continue on.
 
-            //Get the bib location
-            String bibLocation = null;
-            Set<String> bibLocations = MarcUtil.getFieldList(record, sierraRecordFixedFieldsTag + "a");
-            for (String tmpBibLocation : bibLocations){
-                if (tmpBibLocation.matches("[a-zA-Z]{1,5}")){
-                    bibLocation = tmpBibLocation;
-                    break;
-//                }else if (tmpBibLocation.matches("\\(\\d+\\)([a-zA-Z]{1,5})")){
-//                    bibLocation = tmpBibLocation.replaceAll("\\(\\d+\\)", "");
-//                    break;
-                }
-            }
             //Get the url
             String url = MarcUtil.getFirstFieldVal(record, "856u");
 
-            if (url != null && !url.toLowerCase().contains("lib.overdrive.com")){
+            if (url != null /*&& !url.toLowerCase().contains("lib.overdrive.com")*/){
+
+                //Get the bib location
+                String bibLocation = null;
+                Set<String> bibLocations = MarcUtil.getFieldList(record, sierraRecordFixedFieldsTag + "a");
+                for (String tmpBibLocation : bibLocations){
+                    if (tmpBibLocation.matches("[a-zA-Z]{1,5}")){
+                        bibLocation = tmpBibLocation;
+                        break;
+//                }else if (tmpBibLocation.matches("\\(\\d+\\)([a-zA-Z]{1,5})")){
+//                    bibLocation = tmpBibLocation.replaceAll("\\(\\d+\\)", "");
+//                    break;
+                    }
+                }
+
                 //Get the econtent source
                 String urlLower = url.toLowerCase();
                 String econtentSource;
-                String specifiedSource = MarcUtil.getFirstFieldVal(record, "856x");
-                if (specifiedSource != null){
-                    econtentSource = specifiedSource;
-                }else {
-                    String urlText = MarcUtil.getFirstFieldVal(record, "856z");
-                    if (urlText != null) {
-                        // Searching URL to determine eContent Source
-                        urlText = urlText.toLowerCase();
-//                        if (urlText.contains("gpo.gov")) {
-//                            econtentSource = "Federal Government Documents";
-//                        }else
-                            if (urlText.contains("gale virtual reference library")) {
-                            econtentSource = "Gale Virtual Reference Library";
-                        }else if (urlText.contains("gale virtual reference library")) {
-                            econtentSource = "Gale Virtual Reference Library";
-                        } else if (urlText.contains("gale directory library")) {
-                            econtentSource = "Gale Directory Library";
-                        } else if (urlText.contains("hoopla")) {
-                            econtentSource = "Hoopla";
-                        } else if (urlText.contains("national geographic virtual library")) {
-                            econtentSource = "National Geographic Virtual Library";
-                        } else if ((urlText.contains("ebscohost") || urlLower.contains("netlibrary") || urlLower.contains("ebsco"))) {
-                            econtentSource = "EbscoHost";
-                        } else {
-                            econtentSource = "Premium Sites";
-                        }
-                    } else {
-                        econtentSource = "Premium Sites";
-                    }
-                }
+                econtentSource = "ils econtent";
+                //TODO: Determine sources of ILS eContent
+//                String specifiedSource = MarcUtil.getFirstFieldVal(record, "856x");
+//                if (specifiedSource != null){
+//                    econtentSource = specifiedSource;
+//                }else {
+//                    String urlText = MarcUtil.getFirstFieldVal(record, "856z");
+//                    if (urlText != null) {
+//                        // Searching URL to determine eContent Source
+//                        urlText = urlText.toLowerCase();
+////                        if (urlText.contains("gpo.gov")) {
+////                            econtentSource = "Federal Government Documents";
+////                        }else
+//                            if (urlText.contains("gale virtual reference library")) {
+//                            econtentSource = "Gale Virtual Reference Library";
+//                        }else if (urlText.contains("gale virtual reference library")) {
+//                            econtentSource = "Gale Virtual Reference Library";
+//                        } else if (urlText.contains("gale directory library")) {
+//                            econtentSource = "Gale Directory Library";
+//                        } else if (urlText.contains("hoopla")) {
+//                            econtentSource = "Hoopla";
+//                        } else if (urlText.contains("national geographic virtual library")) {
+//                            econtentSource = "National Geographic Virtual Library";
+//                        } else if ((urlText.contains("ebscohost") || urlLower.contains("netlibrary") || urlLower.contains("ebsco"))) {
+//                            econtentSource = "EbscoHost";
+//                        } else {
+//                            econtentSource = "Premium Sites";
+//                        }
+//                    } else {
+//                        econtentSource = "Premium Sites";
+//                    }
+//                }
 
                 ItemInfo itemInfo = new ItemInfo();
                 itemInfo.setIsEContent(true);
@@ -176,24 +180,27 @@ class SacramentoRecordProcessor extends IIIRecordProcessor {
                 relatedRecord.addItem(itemInfo);
                 itemInfo.seteContentUrl(url);
 
-                //Set the format based on the material type
-                String matType = MarcUtil.getFirstFieldVal(record, sierraRecordFixedFieldsTag + materialTypeSubField);
-                itemInfo.setFormat(translateValue("format", matType, identifier));
-                itemInfo.setFormatCategory(translateValue("format_category", matType, identifier));
-                String boostStr = translateValue("format_boost", matType, identifier);
-                try{
-                    int boost = Integer.parseInt(boostStr);
-                    relatedRecord.setFormatBoost(boost);
-                } catch (Exception e){
-                    logger.warn("Unable to load boost for " + identifier + " got boost " + boostStr + " for matType " + matType);
-                }
+                // Use the same format determination process for the econtent record (should just be the MatType)
+                loadPrintFormatInformation(relatedRecord, record);
 
-                itemInfo.setDetailedStatus("Available Online");
+//                //Set the format based on the material type
+//                String matType = MarcUtil.getFirstFieldVal(record, sierraRecordFixedFieldsTag + materialTypeSubField);
+//                itemInfo.setFormat(translateValue("format", matType, identifier));
+//                itemInfo.setFormatCategory(translateValue("format_category", matType, identifier));
+//                String boostStr = translateValue("format_boost", matType, identifier);
+//                try{
+//                    int boost = Integer.parseInt(boostStr);
+//                    relatedRecord.setFormatBoost(boost);
+//                } catch (Exception e){
+//                    logger.warn("Unable to load boost for " + identifier + " got boost " + boostStr + " for matType " + matType);
+//                }
+
 
                 unsuppressedEcontentRecords.add(relatedRecord);
             }
         }
         return unsuppressedEcontentRecords;
     }
+
 
 }
