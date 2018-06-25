@@ -5,14 +5,12 @@ import org.marc4j.marc.DataField;
 import org.marc4j.marc.Record;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.*;
 
 
 /**
- * Custom Record Processing for Santa Fe
+ * Custom Record Processing for Sacramento
  *
  * Pika
  * User: Pascal Brammeier
@@ -20,33 +18,17 @@ import java.util.*;
  */
 
 class SacramentoRecordProcessor extends IIIRecordProcessor {
-    private HashSet<String> recordsWithVolumes = new HashSet<>();
+    private String materialTypeSubField = "d";
 
     SacramentoRecordProcessor(GroupedWorkIndexer indexer, Connection vufindConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
         super(indexer, vufindConn, indexingProfileRS, logger, fullReindex);
 
         loadOrderInformationFromExport();
 
-        loadVolumesFromExport(vufindConn);
-
         validCheckedOutStatusCodes.add("d");
         validCheckedOutStatusCodes.add("o");
-
     }
 
-    private void loadVolumesFromExport(Connection vufindConn){
-        try{
-            PreparedStatement loadVolumesStmt = vufindConn.prepareStatement("SELECT distinct(recordId) FROM ils_volume_info", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-            ResultSet volumeInfoRS = loadVolumesStmt.executeQuery();
-            while (volumeInfoRS.next()){
-                String recordId = volumeInfoRS.getString(1);
-                recordsWithVolumes.add(recordId);
-            }
-            volumeInfoRS.close();
-        }catch (SQLException e){
-            logger.error("Error loading volumes from the export", e);
-        }
-    }
 
     @Override
     protected boolean loanRulesAreBasedOnCheckoutLocation() {
@@ -88,7 +70,7 @@ class SacramentoRecordProcessor extends IIIRecordProcessor {
 
 
     public void loadPrintFormatInformation(RecordInfo recordInfo, Record record){
-        String matType = MarcUtil.getFirstFieldVal(record, sierraRecordFixedFieldsTag + "d");
+        String matType = MarcUtil.getFirstFieldVal(record, sierraRecordFixedFieldsTag + materialTypeSubField);
         if (matType != null) {
             if (!matType.equals("-") && !matType.equals(" ")) {
                 String translatedFormat = translateValue("format", matType, recordInfo.getRecordIdentifier());
@@ -119,7 +101,7 @@ class SacramentoRecordProcessor extends IIIRecordProcessor {
         super.loadPrintFormatInformation(recordInfo, record);
     }
 
-/*
+
     @Override
     protected List<RecordInfo> loadUnsuppressedEContentItems(GroupedWorkSolr groupedWork, String identifier, Record record){
         List<RecordInfo> unsuppressedEcontentRecords = new ArrayList<>();
@@ -129,18 +111,17 @@ class SacramentoRecordProcessor extends IIIRecordProcessor {
             return unsuppressedEcontentRecords;
         }else{
             //No items so we can continue on.
-            //Check the mat type
-            String matType = MarcUtil.getFirstFieldVal(record, "998d");
+
             //Get the bib location
             String bibLocation = null;
-            Set<String> bibLocations = MarcUtil.getFieldList(record, "998a");
+            Set<String> bibLocations = MarcUtil.getFieldList(record, sierraRecordFixedFieldsTag + "a");
             for (String tmpBibLocation : bibLocations){
                 if (tmpBibLocation.matches("[a-zA-Z]{1,5}")){
                     bibLocation = tmpBibLocation;
                     break;
-                }else if (tmpBibLocation.matches("\\(\\d+\\)([a-zA-Z]{1,5})")){
-                    bibLocation = tmpBibLocation.replaceAll("\\(\\d+\\)", "");
-                    break;
+//                }else if (tmpBibLocation.matches("\\(\\d+\\)([a-zA-Z]{1,5})")){
+//                    bibLocation = tmpBibLocation.replaceAll("\\(\\d+\\)", "");
+//                    break;
                 }
             }
             //Get the url
@@ -156,8 +137,14 @@ class SacramentoRecordProcessor extends IIIRecordProcessor {
                 }else {
                     String urlText = MarcUtil.getFirstFieldVal(record, "856z");
                     if (urlText != null) {
+                        // Searching URL to determine eContent Source
                         urlText = urlText.toLowerCase();
-                        if (urlText.contains("gale virtual reference library")) {
+//                        if (urlText.contains("gpo.gov")) {
+//                            econtentSource = "Federal Government Documents";
+//                        }else
+                            if (urlText.contains("gale virtual reference library")) {
+                            econtentSource = "Gale Virtual Reference Library";
+                        }else if (urlText.contains("gale virtual reference library")) {
                             econtentSource = "Gale Virtual Reference Library";
                         } else if (urlText.contains("gale directory library")) {
                             econtentSource = "Gale Directory Library";
@@ -183,12 +170,14 @@ class SacramentoRecordProcessor extends IIIRecordProcessor {
                 itemInfo.seteContentSource(econtentSource);
                 itemInfo.setShelfLocation(econtentSource);
                 itemInfo.setIType("eCollection");
+                itemInfo.setDetailedStatus("Available Online");
                 RecordInfo relatedRecord = groupedWork.addRelatedRecord("external_econtent", identifier);
                 relatedRecord.setSubSource(profileType);
                 relatedRecord.addItem(itemInfo);
                 itemInfo.seteContentUrl(url);
 
                 //Set the format based on the material type
+                String matType = MarcUtil.getFirstFieldVal(record, sierraRecordFixedFieldsTag + materialTypeSubField);
                 itemInfo.setFormat(translateValue("format", matType, identifier));
                 itemInfo.setFormatCategory(translateValue("format_category", matType, identifier));
                 String boostStr = translateValue("format_boost", matType, identifier);
@@ -196,7 +185,7 @@ class SacramentoRecordProcessor extends IIIRecordProcessor {
                     int boost = Integer.parseInt(boostStr);
                     relatedRecord.setFormatBoost(boost);
                 } catch (Exception e){
-                    logger.warn("Unable to load boost for " + identifier + " got boost " + boostStr);
+                    logger.warn("Unable to load boost for " + identifier + " got boost " + boostStr + " for matType " + matType);
                 }
 
                 itemInfo.setDetailedStatus("Available Online");
@@ -206,6 +195,5 @@ class SacramentoRecordProcessor extends IIIRecordProcessor {
         }
         return unsuppressedEcontentRecords;
     }
-    */
 
 }

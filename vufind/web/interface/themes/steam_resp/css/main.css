@@ -8556,6 +8556,8 @@ hr.menu {
 }
 #vertical-menu-bar .menu-bar-option.menu-icon-selected {
   background-color: #646510;
+}
+#vertical-menu-bar .menu-bar-option.menu-icon-selected .menu-bar-label {
   color: #FFF;
 }
 #vertical-menu-bar .menu-icon {

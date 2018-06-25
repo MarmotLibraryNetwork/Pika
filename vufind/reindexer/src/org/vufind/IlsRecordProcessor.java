@@ -115,6 +115,8 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			callNumberSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "callNumber");
 			callNumberCutterSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "callNumberCutter");
 			callNumberPoststampSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "callNumberPoststamp");
+			useItemBasedCallNumbers = indexingProfileRS.getBoolean("useItemBasedCallNumbers");
+			volumeSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "volume");
 
 			locationSubfieldIndicator = getSubfieldIndicatorFromConfig(indexingProfileRS, "location");
 			try {
@@ -207,8 +209,6 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			eContentSubfieldIndicator = getSubfieldIndicatorFromConfig(indexingProfileRS, "eContentDescriptor");
 			useEContentSubfield = eContentSubfieldIndicator != ' ';
 
-			useItemBasedCallNumbers = indexingProfileRS.getBoolean("useItemBasedCallNumbers");
-			volumeSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "volume");
 
 
 			orderTag = indexingProfileRS.getString("orderTag");
@@ -1140,6 +1140,16 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				if (deweyCallNumberField != null) {
 					callNumber = "";
 					for (Subfield curSubfield : deweyCallNumberField.getSubfields()) {
+						callNumber += " " + curSubfield.getData().trim();
+					}
+				}
+			}
+			// Sacramento - look in the 932
+			if (callNumber == null) {
+				DataField sacramentoCallNumberField = record.getDataField("932");
+				if (sacramentoCallNumberField != null) {
+					callNumber = "";
+					for (Subfield curSubfield : sacramentoCallNumberField.getSubfields()) {
 						callNumber += " " + curSubfield.getData().trim();
 					}
 				}

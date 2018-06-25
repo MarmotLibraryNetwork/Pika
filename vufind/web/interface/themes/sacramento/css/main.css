@@ -8439,9 +8439,9 @@ hr.menu {
   border-right: 2px solid #d9d8d8;
 }
 #library-name-header {
-  font-size: 30px;
+  font-size: 25px;
   color: #4D5F79;
-  font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-weight: bold;
   white-space: normal;
   padding-top: 5px;
@@ -8556,7 +8556,9 @@ hr.menu {
 }
 #vertical-menu-bar .menu-bar-option.menu-icon-selected {
   background-color: #F1CB92;
-  color: #FFF;
+}
+#vertical-menu-bar .menu-bar-option.menu-icon-selected .menu-bar-label {
+  color: #4D5F79;
 }
 #vertical-menu-bar .menu-icon {
   padding: 5px;
@@ -9375,7 +9377,7 @@ a.browse-thumbnail-sorted.active {
 }
 #browse-sub-category-menu button.selected {
   color: #fff;
-  background-color: #84B199;
+  background-color: #89A09E;
 }
 #browse-sub-category-menu button:focus {
   outline: none;
@@ -10796,7 +10798,7 @@ fieldset[disabled] .btn-masquerade.active {
   border: 0;
   border-radius: 0.5em;
   color: #fff !important;
-  background-color: #89A09E;
+  background-color: #84B199;
   margin-top: 20px;
   line-height: 60px !important;
   text-shadow: none;
@@ -10805,6 +10807,17 @@ fieldset[disabled] .btn-masquerade.active {
   text-decoration: underline;
   border-bottom: 0;
   box-shadow: 2px 2px 5px #fff;
+}
+#headingInfo:before {
+  content: '';
+  display: inline-block;
+  height: 100%;
+  vertical-align: middle;
+  margin-right: -0.25em;
+}
+#headingInfo {
+  display: inline-block;
+  vertical-align: middle;
 }
 #browse-label {
   background-color: #ffffff;
@@ -10831,9 +10844,9 @@ fieldset[disabled] .btn-masquerade.active {
 }
 .browse-category.selected {
   border: none;
-  background-color: #84B199;
-  background: #84B199;
-  background: linear-gradient(to bottom, #84B199 0%, #84B199 75%, #fff 75%, #fff 80%, #CCCCCC 80%, #fff 100%);
+  background-color: #89A09E;
+  background: #89A09E;
+  background: linear-gradient(to bottom, #89A09E 0%, #89A09E 75%, #fff 75%, #fff 80%, #CCCCCC 80%, #fff 100%);
 }
 .browse-category.selected div {
   color: #fff;
@@ -10849,7 +10862,7 @@ fieldset[disabled] .btn-masquerade.active {
 #browse-category-picker .jcarousel-control-next:active,
 #browse-category-picker .jcarousel-control-prev:hover,
 #browse-category-picker .jcarousel-control-next:hover {
-  color: #84B199;
+  color: #89A09E;
   text-decoration: none;
 }
 #browse-category-picker a.jcarousel-control-next:after {
@@ -10881,5 +10894,5 @@ fieldset[disabled] .btn-masquerade.active {
   text-transform: uppercase;
 }
 #browse-sub-category-menu button.selected {
-  background-color: #84B199;
+  background-color: #89A09E;
 }
