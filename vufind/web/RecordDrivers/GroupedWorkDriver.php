@@ -884,10 +884,10 @@ class GroupedWorkDriver extends RecordInterface{
 		$groupedWork->permanent_id = $this->getPermanentId();
 		if ($groupedWork->find(true)){
 			$groupedWorkDetails = array();
-			$groupedWorkDetails['Full title'] = $groupedWork->full_title;
-			$groupedWorkDetails['Author'] = $groupedWork->author;
-			$groupedWorkDetails['Grouping Category'] = $groupedWork->grouping_category;
-			$groupedWorkDetails['Last Update'] = date('Y-m-d H:i:sA', $groupedWork->date_updated);
+			$groupedWorkDetails['Grouping Title']       = $groupedWork->full_title;
+			$groupedWorkDetails['Grouping Author']      = $groupedWork->author;
+			$groupedWorkDetails['Grouping Category']    = $groupedWork->grouping_category;
+			$groupedWorkDetails['Last Grouping Update'] = date('Y-m-d H:i:sA', $groupedWork->date_updated);
 			if (array_key_exists('last_indexed', $fields)){
 				$groupedWorkDetails['Last Indexed'] = date('Y-m-d H:i:sA', strtotime($fields['last_indexed']));
 			}
