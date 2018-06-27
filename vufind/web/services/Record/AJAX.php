@@ -439,10 +439,14 @@ class Record_AJAX extends Action {
 							}
 
 							$return = $patron->placeHold($shortId, $campus, $cancelDate);
+							// If the hold requires an item-level hold, but there is only one item to choose from, just complete the hold with that one item
+							if (!empty($return['items']) && count($return) == 1) {
+								$return = $patron->placeItemHold($shortId, $return['items'][0], $campus);
+							}
 						}
 					}
 
-					if (isset($return['items'])) {
+					if (!empty($return['items'])) { // only go to item-level hold prompt if there are holdable items to choose from
 						$interface->assign('campus', $campus);
 						$items = $return['items'];
 						$interface->assign('items', $items);
@@ -451,18 +455,15 @@ class Record_AJAX extends Action {
 						$interface->assign('patronId', $patron->id);
 						if (!empty($_REQUEST['autologout'])) $interface->assign('autologout', $_REQUEST['autologout']); // carry user selection to Item Hold Form
 
-//						global $library;
-//						$interface->assign('showDetailedHoldNoticeInformation', $library->showDetailedHoldNoticeInformation);
-//						$interface->assign('treatPrintNoticesAsPhoneNotices', $library->treatPrintNoticesAsPhoneNotices);
 						$interface->assign('showDetailedHoldNoticeInformation', $homeLibrary->showDetailedHoldNoticeInformation);
 						$interface->assign('treatPrintNoticesAsPhoneNotices', $homeLibrary->treatPrintNoticesAsPhoneNotices);
 
 						// Need to place item level holds.
 						$results = array(
-							'success' => true,
+							'success'            => true,
 							'needsItemLevelHold' => true,
-							'message' => $interface->fetch('Record/item-hold-popup.tpl'),
-							'title' => isset($return['title']) ? $return['title'] : '',
+							'message'            => $interface->fetch('Record/item-hold-popup.tpl'),
+							'title'              => isset($return['title']) ? $return['title'] : '',
 						);
 					} else { // Completed Hold Attempt
 						$interface->assign('message', $return['message']);
