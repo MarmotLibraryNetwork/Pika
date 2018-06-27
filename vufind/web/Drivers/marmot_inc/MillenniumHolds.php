@@ -73,9 +73,9 @@ class MillenniumHolds{
 				for ($i = 0; $i < count($itemInfo[0]); $i++) {
 					$items[] = array(
 						'itemNumber' => $itemInfo[1][$i],
-						'location' => trim(str_replace('&nbsp;', '', $itemInfo[2][$i])),
+						'location'   => trim(str_replace('&nbsp;', '', $itemInfo[2][$i])),
 						'callNumber' => trim(str_replace('&nbsp;', '', $itemInfo[3][$i])),
-						'status' => trim(str_replace('&nbsp;', '', $itemInfo[4][$i])),
+						'status'     => trim(str_replace('&nbsp;', '', $itemInfo[4][$i])),
 					);
 				}
 				$hold_result['items'] = $items;
@@ -707,10 +707,10 @@ class MillenniumHolds{
 	 */
 	function placeItemHold($patron, $recordId, $itemId, $pickupBranch, $cancelDate) {
 		global $logger;
-		global $configArray;
+//		global $configArray;
 		global $library;
 
-		$bib1= $recordId;
+		$bib1 = $recordId;
 		if (substr($bib1, 0, 1) != '.'){
 			$bib1 = '.' . $bib1;
 		}
@@ -726,7 +726,7 @@ class MillenniumHolds{
 		// Retrieve Full Marc Record
 		require_once ROOT_DIR . '/RecordDrivers/Factory.php';
 		$record = RecordDriverFactory::initRecordDriverById($this->driver->accountProfile->recordSource . ':' . $bib1);
-		if (!$record) {
+		if (!$record->isValid()) {
 			$logger->log('Place Hold: Failed to get Marc Record', PEAR_LOG_INFO);
 			$title = null;
 		}else{
@@ -773,7 +773,7 @@ class MillenniumHolds{
 				}
 			}
 
-			list($Month, $Day, $Year)=explode("/", $date);
+			list($Month, $Day, $Year) = explode("/", $date);
 
 			//Make sure to connect via the driver so cookies will be correct
 			$this->driver->_curl_connect();
@@ -782,49 +782,56 @@ class MillenniumHolds{
 
 			$loginResult = $this->driver->_curl_login($patron);
 
-			$curl_url = $this->driver->getVendorOpacUrl() . "/search/.$bib/.$bib/1,1,1,B/request~$bib";
-
-			/** @var Library $librarySingleton */
-			global $librarySingleton;
-			$patronHomeBranch = $librarySingleton->getPatronHomeLibrary($patron);
-			if ($patronHomeBranch->defaultNotNeededAfterDays != -1){
-				$post_data['needby_Month']= $Month;
-				$post_data['needby_Day']= $Day;
-				$post_data['needby_Year']=$Year;
-			}
-
-			$post_data['submit.x']="35";
-			$post_data['submit.y']="21";
-			$post_data['submit']="submit";
-			$post_data['locx00']= str_pad($pickupBranch, 5); // padded with spaces, which will get url-encoded into plus signs by httpd_build_query() in the _curlPostPage() method.
-			if (!empty($itemId) && $itemId != -1){
-				$post_data['radio']=$itemId;
-			}
-			$post_data['x']="48";
-			$post_data['y']="15";
-			//MDN 8/14 lt is apparently not required for placing a hold although it is required for login.
-			/*if ($lt != null){
-				$post_data['lt'] = $lt;
-				$post_data['_eventId'] = 'submit';
-			}*/
-
-			$sResult = $this->driver->_curlPostPage($curl_url, $post_data);
-
-			$logger->log("Placing hold $recordId : $title", PEAR_LOG_INFO);
-
-			$sResult = preg_replace("/<!--([^(-->)]*)-->/","",$sResult);
-
-			//Parse the response to get the status message
-			$hold_result = $this->_getHoldResult($sResult);
-			$hold_result['title']  = $title;
-			$hold_result['bid'] = $bib1;
-			global $analytics;
-			if ($analytics){
-				if ($hold_result['success'] == true){
-					$analytics->addEvent('ILS Integration', 'Successful Hold', $title);
-				}else{
-					$analytics->addEvent('ILS Integration', 'Failed Hold', $hold_result['message'] . ' - ' . $title);
+			if ($loginResult) {
+				$curl_url = $this->driver->getVendorOpacUrl() . "/search/.$bib/.$bib/1,1,1,B/request~$bib";
+				/** @var Library $librarySingleton */
+				global $librarySingleton;
+				$patronHomeBranch = $librarySingleton->getPatronHomeLibrary($patron);
+				if ($patronHomeBranch->defaultNotNeededAfterDays != -1){
+					$post_data['needby_Month'] = $Month;
+					$post_data['needby_Day']   = $Day;
+					$post_data['needby_Year']  = $Year;
 				}
+
+				$post_data['submit.x'] = "35";
+				$post_data['submit.y'] = "21";
+				$post_data['submit']   = "submit";
+				$post_data['locx00']   = str_pad($pickupBranch, 5); // padded with spaces, which will get url-encoded into plus signs by httpd_build_query() in the _curlPostPage() method.
+				if (!empty($itemId) && $itemId != -1){
+					$post_data['radio']  = $itemId;
+				}
+				$post_data['x']="48";
+				$post_data['y']="15";
+				//MDN 8/14 lt is apparently not required for placing a hold although it is required for login.
+				/*if ($lt != null){
+					$post_data['lt'] = $lt;
+					$post_data['_eventId'] = 'submit';
+				}*/
+
+				$sResult = $this->driver->_curlPostPage($curl_url, $post_data);
+
+				$logger->log("Placing hold $recordId : $title", PEAR_LOG_INFO);
+
+				$sResult = preg_replace("/<!--([^(-->)]*)-->/","",$sResult);
+
+				//Parse the response to get the status message
+				$hold_result = $this->_getHoldResult($sResult);
+				$hold_result['title']  = $title;
+				$hold_result['bid']    = $bib1;
+				global $analytics;
+				if ($analytics){
+					if ($hold_result['success'] == true){
+						$analytics->addEvent('ILS Integration', 'Successful Hold', $title);
+					}else{
+						$analytics->addEvent('ILS Integration', 'Failed Hold', $hold_result['message'] . ' - ' . $title);
+					}
+				}
+			} else {
+				$hold_result['success'] = false;
+				$hold_result['title']   = $title;
+				$hold_result['bid']     = $bib1;
+				$hold_result['message'] = 'Failed to login user to circulation system to place the hold.';
+
 			}
 			return $hold_result;
 		}
