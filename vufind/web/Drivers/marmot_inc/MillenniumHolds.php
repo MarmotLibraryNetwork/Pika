@@ -830,7 +830,7 @@ class MillenniumHolds{
 				$hold_result['success'] = false;
 				$hold_result['title']   = $title;
 				$hold_result['bid']     = $bib1;
-				$hold_result['message'] = 'Failed to login user to circulation system to place the hold.';
+				$hold_result['message'] = 'Unable to login into circulation system to place the hold. There may be a problem with your account, please contact your library.';
 
 			}
 			return $hold_result;
