@@ -73,7 +73,7 @@ class SacramentoRecordProcessor extends IIIRecordProcessor {
         String matType = MarcUtil.getFirstFieldVal(record, sierraRecordFixedFieldsTag + materialTypeSubField);
         if (matType != null) {
             if (!matType.equals("-") && !matType.equals(" ")) {
-                String translatedFormat = translateValue("format", matType, recordInfo.getRecordIdentifier());
+                String translatedFormat = translateValue("material_type", matType, recordInfo.getRecordIdentifier());
                 if (!translatedFormat.equals(matType)) {
                     String translatedFormatCategory = translateValue("format_category", matType, recordInfo.getRecordIdentifier());
                     recordInfo.addFormat(translatedFormat);
