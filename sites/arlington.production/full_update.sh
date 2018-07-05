@@ -167,7 +167,14 @@ then
 			# Delete any exports over 7 days
 			find /data/vufind-plus/arlington.production/marc_export/ -mindepth 1 -maxdepth 1 -name *.mrc -type f -mtime +7 -delete
 
-			# Secure Copy to Marmot Test Server
+		NEWLEVEL=$(($FILE1SIZE * 97 / 100))
+		echo "" >> ${OUTPUT_FILE}
+		echo " Based on today's export file (1), a new minimum filesize check level should be set to $NEWLEVEL" >> ${OUTPUT_FILE}
+		NEWLEVEL=$(($FILE2SIZE * 97 / 100))
+		echo "" >> ${OUTPUT_FILE}
+		echo "Based on today's export file (2), a new minimum filesize check level should be set to $NEWLEVEL" >> ${OUTPUT_FILE}
+
+
 
 			else
 				echo $FILE2 " size " $FILE2SIZE "is less than minimum size :" $MINFILE2SIZE "; Export was not moved to data directory." >> ${OUTPUT_FILE}

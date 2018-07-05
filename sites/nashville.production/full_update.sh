@@ -156,6 +156,10 @@ then
 		#Delete Zinio Covers
 		cd /usr/local/vufind-plus/vufind/cron; ./zinioDeleteCovers.sh ${PIKASERVER}
 
+		NEWLEVEL=$(($FILE1SIZE * 97 / 100))
+		echo "" >> ${OUTPUT_FILE}
+		echo "Based on today's export file, a new minimum filesize check level should be set to $NEWLEVEL" >> ${OUTPUT_FILE}
+
 		else
 			echo $FILE1 " size " $FILE1SIZE "is less than minimum size :" $MINFILE1SIZE "." >> ${OUTPUT_FILE}
 		fi
