@@ -36,7 +36,7 @@ OUTPUT_FILE="/var/log/pika/${PIKASERVER}/full_update_output.log"
 DAYOFWEEK=$(date +"%u")
 
 # Actual CarlX extract size 2017 07 03 - 1021325895  - pascal
-MINFILE1SIZE=$((1070000000))
+MINFILE1SIZE=$((1060000000))
 # below values from millennium
 # JAMES set MIN 2016 11 03 actual extract size 825177201
 # JAMES set MIN 2017 01 31 actual extract size 823662098
@@ -155,6 +155,10 @@ then
 
 		#Delete Zinio Covers
 		cd /usr/local/vufind-plus/vufind/cron; ./zinioDeleteCovers.sh ${PIKASERVER}
+
+		NEWLEVEL=$(($FILE1SIZE * 97 / 100))
+		echo "" >> ${OUTPUT_FILE}
+		echo "Based on today's export file, a new minimum filesize check level should be set to $NEWLEVEL" >> ${OUTPUT_FILE}
 
 		else
 			echo $FILE1 " size " $FILE1SIZE "is less than minimum size :" $MINFILE1SIZE "." >> ${OUTPUT_FILE}

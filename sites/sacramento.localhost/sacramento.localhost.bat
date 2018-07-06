@@ -4,6 +4,8 @@ if "%1"=="stop" goto stop
 if "%1"=="restart" goto stop
 goto usage
 
+REM Make sure local directory C:\web\VuFind-Plus\sites\default\solr\jetty\logs exists
+
 :start
 REM Setup solr configuration
 set GC_LOG_OPTS=-verbose:gc -XX:+PrintHeapAtGC -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+PrintGCTimeStamps -XX:+PrintTenuringDistribution -XX:+PrintGCApplicationStoppedTime

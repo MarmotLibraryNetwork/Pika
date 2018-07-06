@@ -812,9 +812,11 @@ function getGitBranch(){
 		$branchName = $explodedString[2]; //get the one that is always the branch name
 	}else{
 		$stringFromFile = file('../../.git/FETCH_HEAD', FILE_USE_INCLUDE_PATH);
-		$stringFromFile = $stringFromFile[0]; //get the string from the array
-		if (preg_match('/(.*?)\s+branch\s+\'(.*?)\'.*/', $stringFromFile, $matches)){
-			$branchName = $matches[2] . ' (' . $matches[1] . ')'; //get the branch name
+		if (!empty($stringFromFile)) {
+			$stringFromFile = $stringFromFile[0];//get the string from the array
+			if (preg_match('/(.*?)\s+branch\s+\'(.*?)\'.*/', $stringFromFile, $matches)) {
+				$branchName = $matches[2] . ' (' . $matches[1] . ')'; //get the branch name
+			}
 		}
 	}
 	$interface->assign('gitBranch', $branchName);

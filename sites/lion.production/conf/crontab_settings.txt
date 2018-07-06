@@ -63,11 +63,13 @@
 ###################################
 # Library supplied covers
 31 */2 * * * /usr/local/vufind-plus/sites/lion.production/copyCovers.sh
+#Lynda weekly update
+17 8 * * Fri /usr/local/vufind-plus/vufind/cron/fetch_lynda.sh lion
 
 ############################################
 # New York Times Bestseller Lists Updating #
 ############################################
-7 5 * * 0-1 /usr/local/vufind-plus/vufind/cron/updateNYTLists.sh lion.production
+7 5 * * * /usr/local/vufind-plus/vufind/cron/updateNYTLists.sh lion.production
 # update on Sundays, Mondays at 7:07 local
 
 ##########

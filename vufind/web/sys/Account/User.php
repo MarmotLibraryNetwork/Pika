@@ -296,15 +296,32 @@ class User extends DB_DataObject
 		}
 	}
 
+	private $barcode;
 	function getBarcode(){
-		global $configArray;
-		//TODO: Check the login configuration for the driver
-		if ($configArray['Catalog']['barcodeProperty'] == 'cat_username'){
-			return trim($this->cat_username);
-		}else{
-			return trim($this->cat_password);
+		if (isset($this->barcode)){
+			return $this->barcode;
+		} else {
+			/** @var AccountProfile $accountProfile */
+			if ($accountProfile = $this->getAccountProfile()) {
+				if ($accountProfile->loginConfiguration == 'barcode_pin'){
+					$this->barcode = trim($this->cat_username);
+					return $this->barcode;
+				}elseif ($accountProfile->loginConfiguration == 'name_barcode'){
+					$this->barcode = trim($this->cat_password);
+					return $this->barcode;
+				}
+			}
+			global $configArray;
+			if ($configArray['Catalog']['barcodeProperty'] == 'cat_username') {
+				$this->barcode = trim($this->cat_username);
+				return $this->barcode;
+			} else {
+				$this->barcode = trim($this->cat_password);
+				return $this->barcode;
+			}
 		}
 	}
+
 
 	function saveRoles(){
 		if (isset($this->id) && isset($this->roles) && is_array($this->roles)){

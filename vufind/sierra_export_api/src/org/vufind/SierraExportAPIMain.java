@@ -1123,8 +1123,14 @@ public class SierraExportAPIMain {
 				MarcReader marcReader = new MarcPermissiveStreamReader(new ByteArrayInputStream(marcData.getBytes(StandardCharsets.UTF_8)), true, true);
 				while (marcReader.hasNext()){
 					try {
+						logger.debug("Starting to process the next marc Record");
+
 						Record marcRecord = marcReader.next();
+						logger.debug("Got the next marc Record data");
+
 						RecordIdentifier identifier = recordGroupingProcessor.getPrimaryIdentifierFromMarcRecord(marcRecord, indexingProfile.name, indexingProfile.doAutomaticEcontentSuppression);
+						logger.debug("Writing marc record for " + identifier.getIdentifier());
+
 						File marcFile = indexingProfile.getFileForIlsRecord(identifier.getIdentifier());
 						if (!marcFile.getParentFile().exists()) {
 							if (!marcFile.getParentFile().mkdirs()) {

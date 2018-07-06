@@ -1,14 +1,19 @@
 {strip}
 	<h1>Pika Lists based on the New York Times API</h1>
+	<div class="alert alert-info">
+		For more information on using the New York Times lists, see the <a href="https://docs.google.com/document/d/12i9DJIW79ccRX2ijPeCMalKrCd_iWP_rIWtpoHDxDq4/edit">online documentation</a>.
+	</div>
+
+
+	<h3>Create or Update a List</h3>
+
 	{if $error}
 		<div class="alert alert-danger">{$error}</div>
 	{/if}
 
 	{if $successMessage}
-		<div class="alert alert-info">{$successMessage}</div>
+		<div class="alert alert-success">{$successMessage}</div>
 	{/if}
-
-	<h3>Create or Update a List</h3>
 
 	<form action="" method="post" id="buildList">
 		<div class="form-group">

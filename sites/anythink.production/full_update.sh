@@ -14,7 +14,7 @@ PIKASERVER=anythink.production
 PIKADBNAME=pika
 OUTPUT_FILE="/var/log/vufind-plus/${PIKASERVER}/full_update_output.log"
 
-MINFILE1SIZE=$((308000000))
+MINFILE1SIZE=$((312000000))
 
 # Check for conflicting processes currently running
 function checkConflictingProcesses() {
@@ -147,6 +147,10 @@ then
 
 		# Truncate Continuous Reindexing list of changed items
 		cat /dev/null >| /data/vufind-plus/${PIKASERVER}/marc/changed_items_to_process.csv
+
+		NEWLEVEL=$(($FILE1SIZE * 97 / 100))
+		echo "" >> ${OUTPUT_FILE}
+		echo "Based on today's export file, a new minimum filesize check level should be set to $NEWLEVEL" >> ${OUTPUT_FILE}
 
 	else
 		echo $FILE " size " $FILE1SIZE "is less than minimum size :" $MINFILE1SIZE "; Export was not moved to data directory, Full Regrouping & Full Reindexing skipped." >> ${OUTPUT_FILE}

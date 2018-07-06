@@ -14,7 +14,7 @@ import java.util.Date;
 
 
 /**
- * Reindex Grouped Records for display within VuFind
+ * Reindex Grouped Records for display within Pika
  * 
  * @author Mark Noble <mark@marmot.org>
  * 
@@ -62,7 +62,7 @@ public class GroupedReindexMain {
 		}else if (args.length >= 2 && args[1].equalsIgnoreCase("singleWork")){
 			//Process a specific work
 			//Prompt for the work to process
-			System.out.print("Enter the id of the work to process: ");
+			System.out.print("Enter the grouped work id of the work to process: ");
 
 			//  open up standard input
 			BufferedReader br = new BufferedReader(new InputStreamReader(System.in));

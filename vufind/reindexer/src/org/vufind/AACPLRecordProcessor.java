@@ -12,9 +12,7 @@ import java.io.FileReader;
 import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.sql.ResultSet;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.*;
 import java.util.regex.Pattern;
 
 /**
@@ -26,28 +24,29 @@ import java.util.regex.Pattern;
  */
 class AACPLRecordProcessor extends IlsRecordProcessor {
 	private HashSet<String> bibsWithOrders = new HashSet<>();
+
 	AACPLRecordProcessor(GroupedWorkIndexer indexer, Connection vufindConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 		super(indexer, vufindConn, indexingProfileRS, logger, fullReindex);
 
 		//get a list of bibs that have order records on them
 		File ordersFile = new File(marcPath + "/Pika_orders.mrc");
-		if (ordersFile.exists()){
-			try{
+		if (ordersFile.exists()) {
+			try {
 				MarcReader ordersReader = new MarcStreamReader(new FileInputStream(ordersFile));
-				while (ordersReader.hasNext()){
+				while (ordersReader.hasNext()) {
 					Record marcRecord = ordersReader.next();
 					VariableField recordNumberField = marcRecord.getVariableField("001");
-					if (recordNumberField != null && recordNumberField instanceof ControlField){
+					if (recordNumberField != null && recordNumberField instanceof ControlField) {
 						ControlField recordNumberCtlField = (ControlField) recordNumberField;
 						bibsWithOrders.add(recordNumberCtlField.getData());
 					}
 
 				}
 				logger.info("Finished reading records with orders");
-			}catch (Exception e){
+			} catch (Exception e) {
 				logger.error("Error reading orders file ", e);
 			}
-		}else{
+		} else {
 			logger.warn("Could not find orders file at " + ordersFile.getAbsolutePath());
 		}
 	}
@@ -63,17 +62,17 @@ class AACPLRecordProcessor extends IlsRecordProcessor {
 			}
 		}
 		Subfield locationSubfield = curItem.getSubfield(locationSubfieldIndicator);
-		if (locationSubfield == null){
+		if (locationSubfield == null) {
 			return true;
-		}else{
-			if (locationsToSuppressPattern != null && locationsToSuppressPattern.matcher(locationSubfield.getData().trim()).matches()){
+		} else {
+			if (locationsToSuppressPattern != null && locationsToSuppressPattern.matcher(locationSubfield.getData().trim()).matches()) {
 				return true;
 			}
 		}
-		if (collectionSubfield != ' '){
+		if (collectionSubfield != ' ') {
 			Subfield collectionSubfieldValue = curItem.getSubfield(collectionSubfield);
-			if (collectionSubfieldValue != null){
-				if (collectionsToSuppressPattern != null && collectionsToSuppressPattern.matcher(collectionSubfieldValue.getData().trim()).matches()){
+			if (collectionSubfieldValue != null) {
+				if (collectionsToSuppressPattern != null && collectionsToSuppressPattern.matcher(collectionSubfieldValue.getData().trim()).matches()) {
 					return true;
 				}
 			}
@@ -81,12 +80,12 @@ class AACPLRecordProcessor extends IlsRecordProcessor {
 		return false;
 	}
 
-	protected String getItemStatus(DataField itemField, String recordIdentifier){
+	protected String getItemStatus(DataField itemField, String recordIdentifier) {
 		String subfieldData = getItemSubfieldData(statusSubfieldIndicator, itemField);
 		String shelfLocationData = getItemSubfieldData(shelvingLocationSubfield, itemField);
-		if (shelfLocationData.equalsIgnoreCase("Z-ON-ORDER") || shelfLocationData.equalsIgnoreCase("ON-ORDER")){
+		if (shelfLocationData.equalsIgnoreCase("Z-ON-ORDER") || shelfLocationData.equalsIgnoreCase("ON-ORDER")) {
 			subfieldData = "On Order";
-		}else {
+		} else {
 			if (subfieldData == null) {
 				subfieldData = "ONSHELF";
 			} else if (translateValue("item_status", subfieldData, recordIdentifier, false) == null) {
@@ -95,7 +94,6 @@ class AACPLRecordProcessor extends IlsRecordProcessor {
 		}
 		return subfieldData;
 	}
-
 
 
 	@Override
@@ -111,9 +109,9 @@ class AACPLRecordProcessor extends IlsRecordProcessor {
 		String locationCode = getItemSubfieldData(locationSubfieldIndicator, itemField);
 		String location = translateValue("location", locationCode, identifier);
 		String shelvingLocation = itemInfo.getShelfLocationCode();
-		if (location == null){
+		if (location == null) {
 			location = translateValue("shelf_location", shelvingLocation, identifier);
-		}else {
+		} else {
 			location += " - " + translateValue("shelf_location", shelvingLocation, identifier);
 		}
 		return location;
@@ -122,7 +120,7 @@ class AACPLRecordProcessor extends IlsRecordProcessor {
 	protected void loadTargetAudiences(GroupedWorkSolr groupedWork, Record record, HashSet<ItemInfo> printItems, String identifier) {
 		//For Wake County, load audiences based on collection code rather than based on the 008 and 006 fields
 		HashSet<String> targetAudiences = new HashSet<>();
-		for (ItemInfo printItem : printItems){
+		for (ItemInfo printItem : printItems) {
 			String collection = printItem.getCollection();
 			if (collection != null) {
 				targetAudiences.add(collection.toLowerCase());
@@ -141,16 +139,16 @@ class AACPLRecordProcessor extends IlsRecordProcessor {
 		// ??n?? = Non-Fiction
 		// ??x?? = Other
 		String literaryForm = null;
-		for (ItemInfo printItem : printItems){
+		for (ItemInfo printItem : printItems) {
 			String locationCode = printItem.getShelfLocationCode();
 			if (locationCode != null) {
 				literaryForm = getLiteraryFormForLocation(locationCode);
-				if (literaryForm != null){
+				if (literaryForm != null) {
 					break;
 				}
 			}
 		}
-		if (literaryForm == null){
+		if (literaryForm == null) {
 			literaryForm = "Other";
 		}
 		groupedWork.addLiteraryForm(literaryForm);
@@ -159,11 +157,12 @@ class AACPLRecordProcessor extends IlsRecordProcessor {
 
 	private Pattern nonFicPattern = Pattern.compile(".*nonfic.*", Pattern.CASE_INSENSITIVE);
 	private Pattern ficPattern = Pattern.compile(".*fic.*", Pattern.CASE_INSENSITIVE);
+
 	private String getLiteraryFormForLocation(String locationCode) {
 		String literaryForm = null;
 		if (nonFicPattern.matcher(locationCode).matches()) {
 			literaryForm = "Non Fiction";
-		}else if (ficPattern.matcher(locationCode).matches()){
+		} else if (ficPattern.matcher(locationCode).matches()) {
 			literaryForm = "Fiction";
 		}
 		return literaryForm;
@@ -174,19 +173,19 @@ class AACPLRecordProcessor extends IlsRecordProcessor {
 		//In that case the location code holds the permanent location
 		String subfieldData = getItemSubfieldData(statusSubfieldIndicator, itemField);
 		boolean loadFromPermanentLocation = false;
-		if (subfieldData == null){
+		if (subfieldData == null) {
 			loadFromPermanentLocation = true;
-		}else if (translateValue("item_status", subfieldData, recordIdentifier, false) != null){
+		} else if (translateValue("item_status", subfieldData, recordIdentifier, false) != null) {
 			loadFromPermanentLocation = true;
 		}
-		if (loadFromPermanentLocation){
+		if (loadFromPermanentLocation) {
 			subfieldData = getItemSubfieldData(shelvingLocationSubfield, itemField);
 		}
 		itemInfo.setShelfLocationCode(subfieldData);
 	}
 
-	protected void loadOnOrderItems(GroupedWorkSolr groupedWork, RecordInfo recordInfo, Record record, boolean hasTangibleItems){
-		if (bibsWithOrders.contains(recordInfo.getRecordIdentifier())){
+	protected void loadOnOrderItems(GroupedWorkSolr groupedWork, RecordInfo recordInfo, Record record, boolean hasTangibleItems) {
+		if (bibsWithOrders.contains(recordInfo.getRecordIdentifier())) {
 			if (recordInfo.getNumPrintCopies() == 0 && recordInfo.getNumCopiesOnOrder() == 0) {
 				ItemInfo itemInfo = new ItemInfo();
 				itemInfo.setLocationCode("aacpl");
@@ -212,9 +211,95 @@ class AACPLRecordProcessor extends IlsRecordProcessor {
 				itemInfo.setShelfLocation("On Order");
 
 				recordInfo.addItem(itemInfo);
-			}else{
+			} else {
 				logger.debug("Skipping order item because there are print or order records available");
 			}
 		}
 	}
+
+	@Override
+	protected List<RecordInfo> loadUnsuppressedEContentItems(GroupedWorkSolr groupedWork, String identifier, Record record) {
+		List<RecordInfo> unsuppressedEcontentRecords = new ArrayList<>();
+		List<DataField> itemRecords = MarcUtil.getDataFields(record, itemTag);
+
+		// AACPL should only have 1 item record on a eContent record
+		if (itemRecords.size() == 1) {
+			for (DataField itemField : itemRecords) {
+				String location = itemField.getSubfield(locationSubfieldIndicator).getData();
+				if (location != null) {
+					if (location.equalsIgnoreCase("Z-ELIBRARY") || location.equalsIgnoreCase("Z-ONLINEBK ")) {
+						RecordInfo eContentRecord = getEContentIlsRecord(groupedWork, record, identifier, itemField);
+						unsuppressedEcontentRecords.add(eContentRecord);
+					}
+				}
+			}
+		}
+		return unsuppressedEcontentRecords;
+	}
+
+	RecordInfo getEContentIlsRecord(GroupedWorkSolr groupedWork, Record record, String identifier, DataField itemField){
+		ItemInfo itemInfo = new ItemInfo();
+		itemInfo.setIsEContent(true);
+		RecordInfo relatedRecord = null;
+
+		loadDateAdded(identifier, itemField, itemInfo);
+		String itemLocation = getItemSubfieldData(locationSubfieldIndicator, itemField);
+		itemInfo.setLocationCode(itemLocation);
+//		String itemSublocation = getItemSubfieldData(subLocationSubfield, itemField);
+//		if (itemSublocation == null){
+//			itemSublocation = "";
+//		}
+//		if (itemSublocation.length() > 0){
+//			itemInfo.setSubLocation(translateValue("sub_location", itemSublocation, identifier));
+//		}
+		itemInfo.setITypeCode(getItemSubfieldData(iTypeSubfield, itemField));
+		itemInfo.setIType(translateValue("itype", getItemSubfieldData(iTypeSubfield, itemField), identifier));
+		loadItemCallNumber(record, itemField, itemInfo);
+		itemInfo.setItemIdentifier(getItemSubfieldData(itemRecordNumberSubfieldIndicator, itemField));
+
+		String econtentSource = MarcUtil.getFirstFieldVal(record, "092a");
+//		itemInfo.setShelfLocation(econtentSource);
+		itemInfo.setShelfLocation("Online");
+
+		itemInfo.setCollection(econtentSource);
+
+		itemInfo.seteContentProtectionType("external");
+		itemInfo.seteContentSource(econtentSource);
+		itemInfo.setDetailedStatus("Available Online");
+
+		//Get the url if any
+		loadEContentUrl(record, itemInfo);
+
+		relatedRecord = groupedWork.addRelatedRecord("external_econtent", identifier);
+		relatedRecord.setSubSource(profileType);
+		relatedRecord.addItem(itemInfo);
+		loadEContentFormatInformation(record, relatedRecord, itemInfo);
+
+		return relatedRecord;
+	}
+
+
+	@Override
+	protected void loadEContentFormatInformation(Record record, RecordInfo econtentRecord, ItemInfo econtentItem) {
+		String protectionType = econtentItem.geteContentProtectionType();
+		switch (protectionType) {
+			case "external":
+				String iType = econtentItem.getITypeCode();
+				if (iType != null) {
+					String translatedFormat = translateValue("econtent_itype_format", iType, econtentRecord.getRecordIdentifier());
+					String translatedFormatCategory = translateValue("econtent_itype_format_category", iType, econtentRecord.getRecordIdentifier());
+					String translatedFormatBoost = translateValue("econtent_itype_format_boost", iType, econtentRecord.getRecordIdentifier());
+					econtentItem.setFormat(translatedFormat);
+					econtentItem.setFormatCategory(translatedFormatCategory);
+					econtentRecord.setFormatBoost(Long.parseLong(translatedFormatBoost));
+				} else {
+					logger.warn("Did not get a iType for external eContent " + econtentRecord.getFullIdentifier());
+				}
+				break;
+			default:
+				logger.warn("Unknown protection type " + protectionType);
+				break;
+		}
+	}
+
 }

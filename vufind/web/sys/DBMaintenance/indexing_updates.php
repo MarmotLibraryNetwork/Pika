@@ -215,6 +215,25 @@ function getIndexingUpdates() {
 				)
 		),
 
+		'indexing_profile_additional_fields_ToSuppress' => array(
+				'title' => 'Indexing Profiles - ITypes, ICode2s & BCode3s to suppress',
+				'description' => 'Allow specific Itype, ICode2 & BCode3 codes to be suppressed',
+				'sql' => array(
+						"ALTER TABLE indexing_profiles ADD COLUMN `iTypesToSuppress`  varchar(100) DEFAULT null ",
+						"ALTER TABLE indexing_profiles ADD COLUMN `iCode2sToSuppress` varchar(100) DEFAULT null ",
+						"ALTER TABLE indexing_profiles ADD COLUMN `bCode3sToSuppress` varchar(100) DEFAULT null ",
+				)
+		),
+
+		'indexing_profile_additional_fields_bcode3' => array(
+				'title' => 'Indexing Profiles - BCode3s settings',
+				'description' => 'Allow specific collection codes to be suppressed',
+				'sql' => array(
+					"ALTER TABLE indexing_profiles ADD COLUMN `sierraRecordFixedFieldsTag` char(3) DEFAULT null ",
+					"ALTER TABLE indexing_profiles ADD COLUMN `bCode3` char(1) DEFAULT NULL ",
+				)
+		),
+
 		'indexing_profile_folderCreation' => array(
 				'title' => 'Indexing Profiles - Individual Folder Creation',
 				'description' => 'Determine how marc record folders should be created',

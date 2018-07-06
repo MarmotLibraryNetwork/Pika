@@ -14,7 +14,7 @@ PIKASERVER=santafe.production
 PIKADBNAME=pika
 OUTPUT_FILE="/var/log/vufind-plus/${PIKASERVER}/full_update_output.log"
 
-MINFILE1SIZE=$((325000000))
+MINFILE1SIZE=$((332000000))
 
 # Check if full_update is already running
 #TODO: Verify that the PID file doesn't get log-rotated
@@ -119,12 +119,13 @@ rm /data/vufind-plus/${PIKASERVER}/grouped_work_primary_identifiers.sql
 cd /usr/local/vufind-plus/sites/${PIKASERVER}; ./${PIKASERVER}.sh restart
 
 # OneClick digital Marc Updates
-/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} santafe/oneclickdigital oneclickdigital/santafe >> ${OUTPUT_FILE}
+#/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} santafe/oneclickdigital oneclickdigital/santafe >> ${OUTPUT_FILE}
+# santa fe no longer subscribes. pascal 6/11/2018
 
-
+#Santa Fe does not use Volume Records
 #Get the updated volume information
-cd /usr/local/vufind-plus/vufind/cron;
-nice -n -10 java -jar cron.jar ${PIKASERVER} ExportSierraData >> ${OUTPUT_FILE}
+#cd /usr/local/vufind-plus/vufind/cron;
+#nice -n -10 java -jar cron.jar ${PIKASERVER} ExportSierraData >> ${OUTPUT_FILE}
 
 #Extract from Hoopla
 cd /usr/local/vufind-plus/vufind/cron;./GetHooplaFromMarmot.sh >> ${OUTPUT_FILE}
@@ -178,6 +179,10 @@ then
 
 			# Truncate Continous Reindexing list of changed items
 			cat /dev/null >| /data/vufind-plus/${PIKASERVER}/marc/changed_items_to_process.csv
+
+		NEWLEVEL=$(($FILE1SIZE * 97 / 100))
+		echo "" >> ${OUTPUT_FILE}
+		echo "Based on today's export file, a new minimum filesize check level should be set to $NEWLEVEL" >> ${OUTPUT_FILE}
 
 		else
 			umount /mnt/ftp

@@ -875,7 +875,7 @@ class CarlX extends SIP2Driver{
 //			if (!empty($pin) && !empty($pin1) && $pin == $pin1) {
 
 				// DENY REGISTRATION TO KNOWN BAD IP 12.204.223.250
-				if ($active_ip = "12.204.223.250") {
+				if ($active_ip == "12.204.223.250") {
 					global $logger;
 					$logger->log('Online Registration used forbidden IP ' . $active_ip, PEAR_LOG_ERR);
 					return array(

@@ -56,6 +56,7 @@ function checkConflictingProcesses() {
 }
 
 #Check for any conflicting processes that we shouldn't do a full index during.
+checkConflictingProcesses "sierra_export.jar ${PIKASERVER}" >> ${OUTPUT_FILE}
 checkConflictingProcesses "sierra_export_api.jar ${PIKASERVER}" >> ${OUTPUT_FILE}
 checkConflictingProcesses "overdrive_extract.jar ${PIKASERVER}" >> ${OUTPUT_FILE}
 checkConflictingProcesses "reindexer.jar ${PIKASERVER}" >> ${OUTPUT_FILE}
@@ -109,7 +110,6 @@ cd /usr/local/vufind-plus/vufind/record_grouping; java -server -XX:+UseG1GC -jar
 #then
 
 cd /usr/local/vufind-plus/vufind/reindexer; nice -n -3 java -server -XX:+UseG1GC -jar reindexer.jar ${PIKASERVER} fullReindex >> ${OUTPUT_FILE}
-cd /usr/local/vufind-plus/vufind/reindexer; java -server -XX:+UseG1GC -jar reindexer.jar ${PIKASERVER} fullReindex >> ${OUTPUT_FILE}
 
 #else
 #cd /usr/local/vufind-plus/vufind/reindexer; nice -n -3 java -server -XX:+UseG1GC -jar reindexer.jar ${PIKASERVER} >> ${OUTPUT_FILE}
