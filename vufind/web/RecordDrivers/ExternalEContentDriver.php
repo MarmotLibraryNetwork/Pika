@@ -188,7 +188,7 @@ class ExternalEContentDriver extends BaseEContentDriver{
 	 */
 	function getActionsForItem($itemId, $fileOrUrl, $acsId){
 		$actions = array();
-		$title = 'Access Online';
+		$title = translate('externalEcontent_url_action');
 		if (strlen($fileOrUrl) > 0){
 			if (strlen($fileOrUrl) >= 3){
 				$extension =strtolower(substr($fileOrUrl, strlen($fileOrUrl), 3));
@@ -219,7 +219,7 @@ class ExternalEContentDriver extends BaseEContentDriver{
 		foreach ($relatedUrls as $urlInfo){
 			//Revert to access online per Karen at CCU.  If people want to switch it back, we can add a per library switch
 			//$title = 'Online ' . $urlInfo['source'];
-			$title = 'Access Online';
+			$title = translate('externalEcontent_url_action');
 			$alt = 'Available online from ' . $urlInfo['source'];
 			$fileOrUrl = isset($urlInfo['url']) ? $urlInfo['url'] : $urlInfo['file'];
 			if (strlen($fileOrUrl) > 0){
