@@ -342,12 +342,12 @@ class MillenniumCheckouts {
 			$driver->_curlGetPage($curl_url);
 
 			$renewPostVariables = array(
-				'currentsortorder' => 'current_checkout',
-				'renewsome' => 'YES',
+				'currentsortorder'   => 'current_checkout',
+				'renewsome'          => 'YES',
 				'renew' . $itemIndex => $itemId,
 			);
 			$checkedOutPageText = $driver->_curlPostPage($curl_url, $renewPostVariables);
-			$logger->log($checkedOutPageText, PEAR_LOG_DEBUG);
+//			$logger->log($checkedOutPageText, PEAR_LOG_DEBUG);
 
 			//Parse the checked out titles into individual rows
 			$message = 'Unable to load renewal information for this entry.';
