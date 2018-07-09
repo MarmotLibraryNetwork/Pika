@@ -11,6 +11,8 @@
 EMAIL=root@titan
 PIKASERVER=marmot.test
 OUTPUT_FILE="/var/log/vufind-plus/${PIKASERVER}/continuous_partial_reindex_output.log"
+USE_SIERRA_API_EXTRACT=0
+# set to USE_SIERRA_API_EXTRACT to 1 enable
 
 # Check for conflicting processes currently running
 function checkConflictingProcesses() {
@@ -92,10 +94,18 @@ do
 	: > $OUTPUT_FILE;
 	# reset the output file each round
 
-	#export from sierra (items, holds, and orders)
-	#echo "Starting Sierra Export - `date`" >> ${OUTPUT_FILE}
-	cd /usr/local/vufind-plus/vufind/sierra_export_api/
-	nice -n -10 java -server -XX:+UseG1GC -jar sierra_export_api.jar ${PIKASERVER} >> ${OUTPUT_FILE} &
+  #Note: Sierra Export and OverDrive export run in parallel
+	if [ $USE_SIERRA_API_EXTRACT -eq 1 ]; then
+		#export from sierra (items, holds, and orders)
+		#echo "Starting Sierra Export - `date`" >> ${OUTPUT_FILE}
+		cd /usr/local/vufind-plus/vufind/sierra_export_api/
+		nice -n -10 java -server -XX:+UseG1GC -jar sierra_export_api.jar ${PIKASERVER} >> ${OUTPUT_FILE} &
+	else
+		#export from sierra (items, holds, and orders)
+		#echo "Starting Sierra Export - `date`" >> ${OUTPUT_FILE}
+		cd /usr/local/vufind-plus/vufind/sierra_export/
+		nice -n -10 java -server -XX:+UseG1GC -jar sierra_export.jar ${PIKASERVER} >> ${OUTPUT_FILE} &
+	fi
 
 	#export from overdrive
 	#echo "Starting OverDrive Extract - `date`" >> ${OUTPUT_FILE}

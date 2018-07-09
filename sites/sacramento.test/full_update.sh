@@ -7,6 +7,7 @@ EMAIL=root
 PIKASERVER=sacramento.test
 PIKADBNAME=pika
 OUTPUT_FILE="/var/log/vufind-plus/${PIKASERVER}/full_update_output.log"
+USE_SIERRA_API_EXTRACT=0
 
 # Check if full_update is already running
 #TODO: Verify that the PID file doesn't get log-rotated
@@ -73,8 +74,10 @@ rm /data/vufind-plus/${PIKASERVER}/grouped_work_primary_identifiers.sql
 #Restart Solr
 cd /usr/local/vufind-plus/sites/${PIKASERVER}; ./${PIKASERVER}.sh restart
 
-#Extract from ILS this normally won't update anything since they don't have scheduler, but it could be used manually from time to time.
-/usr/local/vufind-plus/sites/${PIKASERVER}/copySierraExport.sh >> ${OUTPUT_FILE}
+if [ $USE_SIERRA_API_EXTRACT -ne 1 ]; then
+	#Extract from ILS this normally won't update anything since they don't have scheduler, but it could be used manually from time to time.
+	/usr/local/vufind-plus/sites/${PIKASERVER}/copySierraExport.sh >> ${OUTPUT_FILE}
+fi
 
 #Get the updated volume information not needed for LION since they don't have volumes
 #cd /usr/local/vufind-plus/vufind/cron;
