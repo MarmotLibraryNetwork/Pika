@@ -98,12 +98,12 @@
 		<div id='dplaSearchResultsPlaceholder'></div>
 	{/if}
 
-	{if $enableMaterialsRequest}
-		<h2>Didn't find it?</h2>
-		<p>Can't find what you are looking for? <a href="{$path}/MaterialsRequest/NewRequest?lookfor={$lookfor}&basicType={$searchIndex}" onclick="return VuFind.Account.followLinkIfLoggedIn(this);">{translate text='Suggest a purchase'}</a>.</p>
-	{elseif $externalMaterialsRequestUrl}
+	{if $externalMaterialsRequestUrl}
 		<h2>Didn't find it?</h2>
 		<p>Can't find what you are looking for? <a href="{$externalMaterialsRequestUrl}">{translate text='Suggest a purchase'}</a>.</p>
+	{elseif $enableMaterialsRequest}
+		<h2>Didn't find it?</h2>
+		<p>Can't find what you are looking for? <a href="{$path}/MaterialsRequest/NewRequest?lookfor={$lookfor}&basicType={$searchIndex}" onclick="return VuFind.Account.followLinkIfLoggedIn(this);">{translate text='Suggest a purchase'}</a>.</p>
 	{/if}
 
 	{if $showSearchTools || ($loggedIn && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles) || array_key_exists('contentEditor', $userRoles) || array_key_exists('libraryManager', $userRoles) || array_key_exists('locationManager', $userRoles)))}
