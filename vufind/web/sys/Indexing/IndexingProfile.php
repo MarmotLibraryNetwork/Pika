@@ -454,7 +454,7 @@ class IndexingProfile extends DB_DataObject{
 
 		$indexingProfile = new IndexingProfile();
 		$count = $indexingProfile->get('recordUrlComponent', trim($this->recordUrlComponent));
-		if (!$count || ($count == 1 && $this->id != $indexingProfile->id)) {
+		if ($count > 0 && $this->id != $indexingProfile->id) { // include exception for editing the same profile
 
 			$validationResults = array(
 				'validatedOk' => false,
