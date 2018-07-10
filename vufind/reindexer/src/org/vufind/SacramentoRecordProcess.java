@@ -172,7 +172,7 @@ class SacramentoRecordProcessor extends IIIRecordProcessor {
                 itemInfo.seteContentProtectionType("external");
                 itemInfo.setCallNumber("Online");
                 itemInfo.seteContentSource(econtentSource);
-                itemInfo.setShelfLocation(econtentSource);
+//                itemInfo.setShelfLocation(econtentSource); // this sets the owning location facet.  Don't think this is needed for Sacramento
                 itemInfo.setIType("eCollection");
                 itemInfo.setDetailedStatus("Available Online");
                 RecordInfo relatedRecord = groupedWork.addRelatedRecord("external_econtent", identifier);
