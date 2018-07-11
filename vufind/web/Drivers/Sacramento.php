@@ -85,6 +85,9 @@ class Sacramento extends Sierra
 		return $loginData;
 	}
 
+	public function hasUsernameField(){
+		return true;
+	}
 
 	public function updatePin($user, $oldPin, $newPin, $confirmNewPin){
 		$scope = $this->getDefaultScope();
