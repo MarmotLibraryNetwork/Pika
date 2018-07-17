@@ -27,17 +27,25 @@ class ExternalEContentDriver extends BaseEContentDriver{
 	function isEContentHoldable($locationCode, $eContentFieldData){
 		return false;
 	}
+	// This function is not called anywhere. pascal 7-17-2018
 	function isLocalItem($locationCode, $eContentFieldData){
 		return $this->isLibraryItem($locationCode, $eContentFieldData);
 	}
+
+	// This function is not called anywhere. pascal 7-17-2018
 	function isLibraryItem($locationCode, $eContentFieldData){
 		$sharing = $this->getSharing($locationCode, $eContentFieldData);
 		if ($sharing == 'shared'){
 			return true;
 		}else if ($sharing == 'library'){
 			$searchLibrary = Library::getSearchLibrary();
-			if ($searchLibrary == null || $searchLibrary->econtentLocationsToInclude == 'all' || strlen($searchLibrary->econtentLocationsToInclude) == 0  || $searchLibrary->includeOutOfSystemExternalLinks || (strlen($searchLibrary->ilsCode) > 0 && strpos($locationCode, $searchLibrary->ilsCode) === 0)){
+			if ($searchLibrary == null
+				|| $searchLibrary->econtentLocationsToInclude == 'all'
+				|| strlen($searchLibrary->econtentLocationsToInclude) == 0
+				|| $searchLibrary->includeOutOfSystemExternalLinks
+				|| (strlen($searchLibrary->ilsCode) > 0 && strpos($locationCode, $searchLibrary->ilsCode) === 0)){
 				// TODO: econtentLocationsToInclude setting no longer in use. plb 5-17-2016
+				// TODO: I think using the ilsCode here is obsolete also pascal 7-17-2018
 				return true;
 			}else{
 				return false;
