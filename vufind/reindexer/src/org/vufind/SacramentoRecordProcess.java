@@ -134,7 +134,7 @@ class SacramentoRecordProcessor extends IIIRecordProcessor {
                 String urlLower = url.toLowerCase();
                 String econtentSource = "ils econtent";
 //                //TODO: Determine sources of ILS eContent
-                String specifiedSource = MarcUtil.getFirstFieldVal(record, "037b");
+                String specifiedSource = MarcUtil.getFirstFieldVal(record, "901a");
                 if (specifiedSource != null){
                     econtentSource = specifiedSource;
                 }
