@@ -70,10 +70,38 @@ class Fines extends MyAccount
 						$outstandingTotal[$userId] = $this->currency_symbol . number_format($totalOutstanding, 2);
 					}
 
-					$showFinePayments = $configArray['Catalog']['showFinePayments'];
-					$interface->assign('showFinePayments', $showFinePayments);
-
 				}
+
+				$showFinePayments = $configArray['Catalog']['showFinePayments'];
+				$interface->assign('showFinePayments', $showFinePayments);
+
+				$homeLibrary      = Library::getLibraryForLocation($user->homeLocationId);
+				$showEcommerceLink = isset($homeLibrary) && $homeLibrary->showEcommerceLink == 1;
+
+				if ($showEcommerceLink) {
+					$interface->assign('minimumFineAmount',        $homeLibrary->minimumFineAmount);
+					$interface->assign('payFinesLinkText',         $homeLibrary->payFinesLinkText);
+					$interface->assign('showRefreshAccountButton', $homeLibrary->showRefreshAccountButton);
+
+					// Determine E-commerce Link
+					$eCommerceLink = null;
+					if ($homeLibrary->payFinesLink == 'default') {
+						$defaultEcommerceLink = $configArray['Site']['ecommerceLink'];
+						if (!empty($defaultEcommerceLink)) {
+							$eCommerceLink = $defaultEcommerceLink;
+						} else {
+							$showEcommerceLink = false;
+						}
+					} elseif (!empty($homeLibrary->payFinesLink)) {
+						$eCommerceLink = $homeLibrary->payFinesLink;
+					} else {
+						$showEcommerceLink = false;
+					}
+					$interface->assign('ecommerceLink', $eCommerceLink);
+				}
+				$interface->assign('showEcommerceLink', $showEcommerceLink);
+
+
 
 //			$interface->assign('canShowPayFineButton', $canShowPayFineButton);
 				$interface->assign('userAccountLabel', $userAccountLabel);

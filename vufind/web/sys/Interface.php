@@ -237,31 +237,31 @@ class UInterface extends Smarty
 			$user = UserAccount::getLoggedInUser();
 			//Figure out if we should show a link to pay fines.
 			$homeLibrary = Library::getLibraryForLocation($user->homeLocationId);
-			$showEcomerceLink     = isset($homeLibrary) && $homeLibrary->showEcommerceLink == 1;
+			$showECommerceLink     = isset($homeLibrary) && $homeLibrary->showEcommerceLink == 1;
 
-			if ($showEcomerceLink) {
+			if ($showECommerceLink) {
 				$this->assign('minimumFineAmount', $homeLibrary->minimumFineAmount);
 				$this->assign('payFinesLinkText', $homeLibrary->payFinesLinkText);
 				$this->assign('showRefreshAccountButton', $homeLibrary->showRefreshAccountButton);
 
-				// Determine E-comerce Link
-				$ecomerceLink = null;
+				// Determine E-commerce Link
+				$eCommerceLink = null;
 				if ($homeLibrary->payFinesLink == 'default') {
 					global $configArray;
 					$defaultEcommerceLink = $configArray['Site']['ecommerceLink'];
 					if (!empty($defaultEcommerceLink)) {
-						$ecomerceLink = $defaultEcommerceLink;
+						$eCommerceLink = $defaultEcommerceLink;
 					} else {
-						$showEcomerceLink = false;
+						$showECommerceLink = false;
 					}
 				} elseif (!empty($homeLibrary->payFinesLink)) {
-						$ecomerceLink = $homeLibrary->payFinesLink;
+						$eCommerceLink = $homeLibrary->payFinesLink;
 				} else {
-					$showEcomerceLink = false;
+					$showECommerceLink = false;
 				}
-				$this->assign('ecommerceLink', $ecomerceLink);
+				$this->assign('ecommerceLink', $eCommerceLink);
 			}
-			$this->assign('showEcommerceLink', $showEcomerceLink);
+			$this->assign('showEcommerceLink', $showECommerceLink);
 		}
 	}
 
