@@ -92,6 +92,7 @@ class Report_StudentReport extends Admin_Admin {
 			exit;
 		}
 
+//		$this->display()
 		$interface->setPageTitle('Student Report');
 		$interface->assign('sidebar', 'MyAccount/account-sidebar.tpl');
 		$interface->setTemplate('studentReport.tpl');
