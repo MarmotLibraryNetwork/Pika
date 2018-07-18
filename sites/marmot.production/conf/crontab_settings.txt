@@ -45,7 +45,7 @@
 # Daily full update #
 #####################
 # Export lands on ftp server at 00:10am.  Set the start for right after that.
-20 01 * * * cd /usr/local/vufind-plus/sites/marmot.production; ./full_update.sh
+20 0 * * * cd /usr/local/vufind-plus/sites/marmot.production; ./full_update.sh
 
 ################
 # Pika Cleanup #
