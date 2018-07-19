@@ -74,7 +74,7 @@ rm /data/vufind-plus/${PIKASERVER}/grouped_work_primary_identifiers.sql
 #Restart Solr
 cd /usr/local/vufind-plus/sites/${PIKASERVER}; ./${PIKASERVER}.sh restart
 
-if [ $USE_SIERRA_API_EXTRACT -ne 0 ]; then
+if [ $USE_SIERRA_API_EXTRACT -ne 1 ]; then
 	#Extract from ILS
 	#Do not copy the Sierra export, we will just
 	/usr/local/vufind-plus/sites/${PIKASERVER}/copySierraExport.sh >> ${OUTPUT_FILE}
