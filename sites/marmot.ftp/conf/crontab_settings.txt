@@ -143,8 +143,8 @@
 ###############################################
 # Secure copy CMUSierra.out to cmuvufind.marmot.org #
 ###############################################
-# scp cmu marc records to cmuvufind.marmot.org daily at 6.00 AM
-00 6 * * * /root/cron/cmu_secure_copy_CMUSierra.sh
+# scp cmu marc records to cmuvufind.marmot.org daily at 2.15 AM
+15 2 * * * /root/cron/cmu_secure_copy_CMUSierra.sh
 #
 #---eof---
 
