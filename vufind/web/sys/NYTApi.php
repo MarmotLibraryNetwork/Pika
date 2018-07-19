@@ -10,7 +10,8 @@
  */
 class NYTApi {
 
-	const BASE_URI = 'http://api.nytimes.com/svc/books/v2/lists/';
+//	const BASE_URI = 'http://api.nytimes.com/svc/books/v2/lists/'; // old api url
+	const BASE_URI = 'https://content.api.nytimes.com/svc/books/v2/lists/';
 	protected $api_key;
 
 	public function __construct($key) {
@@ -39,7 +40,9 @@ class NYTApi {
 			// do not include header in result
 			CURLOPT_HEADER => 0,
 			// set user agent
-			CURLOPT_USERAGENT => 'Pika app cURL Request'
+			CURLOPT_USERAGENT => 'Pika app cURL Request',
+			CURLOPT_SSL_VERIFYPEER => false,
+			CURLOPT_FOLLOWLOCATION => true,
 		);
 		// Get cURL resource
 		$curl = curl_init();
