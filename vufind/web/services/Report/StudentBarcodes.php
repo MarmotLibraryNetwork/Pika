@@ -40,7 +40,7 @@ class Report_StudentBarcodes extends Admin_Admin {
 				}
 			}
 		}
-		ksort($availableReports);
+		asort($availableReports);
 		$interface->assign('availableReports', $availableReports);
 
 		$selectedReport = isset($_REQUEST['selectedReport']) ? $availableReports[$_REQUEST['selectedReport']] : reset($availableReports);
