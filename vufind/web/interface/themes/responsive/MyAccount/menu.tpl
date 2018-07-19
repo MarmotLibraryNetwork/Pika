@@ -369,7 +369,7 @@
 			{/if}
 
 			{if $loggedIn && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles) || array_key_exists('locationReports', $userRoles) || array_key_exists('contentEditor', $userRoles))}
-				{if in_array($action, array('StudentReport'))}
+				{if in_array($action, array('StudentReport')) || in_array($action, array('StudentBarcodes'))}
 					{assign var="curSection" value=true}
 				{else}
 					{assign var="curSection" value=false}
@@ -386,6 +386,9 @@
 						<div class="panel-body">
 							{if ($ils == 'CarlX' || $ils == 'Sierra') && $loggedIn && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles) || array_key_exists('locationReports', $userRoles))}
 								<div class="adminMenuLink{if $action == "StudentReport"} active{/if}"><a href="{$path}/Report/StudentReport">Student Reports</a></div>
+							{/if}
+							{if ($ils == 'CarlX') && $loggedIn && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles) || array_key_exists('locationReports', $userRoles))}
+								<div class="adminMenuLink{if $action == "StudentBarcodes"} active{/if}"><a href="{$path}/Report/StudentBarcodes">Student Barcodes</a></div>
 							{/if}
 						</div>
 					</div>
