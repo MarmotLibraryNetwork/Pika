@@ -134,7 +134,10 @@ foreach ($aSchoolHomeroom as $sSchoolHomeroom) {
 			)
 		order by
 			patronbranch.branchcode
-			, patron_v.bty
+			, case
+				when patron_v.bty = 13 then 0
+				else 1
+			end
 			, patron_v.sponsor
 			, patron_v.name
 EOT;
