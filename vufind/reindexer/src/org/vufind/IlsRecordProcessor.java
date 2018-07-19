@@ -1461,6 +1461,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		getFormatFromSubjects(record, printFormats);
 		getFormatFromTitle(record, printFormats);
 		getFormatFromDigitalFileCharacteristics(record, printFormats);
+		getGameFormatFrom753(record, printFormats);
 		if (printFormats.size() == 0) {
 			//Only get from fixed field information if we don't have anything yet since the catalogging of
 			//fixed fields is not kept up to date reliably.  #D-87
@@ -1827,6 +1828,20 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		}
 	}
 
+	private void getGameFormatFrom753(Record record, Set<String> result) {
+		// Check for formats in the 753 field "System Details Access to Computer Files"
+		DataField sysDetailsTag = record.getDataField("753");
+		if (sysDetailsTag != null) {
+			if (sysDetailsTag.getSubfield('a') != null) {
+				String sysDetailsValue = sysDetailsTag.getSubfield('a').getData().toLowerCase();
+				String gameFormat = getGameFormatFromValue(sysDetailsValue);
+				if (gameFormat != null){
+					result.add(gameFormat);
+				}
+			}
+		}
+	}
+
 	private String getGameFormatFromValue(String value) {
 		if (value.contains("kinect sensor")) {
 			return "Kinect";
@@ -1844,8 +1859,12 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			return "WiiU";
 		} else if (value.contains("nintendo wii")) {
 			return "Wii";
+		} else if (value.contains("wii")) { // make sure this check comes after checks for "wii u"
+			return "Wii";
 		} else if (value.contains("nintendo 3ds")) {
 			return "3DS";
+		} else if (value.contains("nintendo switch")) {
+			return "NintendoSwitch";
 		} else if (value.contains("directx")) {
 			return "WindowsGame";
 		}else{
