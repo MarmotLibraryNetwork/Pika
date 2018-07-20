@@ -668,7 +668,8 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		if (itemSublocation.length() > 0){
 			itemInfo.setSubLocation(translateValue("sub_location", itemSublocation, identifier));
 		}
-		itemInfo.setITypeCode(getItemSubfieldData(iTypeSubfield, itemField));
+		String iTypeValue = getItemSubfieldData(iTypeSubfield, itemField);
+		itemInfo.setITypeCode(iTypeValue);
 		itemInfo.setIType(translateValue("itype", getItemSubfieldData(iTypeSubfield, itemField), identifier));
 		loadItemCallNumber(record, itemField, itemInfo);
 		itemInfo.setItemIdentifier(getItemSubfieldData(itemRecordNumberSubfieldIndicator, itemField));
@@ -1502,6 +1503,8 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	private void getFormatFromDigitalFileCharacteristics(Record record, LinkedHashSet<String> printFormats) {
 		Set<String> fields = MarcUtil.getFieldList(record, "347b");
 		for (String curField : fields){
+			if (curField.equalsIgnoreCase("4K Ultra HD Blu-ray"))
+				printFormats.add("4KUltraBlu-Ray");
 			if (curField.equalsIgnoreCase("Blu-Ray")){
 				printFormats.add("Blu-ray");
 			}else if (curField.equalsIgnoreCase("DVD video")){
@@ -1566,6 +1569,12 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		}
 		if (printFormats.contains("Blu-ray") && printFormats.contains("VideoDisc")){
 			printFormats.remove("VideoDisc");
+		}
+		if (printFormats.contains("4KUltraBlu-Ray") && printFormats.contains("VideoDisc")){
+			printFormats.remove("VideoDisc");
+		}
+		if (printFormats.contains("Blu-ray") && printFormats.contains("4KUltraBlu-Ray")){
+			printFormats.remove("Blu-ray");
 		}
 		if (printFormats.contains("SoundDisc") && printFormats.contains("SoundRecording")){
 			printFormats.remove("SoundRecording");
@@ -1633,6 +1642,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			printFormats.remove("Electronic");
 			printFormats.remove("CDROM");
 			printFormats.remove("Blu-ray");
+			printFormats.remove("4KUltraBlu-Ray");
 		}
 	}
 
@@ -1750,6 +1760,8 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 						String physicalDescriptionData = subfield.getData().toLowerCase();
 						if (physicalDescriptionData.contains("large type") || physicalDescriptionData.contains("large print")) {
 							result.add("LargePrint");
+						} else if (physicalDescriptionData.contains("4k ultra hd blu-ray") || physicalDescriptionData.contains("4k ultra hd bluray")) {
+							result.add("4KUltraBlu-Ray");
 						} else if (physicalDescriptionData.contains("bluray") || physicalDescriptionData.contains("blu-ray")) {
 							result.add("Blu-ray");
 						} else if (physicalDescriptionData.contains("computer optical disc")) {
@@ -1781,6 +1793,8 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				}else{
 					if (sysDetailsValue.contains("playaway")) {
 						result.add("Playaway");
+					} else if (sysDetailsValue.contains("4k ultra hd blu-ray") || sysDetailsValue.contains("4k ultra hd bluray") || sysDetailsValue.contains("4k ultrahd blu-ray") || sysDetailsValue.contains("4k ultra hd bluray") || sysDetailsValue.contains("4k uh blu-ray") || sysDetailsValue.contains("4k uh bluray")) {
+						result.add("4KUltraBlu-Ray");
 					} else if (sysDetailsValue.contains("bluray") || sysDetailsValue.contains("blu-ray")) {
 						result.add("Blu-ray");
 					} else if (sysDetailsValue.contains("dvd")) {
