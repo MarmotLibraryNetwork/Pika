@@ -24,14 +24,14 @@ abstract class SirsiDynixROA extends HorizonAPI
 
 	}
 	// $customRequest is for curl, can be 'PUT', 'DELETE', 'POST'
-	public function getWebServiceResponse($url, $params = null, $sessionToken = null, $customRequest = null, $additionalHeaders = null)
+	public function getWebServiceResponse($url, $params = null, $sessionToken = null, $customRequest = null, $additionalHeaders = null, $alternateClientId = null)
 	{
 		global $configArray;
 		global $logger;
 		$logger->log('WebServiceURL :' .$url, PEAR_LOG_INFO);
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_URL, $url);
-		$clientId = $configArray['Catalog']['clientId'];
+		$clientId = empty($alternateClientId) ? $configArray['Catalog']['clientId'] : $alternateClientId;
 		$headers  = array(
 			'Accept: application/json',
 			'Content-Type: application/json',
@@ -746,9 +746,10 @@ abstract class SirsiDynixROA extends HorizonAPI
 				global $configArray;
 				$overrideCode = $configArray['Catalog']['selfRegOverrideCode'];
 				$overrideHeaders = array('SD-Prompt-Return:USER_PRIVILEGE_OVRCD/'.$overrideCode);
+				$selfRegClientID = $configArray['Catalog']['selfRegClientId'];
 
 
-				$createNewPatronResponse = $this->getWebServiceResponse($webServiceURL . '/v1/user/patron/', $createPatronInfoParameters, $sessionToken, 'POST', $overrideHeaders);
+				$createNewPatronResponse = $this->getWebServiceResponse($webServiceURL . '/v1/user/patron/', $createPatronInfoParameters, $sessionToken, 'POST', $overrideHeaders, $selfRegClientID);
 
 				if (isset($createNewPatronResponse->messageList)) {
 					foreach ($createNewPatronResponse->messageList as $message) {
@@ -1622,6 +1623,15 @@ abstract class SirsiDynixROA extends HorizonAPI
 		);
 
 		$webServiceURL = $this->getWebServiceURL();
+
+		// This was an attempt to update PINs with the PIKA_CLIENT clientID and the override code
+		// It is possible a different override code is needed.
+//		global $configArray;
+//		$overrideCode = $configArray['Catalog']['selfRegOverrideCode'];
+//		$overrideHeaders = array('SD-Prompt-Return:USER_PRIVILEGE_OVRCD/'.$overrideCode);
+//
+//		$updatePinResponse = $this->getWebServiceResponse($webServiceURL . "/v1/user/patron/changeMyPin", $params, $sessionToken, 'POST', $overrideHeaders);
+
 
 		$updatePinResponse = $this->getWebServiceResponse($webServiceURL . "/v1/user/patron/changeMyPin", $params, $sessionToken, 'POST');
 		if (!empty($updatePinResponse->patronKey) && $updatePinResponse->patronKey ==  $patron->username) {
