@@ -1633,6 +1633,9 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		if (printFormats.contains("LargePrint") && printFormats.contains("Manuscript")){
 			printFormats.remove("Manuscript");
 		}
+		if (printFormats.contains("Wii") && printFormats.contains("WiiU")){
+			printFormats.remove("Wii");
+		}
 		if (printFormats.contains("Kinect") || printFormats.contains("XBox360")  || printFormats.contains("Xbox360")
 				|| printFormats.contains("XBoxOne") || printFormats.contains("PlayStation")
 				|| printFormats.contains("PlayStation3") || printFormats.contains("PlayStation4")
