@@ -40,11 +40,13 @@ class ExtractOverDriveInfo {
 	//Overdrive API information
 	private String clientSecret;
 	private String clientKey;
-	private String accountId;
+//	private String accountId;
+	private List<String> accountIds = new ArrayList<String>();
 	private String overDriveAPIToken;
 	private String overDriveAPITokenType;
 	private long overDriveAPIExpiration;
-	private String overDriveProductsKey;
+//	private String overDriveProductsKey;
+	private TreeMap<String, String> overDriveProductsKeys = new TreeMap<>();;  // specifically <AccountId, overDriveProductsKey>
 	private boolean forceMetaDataUpdate;
 	private TreeMap<Long, String> libToOverDriveAPIKeyMap = new TreeMap<>();
 	private HashMap<String, Long> overDriveFormatMap = new HashMap<>();
@@ -161,6 +163,27 @@ class ExtractOverDriveInfo {
 				markAllAsNeedingUpdatesStmt.executeUpdate();
 			}
 
+
+			String[] tempAccountIds = Util.cleanIniValue(configIni.get("OverDrive", "accountId")).split(",");
+			String[] tempProductKeys = Util.cleanIniValue(configIni.get("OverDrive", "productsKey")).split(",");
+
+			if (tempProductKeys.length == 0) {
+				logger.warn("Warning no products key provided for OverDrive in configuration file.");
+			}
+
+			Integer i = 0;
+			for (String tempAccountId : tempAccountIds) {
+				String tempId = tempAccountId.trim();
+				String tempProductKey = tempProductKeys[i++].trim();
+				if (tempId.length() > 0) {
+					accountIds.add(tempId);
+					if (tempProductKey.length() > 0){
+						overDriveProductsKeys.put(tempId, tempProductKey);
+					}
+				}
+			}
+
+
 			if (individualIdToProcess == null) {
 				//Load last extract time regardless of if we are doing full index or partial index
 				PreparedStatement getVariableStatement = vufindConn.prepareStatement("SELECT * FROM variables where name = 'last_overdrive_extract_time'");
@@ -197,17 +220,12 @@ class ExtractOverDriveInfo {
 			while (advantageCollectionMapRS.next()){
 				advantageCollectionToLibMap.put(advantageCollectionMapRS.getString(2), advantageCollectionMapRS.getLong(1));
 				libToOverDriveAPIKeyMap.put(advantageCollectionMapRS.getLong(1), advantageCollectionMapRS.getString(3));
+				//TODO: probably need to include accountID of a particular advantage library in the libToOverDriveAPIKeyMap
 			}
 			
 			//Load products from API 
 			clientSecret = Util.cleanIniValue(configIni.get("OverDrive", "clientSecret"));
 			clientKey = Util.cleanIniValue(configIni.get("OverDrive", "clientKey"));
-			accountId = Util.cleanIniValue(configIni.get("OverDrive", "accountId"));
-			
-			overDriveProductsKey = configIni.get("OverDrive", "productsKey");
-			if (overDriveProductsKey == null){
-				logger.warn("Warning no products key provided for OverDrive");
-			}
 			String forceMetaDataUpdateStr = configIni.get("OverDrive", "forceMetaDataUpdate");
 			forceMetaDataUpdate = forceMetaDataUpdateStr != null && Boolean.parseBoolean(forceMetaDataUpdateStr);
 			
@@ -231,7 +249,7 @@ class ExtractOverDriveInfo {
 			overDriveFormatMap.put("ebook-mediado", 303L);
 
 			try {
-				if (clientSecret == null || clientKey == null || accountId == null || clientSecret.length() == 0 || clientKey.length() == 0 || accountId.length() == 0) {
+				if (clientSecret == null || clientKey == null || clientSecret.length() == 0 || clientKey.length() == 0 || accountIds.isEmpty()) {
 					logEntry.addNote("Did not find correct configuration in config.ini, not loading overdrive titles");
 				} else {
 					if (individualIdToProcess == null) {
@@ -306,7 +324,16 @@ class ExtractOverDriveInfo {
 
 
 			//Add the main collection to make iteration easier later
-			libToOverDriveAPIKeyMap.put(-1L, overDriveProductsKey);
+//			libToOverDriveAPIKeyMap.put(-1L, overDriveProductsKey);
+			//TODO: multiple products keys
+
+			for (Map.Entry<String, String> entry : overDriveProductsKeys.entrySet()) {
+				String accountId = entry.getKey();
+				String productKey = entry.getValue();
+				Long sharedCollectionId = ( accountIds.indexOf(accountId) + 1) * -1L;
+				libToOverDriveAPIKeyMap.put(sharedCollectionId, productKey);
+
+			}
 
 			ArrayList<MetaAvailUpdateData> productsToUpdate = new ArrayList<>();
 			while (productsNeedingUpdatesRS.next()) {
@@ -330,7 +357,7 @@ class ExtractOverDriveInfo {
 				ArrayList<MetaAvailUpdateData> productsToUpdateBatch = new ArrayList<>();
 				for (int i = 0; i < maxIndex; i++){
 					productsToUpdateBatch.add(productsToUpdate.get(i));
-					sharedStatsHashMap.put(productsToUpdate.get(i).overDriveId, new SharedStats());
+					sharedStatsHashMap.put(productsToUpdate.get(i).overDriveId, new SharedStats()); //TODO: handle for multiple shared collections
 				}
 				productsToUpdate.removeAll(productsToUpdateBatch);
 				//Loop through the libraries first and then the products so we can get data as a batch.
@@ -551,93 +578,107 @@ class ExtractOverDriveInfo {
 		
 	}
 	private boolean loadProductsFromAPI() throws SocketTimeoutException {
-		WebServiceResponse libraryInfoResponse = callOverDriveURL("https://api.overdrive.com/v1/libraries/" + accountId);
-		if (libraryInfoResponse.getResponseCode() == 200 && libraryInfoResponse.getResponse() != null){
-			JSONObject libraryInfo = libraryInfoResponse.getResponse();
-			try {
-				String mainLibraryName = libraryInfo.getString("name");
-				String mainProductUrl = libraryInfo.getJSONObject("links").getJSONObject("products").getString("href");
-				if (lastUpdateTimeParam.length() > 0) {
-					if (mainProductUrl.contains("?")) {
-						mainProductUrl += "&" + lastUpdateTimeParam;
-					} else {
-						mainProductUrl += "?" + lastUpdateTimeParam;
+		Long sharedCollection = 0L;
+		for (String accountId : accountIds) {
+			sharedCollection--;
+			if (accountId.equalsIgnoreCase("2323")) { //TODO: temp short cut
+				continue;
+			}
+			WebServiceResponse libraryInfoResponse = callOverDriveURL("https://api.overdrive.com/v1/libraries/" + accountId);
+			if (libraryInfoResponse.getResponseCode() == 200 && libraryInfoResponse.getResponse() != null) {
+				JSONObject libraryInfo = libraryInfoResponse.getResponse();
+				try {
+					String mainLibraryName = libraryInfo.getString("name");
+					// Get Products Keys from API instead
+//					String productsKey = libraryInfo.getString("collectionToken");
+//					if (productsKey.length() > 0) {
+//						overDriveProductsKey = productsKey;
+//						//TODO: multiple product keys
+//					} else {
+//						logger.warn("Warning no products key found from OverDrive API call.");
+//					}
+					String mainProductUrl = libraryInfo.getJSONObject("links").getJSONObject("products").getString("href");
+					if (lastUpdateTimeParam.length() > 0) {
+						if (mainProductUrl.contains("?")) {
+							mainProductUrl += "&" + lastUpdateTimeParam;
+						} else {
+							mainProductUrl += "?" + lastUpdateTimeParam;
+						}
 					}
-				}
-				loadProductsFromUrl(mainLibraryName, mainProductUrl);
-				logger.info("loaded " + overDriveTitles.size() + " overdrive titles in shared collection");
-				//Get a list of advantage collections
-				if (libraryInfo.getJSONObject("links").has("advantageAccounts")) {
-					WebServiceResponse webServiceResponse = callOverDriveURL(libraryInfo.getJSONObject("links").getJSONObject("advantageAccounts").getString("href"));
-					if (webServiceResponse.getResponseCode() == 200) {
-						JSONObject advantageInfo = webServiceResponse.getResponse();
-						if (advantageInfo.has("advantageAccounts")) {
-							JSONArray advantageAccounts = advantageInfo.getJSONArray("advantageAccounts");
-							for (int i = 0; i < advantageAccounts.length(); i++) {
-								JSONObject curAdvantageAccount = advantageAccounts.getJSONObject(i);
-								String advantageSelfUrl = curAdvantageAccount.getJSONObject("links").getJSONObject("self").getString("href");
-								WebServiceResponse advantageWebServiceResponse = callOverDriveURL(advantageSelfUrl);
-								if (advantageWebServiceResponse.getResponseCode() == 200) {
-									JSONObject advantageSelfInfo = advantageWebServiceResponse.getResponse();
-									if (advantageSelfInfo != null) {
-										String advantageName = curAdvantageAccount.getString("name");
-										String productUrl = advantageSelfInfo.getJSONObject("links").getJSONObject("products").getString("href");
-										if (lastUpdateTimeParam.length() > 0) {
-											if (productUrl.contains("?")) {
-												productUrl += "&" + lastUpdateTimeParam;
-											} else {
-												productUrl += "?" + lastUpdateTimeParam;
+					loadProductsFromUrl(mainLibraryName, mainProductUrl, accountId);
+					logger.info("loaded " + overDriveTitles.size() + " overdrive titles in shared collection " + sharedCollection.toString());
+					//Get a list of advantage collections
+					if (libraryInfo.getJSONObject("links").has("advantageAccounts")) {
+						WebServiceResponse webServiceResponse = callOverDriveURL(libraryInfo.getJSONObject("links").getJSONObject("advantageAccounts").getString("href"));
+						if (webServiceResponse.getResponseCode() == 200) {
+							JSONObject advantageInfo = webServiceResponse.getResponse();
+							if (advantageInfo.has("advantageAccounts")) {
+								JSONArray advantageAccounts = advantageInfo.getJSONArray("advantageAccounts");
+								for (int i = 0; i < advantageAccounts.length(); i++) {
+									JSONObject curAdvantageAccount = advantageAccounts.getJSONObject(i);
+									String advantageSelfUrl = curAdvantageAccount.getJSONObject("links").getJSONObject("self").getString("href");
+									WebServiceResponse advantageWebServiceResponse = callOverDriveURL(advantageSelfUrl);
+									if (advantageWebServiceResponse.getResponseCode() == 200) {
+										JSONObject advantageSelfInfo = advantageWebServiceResponse.getResponse();
+										if (advantageSelfInfo != null) {
+											String advantageName = curAdvantageAccount.getString("name");
+											String productUrl = advantageSelfInfo.getJSONObject("links").getJSONObject("products").getString("href");
+											if (lastUpdateTimeParam.length() > 0) {
+												if (productUrl.contains("?")) {
+													productUrl += "&" + lastUpdateTimeParam;
+												} else {
+													productUrl += "?" + lastUpdateTimeParam;
+												}
 											}
-										}
 
-										Long advantageLibraryId = getLibraryIdForOverDriveAccount(advantageName);
-										if (advantageLibraryId != -1L){
-											loadProductsFromUrl(advantageName, productUrl);
-										}else{
-											logger.info("Skipping advantage account " + advantageName + " because it does not have a Pika library");
-										}
+											Long advantageLibraryId = getLibraryIdForOverDriveAccount(advantageName, accountId);
+											if (advantageLibraryId > 0L) {
+												loadProductsFromUrl(advantageName, productUrl, accountId);
+											} else {
+												logger.info("Skipping advantage account " + advantageName + " because it does not have a Pika library");
+											}
 
-									}
-								} else {
-									results.addNote("Unable to load advantage information for " + advantageSelfUrl);
-									if (advantageWebServiceResponse.getError() != null) {
-										results.addNote(advantageWebServiceResponse.getError());
+										}
+									} else {
+										results.addNote("Unable to load advantage information for " + advantageSelfUrl);
+										if (advantageWebServiceResponse.getError() != null) {
+											results.addNote(advantageWebServiceResponse.getError());
+										}
 									}
 								}
 							}
+						} else {
+							results.addNote("The API indicate that the library has advantage accounts, but none were returned from " + libraryInfo.getJSONObject("links").getJSONObject("advantageAccounts").getString("href"));
+							if (webServiceResponse.getError() != null) {
+								results.addNote(webServiceResponse.getError());
+							}
+							results.incErrors();
 						}
-					} else {
-						results.addNote("The API indicate that the library has advantage accounts, but none were returned from " + libraryInfo.getJSONObject("links").getJSONObject("advantageAccounts").getString("href"));
-						if (webServiceResponse.getError() != null) {
-							results.addNote(webServiceResponse.getError());
-						}
-						results.incErrors();
+						logger.info("loaded " + overDriveTitles.size() + " overdrive titles in shared collection(s) and advantage collections");
 					}
-					logger.info("loaded " + overDriveTitles.size() + " overdrive titles in shared collection and advantage collections");
+					results.setNumProducts(overDriveTitles.size());
+				} catch (SocketTimeoutException toe) {
+					throw toe;
+				} catch (Exception e) {
+					results.addNote("error loading information from OverDrive API " + e.toString());
+					results.incErrors();
+					logger.info("Error loading overdrive titles", e);
+					return false;
 				}
-				results.setNumProducts(overDriveTitles.size());
-				return true;
-			} catch (SocketTimeoutException toe){
-				throw toe;
-			} catch (Exception e) {
-				results.addNote("error loading information from OverDrive API " + e.toString());
+			} else {
+				results.addNote("Unable to load library information for library " + accountId);
+				if (libraryInfoResponse.getError() != null) {
+					results.addNote(libraryInfoResponse.getError());
+				}
 				results.incErrors();
-				logger.info("Error loading overdrive titles", e);
+				logger.info("Error loading overdrive titles " + libraryInfoResponse.getError());
 				return false;
 			}
-		}else{
-			results.addNote("Unable to load library information for library " + accountId);
-			if (libraryInfoResponse.getError() != null){
-				results.addNote(libraryInfoResponse.getError());
-			}
-			results.incErrors();
-			logger.info("Error loading overdrive titles " + libraryInfoResponse.getError());
-			return false;
 		}
-
+		return true;
 	}
 
-	private void loadProductsFromUrl(String libraryName, String mainProductUrl) throws JSONException, SocketTimeoutException {
+	private void loadProductsFromUrl(String libraryName, String mainProductUrl, String accountId) throws JSONException, SocketTimeoutException {
 		WebServiceResponse productsResponse = callOverDriveURL(mainProductUrl);
 		if (productsResponse.getResponseCode() == 200) {
 			JSONObject productInfo = productsResponse.getResponse();
@@ -645,7 +686,7 @@ class ExtractOverDriveInfo {
 				return;
 			}
 			long numProducts = productInfo.getLong("totalItems");
-			Long libraryId = getLibraryIdForOverDriveAccount(libraryName);
+			Long libraryId = getLibraryIdForOverDriveAccount(libraryName, accountId);
 			//if (numProducts > 50) numProducts = 50;
 			logger.info(libraryName + " collection has " + numProducts + " products in it.  The libraryId for the collection is " + libraryId);
 			results.addNote("Loading OverDrive information for " + libraryName);
@@ -745,11 +786,14 @@ class ExtractOverDriveInfo {
 		return curRecord;
 	}
 
-	private Long getLibraryIdForOverDriveAccount(String libraryName) {
+	private Long getLibraryIdForOverDriveAccount(String libraryName, String accountId) {
 		if (advantageCollectionToLibMap.containsKey(libraryName)){
 			return advantageCollectionToLibMap.get(libraryName);
+		} else {
+			long sharedCollectionId = (accountIds.indexOf(accountId) + 1) * -1L;
+			return sharedCollectionId;
 		}
-		return -1L;
+
 	}
 
 	private boolean updateOverDriveMetaData(OverDriveRecordInfo overDriveInfo, long databaseId, OverDriveDBInfo dbInfo) throws SocketTimeoutException {
@@ -766,8 +810,8 @@ class ExtractOverDriveInfo {
 		//Get the url to call for meta data information (based on the first owning collection)
 		long firstCollection = overDriveInfo.getCollections().iterator().next();
 		String apiKey;
-		if (firstCollection == -1L){
-			apiKey = overDriveProductsKey;
+		if (firstCollection < 0L){
+			apiKey = getProductsKeyforSharedCollection(firstCollection);
 		}else{
 			apiKey = libToOverDriveAPIKeyMap.get(firstCollection);
 		}
@@ -1061,6 +1105,7 @@ class ExtractOverDriveInfo {
 									logger.debug("Product " + curProduct.overDriveId + " is not owned by the shared collection, checking advantage collections.");
 									//Sometimes a product is owned by just advantage accounts so we need to check those accounts too
 									for (String advantageKey : libToOverDriveAPIKeyMap.values()){
+										// TODO: will this accidentally iterate through other accounts' non-advantage collections?
 										url = "https://api.overdrive.com/v1/collections/" +advantageKey+ "/products/" + curProduct.overDriveId + "/metadata";
 										WebServiceResponse advantageMetaDataResponse = callOverDriveURL(url);
 										if (advantageMetaDataResponse.getResponseCode() != 200){
@@ -1364,8 +1409,8 @@ class ExtractOverDriveInfo {
 				boolean hasExistingAvailability = existingAvailabilityRS.next();
 
 				String apiKey;
-				if (curCollection == -1L){
-					apiKey = overDriveProductsKey;
+				if (curCollection < 0L){
+					apiKey = getProductsKeyforSharedCollection(curCollection);
 				}else{
 					apiKey = libToOverDriveAPIKeyMap.get(curCollection);
 				}
@@ -1400,9 +1445,9 @@ class ExtractOverDriveInfo {
 						for (int i = 0; i < allAccounts.length(); i++){
 							accountData = allAccounts.getJSONObject(i);
 							long accountId = accountData.getLong("id");
-							if (curCollection == -1L && accountId == -1L){
+							if (curCollection < 0 && accountId == -1L){
 								break;
-							}else if (curCollection != -1L && accountId != -1L){
+							}else if (curCollection > 0 && accountId != -1L){
 								//These don't match because overdrive has it's own number scheme.  There is only one that is not -1 though
 								break;
 							}else{
@@ -1424,7 +1469,7 @@ class ExtractOverDriveInfo {
 								shared = accountData.getBoolean("shared");
 							}
 							int numberOfHolds;
-							if (curCollection == -1) {
+							if (curCollection < 0) {
 								numberOfHolds = availability.getInt("numberOfHolds");
 							}else{
 								numberOfHolds = 0;
@@ -1658,9 +1703,10 @@ class ExtractOverDriveInfo {
 					logger.warn("copiesAvailable was not provided for library " + libraryId + " title " + curProduct.overDriveId);
 					copiesAvailable = 0;
 				}
-				if (libraryId == -1){
+				if (libraryId < 0){
 					sharedStats.copiesOwnedByShared = copiesOwned;
 					sharedStats.copiesAvailableInShared = copiesAvailable;
+					//TODO:  libraryId for the shared collection may now need to be included
 				}else{
 					if (copiesOwned < sharedStats.copiesOwnedByShared){
 						logger.warn("Copies owned " + copiesOwned + " was less than copies owned by the shared collection " + sharedStats.copiesOwnedByShared + " for libraryId " + libraryId + " product " + curProduct.overDriveId);
@@ -1684,7 +1730,7 @@ class ExtractOverDriveInfo {
 				}
 				//Don't restrict this to only the library since it could be owned by an advantage library only.
 				int numberOfHolds;
-				if (libraryId == -1 || sharedStats.copiesOwnedByShared > 0) {
+				if (libraryId < 0 || sharedStats.copiesOwnedByShared > 0) {
 					numberOfHolds = availability.getInt("numberOfHolds");
 				}else{
 					numberOfHolds = 0;
@@ -1771,9 +1817,9 @@ class ExtractOverDriveInfo {
 				for (int i = 0; i < allAccounts.length(); i++) {
 					accountData = allAccounts.getJSONObject(i);
 					long accountId = accountData.getLong("id");
-					if (libraryId == -1L && accountId == -1L) {
+					if (libraryId < 0 && accountId == -1L) {
 						break;
-					} else if (libraryId != -1L && accountId != -1L) {
+					} else if (libraryId > 0 && accountId != -1L) {
 						//These don't match because overdrive has it's own number scheme.  There is only one that is not -1 though
 						break;
 					} else {
@@ -1795,7 +1841,7 @@ class ExtractOverDriveInfo {
 						shared = accountData.getBoolean("shared");
 					}
 					int numberOfHolds;
-					if (libraryId == -1) {
+					if (libraryId < 0) {
 						numberOfHolds = availability.getInt("numberOfHolds");
 					} else {
 						numberOfHolds = 0;
@@ -1950,7 +1996,7 @@ class ExtractOverDriveInfo {
 				//logger.debug("token is still valid");
 				return true;
 			}else{
-				logger.debug("Token has exipred");
+				logger.debug("Token has expired");
 			}
 		}
 		//Connect to the API to get our token
@@ -2042,5 +2088,17 @@ class ExtractOverDriveInfo {
 		} catch (Exception e) {
 			logger.error("Error setting partial extract running", e);
 		}
+	}
+
+	private String getProductsKeyforSharedCollection(Long sharedCollectionId) {
+		Integer i = (int) (Math.abs(sharedCollectionId) - 1);
+		if (i < accountIds.size()) {
+			String accountId = accountIds.get(i);
+			String productsKey = overDriveProductsKeys.get(accountId);
+			return productsKey;
+		} else {
+			logger.debug("Shared Collection ID '" + sharedCollectionId.toString() + "' doesn't have a matching Overdrive Account Id. Failed to get corresponding Products key.");
+		}
+		return "";
 	}
 }
