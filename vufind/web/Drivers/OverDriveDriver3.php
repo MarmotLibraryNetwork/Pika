@@ -53,10 +53,11 @@ class OverDriveDriver3 {
 	private function _connectToAPI($forceNewConnection = false){
 		/** @var Memcache $memCache */
 		global $memCache;
-		$tokenData = $memCache->get('overdrive_token');
+		global $serverName;
+		$tokenData = $memCache->get('overdrive_token' . $serverName);
 		if ($forceNewConnection || $tokenData == false){
 			global $configArray;
-			if (isset($configArray['OverDrive']['clientKey']) && $configArray['OverDrive']['clientKey'] != '' && isset($configArray['OverDrive']['clientSecret']) && $configArray['OverDrive']['clientSecret'] != ''){
+			if (!empty($configArray['OverDrive']['clientKey'])  && !empty($configArray['OverDrive']['clientSecret'])){
 				$ch = curl_init("https://oauth.overdrive.com/token");
 				curl_setopt($ch, CURLOPT_USERAGENT,"Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)");
 				curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -73,7 +74,7 @@ class OverDriveDriver3 {
 				curl_close($ch);
 				$tokenData = json_decode($return);
 				if ($tokenData){
-					$memCache->set('overdrive_token', $tokenData, 0, $tokenData->expires_in - 10);
+					$memCache->set('overdrive_token' . $serverName, $tokenData, 0, $tokenData->expires_in - 10);
 				}
 			}else{
 				//OverDrive is not configured
@@ -179,6 +180,7 @@ class OverDriveDriver3 {
 			curl_setopt($ch, CURLOPT_TIMEOUT, 10);
 			curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 1);
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 			$return = curl_exec($ch);
 			curl_close($ch);
 			$returnVal = json_decode($return);
