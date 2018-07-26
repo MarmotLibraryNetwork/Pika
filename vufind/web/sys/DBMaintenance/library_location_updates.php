@@ -1713,5 +1713,12 @@ function getLibraryLocationUpdates(){
 			),
 		),
 
+		'Add_option_for_multiple_shared_overdrive_accounts' => array(
+			'title' => 'Shared Overdrive Collection',
+			'description' => 'Add an option to set which shared overdrive collection to use when integrating with multiple Overdrive Accounts',
+			'sql' => array(
+				'ALTER TABLE `library` ADD COLUMN `sharedOverdriveCollection` TINYINT(1) DEFAULT -1;',
+			)
+		)
 	);
 }
