@@ -179,7 +179,7 @@ public class GroupedWork1 extends GroupedWorkBase implements Cloneable {
 		groupingTitle = groupingTitle.trim();
 		if (groupingTitle.length() == 0){
 			if (!fullTitle.startsWith("By") && !fullTitle.startsWith("by")){
-				logger.error("Title " + fullTitle + " was normalized to nothing");
+				logger.error("Title '" + fullTitle + "' was normalized to nothing");
 			}
 			groupingTitle = fullTitle;
 		}
