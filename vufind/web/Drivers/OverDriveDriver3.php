@@ -425,32 +425,6 @@ class OverDriveDriver3 {
 		return $this->_callUrl($availabilityUrl);
 	}
 
-	private function _parseLendingOptions($lendingPeriods){
-		$lendingOptions = array();
-		//print_r($lendingPeriods);
-		if (preg_match('/<script>.*?var hazVariableLending.*?<\/script>.*?<noscript>(.*?)<\/noscript>/si', $lendingPeriods, $matches)){
-			preg_match_all('/<li>\\s?\\d+\\s-\\s(.*?)<select name="(.*?)">(.*?)<\/select><\/li>/si', $matches[1], $lendingPeriodInfo, PREG_SET_ORDER);
-			for ($i = 0; $i < count($lendingPeriodInfo); $i++){
-				$lendingOption = array();
-				$lendingOption['name'] = $lendingPeriodInfo[$i][1];
-				$lendingOption['id'] = $lendingPeriodInfo[$i][2];
-				$options = $lendingPeriodInfo[$i][3];
-				$lendingOption['options']= array();
-				preg_match_all('/<option value="(.*?)".*?(selected="selected")?>(.*?)<\/option>/si', $options, $optionInfo, PREG_SET_ORDER);
-				for ($j = 0; $j < count($optionInfo); $j++){
-					$option = array();
-					$option['value'] = $optionInfo[$j][1];
-					$option['selected'] = strlen($optionInfo[$j][2]) > 0;
-					$option['name'] = $optionInfo[$j][3];
-					$lendingOption['options'][] = $option;
-				}
-				$lendingOptions[] = $lendingOption;
-			}
-		}
-		//print_r($lendingOptions);
-		return $lendingOptions;
-	}
-
 	private $checkouts = array();
 
 	/**
@@ -458,7 +432,7 @@ class OverDriveDriver3 {
 	 *
 	 * @param User $user
 	 * @param array $overDriveInfo optional array of information loaded from _loginToOverDrive to improve performance.
-	 *
+	 * @param bool $forSummary
 	 * @return array
 	 */
 	public function getOverDriveCheckedOutItems($user, $overDriveInfo = null, $forSummary = false){
@@ -592,6 +566,7 @@ class OverDriveDriver3 {
 	/**
 	 * @param User $user
 	 * @param null $overDriveInfo
+	 * @param bool $forSummary
 	 * @return array
 	 */
 	public function getOverDriveHolds($user, $overDriveInfo = null, $forSummary = false){
@@ -720,7 +695,6 @@ class OverDriveDriver3 {
 	 * Places a hold on an item within OverDrive
 	 *
 	 * @param string $overDriveId
-	 * @param int $format
 	 * @param User $user
 	 *
 	 * @return array (result, message)
