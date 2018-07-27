@@ -85,6 +85,14 @@ class OverDriveDriver3 {
 	}
 
 	//private function _connectToPatronAPI($patronBarcode, $patronPin = 1234, $forceNewConnection = false){
+
+	/**
+	 * @param User $user
+	 * @param $patronBarcode
+	 * @param $patronPin
+	 * @param bool $forceNewConnection
+	 * @return array|bool|mixed|string
+	 */
 	private function _connectToPatronAPI($user, $patronBarcode, $patronPin, $forceNewConnection = false){
 		/** @var Memcache $memCache */
 		global $memCache;
@@ -96,10 +104,20 @@ class OverDriveDriver3 {
 			if ($tokenData){
 				global $configArray;
 				$ch = curl_init("https://oauth-patron.overdrive.com/patrontoken");
-				if (!isset($configArray['OverDrive']['patronWebsiteId'])){
+				if (empty($configArray['OverDrive']['patronWebsiteId'])){
 					return false;
+				} elseif (strpos($configArray['OverDrive']['patronWebsiteId'], ',') > 0) {
+					//Multiple Overdrive Accounts
+					$patronWebsiteIds = explode(',', $configArray['OverDrive']['patronWebsiteId']);
+					$homeLibrary = $user->getHomeLibrary();
+					$overdriveSharedCollectionId = $homeLibrary->sharedOverdriveCollection;
+					// Shared collection Id numbers are negative and based on the order accountIds of $configArray['OverDrive']['accountId']
+					// (patron website ids need to have the same matching order)
+					$indexOfSiteToUse = abs($overdriveSharedCollectionId) - 1;
+					$websiteId = $patronWebsiteIds[$indexOfSiteToUse];
+				} else {
+					$websiteId = $configArray['OverDrive']['patronWebsiteId'];
 				}
-				$websiteId = $configArray['OverDrive']['patronWebsiteId'];
 				//$websiteId = 100300;
 
 				$ilsname = $this->getILSName($user);
@@ -108,7 +126,7 @@ class OverDriveDriver3 {
 				}
 				//$ilsname = "default";
 
-				if (!isset($configArray['OverDrive']['clientSecret'])){
+				if (empty($configArray['OverDrive']['clientSecret'])){
 					return false;
 				}
 				$clientSecret = $configArray['OverDrive']['clientSecret'];
@@ -244,6 +262,7 @@ class OverDriveDriver3 {
 		$userBarcode = $user->getBarcode();
 		if ($this->getRequirePin($user)){
 			$barcodeProperty = $configArray['Catalog']['barcodeProperty'];
+			//TODO: this should use the account profile property instead
 			$userPin = ($barcodeProperty == 'cat_username') ? $user->cat_password : $user->cat_username;
 				// determine which column is the pin by using the opposing field to the barcode. (between pin & username)
 			$tokenData = $this->_connectToPatronAPI($user, $userBarcode, $userPin, false);
@@ -295,7 +314,7 @@ class OverDriveDriver3 {
 			}
 			curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 
-				$return = curl_exec($ch);
+			$return = curl_exec($ch);
 			$curlInfo = curl_getinfo($ch);
 			curl_close($ch);
 			$returnVal = json_decode($return);
