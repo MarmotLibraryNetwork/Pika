@@ -112,53 +112,46 @@ class SacramentoRecordProcessor extends IIIRecordProcessor {
         }else{
             //No items so we can continue on.
 
-            //Get the url
-            String url = MarcUtil.getFirstFieldVal(record, "856u");
+            String specifiedEcontentSource = MarcUtil.getFirstFieldVal(record, "901a");
+            if (specifiedEcontentSource != null){
+                //Get the url
+                String url = MarcUtil.getFirstFieldVal(record, "856u");
 
-            if (url != null /*&& !url.toLowerCase().contains("lib.overdrive.com")*/){
+                if (url != null){
 
-                //Get the bib location
-                String bibLocation = null;
-                Set<String> bibLocations = MarcUtil.getFieldList(record, sierraRecordFixedFieldsTag + "a");
-                for (String tmpBibLocation : bibLocations){
-                    if (tmpBibLocation.matches("[a-zA-Z]{1,5}")){
-                        bibLocation = tmpBibLocation;
-                        break;
+                    //Get the bib location
+                    String bibLocation = null;
+                    Set<String> bibLocations = MarcUtil.getFieldList(record, sierraRecordFixedFieldsTag + "a");
+                    for (String tmpBibLocation : bibLocations){
+                        if (tmpBibLocation.matches("[a-zA-Z]{1,5}")){
+                            bibLocation = tmpBibLocation;
+                            break;
 //                }else if (tmpBibLocation.matches("\\(\\d+\\)([a-zA-Z]{1,5})")){
 //                    bibLocation = tmpBibLocation.replaceAll("\\(\\d+\\)", "");
 //                    break;
+                        }
                     }
+
+                    ItemInfo itemInfo = new ItemInfo();
+                    itemInfo.setIsEContent(true);
+                    itemInfo.setLocationCode(bibLocation);
+                    itemInfo.seteContentProtectionType("external");
+                    itemInfo.setCallNumber("Online");
+                    itemInfo.seteContentSource(specifiedEcontentSource);
+//                  itemInfo.setShelfLocation(econtentSource); // this sets the owning location facet.  This isn't needed for Sacramento
+                    itemInfo.setIType("eCollection");
+                    itemInfo.setDetailedStatus("Available Online");
+                    RecordInfo relatedRecord = groupedWork.addRelatedRecord("external_econtent", identifier);
+                    relatedRecord.setSubSource(profileType);
+                    relatedRecord.addItem(itemInfo);
+                    itemInfo.seteContentUrl(url);
+
+                    // Use the same format determination process for the econtent record (should just be the MatType)
+                    loadPrintFormatInformation(relatedRecord, record);
+
+
+                    unsuppressedEcontentRecords.add(relatedRecord);
                 }
-
-                //Get the econtent source
-                String urlLower = url.toLowerCase();
-                String econtentSource = "ils econtent";
-//                //TODO: Determine sources of ILS eContent
-                String specifiedSource = MarcUtil.getFirstFieldVal(record, "901a");
-                if (specifiedSource != null){
-                    econtentSource = specifiedSource;
-                }
-
-
-                ItemInfo itemInfo = new ItemInfo();
-                itemInfo.setIsEContent(true);
-                itemInfo.setLocationCode(bibLocation);
-                itemInfo.seteContentProtectionType("external");
-                itemInfo.setCallNumber("Online");
-                itemInfo.seteContentSource(econtentSource);
-//                itemInfo.setShelfLocation(econtentSource); // this sets the owning location facet.  Don't think this is needed for Sacramento
-                itemInfo.setIType("eCollection");
-                itemInfo.setDetailedStatus("Available Online");
-                RecordInfo relatedRecord = groupedWork.addRelatedRecord("external_econtent", identifier);
-                relatedRecord.setSubSource(profileType);
-                relatedRecord.addItem(itemInfo);
-                itemInfo.seteContentUrl(url);
-
-                // Use the same format determination process for the econtent record (should just be the MatType)
-                loadPrintFormatInformation(relatedRecord, record);
-
-
-                unsuppressedEcontentRecords.add(relatedRecord);
             }
         }
         return unsuppressedEcontentRecords;
