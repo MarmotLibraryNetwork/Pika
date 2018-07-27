@@ -1738,8 +1738,9 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 					result.add("LargePrint");
 				}else if (editionData.contains("go reader")) {
 					result.add("GoReader");
-				} else if (find4KUltraBluRayPhrases(editionData)) {
-					result.add("4KUltraBlu-Ray");
+//				} else if (find4KUltraBluRayPhrases(editionData)) {
+//					result.add("4KUltraBlu-Ray");
+					// not sure this is a good idea yet. see D-2432
 				}else {
 					String gameFormat = getGameFormatFromValue(editionData);
 					if (gameFormat != null) {
