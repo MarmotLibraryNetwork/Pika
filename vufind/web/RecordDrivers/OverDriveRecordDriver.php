@@ -519,7 +519,8 @@ class OverDriveRecordDriver extends RecordInterface {
 			}
 			$libraryScopingId = $this->getLibraryScopingId();
 			if ($includeSharedTitles){
-				$availability->whereAdd('libraryId = -1 OR libraryId = ' . $libraryScopingId);
+				$sharedCollectionId = $searchLibrary->sharedOverdriveCollection;
+				$availability->whereAdd('libraryId = ' . $sharedCollectionId . ' OR libraryId = ' . $libraryScopingId);
 			}else{
 				if ($libraryScopingId == -1){
 					return $this->availability;

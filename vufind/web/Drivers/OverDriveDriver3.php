@@ -1074,12 +1074,14 @@ class OverDriveDriver3 {
 	 */
 	public function getScopedAvailability($overDriveRecordDriver){
 		$availability = array();
-		$availability['mine'] = $overDriveRecordDriver->getAvailability();
+		$availability['mine']  = $overDriveRecordDriver->getAvailability();
 		$availability['other'] = array();
 		$scopingId = $this->getLibraryScopingId();
 		if ($scopingId != -1){
 			foreach ($availability['mine'] as $key => $availabilityItem){
-				if ($availabilityItem->libraryId != -1 && $availabilityItem->libraryId != $scopingId){
+				if ($availabilityItem->libraryId > 0 && $availabilityItem->libraryId != $scopingId){
+					// Move items not in the shared collections and not in the library's advantage collection to the "other" catagory.
+					//TODO: does this need reworked with multiple shared collections
 					$availability['other'][$key] = $availability['mine'][$key];
 					unset($availability['mine'][$key]);
 				}
@@ -1110,29 +1112,29 @@ class OverDriveDriver3 {
 
 		//Load status summary
 		$statusSummary = array();
-		$statusSummary['recordId'] = $id;
-		$statusSummary['totalCopies'] = $totalCopies;
-		$statusSummary['onOrderCopies'] = $onOrderCopies;
-		$statusSummary['accessType'] = 'overdrive';
-		$statusSummary['isOverDrive'] = false;
+		$statusSummary['recordId']        = $id;
+		$statusSummary['totalCopies']     = $totalCopies;
+		$statusSummary['onOrderCopies']   = $onOrderCopies;
+		$statusSummary['accessType']      = 'overdrive';
+		$statusSummary['isOverDrive']     = false;
 		$statusSummary['alwaysAvailable'] = false;
-		$statusSummary['class'] = 'checkedOut';
-		$statusSummary['available'] = false;
-		$statusSummary['status'] = 'Not Available';
+		$statusSummary['class']           = 'checkedOut';
+		$statusSummary['available']       = false;
+		$statusSummary['status']          = 'Not Available';
 
 		$statusSummary['availableCopies'] = $availableCopies;
-		$statusSummary['isOverDrive'] = true;
+		$statusSummary['isOverDrive']     = true;
 		if ($totalCopies >= 999999){
 			$statusSummary['alwaysAvailable'] = true;
 		}
 		if ($availableCopies > 0){
-			$statusSummary['status'] = "Available from OverDrive";
+			$statusSummary['status']    = "Available from OverDrive";
 			$statusSummary['available'] = true;
-			$statusSummary['class'] = 'available';
+			$statusSummary['class']     = 'available';
 		}else{
-			$statusSummary['status'] = 'Checked Out';
-			$statusSummary['available'] = false;
-			$statusSummary['class'] = 'checkedOut';
+			$statusSummary['status']      = 'Checked Out';
+			$statusSummary['available']   = false;
+			$statusSummary['class']       = 'checkedOut';
 			$statusSummary['isOverDrive'] = true;
 		}
 
