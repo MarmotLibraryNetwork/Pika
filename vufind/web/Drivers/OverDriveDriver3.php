@@ -411,7 +411,6 @@ class OverDriveDriver3 {
 		return $this->_callUrl("https://api.overdrive.com/v1/libraries/$overdriveAccountId/advantageAccounts");
 	}
 
-	//TODO: refactor
 	public function getProductsInAccount($overdriveAccountId, $productsUrl = null, $start = 0, $limit = 25){
 		if ($productsUrl == null){
 			$productsUrl = "https://api.overdrive.com/v1/collections/$overdriveAccountId/products";
