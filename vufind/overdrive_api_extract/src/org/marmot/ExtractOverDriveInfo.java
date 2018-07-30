@@ -86,6 +86,7 @@ class ExtractOverDriveInfo {
 	private PreparedStatement deleteAvailabilityStmt;
 	private PreparedStatement updateProductAvailabilityStmt;
 	private PreparedStatement markGroupedWorkForBibAsChangedStmt;
+	private PreparedStatement getSharedCollectionIdForAdvantageLibraryStmt;
 	private boolean hadTimeoutsFromOverDrive;
 	
 	private CRC32 checksumCalculator = new CRC32();
@@ -132,6 +133,7 @@ class ExtractOverDriveInfo {
 			deleteAvailabilityStmt = econtentConn.prepareStatement("DELETE FROM overdrive_api_product_availability where id = ?");
 			updateProductAvailabilityStmt = econtentConn.prepareStatement("UPDATE overdrive_api_products SET lastAvailabilityCheck = ?, lastAvailabilityChange = ? where id = ?");
 			markGroupedWorkForBibAsChangedStmt = vufindConn.prepareStatement("UPDATE grouped_work SET date_updated = ? where id = (SELECT grouped_work_id from grouped_work_primary_identifiers WHERE type = 'overdrive' and identifier = ?)") ;
+			getSharedCollectionIdForAdvantageLibraryStmt = vufindConn.prepareStatement("SELECT sharedOverdriveCollection FROM library WHERE libraryId = ?");
 
 			//Get the last time we extracted data from OverDrive
 			if (individualIdToProcess != null) {
@@ -220,7 +222,6 @@ class ExtractOverDriveInfo {
 			while (advantageCollectionMapRS.next()){
 				advantageCollectionToLibMap.put(advantageCollectionMapRS.getString(2), advantageCollectionMapRS.getLong(1));
 				libToOverDriveAPIKeyMap.put(advantageCollectionMapRS.getLong(1), advantageCollectionMapRS.getString(3));
-				//TODO: probably need to include accountID of a particular advantage library in the libToOverDriveAPIKeyMap
 			}
 			
 			//Load products from API 
@@ -323,16 +324,16 @@ class ExtractOverDriveInfo {
 			}
 
 
-			//Add the main collection to make iteration easier later
-//			libToOverDriveAPIKeyMap.put(-1L, overDriveProductsKey);
-			//TODO: multiple products keys
 
+			TreeMap<Long, HashMap> overdriveAccountsSharedStatsHashMaps = new TreeMap<>();
 			for (Map.Entry<String, String> entry : overDriveProductsKeys.entrySet()) {
 				String accountId = entry.getKey();
 				String productKey = entry.getValue();
 				Long sharedCollectionId = ( accountIds.indexOf(accountId) + 1) * -1L;
 				libToOverDriveAPIKeyMap.put(sharedCollectionId, productKey);
 
+//				HashMap<String, SharedStats> sharedStatsHashMap = new HashMap<>();
+//				overdriveAccountsSharedStatsHashMaps.put(sharedCollectionId, sharedStatsHashMap);
 			}
 
 			ArrayList<MetaAvailUpdateData> productsToUpdate = new ArrayList<>();
@@ -350,21 +351,40 @@ class ExtractOverDriveInfo {
 			int batchSize = 25;
 			int batchNum = 1;
 			while (productsToUpdate.size() > 0){
-				HashMap<String, SharedStats> sharedStatsHashMap = new HashMap<>();
-
-
-				int maxIndex = productsToUpdate.size() > batchSize ? batchSize : productsToUpdate.size();
 				ArrayList<MetaAvailUpdateData> productsToUpdateBatch = new ArrayList<>();
+				HashMap<String, SharedStats> sharedStatsHashMap = new HashMap<>();
+				int maxIndex = productsToUpdate.size() > batchSize ? batchSize : productsToUpdate.size();
 				for (int i = 0; i < maxIndex; i++){
 					productsToUpdateBatch.add(productsToUpdate.get(i));
-					sharedStatsHashMap.put(productsToUpdate.get(i).overDriveId, new SharedStats()); //TODO: handle for multiple shared collections
+					sharedStatsHashMap.put(productsToUpdate.get(i).overDriveId, new SharedStats());
+				}
+				for (long i = -1L; i >= accountIds.size() * -1L; i--) {
+					overdriveAccountsSharedStatsHashMaps.put(i, (HashMap) sharedStatsHashMap.clone());
 				}
 				productsToUpdate.removeAll(productsToUpdateBatch);
+
+				updateOverDriveMetaDataBatch(productsToUpdateBatch); // We don't need to iterate of this to update the data for libraries. It will go through them all.
+
 				//Loop through the libraries first and then the products so we can get data as a batch.
 				for (Long libraryId : libToOverDriveAPIKeyMap.keySet()){
-					updateOverDriveMetaDataBatch(libraryId, productsToUpdateBatch);
-					//TODO: Switch to V2 as soon as loading holds works properly
+					if (libraryId < 0) {
+						sharedStatsHashMap = overdriveAccountsSharedStatsHashMaps.get(libraryId);
+					} else {
+						// Lookup Shared Collection Id for advantage library
+						Long sharedCollectionId;
+						getSharedCollectionIdForAdvantageLibraryStmt.setString(1, libraryId.toString());
+						ResultSet getSharedCollectionIdForAdvantageLibraryRS = getSharedCollectionIdForAdvantageLibraryStmt.executeQuery();
+						if (getSharedCollectionIdForAdvantageLibraryRS.next()) {
+							sharedCollectionId = getSharedCollectionIdForAdvantageLibraryRS.getLong(1);
+						} else {
+							logger.debug("Failed to fetch shared collection for which the advantage library "+libraryId+" belongs to");
+							sharedCollectionId = -1L;
+						}
+						sharedStatsHashMap = overdriveAccountsSharedStatsHashMaps.get(sharedCollectionId);
+					}
+
 					updateOverDriveAvailabilityBatchV1(libraryId, productsToUpdateBatch, sharedStatsHashMap);
+					//TODO: Switch to V2 as soon as loading holds works properly
 				}
 				//Do a final update to mark that they don't need to be updated again.
 				for (MetaAvailUpdateData productToUpdate : productsToUpdateBatch){
@@ -581,9 +601,6 @@ class ExtractOverDriveInfo {
 		Long sharedCollection = 0L;
 		for (String accountId : accountIds) {
 			sharedCollection--;
-			if (accountId.equalsIgnoreCase("2323")) { //TODO: temp short cut
-				continue;
-			}
 			WebServiceResponse libraryInfoResponse = callOverDriveURL("https://api.overdrive.com/v1/libraries/" + accountId);
 			if (libraryInfoResponse.getResponseCode() == 200 && libraryInfoResponse.getResponse() != null) {
 				JSONObject libraryInfo = libraryInfoResponse.getResponse();
@@ -1060,14 +1077,14 @@ class ExtractOverDriveInfo {
 		}
 	}
 
-	private void updateOverDriveMetaDataBatch(long libraryId, List<MetaAvailUpdateData> productsToUpdateBatch) throws SocketTimeoutException {
+	private void updateOverDriveMetaDataBatch(List<MetaAvailUpdateData> productsToUpdateBatch) throws SocketTimeoutException {
 		if (productsToUpdateBatch.size() == 0){
 			return;
 		}
 		//Check to see if we need to load metadata
 		long curTime = new Date().getTime() / 1000;
 
-		String apiKey = libToOverDriveAPIKeyMap.get(libraryId);
+		String apiKey = libToOverDriveAPIKeyMap.get(-1L); // Use the key of the main Account Id
 		String url = "https://api.overdrive.com/v1/collections/" + apiKey + "/bulkmetadata?reserveIds=";
 		ArrayList<MetaAvailUpdateData> productsToUpdateMetadata = new ArrayList<>();
 		for (MetaAvailUpdateData curProduct : productsToUpdateBatch) {
@@ -1102,21 +1119,22 @@ class ExtractOverDriveInfo {
 									updateDBMetadataForProduct(curProduct, metadata, curTime);
 								}else{
 									boolean ownedByAdvantage = false;
-									logger.debug("Product " + curProduct.overDriveId + " is not owned by the shared collection, checking advantage collections.");
-									//Sometimes a product is owned by just advantage accounts so we need to check those accounts too
+									logger.debug("Product " + curProduct.overDriveId + " is not owned by the shared collection -1, checking other shared and advantage collections.");
+									//Sometimes a product is owned by just advantage accounts or other shared overdrive accounts so we need to check those accounts too
 									for (String advantageKey : libToOverDriveAPIKeyMap.values()){
-										// TODO: will this accidentally iterate through other accounts' non-advantage collections?
-										url = "https://api.overdrive.com/v1/collections/" +advantageKey+ "/products/" + curProduct.overDriveId + "/metadata";
-										WebServiceResponse advantageMetaDataResponse = callOverDriveURL(url);
-										if (advantageMetaDataResponse.getResponseCode() != 200){
-											//Doesn't exist in this collection, skip to the next.
-											logger.error("Error " + advantageMetaDataResponse.getResponseCode() + " retrieving metadata for advantage account " + url + " " + metaDataResponse.getError());
-										}else {
-											JSONObject advantageMetadata = advantageMetaDataResponse.getResponse();
-											if (advantageMetadata.getBoolean("isOwnedByCollections")){
-												updateDBMetadataForProduct(curProduct, advantageMetadata, curTime);
-												ownedByAdvantage = true;
-												break;
+										if (!advantageKey.equals(apiKey)) {
+											url = "https://api.overdrive.com/v1/collections/" + advantageKey + "/products/" + curProduct.overDriveId + "/metadata";
+											WebServiceResponse advantageMetaDataResponse = callOverDriveURL(url);
+											if (advantageMetaDataResponse.getResponseCode() != 200) {
+												//Doesn't exist in this collection, skip to the next.
+												logger.error("Error " + advantageMetaDataResponse.getResponseCode() + " retrieving metadata for advantage account " + url + " " + metaDataResponse.getError());
+											} else {
+												JSONObject advantageMetadata = advantageMetaDataResponse.getResponse();
+												if (advantageMetadata.getBoolean("isOwnedByCollections")) {
+													updateDBMetadataForProduct(curProduct, advantageMetadata, curTime);
+													ownedByAdvantage = true;
+													break;
+												}
 											}
 										}
 									}
@@ -1708,6 +1726,8 @@ class ExtractOverDriveInfo {
 					sharedStats.copiesAvailableInShared = copiesAvailable;
 					//TODO:  libraryId for the shared collection may now need to be included
 				}else{
+					//This section determines how many copies are owned in the advantage collection.
+					//TODO: it currently assumes sharedStats refers to its shared collection
 					if (copiesOwned < sharedStats.copiesOwnedByShared){
 						logger.warn("Copies owned " + copiesOwned + " was less than copies owned by the shared collection " + sharedStats.copiesOwnedByShared + " for libraryId " + libraryId + " product " + curProduct.overDriveId);
 						copiesOwned = 0;
