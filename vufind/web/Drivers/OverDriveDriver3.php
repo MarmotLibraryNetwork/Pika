@@ -130,6 +130,8 @@ class OverDriveDriver3 {
 					return false;
 				}
 				$clientSecret = $configArray['OverDrive']['clientSecret'];
+				$userAgent = empty($configArray['Catalog']['catalogUserAgent']) ? 'Pika' : $configArray['Catalog']['catalogUserAgent'];
+
 				curl_setopt($ch, CURLOPT_USERAGENT,"Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)");
 				curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 				curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
@@ -138,7 +140,7 @@ class OverDriveDriver3 {
 				curl_setopt($ch, CURLOPT_HTTPHEADER, array(
 					'Content-Type: application/x-www-form-urlencoded;charset=UTF-8',
 					"Authorization: Basic " . $encodedAuthValue,
-					"User-Agent: VuFind-Plus"
+					"User-Agent: $userAgent"
 				));
 				//curl_setopt($ch, CURLOPT_USERPWD, "");
 				//$clientSecret = $configArray['OverDrive']['clientSecret'];
@@ -190,9 +192,12 @@ class OverDriveDriver3 {
 	public function _callUrl($url){
 		$tokenData = $this->_connectToAPI();
 		if ($tokenData){
+			global $configArray;
+			$userAgent = empty($configArray['Catalog']['catalogUserAgent']) ? 'Pika' : $configArray['Catalog']['catalogUserAgent'];
+
 			$ch = curl_init($url);
 			curl_setopt($ch, CURLOPT_USERAGENT,"Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)");
-			curl_setopt($ch, CURLOPT_HTTPHEADER, array("Authorization: {$tokenData->token_type} {$tokenData->access_token}", "User-Agent: VuFind-Plus"));
+			curl_setopt($ch, CURLOPT_HTTPHEADER, array("Authorization: {$tokenData->token_type} {$tokenData->access_token}", "User-Agent: $userAgent"));
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 			curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
 			curl_setopt($ch, CURLOPT_TIMEOUT, 10);
@@ -276,9 +281,11 @@ class OverDriveDriver3 {
 			curl_setopt($ch, CURLOPT_USERAGENT,"Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)");
 			if (isset($tokenData->token_type) && isset($tokenData->access_token)){
 				$authorizationData = $tokenData->token_type . ' ' . $tokenData->access_token;
+				global $configArray;
+				$userAgent = empty($configArray['Catalog']['catalogUserAgent']) ? 'Pika' : $configArray['Catalog']['catalogUserAgent'];
 				$headers = array(
 					"Authorization: $authorizationData",
-					"User-Agent: VuFind-Plus",
+					"User-Agent: $userAgent",
 					"Host: patron.api.overdrive.com" // production
 					//"Host: integration-patron.api.overdrive.com" // testing
 				);
@@ -334,16 +341,18 @@ class OverDriveDriver3 {
 		if ($tokenData || true){
 			$ch = curl_init($url);
 			curl_setopt($ch, CURLOPT_USERAGENT,"Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)");
+			global $configArray;
+			$userAgent = empty($configArray['Catalog']['catalogUserAgent']) ? 'Pika' : $configArray['Catalog']['catalogUserAgent'];
 			if ($tokenData){
 				$authorizationData = $tokenData->token_type . ' ' . $tokenData->access_token;
 				$headers = array(
 					"Authorization: $authorizationData",
-					"User-Agent: VuFind-Plus",
+					"User-Agent: $userAgent",
 					"Host: patron.api.overdrive.com",
 					//"Host: integration-patron.api.overdrive.com"
 				);
 			}else{
-				$headers = array("User-Agent: VuFind-Plus", "Host: api.overdrive.com");
+				$headers = array("User-Agent: $userAgent", "Host: api.overdrive.com");
 			}
 
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
