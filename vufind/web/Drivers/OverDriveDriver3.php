@@ -376,23 +376,36 @@ class OverDriveDriver3 {
 		return false;
 	}
 
-	public function getLibraryAccountInformation(){
+	public function getOverDriveAccountIds() {
+		$sharedOverdriveCollectionChoices = array();
 		global $configArray;
-		$libraryId = $configArray['OverDrive']['accountId'];
-		return $this->_callUrl("https://api.overdrive.com/v1/libraries/$libraryId");
+		if (!empty($configArray['OverDrive']['accountId'])) {
+			$overdriveAccounts = explode(',', $configArray['OverDrive']['accountId']);
+			$sharedCollectionIdNum = -1; // default shared libraryId for overdrive items
+			foreach ($overdriveAccounts as $overdriveAccountId) {
+				$overdriveAccountId = trim($overdriveAccountId);
+				$sharedOverdriveCollectionChoices[$sharedCollectionIdNum] = $overdriveAccountId;
+				$sharedCollectionIdNum--;
+			}
+			return $sharedOverdriveCollectionChoices;
+		} else {
+			return false;
 	}
 
-	public function getAdvantageAccountInformation(){
-		global $configArray;
-		$libraryId = $configArray['OverDrive']['accountId'];
-		return $this->_callUrl("https://api.overdrive.com/v1/libraries/$libraryId/advantageAccounts");
+}
+
+	public function getLibraryAccountInformation($overdriveAccountId){
+		return $this->_callUrl("https://api.overdrive.com/v1/libraries/$overdriveAccountId");
 	}
 
-	public function getProductsInAccount($productsUrl = null, $start = 0, $limit = 25){
-		global $configArray;
+	public function getAdvantageAccountInformation($overdriveAccountId){
+		return $this->_callUrl("https://api.overdrive.com/v1/libraries/$overdriveAccountId/advantageAccounts");
+	}
+
+	//TODO: refactor
+	public function getProductsInAccount($overdriveAccountId, $productsUrl = null, $start = 0, $limit = 25){
 		if ($productsUrl == null){
-			$libraryId = $configArray['OverDrive']['accountId'];
-			$productsUrl = "https://api.overdrive.com/v1/collections/$libraryId/products";
+			$productsUrl = "https://api.overdrive.com/v1/collections/$overdriveAccountId/products";
 		}
 		$productsUrl .= "?offset=$start&limit=$limit";
 		return $this->_callUrl($productsUrl);
@@ -408,6 +421,7 @@ class OverDriveDriver3 {
 		global $configArray;
 		if ($productsKey == null){
 			$productsKey = $configArray['OverDrive']['productsKey'];
+			//TODO: the products key can be gotten through the API
 		}
 		$overDriveId= strtoupper($overDriveId);
 		$metadataUrl = "https://api.overdrive.com/v1/collections/$productsKey/products/$overDriveId/metadata";
