@@ -39,7 +39,7 @@
 # Daily full update #
 #####################
 # This must run before full update on production to ensure sideloads are copied properly
-0 22 * * * cd /usr/local/vufind-plus/sites/sacramento.test; ./full_update.sh
+1 22 * * * cd /usr/local/vufind-plus/sites/sacramento.test; ./full_update.sh
 
 ######################
 # MySQL Nightly Dump #
