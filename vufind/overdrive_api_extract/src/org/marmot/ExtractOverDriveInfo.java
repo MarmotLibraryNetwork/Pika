@@ -352,14 +352,17 @@ class ExtractOverDriveInfo {
 			int batchNum = 1;
 			while (productsToUpdate.size() > 0){
 				ArrayList<MetaAvailUpdateData> productsToUpdateBatch = new ArrayList<>();
-				HashMap<String, SharedStats> sharedStatsHashMap = new HashMap<>();
+//				HashMap<String, SharedStats> sharedStatsHashMap = new HashMap<>();
 				int maxIndex = productsToUpdate.size() > batchSize ? batchSize : productsToUpdate.size();
-				for (int i = 0; i < maxIndex; i++){
+				for (int i = 0; i < maxIndex; i++) {
 					productsToUpdateBatch.add(productsToUpdate.get(i));
-					sharedStatsHashMap.put(productsToUpdate.get(i).overDriveId, new SharedStats());
 				}
-				for (long i = -1L; i >= accountIds.size() * -1L; i--) {
-					overdriveAccountsSharedStatsHashMaps.put(i, (HashMap) sharedStatsHashMap.clone());
+				for (long j = -1L; j >= accountIds.size() * -1L; j--) {
+					HashMap<String, SharedStats> sharedStatsHashMap = new HashMap<>();
+					for (int i = 0; i < maxIndex; i++) {
+						sharedStatsHashMap.put(productsToUpdate.get(i).overDriveId, new SharedStats());
+					}
+					overdriveAccountsSharedStatsHashMaps.put(j, sharedStatsHashMap);
 				}
 				productsToUpdate.removeAll(productsToUpdateBatch);
 
@@ -367,6 +370,7 @@ class ExtractOverDriveInfo {
 
 				//Loop through the libraries first and then the products so we can get data as a batch.
 				for (Long libraryId : libToOverDriveAPIKeyMap.keySet()){
+					HashMap<String, SharedStats> sharedStatsHashMap;
 					if (libraryId < 0) {
 						sharedStatsHashMap = overdriveAccountsSharedStatsHashMaps.get(libraryId);
 					} else {
@@ -1724,30 +1728,29 @@ class ExtractOverDriveInfo {
 				if (libraryId < 0){
 					sharedStats.copiesOwnedByShared = copiesOwned;
 					sharedStats.copiesAvailableInShared = copiesAvailable;
-					//TODO:  libraryId for the shared collection may now need to be included
 				}else{
-					//This section determines how many copies are owned in the advantage collection.
-					//TODO: it currently assumes sharedStats refers to its shared collection
+					//This section determines how many copies are owned in the advantage collection by starting with the data from the shared collection.
 					if (copiesOwned < sharedStats.copiesOwnedByShared){
 						logger.warn("Copies owned " + copiesOwned + " was less than copies owned by the shared collection " + sharedStats.copiesOwnedByShared + " for libraryId " + libraryId + " product " + curProduct.overDriveId);
 						copiesOwned = 0;
 						curProduct.hadAvailabilityErrors = true;
 					}else{
-						copiesOwned -= sharedStats.copiesOwnedByShared;
+						copiesOwned -= sharedStats.copiesOwnedByShared; // Remaining copies are the copied owned by this advantage collection
 					}
 					if (copiesAvailable < sharedStats.copiesAvailableInShared){
 						logger.warn("Copies available " + copiesAvailable + " was less than copies available in shared collection " + sharedStats.copiesAvailableInShared + " for libraryId " + libraryId + " product " + curProduct.overDriveId);
 						copiesAvailable = 0;
 						curProduct.hadAvailabilityErrors = true;
 					}else{
-						copiesAvailable -= sharedStats.copiesAvailableInShared;
+						copiesAvailable -= sharedStats.copiesAvailableInShared;// Remaining copies are the copied available for this advantage collection
 					}
 				}
+// TODO: don't know what this would have implemented
+//				boolean shared = false;
+//				if (availability.has("shared")) {
+//					shared = availability.getBoolean("shared");
+//				}
 
-				boolean shared = false;
-				if (availability.has("shared")) {
-					shared = availability.getBoolean("shared");
-				}
 				//Don't restrict this to only the library since it could be owned by an advantage library only.
 				int numberOfHolds;
 				if (libraryId < 0 || sharedStats.copiesOwnedByShared > 0) {
