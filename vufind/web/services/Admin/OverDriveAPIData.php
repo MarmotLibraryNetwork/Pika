@@ -18,6 +18,7 @@ class Admin_OverDriveAPIData extends Admin_Admin
 				$libraryInfo = $driver->getLibraryAccountInformation($overdriveAccountId);
 				if ($libraryInfo) {
 					$contents .= "<h3>Main - {$libraryInfo->name}</h3>";
+					$contents .= "<p>Shared Collection Id : $sharedCollectionId</p>";
 					$contents .= $this->easy_printr('Library Account Information', 'libraryAccountInfo', $libraryInfo);
 
 					$hasAdvantageAccounts = false;
