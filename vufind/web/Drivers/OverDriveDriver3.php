@@ -1015,27 +1015,27 @@ class OverDriveDriver3 {
 				$addPlaceHoldLink = true;
 			}
 		}
-		foreach ($items as $key => $item){
+		foreach ($items as $key => &$item){
 			$item->links = array();
 			if ($addCheckoutLink){
 				$checkoutLink = "return VuFind.OverDrive.checkOutOverDriveTitle('{$overDriveRecordDriver->getUniqueID()}');";
 				$item->links[] = array(
-					'onclick' => $checkoutLink,
-					'text' => 'Check Out',
+					'onclick' =>     $checkoutLink,
+					'text' =>        'Check Out',
 					'overDriveId' => $overDriveRecordDriver->getUniqueID(),
-					'formatId' => $item->numericId,
-					'action' => 'CheckOut'
+					'formatId' =>    $item->numericId,
+					'action' =>    'CheckOut'
 				);
 			}else if ($addPlaceHoldLink){
 				$item->links[] = array(
-					'onclick' => "return VuFind.OverDrive.placeOverDriveHold('{$overDriveRecordDriver->getUniqueID()}', '{$item->numericId}');",
-					'text' => 'Place Hold',
+					'onclick' =>     "return VuFind.OverDrive.placeOverDriveHold('{$overDriveRecordDriver->getUniqueID()}', '{$item->numericId}');",
+					'text' => '      Place Hold',
 					'overDriveId' => $overDriveRecordDriver->getUniqueID(),
-					'formatId' => $item->numericId,
-					'action' => 'Hold'
+					'formatId' =>    $item->numericId,
+					'action' =>      'Hold'
 				);
 			}
-			$items[$key] = $item;
+//			$items[$key] = $item;
 		}
 
 		return $items;
