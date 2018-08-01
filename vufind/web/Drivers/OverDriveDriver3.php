@@ -1022,16 +1022,16 @@ class OverDriveDriver3 {
 				$checkoutLink = "return VuFind.OverDrive.checkOutOverDriveTitle('{$overDriveRecordDriver->getUniqueID()}');";
 				$item->links[] = array(
 					'onclick' =>     $checkoutLink,
-					'text' =>        'Check Out from Overdrive',
+					'text' =>        'Check Out OverDrive',
 					'overDriveId' => $overDriveRecordDriver->getUniqueID(),
 					'formatId' =>    $item->numericId, // TODO: this doesn't appear to be used any more. pascal 8.1-2018
-					'action' =>    'CheckOut'
+					'action' =>      'CheckOut'
 				);
 			}else if ($addPlaceHoldLink){
 				$item->links[] = array(
 					'onclick' =>     "return VuFind.OverDrive.placeOverDriveHold('{$overDriveRecordDriver->getUniqueID()}', '{$item->numericId}');",
 					//TODO: second parameter doesn't look to be needed any more
-					'text' => '      Place Hold',
+					'text' => '      Place Hold OverDrive',
 					'overDriveId' => $overDriveRecordDriver->getUniqueID(),
 					'formatId' =>    $item->numericId, // TODO: this doesn't appear to be used any more. pascal 8.1-2018
 					'action' =>      'Hold'
