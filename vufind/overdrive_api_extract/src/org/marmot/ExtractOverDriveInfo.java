@@ -1733,14 +1733,14 @@ class ExtractOverDriveInfo {
 				}else{
 					//This section determines how many copies are owned in the advantage collection by starting with the data from the shared collection.
 					if (copiesOwned < sharedStats.copiesOwnedByShared){
-						logger.warn("Copies owned " + copiesOwned + " was less than copies owned by the shared collection " + sharedStats.copiesOwnedByShared + " for libraryId " + libraryId + " product " + curProduct.overDriveId);
+						logger.warn("Copies owned " + copiesOwned + " was less than copies owned " + sharedStats.copiesOwnedByShared + " by the shared collection  for libraryId " + libraryId + " product " + curProduct.overDriveId);
 						copiesOwned = 0;
 						curProduct.hadAvailabilityErrors = true;
 					}else{
 						copiesOwned -= sharedStats.copiesOwnedByShared; // Remaining copies are the copied owned by this advantage collection
 					}
 					if (copiesAvailable < sharedStats.copiesAvailableInShared){
-						logger.warn("Copies available " + copiesAvailable + " was less than copies available in shared collection " + sharedStats.copiesAvailableInShared + " for libraryId " + libraryId + " product " + curProduct.overDriveId);
+						logger.warn("Copies available " + copiesAvailable + " was less than " + sharedStats.copiesAvailableInShared + " copies available in shared collection for libraryId " + libraryId + " product " + curProduct.overDriveId);
 						copiesAvailable = 0;
 						curProduct.hadAvailabilityErrors = true;
 					}else{
