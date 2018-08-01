@@ -36,27 +36,27 @@ class ExtractOverDriveInfo {
 
 	private boolean partialExtractRunning;
 	private Long partialExtractRunningVariableId;
-	
+
 	//Overdrive API information
 	private String clientSecret;
 	private String clientKey;
-//	private String accountId;
+	//	private String accountId;
 	private List<String> accountIds = new ArrayList<String>();
 	private String overDriveAPIToken;
 	private String overDriveAPITokenType;
 	private long overDriveAPIExpiration;
-//	private String overDriveProductsKey;
+	//	private String overDriveProductsKey;
 	private TreeMap<String, String> overDriveProductsKeys = new TreeMap<>();;  // specifically <AccountId, overDriveProductsKey>
 	private boolean forceMetaDataUpdate;
 	private TreeMap<Long, String> libToOverDriveAPIKeyMap = new TreeMap<>();
 	private HashMap<String, Long> overDriveFormatMap = new HashMap<>();
-	
+
 	private HashMap<String, OverDriveRecordInfo> overDriveTitles = new HashMap<>();
 	private HashMap<String, Long> advantageCollectionToLibMap = new HashMap<>();
 	private HashMap<String, OverDriveDBInfo> databaseProducts = new HashMap<>();
 	private HashMap<String, Long> existingLanguageIds = new HashMap<>();
 	private HashMap<String, Long> existingSubjectIds = new HashMap<>();
-	
+
 	private PreparedStatement addProductStmt;
 	private PreparedStatement setNeedsUpdateStmt;
 	private PreparedStatement getNumProductsNeedingUpdatesStmt;
@@ -88,7 +88,7 @@ class ExtractOverDriveInfo {
 	private PreparedStatement markGroupedWorkForBibAsChangedStmt;
 	private PreparedStatement getSharedCollectionIdForAdvantageLibraryStmt;
 	private boolean hadTimeoutsFromOverDrive;
-	
+
 	private CRC32 checksumCalculator = new CRC32();
 	private boolean errorsWhileLoadingProducts;
 
@@ -206,30 +206,31 @@ class ExtractOverDriveInfo {
 
 			//Update the last extract time
 			Long extractStartTime = new Date().getTime();
-			
+
 			ResultSet loadLanguagesRS = loadLanguagesStmt.executeQuery();
 			while (loadLanguagesRS.next()){
 				existingLanguageIds.put(loadLanguagesRS.getString("code"), loadLanguagesRS.getLong("id"));
 			}
-			
+
 			ResultSet loadSubjectsRS = loadSubjectsStmt.executeQuery();
 			while (loadSubjectsRS.next()){
 				existingSubjectIds.put(loadSubjectsRS.getString("name").toLowerCase(), loadSubjectsRS.getLong("id"));
 			}
-			
+
 			PreparedStatement advantageCollectionMapStmt = vufindConn.prepareStatement("SELECT libraryId, overdriveAdvantageName, overdriveAdvantageProductsKey FROM library where overdriveAdvantageName > ''");
 			ResultSet advantageCollectionMapRS = advantageCollectionMapStmt.executeQuery();
 			while (advantageCollectionMapRS.next()){
 				advantageCollectionToLibMap.put(advantageCollectionMapRS.getString(2), advantageCollectionMapRS.getLong(1));
 				libToOverDriveAPIKeyMap.put(advantageCollectionMapRS.getLong(1), advantageCollectionMapRS.getString(3));
 			}
-			
+
 			//Load products from API 
 			clientSecret = Util.cleanIniValue(configIni.get("OverDrive", "clientSecret"));
 			clientKey = Util.cleanIniValue(configIni.get("OverDrive", "clientKey"));
 			String forceMetaDataUpdateStr = configIni.get("OverDrive", "forceMetaDataUpdate");
 			forceMetaDataUpdate = forceMetaDataUpdateStr != null && Boolean.parseBoolean(forceMetaDataUpdateStr);
-			
+
+			//TODO: numeric Format does not seem to be needed anymore.
 			overDriveFormatMap.put("ebook-epub-adobe", 410L);
 			overDriveFormatMap.put("ebook-kindle", 420L);
 			overDriveFormatMap.put("Microsoft eBook", 1L);
@@ -248,6 +249,7 @@ class ExtractOverDriveInfo {
 			overDriveFormatMap.put("video-streaming", 635L);
 			overDriveFormatMap.put("periodicals-nook", 304L);
 			overDriveFormatMap.put("ebook-mediado", 303L);
+			overDriveFormatMap.put("magazine-overdrive", 777L); // arbitrary value assigned. pascal 8-1-2018
 
 			try {
 				if (clientSecret == null || clientKey == null || clientSecret.length() == 0 || clientKey.length() == 0 || accountIds.isEmpty()) {
@@ -301,7 +303,7 @@ class ExtractOverDriveInfo {
 				}
 			}
 		} catch (SQLException e) {
-		// handle any errors
+			// handle any errors
 			logger.error("Error initializing overdrive extraction", e);
 			results.addNote("Error initializing overdrive extraction " + e.toString());
 			results.incErrors();
@@ -439,7 +441,7 @@ class ExtractOverDriveInfo {
 				logger.debug("Updated database for  " + numProcessed + " products from the API");
 			}
 		}
-		
+
 		//Delete any products that no longer exist, but only if we aren't only loading changes and also
 		//should not update if we had any timeouts loading products since those products would have been skipped.
 		if (lastUpdateTimeParam.length() == 0 && !hadTimeoutsFromOverDrive){
@@ -468,11 +470,11 @@ class ExtractOverDriveInfo {
 	}
 
 	private void updateProductInDB(OverDriveRecordInfo overDriveInfo,
-			OverDriveDBInfo overDriveDBInfo) throws SocketTimeoutException {
+								   OverDriveDBInfo overDriveDBInfo) throws SocketTimeoutException {
 		try {
 			boolean updateMade = false;
 			//Check to see if anything has changed.  If so, perform necessary updates. 
-			if (!Util.compareStrings(overDriveInfo.getMediaType(), overDriveDBInfo.getMediaType()) || 
+			if (!Util.compareStrings(overDriveInfo.getMediaType(), overDriveDBInfo.getMediaType()) ||
 					!Util.compareStrings(overDriveInfo.getTitle(), overDriveDBInfo.getTitle()) ||
 					!Util.compareStrings(overDriveInfo.getSubtitle(), overDriveDBInfo.getSubtitle()) ||
 					!Util.compareStrings(overDriveInfo.getSeries(), overDriveDBInfo.getSeries()) ||
@@ -506,7 +508,7 @@ class ExtractOverDriveInfo {
 			setNeedsUpdateStmt.setBoolean(1, true);
 			setNeedsUpdateStmt.setString(2, overDriveInfo.getId());
 			setNeedsUpdateStmt.executeUpdate();
-			
+
 			if (updateMade){
 				//Mark that the grouped work needs to be updated
 				markGroupedWorkForBibAsChangedStmt.setLong(1, extractStartTime);
@@ -516,14 +518,14 @@ class ExtractOverDriveInfo {
 			}else{
 				results.incSkipped();
 			}
-			
+
 		} catch (SQLException e) {
 			logger.info("Error updating overdrive product " + overDriveInfo.getId(), e);
 			results.addNote("Error updating overdrive product " + overDriveInfo.getId() + e.toString());
 			results.incErrors();
 			results.saveResults();
 		}
-		
+
 	}
 
 	private void addProductToDB(OverDriveRecordInfo overDriveInfo) throws SocketTimeoutException {
@@ -599,7 +601,7 @@ class ExtractOverDriveInfo {
 			results.saveResults();
 			return false;
 		}
-		
+
 	}
 	private boolean loadProductsFromAPI() throws SocketTimeoutException {
 		Long sharedCollection = 0L;
@@ -1500,11 +1502,11 @@ class ExtractOverDriveInfo {
 							if (hasExistingAvailability) {
 								//Check to see if the availability has changed
 								if (available != existingAvailabilityRS.getBoolean("available") ||
-												copiesOwned != existingAvailabilityRS.getInt("copiesOwned") ||
-												copiesAvailable != existingAvailabilityRS.getInt("copiesAvailable") ||
-												numberOfHolds != existingAvailabilityRS.getInt("numberOfHolds") ||
-												!availabilityType.equals(existingAvailabilityRS.getString("availabilityType"))
-												) {
+										copiesOwned != existingAvailabilityRS.getInt("copiesOwned") ||
+										copiesAvailable != existingAvailabilityRS.getInt("copiesAvailable") ||
+										numberOfHolds != existingAvailabilityRS.getInt("numberOfHolds") ||
+										!availabilityType.equals(existingAvailabilityRS.getString("availabilityType"))
+										) {
 									updateAvailabilityStmt.setBoolean(1, available);
 									updateAvailabilityStmt.setInt(2, copiesOwned);
 									updateAvailabilityStmt.setInt(3, copiesAvailable);
@@ -1762,11 +1764,11 @@ class ExtractOverDriveInfo {
 				if (hasExistingAvailability) {
 					//Check to see if the availability has changed
 					if (available != existingAvailabilityRS.getBoolean("available") ||
-									copiesOwned != existingAvailabilityRS.getInt("copiesOwned") ||
-									copiesAvailable != existingAvailabilityRS.getInt("copiesAvailable") ||
-									numberOfHolds != existingAvailabilityRS.getInt("numberOfHolds") ||
-									!availabilityType.equals(existingAvailabilityRS.getString("availabilityType"))
-									) {
+							copiesOwned != existingAvailabilityRS.getInt("copiesOwned") ||
+							copiesAvailable != existingAvailabilityRS.getInt("copiesAvailable") ||
+							numberOfHolds != existingAvailabilityRS.getInt("numberOfHolds") ||
+							!availabilityType.equals(existingAvailabilityRS.getString("availabilityType"))
+							) {
 						updateAvailabilityStmt.setBoolean(1, available);
 						updateAvailabilityStmt.setInt(2, copiesOwned);
 						updateAvailabilityStmt.setInt(3, copiesAvailable);
@@ -1873,11 +1875,11 @@ class ExtractOverDriveInfo {
 					if (hasExistingAvailability) {
 						//Check to see if the availability has changed
 						if (available != existingAvailabilityRS.getBoolean("available") ||
-										copiesOwned != existingAvailabilityRS.getInt("copiesOwned") ||
-										copiesAvailable != existingAvailabilityRS.getInt("copiesAvailable") ||
-										numberOfHolds != existingAvailabilityRS.getInt("numberOfHolds") ||
-										!availabilityType.equals(existingAvailabilityRS.getString("availabilityType"))
-										) {
+								copiesOwned != existingAvailabilityRS.getInt("copiesOwned") ||
+								copiesAvailable != existingAvailabilityRS.getInt("copiesAvailable") ||
+								numberOfHolds != existingAvailabilityRS.getInt("numberOfHolds") ||
+								!availabilityType.equals(existingAvailabilityRS.getString("availabilityType"))
+								) {
 							updateAvailabilityStmt.setBoolean(1, available);
 							updateAvailabilityStmt.setInt(2, copiesOwned);
 							updateAvailabilityStmt.setInt(3, copiesAvailable);

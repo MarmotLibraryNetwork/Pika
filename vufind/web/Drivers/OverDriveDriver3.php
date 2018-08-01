@@ -48,6 +48,7 @@ class OverDriveDriver3 {
 		'audiobook-overdrive' => 'OverDrive Listen',
 		'video-streaming' => 'OverDrive Video',
 		'ebook-mediado' => 'MediaDo Reader',
+		'magazine-overdrive'=> 'OverDrive Magazine'
 	);
 
 	private function _connectToAPI($forceNewConnection = false){
@@ -269,7 +270,7 @@ class OverDriveDriver3 {
 			$barcodeProperty = $configArray['Catalog']['barcodeProperty'];
 			//TODO: this should use the account profile property instead
 			$userPin = ($barcodeProperty == 'cat_username') ? $user->cat_password : $user->cat_username;
-				// determine which column is the pin by using the opposing field to the barcode. (between pin & username)
+			// determine which column is the pin by using the opposing field to the barcode. (between pin & username)
 			$tokenData = $this->_connectToPatronAPI($user, $userBarcode, $userPin, false);
 			// this worked for flatirons checkout.  plb 1-13-2015
 //			$tokenData = $this->_connectToPatronAPI($user->cat_username, $user->cat_password, false);
@@ -399,9 +400,9 @@ class OverDriveDriver3 {
 			return $sharedOverdriveCollectionChoices;
 		} else {
 			return false;
-	}
+		}
 
-}
+	}
 
 	public function getLibraryAccountInformation($overdriveAccountId){
 		return $this->_callUrl("https://api.overdrive.com/v1/libraries/$overdriveAccountId");
@@ -498,7 +499,7 @@ class OverDriveDriver3 {
 							if ($format->formatType == 'ebook-overdrive' || $format->formatType == 'ebook-mediado') {
 								$bookshelfItem['overdriveRead'] = true;
 							}else if ($format->formatType == 'audiobook-overdrive'){
-									$bookshelfItem['overdriveListen'] = true;
+								$bookshelfItem['overdriveListen'] = true;
 							}else if ($format->formatType == 'video-streaming'){
 								$bookshelfItem['overdriveVideo'] = true;
 							}else{
@@ -783,7 +784,7 @@ class OverDriveDriver3 {
 			if ($analytics) $analytics->addEvent('OverDrive', 'Cancel Hold', 'succeeded');
 		}else{
 			$cancelHoldResult['message'] = 'There was an error cancelling your hold.';
-		 if (isset($response->message)) $cancelHoldResult['message'] .= "  {$response->message}";
+			if (isset($response->message)) $cancelHoldResult['message'] .= "  {$response->message}";
 			if ($analytics) $analytics->addEvent('OverDrive', 'Cancel Hold', 'failed');
 		}
 		$memCache->delete('overdrive_summary_' . $user->id);
@@ -1021,17 +1022,18 @@ class OverDriveDriver3 {
 				$checkoutLink = "return VuFind.OverDrive.checkOutOverDriveTitle('{$overDriveRecordDriver->getUniqueID()}');";
 				$item->links[] = array(
 					'onclick' =>     $checkoutLink,
-					'text' =>        'Check Out',
+					'text' =>        'Check Out from Overdrive',
 					'overDriveId' => $overDriveRecordDriver->getUniqueID(),
-					'formatId' =>    $item->numericId,
+					'formatId' =>    $item->numericId, // TODO: this doesn't appear to be used any more. pascal 8.1-2018
 					'action' =>    'CheckOut'
 				);
 			}else if ($addPlaceHoldLink){
 				$item->links[] = array(
 					'onclick' =>     "return VuFind.OverDrive.placeOverDriveHold('{$overDriveRecordDriver->getUniqueID()}', '{$item->numericId}');",
+					//TODO: second parameter doesn't look to be needed any more
 					'text' => '      Place Hold',
 					'overDriveId' => $overDriveRecordDriver->getUniqueID(),
-					'formatId' =>    $item->numericId,
+					'formatId' =>    $item->numericId, // TODO: this doesn't appear to be used any more. pascal 8.1-2018
 					'action' =>      'Hold'
 				);
 			}
