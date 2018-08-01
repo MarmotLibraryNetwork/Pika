@@ -608,14 +608,18 @@ public class SierraExportAPIMain {
 					ResultSet getPermanentIdByWorkIdRS = getPermanentIdByWorkIdStmt.executeQuery();
 					if (getPermanentIdByWorkIdRS.next()) {
 						String permanentId = getPermanentIdByWorkIdRS.getString("permanent_id");
-						//Delete the work from solr
-						groupedWorkIndexer.deleteRecord(permanentId);
 
-						//Delete the work from the database?
-						//TODO: Should we do this or leave a record if it was linked to lists, reading history, etc?
-						//regular indexer deletes them too
-						deleteGroupedWorkStmt.setLong(1, groupedWorkId);
-						deleteGroupedWorkStmt.executeUpdate();
+
+						logger.warn("Sierra API extract would have deleted Group Work " + permanentId + " Preventing to investigate underlying issues to fix the Sierra API extract");
+						// See https://marmot.myjetbrains.com/youtrack/issue/D-2364
+//						//Delete the work from solr
+//						groupedWorkIndexer.deleteRecord(permanentId);
+//
+//						//Delete the work from the database?
+//						//TODO: Should we do this or leave a record if it was linked to lists, reading history, etc?
+//						//regular indexer deletes them too
+//						deleteGroupedWorkStmt.setLong(1, groupedWorkId);
+//						deleteGroupedWorkStmt.executeUpdate();
 					}
 
 				}
