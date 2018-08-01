@@ -412,9 +412,9 @@ class OverDriveDriver3 {
 		return $this->_callUrl("https://api.overdrive.com/v1/libraries/$overdriveAccountId/advantageAccounts");
 	}
 
-	public function getProductsInAccount($overdriveAccountId, $productsUrl = null, $start = 0, $limit = 25){
+	public function getProductsInAccount($overdriveProductsKey, $productsUrl = null, $start = 0, $limit = 25){
 		if ($productsUrl == null){
-			$productsUrl = "https://api.overdrive.com/v1/collections/$overdriveAccountId/products";
+			$productsUrl = "https://api.overdrive.com/v1/collections/$overdriveProductsKey/products";
 		}
 		$productsUrl .= "?offset=$start&limit=$limit";
 		return $this->_callUrl($productsUrl);

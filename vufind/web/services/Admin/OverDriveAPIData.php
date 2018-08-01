@@ -18,6 +18,11 @@ class Admin_OverDriveAPIData extends Admin_Admin
 				if ($libraryInfo) {
 					$contents .= "<h3>Main - {$libraryInfo->name}</h3>";
 					$contents .= "<p>Shared Collection Id : $sharedCollectionId</p>";
+					$contents .= "Website: <a href='{$libraryInfo->links->dlrHomepage->href}'>{$libraryInfo->links->dlrHomepage->href}</a>";
+					$productInfo = $driver->getProductsInAccount($libraryInfo->collectionToken, null, 0, 1);
+					if (!empty($productInfo->totalItems)) {
+						$contents .= "<p>Total Items: {$productInfo->totalItems}</p>";
+					}
 					$contents .= $this->easy_printr('Library Account Information', "libraryAccountInfo_{$libraryInfo->collectionToken}", $libraryInfo);
 
 					$hasAdvantageAccounts = false;
@@ -28,6 +33,11 @@ class Admin_OverDriveAPIData extends Admin_Admin
 							$contents .= "<h4>Advantage Accounts</h4>";
 							foreach ($advantageAccounts->advantageAccounts as $accountInfo) {
 								$contents .= $accountInfo->name . ' - ' . $accountInfo->collectionToken . '<br/>';
+								$productInfo = $driver->getProductsInAccount($accountInfo->collectionToken, null, 0, 1);
+								if (!empty($productInfo->totalItems)) {
+									$contents .= "<p>Total Items: {$productInfo->totalItems}</p>";
+								}
+
 							}
 						} else {
 							$contents .= '<div class="alert alert-warning">No advantage accounts for this collection</div>';
