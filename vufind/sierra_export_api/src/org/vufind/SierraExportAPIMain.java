@@ -594,7 +594,7 @@ public class SierraExportAPIMain {
 				//Delete the primary identifier
 				//deletePrimaryIdentifierStmt.setLong(1, primaryIdentifierId);
 //				deletePrimaryIdentifierStmt.executeUpdate();
-				logger.warn("Not deleting primary identifier for grouped work id " + groupedWorkId + " and 'id from sierra api:' " + id + ", full Bid : .b" + id + getCheckDigit(id) );
+				logger.warn("Not deleting primary identifier for grouped work id " + groupedWorkId + " and bib id " + id);
 
 				//Check to see if there are other identifiers for this work
 				getAdditionalPrimaryIdentifierForWorkStmt.setLong(1, groupedWorkId);
