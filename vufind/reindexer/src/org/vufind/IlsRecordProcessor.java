@@ -1493,7 +1493,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			String formatsString = Util.getCsvSeparatedString(printFormats);
 			if (!formatsToFilter.contains(formatsString)){
 				formatsToFilter.add(formatsString);
-				logger.info("Found more than 1 format for " + recordInfo.getFullIdentifier() + " - " + formatsString);
+				logger.warn("Found more than 1 format for " + recordInfo.getFullIdentifier() + " - " + formatsString);
 			}
 		}
 		return printFormats;
@@ -1636,11 +1636,15 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		if (printFormats.contains("Wii") && printFormats.contains("WiiU")){
 			printFormats.remove("Wii");
 		}
-		if (printFormats.contains("Kinect") || printFormats.contains("XBox360")  || printFormats.contains("Xbox360")
+		if (printFormats.contains("3DS") && printFormats.contains("NintendoDS")){
+			printFormats.remove("NintendoDS");
+		}
+		if (printFormats.contains("Kinect") || printFormats.contains("Xbox360")
 				|| printFormats.contains("XBoxOne") || printFormats.contains("PlayStation")
 				|| printFormats.contains("PlayStation3") || printFormats.contains("PlayStation4")
 				|| printFormats.contains("Wii") || printFormats.contains("WiiU")
-				|| printFormats.contains("3DS") || printFormats.contains("WindowsGame")){
+				|| printFormats.contains("NintendoDS") || printFormats.contains("3DS")
+				|| printFormats.contains("WindowsGame")){
 			printFormats.remove("Software");
 			printFormats.remove("Electronic");
 			printFormats.remove("CDROM");
@@ -1730,21 +1734,24 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	private void getFormatFromEdition(Record record, Set<String> result) {
 		// Check for large print book (large format in 650, 300, or 250 fields)
 		// Check for blu-ray in 300 fields
-		DataField edition = record.getDataField("250");
-		if (edition != null) {
-			if (edition.getSubfield('a') != null) {
-				String editionData = edition.getSubfield('a').getData().toLowerCase();
-				if (editionData.contains("large type") || editionData.contains("large print")) {
-					result.add("LargePrint");
-				}else if (editionData.contains("go reader")) {
-					result.add("GoReader");
+//		DataField edition = record.getDataField("250");
+		List<DataField> editions = record.getDataFields("250");
+		for (DataField edition : editions) {
+			if (edition != null) {
+				if (edition.getSubfield('a') != null) {
+					String editionData = edition.getSubfield('a').getData().toLowerCase();
+					if (editionData.contains("large type") || editionData.contains("large print")) {
+						result.add("LargePrint");
+					} else if (editionData.contains("go reader")) {
+						result.add("GoReader");
 //				} else if (find4KUltraBluRayPhrases(editionData)) {
 //					result.add("4KUltraBlu-Ray");
-					// not sure this is a good idea yet. see D-2432
-				}else {
-					String gameFormat = getGameFormatFromValue(editionData);
-					if (gameFormat != null) {
-						result.add(gameFormat);
+						// not sure this is a good idea yet. see D-2432
+					} else {
+						String gameFormat = getGameFormatFromValue(editionData);
+						if (gameFormat != null) {
+							result.add(gameFormat);
+						}
 					}
 				}
 			}
@@ -1888,6 +1895,8 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			return "3DS";
 		} else if (value.contains("nintendo switch")) {
 			return "NintendoSwitch";
+		} else if (value.contains("nintendo ds")) {
+			return "NintendoDS";
 		} else if (value.contains("directx")) {
 			return "WindowsGame";
 		}else{
