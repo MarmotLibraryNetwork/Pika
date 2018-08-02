@@ -1495,7 +1495,9 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			String formatsString = Util.getCsvSeparatedString(printFormats);
 			if (!formatsToFilter.contains(formatsString)){
 				formatsToFilter.add(formatsString);
-				logger.warn("Found more than 1 format for " + recordInfo.getFullIdentifier() + " - " + formatsString);
+				if (fullReindex) {
+					logger.warn("Found more than 1 format for " + recordInfo.getFullIdentifier() + " - " + formatsString);
+				}
 			}
 		}
 		return printFormats;
@@ -1640,6 +1642,9 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		}
 		if (printFormats.contains("3DS") && printFormats.contains("NintendoDS")){
 			printFormats.remove("NintendoDS");
+		}
+		if (printFormats.contains("PlayStation4") && printFormats.contains("PlayStation3")){
+			printFormats.remove("PlayStation3");
 		}
 		if (printFormats.contains("Kinect") || printFormats.contains("Xbox360")
 				|| printFormats.contains("XBoxOne") || printFormats.contains("PlayStation")
