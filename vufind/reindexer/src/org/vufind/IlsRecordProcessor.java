@@ -817,8 +817,10 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		loadDateAdded(recordInfo.getRecordIdentifier(), itemField, itemInfo);
 		getDueDate(itemField, itemInfo);
 
-		itemInfo.setITypeCode(getItemSubfieldData(iTypeSubfield, itemField));
-		itemInfo.setIType(translateValue("itype", getItemSubfieldData(iTypeSubfield, itemField), recordInfo.getRecordIdentifier()));
+		if (iTypeSubfield != ' ') {
+			itemInfo.setITypeCode(getItemSubfieldData(iTypeSubfield, itemField));
+			itemInfo.setIType(translateValue("itype", getItemSubfieldData(iTypeSubfield, itemField), recordInfo.getRecordIdentifier()));
+		}
 
 		double itemPopularity = getItemPopularity(itemField);
 		groupedWork.addPopularity(itemPopularity);
