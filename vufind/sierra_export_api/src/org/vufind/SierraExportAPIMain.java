@@ -357,7 +357,7 @@ public class SierraExportAPIMain {
 
 		try{
 			getWorkForPrimaryIdentifierStmt = vufindConn.prepareStatement("SELECT id, grouped_work_id from grouped_work_primary_identifiers where type = ? and identifier = ?");
-			deletePrimaryIdentifierStmt = vufindConn.prepareStatement("DELETE from grouped_work_primary_identifiers where id = ?");
+			deletePrimaryIdentifierStmt = vufindConn.prepareStatement("DELETE from grouped_work_primary_identifiers where id = ? LIMIT 1");
 			getAdditionalPrimaryIdentifierForWorkStmt = vufindConn.prepareStatement("SELECT * from grouped_work_primary_identifiers where grouped_work_id = ?");
 			markGroupedWorkAsChangedStmt = vufindConn.prepareStatement("UPDATE grouped_work SET date_updated = ? where id = ?");
 			deleteGroupedWorkStmt = vufindConn.prepareStatement("DELETE from grouped_work where id = ?");
@@ -590,9 +590,12 @@ public class SierraExportAPIMain {
 			if (getWorkForPrimaryIdentifierRS.next()) {
 				Long groupedWorkId = getWorkForPrimaryIdentifierRS.getLong("grouped_work_id");
 				Long primaryIdentifierId = getWorkForPrimaryIdentifierRS.getLong("id");
+
 				//Delete the primary identifier
-				deletePrimaryIdentifierStmt.setLong(1, primaryIdentifierId);
-				deletePrimaryIdentifierStmt.executeUpdate();
+				//deletePrimaryIdentifierStmt.setLong(1, primaryIdentifierId);
+//				deletePrimaryIdentifierStmt.executeUpdate();
+				logger.warn("Not deleting primary identifier for grouped work id " + groupedWorkId + " and bib id " + id);
+
 				//Check to see if there are other identifiers for this work
 				getAdditionalPrimaryIdentifierForWorkStmt.setLong(1, groupedWorkId);
 				ResultSet getAdditionalPrimaryIdentifierForWorkRS = getAdditionalPrimaryIdentifierForWorkStmt.executeQuery();
@@ -608,14 +611,18 @@ public class SierraExportAPIMain {
 					ResultSet getPermanentIdByWorkIdRS = getPermanentIdByWorkIdStmt.executeQuery();
 					if (getPermanentIdByWorkIdRS.next()) {
 						String permanentId = getPermanentIdByWorkIdRS.getString("permanent_id");
-						//Delete the work from solr
-						groupedWorkIndexer.deleteRecord(permanentId);
 
-						//Delete the work from the database?
-						//TODO: Should we do this or leave a record if it was linked to lists, reading history, etc?
-						//regular indexer deletes them too
-						deleteGroupedWorkStmt.setLong(1, groupedWorkId);
-						deleteGroupedWorkStmt.executeUpdate();
+
+						logger.warn("Sierra API extract would have deleted Group Work " + permanentId + " Preventing to investigate underlying issues to fix the Sierra API extract");
+						// See https://marmot.myjetbrains.com/youtrack/issue/D-2364
+//						//Delete the work from solr
+//						groupedWorkIndexer.deleteRecord(permanentId);
+//
+//						//Delete the work from the database?
+//						//TODO: Should we do this or leave a record if it was linked to lists, reading history, etc?
+//						//regular indexer deletes them too
+//						deleteGroupedWorkStmt.setLong(1, groupedWorkId);
+//						deleteGroupedWorkStmt.executeUpdate();
 					}
 
 				}
@@ -647,11 +654,11 @@ public class SierraExportAPIMain {
 					int lastId = 0;
 					for (int i = 0; i < entries.length(); i++) {
 						JSONObject curBib = entries.getJSONObject(i);
+						lastId = curBib.getInt("id");
 						boolean isSuppressed = false;
 						if (curBib.has("suppressed")){
 							isSuppressed = curBib.getBoolean("suppressed");
 						}
-						lastId = curBib.getInt("id");
 						if (isSuppressed){
 							String id = curBib.getString("id");
 							allDeletedIds.add(id);
