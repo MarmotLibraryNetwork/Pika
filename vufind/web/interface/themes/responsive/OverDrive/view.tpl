@@ -46,11 +46,11 @@
 								{* Show hold/checkout button as appropriate *}
 								{if $holdingsSummary.showPlaceHold}
 									{* Place hold link *}
-									<a href="#" class="btn btn-sm btn-block btn-primary" id="placeHold{$recordDriver->getUniqueID()|escape:"url"}" onclick="return VuFind.OverDrive.placeOverDriveHold('{$recordDriver->getUniqueID()}')">{translate text="Place Hold"}</a>
+									<a href="#" class="btn btn-sm btn-block btn-primary" id="placeHold{$recordDriver->getUniqueID()|escape:"url"}" onclick="return VuFind.OverDrive.placeOverDriveHold('{$recordDriver->getUniqueID()}')">{translate text="Place Hold OverDrive"}</a>
 								{/if}
 								{if $holdingsSummary.showCheckout}
 									{* Checkout link *}
-									<a href="#" class="btn btn-sm btn-block btn-primary" id="checkout{$recordDriver->getUniqueID()|escape:"url"}" onclick="return VuFind.OverDrive.checkOutOverDriveTitle('{$recordDriver->getUniqueID()}')">{translate text="Checkout"}</a>
+									<a href="#" class="btn btn-sm btn-block btn-primary" id="checkout{$recordDriver->getUniqueID()|escape:"url"}" onclick="return VuFind.OverDrive.checkOutOverDriveTitle('{$recordDriver->getUniqueID()}')">{translate text="Check Out OverDrive"}</a>
 								{/if}
 							</div>
 						</div>

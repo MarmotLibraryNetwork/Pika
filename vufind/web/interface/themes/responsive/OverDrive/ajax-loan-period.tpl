@@ -1,3 +1,7 @@
+{* this doesn't look to be used any more. pascal 8-1-2018
+checkoutOverDriveItemStep2() function no longer exists
+*}
+
 <div id="popupboxHeader" class="header">
 	{translate text="Loan Period"}
 	<a href="#" onclick='hideLightbox();return false;' class="closeIcon">Close <img src="{$path}/images/silk/cancel.png" alt="close" /></a>
