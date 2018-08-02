@@ -1790,24 +1790,26 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 	private void getFormatFromNotes(Record record, Set<String> result) {
 		// Check for formats in the 538 field
-		DataField sysDetailsNote2 = record.getDataField("538");
-		if (sysDetailsNote2 != null) {
-			if (sysDetailsNote2.getSubfield('a') != null) {
-				String sysDetailsValue = sysDetailsNote2.getSubfield('a').getData().toLowerCase();
-				String gameFormat = getGameFormatFromValue(sysDetailsValue);
-				if (gameFormat != null){
-					result.add(gameFormat);
-				}else{
-					if (sysDetailsValue.contains("playaway")) {
-						result.add("Playaway");
-					} else if (find4KUltraBluRayPhrases(sysDetailsValue)) {
-						result.add("4KUltraBlu-Ray");
-					} else if (sysDetailsValue.contains("bluray") || sysDetailsValue.contains("blu-ray")) {
-						result.add("Blu-ray");
-					} else if (sysDetailsValue.contains("dvd")) {
-						result.add("DVD");
-					} else if (sysDetailsValue.contains("vertical file")) {
-						result.add("VerticalFile");
+		List<DataField> systemDetailsNotes = record.getDataFields("538");
+		for (DataField sysDetailsNote2 : systemDetailsNotes) {
+			if (sysDetailsNote2 != null) {
+				if (sysDetailsNote2.getSubfield('a') != null) {
+					String sysDetailsValue = sysDetailsNote2.getSubfield('a').getData().toLowerCase();
+					String gameFormat = getGameFormatFromValue(sysDetailsValue);
+					if (gameFormat != null) {
+						result.add(gameFormat);
+					} else {
+						if (sysDetailsValue.contains("playaway")) {
+							result.add("Playaway");
+						} else if (find4KUltraBluRayPhrases(sysDetailsValue)) {
+							result.add("4KUltraBlu-Ray");
+						} else if (sysDetailsValue.contains("bluray") || sysDetailsValue.contains("blu-ray")) {
+							result.add("Blu-ray");
+						} else if (sysDetailsValue.contains("dvd")) {
+							result.add("DVD");
+						} else if (sysDetailsValue.contains("vertical file")) {
+							result.add("VerticalFile");
+						}
 					}
 				}
 			}
