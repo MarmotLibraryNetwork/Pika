@@ -594,7 +594,16 @@ public class SierraExportAPIMain {
 				//Delete the primary identifier
 				deletePrimaryIdentifierStmt.setLong(1, primaryIdentifierId);
 				deletePrimaryIdentifierStmt.executeUpdate();
-				logger.warn("Deleting primary identifier for grouped work id " + groupedWorkId + " and bib id " + id);
+
+				String permanentId = "";
+				getPermanentIdByWorkIdStmt.setLong(1, groupedWorkId);
+				ResultSet getPermanentIdByWorkIdRS = getPermanentIdByWorkIdStmt.executeQuery();
+				if (getPermanentIdByWorkIdRS.next()) {
+					permanentId = getPermanentIdByWorkIdRS.getString("permanent_id");
+					logger.warn("Deleting primary identifier for grouped work permanentId " + permanentId + " and bib id " + id);
+				} else {
+					logger.warn("Deleting primary identifier for grouped work id " + primaryIdentifierId + " and bib id " + id);
+				}
 
 				//Check to see if there are other identifiers for this work
 				getAdditionalPrimaryIdentifierForWorkStmt.setLong(1, groupedWorkId);
@@ -607,10 +616,12 @@ public class SierraExportAPIMain {
 				} else {
 					//The grouped work no longer exists
 					//Get the permanent id
-					getPermanentIdByWorkIdStmt.setLong(1, groupedWorkId);
-					ResultSet getPermanentIdByWorkIdRS = getPermanentIdByWorkIdStmt.executeQuery();
-					if (getPermanentIdByWorkIdRS.next()) {
-						String permanentId = getPermanentIdByWorkIdRS.getString("permanent_id");
+
+//TODO: temp comment
+//					getPermanentIdByWorkIdStmt.setLong(1, groupedWorkId);
+//					ResultSet getPermanentIdByWorkIdRS = getPermanentIdByWorkIdStmt.executeQuery();
+//					if (getPermanentIdByWorkIdRS.next()) {
+//						String permanentId = getPermanentIdByWorkIdRS.getString("permanent_id");
 
 
 						logger.warn("Sierra API extract deleted Group Work " + permanentId + " from index. Investigate if it is an anomalous deletion by the Sierra API extract");
@@ -625,7 +636,7 @@ public class SierraExportAPIMain {
 //						deleteGroupedWorkStmt.setLong(1, groupedWorkId);
 //						deleteGroupedWorkStmt.executeUpdate();
 
-					}
+//					} //TODO: temp comment
 
 				}
 			}//If not true, already deleted skip this
