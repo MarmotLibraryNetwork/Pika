@@ -1,12 +1,58 @@
 //Variables Customizations for CCU theme
-@header-top-color: #004580; //Top color for background gradient in header
-@header-middle-color: #015092; //middle color for background gradient in header @80% of header height from bottom
-@header-bottom-color: #015294; //Bottom color for background gradient in header
-@header-bottom-border-color: #013565;
-@footer-top-border-color: #013565;
-@header-height: 105px;
 
+@ccu-dark-blue: #00416B;
+@ccu-light-blue: #42b4e4;
+@ccu-yellow: #FCD823;
+
+
+@header-top-color: @ccu-dark-blue; //Top color for background gradient in header
+@header-middle-color: @ccu-dark-blue; //middle color for background gradient in header @80% of header height from bottom
+@header-bottom-color: @ccu-dark-blue; //Bottom color for background gradient in header
+@header-bottom-border-color: #fff;
+@footer-top-border-color: @ccu-dark-blue;
+
+@header-height: 98px;
+@header-logo-height: 88px;
+@header-bottom-border-width:3px;
+
+@home-search-top-color: @ccu-dark-blue;
+@home-search-bottom-color: @ccu-dark-blue;
+
+@menu-bar-background-color:@ccu-dark-blue;
+@menu-bar-selected-background-color: @ccu-light-blue;
+
+
+@btn-primary-bg: @ccu-yellow;
+@btn-primary-color: #333;
 
 // Home Page Browse Category More Results button
-@more-browse-results-backgroundcolor: @category1MainColor;
+@more-browse-results-backgroundcolor: @ccu-light-blue;
 @more-browse-results-color: #d4d4d4;
+
+
+@category1MainColor: @ccu-light-blue;
+//@categoryLineColor: #ffffff;
+//@categoryLineShadow: #ffffff;
+//@selectedCategoryBorderColor: #ffffff;
+
+@browse-header-background-color: #ffffff;
+@browseCarouselControlBackgroundColor: #ffffff;
+@browseCarouselControlColor: @ccu-yellow;
+
+// Selected Category color to give a highlighted appearance
+//@selectedCategoryColor: @ccu-light-blue;
+//@selectedSubCategoryBackgroundColor: @selectedCategoryColor;
+
+
+// set all browse category colors to the first color to remove lightening of successive categories. plb 9-17-2014*/
+@category2MainColor: @category1MainColor;
+@category3MainColor: @category1MainColor;
+@category4MainColor: @category1MainColor;
+@category5MainColor: @category1MainColor;
+@category6MainColor: @category1MainColor;
+@category7MainColor: @category1MainColor;
+@category8MainColor: @category1MainColor;
+@category9MainColor: @category1MainColor;
+
+// set opened accordions color
+@accordion-active-header-backgroundcolor: @ccu-light-blue;
