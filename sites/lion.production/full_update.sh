@@ -89,6 +89,7 @@ cd /usr/local/vufind-plus/vufind/cron;./GetHooplaFromMarmot.sh >> ${OUTPUT_FILE}
 /usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} lion/rbdigital_audio rbdigital_audio/lion >> ${OUTPUT_FILE}
 /usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} lion/rbdigital/russell rbdigital/russell >> ${OUTPUT_FILE}
 /usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} lion/rbdigital/easthampton rbdigital/easthampton >> ${OUTPUT_FILE}
+/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} lion/rbdigital/essex rbdigital/essex >> ${OUTPUT_FILE}
 /usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} lion/rbdigital_magazine rbdigital_magazine/lion >> ${OUTPUT_FILE}
 
 #Extract Lexile Data
