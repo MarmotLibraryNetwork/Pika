@@ -602,7 +602,7 @@ public class SierraExportAPIMain {
 					permanentId = getPermanentIdByWorkIdRS.getString("permanent_id");
 					logger.warn("Deleting primary identifier for grouped work permanentId " + permanentId + " and bib id " + id);
 				} else {
-					logger.warn("Deleting primary identifier for grouped work id " + primaryIdentifierId + " and bib id " + id);
+					logger.warn("Deleting primary identifier for grouped work permanent id " + primaryIdentifierId + " with grouped work id " + groupedWorkId + " and bib id " + id);
 				}
 
 				//Check to see if there are other identifiers for this work
