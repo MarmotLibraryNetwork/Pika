@@ -592,9 +592,9 @@ public class SierraExportAPIMain {
 				Long primaryIdentifierId = getWorkForPrimaryIdentifierRS.getLong("id");
 
 				//Delete the primary identifier
-				//deletePrimaryIdentifierStmt.setLong(1, primaryIdentifierId);
-//				deletePrimaryIdentifierStmt.executeUpdate();
-				logger.warn("Not deleting primary identifier for grouped work id " + groupedWorkId + " and bib id " + id);
+				deletePrimaryIdentifierStmt.setLong(1, primaryIdentifierId);
+				deletePrimaryIdentifierStmt.executeUpdate();
+				logger.warn("Deleting primary identifier for grouped work id " + groupedWorkId + " and bib id " + id);
 
 				//Check to see if there are other identifiers for this work
 				getAdditionalPrimaryIdentifierForWorkStmt.setLong(1, groupedWorkId);
@@ -613,16 +613,18 @@ public class SierraExportAPIMain {
 						String permanentId = getPermanentIdByWorkIdRS.getString("permanent_id");
 
 
-						logger.warn("Sierra API extract would have deleted Group Work " + permanentId + " Preventing to investigate underlying issues to fix the Sierra API extract");
+						logger.warn("Sierra API extract deleted Group Work " + permanentId + " from index. Investigate if it is an anomalous deletion by the Sierra API extract");
 						// See https://marmot.myjetbrains.com/youtrack/issue/D-2364
 //						//Delete the work from solr
-//						groupedWorkIndexer.deleteRecord(permanentId);
-//
+						groupedWorkIndexer.deleteRecord(permanentId);
+
+						//Prevent deletion of the grouped work entry for now. Pascal 8-3-2018
 //						//Delete the work from the database?
 //						//TODO: Should we do this or leave a record if it was linked to lists, reading history, etc?
 //						//regular indexer deletes them too
 //						deleteGroupedWorkStmt.setLong(1, groupedWorkId);
 //						deleteGroupedWorkStmt.executeUpdate();
+
 					}
 
 				}
