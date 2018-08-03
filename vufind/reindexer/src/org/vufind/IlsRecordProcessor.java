@@ -1655,6 +1655,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			printFormats.remove("Software");
 			printFormats.remove("Electronic");
 			printFormats.remove("CDROM");
+			printFormats.remove("DVD");
 			printFormats.remove("Blu-ray");
 			printFormats.remove("4KUltraBlu-Ray");
 		}
