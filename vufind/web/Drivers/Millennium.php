@@ -891,9 +891,9 @@ class Millennium extends ScreenScrapingDriver
 				$extraPostInfo['notices'] = $_REQUEST['notices'];
 			}
 
-			if (isset($_REQUEST['username']) && $_REQUEST['username'] != $user->alt_username){
+			if (isset($_REQUEST['alternate_username']) && $_REQUEST['alternate_username'] != $user->alt_username){
 				// Only Update username if it has changed
-				$extraPostInfo['user_name'] = $_REQUEST['username'];
+				$extraPostInfo['user_name'] = $_REQUEST['alternate_username'];
 			}
 
 			if (isset($_REQUEST['mobileNumber'])){
