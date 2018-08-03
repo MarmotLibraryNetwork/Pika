@@ -8498,7 +8498,7 @@ hr.menu {
 }
 .menu-bar {
   color: #FFF;
-  background-color: #AAAAAA;
+  background-color: #0c4c94;
 }
 #horizontal-menu-bar-container {
   padding-left: 5px;
@@ -8518,7 +8518,7 @@ hr.menu {
   float: left;
 }
 #horizontal-menu-bar-container .menu-icon.menu-icon-selected {
-  background-color: #d5d5d5;
+  background-color: #d8191b;
 }
 #horizontal-menu-bar-container.sticky-menu-bar {
   position: fixed;
@@ -8541,7 +8541,7 @@ hr.menu {
   width: 40px;
   height: 2000px;
   height: 100vh;
-  background-color: #AAAAAA;
+  background-color: #0c4c94;
   color: #FFF;
   padding-left: 0;
   padding-right: 0;
@@ -8555,7 +8555,7 @@ hr.menu {
   position: relative;
 }
 #vertical-menu-bar .menu-bar-option.menu-icon-selected {
-  background-color: #d5d5d5;
+  background-color: #d8191b;
 }
 #vertical-menu-bar .menu-bar-option.menu-icon-selected .menu-bar-label {
   color: #FFF;
@@ -8672,18 +8672,18 @@ hr.menu {
   color: red;
 }
 #home-page-search {
-  background-color: #FFF;
-  background: linear-gradient(to bottom, #FFF, #FFF);
+  background-color: #0c4c94;
+  background: linear-gradient(to bottom, #0c4c94, #0c4c94);
   padding: 20px 0 10px;
   margin-bottom: 5px;
 }
 #home-page-search-label {
   font-size: 35px;
-  color: #000;
+  color: #FFF;
   text-shadow: 1px 1px #999999;
 }
 #home-page-advanced-search-link {
-  color: #000;
+  color: #FFF;
 }
 #lookfor:-ms-input-placeholder {
   font-size: 0;
@@ -8713,19 +8713,19 @@ hr.menu {
 .searchSource {
   margin: 5px 0 0;
   color: #fff;
-  background-color: #FFF;
+  background-color: #0c4c94;
   border: none;
   width: 90% !important;
 }
 #keepFiltersSwitchLabel,
 #advancedSearchLink {
-  color: #000;
+  color: #FFF;
   font-weight: normal;
   font-size: 85%;
 }
 #horizontal-search-box {
-  background-color: #FFF;
-  background: linear-gradient(to bottom, #FFF, #FFF);
+  background-color: #0c4c94;
+  background: linear-gradient(to bottom, #0c4c94, #0c4c94);
   padding: 15px 0;
 }
 #horizontal-search-box #searchForm .row {
@@ -8762,7 +8762,7 @@ hr.menu {
   }
 }
 #horizontal-search-box #horizontal-search-label {
-  color: #000;
+  color: #FFF;
 }
 #horizontal-search-box #lookfor {
   height: 34px;
@@ -10086,7 +10086,7 @@ a.browse-thumbnail-sorted.active {
   display: inline-block;
   padding: 2px;
   padding-bottom: 20px;
-  border-top: 5px solid #AAAAAA;
+  border-top: 5px solid #0c4c94;
   margin-top: 15px;
 }
 .combined-results-section .related-manifestation {
@@ -10101,8 +10101,8 @@ a.browse-thumbnail-sorted.active {
 .combined-results-button {
   float: right;
   margin-top: 4px;
-  background-color: #AAAAAA;
-  border-color: #AAAAAA;
+  background-color: #0c4c94;
+  border-color: #0c4c94;
 }
 .graph-bar {
   background-color: #088ec6;
@@ -10234,15 +10234,15 @@ a.browse-thumbnail-sorted.active {
   font-weight: bold;
 }
 #explore-more-sidebar {
-  background-color: #FFF;
-  background: linear-gradient(to bottom, #FFF, #FFF);
+  background-color: #0c4c94;
+  background: linear-gradient(to bottom, #0c4c94, #0c4c94);
 }
 #explore-more-header {
   padding: 10px 25px 5px 0;
   margin-top: 5px;
   text-align: right;
   color: #FFF;
-  background-color: #9d9d9d;
+  background-color: #0a407c;
   font-variant: small-caps;
   font-weight: bold;
   font-size: 16px;
@@ -10259,7 +10259,7 @@ a.browse-thumbnail-sorted.active {
   text-transform: uppercase;
   font-weight: bold;
   color: #000075;
-  border-bottom: 2px solid #AAAAAA;
+  border-bottom: 2px solid #0c4c94;
   margin-top: 15px;
 }
 #explore-more-body .section {
@@ -10301,12 +10301,12 @@ a.browse-thumbnail-sorted.active {
   }
 }
 .exploreMoreBar {
-  border: solid 1px #AAAAAA;
+  border: solid 1px #0c4c94;
   margin: 10px 5px 15px;
 }
 .exploreMoreBar .exploreMoreBarLabel {
   color: #FFF;
-  background-color: #AAAAAA;
+  background-color: #0c4c94;
   font-weight: bold;
   text-transform: uppercase;
   white-space: nowrap;
@@ -10324,7 +10324,7 @@ a.browse-thumbnail-sorted.active {
 }
 .exploreMoreBar .label-left,
 .exploreMoreBar .label-left img {
-  background-color: #AAAAAA;
+  background-color: #0c4c94;
 }
 .exploreMoreBar .label-left .exploreMoreBarLabel {
   position: absolute;
@@ -10346,7 +10346,7 @@ a.browse-thumbnail-sorted.active {
 }
 .exploreMoreBar .label-top,
 .exploreMoreBar .label-top img {
-  background-color: #AAAAAA;
+  background-color: #0c4c94;
   display: inline-block;
 }
 .exploreMoreBar .label-top .exploreMoreBarLabel {
@@ -10414,7 +10414,7 @@ a.browse-thumbnail-sorted.active {
 #book-sections .jcarousel-control-next {
   height: 100%;
   background-color: transparent;
-  color: #AAAAAA;
+  color: #0c4c94;
   z-index: 2;
   box-shadow: white 0px 0px 0px 0px;
 }
@@ -10577,7 +10577,7 @@ a.browse-thumbnail-sorted.active {
 .archiveComponentContainer .archiveComponent .archiveComponentBody .archiveComponentBox .archiveComponentControls,
 .archiveComponentContainer .archiveComponent .archiveComponentBody .archiveComponentBox .archiveComponentSearchControls {
   color: #FFF;
-  background-color: #AAAAAA;
+  background-color: #0c4c94;
   padding: 10px 0;
   min-height: 124px;
 }
@@ -10587,7 +10587,7 @@ a.browse-thumbnail-sorted.active {
 }
 .archiveComponentContainer .archiveComponent .archiveComponentBody .archiveComponentBox #searchComponentForm {
   background-color: white;
-  border: 1px solid #919191;
+  border: 1px solid #083465;
   padding: 3px;
   margin-left: 5px;
 }
@@ -10615,7 +10615,7 @@ a.browse-thumbnail-sorted.active {
   top: 65px;
 }
 .archiveComponentContainer .archiveComponent.horizontalComponent .archiveComponentHeader {
-  background-color: #AAAAAA;
+  background-color: #0c4c94;
   padding: 10px 10px 0;
 }
 .archiveComponentContainer .archiveComponent.horizontalComponent .archiveComponentHeader + .row {
@@ -10806,7 +10806,7 @@ fieldset[disabled] .btn-masquerade.active {
   border: 0;
   border-radius: 0.5em;
   color: #fff !important;
-  background-color: rgba(51, 51, 51, 0.6);
+  background-color: #9556a4;
   margin-top: 20px;
   line-height: 60px !important;
   text-shadow: none;
@@ -10822,7 +10822,7 @@ fieldset[disabled] .btn-masquerade.active {
 #advancedSearchLink,
 #horizontal-search-box #horizontal-search-label,
 #home-page-advanced-search-link {
-  color: #000;
+  color: #FFF;
 }
 #horizontal-search-box .searchSourceHorizontal,
 #horizontal-search-box #horizontal-search-box .searchTypeHorizontal {
