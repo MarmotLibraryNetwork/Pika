@@ -8407,7 +8407,7 @@ hr.menu {
 }
 #header-container {
   padding-top: 0;
-  height: 90px;
+  height: 120px;
   background-color: #1552a6;
   background: linear-gradient(to bottom, #1552a6, #1552a6 85%, #1552a6);
   border-bottom: 8px solid #1552a6;
@@ -8427,7 +8427,7 @@ hr.menu {
   text-align: center;
   text-shadow: 1px 1px #fff;
   vertical-align: middle;
-  line-height: 82px !important;
+  line-height: 112px !important;
   border-bottom: 4px solid #1552a6;
   color: #8b8b8b !important;
 }
@@ -10812,12 +10812,15 @@ body {
   background: url('../images/sutter-bypass.png') no-repeat center center fixed;
   background-size: cover;
 }
-#system-message-header {
-  background-color: #fff;
+#header-logo {
+  padding: 0;
+  margin-top: 5px;
+  height: 110px;
 }
+#system-message-header,
 #system-message-header ~ .breadcrumbs,
 .container > div:nth-child(1).breadcrumbs {
-  background-color: #1552a6;
+  background-color: #fffff7;
 }
 #headingInfo:before {
   content: '';
