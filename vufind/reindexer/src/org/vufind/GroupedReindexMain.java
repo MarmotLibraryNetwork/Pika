@@ -21,7 +21,7 @@ import java.util.Date;
  */
 public class GroupedReindexMain {
 
-	private static Logger logger	= Logger.getLogger(GroupedReindexMain.class);
+	private static Logger logger = Logger.getLogger(GroupedReindexMain.class);
 
 	//General configuration
 	private static String serverName;

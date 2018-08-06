@@ -36,6 +36,7 @@ public class Scope implements Comparable<Scope>{
 	//Inclusion rules indicate records owned by someone else that should be shown within the scope
 	private HashSet<InclusionRule> inclusionRules = new HashSet<>();
 	private String ilsCode;
+	private Long sharedOverdriveCollectionId;
 	private boolean includeOverDriveAdultCollection;
 	private boolean includeOverDriveTeenCollection;
 	private boolean includeOverDriveKidsCollection;
@@ -211,7 +212,7 @@ public class Scope implements Comparable<Scope>{
 
 	String getIlsCode() {
 		return ilsCode;
-	}
+	} //TODO: no longer needed for indexing
 
 	void setIlsCode(String ilsCode) {
 		this.ilsCode = ilsCode;
@@ -310,6 +311,14 @@ public class Scope implements Comparable<Scope>{
 			isUnscoped = relatedNumericPTypes.contains(-1L);
 		}
 		return isUnscoped;
+	}
+
+	public Long getSharedOverdriveCollectionId() {
+		return sharedOverdriveCollectionId;
+	}
+
+	public void setSharedOverdriveCollectionId(Long sharedOverdriveCollectionId) {
+		this.sharedOverdriveCollectionId = sharedOverdriveCollectionId;
 	}
 
 	class InclusionResult{

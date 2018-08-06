@@ -63,9 +63,9 @@ class GroupedWork4 extends GroupedWorkBase implements Cloneable {
 		if (titleEnd < groupingTitle.length()) {
 			groupingTitle = groupingTitle.substring(0, titleEnd);
 		}
-		groupingTitle = groupingTitle.trim();
+		groupingTitle = groupingTitle.trim(); //TODO: trim before the 100 character truncation
 		if (groupingTitle.length() == 0 && titleBeforeRemovingSubtitles.length() > 0){
-			logger.info("Title " + fullTitle + " was normalized to nothing, reverting to " + titleBeforeRemovingSubtitles);
+			logger.info("Title '" + fullTitle + "' was normalized to nothing, reverting to '" + titleBeforeRemovingSubtitles + "'");
 			groupingTitle = titleBeforeRemovingSubtitles.trim();
 		}
 		return groupingTitle;
@@ -182,7 +182,7 @@ class GroupedWork4 extends GroupedWorkBase implements Cloneable {
 			title = normalizeSubtitleWithinMainTitle(title);
 		}
 		title = normalizeTitle(title, numNonFilingCharacters);
-		this.fullTitle = title.trim();
+		this.fullTitle = title.trim(); //TODO: title is already trimmed in normalizeTitle
 	}
 
 	private String normalizePassedInSubtitle(String title, String subtitle) {
@@ -198,7 +198,7 @@ class GroupedWork4 extends GroupedWorkBase implements Cloneable {
 				}
 			}
 		}else{
-			logger.debug("Not appending subtitle because it was already part of the title.");
+			logger.debug("Not appending subtitle '" + subtitle + "' because it was already part of the title '" + title + "'.");
 		}
 		return title;
 	}

@@ -48,15 +48,17 @@ class OverDriveDriver3 {
 		'audiobook-overdrive' => 'OverDrive Listen',
 		'video-streaming' => 'OverDrive Video',
 		'ebook-mediado' => 'MediaDo Reader',
+		'magazine-overdrive'=> 'OverDrive Magazine'
 	);
 
 	private function _connectToAPI($forceNewConnection = false){
 		/** @var Memcache $memCache */
 		global $memCache;
-		$tokenData = $memCache->get('overdrive_token');
+		global $serverName;
+		$tokenData = $memCache->get('overdrive_token' . $serverName);
 		if ($forceNewConnection || $tokenData == false){
 			global $configArray;
-			if (isset($configArray['OverDrive']['clientKey']) && $configArray['OverDrive']['clientKey'] != '' && isset($configArray['OverDrive']['clientSecret']) && $configArray['OverDrive']['clientSecret'] != ''){
+			if (!empty($configArray['OverDrive']['clientKey'])  && !empty($configArray['OverDrive']['clientSecret'])){
 				$ch = curl_init("https://oauth.overdrive.com/token");
 				curl_setopt($ch, CURLOPT_USERAGENT,"Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)");
 				curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -73,7 +75,7 @@ class OverDriveDriver3 {
 				curl_close($ch);
 				$tokenData = json_decode($return);
 				if ($tokenData){
-					$memCache->set('overdrive_token', $tokenData, 0, $tokenData->expires_in - 10);
+					$memCache->set('overdrive_token' . $serverName, $tokenData, 0, $tokenData->expires_in - 10);
 				}
 			}else{
 				//OverDrive is not configured
@@ -84,6 +86,14 @@ class OverDriveDriver3 {
 	}
 
 	//private function _connectToPatronAPI($patronBarcode, $patronPin = 1234, $forceNewConnection = false){
+
+	/**
+	 * @param User $user
+	 * @param $patronBarcode
+	 * @param $patronPin
+	 * @param bool $forceNewConnection
+	 * @return array|bool|mixed|string
+	 */
 	private function _connectToPatronAPI($user, $patronBarcode, $patronPin, $forceNewConnection = false){
 		/** @var Memcache $memCache */
 		global $memCache;
@@ -95,10 +105,20 @@ class OverDriveDriver3 {
 			if ($tokenData){
 				global $configArray;
 				$ch = curl_init("https://oauth-patron.overdrive.com/patrontoken");
-				if (!isset($configArray['OverDrive']['patronWebsiteId'])){
+				if (empty($configArray['OverDrive']['patronWebsiteId'])){
 					return false;
+				} elseif (strpos($configArray['OverDrive']['patronWebsiteId'], ',') > 0) {
+					//Multiple Overdrive Accounts
+					$patronWebsiteIds = explode(',', $configArray['OverDrive']['patronWebsiteId']);
+					$homeLibrary = $user->getHomeLibrary();
+					$overdriveSharedCollectionId = $homeLibrary->sharedOverdriveCollection;
+					// Shared collection Id numbers are negative and based on the order accountIds of $configArray['OverDrive']['accountId']
+					// (patron website ids need to have the same matching order)
+					$indexOfSiteToUse = abs($overdriveSharedCollectionId) - 1;
+					$websiteId = $patronWebsiteIds[$indexOfSiteToUse];
+				} else {
+					$websiteId = $configArray['OverDrive']['patronWebsiteId'];
 				}
-				$websiteId = $configArray['OverDrive']['patronWebsiteId'];
 				//$websiteId = 100300;
 
 				$ilsname = $this->getILSName($user);
@@ -107,10 +127,12 @@ class OverDriveDriver3 {
 				}
 				//$ilsname = "default";
 
-				if (!isset($configArray['OverDrive']['clientSecret'])){
+				if (empty($configArray['OverDrive']['clientSecret'])){
 					return false;
 				}
 				$clientSecret = $configArray['OverDrive']['clientSecret'];
+				$userAgent = empty($configArray['Catalog']['catalogUserAgent']) ? 'Pika' : $configArray['Catalog']['catalogUserAgent'];
+
 				curl_setopt($ch, CURLOPT_USERAGENT,"Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)");
 				curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 				curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
@@ -119,7 +141,7 @@ class OverDriveDriver3 {
 				curl_setopt($ch, CURLOPT_HTTPHEADER, array(
 					'Content-Type: application/x-www-form-urlencoded;charset=UTF-8',
 					"Authorization: Basic " . $encodedAuthValue,
-					"User-Agent: VuFind-Plus"
+					"User-Agent: $userAgent"
 				));
 				//curl_setopt($ch, CURLOPT_USERPWD, "");
 				//$clientSecret = $configArray['OverDrive']['clientSecret'];
@@ -171,14 +193,18 @@ class OverDriveDriver3 {
 	public function _callUrl($url){
 		$tokenData = $this->_connectToAPI();
 		if ($tokenData){
+			global $configArray;
+			$userAgent = empty($configArray['Catalog']['catalogUserAgent']) ? 'Pika' : $configArray['Catalog']['catalogUserAgent'];
+
 			$ch = curl_init($url);
 			curl_setopt($ch, CURLOPT_USERAGENT,"Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)");
-			curl_setopt($ch, CURLOPT_HTTPHEADER, array("Authorization: {$tokenData->token_type} {$tokenData->access_token}", "User-Agent: VuFind-Plus"));
+			curl_setopt($ch, CURLOPT_HTTPHEADER, array("Authorization: {$tokenData->token_type} {$tokenData->access_token}", "User-Agent: $userAgent"));
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 			curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
 			curl_setopt($ch, CURLOPT_TIMEOUT, 10);
 			curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 1);
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 			$return = curl_exec($ch);
 			curl_close($ch);
 			$returnVal = json_decode($return);
@@ -242,8 +268,9 @@ class OverDriveDriver3 {
 		$userBarcode = $user->getBarcode();
 		if ($this->getRequirePin($user)){
 			$barcodeProperty = $configArray['Catalog']['barcodeProperty'];
+			//TODO: this should use the account profile property instead
 			$userPin = ($barcodeProperty == 'cat_username') ? $user->cat_password : $user->cat_username;
-				// determine which column is the pin by using the opposing field to the barcode. (between pin & username)
+			// determine which column is the pin by using the opposing field to the barcode. (between pin & username)
 			$tokenData = $this->_connectToPatronAPI($user, $userBarcode, $userPin, false);
 			// this worked for flatirons checkout.  plb 1-13-2015
 //			$tokenData = $this->_connectToPatronAPI($user->cat_username, $user->cat_password, false);
@@ -255,9 +282,11 @@ class OverDriveDriver3 {
 			curl_setopt($ch, CURLOPT_USERAGENT,"Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)");
 			if (isset($tokenData->token_type) && isset($tokenData->access_token)){
 				$authorizationData = $tokenData->token_type . ' ' . $tokenData->access_token;
+				global $configArray;
+				$userAgent = empty($configArray['Catalog']['catalogUserAgent']) ? 'Pika' : $configArray['Catalog']['catalogUserAgent'];
 				$headers = array(
 					"Authorization: $authorizationData",
-					"User-Agent: VuFind-Plus",
+					"User-Agent: $userAgent",
 					"Host: patron.api.overdrive.com" // production
 					//"Host: integration-patron.api.overdrive.com" // testing
 				);
@@ -293,7 +322,7 @@ class OverDriveDriver3 {
 			}
 			curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 
-				$return = curl_exec($ch);
+			$return = curl_exec($ch);
 			$curlInfo = curl_getinfo($ch);
 			curl_close($ch);
 			$returnVal = json_decode($return);
@@ -313,16 +342,18 @@ class OverDriveDriver3 {
 		if ($tokenData || true){
 			$ch = curl_init($url);
 			curl_setopt($ch, CURLOPT_USERAGENT,"Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)");
+			global $configArray;
+			$userAgent = empty($configArray['Catalog']['catalogUserAgent']) ? 'Pika' : $configArray['Catalog']['catalogUserAgent'];
 			if ($tokenData){
 				$authorizationData = $tokenData->token_type . ' ' . $tokenData->access_token;
 				$headers = array(
 					"Authorization: $authorizationData",
-					"User-Agent: VuFind-Plus",
+					"User-Agent: $userAgent",
 					"Host: patron.api.overdrive.com",
 					//"Host: integration-patron.api.overdrive.com"
 				);
 			}else{
-				$headers = array("User-Agent: VuFind-Plus", "Host: api.overdrive.com");
+				$headers = array("User-Agent: $userAgent", "Host: api.overdrive.com");
 			}
 
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -355,23 +386,35 @@ class OverDriveDriver3 {
 		return false;
 	}
 
-	public function getLibraryAccountInformation(){
+	public function getOverDriveAccountIds() {
+		$sharedOverdriveCollectionChoices = array();
 		global $configArray;
-		$libraryId = $configArray['OverDrive']['accountId'];
-		return $this->_callUrl("https://api.overdrive.com/v1/libraries/$libraryId");
+		if (!empty($configArray['OverDrive']['accountId'])) {
+			$overdriveAccounts = explode(',', $configArray['OverDrive']['accountId']);
+			$sharedCollectionIdNum = -1; // default shared libraryId for overdrive items
+			foreach ($overdriveAccounts as $overdriveAccountId) {
+				$overdriveAccountId = trim($overdriveAccountId);
+				$sharedOverdriveCollectionChoices[$sharedCollectionIdNum] = $overdriveAccountId;
+				$sharedCollectionIdNum--;
+			}
+			return $sharedOverdriveCollectionChoices;
+		} else {
+			return false;
+		}
+
 	}
 
-	public function getAdvantageAccountInformation(){
-		global $configArray;
-		$libraryId = $configArray['OverDrive']['accountId'];
-		return $this->_callUrl("https://api.overdrive.com/v1/libraries/$libraryId/advantageAccounts");
+	public function getLibraryAccountInformation($overdriveAccountId){
+		return $this->_callUrl("https://api.overdrive.com/v1/libraries/$overdriveAccountId");
 	}
 
-	public function getProductsInAccount($productsUrl = null, $start = 0, $limit = 25){
-		global $configArray;
+	public function getAdvantageAccountInformation($overdriveAccountId){
+		return $this->_callUrl("https://api.overdrive.com/v1/libraries/$overdriveAccountId/advantageAccounts");
+	}
+
+	public function getProductsInAccount($overdriveProductsKey, $productsUrl = null, $start = 0, $limit = 25){
 		if ($productsUrl == null){
-			$libraryId = $configArray['OverDrive']['accountId'];
-			$productsUrl = "https://api.overdrive.com/v1/collections/$libraryId/products";
+			$productsUrl = "https://api.overdrive.com/v1/collections/$overdriveProductsKey/products";
 		}
 		$productsUrl .= "?offset=$start&limit=$limit";
 		return $this->_callUrl($productsUrl);
@@ -387,6 +430,7 @@ class OverDriveDriver3 {
 		global $configArray;
 		if ($productsKey == null){
 			$productsKey = $configArray['OverDrive']['productsKey'];
+			//TODO: the products key can be gotten through the API
 		}
 		$overDriveId= strtoupper($overDriveId);
 		$metadataUrl = "https://api.overdrive.com/v1/collections/$productsKey/products/$overDriveId/metadata";
@@ -404,32 +448,6 @@ class OverDriveDriver3 {
 		return $this->_callUrl($availabilityUrl);
 	}
 
-	private function _parseLendingOptions($lendingPeriods){
-		$lendingOptions = array();
-		//print_r($lendingPeriods);
-		if (preg_match('/<script>.*?var hazVariableLending.*?<\/script>.*?<noscript>(.*?)<\/noscript>/si', $lendingPeriods, $matches)){
-			preg_match_all('/<li>\\s?\\d+\\s-\\s(.*?)<select name="(.*?)">(.*?)<\/select><\/li>/si', $matches[1], $lendingPeriodInfo, PREG_SET_ORDER);
-			for ($i = 0; $i < count($lendingPeriodInfo); $i++){
-				$lendingOption = array();
-				$lendingOption['name'] = $lendingPeriodInfo[$i][1];
-				$lendingOption['id'] = $lendingPeriodInfo[$i][2];
-				$options = $lendingPeriodInfo[$i][3];
-				$lendingOption['options']= array();
-				preg_match_all('/<option value="(.*?)".*?(selected="selected")?>(.*?)<\/option>/si', $options, $optionInfo, PREG_SET_ORDER);
-				for ($j = 0; $j < count($optionInfo); $j++){
-					$option = array();
-					$option['value'] = $optionInfo[$j][1];
-					$option['selected'] = strlen($optionInfo[$j][2]) > 0;
-					$option['name'] = $optionInfo[$j][3];
-					$lendingOption['options'][] = $option;
-				}
-				$lendingOptions[] = $lendingOption;
-			}
-		}
-		//print_r($lendingOptions);
-		return $lendingOptions;
-	}
-
 	private $checkouts = array();
 
 	/**
@@ -437,7 +455,7 @@ class OverDriveDriver3 {
 	 *
 	 * @param User $user
 	 * @param array $overDriveInfo optional array of information loaded from _loginToOverDrive to improve performance.
-	 *
+	 * @param bool $forSummary
 	 * @return array
 	 */
 	public function getOverDriveCheckedOutItems($user, $overDriveInfo = null, $forSummary = false){
@@ -481,7 +499,7 @@ class OverDriveDriver3 {
 							if ($format->formatType == 'ebook-overdrive' || $format->formatType == 'ebook-mediado') {
 								$bookshelfItem['overdriveRead'] = true;
 							}else if ($format->formatType == 'audiobook-overdrive'){
-									$bookshelfItem['overdriveListen'] = true;
+								$bookshelfItem['overdriveListen'] = true;
 							}else if ($format->formatType == 'video-streaming'){
 								$bookshelfItem['overdriveVideo'] = true;
 							}else{
@@ -571,6 +589,7 @@ class OverDriveDriver3 {
 	/**
 	 * @param User $user
 	 * @param null $overDriveInfo
+	 * @param bool $forSummary
 	 * @return array
 	 */
 	public function getOverDriveHolds($user, $overDriveInfo = null, $forSummary = false){
@@ -699,7 +718,6 @@ class OverDriveDriver3 {
 	 * Places a hold on an item within OverDrive
 	 *
 	 * @param string $overDriveId
-	 * @param int $format
 	 * @param User $user
 	 *
 	 * @return array (result, message)
@@ -766,7 +784,7 @@ class OverDriveDriver3 {
 			if ($analytics) $analytics->addEvent('OverDrive', 'Cancel Hold', 'succeeded');
 		}else{
 			$cancelHoldResult['message'] = 'There was an error cancelling your hold.';
-		 if (isset($response->message)) $cancelHoldResult['message'] .= "  {$response->message}";
+			if (isset($response->message)) $cancelHoldResult['message'] .= "  {$response->message}";
 			if ($analytics) $analytics->addEvent('OverDrive', 'Cancel Hold', 'failed');
 		}
 		$memCache->delete('overdrive_summary_' . $user->id);
@@ -998,27 +1016,28 @@ class OverDriveDriver3 {
 				$addPlaceHoldLink = true;
 			}
 		}
-		foreach ($items as $key => $item){
+		foreach ($items as $key => &$item){
 			$item->links = array();
 			if ($addCheckoutLink){
 				$checkoutLink = "return VuFind.OverDrive.checkOutOverDriveTitle('{$overDriveRecordDriver->getUniqueID()}');";
 				$item->links[] = array(
-					'onclick' => $checkoutLink,
-					'text' => 'Check Out',
+					'onclick' =>     $checkoutLink,
+					'text' =>        'Check Out OverDrive',
 					'overDriveId' => $overDriveRecordDriver->getUniqueID(),
-					'formatId' => $item->numericId,
-					'action' => 'CheckOut'
+					'formatId' =>    $item->numericId, // TODO: this doesn't appear to be used any more. pascal 8.1-2018
+					'action' =>      'CheckOut'
 				);
 			}else if ($addPlaceHoldLink){
 				$item->links[] = array(
-					'onclick' => "return VuFind.OverDrive.placeOverDriveHold('{$overDriveRecordDriver->getUniqueID()}', '{$item->numericId}');",
-					'text' => 'Place Hold',
+					'onclick' =>     "return VuFind.OverDrive.placeOverDriveHold('{$overDriveRecordDriver->getUniqueID()}', '{$item->numericId}');",
+					//TODO: second parameter doesn't look to be needed any more
+					'text' => '      Place Hold OverDrive',
 					'overDriveId' => $overDriveRecordDriver->getUniqueID(),
-					'formatId' => $item->numericId,
-					'action' => 'Hold'
+					'formatId' =>    $item->numericId, // TODO: this doesn't appear to be used any more. pascal 8.1-2018
+					'action' =>      'Hold'
 				);
 			}
-			$items[$key] = $item;
+//			$items[$key] = $item;
 		}
 
 		return $items;
@@ -1057,12 +1076,14 @@ class OverDriveDriver3 {
 	 */
 	public function getScopedAvailability($overDriveRecordDriver){
 		$availability = array();
-		$availability['mine'] = $overDriveRecordDriver->getAvailability();
+		$availability['mine']  = $overDriveRecordDriver->getAvailability();
 		$availability['other'] = array();
 		$scopingId = $this->getLibraryScopingId();
 		if ($scopingId != -1){
 			foreach ($availability['mine'] as $key => $availabilityItem){
-				if ($availabilityItem->libraryId != -1 && $availabilityItem->libraryId != $scopingId){
+				if ($availabilityItem->libraryId > 0 && $availabilityItem->libraryId != $scopingId){
+					// Move items not in the shared collections and not in the library's advantage collection to the "other" catagory.
+					//TODO: does this need reworked with multiple shared collections
 					$availability['other'][$key] = $availability['mine'][$key];
 					unset($availability['mine'][$key]);
 				}
@@ -1093,29 +1114,29 @@ class OverDriveDriver3 {
 
 		//Load status summary
 		$statusSummary = array();
-		$statusSummary['recordId'] = $id;
-		$statusSummary['totalCopies'] = $totalCopies;
-		$statusSummary['onOrderCopies'] = $onOrderCopies;
-		$statusSummary['accessType'] = 'overdrive';
-		$statusSummary['isOverDrive'] = false;
+		$statusSummary['recordId']        = $id;
+		$statusSummary['totalCopies']     = $totalCopies;
+		$statusSummary['onOrderCopies']   = $onOrderCopies;
+		$statusSummary['accessType']      = 'overdrive';
+		$statusSummary['isOverDrive']     = false;
 		$statusSummary['alwaysAvailable'] = false;
-		$statusSummary['class'] = 'checkedOut';
-		$statusSummary['available'] = false;
-		$statusSummary['status'] = 'Not Available';
+		$statusSummary['class']           = 'checkedOut';
+		$statusSummary['available']       = false;
+		$statusSummary['status']          = 'Not Available';
 
 		$statusSummary['availableCopies'] = $availableCopies;
-		$statusSummary['isOverDrive'] = true;
+		$statusSummary['isOverDrive']     = true;
 		if ($totalCopies >= 999999){
 			$statusSummary['alwaysAvailable'] = true;
 		}
 		if ($availableCopies > 0){
-			$statusSummary['status'] = "Available from OverDrive";
+			$statusSummary['status']    = "Available from OverDrive";
 			$statusSummary['available'] = true;
-			$statusSummary['class'] = 'available';
+			$statusSummary['class']     = 'available';
 		}else{
-			$statusSummary['status'] = 'Checked Out';
-			$statusSummary['available'] = false;
-			$statusSummary['class'] = 'checkedOut';
+			$statusSummary['status']      = 'Checked Out';
+			$statusSummary['available']   = false;
+			$statusSummary['class']       = 'checkedOut';
 			$statusSummary['isOverDrive'] = true;
 		}
 

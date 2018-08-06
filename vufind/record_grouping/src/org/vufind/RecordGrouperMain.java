@@ -1386,7 +1386,7 @@ public class RecordGrouperMain {
 					boolean swapFirstNameLastName = false;
 					if (creatorInfoRS.next()){
 						String tmpAuthor = creatorInfoRS.getString("fileAs");
-						if (tmpAuthor.equals(author) && (mediaType.equals("ebook") || mediaType.equals("audiobook"))){
+						if (tmpAuthor.equals(author) && (mediaType.equals("ebook") || mediaType.equals("audiobook"))){ //TODO: should be ignore case equals on mediaType checks
 							swapFirstNameLastName = true;
 						}else{
 							author = tmpAuthor;
@@ -1395,6 +1395,8 @@ public class RecordGrouperMain {
 						swapFirstNameLastName = true;
 					}
 					if (swapFirstNameLastName){
+						logger.debug("Swap First Last Name for author '" + author + "' for an Overdrive title.");
+						// I suspect this never gets called anymore. pascal 7/26/2018
 						if (author.contains(" ")){
 							String[] authorParts = author.split("\\s+");
 							StringBuilder tmpAuthor = new StringBuilder();

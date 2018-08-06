@@ -37,7 +37,7 @@ public class ExtractOverDriveInfoMain {
 			}else if (firstArg.equals("singleWork")){
 				//Process a specific work
 				//Prompt for the work to process
-				System.out.print("Enter the id of the record to update from OverDrive: ");
+				System.out.print("Enter the Overdrive ID of the record to update from OverDrive: ");
 
 				//  open up standard input
 				BufferedReader br = new BufferedReader(new InputStreamReader(System.in));

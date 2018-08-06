@@ -519,7 +519,8 @@ class OverDriveRecordDriver extends RecordInterface {
 			}
 			$libraryScopingId = $this->getLibraryScopingId();
 			if ($includeSharedTitles){
-				$availability->whereAdd('libraryId = -1 OR libraryId = ' . $libraryScopingId);
+				$sharedCollectionId = $searchLibrary->sharedOverdriveCollection;
+				$availability->whereAdd('libraryId = ' . $sharedCollectionId . ' OR libraryId = ' . $libraryScopingId);
 			}else{
 				if ($libraryScopingId == -1){
 					return $this->availability;
@@ -1098,14 +1099,14 @@ class OverDriveRecordDriver extends RecordInterface {
 		$actions = array();
 		if ($isAvailable){
 			$actions[] = array(
-				'title' => 'Check Out OverDrive',
-				'onclick' => "return VuFind.OverDrive.checkOutOverDriveTitle('{$this->id}');",
+				'title'        => 'Check Out OverDrive',
+				'onclick'      => "return VuFind.OverDrive.checkOutOverDriveTitle('{$this->id}');",
 				'requireLogin' => false,
 			);
 		}else{
 			$actions[] = array(
-				'title' => 'Place Hold OverDrive',
-				'onclick' => "return VuFind.OverDrive.placeOverDriveHold('{$this->id}');",
+				'title'        => 'Place Hold OverDrive',
+				'onclick'      => "return VuFind.OverDrive.placeOverDriveHold('{$this->id}');",
 				'requireLogin' => false,
 			);
 		}

@@ -29,7 +29,8 @@ class OverDriveDriver2 {
 	private function _connectToAPI($forceNewConnection = false){
 		/** @var Memcache $memCache */
 		global $memCache;
-		$tokenData = $memCache->get('overdrive_token');
+		global $serverName;
+		$tokenData = $memCache->get('overdrive_token' . $serverName);
 		if ($forceNewConnection || $tokenData == false){
 			global $configArray;
 			$ch = curl_init("https://oauth.overdrive.com/token");
@@ -48,7 +49,7 @@ class OverDriveDriver2 {
 			curl_close($ch);
 			$tokenData = json_decode($return);
 			if ($tokenData){
-				$memCache->set('overdrive_token', $tokenData, 0, $tokenData->expires_in - 10);
+				$memCache->set('overdrive_token' . $serverName, $tokenData, 0, $tokenData->expires_in - 10);
 			}
 		}
 		return $tokenData;
