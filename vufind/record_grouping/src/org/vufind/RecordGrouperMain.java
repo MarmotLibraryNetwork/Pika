@@ -812,6 +812,11 @@ public class RecordGrouperMain {
 					if (numRemoved != 1) {
 						logger.warn("Could not delete " + recordNumber + " from ils_marc_checksums table");
 					}
+					else if (curProfile.equals("ils")) {
+						//TODO: this is temporary. this is to diagnose Sierra API Extract issues
+						logger.warn("Deleted ils record " + recordNumber + " from the ils checksum table.");
+
+					}
 				} catch (SQLException e) {
 					logger.error("Error removing ILS id " + recordNumber + " from ils_marc_checksums table", e);
 				}
@@ -828,6 +833,9 @@ public class RecordGrouperMain {
 					int numRemoved = removePrimaryIdentifier.executeUpdate();
 					if (numRemoved != 1) {
 						logger.warn("Could not delete " + recordNumber + " from grouped_work_primary_identifiers table");
+					} else if (curProfile.equals("ils")) {
+						//TODO: this is temporary. this is to diagnose Sierra API Extract issues
+						logger.warn("Deleting grouped work primary identifier entry for record " + recordNumber);
 					}
 				} catch (SQLException e) {
 					logger.error("Error removing " + recordNumber + " from grouped_work_primary_identifiers table", e);
@@ -1103,11 +1111,11 @@ public class RecordGrouperMain {
 				if (ilsMarcChecksumRS.wasNull()){
 					marcRecordFirstDetectionDates.put(fullIdentifier, null);
 				}
-				String identifierLowerCase = fullIdentifier.toLowerCase();
-				if (marcRecordIdsInDatabase.containsKey(identifierLowerCase)){
-					logger.warn(identifierLowerCase + " was already loaded in marcRecordIdsInDatabase");
+				String fullIdentifierLowerCase = fullIdentifier.toLowerCase();
+				if (marcRecordIdsInDatabase.containsKey(fullIdentifierLowerCase)){
+					logger.warn(fullIdentifierLowerCase + " was already loaded in marcRecordIdsInDatabase");
 				}else {
-					marcRecordIdsInDatabase.put(identifierLowerCase, ilsMarcChecksumRS.getLong("id"));
+					marcRecordIdsInDatabase.put(fullIdentifierLowerCase, ilsMarcChecksumRS.getLong("id"));
 				}
 			}
 			ilsMarcChecksumRS.close();
