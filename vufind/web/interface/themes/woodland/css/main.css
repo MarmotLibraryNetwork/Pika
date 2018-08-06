@@ -10814,7 +10814,10 @@ fieldset[disabled] .btn-masquerade.active {
 }
 #header-logo {
   padding: 0;
-  height: 150px;
+  margin-top: 5px;
+  border-radius: 4px;
+  height: 140px;
+  background-color: rgba(230, 230, 230, 0.3);
 }
 #system-message-header,
 #system-message-header ~ .breadcrumbs,
