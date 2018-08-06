@@ -10817,7 +10817,7 @@ fieldset[disabled] .btn-masquerade.active {
   margin-top: 5px;
   border-radius: 4px;
   height: 140px;
-  background-color: rgba(230, 230, 230, 0.3);
+  background-color: rgba(230, 230, 230, 0.5);
 }
 #system-message-header,
 #system-message-header ~ .breadcrumbs,
