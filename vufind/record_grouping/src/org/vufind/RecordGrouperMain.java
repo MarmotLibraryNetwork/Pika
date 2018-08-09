@@ -814,7 +814,7 @@ public class RecordGrouperMain {
 					}
 					else if (curProfile.equals("ils")) {
 						//TODO: this is temporary. this is to diagnose Sierra API Extract issues
-						logger.warn("Deleted ils record " + recordNumber + " from the ils checksum table.");
+						logger.debug("Deleted ils record " + recordNumber + " from the ils checksum table.");
 
 					}
 				} catch (SQLException e) {
@@ -835,7 +835,7 @@ public class RecordGrouperMain {
 						logger.warn("Could not delete " + recordNumber + " from grouped_work_primary_identifiers table");
 					} else if (curProfile.equals("ils")) {
 						//TODO: this is temporary. this is to diagnose Sierra API Extract issues
-						logger.warn("Deleting grouped work primary identifier entry for record " + recordNumber);
+						logger.debug("Deleting grouped work primary identifier entry for record " + recordNumber);
 					}
 				} catch (SQLException e) {
 					logger.error("Error removing " + recordNumber + " from grouped_work_primary_identifiers table", e);
@@ -1203,7 +1203,7 @@ public class RecordGrouperMain {
 				processProfile = true;
 			}
 			if (!processProfile) {
-				logger.debug("Checking if " + curProfile.name + "has had any records marked for regrouping.");
+				logger.debug("Checking if " + curProfile.name + " has had any records marked for regrouping.");
 				if (checkForForcedRegrouping(dbConnection, curProfile.name)) {
 					processProfile = true;
 					addNoteToGroupingLog(curProfile.name + " has no file changes but will be processed because records have been marked for forced regrouping.");
