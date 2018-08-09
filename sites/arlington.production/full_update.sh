@@ -14,8 +14,8 @@ PIKASERVER=arlington.production
 PIKADBNAME=pika
 OUTPUT_FILE="/var/log/vufind-plus/${PIKASERVER}/full_update_output.log"
 
-MINFILE1SIZE=$((773000000))
-MINFILE2SIZE=$((448000000))
+MINFILE1SIZE=$((815000000))
+MINFILE2SIZE=$((467000000))
 
 # Check for conflicting processes currently running
 function checkConflictingProcesses() {
