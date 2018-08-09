@@ -119,8 +119,8 @@ do
 	cd /data/vufind-plus/aacpl.test/marc
 #	wget -q "https://drive.google.com/uc?export=download&id=0B_xqNQMfUrAzanJUZkNXekgtU2s" -O "Pika_Hold_Periodicals.csv"
 #	wget -q "https://drive.google.com/uc?export=download&id=0B_xqNQMfUrAzNGJrajJzQWs3ZGs" -O "Pika_Holds.csv"
-	wget -q "https://drive.google.com/uc?export=download&id=1s3iw6Ldzfcs1AODTfxrSH52za7mL5VqY" -O "Pika_Hold_Periodicals.csv"
-	wget -q "https://drive.google.com/uc?export=download&id=1NNrmCBfBIvnxMdm7Hq9G1xuUGrDadV-v" -O "Pika_Holds.csv"
+	wget -q "https://drive.google.com/uc?export=download&id=1OOS8p8cZcWoHPVnt1jQlpcR9NwRnjlam" -O "Pika_Hold_Periodicals.csv"
+	wget -q "https://drive.google.com/uc?export=download&id=1aT8jXgDd3jG0K3xTYYcFi0hgBRWW6fj2" -O "Pika_Holds.csv"
 
 	cd /usr/local/vufind-plus/vufind/symphony_export/
 	java -server -jar symphony_export.jar  ${PIKASERVER} >> ${OUTPUT_FILE}
