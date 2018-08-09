@@ -812,6 +812,11 @@ public class RecordGrouperMain {
 					if (numRemoved != 1) {
 						logger.warn("Could not delete " + recordNumber + " from ils_marc_checksums table");
 					}
+					else if (curProfile.equals("ils")) {
+						//TODO: this is temporary. this is to diagnose Sierra API Extract issues
+						logger.debug("Deleted ils record " + recordNumber + " from the ils checksum table.");
+
+					}
 				} catch (SQLException e) {
 					logger.error("Error removing ILS id " + recordNumber + " from ils_marc_checksums table", e);
 				}
@@ -828,6 +833,9 @@ public class RecordGrouperMain {
 					int numRemoved = removePrimaryIdentifier.executeUpdate();
 					if (numRemoved != 1) {
 						logger.warn("Could not delete " + recordNumber + " from grouped_work_primary_identifiers table");
+					} else if (curProfile.equals("ils")) {
+						//TODO: this is temporary. this is to diagnose Sierra API Extract issues
+						logger.debug("Deleting grouped work primary identifier entry for record " + recordNumber);
 					}
 				} catch (SQLException e) {
 					logger.error("Error removing " + recordNumber + " from grouped_work_primary_identifiers table", e);
@@ -1103,11 +1111,11 @@ public class RecordGrouperMain {
 				if (ilsMarcChecksumRS.wasNull()){
 					marcRecordFirstDetectionDates.put(fullIdentifier, null);
 				}
-				String identifierLowerCase = fullIdentifier.toLowerCase();
-				if (marcRecordIdsInDatabase.containsKey(identifierLowerCase)){
-					logger.warn(identifierLowerCase + " was already loaded in marcRecordIdsInDatabase");
+				String fullIdentifierLowerCase = fullIdentifier.toLowerCase();
+				if (marcRecordIdsInDatabase.containsKey(fullIdentifierLowerCase)){
+					logger.warn(fullIdentifierLowerCase + " was already loaded in marcRecordIdsInDatabase");
 				}else {
-					marcRecordIdsInDatabase.put(identifierLowerCase, ilsMarcChecksumRS.getLong("id"));
+					marcRecordIdsInDatabase.put(fullIdentifierLowerCase, ilsMarcChecksumRS.getLong("id"));
 				}
 			}
 			ilsMarcChecksumRS.close();
@@ -1195,7 +1203,7 @@ public class RecordGrouperMain {
 				processProfile = true;
 			}
 			if (!processProfile) {
-				logger.debug("Checking if " + curProfile.name + "has had any records marked for regrouping.");
+				logger.debug("Checking if " + curProfile.name + " has had any records marked for regrouping.");
 				if (checkForForcedRegrouping(dbConnection, curProfile.name)) {
 					processProfile = true;
 					addNoteToGroupingLog(curProfile.name + " has no file changes but will be processed because records have been marked for forced regrouping.");
@@ -1386,7 +1394,7 @@ public class RecordGrouperMain {
 					boolean swapFirstNameLastName = false;
 					if (creatorInfoRS.next()){
 						String tmpAuthor = creatorInfoRS.getString("fileAs");
-						if (tmpAuthor.equals(author) && (mediaType.equals("ebook") || mediaType.equals("audiobook"))){
+						if (tmpAuthor.equals(author) && (mediaType.equals("ebook") || mediaType.equals("audiobook"))){ //TODO: should be ignore case equals on mediaType checks
 							swapFirstNameLastName = true;
 						}else{
 							author = tmpAuthor;
@@ -1395,6 +1403,8 @@ public class RecordGrouperMain {
 						swapFirstNameLastName = true;
 					}
 					if (swapFirstNameLastName){
+						logger.debug("Swap First Last Name for author '" + author + "' for an Overdrive title.");
+						// I suspect this never gets called anymore. pascal 7/26/2018
 						if (author.contains(" ")){
 							String[] authorParts = author.split("\\s+");
 							StringBuilder tmpAuthor = new StringBuilder();

@@ -93,6 +93,11 @@
 ###############################
 55 8,12 * * * cd /usr/local/vufind-plus/vufind/cron; /opt/rh/php55/root/usr/bin/php NashvilleAdHocOverdues.php nashville.test
 
+###############################
+# MNPS School Barcodes Report #
+###############################
+50 5 * * * cd /usr/local/vufind-plus/vufind/cron; rm -f /data/pika/nashville.test/report/*_school_barcodes.csv; /opt/rh/php55/root/usr/bin/php NashvilleAdHocBarcodes.php nashville.test
+
 #################################
 # hacks to keep things afloat until Sparky increases RAM
 # RAM was increased to 32G 2015 09 11; JAMES is keeping these lines commented out here for emergencies

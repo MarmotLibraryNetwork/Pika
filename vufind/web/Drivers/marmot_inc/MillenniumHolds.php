@@ -534,8 +534,9 @@ class MillenniumHolds{
 								$curHold['status'] = $status;
 							}elseif (preg_match('/Hold Being Shelved/i', $status, $matches)){
 								$curHold['status'] = $status;
-							}elseif ($status == 'Available ') {
-								$curHold['status'] = 'Ready';
+//							} elseif ($status == 'Available ') {
+//								$curHold['status'] = 'Ready';
+							// Appears to be an anomalous issue for LION See D-2443
 							}else{
 								#PK-778 - Don't attempt to show status for anything other than ready for pickup since Millennium/Sierra statuses are confusing
 								$curHold['status'] = 'Pending';

@@ -88,7 +88,12 @@
 ###############################
 # MNPS School Overdues Report #
 ###############################
-58 8,12 * * * cd /usr/local/vufind-plus/vufind/cron; /opt/rh/php55/root/usr/bin/php NashvilleAdHocOverdues.php nashville.production
+58 5-15 * * * cd /usr/local/vufind-plus/vufind/cron; /opt/rh/php55/root/usr/bin/php NashvilleAdHocOverdues.php nashville.production
+
+###############################
+# MNPS School Barcodes Report #
+###############################
+50 5 * * * cd /usr/local/vufind-plus/vufind/cron; rm -f /data/pika/nashville.production/report/*_school_barcodes.csv; /opt/rh/php55/root/usr/bin/php NashvilleAdHocBarcodes.php nashville.production
 
 #################################
 # hacks to keep things afloat until Sparky increases RAM

@@ -81,3 +81,7 @@
 # Check for semaphore errors
 17 * * * * cd /usr/local/vufind-plus/vufind/cron/; ./apacheSemaphoreCleanup.sh root
 
+#-- renew SSL certs at 1:40AM and 1:40PM everyday --###
+40 1,13 * * * certbot renew
+
+#-- EOF --

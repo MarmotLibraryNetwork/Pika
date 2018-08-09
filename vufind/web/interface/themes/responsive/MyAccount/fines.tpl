@@ -18,9 +18,9 @@
 	{if count($userFines) > 0}
 
 		{* Show Fine Alert when the user has no linked accounts *}
-		{if  count($userFines) == 1 && $profile->fines}
+		{if  count($userFines) == 1 && $user->fines}
 			<div class="alert alert-info">
-				Your account has <strong>{$profile->fines}</strong> in fines.
+				Your account has <strong>{$user->fines}</strong> in fines.
 			</div>
 		{/if}
 
@@ -99,7 +99,7 @@
 			{include file="MyAccount/finePayments.tpl"}
 		{else}
 			{* Pay Fines Button *}
-			{if $showEcommerceLink && $profile->finesVal > $minimumFineAmount}
+			{if $showEcommerceLink && $user->finesVal > $minimumFineAmount}
 				<a href="{$ecommerceLink}" target="_blank"{if $showRefreshAccountButton} onclick="VuFind.Account.ajaxLightbox('{$path}/AJAX/JSON?method=getPayFinesAfterAction')"{/if}>
 					<div class="btn btn-sm btn-primary">{if $payFinesLinkText}{$payFinesLinkText}{else}Click to Pay Fines Online{/if}</div>
 				</a>

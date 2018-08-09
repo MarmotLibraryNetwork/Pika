@@ -42,7 +42,7 @@
 ############################
 # Split Marmot Full Export #
 ############################
-17 00 * * * cp /ftp/sierra/fullexport.marc /data/vufind-plus/marmot.ftp/marc/fullexport.mrc;cd /usr/local/vufind-plus/vufind/cron; java -jar cron.jar marmot.ftp SplitMarcExport
+17 01 * * * cp /ftp/sierra/fullexport.marc /data/vufind-plus/marmot.ftp/marc/fullexport.mrc;cd /usr/local/vufind-plus/vufind/cron; java -jar cron.jar marmot.ftp SplitMarcExport
 
 # Monitor that the marc splitter is updating files
 19 03 * * * /usr/local/vufind-plus/sites/marmot.ftp/marc_split_check.sh
@@ -60,7 +60,7 @@
 7 4 * * * cp /data/vufind-plus/marmot.ftp/split_marc/sd51.mrc /ftp/sd51/MCVSD_BIBS_CollectionAnalysis_81505
 
 # send marc records to collectionHQ at 1.30am every Monday
-30 1 * * 1 /root/cron/marc_send collectionhq
+30 2 * * 1 /root/cron/marc_send collectionhq
 
 # send marc records to Booksite at 2.00am every Monday
 0 2 * * 1 /root/cron/marc_send booksite
@@ -143,8 +143,8 @@
 ###############################################
 # Secure copy CMUSierra.out to cmuvufind.marmot.org #
 ###############################################
-# scp cmu marc records to cmuvufind.marmot.org daily at 3.00 AM
-00 3 * * * /root/cron/cmu_secure_copy_CMUSierra.sh
+# scp cmu marc records to cmuvufind.marmot.org daily at 2.15 AM
+15 2 * * * /root/cron/cmu_secure_copy_CMUSierra.sh
 #
 #---eof---
 

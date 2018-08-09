@@ -206,7 +206,7 @@ public class GroupedWork3 extends GroupedWorkBase implements Cloneable {
 		}
 		groupingTitle = groupingTitle.trim();
 		if (groupingTitle.length() == 0){
-			logger.error("Title " + fullTitle + " was normalized to nothing, reverting to original");
+			logger.error("Title '" + fullTitle + "' was normalized to nothing, reverting to original");
 			groupingTitle = fullTitle;
 		}
 		return groupingTitle;

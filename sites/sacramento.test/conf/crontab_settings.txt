@@ -39,7 +39,7 @@
 # Daily full update #
 #####################
 # This must run before full update on production to ensure sideloads are copied properly
-0 22 * * * cd /usr/local/vufind-plus/sites/sacramento.test; ./full_update.sh
+1 22 * * * cd /usr/local/vufind-plus/sites/sacramento.test; ./full_update.sh
 
 ######################
 # MySQL Nightly Dump #
@@ -62,6 +62,8 @@
 ###################################
 # Library supplied covers
 31 */2 * * * /usr/local/vufind-plus/sites/sacramento.test/copyCovers.sh
+#Lynda weekly update
+29 9 * * Fri /usr/local/vufind-plus/vufind/cron/fetch_lynda.sh sacramento
 
 ############################################
 # New York Times Bestseller Lists Updating #

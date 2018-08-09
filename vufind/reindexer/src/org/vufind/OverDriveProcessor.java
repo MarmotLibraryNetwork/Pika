@@ -39,6 +39,7 @@ public class OverDriveProcessor {
 		try {
 			getProductInfoStmt = econtentConn.prepareStatement("SELECT * from overdrive_api_products where overdriveId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			getNumCopiesStmt = econtentConn.prepareStatement("SELECT sum(copiesOwned) as totalOwned FROM overdrive_api_product_availability WHERE productId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+			//TODO filter by libraries belonging to an overdrive account??
 			getProductMetadataStmt = econtentConn.prepareStatement("SELECT * from overdrive_api_product_metadata where productId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			getProductAvailabilityStmt = econtentConn.prepareStatement("SELECT * from overdrive_api_product_availability where productId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			//getProductCreatorsStmt = econtentConn.prepareStatement("SELECT * from overdrive_api_product_creators where productId = ?");
@@ -176,6 +177,7 @@ public class OverDriveProcessor {
 						overDriveRecord.setPhysicalDescription("");
 
 						int totalCopiesOwned = 0;
+						//TODO: totalCopiesOwned will now have to account for multiple overdrive accounts
 						while (availabilityRS.next()) {
 							//Just create one item for each with a list of sub formats.
 							ItemInfo itemInfo = new ItemInfo();
@@ -203,6 +205,7 @@ public class OverDriveProcessor {
 							int copiesOwned = availabilityRS.getInt("copiesOwned");
 							itemInfo.setNumCopies(copiesOwned);
 							totalCopiesOwned = Math.max(copiesOwned, totalCopiesOwned);
+							//TODO: totalCopiesOwned will now have to account for multiple overdrive accounts
 
 							if (available) {
 								itemInfo.setDetailedStatus("Available Online");
@@ -211,11 +214,11 @@ public class OverDriveProcessor {
 							}
 
 							boolean isAdult = targetAudience.equals("Adult");
-							boolean isTeen = targetAudience.equals("Young Adult");
-							boolean isKids = targetAudience.equals("Juvenile");
-							if (libraryId == -1) {
+							boolean isTeen  = targetAudience.equals("Young Adult");
+							boolean isKids  = targetAudience.equals("Juvenile");
+							if (libraryId < 0) {
 								for (Scope scope : indexer.getScopes()) {
-									if (scope.isIncludeOverDriveCollection()) {
+									if (scope.isIncludeOverDriveCollection() && scope.getSharedOverdriveCollectionId() == libraryId) {
 										//Check based on the audience as well
 										boolean okToInclude = false;
 										if (isAdult && scope.isIncludeOverDriveAdultCollection()) {
@@ -279,7 +282,7 @@ public class OverDriveProcessor {
 
 							}//End processing availability
 						}
-						groupedWork.addHoldings(totalCopiesOwned);
+						groupedWork.addHoldings(totalCopiesOwned); //TODO: determine how this should work with multiple overdrive accounts
 					}
 					numCopiesRS.close();
 				}

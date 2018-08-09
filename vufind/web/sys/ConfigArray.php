@@ -279,23 +279,28 @@ function updateConfigForScoping($configArray) {
 	$subdomainsToTest = array();
 	if(strpos($_SERVER['SERVER_NAME'], '.')){
 		$serverComponents = explode('.', $_SERVER['SERVER_NAME']);
-		$tempSubdomain = '';
+		$possibleMarmotTestSiteSubdomain = '';
 		if (count($serverComponents) >= 3){
 			//URL is probably of the form subdomain.marmot.org or subdomain.opac.marmot.org
-			$subdomainsToTest[] = $serverComponents[0];
-			$tempSubdomain = $serverComponents[0];
+			if ($serverComponents[0] == 'librarycatalog') {
+				// Special Handling for Sacramento Production URLs which don't follow the conventional URL structure, but will need to identified by the second component for some of the URLs
+				$subdomainsToTest[] = $serverComponents[1];
+			} else {
+				$subdomainsToTest[]              = $serverComponents[0];
+				$possibleMarmotTestSiteSubdomain = $serverComponents[0];
+			}
 		} else if (count($serverComponents) == 2){
 			//URL could be either subdomain.localhost or marmot.org. Only use the subdomain
 			//If the second component is localhost.
 			if (strcasecmp($serverComponents[1], 'localhost') == 0){
 				$subdomainsToTest[] = $serverComponents[0];
-				$tempSubdomain = $serverComponents[0];
+				$possibleMarmotTestSiteSubdomain = $serverComponents[0];
 			}
 		}
-		//Trim off test indicator when doing lookups for library/location
-		$lastChar = substr($tempSubdomain, -1);
+		//Trim off test indicator when doing lookups for library/location. eg opac2, opac3, opact, etc
+		$lastChar = substr($possibleMarmotTestSiteSubdomain, -1);
 		if ($lastChar == '2' || $lastChar == '3' || $lastChar == 't' || $lastChar == 'd' || $lastChar == 'x'){
-			$subdomainsToTest[] = substr($tempSubdomain, 0, -1);
+			$subdomainsToTest[] = substr($possibleMarmotTestSiteSubdomain, 0, -1);
 		}
 	}
 

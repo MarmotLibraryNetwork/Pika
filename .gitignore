@@ -5,14 +5,16 @@
 ########################################################
 sites/*/backup
 !sites/default/backup
-sites/default/solr5/docs/*
-sites/default/solr5/example/*
-sites/default/solr5/licenses/*
-sites/default/solr5/logs/*
-sites/default/solr5/tmp/*
-sites/default/solr5/server/logs/*
-sites/default/solr5/server/tmp/*
-sites/default/solr5/server/solr/configsets/*
+sites/default/solr/docs/*
+sites/default/solr/example/*
+sites/default/solr/licenses/*
+#sites/default/solr/logs/*
+sites/default/solr/tmp/*
+sites/default/solr/server/logs/*
+sites/default/solr/server/tmp/*
+sites/default/solr/server/solr/configsets/*
+sites/default/solr/jetty/*
+sites/default/solr/jetty/solr-webapp/webapp/*
 vufind/web/interface/cache/*
 vufind/web/interface/compile/*
 vufind/web/phpinfo.php
@@ -38,7 +40,6 @@ hcl_solr_bib_export.properties
 horizon_export.properties
 *.pid
 *.port
-sites/default/solr/jetty/logs/*
 
 
 # Compiled source #                                                                                   
@@ -67,7 +68,6 @@ LexileTitles.txt
 
 # Logs and databases #
 ######################
-sites/default/solr/jetty/logs
 *.log
 *.log.1
 *.log.2
@@ -116,8 +116,6 @@ documentation/~*.tmp
 # Marmot Symbolic Links #
 #########################
 sites/*.marmot.org
-!sites/opac.marmot.org/
-#re-include the marmot production directory
 
 # Aspencat Symbolic Links #
 ###########################
@@ -139,6 +137,18 @@ sites/170.190.30.108
 sites/170.190.30.180
 sites/170.190.30.38
 sites/*.library.nashville.org
+
+# Sacramento Symbolic Links #
+#############################
+sites/*.saclibrary.org
+sites/librarycatalog.suttercounty.org
+sites/librarycatalog.cityofwoodland.org
+sites/librarycatalog.folsom.ca.us
+
+# Local Machine Symbolic Links #
+################################
+sites/librarycatalog.folsom.localhost/*
+sites/librarycatalog.sutter.localhost/*
 
 # Nashville CarlX Tools #
 ########################

@@ -668,7 +668,8 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		if (itemSublocation.length() > 0){
 			itemInfo.setSubLocation(translateValue("sub_location", itemSublocation, identifier));
 		}
-		itemInfo.setITypeCode(getItemSubfieldData(iTypeSubfield, itemField));
+		String iTypeValue = getItemSubfieldData(iTypeSubfield, itemField);
+		itemInfo.setITypeCode(iTypeValue);
 		itemInfo.setIType(translateValue("itype", getItemSubfieldData(iTypeSubfield, itemField), identifier));
 		loadItemCallNumber(record, itemField, itemInfo);
 		itemInfo.setItemIdentifier(getItemSubfieldData(itemRecordNumberSubfieldIndicator, itemField));
@@ -816,8 +817,10 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		loadDateAdded(recordInfo.getRecordIdentifier(), itemField, itemInfo);
 		getDueDate(itemField, itemInfo);
 
-		itemInfo.setITypeCode(getItemSubfieldData(iTypeSubfield, itemField));
-		itemInfo.setIType(translateValue("itype", getItemSubfieldData(iTypeSubfield, itemField), recordInfo.getRecordIdentifier()));
+		if (iTypeSubfield != ' ') {
+			itemInfo.setITypeCode(getItemSubfieldData(iTypeSubfield, itemField));
+			itemInfo.setIType(translateValue("itype", getItemSubfieldData(iTypeSubfield, itemField), recordInfo.getRecordIdentifier()));
+		}
 
 		double itemPopularity = getItemPopularity(itemField);
 		groupedWork.addPopularity(itemPopularity);
@@ -1461,6 +1464,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		getFormatFromSubjects(record, printFormats);
 		getFormatFromTitle(record, printFormats);
 		getFormatFromDigitalFileCharacteristics(record, printFormats);
+		getGameFormatFrom753(record, printFormats);
 		if (printFormats.size() == 0) {
 			//Only get from fixed field information if we don't have anything yet since the catalogging of
 			//fixed fields is not kept up to date reliably.  #D-87
@@ -1491,7 +1495,9 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			String formatsString = Util.getCsvSeparatedString(printFormats);
 			if (!formatsToFilter.contains(formatsString)){
 				formatsToFilter.add(formatsString);
-				logger.info("Found more than 1 format for " + recordInfo.getFullIdentifier() + " - " + formatsString);
+				if (fullReindex) {
+					logger.warn("Found more than 1 format for " + recordInfo.getFullIdentifier() + " - " + formatsString);
+				}
 			}
 		}
 		return printFormats;
@@ -1501,6 +1507,8 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	private void getFormatFromDigitalFileCharacteristics(Record record, LinkedHashSet<String> printFormats) {
 		Set<String> fields = MarcUtil.getFieldList(record, "347b");
 		for (String curField : fields){
+			if (find4KUltraBluRayPhrases(curField))
+				printFormats.add("4KUltraBlu-Ray");
 			if (curField.equalsIgnoreCase("Blu-Ray")){
 				printFormats.add("Blu-ray");
 			}else if (curField.equalsIgnoreCase("DVD video")){
@@ -1566,6 +1574,12 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		if (printFormats.contains("Blu-ray") && printFormats.contains("VideoDisc")){
 			printFormats.remove("VideoDisc");
 		}
+		if (printFormats.contains("4KUltraBlu-Ray") && printFormats.contains("VideoDisc")){
+			printFormats.remove("VideoDisc");
+		}
+		if (printFormats.contains("Blu-ray") && printFormats.contains("4KUltraBlu-Ray")){
+			printFormats.remove("Blu-ray");
+		}
 		if (printFormats.contains("SoundDisc") && printFormats.contains("SoundRecording")){
 			printFormats.remove("SoundRecording");
 		}
@@ -1623,15 +1637,27 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		if (printFormats.contains("LargePrint") && printFormats.contains("Manuscript")){
 			printFormats.remove("Manuscript");
 		}
-		if (printFormats.contains("Kinect") || printFormats.contains("XBox360")  || printFormats.contains("Xbox360")
+		if (printFormats.contains("Wii") && printFormats.contains("WiiU")){
+			printFormats.remove("Wii");
+		}
+		if (printFormats.contains("3DS") && printFormats.contains("NintendoDS")){
+			printFormats.remove("NintendoDS");
+		}
+		if (printFormats.contains("PlayStation4") && printFormats.contains("PlayStation3")){
+			printFormats.remove("PlayStation3");
+		}
+		if (printFormats.contains("Kinect") || printFormats.contains("Xbox360")
 				|| printFormats.contains("XBoxOne") || printFormats.contains("PlayStation")
 				|| printFormats.contains("PlayStation3") || printFormats.contains("PlayStation4")
 				|| printFormats.contains("Wii") || printFormats.contains("WiiU")
-				|| printFormats.contains("3DS") || printFormats.contains("WindowsGame")){
+				|| printFormats.contains("NintendoDS") || printFormats.contains("3DS")
+				|| printFormats.contains("WindowsGame")){
 			printFormats.remove("Software");
 			printFormats.remove("Electronic");
 			printFormats.remove("CDROM");
+			printFormats.remove("DVD");
 			printFormats.remove("Blu-ray");
+			printFormats.remove("4KUltraBlu-Ray");
 		}
 	}
 
@@ -1716,23 +1742,30 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	private void getFormatFromEdition(Record record, Set<String> result) {
 		// Check for large print book (large format in 650, 300, or 250 fields)
 		// Check for blu-ray in 300 fields
-		DataField edition = record.getDataField("250");
-		if (edition != null) {
-			if (edition.getSubfield('a') != null) {
-				String editionData = edition.getSubfield('a').getData().toLowerCase();
-				if (editionData.contains("large type") || editionData.contains("large print")) {
-					result.add("LargePrint");
-				}else if (editionData.contains("go reader")) {
+//		DataField edition = record.getDataField("250");
+		List<DataField> editions = record.getDataFields("250");
+		for (DataField edition : editions) {
+			if (edition != null) {
+				if (edition.getSubfield('a') != null) {
+					String editionData = edition.getSubfield('a').getData().toLowerCase();
+					if (editionData.contains("large type") || editionData.contains("large print")) {
+						result.add("LargePrint");
+					} else if (editionData.contains("go reader")) {
 						result.add("GoReader");
-				}else {
-					String gameFormat = getGameFormatFromValue(editionData);
-					if (gameFormat != null) {
-						result.add(gameFormat);
+//				} else if (find4KUltraBluRayPhrases(editionData)) {
+//					result.add("4KUltraBlu-Ray");
+						// not sure this is a good idea yet. see D-2432
+					} else {
+						String gameFormat = getGameFormatFromValue(editionData);
+						if (gameFormat != null) {
+							result.add(gameFormat);
+						}
 					}
 				}
 			}
 		}
 	}
+
 
 	private void getFormatFromPhysicalDescription(Record record, Set<String> result) {
 		@SuppressWarnings("unchecked")
@@ -1749,6 +1782,8 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 						String physicalDescriptionData = subfield.getData().toLowerCase();
 						if (physicalDescriptionData.contains("large type") || physicalDescriptionData.contains("large print")) {
 							result.add("LargePrint");
+						} else if (find4KUltraBluRayPhrases(physicalDescriptionData)) {
+							result.add("4KUltraBlu-Ray");
 						} else if (physicalDescriptionData.contains("bluray") || physicalDescriptionData.contains("blu-ray")) {
 							result.add("Blu-ray");
 						} else if (physicalDescriptionData.contains("computer optical disc")) {
@@ -1770,22 +1805,26 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 	private void getFormatFromNotes(Record record, Set<String> result) {
 		// Check for formats in the 538 field
-		DataField sysDetailsNote2 = record.getDataField("538");
-		if (sysDetailsNote2 != null) {
-			if (sysDetailsNote2.getSubfield('a') != null) {
-				String sysDetailsValue = sysDetailsNote2.getSubfield('a').getData().toLowerCase();
-				String gameFormat = getGameFormatFromValue(sysDetailsValue);
-				if (gameFormat != null){
-					result.add(gameFormat);
-				}else{
-					if (sysDetailsValue.contains("playaway")) {
-						result.add("Playaway");
-					} else if (sysDetailsValue.contains("bluray") || sysDetailsValue.contains("blu-ray")) {
-						result.add("Blu-ray");
-					} else if (sysDetailsValue.contains("dvd")) {
-						result.add("DVD");
-					} else if (sysDetailsValue.contains("vertical file")) {
-						result.add("VerticalFile");
+		List<DataField> systemDetailsNotes = record.getDataFields("538");
+		for (DataField sysDetailsNote2 : systemDetailsNotes) {
+			if (sysDetailsNote2 != null) {
+				if (sysDetailsNote2.getSubfield('a') != null) {
+					String sysDetailsValue = sysDetailsNote2.getSubfield('a').getData().toLowerCase();
+					String gameFormat = getGameFormatFromValue(sysDetailsValue);
+					if (gameFormat != null) {
+						result.add(gameFormat);
+					} else {
+						if (sysDetailsValue.contains("playaway")) {
+							result.add("Playaway");
+						} else if (find4KUltraBluRayPhrases(sysDetailsValue)) {
+							result.add("4KUltraBlu-Ray");
+						} else if (sysDetailsValue.contains("bluray") || sysDetailsValue.contains("blu-ray")) {
+							result.add("Blu-ray");
+						} else if (sysDetailsValue.contains("dvd")) {
+							result.add("DVD");
+						} else if (sysDetailsValue.contains("vertical file")) {
+							result.add("VerticalFile");
+						}
 					}
 				}
 			}
@@ -1827,6 +1866,20 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		}
 	}
 
+	private void getGameFormatFrom753(Record record, Set<String> result) {
+		// Check for formats in the 753 field "System Details Access to Computer Files"
+		DataField sysDetailsTag = record.getDataField("753");
+		if (sysDetailsTag != null) {
+			if (sysDetailsTag.getSubfield('a') != null) {
+				String sysDetailsValue = sysDetailsTag.getSubfield('a').getData().toLowerCase();
+				String gameFormat = getGameFormatFromValue(sysDetailsValue);
+				if (gameFormat != null){
+					result.add(gameFormat);
+				}
+			}
+		}
+	}
+
 	private String getGameFormatFromValue(String value) {
 		if (value.contains("kinect sensor")) {
 			return "Kinect";
@@ -1844,8 +1897,14 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			return "WiiU";
 		} else if (value.contains("nintendo wii")) {
 			return "Wii";
+		} else if (value.contains("wii")) { // make sure this check comes after checks for "wii u"
+			return "Wii";
 		} else if (value.contains("nintendo 3ds")) {
 			return "3DS";
+		} else if (value.contains("nintendo switch")) {
+			return "NintendoSwitch";
+		} else if (value.contains("nintendo ds")) {
+			return "NintendoDS";
 		} else if (value.contains("directx")) {
 			return "WindowsGame";
 		}else{
@@ -2293,5 +2352,21 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		}
 		return translatedValues;
 
+	}
+
+	private Boolean find4KUltraBluRayPhrases(String subject) {
+		subject = subject.toLowerCase();
+		return
+			subject.contains("4k ultra hd blu-ray") ||
+			subject.contains("4k ultra hd bluray") ||
+			subject.contains("4k ultrahd blu-ray") ||
+			subject.contains("4k ultrahd bluray") ||
+			subject.contains("4k uh blu-ray") ||
+			subject.contains("4k uh bluray") ||
+			subject.contains("4k ultra high-definition blu-ray") ||
+			subject.contains("4k ultra high-definition bluray") ||
+			subject.contains("4k ultra high definition blu-ray") ||
+			subject.contains("4k ultra high definition bluray")
+			;
 	}
 }

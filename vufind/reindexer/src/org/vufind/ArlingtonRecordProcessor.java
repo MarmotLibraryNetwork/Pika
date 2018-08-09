@@ -21,6 +21,7 @@ import java.util.regex.Pattern;
  * Time: 9:48 PM
  */
 class ArlingtonRecordProcessor extends IIIRecordProcessor {
+	private String materialTypeSubField = "d";
 	private HashSet<String> recordsWithVolumes = new HashSet<>();
 	ArlingtonRecordProcessor(GroupedWorkIndexer indexer, Connection vufindConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 		super(indexer, vufindConn, indexingProfileRS, logger, fullReindex);
@@ -84,7 +85,7 @@ class ArlingtonRecordProcessor extends IIIRecordProcessor {
 			}
 		}
 		if (literaryForm == null){
-			Set<String> bibLocations = MarcUtil.getFieldList(record, "998a");
+			Set<String> bibLocations = MarcUtil.getFieldList(record, sierraRecordFixedFieldsTag + "a");
 			for (String bibLocation : bibLocations){
 			  if (bibLocation.length() <= 5) {
 				  literaryForm = getLiteraryFormForLocation(bibLocation);
@@ -125,7 +126,7 @@ class ArlingtonRecordProcessor extends IIIRecordProcessor {
 			if (addTargetAudienceBasedOnLocationCode(targetAudiences, locationCode)) break;
 		}
 		if (targetAudiences.size() == 0){
-			Set<String> bibLocations = MarcUtil.getFieldList(record, "998a");
+			Set<String> bibLocations = MarcUtil.getFieldList(record, sierraRecordFixedFieldsTag + "a");
 			for (String bibLocation : bibLocations){
 				if (bibLocation.length() <= 5) {
 					if (addTargetAudienceBasedOnLocationCode(targetAudiences, bibLocation)) break;
@@ -161,7 +162,7 @@ class ArlingtonRecordProcessor extends IIIRecordProcessor {
 	 * Load format information for the record.  For arlington, we will load from the material type (998d)
 	 */
 	public void loadPrintFormatInformation(RecordInfo recordInfo, Record record){
-		String matType = MarcUtil.getFirstFieldVal(record, "998d");
+		String matType = MarcUtil.getFirstFieldVal(record, sierraRecordFixedFieldsTag + materialTypeSubField);
 		String translatedFormat = translateValue("format", matType, recordInfo.getRecordIdentifier());
 		String translatedFormatCategory = translateValue("format_category", matType, recordInfo.getRecordIdentifier());
 		recordInfo.addFormat(translatedFormat);
@@ -180,10 +181,10 @@ class ArlingtonRecordProcessor extends IIIRecordProcessor {
 	protected void loadUnsuppressedPrintItems(GroupedWorkSolr groupedWork, RecordInfo recordInfo, String identifier, Record record){
 		super.loadUnsuppressedPrintItems(groupedWork, recordInfo, identifier, record);
 		if (recordInfo.getNumPrintCopies() == 0){
-			String matType = MarcUtil.getFirstFieldVal(record, "998d");
+			String matType = MarcUtil.getFirstFieldVal(record, sierraRecordFixedFieldsTag + materialTypeSubField);
 			if (matType != null && (matType.equals("w") || matType.equals("b"))){
 				//We may have multiple items
-				Set<String> locationFields = MarcUtil.getFieldList(record, "998a");
+				Set<String> locationFields = MarcUtil.getFieldList(record, sierraRecordFixedFieldsTag + "a");
 				for(String locationField: locationFields){
 					ItemInfo itemInfo = new ItemInfo();
 					//Load base information from the Marc Record
@@ -228,10 +229,11 @@ class ArlingtonRecordProcessor extends IIIRecordProcessor {
 		}else{
 			//No items so we can continue on.
 			//Check the mat type
-			String matType = MarcUtil.getFirstFieldVal(record, "998d");
+//			String matType = MarcUtil.getFirstFieldVal(record, "998d");
+			String matType = MarcUtil.getFirstFieldVal(record, sierraRecordFixedFieldsTag + materialTypeSubField);
 			//Get the bib location
 			String bibLocation = null;
-			Set<String> bibLocations = MarcUtil.getFieldList(record, "998a");
+			Set<String> bibLocations = MarcUtil.getFieldList(record, sierraRecordFixedFieldsTag + "a");
 			for (String tmpBibLocation : bibLocations){
 				if (tmpBibLocation.matches("[a-zA-Z]{1,5}")){
 					bibLocation = tmpBibLocation;
@@ -329,36 +331,36 @@ class ArlingtonRecordProcessor extends IIIRecordProcessor {
 		}
 	}
 
-	private static Pattern suppressedBCode3Pattern = Pattern.compile("^[xnopwhd]$");
-	protected boolean isBibSuppressed(Record record) {
-		DataField field998 = record.getDataField("998");
-		if (field998 != null){
-			Subfield suppressionSubfield = field998.getSubfield('e');
-			if (suppressionSubfield != null){
-				String bCode3 = suppressionSubfield.getData().toLowerCase().trim();
-				if (suppressedBCode3Pattern.matcher(bCode3).matches()){
-					logger.debug("Bib record is suppressed due to bcode3 " + bCode3);
-					return true;
-				}
-			}
-		}
-		return false;
-	}
+//	private static Pattern suppressedBCode3Pattern = Pattern.compile("^[xnopwhd]$");
+//	protected boolean isBibSuppressed(Record record) {
+//		DataField field998 = record.getDataField("998");
+//		if (field998 != null){
+//			Subfield suppressionSubfield = field998.getSubfield('e');
+//			if (suppressionSubfield != null){
+//				String bCode3 = suppressionSubfield.getData().toLowerCase().trim();
+//				if (suppressedBCode3Pattern.matcher(bCode3).matches()){
+//					logger.debug("Bib record is suppressed due to bcode3 " + bCode3);
+//					return true;
+//				}
+//			}
+//		}
+//		return false;
+//	}
 
-	private static Pattern suppressedICode2Pattern = Pattern.compile("^(d|e|h|n|p|y|4|5|6)$");
-	protected boolean isItemSuppressed(DataField curItem) {
-		Subfield icode2Subfield = curItem.getSubfield(iCode2Subfield);
-		if (icode2Subfield != null && useICode2Suppression) {
-			String icode2 = icode2Subfield.getData().toLowerCase().trim();
-
-			//Suppress icode2 codes
-			if (suppressedICode2Pattern.matcher(icode2).matches()) {
-				logger.debug("Item record is suppressed due to icode2 " + icode2);
-				return true;
-			}
-		}
-		return super.isItemSuppressed(curItem);
-	}
+//	private static Pattern suppressedICode2Pattern = Pattern.compile("^(d|e|h|n|p|y|4|5|6)$");
+//	protected boolean isItemSuppressed(DataField curItem) {
+//		Subfield icode2Subfield = curItem.getSubfield(iCode2Subfield);
+//		if (icode2Subfield != null && useICode2Suppression) {
+//			String icode2 = icode2Subfield.getData().toLowerCase().trim();
+//
+//			//Suppress icode2 codes
+//			if (suppressedICode2Pattern.matcher(icode2).matches()) {
+//				logger.debug("Item record is suppressed due to icode2 " + icode2);
+//				return true;
+//			}
+//		}
+//		return super.isItemSuppressed(curItem);
+//	}
 
 	/**
 	 * For Arlington do not load Bisac Subjects and load full stings with subfields for topics
