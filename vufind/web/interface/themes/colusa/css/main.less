@@ -27,110 +27,142 @@ body {
 }
 
 
-// Browse Category customizations based on AnyThink
-
-// mixin to select all the typical states of <a> like tags
-.allLinkStates(@rules) {
-  &, &:hover, &:active, &:visited {
-    @rules();
-  }
+// Adopting Nashville styling of browse categories
+.selected-browse-label-search {
+  margin-left: 0;
+  float: left;
+  padding: 0 3px;
+  font-weight: 600;
 }
-
 #browse-label {
-  background-color: #ffffff;
-  //  background: linear-gradient(to bottom, #fff, #fff 98%, @browse-label-text-color 99%);
-  border-bottom: 1px solid @browse-label-text-color;
-  margin: 25px 0 15px;
-  height: auto;
-  padding-bottom: 20px;
-  .browse-label-text{
-    font-weight: 600;
+  display: none;
+}
+#selected-browse-label {
+  background: none;
+
+  > .btn-group {
+    margin-right: 0;
+    padding: 0 3px;
   }
 }
-
-
-// the category text
-.browse-category {
-  padding-top: 20px; // extra padding on top to center text
-  height: 120px;
-
+#browse-category-carousel .browse-category {
+  text-shadow: none;
+  padding: 0;
+  margin-left: 1px;
+  margin-right: 1px;
+  height: 60px;
+  cursor: pointer;
+  font-weight: 600;
+  border: 1px solid #d7d7d7;
   div {
-    //color: @browse-label-text-color;
-    text-shadow: none;
-    text-transform: uppercase;
-    font-size: large;
-    font-weight: 500;
-    &:focus {
-      outline: none; // hide outlining of clicked category
-    }
-  }
-  &.selected {
-    border: none;
-    background-color: @selectedCategoryColor;
-    background: @selectedCategoryColor;
-    background: linear-gradient(to bottom, @selectedCategoryColor 0%, @selectedCategoryColor 75%, #fff 75%, #fff 80%, #CCCCCC 80%, #fff 100%);
-    div {
-      color: #fff;
-    }
-  }
-}
-
-// Left/Right Arrows on browse category carousel
-#browse-category-picker {
-  .jcarousel-control-prev, .jcarousel-control-next {
-    background-color: @content-bg;
-    color: @browseCarouselControlColor;
-    &:active, &:hover {
-      color: @selectedCategoryColor;
+    height: 60px;
+    padding: 15px;
+    //font-size: 20px;
+    &:hover {
       text-decoration: none;
     }
-    .box-shadow(none);
-    font-size: 20px;
   }
-  a {
-    &.jcarousel-control-next:after {
-      content: "▶";
-    }
-    &.jcarousel-control-prev:before {
-      content: "◀";
+  &.selected div {
+    background: @selectedCategoryColor;
+    color:#fff;
+    font-size: @browse-category-font-size;
+    &:hover {
+      background: @selectedCategoryColor;
     }
   }
-  // indicator dots at bottom of browse category carousel
+  &:hover {
+    background: #E4E4E4;
+    border: 1px solid #d7d7d7;
+    //text-decoration: none;
+    transition: all .3s ease-in-out;
+  }
+
+}
+
+#browse-category-picker {
+  .jcarousel-control-prev, .jcarousel-control-next {
+    height: 60px;
+    line-height: 60px;
+    border: 1px solid #ccc;
+    &:hover {
+      text-decoration: none;
+      background: #E4E4E4;
+      transition: all .3s ease-in-out;
+    }
+  }
   .jcarousel-pagination a {
     &.active {
       background: @browseCarouselControlColor;
       // keep shadowing in place on active item
       .box-shadow(0 0 2px #4E443C);
     }
-    @detached-outline-ruleset: {outline: none};
-    .allLinkStates(@detached-outline-ruleset)
+    &, &:hover, &:active, &:visited  {outline: none};
   }
 }
 
-#selected-browse-label {
-  color: black; //TODO: set color
-  background: none; //override line through label
-  padding: 20px 0;
-  border-top: 1px solid @browse-label-text-color;
+.jcarousel-wrapper {
+  margin: 10px auto;
+  position: relative;
 }
 
-.selected-browse-label-search {
-  background: none;
-}
 
-#selected-browse-search-link{
-  text-transform: uppercase;
-}
-
+/* this controls the subcategory menu button are and menu buttons on browse */
 #browse-sub-category-menu {
-  button.selected {
-    background-color: @selectedCategoryColor;
+  margin-top: 20px;
+  .btn {
+    padding: 6px 10px;
+    margin-right: 5px;
+    margin-bottom: 5px;
   }
 }
 
-//.sidebar-button{
-//  color: #333;
-//  background: @sacramento-taupe;
-//}
+#home-page-browse-results hr {
+  margin-top: 0;
+  margin-bottom: 0;
+  border: 0 solid #eee;
+}
 
+
+.panel-title{
+  font-size: 16px;
+}
+
+// Remove gradients from accordions & facets; set a white background for body content //
+#account-settings-accordion, #more-details-accordion, .sidebar-links, #account-settings-accordion {
+  .panel-heading{
+    background: @accordion-header-bg-color;
+  }
+  .active .panel-heading{
+    background: @accordion-active-header-backgroundcolor;
+  }
+  .panel,.panel-heading {
+    border-radius: 0;
+  }
+  .panel-body {
+    background-color: transparent;
+    border: 1px solid #c5c5c5;
+  }
+}
+.facetTitle, .exploreMoreTitle{
+  background: #e8e8e8;
+}
+
+.facetDetails {
+  padding: 10px;
+  border: 1px solid #c5c5c5;
+  border-top: none;
+  background-color: #fff;
+}
+.facetValue {
+  padding: 3px 5px;
+  //color: #888;
+  font-size: medium;
+}
+
+
+.facetValue a {
+  color: #428bca;
+  line-height: 1.7;
+  border-bottom: none;
+}
 
