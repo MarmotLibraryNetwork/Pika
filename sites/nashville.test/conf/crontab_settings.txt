@@ -109,5 +109,5 @@
 */3 6-23 * * * cd /usr/local/vufind-plus/vufind/cron/; ./solrTest.sh
 
 # Check for semaphore errors
-17 * * * * cd /usr/local/vufind-plus/vufind/cron/; ./apacheSemaphoreCleanup.sh james.staub@nashville.gov,Pascal.Brammeier@nashville.gov
+17 * * * * cd /usr/local/vufind-plus/vufind/cron/; ./apacheSemaphoreCleanup.sh james.staub@nashville.gov,bryan.n.jones@nashville.gov,Pascal.Brammeier@nashville.gov
 
