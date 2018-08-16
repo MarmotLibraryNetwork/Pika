@@ -2788,10 +2788,10 @@ class GroupedWorkDriver extends RecordInterface{
 	}
 
 	/**
-	 * @param $validItemIds
+	 * @param array $validItemIdsForScope  Array of items filtered by scope
 	 * @return array
 	 */
-	protected function loadItemDetailsFromIndex($validItemIds) {
+	protected function loadItemDetailsFromIndex($validItemIdsForScope) {
 		$relatedItemsFieldName = 'item_details';
 		$itemsFromIndex = array();
 		if (isset($this->fields[$relatedItemsFieldName])) {
@@ -2799,10 +2799,12 @@ class GroupedWorkDriver extends RecordInterface{
 			if (!is_array($itemsFromIndexRaw)) {
 				$itemsFromIndexRaw = array($itemsFromIndexRaw);
 			}
+			$onOrderItems = array(); // We will consolidate on order items if they are all for the same location (for display)
+
 			foreach ($itemsFromIndexRaw as $tmpItem) {
 				$itemDetails = explode('|', $tmpItem);
 				$itemIdentifier = $itemDetails[0] . ':' . $itemDetails[1];
-				if (in_array($itemIdentifier, $validItemIds)) {
+				if (in_array($itemIdentifier, $validItemIdsForScope)) {
 					$itemsFromIndex[] = $itemDetails;
 					if (!array_key_exists($itemDetails[0], $this->relatedItemsByRecordId)) {
 						$this->relatedItemsByRecordId[$itemDetails[0]] = array();
@@ -2810,7 +2812,6 @@ class GroupedWorkDriver extends RecordInterface{
 					$this->relatedItemsByRecordId[$itemDetails[0]][] = $itemDetails;
 				}
 			}
-			return $itemsFromIndex;
 		}
 		return $itemsFromIndex;
 	}
