@@ -60,6 +60,13 @@ class SacramentoRecordProcessor extends IIIRecordProcessor {
             String shelfLocationCode = printItem.getShelfLocationCode();
             if (shelfLocationCode != null) {
                 targetAudiences.add(shelfLocationCode.toLowerCase());
+            } else {
+                // Because the order record location code is the same as a shelf location code, we can use that to set a target audience for records with only order records
+                String shelfLocation = printItem.getShelfLocation();
+                if (shelfLocation.equals("On Order")) {
+                    String locationCode = printItem.getLocationCode();
+                    targetAudiences.add(locationCode);
+                }
             }
         }
 
@@ -158,4 +165,37 @@ class SacramentoRecordProcessor extends IIIRecordProcessor {
     }
 
 
+    private void createAndAddOrderItem(GroupedWorkSolr groupedWork, RecordInfo recordInfo, OrderInfo orderItem, Record record) {
+        ItemInfo itemInfo = new ItemInfo();
+        String orderNumber = orderItem.getOrderRecordId();
+        String location = orderItem.getLocationCode();
+        if (location == null){
+            logger.warn("No location set for order " + orderNumber + " skipping");
+            return;
+        }
+        itemInfo.setLocationCode(location);
+        itemInfo.setItemIdentifier(orderNumber);
+        itemInfo.setNumCopies(orderItem.getNumCopies());
+        itemInfo.setIsEContent(false);
+        itemInfo.setIsOrderItem(true);
+        itemInfo.setCallNumber("ON ORDER");
+        itemInfo.setSortableCallNumber("ON ORDER");
+        itemInfo.setDetailedStatus("On Order");
+        itemInfo.setCollection("On Order");
+        //Since we don't know when the item will arrive, assume it will come tomorrow.
+        Date tomorrow = new Date();
+        tomorrow.setTime(tomorrow.getTime() + 1000 * 60 * 60 * 24);
+        itemInfo.setDateAdded(tomorrow);
+
+        //Format and Format Category should be set at the record level, so we don't need to set them here.
+
+        //Add the library this is on order for
+        itemInfo.setShelfLocation("On Order");
+
+        String status = orderItem.getStatus();
+
+        if (isOrderItemValid(status, null)){
+            recordInfo.addItem(itemInfo);
+        }
+    }
 }
