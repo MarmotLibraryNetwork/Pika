@@ -11,8 +11,8 @@
 #
 #  usage: marc_get <SERVICETOGETFROM>
 #
-#  uses expect scripts in directory /home/steve/cron
-#  ftp login credentials in file /home/steve/.netrc
+#  uses expect scripts in directory /root/cron
+#  ftp login credentials in file /root/.netrc
 #  intended to be run by cron
 #
 #-------------------------------------------------------------------------
@@ -42,16 +42,16 @@ case $1
   in
   aspencat)
     $LOG "~> get MARC update/delete records for AspenCat from CLIC using expect"
-     /root/cron/aspencat.exp ascc-catalog-deleted.$DATE.marc ascc-catalog-updated.$DATE.marc
+     /root/cron/aspencat.sh ascc-catalog-deleted.$DATE.marc
+     /root/cron/aspencat.sh ascc-catalog-updated.$DATE.marc
 #     /root/cron/aspencat.exp ascc-catalog-full.marc.gz ascc-catalog-deleted.$DATE.marc ascc-catalog-updated.$DATE.marc
     $LOG "~> exit code $?"
     ;;
   aspencat_new)
     $LOG "~> get MARC Full Export records for AspenCat from CLIC using expect (if is new)"
-     /root/cron/aspencat_newer_only.exp ascc-catalog-full.marc.gz
+     /root/cron/aspencat_newer_only.sh ascc-catalog-full.marc.gz
+#     /root/cron/aspencat_newer_only.exp ascc-catalog-full.marc.gz
     $LOG "~> exit code $?"
-#     /root/cron/aspencat.exp  ascc-catalog-deleted.$DATE.marc ascc-catalog-updated.$DATE.marc
-#    $LOG "~> exit code $?"
     ;;
   *)
     $LOG "!!!> ERROR: $1 is not valid, no expect script run"
