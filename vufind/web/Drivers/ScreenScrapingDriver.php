@@ -44,8 +44,8 @@ abstract class ScreenScrapingDriver implements DriverInterface {
 	/**
 	 * Initialize and configure curl connection
 	 *
-	 * @param null $curl_url optional url passed to curl_init
-	 * @param null|Array $curl_options is an array of curl options to include or overwrite.
+	 * @param null        $curl_url optional url passed to curl_init
+	 * @param null|Array  $curl_options is an array of curl options to include or overwrite.
 	 *                    Keys is the curl option constant, Values is the value to set the option to.
 	 * @return resource
 	 */
@@ -59,13 +59,14 @@ abstract class ScreenScrapingDriver implements DriverInterface {
 				if (substr($gitBranch, -1) == "\n"){
 					$gitBranch = substr($gitBranch, 0, -1);
 				}
+				$userAgent = empty($configArray['Catalog']['catalogUserAgent']) ? 'Pika' : $configArray['Catalog']['catalogUserAgent'];
 				$header = array();
 				$header[0] = "Accept: text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5";
 				$header[] = "Cache-Control: max-age=0";
 				$header[] = "Connection: keep-alive";
 				$header[] = "Accept-Charset: ISO-8859-1,utf-8;q=0.7,*;q=0.7";
 				$header[] = "Accept-Language: en-us,en;q=0.5";
-				$header[] = "User-Agent: Pika " . $gitBranch;
+				$header[] = "User-Agent: $userAgent $gitBranch";
 			}
 
 			$cookie = $this->getCookieJar();
