@@ -79,12 +79,15 @@ class NonGroupedRecord extends DB_DataObject{
 				$validationResults['validatedOk'] = false;
 				$validationResults['errors'][]    = 'Did not find a grouped work for record Id ' . $this->recordId . ' in source ' . $this->source;
 			}
-			$checkDuplicate = new NonGroupedRecord();
-			$checkDuplicate->source   = $this->source;
-			$checkDuplicate->recordId = $this->recordId;
-			if ($checkDuplicate->find()) {
-				$validationResults['validatedOk'] = false;
-				$validationResults['errors'][]    = 'A Record To Not Merge entry for record Id ' . $this->recordId . ' in source ' . $this->source . ' already exists.';
+			if (empty($this->id)) {
+				// for new entries, check for duplication
+				$checkDuplicate           = new NonGroupedRecord();
+				$checkDuplicate->source   = $this->source;
+				$checkDuplicate->recordId = $this->recordId;
+				if ($checkDuplicate->find()) {
+					$validationResults['validatedOk'] = false;
+					$validationResults['errors'][]    = 'A Record To Not Merge entry for record Id ' . $this->recordId . ' in source ' . $this->source . ' already exists.';
+				}
 			}
 		} else {
 			$validationResults = array(
