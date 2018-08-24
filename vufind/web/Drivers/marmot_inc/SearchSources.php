@@ -201,12 +201,12 @@ class SearchSources{
 			);
 		}
 
-//		if ($repeatInProspector && !$interface->isMobile()){ //allow in mobile views. plb 11-17-2014
 		if ($repeatInProspector){
+			$innReachEncoreName = $configArray['InterLibraryLoan']['innReachEncoreName'];
 			$searchOptions['prospector'] = array(
-        'name' => 'Prospector Catalog',
-        'description' => 'A shared catalog of academic, public, and special libraries all over Colorado.',
-        'external' => true,
+        'name'        => $innReachEncoreName . ' Catalog',
+        'description' => $innReachEncoreName == 'Prospector' ? 'A shared catalog of academic, public, and special libraries all over Colorado.' : 'A shared catalog for inter-library loaning.',
+        'external'    => true,
 				'catalogType' => 'catalog'
 			);
 		}

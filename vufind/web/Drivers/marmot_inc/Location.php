@@ -126,6 +126,9 @@ class Location extends DB_DataObject
 		// get the structure for the location's hours
 		$hoursStructure = LocationHours::getObjectStructure();
 
+		global $configArray;
+		$innReachEncoreName = $configArray['InterLibraryLoan']['innReachEncoreName'];
+
 		// we don't want to make the locationId property editable
 		// because it is associated with this location only
 		unset($hoursStructure['locationId']);
@@ -201,7 +204,7 @@ class Location extends DB_DataObject
 								array('property'=>'systemsToRepeatIn', 'type'=>'text', 'label'=>'Systems To Repeat In', 'description'=>'A list of library codes that you would like to repeat search in separated by pipes |.', 'hideInLists' => true),
 								array('property'=>'repeatSearchOption', 'type'=>'enum', 'values'=>array('none'=>'None', 'librarySystem'=>'Library System','marmot'=>'Entire Consortium'), 'label'=>'Repeat Search Options (requires Restrict Search By Location to be ON)', 'description'=>'Where to allow repeating search. Valid options are: none, librarySystem, marmot, all', 'default'=>'marmot'),
 								array('property'=>'repeatInOnlineCollection', 'type'=>'checkbox', 'label'=>'Repeat In Online Collection', 'description'=>'Turn on to allow repeat search in the Online Collection.', 'hideInLists' => true, 'default'=>false),
-								array('property'=>'repeatInProspector', 'type'=>'checkbox', 'label'=>'Repeat In Prospector', 'description'=>'Turn on to allow repeat search in Prospector functionality.', 'hideInLists' => true, 'default'=>false),
+								array('property'=>'repeatInProspector', 'type'=>'checkbox', 'label'=>'Repeat In '.$innReachEncoreName, 'description'=>'Turn on to allow repeat search in '.$innReachEncoreName.' functionality.', 'hideInLists' => true, 'default'=>false),
 								array('property'=>'repeatInWorldCat', 'type'=>'checkbox', 'label'=>'Repeat In WorldCat', 'description'=>'Turn on to allow repeat search in WorldCat functionality.', 'hideInLists' => true, 'default'=>false),
 								array('property'=>'repeatInOverdrive', 'type'=>'checkbox', 'label'=>'Repeat In Overdrive', 'description'=>'Turn on to allow repeat search in Overdrive functionality.', 'hideInLists' => true, 'default'=>false),
 						)),
