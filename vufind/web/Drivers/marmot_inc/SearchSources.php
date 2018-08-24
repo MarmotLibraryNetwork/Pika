@@ -351,7 +351,9 @@ class SearchSources{
 			if ($prospectorSearchType != ' '){
 				$lookFor = "$prospectorSearchType:(" . $lookFor . ")";
 			}
-			return "http://encore.coalliance.org/iii/encore/search/C|S" . $lookFor ."|Orightresult|U1?lang=eng&amp;suite=def";
+			$innReachEncoreHostUrl = $configArray['InterLibraryLoan']['innReachEncoreHostUrl'];
+
+			return $innReachEncoreHostUrl . '/iii/encore/search/C|S' . $lookFor . '|Orightresult|U1?lang=eng&amp;suite=def';
 		}else if ($searchSource == 'amazon'){
 			return "http://www.amazon.com/s/ref=nb_sb_noss?url=search-alias%3Daps&field-keywords=" . urlencode($lookFor);
 		}else if ($searchSource == 'course-reserves-course-name'){

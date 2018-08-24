@@ -168,35 +168,38 @@ class AJAX extends Action {
 
 	function getProspectorResults(){
 		$prospectorSavedSearchId = $_GET['prospectorSavedSearchId'];
+		if (ctype_digit($prospectorSavedSearchId)) {
+			require_once ROOT_DIR . '/Drivers/marmot_inc/Prospector.php';
+			global $configArray;
+			global $interface;
+			global $library;
+			global $timer;
 
-		require_once ROOT_DIR . '/Drivers/marmot_inc/Prospector.php';
-		global $configArray;
-		global $interface;
-		global $library;
-		global $timer;
+			/** @var SearchObject_Solr $searchObject */
+			$searchObject = SearchObjectFactory::initSearchObject();
+			$searchObject->init();
+			// Setup Search Engine Connection
+			$class        = $configArray['Index']['engine'];
+			$url          = $configArray['Index']['url'];
+			$db           = new $class($url);
+			$searchObject = $searchObject->restoreSavedSearch($prospectorSavedSearchId, false);
 
-		/** @var SearchObject_Solr $searchObject */
-		$searchObject = SearchObjectFactory::initSearchObject();
-		$searchObject->init();
-		// Setup Search Engine Connection
-		$class = $configArray['Index']['engine'];
-		$url = $configArray['Index']['url'];
-		$db = new $class($url);
-		$searchObject = $searchObject->restoreSavedSearch($prospectorSavedSearchId, false);
+			//Load results from Prospector
+			$prospector = new Prospector();
 
-		//Load results from Prospector
-		$prospector = new Prospector();
+			// Only show prospector results within search results if enabled
+			if ($library && $library->enablePospectorIntegration && $library->showProspectorResultsAtEndOfSearch) {
+				$prospectorResults = $prospector->getTopSearchResults($searchObject->getSearchTerms(), 5);
+				$interface->assign('prospectorResults', $prospectorResults['records']);
+			}
 
-		// Only show prospector results within search results if enabled
-		if ($library && $library->enablePospectorIntegration && $library->showProspectorResultsAtEndOfSearch){
-			$prospectorResults = $prospector->getTopSearchResults($searchObject->getSearchTerms(), 5);
-			$interface->assign('prospectorResults', $prospectorResults['records']);
+			$innReachEncoreName = $configArray['InterLibraryLoan']['innReachEncoreName'];
+			$interface->assign('innReachEncoreName', $innReachEncoreName);
+			$prospectorLink = $prospector->getSearchLink($searchObject->getSearchTerms());
+			$interface->assign('prospectorLink', $prospectorLink);
+			$timer->logTime('load Prospector titles');
+			echo $interface->fetch('Search/ajax-prospector.tpl');
 		}
-
-		$prospectorLink = $prospector->getSearchLink($searchObject->getSearchTerms());
-		$interface->assign('prospectorLink', $prospectorLink);
-		$timer->logTime('load Prospector titles');
-		echo $interface->fetch('Search/ajax-prospector.tpl');
 	}
 
 	/**

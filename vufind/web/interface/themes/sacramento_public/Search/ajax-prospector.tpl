@@ -2,10 +2,10 @@
 {strip}
 	<![CDATA[
 	<div class="row" id="prospectorSection">
-		<div class="col-tn-12 col-sm-3">
+		<div class="col-tn-12 col-sm-4">
 			<img class="center-block" src="{img filename='innReachEncoreLogo.png'}" style="max-width: 100%">
 		</div>
-		<div class="col-tn-12 col-sm-9">
+		<div class="col-tn-12 col-sm-8">
 			<h2>In {$innReachEncoreName}</h2>
 			Request items from other {$innReachEncoreName} libraries to be delivered to your local library for pickup.
 		</div>

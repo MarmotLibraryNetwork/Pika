@@ -39,9 +39,12 @@ class Prospector{
 				}
 
 				if (preg_match('/<span class="title">.*?<a.*?href.*?__R(.*?)__.*?>\\s*(.*?)\\s*<\/a>.*?<\/span>/s', $titleTitleInfo, $titleMatches)) {
-					$curTitleInfo['id'] = $titleMatches[1];
+					$curTitleInfo['id']    = $titleMatches[1];
 					//Create the link to the title in Encore
-					$curTitleInfo['link'] = "http://encore.coalliance.org/iii/encore/record/C__R" . urlencode($curTitleInfo['id']) ."__Orightresult?lang=eng&amp;suite=def";
+					global $configArray;
+					$innReachEncoreHostUrl = $configArray['InterLibraryLoan']['innReachEncoreHostUrl'];
+
+					$curTitleInfo['link']  = $innReachEncoreHostUrl . '/iii/encore/record/C__R' . urlencode($curTitleInfo['id']) .'__Orightresult?lang=eng&amp;suite=def';
 					$curTitleInfo['title'] = strip_tags($titleMatches[2]);
 				} else {
 					//Couldn't load information, skip to the next one.
@@ -161,7 +164,9 @@ class Prospector{
 		$search = str_replace('+', '%20', urlencode(str_replace('/', '', $search)));
 		// Handle special exception: ? character in the search must be encoded specially
 		$search = str_replace('%3F', 'Pw%3D%3D', $search);
-		$prospectorUrl = "http://encore.coalliance.org/iii/encore/search/C__S" . $search ."__Orightresult__U1?lang=eng&amp;suite=def";
+		global $configArray;
+		$innReachEncoreHostUrl = $configArray['InterLibraryLoan']['innReachEncoreHostUrl'];
+		$prospectorUrl = $innReachEncoreHostUrl . '/iii/encore/search/C__S' . $search .'__Orightresult__U1?lang=eng&amp;suite=def';
 		return $prospectorUrl;
 	}
 }

@@ -308,9 +308,10 @@ abstract class RecordInterface {
 		}
 		$timer->logTime('Loaded More Like This');
 		if ($interface->getVariable('enablePospectorIntegration')){
+			$innReachEncoreName = $configArray['InterLibraryLoan']['innReachEncoreName'];
 			$moreDetailsOptions['prospector'] = array(
-					'label' => 'More Copies In Prospector',
-					'body' => '<div id="inProspectorPlaceholder">Loading Prospector Copies...</div>',
+					'label' => 'More Copies In ' . $innReachEncoreName,
+					'body' => '<div id="inProspectorPlaceholder">Loading '. $innReachEncoreName .' Copies...</div>',
 					'hideByDefault' => false
 			);
 		}
