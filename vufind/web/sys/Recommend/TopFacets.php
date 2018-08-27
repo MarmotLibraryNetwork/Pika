@@ -87,6 +87,7 @@ class TopFacets implements RecommendationInterface
 		}
 
 		// Load other relevant settings:
+		//TODO: use responsive design and remove this setting
 		$this->baseSettings = array(
             'rows' => $config['Results_Settings']['top_rows'],
             'cols' => $config['Results_Settings']['top_cols']
