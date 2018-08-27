@@ -23,6 +23,8 @@ class ArrayUtils
 		if (is_array($item)){
 			ArrayUtils::encode_item($item, $key);
 		}else if (is_string($item)){
+			// This only encodes an ISO-8859-1 string to UTF-8
+			// You have to determine the sting in is ISO-8859-1 fist,
 			$key = utf8_encode($key);
 			$item = utf8_encode($item);
 		}

@@ -48,10 +48,14 @@ class AJAX extends Action {
 
 				try {
 					$result = $this->$method();
-					require_once ROOT_DIR . '/sys/Utils/ArrayUtils.php';
-					//					$utf8EncodedValue = ArrayUtils::utf8EncodeArray(array('result'=>$result));
-					$utf8EncodedValue = ArrayUtils::utf8EncodeArray($result);
-					$output = json_encode($utf8EncodedValue);
+//					require_once ROOT_DIR . '/sys/Utils/ArrayUtils.php';
+					// This only encodes an ISO-8859-1 string to UTF-8
+//					$utf8EncodedValue = ArrayUtils::utf8EncodeArray($result);
+					// This only encodes an ISO-8859-1 string to UTF-8
+					// It is best to encode to UTF-8 when ingesting from whatever source that encoding comes from
+					// pascal 8-27-2018
+//					$output = json_encode($utf8EncodedValue);
+					$output = json_encode($result);
 					$error = json_last_error();
 					if ($error != JSON_ERROR_NONE || $output === FALSE) {
 						if (function_exists('json_last_error_msg')) {
@@ -61,7 +65,7 @@ class AJAX extends Action {
 						}
 						global $configArray;
 						if ($configArray['System']['debug']) {
-							print_r($utf8EncodedValue);
+//							print_r($utf8EncodedValue);
 						}
 					}
 				} catch (Exception $e) {
