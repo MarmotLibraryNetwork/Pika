@@ -126,8 +126,8 @@ class TopFacets implements RecommendationInterface
 		// parameter to getFacetList in order to pass down row and column
 		// information for inclusion in the final list.
 		$facetList = $this->searchObject->getFacetList($this->facets, false);
-		foreach ($facetList as $facetSetkey => $facetSet){
-			if ($facetSet['label'] == 'Category' || $facetSet['label'] == 'Format Category'){
+		foreach ($facetList as $facetSetKey => $facetSet){
+			if (stripos($facetSetKey, 'category') !== false){
 				$validCategories = array(
 						'Books',
 						'eBook',
@@ -140,8 +140,9 @@ class TopFacets implements RecommendationInterface
 				//add an image name for display in the template
 				foreach ($facetSet['list'] as $facetKey => $facet){
 					if (in_array($facetKey,$validCategories)){
-						$facet['imageName'] = strtolower(str_replace(' ', '', $facet['value'])) . ".png";
-						$facet['imageNameSelected'] = strtolower(str_replace(' ', '', $facet['value'])) . "_selected.png";
+						$formatIconImageBaseFileName = strtolower(str_replace(' ', '', $facet['value']));
+						$facet['imageName']          = $formatIconImageBaseFileName . ".png";
+						$facet['imageNameSelected']  = $formatIconImageBaseFileName . "_selected.png";
 						$facetSet['list'][$facetKey] = $facet;
 					}else{
 						unset($facetSet['list'][$facetKey]);
@@ -150,8 +151,8 @@ class TopFacets implements RecommendationInterface
 
 				uksort($facetSet['list'], "format_category_comparator");
 
-				$facetList[$facetSetkey] = $facetSet;
-			}elseif (preg_match('/available/i', $facetSet['label'])){
+				$facetList[$facetSetKey] = $facetSet;
+			}elseif (stripos($facetSetKey, 'availability_toggle') !== false){
 
 				$numSelected = 0;
 				foreach ($facetSet['list'] as $facetKey => $facet){
@@ -230,7 +231,7 @@ class TopFacets implements RecommendationInterface
 
 				ksort($sortedFacetList);
 				$facetSet['list'] = $sortedFacetList;
-				$facetList[$facetSetkey] = $facetSet;
+				$facetList[$facetSetKey] = $facetSet;
 			}
 		}
 		$interface->assign('topFacetSet', $facetList);

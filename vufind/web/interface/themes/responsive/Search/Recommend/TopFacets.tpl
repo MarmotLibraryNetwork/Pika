@@ -41,7 +41,7 @@
 					<div class="clearfix"></div>
 				</div>
 			{/if}
-		{elseif stripos($title, 'availability') !== false}
+		{elseif stripos($title, 'availability_toggle') !== false}
 			<div id="availabilityControlContainer" class="row text-center top-facet">
 				<div class="col-tn-12">
 					<div id="availabilityControl" class="btn-group" data-toggle="buttons-radio">

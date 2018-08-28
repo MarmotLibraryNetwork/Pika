@@ -22,20 +22,20 @@ function smarty_function_img($params, &$smarty)
 	$themes = $interface->getThemes();
 	$filename = $params['filename'];
 
-	// Loop through the available themes looking for the requested CSS file:
-	foreach ($themes as $theme) {
-		$theme = trim($theme);
-		
-		// If the file exists on the local file system, set $css to the relative
-		// path needed to link to it from the web interface.
-		if (file_exists("{$local}/interface/themes/{$theme}/images/{$filename}")) {
-			return "{$path}/interface/themes/{$theme}/images/{$filename}";
+	if (!empty($filename)) {
+		// Loop through the available themes looking for the requested CSS file:
+		foreach ($themes as $theme) {
+			$theme = trim($theme);
+
+			// If the file exists on the local file system, set $css to the relative
+			// path needed to link to it from the web interface.
+			if (file_exists("{$local}/interface/themes/{$theme}/images/{$filename}")) {
+				return "{$path}/interface/themes/{$theme}/images/{$filename}";
+			}
+		}//Didn't find a theme specific image, try the images directory
+		if (file_exists("{$local}/images/{$filename}")) {
+			return "{$path}/images/{$filename}";
 		}
-	}
-	
-	//Didn't find a theme specific image, try the images directory
-	if (file_exists("{$local}/images/{$filename}")) {
-		return "{$path}/images/{$filename}";
 	}
 
 	// We couldn't find the file, return an empty value:
