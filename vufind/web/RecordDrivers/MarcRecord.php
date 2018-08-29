@@ -2055,7 +2055,7 @@ class MarcRecord extends IndexRecord
 		foreach ($this->holdingSections as $holdingSection) {
 			$onOrderCopies = array();
 			foreach ($holdingSection['holdings'] as $index => $holding) {
-				if ($holding['callNumber'] == 'ON ORDER') {
+				if ($holding['status'] == 'On Order') {
 					$shelfLocation = $holding['shelfLocation'];
 					if (array_key_exists($shelfLocation, $onOrderCopies)) {
 						// Increase the copy count
