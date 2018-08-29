@@ -151,11 +151,8 @@ then
 	nice -n -10 java -jar overdrive_extract.jar ${PIKASERVER} fullReload >> ${OUTPUT_FILE}
 fi
 
-# should test for new bib extract file
-# should copy old bib extract file
-#Extract from ILS
-FILE1=$(/data/vufind-plus/arlington.test/marc/pika1.mrc)
-FILE2=$(/data/vufind-plus/arlington.test/marc/pika1.mrc)
+FILE1="/data/vufind-plus/arlington.test/marc/pika1.mrc"
+FILE2="/data/vufind-plus/arlington.test/marc/pika2.mrc"
 if [ -n "$FILE1" ]
 then
 	if [ -n "$FILE2" ]
