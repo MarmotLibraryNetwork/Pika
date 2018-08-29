@@ -1774,8 +1774,8 @@ class Solr implements IndexEngine {
 			$options['f.title_full.hl.fragsize'] = 1000;
 		}
 
-		$solrSearchDebug = print_r($options, true) . "\n";
 		if ($this->debugSolrQuery) {
+			$solrSearchDebug = print_r($options, true) . "\n";
 
 			if ($filters) {
 				$solrSearchDebug .= "\nFilterQuery: ";
