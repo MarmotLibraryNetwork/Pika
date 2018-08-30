@@ -82,6 +82,13 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 		}
 	}
 
+	private boolean isWildCardValue(String value) {
+		if (value.equals("9999") || value.equals("999")) {
+			return true;
+		}
+		return false;
+	}
+
 	private HashMap<String, HashMap<RelevantLoanRule, LoanRuleDeterminer>> cachedRelevantLoanRules = new HashMap<>();
 	private HashMap<RelevantLoanRule, LoanRuleDeterminer> getRelevantLoanRules(String iType, String locationCode, HashSet<Long> pTypesToCheck){
 		//Look for ac cached value
@@ -97,7 +104,7 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 		pTypesNotAccountedFor.addAll(pTypesToCheck);
 		Long iTypeLong;
 		if (iType == null){
-			iTypeLong = 999L;
+			iTypeLong = 9999L;
 		}else{
 			iTypeLong = Long.parseLong(iType);
 		}
@@ -108,16 +115,16 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 				//Make sure the location matches
 				if (curDeterminer.matchesLocation(locationCode)) {
 					//logger.debug("    " + curDeterminer.getRowNumber() + " matches location");
-					if (curDeterminer.getItemType().equals("999") || curDeterminer.getItemTypes().contains(iTypeLong)) {
+					if (isWildCardValue(curDeterminer.getItemType()) || curDeterminer.getItemTypes().contains(iTypeLong)) {
 						//logger.debug("    " + curDeterminer.getRowNumber() + " matches iType");
-						if (hasDefaultPType || curDeterminer.getPatronType().equals("999") || isPTypeValid(curDeterminer.getPatronTypes(), pTypesNotAccountedFor)) {
+						if (hasDefaultPType || isWildCardValue(curDeterminer.getPatronType()) || isPTypeValid(curDeterminer.getPatronTypes(), pTypesNotAccountedFor)) {
 							//logger.debug("    " + curDeterminer.getRowNumber() + " matches pType");
 							LoanRule loanRule = loanRules.get(curDeterminer.getLoanRuleId());
 							relevantLoanRules.put(new RelevantLoanRule(loanRule, curDeterminer.getPatronTypes()), curDeterminer);
 
 							//Stop once we have accounted for all ptypes
-							if (curDeterminer.getPatronType().equals("999")) {
-								//999 accounts for all pTypes
+							if (isWildCardValue(curDeterminer.getPatronType())) {
+								// 9999 accounts for all pTypes
 								break;
 							} else {
 								pTypesNotAccountedFor.removeAll(curDeterminer.getPatronTypes());
