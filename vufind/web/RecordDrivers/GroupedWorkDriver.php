@@ -2817,7 +2817,8 @@ class GroupedWorkDriver extends RecordInterface{
 	}
 
 //	const SIERRA_ITYPE_WILDCARDS = array('999', '9999');
-	const SIERRA_PTYPE_WILDCARDS = array('999', '9999');
+	static $SIERRA_PTYPE_WILDCARDS = array('999', '9999');
+	//TODO: switch to const when php version is >= 5.6
 
 	/**
 	 * @param $recordDetails
@@ -2940,7 +2941,7 @@ class GroupedWorkDriver extends RecordInterface{
 				$allLibraryUseOnly = false;
 			}
 
-			if (strlen($holdablePTypes) > 0 && !in_array($holdablePTypes, self::SIERRA_PTYPE_WILDCARDS)) {
+			if (strlen($holdablePTypes) > 0 && !in_array($holdablePTypes, self::$SIERRA_PTYPE_WILDCARDS)) {
 				$holdablePTypes = explode(',', $holdablePTypes);
 				$matchingPTypes = array_intersect($holdablePTypes, $activePTypes);
 				if (count($matchingPTypes) == 0) {
@@ -2951,7 +2952,7 @@ class GroupedWorkDriver extends RecordInterface{
 				$recordHoldable = true;
 			}
 
-			if (strlen($bookablePTypes) > 0 && !in_array($bookablePTypes, self::SIERRA_PTYPE_WILDCARDS)) {
+			if (strlen($bookablePTypes) > 0 && !in_array($bookablePTypes, self::$SIERRA_PTYPE_WILDCARDS)) {
 				$bookablePTypes = explode(',', $bookablePTypes);
 				$matchingPTypes = array_intersect($bookablePTypes, $activePTypes);
 				if (count($matchingPTypes) == 0) {
