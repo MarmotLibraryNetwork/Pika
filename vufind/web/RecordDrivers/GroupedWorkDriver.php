@@ -2816,6 +2816,9 @@ class GroupedWorkDriver extends RecordInterface{
 		return $itemsFromIndex;
 	}
 
+//	const SIERRA_ITYPE_WILDCARDS = array('999', '9999');
+	const SIERRA_PTYPE_WILDCARDS = array('999', '9999');
+
 	/**
 	 * @param $recordDetails
 	 * @param GroupedWork $groupedWork
@@ -2853,42 +2856,42 @@ class GroupedWorkDriver extends RecordInterface{
 
 		//Setup the base record
 		$relatedRecord = array(
-				'id' => $recordDetails[0],
-				'driver' => $recordDriver,
-				'url' => $recordDriver != null ? $recordDriver->getRecordUrl() : '',
-				'format' => $recordDetails[1],
-				'formatCategory' => $recordDetails[2],
-				'edition' => $recordDetails[3],
-				'language' => $recordDetails[4],
-				'publisher' => $recordDetails[5],
-				'publicationDate' => $recordDetails[6],
-				'physical' => $recordDetails[7],
-				'callNumber' => '',
-				'available' => false,
-				'availableOnline' => false,
-				'availableLocally' => false,
-				'availableHere' => false,
-				'inLibraryUseOnly' => true,
-				'allLibraryUseOnly' => true,
-				'isEContent' => false,
-				'availableCopies' => 0,
-				'copies' => 0,
-				'onOrderCopies' => 0,
-				'localAvailableCopies' => 0,
-				'localCopies' => 0,
-				'numHolds' => $recordDriver != null ? $recordDriver->getNumHolds() : 0,
-				'volumeHolds' => $recordDriver != null ? $recordDriver->getVolumeHolds($volumeData) : null,
-				'hasLocalItem' => false,
-				'holdRatio' => 0,
-				'locationLabel' => '',
-				'shelfLocation' => '',
-				'bookable' => false,
-				'holdable' => false,
-				'itemSummary' => array(),
-				'groupedStatus' => 'Currently Unavailable',
-				'source' => $source,
-				'actions' => array(),
-				'schemaDotOrgType' => $this->getSchemaOrgType($recordDetails[1]),
+				'id'                     => $recordDetails[0],
+				'driver'                 => $recordDriver,
+				'url'                    => $recordDriver != null ? $recordDriver->getRecordUrl() : '',
+				'format'                 => $recordDetails[1],
+				'formatCategory'         => $recordDetails[2],
+				'edition'                => $recordDetails[3],
+				'language'               => $recordDetails[4],
+				'publisher'              => $recordDetails[5],
+				'publicationDate'        => $recordDetails[6],
+				'physical'               => $recordDetails[7],
+				'callNumber'             => '',
+				'available'              => false,
+				'availableOnline'        => false,
+				'availableLocally'       => false,
+				'availableHere'          => false,
+				'inLibraryUseOnly'       => true,
+				'allLibraryUseOnly'      => true,
+				'isEContent'             => false,
+				'availableCopies'        => 0,
+				'copies'                 => 0,
+				'onOrderCopies'          => 0,
+				'localAvailableCopies'   => 0,
+				'localCopies'            => 0,
+				'numHolds'               => $recordDriver != null ? $recordDriver->getNumHolds() : 0,
+				'volumeHolds'            => $recordDriver != null ? $recordDriver->getVolumeHolds($volumeData) : null,
+				'hasLocalItem'           => false,
+				'holdRatio'              => 0,
+				'locationLabel'          => '',
+				'shelfLocation'          => '',
+				'bookable'               => false,
+				'holdable'               => false,
+				'itemSummary'            => array(),
+				'groupedStatus'          => 'Currently Unavailable',
+				'source'                 => $source,
+				'actions'                => array(),
+				'schemaDotOrgType'       => $this->getSchemaOrgType($recordDetails[1]),
 				'schemaDotOrgBookFormat' => $this->getSchemaOrgBookFormat($recordDetails[1]),
 		);
 		$timer->logTime("Setup base related record");
@@ -2907,52 +2910,37 @@ class GroupedWorkDriver extends RecordInterface{
 		$i = 0;
 		$allLibraryUseOnly = true;
 		foreach ($this->relatedItemsByRecordId[$recordDetails[0]] as $curItem) {
+			$itemId        = $curItem[1] == 'null' ? '' : $curItem[1];
+			$scopeKey      = $curItem[0] . ':' . $itemId;
 			$shelfLocation = $curItem[2];
-			$callNumber = $curItem[3];
-			$numCopies = $curItem[6];
-			$isOrderItem = $curItem[7] == 'true';
-			$isEcontent = $curItem[8] == 'true';
-			$itemId = $curItem[1] == 'null' ? '' : $curItem[1];
-			$scopeKey = $curItem[0] . ':' . $itemId;
-			$scopingDetails = $scopingInfo[$scopeKey];
-			if ($isEcontent) {
-				if (strlen($scopingDetails[12]) > 0){
-					$relatedUrls[] = array(
-							'source' => $curItem[9],
-							'file' => $curItem[10],
-							'url' => $scopingDetails[12]
-					);
-				}else{
-					$relatedUrls[] = array(
-							'source' => $curItem[9],
-							'file' => $curItem[10],
-							'url' => $curItem[11]
-					);
-				}
+			$callNumber    = $curItem[3];
+			$numCopies     = $curItem[6];
+			$isOrderItem   = $curItem[7] == 'true';
+			$isEcontent    = $curItem[8] == 'true';
+			$locationCode  = isset($curItem[15]) ? $curItem[15] : '';
+			$subLocation   = isset($curItem[16]) ? $curItem[16] : '';
 
-				$relatedRecord['eContentSource'] = $curItem[9];
-				$relatedRecord['isEContent'] = true;
-			}
+			$scopingDetails = $scopingInfo[$scopeKey];
 			//Get Scoping information for this record
-			$groupedStatus = $scopingDetails[2];
-			$status = $curItem[13];
-			$locallyOwned = $scopingDetails[4] == 'true';
-			$available = $scopingDetails[5] == 'true';
+			$groupedStatus    = $scopingDetails[2];
+			$locallyOwned     = $scopingDetails[4] == 'true';
+			$available        = $scopingDetails[5] == 'true';
+			$holdable         = $scopingDetails[6] == 'true';
+			$bookable         = $scopingDetails[7] == 'true';
+			$inLibraryUseOnly = $scopingDetails[8] == 'true';
+			$libraryOwned     = $scopingDetails[9] == 'true';
+			$holdablePTypes   = isset($scopingDetails[10]) ? $scopingDetails[10] : '';
+			$bookablePTypes   = isset($scopingDetails[11]) ? $scopingDetails[11] : '';
+			$status           = $curItem[13];
+
 			if ($status == 'Library Use Only' && !$available){
 				$status = 'Checked Out (library use only)';
 			}
-			$holdable = $scopingDetails[6] == 'true';
-			$bookable = $scopingDetails[7] == 'true';
-			$inLibraryUseOnly = $scopingDetails[8] == 'true';
 			if (!$inLibraryUseOnly){
 				$allLibraryUseOnly = false;
 			}
-			$libraryOwned = $scopingDetails[9] == 'true';
-			$holdablePTypes = isset($scopingDetails[10]) ? $scopingDetails[10] : '';
-			$bookablePTypes = isset($scopingDetails[11]) ? $scopingDetails[11] : '';
-			$locationCode = isset($curItem[15]) ? $curItem[15] : '';
-			$subLocation = isset($curItem[16]) ? $curItem[16] : '';
-			if (strlen($holdablePTypes) > 0 && $holdablePTypes != '999') {
+
+			if (strlen($holdablePTypes) > 0 && !in_array($holdablePTypes, self::SIERRA_PTYPE_WILDCARDS)) {
 				$holdablePTypes = explode(',', $holdablePTypes);
 				$matchingPTypes = array_intersect($holdablePTypes, $activePTypes);
 				if (count($matchingPTypes) == 0) {
@@ -2963,7 +2951,7 @@ class GroupedWorkDriver extends RecordInterface{
 				$recordHoldable = true;
 			}
 
-			if (strlen($bookablePTypes) > 0 && $bookablePTypes != '999') {
+			if (strlen($bookablePTypes) > 0 && !in_array($bookablePTypes, self::SIERRA_PTYPE_WILDCARDS)) {
 				$bookablePTypes = explode(',', $bookablePTypes);
 				$matchingPTypes = array_intersect($bookablePTypes, $activePTypes);
 				if (count($matchingPTypes) == 0) {
@@ -2974,7 +2962,27 @@ class GroupedWorkDriver extends RecordInterface{
 				$recordBookable = true;
 			}
 
+
 			//Update the record with information from the item and from scoping.
+			if ($isEcontent) {
+				if (strlen($scopingDetails[12]) > 0){
+					$relatedUrls[] = array(
+						'source' => $curItem[9],
+						'file'   => $curItem[10],
+						'url'    => $scopingDetails[12]
+					);
+				}else{
+					$relatedUrls[] = array(
+						'source' => $curItem[9],
+						'file'   => $curItem[10],
+						'url'    => $curItem[11]
+					);
+				}
+
+				$relatedRecord['eContentSource'] = $curItem[9];
+				$relatedRecord['isEContent']     = true;
+			}
+
 			$displayByDefault = false;
 			if ($available) {
 				if ($isEcontent) {
@@ -3077,32 +3085,32 @@ class GroupedWorkDriver extends RecordInterface{
 			}
 			//Add the item to the item summary
 			$itemSummaryInfo = array(
-					'description' => $description,
-					'shelfLocation' => $shelfLocation,
-					'callNumber' => $callNumber,
-					'totalCopies' => 1,
-					'availableCopies' => ($available && !$isOrderItem) ? $numCopies : 0,
-					'isLocalItem' => $locallyOwned,
-					'isLibraryItem' => $libraryOwned,
-					'inLibraryUseOnly' => $inLibraryUseOnly,
+					'description'       => $description,
+					'shelfLocation'     => $shelfLocation,
+					'callNumber'        => $callNumber,
+					'totalCopies'       => 1,
+					'availableCopies'   => ($available && !$isOrderItem) ? $numCopies : 0,
+					'isLocalItem'       => $locallyOwned,
+					'isLibraryItem'     => $libraryOwned,
+					'inLibraryUseOnly'  => $inLibraryUseOnly,
 					'allLibraryUseOnly' => $inLibraryUseOnly,
 					'displayByDefault' => $displayByDefault,
-					'onOrderCopies' => $isOrderItem ? $numCopies : 0,
-					'status' => $groupedStatus,
-					'statusFull' => $status,
-					'available' => $available,
-					'holdable' => $holdable,
-					'bookable' => $bookable,
-					'sectionId' => $sectionId,
-					'section' => $section,
-					'relatedUrls' => $relatedUrls,
-					'lastCheckinDate' => isset($curItem[14]) ? $curItem[14] : '',
-					'volume' => $volume,
-					'volumeId' => $volumeId,
-					'isEContent' => $isEcontent,
-					'locationCode' => $locationCode,
-					'subLocation' => $subLocation,
-					'itemId' => $itemId
+					'onOrderCopies'    => $isOrderItem ? $numCopies : 0,
+					'status'           => $groupedStatus,
+					'statusFull'       => $status,
+					'available'        => $available,
+					'holdable'         => $holdable,
+					'bookable'         => $bookable,
+					'sectionId'        => $sectionId,
+					'section'          => $section,
+					'relatedUrls'      => $relatedUrls,
+					'lastCheckinDate'  => isset($curItem[14]) ? $curItem[14] : '',
+					'volume'           => $volume,
+					'volumeId'         => $volumeId,
+					'isEContent'       => $isEcontent,
+					'locationCode'     => $locationCode,
+					'subLocation'      => $subLocation,
+					'itemId'           => $itemId
 			);
 			if (!$forCovers){
 				$itemSummaryInfo['actions'] = $recordDriver != null ? $recordDriver->getItemActions($itemSummaryInfo) : array();

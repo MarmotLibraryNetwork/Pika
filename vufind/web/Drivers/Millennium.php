@@ -1164,6 +1164,9 @@ class Millennium extends ScreenScrapingDriver
 		return $holdable;
 	}
 
+	const SIERRA_ITYPE_WILDCARDS = array('999', '9999');
+	const SIERRA_PTYPE_WILDCARDS = array('999', '9999');
+
 	function isItemHoldableToPatron($locationCode, $iType, $pTypes){
 		/** @var Memcache $memCache*/
 		global $memCache;
@@ -1191,10 +1194,10 @@ class Millennium extends ScreenScrapingDriver
 				if ($loanRuleDeterminer->matchesLocation($locationCode) ){
 					//$logger->log("{$loanRuleDeterminer->rowNumber}) Location correct $locationCode, {$loanRuleDeterminer->location} ({$loanRuleDeterminer->trimmedLocation()})", PEAR_LOG_DEBUG);
 					//Check that the iType is correct
-					if ($loanRuleDeterminer->itemType == '999' || in_array($iType, $loanRuleDeterminer->iTypeArray())){
+					if (in_array($loanRuleDeterminer->itemType, self::SIERRA_ITYPE_WILDCARDS) || in_array($iType, $loanRuleDeterminer->iTypeArray())){
 						//$logger->log("{$loanRuleDeterminer->rowNumber}) iType correct $iType, {$loanRuleDeterminer->itemType}", PEAR_LOG_DEBUG);
 						foreach ($pTypes as $pType){
-							if ($pType == -1 || $loanRuleDeterminer->patronType == '999' || in_array($pType, $loanRuleDeterminer->pTypeArray())){
+							if ($pType == -1 || in_array($loanRuleDeterminer->patronType, self::SIERRA_PTYPE_WILDCARDS) || in_array($pType, $loanRuleDeterminer->pTypeArray())){
 								//$logger->log("{$loanRuleDeterminer->rowNumber}) pType correct $pType, {$loanRuleDeterminer->patronType}", PEAR_LOG_DEBUG);
 								$loanRule = $this->loanRules[$loanRuleDeterminer->loanRuleId];
 								//$logger->log("Determiner {$loanRuleDeterminer->rowNumber} indicates Loan Rule {$loanRule->loanRuleId} applies, holdable {$loanRule->holdable}", PEAR_LOG_DEBUG);
@@ -1239,6 +1242,7 @@ class Millennium extends ScreenScrapingDriver
 			$iTypeSubfield = $indexingProfile->iType;
 			$locationSubfield = $indexingProfile->location;
 		}else{
+			//TODO: use indexing progile
 			$marcItemField = isset($configArray['Reindex']['itemTag']) ? $configArray['Reindex']['itemTag'] : '989';
 			$iTypeSubfield = isset($configArray['Reindex']['iTypeSubfield']) ? $configArray['Reindex']['iTypeSubfield'] : 'j';
 			$locationSubfield = isset($configArray['Reindex']['locationSubfield']) ? $configArray['Reindex']['locationSubfield'] : 'j';
@@ -1301,10 +1305,10 @@ class Millennium extends ScreenScrapingDriver
 				if ($loanRuleDeterminer->matchesLocation($locationCode) ){
 					//$logger->log("{$loanRuleDeterminer->rowNumber}) Location correct $locationCode, {$loanRuleDeterminer->location} ({$loanRuleDeterminer->trimmedLocation()})", PEAR_LOG_DEBUG);
 					//Check that the iType is correct
-					if ($loanRuleDeterminer->itemType == '999' || in_array($iType, $loanRuleDeterminer->iTypeArray())){
+					if (in_array($loanRuleDeterminer->itemType, self::SIERRA_ITYPE_WILDCARDS) || in_array($iType, $loanRuleDeterminer->iTypeArray())){
 						//$logger->log("{$loanRuleDeterminer->rowNumber}) iType correct $iType, {$loanRuleDeterminer->itemType}", PEAR_LOG_DEBUG);
 						foreach ($pTypes as $pType){
-							if ($pType == -1 || $loanRuleDeterminer->patronType == '999' || in_array($pType, $loanRuleDeterminer->pTypeArray())){
+							if ($pType == -1 || in_array($loanRuleDeterminer->patronType, self::SIERRA_PTYPE_WILDCARDS) || in_array($pType, $loanRuleDeterminer->pTypeArray())){
 								//$logger->log("{$loanRuleDeterminer->rowNumber}) pType correct $pType, {$loanRuleDeterminer->patronType}", PEAR_LOG_DEBUG);
 								$loanRule = $this->loanRules[$loanRuleDeterminer->loanRuleId];
 								//$logger->log("Determiner {$loanRuleDeterminer->rowNumber} indicates Loan Rule {$loanRule->loanRuleId} applies, bookable {$loanRule->bookable}", PEAR_LOG_DEBUG);
