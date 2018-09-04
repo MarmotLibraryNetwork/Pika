@@ -24,8 +24,8 @@
 	{/literal}
 	
 	<div class='editor'>
-		<input type='hidden' name='objectAction' value='save' />
-		<input type='hidden' name='id' value='{$id}' />
+		<input type='hidden' name='objectAction' value='save'>
+		<input type='hidden' name='id' value='{$id}'>
 
 		<br/>
 		
