@@ -84,6 +84,6 @@ class MyAccount_SelectInterface extends Action{
 			die();
 		}
 
-		$this->display('selectInterface.tpl', 'Select Library Catalog');
+		$this->display('selectInterface.tpl', 'Select Library Catalog', false);
 	}
 }
