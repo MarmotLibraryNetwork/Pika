@@ -14,10 +14,7 @@ PIKASERVER=arlington.test
 PIKADBNAME=pika
 OUTPUT_FILE="/var/log/vufind-plus/${PIKASERVER}/full_update_output.log"
 
-MINFILE1SIZE=$((1))
-MINFILE2SIZE=$((1))
-#MINFILE1SIZE=$((815000000))
-#MINFILE2SIZE=$((467000000))
+MINFILE1SIZE=$((599000000))
 
 # Check if full_update is already running (test sites only)
 PIDFILE="/var/log/vufind-plus/${PIKASERVER}/full_update.pid"
@@ -127,7 +124,7 @@ cd /usr/local/vufind-plus/sites/${PIKASERVER}; ./${PIKASERVER}.sh restart
 # Get Yesterday's Full Export From Arlington Production Server
 YESTERDAY=$(date -d "yesterday 13:00 " +"%m_%d_%Y")
 scp -Cqp -i /root/.ssh/id_rsa sierraftp@158.59.15.152:/data/vufind-plus/arlington.production/marc_export/pika1.$YESTERDAY.mrc /data/vufind-plus/arlington.test/marc/pika1.mrc >> ${OUTPUT_FILE}
-scp -Cqp -i /root/.ssh/id_rsa sierraftp@158.59.15.152:/data/vufind-plus/arlington.production/marc_export/pika2.$YESTERDAY.mrc /data/vufind-plus/arlington.test/marc/pika2.mrc >> ${OUTPUT_FILE}
+#scp -Cqp -i /root/.ssh/id_rsa sierraftp@158.59.15.152:/data/vufind-plus/arlington.production/marc_export/pika2.$YESTERDAY.mrc /data/vufind-plus/arlington.test/marc/pika2.mrc >> ${OUTPUT_FILE}
 
 #Extract from Hoopla
 # (Arlington maintains the Hoopla record set within their ILS)
@@ -152,26 +149,26 @@ then
 fi
 
 FILE1="/data/vufind-plus/arlington.test/marc/pika1.mrc"
-FILE2="/data/vufind-plus/arlington.test/marc/pika2.mrc"
+#FILE2="/data/vufind-plus/arlington.test/marc/pika2.mrc"
 if [ -n "$FILE1" ]
 then
-	if [ -n "$FILE2" ]
-	then
+#	if [ -n "$FILE2" ]
+#	then
 
 		FILE1SIZE=$(wc -c <"$FILE1")
 		if [ $FILE1SIZE -ge $MINFILE1SIZE ]; then
-		 FILE2SIZE=$(wc -c <"$FILE2")
-		 if [ $FILE2SIZE -ge $MINFILE2SIZE ]; then
+#		 FILE2SIZE=$(wc -c <"$FILE2")
+#		 if [ $FILE2SIZE -ge $MINFILE2SIZE ]; then
 
 			echo "Latest file (1) is " $FILE1 >> ${OUTPUT_FILE}
 			DIFF=$(($FILE1SIZE - $MINFILE1SIZE))
 			PERCENTABOVE=$((100 * $DIFF / $MINFILE1SIZE))
 			echo "The export file (1) is $PERCENTABOVE (%) larger than the minimum size check." >> ${OUTPUT_FILE}
 
-			echo "Latest file (2) is " $FILE2 >> ${OUTPUT_FILE}
-			DIFF=$(($FILE2SIZE - $MINFILE2SIZE))
-			PERCENTABOVE=$((100 * $DIFF / $MINFILE2SIZE))
-			echo "The export file (2) is $PERCENTABOVE (%) larger than the minimum size check." >> ${OUTPUT_FILE}
+#			echo "Latest file (2) is " $FILE2 >> ${OUTPUT_FILE}
+#			DIFF=$(($FILE2SIZE - $MINFILE2SIZE))
+#			PERCENTABOVE=$((100 * $DIFF / $MINFILE2SIZE))
+#			echo "The export file (2) is $PERCENTABOVE (%) larger than the minimum size check." >> ${OUTPUT_FILE}
 
 
 			#Get the updated volume information
@@ -193,16 +190,16 @@ then
 			find /data/vufind-plus/${PIKASERVER}/marc -name 'ITEM_UPDATE_EXTRACT_PIKA*' -delete
 			#TODO: Don't think this is needed any more
 
-			else
-				echo $FILE2 " size " $FILE2SIZE "is less than minimum size :" $MINFILE2SIZE "; Export was not moved to data directory." >> ${OUTPUT_FILE}
-			fi
+#			else
+#				echo $FILE2 " size " $FILE2SIZE "is less than minimum size :" $MINFILE2SIZE "; Export was not moved to data directory." >> ${OUTPUT_FILE}
+#			fi
 		else
 			echo $FILE1 " size " $FILE1SIZE "is less than minimum size :" $MINFILE1SIZE "; Export was not moved to data directory." >> ${OUTPUT_FILE}
 		fi
 
-	else
-		echo "Did not find a Sierra export file (2) from the last 24 hours, Full Regrouping & Full Reindexing skipped." >> ${OUTPUT_FILE}
-	fi
+#	else
+#		echo "Did not find a Sierra export file (2) from the last 24 hours, Full Regrouping & Full Reindexing skipped." >> ${OUTPUT_FILE}
+#	fi
 
 else
 	echo "Did not find a Sierra export file (1) from the last 24 hours, Full Regrouping & Full Reindexing skipped." >> ${OUTPUT_FILE}
