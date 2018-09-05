@@ -6,18 +6,23 @@
 
 @spl-dark-purple: #38345A;
 
-@header-height: 100px;
-@header-logo-height: 74px;
+@header-height: 110px; // the min height
+@header-logo-height: 49px;
 
-
-@home-search-top-color: @spl-dark-purple;
-@home-search-bottom-color: @spl-dark-purple;
+//set in responsive/variables @accordion-header-bg-color:#e7e7e7;
+@home-search-top-color: @accordion-header-bg-color;
+@home-search-bottom-color: @accordion-header-bg-color;
+@home-search-label-color: @spl-black;
 
 @home-page-login-background-color: @spl-orange;
+
+@header-buttons-background-color: @spl-orange;
+@header-buttons-color: @spl-black;
 
 @header-top-color: #ffffff; //Top color for background gradient in header
 @header-middle-color: #ffffff; //middle color for background gradient in header @80% of header height from bottom
 @header-bottom-color: #ffffff; //Bottom color for background gradient in header
+
 
 @library-display-name-color: @spl-black;
 @library-display-name-font: @font-family-sans-serif-resp;
@@ -25,8 +30,6 @@
 
 @header-bottom-border-color: #fff;
 @footer-top-border-color: @spl-gray;
-
-@header-buttons-background-color: @spl-gray;
 
 @btn-primary-bg: @spl-green;
 @btn-primary-color: #333;
@@ -46,8 +49,8 @@
 @browseCarouselControlColor: @spl-green;
 
 // Selected Category color to give a highlighted appearance
-@selectedCategoryColor: @spl-orange;
-@selectedSubCategoryBackgroundColor: @spl-orange;
+@selectedCategoryColor: @spl-green;
+@selectedSubCategoryBackgroundColor: @spl-green;
 
 // set all browse category colors to the first color to remove lightening of successive categories. plb 9-17-2014*/
 @category2MainColor: @category1MainColor;
@@ -68,10 +71,10 @@
 @more-browse-results-backgroundcolor: @spl-purple;
 @more-browse-results-color: #FFF;
 
-@accordion-active-header-backgroundcolor: @spl-purple;
-//@accordion-header-bg-color: @sacramento-taupe;
+@accordion-active-header-backgroundcolor: @accordion-header-bg-color;
 @accordion-header-top-gradient-color: @accordion-header-bg-color;
 @accordion-header-bottom-gradient-color: @accordion-header-bg-color;
+@accordion-active-header-color: @gray-dark; // same as when closed;
 
 //No rounded corners
 @border-radius-base:             0;

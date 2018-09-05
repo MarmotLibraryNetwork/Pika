@@ -8407,7 +8407,7 @@ hr.menu {
 }
 #header-container {
   padding-top: 0;
-  height: 100px;
+  height: 110px;
   background-color: #ffffff;
   background: linear-gradient(to bottom, #ffffff, #ffffff 85%, #ffffff);
   border-bottom: 8px solid #fff;
@@ -8427,7 +8427,7 @@ hr.menu {
   text-align: center;
   text-shadow: 1px 1px #fff;
   vertical-align: middle;
-  line-height: 92px !important;
+  line-height: 102px !important;
   border-bottom: 4px solid #ffffff;
   color: #8b8b8b !important;
 }
@@ -8672,18 +8672,18 @@ hr.menu {
   color: red;
 }
 #home-page-search {
-  background-color: #38345A;
-  background: linear-gradient(to bottom, #38345A, #38345A);
+  background-color: #e7e7e7;
+  background: linear-gradient(to bottom, #e7e7e7, #e7e7e7);
   padding: 20px 0 10px;
   margin-bottom: 5px;
 }
 #home-page-search-label {
   font-size: 35px;
-  color: #FFF;
+  color: #000;
   text-shadow: 1px 1px #999999;
 }
 #home-page-advanced-search-link {
-  color: #FFF;
+  color: #000;
 }
 #lookfor:-ms-input-placeholder {
   font-size: 0;
@@ -8713,19 +8713,19 @@ hr.menu {
 .searchSource {
   margin: 5px 0 0;
   color: #fff;
-  background-color: #38345A;
+  background-color: #e7e7e7;
   border: none;
   width: 90% !important;
 }
 #keepFiltersSwitchLabel,
 #advancedSearchLink {
-  color: #FFF;
+  color: #000;
   font-weight: normal;
   font-size: 85%;
 }
 #horizontal-search-box {
-  background-color: #38345A;
-  background: linear-gradient(to bottom, #38345A, #38345A);
+  background-color: #e7e7e7;
+  background: linear-gradient(to bottom, #e7e7e7, #e7e7e7);
   padding: 15px 0;
 }
 #horizontal-search-box #searchForm .row {
@@ -8762,7 +8762,7 @@ hr.menu {
   }
 }
 #horizontal-search-box #horizontal-search-label {
-  color: #FFF;
+  color: #000;
 }
 #horizontal-search-box #lookfor {
   height: 34px;
@@ -8830,13 +8830,13 @@ hr.menu {
 .sidebar-links .panel.active > a,
 .sidebar-links .panel.active > a:visited,
 .sidebar-links .panel.active > a:hover {
-  color: #fff;
+  color: #333333;
   text-shadow: 1px 1px #555555;
   outline: none;
 }
 .sidebar-links .active .panel-heading {
-  background-color: #52499c;
-  background: linear-gradient(to bottom, #52499c, #403979);
+  background-color: #e7e7e7;
+  background: linear-gradient(to bottom, #e7e7e7, #cecece);
 }
 .sidebar-links .panel-body {
   font-size: 13px;
@@ -9376,7 +9376,7 @@ a.browse-thumbnail-sorted.active {
 }
 #browse-sub-category-menu button.selected {
   color: #fff;
-  background-color: #f3b72d;
+  background-color: #7ebe38;
 }
 #browse-sub-category-menu button:focus {
   outline: none;
@@ -10176,8 +10176,8 @@ a.browse-thumbnail-sorted.active {
   text-shadow: 1px 1px #fff;
 }
 #more-details-accordion .active .panel-heading {
-  background-color: #52499c;
-  background: linear-gradient(to bottom, #52499c, #403979);
+  background-color: #e7e7e7;
+  background: linear-gradient(to bottom, #e7e7e7, #cecece);
 }
 #more-details-accordion .active .panel-title {
   color: #fff;
@@ -10213,8 +10213,8 @@ a.browse-thumbnail-sorted.active {
   font-weight: bold;
 }
 #explore-more-sidebar {
-  background-color: #38345A;
-  background: linear-gradient(to bottom, #38345A, #38345A);
+  background-color: #e7e7e7;
+  background: linear-gradient(to bottom, #e7e7e7, #e7e7e7);
 }
 #explore-more-header {
   padding: 10px 25px 5px 0;
@@ -10776,8 +10776,8 @@ fieldset[disabled] .btn-masquerade.active {
 .header-button {
   border: 0;
   border-radius: 0.5em;
-  color: #fff !important;
-  background-color: #a9aba9;
+  color: #000 !important;
+  background-color: #f3b72d;
   margin-top: 20px;
   line-height: 60px !important;
   text-shadow: none;
@@ -10786,6 +10786,15 @@ fieldset[disabled] .btn-masquerade.active {
   text-decoration: underline;
   border-bottom: 0;
   box-shadow: 2px 2px 5px #fff;
+}
+.header-button {
+  text-transform: uppercase;
+}
+#logoutLink > .header-button {
+  background-color: #a9aba9;
+}
+#header-logo {
+  padding-top: 20px;
 }
 #headingInfo:before {
   content: '';
@@ -10832,12 +10841,12 @@ fieldset[disabled] .btn-masquerade.active {
   text-decoration: none;
 }
 #browse-category-carousel .browse-category.selected div {
-  background: #f3b72d;
+  background: #7ebe38;
   color: #fff;
   font-size: 20px;
 }
 #browse-category-carousel .browse-category.selected div:hover {
-  background: #f3b72d;
+  background: #7ebe38;
 }
 #browse-category-carousel .browse-category:hover {
   background: #E4E4E4;
@@ -10897,7 +10906,7 @@ fieldset[disabled] .btn-masquerade.active {
 #more-details-accordion .active .panel-heading,
 .sidebar-links .active .panel-heading,
 #account-settings-accordion .active .panel-heading {
-  background: #52499c;
+  background: #e7e7e7;
 }
 #account-settings-accordion .panel,
 #more-details-accordion .panel,
@@ -10934,4 +10943,23 @@ fieldset[disabled] .btn-masquerade.active {
   color: #428bca;
   line-height: 1.7;
   border-bottom: none;
+}
+#home-page-search-label {
+  text-shadow: none;
+}
+#home-page-search-label .glyphicon-search {
+  display: none;
+}
+#home-page-hours-locations,
+#home-page-home-button {
+  display: none;
+}
+#more-details-accordion .active .panel-title {
+  color: #333333;
+  text-shadow: 1px 1px #fff;
+}
+.sidebar-links .panel.active > a,
+.sidebar-links .panel.active > a:visited,
+.sidebar-links .panel.active > a:hover {
+  text-shadow: 1px 1px #fff;
 }

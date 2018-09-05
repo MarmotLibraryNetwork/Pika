@@ -5,8 +5,17 @@
 // Always include the base .less file
 @import "../../responsive/css/responsive_base.less";
 
-.header-login-button-mixin(@header-buttons-background-color);
+.header-login-button-mixin(@header-buttons-background-color, @header-buttons-color);
+.header-button {
+  text-transform: uppercase;
+}
+#logoutLink > .header-button {
+  background-color: @spl-gray;
+}
 
+#header-logo {
+  padding-top: 20px;
+}
 
 // This vertically centers #library-name-header (taken from https://css-tricks.com/centering-in-the-unknown/)
 // looks to only work when the library name doesn't wrap
@@ -154,11 +163,44 @@
   padding: 3px 5px;
   //color: #888;
   font-size: medium;
+  a {
+    color: #428bca;
+    line-height: 1.7;
+    border-bottom: none;
+  }
 }
 
 
-.facetValue a {
-  color: #428bca;
-  line-height: 1.7;
-  border-bottom: none;
+// Search Box Modifications
+#home-page-search-label{
+  text-shadow: none;
+  .glyphicon-search {
+    display: none;
+  }
+}
+
+#home-page-hours-locations, #home-page-home-button {
+  display: none;
+}
+
+
+#more-details-accordion {
+  .active {
+    .panel-title {
+      color: @accordion-active-header-color;
+      text-shadow: 1px 1px #fff;
+    }
+  }
+}
+.sidebar-links {
+  .panel {
+    &.active {
+      & > a { // keep the title's link underlining the same color as the title
+        // these end up applying to content in .active div.panel-title
+        &, &:visited, &:hover {
+          text-shadow: 1px 1px #fff;
+        }
+      }
+    }
+  }
 }
