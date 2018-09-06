@@ -1,12 +1,27 @@
 {strip}
 	<h2>In {$interLibraryLoanName}</h2>
-	<p id='prospectorSearchResultsNote'>Didn’t find what you need? Items not owned by {if $consortiumName}{$consortiumName}{elseif $homeLibrary}{$homeLibrary}{else}the library{/if} can be requested from other {$interLibraryLoanName} libraries to be delivered to your local library for pickup.</p>
-	{*<p id='prospectorSearchResultsNote'>Request items from other {$interLibraryLoanName} libraries to be delivered to your local library for pickup.</p>*}
-	<div id='prospectorSearchResultsFooter'>
-		<div id='moreResultsFromProspector'>
-			<button class="btn btn-info" onclick="window.open ('{$interLibraryLoanUrl}', 'child'); return false">See more results in {$interLibraryLoanName}</button>
+	<div class="row" id="prospectorSection">
+		<div class="col-tn-12">
+			Didn’t find what you need? Items not owned by {if $consortiumName}{$consortiumName}{elseif $homeLibrary}{$homeLibrary}{else}the library{/if} can be requested from other {$interLibraryLoanName} libraries to be delivered to your local library for pickup.
 		</div>
-		<div class='clearfix'>&nbsp;</div>
 	</div>
+
+	<div class="row" id="prospectorLinkSection">
+		<div class="col-tn-12">
+			<br>
+			<button class="btn btn-sm btn-info pull-right" onclick="window.open('{$interLibraryLoanUrl}', 'child'); return false">See more results in {$interLibraryLoanName}</button>
+		</div>
+	</div>
+
+	<style type="text/css">
+		{literal}
+		#prospectorSection {
+			padding-top: 15px;
+		}
+		#prospectorLinkSection {
+			padding-bottom: 15px;
+		}
+		{/literal}
+	</style>
 
 {/strip}

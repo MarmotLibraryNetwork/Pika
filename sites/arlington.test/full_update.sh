@@ -14,8 +14,9 @@ PIKASERVER=arlington.test
 PIKADBNAME=pika
 OUTPUT_FILE="/var/log/vufind-plus/${PIKASERVER}/full_update_output.log"
 
-# Check if full_update is already running
-#TODO: Verify that the PID file doesn't get log-rotated
+MINFILE1SIZE=$((601000000))
+
+# Check if full_update is already running (test sites only)
 PIDFILE="/var/log/vufind-plus/${PIKASERVER}/full_update.pid"
 if [ -f $PIDFILE ]
 then
@@ -76,7 +77,7 @@ function checkProhibitedTimes() {
 		then
 			#echo "Sleeping:" $(($stop - $NOW))
 			sleep $(($stop - $NOW))
-			hasConflicts = 1
+			hasConflicts=1
 		fi
 	elif (( $start > $stop ))
 	then
@@ -87,7 +88,7 @@ function checkProhibitedTimes() {
 		elif (( $NOW > $start ))
 		then
 			sleep $(($stop + 86400 - $NOW))
-			hasConflicts = 1
+			hasConflicts=1
 		fi
 	fi
 	echo ${hasConflicts};
@@ -104,14 +105,14 @@ checkConflictingProcesses "sierra_export.jar arlington.test"
 checkConflictingProcesses "overdrive_extract.jar arlington.test"
 checkConflictingProcesses "reindexer.jar arlington.test"
 
+#truncate the output file so you don't spend a week debugging an error from a week ago!
+: > $OUTPUT_FILE;
+
 # Back-up Solr Master Index
 mysqldump ${PIKADBNAME} grouped_work_primary_identifiers > /data/vufind-plus/${PIKASERVER}/grouped_work_primary_identifiers.sql
 sleep 2m
 tar -czf /data/vufind-plus/${PIKASERVER}/solr_master_backup.tar.gz /data/vufind-plus/${PIKASERVER}/solr_master/grouped/index/ /data/vufind-plus/${PIKASERVER}/grouped_work_primary_identifiers.sql >> ${OUTPUT_FILE}
 rm /data/vufind-plus/${PIKASERVER}/grouped_work_primary_identifiers.sql
-
-#truncate the output file so you don't spend a week debugging an error from a week ago!
-: > $OUTPUT_FILE;
 
 #Restart Solr
 cd /usr/local/vufind-plus/sites/${PIKASERVER}; ./${PIKASERVER}.sh restart
@@ -123,20 +124,18 @@ cd /usr/local/vufind-plus/sites/${PIKASERVER}; ./${PIKASERVER}.sh restart
 # Get Yesterday's Full Export From Arlington Production Server
 YESTERDAY=$(date -d "yesterday 13:00 " +"%m_%d_%Y")
 scp -Cqp -i /root/.ssh/id_rsa sierraftp@158.59.15.152:/data/vufind-plus/arlington.production/marc_export/pika1.$YESTERDAY.mrc /data/vufind-plus/arlington.test/marc/pika1.mrc >> ${OUTPUT_FILE}
-scp -Cqp -i /root/.ssh/id_rsa sierraftp@158.59.15.152:/data/vufind-plus/arlington.production/marc_export/pika2.$YESTERDAY.mrc /data/vufind-plus/arlington.test/marc/pika2.mrc >> ${OUTPUT_FILE}
-
-#Get the updated volume information
-cd /usr/local/vufind-plus/vufind/cron;
-nice -n -10 java -jar cron.jar ${PIKASERVER} ExportSierraData >> ${OUTPUT_FILE}
+#scp -Cqp -i /root/.ssh/id_rsa sierraftp@158.59.15.152:/data/vufind-plus/arlington.production/marc_export/pika2.$YESTERDAY.mrc /data/vufind-plus/arlington.test/marc/pika2.mrc >> ${OUTPUT_FILE}
 
 #Extract from Hoopla
 # (Arlington maintains the Hoopla record set within their ILS)
 #cd /usr/local/vufind-plus/vufind/cron;./HOOPLA.sh ${PIKASERVER} >> ${OUTPUT_FILE}
 
 #Extract Lexile Data
+#cd /data/vufind-plus/; wget -N --no-verbose https://cassini.marmot.org/lexileTitles.txt
 cd /data/vufind-plus/; curl --remote-name --remote-time --silent --show-error --compressed --time-cond /data/vufind-plus/lexileTitles.txt https://cassini.marmot.org/lexileTitles.txt
 
 #Extract AR Data
+#cd /data/vufind-plus/accelerated_reader; wget -N --no-verbose https://cassini.marmot.org/RLI-ARDataTAB.txt
 cd /data/vufind-plus/accelerated_reader; curl --remote-name --remote-time --silent --show-error --compressed --time-cond /data/vufind-plus/accelerated_reader/RLI-ARDataTAB.txt https://cassini.marmot.org/RLI-ARDataTAB.txt
 
 
@@ -149,23 +148,62 @@ then
 	nice -n -10 java -jar overdrive_extract.jar ${PIKASERVER} fullReload >> ${OUTPUT_FILE}
 fi
 
-# should test for new bib extract file
-# should copy old bib extract file
+FILE1="/data/vufind-plus/arlington.test/marc/pika1.mrc"
+#FILE2="/data/vufind-plus/arlington.test/marc/pika2.mrc"
+if [ -n "$FILE1" ]
+then
+#	if [ -n "$FILE2" ]
+#	then
 
-#Validate the export
-cd /usr/local/vufind-plus/vufind/cron; java -server -XX:+UseG1GC -jar cron.jar ${PIKASERVER} ValidateMarcExport >> ${OUTPUT_FILE}
+		FILE1SIZE=$(wc -c <"$FILE1")
+		if [ $FILE1SIZE -ge $MINFILE1SIZE ]; then
+#		 FILE2SIZE=$(wc -c <"$FILE2")
+#		 if [ $FILE2SIZE -ge $MINFILE2SIZE ]; then
 
-#Full Regroup
-cd /usr/local/vufind-plus/vufind/record_grouping; java -server -XX:+UseG1GC -Xmx2G -jar record_grouping.jar ${PIKASERVER} fullRegroupingNoClear >> ${OUTPUT_FILE}
+			echo "Latest file (1) is " $FILE1 >> ${OUTPUT_FILE}
+			DIFF=$(($FILE1SIZE - $MINFILE1SIZE))
+			PERCENTABOVE=$((100 * $DIFF / $MINFILE1SIZE))
+			echo "The export file (1) is $PERCENTABOVE (%) larger than the minimum size check." >> ${OUTPUT_FILE}
 
-#Full Reindex
-cd /usr/local/vufind-plus/vufind/reindexer; java -server -XX:+UseG1GC -Xmx2G -jar reindexer.jar ${PIKASERVER} fullReindex >> ${OUTPUT_FILE}
+#			echo "Latest file (2) is " $FILE2 >> ${OUTPUT_FILE}
+#			DIFF=$(($FILE2SIZE - $MINFILE2SIZE))
+#			PERCENTABOVE=$((100 * $DIFF / $MINFILE2SIZE))
+#			echo "The export file (2) is $PERCENTABOVE (%) larger than the minimum size check." >> ${OUTPUT_FILE}
 
-# Truncate Continous Reindexing list of changed items
-cat /dev/null >| /data/vufind-plus/${PIKASERVER}/marc/changed_items_to_process.csv
 
-#Remove all ITEM_UPDATE_EXTRACT_PIKA files so continuous_partial_reindex can start fresh
-find /data/vufind-plus/${PIKASERVER}/marc -name 'ITEM_UPDATE_EXTRACT_PIKA*' -delete
+			#Get the updated volume information
+			cd /usr/local/vufind-plus/vufind/cron; nice -n -10 java -jar cron.jar ${PIKASERVER} ExportSierraData >> ${OUTPUT_FILE}
+
+			#Validate the export
+			cd /usr/local/vufind-plus/vufind/cron; java -server -XX:+UseG1GC -jar cron.jar ${PIKASERVER} ValidateMarcExport >> ${OUTPUT_FILE}
+
+			#Full Regroup
+			cd /usr/local/vufind-plus/vufind/record_grouping; java -server -XX:+UseG1GC -Xmx2G -jar record_grouping.jar ${PIKASERVER} fullRegroupingNoClear >> ${OUTPUT_FILE}
+
+			#Full Reindex
+			cd /usr/local/vufind-plus/vufind/reindexer; java -server -XX:+UseG1GC -Xmx2G -jar reindexer.jar ${PIKASERVER} fullReindex >> ${OUTPUT_FILE}
+
+			# Truncate Continous Reindexing list of changed items
+			cat /dev/null >| /data/vufind-plus/${PIKASERVER}/marc/changed_items_to_process.csv
+
+			#Remove all ITEM_UPDATE_EXTRACT_PIKA files so continuous_partial_reindex can start fresh
+			find /data/vufind-plus/${PIKASERVER}/marc -name 'ITEM_UPDATE_EXTRACT_PIKA*' -delete
+			#TODO: Don't think this is needed any more
+
+#			else
+#				echo $FILE2 " size " $FILE2SIZE "is less than minimum size :" $MINFILE2SIZE "; Export was not moved to data directory." >> ${OUTPUT_FILE}
+#			fi
+		else
+			echo $FILE1 " size " $FILE1SIZE "is less than minimum size :" $MINFILE1SIZE "; Export was not moved to data directory." >> ${OUTPUT_FILE}
+		fi
+
+#	else
+#		echo "Did not find a Sierra export file (2) from the last 24 hours, Full Regrouping & Full Reindexing skipped." >> ${OUTPUT_FILE}
+#	fi
+
+else
+	echo "Did not find a Sierra export file (1) from the last 24 hours, Full Regrouping & Full Reindexing skipped." >> ${OUTPUT_FILE}
+fi
 
 # Clean-up Solr Logs
 find /usr/local/vufind-plus/sites/default/solr/jetty/logs -name "solr_log_*" -mtime +7 -delete
@@ -178,7 +216,7 @@ cd /usr/local/vufind-plus/sites/${PIKASERVER}; ./${PIKASERVER}.sh restart
 FILESIZE=$(stat -c%s ${OUTPUT_FILE})
 if [[ ${FILESIZE} > 0 ]]
 then
-# send mail
-mail -s "Full Extract and Reindexing - ${PIKASERVER}" $EMAIL < ${OUTPUT_FILE}
+	# send mail
+	mail -s "Full Extract and Reindexing - ${PIKASERVER}" $EMAIL < ${OUTPUT_FILE}
 fi
 

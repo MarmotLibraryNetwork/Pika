@@ -621,28 +621,29 @@ class Millennium extends ScreenScrapingDriver
 	 * This is responsible for retrieving all transactions (i.e. checked out items)
 	 * by a specific patron.
 	 *
-	 * @param User $user    The user to load transactions for
-	 *
-	 * @return mixed        Array of the patron's transactions on success,
+	 * @param User $user           The user to load transactions for
+	 * @param bool $linkedAccount  When using linked accounts for Sierra Encore, the curl connection for linked accounts has to be reset
+	 * @return mixed               Array of the patron's transactions on success,
 	 * PEAR_Error otherwise.
 	 * @access public
 	 */
-	public function getMyCheckouts( $user ) {
+	public function getMyCheckouts($user, $linkedAccount = false) {
 		require_once ROOT_DIR . '/Drivers/marmot_inc/MillenniumCheckouts.php';
 		$millenniumCheckouts = new MillenniumCheckouts($this);
-		return $millenniumCheckouts->getMyCheckouts($user);
+		return $millenniumCheckouts->getMyCheckouts($user, $linkedAccount);
 	}
 
 	/**
 	 * Return a page from classic with comments stripped
 	 *
-	 * @param $patron             User The unique identifier for the patron
-	 * @param $page               string The page to be loaded
-	 * @return string             The page from classic
+	 * @param User   $patron         User The unique identifier for the patron
+	 * @param string $page           The page to be loaded
+	 * @param bool   $linkedAccount  When using linked accounts for Sierra Encore, the curl connection for linked accounts has to be reset
+	 * @return string                The page from classic
 	 */
-	public function _fetchPatronInfoPage($patron, $page){
+	public function _fetchPatronInfoPage($patron, $page, $linkedAccount = false){
 		//First we have to login to classic
-		if ($this->_curl_login($patron)) {
+		if ($this->_curl_login($patron, $linkedAccount)) {
 			$scope = $this->getDefaultScope();
 
 			//Now we can get the page
@@ -685,15 +686,15 @@ class Millennium extends ScreenScrapingDriver
 	 *
 	 * This is responsible for retrieving all holds for a specific patron.
 	 *
-	 * @param User $patron    The user to load transactions for
-	 *
-	 * @return array          Array of the patron's holds
+	 * @param User $patron         The user to load transactions for
+	 * @param bool $linkedAccount  When using linked accounts for Sierra Encore, the curl connection for linked accounts has to be reset
+	 * @return array               Array of the patron's holds
 	 * @access public
 	 */
-	public function getMyHolds($patron){
+	public function getMyHolds($patron, $linkedAccount = false){
 		require_once ROOT_DIR . '/Drivers/marmot_inc/MillenniumHolds.php';
 		$millenniumHolds = new MillenniumHolds($this);
-		return $millenniumHolds->getMyHolds($patron);
+		return $millenniumHolds->getMyHolds($patron, $linkedAccount);
 	}
 
 	/**
@@ -1163,6 +1164,13 @@ class Millennium extends ScreenScrapingDriver
 		return $holdable;
 	}
 
+//	const SIERRA_ITYPE_WILDCARDS = array('999', '9999');
+//	const SIERRA_PTYPE_WILDCARDS = array('999', '9999');
+	//TODO: switch to const when php version is >= 5.6
+
+	static $SIERRA_ITYPE_WILDCARDS = array('999', '9999');
+	static $SIERRA_PTYPE_WILDCARDS = array('999', '9999');
+
 	function isItemHoldableToPatron($locationCode, $iType, $pTypes){
 		/** @var Memcache $memCache*/
 		global $memCache;
@@ -1190,10 +1198,10 @@ class Millennium extends ScreenScrapingDriver
 				if ($loanRuleDeterminer->matchesLocation($locationCode) ){
 					//$logger->log("{$loanRuleDeterminer->rowNumber}) Location correct $locationCode, {$loanRuleDeterminer->location} ({$loanRuleDeterminer->trimmedLocation()})", PEAR_LOG_DEBUG);
 					//Check that the iType is correct
-					if ($loanRuleDeterminer->itemType == '999' || in_array($iType, $loanRuleDeterminer->iTypeArray())){
+					if (in_array($loanRuleDeterminer->itemType, self::$SIERRA_ITYPE_WILDCARDS) || in_array($iType, $loanRuleDeterminer->iTypeArray())){
 						//$logger->log("{$loanRuleDeterminer->rowNumber}) iType correct $iType, {$loanRuleDeterminer->itemType}", PEAR_LOG_DEBUG);
 						foreach ($pTypes as $pType){
-							if ($pType == -1 || $loanRuleDeterminer->patronType == '999' || in_array($pType, $loanRuleDeterminer->pTypeArray())){
+							if ($pType == -1 || in_array($loanRuleDeterminer->patronType, self::$SIERRA_PTYPE_WILDCARDS) || in_array($pType, $loanRuleDeterminer->pTypeArray())){
 								//$logger->log("{$loanRuleDeterminer->rowNumber}) pType correct $pType, {$loanRuleDeterminer->patronType}", PEAR_LOG_DEBUG);
 								$loanRule = $this->loanRules[$loanRuleDeterminer->loanRuleId];
 								//$logger->log("Determiner {$loanRuleDeterminer->rowNumber} indicates Loan Rule {$loanRule->loanRuleId} applies, holdable {$loanRule->holdable}", PEAR_LOG_DEBUG);
@@ -1238,6 +1246,7 @@ class Millennium extends ScreenScrapingDriver
 			$iTypeSubfield = $indexingProfile->iType;
 			$locationSubfield = $indexingProfile->location;
 		}else{
+			//TODO: use indexing progile
 			$marcItemField = isset($configArray['Reindex']['itemTag']) ? $configArray['Reindex']['itemTag'] : '989';
 			$iTypeSubfield = isset($configArray['Reindex']['iTypeSubfield']) ? $configArray['Reindex']['iTypeSubfield'] : 'j';
 			$locationSubfield = isset($configArray['Reindex']['locationSubfield']) ? $configArray['Reindex']['locationSubfield'] : 'j';
@@ -1300,10 +1309,10 @@ class Millennium extends ScreenScrapingDriver
 				if ($loanRuleDeterminer->matchesLocation($locationCode) ){
 					//$logger->log("{$loanRuleDeterminer->rowNumber}) Location correct $locationCode, {$loanRuleDeterminer->location} ({$loanRuleDeterminer->trimmedLocation()})", PEAR_LOG_DEBUG);
 					//Check that the iType is correct
-					if ($loanRuleDeterminer->itemType == '999' || in_array($iType, $loanRuleDeterminer->iTypeArray())){
+					if (in_array($loanRuleDeterminer->itemType, self::$SIERRA_ITYPE_WILDCARDS) || in_array($iType, $loanRuleDeterminer->iTypeArray())){
 						//$logger->log("{$loanRuleDeterminer->rowNumber}) iType correct $iType, {$loanRuleDeterminer->itemType}", PEAR_LOG_DEBUG);
 						foreach ($pTypes as $pType){
-							if ($pType == -1 || $loanRuleDeterminer->patronType == '999' || in_array($pType, $loanRuleDeterminer->pTypeArray())){
+							if ($pType == -1 || in_array($loanRuleDeterminer->patronType, self::$SIERRA_PTYPE_WILDCARDS) || in_array($pType, $loanRuleDeterminer->pTypeArray())){
 								//$logger->log("{$loanRuleDeterminer->rowNumber}) pType correct $pType, {$loanRuleDeterminer->patronType}", PEAR_LOG_DEBUG);
 								$loanRule = $this->loanRules[$loanRuleDeterminer->loanRuleId];
 								//$logger->log("Determiner {$loanRuleDeterminer->rowNumber} indicates Loan Rule {$loanRule->loanRuleId} applies, bookable {$loanRule->bookable}", PEAR_LOG_DEBUG);
@@ -1618,13 +1627,14 @@ class Millennium extends ScreenScrapingDriver
 	}
 
 	/**
-	 * @param User $patron
+	 * @param User $patron           The user to load transactions for
 	 * @param bool $includeMessages
-	 * @return array
+	 * @param bool $linkedAccount    When using linked accounts for Sierra Encore, the curl connection for linked accounts has to be reset
+	 * @return array                 Array of fines data
 	 */
-	public function getMyFines($patron = null, $includeMessages = false){
+	public function getMyFines($patron = null, $includeMessages = false, $linkedAccount = false){
 		//Load the information from millennium using CURL
-		$pageContents = $this->_fetchPatronInfoPage($patron, 'overdues');
+		$pageContents = $this->_fetchPatronInfoPage($patron, 'overdues', $linkedAccount);
 
 		//Get the fines table data
 		$messages = array();

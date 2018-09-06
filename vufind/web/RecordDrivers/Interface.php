@@ -292,7 +292,7 @@ abstract class RecordInterface {
 		);
 		$timer->logTime('Loaded Description');
 		$moreDetailsOptions['series'] = array(
-				'label' => 'Also in this Series',
+				'label' => 'Also in This Series',
 				'body' => $interface->fetch('GroupedWork/series.tpl'),
 				'hideByDefault' => false,
 				'openByDefault' => true
@@ -308,9 +308,10 @@ abstract class RecordInterface {
 		}
 		$timer->logTime('Loaded More Like This');
 		if ($interface->getVariable('enablePospectorIntegration')){
+			$innReachEncoreName = $configArray['InterLibraryLoan']['innReachEncoreName'];
 			$moreDetailsOptions['prospector'] = array(
-					'label' => 'More Copies In Prospector',
-					'body' => '<div id="inProspectorPlaceholder">Loading Prospector Copies...</div>',
+					'label' => 'More Copies In ' . $innReachEncoreName,
+					'body' => '<div id="inProspectorPlaceholder">Loading '. $innReachEncoreName .' Copies...</div>',
 					'hideByDefault' => false
 			);
 		}
@@ -427,30 +428,30 @@ abstract class RecordInterface {
 
 	public static function getValidMoreDetailsSources() {
 		return array(
-				'description' => 'Description',
-				'series' => 'Also in this Series',
-				'formats' => 'Formats',
-				'copies' => 'Copies',
-				'links' => 'Links',
-				'moreLikeThis' => 'More Like This',
-				'otherEditions' => 'Other Editions and Formats',
-				'prospector' => 'Prospector',
-				'tableOfContents' => 'Table of Contents  (MARC/Syndetics/ContentCafe)',
-				'excerpt' => 'Excerpt (Syndetics/ContentCafe)',
-				'authornotes' => 'Author Notes (Syndetics/ContentCafe)',
-				'subjects' => 'Subjects',
-				'moreDetails' => 'More Details',
-				'similarSeries' => 'Similar Series From NoveList',
-				'similarTitles' => 'Similar Titles From NoveList',
-				'similarAuthors' => 'Similar Authors From NoveList',
-				'borrowerReviews' => 'Borrower Reviews',
-				'editorialReviews' => 'Editorial Reviews',
+				'description'       => 'Description',
+				'series'            => 'Also in This Series',
+				'formats'           => 'Formats',
+				'copies'            => 'Copies',
+				'links'             => 'Links',
+				'moreLikeThis'      => 'More Like This',
+				'otherEditions'     => 'Other Editions and Formats',
+				'prospector'        => 'Prospector',
+				'tableOfContents'   => 'Table of Contents  (MARC/Syndetics/ContentCafe)',
+				'excerpt'           => 'Excerpt (Syndetics/ContentCafe)',
+				'authornotes'       => 'Author Notes (Syndetics/ContentCafe)',
+				'subjects'          => 'Subjects',
+				'moreDetails'       => 'More Details',
+				'similarSeries'     => 'Similar Series From NoveList',
+				'similarTitles'     => 'Similar Titles From NoveList',
+				'similarAuthors'    => 'Similar Authors From NoveList',
+				'borrowerReviews'   => 'Borrower Reviews',
+				'editorialReviews'  => 'Editorial Reviews',
 				'syndicatedReviews' => 'Syndicated Reviews (Syndetics/ContentCafe)',
-				'goodreadsReviews' => 'GoodReads Reviews',
-				'tags' => 'Tags',
-				'citations' => 'Citations',
-				'copyDetails' => 'Copy Details (OverDrive)',
-				'staff' => 'Staff View',
+				'goodreadsReviews'  => 'GoodReads Reviews',
+				'tags'              => 'Tags',
+				'citations'         => 'Citations',
+				'copyDetails'       => 'Copy Details (OverDrive)',
+				'staff'             => 'Staff View',
 		);
 	}
 

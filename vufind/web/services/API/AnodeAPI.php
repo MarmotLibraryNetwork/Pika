@@ -57,7 +57,7 @@ class AnodeAPI extends Action {
 		} else {
 			$numTitlesToShow = $_REQUEST['numGroupedWorksToShow'];
 		}
-		if (isset($_GET['branch']) && in_array($_GET['branch'], array("bl","bx","se"))) {
+		if (isset($_GET['branch']) && in_array($_GET['branch'], array("bl","bx","ep","ma","se"))) {
 			$branch = $_GET['branch'];
 		} else {
 			$branch = "catalog";

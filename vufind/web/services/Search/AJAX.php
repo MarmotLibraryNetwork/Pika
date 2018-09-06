@@ -48,10 +48,14 @@ class AJAX extends Action {
 
 				try {
 					$result = $this->$method();
-					require_once ROOT_DIR . '/sys/Utils/ArrayUtils.php';
-					//					$utf8EncodedValue = ArrayUtils::utf8EncodeArray(array('result'=>$result));
-					$utf8EncodedValue = ArrayUtils::utf8EncodeArray($result);
-					$output = json_encode($utf8EncodedValue);
+//					require_once ROOT_DIR . '/sys/Utils/ArrayUtils.php';
+					// This only encodes an ISO-8859-1 string to UTF-8
+//					$utf8EncodedValue = ArrayUtils::utf8EncodeArray($result);
+					// This only encodes an ISO-8859-1 string to UTF-8
+					// It is best to encode to UTF-8 when ingesting from whatever source that encoding comes from
+					// pascal 8-27-2018
+//					$output = json_encode($utf8EncodedValue);
+					$output = json_encode($result);
 					$error = json_last_error();
 					if ($error != JSON_ERROR_NONE || $output === FALSE) {
 						if (function_exists('json_last_error_msg')) {
@@ -61,7 +65,7 @@ class AJAX extends Action {
 						}
 						global $configArray;
 						if ($configArray['System']['debug']) {
-							print_r($utf8EncodedValue);
+//							print_r($utf8EncodedValue);
 						}
 					}
 				} catch (Exception $e) {
@@ -168,35 +172,38 @@ class AJAX extends Action {
 
 	function getProspectorResults(){
 		$prospectorSavedSearchId = $_GET['prospectorSavedSearchId'];
+		if (ctype_digit($prospectorSavedSearchId)) {
+			require_once ROOT_DIR . '/Drivers/marmot_inc/Prospector.php';
+			global $configArray;
+			global $interface;
+			global $library;
+			global $timer;
 
-		require_once ROOT_DIR . '/Drivers/marmot_inc/Prospector.php';
-		global $configArray;
-		global $interface;
-		global $library;
-		global $timer;
+			/** @var SearchObject_Solr $searchObject */
+			$searchObject = SearchObjectFactory::initSearchObject();
+			$searchObject->init();
+			// Setup Search Engine Connection
+			$class        = $configArray['Index']['engine'];
+			$url          = $configArray['Index']['url'];
+			$db           = new $class($url);
+			$searchObject = $searchObject->restoreSavedSearch($prospectorSavedSearchId, false);
 
-		/** @var SearchObject_Solr $searchObject */
-		$searchObject = SearchObjectFactory::initSearchObject();
-		$searchObject->init();
-		// Setup Search Engine Connection
-		$class = $configArray['Index']['engine'];
-		$url = $configArray['Index']['url'];
-		$db = new $class($url);
-		$searchObject = $searchObject->restoreSavedSearch($prospectorSavedSearchId, false);
+			//Load results from Prospector
+			$prospector = new Prospector();
 
-		//Load results from Prospector
-		$prospector = new Prospector();
+			// Only show prospector results within search results if enabled
+			if ($library && $library->enablePospectorIntegration && $library->showProspectorResultsAtEndOfSearch) {
+				$prospectorResults = $prospector->getTopSearchResults($searchObject->getSearchTerms(), 5);
+				$interface->assign('prospectorResults', $prospectorResults['records']);
+			}
 
-		// Only show prospector results within search results if enabled
-		if ($library && $library->enablePospectorIntegration && $library->showProspectorResultsAtEndOfSearch){
-			$prospectorResults = $prospector->getTopSearchResults($searchObject->getSearchTerms(), 5);
-			$interface->assign('prospectorResults', $prospectorResults['records']);
+			$innReachEncoreName = $configArray['InterLibraryLoan']['innReachEncoreName'];
+			$interface->assign('innReachEncoreName', $innReachEncoreName);
+			$prospectorLink = $prospector->getSearchLink($searchObject->getSearchTerms());
+			$interface->assign('prospectorLink', $prospectorLink);
+			$timer->logTime('load Prospector titles');
+			echo $interface->fetch('Search/ajax-prospector.tpl');
 		}
-
-		$prospectorLink = $prospector->getSearchLink($searchObject->getSearchTerms());
-		$interface->assign('prospectorLink', $prospectorLink);
-		$timer->logTime('load Prospector titles');
-		echo $interface->fetch('Search/ajax-prospector.tpl');
 	}
 
 	/**

@@ -23,8 +23,8 @@ public class BookabilityInformation {
 	}
 
 	public String getBookablePTypes() {
-		if (bookablePTypes.contains(999L)){
-			return "999";
+		if (bookablePTypes.contains(9999L) || bookablePTypes.contains(999L)){
+			return "9999";
 		}else{
 			return Util.getCsvSeparatedStringFromLongs(bookablePTypes);
 		}

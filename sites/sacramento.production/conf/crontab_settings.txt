@@ -77,6 +77,12 @@
 14 18 * * * cd /usr/local/vufind-plus/vufind/cron/; java -jar cron.jar sacramento.production
 25 0 * * * cd /usr/local/vufind-plus/vufind/cron/; java -jar cron.jar sacramento.production DatabaseCleanup
 
+#################
+# Let's Encrypt #
+#################
+#update sacramento production certificate twice daily
+11 3,19 * * * certbot renew
+
 # Check Apache Solr process and website that it has not stalled.
 */3 * * * * cd /usr/local/vufind-plus/vufind/cron/; ./solrTest.sh
 

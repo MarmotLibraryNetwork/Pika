@@ -316,14 +316,14 @@ class CatalogConnection
 	 * by a specific patron.
 	 *
 	 * @param User $user    The user to load transactions for
-	 *
+	 * @param bool $linkedAccount  When using linked accounts for Sierra Encore, the curl connection for linked accounts has to be reset
 	 * @return mixed        Array of the patron's transactions on success,
 	 * PEAR_Error otherwise.
 	 * @access public
 	 */
-	public function getMyCheckouts($user)
+	public function getMyCheckouts($user, $linkedAccount = false)
 	{
-		$transactions = $this->driver->getMyCheckouts($user);
+		$transactions = $this->driver->getMyCheckouts($user, $linkedAccount);
 		foreach ($transactions as $key => $curTitle){
 			$curTitle['user'] = $user->getNameAndLibraryLabel();
 			$curTitle['userId'] = $user->id;
@@ -349,15 +349,16 @@ class CatalogConnection
 	 *
 	 * This is responsible for retrieving all fines by a specific patron.
 	 *
-	 * @param array $patron The patron array from patronLogin
-	 *
+	 * @param array $patron            The patron array from patronLogin
+	 * @param bool  $includeMessages
+	 * @param bool  $linkedAccount    When using linked accounts for Sierra Encore, the curl connection for linked accounts has to be reset
 	 * @return mixed        Array of the patron's fines on success, PEAR_Error
 	 * otherwise.
 	 * @access public
 	 */
-	public function getMyFines($patron, $includeMessages = false)
+	public function getMyFines($patron, $includeMessages = false, $linkedAccount = false)
 	{
-		return $this->driver->getMyFines($patron, $includeMessages);
+		return $this->driver->getMyFines($patron, $includeMessages, $linkedAccount);
 	}
 
 	/**
@@ -565,13 +566,13 @@ class CatalogConnection
 	 *
 	 * This is responsible for retrieving all holds for a specific patron.
 	 *
-	 * @param User $user    The user to load transactions for
-	 *
-	 * @return array        Array of the patron's holds
+	 * @param User $user           The user to load transactions for
+	 * @param bool $linkedAccount  When using linked accounts for Sierra Encore, the curl connection for linked accounts has to be reset
+	 * @return array               Array of the patron's holds
 	 * @access public
 	 */
-	public function getMyHolds($user) {
-		$holds = $this->driver->getMyHolds($user);
+	public function getMyHolds($user, $linkedAccount = false) {
+		$holds = $this->driver->getMyHolds($user, $linkedAccount);
 		foreach ($holds as $section => $holdsForSection){
 			foreach ($holdsForSection as $key => $curTitle){
 				$curTitle['user'] = $user->getNameAndLibraryLabel();

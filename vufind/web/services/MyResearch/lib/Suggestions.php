@@ -141,7 +141,7 @@ class Suggestions{
 		uasort($suggestions, 'Suggestions::compareSuggestions');
 		//Only return up to $maxRecommendations suggestions to make the page size reasonable
 		$suggestions = array_slice($suggestions, 0, $maxRecommendations, true);
-		$timer->logTime("Sorted and filterd suggestions");
+		$timer->logTime("Sorted and filtered suggestions");
 		//Return suggestions for use in the user interface.
 		return $suggestions;
 	}

@@ -46,18 +46,19 @@ class MillenniumCheckouts {
 	 * This is responsible for retrieving all transactions (i.e. checked out items)
 	 * by a specific patron.
 	 *
-	 * @param User $user    The user to load transactions for
-	 *
-	 * @return mixed        Array of the patron's transactions on success,
+	 * @param User $user           The user to load transactions for
+	 * @param bool $linkedAccount  When using linked accounts for Sierra Encore, the curl connection for linked accounts has to be reset
+
+	 * @return mixed              Array of the patron's transactions on success,
 	 * PEAR_Error otherwise.
 	 * @access public
 	 */
-	public function getMyCheckouts($user) {
+	public function getMyCheckouts($user, $linkedAccount = false) {
 		$checkedOutTitles = array();
 		global $timer;
 		$timer->logTime("Ready to load checked out titles from Millennium");
 		//Load the information from millennium using CURL
-		$sResult = $this->driver->_fetchPatronInfoPage($user, 'items');
+		$sResult = $this->driver->_fetchPatronInfoPage($user, 'items', $linkedAccount);
 		$timer->logTime("Loaded checked out titles from Millennium");
 		if ($sResult) {
 

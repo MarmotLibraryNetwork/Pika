@@ -84,3 +84,9 @@
 # Check for semaphore errors
 17 * * * * cd /usr/local/vufind-plus/vufind/cron/; ./apacheSemaphoreCleanup.sh root
 
+#################
+# Let's Encrypt #
+#################
+#update be.catalog.lionlibraries.org certificate twice daily
+22 3,10 * * * certbot renew
+

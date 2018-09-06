@@ -14,7 +14,7 @@ PIKASERVER=aacpl.production
 PIKADBNAME=pika
 OUTPUT_FILE="/var/log/vufind-plus/${PIKASERVER}/full_update_output.log"
 
-MINFILE1SIZE=$((593000000))
+MINFILE1SIZE=$((595000000))
 
 # Check if full_update is already running
 #TODO: Verify that the PID file doesn't get log-rotated
@@ -161,7 +161,8 @@ fi
 mount 10.1.2.7:/ftp/aacpl /mnt/ftp
 
 # Copy Over Holds data
-cp --update --preserve=timestamps /mnt/ftp/symphony-holds/*.csv /data/vufind-plus/${PIKASERVER}/
+#cp --update --preserve=timestamps /mnt/ftp/symphony-holds/*.csv /data/vufind-plus/${PIKASERVER}/
+#not actually used at this time. 9/6/2018
 
 #Copy extracts from FTP Server
 FILE=$(find /mnt/ftp/symphony -name Pika*.mrc -mtime -1 | sort -n | tail -1)

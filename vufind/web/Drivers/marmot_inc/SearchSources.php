@@ -201,12 +201,12 @@ class SearchSources{
 			);
 		}
 
-//		if ($repeatInProspector && !$interface->isMobile()){ //allow in mobile views. plb 11-17-2014
 		if ($repeatInProspector){
+			$innReachEncoreName = $configArray['InterLibraryLoan']['innReachEncoreName'];
 			$searchOptions['prospector'] = array(
-        'name' => 'Prospector Catalog',
-        'description' => 'A shared catalog of academic, public, and special libraries all over Colorado.',
-        'external' => true,
+        'name'        => $innReachEncoreName . ' Catalog',
+        'description' => $innReachEncoreName == 'Prospector' ? 'A shared catalog of academic, public, and special libraries all over Colorado.' : 'A shared catalog for inter-library loaning.',
+        'external'    => true,
 				'catalogType' => 'catalog'
 			);
 		}
@@ -351,7 +351,9 @@ class SearchSources{
 			if ($prospectorSearchType != ' '){
 				$lookFor = "$prospectorSearchType:(" . $lookFor . ")";
 			}
-			return "http://encore.coalliance.org/iii/encore/search/C|S" . $lookFor ."|Orightresult|U1?lang=eng&amp;suite=def";
+			$innReachEncoreHostUrl = $configArray['InterLibraryLoan']['innReachEncoreHostUrl'];
+
+			return $innReachEncoreHostUrl . '/iii/encore/search/C|S' . $lookFor . '|Orightresult|U1?lang=eng&amp;suite=def';
 		}else if ($searchSource == 'amazon'){
 			return "http://www.amazon.com/s/ref=nb_sb_noss?url=search-alias%3Daps&field-keywords=" . urlencode($lookFor);
 		}else if ($searchSource == 'course-reserves-course-name'){

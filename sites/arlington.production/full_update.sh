@@ -14,8 +14,8 @@ PIKASERVER=arlington.production
 PIKADBNAME=pika
 OUTPUT_FILE="/var/log/vufind-plus/${PIKASERVER}/full_update_output.log"
 
-MINFILE1SIZE=$((815000000))
-MINFILE2SIZE=$((467000000))
+MINFILE1SIZE=$((601000000))
+#MINFILE2SIZE=$((467000000))
 
 # Check for conflicting processes currently running
 function checkConflictingProcesses() {
@@ -95,12 +95,11 @@ cd /usr/local/vufind-plus/sites/${PIKASERVER}; ./${PIKASERVER}.sh restart
 #cd /usr/local/vufind-plus/vufind/cron;./GetHooplaFromMarmot.sh >> ${OUTPUT_FILE}
 
 #Extract Lexile Data
-#cd /data/vufind-plus/; wget -N --no-verbose https://cassini.marmot.org/lexileTitles.txt
 cd /data/vufind-plus/; curl --remote-name --remote-time --silent --show-error --compressed --time-cond /data/vufind-plus/lexileTitles.txt https://cassini.marmot.org/lexileTitles.txt
 
 #Extract AR Data
-#cd /data/vufind-plus/accelerated_reader; wget -N --no-verbose https://cassini.marmot.org/RLI-ARDataTAB.txt
 cd /data/vufind-plus/accelerated_reader; curl --remote-name --remote-time --silent --show-error --compressed --time-cond /data/vufind-plus/accelerated_reader/RLI-ARDataTAB.txt https://cassini.marmot.org/RLI-ARDataTAB.txt
+
 
 #Do a full extract from OverDrive just once a week to catch anything that doesn't
 #get caught in the regular extract
@@ -113,26 +112,26 @@ fi
 
 #Extract from ILS
 FILE1=$(find /home/sierraftp/ -name FULLEXPORT1*.MRC -mtime -1 | sort -n | tail -1)
-FILE2=$(find /home/sierraftp/ -name FULLEXPORT2*.MRC -mtime -1 | sort -n | tail -1)
+#FILE2=$(find /home/sierraftp/ -name FULLEXPORT2*.MRC -mtime -1 | sort -n | tail -1)
 if [ -n "$FILE1" ]
 then
-	if [ -n "$FILE2" ]
-	then
+#	if [ -n "$FILE2" ]
+#	then
 
 		FILE1SIZE=$(wc -c <"$FILE1")
 		if [ $FILE1SIZE -ge $MINFILE1SIZE ]; then
-		 FILE2SIZE=$(wc -c <"$FILE2")
-		 if [ $FILE2SIZE -ge $MINFILE2SIZE ]; then
+#		 FILE2SIZE=$(wc -c <"$FILE2")
+#		 if [ $FILE2SIZE -ge $MINFILE2SIZE ]; then
 
 			echo "Latest file (1) is " $FILE1 >> ${OUTPUT_FILE}
 			DIFF=$(($FILE1SIZE - $MINFILE1SIZE))
 			PERCENTABOVE=$((100 * $DIFF / $MINFILE1SIZE))
 			echo "The export file (1) is $PERCENTABOVE (%) larger than the minimum size check." >> ${OUTPUT_FILE}
 
-			echo "Latest file (2) is " $FILE2 >> ${OUTPUT_FILE}
-			DIFF=$(($FILE2SIZE - $MINFILE2SIZE))
-			PERCENTABOVE=$((100 * $DIFF / $MINFILE2SIZE))
-			echo "The export file (2) is $PERCENTABOVE (%) larger than the minimum size check." >> ${OUTPUT_FILE}
+#			echo "Latest file (2) is " $FILE2 >> ${OUTPUT_FILE}
+#			DIFF=$(($FILE2SIZE - $MINFILE2SIZE))
+#			PERCENTABOVE=$((100 * $DIFF / $MINFILE2SIZE))
+#			echo "The export file (2) is $PERCENTABOVE (%) larger than the minimum size check." >> ${OUTPUT_FILE}
 
 			# Date For Backup filename
 			TODAY=$(date +"%m_%d_%Y")
@@ -142,15 +141,14 @@ then
 			# Move to marc_export to keep as a backup
 			mv $FILE1 /data/vufind-plus/arlington.production/marc_export/pika1.$TODAY.mrc
 
-			# Copy to data directory to process
-			cp $FILE2 /data/vufind-plus/arlington.production/marc/pika2.mrc
-			# Move to marc_export to keep as a backup
-			mv $FILE2 /data/vufind-plus/arlington.production/marc_export/pika2.$TODAY.mrc
-
+#			# Copy to data directory to process
+#			cp $FILE2 /data/vufind-plus/arlington.production/marc/pika2.mrc
+#			# Move to marc_export to keep as a backup
+#			mv $FILE2 /data/vufind-plus/arlington.production/marc_export/pika2.$TODAY.mrc
+#
 
 			#Get the updated volume information
-			cd /usr/local/vufind-plus/vufind/cron;
-			nice -n -10 java -jar cron.jar ${PIKASERVER} ExportSierraData >> ${OUTPUT_FILE}
+			cd /usr/local/vufind-plus/vufind/cron; nice -n -10 java -jar cron.jar ${PIKASERVER} ExportSierraData >> ${OUTPUT_FILE}
 
 			#Validate the export
 			cd /usr/local/vufind-plus/vufind/cron; java -server -XX:+UseG1GC -jar cron.jar ${PIKASERVER} ValidateMarcExport >> ${OUTPUT_FILE}
@@ -170,22 +168,22 @@ then
 		NEWLEVEL=$(($FILE1SIZE * 97 / 100))
 		echo "" >> ${OUTPUT_FILE}
 		echo " Based on today's export file (1), a new minimum filesize check level should be set to $NEWLEVEL" >> ${OUTPUT_FILE}
-		NEWLEVEL=$(($FILE2SIZE * 97 / 100))
-		echo "" >> ${OUTPUT_FILE}
-		echo "Based on today's export file (2), a new minimum filesize check level should be set to $NEWLEVEL" >> ${OUTPUT_FILE}
+#		NEWLEVEL=$(($FILE2SIZE * 97 / 100))
+#		echo "" >> ${OUTPUT_FILE}
+#		echo "Based on today's export file (2), a new minimum filesize check level should be set to $NEWLEVEL" >> ${OUTPUT_FILE}
 
 
 
-			else
-				echo $FILE2 " size " $FILE2SIZE "is less than minimum size :" $MINFILE2SIZE "; Export was not moved to data directory." >> ${OUTPUT_FILE}
-			fi
+#			else
+#				echo $FILE2 " size " $FILE2SIZE "is less than minimum size :" $MINFILE2SIZE "; Export was not moved to data directory." >> ${OUTPUT_FILE}
+#			fi
 		else
 			echo $FILE1 " size " $FILE1SIZE "is less than minimum size :" $MINFILE1SIZE "; Export was not moved to data directory." >> ${OUTPUT_FILE}
 		fi
 
-	else
-		echo "Did not find a Sierra export file (2) from the last 24 hours, Full Regrouping & Full Reindexing skipped." >> ${OUTPUT_FILE}
-	fi
+#	else
+#		echo "Did not find a Sierra export file (2) from the last 24 hours, Full Regrouping & Full Reindexing skipped." >> ${OUTPUT_FILE}
+#	fi
 
 else
 	echo "Did not find a Sierra export file (1) from the last 24 hours, Full Regrouping & Full Reindexing skipped." >> ${OUTPUT_FILE}

@@ -892,7 +892,8 @@ class User extends DB_DataObject
 		global $configArray;
 
 		//Get checked out titles from the ILS
-		$ilsCheckouts = $this->getCatalogDriver()->getMyCheckouts($this);
+		$ilsCheckouts = $this->getCatalogDriver()->getMyCheckouts($this, !$includeLinkedUsers);
+		// When working with linked users with Sierra Encore, curl connections need to be reset for logins to process correctly
 		$timer->logTime("Loaded transactions from catalog.");
 
 		//Get checked out titles from OverDrive
@@ -928,7 +929,8 @@ class User extends DB_DataObject
 	}
 
 	public function getMyHolds($includeLinkedUsers = true, $unavailableSort = 'sortTitle', $availableSort = 'expire'){
-		$ilsHolds = $this->getCatalogDriver()->getMyHolds($this);
+		$ilsHolds = $this->getCatalogDriver()->getMyHolds($this, !$includeLinkedUsers);
+		// When working with linked users with Sierra Encore, curl connections need to be reset for logins to process correctly
 		if (PEAR_Singleton::isError($ilsHolds)) {
 			$ilsHolds = array();
 		}
@@ -1040,7 +1042,8 @@ class User extends DB_DataObject
 	public function getMyFines($includeLinkedUsers = true){
 
 		if (!isset($this->ilsFinesForUser)){
-			$this->ilsFinesForUser = $this->getCatalogDriver()->getMyFines($this);
+			$this->ilsFinesForUser = $this->getCatalogDriver()->getMyFines($this, false, !$includeLinkedUsers);
+			// When working with linked users with Sierra Encore, curl connections need to be reset for logins to process correctly
 			if (PEAR_Singleton::isError($this->ilsFinesForUser)) {
 				$this->ilsFinesForUser = array();
 			}

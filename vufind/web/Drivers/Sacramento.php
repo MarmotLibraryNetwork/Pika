@@ -18,10 +18,11 @@ class Sacramento extends Sierra
 	 *Login url is different; and on login response we look for a success message instead of error messages
 	 *(there are no error message, the login form is returned instead)
 	 *
-	 * @param $patron
+	 * @param User $patron
+	 * @param bool $linkedAccount  When using linked accounts for Sierra Encore, the curl connection for linked accounts has to be reset
 	 * @return bool
 	 */
-	public function _curl_login($patron) {
+	public function _curl_login($patron, $linkedAccount = false) {
 		global $logger;
 		$loginResult = false;
 
@@ -31,6 +32,11 @@ class Sacramento extends Sierra
 
 		$logger->log('Loading page ' . $curlUrl, PEAR_LOG_INFO);
 
+		if ($linkedAccount) {
+			// For linked users, reset the curl connection so that subsequent logins for the linked users process correctly
+			$this->_close_curl();
+			$this->curl_connection = false;
+		}
 		$loginResponse = $this->_curlPostPage($curlUrl, $post_data);
 
 		//When a library uses IPSSO, the initial login does a redirect and requires additional parameters.

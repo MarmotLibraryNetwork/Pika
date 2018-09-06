@@ -29,15 +29,15 @@
 @home-search-top-color: @sutter-dark-blue;
 @home-search-bottom-color: @sutter-dark-blue;
 
-@header-top-color: @sutter-blue; //Top color for background gradient in header
-@header-middle-color: @sutter-blue; //middle color for background gradient in header @80% of header height from bottom
-@header-bottom-color: @sutter-blue; //Bottom color for background gradient in header
+@header-top-color: @home-page-login-background-color; //Top color for background gradient in header
+@header-middle-color: @home-page-login-background-color; //middle color for background gradient in header @80% of header height from bottom
+@header-bottom-color: @home-page-login-background-color; //Bottom color for background gradient in header
 
-@library-display-name-color: @sutter-green;
+@library-display-name-color: @sutter-heading-text-black;
 @library-display-name-font: @font-family-sans-serif-resp;
 //@library-display-name-font-size: 25px;
 
-@header-bottom-border-color: @sutter-blue;
+@header-bottom-border-color: @home-page-login-background-color;
 @footer-top-border-color: @sutter-blue;
 
 @header-buttons-background-color: @sutter-background-white;
@@ -63,7 +63,7 @@
 @selectedCategoryBorderColor: #ffffff;
 
 @browse-header-background-color: #ffffff;
-@browseCarouselControlBackgroundColor: @sutter-green;
+@browseCarouselControlBackgroundColor: #ffffff;
 @browseCarouselControlColor: @sutter-green;
 
 // Selected Category color to give a highlighted appearance
@@ -86,7 +86,6 @@
 @browse-label-line-color: #fff;
 @browse-category-text-color: @sutter-text-black;
 @selected-browse-label-search-color: @sutter-heading-text-black;
-@browse-category-font-size: 30px;
 
 @more-browse-results-backgroundcolor: @sutter-orange;
 @more-browse-results-color: #fff;
@@ -96,3 +95,8 @@
 @accordion-header-top-gradient-color: @accordion-header-bg-color;
 @accordion-header-bottom-gradient-color: @accordion-header-bg-color;
 
+
+//No rounded corners
+@border-radius-base:             0;
+@border-radius-large:            0;
+@border-radius-small:            0;

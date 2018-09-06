@@ -19,11 +19,9 @@ class GroupedWork extends DB_DataObject {
 
 	function forceRegrouping() {
 //		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
-		require_once ROOT_DIR . '/sys/Grouping/GroupedWorkPrimaryIdentifier.php';
-		require_once ROOT_DIR . '/sys/Indexing/IlsMarcChecksum.php';
-		require_once ROOT_DIR . '/sys/OverDrive/OverDriveAPIProduct.php';
 		if (!empty($this->id)) {
 			$numRecordsMarked = 0;
+			require_once ROOT_DIR . '/sys/Grouping/GroupedWorkPrimaryIdentifier.php';
 			$groupedWorkPrimaryIdentifier                  = new GroupedWorkPrimaryIdentifier();
 			$groupedWorkPrimaryIdentifier->grouped_work_id = $this->id;
 			$groupedWorkPrimaryIdentifier->find();
@@ -31,6 +29,7 @@ class GroupedWork extends DB_DataObject {
 			while ($groupedWorkPrimaryIdentifier->fetch()) {
 				if ($groupedWorkPrimaryIdentifier->type == 'overdrive') {
 					//For OverDrive titles, just need to set dateUpdated to now.
+					require_once ROOT_DIR . '/sys/OverDrive/OverDriveAPIProduct.php';
 					$overDriveProduct              = new OverDriveAPIProduct();
 					$overDriveProduct->overdriveId = $groupedWorkPrimaryIdentifier->identifier;
 					if ($overDriveProduct->find(true)) {
@@ -41,6 +40,7 @@ class GroupedWork extends DB_DataObject {
 					}
 				} else {
 					//Mark the checksum as 0.
+					require_once ROOT_DIR . '/sys/Indexing/IlsMarcChecksum.php';
 					$ilsMarcChecksum         = new IlsMarcChecksum();
 					$ilsMarcChecksum->ilsId  = $groupedWorkPrimaryIdentifier->identifier;
 					$ilsMarcChecksum->source = $groupedWorkPrimaryIdentifier->type;

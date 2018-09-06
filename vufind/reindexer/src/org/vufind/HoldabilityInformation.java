@@ -26,8 +26,8 @@ public class HoldabilityInformation {
 	String holdablePTypesString = null;
 	public String getHoldablePTypes() {
 		if (holdablePTypesString == null){
-			if (holdablePTypes.contains(999L)){
-				holdablePTypesString = "999";
+			if (holdablePTypes.contains(9999L) || holdablePTypes.contains(999L)){
+				holdablePTypesString = "9999";
 			}else{
 				holdablePTypesString = Util.getCsvSeparatedStringFromLongs(holdablePTypes);
 			}

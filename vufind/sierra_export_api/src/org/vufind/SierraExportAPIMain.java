@@ -600,9 +600,9 @@ public class SierraExportAPIMain {
 				ResultSet getPermanentIdByWorkIdRS = getPermanentIdByWorkIdStmt.executeQuery();
 				if (getPermanentIdByWorkIdRS.next()) {
 					permanentId = getPermanentIdByWorkIdRS.getString("permanent_id");
-					logger.warn("Deleting primary identifier for grouped work permanentId " + permanentId + " and bib id " + id);
+//					logger.warn("Deleting primary identifier for grouped work permanentId " + permanentId + " and bib id " + id);
 				} else {
-					logger.warn("Deleting primary identifier for grouped work permanent id " + primaryIdentifierId + " with grouped work id " + groupedWorkId + " and bib id " + id);
+//					logger.warn("Deleting primary identifier for grouped work permanent id " + primaryIdentifierId + " with grouped work id " + groupedWorkId + " and bib id " + id);
 				}
 
 				//Check to see if there are other identifiers for this work
@@ -617,14 +617,13 @@ public class SierraExportAPIMain {
 					//The grouped work no longer exists
 					//Get the permanent id
 
-//TODO: temp comment
 //					getPermanentIdByWorkIdStmt.setLong(1, groupedWorkId);
 //					ResultSet getPermanentIdByWorkIdRS = getPermanentIdByWorkIdStmt.executeQuery();
 //					if (getPermanentIdByWorkIdRS.next()) {
 //						String permanentId = getPermanentIdByWorkIdRS.getString("permanent_id");
 
 
-						logger.warn("Sierra API extract deleted Group Work " + permanentId + " from index. Investigate if it is an anomalous deletion by the Sierra API extract");
+//						logger.warn("Sierra API extract deleted Group Work " + permanentId + " from index. Investigate if it is an anomalous deletion by the Sierra API extract");
 						// See https://marmot.myjetbrains.com/youtrack/issue/D-2364
 //						//Delete the work from solr
 						groupedWorkIndexer.deleteRecord(permanentId);
@@ -636,7 +635,7 @@ public class SierraExportAPIMain {
 //						deleteGroupedWorkStmt.setLong(1, groupedWorkId);
 //						deleteGroupedWorkStmt.executeUpdate();
 
-//					} //TODO: temp comment
+//					}
 
 				}
 			}//If not true, already deleted skip this

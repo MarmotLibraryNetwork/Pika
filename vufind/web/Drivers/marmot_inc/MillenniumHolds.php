@@ -639,15 +639,15 @@ class MillenniumHolds{
 	 *
 	 * This is responsible for retrieving all holds for a specific patron.
 	 *
-	 * @param User $patron    The user to load transactions for
-	 *
-	 * @return array          Array of the patron's holds
+	 * @param User $patron         The user to load transactions for
+	 * @param bool $linkedAccount  When using linked accounts for Sierra Encore, the curl connection for linked accounts has to be reset
+	 * @return array               Array of the patron's holds
 	 * @access public
 	 */
-	public function getMyHolds($patron) {
+	public function getMyHolds($patron, $linkedAccount = false) {
 		global $timer;
 		//Load the information from millennium using CURL
-		$sResult = $this->driver->_fetchPatronInfoPage($patron, 'holds');
+		$sResult = $this->driver->_fetchPatronInfoPage($patron, 'holds', $linkedAccount);
 		$timer->logTime("Got holds page from Millennium");
 
 		$holds = $this->parseHoldsPage($sResult, $patron);

@@ -227,7 +227,7 @@ class AACPLRecordProcessor extends IlsRecordProcessor {
 			for (DataField itemField : itemRecords) {
 				String location = itemField.getSubfield(locationSubfieldIndicator).getData();
 				if (location != null) {
-					if (location.equalsIgnoreCase("Z-ELIBRARY") || location.equalsIgnoreCase("Z-ONLINEBK ")) {
+					if (location.equalsIgnoreCase("Z-ELIBRARY") || location.equalsIgnoreCase("Z-ONLINEBK")) {
 						RecordInfo eContentRecord = getEContentIlsRecord(groupedWork, record, identifier, itemField);
 						unsuppressedEcontentRecords.add(eContentRecord);
 					}
@@ -258,6 +258,9 @@ class AACPLRecordProcessor extends IlsRecordProcessor {
 		itemInfo.setItemIdentifier(getItemSubfieldData(itemRecordNumberSubfieldIndicator, itemField));
 
 		String econtentSource = MarcUtil.getFirstFieldVal(record, "092a");
+		if (econtentSource == null || econtentSource.equals("")) {
+			logger.warn("Did not find an econtent source for " + identifier);
+		}
 //		itemInfo.setShelfLocation(econtentSource);
 		itemInfo.setShelfLocation("Online");
 

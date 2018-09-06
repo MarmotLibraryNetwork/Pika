@@ -3,7 +3,7 @@
 <div class="topFacets">
 	<br>
 	{foreach from=$topFacetSet item=cluster key=title}
-		{if $cluster.label == 'Category' || $cluster.label == 'Format Category'}
+		{if stripos($title, 'category') !== false}
 			{if ($categorySelected == false)}
 				<div class="formatCategories top-facet" id="formatCategories">
 					<div id="categoryValues" class="row">
@@ -41,19 +41,22 @@
 					<div class="clearfix"></div>
 				</div>
 			{/if}
-		{elseif preg_match('/available/i', $cluster.label)}
+		{elseif stripos($title, 'availability_toggle') !== false}
 			<div id="availabilityControlContainer" class="row text-center top-facet">
-				<div id="availabilityControl" class="btn-group" data-toggle="buttons-radio">
-					{foreach from=$cluster.list item=thisFacet name="narrowLoop"}
-						{if $thisFacet.isApplied}
-							<button type="button" id="{$thisFacet.value|escape|regex_replace:'/[()\s]/':''}" class="btn btn-primary" name="availabilityControls">{$thisFacet.value|escape}{if $thisFacet.count > 0} ({$thisFacet.count|number_format:0:".":","}){/if}</button>
-						{else}
-							<button type="button" id="{$thisFacet.value|escape|regex_replace:'/[()\s]/':''}" class="btn btn-default" name="availabilityControls" data-url="{$thisFacet.url|escape}" onclick="window.location = $(this).data('url')" >{$thisFacet.value|escape}{if $thisFacet.count > 0} ({$thisFacet.count|number_format:0:".":","}){/if}</button>
-						{/if}
-					{/foreach}
+				<div class="col-tn-12">
+					<div id="availabilityControl" class="btn-group" data-toggle="buttons-radio">
+						{foreach from=$cluster.list item=thisFacet name="narrowLoop"}
+							{if $thisFacet.isApplied}
+								<button type="button" id="{$thisFacet.value|escape|regex_replace:'/[()\s]/':''}" class="btn btn-primary" name="availabilityControls">{$thisFacet.value|escape}{if $thisFacet.count > 0} ({$thisFacet.count|number_format:0:".":","}){/if}</button>
+							{else}
+								<button type="button" id="{$thisFacet.value|escape|regex_replace:'/[()\s]/':''}" class="btn btn-default" name="availabilityControls" data-url="{$thisFacet.url|escape}" onclick="window.location = $(this).data('url')" >{$thisFacet.value|escape}{if $thisFacet.count > 0} ({$thisFacet.count|number_format:0:".":","}){/if}</button>
+							{/if}
+						{/foreach}
+					</div>
 				</div>
 			</div>
 		{else}
+			{*TODO: Rebuild to use the responsive framework and get rid of the html table *}
 			<div class="authorbox top-facet">
 				<h5>{translate text=$cluster.label}<span>{translate text="top_facet_suffix"}</span></h5>
 				<table class="facetsTop navmenu narrow_begin">
@@ -68,7 +71,7 @@
 							<tr>
 						{/if}
 						{if $thisFacet.isApplied}
-							<td>{$thisFacet.value|escape}</a> <img src="{$path}/images/silk/tick.png" alt="Selected" > <a href="{$thisFacet.removalUrl|escape}" class="removeFacetLink" onclick="trackEvent('Remove Facet', '{$cluster.label}', '{$thisFacet.value|escape}');">(remove)</a></td>
+							<td>{$thisFacet.value|escape}</a> <img src="{$path}/images/silk/tick.png" alt="Selected"> <a href="{$thisFacet.removalUrl|escape}" class="removeFacetLink" onclick="trackEvent('Remove Facet', '{$cluster.label}', '{$thisFacet.value|escape}');">(remove)</a></td>
 						{else}
 							<td><a href="{$thisFacet.url|escape}" onclick="trackEvent('Apply Facet', '{$cluster.label}', '{$thisFacet.value|escape}');">{$thisFacet.value|escape}</a> ({$thisFacet.count})</td>
 						{/if}

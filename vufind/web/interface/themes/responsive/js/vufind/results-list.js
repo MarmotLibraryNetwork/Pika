@@ -20,8 +20,8 @@ VuFind.ResultsList = (function(){
 
 		initializeDescriptions: function(){
 			$(".descriptionTrigger").each(function(){
-				var descElement = $(this);
-				var descriptionContentClass = descElement.data("content_class");
+				var descElement = $(this),
+						descriptionContentClass = descElement.data("content_class");
 				options = {
 					html: true,
 					trigger: 'hover',
@@ -33,28 +33,26 @@ VuFind.ResultsList = (function(){
 		},
 
 		lessFacets: function(name){
-			document.getElementById("more" + name).style.display="block";
-			document.getElementById("narrowGroupHidden_" + name).style.display="none";
+			$("#more" + name + ",#narrowGroupHidden_" + name).toggle();
 		},
+
+		moreFacets: function(name){
+			$("#more" + name + ",#narrowGroupHidden_" + name).toggle();
+			},
 
 		loadDescription: function(descriptionContentClass){
 			var contentHolder = $(descriptionContentClass);
 			return contentHolder[0].innerHTML;
 		},
 
-		moreFacets: function(name){
-			document.getElementById("more" + name).style.display="none";
-			document.getElementById("narrowGroupHidden_" + name).style.display="block";
-		},
-
 		moreFacetPopup: function(title, name){
 			VuFind.showMessage(title, $("#moreFacetPopup_" + name).html());
 		},
 
-		toggleFacetVisibility: function(){
-			$facetsSection = $("#collapse-side-facets");
-		},
-
+		// toggleFacetVisibility: function(){
+		// 	$facetsSection = $("#collapse-side-facets");
+		// },
+		//
 		toggleRelatedManifestations: function(manifestationId){
 			$('#relatedRecordPopup_' + manifestationId).toggleClass('hidden');
 			var manifestationToggle = $('#manifestation-toggle-' + manifestationId);

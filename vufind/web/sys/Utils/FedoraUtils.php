@@ -293,14 +293,32 @@ class FedoraUtils {
 	public function getModsValues($tag, $namespace = null, $snippet, $includeTag = false){
 		if ($namespace == null){
 			if (preg_match_all("/<{$tag}(?=[\\s>]).*?>(.*?)<\\/$tag>/s", $snippet, $matches, PREG_PATTERN_ORDER)){
-				return $includeTag ? $matches[0] : $matches[1];
+				if ($includeTag) {
+					$match = self::decodeXmlCharacterReferences($matches[0]);
+				} else {
+					$match = self::decodeXmlCharacterReferences($matches[1]);
+				}
+				return $match;
 			}
 		}else{
 			if (preg_match_all("/<(?:$namespace:)?{$tag}(?=[\\s>]).*?>(.*?)<\\/(?:$namespace:)?{$tag}>/s", $snippet, $matches, PREG_PATTERN_ORDER)){
-				return $includeTag ? $matches[0] : $matches[1];
+				if ($includeTag) {
+					$match = self::decodeXmlCharacterReferences($matches[0]);
+				} else {
+					$match = self::decodeXmlCharacterReferences($matches[1]);
+				}
+				return $match;
 			}
 		}
 		return array();
+	}
+
+	static public function decodeXmlCharacterReferences($strings) {
+		$newStrings = array();
+		foreach ($strings as $string) {
+			$newStrings[] = mb_convert_encoding($string, 'UTF-8', 'HTML-ENTITIES');
+		}
+		return $newStrings;
 	}
 
 	public static function cleanValues($values){

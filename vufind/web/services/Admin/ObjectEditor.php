@@ -171,12 +171,14 @@ abstract class ObjectEditor extends Admin_Admin
 		$validationResults = DataObjectUtil::validateObject($structure, $object);
 		return $validationResults;
 	}
+
 	function viewExistingObjects(){
 		global $interface;
 		//Basic List
 		$interface->assign('dataList', $this->getAllObjects());
 		$interface->setTemplate('../Admin/propertiesList.tpl');
 	}
+
 	function viewIndividualObject($structure){
 		global $interface;
 		//Viewing an individual record, get the id to show

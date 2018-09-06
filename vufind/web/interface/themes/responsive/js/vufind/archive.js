@@ -393,8 +393,7 @@ VuFind.Archive = (function(){
 			if (secondaryId !== undefined){
 				url += "&secondaryId=" + secondaryId;
 			}
-			var metadataTarget = $('#archive-metadata');
-			metadataTarget.html("Please wait while we load information about this object...")
+			var metadataTarget = $('#archive-metadata').html("Please wait while we load information about this object...");
 			$.getJSON(url, function(data) {
 				if (data.success) {
 					metadataTarget.html(data.metadata);
