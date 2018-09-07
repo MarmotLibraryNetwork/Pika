@@ -600,9 +600,9 @@ public class SierraExportAPIMain {
 				ResultSet getPermanentIdByWorkIdRS = getPermanentIdByWorkIdStmt.executeQuery();
 				if (getPermanentIdByWorkIdRS.next()) {
 					permanentId = getPermanentIdByWorkIdRS.getString("permanent_id");
-//					logger.warn("Deleting primary identifier for grouped work permanentId " + permanentId + " and bib id " + id);
+					logger.warn("Deleting primary identifier for grouped work permanentId " + permanentId + " and bib id " + id);
 				} else {
-//					logger.warn("Deleting primary identifier for grouped work permanent id " + primaryIdentifierId + " with grouped work id " + groupedWorkId + " and bib id " + id);
+					logger.warn("Deleting primary identifier for grouped work permanent id " + primaryIdentifierId + " with grouped work id " + groupedWorkId + " and bib id " + id + " (failed to find permanent Id");
 				}
 
 				//Check to see if there are other identifiers for this work
@@ -623,10 +623,11 @@ public class SierraExportAPIMain {
 //						String permanentId = getPermanentIdByWorkIdRS.getString("permanent_id");
 
 
-//						logger.warn("Sierra API extract deleted Group Work " + permanentId + " from index. Investigate if it is an anomalous deletion by the Sierra API extract");
-						// See https://marmot.myjetbrains.com/youtrack/issue/D-2364
+
 //						//Delete the work from solr
 						groupedWorkIndexer.deleteRecord(permanentId);
+						logger.warn("Sierra API extract deleted Group Work " + permanentId + " from index. Investigate if it is an anomalous deletion by the Sierra API extract");
+					// See https://marmot.myjetbrains.com/youtrack/issue/D-2364
 
 						//Prevent deletion of the grouped work entry for now. Pascal 8-3-2018
 //						//Delete the work from the database?
