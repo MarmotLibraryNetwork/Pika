@@ -14,7 +14,7 @@ PIKASERVER=arlington.test
 PIKADBNAME=pika
 OUTPUT_FILE="/var/log/vufind-plus/${PIKASERVER}/full_update_output.log"
 
-MINFILE1SIZE=$((601000000))
+MINFILE1SIZE=$((578000000))
 
 # Check if full_update is already running (test sites only)
 PIDFILE="/var/log/vufind-plus/${PIKASERVER}/full_update.pid"
@@ -84,7 +84,7 @@ function checkProhibitedTimes() {
 		if (( $NOW < $stop ))
 		then
 			sleep $(($stop - $NOW))
-			hasConflicts = 1
+			hasConflicts=1
 		elif (( $NOW > $start ))
 		then
 			sleep $(($stop + 86400 - $NOW))
