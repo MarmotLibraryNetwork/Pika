@@ -57,7 +57,7 @@
 		<div class="smallText">
 			{if $statusInformation.numHolds > 0}
 				{if $statusInformation.groupedStatus == "On Order"}
-					Additional copies on order, {$statusInformation.numHolds} {if $statusInformation.numHolds == 1}person is{else}people are{/if} on the wait list.
+					Multiple copies on order, {$statusInformation.numHolds} {if $statusInformation.numHolds == 1}person is{else}people are{/if} on the wait list.
 				{else}
 					{$statusInformation.copies} {if $statusInformation.copies == 1}copy{else}copies{/if}, {$statusInformation.numHolds} {if $statusInformation.numHolds == 1}person is{else}people are{/if} on the wait list.
 				{/if}
