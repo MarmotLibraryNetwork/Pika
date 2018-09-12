@@ -23,13 +23,14 @@ abstract class HorizonROA implements DriverInterface
 	{
 		$webServiceURL = null;
 		if (!empty($this->accountProfile->patronApiUrl)) {
-			$webServiceURL = $this->accountProfile->patronApiUrl;
+			$webServiceURL = trim($this->accountProfile->patronApiUrl);
 		} elseif (!empty($configArray['Catalog']['webServiceUrl'])) {
 			$webServiceURL = $configArray['Catalog']['webServiceUrl'];
 		} else {
 			global $logger;
 			$logger->log('No Web Service URL defined in Horizon ROA API Driver', PEAR_LOG_CRIT);
 		}
+		$webServiceURL = rtrim($webServiceURL, '/'); // remove any trailing slash because other functions will add it.
 		return $webServiceURL;
 	}
 
@@ -503,6 +504,7 @@ abstract class HorizonROA implements DriverInterface
 						} else {
 							// Could be ILL Items
 							$bibInfo = $this->getWebServiceResponse($webServiceURL . '/v1/catalog/bib/key/' . $bibId . '?includeFields=title,author', null, $sessionToken);
+//							$bibInfo = $this->getWebServiceResponse($webServiceURL . '/v1/catalog/bib/key/' . $bibId . '?includeFields=*', null, $sessionToken);
 							if (!empty($bibInfo->fields)) {
 								$simpleSortTitle        = preg_replace('/^The\s|^A\s/i', '', $bibInfo->fields->title); // remove beginning The or A
 								$curTitle['title']      = $bibInfo->fields->title;
@@ -728,25 +730,26 @@ abstract class HorizonROA implements DriverInterface
 						//Load rating information
 						$curHold['ratingData']      = $recordDriver->getRatingData();
 
-						if ($hold->fields->holdType == 'COPY') {
-
-							$curHold['title2'] = $hold->fields->item->fields->itemType->key . ' - ' . $hold->fields->item->fields->call->fields->callNumber;
-
-
-//						$itemInfo = $this->getWebServiceResponse($webServiceURL . '/v1' . $hold->fields->selectedItem->resource . '/key/' . $hold->fields->selectedItem->key. '?includeFields=barcode,call{*}', null, $sessionToken);
-//						$curHold['title2'] = $itemInfo->fields->itemType->key . ' - ' . $itemInfo->fields->call->fields->callNumber;
-							//TODO: Verify that this matches the title2 built below
-//						if (isset($itemInfo->fields)){
-//							$barcode = $itemInfo->fields->barcode;
-//							$copies = $recordDriver->getCopies();
-//							foreach ($copies as $copy){
-//								if ($copy['itemId'] == $barcode){
-//									$curHold['title2'] = $copy['shelfLocation'] . ' - ' . $copy['callNumber'];
-//									break;
-//								}
-//							}
+						//TODO: WCPL doesn't do item level holds
+//						if ($hold->fields->holdType == 'COPY') {
+//
+//							$curHold['title2'] = $hold->fields->item->fields->itemType->key . ' - ' . $hold->fields->item->fields->call->fields->callNumber;
+//
+//
+////						$itemInfo = $this->getWebServiceResponse($webServiceURL . '/v1' . $hold->fields->selectedItem->resource . '/key/' . $hold->fields->selectedItem->key. '?includeFields=barcode,call{*}', null, $sessionToken);
+////						$curHold['title2'] = $itemInfo->fields->itemType->key . ' - ' . $itemInfo->fields->call->fields->callNumber;
+//							//TODO: Verify that this matches the title2 built below
+////						if (isset($itemInfo->fields)){
+////							$barcode = $itemInfo->fields->barcode;
+////							$copies = $recordDriver->getCopies();
+////							foreach ($copies as $copy){
+////								if ($copy['itemId'] == $barcode){
+////									$curHold['title2'] = $copy['shelfLocation'] . ' - ' . $copy['callNumber'];
+////									break;
+////								}
+////							}
+////						}
 //						}
-						}
 
 					} else {
 						// If we don't have good marc record, ask the ILS for title info
@@ -1166,25 +1169,31 @@ abstract class HorizonROA implements DriverInterface
 		//Get a list of fines for the user
 		$patronFines = $this->getWebServiceResponse($webServiceURL . '/v1/user/patron/key/' . $patron->username . '?includeFields=blockList', null, $sessionToken);
 		if (!empty($patronFines->fields->blockList)) {
+			require_once ROOT_DIR . '/RecordDrivers/MarcRecord.php';
 			foreach ($patronFines->fields->blockList as $blockList) {
 				$blockListKey = $blockList->key;
 				$lookupBlockResponse = $this->getWebServiceResponse($webServiceURL . '/v1/circulation/block/key/' . $blockListKey, null, $sessionToken);
 				if (isset($lookupBlockResponse->fields)){
 					$fine = $lookupBlockResponse->fields;
 
-					$itemId = $fine->item->key;
-					$bibId = $this->getBibId($itemId, $patron);
-					//TODO: just look in marc data first
-					$bibInfo = $this->getWebServiceResponse($webServiceURL . '/v1/catalog/bib/key/' . $bibId . '?includeFields=title,author', null, $sessionToken);
-					if (!empty($bibInfo->fields)) {
-						$title = $bibInfo->fields->title;
-//						$curTitle['author']     = $bibInfo->fields->author;
+
+					// Lookup book title associated with the block
+					$title = '';
+					if (isset($fine->item->key)) {
+						$itemId       = $fine->item->key;
+						$bibId        = $this->getBibId($itemId, $patron);
+						$recordDriver = new MarcRecord($bibId);
+						if ($recordDriver->isValid()) {
+							$title = $recordDriver->getTitle();
+						} else {
+							$bibInfo = $this->getWebServiceResponse($webServiceURL . '/v1/catalog/bib/key/' . $bibId . '?includeFields=title,author', null, $sessionToken);
+							if (!empty($bibInfo->fields)) {
+								$title = $bibInfo->fields->title;
+							}
+						}
 					}
 
-					//TODO: memcache these things
-					$lookupBlockPolicy = $this->getWebServiceResponse($webServiceURL . '/v1/policy/block/key/' . $fine->block->key, null, $sessionToken);
-					$reason = empty($lookupBlockPolicy->fields->description) ? null : $lookupBlockPolicy->fields->description;
-
+					$reason = $this->getBlockPolicy($fine->block->key, $patron);
 					$fines[] = array(
 						'reason'            => $reason,
 						'amount'            => $fine->amount->amount,
@@ -1194,14 +1203,27 @@ abstract class HorizonROA implements DriverInterface
 					);
 
 				}
-
 			}
-
 		}
-
 
 		return $fines;
 	}
 
-
+	private function getBlockPolicy($blockPolicyKey, $patron) {
+		/** @var Memcache $memCache */
+		global $memCache;
+		$memCacheKey     = "horizon_ROA_block_policy_$blockPolicyKey";
+		$blockPolicy = $memCache->get($memCacheKey);
+		if (!$blockPolicy) {
+			$webServiceURL = $this->getWebServiceURL();
+			$sessionToken  = $this->getSessionToken($patron);
+			$lookupBlockPolicy = $this->getWebServiceResponse($webServiceURL . '/v1/policy/block/key/' . $blockPolicyKey, null, $sessionToken);
+			if (!empty($lookupBlockPolicy->fields)) {
+				$blockPolicy = empty($lookupBlockPolicy->fields->description) ? null : $lookupBlockPolicy->fields->description;
+				global $configArray;
+				$memCache->set($memCacheKey, $blockPolicy, 0, $configArray['Caching']['horizon_ROA_block_policy']);
+			}
+		}
+		return $blockPolicy;
+	}
 }
