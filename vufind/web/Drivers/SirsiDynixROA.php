@@ -892,7 +892,7 @@ abstract class SirsiDynixROA extends HorizonAPI //TODO: This class doesn't need 
 
 		//Now that we have the session token, get holds information
 		$webServiceURL = $this->getWebServiceURL();
-		//Get a list of holds for the user
+		//Get a list of checkouts for the user
 //		$patronCheckouts = $this->getWebServiceResponse($webServiceURL . '/v1/user/patron/key/' . $patron->username . '?includeFields=circRecordList{*,item{itemType,call{dispCallNumber}}}', null, $sessionToken);
 		$patronCheckouts = $this->getWebServiceResponse($webServiceURL . '/v1/user/patron/key/' . $patron->username . '?includeFields=circRecordList{*,item{call{dispCallNumber}}}', null, $sessionToken);
 
