@@ -149,6 +149,12 @@ abstract class HorizonROA implements DriverInterface
 	}
 
 
+	/**
+	 * @param $username
+	 * @param $password
+	 * @param $validatedViaSSO
+	 * @return null|User
+	 */
 	public function patronLogin($username, $password, $validatedViaSSO)
 	{
 
@@ -175,7 +181,7 @@ abstract class HorizonROA implements DriverInterface
 			$acountInfoLookupURL = $webServiceURL . '/v1/user/patron/key/' . $horizonRoaUserID
 			. '?includeFields=displayName,birthDate,privilegeExpiresDate,primaryAddress,primaryPhone,library,patronType'
 			. ',holdRecordList,circRecordList,blockList'
-//			. ",estimatedOverdueAmount,blockList,circRecordList"  // fields to play with
+//			. ",estimatedOverdueAmount"  // TODO: fields to play with
 			// {*} notation doesn't work here
 		;
 
@@ -223,10 +229,6 @@ abstract class HorizonROA implements DriverInterface
 				if (isset($lookupMyAccountInfoResponse->fields->primaryAddress)) {
 					$preferredAddress = $lookupMyAccountInfoResponse->fields->primaryAddress->fields;
 					// Set for Account Updating
-//					self::$userPreferredAddresses[$horizonRoaUserID] = $preferredAddress;
-					//TODO: Needed?
-					// Used by My Account Profile to update Contact Info
-
 					$cityState = $preferredAddress->area;
 					if (strpos($cityState, ', ')) {
 						list($City, $State) = explode(', ', $cityState);
@@ -255,7 +257,7 @@ abstract class HorizonROA implements DriverInterface
 				if (isset($lookupMyAccountInfoResponse->fields->library->key)) {
 					$homeBranchCode = strtolower(trim($lookupMyAccountInfoResponse->fields->library->key));
 					//Translate home branch to plain text
-					/** @var \Location $location */
+					/** @var Location $location */
 					$location       = new Location();
 					$location->code = $homeBranchCode;
 					if (!$location->find(true)) {
@@ -274,7 +276,7 @@ abstract class HorizonROA implements DriverInterface
 						// or the first location for the library
 						global $library;
 
-						/** @var \Location $location */
+						/** @var Location $location */
 						$location            = new Location();
 						$location->libraryId = $library->libraryId;
 						$location->orderBy('isMainBranch desc'); // gets the main branch first or the first location
@@ -289,7 +291,7 @@ abstract class HorizonROA implements DriverInterface
 						$user->homeLocationId = $location->locationId;
 						if (empty($user->myLocation1Id)) {
 							$user->myLocation1Id  = ($location->nearbyLocation1 > 0) ? $location->nearbyLocation1 : $location->locationId;
-							/** @var /Location $location */
+							/** @var Location $myLocation1 */
 							//Get display name for preferred location 1
 							$myLocation1             = new Location();
 							$myLocation1->locationId = $user->myLocation1Id;
@@ -301,6 +303,7 @@ abstract class HorizonROA implements DriverInterface
 						if (empty($user->myLocation2Id)){
 							$user->myLocation2Id  = ($location->nearbyLocation2 > 0) ? $location->nearbyLocation2 : $location->locationId;
 							//Get display name for preferred location 2
+							/** @var Location $myLocation2 */
 							$myLocation2             = new Location();
 							$myLocation2->locationId = $user->myLocation2Id;
 							if ($myLocation2->find(true)) {
@@ -324,7 +327,6 @@ abstract class HorizonROA implements DriverInterface
 						$timeNow      = time();
 						$timeToExpire = $timeExpire - $timeNow;
 						if ($timeToExpire <= 30 * 24 * 60 * 60) {
-							//TODO: Sirsi ROA has an expire soon flag in the patronStatusInfo, does Horizon ROA?
 							if ($timeToExpire <= 0) {
 								$user->expired = 1;
 							}
@@ -334,21 +336,23 @@ abstract class HorizonROA implements DriverInterface
 				}
 
 				//Get additional information about fines, etc
+				$finesVal = 0;
+				if (isset($lookupMyAccountInfoResponse->fields->blockList)) {
+					foreach ($lookupMyAccountInfoResponse->fields->blockList as $blockEntry) {
+						$block = $this->getWebServiceResponse($webServiceURL . '/v1/circulation/block/key/' . $blockEntry->key . '?includeFields=owed', null, $sessionToken);
+						if (isset($block->fields)){
+							$fineAmount = (float) $block->fields->owed->amount;
+							$finesVal   += $fineAmount;
+						}
+					}
+				}
 
-				//TODO: Make Additional Calls to calculate these values
-//				$finesVal = 0;
-//				if (isset($lookupMyAccountInfoResponse->fields->blockList)) {
-//					foreach ($lookupMyAccountInfoResponse->fields->blockList as $block) {
-//						// $block is a simplexml object with attribute info about currency, type casting as below seems to work for adding up. plb 3-27-2015
-//						$fineAmount = (float)$block->fields->owed->amount;
-//						$finesVal   += $fineAmount;
-//
-//					}
-//				}
-//
+				$numHolds = 0;
+				//TODO: count available holds
 //				$numHoldsAvailable = 0;
 //				$numHoldsRequested = 0;
-//				if (isset($lookupMyAccountInfoResponse->fields->holdRecordList)) {
+				if (isset($lookupMyAccountInfoResponse->fields->holdRecordList)) {
+					$numHolds = count($lookupMyAccountInfoResponse->fields->holdRecordList);
 //					foreach ($lookupMyAccountInfoResponse->fields->holdRecordList as $hold) {
 //						if ($hold->fields->status == 'BEING_HELD') {
 //							$numHoldsAvailable++;
@@ -356,25 +360,22 @@ abstract class HorizonROA implements DriverInterface
 //							$numHoldsRequested++;
 //						}
 //					}
-//				}
+				}
 //
-//				$numCheckedOut = 0;
-//				if (isset($lookupMyAccountInfoResponse->fields->circRecordList)) {
-//					foreach ($lookupMyAccountInfoResponse->fields->circRecordList as $checkedOut) {
-//						if (empty($checkedOut->fields->claimsReturnedDate) && $checkedOut->fields->status != 'INACTIVE') {
-//							$numCheckedOut++;
-//						}
-//					}
-//				}
+				$numCheckedOut = 0;
+				if (isset($lookupMyAccountInfoResponse->fields->circRecordList)) {
+					$numCheckedOut = count($lookupMyAccountInfoResponse->fields->circRecordList);
+				}
 
 				$user->address1              = $Address1;
 				$user->address2              = $City . ', ' . $State; //TODO: Is there a reason to do this?
 				$user->city                  = $City;
 				$user->state                 = $State;
 				$user->zip                   = $Zip;
-//				$user->fines                 = sprintf('$%01.2f', $finesVal);
-//				$user->finesVal              = $finesVal;
-//				$user->numCheckedOutIls      = $numCheckedOut;
+				$user->fines                 = sprintf('$%01.2f', $finesVal);
+				$user->finesVal              = $finesVal;
+				$user->numCheckedOutIls      = $numCheckedOut;
+				$user->numHoldsIls           = $numHolds;
 //				$user->numHoldsIls           = $numHoldsAvailable + $numHoldsRequested;
 //				$user->numHoldsAvailableIls  = $numHoldsAvailable;
 //				$user->numHoldsRequestedIls  = $numHoldsRequested;
@@ -1173,12 +1174,14 @@ abstract class HorizonROA implements DriverInterface
 
 					$itemId = $fine->item->key;
 					$bibId = $this->getBibId($itemId, $patron);
+					//TODO: just look in marc data first
 					$bibInfo = $this->getWebServiceResponse($webServiceURL . '/v1/catalog/bib/key/' . $bibId . '?includeFields=title,author', null, $sessionToken);
 					if (!empty($bibInfo->fields)) {
 						$title = $bibInfo->fields->title;
 //						$curTitle['author']     = $bibInfo->fields->author;
 					}
 
+					//TODO: memcache these things
 					$lookupBlockPolicy = $this->getWebServiceResponse($webServiceURL . '/v1/policy/block/key/' . $fine->block->key, null, $sessionToken);
 					$reason = empty($lookupBlockPolicy->fields->description) ? null : $lookupBlockPolicy->fields->description;
 
