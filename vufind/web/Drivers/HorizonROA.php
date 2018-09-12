@@ -463,7 +463,6 @@ abstract class HorizonROA implements DriverInterface
 					$bibId = $this->getBibId($itemId, $patron);
 					if (!empty($bibId)) {
 						//TODO: volumes?
-						//TODO: publication date
 						//TODO: Barcode?
 						//TODO: fine amount
 
@@ -492,7 +491,6 @@ abstract class HorizonROA implements DriverInterface
 							$curTitle['author']        = $recordDriver->getPrimaryAuthor();
 							$curTitle['link']          = $recordDriver->getLinkUrl();
 							$curTitle['ratingData']    = $recordDriver->getRatingData();
-							$curTitle['publicationDate'] = $recordDriver->getPublicationDates(); //TODO: this is included in template, but I doubt is usually populated
 						} else {
 							// Presumably ILL Items
 							$bibInfo = $this->getWebServiceResponse($webServiceURL . '/v1/catalog/bib/key/' . $bibId, null, $sessionToken);
