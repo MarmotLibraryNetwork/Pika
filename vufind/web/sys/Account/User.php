@@ -1129,10 +1129,25 @@ class User extends DB_DataObject
 	 * @access  public
 	 */
 	function placeHold($recordId, $pickupBranch, $cancelDate = null) {
-		$result = $this->getCatalogDriver()->placeHold($this, $recordId, $pickupBranch, $cancelDate);
-		$this->updateAltLocationForHold($pickupBranch);
-		if ($result['success']){
-			$this->clearCache();
+		global $offlineMode;
+		if ($offlineMode) {
+			global $configArray;
+			$enableOfflineHolds = $configArray['Catalog']['enableOfflineHolds'];
+			if ($enableOfflineHolds) {
+				$result = $this->placeOfflineHold($recordId);
+			} else {
+				$result = array(
+					'bib'     => $recordId,
+					'success' => false,
+					'message' => 'The circulation system is currently offline.  Please try again later.'
+				);
+			}
+		} else {
+			$result = $this->getCatalogDriver()->placeHold($this, $recordId, $pickupBranch, $cancelDate);
+			$this->updateAltLocationForHold($pickupBranch);
+			if ($result['success']) {
+				$this->clearCache();
+			}
 		}
 		return $result;
 	}
@@ -1144,6 +1159,40 @@ class User extends DB_DataObject
 			$this->clearCache();
 		}
 		return $result;
+	}
+
+	function placeOfflineHold($recordId) {
+
+		require_once ROOT_DIR . '/sys/OfflineHold.php';
+		$offlineHold                = new OfflineHold();
+		$offlineHold->bibId         = $recordId;
+		$offlineHold->patronBarcode = $this->getBarcode();
+		$offlineHold->patronId      = $this->id;
+		$offlineHold->timeEntered   = time();
+		$offlineHold->status        = 'Not Processed';
+
+		$title = null;
+		// Retrieve Full Marc Record
+		require_once ROOT_DIR . '/RecordDrivers/Factory.php';
+		$record = RecordDriverFactory::initRecordDriverById('ils:' . $recordId);
+		if (!empty($record) && $record->isValid())  {
+			$title = $record->getTitle();
+		}
+
+
+		if ($offlineHold->insert()) {
+			return array(
+				'title'   => $title,
+				'bib'     => $recordId,
+				'success' => true,
+				'message' => 'The circulation system is currently offline.  This hold will be entered for you automatically when the circulation system is online.');
+		} else {
+			return array(
+				'title'   => $title,
+				'bib'     => $recordId,
+				'success' => false,
+				'message' => 'The circulation system is currently offline and we could not place this hold.  Please try again later.');
+		}
 	}
 
 	function bookMaterial($recordId, $startDate, $startTime, $endDate, $endTime){
