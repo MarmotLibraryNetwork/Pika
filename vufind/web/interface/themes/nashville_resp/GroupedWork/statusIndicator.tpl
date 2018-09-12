@@ -49,9 +49,16 @@
 			<div class="related-manifestation-shelf-status availableOther">{translate text='Available from another library'}</div>
 		{/if}
 	{else}
-		<div class="related-manifestation-shelf-status checked_out">
-			{if $statusInformation.groupedStatus}{$statusInformation.groupedStatus}{else}Withdrawn/Unavailable{/if}
-		</div>
+		{if $statusInformation.groupedStatus == 'Library Use Only'}
+			<div class="related-manifestation-shelf-status checked_out">{translate text='Checked Out'}</div>
+			<div class="smallText">
+					{$statusInformation.copies} {if $statusInformation.copies == 1}copy{else}copies{/if}, {$statusInformation.numHolds} {if $statusInformation.numHolds == 1}person{else}people{/if} on wait list. 1 copy library use only.
+			</div>
+		{else}
+			<div class="related-manifestation-shelf-status checked_out">
+				{if $statusInformation.groupedStatus}{$statusInformation.groupedStatus}{else}Withdrawn/Unavailable{/if}
+			</div>
+		{/if}
 	{/if}
 	{if ($statusInformation.numHolds > 0 || $statusInformation.onOrderCopies > 0) && ($showGroupedHoldCopiesCount || $viewingIndividualRecord == 1)}
 		<div class="smallText">
