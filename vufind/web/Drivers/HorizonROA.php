@@ -466,20 +466,22 @@ abstract class HorizonROA implements DriverInterface
 						//TODO: Barcode?
 						//TODO: fine amount
 
+						$dueDate      = empty($checkout->dueDate) ? null : $checkout->dueDate;
+						$checkOutDate = empty($checkout->checkOutDate) ? null : $checkout->checkOutDate;
+
 						$curTitle                   = array();
 						$curTitle['checkoutSource'] = 'ILS';
 						$curTitle['recordId']       = $bibId;
 						$curTitle['shortId']        = $bibId;
 						$curTitle['id']             = $bibId;
 						$curTitle['itemid']         = $itemId;
-						$curTitle['dueDate']        = strtotime($checkout->dueDate);
-						$curTitle['checkoutdate']   = strtotime($checkout->checkOutDate);
-						// Note: there is an overdue flag
+						$curTitle['renewIndicator'] = $itemId;
+						$curTitle['dueDate']        = strtotime($dueDate);
+						$curTitle['checkoutdate']   = strtotime($checkOutDate);
 						$curTitle['renewCount']     = $checkout->renewalCount;
 						$curTitle['canrenew']       = true; //TODO: check for any rules
-						$curTitle['renewIndicator'] = $checkOutKey;
-						$curTitle['format']         = 'Unknown';
-						$curTitle['overdue']        = $checkout->overdue; //TODO:
+						$curTitle['format']         = 'Unknown'; //TODO: I think this makes sorting working better
+						$curTitle['overdue']        = $checkout->overdue; // (optional) CatalogConnection method will calculate this based on due date
 
 						$recordDriver = new MarcRecord($bibId);
 						if ($recordDriver->isValid()) {
@@ -491,14 +493,17 @@ abstract class HorizonROA implements DriverInterface
 							$curTitle['author']        = $recordDriver->getPrimaryAuthor();
 							$curTitle['link']          = $recordDriver->getLinkUrl();
 							$curTitle['ratingData']    = $recordDriver->getRatingData();
+							//TODO: could look up barcode from marc
 						} else {
-							// Presumably ILL Items
-							$bibInfo = $this->getWebServiceResponse($webServiceURL . '/v1/catalog/bib/key/' . $bibId, null, $sessionToken);
-							//TODO: include only title & author
-							$simpleSortTitle        = preg_replace('/^The\s|^A\s/i', '', $bibInfo->fields->title); // remove beginning The or A
-							$curTitle['title']      = $bibInfo->fields->title;
-							$curTitle['title_sort'] = empty($simpleSortTitle) ? $bibInfo->fields->title : $simpleSortTitle;
-							$curTitle['author']     = $bibInfo->fields->author;
+							// Could be ILL Items
+							$bibInfo = $this->getWebServiceResponse($webServiceURL . '/v1/catalog/bib/key/' . $bibId . '?includeFields=title,author', null, $sessionToken);
+							if (!empty($bibInfo->fields)) {
+								//TODO: include only title & author
+								$simpleSortTitle        = preg_replace('/^The\s|^A\s/i', '', $bibInfo->fields->title); // remove beginning The or A
+								$curTitle['title']      = $bibInfo->fields->title;
+								$curTitle['title_sort'] = empty($simpleSortTitle) ? $bibInfo->fields->title : $simpleSortTitle;
+								$curTitle['author']     = $bibInfo->fields->author;
+							}
 						}
 
 						$checkedOutTitles[] = $curTitle;
@@ -541,18 +546,20 @@ abstract class HorizonROA implements DriverInterface
 	 */
 	public function hasFastRenewAll()
 	{
-		// TODO: Implement hasFastRenewAll() method.
+		return false;
 	}
 
 	/**
 	 * Renew all titles currently checked out to the user
 	 *
 	 * @param $patron  User
-	 * @return mixed
+	 * @return array
 	 */
-	public function renewAll($patron)
-	{
-		// TODO: Implement renewAll() method.
+	public function renewAll($patron){
+		return array(
+			'success' => false,
+			'message' => 'Renew All not supported directly, call through Catalog Connection',
+		);
 	}
 
 	/**
@@ -562,11 +569,56 @@ abstract class HorizonROA implements DriverInterface
 	 * @param $recordId   string
 	 * @param $itemId     string
 	 * @param $itemIndex  string
-	 * @return mixed
+	 * @return array
 	 */
-	public function renewItem($patron, $recordId, $itemId, $itemIndex)
+	public function renewItem($patron, $recordId, $itemId, $itemIndex = null)
 	{
-		// TODO: Implement renewItem() method.
+		$sessionToken = $this->getSessionToken($patron);
+		if (!$sessionToken) {
+			return array(
+				'success' => false,
+				'message' => 'Sorry, it does not look like you are logged in currently.  Please login and try again'
+			);
+		}
+
+		$params = array(
+			'item' => array(
+				'key'      => $itemId,
+				'resource' => '/catalog/item'
+			)
+		);
+
+		$webServiceURL = $this->getWebServiceURL();
+		$renewCheckOutResponse = $this->getWebServiceResponse($webServiceURL . "/v1/circulation/circRecord/renew", $params, $sessionToken, 'POST');
+		if (!empty($renewCheckOutResponse->circRecord)) {
+			return array(
+				'itemId' => $itemId,
+				'success' => true,
+				'message' => 'Your item was successfully renewed.'
+			);
+		} elseif (isset($renewCheckOutResponse->messageList)) {
+			$messages = array();
+			foreach ($renewCheckOutResponse->messageList as $message) {
+				$messages[] = $message->message;
+			}
+			global $logger;
+			$errorMessage = 'Horizon ROA Renew Item Error: '. ($messages ? implode('; ', $messages) : '');
+			$logger->log($errorMessage, PEAR_LOG_ERR);
+
+			return array(
+				'itemId' => $itemId,
+				'success' => false,
+				'message' => 'Failed to renew item : '. implode('; ', $messages)
+			);
+		} else {
+			return array(
+				'itemId' => $itemId,
+				'success' => false,
+				'message' => 'Failed to renew item : Unknown error'
+			);
+
+		}
+
 	}
 
 	/**
@@ -617,12 +669,13 @@ abstract class HorizonROA implements DriverInterface
 					//TODO: Volume for title?
 					//TODO: AvailableTime (availableTime only referenced in ilsHolds template and Holds Excel function)
 
-					$curHold               = array();
-					$bibId                 = $hold->bib->key;
-					$expireDate            = empty($hold->expirationDate) ? null : $hold->expirationDate;
-					$reactivateDate        = empty($hold->suspendEndDate) ? null : $hold->suspendEndDate;
-					$createDate            = empty($hold->placedDate) ? null : $hold->placedDate;
-					$fillByDate            = empty($hold->fillByDate) ? null : $hold->fillByDate;
+					$bibId          = $hold->bib->key;
+					$expireDate     = empty($hold->expirationDate) ? null : $hold->expirationDate;
+					$reactivateDate = empty($hold->suspendEndDate) ? null : $hold->suspendEndDate;
+					$createDate     = empty($hold->placedDate) ? null : $hold->placedDate;
+					$fillByDate     = empty($hold->fillByDate) ? null : $hold->fillByDate;
+
+					$curHold                         = array();
 					$curHold['id']                    = $bibId; // Template uses record Id for the ID instead of the hold ID
 					$curHold['recordId']              = $bibId;
 					$curHold['shortId']               = $bibId;
@@ -805,7 +858,8 @@ abstract class HorizonROA implements DriverInterface
 		if (!$sessionToken) {
 			return array(
 				'success' => false,
-				'message' => 'Sorry, it does not look like you are logged in currently.  Please login and try again');
+				'message' => 'Sorry, it does not look like you are logged in currently.  Please login and try again'
+			);
 		}
 
 		if (empty($pickUpLocation)) {
@@ -893,7 +947,8 @@ abstract class HorizonROA implements DriverInterface
 		if (!$sessionToken) {
 			return array(
 				'success' => false,
-				'message' => 'Sorry, we could not connect to the circulation system.');
+				'message' => 'Sorry, we could not connect to the circulation system.'
+			);
 		}
 
 		//create the hold using the web service
@@ -927,7 +982,8 @@ abstract class HorizonROA implements DriverInterface
 		if (!$sessionToken) {
 			return array(
 				'success' => false,
-				'message' => 'Sorry, it does not look like you are logged in currently.  Please login and try again');
+				'message' => 'Sorry, it does not look like you are logged in currently.  Please login and try again'
+			);
 		}
 
 		$formattedDateToReactivate = $dateToReactivate ? date('Y-m-d', strtotime($dateToReactivate)) : null;
@@ -976,7 +1032,8 @@ abstract class HorizonROA implements DriverInterface
 		if (!$sessionToken) {
 			return array(
 				'success' => false,
-				'message' => 'Sorry, it does not look like you are logged in currently.  Please login and try again');
+				'message' => 'Sorry, it does not look like you are logged in currently.  Please login and try again'
+			);
 		}
 
 		$params = array(
@@ -1024,7 +1081,8 @@ abstract class HorizonROA implements DriverInterface
 		if (!$sessionToken) {
 			return array(
 				'success' => false,
-				'message' => 'Sorry, it does not look like you are logged in currently.  Please login and try again');
+				'message' => 'Sorry, it does not look like you are logged in currently.  Please login and try again'
+			);
 		}
 
 		$params = array(
@@ -1067,16 +1125,25 @@ abstract class HorizonROA implements DriverInterface
 
 	function getBibId($itemId, $patron) {
 		$bibId = null;
-		//TODO cache these
-		$webServiceURL = $this->getWebServiceURL();
-		$sessionToken = $this->getSessionToken($patron);
+		if (!empty($itemId)) {
+			/** @var Memcache $memCache */
+			global $memCache;
+			$memCacheKey = "horizon_ROA_bib_id_for_item_$itemId";
+			$bibId       = $memCache->get($memCacheKey);
 
-//		$bibLookupResponse  = $this->getWebServiceResponse($webServiceURL . "/v1/catalog/item/key/" . $itemId, null, $sessionToken);
-		$bibLookupResponse  = $this->getWebServiceResponse($webServiceURL . "/v1/catalog/item/key/" . $itemId .'?includeFields=bib', null, $sessionToken);
-		if (!empty($bibLookupResponse->fields)) {
-			$bibId = $bibLookupResponse->fields->bib->key;
+			if (!$bibId) {
+				$webServiceURL = $this->getWebServiceURL();
+				$sessionToken  = $this->getSessionToken($patron);
+
+//				$bibLookupResponse  = $this->getWebServiceResponse($webServiceURL . "/v1/catalog/item/key/" . $itemId, null, $sessionToken);
+				$bibLookupResponse = $this->getWebServiceResponse($webServiceURL . "/v1/catalog/item/key/" . $itemId . '?includeFields=bib', null, $sessionToken);
+				if (!empty($bibLookupResponse->fields)) {
+					$bibId = $bibLookupResponse->fields->bib->key;
+					global $configArray;
+					$memCache->set($memCacheKey, $bibId, 0, $configArray['Caching']['horizon_ROA_bib_id_for_item']);
+				}
+			}
 		}
-
 		return $bibId;
 
 	}
