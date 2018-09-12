@@ -151,8 +151,6 @@ abstract class HorizonROA implements DriverInterface
 
 	public function patronLogin($username, $password, $validatedViaSSO)
 	{
-		global $timer;
-		global $logger;
 
 		//Remove any spaces from the barcode
 		$username = trim($username);
@@ -160,6 +158,7 @@ abstract class HorizonROA implements DriverInterface
 
 		//Authenticate the user via WebService
 		//First call loginUser
+		global $timer;
 		$timer->logTime("Logging in through Horizon APIs");
 		list($userValid, $sessionToken, $horizonRoaUserID) = $this->loginViaWebService($username, $password);
 		if ($validatedViaSSO) {
@@ -170,10 +169,11 @@ abstract class HorizonROA implements DriverInterface
 			$webServiceURL = $this->getWebServiceURL();
 
 //  Calls that show how patron-related data is represented
-//			$patronDescribeResponse           = $this->getWebServiceResponse($webServiceURL . '/v1/user/patron/describe', null, $sessionToken);
+//			$patronDescribeResponse = $this->getWebServiceResponse($webServiceURL . '/v1/user/patron/describe', null, $sessionToken);
+//			$patronTypesQuery = $this->getWebServiceResponse($webServiceURL . '/v1/policy/patronType/simpleQuery?key=*&includeFields=*', null, $sessionToken);
 
-			$acountInfoLookupURL         = $webServiceURL . '/v1/user/patron/key/' . $horizonRoaUserID
-			. '?includeFields=displayName,birthDate,privilegeExpiresDate,primaryAddress,primaryPhone,library'
+			$acountInfoLookupURL = $webServiceURL . '/v1/user/patron/key/' . $horizonRoaUserID
+			. '?includeFields=displayName,birthDate,privilegeExpiresDate,primaryAddress,primaryPhone,library,patronType'
 			. ',holdRecordList,circRecordList,blockList'
 //			. ",estimatedOverdueAmount,blockList,circRecordList"  // fields to play with
 			// {*} notation doesn't work here
@@ -215,11 +215,11 @@ abstract class HorizonROA implements DriverInterface
 				$user->cat_username = $username;
 				$user->cat_password = $password;
 
+
 				$Address1    = "";
 				$City        = "";
 				$State       = "";
 				$Zip         = "";
-
 				if (isset($lookupMyAccountInfoResponse->fields->primaryAddress)) {
 					$preferredAddress = $lookupMyAccountInfoResponse->fields->primaryAddress->fields;
 					// Set for Account Updating
@@ -243,8 +243,13 @@ abstract class HorizonROA implements DriverInterface
 
 					$phone = $lookupMyAccountInfoResponse->fields->primaryPhone;
 					$user->phone = $phone;
-
 				}
+
+				$ptype = 0;
+				if (isset($lookupMyAccountInfoResponse->fields->patronType)) {
+					$ptype = $lookupMyAccountInfoResponse->fields->patronType->key;
+				}
+
 
 				//Get additional information about the patron's home branch for display.
 				if (isset($lookupMyAccountInfoResponse->fields->library->key)) {
@@ -363,7 +368,7 @@ abstract class HorizonROA implements DriverInterface
 //				}
 
 				$user->address1              = $Address1;
-				$user->address2              = $City . ', ' . $State;
+				$user->address2              = $City . ', ' . $State; //TODO: Is there a reason to do this?
 				$user->city                  = $City;
 				$user->state                 = $State;
 				$user->zip                   = $Zip;
@@ -373,7 +378,7 @@ abstract class HorizonROA implements DriverInterface
 //				$user->numHoldsIls           = $numHoldsAvailable + $numHoldsRequested;
 //				$user->numHoldsAvailableIls  = $numHoldsAvailable;
 //				$user->numHoldsRequestedIls  = $numHoldsRequested;
-				$user->patronType            = 0;
+				$user->patronType            = $ptype;
 				$user->notices               = '-';
 				$user->noticePreferenceLabel = 'E-mail';
 				$user->web_note              = '';
@@ -436,7 +441,7 @@ abstract class HorizonROA implements DriverInterface
 			return $checkedOutTitles;
 		}
 
-		//Now that we have the session token, get holds information
+		// Now that we have the session token, get checkout  information
 		$webServiceURL = $this->getWebServiceURL();
 
 //		$circRecordDescribe  = $this->getWebServiceResponse($webServiceURL . "/v1/circulation/circRecord/describe", null, $sessionToken);
@@ -446,11 +451,11 @@ abstract class HorizonROA implements DriverInterface
 //		$copyDescribe  = $this->getWebServiceResponse($webServiceURL . "/v1/catalog/copy/describe", null, $sessionToken);
 
 
-		//Get a list of holds for the user
+		//Get a list of checkouts for the user
 		$patronCheckouts = $this->getWebServiceResponse($webServiceURL . '/v1/user/patron/key/' . $patron->username . '?includeFields=circRecordList', null, $sessionToken);
 
 		if (!empty($patronCheckouts->fields->circRecordList)) {
-			$sCount = 0;
+//			$sCount = 0;
 			require_once ROOT_DIR . '/RecordDrivers/MarcRecord.php';
 
 			foreach ($patronCheckouts->fields->circRecordList as $checkoutRecord) {
@@ -498,7 +503,6 @@ abstract class HorizonROA implements DriverInterface
 							// Could be ILL Items
 							$bibInfo = $this->getWebServiceResponse($webServiceURL . '/v1/catalog/bib/key/' . $bibId . '?includeFields=title,author', null, $sessionToken);
 							if (!empty($bibInfo->fields)) {
-								//TODO: include only title & author
 								$simpleSortTitle        = preg_replace('/^The\s|^A\s/i', '', $bibInfo->fields->title); // remove beginning The or A
 								$curTitle['title']      = $bibInfo->fields->title;
 								$curTitle['title_sort'] = empty($simpleSortTitle) ? $bibInfo->fields->title : $simpleSortTitle;
@@ -745,17 +749,14 @@ abstract class HorizonROA implements DriverInterface
 
 					} else {
 						// If we don't have good marc record, ask the ILS for title info
-						//TODO: has format?
-						$bibInfo              = $this->getWebServiceResponse($webServiceURL . '/v1/catalog/bib/key/' . $bibId, null, $sessionToken);
-						$curHold['title']     = $bibInfo->fields->title;
-						$simpleSortTitle      = preg_replace('/^The\s|^A\s/i', '', $bibInfo->fields->title); // remove begining The or A
-						$curHold['sortTitle'] = empty($simpleSortTitle) ? $bibInfo->fields->title : $simpleSortTitle;
-						$curHold['author']    = $bibInfo->fields->author;
-
-//// TODO: ILL Holds are item level holds as well; but I doubt we need the title2 in that case.
-//					if ($hold->fields->holdType == 'COPY'){
-//						$curHold['title2'] = $hold->fields->item->fields->itemType->key . ' - ' . $hold->fields->item->fields->call->fields->callNumber;
-//					}
+						//TODO: turn into a function??
+						$bibInfo = $this->getWebServiceResponse($webServiceURL . '/v1/catalog/bib/key/' . $bibId . '?includeFields=title,author', null, $sessionToken);
+						if (!empty($bibInfo->fields)) {
+							$curHold['title']     = $bibInfo->fields->title;
+							$simpleSortTitle      = preg_replace('/^The\s|^A\s/i', '', $bibInfo->fields->title); // remove beginning The or A
+							$curHold['sortTitle'] = empty($simpleSortTitle) ? $bibInfo->fields->title : $simpleSortTitle;
+							$curHold['author']    = $bibInfo->fields->author;
+						}
 
 					}
 
@@ -1145,6 +1146,59 @@ abstract class HorizonROA implements DriverInterface
 			}
 		}
 		return $bibId;
-
 	}
+
+	public function getMyFines($patron, $includeMessages)
+	{
+		$fines = array();
+		//Get the session token for the user
+		$sessionToken = $this->getSessionToken($patron);
+		if (!$sessionToken) {
+			return $fines;
+		}
+
+		// Now that we have the session token, get fines information
+		$webServiceURL = $this->getWebServiceURL();
+
+//		$blockListDescribe  = $this->getWebServiceResponse($webServiceURL . "/v1/circulation/block/describe", null, $sessionToken);
+
+		//Get a list of fines for the user
+		$patronFines = $this->getWebServiceResponse($webServiceURL . '/v1/user/patron/key/' . $patron->username . '?includeFields=blockList', null, $sessionToken);
+		if (!empty($patronFines->fields->blockList)) {
+			foreach ($patronFines->fields->blockList as $blockList) {
+				$blockListKey = $blockList->key;
+				$lookupBlockResponse = $this->getWebServiceResponse($webServiceURL . '/v1/circulation/block/key/' . $blockListKey, null, $sessionToken);
+				if (isset($lookupBlockResponse->fields)){
+					$fine = $lookupBlockResponse->fields;
+
+					$itemId = $fine->item->key;
+					$bibId = $this->getBibId($itemId, $patron);
+					$bibInfo = $this->getWebServiceResponse($webServiceURL . '/v1/catalog/bib/key/' . $bibId . '?includeFields=title,author', null, $sessionToken);
+					if (!empty($bibInfo->fields)) {
+						$title = $bibInfo->fields->title;
+//						$curTitle['author']     = $bibInfo->fields->author;
+					}
+
+					$lookupBlockPolicy = $this->getWebServiceResponse($webServiceURL . '/v1/policy/block/key/' . $fine->block->key, null, $sessionToken);
+					$reason = empty($lookupBlockPolicy->fields->description) ? null : $lookupBlockPolicy->fields->description;
+
+					$fines[] = array(
+						'reason'            => $reason,
+						'amount'            => $fine->amount->amount,
+						'message'           => $title,
+						'amountOutstanding' => $fine->owed->amount,
+						'date'              => date('M j, Y', strtotime($fine->createDate))
+					);
+
+				}
+
+			}
+
+		}
+
+
+		return $fines;
+	}
+
+
 }
