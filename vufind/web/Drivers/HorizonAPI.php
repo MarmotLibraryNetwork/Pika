@@ -376,13 +376,13 @@ abstract class HorizonAPI extends Horizon{
 	 * @param   User    $patron     The User to place a hold for
 	 * @param   string  $recordId   The id of the bib record
 	 * @param   string  $itemId     The id of the item to hold
-	 * @param   string  $comment    Any comment regarding the hold or recall
+	 * @param   string  $pickupBranch
 	 * @param   string  $type       Whether to place a hold or recall
 	 * @return  mixed               True if successful, false if unsuccessful
 	 *                              If an error occurs, return a PEAR_Error
 	 * @access  public
 	 */
-	function placeItemHold($patron, $recordId, $itemId, $comment = '', $type = 'request') {
+	function placeItemHold($patron, $recordId, $itemId, $pickupBranch, $type = 'request') {
 		global $configArray;
 
 		$userId = $patron->id;
@@ -409,31 +409,6 @@ abstract class HorizonAPI extends Horizon{
 			$title = $record->getTitle();
 		}
 
-		global $offlineMode;
-		if ($offlineMode){
-			require_once ROOT_DIR . '/sys/OfflineHold.php';
-			$offlineHold = new OfflineHold();
-			$offlineHold->bibId = $recordId;
-			$offlineHold->patronBarcode = $patron->getBarcode();
-			$offlineHold->patronId = $patron->id;
-			$offlineHold->timeEntered = time();
-			$offlineHold->status = 'Not Processed';
-			if ($offlineHold->insert()){
-				//TODO: use bib or bid ??
-				return array(
-					'title'   => $title,
-					'bib'     => $recordId,
-					'success' => true,
-					'message' => 'The circulation system is currently offline.  This hold will be entered for you automatically when the circulation system is online.');
-			}else{
-				return array(
-					'title'   => $title,
-					'bib'     => $recordId,
-					'success' => false,
-					'message' => 'The circulation system is currently offline and we could not place this hold.  Please try again later.');
-			}
-
-		}else{
 			if ($type == 'cancel' || $type == 'recall' || $type == 'update') {
 				$result = $this->updateHold($patron, $recordId, $type/*, $title*/);
 				$result['title'] = $title;
@@ -441,21 +416,16 @@ abstract class HorizonAPI extends Horizon{
 				return $result;
 
 			} else {
-				if (isset($_REQUEST['campus'])){
-					$campus=trim($_REQUEST['campus']);
-				}else{
-					$campus = $patron->homeLocationId;
-				}
 				//create the hold using the web service
-				$createHoldUrl = $configArray['Catalog']['webServiceUrl'] . '/standard/createMyHold?clientID=' . $configArray['Catalog']['clientId'] . '&sessionToken=' . $sessionToken . '&pickupLocation=' . $campus . '&titleKey=' . $recordId ;
-				if ($itemId){
+				$createHoldUrl = $configArray['Catalog']['webServiceUrl'] . '/standard/createMyHold?clientID=' . $configArray['Catalog']['clientId'] . '&sessionToken=' . $sessionToken . '&pickupLocation=' . $pickupBranch . '&titleKey=' . $recordId ;
+				if (!empty($itemId)){
 					$createHoldUrl .= '&itemKey=' . $itemId;
 				}
 
 				$createHoldResponse = $this->getWebServiceResponse($createHoldUrl);
 
 				$hold_result = array();
-				if ($createHoldResponse == "true"){ //sucessful hold responses return a string "true"
+				if ($createHoldResponse == "true"){ //successful hold responses return a string "true"
 					$hold_result['success'] = true;
 					$hold_result['message'] = 'Your hold was placed successfully.';
 				}else{
@@ -483,7 +453,7 @@ abstract class HorizonAPI extends Horizon{
 				return $hold_result;
 
 			}
-		}
+
 	}
 
 	function cancelHold($patron, $recordId, $cancelId) {
@@ -856,7 +826,8 @@ abstract class HorizonAPI extends Horizon{
 		return array(
 			'itemId' => $itemId,
 			'success'  => $success,
-			'message' => $message);
+			'message' => $message
+		);
 	}
 
 	public function getNumHolds($id) {
@@ -866,7 +837,11 @@ abstract class HorizonAPI extends Horizon{
 			$lookupTitleInfoUrl = $configArray['Catalog']['webServiceUrl'] . '/standard/lookupTitleInfo?clientID=' . $configArray['Catalog']['clientId'] . '&titleKey=' . $id . '&includeItemInfo=false&includeHoldCount=true' ;
 			$lookupTitleInfoResponse = $this->getWebServiceResponse($lookupTitleInfoUrl);
 			if ($lookupTitleInfoResponse->titleInfo){
-				return (int)$lookupTitleInfoResponse->titleInfo->holdCount;
+				if (is_array($lookupTitleInfoResponse->titleInfo)) {
+					return (int) $lookupTitleInfoResponse->titleInfo[0]->holdCount;
+				} else {
+					return (int) $lookupTitleInfoResponse->titleInfo->holdCount;
+				}
 			}
 		}
 
