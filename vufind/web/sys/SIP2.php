@@ -96,7 +96,7 @@ class sip2
 	public $AN = 'SIPCHK';
 
 	/* Private variable to hold socket connection */
-	private $socket;
+	protected $socket;
 
 	/* Sequence number counter */
 	private $seq   = -1;
@@ -587,7 +587,7 @@ class sip2
         'Online'            => substr($response, 2, 1),
         'Checkin'           => substr($response, 3, 1),  /* is Checkin by the SC allowed ?*/
         'Checkout'          => substr($response, 4, 1),  /* is Checkout by the SC allowed ?*/
-        'Renewal'			=> substr($response, 5, 1),  /* renewal allowed? */
+        'Renewal'           => substr($response, 5, 1),  /* renewal allowed? */
         'PatronUpdate'      => substr($response, 6, 1),  /* is patron status updating by the SC allowed ? (status update ok)*/
         'Offline'           => substr($response, 7, 1),
         'Timeout'           => substr($response, 8, 3),
@@ -862,9 +862,7 @@ class sip2
 		$this->_debugmsg( "SIP2: --- SOCKET READY ---" );
 
 		global $configArray;
-		if (isset($configArray['SIP2']['sipLogin']) && isset($configArray['SIP2']['sipPassword']) &&
-				$configArray['SIP2']['sipLogin'] != '' && $configArray['SIP2']['sipPassword'] != ''
-			){
+		if (!empty($configArray['SIP2']['sipLogin']) && !empty($configArray['SIP2']['sipPassword'])){
 
 			$lineEnding = "\r\n";
 
@@ -874,7 +872,7 @@ class sip2
 			$logger->log("Login Prompt Received was " . $prompt, PEAR_LOG_DEBUG);
 			$login = $configArray['SIP2']['sipLogin'];
 			$ret = socket_write($this->socket, $login, strlen($login));
-			$ret = socket_write($this->socket, $lineEnding, strlen($lineEnding));
+			$ret += socket_write($this->socket, $lineEnding, strlen($lineEnding));
 			$logger->log("Wrote $ret bytes for login", PEAR_LOG_DEBUG);
 			$this->Sleep();
 
@@ -882,7 +880,7 @@ class sip2
 			$logger->log("Password Prompt Received was " . $prompt, PEAR_LOG_DEBUG);
 			$password = $configArray['SIP2']['sipPassword'];
 			$ret = socket_write($this->socket, $password, strlen($password));
-			$ret = socket_write($this->socket, $lineEnding, strlen($lineEnding));
+			$ret += socket_write($this->socket, $lineEnding, strlen($lineEnding));
 			$logger->log("Wrote $ret bytes for password", PEAR_LOG_DEBUG);
 
 			if ($this->use_usleep){
@@ -928,7 +926,7 @@ class sip2
 	/* Core local utility functions */
 	function _datestamp($timestamp = '')
 	{
-		/* generate a SIP2 compatable datestamp */
+		/* generate a SIP2 compatible datestamp */
 		/* From the spec:
 		 * YYYYMMDDZZZZHHMMSS.
 		 * All dates and times are expressed according to the ANSI standard X3.30 for date and X3.43 for time.
