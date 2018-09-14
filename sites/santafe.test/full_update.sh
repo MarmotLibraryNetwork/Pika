@@ -76,18 +76,18 @@ function checkProhibitedTimes() {
 		then
 			#echo "Sleeping:" $(($stop - $NOW))
 			sleep $(($stop - $NOW))
-			hasConflicts = 1
+			hasConflicts=1
 		fi
 	elif (( $start > $stop ))
 	then
 		if (( $NOW < $stop ))
 		then
 			sleep $(($stop - $NOW))
-			hasConflicts = 1
+			hasConflicts=1
 		elif (( $NOW > $start ))
 		then
 			sleep $(($stop + 86400 - $NOW))
-			hasConflicts = 1
+			hasConflicts=1
 		fi
 	fi
 	echo ${hasConflicts};
@@ -116,14 +116,14 @@ rm /data/vufind-plus/${PIKASERVER}/grouped_work_primary_identifiers.sql
 #Restart Solr
 cd /usr/local/vufind-plus/sites/${PIKASERVER}; ./${PIKASERVER}.sh restart
 
+## Side Loads ##
+
 # OneClick digital Marc Updates
 #/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} santafe/oneclickdigital oneclickdigital/santafe >> ${OUTPUT_FILE}
 # santa fe no longer subscribes. pascal 6/11/2018
 
-#Santa Fe does not use Volume Records
-#Get the updated volume information
-#cd /usr/local/vufind-plus/vufind/cron;
-#nice -n -10 java -jar cron.jar ${PIKASERVER} ExportSierraData >> ${OUTPUT_FILE}
+#RBdigital Magazines
+/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} santafe/rbdigitalmagazines rbdigitalmagazines/santafe >> ${OUTPUT_FILE}
 
 #Extract from Hoopla
 cd /usr/local/vufind-plus/vufind/cron;./GetHooplaFromMarmot.sh >> ${OUTPUT_FILE}
@@ -133,6 +133,12 @@ cd /data/vufind-plus/; curl --remote-name --remote-time --silent --show-error --
 
 #Extract AR Data
 cd /data/vufind-plus/accelerated_reader; curl --remote-name --remote-time --silent --show-error --compressed --time-cond /data/vufind-plus/accelerated_reader/RLI-ARDataTAB.txt https://cassini.marmot.org/RLI-ARDataTAB.txt
+
+#Santa Fe does not use Volume Records
+#Get the updated volume information
+#cd /usr/local/vufind-plus/vufind/cron;
+#nice -n -10 java -jar cron.jar ${PIKASERVER} ExportSierraData >> ${OUTPUT_FILE}
+
 
 
 #Do a full extract from OverDrive just once a week to catch anything that doesn't
