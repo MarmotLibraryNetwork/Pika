@@ -32,7 +32,7 @@ class EmailResetPin extends Action{
 				$emailResult = $driver->emailResetPin($barcode);
 			}else{
 				$emailResult = array(
-					'error' => 'This functionality is not available in the ILS.',
+					'error' => 'This functionality is not available in the circulation system.',
 				);
 			}
 			$interface->assign('emailResult', $emailResult);

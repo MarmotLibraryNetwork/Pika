@@ -72,7 +72,7 @@ class ResetPin extends Action{
 				}
 			}else{
 				$resetPinResult = array(
-					'error' => 'This functionality is not available in the ILS.',
+					'error' => 'This functionality is not available in the circulation system.',
 				);
 			}
 			$interface->assign('resetPinResult', $resetPinResult);
