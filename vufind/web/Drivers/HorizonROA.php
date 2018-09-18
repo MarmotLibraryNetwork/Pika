@@ -374,18 +374,20 @@ abstract class HorizonROA implements DriverInterface
 				}
 
 				$numHolds = 0;
-				//TODO: count available holds
-//				$numHoldsAvailable = 0;
-//				$numHoldsRequested = 0;
+				$numHoldsAvailable = 0;
+				$numHoldsRequested = 0;
 				if (isset($lookupMyAccountInfoResponse->fields->holdRecordList)) {
 					$numHolds = count($lookupMyAccountInfoResponse->fields->holdRecordList);
-//					foreach ($lookupMyAccountInfoResponse->fields->holdRecordList as $hold) {
-//						if ($hold->fields->status == 'BEING_HELD') {
-//							$numHoldsAvailable++;
-//						} elseif ($hold->fields->status != 'EXPIRED') {
-//							$numHoldsRequested++;
-//						}
-//					}
+					foreach ($lookupMyAccountInfoResponse->fields->holdRecordList as $hold) {
+						$lookupHoldResponse = $this->getWebServiceResponse($webServiceURL . '/v1/circulation/holdRecord/key/' . $hold->key . '?includeFields=status', null, $sessionToken);
+						if (!empty($lookupHoldResponse->fields)) {
+							if ($lookupHoldResponse->fields->status == 'BEING_HELD') {
+								$numHoldsAvailable++;
+							} elseif ($lookupHoldResponse->fields->status != 'EXPIRED') {
+								$numHoldsRequested++;
+							}
+						}
+					}
 				}
 //
 				$numCheckedOut = 0;
@@ -402,9 +404,8 @@ abstract class HorizonROA implements DriverInterface
 				$user->finesVal              = $finesVal;
 				$user->numCheckedOutIls      = $numCheckedOut;
 				$user->numHoldsIls           = $numHolds;
-//				$user->numHoldsIls           = $numHoldsAvailable + $numHoldsRequested;
-//				$user->numHoldsAvailableIls  = $numHoldsAvailable;
-//				$user->numHoldsRequestedIls  = $numHoldsRequested;
+				$user->numHoldsAvailableIls  = $numHoldsAvailable;
+				$user->numHoldsRequestedIls  = $numHoldsRequested;
 				$user->patronType            = $ptype;
 				$user->notices               = '-';
 				$user->noticePreferenceLabel = 'E-mail';
@@ -1185,9 +1186,11 @@ abstract class HorizonROA implements DriverInterface
 //				$bibInfoLookupResponse = $this->getWebServiceResponse($webServiceURL . '/v1/catalog/bib/key/' . $bibId . '?includeFields=*', null, $sessionToken);
 				$bibInfoLookupResponse = $this->getWebServiceResponse($webServiceURL . '/v1/catalog/bib/key/' . $bibId . '?includeFields=title,author', null, $sessionToken);
 				if (!empty($bibInfoLookupResponse->fields)) {
-					$title  = $bibInfoLookupResponse->fields->title;
-					$title  = strstr($title, '/', true); //rop everything from title after '/' character (author info)
-					$author = $bibInfoLookupResponse->fields->author;
+					$title      = $bibInfoLookupResponse->fields->title;
+					$shortTitle = strstr($title, '/', true); //drop everything from title after '/' character (author info)
+					$title      = ($shortTitle) ? $shortTitle : $title;
+					$title      = trim($title);
+					$author     = $bibInfoLookupResponse->fields->author;
 
 					$bibInfo = array(
 						$title,
