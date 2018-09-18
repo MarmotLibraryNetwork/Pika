@@ -830,11 +830,16 @@ abstract class HorizonAPI extends Horizon{
 		);
 	}
 
-	public function getNumHolds($id) {
+	/**
+	 * Return the number of holds that are on a record
+	 * @param  string|int $bibId
+	 * @return bool|int
+	 */
+	public function getNumHolds($bibId) {
 		global $offlineMode;
 		if (!$offlineMode){
 			global $configArray;
-			$lookupTitleInfoUrl = $configArray['Catalog']['webServiceUrl'] . '/standard/lookupTitleInfo?clientID=' . $configArray['Catalog']['clientId'] . '&titleKey=' . $id . '&includeItemInfo=false&includeHoldCount=true' ;
+			$lookupTitleInfoUrl = $configArray['Catalog']['webServiceUrl'] . '/standard/lookupTitleInfo?clientID=' . $configArray['Catalog']['clientId'] . '&titleKey=' . $bibId . '&includeItemInfo=false&includeHoldCount=true' ;
 			$lookupTitleInfoResponse = $this->getWebServiceResponse($lookupTitleInfoUrl);
 			if ($lookupTitleInfoResponse->titleInfo){
 				if (is_array($lookupTitleInfoResponse->titleInfo)) {
@@ -844,8 +849,7 @@ abstract class HorizonAPI extends Horizon{
 				}
 			}
 		}
-
-		return 0;
+		return false;
 	}
 
 	function resetPin($user) {

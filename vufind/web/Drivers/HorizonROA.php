@@ -27,15 +27,14 @@ abstract class HorizonROA implements DriverInterface
 	 * @return array
 	 */
 	public function splitFullName($fullName) {
-		$fullName = str_replace(",", " ", $fullName);
-		$fullName = str_replace(";", " ", $fullName);
-		$fullName = str_replace(";", "'", $fullName);
-		$fullName = preg_replace("/\\s{2,}/", " ", $fullName);
-		$nameParts = explode(' ', $fullName);
-		$lastName = strtolower($nameParts[0]);
+		$fullName   = str_replace(",", ' ', $fullName);
+		$fullName   = str_replace(";", ' ', $fullName);
+		$fullName   = preg_replace("/\\s{2,}/", ' ', $fullName);
+		$nameParts  = explode(' ', $fullName);
+		$lastName   = strtolower($nameParts[0]);
 		$middleName = isset($nameParts[2]) ? strtolower($nameParts[2]) : '';
-		$firstName = isset($nameParts[1]) ? strtolower($nameParts[1]) : $middleName;
-		$firstName = trim($firstName, '()');
+		$firstName  = isset($nameParts[1]) ? strtolower($nameParts[1]) : $middleName;
+		$firstName  = trim($firstName, '()');
 		return array($fullName, $lastName, $firstName);
 	}
 
@@ -200,7 +199,7 @@ abstract class HorizonROA implements DriverInterface
 
 //			$patronDSearchescribeResponse = $this->getWebServiceResponse($webServiceURL . '/v1/user/patron/search/describe', null, $sessionToken);
 				//TODO: a patron search may require a staff user account.
-			$patronSearchResponse = $this->getWebServiceResponse($webServiceURL . '/v1/user/patron/search', array('q' => 'borr|2:22046027101218'), $sessionToken);
+//			$patronSearchResponse = $this->getWebServiceResponse($webServiceURL . '/v1/user/patron/search', array('q' => 'borr|2:22046027101218'), $sessionToken);
 
 //			$patronTypesQuery = $this->getWebServiceResponse($webServiceURL . '/v1/policy/patronType/simpleQuery?key=*&includeFields=*', null, $sessionToken);
 
@@ -440,12 +439,33 @@ abstract class HorizonROA implements DriverInterface
 
 	public function hasNativeReadingHistory()
 	{
+		false;
 		// TODO: Implement hasNativeReadingHistory() method.
 	}
 
-	public function getNumHolds($id)
-	{
-		// TODO: Implement getNumHolds() method.
+	/**
+	 * Return the number of holds that are on a record
+	 * @param  string|int $bibId
+	 * @return bool|int
+	 */
+	public function getNumHolds($bibId) {
+		//This uses the standard / REST method to retrieve this information from the ILS.
+		// It isn't an ROA call.
+		global $offlineMode;
+		if (!$offlineMode){
+			$webServiceURL = $this->getWebServiceURL();
+			$lookupTitleInfoUrl = $webServiceURL . '/rest/standard/lookupTitleInfo?titleKey=' . $bibId . '&includeItemInfo=false&includeHoldCount=true' ;
+			$lookupTitleInfoResponse = $this->getWebServiceResponse($lookupTitleInfoUrl);
+			if ($lookupTitleInfoResponse->titleInfo){
+				if (is_array($lookupTitleInfoResponse->titleInfo) && isset($lookupTitleInfoResponse->titleInfo[0]->holdCount)) {
+					return (int) $lookupTitleInfoResponse->titleInfo[0]->holdCount;
+				} elseif (isset($lookupTitleInfoResponse->titleInfo->holdCount)) {
+					//TODO: I suspect that this never occurs
+					return (int) $lookupTitleInfoResponse->titleInfo->holdCount;
+				}
+			}
+		}
+		return false;
 	}
 
 	/**
@@ -520,6 +540,7 @@ abstract class HorizonROA implements DriverInterface
 						$curTitle['format']         = 'Unknown'; //TODO: I think this makes sorting working better
 						$curTitle['overdue']        = $checkout->overdue; // (optional) CatalogConnection method will calculate this based on due date
 						$curTitle['fine']           = $fine;
+						$curTitle['holdQueueLength'] = $this->getNumHolds($bibId);
 
 						$recordDriver = new MarcRecord($bibId);
 						if ($recordDriver->isValid()) {
