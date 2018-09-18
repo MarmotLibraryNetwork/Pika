@@ -19,6 +19,26 @@ abstract class HorizonROA implements DriverInterface
 		$this->accountProfile = $accountProfile;
 	}
 
+	/**
+	 * Split a name into firstName, lastName, middleName.
+	 *a
+	 * Assumes the name is entered as LastName, FirstName MiddleName
+	 * @param $fullName
+	 * @return array
+	 */
+	public function splitFullName($fullName) {
+		$fullName = str_replace(",", " ", $fullName);
+		$fullName = str_replace(";", " ", $fullName);
+		$fullName = str_replace(";", "'", $fullName);
+		$fullName = preg_replace("/\\s{2,}/", " ", $fullName);
+		$nameParts = explode(' ', $fullName);
+		$lastName = strtolower($nameParts[0]);
+		$middleName = isset($nameParts[2]) ? strtolower($nameParts[2]) : '';
+		$firstName = isset($nameParts[1]) ? strtolower($nameParts[1]) : $middleName;
+		$firstName = trim($firstName, '()');
+		return array($fullName, $lastName, $firstName);
+	}
+
 	public function getWebServiceURL()
 	{
 		$webServiceURL = null;
@@ -166,7 +186,7 @@ abstract class HorizonROA implements DriverInterface
 		//Authenticate the user via WebService
 		//First call loginUser
 		global $timer;
-		$timer->logTime("Logging in through Horizon APIs");
+		$timer->logTime("Logging in through Horizon ROA APIs");
 		list($userValid, $sessionToken, $horizonRoaUserID) = $this->loginViaWebService($username, $password);
 		if ($validatedViaSSO) {
 			$userValid = true;
@@ -177,6 +197,11 @@ abstract class HorizonROA implements DriverInterface
 
 //  Calls that show how patron-related data is represented
 //			$patronDescribeResponse = $this->getWebServiceResponse($webServiceURL . '/v1/user/patron/describe', null, $sessionToken);
+
+//			$patronDSearchescribeResponse = $this->getWebServiceResponse($webServiceURL . '/v1/user/patron/search/describe', null, $sessionToken);
+				//TODO: a patron search may require a staff user account.
+			$patronSearchResponse = $this->getWebServiceResponse($webServiceURL . '/v1/user/patron/search', array('q' => 'borr|2:22046027101218'), $sessionToken);
+
 //			$patronTypesQuery = $this->getWebServiceResponse($webServiceURL . '/v1/policy/patronType/simpleQuery?key=*&includeFields=*', null, $sessionToken);
 
 			$acountInfoLookupURL = $webServiceURL . '/v1/user/patron/key/' . $horizonRoaUserID
@@ -192,7 +217,7 @@ abstract class HorizonROA implements DriverInterface
 			if ($lookupMyAccountInfoResponse && !isset($lookupMyAccountInfoResponse->messageList)) {
 				$fullName = $lookupMyAccountInfoResponse->fields->displayName;
 				if (strpos($fullName, ',')) {
-					list($lastName, $firstName) = explode(', ', $fullName);
+					list(, $lastName, $firstName) = $this->splitFullName($fullName);
 				}
 
 				$userExistsInDB = false;
@@ -466,15 +491,18 @@ abstract class HorizonROA implements DriverInterface
 				if (isset($lookupCheckOutResponse->fields)) {
 					$checkout = $lookupCheckOutResponse->fields;
 
-					$itemId = $checkout->item->key;
-					$bibId = $this->getBibId($itemId, $patron);
+					$itemId  = $checkout->item->key;
+					list($bibId, $barcode, $itemType) = $this->getItemInfo($itemId, $patron);
 					if (!empty($bibId)) {
 						//TODO: volumes?
-						//TODO: Barcode?
-						//TODO: fine amount
 
 						$dueDate      = empty($checkout->dueDate) ? null : $checkout->dueDate;
 						$checkOutDate = empty($checkout->checkOutDate) ? null : $checkout->checkOutDate;
+						$fine         = empty($checkout->checkOutFee->amount) ? null : $checkout->checkOutFee->amount;
+						if (!empty($fine) && (float) $fine <= 0) {
+							// handle case of string '0.00'
+							$fine = null;
+						}
 
 						$curTitle                   = array();
 						$curTitle['checkoutSource'] = 'ILS';
@@ -482,13 +510,15 @@ abstract class HorizonROA implements DriverInterface
 						$curTitle['shortId']        = $bibId;
 						$curTitle['id']             = $bibId;
 						$curTitle['itemid']         = $itemId;
+						$curTitle['barcode']        = $barcode;
 						$curTitle['renewIndicator'] = $itemId;
 						$curTitle['dueDate']        = strtotime($dueDate);
 						$curTitle['checkoutdate']   = strtotime($checkOutDate);
 						$curTitle['renewCount']     = $checkout->renewalCount;
-						$curTitle['canrenew']       = true; //TODO: check for any rules
+						$curTitle['canrenew']       = $this->canRenew($itemType);
 						$curTitle['format']         = 'Unknown'; //TODO: I think this makes sorting working better
 						$curTitle['overdue']        = $checkout->overdue; // (optional) CatalogConnection method will calculate this based on due date
+						$curTitle['fine']           = $fine;
 
 						$recordDriver = new MarcRecord($bibId);
 						if ($recordDriver->isValid()) {
@@ -500,46 +530,16 @@ abstract class HorizonROA implements DriverInterface
 							$curTitle['author']        = $recordDriver->getPrimaryAuthor();
 							$curTitle['link']          = $recordDriver->getLinkUrl();
 							$curTitle['ratingData']    = $recordDriver->getRatingData();
-							//TODO: could look up barcode from marc
 						} else {
-							// Could be ILL Items
-							$bibInfo = $this->getWebServiceResponse($webServiceURL . '/v1/catalog/bib/key/' . $bibId . '?includeFields=title,author', null, $sessionToken);
-//							$bibInfo = $this->getWebServiceResponse($webServiceURL . '/v1/catalog/bib/key/' . $bibId . '?includeFields=*', null, $sessionToken);
-							if (!empty($bibInfo->fields)) {
-								$simpleSortTitle        = preg_replace('/^The\s|^A\s/i', '', $bibInfo->fields->title); // remove beginning The or A
-								$curTitle['title']      = $bibInfo->fields->title;
-								$curTitle['title_sort'] = empty($simpleSortTitle) ? $bibInfo->fields->title : $simpleSortTitle;
-								$curTitle['author']     = $bibInfo->fields->author;
-							}
+							// If we don't have good marc record, ask the ILS for title info
+							list($title, $author)   = $this->getTitleAuthorForBib($bibId, $patron);
+							$simpleSortTitle        = preg_replace('/^The\s|^A\s/i', '', $title); // remove beginning The or A
+							$curTitle['title']      = $title;
+							$curTitle['title_sort'] = empty($simpleSortTitle) ? $title : $simpleSortTitle;
+							$curTitle['author']     = $author;
 						}
 
 						$checkedOutTitles[] = $curTitle;
-
-						//TODO: should sorting be set here
-						//					$sCount++;
-						//					$sortTitle = isset($curTitle['title_sort']) ? $curTitle['title_sort'] : $curTitle['title'];
-						//					$sortKey   = $sortTitle;
-						//					if ($sortOption == 'title') {
-						//						$sortKey = $sortTitle;
-						//					} elseif ($sortOption == 'author') {
-						//						$sortKey = (isset($curTitle['author']) ? $curTitle['author'] : "Unknown") . '-' . $sortTitle;
-						//					} elseif ($sortOption == 'dueDate') {
-						//						if (isset($curTitle['dueDate'])) {
-						//							if (preg_match('/.*?(\\d{1,2})[-\/](\\d{1,2})[-\/](\\d{2,4}).*/', $curTitle['dueDate'], $matches)) {
-						//								$sortKey = $matches[3] . '-' . $matches[1] . '-' . $matches[2] . '-' . $sortTitle;
-						//							} else {
-						//								$sortKey = $curTitle['dueDate'] . '-' . $sortTitle;
-						//							}
-						//						}
-						//					} elseif ($sortOption == 'format') {
-						//						$sortKey = (isset($curTitle['format']) ? $curTitle['format'] : "Unknown") . '-' . $sortTitle;
-						//					} elseif ($sortOption == 'renewed') {
-						//						$sortKey = (isset($curTitle['renewCount']) ? $curTitle['renewCount'] : 0) . '-' . $sortTitle;
-						//					} elseif ($sortOption == 'holdQueueLength') {
-						//						$sortKey = (isset($curTitle['holdQueueLength']) ? $curTitle['holdQueueLength'] : 0) . '-' . $sortTitle;
-						//					}
-						//					$sortKey                    .= "_$sCount";
-						//					$checkedOutTitles[$sortKey] = $curTitle;
 
 					}
 				}
@@ -726,9 +726,7 @@ abstract class HorizonROA implements DriverInterface
 						$curHold['format_category'] = $recordDriver->getFormatCategory();
 						$curHold['coverUrl']        = $recordDriver->getBookcoverUrl('medium');
 						$curHold['link']            = $recordDriver->getRecordUrl();
-
-						//Load rating information
-						$curHold['ratingData']      = $recordDriver->getRatingData();
+						$curHold['ratingData']      = $recordDriver->getRatingData(); //Load rating information
 
 						//TODO: WCPL doesn't do item level holds
 //						if ($hold->fields->holdType == 'COPY') {
@@ -753,19 +751,14 @@ abstract class HorizonROA implements DriverInterface
 
 					} else {
 						// If we don't have good marc record, ask the ILS for title info
-						//TODO: turn into a function??
-						$bibInfo = $this->getWebServiceResponse($webServiceURL . '/v1/catalog/bib/key/' . $bibId . '?includeFields=title,author', null, $sessionToken);
-						if (!empty($bibInfo->fields)) {
-							$curHold['title']     = $bibInfo->fields->title;
-							$simpleSortTitle      = preg_replace('/^The\s|^A\s/i', '', $bibInfo->fields->title); // remove beginning The or A
-							$curHold['sortTitle'] = empty($simpleSortTitle) ? $bibInfo->fields->title : $simpleSortTitle;
-							$curHold['author']    = $bibInfo->fields->author;
-						}
-
+						list($title, $author) = $this->getTitleAuthorForBib($bibId, $patron);
+						$simpleSortTitle      = preg_replace('/^The\s|^A\s/i', '', $title); // remove beginning The or A
+						$curHold['title']     = $title;
+						$curHold['sortTitle'] = empty($simpleSortTitle) ? $title : $simpleSortTitle;
+						$curHold['author']    = $author;
 					}
 
 					if (!isset($curHold['status']) || strcasecmp($curHold['status'], "being_held") != 0) {
-						//TODO: need the right available status
 						$holds['unavailable'][] = $curHold;
 					} else {
 						$holds['available'][] = $curHold;
@@ -1102,7 +1095,7 @@ abstract class HorizonROA implements DriverInterface
 		);
 
 		$webServiceURL      = $this->getWebServiceURL();
-		$describe           = $this->getWebServiceResponse($webServiceURL . "/circulation/holdRecord/changePickupLibrary/describe", null, $sessionToken);
+//		$describe           = $this->getWebServiceResponse($webServiceURL . "/circulation/holdRecord/changePickupLibrary/describe", null, $sessionToken);
 		$updateHoldResponse = $this->getWebServiceResponse($webServiceURL . "/v1/circulation/holdRecord/changePickupLibrary", $params, $sessionToken, 'POST');
 
 		if (!empty($updateHoldResponse->holdRecord)) {
@@ -1128,29 +1121,87 @@ abstract class HorizonROA implements DriverInterface
 		}
 	}
 
-	function getBibId($itemId, $patron) {
-		$bibId = null;
+	/**
+	 * Look up information about an item record in the ILS.
+	 *
+	 * @param string $itemId  Id of the Item to lookup
+	 * @param User   $patron  User object to create a sesion with
+	 * @return array          An array of Bib ID, Item Barcode, and the Item Type
+	 */
+	function getItemInfo($itemId, $patron) {
+		$itemInfo = array(
+			null, // bibId
+			null, // barcode
+			null, // item Type
+		);
 		if (!empty($itemId)) {
 			/** @var Memcache $memCache */
 			global $memCache;
-			$memCacheKey = "horizon_ROA_bib_id_for_item_$itemId";
-			$bibId       = $memCache->get($memCacheKey);
+			$memCacheKeyPrefix = 'horizon_ROA_bib_info_for_item';
+			$memCacheKey       = "{$memCacheKeyPrefix}_$itemId";
+			$itemInfo          = $memCache->get($memCacheKey);
 
-			if (!$bibId) {
+			if (!$itemInfo || isset($_REQUEST['reload'])) {
 				$webServiceURL = $this->getWebServiceURL();
 				$sessionToken  = $this->getSessionToken($patron);
 
-//				$bibLookupResponse  = $this->getWebServiceResponse($webServiceURL . "/v1/catalog/item/key/" . $itemId, null, $sessionToken);
-				$bibLookupResponse = $this->getWebServiceResponse($webServiceURL . "/v1/catalog/item/key/" . $itemId . '?includeFields=bib', null, $sessionToken);
-				if (!empty($bibLookupResponse->fields)) {
-					$bibId = $bibLookupResponse->fields->bib->key;
+//				$itemInfoLookupResponse  = $this->getWebServiceResponse($webServiceURL . "/v1/catalog/item/key/" . $itemId, null, $sessionToken);
+				$itemInfoLookupResponse = $this->getWebServiceResponse($webServiceURL . "/v1/catalog/item/key/" . $itemId . '?includeFields=bib,barcode,itemType', null, $sessionToken);
+				if (!empty($itemInfoLookupResponse->fields)) {
+					$bibId    = $itemInfoLookupResponse->fields->bib->key;
+					$barcode  = $itemInfoLookupResponse->fields->barcode;
+					$itemType = $itemInfoLookupResponse->fields->itemType->key;
+
+					$itemInfo = array(
+						$bibId,
+						$barcode,
+						$itemType,
+					);
+
 					global $configArray;
-					$memCache->set($memCacheKey, $bibId, 0, $configArray['Caching']['horizon_ROA_bib_id_for_item']);
+					$memCache->set($memCacheKey, $itemInfo, 0, $configArray['Caching'][$memCacheKeyPrefix]);
 				}
 			}
 		}
-		return $bibId;
+		return $itemInfo;
 	}
+
+	function getTitleAuthorForBib($bibId, $patron) {
+		$bibInfo = array(
+			null, // title
+			null, // author
+		);
+		if (!empty($bibId)) {
+			/** @var Memcache $memCache */
+			global $memCache;
+			$memCacheKeyPrefix = 'horizon_ROA_title_info_for_bib';
+			$memCacheKey       = "{$memCacheKeyPrefix}_$bibId";
+			$bibInfo           = $memCache->get($memCacheKey);
+
+			if (!$bibInfo || isset($_REQUEST['reload'])) {
+				$webServiceURL = $this->getWebServiceURL();
+				$sessionToken  = $this->getSessionToken($patron);
+
+//				$bibInfoLookupResponse = $this->getWebServiceResponse($webServiceURL . '/v1/catalog/bib/key/' . $bibId . '?includeFields=*', null, $sessionToken);
+				$bibInfoLookupResponse = $this->getWebServiceResponse($webServiceURL . '/v1/catalog/bib/key/' . $bibId . '?includeFields=title,author', null, $sessionToken);
+				if (!empty($bibInfoLookupResponse->fields)) {
+					$title  = $bibInfoLookupResponse->fields->title;
+					$title  = strstr($title, '/', true); //rop everything from title after '/' character (author info)
+					$author = $bibInfoLookupResponse->fields->author;
+
+					$bibInfo = array(
+						$title,
+						$author,
+					);
+
+					global $configArray;
+					$memCache->set($memCacheKey, $bibInfo, 0, $configArray['Caching'][$memCacheKeyPrefix]);
+				}
+			}
+		}
+		return $bibInfo;
+	}
+
 
 	public function getMyFines($patron, $includeMessages)
 	{
@@ -1176,20 +1227,16 @@ abstract class HorizonROA implements DriverInterface
 				if (isset($lookupBlockResponse->fields)){
 					$fine = $lookupBlockResponse->fields;
 
-
 					// Lookup book title associated with the block
 					$title = '';
 					if (isset($fine->item->key)) {
 						$itemId       = $fine->item->key;
-						$bibId        = $this->getBibId($itemId, $patron);
+						list($bibId)  = $this->getItemInfo($itemId, $patron);
 						$recordDriver = new MarcRecord($bibId);
 						if ($recordDriver->isValid()) {
 							$title = $recordDriver->getTitle();
 						} else {
-							$bibInfo = $this->getWebServiceResponse($webServiceURL . '/v1/catalog/bib/key/' . $bibId . '?includeFields=title,author', null, $sessionToken);
-							if (!empty($bibInfo->fields)) {
-								$title = $bibInfo->fields->title;
-							}
+							list($title) = $this->getTitleAuthorForBib($bibId, $patron);
 						}
 					}
 
@@ -1226,4 +1273,235 @@ abstract class HorizonROA implements DriverInterface
 		}
 		return $blockPolicy;
 	}
+
+	public 	function updatePin($patron, $oldPin, $newPin, $confirmNewPin){
+		$updatePinResponse = $this->changeMyPin($patron, $newPin, $oldPin);
+		if (isset($updatePinResponse->messageList)) {
+			$errors = '';
+			foreach ($updatePinResponse->messageList as $errorMessage) {
+				$errors .= $errorMessage->message . ';';
+			}
+			global $logger;
+			$logger->log('Horizon ROA Driver error updating user\'s Pin :'.$errors, PEAR_LOG_ERR);
+			return 'Sorry, we encountered an error while attempting to update your pin. Please contact your local library.';
+		} elseif (!empty($updatePinResponse->sessionToken)){
+			$patron->cat_password = $newPin;
+			$patron->update();
+			return "Your pin number was updated successfully.";
+		}else{
+			return "Sorry, we could not update your pin number. Please try again later.";
+		}
+	}
+
+	private function changeMyPin($patron, $newPin, $currentPin = null, $resetToken = null) {
+		if (empty($resetToken)) {
+			$sessionToken = $this->getSessionToken($patron);
+			if (!$sessionToken) {
+				return 'Sorry, it does not look like you are logged in currently.  Please login and try again';
+			}
+			if (!empty($newPin) && !empty($currentPin)) {
+				$jsonParameters = array(
+					'currentPin' => $currentPin,
+					'newPin'     => $newPin,
+				);
+			} else {
+				return 'Sorry the current PIN or new PIN is blank';
+			}
+
+		} else {
+			$sessionToken = $this->getSessionToken($patron);
+			$jsonParameters = array(
+				'newPin'     => $newPin,
+				'resetToken' => $resetToken
+			);
+
+		}
+		$webServiceURL = $this->getWebServiceURL();
+		$updatePinUrl =  $webServiceURL . '/v1/user/patron/changeMyPin';
+
+		$updatePinResponse = $this->getWebServiceResponse($updatePinUrl, $jsonParameters, empty($sessionToken) ? null : $sessionToken, 'POST');
+		return $updatePinResponse;
+	}
+
+	public function emailResetPin($barcode)
+	{
+		if (!empty($barcode)) {
+
+			$patron = new User;
+			$patron->get('cat_username', $barcode); // This will always be for barcode/pin configurations
+			if (!empty($patron->id)) {
+				global $configArray;
+				$userID = $patron->id;
+			} else {
+				//TODO: Look up user in Horizon
+			}
+
+//				// If possible, check if Horizon has an email address for the patron
+//				if (!empty($patron->cat_password)) {
+//					list($userValid, $sessionToken, $ilsUserID) = $this->loginViaWebService($barcode, $patron->cat_password);
+//					if ($userValid) {
+//						// Yay! We were able to login with the pin Pika has!
+//
+//						//Now check for an email address
+//						$lookupMyAccountInfoResponse = $this->getWebServiceResponse($configArray['Catalog']['webServiceUrl'] . '/standard/lookupMyAccountInfo?clientID=' . $configArray['Catalog']['clientId'] . '&sessionToken=' . $sessionToken . '&includeAddressInfo=true');
+//						if ($lookupMyAccountInfoResponse) {
+//							if (isset($lookupMyAccountInfoResponse->AddressInfo)) {
+//								if (empty($lookupMyAccountInfoResponse->AddressInfo->email)) {
+//									// return an error message because horizon doesn't have an email.
+//									return array(
+//										'error' => 'The circulation system does not have an email associated with this card number. Please contact your library to reset your pin.'
+//									);
+//								}
+//							}
+//						}
+//					}
+//				}
+
+			if ($userID) {
+				//TODO: looks like user ID will still be required
+				// email the pin to the user
+				$resetPinAPIUrl = $this->getWebServiceURL() . '/v1/user/patron/resetMyPin';
+				$jsonPOST       = array(
+					'barcode'     => $barcode,
+					'resetPinUrl' => $configArray['Site']['url'] . '/MyAccount/ResetPin?resetToken=<RESET_PIN_TOKEN>' . (empty($userID) ? '' : '&uid=' . $userID)
+				);
+
+				$resetPinResponse = $this->getWebServiceResponse($resetPinAPIUrl, $jsonPOST, null, 'POST');
+				// Reset Pin Response is empty JSON on success.
+
+				if (!empty($resetPinResponse) && is_object($resetPinResponse) && !isset($resetPinResponse->messageList)) {
+					// Successfull response is an empty json object "{}"
+					return array(
+						'success' => true,
+					);
+				} else {
+					$result = array(
+						'error' => "Sorry, we could not e-mail your pin to you.  Please visit the library to reset your pin."
+					);
+					if (isset($resetPinResponse['messageList'])) {
+						$errors = '';
+						foreach ($resetPinResponse['messageList'] as $errorMessage) {
+							$errors .= $errorMessage['message'] . ';';
+						}
+						global $logger;
+						$logger->log('WCPL Driver error updating user\'s Pin :' . $errors, PEAR_LOG_ERR);
+					}
+					return $result;
+				}
+
+
+			} else {
+				return array(
+					'error' => 'Sorry, we did not find the card number you entered or you have not logged into the catalog previously.  Please contact your library to reset your pin.'
+				);
+			}
+		}
+	}
+
+	function resetPin($user, $newPin, $resetToken){
+		//TODO: the reset PIN call looks to need a staff priviledged account to complete
+		if (empty($resetToken)) {
+			global $logger;
+			$logger->log('No Reset Token passed to resetPin function', PEAR_LOG_ERR);
+			return array(
+				'error' => 'Sorry, we could not update your pin. The reset token is missing. Please try again later'
+			);
+		}
+
+		$changeMyPinResponse = $this->changeMyPin($user, $newPin, null, $resetToken);
+		if (isset($changeMyPinResponse->messageList)) {
+			$errors = '';
+			foreach ($changeMyPinResponse->messageList as $errorMessage) {
+				$errors .= $errorMessage->message . ';';
+			}
+			global $logger;
+			$logger->log('Horizon ROA Driver error updating user\'s Pin :'.$errors, PEAR_LOG_ERR);
+			return array(
+				'error' => 'Sorry, we encountered an error while attempting to update your pin. Please contact your local library.'
+			);
+		} elseif (!empty($changeMyPinResponse->essionToken)){
+			if ($user->username == $changeMyPinResponse->patronKey) { // Check that the ILS user matches the Pika user
+				//TODO: check that this still applies
+				$user->cat_password = $newPin;
+				$user->update();
+			}
+			return array(
+				'success' => true,
+			);
+		}else{
+			return array(
+				'error' => "Sorry, we could not update your pin number. Please try again later."
+			);
+		}
+	}
+
+	/**
+	 * @param User $patron                   The User Object to make updates to
+	 * @param boolean $canUpdateContactInfo  Permission check that updating is allowed
+	 * @return array                         Array of error messages for errors that occurred
+	 */
+	function updatePatronInfo($patron, $canUpdateContactInfo) {
+		$updateErrors = array();
+		if ($canUpdateContactInfo) {
+//			list($userValid, $sessionToken, $horizonRoaUserID) = $this->loginViaWebService($username, $password);
+			$sessionToken = $this->getSessionToken($patron);
+			if ($sessionToken) {
+				$horizonRoaUserId = $patron->username;
+
+				$updatePatronInfoParameters = array(
+					'fields' => array(),
+//					'key'      => $horizonRoaUserId,
+//					'resource' => '/user/patron',
+				);
+
+				$emailAddress = trim($_REQUEST['email']);
+				if (is_array($emailAddress)) {
+					$emailAddress = '';
+				}
+				$primaryAddress = array(
+					'ROAObject' => '/ROAObject/primaryPatronAddressObject',
+					'fields' => array(
+						'line1' => '4020 Carya Dr',
+						//						'line2' => NULL,
+						//						'line3' => NULL,
+						//						'line4' => NULL,
+						'area' => 'Raleigh, NC',
+						'postalCode' => '27610',
+						'emailAddress' => $emailAddress,
+					)
+				);
+				$updatePatronInfoParameters['fields'][] = $primaryAddress;
+
+
+				$webServiceURL             = $this->getWebServiceURL();
+				$updateAccountInfoResponse = $this->getWebServiceResponse($webServiceURL . '/v1/user/patron/key/' . $horizonRoaUserId, $updatePatronInfoParameters, $sessionToken, 'PUT');
+
+				if (isset($updateAccountInfoResponse->messageList)) {
+					foreach ($updateAccountInfoResponse->messageList as $message) {
+						$updateErrors[] = $message->message;
+					}
+					global $logger;
+					$logger->log('Horizon ROA Driver - Patron Info Update Error - Error from ILS : '.implode(';', $updateErrors), PEAR_LOG_ERR);
+				}
+
+			} else {
+				$updateErrors[] = 'Sorry, it does not look like you are logged in currently.  Please login and try again';
+			}
+		} else {
+			$updateErrors[] = 'You do not have permission to update profile information.';
+		}
+		return $updateErrors;
+	}
+
+	/**
+	 * A place holder method to override with site specific logic
+	 *
+	 * @return bool
+	 */
+	public function canRenew()
+	{
+		return true;
+	}
+
+
 }
