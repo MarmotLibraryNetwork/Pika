@@ -169,17 +169,9 @@ class CatalogConnection
 		global $offlineMode;
 
 		//Get the barcode property
-		if ($this->accountProfile->loginConfiguration == 'barcode_pin'){
-			$barcode = $username;
-		}else{
-			$barcode = $password;
-		}
+		$barcode = $this->accountProfile->loginConfiguration == 'barcode_pin' ? $username : $password;
+		$barcode = preg_replace('/[\s]/', '', $barcode); // remove all space characters
 
-		//Strip any non digit characters from the password
-		//Can't do this any longer since some libraries do have characters in their barcode:
-		//$password = preg_replace('/[a-or-zA-OR-Z\W]/', '', $password);
-		//Remove any spaces from the barcode
-		$barcode = preg_replace('/[^a-zA-Z\d\s]/', '', trim($barcode));
 		if ($offlineMode){
 			//The catalog is offline, check the database to see if the user is valid
 			$user = new User();
@@ -189,7 +181,7 @@ class CatalogConnection
 				$user->cat_password = $barcode;
 			}
 			if ($user->find(true)){
-				if ($this->driver->accountProfile->loginConfiguration = 'barcode_pin') {
+				if ($this->driver->accountProfile->loginConfiguration == 'barcode_pin') {
 					//We load the account based on the barcode make sure the pin matches
 					$userValid = $user->cat_password == $password;
 				}else{
@@ -209,6 +201,12 @@ class CatalogConnection
 				return null;
 			}
 		}else {
+			if ($this->driver->accountProfile->loginConfiguration == 'barcode_pin') {
+				$username = $barcode;
+			}else{
+				$password = $barcode;
+			}
+
 			$user = $this->driver->patronLogin($username, $password, $validatedViaSSO);
 		}
 
@@ -218,6 +216,7 @@ class CatalogConnection
 					$user->displayName = $user->lastname;
 				}else{
 					// #PK-979 Make display name configurable firstname, last initial, vs first initial last name
+					/** @var Library $homeLibrary */
 					$homeLibrary = $user->getHomeLibrary();
 					if ($homeLibrary == null || ($homeLibrary->patronNameDisplayStyle == 'firstinitial_lastname')){
 						// #PK-979 Make display name configurable firstname, last initial, vs first initial last name
