@@ -86,11 +86,11 @@ cd /usr/local/vufind-plus/vufind/cron;./HOOPLA.sh ${PIKASERVER} >> ${OUTPUT_FILE
 ## Side Loads ##
 
 # Ebrary Marc Updates
-/usr/local/vufind-plus/sites/marmot.test/moveFullExport.sh ccu/ebrary ebrary/ccu >> ${OUTPUT_FILE}
+/usr/local/vufind-plus/vufind/cron/moveFullExport.sh ccu/ebrary ebrary/ccu >> ${OUTPUT_FILE}
 /usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} western/ebrary ebrary/western >> ${OUTPUT_FILE}
 
 #Adams Ebrary DDA files
-/usr/local/vufind-plus/sites/${PIKASERVER}/moveFullExport.sh adams/ebrary/DDA ebrary/adams >> ${OUTPUT_FILE}
+/usr/local/vufind-plus/vufind/cron/moveFullExport.sh adams/ebrary/DDA ebrary/adams >> ${OUTPUT_FILE}
 
 # CCU Alexander Street Press Marc Updates
 /usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} ccu/alexanderStreetPress alexanderstreetpress/ccu >> ${OUTPUT_FILE}
@@ -128,10 +128,10 @@ cd /usr/local/vufind-plus/vufind/cron;./HOOPLA.sh ${PIKASERVER} >> ${OUTPUT_FILE
 /usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} budwerner/kanopy kanopy/budwerner >> ${OUTPUT_FILE}
 
 # SD51 Mackin VIA Marc Updates
-#/usr/local/vufind-plus/sites/marmot.test/moveFullExport.sh sd51/mackinvia/mvcp mackinvia/mvcp >> ${OUTPUT_FILE}
-#/usr/local/vufind-plus/sites/marmot.test/moveFullExport.sh sd51/mackinvia/mvem mackinvia/mvem >> ${OUTPUT_FILE}
-#/usr/local/vufind-plus/sites/marmot.test/moveFullExport.sh sd51/mackinvia/mvrr mackinvia/mvrr >> ${OUTPUT_FILE}
-#/usr/local/vufind-plus/sites/marmot.test/moveFullExport.sh sd51/mackinvia/mvtm mackinvia/mvtm >> ${OUTPUT_FILE}
+#/usr/local/vufind-plus/vufind/cron/moveFullExport.sh sd51/mackinvia/mvcp mackinvia/mvcp >> ${OUTPUT_FILE}
+#/usr/local/vufind-plus/vufind/cron/moveFullExport.sh sd51/mackinvia/mvem mackinvia/mvem >> ${OUTPUT_FILE}
+#/usr/local/vufind-plus/vufind/cron/moveFullExport.sh sd51/mackinvia/mvrr mackinvia/mvrr >> ${OUTPUT_FILE}
+#/usr/local/vufind-plus/vufind/cron/moveFullExport.sh sd51/mackinvia/mvtm mackinvia/mvtm >> ${OUTPUT_FILE}
 
 # Learning Express Marc Updates
 /usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} budwerner/learning_express learning_express/steamboatsprings >> ${OUTPUT_FILE}
@@ -190,7 +190,7 @@ cd /usr/local/vufind-plus/vufind/record_grouping; java -server -XX:+UseG1GC -jar
 
 #Full Reindex - since this takes so long, just run the full index once a week and let Sierra Export keep it up to date the rest of the time. 
 if [ "${DAYOFWEEK}" -eq 5 ]; then
-cd /usr/local/vufind-plus/vufind/reindexer; nice -n -3 java -server -XX:+UseG1GC -jar reindexer.jar ${PIKASERVER} fullReindex >> ${OUTPUT_FILE}
+cd /usr/local/vufind-plus/vufind/reindexer; java -server -XX:+UseG1GC -jar reindexer.jar ${PIKASERVER} fullReindex >> ${OUTPUT_FILE}
 else
 	echo "Not running full re-index today, only a round of regular reindexing" >> ${OUTPUT_FILE}
 	cd /usr/local/vufind-plus/vufind/reindexer; nice -n -3 java -server -XX:+UseG1GC -jar reindexer.jar ${PIKASERVER} >> ${OUTPUT_FILE}
