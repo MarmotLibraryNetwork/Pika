@@ -36,7 +36,7 @@
 #####################
 # Daily full update #
 #####################
-00 04 * * * cd /usr/local/vufind-plus/sites/addison.test; ./full_update.sh
+33 03 * * * cd /usr/local/vufind-plus/sites/addison.test; ./full_update.sh
 
 ######################
 # MySQL Nightly Dump #

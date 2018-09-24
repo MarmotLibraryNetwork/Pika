@@ -143,11 +143,7 @@ fi
 
 #Extract from ILS
 #Copy extracts from FTP Server
-mount 10.1.2.7:/ftp/addison /mnt/ftp
-FILE1=$(find /mnt/ftp/ -name pika*.mrc -mtime -1 | sort -n | tail -1)
-cp $FILE1 /data/vufind-plus/${PIKASERVER}/marc/fullexport.mrc
-umount /mnt/ftp
-
+/usr/local/vufind-plus/cron/vufind/moveFullExport.sh addison/sierra ${PIKASERVER} ${PIKASERVER} >> ${OUTPUT_FILE}
 
 #Validate the export
 cd /usr/local/vufind-plus/vufind/cron; java -server -XX:+UseG1GC -jar cron.jar ${PIKASERVER} ValidateMarcExport >> ${OUTPUT_FILE}
