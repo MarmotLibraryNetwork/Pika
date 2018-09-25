@@ -8,7 +8,11 @@
 @import "../../responsive/css/responsive_base.less";
 
 .header-login-button-mixin(@home-page-login-background-color);
+.header-button{
+  border-radius: 0;
+  line-height: 40px !important;
 
+}
 #header-container {
   background: #FFFFFF;
 }
@@ -19,15 +23,24 @@
 
 
 .browse-category {
-  padding-top: 20px; // extra padding on top to center text
-  //height: 120px;
+  //padding-top: 20px; // extra padding on top to center text
+  border: 2px solid @selectedCategoryBorderColor; //this is different for arlington
+
+  // vertically center test
+  display:flex;
+  align-items: center;
 
   div {
-    //color: @browse-label-text-color;
     text-shadow: none;
     text-transform: uppercase;
     font-size: large;
     font-weight: 500;
+
+    // vertically center test
+    line-height: 1;
+    vertical-align: middle;
+    height: auto;
+
     &:focus {
       outline: none; // hide outlining of clicked category
     }
@@ -37,7 +50,7 @@
     background-color: @selectedCategoryColor;
     background: @selectedCategoryColor;
     div {
-      color: #fff;
+      color: #222;
     }
   }
 }
