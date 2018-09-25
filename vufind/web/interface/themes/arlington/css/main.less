@@ -26,7 +26,7 @@
   //padding-top: 20px; // extra padding on top to center text
   border: 2px solid @selectedCategoryBorderColor; //this is different for arlington
 
-  // vertically center test
+  // vertically center text
   display:flex;
   align-items: center;
 
@@ -36,11 +36,14 @@
     font-size: large;
     font-weight: 500;
 
-    // vertically center test
+    // vertically center text
     line-height: 1;
     vertical-align: middle;
     height: auto;
 
+    // horizontally center test
+    margin-left: auto;
+    margin-right: auto;
     &:focus {
       outline: none; // hide outlining of clicked category
     }
@@ -54,7 +57,12 @@
     }
   }
 }
-
+#browse-sub-category-menu {
+  button.selected {
+    border: 2px solid @selectedCategoryBorderColor;
+    //background-color: @selectedCategoryColor;
+  }
+}
 // mixin to select all the typical states of <a> like tags
 .allLinkStates(@rules) {
   &, &:hover, &:active, &:visited {
