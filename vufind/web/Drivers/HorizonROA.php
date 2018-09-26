@@ -207,7 +207,7 @@ abstract class HorizonROA implements DriverInterface
 			. '?includeFields=displayName,birthDate,privilegeExpiresDate,primaryAddress,primaryPhone,library,patronType'
 			. ',holdRecordList,circRecordList,blockList'
 //			. ",estimatedOverdueAmount"  // TODO: fields to play with
-			// {*} notation doesn't work here
+			// Note that {*} notation doesn't work for Horizon ROA yet
 		;
 
 			// phoneList is for texting notification preferences
@@ -257,11 +257,16 @@ abstract class HorizonROA implements DriverInterface
 					$cityState = $preferredAddress->area;
 					if (strpos($cityState, ', ')) {
 						list($City, $State) = explode(', ', $cityState);
-					} else {
-						//TODO: is there ever an exception?
+					} elseif ($preferredAddress->area == 'other' && !empty($preferredAddress->line3)) {
+						//For Wake County, when this is other; the city state is listed in address3
+						list($City, $State) = explode(', ', $preferredAddress->address3);
+
 					}
 					$Address1 = $preferredAddress->line1;
-					//TODO: combine additional Lines? (lines 2 - 4)
+					if (!empty($preferredAddress->line2)){
+						//apt number
+						$Address1 .= ' '. $preferredAddress->line2;
+					}
 
 					$email = $preferredAddress->emailAddress;
 					$user->email = $email;
@@ -621,7 +626,7 @@ abstract class HorizonROA implements DriverInterface
 		$renewCheckOutResponse = $this->getWebServiceResponse($webServiceURL . "/v1/circulation/circRecord/renew", $params, $sessionToken, 'POST');
 		if (!empty($renewCheckOutResponse->circRecord)) {
 			return array(
-				'itemId' => $itemId,
+				'itemId'  => $itemId,
 				'success' => true,
 				'message' => 'Your item was successfully renewed.'
 			);
@@ -635,13 +640,13 @@ abstract class HorizonROA implements DriverInterface
 			$logger->log($errorMessage, PEAR_LOG_ERR);
 
 			return array(
-				'itemId' => $itemId,
+				'itemId'  => $itemId,
 				'success' => false,
 				'message' => 'Failed to renew item : '. implode('; ', $messages)
 			);
 		} else {
 			return array(
-				'itemId' => $itemId,
+				'itemId'  => $itemId,
 				'success' => false,
 				'message' => 'Failed to renew item : Unknown error'
 			);
@@ -873,6 +878,7 @@ abstract class HorizonROA implements DriverInterface
 	function placeItemHold($patron, $recordId, $itemId, $pickUpLocation = null, $type = 'request', $cancelIfNotFilledByDate = null)
 	{
 
+		//TODO: parameter $type can be removed.
 		//Get the session token for the user
 		$sessionToken = $this->getSessionToken($patron);
 		if (!$sessionToken) {
@@ -947,7 +953,7 @@ abstract class HorizonROA implements DriverInterface
 		}
 
 		$hold_result['title'] = $title;
-		$hold_result['bid']   = $recordId;
+		$hold_result['bid']   = $recordId; //TODO: bid or bib
 
 		global $analytics;
 		if ($analytics) {
