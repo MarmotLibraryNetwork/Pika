@@ -10798,7 +10798,6 @@ fieldset[disabled] .btn-masquerade.active {
   text-shadow: none;
 }
 .browse-category {
-  border: 2px solid #222;
   display: flex;
   align-items: center;
 }
@@ -10850,6 +10849,9 @@ fieldset[disabled] .btn-masquerade.active {
 #browse-category-picker .jcarousel-pagination a:active,
 #browse-category-picker .jcarousel-pagination a:visited {
   outline: none;
+}
+#browse-category-picker .jcarousel li {
+  border: 2px solid #222;
 }
 .manifestation-format .btn {
   min-width: 100%;

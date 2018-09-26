@@ -24,7 +24,6 @@
 
 .browse-category {
   //padding-top: 20px; // extra padding on top to center text
-  border: 2px solid @selectedCategoryBorderColor; //this is different for arlington
 
   // vertically center text
   display:flex;
@@ -92,7 +91,10 @@
     }
     @detached-outline-ruleset: {outline: none};
     .allLinkStates(@detached-outline-ruleset)
-
+  }
+  .jcarousel li {
+    border: 2px solid @selectedCategoryBorderColor; // this is different than usual for arlington
+    //rule selector needed to be more specific to override other applicable rules
   }
 }
 
