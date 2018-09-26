@@ -10807,6 +10807,9 @@ fieldset[disabled] .btn-masquerade.active {
   display: inline-block;
   vertical-align: middle;
 }
+#home-page-browse-header {
+  margin-left: 0;
+}
 .selected-browse-label-search {
   margin-left: 0;
   float: left;
@@ -10879,7 +10882,6 @@ fieldset[disabled] .btn-masquerade.active {
   margin: 10px auto;
   position: relative;
 }
-/* this controls the subcategory menu button are and menu buttons on browse */
 #browse-sub-category-menu {
   margin-top: 20px;
 }
