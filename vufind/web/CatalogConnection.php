@@ -1007,11 +1007,16 @@ class CatalogConnection
 			$numRenewals = 0;
 			$failure_messages = array();
 			foreach ($currentTransactions as $transaction){
-				$curResult = $this->renewItem($patron, $transaction['recordId'], $transaction['renewIndicator'], null);
-				if ($curResult['success']){
-					$numRenewals++;
+				if ((isset($transaction['canrenew']) && $transaction['canrenew'] == true) || !isset($transaction['canrenew'])) {
+					// If we are calculating canrew, make a renewall attempt.  If we are though, don't make an attempt if canrenew is false
+					$curResult = $this->renewItem($patron, $transaction['recordId'], $transaction['renewIndicator'], null);
+					if ($curResult['success']){
+						$numRenewals++;
+					} else {
+						$failure_messages[] = $curResult['message'];
+					}
 				} else {
-					$failure_messages[] = $curResult['message'];
+					$failure_messages[] = '"' . $transaction['title'] . '" can not be renewed';
 				}
 			}
 			$renewResult['Renewed'] += $numRenewals;
