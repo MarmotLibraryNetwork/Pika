@@ -178,8 +178,8 @@ abstract class HorizonROA implements DriverInterface
 	public function patronLogin($username, $password, $validatedViaSSO)
 	{
 
-		//Remove any spaces from the barcode
-		$username = trim($username);
+		//TODO: check wihich login style in use. Right now assuming barcode_pin
+		$username = preg_replace('/[\s]/', '', $username); // remove all space characters
 		$password = trim($password);
 
 		//Authenticate the user via WebService

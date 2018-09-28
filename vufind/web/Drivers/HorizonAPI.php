@@ -31,7 +31,7 @@ abstract class HorizonAPI extends Horizon{
 		global $configArray;
 
 		//Remove any spaces from the barcode
-		$username = trim($username);
+		$username = preg_replace('/[\s]/', '', $username); // remove all space characters
 		$password = trim($password);
 
 		//Authenticate the user via WebService
