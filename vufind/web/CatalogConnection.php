@@ -170,7 +170,9 @@ class CatalogConnection
 
 		//Get the barcode property
 		$barcode = $this->accountProfile->loginConfiguration == 'barcode_pin' ? $username : $password;
-		$barcode = preg_replace('/[\s]/', '', $barcode); // remove all space characters
+//		$barcode = preg_replace('/[\s]/', '', $barcode); // remove all space characters
+		//TODO: some libraries may have barcodes that the space character is valid. So far Aspencat appears to be one. pascal 9/27/2018
+		$barcode = trim($barcode);
 
 		if ($offlineMode){
 			//The catalog is offline, check the database to see if the user is valid
