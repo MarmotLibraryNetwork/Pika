@@ -5,18 +5,29 @@
 // Always include the base .less file
 @import "../../responsive/css/responsive_base.less";
 
+#system-message-header,
+#system-message-header~.breadcrumbs,   // the google translate box
+.container > div:nth-child(1).breadcrumbs // the google translate box when there is no system message
+{
+  background-color: @body-bg-resp;
+}
+
 #header-container{
   background-color: #B5192B;
-  background-image: url('/interface/themes/western_resp/images/header_background.png');
+  //background-image: url('/interface/themes/western_resp/images/header_background.png');
   background-position: right bottom;
   background-repeat: no-repeat;
-  min-height: 120px;
+  min-height: 100px;
+  height: 100px;
   padding: 0;
 }
 #header-wrapper{
   background-color: #B5192B;
   background: linear-gradient(to bottom, #B5192B 0%, #D82538 100%);
 }
+
+.header-login-button-mixin(fade(#6F737A, 70%));
+.header-login-button-mixin();
 
 .facetTitle, .exploreMoreTitle{
   background: #f8f8f8;
