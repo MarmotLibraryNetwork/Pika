@@ -62,6 +62,8 @@ checkConflictingProcesses "sierra_export.jar ${PIKASERVER}" >> ${OUTPUT_FILE}
 checkConflictingProcesses "overdrive_extract.jar ${PIKASERVER}" >> ${OUTPUT_FILE}
 checkConflictingProcesses "reindexer.jar ${PIKASERVER}" >> ${OUTPUT_FILE}
 
+#echo "Finished checking conflicting process"
+
 #truncate the output file so you don't spend a week debugging an error from a week ago!
 : > $OUTPUT_FILE;
 
@@ -71,8 +73,12 @@ sleep 2m
 tar -czf /data/vufind-plus/${PIKASERVER}/solr_master_backup.tar.gz /data/vufind-plus/${PIKASERVER}/solr_master/grouped/index/ /data/vufind-plus/${PIKASERVER}/grouped_work_primary_identifiers.sql >> ${OUTPUT_FILE}
 rm /data/vufind-plus/${PIKASERVER}/grouped_work_primary_identifiers.sql
 
+#echo "Finished index backups"
+
 #Restart Solr
 cd /usr/local/vufind-plus/sites/${PIKASERVER}; ./${PIKASERVER}.sh restart
+
+#echo "Finished solr restart"
 
 if [ $USE_SIERRA_API_EXTRACT -ne 1 ]; then
 	#Extract from ILS
@@ -80,17 +86,19 @@ if [ $USE_SIERRA_API_EXTRACT -ne 1 ]; then
 	/usr/local/vufind-plus/sites/${PIKASERVER}/copySierraExport.sh >> ${OUTPUT_FILE}
 fi
 
+#echo "Finished export copy"
+
 #Extract from Hoopla
 cd /usr/local/vufind-plus/vufind/cron;./HOOPLA.sh ${PIKASERVER} >> ${OUTPUT_FILE}
 
 ## Side Loads ##
 
 # Ebrary Marc Updates
-/usr/local/vufind-plus/vufind/cron/moveFullExport.sh ccu/ebrary ebrary/ccu >> ${OUTPUT_FILE}
+/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} ccu/ebrary ebrary/ccu >> ${OUTPUT_FILE}
 /usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} western/ebrary ebrary/western >> ${OUTPUT_FILE}
 
 #Adams Ebrary DDA files
-/usr/local/vufind-plus/vufind/cron/moveFullExport.sh adams/ebrary/DDA ebrary/adams >> ${OUTPUT_FILE}
+/usr/local/vufind-plus/vufind/cron/moveFullExport.sh ${PIKASERVER} adams/ebrary/DDA ebrary/adams >> ${OUTPUT_FILE}
 
 # CCU Alexander Street Press Marc Updates
 /usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} ccu/alexanderStreetPress alexanderstreetpress/ccu >> ${OUTPUT_FILE}
@@ -159,6 +167,7 @@ cd /usr/local/vufind-plus/vufind/cron;./HOOPLA.sh ${PIKASERVER} >> ${OUTPUT_FILE
 # Docuseek Marc Updates
 /usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} cmc/docuseek docuseek/cmc >> ${OUTPUT_FILE}
 
+#echo "finished sideload fetching"
 
 #Extracts for sideloaded eContent; settings defined in config.pwd.ini [Sideload]
 cd /usr/local/vufind-plus/vufind/cron; ./sideload.sh ${PIKASERVER}
@@ -189,12 +198,12 @@ cd /usr/local/vufind-plus/vufind/cron; java -server -XX:+UseG1GC -jar cron.jar $
 cd /usr/local/vufind-plus/vufind/record_grouping; java -server -XX:+UseG1GC -jar record_grouping.jar ${PIKASERVER} fullRegroupingNoClear >> ${OUTPUT_FILE}
 
 #Full Reindex - since this takes so long, just run the full index once a week and let Sierra Export keep it up to date the rest of the time. 
-if [ "${DAYOFWEEK}" -eq 5 ]; then
-cd /usr/local/vufind-plus/vufind/reindexer; java -server -XX:+UseG1GC -jar reindexer.jar ${PIKASERVER} fullReindex >> ${OUTPUT_FILE}
-else
-	echo "Not running full re-index today, only a round of regular reindexing" >> ${OUTPUT_FILE}
-	cd /usr/local/vufind-plus/vufind/reindexer; nice -n -3 java -server -XX:+UseG1GC -jar reindexer.jar ${PIKASERVER} >> ${OUTPUT_FILE}
-fi
+#if [ "${DAYOFWEEK}" -eq 5 ]; then
+	cd /usr/local/vufind-plus/vufind/reindexer; java -server -XX:+UseG1GC -jar reindexer.jar ${PIKASERVER} fullReindex >> ${OUTPUT_FILE}
+#else
+#	echo "Not running full re-index today, only a round of regular reindexing" >> ${OUTPUT_FILE}
+#	cd /usr/local/vufind-plus/vufind/reindexer; nice -n -3 java -server -XX:+UseG1GC -jar reindexer.jar ${PIKASERVER} >> ${OUTPUT_FILE}
+#fi
 
 # Truncate Continuous Reindexing list of changed items
 #cat /dev/null >| /data/vufind-plus/${PIKASERVER}/marc/changed_items_to_process.csv
