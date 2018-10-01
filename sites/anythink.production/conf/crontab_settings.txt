@@ -47,6 +47,12 @@
 # Set the start for 1:30 am
 30 01 * * * cd /usr/local/vufind-plus/sites/anythink.production; ./full_update.sh
 
+###################################
+# Data Extract from other systems #
+###################################
+#Lynda weekly update
+39 0 * * Fri /usr/local/vufind-plus/vufind/cron/fetch_lynda.sh anythink
+
 ###################
 # Pika Cron Jobs  #
 ###################
