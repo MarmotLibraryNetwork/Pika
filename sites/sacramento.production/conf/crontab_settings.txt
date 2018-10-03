@@ -39,7 +39,7 @@
 # Daily full update #
 #####################
 # This must run before full update on production to ensure sideloads are copied properly
-2 22 * * * cd /usr/local/vufind-plus/sites/sacramento.production; ./full_update.sh
+20 2 * * * cd /usr/local/vufind-plus/sites/sacramento.production; ./full_update.sh
 
 ######################
 # MySQL Nightly Dump #
@@ -53,9 +53,6 @@
 # Temp Files
 26 * * * * cd /tmp; /bin/rm -rf CURLCOOKIE*
 27 */2 * * * cd /tmp; /bin/rm -rf epb*
-0 22-23 * * * /usr/sbin/apachectl restart > /dev/null 2>&1
-0 0-5 * * * /usr/sbin/apachectl restart > /dev/null 2>&1
-0 5-21 * * * /usr/sbin/apachectl graceful > /dev/null 2>&1
 
 ###################################
 # Data Extract from other systems #
@@ -86,7 +83,16 @@
 # Check Apache Solr process and website that it has not stalled.
 */3 * * * * cd /usr/local/vufind-plus/vufind/cron/; ./solrTest.sh
 
+#####################
+# Apache Web Server #
+#####################
+# Preventative restarts for performance
+0 22-23 * * * /usr/sbin/apachectl restart > /dev/null 2>&1
+0 0-5 * * * /usr/sbin/apachectl restart > /dev/null 2>&1
+0 5-21 * * * /usr/sbin/apachectl graceful > /dev/null 2>&1
 # Check for semaphore errors
 17 * * * * cd /usr/local/vufind-plus/vufind/cron/; ./apacheSemaphoreCleanup.sh root
+# Fetch Marmot SSL Certificate
+50 8 * * Mon /usr/local/vufind-plus/vufind/cron/fetchMarmotCertFiles.sh
 
 #-- EOF -
