@@ -83,3 +83,4 @@
 # Check for semaphore errors
 17 * * * * cd /usr/local/vufind-plus/vufind/cron/; ./apacheSemaphoreCleanup.sh root
 
+#-- EOF -
