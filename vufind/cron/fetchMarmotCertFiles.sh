@@ -8,7 +8,7 @@
 #-------------------------------------------------------------------------
 
 
-CERTIFICATEDIRECTORY="/data/wildcard.marmot.org"
+CERTIFICATEDIRECTORY="data/wildcard.marmot.org"
 REMOTE="10.1.2.7:/$CERTIFICATEDIRECTORY"
 LOCAL="/mnt/ftp"
 
@@ -18,7 +18,7 @@ LOG="logger -t $0"
 $LOG "~~ mount $REMOTE $LOCAL"
 mount $REMOTE $LOCAL
 
-if [ $? -eq 1 ]; then
+if [ $? -eq 0 ]; then
 	if [ -d "$LOCAL/" ]; then
 		if [ -d "/etc/pki/tls/certs/" ]; then
 			if [ -d "/etc/pki/tls/private/" ]; then
