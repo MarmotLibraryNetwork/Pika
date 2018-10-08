@@ -8407,7 +8407,7 @@ hr.menu {
 }
 #header-container {
   padding-top: 0;
-  height: 105px;
+  height: 135px;
   background-color: transparent;
   background: linear-gradient(to bottom, transparent, transparent 85%, transparent);
   border-bottom: 8px solid #fff;
@@ -8427,7 +8427,7 @@ hr.menu {
   text-align: center;
   text-shadow: 1px 1px #fff;
   vertical-align: middle;
-  line-height: 97px !important;
+  line-height: 127px !important;
   border-bottom: 4px solid transparent;
   color: #8b8b8b !important;
 }
