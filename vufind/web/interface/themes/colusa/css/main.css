@@ -8407,7 +8407,7 @@ hr.menu {
 }
 #header-container {
   padding-top: 0;
-  height: 135px;
+  height: 150px;
   background-color: transparent;
   background: linear-gradient(to bottom, transparent, transparent 85%, transparent);
   border-bottom: 8px solid #fff;
@@ -8427,7 +8427,7 @@ hr.menu {
   text-align: center;
   text-shadow: 1px 1px #fff;
   vertical-align: middle;
-  line-height: 127px !important;
+  line-height: 142px !important;
   border-bottom: 4px solid transparent;
   color: #8b8b8b !important;
 }
@@ -8441,7 +8441,7 @@ hr.menu {
 #library-name-header {
   font-size: 30px;
   color: #02325e;
-  font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-weight: bold;
   white-space: normal;
   padding-top: 5px;
@@ -10800,6 +10800,9 @@ body {
 #headingInfo {
   display: inline-block;
   vertical-align: middle;
+}
+#library-name-header {
+  text-align: center;
 }
 .selected-browse-label-search {
   margin-left: 0;
