@@ -14,7 +14,7 @@ PIKASERVER=arlington.test
 PIKADBNAME=pika
 OUTPUT_FILE="/var/log/vufind-plus/${PIKASERVER}/full_update_output.log"
 
-MINFILE1SIZE=$((578000000))
+MINFILE1SIZE=$((508000000))
 
 # Check if full_update is already running (test sites only)
 PIDFILE="/var/log/vufind-plus/${PIKASERVER}/full_update.pid"
@@ -101,9 +101,9 @@ function checkProhibitedTimes() {
 
 #Check for any conflicting processes that we shouldn't do a full index during.
 #Since we aren't running in a loop, check in the order they run.
-checkConflictingProcesses "sierra_export.jar arlington.test"
-checkConflictingProcesses "overdrive_extract.jar arlington.test"
-checkConflictingProcesses "reindexer.jar arlington.test"
+checkConflictingProcesses "sierra_export.jar ${PIKASERVER}"
+checkConflictingProcesses "overdrive_extract.jar ${PIKASERVER}"
+checkConflictingProcesses "reindexer.jar ${PIKASERVER}"
 
 #truncate the output file so you don't spend a week debugging an error from a week ago!
 : > $OUTPUT_FILE;

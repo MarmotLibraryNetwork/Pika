@@ -106,12 +106,12 @@ class AJAX_JSON extends Action {
 		require_once ROOT_DIR . '/sys/MaterialsRequest.php';
 
 		return array(
-			'success'=>true,
-			'name'=>ucwords($user->firstname . ' ' . $user->lastname),
-			'phone'=>$user->phone,
-			'email'=>$user->email,
-			'homeLocation'=> isset($patronHomeBranch) ? $patronHomeBranch->code : '',
-			'homeLocationId'=> isset($patronHomeBranch) ? $patronHomeBranch->locationId : '',
+			'success'                => true,
+			'name'                   => ucwords($user->firstname . ' ' . $user->lastname),
+			'phone'                  => $user->phone,
+			'email'                  => $user->email,
+			'homeLocation'           => isset($patronHomeBranch) ? $patronHomeBranch->code : '',
+			'homeLocationId'         => isset($patronHomeBranch) ? $patronHomeBranch->locationId : '',
 			'enableMaterialsRequest' => MaterialsRequest::enableMaterialsRequest(true),
 		);
 	}

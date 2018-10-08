@@ -17,18 +17,26 @@ class MyAccount_Holds extends MyAccount{
 		       $library;
 
 		$user = UserAccount::getLoggedInUser();
-		//Check to see if any user accounts are allowed to freeze holds
-		$interface->assign('allowFreezeHolds', true);
 
+		$interface->assign('allowFreezeHolds', true);
+		//User method getMyHolds checks to see if the user account is allowed to freeze holds
+
+		// Set Holds settings that are based on the ILS system
 		$ils = $configArray['Catalog']['ils'];
-		$showPosition = ($ils == 'Horizon' || $ils == 'Koha' || $ils == 'Symphony' || $ils == 'CarlX');
-		$showExpireTime = ($ils == 'Horizon' || $ils == 'Symphony');
+		$showPosition                    = ($ils == 'Horizon' || $ils == 'Koha' || $ils == 'Symphony' || $ils == 'CarlX');
+		$showExpireTime                  = ($ils == 'Horizon' || $ils == 'Symphony');
 		$suspendRequiresReactivationDate = ($ils == 'Horizon' || $ils == 'CarlX' || $ils == 'Symphony'|| $ils == 'Koha');
+		$canChangePickupLocation         = ($ils != 'Koha');
+		$showPlacedColumn                = ($ils == 'Symphony' || $ils == 'Horizon'); //TODO: is this true for earlier versions of Horizon Drivers
+		$showDateWhenSuspending          = ($ils == 'Horizon' || $ils == 'CarlX' || $ils == 'Symphony' || $ils == 'Koha');
+
 		$interface->assign('suspendRequiresReactivationDate', $suspendRequiresReactivationDate);
-		$canChangePickupLocation = ($ils != 'Koha');
 		$interface->assign('canChangePickupLocation', $canChangePickupLocation);
-		$showPlacedColumn = ($ils == 'Symphony');
 		$interface->assign('showPlacedColumn', $showPlacedColumn);
+		$interface->assign('showDateWhenSuspending', $showDateWhenSuspending);
+		$interface->assign('showPosition', $showPosition);
+		$interface->assign('showNotInterested', false);
+
 
 		// Define sorting options
 		$unavailableHoldSortOptions = array(
@@ -70,18 +78,12 @@ class MyAccount_Holds extends MyAccount{
 			'unavailable' => $selectedUnavailableSortOption
 			));
 
+
 		if ($library->showLibraryHoursNoticeOnAccountPages) {
 			$libraryHoursMessage = Location::getLibraryHoursMessage($user->homeLocationId);
 			$interface->assign('libraryHoursMessage', $libraryHoursMessage);
 		}
 
-		$allowChangeLocation = ($ils == 'Millennium' || $ils == 'Sierra');
-		$interface->assign('allowChangeLocation', $allowChangeLocation);
-		$showDateWhenSuspending = ($ils == 'Horizon' || $ils == 'CarlX' || $ils == 'Symphony' || $ils == 'Koha');
-		$interface->assign('showDateWhenSuspending', $showDateWhenSuspending);
-
-		$interface->assign('showPosition', $showPosition);
-		$interface->assign('showNotInterested', false);
 
 		// Get My Transactions
 		global $offlineMode;
@@ -138,6 +140,8 @@ class MyAccount_Holds extends MyAccount{
 //			$interface->assign('offlineHolds', $offlineHolds);
 //		}
 
+
+		// Set up explanation blurb for My Holds page
 		if (!$library->showDetailedHoldNoticeInformation){
 			$notification_method = '';
 		}else{
@@ -147,8 +151,6 @@ class MyAccount_Holds extends MyAccount{
 			}
 		}
 		$interface->assign('notification_method', strtolower($notification_method));
-
-		//print_r($patron);
 
 		// Present to the user
 		$this->display('holds.tpl', 'My Holds');

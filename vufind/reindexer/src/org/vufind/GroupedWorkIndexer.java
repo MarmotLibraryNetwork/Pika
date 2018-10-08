@@ -217,13 +217,13 @@ public class GroupedWorkIndexer {
 						case "Flatirons":
 							ilsRecordProcessors.put(curIdentifier, new FlatironsRecordProcessor(this, vufindConn, indexingProfileRS, logger, fullReindex));
 							break;
-						case "Hoopla":
-							ilsRecordProcessors.put(curIdentifier, new HooplaProcessor(this, indexingProfileRS, logger));
+						case "Addison":
+							ilsRecordProcessors.put(curIdentifier, new AddisonRecordProcessor(this, vufindConn, indexingProfileRS, logger, fullReindex));
 							break;
 						case "Arlington":
 							ilsRecordProcessors.put(curIdentifier, new ArlingtonRecordProcessor(this, vufindConn, indexingProfileRS, logger, fullReindex));
 							break;
-						case "CarlX":
+						case "CarlX": // Currently the Nashville Processor
 							ilsRecordProcessors.put(curIdentifier, new CarlXRecordProcessor(this, vufindConn, indexingProfileRS, logger, fullReindex));
 							break;
 						case "SantaFe":
@@ -240,6 +240,9 @@ public class GroupedWorkIndexer {
 							break;
 						case "SideLoadedEContent":
 							ilsRecordProcessors.put(curIdentifier, new SideLoadedEContentProcessor(this, vufindConn, indexingProfileRS, logger, fullReindex));
+							break;
+						case "Hoopla":
+							ilsRecordProcessors.put(curIdentifier, new HooplaProcessor(this, indexingProfileRS, logger));
 							break;
 						default:
 							logger.error("Unknown indexing class " + ilsIndexingClassString);

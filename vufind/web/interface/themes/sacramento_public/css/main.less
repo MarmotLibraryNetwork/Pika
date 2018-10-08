@@ -34,6 +34,9 @@
 
 
 // Adopting Nashville styling of browse categories
+#home-page-browse-header {
+  margin-left: 0; // to give a gap of white background between the search box and the browse category carousel
+}
 .selected-browse-label-search {
   margin-left: 0;
   float: left;
@@ -112,7 +115,7 @@
 }
 
 
-/* this controls the subcategory menu button are and menu buttons on browse */
+// this controls the subcategory menu button are and menu buttons on browse
 #browse-sub-category-menu {
   margin-top: 20px;
   .btn {
@@ -182,9 +185,11 @@
 #home-page-hours-locations, #home-page-home-button {
   display: none;
 }
+#home-page-login {
+  text-shadow: none;
+}
 
-
-#more-details-accordion {
+#more-details-accordion, #account-settings-accordion{
   .active {
     .panel-title {
       color: @accordion-active-header-color;

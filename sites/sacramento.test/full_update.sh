@@ -86,6 +86,24 @@ fi
 #Extract from Hoopla, this just needs to be done once a day
 cd /usr/local/vufind-plus/vufind/cron;./GetHooplaFromMarmot.sh >> ${OUTPUT_FILE}
 
+## Side Loads ##
+
+#Book Flix
+/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} sacramento/bookflix/spl bookflix/spl >> ${OUTPUT_FILE}
+
+#Gale
+/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} sacramento/gale/spl gale/spl >> ${OUTPUT_FILE}
+/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} sacramento/gale/folsom gale/folsom >> ${OUTPUT_FILE}
+
+#Ebsco
+/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} sacramento/ebsco/folsom ebsco/folsom >> ${OUTPUT_FILE}
+
+#RbDigital Magazines
+/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} sacramento/rbdigital_magazine/spl rbdigital_magazine/spl >> ${OUTPUT_FILE}
+/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} sacramento/rbdigital_magazine/folsom rbdigital_magazine/folsom >> ${OUTPUT_FILE}
+/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} sacramento/rbdigital_magazine/woodland rbdigital_magazine/woodland >> ${OUTPUT_FILE}
+
+
 #Extract Lexile Data
 cd /data/vufind-plus/; curl --remote-name --remote-time --silent --show-error --compressed --time-cond /data/vufind-plus/lexileTitles.txt https://cassini.marmot.org/lexileTitles.txt
 

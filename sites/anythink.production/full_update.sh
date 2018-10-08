@@ -14,7 +14,7 @@ PIKASERVER=anythink.production
 PIKADBNAME=pika
 OUTPUT_FILE="/var/log/vufind-plus/${PIKASERVER}/full_update_output.log"
 
-MINFILE1SIZE=$((320000000))
+MINFILE1SIZE=$((322000000))
 
 # Check for conflicting processes currently running
 function checkConflictingProcesses() {
@@ -72,9 +72,9 @@ function checkProhibitedTimes() {
 
 #Check for any conflicting processes that we shouldn't do a full index during.
 #Since we aren't running in a loop, check in the order they run.
-checkConflictingProcesses "overdrive_extract.jar" >> ${OUTPUT_FILE}
-checkConflictingProcesses "horizon_export.jar" >> ${OUTPUT_FILE}
-checkConflictingProcesses "reindexer.jar" >> ${OUTPUT_FILE}
+checkConflictingProcesses "overdrive_extract.jar ${PIKASERVER}" >> ${OUTPUT_FILE}
+checkConflictingProcesses "horizon_export.jar ${PIKASERVER}" >> ${OUTPUT_FILE}
+checkConflictingProcesses "reindexer.jar ${PIKASERVER}" >> ${OUTPUT_FILE}
 
 #truncate the output file so you don't spend a week debugging an error from a week ago!
 : > $OUTPUT_FILE;

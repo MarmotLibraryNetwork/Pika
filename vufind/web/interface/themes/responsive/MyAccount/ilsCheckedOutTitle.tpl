@@ -81,13 +81,6 @@
 						</div>
 					{/if}
 
-					{if $record.publicationDate}
-						<div class="row">
-							<div class="result-label col-tn-4 col-lg-3">{translate text='Published'}</div>
-							<div class="result-value col-tn-8 col-lg-9">{$record.publicationDate|escape}</div>
-						</div>
-					{/if}
-
 					{if $showOut}
 						<div class="row">
 							<div class="result-label col-tn-4 col-lg-3">{translate text='Checked Out'}</div>
@@ -166,11 +159,10 @@
 						</div>
 					{/if}
 
-					{if $showWaitList}
+					{if $showWaitList && is_int($record.holdQueueLength)}
 						<div class="row">
 							<div class="result-label col-tn-4 col-lg-3">{translate text='Wait List'}</div>
 							<div class="result-value col-tn-8 col-lg-9">
-								{* Wait List goes here *}
 								{$record.holdQueueLength}
 							</div>
 						</div>

@@ -6,17 +6,16 @@
 @import "../../responsive/css/responsive_base.less";
 
 .header-login-button-mixin(@header-buttons-background-color);
-
-#header-container {
-  background-image: @header_image;
-  background-position: center;
+.header-button {
+  text-transform: uppercase;
 }
+
 #header-logo {
   padding: 0;
-  margin-top: 5px;
-  border-radius: 4px;
+  //margin-top: 5px;
+  //border-radius: 4px;
   height: @header-logo-height;
-  background-color: @logo-background-color;
+  //background-color: @logo-background-color;
 }
 #system-message-header,
 #system-message-header~.breadcrumbs,   // the google translate box
@@ -171,13 +170,40 @@
   padding: 3px 5px;
   //color: #888;
   font-size: medium;
-}
-
-
-.facetValue a {
+  a {
   color: #428bca;
   line-height: 1.7;
   border-bottom: none;
 }
+}
 
 
+// Search Box Modifications
+#home-page-search-label{
+  text-shadow: none;
+  .glyphicon-search {
+    display: none;
+  }
+}
+
+
+#more-details-accordion {
+  .active {
+    .panel-title {
+      color: @accordion-active-header-color;
+      //text-shadow: 1px 1px #fff;
+    }
+  }
+}
+.sidebar-links {
+  .panel {
+    &.active {
+      & > a { // keep the title's link underlining the same color as the title
+        // these end up applying to content in .active div.panel-title
+        &, &:visited, &:hover {
+          //text-shadow: 1px 1px #fff;
+        }
+      }
+    }
+  }
+}

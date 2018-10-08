@@ -8400,7 +8400,7 @@ hr.menu {
   color: #ccc;
 }
 #system-message-header {
-  background-color: #817C81;
+  background-color: #a71930;
   color: black;
   text-align: center;
   padding: 3px;
@@ -8408,9 +8408,9 @@ hr.menu {
 #header-container {
   padding-top: 0;
   height: 130px;
-  background-color: #817C81;
-  background: linear-gradient(to bottom, #817C81, #525254 85%, #444545);
-  border-bottom: 8px solid #6F737A;
+  background-color: #a71930;
+  background: linear-gradient(to bottom, #a71930, #a71930 85%, #a71930);
+  border-bottom: 8px solid #a71930;
   margin-bottom: 0;
   min-height: 110px;
 }
@@ -8428,7 +8428,7 @@ hr.menu {
   text-shadow: 1px 1px #fff;
   vertical-align: middle;
   line-height: 122px !important;
-  border-bottom: 4px solid #444545;
+  border-bottom: 4px solid #a71930;
   color: #8b8b8b !important;
 }
 .header-button:hover {
@@ -10774,17 +10774,50 @@ fieldset[disabled] .btn-masquerade.active {
   color: #ebccff;
   background-color: #fff;
 }
+#system-message-header,
+#system-message-header ~ .breadcrumbs,
+.container > div:nth-child(1).breadcrumbs {
+  background-color: #fff;
+}
 #header-container {
   background-color: #B5192B;
-  background-image: url('/interface/themes/western_resp/images/header_background.png');
   background-position: right bottom;
   background-repeat: no-repeat;
-  min-height: 120px;
+  min-height: 100px;
+  height: 100px;
   padding: 0;
 }
 #header-wrapper {
   background-color: #B5192B;
   background: linear-gradient(to bottom, #B5192B 0%, #D82538 100%);
+}
+.header-button {
+  border: 0;
+  border-radius: 0.5em;
+  color: #fff !important;
+  background-color: rgba(111, 115, 122, 0.7);
+  margin-top: 20px;
+  line-height: 60px !important;
+  text-shadow: none;
+}
+.header-button:hover {
+  text-decoration: underline;
+  border-bottom: 0;
+  box-shadow: 2px 2px 5px #fff;
+}
+.header-button {
+  border: 0;
+  border-radius: 0.5em;
+  color: #fff !important;
+  background-color: rgba(51, 51, 51, 0.6);
+  margin-top: 20px;
+  line-height: 60px !important;
+  text-shadow: none;
+}
+.header-button:hover {
+  text-decoration: underline;
+  border-bottom: 0;
+  box-shadow: 2px 2px 5px #fff;
 }
 .facetTitle,
 .exploreMoreTitle {

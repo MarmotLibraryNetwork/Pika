@@ -169,17 +169,11 @@ class CatalogConnection
 		global $offlineMode;
 
 		//Get the barcode property
-		if ($this->accountProfile->loginConfiguration == 'barcode_pin'){
-			$barcode = $username;
-		}else{
-			$barcode = $password;
-		}
+		$barcode = $this->accountProfile->loginConfiguration == 'barcode_pin' ? $username : $password;
+//		$barcode = preg_replace('/[\s]/', '', $barcode); // remove all space characters
+		//TODO: some libraries may have barcodes that the space character is valid. So far Aspencat appears to be one. pascal 9/27/2018
+		$barcode = trim($barcode);
 
-		//Strip any non digit characters from the password
-		//Can't do this any longer since some libraries do have characters in their barcode:
-		//$password = preg_replace('/[a-or-zA-OR-Z\W]/', '', $password);
-		//Remove any spaces from the barcode
-		$barcode = preg_replace('/[^a-zA-Z\d\s]/', '', trim($barcode));
 		if ($offlineMode){
 			//The catalog is offline, check the database to see if the user is valid
 			$user = new User();
@@ -189,7 +183,7 @@ class CatalogConnection
 				$user->cat_password = $barcode;
 			}
 			if ($user->find(true)){
-				if ($this->driver->accountProfile->loginConfiguration = 'barcode_pin') {
+				if ($this->driver->accountProfile->loginConfiguration == 'barcode_pin') {
 					//We load the account based on the barcode make sure the pin matches
 					$userValid = $user->cat_password == $password;
 				}else{
@@ -209,6 +203,12 @@ class CatalogConnection
 				return null;
 			}
 		}else {
+			if ($this->driver->accountProfile->loginConfiguration == 'barcode_pin') {
+				$username = $barcode;
+			}else{
+				$password = $barcode;
+			}
+
 			$user = $this->driver->patronLogin($username, $password, $validatedViaSSO);
 		}
 
@@ -218,6 +218,7 @@ class CatalogConnection
 					$user->displayName = $user->lastname;
 				}else{
 					// #PK-979 Make display name configurable firstname, last initial, vs first initial last name
+					/** @var Library $homeLibrary */
 					$homeLibrary = $user->getHomeLibrary();
 					if ($homeLibrary == null || ($homeLibrary->patronNameDisplayStyle == 'firstinitial_lastname')){
 						// #PK-979 Make display name configurable firstname, last initial, vs first initial last name
@@ -1008,11 +1009,16 @@ class CatalogConnection
 			$numRenewals = 0;
 			$failure_messages = array();
 			foreach ($currentTransactions as $transaction){
-				$curResult = $this->renewItem($patron, $transaction['recordId'], $transaction['renewIndicator'], null);
-				if ($curResult['success']){
-					$numRenewals++;
+				if ((isset($transaction['canrenew']) && $transaction['canrenew'] == true) || !isset($transaction['canrenew'])) {
+					// If we are calculating canrew, make a renewall attempt.  If we are though, don't make an attempt if canrenew is false
+					$curResult = $this->renewItem($patron, $transaction['recordId'], $transaction['renewIndicator'], null);
+					if ($curResult['success']){
+						$numRenewals++;
+					} else {
+						$failure_messages[] = $curResult['message'];
+					}
 				} else {
-					$failure_messages[] = $curResult['message'];
+					$failure_messages[] = '"' . $transaction['title'] . '" can not be renewed';
 				}
 			}
 			$renewResult['Renewed'] += $numRenewals;

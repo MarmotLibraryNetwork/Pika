@@ -60,9 +60,6 @@
 # Check Apache Solr process and website that it has not stalled.
 */3 * * * * cd /usr/local/vufind-plus/vufind/cron/; ./solrTest.sh
 
-# Check for semaphore errors
-17 * * * * cd /usr/local/vufind-plus/vufind/cron/; ./apacheSemaphoreCleanup.sh root
-
 ###############################################
 # Copy Original Covers from Marmot FTP Server #
 ###############################################
@@ -73,8 +70,6 @@
 # Clean Up Temporary Files
 26 * * * * cd /tmp; /bin/rm -rf CURLCOOKIE*
 27 */2 * * * cd /tmp; /bin/rm -rf epb*
-0 0-7 * * * /usr/sbin/apachectl restart > /dev/null 2>&1
-0 8-23 * * * /usr/sbin/apachectl graceful > /dev/null 2>&1
 
 ############################################
 # New York Times Bestseller Lists Updating #
@@ -82,7 +77,22 @@
 23 7 * * * /usr/local/vufind-plus/vufind/cron/updateNYTLists.sh aacpl.production
 # update on Sundays at 7:23
 
-
+#################
+# Let's Encrypt #
+#################
 ### -- renew SSL certs at 3:51AM and 3:51PM everyday --###
 51 3,15 * * * certbot renew --quiet
 
+#####################
+# Apache Web Server #
+#####################
+# Preventative restarts for performance
+0 22-23 * * * /usr/sbin/apachectl restart > /dev/null 2>&1
+0 0-5 * * * /usr/sbin/apachectl restart > /dev/null 2>&1
+0 5-21 * * * /usr/sbin/apachectl graceful > /dev/null 2>&1
+# Check for semaphore errors
+17 * * * * cd /usr/local/vufind-plus/vufind/cron/; ./apacheSemaphoreCleanup.sh root
+# Fetch Marmot SSL Certificate
+50 8 * * Mon /usr/local/vufind-plus/vufind/cron/fetchMarmotCertFiles.sh
+
+#-- EOF -

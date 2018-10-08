@@ -15,6 +15,10 @@ require_once 'bootstrap.php';
 require_once ROOT_DIR . '/sys/SIP2.php';
 $sip2 = new sip2();
 
+////Used this to test connecting to a Koha SIP system
+//require_once ROOT_DIR . '/sys/KohaSIP.php';
+//$sip2 = new KohaSIP();
+
 $host = $_REQUEST['host'];
 $port = $_REQUEST['port'];
 

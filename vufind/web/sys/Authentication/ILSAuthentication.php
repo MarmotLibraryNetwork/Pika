@@ -31,8 +31,8 @@ class ILSAuthentication implements Authentication {
 				return UserAccount::getLoggedInUser();
 			}
 		}
-		$this->username = isset($_REQUEST['username']) ? $_REQUEST['username'] : '';
-		$this->password = isset($_REQUEST['password']) ? $_REQUEST['password'] : '';
+		$this->username = empty($_REQUEST['username']) ? '' : $_REQUEST['username'];
+		$this->password = empty($_REQUEST['password']) ? '' : $_REQUEST['password'];
 
 		if (is_array($this->username)){
 			$this->username = reset($this->username);

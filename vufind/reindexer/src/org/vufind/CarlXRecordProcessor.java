@@ -33,7 +33,7 @@ class CarlXRecordProcessor extends IlsRecordProcessor {
 
 	@Override
 	protected boolean isItemAvailable(ItemInfo itemInfo) {
-		return itemInfo.getStatusCode().equals("S") || itemInfo.getStatusCode().equals("SI");
+		return itemInfo.getStatusCode().equals("S") || itemInfo.getStatusCode().equals("SC") || itemInfo.getStatusCode().equals("SI");
 	}
 
 	@Override
@@ -209,5 +209,10 @@ class CarlXRecordProcessor extends IlsRecordProcessor {
 		HashSet<String> translatedAudiences = translateCollection("target_audience", targetAudiences, identifier);
 		groupedWork.addTargetAudiences(translatedAudiences);
 		groupedWork.addTargetAudiencesFull(translatedAudiences);
+	}
+	
+	@Override
+	protected boolean determineLibraryUseOnly(ItemInfo itemInfo, Scope curScope) {
+		return itemInfo.getStatusCode().equals("SC");
 	}
 }

@@ -102,8 +102,8 @@ function checkProhibitedTimes() {
 
 #Check for any conflicting processes that we shouldn't do a full index during.
 #Since we aren't running in a loop, check in the order they run.
-checkConflictingProcesses "overdrive_extract.jar aacpl.test"
-checkConflictingProcesses "reindexer.jar aacpl.test"
+checkConflictingProcesses "overdrive_extract.jar ${PIKASERVER}"
+checkConflictingProcesses "reindexer.jar ${PIKASERVER}"
 
 # Back-up Solr Master Index
 mysqldump ${PIKADBNAME} grouped_work_primary_identifiers > /data/vufind-plus/${PIKASERVER}/grouped_work_primary_identifiers.sql
@@ -113,7 +113,7 @@ rm /data/vufind-plus/${PIKASERVER}/grouped_work_primary_identifiers.sql
 
 #truncate the output file so you don't spend a week debugging an error from a week ago!
 : > $OUTPUT_FILE;
-#/usr/local/vufind-plus/sites/${PIKASERVER}/moveFullExport.sh aacpl/symphony aacpl.test >> ${OUTPUT_FILE}
+#/usr/local/vufind-plus/vufind/cron/moveFullExport.sh aacpl/symphony aacpl.test >> ${OUTPUT_FILE}
 #moved below with file checking
 
 #Restart Solr

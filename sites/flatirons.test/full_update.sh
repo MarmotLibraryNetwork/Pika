@@ -104,9 +104,9 @@ function checkProhibitedTimes() {
 #Since we aren't running in a loop, check in the order they run.
 #checkConflictingProcesses "ITEM_UPDATE_EXTRACT_PIKA_4_Flatirons.exp"
 #checkConflictingProcesses "millennium_export.jar"
-checkConflictingProcesses "overdrive_extract.jar flatirons.test"
-checkConflictingProcesses "reindexer.jar flatirons.test"
-checkConflictingProcesses "sierra_export.jar flatirons.test"
+checkConflictingProcesses "overdrive_extract.jar ${PIKASERVER}"
+checkConflictingProcesses "reindexer.jar ${PIKASERVER}"
+checkConflictingProcesses "sierra_export.jar ${PIKASERVER}"
 
 #truncate the output file so you don't spend a week debugging an error from a week ago!
 : > $OUTPUT_FILE;

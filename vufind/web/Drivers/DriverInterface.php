@@ -36,6 +36,12 @@ interface DriverInterface
 
 	public function patronLogin($username, $password, $validatedViaSSO);
 	public function hasNativeReadingHistory();
+
+	/**
+	 * Return the number of holds that are on a record
+	 * @param $id
+	 * @return int
+	 */
 	public function getNumHolds($id);
 
 	/**
@@ -44,12 +50,12 @@ interface DriverInterface
 	 * This is responsible for retrieving all transactions (i.e. checked out items)
 	 * by a specific patron.
 	 *
-	 * @param User $user    The user to load transactions for
+	 * @param User $patron    The user to load transactions for
 	 *
 	 * @return array        Array of the patron's transactions on success
 	 * @access public
 	 */
-	public function getMyCheckouts($user);
+	public function getMyCheckouts($patron);
 
 	/**
 	 * @return boolean true if the driver can renew all titles in a single pass
@@ -92,11 +98,12 @@ interface DriverInterface
 	 *
 	 * This is responsible for both placing holds as well as placing recalls.
 	 *
-	 * @param   User    $patron       The User to place a hold for
-	 * @param   string  $recordId     The id of the bib record
-	 * @param   string  $pickupBranch The branch where the user wants to pickup the item when available
+	 * @param   User $patron             The User to place a hold for
+	 * @param   string $recordId         The id of the bib record
+	 * @param   string $pickupBranch     The branch where the user wants to pickup the item when available
+	 * @param   null|string $cancelDate  The date to cancel the Hold if it isn't filled
 	 * @return  array                 An array with the following keys
-	 *                                result - true/false
+	 *                                success - true/false
 	 *                                message - the message to display (if item holds are required, this is a form to select the item).
 	 *                                needsItemLevelHold - An indicator that item level holds are required
 	 *                                title - the title of the record the user is placing a hold on
@@ -113,8 +120,10 @@ interface DriverInterface
 	 * @param   string  $recordId   The id of the bib record
 	 * @param   string  $itemId     The id of the item to hold
 	 * @param   string  $pickupBranch The branch where the user wants to pickup the item when available
-	 * @return  mixed               True if successful, false if unsuccessful
-	 *                              If an error occurs, return a PEAR_Error
+	 * @return  array                 An array with the following keys
+	 *                                success - true/false
+	 *                                message - the message to display
+	 *                                title - the title of the record the user is placing a hold on
 	 * @access  public
 	 */
 	function placeItemHold($patron, $recordId, $itemId, $pickupBranch);

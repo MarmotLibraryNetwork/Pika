@@ -19,14 +19,14 @@
 								{*<a href="#" class="btn btn-xs btn-primary" onclick="return VuFind.ResultsList.toggleRelatedManifestations('{$id|escapeCSS}_{$relatedManifestation.format|escapeCSS}');">*}
 									{*{$relatedManifestation.format}*}
 								{*</a>*}
-								<a href="#" onclick="return VuFind.ResultsList.toggleRelatedManifestations('{$id|escapeCSS}_{$relatedManifestation.format|escapeCSS}');">
+								<a href="#" onclick="return VuFind.ResultsList.toggleRelatedManifestations('{if $inPopUp}popup-{/if}{$id|escapeCSS}_{$relatedManifestation.format|escapeCSS}');">
 									<span class="manifestation-toggle-text label label-default" id='manifestation-toggle-text-{$id|escapeCSS}_{$relatedManifestation.format|escapeCSS}'>Show&nbsp;Edition</span>
 								</a>
 							{else}
-								<a href="#" class="btn btn-xs btn-primary" onclick="return VuFind.ResultsList.toggleRelatedManifestations('{$id|escapeCSS}_{$relatedManifestation.format|escapeCSS}');">
+								<a href="#" class="btn btn-xs btn-primary" onclick="return VuFind.ResultsList.toggleRelatedManifestations('{if $inPopUp}popup-{/if}{$id|escapeCSS}_{$relatedManifestation.format|escapeCSS}');">
 									{$relatedManifestation.format}
 								</a>
-								<a href="#" onclick="return VuFind.ResultsList.toggleRelatedManifestations('{$id|escapeCSS}_{$relatedManifestation.format|escapeCSS}');">
+								<a href="#" onclick="return VuFind.ResultsList.toggleRelatedManifestations('{if $inPopUp}popup-{/if}{$id|escapeCSS}_{$relatedManifestation.format|escapeCSS}');">
 									<span class="manifestation-toggle-text label label-info" id='manifestation-toggle-text-{$id|escapeCSS}_{$relatedManifestation.format|escapeCSS}'>Show&nbsp;Editions</span>
 								</a>
 							{/if}
@@ -56,7 +56,7 @@
 						</div>
 				  </div>
 					<div class="row">
-						<div class="col-sm-12 hidden" id="relatedRecordPopup_{$id|escapeCSS}_{$relatedManifestation.format|escapeCSS}">
+						<div class="col-sm-12 hidden" id="relatedRecordPopup_{if $inPopUp}popup-{/if}{$id|escapeCSS}_{$relatedManifestation.format|escapeCSS}">
 							{include file="GroupedWork/relatedRecords.tpl" relatedRecords=$relatedManifestation.relatedRecords relatedManifestation=$relatedManifestation}
 						</div>
 					</div>

@@ -86,6 +86,8 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	private char orderStatusSubfield;
 	private char orderCode3Subfield;
 
+	private boolean addOnOrderShelfLocations = false;
+
 	private int numCharsToCreateFolderFrom;
 	private boolean createFolderFromLeadingCharacters;
 

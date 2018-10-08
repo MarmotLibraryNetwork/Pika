@@ -14,7 +14,7 @@ PIKASERVER=wcpl.production
 PIKADBNAME=pika
 OUTPUT_FILE="/var/log/vufind-plus/${PIKASERVER}/full_update_output.log"
 
-MINFILE1SIZE=$((331000000))
+MINFILE1SIZE=$((332000000))
 
 # Check if full_update is already running
 #TODO: Verify that the PID file doesn't get log-rotated
@@ -102,8 +102,8 @@ function checkProhibitedTimes() {
 
 #Check for any conflicting processes that we shouldn't do a full index during.
 #Since we aren't running in a loop, check in the order they run.
-checkConflictingProcesses "overdrive_extract.jar wcpl.production"
-checkConflictingProcesses "reindexer.jar wcpl.production"
+checkConflictingProcesses "overdrive_extract.jar ${PIKASERVER}"
+checkConflictingProcesses "reindexer.jar ${PIKASERVER}"
 
 # Back-up Solr Master Index
 mysqldump ${PIKADBNAME} grouped_work_primary_identifiers > /data/vufind-plus/${PIKASERVER}/grouped_work_primary_identifiers.sql

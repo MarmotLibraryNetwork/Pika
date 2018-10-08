@@ -14,7 +14,7 @@ PIKASERVER=arlington.production
 PIKADBNAME=pika
 OUTPUT_FILE="/var/log/vufind-plus/${PIKASERVER}/full_update_output.log"
 
-MINFILE1SIZE=$((578000000))
+MINFILE1SIZE=$((508000000))
 
 # Check for conflicting processes currently running
 function checkConflictingProcesses() {
@@ -73,9 +73,9 @@ function checkProhibitedTimes() {
 
 #Check for any conflicting processes that we shouldn't do a full index during.
 #Since we aren't running in a loop, check in the order they run.
-checkConflictingProcesses "sierra_export.jar arlington.production"
-checkConflictingProcesses "overdrive_extract.jar arlington.production"
-checkConflictingProcesses "reindexer.jar arlington.production"
+checkConflictingProcesses "sierra_export.jar ${PIKASERVER}"
+checkConflictingProcesses "overdrive_extract.jar ${PIKASERVER}"
+checkConflictingProcesses "reindexer.jar ${PIKASERVER}"
 
 #truncate the output file so you don't spend a week debugging an error from a week ago!
 : > $OUTPUT_FILE;

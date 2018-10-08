@@ -1,38 +1,36 @@
-@header_image : url('/interface/themes/woodland/images/header_background.png');
+
+@woodland-primary-green: #32b700;
+@woodland-secondary-blue: #00847a;
+@woodland-secondary-orange: #d65d00;
+@woodland-complementary-red: #cb0020;
+
 @header-height: 150px;
 @header-logo-height: 140px;
-@header-buttons-background-color : fade(darken(#fff, 10%), 30%);
-@logo-background-color : fade(darken(#fff, 10%), 50%);
+@header-buttons-background-color : @woodland-complementary-red;
 
 
-@woodland-background-light-gray: #ebebeb;
-@woodland-dark-blue:#284058;
-@woodland-action-blue: #0d60ae;
-@woodland-deep-dark-blue: #193148;
-@woodland-highlighted-blue: #7accdf;
-@woodland-header-text-blue: #275889;
+//@body-bg-resp: @woodland-background-light-gray;
 
-@body-bg-resp: @woodland-background-light-gray;
-
-@home-search-top-color: @woodland-dark-blue;
-@home-search-bottom-color: @woodland-dark-blue;
+@home-search-top-color: @woodland-primary-green;
+@home-search-bottom-color: @woodland-primary-green;
 
 @header-top-color: #ffffff; //Top color for background gradient in header
 @header-middle-color: #ffffff; //middle color for background gradient in header @80% of header height from bottom
 @header-bottom-color: #ffffff; //Bottom color for background gradient in header
 
-@library-display-name-color: #fff;
+@library-display-name-color: @woodland-secondary-blue;
 @library-display-name-font: @font-family-sans-serif-resp;
 //@library-display-name-font-size: 25px;
 
-@header-bottom-border-color: transparent;
-@footer-top-border-color: @woodland-deep-dark-blue;
+@header-bottom-border-color: @woodland-secondary-blue;
+@footer-top-border-color: @woodland-secondary-blue;
 
-@btn-primary-bg: @woodland-action-blue;
+@btn-primary-bg: @woodland-primary-green;
+//@btn-primary-bg: @woodland-complementary-red;
 //@btn-primary-color: #333;
 
-@menu-bar-background-color: @woodland-dark-blue;
-@menu-bar-selected-background-color: @woodland-action-blue;
+@menu-bar-background-color: @woodland-secondary-orange;
+@menu-bar-selected-background-color: @woodland-complementary-red;
 //@menu-bar-selected-color: @sacramento-navy;
 
 @category1MainColor: #ffffff;
@@ -42,11 +40,11 @@
 
 @browse-header-background-color: #ffffff;
 @browseCarouselControlBackgroundColor: #fff;
-@browseCarouselControlColor: @woodland-action-blue;
+@browseCarouselControlColor: @woodland-primary-green;
 
 // Selected Category color to give a highlighted appearance
-@selectedCategoryColor: @woodland-highlighted-blue;
-@selectedSubCategoryBackgroundColor: @woodland-highlighted-blue;
+@selectedCategoryColor: @woodland-secondary-orange;
+@selectedSubCategoryBackgroundColor: @woodland-secondary-orange;
 
 // set all browse category colors to the first color to remove lightening of successive categories. plb 9-17-2014*/
 @category2MainColor: @category1MainColor;
@@ -59,14 +57,14 @@
 @category9MainColor: @category1MainColor;
 
 
-@browse-label-text-color: @woodland-header-text-blue;
-@browse-category-text-color: @woodland-header-text-blue;
-@selected-browse-label-search-color: @woodland-header-text-blue;
+@browse-label-text-color: @woodland-secondary-blue;
+@browse-category-text-color: @woodland-secondary-blue;
+@selected-browse-label-search-color: @woodland-secondary-blue;
 
 //@more-browse-results-backgroundcolor: @sacramento-bronze;
 //@more-browse-results-color: #FFF;
 
-@accordion-active-header-backgroundcolor: @woodland-dark-blue;
+@accordion-active-header-backgroundcolor: @woodland-secondary-blue;
 @accordion-header-top-gradient-color: @accordion-header-bg-color;
 @accordion-header-bottom-gradient-color: @accordion-header-bg-color;
 

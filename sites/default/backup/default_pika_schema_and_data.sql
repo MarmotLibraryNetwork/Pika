@@ -822,7 +822,7 @@ CREATE TABLE `external_link_tracking` (
   `linkHost` varchar(200) NOT NULL,
   `trackingDate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`externalLinkId`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2587,7 +2587,7 @@ CREATE TABLE `purchase_link_tracking` (
   `trackingDate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`purchaseLinkId`),
   KEY `purchaseLinkId` (`purchaseLinkId`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3031,7 +3031,7 @@ CREATE TABLE `usage_tracking` (
   PRIMARY KEY (`usageId`),
   KEY `usageId` (`usageId`),
   KEY `IP_DATE` (`ipId`,`trackingDate`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --

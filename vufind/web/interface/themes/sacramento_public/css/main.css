@@ -8942,7 +8942,7 @@ hr.menu {
   left: auto;
 }
 #home-page-browse-header {
-  background-color: #ffffff;
+  background-color: #f2f2f2;
   padding-bottom: 15px;
 }
 #home-page-browse-content {
@@ -8958,7 +8958,7 @@ hr.menu {
   z-index: -1;
 }
 .browse-label-text {
-  background-color: #ffffff;
+  background-color: #f2f2f2;
   font-size: 22px;
   color: #000;
   line-height: 5px;
@@ -10807,6 +10807,9 @@ fieldset[disabled] .btn-masquerade.active {
   display: inline-block;
   vertical-align: middle;
 }
+#home-page-browse-header {
+  margin-left: 0;
+}
 .selected-browse-label-search {
   margin-left: 0;
   float: left;
@@ -10879,7 +10882,6 @@ fieldset[disabled] .btn-masquerade.active {
   margin: 10px auto;
   position: relative;
 }
-/* this controls the subcategory menu button are and menu buttons on browse */
 #browse-sub-category-menu {
   margin-top: 20px;
 }
@@ -10954,7 +10956,11 @@ fieldset[disabled] .btn-masquerade.active {
 #home-page-home-button {
   display: none;
 }
-#more-details-accordion .active .panel-title {
+#home-page-login {
+  text-shadow: none;
+}
+#more-details-accordion .active .panel-title,
+#account-settings-accordion .active .panel-title {
   color: #333333;
   text-shadow: 1px 1px #fff;
 }

@@ -27,10 +27,10 @@ else
 			if [ $(ls -1A "$LOCAL/$SOURCE/" | grep .mrc | wc -l) -gt 0 ]; then
 				# only do copy command if there are files present to move
 
-				FILE1=$(ls -rt $LOCAL/$SOURCE/*.mrc|tail -1)
+				FILE1=$(ls -rt1 $LOCAL/$SOURCE/*.mrc|tail -1)
 				# Get only the latest file
 				if [ -n "$FILE1" ]; then
-					$LOG "~~ Copy fullexport marc file(s)."
+					$LOG "~~ Copy fullexport marc file."
 					$LOG "~~ cp --update $FILE1 /data/vufind-plus/$DESTINATION/marc/fullexport.mrc"
 					cp --update "$FILE1" /data/vufind-plus/$DESTINATION/marc/fullexport.mrc
 
@@ -49,6 +49,10 @@ else
 							echo "Moving $FILE1 on ftp server to processed directory."
 							mv "$FILE1" $LOCAL/$SOURCE/processed/
 						fi
+					fi
+
+					if [ $(ls -1A "$LOCAL/$SOURCE/" | grep .mrc | wc -l) -gt 1 ]; then
+						echo "There is more that 1 MARC file present in $LOCAL/$SOURCE/ during $0 process."
 					fi
 #				else
 #					echo "No File was found in $SOURCE"
