@@ -59,7 +59,7 @@ cd /usr/local/vufind-plus/vufind/cron;./GetHooplaFromMarmot.sh >> ${OUTPUT_FILE}
 /usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} western/ebrary ebrary/western >> ${OUTPUT_FILE}
 
 #Adams Ebrary DDA files
-/usr/local/vufind-plus/vufind/cron/moveFullExport.sh ${PIKASERVER} adams/ebrary/DDA ebrary/adams >> ${OUTPUT_FILE}
+/usr/local/vufind-plus/vufind/cron/moveFullExport.sh adams/ebrary/DDA ebrary/adams ${PIKASERVER} >> ${OUTPUT_FILE}
 
 # CCU Alexander Street Press Marc Updates
 /usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} ccu/alexanderStreetPress alexanderstreetpress/ccu >> ${OUTPUT_FILE}
