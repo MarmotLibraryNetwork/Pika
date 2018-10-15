@@ -92,7 +92,7 @@
 # Check for semaphore errors
 17 * * * * cd /usr/local/vufind-plus/vufind/cron/; ./apacheSemaphoreCleanup.sh root
 # Fetch Marmot SSL Certificate
-50 8 * * Mon /usr/local/vufind-plus/vufind/cron/fetchMarmotCertFiles.sh
+53 8 * * Mon /usr/local/vufind-plus/vufind/cron/fetchMarmotCertFiles.sh
 
 #-- EOF -
 #final end of line character needed for crontab to be read
