@@ -417,37 +417,35 @@ class Record_AJAX extends Action {
 				} else {
 					$homeLibrary = $patron->getHomeLibrary();
 
+					$cancelDate = trim($_REQUEST['canceldate']);
+					if ($homeLibrary->defaultNotNeededAfterDays != -1) {
+						if (empty($cancelDate)) {
+							$daysFromNow = $homeLibrary->defaultNotNeededAfterDays == 0 ? 182.5 : $homeLibrary->defaultNotNeededAfterDays;
+							//Default to a date 6 months (half a year) in the future.
+							$nnaDate    = time() + $daysFromNow * 24 * 60 * 60;
+							$cancelDate = date('m/d/Y', $nnaDate);
+						}
+					}
+
+
 					if (isset($_REQUEST['selectedItem'])) {
-						$return = $patron->placeItemHold($shortId, $_REQUEST['selectedItem'], $campus);
+						$return = $patron->placeItemHold($shortId, $_REQUEST['selectedItem'], $campus, $cancelDate);
 					} else {
 						if (isset($_REQUEST['volume'])){
-							$return = $patron->placeVolumeHold($shortId, $_REQUEST['volume'], $campus);
+							$return = $patron->placeVolumeHold($shortId, $_REQUEST['volume'], $campus, $cancelDate);
 						}else{
-
-							if (!empty($_REQUEST['canceldate'])){
-								$cancelDate = $_REQUEST['canceldate'];
-							}else{
-								if ($homeLibrary->defaultNotNeededAfterDays == 0){
-									//Default to a date 6 months (half a year) in the future.
-									$sixMonthsFromNow = time() + 182.5 * 24 * 60 * 60;
-									$cancelDate = date('m/d/Y', $sixMonthsFromNow);
-								}else{
-									//Default to a date 6 months (half a year) in the future.
-									$nnaDate = time() + $homeLibrary->defaultNotNeededAfterDays * 24 * 60 * 60;
-									$cancelDate = date('m/d/Y', $nnaDate);
-								}
-							}
 
 							$return = $patron->placeHold($shortId, $campus, $cancelDate);
 							// If the hold requires an item-level hold, but there is only one item to choose from, just complete the hold with that one item
 							if (!empty($return['items']) && count($return['items']) == 1) {
-								$return = $patron->placeItemHold($shortId, $return['items'][0]['itemNumber'], $campus);
+								$return = $patron->placeItemHold($shortId, $return['items'][0]['itemNumber'], $campus, $cancelDate);
 							}
 						}
 					}
 
 					if (!empty($return['items'])) { // only go to item-level hold prompt if there are holdable items to choose from
 						$interface->assign('campus', $campus);
+						$interface->assign('canceldate', $cancelDate);
 						$items = $return['items'];
 						$interface->assign('items', $items);
 						$interface->assign('message', $return['message']);

@@ -1268,7 +1268,7 @@ class User extends DB_DataObject
 	 *                              If an error occurs, return a PEAR_Error
 	 * @access  public
 	 */
-	function placeItemHold($recordId, $itemId, $pickupBranch) {
+	function placeItemHold($recordId, $itemId, $pickupBranch, $cancelDate = null) {
 		$result = $this->getCatalogDriver()->placeItemHold($this, $recordId, $itemId, $pickupBranch);
 		$this->updateAltLocationForHold($pickupBranch);
 		if ($result['success']){
