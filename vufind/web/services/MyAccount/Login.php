@@ -118,6 +118,13 @@ class MyAccount_Login extends Action
 			$catalog = CatalogFactory::getCatalogConnectionInstance();
 			$useEmailResetPin = $catalog->checkFunction('emailResetPin');
 			$interface->assign('useEmailResetPin', $useEmailResetPin);
+		} elseif ($configArray['Catalog']['ils'] == 'Sierra') {
+			$catalog = CatalogFactory::getCatalogConnectionInstance();
+			if (!empty($catalog->accountProfile->loginConfiguration) && $catalog->accountProfile->loginConfiguration == 'barcode_pin') {
+				$interface->assign('showForgotPinLink', true);
+				$useEmailResetPin = $catalog->checkFunction('emailResetPin');
+				$interface->assign('useEmailResetPin', $useEmailResetPin);
+			}
 		}
 
 		$interface->assign('isLoginPage', true);
