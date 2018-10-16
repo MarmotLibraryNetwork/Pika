@@ -870,21 +870,22 @@ class MillenniumHolds{
 
 	private function setCancelByDatePost($patron, $cancelDate){
 		$postData = array();
-		/** @var Library $librarySingleton */
-		global $librarySingleton;
-		$patronHomeBranch = $librarySingleton->getPatronHomeLibrary($patron);
-		if ($patronHomeBranch->defaultNotNeededAfterDays != -1) {
-			if (empty($cancelDate)) {
-				$daysFromNow = $patronHomeBranch->defaultNotNeededAfterDays == 0 ? 182.5 : $patronHomeBranch->defaultNotNeededAfterDays;
-				//Default to a date 6 months (half a year) in the future.
-				$nnaDate    = time() + $daysFromNow * 24 * 60 * 60;
-				$cancelDate = date('m/d/Y', $nnaDate);
-			}
+		// This functionality is moved to the Record AJAX processor
+//		/** @var Library $librarySingleton */
+//		global $librarySingleton;
+//		$patronHomeBranch = $librarySingleton->getPatronHomeLibrary($patron);
+//		if ($patronHomeBranch->defaultNotNeededAfterDays != -1) {
+//			if (empty($cancelDate)) {
+//				$daysFromNow = $patronHomeBranch->defaultNotNeededAfterDays == 0 ? 182.5 : $patronHomeBranch->defaultNotNeededAfterDays;
+//				//Default to a date 6 months (half a year) in the future.
+//				$nnaDate    = time() + $daysFromNow * 24 * 60 * 60;
+//				$cancelDate = date('m/d/Y', $nnaDate);
+//			}
 			list($Month, $Day, $Year) = explode('/', $cancelDate);
 			$postData['needby_Month'] = $Month;
 			$postData['needby_Day']   = $Day;
 			$postData['needby_Year']  = $Year;
-		}
+//		}
 		return $postData;
 	}
 
