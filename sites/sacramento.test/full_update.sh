@@ -92,7 +92,8 @@ cd /usr/local/vufind-plus/vufind/cron;./GetHooplaFromMarmot.sh >> ${OUTPUT_FILE}
 /usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} sacramento/bookflix/spl bookflix/spl >> ${OUTPUT_FILE}
 
 #Gale
-/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} sacramento/gale/spl gale/spl >> ${OUTPUT_FILE}
+/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} sacramento/gale_ebook/spl gale_ebook/spl >> ${OUTPUT_FILE}
+/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} sacramento/gale_econtent/spl gale_econtent/spl >> ${OUTPUT_FILE}
 /usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} sacramento/gale/folsom gale/folsom >> ${OUTPUT_FILE}
 
 #Ebsco
