@@ -363,12 +363,19 @@ class Millennium extends ScreenScrapingDriver
 			if (isset($patronDump['ADDRESS'])){
 				$fullAddress = $patronDump['ADDRESS'];
 				$addressParts = explode('$',$fullAddress);
-				$user->address1 = $addressParts[0];
-				$user->city     = isset($addressParts[1]) ? $addressParts[1] : '';
-				$user->state    = isset($addressParts[2]) ? $addressParts[2] : '';
-				$user->zip      = isset($addressParts[3]) ? $addressParts[3] : '';
-
-				//TODO: Special handling for juvenile Sacramento Patrons with an initial C/O line
+				if (count($addressParts) == 5) {
+					// Special handling for juvenile Sacramento Patrons with an initial C/O line
+					// $addressParts[0] will have the C/O line
+					$user->address1 = $addressParts[1];
+					$user->city     = isset($addressParts[2]) ? $addressParts[2] : '';
+					$user->state    = isset($addressParts[3]) ? $addressParts[3] : '';
+					$user->zip      = isset($addressParts[4]) ? $addressParts[4] : '';
+				} else {
+					$user->address1 = $addressParts[0];
+					$user->city     = isset($addressParts[1]) ? $addressParts[1] : '';
+					$user->state    = isset($addressParts[2]) ? $addressParts[2] : '';
+					$user->zip      = isset($addressParts[3]) ? $addressParts[3] : '';
+				}
 
 				if (preg_match('/(.*?),\\s+(.*)\\s+(\\d*(?:-\\d*)?)/', $user->city, $matches)) {
 					$user->city  = $matches[1];
