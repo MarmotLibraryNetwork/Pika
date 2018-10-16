@@ -4,6 +4,7 @@
 		<input type="hidden" name="id" id="id" value="{$id}">
 		<input type="hidden" name="patronId" id="patronId" value="{$patronId}">
 		<input type="hidden" name="campus" id="campus" value="{$campus}">
+		<input type="hidden" name="canceldate" id="canceldate" value="{$canceldate}">
 		<input type="hidden" name="module" id="module" value="{$activeRecordProfileModule}">
 		{if $autologout}{* If user originally chose autologout carry that choice back to server from this form *}
 			<input type="hidden" name="autologout" id="autologout" checked> {* checked to preserve checkbox behavior in hold-popup.tpl *}

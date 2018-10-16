@@ -735,26 +735,30 @@ class MillenniumHolds{
 
 			//Make sure to connect via the driver so cookies will be correct
 			$this->driver->_curl_connect();
-
 			$loginResult = $this->driver->_curl_login($patron);
 
 			if ($loginResult) {
 				$curl_url = $this->driver->getVendorOpacUrl() . "/search/.$shortID/.$shortID/1,1,1,B/request~$shortID";
 
-				$post_data             = $this->setCancelByDatePost($patron, $cancelDate);
-				$post_data['x']        = "48";
-				$post_data['y']        = "15";
-				$post_data['submit.x'] = "35";
-				$post_data['submit.y'] = "21";
-				$post_data['submit']   = "submit";
-				$post_data['locx00']   = str_pad($pickupBranch, 5); // padded with spaces, which will get url-encoded into plus signs by httpd_build_query() in the _curlPostPage() method.
-				if (!empty($itemId) && $itemId != -1){
-					$post_data['radio']  = $itemId;
+				if (!empty($cancelDate)) {
+					list($Month, $Day, $Year) = explode('/', $cancelDate);
+					$postData['needby_Month'] = $Month;
+					$postData['needby_Day']   = $Day;
+					$postData['needby_Year']  = $Year;
 				}
 
-				$sResult = $this->driver->_curlPostPage($curl_url, $post_data);
-				$sResult = preg_replace("/<!--([^(-->)]*)-->/","",$sResult);
+				$postData['x']        = "48";
+				$postData['y']        = "15";
+				$postData['submit.x'] = "35";
+				$postData['submit.y'] = "21";
+				$postData['submit']   = "submit";
+				$postData['locx00']   = str_pad($pickupBranch, 5); // padded with spaces, which will get url-encoded into plus signs by httpd_build_query() in the _curlPostPage() method.
+				if (!empty($itemId) && $itemId != -1){
+					$postData['radio']  = $itemId;
+				}
 
+				$sResult = $this->driver->_curlPostPage($curl_url, $postData);
+				$sResult = preg_replace("/<!--([^(-->)]*)-->/","",$sResult);
 				$logger->log("Placing hold $recordId : $title", PEAR_LOG_INFO);
 
 
@@ -815,7 +819,7 @@ class MillenniumHolds{
 		// Retrieve Full Marc Record
 		require_once ROOT_DIR . '/RecordDrivers/Factory.php';
 		$record = RecordDriverFactory::initRecordDriverById($this->driver->accountProfile->recordSource . ':' . $bib1);
-		if (!$record) {
+		if (!$record->isValid()) {
 			$logger->log('Place Hold: Failed to get Marc Record', PEAR_LOG_INFO);
 			$title = null;
 		}else{
@@ -824,28 +828,31 @@ class MillenniumHolds{
 
 			//Make sure to connect via the driver so cookies will be correct
 			$this->driver->_curl_connect();
-
 			$loginResult = $this->driver->_curl_login($patron);
 			if ($loginResult) {
 				$volumeId = substr(str_replace('.j', 'j', $volumeId), 0, -1);
 				$curl_url = $this->driver->getVendorOpacUrl() . "/search/.$shortId/.$shortId/1,1,1,B/request~$shortId&jrecnum=$volumeId";
 
-				$post_data = $this->setCancelByDatePost($patron, $cancelDate);
-				$post_data['x']        = "48";
-				$post_data['y']        = "15";
-				$post_data['submit.x'] = "35";
-				$post_data['submit.y'] = "21";
-				$post_data['submit']   = "submit";
-				$post_data['locx00']   = str_pad($pickupBranch, 5); // padded with spaces, which will get url-encoded into plus signs by httpd_build_query() in the _curlPostPage() method.
-				if (!empty($itemId) && $itemId != -1) {
-					$post_data['radio'] = $itemId;
+				if (!empty($cancelDate)) {
+					list($Month, $Day, $Year) = explode('/', $cancelDate);
+					$postData['needby_Month'] = $Month;
+					$postData['needby_Day']   = $Day;
+					$postData['needby_Year']  = $Year;
 				}
 
-				$sResult = $this->driver->_curlPostPage($curl_url, $post_data);
+				$postData['x']        = "48";
+				$postData['y']        = "15";
+				$postData['submit.x'] = "35";
+				$postData['submit.y'] = "21";
+				$postData['submit']   = "submit";
+				$postData['locx00']   = str_pad($pickupBranch, 5); // padded with spaces, which will get url-encoded into plus signs by httpd_build_query() in the _curlPostPage() method.
+				if (!empty($itemId) && $itemId != -1) {
+					$postData['radio'] = $itemId;
+				}
 
-				$logger->log("Placing hold $recordId : $title", PEAR_LOG_INFO);
-
+				$sResult = $this->driver->_curlPostPage($curl_url, $postData);
 				$sResult = preg_replace("/<!--([^(-->)]*)-->/", "", $sResult);
+				$logger->log("Placing hold $recordId : $title", PEAR_LOG_INFO);
 
 				//Parse the response to get the status message
 				$holdResult          = $this->_getHoldResult($sResult);
@@ -866,27 +873,6 @@ class MillenniumHolds{
 				}
 			}
 			return $holdResult;
-	}
-
-	private function setCancelByDatePost($patron, $cancelDate){
-		$postData = array();
-		// This functionality is moved to the Record AJAX processor
-//		/** @var Library $librarySingleton */
-//		global $librarySingleton;
-//		$patronHomeBranch = $librarySingleton->getPatronHomeLibrary($patron);
-//		if ($patronHomeBranch->defaultNotNeededAfterDays != -1) {
-//			if (empty($cancelDate)) {
-//				$daysFromNow = $patronHomeBranch->defaultNotNeededAfterDays == 0 ? 182.5 : $patronHomeBranch->defaultNotNeededAfterDays;
-//				//Default to a date 6 months (half a year) in the future.
-//				$nnaDate    = time() + $daysFromNow * 24 * 60 * 60;
-//				$cancelDate = date('m/d/Y', $nnaDate);
-//			}
-			list($Month, $Day, $Year) = explode('/', $cancelDate);
-			$postData['needby_Month'] = $Month;
-			$postData['needby_Day']   = $Day;
-			$postData['needby_Year']  = $Year;
-//		}
-		return $postData;
 	}
 
 	private function getHoldByXNum($holds, $tmpXnum) {
