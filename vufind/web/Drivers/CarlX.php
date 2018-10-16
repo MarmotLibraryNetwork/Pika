@@ -288,7 +288,7 @@ class CarlX extends SIP2Driver{
 
 				if (preg_match("/^66/", $msg_result)) {
 					$result = $mysip->parseRenewAllResponse($msg_result);
-					$logger->log("Renew all response\r\n" . print_r($msg_result, true), PEAR_LOG_ERR);
+					$logger->log("Renew all response\r\n" . print_r($msg_result, true), PEAR_LOG_DEBUG);
 
 					$renew_result['success'] = ($result['fixed']['Ok'] == 1);
 					$renew_result['Renewed'] = ltrim($result['fixed']['Renewed'], '0');
@@ -536,6 +536,7 @@ class CarlX extends SIP2Driver{
 	 * @param   User $patron The User to place a hold for
 	 * @param   string $recordId The id of the bib record
 	 * @param   string $pickupBranch The branch where the user wants to pickup the item when available
+	 * @param   null|string $cancelDate The date to cancel the Hold if it isn't filled
 	 * @return  array                 An array with the following keys
 	 *                                result - true/false
 	 *                                message - the message to display (if item holds are required, this is a form to select the item).
@@ -1679,7 +1680,7 @@ class CarlX extends SIP2Driver{
 //				$title = $this->getRecordTitle($recordId); //TODO: method isn't defined
 
 				if (preg_match("/^16/", $msg_result)) {
-					$result = $mySip->parseHoldResponse($msg_result );
+					$result = $mySip->parseHoldResponse($msg_result);
 					$success = ($result['fixed']['Ok'] == 1);
 					$message = $result['variable']['AF'][0];
 					if (!empty($result['variable']['AJ'][0])) {
