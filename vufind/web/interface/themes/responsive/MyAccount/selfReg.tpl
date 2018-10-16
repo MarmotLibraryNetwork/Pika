@@ -59,6 +59,17 @@
 {*  Guardian Name is required for users under 18 for Sacramento Public Library *}
 		{literal}
 		if ($('#guardianFirstName')){
+			jQuery.validator.addMethod("california", function(value, element) {
+				// Must be state code for California
+				return this.optional( element ) || /^CA|ca$/.test( value );
+			}, 'Please enter CA. Only California Residents may register.');
+			jQuery.validator.addMethod("californiaZIP", function(value, element) {
+				// Must be zip code for California
+				return this.optional( element ) || /^9/.test( value );
+			}, 'Please enter zip code that starts with a 9. Only California Residents may register.');
+			$('#zip').rules('add', {californiaZIP : true});
+			$('#state').rules('add', {california : true});
+
 			$('#birthDate').focusout(function(){
 				var birthDate = $(this).datepicker('getDate');
 				if (birthDate) {

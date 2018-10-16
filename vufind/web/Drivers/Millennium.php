@@ -1516,6 +1516,9 @@ class Millennium extends ScreenScrapingDriver
 			$physicalAddress             = trim($_REQUEST['physicalAddress']);
 			$post_data['stre_haddress2'] = $physicalAddress;
 		}
+		if (!empty($_REQUEST['countyAddress'])) {
+			$post_data['coun_aaddress'] = trim($_REQUEST['countyAddress']);
+		}
 		if ($this->combineCityStateZipInSelfRegistration()){
 			$post_data['city_aaddress']  = "$city, $state $zip";
 		}else{

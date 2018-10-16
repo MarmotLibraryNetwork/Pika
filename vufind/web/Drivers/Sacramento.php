@@ -26,9 +26,9 @@ class Sacramento extends Sierra
 		global $logger;
 		$loginResult = false;
 
-		$curlUrl = $this->getVendorOpacUrl() . '/iii/cas/login?scope=' .$this->getLibraryScope();
-		$curlUrl = str_replace('http://', 'https://', $curlUrl);
-		$post_data = $this->_getLoginFormValues($patron);
+		$curlUrl  = $this->getVendorOpacUrl() . '/iii/cas/login?scope=' .$this->getLibraryScope();
+		$curlUrl  = str_replace('http://', 'https://', $curlUrl);
+		$postData = $this->_getLoginFormValues($patron);
 
 		$logger->log('Loading page ' . $curlUrl, PEAR_LOG_INFO);
 
@@ -37,20 +37,21 @@ class Sacramento extends Sierra
 			$this->_close_curl();
 			$this->curl_connection = false;
 		}
-		$loginResponse = $this->_curlPostPage($curlUrl, $post_data);
+		$loginResponse = $this->_curlPostPage($curlUrl, $postData);
 
 		//When a library uses IPSSO, the initial login does a redirect and requires additional parameters.
 		if (preg_match('/<input type="hidden" name="lt" value="(.*?)" \/>/si', $loginResponse, $loginMatches)) {
 			$lt = $loginMatches[1]; //Get the lt value
 			//Login again
-			$post_data['lt']       = $lt;
-			$post_data['_eventId'] = 'submit';
+			$postData['lt']       = $lt;
+			$postData['_eventId'] = 'submit';
 
-			//Don't issue a post, just call the same page (with redirects as needed)
-			$post_string = http_build_query($post_data);
-			curl_setopt($this->curl_connection, CURLOPT_POSTFIELDS, $post_string);
-
-			$loginResponse = curl_exec($this->curl_connection);
+//			//Don't issue a post, just call the same page (with redirects as needed)
+//			$post_string = http_build_query($postData);
+//			curl_setopt($this->curl_connection, CURLOPT_POSTFIELDS, $post_string);
+//
+//			$loginResponse = curl_exec($this->curl_connection);
+			$loginResponse = $this->_curlPostPage($curlUrl, $postData);
 		}
 
 		if ($loginResponse) {
@@ -95,14 +96,14 @@ class Sacramento extends Sierra
 		return true;
 	}
 
-	public function updatePin($user, $oldPin, $newPin, $confirmNewPin){
+	public function updatePin($patron, $oldPin, $newPin, $confirmNewPin){
 		$scope = $this->getDefaultScope();
 
 		//First we have to login to classic
-		$this->_curl_login($user);
+		$this->_curl_login($patron);
 
 		//Now we can get the page
-		$curlUrl = $this->getVendorOpacUrl() . "/patroninfo~S{$scope}/" . $user->username ."/newpin";
+		$curlUrl = $this->getVendorOpacUrl() . "/patroninfo~S{$scope}/" . $patron->username ."/newpin";
 
 		$post = array(
 			'pin'        => $oldPin,
@@ -114,8 +115,8 @@ class Sacramento extends Sierra
 
 		if ($curlResponse) {
 			if (stripos($curlResponse, 'Your PIN has been modified.')) {
-				$user->cat_password = $newPin;
-				$user->update();
+				$patron->cat_password = $newPin;
+				$patron->update();
 				return "Your pin number was updated successfully.";
 			} else if (preg_match('/class="errormessage">(.+?)<\/div>/is', $curlResponse, $matches)){
 				return trim($matches[1]);
@@ -159,10 +160,11 @@ class Sacramento extends Sierra
 	function isMiddleNameASeparateFieldInSelfRegistration(){
 		return true;
 	}
+	function combineCityStateZipInSelfRegistration(){
+		return false;
+	}
 
 	function selfRegister(){
-//		TODO: process address field when registrant is less than 18
-		//TODO: zipcod check
 		$address              = trim($_REQUEST['address']);
 		$originalAddressInput = $address; // Save for feeding back data input to users (ie undo our special manipulations here)
 		$apartmentNumber      = trim($_REQUEST['apartmentNumber']);
@@ -173,34 +175,29 @@ class Sacramento extends Sierra
 		$guardianFirstName = trim($_REQUEST['guardianFirstName']);
 		$guardianLastName  = trim($_REQUEST['guardianLastName']);
 
-		// reset global variables to be processed by parent method
+		// Reset global variables to be processed by parent method
 		if (!empty($guardianFirstName) || !empty($guardianLastName)) {
-			$_REQUEST['address'] = 'C/O ' . $guardianFirstName . ($guardianFirstName ? ' ' : '' ) . $guardianLastName;
-			$_REQUEST['physicalAddress'] = $address;
+			// Required for registrants that are under 18 years old
+			$_REQUEST['address']       = 'C/O ' . $guardianFirstName . ($guardianFirstName ? ' ' : '' ) . $guardianLastName;
+			$_REQUEST['countyAddress'] = $address;
 		} else {
 			$_REQUEST['address'] = $address;
-
 		}
-		//TODO attaches to coun_aaddress
-// Below is how the original javascript transforms the address
-//		Adult :
-//		stre_aaddress: $physicalAddress
-//city_aaddress: "$city, $state $zip"
-//
-//not populated: coun_aaddress
-//
-//CHild :
-//
-//stre_aaddress: C/O line
-//city_aaddress: $physicalAddress
-//coun_aaddress:  "$city, $state $zip"
+
 		//TODO: original form sets a TemplateName value (with a default of web3spl).  Need to verify that this is needed from the pika form
 
 		$selfRegisterResults = parent::selfRegister();
+
 		$_REQUEST['address'] = $originalAddressInput;  // Set the global variable back so the user sees what they inputted
+		unset($_REQUEST['countyAddress']);
+
 		if ($selfRegisterResults['success'] && !empty($selfRegisterResults['barcode'])) {
-			$this->requestPinReset($selfRegisterResults['barcode']);
+//			$this->requestPinReset($selfRegisterResults['barcode']);
+			$patronDump = $this->_getPatronDump();
+			$selfRegUser = new User();
+			$this->updatePin($selfRegUser, null, 1234, 1234);
 		}
+
 		return $selfRegisterResults;
 	}
 
