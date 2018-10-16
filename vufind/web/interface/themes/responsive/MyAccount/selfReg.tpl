@@ -14,6 +14,11 @@
 			<div class="alert alert-info">
 				Your library card number is <strong>{$selfRegResult.barcode}</strong>.
 			</div>
+			{if $pitSetSuccess}
+				<div class="alert alert-info">
+					{$pitSetSuccess}
+				</div>
+			{/if}
 		{else}
 			{img_assign filename='self_reg_banner.png' var=selfRegBanner}
 			{if $selfRegBanner}
@@ -60,11 +65,11 @@
 		{literal}
 		if ($('#guardianFirstName')){
 			jQuery.validator.addMethod("california", function(value, element) {
-				// Must be state code for California
+				/*Must be state code for California*/
 				return this.optional( element ) || /^CA|ca$/.test( value );
 			}, 'Please enter CA. Only California Residents may register.');
 			jQuery.validator.addMethod("californiaZIP", function(value, element) {
-				// Must be zip code for California
+				 /*Must be zip code for California*/
 				return this.optional( element ) || /^9/.test( value );
 			}, 'Please enter zip code that starts with a 9. Only California Residents may register.');
 			$('#zip').rules('add', {californiaZIP : true});
@@ -103,15 +108,18 @@
 
 	});
 	{/literal}
-	{* Pin Validation for CarlX, Sirsi *}
+	{* Pin Validation for CarlX, Sirsi, and Sacramento *}
+	{* For Sacramento, allow any characters to be used (determined with $('#guardianFirstName') *}
 	{literal}
 	if ($('#pin').length > 0 && $('#pin1').length > 0) {
 		$("#objectEditor").validate({
 			rules: {
 				pin: {
+					digits : $('#guardianFirstName').length != 1,
 					minlength: 4
 				},
 				pin1: {
+					digits : $('#guardianFirstName').length != 1,
 					minlength: 4,
 					equalTo: "#pin"
 				}

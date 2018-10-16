@@ -368,6 +368,8 @@ class Millennium extends ScreenScrapingDriver
 				$user->state    = isset($addressParts[2]) ? $addressParts[2] : '';
 				$user->zip      = isset($addressParts[3]) ? $addressParts[3] : '';
 
+				//TODO: Special handling for juvenile Sacramento Patrons with an initial C/O line
+
 				if (preg_match('/(.*?),\\s+(.*)\\s+(\\d*(?:-\\d*)?)/', $user->city, $matches)) {
 					$user->city  = $matches[1];
 					$user->state = $matches[2];

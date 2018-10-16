@@ -45,12 +45,6 @@ class Sacramento extends Sierra
 			//Login again
 			$postData['lt']       = $lt;
 			$postData['_eventId'] = 'submit';
-
-//			//Don't issue a post, just call the same page (with redirects as needed)
-//			$post_string = http_build_query($postData);
-//			curl_setopt($this->curl_connection, CURLOPT_POSTFIELDS, $post_string);
-//
-//			$loginResponse = curl_exec($this->curl_connection);
 			$loginResponse = $this->_curlPostPage($curlUrl, $postData);
 		}
 
@@ -60,22 +54,14 @@ class Sacramento extends Sierra
 			// Check for Login Error Responses
 			$numMatches = preg_match('/<span.\s?class="errormessage">(?P<error>.+?)<\/span>/is', $loginResponse, $matches);
 			if ($numMatches > 0) {
-				$logger->log('Millennium Curl Login Attempt received an Error response : ' . $matches['error'], PEAR_LOG_DEBUG);
-//				$loginResult = false;
+				$logger->log('Sacramento Curl Login Attempt received an Error response : ' . $matches['error'], PEAR_LOG_DEBUG);
 			} else {
 				$numMatches = preg_match('/<div id="msg" class="success">/is', $loginResponse);
 				if ($numMatches > 0) {
 					$loginResult = true;
-
-					// Pause briefly after logging in as some follow-up millennium operations (done via curl) will fail if done too quickly
-//					usleep(150000);
-					//TODO: trying with out the login pause
 				}
-
-
 			}
 		}
-
 		return $loginResult;
 	}
 
@@ -97,7 +83,7 @@ class Sacramento extends Sierra
 	}
 
 	public function updatePin($patron, $oldPin, $newPin, $confirmNewPin){
-		$scope = $this->getDefaultScope();
+		$scope = $this->getDefaultScope(); //TODO: Use LibraryScope() instead
 
 		//First we have to login to classic
 		$this->_curl_login($patron);
@@ -145,7 +131,7 @@ class Sacramento extends Sierra
 		$fields[]   = array('property'=>'address',         'type'=>'text', 'label'=>'Mailing Address', 'description'=>'Mailing Address', 'maxLength' => 128, 'required' => true);
 		$fields[]   = array('property'=>'apartmentNumber', 'type'=>'text', 'label'=>'Apartment Number', 'description'=>'Apartment Number', 'maxLength' => 10, 'required' => false);
 		$fields[]   = array('property'=>'city',            'type'=>'text', 'label'=>'City', 'description'=>'City', 'maxLength' => 48, 'required' => true);
-		$fields[]   = array('property'=>'state',           'type'=>'text', 'label'=>'State', 'description'=>'State', 'maxLength' => 32, 'required' => true, 'default'=>'CA');
+		$fields[]   = array('property'=>'state',           'type'=>'text', 'label'=>'State', 'description'=>'State', 'maxLength' => 2, 'required' => true, 'default'=>'CA');
 		$fields[]   = array('property'=>'zip',             'type'=>'text', 'label'=>'Zip Code', 'description'=>'Zip Code', 'maxLength' => 32, 'required' => true);
 		$fields[]   = array('property'=>'phone',           'type'=>'text', 'label'=>'Phone (xxx-xxx-xxxx)', 'description'=>'Phone', 'maxLength' => 128, 'required' => false);
 		$fields[]   = array('property'=>'email',           'type'=>'email', 'label'=>'E-Mail', 'description'=>'E-Mail', 'maxLength' => 128, 'required' => false);
@@ -153,6 +139,9 @@ class Sacramento extends Sierra
 		$fields[]  = array('property'=>'guardianFirstName', 'type'=>'text', 'label'=>'Parent/Guardian First Name', 'description'=>'Your parent\'s or guardian\'s first name', 'maxLength' => 40, 'required' => false);
 		$fields[]  = array('property'=>'guardianLastName',  'type'=>'text', 'label'=>'Parent/Guardian Last Name', 'description'=>'Your parent\'s or guardian\'s last name', 'maxLength' => 40, 'required' => false);
 		//These two fields will be made required by javascript in the template
+
+		$fields[] = array('property'=>'pin',         'type'=>'pin',   'label'=>'Pin', 'description'=>'Your desired pin', /*'maxLength' => 4, 'size' => 4,*/ 'required' => true);
+		$fields[] = array('property'=>'pin1',        'type'=>'pin',   'label'=>'Confirm Pin', 'description'=>'Re-type your desired pin', /*'maxLength' => 4, 'size' => 4,*/ 'required' => true);
 
 		return $fields;
 	}
@@ -192,14 +181,49 @@ class Sacramento extends Sierra
 		unset($_REQUEST['countyAddress']);
 
 		if ($selfRegisterResults['success'] && !empty($selfRegisterResults['barcode'])) {
-//			$this->requestPinReset($selfRegisterResults['barcode']);
-			$patronDump = $this->_getPatronDump();
-			$selfRegUser = new User();
-			$this->updatePin($selfRegUser, null, 1234, 1234);
+			$pin = trim($_REQUEST['pin']);
+			if (!empty($pin) && $pin == trim($_REQUEST['pin1'])) {
+				$pinSetSuccess = $this->setSelfRegisteredUserPIN($selfRegisterResults['barcode'], $pin);
+				if ($pinSetSuccess) {
+					global $interface;
+					$interface->assign('pitSetSuccess', 'Your PIN has been set');
+				}
+				//TODO: give an error message about PIN nor getting set
+			}
 		}
 
 		return $selfRegisterResults;
 	}
 
+	function setSelfRegisteredUserPIN($barcode, $pin) {
+		$baseUrl = $this->getVendorOpacUrl() . '/iii/cas/login';
+		$baseUrl = str_replace('http://', 'https://', $baseUrl);
+		$curlUrl = $baseUrl . '?scope=' .$this->getLibraryScope();
 
+		$postData['code'] = $barcode;
+
+		$loginResponse = $this->_curlPostPage($curlUrl, $postData);
+
+		if (preg_match('/<input type="hidden" name="lt" value="(.*?)" \/>/si', $loginResponse, $loginMatches)) {
+			$lt = $loginMatches[1]; //Get the lt value
+		}
+		$setPinURL = $baseUrl . '?service=' . str_replace('cas/login', 'encore/j_acegi_cas_security_check', $baseUrl);
+		$postData = array(
+			'code'     => $barcode,
+			'pin'      => null,
+			'pin1'     => $pin,
+			'pin2'     => $pin,
+			'lt'       => $lt,
+			'_eventId' => 'submit'
+		);
+		$setPinResponse = $this->_curlPostPage($setPinURL, $postData);
+		$patronDump = $this->_getPatronDump($barcode, true);
+		if (empty($patronDump['PIN'])) {
+			global $logger;
+			$logger->log('Failed to set initial PIN for Self Registered user with barcode ' . $barcode, PEAR_LOG_ERR);
+			return false;
+		} else {
+			return true;
+		}
+	}
 }
