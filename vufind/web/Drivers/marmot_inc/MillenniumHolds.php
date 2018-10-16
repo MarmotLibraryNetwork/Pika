@@ -879,12 +879,11 @@ class MillenniumHolds{
 				//Default to a date 6 months (half a year) in the future.
 				$nnaDate    = time() + $daysFromNow * 24 * 60 * 60;
 				$cancelDate = date('m/d/Y', $nnaDate);
-
-				list($Month, $Day, $Year)  = explode("/", $cancelDate);
-				$postData['needby_Month'] = $Month;
-				$postData['needby_Day']   = $Day;
-				$postData['needby_Year']  = $Year;
 			}
+			list($Month, $Day, $Year) = explode('/', $cancelDate);
+			$postData['needby_Month'] = $Month;
+			$postData['needby_Day']   = $Day;
+			$postData['needby_Year']  = $Year;
 		}
 		return $postData;
 	}
