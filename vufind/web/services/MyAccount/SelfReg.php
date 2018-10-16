@@ -31,9 +31,9 @@ class SelfReg extends Action {
 	}
 
 	function launch($msg = null) {
-		global $interface,
-			$library,
-			$configArray;
+		global $interface;
+		global $library;
+		global $configArray;
 
 		/** @var  CatalogConnection $catalog */
 //		$catalog = CatalogFactory::getCatalogConnectionInstance();

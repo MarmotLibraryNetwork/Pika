@@ -73,21 +73,19 @@ abstract class ScreenScrapingDriver implements DriverInterface {
 
 			$this->curl_connection = curl_init($curlUrl);
 			$default_curl_options = array(
-				CURLOPT_CONNECTTIMEOUT => 20,
-				CURLOPT_TIMEOUT => 60,
-				CURLOPT_HTTPHEADER => $header,
-				//CURLOPT_USERAGENT => 'User-Agent: Mozilla/5.0 (Windows NT 6.2; WOW64; rv:39.0) Gecko/20100101 Firefox/39.0',
-				//CURLOPT_USERAGENT => "User-Agent:Pika " . $gitBranch,
-				CURLOPT_RETURNTRANSFER => true,
-				CURLOPT_SSL_VERIFYPEER => false, //
-				CURLOPT_SSL_VERIFYHOST => false,
-				CURLOPT_FOLLOWLOCATION => true,
+				CURLOPT_CONNECTTIMEOUT    => 20,
+				CURLOPT_TIMEOUT           => 60,
+				CURLOPT_HTTPHEADER        => $header,
+				CURLOPT_RETURNTRANSFER    => true,
+				CURLOPT_SSL_VERIFYPEER    => false,
+				CURLOPT_SSL_VERIFYHOST    => false,
+				CURLOPT_FOLLOWLOCATION    => true,
 				CURLOPT_UNRESTRICTED_AUTH => true,
-				CURLOPT_COOKIEJAR => $cookie,
-				CURLOPT_COOKIESESSION => false,
-				CURLOPT_FORBID_REUSE => false,
-				CURLOPT_HEADER => false,
-				CURLOPT_AUTOREFERER => true,
+				CURLOPT_COOKIEJAR         => $cookie,
+				CURLOPT_COOKIESESSION     => false,
+				CURLOPT_FORBID_REUSE      => false,
+				CURLOPT_HEADER            => false,
+				CURLOPT_AUTOREFERER       => true,
 				//  CURLOPT_HEADER => true, // debugging only
 				//  CURLOPT_VERBOSE => true, // debugging only
 			);
@@ -145,7 +143,7 @@ abstract class ScreenScrapingDriver implements DriverInterface {
 
 		$this->_curl_connect($url);
 		curl_setopt_array($this->curl_connection, array(
-			CURLOPT_POST => true,
+			CURLOPT_POST       => true,
 			CURLOPT_POSTFIELDS => $post_string
 		));
 		$return = curl_exec($this->curl_connection);

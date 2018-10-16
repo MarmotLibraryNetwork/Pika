@@ -129,4 +129,80 @@ class Sacramento extends Sierra
 		}
 
 	}
+
+	public function getSelfRegistrationFields()
+	{
+		global $library;
+		$fields = array();
+		if ($library && $library->promptForBirthDateInSelfReg){
+			$fields[] = array('property'=>'birthDate',       'type'=>'date', 'label'=>'Date of Birth (MM-DD-YYYY)', 'description'=>'Date of birth', 'maxLength' => 10, 'required' => true);
+		}
+		$fields[]   = array('property'=>'firstName',       'type'=>'text', 'label'=>'First Name', 'description'=>'Your first name', 'maxLength' => 40, 'required' => true);
+		$fields[]   = array('property'=>'middleName',      'type'=>'text', 'label'=>'Middle Initial', 'description'=>'Your middle initial', 'maxLength' => 40, 'required' => false);
+		// gets added to the first name separated by a space
+		$fields[]   = array('property'=>'lastName',        'type'=>'text', 'label'=>'Last Name', 'description'=>'Your last name', 'maxLength' => 40, 'required' => true);
+		$fields[]   = array('property'=>'address',         'type'=>'text', 'label'=>'Mailing Address', 'description'=>'Mailing Address', 'maxLength' => 128, 'required' => true);
+		$fields[]   = array('property'=>'apartmentNumber', 'type'=>'text', 'label'=>'Apartment Number', 'description'=>'Apartment Number', 'maxLength' => 10, 'required' => false);
+		$fields[]   = array('property'=>'city',            'type'=>'text', 'label'=>'City', 'description'=>'City', 'maxLength' => 48, 'required' => true);
+		$fields[]   = array('property'=>'state',           'type'=>'text', 'label'=>'State', 'description'=>'State', 'maxLength' => 32, 'required' => true, 'default'=>'CA');
+		$fields[]   = array('property'=>'zip',             'type'=>'text', 'label'=>'Zip Code', 'description'=>'Zip Code', 'maxLength' => 32, 'required' => true);
+		$fields[]   = array('property'=>'phone',           'type'=>'text', 'label'=>'Phone (xxx-xxx-xxxx)', 'description'=>'Phone', 'maxLength' => 128, 'required' => false);
+		$fields[]   = array('property'=>'email',           'type'=>'email', 'label'=>'E-Mail', 'description'=>'E-Mail', 'maxLength' => 128, 'required' => false);
+
+		$fields[]  = array('property'=>'guardianFirstName', 'type'=>'text', 'label'=>'Parent/Guardian First Name', 'description'=>'Your parent\'s or guardian\'s first name', 'maxLength' => 40, 'required' => false);
+		$fields[]  = array('property'=>'guardianLastName',  'type'=>'text', 'label'=>'Parent/Guardian Last Name', 'description'=>'Your parent\'s or guardian\'s last name', 'maxLength' => 40, 'required' => false);
+		//These two fields will be made required by javascript in the template
+
+		return $fields;
+	}
+
+	function isMiddleNameASeparateFieldInSelfRegistration(){
+		return true;
+	}
+
+	function selfRegister(){
+//		TODO: process address field when registrant is less than 18
+		//TODO: zipcod check
+		$address              = trim($_REQUEST['address']);
+		$originalAddressInput = $address; // Save for feeding back data input to users (ie undo our special manipulations here)
+		$apartmentNumber      = trim($_REQUEST['apartmentNumber']);
+		if (!empty($apartmentNumber)) {
+			$address .= ' APT ' . $apartmentNumber;
+		}
+
+		$guardianFirstName = trim($_REQUEST['guardianFirstName']);
+		$guardianLastName  = trim($_REQUEST['guardianLastName']);
+
+		// reset global variables to be processed by parent method
+		if (!empty($guardianFirstName) || !empty($guardianLastName)) {
+			$_REQUEST['address'] = 'C/O ' . $guardianFirstName . ($guardianFirstName ? ' ' : '' ) . $guardianLastName;
+			$_REQUEST['physicalAddress'] = $address;
+		} else {
+			$_REQUEST['address'] = $address;
+
+		}
+		//TODO attaches to coun_aaddress
+// Below is how the original javascript transforms the address
+//		Adult :
+//		stre_aaddress: $physicalAddress
+//city_aaddress: "$city, $state $zip"
+//
+//not populated: coun_aaddress
+//
+//CHild :
+//
+//stre_aaddress: C/O line
+//city_aaddress: $physicalAddress
+//coun_aaddress:  "$city, $state $zip"
+		//TODO: original form sets a TemplateName value (with a default of web3spl).  Need to verify that this is needed from the pika form
+
+		$selfRegisterResults = parent::selfRegister();
+		$_REQUEST['address'] = $originalAddressInput;  // Set the global variable back so the user sees what they inputted
+		if ($selfRegisterResults['success'] && !empty($selfRegisterResults['barcode'])) {
+			$this->requestPinReset($selfRegisterResults['barcode']);
+		}
+		return $selfRegisterResults;
+	}
+
+
 }

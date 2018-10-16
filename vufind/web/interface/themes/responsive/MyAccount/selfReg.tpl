@@ -55,6 +55,41 @@
 			,endDate: "+0d"
 			,startView: 2
 		});
+		{/literal}
+{*  Guardian Name is required for users under 18 for Sacramento Public Library *}
+		{literal}
+		if ($('#guardianFirstName')){
+			$('#birthDate').focusout(function(){
+				var birthDate = $(this).datepicker('getDate');
+				if (birthDate) {
+					var today = new Date(),
+							age = today.getFullYear() - birthDate.getFullYear();
+					if (today.getMonth() < birthDate.getMonth() ||
+							(today.getMonth() == birthDate.getMonth() && today.getDate() < birthDate.getDate())) {
+						age--;
+					}
+					var isMinor = age < 18;
+					$("#guardianFirstName").rules("add", {
+						required:isMinor
+					});
+					$("#guardianLastName").rules("add", {
+						required:isMinor
+					});
+					if (isMinor){
+						if ( $('#propertyRowguardianFirstName label span.required-input').length == 0) {
+							$('#propertyRowguardianFirstName label').append('<span class="required-input">*</span>');
+						}
+						if ( $('#propertyRowguardianLastName label span.required-input').length == 0) {
+							$('#propertyRowguardianLastName label').append('<span class="required-input">*</span>');
+						}
+					} else {
+						$('#propertyRowguardianFirstName label, #propertyRowguardianLastName label').has('span.required-input').remove()
+					}
+				}
+			});
+		}
+
+
 	});
 	{/literal}
 	{* Pin Validation for CarlX, Sirsi *}

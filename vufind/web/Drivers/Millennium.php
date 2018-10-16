@@ -114,13 +114,13 @@ class Millennium extends ScreenScrapingDriver
 		$branchScope = '';
 		//Load the holding label for the branch where the user is physically.
 		if (!is_null($searchLocation)){
-			if (isset($searchLocation->scope) && $searchLocation->scope > 0){
+			if (!empty($searchLocation->scope)){
 				$branchScope = $searchLocation->scope;
 			}
 		}
 		if (strlen($branchScope)){
 			return $branchScope;
-		}else if (isset($searchLibrary) && isset($searchLibrary->scope) && $searchLibrary->scope > 0) {
+		}else if (!empty($searchLibrary->scope)) {
 			return $searchLibrary->scope;
 		}else{
 			return $this->getDefaultScope();
@@ -214,6 +214,7 @@ class Millennium extends ScreenScrapingDriver
 			$userValid = true;
 		}else{
 			if ($this->accountProfile->loginConfiguration == 'barcode_pin'){
+				//TODO: check if a pin is set in patron dump (should always be unless the user doesn't have a pin yet
 				$userValid = $this->_doPinTest($barcode, $password);
 			}else{
 				if (isset($patronDump['PATRN_NAME'])){
@@ -1473,79 +1474,83 @@ class Millennium extends ScreenScrapingDriver
 	function combineCityStateZipInSelfRegistration(){
 		return true;
 	}
+
+	/**
+	 * Override this function in the Site specific driver when the middle name
+	 * is a seperate field to submit in the classic OPAC registration form.
+	 * @return bool
+	 */
+	function isMiddleNameASeparateFieldInSelfRegistration(){
+		return false;
+	}
+
 	function selfRegister(){
 		global $logger;
 		global $library;
+		global $configArray;
 
-		$firstName = trim($_REQUEST['firstName']);
-		$middleName = trim($_REQUEST['middleName']);
-		$lastName = trim($_REQUEST['lastName']);
-		$address = trim($_REQUEST['address']);
-		$physicalAddress = trim($_REQUEST['physicalAddress']);
-		$city = trim($_REQUEST['city']);
-		$state = trim($_REQUEST['state']);
-		$zip = trim($_REQUEST['zip']);
-		$email = trim($_REQUEST['email']);
+		$firstName       = trim($_REQUEST['firstName']);
+		$middleName      = trim($_REQUEST['middleName']);
+		$lastName        = trim($_REQUEST['lastName']);
+		$address         = trim($_REQUEST['address']);
+		$city            = trim($_REQUEST['city']);
+		$state           = trim($_REQUEST['state']);
+		$zip             = trim($_REQUEST['zip']);
+		$email           = trim($_REQUEST['email']);
 
-		$cookie = tempnam ("/tmp", "CURLCOOKIE");
-		$curl_url = $this->getVendorOpacUrl() . "/selfreg~S" . $this->getLibraryScope();
-		$logger->log('Loading page ' . $curl_url, PEAR_LOG_INFO);
-		//echo "$curl_url";
-		$curl_connection = curl_init($curl_url);
-		curl_setopt($curl_connection, CURLOPT_CONNECTTIMEOUT, 30);
-		curl_setopt($curl_connection, CURLOPT_USERAGENT,"Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)");
-		curl_setopt($curl_connection, CURLOPT_RETURNTRANSFER, true);
-		curl_setopt($curl_connection, CURLOPT_SSL_VERIFYPEER, false);
-		curl_setopt($curl_connection, CURLOPT_FOLLOWLOCATION, 1);
-		curl_setopt($curl_connection, CURLOPT_UNRESTRICTED_AUTH, true);
+		$SelfRegistrationURL = $this->getVendorOpacUrl() . "/selfreg~S" . $this->getLibraryScope();
+		$logger->log('Loading page ' . $SelfRegistrationURL, PEAR_LOG_INFO);
 
-		$post_data['nfirst'] = $middleName ? $firstName.' '.$middleName : $firstName; // add middle name onto first name;
-		$post_data['nlast'] = $lastName;
-		$post_data['stre_aaddress'] = $address;
-		if (!empty($physicalAddress)) {
+		if ($this->isMiddleNameASeparateFieldInSelfRegistration()) {
+			$post_data['nfirst']         =  $firstName;
+			if (!empty($middleName)){
+				$post_data['nmiddle']      =  $middleName;
+			}
+		} else {
+			$post_data['nfirst']         = $middleName ? $firstName.' '.$middleName : $firstName; // add middle name onto first name;
+		}
+		$post_data['nlast']            = $lastName;
+		$post_data['stre_aaddress']    = $address;
+		if (!empty($_REQUEST['physicalAddress'])) {
+			$physicalAddress             = trim($_REQUEST['physicalAddress']);
 			$post_data['stre_haddress2'] = $physicalAddress;
 		}
 		if ($this->combineCityStateZipInSelfRegistration()){
-			$post_data['city_aaddress'] = "$city, $state $zip";
+			$post_data['city_aaddress']  = "$city, $state $zip";
 		}else{
-			$post_data['city_aaddress'] = "$city";
-			$post_data['stat_aaddress'] = "$state";
-			$post_data['post_aaddress'] = "$zip";
+			$post_data['city_aaddress']  = "$city";
+			$post_data['stat_aaddress']  = "$state";
+			$post_data['post_aaddress']  = "$zip";
 		}
 
 		$post_data['zemailaddr'] = $email;
-		if (isset($_REQUEST['phone'])){
+		if (!empty($_REQUEST['phone'])){
 			$phone = trim($_REQUEST['phone']);
 			$post_data['tphone1'] = $phone;
 		}
-		if (isset($_REQUEST['birthDate'])){
-			$post_data['F051birthdate'] = $_REQUEST['birthDate'];
+		if (!empty($_REQUEST['birthDate'])){
+			$post_data['F051birthdate'] = trim($_REQUEST['birthDate']);
 		}
-		if (isset($_REQUEST['universityID'])){
-			$post_data['universityID'] = $_REQUEST['universityID'];
+		if (!empty($_REQUEST['universityID'])){
+//			$post_data['universityID'] = trim($_REQUEST['universityID']);
+			$post_data['uuniversityID'] = trim($_REQUEST['universityID']); // I think the initial double u is the correct entry. No one is currently using this so I can't confirm. Pascal. 10-11-2018
 		}
 
 		if ($library->selfRegistrationTemplate && $library->selfRegistrationTemplate != 'default'){
 			$post_data['TemplateName'] = $library->selfRegistrationTemplate;
 		}
 
-
-//		$post_items = array();
-//		foreach ($post_data as $key => $value) {
-//			$post_items[] = $key . '=' . urlencode($value);
-//		}
-//		$post_string = implode ('&', $post_items);
-		$post_string = http_build_query($post_data);
-		curl_setopt($curl_connection, CURLOPT_POSTFIELDS, $post_string);
-		$sresult = curl_exec($curl_connection);
-
-		curl_close($curl_connection);
-		unlink($cookie);
+		$selfRegistrationResult = $this->_curlPostPage($SelfRegistrationURL, $post_data);
 
 		//Parse the library card number from the response
-		if (preg_match('/Your barcode is:.*?(\\d+)<\/(b|strong)>/s', $sresult, $matches)) {
+		if (preg_match('/Your barcode is:.*?(\\d+)<\/(b|strong)>/s', $selfRegistrationResult, $matches)) {
 			$barcode = $matches[1];
 			return array('success' => true, 'barcode' => $barcode);
+		} elseif (preg_match('/msg_confirm_note.*?(\\d+).*msg_confirm_note/s', $selfRegistrationResult, $matches)) {
+			// Success for Sacramento
+				$barcode = $matches[1];
+				return array('success' => true, 'barcode' => $barcode);
+
 		} else {
 			return array('success' => false, 'barcode' => '');
 		}
@@ -1673,44 +1678,44 @@ class Millennium extends ScreenScrapingDriver
 		return $messages;
 	}
 
-	public function requestPinReset($barcode){
-		//Go to the pinreset page
-		$pinResetUrl = $this->getVendorOpacUrl() . '/pinreset';
-		$cookieJar = tempnam ("/tmp", "CURLCOOKIE");
-		$curl_connection = curl_init();
-		curl_setopt($curl_connection, CURLOPT_CONNECTTIMEOUT, 30);
-		curl_setopt($curl_connection, CURLOPT_USERAGENT,"Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)");
-		curl_setopt($curl_connection, CURLOPT_RETURNTRANSFER, true);
-		curl_setopt($curl_connection, CURLOPT_SSL_VERIFYPEER, false);
-		curl_setopt($curl_connection, CURLOPT_FOLLOWLOCATION, 1);
-		curl_setopt($curl_connection, CURLOPT_UNRESTRICTED_AUTH, true);
-		curl_setopt($curl_connection, CURLOPT_COOKIEJAR, $cookieJar );
-		curl_setopt($curl_connection, CURLOPT_COOKIESESSION, is_null($cookieJar) ? true : false);
-		curl_setopt($curl_connection, CURLOPT_HTTPGET, true);
 
-		curl_setopt($curl_connection, CURLOPT_URL, $pinResetUrl);
-		/*$pinResetPageHtml = */curl_exec($curl_connection);
+	//This function is to match other drivers
+	//TODO: refactor driver
+	public function emailResetPin($barcode) {
+		$requestPinResetResult = $this->requestPinReset($barcode);
+		if ($requestPinResetResult['error']) {
+			// Re-arrange result to match template's expected input
+			$requestPinResetResult['error'] = $requestPinResetResult['message'];
+		}
+		return $requestPinResetResult;
+	}
+
+	public function requestPinReset($barcode){
+		$pinResetUrl     = $this->getVendorOpacUrl() . '/pinreset';
+		$this->_curlGetPage($pinResetUrl); 		//Go to the pin reset page first
 
 		//Now submit the request
-		$post_data['code'] = $barcode;
+		$post_data['code']       = $barcode;
 		$post_data['pat_submit'] = 'xxx';
-		$post_string = http_build_query($post_data);
-		curl_setopt($curl_connection, CURLOPT_POST, true);
-		curl_setopt($curl_connection, CURLOPT_POSTFIELDS, $post_string);
-		$pinResetResultPageHtml = curl_exec($curl_connection);
+		$pinResetResultPageHtml = $this->_curlPostPage($pinResetUrl, $post_data);
 
 		//Parse the response
 		$result = array(
 			'success' => false,
-			'error' => true,
+			'error'   => true,
 			'message' => 'Unknown error resetting pin'
 		);
 
 		if (preg_match('/<div class="errormessage">(.*?)<\/div>/is', $pinResetResultPageHtml, $matches)){
-			$result['error'] = false;
+			$result['error']   = false;
 			$result['message'] = trim($matches[1]);
 		}elseif (preg_match('/<div class="pageContent">.*?<strong>(.*?)<\/strong>/si', $pinResetResultPageHtml, $matches)){
-			$result['error'] = false;
+			$result['error']   = false;
+			$result['success'] = true;
+			$result['message'] = trim($matches[1]);
+		}elseif (preg_match('/<div id="content">.*?<strong>(.*?)<\/strong>/si', $pinResetResultPageHtml, $matches)){
+			//Sacramento result (Possible Encore result)
+			$result['error']   = false;
 			$result['success'] = true;
 			$result['message'] = trim($matches[1]);
 		}
@@ -1859,9 +1864,9 @@ class Millennium extends ScreenScrapingDriver
 	}
 
 	protected function _doPinTest($barcode, $pin) {
-		$pin = urlencode(trim($pin));
-		$barcode = trim($barcode);
-		$pinTestUrl = $this->accountProfile->patronApiUrl . "/PATRONAPI/$barcode/$pin/pintest";
+		$pin              = urlencode(trim($pin));
+		$barcode          = trim($barcode);
+		$pinTestUrl       = $this->accountProfile->patronApiUrl . "/PATRONAPI/$barcode/$pin/pintest";
 		$pinTestResultRaw = $this->_curlGetPage($pinTestUrl);
 		//$logger->log('PATRONAPI pintest response : ' . $api_contents, PEAR_LOG_DEBUG);
 		if ($pinTestResultRaw){
