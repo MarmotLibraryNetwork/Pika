@@ -108,23 +108,18 @@ class Millennium extends ScreenScrapingDriver
 		if (isset($_REQUEST['useUnscopedHoldingsSummary'])){
 			return $this->getDefaultScope();
 		}
-		$searchLibrary = Library::getSearchLibrary();
-		$searchLocation = Location::getSearchLocation();
 
-		$branchScope = '';
 		//Load the holding label for the branch where the user is physically.
-		if (!is_null($searchLocation)){
-			if (!empty($searchLocation->scope)){
-				$branchScope = $searchLocation->scope;
-			}
+		$searchLocation = Location::getSearchLocation();
+		if (!empty($searchLocation->scope)){
+			return $searchLocation->scope;
 		}
-		if (strlen($branchScope)){
-			return $branchScope;
-		}else if (!empty($searchLibrary->scope)) {
+
+		$searchLibrary  = Library::getSearchLibrary();
+		if (!empty($searchLibrary->scope)) {
 			return $searchLibrary->scope;
-		}else{
-			return $this->getDefaultScope();
 		}
+		return $this->getDefaultScope();
 	}
 
 	public function getDefaultScope(){
