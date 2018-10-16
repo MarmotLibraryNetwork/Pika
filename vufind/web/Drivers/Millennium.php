@@ -702,11 +702,12 @@ class Millennium extends ScreenScrapingDriver
 	 *
 	 * This is responsible for both placing holds as well as placing recalls.
 	 *
-	 * @param   User    $patron       The User to place a hold for
-	 * @param   string  $recordId     The id of the bib record
-	 * @param   string  $pickupBranch The branch where the user wants to pickup the item when available
-	 * @return  mixed                 True if successful, false if unsuccessful
-	 *                                If an error occurs, return a PEAR_Error
+	 * @param   User    $patron          The User to place a hold for
+	 * @param   string  $recordId        The id of the bib record
+	 * @param   string  $pickupBranch    The branch where the user wants to pickup the item when available
+	 * @param   null|string $cancelDate  The date to cancel the hold if it isn't fulfilled
+	 * @return  mixed                    True if successful, false if unsuccessful
+	 *                                   If an error occurs, return a PEAR_Error
 	 * @access  public
 	 */
 	function placeHold($patron, $recordId, $pickupBranch, $cancelDate = null) {
@@ -719,12 +720,13 @@ class Millennium extends ScreenScrapingDriver
 	 *
 	 * This is responsible for both placing item level holds.
 	 *
-	 * @param   User    $patron     The User to place a hold for
-	 * @param   string  $recordId   The id of the bib record
-	 * @param   string  $itemId     The id of the item to hold
-	 * @param   string  $pickupBranch The branch where the user wants to pickup the item when available
-	 * @return  mixed               True if successful, false if unsuccessful
-	 *                              If an error occurs, return a PEAR_Error
+	 * @param   User    $patron          The User to place a hold for
+	 * @param   string  $recordId        The id of the bib record
+	 * @param   string  $itemId          The id of the item to hold
+	 * @param   string  $pickupBranch    The branch where the user wants to pickup the item when available
+	 * @param   null|string $cancelDate  The date to cancel the hold if it isn't fulfilled
+	 * @return  mixed                    True if successful, false if unsuccessful
+	 *                                   If an error occurs, return a PEAR_Error
 	 * @access  public
 	 */
 	function placeItemHold($patron, $recordId, $itemId, $pickupBranch, $cancelDate = null) {
