@@ -38,11 +38,11 @@ require_once ROOT_DIR . '/Drivers/ScreenScrapingDriver.php';
  */
 class Millennium extends ScreenScrapingDriver
 {
-	var $statusTranslations = null;
-	var $holdableStatiRegex = null;
-	var $availableStatiRegex = null;
-	/** @var  Solr */
-	public $db;
+//	var $statusTranslations = null;
+//	var $holdableStatiRegex = null;
+//	var $availableStatiRegex = null;
+//	/** @var  Solr */
+//	public $db;
 
 	/** @var LoanRule[] $loanRules  */
 	var $loanRules = null;
@@ -390,15 +390,13 @@ class Millennium extends ScreenScrapingDriver
 			}
 
 			$user->address2  = $user->city . ', ' . $user->state;
-			$user->workPhone = (isset($patronDump) && isset($patronDump['G/WK_PHONE'])) ? $patronDump['G/WK_PHONE'] : '';
-			if (isset($patronDump) && isset($patronDump['MOBILE_NO'])){
+			$user->workPhone = !empty($patronDump['G/WK_PHONE']) ? $patronDump['G/WK_PHONE'] : '';
+			if (!empty($patronDump['MOBILE_NO'])){
 				$user->mobileNumber = $patronDump['MOBILE_NO'];
+			}elseif (!empty($patronDump['MOBILE_PH'])){
+				$user->mobileNumber = $patronDump['MOBILE_PH'];
 			}else{
-				if (isset($patronDump) && isset($patronDump['MOBILE_PH'])){
-					$user->mobileNumber = $patronDump['MOBILE_PH'];
-				}else{
-					$user->mobileNumber = '';
-				}
+				$user->mobileNumber = '';
 			}
 
 			$user->finesVal = floatval(preg_replace('/[^\\d.]/', '', $patronDump['MONEY_OWED']));
@@ -415,7 +413,7 @@ class Millennium extends ScreenScrapingDriver
 			$numHoldsAvailable = 0;
 			$numHoldsRequested = 0;
 			$availableStatusRegex = isset($configArray['Catalog']['patronApiAvailableHoldsRegex']) ? $configArray['Catalog']['patronApiAvailableHoldsRegex'] : "/ST=(105|98|106),/";
-			if (isset($patronDump) && isset($patronDump['HOLD']) && count($patronDump['HOLD']) > 0){
+			if (!empty($patronDump['HOLD']) && count($patronDump['HOLD']) > 0){
 				foreach ($patronDump['HOLD'] as $hold){
 					if (preg_match("$availableStatusRegex", $hold)){
 						$numHoldsAvailable++;
@@ -591,11 +589,12 @@ class Millennium extends ScreenScrapingDriver
 			$post_data['lt']       = $lt;
 			$post_data['_eventId'] = 'submit';
 
-			//Don't issue a post, just call the same page (with redirects as needed)
-			$post_string = http_build_query($post_data);
-			curl_setopt($this->curl_connection, CURLOPT_POSTFIELDS, $post_string);
-
-			$loginResponse = curl_exec($this->curl_connection);
+//			//Don't issue a post, just call the same page (with redirects as needed)
+//			$post_string = http_build_query($post_data);
+//			curl_setopt($this->curl_connection, CURLOPT_POSTFIELDS, $post_string);
+//
+//			$loginResponse = curl_exec($this->curl_connection);
+			$loginResponse = $this->_curlPostPage($curlUrl, $post_data);
 		}
 
 		if ($loginResponse) {
@@ -747,10 +746,10 @@ class Millennium extends ScreenScrapingDriver
 	 *                                  If an error occurs, return a PEAR_Error
 	 * @access  public
 	 */
-	function placeVolumeHold($patron, $recordId, $volumeId, $pickupBranch) {
+	function placeVolumeHold($patron, $recordId, $volumeId, $pickupBranch, $cancelDate = null) {
 		require_once ROOT_DIR . '/Drivers/marmot_inc/MillenniumHolds.php';
 		$millenniumHolds = new MillenniumHolds($this);
-		return $millenniumHolds->placeVolumeHold($patron, $recordId, $volumeId, $pickupBranch);
+		return $millenniumHolds->placeVolumeHold($patron, $recordId, $volumeId, $pickupBranch, $cancelDate);
 	}
 
 	public function updateHold($patron, $requestId, $type){

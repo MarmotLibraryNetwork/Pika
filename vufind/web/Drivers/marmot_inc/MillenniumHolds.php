@@ -660,21 +660,21 @@ class MillenniumHolds{
 				disableErrorHandler();
 				$recordDriver = new MarcRecord($this->driver->accountProfile->recordSource . ":" . $hold['recordId']);
 				if ($recordDriver->isValid()){
-					$hold['id'] = $recordDriver->getUniqueID();
-					$hold['shortId'] = $recordDriver->getShortId();
+					$hold['id']              = $recordDriver->getUniqueID();
+					$hold['shortId']         = $recordDriver->getShortId();
 					//Load title, author, and format information about the title
-					$hold['title'] = $recordDriver->getTitle();
-					$hold['sortTitle'] = $recordDriver->getSortableTitle();
-					$hold['author'] = $recordDriver->getAuthor();
-					$hold['format'] = $recordDriver->getFormat();
-					$hold['isbn'] = $recordDriver->getCleanISBN();  //TODO these may not be used anywhere now that the links are built here, have to check
-					$hold['upc'] = $recordDriver->getCleanUPC();    //TODO these may not be used anywhere now that the links are built here, have to check
+					$hold['title']           = $recordDriver->getTitle();
+					$hold['sortTitle']       = $recordDriver->getSortableTitle();
+					$hold['author']          = $recordDriver->getAuthor();
+					$hold['format']          = $recordDriver->getFormat();
+					$hold['isbn']            = $recordDriver->getCleanISBN();  //TODO these may not be used anywhere now that the links are built here, have to check
+					$hold['upc']             = $recordDriver->getCleanUPC();    //TODO these may not be used anywhere now that the links are built here, have to check
 					$hold['format_category'] = $recordDriver->getFormatCategory();
 
 					//Load rating information
-					$hold['ratingData'] = $recordDriver->getRatingData();
-					$hold['link'] = $recordDriver->getRecordUrl();
-					$hold['coverUrl'] = $recordDriver->getBookcoverUrl('medium');
+					$hold['ratingData']      = $recordDriver->getRatingData();
+					$hold['link']            = $recordDriver->getRecordUrl();
+					$hold['coverUrl']        = $recordDriver->getBookcoverUrl('medium');
 				}
 				$holds[$section][$key] = $hold;
 
@@ -696,28 +696,27 @@ class MillenniumHolds{
 	/**
 	 * Place Item Hold
 	 *
-	 * This is responsible for both placing item level holds.
+	 * This is responsible for both placing item level and bib level holds.
 	 *
-	 * @param   User    $patron     The User to place a hold for
-	 * @param   string  $recordId   The id of the bib record
-	 * @param   string  $itemId     The id of the item to hold
-	 * @param   string  $pickupBranch The branch where the user wants to pickup the item when available
-	 * @return  mixed               True if successful, false if unsuccessful
-	 *                              If an error occurs, return a PEAR_Error
+	 * @param   User    $patron          The User to place a hold for
+	 * @param   string  $recordId        The id of the bib record
+	 * @param   string  $itemId          The id of the item to hold
+	 * @param   string  $pickupBranch    The branch where the user wants to pickup the item when available
+	 * @param   null|string $cancelDate  The date to cancel the hold if it isn't fulfilled
+	 * @return  mixed                    True if successful, false if unsuccessful
+	 *                                   If an error occurs, return a PEAR_Error
 	 * @access  public
 	 */
 	function placeItemHold($patron, $recordId, $itemId, $pickupBranch, $cancelDate) {
 		global $logger;
-//		global $configArray;
-		global $library;
 
 		$bib1 = $recordId;
 		if (substr($bib1, 0, 1) != '.'){
 			$bib1 = '.' . $bib1;
 		}
 
-		$bib = substr(str_replace('.b', 'b', $bib1), 0, -1);
-		if (strlen($bib) == 0){
+		$shortID = substr(str_replace('.b', 'b', $bib1), 0, -1);
+		if (strlen($shortID) == 0){
 			return array(
 				'success' => false,
 				'message' => 'A valid record id was not provided. Please try again.');
@@ -734,40 +733,17 @@ class MillenniumHolds{
 			$title = $record->getTitle();
 		}
 
-			if (!empty($_REQUEST['canceldate'])){
-				$date = $_REQUEST['canceldate'];
-			}else{
-				if ($library->defaultNotNeededAfterDays == 0){
-					//Default to a date 6 months (half a year) in the future.
-					$sixMonthsFromNow = time() + 182.5 * 24 * 60 * 60;
-					$date = date('m/d/Y', $sixMonthsFromNow);
-				}else{
-					//Default to a date 6 months (half a year) in the future.
-					$nnaDate = time() + $library->defaultNotNeededAfterDays * 24 * 60 * 60;
-					$date = date('m/d/Y', $nnaDate);
-				}
-			}
-
-			list($Month, $Day, $Year) = explode("/", $date);
-
 			//Make sure to connect via the driver so cookies will be correct
 			$this->driver->_curl_connect();
-
-//			curl_setopt($curl_connection, CURLOPT_POST, true);
 
 			$loginResult = $this->driver->_curl_login($patron);
 
 			if ($loginResult) {
-				$curl_url = $this->driver->getVendorOpacUrl() . "/search/.$bib/.$bib/1,1,1,B/request~$bib";
-				/** @var Library $librarySingleton */
-				global $librarySingleton;
-				$patronHomeBranch = $librarySingleton->getPatronHomeLibrary($patron);
-				if ($patronHomeBranch->defaultNotNeededAfterDays != -1){
-					$post_data['needby_Month'] = $Month;
-					$post_data['needby_Day']   = $Day;
-					$post_data['needby_Year']  = $Year;
-				}
+				$curl_url = $this->driver->getVendorOpacUrl() . "/search/.$shortID/.$shortID/1,1,1,B/request~$shortID";
 
+				$post_data             = $this->setCancelByDatePost($patron, $cancelDate);
+				$post_data['x']        = "48";
+				$post_data['y']        = "15";
 				$post_data['submit.x'] = "35";
 				$post_data['submit.y'] = "21";
 				$post_data['submit']   = "submit";
@@ -775,19 +751,12 @@ class MillenniumHolds{
 				if (!empty($itemId) && $itemId != -1){
 					$post_data['radio']  = $itemId;
 				}
-				$post_data['x']="48";
-				$post_data['y']="15";
-				//MDN 8/14 lt is apparently not required for placing a hold although it is required for login.
-				/*if ($lt != null){
-					$post_data['lt'] = $lt;
-					$post_data['_eventId'] = 'submit';
-				}*/
 
 				$sResult = $this->driver->_curlPostPage($curl_url, $post_data);
+				$sResult = preg_replace("/<!--([^(-->)]*)-->/","",$sResult);
 
 				$logger->log("Placing hold $recordId : $title", PEAR_LOG_INFO);
 
-				$sResult = preg_replace("/<!--([^(-->)]*)-->/","",$sResult);
 
 				//Parse the response to get the status message
 				$hold_result = $this->_getHoldResult($sResult);
@@ -815,30 +784,31 @@ class MillenniumHolds{
 	/**
 	 * Place Volume Hold
 	 *
-	 * This is responsible for both placing volume level holds.
+	 * This is responsible for placing volume level holds.
 	 *
-	 * @param   User    $patron       The User to place a hold for
-	 * @param   string  $recordId     The id of the bib record
-	 * @param   string  $volumeId     The id of the volume to hold
-	 * @param   string  $pickupBranch The branch where the user wants to pickup the item when available
-	 * @return  mixed                 True if successful, false if unsuccessful
-	 *                                If an error occurs, return a PEAR_Error
+	 * @param   User $patron             The User to place a hold for
+	 * @param   string $recordId         The id of the bib record
+	 * @param   string $volumeId         The id of the volume to hold
+	 * @param   string $pickupBranch     The branch where the user wants to pickup the item when available
+	 * @param   null|string $cancelDate  The date to cancel the hold if it isn't fulfilled
+	 * @return  mixed                    True if successful, false if unsuccessful
+	 *                                   If an error occurs, return a PEAR_Error
 	 * @access  public
 	 */
-	function placeVolumeHold($patron, $recordId, $volumeId, $pickupBranch) {
+	function placeVolumeHold($patron, $recordId, $volumeId, $pickupBranch, $cancelDate = null) {
 		global $logger;
-		global $configArray;
 
 		$bib1= $recordId;
 		if (substr($bib1, 0, 1) != '.'){
 			$bib1 = '.' . $bib1;
 		}
 
-		$bib = substr(str_replace('.b', 'b', $bib1), 0, -1);
-		if (strlen($bib) == 0){
+		$shortId = substr(str_replace('.b', 'b', $bib1), 0, -1);
+		if (strlen($shortId) == 0){
 			return array(
 					'success' => false,
-					'message' => 'A valid record id was not provided. Please try again.');
+					'message' => 'A valid record id was not provided. Please try again.'
+			);
 		}
 
 		//Get the title of the book.
@@ -852,77 +822,71 @@ class MillenniumHolds{
 			$title = $record->getTitle();
 		}
 
-			if (!empty($_REQUEST['canceldate'])){
-				$date = $_REQUEST['canceldate'];
-			}else{
-				global $library;
-				if ($library->defaultNotNeededAfterDays == 0){
-					//Default to a date 6 months (half a year) in the future.
-					$sixMonthsFromNow = time() + 182.5 * 24 * 60 * 60;
-					$date = date('m/d/Y', $sixMonthsFromNow);
-				}else{
-					//Default to a date 6 months (half a year) in the future.
-					$nnaDate = time() + $library->defaultNotNeededAfterDays * 24 * 60 * 60;
-					$date = date('m/d/Y', $nnaDate);
-				}
-			}
-
-			list($Month, $Day, $Year)=explode("/", $date);
-
 			//Make sure to connect via the driver so cookies will be correct
 			$this->driver->_curl_connect();
 
-//			curl_setopt($curl_connection, CURLOPT_POST, true);
-
 			$loginResult = $this->driver->_curl_login($patron);
+			if ($loginResult) {
+				$volumeId = substr(str_replace('.j', 'j', $volumeId), 0, -1);
+				$curl_url = $this->driver->getVendorOpacUrl() . "/search/.$shortId/.$shortId/1,1,1,B/request~$shortId&jrecnum=$volumeId";
 
-			$volumeId = substr(str_replace('.j', 'j', $volumeId), 0, -1);
-			$curl_url = $this->driver->getVendorOpacUrl() . "/search/.$bib/.$bib/1,1,1,B/request~$bib&jrecnum=$volumeId";
+				$post_data = $this->setCancelByDatePost($patron, $cancelDate);
+				$post_data['x']        = "48";
+				$post_data['y']        = "15";
+				$post_data['submit.x'] = "35";
+				$post_data['submit.y'] = "21";
+				$post_data['submit']   = "submit";
+				$post_data['locx00']   = str_pad($pickupBranch, 5); // padded with spaces, which will get url-encoded into plus signs by httpd_build_query() in the _curlPostPage() method.
+				if (!empty($itemId) && $itemId != -1) {
+					$post_data['radio'] = $itemId;
+				}
 
-			/** @var Library $librarySingleton */
-			global $librarySingleton;
-			$patronHomeBranch = $librarySingleton->getPatronHomeLibrary($patron);
-			if ($patronHomeBranch->defaultNotNeededAfterDays != -1){
-				$post_data['needby_Month']= $Month;
-				$post_data['needby_Day']= $Day;
-				$post_data['needby_Year']=$Year;
+				$sResult = $this->driver->_curlPostPage($curl_url, $post_data);
+
+				$logger->log("Placing hold $recordId : $title", PEAR_LOG_INFO);
+
+				$sResult = preg_replace("/<!--([^(-->)]*)-->/", "", $sResult);
+
+				//Parse the response to get the status message
+				$holdResult          = $this->_getHoldResult($sResult);
+				$holdResult['title'] = $title;
+				$holdResult['bid']   = $bib1;
+			} else {
+				$holdResult = array(
+					'success' => false,
+					'message' => 'Unable to log into circulation system. Please try again.'
+				);
 			}
-
-			$post_data['submit.x']="35";
-			$post_data['submit.y']="21";
-			$post_data['submit']="submit";
-			$post_data['locx00']= str_pad($pickupBranch, 5); // padded with spaces, which will get url-encoded into plus signs by httpd_build_query() in the _curlPostPage() method.
-			if (!empty($itemId) && $itemId != -1){
-				$post_data['radio']=$itemId;
-			}
-			$post_data['x']="48";
-			$post_data['y']="15";
-			//MDN 8/14 lt is apparently not required for placing a hold although it is required for login.
-			/*if ($lt != null){
-				$post_data['lt'] = $lt;
-				$post_data['_eventId'] = 'submit';
-			}*/
-
-			$sResult = $this->driver->_curlPostPage($curl_url, $post_data);
-
-			$logger->log("Placing hold $recordId : $title", PEAR_LOG_INFO);
-
-			$sResult = preg_replace("/<!--([^(-->)]*)-->/","",$sResult);
-
-			//Parse the response to get the status message
-			$hold_result = $this->_getHoldResult($sResult);
-			$hold_result['title']  = $title;
-			$hold_result['bid'] = $bib1;
 			global $analytics;
 			if ($analytics){
-				if ($hold_result['success'] == true){
+				if ($holdResult['success'] == true){
 					$analytics->addEvent('ILS Integration', 'Successful Hold', $title);
 				}else{
-					$analytics->addEvent('ILS Integration', 'Failed Hold', $hold_result['message'] . ' - ' . $title);
+					$analytics->addEvent('ILS Integration', 'Failed Hold', $holdResult['message'] . ' - ' . $title);
 				}
 			}
-			return $hold_result;
+			return $holdResult;
+	}
 
+	private function setCancelByDatePost($patron, $cancelDate){
+		$postData = array();
+		/** @var Library $librarySingleton */
+		global $librarySingleton;
+		$patronHomeBranch = $librarySingleton->getPatronHomeLibrary($patron);
+		if ($patronHomeBranch->defaultNotNeededAfterDays != -1) {
+			if (empty($cancelDate)) {
+				$daysFromNow = $patronHomeBranch->defaultNotNeededAfterDays == 0 ? 182.5 : $patronHomeBranch->defaultNotNeededAfterDays;
+				//Default to a date 6 months (half a year) in the future.
+				$nnaDate    = time() + $daysFromNow * 24 * 60 * 60;
+				$cancelDate = date('m/d/Y', $nnaDate);
+
+				list($Month, $Day, $Year)  = explode("/", $cancelDate);
+				$postData['needby_Month'] = $Month;
+				$postData['needby_Day']   = $Day;
+				$postData['needby_Year']  = $Year;
+			}
+		}
+		return $postData;
 	}
 
 	private function getHoldByXNum($holds, $tmpXnum) {

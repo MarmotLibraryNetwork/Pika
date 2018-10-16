@@ -537,7 +537,7 @@ class CatalogConnection
 					$result = $this->driver->doReadingHistoryAction($patron, $action, $selectedTitles);
 				}
 
-				//Delete the reading history (permanently this time sine we are opting out)
+				//Delete the reading history (permanently this time since we are opting out)
 				$readingHistoryDB = new ReadingHistoryEntry();
 				$readingHistoryDB->userId = $patron->id;
 				$readingHistoryDB->delete();
@@ -1033,9 +1033,9 @@ class CatalogConnection
 		}
 	}
 
-	public function placeVolumeHold($patron, $recordId, $volumeId, $pickupBranch) {
+	public function placeVolumeHold($patron, $recordId, $volumeId, $pickupBranch, $cancelDate = null) {
 		if ($this->checkFunction('placeVolumeHold')){
-			return $this->driver->placeVolumeHold($patron, $recordId, $volumeId, $pickupBranch);
+			return $this->driver->placeVolumeHold($patron, $recordId, $volumeId, $pickupBranch, $cancelDate);
 		}else{
 			return array(
 					'success' => false,
