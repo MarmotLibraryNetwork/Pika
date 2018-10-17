@@ -288,7 +288,7 @@
 													<br><br>
 													To sign up for SMS/Text messages, you must opt-in above and enter your Mobile (cell phone) number below.
 													<br><br>
-													<a href="{$path}/Help/Home?topic=smsTerms" data-title="SMS Notice Terms" class="modalDialogTrigger">View Terms and Conditions</a>
+													<a href="{if $smsTermsLink}{$smsTermsLink}{else}{$path}/Help/Home?topic=smsTerms{/if}" data-title="SMS Notice Terms" class="modalDialogTrigger">View Terms and Conditions</a>
 												</p>
 											{else}
 

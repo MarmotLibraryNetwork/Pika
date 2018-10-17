@@ -29,8 +29,17 @@ class MyAccount_Profile extends MyAccount
 		$user = UserAccount::getLoggedInUser();
 
 		$ils = $configArray['Catalog']['ils'];
-		$smsEnabled = $configArray['Catalog']['smsEnabled'];
-		$interface->assign('showSMSNoticesInProfile', $ils == 'Sierra' && $smsEnabled == true);
+		if ($ils == 'Sierra') {
+			// SMS Options are for the iii's ils-integration SMS service only
+			$smsEnabled = $configArray['Catalog']['smsEnabled'];
+			if ($smsEnabled) {
+				$interface->assign('showSMSNoticesInProfile', true);
+				$smsTermsLink = $configArray['Catalog']['smsTermsLink'];
+				if ($smsTermsLink) {
+					$interface->assign('smsTermsLink', $smsTermsLink);
+				}
+			}
+		}
 
 		if ($user) {
 
