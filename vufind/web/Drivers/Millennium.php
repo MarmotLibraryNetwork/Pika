@@ -85,7 +85,6 @@ class Millennium extends ScreenScrapingDriver
 		if (isset($_REQUEST['useUnscopedHoldingsSummary'])){
 			return $this->getDefaultScope();
 		}
-		$searchLibrary = Library::getSearchLibrary();
 		$searchLocation = Location::getSearchLocation();
 
 		$branchScope = '';
@@ -95,9 +94,12 @@ class Millennium extends ScreenScrapingDriver
 				$branchScope = $searchLocation->scope;
 			}
 		}
+		$searchLibrary = Library::getSearchLibrary();
 		if (strlen($branchScope)){
 			return $branchScope;
 		}else if (isset($searchLibrary) && $searchLibrary->useScope && $searchLibrary->restrictSearchByLibrary) {
+			//TODO: these condition checks are the main difference between this function and getLibraryScope. We should document the importance of this difference here.
+			// I can only guess at the importance at this time. Should evaluate it. Pascal 10-17-2018
 			return $searchLibrary->scope;
 		}else{
       return $this->getDefaultScope();
@@ -366,6 +368,10 @@ class Millennium extends ScreenScrapingDriver
 				if (count($addressParts) == 3) {
 					// Special handling for juvenile Sacramento Patrons with an initial C/O line
 					// $addressParts[0] will have the C/O line
+					//TODO: If
+					if (strpos($addressParts[0], 'C/O ') === 0) {
+						$user->careOf = $addressParts[0];
+					}
 					$user->address1 = $addressParts[1];
 					$user->city     = isset($addressParts[2]) ? $addressParts[2] : '';
 				} else {
@@ -901,7 +907,7 @@ class Millennium extends ScreenScrapingDriver
 				$extraPostInfo['user_name'] = $_REQUEST['alternate_username'];
 			}
 
-			if (isset($_REQUEST['mobileNumber'])){
+			if (!empty($_REQUEST['mobileNumber'])){
 				$extraPostInfo['mobile'] = preg_replace('/\D/', '', $_REQUEST['mobileNumber']);
 				if (strlen($_REQUEST['mobileNumber']) > 0 && $_REQUEST['smsNotices'] == 'on'){
 					$extraPostInfo['optin'] = 'on';

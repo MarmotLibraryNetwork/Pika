@@ -91,6 +91,7 @@
 												<input name="address1" id="address1" value='{$profile->address1|escape}' size="50" maxlength="75" class="form-control required">
 											{elseif $edit && $millenniumNoAddress}
 												<input name="address1" id="address1" value='{$profile->address1|escape}' type="hidden">
+												{if $profile->careOf}{$profile->careOf|escape}<br>{/if}
 												{$profile->address1|escape}
 											{else}
 												{$profile->address1|escape}
