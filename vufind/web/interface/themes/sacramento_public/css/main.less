@@ -10,7 +10,8 @@
   text-transform: uppercase;
 }
 #logoutLink > .header-button {
-  background-color: @spl-gray;
+  background-color: #fff;
+  border: 1px solid @spl-orange;
 }
 
 #header-logo {
@@ -34,6 +35,7 @@
 
 
 // Adopting Nashville styling of browse categories
+#main-content-with-sidebar>.row.breadcrumbs,
 #home-page-browse-header {
   margin-left: 0; // to give a gap of white background between the search box and the browse category carousel
 }
@@ -153,7 +155,7 @@
   }
 }
 .facetTitle, .exploreMoreTitle{
-  background: #e8e8e8;
+  background: @spl-other-gray;
 }
 
 .facetDetails {
@@ -208,4 +210,17 @@
       }
     }
   }
+}
+//TODO: I think this should go into the main styling.
+#refineSearch~#home-account-links{
+  padding-top:15px;
+}
+.sidebar-label{
+  background: @sidebar-label-background-color;
+  font-weight: bold;
+}
+
+.related-manifestation-shelf-status.availableOther{
+  color: #000;
+  font-weight: bold;
 }
