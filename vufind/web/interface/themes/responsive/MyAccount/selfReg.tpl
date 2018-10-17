@@ -19,6 +19,11 @@
 					{$pitSetSuccess}
 				</div>
 			{/if}
+			{if $pitSetFail}
+				<div class="alert alert-warning">
+					{$pitSetFail}
+				</div>
+			{/if}
 		{else}
 			{img_assign filename='self_reg_banner.png' var=selfRegBanner}
 			{if $selfRegBanner}
@@ -85,6 +90,7 @@
 						age--;
 					}
 					var isMinor = age < 18;
+					/* Have to add/remove rule to each element separately, can't combine selector */
 					$("#guardianFirstName").rules("add", {
 						required:isMinor
 					});
@@ -95,11 +101,13 @@
 						if ( $('#propertyRowguardianFirstName label span.required-input').length == 0) {
 							$('#propertyRowguardianFirstName label').append('<span class="required-input">*</span>');
 						}
+						$('#propertyRowguardianFirstName, #propertyRowguardianLastName').show();
 						if ( $('#propertyRowguardianLastName label span.required-input').length == 0) {
 							$('#propertyRowguardianLastName label').append('<span class="required-input">*</span>');
 						}
 					} else {
-						$('#propertyRowguardianFirstName label, #propertyRowguardianLastName label').has('span.required-input').remove()
+						$('#propertyRowguardianFirstName, #propertyRowguardianLastName').hide();
+						$('#propertyRowguardianFirstName label, #propertyRowguardianLastName label').children('span.required-input').remove();
 					}
 				}
 			});

@@ -363,13 +363,11 @@ class Millennium extends ScreenScrapingDriver
 			if (isset($patronDump['ADDRESS'])){
 				$fullAddress = $patronDump['ADDRESS'];
 				$addressParts = explode('$',$fullAddress);
-				if (count($addressParts) == 5) {
+				if (count($addressParts) == 3) {
 					// Special handling for juvenile Sacramento Patrons with an initial C/O line
 					// $addressParts[0] will have the C/O line
 					$user->address1 = $addressParts[1];
 					$user->city     = isset($addressParts[2]) ? $addressParts[2] : '';
-					$user->state    = isset($addressParts[3]) ? $addressParts[3] : '';
-					$user->zip      = isset($addressParts[4]) ? $addressParts[4] : '';
 				} else {
 					$user->address1 = $addressParts[0];
 					$user->city     = isset($addressParts[1]) ? $addressParts[1] : '';
@@ -1492,7 +1490,6 @@ class Millennium extends ScreenScrapingDriver
 	function selfRegister(){
 		global $logger;
 		global $library;
-		global $configArray;
 
 		$firstName       = trim($_REQUEST['firstName']);
 		$middleName      = trim($_REQUEST['middleName']);

@@ -149,11 +149,19 @@ class Sacramento extends Sierra
 	function isMiddleNameASeparateFieldInSelfRegistration(){
 		return true;
 	}
-	function combineCityStateZipInSelfRegistration(){
-		return false;
-	}
+//	function combineCityStateZipInSelfRegistration(){
+//		return false;
+//	}
 
 	function selfRegister(){
+		//Capitalize All Input, expect pin passwords
+		foreach ($this->getSelfRegistrationFields() as $formField) {
+			$formFieldName = $formField['property'];
+			if ($formField != 'pin' && $formField != 'pin1') {
+				$_REQUEST[$formFieldName] = strtoupper($_REQUEST[$formFieldName]);
+			}
+		}
+
 		$address              = trim($_REQUEST['address']);
 		$originalAddressInput = $address; // Save for feeding back data input to users (ie undo our special manipulations here)
 		$apartmentNumber      = trim($_REQUEST['apartmentNumber']);
@@ -173,8 +181,6 @@ class Sacramento extends Sierra
 			$_REQUEST['address'] = $address;
 		}
 
-		//TODO: original form sets a TemplateName value (with a default of web3spl).  Need to verify that this is needed from the pika form
-
 		$selfRegisterResults = parent::selfRegister();
 
 		$_REQUEST['address'] = $originalAddressInput;  // Set the global variable back so the user sees what they inputted
@@ -184,11 +190,12 @@ class Sacramento extends Sierra
 			$pin = trim($_REQUEST['pin']);
 			if (!empty($pin) && $pin == trim($_REQUEST['pin1'])) {
 				$pinSetSuccess = $this->setSelfRegisteredUserPIN($selfRegisterResults['barcode'], $pin);
+				global $interface;
 				if ($pinSetSuccess) {
-					global $interface;
 					$interface->assign('pitSetSuccess', 'Your PIN has been set');
+				} else {
+					$interface->assign('pitSetFail', 'Your PIN was not set');
 				}
-				//TODO: give an error message about PIN nor getting set
 			}
 		}
 
