@@ -10,7 +10,26 @@
 		{$instructions}
 	</div>
 {/if}
-<div class='adminTableRegion'>
+{* Display Standard buttons at top of table as well as below *}
+{if $canAddNew}
+	<form action="" method="get" id="addNewFormTop">
+		<div>
+			<input type="hidden" name="objectAction" value="addNew">
+			<button type="submit" value="addNew" class="btn btn-primary">Add New {$objectType}</button>
+		</div>
+	</form>
+{/if}
+
+{foreach from=$customListActions item=customAction}
+	<form action="" method="get">
+		<div>
+			<input type="hidden" name="objectAction" value='{$customAction.action}'>
+			<button type="submit" value='{$customAction.action}' class="btn btn-small btn-default">{$customAction.label}</button>
+		</div>
+	</form>
+{/foreach}
+
+<div class="adminTableRegion">
 	<table class="adminTable table table-striped table-condensed smallText" id="adminTable">
 		<thead>
 			<tr>
@@ -95,10 +114,10 @@
 	</table>
 </div>
 {if $canAddNew}
-	<form action="" method="get" id='addNewForm'>
+	<form action="" method="get" id="addNewFormBottom">
 		<div>
-			<input type='hidden' name='objectAction' value='addNew' />
-			<button type='submit' value='addNew' class="btn btn-primary">Add New {$objectType}</button>
+			<input type="hidden" name="objectAction" value="addNew">
+			<button type="submit" value="addNew" class="btn btn-primary">Add New {$objectType}</button>
 		</div>
 	</form>
 {/if}
@@ -106,8 +125,8 @@
 {foreach from=$customListActions item=customAction}
 	<form action="" method="get">
 		<div>
-			<input type='hidden' name='objectAction' value='{$customAction.action}' />
-			<button type='submit' value='{$customAction.action}' class="btn btn-small btn-default">{$customAction.label}</button>
+			<input type="hidden" name="objectAction" value='{$customAction.action}'>
+			<button type="submit" value='{$customAction.action}' class="btn btn-small btn-default">{$customAction.label}</button>
 		</div>
 	</form>
 {/foreach}
