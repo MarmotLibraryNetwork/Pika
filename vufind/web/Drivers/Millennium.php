@@ -147,12 +147,12 @@ class Millennium extends ScreenScrapingDriver
 		$id_ = substr(str_replace('.b', '', $id), 0, -1);
 
 		$req =  $host . "/search~S{$scope}/.b" . $id_ . "/.b" . $id_ . "/1,1,1,B/holdings~" . $id_;
-		$millenniumCache->holdingsInfo = file_get_contents($req);
+		$millenniumCache->holdingsInfo = $this->_curlGetPage($req);
 		//$logger->log("Loaded holdings from url $req", PEAR_LOG_DEBUG);
 		$timer->logTime('got holdings from millennium');
 
 		$req =  $host . "/search~S{$scope}/.b" . $id_ . "/.b" . $id_ . "/1,1,1,B/frameset~" . $id_;
-		$millenniumCache->framesetInfo = file_get_contents($req);
+		$millenniumCache->framesetInfo = $this->_curlGetPage($req);
 		$timer->logTime('got frameset info from millennium');
 
 		$millenniumCache->cacheDate = time();
@@ -514,7 +514,7 @@ class Millennium extends ScreenScrapingDriver
 			foreach ($barcodesToTest as $i=>$barcode){
 				$patronDump = $this->_parsePatronApiPage($host, $barcode);
 
-				if (is_null($patronDump)){
+				if (empty($patronDump)){
 					return $patronDump;
 				}else if ((isset($patronDump['ERRNUM']) || count($patronDump) == 0) && $i != count($barcodesToTest) - 1){
 					//check the next barcode
@@ -1256,7 +1256,7 @@ class Millennium extends ScreenScrapingDriver
 			$iTypeSubfield = $indexingProfile->iType;
 			$locationSubfield = $indexingProfile->location;
 		}else{
-			//TODO: use indexing progile
+			//TODO: use indexing profile
 			$marcItemField = isset($configArray['Reindex']['itemTag']) ? $configArray['Reindex']['itemTag'] : '989';
 			$iTypeSubfield = isset($configArray['Reindex']['iTypeSubfield']) ? $configArray['Reindex']['iTypeSubfield'] : 'j';
 			$locationSubfield = isset($configArray['Reindex']['locationSubfield']) ? $configArray['Reindex']['locationSubfield'] : 'j';
@@ -1360,21 +1360,17 @@ class Millennium extends ScreenScrapingDriver
 
 	function getCheckInGrid($id, $checkInGridId){
 		//Issue summaries are loaded from the main record page.
-		global $configArray;
+//		global $configArray;
 
 		// Strip ID
 		$id_ = substr(str_replace('.b', '', $id), 0, -1);
 
 		// Load Record Page
-		if (substr($configArray['Catalog']['url'], -1) == '/') {
-			$host = substr($configArray['Catalog']['url'], 0, -1);
-		} else {
-			$host = $configArray['Catalog']['url'];
-		}
 
+		$host        = $this->getVendorOpacUrl();
 		$branchScope = $this->getMillenniumScope();
-		$req =  $host . "/search~S{$branchScope}/.b" . $id_ . "/.b" . $id_ . "/1,1,1,B/$checkInGridId&FF=1,0,";
-		$result = file_get_contents($req);
+		$url         =  $host . "/search~S{$branchScope}/.b" . $id_ . "/.b" . $id_ . "/1,1,1,B/$checkInGridId&FF=1,0,";
+		$result      = $this->_curlGetPage($url);
 
 		//Extract the actual table
 		$checkInData = array();
@@ -1384,17 +1380,17 @@ class Millennium extends ScreenScrapingDriver
 			//Extract each item from the grid.
 			preg_match_all('/.*?<td valign="top" class="(.*?)">(.*?)<\/td>/s', $checkInTable, $checkInCellMatch, PREG_SET_ORDER);
 			for ($matchi = 0; $matchi < count($checkInCellMatch); $matchi++) {
-				$checkInCell = array();
-				$checkInCell['class'] = $checkInCellMatch[$matchi][1];
 				$cellData = trim($checkInCellMatch[$matchi][2]);
+				$checkInCell                 = array();
+				$checkInCell['class']        = $checkInCellMatch[$matchi][1];
 				//Load issue date, status, date received, issue number, copies received
 				if (preg_match('/(.*?)<br\\s*\/?>.*?<span class="(?:.*?)">(.*?)<\/span>.*?on (\\d{1,2}-\\d{1,2}-\\d{1,2})<br\\s*\/?>(.*?)(?:<!-- copies --> \\((\\d+) copy\\))?<br\\s*\/?>/s', $cellData, $matches)) {
-					$checkInCell['issueDate'] = trim($matches[1]);
-					$checkInCell['status'] = trim($matches[2]);
-					$checkInCell['statusDate'] = trim($matches[3]);
+					$checkInCell['issueDate']   = trim($matches[1]);
+					$checkInCell['status']      = trim($matches[2]);
+					$checkInCell['statusDate']  = trim($matches[3]);
 					$checkInCell['issueNumber'] = trim($matches[4]);
 					if (isset($matches[5])){
-						$checkInCell['copies'] = trim($matches[5]);
+						$checkInCell['copies']    = trim($matches[5]);
 					}
 				}
 				$checkInData[] = $checkInCell;

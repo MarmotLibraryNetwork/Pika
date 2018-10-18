@@ -186,11 +186,10 @@ abstract class ScreenScrapingDriver implements DriverInterface {
 	}
 
 	public function getVendorOpacUrl(){
-		global $configArray;
-
 		if ($this->accountProfile && $this->accountProfile->vendorOpacUrl ){
 			$host = $this->accountProfile->vendorOpacUrl;
 		}else{
+			global $configArray;
 			$host = $configArray['Catalog']['url'];
 		}
 

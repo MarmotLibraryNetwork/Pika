@@ -9781,11 +9781,21 @@ a.browse-thumbnail-sorted.active {
   color: #3c763d;
 }
 .checkInCell {
-  border: 1px solid #3e63a6;
-  float: left;
-  min-height: 8em;
+  border: 1px solid #222;
+  min-height: 9em;
   padding: 4px;
-  width: 150px;
+  text-align: center;
+}
+.checkInCell .issueInfo {
+  font-weight: bolder;
+  font-style: oblique;
+  padding-bottom: 15px;
+}
+.checkInCell .status {
+  padding-bottom: 15px;
+}
+.checkInCell .copies {
+  color: #333;
 }
 .citation th {
   vertical-align: top;

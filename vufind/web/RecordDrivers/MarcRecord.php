@@ -1585,6 +1585,13 @@ class MarcRecord extends IndexRecord
 		return $this->getGroupedWorkDriver()->getFountasPinnellLevel();
 	}
 
+	private $periodicalFormats = array(
+		'Journal',
+		'Newspaper',
+		'Print Periodical',
+		'Periodical',
+		'Magazine',
+	);
 	public function getMoreDetailsOptions()
 	{
 		global $interface;
@@ -1605,7 +1612,7 @@ class MarcRecord extends IndexRecord
 		//If this is a periodical we may have additional information
 		$isPeriodical = false;
 		foreach ($this->getFormats() as $format) {
-			if ($format == 'Journal' || $format == 'Newspaper' || $format == 'Print Periodical' || $format == 'Magazine') {
+			if (in_array($format, $this->periodicalFormats)) {
 				$isPeriodical = true;
 				break;
 			}
