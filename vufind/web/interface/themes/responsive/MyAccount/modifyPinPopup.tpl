@@ -1,3 +1,4 @@
+{* Deprecated. THis should be deleted and the main resetPin template should be used instead. pascal 10-18-2018
 <div>
 	<form method="post" name="modifyPinNumber" action="{$path}/MyAccount/Profile">
 		<div>
@@ -17,3 +18,4 @@
 		</div>
 	</form>
 </div>
+*}

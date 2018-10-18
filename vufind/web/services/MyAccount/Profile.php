@@ -61,29 +61,34 @@ class MyAccount_Profile extends MyAccount
 			// Get Library Settings from the home library of the current user-account being displayed
 			$patronHomeLibrary = $librarySingleton->getPatronHomeLibrary($patron);
 			if ($patronHomeLibrary == null){
-				$canUpdateContactInfo = true;
-				$canUpdateAddress = true;
-				$showWorkPhoneInProfile = false;
-				$showNoticeTypeInProfile = true;
-				$showPickupLocationInProfile = false;
-				$treatPrintNoticesAsPhoneNotices = false;
-				$allowPinReset = false;
+				$canUpdateContactInfo                 = true;
+				$canUpdateAddress                     = true;
+				$showWorkPhoneInProfile               = false;
+				$showNoticeTypeInProfile              = true;
+				$showPickupLocationInProfile          = false;
+				$treatPrintNoticesAsPhoneNotices      = false;
+				$allowPinReset                        = false;
 				$showAlternateLibraryOptionsInProfile = true;
-				$allowAccountLinking = true;
+				$allowAccountLinking                  = true;
 			}else{
-				$canUpdateContactInfo = ($patronHomeLibrary->allowProfileUpdates == 1);
-				$canUpdateAddress = ($patronHomeLibrary->allowPatronAddressUpdates == 1);
-				$showWorkPhoneInProfile = ($patronHomeLibrary->showWorkPhoneInProfile == 1);
-				$showNoticeTypeInProfile = ($patronHomeLibrary->showNoticeTypeInProfile == 1);
-				$treatPrintNoticesAsPhoneNotices = ($patronHomeLibrary->treatPrintNoticesAsPhoneNotices == 1);
-				$showPickupLocationInProfile = ($patronHomeLibrary->showPickupLocationInProfile == 1);
-				$allowPinReset = ($patronHomeLibrary->allowPinReset == 1);
+				$canUpdateContactInfo                 = ($patronHomeLibrary->allowProfileUpdates == 1);
+				$canUpdateAddress                     = ($patronHomeLibrary->allowPatronAddressUpdates == 1);
+				$showWorkPhoneInProfile               = ($patronHomeLibrary->showWorkPhoneInProfile == 1);
+				$showNoticeTypeInProfile              = ($patronHomeLibrary->showNoticeTypeInProfile == 1);
+				$treatPrintNoticesAsPhoneNotices      = ($patronHomeLibrary->treatPrintNoticesAsPhoneNotices == 1);
+				$showPickupLocationInProfile          = ($patronHomeLibrary->showPickupLocationInProfile == 1);
+				$allowPinReset                        = ($patronHomeLibrary->allowPinReset == 1);
 				$showAlternateLibraryOptionsInProfile = ($patronHomeLibrary->showAlternateLibraryOptionsInProfile == 1);
-				$allowAccountLinking = ($patronHomeLibrary->allowLinkedAccounts == 1);
+				$allowAccountLinking                  = ($patronHomeLibrary->allowLinkedAccounts == 1);
 				if (($user->finesVal > $patronHomeLibrary->maxFinesToAllowAccountUpdates) && ($patronHomeLibrary->maxFinesToAllowAccountUpdates > 0)){
 					$canUpdateContactInfo = false;
-					$canUpdateAddress = false;
+					$canUpdateAddress     = false;
 				}
+			}
+
+			if ($allowPinReset) {
+				$numericOnlyPINs = $configArray['Catalog']['numericOnlyPins'];
+				$interface->assign('numericOnlyPins', $numericOnlyPINs);
 			}
 
 			$interface->assign('showUsernameField', $patron->getShowUsernameField());

@@ -26,7 +26,8 @@ class MyAccount_AJAX
 			'saveSearch', 'deleteSavedSearch', // deleteSavedSearch not checked
 			'confirmCancelHold', 'cancelHold', 'cancelHolds', 'freezeHold', 'thawHold', 'getChangeHoldLocationForm', 'changeHoldLocation',
 			'getReactivationDateForm', //not checked
-			'renewItem', 'renewAll', 'renewSelectedItems', 'getPinResetForm',
+			'renewItem', 'renewAll', 'renewSelectedItems',
+//			'getPinResetForm',
 			'getAddAccountLinkForm', 'addAccountLink', 'removeAccountLink',
 			'cancelBooking', 'getCitationFormatsForm', 'getAddBrowseCategoryFromListForm'
 		  ,'getMasqueradeAsForm', 'initiateMasquerade', 'endMasquerade', 'getMenuData'
@@ -903,14 +904,15 @@ class MyAccount_AJAX
 		return MyAccount_Masquerade::endMasquerade();
 	}
 
-	function getPinUpdateForm()
-	{
-		global $interface;
-		$interface->assign('popupTitle', 'Modify PIN number');
-		$pageContent = $interface->fetch('MyResearch/modifyPinPopup.tpl');
-		$interface->assign('popupContent', $pageContent);
-		return $interface->fetch('popup-wrapper.tpl');
-	}
+// Deprecated. This should use the main restPin form if it is ever re-instated. pascal 10-18-2018
+	//	function getPinUpdateForm()
+//	{
+//		global $interface;
+//		$interface->assign('popupTitle', 'Modify PIN number');
+//		$pageContent = $interface->fetch('MyResearch/modifyPinPopup.tpl');
+//		$interface->assign('popupContent', $pageContent);
+//		return $interface->fetch('popup-wrapper.tpl');
+//	}
 
 	function getChangeHoldLocationForm()
 	{

@@ -30,6 +30,10 @@ class ResetPin extends Action{
 			$interface->assign('userID', $_REQUEST['uid']);
 		}
 
+		global $configArray;
+		$numericOnlyPINs = $configArray['Catalog']['numericOnlyPins'];
+		$interface->assign('numericOnlyPins', $numericOnlyPINs);
+
 		if (isset($_REQUEST['submit'])){
 			$this->catalog = CatalogFactory::getCatalogConnectionInstance();
 			$driver = $this->catalog->driver;

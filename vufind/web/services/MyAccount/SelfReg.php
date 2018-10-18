@@ -82,6 +82,9 @@ class SelfReg extends Action {
 			$interface->assign('captcha', $captchaCode);
 		}
 
+		$numericOnlyPINs = $configArray['Catalog']['numericOnlyPins'];
+		$interface->assign('numericOnlyPins', $numericOnlyPINs);
+
 		$fieldsForm = $interface->fetch('DataObjectUtil/objectEditForm.tpl');
 		$interface->assign('selfRegForm', $fieldsForm);
 

@@ -112,29 +112,26 @@
 				}
 			});
 		}
-
-
+		{/literal}
+		{* Pin Validation for CarlX, Sirsi, and Sacramento *}
+		{* For Sacramento, allow any characters to be used (determined with $('#guardianFirstName') *}
+		{literal}
+		if ($('#pin').length > 0 && $('#pin1').length > 0) {
+			$("#objectEditor").validate({
+				rules: {
+					pin: {
+						digits : {/literal}{if $numericOnlyPins}true{else}false{/if}{literal},
+						minlength: 4
+					},
+					pin1: {
+						digits : {/literal}{if $numericOnlyPins}true{else}false{/if}{literal},
+						minlength: 4,
+						equalTo: "#pin"
+					}
+				}
+			});
+		}
 	});
 	{/literal}
-	{* Pin Validation for CarlX, Sirsi, and Sacramento *}
-	{* For Sacramento, allow any characters to be used (determined with $('#guardianFirstName') *}
-	{literal}
-	if ($('#pin').length > 0 && $('#pin1').length > 0) {
-		$("#objectEditor").validate({
-			rules: {
-				pin: {
-					digits : $('#guardianFirstName').length != 1,
-					minlength: 4
-				},
-				pin1: {
-					digits : $('#guardianFirstName').length != 1,
-					minlength: 4,
-					equalTo: "#pin"
-				}
-			}
-		});
-	}
-	{/literal}
-
 </script>
 {/if}
