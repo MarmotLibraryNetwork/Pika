@@ -1,0 +1,187 @@
+// Core variables and mixins
+@import (reference) "../../responsive/css/variables.less";
+@import (reference) "variables.less";
+
+// Always include the base .less file
+@import "../../responsive/css/responsive_base.less";
+
+
+.header-login-button-mixin(@header-buttons-background-color);
+
+
+
+// Browse Category customizations based on AnyThink
+
+// mixin to select all the typical states of <a> like tags
+.allLinkStates(@rules) {
+  &, &:hover, &:active, &:visited {
+    @rules();
+  }
+}
+
+#browse-label {
+  background-color: #ffffff;
+  //  background: linear-gradient(to bottom, #fff, #fff 98%, @browse-label-text-color 99%);
+  border-bottom: 1px solid @browse-label-text-color;
+  margin: 25px 0 15px;
+  height: auto;
+  padding-bottom: 20px;
+  .browse-label-text{
+    font-weight: 600;
+  }
+}
+
+
+// the category text
+.browse-category {
+  padding-top: 20px; // extra padding on top to center text
+  height: 120px;
+
+  div {
+    //color: @browse-label-text-color;
+    text-shadow: none;
+    text-transform: uppercase;
+    font-size: large;
+    font-weight: 500;
+    &:focus {
+      outline: none; // hide outlining of clicked category
+    }
+  }
+  &.category0 {
+    background-color: @category1MainColor;
+    background: linear-gradient(to bottom, @category1MainColor 0%, @category1MainColor 75%, #fff 75%);
+  }
+  &.category1 {
+    background-color: @category2MainColor;
+    background: linear-gradient(to bottom, @category1MainColor 0%, @category1MainColor 75%, #fff 75%);
+  }
+  &.category2 {
+    background-color: @category3MainColor;
+    background: linear-gradient(to bottom, @category2MainColor 0%, @category2MainColor 75%, #fff 75%);
+  }
+  &.category3 {
+    background-color: @category4MainColor;
+    background: linear-gradient(to bottom, @category3MainColor 0%, @category3MainColor 75%, #fff 75%);
+  }
+  &.category4 {
+    background-color: @category5MainColor;
+    background: linear-gradient(to bottom, @category4MainColor 0%, @category4MainColor 75%, #fff 75%);
+  }
+  &.category5 {
+    background-color: @category6MainColor;
+    background: linear-gradient(to bottom, @category5MainColor 0%, @category5MainColor 75%, #fff 75%);
+  }
+  &.category6 {
+    background-color: @category7MainColor;
+    background: linear-gradient(to bottom, @category6MainColor 0%, @category6MainColor 75%, #fff 75%);
+  }
+  &.category7 {
+    background-color: @category8MainColor;
+    background: linear-gradient(to bottom, @category7MainColor 0%, @category7MainColor 75%, #fff 75%);
+  }
+  &.category8 {
+    background-color: @category9MainColor;
+    background: linear-gradient(to bottom, @category8MainColor 0%, @category8MainColor 75%, #fff 75%);
+  }
+  &.selected {
+    border: none;
+    background-color: @selectedCategoryColor;
+    background: @selectedCategoryColor;
+    background: linear-gradient(to bottom, @selectedCategoryColor 0%, @selectedCategoryColor 75%, #fff 75%, #fff 80%, #CCCCCC 80%, #fff 100%);
+    div {
+      color: #fff;
+    }
+  }
+
+}
+
+// Left/Right Arrows on browse category carousel
+#browse-category-picker {
+  .jcarousel-control-prev, .jcarousel-control-next {
+    background-color: @content-bg;
+    color: @browseCarouselControlColor;
+    &:active, &:hover {
+      color: @selectedCategoryColor;
+      text-decoration: none;
+    }
+    .box-shadow(none);
+    font-size: 20px;
+  }
+  a {
+    &.jcarousel-control-next:after {
+      content: "▶";
+    }
+    &.jcarousel-control-prev:before {
+      content: "◀";
+    }
+  }
+  // indicator dots at bottom of browse category carousel
+  .jcarousel-pagination a {
+    &.active {
+      background: @browseCarouselControlColor;
+      // keep shadowing in place on active item
+      .box-shadow(0 0 2px #4E443C);
+    }
+    @detached-outline-ruleset: {outline: none};
+    .allLinkStates(@detached-outline-ruleset)
+  }
+}
+
+#selected-browse-label {
+  color: black; //TODO: set color
+  background: none; //override line through label
+  padding: 20px 0;
+  border-top: 1px solid @browse-label-text-color;
+}
+
+.selected-browse-label-search {
+  background: none;
+}
+
+#selected-browse-search-link{
+  text-transform: uppercase;
+}
+
+#browse-sub-category-menu {
+  button.selected {
+    background-color: @selectedCategoryColor;
+  }
+}
+
+
+// Remove gradients from accordions & facets; set a white background for body content //
+#account-settings-accordion, #more-details-accordion, .sidebar-links, #account-settings-accordion {
+  .panel-heading{
+    background: @accordion-header-bg-color;
+  }
+  .active .panel-heading{
+    background: @accordion-active-header-backgroundcolor;
+  }
+  .panel,.panel-heading {
+    border-radius: 0;
+  }
+  .panel-body {
+    background-color: transparent;
+    border: 1px solid #c5c5c5;
+  }
+}
+.facetTitle, .exploreMoreTitle{
+  background: @accordion-header-bg-color;
+}
+
+.facetDetails {
+  padding: 10px;
+  border: 1px solid #c5c5c5;
+  border-top: none;
+  background-color: #fff;
+}
+.facetValue {
+  padding: 3px 5px;
+  //color: #888;
+  font-size: medium;
+  a {
+    color: #428bca;
+    line-height: 1.7;
+    border-bottom: none;
+  }
+}
