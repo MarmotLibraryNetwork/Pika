@@ -8400,7 +8400,7 @@ hr.menu {
   color: #ccc;
 }
 #system-message-header {
-  background-color: #AFAFAF;
+  background-color: #1459b6;
   color: black;
   text-align: center;
   padding: 3px;
@@ -8408,9 +8408,9 @@ hr.menu {
 #header-container {
   padding-top: 0;
   height: 120px;
-  background-color: #AFAFAF;
-  background: linear-gradient(to bottom, #AFAFAF, #AFAFAF 85%, #AFAFAF);
-  border-bottom: 8px solid #AFAFAF;
+  background-color: #1459b6;
+  background: linear-gradient(to bottom, #1459b6, #1459b6 85%, #1459b6);
+  border-bottom: 8px solid #1459b6;
   margin-bottom: 0;
   min-height: 110px;
 }
@@ -8428,7 +8428,7 @@ hr.menu {
   text-shadow: 1px 1px #fff;
   vertical-align: middle;
   line-height: 112px !important;
-  border-bottom: 4px solid #AFAFAF;
+  border-bottom: 4px solid #1459b6;
   color: #8b8b8b !important;
 }
 .header-button:hover {
@@ -8440,7 +8440,7 @@ hr.menu {
 }
 #library-name-header {
   font-size: 30px;
-  color: #4b4534;
+  color: #b0d843;
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-weight: bold;
   white-space: normal;
@@ -8778,7 +8778,7 @@ hr.menu {
   margin-bottom: 0;
 }
 #home-page-login {
-  background-color: #AFAFAF;
+  background-color: #fc3;
   color: #FFF;
   font-size: 18px;
   text-shadow: 1px 1px #999999;
@@ -9376,7 +9376,7 @@ a.browse-thumbnail-sorted.active {
 }
 #browse-sub-category-menu button.selected {
   color: #fff;
-  background-color: #fff8dc;
+  background-color: #b0d843;
 }
 #browse-sub-category-menu button:focus {
   outline: none;
@@ -10787,7 +10787,7 @@ fieldset[disabled] .btn-masquerade.active {
   border: 0;
   border-radius: 0.5em;
   color: #4b4534 !important;
-  background-color: #fffff7;
+  background-color: #fc3;
   margin-top: 20px;
   line-height: 60px !important;
   text-shadow: none;
@@ -10796,10 +10796,6 @@ fieldset[disabled] .btn-masquerade.active {
   text-decoration: underline;
   border-bottom: 0;
   box-shadow: 2px 2px 5px #fff;
-}
-body {
-  background: url('../images/sutter-bypass.png') no-repeat center center fixed;
-  background-size: cover;
 }
 #header-logo {
   padding: 0;
@@ -10856,12 +10852,12 @@ body {
   text-decoration: none;
 }
 #browse-category-carousel .browse-category.selected div {
-  background: #fff8dc;
+  background: #b0d843;
   color: #333;
   font-size: 20px;
 }
 #browse-category-carousel .browse-category.selected div:hover {
-  background: #fff8dc;
+  background: #b0d843;
 }
 #browse-category-carousel .browse-category:hover {
   background: #E4E4E4;
@@ -10961,4 +10957,8 @@ body {
   color: #428bca;
   line-height: 1.7;
   border-bottom: none;
+}
+.sidebar-label,
+.sidebar-button {
+  background: #0a2e5c;
 }
