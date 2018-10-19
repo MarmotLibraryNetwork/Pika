@@ -36,8 +36,8 @@ require_once ROOT_DIR . '/Drivers/Sierra.php';
 class Arlington extends Sierra{
 	public function _getLoginFormValues($patron){
 		$loginData = array();
-		$loginData['pin'] = $patron->cat_password;
-		$loginData['code'] = $patron->cat_username;
+		$loginData['pin']    = $patron->cat_password;
+		$loginData['code']   = $patron->cat_username;
 		$loginData['submit'] = 'submit';
 		return $loginData;
 	}
@@ -51,6 +51,13 @@ class Arlington extends Sierra{
 		return true;
 	}
 
+	/**
+	 * @param User    $user          User that the PIN should be changed for
+	 * @param string $oldPin         Current PIN
+	 * @param string $newPin         New PIN
+	 * @param $string confirmNewPin  Second ENtry of PIN for verification of PIN (verification happens in User)
+	 * @return string
+	 */
 	public function updatePin($user, $oldPin, $newPin, $confirmNewPin){
 		$scope = $this->getDefaultScope();
 

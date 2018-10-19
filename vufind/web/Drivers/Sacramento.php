@@ -82,6 +82,13 @@ class Sacramento extends Sierra
 		return true;
 	}
 
+	/**
+	 * @param User    $user          User that the PIN should be changed for
+	 * @param string $oldPin         Current PIN
+	 * @param string $newPin         New PIN
+	 * @param $string confirmNewPin  Second ENtry of PIN for verification of PIN (verification happens in User)
+	 * @return string
+	 */
 	public function updatePin($patron, $oldPin, $newPin, $confirmNewPin){
 		$scope = $this->getDefaultScope(); //TODO: Use LibraryScope() instead
 
@@ -149,9 +156,6 @@ class Sacramento extends Sierra
 	function isMiddleNameASeparateFieldInSelfRegistration(){
 		return true;
 	}
-//	function combineCityStateZipInSelfRegistration(){
-//		return false;
-//	}
 
 	function selfRegister(){
 		//Capitalize All Input, expect pin passwords
