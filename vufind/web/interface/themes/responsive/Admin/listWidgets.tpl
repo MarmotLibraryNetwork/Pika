@@ -6,8 +6,11 @@
 		</div>
 		<div id="widgets"></div>
 		{* Select a widget to edit *}
-		<div id="availableWidgets"> 
-		<table class="table table-striped">
+		<div id="availableWidgets">
+			{if $canAddNew}
+				<input type="button" class="btn btn-primary" name="addWidget" value="Add Widget" onclick="window.location = '{$path}/Admin/ListWidgets?objectAction=add';">
+			{/if}
+			<table class="table table-striped">
 		<thead><tr><th>Id</th><th>Name</th><th>Library</th><th>Description</th><th class="sorter-false filter-false ">Actions</th></tr></thead>
 		<tbody>
 			{foreach from=$availableWidgets key=id item=widget}
