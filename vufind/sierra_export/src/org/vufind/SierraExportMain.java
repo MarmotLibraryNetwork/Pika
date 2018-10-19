@@ -105,7 +105,7 @@ public class SierraExportMain{
 		Connection conn = null;
 		try{
 			//Open the connection to the database
-			if (!sierraDBPassword.isEmpty() && !sierraDBUser.isEmpty()) {
+			if (sierraDBUser != null && sierraDBPassword != null && !sierraDBPassword.isEmpty() && !sierraDBUser.isEmpty()) {
 				// Use specific user name and password when the are issues with special characters
 				if (sierraDBUser.startsWith("\"")){
 					sierraDBUser = sierraDBUser.substring(1, sierraDBUser.length() - 1);

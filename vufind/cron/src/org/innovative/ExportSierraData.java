@@ -44,7 +44,7 @@ public class ExportSierraData implements IProcessHandler {
 			Connection conn = null;
 			try{
 				//Open the connection to the database
-				if (!sierraDBPassword.isEmpty() && !sierraDBUser.isEmpty()) {
+				if (sierraDBUser != null && sierraDBPassword != null && !sierraDBPassword.isEmpty() && !sierraDBUser.isEmpty()) {
 					// Use specific user name and password when the are issues with special characters
 					if (sierraDBPassword.startsWith("\"")){
 						sierraDBPassword = sierraDBPassword.substring(1, sierraDBPassword.length() - 1);
