@@ -164,14 +164,27 @@ public class SierraExportAPIMain {
 		}
 
 		//Connect to the sierra database
-		String url = ini.get("Catalog", "sierra_db");
+		String url              = ini.get("Catalog", "sierra_db");
+		String sierraDBUser     = ini.get("Catalog", "sierra_db_user");
+		String sierraDBPassword = ini.get("Catalog", "sierra_db_password");
 		if (url.startsWith("\"")){
 			url = url.substring(1, url.length() - 1);
 		}
 		Connection conn = null;
 		try{
 			//Open the connection to the database
-			conn = DriverManager.getConnection(url);
+			if (!sierraDBPassword.isEmpty() && !sierraDBUser.isEmpty()) {
+				// Use specific user name and password when the are issues with special characters
+				if (sierraDBUser.startsWith("\"")){
+					sierraDBUser = sierraDBUser.substring(1, sierraDBUser.length() - 1);
+				}
+				if (sierraDBPassword.startsWith("\"")){
+					sierraDBPassword = sierraDBPassword.substring(1, sierraDBPassword.length() - 1);
+				}
+				conn = DriverManager.getConnection(url, sierraDBUser, sierraDBPassword);
+			} else {
+				conn = DriverManager.getConnection(url);
+			}
 			orderStatusesToExport = cleanIniValue(ini.get("Reindex", "orderStatusesToExport"));
 			if (orderStatusesToExport == null){
 				orderStatusesToExport = "o|1";
