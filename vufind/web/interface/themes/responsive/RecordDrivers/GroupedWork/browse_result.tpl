@@ -8,6 +8,7 @@
 		</div>
 
 	{else}{*Default Browse Mode (covers) *}
+		<div class="column-fix"> {* Needed div to hack firefox into not doing column breaks with a thumbnail. Only used for Sacramento at this time. pascal 10-19-2018 *}
 		<div class="browse-thumbnail">
 			<a onclick="return VuFind.GroupedWork.showGroupedWorkInfo('{$summId}','{$browseCategoryId}')" href="{$summUrl}">
 				<div>
@@ -34,6 +35,7 @@
 				</span>
 				</div>
 			{/if}
+		</div>
 		</div>
 	{/if}
 {/strip}
