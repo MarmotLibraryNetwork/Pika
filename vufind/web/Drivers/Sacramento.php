@@ -111,7 +111,7 @@ class Sacramento extends Sierra
 				$patron->cat_password = $newPin;
 				$patron->update();
 				return "Your pin number was updated successfully.";
-			} else if (preg_match('/class="errormessage">(.+?)<\/div>/is', $curlResponse, $matches)){
+			} else if (preg_match('/class="errormessage">(.+?)<\/span>/is', $curlResponse, $matches)){
 				return trim($matches[1]);
 
 			} else {
