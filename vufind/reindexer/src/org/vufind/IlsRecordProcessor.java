@@ -796,6 +796,9 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		itemInfo.setItemIdentifier(getItemSubfieldData(itemRecordNumberSubfieldIndicator, itemField));
 
 		String itemStatus = getItemStatus(itemField, recordInfo.getRecordIdentifier());
+		if (itemStatus.isEmpty()) {
+			logger.warn("Item contained no status value for item " + itemInfo.getItemIdentifier() + " in record " + recordInfo.getRecordIdentifier());
+		}
 
 		String itemLocation = getItemSubfieldData(locationSubfieldIndicator, itemField);
 		itemInfo.setLocationCode(itemLocation);
