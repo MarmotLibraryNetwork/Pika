@@ -340,7 +340,6 @@
 				</div>
 
 				{if $allowPinReset && !$offline}
-					{debug}
 					<div class="panel active">
 						<a data-toggle="collapse" data-parent="#account-settings-accordion" href="#pinPanel">
 							<div class="panel-heading">

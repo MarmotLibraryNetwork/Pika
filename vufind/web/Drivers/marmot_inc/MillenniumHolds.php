@@ -726,12 +726,7 @@ class MillenniumHolds{
 		// Retrieve Full Marc Record
 		require_once ROOT_DIR . '/RecordDrivers/Factory.php';
 		$record = RecordDriverFactory::initRecordDriverById($this->driver->accountProfile->recordSource . ':' . $bib1);
-		if (!$record->isValid()) {
-			$logger->log('Place Hold: Failed to get Marc Record', PEAR_LOG_INFO);
-			$title = null;
-		}else{
-			$title = $record->getTitle();
-		}
+		$title = $record->isValid() ? $record->getTitle() : null;
 
 			//Make sure to connect via the driver so cookies will be correct
 			$this->driver->_curl_connect();
@@ -759,29 +754,32 @@ class MillenniumHolds{
 
 				$sResult = $this->driver->_curlPostPage($curl_url, $postData);
 				$sResult = preg_replace("/<!--([^(-->)]*)-->/","",$sResult);
-				$logger->log("Placing hold $recordId : $title", PEAR_LOG_INFO);
-
 
 				//Parse the response to get the status message
-				$hold_result = $this->_getHoldResult($sResult);
-				$hold_result['title']  = $title;
-				$hold_result['bid']    = $bib1;
+				$holdResult = $this->_getHoldResult($sResult);
+				$logger->log("Placing hold $recordId", PEAR_LOG_INFO);
+
+				if ($title) {
+					$holdResult['title'] = $title;
+				}
+				$holdResult['bid']     = $bib1;
+
 				global $analytics;
 				if ($analytics){
-					if ($hold_result['success'] == true){
+					if ($holdResult['success'] == true){
 						$analytics->addEvent('ILS Integration', 'Successful Hold', $title);
 					}else{
-						$analytics->addEvent('ILS Integration', 'Failed Hold', $hold_result['message'] . ' - ' . $title);
+						$analytics->addEvent('ILS Integration', 'Failed Hold', $holdResult['message'] . ' - ' . $title);
 					}
 				}
 			} else {
-				$hold_result['success'] = false;
-				$hold_result['title']   = $title;
-				$hold_result['bid']     = $bib1;
-				$hold_result['message'] = 'Unable to login into circulation system to place the hold. There may be a problem with your account, please contact your library.';
+				$holdResult['success'] = false;
+				$holdResult['title']   = $title;
+				$holdResult['bid']     = $bib1;
+				$holdResult['message'] = 'Unable to login into circulation system to place the hold. There may be a problem with your account, please contact your library.';
 
 			}
-			return $hold_result;
+			return $holdResult;
 
 	}
 
@@ -819,12 +817,7 @@ class MillenniumHolds{
 		// Retrieve Full Marc Record
 		require_once ROOT_DIR . '/RecordDrivers/Factory.php';
 		$record = RecordDriverFactory::initRecordDriverById($this->driver->accountProfile->recordSource . ':' . $bib1);
-		if (!$record->isValid()) {
-			$logger->log('Place Hold: Failed to get Marc Record', PEAR_LOG_INFO);
-			$title = null;
-		}else{
-			$title = $record->getTitle();
-		}
+		$title = $record->isValid() ? $record->getTitle() : null;
 
 			//Make sure to connect via the driver so cookies will be correct
 			$this->driver->_curl_connect();
@@ -852,12 +845,15 @@ class MillenniumHolds{
 
 				$sResult = $this->driver->_curlPostPage($curl_url, $postData);
 				$sResult = preg_replace("/<!--([^(-->)]*)-->/", "", $sResult);
-				$logger->log("Placing hold $recordId : $title", PEAR_LOG_INFO);
 
 				//Parse the response to get the status message
 				$holdResult          = $this->_getHoldResult($sResult);
-				$holdResult['title'] = $title;
-				$holdResult['bid']   = $bib1;
+				$logger->log("Placing hold $recordId : $title", PEAR_LOG_INFO);
+				if ($title) {
+					$holdResult['title'] = $title;
+				}
+
+				$holdResult['bid']     = $bib1;
 			} else {
 				$holdResult = array(
 					'success' => false,

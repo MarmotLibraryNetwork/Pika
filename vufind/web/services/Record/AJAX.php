@@ -417,7 +417,7 @@ class Record_AJAX extends Action {
 				} else {
 					$homeLibrary = $patron->getHomeLibrary();
 
-					$cancelDate = trim($_REQUEST['canceldate']);
+					$cancelDate = empty($_REQUEST['canceldate']) ? null : trim($_REQUEST['canceldate']);
 					if ($homeLibrary->defaultNotNeededAfterDays != -1) {
 						if (empty($cancelDate)) {
 							$daysFromNow = $homeLibrary->defaultNotNeededAfterDays == 0 ? 182.5 : $homeLibrary->defaultNotNeededAfterDays;

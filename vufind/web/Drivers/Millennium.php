@@ -133,11 +133,9 @@ class Millennium extends ScreenScrapingDriver
 		require_once ROOT_DIR . '/Drivers/marmot_inc/MillenniumCache.php';
 		$scope = $this->getMillenniumScope();
 		//Load the pages for holdings, order information, and items
-		$millenniumCache = new MillenniumCache();
+		$millenniumCache           = new MillenniumCache();
 		$millenniumCache->recordId = $id;
-		$millenniumCache->scope = $scope;
-		global $timer;
-		$host = $this->getVendorOpacUrl();
+		$millenniumCache->scope    = $scope;
 
 		//If we get an identifier type, strip that
 		if (strpos($id, ':') > 0){
@@ -146,13 +144,15 @@ class Millennium extends ScreenScrapingDriver
 		// Strip ID
 		$id_ = substr(str_replace('.b', '', $id), 0, -1);
 
-		$req =  $host . "/search~S{$scope}/.b" . $id_ . "/.b" . $id_ . "/1,1,1,B/holdings~" . $id_;
-		$millenniumCache->holdingsInfo = $this->_curlGetPage($req);
-		//$logger->log("Loaded holdings from url $req", PEAR_LOG_DEBUG);
+		$host = $this->getVendorOpacUrl();
+		$url =  $host . "/search~S{$scope}/.b" . $id_ . "/.b" . $id_ . "/1,1,1,B/holdings~" . $id_;
+		$millenniumCache->holdingsInfo = $this->_curlGetPage($url);
+		//$logger->log("Loaded holdings from url $url", PEAR_LOG_DEBUG);
+		global $timer;
 		$timer->logTime('got holdings from millennium');
 
-		$req =  $host . "/search~S{$scope}/.b" . $id_ . "/.b" . $id_ . "/1,1,1,B/frameset~" . $id_;
-		$millenniumCache->framesetInfo = $this->_curlGetPage($req);
+		$url =  $host . "/search~S{$scope}/.b" . $id_ . "/.b" . $id_ . "/1,1,1,B/frameset~" . $id_;
+		$millenniumCache->framesetInfo = $this->_curlGetPage($url);
 		$timer->logTime('got frameset info from millennium');
 
 		$millenniumCache->cacheDate = time();
@@ -815,18 +815,18 @@ class Millennium extends ScreenScrapingDriver
 	public function renewItem($patron, $recordId, $itemId, $itemIndex){
 		require_once ROOT_DIR . '/Drivers/marmot_inc/MillenniumCheckouts.php';
 		$millenniumCheckouts = new MillenniumCheckouts($this);
-		$result = $millenniumCheckouts->renewItem($patron, $itemId, $itemIndex);
-		// If we get an account busy error let's try again a few times after a delay
-		$numTries = 1;
-		while (!$result['success'] && (strpos($result['message'], 'your account is in use by the system.') || stripos($result['message'], 'n use by system.')) && $numTries < 4) {
+		$numTries = 0;
+		do {
+			$result  = $millenniumCheckouts->renewItem($patron, $itemId, $itemIndex);
+			$failure = !$result['success'] && stripos($result['message'], 'n use by system.');
+			// If we get an account busy error let's try again a few times after a delay
 			usleep(400000);
 			$numTries++;
-			$result = $millenniumCheckouts->renewItem($patron, $itemId, $itemIndex);
-			if (!$result['success'] && (strpos($result['message'], 'your account is in use by the system.') || stripos($result['message'], 'n use by system.'))) {
+			if ($failure) {
 				global $logger;
 				$logger->log("System still busy after $numTries attempts at renewal", PEAR_LOG_ERR);
 			}
-		}
+		} while ($failure && $numTries < 4);
 		return $result;
 	}
 
@@ -1128,51 +1128,52 @@ class Millennium extends ScreenScrapingDriver
 	 * @param File_MARC_Record $marcRecord
 	 * @return bool
 	 */
-	function isRecordHoldable($marcRecord){
-		$pTypes = $this->getPTypes();
-		global $configArray;
-		global $indexingProfiles;
-		if (array_key_exists($this->accountProfile->recordSource, $indexingProfiles)) {
-			/** @var IndexingProfile $indexingProfile */
-			$indexingProfile = $indexingProfiles[$this->accountProfile->recordSource];
-			$marcItemField = $indexingProfile->itemTag;
-			$iTypeSubfield = $indexingProfile->iType;
-			$locationSubfield = $indexingProfile->location;
-		}else{
-			$marcItemField = isset($configArray['Reindex']['itemTag']) ? $configArray['Reindex']['itemTag'] : '989';
-			$iTypeSubfield = isset($configArray['Reindex']['iTypeSubfield']) ? $configArray['Reindex']['iTypeSubfield'] : 'j';
-			$locationSubfield = isset($configArray['Reindex']['locationSubfield']) ? $configArray['Reindex']['locationSubfield'] : 'j';
-		}
-
-		/** @var File_MARC_Data_Field[] $items */
-		$items = $marcRecord->getFields($marcItemField);
-		$holdable = false;
-		$itemNumber = 0;
-		foreach ($items as $item){
-			$itemNumber++;
-			$subfield_j = $item->getSubfield($iTypeSubfield);
-			if (is_object($subfield_j) && !$subfield_j->isEmpty()){
-				$iType = $subfield_j->getData();
-			}else{
-				$iType = '0';
-			}
-			$subfield_d = $item->getSubfield($locationSubfield);
-			if (is_object($subfield_d) && !$subfield_d->isEmpty()){
-				$locationCode = $subfield_d->getData();
-			}else{
-				$locationCode = '?????';
-			}
-			//$logger->log("$itemNumber) iType = $iType, locationCode = $locationCode", PEAR_LOG_DEBUG);
-
-			//Check the determiner table to see if this matches
-			$holdable = $this->isItemHoldableToPatron($locationCode, $iType, $pTypes);
-
-			if ($holdable){
-				break;
-			}
-		}
-		return $holdable;
-	}
+	// Not used anywhere. pascal 20-18-2018
+//	function isRecordHoldable($marcRecord){
+//		$pTypes = $this->getPTypes();
+//		global $configArray;
+//		global $indexingProfiles;
+//		if (array_key_exists($this->accountProfile->recordSource, $indexingProfiles)) {
+//			/** @var IndexingProfile $indexingProfile */
+//			$indexingProfile = $indexingProfiles[$this->accountProfile->recordSource];
+//			$marcItemField = $indexingProfile->itemTag;
+//			$iTypeSubfield = $indexingProfile->iType;
+//			$locationSubfield = $indexingProfile->location;
+//		}else{
+//			$marcItemField = isset($configArray['Reindex']['itemTag']) ? $configArray['Reindex']['itemTag'] : '989';
+//			$iTypeSubfield = isset($configArray['Reindex']['iTypeSubfield']) ? $configArray['Reindex']['iTypeSubfield'] : 'j';
+//			$locationSubfield = isset($configArray['Reindex']['locationSubfield']) ? $configArray['Reindex']['locationSubfield'] : 'j';
+//		}
+//
+//		/** @var File_MARC_Data_Field[] $items */
+//		$items = $marcRecord->getFields($marcItemField);
+//		$holdable = false;
+//		$itemNumber = 0;
+//		foreach ($items as $item){
+//			$itemNumber++;
+//			$subfield_j = $item->getSubfield($iTypeSubfield);
+//			if (is_object($subfield_j) && !$subfield_j->isEmpty()){
+//				$iType = $subfield_j->getData();
+//			}else{
+//				$iType = '0';
+//			}
+//			$subfield_d = $item->getSubfield($locationSubfield);
+//			if (is_object($subfield_d) && !$subfield_d->isEmpty()){
+//				$locationCode = $subfield_d->getData();
+//			}else{
+//				$locationCode = '?????';
+//			}
+//			//$logger->log("$itemNumber) iType = $iType, locationCode = $locationCode", PEAR_LOG_DEBUG);
+//
+//			//Check the determiner table to see if this matches
+//			$holdable = $this->isItemHoldableToPatron($locationCode, $iType, $pTypes);
+//
+//			if ($holdable){
+//				break;
+//			}
+//		}
+//		return $holdable;
+//	}
 
 //	const SIERRA_ITYPE_WILDCARDS = array('999', '9999');
 //	const SIERRA_PTYPE_WILDCARDS = array('999', '9999');
