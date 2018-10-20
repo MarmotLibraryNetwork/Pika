@@ -54,8 +54,8 @@
 		{/if}
 </div>
 {/strip}
-{if $promptForBirthDateInSelfReg}
 <script type="text/javascript">
+{if $promptForBirthDateInSelfReg}
 	{* #borrower_note is birthdate for anythink *}
 	{* this is bootstrap datepicker, not jquery ui *}
 	{literal}

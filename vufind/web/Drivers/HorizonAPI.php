@@ -951,12 +951,19 @@ abstract class HorizonAPI extends Horizon{
 		if ($lookupSelfRegistrationFieldsResponse){
 			foreach($lookupSelfRegistrationFieldsResponse->registrationField as $registrationField){
 				$newField = array(
-					'property' => (string)$registrationField->column,
-					'label' => (string)$registrationField->label,
+					'property'  => (string)$registrationField->column,
+					'label'     => (string)$registrationField->label,
 					'maxLength' => (int)$registrationField->length,
-					'type' => 'text',
-					'required' => (string)$registrationField->required == 'true',
+					'type'      => 'text',
+					'required'  => (string)$registrationField->required == 'true',
 				);
+				if ($newField['property'] == 'pin#'){
+					$newField['property'] = 'pin';
+					$newField['type']     = 'pin';
+				}elseif ($newField['property'] == 'confirmpin#'){
+					$newField['property'] = 'pin1';
+					$newField['type']     = 'pin';
+				}
 				if ((string)$registrationField->masked == 'true'){
 					$newField['type'] = 'password';
 				}
@@ -1001,14 +1008,14 @@ abstract class HorizonAPI extends Horizon{
 	 * @return array
 	 */
 	public function splitFullName($fullName) {
-		$fullName = str_replace(",", " ", $fullName);
-		$fullName = str_replace(";", " ", $fullName);
-		$fullName = str_replace(";", "'", $fullName);
-		$fullName = preg_replace("/\\s{2,}/", " ", $fullName);
-		$nameParts = explode(' ', $fullName);
-		$lastName = strtolower($nameParts[0]);
+		$fullName   = str_replace(",", " ", $fullName);
+		$fullName   = str_replace(";", " ", $fullName);
+		$fullName   = str_replace(";", "'", $fullName);
+		$fullName   = preg_replace("/\\s{2,}/", " ", $fullName);
+		$nameParts  = explode(' ', $fullName);
+		$lastName   = strtolower($nameParts[0]);
 		$middleName = isset($nameParts[2]) ? strtolower($nameParts[2]) : '';
-		$firstName = isset($nameParts[1]) ? strtolower($nameParts[1]) : $middleName;
+		$firstName  = isset($nameParts[1]) ? strtolower($nameParts[1]) : $middleName;
 		return array($fullName, $lastName, $firstName);
 	}
 
