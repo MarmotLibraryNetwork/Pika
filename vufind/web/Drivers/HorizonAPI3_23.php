@@ -12,26 +12,21 @@ require_once ROOT_DIR . '/Drivers/HorizonAPI.php';
 abstract class HorizonAPI3_23 extends HorizonAPI
 {
 	private function getBaseWebServiceUrl() {
-		global $configArray;
-		if (!empty($this->accountProfile->patronApiUrl)) {
-			$webServiceURL = $this->accountProfile->patronApiUrl;
-		} elseif (!empty($configArray['Catalog']['webServiceUrl'])) {
-			$webServiceURL = $configArray['Catalog']['webServiceUrl'];
-		} else {
-			global $logger;
-			$logger->log('No Web Service URL defined in Horizon API Driver', PEAR_LOG_CRIT);
-			return null;
-		}
-
-		$urlParts = parse_url($webServiceURL);
+		$webServiceURL     = $this->getWebServiceURL();
+		$urlParts          = parse_url($webServiceURL);
 		$baseWebServiceUrl = $urlParts['scheme']. '://'. $urlParts['host']. (!empty($urlParts['port']) ? ':'. $urlParts['port'] : '');
 
 		return $baseWebServiceUrl;
 	}
 
+	/**
+	 * @param User   $patron         The user to update PIN for
+	 * @param string $oldPin         The current PIN
+	 * @param string $newPin         The PIN to update to
+	 * @param string $confirmNewPin  A second entry to confirm the new PIN number (checked in User now)
+	 * @return string
+	 */
 	function updatePin($patron, $oldPin, $newPin, $confirmNewPin){
-//		global $configArray;
-
 		//Log the user in
 		list($userValid, $sessionToken) = $this->loginViaWebService($patron->cat_username, $patron->cat_password);
 		if (!$userValid){
@@ -41,7 +36,7 @@ abstract class HorizonAPI3_23 extends HorizonAPI
 		$updatePinUrl = $this->getBaseWebServiceUrl() . '/hzws/user/patron/changeMyPin';
 		$jsonParameters = array(
 			'currentPin' => $oldPin,
-			'newPin' => $newPin,
+			'newPin'     => $newPin,
 		);
 		$updatePinResponse = $this->getWebServiceResponseUpdated($updatePinUrl, $jsonParameters, $sessionToken);
 		if (isset($updatePinResponse['messageList'])) {
@@ -63,7 +58,7 @@ abstract class HorizonAPI3_23 extends HorizonAPI
 	}
 
 
-	function resetPin($user, $newPin, $resetToken=null){
+	function resetPin($patron, $newPin, $resetToken=null){
 		if (empty($resetToken)) {
 			global $logger;
 			$logger->log('No Reset Token passed to resetPin function', PEAR_LOG_ERR);
@@ -75,7 +70,7 @@ abstract class HorizonAPI3_23 extends HorizonAPI
 		$changeMyPinAPIUrl = $this->getBaseWebServiceUrl() . '/hzws/user/patron/changeMyPin';
 		$jsonParameters = array(
 			'resetPinToken' => $resetToken,
-			'newPin' => $newPin,
+			'newPin'        => $newPin,
 		);
 		$changeMyPinResponse = $this->getWebServiceResponseUpdated($changeMyPinAPIUrl, $jsonParameters);
 		if (isset($changeMyPinResponse['messageList'])) {
@@ -89,9 +84,9 @@ abstract class HorizonAPI3_23 extends HorizonAPI
 				'error' => 'Sorry, we encountered an error while attempting to update your pin. Please contact your local library.'
 			);
 		} elseif (!empty($changeMyPinResponse['sessionToken'])){
-			if ($user->username == $changeMyPinResponse['patronKey']) { // Check that the ILS user matches the Pika user
-				$user->cat_password = $newPin;
-				$user->update();
+			if ($patron->username == $changeMyPinResponse['patronKey']) { // Check that the ILS user matches the Pika user
+				$patron->cat_password = $newPin;
+				$patron->update();
 			}
 			return array(
 				'success' => true,
@@ -126,7 +121,7 @@ abstract class HorizonAPI3_23 extends HorizonAPI
 					// Yay! We were able to login with the pin Pika has!
 
 					//Now check for an email address
-					$lookupMyAccountInfoResponse = $this->getWebServiceResponse( $configArray['Catalog']['webServiceUrl']  . '/standard/lookupMyAccountInfo?clientID=' . $configArray['Catalog']['clientId'] . '&sessionToken=' . $sessionToken . '&includeAddressInfo=true');
+					$lookupMyAccountInfoResponse = $this->getWebServiceResponse( $this->getWebServiceURL() . '/standard/lookupMyAccountInfo?clientID=' . $configArray['Catalog']['clientId'] . '&sessionToken=' . $sessionToken . '&includeAddressInfo=true');
 					if ($lookupMyAccountInfoResponse) {
 						if (isset($lookupMyAccountInfoResponse->AddressInfo)){
 							if (empty($lookupMyAccountInfoResponse->AddressInfo->email)){
@@ -143,7 +138,7 @@ abstract class HorizonAPI3_23 extends HorizonAPI
 			// email the pin to the user
 			$resetPinAPIUrl = $this->getBaseWebServiceUrl() . '/hzws/user/patron/resetMyPin';
 			$jsonPOST       = array(
-				'login' => $barcode,
+				'login'       => $barcode,
 				'resetPinUrl' => $configArray['Site']['url'] . '/MyAccount/ResetPin?resetToken=<RESET_PIN_TOKEN>' . (empty($userID) ?  '' : '&uid=' . $userID)
 			);
 

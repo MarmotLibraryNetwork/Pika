@@ -38,19 +38,22 @@ abstract class HorizonROA implements DriverInterface
 		return array($fullName, $lastName, $firstName);
 	}
 
+	private $webServiceURL = null;
 	public function getWebServiceURL()
 	{
-		$webServiceURL = null;
-		if (!empty($this->accountProfile->patronApiUrl)) {
-			$webServiceURL = trim($this->accountProfile->patronApiUrl);
-		} elseif (!empty($configArray['Catalog']['webServiceUrl'])) {
-			$webServiceURL = $configArray['Catalog']['webServiceUrl'];
-		} else {
-			global $logger;
-			$logger->log('No Web Service URL defined in Horizon ROA API Driver', PEAR_LOG_CRIT);
+		if (empty($this->webServiceURL)) {
+			$webServiceURL = null;
+			if (!empty($this->accountProfile->patronApiUrl)) {
+				$webServiceURL = trim($this->accountProfile->patronApiUrl);
+			} elseif (!empty($configArray['Catalog']['webServiceUrl'])) {
+				$webServiceURL = $configArray['Catalog']['webServiceUrl'];
+			} else {
+				global $logger;
+				$logger->log('No Web Service URL defined in Horizon ROA API Driver', PEAR_LOG_CRIT);
+			}
+			$this->webServiceURL = rtrim($webServiceURL, '/'); // remove any trailing slash because other functions will add it.
 		}
-		$webServiceURL = rtrim($webServiceURL, '/'); // remove any trailing slash because other functions will add it.
-		return $webServiceURL;
+		return $this->webServiceURL;
 	}
 
 	// $customRequest is for curl, can be 'PUT', 'DELETE', 'POST'

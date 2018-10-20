@@ -168,6 +168,7 @@ class MyAccount_Profile extends MyAccount
 			}*/
 
 //			$interface->assign('overDriveUrl', $configArray['OverDrive']['url']);
+			/** @var I18N_Translator $translator */
 			global $translator;
 			$notice         = $translator->translate('overdrive_account_preferences_notice');
 			$replacementUrl = empty($configArray['OverDrive']['url']) ? '#' : $configArray['OverDrive']['url'];
