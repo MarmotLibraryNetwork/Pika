@@ -31,8 +31,12 @@ class ResetPin extends Action{
 		}
 
 		global $configArray;
-		$numericOnlyPINs = $configArray['Catalog']['numericOnlyPins'];
-		$interface->assign('numericOnlyPins', $numericOnlyPINs);
+		$numericOnlyPins      = $configArray['Catalog']['numericOnlyPins'];
+		$alphaNumericOnlyPins = $configArray['Catalog']['alphaNumericOnlyPins'];
+		$pinMinimumLength     = $configArray['Catalog']['pinMinimumLength'];
+		$interface->assign('numericOnlyPins', $numericOnlyPins);
+		$interface->assign('alphaNumericOnlyPins', $alphaNumericOnlyPins);
+		$interface->assign('pinMinimumLength', $pinMinimumLength);
 
 		if (isset($_REQUEST['submit'])){
 			$this->catalog = CatalogFactory::getCatalogConnectionInstance();

@@ -52,20 +52,20 @@
 				</div>
 			</div>
 		{elseif $property.type == 'text' || $property.type == 'folder'}
-			<input type='text' name='{$propName}' id='{$propName}' value='{$propValue|escape}' {if $property.maxLength}maxlength='{$property.maxLength}'{/if} {if $property.size}size='{$property.size}'{/if} class='form-control {if $property.required}required{/if}'>
+			<input type="text" name='{$propName}' id='{$propName}' value='{$propValue|escape}' {if $property.maxLength}maxlength='{$property.maxLength}'{/if} {if $property.size}size='{$property.size}'{/if} class='form-control {if $property.required}required{/if}'>
 		{elseif $property.type == 'integer'}
-			<input type='number' name='{$propName}' id='{$propName}' value='{$propValue|escape}' {if $property.max}max="{$property.max}"{/if} {if $property.min}min="{$property.min}"{/if} {if $property.maxLength}maxlength='{$property.maxLength}'{/if} {if $property.size}size='{$property.size}'{/if} class='form-control {if $property.required}required{/if}'>
+			<input type="number" name='{$propName}' id='{$propName}' value='{$propValue|escape}' {if $property.max}max="{$property.max}"{/if} {if $property.min}min="{$property.min}"{/if} {if $property.maxLength}maxlength='{$property.maxLength}'{/if} {if $property.size}size='{$property.size}'{/if} class='form-control {if $property.required}required{/if}'>
 		{elseif $property.type == 'url'}
-			<input type='text' name='{$propName}' id='{$propName}' value='{$propValue|escape}' {if $property.maxLength}maxlength='{$property.maxLength}'{/if} {if $property.size}size='{$property.size}'{/if} class='form-control url {if $property.required}required{/if}'>
+			<input type="text" name='{$propName}' id='{$propName}' value='{$propValue|escape}' {if $property.maxLength}maxlength='{$property.maxLength}'{/if} {if $property.size}size='{$property.size}'{/if} class='form-control url {if $property.required}required{/if}'>
 		{elseif $property.type == 'email'}
-			<input type='text' name='{$propName}' id='{$propName}' value='{$propValue|escape}' {if $property.maxLength}maxlength='{$property.maxLength}'{/if} {if $property.size}size='{$property.size}'{/if} class='form-control email {if $property.required}required{/if}'>
+			<input type="text" name='{$propName}' id='{$propName}' value='{$propValue|escape}' {if $property.maxLength}maxlength='{$property.maxLength}'{/if} {if $property.size}size='{$property.size}'{/if} class='form-control email {if $property.required}required{/if}'>
 		{elseif $property.type == 'multiemail'}
-			<input type='text' name='{$propName}' id='{$propName}' value='{$propValue|escape}' {if $property.maxLength}maxlength='{$property.maxLength}'{/if} {if $property.size}size='{$property.size}'{/if} class='form-control multiemail {if $property.required}required{/if}'>
+			<input type="text" name='{$propName}' id='{$propName}' value='{$propValue|escape}' {if $property.maxLength}maxlength='{$property.maxLength}'{/if} {if $property.size}size='{$property.size}'{/if} class='form-control multiemail {if $property.required}required{/if}'>
 		{elseif $property.type == 'date'}
 			{*<input type='{$property.type}' name='{$propName}' id='{$propName}' value='{$propValue}' {if $property.maxLength}maxLength='10'{/if}	class='form-control {if $property.required}required{/if} date'>*}
 			{* disable html5 features until consistly implemented *}
 			{*<input type='text' name='{$propName}' id='{$propName}' value='{$propValue}' {if $property.maxLength}maxLength='10'{/if}	class='form-control {if $property.required}required{/if} date'>*}
-			<input type='text' name='{$propName}' id='{$propName}' value='{$propValue}' {if $property.maxLength}maxLength='10'{/if}	class='form-control {if $property.required}required{/if} datePika'>
+			<input type="text" name='{$propName}' id='{$propName}' value='{$propValue}' {if $property.maxLength}maxLength='10'{/if}	class='form-control {if $property.required}required{/if} datePika'>
 			{* datePika is for the form validator *}
 		{elseif $property.type == 'partialDate'}
 			{include file="DataObjectUtil/partialDate.tpl"}
@@ -74,10 +74,10 @@
 			{include file="DataObjectUtil/textarea.tpl"}
 
 		{elseif $property.type == 'password'}
-			{include file="DataObjectUtil/password.tpl"}
+			<input type="password" name='{$propName}' id='{$propName}'>
 
 		{elseif $property.type == 'pin'}
-			<input type='password' name='{$propName}' id='{$propName}' value='{$propValue|escape}' {if $property.maxLength}maxlength='{$property.maxLength}'{/if} {if $property.size}size='{$property.size}'{/if} class='form-control digits {if $property.required}required{/if}'>
+			<input type="password" name='{$propName}' id='{$propName}' value='{$propValue|escape}' {if $property.maxLength}maxlength='{$property.maxLength}'{/if} {if $property.size}size='{$property.size}'{/if} class="form-control{if $numericOnlyPins} digits{else}{if $alphaNumericOnlyPins} alphaNumeric{/if}{/if}{if $property.required} required{/if}"{* doesn't work {if $pinMinimumLength > 0} data-rule-minlength="{$pinMinimumLength}"{/if}*}>
 
 
 		{elseif $property.type == 'currency'}
@@ -99,11 +99,11 @@
 			{if $propValue}
 				{if $property.type == 'image'}
 					<img src='{$path}/files/thumbnail/{$propValue}'>{$propValue}
-					<input type='checkbox' name='remove{$propName}' id='remove{$propName}'> Remove image.
+					<input type="checkbox" name='remove{$propName}' id='remove{$propName}'> Remove image.
 					<br>
 				{else}
 					Existing file: {$propValue}
-					<input type='hidden' name='{$propName}_existing' id='{$propName}_existing' value='{$propValue|escape}'>
+					<input type="hidden" name='{$propName}_existing' id='{$propName}_existing' value='{$propValue|escape}'>
 
 				{/if}
 			{/if}
@@ -112,7 +112,7 @@
 		{elseif $property.type == 'checkbox'}
 			<div class="checkbox">
 				<label for='{$propName}'{if $property.description} title="{$property.description}"{/if}>
-					<input type='checkbox' name='{$propName}' id='{$propName}' {if ($propValue == 1)}checked='checked'{/if}> {$property.label}
+					<input type="checkbox" name='{$propName}' id='{$propName}' {if ($propValue == 1)}checked="checked"{/if}> {$property.label}
 				</label>
 			</div>
 
@@ -122,8 +122,8 @@
 
 	</div>
 {elseif $property.type == 'hidden'}
-	<input type='hidden' name='{$propName}' value='{$propValue}'>
+	<input type="hidden" name='{$propName}' value='{$propValue}'>
 {/if}
 {if $property.showDescription}
-	<div class='propertyDescription'>{$property.description}</div>
+	<div class="propertyDescription">{$property.description}</div>
 {/if}

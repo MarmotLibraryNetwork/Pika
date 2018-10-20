@@ -14,14 +14,14 @@
 			<div class="alert alert-info">
 				Your library card number is <strong>{$selfRegResult.barcode}</strong>.
 			</div>
-			{if $pitSetSuccess}
+			{if $pinSetSuccess}
 				<div class="alert alert-info">
-					{$pitSetSuccess}
+					{$pinSetSuccess}
 				</div>
 			{/if}
-			{if $pitSetFail}
+			{if $pinSetFail}
 				<div class="alert alert-warning">
-					{$pitSetFail}
+					{$pinSetFail}
 				</div>
 			{/if}
 		{else}
@@ -59,7 +59,7 @@
 	{* #borrower_note is birthdate for anythink *}
 	{* this is bootstrap datepicker, not jquery ui *}
 	{literal}
-	$(document).ready(function(){
+	$(function(){
 		$('input.datePika').datepicker({
 			format: "mm-dd-yyyy"
 			,endDate: "+0d"
@@ -112,26 +112,14 @@
 				}
 			});
 		}
-		{/literal}
+	});
+	{/literal}
+{/if}
 		{* Pin Validation for CarlX, Sirsi, and Sacramento *}
-		{* For Sacramento, allow any characters to be used (determined with $('#guardianFirstName') *}
 		{literal}
-		if ($('#pin').length > 0 && $('#pin1').length > 0) {
-			$("#objectEditor").validate({
-				rules: {
-					pin: {
-						digits : {/literal}{if $numericOnlyPins}true{else}false{/if}{literal},
-						minlength: 4
-					},
-					pin1: {
-						digits : {/literal}{if $numericOnlyPins}true{else}false{/if}{literal},
-						minlength: 4,
-						equalTo: "#pin"
-					}
-				}
-			});
-		}
+	$(function(){
+		$('#pin').rules('add', {minlength:{/literal}{if $pinMinimumLength}{$pinMinimumLength}{else}0{/if}{literal}});
+		$('#pin1').rules('add', {equalTo: "#pin",minlength:{/literal}{if $pinMinimumLength}{$pinMinimumLength}{else}0{/if}{literal}});
 	});
 	{/literal}
 </script>
-{/if}

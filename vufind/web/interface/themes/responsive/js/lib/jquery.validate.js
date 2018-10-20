@@ -268,6 +268,7 @@ $.extend($.validator, {
 		dateISO: "Please enter a valid date (ISO).",
 		number: "Please enter a valid number.",
 		digits: "Please enter only digits.",
+		alphaNumeric: "Please enter only letters and digits.",
 		creditcard: "Please enter a valid credit card number.",
 		equalTo: "Please enter the same value again.",
 		accept: "Please enter a value with a valid extension.",
@@ -755,6 +756,7 @@ $.extend($.validator, {
 		number: {number: true},
 		numberDE: {numberDE: true},
 		digits: {digits: true},
+		alphaNumeric: {alphaNumeric: true},
 		creditcard: {creditcard: true}
 	},
 
@@ -1032,6 +1034,10 @@ $.extend($.validator, {
 		// http://docs.jquery.com/Plugins/Validation/Methods/digits
 		digits: function(value, element) {
 			return this.optional(element) || /^\d+$/.test(value);
+		},
+
+		alphaNumeric: function(value, element) {
+			return this.optional(element) || /^[a-z0-9]+$/i.test(value);
 		},
 
 		// http://docs.jquery.com/Plugins/Validation/Methods/creditcard

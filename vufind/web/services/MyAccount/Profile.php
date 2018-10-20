@@ -87,8 +87,12 @@ class MyAccount_Profile extends MyAccount
 			}
 
 			if ($allowPinReset) {
-				$numericOnlyPINs = $configArray['Catalog']['numericOnlyPins'];
-				$interface->assign('numericOnlyPins', $numericOnlyPINs);
+				$numericOnlyPins      = $configArray['Catalog']['numericOnlyPins'];
+				$alphaNumericOnlyPins = $configArray['Catalog']['alphaNumericOnlyPins'];
+				$pinMinimumLength     = $configArray['Catalog']['pinMinimumLength'];
+				$interface->assign('numericOnlyPins', $numericOnlyPins);
+				$interface->assign('alphaNumericOnlyPins', $alphaNumericOnlyPins);
+				$interface->assign('pinMinimumLength', $pinMinimumLength);
 			}
 
 			$interface->assign('showUsernameField', $patron->getShowUsernameField());
