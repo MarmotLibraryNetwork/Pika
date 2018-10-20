@@ -1037,14 +1037,7 @@ abstract class HorizonAPI extends Horizon{
 	}
 
 	public function getWebServiceResponse($url){
-		$ch = curl_init();
-		curl_setopt($ch, CURLOPT_URL, $url);
-		//curl_setopt($ch, CURLOPT_HTTPHEADER, array('Accept-Charset: utf-8'));
-		curl_setopt($ch, CURLOPT_HEADER, false);
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-		$xml = curl_exec($ch);
-		curl_close($ch);
-
+		$xml = $this->_curlGetPage($url);
 		if ($xml !== false && $xml !== 'false'){
 			if (strpos($xml, '<') !== FALSE){
 				//Strip any non-UTF-8 characters
