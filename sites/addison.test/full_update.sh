@@ -14,6 +14,8 @@ PIKASERVER=addison.test
 PIKADBNAME=pika
 OUTPUT_FILE="/var/log/vufind-plus/${PIKASERVER}/full_update_output.log"
 
+MINFILE1SIZE=$((320000000))
+
 # Check if full_update is already running
 #TODO: Verify that the PID file doesn't get log-rotated
 PIDFILE="/var/log/vufind-plus/${PIKASERVER}/full_update.pid"
@@ -117,7 +119,7 @@ rm /data/vufind-plus/${PIKASERVER}/grouped_work_primary_identifiers.sql
 cd /usr/local/vufind-plus/sites/${PIKASERVER}; ./${PIKASERVER}.sh restart
 
 
-#TODO: Does Addison use Volume Records
+# Addison doesn't use Volume Records
 # Get the updated volume information
 #cd /usr/local/vufind-plus/vufind/cron;
 #nice -n -10 java -jar cron.jar ${PIKASERVER} ExportSierraData >> ${OUTPUT_FILE}
@@ -143,19 +145,50 @@ fi
 
 #Extract from ILS
 #Copy extracts from FTP Server
-/usr/local/vufind-plus/cron/vufind/moveFullExport.sh addison/sierra ${PIKASERVER} ${PIKASERVER} >> ${OUTPUT_FILE}
+mount 10.1.2.7:/ftp/addison/sierra /mnt/ftp
+FILE1=$(find /mnt/ftp/ -name fullexport*.mrc -mtime -1 | sort -n | tail -1)
 
-#Validate the export
-cd /usr/local/vufind-plus/vufind/cron; java -server -XX:+UseG1GC -jar cron.jar ${PIKASERVER} ValidateMarcExport >> ${OUTPUT_FILE}
+if [ -n "$FILE1" ]
+then
+		FILE1SIZE=$(wc -c <"$FILE1")
+		if [ $FILE1SIZE -ge $MINFILE1SIZE ]; then
 
-#Full Regroup
-cd /usr/local/vufind-plus/vufind/record_grouping; java -server -XX:+UseG1GC -Xmx2G -jar record_grouping.jar ${PIKASERVER} fullRegroupingNoClear >> ${OUTPUT_FILE}
+			echo "Latest file is " $FILE1 >> ${OUTPUT_FILE}
+			DIFF=$(($FILE1SIZE - $MINFILE1SIZE))
+			PERCENTABOVE=$((100 * $DIFF / $MINFILE1SIZE))
+			echo "The export file is $PERCENTABOVE (%) larger than the minimum size check." >> ${OUTPUT_FILE}
 
-#Full Reindex
-cd /usr/local/vufind-plus/vufind/reindexer; java -server -XX:+UseG1GC -Xmx2G -jar reindexer.jar ${PIKASERVER} fullReindex >> ${OUTPUT_FILE}
+			cp $FILE1 /data/vufind-plus/${PIKASERVER}/marc/fullexport.mrc
 
-# Truncate Continous Reindexing list of changed items
-cat /dev/null >| /data/vufind-plus/${PIKASERVER}/marc/changed_items_to_process.csv
+			#Delete full exports older than a week
+			find /mnt/ftp/ -name fullexport*.mrc -mtime +7 -delete
+			umount /mnt/ftp
+
+		#Validate the export
+		cd /usr/local/vufind-plus/vufind/cron; java -server -XX:+UseG1GC -jar cron.jar ${PIKASERVER} ValidateMarcExport >> ${OUTPUT_FILE}
+
+		#Full Regroup
+		cd /usr/local/vufind-plus/vufind/record_grouping; java -server -XX:+UseG1GC -Xmx2G -jar record_grouping.jar ${PIKASERVER} fullRegroupingNoClear >> ${OUTPUT_FILE}
+
+		#Full Reindex
+		cd /usr/local/vufind-plus/vufind/reindexer; java -server -XX:+UseG1GC -Xmx2G -jar reindexer.jar ${PIKASERVER} fullReindex >> ${OUTPUT_FILE}
+
+		# Truncate Continous Reindexing list of changed items
+		cat /dev/null >| /data/vufind-plus/${PIKASERVER}/marc/changed_items_to_process.csv
+
+		NEWLEVEL=$(($FILE1SIZE * 97 / 100))
+		echo "" >> ${OUTPUT_FILE}
+		echo "Based on today's export file, a new minimum filesize check level should be set to $NEWLEVEL" >> ${OUTPUT_FILE}
+
+		else
+			umount /mnt/ftp
+			echo $FILE1 " size " $FILE1SIZE "is less than minimum size :" $MINFILE1SIZE "; Export was not moved to data directory." >> ${OUTPUT_FILE}
+		fi
+
+else
+	umount /mnt/ftp
+	echo "Did not find a Sierra export file from the last 24 hours, Full Regrouping & Full Reindexing skipped." >> ${OUTPUT_FILE}
+fi
 
 # Clean-up Solr Logs
 find /usr/local/vufind-plus/sites/default/solr/jetty/logs -name "solr_log_*" -mtime +7 -delete
