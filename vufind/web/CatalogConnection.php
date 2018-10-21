@@ -326,17 +326,17 @@ class CatalogConnection
 	{
 		$transactions = $this->driver->getMyCheckouts($user, $linkedAccount);
 		foreach ($transactions as $key => $curTitle){
-			$curTitle['user'] = $user->getNameAndLibraryLabel();
+			$curTitle['user']   = $user->getNameAndLibraryLabel();
 			$curTitle['userId'] = $user->id;
 			$curTitle['fullId'] = $this->accountProfile->recordSource . ':' . $curTitle['id'];
 
 			if ($curTitle['dueDate']){
 				// use the same time of day to calculate days until due, in order to avoid errors wiht rounding
-				$dueDate = strtotime('midnight', $curTitle['dueDate']);
-				$today = strtotime('midnight');
+				$dueDate      = strtotime('midnight', $curTitle['dueDate']);
+				$today        = strtotime('midnight');
 				$daysUntilDue = ceil(($dueDate - $today) / (24 * 60 * 60));
-				$overdue = $daysUntilDue < 0;
-				$curTitle['overdue'] = $overdue;
+				$overdue      = $daysUntilDue < 0;
+				$curTitle['overdue']      = $overdue;
 				$curTitle['daysUntilDue'] = $daysUntilDue;
 			}
 			//Determine if the record
