@@ -807,7 +807,7 @@ abstract class SirsiDynixROA extends HorizonAPI //TODO: This class doesn't need 
 //		$loginDescribeResponse = $this->getWebServiceResponse($webServiceURL . '/user/patron/login/describe');
 			$loginUserUrl      = $webServiceURL . '/user/patron/login';
 			$params            = array(
-				'login' => $username,
+				'login'    => $username,
 				'password' => $password,
 			);
 			$loginUserResponse = $this->getWebServiceResponse($loginUserUrl, $params);
@@ -1577,10 +1577,10 @@ abstract class SirsiDynixROA extends HorizonAPI //TODO: This class doesn't need 
 	}
 
 	/**
-	 * @param $user
-	 * @param $oldPin
-	 * @param $newPin
-	 * @param $confirmNewPin
+	 * @param User   $patron         The user to update PIN for
+	 * @param string $oldPin         The current PIN
+	 * @param string $newPin         The PIN to update to
+	 * @param string $confirmNewPin  A second entry to confirm the new PIN number (checked in User now)
 	 * @return string
 	 */
 	function updatePin($patron, $oldPin, $newPin, $confirmNewPin)
@@ -1594,7 +1594,7 @@ abstract class SirsiDynixROA extends HorizonAPI //TODO: This class doesn't need 
 
 		$params = array(
 			'currentPin' => $oldPin,
-		  'newPin' => $newPin
+		  'newPin'     => $newPin
 		);
 
 		$webServiceURL = $this->getWebServiceURL();
