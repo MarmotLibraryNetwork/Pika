@@ -269,7 +269,6 @@ class MaterialsRequest_AJAX extends Action{
 					$requestFormFields = $materialsRequest->getRequestFormFields($requestLibrary->libraryId, $staffView);
 					$interface->assign('requestFormFields', $requestFormFields);
 
-
 					// Statuses
 					$statusQuery           = new MaterialsRequestStatus();
 					$materialsRequest->joinAdd($statusQuery);
@@ -279,8 +278,8 @@ class MaterialsRequest_AJAX extends Action{
 					$materialsRequest->joinAdd($locationQuery, "LEFT");
 
 					// Format Labels
-					$formats = new MaterialsRequestFormats();
-					$formats->libraryId = $requestLibrary->libraryId;
+					$formats             = new MaterialsRequestFormats();
+					$formats->libraryId  = $requestLibrary->libraryId;
 					$usingDefaultFormats = $formats->count() == 0;
 
 					$materialsRequest->selectAdd();
@@ -298,14 +297,13 @@ class MaterialsRequest_AJAX extends Action{
 							/** @var MaterialsRequestFormats $format */
 							foreach ($defaultFormats as $format) {
 								if ($materialsRequest->format == $format->format ){
-									$materialsRequest->formatLabel = $format->formatLabel;
-									$materialsRequest->authorLabel = $format->authorLabel;
+									$materialsRequest->formatLabel   = $format->formatLabel;
+									$materialsRequest->authorLabel   = $format->authorLabel;
 									$materialsRequest->specialFields = $format->specialFields;
 									break;
 								}
 							}
 						}
-
 						$interface->assign('materialsRequest', $materialsRequest);
 
 						if ($user && UserAccount::userHasRole('library_material_requests')) {
@@ -322,7 +320,6 @@ class MaterialsRequest_AJAX extends Action{
 									$barCodeColumn = $accountProfile->loginConfiguration == 'name_barcode' ? 'cat_password' : 'cat_username';
 								}
 								$interface->assign('barCodeColumn', $barCodeColumn);
-
 							}
 						} else {
 							$interface->assign('showUserInformation', false);
