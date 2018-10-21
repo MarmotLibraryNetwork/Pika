@@ -28,7 +28,7 @@ abstract class HorizonAPI3_23 extends HorizonAPI
 	 */
 	function updatePin($patron, $oldPin, $newPin, $confirmNewPin){
 		//Log the user in
-		list($userValid, $sessionToken) = $this->loginViaWebService($patron->cat_username, $patron->cat_password);
+		list($userValid, $sessionToken) = $this->loginViaWebService($patron);
 		if (!$userValid){
 			return 'Sorry, it does not look like you are logged in currently.  Please login and try again';
 		}
@@ -45,7 +45,7 @@ abstract class HorizonAPI3_23 extends HorizonAPI
 				$errors .= $errorMessage['message'] . ';';
 			}
 			global $logger;
-			$logger->log('WCPL Driver error updating user\'s Pin :'.$errors, PEAR_LOG_ERR);
+			$logger->log('Horizon API 3.23 Driver error updating user\'s Pin :'.$errors, PEAR_LOG_ERR);
 			return 'Sorry, we encountered an error while attempting to update your pin. Please contact your local library.';
 		} elseif (!empty($updatePinResponse['sessionToken'])){
 			// Success response isn't particularly clear, but returning the session Token seems to indicate the pin updated. plb 8-15-2016
@@ -58,6 +58,12 @@ abstract class HorizonAPI3_23 extends HorizonAPI
 	}
 
 
+	/**
+	 * @param User        $patron
+	 * @param string      $newPin
+	 * @param null|string $resetToken
+	 * @return array
+	 */
 	function resetPin($patron, $newPin, $resetToken=null){
 		if (empty($resetToken)) {
 			global $logger;
@@ -116,7 +122,7 @@ abstract class HorizonAPI3_23 extends HorizonAPI
 
 			// If possible, check if Horizon has an email address for the patron
 			if (!empty($patron->cat_password)) {
-				list($userValid, $sessionToken, $ilsUserID) = $this->loginViaWebService($barcode, $patron->cat_password);
+				list($userValid, $sessionToken, $ilsUserID) = $this->loginViaWebService($patron);
 				if ($userValid) {
 					// Yay! We were able to login with the pin Pika has!
 
@@ -173,44 +179,43 @@ abstract class HorizonAPI3_23 extends HorizonAPI
 		}
 	}
 
+	protected $usingNewerAPICalls = false;
+	protected $sessionToken;
+	protected function getCustomHeaders() {
+		if ($this->usingNewerAPICalls) {
+			global $configArray;
+			$requestHeaders = array(
+				'Accept: application/json',
+				'Content-Type: application/json',
+				'SD-Originating-App-Id: Pika',
+				'x-sirs-clientId: ' . $configArray['Catalog']['clientId'],
+			);
+
+			if (!empty($this->sessionToken)) {
+				$requestHeaders[] = "x-sirs-sessionToken: $this->sessionToken";
+			}
+			return $requestHeaders;
+		}
+		return null;
+	}
 
 	/**
 	 *  Handles API calls to the newer Horizon APIs.
 	 *
-	 * @param $url
+	 * @param $url         URL to call
 	 * @param array $post  POST variables get encoded as JSON
-	 * @return bool|mixed|SimpleXMLElement
+	 * @return bool|mixed  return false or the response
 	 */
 	public function getWebServiceResponseUpdated($url, $post = array(), $sessionToken = ''){
-		global $configArray;
-		$requestHeaders = array(
-			'Accept: application/json',
-			'Content-Type: application/json',
-			'SD-Originating-App-Id: Pika',
-			'x-sirs-clientId: ' . $configArray['Catalog']['clientId'],
-		);
+		$this->usingNewerAPICalls = true; // Set to use custom headers
+		$this->sessionToken       = $sessionToken; // used to build custom headers
+		$this->_close_curl();
 
-		if (!empty($sessionToken)) {
-			$requestHeaders[] = "x-sirs-sessionToken: $sessionToken";
-		}
+		$curlResponse = $this->_curlPostBodyData($url, $post, true);
 
-		$ch = curl_init();
-		curl_setopt($ch, CURLOPT_URL, $url);
-		curl_setopt($ch, CURLOPT_HTTPHEADER, $requestHeaders);
-		if (!empty($post)) {
-			$post = json_encode($post);  // Turn Post Fields into JSON Data
-			curl_setopt($ch, CURLOPT_POST, true);
-			curl_setopt($ch, CURLOPT_POSTFIELDS, $post);
-		}
-		curl_setopt($ch, CURLOPT_HEADER, false);
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-
-//		curl_setopt($ch, CURLINFO_HEADER_OUT, true); // enables request headers for curl_getinfo()
-		$curlResponse = curl_exec($ch);
-
-//		$info = curl_getinfo($ch);  // for debugging curl calls
-
-		curl_close($ch);
+		// Close up connections in case an older call is used later (though probably not)
+		$this->usingNewerAPICalls = false;
+		$this->_close_curl();
 
 		if ($curlResponse !== false && $curlResponse !== 'false'){
 			$response = json_decode($curlResponse, true);
@@ -218,11 +223,9 @@ abstract class HorizonAPI3_23 extends HorizonAPI
 				return $response;
 			} else {
 				global $logger;
-				$logger->log('Error Parsing JSON response in WCPL Driver: ' . json_last_error_msg(), PEAR_LOG_ERR);
+				$logger->log('Error Parsing JSON response in Horizon 3.23 Driver: ' . json_last_error_msg(), PEAR_LOG_ERR);
 				return false;
 			}
-
-
 		}else{
 			global $logger;
 			$logger->log('Curl problem in getWebServiceResponseUpdated', PEAR_LOG_WARNING);

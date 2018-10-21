@@ -108,8 +108,14 @@ abstract class ScreenScrapingDriver implements DriverInterface {
 	 *  Is ran automatically as the class is being shutdown.
 	 */
 	public function _close_curl() {
-		if ($this->curl_connection) curl_close($this->curl_connection);
-		if ($this->cookieJar && file_exists($this->cookieJar)) unlink($this->cookieJar);
+		if ($this->curl_connection) {
+			curl_close($this->curl_connection);
+			unset($this->curl_connection);
+		}
+		if ($this->cookieJar && file_exists($this->cookieJar)) {
+			unlink($this->cookieJar);
+			unset($this->cookieJar);
+		}
 	}
 
 	/**
