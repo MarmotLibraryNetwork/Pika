@@ -982,16 +982,16 @@ abstract class IslandoraDriver extends RecordInterface {
 	public function getAllSubjectHeadings($includeTitleAsSubject = true) {
 		if ($this->subjectHeadings == null) {
 			require_once ROOT_DIR . '/sys/ArchiveSubject.php';
-			$archiveSubjects = new ArchiveSubject();
-			$subjectsToIgnore = array();
+			$archiveSubjects    = new ArchiveSubject();
+			$subjectsToIgnore   = array();
 			$subjectsToRestrict = array();
 			if ($archiveSubjects->find(true)){
-				$subjectsToIgnore = array_flip(explode("\r\n", strtolower($archiveSubjects->subjectsToIgnore)));
+				$subjectsToIgnore   = array_flip(explode("\r\n", strtolower($archiveSubjects->subjectsToIgnore)));
 				$subjectsToRestrict = array_flip(explode("\r\n", strtolower($archiveSubjects->subjectsToRestrict)));
 			}
 
 			$subjectsWithLinks = $this->getAllSubjectsWithLinks();
-			$relatedSubjects = array();
+			$relatedSubjects   = array();
 			if ($includeTitleAsSubject) {
 				$title = $this->getTitle();
 				if (strlen($title) > 0) {
@@ -1602,23 +1602,23 @@ abstract class IslandoraDriver extends RecordInterface {
 			$timer->logTime("Starting getDirectlyLinkedArchiveObjects");
 			$this->directlyRelatedObjects = array(
 					'numFound' => 0,
-					'objects' => array(),
+					'objects'  => array(),
 			);
 
 			$relatedObjects = $this->getModsValues('relatedObject', 'marmot');
 			if (count($relatedObjects) > 0){
-				$numObjects = 0;
+				$numObjects        = 0;
 				$relatedObjectPIDs = array();
-				$objectNotes = array();
-				$objectLabels = array();
+				$objectNotes       = array();
+				$objectLabels      = array();
 				foreach ($relatedObjects as $relatedObjectSnippets){
-					$objectPid = trim($this->getModsValue('objectPid', 'marmot', $relatedObjectSnippets));
-					$objectLabel = trim($this->getModsValue('objectTitle', 'marmot', $relatedObjectSnippets));
+					$objectPid        = trim($this->getModsValue('objectPid', 'marmot', $relatedObjectSnippets));
+					$objectLabel      = trim($this->getModsValue('objectTitle', 'marmot', $relatedObjectSnippets));
 					$relationshipNote = trim($this->getModsValue('objectRelationshipNote', 'marmot', $relatedObjectSnippets));
 					if (strlen($objectPid) > 0){
 						$numObjects++;
-						$relatedObjectPIDs[] = $objectPid;
-						$objectNotes[$objectPid] = $relationshipNote;
+						$relatedObjectPIDs[]      = $objectPid;
+						$objectNotes[$objectPid]  = $relationshipNote;
 						$objectLabels[$objectPid] = $objectLabel;
 					}
 				}
@@ -1635,13 +1635,13 @@ abstract class IslandoraDriver extends RecordInterface {
 						foreach ($response['response']['docs'] as $doc) {
 							$entityDriver = RecordDriverFactory::initRecordDriver($doc);
 							$objectInfo = array(
-									'pid' => $entityDriver->getUniqueID(),
-									'label' => $objectLabels[$entityDriver->getUniqueID()] ? $objectLabels[$entityDriver->getUniqueID()] : $entityDriver->getTitle(),
+									'pid'         => $entityDriver->getUniqueID(),
+									'label'       => $objectLabels[$entityDriver->getUniqueID()] ? $objectLabels[$entityDriver->getUniqueID()] : $entityDriver->getTitle(),
 									'description' => $entityDriver->getTitle(),
-									'image' => $entityDriver->getBookcoverUrl('medium'),
-									'link' => $entityDriver->getRecordUrl(),
-									'driver' => $entityDriver,
-									'note' => $objectNotes[$entityDriver->getUniqueID()]
+									'image'       => $entityDriver->getBookcoverUrl('medium'),
+									'link'        => $entityDriver->getRecordUrl(),
+									'driver'      => $entityDriver,
+									'note'        => $objectNotes[$entityDriver->getUniqueID()]
 							);
 							$this->directlyRelatedObjects['objects'][$objectInfo['pid']] = $objectInfo;
 							$this->directlyRelatedObjects['numFound']++;
@@ -1662,7 +1662,7 @@ abstract class IslandoraDriver extends RecordInterface {
 			$searchObject->setLimit(100);
 			$searchObject->setSearchTerms(array(
 					'lookfor' => '"' . $this->getUniqueID() . '"',
-					'index' => 'IslandoraRelationshipsById'
+					'index'   => 'IslandoraRelationshipsById'
 			));
 
 			$searchObject->clearHiddenFilters();
@@ -1728,13 +1728,13 @@ abstract class IslandoraDriver extends RecordInterface {
 						$this->addRelatedEntityToArrays($entityDriver->getUniqueID(), $entityDriver->getTitle(), 'place', '', $role);
 					}else{
 						$objectInfo = array(
-								'pid' => $entityDriver->getUniqueID(),
-								'label' => $entityDriver->getTitle(),
+								'pid'         => $entityDriver->getUniqueID(),
+								'label'       => $entityDriver->getTitle(),
 								'description' => $entityDriver->getTitle(),
-								'image' => $entityDriver->getBookcoverUrl('medium'),
-								'link' => $entityDriver->getRecordUrl(),
-								'role' => $role,
-								'driver' => $entityDriver
+								'image'       => $entityDriver->getBookcoverUrl('medium'),
+								'link'        => $entityDriver->getRecordUrl(),
+								'role'        => $role,
+								'driver'      => $entityDriver
 						);
 						$this->directlyRelatedObjects['objects'][$objectInfo['pid']] = $objectInfo;
 						$this->directlyRelatedObjects['numFound']++;
@@ -1887,7 +1887,7 @@ abstract class IslandoraDriver extends RecordInterface {
 		}
 	}
 
-	public function getDateCreated() {
+	public function getDateCreated($dateFormat = 'm/d/Y') {
 		$dateCreated = $this->getModsValue('dateCreated', 'mods');
 		if ($dateCreated == ''){
 			$dateCreated = $this->getModsValue('dateIssued', 'mods');
@@ -1897,7 +1897,7 @@ abstract class IslandoraDriver extends RecordInterface {
 		}
 		$formattedDate = DateTime::createFromFormat('Y-m-d', $dateCreated);
 		if ($formattedDate != false) {
-			$dateCreated = $formattedDate->format('m/d/Y');
+			$dateCreated = $formattedDate->format($dateFormat);
 		}
 		return $dateCreated;
 	}
@@ -2921,7 +2921,7 @@ abstract class IslandoraDriver extends RecordInterface {
 					$rightsHolderDriver = RecordDriverFactory::initRecordDriver($rightsHolderObj);
 					$rightsHolderData[] = array(
 							'label' => $rightsHolderTitle,
-							'link' => $rightsHolderDriver->getRecordUrl()
+							'link'  => $rightsHolderDriver->getRecordUrl()
 					);
 					$validRightsHolder = true;
 				}
@@ -3147,7 +3147,7 @@ abstract class IslandoraDriver extends RecordInterface {
 			$collections = $this->getRelatedCollections();
 			foreach ($collections as $collection){
 				/** @var CollectionDriver $collectionDriver */
-				$collectionDriver = $collection['driver'];
+				$collectionDriver   = $collection['driver'];
 				$collectionBranding = $collectionDriver->getBrandingInformation();
 				foreach ($collectionBranding as $key => $entity){
 					if ($entity['sortIndex'] <= 3){

@@ -11,18 +11,22 @@ class API_ArchiveAPI extends Action {
 	function launch(){
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
 
-		header('Content-type: application/json');
-		header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
-		header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
-
 		if ($method != 'getDPLASearchResults' && method_exists($this, $method)) {
-			$output = json_encode(array('result'=>$this->$method()));
+			$output = json_encode(array('result' => $this->$method()));
 		} else {
 			$output = json_encode(array('error'=>"invalid_method '$method'"));
 		}
+		header('Content-type: application/json');
+		header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
+		header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
 		echo $output;
 	}
 
+	private $organizationRolesToIncludeInDPLA = array(
+		'owner',
+		'donor',
+		'acknowledgement',
+	);
 	/**
 	 * Returns a feed of content to be sent by DPLA after being processed by the state library.  May not return
 	 * a full number of results due to filtering at the collection level.
@@ -30,53 +34,145 @@ class API_ArchiveAPI extends Action {
 	 * Future libraries may require different information.
 	 */
 	function getDPLAFeed(){
-		$curPage = isset($_REQUEST['page']) ? $_REQUEST['page'] : 1;
-		$pageSize = isset($_REQUEST['pageSize']) ? $_REQUEST['pageSize'] : 100;
+		$curPage      = isset($_REQUEST['page']) ? $_REQUEST['page'] : 1;
+		$pageSize     = isset($_REQUEST['pageSize']) ? $_REQUEST['pageSize'] : 100;
 		$changesSince = isset($_REQUEST['changesSince']) ? $_REQUEST['changesSince'] : null;
-		$namespace = isset($_REQUEST['namespace']) ? $_REQUEST['namespace'] : null;
+		$namespace    = isset($_REQUEST['namespace']) ? $_REQUEST['namespace'] : null;
 		list($searchObject, $collectionsToInclude, $searchResult) = $this->getDPLASearchResults($namespace, $changesSince, $curPage, $pageSize);
 
 		$dplaDocs = array();
 
 		foreach ($searchResult['response']['docs'] as $doc){
-			/** @var IslandoraDriver $record */
-			$record = RecordDriverFactory::initRecordDriver($doc);
-			$contributingLibrary = $record->getContributingLibrary();
-			//$exportToDPLA = isset($doc['mods_extension_marmotLocal_pikaOptions_dpla_s']) ? $doc['mods_extension_marmotLocal_pikaOptions_dpla_s'] : 'collection';
-
-			//Get the owning library
 			$dplaDoc = array();
-			if ($contributingLibrary == null){
-				list($namespace) = explode(':', $record->getUniqueID());
-				$dplaDoc['dataProvider'] = $namespace;
-			}else{
-				$dplaDoc['dataProvider'] = $contributingLibrary['libraryName'];
-			}
+			/** @var IslandoraDriver $record */
+			$record                   = RecordDriverFactory::initRecordDriver($doc);
+			$dplaDoc['identifier']    = $record->getUniqueID();
+			$dplaDoc['title']         = $record->getTitle();
+			$dplaDoc['description']   = $record->getDescription();
+			$dplaDoc['type']          = $record->getFormat();
+			$dplaDoc['format']        = $this->mapFormat($record->getFormat());
+			$dplaDoc['preview']       = $record->getBookcoverUrl('small');
+			$dplaDoc['includeInDPLA'] = isset($doc['mods_extension_marmotLocal_pikaOptions_dpla_s']) ? $doc['mods_extension_marmotLocal_pikaOptions_dpla_s'] : 'default';
 
-			$dplaDoc['isShownAt'] = $contributingLibrary['baseUrl'] . $record->getLinkUrl();
-			if (isset($doc['mods_accessCondition_marmot_rightsStatementOrg_t'])){
-				$dplaDoc['rights'] = $doc['mods_accessCondition_marmot_rightsStatementOrg_t'];
-			}else{
-				$dplaDoc['rights'] = 'http://rightsstatements.org/page/CNE/1.0/?language=en';
-			}
-
-			$dplaDoc['title'] = $record->getTitle();
+			$dateCreated             = $record->getDateCreated('Y-m-d'); //Reformat back to YYYY-MM-DD
+			$dplaDoc['dateCreated']  = $dateCreated ? $dateCreated : null;
 
 			$language = $record->getModsValue('languageTerm');
 			if (strlen($language)){
 				$dplaDoc['language'] = $language;
 			}
 
-			$dplaDoc['preview'] = $record->getBookcoverUrl('small');
-			$dplaDoc['dateCreated'] = null;
-				//Reformat back to YYYY-MM-DD
-			$formattedDate = DateTime::createFromFormat('m/d/Y', $record->getDateCreated());
-			if ($formattedDate != false) {
-				$dateCreated = $formattedDate->format('Y-m-d');
-				$dplaDoc['dateCreated'] = $dateCreated;
+			$subTitle = $record->getSubTitle();
+			if (strlen($subTitle) > 0){
+				$dplaDoc['alternativeTitle'] = $subTitle;
 			}
 
-			$relatedPlaces = $record->getRelatedPlaces();
+			// Extent (What the digital object is a representation of)
+			if (isset($doc['mods_physicalDescription_extent_s'])){
+				$dplaDoc['extent'] = $doc['mods_physicalDescription_extent_s'];
+			}
+
+			// Creator
+			if (isset($doc['mods_extension_marmotLocal_hasCreator_entityTitle_ms'])){
+				$dplaDoc['creator'] = $doc['mods_extension_marmotLocal_hasCreator_entityTitle_ms'];
+			}
+
+			// Marmot Contributor
+			$contributingLibrary       = $record->getContributingLibrary();
+			if ($contributingLibrary == null){
+				list($namespace) = explode(':', $record->getUniqueID());
+				global $configArray;
+				$dplaDoc['dataProvider'] = $namespace;
+				$dplaDoc['isShownAt']    = $configArray['Catalog']['url'] . $record->getLinkUrl();
+				// When the contributing Library isn't provided we don't have an ideal base URL
+			}else{
+				$dplaDoc['dataProvider'] = $contributingLibrary['libraryName'];
+				$dplaDoc['isShownAt']    = $contributingLibrary['baseUrl'] . $record->getLinkUrl();
+			}
+
+			// Partner Contributors
+			$additionalContributors    = $record->getBrandingInformation();
+			$institutionalContributors = array();
+			foreach ($additionalContributors as $pid => $contributor) {
+				if ($pid != $contributingLibrary['pid'] && strpos($pid, 'organization') === 0 && ( !empty($contributor['role']) && in_array($contributor['role'], $this->organizationRolesToIncludeInDPLA) )) {
+					// Include only organizations with specific roles that aren't the library itself
+					if (empty($contributor['label'])) {
+						/** @var OrganizationDriver $islandoraObject */
+						$islandoraObject = RecordDriverFactory::initIslandoraDriverFromPid($pid);
+						$title           = $islandoraObject->getTitle();
+						if (!empty($title)) {
+							$institutionalContributors[] = $title;
+						}
+					} else {
+						$institutionalContributors[] = $contributor['label'];
+					}
+				}
+			}
+			if (!empty($institutionalContributors)) {
+				// Institutional Contributors becomes the data Provider & the Marmot Contributor becomes the intermediate data provider
+				$intermediateProvider            = $dplaDoc['dataProvider'];
+				$dplaDoc['intermediateProvider'] = $intermediateProvider;
+				$dplaDoc['dataProvider']         = count($institutionalContributors) == 1 ? $institutionalContributors[0] : $institutionalContributors;
+			}
+
+			// Related Collections
+			$relatedCollections = $record->getRelatedCollections();
+			$dplaRelations      = array();
+			foreach ($relatedCollections as $relatedCollection){
+				$dplaRelations[] = $relatedCollection['label'];
+			}
+			$dplaDoc['relation'] = $dplaRelations;
+
+			// Parent Collection
+			$parentCollectionPid = null;
+			if (!empty($doc['RELS_EXT_isMemberOfCollection_uri_mt'])) {
+				if (is_array($doc['RELS_EXT_isMemberOfCollection_uri_mt'])) {
+					if (count($doc['RELS_EXT_isMemberOfCollection_uri_mt']) == 1) {
+						$parentCollectionPid = str_replace('info:fedora/', '', reset($doc['RELS_EXT_isMemberOfCollection_uri_mt']));
+					} else {
+						// More than one parent collection?  Shouldn't be an issue
+					}
+				}
+//				else {
+//					$parentCollectionPid = str_replace('info:fedora/', '', $doc['RELS_EXT_isMemberOfCollection_uri_mt']);
+//				}
+			}
+
+			// Rights.org statement
+			$rightsStatement = '';
+			if (isset($doc['mods_accessCondition_marmot_rightsStatementOrg_t'])){
+				$rightsStatement = $doc['mods_accessCondition_marmot_rightsStatementOrg_t'];
+			}else{
+				if (!empty($doc['RELS_EXT_isMemberOfCollection_uri_mt'])) {
+					foreach ($doc['RELS_EXT_isMemberOfCollection_uri_mt'] as $parentCollectionURI) {
+						$parentCollectionPid = str_replace('info:fedora/', '', $parentCollectionURI);
+						if (!empty($parentCollectionPid)) {
+							/** @var CollectionDriver $collectionDriver */
+							$collectionDriver = RecordDriverFactory::initIslandoraDriverFromPid($parentCollectionPid);
+							if (!PEAR_Singleton::isError($collectionDriver)) {
+								$rightsStatement = $collectionDriver->getModsValue('rightsStatementOrg', 'marmot');
+								if ($rightsStatement) {
+									break;
+								}
+							}
+						}
+					}
+				}
+
+			}
+			if (empty($rightsStatement)) {
+				$rightsStatement = 'http://rightsstatements.org/page/CNE/1.0/?language=en';
+			}
+			$rightsStatement   = str_replace('?language=en', '', $rightsStatement); // Our DPLA hub requested removal of language parameter
+			$dplaDoc['rights'] = $rightsStatement;
+
+			// Rights holder
+			if (isset($doc['mods_accessCondition_rightsHolder_entityTitle_ms'])){
+				$dplaDoc['rightsHolder'] = $doc['mods_accessCondition_rightsHolder_entityTitle_ms'];
+			}
+
+			// Places
+			$relatedPlaces     = $record->getRelatedPlaces();
 			$dplaRelatedPlaces = array();
 			foreach ($relatedPlaces as $relatedPlace){
 				$dplaRelatedPlaces[] = $relatedPlace['label'];
@@ -84,49 +180,36 @@ class API_ArchiveAPI extends Action {
 			if (count($dplaRelatedPlaces)){
 				$dplaDoc['place'] = $dplaRelatedPlaces;
 			}
+
+			// Subjects
 			$subjects = $record->getAllSubjectHeadings(false); // DPLA does not want the title included as a subject
-			$dplaDoc['subject'] = array_keys($subjects);
-			if (isset($doc['mods_extension_marmotLocal_hasCreator_entityTitle_ms'])){
-				$dplaDoc['creator'] = $doc['mods_extension_marmotLocal_hasCreator_entityTitle_ms'];
+			// Marmot wants related Collections included in the subjects
+			if (empty($subjects)) {
+				$subjects = $dplaRelations;
+			} else {
+				$subjects = array_keys($subjects);
+				$subjects = array_merge($subjects, $dplaRelations);
 			}
-			$dplaDoc['description'] = $record->getDescription();
-			$dplaDoc['format'] = $this->mapFormat($record->getFormat());
-			$publishers = array();
+			$dplaDoc['subject'] = $subjects;
+
+			// Publishers
+			$publishers     = array();
 			$relatedPeople = $record->getRelatedPeople();
 			foreach ($relatedPeople as $relatedPerson){
-				if ($relatedPerson['role'] = 'publisher'){
+				if ($relatedPerson['role'] == 'publisher'){
 					$publishers[] = $relatedPerson['label'];
 				}
 			}
 			$relatedOrganizations = $record->getRelatedOrganizations();
 			foreach ($relatedOrganizations as $relatedOrganization){
-				if ($relatedOrganization['role'] = 'publisher'){
+				if ($relatedOrganization['role'] == 'publisher'){
 					$publishers[] = $relatedOrganization['label'];
 				}
 			}
 			if (count($publishers) > 0){
 				$dplaDoc['publisher'] = $publishers;
 			}
-			$dplaDoc['type'] = $record->getFormat();
-			$subTitle = $record->getSubTitle();
-			if (strlen($subTitle) > 0){
-				$dplaDoc['alternativeTitle'] = $record->getSubTitle();
-			}
 
-			if (isset($doc['mods_physicalDescription_extent_s'])){
-				$dplaDoc['extent'] = $doc['mods_physicalDescription_extent_s'];
-			}
-			$dplaDoc['identifier'] = $record->getUniqueID();
-			$relatedCollections = $record->getRelatedCollections();
-			$dplaRelations = array();
-			foreach ($relatedCollections as $relatedCollection){
-				$dplaRelations[] = $relatedCollection['label'];
-			}
-			$dplaDoc['relation'] = $dplaRelations;
-			if (isset($doc['mods_accessCondition_rightsHolder_entityTitle_ms'])){
-				$dplaDoc['rightsHolder'] = $doc['mods_accessCondition_rightsHolder_entityTitle_ms'];
-			}
-			$dplaDoc['includeInDPLA'] = isset($doc['mods_extension_marmotLocal_pikaOptions_dpla_s']) ? $doc['mods_extension_marmotLocal_pikaOptions_dpla_s'] : 'default';
 			$dplaDocs[] = $dplaDoc;
 		}
 
@@ -140,29 +223,29 @@ class API_ArchiveAPI extends Action {
 
 		$summary = $searchObject->getResultSummary();
 		$results = array(
-				'numResults' => $summary['resultTotal'],
-				'numPages' => ceil($summary['resultTotal'] / $pageSize),
-				'recordsByLibrary' => $recordsByLibrary,
+				'numResults'          => $summary['resultTotal'],
+				'numPages'            => ceil($summary['resultTotal'] / $pageSize),
+				'recordsByLibrary'    => $recordsByLibrary,
 				'includedCollections' => $collectionsToInclude,
-				'docs' => $dplaDocs,
+				'docs'                => $dplaDocs,
 		);
 
 		return $results;
 	}
 
 	private $formatMap = array(
-			"Academic Paper" => "Text",
-			"Art" => "Image",
-			"Article" => "Text",
-			"Book" => "Text",
-			"Document" => "Text",
-			"Image" => "Still Image",
-			"Magazine" => "Text",
+			"Academic Paper"  => "Text",
+			"Art"             => "Image",
+			"Article"         => "Text",
+			"Book"            => "Text",
+			"Document"        => "Text",
+			"Image"           => "Still Image",
+			"Magazine"        => "Text",
 			"Music Recording" => "Sound",
-			"Newspaper" => "Text",
-			"Page" => "Text",
-			"Postcard" => "Still Image",
-			"Video" => "Moving Image",
+			"Newspaper"       => "Text",
+			"Page"            => "Text",
+			"Postcard"        => "Still Image",
+			"Video"           => "Moving Image",
 			"Voice Recording" => "Sound",
 	);
 	private function mapFormat($format){
@@ -239,6 +322,7 @@ class API_ArchiveAPI extends Action {
 				'mods_extension_marmotLocal_hasCreator_entityTitle_ms',
 				'mods_physicalDescription_extent_s',
 				'mods_extension_marmotLocal_pikaOptions_dpla_s',
+				'RELS_EXT_isMemberOfCollection_uri_mt',
 		));
 		$searchObject->setPage($curPage);
 		$searchObject->setLimit($pageSize);
