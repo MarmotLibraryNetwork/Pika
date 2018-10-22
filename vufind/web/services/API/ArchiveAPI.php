@@ -149,7 +149,7 @@ class API_ArchiveAPI extends Action {
 						if (!empty($parentCollectionPid)) {
 							/** @var CollectionDriver $collectionDriver */
 							$collectionDriver = RecordDriverFactory::initIslandoraDriverFromPid($parentCollectionPid);
-							if (!PEAR_Singleton::isError($collectionDriver)) {
+							if (!empty($collectionDriver) && !PEAR_Singleton::isError($collectionDriver)) {
 								$rightsStatement = $collectionDriver->getModsValue('rightsStatementOrg', 'marmot');
 								if ($rightsStatement) {
 									break;
