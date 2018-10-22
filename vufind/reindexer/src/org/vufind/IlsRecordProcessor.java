@@ -795,11 +795,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		//Load base information from the Marc Record
 		itemInfo.setItemIdentifier(getItemSubfieldData(itemRecordNumberSubfieldIndicator, itemField));
 
-		String itemStatus = getItemStatus(itemField, recordInfo.getRecordIdentifier());
-		if (itemStatus.isEmpty()) {
-			logger.warn("Item contained no status value for item " + itemInfo.getItemIdentifier() + " in record " + recordInfo.getRecordIdentifier());
-		}
-
+		String itemStatus   = getItemStatus(itemField, recordInfo.getRecordIdentifier());
 		String itemLocation = getItemSubfieldData(locationSubfieldIndicator, itemField);
 		itemInfo.setLocationCode(itemLocation);
 		String itemSublocation = getItemSubfieldData(subLocationSubfield, itemField);
@@ -815,6 +811,9 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 		//if the status and location are null, we can assume this is not a valid item
 		if (!isItemValid(itemStatus, itemLocation)) return null;
+		if (itemStatus.isEmpty()) {
+			logger.warn("Item contained no status value for item " + itemInfo.getItemIdentifier() + "for location " + itemLocation + " in record " + recordInfo.getRecordIdentifier());
+		}
 
 		setShelfLocationCode(itemField, itemInfo, recordInfo.getRecordIdentifier());
 		itemInfo.setShelfLocation(getShelfLocationForItem(itemInfo, itemField, recordInfo.getRecordIdentifier()));
