@@ -143,12 +143,12 @@ class Sacramento extends Sierra
 		$fields[]   = array('property'=>'phone',           'type'=>'text', 'label'=>'Phone (xxx-xxx-xxxx)', 'description'=>'Phone', 'maxLength' => 128, 'required' => false);
 		$fields[]   = array('property'=>'email',           'type'=>'email', 'label'=>'E-Mail', 'description'=>'E-Mail', 'maxLength' => 128, 'required' => false);
 
-		$fields[]  = array('property'=>'guardianFirstName', 'type'=>'text', 'label'=>'Parent/Guardian First Name', 'description'=>'Your parent\'s or guardian\'s first name', 'maxLength' => 40, 'required' => false);
-		$fields[]  = array('property'=>'guardianLastName',  'type'=>'text', 'label'=>'Parent/Guardian Last Name', 'description'=>'Your parent\'s or guardian\'s last name', 'maxLength' => 40, 'required' => false);
+		$fields[]   = array('property'=>'guardianFirstName', 'type'=>'text', 'label'=>'Parent/Guardian First Name', 'description'=>'Your parent\'s or guardian\'s first name', 'maxLength' => 40, 'required' => false);
+		$fields[]   = array('property'=>'guardianLastName',  'type'=>'text', 'label'=>'Parent/Guardian Last Name', 'description'=>'Your parent\'s or guardian\'s last name', 'maxLength' => 40, 'required' => false);
 		//These two fields will be made required by javascript in the template
 
-		$fields[] = array('property'=>'pin',         'type'=>'pin',   'label'=>'Pin', 'description'=>'Your desired pin', /*'maxLength' => 4, 'size' => 4,*/ 'required' => true);
-		$fields[] = array('property'=>'pin1',        'type'=>'pin',   'label'=>'Confirm Pin', 'description'=>'Re-type your desired pin', /*'maxLength' => 4, 'size' => 4,*/ 'required' => true);
+		$fields[]   = array('property'=>'pin',         'type'=>'pin',   'label'=>'Pin', 'description'=>'Your desired pin', /*'maxLength' => 4, 'size' => 4,*/ 'required' => true);
+		$fields[]   = array('property'=>'pin1',        'type'=>'pin',   'label'=>'Confirm Pin', 'description'=>'Re-type your desired pin', /*'maxLength' => 4, 'size' => 4,*/ 'required' => true);
 
 		return $fields;
 	}
@@ -182,6 +182,24 @@ class Sacramento extends Sierra
 			$_REQUEST['address']       = 'C/O ' . $guardianFirstName . ($guardianFirstName ? ' ' : '' ) . $guardianLastName;
 			$_REQUEST['countyAddress'] = $address;
 		} else {
+//			// Check age if no guardian name
+//			$birthDate = trim($_REQUEST['birthDate']);
+//			$date      = DateTime::createFromFormat('m-d-Y',$birthDate);
+//			if ($date == false){
+//				return array(
+//					'success' => false,
+//					'message' => 'Could not process birthdate. Please re-enter.'
+//				);
+//
+//			}
+//			$age       = $date->diff(new DateTime())->y;
+//			if ($age < 18){
+//				return array(
+//					'success' => false,
+//					'message' => "Those under 18 must include a parent or guardian's name. Please fill in this field."
+//				);
+//			}
+
 			$_REQUEST['address'] = $address;
 		}
 
@@ -196,9 +214,9 @@ class Sacramento extends Sierra
 				$pinSetSuccess = $this->setSelfRegisteredUserPIN($selfRegisterResults['barcode'], $pin);
 				global $interface;
 				if ($pinSetSuccess) {
-					$interface->assign('pitSetSuccess', 'Your PIN has been set');
+					$interface->assign('pinSetSuccess', 'Your PIN has been set');
 				} else {
-					$interface->assign('pitSetFail', 'Your PIN was not set');
+					$interface->assign('pinSetFail', 'Your PIN was not set');
 				}
 			}
 		}
@@ -219,7 +237,7 @@ class Sacramento extends Sierra
 			$lt = $loginMatches[1]; //Get the lt value
 		}
 		$setPinURL = $baseUrl . '?service=' . str_replace('cas/login', 'encore/j_acegi_cas_security_check', $baseUrl);
-		$postData = array(
+		$postData  = array(
 			'code'     => $barcode,
 			'pin'      => null,
 			'pin1'     => $pin,
@@ -228,6 +246,9 @@ class Sacramento extends Sierra
 			'_eventId' => 'submit'
 		);
 		$setPinResponse = $this->_curlPostPage($setPinURL, $postData);
+//		if (preg_match('/class="errormessage">(.+?)<\/span>/is', $setPinResponse, $matches)){
+//			return trim($matches[1]);
+//		}
 		$patronDump = $this->_getPatronDump($barcode, true);
 		if (empty($patronDump['PIN'])) {
 			global $logger;

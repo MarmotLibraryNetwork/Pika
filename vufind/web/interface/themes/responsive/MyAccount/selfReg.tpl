@@ -38,10 +38,17 @@
 				{/if}
 			</div>
 			{if (isset($selfRegResult))}
+				{*TODO: Good idea, couldn't finish it at this time. pascal 10-23-2018*}
+				{*{if !$selfRegResult.success && !empty($selfRegResult.message)}*}
+					{*<div id="selfRegFail" class="alert alert-warning">*}
+						{*{$selfRegResult.message}*}
+					{*</div>*}
+				{*{else}*}
 				<div id="selfRegFail" class="alert alert-warning">
 					Sorry, we were unable to create a library card for you.  You may already have an account or there may be an error with the information you entered.
 					Please try again or visit the library in person (with a valid ID) so we can create a card for you.
 				</div>
+				{*{/if}*}
 			{/if}
 			{if $captchaMessage}
 				<div id="selfRegFail" class="alert alert-warning">
