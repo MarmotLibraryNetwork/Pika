@@ -450,3 +450,7 @@ jQuery.validator.addMethod(
 		"Please enter a correct date"
 );
 
+jQuery.validator.addMethod("alphaNumeric", function(value, element) {
+	return this.optional(element) || /^[a-z0-9]+$/i.test(value);
+}, "Please enter only letters and digits.");
+
