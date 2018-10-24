@@ -8,10 +8,17 @@
 .header-login-button-mixin(@header-buttons-background-color, @header-buttons-color);
 .header-button {
   text-transform: uppercase;
+  border: 2px solid @spl-orange;
+  &:hover {
+    background-color: @spl-darker-orange;
+  }
 }
 #logoutLink > .header-button {
   background-color: #fff;
   border: 1px solid @spl-orange;
+  &:hover {
+    background-color: #FAEDC5;
+  }
 }
 
 #header-logo {
@@ -64,7 +71,7 @@
   height: 60px;
   cursor: pointer;
   font-weight: 600;
-  border: 1px solid #d7d7d7;
+  border: 1px solid @spl-border-gray;
   div {
     height: 60px;
     padding: 15px;
@@ -73,17 +80,19 @@
       text-decoration: none;
     }
   }
-  &.selected div {
-    background: @selectedCategoryColor;
-    color:#fff;
-    font-size: @browse-category-font-size;
-    &:hover {
+  &.selected {
+    border: 1px solid @selectedCategoryBorderColor;
+     div {
       background: @selectedCategoryColor;
+      //color:#fff;
+      font-size: @browse-category-font-size;
+      &:hover {
+        background: @selectedCategoryColor;
+      }
     }
   }
   &:hover {
     background: #E4E4E4;
-    border: 1px solid #d7d7d7;
     //text-decoration: none;
     transition: all .3s ease-in-out;
   }
@@ -124,6 +133,11 @@
     padding: 6px 10px;
     margin-right: 5px;
     margin-bottom: 5px;
+  }
+  button {
+    &.selected {
+      border: 1px solid @selectedCategoryBorderColor;
+    }
   }
 }
 
@@ -224,6 +238,8 @@
   color: #000;
   font-weight: bold;
 }
+
+// Vertically Align cover images with the thumbnail block; up to a maximum size.  so that the thumbnail blocks have a uniform height and fall into columns evenly
 .browse-thumbnail {
   div:first-child {
     height: 180px;
@@ -243,3 +259,17 @@
   column-break-inside: avoid;
   display: table;
 }
+
+.btn-primary, .btn-info {
+  &:hover {
+    background-color: @spl-green;
+    border-color: #7BAD42;
+  }
+}
+// Return Now button.  Had bad side effects. Turned off
+//.btn-warning {
+//  &:hover {
+//    background-color: #E9E9E9;
+//    border-color:@btn-warning-border;
+//  }
+//}

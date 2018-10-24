@@ -3,10 +3,13 @@
 @spl-black: #000;
 @spl-purple: #52499c;
 @spl-orange: #f3b72d;
+@spl-darker-orange: #E5A739;
+@spl-readable-green: #B8D986;
 
 @spl-dark-purple: #38345A;
 
 @spl-other-gray: #F0EFEF;
+@spl-border-gray: #A2A1A1;
 
 @header-height: 110px; // the min height
 @header-logo-height: 49px;
@@ -33,8 +36,21 @@
 @header-bottom-border-color: #fff;
 @footer-top-border-color: @spl-gray;
 
-@btn-primary-bg: @spl-green;
+@btn-primary-bg: @spl-readable-green;
 @btn-primary-color: #333;
+@btn-primary-border: @spl-green;
+
+// Return Now button.  Had bad side effects. Turned off
+//@btn-warning-bg: #FFF;
+//@btn-warning-border: @spl-border-gray;
+
+// I suspect this is a bad idea to color these the same as primary buttons.
+@btn-info-bg: @spl-readable-green;
+@btn-info-border: @spl-green;
+@btn-info-color: #333;
+
+@alert-info-bg: @spl-other-gray;
+@alert-info-border: @spl-border-gray;
 
 @menu-bar-background-color: @spl-gray;
 @menu-bar-selected-background-color: @spl-purple;
@@ -43,7 +59,7 @@
 @category1MainColor: #ffffff;
 @categoryLineColor: #ffffff;
 @categoryLineShadow: #ffffff;
-@selectedCategoryBorderColor: #ffffff;
+@selectedCategoryBorderColor: @spl-green;
 
 @jcarousel-item-border-color: #d7d7d7;
 @browse-header-background-color: @spl-other-gray;
@@ -51,8 +67,9 @@
 @browseCarouselControlColor: @spl-green;
 
 // Selected Category color to give a highlighted appearance
-@selectedCategoryColor: @spl-green;
-@selectedSubCategoryBackgroundColor: @spl-green;
+@selectedCategoryColor: @spl-readable-green;
+@selectedSubCategoryBackgroundColor: @spl-readable-green;
+@selectedSubCategoryFontColor: #333;
 
 // set all browse category colors to the first color to remove lightening of successive categories. plb 9-17-2014*/
 @category2MainColor: @category1MainColor;
