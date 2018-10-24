@@ -75,7 +75,7 @@
 		{/literal}
 		{*  Guardian Name is required for users under 18 for Sacramento Public Library *}
 		{literal}
-		if ($('#guardianFirstName')){
+		if ($('#guardianFirstName').length){
 			jQuery.validator.addMethod("californiaZIP", function(value, element) {
 				/*Must be zip code for California*/
 				return this.optional( element ) || /^9/.test( value );
