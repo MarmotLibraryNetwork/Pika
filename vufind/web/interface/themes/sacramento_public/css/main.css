@@ -10992,13 +10992,13 @@ fieldset[disabled] .btn-masquerade.active {
   color: #000;
   font-weight: bold;
 }
-.browse-thumbnail {
-  height: 210px;
+.browse-thumbnail div:first-child {
+  height: 180px;
   display: flex;
   align-items: center;
 }
 .browse-thumbnail a img {
-  max-height: 200px;
+  max-height: 180px;
 }
 .column-fix {
   -webkit-column-break-inside: avoid;
