@@ -62,7 +62,7 @@
 </div>
 {/strip}
 <script type="text/javascript">
-{if $promptForBirthDateInSelfReg}
+	{if $promptForBirthDateInSelfReg}
 	{* #borrower_note is birthdate for anythink *}
 	{* this is bootstrap datepicker, not jquery ui *}
 	{literal}
@@ -73,19 +73,14 @@
 			,startView: 2
 		});
 		{/literal}
-{*  Guardian Name is required for users under 18 for Sacramento Public Library *}
+		{*  Guardian Name is required for users under 18 for Sacramento Public Library *}
 		{literal}
 		if ($('#guardianFirstName')){
-			jQuery.validator.addMethod("california", function(value, element) {
-				/*Must be state code for California*/
-				return this.optional( element ) || /^CA|ca$/.test( value );
-			}, 'Please enter CA. Only California Residents may register.');
 			jQuery.validator.addMethod("californiaZIP", function(value, element) {
-				 /*Must be zip code for California*/
+				/*Must be zip code for California*/
 				return this.optional( element ) || /^9/.test( value );
 			}, 'Please enter zip code that starts with a 9. Only California Residents may register.');
 			$('#zip').rules('add', {californiaZIP : true});
-			$('#state').rules('add', {california : true});
 
 			$('#birthDate').focusout(function(){
 				var birthDate = $(this).datepicker('getDate');
@@ -121,12 +116,21 @@
 		}
 	});
 	{/literal}
-{/if}
-		{* Pin Validation for CarlX, Sirsi, and Sacramento *}
-		{literal}
+	{/if}
+	{* Pin Validation for CarlX, Sirsi, and Sacramento *}
+	{literal}
 	$(function(){
 		$('#pin').rules('add', {minlength:{/literal}{if $pinMinimumLength}{$pinMinimumLength}{else}0{/if}{literal}});
 		$('#pin1').rules('add', {equalTo: "#pin",minlength:{/literal}{if $pinMinimumLength}{$pinMinimumLength}{else}0{/if}{literal}});
+		{/literal}
+		{if $selfRegStateRegex && $selfRegStateMessage}
+		{* Add state validation *}
+		jQuery.validator.addMethod("stateCheck", function(value, element) {ldelim}
+			return this.optional( element ) || {$selfRegStateRegex}.test( value );
+			{rdelim}, '{$selfRegStateMessage}');
+		$('#state').rules('add', {ldelim}stateCheck:true{rdelim});
+		{/if}
+		{literal}
 	});
 	{/literal}
 </script>
