@@ -948,6 +948,7 @@ class CarlX extends SIP2Driver{
 				$request->Patron->RegistrationDate		= date('c'); // Registration Date, format ISO 8601
 				$request->Patron->LastActionDate		= date('c'); // Registration Date, format ISO 8601
 				$request->Patron->LastEditDate			= date('c'); // Registration Date, format ISO 8601
+				$request->Patron->CollectionStatus		= 'not sent';
 
 				$request->Patron->EmailNotices			= $configArray['Catalog']['selfRegEmailNotices'];
 				$request->Patron->DefaultBranch			= $configArray['Catalog']['selfRegDefaultBranch'];
