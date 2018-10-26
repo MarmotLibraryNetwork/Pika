@@ -42,7 +42,8 @@
 #####################
 # Daily full update #
 #####################
-00 2 * * * cd /usr/local/vufind-plus/sites/flatirons.test; ./full_update.sh
+#exports arrive about 2:15am
+30 2 * * * cd /usr/local/vufind-plus/sites/flatirons.test; ./full_update.sh
 
 ################
 # Pika Cleanup #
