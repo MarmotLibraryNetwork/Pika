@@ -10975,6 +10975,11 @@ fieldset[disabled] .btn-masquerade.active {
 #home-page-search-label .glyphicon-search {
   display: none;
 }
+.searchTypeHome,
+.searchSource {
+  color: #333;
+  background-color: #fff;
+}
 #home-page-hours-locations,
 #home-page-home-button {
   display: none;
