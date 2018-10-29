@@ -1142,22 +1142,22 @@ abstract class IslandoraDriver extends RecordInterface {
 				//Get collections related to objects related to this entity
 				$directlyLinkedObjects = $this->getDirectlyRelatedArchiveObjects();
 				foreach ($directlyLinkedObjects['objects'] as $tmpObject){
-					$linkedCollections = $tmpObject['driver']->getRelatedCollections();
+					$linkedCollections        = $tmpObject['driver']->getRelatedCollections();
 					$this->relatedCollections = array_merge($this->relatedCollections, $linkedCollections);
 				}
 			}
 			//Get collections directly related to the object
 			$collectionsRaw = $this->getArchiveObject()->relationships->get(FEDORA_RELS_EXT_URI, 'isMemberOfCollection');
-			$fedoraUtils = FedoraUtils::getInstance();
+			$fedoraUtils    = FedoraUtils::getInstance();
 			foreach ($collectionsRaw as $collectionInfo) {
 				if ($fedoraUtils->isPidValidForPika($collectionInfo['object']['value'])){
 					$collectionObject = $fedoraUtils->getObject($collectionInfo['object']['value']);
-					$driver = RecordDriverFactory::initRecordDriver($collectionObject);
+					$driver           = RecordDriverFactory::initRecordDriver($collectionObject);
 					$this->relatedCollections[$collectionInfo['object']['value']] = array(
-							'pid' => $collectionInfo['object']['value'],
-							'label' => $collectionObject->label,
-							'link' => '/Archive/' . $collectionInfo['object']['value'] . '/Exhibit',
-							'image' => $fedoraUtils->getObjectImageUrl($collectionObject, 'small'),
+							'pid'    => $collectionInfo['object']['value'],
+							'label'  => $collectionObject->label,
+							'link'   => '/Archive/' . $collectionInfo['object']['value'] . '/Exhibit',
+							'image'  => $fedoraUtils->getObjectImageUrl($collectionObject, 'small'),
 							'object' => $collectionObject,
 							'driver' => $driver,
 					);
@@ -3092,8 +3092,8 @@ abstract class IslandoraDriver extends RecordInterface {
 	public function getContributingLibrary() {
 		if ($this->contributingLibrary === false){
 			//Get the contributing institution
-			list($namespace) = explode(':', $this->getUniqueID());
-			$contributingLibrary = new Library();
+			list($namespace)                       = explode(':', $this->getUniqueID());
+			$contributingLibrary                   = new Library();
 			$contributingLibrary->archiveNamespace = $namespace;
 			if (!$contributingLibrary->find(true)){
 				$contributingLibrary = null;
@@ -3109,23 +3109,23 @@ abstract class IslandoraDriver extends RecordInterface {
 
 				$contributingLibraryPid = $contributingLibrary->archivePid;
 				require_once ROOT_DIR . '/sys/Islandora/IslandoraObjectCache.php';
-				$islandoraCache = new IslandoraObjectCache();
+				$islandoraCache      = new IslandoraObjectCache();
 				$islandoraCache->pid = $contributingLibraryPid;
 				if ($islandoraCache->find(true) && !empty($islandoraCache->mediumCoverUrl)){
-					$imageUrl = $islandoraCache->mediumCoverUrl;
+					$imageUrl     = $islandoraCache->mediumCoverUrl;
 					$libraryTitle = $islandoraCache->title;
 				}else{
-					$imageUrl = $fedoraUtils->getObjectImageUrl($fedoraUtils->getObject($contributingLibraryPid), 'medium');
+					$imageUrl     = $fedoraUtils->getObjectImageUrl($fedoraUtils->getObject($contributingLibraryPid), 'medium');
 					$libraryTitle = $fedoraUtils->getObjectLabel($contributingLibraryPid);
 				}
 				$this->contributingLibrary = array(
-						'label' => 'Contributed by ' . $libraryTitle,
-						'image' => $imageUrl,
-						'link' => "/Archive/$contributingLibraryPid/Organization",
-						'sortIndex' => 9,
-						'pid' => $contributingLibraryPid,
+						'label'       => 'Contributed by ' . $libraryTitle,
+						'image'       => $imageUrl,
+						'link'        => "/Archive/$contributingLibraryPid/Organization",
+						'sortIndex'   => 9,
+						'pid'         => $contributingLibraryPid,
 						'libraryName' => $libraryTitle,
-						'baseUrl' => 'https://' . $contributingLibrary->subdomain . '.marmot.org', //TODO: This needs to change for other libraries
+						'baseUrl'     => 'https://' . $contributingLibrary->subdomain . '.marmot.org', //TODO: This needs to change for other libraries
 				);
 			}else{
 				$this->contributingLibrary = null;

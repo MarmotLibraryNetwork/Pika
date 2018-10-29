@@ -27,6 +27,7 @@ class API_ArchiveAPI extends Action {
 		'donor',
 		'acknowledgement',
 	);
+
 	/**
 	 * Returns a feed of content to be sent by DPLA after being processed by the state library.  May not return
 	 * a full number of results due to filtering at the collection level.
@@ -54,7 +55,10 @@ class API_ArchiveAPI extends Action {
 			$dplaDoc['preview']       = $record->getBookcoverUrl('small');
 			$dplaDoc['includeInDPLA'] = isset($doc['mods_extension_marmotLocal_pikaOptions_dpla_s']) ? $doc['mods_extension_marmotLocal_pikaOptions_dpla_s'] : 'default';
 
-			$dateCreated             = $record->getDateCreated('Y-m-d'); //Reformat back to YYYY-MM-DD
+			$dateCreated             = $record->getDateCreated('Y-m-d'); // Reformat back to YYYY-MM-DD
+			if ($dateCreated == 'Date Unknown') {
+				$dateCreated           = null;
+			}
 			$dplaDoc['dateCreated']  = $dateCreated ? $dateCreated : null;
 
 			$language = $record->getModsValue('languageTerm');
@@ -125,18 +129,18 @@ class API_ArchiveAPI extends Action {
 
 			// Parent Collection
 			$parentCollectionPid = null;
-			if (!empty($doc['RELS_EXT_isMemberOfCollection_uri_mt'])) {
-				if (is_array($doc['RELS_EXT_isMemberOfCollection_uri_mt'])) {
-					if (count($doc['RELS_EXT_isMemberOfCollection_uri_mt']) == 1) {
-						$parentCollectionPid = str_replace('info:fedora/', '', reset($doc['RELS_EXT_isMemberOfCollection_uri_mt']));
-					} else {
-						// More than one parent collection?  Shouldn't be an issue
-					}
-				}
-//				else {
-//					$parentCollectionPid = str_replace('info:fedora/', '', $doc['RELS_EXT_isMemberOfCollection_uri_mt']);
+//			if (!empty($doc['RELS_EXT_isMemberOfCollection_uri_mt'])) {
+//				if (is_array($doc['RELS_EXT_isMemberOfCollection_uri_mt'])) {
+//					if (count($doc['RELS_EXT_isMemberOfCollection_uri_mt']) == 1) {
+//						$parentCollectionPid = str_replace('info:fedora/', '', reset($doc['RELS_EXT_isMemberOfCollection_uri_mt']));
+//					} else {
+//						// More than one parent collection?  Shouldn't be an issue
+//					}
 //				}
-			}
+////				else {
+////					$parentCollectionPid = str_replace('info:fedora/', '', $doc['RELS_EXT_isMemberOfCollection_uri_mt']);
+////				}
+//			}
 
 			// Rights.org statement
 			$rightsStatement = '';
