@@ -87,11 +87,15 @@ class SelfReg extends Action {
 		$pinMinimumLength     = $configArray['Catalog']['pinMinimumLength'];
 		$selfRegStateRegex    = $configArray['Catalog']['selfRegStateRegex'];
 		$selfRegStateMessage  = $configArray['Catalog']['selfRegStateMessage'];
+		$selfRegZipRegex      = $configArray['Catalog']['selfRegZipRegex'];
+		$selfRegZipMessage    = $configArray['Catalog']['selfRegZipMessage'];
 		$interface->assign('numericOnlyPins', $numericOnlyPins);
 		$interface->assign('alphaNumericOnlyPins', $alphaNumericOnlyPins);
 		$interface->assign('pinMinimumLength', $pinMinimumLength);
 		$interface->assign('selfRegStateRegex', $selfRegStateRegex);
 		$interface->assign('selfRegStateMessage', $selfRegStateMessage);
+		$interface->assign('selfRegZipRegex', $selfRegZipRegex);
+		$interface->assign('selfRegZipMessage', $selfRegZipMessage);
 
 		$fieldsForm = $interface->fetch('DataObjectUtil/objectEditForm.tpl');
 		$interface->assign('selfRegForm', $fieldsForm);

@@ -76,11 +76,6 @@
 		{*  Guardian Name is required for users under 18 for Sacramento Public Library *}
 		{literal}
 		if ($('#guardianFirstName').length){
-			jQuery.validator.addMethod("californiaZIP", function(value, element) {
-				/*Must be zip code for California*/
-				return this.optional( element ) || /^9/.test( value );
-			}, 'Please enter zip code that starts with a 9. Only California Residents may register.');
-			$('#zip').rules('add', {californiaZIP : true});
 
 			$('#birthDate').focusout(function(){
 				var birthDate = $(this).datepicker('getDate');
@@ -120,6 +115,7 @@
 	{* Pin Validation for CarlX, Sirsi, and Sacramento *}
 	{literal}
 	$(function(){
+		$('#zip').rules('add', {zipcodeUS:true});
 		$('#pin').rules('add', {minlength:{/literal}{if $pinMinimumLength}{$pinMinimumLength}{else}0{/if}{literal}});
 		$('#pin1').rules('add', {equalTo: "#pin",minlength:{/literal}{if $pinMinimumLength}{$pinMinimumLength}{else}0{/if}{literal}});
 		{/literal}
@@ -129,6 +125,13 @@
 			return this.optional( element ) || {$selfRegStateRegex}.test( value );
 			{rdelim}, '{$selfRegStateMessage}');
 		$('#state').rules('add', {ldelim}stateCheck:true{rdelim});
+		{/if}
+		{if $selfRegZipRegex && $selfRegZipMessage}
+		{* Add additional/specific zip code validation *}
+		jQuery.validator.addMethod("zipCheck", function(value, element) {ldelim}
+			return this.optional( element ) || {$selfRegZipRegex}.test( value );
+			{rdelim}, '{$selfRegZipMessage}');
+		$('#zip').rules('add', {ldelim}zipCheck:true{rdelim});
 		{/if}
 		{literal}
 	});
