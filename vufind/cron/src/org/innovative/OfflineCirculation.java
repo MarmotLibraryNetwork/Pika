@@ -66,9 +66,9 @@ public class OfflineCirculation implements IProcessHandler {
 		processLog.addNote("Processing offline holds");
 		try {
 			PreparedStatement holdsToProcessStmt = vufindConn.prepareStatement("SELECT offline_hold.*, cat_username, cat_password from offline_hold LEFT JOIN user on user.id = offline_hold.patronId where status='Not Processed' order by timeEntered ASC");
-			PreparedStatement updateHold = vufindConn.prepareStatement("UPDATE offline_hold set timeProcessed = ?, status = ?, notes = ? where id = ?");
-			String baseUrl = configIni.get("Site", "url");
-			ResultSet holdsToProcessRS = holdsToProcessStmt.executeQuery();
+			PreparedStatement updateHold         = vufindConn.prepareStatement("UPDATE offline_hold set timeProcessed = ?, status = ?, notes = ? where id = ?");
+			String baseUrl                       = configIni.get("Site", "url");
+			ResultSet holdsToProcessRS           = holdsToProcessStmt.executeQuery();
 			while (holdsToProcessRS.next()){
 				processOfflineHold(updateHold, baseUrl, holdsToProcessRS);
 			}
@@ -85,13 +85,13 @@ public class OfflineCirculation implements IProcessHandler {
 		updateHold.setLong(1, new Date().getTime() / 1000);
 		updateHold.setLong(4, holdId);
 		try {
-			String patronBarcode = URLEncoder.encode(holdsToProcessRS.getString("patronBarcode"), "UTF-8");
-			String patronName = holdsToProcessRS.getString("cat_username");
+			String patronBarcode = encode(holdsToProcessRS.getString("patronBarcode"));
+			String patronName    = holdsToProcessRS.getString("cat_username");
 			if (patronName == null || patronName.length() == 0){
 				patronName = holdsToProcessRS.getString("patronName");
 			}
-			patronName = URLEncoder.encode(patronName, "UTF-8");
-			String bibId = URLEncoder.encode(holdsToProcessRS.getString("bibId"), "UTF-8");
+			patronName    = encode(patronName);
+			String bibId  = encode(holdsToProcessRS.getString("bibId"));
 			String itemId = holdsToProcessRS.getString("itemId");
 			URL placeHoldUrl;
 			if (itemId != null && itemId.length() > 0){
@@ -105,7 +105,7 @@ public class OfflineCirculation implements IProcessHandler {
 				String placeHoldDataJson = Util.convertStreamToString((InputStream) placeHoldDataRaw);
 				processLog.addNote("Result = " + placeHoldDataJson);
 				JSONObject placeHoldData = new JSONObject(placeHoldDataJson);
-				JSONObject result = placeHoldData.getJSONObject("result");
+				JSONObject result        = placeHoldData.getJSONObject("result");
 				if (result.getBoolean("success")){
 					updateHold.setString(2, "Hold Succeeded");
 				}else{
@@ -147,10 +147,11 @@ public class OfflineCirculation implements IProcessHandler {
 	private void processOfflineCirculationEntries(Ini configIni, Connection vufindConn) {
 		processLog.addNote("Processing offline checkouts and check-ins");
 		try {
-			PreparedStatement circulationEntryToProcessStmt = vufindConn.prepareStatement("SELECT offline_circulation.* from offline_circulation where status='Not Processed' order by timeEntered ASC");
-			PreparedStatement updateCirculationEntry = vufindConn.prepareStatement("UPDATE offline_circulation set timeProcessed = ?, status = ?, notes = ? where id = ?");
-			String baseUrl = configIni.get("Catalog", "linking_url") + "/iii/airwkst";
-			ResultSet circulationEntriesToProcessRS = circulationEntryToProcessStmt.executeQuery();
+//			PreparedStatement circulationEntryToProcessStmt = vufindConn.prepareStatement("SELECT offline_circulation.* from offline_circulation where status='Not Processed' order by timeEntered ASC");
+			PreparedStatement circulationEntryToProcessStmt = vufindConn.prepareStatement("SELECT offline_circulation.* from offline_circulation where status='Not Processed' order by login ASC, initials ASC, patronBarcode ASC, timeEntered ASC");
+			PreparedStatement updateCirculationEntry        = vufindConn.prepareStatement("UPDATE offline_circulation set timeProcessed = ?, status = ?, notes = ? where id = ?");
+			String baseUrl                                  = configIni.get("Catalog", "linking_url") + "/iii/airwkst";
+			ResultSet circulationEntriesToProcessRS         = circulationEntryToProcessStmt.executeQuery();
 			int numProcessed = 0;
 			while (circulationEntriesToProcessRS.next()){
 				processOfflineCirculationEntry(updateCirculationEntry, baseUrl, circulationEntriesToProcessRS);
@@ -171,13 +172,13 @@ public class OfflineCirculation implements IProcessHandler {
 		updateCirculationEntry.clearParameters();
 		updateCirculationEntry.setLong(1, new Date().getTime() / 1000);
 		updateCirculationEntry.setLong(4, circulationEntryId);
-		String itemBarcode = circulationEntriesToProcessRS.getString("itemBarcode");
-		String login = circulationEntriesToProcessRS.getString("login");
-		String loginPassword = circulationEntriesToProcessRS.getString("loginPassword");
-		String initials = circulationEntriesToProcessRS.getString("initials");
+		String itemBarcode      = circulationEntriesToProcessRS.getString("itemBarcode");
+		String login            = circulationEntriesToProcessRS.getString("login");
+		String loginPassword    = circulationEntriesToProcessRS.getString("loginPassword");
+		String initials         = circulationEntriesToProcessRS.getString("initials");
 		String initialsPassword = circulationEntriesToProcessRS.getString("initialsPassword");
-		String type = circulationEntriesToProcessRS.getString("type");
-		Long timeEntered = circulationEntriesToProcessRS.getLong("timeEntered");
+		String type             = circulationEntriesToProcessRS.getString("type");
+		Long timeEntered        = circulationEntriesToProcessRS.getLong("timeEntered");
 		OfflineCirculationResult result;
 		if (type.equals("Check In")){
 			result = processOfflineCheckIn(baseAirpacUrl, login, loginPassword, initials, initialsPassword, itemBarcode, timeEntered);
@@ -214,8 +215,10 @@ public class OfflineCirculation implements IProcessHandler {
 			URLPostResponse homePageResponse = Util.getURL(baseAirpacUrl + "/", logger);
 			//logger.debug("Home page Response\r\n" + homePageResponse.getMessage());
 			//logCookies();
-			boolean bypassLogin = true;
+			boolean bypassLogin           = true;
 			URLPostResponse loginResponse = null;
+			login                         = encode(login);
+			loginPassword                 = encode(loginPassword);
 			if (lastLogin == null || !lastLogin.equals(login)){
 				bypassLogin = false;
 				if (lastLogin != null){
@@ -240,12 +243,14 @@ public class OfflineCirculation implements IProcessHandler {
 			if (bypassLogin || (loginResponse.isSuccess() && (loginResponse.getMessage().contains("needinitials")) || ils.equalsIgnoreCase("sierra"))){
 				URLPostResponse initialsResponse;
 				boolean bypassInitials = true;
+				initials               = encode(initials);
 				if (ils.equalsIgnoreCase("millennium") && (lastInitials == null || lastInitials.equals(initials))){
 					bypassInitials = false;
-					lastInitials = initials;
+					lastInitials   = initials;
 				}
 				if (bypassInitials == false){
 					//Login to airpac (initials)
+					initialsPassword             = encode(initialsPassword);
 					StringBuilder initialsParams = new StringBuilder("action=ValidateAirWkstUserAction")
 							.append("&initials=").append(initials)
 							.append("&initialspassword=").append(initialsPassword)
@@ -259,20 +264,27 @@ public class OfflineCirculation implements IProcessHandler {
 				}else{
 					initialsResponse = loginResponse;
 				}
-				if (bypassInitials || initialsResponse.isSuccess() && initialsResponse.getMessage().contains("Check Out")){
+				String errorMessage = null;
+				String message = "";
+				if (initialsResponse != null) {
+					message        = initialsResponse.getMessage();
+					errorMessage   = getErrorMessage(message);
+				}
+				if ((bypassInitials && initialsResponse == null) || (initialsResponse != null && errorMessage == null && message.contains("Check Out"))) {
 					//Go to the checkout page
 					boolean bypassPatronPage = false;
-					if (lastPatronBarcode == null || !lastPatronBarcode.equals(patronBarcode) || lastPatronHadError){
+					patronBarcode            = encode(patronBarcode);
+					if (lastPatronBarcode == null || !lastPatronBarcode.equals(patronBarcode) || lastPatronHadError) {
 						bypassPatronPage = false;
-						if (lastPatronBarcode != null){
+						if (lastPatronBarcode != null) {
 							//Go back to the home page
 							URLPostResponse circaMenuPageResponse = Util.getURL(baseAirpacUrl, logger);
 						}
-						lastPatronBarcode = patronBarcode;
+						lastPatronBarcode  = patronBarcode;
 						lastPatronHadError = false;
 					}
 					URLPostResponse patronBarcodeResponse = null;
-					if (bypassPatronPage == false){
+					if (bypassPatronPage == false) {
 						URLPostResponse checkOutPageResponse = Util.getURL(baseAirpacUrl + "/?action=GetAirWkstUserInfoAction&purpose=checkout", logger);
 						StringBuilder patronBarcodeParams = new StringBuilder("action=LogInAirWkstPatronAction")
 								.append("&patronbarcode=").append(patronBarcode)
@@ -282,8 +294,9 @@ public class OfflineCirculation implements IProcessHandler {
 								.append("&sourcebrowse=airwkstpage");
 						patronBarcodeResponse = Util.postToURL(baseAirpacUrl + "/airwkstcore?" + patronBarcodeParams.toString(), null, "text/html", baseAirpacUrl + "/", logger);
 					}
-					if (bypassPatronPage || (patronBarcodeResponse.isSuccess() && patronBarcodeResponse.getMessage().contains("Please scan item barcode"))){
+					if (bypassPatronPage || (patronBarcodeResponse.isSuccess() && patronBarcodeResponse.getMessage().contains("Please scan item barcode"))) {
 						lastPatronHadError = false;
+						itemBarcode        = encode(itemBarcode);
 						StringBuilder itemBarcodeParams = new StringBuilder("action=GetAirWkstItemOneAction")
 								.append("&prevscreen=AirWkstItemRequestPage")
 								.append("&purpose=checkout")
@@ -291,23 +304,21 @@ public class OfflineCirculation implements IProcessHandler {
 								.append("&searchtype=b")
 								.append("&sourcebrowse=airwkstpage");
 						URLPostResponse itemBarcodeResponse = Util.postToURL(baseAirpacUrl + "/airwkstcore?" + itemBarcodeParams.toString(), null, "text/html", baseAirpacUrl + "/", logger);
-						if (itemBarcodeResponse.isSuccess()){
-							Pattern Regex = Pattern.compile("<h3 class=\"error\">(.*?)</h3>", Pattern.CANON_EQ);
-							Matcher RegexMatcher = Regex.matcher(itemBarcodeResponse.getMessage());
-							if (RegexMatcher.find()) {
-								String error = RegexMatcher.group(1);
+						if (itemBarcodeResponse.isSuccess()) {
+							errorMessage = getErrorMessage(itemBarcodeResponse.getMessage());
+							if (errorMessage != null) {
 								result.setSuccess(false);
-								result.setNote(error);
-							}else{
+								result.setNote(errorMessage);
+							} else {
 								//Everything seems to have worked
 								result.setSuccess(true);
 							}
 						} else {
 							logger.debug("Item Barcode response\r\n" + itemBarcodeResponse.getMessage());
 							result.setSuccess(false);
-							result.setNote("Could not process check out because the item response was not successfull");
+							result.setNote("Could not process check out because the item response was not successful");
 						}
-					} else if (patronBarcodeResponse.isSuccess() && patronBarcodeResponse.getMessage().contains("<h[123] class=\"error\">")){
+					} else if (patronBarcodeResponse.isSuccess() && patronBarcodeResponse.getMessage().contains("<h[123] class=\"error\">")) {
 						lastPatronHadError = true;
 						Pattern regex = Pattern.compile("<h[123] class=\"error\">(.*?)</h[123]>");
 						Matcher matcher = regex.matcher(patronBarcodeResponse.getMessage());
@@ -315,7 +326,7 @@ public class OfflineCirculation implements IProcessHandler {
 							String error = matcher.group(1);
 							result.setSuccess(false);
 							result.setNote(error);
-						}else{
+						} else {
 							result.setSuccess(false);
 							result.setNote("Unknown error loading patron");
 						}
@@ -325,13 +336,17 @@ public class OfflineCirculation implements IProcessHandler {
 						result.setSuccess(false);
 						result.setNote("Could not process check out because the patron could not be logged in");
 					}
-				} else{
-					logger.debug("Initials response\r\n" + initialsResponse.getMessage());
-					result.setSuccess(false);
-					result.setNote("Could not process check out because initials were incorrect");
+				} else {
+					if (errorMessage != null) {
+						logger.debug("Initials/Login error: " + errorMessage);
+						result.setSuccess(false);
+						result.setNote("Could not login : " + errorMessage);
+					} else {
+						logger.debug("Initials response\r\n" + initialsResponse.getMessage());
+						result.setSuccess(false);
+						result.setNote("Could not process check out because initials were incorrect");
+					}
 				}
-
-
 			} else{
 				logger.debug("Login response\r\n" + loginResponse.getMessage());
 				result.setSuccess(false);
@@ -347,6 +362,7 @@ public class OfflineCirculation implements IProcessHandler {
 
 	private OfflineCirculationResult processOfflineCheckIn(String baseAirpacUrl, String login, String loginPassword, String initials, String initialsPassword, String itemBarcode, Long timeEntered) {
 		OfflineCirculationResult result = new OfflineCirculationResult();
+		Pattern errorRegex              = Pattern.compile("<h[123] class=\"error\">(.*?)</h[123]>");
 		try{
 			//Login to airpac (login)
 			URLPostResponse homePageResponse = Util.getURL(baseAirpacUrl + "/", logger);
@@ -384,8 +400,8 @@ public class OfflineCirculation implements IProcessHandler {
 							.append("&sourcebrowse=airwkstpage");
 					URLPostResponse checkinResponse = Util.postToURL(baseAirpacUrl + "/airwkstcore?" + checkinParams.toString(), null, "text/html", baseAirpacUrl + "/", logger);
 					if (checkinResponse.isSuccess()){
-						Pattern Regex = Pattern.compile("<h3 class=\"error\">(.*?)</h3>", Pattern.CANON_EQ);
-						Matcher RegexMatcher = Regex.matcher(checkinResponse.getMessage());
+//						Pattern Regex = Pattern.compile("<h3 class=\"error\">(.*?)</h3>", Pattern.CANON_EQ);
+						Matcher RegexMatcher = errorRegex.matcher(checkinResponse.getMessage());
 						if (RegexMatcher.find()) {
 							String error = RegexMatcher.group(1);
 							result.setSuccess(false);
@@ -412,5 +428,33 @@ public class OfflineCirculation implements IProcessHandler {
 		}
 
 		return result;
+	}
+
+	private String getErrorMessage(String message) {
+		Pattern errorRegex   = Pattern.compile("<h[123] class=\"error\">(.*?)</h[123]>");
+		Matcher RegexMatcher = errorRegex.matcher(message);
+		if (RegexMatcher.find()) {
+			String error = RegexMatcher.group(1);
+			return error;
+		}else{
+			//Everything seems to have worked
+			return null;
+		}
+	}
+
+	private static final String VALUES = "!#$&'()*+,/:;=?@[] \"%-.<>\\^_`{|}~";
+
+	private static String encode(String input) {
+		if (input == null || input.isEmpty()) {
+			return input;
+		}
+		StringBuilder result = new StringBuilder(input);
+		for (int i = input.length() - 1; i >= 0; i--) {
+			if (VALUES.indexOf(input.charAt(i)) != -1) {
+				result.replace(i, i + 1,
+						"%" + Integer.toHexString(input.charAt(i)).toUpperCase());
+			}
+		}
+		return result.toString();
 	}
 }
