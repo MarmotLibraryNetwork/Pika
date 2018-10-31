@@ -14,7 +14,7 @@ public class AddisonRecordProcessor extends IIIRecordProcessor {
     AddisonRecordProcessor(GroupedWorkIndexer indexer, Connection vufindConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
         super(indexer, vufindConn, indexingProfileRS, logger, fullReindex);
 
-//        loadOrderInformationFromExport();
+        loadOrderInformationFromExport();
 //        loadVolumesFromExport(vufindConn);
 
         validCheckedOutStatusCodes.add("o"); // Library Use Only
