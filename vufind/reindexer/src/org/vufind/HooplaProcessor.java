@@ -95,6 +95,8 @@ class HooplaProcessor extends MarcRecordProcessor {
 		String format = MarcUtil.getFirstFieldVal(record, "099a");
 		if (format != null) {
 			format = format.replace(" hoopla", "");
+		} else {
+			logger.warn("No format found in 099a for Hoopla record " + identifier);
 		}
 
 		//Do updates based on the overall bib (shared regardless of scoping)
@@ -105,8 +107,13 @@ class HooplaProcessor extends MarcRecordProcessor {
 		//There are also not multiple formats within a record that we would need to split out.
 
 		String formatCategory = indexer.translateSystemValue("format_category_hoopla", format, identifier);
+		Long formatBoost = 8L; // Reasonable default value
 		String formatBoostStr = indexer.translateSystemValue("format_boost_hoopla", format, identifier);
-		Long formatBoost = Long.parseLong(formatBoostStr);
+		if (formatBoostStr != null && !formatBoostStr.isEmpty()){
+			formatBoost  = Long.parseLong(formatBoostStr);
+		} else {
+			logger.warn("Did not find format boost for Hoopla format" + format);
+		}
 
 		String fullDescription = Util.getCRSeparatedString(MarcUtil.getFieldList(record, "520a"));
 		groupedWork.addDescription(fullDescription, format);
@@ -138,7 +145,7 @@ class HooplaProcessor extends MarcRecordProcessor {
 
 		//Load physical description
 		Set<String> physicalDescriptions = MarcUtil.getFieldList(record, "300abcefg:530abcd");
-		String physicalDescription = null;
+		String physicalDescription       = null;
 		if (physicalDescriptions.size() > 0){
 			physicalDescription = physicalDescriptions.iterator().next();
 		}
