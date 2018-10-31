@@ -40,7 +40,7 @@
 	];
 function reloadCombinedResults(){ldelim}
 	{foreach from=$combinedResultSections item=combinedResultSection}
-	VuFind.Searches.getCombinedResults('{$combinedResultSection|get_class}:{$combinedResultSection->id}', '{$combinedResultSection->id}', '{$combinedResultSection->source}', '{$lookfor}', '{$basicSearchType}', {$combinedResultSection->numberOfResultsToShow});
+	VuFind.Searches.getCombinedResults('{$combinedResultSection|get_class}:{$combinedResultSection->id}', '{$combinedResultSection->id}', '{$combinedResultSection->source}', '{$lookfor|escape:"quotes"}', '{$basicSearchType}', {$combinedResultSection->numberOfResultsToShow});
 	{/foreach}
 {rdelim};
 

@@ -38,14 +38,17 @@ VuFind.Searches = (function(){
 		},
 
 		getCombinedResults: function(fullId, shortId, source, searchTerm, searchType, numberOfResults){
-			var url = Globals.path + '/Union/AJAX';
-			var params = '?method=getCombinedResults&source=' + source + '&numberOfResults=' + numberOfResults + "&id=" + fullId + "&searchTerm=" + searchTerm + "&searchType=" + searchType;
-			if ($('#hideCovers').is(':checked')){
-				params += "&showCovers=off";
-			}else{
-				params += "&showCovers=on";
-			}
-			$.getJSON(url+params, function(data){
+			var url = Globals.path + '/Union/AJAX',
+					params = {
+						'method'        : 'getCombinedResults',
+						source          : source,
+						numberOfResults : numberOfResults,
+						id              : fullId,
+						searchTerm      : searchTerm,
+						searchType      : searchType,
+						showCovers      : $('#hideCovers').is(':checked') ? 'on' : 'off',
+					};
+			$.getJSON(url, params, function(data){
 				if (data.success == false){
 					VuFind.showMessage("Error loading results", data.error);
 				}else{
@@ -123,13 +126,13 @@ VuFind.Searches = (function(){
 			try{
 				$("#lookfor").autocomplete({
 					source:function(request,response){
-						var url=Globals.path+"/Search/AJAX?method=GetAutoSuggestList&searchTerm=" + $("#lookfor").val();
-						$.ajax({
-							url:url,
-							dataType:"json",
-							success:function(data){
-								response(data);
-							}
+						var url    = Globals.path+"/Search/AJAX",
+								params = {
+									'method'   :'GetAutoSuggestList',
+									searchTerm :$("#lookfor").val()
+								};
+						$.getJSON(url, params, function(data){
+							response(data);
 						});
 					},
 					position:{
