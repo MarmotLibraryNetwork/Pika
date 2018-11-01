@@ -86,7 +86,7 @@ class Sacramento extends Sierra
 	 * @param User    $user          User that the PIN should be changed for
 	 * @param string $oldPin         Current PIN
 	 * @param string $newPin         New PIN
-	 * @param $string confirmNewPin  Second ENtry of PIN for verification of PIN (verification happens in User)
+	 * @param string $confirmNewPin  Second ENtry of PIN for verification of PIN (verification happens in User)
 	 * @return string
 	 */
 	public function updatePin($patron, $oldPin, $newPin, $confirmNewPin){

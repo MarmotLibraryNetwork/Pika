@@ -42,6 +42,59 @@ class Arlington extends Sierra{
 		return $loginData;
 	}
 
+	/**
+	 * default login not quite right for Sacramento.
+	 *Login url is different; and on login response we look for a success message instead of error messages
+	 *(there are no error message, the login form is returned instead)
+	 *
+	 * @param User $patron
+	 * @param bool $linkedAccount  When using linked accounts for Sierra Encore, the curl connection for linked accounts has to be reset
+	 * @return bool
+	 */
+	public function _curl_login($patron, $linkedAccount = false) {
+		global $logger;
+		$loginResult = false;
+
+		$curlUrl  = $this->getVendorOpacUrl() . '/iii/cas/login?scope=' .$this->getLibraryScope();
+		$curlUrl  = str_replace('http://', 'https://', $curlUrl);
+		$postData = $this->_getLoginFormValues($patron);
+
+		$logger->log('Loading page ' . $curlUrl, PEAR_LOG_INFO);
+
+		if ($linkedAccount) {
+			// For linked users, reset the curl connection so that subsequent logins for the linked users process correctly
+			$this->_close_curl();
+			$this->curl_connection = false;
+		}
+		$loginResponse = $this->_curlPostPage($curlUrl, $postData);
+
+		//When a library uses IPSSO, the initial login does a redirect and requires additional parameters.
+		if (preg_match('/<input type="hidden" name="lt" value="(.*?)" \/>/si', $loginResponse, $loginMatches)) {
+			$lt = $loginMatches[1]; //Get the lt value
+			//Login again
+			$postData['lt']       = $lt;
+			$postData['_eventId'] = 'submit';
+			$loginResponse = $this->_curlPostPage($curlUrl, $postData);
+		}
+
+		if ($loginResponse) {
+			$loginResult = false;
+
+			// Check for Login Error Responses
+			$numMatches = preg_match('/<span.\s?class="errormessage">(?P<error>.+?)<\/span>/is', $loginResponse, $matches);
+			if ($numMatches > 0) {
+				$logger->log('Sacramento Curl Login Attempt received an Error response : ' . $matches['error'], PEAR_LOG_DEBUG);
+			} else {
+				$numMatches = preg_match('/<div id="msg" class="success">/is', $loginResponse);
+				if ($numMatches > 0) {
+					$loginResult = true;
+				}
+			}
+		}
+		return $loginResult;
+	}
+
+
 	public function getSelfRegistrationFields() {
 		header('Location: http://library.arlingtonva.us/services/accounts-and-borrowing/get-a-free-library-card/');
 		die;
