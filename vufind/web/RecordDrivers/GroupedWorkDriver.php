@@ -2821,15 +2821,17 @@ class GroupedWorkDriver extends RecordInterface{
 	//TODO: switch to const when php version is >= 5.6
 
 	/**
-	 * @param $recordDetails
+	 * @param array       $recordDetails
 	 * @param GroupedWork $groupedWork
-	 * @param Timer $timer
-	 * @param $scopingInfo
-	 * @param $activePTypes
-	 * @param Location $searchLocation
-	 * @param Library $library
+	 * @param Timer       $timer
+	 * @param array       $scopingInfo
+	 * @param array       $activePTypes
+	 * @param Location    $searchLocation
+	 * @param Library     $library
+	 * @param bool       $forCovers
 	 * @return array
 	 */
+	//TODO: this function should be optimized much more when loading for covers
 	protected function setupRelatedRecordDetails($recordDetails, $groupedWork, $timer, $scopingInfo, $activePTypes, $searchLocation, $library, $forCovers = false) {
 		//Check to see if we have any volume data for the record
 		require_once ROOT_DIR . '/Drivers/marmot_inc/IlsVolumeInfo.php';
@@ -2880,8 +2882,8 @@ class GroupedWorkDriver extends RecordInterface{
 				'onOrderCopies'          => 0,
 				'localAvailableCopies'   => 0,
 				'localCopies'            => 0,
-				'numHolds'               => $recordDriver != null ? $recordDriver->getNumHolds() : 0,
-				'volumeHolds'            => $recordDriver != null ? $recordDriver->getVolumeHolds($volumeData) : null,
+				'numHolds'               => !$forCovers && $recordDriver != null ? $recordDriver->getNumHolds() : 0,
+				'volumeHolds'            => !$forCovers && $recordDriver != null ? $recordDriver->getVolumeHolds($volumeData) : null,
 				'hasLocalItem'           => false,
 				'holdRatio'              => 0,
 				'locationLabel'          => '',
