@@ -41,16 +41,16 @@ public class SymphonyExportMain {
 		}else{
 			System.out.println("Could not find log4j configuration " + log4jFile.toString());
 		}
-		logger.info(startTime.toString() + ": Starting CarlX Extract");
+		logger.info(startTime.toString() + ": Starting Symphony Extract");
 
 		// Read the base INI file to get information about the server (current directory/cron/config.ini)
 		Ini ini = loadConfigFile("config.ini");
 
-		//Connect to the vufind database
+		//Connect to the Pika database
 		Connection pikaConn = null;
 		try{
 			String databaseConnectionInfo = cleanIniValue(ini.get("Database", "database_vufind_jdbc"));
-			pikaConn = DriverManager.getConnection(databaseConnectionInfo);
+			pikaConn                      = DriverManager.getConnection(databaseConnectionInfo);
 		}catch (Exception e){
 			System.out.println("Error connecting to vufind database " + e.toString());
 			System.exit(1);
@@ -112,17 +112,17 @@ public class SymphonyExportMain {
 	}
 
 	private static void processOrdersFile(long lastExportTime, Connection pikaConn) {
-		File mainFile = new File(indexingProfile.marcPath + "/fullexport.mrc");
+		File mainFile                 = new File(indexingProfile.marcPath + "/fullexport.mrc");
 		HashSet<String> idsInMainFile = new HashSet<>();
 		if (mainFile.exists()){
 			try {
-				MarcReader reader = new MarcPermissiveStreamReader(new FileInputStream(mainFile), true, true);
+				MarcReader reader  = new MarcPermissiveStreamReader(new FileInputStream(mainFile), true, true);
 				int numRecordsRead = 0;
 				while (reader.hasNext()) {
 					try {
 						Record marcRecord = reader.next();
 						numRecordsRead++;
-						String id = getPrimaryIdentifierFromMarcRecord(marcRecord);
+						String id         = getPrimaryIdentifierFromMarcRecord(marcRecord);
 						idsInMainFile.add(id);
 					}catch (MarcException me){
 						logger.warn("Error processing individual record  on record " + numRecordsRead + " of " + mainFile.getAbsolutePath(), me);
@@ -136,7 +136,7 @@ public class SymphonyExportMain {
 		//We have gotten 2 different exports a single export as CSV and a second daily version as XLSX.  If the XLSX exists, we will
 		//process that and ignore the CSV version.
 		File ordersFileMarc = new File(indexingProfile.marcPath + "/Pika_orders.mrc");
-		File ordersFile = new File(indexingProfile.marcPath + "/PIKA-onorderfile.txt");
+		File ordersFile     = new File(indexingProfile.marcPath + "/PIKA-onorderfile.txt");
 		convertOrdersFileToMarc(ordersFile, ordersFileMarc, idsInMainFile);
 
 	}
@@ -150,11 +150,11 @@ public class SymphonyExportMain {
 			}
 			//Always process since we only received one export and we are gradually removing records as they appear in the full export.
 			try{
-				MarcWriter writer = new MarcStreamWriter(new FileOutputStream(ordersFileMarc, false));
+				MarcWriter writer           = new MarcStreamWriter(new FileOutputStream(ordersFileMarc, false));
 				BufferedReader ordersReader = new BufferedReader(new InputStreamReader(new FileInputStream(ordersFile)));
-				String line = ordersReader.readLine();
-				int numOrderRecordsWritten = 0;
-				int numOrderRecordsSkipped = 0;
+				String line                 = ordersReader.readLine();
+				int numOrderRecordsWritten  = 0;
+				int numOrderRecordsSkipped  = 0;
 				while (line != null){
 					int firstPipePos = line.indexOf('|');
 					if (firstPipePos != -1){
@@ -166,15 +166,15 @@ public class SymphonyExportMain {
 									line = line.substring(0, line.length() - 1);
 								}
 								int lastPipePosition = line.lastIndexOf('|');
-								String title = line.substring(lastPipePosition + 1);
-								line = line.substring(0, lastPipePosition);
-								lastPipePosition = line.lastIndexOf('|');
-								String author = line.substring(lastPipePosition + 1);
-								line = line.substring(0, lastPipePosition);
-								String ohohseven = line.replace("|", " ");
+								String title         = line.substring(lastPipePosition + 1);
+								line                 = line.substring(0, lastPipePosition);
+								lastPipePosition     = line.lastIndexOf('|');
+								String author        = line.substring(lastPipePosition + 1);
+								line                 = line.substring(0, lastPipePosition);
+								String ohohseven     = line.replace("|", " ");
 								//The marc record does not exist, create a temporary bib in the orders file which will get processed by record grouping
-								MarcFactory factory = MarcFactory.newInstance();
-								Record marcRecord = factory.newRecord();
+								MarcFactory factory  = MarcFactory.newInstance();
+								Record marcRecord   = factory.newRecord();
 								marcRecord.addVariableField(factory.newControlField("001", "a" + recordNumber));
 								if (!ohohseven.equals("-")) {
 									marcRecord.addVariableField(factory.newControlField("007", ohohseven));
@@ -227,12 +227,12 @@ public class SymphonyExportMain {
 				String lastCatalogIdRead = "";
 				try {
 					BufferedReader reader = new BufferedReader(new FileReader(holdFile));
-					String line = reader.readLine();
+					String line           = reader.readLine();
 					while (line != null){
 						int firstComma = line.indexOf(',');
 						if (firstComma > 0){
-							String catalogId = line.substring(0, firstComma);
-							catalogId = catalogId.replaceAll("\\D", "");
+							String catalogId  = line.substring(0, firstComma);
+							catalogId         = catalogId.replaceAll("\\D", "");
 							lastCatalogIdRead = catalogId;
 							//Make sure the catalog is numeric
 							if (catalogId.length() > 0 && catalogId.matches("^\\d+$")){
@@ -258,21 +258,21 @@ public class SymphonyExportMain {
 
 		File periodicalsHoldFile = new File(indexingProfile.marcPath + "/Pika_Hold_Periodicals.csv");
 		if (periodicalsHoldFile.exists()){
-			long now = new Date().getTime();
+			long now                  = new Date().getTime();
 			long holdFileLastModified = periodicalsHoldFile.lastModified();
 			if (now - holdFileLastModified > 2 * 24 * 60 * 60 * 1000){
 				logger.warn("Periodicals Holds File was last written more than 2 days ago");
 			}else {
 				writeHolds = true;
 				try {
-					BufferedReader reader = new BufferedReader(new FileReader(periodicalsHoldFile));
-					String line = reader.readLine();
+					BufferedReader reader    = new BufferedReader(new FileReader(periodicalsHoldFile));
+					String line              = reader.readLine();
 					String lastCatalogIdRead = "";
 					while (line != null){
 						int firstComma = line.indexOf(',');
 						if (firstComma > 0){
-							String catalogId = line.substring(0, firstComma);
-							catalogId = catalogId.replaceAll("\\D", "");
+							String catalogId  = line.substring(0, firstComma);
+							catalogId         = catalogId.replaceAll("\\D", "");
 							lastCatalogIdRead = catalogId;
 							//Make sure the catalog is numeric
 							if (catalogId.length() > 0 && catalogId.matches("^\\d+$")){
@@ -300,15 +300,19 @@ public class SymphonyExportMain {
 		if (!hadErrors && writeHolds){
 			try {
 				pikaConn.setAutoCommit(false);
-				pikaConn.prepareCall("DELETE FROM ils_hold_summary").executeUpdate();
+				pikaConn.prepareCall("TRUNCATE ils_hold_summary").executeUpdate();  // Truncate so that id value doesn't grow beyond column size
 				logger.info("Removed existing holds");
 				PreparedStatement updateHoldsStmt = pikaConn.prepareStatement("INSERT INTO ils_hold_summary (ilsId, numHolds) VALUES (?, ?)");
 				for (String ilsId : holdsByBib.keySet()){
-					updateHoldsStmt.setString(1, "a" + ilsId);
-					updateHoldsStmt.setInt(2, holdsByBib.get(ilsId));
-					int numUpdates = updateHoldsStmt.executeUpdate();
-					if (numUpdates != 1){
-						logger.info("Hold was not inserted " + "a" + ilsId + " " + holdsByBib.get(ilsId));
+					if (ilsId.length() < 20){
+						updateHoldsStmt.setString(1, "a" + ilsId);
+						updateHoldsStmt.setInt(2, holdsByBib.get(ilsId));
+						int numUpdates = updateHoldsStmt.executeUpdate();
+						if (numUpdates != 1){
+							logger.info("Hold was not inserted " + "a" + ilsId + " " + holdsByBib.get(ilsId));
+						}
+					} else {
+						logger.warn("ILS id for hold summary longer that database column varchar(20) : a" + ilsId);
 					}
 				}
 				pikaConn.commit();
@@ -333,11 +337,11 @@ public class SymphonyExportMain {
 	 * @param pikaConn       the connection to the database
 	 */
 	private static void processNewMarcExports(long lastExportTime, Connection pikaConn) {
-		File fullExportFile = new File(indexingProfile.marcPath + "/fullexport.mrc");
+		File fullExportFile      = new File(indexingProfile.marcPath + "/fullexport.mrc");
 		File fullExportDirectory = fullExportFile.getParentFile();
-		File sitesDirectory = fullExportDirectory.getParentFile();
-		File updatesDirectory = new File(sitesDirectory.getAbsolutePath() + "/marc_updates");
-		File updatesFile = new File(updatesDirectory.getAbsolutePath() + "/Pika-hourly.mrc");
+		File sitesDirectory      = fullExportDirectory.getParentFile();
+		File updatesDirectory    = new File(sitesDirectory.getAbsolutePath() + "/marc_updates");
+		File updatesFile         = new File(updatesDirectory.getAbsolutePath() + "/Pika-hourly.mrc");
 		if (!fullExportFile.exists()){
 			logger.error("Full export file did not exist");
 			hadErrors = true;
@@ -359,9 +363,9 @@ public class SymphonyExportMain {
 
 		//If we got this far we have a good updates file to process.
 		try {
-			PreparedStatement getChecksumStmt = pikaConn.prepareStatement("SELECT checksum FROM ils_marc_checksums where source = ? AND ilsId = ?");
-			PreparedStatement updateChecksumStmt = pikaConn.prepareStatement("UPDATE ils_marc_checksums set checksum = ? where source = ? AND ilsId = ?");
-			PreparedStatement getGroupedWorkIdStmt = pikaConn.prepareStatement("SELECT grouped_work_id from grouped_work_primary_identifiers WHERE type = ? AND identifier = ?");
+			PreparedStatement getChecksumStmt       = pikaConn.prepareStatement("SELECT checksum FROM ils_marc_checksums where source = ? AND ilsId = ?");
+			PreparedStatement updateChecksumStmt    = pikaConn.prepareStatement("UPDATE ils_marc_checksums set checksum = ? where source = ? AND ilsId = ?");
+			PreparedStatement getGroupedWorkIdStmt  = pikaConn.prepareStatement("SELECT grouped_work_id from grouped_work_primary_identifiers WHERE type = ? AND identifier = ?");
 			PreparedStatement updateGroupedWorkStmt = pikaConn.prepareStatement("UPDATE grouped_work set date_updated = ? where id = ?");
 
 			MarcReader updatedMarcReader = new MarcStreamReader(new FileInputStream(updatesFile));
@@ -420,12 +424,12 @@ public class SymphonyExportMain {
 
 	private static String getPrimaryIdentifierFromMarcRecord(Record marcRecord) {
 		List<VariableField> recordNumberFields = marcRecord.getVariableFields(indexingProfile.recordNumberTag);
-		String recordNumber = null;
+		String recordNumber                    = null;
 		//Make sure we only get one ils identifier
 		for (VariableField curVariableField : recordNumberFields) {
 			if (curVariableField instanceof DataField) {
 				DataField curRecordNumberField = (DataField) curVariableField;
-				Subfield subfieldA = curRecordNumberField.getSubfield('a');
+				Subfield subfieldA             = curRecordNumberField.getSubfield('a');
 				if (subfieldA != null && (indexingProfile.recordNumberPrefix.length() == 0 || subfieldA.getData().length() > indexingProfile.recordNumberPrefix.length())) {
 					if (curRecordNumberField.getSubfield('a').getData().substring(0, indexingProfile.recordNumberPrefix.length()).equals(indexingProfile.recordNumberPrefix)) {
 						recordNumber = curRecordNumberField.getSubfield('a').getData().trim();
@@ -435,7 +439,7 @@ public class SymphonyExportMain {
 			} else {
 				//It's a control field
 				ControlField curRecordNumberField = (ControlField) curVariableField;
-				recordNumber = curRecordNumberField.getData().trim();
+				recordNumber                      = curRecordNumberField.getData().trim();
 				break;
 			}
 		}
@@ -446,9 +450,9 @@ public class SymphonyExportMain {
 		Long lastSymphonyExtractTime = null;
 		try {
 			PreparedStatement loadLastSymphonyExtractTimeStmt = vufindConn.prepareStatement("SELECT * from variables WHERE name = 'last_symphony_extract_time'", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-			ResultSet lastSymphonyExtractTimeRS = loadLastSymphonyExtractTimeStmt.executeQuery();
+			ResultSet lastSymphonyExtractTimeRS               = loadLastSymphonyExtractTimeStmt.executeQuery();
 			if (lastSymphonyExtractTimeRS.next()){
-				lastSymphonyExtractTime           = lastSymphonyExtractTimeRS.getLong("value");
+				lastSymphonyExtractTime                              = lastSymphonyExtractTimeRS.getLong("value");
 				SymphonyExportMain.lastSymphonyExtractTimeVariableId = lastSymphonyExtractTimeRS.getLong("id");
 				logger.debug("Last extract time was " + lastSymphonyExtractTime);
 			}else{
