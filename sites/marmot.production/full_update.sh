@@ -113,9 +113,10 @@ cd /usr/local/vufind-plus/vufind/cron;./GetHooplaFromMarmot.sh >> ${OUTPUT_FILE}
 # Colorado State Gov Docs Marc Updates
 /usr/local/vufind-plus/vufind/cron/moveFullExport.sh marmot/coloGovDocs colorado_gov_docs >> ${OUTPUT_FILE}
 
-# Naxos Fort Lewis
+# Naxos
 /usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} fortlewis_sideload/naxos naxos/fortlewis >> ${OUTPUT_FILE}
 /usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} fortlewis_sideload/naxos_jazz naxos/jazz/fortlewis >> ${OUTPUT_FILE}
+/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} ccu/naxos naxos/ccu >> ${OUTPUT_FILE}
 
 # Mango Language
 /usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} mesa/mango mango/mesa >> ${OUTPUT_FILE}
