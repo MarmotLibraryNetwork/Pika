@@ -1,6 +1,6 @@
 {strip}
 	{if count($libraryLocations) > 1}
-	<form role="from">
+	<form role="form">
 		<div class="form-group">
 			<label for="selectLibrary">Select a Location</label>
 			<select name="selectLibrary" id="selectLibrary" onchange="return VuFind.showLocationHoursAndMap();" class="form-control">

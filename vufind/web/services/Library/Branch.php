@@ -50,38 +50,39 @@ class Branch extends Action{
 						$hourObj->close = "$hour:$minutes PM";
 					}
 					$hoursSemantic[] = array(
-						'@type' => 'OpeningHoursSpecification',
-						'opens' => $hourObj->open,
-						'closes' => $hourObj->close,
+						'@type'     => 'OpeningHoursSpecification',
+						'opens'     => $hourObj->open,
+						'closes'    => $hourObj->close,
 						'dayOfWeek' => 'http://purl.org/goodrelations/v1#' . $hourObj->day
 					);
 				}
 				$hours[$key] = $hourObj;
 			}
-			$mapLink = "http://maps.google.com/maps?f=q&hl=en&geocode=&q=$mapAddress&ie=UTF8&z=15&iwloc=addr&om=1&t=m";
+			$mapLink      = "http://maps.google.com/maps?f=q&hl=en&geocode=&q=$mapAddress&ie=UTF8&z=15&iwloc=addr&om=1&t=m";
+			$mapImageLink = "http://maps.googleapis.com/maps/api/staticmap?center=$mapAddress&zoom=15&size=200x200&sensor=false&markers=color:red%7C$mapAddress&key" . $configArray['Maps']['apiKey'];
 			$locationInfo = array(
-				'id' => $location->locationId,
-				'name' => $location->displayName,
-				'address' => preg_replace('/\r\n|\r|\n/', '<br>', $location->address),
-				'phone' => $location->phone,
-				'map_image' => "http://maps.googleapis.com/maps/api/staticmap?center=$mapAddress&zoom=15&size=200x200&sensor=false&markers=color:red%7C$mapAddress",
-				'map_link' => $mapLink,
-				'hours' => $hours
+				'id'        => $location->locationId,
+				'name'      => $location->displayName,
+				'address'   => preg_replace('/\r\n|\r|\n/', '<br>', $location->address),
+				'phone'     => $location->phone,
+				'map_image' => $mapImageLink,
+				'map_link'  => $mapLink,
+				'hours'     => $hours
 			);
 			$interface->assign('locationInfo', $locationInfo);
 
 			//Schema.org
 			$semanticData = array(
-				'@context' => 'http://schema.org',
-				'@type' => 'Library',
-				'name' => $location->displayName,
-				'branchCode' => $location->code,
+				'@context'           => 'http://schema.org',
+				'@type'              => 'Library',
+				'name'               => $location->displayName,
+				'branchCode'         => $location->code,
 				'parentOrganization' => $configArray['Site']['url'] . "/Library/{$location->libraryId}/System"
 			);
 
 			if ($location->address){
 				$semanticData['address'] = $location->address;
-				$semanticData['hasMap'] = $mapLink;
+				$semanticData['hasMap']  = $mapLink;
 			}
 			if ($location->phone){
 				$semanticData['telephone'] = $location->phone;
