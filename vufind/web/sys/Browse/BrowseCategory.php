@@ -121,11 +121,11 @@ class BrowseCategory extends DB_DataObject{
 		// key structure
 		// $key = 'browse_category_' . $this->textId . '_' . $solrScope . '_' . $browseMode;
 
-		$libraries = new Library();
+		$libraries         = new Library();
 		$librarySubDomains = $libraries->fetchAll('subdomain');
-		$locations = new Location();
-		$locationCodes = $locations->fetchAll('code');
-		$solrScopes = array_merge($librarySubDomains, $locationCodes);
+		$locations         = new Location();
+		$locationCodes     = $locations->fetchAll('code');
+		$solrScopes        = array_merge($librarySubDomains, $locationCodes);
 
 		if (!empty($solrScopes)) { // don't bother if we didn't get any solr scopes
 			// Valid Browse Modes (taken from class Browse_AJAX)
@@ -149,7 +149,8 @@ class BrowseCategory extends DB_DataObject{
 
 	public function saveSubBrowseCategories(){
 		if (isset ($this->subBrowseCategories) && is_array($this->subBrowseCategories)) {
-			/** @var SubBrowseCategories[] $subBrowseCategories */
+			/** @var BrowseCategory[] $subBrowseCategories */
+			/** @var BrowseCategory   $subCategory */
 			foreach ($this->subBrowseCategories as $subCategory) {
 				if (isset($subCategory->deleteOnSave) && $subCategory->deleteOnSave == true) {
 					$subCategory->delete();
