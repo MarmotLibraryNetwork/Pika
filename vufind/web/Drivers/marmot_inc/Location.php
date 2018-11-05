@@ -888,7 +888,7 @@ class Location extends DB_DataObject
 			if (!isset($this->hours)){
 				$this->hours = array();
 				if ($this->locationId){
-					$hours = new LocationHours();
+					$hours             = new LocationHours();
 					$hours->locationId = $this->locationId;
 					$hours->orderBy('day');
 					$hours->find();
@@ -1105,7 +1105,7 @@ class Location extends DB_DataObject
 			$holiday->libraryId = $location->libraryId;
 			if ($holiday->find(true)){
 				return array(
-					'closed' => true,
+					'closed'        => true,
 					'closureReason' => $holiday->name
 				);
 			}
@@ -1121,10 +1121,10 @@ class Location extends DB_DataObject
 			if ($hours->find(true)){
 				$hours->fetch();
 				return array(
-					'open' => ltrim($hours->open, '0'),
-					'close' => ltrim($hours->close, '0'),
-					'closed' => $hours->closed ? true : false,
-					'openFormatted' => ($hours->open == '12:00' ? 'Noon' : date("g:i A", strtotime($hours->open))),
+					'open'           => ltrim($hours->open, '0'),
+					'close'          => ltrim($hours->close, '0'),
+					'closed'         => $hours->closed ? true : false,
+					'openFormatted'  => ($hours->open == '12:00' ? 'Noon' : date("g:i A", strtotime($hours->open))),
 					'closeFormatted' => ($hours->close == '12:00' ? 'Noon' : date("g:i A", strtotime($hours->close)))
 				);
 			}
@@ -1419,9 +1419,41 @@ class Location extends DB_DataObject
 	}
 
 	public function getNumHours() {
-		$hours = new LocationHours();
+		$hours             = new LocationHours();
 		$hours->locationId = $this->locationId;
 		return $hours->count();
+	}
+
+	public function getHoursFormatted()
+	{
+		$hours = $this->getHours();
+		foreach ($hours as $key => $hourObj) {
+			if (!$hourObj->closed) {
+				$formattedHoursObject        = new LocationHours();
+				$formattedHoursObject->open  = $hourObj->formatHours($hourObj->open);
+				$formattedHoursObject->close = $hourObj->formatHours($hourObj->close);
+				$hours[$key]                 = $formattedHoursObject;
+			}
+		}
+		return $hours;
+	}
+
+	public function getLocationInformation() {
+		global $configArray;
+		$hours        = $this->getHoursFormatted();
+		$mapAddress   = urlencode(preg_replace('/\r\n|\r|\n/', '+', $this->address));
+		$mapLink      = "http://maps.google.com/maps?f=q&hl=en&geocode=&q=$mapAddress&ie=UTF8&z=15&iwloc=addr&om=1&t=m";
+		$mapImageLink = "http://maps.googleapis.com/maps/api/staticmap?center=$mapAddress&zoom=15&size=200x200&sensor=false&markers=color:red%7C$mapAddress&key=" . $configArray['Maps']['apiKey'];
+		$locationInfo = array(
+			'id'        => $this->locationId,
+			'name'      => $this->displayName,
+			'address'   => preg_replace('/\r\n|\r|\n/', '<br>', $this->address),
+			'phone'     => $this->phone,
+			'map_image' => $mapImageLink,
+			'map_link'  => $mapLink,
+			'hours'     => $hours
+		);
+		return $locationInfo;
 	}
 
 	private $opacStatus = null;
@@ -1485,7 +1517,6 @@ class Location extends DB_DataObject
 		$oneToManyDBObject = new $oneToManyDBObjectClassName();
 		$oneToManyDBObject->libraryId = $this->libraryId;
 		$oneToManyDBObject->delete();
-
 	}
 
 }

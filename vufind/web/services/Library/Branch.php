@@ -15,60 +15,12 @@ class Branch extends Action{
 		global $interface;
 		global $configArray;
 
-		$location = new Location();
+		$location             = new Location();
 		$location->locationId = $_REQUEST['id'];
 		if ($location->find(true)){
 			$interface->assign('location', $location);
 
-			$mapAddress = urlencode(preg_replace('/\r\n|\r|\n/', '+', $location->address));
-			$hours = $location->getHours();
-			$hoursSemantic = array();
-			foreach ($hours as $key => $hourObj){
-				if (!$hourObj->closed){
-					$hourString = $hourObj->open;
-					list($hour, $minutes) = explode(':', $hourString);
-					if ($hour < 12){
-						$hourObj->open .= ' AM';
-					}elseif ($hour == 12){
-						$hourObj->open = 'Noon';
-					}elseif ($hour == 24){
-						$hourObj->open = 'Midnight';
-					}else{
-						$hour -= 12;
-						$hourObj->open = "$hour:$minutes PM";
-					}
-					$hourString = $hourObj->close;
-					list($hour, $minutes) = explode(':', $hourString);
-					if ($hour < 12){
-						$hourObj->close .= ' AM';
-					}elseif ($hour == 12){
-						$hourObj->close = 'Noon';
-					}elseif ($hour == 24){
-						$hourObj->close = 'Midnight';
-					}else{
-						$hour -= 12;
-						$hourObj->close = "$hour:$minutes PM";
-					}
-					$hoursSemantic[] = array(
-						'@type'     => 'OpeningHoursSpecification',
-						'opens'     => $hourObj->open,
-						'closes'    => $hourObj->close,
-						'dayOfWeek' => 'http://purl.org/goodrelations/v1#' . $hourObj->day
-					);
-				}
-				$hours[$key] = $hourObj;
-			}
-			$mapLink      = "http://maps.google.com/maps?f=q&hl=en&geocode=&q=$mapAddress&ie=UTF8&z=15&iwloc=addr&om=1&t=m";
-			$mapImageLink = "http://maps.googleapis.com/maps/api/staticmap?center=$mapAddress&zoom=15&size=200x200&sensor=false&markers=color:red%7C$mapAddress&key" . $configArray['Maps']['apiKey'];
-			$locationInfo = array(
-				'id'        => $location->locationId,
-				'name'      => $location->displayName,
-				'address'   => preg_replace('/\r\n|\r|\n/', '<br>', $location->address),
-				'phone'     => $location->phone,
-				'map_image' => $mapImageLink,
-				'map_link'  => $mapLink,
-				'hours'     => $hours
-			);
+			$locationInfo = $location->getLocationInformation();
 			$interface->assign('locationInfo', $locationInfo);
 
 			//Schema.org
@@ -82,10 +34,21 @@ class Branch extends Action{
 
 			if ($location->address){
 				$semanticData['address'] = $location->address;
-				$semanticData['hasMap']  = $mapLink;
+				$semanticData['hasMap']  = $locationInfo['map_link'];
 			}
 			if ($location->phone){
 				$semanticData['telephone'] = $location->phone;
+			}
+			$hoursSemantic = array();
+			foreach ($location->getHours() as $key => $hourObj){
+				if (!$hourObj->closed){
+					$hoursSemantic[] = array(
+						'@type'     => 'OpeningHoursSpecification',
+						'opens'     => $hourObj->open,
+						'closes'    => $hourObj->close,
+						'dayOfWeek' => 'http://purl.org/goodrelations/v1#' . $hourObj->day
+					);
+				}
 			}
 			if (!empty($hoursSemantic)){
 				$semanticData['openingHoursSpecification'] = $hoursSemantic;

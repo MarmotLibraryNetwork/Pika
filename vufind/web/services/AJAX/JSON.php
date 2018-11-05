@@ -150,8 +150,8 @@ class AJAX_JSON extends Action {
 	function getHoursAndLocations(){
 		//Get a list of locations for the current library
 		global $library;
-		$tmpLocation = new Location();
-		$tmpLocation->libraryId = $library->libraryId;
+		$tmpLocation                              = new Location();
+		$tmpLocation->libraryId                   = $library->libraryId;
 		$tmpLocation->showInLocationsAndHoursList = 1;
 		$tmpLocation->orderBy('isMainBranch DESC, displayName'); // List Main Branches first, then sort by name
 		$libraryLocations = array();
@@ -164,47 +164,8 @@ class AJAX_JSON extends Action {
 			$tmpLocation->find();
 		}
 		while ($tmpLocation->fetch()){
-			$mapAddress = urlencode(preg_replace('/\r\n|\r|\n/', '+', $tmpLocation->address));
-			$clonedLocation = clone $tmpLocation;
-			$hours = $clonedLocation->getHours();
-			foreach ($hours as $key => $hourObj){
-				if (!$hourObj->closed){
-					$hourString = $hourObj->open;
-					list($hour, $minutes) = explode(':', $hourString);
-					if ($hour < 12){
-						$hourObj->open = +$hour.":$minutes AM"; // remove leading zeros in the hour
-					}elseif ($hour == 12){
-						$hourObj->open = 'Noon';
-					}elseif ($hour == 24){
-						$hourObj->open = 'Midnight';
-					}else{
-						$hour -= 12;
-						$hourObj->open = "$hour:$minutes PM";
-					}
-					$hourString = $hourObj->close;
-					list($hour, $minutes) = explode(':', $hourString);
-					if ($hour < 12){
-						$hourObj->close .= ' AM';
-					}elseif ($hour == 12){
-						$hourObj->close = 'Noon';
-					}elseif ($hour == 24){
-						$hourObj->close = 'Midnight';
-					}else{
-						$hour -= 12;
-						$hourObj->close = "$hour:$minutes PM";
-					}
-				}
-				$hours[$key] = $hourObj;
-			}
-			$libraryLocations[] = array(
-				'id' => $tmpLocation->locationId,
-				'name' => $tmpLocation->displayName,
-				'address' => preg_replace('/\r\n|\r|\n/', '<br>', $tmpLocation->address),
-				'phone' => $tmpLocation->phone,
-				'map_image' => "http://maps.googleapis.com/maps/api/staticmap?center=$mapAddress&zoom=15&size=200x200&sensor=false&markers=color:red%7C$mapAddress",
-				'map_link' => "http://maps.google.com/maps?f=q&hl=en&geocode=&q=$mapAddress&ie=UTF8&z=15&iwloc=addr&om=1&t=m",
-				'hours' => $hours
-			);
+			$locationInfo       = $tmpLocation->getLocationInformation();
+			$libraryLocations[] = $locationInfo;
 		}
 
 		global $interface;
