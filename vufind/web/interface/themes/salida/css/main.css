@@ -10843,6 +10843,10 @@ fieldset[disabled] .btn-masquerade.active {
 #browse-category-picker .jcarousel-control-next {
   box-shadow: none;
 }
+#browse-sub-category-menu button.selected {
+  border: 2px solid #000;
+  color: #000;
+}
 body {
   background-image: url("http://www.salidalibrary.org/wp-content/uploads/2014/02/monarch-ski-resort-trees-11_20132.jpg");
   background-position: center top;
