@@ -81,7 +81,7 @@ class SacramentoRecordProcessor extends IIIRecordProcessor {
         if (matType != null) {
             if (!matType.equals("-") && !matType.equals(" ")) {
                 String translatedFormat = translateValue("material_type", matType, recordInfo.getRecordIdentifier());
-                if (!translatedFormat.equals(matType)) {
+                if (translatedFormat != null && !translatedFormat.equals(matType)) {
                     String translatedFormatCategory = translateValue("format_category", matType, recordInfo.getRecordIdentifier());
                     recordInfo.addFormat(translatedFormat);
                     if (translatedFormatCategory != null) {
@@ -97,7 +97,7 @@ class SacramentoRecordProcessor extends IIIRecordProcessor {
                         logger.warn("Could not load format boost for format " + formatBoost + " profile " + profileType);
                     }
                 } else {
-                    logger.warn("Material Type "+ matType + " had no translation, falling back to default format determination.");
+                    logger.info("Material Type "+ matType + " had no translation, falling back to default format determination.");
                 }
             } else {
                 logger.info("Material Type for " + recordInfo.getRecordIdentifier() +" has empty value '"+ matType + "', falling back to default format determination.");
