@@ -62,7 +62,7 @@
 # Data Extract from other systems #
 ###################################
 # Library supplied covers
-31 */2 * * * /usr/local/vufind-plus/sites/lion.production/copyCovers.sh
+*/9 * * * * /usr/local/vufind-plus/sites/lion.production/copyCovers.sh
 #Lynda weekly update
 17 8 * * Fri /usr/local/vufind-plus/vufind/cron/fetch_lynda.sh lion
 
