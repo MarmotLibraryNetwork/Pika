@@ -31,7 +31,7 @@
 		<div class="row">
 			<div class="result-label col-xs-3">{translate text='Physical Desc'}:</div>
 			<div class="col-xs-9 result-value">
-				{implode subject=$physicalDescriptions glue="<br/>"}
+				{implode subject=$physicalDescriptions glue="<br>"}
 			</div>
 		</div>
 	{/if}
@@ -110,8 +110,8 @@
 
 	{if $recordDriver && $recordDriver->getFountasPinnellLevel()}
 		<div class="row">
-			<div class="result-label col-md-3">{translate text='Fountas &amp; Pinnell'}:</div>
-			<div class="col-md-9 result-value">
+			<div class="result-label col-xs-3">{translate text='Fountas &amp; Pinnell'}:</div>
+			<div class="col-xs-9 result-value">
 				{$recordDriver->getFountasPinnellLevel()|escape}
 			</div>
 		</div>
@@ -121,8 +121,8 @@
 		<h4>{translate text='Notes'}</h4>
 		{foreach from=$notes item=note name=loop}
 			<div class="row">
-				<div class="result-label col-sm-3">{$note.label}</div>
-				<div class="col-sm-9 result-value">{$note.note}</div>
+				<div class="result-label col-xs-3">{$note.label}</div>
+				<div class="col-xs-9 result-value">{$note.note}</div>
 			</div>
 		{/foreach}
 	{/if}

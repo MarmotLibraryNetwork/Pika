@@ -114,7 +114,14 @@ public class OfflineCirculation implements IProcessHandler {
 				if (result.has("holdMessage")){
 					updateHold.setString(3, result.getString("holdMessage"));
 				}else{
-					updateHold.setString(3, result.getString("message"));
+					String message = result.getString("message");
+					if (message == null || message.isEmpty()) {
+						message = "Did not get valid message response from place hold attempt";
+					}
+					if (message.length() > 512) { // Column size of the offline hold note field is 512
+						message = message.substring(0, 511);
+					}
+					updateHold.setString(3, message);
 				}
 			}
 			processLog.incUpdated();
