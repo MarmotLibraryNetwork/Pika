@@ -85,19 +85,19 @@ public class OfflineCirculation implements IProcessHandler {
 		updateHold.setLong(1, new Date().getTime() / 1000);
 		updateHold.setLong(4, holdId);
 		try {
-			String patronBarcode = encode(holdsToProcessRS.getString("patronBarcode"));
-			String patronName    = holdsToProcessRS.getString("cat_username");
+			String patronPassword = encode(holdsToProcessRS.getString("cat_password"));
+			String patronName     = holdsToProcessRS.getString("cat_username");
 			if (patronName == null || patronName.length() == 0){
 				patronName = holdsToProcessRS.getString("patronName");
 			}
-			patronName    = encode(patronName);
-			String bibId  = encode(holdsToProcessRS.getString("bibId"));
-			String itemId = holdsToProcessRS.getString("itemId");
+			patronName     = encode(patronName);
+			String bibId   = encode(holdsToProcessRS.getString("bibId"));
+			String itemId  = holdsToProcessRS.getString("itemId");
 			URL placeHoldUrl;
 			if (itemId != null && itemId.length() > 0){
-				placeHoldUrl = new URL(baseUrl + "/API/UserAPI?method=placeItemHold&username=" + patronName + "&password=" + patronBarcode + "&bibId=" + bibId + "&itemId=" + itemId);
+				placeHoldUrl = new URL(baseUrl + "/API/UserAPI?method=placeItemHold&username=" + patronName + "&password=" + patronPassword + "&bibId=" + bibId + "&itemId=" + itemId);
 			}else{
-				placeHoldUrl = new URL(baseUrl + "/API/UserAPI?method=placeHold&username=" + patronName + "&password=" + patronBarcode + "&bibId=" + bibId);
+				placeHoldUrl = new URL(baseUrl + "/API/UserAPI?method=placeHold&username=" + patronName + "&password=" + patronPassword + "&bibId=" + bibId);
 			}
 
 			Object placeHoldDataRaw = placeHoldUrl.getContent();
