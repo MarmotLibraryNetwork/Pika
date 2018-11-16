@@ -488,7 +488,7 @@ class Millennium extends ScreenScrapingDriver
 			if ($host == null){
 				$host = $configArray['OPAC']['patron_host'];
 			}
-			$barcodesToTest = array();
+			$barcodesToTest   = array();
 			$barcodesToTest[] = $barcode;
 
 			//Special processing to allow users to login with short barcodes
@@ -511,11 +511,11 @@ class Millennium extends ScreenScrapingDriver
 				$barcodesToTest[] = "mv" . $barcode;
 			}
 
-			foreach ($barcodesToTest as $i=>$barcode){
+			foreach ($barcodesToTest as $i=> $barcode){
 				$patronDump = $this->_parsePatronApiPage($host, $barcode);
 
 				if (empty($patronDump)){
-					return $patronDump;
+					continue; // try any other barcodes
 				}else if ((isset($patronDump['ERRNUM']) || count($patronDump) == 0) && $i != count($barcodesToTest) - 1){
 					//check the next barcode
 				}else{
@@ -541,7 +541,7 @@ class Millennium extends ScreenScrapingDriver
 		//Sample format of a row is as follows:
 		//P TYPE[p47]=100<BR>
 		$patronApiUrl =  $host . "/PATRONAPI/" . $barcode ."/dump" ;
-		$result = $this->_curlGetPage($patronApiUrl);
+		$result       = $this->_curlGetPage($patronApiUrl);
 
 		//Strip the actual contents out of the body of the page.
 		//Periodically we get HTML like characters within the notes so strip tags breaks the page.
@@ -1606,9 +1606,9 @@ class Millennium extends ScreenScrapingDriver
 			$firstName = null;
 		}
 
-		$fullName = str_replace(",", " ", $patronName);
-		$fullName = str_replace(";", " ", $fullName);
-		$fullName = preg_replace("/\\s{2,}/", " ", $fullName);
+		$fullName         = str_replace(",", " ", $patronName);
+		$fullName         = str_replace(";", " ", $fullName);
+		$fullName         = preg_replace("/\\s{2,}/", " ", $fullName);
 		$allNameComponents = preg_split('/[\s-]/', strtolower($fullName));
 		foreach ($allNameComponents as $name){
 			$newName = str_replace('-', '', $name);
@@ -1625,9 +1625,9 @@ class Millennium extends ScreenScrapingDriver
 		//Get the first name that the user supplies.
 		//This expects the user to enter one or two names and only
 		//Validates the first name that was entered.
-		$username = str_replace(",", " ", $username);
-		$username = str_replace(";", " ", $username);
-		$username = preg_replace("/\\s{2,}/", " ", $username);
+		$username     = str_replace(",", " ", $username);
+		$username     = str_replace(";", " ", $username);
+		$username     = preg_replace("/\\s{2,}/", " ", $username);
 		$enteredNames = preg_split('/[\s-]/', strtolower($username));
 		$userValid = false;
 		foreach ($enteredNames as $name) {
