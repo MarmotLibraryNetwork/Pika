@@ -46,7 +46,7 @@ class Circa_OfflineCirculation extends Action{
 
 			if ($loginInfoValid){
 				//$barcodesToCheckIn = $_REQUEST['barcodesToCheckIn'];
-				$patronBarcode = $_REQUEST['patronBarcode'];
+				$patronBarcode      = $_REQUEST['patronBarcode'];
 				$barcodesToCheckOut = $_REQUEST['barcodesToCheckOut'];
 
 				//First store any titles that are being checked in
@@ -67,8 +67,8 @@ class Circa_OfflineCirculation extends Action{
 				}*/
 				$numItemsCheckedOut = 0;
 				if (strlen(trim($barcodesToCheckOut)) > 0 && strlen($patronBarcode) > 0){
-					$userObj = new User();
 					$patronId = null;
+					$userObj               = new User();
 					$userObj->cat_password = $patronBarcode;
 					if ($userObj->find()){
 						$userObj->fetch();
@@ -81,17 +81,17 @@ class Circa_OfflineCirculation extends Action{
 					foreach ($barcodesToCheckOut as $barcode){
 						$barcode = trim($barcode);
 						if (strlen($barcode) > 0){
-							$offlineCirculationEntry = new OfflineCirculationEntry();
-							$offlineCirculationEntry->timeEntered = time();
-							$offlineCirculationEntry->itemBarcode = $barcode;
-							$offlineCirculationEntry->login = $login;
+							$offlineCirculationEntry                = new OfflineCirculationEntry();
+							$offlineCirculationEntry->timeEntered   = time();
+							$offlineCirculationEntry->itemBarcode   = $barcode;
+							$offlineCirculationEntry->login         = $login;
 							$offlineCirculationEntry->loginPassword = $password1;
 							//$offlineCirculationEntry->initials = $initials;
 							//$offlineCirculationEntry->initialsPassword = $password2;
 							$offlineCirculationEntry->patronBarcode = $patronBarcode;
-							$offlineCirculationEntry->patronId = $patronId;
-							$offlineCirculationEntry->type = 'Check Out';
-							$offlineCirculationEntry->status = 'Not Processed';
+							$offlineCirculationEntry->patronId      = $patronId;
+							$offlineCirculationEntry->type          = 'Check Out';
+							$offlineCirculationEntry->status        = 'Not Processed';
 							if ($offlineCirculationEntry->insert()){
 								$numItemsCheckedOut++;
 							}else{
