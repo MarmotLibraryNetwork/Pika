@@ -41,11 +41,12 @@ class SantaFe extends Sierra{
 		return $loginData;
 	}
 
+ //TODO: I suspect the function version of this in use for Arlington and Sacramento will work for Santa Fe too.
 	public function _curl_login($patron) {
 		global $logger;
 		$loginResult = false;
 
-		$baseUrl = $this->getVendorOpacUrl() . "/patroninfo~S1/IIITICKET";
+		$baseUrl   = $this->getVendorOpacUrl() . "/patroninfo~S1/IIITICKET";
 		$curlUrl   = 'https://catalog.ci.santa-fe.nm.us/iii/cas/login?scope=1&service=' . urlencode($baseUrl);
 		$post_data = $this->_getLoginFormValues($patron);
 
