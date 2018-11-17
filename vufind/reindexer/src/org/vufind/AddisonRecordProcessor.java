@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Set;
 
 public class AddisonRecordProcessor extends IIIRecordProcessor {
+    private String materialTypeSubField = "d";
     AddisonRecordProcessor(GroupedWorkIndexer indexer, Connection vufindConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
         super(indexer, vufindConn, indexingProfileRS, logger, fullReindex);
 
@@ -40,6 +41,39 @@ public class AddisonRecordProcessor extends IIIRecordProcessor {
     protected boolean loanRulesAreBasedOnCheckoutLocation() {
         return false;
     }
+
+    public void loadPrintFormatInformation(RecordInfo recordInfo, Record record){
+        String matType = MarcUtil.getFirstFieldVal(record, sierraRecordFixedFieldsTag + materialTypeSubField);
+        if (matType != null) {
+            if (!matType.equals("-") && !matType.equals(" ")) {
+                String translatedFormat = translateValue("material_type", matType, recordInfo.getRecordIdentifier());
+                if (translatedFormat != null && !translatedFormat.equals(matType)) {
+                    String translatedFormatCategory = translateValue("format_category", matType, recordInfo.getRecordIdentifier());
+                    recordInfo.addFormat(translatedFormat);
+                    if (translatedFormatCategory != null) {
+                        recordInfo.addFormatCategory(translatedFormatCategory);
+                    }
+                    // use translated value
+                    String formatBoost = translateValue("format_boost", matType, recordInfo.getRecordIdentifier());
+                    try {
+                        Long tmpFormatBoostLong = Long.parseLong(formatBoost);
+                        recordInfo.setFormatBoost(tmpFormatBoostLong);
+                        return;
+                    } catch (NumberFormatException e) {
+                        logger.warn("Could not load format boost for format " + formatBoost + " profile " + profileType + "; Falling back to default format determination process");
+                    }
+                } else {
+                    logger.info("Material Type "+ matType + " had no translation, falling back to default format determination.");
+                }
+            } else {
+                logger.info("Material Type for " + recordInfo.getRecordIdentifier() +" has empty value '"+ matType + "', falling back to default format determination.");
+            }
+        } else {
+            logger.info(recordInfo.getRecordIdentifier() + " did not have a material type, falling back to default format determination.");
+        }
+        super.loadPrintFormatInformation(recordInfo, record);
+    }
+
 
     // This is just taken from Sacramento Processor
     @Override

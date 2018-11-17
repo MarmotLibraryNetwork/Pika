@@ -162,8 +162,8 @@ class ArlingtonRecordProcessor extends IIIRecordProcessor {
 	 * Load format information for the record.  For arlington, we will load from the material type (998d)
 	 */
 	public void loadPrintFormatInformation(RecordInfo recordInfo, Record record){
-		String matType = MarcUtil.getFirstFieldVal(record, sierraRecordFixedFieldsTag + materialTypeSubField);
-		String translatedFormat = translateValue("format", matType, recordInfo.getRecordIdentifier());
+		String matType                  = MarcUtil.getFirstFieldVal(record, sierraRecordFixedFieldsTag + materialTypeSubField);
+		String translatedFormat         = translateValue("format", matType, recordInfo.getRecordIdentifier());
 		String translatedFormatCategory = translateValue("format_category", matType, recordInfo.getRecordIdentifier());
 		recordInfo.addFormat(translatedFormat);
 		if (translatedFormatCategory != null) {
