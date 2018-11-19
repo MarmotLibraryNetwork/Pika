@@ -410,7 +410,7 @@ class Aspencat implements DriverInterface{
 						$userExistsInDB = false;
 						$user = new User();
 						//Get the unique user id from Millennium
-						$user->source = $this->accountProfile->name;
+						$user->source   = $this->accountProfile->name;
 						$user->username = $userFromDb['borrowernumber'];
 						if ($user->find(true)){
 							$userExistsInDB = true;
@@ -616,7 +616,7 @@ class Aspencat implements DriverInterface{
 	public function __construct($accountProfile){
 		$this->accountProfile = $accountProfile;
 		global $timer;
-		$timer->logTime("Crea11ted Aspencat Driver");
+		$timer->logTime("Created Aspencat Driver");
 	}
 
 	function __destruct(){
@@ -1088,10 +1088,10 @@ class Aspencat implements DriverInterface{
 	 */
 	public function getMyHoldsFromOpac($patron){
 		global $logger;
-		$availableHolds = array();
+		$availableHolds   = array();
 		$unavailableHolds = array();
 		$holds = array(
-			'available'=> $availableHolds,
+			'available'   => $availableHolds,
 			'unavailable' => $unavailableHolds
 		);
 		//Get transactions by screen scraping
@@ -1305,10 +1305,10 @@ class Aspencat implements DriverInterface{
 	public function getMyHoldsFromDB(/** @noinspection PhpUnusedParameterInspection */
 		$patron, $page = 1, $recordsPerPage = -1, $sortOption = 'title'){
 
-		$availableHolds = array();
+		$availableHolds   = array();
 		$unavailableHolds = array();
 		$holds = array(
-			'available'=> $availableHolds,
+			'available'   => $availableHolds,
 			'unavailable' => $unavailableHolds
 		);
 

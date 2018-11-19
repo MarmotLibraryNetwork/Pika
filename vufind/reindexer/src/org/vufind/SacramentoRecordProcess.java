@@ -94,7 +94,7 @@ class SacramentoRecordProcessor extends IIIRecordProcessor {
                         recordInfo.setFormatBoost(tmpFormatBoostLong);
                         return;
                     } catch (NumberFormatException e) {
-                        logger.warn("Could not load format boost for format " + formatBoost + " profile " + profileType);
+                        logger.warn("Could not load format boost for format " + formatBoost + " profile " + profileType + "; Falling back to default format determination process");
                     }
                 } else {
                     logger.info("Material Type "+ matType + " had no translation, falling back to default format determination.");
@@ -119,8 +119,9 @@ class SacramentoRecordProcessor extends IIIRecordProcessor {
         }else{
             //No items so we can continue on.
 
-            String specifiedEcontentSource = MarcUtil.getFirstFieldVal(record, "901a");
-            if (specifiedEcontentSource != null){
+            String econtentSource = MarcUtil.getFirstFieldVal(record, "901a");
+            if (econtentSource != null){
+                // For Sacramento, if the itemless record doesn't have a specified eContent source, don't treat it as an econtent record
                 //Get the url
                 String url = MarcUtil.getFirstFieldVal(record, "856u");
 
@@ -144,7 +145,7 @@ class SacramentoRecordProcessor extends IIIRecordProcessor {
                     itemInfo.setLocationCode(bibLocation);
                     itemInfo.seteContentProtectionType("external");
                     itemInfo.setCallNumber("Online");
-                    itemInfo.seteContentSource(specifiedEcontentSource);
+                    itemInfo.seteContentSource(econtentSource);
 //                  itemInfo.setShelfLocation(econtentSource); // this sets the owning location facet.  This isn't needed for Sacramento
                     itemInfo.setIType("eCollection");
                     itemInfo.setDetailedStatus("Available Online");
