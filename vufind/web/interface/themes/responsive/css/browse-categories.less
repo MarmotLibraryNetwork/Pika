@@ -421,3 +421,27 @@
     font-size: @browse-category-font-size + 2;
   }
 }
+
+// MIXIN: Vertically Align cover images with the thumbnail block; up to a maximum size.  Thumbnail blocks will have a
+// uniform height and fall into columns evenly.
+.verticalAlignThumbnailArt() {
+  .browse-thumbnail {
+    div:first-child {
+      height: 180px;
+      display: flex;
+      align-items: center;
+    }
+    a {
+      img {
+        max-height: 180px;
+      }
+    }
+  }
+  .column-fix {
+    -webkit-column-break-inside: avoid;
+    -moz-column-break-inside: avoid;
+    -o-column-break-inside: avoid;
+    column-break-inside: avoid;
+    display: table;
+  }
+}
