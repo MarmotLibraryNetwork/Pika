@@ -45,7 +45,7 @@ public class AddisonRecordProcessor extends IIIRecordProcessor {
     public void loadPrintFormatInformation(RecordInfo recordInfo, Record record){
         String matType = MarcUtil.getFirstFieldVal(record, sierraRecordFixedFieldsTag + materialTypeSubField);
         if (matType != null) {
-            if (!matType.equals("-") && !matType.equals(" ")) {
+            if (!matType.equals("-") && !matType.equals(" ") && !matType.equals("v")) { // Mat-Type "v" is video games; they are to be excluded for the better default format determination
                 String translatedFormat = translateValue("material_type", matType, recordInfo.getRecordIdentifier());
                 if (translatedFormat != null && !translatedFormat.equals(matType)) {
                     String translatedFormatCategory = translateValue("format_category", matType, recordInfo.getRecordIdentifier());
