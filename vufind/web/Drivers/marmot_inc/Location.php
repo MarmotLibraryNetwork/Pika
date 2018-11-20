@@ -93,6 +93,8 @@ class Location extends DB_DataObject
 	/** @var  array $data */
 	protected $data;
 
+	public $hours;
+
 	function keys() {
 		return array('locationId', 'code');
 	}
@@ -1426,13 +1428,16 @@ class Location extends DB_DataObject
 
 	public function getHoursFormatted()
 	{
+		unset($this->hours); // clear out any previous hours data that has been set
 		$hours = $this->getHours();
 		foreach ($hours as $key => $hourObj) {
 			if (!$hourObj->closed) {
-				$formattedHoursObject        = new LocationHours();
-				$formattedHoursObject->open  = $hourObj->formatHours($hourObj->open);
-				$formattedHoursObject->close = $hourObj->formatHours($hourObj->close);
-				$hours[$key]                 = $formattedHoursObject;
+				$formattedHoursObject         = new LocationHours();
+				$formattedHoursObject->day    = $hourObj->day;
+				$formattedHoursObject->open   = $hourObj->formatHours($hourObj->open);
+				$formattedHoursObject->close  = $hourObj->formatHours($hourObj->close);
+				$formattedHoursObject->closed = $hourObj->closed;
+				$hours[$key]                  = $formattedHoursObject;
 			}
 		}
 		return $hours;
