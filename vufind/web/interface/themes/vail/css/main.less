@@ -46,3 +46,25 @@
 
 // Selected Category needs to give a highlighted appearance
 .noCarouselSelectedCategoryMixin(@selectedCategoryColor);
+
+// Vertically Align cover images with the thumbnail block; up to a maximum size.  so that the thumbnail blocks have a uniform height and fall into columns evenly
+// added by Chris 11/14/2018
+.browse-thumbnail {
+  div:first-child {
+    height: 180px;
+    display: flex;
+    align-items: center;
+  }
+  a {
+    img {
+      max-height: 180px;
+    }
+  }
+}
+.column-fix {
+  -webkit-column-break-inside: avoid;
+  -moz-column-break-inside: avoid;
+  -o-column-break-inside: avoid;
+  column-break-inside: avoid;
+  display: table;
+}

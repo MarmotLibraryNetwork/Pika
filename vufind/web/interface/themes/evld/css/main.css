@@ -10798,3 +10798,18 @@ fieldset[disabled] .btn-masquerade.active {
   border-bottom: 0;
   box-shadow: 2px 2px 5px #fff;
 }
+.browse-thumbnail div:first-child {
+  height: 180px;
+  display: flex;
+  align-items: center;
+}
+.browse-thumbnail a img {
+  max-height: 180px;
+}
+.column-fix {
+  -webkit-column-break-inside: avoid;
+  -moz-column-break-inside: avoid;
+  -o-column-break-inside: avoid;
+  column-break-inside: avoid;
+  display: table;
+}

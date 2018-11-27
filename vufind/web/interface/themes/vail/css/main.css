@@ -10850,3 +10850,18 @@ fieldset[disabled] .btn-masquerade.active {
   background: linear-gradient(to bottom, #4f8ac4, #4f8ac4 82%, #32702b 83%, #54B948 84%, #54B948 88%, #32702b 89%, #4f8ac4 90%, #4f8ac4);
   font-size: 22px;
 }
+.browse-thumbnail div:first-child {
+  height: 180px;
+  display: flex;
+  align-items: center;
+}
+.browse-thumbnail a img {
+  max-height: 180px;
+}
+.column-fix {
+  -webkit-column-break-inside: avoid;
+  -moz-column-break-inside: avoid;
+  -o-column-break-inside: avoid;
+  column-break-inside: avoid;
+  display: table;
+}

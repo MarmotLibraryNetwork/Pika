@@ -327,6 +327,7 @@ function loadSearchInformation(){
 	$searchLibrary = Library::getSearchLibrary($searchSource);
 	$searchLocation = Location::getSearchLocation($searchSource);
 
+	//TODO: this is only used in a couple places to build links to classic opac. It doesn't need to be global
 	global $millenniumScope;
 	if ($library){
 		if ($searchLibrary){
