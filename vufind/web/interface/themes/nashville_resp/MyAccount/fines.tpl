@@ -12,7 +12,7 @@
 
 	<h2>{translate text='Fines'}</h2>
 {if $offline}
-	<div class="alert alert-warning"><strong>The library system is currently offline.</strong> We are unable to retrieve information about your {translate text='Fines'|lower} at this time.</div>
+	<div class="alert alert-warning"><strong>The library system is currently offline.</strong> We are unable to retrieve information about your {translate text='Fines'} at this time.</div>
 {else}
 
 	{if count($userFines) > 0}
@@ -20,7 +20,7 @@
 		{* Show Fine Alert when the user has no linked accounts *}
 		{if  count($userFines) == 1 && $profile->fines}
 			<div class="alert alert-info">
-				Your account has <strong>{$profile->fines}</strong> in fines.
+				Your account has <strong>{$profile->fines}</strong> in {translate text='Fines'}.
 			</div>
 		{/if}
 
@@ -95,7 +95,7 @@
 				</tfoot>
 			</table>
 				{else}
-				<p class="alert alert-success">This account does not have any fines within the system.</p>
+				<p class="alert alert-success">This account does not have any {translate text='Fines'} within the system.</p>
 			{/if}
 		{/foreach}
 
@@ -106,13 +106,13 @@
 			{* Pay Fines Button *}
 			{if $showEcommerceLink && $profile->finesVal > $minimumFineAmount}
 				<a href="{$ecommerceLink}" target="_blank"{if $showRefreshAccountButton} onclick="VuFind.Account.ajaxLightbox('{$path}/AJAX/JSON?method=getPayFinesAfterAction')"{/if}>
-					<div class="btn btn-sm btn-primary">{if $payFinesLinkText}{$payFinesLinkText}{else}Click to Pay Fines Online{/if}</div>
+					<div class="btn btn-sm btn-primary">{if $payFinesLinkText}{$payFinesLinkText}{else}Click to Pay {translate text='Fines'} Online{/if}</div>
 				</a>
 			{/if}
 		{/if}
 
 	{else}
-		<p class="alert alert-success">You do not have any fines within the system.</p>
+		<p class="alert alert-success">You do not have any {translate text='Fines'} within the system.</p>
 	{/if}
 {/if}
 {else}
