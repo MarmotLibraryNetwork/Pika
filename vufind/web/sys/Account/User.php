@@ -5,8 +5,7 @@
 require_once 'DB/DataObject.php';
 require_once 'DB/DataObject/Cast.php';
 
-class User extends DB_DataObject
-{
+class User extends DB_DataObject {
 	###START_AUTOCODE
 	/* the code below is auto generated do not remove the above tag */
 
@@ -25,14 +24,14 @@ class User extends DB_DataObject
 	public $cat_password;                    // string(50)
 	public $patronType;
 	public $created;                         // datetime(19)  not_null binary
-	public $homeLocationId;					 // int(11)
-	public $myLocation1Id;					 // int(11)
-	public $myLocation2Id;					 // int(11)
-	public $trackReadingHistory; 			 // tinyint
+	public $homeLocationId;                  // int(11)
+	public $myLocation1Id;                   // int(11)
+	public $myLocation2Id;                   // int(11)
+	public $trackReadingHistory;             // tinyint
 	public $initialReadingHistoryLoaded;
-	public $bypassAutoLogout;        //tinyint
-	public $disableRecommendations;     //tinyint
-	public $disableCoverArt;     //tinyint
+	public $bypassAutoLogout;                //tinyint
+	public $disableRecommendations;          //tinyint
+	public $disableCoverArt;                 //tinyint
 	public $overdriveEmail;
 	public $promptForOverdriveEmail;
 	public $hooplaCheckOutConfirmation;
@@ -94,7 +93,6 @@ class User extends DB_DataObject
 	public $phoneType;
 
 
-
 	/* the code above is auto generated do not remove the tag below */
 	###END_AUTOCODE
 
@@ -103,14 +101,14 @@ class User extends DB_DataObject
 		$tagList = array();
 
 		$escapedId = $this->escape($this->id, false);
-		$sql = "SELECT id, groupedRecordPermanentId, tag, COUNT(groupedRecordPermanentId) AS cnt " .
-							 "FROM user_tags WHERE " .
-							 "userId = '{$escapedId}' ";
-		$sql .= "GROUP BY tag ORDER BY tag ASC";
-		$tag = new UserTag();
+		$sql       = "SELECT id, groupedRecordPermanentId, tag, COUNT(groupedRecordPermanentId) AS cnt " .
+			"FROM user_tags WHERE " .
+			"userId = '{$escapedId}' ";
+		$sql       .= "GROUP BY tag ORDER BY tag ASC";
+		$tag       = new UserTag();
 		$tag->query($sql);
-		if ($tag->N) {
-			while ($tag->fetch()) {
+		if ($tag->N){
+			while ($tag->fetch()){
 				$tagList[] = clone($tag);
 			}
 		}
@@ -119,19 +117,19 @@ class User extends DB_DataObject
 	}
 
 
-	function getLists() {
+	function getLists(){
 		require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
 
 		$lists = array();
 
 		$escapedId = $this->escape($this->id, false);
-		$sql = "SELECT user_list.* FROM user_list " .
-							 "WHERE user_list.user_id = '$escapedId' " .
-							 "ORDER BY user_list.title";
-		$list = new UserList();
+		$sql       = "SELECT user_list.* FROM user_list " .
+			"WHERE user_list.user_id = '$escapedId' " .
+			"ORDER BY user_list.title";
+		$list      = new UserList();
 		$list->query($sql);
-		if ($list->N) {
-			while ($list->fetch()) {
+		if ($list->N){
+			while ($list->fetch()){
 				$lists[] = clone($list);
 			}
 		}
@@ -140,6 +138,7 @@ class User extends DB_DataObject
 	}
 
 	private $catalogDriver;
+
 	/**
 	 * Get a connection to the catalog for the user
 	 *
@@ -150,7 +149,7 @@ class User extends DB_DataObject
 			//Based off the source of the user, get the AccountProfile
 			$accountProfile = $this->getAccountProfile();
 			if ($accountProfile){
-				$catalogDriver = $accountProfile->driver;
+				$catalogDriver       = $accountProfile->driver;
 				$this->catalogDriver = CatalogFactory::getCatalogConnectionInstance($catalogDriver, $accountProfile);
 			}
 		}
@@ -167,7 +166,7 @@ class User extends DB_DataObject
 			return $this->accountProfile;
 		}
 		require_once ROOT_DIR . '/sys/Account/AccountProfile.php';
-		$accountProfile = new AccountProfile();
+		$accountProfile       = new AccountProfile();
 		$accountProfile->name = $this->source;
 		if ($accountProfile->find(true)){
 			$this->accountProfile = $accountProfile;
@@ -178,17 +177,17 @@ class User extends DB_DataObject
 	}
 
 	function __get($name){
-		if ($name == 'roles') {
+		if ($name == 'roles'){
 			return $this->getRoles();
 		}elseif ($name == 'linkedUsers'){
 			return $this->getLinkedUsers();
 		}elseif ($name == 'materialsRequestReplyToAddress'){
-			if (!isset($this->materialsRequestReplyToAddress)) {
+			if (!isset($this->materialsRequestReplyToAddress)){
 				$this->getStaffSettings();
 			}
 			return $this->materialsRequestReplyToAddress;
 		}elseif ($name == 'materialsRequestEmailSignature'){
-			if (!isset($this->materialsRequestEmailSignature)) {
+			if (!isset($this->materialsRequestEmailSignature)){
 				$this->getStaffSettings();
 			}
 			return $this->materialsRequestEmailSignature;
@@ -198,7 +197,7 @@ class User extends DB_DataObject
 	}
 
 	function __set($name, $value){
-		if ($name == 'roles') {
+		if ($name == 'roles'){
 			$this->roles = $value;
 			//Update the database, first remove existing values
 			$this->saveRoles();
@@ -212,7 +211,7 @@ class User extends DB_DataObject
 			$this->roles = array();
 			//Load roles for the user from the user
 			require_once ROOT_DIR . '/sys/Administration/Role.php';
-			$role = new Role();
+			$role            = new Role();
 			$canUseTestRoles = false;
 			if ($this->id){
 				$escapedId = mysql_escape_string($this->id);
@@ -255,14 +254,14 @@ class User extends DB_DataObject
 
 
 		$masqueradeMode = UserAccount::isUserMasquerading();
-		if ($masqueradeMode && !$isGuidingUser) {
-			if (is_null($this->masqueradingRoles)) {
+		if ($masqueradeMode && !$isGuidingUser){
+			if (is_null($this->masqueradingRoles)){
 				global /** @var User $guidingUser */
 				$guidingUser;
 				$guidingUserRoles = $guidingUser->getRoles(true);
-				if (in_array('opacAdmin', $guidingUserRoles)) {
+				if (in_array('opacAdmin', $guidingUserRoles)){
 					$this->masqueradingRoles = $this->roles;
-				} else {
+				}else{
 					$this->masqueradingRoles = array_intersect($this->roles, $guidingUserRoles);
 				}
 			}
@@ -284,25 +283,26 @@ class User extends DB_DataObject
 
 	function setStaffSettings(){
 		require_once ROOT_DIR . '/sys/Account/UserStaffSettings.php';
-		$staffSettings = new UserStaffSettings();
-		$staffSettings->userId =  $this->id;
-		$doUpdate = $staffSettings->find(true);
+		$staffSettings                                 = new UserStaffSettings();
+		$staffSettings->userId                         = $this->id;
+		$doUpdate                                      = $staffSettings->find(true);
 		$staffSettings->materialsRequestReplyToAddress = $this->materialsRequestReplyToAddress;
 		$staffSettings->materialsRequestEmailSignature = $this->materialsRequestEmailSignature;
-		if ($doUpdate) {
+		if ($doUpdate){
 			$staffSettings->update();
-		} else {
+		}else{
 			$staffSettings->insert();
 		}
 	}
 
 	private $barcode;
+
 	function getBarcode(){
 		if (isset($this->barcode)){
 			return $this->barcode;
-		} else {
+		}else{
 			/** @var AccountProfile $accountProfile */
-			if ($accountProfile = $this->getAccountProfile()) {
+			if ($accountProfile = $this->getAccountProfile()){
 				if ($accountProfile->loginConfiguration == 'barcode_pin'){
 					$this->barcode = trim($this->cat_username);
 					return $this->barcode;
@@ -312,10 +312,10 @@ class User extends DB_DataObject
 				}
 			}
 			global $configArray;
-			if ($configArray['Catalog']['barcodeProperty'] == 'cat_username') {
+			if ($configArray['Catalog']['barcodeProperty'] == 'cat_username'){
 				$this->barcode = trim($this->cat_username);
 				return $this->barcode;
-			} else {
+			}else{
 				$this->barcode = trim($this->cat_password);
 				return $this->barcode;
 			}
@@ -326,7 +326,7 @@ class User extends DB_DataObject
 	function saveRoles(){
 		if (isset($this->id) && isset($this->roles) && is_array($this->roles)){
 			require_once ROOT_DIR . '/sys/Administration/Role.php';
-			$role = new Role();
+			$role      = new Role();
 			$escapedId = $this->escape($this->id, false);
 			$role->query("DELETE FROM user_roles WHERE userId = " . $escapedId);
 			//Now add the new values.
@@ -346,7 +346,7 @@ class User extends DB_DataObject
 	 */
 	function getLinkedUsers(){
 		if (is_null($this->linkedUsers)){
- 			$this->linkedUsers = array();
+			$this->linkedUsers = array();
 			/* var Library $library */
 			global $library;
 			/** @var Memcache $memCache */
@@ -355,12 +355,12 @@ class User extends DB_DataObject
 			global $logger;
 			if ($this->id && $library->allowLinkedAccounts){
 				require_once ROOT_DIR . '/sys/Account/UserLink.php';
-				$userLink = new UserLink();
+				$userLink                   = new UserLink();
 				$userLink->primaryAccountId = $this->id;
 				$userLink->find();
 				while ($userLink->fetch()){
-					if (!$this->isBlockedAccount($userLink->linkedAccountId)) {
-						$linkedUser = new User();
+					if (!$this->isBlockedAccount($userLink->linkedAccountId)){
+						$linkedUser     = new User();
 						$linkedUser->id = $userLink->linkedAccountId;
 						if ($linkedUser->find(true)){
 							/** @var User $userData */
@@ -372,7 +372,7 @@ class User extends DB_DataObject
 								$logger->log("Found cached linked user {$userData->id}", PEAR_LOG_DEBUG);
 								$linkedUser = $userData;
 							}
-							if ($linkedUser && !PEAR_Singleton::isError($linkedUser)) {
+							if ($linkedUser && !PEAR_Singleton::isError($linkedUser)){
 								$this->linkedUsers[] = clone($linkedUser);
 							}
 						}
@@ -384,6 +384,7 @@ class User extends DB_DataObject
 	}
 
 	private $linkedUserObjects;
+
 	function getLinkedUserObjects(){
 		if (is_null($this->linkedUserObjects)){
 			$this->linkedUserObjects = array();
@@ -391,12 +392,12 @@ class User extends DB_DataObject
 			global $library;
 			if ($this->id && $library->allowLinkedAccounts){
 				require_once ROOT_DIR . '/sys/Account/UserLink.php';
-				$userLink = new UserLink();
+				$userLink                   = new UserLink();
 				$userLink->primaryAccountId = $this->id;
 				$userLink->find();
 				while ($userLink->fetch()){
-					if (!$this->isBlockedAccount($userLink->linkedAccountId)) {
-						$linkedUser = new User();
+					if (!$this->isBlockedAccount($userLink->linkedAccountId)){
+						$linkedUser     = new User();
 						$linkedUser->id = $userLink->linkedAccountId;
 						if ($linkedUser->find(true)){
 							/** @var User $userData */
@@ -410,7 +411,7 @@ class User extends DB_DataObject
 	}
 
 	public function setParentUser($user){
-		$this->parentUser =  $user;
+		$this->parentUser = $user;
 	}
 
 	// Account Blocks //
@@ -423,23 +424,29 @@ class User extends DB_DataObject
 	 * @param  $accountIdToCheck string   linked account Id to check for blocking
 	 * @return bool                       true for blocking, false for no blocking
 	 */
-	public function isBlockedAccount($accountIdToCheck) {
-		if (is_null($this->blockAll)) $this->setAccountBlocks();
+	public function isBlockedAccount($accountIdToCheck){
+		if (is_null($this->blockAll)){
+			$this->setAccountBlocks();
+		}
 		return $this->blockAll || in_array($accountIdToCheck, $this->blockedAccounts);
 	}
 
-	private function setAccountBlocks() {
+	private function setAccountBlocks(){
 		// default settings
-		$this->blockAll = false;
+		$this->blockAll        = false;
 		$this->blockedAccounts = array();
 
 		require_once ROOT_DIR . '/sys/Administration/BlockPatronAccountLink.php';
-		$accountBlock = new BlockPatronAccountLink();
+		$accountBlock                   = new BlockPatronAccountLink();
 		$accountBlock->primaryAccountId = $this->id;
-		if ($accountBlock->find()) {
-			while ($accountBlock->fetch(false)) {
-				if ($accountBlock->blockLinking) $this->blockAll = true; // any one row that has block all on will set this setting to true for this account.
-				if ($accountBlock->blockedLinkAccountId) $this->blockedAccounts[] = $accountBlock->blockedLinkAccountId;
+		if ($accountBlock->find()){
+			while ($accountBlock->fetch(false)){
+				if ($accountBlock->blockLinking){
+					$this->blockAll = true;
+				} // any one row that has block all on will set this setting to true for this account.
+				if ($accountBlock->blockedLinkAccountId){
+					$this->blockedAccounts[] = $accountBlock->blockedLinkAccountId;
+				}
 			}
 		}
 	}
@@ -508,14 +515,14 @@ class User extends DB_DataObject
 			global $library;
 			if ($this->id && $library->allowLinkedAccounts){
 				require_once ROOT_DIR . '/sys/Account/UserLink.php';
-				$userLink = new UserLink();
+				$userLink                  = new UserLink();
 				$userLink->linkedAccountId = $this->id;
 				$userLink->find();
 				while ($userLink->fetch()){
-					$linkedUser = new User();
+					$linkedUser     = new User();
 					$linkedUser->id = $userLink->primaryAccountId;
 					if ($linkedUser->find(true)){
-						if (!$linkedUser->isBlockedAccount($this->id)) {
+						if (!$linkedUser->isBlockedAccount($this->id)){
 							$this->viewers[] = clone($linkedUser);
 						}
 					}
@@ -533,18 +540,20 @@ class User extends DB_DataObject
 	function addLinkedUser($user){
 		/* var Library $library */
 		global $library;
-		if ($library->allowLinkedAccounts && $user->id != $this->id) { // library allows linked accounts and the account to link is not itself
+		if ($library->allowLinkedAccounts && $user->id != $this->id){ // library allows linked accounts and the account to link is not itself
 			$linkedUsers = $this->getLinkedUsers();
 			/** @var User $existingUser */
-			foreach ($linkedUsers as $existingUser) {
-				if ($existingUser->id == $user->id) {
+			foreach ($linkedUsers as $existingUser){
+				if ($existingUser->id == $user->id){
 					//We already have a link to this user
 					return true;
 				}
 			}
 
 			// Check for Account Blocks
-			if ($this->isBlockedAccount($user->id)) return false;
+			if ($this->isBlockedAccount($user->id)){
+				return false;
+			}
 
 			//Check to make sure the account we are linking to allows linking
 			$linkLibrary = $user->getHomeLibrary();
@@ -557,8 +566,8 @@ class User extends DB_DataObject
 			$userLink                   = new UserLink();
 			$userLink->primaryAccountId = $this->id;
 			$userLink->linkedAccountId  = $user->id;
-			$result = $userLink->insert();
-			if (true == $result) {
+			$result                     = $userLink->insert();
+			if (true == $result){
 				$this->linkedUsers[] = clone($user);
 				return true;
 			}
@@ -569,7 +578,7 @@ class User extends DB_DataObject
 	function removeLinkedUser($userId){
 		/* var Library $library */
 		global $library;
-		if ($library->allowLinkedAccounts) {
+		if ($library->allowLinkedAccounts){
 			require_once ROOT_DIR . '/sys/Account/UserLink.php';
 			$userLink                   = new UserLink();
 			$userLink->primaryAccountId = $this->id;
@@ -595,14 +604,20 @@ class User extends DB_DataObject
 
 	function insert(){
 		//set default values as needed
-		if (!isset($this->homeLocationId)) {
+		if (!isset($this->homeLocationId)){
 			$this->homeLocationId = 0;
 			global $logger;
 			$logger->log('No Home Location ID was set for newly created user.', PEAR_LOG_WARNING);
 		}
-		if (!isset($this->myLocation1Id)) $this->myLocation1Id = 0;
-		if (!isset($this->myLocation2Id)) $this->myLocation2Id = 0;
-		if (!isset($this->bypassAutoLogout)) $this->bypassAutoLogout = 0;
+		if (!isset($this->myLocation1Id)){
+			$this->myLocation1Id = 0;
+		}
+		if (!isset($this->myLocation2Id)){
+			$this->myLocation2Id = 0;
+		}
+		if (!isset($this->bypassAutoLogout)){
+			$this->bypassAutoLogout = 0;
+		}
 
 		parent::insert();
 		$this->saveRoles();
@@ -620,30 +635,30 @@ class User extends DB_DataObject
 		$roleList = Role::getLookup();
 
 		$structure = array(
-				'id' => array('property'=>'id', 'type'=>'label', 'label'=>'Administrator Id', 'description'=>'The unique id of the in the system'),
-				'firstname' => array('property'=>'firstname', 'type'=>'label', 'label'=>'First Name', 'description'=>'The first name for the user.'),
-				'lastname' => array('property'=>'lastname', 'type'=>'label', 'label'=>'Last Name', 'description'=>'The last name of the user.'),
-				'homeLibraryName' => array('property'=>'homeLibraryName', 'type'=>'label', 'label'=>'Home Library', 'description'=>'The library the user belongs to.'),
-				'homeLocation' => array('property'=>'homeLocation', 'type'=>'label', 'label'=>'Home Location', 'description'=>'The branch the user belongs to.'),
+			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Administrator Id', 'description' => 'The unique id of the in the system'),
+			'firstname' => array('property' => 'firstname', 'type' => 'label', 'label' => 'First Name', 'description' => 'The first name for the user.'),
+			'lastname' => array('property' => 'lastname', 'type' => 'label', 'label' => 'Last Name', 'description' => 'The last name of the user.'),
+			'homeLibraryName' => array('property' => 'homeLibraryName', 'type' => 'label', 'label' => 'Home Library', 'description' => 'The library the user belongs to.'),
+			'homeLocation' => array('property' => 'homeLocation', 'type' => 'label', 'label' => 'Home Location', 'description' => 'The branch the user belongs to.'),
 		);
 
 		global $configArray;
-		$barcodeProperty = $configArray['Catalog']['barcodeProperty'];
-		$structure['barcode'] = array('property'=>$barcodeProperty, 'type'=>'label', 'label'=>'Barcode', 'description'=>'The barcode for the user.');
+		$barcodeProperty      = $configArray['Catalog']['barcodeProperty'];
+		$structure['barcode'] = array('property' => $barcodeProperty, 'type' => 'label', 'label' => 'Barcode', 'description' => 'The barcode for the user.');
 
-		$structure['roles'] = array('property'=>'roles', 'type'=>'multiSelect', 'listStyle' =>'checkbox', 'values'=>$roleList, 'label'=>'Roles', 'description'=>'A list of roles that the user has.');
+		$structure['roles'] = array('property' => 'roles', 'type' => 'multiSelect', 'listStyle' => 'checkbox', 'values' => $roleList, 'label' => 'Roles', 'description' => 'A list of roles that the user has.');
 
 		return $structure;
 	}
 
 	function getFilters(){
 		require_once ROOT_DIR . '/sys/Administration/Role.php';
-		$roleList = Role::getLookup();
+		$roleList     = Role::getLookup();
 		$roleList[-1] = 'Any Role';
 		return array(
-		array('filter'=>'role', 'type'=>'enum', 'values'=>$roleList, 'label'=>'Role'),
-		array('filter'=>'cat_password', 'type'=>'text', 'label'=>'Login'),
-		array('filter'=>'cat_username', 'type'=>'text', 'label'=>'Name'),
+			array('filter' => 'role', 'type' => 'enum', 'values' => $roleList, 'label' => 'Role'),
+			array('filter' => 'cat_password', 'type' => 'text', 'label' => 'Login'),
+			array('filter' => 'cat_username', 'type' => 'text', 'label' => 'Name'),
 		);
 	}
 
@@ -663,11 +678,12 @@ class User extends DB_DataObject
 	}
 
 	private $runtimeInfoUpdated = false;
+
 	function updateRuntimeInformation(){
-		if (!$this->runtimeInfoUpdated) {
-			if ($this->getCatalogDriver()) {
+		if (!$this->runtimeInfoUpdated){
+			if ($this->getCatalogDriver()){
 				$this->getCatalogDriver()->updateUserWithAdditionalRuntimeInformation($this);
-			} else {
+			}else{
 				echo("Catalog Driver is not configured properly.  Please update indexing profiles and setup Account Profiles");
 			}
 			$this->runtimeInfoUpdated = true;
@@ -688,14 +704,14 @@ class User extends DB_DataObject
 	}
 
 	function updateHooplaOptions(){
-		if (isset($_REQUEST['hooplaCheckOutConfirmation']) && ($_REQUEST['hooplaCheckOutConfirmation'] == 'yes' || $_REQUEST['hooplaCheckOutConfirmation'] == 'on')) {
+		if (isset($_REQUEST['hooplaCheckOutConfirmation']) && ($_REQUEST['hooplaCheckOutConfirmation'] == 'yes' || $_REQUEST['hooplaCheckOutConfirmation'] == 'on')){
 			// if set check & on check must be combined because checkboxes/radios don't report 'offs'
 			$this->hooplaCheckOutConfirmation = 1;
 		}else{
 			$this->hooplaCheckOutConfirmation = 0;
 		}
 		$this->update();
-		}
+	}
 
 	function updateUserPreferences(){
 		// Validate that the input data is correct
@@ -717,10 +733,10 @@ class User extends DB_DataObject
 				$this->myLocation1Id = $_POST['myLocation1'];
 			}else{
 				$location = new Location();
-				$location->get('locationId', $_POST['myLocation1'] );
-				if ($location->N != 1) {
+				$location->get('locationId', $_POST['myLocation1']);
+				if ($location->N != 1){
 					PEAR_Singleton::raiseError('The 1st location could not be found in the database.');
-				} else {
+				}else{
 					$this->myLocation1Id = $_POST['myLocation1'];
 				}
 			}
@@ -730,17 +746,17 @@ class User extends DB_DataObject
 				$this->myLocation2Id = $_POST['myLocation2'];
 			}else{
 				$location = new Location();
-				$location->get('locationId', $_POST['myLocation2'] );
-				if ($location->N != 1) {
+				$location->get('locationId', $_POST['myLocation2']);
+				if ($location->N != 1){
 					PEAR_Singleton::raiseError('The 2nd location could not be found in the database.');
-				} else {
+				}else{
 					$this->myLocation2Id = $_POST['myLocation2'];
 				}
 			}
 
 		}
 
-		$this->noPromptForUserReviews = (isset($_POST['noPromptForUserReviews']) && $_POST['noPromptForUserReviews'] == 'on')? 1 : 0;
+		$this->noPromptForUserReviews = (isset($_POST['noPromptForUserReviews']) && $_POST['noPromptForUserReviews'] == 'on') ? 1 : 0;
 		$this->clearCache();
 		return $this->update();
 	}
@@ -758,25 +774,25 @@ class User extends DB_DataObject
 	 * @param $list UserList           object of the user list to check permission for
 	 * @return  bool       true if this user can edit passed list
 	 */
-	function canEditList($list) {
+	function canEditList($list){
 		if ($this->id == $list->user_id){
 			return true;
 		}elseif ($this->hasRole('opacAdmin')){
 			return true;
 		}elseif ($this->hasRole('libraryAdmin') || $this->hasRole('contentEditor') || $this->hasRole('libraryManager')){
-			$listUser = new User();
+			$listUser     = new User();
 			$listUser->id = $list->user_id;
 			$listUser->find(true);
 			$listLibrary = Library::getLibraryForLocation($listUser->homeLocationId);
 			$userLibrary = Library::getLibraryForLocation($this->homeLocationId);
 			if ($userLibrary->libraryId == $listLibrary->libraryId){
 				return true;
-			}elseif(strpos($list->title, 'NYT - ') === 0 && ($this->hasRole('libraryAdmin') || $this->hasRole('contentEditor'))){
+			}elseif (strpos($list->title, 'NYT - ') === 0 && ($this->hasRole('libraryAdmin') || $this->hasRole('contentEditor'))){
 				//Allow NYT Times lists to be edited by any library admins and library managers
 				return true;
 			}
 		}elseif ($this->hasRole('locationManager')){
-			$listUser = new User();
+			$listUser     = new User();
 			$listUser->id = $list->user_id;
 			$listUser->find(true);
 			if ($this->homeLocationId == $listUser->homeLocationId){
@@ -800,13 +816,13 @@ class User extends DB_DataObject
 		return $this->getHomeLibrary()->displayName;
 	}
 
-	public function getNumCheckedOutTotal($includeLinkedUsers = true) {
+	public function getNumCheckedOutTotal($includeLinkedUsers = true){
 		$this->updateRuntimeInformation();
 		$myCheckouts = $this->numCheckedOutIls + $this->numCheckedOutOverDrive + $this->numCheckedOutHoopla;
-		if ($includeLinkedUsers) {
-			if ($this->getLinkedUsers() != null) {
+		if ($includeLinkedUsers){
+			if ($this->getLinkedUsers() != null){
 				/** @var User $user */
-				foreach ($this->getLinkedUsers() as $user) {
+				foreach ($this->getLinkedUsers() as $user){
 					$myCheckouts += $user->getNumCheckedOutTotal(false);
 				}
 			}
@@ -814,13 +830,13 @@ class User extends DB_DataObject
 		return $myCheckouts;
 	}
 
-	public function getNumHoldsTotal($includeLinkedUsers = true) {
+	public function getNumHoldsTotal($includeLinkedUsers = true){
 		$this->updateRuntimeInformation();
 		$myHolds = $this->numHoldsIls + $this->numHoldsOverDrive;
-		if ($includeLinkedUsers) {
-			if ($this->getLinkedUsers() != null) {
+		if ($includeLinkedUsers){
+			if ($this->getLinkedUsers() != null){
 				/** @var User $user */
-				foreach ($this->linkedUsers as $user) {
+				foreach ($this->linkedUsers as $user){
 					$myHolds += $user->getNumHoldsTotal(false);
 				}
 			}
@@ -832,9 +848,9 @@ class User extends DB_DataObject
 		$this->updateRuntimeInformation();
 		$myHolds = $this->numHoldsAvailableIls + $this->numHoldsAvailableOverDrive;
 		if ($includeLinkedUsers){
-			if ($this->getLinkedUsers() != null) {
+			if ($this->getLinkedUsers() != null){
 				/** @var User $user */
-				foreach ($this->linkedUsers as $user) {
+				foreach ($this->linkedUsers as $user){
 					$myHolds += $user->getNumHoldsAvailableTotal(false);
 				}
 			}
@@ -846,9 +862,9 @@ class User extends DB_DataObject
 	public function getNumBookingsTotal($includeLinkedUsers = true){
 		$myBookings = $this->numBookings;
 		if ($includeLinkedUsers){
-			if ($this->getLinkedUsers() != null) {
+			if ($this->getLinkedUsers() != null){
 				/** @var User $user */
-				foreach ($this->linkedUsers as $user) {
+				foreach ($this->linkedUsers as $user){
 					$myBookings += $user->getNumBookingsTotal(false);
 				}
 			}
@@ -858,13 +874,14 @@ class User extends DB_DataObject
 	}
 
 	private $totalFinesForLinkedUsers = -1;
+
 	public function getTotalFines($includeLinkedUsers = true){
 		$totalFines = $this->finesVal;
 		if ($includeLinkedUsers){
 			if ($this->totalFinesForLinkedUsers == -1){
-				if ($this->getLinkedUsers() != null) {
+				if ($this->getLinkedUsers() != null){
 					/** @var User $user */
-					foreach ($this->linkedUsers as $user) {
+					foreach ($this->linkedUsers as $user){
 						$totalFines += $user->getTotalFines(false);
 					}
 				}
@@ -900,7 +917,7 @@ class User extends DB_DataObject
 		//Do not load OverDrive titles if the parent barcode (if any) is the same as the current barcode
 		if ($this->isValidForOverDrive()){
 			require_once ROOT_DIR . '/Drivers/OverDriveDriverFactory.php';
-			$overDriveDriver = OverDriveDriverFactory::getDriver();
+			$overDriveDriver          = OverDriveDriverFactory::getDriver();
 			$overDriveCheckedOutItems = $overDriveDriver->getOverDriveCheckedOutItems($this);
 		}else{
 			$overDriveCheckedOutItems = array();
@@ -912,15 +929,15 @@ class User extends DB_DataObject
 		//Do not load Hoopla titles if the parent barcode (if any) is the same as the current barcode
 		if ($this->isValidForHoopla()){
 			require_once ROOT_DIR . '/Drivers/HooplaDriver.php';
-			$hooplaDriver = new HooplaDriver();
+			$hooplaDriver          = new HooplaDriver();
 			$hooplaCheckedOutItems = $hooplaDriver->getHooplaCheckedOutItems($this);
-			$allCheckedOut = array_merge($allCheckedOut, $hooplaCheckedOutItems);
+			$allCheckedOut         = array_merge($allCheckedOut, $hooplaCheckedOutItems);
 		}
 
-		if ($includeLinkedUsers) {
-			if ($this->getLinkedUsers() != null) {
+		if ($includeLinkedUsers){
+			if ($this->getLinkedUsers() != null){
 				/** @var User $user */
-				foreach ($this->getLinkedUsers() as $user) {
+				foreach ($this->getLinkedUsers() as $user){
 					$allCheckedOut = array_merge($allCheckedOut, $user->getMyCheckouts(false));
 				}
 			}
@@ -931,7 +948,7 @@ class User extends DB_DataObject
 	public function getMyHolds($includeLinkedUsers = true, $unavailableSort = 'sortTitle', $availableSort = 'expire'){
 		$ilsHolds = $this->getCatalogDriver()->getMyHolds($this, !$includeLinkedUsers);
 		// When working with linked users with Sierra Encore, curl connections need to be reset for logins to process correctly
-		if (PEAR_Singleton::isError($ilsHolds)) {
+		if (PEAR_Singleton::isError($ilsHolds)){
 			$ilsHolds = array();
 		}
 
@@ -939,37 +956,37 @@ class User extends DB_DataObject
 		if ($this->isValidForOverDrive()){
 			require_once ROOT_DIR . '/Drivers/OverDriveDriverFactory.php';
 			$overDriveDriver = OverDriveDriverFactory::getDriver();
-			$overDriveHolds = $overDriveDriver->getOverDriveHolds($this);
+			$overDriveHolds  = $overDriveDriver->getOverDriveHolds($this);
 		}else{
 			$overDriveHolds = array();
 		}
 
 		$allHolds = array_merge_recursive($ilsHolds, $overDriveHolds);
 
-		if ($includeLinkedUsers) {
-			if ($this->getLinkedUsers() != null) {
+		if ($includeLinkedUsers){
+			if ($this->getLinkedUsers() != null){
 				/** @var User $user */
-				foreach ($this->getLinkedUsers() as $user) {
+				foreach ($this->getLinkedUsers() as $user){
 					$allHolds = array_merge_recursive($allHolds, $user->getMyHolds(false, $unavailableSort, $availableSort));
 				}
 			}
 		}
 
-		$indexToSortBy='sortTitle';
-		$holdSort = function ($a, $b) use (&$indexToSortBy) {
+		$indexToSortBy = 'sortTitle';
+		$holdSort      = function ($a, $b) use (&$indexToSortBy){
 			$a = isset($a[$indexToSortBy]) ? $a[$indexToSortBy] : null;
 			$b = isset($b[$indexToSortBy]) ? $b[$indexToSortBy] : null;
 
 			// Put empty values (except for specified values of zero) at the bottom of the sort
-			if (modifiedEmpty($a) && modifiedEmpty($b)) {
+			if (modifiedEmpty($a) && modifiedEmpty($b)){
 				return 0;
-			} elseif (!modifiedEmpty($a) && modifiedEmpty($b)) {
+			}elseif (!modifiedEmpty($a) && modifiedEmpty($b)){
 				return -1;
-			} elseif (modifiedEmpty($a) && !modifiedEmpty($b)) {
+			}elseif (modifiedEmpty($a) && !modifiedEmpty($b)){
 				return 1;
 			}
 
-			if ($indexToSortBy == 'format') {
+			if ($indexToSortBy == 'format'){
 				$a = implode($a, ',');
 				$b = implode($b, ',');
 			}
@@ -978,8 +995,8 @@ class User extends DB_DataObject
 			// This will sort numerically correctly as well
 		};
 
-		if (count($allHolds['available'])) {
-			switch ($availableSort) {
+		if (count($allHolds['available'])){
+			switch ($availableSort){
 				case 'author' :
 				case 'format' :
 					$indexToSortBy = $availableSort;
@@ -996,8 +1013,8 @@ class User extends DB_DataObject
 			}
 			uasort($allHolds['available'], $holdSort);
 		}
-		if (count($allHolds['unavailable'])) {
-			switch ($unavailableSort) {
+		if (count($allHolds['unavailable'])){
+			switch ($unavailableSort){
 				case 'author' :
 				case 'location' :
 				case 'position' :
@@ -1023,14 +1040,14 @@ class User extends DB_DataObject
 
 	public function getMyBookings($includeLinkedUsers = true){
 		$ilsBookings = $this->getCatalogDriver()->getMyBookings($this);
-		if (PEAR_Singleton::isError($ilsBookings)) {
+		if (PEAR_Singleton::isError($ilsBookings)){
 			$ilsBookings = array();
 		}
 
-		if ($includeLinkedUsers) {
-			if ($this->getLinkedUsers() != null) {
+		if ($includeLinkedUsers){
+			if ($this->getLinkedUsers() != null){
 				/** @var User $user */
-				foreach ($this->getLinkedUsers() as $user) {
+				foreach ($this->getLinkedUsers() as $user){
 					$ilsBookings = array_merge_recursive($ilsBookings, $user->getMyBookings(false));
 				}
 			}
@@ -1039,21 +1056,22 @@ class User extends DB_DataObject
 	}
 
 	private $ilsFinesForUser;
+
 	public function getMyFines($includeLinkedUsers = true){
 
 		if (!isset($this->ilsFinesForUser)){
 			$this->ilsFinesForUser = $this->getCatalogDriver()->getMyFines($this, false, !$includeLinkedUsers);
 			// When working with linked users with Sierra Encore, curl connections need to be reset for logins to process correctly
-			if (PEAR_Singleton::isError($this->ilsFinesForUser)) {
+			if (PEAR_Singleton::isError($this->ilsFinesForUser)){
 				$this->ilsFinesForUser = array();
 			}
 		}
 		$ilsFines[$this->id] = $this->ilsFinesForUser;
 
-		if ($includeLinkedUsers) {
-			if ($this->getLinkedUsers() != null) {
+		if ($includeLinkedUsers){
+			if ($this->getLinkedUsers() != null){
 				/** @var User $user */
-				foreach ($this->getLinkedUsers() as $user) {
+				foreach ($this->getLinkedUsers() as $user){
 					$ilsFines += $user->getMyFines(false); // keep keys as userId
 				}
 			}
@@ -1085,24 +1103,27 @@ class User extends DB_DataObject
 		$linkedUsers = $this->getLinkedUsers();
 		foreach ($linkedUsers as $linkedUser){
 			if ($recordSource == $linkedUser->source){
-				$linkedUserLocation = new Location();
+				$linkedUserLocation        = new Location();
 				$linkedUserPickupLocations = $linkedUserLocation->getPickupBranches($linkedUser, null, true);
-				foreach ($linkedUserPickupLocations as $sortingKey => $pickupLocation) {
-					foreach ($locations as $mainSortingKey => $mainPickupLocation) {
+				foreach ($linkedUserPickupLocations as $sortingKey => $pickupLocation){
+					foreach ($locations as $mainSortingKey => $mainPickupLocation){
 						// Check For Duplicated Pickup Locations
-						if ($mainPickupLocation->libraryId == $pickupLocation->libraryId && $mainPickupLocation->locationId == $pickupLocation->locationId) {
+						if ($mainPickupLocation->libraryId == $pickupLocation->libraryId && $mainPickupLocation->locationId == $pickupLocation->locationId){
 							// Merge Linked Users that all have this pick-up location
-							$pickupUsers = array_unique(array_merge($mainPickupLocation->pickupUsers, $pickupLocation->pickupUsers));
+							$pickupUsers                     = array_unique(array_merge($mainPickupLocation->pickupUsers, $pickupLocation->pickupUsers));
 							$mainPickupLocation->pickupUsers = $pickupUsers;
-							$pickupLocation->pickupUsers = $pickupUsers;
+							$pickupLocation->pickupUsers     = $pickupUsers;
 
 							// keep location with better sort key, remove the other
-							if ($mainSortingKey == $sortingKey || $mainSortingKey[0] < $sortingKey[0] ) {
+							if ($mainSortingKey == $sortingKey || $mainSortingKey[0] < $sortingKey[0]){
 								unset ($linkedUserPickupLocations[$sortingKey]);
-							} elseif ($mainSortingKey[0] == $sortingKey[0]) {
-								if (strcasecmp($mainSortingKey, $sortingKey) > 0) unset ($locations[$mainSortingKey]);
-								else unset ($linkedUserPickupLocations[$sortingKey]);
-							} else {
+							}elseif ($mainSortingKey[0] == $sortingKey[0]){
+								if (strcasecmp($mainSortingKey, $sortingKey) > 0){
+									unset ($locations[$mainSortingKey]);
+								}else{
+									unset ($linkedUserPickupLocations[$sortingKey]);
+								}
+							}else{
 								unset ($locations[$mainSortingKey]);
 							}
 
@@ -1121,51 +1142,92 @@ class User extends DB_DataObject
 	 *
 	 * Place a hold for the current user within their ILS
 	 *
-	 * @param   string  $recordId     The id of the bib record
-	 * @param   string  $pickupBranch The branch where the user wants to pickup the item when available
-	 * @return  array                 An array with the following keys
-	 *                                result - true/false
-	 *                                message - the message to display
+	 * @param   string $recordId The id of the bib record
+	 * @param   string $pickupBranch The branch where the user wants to pickup the item when available
+	 * @param   null|string $cancelDate The date to cancel the hold if it isn't fulfilled
+	 * @return  mixed                    An array with the following keys:
+	 *                                    result - true/false
+	 *                                    message - the message to display
 	 * @access  public
 	 */
-	function placeHold($recordId, $pickupBranch, $cancelDate = null) {
+	function placeHold($recordId, $pickupBranch, $cancelDate = null){
 		global $offlineMode;
-		if ($offlineMode) {
+		if ($offlineMode){
 			global $configArray;
 			$enableOfflineHolds = $configArray['Catalog']['enableOfflineHolds'];
-			if ($enableOfflineHolds) {
+			if ($enableOfflineHolds){
 				$result = $this->placeOfflineHold($recordId);
-			} else {
+			}else{
 				$result = array(
-					'bib'     => $recordId,
+					'bib' => $recordId,
 					'success' => false,
 					'message' => 'The circulation system is currently offline.  Please try again later.'
 				);
 			}
-		} else {
+		}else{
+			if (empty($cancelDate)){
+				//Set not need after date, if not supplied, based on library settings
+				$cancelDate = $this->getHoldNotNeededAfterDate();
+			}
+
 			$result = $this->getCatalogDriver()->placeHold($this, $recordId, $pickupBranch, $cancelDate);
 			$this->updateAltLocationForHold($pickupBranch);
-			if ($result['success']) {
+			if ($result['success']){
 				$this->clearCache();
 			}
 		}
 		return $result;
 	}
 
+
 	function placeVolumeHold($recordId, $volumeId, $pickupBranch, $cancelDate = null){
-		$result = $this->getCatalogDriver()->placeVolumeHold($this, $recordId, $volumeId, $pickupBranch, $cancelDate);
-		$this->updateAltLocationForHold($pickupBranch);
-		if ($result['success']){
-			$this->clearCache();
+		global $offlineMode;
+		if ($offlineMode){
+			global $configArray;
+			$enableOfflineHolds = $configArray['Catalog']['enableOfflineHolds'];
+			if ($enableOfflineHolds){
+				//TODO: Offline Volume Level Holds aren't possible at this time
+				$result = array(
+					'success' => false,
+					'message' => 'The circulation system is currently offline.  Please try again later.'
+				);
+			}else{
+				$result = array(
+					'bib' => $recordId,
+					//					'volumeId' => $volumeId, // TODO: No special handling exists in forms for the return I believe. pascal 11/27/2018
+					'success' => false,
+					'message' => 'The circulation system is currently offline.  Please try again later.'
+				);
+			}
+		}else{
+			if (empty($cancelDate)){
+				//Set not need after date, if not supplied, based on library settings
+				$cancelDate = $this->getHoldNotNeededAfterDate();
+			}
+
+			$result = $this->getCatalogDriver()->placeVolumeHold($this, $recordId, $volumeId, $pickupBranch, $cancelDate);
+			$this->updateAltLocationForHold($pickupBranch);
+			if ($result['success']){
+				$this->clearCache();
+			}
 		}
+
 		return $result;
 	}
 
-	function placeOfflineHold($recordId) {
+	/**
+	 * Record an Offline Hold that can be processed later when the circulation system is back online
+	 *
+	 * @param   string $recordId The id of the bib record
+	 * @param   null|string $itemId The id of the item to hold
+	 * @return array
+	 */
+	function placeOfflineHold($recordId, $itemId = null){
 
 		require_once ROOT_DIR . '/sys/OfflineHold.php';
 		$offlineHold                = new OfflineHold();
 		$offlineHold->bibId         = $recordId;
+		$offlineHold->itemId        = $itemId;
 		$offlineHold->patronBarcode = $this->getBarcode();
 		$offlineHold->patronId      = $this->id;
 		$offlineHold->timeEntered   = time();
@@ -1175,24 +1237,36 @@ class User extends DB_DataObject
 		// Retrieve Full Marc Record
 		require_once ROOT_DIR . '/RecordDrivers/Factory.php';
 		$record = RecordDriverFactory::initRecordDriverById('ils:' . $recordId);
-		if (!empty($record) && $record->isValid())  {
+		if (!empty($record) && $record->isValid()){
 			$title = $record->getTitle();
 		}
 
 
-		if ($offlineHold->insert()) {
+		if ($offlineHold->insert()){
 			return array(
-				'title'   => $title,
-				'bib'     => $recordId,
+				'title' => $title,
+				'bib' => $recordId,
 				'success' => true,
 				'message' => 'The circulation system is currently offline.  This hold will be entered for you automatically when the circulation system is online.');
-		} else {
+		}else{
 			return array(
-				'title'   => $title,
-				'bib'     => $recordId,
+				'title' => $title,
+				'bib' => $recordId,
 				'success' => false,
 				'message' => 'The circulation system is currently offline and we could not place this hold.  Please try again later.');
 		}
+	}
+
+	private function getHoldNotNeededAfterDate(){
+		$cancelDate  = null;
+		$homeLibrary = $this->getHomeLibrary();
+		if ($homeLibrary->defaultNotNeededAfterDays != -1){
+			$daysFromNow = $homeLibrary->defaultNotNeededAfterDays == 0 ? 182.5 : $homeLibrary->defaultNotNeededAfterDays;
+			//Default to a date 6 months (half a year) in the future.
+			$nnaDate    = time() + $daysFromNow * 24 * 60 * 60;
+			$cancelDate = date('m/d/Y', $nnaDate);
+		}
+		return $cancelDate;
 	}
 
 	function bookMaterial($recordId, $startDate, $startTime, $endDate, $endTime){
@@ -1204,21 +1278,23 @@ class User extends DB_DataObject
 	}
 
 	function updateAltLocationForHold($pickupBranch){
-		if ($this->homeLocationCode != $pickupBranch) {
+		if ($this->homeLocationCode != $pickupBranch){
 			global $logger;
 			$logger->log("The selected pickup branch is not the user's home location, checking to see if we need to set an alternate branch", PEAR_LOG_INFO);
-			$location = new Location();
+			$location       = new Location();
 			$location->code = $pickupBranch;
-			if ($location->find(true)) {
+			if ($location->find(true)){
 				$logger->log("Found the location for the pickup branch $pickupBranch {$location->locationId}", PEAR_LOG_INFO);
-				if ($this->myLocation1Id == 0) {
+				if ($this->myLocation1Id == 0){
 					$logger->log("Alternate location 1 is blank updating that", PEAR_LOG_INFO);
 					$this->myLocation1Id = $location->locationId;
 					$this->update();
-				} else if ($this->myLocation2Id == 0 && $location->locationId != $this->myLocation1Id) {
-					$logger->log("Alternate location 2 is blank updating that", PEAR_LOG_INFO);
-					$this->myLocation2Id = $location->locationId;
-					$this->update();
+				}else{
+					if ($this->myLocation2Id == 0 && $location->locationId != $this->myLocation1Id){
+						$logger->log("Alternate location 2 is blank updating that", PEAR_LOG_INFO);
+						$this->myLocation2Id = $location->locationId;
+						$this->update();
+					}
 				}
 			}else{
 				$logger->log("Could not find location for $pickupBranch", PEAR_LOG_ERR);
@@ -1236,16 +1312,16 @@ class User extends DB_DataObject
 		$result = $this->getCatalogDriver()->cancelAllBookedMaterial($this);
 		$this->clearCache();
 
-		if ($includeLinkedUsers) {
-			if ($this->getLinkedUsers() != null) {
+		if ($includeLinkedUsers){
+			if ($this->getLinkedUsers() != null){
 				/** @var User $user */
-				foreach ($this->getLinkedUsers() as $user) {
+				foreach ($this->getLinkedUsers() as $user){
 
 					$additionalResults = $user->cancelAllBookedMaterial(false);
-					if (!$additionalResults['success']) { // if we recieved failures
-						if ($result['success']) {
+					if (!$additionalResults['success']){ // if we recieved failures
+						if ($result['success']){
 							$result = $additionalResults; // first set of failures, overwrite currently successful results
-						} else { // if there were already failures, add the extra failure messages
+						}else{ // if there were already failures, add the extra failure messages
 							$result['message'] = array_merge($result['message'], $additionalResults['message']);
 						}
 					}
@@ -1261,18 +1337,40 @@ class User extends DB_DataObject
 	 *
 	 * This is responsible for placing item level holds.
 	 *
-	 * @param   string  $recordId   The id of the bib record
-	 * @param   string  $itemId     The id of the item to hold
-	 * @param   string  $pickupBranch The branch where the user wants to pickup the item when available
-	 * @return  mixed               True if successful, false if unsuccessful
-	 *                              If an error occurs, return a PEAR_Error
+	 * @param   string $recordId The id of the bib record
+	 * @param   string $itemId The id of the item to hold
+	 * @param   string $pickupBranch The branch where the user wants to pickup the item when available
+	 * @param   null|string $cancelDate The date to cancel the hold if it isn't fulfilled
+	 * @return  mixed                    True if successful, false if unsuccessful
+	 *                                   If an error occurs, return a PEAR_Error
 	 * @access  public
 	 */
-	function placeItemHold($recordId, $itemId, $pickupBranch, $cancelDate = null) {
-		$result = $this->getCatalogDriver()->placeItemHold($this, $recordId, $itemId, $pickupBranch);
-		$this->updateAltLocationForHold($pickupBranch);
-		if ($result['success']){
-			$this->clearCache();
+	function placeItemHold($recordId, $itemId, $pickupBranch, $cancelDate = null){
+		global $offlineMode;
+		if ($offlineMode){
+			global $configArray;
+			$enableOfflineHolds = $configArray['Catalog']['enableOfflineHolds'];
+			if ($enableOfflineHolds){
+				$result = $this->placeOfflineHold($recordId);
+			}else{
+				$result = array(
+					'bib' => $recordId,
+					//					'itemId'  => $itemId, // TODO: No special handling exists in forms for the return I believe. pascal 11/27/2018
+					'success' => false,
+					'message' => 'The circulation system is currently offline.  Please try again later.'
+				);
+			}
+		}else{
+			if (empty($cancelDate)){
+				//Set not need after date, if not supplied, based on library settings
+				$cancelDate = $this->getHoldNotNeededAfterDate();
+			}
+
+			$result = $this->getCatalogDriver()->placeItemHold($this, $recordId, $itemId, $pickupBranch, $cancelDate);
+			$this->updateAltLocationForHold($pickupBranch);
+			if ($result['success']){
+				$this->clearCache();
+			}
 		}
 		return $result;
 	}
@@ -1315,7 +1413,7 @@ class User extends DB_DataObject
 	}
 
 //		function changeHoldPickUpLocation($recordId, $itemToUpdateId, $newPickupLocation){
-			//$recordId is not used to update change hold pick up location in driver
+	//$recordId is not used to update change hold pick up location in driver
 	function changeHoldPickUpLocation($itemToUpdateId, $newPickupLocation){
 		$result = $this->getCatalogDriver()->changeHoldPickupLocation($this, null, $itemToUpdateId, $newPickupLocation);
 		$this->clearCache();
@@ -1343,22 +1441,24 @@ class User extends DB_DataObject
 	function renewAll($renewLinkedUsers = false){
 		$renewAllResults = $this->getCatalogDriver()->renewAll($this);
 		//Also renew linked Users if needed
-		if ($renewLinkedUsers) {
-			if ($this->getLinkedUsers() != null) {
+		if ($renewLinkedUsers){
+			if ($this->getLinkedUsers() != null){
 				/** @var User $user */
-				foreach ($this->getLinkedUsers() as $user) {
+				foreach ($this->getLinkedUsers() as $user){
 					$linkedResults = $user->renewAll(false);
 					//Merge results
-					$renewAllResults['Renewed'] += $linkedResults['Renewed'];
+					$renewAllResults['Renewed']   += $linkedResults['Renewed'];
 					$renewAllResults['Unrenewed'] += $linkedResults['Unrenewed'];
-					$renewAllResults['Total'] += $linkedResults['Total'];
+					$renewAllResults['Total']     += $linkedResults['Total'];
 					if ($renewAllResults['success'] && !$linkedResults['success']){
 						$renewAllResults['success'] = false;
 						$renewAllResults['message'] = $linkedResults['message'];
-					}else if (!$renewAllResults['success'] && !$linkedResults['success']){
-						//Append the new message
+					}else{
+						if (!$renewAllResults['success'] && !$linkedResults['success']){
+							//Append the new message
 
-						array_merge($renewAllResults['message'], $linkedResults['message']);
+							array_merge($renewAllResults['message'], $linkedResults['message']);
+						}
 					}
 				}
 			}
@@ -1367,7 +1467,7 @@ class User extends DB_DataObject
 		return $renewAllResults;
 	}
 
-	public function getReadingHistory($page, $recordsPerPage, $selectedSortOption) {
+	public function getReadingHistory($page, $recordsPerPage, $selectedSortOption){
 		return $this->getCatalogDriver()->getReadingHistory($this, $page, $recordsPerPage, $selectedSortOption);
 	}
 
@@ -1387,7 +1487,7 @@ class User extends DB_DataObject
 			return true;
 		}elseif (isset($configArray['Staff P-Types'])){
 			$staffPTypes = $configArray['Staff P-Types'];
-			$pType = $this->patronType;
+			$pType       = $this->patronType;
 			if ($pType && array_key_exists($pType, $staffPTypes)){
 				return true;
 			}
@@ -1429,12 +1529,12 @@ class User extends DB_DataObject
 	}
 
 	function getRelatedPTypes($includeLinkedUsers = true){
-		$relatedPTypes = array();
+		$relatedPTypes                    = array();
 		$relatedPTypes[$this->patronType] = $this->patronType;
 		if ($includeLinkedUsers){
-			if ($this->getLinkedUserObjects() != null) {
+			if ($this->getLinkedUserObjects() != null){
 				/** @var User $user */
-				foreach ($this->getLinkedUserObjects() as $user) {
+				foreach ($this->getLinkedUserObjects() as $user){
 					$relatedPTypes = array_merge($relatedPTypes, $user->getRelatedPTypes(false));
 				}
 			}
@@ -1447,49 +1547,47 @@ class User extends DB_DataObject
 		return $result;
 	}
 
-	public function getShowUsernameField() {
+	public function getShowUsernameField(){
 		return $this->getCatalogDriver()->getShowUsernameField();
 	}
 
 	/**
 	 * @return string
 	 */
-	public function getMasqueradeLevel()
-	{
-		if (empty($this->masqueradeLevel)) $this->setMasqueradeLevel();
+	public function getMasqueradeLevel(){
+		if (empty($this->masqueradeLevel)){
+			$this->setMasqueradeLevel();
+		}
 		return $this->masqueradeLevel;
 	}
 
-	private function setMasqueradeLevel()
-	{
+	private function setMasqueradeLevel(){
 		$this->masqueradeLevel = 'none';
-		if (!empty($this->patronType)) {
+		if (!empty($this->patronType)){
 			require_once ROOT_DIR . '/Drivers/marmot_inc/PType.php';
 			$pType = new pType();
 			$pType->get('pType', $this->patronType);
-			if ($pType->N > 0) {
+			if ($pType->N > 0){
 				$this->masqueradeLevel = $pType->masquerade;
 			}
 		}
 	}
 
-	public function canMasquerade() {
+	public function canMasquerade(){
 		return $this->getMasqueradeLevel() != 'none';
 	}
 
 	/**
 	 * @param mixed $materialsRequestReplyToAddress
 	 */
-	public function setMaterialsRequestReplyToAddress($materialsRequestReplyToAddress)
-	{
+	public function setMaterialsRequestReplyToAddress($materialsRequestReplyToAddress){
 		$this->materialsRequestReplyToAddress = $materialsRequestReplyToAddress;
 	}
 
 	/**
 	 * @param mixed $materialsRequestEmailSignature
 	 */
-	public function setMaterialsRequestEmailSignature($materialsRequestEmailSignature)
-	{
+	public function setMaterialsRequestEmailSignature($materialsRequestEmailSignature){
 		$this->materialsRequestEmailSignature = $materialsRequestEmailSignature;
 	}
 
@@ -1503,12 +1601,12 @@ class User extends DB_DataObject
 
 	function setNumHoldsAvailableOverDrive($val){
 		$this->numHoldsAvailableOverDrive = $val;
-		$this->numHoldsOverDrive += $val;
+		$this->numHoldsOverDrive          += $val;
 	}
 
 	function setNumHoldsRequestedOverDrive($val){
 		$this->numHoldsRequestedOverDrive = $val;
-		$this->numHoldsOverDrive += $val;
+		$this->numHoldsOverDrive          += $val;
 	}
 
 	function setNumMaterialsRequests($val){
@@ -1530,7 +1628,7 @@ class User extends DB_DataObject
 	}
 }
 
-function modifiedEmpty($var) {
+function modifiedEmpty($var){
 	// specified values of zero will not be considered empty
 	return empty($var) && $var !== 0 && $var !== '0';
 }

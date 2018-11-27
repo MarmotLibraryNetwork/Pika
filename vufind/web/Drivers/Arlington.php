@@ -83,7 +83,7 @@ class Arlington extends Sierra{
 			// Check for Login Error Responses
 			$numMatches = preg_match('/<span.\s?class="errormessage">(?P<error>.+?)<\/span>/is', $loginResponse, $matches);
 			if ($numMatches > 0) {
-				$logger->log('Sacramento Curl Login Attempt received an Error response : ' . $matches['error'], PEAR_LOG_DEBUG);
+				$logger->log('Arlington Curl Login Attempt received an Error response : ' . $matches['error'], PEAR_LOG_DEBUG);
 			} else {
 				$numMatches = preg_match('/<div id="msg" class="success">/is', $loginResponse);
 				if ($numMatches > 0) {

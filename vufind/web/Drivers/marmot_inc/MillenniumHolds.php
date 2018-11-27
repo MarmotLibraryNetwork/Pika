@@ -707,7 +707,7 @@ class MillenniumHolds{
 	 *                                   If an error occurs, return a PEAR_Error
 	 * @access  public
 	 */
-	function placeItemHold($patron, $recordId, $itemId, $pickupBranch, $cancelDate) {
+	function placeItemHold($patron, $recordId, $itemId, $pickupBranch, $cancelDate = null) {
 		global $logger;
 
 		$bib1 = $recordId;
@@ -726,7 +726,7 @@ class MillenniumHolds{
 		// Retrieve Full Marc Record
 		require_once ROOT_DIR . '/RecordDrivers/Factory.php';
 		$record = RecordDriverFactory::initRecordDriverById($this->driver->accountProfile->recordSource . ':' . $bib1);
-		$title = $record->isValid() ? $record->getTitle() : null;
+		$title  = $record->isValid() ? $record->getTitle() : null;
 
 			//Make sure to connect via the driver so cookies will be correct
 			$this->driver->_curl_connect();
@@ -742,11 +742,15 @@ class MillenniumHolds{
 					$postData['needby_Year']  = $Year;
 				}
 
+				// Older OPAC POST Params
 				$postData['x']        = "48";
 				$postData['y']        = "15";
 				$postData['submit.x'] = "35";
 				$postData['submit.y'] = "21";
 				$postData['submit']   = "submit";
+
+				// Newer POST Params
+				$postData["pat_submit"] = 'xxx';
 				$postData['locx00']   = str_pad($pickupBranch, 5); // padded with spaces, which will get url-encoded into plus signs by httpd_build_query() in the _curlPostPage() method.
 				if (!empty($itemId) && $itemId != -1){
 					$postData['radio']  = $itemId;

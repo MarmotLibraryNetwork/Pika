@@ -2,7 +2,7 @@
 /**
  * An abstract base class so screen scraping functionality can be stored in a single location
  *
- * @category VuFind-Plus-2014 
+ * @category Pka
  * @author Mark Noble <mark@marmot.org>
  * Date: 7/23/2015
  * Time: 2:32 PM
@@ -27,7 +27,7 @@ abstract class ScreenScrapingDriver implements DriverInterface {
 	}
 
 	public function setCookieJar(){
-		$cookieJar = tempnam("/tmp", "CURLCOOKIE");
+		$cookieJar       = tempnam("/tmp", "CURLCOOKIE");
 		$this->cookieJar = $cookieJar;
 	}
 
@@ -35,7 +35,7 @@ abstract class ScreenScrapingDriver implements DriverInterface {
 	 * @return mixed CookieJar name
 	 */
 	public function getCookieJar() {
-		if (is_null($this->cookieJar)){
+		if (is_null($this->cookieJar)){ //tried empty(); may be a problem
 			$this->setCookieJar();
 		}
 		return $this->cookieJar;
@@ -44,35 +44,39 @@ abstract class ScreenScrapingDriver implements DriverInterface {
 	/**
 	 * Initialize and configure curl connection
 	 *
-	 * @param null        $curl_url optional url passed to curl_init
-	 * @param null|Array  $curl_options is an array of curl options to include or overwrite.
+	 * @param null        $curlUrl optional url passed to curl_init
+	 * @param null|array  $curl_options is an array of curl options to include or overwrite.
 	 *                    Keys is the curl option constant, Values is the value to set the option to.
 	 * @return resource
 	 */
-	public function _curl_connect($curlUrl = null, $curl_options = null){
+	public function _curl_connect($curlUrl = null, $curl_options = null, $additionalHeaders = null){
 		//Make sure we only connect once
 		if (!$this->curl_connection){
 			$header = $this->getCustomHeaders();
 			if ($header == null) {
 				global $interface;
+				/** @var string $gitBranch */
 				$gitBranch = $interface->getVariable('gitBranch');
 				if (substr($gitBranch, -1) == "\n"){
 					$gitBranch = substr($gitBranch, 0, -1);
 				}
 				$userAgent = empty($configArray['Catalog']['catalogUserAgent']) ? 'Pika' : $configArray['Catalog']['catalogUserAgent'];
-				$header = array();
+				$header    = array();
 				$header[0] = "Accept: text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5";
-				$header[] = "Cache-Control: max-age=0";
-				$header[] = "Connection: keep-alive";
-				$header[] = "Accept-Charset: ISO-8859-1,utf-8;q=0.7,*;q=0.7";
-				$header[] = "Accept-Language: en-us,en;q=0.5";
-				$header[] = "User-Agent: $userAgent $gitBranch";
+				$header[]  = "Cache-Control: max-age=0";
+				$header[]  = "Connection: keep-alive";
+				$header[]  = "Accept-Charset: ISO-8859-1,utf-8;q=0.7,*;q=0.7";
+				$header[]  = "Accept-Language: en-us,en;q=0.5";
+				$header[]  = "User-Agent: $userAgent $gitBranch";
+			}
+			if (!empty($additionalHeaders) && is_array($additionalHeaders)) {
+				$header = array_merge($header, $additionalHeaders);
 			}
 
 			$cookie = $this->getCookieJar();
 
 			$this->curl_connection = curl_init($curlUrl);
-			$default_curl_options = array(
+			$default_curl_options  = array(
 				CURLOPT_CONNECTTIMEOUT    => 20,
 				CURLOPT_TIMEOUT           => 60,
 				CURLOPT_HTTPHEADER        => $header,
@@ -91,7 +95,9 @@ abstract class ScreenScrapingDriver implements DriverInterface {
 			);
 
 			if ($curl_options) {
+				//TODO: if this comes into play, the second line is better I suspect. because the curl option constants are all numeric, therefore array_merge will redo the keys index.
 				$default_curl_options = array_merge($default_curl_options, $curl_options);
+//				$default_curl_options = $default_curl_options + $curl_options;
 			}
 			curl_setopt_array($this->curl_connection, $default_curl_options);
 		}else{
@@ -152,7 +158,22 @@ abstract class ScreenScrapingDriver implements DriverInterface {
 			CURLOPT_POST       => true,
 			CURLOPT_POSTFIELDS => $post_string
 		));
+
+//		global $instanceName;
+//		$usingLocalDevelopment = stripos($instanceName, 'localhost') !== false;
+//		if ($usingLocalDevelopment) {
+//			$this->setupDebugging();
+//		}
+
 		$return = curl_exec($this->curl_connection);
+
+//		// Debugging only, comment out later.
+//		if ($usingLocalDevelopment) {
+//			$info          = curl_getinfo($this->curl_connection);
+//			$headerRequest = curl_getinfo($this->curl_connection, CURLINFO_HEADER_OUT);
+//			$error         = curl_error($this->curl_connection);
+//		}
+
 		if (!$return) { // log curl error
 			global $logger;
 			$logger->log('curl post error : '.curl_error($this->curl_connection), PEAR_LOG_ERR);
@@ -163,7 +184,7 @@ abstract class ScreenScrapingDriver implements DriverInterface {
 	/**
 	 * Uses the POST Method to retrieve content from a page
 	 *
-	 * @param string            $url          The url to post to
+	 * @param string           $url          The url to post to
 	 * @param string[]|string  $postParams   Additional Post Params to use
 	 * @param boolean   $jsonEncode
 	 *
@@ -178,7 +199,7 @@ abstract class ScreenScrapingDriver implements DriverInterface {
 
 		$this->_curl_connect($url);
 		curl_setopt_array($this->curl_connection, array(
-			CURLOPT_POST => true,
+			CURLOPT_POST       => true,
 			CURLOPT_POSTFIELDS => $post_string,
 		));
 
@@ -186,6 +207,7 @@ abstract class ScreenScrapingDriver implements DriverInterface {
 	}
 
 	protected function setupDebugging(){
+		curl_setopt($this->curl_connection, CURLINFO_HEADER_OUT, true);
 		$result1 = curl_setopt($this->curl_connection, CURLOPT_HEADER, true);
 		$result2 = curl_setopt($this->curl_connection, CURLOPT_VERBOSE, true);
 		return $result1 && $result2;

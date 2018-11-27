@@ -418,15 +418,6 @@ class Record_AJAX extends Action {
 					$homeLibrary = $patron->getHomeLibrary();
 
 					$cancelDate = empty($_REQUEST['canceldate']) ? null : trim($_REQUEST['canceldate']);
-					if ($homeLibrary->defaultNotNeededAfterDays != -1) {
-						if (empty($cancelDate)) {
-							$daysFromNow = $homeLibrary->defaultNotNeededAfterDays == 0 ? 182.5 : $homeLibrary->defaultNotNeededAfterDays;
-							//Default to a date 6 months (half a year) in the future.
-							$nnaDate    = time() + $daysFromNow * 24 * 60 * 60;
-							$cancelDate = date('m/d/Y', $nnaDate);
-						}
-					}
-
 
 					if (isset($_REQUEST['selectedItem'])) {
 						$return = $patron->placeItemHold($shortId, $_REQUEST['selectedItem'], $campus, $cancelDate);
