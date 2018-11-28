@@ -11,15 +11,14 @@
 		</div>
 	</div>
 </form>
+{/strip}
 	<script type="text/javascript">
-		$('#cardNumber').focus().select();
 		{literal}
+		$('#cardNumber').focus();
 		$("#masqueradeForm").validate({
-			submitHandler: function(){
+			submitHandler: function () {
 				VuFind.Account.initiateMasquerade();
 			}
 		});
 		{/literal}
-
 	</script>
-{/strip}
