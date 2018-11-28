@@ -140,6 +140,8 @@ public class AddisonRecordProcessor extends IIIRecordProcessor {
                 econtentSource = "BookFlix";
             } else if (url.contains("cloudlibrary") || url.contains("3m")){
                 econtentSource = "Cloud Library";
+            } else if (url.contains("biblioboard")){
+                econtentSource = "Biblioboard";
             } else if (url.contains("learningexpress")){
                 econtentSource = "Learning Express";
             } else if (url.contains("ebsco")){
