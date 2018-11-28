@@ -118,11 +118,8 @@ rm /data/vufind-plus/${PIKASERVER}/grouped_work_primary_identifiers.sql
 #Restart Solr
 cd /usr/local/vufind-plus/sites/${PIKASERVER}; ./${PIKASERVER}.sh restart
 
+## Side Loads ##
 
-# Addison doesn't use Volume Records
-# Get the updated volume information
-#cd /usr/local/vufind-plus/vufind/cron;
-#nice -n -10 java -jar cron.jar ${PIKASERVER} ExportSierraData >> ${OUTPUT_FILE}
 
 #Extract from Hoopla
 cd /usr/local/vufind-plus/vufind/cron;./GetHooplaFromMarmot.sh >> ${OUTPUT_FILE}
@@ -132,6 +129,11 @@ cd /data/vufind-plus/; curl --remote-name --remote-time --silent --show-error --
 
 #Extract AR Data
 cd /data/vufind-plus/accelerated_reader; curl --remote-name --remote-time --silent --show-error --compressed --time-cond /data/vufind-plus/accelerated_reader/RLI-ARDataTAB.txt https://cassini.marmot.org/RLI-ARDataTAB.txt
+
+# Addison doesn't use Volume Records
+# Get the updated volume information
+#cd /usr/local/vufind-plus/vufind/cron;
+#nice -n -10 java -jar cron.jar ${PIKASERVER} ExportSierraData >> ${OUTPUT_FILE}
 
 
 #Do a full extract from OverDrive just once a week to catch anything that doesn't
