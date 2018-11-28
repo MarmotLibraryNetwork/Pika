@@ -64,20 +64,20 @@ public class GroupedWorkIndexer {
 
 
 	public GroupedWorkIndexer(String serverName, Connection vufindConn, Connection econtentConn, Ini configIni, boolean fullReindex, boolean singleWorkIndex, Logger logger) {
-		indexStartTime = new Date().getTime() / 1000;
-		this.serverName = serverName;
-		this.logger = logger;
-		this.vufindConn = vufindConn;
-		this.fullReindex = fullReindex;
-		this.configIni = configIni;
+		indexStartTime                = new Date().getTime() / 1000;
+		this.serverName               = serverName;
+		this.logger                   = logger;
+		this.vufindConn               = vufindConn;
+		this.fullReindex              = fullReindex;
+		this.configIni                = configIni;
 
-		solrPort = configIni.get("Reindex", "solrPort");
+		solrPort                      = configIni.get("Reindex", "solrPort");
 
 		availableAtLocationBoostValue = Integer.parseInt(configIni.get("Reindex", "availableAtLocationBoostValue"));
-		ownedByLocationBoostValue = Integer.parseInt(configIni.get("Reindex", "ownedByLocationBoostValue"));
-		baseLogPath = Util.cleanIniValue(configIni.get("Site", "baseLogPath"));
+		ownedByLocationBoostValue     = Integer.parseInt(configIni.get("Reindex", "ownedByLocationBoostValue"));
+		baseLogPath                   = Util.cleanIniValue(configIni.get("Site", "baseLogPath"));
 
-		String maxWorksToProcessStr = Util.cleanIniValue(configIni.get("Reindex", "maxWorksToProcess"));
+		String maxWorksToProcessStr   = Util.cleanIniValue(configIni.get("Reindex", "maxWorksToProcess"));
 		if (maxWorksToProcessStr != null && maxWorksToProcessStr.length() > 0){
 			try{
 				maxWorksToProcess = Long.parseLong(maxWorksToProcessStr);
@@ -90,9 +90,9 @@ public class GroupedWorkIndexer {
 		//Load the last Index time
 		try{
 			PreparedStatement loadLastGroupingTime = vufindConn.prepareStatement("SELECT * from variables WHERE name = 'last_reindex_time'");
-			ResultSet lastGroupingTimeRS = loadLastGroupingTime.executeQuery();
+			ResultSet lastGroupingTimeRS           = loadLastGroupingTime.executeQuery();
 			if (lastGroupingTimeRS.next()){
-				lastReindexTime = lastGroupingTimeRS.getLong("value");
+				lastReindexTime           = lastGroupingTimeRS.getLong("value");
 				lastReindexTimeVariableId = lastGroupingTimeRS.getLong("id");
 			}
 			lastGroupingTimeRS.close();
@@ -104,11 +104,11 @@ public class GroupedWorkIndexer {
 		//Check to see if a partial reindex is running
 		try{
 			PreparedStatement loadPartialReindexRunning = vufindConn.prepareStatement("SELECT * from variables WHERE name = 'partial_reindex_running'");
-			ResultSet loadPartialReindexRunningRS = loadPartialReindexRunning.executeQuery();
+			ResultSet loadPartialReindexRunningRS       = loadPartialReindexRunning.executeQuery();
 			if (loadPartialReindexRunningRS.next()){
 				partialReindexRunningVariableId = loadPartialReindexRunningRS.getLong("id");
-				String value = loadPartialReindexRunningRS.getString("value");
-				partialReindexRunning = (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("1"));
+				String value                    = loadPartialReindexRunningRS.getString("value");
+				partialReindexRunning           = (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("1"));
 			}
 			loadPartialReindexRunningRS.close();
 			loadPartialReindexRunning.close();
@@ -125,7 +125,7 @@ public class GroupedWorkIndexer {
 			//TODO: Restore functionality to not include any identifiers that aren't tagged as valid for enrichment
 			//getGroupedWorkIdentifiers = vufindConn.prepareStatement("SELECT * FROM grouped_work_identifiers inner join grouped_work_identifiers_ref on identifier_id = grouped_work_identifiers.id where grouped_work_id = ? and valid_for_enrichment = 1", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 
-			getDateFirstDetectedStmt = vufindConn.prepareStatement("SELECT dateFirstDetected FROM ils_marc_checksums WHERE source = ? AND ilsId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+			getDateFirstDetectedStmt          = vufindConn.prepareStatement("SELECT dateFirstDetected FROM ils_marc_checksums WHERE source = ? AND ilsId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 		} catch (Exception e){
 			logger.error("Could not load statements to get identifiers ", e);
 		}
@@ -134,12 +134,12 @@ public class GroupedWorkIndexer {
 		GroupedReindexMain.addNoteToReindexLog("Setting up update server and solr server");
 		if (fullReindex){
 			//MDN 10-21-2015 - use the grouped core since we are using replication.
+			solrServer   = new HttpSolrServer("http://localhost:" + solrPort + "/solr/grouped");
 			updateServer = new ConcurrentUpdateSolrServer("http://localhost:" + solrPort + "/solr/grouped", 500, 8);
 			updateServer.setRequestWriter(new BinaryRequestWriter());
-			solrServer = new HttpSolrServer("http://localhost:" + solrPort + "/solr/grouped");
 
 			//Stop replication from the master
-			String url = "http://localhost:" + solrPort + "/solr/grouped/replication?command=disablereplication";
+			String url                              = "http://localhost:" + solrPort + "/solr/grouped/replication?command=disablereplication";
 			URLPostResponse stopReplicationResponse = Util.getURL(url, logger);
 			if (!stopReplicationResponse.isSuccess()){
 				logger.error("Error restarting replication " + stopReplicationResponse.getMessage());
@@ -152,7 +152,7 @@ public class GroupedWorkIndexer {
 			//Check to make sure that at least a couple of minutes have elapsed since the last index
 			//Periodically in the middle of the night we get indexes every minute or multiple times a minute
 			//which is annoying especially since it generally means nothing is changing.
-			long elapsedTime = indexStartTime - lastReindexTime;
+			long elapsedTime         = indexStartTime - lastReindexTime;
 			long minIndexingInterval = 2 * 60;
 			if (elapsedTime < minIndexingInterval && !singleWorkIndex) {
 				try {
@@ -186,8 +186,8 @@ public class GroupedWorkIndexer {
 		//Initialize processors based on our indexing profiles and the primary identifiers for the records.
 		try {
 			PreparedStatement uniqueIdentifiersStmt = vufindConn.prepareStatement("SELECT DISTINCT type FROM grouped_work_primary_identifiers");
-			PreparedStatement getIndexingProfile = vufindConn.prepareStatement("SELECT * from indexing_profiles where name = ?");
-			ResultSet uniqueIdentifiersRS = uniqueIdentifiersStmt.executeQuery();
+			PreparedStatement getIndexingProfile    = vufindConn.prepareStatement("SELECT * from indexing_profiles where name = ?");
+			ResultSet uniqueIdentifiersRS           = uniqueIdentifiersStmt.executeQuery();
 
 			while (uniqueIdentifiersRS.next()){
 				String curIdentifier = uniqueIdentifiersRS.getString("type");

@@ -86,7 +86,16 @@ public class AddisonRecordProcessor extends IIIRecordProcessor {
         }else{
             //No items so we can continue on.
 
-            String url = MarcUtil.getFirstFieldVal(record, "856u");
+            String url                     = null;
+            String specifiedEcontentSource = null;
+            Set<String> urls = MarcUtil.getFieldList(record, "856u");
+            for (String tempUrl : urls){
+                specifiedEcontentSource = determineEcontentSourceByURL(tempUrl);
+                if (specifiedEcontentSource != null){
+                    url = tempUrl;
+                    break;
+                }
+            }
             if (url != null){
 
                 //Get the bib location
@@ -102,7 +111,7 @@ public class AddisonRecordProcessor extends IIIRecordProcessor {
                     }
                 }
 
-                String specifiedEcontentSource = determineEcontentSourceByURL(url);
+//                String specifiedEcontentSource = determineEcontentSourceByURL(url);
 
                 ItemInfo itemInfo = new ItemInfo();
                 itemInfo.setIsEContent(true);
@@ -124,6 +133,11 @@ public class AddisonRecordProcessor extends IIIRecordProcessor {
 
 
                 unsuppressedEcontentRecords.add(relatedRecord);
+            } else {
+                //TODO: temporary. just for debugging econtent records
+                if (urls.size() > 0) {
+                    logger.warn("Itemless record " + identifier + " had 856u URLs but none had a expected econtent source.");
+                }
             }
 
         }
@@ -138,12 +152,18 @@ public class AddisonRecordProcessor extends IIIRecordProcessor {
                 econtentSource = "Axis 360";
             } else if (url.contains("bkflix")){
                 econtentSource = "BookFlix";
-            } else if (url.contains("cloudlibrary") || url.contains("3m")){
-                econtentSource = "Cloud Library";
+            } else if (url.contains("tfx.")){
+                econtentSource = "TrueFlix";
             } else if (url.contains("biblioboard")){
                 econtentSource = "Biblioboard";
             } else if (url.contains("learningexpress")){
                 econtentSource = "Learning Express";
+            } else if (url.contains("rbdigital")){
+                econtentSource = "RBdigital";
+            } else if (url.contains("enkilibrary")){
+                econtentSource = "ENKI Library";
+            } else if (url.contains("cloudlibrary") || url.contains("3m")){
+                econtentSource = "Cloud Library";
             } else if (url.contains("ebsco")){
                 econtentSource = "EBSCO";
             }
