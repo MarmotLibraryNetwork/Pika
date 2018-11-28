@@ -48,8 +48,8 @@ public class AddisonRecordProcessor extends IIIRecordProcessor {
             if (!matType.equals("-") && !matType.equals(" ") && !matType.equals("v")) { // Mat-Type "v" is video games; they are to be excluded for the better default format determination
                 String translatedFormat = translateValue("material_type", matType, recordInfo.getRecordIdentifier());
                 if (translatedFormat != null && !translatedFormat.equals(matType)) {
-                    String translatedFormatCategory = translateValue("format_category", matType, recordInfo.getRecordIdentifier());
                     recordInfo.addFormat(translatedFormat);
+                    String translatedFormatCategory = translateValue("format_category", matType, recordInfo.getRecordIdentifier());
                     if (translatedFormatCategory != null && !translatedFormatCategory.equals(matType)) {
                         recordInfo.addFormatCategory(translatedFormatCategory);
                     }
@@ -106,21 +106,21 @@ public class AddisonRecordProcessor extends IIIRecordProcessor {
 
                 ItemInfo itemInfo = new ItemInfo();
                 itemInfo.setIsEContent(true);
-                itemInfo.setLocationCode(bibLocation);
                 itemInfo.seteContentProtectionType("external");
                 itemInfo.setCallNumber("Online");
-                itemInfo.seteContentSource(specifiedEcontentSource == null ? "Econtent Source" : specifiedEcontentSource);
-//              itemInfo.setShelfLocation(econtentSource); // this sets the owning location facet.  This isn't needed for Sacramento
                 itemInfo.setIType("eCollection");
                 itemInfo.setDetailedStatus("Available Online");
+
+                itemInfo.seteContentUrl(url);
+                itemInfo.setLocationCode(bibLocation);
+                itemInfo.seteContentSource(specifiedEcontentSource == null ? "Econtent" : specifiedEcontentSource);
+//                itemInfo.setShelfLocation(econtentSource); // this sets the owning location facet.  This isn't needed for Sacramento
                 RecordInfo relatedRecord = groupedWork.addRelatedRecord("external_econtent", identifier);
                 relatedRecord.setSubSource(profileType);
                 relatedRecord.addItem(itemInfo);
-                itemInfo.seteContentUrl(url);
 
                 // Use the same format determination process for the econtent record (should just be the MatType)
-//                loadPrintFormatInformation(relatedRecord, record);
-                //This happens before loadUnsuppressedEContentItems() is called, so shouldn't be needed.
+                loadPrintFormatInformation(relatedRecord, record);
 
 
                 unsuppressedEcontentRecords.add(relatedRecord);
@@ -136,10 +136,14 @@ public class AddisonRecordProcessor extends IIIRecordProcessor {
             url = url.toLowerCase();
             if (url.contains("axis360")){
                 econtentSource = "Axis 360";
-            }else if (url.contains("bkflix")){
+            } else if (url.contains("bkflix")){
                 econtentSource = "BookFlix";
-            }else if (url.contains("cloudlibrary") || url.contains("3m")){
+            } else if (url.contains("cloudlibrary") || url.contains("3m")){
                 econtentSource = "Cloud Library";
+            } else if (url.contains("learningexpress")){
+                econtentSource = "Learning Express";
+            } else if (url.contains("ebsco")){
+                econtentSource = "EBSCO";
             }
         }
         return econtentSource;
