@@ -50,7 +50,7 @@ public class AddisonRecordProcessor extends IIIRecordProcessor {
                 if (translatedFormat != null && !translatedFormat.equals(matType)) {
                     String translatedFormatCategory = translateValue("format_category", matType, recordInfo.getRecordIdentifier());
                     recordInfo.addFormat(translatedFormat);
-                    if (translatedFormatCategory != null) {
+                    if (translatedFormatCategory != null && !translatedFormatCategory.equals(matType)) {
                         recordInfo.addFormatCategory(translatedFormatCategory);
                     }
                     // use translated value
@@ -75,7 +75,7 @@ public class AddisonRecordProcessor extends IIIRecordProcessor {
     }
 
 
-    // This is just taken from Sacramento Processor
+    // This is based on version from Sacramento Processor
     @Override
     protected List<RecordInfo> loadUnsuppressedEContentItems(GroupedWorkSolr groupedWork, String identifier, Record record){
         List<RecordInfo> unsuppressedEcontentRecords = new ArrayList<>();
@@ -86,50 +86,62 @@ public class AddisonRecordProcessor extends IIIRecordProcessor {
         }else{
             //No items so we can continue on.
 
-            String specifiedEcontentSource = "Econtent Source";
-//            String specifiedEcontentSource = MarcUtil.getFirstFieldVal(record, "901a");
-//            if (specifiedEcontentSource != null){
-                //Get the url
-                String url = MarcUtil.getFirstFieldVal(record, "856u");
+            String url = MarcUtil.getFirstFieldVal(record, "856u");
+            if (url != null){
 
-                if (url != null){
-
-                    //Get the bib location
-                    String bibLocation = null;
-                    Set<String> bibLocations = MarcUtil.getFieldList(record, sierraRecordFixedFieldsTag + "a");
-                    for (String tmpBibLocation : bibLocations){
-                        if (tmpBibLocation.matches("[a-zA-Z]{1,5}")){
-                            bibLocation = tmpBibLocation;
-                            break;
+                //Get the bib location
+                String bibLocation       = null;
+                Set<String> bibLocations = MarcUtil.getFieldList(record, sierraRecordFixedFieldsTag + "a");
+                for (String tmpBibLocation : bibLocations){
+                    if (tmpBibLocation.matches("[a-zA-Z]{1,5}")){
+                        bibLocation = tmpBibLocation;
+                        break;
 //                }else if (tmpBibLocation.matches("\\(\\d+\\)([a-zA-Z]{1,5})")){
 //                    bibLocation = tmpBibLocation.replaceAll("\\(\\d+\\)", "");
 //                    break;
-                        }
                     }
-
-                    ItemInfo itemInfo = new ItemInfo();
-                    itemInfo.setIsEContent(true);
-                    itemInfo.setLocationCode(bibLocation);
-                    itemInfo.seteContentProtectionType("external");
-                    itemInfo.setCallNumber("Online");
-                    itemInfo.seteContentSource(specifiedEcontentSource);
-//                  itemInfo.setShelfLocation(econtentSource); // this sets the owning location facet.  This isn't needed for Sacramento
-                    itemInfo.setIType("eCollection");
-                    itemInfo.setDetailedStatus("Available Online");
-                    RecordInfo relatedRecord = groupedWork.addRelatedRecord("external_econtent", identifier);
-                    relatedRecord.setSubSource(profileType);
-                    relatedRecord.addItem(itemInfo);
-                    itemInfo.seteContentUrl(url);
-
-                    // Use the same format determination process for the econtent record (should just be the MatType)
-                    loadPrintFormatInformation(relatedRecord, record);
-
-
-                    unsuppressedEcontentRecords.add(relatedRecord);
                 }
-//            }
+
+                String specifiedEcontentSource = determineEcontentSourceByURL(url);
+
+                ItemInfo itemInfo = new ItemInfo();
+                itemInfo.setIsEContent(true);
+                itemInfo.setLocationCode(bibLocation);
+                itemInfo.seteContentProtectionType("external");
+                itemInfo.setCallNumber("Online");
+                itemInfo.seteContentSource(specifiedEcontentSource == null ? "Econtent Source" : specifiedEcontentSource);
+//              itemInfo.setShelfLocation(econtentSource); // this sets the owning location facet.  This isn't needed for Sacramento
+                itemInfo.setIType("eCollection");
+                itemInfo.setDetailedStatus("Available Online");
+                RecordInfo relatedRecord = groupedWork.addRelatedRecord("external_econtent", identifier);
+                relatedRecord.setSubSource(profileType);
+                relatedRecord.addItem(itemInfo);
+                itemInfo.seteContentUrl(url);
+
+                // Use the same format determination process for the econtent record (should just be the MatType)
+//                loadPrintFormatInformation(relatedRecord, record);
+                //This happens before loadUnsuppressedEContentItems() is called, so shouldn't be needed.
+
+
+                unsuppressedEcontentRecords.add(relatedRecord);
+            }
+
         }
         return unsuppressedEcontentRecords;
     }
 
+    private String determineEcontentSourceByURL(String url) {
+        String econtentSource = null;
+        if (url != null && !url.isEmpty()){
+            url = url.toLowerCase();
+            if (url.contains("axis360")){
+                econtentSource = "Axis 360";
+            }else if (url.contains("bkflix")){
+                econtentSource = "BookFlix";
+            }else if (url.contains("cloudlibrary") || url.contains("3m")){
+                econtentSource = "Cloud Library";
+            }
+        }
+        return econtentSource;
+    }
 }
