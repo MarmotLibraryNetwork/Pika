@@ -155,7 +155,7 @@
 							{* OPAC Admin Actions*}
 							{if array_key_exists('opacAdmin', $userRoles)}
 								{* Sierra/Millennium OPAC Admin Actions*}
-								{if ($ils == 'Millennium' || $ils == 'Sierra' || $ils == 'Horizon')}
+								{if ($ils == 'Millennium' || $ils == 'Sierra' || $ils == 'Horizon' || $ils == 'CarlX')}
 								<div class="adminMenuLink{if $action == "PTypes"} active{/if}"><a href="{$path}/Admin/PTypes">P-Types</a></div>
 								{/if}
 								{if ($ils == 'Millennium' || $ils == 'Sierra')}
