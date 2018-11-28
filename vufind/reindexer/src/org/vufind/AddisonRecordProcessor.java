@@ -122,7 +122,8 @@ public class AddisonRecordProcessor extends IIIRecordProcessor {
 
                 itemInfo.seteContentUrl(url);
                 itemInfo.setLocationCode(bibLocation);
-                itemInfo.seteContentSource(specifiedEcontentSource == null ? "Econtent" : specifiedEcontentSource);
+                itemInfo.seteContentSource(specifiedEcontentSource);
+//                itemInfo.seteContentSource(specifiedEcontentSource == null ? "Econtent" : specifiedEcontentSource);
 //                itemInfo.setShelfLocation(econtentSource); // this sets the owning location facet.  This isn't needed for Sacramento
                 RecordInfo relatedRecord = groupedWork.addRelatedRecord("external_econtent", identifier);
                 relatedRecord.setSubSource(profileType);
@@ -166,6 +167,8 @@ public class AddisonRecordProcessor extends IIIRecordProcessor {
                 econtentSource = "Cloud Library";
             } else if (url.contains("ebsco")){
                 econtentSource = "EBSCO";
+            } else if (url.contains("gale")){
+                econtentSource = "Gale";
             }
         }
         return econtentSource;
