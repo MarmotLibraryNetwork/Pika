@@ -91,8 +91,7 @@ class Search_Home extends Action {
 	 * @return BrowseCategory[]
 	 */
 	public function getBrowseCategories($localBrowseCategories=null) {
-		global $interface,
-						$user;
+		global $interface;
 
 		$browseCategories = array();
 		$specifiedCategory = isset($_REQUEST['browseCategory']);
@@ -102,6 +101,11 @@ class Search_Home extends Action {
 			foreach ($localBrowseCategories as $index => $localBrowseCategory) {
 				$browseCategory         = new BrowseCategory();
 				$browseCategory->textId = $localBrowseCategory->browseCategoryTextId;
+				if ($browseCategory->textId == 'system_recommended_for_you'){
+					if (UserAccount::isLoggedIn()){
+						$user = UserAccount::getActiveUserObj();
+					}
+				}
 				if (($browseCategory->textId == 'system_recommended_for_you' && $user && $user->hasRatings()) || $browseCategory->find(true)) {
 					// Only Show the Recommended for You browse category if the user is logged in and has rated titles
 					if ($browseCategory->textId == 'system_recommended_for_you') {
