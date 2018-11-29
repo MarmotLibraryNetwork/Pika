@@ -22,8 +22,7 @@ require_once ROOT_DIR . '/Action.php';
 
 class Search_Home extends Action {
 
-	function launch()
-	{
+	function launch(){
 		global $interface;
 		global $configArray;
 		global $library;
@@ -53,10 +52,10 @@ class Search_Home extends Action {
 		}
 
 		// Get Browse Categories for default Library if none are set for the Library and Location
-		if (empty($browseCategories)) {
-			$defaultLibrary = new Library();
+		if (empty($browseCategories)){
+			$defaultLibrary            = new Library();
 			$defaultLibrary->isDefault = true;
-			if ($defaultLibrary->find(true)) {
+			if ($defaultLibrary->find(true)){
 				$browseCategories = $this->getBrowseCategories($defaultLibrary->browseCategories);
 			}
 		}
@@ -78,7 +77,7 @@ class Search_Home extends Action {
 ////			$browseResults = $browseAJAX->getBrowseCategoryInfo(reset($browseCategories)->textId);
 ////			$interface->assign('browseResults', $browseResults);
 		}
-		if (!$interface->get_template_vars('browseMode')) {
+		if (!$interface->get_template_vars('browseMode')){
 			$interface->assign('browseMode', 'covers'); // fail safe: if no browseMode is set at all, go with covers
 		}
 
@@ -90,51 +89,49 @@ class Search_Home extends Action {
 	 * @param LocationBrowseCategory|LibraryBrowseCategory|null $localBrowseCategories
 	 * @return BrowseCategory[]
 	 */
-	public function getBrowseCategories($localBrowseCategories=null) {
+	public function getBrowseCategories($localBrowseCategories = null){
 		global $interface;
 
-		$browseCategories = array();
-		$specifiedCategory = isset($_REQUEST['browseCategory']);
+		$browseCategories     = array();
+		$specifiedCategory    = isset($_REQUEST['browseCategory']);
 		$specifiedSubCategory = $specifiedCategory && isset($_REQUEST['subCategory']); // make a specified main browse category required
-		if ($localBrowseCategories) {
+		if ($localBrowseCategories){
 			$first = key($localBrowseCategories); // get key of first category
-			foreach ($localBrowseCategories as $index => $localBrowseCategory) {
+			$user  = UserAccount::isLoggedIn() ? UserAccount::getActiveUserObj() : false;
+			foreach ($localBrowseCategories as $index => $localBrowseCategory){
 				$browseCategory         = new BrowseCategory();
 				$browseCategory->textId = $localBrowseCategory->browseCategoryTextId;
-				if ($browseCategory->textId == 'system_recommended_for_you'){
-					if (UserAccount::isLoggedIn()){
-						$user = UserAccount::getActiveUserObj();
-					}
-				}
-				if (($browseCategory->textId == 'system_recommended_for_you' && $user && $user->hasRatings()) || $browseCategory->find(true)) {
+				if (($browseCategory->textId == 'system_recommended_for_you' && $user && $user->hasRatings()) || $browseCategory->find(true)){
 					// Only Show the Recommended for You browse category if the user is logged in and has rated titles
-					if ($browseCategory->textId == 'system_recommended_for_you') {
+					if ($browseCategory->textId == 'system_recommended_for_you'){
 						$browseCategory->label = translate('Recommended For You');
 					}
 					$browseCategories[] = clone($browseCategory);
 					if (
 						($specifiedCategory && $_REQUEST['browseCategory'] == $browseCategory->textId) // A category has been selected through URL parameter
 						|| (!$specifiedCategory && $index == $first) // Or default to selecting the first browse category
-					) {
+					){
 						$selectedBrowseCategory = clone($browseCategory); //TODO needed?
 						$interface->assign('selectedBrowseCategory', $selectedBrowseCategory);
-						if ($specifiedSubCategory) {
+						if ($specifiedSubCategory){
 							$selectedBrowseCategory->getSubCategories();
 
 							$validSubCategory = false;
-							$subCategories = array();
+							$subCategories    = array();
 							/** @var SubBrowseCategories $subCategory */
-							foreach ($selectedBrowseCategory->subBrowseCategories as $subCategory) {
+							foreach ($selectedBrowseCategory->subBrowseCategories as $subCategory){
 								// Get Needed Info about sub-category
 								/** @var BrowseCategory $temp */
 								$temp = new BrowseCategory();
 								$temp->get($subCategory->subCategoryId);
-								if ($temp) {
-									if ($temp->textId == $_REQUEST['subCategory']) $validSubCategory = true;
+								if ($temp){
+									if ($temp->textId == $_REQUEST['subCategory']){
+										$validSubCategory = true;
+									}
 									$subCategories[] = array('label' => $temp->label, 'textId' => $temp->textId);
 								}
 							}
-							if ($validSubCategory) {
+							if ($validSubCategory){
 								$interface->assign('subCategoryTextId', $_REQUEST['subCategory']);
 								$interface->assign('subCategories', $subCategories);
 							}
@@ -142,14 +139,14 @@ class Search_Home extends Action {
 					}
 				}
 			}
-		} else { // get All BrowseCategories
+		}else{ // get All BrowseCategories
 			$browseCategory = new BrowseCategory();
 			$browseCategory->orderBy('numTitlesClickedOn');
 			$browseCategory->limit(0, 20);
 			$browseCategory->find();
-			while($browseCategory->fetch()){
+			while ($browseCategory->fetch()){
 				//Do not use the browse category if it is a subcategory of any other category
-				$subCategoryInfo = new SubBrowseCategories();
+				$subCategoryInfo                = new SubBrowseCategories();
 				$subCategoryInfo->subCategoryId = $browseCategory->id;
 				$subCategoryInfo->find();
 				if ($subCategoryInfo->N > 0){
@@ -158,26 +155,28 @@ class Search_Home extends Action {
 
 //				$browseCategory->getSubCategories(); // add subcategory information to the object
 				$browseCategories[] = clone($browseCategory);
-				if ($specifiedCategory && $_REQUEST['browseCategory'] == $browseCategory->textId) {
+				if ($specifiedCategory && $_REQUEST['browseCategory'] == $browseCategory->textId){
 					$selectedBrowseCategory = clone($browseCategory);
 					$interface->assign('selectedBrowseCategory', $selectedBrowseCategory);
-					if ($specifiedSubCategory) {
+					if ($specifiedSubCategory){
 						$selectedBrowseCategory->getSubCategories();
 
 						$validSubCategory = false;
-						$subCategories = array();
+						$subCategories    = array();
 						/** @var SubBrowseCategories $subCategory */
-						foreach ($selectedBrowseCategory->subBrowseCategories as $subCategory) {
+						foreach ($selectedBrowseCategory->subBrowseCategories as $subCategory){
 							// Get Needed Info about sub-category
 							/** @var BrowseCategory $temp */
 							$temp = new BrowseCategory();
 							$temp->get($subCategory->subCategoryId);
-							if ($temp) {
-								if ($temp->textId == $_REQUEST['subCategory']) $validSubCategory = true;
+							if ($temp){
+								if ($temp->textId == $_REQUEST['subCategory']){
+									$validSubCategory = true;
+								}
 								$subCategories[] = array('label' => $temp->label, 'textId' => $temp->textId);
 							}
 						}
-						if ($validSubCategory) {
+						if ($validSubCategory){
 							$interface->assign('subCategoryTextId', $_REQUEST['subCategory']);
 							$interface->assign('subCategories', $subCategories);
 						}
