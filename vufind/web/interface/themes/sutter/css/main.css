@@ -8930,8 +8930,8 @@ hr.menu {
 }
 .sidebar-links .panel-heading {
   padding: 5px 15px;
-  background-color: #e7e7e7;
-  background: linear-gradient(to bottom, #e7e7e7, #e7e7e7);
+  background-color: #0a2e5c;
+  background: linear-gradient(to bottom, #0a2e5c, #0a2e5c);
   border-bottom: 1px solid #a1a1a1;
 }
 .sidebar-links .panel > a,
@@ -11028,7 +11028,9 @@ fieldset[disabled] .btn-masquerade.active {
 #more-details-accordion .panel-heading,
 .sidebar-links .panel-heading,
 #account-settings-accordion .panel-heading {
-  background: #e7e7e7;
+  background: #0a2e5c;
+  color: #FFF;
+  text-shadow: 1px 1px #555555;
 }
 #account-settings-accordion .active .panel-heading,
 #more-details-accordion .active .panel-heading,
