@@ -133,6 +133,11 @@ cd /data/vufind-plus/; curl --remote-name --remote-time --silent --show-error --
 #Extract AR Data
 cd /data/vufind-plus/accelerated_reader; curl --remote-name --remote-time --silent --show-error --compressed --time-cond /data/vufind-plus/accelerated_reader/RLI-ARDataTAB.txt https://cassini.marmot.org/RLI-ARDataTAB.txt
 
+## SIDELOADS ##
+# Axis 360
+/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} addison/axis_360 axis_360/addison >> ${OUTPUT_FILE}
+#Biblioboard
+/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} addison/Biblioboard Biblioboard/addison >> ${OUTPUT_FILE}
 
 #Do a full extract from OverDrive just once a week to catch anything that doesn't
 #get caught in the regular extract
