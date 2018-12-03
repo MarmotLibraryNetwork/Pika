@@ -715,11 +715,19 @@
 					return element.validity.badInput ? "NaN" : $element.val();
 				}
 
-				if ( element.isContentEditable ) {
-					val = $element.text();
-				} else {
+				// if ( element.isContentEditable ) {
+				// 	val = $element.text();
+				// } else {
+				// 	val = $element.val();
+				// }
+				// window.console.log($element.val(), $element.text());
+
+				//NOTE: This is to replace the above, which breaks validation in IE11.  Pascal. 12/3/2018
 					val = $element.val();
+				if (typeof val == "undefined") {
+					val = $element.text();
 				}
+
 
 				if ( type === "file" ) {
 
@@ -1235,6 +1243,7 @@
 				// Support for <input required> in both html5 and older browsers
 				if ( method === "required" ) {
 					value = element.getAttribute( method );
+					value = $element.attr(method);
 
 					// Some browsers return an empty string for the required attribute
 					// and non-HTML5 browsers might have required="" markup
