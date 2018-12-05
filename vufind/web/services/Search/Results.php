@@ -41,14 +41,14 @@ class Search_Results extends Action {
 		$searchSource = isset($_REQUEST['searchSource']) ? $_REQUEST['searchSource'] : 'local';
 
 		if (isset($_REQUEST['replacementTerm'])){
-			$replacementTerm = $_REQUEST['replacementTerm'];
-			$interface->assign('replacementTerm', $replacementTerm);
-			$oldTerm = $_REQUEST['lookfor'];
-			$interface->assign('oldTerm', $oldTerm);
+			$replacementTerm     = $_REQUEST['replacementTerm'];
+			$oldTerm             = $_REQUEST['lookfor'];
+			$oldSearchUrl        = $_SERVER['REQUEST_URI'];
+			$oldSearchUrl        = str_replace('replacementTerm=' . urlencode($replacementTerm), 'disallowReplacements', $oldSearchUrl);
+			$_GET['lookfor']     = $replacementTerm;
 			$_REQUEST['lookfor'] = $replacementTerm;
-			$_GET['lookfor'] = $replacementTerm;
-			$oldSearchUrl = $_SERVER['REQUEST_URI'];
-			$oldSearchUrl = str_replace('replacementTerm=' . urlencode($replacementTerm), 'disallowReplacements', $oldSearchUrl);
+			$interface->assign('replacementTerm', $replacementTerm);
+			$interface->assign('oldTerm', $oldTerm);
 			$interface->assign('oldSearchUrl', $oldSearchUrl);
 		}
 
@@ -285,9 +285,8 @@ class Search_Results extends Action {
 		if ($searchObject->getResultTotal() < 1) {
 			require_once ROOT_DIR . '/services/Search/lib/SearchSuggestions.php';
 			$searchSuggestions = new SearchSuggestions();
-
-			$commonSearches = $searchSuggestions->getSpellingSearches($searchObject->displayQuery(), $searchObject->getSearchIndex());
-			$suggestions = array();
+			$commonSearches    = $searchSuggestions->getSpellingSearches($searchObject->displayQuery(), $searchObject->getSearchIndex());
+			$suggestions       = array();
 			foreach ($commonSearches as $commonSearch){
 				$suggestions[$commonSearch['phrase']] = '/Search/Results?lookfor=' . urlencode($commonSearch['phrase']);
 			}
@@ -295,14 +294,14 @@ class Search_Results extends Action {
 
 			//We didn't find anything.  Look for search Suggestions
 			//Don't try to find suggestions if facets were applied
-			$autoSwitchSearch = false;
+			$autoSwitchSearch     = false;
 			$disallowReplacements = isset($_REQUEST['disallowReplacements']) || isset($_REQUEST['replacementTerm']);
 			if (!$disallowReplacements && (!isset($facetSet) || count($facetSet) == 0)){
 				//We can try to find a suggestion, but only if we are not doing a phrase search.
 				if (strpos($searchObject->displayQuery(), '"') === false){
 					require_once ROOT_DIR . '/services/Search/lib/SearchSuggestions.php';
 					$searchSuggestions = new SearchSuggestions();
-					$commonSearches = $searchSuggestions->getCommonSearchesMySql($searchObject->displayQuery(), $searchObject->getSearchIndex());
+					$commonSearches    = $searchSuggestions->getCommonSearchesMySql($searchObject->displayQuery(), $searchObject->getSearchIndex());
 
 					//assign here before we start popping stuff off
 					$interface->assign('searchSuggestions', $commonSearches);
@@ -311,12 +310,12 @@ class Search_Results extends Action {
 					$allSuggestions = $searchSuggestions->getAllSuggestions($searchObject->displayQuery(), $searchObject->getSearchIndex());
 					$numSuggestions = count($allSuggestions);
 					if ($numSuggestions == 1){
-						$firstSearch = array_pop($allSuggestions);
+						$firstSearch      = array_pop($allSuggestions);
 						$autoSwitchSearch = true;
 					}elseif ($numSuggestions >= 2){
-						$firstSearch = array_shift($allSuggestions);
-						$secondSearch = array_shift($allSuggestions);
-						$firstTimesSearched = $firstSearch['numSearches'];
+						$firstSearch         = array_shift($allSuggestions);
+						$secondSearch        = array_shift($allSuggestions);
+						$firstTimesSearched  = $firstSearch['numSearches'];
 						$secondTimesSearched = $secondSearch['numSearches'];
 						if ($secondTimesSearched > 0 && $firstTimesSearched / $secondTimesSearched > 10){ // avoids division by zero
 							$autoSwitchSearch = true;
