@@ -302,9 +302,12 @@ public class GroupedWorkSolr implements Cloneable {
 				Calendar publicationDate = GregorianCalendar.getInstance();
 				publicationDate.set(earliestPublicationDate.intValue(), Calendar.DECEMBER, 31);
 
-				long indexTime = Util.getIndexDate().getTime();
-				long publicationTime = publicationDate.getTime().getTime();
+				long indexTime         = Util.getIndexDate().getTime();
+				long publicationTime   = publicationDate.getTime().getTime();
 				long bibDaysSinceAdded = (indexTime - publicationTime) / (long)(1000 * 60 * 60 * 24);
+				if (bibDaysSinceAdded < 0) {
+					logger.warn("Days since added value " + bibDaysSinceAdded + " is negative for grouped work " + id);
+				}
 				doc.addField("days_since_added", Long.toString(bibDaysSinceAdded));
 				doc.addField("time_since_added", Util.getTimeSinceAddedForDate(publicationDate.getTime()));
 			}else{

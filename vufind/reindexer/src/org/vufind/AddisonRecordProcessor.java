@@ -5,12 +5,15 @@ import org.marc4j.marc.DataField;
 import org.marc4j.marc.Record;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
 public class AddisonRecordProcessor extends IIIRecordProcessor {
+    private PreparedStatement getDateAddedStmt; // to set date added for ils (itemless) econtent records
     private String materialTypeSubField = "d";
     AddisonRecordProcessor(GroupedWorkIndexer indexer, Connection vufindConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
         super(indexer, vufindConn, indexingProfileRS, logger, fullReindex);
@@ -20,6 +23,12 @@ public class AddisonRecordProcessor extends IIIRecordProcessor {
 
         validCheckedOutStatusCodes.add("o"); // Library Use Only
         validCheckedOutStatusCodes.add("d"); // Display  //TODO: is this a good one to use?  (Sacramento does)
+
+        try{
+            getDateAddedStmt = vufindConn.prepareStatement("SELECT dateFirstDetected FROM ils_marc_checksums WHERE ilsId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+        }catch (Exception e){
+            logger.error("Unable to setup prepared statement for date added to catalog");
+        }
     }
 
     @Override
@@ -123,6 +132,7 @@ public class AddisonRecordProcessor extends IIIRecordProcessor {
                 itemInfo.seteContentUrl(url);
                 itemInfo.setLocationCode(bibLocation);
                 itemInfo.seteContentSource(specifiedEcontentSource);
+                loadDateAddedForItemlessEcontent(identifier, itemInfo);
 //                itemInfo.seteContentSource(specifiedEcontentSource == null ? "Econtent" : specifiedEcontentSource);
 //                itemInfo.setShelfLocation(econtentSource); // this sets the owning location facet.  This isn't needed for Sacramento
                 RecordInfo relatedRecord = groupedWork.addRelatedRecord("external_econtent", identifier);
@@ -135,10 +145,10 @@ public class AddisonRecordProcessor extends IIIRecordProcessor {
 
                 unsuppressedEcontentRecords.add(relatedRecord);
             } else {
-                //TODO: temporary. just for debugging econtent records
-                if (urls.size() > 0) {
-                    logger.warn("Itemless record " + identifier + " had 856u URLs but none had a expected econtent source.");
-                }
+//                //TODO: temporary. just for debugging econtent records
+//                if (urls.size() > 0) {
+//                    logger.warn("Itemless record " + identifier + " had 856u URLs but none had a expected econtent source.");
+//                }
             }
 
         }
@@ -172,5 +182,23 @@ public class AddisonRecordProcessor extends IIIRecordProcessor {
             }
         }
         return econtentSource;
+    }
+
+    // to set date added for ils (itemless) econtent records
+    private void loadDateAddedForItemlessEcontent(String identfier, ItemInfo itemInfo) {
+        try {
+            getDateAddedStmt.setString(1, identfier);
+            ResultSet getDateAddedRS = getDateAddedStmt.executeQuery();
+            if (getDateAddedRS.next()) {
+                long timeAdded = getDateAddedRS.getLong(1);
+                Date curDate = new Date(timeAdded * 1000);
+                itemInfo.setDateAdded(curDate);
+                getDateAddedRS.close();
+            }else{
+                logger.debug("Could not determine date added for " + identfier);
+            }
+        }catch (Exception e){
+            logger.error("Unable to load date added for " + identfier);
+        }
     }
 }
