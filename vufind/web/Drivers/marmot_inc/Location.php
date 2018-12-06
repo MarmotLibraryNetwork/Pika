@@ -1,6 +1,6 @@
 <?php
 /**
- * Table Definition for library
+ * Table Definition for location
  */
 require_once 'DB/DataObject.php';
 require_once 'DB/DataObject/Cast.php';
@@ -93,7 +93,8 @@ class Location extends DB_DataObject
 	/** @var  array $data */
 	protected $data;
 
-	public $hours;
+//	public $hours;
+// Don't explicitly declare this property.  Calls to it trigger its look up when it isn't set
 
 	function keys() {
 		return array('locationId', 'code');
