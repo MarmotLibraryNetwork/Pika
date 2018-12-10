@@ -5,8 +5,11 @@ import org.apache.log4j.Logger;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.SolrInputField;
 
+import java.time.Year;
 import java.util.*;
 import java.util.regex.Pattern;
+
+import static java.time.Year.now;
 
 /**
  * A representation of the grouped record as it will be added to Solr.
@@ -300,13 +303,19 @@ public class GroupedWorkSolr implements Cloneable {
 			if (earliestPublicationDate != null){
 				//Return number of days since the given year
 				Calendar publicationDate = GregorianCalendar.getInstance();
-				publicationDate.set(earliestPublicationDate.intValue(), Calendar.DECEMBER, 31);
+				int thisYear             = now().getValue();
+				if (thisYear == earliestPublicationDate) {
+					publicationDate.set(earliestPublicationDate.intValue(), Calendar.JANUARY, 1);
+				} else  {
+					publicationDate.set(earliestPublicationDate.intValue(), Calendar.DECEMBER, 31);
+				}
 
 				long indexTime         = Util.getIndexDate().getTime();
 				long publicationTime   = publicationDate.getTime().getTime();
 				long bibDaysSinceAdded = (indexTime - publicationTime) / (long)(1000 * 60 * 60 * 24);
 				if (bibDaysSinceAdded < 0) {
 					logger.warn("Days since added value " + bibDaysSinceAdded + " is negative for grouped work " + id);
+					bibDaysSinceAdded = 0;
 				}
 				doc.addField("days_since_added", Long.toString(bibDaysSinceAdded));
 				doc.addField("time_since_added", Util.getTimeSinceAddedForDate(publicationDate.getTime()));
