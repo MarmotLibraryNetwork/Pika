@@ -306,7 +306,7 @@ public class GroupedWorkSolr implements Cloneable {
 				int thisYear             = now().getValue();
 				if (thisYear == earliestPublicationDate) {
 					publicationDate.set(earliestPublicationDate.intValue(), Calendar.JANUARY, 1);
-				} else  {
+				} else  if (thisYear < earliestPublicationDate) {
 					publicationDate.set(earliestPublicationDate.intValue(), Calendar.DECEMBER, 31);
 				}
 
@@ -314,7 +314,7 @@ public class GroupedWorkSolr implements Cloneable {
 				long publicationTime   = publicationDate.getTime().getTime();
 				long bibDaysSinceAdded = (indexTime - publicationTime) / (long)(1000 * 60 * 60 * 24);
 				if (bibDaysSinceAdded < 0) {
-					logger.warn("Days since added value " + bibDaysSinceAdded + " is negative for grouped work " + id);
+					logger.warn("Using Publication date to calculate Days since added value " + bibDaysSinceAdded + " is negative for grouped work " + id);
 					bibDaysSinceAdded = 0;
 				}
 				doc.addField("days_since_added", Long.toString(bibDaysSinceAdded));
