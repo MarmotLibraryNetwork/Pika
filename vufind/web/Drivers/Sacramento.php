@@ -158,11 +158,14 @@ class Sacramento extends Sierra
 	}
 
 	function selfRegister(){
-		//Capitalize All Input, expect pin passwords
-		foreach ($this->getSelfRegistrationFields() as $formField) {
-			$formFieldName = $formField['property'];
-			if ($formField != 'pin' && $formField != 'pin1') {
-				$_REQUEST[$formFieldName] = strtoupper($_REQUEST[$formFieldName]);
+		global $library;
+		if ($library->subdomain == 'catalog'){ // just for sacramento public library
+			//Capitalize All Input, expect pin passwords
+			foreach ($this->getSelfRegistrationFields() as $formField){
+				$formFieldName = $formField['property'];
+				if ($formField != 'pin' && $formField != 'pin1'){
+					$_REQUEST[$formFieldName] = strtoupper($_REQUEST[$formFieldName]);
+				}
 			}
 		}
 
