@@ -49,13 +49,13 @@ EOQ;
 
 		if (count($queryResults) == 0){
 			$sectionDetails = array(
-					'pid' => $this->getUniqueID(),
-					'title' => $this->getTitle(),
-					'seq' => 0,
-					'cover' => $this->getBookcoverUrl('small'),
+					'pid'        => $this->getUniqueID(),
+					'title'      => $this->getTitle(),
+					'seq'        => 0,
+					'cover'      => $this->getBookcoverUrl('small'),
 					'transcript' => ''
 			);
-			$sectionObject = $fedoraUtils->getObject($this->getUniqueID());
+			$sectionObject  = $fedoraUtils->getObject($this->getUniqueID());
 			$sectionDetails = $this->loadPagesForSection($sectionObject, $sectionDetails);
 
 			$sections[$this->getUniqueID()] = $sectionDetails;

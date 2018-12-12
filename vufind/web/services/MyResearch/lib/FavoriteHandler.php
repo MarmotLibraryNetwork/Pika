@@ -147,8 +147,8 @@ class FavoriteHandler
 		global $interface;
 
 		$recordsPerPage = isset($_REQUEST['pagesize']) && (is_numeric($_REQUEST['pagesize'])) ? $_REQUEST['pagesize'] : 20;
-		$page = isset($_REQUEST['page']) ? $_REQUEST['page'] : 1;
-		$startRecord = ($page - 1) * $recordsPerPage + 1;
+		$page           = isset($_REQUEST['page']) ? $_REQUEST['page'] : 1;
+		$startRecord    = ($page - 1) * $recordsPerPage + 1;
 		if ($startRecord < 0){
 			$startRecord = 0;
 		}
@@ -242,7 +242,7 @@ class FavoriteHandler
 				if (!empty($this->catalogIds)) {
 					$catalogSearchObject->setQueryIDs($this->catalogIds); // do solr search by Ids
 					$catalogSearchObject->setPage(1); // set to the first page for the search only
-					$catalogResult = $catalogSearchObject->processSearch();
+					$catalogResult       = $catalogSearchObject->processSearch();
 					$catalogResourceList = $catalogSearchObject->getResultListHTML($this->user, $this->listId, $this->allowEdit, $this->favorites, $this->isMixedUserList);
 				}
 			}
@@ -372,9 +372,9 @@ class FavoriteHandler
 			$link .= "?page=%d";
 		}
 		$options = array('totalItems' => $pageInfo['resultTotal'],
-		                 'perPage' => $pageInfo['perPage'],
-		                 'fileName' => $link,
-		                 'append'    => false);
+		                 'perPage'    => $pageInfo['perPage'],
+		                 'fileName'   => $link,
+		                 'append'     => false);
 		require_once ROOT_DIR . '/sys/Pager.php';
 		$pager = new VuFindPager($options);
 		$interface->assign('pageLinks', $pager->getLinks());

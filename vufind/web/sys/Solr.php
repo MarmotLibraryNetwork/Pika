@@ -1233,8 +1233,8 @@ class Solr implements IndexEngine {
 					$lookfor = preg_replace_callback(
 						'/([\\w-]+):([\\w\\d\\s"-]+?)\\s?(?<=\b)(AND|OR|AND NOT|OR NOT|\\)|$)(?=\b)/',
 						function ($matches) use($that){
-							$field = $matches[1];
-							$lookfor = $matches[2];
+							$field    = $matches[1];
+							$lookfor  = $matches[2];
 							$newQuery = $that->_buildQueryComponent($field, $lookfor);
 							return $newQuery . $matches[3];
 						},

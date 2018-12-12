@@ -43,7 +43,12 @@ class SearchStatNew extends DB_DataObject
 			while($searchStat->fetch()){
 				$searchStat->phrase = trim(str_replace('"', '', $searchStat->phrase));
 				if ($searchStat->phrase != $phrase && !array_key_exists($searchStat->phrase, $results)){
-					$results[str_pad($searchStat->numSearches, 10, '0', STR_PAD_LEFT) . $searchStat->phrase] = array('phrase'=>$searchStat->phrase, 'numSearches'=>$searchStat->numSearches, 'numResults'=>1);
+					$results[str_pad($searchStat->numSearches, 10, '0', STR_PAD_LEFT) . $searchStat->phrase] =
+						array(
+							'phrase'      => $searchStat->phrase,
+							'numSearches' => $searchStat->numSearches,
+							'numResults'  => 1
+						);
 				}
 			}
 		}else{
