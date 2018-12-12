@@ -8786,8 +8786,8 @@ hr.menu {
   color: red;
 }
 #home-page-search {
-  background-color: #f5c800;
-  background: linear-gradient(to bottom, #f5c800, #FED100);
+  background-color: #1E1E1E;
+  background: linear-gradient(to bottom, #1E1E1E, #1E1E1E);
   padding: 20px 0 10px;
   margin-bottom: 5px;
 }
@@ -8827,7 +8827,7 @@ hr.menu {
 .searchSource {
   margin: 5px 0 0;
   color: #fff;
-  background-color: #FED100;
+  background-color: #1E1E1E;
   border: none;
   width: 90% !important;
 }
@@ -8838,8 +8838,8 @@ hr.menu {
   font-size: 85%;
 }
 #horizontal-search-box {
-  background-color: #f5c800;
-  background: linear-gradient(to bottom, #f5c800, #FED100);
+  background-color: #1E1E1E;
+  background: linear-gradient(to bottom, #1E1E1E, #1E1E1E);
   padding: 15px 0;
 }
 #horizontal-search-box #searchForm .row {
@@ -8913,7 +8913,6 @@ hr.menu {
 #home-page-library-section > a:hover {
   color: #fff;
 }
-/* TODO: Fix to reflect panel styles */
 .sidebar-button {
   text-align: center;
   background-color: #7c7c7d;
@@ -10339,8 +10338,8 @@ a.browse-thumbnail-sorted.active {
   font-weight: bold;
 }
 #explore-more-sidebar {
-  background-color: #f5c800;
-  background: linear-gradient(to bottom, #f5c800, #FED100);
+  background-color: #1E1E1E;
+  background: linear-gradient(to bottom, #1E1E1E, #1E1E1E);
 }
 #explore-more-header {
   padding: 10px 25px 5px 0;
