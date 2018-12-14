@@ -126,6 +126,9 @@ cd /usr/local/vufind-plus/sites/${PIKASERVER}; ./${PIKASERVER}.sh restart
 #/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} addison/Biblioboard Biblioboard/addison >> ${OUTPUT_FILE}
 #TrueFlix
 #/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} addison/trueflix trueflix/addison >> ${OUTPUT_FILE}
+#Learning Express
+#/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} addison/learning_express learning_express/addison >> ${OUTPUT_FILE}
+
 
 #Extract from Hoopla
 cd /usr/local/vufind-plus/vufind/cron;./GetHooplaFromMarmot.sh >> ${OUTPUT_FILE}
