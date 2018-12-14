@@ -118,8 +118,14 @@ rm /data/vufind-plus/${PIKASERVER}/grouped_work_primary_identifiers.sql
 #Restart Solr
 cd /usr/local/vufind-plus/sites/${PIKASERVER}; ./${PIKASERVER}.sh restart
 
-## Side Loads ##
 
+## SIDELOADS ##
+# Axis 360
+#/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} addison/axis_360 axis_360/addison >> ${OUTPUT_FILE}
+#Biblioboard
+#/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} addison/Biblioboard Biblioboard/addison >> ${OUTPUT_FILE}
+#TrueFlix
+#/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} addison/trueflix trueflix/addison >> ${OUTPUT_FILE}
 
 #Extract from Hoopla
 cd /usr/local/vufind-plus/vufind/cron;./GetHooplaFromMarmot.sh >> ${OUTPUT_FILE}
