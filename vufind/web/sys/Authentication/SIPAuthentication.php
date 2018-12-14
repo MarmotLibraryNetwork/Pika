@@ -121,7 +121,7 @@ class SIPAuthentication implements Authentication {
 
 				if ($mysip->connect()) {
 					//send selfcheck status message
-					$in = $mysip->msgSCStatus();
+					$in         = $mysip->msgSCStatus();
 					$msg_result = $mysip->get_message($in);
 
 					// Make sure the response is 98 as expected
@@ -134,10 +134,10 @@ class SIPAuthentication implements Authentication {
 							$mysip->AN = $result['variable']['AN'][0]; /* set AN to value returned */
 						}
 
-						$mysip->patron = $username;
+						$mysip->patron    = $username;
 						$mysip->patronpwd = $password;
 
-						$in = $mysip->msgPatronStatusRequest();
+						$in         = $mysip->msgPatronStatusRequest();
 						$msg_result = $mysip->get_message($in);
 
 						// Make sure the response is 24 as expected
@@ -146,9 +146,9 @@ class SIPAuthentication implements Authentication {
 
 							if (($result['variable']['BL'][0] == 'Y') and ($result['variable']['CQ'][0] == 'Y')) {
 								//Get patron info as well
-								$in = $mysip->msgPatronInformation('none');
+								$in         = $mysip->msgPatronInformation('none');
 								$msg_result = $mysip->get_message($in);
-				
+
 								// Make sure the response is 24 as expected
 								if (preg_match("/^64/", $msg_result)) {
 									$patronInfoResponse = $mysip->parsePatronInfoResponse( $msg_result );
@@ -202,7 +202,7 @@ class SIPAuthentication implements Authentication {
 	 */
 	private function processSIP2User($info, $username, $password, $patronInfoResponse){
 		global $timer;
-		$user = new User();
+		$user           = new User();
 		$user->username = $info['variable']['AA'][0];
 		if ($user->find(true)) {
 			$insert = false;
