@@ -1,6 +1,6 @@
 <?php
 /**
- *
+ * ByWaterKoha SIP driver.
  *
  * @category Pika
  * @author: Pascal Brammeier
@@ -8,13 +8,19 @@
  *
  */
 
-
 require_once ROOT_DIR . '/sys/KohaSIP.php';
 require_once ROOT_DIR . '/Drivers/SIP2Driver.php';
+
 abstract class ByWaterKoha extends SIP2Driver {
 
 	/** @var  AccountProfile $accountProfile */
 	public $accountProfile;
+	/**
+	 * @var $dbConnection null
+	 */
+	private $dbConnection = null;
+
+	private $sipConnection = null;
 
 	/**
 	 * @param AccountProfile $accountProfile
@@ -23,23 +29,39 @@ abstract class ByWaterKoha extends SIP2Driver {
 		global $configArray;
 		$this->accountProfile = $accountProfile;
 		$this->sipHost        = $configArray['SIP2']['host'];
+		$this->sipPort        = $configArray['SIP2']['port'];
+		$this->debug          = isset($configArray['System']['debug'])        ? $configArray['System']['debug'] : false;
+
+		//$this->sipConnection = $this->initSipConnection($this->sipHost, $this->sipPort);
 	}
 
+	/**
+	 * @param string $username
+	 * @param string $password
+	 * @param $validatedViaSSO
+	 * @return array|void|null
+	 */
 	public function patronLogin($username, $password, $validatedViaSSO)
 	{
 		$useSip = 1;
 		if ($useSip) {
 			$result = $this->patronLoginViaSip($username, $password);
+			return $result;
+		} else {
+			//TODO: use database login as preference: look as Aspencat.php
 		}
-		//TODO: use database login as preference: look as Aspencat.php
+
 	}
 
 
+	/**
+	 * @param $username
+	 * @param $password
+	 */
 	protected function patronLoginViaSip($username, $password) {
-		//TODO:
-		// Just Verify credentials against SIP
-//		$this->initSipConnection();
+		$this->initSipConnection($host, $port);
 	}
+
 
 	public function hasNativeReadingHistory()
 	{
@@ -48,12 +70,45 @@ abstract class ByWaterKoha extends SIP2Driver {
 
 	/**
 	 * Return the number of holds that are on a record
-	 * @param $id
+	 * @param int $id biblionumber of title
 	 * @return int
 	 */
 	public function getNumHolds($id)
 	{
 		// TODO: Implement getNumHolds() method.
+
+	}
+
+	/**
+	 * Return the number of holds that are on a record
+	 * @param int $id biblionumber of title
+	 * @return int
+	 */
+	public function getNumHoldsFromDB($id) {
+		if (isset($this->holdsByBib[$id])){
+			return $this->holdsByBib[$id];
+		}
+
+		$numHolds = 0;
+
+		$this->initDatabaseConnection();
+		$sql = "SELECT count(*) from reserves where biblionumber = $id";
+		$results = mysqli_query($this->dbConnection, $sql);
+		if (!$results){
+			global $logger;
+			$logger->log("Unable to load hold count from Koha (" . mysqli_errno($this->dbConnection) . ") " . mysqli_error($this->dbConnection), PEAR_LOG_ERR);
+		}else{
+			$curRow = $results->fetch_row();
+			$numHolds = $curRow[0];
+			$results->close();
+		}
+
+		$this->holdsByBib[$id] = $numHolds;
+
+		global $timer;
+		$timer->logTime("Finished loading num holds for record ");
+
+		return $numHolds;
 	}
 
 	/**
@@ -72,7 +127,7 @@ abstract class ByWaterKoha extends SIP2Driver {
 		// TODO: Implement getMyCheckouts() method.
 		$checkedOutTitles = array();
 
-		if ($this->initSipConnection()) {
+		if ($this->initSipConnection($this->sipHost, $this->sipPort)) {
 			$this->sipConnection->patron    = $patron->cat_username;
 			$this->sipConnection->patronpwd = $patron->cat_password;
 			$sip_result = $this->getPatronInfo('charged');
@@ -83,6 +138,73 @@ abstract class ByWaterKoha extends SIP2Driver {
 		}
 		return $checkedOutTitles;
 
+	}
+
+	/**
+	 * @param User $patron
+	 * @return array
+	 */
+	public function getMyCheckoutsFromDB($patron) {
+		if (isset($this->transactions[$patron->id])){
+			return $this->transactions[$patron->id];
+		}
+
+		//Get transactions by screen scraping
+		$transactions = array();
+
+		$this->initDatabaseConnection();
+
+		$sql = "SELECT issues.*, items.biblionumber, title, author from issues left join items on items.itemnumber = issues.itemnumber left join biblio ON items.biblionumber = biblio.biblionumber where borrowernumber = {$patron->username}";
+		$results = mysqli_query($this->dbConnection, $sql);
+		while ($curRow = $results->fetch_assoc()){
+			$transaction = array();
+			$transaction['checkoutSource'] = 'ILS';
+
+			$transaction['id'] = $curRow['biblionumber'];
+			$transaction['recordId'] = $curRow['biblionumber'];
+			$transaction['shortId'] = $curRow['biblionumber'];
+			$transaction['title'] = $curRow['title'];
+			$transaction['author'] = $curRow['author'];
+
+			$dateDue = DateTime::createFromFormat('Y-m-d', $curRow['date_due']);
+			if ($dateDue){
+				$dueTime = $dateDue->getTimestamp();
+			}else{
+				$dueTime = null;
+			}
+			$transaction['dueDate'] = $dueTime;
+			$transaction['itemid'] = $curRow['id'];
+			$transaction['renewIndicator'] = $curRow['id'];
+			$transaction['renewCount'] = $curRow['renewals'];
+
+			if ($transaction['id'] && strlen($transaction['id']) > 0){
+				$transaction['recordId'] = $transaction['id'];
+				require_once ROOT_DIR . '/RecordDrivers/MarcRecord.php';
+				$recordDriver = new MarcRecord($transaction['recordId']);
+				if ($recordDriver->isValid()){
+					$transaction['coverUrl']      = $recordDriver->getBookcoverUrl('medium');
+					$transaction['groupedWorkId'] = $recordDriver->getGroupedWorkId();
+					$transaction['ratingData']    = $recordDriver->getRatingData();
+					$transaction['format']        = $recordDriver->getPrimaryFormat();
+					$transaction['author']        = $recordDriver->getPrimaryAuthor();
+					$transaction['title']         = $recordDriver->getTitle();
+					$curTitle['title_sort']       = $recordDriver->getSortableTitle();
+					$transaction['link']          = $recordDriver->getLinkUrl();
+				}else{
+					$transaction['coverUrl'] = "";
+					$transaction['groupedWorkId'] = "";
+					$transaction['format'] = "Unknown";
+				}
+			}
+
+			$transaction['user'] = $patron->getNameAndLibraryLabel();
+
+			$transactions[] = $transaction;
+		}
+
+		$this->transactions[$patron->id] = $transactions;
+
+		return $transactions;
 	}
 
 	/**
@@ -183,12 +305,12 @@ abstract class ByWaterKoha extends SIP2Driver {
 	 *
 	 * This is responsible for retrieving all holds for a specific patron.
 	 *
-	 * @param User $user The user to load transactions for
+	 * @param User $patron The user to load transactions for
 	 *
 	 * @return array        Array of the patron's holds
 	 * @access public
 	 */
-	public function getMyHolds($user)
+	public function getMyHolds($patron)
 	{
 		// TODO: Implement getMyHolds() method.
 		$availableHolds   = array();
@@ -366,39 +488,46 @@ abstract class ByWaterKoha extends SIP2Driver {
 		return $fines;
 	}
 
+	/**
+	 * Get a list of fines for the user.
+	 * Code take from C4::Account getcharges method
+	 *
+	 * @param null $patron
+	 * @param bool $includeMessages
+	 * @return array
+	 */
+	public function getMyFinesFromDB($patron, $includeMessages = false){
 
-	private $dbConnection = null;
+		$this->initDatabaseConnection();
 
-//	function initDatabaseConnection(){
-//		if ($this->dbConnection == null){
-//			global $configArray;
-//
-//			try {
-//				$databaseSourceName = $configArray['Catalog']['db_host'] . ';dbname=' . $configArray['Catalog']['db_name'];
-//				$this->dbConnection = new PDO($databaseSourceName, $configArray['Catalog']['db_user'], $configArray['Catalog']['db_pwd']);
-//			} catch (PDOException $e) {
-//				$this->dbConnection = null;
-//				global $logger;
-//				$logger->log("Error connecting to Bywater Koha database " . $e->getMessage(), PEAR_LOG_ERR);
-//			}
-//			global $timer;
-//			$timer->logTime("Initialized connection to Koha");
-//		}
-//	}
+		//Get a list of outstanding fees
+		$query = "SELECT * FROM fees JOIN fee_transactions AS ft on(id = fee_id) WHERE borrowernumber = {$patron->username} and accounttype in (select accounttype from accounttypes where class='fee' or class='invoice') ";
 
-	function initDatabaseConnection(){
-		global $configArray;
-		if ($this->dbConnection == null){
-			$this->dbConnection = mysqli_connect($configArray['Catalog']['db_host'], $configArray['Catalog']['db_user'], $configArray['Catalog']['db_pwd'], $configArray['Catalog']['db_name'], $configArray['Catalog']['db_port']);
+		$allFeesRS = mysqli_query($this->dbConnection, $query);
 
-			if (!$this->dbConnection || mysqli_errno($this->dbConnection) != 0){
-				global $logger;
-				$logger->log("Error connecting to Koha database " . mysqli_error($this->dbConnection), PEAR_LOG_ERR);
-				$this->dbConnection = null;
+		$fines = array();
+		while ($allFeesRow = $allFeesRS->fetch_assoc()){
+			$feeId = $allFeesRow['id'];
+			$query2 = "SELECT sum(amount) as amountOutstanding from fees LEFT JOIN fee_transactions on (fees.id=fee_transactions.fee_id) where fees.id = $feeId";
+
+			$outstandingFeesRS = mysqli_query($this->dbConnection, $query2);
+			$outstandingFeesRow = $outstandingFeesRS->fetch_assoc();
+			$amountOutstanding = $outstandingFeesRow['amountOutstanding'];
+			if ($amountOutstanding > 0){
+				$curFine = array(
+					'date' => $allFeesRow['timestamp'],
+					'reason' => $allFeesRow['accounttype'],
+					'message' => $allFeesRow['description'],
+					'amount' => $allFeesRow['amount'],
+					'amountOutstanding' => $amountOutstanding,
+				);
+				$fines[] = $curFine;
 			}
-			global $timer;
-			$timer->logTime("Initialized connection to Koha");
+			$outstandingFeesRS->close();
 		}
+		$allFeesRS->close();
+
+		return $fines;
 	}
 
 	/**
@@ -513,40 +642,20 @@ abstract class ByWaterKoha extends SIP2Driver {
 		return $holds;
 	}
 
+	function initDatabaseConnection(){
+		global $configArray;
+		if ($this->dbConnection == null){
+			$this->dbConnection = mysqli_connect($configArray['Catalog']['db_host'], $configArray['Catalog']['db_user'], $configArray['Catalog']['db_pwd'], $configArray['Catalog']['db_name'], $configArray['Catalog']['db_port']);
 
-//	protected function initSipConnection() {
-//		if ($this->sipConnection == null){
-//			global $configArray;
-//			$host = $configArray['SIP2']['host'];
-//			$post = $configArray['SIP2']['port'];
-//			require_once ROOT_DIR . '/sys/KohaSIP.php';
-//			$this->sipConnection           = new KohaSIP();
-//			$this->sipConnection->hostname = $host;
-//			$this->sipConnection->port     = $post;
-//			if ($this->sipConnection->connect()) {
-//				//send self-check status message
-//				$in         = $this->sipConnection->msgSCStatus();
-//				$msg_result = $this->sipConnection->get_message($in);
-//
-//				// Make sure the response is 98 as expected
-//				if (preg_match("/^98/", $msg_result)) {
-//					$result = $this->sipConnection->parseACSStatusResponse($msg_result);
-//
-//					//  Use result to populate SIP2 settings
-//					$this->sipConnection->AO = $result['variable']['AO'][0]; /* set AO to value returned */
-//					if (isset($result['variable']['AN'])){
-//						$this->sipConnection->AN = $result['variable']['AN'][0]; /* set AN to value returned */
-//					}
-//					return true;
-//				}
-//				$this->sipConnection->disconnect();
-//			}
-//			$this->sipConnection = null;
-//			return false;
-//		}else{
-//			return true;
-//		}
-//	}
+			if (!$this->dbConnection || mysqli_errno($this->dbConnection) != 0){
+				global $logger;
+				$logger->log("Error connecting to Koha database " . mysqli_error($this->dbConnection), PEAR_LOG_ERR);
+				$this->dbConnection = null;
+			}
+			global $timer;
+			$timer->logTime("Initialized connection to Koha");
+		}
+	}
 
 	function __destruct(){
 		//Cleanup any connections we have to other systems
