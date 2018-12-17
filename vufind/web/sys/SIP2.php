@@ -773,7 +773,7 @@ class sip2
 		//Read from the socket one byte at a time until we read a carriage return
 		//Or until the connection receives an error ($nr === false).
 		while ($terminator != "\x0D" && $nr !== FALSE) {
-			$nr = socket_recv($this->socket,$terminator,1,0);
+			$nr     = socket_recv($this->socket, $terminator, 1, 0);
 			$result = $result . $terminator;
 		}
 		if ($nr === false){
@@ -871,16 +871,16 @@ class sip2
 			$prompt = $this->getResponse();
 			$logger->log("Login Prompt Received was " . $prompt, PEAR_LOG_DEBUG);
 			$login = $configArray['SIP2']['sipLogin'];
-			$ret = socket_write($this->socket, $login, strlen($login));
-			$ret += socket_write($this->socket, $lineEnding, strlen($lineEnding));
+			$ret   = socket_write($this->socket, $login, strlen($login));
+			$ret   += socket_write($this->socket, $lineEnding, strlen($lineEnding));
 			$logger->log("Wrote $ret bytes for login", PEAR_LOG_DEBUG);
 			$this->Sleep();
 
 			$prompt = $this->getResponse();
 			$logger->log("Password Prompt Received was " . $prompt, PEAR_LOG_DEBUG);
 			$password = $configArray['SIP2']['sipPassword'];
-			$ret = socket_write($this->socket, $password, strlen($password));
-			$ret += socket_write($this->socket, $lineEnding, strlen($lineEnding));
+			$ret      = socket_write($this->socket, $password, strlen($password));
+			$ret      += socket_write($this->socket, $lineEnding, strlen($lineEnding));
 			$logger->log("Wrote $ret bytes for password", PEAR_LOG_DEBUG);
 
 			if ($this->use_usleep){
