@@ -125,21 +125,7 @@ abstract class ByWaterKoha extends SIP2Driver {
 	public function getMyCheckouts($patron){
 
 		return $this->getMyCheckoutsFromDB($patron);
-		// TODO: Implement getMyCheckouts() method.
-		/*
-		$checkedOutTitles = array();
 
-		if ($this->initSipConnection($this->sipHost, $this->sipPort)) {
-			$this->sipConnection->patron    = $patron->cat_username;
-			$this->sipConnection->patronpwd = $patron->cat_password;
-			$sip_result = $this->getPatronInfo('charged');
-			if ($sip_result) {
-				//Field AU doesn't contain any information
-
-			}
-		}
-		return $checkedOutTitles;
-	*/
 	}
 
 	/**
