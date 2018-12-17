@@ -20,6 +20,9 @@ abstract class ByWaterKoha extends SIP2Driver {
 	 */
 	private $dbConnection = null;
 
+	/**
+	 * @var KohaSIP $sipConnection
+	 */
 	protected $sipConnection = null;
 
 	/**
@@ -31,9 +34,33 @@ abstract class ByWaterKoha extends SIP2Driver {
 		$this->sipHost        = $configArray['SIP2']['host'];
 		$this->sipPort        = $configArray['SIP2']['port'];
 		$this->debug          = isset($configArray['System']['debug'])        ? $configArray['System']['debug'] : false;
-
-		//$this->sipConnection = $this->initSipConnection($this->sipHost, $this->sipPort);
 	}
+
+	protected function initSipConnection($host = null, $port = null){
+		$this->sipConnection           = new KohaSIP();
+		$this->sipConnection->hostname = $this->sipHost;
+		$this->sipConnection->port     = $this->sipPort;
+		$this->sipConnection->debug    = $this->debug;
+		if ($this->sipConnection->connect()){
+			$in         = $this->sipConnection->msgSCStatus();
+			$msg_result = $this->sipConnection->get_message($in);
+
+			// Make sure the response is 98 as expected
+			if (preg_match("/^98/", $msg_result)){
+				$result = $this->sipConnection->parseACSStatusResponse($msg_result);
+
+				//  Use result to populate SIP2 setings
+				$this->sipConnection->AO = $result['variable']['AO'][0]; /* set AO to value returned */
+				if (!empty($result['variable']['AN'])){
+					$this->sipConnection->AN = $result['variable']['AN'][0]; /* set AN to value returned */
+				}
+				return true;
+			}
+		}
+		$this->sipConnection->disconnect();
+		return false;
+	}
+
 
 	/**
 	 * @param string $username
@@ -59,7 +86,7 @@ abstract class ByWaterKoha extends SIP2Driver {
 	 * @param $password
 	 */
 	protected function patronLoginViaSip($username, $password) {
-		$this->initSipConnection($host, $port);
+		$this->initSipConnection();
 	}
 
 
@@ -369,8 +396,7 @@ EOD;
 	 *                                title - the title of the record the user is placing a hold on
 	 * @access  public
 	 */
-	function placeItemHold($patron, $recordId, $itemId, $pickupBranch, $cancelIfNotFilledByDate = null)
-	{
+	function placeItemHold($patron, $recordId, $itemId, $pickupBranch, $cancelIfNotFilledByDate = null){
 		$hold_result = array(
 			'success' => false,
 			'message' => 'Your hold could not be placed. '
@@ -378,9 +404,10 @@ EOD;
 		if ($this->initSipConnection()) {
 			$title   = null;
 			$success = false;
-			$message = 'Unkown error occurred communicating with the circulation system';
+			$message = 'Unknown error occurred communicating with the circulation system';
 
-			$this->sipConnection->patron    = $patron->cat_username;
+			$this->sipConnection->patron    = $patron->cat_username; //TODO: appears barcode is needed to place hold but user id is needed to look up patron status
+//			$this->sipConnection->patron    = $patron->username;
 			$this->sipConnection->patronpwd = $patron->cat_password;
 
 			// Determine a pickup location
@@ -398,7 +425,7 @@ EOD;
 			// Determine hold expiration time
 			if (!empty($cancelIfNotFilledByDate)) {
 //				$timestamp = strtotime($cancelIfNotFilledByDate);
-				$dateObject = date_create_from_format('m/d/Y', $cancelIfNotFilledByDate);
+				$dateObject     = date_create_from_format('m/d/Y', $cancelIfNotFilledByDate);
 				$expirationTime = $dateObject->getTimestamp();
 
 			} else {
@@ -409,6 +436,7 @@ EOD;
 			//TODO: for item level holds, do we have to change the hold type? (probably to 3)
 
 			$in         = $this->sipConnection->msgHold('+', $expirationTime, '2', $itemId, $recordId, null, $pickupBranch);
+//			$in         = $this->sipConnection->msgHold('+', $expirationTime, '2', $recordId, null, 'N', $pickupBranch);
 			$msg_result = $this->sipConnection->get_message($in);
 			if (preg_match("/^16/", $msg_result)) {
 				$result  = $this->sipConnection->parseHoldResponse($msg_result);

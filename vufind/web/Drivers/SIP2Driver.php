@@ -106,12 +106,12 @@ abstract class SIP2Driver implements DriverInterface{
 	protected function initSipConnection($host, $port) {
 		if ($this->sipConnection == null){
 			require_once ROOT_DIR . '/sys/SIP2.php';
-			$this->sipConnection = new sip2();
+			$this->sipConnection           = new sip2();
 			$this->sipConnection->hostname = $host;
-			$this->sipConnection->port = $port;
+			$this->sipConnection->port     = $port;
 			if ($this->sipConnection->connect()) {
 				//send selfcheck status message
-				$in = $this->sipConnection->msgSCStatus();
+				$in         = $this->sipConnection->msgSCStatus();
 				$msg_result = $this->sipConnection->get_message($in);
 				// Make sure the response is 98 as expected
 				if (preg_match("/^98/", $msg_result)) {
@@ -131,6 +131,7 @@ abstract class SIP2Driver implements DriverInterface{
 			return true;
 		}
 	}
+
 	function __destruct(){
 		//Cleanup any connections we have to other systems
 		if ($this->sipConnection != null){
