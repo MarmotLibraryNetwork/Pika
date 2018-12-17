@@ -122,9 +122,11 @@ abstract class ByWaterKoha extends SIP2Driver {
 	 * @return array        Array of the patron's transactions on success
 	 * @access public
 	 */
-	public function getMyCheckouts($patron)
-	{
+	public function getMyCheckouts($patron){
+
+		return $this->getMyCheckoutsFromDB($patron);
 		// TODO: Implement getMyCheckouts() method.
+		/*
 		$checkedOutTitles = array();
 
 		if ($this->initSipConnection($this->sipHost, $this->sipPort)) {
@@ -137,12 +139,17 @@ abstract class ByWaterKoha extends SIP2Driver {
 			}
 		}
 		return $checkedOutTitles;
-
+	*/
 	}
 
 	/**
+	 * getMyCheckoutsFromDB
+	 *
+	 * Get a list of checkouts for a patron.
+	 *
 	 * @param User $patron
-	 * @return array
+	 * @return array Array of patrons checkouts
+	 * @access public
 	 */
 	public function getMyCheckoutsFromDB($patron) {
 		if (isset($this->transactions[$patron->id])){
@@ -154,7 +161,16 @@ abstract class ByWaterKoha extends SIP2Driver {
 
 		$this->initDatabaseConnection();
 
-		$sql = "SELECT issues.*, items.biblionumber, title, author from issues left join items on items.itemnumber = issues.itemnumber left join biblio ON items.biblionumber = biblio.biblionumber where borrowernumber = {$patron->username}";
+		$sql = <<<EOD
+SELECT i.*, items.*, bib.title, bib.author
+FROM borrowers as b, issues as i, items, biblio as bib
+where b.cardnumber ="{$patron->username}"
+AND b.borrowernumber = i.borrowernumber
+AND items.itemnumber = i.itemnumber
+AND items.biblionumber = bib.biblionumber
+EOD;
+
+
 		$results = mysqli_query($this->dbConnection, $sql);
 		while ($curRow = $results->fetch_assoc()){
 			$transaction = array();
@@ -173,8 +189,8 @@ abstract class ByWaterKoha extends SIP2Driver {
 				$dueTime = null;
 			}
 			$transaction['dueDate'] = $dueTime;
-			$transaction['itemid'] = $curRow['id'];
-			$transaction['renewIndicator'] = $curRow['id'];
+			$transaction['itemid'] = $curRow['itemnumber'];
+			$transaction['renewIndicator'] = $curRow['itemnumber'];
 			$transaction['renewCount'] = $curRow['renewals'];
 
 			if ($transaction['id'] && strlen($transaction['id']) > 0){
@@ -535,7 +551,7 @@ abstract class ByWaterKoha extends SIP2Driver {
 	 *
 	 * This is responsible for retrieving all holds by a specific patron.
 	 *
-	 * @param array|User $patron      The patron array from patronLogin
+	 * @param object|User $patron     The patron object from patronLogin
 	 * @param integer $page           The current page of holds
 	 * @param integer $recordsPerPage The number of records to show per page
 	 * @param string $sortOption      How the records should be sorted

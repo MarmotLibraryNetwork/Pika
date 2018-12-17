@@ -2,7 +2,7 @@
 /**
  * Description goes here
  *
- * @category VuFind-Plus-2014 
+ * @category Pika
  * @author Mark Noble <mark@marmot.org>
  * Date: 7/20/2015
  * Time: 10:09 PM
@@ -21,7 +21,7 @@ abstract class SIP2Driver implements DriverInterface{
 		if ($itemSip2Data == false || isset($_REQUEST['reload'])){
 			//Check to see if the SIP2 information is already cached
 			//TODO: Add Host and Port
-			// set in config .in SIP section
+			// set in config .ini SIP section
 			if ($this->initSipConnection()){
 				$in = $this->sipConnection->msgItemInformation($barcode);
 				$msg_result = $this->sipConnection->get_message($in);
@@ -63,6 +63,8 @@ abstract class SIP2Driver implements DriverInterface{
 		}
 		return $itemSip2Data;
 	}
+
+
 	public function patronLogin($username, $password, $validatedViaSSO) {
 		//TODO: Implement $validatedViaSSO
 		//Koha uses SIP2 authentication for login.  See
@@ -100,12 +102,13 @@ abstract class SIP2Driver implements DriverInterface{
 			return null;
 		}
 	}
-	protected function initSipConnection($host, $post) {
+
+	protected function initSipConnection($host, $port) {
 		if ($this->sipConnection == null){
 			require_once ROOT_DIR . '/sys/SIP2.php';
 			$this->sipConnection = new sip2();
 			$this->sipConnection->hostname = $host;
-			$this->sipConnection->port = $post;
+			$this->sipConnection->port = $port;
 			if ($this->sipConnection->connect()) {
 				//send selfcheck status message
 				$in = $this->sipConnection->msgSCStatus();
