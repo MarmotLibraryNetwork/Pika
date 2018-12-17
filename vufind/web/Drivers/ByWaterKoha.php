@@ -20,7 +20,7 @@ abstract class ByWaterKoha extends SIP2Driver {
 	 */
 	private $dbConnection = null;
 
-	private $sipConnection = null;
+	protected $sipConnection = null;
 
 	/**
 	 * @param AccountProfile $accountProfile
@@ -310,17 +310,8 @@ abstract class ByWaterKoha extends SIP2Driver {
 	 * @return array        Array of the patron's holds
 	 * @access public
 	 */
-	public function getMyHolds($patron)
-	{
-		// TODO: Implement getMyHolds() method.
-		$availableHolds   = array();
-		$unavailableHolds = array();
-		$holds            = array(
-			'available'   => $availableHolds,
-			'unavailable' => $unavailableHolds
-		);
-
-
+	public function getMyHolds($patron){
+		$holds = $this->getMyHoldsFromDB($patron);
 		return $holds;
 	}
 
@@ -552,93 +543,104 @@ abstract class ByWaterKoha extends SIP2Driver {
 			'unavailable' => $unavailableHolds
 		);
 
+		require_once ROOT_DIR . '/RecordDrivers/MarcRecord.php';
+
 		$this->initDatabaseConnection();
+		if ($this->dbConnection){
 
-		$sql    = "SELECT *, title, author FROM reserves inner join biblio on biblio.biblionumber = reserves.biblionumber where borrowernumber = {$patron->username}";
-		$results = mysqli_query($this->dbConnection, $sql);
-		while ($curRow = $results->fetch_assoc()){
-			//Each row in the table represents a hold
-			$bibId          = $curRow['biblionumber'];
-			$expireDate     = $curRow['expirationdate'];
-			$createDate     = $curRow['reservedate'];
-			$fillByDate     = $curRow['cancellationdate']; //TODO: Is this the cancellation date or is 'waitingdate'
-			$reactivateDate = $curRow['suspend_until'];
-			$branchcode     = $curRow['branchcode'];
+			$sql = 'SELECT reserves.*, biblio.title, biblio.author, borrowers.cardnumber, borrowers.borrowernumber FROM reserves inner join biblio on biblio.biblionumber = reserves.biblionumber left join borrowers using (borrowernumber) ';
+			$sql .= 'where borrowernumber = "'. $patron->getBarcode() . '"';
 
-			$curHold                          = array();
-			$curHold['id']                    = $bibId;
-			$curHold['recordId']              = $bibId;
-			$curHold['shortId']               = $bibId;
-			$curHold['holdSource']            = 'ILS';
-			$curHold['itemId']                = $curRow['itemnumber']; //TODO: verify this is really an item id (by db documentation, I'm pretty sure)
-			$curHold['title']                 = $curRow['title'];
-			$curHold['author']                = $curRow['author'];
-			$curHold['create']                = strtotime($createDate);
-			$curHold['expire']                = strtotime($expireDate);
-			$curHold['automaticCancellation'] = strtotime($fillByDate);
-			$curHold['reactivate']            = $reactivateDate;
-			$curHold['reactivateTime']        = strtotime($reactivateDate);
+			$results = mysqli_query($this->dbConnection, $sql);
+			if ($results){
+				while ($curRow = $results->fetch_assoc()){
+					//Each row in the table represents a hold
+					$bibId          = $curRow['biblionumber'];
+					$expireDate     = $curRow['expirationdate'];
+					$createDate     = $curRow['reservedate'];
+					$fillByDate     = $curRow['cancellationdate']; //TODO: Is this the cancellation date or is 'waitingdate'
+					$reactivateDate = $curRow['suspend_until'];
+					$branchCode     = $curRow['branchcode'];
 
-			$curHold['location']           = $branchcode;
-			$curHold['currentPickupName']  = $branchcode;
-			$curHold['position']           = $curRow['priority'];
-			$curHold['cancelId']           = $curRow['reservenumber'];
-			$curHold['cancelable']         = true;
-			$curHold['locationUpdateable'] = false;
-			$curHold['frozen']             = false;
-			$curHold['freezeable']         = false;
+					$curHold                          = array();
+					$curHold['id']                    = $bibId;
+					$curHold['recordId']              = $bibId;
+					$curHold['shortId']               = $bibId;
+					$curHold['holdSource']            = 'ILS';
+					$curHold['itemId']                = $curRow['itemnumber']; //TODO: verify this is really an item id (by db documentation, I'm pretty sure)
+					$curHold['title']                 = $curRow['title'];
+					$curHold['author']                = $curRow['author'];
+					$curHold['create']                = strtotime($createDate);
+					$curHold['expire']                = strtotime($expireDate);
+					$curHold['automaticCancellation'] = strtotime($fillByDate);
+					$curHold['reactivate']            = $reactivateDate;
+					$curHold['reactivateTime']        = strtotime($reactivateDate);
+					$curHold['location']              = $branchCode;
+					$curHold['currentPickupName']     = $branchCode;
+					$curHold['position']              = $curRow['priority'];
+					$curHold['cancelId']              = $curRow['reserve_id'];//$curRow['reservenumber'];
+					$curHold['cancelable']            = true;
+					$curHold['locationUpdateable']    = false; //TODO: can update after the SIP call is built (will need additional logic for this depending on status)
+					$curHold['frozen']                = false;
+					$curHold['freezeable']            = false; //TODO: can update after the SIP call is built (will need additional logic for this depending on status)
 
-			switch ($curRow['found']) {
-				case 'S':
-					$curHold['status']      = "Suspended";
-					$curHold['frozen']      = true;
-					$curHold['cancelable']  = false;
-					break;
-				case 'W':
-					$curHold['status']     = "Ready to Pickup";
-					break;
-				case 'T':
-					$curHold['status']      = "In Transit";
-					break;
-				default:
-					$curHold['status']     = "Pending";
-					$curHold['freezeable'] = true;
-					break;
-			}
+					switch ($curRow['found']){
+						case 'S':
+							$curHold['status']     = "Suspended";
+							$curHold['frozen']     = true;
+							$curHold['cancelable'] = false;
+							break;
+						case 'W':
+							$curHold['status'] = "Ready to Pickup";
+							break;
+						case 'T':
+							$curHold['status'] = "In Transit";
+							break;
+						default:
+							$curHold['status']     = "Pending";
+							$curHold['freezeable'] = true;
+							break;
+					}
 
-			if ($bibId){
-				require_once ROOT_DIR . '/RecordDrivers/MarcRecord.php';
-				$recordDriver = new MarcRecord($bibId);
-				if ($recordDriver->isValid()){
-					$curHold['title']           = $recordDriver->getTitle();
-					$curHold['author']          = $recordDriver->getPrimaryAuthor();
-					$curHold['sortTitle']       = $recordDriver->getSortableTitle();
-					$curHold['format']          = $recordDriver->getFormat();
-					$curHold['isbn']            = $recordDriver->getCleanISBN();
-					$curHold['upc']             = $recordDriver->getCleanUPC();
-					$curHold['format_category'] = $recordDriver->getFormatCategory();
-					$curHold['coverUrl']        = $recordDriver->getBookcoverUrl('medium');
-					$curHold['link']            = $recordDriver->getRecordUrl();
-					$curHold['ratingData']      = $recordDriver->getRatingData(); //Load rating information
+					$curPickupBranch       = new Location();
+					$curPickupBranch->code = $branchCode;
+					if ($curPickupBranch->find(true)){
+						$curPickupBranch->fetch();
+						$curHold['currentPickupId']   = $curPickupBranch->locationId;
+						$curHold['currentPickupName'] = $curPickupBranch->displayName;
+						$curHold['location']          = $curPickupBranch->displayName;
+					}
+
+					if (!empty($bibId)){
+						$recordDriver = new MarcRecord($bibId);
+						if ($recordDriver->isValid()){
+							$curHold['title']           = $recordDriver->getTitle();
+							$curHold['author']          = $recordDriver->getPrimaryAuthor();
+							$curHold['sortTitle']       = $recordDriver->getSortableTitle();
+							$curHold['format']          = $recordDriver->getFormat();
+							$curHold['isbn']            = $recordDriver->getCleanISBN();
+							$curHold['upc']             = $recordDriver->getCleanUPC();
+							$curHold['format_category'] = $recordDriver->getFormatCategory();
+							$curHold['coverUrl']        = $recordDriver->getBookcoverUrl('medium');
+							$curHold['link']            = $recordDriver->getRecordUrl();
+							$curHold['ratingData']      = $recordDriver->getRatingData(); //Load rating information
+						}else{
+							$simpleSortTitle      = preg_replace('/^The\s|^A\s/i', '', $curRow['title']); // remove beginning The or A
+							$curHold['sortTitle'] = empty($simpleSortTitle) ? $curRow['title'] : $simpleSortTitle;
+						}
+					}
+
+					if (preg_match('/^Ready to Pickup.*/i', $curHold['status'])){
+						$holds['available'][] = $curHold;
+					}else{
+						$holds['unavailable'][] = $curHold;
+					}
 				}
-			}
-
-			$curPickupBranch       = new Location();
-			$curPickupBranch->code = $branchcode;
-			if ($curPickupBranch->find(true)) {
-				$curPickupBranch->fetch();
-				$curHold['currentPickupId']   = $curPickupBranch->locationId;
-				$curHold['currentPickupName'] = $curPickupBranch->displayName;
-				$curHold['location']          = $curPickupBranch->displayName;
-			}
-
-			if (preg_match('/^Ready to Pickup.*/i', $curHold['status'])){
-				$holds['available'][]   = $curHold;
-			}else{
-				$holds['unavailable'][] = $curHold;
+			} else {
+				global $logger;
+				$logger->log("Error querying for holds in Bywater Koha database " . mysqli_error($this->dbConnection), PEAR_LOG_ERR);
 			}
 		}
-
 		return $holds;
 	}
 
@@ -665,9 +667,9 @@ abstract class ByWaterKoha extends SIP2Driver {
 		}
 
 		if ($this->dbConnection != null){
-			if ($this->getNumHoldsStmt != null){
-				$this->getNumHoldsStmt->close();
-			}
+//			if ($this->getNumHoldsStmt != null){
+//				$this->getNumHoldsStmt->close();
+//			}
 			mysqli_close($this->dbConnection);
 		}
 
