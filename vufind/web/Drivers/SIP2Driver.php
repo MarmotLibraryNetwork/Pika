@@ -10,7 +10,7 @@
 
 abstract class SIP2Driver implements DriverInterface{
 	/** @var sip2 $sipConnection  */
-	private $sipConnection = null;
+	protected $sipConnection = null;
 
 	private function _loadItemSIP2Data($barcode, $itemStatus){
 		/** @var Memcache $memCache */

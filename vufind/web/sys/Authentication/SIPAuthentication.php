@@ -30,7 +30,7 @@ class SIPAuthentication implements Authentication {
 
 				if ($mysip->connect()) {
 					//send selfcheck status message
-					$in = $mysip->msgSCStatus();
+					$in         = $mysip->msgSCStatus();
 					$msg_result = $mysip->get_message($in);
 
 					// Make sure the response is 98 as expected
@@ -38,13 +38,13 @@ class SIPAuthentication implements Authentication {
 						$result = $mysip->parseACSStatusResponse($msg_result);
 
 						//  Use result to populate SIP2 settings
-						$mysip->AO = $result['variable']['AO'][0]; /* set AO to value returned */
-						$mysip->AN = $result['variable']['AN'][0]; /* set AN to value returned */
+						$mysip->AO = empty($result['variable']['AO'][0]) ? null : $result['variable']['AO'][0]; /* set AO to value returned */
+						$mysip->AN = empty($result['variable']['AN'][0]) ? null : $result['variable']['AN'][0]; /* set AN to value returned */
 
-						$mysip->patron = $username;
+						$mysip->patron    = $username;
 						$mysip->patronpwd = $password;
 
-						$in = $mysip->msgPatronStatusRequest();
+						$in         = $mysip->msgPatronStatusRequest();
 						$msg_result = $mysip->get_message($in);
 
 						// Make sure the response is 24 as expected
