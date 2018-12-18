@@ -386,7 +386,7 @@ class UserAccount {
 			//Check CAS first
 			require_once ROOT_DIR . '/sys/Authentication/CASAuthentication.php';
 			$casAuthentication = new CASAuthentication(null);
-			$casUsername = $casAuthentication->authenticate(false);
+			$casUsername       = $casAuthentication->authenticate(false);
 			if ($casUsername == false || PEAR_Singleton::isError($casUsername)){
 				//The user could not be authenticated in CAS
 				$logger->log("The user could not be logged in", PEAR_LOG_INFO);
