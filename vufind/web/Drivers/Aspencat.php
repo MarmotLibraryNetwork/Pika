@@ -1318,24 +1318,23 @@ class Aspencat implements DriverInterface{
 		$results = mysqli_query($this->dbConnection, $sql);
 		while ($curRow = $results->fetch_assoc()){
 			//Each row in the table represents a hold
-			$curHold= array();
-			$curHold['holdSource'] = 'ILS';
-			$bibId = $curRow['biblionumber'];
-			$curHold['id'] = $curRow['biblionumber'];
-			$curHold['shortId'] = $curRow['biblionumber'];
-			$curHold['recordId'] = $curRow['biblionumber'];
-			$curHold['title'] = $curRow['title'];
-			$curHold['create'] = date_parse_from_format('Y-M-d H:m:s', $curRow['reservedate']);
-			$dateTime = date_create_from_format('Y-M-d', $curRow['expirationdate']);
-			$curHold['expire'] = $dateTime->getTimestamp();
-
-			$curHold['location'] = $curRow['branchcode'];
+			$curHold                       = array();
+			$curHold['holdSource']         = 'ILS';
+			$bibId                         = $curRow['biblionumber'];
+			$curHold['id']                 = $curRow['biblionumber'];
+			$curHold['shortId']            = $curRow['biblionumber'];
+			$curHold['recordId']           = $curRow['biblionumber'];
+			$curHold['title']              = $curRow['title'];
+			$curHold['create']             = date_parse_from_format('Y-M-d H:m:s', $curRow['reservedate']);
+			$dateTime                      = date_create_from_format('Y-M-d', $curRow['expirationdate']);
+			$curHold['expire']             = $dateTime->getTimestamp();
+			$curHold['location']           = $curRow['branchcode'];
 			$curHold['locationUpdateable'] = false;
-			$curHold['currentPickupName'] = $curHold['location'];
-			$curHold['position'] = $curRow['priority'];
-			$curHold['frozen'] = false;
-			$curHold['freezeable'] = false;
-			$curHold['cancelable'] = true;
+			$curHold['currentPickupName']  = $curHold['location'];
+			$curHold['position']           = $curRow['priority'];
+			$curHold['frozen']             = false;
+			$curHold['freezeable']         = false;
+			$curHold['cancelable']         = true;
 			if ($curRow['found'] == 'S'){
 				$curHold['frozen'] = true;
 				$curHold['status'] = "Suspended";

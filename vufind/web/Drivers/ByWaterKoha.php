@@ -1,6 +1,6 @@
 <?php
 /**
- * ByWaterKoha SIP driver.
+ * ByWaterKoha ILS-DI + SIP driver.
  *
  * @category Pika
  * @author: Pascal Brammeier
@@ -9,16 +9,17 @@
  */
 
 require_once ROOT_DIR . '/sys/KohaSIP.php';
-require_once ROOT_DIR . '/Drivers/SIP2Driver.php';
+#require_once ROOT_DIR . '/Drivers/SIP2Driver.php';
+require_once ROOT_DIR . '/Drivers/KohaILSDI.php';
 
-abstract class ByWaterKoha extends SIP2Driver {
+abstract class ByWaterKoha extends KohaILSDI {
 
 	/** @var  AccountProfile $accountProfile */
 	public $accountProfile;
-	/**
-	 * @var $dbConnection null
-	 */
-	private $dbConnection = null;
+//	/**
+//	 * @var $dbConnection null
+//	 */
+//	protected $dbConnection = null;
 
 	/**
 	 * @var KohaSIP $sipConnection
@@ -360,11 +361,11 @@ EOD;
 	 *                                title - the title of the record the user is placing a hold on
 	 * @access  public
 	 */
-	public function placeHold($patron, $recordId, $pickupBranch, $cancelIfNotFilledByDate = null)
-	{
-		$result = $this->placeItemHold($patron, $recordId, null, $pickupBranch, $cancelIfNotFilledByDate);
-		return $result;
-	}
+//	public function placeHold($patron, $recordId, $pickupBranch, $cancelIfNotFilledByDate = null)
+//	{
+//		$result = $this->placeItemHold($patron, $recordId, null, $pickupBranch, $cancelIfNotFilledByDate);
+//		return $result;
+//	}
 
 	/**
 	 * Place Item Hold
@@ -382,65 +383,65 @@ EOD;
 	 *                                title - the title of the record the user is placing a hold on
 	 * @access  public
 	 */
-	function placeItemHold($patron, $recordId, $itemId, $pickupBranch, $cancelIfNotFilledByDate = null){
-		$hold_result = array(
-			'success' => false,
-			'message' => 'Your hold could not be placed. '
-		);
-		if ($this->initSipConnection()) {
-			$title   = null;
-			$success = false;
-			$message = 'Unknown error occurred communicating with the circulation system';
-
-			$this->sipConnection->patron    = $patron->cat_username; //TODO: appears barcode is needed to place hold but user id is needed to look up patron status
+//	function placeItemHold($patron, $recordId, $itemId, $pickupBranch, $cancelIfNotFilledByDate = null){
+//		$holdResult = array(
+//			'success' => false,
+//			'message' => 'Your hold could not be placed. '
+//		);
+//		if ($this->initSipConnection()) {
+//			$title   = null;
+//			$success = false;
+//			$message = 'Unknown error occurred communicating with the circulation system';
+//
+////			$this->sipConnection->patron    = $patron->cat_username; //TODO: appears barcode is needed to place hold but user id is needed to look up patron status
 //			$this->sipConnection->patron    = $patron->username;
-			$this->sipConnection->patronpwd = $patron->cat_password;
-
-			// Determine a pickup location
-			if (empty($pickupBranch)){
-				//Get the code for the location
-				$locationLookup = new Location();
-				$locationLookup->get('locationId', $patron->homeLocationId);
-				if ($locationLookup->get('locationId', $patron->homeLocationId)){
-					$pickupBranch = strtoupper($locationLookup->code);
-				}
-			}else{
-				$pickupBranch = strtoupper($pickupBranch);
-			}
-
-			// Determine hold expiration time
-			if (!empty($cancelIfNotFilledByDate)) {
-//				$timestamp = strtotime($cancelIfNotFilledByDate);
-				$dateObject     = date_create_from_format('m/d/Y', $cancelIfNotFilledByDate);
-				$expirationTime = $dateObject->getTimestamp();
-
-			} else {
-				//TODO: Set default here? Can we do SIP call with out cancel time (yes, by SIP2 doc)
-				$expirationTime = ''; // has to be empty strin to be handled well by the SIP2 class
-			}
-
-			//TODO: for item level holds, do we have to change the hold type? (probably to 3)
-
-			$in         = $this->sipConnection->msgHold('+', $expirationTime, '2', $itemId, $recordId, null, $pickupBranch);
-//			$in         = $this->sipConnection->msgHold('+', $expirationTime, '2', $recordId, null, 'N', $pickupBranch);
-			$msg_result = $this->sipConnection->get_message($in);
-			if (preg_match("/^16/", $msg_result)) {
-				$result  = $this->sipConnection->parseHoldResponse($msg_result);
-				$success = ($result['fixed']['Ok'] == 1);
-				$message = $result['variable']['AF'][0];
-				if (!empty($result['variable']['AJ'][0])) {
-					$title = $result['variable']['AJ'][0];
-				}
-			}
-			$hold_result = array(
-				'title'   => $title,
-				'bib'     => $recordId,
-				'success' => $success,
-				'message' => $message
-			);
-		}
-		return $hold_result;
-	}
+//			$this->sipConnection->patronpwd = $patron->cat_password;
+//
+//			// Determine a pickup location
+//			if (empty($pickupBranch)){
+//				//Get the code for the location
+//				$locationLookup = new Location();
+//				$locationLookup->get('locationId', $patron->homeLocationId);
+//				if ($locationLookup->get('locationId', $patron->homeLocationId)){
+//					$pickupBranch = strtoupper($locationLookup->code);
+//				}
+//			}else{
+//				$pickupBranch = strtoupper($pickupBranch);
+//			}
+//
+//			// Determine hold expiration time
+//			if (!empty($cancelIfNotFilledByDate)) {
+////				$timestamp = strtotime($cancelIfNotFilledByDate);
+//				$dateObject     = date_create_from_format('m/d/Y', $cancelIfNotFilledByDate);
+//				$expirationTime = $dateObject->getTimestamp();
+//
+//			} else {
+//				//TODO: Set default here? Can we do SIP call with out cancel time (yes, by SIP2 doc)
+//				$expirationTime = ''; // has to be empty strin to be handled well by the SIP2 class
+//			}
+//
+//			//TODO: for item level holds, do we have to change the hold type? (probably to 3)
+//
+//			$in         = $this->sipConnection->msgHold('+', $expirationTime, '2', $itemId, $recordId, null, $pickupBranch);
+////			$in         = $this->sipConnection->msgHold('+', $expirationTime, '2', $recordId, null, 'N', $pickupBranch);
+//			$msg_result = $this->sipConnection->get_message($in);
+//			if (preg_match("/^16/", $msg_result)) {
+//				$result  = $this->sipConnection->parseHoldResponse($msg_result);
+//				$success = ($result['fixed']['Ok'] == 1);
+//				$message = $result['variable']['AF'][0];
+//				if (!empty($result['variable']['AJ'][0])) {
+//					$title = $result['variable']['AJ'][0];
+//				}
+//			}
+//			$holdResult = array(
+//				'title'   => $title,
+//				'bib'     => $recordId,
+//				'success' => $success,
+//				'message' => $message
+//			);
+//		}
+//		return $holdResult;
+//	}
 
 	/**
 	 * Cancels a hold for a patron
@@ -450,14 +451,25 @@ EOD;
 	 * @param   string $cancelId Information about the hold to be cancelled
 	 * @return  array
 	 */
-	function cancelHold($patron, $recordId, $cancelId)
-	{
+	function cancelHold($patron, $recordId, $cancelId){
 		// TODO: Implement cancelHold() method.
 	}
 
-	function freezeHold($patron, $recordId, $itemToFreezeId, $dateToReactivate)
-	{
-		// TODO: Implement freezeHold() method.
+	function freezeHold($patron, $recordId, $itemToFreezeId, $dateToReactivate){
+		$result = $this->freezeThawHoldViaSIP($patron, $recordId, null, $dateToReactivate);
+		return $result;
+	}
+
+	function freezeThawHoldViaSIP($patron, $recordId, $itemToFreezeId = null, $dateToReactivate = null, $type = 'freeze'){
+		$holdResult = array(
+			'success' => false,
+			'message' => 'Your hold could not be placed. '
+		);
+		if ($this->initSipConnection()) {
+
+		}
+		return $holdResult;
+
 	}
 
 	function thawHold($patron, $recordId, $itemToThawId)
@@ -597,7 +609,8 @@ EOD;
 		if ($this->dbConnection){
 
 			$sql = 'SELECT reserves.*, biblio.title, biblio.author, borrowers.cardnumber, borrowers.borrowernumber FROM reserves inner join biblio on biblio.biblionumber = reserves.biblionumber left join borrowers using (borrowernumber) ';
-			$sql .= 'where borrowernumber = "'. $patron->getBarcode() . '"';
+//			$sql .= 'where userid = "'. $patron->getBarcode() . '"'; //TODO: temp
+			$sql .= 'where cardnumber = "'. $patron->getBarcode() . '"';
 
 			$results = mysqli_query($this->dbConnection, $sql);
 			if ($results){
@@ -692,21 +705,22 @@ EOD;
 		return $holds;
 	}
 
-	function initDatabaseConnection(){
-		global $configArray;
-		if ($this->dbConnection == null){
-			$this->dbConnection = mysqli_connect($configArray['Catalog']['db_host'], $configArray['Catalog']['db_user'], $configArray['Catalog']['db_pwd'], $configArray['Catalog']['db_name'], $configArray['Catalog']['db_port']);
-
-			if (!$this->dbConnection || mysqli_errno($this->dbConnection) != 0){
-				global $logger;
-				$logger->log("Error connecting to Koha database " . mysqli_error($this->dbConnection), PEAR_LOG_ERR);
-				$this->dbConnection = null;
-			}
-			global $timer;
-			$timer->logTime("Initialized connection to Koha");
-		}
-	}
-
+	//Moved to KohaILSDI Driver
+//	function initDatabaseConnection(){
+//		global $configArray;
+//		if ($this->dbConnection == null){
+//			$this->dbConnection = mysqli_connect($configArray['Catalog']['db_host'], $configArray['Catalog']['db_user'], $configArray['Catalog']['db_pwd'], $configArray['Catalog']['db_name'], $configArray['Catalog']['db_port']);
+//
+//			if (!$this->dbConnection || mysqli_errno($this->dbConnection) != 0){
+//				global $logger;
+//				$logger->log("Error connecting to Koha database " . mysqli_error($this->dbConnection), PEAR_LOG_ERR);
+//				$this->dbConnection = null;
+//			}
+//			global $timer;
+//			$timer->logTime("Initialized connection to Koha");
+//		}
+//	}
+//
 	function __destruct(){
 		//Cleanup any connections we have to other systems
 		if ($this->sipConnection != null){
