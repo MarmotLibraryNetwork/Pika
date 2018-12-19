@@ -119,14 +119,16 @@ abstract class KohaILSDI extends ScreenScrapingDriver {
 		}
 
 		$urlParameters = array(
-			'service' => empty($itemId) ? 'HoldTitle' : 'HoldItem',
-			'patron_id' => $patronKohaId,
-			'bib_id' => $recordId,
-			'pickup_location' => $pickupBranch,
-			'request_location' => $_SERVER['REMOTE_ADDR'], //TODO: End user's IP. (yike's! Koha wants this?)
+			'service'          => empty($itemId) ? 'HoldTitle' : 'HoldItem',
+			'patron_id'        => $patronKohaId,
+			'bib_id'           => $recordId,
+			'pickup_location'  => $pickupBranch,
 		);
 		if (!empty($itemId)){
 			$urlParameters['item_id'] = $itemId;
+		} else {
+			// Hold Title request requires the user's end IP address
+			$urlParameters['request_location'] = $_SERVER['REMOTE_ADDR']; //TODO: End user's IP. (yike's! Koha wants this?)
 		}
 		if (!empty($cancelIfNotFilledByDate)){
 			$urlParameters['needed_before_date'] = $cancelIfNotFilledByDate;//TODO determine date format needed
