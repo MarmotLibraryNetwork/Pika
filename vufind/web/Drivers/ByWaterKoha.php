@@ -483,6 +483,8 @@ EOD;
 	 */
 	public function getMyFines($patron, $includeMessages = false)
 	{
+		return $this->getMyFinesFromDB($patron);
+
 		// TODO: Implement getMyFines() method.
 		$fines = array();
 		if ($this->initSipConnection()) {
@@ -520,31 +522,47 @@ EOD;
 	public function getMyFinesFromDB($patron, $includeMessages = false){
 
 		$this->initDatabaseConnection();
-
-		//Get a list of outstanding fees
-		$query = "SELECT * FROM fees JOIN fee_transactions AS ft on(id = fee_id) WHERE borrowernumber = {$patron->username} and accounttype in (select accounttype from accounttypes where class='fee' or class='invoice') ";
-
-		$allFeesRS = mysqli_query($this->dbConnection, $query);
-
+		// set early to give quick return if no fines
 		$fines = array();
-		while ($allFeesRow = $allFeesRS->fetch_assoc()){
-			$feeId = $allFeesRow['id'];
-			$query2 = "SELECT sum(amount) as amountOutstanding from fees LEFT JOIN fee_transactions on (fees.id=fee_transactions.fee_id) where fees.id = $feeId";
 
-			$outstandingFeesRS = mysqli_query($this->dbConnection, $query2);
-			$outstandingFeesRow = $outstandingFeesRS->fetch_assoc();
-			$amountOutstanding = $outstandingFeesRow['amountOutstanding'];
-			if ($amountOutstanding > 0){
-				$curFine = array(
+		$sum_query = <<<EOD
+select sum(accountlines.amountoutstanding) as sum 
+from accountlines, borrowers
+where borrowers.cardnumber = "{$patron->username}"
+and borrowers.borrowernumber = accountlines.borrowernumber
+EOD;
+		// quick query to see if there are any outstanding fines.
+		$sumResp = mysqli_query($this->dbConnection, $sum_query);
+		// only a single row returned 'sum'
+		$sum_row  = $sumResp->fetch_assoc();
+		if ($sum_row['sum'] <= 0) {
+			// no fines
+			return $fines;
+		}
+
+		// has fines
+		$fines_query = <<<EOD
+select accountlines.*, account_offsets.*
+from accountlines, account_offsets, borrowers 
+where borrowers.cardnumber = "{$patron->username}"
+and borrowers.borrowernumber = accountlines.borrowernumber
+and (accountlines.accountlines_id = account_offsets.credit_id 
+or accountlines.accountlines_id = account_offsets.debit_id)
+and accountlines.amountoutstanding != '0.000000'
+EOD;
+
+		$allFeesRS = mysqli_query($this->dbConnection, $fines_query);
+
+		while ($allFeesRow = $allFeesRS->fetch_assoc()){
+
+			$curFine = [
 					'date' => $allFeesRow['timestamp'],
 					'reason' => $allFeesRow['accounttype'],
 					'message' => $allFeesRow['description'],
 					'amount' => $allFeesRow['amount'],
-					'amountOutstanding' => $amountOutstanding,
-				);
+					'amountOutstanding' => $allFeesRow['amountoutstanding']
+			];
 				$fines[] = $curFine;
-			}
-			$outstandingFeesRS->close();
 		}
 		$allFeesRS->close();
 
