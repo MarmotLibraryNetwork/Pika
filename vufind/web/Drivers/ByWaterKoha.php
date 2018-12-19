@@ -552,27 +552,37 @@ EOD;
 			return $fines;
 		}
 
+		$sumResp->close();
+
 		// has fines
 		$fines_query = <<<EOD
-select accountlines.*, account_offsets.*
+select accountlines.amount as ac_amount, accountlines.*, account_offsets.*
 from accountlines, account_offsets, borrowers 
 where borrowers.cardnumber = "{$patron->username}"
 and borrowers.borrowernumber = accountlines.borrowernumber
 and (accountlines.accountlines_id = account_offsets.credit_id 
 or accountlines.accountlines_id = account_offsets.debit_id)
-and accountlines.amountoutstanding != '0.000000'
+order by accountlines.date ASC
 EOD;
+
 
 		$allFeesRS = mysqli_query($this->dbConnection, $fines_query);
 
 		while ($allFeesRow = $allFeesRS->fetch_assoc()){
+			// do some rounding to get rid of extra zeros.
+			$amount = number_format($allFeesRow['ac_amount'], 2, '.', '');
+			$amountOutstanding = number_format($allFeesRow['amountoutstanding'], 2, '.', '');
+			// if amountoutstanding is 0.000000 set it to nothing so it doesn't mess with Fine.php class calculation
+			if ($amountOutstanding == 0) {
+				$amountOutstanding = '';
+			}
 
 			$curFine = [
-					'date' => $allFeesRow['timestamp'],
+					'date' => $allFeesRow['date'],
 					'reason' => $allFeesRow['accounttype'],
-					'message' => $allFeesRow['description'],
-					'amount' => $allFeesRow['amount'],
-					'amountOutstanding' => $allFeesRow['amountoutstanding']
+					'message' => $allFeesRow['type'].": ".$allFeesRow['description'],
+					'amount' => $amount,
+					'amountOutstanding' => $amountOutstanding
 			];
 				$fines[] = $curFine;
 		}
