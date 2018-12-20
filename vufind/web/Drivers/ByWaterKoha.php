@@ -170,7 +170,6 @@ abstract class ByWaterKoha extends KohaILSDI {
 			return $this->transactions[$patron->id];
 		}
 
-		//Get transactions by screen scraping
 		$transactions = array();
 
 		$this->initDatabaseConnection();
@@ -196,7 +195,7 @@ EOD;
 			$transaction['title'] = $curRow['title'];
 			$transaction['author'] = $curRow['author'];
 
-			$dateDue = DateTime::createFromFormat('Y-m-d', $curRow['date_due']);
+			$dateDue = DateTime::createFromFormat('Y-m-d G:i:s', $curRow['date_due']);
 			if ($dateDue){
 				$dueTime = $dateDue->getTimestamp();
 			}else{
@@ -301,7 +300,7 @@ EOD;
 	 * @param $itemId     string
 	 * @param $itemIndex  string
 	 * @return mixed
-	 */
+
 	public function renewItem($patron, $recordId, $itemId, $itemIndex)
 	{
 		// TODO: Implement renewItem() method.
@@ -328,7 +327,7 @@ EOD;
 			'message' => $message
 		);
 
-	}
+	}*/
 
 	/**
 	 * Get Patron Holds
@@ -576,7 +575,7 @@ EOD;
 			if ($amountOutstanding == 0) {
 				$amountOutstanding = '';
 			}
-
+			// TODO: select title if accountlines.issueid != null
 			$curFine = [
 					'date' => $allFeesRow['date'],
 					'reason' => $allFeesRow['accounttype'],

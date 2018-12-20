@@ -163,6 +163,57 @@ abstract class KohaILSDI extends ScreenScrapingDriver {
 		return $holdResult;
 	}
 
+
+	/**
+	 * Renew a single title currently checked out to the user
+	 *
+	 * @param $patron     User
+	 * @param $recordId   string
+	 * @param $itemId     string
+	 * @param $itemIndex  string
+	 * @return $holdResults array
+	 */
+	public function renewItem($patron, $recordId, $itemId, $itemIndex){
+
+		$renewResults = [
+			'itemId' => 0,
+			'success' => false,
+			'message' => 'Failed to renew item.'
+		];
+
+		$patronKohaId = $this->getKohaPatronId($patron);
+
+		$urlParameters = array(
+			'service'          => 'RenewLoan',
+			'patron_id'        => $patronKohaId,
+			'item_id'          => $itemId,
+		);
+
+		//create the hold using the web service call
+		$webServiceURL = $this->getWebServiceURL() . $this->ilsdiscript;
+		$webServiceURL .= '?' . http_build_query($urlParameters);
+
+		$renewResponse = $this->getWebServiceResponse($webServiceURL);
+
+		if ($renewResponse) {
+			if($renewResponse->success ==  '1') {
+				// success
+				$renewResults['success'] = true;
+				$renewResults['itemId']  = $itemId;
+				$renewResults['message'] = 'Items successfully renewed.';
+			} elseif($renewResponse->success == '0') {
+				// fail
+				if($renewResponse->error) {
+					$renewResults['message'] = 'Unable able to renew item. Reason '.$renewResponse->error;
+				}
+			}
+		}
+
+		return $renewResults;
+
+	}
+
+
 	private function getKohaPatronId(User $patron){
 		//TODO: memcache KohaPatronIds
 		$this->initDatabaseConnection();
