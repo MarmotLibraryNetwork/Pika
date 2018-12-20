@@ -8612,7 +8612,7 @@ hr.menu {
 }
 .menu-bar {
   color: #FFF;
-  background-color: #0c4c94;
+  background-color: #0F5589;
 }
 #horizontal-menu-bar-container {
   padding-left: 5px;
@@ -8655,7 +8655,7 @@ hr.menu {
   width: 40px;
   height: 2000px;
   height: 100vh;
-  background-color: #0c4c94;
+  background-color: #0F5589;
   color: #FFF;
   padding-left: 0;
   padding-right: 0;
@@ -8786,8 +8786,8 @@ hr.menu {
   color: red;
 }
 #home-page-search {
-  background-color: #0c4c94;
-  background: linear-gradient(to bottom, #0c4c94, #0c4c94);
+  background-color: #0F5589;
+  background: linear-gradient(to bottom, #0F5589, #0F5589);
   padding: 20px 0 10px;
   margin-bottom: 5px;
 }
@@ -8827,7 +8827,7 @@ hr.menu {
 .searchSource {
   margin: 5px 0 0;
   color: #fff;
-  background-color: #0c4c94;
+  background-color: #0F5589;
   border: none;
   width: 90% !important;
 }
@@ -8838,8 +8838,8 @@ hr.menu {
   font-size: 85%;
 }
 #horizontal-search-box {
-  background-color: #0c4c94;
-  background: linear-gradient(to bottom, #0c4c94, #0c4c94);
+  background-color: #0F5589;
+  background: linear-gradient(to bottom, #0F5589, #0F5589);
   padding: 15px 0;
 }
 #horizontal-search-box #searchForm .row {
@@ -8892,7 +8892,7 @@ hr.menu {
   margin-bottom: 0;
 }
 #home-page-login {
-  background-color: #AFAFAF;
+  background-color: #D8AE34;
   color: #FFF;
   font-size: 18px;
   text-shadow: 1px 1px #999999;
@@ -8949,8 +8949,8 @@ hr.menu {
   outline: none;
 }
 .sidebar-links .active .panel-heading {
-  background-color: #0c4c94;
-  background: linear-gradient(to bottom, #0c4c94, #083465);
+  background-color: #0F5589;
+  background: linear-gradient(to bottom, #0F5589, #0a385b);
 }
 .sidebar-links .panel-body {
   font-size: 13px;
@@ -9491,7 +9491,7 @@ a.browse-thumbnail-sorted.active {
 }
 #browse-sub-category-menu button.selected {
   color: #fff;
-  background-color: #0c4c94;
+  background-color: #0F5589;
 }
 #browse-sub-category-menu button:focus {
   outline: none;
@@ -10210,7 +10210,7 @@ a.browse-thumbnail-sorted.active {
   display: inline-block;
   padding: 2px;
   padding-bottom: 20px;
-  border-top: 5px solid #0c4c94;
+  border-top: 5px solid #0F5589;
   margin-top: 15px;
 }
 .combined-results-section .related-manifestation {
@@ -10225,8 +10225,8 @@ a.browse-thumbnail-sorted.active {
 .combined-results-button {
   float: right;
   margin-top: 4px;
-  background-color: #0c4c94;
-  border-color: #0c4c94;
+  background-color: #0F5589;
+  border-color: #0F5589;
 }
 .graph-bar {
   background-color: #088ec6;
@@ -10301,8 +10301,8 @@ a.browse-thumbnail-sorted.active {
   text-shadow: 1px 1px #fff;
 }
 #more-details-accordion .active .panel-heading {
-  background-color: #0c4c94;
-  background: linear-gradient(to bottom, #0c4c94, #083465);
+  background-color: #0F5589;
+  background: linear-gradient(to bottom, #0F5589, #0a385b);
 }
 #more-details-accordion .active .panel-title {
   color: #fff;
@@ -10338,15 +10338,15 @@ a.browse-thumbnail-sorted.active {
   font-weight: bold;
 }
 #explore-more-sidebar {
-  background-color: #0c4c94;
-  background: linear-gradient(to bottom, #0c4c94, #0c4c94);
+  background-color: #0F5589;
+  background: linear-gradient(to bottom, #0F5589, #0F5589);
 }
 #explore-more-header {
   padding: 10px 25px 5px 0;
   margin-top: 5px;
   text-align: right;
   color: #FFF;
-  background-color: #0a407c;
+  background-color: #0c4772;
   font-variant: small-caps;
   font-weight: bold;
   font-size: 16px;
@@ -10363,7 +10363,7 @@ a.browse-thumbnail-sorted.active {
   text-transform: uppercase;
   font-weight: bold;
   color: #000075;
-  border-bottom: 2px solid #0c4c94;
+  border-bottom: 2px solid #0F5589;
   margin-top: 15px;
 }
 #explore-more-body .section {
@@ -10405,12 +10405,12 @@ a.browse-thumbnail-sorted.active {
   }
 }
 .exploreMoreBar {
-  border: solid 1px #0c4c94;
+  border: solid 1px #0F5589;
   margin: 10px 5px 15px;
 }
 .exploreMoreBar .exploreMoreBarLabel {
   color: #FFF;
-  background-color: #0c4c94;
+  background-color: #0F5589;
   font-weight: bold;
   text-transform: uppercase;
   white-space: nowrap;
@@ -10428,7 +10428,7 @@ a.browse-thumbnail-sorted.active {
 }
 .exploreMoreBar .label-left,
 .exploreMoreBar .label-left img {
-  background-color: #0c4c94;
+  background-color: #0F5589;
 }
 .exploreMoreBar .label-left .exploreMoreBarLabel {
   position: absolute;
@@ -10450,7 +10450,7 @@ a.browse-thumbnail-sorted.active {
 }
 .exploreMoreBar .label-top,
 .exploreMoreBar .label-top img {
-  background-color: #0c4c94;
+  background-color: #0F5589;
   display: inline-block;
 }
 .exploreMoreBar .label-top .exploreMoreBarLabel {
@@ -10518,7 +10518,7 @@ a.browse-thumbnail-sorted.active {
 #book-sections .jcarousel-control-next {
   height: 100%;
   background-color: transparent;
-  color: #0c4c94;
+  color: #0F5589;
   z-index: 2;
   box-shadow: white 0px 0px 0px 0px;
 }
@@ -10681,7 +10681,7 @@ a.browse-thumbnail-sorted.active {
 .archiveComponentContainer .archiveComponent .archiveComponentBody .archiveComponentBox .archiveComponentControls,
 .archiveComponentContainer .archiveComponent .archiveComponentBody .archiveComponentBox .archiveComponentSearchControls {
   color: #FFF;
-  background-color: #0c4c94;
+  background-color: #0F5589;
   padding: 10px 0;
   min-height: 124px;
 }
@@ -10691,7 +10691,7 @@ a.browse-thumbnail-sorted.active {
 }
 .archiveComponentContainer .archiveComponent .archiveComponentBody .archiveComponentBox #searchComponentForm {
   background-color: white;
-  border: 1px solid #083465;
+  border: 1px solid #0a385b;
   padding: 3px;
   margin-left: 5px;
 }
@@ -10719,7 +10719,7 @@ a.browse-thumbnail-sorted.active {
   top: 65px;
 }
 .archiveComponentContainer .archiveComponent.horizontalComponent .archiveComponentHeader {
-  background-color: #0c4c94;
+  background-color: #0F5589;
   padding: 10px 10px 0;
 }
 .archiveComponentContainer .archiveComponent.horizontalComponent .archiveComponentHeader + .row {
@@ -10902,7 +10902,7 @@ fieldset[disabled] .btn-masquerade.active {
   border: 0;
   border-radius: 0.5em;
   color: #fff !important;
-  background-color: #9556a4;
+  background-color: #508BC9;
   margin-top: 20px;
   line-height: 60px !important;
   text-shadow: none;
@@ -10914,6 +10914,20 @@ fieldset[disabled] .btn-masquerade.active {
 }
 #header-logo {
   height: 140px;
+}
+.sidebar-button {
+  background-color: #D8AE34;
+  color: #FFF;
+  font-size: 18px;
+  text-shadow: 1px 1px #999999;
+  padding: 5px;
+  margin-bottom: 5px;
+}
+.sidebar-button a {
+  color: #FFF;
+}
+#horizontal-search-wrapper + #content-container .sidebar-button {
+  margin-top: 5px;
 }
 #browse-label {
   background-color: #ffffff;
@@ -10940,9 +10954,9 @@ fieldset[disabled] .btn-masquerade.active {
 }
 .browse-category.selected {
   border: none;
-  background-color: #0c4c94;
-  background: #0c4c94;
-  background: linear-gradient(to bottom, #0c4c94 0%, #0c4c94 75%, #fff 75%, #fff 80%, #CCCCCC 80%, #fff 100%);
+  background-color: #0F5589;
+  background: #0F5589;
+  background: linear-gradient(to bottom, #0F5589 0%, #0F5589 75%, #fff 75%, #fff 80%, #CCCCCC 80%, #fff 100%);
 }
 .browse-category.selected div {
   color: #fff;
@@ -10958,7 +10972,7 @@ fieldset[disabled] .btn-masquerade.active {
 #browse-category-picker .jcarousel-control-next:active,
 #browse-category-picker .jcarousel-control-prev:hover,
 #browse-category-picker .jcarousel-control-next:hover {
-  color: #0c4c94;
+  color: #0F5589;
   text-decoration: none;
 }
 #browse-category-picker a.jcarousel-control-next:after {
@@ -10990,7 +11004,7 @@ fieldset[disabled] .btn-masquerade.active {
   text-transform: uppercase;
 }
 #browse-sub-category-menu button.selected {
-  background-color: #0c4c94;
+  background-color: #0F5589;
 }
 .browse-thumbnail div:first-child {
   height: 180px;
