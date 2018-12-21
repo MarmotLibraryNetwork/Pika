@@ -252,18 +252,18 @@ class CatalogConnection
 
 		if ($user->isValidForHoopla()){
 			require_once ROOT_DIR . '/Drivers/HooplaDriver.php';
-			$driver = new HooplaDriver();
-			$hooplaSummary = $driver->getHooplaPatronStatus($user);
+			$driver          = new HooplaDriver();
+			$hooplaSummary   = $driver->getHooplaPatronStatus($user);
 			$hooplaCheckOuts = isset($hooplaSummary->currentlyBorrowed) ? $hooplaSummary->currentlyBorrowed : 0;
 			$user->setNumCheckedOutHoopla($hooplaCheckOuts);
 		}
 
-		$materialsRequest = new MaterialsRequest();
+		$materialsRequest            = new MaterialsRequest();
 		$materialsRequest->createdBy = $user->id;
-		$homeLibrary = Library::getLibraryForLocation($user->homeLocationId);
+		$homeLibrary                 = Library::getLibraryForLocation($user->homeLocationId);
 		if ($homeLibrary && $homeLibrary->enableMaterialsRequest){
-			$statusQuery = new MaterialsRequestStatus();
-			$statusQuery->isOpen = 1;
+			$statusQuery            = new MaterialsRequestStatus();
+			$statusQuery->isOpen    = 1;
 			$statusQuery->libraryId = $homeLibrary->libraryId;
 			$materialsRequest->joinAdd($statusQuery);
 			$materialsRequest->find();
@@ -274,8 +274,8 @@ class CatalogConnection
 
 		if ($user->trackReadingHistory && $user->initialReadingHistoryLoaded){
 			require_once ROOT_DIR . '/sys/ReadingHistoryEntry.php';
-			$readingHistoryDB = new ReadingHistoryEntry();
-			$readingHistoryDB->userId = $user->id;
+			$readingHistoryDB          = new ReadingHistoryEntry();
+			$readingHistoryDB->userId  = $user->id;
 			$readingHistoryDB->deleted = 0;
 			$readingHistoryDB->groupBy('groupedWorkPermanentId');
 			$readingHistoryDB->find();

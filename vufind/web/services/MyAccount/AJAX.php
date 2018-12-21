@@ -1354,7 +1354,7 @@ class MyAccount_AJAX
 			if ($userListData == null || isset($_REQUEST['reload'])){
 				$lists = array();
 				require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
-				$tmpList = new UserList();
+				$tmpList          = new UserList();
 				$tmpList->user_id = UserAccount::getActiveUserId();
 				$tmpList->deleted = 0;
 				$tmpList->orderBy("title ASC");
@@ -1362,9 +1362,9 @@ class MyAccount_AJAX
 				if ($tmpList->N > 0){
 					while ($tmpList->fetch()){
 						$lists[$tmpList->id] = array(
-								'name' => $tmpList->title,
-								'url' => '/MyAccount/MyList/' .$tmpList->id ,
-								'id' => $tmpList->id,
+								'name'      => $tmpList->title,
+								'url'       => '/MyAccount/MyList/' .$tmpList->id ,
+								'id'        => $tmpList->id,
 								'numTitles' => $tmpList->numValidListItems()
 						);
 					}
