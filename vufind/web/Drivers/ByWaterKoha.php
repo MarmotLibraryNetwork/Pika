@@ -69,17 +69,17 @@ abstract class ByWaterKoha extends KohaILSDI {
 	 * @param $validatedViaSSO
 	 * @return array|void|null
 	 */
-	public function patronLogin($username, $password, $validatedViaSSO)
-	{
-		$useSip = 1;
-		if ($useSip) {
-			$result = $this->patronLoginViaSip($username, $password);
-			return $result;
-		} else {
-			//TODO: use database login as preference: look as Aspencat.php
-		}
-
-	}
+//	public function patronLogin($username, $password, $validatedViaSSO)
+//	{
+//		$useSip = 1;
+//		if ($useSip) {
+//			$result = $this->patronLoginViaSip($username, $password);
+//			return $result;
+//		} else {
+//			//TODO: use database login as preference: look as Aspencat.php
+//		}
+//
+//	}
 
 
 	/**
@@ -118,21 +118,19 @@ abstract class ByWaterKoha extends KohaILSDI {
 		}
 
 		$numHolds = 0;
-
-		$this->initDatabaseConnection();
-		$sql = "SELECT count(*) from reserves where biblionumber = $id";
-		$results = mysqli_query($this->dbConnection, $sql);
-		if (!$results){
-			global $logger;
-			$logger->log("Unable to load hold count from Koha (" . mysqli_errno($this->dbConnection) . ") " . mysqli_error($this->dbConnection), PEAR_LOG_ERR);
-		}else{
-			$curRow = $results->fetch_row();
-			$numHolds = $curRow[0];
-			$results->close();
+		if ($this->initDatabaseConnection()){
+			$sql     = "SELECT count(*) from reserves where biblionumber = $id";
+			$results = mysqli_query($this->dbConnection, $sql);
+			if (!$results){
+				global $logger;
+				$logger->log("Unable to load hold count from Koha (" . mysqli_errno($this->dbConnection) . ") " . mysqli_error($this->dbConnection), PEAR_LOG_ERR);
+			}else{
+				$curRow   = $results->fetch_row();
+				$numHolds = $curRow[0];
+				$results->close();
+			}
+			$this->holdsByBib[$id] = $numHolds;
 		}
-
-		$this->holdsByBib[$id] = $numHolds;
-
 		global $timer;
 		$timer->logTime("Finished loading num holds for record ");
 
