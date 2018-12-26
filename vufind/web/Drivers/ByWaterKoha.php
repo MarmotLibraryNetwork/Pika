@@ -293,43 +293,6 @@ EOD;
 		}
 
 	/**
-	 * Renew a single title currently checked out to the user
-	 *
-	 * @param $patron     User
-	 * @param $recordId   string
-	 * @param $itemId     string
-	 * @param $itemIndex  string
-	 * @return mixed
-
-	public function renewItem($patron, $recordId, $itemId, $itemIndex)
-	{
-		// TODO: Implement renewItem() method.
-		$success = false;
-		$message = "Could not connect to circulation server, please try again later.";
-
-		if ($this->initSipConnection()) {
-			$this->sipConnection->patron    = $patron->cat_username;
-			$this->sipConnection->patronpwd = $patron->cat_password;
-
-			$in         = $this->sipConnection->msgRenew($itemId, $recordId);
-			$msg_result = $this->sipConnection->get_message($in);
-			if (preg_match("/^30/", $msg_result)) {
-				$result  = $this->sipConnection->parseRenewResponse($msg_result);
-				$success = ($result['fixed']['Ok'] == 1);
-				$message = $result['variable']['AF'][0];
-
-			}
-
-		}
-		return array(
-			'itemId'  => $itemId,
-			'success' => $success,
-			'message' => $message
-		);
-
-	}*/
-
-	/**
 	 * Get Patron Holds
 	 *
 	 * This is responsible for retrieving all holds for a specific patron.
@@ -342,6 +305,41 @@ EOD;
 	public function getMyHolds($patron){
 		$holds = $this->getMyHoldsFromDB($patron);
 		return $holds;
+	}
+
+	/**
+	 * Get Reading History
+	 *
+	 * This is responsible for retrieving a history of checked out items for the patron.
+	 *
+	 * @param   User   $patron     The patron account
+	 * @param   int    $page
+	 * @param   int    $recordsPerPage
+	 * @param   string $sortOption
+	 *
+	 * @return  array               Array of the patron's reading list
+	 *                              If an error occurs, return a PEAR_Error
+	 * @access  public
+	 */
+	public function getReadingHistory($patron, $page = 1, $recordsPerPage = -1, $sortOption = "checkedOut") {
+
+		$this->initDatabaseConnection();
+
+		//Figure out if the user is opted in to reading history
+		$sql = "select privacy from borrowers where borrowernumber = {$patron->username}";
+		$res = mysqli_query($this->dbConnection, $sql);
+		$row = $res->fetch_assoc();
+		// privacy in koha db: 1 = default (keep as long as allowed by law), 0 = forever, 2 = never
+		$privacy = $row['privacy'];
+
+		if ($privacy != 2) {
+
+		}
+		// Update patron's setting in Pika if the setting has changed in Koha
+		if ($historyEnabled != $patron->trackReadingHistory) {
+			$patron->trackReadingHistory = (boolean) $historyEnabled;
+			$patron->update();
+		}
 	}
 
 	/**
@@ -552,8 +550,25 @@ EOD;
 		}
 
 		$sumResp->close();
-
+/*
+ *
+ * SELECT distinct accountno FROM accountlines where borrowernumber = '416127' order by accountno desc;
+ *
+ * Next loop over each account #
+ *
+ *
+ */
 		// has fines
+		// First get account #'s
+		/*
+		$accountNosSql = 'select distinct accountno from accountlines where borrowernumber = "{$patron->username}" order by accountno desc';
+		$accountNosRsp = mysqli_query($this->dbConnection, $accountNosSql);
+
+		$accountLineSql = 'select accountlines.amountoutstanding, '
+		foreach ($accountNosRsp->fetch_assoc() as $accountNo) {
+
+		}
+*/
 		$fines_query = <<<EOD
 select accountlines.amount as ac_amount, accountlines.*, account_offsets.*
 from accountlines, account_offsets, borrowers 
@@ -569,7 +584,7 @@ EOD;
 
 		while ($allFeesRow = $allFeesRS->fetch_assoc()){
 			// do some rounding to get rid of extra zeros.
-			$amount = number_format($allFeesRow['ac_amount'], 2, '.', '');
+			$amount = number_format($allFeesRow['amount'], 2, '.', '');
 			$amountOutstanding = number_format($allFeesRow['amountoutstanding'], 2, '.', '');
 			// if amountoutstanding is 0.000000 set it to nothing so it doesn't mess with Fine.php class calculation
 			if ($amountOutstanding == 0) {
