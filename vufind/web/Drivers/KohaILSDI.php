@@ -164,6 +164,51 @@ abstract class KohaILSDI extends ScreenScrapingDriver {
 		return $holdResult;
 	}
 
+	/**
+	 * Cancels a hold for a patron
+	 *
+	 * @param   User    $patron     The User to cancel the hold for
+	 * @param   string  $recordId   The id of the bib record
+	 * @param   string  $cancelId   Information about the hold to be cancelled
+	 * @return  array
+	 */
+	public function cancelHold($patron, $recordId, $cancelId) {
+		$cancelResults = [
+			'itemId' => 0,
+			'success' => false,
+			'message' => 'Failed to cancel hold.'
+		];
+
+		$patronKohaId = $this->getKohaPatronId($patron);
+
+		$urlParameters = array(
+			'service'          => 'CancelHold',
+			'patron_id'        => $patronKohaId,
+			'item_id'          => $recordId,
+		);
+
+		//create the hold using the web service call
+		$webServiceURL = $this->getWebServiceURL() . $this->ilsdiscript;
+		$webServiceURL .= '?' . http_build_query($urlParameters);
+
+		$cancelResponse = $this->getWebServiceResponse($webServiceURL);
+
+		if ($cancelResponse) {
+			if($cancelResponse->message && $cancelResponse->message != '') {
+				// success
+				$cancelResults['success'] = true;
+				$cancelResults['itemId']  = $itemId;
+				$cancelResults['message'] = 'Hold canceled.';
+			} elseif($cancelResponse->code) {
+				// fail
+				if($cancelResponse->code) {
+					$cancelResults['message'] .=  ' Reason '.$cancelResponse->code;
+				}
+			}
+		}
+
+		return $cancelResults;
+	}
 
 	/**
 	 * Renew a single title currently checked out to the user

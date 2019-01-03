@@ -446,9 +446,9 @@ EOD;
 	 * @param   string $cancelId Information about the hold to be cancelled
 	 * @return  array
 	 */
-	function cancelHold($patron, $recordId, $cancelId){
+	//function cancelHold($patron, $recordId, $cancelId){
 		// TODO: Implement cancelHold() method.
-	}
+	//}
 
 	function freezeHold($patron, $recordId, $itemToFreezeId, $dateToReactivate){
 		$result = $this->freezeThawHoldViaSIP($patron, $recordId, null, $dateToReactivate);
