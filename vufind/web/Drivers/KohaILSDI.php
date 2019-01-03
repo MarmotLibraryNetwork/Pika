@@ -184,7 +184,7 @@ abstract class KohaILSDI extends ScreenScrapingDriver {
 		$urlParameters = array(
 			'service'          => 'CancelHold',
 			'patron_id'        => $patronKohaId,
-			'item_id'          => $recordId,
+			'item_id'          => $cancelId,
 		);
 
 		//create the hold using the web service call
@@ -194,7 +194,7 @@ abstract class KohaILSDI extends ScreenScrapingDriver {
 		$cancelResponse = $this->getWebServiceResponse($webServiceURL);
 
 		if ($cancelResponse) {
-			if($cancelResponse->message && $cancelResponse->message != '') {
+			if($cancelResponse->message) {
 				// success
 				$cancelResults['success'] = true;
 				$cancelResults['itemId']  = $itemId;
