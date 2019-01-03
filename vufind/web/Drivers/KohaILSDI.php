@@ -164,6 +164,48 @@ abstract class KohaILSDI extends ScreenScrapingDriver {
 		return $holdResult;
 	}
 
+	/**
+	 * Cancel hold a single title
+	 *
+	 * @param $patron     User
+	 * @param $recordId   string
+	 * @param  $cancelId  string
+	 * @param $itemIndex  string
+	 * @return $cancelHoldResults array
+	 */
+	public function cancelHold($patron, $recordId, $cancelId){
+		$cancelHoldResults = [
+			'itemId' => 0,
+			'success' => false,
+			'message' => 'Failed to renew item.'
+		];
+		$patronKohaId = $this->getKohaPatronId($patron);
+
+		$urlParameters = [
+			'service'          => 'CancelHold',
+			'patron_id'        => $patronKohaId,
+			'item_id'          => $recordId
+		];
+
+		$webServiceURL = $this->getWebServiceURL() . $this->ilsdiscript;
+		$webServiceURL .= '?' . http_build_query($urlParameters);
+
+		$cancelHoldResponse = $this->getWebServiceResponse($webServiceURL);
+
+		if ($cancelHoldResponse) {
+			if($cancelHoldResponse->message ==  'Canceled') {
+				// success
+				$cancelHoldResults['success'] = true;
+				$cancelHoldResults['itemId']  = $recordId;
+				$cancelHoldResults['message'] = 'Hold successfully canceled.';
+			} else {
+				// fail
+					$cancelHoldResultsResults['message'] = 'Unable able to cancel hold. Reason '.$cancelHoldResponse->code;
+			}
+		}
+
+		return $cancelHoldResultsResults;
+	}
 
 	/**
 	 * Renew a single title currently checked out to the user
@@ -176,11 +218,11 @@ abstract class KohaILSDI extends ScreenScrapingDriver {
 	 */
 	public function renewItem($patron, $recordId, $itemId, $itemIndex){
 
-		$renewResults = [
+		$renewResults = array(
 			'itemId' => 0,
 			'success' => false,
 			'message' => 'Failed to renew item.'
-		];
+		);
 
 		$patronKohaId = $this->getKohaPatronId($patron);
 
@@ -273,6 +315,7 @@ abstract class KohaILSDI extends ScreenScrapingDriver {
 		}
 	}
 
+
 	private function authenticatePatron($barcode, $password){
 		$urlParameters = array(
 			'service' => 'AuthenticatePatron',
@@ -281,7 +324,7 @@ abstract class KohaILSDI extends ScreenScrapingDriver {
 		);
 
 		$webServiceURL        = $this->getWebServiceURL() . $this->ilsdiscript;
-		$webServiceURL        .= '?' . http_build_query($urlParameters);
+		$webServiceURL       .= '?' . http_build_query($urlParameters);
 		$authenticateResponse = $this->getWebServiceResponse($webServiceURL);
 		if (!empty($authenticateResponse)){
 			if (!empty($authenticateResponse->id)){

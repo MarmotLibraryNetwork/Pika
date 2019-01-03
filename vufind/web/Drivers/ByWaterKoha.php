@@ -446,9 +446,24 @@ EOD;
 	 * @param   string $cancelId Information about the hold to be cancelled
 	 * @return  array
 	 */
+
+	/*
 	function cancelHold($patron, $recordId, $cancelId){
-		// TODO: Implement cancelHold() method.
+	#TODO: What hold type?
+
+		# msgHold($mode, $expDate = '', $holdtype = '', $item = '', $title = '', $fee='N', $pkupLocation = '')
+		if ($this->initSipConnection()) {
+			$this->sipConnection->patron    = $patron->cat_username;
+			$this->sipConnection->patronpwd = $patron->cat_password;
+			$msgHold = $this->sipConnection->msgHold('-', '', '', $recordId, $cancelId,'N' ,'');
+			$rspHold = $this->sipConnection->parseHoldResponse($msgHold);
+			var_dump($rspHold); exit();
+		}
+
+
 	}
+*/
+
 
 	function freezeHold($patron, $recordId, $itemToFreezeId, $dateToReactivate){
 		$result = $this->freezeThawHoldViaSIP($patron, $recordId, null, $dateToReactivate);
