@@ -194,14 +194,13 @@ abstract class KohaILSDI extends ScreenScrapingDriver {
 		$cancelResponse = $this->getWebServiceResponse($webServiceURL);
 
 		if ($cancelResponse) {
-			if($cancelResponse->message) {
+			if($cancelResponse->code && $cancelResponse->code == "Canceled") {
 				// success
 				$cancelResults['success'] = true;
-				$cancelResults['itemId']  = $itemId;
 				$cancelResults['message'] = 'Hold canceled.';
-			} elseif($cancelResponse->code) {
+			} elseif($cancelResponse->message) {
 				// fail
-				if($cancelResponse->code) {
+				if($cancelResponse->message) {
 					$cancelResults['message'] .=  ' Reason '.$cancelResponse->code;
 				}
 			}
