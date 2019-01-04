@@ -118,7 +118,27 @@ rm /data/vufind-plus/${PIKASERVER}/grouped_work_primary_identifiers.sql
 #Restart Solr
 cd /usr/local/vufind-plus/sites/${PIKASERVER}; ./${PIKASERVER}.sh restart
 
-## Side Loads ##
+
+## SIDELOADS ##
+# Axis 360
+/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} addison/axis_360 axis_360/addison >> ${OUTPUT_FILE}
+#Biblioboard
+#/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} addison/Biblioboard Biblioboard/addison >> ${OUTPUT_FILE}
+#TrueFlix
+/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} addison/trueflix trueflix/addison >> ${OUTPUT_FILE}
+
+#Learning Express
+#/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} addison/learning_express learning_express/addison >> ${OUTPUT_FILE}
+#Bookflix
+/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} addison/bookflix bookflix/addison >> ${OUTPUT_FILE}
+
+#Gale eCourses
+/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} addison/gale_courses gale_courses/addison >> ${OUTPUT_FILE}
+
+#RB Digital
+#/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} addison/RBdigital_magazines RBdigital_magazines/addison >> ${OUTPUT_FILE}
+
+
 
 
 #Extract from Hoopla

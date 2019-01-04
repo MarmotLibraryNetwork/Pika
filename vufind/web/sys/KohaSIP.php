@@ -13,8 +13,7 @@ class KohaSIP extends sip2
 {
 
 	//TODO: this function should really replace the base method. Would need to build a version of doSipLogin for the parent class
-	function connect()
-	{
+	function connect(){
 		global $logger;
 		/* Socket Communications  */
 		$this->_debugmsg( "SIP2: --- BEGIN SIP communication ---");
@@ -43,7 +42,7 @@ class KohaSIP extends sip2
 
 		/* open a connection to the host */
 		$connectionTimeout = 10;
-		$connectStart = time();
+		$connectStart      = time();
 		while (!@socket_connect($this->socket, $address, $this->port)){
 			$error = socket_last_error($this->socket);
 			if ($error == 114 || $error == 115){

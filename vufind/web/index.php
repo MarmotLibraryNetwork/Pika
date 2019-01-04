@@ -75,8 +75,10 @@ $timer->logTime('Setup Analytics');
 
 $googleAnalyticsId        = isset($configArray['Analytics']['googleAnalyticsId'])        ? $configArray['Analytics']['googleAnalyticsId'] : false;
 $googleAnalyticsLinkingId = isset($configArray['Analytics']['googleAnalyticsLinkingId']) ? $configArray['Analytics']['googleAnalyticsLinkingId'] : false;
+$trackTranslation         = isset($configArray['Analytics']['trackTranslation'])         ? $configArray['Analytics']['trackTranslation'] : false;
 $interface->assign('googleAnalyticsId', $googleAnalyticsId);
 $interface->assign('googleAnalyticsLinkingId', $googleAnalyticsLinkingId);
+$interface->assign('trackTranslation', $trackTranslation);
 if ($googleAnalyticsId) {
 	$googleAnalyticsDomainName = isset($configArray['Analytics']['domainName']) ? $configArray['Analytics']['domainName'] : strstr($_SERVER['SERVER_NAME'], '.');
 	// check for a config setting, use that if found, otherwise grab domain name  but remove the first subdomain
@@ -863,72 +865,72 @@ function loadModuleActionId(){
 		$allRecordModules .= '|' . $profile->recordUrlComponent;
 	}
 	if (preg_match("/(MyAccount)\/([^\/?]+)\/([^\/?]+)(\?.+)?/", $requestURI, $matches)){
-		$_GET['module'] = $matches[1];
-		$_GET['id'] = $matches[3];
-		$_GET['action'] = $matches[2];
+		$_GET['module']     = $matches[1];
+		$_GET['id']         = $matches[3];
+		$_GET['action']     = $matches[2];
 		$_REQUEST['module'] = $matches[1];
-		$_REQUEST['id'] = $matches[3];
+		$_REQUEST['id']     = $matches[3];
 		$_REQUEST['action'] = $matches[2];
 	}elseif (preg_match("/(MyAccount)\/([^\/?]+)(\?.+)?/", $requestURI, $matches)){
-		$_GET['module'] = $matches[1];
-		$_GET['action'] = $matches[2];
-		$_REQUEST['id'] = '';
+		$_GET['module']     = $matches[1];
+		$_GET['action']     = $matches[2];
+		$_REQUEST['id']     = '';
 		$_REQUEST['module'] = $matches[1];
 		$_REQUEST['action'] = $matches[2];
-		$_REQUEST['id'] = '';
+		$_REQUEST['id']     = '';
 	}elseif (preg_match("/(MyAccount)\/?/", $requestURI, $matches)){
-		$_GET['module'] = $matches[1];
-		$_GET['action'] = 'Home';
-		$_REQUEST['id'] = '';
+		$_GET['module']     = $matches[1];
+		$_GET['action']     = 'Home';
+		$_REQUEST['id']     = '';
 		$_REQUEST['module'] = $matches[1];
 		$_REQUEST['action'] = 'Home';
-		$_REQUEST['id'] = '';
+		$_REQUEST['id']     = '';
 	}elseif (preg_match('/\/(Archive)\/((?:[\\w\\d:]|%3A)+)\/([^\/?]+)/', $requestURI, $matches)){
 		$_GET['module'] = $matches[1];
 //		$_GET['id'] = $matches[2];// TODO: Leaving in case change below, effects other Pika functionality
-		$_GET['id'] =  urldecode($matches[2]); // Decodes colons % codes back into colons.
-		$_GET['action'] = $matches[3];
+		$_GET['id']         = urldecode($matches[2]); // Decodes colons % codes back into colons.
+		$_GET['action']     = $matches[3];
 		$_REQUEST['module'] = $matches[1];
 //		$_REQUEST['id'] = $matches[2]; // TODO: Leaving in case change below, effects other Pika functionality
-		$_REQUEST['id'] = urldecode($matches[2]);  // Decodes colons % codes back into colons.
+		$_REQUEST['id']     = urldecode($matches[2]);  // Decodes colons % codes back into colons.
 		$_REQUEST['action'] = $matches[3];
 		//Redirect things /GroupedWork/AJAX to the proper action
 	}elseif (preg_match("/($allRecordModules)\/([a-zA-Z]+)(?:\?|\/?$)/", $requestURI, $matches)){
-		$_GET['module'] = $matches[1];
-		$_GET['action'] = $matches[2];
+		$_GET['module']     = $matches[1];
+		$_GET['action']     = $matches[2];
 		$_REQUEST['module'] = $matches[1];
 		$_REQUEST['action'] = $matches[2];
 		//Redirect things /Record/.b3246786/Home to the proper action
 		//Also things like /OverDrive/84876507-043b-b3ce-2930-91af93d2a4f0/Home
 	}elseif (preg_match("/($allRecordModules)\/([^\/?]+?)\/([^\/?]+)/", $requestURI, $matches)){
-		$_GET['module'] = $matches[1];
-		$_GET['id'] = $matches[2];
-		$_GET['action'] = $matches[3];
+		$_GET['module']     = $matches[1];
+		$_GET['id']         = $matches[2];
+		$_GET['action']     = $matches[3];
 		$_REQUEST['module'] = $matches[1];
-		$_REQUEST['id'] = $matches[2];
+		$_REQUEST['id']     = $matches[2];
 		$_REQUEST['action'] = $matches[3];
 		//Redirect things /Record/.b3246786 to the proper action
 	}elseif (preg_match("/($allRecordModules)\/([^\/?]+?)(?:\?|\/?$)/", $requestURI, $matches)){
-		$_GET['module'] = $matches[1];
-		$_GET['id'] = $matches[2];
-		$_GET['action'] = 'Home';
+		$_GET['module']     = $matches[1];
+		$_GET['id']         = $matches[2];
+		$_GET['action']     = 'Home';
 		$_REQUEST['module'] = $matches[1];
-		$_REQUEST['id'] = $matches[2];
+		$_REQUEST['id']     = $matches[2];
 		$_REQUEST['action'] = 'Home';
 	}elseif (preg_match("/([^\/?]+)\/([^\/?]+)/", $requestURI, $matches)){
-		$_GET['module'] = $matches[1];
-		$_GET['action'] = $matches[2];
+		$_GET['module']     = $matches[1];
+		$_GET['action']     = $matches[2];
 		$_REQUEST['module'] = $matches[1];
 		$_REQUEST['action'] = $matches[2];
 	}
 	//Correct some old actions
 	if (isset($_GET['action'])) {
-		if ($_GET['action'] == 'OverdriveHolds') {
-			$_GET['action'] = 'Holds';
+		if ($_GET['action'] == 'OverdriveHolds'){
+			$_GET['action']     = 'Holds';
 			$_REQUEST['action'] = 'Holds';
-		} else {
-			if ($_GET['action'] == 'OverdriveCheckedOut') {
-				$_GET['action'] = 'CheckedOut';
+		}else{
+			if ($_GET['action'] == 'OverdriveCheckedOut'){
+				$_GET['action']     = 'CheckedOut';
 				$_REQUEST['action'] = 'CheckedOut';
 			}
 		}

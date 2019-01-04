@@ -35,6 +35,12 @@ interface DriverInterface
 	public function __construct($accountProfile);
 
 	public function patronLogin($username, $password, $validatedViaSSO);
+
+	/**
+	 * TODO: Document what this does.
+	 * @param $id
+	 * @return int
+	 */
 	public function hasNativeReadingHistory();
 
 	/**

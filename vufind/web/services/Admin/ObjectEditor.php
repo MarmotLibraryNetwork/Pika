@@ -108,11 +108,12 @@ abstract class ObjectEditor extends Admin_Admin
 			return null;
 		}
 	}
+
 	function getExistingObjectById($id){
 		$objectType = $this->getObjectType();
-		$idColumn = $this->getIdKeyColumn();
+		$idColumn   = $this->getIdKeyColumn();
 		/** @var DB_DataObject $curLibrary */
-		$curLibrary = new $objectType;
+		$curLibrary            = new $objectType;
 		$curLibrary->$idColumn = $id;
 		$curLibrary->find();
 		if ($curLibrary->N == 1){

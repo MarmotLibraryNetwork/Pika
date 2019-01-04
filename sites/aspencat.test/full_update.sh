@@ -78,6 +78,9 @@ cd /usr/local/vufind-plus/sites/${PIKASERVER}; ./${PIKASERVER}.sh restart
 # No Aspencat libraries use hoopla, no need to copy them
 #cd /usr/local/vufind-plus/vufind/cron;./GetHooplaFromMarmot.sh >> ${OUTPUT_FILE}
 
+#Unite for Literacy
+/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} aspencat/unite_literacy unite_literacy/aspencat >> ${OUTPUT_FILE}
+
 # Cloud Library
 /usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} aspencat/cloudlibrary cloudlibrary/aspencat >> ${OUTPUT_FILE}
 

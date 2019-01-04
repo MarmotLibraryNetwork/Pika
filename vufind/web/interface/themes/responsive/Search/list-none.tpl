@@ -8,7 +8,14 @@
 
 	<h2>{translate text='nohit_heading'}</h2>
 
-<p class="alert alert-info">{translate text='nohit_prefix'} - <b>{if $lookfor}{$lookfor|escape:"html"}{else}&lt;empty&gt;{/if}</b> - {translate text='nohit_suffix'}</p>
+	{if $replacementTerm}
+		<div id="replacement-search-info-block">
+			<div id="replacement-search-info"><span class="replacement-search-info-text">Showing Results for</span> {$replacementTerm}</div>
+			<div id="original-search-info"><span class="replacement-search-info-text">Search instead for </span><a href="{$oldSearchUrl}">{$oldTerm}</a></div>
+		</div>
+	{/if}
+
+	<p class="alert alert-info">{translate text='nohit_prefix'} - <b>{if $lookfor}{$lookfor|escape:"html"}{else}&lt;empty&gt;{/if}</b> - {translate text='nohit_suffix'}</p>
 
 {* Return to Advanced Search Link *}
 {if $searchType == 'advanced'}

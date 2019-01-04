@@ -181,18 +181,18 @@ abstract class Archive_Object extends Action {
 
 		$this->recordDriver->loadRelatedEntities();
 
-		$addressInfo = array();
-		$latitude = $this->recordDriver->getModsValue('latitude', 'marmot');
-		$longitude = $this->recordDriver->getModsValue('longitude', 'marmot');
+		$addressInfo         = array();
+		$latitude            = $this->recordDriver->getModsValue('latitude', 'marmot');
+		$longitude           = $this->recordDriver->getModsValue('longitude', 'marmot');
 		$addressStreetNumber = $this->recordDriver->getModsValue('addressStreetNumber', 'marmot');
-		$addressStreet = $this->recordDriver->getModsValue('addressStreet', 'marmot');
-		$address2 = $this->recordDriver->getModsValue('address2', 'marmot');
-		$addressCity = $this->recordDriver->getModsValue('addressCity', 'marmot');
-		$addressCounty = $this->recordDriver->getModsValue('addressCounty', 'marmot');
-		$addressState = $this->recordDriver->getModsValue('addressState', 'marmot');
-		$addressZipCode = $this->recordDriver->getModsValue('addressZipCode', 'marmot');
-		$addressCountry = $this->recordDriver->getModsValue('addressCountry', 'marmot');
-		$addressOtherRegion = $this->recordDriver->getModsValue('addressOtherRegion', 'marmot');
+		$addressStreet       = $this->recordDriver->getModsValue('addressStreet', 'marmot');
+		$address2            = $this->recordDriver->getModsValue('address2', 'marmot');
+		$addressCity         = $this->recordDriver->getModsValue('addressCity', 'marmot');
+		$addressCounty       = $this->recordDriver->getModsValue('addressCounty', 'marmot');
+		$addressState        = $this->recordDriver->getModsValue('addressState', 'marmot');
+		$addressZipCode      = $this->recordDriver->getModsValue('addressZipCode', 'marmot');
+		$addressCountry      = $this->recordDriver->getModsValue('addressCountry', 'marmot');
+		$addressOtherRegion  = $this->recordDriver->getModsValue('addressOtherRegion', 'marmot');
 		if (strlen($latitude) ||
 				strlen($longitude) ||
 				strlen($addressStreetNumber) ||

@@ -194,8 +194,7 @@ function ini_merge($config_ini, $custom_ini)
  *
  * @return  array       The desired config.ini settings in array format.
  */
-function readConfig()
-{
+function readConfig(){
 	//Read default configuration file
 	$configFile = '../../sites/default/conf/config.ini';
 	$mainArray = parse_ini_file($configFile, true);

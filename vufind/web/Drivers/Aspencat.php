@@ -409,7 +409,6 @@ class Aspencat implements DriverInterface{
 					}elseif (($userFromDb['password'] == $encodedPassword) || $validatedViaSSO) {
 						$userExistsInDB = false;
 						$user = new User();
-						//Get the unique user id from Millennium
 						$user->source   = $this->accountProfile->name;
 						$user->username = $userFromDb['borrowernumber'];
 						if ($user->find(true)){
@@ -488,16 +487,16 @@ class Aspencat implements DriverInterface{
 						$homeBranchCode = strtolower($userFromDb['branchcode']);
 						$location = new Location();
 						$location->code = $homeBranchCode;
-						if (!$location->find(1)){
+						if (!$location->find(true)){
 							unset($location);
 							$user->homeLocationId = 0;
 							// Logging for Diagnosing PK-1846
 							global $logger;
-							$logger->log('Aspencat Driver: No Location found, user\'s homeLocationId being set to 0. User : '.$user->id, PEAR_LOG_WARNING);
+							$logger->log('Aspencat Driver: No Location found, user\'s homeLocationId being set to 0. User : ' . $user->id, PEAR_LOG_WARNING);
 						}
 
-						if ((empty($user->homeLocationId) || $user->homeLocationId == -1) || (isset($location) && $user->homeLocationId != $location->locationId)) { // When homeLocation isn't set or has changed
-							if ((empty($user->homeLocationId) || $user->homeLocationId == -1) && !isset($location)) {
+						if ((empty($user->homeLocationId) || $user->homeLocationId == -1) || (isset($location) && $user->homeLocationId != $location->locationId)){ // When homeLocation isn't set or has changed
+							if ((empty($user->homeLocationId) || $user->homeLocationId == -1) && !isset($location)){
 								// homeBranch Code not found in location table and the user doesn't have an assigned homelocation,
 								// try to find the main branch to assign to user
 								// or the first location for the library
@@ -506,32 +505,32 @@ class Aspencat implements DriverInterface{
 								$location            = new Location();
 								$location->libraryId = $library->libraryId;
 								$location->orderBy('isMainBranch desc'); // gets the main branch first or the first location
-								if (!$location->find(true)) {
+								if (!$location->find(true)){
 									// Seriously no locations even?
 									global $logger;
 									$logger->log('Failed to find any location to assign to user as home location', PEAR_LOG_ERR);
 									unset($location);
 								}
 							}
-							if (isset($location)) {
+							if (isset($location)){
 								$user->homeLocationId = $location->locationId;
-								if (empty($user->myLocation1Id)) {
-									$user->myLocation1Id  = ($location->nearbyLocation1 > 0) ? $location->nearbyLocation1 : $location->locationId;
+								if (empty($user->myLocation1Id)){
+									$user->myLocation1Id = ($location->nearbyLocation1 > 0) ? $location->nearbyLocation1 : $location->locationId;
 									/** @var /Location $location */
 									//Get display name for preferred location 1
 									$myLocation1             = new Location();
 									$myLocation1->locationId = $user->myLocation1Id;
-									if ($myLocation1->find(true)) {
+									if ($myLocation1->find(true)){
 										$user->myLocation1 = $myLocation1->displayName;
 									}
 								}
 
 								if (empty($user->myLocation2Id)){
-									$user->myLocation2Id  = ($location->nearbyLocation2 > 0) ? $location->nearbyLocation2 : $location->locationId;
+									$user->myLocation2Id = ($location->nearbyLocation2 > 0) ? $location->nearbyLocation2 : $location->locationId;
 									//Get display name for preferred location 2
 									$myLocation2             = new Location();
 									$myLocation2->locationId = $user->myLocation2Id;
-									if ($myLocation2->find(true)) {
+									if ($myLocation2->find(true)){
 										$user->myLocation2 = $myLocation2->displayName;
 									}
 								}
@@ -1318,24 +1317,23 @@ class Aspencat implements DriverInterface{
 		$results = mysqli_query($this->dbConnection, $sql);
 		while ($curRow = $results->fetch_assoc()){
 			//Each row in the table represents a hold
-			$curHold= array();
-			$curHold['holdSource'] = 'ILS';
-			$bibId = $curRow['biblionumber'];
-			$curHold['id'] = $curRow['biblionumber'];
-			$curHold['shortId'] = $curRow['biblionumber'];
-			$curHold['recordId'] = $curRow['biblionumber'];
-			$curHold['title'] = $curRow['title'];
-			$curHold['create'] = date_parse_from_format('Y-M-d H:m:s', $curRow['reservedate']);
-			$dateTime = date_create_from_format('Y-M-d', $curRow['expirationdate']);
-			$curHold['expire'] = $dateTime->getTimestamp();
-
-			$curHold['location'] = $curRow['branchcode'];
+			$curHold                       = array();
+			$curHold['holdSource']         = 'ILS';
+			$bibId                         = $curRow['biblionumber'];
+			$curHold['id']                 = $curRow['biblionumber'];
+			$curHold['shortId']            = $curRow['biblionumber'];
+			$curHold['recordId']           = $curRow['biblionumber'];
+			$curHold['title']              = $curRow['title'];
+			$curHold['create']             = date_parse_from_format('Y-M-d H:m:s', $curRow['reservedate']);
+			$dateTime                      = date_create_from_format('Y-M-d', $curRow['expirationdate']);
+			$curHold['expire']             = $dateTime->getTimestamp();
+			$curHold['location']           = $curRow['branchcode'];
 			$curHold['locationUpdateable'] = false;
-			$curHold['currentPickupName'] = $curHold['location'];
-			$curHold['position'] = $curRow['priority'];
-			$curHold['frozen'] = false;
-			$curHold['freezeable'] = false;
-			$curHold['cancelable'] = true;
+			$curHold['currentPickupName']  = $curHold['location'];
+			$curHold['position']           = $curRow['priority'];
+			$curHold['frozen']             = false;
+			$curHold['freezeable']         = false;
+			$curHold['cancelable']         = true;
 			if ($curRow['found'] == 'S'){
 				$curHold['frozen'] = true;
 				$curHold['status'] = "Suspended";

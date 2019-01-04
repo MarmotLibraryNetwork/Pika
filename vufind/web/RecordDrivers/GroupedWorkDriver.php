@@ -1628,7 +1628,7 @@ class GroupedWorkDriver extends RecordInterface{
 		}
 	}
 
-		/**
+	/**
 		 * The vast majority of record information is stored within the index.
 		 * This routine parses the information from the index and restructures it for use within the user interface.
 		 *
@@ -1641,35 +1641,43 @@ class GroupedWorkDriver extends RecordInterface{
 		$relatedRecords = $this->getRelatedRecords();
 		$timer->logTime("Finished loading related records in getRelatedManifestations");
 		$memoryWatcher->logMemory("Finished loading related records");
+
+		// alter the status ranking array to use for comparison here
+		$statusRankings = array();
+		foreach (self::$statusRankings as $key => $value) {
+			$key = strtolower($key);
+			$statusRankings[$key] = $value;
+		}
+
 		//Group the records based on format
 		$relatedManifestations = array();
 		foreach ($relatedRecords as $curRecord){
 			if (!array_key_exists($curRecord['format'], $relatedManifestations)){
 				$relatedManifestations[$curRecord['format']] = array(
-					'format' => $curRecord['format'],
-					'formatCategory' => $curRecord['formatCategory'],
-					'copies' => 0,
-					'availableCopies' => 0,
-					'localCopies' => 0,
+					'format'               => $curRecord['format'],
+					'formatCategory'       => $curRecord['formatCategory'],
+					'copies'               => 0,
+					'availableCopies'      => 0,
+					'localCopies'          => 0,
 					'localAvailableCopies' => 0,
-					'onOrderCopies' => 0,
-					'numHolds' => 0,
-					'available' => false,
-					'hasLocalItem' => false,
-					'isEContent' => false,
-					'relatedRecords' => array(),
-					'preferredEdition' => null,
-					'statusMessage' => '',
-					'itemLocations' => array(),
-					'availableLocally' => false,
-					'availableOnline' => false,
-					'availableHere' => false,
-					'inLibraryUseOnly' => false,
-					'allLibraryUseOnly' => true,
-					'hideByDefault' => false,
-					'itemSummary' => array(),
-					'itemSummaryLocal' => array(),
-					'groupedStatus' => ''
+					'onOrderCopies'        => 0,
+					'numHolds'             => 0,
+					'available'            => false,
+					'hasLocalItem'         => false,
+					'isEContent'           => false,
+					'relatedRecords'       => array(),
+					'preferredEdition'     => null,
+					'statusMessage'        => '',
+					'itemLocations'        => array(),
+					'availableLocally'     => false,
+					'availableOnline'      => false,
+					'availableHere'        => false,
+					'inLibraryUseOnly'     => false,
+					'allLibraryUseOnly'    => true,
+					'hideByDefault'        => false,
+					'itemSummary'          => array(),
+					'itemSummaryLocal'     => array(),
+					'groupedStatus'        => ''
 				);
 			}
 			if (isset($curRecord['availableLocally']) && $curRecord['availableLocally'] == true){
@@ -1705,10 +1713,10 @@ class GroupedWorkDriver extends RecordInterface{
 				$relatedManifestations[$curRecord['format']]['callNumber'][$curRecord['callNumber']] = $curRecord['callNumber'];
 			}
 			$relatedManifestations[$curRecord['format']]['relatedRecords'][] = $curRecord;
-			$relatedManifestations[$curRecord['format']]['copies'] += $curRecord['copies'];
-			$relatedManifestations[$curRecord['format']]['availableCopies'] += $curRecord['availableCopies'];
+			$relatedManifestations[$curRecord['format']]['copies']           += $curRecord['copies'];
+			$relatedManifestations[$curRecord['format']]['availableCopies']  += $curRecord['availableCopies'];
 			if ($curRecord['hasLocalItem']){
-				$relatedManifestations[$curRecord['format']]['localCopies'] += (isset($curRecord['localCopies']) ? $curRecord['localCopies'] : 0);
+				$relatedManifestations[$curRecord['format']]['localCopies']          += (isset($curRecord['localCopies']) ? $curRecord['localCopies'] : 0);
 				$relatedManifestations[$curRecord['format']]['localAvailableCopies'] += (isset($curRecord['localAvailableCopies']) ? $curRecord['localAvailableCopies'] : 0);
 			}
 			if (isset($curRecord['itemSummary'])){
@@ -1720,17 +1728,18 @@ class GroupedWorkDriver extends RecordInterface{
 			if (isset($curRecord['onOrderCopies'])){
 				$relatedManifestations[$curRecord['format']]['onOrderCopies'] += $curRecord['onOrderCopies'];
 			}
-			$statusRankings = array(
-				'currently unavailable' => 1,
-				'on order' => 2,
-				'coming soon' => 3,
-				'in processing' => 3.5,
-				'checked out' => 4,
-				'library use only' => 5,
-				'available online' => 6,
-				'in transit' => 6.5,
-				'on shelf' => 7
-			);
+// For Reference
+//			static $statusRankings = array(
+//				'currently unavailable' => 1,
+//				'on order'              => 2,
+//				'coming soon'           => 3,
+//				'in processing'         => 3.5,
+//				'checked out'           => 4,
+//				'library use only'      => 5,
+//				'available online'      => 6,
+//				'in transit'           => 6.5,
+//				'on shelf'              => 7
+//			);
 			if (isset($curRecord['groupedStatus']) && $curRecord['groupedStatus'] != ''){
 				$groupedStatus = $relatedManifestations[$curRecord['format']]['groupedStatus'];
 
@@ -1750,20 +1759,20 @@ class GroupedWorkDriver extends RecordInterface{
 		$memoryWatcher->logMemory("Finished initial processing of related records");
 
 		//Check to see if we have applied a format or format category facet
-		$selectedFormat = null;
-		$selectedFormatCategory = null;
-		$selectedAvailability = null;
+		$selectedFormat               = null;
+		$selectedFormatCategory       = null;
+		$selectedAvailability         = null;
 		$selectedDetailedAvailability = null;
 		if (isset($_REQUEST['filter'])){
 			foreach ($_REQUEST['filter'] as $filter){
 				if (preg_match('/^format_category(?:\w*):"?(.+?)"?$/', $filter, $matches)){
-					$selectedFormatCategory = urldecode($matches[1]);
+					$selectedFormatCategory       = urldecode($matches[1]);
 				}elseif (preg_match('/^format(?:\w*):"?(.+?)"?$/', $filter, $matches)){
-					$selectedFormat = urldecode($matches[1]);
+					$selectedFormat               = urldecode($matches[1]);
 				}elseif (preg_match('/^availability_toggle(?:\w*):"?(.+?)"?$/', $filter, $matches)){
-					$selectedAvailability = urldecode($matches[1]);
+					$selectedAvailability         = urldecode($matches[1]);
 				}elseif (preg_match('/^availability_by_format(?:[\w_]*):"?(.+?)"?$/', $filter, $matches)){
-					$selectedAvailability = urldecode($matches[1]);
+					$selectedAvailability         = urldecode($matches[1]);
 				}elseif (preg_match('/^available_at(?:[\w_]*):"?(.+?)"?$/', $filter, $matches)) {
 					$selectedDetailedAvailability = urldecode($matches[1]);
 				}
@@ -1771,9 +1780,9 @@ class GroupedWorkDriver extends RecordInterface{
 		}
 
 		//Check to see what we need to do for actions, and determine if the record should be hidden by default
-		$searchLibrary = Library::getSearchLibrary();
+		$searchLibrary  = Library::getSearchLibrary();
 		$searchLocation = Location::getSearchLocation();
-		$isSuperScope = false;
+		$isSuperScope   = false;
 		if ($searchLocation){
 			$isSuperScope = !$searchLocation->restrictSearchByLocation;
 		}elseif ($searchLibrary){
@@ -1782,8 +1791,8 @@ class GroupedWorkDriver extends RecordInterface{
 		foreach ($relatedManifestations as $key => $manifestation) {
 			$manifestation['numRelatedRecords'] = count($manifestation['relatedRecords']);
 			if (count($manifestation['relatedRecords']) == 1) {
-				$firstRecord = reset($manifestation['relatedRecords']);
-				$manifestation['url'] = $firstRecord['url'];
+				$firstRecord              = reset($manifestation['relatedRecords']);
+				$manifestation['url']     = $firstRecord['url'];
 				$manifestation['actions'] = $firstRecord['actions'];
 			} else {
 				//Figure out what the preferred record is to place a hold on.  Since sorting has been done properly, this should always be the first
@@ -1803,7 +1812,7 @@ class GroupedWorkDriver extends RecordInterface{
 						$alteredActions = array();
 						foreach ($bestRecord['actions'] as $action) {
 							$action['onclick'] = str_replace('Record.showPlaceHold', 'Record.showPlaceHoldEditions', $action['onclick']);
-							$alteredActions[] = $action;
+							$alteredActions[]  = $action;
 						}
 						$manifestation['actions'] = $alteredActions;
 						unset($action, $alteredActions);
@@ -2432,7 +2441,7 @@ class GroupedWorkDriver extends RecordInterface{
 	private function mergeItemSummary($localCopies, $itemSummary) {
 		foreach ($itemSummary as $key => $item){
 			if (isset($localCopies[$key])){
-				$localCopies[$key]['totalCopies'] += $item['totalCopies'];
+				$localCopies[$key]['totalCopies']     += $item['totalCopies'];
 				$localCopies[$key]['availableCopies'] += $item['availableCopies'];
 				if ($item['displayByDefault']){
 					$localCopies[$key]['displayByDefault'] = true;
@@ -2471,7 +2480,7 @@ class GroupedWorkDriver extends RecordInterface{
 		$pubDate = $this->getPublicationDates();
 		if (count($pubDate) == 1){
 			$params['rft.date'] = $pubDate[0];
-		}elseif (count($pubDate > 1)){
+		}elseif (count($pubDate) > 1){
 			$params['rft.date'] = $pubDate;
 		}
 
@@ -2605,14 +2614,14 @@ class GroupedWorkDriver extends RecordInterface{
 
 	private static $statusRankings = array(
 		'Currently Unavailable' => 1,
-		'On Order' => 2,
-		'Coming Soon' => 3,
-		'In Processing' => 3.5,
-		'Checked Out' => 4,
-		'Library Use Only' => 5,
-		'Available Online' => 6,
-		'In Transit' => 6.5,
-		'On Shelf' => 7
+		'On Order'              => 2,
+		'Coming Soon'           => 3,
+		'In Processing'         => 3.5,
+		'Checked Out'           => 4,
+		'Library Use Only'      => 5,
+		'Available Online'      => 6,
+		'In Transit'            => 6.5,
+		'On Shelf'              => 7
 	);
 	public static function keepBestGroupedStatus($groupedStatus, $groupedStatus1) {
 		if (isset(GroupedWorkDriver::$statusRankings[$groupedStatus])){
@@ -2834,28 +2843,16 @@ class GroupedWorkDriver extends RecordInterface{
 	//TODO: this function should be optimized much more when loading for covers
 	protected function setupRelatedRecordDetails($recordDetails, $groupedWork, $timer, $scopingInfo, $activePTypes, $searchLocation, $library, $forCovers = false) {
 		//Check to see if we have any volume data for the record
-		require_once ROOT_DIR . '/Drivers/marmot_inc/IlsVolumeInfo.php';
 		global $memoryWatcher;
-		$volumeData = array();
-		$volumeDataDB = new IlsVolumeInfo();
-		$volumeDataDB->recordId = $recordDetails[0];
-		//D-81 show volume information even if there aren't related items
-		//$volumeDataDB->whereAdd('length(relatedItems) > 0');
-		if ($volumeDataDB->find()){
-			while ($volumeDataDB->fetch()){
-				$volumeData[] = clone($volumeDataDB);
-			}
-		}
-		$volumeDataDB = null;
-		unset($volumeDataDB);
+		$volumeData = $this->getVolumeInfoForRecord($recordDetails[0]);
 
 		//		list($source) = explode(':', $recordDetails[0], 1); // this does not work for 'overdrive:27770ba9-9e68-410c-902b-de2de8e2b7fe', returns 'overdrive:27770ba9-9e68-410c-902b-de2de8e2b7fe'
 		// when loading book covers.
 		list($source) = explode(':', $recordDetails[0], 2);
 		require_once ROOT_DIR . '/RecordDrivers/Factory.php';
 		$recordDriver = RecordDriverFactory::initRecordDriverById($recordDetails[0], $groupedWork);
-		$timer->logTime("Loaded Record Driver for  $recordDetails[0]");
-		$memoryWatcher->logMemory("Loaded Record Driver for  $recordDetails[0]");
+		$timer->logTime("Loaded Record Driver for $recordDetails[0]");
+		$memoryWatcher->logMemory("Loaded Record Driver for $recordDetails[0]");
 
 		//Setup the base record
 		$relatedRecord = array(
@@ -2901,11 +2898,11 @@ class GroupedWorkDriver extends RecordInterface{
 		$memoryWatcher->logMemory("Setup base related record");
 
 		//Process the items for the record and add additional information as needed
-		$localShelfLocation = null;
+		$localShelfLocation   = null;
 		$libraryShelfLocation = null;
-		$localCallNumber = null;
-		$libraryCallNumber = null;
-		$relatedUrls = array();
+		$localCallNumber      = null;
+		$libraryCallNumber    = null;
+		$relatedUrls          = array();
 
 		$recordHoldable = false;
 		$recordBookable = false;
@@ -2914,8 +2911,19 @@ class GroupedWorkDriver extends RecordInterface{
 		$allLibraryUseOnly = true;
 		foreach ($this->relatedItemsByRecordId[$recordDetails[0]] as $curItem) {
 			$itemId        = $curItem[1] == 'null' ? '' : $curItem[1];
-			$scopeKey      = $curItem[0] . ':' . $itemId;
 			$shelfLocation = $curItem[2];
+
+			if ($recordDriver != null && $recordDriver->hasOpacFieldMessage()) {
+				$opacMessage = $recordDriver->getOpacFieldMessage($itemId);
+				if ($opacMessage && $opacMessage != '-' && $opacMessage != ' ') {
+					$opacMessageTranslation = translate('opacFieldMessageCode_'.$opacMessage);
+					if ($opacMessageTranslation != 'opacFieldMessageCode_'){ // Only display if the code has a translation
+						$shelfLocation = "$opacMessageTranslation $shelfLocation";
+					}
+				}
+			}
+
+			$scopeKey      = $curItem[0] . ':' . $itemId;
 			$callNumber    = $curItem[3];
 			$numCopies     = $curItem[6];
 			$isOrderItem   = $curItem[7] == 'true';
@@ -2936,7 +2944,7 @@ class GroupedWorkDriver extends RecordInterface{
 			$bookablePTypes   = isset($scopingDetails[11]) ? $scopingDetails[11] : '';
 			$status           = $curItem[13];
 
-			if ($status == 'Library Use Only' && !$available){
+			if (!$available && strtolower($status) == 'library use only'){
 				$status = 'Checked Out (library use only)';
 			}
 			if (!$inLibraryUseOnly){
@@ -3016,10 +3024,10 @@ class GroupedWorkDriver extends RecordInterface{
 				$relatedRecord['bookable'] = true;
 			}
 			$relatedRecord['groupedStatus'] = GroupedWorkDriver::keepBestGroupedStatus($relatedRecord['groupedStatus'], $groupedStatus);
-			$description = $shelfLocation . ':' . $callNumber;
 
-			$volume = null;
-			$volumeId = null;
+			$description = $shelfLocation . ':' . $callNumber;
+			$volume      = null;
+			$volumeId    = null;
 			if (count($volumeData)){
 				/** @var IlsVolumeInfo $volumeDataPoint */
 				foreach ($volumeData as $volumeDataPoint){
@@ -3028,7 +3036,7 @@ class GroupedWorkDriver extends RecordInterface{
 							$volumeDataPoint->holdable = true;
 						}
 						if (strlen($volumeDataPoint->relatedItems) > 0) {
-							$volume = $volumeDataPoint->displayLabel;
+							$volume   = $volumeDataPoint->displayLabel;
 							$volumeId = $volumeDataPoint->volumeId;
 							break;
 						}
@@ -3048,15 +3056,15 @@ class GroupedWorkDriver extends RecordInterface{
 					$localCallNumber = $callNumber;
 				}
 				if ($available && !$isEcontent) {
-					$relatedRecord['availableHere'] = true;
+					$relatedRecord['availableHere']    = true;
 					$relatedRecord['availableLocally'] = true;
-					$relatedRecord['class'] = 'here';
+					$relatedRecord['class']            = 'here';
 				}
-				$relatedRecord['localCopies'] += $numCopies;
+				$relatedRecord['localCopies']  += $numCopies;
 				$relatedRecord['hasLocalItem'] = true;
-				$key = '1 ' . $description;
-				$sectionId = 1;
-				$section = 'In this library';
+				$key                           = '1 ' . $description;
+				$sectionId                     = 1;
+				$section                       = 'In this library';
 			} elseif ($libraryOwned) {
 				if ($libraryShelfLocation == null) {
 					$libraryShelfLocation = $shelfLocation;
@@ -3071,15 +3079,15 @@ class GroupedWorkDriver extends RecordInterface{
 				if ($searchLocation == null || $isEcontent) {
 					$relatedRecord['hasLocalItem'] = true;
 				}
-				$key = '5 ' . $description;
+				$key       = '5 ' . $description;
 				$sectionId = 5;
-				$section = $library->displayName;
+				$section   = $library->displayName;
 			} elseif ($isOrderItem) {
-				$key = '7 ' . $description;
+				$key       = '7 ' . $description;
 				$sectionId = 7;
-				$section = 'On Order';
+				$section   = 'On Order';
 			} else {
-				$key = '6 ' . $description;
+				$key       = '6 ' . $description;
 				$sectionId = 6;
 			}
 
@@ -3097,23 +3105,23 @@ class GroupedWorkDriver extends RecordInterface{
 					'isLibraryItem'     => $libraryOwned,
 					'inLibraryUseOnly'  => $inLibraryUseOnly,
 					'allLibraryUseOnly' => $inLibraryUseOnly,
-					'displayByDefault' => $displayByDefault,
-					'onOrderCopies'    => $isOrderItem ? $numCopies : 0,
-					'status'           => $groupedStatus,
-					'statusFull'       => $status,
-					'available'        => $available,
-					'holdable'         => $holdable,
-					'bookable'         => $bookable,
-					'sectionId'        => $sectionId,
-					'section'          => $section,
-					'relatedUrls'      => $relatedUrls,
-					'lastCheckinDate'  => isset($curItem[14]) ? $curItem[14] : '',
-					'volume'           => $volume,
-					'volumeId'         => $volumeId,
-					'isEContent'       => $isEcontent,
-					'locationCode'     => $locationCode,
-					'subLocation'      => $subLocation,
-					'itemId'           => $itemId
+					'displayByDefault'  => $displayByDefault,
+					'onOrderCopies'     => $isOrderItem ? $numCopies : 0,
+					'status'            => $groupedStatus,
+					'statusFull'        => $status,
+					'available'         => $available,
+					'holdable'          => $holdable,
+					'bookable'          => $bookable,
+					'sectionId'         => $sectionId,
+					'section'           => $section,
+					'relatedUrls'       => $relatedUrls,
+					'lastCheckinDate'   => isset($curItem[14]) ? $curItem[14] : '',
+					'volume'            => $volume,
+					'volumeId'          => $volumeId,
+					'isEContent'        => $isEcontent,
+					'locationCode'      => $locationCode,
+					'subLocation'       => $subLocation,
+					'itemId'            => $itemId
 			);
 			if (!$forCovers){
 				$itemSummaryInfo['actions'] = $recordDriver != null ? $recordDriver->getItemActions($itemSummaryInfo) : array();
@@ -3396,5 +3404,26 @@ class GroupedWorkDriver extends RecordInterface{
 			$url = $this->getLinkUrl();
 		}
 		return $url;
+	}
+
+	/**
+	 * @param  string $recordID
+	 * @return array
+	 */
+	private function getVolumeInfoForRecord($recordID){
+		require_once ROOT_DIR . '/Drivers/marmot_inc/IlsVolumeInfo.php';
+		$volumeData             = array();
+		$volumeDataDB           = new IlsVolumeInfo();
+		$volumeDataDB->recordId = $recordID;
+		//D-81 show volume information even if there aren't related items
+		//$volumeDataDB->whereAdd('length(relatedItems) > 0');
+		if ($volumeDataDB->find()){
+			while ($volumeDataDB->fetch()){
+				$volumeData[] = clone($volumeDataDB);
+			}
+		}
+		$volumeDataDB = null;
+		unset($volumeDataDB);
+		return $volumeData;
 	}
 }
