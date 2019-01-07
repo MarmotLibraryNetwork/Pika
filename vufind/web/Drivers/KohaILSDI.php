@@ -259,7 +259,7 @@ abstract class KohaILSDI extends ScreenScrapingDriver {
 	}
 
 
-	private function getKohaPatronId(User $patron){
+	protected function getKohaPatronId(User $patron){
 		//TODO: memcache KohaPatronIds
 		if ($this->initDatabaseConnection()){
 			$sql     = 'SELECT borrowernumber FROM borrowers WHERE cardnumber = "' . $patron->getBarcode() . '"';

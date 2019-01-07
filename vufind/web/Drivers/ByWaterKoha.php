@@ -170,12 +170,14 @@ abstract class ByWaterKoha extends KohaILSDI {
 
 		$transactions = array();
 
+		$kohaPatronID = $this->getKohaPatronId($patron);
+
 		$this->initDatabaseConnection();
 
 		$sql = <<<EOD
 SELECT i.*, items.*, bib.title, bib.author
 FROM borrowers as b, issues as i, items, biblio as bib
-where b.cardnumber ="{$patron->username}"
+where b.borrowernumber ={$kohaPatronID}
 AND b.borrowernumber = i.borrowernumber
 AND items.itemnumber = i.itemnumber
 AND items.biblionumber = bib.biblionumber
