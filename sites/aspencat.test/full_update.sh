@@ -8,7 +8,7 @@ PIKASERVER=aspencat.test
 PIKADBNAME=pika
 OUTPUT_FILE="/var/log/vufind-plus/${PIKASERVER}/full_update_output.log"
 
-MINFILE1SIZE=$((976000000))
+MINFILE1SIZE=$((972000000))
 
 # Check if full_update is already running
 #TODO: Verify that the PID file doesn't get log-rotated
