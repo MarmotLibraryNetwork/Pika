@@ -20,7 +20,7 @@
 				<img src="{img filename='facebook-icon.png'}" alt="Share on Facebook">
 			</a>
 
-			<a href="http://www.pinterest.com/pin/create/button/?url={$url}/{$recordDriver->getLinkUrl()}&media={$url}{$recordDriver->getBookcoverUrl('medium')}&description=Pin%20on%20Pinterest" target="_blank" title="Pin on Pinterest">
+			<a href="http://www.pinterest.com/pin/create/button/?url={$url}/{$recordDriver->getLinkUrl()}&media={$recordDriver->getBookcoverUrl('medium')|escape:'url'}&description=Pin%20on%20Pinterest" target="_blank" title="Pin on Pinterest">
 				<img src="{img filename='pinterest-icon.png'}" alt="Pin on Pinterest">
 			</a>
 		{/if}
