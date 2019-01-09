@@ -323,23 +323,104 @@ EOD;
 	 */
 	public function getReadingHistory($patron, $page = 1, $recordsPerPage = -1, $sortOption = "checkedOut") {
 
+		$kohaPatronID = $this->getKohaPatronId($patron);
+
 		$this->initDatabaseConnection();
 
 		//Figure out if the user is opted in to reading history
-		$sql = "select privacy from borrowers where borrowernumber = {$patron->username}";
+		$sql = "select privacy from borrowers where borrowernumber = {$kohaPatronID}";
 		$res = mysqli_query($this->dbConnection, $sql);
 		$row = $res->fetch_assoc();
 		// privacy in koha db: 1 = default (keep as long as allowed by law), 0 = forever, 2 = never
 		$privacy = $row['privacy'];
 
+		$historyEnabled = false;
 		if ($privacy != 2) {
-
+			$historyEnabled = true;
 		}
 		// Update patron's setting in Pika if the setting has changed in Koha
 		if ($historyEnabled != $patron->trackReadingHistory) {
 			$patron->trackReadingHistory = (boolean) $historyEnabled;
 			$patron->update();
 		}
+
+		if (!$historyEnabled) {
+			return array('historyActive' => false, 'titles' => array(), 'numTitles' => 0);
+		}
+
+		$historyActive = true;
+
+		$readinHistorySql = <<<EOD
+SELECT *, issues.timestamp as issuestimestamp, issues.renewals AS renewals,items.renewals AS totalrenewals,items.timestamp AS itemstimestamp
+  FROM issues
+  LEFT JOIN items on items.itemnumber=issues.itemnumber
+  LEFT JOIN biblio ON items.biblionumber=biblio.biblionumber
+  LEFT JOIN biblioitems ON items.biblioitemnumber=biblioitems.biblioitemnumber
+  WHERE borrowernumber={$kohaPatronID}
+  UNION ALL
+  SELECT *, old_issues.timestamp as issuestimestamp, old_issues.renewals AS renewals,items.renewals AS totalrenewals,items.timestamp AS itemstimestamp
+  FROM old_issues
+  LEFT JOIN items on items.itemnumber=old_issues.itemnumber
+  LEFT JOIN biblio ON items.biblionumber=biblio.biblionumber
+  LEFT JOIN biblioitems ON items.biblioitemnumber=biblioitems.biblioitemnumber
+  WHERE borrowernumber={$kohaPatronID} AND old_issues.itemnumber IS NOT NULL
+EOD;
+
+		$readingHistoryRes = mysqli_query($this->dbConnection, $readinHistorySql);
+
+
+		if ($readingHistoryRes){
+			$readingHistoryTitles = array();
+			while ($readingHistoryTitleRow = $readingHistoryRes->fetch_assoc()){
+				$checkOutDate = new DateTime($readingHistoryTitleRow['issuetimestamp']);
+				$curTitle = array();
+				$curTitle['id']       = $readingHistoryTitleRow['biblionumber'];
+				$curTitle['shortId']  = $readingHistoryTitleRow['biblionumber'];
+				$curTitle['recordId'] = $readingHistoryTitleRow['biblionumber'];
+				$curTitle['title']    = $readingHistoryTitleRow['title'];
+				$curTitle['checkout'] = $checkOutDate->format('m-d-Y'); // this format is expected by Pika's java cron program.
+
+				$readingHistoryTitles[] = $curTitle;
+			}
+
+
+		$numTitles = count($readingHistoryTitles);
+
+		//process pagination
+		if ($recordsPerPage != -1){
+			$startRecord = ($page - 1) * $recordsPerPage;
+			$readingHistoryTitles = array_slice($readingHistoryTitles, $startRecord, $recordsPerPage);
+		}
+
+		set_time_limit(20 * count($readingHistoryTitles));
+		foreach ($readingHistoryTitles as $key => $historyEntry){
+			//Get additional information from resources table
+			$historyEntry['ratingData']  = null;
+			$historyEntry['permanentId'] = null;
+			$historyEntry['linkUrl']     = null;
+			$historyEntry['coverUrl']    = null;
+			$historyEntry['format']      = "Unknown";
+
+			if (!empty($historyEntry['recordId'])){
+//					if (is_int($historyEntry['recordId'])) $historyEntry['recordId'] = (string) $historyEntry['recordId']; // Marc Record Contructor expects the recordId as a string.
+				require_once ROOT_DIR . '/RecordDrivers/MarcRecord.php';
+				$recordDriver = new MarcRecord($this->accountProfile->recordSource.':'.$historyEntry['recordId']);
+				if ($recordDriver->isValid()){
+					$historyEntry['ratingData']  = $recordDriver->getRatingData();
+					$historyEntry['permanentId'] = $recordDriver->getPermanentId();
+					$historyEntry['linkUrl']     = $recordDriver->getGroupedWorkDriver()->getLinkUrl();
+					$historyEntry['coverUrl']    = $recordDriver->getBookcoverUrl('medium');
+					$historyEntry['format']      = $recordDriver->getFormats();
+					$historyEntry['author']      = $recordDriver->getPrimaryAuthor();
+				}
+				$recordDriver = null;
+			}
+			$readingHistoryTitles[$key] = $historyEntry;
+		}
+
+			return array('historyActive'=>$historyActive, 'titles'=>$readingHistoryTitles, 'numTitles'=> $numTitles);
+		}
+		return array('historyActive'=>false, 'titles'=>array(), 'numTitles'=> 0);
 	}
 
 	/**
