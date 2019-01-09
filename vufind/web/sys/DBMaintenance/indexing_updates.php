@@ -281,6 +281,14 @@ function getIndexingUpdates() {
 				)
 		),
 
+		'indexing_profile_record_number_subfield' => array(
+			'title' => 'Indexing Profiles - recordNumberField setting',
+			'description' => 'Allow the record number sub-field to be specified.',
+			'sql' => array(
+				"ALTER TABLE indexing_profiles ADD COLUMN `recordNumberField` char(1) DEFAULT 'a' ",
+			)
+		),
+
 		'translation_map_regex' => array(
 			'title' => 'Translation Maps Regex',
 			'description' => 'Setup Translation Maps to use regular expressions',
