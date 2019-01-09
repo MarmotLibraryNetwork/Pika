@@ -713,24 +713,25 @@ public class RecordGrouperMain {
 				ResultSet indexingProfilesRS = getIndexingProfilesStmt.executeQuery();
 				while (indexingProfilesRS.next()){
 					IndexingProfile profile = new IndexingProfile();
-					profile.id = indexingProfilesRS.getLong(1);
-					profile.name = indexingProfilesRS.getString("name");
-					profile.marcPath = indexingProfilesRS.getString("marcPath");
-					profile.filenamesToInclude = indexingProfilesRS.getString("filenamesToInclude");
-					profile.individualMarcPath = indexingProfilesRS.getString("individualMarcPath");
-					profile.numCharsToCreateFolderFrom = indexingProfilesRS.getInt("numCharsToCreateFolderFrom");
+					profile.id                                = indexingProfilesRS.getLong(1);
+					profile.name                              = indexingProfilesRS.getString("name");
+					profile.marcPath                          = indexingProfilesRS.getString("marcPath");
+					profile.filenamesToInclude                = indexingProfilesRS.getString("filenamesToInclude");
+					profile.individualMarcPath                = indexingProfilesRS.getString("individualMarcPath");
+					profile.numCharsToCreateFolderFrom        = indexingProfilesRS.getInt("numCharsToCreateFolderFrom");
 					profile.createFolderFromLeadingCharacters = indexingProfilesRS.getBoolean("createFolderFromLeadingCharacters");
-					profile.groupingClass = indexingProfilesRS.getString("groupingClass");
-					profile.recordNumberTag = indexingProfilesRS.getString("recordNumberTag");
-					profile.recordNumberPrefix = indexingProfilesRS.getString("recordNumberPrefix");
-					profile.marcEncoding = indexingProfilesRS.getString("marcEncoding");
-					profile.formatSource = indexingProfilesRS.getString("formatSource");
-					profile.specifiedFormatCategory = indexingProfilesRS.getString("specifiedFormatCategory");
-					profile.format = getCharFromRecordSet(indexingProfilesRS, "format");
-					profile.itemTag = indexingProfilesRS.getString("itemTag");
-					profile.eContentDescriptor = getCharFromRecordSet(indexingProfilesRS, "eContentDescriptor");
-					profile.doAutomaticEcontentSuppression = indexingProfilesRS.getBoolean("doAutomaticEcontentSuppression");
-					profile.groupUnchangedFiles = indexingProfilesRS.getBoolean("groupUnchangedFiles");
+					profile.groupingClass                     = indexingProfilesRS.getString("groupingClass");
+					profile.recordNumberTag                   = indexingProfilesRS.getString("recordNumberTag");
+					profile.recordNumberField                 = getCharFromRecordSet(indexingProfilesRS, "recordNumberField");
+					profile.recordNumberPrefix                = indexingProfilesRS.getString("recordNumberPrefix");
+					profile.marcEncoding                      = indexingProfilesRS.getString("marcEncoding");
+					profile.formatSource                      = indexingProfilesRS.getString("formatSource");
+					profile.specifiedFormatCategory           = indexingProfilesRS.getString("specifiedFormatCategory");
+					profile.format                            = getCharFromRecordSet(indexingProfilesRS, "format");
+					profile.itemTag                           = indexingProfilesRS.getString("itemTag");
+					profile.eContentDescriptor                = getCharFromRecordSet(indexingProfilesRS, "eContentDescriptor");
+					profile.doAutomaticEcontentSuppression    = indexingProfilesRS.getBoolean("doAutomaticEcontentSuppression");
+					profile.groupUnchangedFiles               = indexingProfilesRS.getBoolean("groupUnchangedFiles");
 
 					indexingProfiles.add(profile);
 				}

@@ -23,6 +23,7 @@ import java.util.regex.Pattern;
 class RecordGroupingProcessor {
 	protected Logger logger;
 	String recordNumberTag = "";
+	char recordNumberField = 'a';
 	String recordNumberPrefix = "";
 	String itemTag;
 	boolean useEContentSubfield = false;
@@ -70,6 +71,7 @@ class RecordGroupingProcessor {
 	RecordGroupingProcessor(Connection dbConnection, String serverName, Ini configIni, Logger logger, boolean fullRegrouping) {
 		this.logger = logger;
 		this.fullRegrouping = fullRegrouping;
+		//TODO: these should be deprecated for indexing profile settings in the database
 		recordNumberTag = configIni.get("Reindex", "recordNumberTag");
 		recordNumberPrefix = configIni.get("Reindex", "recordNumberPrefix");
 		itemTag = configIni.get("Reindex", "itemTag");
@@ -133,18 +135,18 @@ class RecordGroupingProcessor {
 	private static Pattern overdrivePattern = Pattern.compile("(?i)^http://.*?/ContentDetails\\.htm\\?id=[\\da-f]{8}-[\\da-f]{4}-[\\da-f]{4}-[\\da-f]{4}-[\\da-f]{12}$|^http://link\\.overdrive\\.com");
 	RecordIdentifier getPrimaryIdentifierFromMarcRecord(Record marcRecord, String recordType, boolean doAutomaticEcontentSuppression){
 		RecordIdentifier identifier = null;
-		VariableField recordNumberField = marcRecord.getVariableField(recordNumberTag);
+		VariableField recordNumberFieldValue = marcRecord.getVariableField(recordNumberTag);
 		//Make sure we only get one ils identifier
 		logger.debug("getPrimaryIdentifierFromMarcRecord - Got record number field");
-		if (recordNumberField != null){
-			if (recordNumberField instanceof DataField) {
+		if (recordNumberFieldValue != null){
+			if (recordNumberFieldValue instanceof DataField) {
 				logger.debug("getPrimaryIdentifierFromMarcRecord - Record number field is a data field");
 
-				DataField curRecordNumberField = (DataField)recordNumberField;
-				Subfield subfieldA = curRecordNumberField.getSubfield('a');
+				DataField curRecordNumberField = (DataField)recordNumberFieldValue;
+				Subfield subfieldA = curRecordNumberField.getSubfield(recordNumberField);
 				if (subfieldA != null && (recordNumberPrefix.length() == 0 || subfieldA.getData().length() > recordNumberPrefix.length())) {
-					if (curRecordNumberField.getSubfield('a').getData().substring(0, recordNumberPrefix.length()).equals(recordNumberPrefix)) {
-						String recordNumber = curRecordNumberField.getSubfield('a').getData().trim();
+					if (curRecordNumberField.getSubfield(recordNumberField).getData().substring(0, recordNumberPrefix.length()).equals(recordNumberPrefix)) {
+						String recordNumber = curRecordNumberField.getSubfield(recordNumberField).getData().trim();
 						identifier = new RecordIdentifier();
 						identifier.setValue(recordType, recordNumber);
 					}
@@ -152,7 +154,7 @@ class RecordGroupingProcessor {
 			}else{
 				//It's a control field
 				logger.debug("getPrimaryIdentifierFromMarcRecord - Record number field is a control field");
-				ControlField curRecordNumberField = (ControlField)recordNumberField;
+				ControlField curRecordNumberField = (ControlField)recordNumberFieldValue;
 				String recordNumber = curRecordNumberField.getData().trim();
 				identifier = new RecordIdentifier();
 				identifier.setValue(recordType, recordNumber);

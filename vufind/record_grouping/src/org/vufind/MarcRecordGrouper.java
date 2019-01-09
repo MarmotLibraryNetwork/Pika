@@ -34,10 +34,11 @@ class MarcRecordGrouper extends RecordGroupingProcessor{
 		super(logger, fullRegrouping);
 		this.profile = profile;
 
-		recordNumberTag = profile.recordNumberTag;
-		recordNumberPrefix = profile.recordNumberPrefix;
-		itemTag = profile.itemTag;
-		eContentDescriptor = profile.eContentDescriptor;
+		recordNumberTag     = profile.recordNumberTag;
+		recordNumberField   = profile.recordNumberField;
+		recordNumberPrefix  = profile.recordNumberPrefix;
+		itemTag             = profile.itemTag;
+		eContentDescriptor  = profile.eContentDescriptor;
 		useEContentSubfield = profile.eContentDescriptor != ' ';
 
 
