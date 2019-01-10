@@ -611,15 +611,16 @@ EOD;
 	 */
 	public function getMyFinesFromDB($patron, $includeMessages = false){
 
+		$kohaPatronID = $this->getKohaPatronId($patron);
+
 		$this->initDatabaseConnection();
 		// set early to give quick return if no fines
 		$fines = array();
 
 		$sum_query = <<<EOD
 select sum(accountlines.amountoutstanding) as sum 
-from accountlines, borrowers
-where borrowers.cardnumber = "{$patron->username}"
-and borrowers.borrowernumber = accountlines.borrowernumber
+from accountlines
+where accountlines.borrowernumber = "{$kohaPatronID}"
 EOD;
 		// quick query to see if there are any outstanding fines.
 		$sumResp = mysqli_query($this->dbConnection, $sum_query);
@@ -629,8 +630,22 @@ EOD;
 			// no fines
 			return $fines;
 		}
+		$amount = number_format($sum_row['sum'], 2, '.', '');
+		$date = date('n-j-Y');
+
+		$curFine = [
+			'date' => $date,
+			'reason' => 'Total fines Owed ',
+			'message' => 'Outstanding balance.',
+			'amount' => $amount,
+			'amountOutstanding' => $amount
+		];
+
+		$fines[] = $curFine;
 
 		$sumResp->close();
+
+		return $fines;
 /*
  *
  * SELECT distinct accountno FROM accountlines where borrowernumber = '416127' order by accountno desc;
