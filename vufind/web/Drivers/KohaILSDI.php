@@ -310,18 +310,31 @@ abstract class KohaILSDI extends ScreenScrapingDriver {
 	}
 
 
+	protected static $kohaPatronIdsForUsers = array();
 	protected function getKohaPatronId(User $patron){
-		//TODO: memcache KohaPatronIds
+		if (!isset(self::$kohaPatronIdsForUsers[$patron->id])){
+			/** @var Memcache $memCache */
+			global $memCache;
+			$memcacheKey = 'kohaPatronId_'. $patron->id;
+			$kohaPatronId = $memCache->get($memcacheKey);
+			if ($kohaPatronId === false || isset($_REQUEST['reload'])){
 		if ($this->initDatabaseConnection()){
 			$sql     = 'SELECT borrowernumber FROM borrowers WHERE cardnumber = "' . $patron->getBarcode() . '"';
 			$results = mysqli_query($this->dbConnection, $sql);
 			if ($results){
 				$row          = $results->fetch_assoc();
 				$kohaPatronId = $row['borrowernumber'];
+						self::$kohaPatronIdsForUsers[$patron->id] = $kohaPatronId;
+						global $configArray;
+						$memCache->set($memcacheKey, $kohaPatronId, 0, $configArray['Caching']['koha_patron_id']);
 				if (!empty($kohaPatronId)){
 					return $kohaPatronId;
 				}
 			}
+		}
+			}
+		} else {
+			return self::$kohaPatronIdsForUsers[$patron->id];
 		}
 		return false;
 	}
@@ -351,21 +364,13 @@ abstract class KohaILSDI extends ScreenScrapingDriver {
 				continue;
 			}elseif (is_int($kohaUserID)){
 				$patron = $this->getPatronInformation($kohaUserID);
-//				if ($patron){
-//					// Get Num Holds
-//					$patron->numHoldsAvailableIls = $this->getNumOfAvailableHoldsFromDB($kohaUserID);
-//					$patron->numHoldsRequestedIls = $this->getNumOfUnAvailableHoldsFromDB($kohaUserID);
-//					$patron->numHoldsIls          = $patron->numHoldsAvailableIls + $patron->numHoldsRequestedIls;
-//
-//					// Get Num Checkouts
-//					$patron->numCheckedOutIls = $this->getNumOfCheckoutsFromDB($kohaUserID);
-//				}
-				return $patron;
+				break;
 			}
 		}
 		if (!$patron && PEAR_Singleton::isError($kohaUserID)){
 			return $kohaUserID;
 		}
+		return $patron;
 	}
 
 	private function authenticatePatron($barcode, $password){
