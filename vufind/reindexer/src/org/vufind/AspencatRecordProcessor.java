@@ -185,7 +185,14 @@ class AspencatRecordProcessor extends IlsRecordProcessor {
 							case "-1":
 								return "On Order";
 						}
+						//subfield 7 : not for loan
+						//  -2 cataloging;  in repairs, ordered, in staff collection
+						//subfield q will have the due date
+						//no longer in catalogging,
 						//There are several library use only statuses that we do not care about right now.
+
+
+						//holds in the subfield n
 						return null;
 					}else if (subfield == 'k') {
 						switch (fieldData) {

@@ -68,6 +68,7 @@ public class KohaExportMain {
 		try {
 			String kohaConnectionJDBC = "jdbc:mysql://" +
 					cleanIniValue(ini.get("Catalog", "db_host")) +
+					":" + cleanIniValue(ini.get("Catalog", "db_port")) +
 					"/" + cleanIniValue(ini.get("Catalog", "db_name") +
 					"?user=" + cleanIniValue(ini.get("Catalog", "db_user")) +
 					"&password=" + cleanIniValue(ini.get("Catalog", "db_pwd")) +
@@ -192,7 +193,9 @@ public class KohaExportMain {
 			//Only mark records as changed
 			boolean errorUpdatingDatabase = false;
 
-			PreparedStatement getChangedItemsFromKohaStmt = kohaConn.prepareStatement("select itemnumber, biblionumber, barcode, damaged, itemlost, wthdrawn, suppress, restricted, onloan from items where timestamp >= ? LIMIT 0, ?");
+//			PreparedStatement getChangedItemsFromKohaStmt = kohaConn.prepareStatement("select itemnumber, biblionumber, barcode, damaged, itemlost, wthdrawn, suppress, restricted, onloan from items where timestamp >= ? LIMIT 0, ?");
+			PreparedStatement getChangedItemsFromKohaStmt = kohaConn.prepareStatement("select itemnumber, biblionumber, barcode, damaged, itemlost, withdrawn, restricted, onloan from items where timestamp >= ? LIMIT 0, ?");
+			// withdrawn col name change; no suppress column
 			getChangedItemsFromKohaStmt.setTimestamp(1, new Timestamp(lastKohaExtractTime * 1000));
 			getChangedItemsFromKohaStmt.setLong(2, maxRecordsToUpdateDuringExtract);
 

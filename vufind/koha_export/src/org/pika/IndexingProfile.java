@@ -129,7 +129,7 @@ public class IndexingProfile {
 			}
 
 		}catch (Exception e){
-			logger.error("Error reading index profile for CarlX", e);
+			logger.error("Error reading index profile for Koha", e);
 		}
 		return indexingProfile;
 	}
