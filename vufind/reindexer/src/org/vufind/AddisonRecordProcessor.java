@@ -36,7 +36,7 @@ public class AddisonRecordProcessor extends IIIRecordProcessor {
         boolean available      = false;
         String status          = itemInfo.getStatusCode();
         String dueDate         = itemInfo.getDueDate() == null ? "" : itemInfo.getDueDate();
-        String availableStatus = "-oyp";
+        String availableStatus = "-oy";
 
         if (!status.isEmpty() && availableStatus.indexOf(status.charAt(0)) >= 0) {
             if (dueDate.length() == 0 || dueDate.trim().equals("-  -")) {
