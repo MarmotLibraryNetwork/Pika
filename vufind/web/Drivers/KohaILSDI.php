@@ -104,11 +104,62 @@ abstract class KohaILSDI extends ScreenScrapingDriver {
 	 * @access  public
 	 */
 	public function placeHold($patron, $recordId, $pickupBranch, $cancelIfNotFilledByDate = null){
-		$result = $this->placeItemHold($patron, $recordId, null, $pickupBranch, $cancelIfNotFilledByDate);
-		return $result;
+		$holdResult = array(
+			'success' => false,
+			'message' => 'Your hold could not be placed. '
+		);
+
+		$patronKohaId = $this->getKohaPatronId($patron);
+
+		if (empty($pickupBranch)){
+			$pickupBranch = strtoupper($patron->homeLocationCode);
+		}
+
+		$urlParameters = [
+			'service' => 'HoldTitle',
+			'patron_id' => $patronKohaId,
+			'bib_id' => $recordId,
+			'pickup_location' => $pickupBranch,
+			'request_location' => $_SERVER['REMOTE_ADDR']
+		];
+
+		if (!empty($cancelIfNotFilledByDate)){
+			$urlParameters['needed_before_date'] = $cancelIfNotFilledByDate;//TODO determine date format needed
+		}
+
+		$webServiceURL = $this->getWebServiceURL() . $this->ilsdiscript;
+		$webServiceURL .= '?' . http_build_query($urlParameters);
+
+		$success      = false;
+		$title        = null;
+
+		$holdResponse = $this->getWebServiceResponse($webServiceURL);
+		if (!empty($holdResponse)){
+			if (!empty($holdResponse->title)){
+				$holdResult = array(
+					'title' => $title,
+					'bib' => $recordId,
+					'success' => true,
+					'message' => "You hold has been placed."
+				);
+			}else{
+				//TODO: error message
+				$message = 'Failed to place the hold';
+				if (isset($holdResponse->message)){
+					$message .= ' : ' . $holdResponse->message;
+				}else{
+					$message .= '. Error Code : ' . $holdResponse->code;
+				}
+			}
+		}
+
+		return $holdResult;
 	}
 
 	function placeItemHold($patron, $recordId, $itemId, $pickupBranch = null, $cancelIfNotFilledByDate = null){
+
+		return $this->placeHold($patron, $recordId, $pickupBranch, $cancelIfNotFilledByDate);
+
 		$holdResult = array(
 			'success' => false,
 			'message' => 'Your hold could not be placed. '
