@@ -630,6 +630,8 @@ EOD;
 			// no fines
 			return $fines;
 		}
+
+		/*
 		$amount = number_format($sum_row['sum'], 2, '.', '');
 		$date = date('n-j-Y');
 
@@ -646,6 +648,7 @@ EOD;
 		$sumResp->close();
 
 		return $fines;
+		*/
 /*
  *
  * SELECT distinct accountno FROM accountlines where borrowernumber = '416127' order by accountno desc;
@@ -665,14 +668,23 @@ EOD;
 
 		}
 */
+		/*
 		$fines_query = <<<EOD
 select accountlines.amount as ac_amount, accountlines.*, account_offsets.*
 from accountlines, account_offsets, borrowers 
-where borrowers.cardnumber = "{$patron->username}"
+where borrowers.borrowernumber = "{$patron->username}"
 and borrowers.borrowernumber = accountlines.borrowernumber
 and (accountlines.accountlines_id = account_offsets.credit_id 
 or accountlines.accountlines_id = account_offsets.debit_id)
 order by accountlines.date ASC
+EOD;
+*/
+
+		$fines_query = <<<EOD
+select *
+from accountlines
+where accountlines.borrowernumber = "{$kohaPatronID}"
+and accountlines.amountoutstanding != 0.000000
 EOD;
 
 
@@ -690,7 +702,7 @@ EOD;
 			$curFine = [
 					'date' => $allFeesRow['date'],
 					'reason' => $allFeesRow['accounttype'],
-					'message' => $allFeesRow['type'].": ".$allFeesRow['description'],
+					'message' => $allFeesRow['description'],
 					'amount' => $amount,
 					'amountOutstanding' => $amountOutstanding
 			];
