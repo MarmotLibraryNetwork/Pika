@@ -317,13 +317,16 @@ abstract class KohaILSDI extends ScreenScrapingDriver {
 			global $memCache;
 			$memcacheKey = 'kohaPatronId_'. $patron->id;
 			$kohaPatronId = $memCache->get($memcacheKey);
+			if ($kohaPatronId && !isset($_REQUEST['reload'])) {
+				return $kohaPatronId;
+			}
 			if ($kohaPatronId === false || isset($_REQUEST['reload'])){
-		if ($this->initDatabaseConnection()){
-			$sql     = 'SELECT borrowernumber FROM borrowers WHERE cardnumber = "' . $patron->getBarcode() . '"';
-			$results = mysqli_query($this->dbConnection, $sql);
-			if ($results){
-				$row          = $results->fetch_assoc();
-				$kohaPatronId = $row['borrowernumber'];
+				if ($this->initDatabaseConnection()){
+					$sql     = 'SELECT borrowernumber FROM borrowers WHERE cardnumber = "' . $patron->getBarcode() . '"';
+					$results = mysqli_query($this->dbConnection, $sql);
+					if ($results){
+						$row          = $results->fetch_assoc();
+						$kohaPatronId = $row['borrowernumber'];
 						self::$kohaPatronIdsForUsers[$patron->id] = $kohaPatronId;
 						global $configArray;
 						$memCache->set($memcacheKey, $kohaPatronId, 0, $configArray['Caching']['koha_patron_id']);
