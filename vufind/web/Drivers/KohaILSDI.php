@@ -312,34 +312,51 @@ abstract class KohaILSDI extends ScreenScrapingDriver {
 
 	protected static $kohaPatronIdsForUsers = array();
 	protected function getKohaPatronId(User $patron){
-		if (!isset(self::$kohaPatronIdsForUsers[$patron->id])){
-			/** @var Memcache $memCache */
-			global $memCache;
-			$memcacheKey = 'kohaPatronId_'. $patron->id;
-			$kohaPatronId = $memCache->get($memcacheKey);
-			if ($kohaPatronId && !isset($_REQUEST['reload'])) {
-				return $kohaPatronId;
-			}
-			if ($kohaPatronId === false || isset($_REQUEST['reload'])){
-				if ($this->initDatabaseConnection()){
-					$sql     = 'SELECT borrowernumber FROM borrowers WHERE cardnumber = "' . $patron->getBarcode() . '"';
-					$results = mysqli_query($this->dbConnection, $sql);
-					if ($results){
-						$row          = $results->fetch_assoc();
-						$kohaPatronId = $row['borrowernumber'];
-						self::$kohaPatronIdsForUsers[$patron->id] = $kohaPatronId;
-						global $configArray;
-						$memCache->set($memcacheKey, $kohaPatronId, 0, $configArray['Caching']['koha_patron_id']);
-				if (!empty($kohaPatronId)){
-					return $kohaPatronId;
-				}
-			}
+		// first check the $kohaPatronIdsForUsers array for koha id
+		if (array_key_exists($patron->id, self::$kohaPatronIdsForUsers)) {
+			// found it in the array
+			return self::$kohaPatronIdsForUsers;
 		}
+
+		// next check memcache for the koha id
+		global $memCache;
+		$memcacheKey  = 'kohaPatronId_' . $patron->id;
+		$kohaPatronId = $memCache->get($memcacheKey);
+
+		if ($kohaPatronId && !isset($_REQUEST['reload'])) {
+			// found the koha id and we don't need to reload
+			return $kohaPatronId;
+		}
+
+		// not in memcache either. grab it from the database
+		if( !$this->initDatabaseConnection()) {
+			// oops. can't connect to database.
+			return false;
+		}
+		// ok. lets proceed.
+		$sql     = 'SELECT borrowernumber FROM borrowers WHERE cardnumber = "' . $patron->getBarcode() . '"';
+		$results = mysqli_query($this->dbConnection, $sql);
+		if($results) {
+			// got a response. let's proceed.
+			$row = $results->fetch_assoc();
+			if(empty($row['borrowernumber'])) {
+				// hmmm. what's up with this?
+				return false;
 			}
+			// ok, we have something to work with.
+			$kohaPatronId = $row['borrowernumber'];
 		} else {
-			return self::$kohaPatronIdsForUsers[$patron->id];
+			// oops. something went wrong
+			return false;
 		}
-		return false;
+		// load it into the $kohaPatronIdsForUsers array
+		self::$kohaPatronIdsForUsers[$patron->id] = $kohaPatronId;
+		// cool. let's load up memcache. we still have $memcacheKey and global $memCache from above. no need to do work twice.
+		global $configArray;
+		$memCache->set($memcacheKey, $kohaPatronId, 0, $configArray['Caching']['koha_patron_id']);
+		// ok, memcache set. lets give back the koha id
+		return $kohaPatronId;
+		// and ... done!
 	}
 
 	public function patronLogin($username, $password, $validatedViaSSO){
