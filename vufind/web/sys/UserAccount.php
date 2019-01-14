@@ -279,6 +279,7 @@ class UserAccount {
 
 			/** @var User $userData */
 			$userData = $memCache->get("user_{$serverName}_{$activeUserId}");
+			//$userData = false;
 			if ($userData === false || isset($_REQUEST['reload'])){
 
 				//Load the user from the database

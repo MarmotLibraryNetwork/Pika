@@ -383,7 +383,7 @@ abstract class KohaILSDI extends ScreenScrapingDriver {
 			if (PEAR_Singleton::isError($kohaUserID)){
 				continue;
 			}elseif (is_int($kohaUserID)){
-				$patron = $this->getPatronInformation($kohaUserID);
+				$patron = $this->getPatronInformation($kohaUserID, $password);
 				break;
 			}
 		}
@@ -418,7 +418,7 @@ abstract class KohaILSDI extends ScreenScrapingDriver {
 		return new PEAR_Error('authentication_error_technical');
 	}
 
-	private function getPatronInformation($kohaUserId){
+	private function getPatronInformation($kohaUserId, $password = ''){
 		$patron = false;
 
 		$urlParameters = array(
@@ -460,7 +460,9 @@ abstract class KohaILSDI extends ScreenScrapingDriver {
 			$patron->fullname     = $firstName . ' ' . $lastName;
 			$patron->username     = $kohaUserId;
 			$patron->cat_username = (string)$patronInfoRepsonse->cardnumber;
-//			$patron->cat_password = //TODO: this will have to be set somewhere else
+			if (!empty($password)) {
+				$patron->cat_password = $password;
+			}
 			$patron->email      = (string)$patronInfoRepsonse->email;
 			$patron->patronType = (string)$patronInfoRepsonse->categorycode;
 			$patron->web_note   = (string)$patronInfoRepsonse->opacnote; //TODO: double check that the point of the opac note is the same as our webnote
