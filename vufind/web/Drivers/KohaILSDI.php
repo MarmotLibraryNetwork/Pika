@@ -124,32 +124,27 @@ abstract class KohaILSDI extends ScreenScrapingDriver {
 		];
 
 		if (!empty($cancelIfNotFilledByDate)){
-			$urlParameters['needed_before_date'] = $cancelIfNotFilledByDate;//TODO determine date format needed
+			$urlParameters['needed_before_date'] = $cancelIfNotFilledByDate;
 		}
 
 		$webServiceURL = $this->getWebServiceURL() . $this->ilsdiscript;
 		$webServiceURL .= '?' . http_build_query($urlParameters);
 
-		$success      = false;
 		$title        = null;
 
 		$holdResponse = $this->getWebServiceResponse($webServiceURL);
 		if (!empty($holdResponse)){
 			if (!empty($holdResponse->title)){
 				$holdResult = array(
-					'title' => $title,
+					'title' => $holdResponse->title,
 					'bib' => $recordId,
 					'success' => true,
 					'message' => "You hold has been placed."
 				);
-			}else{
-				//TODO: error message
-				$message = 'Failed to place the hold';
-				if (isset($holdResponse->message)){
-					$message .= ' : ' . $holdResponse->message;
-				}else{
-					$message .= '. Error Code : ' . $holdResponse->code;
-				}
+			}elseif(isset($holdResponse->message)){
+				$holdResult['message'] .= ' Message: ' . $holdResponse->message;
+			}elseif(isset($holdResponse->code)){
+				$holdResult['message'] .= ' Error Code: ' . $holdResponse->code;
 			}
 		}
 
