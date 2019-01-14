@@ -1,8 +1,8 @@
 package org.pika;
 
 /**
- * Information about an item that has changed within Sierra
- * VuFind-Plus
+ * Information about an item that has changed within Koha
+ * Pika
  * User: Mark Noble
  * Date: 10/13/2014
  * Time: 9:47 AM
@@ -10,12 +10,15 @@ package org.pika;
 public class ItemChangeInfo {
 	private String itemId;
 	private String location;
+	private String subLocation;
+	private String shelfLocation;
 	private int damaged;
-	private String itemLost;
+	private int itemLost;
 	private int withdrawn;
-	private int suppress;
-	private String restricted;
+//	private int suppress;
+	private int restricted;
 	private String onLoan;
+	private String notForLoan;
 
 	public String getItemId() {
 		return itemId;
@@ -41,11 +44,11 @@ public class ItemChangeInfo {
 		this.damaged = damaged;
 	}
 
-	public String getItemLost() {
+	public int getItemLost() {
 		return itemLost;
 	}
 
-	public void setItemLost(String itemLost) {
+	public void setItemLost(int itemLost) {
 		this.itemLost = itemLost;
 	}
 
@@ -57,19 +60,19 @@ public class ItemChangeInfo {
 		this.withdrawn = withdrawn;
 	}
 
-	public int getSuppress() {
-		return suppress;
-	}
+//	public int getSuppress() {
+//		return suppress;
+//	}
+//
+//	public void setSuppress(int suppress) {
+//		this.suppress = suppress;
+//	}
 
-	public void setSuppress(int suppress) {
-		this.suppress = suppress;
-	}
-
-	public String getRestricted() {
+	public int getRestricted() {
 		return restricted;
 	}
 
-	public void setRestricted(String restricted) {
+	public void setRestricted(int restricted) {
 		this.restricted = restricted;
 	}
 
@@ -79,5 +82,29 @@ public class ItemChangeInfo {
 
 	public void setOnLoan(String onLoan) {
 		this.onLoan = onLoan;
+	}
+
+	public String getNotForLoan() {
+		return notForLoan;
+	}
+
+	public void setNotForLoan(String notForLoan) {
+		this.notForLoan = notForLoan;
+	}
+
+	public String getShelfLocation() {
+		return shelfLocation;
+	}
+
+	public void setShelfLocation(String shelfLocation) {
+		this.shelfLocation = shelfLocation;
+	}
+
+	public String getSubLocation() {
+		return subLocation;
+	}
+
+	public void setSubLocation(String subLocation) {
+		this.subLocation = subLocation;
 	}
 }
