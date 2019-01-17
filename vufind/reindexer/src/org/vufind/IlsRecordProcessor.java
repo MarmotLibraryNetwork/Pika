@@ -1659,6 +1659,12 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		if (printFormats.contains("XboxOne") && printFormats.contains("Xbox360")){
 			printFormats.remove("Xbox360");
 		}
+		if (printFormats.contains("Kinect") && printFormats.contains("Xbox360")){
+			printFormats.remove("Xbox360");
+		}
+		if (printFormats.contains("Kinect") && printFormats.contains("XboxOne")){
+			printFormats.remove("XboxOne");
+		}
 		if (printFormats.contains("Kinect") || printFormats.contains("Xbox360")
 				|| printFormats.contains("XboxOne") || printFormats.contains("PlayStation")
 				|| printFormats.contains("PlayStation3") || printFormats.contains("PlayStation4")
@@ -1900,6 +1906,8 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			return "XboxOne";
 		} else if (value.contains("xbox") && !value.contains("compatible")) {
 			return "Xbox360";
+		} else if (value.contains("playstation 4") /*&& !value.contains("compatible")*/) {
+			return "PlayStationVita";
 		} else if (value.contains("playstation 4") && !value.contains("compatible")) {
 			return "PlayStation4";
 		} else if (value.contains("playstation 3") && !value.contains("compatible")) {
