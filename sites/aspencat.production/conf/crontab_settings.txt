@@ -29,7 +29,7 @@
 #############
 # On Reboot #
 #############
-@reboot cd /usr/local/vufind-plus/sites/aspencat.production/; ./aspencat.production.sh start
+#@reboot cd /usr/local/vufind-plus/sites/aspencat.production/; ./aspencat.production.sh start
 # Continuous Re-Indexing
 #@reboot sleep 300 && /usr/local/vufind-plus/sites/aspencat.production/continuous_partial_reindex.sh
 
