@@ -926,11 +926,11 @@ public class GroupedWorkIndexer {
 			GroupedReindexMain.addNoteToReindexLog("Starting to process " + numWorksToIndex + " grouped works");
 
 			ResultSet groupedWorks = getAllGroupedWorks.executeQuery();
-			while (groupedWorks.next()){
-				Long id = groupedWorks.getLong("id");
-				String permanentId = groupedWorks.getString("permanent_id");
+			while (groupedWorks.next()) {
+				Long   id                = groupedWorks.getLong("id");
+				String permanentId       = groupedWorks.getString("permanent_id");
 				String grouping_category = groupedWorks.getString("grouping_category");
-				Long lastUpdated = groupedWorks.getLong("date_updated");
+				Long   lastUpdated       = groupedWorks.getLong("date_updated");
 				if (groupedWorks.wasNull()){
 					lastUpdated = null;
 				}
@@ -975,9 +975,9 @@ public class GroupedWorkIndexer {
 
 		getGroupedWorkPrimaryIdentifiers.setLong(1, id);
 		ResultSet groupedWorkPrimaryIdentifiers = getGroupedWorkPrimaryIdentifiers.executeQuery();
-		int numPrimaryIdentifiers = 0;
+		int       numPrimaryIdentifiers         = 0;
 		while (groupedWorkPrimaryIdentifiers.next()){
-			String type = groupedWorkPrimaryIdentifiers.getString("type");
+			String type       = groupedWorkPrimaryIdentifiers.getString("type");
 			String identifier = groupedWorkPrimaryIdentifiers.getString("identifier");
 
 			//Make a copy of the grouped work so we can revert if we don't add any records

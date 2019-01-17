@@ -3,7 +3,6 @@ package org.vufind;
 import org.apache.log4j.Logger;
 import org.marc4j.MarcPermissiveStreamReader;
 import org.marc4j.MarcReader;
-import org.marc4j.MarcStreamReader;
 import org.marc4j.marc.*;
 
 import java.io.*;
@@ -631,9 +630,10 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		return status.equals("o") || status.equals("1");
 	}
 
+//TODO: this should move to the iii handler; and a blank method put here instead
 	private void loadOrderIds(GroupedWorkSolr groupedWork, Record record) {
 		//Load order ids from recordNumberTag
-		Set<String> recordIds = MarcUtil.getFieldList(record, recordNumberTag + "a");
+		Set<String> recordIds = MarcUtil.getFieldList(record, recordNumberTag + "a"); //TODO: refactor to use the record number subfield indicator
 		for(String recordId : recordIds){
 			if (recordId.startsWith(".o")){
 				groupedWork.addAlternateId(recordId);
@@ -707,7 +707,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		}else{
 			//This is for a "less advanced" catalog, set some basic info
 			itemInfo.seteContentProtectionType("external");
-			itemInfo.seteContentSource(getSourceType(record, itemField));
+			itemInfo.seteContentSource(getILSeContentSourceType(record, itemField));
 		}
 
 		//Set record type
@@ -778,7 +778,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		}
 	}
 
-	protected String getSourceType(Record record, DataField itemField) {
+	protected String getILSeContentSourceType(Record record, DataField itemField) {
 		return "Unknown Source";
 	}
 
@@ -941,28 +941,28 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		boolean available = isItemAvailable(itemInfo);
 
 		//Determine which scopes have access to this record
-		String displayStatus = getDisplayStatus(itemInfo, recordInfo.getRecordIdentifier());
+		String displayStatus        = getDisplayStatus(itemInfo, recordInfo.getRecordIdentifier());
 		String groupedDisplayStatus = getDisplayGroupedStatus(itemInfo, recordInfo.getRecordIdentifier());
-		String overiddenStatus = getOverriddenStatus(itemInfo, true);
+		String overiddenStatus      = getOverriddenStatus(itemInfo, true);
 		if (overiddenStatus != null && !overiddenStatus.equals("On Shelf") && !overiddenStatus.equals("Library Use Only") && !overiddenStatus.equals("Available Online")){
 			available = false;
 		}
 
-		String itemLocation = itemInfo.getLocationCode();
+		String itemLocation    = itemInfo.getLocationCode();
 		String itemSublocation = itemInfo.getSubLocationCode();
 
 		HoldabilityInformation isHoldableUnscoped = isItemHoldableUnscoped(itemInfo);
 		BookabilityInformation isBookableUnscoped = isItemBookableUnscoped();
-		String originalUrl = itemInfo.geteContentUrl();
-		String primaryFormat = recordInfo.getPrimaryFormat();
+		String                 originalUrl        = itemInfo.geteContentUrl();
+		String                 primaryFormat      = recordInfo.getPrimaryFormat();
 		for (Scope curScope : indexer.getScopes()) {
 			//Check to see if the record is holdable for this scope
 			HoldabilityInformation isHoldable = isItemHoldable(itemInfo, curScope, isHoldableUnscoped);
 
 			Scope.InclusionResult result = curScope.isItemPartOfScope(profileType, itemLocation, itemSublocation, itemInfo.getITypeCode(), audiences, primaryFormat, isHoldable.isHoldable(), false, false, record, originalUrl);
 			if (result.isIncluded){
-				BookabilityInformation isBookable = isItemBookable(itemInfo, curScope, isBookableUnscoped);
-				ScopingInfo scopingInfo = itemInfo.addScope(curScope);
+				BookabilityInformation isBookable  = isItemBookable(itemInfo, curScope, isBookableUnscoped);
+				ScopingInfo            scopingInfo = itemInfo.addScope(curScope);
 				scopingInfo.setAvailable(available);
 				scopingInfo.setHoldable(isHoldable.isHoldable());
 				scopingInfo.setHoldablePTypes(isHoldable.getHoldablePTypes());
@@ -1080,12 +1080,12 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			volume = getItemSubfieldData(volumeSubfield, itemField);
 		}
 		if (useItemBasedCallNumbers && itemField != null) {
-			String callNumberPreStamp = getItemSubfieldDataWithoutTrimming(callNumberPrestampSubfield, itemField);
-			String callNumber = getItemSubfieldDataWithoutTrimming(callNumberSubfield, itemField);
-			String callNumberCutter = getItemSubfieldDataWithoutTrimming(callNumberCutterSubfield, itemField);
+			String callNumberPreStamp  = getItemSubfieldDataWithoutTrimming(callNumberPrestampSubfield, itemField);
+			String callNumber          = getItemSubfieldDataWithoutTrimming(callNumberSubfield, itemField);
+			String callNumberCutter    = getItemSubfieldDataWithoutTrimming(callNumberCutterSubfield, itemField);
 			String callNumberPostStamp = getItemSubfieldData(callNumberPoststampSubfield, itemField);
 
-			StringBuilder fullCallNumber = new StringBuilder();
+			StringBuilder fullCallNumber     = new StringBuilder();
 			StringBuilder sortableCallNumber = new StringBuilder();
 			if (callNumberPreStamp != null) {
 				fullCallNumber.append(callNumberPreStamp);
