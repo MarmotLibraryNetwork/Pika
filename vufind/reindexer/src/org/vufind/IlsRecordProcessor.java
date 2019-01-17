@@ -1601,6 +1601,9 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			printFormats.add("SoundDisc");
 		}
 
+//		if (printFormats.contains("Book")){
+//			if (printFormats.contains("LargePrint") || )
+//		}
 		if (printFormats.contains("Book") && printFormats.contains("LargePrint")){
 			printFormats.remove("Book");
 		}
@@ -1619,6 +1622,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		if (printFormats.contains("Book") && printFormats.contains("Kit")){
 			printFormats.remove("Book");
 		}
+
 		if (printFormats.contains("AudioCD") && printFormats.contains("CD")){
 			printFormats.remove("AudioCD");
 		}
@@ -1640,6 +1644,9 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		}
 		if (printFormats.contains("LargePrint") && printFormats.contains("Manuscript")){
 			printFormats.remove("Manuscript");
+		}
+		if (printFormats.contains("Painting") && printFormats.contains("Photo")){
+			printFormats.remove("Photo");
 		}
 		if (printFormats.contains("Wii") && printFormats.contains("WiiU")){
 			printFormats.remove("Wii");
@@ -2059,9 +2066,10 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			 * result.add("Blu-ray"); break; } }
 			 */
 			formatCode = formatField.getData().toUpperCase().charAt(0);
+			char specificMaterial = formatField.getData().toUpperCase().charAt(1);
 			switch (formatCode) {
 				case 'A':
-					switch (formatField.getData().toUpperCase().charAt(1)) {
+					switch (specificMaterial) {
 						case 'D':
 							result.add("Atlas");
 							break;
@@ -2071,7 +2079,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 					}
 					break;
 				case 'C':
-					switch (formatField.getData().toUpperCase().charAt(1)) {
+					switch (specificMaterial) {
 						case 'A':
 							result.add("TapeCartridge");
 							break;
@@ -2110,7 +2118,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 					result.add("Braille");
 					break;
 				case 'G':
-					switch (formatField.getData().toUpperCase().charAt(1)) {
+					switch (specificMaterial) {
 						case 'C':
 						case 'D':
 							result.add("Filmstrip");
@@ -2127,7 +2135,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 					result.add("Microfilm");
 					break;
 				case 'K':
-					switch (formatField.getData().toUpperCase().charAt(1)) {
+					switch (specificMaterial) {
 						case 'C':
 							result.add("Collage");
 							break;
@@ -2161,7 +2169,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 					}
 					break;
 				case 'M':
-					switch (formatField.getData().toUpperCase().charAt(1)) {
+					switch (specificMaterial) {
 						case 'F':
 							result.add("VideoCassette");
 							break;
@@ -2183,7 +2191,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 					result.add("SensorImage");
 					break;
 				case 'S':
-					switch (formatField.getData().toUpperCase().charAt(1)) {
+					switch (specificMaterial) {
 						case 'D':
 							if (formatField.getData().length() >= 4) {
 								char speed = formatField.getData().toUpperCase().charAt(3);
@@ -2209,7 +2217,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 					}
 					break;
 				case 'T':
-					switch (formatField.getData().toUpperCase().charAt(1)) {
+					switch (specificMaterial) {
 						case 'A':
 							result.add("Book");
 							break;
@@ -2219,7 +2227,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 					}
 					break;
 				case 'V':
-					switch (formatField.getData().toUpperCase().charAt(1)) {
+					switch (specificMaterial) {
 						case 'C':
 							result.add("VideoCartridge");
 							break;
