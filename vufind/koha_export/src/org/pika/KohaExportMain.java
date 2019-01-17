@@ -37,15 +37,15 @@ public class KohaExportMain {
 	private static String exportPath;
 
 	// Item subfields
-	private static char locationSubfield = 'a';
-	private static char sublocationSubfield = '8';
+	private static char locationSubfield      = 'a';
+	private static char sublocationSubfield   = '8';
 	private static char shelflocationSubfield = 'c';
-	private static char withdrawnSubfield = '0';
-	private static char damagedSubfield = '4';
-	private static char lostSubfield = '1';
-	private static char notforloanSubfield = '7'; //Primary status subfield
-	private static char restrictedSubfield = '1';
-	private static char dueDateSubfield = 'q';
+	private static char withdrawnSubfield     = '0';
+	private static char damagedSubfield       = '4';
+	private static char lostSubfield          = '1';
+	private static char notforloanSubfield    = '7'; //Primary status subfield
+	private static char restrictedSubfield    = '5';
+	private static char dueDateSubfield       = 'q';
 
 
 
@@ -154,7 +154,7 @@ public class KohaExportMain {
 	private static void exportHoldShelfItems(Connection kohaConn) {
 		logger.info("Starting export of hold shelf items");
 		try {
-			PreparedStatement onHoldShelfItemsStmt = kohaConn.prepareStatement("SELECT itemnumber from reserves WHERE found = 'W'");
+			PreparedStatement onHoldShelfItemsStmt = kohaConn.prepareStatement("SELECT itemnumber from reserves WHERE found = 'W'"); // W is Waiting at Library (As FYI a found value of 'T' is In Transit
 			ResultSet         onHoldShelfItemsRS   = onHoldShelfItemsStmt.executeQuery();
 
 			writeToFileFromSQLResult("holdShelfItems.csv", onHoldShelfItemsRS);
