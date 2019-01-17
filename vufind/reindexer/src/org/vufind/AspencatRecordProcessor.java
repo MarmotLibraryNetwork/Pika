@@ -100,6 +100,7 @@ class AspencatRecordProcessor extends IlsRecordProcessor {
 		for(DataField item : items){
 			Subfield iTypeSubField = item.getSubfield(iTypeSubfield);
 			if (iTypeSubField != null){
+				//TODO: check if Itype is supressed
 				String iType = iTypeSubField.getData().toLowerCase();
 				if (itemCountsByItype.containsKey(iType)){
 					itemCountsByItype.put(iType, itemCountsByItype.get(iType) + 1);
@@ -293,7 +294,6 @@ class AspencatRecordProcessor extends IlsRecordProcessor {
 						if (eContentRecord != null) {
 							unsuppressedEcontentRecords.add(eContentRecord);
 						}
-
 					}
 				}
 			}
@@ -350,7 +350,7 @@ class AspencatRecordProcessor extends IlsRecordProcessor {
 						//Try the location for the item
 						if (itemField.getSubfield(locationSubfieldIndicator) != null){
 							sourceType = itemField.getSubfield(locationSubfieldIndicator).getData();
-							logger.warn("Did not find econtent source; using location instead : " + sourceType);
+							logger.warn("Did not find eContent source; using location instead : " + sourceType);
 						}
 					}
 				}
