@@ -159,7 +159,8 @@ class Sacramento extends Sierra
 
 	function selfRegister(){
 		global $library;
-		if ($library->subdomain == 'catalog' || $library->subdomain == 'spl'){ // just for sacramento public library
+		// sacramento test and production, woodlands test
+		if ($library->subdomain == 'catalog' || $library->subdomain == 'spl' || $library->subdomain == 'woodland' || $library->subdomain == 'cityofwoodland'){
 			//Capitalize All Input, expect pin passwords
 			foreach ($this->getSelfRegistrationFields() as $formField){
 				$formFieldName = $formField['property'];
