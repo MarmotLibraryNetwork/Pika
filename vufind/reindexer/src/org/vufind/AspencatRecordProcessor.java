@@ -22,9 +22,9 @@ import java.util.*;
  * Time: 3:00 PM
  */
 class AspencatRecordProcessor extends IlsRecordProcessor {
-	private HashSet<String> inTransitItems = new HashSet<>();
-	private HashSet<String> onHoldShelfItems = new HashSet<>();
-	private boolean doAutomaticEcontentSuppression = false;
+	private HashSet<String> inTransitItems                 = new HashSet<>();
+	private HashSet<String> onHoldShelfItems               = new HashSet<>();
+	private boolean         doAutomaticEcontentSuppression = false;
 
 	// Item subfields (Copied from Koha Export Main)
 	private char withdrawnSubfield  = '0';
@@ -82,7 +82,8 @@ class AspencatRecordProcessor extends IlsRecordProcessor {
 	protected boolean isItemAvailable(ItemInfo itemInfo) {
 //		return (itemInfo.getStatusCode().equals("On Shelf") || itemInfo.getStatusCode().equals("Library Use Only")) && !inTransitItems.contains(itemInfo.getItemIdentifier());
 //		return (itemInfo.getStatusCode().equals(ItemStatus.ONSHELF.toString()) || itemInfo.getStatusCode().equals(ItemStatus.LIBRARYUSEONLY.toString())) && !inTransitItems.contains(itemInfo.getItemIdentifier());
-		return itemInfo.getStatusCode().equals(ItemStatus.ONSHELF.toString()) || itemInfo.getStatusCode().equals(ItemStatus.LIBRARYUSEONLY.toString());
+		String statusCode = itemInfo.getStatusCode();
+		return statusCode.equals(ItemStatus.ONSHELF.toString()) || statusCode.equals(ItemStatus.LIBRARYUSEONLY.toString()) || statusCode.equals(ItemStatus.INPROCESSING.toString());
 	}
 
 	@Override
@@ -98,27 +99,28 @@ class AspencatRecordProcessor extends IlsRecordProcessor {
 		String                   mostPopularIType  = "";  //Get a list of all the formats based on the items
 		List<DataField> items = MarcUtil.getDataFields(record, itemTag);
 		for(DataField item : items){
-			Subfield iTypeSubField = item.getSubfield(iTypeSubfield);
-			if (iTypeSubField != null){
-				//TODO: check if Itype is supressed
-				String iType = iTypeSubField.getData().toLowerCase();
-				if (itemCountsByItype.containsKey(iType)){
-					itemCountsByItype.put(iType, itemCountsByItype.get(iType) + 1);
-				}else{
-					itemCountsByItype.put(iType, 1);
-					//Translate the iType to see what formats we get.  Some item types do not have a format by default and use the default translation
-					//We still will want to record those counts.
-					String translatedFormat = translateValue("format", iType, recordInfo.getRecordIdentifier());
-					//If the format is book, ignore it for now.  We will use the default method later.
-					if (translatedFormat == null || translatedFormat.equalsIgnoreCase("book")){
-						translatedFormat = "";
+			if (!isItemSuppressed(item)) {
+				Subfield iTypeSubField = item.getSubfield(iTypeSubfield);
+				if (iTypeSubField != null) {
+					String iType = iTypeSubField.getData().toLowerCase();
+					if (itemCountsByItype.containsKey(iType)) {
+						itemCountsByItype.put(iType, itemCountsByItype.get(iType) + 1);
+					} else {
+						itemCountsByItype.put(iType, 1);
+						//Translate the iType to see what formats we get.  Some item types do not have a format by default and use the default translation
+						//We still will want to record those counts.
+						String translatedFormat = translateValue("format", iType, recordInfo.getRecordIdentifier());
+						//If the format is book, ignore it for now.  We will use the default method later.
+						if (translatedFormat == null || translatedFormat.equalsIgnoreCase("book")) {
+							translatedFormat = "";
+						}
+						itemTypeToFormat.put(iType, translatedFormat);
 					}
-					itemTypeToFormat.put(iType, translatedFormat);
-				}
 
-				if (itemCountsByItype.get(iType) > mostUsedCount){
-					mostPopularIType = iType;
-					mostUsedCount = itemCountsByItype.get(iType);
+					if (itemCountsByItype.get(iType) > mostUsedCount) {
+						mostPopularIType = iType;
+						mostUsedCount = itemCountsByItype.get(iType);
+					}
 				}
 			}
 		}
@@ -160,9 +162,6 @@ class AspencatRecordProcessor extends IlsRecordProcessor {
 		status = getStatusFromBooleanSubfield(itemField, withdrawnSubfield, ItemStatus.WITHDRAWN);
 		if (status != null) return status.toString();
 
-		status = getStatusFromBooleanSubfield(itemField, lostSubfield, ItemStatus.LOST);
-		if (status != null) return status.toString();
-
 		status = getStatusFromBooleanSubfield(itemField, damagedSubfield, ItemStatus.DAMAGED);
 		if (status != null) return status.toString();
 
@@ -170,7 +169,10 @@ class AspencatRecordProcessor extends IlsRecordProcessor {
 //		if (status != null) return status.toString();
 
 		// Now Try more complicated statuses
-		status = getStatusFromDueDateSubfield(itemField, dueDateSubfield);
+		status = getStatusFromLostSubfield(itemField); // Any value that isn't 0, will set the status to LOST
+		if (status != null) return status.toString();
+
+		status = getStatusFromDueDateSubfield(itemField);
 		if (status != null) return status.toString();
 
 		if (inTransitItems.contains(itemIdentifier)){
@@ -182,6 +184,7 @@ class AspencatRecordProcessor extends IlsRecordProcessor {
 			return status.toString();
 		}
 
+		// Finally Check the Not For Loan subfield
 		status = getStatusFromSubfield(itemField, notforloanSubfield);
 		if (status != null) return status.toString();
 
@@ -195,32 +198,31 @@ class AspencatRecordProcessor extends IlsRecordProcessor {
 			//Aspencat Koha NOT_LOAN values
 			switch (fieldData) {
 				case "0":
-					return ItemStatus.ONSHELF; //TODO: is this a good assumption.
+					return ItemStatus.ONSHELF;
 				case "-2": //Cataloging
-					//TODO: InProcessing
+					return ItemStatus.INPROCESSING;
 				case "-1": // Ordered
 					return ItemStatus.ONORDER;
 				case "1": // Not for Loan
-				case "2": // Staff Collection //TODO??
+				case "2": // Staff Collection
 					return ItemStatus.LIBRARYUSEONLY;
-				case "3": // In Repairs //TODO
+				case "3": // In Repairs
+					return ItemStatus.INREPAIRS;
+				default:
+					if (!additionalStatuses.contains(fieldData)){
+						logger.warn("Found new status " + fieldData + " for subfield " +subfield);
+						additionalStatuses.add(fieldData);
+					}
 			}
-
-			String status = "subfield " + subfield + "=" + fieldData;
-			if (!additionalStatuses.contains(status)){
-				logger.warn("Found new status " + status);
-				additionalStatuses.add(status);
-			}
-
 		}
 		return null;
 	}
 
-	private ItemStatus getStatusFromDueDateSubfield(DataField itemField, char subfield) {
-		if (itemField.getSubfield(subfield) != null) {
-			String fieldData = itemField.getSubfield(subfield).getData();
+	private ItemStatus getStatusFromDueDateSubfield(DataField itemField) {
+		if (itemField.getSubfield(dueDateSubfield) != null) {
+			String fieldData = itemField.getSubfield(dueDateSubfield).getData();
 
-			if (fieldData.matches("\\d{4}-\\d{2}-\\d{2}")) {//TODO: should use index profile formatting
+			if (fieldData.matches("\\d{4}-\\d{2}-\\d{2}")) {
 				return ItemStatus.CHECKEDOUT;
 			}
 		}
@@ -239,6 +241,17 @@ class AspencatRecordProcessor extends IlsRecordProcessor {
 		return null;
 	}
 
+	private ItemStatus getStatusFromLostSubfield(DataField itemField) {
+		// If there is any value set for the lost subfield, the status is LOST
+		if (itemField.getSubfield(lostSubfield) != null){
+			String fieldData = itemField.getSubfield(lostSubfield).getData();
+			if (!fieldData.equals("0")) {
+				return ItemStatus.LOST;
+			}
+		}
+		return null;
+	}
+
 	protected void loadUnsuppressedPrintItems(GroupedWorkSolr groupedWork, RecordInfo recordInfo, String identifier, Record record){
 		List<DataField> itemRecords = MarcUtil.getDataFields(record, itemTag);
 		for (DataField itemField : itemRecords){
@@ -251,7 +264,7 @@ class AspencatRecordProcessor extends IlsRecordProcessor {
 	private boolean isEContent(DataField itemField) {
 		if (itemField.getSubfield(iTypeSubfield) != null){
 			String iType = itemField.getSubfield(iTypeSubfield).getData().toLowerCase();
-			return iType.equals("ebook") || iType.equals("eaudio") || iType.equals("online") || iType.equals("oneclick");
+			return iType.equals("ebook") || iType.equals("eaudio") || iType.equals("online");
 		}
 		return false;
 	}
@@ -311,6 +324,9 @@ class AspencatRecordProcessor extends IlsRecordProcessor {
 			econtentItem.setFormat(translatedFormat);
 			econtentItem.setFormatCategory(translatedFormatCategory);
 			econtentRecord.setFormatBoost(Long.parseLong(translatedFormatBoost));
+			if (iType.equals(translatedFormat)){
+				logger.warn("Itype " + iType + "has no format translation value (or they are the same.)");
+			}
 		}
 	}
 
@@ -350,7 +366,7 @@ class AspencatRecordProcessor extends IlsRecordProcessor {
 						//Try the location for the item
 						if (itemField.getSubfield(locationSubfieldIndicator) != null){
 							sourceType = itemField.getSubfield(locationSubfieldIndicator).getData();
-							logger.warn("Did not find eContent source; using location instead : " + sourceType);
+							logger.warn("Did not find ils eContent source.");
 						}
 					}
 				}
@@ -359,23 +375,21 @@ class AspencatRecordProcessor extends IlsRecordProcessor {
 		return sourceType;
 	}
 
-	//TODO: new suppression rules
 	protected boolean isItemSuppressed(DataField curItem) {
 		boolean suppressed = false;
-//		if (curItem.getSubfield('i') != null) {
-//			suppressed = curItem.getSubfield('i').getData().equals("1");
-//		}
+		// Supress if marked as withdrawn
 		if (curItem.getSubfield(withdrawnSubfield) != null) {
 			if (curItem.getSubfield(withdrawnSubfield).getData().equals("1")) {
 				suppressed = true;
 			}
 		}
-//		if (curItem.getSubfield('1') != null) {
-//			String fieldData = curItem.getSubfield('1').getData().toLowerCase();
-//			if (fieldData.equals("lost") || fieldData.equals("missing") || fieldData.equals("longoverdue") || fieldData.equals("trace")) {
-//				suppressed = true;
-//			}
-//		}
+		// Supress if lost is set to anything but 0
+		if (curItem.getSubfield(lostSubfield) != null) {
+			if (!curItem.getSubfield(lostSubfield).getData().equals("0")) {
+				suppressed = true;
+			}
+		}
+		// if not suppressed here, check indexing profile settings
 		return suppressed || super.isItemSuppressed(curItem);
 	}
 

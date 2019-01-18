@@ -4,14 +4,14 @@ public enum ItemStatus {
 	ONSHELF,
 	LIBRARYUSEONLY,
 	ONORDER,
+	INPROCESSING,
 	CHECKEDOUT,
 	ONHOLDSHELF,
 	INTRANSIT,
-	LONGOVERDUE, //TODO: going to use?
+	INREPAIRS,
+	DAMAGED,
 	LOST,
 	WITHDRAWN,
-	DAMAGED,
-	BILLED, //TODO: going to use?
 	;
 
 	@Override
@@ -23,6 +23,8 @@ public enum ItemStatus {
 				return "Library Use Only";
 			case ONORDER:
 				return "On Order";
+			case INPROCESSING:
+				return "In Processing";
 			case CHECKEDOUT:
 				return "Checked Out";
 			case ONHOLDSHELF:
@@ -35,6 +37,8 @@ public enum ItemStatus {
 				return "Damaged";
 			case WITHDRAWN:
 				return "Withdrawn";
+			case INREPAIRS:
+				return "In Repair";
 		}
 		return null;
 	}
