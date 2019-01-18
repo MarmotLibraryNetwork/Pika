@@ -91,8 +91,11 @@ org.eclipse.*.prefs
 .idea/
 .settings/
 out/
-.shelf/
 # ignore any thing shevled by intellij
+.shelf/
+#ignore intellig settings files
+*.ipr
+*.iws
 
 # OS generated files #
 ######################
