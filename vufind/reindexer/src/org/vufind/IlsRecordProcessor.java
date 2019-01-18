@@ -1913,7 +1913,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			return "XboxOne";
 		} else if (value.contains("xbox") && !value.contains("compatible")) {
 			return "Xbox360";
-		} else if (value.contains("playstation 4") /*&& !value.contains("compatible")*/) {
+		} else if (value.contains("playstation vita") /*&& !value.contains("compatible")*/) {
 			return "PlayStationVita";
 		} else if (value.contains("playstation 4") && !value.contains("compatible")) {
 			return "PlayStation4";
