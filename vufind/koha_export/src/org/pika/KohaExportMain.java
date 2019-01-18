@@ -64,20 +64,21 @@ public class KohaExportMain {
 		// Read the base INI file to get information about the server (current directory/conf/config.ini)
 		Ini ini = loadConfigFile("config.ini");
 
-		//Connect to the vufind database
-		Connection vufindConn = null;
+		// Connect to the Pika database
+		Connection pikaConn = null;
 		try {
 			String databaseConnectionInfo = cleanIniValue(ini.get("Database", "database_vufind_jdbc"));
 			if (databaseConnectionInfo == null){
 				logger.error("Please provide database_vufind_jdbc within config.ini (or better config.pwd.ini) ");
 				System.exit(1);
 			}
-			vufindConn = DriverManager.getConnection(databaseConnectionInfo);
+			pikaConn = DriverManager.getConnection(databaseConnectionInfo);
 		} catch (Exception e) {
-			logger.error("Error connecting to vufind database ", e);
+			logger.error("Error connecting to pika database ", e);
 			System.exit(1);
 		}
 
+		// Connect to the Koha database
 		Connection kohaConn = null;
 		try {
 			String kohaConnectionJDBC = "jdbc:mysql://" +
@@ -97,7 +98,7 @@ public class KohaExportMain {
 		if (args.length > 1){
 			profileToLoad = args[1];
 		}
-		indexingProfile = IndexingProfile.loadIndexingProfile(vufindConn, profileToLoad, logger);
+		indexingProfile = IndexingProfile.loadIndexingProfile(pikaConn, profileToLoad, logger);
 
 		exportPath = indexingProfile.marcPath;
 		if (exportPath.startsWith("\"")){
@@ -119,15 +120,15 @@ public class KohaExportMain {
 		}
 
 		//Get a list of works that have changed since the last index
-		getChangedRecordsFromDatabase(ini, vufindConn, kohaConn);
-		exportHolds(vufindConn, kohaConn);
+		getChangedRecordsFromDatabase(ini, pikaConn, kohaConn);
+		exportHolds(pikaConn, kohaConn);
 		exportHoldShelfItems(kohaConn);
 		exportInTransitItems(kohaConn);
 
-		if (vufindConn != null){
+		if (pikaConn != null){
 			try{
 				//Close the connection
-				vufindConn.close();
+				pikaConn.close();
 			}catch(Exception e){
 				System.out.println("Error closing connection: " + e.toString());
 				e.printStackTrace();
