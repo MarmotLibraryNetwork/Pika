@@ -13,11 +13,11 @@ public class ItemChangeInfo {
 	private String subLocation;
 	private String shelfLocation;
 	private int damaged;
-	private int itemLost;
 	private int withdrawn;
-//	private int suppress;
-	private int restricted;
-	private String onLoan;
+	//	private int suppress;
+//	private int restricted;
+	private String itemLost;
+	private String dueDate;
 	private String notForLoan;
 
 	public String getItemId() {
@@ -44,11 +44,11 @@ public class ItemChangeInfo {
 		this.damaged = damaged;
 	}
 
-	public int getItemLost() {
+	public String getItemLost() {
 		return itemLost;
 	}
 
-	public void setItemLost(int itemLost) {
+	public void setItemLost(String itemLost) {
 		this.itemLost = itemLost;
 	}
 
@@ -68,20 +68,20 @@ public class ItemChangeInfo {
 //		this.suppress = suppress;
 //	}
 
-	public int getRestricted() {
-		return restricted;
+//	public int getRestricted() {
+//		return restricted;
+//	}
+//
+//	public void setRestricted(int restricted) {
+//		this.restricted = restricted;
+//	}
+
+	public String getDueDate() {
+		return dueDate;
 	}
 
-	public void setRestricted(int restricted) {
-		this.restricted = restricted;
-	}
-
-	public String getOnLoan() {
-		return onLoan;
-	}
-
-	public void setOnLoan(String onLoan) {
-		this.onLoan = onLoan;
+	public void setDueDate(String dueDate) {
+		this.dueDate = dueDate;
 	}
 
 	public String getNotForLoan() {

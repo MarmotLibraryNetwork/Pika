@@ -38,7 +38,7 @@ public class KohaExportMain {
 
 	// Item subfields
 	private static char locationSubfield      = 'a';
-	private static char sublocationSubfield   = '8';
+	private static char subLocationSubfield   = '8';
 	private static char shelflocationSubfield = 'c';
 	private static char withdrawnSubfield     = '0';
 	private static char damagedSubfield       = '4';
@@ -104,6 +104,19 @@ public class KohaExportMain {
 			exportPath = exportPath.substring(1, exportPath.length() - 1);
 		}
 
+		// Override any relevant subfield settings if they are set
+		if (indexingProfile.locationSubfield != ' '){
+			locationSubfield = indexingProfile.locationSubfield;
+		}
+		if (indexingProfile.subLocationSubfield != ' '){
+			subLocationSubfield = indexingProfile.subLocationSubfield;
+		}
+		if (indexingProfile.shelvingLocationSubfield != ' '){
+			shelflocationSubfield = indexingProfile.shelvingLocationSubfield;
+		}
+		if (indexingProfile.dueDateSubfield != ' '){
+			dueDateSubfield = indexingProfile.dueDateSubfield;
+		}
 
 		//Get a list of works that have changed since the last index
 		getChangedRecordsFromDatabase(ini, vufindConn, kohaConn);
@@ -258,14 +271,12 @@ public class KohaExportMain {
 			//Only mark records as changed
 			boolean errorUpdatingDatabase = false;
 
-//			PreparedStatement getChangedItemsFromKohaStmt = kohaConn.prepareStatement("select itemnumber, biblionumber, barcode, damaged, itemlost, wthdrawn, suppress, restricted, onloan from items where timestamp >= ? LIMIT 0, ?");
-			PreparedStatement getChangedItemsFromKohaStmt = kohaConn.prepareStatement("select itemnumber, biblionumber, barcode, homebranch, ccode, location, damaged, itemlost, withdrawn, restricted, onloan, notforloan from items where timestamp >= ? LIMIT 0, ?");
+//			PreparedStatement getChangedItemsFromKohaStmt = kohaConn.prepareStatement("select itemnumber, biblionumber, barcode, homebranch, ccode, location, damaged, itemlost, withdrawn, restricted, onloan, notforloan from items where timestamp >= ? LIMIT 0, ?");
+			PreparedStatement getChangedItemsFromKohaStmt = kohaConn.prepareStatement("select itemnumber, biblionumber, homebranch, ccode, location, damaged, itemlost, withdrawn, onloan, notforloan from items where timestamp >= ? LIMIT 0, ?");
 			//notforloan is the primary status column for aspencat bywater koha (subfield 7)
 			//shelf loc is subfield c, column location
 			//sub location is subfield 8 (they call it collection code), column ccode
 			//location is subfield a, column homebranch
-
-			//TODO: barcode?
 
 			getChangedItemsFromKohaStmt.setTimestamp(1, new Timestamp(lastKohaExtractTime * 1000));
 			getChangedItemsFromKohaStmt.setLong(2, maxRecordsToUpdateDuringExtract);
@@ -278,14 +289,14 @@ public class KohaExportMain {
 				String location      = itemChangeRS.getString("homebranch");
 				String subLocation   = itemChangeRS.getString("ccode");
 				String shelfLocation = itemChangeRS.getString("location");
+//				int    restricted    = itemChangeRS.getInt("restricted");
 				int    damaged       = itemChangeRS.getInt("damaged");
-				int    itemlost      = itemChangeRS.getInt("itemlost");
 				int    withdrawn     = itemChangeRS.getInt("withdrawn");
-				int    restricted    = itemChangeRS.getInt("restricted");
+				String itemlost      = itemChangeRS.getString("itemlost");
 				String notforloan    = itemChangeRS.getString("notforloan");
-				String onloan        = "";
+				String dueDate        = "";
 				try {
-					onloan = itemChangeRS.getString("onloan");
+					dueDate = itemChangeRS.getString("onloan");
 				}catch (SQLException e){
 					logger.info("Invalid onloan value for bib " + bibNumber + " item " + itemNumber);
 				}
@@ -298,9 +309,9 @@ public class KohaExportMain {
 				changeInfo.setDamaged(damaged);
 				changeInfo.setItemLost(itemlost);
 				changeInfo.setWithdrawn(withdrawn);
-				changeInfo.setRestricted(restricted);
+//				changeInfo.setRestricted(restricted);
 				changeInfo.setNotForLoan(notforloan);
-				changeInfo.setOnLoan(onloan);
+				changeInfo.setDueDate(dueDate);
 
 				ArrayList<ItemChangeInfo> itemChanges;
 				if (changedBibs.containsKey(bibNumber)) {
@@ -389,12 +400,12 @@ public class KohaExportMain {
 								if (itemRecordNumber.equals(curItem.getItemId())) {
 									setBooleanSubfield(itemField, curItem.getWithdrawn(), withdrawnSubfield);
 									setBooleanSubfield(itemField, curItem.getDamaged(), damagedSubfield);
-									setBooleanSubfield(itemField, curItem.getRestricted(), restrictedSubfield);
-									setBooleanSubfield(itemField, curItem.getItemLost(), lostSubfield);
+//									setBooleanSubfield(itemField, curItem.getRestricted(), restrictedSubfield);
+									setSubfieldValue(itemField, lostSubfield, curItem.getItemLost());
 									setSubfieldValue(itemField, locationSubfield, curItem.getLocation());
-									setSubfieldValue(itemField, sublocationSubfield, curItem.getSubLocation());
+									setSubfieldValue(itemField, subLocationSubfield, curItem.getSubLocation());
 									setSubfieldValue(itemField, shelflocationSubfield, curItem.getShelfLocation());
-									setSubfieldValue(itemField, dueDateSubfield, curItem.getOnLoan());
+									setSubfieldValue(itemField, dueDateSubfield, curItem.getDueDate());
 									setSubfieldValue(itemField, notforloanSubfield, curItem.getNotForLoan());
 
 								}

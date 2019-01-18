@@ -29,6 +29,7 @@ public class IndexingProfile {
 	String dueDateFormat;
 	char lastCheckinDateSubfield;
 	char locationSubfield;
+	char subLocationSubfield;
 	char itemStatusSubfield;
 	char iTypeSubfield;
 	char shelvingLocationSubfield;
@@ -37,6 +38,8 @@ public class IndexingProfile {
 	char callNumberSubfield;
 	char dateCreatedSubfield;
 	char dueDateSubfield;
+
+
 
 
 	private char getCharFromString(String stringValue) {
@@ -89,6 +92,13 @@ public class IndexingProfile {
 		this.shelvingLocationSubfield = getCharFromString(shelvingLocationSubfield);
 	}
 
+	public char getSubLocationSubfield() {
+		return subLocationSubfield;
+	}
+
+	public void setSubLocationSubfield(String sublocationSubfield) {
+		this.subLocationSubfield = getCharFromString(sublocationSubfield);
+	}
 	private void setITypeSubfield(String iTypeSubfield) {
 		this.iTypeSubfield = getCharFromString(iTypeSubfield);
 	}
@@ -115,6 +125,7 @@ public class IndexingProfile {
 				indexingProfile.setItemRecordNumberSubfield(indexingProfileRS.getString("itemRecordNumber"));
 				indexingProfile.setLastCheckinDateSubfield(indexingProfileRS.getString("lastCheckinDate"));
 				indexingProfile.setLocationSubfield(indexingProfileRS.getString("location"));
+				indexingProfile.setSubLocationSubfield(indexingProfileRS.getString("subLocation"));
 				indexingProfile.setItemStatusSubfield(indexingProfileRS.getString("status"));
 				indexingProfile.setDueDateSubfield(indexingProfileRS.getString("dueDate"));
 				indexingProfile.setDateCreatedSubfield(indexingProfileRS.getString("dateCreated"));
