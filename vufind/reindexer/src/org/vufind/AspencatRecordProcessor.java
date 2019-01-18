@@ -281,7 +281,7 @@ class AspencatRecordProcessor extends IlsRecordProcessor {
 						boolean isOverDrive = false;
 						boolean isHoopla    = false;
 						String  sourceType  = getILSeContentSourceType(record, itemField);
-						if (sourceType != null) {
+						if (sourceType != null && !sourceType.equals("Unknown Source")) {
 							sourceType = sourceType.toLowerCase().trim();
 							if (sourceType.contains("overdrive")) {
 								isOverDrive = true;
@@ -332,8 +332,8 @@ class AspencatRecordProcessor extends IlsRecordProcessor {
 
 	protected String getILSeContentSourceType(Record record, DataField itemField) {
 		//Try to figure out the source
-		String sourceType = null;
-		//Try |e
+		String sourceType = "Unknown Source";
+		//Try Item Source subfield
 		if (itemField.getSubfield(itemSourceSubfield) != null){
 			sourceType = itemField.getSubfield(itemSourceSubfield).getData();
 		}else{
@@ -358,15 +358,6 @@ class AspencatRecordProcessor extends IlsRecordProcessor {
 									break;
 								}
 							}
-						}
-					}
-
-					//If the source type is still null, try the location of the item
-					if (sourceType == null){
-						//Try the location for the item
-						if (itemField.getSubfield(locationSubfieldIndicator) != null){
-							sourceType = itemField.getSubfield(locationSubfieldIndicator).getData();
-							logger.warn("Did not find ils eContent source.");
 						}
 					}
 				}

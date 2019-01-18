@@ -656,9 +656,9 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	}
 
 	RecordInfo getEContentIlsRecord(GroupedWorkSolr groupedWork, Record record, String identifier, DataField itemField){
-		ItemInfo itemInfo = new ItemInfo();
-		itemInfo.setIsEContent(true);
 		RecordInfo relatedRecord = null;
+		ItemInfo   itemInfo      = new ItemInfo();
+		itemInfo.setIsEContent(true);
 
 		loadDateAdded(identifier, itemField, itemInfo);
 		String itemLocation = getItemSubfieldData(locationSubfieldIndicator, itemField);
