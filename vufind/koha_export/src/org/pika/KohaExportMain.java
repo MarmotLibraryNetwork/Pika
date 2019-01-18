@@ -244,10 +244,9 @@ public class KohaExportMain {
 		//Get the time the last extract was done
 		try{
 			logger.info("Starting to load changed records from Koha using the Database connection");
-			Long lastKohaExtractTime;
 			Long lastKohaExtractTimeVariableId = null;
-
-			long updateTime = new Date().getTime() / 1000;
+			long updateTime                    = new Date().getTime() / 1000;
+			long lastKohaExtractTime;
 
 			PreparedStatement markGroupedWorkForBibAsChangedStmt = vufindConn.prepareStatement("UPDATE grouped_work SET date_updated = ? where id = (SELECT grouped_work_id from grouped_work_primary_identifiers WHERE type = 'ils' and identifier = ?)");
 			PreparedStatement loadLastKohaExtractTimeStmt        = vufindConn.prepareStatement("SELECT * from variables WHERE name = 'last_koha_extract_time'", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
@@ -257,15 +256,15 @@ public class KohaExportMain {
 				lastKohaExtractTimeVariableId = lastKohaExtractTimeRS.getLong("id");
 			}else{
 				//Get the last 5 minutes for the initial setup
-				lastKohaExtractTime = new Date().getTime() / 1000 - 5 * 60 * 60;
+				lastKohaExtractTime = updateTime - 5 * 60 * 60;
 			}
 
 			// go back 20 minutes to make sure that we cover changes that haven't been replicated
-			lastKohaExtractTime -= 20 * 60;
+			lastKohaExtractTime -= 20 * 60; //TODO: is this still needed?
 
 			String maxRecordsToUpdateDuringExtractStr = ini.get("Catalog", "maxRecordsToUpdateDuringExtract");
 			int    maxRecordsToUpdateDuringExtract    = 100000;
-			if (maxRecordsToUpdateDuringExtractStr != null){
+			if (maxRecordsToUpdateDuringExtractStr != null && maxRecordsToUpdateDuringExtractStr.length() > 0){
 				maxRecordsToUpdateDuringExtract = Integer.parseInt(maxRecordsToUpdateDuringExtractStr);
 			}
 
@@ -408,7 +407,6 @@ public class KohaExportMain {
 									setSubfieldValue(itemField, shelflocationSubfield, curItem.getShelfLocation());
 									setSubfieldValue(itemField, dueDateSubfield, curItem.getDueDate());
 									setSubfieldValue(itemField, notforloanSubfield, curItem.getNotForLoan());
-
 								}
 							}
 						} else {
