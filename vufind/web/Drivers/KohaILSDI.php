@@ -113,6 +113,8 @@ abstract class KohaILSDI extends ScreenScrapingDriver {
 
 		if (empty($pickupBranch)){
 			$pickupBranch = strtoupper($patron->homeLocationCode);
+		} else {
+			$pickupBranch = strtoupper($pickupBranch);
 		}
 
 		$urlParameters = [
