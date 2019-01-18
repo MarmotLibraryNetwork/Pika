@@ -174,7 +174,7 @@ public class SymphonyExportMain {
 								String ohohseven     = line.replace("|", " ");
 								//The marc record does not exist, create a temporary bib in the orders file which will get processed by record grouping
 								MarcFactory factory  = MarcFactory.newInstance();
-								Record marcRecord   = factory.newRecord();
+								Record marcRecord    = factory.newRecord();
 								marcRecord.addVariableField(factory.newControlField("001", "a" + recordNumber));
 								if (!ohohseven.equals("-")) {
 									marcRecord.addVariableField(factory.newControlField("007", ohohseven));

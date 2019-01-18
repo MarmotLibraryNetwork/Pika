@@ -24,7 +24,7 @@ public class IndexingProfile {
 	String recordNumberTag;
 	char recordNumberField;
 	String recordNumberPrefix;
-	String itemTag ;
+	String itemTag;
 	String formatSource;
 	char format;
 	char eContentDescriptor;
