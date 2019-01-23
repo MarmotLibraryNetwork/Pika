@@ -3157,8 +3157,9 @@ class GroupedWorkDriver extends RecordInterface{
 		} elseif ($libraryCallNumber != null) {
 			$relatedRecord['callNumber'] = $libraryCallNumber;
 		}
-		ksort($relatedRecord['itemSummary'], SORT_NATURAL);
+
 		ksort($relatedRecord['itemDetails'], SORT_NATURAL);
+		ksort($relatedRecord['itemSummary'], SORT_NATURAL);
 		$timer->logTime("Setup record items");
 		$memoryWatcher->logMemory("Setup record items");
 
