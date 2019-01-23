@@ -25,39 +25,40 @@ import org.apache.log4j.Logger;
  * Time: 2:26 PM
  */
 public class GroupedWorkIndexer {
-	private Ini configIni;
-	private String baseLogPath;
-	private String serverName;
-	private String solrPort;
-	private Logger logger;
-	private SolrServer solrServer;
-	private Long indexStartTime;
-	private ConcurrentUpdateSolrServer updateServer;
-	private HashMap<String, MarcRecordProcessor> ilsRecordProcessors = new HashMap<>();
-	private OverDriveProcessor overDriveProcessor;
-	private HashMap<String, HashMap<String, String>> translationMaps = new HashMap<>();
-	private HashMap<String, LexileTitle> lexileInformation = new HashMap<>();
-	private HashMap<String, ARTitle> arInformation = new HashMap<>();
-	private Long maxWorksToProcess = -1L;
+	private Ini                                      configIni;
+	private String                                   baseLogPath;
+	private String                                   serverName;
+	private String                                   solrPort;
+	private Logger                                   logger;
+	private SolrServer                               solrServer;
+	private Long                                     indexStartTime;
+	private ConcurrentUpdateSolrServer               updateServer;
+	private HashMap<String, MarcRecordProcessor>     ilsRecordProcessors = new HashMap<>();
+	private OverDriveProcessor                       overDriveProcessor;
+	private HashMap<String, HashMap<String, String>> translationMaps     = new HashMap<>();
+	private HashMap<String, LexileTitle>             lexileInformation   = new HashMap<>();
+	private HashMap<String, ARTitle>                 arInformation       = new HashMap<>();
+	private Long                                     maxWorksToProcess   = -1L;
 
 	private PreparedStatement getRatingStmt;
 	private PreparedStatement getNovelistStmt;
-	private Connection vufindConn;
+	private Connection        vufindConn;
 
 	private int availableAtLocationBoostValue;
 	private int ownedByLocationBoostValue;
+	private boolean giveOnOrderItemsTheirOwnShelfLocation = false;
 
 	private boolean fullReindex;
-	private long lastReindexTime;
-	private Long lastReindexTimeVariableId;
+	private long    lastReindexTime;
+	private Long    lastReindexTimeVariableId;
 	private boolean partialReindexRunning;
-	private Long partialReindexRunningVariableId;
-	private Long fullReindexRunningVariableId;
+	private Long    partialReindexRunningVariableId;
+	private Long    fullReindexRunningVariableId;
 	private boolean okToIndex = true;
 
 
 	private HashSet<String> worksWithInvalidLiteraryForms = new HashSet<>();
-	private TreeSet<Scope> scopes = new TreeSet<>();
+	private TreeSet<Scope>  scopes                        = new TreeSet<>();
 
 	private PreparedStatement getGroupedWorkPrimaryIdentifiers;
 	private PreparedStatement getDateFirstDetectedStmt;
@@ -75,6 +76,7 @@ public class GroupedWorkIndexer {
 
 		availableAtLocationBoostValue = Integer.parseInt(configIni.get("Reindex", "availableAtLocationBoostValue"));
 		ownedByLocationBoostValue     = Integer.parseInt(configIni.get("Reindex", "ownedByLocationBoostValue"));
+		giveOnOrderItemsTheirOwnShelfLocation = Boolean.parseBoolean(configIni.get("Reindex", "giveOnOrderItemsTheirOwnShelfLocation"));
 		baseLogPath                   = Util.cleanIniValue(configIni.get("Site", "baseLogPath"));
 
 		String maxWorksToProcessStr   = Util.cleanIniValue(configIni.get("Reindex", "maxWorksToProcess"));
@@ -1321,5 +1323,9 @@ public class GroupedWorkIndexer {
 	long processPublicUserLists() {
 		UserListProcessor listProcessor = new UserListProcessor(this, vufindConn, logger, fullReindex, availableAtLocationBoostValue, ownedByLocationBoostValue);
 		return listProcessor.processPublicUserLists(lastReindexTime, updateServer, solrServer);
+	}
+
+	public boolean isGiveOnOrderItemsTheirOwnShelfLocation() {
+		return giveOnOrderItemsTheirOwnShelfLocation;
 	}
 }
