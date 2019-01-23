@@ -3025,7 +3025,6 @@ class GroupedWorkDriver extends RecordInterface{
 			}
 			$relatedRecord['groupedStatus'] = GroupedWorkDriver::keepBestGroupedStatus($relatedRecord['groupedStatus'], $groupedStatus);
 
-			$description = $shelfLocation . ':' . $callNumber;
 			$volume      = null;
 			$volumeId    = null;
 			if (count($volumeData)){
@@ -3044,7 +3043,9 @@ class GroupedWorkDriver extends RecordInterface{
 				}
 			}
 			if ($volume){
-				$description = $volume . $description;
+				$description =  $shelfLocation . ':' . $volume . $callNumber;
+			} else 	{
+				$description = $shelfLocation . ':' . $callNumber;
 			}
 
 			$section = 'Other Locations';
