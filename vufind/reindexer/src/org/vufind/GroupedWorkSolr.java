@@ -110,14 +110,14 @@ public class GroupedWorkSolr implements Cloneable {
 	}
 
 	protected GroupedWorkSolr clone() throws CloneNotSupportedException{
-		GroupedWorkSolr clonedWork = (GroupedWorkSolr)super.clone();
+		GroupedWorkSolr clonedWork = (GroupedWorkSolr) super.clone();
 		//Clone collections as well
 		// noinspection unchecked
 		clonedWork.relatedRecords = (HashMap<String, RecordInfo>) relatedRecords.clone();
 		// noinspection unchecked
 		clonedWork.alternateIds = (HashSet<String>) alternateIds.clone();
 		// noinspection unchecked
-		clonedWork.primaryAuthors = (HashMap<String,Long>) primaryAuthors.clone();
+		clonedWork.primaryAuthors = (HashMap<String, Long>) primaryAuthors.clone();
 		// noinspection unchecked
 		clonedWork.authorAdditional = (HashSet<String>) authorAdditional.clone();
 		// noinspection unchecked
@@ -153,7 +153,7 @@ public class GroupedWorkSolr implements Cloneable {
 		// noinspection unchecked
 		clonedWork.geographicFacets = (HashSet<String>) geographicFacets.clone();
 		// noinspection unchecked
-		clonedWork.isbns = (HashMap<String,Long>) isbns.clone();
+		clonedWork.isbns = (HashMap<String, Long>) isbns.clone();
 		// noinspection unchecked
 		clonedWork.issns = (HashSet<String>) issns.clone();
 		// noinspection unchecked
@@ -167,9 +167,9 @@ public class GroupedWorkSolr implements Cloneable {
 		// noinspection unchecked
 		clonedWork.lcSubjects = (HashSet<String>) lcSubjects.clone();
 		// noinspection unchecked
-		clonedWork.literaryFormFull = (HashMap<String,Integer>) literaryFormFull.clone();
+		clonedWork.literaryFormFull = (HashMap<String, Integer>) literaryFormFull.clone();
 		// noinspection unchecked
-		clonedWork.literaryForm = (HashMap<String,Integer>) literaryForm.clone();
+		clonedWork.literaryForm = (HashMap<String, Integer>) literaryForm.clone();
 		// noinspection unchecked
 		clonedWork.mpaaRatings = (HashSet<String>) mpaaRatings.clone();
 		// noinspection unchecked
@@ -181,7 +181,7 @@ public class GroupedWorkSolr implements Cloneable {
 		// noinspection unchecked
 		clonedWork.publicationDates = (HashSet<String>) publicationDates.clone();
 		// noinspection unchecked
-		clonedWork.series = (HashMap<String,String>) series.clone();
+		clonedWork.series = (HashMap<String, String>) series.clone();
 		// noinspection unchecked
 		clonedWork.series2 = (HashMap<String, String>) series2.clone();
 		// noinspection unchecked
@@ -203,7 +203,7 @@ public class GroupedWorkSolr implements Cloneable {
 		// noinspection unchecked
 		clonedWork.subjects = (HashSet<String>) subjects.clone();
 		// noinspection unchecked
-		clonedWork.upcs = (HashMap<String,Long>) upcs.clone();
+		clonedWork.upcs = (HashMap<String, Long>) upcs.clone();
 		// noinspection unchecked
 		clonedWork.systemLists = (HashSet<String>) systemLists.clone();
 
@@ -316,6 +316,8 @@ public class GroupedWorkSolr implements Cloneable {
 				if (bibDaysSinceAdded < 0) {
 					logger.warn("Using Publication date to calculate Days since added value " + bibDaysSinceAdded + " is negative for grouped work " + id);
 					bibDaysSinceAdded = 0;
+					doc.addField("days_since_added", Long.toString(bibDaysSinceAdded));
+					doc.addField("time_since_added", Util.getTimeSinceAddedForDate(Util.getIndexDate()));
 				}
 				doc.addField("days_since_added", Long.toString(bibDaysSinceAdded));
 				doc.addField("time_since_added", Util.getTimeSinceAddedForDate(publicationDate.getTime()));
@@ -383,7 +385,7 @@ public class GroupedWorkSolr implements Cloneable {
 		//relevance determiners
 		doc.addField("popularity", Long.toString((long)popularity));
 		doc.addField("num_holdings", numHoldings);
-		//vufind enrichment
+		//pika enrichment
 		doc.addField("rating", rating);
 		doc.addField("rating_facet", getRatingFacet(rating));
 		doc.addField("description", Util.getCRSeparatedString(description));
@@ -507,9 +509,9 @@ public class GroupedWorkSolr implements Cloneable {
 								Calendar publicationDate = GregorianCalendar.getInstance();
 								publicationDate.set(earliestPublicationDate.intValue(), Calendar.DECEMBER, 31);
 
-								long indexTime = Util.getIndexDate().getTime();
+								long indexTime       = Util.getIndexDate().getTime();
 								long publicationTime = publicationDate.getTime().getTime();
-								daysSinceAdded = (indexTime - publicationTime) / (long)(1000 * 60 * 60 * 24);
+								daysSinceAdded = (indexTime - publicationTime) / (long) (1000 * 60 * 60 * 24);
 							}else{
 								daysSinceAdded = Integer.MAX_VALUE;
 							}
@@ -546,7 +548,7 @@ public class GroupedWorkSolr implements Cloneable {
 			SolrInputField field = doc.getField("local_days_since_added_" + scope.getScopeName());
 			if (field != null){
 				Integer daysSinceAdded = (Integer)field.getFirstValue();
-				doc.addField("local_time_since_added_" + scope.getScopeName(), Util.getTimeSinceAdded(daysSinceAdded));
+				doc.addField("local_time_since_added_" + scope.getScopeName(), Util.getTimeSinceAdded(daysSinceAdded, scope.isIncludeOnOrderRecordsInDateAddedFacetValues()));
 			}
 		}
 	}
