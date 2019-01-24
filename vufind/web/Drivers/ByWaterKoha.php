@@ -201,8 +201,8 @@ EOD;
 			}else{
 				$dueTime = null;
 			}
-			
-			if($curRow['auto_renew '] == 1) {
+
+			if($curRow['auto_renew'] == 1) {
 				$transaction['canrenew'] = false;
 			}
 
