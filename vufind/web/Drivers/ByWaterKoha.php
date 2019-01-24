@@ -177,7 +177,7 @@ abstract class ByWaterKoha extends KohaILSDI {
 		$sql = <<<EOD
 SELECT i.*, items.*, bib.title, bib.author
 FROM borrowers as b, issues as i, items, biblio as bib
-where b.borrowernumber ={$kohaPatronID}
+where b.borrowernumber = '{$kohaPatronID}'
 AND b.borrowernumber = i.borrowernumber
 AND items.itemnumber = i.itemnumber
 AND items.biblionumber = bib.biblionumber
@@ -201,6 +201,11 @@ EOD;
 			}else{
 				$dueTime = null;
 			}
+			
+			if($curRow['auto_renew '] == 1) {
+				$transaction['canrenew'] = false;
+			}
+
 			$transaction['dueDate'] = $dueTime;
 			$transaction['itemid'] = $curRow['itemnumber'];
 			$transaction['renewIndicator'] = $curRow['itemnumber'];
@@ -533,27 +538,61 @@ EOD;
 		// TODO: Implement cancelHold() method.
 	//}
 
+
 	function freezeHold($patron, $recordId, $itemToFreezeId, $dateToReactivate){
-		$result = $this->freezeThawHoldViaSIP($patron, $recordId, null, $dateToReactivate);
+		$result = $this->freezeThawHoldViaSIP($patron, $recordId, $itemToFreezeId, $dateToReactivate);
 		return $result;
-	}
-
-	function freezeThawHoldViaSIP($patron, $recordId, $itemToFreezeId = null, $dateToReactivate = null, $type = 'freeze'){
-		$holdResult = array(
-			'success' => false,
-			'message' => 'Your hold could not be placed. '
-		);
-		if ($this->initSipConnection()) {
-
-		}
-		return $holdResult;
-
 	}
 
 	function thawHold($patron, $recordId, $itemToThawId)
 	{
-		// TODO: Implement thawHold() method.
+		$result = $this->freezeThawHoldViaSIP($patron, $recordId, $itemToThawId, null, 'thaw');
+		return $result;
 	}
+
+	/**
+	 * @param $patron
+	 * @param $recordId
+	 * @param null $itemToFreezeId
+	 * @param null $dateToReactivate
+	 * @param string $type
+	 * @return array
+	 */
+	function freezeThawHoldViaSIP($patron, $recordId, $itemToFreezeId = null, $dateToReactivate = null, $type = 'freeze'){
+		$holdResult = array(
+			'success' => false,
+			'message' => 'Unable to {$type} hold. '
+		);
+
+		if (!$this->initSipConnection()) {
+			$holdResult['message'] .= "Can't establish connection to SIP server.";
+			return $holdResult;
+		}
+
+		// determine freeze or thaw
+		if($type = 'freeze') {
+
+		} elseif($type = 'thaw') {
+
+		} else {
+			$holdResult['message'] .= 'Invalid paramater.';
+		}
+
+		$date_stamp = date('Ymd    His');
+		$freezeThawMsg = $this->msgHold('*', $date_stamp, 4, $itemToFreezeId, $recordId, 'N');
+		$freezeThawResponse = $this->parseHoldResponse($freezeThawMsg);
+
+
+		if($freezeThawResponse['Ok'] == 1) {
+			// success
+		} else {
+			// fail
+		}
+
+		return $holdResult;
+
+	}
+
 
 	function changeHoldPickupLocation($patron, $recordId, $itemToUpdateId, $newPickupLocation)
 	{
