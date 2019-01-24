@@ -1410,6 +1410,15 @@ function getLibraryLocationUpdates(){
 					),
 			),
 
+			'location_library_on_order_dates_in_date_added_facets' => array(
+					'title' => 'Controls whether onorder date (tomorrow) are used in all date added facet values',
+					'description' => 'Controls whether onorder date (tomorrow) are used in all date added facet values',
+					'sql' => array(
+							'ALTER TABLE library ADD COLUMN includeOnOrderRecordsInDateAddedFacetValues TINYINT DEFAULT 1',
+							'ALTER TABLE location ADD COLUMN includeOnOrderRecordsInDateAddedFacetValues TINYINT DEFAULT 1',
+					),
+			),
+
 			'library_cas_configuration' => array(
 					'title' => 'Library CAS Configuration',
 					'description' => 'Add configuration options for CAS SSO support',
