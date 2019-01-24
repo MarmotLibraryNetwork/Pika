@@ -31,11 +31,6 @@ class SacramentoRecordProcessor extends IIIRecordProcessor {
 
 
     @Override
-    protected boolean loanRulesAreBasedOnCheckoutLocation() {
-        return false;
-    }
-
-    @Override
     protected boolean isItemAvailable(ItemInfo itemInfo) {
         boolean available = false;
         String status = itemInfo.getStatusCode();

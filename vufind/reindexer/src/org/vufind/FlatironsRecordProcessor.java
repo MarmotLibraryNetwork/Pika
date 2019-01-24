@@ -235,10 +235,6 @@ class FlatironsRecordProcessor extends IIIRecordProcessor{
 		}
 	}
 
-	protected boolean loanRulesAreBasedOnCheckoutLocation(){
-		return false;
-	}
-
 	protected void loadTargetAudiences(GroupedWorkSolr groupedWork, Record record, HashSet<ItemInfo> printItems, String identifier) {
 		//For Flatirons, load audiences based on the final character of the location codes
 		HashSet<String> targetAudiences = new HashSet<>();

@@ -46,11 +46,6 @@ public class AddisonRecordProcessor extends IIIRecordProcessor {
         return available;
     }
 
-    @Override
-    protected boolean loanRulesAreBasedOnCheckoutLocation() {
-        return false;
-    }
-
     public void loadPrintFormatInformation(RecordInfo recordInfo, Record record){
         String matType = MarcUtil.getFirstFieldVal(record, sierraRecordFixedFieldsTag + materialTypeSubField);
         if (matType != null) {

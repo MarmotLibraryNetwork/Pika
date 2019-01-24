@@ -324,8 +324,7 @@ public class GroupedWorkIndexer {
 	}
 
 	private void loadLocationScopes() throws SQLException {
-		PreparedStatement locationInformationStmt = vufindConn.prepareStatement("SELECT library.libraryId, locationId, code, subLocation, ilsCode, " +
-				//TODO remove ilsCode
+		PreparedStatement locationInformationStmt = vufindConn.prepareStatement("SELECT library.libraryId, locationId, code, subLocation, " +
 				"library.subdomain, location.facetLabel, location.displayName, library.pTypes, library.restrictOwningBranchesAndSystems, location.publicListsToInclude, " +
 				"library.enableOverdriveCollection as enableOverdriveCollectionLibrary, " +
 				"location.enableOverdriveCollection as enableOverdriveCollectionLocation, " +
@@ -381,7 +380,6 @@ public class GroupedWorkIndexer {
 			locationScopeInfo.setIncludeOverDriveTeenCollection(includeOverdriveTeen);
 			locationScopeInfo.setIncludeOverDriveKidsCollection(includeOverdriveKids);
 			locationScopeInfo.setRestrictOwningLibraryAndLocationFacets(locationInformationRS.getBoolean("restrictOwningBranchesAndSystems"));
-			locationScopeInfo.setIlsCode(code); //TODO: ilscode no longer used in indexing
 			locationScopeInfo.setPublicListsToInclude(locationInformationRS.getInt("publicListsToInclude"));
 			locationScopeInfo.setAdditionalLocationsToShowAvailabilityFor(locationInformationRS.getString("additionalLocationsToShowAvailabilityFor"));
 			locationScopeInfo.setIncludeAllLibraryBranchesInFacets(locationInformationRS.getBoolean("includeAllLibraryBranchesInFacets"));
@@ -465,12 +463,12 @@ public class GroupedWorkIndexer {
 
 	private PreparedStatement libraryRecordInclusionRulesStmt;
 	private void loadLibraryScopes() throws SQLException {
-		PreparedStatement libraryInformationStmt = vufindConn.prepareStatement("SELECT libraryId, ilsCode, subdomain, " +
+		PreparedStatement libraryInformationStmt = vufindConn.prepareStatement("SELECT libraryId, subdomain, " +
 				"displayName, facetLabel, pTypes, enableOverdriveCollection, restrictOwningBranchesAndSystems, publicListsToInclude, " +
 				"additionalLocationsToShowAvailabilityFor, sharedOverdriveCollection, includeOverdriveAdult, includeOverdriveTeen, includeOverdriveKids, " +
 				"includeAllRecordsInShelvingFacets, includeAllRecordsInDateAddedFacets, includeOnOrderRecordsInDateAddedFacetValues, includeOnlineMaterialsInAvailableToggle " +
-				"FROM library ORDER BY ilsCode ASC",
-				ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY); //TODO: ilsCode no longer used.
+				"FROM library ORDER BY subdomain ASC",
+				ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 		PreparedStatement libraryOwnedRecordRulesStmt = vufindConn.prepareStatement("SELECT library_records_owned.*, indexing_profiles.name from library_records_owned INNER JOIN indexing_profiles ON indexingProfileId = indexing_profiles.id WHERE libraryId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 		libraryRecordInclusionRulesStmt = vufindConn.prepareStatement("SELECT library_records_to_include.*, indexing_profiles.name from library_records_to_include INNER JOIN indexing_profiles ON indexingProfileId = indexing_profiles.id WHERE libraryId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 		ResultSet libraryInformationRS = libraryInformationStmt.executeQuery();
@@ -516,7 +514,6 @@ public class GroupedWorkIndexer {
 			newScope.setSharedOverdriveCollectionId(sharedOverdriveCollectionId);
 
 			newScope.setRestrictOwningLibraryAndLocationFacets(libraryInformationRS.getBoolean("restrictOwningBranchesAndSystems"));
-			newScope.setIlsCode(libraryInformationRS.getString("ilsCode")); //TODO: ilsCode no longer used.
 
 			//Load information about what should be included in the scope
 			libraryOwnedRecordRulesStmt.setLong(1, libraryId);
