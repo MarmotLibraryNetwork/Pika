@@ -92,7 +92,7 @@ class MaterialsRequest_Submit extends Action
 				if ($materialsRequest->N >= $maxActiveRequests){
 					$interface->assign('success', false);
 					$materialsRequestString = translate('materials_request_short');
-					$interface->assign('error', "You've already reached your maximum limit of $maxActiveRequests '. translate('materials request') .'s open at one time. Once we've processed your existing {$materialsRequestString}s, you'll be able to submit again. To check the status of your current {$materialsRequestString}s, visit your <a href='{$accountPageLink}'>account</a>.");
+					$interface->assign('error', "You've already reached your maximum limit of $maxActiveRequests " . translate('materials request') . "s open at one time. Once we've processed your existing {$materialsRequestString}s, you'll be able to submit again. To check the status of your current {$materialsRequestString}s, visit your <a href='{$accountPageLink}'>account</a>.");
 				}else{
 					//Check the total number of requests created this year
 					$materialsRequest = new MaterialsRequest();
@@ -107,7 +107,7 @@ class MaterialsRequest_Submit extends Action
 					if ($requestsThisYear >= $maxRequestsPerYear){
 						$interface->assign('success', false);
 						$materialsRequestString = translate('materials_request_short');
-						$interface->assign('error', "You've already reached your maximum limit of $maxRequestsPerYear '. translate('materials request') .'s per year. To check the status of your current {$materialsRequestString}s, visit your <a href='{$accountPageLink}'>account page</a>.");
+						$interface->assign('error', "You've already reached your maximum limit of $maxRequestsPerYear " . translate('materials request') . "s per year. To check the status of your current {$materialsRequestString}s, visit your <a href='{$accountPageLink}'>account page</a>.");
 					}else{
 						//Materials request can be submitted.
 						$materialsRequest = new MaterialsRequest();
