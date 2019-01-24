@@ -22,23 +22,23 @@ import java.util.regex.Pattern;
  */
 class RecordGroupingProcessor {
 	protected Logger logger;
-	String recordNumberTag = "";
-	char recordNumberField = 'a';
-	String recordNumberPrefix = "";
-	String itemTag;
+	String  recordNumberTag     = "";
+	char    recordNumberField   = 'a';
+	String  recordNumberPrefix  = "";
+	String  itemTag;
 	boolean useEContentSubfield = false;
-	char eContentDescriptor = ' ';
+	char    eContentDescriptor  = ' ';
 	private PreparedStatement insertGroupedWorkStmt;
 	private PreparedStatement groupedWorkForIdentifierStmt;
 	private PreparedStatement updateDateUpdatedForGroupedWorkStmt;
 	private PreparedStatement addPrimaryIdentifierForWorkStmt;
 	private PreparedStatement removePrimaryIdentifiersForWorkStmt;
 
-	private int numRecordsProcessed = 0;
+	private int numRecordsProcessed  = 0;
 	private int numGroupedWorksAdded = 0;
 
 	private boolean fullRegrouping;
-	private long startTime = new Date().getTime();
+	private long    startTime = new Date().getTime();
 
 	HashMap<String, HashMap<String, String>> translationMaps = new HashMap<>();
 
@@ -86,7 +86,7 @@ class RecordGroupingProcessor {
 
 	void setupDatabaseStatements(Connection dbConnection) {
 		try{
-			insertGroupedWorkStmt = dbConnection.prepareStatement("INSERT INTO " + RecordGrouperMain.groupedWorkTableName + " (full_title, author, grouping_category, permanent_id, date_updated) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE date_updated = VALUES(date_updated), id=LAST_INSERT_ID(id) ", Statement.RETURN_GENERATED_KEYS) ;
+			insertGroupedWorkStmt = dbConnection.prepareStatement("INSERT INTO " + RecordGrouperMain.groupedWorkTableName + " (full_title, author, grouping_category, permanent_id, date_updated) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE date_updated = VALUES(date_updated), id=LAST_INSERT_ID(id) ", Statement.RETURN_GENERATED_KEYS);
 			updateDateUpdatedForGroupedWorkStmt = dbConnection.prepareStatement("UPDATE grouped_work SET date_updated = ? where id = ?");
 			addPrimaryIdentifierForWorkStmt = dbConnection.prepareStatement("INSERT INTO grouped_work_primary_identifiers (grouped_work_id, type, identifier) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE id=LAST_INSERT_ID(id), grouped_work_id = VALUES(grouped_work_id)", Statement.RETURN_GENERATED_KEYS);
 			removePrimaryIdentifiersForWorkStmt = dbConnection.prepareStatement("DELETE FROM grouped_work_primary_identifiers where grouped_work_id = ?");
@@ -142,11 +142,11 @@ class RecordGroupingProcessor {
 			if (recordNumberFieldValue instanceof DataField) {
 				logger.debug("getPrimaryIdentifierFromMarcRecord - Record number field is a data field");
 
-				DataField curRecordNumberField = (DataField)recordNumberFieldValue;
-				Subfield subfieldA = curRecordNumberField.getSubfield(recordNumberField);
-				if (subfieldA != null && (recordNumberPrefix.length() == 0 || subfieldA.getData().length() > recordNumberPrefix.length())) {
-					if (curRecordNumberField.getSubfield(recordNumberField).getData().substring(0, recordNumberPrefix.length()).equals(recordNumberPrefix)) {
-						String recordNumber = curRecordNumberField.getSubfield(recordNumberField).getData().trim();
+				DataField curRecordNumberField = (DataField) recordNumberFieldValue;
+				Subfield  recordNumberSubfield = curRecordNumberField.getSubfield(recordNumberField);
+				if (recordNumberSubfield != null && (recordNumberPrefix.length() == 0 || recordNumberSubfield.getData().length() > recordNumberPrefix.length())) {
+					if (recordNumberSubfield.getData().substring(0, recordNumberPrefix.length()).equals(recordNumberPrefix)) {
+						String recordNumber = recordNumberSubfield.getData().trim();
 						identifier = new RecordIdentifier();
 						identifier.setValue(recordType, recordNumber);
 					}
@@ -229,8 +229,8 @@ class RecordGroupingProcessor {
 		GroupedWorkBase workForTitle = GroupedWorkFactory.getInstance(-1);
 
 		//Title
-		DataField field245 = setWorkTitleBasedOnMarcRecord(marcRecord, workForTitle);
-		String groupingFormat = setGroupingCategoryForWork(marcRecord, loadFormatFrom, formatSubfield, specifiedFormatCategory, workForTitle);
+		DataField field245       = setWorkTitleBasedOnMarcRecord(marcRecord, workForTitle);
+		String    groupingFormat = setGroupingCategoryForWork(marcRecord, loadFormatFrom, formatSubfield, specifiedFormatCategory, workForTitle);
 
 
 		//Author
