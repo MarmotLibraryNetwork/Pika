@@ -3159,7 +3159,7 @@ class GroupedWorkDriver extends RecordInterface{
 		}
 
 		ksort($relatedRecord['itemDetails']);
-		ksort($relatedRecord['itemSummary'], SORT_NUMERIC);
+		ksort($relatedRecord['itemSummary']);
 		$timer->logTime("Setup record items");
 		$memoryWatcher->logMemory("Setup record items");
 
