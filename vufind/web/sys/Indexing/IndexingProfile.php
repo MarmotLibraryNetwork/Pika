@@ -190,7 +190,7 @@ class IndexingProfile extends DB_DataObject{
 							'locationsToSuppress'   => array('property' => 'locationsToSuppress', 'type' => 'text', 'label' => 'Locations To Suppress', 'maxLength' => 255, 'description' => 'A regular expression for any locations that should be suppressed'),
 							'collectionsToSuppress' => array('property' => 'collectionsToSuppress', 'type' => 'text', 'label' => 'Collections To Suppress', 'maxLength' => 100, 'description' => 'A regular expression for any collections that should be suppressed'),
 							'useICode2Suppression'  => array('property' => 'useICode2Suppression', 'type' => 'checkbox', 'label' => 'Use Item Suppression Field suppression for items', 'description' => 'Whether or not we should suppress items based on Item Suppression Field'),
-							'iCode2sToSuppress'     => array('property' => 'iCode2sToSuppress', 'type' => 'text', 'label' => 'Item Suppression Field To Suppress (use regex)', 'maxLength' => 100, 'description' => 'A regular expression for any Item Suppression Field that should be suppressed'),
+							'iCode2sToSuppress'     => array('property' => 'iCode2sToSuppress', 'type' => 'text', 'label' => 'Item Suppression Field Values To Suppress (use regex)', 'maxLength' => 100, 'description' => 'A regular expression for any Item Suppression Field that should be suppressed'),
 
 						)),
 					'bibSuppressionSection' =>array('property'=>'bibSuppressionSection', 'type' => 'section', 'label' =>'Bib Level Suppression Settings', 'hideInLists' => true,
