@@ -18,34 +18,45 @@ import java.util.*;
  */
 
 class SacramentoRecordProcessor extends IIIRecordProcessor {
-    private String materialTypeSubField = "d";
+    //TODO: These should be added to indexing profile
+    private String materialTypeSubField     = "d";
+    private String availableStatus          = "-od(j";
+    private String validOnOrderRecordStatus = "o1";
+    private String libraryUseOnlyStatus     = "o";
 
     SacramentoRecordProcessor(GroupedWorkIndexer indexer, Connection vufindConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
         super(indexer, vufindConn, indexingProfileRS, logger, fullReindex);
 
         loadOrderInformationFromExport();
 
-        validCheckedOutStatusCodes.add("d");
         validCheckedOutStatusCodes.add("o");
+        validCheckedOutStatusCodes.add("d");
     }
 
+    //TODO: this could become the base method when statuses settings are added to the index
+    protected boolean isOrderItemValid(String status, String code3) {
+        return !status.isEmpty() && validOnOrderRecordStatus.indexOf(status.charAt(0)) >= 0;
+    }
+
+    //TODO: this could become the base method when statuses settings are added to the index
+    protected boolean determineLibraryUseOnly(ItemInfo itemInfo, Scope curScope) {
+        String status = itemInfo.getStatusCode();
+        return !status.isEmpty() && libraryUseOnlyStatus.indexOf(status.charAt(0)) >= 0;
+    }
 
     @Override
+    //TODO: this could become the base III method when statuses settings are added to the index
     protected boolean isItemAvailable(ItemInfo itemInfo) {
         boolean available = false;
-        String status = itemInfo.getStatusCode();
-        String dueDate = itemInfo.getDueDate() == null ? "" : itemInfo.getDueDate();
-        String availableStatus = "-od(j";
-        if (status.length() > 0 && availableStatus.indexOf(status.charAt(0)) >= 0) {
-            if (dueDate.length() == 0) {
+        String  status    = itemInfo.getStatusCode();
+        String  dueDate   = itemInfo.getDueDate() == null ? "" : itemInfo.getDueDate();
+
+        if (!status.isEmpty() && availableStatus.indexOf(status.charAt(0)) >= 0) {
+            if (dueDate.length() == 0 || dueDate.trim().equals("-  -")) {
                 available = true;
             }
         }
         return available;
-    }
-
-    protected boolean determineLibraryUseOnly(ItemInfo itemInfo, Scope curScope) {
-        return itemInfo.getStatusCode().equals("o");
     }
 
     protected void loadTargetAudiences(GroupedWorkSolr groupedWork, Record record, HashSet<ItemInfo> printItems, String identifier) {
@@ -161,37 +172,4 @@ class SacramentoRecordProcessor extends IIIRecordProcessor {
     }
 
 
-    private void createAndAddOrderItem(GroupedWorkSolr groupedWork, RecordInfo recordInfo, OrderInfo orderItem, Record record) {
-        ItemInfo itemInfo = new ItemInfo();
-        String orderNumber = orderItem.getOrderRecordId();
-        String location = orderItem.getLocationCode();
-        if (location == null){
-            logger.warn("No location set for order " + orderNumber + " skipping");
-            return;
-        }
-        itemInfo.setLocationCode(location);
-        itemInfo.setItemIdentifier(orderNumber);
-        itemInfo.setNumCopies(orderItem.getNumCopies());
-        itemInfo.setIsEContent(false);
-        itemInfo.setIsOrderItem(true);
-        itemInfo.setCallNumber("ON ORDER");
-        itemInfo.setSortableCallNumber("ON ORDER");
-        itemInfo.setDetailedStatus("On Order");
-        itemInfo.setCollection("On Order");
-        //Since we don't know when the item will arrive, assume it will come tomorrow.
-        Date tomorrow = new Date();
-        tomorrow.setTime(tomorrow.getTime() + 1000 * 60 * 60 * 24);
-        itemInfo.setDateAdded(tomorrow);
-
-        //Format and Format Category should be set at the record level, so we don't need to set them here.
-
-        //Add the library this is on order for
-        itemInfo.setShelfLocation("On Order");
-
-        String status = orderItem.getStatus();
-
-        if (isOrderItemValid(status, null)){
-            recordInfo.addItem(itemInfo);
-        }
-    }
 }

@@ -42,7 +42,6 @@ public class AddisonRecordProcessor extends IIIRecordProcessor {
 		return !status.isEmpty() && validOnOrderRecordStatus.indexOf(status.charAt(0)) >= 0;
 	}
 
-	@Override
 	//TODO: this could become the base method when statuses settings are added to the index
 	protected boolean determineLibraryUseOnly(ItemInfo itemInfo, Scope curScope) {
 		String status = itemInfo.getStatusCode();
