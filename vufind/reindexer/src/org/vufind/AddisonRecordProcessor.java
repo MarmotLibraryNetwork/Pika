@@ -14,7 +14,12 @@ import java.util.Set;
 
 public class AddisonRecordProcessor extends IIIRecordProcessor {
     private PreparedStatement getDateAddedStmt; // to set date added for ils (itemless) econtent records
-    private String materialTypeSubField = "d";
+
+    //TODO: These should be added to indexing profile
+    private String            materialTypeSubField     = "d";
+    private String            availableStatus          = "-oy";
+    private String            validOnOrderRecordStatus = "o1a";
+
     AddisonRecordProcessor(GroupedWorkIndexer indexer, Connection vufindConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
         super(indexer, vufindConn, indexingProfileRS, logger, fullReindex);
 
@@ -22,7 +27,7 @@ public class AddisonRecordProcessor extends IIIRecordProcessor {
 //        loadVolumesFromExport(vufindConn);
 
         validCheckedOutStatusCodes.add("o"); // Library Use Only
-        validCheckedOutStatusCodes.add("d"); // Display  //TODO: is this a good one to use?  (Sacramento does)
+        validCheckedOutStatusCodes.add("d"); // Display
 
         try{
             getDateAddedStmt = vufindConn.prepareStatement("SELECT dateFirstDetected FROM ils_marc_checksums WHERE ilsId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
@@ -31,12 +36,17 @@ public class AddisonRecordProcessor extends IIIRecordProcessor {
         }
     }
 
+    protected boolean isOrderItemValid(String status, String code3) {
+        return !status.isEmpty() && validOnOrderRecordStatus.indexOf(status.charAt(0)) >= 0;
+    }
+
+
     @Override
     protected boolean isItemAvailable(ItemInfo itemInfo) {
         boolean available      = false;
         String status          = itemInfo.getStatusCode();
         String dueDate         = itemInfo.getDueDate() == null ? "" : itemInfo.getDueDate();
-        String availableStatus = "-oy";
+//        String availableStatus = "-oy";
 
         if (!status.isEmpty() && availableStatus.indexOf(status.charAt(0)) >= 0) {
             if (dueDate.length() == 0 || dueDate.trim().equals("-  -")) {
