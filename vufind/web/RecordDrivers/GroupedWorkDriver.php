@@ -1607,9 +1607,9 @@ class GroupedWorkDriver extends RecordInterface{
 
 			//Load the work from the database so we can use it in each record diver
 			require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
-			$groupedWork = new GroupedWork();
+			$groupedWork               = new GroupedWork();
 			$groupedWork->permanent_id = $this->getUniqueID();
-			$relatedRecords = array();
+			$relatedRecords            = array();
 			//This will be false if the record is old
 			if ($groupedWork->find(true)){
 				//Generate record information based on the information we have in the index
@@ -2752,20 +2752,20 @@ class GroupedWorkDriver extends RecordInterface{
 		//within the scoping details field for the scope.
 		//Each field is
 		$scopingInfoFieldName = 'scoping_details_' . $solrScope;
-		$scopingInfo = array();
-		$validRecordIds = array();
-		$validItemIds = array();
+		$scopingInfo          = array();
+		$validRecordIds       = array();
+		$validItemIds         = array();
 		if (isset($this->fields[$scopingInfoFieldName])) {
 			$scopingInfoRaw = $this->fields[$scopingInfoFieldName];
 			if (!is_array($scopingInfoRaw)) {
 				$scopingInfoRaw = array($scopingInfoRaw);
 			}
 			foreach ($scopingInfoRaw as $tmpItem) {
-				$scopingDetails = explode('|', $tmpItem);
-				$scopeKey = $scopingDetails[0] . ':' . ($scopingDetails[1] == 'null' ? '' : $scopingDetails[1]);
+				$scopingDetails         = explode('|', $tmpItem);
+				$scopeKey               = $scopingDetails[0] . ':' . ($scopingDetails[1] == 'null' ? '' : $scopingDetails[1]);
 				$scopingInfo[$scopeKey] = $scopingDetails;
-				$validRecordIds[] = $scopingDetails[0];
-				$validItemIds[] = $scopeKey;
+				$validRecordIds[]       = $scopingDetails[0];
+				$validItemIds[]         = $scopeKey;
 			}
 		}
 		return array($scopingInfo, $validRecordIds, $validItemIds);
@@ -2976,6 +2976,7 @@ class GroupedWorkDriver extends RecordInterface{
 
 			//Update the record with information from the item and from scoping.
 			if ($isEcontent) {
+				// the scope local url should override the item url if it is set
 				if (strlen($scopingDetails[12]) > 0){
 					$relatedUrls[] = array(
 						'source' => $curItem[9],
@@ -2992,6 +2993,11 @@ class GroupedWorkDriver extends RecordInterface{
 
 				$relatedRecord['eContentSource'] = $curItem[9];
 				$relatedRecord['isEContent']     = true;
+			} elseif (!empty($curItem[11])) {
+				// Special Physical Records, like KitKeeper
+				$relatedUrls[] = array(
+					'url'    => $curItem[11]
+				);
 			}
 
 			$displayByDefault = false;
@@ -3136,8 +3142,8 @@ class GroupedWorkDriver extends RecordInterface{
 					$relatedRecord['itemSummary'][$key]['displayByDefault'] = true;
 				}
 				$relatedRecord['itemSummary'][$key]['onOrderCopies'] += $itemSummaryInfo['onOrderCopies'];
-				$lastStatus = $relatedRecord['itemSummary'][$key]['status'];
-				$relatedRecord['itemSummary'][$key]['status'] = GroupedWorkDriver::keepBestGroupedStatus($lastStatus, $groupedStatus);
+				$lastStatus                                          = $relatedRecord['itemSummary'][$key]['status'];
+				$relatedRecord['itemSummary'][$key]['status']        = GroupedWorkDriver::keepBestGroupedStatus($lastStatus, $groupedStatus);
 				if ($lastStatus != $relatedRecord['itemSummary'][$key]['status']){
 					$relatedRecord['itemSummary'][$key]['statusFull'] = $itemSummaryInfo['statusFull'];
 				}

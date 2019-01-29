@@ -1281,61 +1281,60 @@ class MarcRecord extends IndexRecord
 		return array();
 	}
 
-	public function getRecordActions($isAvailable, $isHoldable, $isBookable, $relatedUrls = null, $volumeData = null)
-	{
+	public function getRecordActions($isAvailable, $isHoldable, $isBookable, $relatedUrls = null, $volumeData = null){
 		$actions = array();
 		global $interface;
 		global $library;
-		if (isset($interface)) {
-			if ($interface->getVariable('displayingSearchResults')) {
+		if (isset($interface)){
+			if ($interface->getVariable('displayingSearchResults')){
 				$showHoldButton = $interface->getVariable('showHoldButtonInSearchResults');
-			} else {
+			}else{
 				$showHoldButton = $interface->getVariable('showHoldButton');
 			}
 
-			if ($showHoldButton && $interface->getVariable('offline')) {
+			if ($showHoldButton && $interface->getVariable('offline')){
 				// When Pika is in offline mode, only show the hold button if offline-login & offline-holds are allowed
 				global $configArray;
-				if (!$interface->getVariable('enableLoginWhileOffline') || !$configArray['Catalog']['enableOfflineHolds']) {
+				if (!$interface->getVariable('enableLoginWhileOffline') || !$configArray['Catalog']['enableOfflineHolds']){
 					$showHoldButton = false;
 				}
 			}
 
-			if ($showHoldButton && $isAvailable) {
+			if ($showHoldButton && $isAvailable){
 				$showHoldButton = !$interface->getVariable('showHoldButtonForUnavailableOnly');
 			}
-		} else {
+		}else{
 			$showHoldButton = false;
 		}
 
-		if ($isHoldable && $showHoldButton) {
-			if (!is_null($volumeData) && count($volumeData) > 0) {
-				foreach ($volumeData as $volumeInfo) {
+		if ($isHoldable && $showHoldButton){
+			if (!is_null($volumeData) && count($volumeData) > 0){
+				foreach ($volumeData as $volumeInfo){
 					if (isset($volumeInfo->holdable) && $volumeInfo->holdable) {
 						$id = $this->getIdWithSource();
 						$id .= ':' . $volumeInfo->volumeId;
 						$actions[] = array(
-								'title' => 'Hold ' . $volumeInfo->displayLabel,
-								'url' => '',
-								'onclick' => "return VuFind.Record.showPlaceHold('{$this->getModule()}', '$id');",
+								'title'        => 'Hold ' . $volumeInfo->displayLabel,
+								'url'          => '',
+								'onclick'      => "return VuFind.Record.showPlaceHold('{$this->getModule()}', '$id');",
 								'requireLogin' => false,
 						);
 					}
 				}
 			} else {
 				$actions[] = array(
-						'title' => 'Place Hold',
-						'url' => '',
-						'onclick' => "return VuFind.Record.showPlaceHold('{$this->getModule()}', '{$this->getIdWithSource()}');",
+						'title'        => 'Place Hold',
+						'url'          => '',
+						'onclick'      => "return VuFind.Record.showPlaceHold('{$this->getModule()}', '{$this->getIdWithSource()}');",
 						'requireLogin' => false,
 				);
 			}
 		}
 		if ($isBookable && $library->enableMaterialsBooking) {
 			$actions[] = array(
-					'title' => 'Schedule Item',
-					'url' => '',
-					'onclick' => "return VuFind.Record.showBookMaterial('{$this->getModule()}', '{$this->getId()}');",
+					'title'        => 'Schedule Item',
+					'url'          => '',
+					'onclick'      => "return VuFind.Record.showBookMaterial('{$this->getModule()}', '{$this->getId()}');",
 					'requireLogin' => false,
 			);
 		}
@@ -1343,12 +1342,24 @@ class MarcRecord extends IndexRecord
 		$archiveLink = GroupedWorkDriver::getArchiveLinkForWork($this->getGroupedWorkId());
 		if ($archiveLink != null){
 			$actions[] = array(
-					'title' => 'View Online',
-					'url' => $archiveLink,
+					'title'        => 'View Online',
+					'url'          => $archiveLink,
 					'requireLogin' => false,
 			);
 		}
 
+		//Special Itemless Print Record Actions with url links, like KitKeeper Records
+		if (empty($actions) && !empty($relatedUrls) && $isAvailable){
+			//TODO: not sure what the best check is at this point
+			foreach ($relatedUrls as $relatedUrl){
+				$actions[] = array(
+					'title'        => 'Reserve Online',
+					'url'          => $relatedUrl['url'],
+					'requireLogin' => false,
+				);
+			}
+
+		}
 		return $actions;
 	}
 
