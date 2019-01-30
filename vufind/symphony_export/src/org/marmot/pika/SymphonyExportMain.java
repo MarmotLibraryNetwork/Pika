@@ -166,6 +166,10 @@ public class SymphonyExportMain {
 									line = line.substring(0, line.length() - 1);
 								}
 								int lastPipePosition = line.lastIndexOf('|');
+								String isbnString    = line.substring(lastPipePosition + 1);
+//								logger.info(isbnString);
+								line                 = line.substring(0, lastPipePosition);
+								lastPipePosition     = line.lastIndexOf('|');
 								String title         = line.substring(lastPipePosition + 1);
 								line                 = line.substring(0, lastPipePosition);
 								lastPipePosition     = line.lastIndexOf('|');
