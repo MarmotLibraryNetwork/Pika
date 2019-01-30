@@ -434,7 +434,7 @@ EOD;
 			$result['success'] = true;
 			return $result;
 		}
-		
+
 		return $result;
 	}
 
@@ -706,10 +706,13 @@ EOD;
 		curl_setopt_array($c, $curl_options);
 		$return = curl_exec($c);
 
+		global $logger;
 		if($errno = curl_errno($c)) {
 			$error_message = curl_strerror($errno);
 			$curlError = "cURL error ({$errno}):\n {$error_message}";
+			$logger->log($curlError, PEAR_LOG_ERR);
 		}
+		$logger->log('response from bywater api: ' . $return, PEAR_LOG_ERR);
 		curl_close($c);
 		return $return;
 	}
