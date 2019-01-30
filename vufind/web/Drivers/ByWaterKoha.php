@@ -411,12 +411,59 @@ EOD;
 	 * @return array
 	 */
 	function freezeHold($patron, $recordId, $itemToFreezeId, $dateToReactivate){
-		// TODO: Implement Bywater API
+		global $configArray;
+
+		$result = [
+			'title' => '',
+			'success' => false,
+			'message' => 'Unable to ' . translate('freeze') .' your hold.'
+		];
+
+		$apiUrl = $configArray['Catalog']['koha_api_url'];
+		$apiUrl .= "/api/v1/contrib/pika/holds/{$itemToFreezeId}/suspend";
+
+		$response = $this->_curl_post_request($apiUrl);
+
+		if(!$response) {
+			return $result;
+		}
+
+		$hold_response = json_decode($response);
+		if ($hold_response->suspended && $hold_response->suspended == true) {
+			$result['message'] = 'Your hold was ' . translate('frozen') .' successfully.';
+			$result['success'] = true;
+			return $result;
+		}
+
+
 		return $result;
 	}
 
 	function thawHold($patron, $recordId, $itemToThawId) {
-		// TODO: Implement Bywater API
+		global $configArray;
+
+		$result = [
+			'title' => '',
+			'success' => false,
+			'message' => 'Unable to ' . translate('thaw') . ' your hold.'
+		];
+
+		$apiUrl =  $configArray['Catalog']['koha_api_url'];
+		$apiUrl .= "/api/v1/contrib/pika/holds/{$itemToThawId}/resume";
+
+		$response = $this->_curl_post_request($apiUrl);
+		if(!$response) {
+			return $result;
+		}
+
+
+		$hold_response = json_decode($response);
+		if ($hold_response->resumeed && $hold_response->resumeed == true) {
+			$result['message'] = 'Your hold was ' . translate('thawed') .' successfully.';
+			$result['success'] = true;
+			return $result;
+		}
+
 		return $result;
 	}
 
@@ -572,7 +619,12 @@ EOD;
 					$curHold['cancelable']            = true;
 					$curHold['locationUpdateable']    = false; //TODO: can update after the SIP call is built (will need additional logic for this depending on status)
 					$curHold['frozen']                = false;
-					$curHold['freezeable']            = false; //TODO: can update after the SIP call is built (will need additional logic for this depending on status)
+					$curHold['freezeable']            = false;
+
+					// frozen
+					if($curRow['suspend'] == 1) {
+						$curHold['frozen'] = true;
+					}
 
 					switch ($curRow['found']){
 						case 'S':
@@ -632,6 +684,36 @@ EOD;
 			}
 		}
 		return $holds;
+	}
+
+	private function _curl_post_request($url) {
+		$c = curl_init($url);
+		$curl_options  = array(
+			CURLOPT_POST              => true,
+			CURLOPT_RETURNTRANSFER    => true,
+			CURLOPT_CONNECTTIMEOUT    => 20,
+			CURLOPT_TIMEOUT           => 60,
+			CURLOPT_RETURNTRANSFER    => true,
+			CURLOPT_SSL_VERIFYPEER    => false,
+			CURLOPT_SSL_VERIFYHOST    => false,
+			CURLOPT_FOLLOWLOCATION    => true,
+			CURLOPT_UNRESTRICTED_AUTH => true,
+			CURLOPT_COOKIESESSION     => false,
+			CURLOPT_FORBID_REUSE      => false,
+			CURLOPT_HEADER            => false,
+			CURLOPT_AUTOREFERER       => true,
+			CURLOPT_HTTPPROXYTUNNEL   => true
+		);
+
+		curl_setopt_array($c, $curl_options);
+		$return = curl_exec($c);
+
+		if($errno = curl_errno($c)) {
+			$error_message = curl_strerror($errno);
+			$curlError = "cURL error ({$errno}):\n {$error_message}";
+		}
+		curl_close($c);
+		return $return;
 	}
 
 	function __destruct(){

@@ -25,11 +25,13 @@ class MyAccount_Holds extends MyAccount{
 		$ils = $configArray['Catalog']['ils'];
 		$showPosition                    = ($ils == 'Horizon' || $ils == 'Koha' || $ils == 'Symphony' || $ils == 'CarlX');
 		$showExpireTime                  = ($ils == 'Horizon' || $ils == 'Symphony');
-		$suspendRequiresReactivationDate = ($ils == 'Horizon' || $ils == 'CarlX' || $ils == 'Symphony'|| $ils == 'Koha');
+		$suspendRequiresReactivationDate = ($ils == 'Horizon' || $ils == 'CarlX' || $ils == 'Symphony');
 		$canChangePickupLocation         = ($ils != 'Koha');
 		$showPlacedColumn                = ($ils == 'Symphony' || $ils == 'Horizon'); //TODO: is this true for earlier versions of Horizon Drivers
 		$showDateWhenSuspending          = ($ils == 'Horizon' || $ils == 'CarlX' || $ils == 'Symphony' || $ils == 'Koha');
-
+		if (isset($configArray['suspend_requires_reactivation_date'])) {
+			$suspendRequiresReactivationDate = $configArray['suspend_requires_reactivation_date'];
+		}
 		$interface->assign('suspendRequiresReactivationDate', $suspendRequiresReactivationDate);
 		$interface->assign('canChangePickupLocation', $canChangePickupLocation);
 		$interface->assign('showPlacedColumn', $showPlacedColumn);
