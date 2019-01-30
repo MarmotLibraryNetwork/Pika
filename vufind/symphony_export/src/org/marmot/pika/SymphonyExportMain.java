@@ -14,6 +14,8 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.zip.CRC32;
 
 /**
@@ -135,8 +137,8 @@ public class SymphonyExportMain {
 
 		//We have gotten 2 different exports a single export as CSV and a second daily version as XLSX.  If the XLSX exists, we will
 		//process that and ignore the CSV version.
-		File ordersFileMarc = new File(indexingProfile.marcPath + "/Pika_orders.mrc");
-		File ordersFile     = new File(indexingProfile.marcPath + "/PIKA-onorderfile.txt");
+		File ordersFileMarc = new File(indexingProfile.marcPath + "/Pika_orders.mrc"); // The output of convertOrdersFileToMarc
+		File ordersFile     = new File(indexingProfile.marcPath + "/PIKA-onorderfile.txt"); // The input of convertOrdersFileToMarc
 		convertOrdersFileToMarc(ordersFile, ordersFileMarc, idsInMainFile);
 
 	}
@@ -150,24 +152,30 @@ public class SymphonyExportMain {
 			}
 			//Always process since we only received one export and we are gradually removing records as they appear in the full export.
 			try{
-				MarcWriter writer           = new MarcStreamWriter(new FileOutputStream(ordersFileMarc, false));
-				BufferedReader ordersReader = new BufferedReader(new InputStreamReader(new FileInputStream(ordersFile)));
-				String line                 = ordersReader.readLine();
-				int numOrderRecordsWritten  = 0;
-				int numOrderRecordsSkipped  = 0;
+				MarcWriter     writer                 = new MarcStreamWriter(new FileOutputStream(ordersFileMarc, false));
+				BufferedReader ordersReader           = new BufferedReader(new InputStreamReader(new FileInputStream(ordersFile)));
+				String         line                   = ordersReader.readLine();
+				int            numOrderRecordsWritten = 0;
+				int            numOrderRecordsSkipped = 0;
+				Pattern        isbnPattern            = Pattern.compile("(^\\d{13}|^\\d{10}).*$");
 				while (line != null){
 					int firstPipePos = line.indexOf('|');
 					if (firstPipePos != -1){
 						String recordNumber = line.substring(0, firstPipePos);
 						line = line.substring(firstPipePos + 1);
 						if (recordNumber.matches("^\\d+$")) {
-							if (!idsInMainFile.contains("a" + recordNumber)){
+							if (!idsInMainFile.contains("a" + recordNumber)){ // Don't add order records for anything in the ILS's main export file (ie. the regular record for the order)
 								if (line.endsWith("|")){
 									line = line.substring(0, line.length() - 1);
 								}
-								int lastPipePosition = line.lastIndexOf('|');
-								String isbnString    = line.substring(lastPipePosition + 1);
-//								logger.info(isbnString);
+								int     lastPipePosition = line.lastIndexOf('|');
+								String  isbn             = "";
+								String  isbnString       = line.substring(lastPipePosition + 1);
+								Matcher isbnMatcher      = isbnPattern.matcher(isbnString);
+								if (isbnMatcher.matches()) {
+									isbn = isbnMatcher.group(1);
+								}
+								logger.info(isbnString);
 								line                 = line.substring(0, lastPipePosition);
 								lastPipePosition     = line.lastIndexOf('|');
 								String title         = line.substring(lastPipePosition + 1);
@@ -187,6 +195,9 @@ public class SymphonyExportMain {
 									marcRecord.addVariableField(factory.newDataField("100", '0', '0', "a", author));
 								}
 								marcRecord.addVariableField(factory.newDataField("245", '0', '0', "a", title));
+								if (!isbn.isEmpty()){
+									marcRecord.addVariableField(factory.newDataField("020", '0', '0', "a", isbn));
+								}
 								writer.write(marcRecord);
 								numOrderRecordsWritten++;
 							}else{
