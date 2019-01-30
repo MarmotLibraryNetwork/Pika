@@ -160,7 +160,7 @@ class FlatironsRecordProcessor extends IIIRecordProcessor{
 		//Check status
 		Subfield statusSubfield = curItem.getSubfield(statusSubfieldIndicator);
 		if (statusSubfield != null){
-			String status = statusSubfield.getData();
+			String status = statusSubfield.getData().trim();
 			if (status.equals("l")){
 				return true;
 			}

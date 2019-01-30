@@ -1341,7 +1341,8 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			if (statusSubfield == null) { // suppress if subfield is missing
 				return true;
 			} else {
-				if (statusesToSuppressPattern != null && statusesToSuppressPattern.matcher(statusSubfield.getData()).matches()) {
+				String status = statusSubfield.getData().trim();
+				if (statusesToSuppressPattern != null && statusesToSuppressPattern.matcher(status).matches()) {
 					return true;
 				}
 			}

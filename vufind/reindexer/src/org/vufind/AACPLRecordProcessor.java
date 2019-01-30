@@ -56,7 +56,7 @@ class AACPLRecordProcessor extends IlsRecordProcessor {
 			Subfield statusSubfield = curItem.getSubfield(statusSubfieldIndicator);
 			//For Anne Arundel, the status is blank if the item is on shelf
 			if (statusSubfield != null) {
-				if (statusesToSuppressPattern != null && statusesToSuppressPattern.matcher(statusSubfield.getData()).matches()) {
+				if (statusesToSuppressPattern != null && statusesToSuppressPattern.matcher(statusSubfield.getData().trim()).matches()) {
 					return true;
 				}
 			}
