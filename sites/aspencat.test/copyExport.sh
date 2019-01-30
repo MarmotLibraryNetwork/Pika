@@ -11,7 +11,7 @@
 REMOTE="10.1.2.7:/ftp"
 LOCAL="/mnt/ftp"
 DEST="/data/vufind-plus/aspencat.test/marc"
-YESTERDAY=`date +%Y%m%d --date="yesterday"`
+#YESTERDAY=`date +%Y%m%d --date="yesterday"`
 LOG="logger -t copyExport "
 
 #-------------------------------------------------------------------------
@@ -31,7 +31,7 @@ $LOG "~~ exit code " $?
 FILE=$(find $LOCAL/aspencat/ -name *.mrc.gz -mtime -1)
 if [ -n "$FILE" ]; then
 	$LOG "~~ unzip $FILE file to fullexport.mrc"
-	gunzip -c $LOCAL/$FILE > $DEST/fullexport.mrc
+	gunzip -c $FILE > $DEST/fullexport.mrc
 	$LOG "~~ exit code " $?
 fi
 
