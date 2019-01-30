@@ -428,14 +428,13 @@ EOD;
 			return $result;
 		}
 
-		$hold_response = json_decode($response);
+		$hold_response = json_decode($response, false);
 		if ($hold_response->suspended && $hold_response->suspended == true) {
 			$result['message'] = 'Your hold was ' . translate('frozen') .' successfully.';
 			$result['success'] = true;
 			return $result;
 		}
-
-
+		
 		return $result;
 	}
 
@@ -456,8 +455,7 @@ EOD;
 			return $result;
 		}
 
-
-		$hold_response = json_decode($response);
+		$hold_response = json_decode($response, false);
 		if ($hold_response->resumeed && $hold_response->resumeed == true) {
 			$result['message'] = 'Your hold was ' . translate('thawed') .' successfully.';
 			$result['success'] = true;
