@@ -615,18 +615,19 @@ EOD;
 					$curHold['position']              = $curRow['priority'];
 					$curHold['cancelId']              = $curRow['reserve_id'];//$curRow['reservenumber'];
 					$curHold['cancelable']            = true;
-					$curHold['locationUpdateable']    = false; //TODO: can update after the SIP call is built (will need additional logic for this depending on status)
+					$curHold['locationUpdateable']    = false;
 					$curHold['frozen']                = false;
 					$curHold['freezeable']            = false;
 
 					// frozen
 					if($curRow['suspend'] == 1) {
 						$curHold['frozen'] = true;
+						$curHold['status'] = "Frozen";
 					}
 
 					switch ($curRow['found']){
 						case 'S':
-							$curHold['status']     = "Suspended";
+							$curHold['status']     = "Frozen";
 							$curHold['frozen']     = true;
 							$curHold['cancelable'] = false;
 							break;

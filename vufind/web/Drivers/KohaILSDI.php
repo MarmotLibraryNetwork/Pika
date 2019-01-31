@@ -132,8 +132,8 @@ abstract class KohaILSDI extends ScreenScrapingDriver {
 		$webServiceURL = $this->getWebServiceURL() . $this->ilsdiscript;
 		$webServiceURL .= '?' . http_build_query($urlParameters);
 
-		$title        = null;
-
+		$title = null;
+		$errorMessage = "Sorry, none of these items can be placed on hold. Either the items are not currently available for loan or the library that owns the materials does not allow them to be loaned outside of that library or service area. Please contact your library with any questions.";
 		$holdResponse = $this->getWebServiceResponse($webServiceURL);
 		if (!empty($holdResponse)){
 			if (!empty($holdResponse->title)){
@@ -144,9 +144,9 @@ abstract class KohaILSDI extends ScreenScrapingDriver {
 					'message' => "You hold has been placed."
 				);
 			}elseif(isset($holdResponse->message)){
-				$holdResult['message'] .= ' Message: ' . $holdResponse->message;
+				$holdResult['message'] = $errorMessage;
 			}elseif(isset($holdResponse->code)){
-				$holdResult['message'] .= ' Error Code: ' . $holdResponse->code;
+				$holdResult['message'] = $errorMessage;
 			}
 		}
 
