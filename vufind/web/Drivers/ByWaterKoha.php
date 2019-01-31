@@ -685,6 +685,11 @@ EOD;
 	}
 
 	private function _curl_post_request($url) {
+
+		global $logger;
+		$logger->log("\n\nBywater API URL:  from bywater api: " . $url, PEAR_LOG_ERR);
+
+
 		$c = curl_init($url);
 		$curl_options  = array(
 			CURLOPT_POST              => true,
@@ -700,19 +705,20 @@ EOD;
 			CURLOPT_FORBID_REUSE      => false,
 			CURLOPT_HEADER            => false,
 			CURLOPT_AUTOREFERER       => true,
-			CURLOPT_HTTPPROXYTUNNEL   => true
+			//CURLOPT_HTTPPROXYTUNNEL   => true
 		);
 
 		curl_setopt_array($c, $curl_options);
 		$return = curl_exec($c);
 
-		global $logger;
+
 		if($errno = curl_errno($c)) {
 			$error_message = curl_strerror($errno);
 			$curlError = "cURL error ({$errno}):\n {$error_message}";
 			$logger->log($curlError, PEAR_LOG_ERR);
 		}
-		$logger->log('response from bywater api: ' . $return, PEAR_LOG_ERR);
+
+		$logger->log('Response from bywater api: ' . $return . "\n\n", PEAR_LOG_ERR);
 		curl_close($c);
 		return $return;
 	}
