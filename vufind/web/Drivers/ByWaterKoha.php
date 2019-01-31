@@ -619,11 +619,7 @@ EOD;
 					$curHold['frozen']                = false;
 					$curHold['freezeable']            = false;
 
-					// frozen
-					if($curRow['suspend'] == 1) {
-						$curHold['frozen'] = true;
-						$curHold['status'] = "Frozen";
-					}
+
 
 					switch ($curRow['found']){
 						case 'S':
@@ -638,8 +634,14 @@ EOD;
 							$curHold['status'] = "In Transit";
 							break;
 						default:
-							$curHold['status']     = "Pending";
-							$curHold['freezeable'] = true;
+							// frozen
+							if($curRow['suspend'] == 1) {
+								$curHold['frozen'] = true;
+								$curHold['status'] = "Frozen";
+							} else {
+								$curHold['status']     = "Pending";
+								$curHold['freezeable'] = true;
+							}
 							break;
 					}
 
