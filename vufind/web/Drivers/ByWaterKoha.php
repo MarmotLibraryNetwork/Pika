@@ -686,10 +686,6 @@ EOD;
 
 	private function _curl_post_request($url) {
 
-		global $logger;
-		$logger->log("\n\nBywater API URL: " . $url, PEAR_LOG_ERR);
-
-
 		$c = curl_init($url);
 		$curl_options  = array(
 			CURLOPT_POST              => true,
@@ -699,25 +695,28 @@ EOD;
 			CURLOPT_SSL_VERIFYPEER    => false,
 			CURLOPT_SSL_VERIFYHOST    => false,
 			CURLOPT_FOLLOWLOCATION    => true,
-			//CURLOPT_UNRESTRICTED_AUTH => true,
+			CURLOPT_UNRESTRICTED_AUTH => true,
 			CURLOPT_COOKIESESSION     => false,
 			CURLOPT_FORBID_REUSE      => false,
 			CURLOPT_HEADER            => false,
 			CURLOPT_AUTOREFERER       => true,
-			//CURLOPT_HTTPPROXYTUNNEL   => true
 		);
 
 		curl_setopt_array($c, $curl_options);
+		// this stops the remote server from giving "Bad Request".
+		curl_setopt($c, CURLOPT_POSTFIELDS, array());
+
 		$return = curl_exec($c);
 
-
 		if($errno = curl_errno($c)) {
+			global $logger;
 			$error_message = curl_strerror($errno);
 			$curlError = "cURL error ({$errno}):\n {$error_message}";
+			$logger->log("\n\nBywater API URL: " . $url, PEAR_LOG_ERR);
 			$logger->log($curlError, PEAR_LOG_ERR);
+			$logger->log('Response from bywater api: ' . $return . "\n\n", PEAR_LOG_ERR);
 		}
 
-		$logger->log('Response from bywater api: ' . $return . "\n\n", PEAR_LOG_ERR);
 		curl_close($c);
 		return $return;
 	}
