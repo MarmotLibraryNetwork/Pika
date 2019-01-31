@@ -420,7 +420,7 @@ EOD;
 		];
 
 		$apiUrl = $configArray['Catalog']['koha_api_url'];
-		$apiUrl .= "/api/v1/contrib/pika/holds/{$itemToFreezeId}/suspend";
+		$apiUrl .= "/api/v1/contrib/pika/holds/{$itemToFreezeId}/suspend/";
 
 		$response = $this->_curl_post_request($apiUrl);
 
@@ -448,7 +448,7 @@ EOD;
 		];
 
 		$apiUrl =  $configArray['Catalog']['koha_api_url'];
-		$apiUrl .= "/api/v1/contrib/pika/holds/{$itemToThawId}/resume";
+		$apiUrl .= "/api/v1/contrib/pika/holds/{$itemToThawId}/resume/";
 
 		$response = $this->_curl_post_request($apiUrl);
 		if(!$response) {
@@ -687,7 +687,7 @@ EOD;
 	private function _curl_post_request($url) {
 
 		global $logger;
-		$logger->log("\n\nBywater API URL:  from bywater api: " . $url, PEAR_LOG_ERR);
+		$logger->log("\n\nBywater API URL: " . $url, PEAR_LOG_ERR);
 
 
 		$c = curl_init($url);
@@ -696,11 +696,10 @@ EOD;
 			CURLOPT_RETURNTRANSFER    => true,
 			CURLOPT_CONNECTTIMEOUT    => 20,
 			CURLOPT_TIMEOUT           => 60,
-			CURLOPT_RETURNTRANSFER    => true,
 			CURLOPT_SSL_VERIFYPEER    => false,
 			CURLOPT_SSL_VERIFYHOST    => false,
 			CURLOPT_FOLLOWLOCATION    => true,
-			CURLOPT_UNRESTRICTED_AUTH => true,
+			//CURLOPT_UNRESTRICTED_AUTH => true,
 			CURLOPT_COOKIESESSION     => false,
 			CURLOPT_FORBID_REUSE      => false,
 			CURLOPT_HEADER            => false,
