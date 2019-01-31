@@ -10919,6 +10919,7 @@ fieldset[disabled] .btn-masquerade.active {
 }
 a img#header-logo {
   margin-left: -15px;
+  margin-top: -10px;
 }
 #home-page-login {
   background-color: #75777a;
