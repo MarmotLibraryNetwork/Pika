@@ -148,7 +148,7 @@ abstract class ByWaterKoha extends KohaILSDI {
 		$this->initDatabaseConnection();
 
 		$sql = <<<EOD
-SELECT i.*, items.*, bib.title, bib.author
+SELECT i.*, items.*, i.renewals as times_renewed, bib.title, bib.author
 FROM borrowers as b, issues as i, items, biblio as bib
 where b.borrowernumber = '{$kohaPatronID}'
 AND b.borrowernumber = i.borrowernumber
@@ -182,7 +182,7 @@ EOD;
 			$transaction['dueDate'] = $dueTime;
 			$transaction['itemid'] = $curRow['itemnumber'];
 			$transaction['renewIndicator'] = $curRow['itemnumber'];
-			$transaction['renewCount'] = $curRow['renewals'];
+			$transaction['renewCount'] = $curRow['times_renewed'];
 
 			if ($transaction['id'] && strlen($transaction['id']) > 0){
 				$transaction['recordId'] = $transaction['id'];
