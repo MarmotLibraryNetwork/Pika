@@ -302,23 +302,28 @@ EOD;
 
 		$kohaPatronID = $this->getKohaPatronId($patron);
 
-		$this->initDatabaseConnection();
+		if($this->initDatabaseConnection() == null) {
+			return array('historyActive' => false, 'titles' => array(), 'numTitles' => 0);
+		}
 
-		//Figure out if the user is opted in to reading history
+		//Figure out if the user has opted out of reading history in koha.
 		$sql = "select privacy from borrowers where borrowernumber = {$kohaPatronID}";
 		$res = mysqli_query($this->dbConnection, $sql);
 		$row = $res->fetch_assoc();
-		// privacy in koha db: 1 = default (keep as long as allowed by law), 0 = forever, 2 = never
+		// privacy in koha: 1 = default (keep as long as allowed by law), 0 = forever, 2 = never
 		$privacy = $row['privacy'];
-
+		// history enabled from koha
 		$historyEnabled = false;
 		if ($privacy != 2) {
 			$historyEnabled = true;
 		}
-		// Update patron's setting in Pika if the setting has changed in Koha
-		if ($historyEnabled != $patron->trackReadingHistory) {
-			$patron->trackReadingHistory = (boolean) $historyEnabled;
-			$patron->update();
+		// Update patron's setting in Pika only if reading history disabled in koha
+		// otherwise keep setting as is
+		if ($historyEnabled == false) {
+			if ($historyEnabled != $patron->trackReadingHistory) {
+				$patron->trackReadingHistory = (boolean)$historyEnabled;
+				$patron->update();
+			}
 		}
 
 		if (!$historyEnabled) {
