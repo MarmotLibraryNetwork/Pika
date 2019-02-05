@@ -81,7 +81,7 @@
 # Let's Encrypt #
 #################
 #-- renew SSL certs at 1:40AM and 1:40PM everyday --###
-40 1,13 * * * certbot renew
+40 1,13 * * * certbot renew --quiet --preferred-challenges http-01
 
 #####################
 # Apache Web Server #

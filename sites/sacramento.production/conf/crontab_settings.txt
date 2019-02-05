@@ -78,7 +78,7 @@
 # Let's Encrypt #
 #################
 #update sacramento production certificate twice daily
-11 3,19 * * * certbot renew
+11 3,19 * * * certbot renew --quiet --preferred-challenges http-01
 
 # Check Apache Solr process and website that it has not stalled.
 */3 * * * * cd /usr/local/vufind-plus/vufind/cron/; ./solrTest.sh

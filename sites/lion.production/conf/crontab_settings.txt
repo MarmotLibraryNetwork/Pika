@@ -88,5 +88,5 @@
 # Let's Encrypt #
 #################
 #update be.catalog.lionlibraries.org certificate twice daily
-22 3,10 * * * certbot renew
+22 3,10 * * * certbot renew --quiet --preferred-challenges http-01
 

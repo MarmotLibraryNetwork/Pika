@@ -83,4 +83,4 @@
 # Let's Encrypt #
 #################
 #update certificate twice daily
-37 5,11 * * * certbot renew --quiet
+37 5,11 * * * certbot renew --quiet --preferred-challenges http-01
