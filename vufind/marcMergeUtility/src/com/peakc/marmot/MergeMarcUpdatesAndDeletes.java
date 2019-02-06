@@ -26,24 +26,24 @@ import java.util.*;
  * Date: 8/27/2016
  */
 class MergeMarcUpdatesAndDeletes {
-	private String recordNumberTag = "";
+	private String recordNumberTag      = "";
 	private String recordNumberSubfield = "";
 	private Logger logger;
 
 	boolean startProcess(Ini configIni, Logger logger) throws Exception {
 		this.logger = logger;
 
-		String mainFilePath = configIni.get("MergeUpdate", "marcPath");
-		String backupPath = configIni.get("MergeUpdate", "backupPath");
-		String marcEncoding = configIni.get("MergeUpdate", "marcEncoding");
-		recordNumberTag = configIni.get("MergeUpdate", "recordNumberTag");
-		recordNumberSubfield = configIni.get("MergeUpdate", "recordNumberSubfield");
-		String changesPath = configIni.get("MergeUpdate", "changesPath");
+		String mainFilePath   = configIni.get("MergeUpdate", "marcPath");
+		String backupPath     = configIni.get("MergeUpdate", "backupPath");
+		String marcEncoding   = configIni.get("MergeUpdate", "marcEncoding");
+		recordNumberTag       = configIni.get("MergeUpdate", "recordNumberTag");
+		recordNumberSubfield  = configIni.get("MergeUpdate", "recordNumberSubfield");
+		String changesPath    = configIni.get("MergeUpdate", "changesPath");
 		String deleteFilePath = configIni.get("MergeUpdate", "deleteFilePath");
 
-		int numUpdates;
-		int numDeletions;
-		int numAdditions;
+		int     numUpdates;
+		int     numDeletions;
+		int     numAdditions;
 		boolean errorOccurred = false;
 
 		try {
@@ -449,7 +449,7 @@ class MergeMarcUpdatesAndDeletes {
 		if (tagID < 10) {
 			List<ControlField> recordIdField = getControlFields(marcRecord, recordNumberTag);
 			if (recordIdField != null && recordIdField.size() > 0) {
-				return recordIdField.get(0).getData();
+				return recordIdField.get(0).getData().trim();
 			}
 		} else {
 			List<DataField> recordIdField1 = getDataFields(marcRecord, recordNumberTag);
@@ -457,7 +457,7 @@ class MergeMarcUpdatesAndDeletes {
 			for (DataField curRecordField : recordIdField1) {
 				Subfield subfield = curRecordField.getSubfield(recordNumberSubfield.toCharArray()[0]);
 				if (subfield != null) {
-					return subfield.getData();
+					return subfield.getData().trim();
 				}
 			}
 		}

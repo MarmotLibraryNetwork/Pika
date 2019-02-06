@@ -109,9 +109,15 @@ fi
 #TODO: Use new nightly export
 ## Copy Export from ILS
 /usr/local/vufind-plus/sites/${PIKASERVER}/copyExport.sh >> ${OUTPUT_FILE}
-#YESTERDAY=`date +%Y%m%d --date="yesterday"`
-#UPDATEFILE=/data/vufind-plus/${PIKASERVER}/marc/ascc-catalog-deleted.$YESTERDAY.marc
-#DELETEFILE=/data/vufind-plus/${PIKASERVER}/marc/ascc-catalog-updated.$YESTERDAY.marc
+
+#TODO: Create nightly deletions file
+
+#Fetch Additions
+/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} aspencat/bywater
+
+#Delete merge backups older than a week (fetch_sideload deletes older than 30 days, but that would take up to much space)
+find /data/vufind-plus/$PIKADATADIR/mergeBackup -name "*.mrc" -mtime +7 -delete
+
 
 #if [[ -f $UPDATEFILE && -f $DELETEFILE ]]; then
 #	# if the update and delete files are found, merge them into the fullexport file.

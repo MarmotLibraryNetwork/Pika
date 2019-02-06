@@ -15,7 +15,6 @@ import java.util.Date;
 public class MergeUpdate {
 	private static Logger logger = Logger.getLogger(MergeUpdate.class);
 	  /*Logger logger = LogManager.getRootLogger();*/
-	// write your code here
 
 	public static void main(String[] args) {
 
