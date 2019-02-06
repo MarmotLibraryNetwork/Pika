@@ -159,7 +159,8 @@ class Sacramento extends Sierra
 
 	function selfRegister(){
 		global $library;
-		if ($library->subdomain == 'catalog'){ // just for sacramento public library
+		// sacramento test and production, woodlands test
+		if ($library->subdomain == 'catalog' || $library->subdomain == 'spl' || $library->subdomain == 'woodland' || $library->subdomain == 'cityofwoodland'){
 			//Capitalize All Input, expect pin passwords
 			foreach ($this->getSelfRegistrationFields() as $formField){
 				$formFieldName = $formField['property'];
@@ -168,7 +169,6 @@ class Sacramento extends Sierra
 				}
 			}
 		}
-
 		$address              = trim($_REQUEST['address']);
 		$originalAddressInput = $address; // Save for feeding back data input to users (ie undo our special manipulations here)
 		$apartmentNumber      = trim($_REQUEST['apartmentNumber']);
@@ -176,6 +176,22 @@ class Sacramento extends Sierra
 			$address .= ' APT ' . $apartmentNumber;
 		}
 
+		if(isset($_REQUEST['phone'])) {
+			$phone_number = $_REQUEST['phone'];
+			// strip everything except digits
+			$phone_number = preg_replace("/[^\d]/", "", $phone_number);
+			$length       = strlen($phone_number);
+			// if number is 11 try and trim leading 1
+			if ($length == 11) {
+				rtrim($phone_number, '1');
+				// get the length again
+				$length = strlen($phone_number);
+			}
+			if ($length == 10) {
+				$phone_number = preg_replace("/^1?(\d{3})(\d{3})(\d{4})$/", "$1-$2-$3", $phone_number);
+			}
+			$_REQUEST['phone'] = $phone_number;
+		}
 		$guardianFirstName = trim($_REQUEST['guardianFirstName']);
 		$guardianLastName  = trim($_REQUEST['guardianLastName']);
 

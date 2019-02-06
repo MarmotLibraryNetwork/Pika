@@ -169,20 +169,10 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 		}else{
 			//First check to see if the overall record is not holdable based on suppression rules
 			if (isHoldableUnscoped.isHoldable()) {
-				String locationCode;
-				if (loanRulesAreBasedOnCheckoutLocation()) {
-					// This block is obsolete. loanRulesAreBasedOnCheckoutLocation() returns true only for NashvilleRecordProcessor, which is an obsolete driver that is for the Millennium ILS (not newer Sierra) pascal 7-17-2018
-					//Loan rule determiner by lending location
-					locationCode = curScope.getIlsCode();
-				}else{
-					//Loan rule determiner by owning location
-					locationCode = itemInfo.getLocationCode();
-				}
-
-				String itemIType = itemInfo.getITypeCode();
-
-				String key = curScope.getScopeName() + locationCode + itemIType;
-				HoldabilityInformation cachedInfo = holdabilityCache.get(key);
+				String                 locationCode = itemInfo.getLocationCode();
+				String                 itemIType    = itemInfo.getITypeCode();
+				String                 key          = curScope.getScopeName() + locationCode + itemIType;
+				HoldabilityInformation cachedInfo   = holdabilityCache.get(key);
 				if (cachedInfo == null){
 					HashMap<RelevantLoanRule, LoanRuleDeterminer> relevantLoanRules = getRelevantLoanRules(itemIType, locationCode, curScope.getRelatedNumericPTypes());
 					HashSet<Long> holdablePTypes = new HashSet<>();
@@ -208,19 +198,9 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 	private HashMap<String, BookabilityInformation> bookabilityCache = new HashMap<>();
 	@Override
 	protected BookabilityInformation isItemBookable(ItemInfo itemInfo, Scope curScope, BookabilityInformation isBookableUnscoped) {
-		String locationCode;
-		if (loanRulesAreBasedOnCheckoutLocation()) {
-			// This block is obsolete. loanRulesAreBasedOnCheckoutLocation() returns true only for NashvilleRecordProcessor, which is an obsolete driver that is for the Millennium ILS (not newer Sierra) pascal 7-17-2018
-			//Loan rule determiner by lending location
-			locationCode = curScope.getIlsCode();
-		}else{
-			//Loan rule determiner by owning location
-			locationCode = itemInfo.getLocationCode();
-		}
-
-		String itemIType = itemInfo.getITypeCode();
-
-		String key = curScope.getScopeName() + "-" + locationCode + "-" + itemIType;
+		String locationCode = itemInfo.getLocationCode();
+		String itemIType    = itemInfo.getITypeCode();
+		String key          = curScope.getScopeName() + "-" + locationCode + "-" + itemIType;
 		if (!bookabilityCache.containsKey(key)) {
 			HashMap<RelevantLoanRule, LoanRuleDeterminer> relevantLoanRules = getRelevantLoanRules(itemIType, locationCode, curScope.getRelatedNumericPTypes());
 			HashSet<Long> bookablePTypes = new HashSet<>();
@@ -275,8 +255,6 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 			}
 		}
 	}
-
-	protected abstract boolean loanRulesAreBasedOnCheckoutLocation();
 
 	protected void setDetailedStatus(ItemInfo itemInfo, DataField itemField, String itemStatus, String identifier) {
 		//See if we need to override based on the last check in date
@@ -363,9 +341,9 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 				reader.readNext();
 				String[] orderData;
 				while ((orderData = reader.readNext()) != null){
-					OrderInfo orderRecord = new OrderInfo();
-					String recordId = ".b" + orderData[0] + getCheckDigit(orderData[0]);
-					String orderRecordId = ".o" + orderData[1] + getCheckDigit(orderData[1]);
+					OrderInfo orderRecord   = new OrderInfo();
+					String    recordId      = ".b" + orderData[0] + getCheckDigit(orderData[0]);
+					String    orderRecordId = ".o" + orderData[1] + getCheckDigit(orderData[1]);
 					orderRecord.setOrderRecordId(orderRecordId);
 					orderRecord.setStatus(orderData[3]);
 					orderRecord.setNumCopies(Integer.parseInt(orderData[4]));

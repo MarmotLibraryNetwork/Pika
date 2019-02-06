@@ -104,107 +104,104 @@ abstract class KohaILSDI extends ScreenScrapingDriver {
 	 * @access  public
 	 */
 	public function placeHold($patron, $recordId, $pickupBranch, $cancelIfNotFilledByDate = null){
-		$result = $this->placeItemHold($patron, $recordId, null, $pickupBranch, $cancelIfNotFilledByDate);
-		return $result;
-	}
-
-	function placeItemHold($patron, $recordId, $itemId, $pickupBranch = null, $cancelIfNotFilledByDate = null){
 		$holdResult = array(
 			'success' => false,
 			'message' => 'Your hold could not be placed. '
 		);
 
 		$patronKohaId = $this->getKohaPatronId($patron);
+
 		if (empty($pickupBranch)){
 			$pickupBranch = strtoupper($patron->homeLocationCode);
+		} else {
+			$pickupBranch = strtoupper($pickupBranch);
 		}
 
-		$urlParameters = array(
-			'service' => empty($itemId) ? 'HoldTitle' : 'HoldItem',
+		$urlParameters = [
+			'service' => 'HoldTitle',
 			'patron_id' => $patronKohaId,
 			'bib_id' => $recordId,
 			'pickup_location' => $pickupBranch,
-		);
-		if (!empty($itemId)){
-			$urlParameters['item_id'] = $itemId;
-		}else{
-			// Hold Title request requires the user's end IP address
-			$urlParameters['request_location'] = $_SERVER['REMOTE_ADDR']; //TODO: End user's IP. (yike's! Koha wants this?)
-		}
+			'request_location' => $_SERVER['REMOTE_ADDR']
+		];
+
 		if (!empty($cancelIfNotFilledByDate)){
-			$urlParameters['needed_before_date'] = $cancelIfNotFilledByDate;//TODO determine date format needed
+			$urlParameters['needed_before_date'] = $cancelIfNotFilledByDate;
 		}
-		//create the hold using the web service call
+
 		$webServiceURL = $this->getWebServiceURL() . $this->ilsdiscript;
 		$webServiceURL .= '?' . http_build_query($urlParameters);
 
-		$success      = false;
-		$title        = null;
+		$title = null;
+		$errorMessage = "Sorry, none of these items can be placed on hold. Either the items are not currently available for loan or the library that owns the materials does not allow them to be loaned outside of that library or service area. Please contact your library with any questions.";
 		$holdResponse = $this->getWebServiceResponse($webServiceURL);
 		if (!empty($holdResponse)){
-			if (empty($holdResponse->message) && empty($holdResponse->code)){
-
-			}else{
-				//TODO: error message
-				$message = 'Failed to place the hold';
-				if (isset($holdResponse->message)){
-					$message .= ' : ' . $holdResponse->message;
-				}else{
-					$message .= '. Error Code : ' . $holdResponse->code;
-				}
+			if (!empty($holdResponse->title)){
+				$holdResult = array(
+					'title' => $holdResponse->title,
+					'bib' => $recordId,
+					'success' => true,
+					'message' => "You hold has been placed."
+				);
+			}elseif(isset($holdResponse->message)){
+				$holdResult['message'] = $errorMessage;
+			}elseif(isset($holdResponse->code)){
+				$holdResult['message'] = $errorMessage;
 			}
-			$holdResult = array(
-				'title' => $title,
-				'bib' => $recordId,
-				'success' => $success,
-				'message' => $message
-			);
 		}
 
 		return $holdResult;
 	}
 
+	function placeItemHold($patron, $recordId, $itemId, $pickupBranch = null, $cancelIfNotFilledByDate = null){
+
+		return $this->placeHold($patron, $recordId, $pickupBranch, $cancelIfNotFilledByDate);
+
+	}
+
 	/**
-	 * Cancel hold a single title
+	 * Cancels a hold for a patron
 	 *
-	 * @param $patron     User
-	 * @param $recordId   string
-	 * @param  $cancelId  string
-	 * @param $itemIndex  string
-	 * @return $cancelHoldResults array
+	 * @param   User    $patron     The User to cancel the hold for
+	 * @param   string  $recordId   The id of the bib record
+	 * @param   string  $cancelId   Information about the hold to be cancelled
+	 * @return  array
 	 */
-	public function cancelHold($patron, $recordId, $cancelId){
-		$cancelHoldResults = [
+	public function cancelHold($patron, $recordId, $cancelId) {
+		$cancelResults = [
 			'itemId' => 0,
 			'success' => false,
-			'message' => 'Failed to renew item.'
+			'message' => 'Failed to cancel hold.'
 		];
+
 		$patronKohaId = $this->getKohaPatronId($patron);
 
-		$urlParameters = [
+		$urlParameters = array(
 			'service'          => 'CancelHold',
 			'patron_id'        => $patronKohaId,
-			'item_id'          => $recordId
-		];
+			'item_id'          => $cancelId,
+		);
 
+		//create the hold using the web service call
 		$webServiceURL = $this->getWebServiceURL() . $this->ilsdiscript;
 		$webServiceURL .= '?' . http_build_query($urlParameters);
 
-		$cancelHoldResponse = $this->getWebServiceResponse($webServiceURL);
+		$cancelResponse = $this->getWebServiceResponse($webServiceURL);
 
-		if ($cancelHoldResponse) {
-			if($cancelHoldResponse->message ==  'Canceled') {
+		if ($cancelResponse) {
+			if($cancelResponse->code && $cancelResponse->code == "Canceled") {
 				// success
-				$cancelHoldResults['success'] = true;
-				$cancelHoldResults['itemId']  = $recordId;
-				$cancelHoldResults['message'] = 'Hold successfully canceled.';
-			} else {
+				$cancelResults['success'] = true;
+				$cancelResults['message'] = 'Hold canceled.';
+			} elseif($cancelResponse->message) {
 				// fail
-					$cancelHoldResultsResults['message'] = 'Unable able to cancel hold. Reason '.$cancelHoldResponse->code;
+				if($cancelResponse->message) {
+					$cancelResults['message'] .=  ' Reason '.$cancelResponse->code;
+				}
 			}
 		}
 
-		return $cancelHoldResultsResults;
+		return $cancelResults;
 	}
 
 	/**
@@ -218,11 +215,11 @@ abstract class KohaILSDI extends ScreenScrapingDriver {
 	 */
 	public function renewItem($patron, $recordId, $itemId, $itemIndex){
 
-		$renewResults = array(
+		$renewResults = [
 			'itemId' => 0,
 			'success' => false,
 			'message' => 'Failed to renew item.'
-		);
+		];
 
 		$patronKohaId = $this->getKohaPatronId($patron);
 
@@ -257,20 +254,53 @@ abstract class KohaILSDI extends ScreenScrapingDriver {
 	}
 
 
-	private function getKohaPatronId(User $patron){
-		//TODO: memcache KohaPatronIds
-		if ($this->initDatabaseConnection()){
-			$sql     = 'SELECT borrowernumber FROM borrowers WHERE cardnumber = "' . $patron->getBarcode() . '"';
-			$results = mysqli_query($this->dbConnection, $sql);
-			if ($results){
-				$row          = $results->fetch_assoc();
-				$kohaPatronId = $row['borrowernumber'];
-				if (!empty($kohaPatronId)){
-					return $kohaPatronId;
-				}
-			}
+	protected static $kohaPatronIdsForUsers = array();
+	protected function getKohaPatronId(User $patron){
+		// first check the $kohaPatronIdsForUsers array for koha id
+		if (array_key_exists($patron->id, self::$kohaPatronIdsForUsers)) {
+			// found it in the array
+			return self::$kohaPatronIdsForUsers;
 		}
-		return false;
+
+		// next check memcache for the koha id
+		global $memCache;
+		$memcacheKey  = 'kohaPatronId_' . $patron->id;
+		$kohaPatronId = $memCache->get($memcacheKey);
+
+		if ($kohaPatronId && !isset($_REQUEST['reload'])) {
+			// found the koha id and we don't need to reload
+			return $kohaPatronId;
+		}
+
+		// not in memcache either. grab it from the database
+		if( !$this->initDatabaseConnection()) {
+			// oops. can't connect to database.
+			return false;
+		}
+		// ok. lets proceed.
+		$sql     = 'SELECT borrowernumber FROM borrowers WHERE cardnumber = "' . $patron->getBarcode() . '"';
+		$results = mysqli_query($this->dbConnection, $sql);
+		if($results) {
+			// got a response. let's proceed.
+			$row = $results->fetch_assoc();
+			if(empty($row['borrowernumber'])) {
+				// hmmm. what's up with this?
+				return false;
+			}
+			// ok, we have something to work with.
+			$kohaPatronId = $row['borrowernumber'];
+		} else {
+			// oops. something went wrong
+			return false;
+		}
+		// load it into the $kohaPatronIdsForUsers array
+		self::$kohaPatronIdsForUsers[$patron->id] = $kohaPatronId;
+		// cool. let's load up memcache. we still have $memcacheKey and global $memCache from above. no need to do work twice.
+		global $configArray;
+		$memCache->set($memcacheKey, $kohaPatronId, 0, $configArray['Caching']['koha_patron_id']);
+		// ok, memcache set. lets give back the koha id
+		return $kohaPatronId;
+		// and ... done!
 	}
 
 	public function patronLogin($username, $password, $validatedViaSSO){
@@ -297,24 +327,15 @@ abstract class KohaILSDI extends ScreenScrapingDriver {
 			if (PEAR_Singleton::isError($kohaUserID)){
 				continue;
 			}elseif (is_int($kohaUserID)){
-				$patron = $this->getPatronInformation($kohaUserID);
-//				if ($patron){
-//					// Get Num Holds
-//					$patron->numHoldsAvailableIls = $this->getNumOfAvailableHoldsFromDB($kohaUserID);
-//					$patron->numHoldsRequestedIls = $this->getNumOfUnAvailableHoldsFromDB($kohaUserID);
-//					$patron->numHoldsIls          = $patron->numHoldsAvailableIls + $patron->numHoldsRequestedIls;
-//
-//					// Get Num Checkouts
-//					$patron->numCheckedOutIls = $this->getNumOfCheckoutsFromDB($kohaUserID);
-//				}
-				return $patron;
+				$patron = $this->getPatronInformation($kohaUserID, $password);
+				break;
 			}
 		}
 		if (!$patron && PEAR_Singleton::isError($kohaUserID)){
 			return $kohaUserID;
 		}
+		return $patron;
 	}
-
 
 	private function authenticatePatron($barcode, $password){
 		$urlParameters = array(
@@ -324,7 +345,7 @@ abstract class KohaILSDI extends ScreenScrapingDriver {
 		);
 
 		$webServiceURL        = $this->getWebServiceURL() . $this->ilsdiscript;
-		$webServiceURL       .= '?' . http_build_query($urlParameters);
+		$webServiceURL        .= '?' . http_build_query($urlParameters);
 		$authenticateResponse = $this->getWebServiceResponse($webServiceURL);
 		if (!empty($authenticateResponse)){
 			if (!empty($authenticateResponse->id)){
@@ -341,7 +362,7 @@ abstract class KohaILSDI extends ScreenScrapingDriver {
 		return new PEAR_Error('authentication_error_technical');
 	}
 
-	private function getPatronInformation($kohaUserId){
+	private function getPatronInformation($kohaUserId, $password = ''){
 		$patron = false;
 
 		$urlParameters = array(
@@ -383,7 +404,9 @@ abstract class KohaILSDI extends ScreenScrapingDriver {
 			$patron->fullname     = $firstName . ' ' . $lastName;
 			$patron->username     = $kohaUserId;
 			$patron->cat_username = (string)$patronInfoRepsonse->cardnumber;
-//			$patron->cat_password = //TODO: this will have to be set somewhere else
+			if (!empty($password)) {
+				$patron->cat_password = $password;
+			}
 			$patron->email      = (string)$patronInfoRepsonse->email;
 			$patron->patronType = (string)$patronInfoRepsonse->categorycode;
 			$patron->web_note   = (string)$patronInfoRepsonse->opacnote; //TODO: double check that the point of the opac note is the same as our webnote

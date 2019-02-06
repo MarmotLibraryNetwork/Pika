@@ -3,7 +3,7 @@
 # Should be called once per day.  Will interrupt partial reindexing.
 #
 # At the end of the index will email users with the results.
-EMAIL=root@aspencatvm.marmot.org
+EMAIL=root@makhaon.marmot.org
 PIKASERVER=aspencat.production
 PIKADBNAME=pika
 OUTPUT_FILE="/var/log/vufind-plus/${PIKASERVER}/full_update_output.log"
@@ -32,9 +32,9 @@ function checkConflictingProcesses() {
 : > $OUTPUT_FILE;
 
 #Check for any conflicting processes that we shouldn't do a full index during.
-checkConflictingProcesses "koha_export.jar ${PIKASERVER}"
-checkConflictingProcesses "overdrive_extract.jar ${PIKASERVER}"
-checkConflictingProcesses "reindexer.jar ${PIKASERVER}"
+checkConflictingProcesses "koha_export.jar ${PIKASERVER}" >> ${OUTPUT_FILE}
+checkConflictingProcesses "overdrive_extract.jar ${PIKASERVER}" >> ${OUTPUT_FILE}
+checkConflictingProcesses "reindexer.jar ${PIKASERVER}" >> ${OUTPUT_FILE}
 
 # Back-up Solr Master Index
 mysqldump ${PIKADBNAME} grouped_work_primary_identifiers > /data/vufind-plus/${PIKASERVER}/grouped_work_primary_identifiers.sql
@@ -49,10 +49,13 @@ cd /usr/local/vufind-plus/sites/${PIKASERVER}; ./${PIKASERVER}.sh restart
 # No Aspencat libraries use hoopla, no need to copy them
 #cd /usr/local/vufind-plus/vufind/cron;./GetHooplaFromMarmot.sh >> ${OUTPUT_FILE}
 
+#Unite for Literacy
+/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} aspencat/unite_literacy unite_literacy/aspencat >> ${OUTPUT_FILE}
+
 # Cloud Library
 /usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} aspencat/cloudlibrary cloudlibrary/aspencat >> ${OUTPUT_FILE}
 
-# EBSCO (CC of Aurora
+# EBSCO (CC of Aurora)
 /usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} aspencat/ebsco/cca ebsco/cca >> ${OUTPUT_FILE}
 
 #Colorado State Government Documents Updates
@@ -73,29 +76,30 @@ then
 	nice -n -10 java -server -XX:+UseG1GC -jar overdrive_extract.jar ${PIKASERVER} fullReload >> ${OUTPUT_FILE}
 fi
 
-# Copy Export from ILS
+#TODO: Use new nightly export
+## Copy Export from ILS
 /usr/local/vufind-plus/sites/${PIKASERVER}/copyExport.sh >> ${OUTPUT_FILE}
-YESTERDAY=`date +%Y%m%d --date="yesterday"`
-UPDATEFILE=/data/vufind-plus/${PIKASERVER}/marc/ascc-catalog-deleted.$YESTERDAY.marc
-DELETEFILE=/data/vufind-plus/${PIKASERVER}/marc/ascc-catalog-updated.$YESTERDAY.marc
+#YESTERDAY=`date +%Y%m%d --date="yesterday"`
+#UPDATEFILE=/data/vufind-plus/${PIKASERVER}/marc/ascc-catalog-deleted.$YESTERDAY.marc
+#DELETEFILE=/data/vufind-plus/${PIKASERVER}/marc/ascc-catalog-updated.$YESTERDAY.marc
 
-if [[ -f $UPDATEFILE && -f $DELETEFILE ]]; then
-	# if the update and delete files are found, merge them into the fullexport file.
-	echo "Merging updates and deletes." >> ${OUTPUT_FILE}
-	cd /usr/local/vufind-plus/vufind/cron/; java -jar cron.jar ${PIKASERVER} MergeMarcUpdatesAndDeletes >> ${OUTPUT_FILE}
-#	NUMOFADDSORDELETEFILESREMAINING=$(ls *.marc|wc -l)
-#	if [ $NUMOFADDSORDELETEFILESREMAINING -gt 0 ]; then
-#		echo "There are $NUMOFADDSORDELETEFILESREMAINING Add or Delete files left after merge process";
-#	fi
-else
-		if [ ! -f $UPDATEFILE ]; then
-		 echo "Update File $UPDATEFILE was not found." >> ${OUTPUT_FILE}
-		fi
-		if [ ! -f $DELETEFILE ]; then
-		 echo "Delete File $DELETEFILE was not found." >> ${OUTPUT_FILE}
-		fi
-	echo "Not merging updates and deletes." >> ${OUTPUT_FILE}
-fi
+#if [[ -f $UPDATEFILE && -f $DELETEFILE ]]; then
+#	# if the update and delete files are found, merge them into the fullexport file.
+#	echo "Merging updates and deletes." >> ${OUTPUT_FILE}
+#	cd /usr/local/vufind-plus/vufind/cron/; java -jar cron.jar ${PIKASERVER} MergeMarcUpdatesAndDeletes >> ${OUTPUT_FILE}
+##	NUMOFADDSORDELETEFILESREMAINING=$(ls *.marc|wc -l)
+##	if [ $NUMOFADDSORDELETEFILESREMAINING -gt 0 ]; then
+##		echo "There are $NUMOFADDSORDELETEFILESREMAINING Add or Delete files left after merge process";
+##	fi
+#else
+#		if [ ! -f $UPDATEFILE ]; then
+#		 echo "Update File $UPDATEFILE was not found." >> ${OUTPUT_FILE}
+#		fi
+#		if [ ! -f $DELETEFILE ]; then
+#		 echo "Delete File $DELETEFILE was not found." >> ${OUTPUT_FILE}
+#		fi
+#	echo "Not merging updates and deletes." >> ${OUTPUT_FILE}
+#fi
 
 # if the update/delete files aren't found merging won't occur, which would have updated the timestamp on the fullexport file.
 # therefore the next if block, is a good check for everyday of the week.
@@ -116,8 +120,6 @@ if [ -n "$FILE" ]; then
 		#Full Regroup
 		cd /usr/local/vufind-plus/vufind/record_grouping; java -server -Xmx6G -XX:+UseG1GC -jar record_grouping.jar ${PIKASERVER} fullRegroupingNoClear >> ${OUTPUT_FILE}
 
-		#TODO: Determine if we should do a partial update from the ILS and OverDrive before running the reindex to grab last minute changes
-
 		#Full Reindex
 		cd /usr/local/vufind-plus/vufind/reindexer; nice -n -3 java -server -XX:+UseG1GC -jar reindexer.jar ${PIKASERVER} fullReindex >> ${OUTPUT_FILE}
 
@@ -135,8 +137,10 @@ if [ -n "$FILE" ]; then
 		echo $FILE " size " $FILE1SIZE "is less than minimum size :" $MINFILE1SIZE "; Export was not moved to data directory, Full Regrouping & Full Reindexing skipped." >> ${OUTPUT_FILE}
 	fi
 else
-	echo "The full export file has not been updated in the last 24 hours, meaning the full export file or the add/deletes files were not delivered. Full Regrouping & Full Reindexing skipped." >> ${OUTPUT_FILE}
-	echo "The full export is delivered Saturday Mornings. The adds/deletes are delivered every night except Friday night." >> ${OUTPUT_FILE}
+	echo "Did not find a export file from the last 24 hours, Full Regrouping & Full Reindexing skipped." >> ${OUTPUT_FILE}
+#TODO: update this error message when export is setup
+#	echo "The full export file has not been updated in the last 24 hours, meaning the full export file or the add/deletes files were not delivered. Full Regrouping & Full Reindexing skipped." >> ${OUTPUT_FILE}
+#	echo "The full export is delivered Saturday Mornings. The adds/deletes are delivered every night except Friday night." >> ${OUTPUT_FILE}
 fi
 
 # Clean-up Solr Logs

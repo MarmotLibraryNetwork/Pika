@@ -25,39 +25,40 @@ import org.apache.log4j.Logger;
  * Time: 2:26 PM
  */
 public class GroupedWorkIndexer {
-	private Ini configIni;
-	private String baseLogPath;
-	private String serverName;
-	private String solrPort;
-	private Logger logger;
-	private SolrServer solrServer;
-	private Long indexStartTime;
-	private ConcurrentUpdateSolrServer updateServer;
-	private HashMap<String, MarcRecordProcessor> ilsRecordProcessors = new HashMap<>();
-	private OverDriveProcessor overDriveProcessor;
-	private HashMap<String, HashMap<String, String>> translationMaps = new HashMap<>();
-	private HashMap<String, LexileTitle> lexileInformation = new HashMap<>();
-	private HashMap<String, ARTitle> arInformation = new HashMap<>();
-	private Long maxWorksToProcess = -1L;
+	private Ini                                      configIni;
+	private String                                   baseLogPath;
+	private String                                   serverName;
+	private String                                   solrPort;
+	private Logger                                   logger;
+	private SolrServer                               solrServer;
+	private Long                                     indexStartTime;
+	private ConcurrentUpdateSolrServer               updateServer;
+	private HashMap<String, MarcRecordProcessor>     ilsRecordProcessors = new HashMap<>();
+	private OverDriveProcessor                       overDriveProcessor;
+	private HashMap<String, HashMap<String, String>> translationMaps     = new HashMap<>();
+	private HashMap<String, LexileTitle>             lexileInformation   = new HashMap<>();
+	private HashMap<String, ARTitle>                 arInformation       = new HashMap<>();
+	private Long                                     maxWorksToProcess   = -1L;
 
 	private PreparedStatement getRatingStmt;
 	private PreparedStatement getNovelistStmt;
-	private Connection vufindConn;
+	private Connection        vufindConn;
 
 	private int availableAtLocationBoostValue;
 	private int ownedByLocationBoostValue;
+	private boolean giveOnOrderItemsTheirOwnShelfLocation = false;
 
 	private boolean fullReindex;
-	private long lastReindexTime;
-	private Long lastReindexTimeVariableId;
+	private long    lastReindexTime;
+	private Long    lastReindexTimeVariableId;
 	private boolean partialReindexRunning;
-	private Long partialReindexRunningVariableId;
-	private Long fullReindexRunningVariableId;
+	private Long    partialReindexRunningVariableId;
+	private Long    fullReindexRunningVariableId;
 	private boolean okToIndex = true;
 
 
 	private HashSet<String> worksWithInvalidLiteraryForms = new HashSet<>();
-	private TreeSet<Scope> scopes = new TreeSet<>();
+	private TreeSet<Scope>  scopes                        = new TreeSet<>();
 
 	private PreparedStatement getGroupedWorkPrimaryIdentifiers;
 	private PreparedStatement getDateFirstDetectedStmt;
@@ -75,6 +76,7 @@ public class GroupedWorkIndexer {
 
 		availableAtLocationBoostValue = Integer.parseInt(configIni.get("Reindex", "availableAtLocationBoostValue"));
 		ownedByLocationBoostValue     = Integer.parseInt(configIni.get("Reindex", "ownedByLocationBoostValue"));
+		giveOnOrderItemsTheirOwnShelfLocation = Boolean.parseBoolean(configIni.get("Reindex", "giveOnOrderItemsTheirOwnShelfLocation"));
 		baseLogPath                   = Util.cleanIniValue(configIni.get("Site", "baseLogPath"));
 
 		String maxWorksToProcessStr   = Util.cleanIniValue(configIni.get("Reindex", "maxWorksToProcess"));
@@ -322,7 +324,7 @@ public class GroupedWorkIndexer {
 	}
 
 	private void loadLocationScopes() throws SQLException {
-		PreparedStatement locationInformationStmt = vufindConn.prepareStatement("SELECT library.libraryId, locationId, code, subLocation, ilsCode, " +
+		PreparedStatement locationInformationStmt = vufindConn.prepareStatement("SELECT library.libraryId, locationId, code, subLocation, " +
 				"library.subdomain, location.facetLabel, location.displayName, library.pTypes, library.restrictOwningBranchesAndSystems, location.publicListsToInclude, " +
 				"library.enableOverdriveCollection as enableOverdriveCollectionLibrary, " +
 				"location.enableOverdriveCollection as enableOverdriveCollectionLocation, " +
@@ -331,7 +333,7 @@ public class GroupedWorkIndexer {
 				"library.includeOverdriveKids as includeOverdriveKidsLibrary, location.includeOverdriveKids as includeOverdriveKidsLocation, " +
 				"library.sharedOverdriveCollection, " +
 				"location.additionalLocationsToShowAvailabilityFor, includeAllLibraryBranchesInFacets, " +
-				"location.includeAllRecordsInShelvingFacets, location.includeAllRecordsInDateAddedFacets, location.baseAvailabilityToggleOnLocalHoldingsOnly, " +
+				"location.includeAllRecordsInShelvingFacets, location.includeAllRecordsInDateAddedFacets, location.includeOnOrderRecordsInDateAddedFacetValues, location.baseAvailabilityToggleOnLocalHoldingsOnly, " +
 				"location.includeOnlineMaterialsInAvailableToggle, location.includeLibraryRecordsToInclude " +
 				"FROM location INNER JOIN library on library.libraryId = location.libraryId ORDER BY code ASC",
 				ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
@@ -342,20 +344,20 @@ public class GroupedWorkIndexer {
 
 		ResultSet locationInformationRS = locationInformationStmt.executeQuery();
 		while (locationInformationRS.next()){
-			String code = locationInformationRS.getString("code").toLowerCase();
+			String code        = locationInformationRS.getString("code").toLowerCase();
 			String subLocation = locationInformationRS.getString("subLocation");
-			String facetLabel = locationInformationRS.getString("facetLabel");
+			String facetLabel  = locationInformationRS.getString("facetLabel");
 			String displayName = locationInformationRS.getString("displayName");
 			if (facetLabel.length() == 0){
 				facetLabel = displayName;
 			}
 
 			//Determine if we need to build a scope for this location
-			Long libraryId = locationInformationRS.getLong("libraryId");
-			Long locationId = locationInformationRS.getLong("locationId");
-			String pTypes = locationInformationRS.getString("pTypes");
+			Long   libraryId  = locationInformationRS.getLong("libraryId");
+			Long   locationId = locationInformationRS.getLong("locationId");
+			String pTypes     = locationInformationRS.getString("pTypes");
 			if (pTypes == null) pTypes = "";
-			boolean includeOverDriveCollectionLibrary = locationInformationRS.getBoolean("enableOverdriveCollectionLibrary");
+			boolean includeOverDriveCollectionLibrary  = locationInformationRS.getBoolean("enableOverdriveCollectionLibrary");
 			boolean includeOverDriveCollectionLocation = locationInformationRS.getBoolean("enableOverdriveCollectionLocation");
 
 			Scope locationScopeInfo = new Scope();
@@ -372,18 +374,18 @@ public class GroupedWorkIndexer {
 			locationScopeInfo.setIncludeOverDriveCollection(includeOverDriveCollectionLibrary && includeOverDriveCollectionLocation);
 			locationScopeInfo.setSharedOverdriveCollectionId(locationInformationRS.getLong("sharedOverdriveCollection"));
 			boolean includeOverdriveAdult = locationInformationRS.getBoolean("includeOverdriveAdultLibrary") && locationInformationRS.getBoolean("includeOverdriveAdultLocation");
-			boolean includeOverdriveTeen = locationInformationRS.getBoolean("includeOverdriveTeenLibrary") && locationInformationRS.getBoolean("includeOverdriveTeenLocation");
-			boolean includeOverdriveKids = locationInformationRS.getBoolean("includeOverdriveKidsLibrary") && locationInformationRS.getBoolean("includeOverdriveKidsLocation");
+			boolean includeOverdriveTeen  = locationInformationRS.getBoolean("includeOverdriveTeenLibrary") && locationInformationRS.getBoolean("includeOverdriveTeenLocation");
+			boolean includeOverdriveKids  = locationInformationRS.getBoolean("includeOverdriveKidsLibrary") && locationInformationRS.getBoolean("includeOverdriveKidsLocation");
 			locationScopeInfo.setIncludeOverDriveAdultCollection(includeOverdriveAdult);
 			locationScopeInfo.setIncludeOverDriveTeenCollection(includeOverdriveTeen);
 			locationScopeInfo.setIncludeOverDriveKidsCollection(includeOverdriveKids);
 			locationScopeInfo.setRestrictOwningLibraryAndLocationFacets(locationInformationRS.getBoolean("restrictOwningBranchesAndSystems"));
-			locationScopeInfo.setIlsCode(code); //TODO: ilscode no longer used in indexing
 			locationScopeInfo.setPublicListsToInclude(locationInformationRS.getInt("publicListsToInclude"));
 			locationScopeInfo.setAdditionalLocationsToShowAvailabilityFor(locationInformationRS.getString("additionalLocationsToShowAvailabilityFor"));
 			locationScopeInfo.setIncludeAllLibraryBranchesInFacets(locationInformationRS.getBoolean("includeAllLibraryBranchesInFacets"));
 			locationScopeInfo.setIncludeAllRecordsInShelvingFacets(locationInformationRS.getBoolean("includeAllRecordsInShelvingFacets"));
 			locationScopeInfo.setIncludeAllRecordsInDateAddedFacets(locationInformationRS.getBoolean("includeAllRecordsInDateAddedFacets"));
+			locationScopeInfo.setIncludeOnOrderRecordsInDateAddedFacetValues(locationInformationRS.getBoolean("includeOnOrderRecordsInDateAddedFacetValues"));
 			locationScopeInfo.setBaseAvailabilityToggleOnLocalHoldingsOnly(locationInformationRS.getBoolean("baseAvailabilityToggleOnLocalHoldingsOnly"));
 			locationScopeInfo.setIncludeOnlineMaterialsInAvailableToggle(locationInformationRS.getBoolean("includeOnlineMaterialsInAvailableToggle"));
 
@@ -461,18 +463,18 @@ public class GroupedWorkIndexer {
 
 	private PreparedStatement libraryRecordInclusionRulesStmt;
 	private void loadLibraryScopes() throws SQLException {
-		PreparedStatement libraryInformationStmt = vufindConn.prepareStatement("SELECT libraryId, ilsCode, subdomain, " +
+		PreparedStatement libraryInformationStmt = vufindConn.prepareStatement("SELECT libraryId, subdomain, " +
 				"displayName, facetLabel, pTypes, enableOverdriveCollection, restrictOwningBranchesAndSystems, publicListsToInclude, " +
 				"additionalLocationsToShowAvailabilityFor, sharedOverdriveCollection, includeOverdriveAdult, includeOverdriveTeen, includeOverdriveKids, " +
-				"includeAllRecordsInShelvingFacets, includeAllRecordsInDateAddedFacets, includeOnlineMaterialsInAvailableToggle " +
-				"FROM library ORDER BY ilsCode ASC",
-				ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY); //TODO: ilsCode no longer used.
+				"includeAllRecordsInShelvingFacets, includeAllRecordsInDateAddedFacets, includeOnOrderRecordsInDateAddedFacetValues, includeOnlineMaterialsInAvailableToggle " +
+				"FROM library ORDER BY subdomain ASC",
+				ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 		PreparedStatement libraryOwnedRecordRulesStmt = vufindConn.prepareStatement("SELECT library_records_owned.*, indexing_profiles.name from library_records_owned INNER JOIN indexing_profiles ON indexingProfileId = indexing_profiles.id WHERE libraryId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 		libraryRecordInclusionRulesStmt = vufindConn.prepareStatement("SELECT library_records_to_include.*, indexing_profiles.name from library_records_to_include INNER JOIN indexing_profiles ON indexingProfileId = indexing_profiles.id WHERE libraryId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 		ResultSet libraryInformationRS = libraryInformationStmt.executeQuery();
 		while (libraryInformationRS.next()){
-			String facetLabel = libraryInformationRS.getString("facetLabel");
-			String subdomain = libraryInformationRS.getString("subdomain");
+			String facetLabel  = libraryInformationRS.getString("facetLabel");
+			String subdomain   = libraryInformationRS.getString("subdomain");
 			String displayName = libraryInformationRS.getString("displayName");
 			if (facetLabel.length() == 0){
 				facetLabel = displayName;
@@ -481,11 +483,11 @@ public class GroupedWorkIndexer {
 			Long libraryId = libraryInformationRS.getLong("libraryId");
 			String pTypes = libraryInformationRS.getString("pTypes");
 			if (pTypes == null) {pTypes = "";}
-			boolean includeOverdrive = libraryInformationRS.getBoolean("enableOverdriveCollection");
-			Long sharedOverdriveCollectionId = libraryInformationRS.getLong("sharedOverdriveCollection");
-			boolean includeOverdriveAdult = libraryInformationRS.getBoolean("includeOverdriveAdult");
-			boolean includeOverdriveTeen = libraryInformationRS.getBoolean("includeOverdriveTeen");
-			boolean includeOverdriveKids = libraryInformationRS.getBoolean("includeOverdriveKids");
+			boolean includeOverdrive            = libraryInformationRS.getBoolean("enableOverdriveCollection");
+			Long    sharedOverdriveCollectionId = libraryInformationRS.getLong("sharedOverdriveCollection");
+			boolean includeOverdriveAdult       = libraryInformationRS.getBoolean("includeOverdriveAdult");
+			boolean includeOverdriveTeen        = libraryInformationRS.getBoolean("includeOverdriveTeen");
+			boolean includeOverdriveKids        = libraryInformationRS.getBoolean("includeOverdriveKids");
 
 			//Determine if we need to build a scope for this library
 			//MDN 10/1/2014 always build scopes because it makes coding more consistent elsewhere.
@@ -502,6 +504,7 @@ public class GroupedWorkIndexer {
 			newScope.setAdditionalLocationsToShowAvailabilityFor(libraryInformationRS.getString("additionalLocationsToShowAvailabilityFor"));
 			newScope.setIncludeAllRecordsInShelvingFacets(libraryInformationRS.getBoolean("includeAllRecordsInShelvingFacets"));
 			newScope.setIncludeAllRecordsInDateAddedFacets(libraryInformationRS.getBoolean("includeAllRecordsInDateAddedFacets"));
+			newScope.setIncludeOnOrderRecordsInDateAddedFacetValues(libraryInformationRS.getBoolean("includeOnOrderRecordsInDateAddedFacetValues"));
 
 			newScope.setIncludeOnlineMaterialsInAvailableToggle(libraryInformationRS.getBoolean("includeOnlineMaterialsInAvailableToggle"));
 
@@ -511,7 +514,6 @@ public class GroupedWorkIndexer {
 			newScope.setSharedOverdriveCollectionId(sharedOverdriveCollectionId);
 
 			newScope.setRestrictOwningLibraryAndLocationFacets(libraryInformationRS.getBoolean("restrictOwningBranchesAndSystems"));
-			newScope.setIlsCode(libraryInformationRS.getString("ilsCode")); //TODO: ilsCode no longer used.
 
 			//Load information about what should be included in the scope
 			libraryOwnedRecordRulesStmt.setLong(1, libraryId);
@@ -926,11 +928,11 @@ public class GroupedWorkIndexer {
 			GroupedReindexMain.addNoteToReindexLog("Starting to process " + numWorksToIndex + " grouped works");
 
 			ResultSet groupedWorks = getAllGroupedWorks.executeQuery();
-			while (groupedWorks.next()){
-				Long id = groupedWorks.getLong("id");
-				String permanentId = groupedWorks.getString("permanent_id");
+			while (groupedWorks.next()) {
+				Long   id                = groupedWorks.getLong("id");
+				String permanentId       = groupedWorks.getString("permanent_id");
 				String grouping_category = groupedWorks.getString("grouping_category");
-				Long lastUpdated = groupedWorks.getLong("date_updated");
+				Long   lastUpdated       = groupedWorks.getLong("date_updated");
 				if (groupedWorks.wasNull()){
 					lastUpdated = null;
 				}
@@ -975,9 +977,9 @@ public class GroupedWorkIndexer {
 
 		getGroupedWorkPrimaryIdentifiers.setLong(1, id);
 		ResultSet groupedWorkPrimaryIdentifiers = getGroupedWorkPrimaryIdentifiers.executeQuery();
-		int numPrimaryIdentifiers = 0;
+		int       numPrimaryIdentifiers         = 0;
 		while (groupedWorkPrimaryIdentifiers.next()){
-			String type = groupedWorkPrimaryIdentifiers.getString("type");
+			String type       = groupedWorkPrimaryIdentifiers.getString("type");
 			String identifier = groupedWorkPrimaryIdentifiers.getString("identifier");
 
 			//Make a copy of the grouped work so we can revert if we don't add any records
@@ -1321,5 +1323,9 @@ public class GroupedWorkIndexer {
 	long processPublicUserLists() {
 		UserListProcessor listProcessor = new UserListProcessor(this, vufindConn, logger, fullReindex, availableAtLocationBoostValue, ownedByLocationBoostValue);
 		return listProcessor.processPublicUserLists(lastReindexTime, updateServer, solrServer);
+	}
+
+	public boolean isGiveOnOrderItemsTheirOwnShelfLocation() {
+		return giveOnOrderItemsTheirOwnShelfLocation;
 	}
 }

@@ -17,17 +17,19 @@ import org.apache.log4j.Logger;
 public class IndexingProfile {
 	Long id;
 	String name;
+	String marcPath;
 	String individualMarcPath;
 	int numCharsToCreateFolderFrom;
 	boolean createFolderFromLeadingCharacters;
 	String recordNumberTag;
-	String itemTag ;
+	String itemTag;
 	char itemRecordNumberSubfield;
 	String lastCheckinFormat;
 	String dateCreatedFormat;
 	String dueDateFormat;
 	char lastCheckinDateSubfield;
 	char locationSubfield;
+	char subLocationSubfield;
 	char itemStatusSubfield;
 	char iTypeSubfield;
 	char shelvingLocationSubfield;
@@ -36,6 +38,8 @@ public class IndexingProfile {
 	char callNumberSubfield;
 	char dateCreatedSubfield;
 	char dueDateSubfield;
+
+
 
 
 	private char getCharFromString(String stringValue) {
@@ -88,6 +92,13 @@ public class IndexingProfile {
 		this.shelvingLocationSubfield = getCharFromString(shelvingLocationSubfield);
 	}
 
+	public char getSubLocationSubfield() {
+		return subLocationSubfield;
+	}
+
+	public void setSubLocationSubfield(String sublocationSubfield) {
+		this.subLocationSubfield = getCharFromString(sublocationSubfield);
+	}
 	private void setITypeSubfield(String iTypeSubfield) {
 		this.iTypeSubfield = getCharFromString(iTypeSubfield);
 	}
@@ -97,30 +108,30 @@ public class IndexingProfile {
 		IndexingProfile indexingProfile = new IndexingProfile();
 		try {
 			PreparedStatement getIndexingProfileStmt = vufindConn.prepareStatement("SELECT * FROM indexing_profiles where name ='" + profileToLoad + "'");
-			ResultSet indexingProfileRS = getIndexingProfileStmt.executeQuery();
+			ResultSet         indexingProfileRS      = getIndexingProfileStmt.executeQuery();
 			if (indexingProfileRS.next()) {
 
-				indexingProfile.id = indexingProfileRS.getLong("id");
-
-				indexingProfile.itemTag = indexingProfileRS.getString("itemTag");
-				indexingProfile.setItemRecordNumberSubfield(indexingProfileRS.getString("itemRecordNumber"));
-				indexingProfile.setLastCheckinDateSubfield(indexingProfileRS.getString("lastCheckinDate"));
-				indexingProfile.lastCheckinFormat = indexingProfileRS.getString("lastCheckinFormat");
-				indexingProfile.setLocationSubfield(indexingProfileRS.getString("location"));
-				indexingProfile.setItemStatusSubfield(indexingProfileRS.getString("status"));
-				indexingProfile.setDueDateSubfield(indexingProfileRS.getString("dueDate"));
-				indexingProfile.dueDateFormat = indexingProfileRS.getString("dueDateFormat");
-				indexingProfile.setDateCreatedSubfield(indexingProfileRS.getString("dateCreated"));
-				indexingProfile.dateCreatedFormat = indexingProfileRS.getString("dateCreatedFormat");
-				indexingProfile.setCallNumberSubfield(indexingProfileRS.getString("callNumber"));
-				indexingProfile.setTotalCheckoutsSubfield(indexingProfileRS.getString("totalCheckouts"));
-				indexingProfile.setYearToDateCheckoutsSubfield(indexingProfileRS.getString("yearToDateCheckouts"));
-
+				indexingProfile.id                                 = indexingProfileRS.getLong("id");
+				indexingProfile.itemTag                            = indexingProfileRS.getString("itemTag");
+				indexingProfile.lastCheckinFormat                  = indexingProfileRS.getString("lastCheckinFormat");
+				indexingProfile.dueDateFormat                      = indexingProfileRS.getString("dueDateFormat");
+				indexingProfile.dateCreatedFormat                  = indexingProfileRS.getString("dateCreatedFormat");
 				indexingProfile.individualMarcPath                 = indexingProfileRS.getString("individualMarcPath");
-				indexingProfile.name                        = indexingProfileRS.getString("name");
+				indexingProfile.marcPath                           = indexingProfileRS.getString("marcPath");
+				indexingProfile.name                               = indexingProfileRS.getString("name");
 				indexingProfile.numCharsToCreateFolderFrom         = indexingProfileRS.getInt("numCharsToCreateFolderFrom");
 				indexingProfile.createFolderFromLeadingCharacters  = indexingProfileRS.getBoolean("createFolderFromLeadingCharacters");
 
+				indexingProfile.setItemRecordNumberSubfield(indexingProfileRS.getString("itemRecordNumber"));
+				indexingProfile.setLastCheckinDateSubfield(indexingProfileRS.getString("lastCheckinDate"));
+				indexingProfile.setLocationSubfield(indexingProfileRS.getString("location"));
+				indexingProfile.setSubLocationSubfield(indexingProfileRS.getString("subLocation"));
+				indexingProfile.setItemStatusSubfield(indexingProfileRS.getString("status"));
+				indexingProfile.setDueDateSubfield(indexingProfileRS.getString("dueDate"));
+				indexingProfile.setDateCreatedSubfield(indexingProfileRS.getString("dateCreated"));
+				indexingProfile.setCallNumberSubfield(indexingProfileRS.getString("callNumber"));
+				indexingProfile.setTotalCheckoutsSubfield(indexingProfileRS.getString("totalCheckouts"));
+				indexingProfile.setYearToDateCheckoutsSubfield(indexingProfileRS.getString("yearToDateCheckouts"));
 				indexingProfile.setShelvingLocationSubfield(indexingProfileRS.getString("shelvingLocation"));
 				indexingProfile.setITypeSubfield(indexingProfileRS.getString("iType"));
 
@@ -129,7 +140,7 @@ public class IndexingProfile {
 			}
 
 		}catch (Exception e){
-			logger.error("Error reading index profile for CarlX", e);
+			logger.error("Error reading index profile for Koha", e);
 		}
 		return indexingProfile;
 	}

@@ -3,7 +3,6 @@ package org.vufind;
 import org.apache.log4j.Logger;
 import org.marc4j.MarcPermissiveStreamReader;
 import org.marc4j.MarcReader;
-import org.marc4j.MarcStreamReader;
 import org.marc4j.marc.*;
 
 import java.io.*;
@@ -627,13 +626,15 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		}
 	}
 
+	//TODO: this version should move to the iii handler; and a blank method put here instead
 	protected boolean isOrderItemValid(String status, String code3) {
 		return status.equals("o") || status.equals("1");
 	}
 
+//TODO: this should move to the iii handler; and a blank method put here instead
 	private void loadOrderIds(GroupedWorkSolr groupedWork, Record record) {
 		//Load order ids from recordNumberTag
-		Set<String> recordIds = MarcUtil.getFieldList(record, recordNumberTag + "a");
+		Set<String> recordIds = MarcUtil.getFieldList(record, recordNumberTag + "a"); //TODO: refactor to use the record number subfield indicator
 		for(String recordId : recordIds){
 			if (recordId.startsWith(".o")){
 				groupedWork.addAlternateId(recordId);
@@ -656,9 +657,9 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	}
 
 	RecordInfo getEContentIlsRecord(GroupedWorkSolr groupedWork, Record record, String identifier, DataField itemField){
-		ItemInfo itemInfo = new ItemInfo();
-		itemInfo.setIsEContent(true);
 		RecordInfo relatedRecord = null;
+		ItemInfo   itemInfo      = new ItemInfo();
+		itemInfo.setIsEContent(true);
 
 		loadDateAdded(identifier, itemField, itemInfo);
 		String itemLocation = getItemSubfieldData(locationSubfieldIndicator, itemField);
@@ -707,7 +708,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		}else{
 			//This is for a "less advanced" catalog, set some basic info
 			itemInfo.seteContentProtectionType("external");
-			itemInfo.seteContentSource(getSourceType(record, itemField));
+			itemInfo.seteContentSource(getILSeContentSourceType(record, itemField));
 		}
 
 		//Set record type
@@ -778,7 +779,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		}
 	}
 
-	protected String getSourceType(Record record, DataField itemField) {
+	protected String getILSeContentSourceType(Record record, DataField itemField) {
 		return "Unknown Source";
 	}
 
@@ -941,28 +942,28 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		boolean available = isItemAvailable(itemInfo);
 
 		//Determine which scopes have access to this record
-		String displayStatus = getDisplayStatus(itemInfo, recordInfo.getRecordIdentifier());
+		String displayStatus        = getDisplayStatus(itemInfo, recordInfo.getRecordIdentifier());
 		String groupedDisplayStatus = getDisplayGroupedStatus(itemInfo, recordInfo.getRecordIdentifier());
-		String overiddenStatus = getOverriddenStatus(itemInfo, true);
+		String overiddenStatus      = getOverriddenStatus(itemInfo, true);
 		if (overiddenStatus != null && !overiddenStatus.equals("On Shelf") && !overiddenStatus.equals("Library Use Only") && !overiddenStatus.equals("Available Online")){
 			available = false;
 		}
 
-		String itemLocation = itemInfo.getLocationCode();
+		String itemLocation    = itemInfo.getLocationCode();
 		String itemSublocation = itemInfo.getSubLocationCode();
 
 		HoldabilityInformation isHoldableUnscoped = isItemHoldableUnscoped(itemInfo);
 		BookabilityInformation isBookableUnscoped = isItemBookableUnscoped();
-		String originalUrl = itemInfo.geteContentUrl();
-		String primaryFormat = recordInfo.getPrimaryFormat();
+		String                 originalUrl        = itemInfo.geteContentUrl();
+		String                 primaryFormat      = recordInfo.getPrimaryFormat();
 		for (Scope curScope : indexer.getScopes()) {
 			//Check to see if the record is holdable for this scope
 			HoldabilityInformation isHoldable = isItemHoldable(itemInfo, curScope, isHoldableUnscoped);
 
 			Scope.InclusionResult result = curScope.isItemPartOfScope(profileType, itemLocation, itemSublocation, itemInfo.getITypeCode(), audiences, primaryFormat, isHoldable.isHoldable(), false, false, record, originalUrl);
 			if (result.isIncluded){
-				BookabilityInformation isBookable = isItemBookable(itemInfo, curScope, isBookableUnscoped);
-				ScopingInfo scopingInfo = itemInfo.addScope(curScope);
+				BookabilityInformation isBookable  = isItemBookable(itemInfo, curScope, isBookableUnscoped);
+				ScopingInfo            scopingInfo = itemInfo.addScope(curScope);
 				scopingInfo.setAvailable(available);
 				scopingInfo.setHoldable(isHoldable.isHoldable());
 				scopingInfo.setHoldablePTypes(isHoldable.getHoldablePTypes());
@@ -1080,12 +1081,12 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			volume = getItemSubfieldData(volumeSubfield, itemField);
 		}
 		if (useItemBasedCallNumbers && itemField != null) {
-			String callNumberPreStamp = getItemSubfieldDataWithoutTrimming(callNumberPrestampSubfield, itemField);
-			String callNumber = getItemSubfieldDataWithoutTrimming(callNumberSubfield, itemField);
-			String callNumberCutter = getItemSubfieldDataWithoutTrimming(callNumberCutterSubfield, itemField);
+			String callNumberPreStamp  = getItemSubfieldDataWithoutTrimming(callNumberPrestampSubfield, itemField);
+			String callNumber          = getItemSubfieldDataWithoutTrimming(callNumberSubfield, itemField);
+			String callNumberCutter    = getItemSubfieldDataWithoutTrimming(callNumberCutterSubfield, itemField);
 			String callNumberPostStamp = getItemSubfieldData(callNumberPoststampSubfield, itemField);
 
-			StringBuilder fullCallNumber = new StringBuilder();
+			StringBuilder fullCallNumber     = new StringBuilder();
 			StringBuilder sortableCallNumber = new StringBuilder();
 			if (callNumberPreStamp != null) {
 				fullCallNumber.append(callNumberPreStamp);
@@ -1340,7 +1341,8 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			if (statusSubfield == null) { // suppress if subfield is missing
 				return true;
 			} else {
-				if (statusesToSuppressPattern != null && statusesToSuppressPattern.matcher(statusSubfield.getData()).matches()) {
+				String status = statusSubfield.getData().trim();
+				if (statusesToSuppressPattern != null && statusesToSuppressPattern.matcher(status).matches()) {
 					return true;
 				}
 			}
@@ -1601,6 +1603,9 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			printFormats.add("SoundDisc");
 		}
 
+//		if (printFormats.contains("Book")){
+//			if (printFormats.contains("LargePrint") || )
+//		}
 		if (printFormats.contains("Book") && printFormats.contains("LargePrint")){
 			printFormats.remove("Book");
 		}
@@ -1619,6 +1624,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		if (printFormats.contains("Book") && printFormats.contains("Kit")){
 			printFormats.remove("Book");
 		}
+
 		if (printFormats.contains("AudioCD") && printFormats.contains("CD")){
 			printFormats.remove("AudioCD");
 		}
@@ -1641,6 +1647,9 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		if (printFormats.contains("LargePrint") && printFormats.contains("Manuscript")){
 			printFormats.remove("Manuscript");
 		}
+		if (printFormats.contains("Painting") && printFormats.contains("Photo")){
+			printFormats.remove("Photo");
+		}
 		if (printFormats.contains("Wii") && printFormats.contains("WiiU")){
 			printFormats.remove("Wii");
 		}
@@ -1658,6 +1667,12 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		}
 		if (printFormats.contains("XboxOne") && printFormats.contains("Xbox360")){
 			printFormats.remove("Xbox360");
+		}
+		if (printFormats.contains("Kinect") && printFormats.contains("Xbox360")){
+			printFormats.remove("Xbox360");
+		}
+		if (printFormats.contains("Kinect") && printFormats.contains("XboxOne")){
+			printFormats.remove("XboxOne");
 		}
 		if (printFormats.contains("Kinect") || printFormats.contains("Xbox360")
 				|| printFormats.contains("XboxOne") || printFormats.contains("PlayStation")
@@ -1900,6 +1915,8 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			return "XboxOne";
 		} else if (value.contains("xbox") && !value.contains("compatible")) {
 			return "Xbox360";
+		} else if (value.contains("playstation vita") /*&& !value.contains("compatible")*/) {
+			return "PlayStationVita";
 		} else if (value.contains("playstation 4") && !value.contains("compatible")) {
 			return "PlayStation4";
 		} else if (value.contains("playstation 3") && !value.contains("compatible")) {
@@ -2051,9 +2068,10 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			 * result.add("Blu-ray"); break; } }
 			 */
 			formatCode = formatField.getData().toUpperCase().charAt(0);
+			char specificMaterial = formatField.getData().toUpperCase().charAt(1);
 			switch (formatCode) {
 				case 'A':
-					switch (formatField.getData().toUpperCase().charAt(1)) {
+					switch (specificMaterial) {
 						case 'D':
 							result.add("Atlas");
 							break;
@@ -2063,7 +2081,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 					}
 					break;
 				case 'C':
-					switch (formatField.getData().toUpperCase().charAt(1)) {
+					switch (specificMaterial) {
 						case 'A':
 							result.add("TapeCartridge");
 							break;
@@ -2102,7 +2120,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 					result.add("Braille");
 					break;
 				case 'G':
-					switch (formatField.getData().toUpperCase().charAt(1)) {
+					switch (specificMaterial) {
 						case 'C':
 						case 'D':
 							result.add("Filmstrip");
@@ -2119,7 +2137,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 					result.add("Microfilm");
 					break;
 				case 'K':
-					switch (formatField.getData().toUpperCase().charAt(1)) {
+					switch (specificMaterial) {
 						case 'C':
 							result.add("Collage");
 							break;
@@ -2153,7 +2171,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 					}
 					break;
 				case 'M':
-					switch (formatField.getData().toUpperCase().charAt(1)) {
+					switch (specificMaterial) {
 						case 'F':
 							result.add("VideoCassette");
 							break;
@@ -2175,7 +2193,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 					result.add("SensorImage");
 					break;
 				case 'S':
-					switch (formatField.getData().toUpperCase().charAt(1)) {
+					switch (specificMaterial) {
 						case 'D':
 							if (formatField.getData().length() >= 4) {
 								char speed = formatField.getData().toUpperCase().charAt(3);
@@ -2201,7 +2219,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 					}
 					break;
 				case 'T':
-					switch (formatField.getData().toUpperCase().charAt(1)) {
+					switch (specificMaterial) {
 						case 'A':
 							result.add("Book");
 							break;
@@ -2211,7 +2229,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 					}
 					break;
 				case 'V':
-					switch (formatField.getData().toUpperCase().charAt(1)) {
+					switch (specificMaterial) {
 						case 'C':
 							result.add("VideoCartridge");
 							break;

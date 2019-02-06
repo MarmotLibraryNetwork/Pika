@@ -14,6 +14,21 @@
   }
 }
 
+#header-container {
+  background-image: url(/interface/themes/bemis/images/bemis-header-bg.gif);
+  background-repeat: no-repeat;
+  background-position: 340px 0px;
+}
+
+a img#header-logo {
+  margin-left: -15px;
+  margin-top: -10px;
+}
+
+#home-page-login {
+  background-color: #75777a;
+}
+
 .sidebar-button{
   padding: 5px 15px;
   background-color: @accordion-header-bg-color;
@@ -21,6 +36,7 @@
   color: #fff;
   margin-bottom: 15px;
   border-radius: 4px;
+  text-shadow: 1px 1px @gray;
 }
 /*
 .panel-heading {
@@ -50,12 +66,15 @@
   }
 }
 
+.browse-category.category0, .browse-category.category1, .browse-category.category2, .browse-category.category3, .browse-category.category4, .browse-category.category5 {
+  background-color: #F9F9F0;
+  background: linear-gradient(to bottom, #F9F9F0 0%, #F9F9F0 75%, #fff 75%, #fff 80%, #CCCCCC 80%, #fff 100%);
+}
 
 // the category text
 .browse-category {
   padding-top: 20px; // extra padding on top to center text
   height: 120px;
-
   div {
     //color: @browse-label-text-color;
     text-shadow: none;
@@ -160,13 +179,16 @@
       }
     }
   }
+  .panel-title {
+    text-shadow: 1px 1px @gray;
+  }
   .active {
     .panel-heading {
       background-color: @accordion-active-header-backgroundcolor;
       background: linear-gradient(to bottom, darken(@accordion-header-top-gradient-color, 5%), darken(@accordion-header-top-gradient-color, 10%));
     }
     .panel-title {
-
+      text-shadow: 1px 1px @gray;
     }
   }
   .panel-body {

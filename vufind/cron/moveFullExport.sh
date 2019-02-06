@@ -24,10 +24,10 @@ else
 
 	if [ -d "$LOCAL/$SOURCE/" ]; then
 		if [ -d "/data/vufind-plus/$DESTINATION/marc/" ]; then
-			if [ $(ls -1A "$LOCAL/$SOURCE/" | grep .mrc | wc -l) -gt 0 ]; then
+			if [ $(ls -1A "$LOCAL/$SOURCE/" | grep -i .mrc | wc -l) -gt 0 ]; then
 				# only do copy command if there are files present to move
 
-				FILE1=$(ls -rt1 $LOCAL/$SOURCE/*.mrc|tail -1)
+				FILE1=$(ls -rt1 $LOCAL/$SOURCE/*|grep -i .mrc|tail -1)
 				# Get only the latest file
 				if [ -n "$FILE1" ]; then
 					$LOG "~~ Copy fullexport marc file."
@@ -51,7 +51,7 @@ else
 						fi
 					fi
 
-					if [ $(ls -1A "$LOCAL/$SOURCE/" | grep .mrc | wc -l) -gt 1 ]; then
+					if [ $(ls -1A "$LOCAL/$SOURCE/" | grep -i .mrc | wc -l) -gt 1 ]; then
 						echo "There is more that 1 MARC file present in $LOCAL/$SOURCE/ during $0 process."
 					fi
 #				else

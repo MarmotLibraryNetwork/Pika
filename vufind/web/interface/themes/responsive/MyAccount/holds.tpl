@@ -21,7 +21,7 @@
 	{else}
 
 		<p id="overdrive_holds_inclusion_notice">
-			{translate text="Items on hold includes titles in Overdrive."}
+			{translate text="Items on hold include titles in Overdrive."}
 		</p>
 
 		{foreach from=$recordList item=sectionData key=sectionKey}

@@ -29,9 +29,9 @@
 #############
 # On Reboot #
 #############
-@reboot cd /usr/local/vufind-plus/sites/aspencat.production/; ./aspencat.production.sh start
+#@reboot cd /usr/local/vufind-plus/sites/aspencat.production/; ./aspencat.production.sh start
 # Continuous Re-Indexing
-@reboot sleep 300 && /usr/local/vufind-plus/sites/aspencat.production/continuous_partial_reindex.sh
+#@reboot sleep 300 && /usr/local/vufind-plus/sites/aspencat.production/continuous_partial_reindex.sh
 
 ######################
 # MySQL Nightly Dump #
@@ -43,9 +43,10 @@
 # Daily full update #
 #####################
 # avoid 6pm - 11pm for AspenCat PLB  (PK-288)
-10 00 * * 0-5 cd /usr/local/vufind-plus/sites/aspencat.production; ./full_update.sh
+#TODO: timing needs to be adjusted for delivery of their full export
+#10 00 * * 0-5 cd /usr/local/vufind-plus/sites/aspencat.production; ./full_update.sh
 # start full update early, expecting to use the same full export file as previous days
-30 03 * * 6 cd /usr/local/vufind-plus/sites/aspencat.production; ./full_update.sh
+#30 03 * * 6 cd /usr/local/vufind-plus/sites/aspencat.production; ./full_update.sh
 # start full update saturday morning after the new full export has arrived
 
 ################
@@ -73,7 +74,7 @@
 # DB clean-up at end of the day, 11:44pm
 
 # Check for semaphore errors
-17 * * * * cd /usr/local/vufind-plus/vufind/cron/; ./apacheSemaphoreCleanup.sh root@aspencatvm.marmot.org
+17 * * * * cd /usr/local/vufind-plus/vufind/cron/; ./apacheSemaphoreCleanup.sh root@makhaon.marmot.org
 
 # Check Apache Solr process and website that it has not stalled.
 */10 * * * * cd /usr/local/vufind-plus/vufind/cron/; ./solrTest.sh
@@ -88,7 +89,8 @@
 # Let's Encrypt #
 #################
 #update catalog.aspencat.info certificate twice daily
-43 3,10 * * * certbot renew
+#43 3,10 * * * certbot renew --quiet --preferred-challenges http-01
+#TODO: turn back on once live
 
 #final end of line character needed for crontab to be read
 

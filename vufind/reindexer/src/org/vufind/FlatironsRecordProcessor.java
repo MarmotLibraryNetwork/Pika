@@ -160,7 +160,7 @@ class FlatironsRecordProcessor extends IIIRecordProcessor{
 		//Check status
 		Subfield statusSubfield = curItem.getSubfield(statusSubfieldIndicator);
 		if (statusSubfield != null){
-			String status = statusSubfield.getData();
+			String status = statusSubfield.getData().trim();
 			if (status.equals("l")){
 				return true;
 			}
@@ -233,10 +233,6 @@ class FlatironsRecordProcessor extends IIIRecordProcessor{
 			logger.warn("Could not get format boost for format " + format);
 			econtentRecord.setFormatBoost(1);
 		}
-	}
-
-	protected boolean loanRulesAreBasedOnCheckoutLocation(){
-		return false;
 	}
 
 	protected void loadTargetAudiences(GroupedWorkSolr groupedWork, Record record, HashSet<ItemInfo> printItems, String identifier) {

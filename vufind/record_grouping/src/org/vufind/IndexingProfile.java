@@ -22,8 +22,9 @@ public class IndexingProfile {
 	boolean createFolderFromLeadingCharacters;
 	String groupingClass;
 	String recordNumberTag;
+	char recordNumberField;
 	String recordNumberPrefix;
-	String itemTag ;
+	String itemTag;
 	String formatSource;
 	char format;
 	char eContentDescriptor;

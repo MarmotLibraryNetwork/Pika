@@ -24,7 +24,7 @@
 		<script src="{$path}/interface/themes/responsive/js/lib/jquery.tablesorter.pager.min.js?v={$gitBranch|urlencode}"></script>
 		<script src="{$path}/interface/themes/responsive/js/lib/jquery.tablesorter.widgets.min.js?v={$gitBranch|urlencode}"></script>
 		{* Validator has two library files *}
-		{*<script src="{$path}/interface/themes/responsive/js/lib/jquery.validate.js"></script>*}
+		{*<script src="{$path}/interface/themes/responsive/js/lib/jquery.validate.js?v={$gitBranch|urlencode}"></script>*}
 		<script src="{$path}/interface/themes/responsive/js/lib/jquery.validate.min.js?v={$gitBranch|urlencode}"></script>
 		<script src="{$path}/interface/themes/responsive/js/lib/additional-methods.min.js?v={$gitBranch|urlencode}"></script>
 

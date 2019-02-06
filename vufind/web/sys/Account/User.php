@@ -1563,7 +1563,7 @@ class User extends DB_DataObject {
 
 	private function setMasqueradeLevel(){
 		$this->masqueradeLevel = 'none';
-		if (!empty($this->patronType)){
+		if (isset($this->patronType) && !is_null($this->patronType) && $this->patronType !== false){ // (patronType 0 can be a valid value)
 			require_once ROOT_DIR . '/Drivers/marmot_inc/PType.php';
 			$pType = new pType();
 			$pType->get('pType', $this->patronType);

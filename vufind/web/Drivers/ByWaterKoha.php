@@ -9,17 +9,12 @@
  */
 
 require_once ROOT_DIR . '/sys/KohaSIP.php';
-#require_once ROOT_DIR . '/Drivers/SIP2Driver.php';
 require_once ROOT_DIR . '/Drivers/KohaILSDI.php';
 
 abstract class ByWaterKoha extends KohaILSDI {
 
 	/** @var  AccountProfile $accountProfile */
 	public $accountProfile;
-//	/**
-//	 * @var $dbConnection null
-//	 */
-//	protected $dbConnection = null;
 
 	/**
 	 * @var KohaSIP $sipConnection
@@ -62,26 +57,6 @@ abstract class ByWaterKoha extends KohaILSDI {
 		return false;
 	}
 
-
-	/**
-	 * @param string $username
-	 * @param string $password
-	 * @param $validatedViaSSO
-	 * @return array|void|null
-	 */
-//	public function patronLogin($username, $password, $validatedViaSSO)
-//	{
-//		$useSip = 1;
-//		if ($useSip) {
-//			$result = $this->patronLoginViaSip($username, $password);
-//			return $result;
-//		} else {
-//			//TODO: use database login as preference: look as Aspencat.php
-//		}
-//
-//	}
-
-
 	/**
 	 * @param $username
 	 * @param $password
@@ -101,9 +76,7 @@ abstract class ByWaterKoha extends KohaILSDI {
 	 * @param int $id biblionumber of title
 	 * @return int
 	 */
-	public function getNumHolds($id)
-	{
-		// TODO: Implement getNumHolds() method.
+	public function getNumHolds($id) {
 
 	}
 
@@ -170,12 +143,14 @@ abstract class ByWaterKoha extends KohaILSDI {
 
 		$transactions = array();
 
+		$kohaPatronID = $this->getKohaPatronId($patron);
+
 		$this->initDatabaseConnection();
 
 		$sql = <<<EOD
-SELECT i.*, items.*, bib.title, bib.author
+SELECT i.*, items.*, i.renewals as times_renewed, bib.title, bib.author
 FROM borrowers as b, issues as i, items, biblio as bib
-where b.cardnumber ="{$patron->username}"
+where b.borrowernumber = '{$kohaPatronID}'
 AND b.borrowernumber = i.borrowernumber
 AND items.itemnumber = i.itemnumber
 AND items.biblionumber = bib.biblionumber
@@ -199,10 +174,15 @@ EOD;
 			}else{
 				$dueTime = null;
 			}
+
+			if($curRow['auto_renew'] == 1) {
+				$transaction['canrenew'] = false;
+			}
+
 			$transaction['dueDate'] = $dueTime;
 			$transaction['itemid'] = $curRow['itemnumber'];
 			$transaction['renewIndicator'] = $curRow['itemnumber'];
-			$transaction['renewCount'] = $curRow['renewals'];
+			$transaction['renewCount'] = $curRow['times_renewed'];
 
 			if ($transaction['id'] && strlen($transaction['id']) > 0){
 				$transaction['recordId'] = $transaction['id'];
@@ -239,7 +219,7 @@ EOD;
 	 */
 	public function hasFastRenewAll()
 	{
-		// TODO: Implement hasFastRenewAll() method.
+		return false;
 	}
 
 	/**
@@ -248,8 +228,7 @@ EOD;
 	 * @param $patron  User
 	 * @return mixed
 	 */
-	public function renewAll($patron)
-	{
+	public function renewAll($patron) {
 		// TODO: Implement renewAll() method.
 		$renew_result = array(
 			'success' => false,
@@ -321,174 +300,178 @@ EOD;
 	 */
 	public function getReadingHistory($patron, $page = 1, $recordsPerPage = -1, $sortOption = "checkedOut") {
 
-		$this->initDatabaseConnection();
+		$kohaPatronID = $this->getKohaPatronId($patron);
 
-		//Figure out if the user is opted in to reading history
-		$sql = "select privacy from borrowers where borrowernumber = {$patron->username}";
+		if($this->initDatabaseConnection() == null) {
+			return array('historyActive' => false, 'titles' => array(), 'numTitles' => 0);
+		}
+
+		//Figure out if the user has opted out of reading history in koha.
+		$sql = "select privacy from borrowers where borrowernumber = {$kohaPatronID}";
 		$res = mysqli_query($this->dbConnection, $sql);
 		$row = $res->fetch_assoc();
-		// privacy in koha db: 1 = default (keep as long as allowed by law), 0 = forever, 2 = never
+		// privacy in koha: 1 = default (keep as long as allowed by law), 0 = forever, 2 = never
 		$privacy = $row['privacy'];
-
+		// history enabled from koha
+		$historyEnabled = false;
 		if ($privacy != 2) {
+			$historyEnabled = true;
+		}
+		// Update patron's setting in Pika only if reading history disabled in koha
+		// otherwise keep setting as is
+		if ($historyEnabled == false) {
+			if ($historyEnabled != $patron->trackReadingHistory) {
+				$patron->trackReadingHistory = (boolean)$historyEnabled;
+				$patron->update();
+			}
+		}
 
+		if (!$historyEnabled) {
+			return array('historyActive' => false, 'titles' => array(), 'numTitles' => 0);
 		}
-		// Update patron's setting in Pika if the setting has changed in Koha
-		if ($historyEnabled != $patron->trackReadingHistory) {
-			$patron->trackReadingHistory = (boolean) $historyEnabled;
-			$patron->update();
+
+		$historyActive = true;
+
+		$readinHistorySql = <<<EOD
+SELECT *, issues.timestamp as issuestimestamp, issues.renewals AS renewals,items.renewals AS totalrenewals,items.timestamp AS itemstimestamp
+  FROM issues
+  LEFT JOIN items on items.itemnumber=issues.itemnumber
+  LEFT JOIN biblio ON items.biblionumber=biblio.biblionumber
+  LEFT JOIN biblioitems ON items.biblioitemnumber=biblioitems.biblioitemnumber
+  WHERE borrowernumber={$kohaPatronID}
+  UNION ALL
+  SELECT *, old_issues.timestamp as issuestimestamp, old_issues.renewals AS renewals,items.renewals AS totalrenewals,items.timestamp AS itemstimestamp
+  FROM old_issues
+  LEFT JOIN items on items.itemnumber=old_issues.itemnumber
+  LEFT JOIN biblio ON items.biblionumber=biblio.biblionumber
+  LEFT JOIN biblioitems ON items.biblioitemnumber=biblioitems.biblioitemnumber
+  WHERE borrowernumber={$kohaPatronID} AND old_issues.itemnumber IS NOT NULL
+EOD;
+
+		$readingHistoryRes = mysqli_query($this->dbConnection, $readinHistorySql);
+
+		if ($readingHistoryRes){
+			$readingHistoryTitles = array();
+			while ($readingHistoryTitleRow = $readingHistoryRes->fetch_assoc()){
+				$checkOutDate = new DateTime($readingHistoryTitleRow['issuetimestamp']);
+				$curTitle = array();
+				$curTitle['id']       = $readingHistoryTitleRow['biblionumber'];
+				$curTitle['shortId']  = $readingHistoryTitleRow['biblionumber'];
+				$curTitle['recordId'] = $readingHistoryTitleRow['biblionumber'];
+				$curTitle['title']    = $readingHistoryTitleRow['title'];
+				$curTitle['checkout'] = $checkOutDate->format('m-d-Y'); // this format is expected by Pika's java cron program.
+
+				$readingHistoryTitles[] = $curTitle;
+			}
+
+		$numTitles = count($readingHistoryTitles);
+
+		//process pagination
+		if ($recordsPerPage != -1){
+			$startRecord = ($page - 1) * $recordsPerPage;
+			$readingHistoryTitles = array_slice($readingHistoryTitles, $startRecord, $recordsPerPage);
 		}
+
+		set_time_limit(20 * count($readingHistoryTitles));
+		foreach ($readingHistoryTitles as $key => $historyEntry){
+			//Get additional information from resources table
+			$historyEntry['ratingData']  = null;
+			$historyEntry['permanentId'] = null;
+			$historyEntry['linkUrl']     = null;
+			$historyEntry['coverUrl']    = null;
+			$historyEntry['format']      = "Unknown";
+
+			if (!empty($historyEntry['recordId'])){
+//					if (is_int($historyEntry['recordId'])) $historyEntry['recordId'] = (string) $historyEntry['recordId']; // Marc Record Contructor expects the recordId as a string.
+				require_once ROOT_DIR . '/RecordDrivers/MarcRecord.php';
+				$recordDriver = new MarcRecord($this->accountProfile->recordSource.':'.$historyEntry['recordId']);
+				if ($recordDriver->isValid()){
+					$historyEntry['ratingData']  = $recordDriver->getRatingData();
+					$historyEntry['permanentId'] = $recordDriver->getPermanentId();
+					$historyEntry['linkUrl']     = $recordDriver->getGroupedWorkDriver()->getLinkUrl();
+					$historyEntry['coverUrl']    = $recordDriver->getBookcoverUrl('medium');
+					$historyEntry['format']      = $recordDriver->getFormats();
+					$historyEntry['author']      = $recordDriver->getPrimaryAuthor();
+				}
+				$recordDriver = null;
+			}
+			$readingHistoryTitles[$key] = $historyEntry;
+		}
+
+			return array('historyActive'=>$historyActive, 'titles'=>$readingHistoryTitles, 'numTitles'=> $numTitles);
+		}
+		return array('historyActive'=>false, 'titles'=>array(), 'numTitles'=> 0);
 	}
 
-	/**
-	 * Place Hold
-	 *
-	 * This is responsible for both placing holds as well as placing recalls.
-	 *
-	 * @param   User $patron The User to place a hold for
-	 * @param   string $recordId The id of the bib record
-	 * @param   string $pickupBranch The branch where the user wants to pickup the item when available
-	 * @param   null|string $cancelIfNotFilledByDate The date to cancel the Hold if it isn't filled
-	 * @return  array                 An array with the following keys
-	 *                                success - true/false
-	 *                                message - the message to display (if item holds are required, this is a form to select the item).
-	 *                                needsItemLevelHold - An indicator that item level holds are required
-	 *                                title - the title of the record the user is placing a hold on
-	 * @access  public
-	 */
-//	public function placeHold($patron, $recordId, $pickupBranch, $cancelIfNotFilledByDate = null)
-//	{
-//		$result = $this->placeItemHold($patron, $recordId, null, $pickupBranch, $cancelIfNotFilledByDate);
-//		return $result;
-//	}
 
 	/**
-	 * Place Item Hold
+	 * Freeze Hold
 	 *
-	 * This is responsible for both placing item level holds.
+	 * Freeze/suspend/pause a hold for an individual title.
 	 *
-	 * @param   User $patron The User to place a hold for
-	 * @param   string $recordId The id of the bib record
-	 * @param   string $itemId The id of the item to hold
-	 * @param   string $pickupBranch The branch where the user wants to pickup the item when available
-	 * @param   null|string $cancelIfNotFilledByDate The date to cancel the Hold if it isn't filled
-	 * @return  array                 An array with the following keys
-	 *                                success - true/false
-	 *                                message - the message to display
-	 *                                title - the title of the record the user is placing a hold on
-	 * @access  public
+	 * @param $patron             Patron
+	 * @param $recordId
+	 * @param $itemToFreezeId
+	 * @param $dateToReactivate
+	 * @return array
 	 */
-//	function placeItemHold($patron, $recordId, $itemId, $pickupBranch, $cancelIfNotFilledByDate = null){
-//		$holdResult = array(
-//			'success' => false,
-//			'message' => 'Your hold could not be placed. '
-//		);
-//		if ($this->initSipConnection()) {
-//			$title   = null;
-//			$success = false;
-//			$message = 'Unknown error occurred communicating with the circulation system';
-//
-////			$this->sipConnection->patron    = $patron->cat_username; //TODO: appears barcode is needed to place hold but user id is needed to look up patron status
-//			$this->sipConnection->patron    = $patron->username;
-//			$this->sipConnection->patronpwd = $patron->cat_password;
-//
-//			// Determine a pickup location
-//			if (empty($pickupBranch)){
-//				//Get the code for the location
-//				$locationLookup = new Location();
-//				$locationLookup->get('locationId', $patron->homeLocationId);
-//				if ($locationLookup->get('locationId', $patron->homeLocationId)){
-//					$pickupBranch = strtoupper($locationLookup->code);
-//				}
-//			}else{
-//				$pickupBranch = strtoupper($pickupBranch);
-//			}
-//
-//			// Determine hold expiration time
-//			if (!empty($cancelIfNotFilledByDate)) {
-////				$timestamp = strtotime($cancelIfNotFilledByDate);
-//				$dateObject     = date_create_from_format('m/d/Y', $cancelIfNotFilledByDate);
-//				$expirationTime = $dateObject->getTimestamp();
-//
-//			} else {
-//				//TODO: Set default here? Can we do SIP call with out cancel time (yes, by SIP2 doc)
-//				$expirationTime = ''; // has to be empty strin to be handled well by the SIP2 class
-//			}
-//
-//			//TODO: for item level holds, do we have to change the hold type? (probably to 3)
-//
-//			$in         = $this->sipConnection->msgHold('+', $expirationTime, '2', $itemId, $recordId, null, $pickupBranch);
-////			$in         = $this->sipConnection->msgHold('+', $expirationTime, '2', $recordId, null, 'N', $pickupBranch);
-//			$msg_result = $this->sipConnection->get_message($in);
-//			if (preg_match("/^16/", $msg_result)) {
-//				$result  = $this->sipConnection->parseHoldResponse($msg_result);
-//				$success = ($result['fixed']['Ok'] == 1);
-//				$message = $result['variable']['AF'][0];
-//				if (!empty($result['variable']['AJ'][0])) {
-//					$title = $result['variable']['AJ'][0];
-//				}
-//			}
-//			$holdResult = array(
-//				'title'   => $title,
-//				'bib'     => $recordId,
-//				'success' => $success,
-//				'message' => $message
-//			);
-//		}
-//		return $holdResult;
-//	}
-
-	/**
-	 * Cancels a hold for a patron
-	 *
-	 * @param   User $patron The User to cancel the hold for
-	 * @param   string $recordId The id of the bib record
-	 * @param   string $cancelId Information about the hold to be cancelled
-	 * @return  array
-	 */
-
-	/*
-	function cancelHold($patron, $recordId, $cancelId){
-	#TODO: What hold type?
-
-		# msgHold($mode, $expDate = '', $holdtype = '', $item = '', $title = '', $fee='N', $pkupLocation = '')
-		if ($this->initSipConnection()) {
-			$this->sipConnection->patron    = $patron->cat_username;
-			$this->sipConnection->patronpwd = $patron->cat_password;
-			$msgHold = $this->sipConnection->msgHold('-', '', '', $recordId, $cancelId,'N' ,'');
-			$rspHold = $this->sipConnection->parseHoldResponse($msgHold);
-			var_dump($rspHold); exit();
-		}
-
-
-	}
-*/
-
-
 	function freezeHold($patron, $recordId, $itemToFreezeId, $dateToReactivate){
-		$result = $this->freezeThawHoldViaSIP($patron, $recordId, null, $dateToReactivate);
+		global $configArray;
+
+		$result = [
+			'title' => '',
+			'success' => false,
+			'message' => 'Unable to ' . translate('freeze') .' your hold.'
+		];
+
+		$apiUrl = $configArray['Catalog']['koha_api_url'];
+		$apiUrl .= "/api/v1/contrib/pika/holds/{$itemToFreezeId}/suspend/";
+
+		$response = $this->_curl_post_request($apiUrl);
+
+		if(!$response) {
+			return $result;
+		}
+
+		$hold_response = json_decode($response, false);
+		if ($hold_response->suspended && $hold_response->suspended == true) {
+			$result['message'] = 'Your hold was ' . translate('frozen') .' successfully.';
+			$result['success'] = true;
+			return $result;
+		}
+
 		return $result;
 	}
 
-	function freezeThawHoldViaSIP($patron, $recordId, $itemToFreezeId = null, $dateToReactivate = null, $type = 'freeze'){
-		$holdResult = array(
+	function thawHold($patron, $recordId, $itemToThawId) {
+		global $configArray;
+
+		$result = [
+			'title' => '',
 			'success' => false,
-			'message' => 'Your hold could not be placed. '
-		);
-		if ($this->initSipConnection()) {
+			'message' => 'Unable to ' . translate('thaw') . ' your hold.'
+		];
 
+		$apiUrl =  $configArray['Catalog']['koha_api_url'];
+		$apiUrl .= "/api/v1/contrib/pika/holds/{$itemToThawId}/resume/";
+
+		$response = $this->_curl_post_request($apiUrl);
+		if(!$response) {
+			return $result;
 		}
-		return $holdResult;
 
+		$hold_response = json_decode($response, false);
+		if ($hold_response->resumeed && $hold_response->resumeed == true) {
+			$result['message'] = 'Your hold was ' . translate('thawed') .' successfully.';
+			$result['success'] = true;
+			return $result;
+		}
+
+		return $result;
 	}
 
-	function thawHold($patron, $recordId, $itemToThawId)
-	{
-		// TODO: Implement thawHold() method.
-	}
 
-	function changeHoldPickupLocation($patron, $recordId, $itemToUpdateId, $newPickupLocation)
-	{
+	function changeHoldPickupLocation($patron, $recordId, $itemToUpdateId, $newPickupLocation) {
 		// TODO: Implement changeHoldPickupLocation() method.
 	}
 
@@ -503,39 +486,12 @@ EOD;
 	 * otherwise.
 	 * @access public
 	 */
-	public function getMyFines($patron, $includeMessages = false)
-	{
+	public function getMyFines($patron, $includeMessages = false) {
 		return $this->getMyFinesFromDB($patron);
-
-		// TODO: Implement getMyFines() method.
-		$fines = array();
-		if ($this->initSipConnection()) {
-			$this->sipConnection->patron    = $patron->cat_username;
-			$this->sipConnection->patronpwd = $patron->cat_password;
-			$sip_result = $this->getPatronInfo('fine');
-			if ($sip_result) {
-				if (!empty($sip_result['variable']['AV'])) {
-					foreach ($sip_result['variable']['AV'] as $sip_fine) {
-						$fineAmount = trim(strstr($sip_fine, ' '));
-						$fines[] = array(
-							'reason'            => null,
-							'amount'            => $fineAmount,
-							'message'           => null,
-//							'amountOutstanding' => $fineAmount,
-							'date'              => null,
-						);
-
-					}
-				}
-
-			}
-		}
-		return $fines;
 	}
 
 	/**
 	 * Get a list of fines for the user.
-	 * Code take from C4::Account getcharges method
 	 *
 	 * @param null $patron
 	 * @param bool $includeMessages
@@ -543,15 +499,16 @@ EOD;
 	 */
 	public function getMyFinesFromDB($patron, $includeMessages = false){
 
+		$kohaPatronID = $this->getKohaPatronId($patron);
+
 		$this->initDatabaseConnection();
 		// set early to give quick return if no fines
 		$fines = array();
 
 		$sum_query = <<<EOD
 select sum(accountlines.amountoutstanding) as sum 
-from accountlines, borrowers
-where borrowers.cardnumber = "{$patron->username}"
-and borrowers.borrowernumber = accountlines.borrowernumber
+from accountlines
+where accountlines.borrowernumber = "{$kohaPatronID}"
 EOD;
 		// quick query to see if there are any outstanding fines.
 		$sumResp = mysqli_query($this->dbConnection, $sum_query);
@@ -562,36 +519,12 @@ EOD;
 			return $fines;
 		}
 
-		$sumResp->close();
-/*
- *
- * SELECT distinct accountno FROM accountlines where borrowernumber = '416127' order by accountno desc;
- *
- * Next loop over each account #
- *
- *
- */
-		// has fines
-		// First get account #'s
-		/*
-		$accountNosSql = 'select distinct accountno from accountlines where borrowernumber = "{$patron->username}" order by accountno desc';
-		$accountNosRsp = mysqli_query($this->dbConnection, $accountNosSql);
-
-		$accountLineSql = 'select accountlines.amountoutstanding, '
-		foreach ($accountNosRsp->fetch_assoc() as $accountNo) {
-
-		}
-*/
 		$fines_query = <<<EOD
-select accountlines.amount as ac_amount, accountlines.*, account_offsets.*
-from accountlines, account_offsets, borrowers 
-where borrowers.cardnumber = "{$patron->username}"
-and borrowers.borrowernumber = accountlines.borrowernumber
-and (accountlines.accountlines_id = account_offsets.credit_id 
-or accountlines.accountlines_id = account_offsets.debit_id)
-order by accountlines.date ASC
+select *
+from accountlines
+where accountlines.borrowernumber = "{$kohaPatronID}"
+and accountlines.amountoutstanding != 0.000000
 EOD;
-
 
 		$allFeesRS = mysqli_query($this->dbConnection, $fines_query);
 
@@ -607,7 +540,7 @@ EOD;
 			$curFine = [
 					'date' => $allFeesRow['date'],
 					'reason' => $allFeesRow['accounttype'],
-					'message' => $allFeesRow['type'].": ".$allFeesRow['description'],
+					'message' => $allFeesRow['description'],
 					'amount' => $amount,
 					'amountOutstanding' => $amountOutstanding
 			];
@@ -645,9 +578,18 @@ EOD;
 		$this->initDatabaseConnection();
 		if ($this->dbConnection){
 
-			$sql = 'SELECT reserves.*, biblio.title, biblio.author, borrowers.cardnumber, borrowers.borrowernumber FROM reserves inner join biblio on biblio.biblionumber = reserves.biblionumber left join borrowers using (borrowernumber) ';
-//			$sql .= 'where userid = "'. $patron->getBarcode() . '"'; //TODO: temp
-			$sql .= 'where cardnumber = "'. $patron->getBarcode() . '"';
+			//$sql = 'SELECT reserves.*, biblio.title, biblio.author, borrowers.cardnumber, borrowers.borrowernumber FROM reserves inner join biblio on biblio.biblionumber = reserves.biblionumber left join borrowers using (borrowernumber) ';
+			//$sql .= 'where cardnumber = "'. $patron->getBarcode() . '"';
+			$patron_barcode = $patron->getBarcode();
+			$sql = <<<EOD
+SELECT reserves.*, biblio.title, biblio.author, borrowers.cardnumber, borrowers.borrowernumber 
+FROM reserves 
+	inner join biblio on biblio.biblionumber = reserves.biblionumber 
+	left join borrowers using (borrowernumber)
+where cardnumber = "{$patron_barcode}"
+EOD;
+
+
 
 			$results = mysqli_query($this->dbConnection, $sql);
 			if ($results){
@@ -678,13 +620,15 @@ EOD;
 					$curHold['position']              = $curRow['priority'];
 					$curHold['cancelId']              = $curRow['reserve_id'];//$curRow['reservenumber'];
 					$curHold['cancelable']            = true;
-					$curHold['locationUpdateable']    = false; //TODO: can update after the SIP call is built (will need additional logic for this depending on status)
+					$curHold['locationUpdateable']    = false;
 					$curHold['frozen']                = false;
-					$curHold['freezeable']            = false; //TODO: can update after the SIP call is built (will need additional logic for this depending on status)
+					$curHold['freezeable']            = false;
+
+
 
 					switch ($curRow['found']){
 						case 'S':
-							$curHold['status']     = "Suspended";
+							$curHold['status']     = "Frozen";
 							$curHold['frozen']     = true;
 							$curHold['cancelable'] = false;
 							break;
@@ -695,8 +639,14 @@ EOD;
 							$curHold['status'] = "In Transit";
 							break;
 						default:
-							$curHold['status']     = "Pending";
-							$curHold['freezeable'] = true;
+							// frozen
+							if($curRow['suspend'] == 1) {
+								$curHold['frozen'] = true;
+								$curHold['status'] = "Frozen";
+							} else {
+								$curHold['status']     = "Pending";
+								$curHold['freezeable'] = true;
+							}
 							break;
 					}
 
@@ -742,22 +692,43 @@ EOD;
 		return $holds;
 	}
 
-	//Moved to KohaILSDI Driver
-//	function initDatabaseConnection(){
-//		global $configArray;
-//		if ($this->dbConnection == null){
-//			$this->dbConnection = mysqli_connect($configArray['Catalog']['db_host'], $configArray['Catalog']['db_user'], $configArray['Catalog']['db_pwd'], $configArray['Catalog']['db_name'], $configArray['Catalog']['db_port']);
-//
-//			if (!$this->dbConnection || mysqli_errno($this->dbConnection) != 0){
-//				global $logger;
-//				$logger->log("Error connecting to Koha database " . mysqli_error($this->dbConnection), PEAR_LOG_ERR);
-//				$this->dbConnection = null;
-//			}
-//			global $timer;
-//			$timer->logTime("Initialized connection to Koha");
-//		}
-//	}
-//
+	private function _curl_post_request($url) {
+
+		$c = curl_init($url);
+		$curl_options  = array(
+			CURLOPT_POST              => true,
+			CURLOPT_RETURNTRANSFER    => true,
+			CURLOPT_CONNECTTIMEOUT    => 20,
+			CURLOPT_TIMEOUT           => 60,
+			CURLOPT_SSL_VERIFYPEER    => false,
+			CURLOPT_SSL_VERIFYHOST    => false,
+			CURLOPT_FOLLOWLOCATION    => true,
+			CURLOPT_UNRESTRICTED_AUTH => true,
+			CURLOPT_COOKIESESSION     => false,
+			CURLOPT_FORBID_REUSE      => false,
+			CURLOPT_HEADER            => false,
+			CURLOPT_AUTOREFERER       => true,
+		);
+
+		curl_setopt_array($c, $curl_options);
+		// this stops the remote server from giving "Bad Request".
+		curl_setopt($c, CURLOPT_POSTFIELDS, array());
+
+		$return = curl_exec($c);
+
+		if($errno = curl_errno($c)) {
+			global $logger;
+			$error_message = curl_strerror($errno);
+			$curlError = "cURL error ({$errno}):\n {$error_message}";
+			$logger->log("\n\nBywater API URL: " . $url, PEAR_LOG_ERR);
+			$logger->log($curlError, PEAR_LOG_ERR);
+			$logger->log('Response from bywater api: ' . $return . "\n\n", PEAR_LOG_ERR);
+		}
+
+		curl_close($c);
+		return $return;
+	}
+
 	function __destruct(){
 		//Cleanup any connections we have to other systems
 		if ($this->sipConnection != null){
@@ -766,12 +737,8 @@ EOD;
 		}
 
 		if ($this->dbConnection != null){
-//			if ($this->getNumHoldsStmt != null){
-//				$this->getNumHoldsStmt->close();
-//			}
 			mysqli_close($this->dbConnection);
 		}
-
 	}
 
 

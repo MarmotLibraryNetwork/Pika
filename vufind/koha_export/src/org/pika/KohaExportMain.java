@@ -16,10 +16,10 @@ import org.marc4j.marc.impl.SubfieldImpl;
 
 import java.io.*;
 import java.sql.*;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
+
+import au.com.bytecode.opencsv.CSVWriter;
 
 /**
  * Export data from Koha
@@ -34,6 +34,20 @@ public class KohaExportMain {
 	private static String serverName; //Pika instance name
 
 	private static IndexingProfile indexingProfile;
+	private static String exportPath;
+
+	// Item subfields
+	private static char locationSubfield      = 'a';
+	private static char subLocationSubfield   = '8';
+	private static char shelflocationSubfield = 'c';
+	private static char withdrawnSubfield     = '0';
+	private static char damagedSubfield       = '4';
+	private static char lostSubfield          = '1';
+	private static char notforloanSubfield    = '7'; //Primary status subfield
+	private static char restrictedSubfield    = '5';
+	private static char dueDateSubfield       = 'q';
+
+
 
 	public static void main(String[] args) {
 		serverName = args[0];
@@ -50,24 +64,26 @@ public class KohaExportMain {
 		// Read the base INI file to get information about the server (current directory/conf/config.ini)
 		Ini ini = loadConfigFile("config.ini");
 
-		//Connect to the vufind database
-		Connection vufindConn = null;
+		// Connect to the Pika database
+		Connection pikaConn = null;
 		try {
 			String databaseConnectionInfo = cleanIniValue(ini.get("Database", "database_vufind_jdbc"));
 			if (databaseConnectionInfo == null){
 				logger.error("Please provide database_vufind_jdbc within config.ini (or better config.pwd.ini) ");
 				System.exit(1);
 			}
-			vufindConn = DriverManager.getConnection(databaseConnectionInfo);
+			pikaConn = DriverManager.getConnection(databaseConnectionInfo);
 		} catch (Exception e) {
-			logger.error("Error connecting to vufind database ", e);
+			logger.error("Error connecting to pika database ", e);
 			System.exit(1);
 		}
 
+		// Connect to the Koha database
 		Connection kohaConn = null;
 		try {
 			String kohaConnectionJDBC = "jdbc:mysql://" +
 					cleanIniValue(ini.get("Catalog", "db_host")) +
+					":" + cleanIniValue(ini.get("Catalog", "db_port")) +
 					"/" + cleanIniValue(ini.get("Catalog", "db_name") +
 					"?user=" + cleanIniValue(ini.get("Catalog", "db_user")) +
 					"&password=" + cleanIniValue(ini.get("Catalog", "db_pwd")) +
@@ -82,16 +98,37 @@ public class KohaExportMain {
 		if (args.length > 1){
 			profileToLoad = args[1];
 		}
-		indexingProfile = IndexingProfile.loadIndexingProfile(vufindConn, profileToLoad, logger);
+		indexingProfile = IndexingProfile.loadIndexingProfile(pikaConn, profileToLoad, logger);
+
+		exportPath = indexingProfile.marcPath;
+		if (exportPath.startsWith("\"")){
+			exportPath = exportPath.substring(1, exportPath.length() - 1);
+		}
+
+		// Override any relevant subfield settings if they are set
+		if (indexingProfile.locationSubfield != ' '){
+			locationSubfield = indexingProfile.locationSubfield;
+		}
+		if (indexingProfile.subLocationSubfield != ' '){
+			subLocationSubfield = indexingProfile.subLocationSubfield;
+		}
+		if (indexingProfile.shelvingLocationSubfield != ' '){
+			shelflocationSubfield = indexingProfile.shelvingLocationSubfield;
+		}
+		if (indexingProfile.dueDateSubfield != ' '){
+			dueDateSubfield = indexingProfile.dueDateSubfield;
+		}
 
 		//Get a list of works that have changed since the last index
-		getChangedRecordsFromDatabase(ini, vufindConn, kohaConn);
-		exportHolds(vufindConn, kohaConn);
+		getChangedRecordsFromDatabase(ini, pikaConn, kohaConn);
+		exportHolds(pikaConn, kohaConn);
+		exportHoldShelfItems(kohaConn);
+		exportInTransitItems(kohaConn);
 
-		if (vufindConn != null){
+		if (pikaConn != null){
 			try{
 				//Close the connection
-				vufindConn.close();
+				pikaConn.close();
 			}catch(Exception e){
 				System.out.println("Error closing connection: " + e.toString());
 				e.printStackTrace();
@@ -110,6 +147,49 @@ public class KohaExportMain {
 		logger.info(currentTime.toString() + ": Finished Koha Extract");
 	}
 
+	private static void exportInTransitItems(Connection kohaConn) {
+		logger.info("Starting export of in-transit items");
+		try {
+			PreparedStatement getInTransitItemsStmt = kohaConn.prepareStatement("SELECT itemnumber from branchtransfers WHERE datearrived IS NULL");
+			ResultSet         inTransitItemsRS      = getInTransitItemsStmt.executeQuery();
+
+			writeToFileFromSQLResult("inTransitItems.csv", inTransitItemsRS);
+
+			inTransitItemsRS.close();
+			getInTransitItemsStmt.close();
+		} catch (SQLException e) {
+			logger.error("Error retrieving in-transit items from Koha", e);
+		} catch (IOException e) {
+			logger.error("Error writing in-transit items to file", e);
+		}
+		logger.info("Finished export of in-transit items");
+	}
+
+	private static void exportHoldShelfItems(Connection kohaConn) {
+		logger.info("Starting export of hold shelf items");
+		try {
+			PreparedStatement onHoldShelfItemsStmt = kohaConn.prepareStatement("SELECT itemnumber from reserves WHERE found = 'W'"); // W is Waiting at Library (As FYI a found value of 'T' is In Transit
+			ResultSet         onHoldShelfItemsRS   = onHoldShelfItemsStmt.executeQuery();
+
+			writeToFileFromSQLResult("holdShelfItems.csv", onHoldShelfItemsRS);
+
+			onHoldShelfItemsRS.close();
+			onHoldShelfItemsStmt.close();
+		} catch (SQLException e) {
+			logger.error("Error retrieving hold shelf items from Koha", e);
+		} catch (IOException e) {
+			logger.error("Error writing hold shelf items to file", e);
+		}
+		logger.info("Finished export of hold shelf items");
+	}
+
+	private static void writeToFileFromSQLResult(String fileName, ResultSet dataRS) throws IOException, SQLException {
+		File      dataFile       = new File(exportPath + "/" + fileName);
+		CSVWriter dataFileWriter = new CSVWriter(new FileWriter(dataFile));
+		dataFileWriter.writeAll(dataRS, true);
+		dataFileWriter.close();
+	}
+
 	private static void exportHolds(Connection vufindConn, Connection kohaConn) {
 		Savepoint startOfHolds = null;
 		try {
@@ -122,13 +202,13 @@ public class KohaExportMain {
 
 			PreparedStatement addIlsHoldSummary = vufindConn.prepareStatement("INSERT INTO ils_hold_summary (ilsId, numHolds) VALUES (?, ?)");
 
-			HashMap<String, Long> numHoldsByBib = new HashMap<>();
 			//Export bib level holds
-			PreparedStatement bibHoldsStmt = kohaConn.prepareStatement("select count(reservenumber) as numHolds, biblionumber from reserves group by biblionumber", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-			ResultSet bibHoldsRS = bibHoldsStmt.executeQuery();
+			HashMap<String, Long> numHoldsByBib = new HashMap<>();
+			PreparedStatement     bibHoldsStmt  = kohaConn.prepareStatement("select count(*) as numHolds, biblionumber from reserves group by biblionumber", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			ResultSet             bibHoldsRS    = bibHoldsStmt.executeQuery();
 			while (bibHoldsRS.next()){
-				String bibId = bibHoldsRS.getString("biblionumber");
-				Long numHolds = bibHoldsRS.getLong("numHolds");
+				String bibId    = bibHoldsRS.getString("biblionumber");
+				Long   numHolds = bibHoldsRS.getLong("numHolds");
 				numHoldsByBib.put(bibId, numHolds);
 			}
 			bibHoldsRS.close();
@@ -164,63 +244,74 @@ public class KohaExportMain {
 		//Get the time the last extract was done
 		try{
 			logger.info("Starting to load changed records from Koha using the Database connection");
-			Long lastKohaExtractTime;
 			Long lastKohaExtractTimeVariableId = null;
+			long updateTime                    = new Date().getTime() / 1000;
+			long lastKohaExtractTime;
 
-			long updateTime = new Date().getTime() / 1000;
-
-			PreparedStatement markGroupedWorkForBibAsChangedStmt = vufindConn.prepareStatement("UPDATE grouped_work SET date_updated = ? where id = (SELECT grouped_work_id from grouped_work_primary_identifiers WHERE type = 'ils' and identifier = ?)") ;
-			PreparedStatement loadLastKohaExtractTimeStmt = vufindConn.prepareStatement("SELECT * from variables WHERE name = 'last_koha_extract_time'", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-			ResultSet lastKohaExtractTimeRS = loadLastKohaExtractTimeStmt.executeQuery();
+			PreparedStatement markGroupedWorkForBibAsChangedStmt = vufindConn.prepareStatement("UPDATE grouped_work SET date_updated = ? where id = (SELECT grouped_work_id from grouped_work_primary_identifiers WHERE type = 'ils' and identifier = ?)");
+			PreparedStatement loadLastKohaExtractTimeStmt        = vufindConn.prepareStatement("SELECT * from variables WHERE name = 'last_koha_extract_time'", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			ResultSet         lastKohaExtractTimeRS              = loadLastKohaExtractTimeStmt.executeQuery();
 			if (lastKohaExtractTimeRS.next()){
-				lastKohaExtractTime = lastKohaExtractTimeRS.getLong("value");
+				lastKohaExtractTime           = lastKohaExtractTimeRS.getLong("value");
 				lastKohaExtractTimeVariableId = lastKohaExtractTimeRS.getLong("id");
 			}else{
 				//Get the last 5 minutes for the initial setup
-				lastKohaExtractTime = new Date().getTime() / 1000 - 5 * 60 * 60;
+				lastKohaExtractTime = updateTime - 5 * 60 * 60;
 			}
 
-			//Since we are on a replica of the database, go back 20 minutes to make sure that we cover changes that haven't been replicated
-			lastKohaExtractTime -= 20 * 60;
+			// go back 20 minutes to make sure that we cover changes that haven't been replicated
+			lastKohaExtractTime -= 20 * 60; //TODO: is this still needed?
 
 			String maxRecordsToUpdateDuringExtractStr = ini.get("Catalog", "maxRecordsToUpdateDuringExtract");
-			int maxRecordsToUpdateDuringExtract = 100000;
-			if (maxRecordsToUpdateDuringExtractStr != null){
+			int    maxRecordsToUpdateDuringExtract    = 100000;
+			if (maxRecordsToUpdateDuringExtractStr != null && maxRecordsToUpdateDuringExtractStr.length() > 0){
 				maxRecordsToUpdateDuringExtract = Integer.parseInt(maxRecordsToUpdateDuringExtractStr);
 			}
 
 			//Only mark records as changed
 			boolean errorUpdatingDatabase = false;
 
-			PreparedStatement getChangedItemsFromKohaStmt = kohaConn.prepareStatement("select itemnumber, biblionumber, barcode, damaged, itemlost, wthdrawn, suppress, restricted, onloan from items where timestamp >= ? LIMIT 0, ?");
+//			PreparedStatement getChangedItemsFromKohaStmt = kohaConn.prepareStatement("select itemnumber, biblionumber, barcode, homebranch, ccode, location, damaged, itemlost, withdrawn, restricted, onloan, notforloan from items where timestamp >= ? LIMIT 0, ?");
+			PreparedStatement getChangedItemsFromKohaStmt = kohaConn.prepareStatement("select itemnumber, biblionumber, homebranch, ccode, location, damaged, itemlost, withdrawn, onloan, notforloan from items where timestamp >= ? LIMIT 0, ?");
+			//notforloan is the primary status column for aspencat bywater koha (subfield 7)
+			//shelf loc is subfield c, column location
+			//sub location is subfield 8 (they call it collection code), column ccode
+			//location is subfield a, column homebranch
+
 			getChangedItemsFromKohaStmt.setTimestamp(1, new Timestamp(lastKohaExtractTime * 1000));
 			getChangedItemsFromKohaStmt.setLong(2, maxRecordsToUpdateDuringExtract);
 
-			ResultSet itemChangeRS = getChangedItemsFromKohaStmt.executeQuery();
-			HashMap<String, ArrayList<ItemChangeInfo>> changedBibs = new HashMap<>();
+			ResultSet                                  itemChangeRS = getChangedItemsFromKohaStmt.executeQuery();
+			HashMap<String, ArrayList<ItemChangeInfo>> changedBibs  = new HashMap<>();
 			while (itemChangeRS.next()){
-				String bibNumber = itemChangeRS.getString("biblionumber");
-				String itemNumber = itemChangeRS.getString("itemnumber");
-				int damaged = itemChangeRS.getInt("damaged");
-				String itemlost = itemChangeRS.getString("itemlost");
-				int wthdrawn = itemChangeRS.getInt("wthdrawn");
-				int suppress = itemChangeRS.getInt("suppress");
-				String restricted = itemChangeRS.getString("restricted");
-				String onloan = "";
+				String bibNumber     = itemChangeRS.getString("biblionumber");
+				String itemNumber    = itemChangeRS.getString("itemnumber");
+				String location      = itemChangeRS.getString("homebranch");
+				String subLocation   = itemChangeRS.getString("ccode");
+				String shelfLocation = itemChangeRS.getString("location");
+//				int    restricted    = itemChangeRS.getInt("restricted");
+				int    damaged       = itemChangeRS.getInt("damaged");
+				int    withdrawn     = itemChangeRS.getInt("withdrawn");
+				String itemlost      = itemChangeRS.getString("itemlost");
+				String notforloan    = itemChangeRS.getString("notforloan");
+				String dueDate        = "";
 				try {
-					onloan = itemChangeRS.getString("onloan");
+					dueDate = itemChangeRS.getString("onloan");
 				}catch (SQLException e){
 					logger.info("Invalid onloan value for bib " + bibNumber + " item " + itemNumber);
 				}
 
 				ItemChangeInfo changeInfo = new ItemChangeInfo();
 				changeInfo.setItemId(itemNumber);
+				changeInfo.setLocation(location);
+				changeInfo.setSubLocation(subLocation);
+				changeInfo.setShelfLocation(shelfLocation);
 				changeInfo.setDamaged(damaged);
 				changeInfo.setItemLost(itemlost);
-				changeInfo.setWithdrawn(wthdrawn);
-				changeInfo.setSuppress(suppress);
-				changeInfo.setRestricted(restricted);
-				changeInfo.setOnLoan(onloan);
+				changeInfo.setWithdrawn(withdrawn);
+//				changeInfo.setRestricted(restricted);
+				changeInfo.setNotForLoan(notforloan);
+				changeInfo.setDueDate(dueDate);
 
 				ArrayList<ItemChangeInfo> itemChanges;
 				if (changedBibs.containsKey(bibNumber)) {
@@ -233,7 +324,7 @@ public class KohaExportMain {
 			}
 
 			vufindConn.setAutoCommit(false);
-			logger.info("A total of " + changedBibs.size() + " bibs were updated");
+			logger.info("A total of " + changedBibs.size() + " bibs to update");
 			int numUpdates = 0;
 			for (String curBibId : changedBibs.keySet()){
 				//Update the marc record
@@ -253,6 +344,9 @@ public class KohaExportMain {
 					errorUpdatingDatabase = true;
 				}
 			}
+			logger.info("A total of " + numUpdates + " bibs were updated");
+
+
 			//Turn auto commit back on
 			vufindConn.commit();
 			vufindConn.setAutoCommit(true);
@@ -304,20 +398,19 @@ public class KohaExportMain {
 							for (ItemChangeInfo curItem : itemChangeInfo) {
 								//Find the correct item
 								if (itemRecordNumber.equals(curItem.getItemId())) {
-									//Do not update location since we get the permanent location which shouldn't change
-									//itemField.getSubfield(locationSubfield).setData(curItem.getLocation());
-									setBooleanSubfield(itemField, curItem.getWithdrawn(), '0');
-									setSubfieldValue(itemField, '1', curItem.getItemLost());
-									setBooleanSubfield(itemField, curItem.getDamaged(), '4');
-									setBooleanSubfield(itemField, curItem.getSuppress(), 'i');
-									char subfield = '7';
-									String newValue = curItem.getRestricted();
-									setSubfieldValue(itemField, subfield, newValue);
-									setSubfieldValue(itemField, 'q', curItem.getOnLoan());
-									setSubfieldValue(itemField, '0', curItem.getOnLoan() == null ? "1" : "0");
-
+									setBooleanSubfield(itemField, curItem.getWithdrawn(), withdrawnSubfield);
+									setBooleanSubfield(itemField, curItem.getDamaged(), damagedSubfield);
+//									setBooleanSubfield(itemField, curItem.getRestricted(), restrictedSubfield);
+									setSubfieldValue(itemField, lostSubfield, curItem.getItemLost());
+									setSubfieldValue(itemField, locationSubfield, curItem.getLocation());
+									setSubfieldValue(itemField, subLocationSubfield, curItem.getSubLocation());
+									setSubfieldValue(itemField, shelflocationSubfield, curItem.getShelfLocation());
+									setSubfieldValue(itemField, dueDateSubfield, curItem.getDueDate());
+									setSubfieldValue(itemField, notforloanSubfield, curItem.getNotForLoan());
 								}
 							}
+						} else {
+							logger.debug("Did not find individual MARC file for bib ");
 						}
 					}
 

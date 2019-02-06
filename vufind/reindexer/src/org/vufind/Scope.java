@@ -19,35 +19,33 @@ public class Scope implements Comparable<Scope>{
 	private String facetLabel;
 
 	private HashSet<Long> relatedNumericPTypes = new HashSet<>();
-	private boolean includeOverDriveCollection;
-	private Long libraryId;
+	private boolean       includeOverDriveCollection;
+	private Long          libraryId;
 
 	//Determine if this is a library scope or location scope and store related information
-	private boolean isLibraryScope;
-	//If this is a library scope, we want to store pointers to the individual location scopes
-	private HashSet<Scope> locationScopes = new HashSet<>();
+	private boolean        isLibraryScope;
+	private HashSet<Scope> locationScopes = new HashSet<>(); //If this is a library scope, we want to store pointers to the individual location scopes
+	private boolean        isLocationScope;
+	private Scope          libraryScope;
 
-	private boolean isLocationScope;
-	private Scope libraryScope;
-
-	private boolean restrictOwningLibraryAndLocationFacets;
+	private boolean                restrictOwningLibraryAndLocationFacets;
 	//Ownership rules indicate direct ownership of a record
-	private HashSet<OwnershipRule> ownershipRules = new HashSet<>();
+	private HashSet<OwnershipRule> ownershipRules                            = new HashSet<>();
 	//Inclusion rules indicate records owned by someone else that should be shown within the scope
-	private HashSet<InclusionRule> inclusionRules = new HashSet<>();
-	private String ilsCode;
-	private Long sharedOverdriveCollectionId;
-	private boolean includeOverDriveAdultCollection;
-	private boolean includeOverDriveTeenCollection;
-	private boolean includeOverDriveKidsCollection;
-	private int publicListsToInclude;
-	private String additionalLocationsToShowAvailabilityFor;
-	private Pattern additionalLocationsToShowAvailabilityForPattern;
-	private boolean includeAllLibraryBranchesInFacets; //Only applies to location scopes
-	private boolean includeAllRecordsInShelvingFacets;
-	private boolean includeAllRecordsInDateAddedFacets;
-	private boolean baseAvailabilityToggleOnLocalHoldingsOnly = false;
-	private boolean includeOnlineMaterialsInAvailableToggle  = true;
+	private HashSet<InclusionRule> inclusionRules                            = new HashSet<>();
+	private Long                   sharedOverdriveCollectionId;
+	private boolean                includeOverDriveAdultCollection;
+	private boolean                includeOverDriveTeenCollection;
+	private boolean                includeOverDriveKidsCollection;
+	private int                    publicListsToInclude;
+	private String                 additionalLocationsToShowAvailabilityFor;
+	private Pattern                additionalLocationsToShowAvailabilityForPattern;
+	private boolean                includeAllLibraryBranchesInFacets; //Only applies to location scopes
+	private boolean                includeAllRecordsInShelvingFacets;
+	private boolean                includeAllRecordsInDateAddedFacets;
+	private boolean                includeOnOrderRecordsInDateAddedFacetValues;
+	private boolean                baseAvailabilityToggleOnLocalHoldingsOnly = false;
+	private boolean                includeOnlineMaterialsInAvailableToggle   = true;
 
 	String getScopeName() {
 		return scopeName;
@@ -210,14 +208,6 @@ public class Scope implements Comparable<Scope>{
 		return locationScopes;
 	}
 
-	String getIlsCode() {
-		return ilsCode;
-	} //TODO: no longer needed for indexing
-
-	void setIlsCode(String ilsCode) {
-		this.ilsCode = ilsCode;
-	}
-
 	void setIncludeOverDriveAdultCollection(boolean includeOverDriveAdultCollection) {
 		this.includeOverDriveAdultCollection = includeOverDriveAdultCollection;
 	}
@@ -319,6 +309,14 @@ public class Scope implements Comparable<Scope>{
 
 	public void setSharedOverdriveCollectionId(Long sharedOverdriveCollectionId) {
 		this.sharedOverdriveCollectionId = sharedOverdriveCollectionId;
+	}
+
+	public boolean isIncludeOnOrderRecordsInDateAddedFacetValues() {
+		return includeOnOrderRecordsInDateAddedFacetValues;
+	}
+
+	public void setIncludeOnOrderRecordsInDateAddedFacetValues(boolean includeOnOrderRecordsInDateAddedFacetValues) {
+		this.includeOnOrderRecordsInDateAddedFacetValues = includeOnOrderRecordsInDateAddedFacetValues;
 	}
 
 	class InclusionResult{

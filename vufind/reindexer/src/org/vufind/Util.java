@@ -278,18 +278,24 @@ public class Util {
 		return indexDate;
 	}
 	static LinkedHashSet<String> getTimeSinceAddedForDate(Date curDate) {
+		return getTimeSinceAddedForDate(curDate, true);
+	}
+	static LinkedHashSet<String> getTimeSinceAddedForDate(Date curDate, boolean includeOnOrderFromOtherTimeAddedValues) {
 		if (curDate == null) {
 			return null;
 		}
 		long timeDifferenceDays = (indexDate.getTime() - curDate.getTime())
 				/ (1000 * 60 * 60 * 24);
-		return getTimeSinceAdded(timeDifferenceDays);
+		return getTimeSinceAdded(timeDifferenceDays, includeOnOrderFromOtherTimeAddedValues);
 	}
-	static LinkedHashSet<String> getTimeSinceAdded(long timeDifferenceDays){
+	static LinkedHashSet<String> getTimeSinceAdded(long timeDifferenceDays, boolean includeOnOrderFromOtherTimeAddedValues){
 		// System.out.println("Time Difference Days: " + timeDifferenceDays);
 		LinkedHashSet<String> result = new LinkedHashSet<>();
 		if (timeDifferenceDays < 0) {
 			result.add("On Order");
+			if (!includeOnOrderFromOtherTimeAddedValues){
+				return result;
+			}
 		}
 		if (timeDifferenceDays <= 1) {
 			result.add("Day");

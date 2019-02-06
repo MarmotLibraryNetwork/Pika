@@ -24,85 +24,85 @@ public class GroupedWorkSolr implements Cloneable {
 
 	private HashMap<String, RecordInfo> relatedRecords = new HashMap<>();
 
-	private String acceleratedReaderInterestLevel;
-	private String acceleratedReaderReadingLevel;
-	private String acceleratedReaderPointValue;
-	private HashSet<String> alternateIds = new HashSet<>();
-	private String authAuthor;
-	private HashMap<String,Long> primaryAuthors = new HashMap<>();
-	private String authorLetter;
-	private HashSet<String> authorAdditional = new HashSet<>();
-	private String authorDisplay;
-	private HashSet<String> author2 = new HashSet<>();
-	private HashSet<String> authAuthor2 = new HashSet<>();
-	private HashSet<String> author2Role = new HashSet<>();
-	private HashSet<String> awards = new HashSet<>();
-	private HashSet<String> barcodes = new HashSet<>();
-	private HashSet<String> bisacSubjects = new HashSet<>();
-	private String callNumberA;
-	private String callNumberFirst;
-	private String callNumberSubject;
-	private HashSet<String> contents = new HashSet<>();
-	private HashSet<String> dateSpans = new HashSet<>();
-	private HashSet<String> description = new HashSet<>();
-	private String displayDescription = "";
-	private String displayDescriptionFormat = "";
-	private String displayTitle;
-	private Long earliestPublicationDate = null;
-	private HashSet<String> econtentDevices = new HashSet<>();
-	private HashSet<String> editions = new HashSet<>();
-	private HashSet<String> eras = new HashSet<>();
-	private HashSet<String> fullTitles = new HashSet<>();
-	private HashSet<String> genres = new HashSet<>();
-	private HashSet<String> genreFacets = new HashSet<>();
-	private HashSet<String> geographic = new HashSet<>();
-	private HashSet<String> geographicFacets = new HashSet<>();
-	private String groupingCategory;
-	private String primaryIsbn;
-	private boolean primaryIsbnIsBook;
-	private Long primaryIsbnUsageCount;
-	private HashMap<String, Long> isbns = new HashMap<>();
-	private HashSet<String> issns = new HashSet<>();
-	private HashSet<String> keywords = new HashSet<>();
-	private HashSet<String> languages = new HashSet<>();
-	private HashSet<String> translations = new HashSet<>();
-	private Long languageBoost = 1L;
-	private Long languageBoostSpanish = 1L;
-	private HashSet<String> lccns = new HashSet<>();
-	private HashSet<String> lcSubjects = new HashSet<>();
-	private String lexileScore = "-1";
-	private String lexileCode = "";
-	private String fountasPinnell = "";
-	private HashMap<String, Integer> literaryFormFull = new HashMap<>();
-	private HashMap<String, Integer> literaryForm = new HashMap<>();
-	private HashSet<String> mpaaRatings = new HashSet<>();
-	private Long numHoldings = 0L;
-	private HashSet<String> oclcs = new HashSet<>();
-	private HashSet<String> physicals = new HashSet<>();
-	private double popularity;
-	private HashSet<String> publishers = new HashSet<>();
-	private HashSet<String> publicationDates = new HashSet<>();
-	private float rating = 2.5f;
-	private HashMap<String, String> series = new HashMap<>();
-	private HashMap<String, String> series2 = new HashMap<>();
-	private HashMap<String, String> seriesWithVolume = new HashMap<>();
-	private String subTitle;
-	private HashSet<String> targetAudienceFull = new HashSet<>();
-	private TreeSet<String> targetAudience = new TreeSet<>();
-	private String title;
-	private HashSet<String> titleAlt = new HashSet<>();
-	private HashSet<String> titleOld = new HashSet<>();
-	private HashSet<String> titleNew = new HashSet<>();
-	private String titleSort;
-	private String titleFormat = "";
-	private HashSet<String> topics = new HashSet<>();
-	private HashSet<String> topicFacets = new HashSet<>();
-	private HashSet<String> subjects = new HashSet<>();
-	private HashMap<String, Long> upcs = new HashMap<>();
+	private String                   acceleratedReaderInterestLevel;
+	private String                   acceleratedReaderReadingLevel;
+	private String                   acceleratedReaderPointValue;
+	private HashSet<String>          alternateIds             = new HashSet<>();
+	private String                   authAuthor;
+	private HashMap<String, Long>    primaryAuthors           = new HashMap<>();
+	private String                   authorLetter;
+	private HashSet<String>          authorAdditional         = new HashSet<>();
+	private String                   authorDisplay;
+	private HashSet<String>          author2                  = new HashSet<>();
+	private HashSet<String>          authAuthor2              = new HashSet<>();
+	private HashSet<String>          author2Role              = new HashSet<>();
+	private HashSet<String>          awards                   = new HashSet<>();
+	private HashSet<String>          barcodes                 = new HashSet<>();
+	private HashSet<String>          bisacSubjects            = new HashSet<>();
+	private String                   callNumberA;
+	private String                   callNumberFirst;
+	private String                   callNumberSubject;
+	private HashSet<String>          contents                 = new HashSet<>();
+	private HashSet<String>          dateSpans                = new HashSet<>();
+	private HashSet<String>          description              = new HashSet<>();
+	private String                   displayDescription       = "";
+	private String                   displayDescriptionFormat = "";
+	private String                   displayTitle;
+	private Long                     earliestPublicationDate  = null;
+	private HashSet<String>          econtentDevices          = new HashSet<>();
+	private HashSet<String>          editions                 = new HashSet<>();
+	private HashSet<String>          eras                     = new HashSet<>();
+	private HashSet<String>          fullTitles               = new HashSet<>();
+	private HashSet<String>          genres                   = new HashSet<>();
+	private HashSet<String>          genreFacets              = new HashSet<>();
+	private HashSet<String>          geographic               = new HashSet<>();
+	private HashSet<String>          geographicFacets         = new HashSet<>();
+	private String                   groupingCategory;
+	private String                   primaryIsbn;
+	private boolean                  primaryIsbnIsBook;
+	private Long                     primaryIsbnUsageCount;
+	private HashMap<String, Long>    isbns                    = new HashMap<>();
+	private HashSet<String>          issns                    = new HashSet<>();
+	private HashSet<String>          keywords                 = new HashSet<>();
+	private HashSet<String>          languages                = new HashSet<>();
+	private HashSet<String>          translations             = new HashSet<>();
+	private Long                     languageBoost            = 1L;
+	private Long                     languageBoostSpanish     = 1L;
+	private HashSet<String>          lccns                    = new HashSet<>();
+	private HashSet<String>          lcSubjects               = new HashSet<>();
+	private String                   lexileScore              = "-1";
+	private String                   lexileCode               = "";
+	private String                   fountasPinnell           = "";
+	private HashMap<String, Integer> literaryFormFull         = new HashMap<>();
+	private HashMap<String, Integer> literaryForm             = new HashMap<>();
+	private HashSet<String>          mpaaRatings              = new HashSet<>();
+	private Long                     numHoldings              = 0L;
+	private HashSet<String>          oclcs                    = new HashSet<>();
+	private HashSet<String>          physicals                = new HashSet<>();
+	private double                   popularity;
+	private HashSet<String>          publishers               = new HashSet<>();
+	private HashSet<String>          publicationDates         = new HashSet<>();
+	private float                    rating                   = 2.5f;
+	private HashMap<String, String>  series                   = new HashMap<>();
+	private HashMap<String, String>  series2                  = new HashMap<>();
+	private HashMap<String, String>  seriesWithVolume         = new HashMap<>();
+	private String                   subTitle;
+	private HashSet<String>          targetAudienceFull       = new HashSet<>();
+	private TreeSet<String>          targetAudience           = new TreeSet<>();
+	private String                   title;
+	private HashSet<String>          titleAlt                 = new HashSet<>();
+	private HashSet<String>          titleOld                 = new HashSet<>();
+	private HashSet<String>          titleNew                 = new HashSet<>();
+	private String                   titleSort;
+	private String                   titleFormat              = "";
+	private HashSet<String>          topics                   = new HashSet<>();
+	private HashSet<String>          topicFacets              = new HashSet<>();
+	private HashSet<String>          subjects                 = new HashSet<>();
+	private HashMap<String, Long>    upcs                     = new HashMap<>();
 
-	private Logger logger;
+	private Logger             logger;
 	private GroupedWorkIndexer groupedWorkIndexer;
-	private HashSet<String> systemLists = new HashSet<>();
+	private HashSet<String>    systemLists = new HashSet<>();
 
 	public GroupedWorkSolr(GroupedWorkIndexer groupedWorkIndexer, Logger logger) {
 		this.logger = logger;
@@ -110,14 +110,14 @@ public class GroupedWorkSolr implements Cloneable {
 	}
 
 	protected GroupedWorkSolr clone() throws CloneNotSupportedException{
-		GroupedWorkSolr clonedWork = (GroupedWorkSolr)super.clone();
+		GroupedWorkSolr clonedWork = (GroupedWorkSolr) super.clone();
 		//Clone collections as well
 		// noinspection unchecked
 		clonedWork.relatedRecords = (HashMap<String, RecordInfo>) relatedRecords.clone();
 		// noinspection unchecked
 		clonedWork.alternateIds = (HashSet<String>) alternateIds.clone();
 		// noinspection unchecked
-		clonedWork.primaryAuthors = (HashMap<String,Long>) primaryAuthors.clone();
+		clonedWork.primaryAuthors = (HashMap<String, Long>) primaryAuthors.clone();
 		// noinspection unchecked
 		clonedWork.authorAdditional = (HashSet<String>) authorAdditional.clone();
 		// noinspection unchecked
@@ -153,7 +153,7 @@ public class GroupedWorkSolr implements Cloneable {
 		// noinspection unchecked
 		clonedWork.geographicFacets = (HashSet<String>) geographicFacets.clone();
 		// noinspection unchecked
-		clonedWork.isbns = (HashMap<String,Long>) isbns.clone();
+		clonedWork.isbns = (HashMap<String, Long>) isbns.clone();
 		// noinspection unchecked
 		clonedWork.issns = (HashSet<String>) issns.clone();
 		// noinspection unchecked
@@ -167,9 +167,9 @@ public class GroupedWorkSolr implements Cloneable {
 		// noinspection unchecked
 		clonedWork.lcSubjects = (HashSet<String>) lcSubjects.clone();
 		// noinspection unchecked
-		clonedWork.literaryFormFull = (HashMap<String,Integer>) literaryFormFull.clone();
+		clonedWork.literaryFormFull = (HashMap<String, Integer>) literaryFormFull.clone();
 		// noinspection unchecked
-		clonedWork.literaryForm = (HashMap<String,Integer>) literaryForm.clone();
+		clonedWork.literaryForm = (HashMap<String, Integer>) literaryForm.clone();
 		// noinspection unchecked
 		clonedWork.mpaaRatings = (HashSet<String>) mpaaRatings.clone();
 		// noinspection unchecked
@@ -181,7 +181,7 @@ public class GroupedWorkSolr implements Cloneable {
 		// noinspection unchecked
 		clonedWork.publicationDates = (HashSet<String>) publicationDates.clone();
 		// noinspection unchecked
-		clonedWork.series = (HashMap<String,String>) series.clone();
+		clonedWork.series = (HashMap<String, String>) series.clone();
 		// noinspection unchecked
 		clonedWork.series2 = (HashMap<String, String>) series2.clone();
 		// noinspection unchecked
@@ -203,7 +203,7 @@ public class GroupedWorkSolr implements Cloneable {
 		// noinspection unchecked
 		clonedWork.subjects = (HashSet<String>) subjects.clone();
 		// noinspection unchecked
-		clonedWork.upcs = (HashMap<String,Long>) upcs.clone();
+		clonedWork.upcs = (HashMap<String, Long>) upcs.clone();
 		// noinspection unchecked
 		clonedWork.systemLists = (HashSet<String>) systemLists.clone();
 
@@ -316,6 +316,8 @@ public class GroupedWorkSolr implements Cloneable {
 				if (bibDaysSinceAdded < 0) {
 					logger.warn("Using Publication date to calculate Days since added value " + bibDaysSinceAdded + " is negative for grouped work " + id);
 					bibDaysSinceAdded = 0;
+					doc.addField("days_since_added", Long.toString(bibDaysSinceAdded));
+					doc.addField("time_since_added", Util.getTimeSinceAddedForDate(Util.getIndexDate()));
 				}
 				doc.addField("days_since_added", Long.toString(bibDaysSinceAdded));
 				doc.addField("time_since_added", Util.getTimeSinceAddedForDate(publicationDate.getTime()));
@@ -383,7 +385,7 @@ public class GroupedWorkSolr implements Cloneable {
 		//relevance determiners
 		doc.addField("popularity", Long.toString((long)popularity));
 		doc.addField("num_holdings", numHoldings);
-		//vufind enrichment
+		//pika enrichment
 		doc.addField("rating", rating);
 		doc.addField("rating_facet", getRatingFacet(rating));
 		doc.addField("description", Util.getCRSeparatedString(description));
@@ -507,9 +509,9 @@ public class GroupedWorkSolr implements Cloneable {
 								Calendar publicationDate = GregorianCalendar.getInstance();
 								publicationDate.set(earliestPublicationDate.intValue(), Calendar.DECEMBER, 31);
 
-								long indexTime = Util.getIndexDate().getTime();
+								long indexTime       = Util.getIndexDate().getTime();
 								long publicationTime = publicationDate.getTime().getTime();
-								daysSinceAdded = (indexTime - publicationTime) / (long)(1000 * 60 * 60 * 24);
+								daysSinceAdded = (indexTime - publicationTime) / (long) (1000 * 60 * 60 * 24);
 							}else{
 								daysSinceAdded = Integer.MAX_VALUE;
 							}
@@ -546,7 +548,7 @@ public class GroupedWorkSolr implements Cloneable {
 			SolrInputField field = doc.getField("local_days_since_added_" + scope.getScopeName());
 			if (field != null){
 				Integer daysSinceAdded = (Integer)field.getFirstValue();
-				doc.addField("local_time_since_added_" + scope.getScopeName(), Util.getTimeSinceAdded(daysSinceAdded));
+				doc.addField("local_time_since_added_" + scope.getScopeName(), Util.getTimeSinceAdded(daysSinceAdded, scope.isIncludeOnOrderRecordsInDateAddedFacetValues()));
 			}
 		}
 	}
@@ -600,7 +602,7 @@ public class GroupedWorkSolr implements Cloneable {
 			}
 			if (curItem.isEContent()){
 				owningLocationValue = curItem.getShelfLocation();
-			}else if (curItem.isOrderItem()){
+			}else if (curItem.isOrderItem() && groupedWorkIndexer.isGiveOnOrderItemsTheirOwnShelfLocation()){
 				owningLocationValue = curScopeDetails.getFacetLabel() + " On Order";
 			}
 
@@ -681,7 +683,7 @@ public class GroupedWorkSolr implements Cloneable {
 			String owningLibraryValue = curScopeDetails.getFacetLabel();
 			if (curItem.isEContent()){
 				owningLibraryValue = curScopeDetails.getFacetLabel() + " Online";
-			}else if (curItem.isOrderItem()) {
+			}else if (curItem.isOrderItem() && groupedWorkIndexer.isGiveOnOrderItemsTheirOwnShelfLocation()) {
 				owningLibraryValue = curScopeDetails.getFacetLabel() + " On Order";
 			}
 			addUniqueFieldValue(doc, "owning_library_" + curScopeName, owningLibraryValue);

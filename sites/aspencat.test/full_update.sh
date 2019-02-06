@@ -3,12 +3,12 @@
 # Should be called once per day.  Will interrupt partial reindexing.
 #
 # At the end of the index will email users with the results.
-EMAIL=root@rhea
+EMAIL=root@dolly
 PIKASERVER=aspencat.test
 PIKADBNAME=pika
 OUTPUT_FILE="/var/log/vufind-plus/${PIKASERVER}/full_update_output.log"
 
-MINFILE1SIZE=$((976000000))
+MINFILE1SIZE=$((972000000))
 
 # Check if full_update is already running
 #TODO: Verify that the PID file doesn't get log-rotated
@@ -84,7 +84,7 @@ cd /usr/local/vufind-plus/sites/${PIKASERVER}; ./${PIKASERVER}.sh restart
 # Cloud Library
 /usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} aspencat/cloudlibrary cloudlibrary/aspencat >> ${OUTPUT_FILE}
 
-# EBSCO (CC of Aurora
+# EBSCO (CC of Aurora)
 /usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} aspencat/ebsco/cca ebsco/cca >> ${OUTPUT_FILE}
 
 #Colorado State Government Documents Updates
@@ -106,25 +106,26 @@ then
 	nice -n -10 java -server -XX:+UseG1GC -jar overdrive_extract.jar ${PIKASERVER} fullReload >> ${OUTPUT_FILE}
 fi
 
-# Copy Export from ILS
+#TODO: Use new nightly export
+## Copy Export from ILS
 /usr/local/vufind-plus/sites/${PIKASERVER}/copyExport.sh >> ${OUTPUT_FILE}
-YESTERDAY=`date +%Y%m%d --date="yesterday"`
-UPDATEFILE=/data/vufind-plus/${PIKASERVER}/marc/ascc-catalog-deleted.$YESTERDAY.marc
-DELETEFILE=/data/vufind-plus/${PIKASERVER}/marc/ascc-catalog-updated.$YESTERDAY.marc
+#YESTERDAY=`date +%Y%m%d --date="yesterday"`
+#UPDATEFILE=/data/vufind-plus/${PIKASERVER}/marc/ascc-catalog-deleted.$YESTERDAY.marc
+#DELETEFILE=/data/vufind-plus/${PIKASERVER}/marc/ascc-catalog-updated.$YESTERDAY.marc
 
-if [[ -f $UPDATEFILE && -f $DELETEFILE ]]; then
-	# if the update and delete files are found, merge them into the fullexport file.
-	echo "Merging updates and deletes." >> ${OUTPUT_FILE}
-	cd /usr/local/vufind-plus/vufind/cron/; java -jar cron.jar aspencat.test MergeMarcUpdatesAndDeletes >> ${OUTPUT_FILE}
-else
-		if [ ! -f $UPDATEFILE ]; then
-		 echo "Update File $UPDATEFILE was not found." >> ${OUTPUT_FILE}
-		fi
-		if [ ! -f $DELETEFILE ]; then
-		 echo "Delete File $DELETEFILE was not found." >> ${OUTPUT_FILE}
-		fi
-	echo "Not merging updates and deletes." >> ${OUTPUT_FILE}
-fi
+#if [[ -f $UPDATEFILE && -f $DELETEFILE ]]; then
+#	# if the update and delete files are found, merge them into the fullexport file.
+#	echo "Merging updates and deletes." >> ${OUTPUT_FILE}
+#	cd /usr/local/vufind-plus/vufind/cron/; java -jar cron.jar aspencat.test MergeMarcUpdatesAndDeletes >> ${OUTPUT_FILE}
+#else
+#		if [ ! -f $UPDATEFILE ]; then
+#		 echo "Update File $UPDATEFILE was not found." >> ${OUTPUT_FILE}
+#		fi
+#		if [ ! -f $DELETEFILE ]; then
+#		 echo "Delete File $DELETEFILE was not found." >> ${OUTPUT_FILE}
+#		fi
+#	echo "Not merging updates and deletes." >> ${OUTPUT_FILE}
+#fi
 
 # if the update/delete files aren't found merging won't occur, which would have updated the timestamp on the fullexport file.
 # therefore the next if block, is a good check for everyday of the week.
@@ -153,12 +154,21 @@ if [ -n "$FILE" ]; then
 		# Delete any exports over 7 days
 		find /data/vufind-plus/${PIKASERVER}/marc_backup/ -mindepth 1 -maxdepth 1 -name *.marc -type f -mtime +7 -delete
 
+		# Truncate Continuous Reindexing list of changed items
+		cat /dev/null >| /data/vufind-plus/${PIKASERVER}/marc/changed_items_to_process.csv
+
+		NEWLEVEL=$(($FILE1SIZE * 97 / 100))
+		echo "" >> ${OUTPUT_FILE}
+		echo "Based on today's export file, a new minimum filesize check level should be set to $NEWLEVEL" >> ${OUTPUT_FILE}
+
 	else
 		echo $FILE " size " $FILE1SIZE "is less than minimum size :" $MINFILE1SIZE "; Export was not moved to data directory, Full Regrouping & Full Reindexing skipped." >> ${OUTPUT_FILE}
 	fi
 else
-	echo "The full export file has not been updated in the last 24 hours, meaning the full export file or the add/deletes files were not delivered. Full Regrouping & Full Reindexing skipped." >> ${OUTPUT_FILE}
-	echo "The full export is delivered Saturday Mornings. The adds/deletes are delivered every night except Friday night." >> ${OUTPUT_FILE}
+	echo "Did not find a export file from the last 24 hours, Full Regrouping & Full Reindexing skipped." >> ${OUTPUT_FILE}
+#TODO: update this error message when export is setup
+#	echo "The full export file has not been updated in the last 24 hours, meaning the full export file or the add/deletes files were not delivered. Full Regrouping & Full Reindexing skipped." >> ${OUTPUT_FILE}
+#	echo "The full export is delivered Saturday Mornings. The adds/deletes are delivered every night except Friday night." >> ${OUTPUT_FILE}
 fi
 
 # Clean-up Solr Logs

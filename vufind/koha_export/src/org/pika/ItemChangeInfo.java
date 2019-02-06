@@ -1,8 +1,8 @@
 package org.pika;
 
 /**
- * Information about an item that has changed within Sierra
- * VuFind-Plus
+ * Information about an item that has changed within Koha
+ * Pika
  * User: Mark Noble
  * Date: 10/13/2014
  * Time: 9:47 AM
@@ -10,12 +10,15 @@ package org.pika;
 public class ItemChangeInfo {
 	private String itemId;
 	private String location;
+	private String subLocation;
+	private String shelfLocation;
 	private int damaged;
-	private String itemLost;
 	private int withdrawn;
-	private int suppress;
-	private String restricted;
-	private String onLoan;
+	//	private int suppress;
+//	private int restricted;
+	private String itemLost;
+	private String dueDate;
+	private String notForLoan;
 
 	public String getItemId() {
 		return itemId;
@@ -57,27 +60,51 @@ public class ItemChangeInfo {
 		this.withdrawn = withdrawn;
 	}
 
-	public int getSuppress() {
-		return suppress;
+//	public int getSuppress() {
+//		return suppress;
+//	}
+//
+//	public void setSuppress(int suppress) {
+//		this.suppress = suppress;
+//	}
+
+//	public int getRestricted() {
+//		return restricted;
+//	}
+//
+//	public void setRestricted(int restricted) {
+//		this.restricted = restricted;
+//	}
+
+	public String getDueDate() {
+		return dueDate;
 	}
 
-	public void setSuppress(int suppress) {
-		this.suppress = suppress;
+	public void setDueDate(String dueDate) {
+		this.dueDate = dueDate;
 	}
 
-	public String getRestricted() {
-		return restricted;
+	public String getNotForLoan() {
+		return notForLoan;
 	}
 
-	public void setRestricted(String restricted) {
-		this.restricted = restricted;
+	public void setNotForLoan(String notForLoan) {
+		this.notForLoan = notForLoan;
 	}
 
-	public String getOnLoan() {
-		return onLoan;
+	public String getShelfLocation() {
+		return shelfLocation;
 	}
 
-	public void setOnLoan(String onLoan) {
-		this.onLoan = onLoan;
+	public void setShelfLocation(String shelfLocation) {
+		this.shelfLocation = shelfLocation;
+	}
+
+	public String getSubLocation() {
+		return subLocation;
+	}
+
+	public void setSubLocation(String subLocation) {
+		this.subLocation = subLocation;
 	}
 }

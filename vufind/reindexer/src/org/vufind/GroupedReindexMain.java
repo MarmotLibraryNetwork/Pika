@@ -39,7 +39,7 @@ public class GroupedReindexMain {
 	private static PreparedStatement addNoteToReindexLogStmt;
 
 	//Database connections and prepared statements
-	private static Connection vufindConn = null;
+	private static Connection vufindConn   = null;
 	private static Connection econtentConn = null;
 	
 	/**
