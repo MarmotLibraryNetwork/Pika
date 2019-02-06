@@ -32,7 +32,7 @@ else
 				if [ -n "$FILE1" ]; then
 					$LOG "~~ Copy fullexport marc file."
 					$LOG "~~ cp --update $FILE1 /data/vufind-plus/$DESTINATION/marc/fullexport.mrc"
-					cp --update "$FILE1" /data/vufind-plus/$DESTINATION/marc/fullexport.mrc
+					cp --update -v "$FILE1" /data/vufind-plus/$DESTINATION/marc/fullexport.mrc
 
 					if [ $? -ne 0 ]; then
 						$LOG "~~ Copying $FILE1 file failed."

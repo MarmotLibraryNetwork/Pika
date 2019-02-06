@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
 if [[ $# -ne 1 ]]; then
 	echo "To use, add the side load collection data directory for the first parameter (omitting /data/vufind-plus)."

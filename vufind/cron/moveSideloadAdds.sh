@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # This script is for moving marc files that are adds or deletes from on the ftp server to data directory on the pika server
 
@@ -29,7 +29,7 @@ else
 
 				$LOG "~~ Copy sideload adds/deletes marc file(s)."
 				$LOG "~~ cp $LOCAL/$SOURCE/*.mrc /data/vufind-plus/$DESTINATION/marc/"
-				cp $LOCAL/$SOURCE/*.mrc /data/vufind-plus/$DESTINATION/marc/
+				cp -v $LOCAL/$SOURCE/*.mrc /data/vufind-plus/$DESTINATION/marc/
 
 				if [ $? -ne 0 ]; then
 					$LOG "~~ Copying $SOURCE marc files failed."
@@ -44,7 +44,7 @@ else
 							mkdir $LOCAL/$SOURCE/processed/
 						fi
 						echo "Moving files on ftp server to processed directory."
-						mv $LOCAL/$SOURCE/*.mrc $LOCAL/$SOURCE/processed/
+						mv -v $LOCAL/$SOURCE/*.mrc $LOCAL/$SOURCE/processed/
 					fi
 				fi
 
