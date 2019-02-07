@@ -366,23 +366,24 @@ class AspencatRecordProcessor extends IlsRecordProcessor {
 		return sourceType;
 	}
 
-	protected boolean isItemSuppressed(DataField curItem) {
-		boolean suppressed = false;
-		// Supress if marked as withdrawn
-		if (curItem.getSubfield(withdrawnSubfield) != null) {
-			if (curItem.getSubfield(withdrawnSubfield).getData().equals("1")) {
-				suppressed = true;
-			}
-		}
-		// Supress if lost is set to anything but 0
-		if (curItem.getSubfield(lostSubfield) != null) {
-			if (!curItem.getSubfield(lostSubfield).getData().equals("0")) {
-				suppressed = true;
-			}
-		}
-		// if not suppressed here, check indexing profile settings
-		return suppressed || super.isItemSuppressed(curItem);
-	}
+// Moved Withdrawn & Lost subfield checking to the indexing profile item status suppression since withdrawn and lost are calculated statuses
+	//	protected boolean isItemSuppressed(DataField curItem) {
+//		boolean suppressed = false;
+//		// Supress if marked as withdrawn
+//		if (curItem.getSubfield(withdrawnSubfield) != null) {
+//			if (curItem.getSubfield(withdrawnSubfield).getData().equals("1")) {
+//				suppressed = true;
+//			}
+//		}
+//		// Supress if lost is set to anything but 0
+//		if (curItem.getSubfield(lostSubfield) != null) {
+//			if (!curItem.getSubfield(lostSubfield).getData().equals("0")) {
+//				suppressed = true;
+//			}
+//		}
+//		// if not suppressed here, check indexing profile settings
+//		return suppressed || super.isItemSuppressed(curItem);
+//	}
 
 	protected String getShelfLocationForItem(ItemInfo itemInfo, DataField itemField, String identifier) {
 		/*String locationCode = getItemSubfieldData(locationSubfieldIndicator, itemField);

@@ -10,7 +10,7 @@ else
 
 	# Source & Destination set by command line options
 	SOURCE=$1
-	DESTINATION=$2
+	DESTINATION=/data/vufind-plus/$2/marc
 	PIKASERVER=$3
 
 	LOG="logger -t $0"
@@ -28,8 +28,8 @@ else
 			# only do copy command if there are files present to move
 
 				$LOG "~~ Copy sideload adds/deletes marc file(s)."
-				$LOG "~~ cp $LOCAL/$SOURCE/*.mrc /data/vufind-plus/$DESTINATION/marc/"
-				cp -v $LOCAL/$SOURCE/*.mrc /data/vufind-plus/$DESTINATION/marc/
+				$LOG "~~ cp $LOCAL/$SOURCE/*.mrc $DESTINATION/"
+				cp -v $LOCAL/$SOURCE/*.mrc $DESTINATION/
 
 				if [ $? -ne 0 ]; then
 					$LOG "~~ Copying $SOURCE marc files failed."
@@ -37,6 +37,14 @@ else
 				else
 					$LOG "~~ $SOURCE marc files were copied."
 					echo "$SOURCE marc files were copied."
+
+					if [ $(ls -1A "$DESTINATION" | grep .mrc.gz | wc -l) -gt 0 ] ; then
+						# if they are gzipped files copy and unzip
+						$LOG "~~ Gzip files found. Uncompressing at destination"
+						$LOG "~~ gunzip -v $DESTINATION/*.mrc.gz"
+						gunzip -v $DESTINATION/*.mrc.gz
+					fi
+
 					if [[ ! $PIKASERVER =~ ".test" ]]; then
 						# Only move marc files to processed folder for production servers
 						# The test server MUST run before production or the file won't exist
