@@ -38,10 +38,14 @@ else
 					$LOG "~~ $SOURCE marc files were copied."
 					echo "$SOURCE marc files were copied."
 
-					if [ $(ls -1A "$DESTINATION" | grep .mrc.gz | wc -l) -gt 0 ] ; then
+					if [ $(ls -1A "LOCAL/$SOURCE/" | grep .mrc.gz | wc -l) -gt 0 ] ; then
 						# if they are gzipped files copy and unzip
 						$LOG "~~ Gzip files found. Uncompressing at destination"
 						echo "~~ Gzip files found. Uncompressing at destination"
+
+						$LOG "~~ cp $LOCAL/$SOURCE/*.mrc.gz $DESTINATION/"
+						cp -v $LOCAL/$SOURCE/*.mrc.gz $DESTINATION/
+
 						$LOG "~~ gunzip -v $DESTINATION/*.mrc.gz"
 						gunzip -v $DESTINATION/*.mrc.gz
 					fi
