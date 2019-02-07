@@ -82,6 +82,13 @@ class Sacramento extends Sierra
 		return true;
 	}
 
+	public function hasFastRenewAll(){
+		return false;
+		//TODO: turned off using millennium driver renewall because it seems to have errors for Sacramento.
+		//see: https://marmot.myjetbrains.com/youtrack/issue/D-2918
+	}
+
+
 	/**
 	 * @param User    $user          User that the PIN should be changed for
 	 * @param string $oldPin         Current PIN
