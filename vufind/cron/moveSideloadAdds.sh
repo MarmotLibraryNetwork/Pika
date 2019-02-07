@@ -23,7 +23,7 @@ else
 	mount $REMOTE $LOCAL
 
 	if [ -d "$LOCAL/$SOURCE/" ]; then
-		if [ -d "/data/vufind-plus/$DESTINATION/marc/" ]; then
+		if [ -d "$DESTINATION/" ]; then
 			if [ $(ls -1A "$LOCAL/$SOURCE/" | grep .mrc | wc -l) -gt 0 ] ; then
 			# only do copy command if there are files present to move
 
@@ -41,6 +41,7 @@ else
 					if [ $(ls -1A "$DESTINATION" | grep .mrc.gz | wc -l) -gt 0 ] ; then
 						# if they are gzipped files copy and unzip
 						$LOG "~~ Gzip files found. Uncompressing at destination"
+						echo "~~ Gzip files found. Uncompressing at destination"
 						$LOG "~~ gunzip -v $DESTINATION/*.mrc.gz"
 						gunzip -v $DESTINATION/*.mrc.gz
 					fi
@@ -58,7 +59,7 @@ else
 
 			fi
 		else
-			echo "Path /data/vufind-plus/$DESTINATION/marc/ doesn't exist."
+			echo "Path $DESTINATION/ doesn't exist."
 		fi
 
 	else
