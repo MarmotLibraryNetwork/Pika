@@ -444,7 +444,7 @@ class MergeMarcUpdatesAndDeletes {
 
 	private String getRecordIdFromMarcRecord(Record marcRecord) {
 		//if a subfield is found in ini file, then use it
-		//no subfield check for record tag ids betwee 001 to 010
+		//no subfield check for record tag ids between 001 to 010
 		int tagID = Integer.parseInt(recordNumberTag);
 		if (tagID < 10) {
 			List<ControlField> recordIdField = getControlFields(marcRecord, recordNumberTag);
@@ -454,11 +454,17 @@ class MergeMarcUpdatesAndDeletes {
 		} else {
 			List<DataField> recordIdField1 = getDataFields(marcRecord, recordNumberTag);
 			//Make sure we only get one ils identifier
-			for (DataField curRecordField : recordIdField1) {
-				Subfield subfield = curRecordField.getSubfield(recordNumberSubfield.toCharArray()[0]);
-				if (subfield != null) {
-					return subfield.getData().trim();
+			if (recordNumberSubfield != null && !recordNumberSubfield.isEmpty()) {
+				char c = recordNumberSubfield.toCharArray()[0];
+				for (DataField curRecordField : recordIdField1) {
+					Subfield subfield = curRecordField.getSubfield(c);
+					if (subfield != null) {
+						return subfield.getData().trim();
+					}
 				}
+			} else {
+				logger.error("The recordNumberSubfield was not specified. This is required for the merging of this record set.");
+				System.exit(1);
 			}
 		}
 
