@@ -38,7 +38,7 @@ else
 					$LOG "~~ $SOURCE marc files were copied."
 					echo "$SOURCE marc files were copied."
 
-					if [ $(ls -1A "LOCAL/$SOURCE/" | grep .mrc.gz | wc -l) -gt 0 ] ; then
+					if [ $(ls -1A "$LOCAL/$SOURCE/" | grep .mrc.gz | wc -l) -gt 0 ] ; then
 						# if they are gzipped files copy and unzip
 						$LOG "~~ Gzip files found. Uncompressing at destination"
 						echo "~~ Gzip files found. Uncompressing at destination"
@@ -48,6 +48,17 @@ else
 
 						$LOG "~~ gunzip -v $DESTINATION/*.mrc.gz"
 						gunzip -v $DESTINATION/*.mrc.gz
+
+						if [[ ! $PIKASERVER =~ ".test" ]]; then
+							# Only move marc files to processed folder for production servers
+							# The test server MUST run before production or the file won't exist
+							if [ ! -d "$LOCAL/$SOURCE/processed/" ]; then
+								mkdir $LOCAL/$SOURCE/processed/
+							fi
+							echo "Moving files on ftp server to processed directory."
+							mv -v $LOCAL/$SOURCE/*.mrc.gz $LOCAL/$SOURCE/processed/
+						fi
+
 					fi
 
 					if [[ ! $PIKASERVER =~ ".test" ]]; then
