@@ -82,7 +82,7 @@ fi
 #TODO: Create nightly deletions file
 
 #Fetch Additions
-/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} aspencat/bywaterkoha bywaterkoha
+/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} aspencat/bywaterkoha bywaterkoha >> ${OUTPUT_FILE}
 
 #Delete merge backups older than a week (fetch_sideload deletes older than 30 days, but that would take up to much space)
 find /data/vufind-plus/bywaterkoha/mergeBackup -name "*.mrc" -mtime +7 -delete
