@@ -34,7 +34,9 @@ public class KohaExportMain {
 	private static String serverName; //Pika instance name
 
 	private static IndexingProfile indexingProfile;
-	private static String exportPath;
+	private static String          exportPath;
+
+	private static boolean getDeletedBibs = false;
 
 	// Item subfields
 	private static char locationSubfield      = 'a';
@@ -46,6 +48,7 @@ public class KohaExportMain {
 	private static char notforloanSubfield    = '7'; //Primary status subfield
 	private static char restrictedSubfield    = '5';
 	private static char dueDateSubfield       = 'q';
+
 	private static long updateTime;
 	private static long lastKohaExtractTime;
 	private static Long lastKohaExtractTimeVariableId = null;
@@ -61,6 +64,7 @@ public class KohaExportMain {
 		} else {
 			System.out.println("Could not find log4j configuration " + log4jFile.toString());
 		}
+
 		logger.info(startTime.toString() + ": Starting Koha Extract");
 
 		// Read the base INI file to get information about the server (current directory/conf/config.ini)
@@ -98,46 +102,70 @@ public class KohaExportMain {
 
 		String profileToLoad = "ils";
 		if (args.length > 1){
-			profileToLoad = args[1];
+			if (args[1].equalsIgnoreCase("getDeletedBibs")){
+				getDeletedBibs = true;
+			} else {
+				profileToLoad = args[1];
+			}
 		}
 		indexingProfile = IndexingProfile.loadIndexingProfile(pikaConn, profileToLoad, logger);
 
-		exportPath = indexingProfile.marcPath;
-		if (exportPath.startsWith("\"")){
-			exportPath = exportPath.substring(1, exportPath.length() - 1);
-		}
+		if (getDeletedBibs){
+			// Fetch Deleted Bibs from today
+			exportPath = "/data/vufind-plus/bywaterkoha/deletes/marc"; //TODO: make a parameter of this someday
+			try {
+				String deletedBibsFileName = "deletedBibs.csv";
+				long yesterday = updateTime - 24 * 60 * 60 * 60; // TODO: make an optional parameter for this someday
+				PreparedStatement getDeletedBibsFromKohaStmt = kohaConn.prepareStatement("select biblionumber from deletedbiblio where timestamp >= ?");
+				getDeletedBibsFromKohaStmt.setTimestamp(1, new Timestamp(yesterday * 1000));
+				ResultSet getDeletedBibsFromKohaRS = getDeletedBibsFromKohaStmt.executeQuery();
+				writeToFileFromSQLResult(deletedBibsFileName, getDeletedBibsFromKohaRS);
 
-		// Override any relevant subfield settings if they are set
-		if (indexingProfile.locationSubfield != ' '){
-			locationSubfield = indexingProfile.locationSubfield;
-		}
-		if (indexingProfile.subLocationSubfield != ' '){
-			subLocationSubfield = indexingProfile.subLocationSubfield;
-		}
-		if (indexingProfile.shelvingLocationSubfield != ' '){
-			shelflocationSubfield = indexingProfile.shelvingLocationSubfield;
-		}
-		if (indexingProfile.dueDateSubfield != ' '){
-			dueDateSubfield = indexingProfile.dueDateSubfield;
-		}
+			} catch (Exception e) {
+				logger.error("Error loading deleted records from Koha database", e);
+				System.exit(1);
+			}
 
-		updateTime = new Date().getTime() / 1000;
-		getLastKohaExtractTime(pikaConn);
 
-		if(
-			//Get a list of works that have changed or deleted since the last index
-			getChangedRecordsFromDatabase(ini, pikaConn, kohaConn) &&
-			getDeletedItemsFromDatabase(ini, pikaConn, kohaConn)
-		){
-			setLastKohaExtractTime(pikaConn);
 		} else {
-			logger.error("There was an error updating item info or the database, not setting last extract time.");
+			// Regular Koha extraction processes
+
+			exportPath = indexingProfile.marcPath;
+			if (exportPath.startsWith("\"")){
+				exportPath = exportPath.substring(1, exportPath.length() - 1);
+			}
+
+			// Override any relevant subfield settings if they are set
+			if (indexingProfile.locationSubfield != ' '){
+				locationSubfield = indexingProfile.locationSubfield;
+			}
+			if (indexingProfile.subLocationSubfield != ' '){
+				subLocationSubfield = indexingProfile.subLocationSubfield;
+			}
+			if (indexingProfile.shelvingLocationSubfield != ' '){
+				shelflocationSubfield = indexingProfile.shelvingLocationSubfield;
+			}
+			if (indexingProfile.dueDateSubfield != ' '){
+				dueDateSubfield = indexingProfile.dueDateSubfield;
+			}
+
+			updateTime = new Date().getTime() / 1000;
+			getLastKohaExtractTime(pikaConn);
+
+			if(
+				//Get a list of works that have changed or deleted since the last index
+					getChangedRecordsFromDatabase(ini, pikaConn, kohaConn) &&
+							getDeletedItemsFromDatabase(ini, pikaConn, kohaConn)
+			){
+				setLastKohaExtractTime(pikaConn);
+			} else {
+				logger.error("There was an error updating item info or the database, not setting last extract time.");
+			}
+
+			exportHolds(pikaConn, kohaConn);
+			exportHoldShelfItems(kohaConn);
+			exportInTransitItems(kohaConn);
 		}
-
-		exportHolds(pikaConn, kohaConn);
-		exportHoldShelfItems(kohaConn);
-		exportInTransitItems(kohaConn);
-
 
 		if (pikaConn != null){
 			try{
