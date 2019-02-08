@@ -88,24 +88,6 @@ fi
 find /data/vufind-plus/bywaterkoha/mergeBackup -name "*.mrc" -mtime +7 -delete
 
 
-#if [[ -f $UPDATEFILE && -f $DELETEFILE ]]; then
-#	# if the update and delete files are found, merge them into the fullexport file.
-#	echo "Merging updates and deletes." >> ${OUTPUT_FILE}
-#	cd /usr/local/vufind-plus/vufind/cron/; java -jar cron.jar ${PIKASERVER} MergeMarcUpdatesAndDeletes >> ${OUTPUT_FILE}
-##	NUMOFADDSORDELETEFILESREMAINING=$(ls *.marc|wc -l)
-##	if [ $NUMOFADDSORDELETEFILESREMAINING -gt 0 ]; then
-##		echo "There are $NUMOFADDSORDELETEFILESREMAINING Add or Delete files left after merge process";
-##	fi
-#else
-#		if [ ! -f $UPDATEFILE ]; then
-#		 echo "Update File $UPDATEFILE was not found." >> ${OUTPUT_FILE}
-#		fi
-#		if [ ! -f $DELETEFILE ]; then
-#		 echo "Delete File $DELETEFILE was not found." >> ${OUTPUT_FILE}
-#		fi
-#	echo "Not merging updates and deletes." >> ${OUTPUT_FILE}
-#fi
-
 # if the update/delete files aren't found merging won't occur, which would have updated the timestamp on the fullexport file.
 # therefore the next if block, is a good check for everyday of the week.
 FILE=$(find /data/vufind-plus/${PIKASERVER}/marc/ -name fullexport.mrc -mtime -1 | sort -n | tail -1)

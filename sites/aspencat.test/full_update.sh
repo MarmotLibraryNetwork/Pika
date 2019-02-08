@@ -116,22 +116,8 @@ fi
 /usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} aspencat/bywaterkoha bywaterkoha
 
 #Delete merge backups older than a week (fetch_sideload deletes older than 30 days, but that would take up to much space)
-find /data/vufind-plus/$PIKADATADIR/mergeBackup -name "*.mrc" -mtime +7 -delete
+find /data/vufind-plus/bywaterkoha/mergeBackup -name "*.mrc" -mtime +7 -delete
 
-
-#if [[ -f $UPDATEFILE && -f $DELETEFILE ]]; then
-#	# if the update and delete files are found, merge them into the fullexport file.
-#	echo "Merging updates and deletes." >> ${OUTPUT_FILE}
-#	cd /usr/local/vufind-plus/vufind/cron/; java -jar cron.jar aspencat.test MergeMarcUpdatesAndDeletes >> ${OUTPUT_FILE}
-#else
-#		if [ ! -f $UPDATEFILE ]; then
-#		 echo "Update File $UPDATEFILE was not found." >> ${OUTPUT_FILE}
-#		fi
-#		if [ ! -f $DELETEFILE ]; then
-#		 echo "Delete File $DELETEFILE was not found." >> ${OUTPUT_FILE}
-#		fi
-#	echo "Not merging updates and deletes." >> ${OUTPUT_FILE}
-#fi
 
 # if the update/delete files aren't found merging won't occur, which would have updated the timestamp on the fullexport file.
 # therefore the next if block, is a good check for everyday of the week.
