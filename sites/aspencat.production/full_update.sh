@@ -79,9 +79,11 @@ fi
 ## Copy Export from ILS
 /usr/local/vufind-plus/sites/${PIKASERVER}/copyExport.sh >> ${OUTPUT_FILE}
 
-#TODO: Create nightly deletions file
+#Fetch Deletions
+cd /usr/local/vufind-plus/vufind/koha_export/;java -server -XX:+UseG1GC -jar koha_export.jar ${PIKASERVER} getDeletedBibs >> ${OUTPUT_FILE}
 
 #Fetch Additions
+# merging happens in this command so it should be last
 /usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} aspencat/bywaterkoha bywaterkoha >> ${OUTPUT_FILE}
 
 #Delete merge backups older than a week (fetch_sideload deletes older than 30 days, but that would take up to much space)
