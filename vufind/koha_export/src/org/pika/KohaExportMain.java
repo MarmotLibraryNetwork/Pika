@@ -364,7 +364,7 @@ public class KohaExportMain {
 					success = false;
 				}
 			}
-			logger.info("A total of " + numUpdates + " bibs were updated");
+			logger.info("A total of " + numUpdates + " bibs were marked for reindexing");
 
 
 			//Turn auto commit back on
@@ -509,7 +509,8 @@ public class KohaExportMain {
 					for (ItemChangeInfo curItem : remainingItemsToUpdate){
 						ItemIds.append(curItem.getItemId()).append(", ");
 					}
-					logger.warn("Items " + ItemIds.toString() + " were not updated for record " +curBibId);
+					logger.info("Items " + ItemIds.toString() + " were not updated for record " +curBibId);
+					// Possibly new items from today
 				}
 
 				//Write the new marc record
@@ -549,7 +550,7 @@ public class KohaExportMain {
 					}
 				}
 				if (remainingItemsToDelete.size() > 0){
-					logger.warn("Items " + String.join(", ", deletedIDs) +  " were not found for deletion on bib " + curBibId );
+					logger.info("Items " + String.join(", ", deletedIDs) +  " were not found for deletion on bib " + curBibId );
 					// This may be an unneeded check, as in we have already deleted the items in a round of extraction before this one.
 				}
 
