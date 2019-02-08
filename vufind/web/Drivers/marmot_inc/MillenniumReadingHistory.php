@@ -249,7 +249,7 @@ class MillenniumReadingHistory {
 		$sCount = 1;
 		$readingHistoryTitles = array();
 		foreach ($sRows as $sRow) {
-			usleep(50000);
+			usleep(150000);
 			preg_match_all('/<td[^>]*>(.*?)<\/td>/si', $sRow, $result, PREG_SET_ORDER);
 			$sCols = array();
 			for ($matchi = 0; $matchi < count($result); $matchi++) {
