@@ -24,11 +24,13 @@ else
 
 	if [ -d "$LOCAL/$SOURCE/" ]; then
 		if [ -d "$DESTINATION/" ]; then
-			if [ $(ls -1A "$LOCAL/$SOURCE/" | grep .mrc | wc -l) -gt 0 ] ; then
+
+			# Process regular MARC files
+			if [ $(ls -1A "$LOCAL/$SOURCE/" | grep .mrc$ | wc -l) -gt 0 ] ; then
 			# only do copy command if there are files present to move
 
 				$LOG "~~ Copy sideload adds/deletes marc file(s)."
-				$LOG "~~ cp $LOCAL/$SOURCE/*.mrc $DESTINATION/"
+				$LOG "~~ cp -v $LOCAL/$SOURCE/*.mrc $DESTINATION/"
 				cp -v $LOCAL/$SOURCE/*.mrc $DESTINATION/
 
 				if [ $? -ne 0 ]; then
@@ -37,29 +39,6 @@ else
 				else
 					$LOG "~~ $SOURCE marc files were copied."
 					echo "$SOURCE marc files were copied."
-
-					if [ $(ls -1A "$LOCAL/$SOURCE/" | grep .mrc.gz | wc -l) -gt 0 ] ; then
-						# if they are gzipped files copy and unzip
-						$LOG "~~ Gzip files found. Uncompressing at destination"
-						echo "~~ Gzip files found. Uncompressing at destination"
-
-						$LOG "~~ cp $LOCAL/$SOURCE/*.mrc.gz $DESTINATION/"
-						cp -v $LOCAL/$SOURCE/*.mrc.gz $DESTINATION/
-
-						$LOG "~~ gunzip -v $DESTINATION/*.mrc.gz"
-						gunzip -v $DESTINATION/*.mrc.gz
-
-						if [[ ! $PIKASERVER =~ ".test" ]]; then
-							# Only move marc files to processed folder for production servers
-							# The test server MUST run before production or the file won't exist
-							if [ ! -d "$LOCAL/$SOURCE/processed/" ]; then
-								mkdir $LOCAL/$SOURCE/processed/
-							fi
-							echo "Moving files on ftp server to processed directory."
-							mv -v $LOCAL/$SOURCE/*.mrc.gz $LOCAL/$SOURCE/processed/
-						fi
-
-					fi
 
 					if [[ ! $PIKASERVER =~ ".test" ]]; then
 						# Only move marc files to processed folder for production servers
@@ -73,6 +52,45 @@ else
 				fi
 
 			fi
+
+			# Process compressed MARC files
+			if [ $(ls -1A "$LOCAL/$SOURCE/" | grep .mrc.gz$ | wc -l) -gt 0 ] ; then
+				# if they are gzipped files copy and unzip
+				$LOG "~~ Gzip files found."
+				echo "~~ Gzip files found."
+
+				$LOG "~~ cp $LOCAL/$SOURCE/*.mrc.gz $DESTINATION/"
+				cp -v $LOCAL/$SOURCE/*.mrc.gz $DESTINATION/
+
+				if [ $? -ne 0 ]; then
+					$LOG "~~ Copying $SOURCE marc files failed."
+					echo "Copying $SOURCE marc files failed."
+				else
+					$LOG "~~ $SOURCE gzipped marc files were copied. Decompressing."
+					echo "$SOURCE gzipped marc files were copied. Decompressing."
+
+					$LOG "~~ gunzip -v $DESTINATION/*.mrc.gz"
+					gunzip -v $DESTINATION/*.mrc.gz
+					if [ $? -eq 1 ];then
+						$LOG "~~ Decompression failed."
+						echo "Decompression failed."
+					else
+
+						if [[ ! $PIKASERVER =~ ".test" ]]; then
+							# Only move marc files to processed folder for production servers
+							# The test server MUST run before production or the file won't exist
+							if [ ! -d "$LOCAL/$SOURCE/processed/" ]; then
+								mkdir $LOCAL/$SOURCE/processed/
+							fi
+							echo "Moving files on ftp server to processed directory."
+							mv -v $LOCAL/$SOURCE/*.mrc.gz $LOCAL/$SOURCE/processed/
+						fi
+					fi
+				fi
+
+			fi
+
+
 		else
 			echo "Path $DESTINATION/ doesn't exist."
 		fi
