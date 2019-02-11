@@ -80,11 +80,18 @@ class AspencatRecordProcessor extends IlsRecordProcessor {
 
 	@Override
 	protected boolean isItemAvailable(ItemInfo itemInfo) {
-//		return (itemInfo.getStatusCode().equals("On Shelf") || itemInfo.getStatusCode().equals("Library Use Only")) && !inTransitItems.contains(itemInfo.getItemIdentifier());
-//		return (itemInfo.getStatusCode().equals(ItemStatus.ONSHELF.toString()) || itemInfo.getStatusCode().equals(ItemStatus.LIBRARYUSEONLY.toString())) && !inTransitItems.contains(itemInfo.getItemIdentifier());
 		String statusCode = itemInfo.getStatusCode();
 		return statusCode.equals(ItemStatus.ONSHELF.toString()) || statusCode.equals(ItemStatus.LIBRARYUSEONLY.toString()) || statusCode.equals(ItemStatus.INPROCESSING.toString());
 	}
+
+	// Since there is not a scope and/or ptype dependency on holdability, we will use the indexing profile setting that take effect in isItemHoldableUnscoped() in the ilsRecordProcessor
+//	@Override
+//	protected HoldabilityInformation isItemHoldable(ItemInfo itemInfo, Scope curScope, HoldabilityInformation isHoldableUnscoped) {
+//		String                 statusCode   = itemInfo.getStatusCode();
+//		boolean                isHoldable   = !statusCode.equals(ItemStatus.INREPAIRS.toString()) && !statusCode.equals(ItemStatus.LIBRARYUSEONLY.toString()); // Specifically, NotForLoan statuses In Repairs, Library Use Only & Staff Collection
+//		HoldabilityInformation itemHoldInfo = new HoldabilityInformation(isHoldable, new HashSet<Long>());
+//		return itemHoldInfo;
+//	}
 
 	@Override
 	protected boolean determineLibraryUseOnly(ItemInfo itemInfo, Scope curScope) {
@@ -145,7 +152,7 @@ class AspencatRecordProcessor extends IlsRecordProcessor {
 			if (formatBoostStr == null){
 				formatBoostStr = translateValue("format_boost", itemTypeToFormat.get(mostPopularIType), recordInfo.getRecordIdentifier());
 			}
-			if (formatBoostStr != null && Util.isNumeric(formatBoostStr)) {
+			if (Util.isNumeric(formatBoostStr)) {
 				formatBoost = Long.parseLong(formatBoostStr);
 			}
 			recordInfo.setFormatBoost(formatBoost);
@@ -155,7 +162,7 @@ class AspencatRecordProcessor extends IlsRecordProcessor {
 	private HashSet<String> additionalStatuses = new HashSet<>();
 	protected String getItemStatus(DataField itemField, String recordIdentifier){
 		ItemStatus status;
-		String itemIdentifier = getItemSubfieldData(itemRecordNumberSubfieldIndicator, itemField);
+		String     itemIdentifier = getItemSubfieldData(itemRecordNumberSubfieldIndicator, itemField);
 
 		//Determining status for Koha relies on a number of different fields
 		// Determine simple statuses first
@@ -231,7 +238,7 @@ class AspencatRecordProcessor extends IlsRecordProcessor {
 
 	private ItemStatus getStatusFromBooleanSubfield(DataField itemField, char subfield, ItemStatus defaultStatus) {
 		if (itemField.getSubfield(subfield) != null){
-			String fieldData = itemField.getSubfield(subfield).getData();
+			String fieldData = itemField.getSubfield(subfield).getData().trim();
 			if (!fieldData.equals("0")) {
 				if (fieldData.equals("1")) {
 					return defaultStatus;
@@ -367,7 +374,14 @@ class AspencatRecordProcessor extends IlsRecordProcessor {
 	}
 
 // Moved Withdrawn & Lost subfield checking to the indexing profile item status suppression since withdrawn and lost are calculated statuses
-	//	protected boolean isItemSuppressed(DataField curItem) {
+// but status is uniquely calculated for Aspencat, so status suppression needs slight customization. (probably should go in a Koha Record Processor
+	protected boolean isItemSuppressed(DataField curItem) {
+		String status = getItemStatus(curItem, null);
+		if (statusesToSuppressPattern != null && statusesToSuppressPattern.matcher(status).matches()) {
+			return true;
+		}
+		return  super.isItemSuppressed(curItem);
+
 //		boolean suppressed = false;
 //		// Supress if marked as withdrawn
 //		if (curItem.getSubfield(withdrawnSubfield) != null) {
@@ -381,9 +395,9 @@ class AspencatRecordProcessor extends IlsRecordProcessor {
 //				suppressed = true;
 //			}
 //		}
-//		// if not suppressed here, check indexing profile settings
+		// if not suppressed here, check indexing profile settings
 //		return suppressed || super.isItemSuppressed(curItem);
-//	}
+	}
 
 	protected String getShelfLocationForItem(ItemInfo itemInfo, DataField itemField, String identifier) {
 		/*String locationCode = getItemSubfieldData(locationSubfieldIndicator, itemField);
