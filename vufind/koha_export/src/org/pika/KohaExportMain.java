@@ -101,21 +101,33 @@ public class KohaExportMain {
 		}
 
 		String profileToLoad = "ils";
+		int numHoursToFetchBibDeletions = 24;
 		if (args.length > 1){
 			if (args[1].equalsIgnoreCase("getDeletedBibs")){
 				getDeletedBibs = true;
+				if (args.length > 2) {
+					try {
+						numHoursToFetchBibDeletions = Integer.parseInt(args[2]);
+					} catch (NumberFormatException e) {
+						logger.warn("Could not parse number of hours to fetch parameter: " + args[2] +"; Using default 24 instead.");
+					}
+				}
+				exportPath = "/data/vufind-plus/bywaterkoha/deletes/marc"; // default path
+				if (args.length > 3){
+					exportPath = args[3];
+				}
 			} else {
 				profileToLoad = args[1];
 			}
 		}
-		indexingProfile = IndexingProfile.loadIndexingProfile(pikaConn, profileToLoad, logger);
+
+		updateTime      = new Date().getTime() / 1000;
 
 		if (getDeletedBibs){
 			// Fetch Deleted Bibs from today
-			exportPath = "/data/vufind-plus/bywaterkoha/deletes/marc"; //TODO: make a parameter of this someday
 			try {
-				String deletedBibsFileName = "deletedBibs.csv";
-				long yesterday = updateTime - 24 * 60 * 60 * 60; // TODO: make an optional parameter for this someday
+				String            deletedBibsFileName        = "deletedBibs.csv";
+				long              yesterday                  = updateTime - numHoursToFetchBibDeletions * 3600; // seconds
 				PreparedStatement getDeletedBibsFromKohaStmt = kohaConn.prepareStatement("select biblionumber from deletedbiblio where timestamp >= ?");
 				getDeletedBibsFromKohaStmt.setTimestamp(1, new Timestamp(yesterday * 1000));
 				ResultSet getDeletedBibsFromKohaRS = getDeletedBibsFromKohaStmt.executeQuery();
@@ -130,12 +142,13 @@ public class KohaExportMain {
 		} else {
 			// Regular Koha extraction processes
 
-			exportPath = indexingProfile.marcPath;
+			exportPath      = indexingProfile.marcPath;
 			if (exportPath.startsWith("\"")){
 				exportPath = exportPath.substring(1, exportPath.length() - 1);
 			}
 
 			// Override any relevant subfield settings if they are set
+			indexingProfile = IndexingProfile.loadIndexingProfile(pikaConn, profileToLoad, logger);
 			if (indexingProfile.locationSubfield != ' '){
 				locationSubfield = indexingProfile.locationSubfield;
 			}
@@ -149,13 +162,12 @@ public class KohaExportMain {
 				dueDateSubfield = indexingProfile.dueDateSubfield;
 			}
 
-			updateTime = new Date().getTime() / 1000;
 			getLastKohaExtractTime(pikaConn);
 
 			if(
-				//Get a list of works that have changed or deleted since the last index
+				// Get a list of works that have changed or deleted since the last index
 					getChangedRecordsFromDatabase(ini, pikaConn, kohaConn) &&
-							getDeletedItemsFromDatabase(ini, pikaConn, kohaConn)
+							getDeletedItemsFromDatabase(/*ini,*/ pikaConn, kohaConn)
 			){
 				setLastKohaExtractTime(pikaConn);
 			} else {
@@ -202,7 +214,8 @@ public class KohaExportMain {
 			}
 
 			// go back 1 minutes
-			lastKohaExtractTime -= 1 * 60;
+			lastKohaExtractTime -= 60;
+//			lastKohaExtractTime -= 1 * 60; // minutes version, if we decide to greater than 1
 		} catch (SQLException e) {
 			logger.error("Error fetching the last Koha extract time from the Pika database", e);
 		}
@@ -314,8 +327,6 @@ public class KohaExportMain {
 				maxRecordsToUpdateDuringExtract = Integer.parseInt(maxRecordsToUpdateDuringExtractStr);
 			}
 
-			boolean errorUpdatingDatabase = false;
-
 //			PreparedStatement getChangedItemsFromKohaStmt = kohaConn.prepareStatement("select itemnumber, biblionumber, barcode, homebranch, ccode, location, damaged, itemlost, withdrawn, restricted, onloan, notforloan from items where timestamp >= ? LIMIT 0, ?");
 			PreparedStatement getChangedItemsFromKohaStmt = kohaConn.prepareStatement("select itemnumber, biblionumber, homebranch, ccode, location, damaged, itemlost, withdrawn, onloan, notforloan from items where timestamp >= ? LIMIT 0, ?");
 			//notforloan is the primary status column for aspencat bywater koha (subfield 7)
@@ -411,7 +422,7 @@ public class KohaExportMain {
 	private static void setLastKohaExtractTime(Connection pikaConn) {
 		// Update the last extract time
 		try {
-			Long finishTime = new Date().getTime() / 1000;
+			long finishTime = new Date().getTime() / 1000;
 			if (lastKohaExtractTimeVariableId != null) {
 				PreparedStatement updateVariableStmt = pikaConn.prepareStatement("UPDATE variables set value = ? WHERE id = ?");
 				updateVariableStmt.setLong(1, finishTime);
@@ -429,7 +440,7 @@ public class KohaExportMain {
 		}
 	}
 
-	private static boolean getDeletedItemsFromDatabase(Ini ini, Connection pikaConn, Connection kohaConn){
+	private static boolean getDeletedItemsFromDatabase(/*Ini ini,*/ Connection pikaConn, Connection kohaConn){
 		boolean success = true;
 		try {
 			logger.info("Starting to load deleted items from Koha using the database connection");
@@ -505,7 +516,7 @@ public class KohaExportMain {
 			if (marcRecord != null) {
 
 				//Loop through all item fields to see what has changed
-				ArrayList<ItemChangeInfo> remainingItemsToUpdate = new ArrayList<ItemChangeInfo>(itemChangeInfo);
+				ArrayList<ItemChangeInfo> remainingItemsToUpdate = new ArrayList<>(itemChangeInfo);
 				List<VariableField> itemFields = marcRecord.getVariableFields(indexingProfile.itemTag);
 				for (VariableField itemFieldVar : itemFields) {
 					DataField itemField = (DataField) itemFieldVar;
