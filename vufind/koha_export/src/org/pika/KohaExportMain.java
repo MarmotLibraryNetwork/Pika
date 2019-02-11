@@ -142,13 +142,13 @@ public class KohaExportMain {
 		} else {
 			// Regular Koha extraction processes
 
+			indexingProfile = IndexingProfile.loadIndexingProfile(pikaConn, profileToLoad, logger);
 			exportPath      = indexingProfile.marcPath;
 			if (exportPath.startsWith("\"")){
 				exportPath = exportPath.substring(1, exportPath.length() - 1);
 			}
 
 			// Override any relevant subfield settings if they are set
-			indexingProfile = IndexingProfile.loadIndexingProfile(pikaConn, profileToLoad, logger);
 			if (indexingProfile.locationSubfield != ' '){
 				locationSubfield = indexingProfile.locationSubfield;
 			}
