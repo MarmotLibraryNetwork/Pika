@@ -177,7 +177,11 @@
 							{*<a href="#" onclick="$('#selected{$record.itemid}').attr('checked', 'checked');return VuFind.Account.renewSelectedTitles();" class="btn btn-sm btn-primary">Renew</a>*}
 							<a href="#" onclick="return VuFind.Account.renewTitle('{$record.userId}', '{$record.recordId}', '{$record.renewIndicator}');" class="btn btn-sm btn-primary">{translate text='Renew'}</a>
 						{else}
-							Sorry, this title cannot be renewed
+							{if isset($record.renew_message) && $record.canrenew == false}
+								{$record.renew_message}
+							{else}
+								{translate text='Can Not Renew'}
+							{/if}
 						{/if}
 					</div>
 				</div>
