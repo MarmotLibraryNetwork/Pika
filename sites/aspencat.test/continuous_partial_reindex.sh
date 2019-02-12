@@ -53,11 +53,11 @@ function checkProhibitedTimes() {
 		if (( $NOW < $stop ))
 		then
 			sleep $(($stop - $NOW))
-			hasConflicts = 1
+			hasConflicts=1
 		elif (( $NOW > $start ))
 		then
 			sleep $(($stop + 86400 - $NOW))
-			hasConflicts = 1
+			hasConflicts=1
 		fi
 	fi
 	echo ${hasConflicts};
