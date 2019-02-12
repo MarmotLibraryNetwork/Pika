@@ -81,7 +81,9 @@ class AspencatRecordProcessor extends IlsRecordProcessor {
 	@Override
 	protected boolean isItemAvailable(ItemInfo itemInfo) {
 		String statusCode = itemInfo.getStatusCode();
-		return statusCode.equals(ItemStatus.ONSHELF.toString()) || statusCode.equals(ItemStatus.LIBRARYUSEONLY.toString()) || statusCode.equals(ItemStatus.INPROCESSING.toString());
+		return statusCode.equals(ItemStatus.ONSHELF.toString()) || statusCode.equals(ItemStatus.LIBRARYUSEONLY.toString()) || statusCode.equals(ItemStatus.INPROCESSING.toString())
+				|| statusCode.equals(ItemStatus.CATALOGING.toString() // TODO: this should be temporary
+		);
 	}
 
 	// Since there is not a scope and/or ptype dependency on holdability, we will use the indexing profile setting that take effect in isItemHoldableUnscoped() in the ilsRecordProcessor
@@ -192,13 +194,13 @@ class AspencatRecordProcessor extends IlsRecordProcessor {
 		}
 
 		// Finally Check the Not For Loan subfield
-		status = getStatusFromSubfield(itemField, notforloanSubfield);
+		status = getStatusFromSubfield(itemField, notforloanSubfield, recordIdentifier, itemIdentifier);
 		if (status != null) return status.toString();
 
 		return ItemStatus.ONSHELF.toString();
 	}
 
-	private ItemStatus getStatusFromSubfield(DataField itemField, char subfield) {
+	private ItemStatus getStatusFromSubfield(DataField itemField, char subfield, String recordIdentifier, String itemIdentifier) {
 		if (itemField.getSubfield(subfield) != null){
 			String fieldData = itemField.getSubfield(subfield).getData();
 
@@ -215,9 +217,12 @@ class AspencatRecordProcessor extends IlsRecordProcessor {
 					return ItemStatus.LIBRARYUSEONLY;
 				case "3": // In Repairs
 					return ItemStatus.INREPAIRS;
+				case "5": // Cataloging
+					//TODO: should be a temporary status
+					return ItemStatus.CATALOGING;
 				default:
 					if (!additionalStatuses.contains(fieldData)){
-						logger.warn("Found new status " + fieldData + " for subfield " +subfield);
+						logger.warn("Found new status " + fieldData + " for subfield " + subfield + " for item " + itemIdentifier + " on bib " + recordIdentifier);
 						additionalStatuses.add(fieldData);
 					}
 			}

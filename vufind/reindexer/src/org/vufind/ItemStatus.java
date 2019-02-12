@@ -5,6 +5,7 @@ public enum ItemStatus {
 	LIBRARYUSEONLY,
 	ONORDER,
 	INPROCESSING,
+	CATALOGING,
 	CHECKEDOUT,
 	ONHOLDSHELF,
 	INTRANSIT,
@@ -25,6 +26,8 @@ public enum ItemStatus {
 				return "On Order";
 			case INPROCESSING:
 				return "In Processing";
+			case CATALOGING:
+				return "Cataloging";
 			case CHECKEDOUT:
 				return "Checked Out";
 			case ONHOLDSHELF:
