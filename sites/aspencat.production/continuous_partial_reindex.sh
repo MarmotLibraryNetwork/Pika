@@ -76,21 +76,6 @@ do
 		continue
 	fi
 
-	# Do not run while the export from Koha is running to prevent inconsistencies with MARC records
-	# export starts at ??pm the file is copied to the FTP server at about 11:30
-	hasConflicts=$(checkProhibitedTimes "21:50" "00:10")
-	#If we did get a conflict, restart the loop to make sure that all tests run
-	if (($? != 0)); then
-		continue
-	fi
-
-	# Do not run while Aspencat is Updating (6pm - 11pm) PK-288
-	hasConflicts=$(checkProhibitedTimes "18:00" "23:00")
-	#If we did get a conflict, restart the loop to make sure that all tests run
-	if (($? != 0)); then
-		continue
-	fi
-
 	#####
 	# Start of the actual indexing code
 	#####
