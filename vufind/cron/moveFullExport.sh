@@ -77,7 +77,7 @@ else
 					echo "$SOURCE gzipped marc files were copied. Decompressing."
 
 					$LOG "~~ gunzip -v $DESTINATION/*.mrc.gz"
-					gunzip -v $DESTINATION/*.mrc.gz > /data/vufind-plus/$DESTINATION/marc/fullexport.mrc
+					gunzip -vf /data/vufind-plus/$DESTINATION/marc/*.mrc.gz > /data/vufind-plus/$DESTINATION/marc/fullexport.mrc
 					if [ $? -eq 1 ];then
 						$LOG "~~ Decompression failed."
 						echo "Decompression failed."
