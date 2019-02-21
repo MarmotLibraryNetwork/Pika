@@ -13,6 +13,7 @@ public enum ItemStatus {
 	DAMAGED,
 	LOST,
 	WITHDRAWN,
+	SUPPRESSED
 	;
 
 	@Override
@@ -42,6 +43,8 @@ public enum ItemStatus {
 				return "Withdrawn";
 			case INREPAIRS:
 				return "In Repair";
+			case SUPPRESSED:
+				return "Suppressed";
 		}
 		return null;
 	}

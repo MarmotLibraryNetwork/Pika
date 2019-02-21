@@ -106,9 +106,10 @@ class AspencatRecordProcessor extends IlsRecordProcessor {
 		HashMap<String, String>  itemTypeToFormat  = new HashMap<>();
 		int                      mostUsedCount     = 0;
 		String                   mostPopularIType  = "";  //Get a list of all the formats based on the items
+		String                   recordIdentifier  = recordInfo.getRecordIdentifier();
 		List<DataField> items = MarcUtil.getDataFields(record, itemTag);
 		for(DataField item : items){
-			if (!isItemSuppressed(item)) {
+			if (!isItemSuppressed(item, recordIdentifier)) {
 				Subfield iTypeSubField = item.getSubfield(iTypeSubfield);
 				if (iTypeSubField != null) {
 					String iType = iTypeSubField.getData().toLowerCase();
@@ -118,7 +119,7 @@ class AspencatRecordProcessor extends IlsRecordProcessor {
 						itemCountsByItype.put(iType, 1);
 						//Translate the iType to see what formats we get.  Some item types do not have a format by default and use the default translation
 						//We still will want to record those counts.
-						String translatedFormat = translateValue("format", iType, recordInfo.getRecordIdentifier());
+						String translatedFormat = translateValue("format", iType, recordIdentifier);
 						//If the format is book, ignore it for now.  We will use the default method later.
 						if (translatedFormat == null || translatedFormat.equalsIgnoreCase("book")) {
 							translatedFormat = "";
@@ -141,18 +142,18 @@ class AspencatRecordProcessor extends IlsRecordProcessor {
 		} else{
 			//logger.debug("Using default method of loading formats from iType");
 			recordInfo.addFormat(itemTypeToFormat.get(mostPopularIType));
-			String translatedFormatCategory = translateValue("format_category", mostPopularIType, recordInfo.getRecordIdentifier());
+			String translatedFormatCategory = translateValue("format_category", mostPopularIType, recordIdentifier);
 			if (translatedFormatCategory == null){
-				translatedFormatCategory = translateValue("format_category", itemTypeToFormat.get(mostPopularIType), recordInfo.getRecordIdentifier());
+				translatedFormatCategory = translateValue("format_category", itemTypeToFormat.get(mostPopularIType), recordIdentifier);
 				if (translatedFormatCategory == null){
 					translatedFormatCategory = mostPopularIType;
 				}
 			}
 			recordInfo.addFormatCategory(translatedFormatCategory);
 			Long formatBoost = 1L;
-			String formatBoostStr = translateValue("format_boost", mostPopularIType, recordInfo.getRecordIdentifier());
+			String formatBoostStr = translateValue("format_boost", mostPopularIType, recordIdentifier);
 			if (formatBoostStr == null){
-				formatBoostStr = translateValue("format_boost", itemTypeToFormat.get(mostPopularIType), recordInfo.getRecordIdentifier());
+				formatBoostStr = translateValue("format_boost", itemTypeToFormat.get(mostPopularIType), recordIdentifier);
 			}
 			if (Util.isNumeric(formatBoostStr)) {
 				formatBoost = Long.parseLong(formatBoostStr);
@@ -194,15 +195,15 @@ class AspencatRecordProcessor extends IlsRecordProcessor {
 		}
 
 		// Finally Check the Not For Loan subfield
-		status = getStatusFromSubfield(itemField, notforloanSubfield, recordIdentifier, itemIdentifier);
+		status = getStatusFromNotForLoanSubfield(itemField, recordIdentifier, itemIdentifier);
 		if (status != null) return status.toString();
 
 		return ItemStatus.ONSHELF.toString();
 	}
 
-	private ItemStatus getStatusFromSubfield(DataField itemField, char subfield, String recordIdentifier, String itemIdentifier) {
-		if (itemField.getSubfield(subfield) != null){
-			String fieldData = itemField.getSubfield(subfield).getData();
+	private ItemStatus getStatusFromNotForLoanSubfield(DataField itemField, String recordIdentifier, String itemIdentifier) {
+		if (itemField.getSubfield(notforloanSubfield) != null){
+			String fieldData = itemField.getSubfield(notforloanSubfield).getData();
 
 			//Aspencat Koha NOT_LOAN values
 			switch (fieldData) {
@@ -217,12 +218,14 @@ class AspencatRecordProcessor extends IlsRecordProcessor {
 					return ItemStatus.LIBRARYUSEONLY;
 				case "3": // In Repairs
 					return ItemStatus.INREPAIRS;
+				case "4":
+					return ItemStatus.SUPPRESSED;
 				case "5": // Cataloging
 					//TODO: should be a temporary status
 					return ItemStatus.CATALOGING;
 				default:
 					if (!additionalStatuses.contains(fieldData)){
-						logger.warn("Found new status " + fieldData + " for subfield " + subfield + " for item " + itemIdentifier + " on bib " + recordIdentifier);
+						logger.warn("Found new status " + fieldData + " for subfield " + notforloanSubfield + " for item " + itemIdentifier + " on bib " + recordIdentifier);
 						additionalStatuses.add(fieldData);
 					}
 			}
@@ -267,7 +270,7 @@ class AspencatRecordProcessor extends IlsRecordProcessor {
 	protected void loadUnsuppressedPrintItems(GroupedWorkSolr groupedWork, RecordInfo recordInfo, String identifier, Record record){
 		List<DataField> itemRecords = MarcUtil.getDataFields(record, itemTag);
 		for (DataField itemField : itemRecords){
-			if (!isItemSuppressed(itemField) && !isEContent(itemField)) {
+			if (!isItemSuppressed(itemField, identifier) && !isEContent(itemField)) {
 				getPrintIlsItem(groupedWork, recordInfo, record, itemField);
 			}
 		}
@@ -380,29 +383,17 @@ class AspencatRecordProcessor extends IlsRecordProcessor {
 
 // Moved Withdrawn & Lost subfield checking to the indexing profile item status suppression since withdrawn and lost are calculated statuses
 // but status is uniquely calculated for Aspencat, so status suppression needs slight customization. (probably should go in a Koha Record Processor
-	protected boolean isItemSuppressed(DataField curItem) {
-		String status = getItemStatus(curItem, null);
+	protected boolean isItemSuppressed(DataField curItem, String identifier) {
+		String status = getItemStatus(curItem, identifier);
 		if (statusesToSuppressPattern != null && statusesToSuppressPattern.matcher(status).matches()) {
 			return true;
 		}
 		return  super.isItemSuppressed(curItem);
-
-//		boolean suppressed = false;
-//		// Supress if marked as withdrawn
-//		if (curItem.getSubfield(withdrawnSubfield) != null) {
-//			if (curItem.getSubfield(withdrawnSubfield).getData().equals("1")) {
-//				suppressed = true;
-//			}
-//		}
-//		// Supress if lost is set to anything but 0
-//		if (curItem.getSubfield(lostSubfield) != null) {
-//			if (!curItem.getSubfield(lostSubfield).getData().equals("0")) {
-//				suppressed = true;
-//			}
-//		}
-		// if not suppressed here, check indexing profile settings
-//		return suppressed || super.isItemSuppressed(curItem);
 	}
+
+//	protected boolean isItemSuppressed(DataField curItem) {
+//		return isItemSuppressed(curItem, null);
+//	}
 
 	protected String getShelfLocationForItem(ItemInfo itemInfo, DataField itemField, String identifier) {
 		/*String locationCode = getItemSubfieldData(locationSubfieldIndicator, itemField);
