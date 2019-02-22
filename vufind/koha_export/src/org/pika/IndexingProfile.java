@@ -15,29 +15,29 @@ import org.apache.log4j.Logger;
  * Time: 10:38 PM
  */
 public class IndexingProfile {
-	Long id;
-	String name;
-	String marcPath;
-	String individualMarcPath;
-	int numCharsToCreateFolderFrom;
+	Long    id;
+	String  name;
+	String  marcPath;
+	String  individualMarcPath;
+	int     numCharsToCreateFolderFrom;
 	boolean createFolderFromLeadingCharacters;
-	String recordNumberTag;
-	String itemTag;
-	char itemRecordNumberSubfield;
-	String lastCheckinFormat;
-	String dateCreatedFormat;
-	String dueDateFormat;
-	char lastCheckinDateSubfield;
-	char locationSubfield;
-	char subLocationSubfield;
-	char itemStatusSubfield;
-	char iTypeSubfield;
-	char shelvingLocationSubfield;
-	char yearToDateCheckoutsSubfield;
-	char totalCheckoutsSubfield;
-	char callNumberSubfield;
-	char dateCreatedSubfield;
-	char dueDateSubfield;
+	String  recordNumberTag;
+	String  itemTag;
+	char    itemRecordNumberSubfield;
+	String  lastCheckinFormat;
+	String  dateCreatedFormat;
+	String  dueDateFormat;
+	char    lastCheckinDateSubfield;
+	char    locationSubfield;
+	char    subLocationSubfield;
+	char    itemStatusSubfield;
+	char    iTypeSubfield;
+	char    shelvingLocationSubfield;
+	char    yearToDateCheckoutsSubfield;
+	char    totalCheckoutsSubfield;
+	char    callNumberSubfield;
+	char    dateCreatedSubfield;
+	char    dueDateSubfield;
 
 
 
@@ -103,11 +103,11 @@ public class IndexingProfile {
 		this.iTypeSubfield = getCharFromString(iTypeSubfield);
 	}
 
-	static IndexingProfile loadIndexingProfile(Connection vufindConn, String profileToLoad, Logger logger) {
+	static IndexingProfile loadIndexingProfile(Connection pikaConn, String profileToLoad, Logger logger) {
 		//Get the Indexing Profile from the database
 		IndexingProfile indexingProfile = new IndexingProfile();
 		try {
-			PreparedStatement getIndexingProfileStmt = vufindConn.prepareStatement("SELECT * FROM indexing_profiles where name ='" + profileToLoad + "'");
+			PreparedStatement getIndexingProfileStmt = pikaConn.prepareStatement("SELECT * FROM indexing_profiles where name ='" + profileToLoad + "'");
 			ResultSet         indexingProfileRS      = getIndexingProfileStmt.executeQuery();
 			if (indexingProfileRS.next()) {
 

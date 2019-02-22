@@ -175,8 +175,10 @@ EOD;
 				$dueTime = null;
 			}
 
+
 			if($curRow['auto_renew'] == 1) {
 				$transaction['canrenew'] = false;
+				$transaction['renew_message'] = "This title will be auto-renewed.";
 			}
 
 			$transaction['dueDate'] = $dueTime;
