@@ -1547,8 +1547,13 @@ class Millennium extends ScreenScrapingDriver
 		if ( isset($_REQUEST['ddepartment']) && !empty($_REQUEST['ddepartment'])) {
 			$post_data['ddepartment'] = $_REQUEST['ddepartment'];
 		}
-		
-		if ($library->selfRegistrationTemplate && $library->selfRegistrationTemplate != 'default'){
+
+		if (!empty($_REQUEST['signature'])){
+			// Bemis self-registration form requires signature
+			$post_data['signature'] = trim($_REQUEST['signature']);
+		}
+
+		if (!empty($library->selfRegistrationTemplate) && $library->selfRegistrationTemplate != 'default'){
 			$post_data['TemplateName'] = $library->selfRegistrationTemplate;
 		}
 
