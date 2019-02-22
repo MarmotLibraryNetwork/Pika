@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 if [[ $# -ne 1 ]]; then
 	echo "To use, add the side load collection data directory for the first parameter (omitting /data/vufind-plus)."
@@ -15,6 +15,14 @@ else
 				if [ -r "$SIDELOADDIR/mergeConfig.ini" ]; then
 					cd /usr/local/vufind-plus/vufind/marcMergeUtility
 					java -jar MarcMergeUtility.jar "$SIDELOADDIR/mergeConfig.ini"
+					if [ $? -ne 0 ]; then
+						$LOG "~~ $1: Merging failed."
+						echo "$1: Merging failed."
+					else
+						$LOG "~~ $1: Merging succeeded."
+						echo "$1: Merging succeeded."
+					fi
+
 				else
 					echo    "$1: Merge configuration file not readable: $SIDELOADDIR/mergeConfig.ini"
 					$LOG "~~ $1: Merge configuration file not readable: $SIDELOADDIR/mergeConfig.ini"
