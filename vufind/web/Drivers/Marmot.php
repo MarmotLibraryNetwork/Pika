@@ -56,6 +56,12 @@ class Marmot extends Sierra{
 		$fields[] = array('property'=>'email', 'type'=>'email', 'label'=>'E-Mail', 'description'=>'E-Mail', 'maxLength' => 128, 'required' => false);
 		$fields[] = array('property'=>'phone', 'type'=>'text', 'label'=>'Phone (xxx-xxx-xxxx)', 'description'=>'Phone', 'maxLength' => 128, 'required' => false);
 
+		if ($library->selfRegistrationTemplate == 'beself'){
+			// Bemis Signature Field
+			$fields[] = array('property'=>'signature', 'type'=>'text', 'label'=>'Signature', 'description'=>'Enter your name', 'maxLength' => 40, 'required' => true);
+		}
+
 		return $fields;
 	}
+
 }

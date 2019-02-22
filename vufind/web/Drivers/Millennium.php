@@ -1544,7 +1544,12 @@ class Millennium extends ScreenScrapingDriver
 			$post_data['uuniversityID'] = trim($_REQUEST['universityID']); // I think the initial double u is the correct entry. No one is currently using this so I can't confirm. Pascal. 10-11-2018
 		}
 
-		if ($library->selfRegistrationTemplate && $library->selfRegistrationTemplate != 'default'){
+		if (!empty($_REQUEST['signature'])){
+			// Bemis self-registration form requires signature
+			$post_data['signature'] = trim($_REQUEST['signature']);
+		}
+
+		if (!empty($library->selfRegistrationTemplate) && $library->selfRegistrationTemplate != 'default'){
 			$post_data['TemplateName'] = $library->selfRegistrationTemplate;
 		}
 

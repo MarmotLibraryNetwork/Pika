@@ -70,7 +70,7 @@ class Lion extends Sierra
 			$post_data['universityID'] = $_REQUEST['universityID'];
 		}
 
-		if ($library->selfRegistrationTemplate && $library->selfRegistrationTemplate != 'default'){
+		if (!empty($library->selfRegistrationTemplate) && $library->selfRegistrationTemplate != 'default'){
 			$post_data['TemplateName'] = $library->selfRegistrationTemplate;
 		}
 
