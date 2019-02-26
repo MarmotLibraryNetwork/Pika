@@ -112,8 +112,8 @@ class OverDrive_AJAX extends Action {
 	}
 
 	function ReturnOverDriveItem(){
-		$user = UserAccount::getLoggedInUser();
-		$overDriveId = $_REQUEST['overDriveId'];
+		$user          = UserAccount::getLoggedInUser();
+		$overDriveId   = $_REQUEST['overDriveId'];
 		$transactionId = $_REQUEST['transactionId'];
 		if ($user){
 			$patronId = $_REQUEST['patronId'];

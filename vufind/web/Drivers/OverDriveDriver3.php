@@ -288,6 +288,9 @@ class OverDriveDriver3 {
 					"Host: patron.api.overdrive.com" // production
 					//"Host: integration-patron.api.overdrive.com" // testing
 				);
+				if ($postParams != null){
+					$headers[] = 'Content-Type: application/vnd.overdrive.content.api+json';
+				}
 			}else{
 				//The user is not valid
 //				if (isset($configArray['Site']['debug']) && $configArray['Site']['debug'] == true){
@@ -312,7 +315,6 @@ class OverDriveDriver3 {
 				$postData = json_encode($jsonData);
 				//print_r($postData);
 				curl_setopt($ch, CURLOPT_POSTFIELDS, $postData);
-				$headers[] = 'Content-Type: application/vnd.overdrive.content.api+json';
 			}else{
 				curl_setopt($ch, CURLOPT_HTTPGET, true);
 			}
@@ -333,11 +335,9 @@ class OverDriveDriver3 {
 
 	private function _callPatronDeleteUrl($user, $url){
 		$tokenData = $this->_connectToPatronAPI($user);
-//		$tokenData = $this->_connectToPatronAPI($user, $patronBarcode, $patronPin, false);
 		//TODO: Remove || true when oauth works
 		if ($tokenData || true){
 			$ch = curl_init($url);
-			curl_setopt($ch, CURLOPT_USERAGENT,"Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)");
 			global $configArray;
 			$userAgent = empty($configArray['Catalog']['catalogUserAgent']) ? 'Pika' : $configArray['Catalog']['catalogUserAgent'];
 			if ($tokenData){
@@ -354,7 +354,7 @@ class OverDriveDriver3 {
 
 			$this->setCurlDefaults($ch, $headers);
 			curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'DELETE');
-			$return = curl_exec($ch);
+			$return     = curl_exec($ch);
 			$returnInfo = curl_getinfo($ch);
 			if ($returnInfo['http_code'] == 204){
 				$result = true;
@@ -456,7 +456,7 @@ class OverDriveDriver3 {
 		if (!$this->isUserValidForOverDrive($user)){
 			return array();
 		}
-		$url = $configArray['OverDrive']['patronApiUrl'] . '/v1/patrons/me/checkouts';
+		$url      = $configArray['OverDrive']['patronApiUrl'] . '/v1/patrons/me/checkouts';
 		$response = $this->_callPatronUrl($user, $url);
 		if ($response == false){
 			//The user is not authorized to use OverDrive
@@ -531,9 +531,9 @@ class OverDriveDriver3 {
 						}
 						if (isset($formatField->options)){
 							foreach ($formatField->options as $index => $format){
-								$curFormat = array();
-								$curFormat['id'] = $format;
-								$curFormat['name'] = $this->format_map[$format];
+								$curFormat                  = array();
+								$curFormat['id']            = $format;
+								$curFormat['name']          = $this->format_map[$format];
 								$bookshelfItem['formats'][] = $curFormat;
 							}
 						}else{
@@ -546,9 +546,9 @@ class OverDriveDriver3 {
 					}
 					//Figure out which eContent record this is for.
 					require_once ROOT_DIR . '/RecordDrivers/OverDriveRecordDriver.php';
-					$overDriveRecord = new OverDriveRecordDriver($bookshelfItem['overDriveId']);
+					$overDriveRecord           = new OverDriveRecordDriver($bookshelfItem['overDriveId']);
 					$bookshelfItem['recordId'] = $overDriveRecord->getUniqueID();
-					$groupedWorkId = $overDriveRecord->getGroupedWorkId();
+					$groupedWorkId             = $overDriveRecord->getGroupedWorkId();
 					if ($groupedWorkId != null){
 						$bookshelfItem['groupedWorkId'] = $groupedWorkId;
 					}
@@ -561,10 +561,10 @@ class OverDriveDriver3 {
 					$bookshelfItem['linkUrl']    = $overDriveRecord->getLinkUrl(false);
 					$bookshelfItem['ratingData'] = $overDriveRecord->getRatingData();
 				}
-				$bookshelfItem['user'] = $user->getNameAndLibraryLabel();
+				$bookshelfItem['user']   = $user->getNameAndLibraryLabel();
 				$bookshelfItem['userId'] = $user->id;
 
-				$key = $bookshelfItem['checkoutSource'] . $bookshelfItem['overDriveId'];
+				$key                    = $bookshelfItem['checkoutSource'] . $bookshelfItem['overDriveId'];
 				$checkedOutTitles[$key] = $bookshelfItem;
 			}
 		}
@@ -589,7 +589,7 @@ class OverDriveDriver3 {
 		}
 		global $configArray;
 		$holds = array(
-			'available' => array(),
+			'available'   => array(),
 			'unavailable' => array()
 		);
 		if (!$this->isUserValidForOverDrive($user)){
@@ -715,16 +715,17 @@ class OverDriveDriver3 {
 	public function placeOverDriveHold($overDriveId, $user){
 		global $configArray;
 		global $analytics;
+		/** @var Memcache $memCache */
 		global $memCache;
 
 		$url = $configArray['OverDrive']['patronApiUrl'] . '/v1/patrons/me/holds/' . $overDriveId;
 		$params = array(
-			'reserveId' => $overDriveId,
+			'reserveId'    => $overDriveId,
 			'emailAddress' => trim($user->overdriveEmail)
 		);
 		$response = $this->_callPatronUrl($user, $url, $params);
 
-		$holdResult = array();
+		$holdResult            = array();
 		$holdResult['success'] = false;
 		$holdResult['message'] = '';
 
@@ -752,6 +753,7 @@ class OverDriveDriver3 {
 	public function cancelOverDriveHold($overDriveId, $user){
 		global $configArray;
 		global $analytics;
+		/** @var Memcache $memCache */
 		global $memCache;
 
 		$url      = $configArray['OverDrive']['patronApiUrl'] . '/v1/patrons/me/holds/' . $overDriveId;
@@ -848,27 +850,28 @@ class OverDriveDriver3 {
 	public function returnOverDriveItem($overDriveId, $transactionId, $user){
 		global $configArray;
 		global $analytics;
-		global $memCache;
+		global /** @var Memcache $memCache */
+		$memCache;
 
 		$url      = $configArray['OverDrive']['patronApiUrl'] . '/v1/patrons/me/checkouts/' . $overDriveId;
 		$response = $this->_callPatronDeleteUrl($user, $url);
 
-		$cancelHoldResult            = array();
-		$cancelHoldResult['success'] = false;
-		$cancelHoldResult['message'] = '';
+		$cancelCheckOutResult            = array();
+		$cancelCheckOutResult['success'] = false;
+		$cancelCheckOutResult['message'] = '';
 		if ($response === true){
-			$cancelHoldResult['success'] = true;
-			$cancelHoldResult['message'] = 'Your item was returned successfully.';
+			$cancelCheckOutResult['success'] = true;
+			$cancelCheckOutResult['message'] = 'Your item was returned successfully.';
 			if ($analytics) $analytics->addEvent('OverDrive', 'Return Item', 'succeeded');
 		}else{
-			$cancelHoldResult['message'] = 'There was an error returning this item.';
-			if (isset($response->message)) $cancelHoldResult['message'] .= "  {$response->message}";
+			$cancelCheckOutResult['message'] = 'There was an error returning this item.';
+			if (isset($response->message)) $cancelCheckOutResult['message'] .= "  {$response->message}";
 			if ($analytics) $analytics->addEvent('OverDrive', 'Return Item', 'failed');
 		}
 
 		$memCache->delete('overdrive_summary_' . $user->id);
 		$user->clearCache();
-		return $cancelHoldResult;
+		return $cancelCheckOutResult;
 	}
 
 	public function selectOverDriveDownloadFormat($overDriveId, $formatId, $user){
@@ -879,7 +882,7 @@ class OverDriveDriver3 {
 
 		$url      = $configArray['OverDrive']['patronApiUrl'] . '/v1/patrons/me/checkouts/' . $overDriveId . '/formats';
 		$params   = array(
-			'reserveId' => $overDriveId,
+			'reserveId'  => $overDriveId,
 			'formatType' => $formatId,
 		);
 		$response = $this->_callPatronUrl($user, $url, $params);
