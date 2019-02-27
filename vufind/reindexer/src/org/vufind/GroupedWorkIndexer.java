@@ -222,6 +222,9 @@ public class GroupedWorkIndexer {
 						case "Addison":
 							ilsRecordProcessors.put(curIdentifier, new AddisonRecordProcessor(this, vufindConn, indexingProfileRS, logger, fullReindex));
 							break;
+						case "Aurora":
+							ilsRecordProcessors.put(curIdentifier, new AuroraRecordProcessor(this, vufindConn, indexingProfileRS, logger, fullReindex));
+							break;
 						case "Arlington":
 							ilsRecordProcessors.put(curIdentifier, new ArlingtonRecordProcessor(this, vufindConn, indexingProfileRS, logger, fullReindex));
 							break;
