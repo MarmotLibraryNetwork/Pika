@@ -71,7 +71,6 @@ class RecordGroupingProcessor {
 	RecordGroupingProcessor(Connection dbConnection, String serverName, Ini configIni, Logger logger, boolean fullRegrouping) {
 		this.logger = logger;
 		this.fullRegrouping = fullRegrouping;
-		//TODO: these should be deprecated for indexing profile settings in the database
 		recordNumberTag = configIni.get("Reindex", "recordNumberTag");
 		recordNumberPrefix = configIni.get("Reindex", "recordNumberPrefix");
 		itemTag = configIni.get("Reindex", "itemTag");

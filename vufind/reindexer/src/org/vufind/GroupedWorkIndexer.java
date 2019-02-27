@@ -44,8 +44,8 @@ public class GroupedWorkIndexer {
 	private PreparedStatement getNovelistStmt;
 	private Connection        vufindConn;
 
-	private int availableAtLocationBoostValue;
-	private int ownedByLocationBoostValue;
+	private int     availableAtLocationBoostValue;
+	private int     ownedByLocationBoostValue;
 	private boolean giveOnOrderItemsTheirOwnShelfLocation = false;
 
 	private boolean fullReindex;
