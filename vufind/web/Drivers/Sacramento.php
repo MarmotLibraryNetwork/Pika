@@ -82,6 +82,13 @@ class Sacramento extends Sierra
 		return true;
 	}
 
+	public function hasFastRenewAll(){
+		return false;
+		//TODO: turned off using millennium driver renewall because it seems to have errors for Sacramento.
+		//see: https://marmot.myjetbrains.com/youtrack/issue/D-2918
+	}
+
+
 	/**
 	 * @param User    $user          User that the PIN should be changed for
 	 * @param string $oldPin         Current PIN
@@ -199,9 +206,10 @@ class Sacramento extends Sierra
 		$firstNameOneLetter  = strtoupper($firstNameOneLetter[0]);
 		$birthDate           = trim($_REQUEST['birthDate']);
 		$dateArray           = date_parse($birthDate);
+		$birthDay            = str_pad($dateArray['day'], 2, "0", STR_PAD_LEFT);
 		$birthMonth          = str_pad($dateArray['month'], 2, "0", STR_PAD_LEFT);
-		$birthYear           = substr($dateArray['year'], -2, 2);
-		$ddepartment = $lastNameFourLetters . $firstNameOneLetter . $birthMonth . $birthYear;
+		$ddepartment = $lastNameFourLetters . $firstNameOneLetter . $birthDay . $birthMonth;
+
 
 		$_REQUEST['ddepartment'] = $ddepartment;
 

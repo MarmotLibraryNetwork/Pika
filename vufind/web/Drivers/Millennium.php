@@ -616,7 +616,7 @@ class Millennium extends ScreenScrapingDriver
 			} else {
 
 				// Pause briefly after logging in as some follow-up millennium operations (done via curl) will fail if done too quickly
-				usleep(150000);
+				usleep(50000);
 			}
 		}
 

@@ -6955,10 +6955,10 @@ td.hidden-inline-block-lg {
 }
 a,
 a:visited {
-  color: #428bca;
+  color: #326799;
 }
 a:hover {
-  color: #3071a9;
+  color: #254d73;
 }
 a.btn-primary,
 a.btn-warning,
@@ -8960,7 +8960,7 @@ hr.menu {
 .sidebar-links .panel-body a:not(.btn),
 .sidebar-links .panel-body a:visited:not(.btn),
 .sidebar-links .panel-body a:hover:not(.btn) {
-  color: #428bca;
+  color: #326799;
 }
 .ui-helper-hidden {
   display: none;
