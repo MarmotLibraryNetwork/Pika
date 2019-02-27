@@ -84,6 +84,42 @@ public class KohaExportMain {
 			System.exit(1);
 		}
 
+		updateTime = new Date().getTime() / 1000;
+		String profileToLoad               = "ils";
+		int    numHoursToFetchBibDeletions = 24;
+		if (args.length > 1){
+			if (args[1].equalsIgnoreCase("getDeletedBibs")) {
+				getDeletedBibs = true;
+				if (args.length > 2) {
+					try {
+						numHoursToFetchBibDeletions = Integer.parseInt(args[2]);
+					} catch (NumberFormatException e) {
+						logger.warn("Could not parse number of hours to fetch parameter: " + args[2] + "; Using default 24 instead.");
+					}
+				}
+				exportPath = "/data/vufind-plus/bywaterkoha/deletes/marc"; // default path
+				if (args.length > 3) {
+					exportPath = args[3];
+				}
+			} else if (args[1].equalsIgnoreCase("updateLastExtractTime")){
+				long timestamp;
+				if (args.length > 2) {
+					// Set to a specific timestamp if that is passed on the command line
+					String newExtractTime = args[2];
+					timestamp = Long.parseLong(newExtractTime);
+				} else {
+					// Otherwise, set to 24 hours ago
+					timestamp = updateTime - 24*3600;
+				}
+				getLastKohaExtractTime(pikaConn); // Fetches the lastKohaExtractTimeVariableId for us
+				// Update the extract time and exit
+				setLastKohaExtractTime(pikaConn, timestamp);
+				System.exit(0);
+			} else {
+				profileToLoad = args[1];
+			}
+		}
+
 		// Connect to the Koha database
 		Connection kohaConn = null;
 		try {
@@ -99,29 +135,6 @@ public class KohaExportMain {
 			logger.error("Error connecting to koha database ", e);
 			System.exit(1);
 		}
-
-		String profileToLoad = "ils";
-		int numHoursToFetchBibDeletions = 24;
-		if (args.length > 1){
-			if (args[1].equalsIgnoreCase("getDeletedBibs")){
-				getDeletedBibs = true;
-				if (args.length > 2) {
-					try {
-						numHoursToFetchBibDeletions = Integer.parseInt(args[2]);
-					} catch (NumberFormatException e) {
-						logger.warn("Could not parse number of hours to fetch parameter: " + args[2] +"; Using default 24 instead.");
-					}
-				}
-				exportPath = "/data/vufind-plus/bywaterkoha/deletes/marc"; // default path
-				if (args.length > 3){
-					exportPath = args[3];
-				}
-			} else {
-				profileToLoad = args[1];
-			}
-		}
-
-		updateTime      = new Date().getTime() / 1000;
 
 		if (getDeletedBibs){
 			// Fetch Deleted Bibs from today
@@ -420,9 +433,13 @@ public class KohaExportMain {
 	}
 
 	private static void setLastKohaExtractTime(Connection pikaConn) {
+		long finishTime = new Date().getTime() / 1000;
+		setLastKohaExtractTime(pikaConn, finishTime);
+	}
+
+	private static void setLastKohaExtractTime(Connection pikaConn, long finishTime) {
 		// Update the last extract time
 		try {
-			long finishTime = new Date().getTime() / 1000;
 			if (lastKohaExtractTimeVariableId != null) {
 				PreparedStatement updateVariableStmt = pikaConn.prepareStatement("UPDATE variables set value = ? WHERE id = ?");
 				updateVariableStmt.setLong(1, finishTime);
