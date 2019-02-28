@@ -9,8 +9,13 @@ class AuroraRecordProcessor extends IIIRecordProcessor  {
 	AuroraRecordProcessor(GroupedWorkIndexer indexer, Connection pikaConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 		super(indexer, pikaConn, indexingProfileRS, logger, fullReindex);
 
+		validCheckedOutStatusCodes.add("o"); // Library Use Only
+		validCheckedOutStatusCodes.add("d"); // Display
+
 	}
-	private String availableStatus          = "-oy";
+	private String materialTypeSubField     = "d";
+	private String availableStatus          = "-do";
+	private String libraryUseOnlyStatus     = "o";
 
 	@Override
 	//TODO: this could become the base III method when statuses settings are added to the index
@@ -25,6 +30,12 @@ class AuroraRecordProcessor extends IIIRecordProcessor  {
 			}
 		}
 		return available;
+	}
+
+	//TODO: this could become the base method when statuses settings are added to the index
+	protected boolean determineLibraryUseOnly(ItemInfo itemInfo, Scope curScope) {
+		String status = itemInfo.getStatusCode();
+		return !status.isEmpty() && libraryUseOnlyStatus.indexOf(status.charAt(0)) >= 0;
 	}
 
 }
