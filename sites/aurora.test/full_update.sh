@@ -135,19 +135,19 @@ cd /data/vufind-plus/accelerated_reader; curl --remote-name --remote-time --sile
 
 ## SIDELOADS ##
 # Axis 360
-/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} aurora/axis_360 axis_360/aurora >> ${OUTPUT_FILE}
+#/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} aurora/axis_360 axis_360/aurora >> ${OUTPUT_FILE}
 #Biblioboard
-/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} aurora/Biblioboard Biblioboard/aurora >> ${OUTPUT_FILE}
+#/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} aurora/Biblioboard Biblioboard/aurora >> ${OUTPUT_FILE}
 #TrueFlix
-/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} aurora/trueflix trueflix/aurora >> ${OUTPUT_FILE}
+#/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} aurora/trueflix trueflix/aurora >> ${OUTPUT_FILE}
 #Learning Express
-/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} aurora/learning_express learning_express/aurora >> ${OUTPUT_FILE}
+#/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} aurora/learning_express learning_express/aurora >> ${OUTPUT_FILE}
 #Bookflix
-/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} aurora/bookflix bookflix/aurora >> ${OUTPUT_FILE}
+#/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} aurora/bookflix bookflix/aurora >> ${OUTPUT_FILE}
 #Gale eCourses
-/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} aurora/gale_courses gale_courses/aurora >> ${OUTPUT_FILE}
+#/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} aurora/gale_courses gale_courses/aurora >> ${OUTPUT_FILE}
 #RB Digital
-/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} aurora/RBdigital_magazines RBdigital_magazines/aurora >> ${OUTPUT_FILE}
+#/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} aurora/RBdigital_magazines RBdigital_magazines/aurora >> ${OUTPUT_FILE}
 
 #Do a full extract from OverDrive just once a week to catch anything that doesn't
 #get caught in the regular extract
