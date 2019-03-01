@@ -35,7 +35,7 @@ abstract class ScreenScrapingDriver implements DriverInterface {
 	 * @return mixed CookieJar name
 	 */
 	public function getCookieJar() {
-		if (is_null($this->cookieJar)){ //tried empty(); may be a problem
+		if (!isset($this->cookieJar) || is_null($this->cookieJar)){ //tried empty(); may be a problem
 			$this->setCookieJar();
 		}
 		return $this->cookieJar;
