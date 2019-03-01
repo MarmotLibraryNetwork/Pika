@@ -52,17 +52,17 @@ class UserAPI extends Action {
 				require_once ROOT_DIR . '/sys/Utils/ArrayUtils.php';
 				$utf8EncodedValue = ArrayUtils::utf8EncodeArray(array('result'=>$result));
 				$output = json_encode($utf8EncodedValue);
-				$error = json_last_error();
+				$error  = json_last_error();
 				if ($error != JSON_ERROR_NONE || $output === FALSE){
 					if (function_exists('json_last_error_msg')){
 						$output = json_encode(array('error'=>'error_encoding_data', 'message' => json_last_error_msg()));
 					}else{
 						$output = json_encode(array('error'=>'error_encoding_data', 'message' => json_last_error()));
 					}
-					global $configArray;
-					if ($configArray['System']['debug']){
-						print_r($utf8EncodedValue);
-					}
+//					global $configArray;
+//					if ($configArray['System']['debug']){
+//						print_r($utf8EncodedValue);
+//					}
 				}
 			}catch (Exception $e){
 				$output = json_encode(array('error'=>'error_encoding_data', 'message' => $e));
