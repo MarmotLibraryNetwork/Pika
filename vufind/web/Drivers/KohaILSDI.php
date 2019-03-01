@@ -355,6 +355,7 @@ abstract class KohaILSDI extends ScreenScrapingDriver {
 				if ($authenticateResponse->code != "PatronNotFound"){
 					global $logger;
 					$logger->log('Unexpected authentication denied code : ' . $authenticateResponse->code, LOG_DEBUG);
+					$logger->log('Unexpected authentication denied code : ' . $authenticateResponse->message, LOG_DEBUG);
 				}
 				return new PEAR_Error('authentication_error_denied');
 			}
@@ -377,23 +378,23 @@ abstract class KohaILSDI extends ScreenScrapingDriver {
 		$webServiceURL = $this->getWebServiceURL() . $this->ilsdiscript;
 		$webServiceURL .= '?' . http_build_query($urlParameters);
 
-		$patronInfoRepsonse = $this->getWebServiceResponse($webServiceURL);
-		if (!empty($patronInfoRepsonse->cardnumber)){
+		$patronInfoResponse = $this->getWebServiceResponse($webServiceURL);
+		if (!empty($patronInfoResponse->cardnumber)){
 			$userExistsInDB       = false;
 			$patron               = new User();
 			$patron->source       = $this->accountProfile->name;
-			$patron->cat_username = (string)$patronInfoRepsonse->cardnumber;
+			$patron->cat_username = (string)$patronInfoResponse->cardnumber;
 			if ($patron->find(true)){
 				$userExistsInDB = true;
 			}
 
 			$forceDisplayNameUpdate = false;
-			$firstName              = (string)$patronInfoRepsonse->firstname;
+			$firstName              = (string)$patronInfoResponse->firstname;
 			if ($patron->firstname != $firstName){
 				$patron->firstname      = $firstName;
 				$forceDisplayNameUpdate = true;
 			}
-			$lastName = (string)$patronInfoRepsonse->surname;
+			$lastName = (string)$patronInfoResponse->surname;
 			if ($patron->lastname != $lastName){
 				$patron->lastname       = isset($lastName) ? $lastName : '';
 				$forceDisplayNameUpdate = true;
@@ -403,19 +404,19 @@ abstract class KohaILSDI extends ScreenScrapingDriver {
 			}
 			$patron->fullname     = $firstName . ' ' . $lastName;
 			$patron->username     = $kohaUserId;
-			$patron->cat_username = (string)$patronInfoRepsonse->cardnumber;
+			$patron->cat_username = (string)$patronInfoResponse->cardnumber;
 			if (!empty($password)) {
 				$patron->cat_password = $password;
 			}
-			$patron->email      = (string)$patronInfoRepsonse->email;
-			$patron->patronType = (string)$patronInfoRepsonse->categorycode;
-			$patron->web_note   = (string)$patronInfoRepsonse->opacnote; //TODO: double check that the point of the opac note is the same as our webnote
-			$patron->address1   = (string)$patronInfoRepsonse->address;
-			$patron->city       = (string)$patronInfoRepsonse->city;
-			$patron->state      = (string)$patronInfoRepsonse->state;
-			$patron->zip        = (string)$patronInfoRepsonse->zipcode;
+			$patron->email      = (string)$patronInfoResponse->email;
+			$patron->patronType = (string)$patronInfoResponse->categorycode;
+			$patron->web_note   = (string)$patronInfoResponse->opacnote; //TODO: double check that the point of the opac note is the same as our webnote
+			$patron->address1   = (string)$patronInfoResponse->address;
+			$patron->city       = (string)$patronInfoResponse->city;
+			$patron->state      = (string)$patronInfoResponse->state;
+			$patron->zip        = (string)$patronInfoResponse->zipcode;
 
-			$outstandingFines = (string)$patronInfoRepsonse->charges;
+			$outstandingFines = (string)$patronInfoResponse->charges;
 			$patron->fines    = sprintf('$%0.2f', $outstandingFines);
 			$patron->finesVal = floatval($outstandingFines);
 
@@ -428,7 +429,7 @@ abstract class KohaILSDI extends ScreenScrapingDriver {
 			$patron->numCheckedOutIls = $this->getNumOfCheckoutsFromDB($kohaUserId);
 
 
-			$homeBranchCode = strtolower((string)$patronInfoRepsonse->branchcode);
+			$homeBranchCode = strtolower((string)$patronInfoResponse->branchcode);
 			$location       = new Location();
 			$location->code = $homeBranchCode;
 			if (!$location->find(1)){
@@ -489,7 +490,7 @@ abstract class KohaILSDI extends ScreenScrapingDriver {
 
 			$patron->expired     = 0; // default setting
 			$patron->expireClose = 0;
-			$patron->expires     = (string)$patronInfoRepsonse->dateexpiry;
+			$patron->expires     = (string)$patronInfoResponse->dateexpiry;
 			if (!empty($patron->expires)){
 				list ($yearExp, $monthExp, $dayExp) = explode('-', $patron->expires);
 				$timeExpire   = strtotime($monthExp . "/" . $dayExp . "/" . $yearExp);
