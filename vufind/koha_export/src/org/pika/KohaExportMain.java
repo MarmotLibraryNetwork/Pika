@@ -111,7 +111,8 @@ public class KohaExportMain {
 					// Otherwise, set to 24 hours ago
 					timestamp = updateTime - 24*3600;
 				}
-				getLastKohaExtractTime(pikaConn); // Fetches the lastKohaExtractTimeVariableId for us
+				logger.info("Setting the Last Koha Extract Time to timestamp: " + timestamp);
+
 				// Update the extract time and exit
 				setLastKohaExtractTime(pikaConn, timestamp);
 				System.exit(0);
@@ -231,6 +232,35 @@ public class KohaExportMain {
 //			lastKohaExtractTime -= 1 * 60; // minutes version, if we decide to greater than 1
 		} catch (SQLException e) {
 			logger.error("Error fetching the last Koha extract time from the Pika database", e);
+		}
+	}
+
+	private static void setLastKohaExtractTime(Connection pikaConn) {
+		long finishTime = new Date().getTime() / 1000;
+		setLastKohaExtractTime(pikaConn, finishTime);
+	}
+
+	private static void setLastKohaExtractTime(Connection pikaConn, long finishTime) {
+		// Update the last extract time
+		try {
+			if (lastKohaExtractTimeVariableId == null){
+				// If we haven't fetch the Koha Extract time yet, try now.
+				getLastKohaExtractTime(pikaConn);
+			}
+			if (lastKohaExtractTimeVariableId != null) {
+				PreparedStatement updateVariableStmt = pikaConn.prepareStatement("UPDATE variables set value = ? WHERE id = ?");
+				updateVariableStmt.setLong(1, finishTime);
+				updateVariableStmt.setLong(2, lastKohaExtractTimeVariableId);
+				updateVariableStmt.executeUpdate();
+				updateVariableStmt.close();
+			} else {
+				PreparedStatement insertVariableStmt = pikaConn.prepareStatement("INSERT INTO variables (`name`, `value`) VALUES ('last_koha_extract_time', ?)");
+				insertVariableStmt.setString(1, Long.toString(finishTime));
+				insertVariableStmt.executeUpdate();
+				insertVariableStmt.close();
+			}
+		} catch (SQLException e) {
+			logger.error("Error setting the last Koha extract time", e);
 		}
 	}
 
@@ -430,31 +460,6 @@ public class KohaExportMain {
 		}
 		logger.info("Finished loading changed records from Koha database");
 		return success;
-	}
-
-	private static void setLastKohaExtractTime(Connection pikaConn) {
-		long finishTime = new Date().getTime() / 1000;
-		setLastKohaExtractTime(pikaConn, finishTime);
-	}
-
-	private static void setLastKohaExtractTime(Connection pikaConn, long finishTime) {
-		// Update the last extract time
-		try {
-			if (lastKohaExtractTimeVariableId != null) {
-				PreparedStatement updateVariableStmt = pikaConn.prepareStatement("UPDATE variables set value = ? WHERE id = ?");
-				updateVariableStmt.setLong(1, finishTime);
-				updateVariableStmt.setLong(2, lastKohaExtractTimeVariableId);
-				updateVariableStmt.executeUpdate();
-				updateVariableStmt.close();
-			} else {
-				PreparedStatement insertVariableStmt = pikaConn.prepareStatement("INSERT INTO variables (`name`, `value`) VALUES ('last_koha_extract_time', ?)");
-				insertVariableStmt.setString(1, Long.toString(finishTime));
-				insertVariableStmt.executeUpdate();
-				insertVariableStmt.close();
-			}
-		} catch (SQLException e) {
-			logger.error("Error setting the last Koha extract time", e);
-		}
 	}
 
 	private static boolean getDeletedItemsFromDatabase(/*Ini ini,*/ Connection pikaConn, Connection kohaConn){
