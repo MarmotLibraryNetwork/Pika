@@ -42,7 +42,10 @@
 #####################
 # Daily full update #
 #####################
-10 00 * * * cd /usr/local/vufind-plus/sites/aspencat.production; ./full_update.sh
+# run full update at 12:10am on Monday through Saturday
+10 00 * * 1-6 cd /usr/local/vufind-plus/sites/aspencat.production; ./full_update.sh
+# run full update at 4:30am on Sunday
+30 04 * * 0 cd /usr/local/vufind-plus/sites/aspencat.production; ./full_update.sh
 
 ################
 # Pika Cleanup #
