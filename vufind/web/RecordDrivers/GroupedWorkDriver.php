@@ -2913,12 +2913,14 @@ class GroupedWorkDriver extends RecordInterface{
 			$itemId        = $curItem[1] == 'null' ? '' : $curItem[1];
 			$shelfLocation = $curItem[2];
 
-			if ($recordDriver != null && $recordDriver->hasOpacFieldMessage()) {
-				$opacMessage = $recordDriver->getOpacFieldMessage($itemId);
-				if ($opacMessage && $opacMessage != '-' && $opacMessage != ' ') {
-					$opacMessageTranslation = translate('opacFieldMessageCode_'.$opacMessage);
-					if ($opacMessageTranslation != 'opacFieldMessageCode_'){ // Only display if the code has a translation
-						$shelfLocation = "$opacMessageTranslation $shelfLocation";
+			if (!$forCovers){
+				if (!empty($itemId) && $recordDriver != null && $recordDriver->hasOpacFieldMessage()){
+					$opacMessage = $recordDriver->getOpacFieldMessage($itemId);
+					if ($opacMessage && $opacMessage != '-' && $opacMessage != ' '){
+						$opacMessageTranslation = translate('opacFieldMessageCode_' . $opacMessage);
+						if ($opacMessageTranslation != 'opacFieldMessageCode_'){ // Only display if the code has a translation
+							$shelfLocation = "$opacMessageTranslation $shelfLocation";
+						}
 					}
 				}
 			}
