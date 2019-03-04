@@ -9,7 +9,7 @@ PIKADBNAME=pika
 OUTPUT_FILE="/var/log/vufind-plus/${PIKASERVER}/full_update_output.log"
 USE_SIERRA_API_EXTRACT=0
 
-MINFILE1SIZE=$((1250000000))
+MINFILE1SIZE=$((999000000))
 
 # Check if full_update is already running
 #TODO: Verify that the PID file doesn't get log-rotated
