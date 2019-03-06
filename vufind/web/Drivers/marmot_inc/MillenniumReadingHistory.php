@@ -27,6 +27,9 @@ class MillenniumReadingHistory {
 	public function getReadingHistory($patron, $page = 1, $recordsPerPage = -1, $sortOption = "checkedOut") {
 		global $timer;
 		//Load the information from millennium using CURL
+		//$this->driver->_close_curl();
+
+		//$this->driver->_curl_login($patron);
 		$pageContents = $this->driver->_fetchPatronInfoPage($patron, 'readinghistory');
 
 		//Check to see if there are multiple pages of reading history
@@ -246,6 +249,7 @@ class MillenniumReadingHistory {
 		$sCount = 1;
 		$readingHistoryTitles = array();
 		foreach ($sRows as $sRow) {
+			usleep(150000);
 			preg_match_all('/<td[^>]*>(.*?)<\/td>/si', $sRow, $result, PREG_SET_ORDER);
 			$sCols = array();
 			for ($matchi = 0; $matchi < count($result); $matchi++) {

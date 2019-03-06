@@ -2,16 +2,11 @@
 # Copy Aspencat Extracts from ftp server
 # runs after files are received on the ftp server
 #-------------------------------------------------------------------------
-# 19 Dec 14 sml expanded script to copy updated & deleted marc files from
-#               ftp server and added variable/constants declarations
-# 20 Dec 14 sml added output to track progression of the script as it runs
-#-------------------------------------------------------------------------
 # declare variables and constants
 #-------------------------------------------------------------------------
 REMOTE="10.1.2.7:/ftp"
 LOCAL="/mnt/ftp"
 DEST="/data/vufind-plus/aspencat.test/marc"
-#YESTERDAY=`date +%Y%m%d --date="yesterday"`
 LOG="logger -t copyExport "
 
 #-------------------------------------------------------------------------
@@ -28,20 +23,15 @@ mount $REMOTE $LOCAL
 $LOG "~~ exit code " $?
 
 # Only grab the full export file if it is less that a day old.
-FILE=$(find $LOCAL/aspencat/ -name *.mrc.gz -mtime -1)
+FILE=$(find $LOCAL/aspencat/bywaterkoha/completeCollection/ -name "*.mrc.gz" -mtime -1|more -1)
+# final slash helps limit to directory only; quotes around the name pattern is needed in some cases;
+# piping through more -1 ensure only 1 file is used.
 if [ -n "$FILE" ]; then
 	$LOG "~~ unzip $FILE file to fullexport.mrc"
-	gunzip -c $FILE > $DEST/fullexport.mrc
+	gunzip -cv $FILE > $DEST/fullexport.mrc
 	$LOG "~~ exit code " $?
 fi
 
-#$LOG "~~ copy ascc-catalog-deleted marc file"
-#cp $LOCAL/aspencat/ascc-catalog-deleted.$YESTERDAY.marc $DEST
-#$LOG "~~ exit code " $?
-#
-#$LOG "~~ copy ascc-catalog-updated marc file"
-#cp $LOCAL/aspencat/ascc-catalog-updated.$YESTERDAY.marc $DEST
-#$LOG "~~ exit code " $?
 
 $LOG "~~ umount $LOCAL"
 umount $LOCAL

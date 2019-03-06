@@ -108,24 +108,18 @@ fi
 
 #TODO: Use new nightly export
 ## Copy Export from ILS
-/usr/local/vufind-plus/sites/${PIKASERVER}/copyExport.sh >> ${OUTPUT_FILE}
-#YESTERDAY=`date +%Y%m%d --date="yesterday"`
-#UPDATEFILE=/data/vufind-plus/${PIKASERVER}/marc/ascc-catalog-deleted.$YESTERDAY.marc
-#DELETEFILE=/data/vufind-plus/${PIKASERVER}/marc/ascc-catalog-updated.$YESTERDAY.marc
+#/usr/local/vufind-plus/sites/${PIKASERVER}/copyExport.sh >> ${OUTPUT_FILE}
 
-#if [[ -f $UPDATEFILE && -f $DELETEFILE ]]; then
-#	# if the update and delete files are found, merge them into the fullexport file.
-#	echo "Merging updates and deletes." >> ${OUTPUT_FILE}
-#	cd /usr/local/vufind-plus/vufind/cron/; java -jar cron.jar aspencat.test MergeMarcUpdatesAndDeletes >> ${OUTPUT_FILE}
-#else
-#		if [ ! -f $UPDATEFILE ]; then
-#		 echo "Update File $UPDATEFILE was not found." >> ${OUTPUT_FILE}
-#		fi
-#		if [ ! -f $DELETEFILE ]; then
-#		 echo "Delete File $DELETEFILE was not found." >> ${OUTPUT_FILE}
-#		fi
-#	echo "Not merging updates and deletes." >> ${OUTPUT_FILE}
-#fi
+#Fetch Deletions
+cd /usr/local/vufind-plus/vufind/koha_export/;java -server -XX:+UseG1GC -jar koha_export.jar ${PIKASERVER} getDeletedBibs >> ${OUTPUT_FILE}
+
+#Fetch Additions
+# merging happens in this command so it should be last
+/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} aspencat/bywaterkoha bywaterkoha  >> ${OUTPUT_FILE}
+
+#Delete merge backups older than a week (fetch_sideload deletes older than 30 days, but that would take up to much space)
+find /data/vufind-plus/bywaterkoha/mergeBackup -name "*.mrc" -mtime +7 -delete
+
 
 # if the update/delete files aren't found merging won't occur, which would have updated the timestamp on the fullexport file.
 # therefore the next if block, is a good check for everyday of the week.
@@ -144,18 +138,21 @@ if [ -n "$FILE" ]; then
 		cd /usr/local/vufind-plus/vufind/cron; java -server -XX:+UseG1GC -jar cron.jar ${PIKASERVER} ValidateMarcExport >> ${OUTPUT_FILE}
 
 		#Full Regroup
-		cd /usr/local/vufind-plus/vufind/record_grouping; java -server -XX:+UseG1GC -jar record_grouping.jar ${PIKASERVER} fullRegroupingNoClear >> ${OUTPUT_FILE}
-
-		#TODO: Determine if we should do a partial update from the ILS and OverDrive before running the reindex to grab last minute changes
+		cd /usr/local/vufind-plus/vufind/record_grouping; java -server -Xmx6G -XX:+UseG1GC -jar record_grouping.jar ${PIKASERVER} fullRegroupingNoClear >> ${OUTPUT_FILE}
 
 		#Full Reindex
 		cd /usr/local/vufind-plus/vufind/reindexer; nice -n -3 java -server -XX:+UseG1GC -jar reindexer.jar ${PIKASERVER} fullReindex >> ${OUTPUT_FILE}
 
-		# Delete any exports over 7 days
-		find /data/vufind-plus/${PIKASERVER}/marc_backup/ -mindepth 1 -maxdepth 1 -name *.marc -type f -mtime +7 -delete
-
 		# Truncate Continuous Reindexing list of changed items
 		cat /dev/null >| /data/vufind-plus/${PIKASERVER}/marc/changed_items_to_process.csv
+
+		# ON Monday early mornings, when processing the Sunday delivery of the full export, upon a good full reindex, set the Koha Extract time
+		# back to Saturday Night in order to recapture any item changes that occurred Sunday.
+		if [ "${DAYOFWEEK}" -eq 1 ];then
+			echo "Resetting Koha Last Extract Time to Saturday Night." >> ${OUTPUT_FILE}
+			SATURDAYNIGHT=$(date --date="2 days ago 10pm" %s)
+			cd /usr/local/vufind-plus/vufind/koha_export/;java -server -XX:+UseG1GC -jar koha_export.jar ${PIKASERVER} updateLastExtractTime ${SATURDAYNIGHT} >> ${OUTPUT_FILE}
+		fi
 
 		NEWLEVEL=$(($FILE1SIZE * 97 / 100))
 		echo "" >> ${OUTPUT_FILE}

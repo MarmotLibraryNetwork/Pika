@@ -616,7 +616,7 @@ class Millennium extends ScreenScrapingDriver
 			} else {
 
 				// Pause briefly after logging in as some follow-up millennium operations (done via curl) will fail if done too quickly
-				usleep(150000);
+				usleep(50000);
 			}
 		}
 
@@ -1544,7 +1544,16 @@ class Millennium extends ScreenScrapingDriver
 			$post_data['uuniversityID'] = trim($_REQUEST['universityID']); // I think the initial double u is the correct entry. No one is currently using this so I can't confirm. Pascal. 10-11-2018
 		}
 
-		if ($library->selfRegistrationTemplate && $library->selfRegistrationTemplate != 'default'){
+		if ( isset($_REQUEST['ddepartment']) && !empty($_REQUEST['ddepartment'])) {
+			$post_data['ddepartment'] = $_REQUEST['ddepartment'];
+		}
+
+		if (!empty($_REQUEST['signature'])){
+			// Bemis self-registration form requires signature
+			$post_data['signature'] = trim($_REQUEST['signature']);
+		}
+
+		if (!empty($library->selfRegistrationTemplate) && $library->selfRegistrationTemplate != 'default'){
 			$post_data['TemplateName'] = $library->selfRegistrationTemplate;
 		}
 

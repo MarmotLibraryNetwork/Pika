@@ -18,16 +18,21 @@ class ArrayUtils
 		return $array;
 	}
 
-	function encode_item(&$item, &$key)
-	{
+	function encode_item(&$item, &$key){
+		$utf8 = 'UTF-8';
+		$possible_encodings = 'UTF-8, ISO-8859-1'; //This will likely need expanded other encodings we encounter
 		if (is_array($item)){
 			ArrayUtils::encode_item($item, $key);
-		}else if (is_string($item)){
-			// This only encodes an ISO-8859-1 string to UTF-8
-			// You have to determine the sting in is ISO-8859-1 fist,
-			$key = utf8_encode($key);
-			$item = utf8_encode($item);
+		}else{
+			if (is_string($item)){
+				if (!mb_check_encoding($key, $utf8)){
+					$key = mb_convert_encoding($key, $utf8, 'UTF-8, ISO-8859-1');
+				}
+				if (!mb_check_encoding($item, $utf8)){
+					$item = mb_convert_encoding($item, $utf8, 'UTF-8, ISO-8859-1');
+				}
+			}
 		}
-
 	}
+
 }

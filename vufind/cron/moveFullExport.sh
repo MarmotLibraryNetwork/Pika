@@ -27,12 +27,16 @@ else
 			if [ $(ls -1A "$LOCAL/$SOURCE/" | grep -i .mrc | wc -l) -gt 0 ]; then
 				# only do copy command if there are files present to move
 
-				FILE1=$(ls -rt1 $LOCAL/$SOURCE/*|grep -i .mrc|tail -1)
-				# Get only the latest file
+				FILE1=$(ls -rt1 $LOCAL/$SOURCE/*|grep -i .mrc$|tail -1)
+				# Get only the latest file, and must end with .mrc
 				if [ -n "$FILE1" ]; then
+					if [ $(ls -1A "$LOCAL/$SOURCE/" | grep -i .mrc | wc -l) -gt 1 ]; then
+						echo "There is more that 1 MARC file present in $LOCAL/$SOURCE/ during $0 process."
+					fi
+
 					$LOG "~~ Copy fullexport marc file."
 					$LOG "~~ cp --update $FILE1 /data/vufind-plus/$DESTINATION/marc/fullexport.mrc"
-					cp --update "$FILE1" /data/vufind-plus/$DESTINATION/marc/fullexport.mrc
+					cp --update -v "$FILE1" /data/vufind-plus/$DESTINATION/marc/fullexport.mrc
 
 					if [ $? -ne 0 ]; then
 						$LOG "~~ Copying $FILE1 file failed."
@@ -51,11 +55,47 @@ else
 						fi
 					fi
 
-					if [ $(ls -1A "$LOCAL/$SOURCE/" | grep -i .mrc | wc -l) -gt 1 ]; then
+				else
+
+			# Process compressed MARC files
+			if [ $(ls -1A "$LOCAL/$SOURCE/" | grep .mrc.gz$ | wc -l) -gt 0 ] ; then
+					if [ $(ls -1A "$LOCAL/$SOURCE/" | grep .mrc.gz$ | wc -l) -gt 1 ]; then
 						echo "There is more that 1 MARC file present in $LOCAL/$SOURCE/ during $0 process."
 					fi
-#				else
-#					echo "No File was found in $SOURCE"
+				# if they are gzipped files copy and unzip
+				$LOG "~~ Gzip files found."
+				echo "~~ Gzip files found."
+
+				$LOG "~~ cp $LOCAL/$SOURCE/*.mrc.gz $DESTINATION/"
+				cp -v $LOCAL/$SOURCE/*.mrc.gz /data/vufind-plus/$DESTINATION/marc/
+
+				if [ $? -ne 0 ]; then
+					$LOG "~~ Copying $SOURCE marc files failed."
+					echo "Copying $SOURCE marc files failed."
+				else
+					$LOG "~~ $SOURCE gzipped marc files were copied. Decompressing."
+					echo "$SOURCE gzipped marc files were copied. Decompressing."
+
+					$LOG "~~ gunzip -v $DESTINATION/*.mrc.gz"
+					gunzip -vf /data/vufind-plus/$DESTINATION/marc/*.mrc.gz > /data/vufind-plus/$DESTINATION/marc/fullexport.mrc
+					if [ $? -eq 1 ];then
+						$LOG "~~ Decompression failed."
+						echo "Decompression failed."
+					else
+
+						if [[ ! $PIKASERVER =~ ".test" ]]; then
+							# Only move marc files to processed folder for production servers
+							# The test server MUST run before production or the file won't exist
+							if [ ! -d "$LOCAL/$SOURCE/processed/" ]; then
+								mkdir $LOCAL/$SOURCE/processed/
+							fi
+							echo "Moving files on ftp server to processed directory."
+							mv -v $LOCAL/$SOURCE/*.mrc.gz $LOCAL/$SOURCE/processed/
+						fi
+					fi
+				fi
+			fi
+
 				fi
 			fi
 		else

@@ -393,8 +393,8 @@ class CatalogConnection
 				$this->updateReadingHistoryBasedOnCurrentCheckouts($patron);
 
 				require_once ROOT_DIR . '/sys/ReadingHistoryEntry.php';
-				$readingHistoryDB = new ReadingHistoryEntry();
-				$readingHistoryDB->userId = $patron->id;
+				$readingHistoryDB          = new ReadingHistoryEntry();
+				$readingHistoryDB->userId  = $patron->id;
 				$readingHistoryDB->deleted = 0; //Only show titles that have not been deleted
 				$readingHistoryDB->selectAdd('MAX(checkOutDate) as checkOutDate');
 				$readingHistoryDB->selectAdd('GROUP_CONCAT(DISTINCT(format)) as format');
@@ -422,8 +422,8 @@ class CatalogConnection
 					$readingHistoryTitles[] = $historyEntry;
 				}
 
-				$readingHistoryDB = new ReadingHistoryEntry();
-				$readingHistoryDB->userId = $patron->id;
+				$readingHistoryDB          = new ReadingHistoryEntry();
+				$readingHistoryDB->userId  = $patron->id;
 				$readingHistoryDB->deleted = 0;
 				$readingHistoryDB->groupBy('groupedWorkPermanentId');
 				$readingHistoryDB->find();
@@ -883,7 +883,7 @@ class CatalogConnection
 	private function updateReadingHistoryBasedOnCurrentCheckouts($patron) {
 		require_once ROOT_DIR . '/sys/ReadingHistoryEntry.php';
 		//Note, include deleted titles here so they are not added multiple times.
-		$readingHistoryDB = new ReadingHistoryEntry();
+		$readingHistoryDB         = new ReadingHistoryEntry();
 		$readingHistoryDB->userId = $patron->id;
 		$readingHistoryDB->whereAdd('checkInDate IS NULL');
 		$readingHistoryDB->find();
@@ -915,7 +915,7 @@ class CatalogConnection
 			if (array_key_exists($key, $activeHistoryTitles)){
 				unset($activeHistoryTitles[$key]);
 			}else{
-				$historyEntryDB = new ReadingHistoryEntry();
+				$historyEntryDB         = new ReadingHistoryEntry();
 				$historyEntryDB->userId = $patron->id;
 				if (isset($checkout['groupedWorkId'])){
 					$historyEntryDB->groupedWorkPermanentId = $checkout['groupedWorkId'] == null ? '' : $checkout['groupedWorkId'];
@@ -925,9 +925,15 @@ class CatalogConnection
 
 				$historyEntryDB->source       = $source;
 				$historyEntryDB->sourceId     = $sourceId;
-				$historyEntryDB->title        = substr($checkout['title'], 0, 150);
-				$historyEntryDB->author       = substr($checkout['author'], 0, 75);
-				$historyEntryDB->format       = substr($checkout['format'], 0, 50);
+				if (!empty($checkout['title'])){
+					$historyEntryDB->title = substr($checkout['title'], 0, 150);
+				}
+				if (!empty($checkout['author'])){
+					$historyEntryDB->author = substr($checkout['author'], 0, 75);
+				}
+				if (!empty($checkout['format'])){
+					$historyEntryDB->format = substr($checkout['format'], 0, 50);
+				}
 				$historyEntryDB->checkOutDate = time();
 				if (!$historyEntryDB->insert()){
 					global $logger;
@@ -939,9 +945,9 @@ class CatalogConnection
 		//Anything that was still active is now checked in
 		foreach ($activeHistoryTitles as $historyEntry){
 			//Update even if deleted to make sure code is cleaned up correctly
-			$historyEntryDB = new ReadingHistoryEntry();
-			$historyEntryDB->source = $historyEntry['source'];
-			$historyEntryDB->sourceId = $historyEntry['id'];
+			$historyEntryDB              = new ReadingHistoryEntry();
+			$historyEntryDB->source      = $historyEntry['source'];
+			$historyEntryDB->sourceId    = $historyEntry['id'];
 			$historyEntryDB->checkInDate = null;
 			if ($historyEntryDB->find(true)){
 				$historyEntryDB->checkInDate = time();

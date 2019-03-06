@@ -82,6 +82,13 @@ class Sacramento extends Sierra
 		return true;
 	}
 
+	public function hasFastRenewAll(){
+		return false;
+		//TODO: turned off using millennium driver renewall because it seems to have errors for Sacramento.
+		//see: https://marmot.myjetbrains.com/youtrack/issue/D-2918
+	}
+
+
 	/**
 	 * @param User    $user          User that the PIN should be changed for
 	 * @param string $oldPin         Current PIN
@@ -159,7 +166,7 @@ class Sacramento extends Sierra
 
 	function selfRegister(){
 		global $library;
-		// sacramento test and production, woodlands test
+		// sacramento test and production, woodlands test and production
 		if ($library->subdomain == 'catalog' || $library->subdomain == 'spl' || $library->subdomain == 'woodland' || $library->subdomain == 'cityofwoodland'){
 			//Capitalize All Input, expect pin passwords
 			foreach ($this->getSelfRegistrationFields() as $formField){
@@ -169,6 +176,7 @@ class Sacramento extends Sierra
 				}
 			}
 		}
+
 		$address              = trim($_REQUEST['address']);
 		$originalAddressInput = $address; // Save for feeding back data input to users (ie undo our special manipulations here)
 		$apartmentNumber      = trim($_REQUEST['apartmentNumber']);
@@ -176,12 +184,42 @@ class Sacramento extends Sierra
 			$address .= ' APT ' . $apartmentNumber;
 		}
 
+		// Special handling for all Sac libraries.
+		// Removing , after city
+		// These will need to be reset before returning to user
+		$orignalCity  = trim($_REQUEST['city']);
+		$orignalState = trim($_REQUEST['state']);
+		$orignalZip   = trim($_REQUEST['zip']);
+
+		$cityStateZip = "$orignalCity $orignalState $orignalZip";
+		$_REQUEST['city']  = $cityStateZip;
+		$_REQUEST['state'] = '';
+		$_REQUEST['zip']   = '';
+
+		//library specific field for ddepartment
+		//four letters of last name, first letter of first name, two digit birth month, two digit birth day
+		//short last names get padded with Z
+		$lastNameFourLetters = substr($_REQUEST['lastName'], 0, 4);
+		$lastNameFourLetters = strtoupper($lastNameFourLetters);
+		$lastNameFourLetters = str_pad($lastNameFourLetters, 4, "Z", STR_PAD_RIGHT);
+		$firstNameOneLetter  = substr($_REQUEST['firstName'], 0, 1);
+		$firstNameOneLetter  = strtoupper($firstNameOneLetter[0]);
+		$birthDate           = trim($_REQUEST['birthDate']);
+		$dateArray           = date_parse($birthDate);
+		$birthDay            = str_pad($dateArray['day'], 2, "0", STR_PAD_LEFT);
+		$birthMonth          = str_pad($dateArray['month'], 2, "0", STR_PAD_LEFT);
+		$ddepartment = $lastNameFourLetters . $firstNameOneLetter . $birthDay . $birthMonth;
+
+
+		$_REQUEST['ddepartment'] = $ddepartment;
+
+		// format phone to 000-000-0000
 		if(isset($_REQUEST['phone'])) {
 			$phone_number = $_REQUEST['phone'];
 			// strip everything except digits
 			$phone_number = preg_replace("/[^\d]/", "", $phone_number);
 			$length       = strlen($phone_number);
-			// if number is 11 try and trim leading 1
+			// if number is 11 try to trim leading 1
 			if ($length == 11) {
 				rtrim($phone_number, '1');
 				// get the length again
@@ -192,10 +230,12 @@ class Sacramento extends Sierra
 			}
 			$_REQUEST['phone'] = $phone_number;
 		}
+		// end special handling
+
 		$guardianFirstName = trim($_REQUEST['guardianFirstName']);
 		$guardianLastName  = trim($_REQUEST['guardianLastName']);
 
-		// Reset global variables to be processed by parent method
+		// Reset request variables to be processed by parent method
 		if (!empty($guardianFirstName) || !empty($guardianLastName)) {
 			// Required for registrants that are under 18 years old
 			$_REQUEST['address']       = 'C/O ' . $guardianFirstName . ($guardianFirstName ? ' ' : '' ) . $guardianLastName;
@@ -224,7 +264,12 @@ class Sacramento extends Sierra
 
 		$selfRegisterResults = parent::selfRegister();
 
-		$_REQUEST['address'] = $originalAddressInput;  // Set the global variable back so the user sees what they inputted
+		// Set the request variable back so the user sees what they inputted
+		$_REQUEST['address'] = $originalAddressInput;
+		$_REQUEST['city']    = $orignalCity;
+		$_REQUEST['state']   = $orignalState;
+		$_REQUEST['zip']     = $orignalZip;
+
 		unset($_REQUEST['countyAddress']);
 
 		if ($selfRegisterResults['success'] && !empty($selfRegisterResults['barcode'])) {
@@ -241,6 +286,10 @@ class Sacramento extends Sierra
 		}
 
 		return $selfRegisterResults;
+	}
+
+	function combineCityStateZipInSelfRegistration(){
+		return false;
 	}
 
 	function setSelfRegisteredUserPIN($barcode, $pin) {

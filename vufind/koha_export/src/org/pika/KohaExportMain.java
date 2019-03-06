@@ -34,7 +34,9 @@ public class KohaExportMain {
 	private static String serverName; //Pika instance name
 
 	private static IndexingProfile indexingProfile;
-	private static String exportPath;
+	private static String          exportPath;
+
+	private static boolean getDeletedBibs = false;
 
 	// Item subfields
 	private static char locationSubfield      = 'a';
@@ -47,6 +49,9 @@ public class KohaExportMain {
 	private static char restrictedSubfield    = '5';
 	private static char dueDateSubfield       = 'q';
 
+	private static long updateTime;
+	private static long lastKohaExtractTime;
+	private static Long lastKohaExtractTimeVariableId = null;
 
 
 	public static void main(String[] args) {
@@ -59,6 +64,7 @@ public class KohaExportMain {
 		} else {
 			System.out.println("Could not find log4j configuration " + log4jFile.toString());
 		}
+
 		logger.info(startTime.toString() + ": Starting Koha Extract");
 
 		// Read the base INI file to get information about the server (current directory/conf/config.ini)
@@ -78,6 +84,43 @@ public class KohaExportMain {
 			System.exit(1);
 		}
 
+		updateTime = new Date().getTime() / 1000;
+		String profileToLoad               = "ils";
+		int    numHoursToFetchBibDeletions = 24;
+		if (args.length > 1){
+			if (args[1].equalsIgnoreCase("getDeletedBibs")) {
+				getDeletedBibs = true;
+				if (args.length > 2) {
+					try {
+						numHoursToFetchBibDeletions = Integer.parseInt(args[2]);
+					} catch (NumberFormatException e) {
+						logger.warn("Could not parse number of hours to fetch parameter: " + args[2] + "; Using default 24 instead.");
+					}
+				}
+				exportPath = "/data/vufind-plus/bywaterkoha/deletes/marc"; // default path
+				if (args.length > 3) {
+					exportPath = args[3];
+				}
+			} else if (args[1].equalsIgnoreCase("updateLastExtractTime")){
+				long timestamp;
+				if (args.length > 2) {
+					// Set to a specific timestamp if that is passed on the command line
+					String newExtractTime = args[2];
+					timestamp = Long.parseLong(newExtractTime);
+				} else {
+					// Otherwise, set to 24 hours ago
+					timestamp = updateTime - 24*3600;
+				}
+				logger.info("Setting the Last Koha Extract Time to timestamp: " + timestamp);
+
+				// Update the extract time and exit
+				setLastKohaExtractTime(pikaConn, timestamp);
+				System.exit(0);
+			} else {
+				profileToLoad = args[1];
+			}
+		}
+
 		// Connect to the Koha database
 		Connection kohaConn = null;
 		try {
@@ -94,36 +137,61 @@ public class KohaExportMain {
 			System.exit(1);
 		}
 
-		String profileToLoad = "ils";
-		if (args.length > 1){
-			profileToLoad = args[1];
-		}
-		indexingProfile = IndexingProfile.loadIndexingProfile(pikaConn, profileToLoad, logger);
+		if (getDeletedBibs){
+			// Fetch Deleted Bibs from today
+			try {
+				String            deletedBibsFileName        = "deletedBibs.csv";
+				long              yesterday                  = updateTime - numHoursToFetchBibDeletions * 3600; // seconds
+				PreparedStatement getDeletedBibsFromKohaStmt = kohaConn.prepareStatement("select biblionumber from deletedbiblio where timestamp >= ?");
+				getDeletedBibsFromKohaStmt.setTimestamp(1, new Timestamp(yesterday * 1000));
+				ResultSet getDeletedBibsFromKohaRS = getDeletedBibsFromKohaStmt.executeQuery();
+				writeToFileFromSQLResult(deletedBibsFileName, getDeletedBibsFromKohaRS);
 
-		exportPath = indexingProfile.marcPath;
-		if (exportPath.startsWith("\"")){
-			exportPath = exportPath.substring(1, exportPath.length() - 1);
-		}
+			} catch (Exception e) {
+				logger.error("Error loading deleted records from Koha database", e);
+				System.exit(1);
+			}
 
-		// Override any relevant subfield settings if they are set
-		if (indexingProfile.locationSubfield != ' '){
-			locationSubfield = indexingProfile.locationSubfield;
-		}
-		if (indexingProfile.subLocationSubfield != ' '){
-			subLocationSubfield = indexingProfile.subLocationSubfield;
-		}
-		if (indexingProfile.shelvingLocationSubfield != ' '){
-			shelflocationSubfield = indexingProfile.shelvingLocationSubfield;
-		}
-		if (indexingProfile.dueDateSubfield != ' '){
-			dueDateSubfield = indexingProfile.dueDateSubfield;
-		}
 
-		//Get a list of works that have changed since the last index
-		getChangedRecordsFromDatabase(ini, pikaConn, kohaConn);
-		exportHolds(pikaConn, kohaConn);
-		exportHoldShelfItems(kohaConn);
-		exportInTransitItems(kohaConn);
+		} else {
+			// Regular Koha extraction processes
+
+			indexingProfile = IndexingProfile.loadIndexingProfile(pikaConn, profileToLoad, logger);
+			exportPath      = indexingProfile.marcPath;
+			if (exportPath.startsWith("\"")){
+				exportPath = exportPath.substring(1, exportPath.length() - 1);
+			}
+
+			// Override any relevant subfield settings if they are set
+			if (indexingProfile.locationSubfield != ' '){
+				locationSubfield = indexingProfile.locationSubfield;
+			}
+			if (indexingProfile.subLocationSubfield != ' '){
+				subLocationSubfield = indexingProfile.subLocationSubfield;
+			}
+			if (indexingProfile.shelvingLocationSubfield != ' '){
+				shelflocationSubfield = indexingProfile.shelvingLocationSubfield;
+			}
+			if (indexingProfile.dueDateSubfield != ' '){
+				dueDateSubfield = indexingProfile.dueDateSubfield;
+			}
+
+			getLastKohaExtractTime(pikaConn);
+
+			if(
+				// Get a list of works that have changed or deleted since the last index
+					getChangedRecordsFromDatabase(ini, pikaConn, kohaConn) &&
+							getDeletedItemsFromDatabase(/*ini,*/ pikaConn, kohaConn)
+			){
+				setLastKohaExtractTime(pikaConn);
+			} else {
+				logger.error("There was an error updating item info or the database, not setting last extract time.");
+			}
+
+			exportHolds(pikaConn, kohaConn);
+			exportHoldShelfItems(kohaConn);
+			exportInTransitItems(kohaConn);
+		}
 
 		if (pikaConn != null){
 			try{
@@ -145,6 +213,55 @@ public class KohaExportMain {
 		}
 		Date currentTime = new Date();
 		logger.info(currentTime.toString() + ": Finished Koha Extract");
+	}
+
+	private static void getLastKohaExtractTime(Connection pikaConn) {
+		try {
+			PreparedStatement loadLastKohaExtractTimeStmt = pikaConn.prepareStatement("SELECT * from variables WHERE name = 'last_koha_extract_time'", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			ResultSet         lastKohaExtractTimeRS       = loadLastKohaExtractTimeStmt.executeQuery();
+			if (lastKohaExtractTimeRS.next()){
+				lastKohaExtractTime = lastKohaExtractTimeRS.getLong("value");
+				lastKohaExtractTimeVariableId = lastKohaExtractTimeRS.getLong("id");
+			}else{
+				//Get the last 5 minutes for the initial setup
+				lastKohaExtractTime = updateTime - 5 * 60;
+			}
+
+			// go back 1 minutes
+			lastKohaExtractTime -= 60;
+//			lastKohaExtractTime -= 1 * 60; // minutes version, if we decide to greater than 1
+		} catch (SQLException e) {
+			logger.error("Error fetching the last Koha extract time from the Pika database", e);
+		}
+	}
+
+	private static void setLastKohaExtractTime(Connection pikaConn) {
+		long finishTime = new Date().getTime() / 1000;
+		setLastKohaExtractTime(pikaConn, finishTime);
+	}
+
+	private static void setLastKohaExtractTime(Connection pikaConn, long finishTime) {
+		// Update the last extract time
+		try {
+			if (lastKohaExtractTimeVariableId == null){
+				// If we haven't fetch the Koha Extract time yet, try now.
+				getLastKohaExtractTime(pikaConn);
+			}
+			if (lastKohaExtractTimeVariableId != null) {
+				PreparedStatement updateVariableStmt = pikaConn.prepareStatement("UPDATE variables set value = ? WHERE id = ?");
+				updateVariableStmt.setLong(1, finishTime);
+				updateVariableStmt.setLong(2, lastKohaExtractTimeVariableId);
+				updateVariableStmt.executeUpdate();
+				updateVariableStmt.close();
+			} else {
+				PreparedStatement insertVariableStmt = pikaConn.prepareStatement("INSERT INTO variables (`name`, `value`) VALUES ('last_koha_extract_time', ?)");
+				insertVariableStmt.setString(1, Long.toString(finishTime));
+				insertVariableStmt.executeUpdate();
+				insertVariableStmt.close();
+			}
+		} catch (SQLException e) {
+			logger.error("Error setting the last Koha extract time", e);
+		}
 	}
 
 	private static void exportInTransitItems(Connection kohaConn) {
@@ -240,36 +357,18 @@ public class KohaExportMain {
 		logger.info("Finished exporting holds");
 	}
 
-	private static void getChangedRecordsFromDatabase(Ini ini, Connection vufindConn, Connection kohaConn) {
-		//Get the time the last extract was done
+	private static boolean getChangedRecordsFromDatabase(Ini ini, Connection pikaConn, Connection kohaConn) {
+		boolean success = true;
+
+		// Get the time the last extract was done
 		try{
 			logger.info("Starting to load changed records from Koha using the Database connection");
-			Long lastKohaExtractTimeVariableId = null;
-			long updateTime                    = new Date().getTime() / 1000;
-			long lastKohaExtractTime;
-
-			PreparedStatement markGroupedWorkForBibAsChangedStmt = vufindConn.prepareStatement("UPDATE grouped_work SET date_updated = ? where id = (SELECT grouped_work_id from grouped_work_primary_identifiers WHERE type = 'ils' and identifier = ?)");
-			PreparedStatement loadLastKohaExtractTimeStmt        = vufindConn.prepareStatement("SELECT * from variables WHERE name = 'last_koha_extract_time'", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-			ResultSet         lastKohaExtractTimeRS              = loadLastKohaExtractTimeStmt.executeQuery();
-			if (lastKohaExtractTimeRS.next()){
-				lastKohaExtractTime           = lastKohaExtractTimeRS.getLong("value");
-				lastKohaExtractTimeVariableId = lastKohaExtractTimeRS.getLong("id");
-			}else{
-				//Get the last 5 minutes for the initial setup
-				lastKohaExtractTime = updateTime - 5 * 60 * 60;
-			}
-
-			// go back 20 minutes to make sure that we cover changes that haven't been replicated
-			lastKohaExtractTime -= 20 * 60; //TODO: is this still needed?
 
 			String maxRecordsToUpdateDuringExtractStr = ini.get("Catalog", "maxRecordsToUpdateDuringExtract");
 			int    maxRecordsToUpdateDuringExtract    = 100000;
 			if (maxRecordsToUpdateDuringExtractStr != null && maxRecordsToUpdateDuringExtractStr.length() > 0){
 				maxRecordsToUpdateDuringExtract = Integer.parseInt(maxRecordsToUpdateDuringExtractStr);
 			}
-
-			//Only mark records as changed
-			boolean errorUpdatingDatabase = false;
 
 //			PreparedStatement getChangedItemsFromKohaStmt = kohaConn.prepareStatement("select itemnumber, biblionumber, barcode, homebranch, ccode, location, damaged, itemlost, withdrawn, restricted, onloan, notforloan from items where timestamp >= ? LIMIT 0, ?");
 			PreparedStatement getChangedItemsFromKohaStmt = kohaConn.prepareStatement("select itemnumber, biblionumber, homebranch, ccode, location, damaged, itemlost, withdrawn, onloan, notforloan from items where timestamp >= ? LIMIT 0, ?");
@@ -323,9 +422,12 @@ public class KohaExportMain {
 				itemChanges.add(changeInfo);
 			}
 
-			vufindConn.setAutoCommit(false);
+			pikaConn.setAutoCommit(false);
 			logger.info("A total of " + changedBibs.size() + " bibs to update");
-			int numUpdates = 0;
+
+			// Update MARC then mark owning grouped work as changed
+			PreparedStatement markGroupedWorkForBibAsChangedStmt = pikaConn.prepareStatement("UPDATE grouped_work SET date_updated = ? where id = (SELECT grouped_work_id from grouped_work_primary_identifiers WHERE type = 'ils' and identifier = ?)");
+			int               numUpdates                         = 0;
 			for (String curBibId : changedBibs.keySet()){
 				//Update the marc record
 				updateMarc(curBibId, changedBibs.get(curBibId));
@@ -337,94 +439,188 @@ public class KohaExportMain {
 
 					numUpdates++;
 					if (numUpdates % 50 == 0){
-						vufindConn.commit();
+						pikaConn.commit();
 					}
 				}catch (SQLException e){
 					logger.error("Could not mark that " + curBibId + " was changed due to error ", e);
-					errorUpdatingDatabase = true;
+					success = false;
 				}
 			}
-			logger.info("A total of " + numUpdates + " bibs were updated");
+			logger.info("A total of " + numUpdates + " bibs were marked for reindexing");
 
 
 			//Turn auto commit back on
-			vufindConn.commit();
-			vufindConn.setAutoCommit(true);
-
-			if (!errorUpdatingDatabase) {
-				//Update the last extract time
-				Long finishTime = new Date().getTime() / 1000;
-				if (lastKohaExtractTimeVariableId != null) {
-					PreparedStatement updateVariableStmt = vufindConn.prepareStatement("UPDATE variables set value = ? WHERE id = ?");
-					updateVariableStmt.setLong(1, finishTime);
-					updateVariableStmt.setLong(2, lastKohaExtractTimeVariableId);
-					updateVariableStmt.executeUpdate();
-					updateVariableStmt.close();
-				} else {
-					PreparedStatement insertVariableStmt = vufindConn.prepareStatement("INSERT INTO variables (`name`, `value`) VALUES ('last_koha_extract_time', ?)");
-					insertVariableStmt.setString(1, Long.toString(finishTime));
-					insertVariableStmt.executeUpdate();
-					insertVariableStmt.close();
-				}
-			}else{
-				logger.error("There was an error updating the database, not setting last extract time.");
-			}
+			pikaConn.commit();
+			pikaConn.setAutoCommit(true);
 
 		} catch (Exception e){
 			logger.error("Error loading changed records from Koha database", e);
+			success = false;
 			System.exit(1);
 		}
 		logger.info("Finished loading changed records from Koha database");
+		return success;
+	}
+
+	private static boolean getDeletedItemsFromDatabase(/*Ini ini,*/ Connection pikaConn, Connection kohaConn){
+		boolean success = true;
+		try {
+			logger.info("Starting to load deleted items from Koha using the database connection");
+
+//			PreparedStatement getDeletedItemsFromKohaStmt = kohaConn.prepareStatement("select itemnumber, biblionumber from items where timestamp >= ? LIMIT 0, ?");
+			PreparedStatement getDeletedItemsFromKohaStmt = kohaConn.prepareStatement("select itemnumber, biblionumber from deleteditems where timestamp >= ?");
+			getDeletedItemsFromKohaStmt.setTimestamp(1, new Timestamp(lastKohaExtractTime * 1000));
+			ResultSet                          deletedItemsRS      = getDeletedItemsFromKohaStmt.executeQuery();
+			HashMap<String, ArrayList<String>> bibsForDeletedItems = new HashMap<>();
+			int numItemsToDelete = 0;
+			while (deletedItemsRS.next()) {
+				String itemNumber = deletedItemsRS.getString("itemnumber");
+				String bibNumber  = deletedItemsRS.getString("biblionumber");
+				if (itemNumber != null && !itemNumber.isEmpty() && bibNumber != null && !bibNumber.isEmpty()) {
+					ArrayList<String> deletedIds;
+
+					if (bibsForDeletedItems.containsKey(bibNumber)) {
+						deletedIds = bibsForDeletedItems.get(bibNumber);
+					} else {
+						deletedIds = new ArrayList<>();
+						bibsForDeletedItems.put(bibNumber, deletedIds);
+					}
+					deletedIds.add(itemNumber);
+					numItemsToDelete++;
+
+				} else {
+					logger.warn("Received results from koha database with an empty item or bib number");
+				}
+			}
+
+			pikaConn.setAutoCommit(false);
+			logger.info("A total of " + numItemsToDelete + " items from " + bibsForDeletedItems.size() + " records to delete");
+
+			// Update MARC then mark owning grouped work as changed
+			PreparedStatement markGroupedWorkForBibAsChangedStmt = pikaConn.prepareStatement("UPDATE grouped_work SET date_updated = ? where id = (SELECT grouped_work_id from grouped_work_primary_identifiers WHERE type = 'ils' and identifier = ?)");
+			int               numUpdates                         = 0;
+			for (String curBibId : bibsForDeletedItems.keySet()){
+
+				// Update the marc record
+				deleteItemsFromMarc(curBibId, bibsForDeletedItems.get(curBibId));
+
+				//Update the database
+				try {
+					markGroupedWorkForBibAsChangedStmt.setLong(1, updateTime);
+					markGroupedWorkForBibAsChangedStmt.setString(2, curBibId);
+					markGroupedWorkForBibAsChangedStmt.executeUpdate();
+
+					numUpdates++;
+					if (numUpdates % 50 == 0){
+						pikaConn.commit();
+					}
+				}catch (SQLException e){
+					logger.error("Could not mark that " + curBibId + " was changed due to error ", e);
+					success = false;
+				}
+			}
+			logger.info("A total of " + numUpdates + " bibs were marked for reindexing");
+
+
+		} catch (Exception e){
+			logger.error("Error loading deleted items from Koha database", e);
+			success = false;
+			System.exit(1);
+		}
+		return success;
+
 	}
 
 	private static void updateMarc(String curBibId, ArrayList<ItemChangeInfo> itemChangeInfo) {
 		//Load the existing marc record from file
 		try {
-			File marcFile = indexingProfile.getFileForIlsRecord(curBibId);
-			if (marcFile.exists()) {
-				FileInputStream inputStream = new FileInputStream(marcFile);
-				MarcPermissiveStreamReader marcReader = new MarcPermissiveStreamReader(inputStream, true, true, "UTF-8");
-				if (marcReader.hasNext()) {
-					Record marcRecord = marcReader.next();
-					inputStream.close();
+			Record marcRecord = loadMarc(curBibId);
+			if (marcRecord != null) {
 
-					//Loop through all item fields to see what has changed
-					List<VariableField> itemFields = marcRecord.getVariableFields(indexingProfile.itemTag);
-					for (VariableField itemFieldVar : itemFields) {
-						DataField itemField = (DataField) itemFieldVar;
-						if (itemField.getSubfield(indexingProfile.itemRecordNumberSubfield) != null) {
-							String itemRecordNumber = itemField.getSubfield(indexingProfile.itemRecordNumberSubfield).getData();
-							//Update the items
-							for (ItemChangeInfo curItem : itemChangeInfo) {
-								//Find the correct item
-								if (itemRecordNumber.equals(curItem.getItemId())) {
-									setBooleanSubfield(itemField, curItem.getWithdrawn(), withdrawnSubfield);
-									setBooleanSubfield(itemField, curItem.getDamaged(), damagedSubfield);
+				//Loop through all item fields to see what has changed
+				ArrayList<ItemChangeInfo> remainingItemsToUpdate = new ArrayList<>(itemChangeInfo);
+				List<VariableField> itemFields = marcRecord.getVariableFields(indexingProfile.itemTag);
+				for (VariableField itemFieldVar : itemFields) {
+					DataField itemField = (DataField) itemFieldVar;
+					if (itemField.getSubfield(indexingProfile.itemRecordNumberSubfield) != null) {
+						String itemRecordNumber = itemField.getSubfield(indexingProfile.itemRecordNumberSubfield).getData();
+						//Update the items
+						for (ItemChangeInfo curItem : itemChangeInfo) {
+							//Find the correct item
+							if (itemRecordNumber.equals(curItem.getItemId())) {
+								setBooleanSubfield(itemField, curItem.getWithdrawn(), withdrawnSubfield);
+								setBooleanSubfield(itemField, curItem.getDamaged(), damagedSubfield);
 //									setBooleanSubfield(itemField, curItem.getRestricted(), restrictedSubfield);
-									setSubfieldValue(itemField, lostSubfield, curItem.getItemLost());
-									setSubfieldValue(itemField, locationSubfield, curItem.getLocation());
-									setSubfieldValue(itemField, subLocationSubfield, curItem.getSubLocation());
-									setSubfieldValue(itemField, shelflocationSubfield, curItem.getShelfLocation());
-									setSubfieldValue(itemField, dueDateSubfield, curItem.getDueDate());
-									setSubfieldValue(itemField, notforloanSubfield, curItem.getNotForLoan());
-								}
+								setSubfieldValue(itemField, lostSubfield, curItem.getItemLost());
+								setSubfieldValue(itemField, locationSubfield, curItem.getLocation());
+								setSubfieldValue(itemField, subLocationSubfield, curItem.getSubLocation());
+								setSubfieldValue(itemField, shelflocationSubfield, curItem.getShelfLocation());
+								setSubfieldValue(itemField, dueDateSubfield, curItem.getDueDate());
+								setSubfieldValue(itemField, notforloanSubfield, curItem.getNotForLoan());
+								remainingItemsToUpdate.remove(curItem);
 							}
-						} else {
-							logger.debug("Did not find individual MARC file for bib ");
+						}
+						if (remainingItemsToUpdate.size() == 0){
+							break;
 						}
 					}
-
-					//Write the new marc record
-					MarcWriter writer = new MarcStreamWriter(new FileOutputStream(marcFile, false));
-					writer.write(marcRecord);
-					writer.close();
-				} else {
-					logger.info("Could not read marc record for " + curBibId + " the bib was empty");
 				}
-			}else{
-				logger.debug("Marc Record does not exist for " + curBibId + " it is not part of the main extract yet.");
+				if (remainingItemsToUpdate.size() > 0 ){
+					StringBuilder ItemIds = new StringBuilder();
+					for (ItemChangeInfo curItem : remainingItemsToUpdate){
+						ItemIds.append(curItem.getItemId()).append(", ");
+					}
+					logger.info("Items " + ItemIds.toString() + " were not updated for record " +curBibId);
+					// Possibly new items from today
+				}
+
+				//Write the new marc record
+				saveMarc(marcRecord, curBibId);
 			}
 		}catch (Exception e){
+			logger.error("Error updating marc record for bib " + curBibId, e);
+		}
+	}
+
+	private static void deleteItemsFromMarc(String curBibId, ArrayList<String> deletedIDs) {
+		// Load the existing marc record from file
+		try {
+			Record marcRecord = loadMarc(curBibId);
+			if (marcRecord != null) {
+
+				// Loop through all item fields to find the deleted items
+				boolean isRecordChanged = false;
+				List<VariableField> itemFields = marcRecord.getVariableFields(indexingProfile.itemTag);
+				ArrayList<String> remainingItemsToDelete = new ArrayList<>(deletedIDs);
+				for (VariableField itemFieldVar : itemFields) {
+					DataField itemField = (DataField) itemFieldVar;
+					if (itemField.getSubfield(indexingProfile.itemRecordNumberSubfield) != null) {
+						String itemRecordNumber = itemField.getSubfield(indexingProfile.itemRecordNumberSubfield).getData().trim();
+						// Update the items
+						for (String curItemID : deletedIDs) {
+							// Find the correct item
+							if (itemRecordNumber.equals(curItemID)) {
+								marcRecord.removeVariableField(itemFieldVar);
+								remainingItemsToDelete.remove(curItemID);
+								isRecordChanged = true;
+							}
+						}
+						if (remainingItemsToDelete.size() == 0){
+							break;
+						}
+					}
+				}
+				if (remainingItemsToDelete.size() > 0){
+					logger.info("Items " + String.join(", ", deletedIDs) +  " were not found for deletion on bib " + curBibId );
+					// This may be an unneeded check, as in we have already deleted the items in a round of extraction before this one.
+				}
+
+				// Write the new marc record
+				if (isRecordChanged) {
+					saveMarc(marcRecord, curBibId);
+				}
+			}
+		} catch (Exception e){
 			logger.error("Error updating marc record for bib " + curBibId, e);
 		}
 	}
@@ -456,6 +652,46 @@ public class KohaExportMain {
 				withDrawnSubfield.setData("1");
 			}
 		}
+	}
+
+	private static Record loadMarc(String curBibId) {
+		//Load the existing marc record from file
+		try {
+			logger.debug("Loading MARC for " + curBibId);
+			File marcFile = indexingProfile.getFileForIlsRecord(curBibId);
+			if (marcFile.exists()) {
+				FileInputStream inputStream = new FileInputStream(marcFile);
+				MarcPermissiveStreamReader marcReader = new MarcPermissiveStreamReader(inputStream, true, true, "UTF-8");
+				if (marcReader.hasNext()) {
+					Record marcRecord = marcReader.next();
+					inputStream.close();
+					return marcRecord;
+				} else {
+					logger.info("Could not read marc record for " + curBibId + ". The bib was empty");
+				}
+			}else{
+				logger.debug("Marc Record does not exist for " + curBibId + " (" + marcFile.getAbsolutePath() + "). It is not part of the main extract yet.");
+			}
+		}catch (Exception e){
+			logger.error("Error updating marc record for bib " + curBibId, e);
+		}
+		return null;
+	}
+
+	private static void saveMarc(Record marcObject, String curBibId) {
+		// Write the new marc record
+		File marcFile = indexingProfile.getFileForIlsRecord(curBibId);
+
+		MarcWriter writer;
+		try {
+			writer = new MarcStreamWriter(new FileOutputStream(marcFile, false));
+			writer.write(marcObject);
+			writer.close();
+			logger.debug("  Created or saved updated MARC record to " + marcFile.getAbsolutePath());
+		} catch (FileNotFoundException e) {
+			logger.error("Error saving marc record for bib " + curBibId, e);
+		}
+
 	}
 
 	private static Ini loadConfigFile(String filename){

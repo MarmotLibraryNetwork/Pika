@@ -21,52 +21,53 @@ public class IndexingProfile {
 	Long id;
 
 	String name;
-	private String individualMarcPath;
-	private int numCharsToCreateFolderFrom;
+	private String  individualMarcPath;
+	private int     numCharsToCreateFolderFrom;
 	private boolean createFolderFromLeadingCharacters;
 	//Used in record grouping
 	String recordNumberTag;
+	char   recordNumberField;
 	String recordNumberPrefix;
 
-	String itemTag ;
-	char itemRecordNumberSubfield;
-	char barcodeSubfield;
-	char locationSubfield;
-	char itemStatusSubfield;
-	char dueDateSubfield;
-	String dueDateFormat;
+	String           itemTag;
+	char             itemRecordNumberSubfield;
+	char             barcodeSubfield;
+	char             locationSubfield;
+	char             itemStatusSubfield;
+	char             dueDateSubfield;
+	String           dueDateFormat;
 	SimpleDateFormat dueDateFormatter;
-	char totalCheckoutsSubfield;
-	char lastYearCheckoutsSubfield;
-	char yearToDateCheckoutsSubfield;
-	char totalRenewalsSubfield;
-	char iTypeSubfield;
-	char dateCreatedSubfield;
+	char             totalCheckoutsSubfield;
+	char             lastYearCheckoutsSubfield;
+	char             yearToDateCheckoutsSubfield;
+	char             totalRenewalsSubfield;
+	char             iTypeSubfield;
+	char             dateCreatedSubfield;
 	private String dateCreatedFormat;
 	SimpleDateFormat dateCreatedFormatter;
 
-	char lastCheckinDateSubfield;
-	String lastCheckinFormat;
+	char             lastCheckinDateSubfield;
+	String           lastCheckinFormat;
 	SimpleDateFormat lastCheckinFormatter;
-	char shelvingLocationSubfield;
-	char iCode2Subfield;
-	char callNumberPrestampSubfield;
-	char callNumberSubfield;
-	char callNumberCutterSubfield;
-	char callNumberPoststampSubfield;
-	char volume;
-	char itemUrl;
+	char             shelvingLocationSubfield;
+	char             iCode2Subfield;
+	char             callNumberPrestampSubfield;
+	char             callNumberSubfield;
+	char             callNumberCutterSubfield;
+	char             callNumberPoststampSubfield;
+	char             volume;
+	char             itemUrl;
 
 	//These are used from Record Grouping and Reindexing
 	boolean doAutomaticEcontentSuppression;
 
 	String formatSource;
-	char format;
-	char eContentDescriptor;
+	char   format;
+	char   eContentDescriptor;
 	String specifiedFormatCategory;
 
 	String bcode3DestinationField;
-	char bcode3DestinationSubfield;
+	char   bcode3DestinationSubfield;
 	String callNumberExportFieldTag;
 	String callNumberPrestampExportSubfield;
 	String callNumberExportSubfield;
@@ -84,6 +85,10 @@ public class IndexingProfile {
 		return result;
 	}
 
+	private void setRecordNumberField(String recordNumberField) {
+		this.recordNumberField = getCharFromString(recordNumberField);
+	}
+
 	private void setItemRecordNumberSubfield(String itemRecordNumberSubfield) {
 		this.itemRecordNumberSubfield = getCharFromString(itemRecordNumberSubfield);
 	}
@@ -92,11 +97,9 @@ public class IndexingProfile {
 		this.lastCheckinDateSubfield = getCharFromString(lastCheckinDateSubfield);
 	}
 
-
 	private void setLocationSubfield(String locationSubfield) {
 		this.locationSubfield = getCharFromString(locationSubfield);
 	}
-
 
 	private void setItemStatusSubfield(String itemStatusSubfield) {
 		this.itemStatusSubfield = getCharFromString(itemStatusSubfield);
@@ -210,13 +213,14 @@ public class IndexingProfile {
 				indexingProfile.setShelvingLocationSubfield(indexingProfileRS.getString("shelvingLocation"));
 
 				indexingProfile.individualMarcPath                 = indexingProfileRS.getString("individualMarcPath");
-				indexingProfile.name                        = indexingProfileRS.getString("name");
+				indexingProfile.name                               = indexingProfileRS.getString("name");
 				indexingProfile.numCharsToCreateFolderFrom         = indexingProfileRS.getInt("numCharsToCreateFolderFrom");
 				indexingProfile.createFolderFromLeadingCharacters  = indexingProfileRS.getBoolean("createFolderFromLeadingCharacters");
 
-				indexingProfile.doAutomaticEcontentSuppression = indexingProfileRS.getBoolean("doAutomaticEcontentSuppression");
+				indexingProfile.doAutomaticEcontentSuppression     = indexingProfileRS.getBoolean("doAutomaticEcontentSuppression");
 
-				indexingProfile.recordNumberTag = indexingProfileRS.getString("recordNumberTag");
+				indexingProfile.recordNumberTag    = indexingProfileRS.getString("recordNumberTag");
+				indexingProfile.setRecordNumberField(indexingProfileRS.getString("recordNumberField"));
 				indexingProfile.recordNumberPrefix = indexingProfileRS.getString("recordNumberPrefix");
 				indexingProfile.setEContentDescriptor(indexingProfileRS.getString("eContentDescriptor"));
 

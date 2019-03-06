@@ -23,13 +23,13 @@ if [ $# = 3 ];then
   # Fetch Deletes
   /usr/local/vufind-plus/vufind/cron/moveSideloadAdds.sh $FTPSOURCE/deletesOnly $PIKADATADIR/deletes $PIKASERVER
 
-  if [ $(ls -lA /data/vufind-plus/$PIKADATADIR/marc |grep fullexport.mrc|wc -l) = 0 ];then
-  # If there is no full export file in the main marc directory ....
-  if [ $(ls -lA /data/vufind-plus/$PIKADATADIR/merge/marc/*.mrc|wc -l) -gt 0  ];then
-  # ... and there is a marc file in the merge directory; move largest one and set it as the main full export file
-    FILE=$(ls -rS /data/vufind-plus/$PIKADATADIR/merge/marc/*.mrc|tail -1)
-    mv "$FILE" /data/vufind-plus/$PIKADATADIR/marc/fullexport.mrc
-  fi
+  if [ $(ls -lA /data/vufind-plus/$PIKADATADIR/marc/|grep fullexport.mrc|wc -l) = 0 ];then
+    # If there is no full export file in the main marc directory ....
+    if [ $(ls -lA /data/vufind-plus/$PIKADATADIR/merge/marc/*.mrc|wc -l) -gt 0  ];then
+    # ... and there is a marc file in the merge directory; move largest one and set it as the main full export file
+      FILE=$(ls -rS /data/vufind-plus/$PIKADATADIR/merge/marc/*.mrc|tail -1)
+      mv -v "$FILE" /data/vufind-plus/$PIKADATADIR/marc/fullexport.mrc
+    fi
   fi
 
   # Merge Data

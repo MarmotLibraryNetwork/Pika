@@ -5,6 +5,7 @@ public enum ItemStatus {
 	LIBRARYUSEONLY,
 	ONORDER,
 	INPROCESSING,
+	CATALOGING,
 	CHECKEDOUT,
 	ONHOLDSHELF,
 	INTRANSIT,
@@ -12,6 +13,7 @@ public enum ItemStatus {
 	DAMAGED,
 	LOST,
 	WITHDRAWN,
+	SUPPRESSED
 	;
 
 	@Override
@@ -25,6 +27,8 @@ public enum ItemStatus {
 				return "On Order";
 			case INPROCESSING:
 				return "In Processing";
+			case CATALOGING:
+				return "Cataloging";
 			case CHECKEDOUT:
 				return "Checked Out";
 			case ONHOLDSHELF:
@@ -39,6 +43,8 @@ public enum ItemStatus {
 				return "Withdrawn";
 			case INREPAIRS:
 				return "In Repair";
+			case SUPPRESSED:
+				return "Suppressed";
 		}
 		return null;
 	}

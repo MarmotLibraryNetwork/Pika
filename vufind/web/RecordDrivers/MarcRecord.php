@@ -2247,11 +2247,15 @@ class MarcRecord extends IndexRecord
 			if ($this->getMarcRecord()){
 				$itemRecords = $this->marcRecord->getFields($itemTag);
 				foreach ($itemRecords as $itemRecord){
-					$itemRecordId = $itemRecord->getSubfield($itemIdSubfield)->getData();
-					if ($itemRecordId == $itemId){
-						$opacMessage = $itemRecord->getSubfield($opacMessageSubfield)->getData();
-						if (!empty($opacMessage)){
-							$memCache->set($opacMessageKey, $opacMessage, 0, 600);
+					/** @var File_MARC_Subfield $subfield */
+					$subfield     = $itemRecord->getSubfield($itemIdSubfield);
+					if (!empty($subfield)){
+						$itemRecordId = $subfield->getData();
+						if ($itemRecordId == $itemId){
+							$opacMessage = $itemRecord->getSubfield($opacMessageSubfield)->getData();
+							if (!empty($opacMessage)){
+								$memCache->set($opacMessageKey, $opacMessage, 0, 600);
+							}
 						}
 					}
 				}

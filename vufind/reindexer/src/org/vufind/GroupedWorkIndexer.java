@@ -44,8 +44,8 @@ public class GroupedWorkIndexer {
 	private PreparedStatement getNovelistStmt;
 	private Connection        vufindConn;
 
-	private int availableAtLocationBoostValue;
-	private int ownedByLocationBoostValue;
+	private int     availableAtLocationBoostValue;
+	private int     ownedByLocationBoostValue;
 	private boolean giveOnOrderItemsTheirOwnShelfLocation = false;
 
 	private boolean fullReindex;
@@ -221,6 +221,9 @@ public class GroupedWorkIndexer {
 							break;
 						case "Addison":
 							ilsRecordProcessors.put(curIdentifier, new AddisonRecordProcessor(this, vufindConn, indexingProfileRS, logger, fullReindex));
+							break;
+						case "Aurora":
+							ilsRecordProcessors.put(curIdentifier, new AuroraRecordProcessor(this, vufindConn, indexingProfileRS, logger, fullReindex));
 							break;
 						case "Arlington":
 							ilsRecordProcessors.put(curIdentifier, new ArlingtonRecordProcessor(this, vufindConn, indexingProfileRS, logger, fullReindex));
