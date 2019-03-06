@@ -1,14 +1,17 @@
 // Core variables and mixins
 @import (reference) "../../responsive/css/variables.less";
-@import (reference) "variables";
+
 
 // Always include the base .less file
 @import "../../responsive/css/responsive_base.less";
+@import (reference) "variables";
 
 .header-login-button-mixin(@header-buttons-background-color);
-
-
-
+.sidebar-button-mixin();
+.sidebar-button {
+  color: #333;
+}
+#header-logo { padding: 0px; }
 // Browse Category customizations based on AnyThink
 
 // mixin to select all the typical states of <a> like tags
@@ -30,12 +33,17 @@
   }
 }
 
+.jcarousel li {
+  border: 1px solid #adadad;
+}
 
 // the category text
 .browse-category {
   padding-top: 20px; // extra padding on top to center text
   height: 120px;
-
+  background-color: @aurora-orange;
+  border-radius: 4px;
+  border: 1px solid #adadad;
   div {
     //color: @browse-label-text-color;
     text-shadow: none;
@@ -47,10 +55,10 @@
     }
   }
   &.selected {
-    border: none;
     background-color: @selectedCategoryColor;
     background: @selectedCategoryColor;
-    background: linear-gradient(to bottom, @selectedCategoryColor 0%, @selectedCategoryColor 75%, #fff 75%, #fff 80%, #CCCCCC 80%, #fff 100%);
+    border: 1px solid #adadad;
+    /*background: linear-gradient(to bottom, @selectedCategoryColor 0%, @selectedCategoryColor 75%, #fff 75%, #fff 80%, #CCCCCC 80%, #fff 100%);*/
     div {
       color: #fff;
     }
