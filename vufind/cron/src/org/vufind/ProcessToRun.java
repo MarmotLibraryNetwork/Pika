@@ -1,12 +1,12 @@
 package org.vufind;
 
 public class ProcessToRun {
-	
-	private String processName;
-	private String processClass;
-	private String[] arguments = null;
-	private Long lastRunVariableId = null;
-	private Long lastRunTime = null;
+
+	private String   processName;
+	private String   processClass;
+	private String[] arguments         = null;
+	private Long     lastRunVariableId = null;
+	private Long     lastRunTime       = null;
 
 	public ProcessToRun(String processName, String processClass) {
 		this.processName = processName;
