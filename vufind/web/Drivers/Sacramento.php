@@ -208,7 +208,7 @@ class Sacramento extends Sierra
 		$birthDate           = date_create_from_format('m-d-Y', $birthDate);
 		$birthDay            = date_format($birthDate, 'd');
 		$birthMonth          = date_format($birthDate, 'm');
-		$ddepartment = $lastNameFourLetters . $firstNameOneLetter . $birthDay . $birthMonth;
+		$ddepartment = $lastNameFourLetters . $firstNameOneLetter . $birthMonth . $birthDay;
 
 
 		$_REQUEST['ddepartment'] = $ddepartment;
