@@ -70,6 +70,7 @@ public class UpdateReadingHistory implements IProcessHandler {
 							updateInitialReadingHistoryLoaded.executeUpdate();
 						}else{
 							errorLoadingInitialReadingHistory = true;
+							logger.warn("Failed loading Initial Reading History for user " + cat_username);
 						}
 					}catch (SQLException e){
 						logger.error("Error loading initial reading history", e);
@@ -159,14 +160,15 @@ public class UpdateReadingHistory implements IProcessHandler {
 						}else{
 							processLog.incErrors();
 							processLog.addNote("Unexpected JSON for patron reading history " + result.get("readingHistory").getClass());
+							logger.info("Unexpected JSON for patron reading history " + result.get("readingHistory").getClass());
 							hadError = true;
 						}
 					} else {
-						logger.info("Call to loadReadingHistoryFromIls returned a success code of false for " + cat_username);
+						logger.warn("Call to loadReadingHistoryFromIls returned a success code of false for " + cat_username);
 						hadError = true;
 					}
 				} catch (JSONException e) {
-					logger.error("Unable to load patron information from for " + cat_username + " exception loading response ", e);
+					logger.error("Unable to load patron information for " + cat_username + ", exception loading response ", e);
 					logger.error(patronDataJson);
 					processLog.incErrors();
 					processLog.addNote("Unable to load patron information from for " + cat_username + " exception loading response " + e.toString());
