@@ -671,6 +671,12 @@ class Millennium extends ScreenScrapingDriver
 		return $millenniumReadingHistory->getReadingHistory($patron, $page, $recordsPerPage, $sortOption);
 	}
 
+	public function loadReadingHistoryFromIls($patron) {
+		require_once ROOT_DIR . '/Drivers/marmot_inc/MillenniumReadingHistory.php';
+		$millenniumReadingHistory = new MillenniumReadingHistory($this);
+		return $millenniumReadingHistory->loadReadingHistoryFromIls($patron);
+	}
+
 	/**
 	 * Do an update or edit of reading history information.  Current actions are:
 	 * deleteMarked

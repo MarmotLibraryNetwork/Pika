@@ -41,7 +41,7 @@ class UserAPI extends Action {
 	function launch()
 	{
 		//header('Content-type: application/json');
-		header('Content-type: text/html');
+		header('Content-type: application/json');
 		header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
 		header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
 
@@ -50,9 +50,9 @@ class UserAPI extends Action {
 			try{
 				$result = $this->$_REQUEST['method']();
 				require_once ROOT_DIR . '/sys/Utils/ArrayUtils.php';
-				$utf8EncodedValue = ArrayUtils::utf8EncodeArray(array('result'=>$result));
-				$output = json_encode($utf8EncodedValue);
-				$error  = json_last_error();
+				$utf8EncodedValue = ArrayUtils::utf8EncodeArray(array('result' => $result));
+				$output           = json_encode($utf8EncodedValue);
+				$error            = json_last_error();
 				if ($error != JSON_ERROR_NONE || $output === FALSE){
 					if (function_exists('json_last_error_msg')){
 						$output = json_encode(array('error'=>'error_encoding_data', 'message' => json_last_error_msg()));
@@ -1451,6 +1451,24 @@ class UserAPI extends Action {
 			}
 		}
 	}
+
+	function loadReadingHistoryFromIls(){
+		global $offlineMode;
+		if ($offlineMode) {
+			return array('success'=>false, 'message'=>'Circulation system is offline');
+		} else {
+			list($username, $password) = $this->loadUsernameAndPassword();
+			$user = UserAccount::validateAccount($username, $password);
+			if (!empty($user) && !PEAR_Singleton::isError($user)) {
+				$readingHistory = $user->loadReadingHistoryFromIls();
+
+				return array('success' => true, 'readingHistory' => $readingHistory['titles']);
+			} else {
+				return array('success' => false, 'message' => 'Login unsuccessful');
+			}
+		}
+	}
+
 
 	/**
 	 * Allows reading history to be collected for the patron.  If this option is not selected,
