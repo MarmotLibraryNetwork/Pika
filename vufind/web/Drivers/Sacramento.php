@@ -205,10 +205,10 @@ class Sacramento extends Sierra
 		$firstNameOneLetter  = substr($_REQUEST['firstName'], 0, 1);
 		$firstNameOneLetter  = strtoupper($firstNameOneLetter[0]);
 		$birthDate           = trim($_REQUEST['birthDate']);
-		$dateArray           = date_parse($birthDate);
-		$birthDay            = str_pad($dateArray['day'], 2, "0", STR_PAD_LEFT);
-		$birthMonth          = str_pad($dateArray['month'], 2, "0", STR_PAD_LEFT);
-		$ddepartment = $lastNameFourLetters . $firstNameOneLetter . $birthDay . $birthMonth;
+		$birthDate           = date_create_from_format('m-d-Y', $birthDate);
+		$birthDay            = date_format($birthDate, 'd');
+		$birthMonth          = date_format($birthDate, 'm');
+		$ddepartment = $lastNameFourLetters . $firstNameOneLetter . $birthMonth . $birthDay;
 
 
 		$_REQUEST['ddepartment'] = $ddepartment;

@@ -410,12 +410,12 @@ class MillenniumHolds{
 
 
 			//$sCols = preg_split("/<t(h|d)([^>]*)>/",$sRow);
-			$curHold= array();
-			$curHold['create'] = null;
-			$curHold['reqnum'] = null;
+			$curHold               = array();
+			$curHold['create']     = null;
+			$curHold['reqnum']     = null;
 			$curHold['holdSource'] = 'ILS';
-			$curHold['userId'] = $patron->id;
-			$curHold['user'] = $userLabel;
+			$curHold['userId']     = $patron->id;
+			$curHold['user']       = $userLabel;
 
 			//Holds page occasionally has a header with number of items checked out.
 			for ($i=0; $i < sizeof($sCols); $i++) {
@@ -432,11 +432,11 @@ class MillenniumHolds{
 						$matches = array();
 						$numMatches = preg_match_all('/.*?cancel(.*?)x(\\d\\d).*/s', $sCols[$i], $matches);
 						if ($numMatches > 0){
-							$curHold['renew'] = "BOX";
+							$curHold['renew']      = "BOX";
 							$curHold['cancelable'] = true;
-							$curHold['itemId'] = $matches[1][0];
-							$curHold['xnum'] = $matches[2][0];
-							$curHold['cancelId'] = $matches[1][0] . '~' . $matches[2][0];
+							$curHold['itemId']     = $matches[1][0];
+							$curHold['xnum']       = $matches[2][0];
+							$curHold['cancelId']   = $matches[1][0] . '~' . $matches[2][0];
 						}else{
 							$curHold['cancelable'] = false;
 						}
@@ -445,17 +445,17 @@ class MillenniumHolds{
 					elseif (stripos($sKeys[$i],"TITLE") > -1) {
 						if (preg_match('/.*?<a href=\\"\/record=(.*?)(?:~S\\d{1,2})\\">(.*?)<\/a>.*/', $sCols[$i], $matches)) {
 							$shortId = $matches[1];
-							$bibid = '.' . $matches[1] . $this->driver->getCheckDigit($shortId);
-							$title = strip_tags($matches[2]);
+							$bibid   = '.' . $matches[1] . $this->driver->getCheckDigit($shortId);
+							$title   = strip_tags($matches[2]);
 						}elseif (preg_match('/.*<a href=".*?\/record\/C__R(.*?)\\?.*?">(.*?)<\/a>.*/si', $sCols[$i], $matches)){
 							$shortId = $matches[1];
-							$bibid = '.' . $matches[1] . $this->driver->getCheckDigit($shortId);
-							$title = strip_tags($matches[2]);
+							$bibid   = '.' . $matches[1] . $this->driver->getCheckDigit($shortId);
+							$title   = strip_tags($matches[2]);
 						}else{
 							//This happens for prospector titles
-							$bibid = '';
+							$bibid   = '';
 							$shortId = '';
-							$title = trim($sCols[$i]);
+							$title   = trim($sCols[$i]);
 							/*global $configArray;
 							if ($configArray['System']['debug']){
 								echo("Unexpected format in title column.  Got " . htmlentities($sCols[$i]) . "<br/>");
@@ -465,10 +465,10 @@ class MillenniumHolds{
 							$curHold['volume'] = $matches[1];
 						}
 
-						$curHold['id'] = $bibid;
+						$curHold['id']       = $bibid;
 						$curHold['recordId'] = $bibid;
-						$curHold['shortId'] = $shortId;
-						$curHold['title'] = $title;
+						$curHold['shortId']  = $shortId;
+						$curHold['title']    = $title;
 					}
 					elseif (stripos($sKeys[$i],"Ratings") > -1) {
 						$curHold['request'] = "STARS";
@@ -482,16 +482,16 @@ class MillenniumHolds{
 						if (preg_match('/<select\\s+name=loc(.*?)x(\\d\\d).*?<option\\s+value="([a-z0-9+ ]{1,5})"\\s+selected="selected">.*/s', $sCols[$i], $matches)) {
 									// new regex above includes a space in the value capture now. This seems to be the result of our setting of the pickup location on the place hold side.
 									// plb 8-12-2015
-							$curHold['locationId'] = $matches[1];
+							$curHold['locationId']   = $matches[1];
 							$curHold['locationXnum'] = $matches[2];
-							$curPickupBranch = new Location();
+							$curPickupBranch         = new Location();
 							$curPickupBranch->whereAdd("code = '{$matches[3]}'");
 							$curPickupBranch->find(1);
 							if ($curPickupBranch->N > 0) {
 								$curPickupBranch->fetch();
-								$curHold['currentPickupId'] = $curPickupBranch->locationId;
+								$curHold['currentPickupId']   = $curPickupBranch->locationId;
 								$curHold['currentPickupName'] = $curPickupBranch->displayName;
-								$curHold['location'] = $curPickupBranch->displayName;
+								$curHold['location']          = $curPickupBranch->displayName;
 							}
 							$curHold['locationUpdateable'] = true;
 
@@ -500,14 +500,14 @@ class MillenniumHolds{
 						}elseif (preg_match('/<select.*?>/', $sCols[$i])){
 							//Updateable, but no location set
 							$curHold['locationUpdateable'] = true;
-							$curHold['location'] = 'Not Set';
+							$curHold['location']           = 'Not Set';
 						}else{
 							$curHold['location'] = trim(strip_tags($sCols[$i], '<select><option>'));
 							//Trim the carrier code if any
 							if (preg_match('/.*\s[\w\d]{4}$/', $curHold['location'])){
 								$curHold['location'] = substr($curHold['location'], 0, strlen($curHold['location']) - 5);
 							}
-							$curHold['currentPickupName'] = $curHold['location'];
+							$curHold['currentPickupName']  = $curHold['location'];
 							$curHold['locationUpdateable'] = false;
 						}
 					}
@@ -521,9 +521,8 @@ class MillenniumHolds{
 							$curHold['status'] = $status;
 							if (preg_match('/READY.*(\d{2}-\d{2}-\d{2})/i', $status, $matches)){
 								$curHold['status'] = 'Ready';
-								//Get expiration date
-								$exipirationDate = $matches[1];
-								$expireDate = DateTime::createFromFormat('m-d-y', $exipirationDate);
+								$exipirationDate   = $matches[1]; // Get expiration date
+								$expireDate        = DateTime::createFromFormat('m-d-y', $exipirationDate);
 								$curHold['expire'] = $expireDate->getTimestamp();
 
 							}elseif (preg_match('/READY\sFOR\sPICKUP/i', $status, $matches)){
@@ -533,6 +532,8 @@ class MillenniumHolds{
 							}elseif (preg_match('/\d+\sof\s\d+\sholds/i', $status, $matches)){
 								$curHold['status'] = $status;
 							}elseif (preg_match('/Hold Being Shelved/i', $status, $matches)){
+								$curHold['status'] = $status;
+							}elseif (preg_match('/Just checked in. Ask at desk./i', $status, $matches)){ // Sacramento Custom Status
 								$curHold['status'] = $status;
 //							} elseif ($status == 'Available ') {
 //								$curHold['status'] = 'Ready';
@@ -545,11 +546,11 @@ class MillenniumHolds{
 							#PK-778 - Don't attempt to show status for anything other than ready for pickup since Millennium/Sierra statuses are confusing
 							$curHold['status'] = "Pending";
 						}
-						$matches = array();
+						$matches               = array();
 						$curHold['renewError'] = false;
 						if (preg_match('/.*DUE\\s(\\d{2}-\\d{2}-\\d{2}).*(?:<font color="red">\\s*(.*)<\/font>).*/s', $sCols[$i], $matches)){
 							//Renew error
-							$curHold['renewError'] = $matches[2];
+							$curHold['renewError']    = $matches[2];
 							$curHold['statusMessage'] = $matches[2];
 						}else{
 							if (preg_match('/.*DUE\\s(\\d{2}-\\d{2}-\\d{2})\\s(.*)?/s', $sCols[$i], $matches)){
@@ -596,7 +597,7 @@ class MillenniumHolds{
 				$volumeId = '.' . substr($curHold['cancelId'], 0, strpos($curHold['cancelId'], '~'));
 				$volumeId .= $this->driver->getCheckDigit($volumeId);
 				require_once ROOT_DIR . '/Drivers/marmot_inc/IlsVolumeInfo.php';
-				$volumeInfo = new IlsVolumeInfo();
+				$volumeInfo           = new IlsVolumeInfo();
 				$volumeInfo->volumeId = $volumeId;
 				if ($volumeInfo->find(true)){
 					$curHold['volume'] = $volumeInfo->displayLabel;
@@ -620,7 +621,12 @@ class MillenniumHolds{
 			}
 
 			//add to the appropriate array
-			if (!isset($curHold['status']) || (strcasecmp($curHold['status'], "ready") != 0 && strcasecmp($curHold['status'], "hold being shelved") != 0)){
+			if (!isset($curHold['status'])
+				|| (strcasecmp($curHold['status'], "ready") != 0
+					&& strcasecmp($curHold['status'], "hold being shelved") != 0
+					&& strcasecmp($curHold['status'], "just checked in. ask at desk.") != 0
+
+				)){
 				$holds['unavailable'][$curHold['holdSource'] . $curHold['itemId'] . $curHold['cancelId'] . $userLabel] = $curHold;
 			}else{
 				$holds['available'][$curHold['holdSource'] . $curHold['itemId'] . $curHold['cancelId']. $userLabel] = $curHold;
