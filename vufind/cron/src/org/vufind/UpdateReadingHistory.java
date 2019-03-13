@@ -135,11 +135,7 @@ public class UpdateReadingHistory implements IProcessHandler {
 		boolean additionalRoundRequired;
 		String nextRound = "";
 		try {
-//			try {
-//
-//			} catch (SQLException e) {
-//
-//			}
+			logger.info("Loading initial reading history from ils for " + cat_username);
 			do {
 				additionalRoundRequired = false;
 				// Call the patron API to get their checked out items
@@ -150,7 +146,6 @@ public class UpdateReadingHistory implements IProcessHandler {
 				URL    patronApiUrl          = new URL(loadReadingHistoryUrl);
 				// loadReadingHistoryFromIls is intended to be a faster call, or at least contain only enough information to add entries into the database.
 				// (The regular getPatronReadingHistory included a lot of information that is not needed to update the database.
-				logger.info("Loading initial reading history from " + cat_username);
 				Object patronDataRaw = patronApiUrl.getContent();
 				if (patronDataRaw instanceof InputStream) {
 					String patronDataJson = "";
@@ -166,7 +161,7 @@ public class UpdateReadingHistory implements IProcessHandler {
 								if (result.has("nextRound")){
 									nextRound = result.getString("nextRound");
 									additionalRoundRequired = true;
-									logger.info("Another round of calling the User API is required. Next Round is :" + nextRound);
+									logger.info("Another round of calling the User API is required. Next Round is : " + nextRound);
 								}
 								if (result.get("readingHistory").getClass() == JSONObject.class) {
 									JSONObject readingHistoryItems = result.getJSONObject("readingHistory");
