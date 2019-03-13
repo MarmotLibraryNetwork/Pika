@@ -671,10 +671,10 @@ class Millennium extends ScreenScrapingDriver
 		return $millenniumReadingHistory->getReadingHistory($patron, $page, $recordsPerPage, $sortOption);
 	}
 
-	public function loadReadingHistoryFromIls($patron) {
+	public function loadReadingHistoryFromIls($patron, $loadAdditional = null) {
 		require_once ROOT_DIR . '/Drivers/marmot_inc/MillenniumReadingHistory.php';
 		$millenniumReadingHistory = new MillenniumReadingHistory($this);
-		return $millenniumReadingHistory->loadReadingHistoryFromIls($patron);
+		return $millenniumReadingHistory->loadReadingHistoryFromIls($patron, $loadAdditional);
 	}
 
 	/**

@@ -1471,10 +1471,10 @@ class User extends DB_DataObject {
 		return $this->getCatalogDriver()->getReadingHistory($this, $page, $recordsPerPage, $selectedSortOption);
 	}
 
-	public function loadReadingHistoryFromILS(){
+	public function loadReadingHistoryFromILS($loadAdditional = null){
 		$catalogDriver = $this->getCatalogDriver();
 		if (method_exists($catalogDriver, 'loadReadingHistoryFromIls')){
-			return $catalogDriver->loadReadingHistoryFromIls($this);
+			return $catalogDriver->loadReadingHistoryFromIls($this, $loadAdditional);
 		} else {
 			return $catalogDriver->getReadingHistory($this);
 		}

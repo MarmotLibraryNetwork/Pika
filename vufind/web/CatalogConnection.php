@@ -378,19 +378,20 @@ class CatalogConnection
 //		}
 //	}
 
-	function loadReadingHistoryFromIls($patron){
+	function loadReadingHistoryFromIls($patron, $loadAdditional = null){
 		if (!empty($patron) && $patron->trackReadingHistory){
-			if (!$patron->initialReadingHistoryLoaded) {
+//			if (!$patron->initialReadingHistoryLoaded) {
 				if ($this->driver->hasNativeReadingHistory()){
 					if (method_exists($this->driver, 'loadReadingHistoryFromIls')){
-						$result = $this->driver->loadReadingHistoryFromIls($patron);
+						$result = $this->driver->loadReadingHistoryFromIls($patron, $loadAdditional);
 						return $result;
 					}
 				}
 				// Fall back
 				return $this->getReadingHistory($patron);
-			}
+//			}
 		}
+		return false;
 	}
 
 	/**
@@ -598,8 +599,8 @@ class CatalogConnection
 		$holds = $this->driver->getMyHolds($user, $linkedAccount);
 		foreach ($holds as $section => $holdsForSection){
 			foreach ($holdsForSection as $key => $curTitle){
-				$curTitle['user'] = $user->getNameAndLibraryLabel();
-				$curTitle['userId'] = $user->id;
+				$curTitle['user']             = $user->getNameAndLibraryLabel();
+				$curTitle['userId']           = $user->id;
 				$curTitle['allowFreezeHolds'] = $user->getHomeLibrary()->allowFreezeHolds;
 				if (!isset($curTitle['sortTitle'])){
 					$curTitle['sortTitle'] = $curTitle['title'];

@@ -48,10 +48,12 @@ public class UpdateReadingHistory implements IProcessHandler {
 		// Connect to the Pika MySQL database
 		try {
 			// Get a list of all patrons that have reading history turned on.
-			PreparedStatement getUsersStmt                      = pikaConn.prepareStatement("SELECT id, cat_username, cat_password, initialReadingHistoryLoaded FROM user where trackReadingHistory=1", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-			PreparedStatement updateInitialReadingHistoryLoaded = pikaConn.prepareStatement("UPDATE user SET initialReadingHistoryLoaded = 1 WHERE id = ?");
-			PreparedStatement getCheckedOutTitlesForUser        = pikaConn.prepareStatement("SELECT id, groupedWorkPermanentId, source, sourceId, title FROM user_reading_history_work WHERE userId=? and checkInDate is null", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-			PreparedStatement updateReadingHistoryStmt          = pikaConn.prepareStatement("UPDATE user_reading_history_work SET checkInDate=? WHERE id = ?");
+			PreparedStatement getUsersStmt                            = pikaConn.prepareStatement("SELECT id, cat_username, cat_password, initialReadingHistoryLoaded FROM user where trackReadingHistory=1", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement updateInitialReadingHistoryLoaded       = pikaConn.prepareStatement("UPDATE user SET initialReadingHistoryLoaded = 1 WHERE id = ?");
+			PreparedStatement getCheckedOutTitlesForUser              = pikaConn.prepareStatement("SELECT id, groupedWorkPermanentId, source, sourceId, title FROM user_reading_history_work WHERE userId=? and checkInDate is null", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement updateReadingHistoryStmt                = pikaConn.prepareStatement("UPDATE user_reading_history_work SET checkInDate=? WHERE id = ?");
+//			PreparedStatement lookForPreviousEntriesBeforeInitialLoad = pikaConn.prepareStatement("SELECT COUNT(id) FROM user_reading_history_work WHERE userId = ?");
+//			PreparedStatement deletePreviousEntriesBeforeInitialLoad  = pikaConn.prepareStatement("DELETE FROM user_reading_history_work WHERE userId = ?");
 			insertReadingHistoryStmt = pikaConn.prepareStatement("INSERT INTO user_reading_history_work (userId, groupedWorkPermanentId, source, sourceId, title, author, format, checkOutDate) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
 			
 			ResultSet userResults = getUsersStmt.executeQuery();
@@ -124,62 +126,94 @@ public class UpdateReadingHistory implements IProcessHandler {
 		processLog.saveToDatabase(pikaConn, logger);
 	}
 
+	private static boolean isNumeric(String str) {
+		return str.matches("^\\d+$");
+	}
+
 	private boolean loadInitialReadingHistoryForUser(Long userId, String cat_username, String cat_password) throws SQLException {
 		boolean hadError = false;
+		boolean additionalRoundRequired;
+		String nextRound = "";
 		try {
-			// Call the patron API to get their checked out items
+//			try {
+//
+//			} catch (SQLException e) {
+//
+//			}
+			do {
+				additionalRoundRequired = false;
+				// Call the patron API to get their checked out items
 //			URL patronApiUrl = new URL(pikaUrl + "/API/UserAPI?method=getPatronReadingHistory&username=" + encode(cat_username) + "&password=" + encode(cat_password));
-			URL patronApiUrl = new URL(pikaUrl + "/API/UserAPI?method=loadReadingHistoryFromIls&username=" + encode(cat_username) + "&password=" + encode(cat_password));
-			// loadReadingHistoryFromIls is intended to be a faster call, or at least contain only enough information to add entries into the database.
-			// (The regular getPatronReadingHistory included a lot of information that is not needed to update the database.
-			logger.debug("Loading initial reading history from " + cat_username);
-			Object patronDataRaw = patronApiUrl.getContent();
-			if (patronDataRaw instanceof InputStream) {
-				String patronDataJson = Util.convertStreamToString((InputStream) patronDataRaw);
-				logger.debug(patronApiUrl.toString());
-				logger.debug("Json for patron reading history " + patronDataJson);
-				try {
-					JSONObject patronData = new JSONObject(patronDataJson);
-					JSONObject result     = patronData.getJSONObject("result");
-					if (result.getBoolean("success") && result.has("readingHistory")) {
-						if (result.get("readingHistory").getClass() == JSONObject.class){
-							JSONObject readingHistoryItems = result.getJSONObject("readingHistory");
-							@SuppressWarnings("unchecked")
-							Iterator<String> keys = (Iterator<String>) readingHistoryItems.keys();
-							while (keys.hasNext()) {
-								String     curKey             = keys.next();
-								JSONObject readingHistoryItem = readingHistoryItems.getJSONObject(curKey);
-								processReadingHistoryTitle(readingHistoryItem, userId);
 
+				String loadReadingHistoryUrl = pikaUrl + "/API/UserAPI?method=loadReadingHistoryFromIls&username=" + encode(cat_username) + "&password=" + encode(cat_password)
+						+ (isNumeric(nextRound) ? "&nextRound=" + nextRound : "");
+				URL    patronApiUrl          = new URL(loadReadingHistoryUrl);
+				// loadReadingHistoryFromIls is intended to be a faster call, or at least contain only enough information to add entries into the database.
+				// (The regular getPatronReadingHistory included a lot of information that is not needed to update the database.
+				logger.info("Loading initial reading history from " + cat_username);
+				Object patronDataRaw = patronApiUrl.getContent();
+				if (patronDataRaw instanceof InputStream) {
+					String patronDataJson = "";
+					try {
+						patronDataJson = Util.convertStreamToString((InputStream) patronDataRaw);
+						if (patronDataJson != null && patronDataJson.length() > 0) {
+							logger.debug(patronApiUrl.toString());
+							logger.debug("Json for patron reading history " + patronDataJson);
+
+							JSONObject patronData = new JSONObject(patronDataJson);
+							JSONObject result     = patronData.getJSONObject("result");
+							if (result.getBoolean("success") && result.has("readingHistory")) {
+								if (result.has("nextRound")){
+									nextRound = result.getString("nextRound");
+									additionalRoundRequired = true;
+									logger.info("Another round of calling the User API is required. Next Round is :" + nextRound);
+								}
+								if (result.get("readingHistory").getClass() == JSONObject.class) {
+									JSONObject readingHistoryItems = result.getJSONObject("readingHistory");
+									@SuppressWarnings("unchecked")
+									Iterator<String> keys = (Iterator<String>) readingHistoryItems.keys();
+									while (keys.hasNext()) {
+										String     curKey             = keys.next();
+										JSONObject readingHistoryItem = readingHistoryItems.getJSONObject(curKey);
+										processReadingHistoryTitle(readingHistoryItem, userId);
+
+									}
+								} else if (result.get("readingHistory").getClass() == JSONArray.class) {
+									JSONArray readingHistoryItems = result.getJSONArray("readingHistory");
+									for (int i = 0; i < readingHistoryItems.length(); i++) {
+										processReadingHistoryTitle(readingHistoryItems.getJSONObject(i), userId);
+									}
+								} else {
+									processLog.incErrors();
+									processLog.addNote("Unexpected JSON for patron reading history " + result.get("readingHistory").getClass());
+									logger.info("Unexpected JSON for patron reading history " + result.get("readingHistory").getClass());
+									hadError = true;
+								}
+							} else {
+								logger.warn("Call to loadReadingHistoryFromIls returned a success code of false for " + cat_username);
+								hadError = true;
 							}
-						}else if (result.get("readingHistory").getClass() == JSONArray.class){
-							JSONArray readingHistoryItems = result.getJSONArray("readingHistory");
-							for (int i = 0; i < readingHistoryItems.length(); i++){
-								processReadingHistoryTitle(readingHistoryItems.getJSONObject(i), userId);
-							}
-						}else{
-							processLog.incErrors();
-							processLog.addNote("Unexpected JSON for patron reading history " + result.get("readingHistory").getClass());
-							logger.info("Unexpected JSON for patron reading history " + result.get("readingHistory").getClass());
+						} else {
+							logger.error("Empty response loading initial history for " + cat_username);
 							hadError = true;
 						}
-					} else {
-						logger.warn("Call to loadReadingHistoryFromIls returned a success code of false for " + cat_username);
+					} catch (IOException e) {
+						logger.error("Error reading input stream for " + cat_username, e);
+						hadError = true;
+					} catch (JSONException e) {
+						logger.error("Unable to load patron information for " + cat_username + ", exception loading response ", e);
+						logger.error(patronDataJson);
+						processLog.incErrors();
+						processLog.addNote("Unable to load patron information from for " + cat_username + " exception loading response " + e.toString());
 						hadError = true;
 					}
-				} catch (JSONException e) {
-					logger.error("Unable to load patron information for " + cat_username + ", exception loading response ", e);
-					logger.error(patronDataJson);
+				} else {
+					logger.error("Unable to load patron information from for " + cat_username + ": expected to get back an input stream, received a "
+							+ patronDataRaw.getClass().getName());
 					processLog.incErrors();
-					processLog.addNote("Unable to load patron information from for " + cat_username + " exception loading response " + e.toString());
 					hadError = true;
 				}
-			} else {
-				logger.error("Unable to load patron information from for " + cat_username + ": expected to get back an input stream, received a "
-						+ patronDataRaw.getClass().getName());
-				processLog.incErrors();
-				hadError = true;
-			}
+			} while (additionalRoundRequired || hadError);
 		} catch (MalformedURLException e) {
 			logger.error("Bad url for patron API " + e.toString());
 			processLog.incErrors();
@@ -240,13 +274,13 @@ public class UpdateReadingHistory implements IProcessHandler {
 			insertReadingHistoryStmt.setString(7, Util.trimTo(50, format));
 			String checkoutDate = readingHistoryTitle.getString("checkout");
 			long checkoutTime = new Date().getTime();
-			if (checkoutDate.matches("^\\d+$")){
+			if (isNumeric(checkoutDate)){ // Timestamp
 				checkoutTime = Long.parseLong(checkoutDate);
 			}else{
 				try {
 					checkoutTime = checkoutDateFormat.parse(checkoutDate).getTime() / 1000;
 				} catch (ParseException e) {
-					logger.error("Error loading checkout date " + checkoutDate + " was not the expected format");
+					logger.error("Error loading checkout date " + checkoutDate + " was not the expected format", e);
 				}
 			}
 

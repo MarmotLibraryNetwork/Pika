@@ -17,26 +17,48 @@ class MillenniumReadingHistory {
 		$this->driver = $driver;
 	}
 
-public function loadReadingHistoryFromIls($patron) {
+	/**
+	 * Method to extract a patron's existing reading history in the ILS.
+	 * This method is meant to be used by the Pika cron process to do the initial load
+	 * of a patron's reading history.
+	 *
+	 * @param User $patron
+	 * @param null|int $loadAdditional
+	 * @return array
+	 */
+	public function loadReadingHistoryFromIls($patron, $loadAdditional = null) {
 	global $timer;
-	$pageContents = $this->driver->_fetchPatronInfoPage($patron, 'readinghistory');
+	$additionalLoadsRequired = false;
+	$pagesToLoadAtATime = 4;
+	$initialStartPage   = 1;
+	$ReadHistoryPage    = 'readinghistory';
+	if (!empty($loadAdditional)){
+		$initialStartPage = $loadAdditional * $pagesToLoadAtATime + 1;
+		$ReadHistoryPage .= '&page=' . $initialStartPage;
+	}
+	$pageContents       = $this->driver->_fetchPatronInfoPage($patron, $ReadHistoryPage, false);
 
 	//Check to see if there are multiple pages of reading history
 	$hasPagination = preg_match('/<td[^>]*class="browsePager"/', $pageContents);
 	if ($hasPagination){
 		//Load a list of extra pages to load.  The pagination links display multiple times, so load into an associative array to make them unique
 		preg_match_all('/<a href="readinghistory&page=(\\d+)">/', $pageContents, $additionalPageMatches);
-		$maxPageNum = max($additionalPageMatches[1]);
+		$maxPageNum        = max($additionalPageMatches[1]);
+		$lastPageThisRound = $initialStartPage + ($pagesToLoadAtATime - 1);
+		if ($maxPageNum > $lastPageThisRound){
+			$additionalLoadsRequired = true;
+			$nextRound               = empty($loadAdditional) ? 1 : $loadAdditional + 1;
+		} else {
+			$lastPageThisRound = $maxPageNum;
+		}
 	}
 
-	$recordsRead          = 0;
 	$readingHistoryTitles = $this->parseReadingHistoryPage($pageContents, $patron);
-	$recordsRead          += count($readingHistoryTitles);
 	if (isset($maxPageNum)){
-		for ($pageNum = 2; $pageNum <= $maxPageNum; $pageNum++){
-			$pageContents         = $this->driver->_fetchPatronInfoPage($patron, 'readinghistory&page=' . $pageNum);
+		$nextPageToStartWith = empty($loadAdditional) ? 2 : $initialStartPage + 1;
+		for ($pageNum = $nextPageToStartWith; $pageNum <= $lastPageThisRound; $pageNum++){
+			$pageContents         = $this->driver->_fetchPatronInfoPage($patron, 'readinghistory&page=' . $pageNum, false);
 			$additionalTitles     = $this->parseReadingHistoryPage($pageContents, $patron);
-			$recordsRead          += count($additionalTitles);
 			$readingHistoryTitles = array_merge($readingHistoryTitles, $additionalTitles);
 		}
 	}
@@ -60,6 +82,12 @@ public function loadReadingHistoryFromIls($patron) {
 		);
 	}
 
+	if ($additionalLoadsRequired){
+		return array(
+			'nextRound' => $nextRound,
+			'titles'    => $readingHistoryTitles,
+		);
+	}
 	return array('titles' => $readingHistoryTitles);
 }
 
