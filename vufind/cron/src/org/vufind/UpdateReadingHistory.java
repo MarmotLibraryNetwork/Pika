@@ -208,7 +208,7 @@ public class UpdateReadingHistory implements IProcessHandler {
 					processLog.incErrors();
 					hadError = true;
 				}
-			} while (additionalRoundRequired || hadError);
+			} while (additionalRoundRequired && !hadError);
 		} catch (MalformedURLException e) {
 			logger.error("Bad url for patron API " + e.toString());
 			processLog.incErrors();
