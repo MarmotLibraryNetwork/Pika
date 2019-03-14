@@ -1464,19 +1464,22 @@ class UserAPI extends Action {
 			}
 			$user = UserAccount::validateAccount($username, $password);
 			if (!empty($user) && !PEAR_Singleton::isError($user)){
-				$loadReadingHistoryResponse = $user->loadReadingHistoryFromIls($loadAdditional);
-				if (!$loadReadingHistoryResponse) {
-					return array('success' => false, 'message' => 'Did not loading reading history from ILS.');
-				}
-
-				if (empty($loadReadingHistoryResponse['nextRound'])){
-					return array('success' => true, 'readingHistory' => $loadReadingHistoryResponse['titles']);
+				if ($user->trackReadingHistory){
+					$loadReadingHistoryResponse = $user->loadReadingHistoryFromIls($loadAdditional);
+					if (!$loadReadingHistoryResponse){
+						return array('success' => false, 'message' => 'Did not load reading history from ILS.');
+					}
+					if (empty($loadReadingHistoryResponse['nextRound'])){
+						return array('success' => true, 'readingHistory' => $loadReadingHistoryResponse['titles']);
+					}else{
+						return array(
+							'success'        => true,
+							'nextRound'      => $loadReadingHistoryResponse['nextRound'],
+							'readingHistory' => $loadReadingHistoryResponse['titles'],
+						);
+					}
 				}else{
-					return array(
-						'success'        => true,
-						'nextRound'      => $loadReadingHistoryResponse['nextRound'],
-						'readingHistory' => $loadReadingHistoryResponse['titles']
-					);
+					return array('success' => false, 'message' => 'User is not opted in for reading history');
 				}
 			}else{
 				return array('success' => false, 'message' => 'Login unsuccessful');
