@@ -177,7 +177,7 @@ class UInterface extends Smarty
 				// unless offline login is enabled, don't check the offline mode system variable
 				$offlineModeSystemVariable = new Variable();
 				$offlineModeSystemVariable->get('name', 'offline_mode_when_offline_login_allowed');
-				if ($offlineModeSystemVariable && ($offlineModeSystemVariable->value == 'true' || $offlineModeSystemVariable == '1')) {
+				if ($offlineModeSystemVariable && (strtolower(trim($offlineModeSystemVariable->value)) == 'true' || trim($offlineModeSystemVariable->value) == '1')) {
 					$this->assign('enableLoginWhileOffline', true);
 					$offlineMode = true;
 				}
