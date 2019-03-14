@@ -446,13 +446,21 @@ class CatalogConnection
 					$readingHistoryDB->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 				}
 				$readingHistoryTitles = array();
-				$numTitles            = $readingHistoryDB->find();
+				$readingHistoryDB->find();
 				while ($readingHistoryDB->fetch()){
 					$historyEntry           = $this->getHistoryEntryForDatabaseEntry($readingHistoryDB);
 					$readingHistoryTitles[] = $historyEntry;
 				}
 
-				return array('historyActive' => $patron->trackReadingHistory, 'titles' => $readingHistoryTitles, 'numTitles' => $numTitles);
+				// Fetch total number of reading history entries
+				$readingHistoryDB          = new ReadingHistoryEntry();
+				$readingHistoryDB->userId  = $patron->id;
+				$readingHistoryDB->deleted = 0;
+				$readingHistoryDB->groupBy('groupedWorkPermanentId');
+				$totalReadingHistoryEntries = $readingHistoryDB->find();
+
+
+				return array('historyActive' => $patron->trackReadingHistory, 'titles' => $readingHistoryTitles, 'numTitles' => $totalReadingHistoryEntries);
 			}else{
 				//Reading history disabled
 				return array('historyActive' => $patron->trackReadingHistory, 'titles' => array(), 'numTitles' => 0);
