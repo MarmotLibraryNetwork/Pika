@@ -103,6 +103,8 @@
 					</div>
 				</div>
 
+				{if $pageLinks.all}<div class="text-center">{$pageLinks.all}</div>{/if}
+
 				{* Header Row with Column Labels *}
 				<div class="row hidden-xs">
 					<div class="col-sm-1">
