@@ -48,7 +48,7 @@ public class UpdateReadingHistory implements IProcessHandler {
 		// Connect to the Pika MySQL database
 		try {
 			// Get a list of all patrons that have reading history turned on.
-			PreparedStatement getUsersStmt                            = pikaConn.prepareStatement("SELECT id, cat_username, cat_password, initialReadingHistoryLoaded FROM user where trackReadingHistory=1", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement getUsersStmt                            = pikaConn.prepareStatement("SELECT id, cat_username, cat_password, initialReadingHistoryLoaded FROM user WHERE trackReadingHistory=1 ORDER BY initialReadingHistoryLoaded", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			PreparedStatement updateInitialReadingHistoryLoaded       = pikaConn.prepareStatement("UPDATE user SET initialReadingHistoryLoaded = 1 WHERE id = ?");
 			PreparedStatement getCheckedOutTitlesForUser              = pikaConn.prepareStatement("SELECT id, groupedWorkPermanentId, source, sourceId, title FROM user_reading_history_work WHERE userId=? and checkInDate is null", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			PreparedStatement updateReadingHistoryStmt                = pikaConn.prepareStatement("UPDATE user_reading_history_work SET checkInDate=? WHERE id = ?");
@@ -56,7 +56,7 @@ public class UpdateReadingHistory implements IProcessHandler {
 //			PreparedStatement deletePreviousEntriesBeforeInitialLoad  = pikaConn.prepareStatement("DELETE FROM user_reading_history_work WHERE userId = ?");
 			insertReadingHistoryStmt = pikaConn.prepareStatement("INSERT INTO user_reading_history_work (userId, groupedWorkPermanentId, source, sourceId, title, author, format, checkOutDate) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
 			
-			ResultSet userResults = getUsersStmt.executeQuery();
+			ResultSet userResults = getUsersStmt.executeQuery(); // Fetches patrons that haven't had the initial load done first
 			while (userResults.next()) {
 				// For each patron
 				Long    userId                            = userResults.getLong("id");
