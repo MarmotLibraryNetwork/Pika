@@ -255,8 +255,13 @@ class Millennium extends ScreenScrapingDriver
 			if ($this->accountProfile->loginConfiguration == 'barcode_pin'){
 				if (isset($patronDump['P_BARCODE'])){
 					$user->cat_username = $patronDump['P_BARCODE']; //Make sure to get the barcode so if we are using usernames we can still get the barcode for use with overdrive, etc.
-				}else{
+				}elseif (isset($patronDump['CARD_#'])){
 					$user->cat_username = $patronDump['CARD_#']; //Make sure to get the barcode so if we are using usernames we can still get the barcode for use with overdrive, etc.
+				}else{
+					/** @var Logger $logger */
+					global $logger;
+					$logger->log("Did not find patron barcode number in patron dump call for username $username; using $username as the barcode", PEAR_LOG_ERR);
+					$user->cat_username = $username;
 				}
 				$user->cat_password = $password;
 			}else{
