@@ -1037,9 +1037,9 @@ class ListAPI extends Action {
 
 		// Look for selected List
 		require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
-		$nytList = new UserList();
+		$nytList          = new UserList();
 		$nytList->user_id = $pikaUser->id;
-		$nytList->title = $selectedListTitle;
+		$nytList->title   = $selectedListTitle;
 		$listExistsInPika = $nytList->find(1);
 
 		//We didn't find the list in Pika, create one
