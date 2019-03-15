@@ -187,7 +187,8 @@ class Millennium extends ScreenScrapingDriver
 		global $configArray;
 
 		//Get the barcode property
-		if ($this->accountProfile->loginConfiguration == 'barcode_pin'){
+		$barcodePinLogin = $this->accountProfile->loginConfiguration == 'barcode_pin';
+		if ($barcodePinLogin){
 			$barcode = $username;
 		}else{
 			$barcode = $password;
@@ -210,7 +211,7 @@ class Millennium extends ScreenScrapingDriver
 		if ($validatedViaSSO) {
 			$userValid = true;
 		}else{
-			if ($this->accountProfile->loginConfiguration == 'barcode_pin'){
+			if ($barcodePinLogin){
 				//TODO: check if a pin is set in patron dump (should always be unless the user doesn't have a pin yet
 				$userValid = $this->_doPinTest($barcode, $password);
 			}else{
@@ -251,30 +252,26 @@ class Millennium extends ScreenScrapingDriver
 				$user->displayName = '';
 			}
 
-			if ($this->accountProfile->loginConfiguration == 'barcode_pin'){
-				if (isset($patronDump['P_BARCODE'])){
-					$user->cat_username = $patronDump['P_BARCODE']; //Make sure to get the barcode so if we are using usernames we can still get the barcode for use with overdrive, etc.
-				}elseif (isset($patronDump['CARD_#'])){
-					$user->cat_username = $patronDump['CARD_#']; //Make sure to get the barcode so if we are using usernames we can still get the barcode for use with overdrive, etc.
-				}elseif (isset($patronDump['STUDENT_ID'])){
-					$user->cat_username = $patronDump['STUDENT_ID']; //Make sure to get the barcode so if we are using usernames we can still get the barcode for use with overdrive, etc.
-				}else{
-					/** @var Logger $logger */
-					global $logger;
-					$logger->log("Did not find patron barcode number in patron dump call for username $username; using $username as the barcode", PEAR_LOG_ERR);
-					$user->cat_username = $barcode;
-				}
+			//Make sure to get the barcode so if we are using usernames we can still get the barcode for use with overdrive, etc.
+			if (!empty($patronDump['P_BARCODE'])){
+				$barcodeInPatronDump = $patronDump['P_BARCODE'];
+			}elseif (!empty($patronDump['CARD_#'])){
+				$barcodeInPatronDump = $patronDump['CARD_#']; //Make sure to get the barcode so if we are using usernames we can still get the barcode for use with overdrive, etc.
+			}elseif (!empty($patronDump['STUDENT_ID'])){
+				$barcodeInPatronDump= $patronDump['STUDENT_ID']; //Make sure to get the barcode so if we are using usernames we can still get the barcode for use with overdrive, etc.
+			}else{
+				/** @var Logger $logger */
+				global $logger;
+				$logger->log("Did not find patron barcode number in patron dump call for username $username; using $barcode as the barcode.", PEAR_LOG_ERR);
+				$barcodeInPatronDump = $barcode;
+			}
+
+			if ($barcodePinLogin){
+				$user->cat_username = $barcodeInPatronDump;
 				$user->cat_password = $password;
 			}else{
 				$user->cat_username = $patronDump['PATRN_NAME'];
-				//When we get the patron dump, we may override the barcode so make sure that we update it here.
-				//For self registered cards, the P_BARCODE is not set so we need to use the RECORD_# field
-				if (strlen($patronDump['P_BARCODE']) > 0){
-					$user->cat_password = $patronDump['P_BARCODE'];
-				}else{
-					$user->cat_password = $patronDump['RECORD_#'];
-				}
-
+				$user->cat_password = $barcodeInPatronDump;
 			}
 
 			$user->phone      = isset($patronDump['TELEPHONE']) ? $patronDump['TELEPHONE'] : (isset($patronDump['HOME_PHONE']) ? $patronDump['HOME_PHONE'] : '');
