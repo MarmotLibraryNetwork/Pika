@@ -1,10 +1,12 @@
 <?php
 /**
- *
+ * Driver to handle Hoopla API user actions.
  *
  * @category Pika
  * @author: Pascal Brammeier
  * Date: 1/8/2018
+ *
+ *
  *
  */
 
@@ -12,7 +14,6 @@
 class HooplaDriver
 {
 	const memCacheKey = 'hoopla_api_access_token';
-//	public $hooplaAPIBaseURL = 'hoopla-api-dev.hoopladigital.com';
 	public $hooplaAPIBaseURL = 'hoopla-api-dev.hoopladigital.com';
 	private $accessToken;
 	private $hooplaEnabled = false;
@@ -108,7 +109,7 @@ class HooplaDriver
 	}
 
 	/**
-	 * Simplified CURL call for returning a title. Sucess is determined by recieving a http status code of 204
+	 * Simplified CURL call for returning a title. Success is determined by receiving a http status code of 204
 	 * @param $url
 	 * @return bool
 	 */
