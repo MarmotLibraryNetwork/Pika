@@ -229,22 +229,21 @@ class Millennium extends ScreenScrapingDriver
 				}
 			}
 			$userExistsInDB = false;
-			$user = new User();
-			//Get the unique user id from Millennium
+			$user           = new User();
 			$user->source   = $this->accountProfile->name;
-			$user->username = $patronDump['RECORD_#'];
+			$user->username = $patronDump['RECORD_#']; //Get the unique user id from Millennium
 			if ($user->find(true)) {
 				$userExistsInDB = true;
 			}
 			$forceDisplayNameUpdate = false;
 			$firstName = isset($firstName) ? $firstName : '';
 			if ($user->firstname != $firstName) {
-				$user->firstname = $firstName;
+				$user->firstname        = $firstName;
 				$forceDisplayNameUpdate = true;
 			}
 			$lastName = isset($lastName) ? $lastName : '';
 			if ($user->lastname != $lastName){
-				$user->lastname = isset($lastName) ? $lastName : '';
+				$user->lastname         = isset($lastName) ? $lastName : '';
 				$forceDisplayNameUpdate = true;
 			}
 			$user->fullname = isset($fullName) ? $fullName : '';
@@ -257,11 +256,13 @@ class Millennium extends ScreenScrapingDriver
 					$user->cat_username = $patronDump['P_BARCODE']; //Make sure to get the barcode so if we are using usernames we can still get the barcode for use with overdrive, etc.
 				}elseif (isset($patronDump['CARD_#'])){
 					$user->cat_username = $patronDump['CARD_#']; //Make sure to get the barcode so if we are using usernames we can still get the barcode for use with overdrive, etc.
+				}elseif (isset($patronDump['STUDENT_ID'])){
+					$user->cat_username = $patronDump['STUDENT_ID']; //Make sure to get the barcode so if we are using usernames we can still get the barcode for use with overdrive, etc.
 				}else{
 					/** @var Logger $logger */
 					global $logger;
 					$logger->log("Did not find patron barcode number in patron dump call for username $username; using $username as the barcode", PEAR_LOG_ERR);
-					$user->cat_username = $username;
+					$user->cat_username = $barcode;
 				}
 				$user->cat_password = $password;
 			}else{
@@ -276,8 +277,8 @@ class Millennium extends ScreenScrapingDriver
 
 			}
 
-			$user->phone = isset($patronDump['TELEPHONE']) ? $patronDump['TELEPHONE'] : (isset($patronDump['HOME_PHONE']) ? $patronDump['HOME_PHONE'] : '');
-			$user->email = isset($patronDump['EMAIL_ADDR']) ? $patronDump['EMAIL_ADDR'] : '';
+			$user->phone      = isset($patronDump['TELEPHONE']) ? $patronDump['TELEPHONE'] : (isset($patronDump['HOME_PHONE']) ? $patronDump['HOME_PHONE'] : '');
+			$user->email      = isset($patronDump['EMAIL_ADDR']) ? $patronDump['EMAIL_ADDR'] : '';
 			$user->patronType = $patronDump['P_TYPE'];
 			if (isset($configArray['OPAC']['webNoteField'])){
 				$user->web_note = isset($patronDump[$configArray['OPAC']['webNoteField']]) ? $patronDump[$configArray['OPAC']['webNoteField']] : '';
@@ -290,7 +291,7 @@ class Millennium extends ScreenScrapingDriver
 			if (isset($patronDump['HOME_LIBR']) || isset($patronDump['HOLD_LIBR'])){
 				$homeBranchCode = isset($patronDump['HOME_LIBR']) ? $patronDump['HOME_LIBR'] : $patronDump['HOLD_LIBR'];
 				$homeBranchCode = str_replace('+', '', $homeBranchCode); //Translate home branch to plain text
-				$location = new Location();
+				$location       = new Location();
 				$location->code = $homeBranchCode;
 				if (!$location->find(true)){
 					unset($location);
@@ -303,7 +304,7 @@ class Millennium extends ScreenScrapingDriver
 
 			if (empty($user->homeLocationId) || (isset($location) && $user->homeLocationId != $location->locationId)) { // When homeLocation isn't set or has changed
 				if (empty($user->homeLocationId) && !isset($location)) {
-						// homeBranch Code not found in location table and the user doesn't have an assigned homelocation,
+						// homeBranch Code not found in location table and the user doesn't have an assigned homeLocation,
 						// try to find the main branch to assign to user
 						// or the first location for the library
 						global $library;
@@ -321,9 +322,9 @@ class Millennium extends ScreenScrapingDriver
 				if (isset($location)) {
 					$user->homeLocationId = $location->locationId;
 					if (empty($user->myLocation1Id)) {
-						$user->myLocation1Id  = ($location->nearbyLocation1 > 0) ? $location->nearbyLocation1 : $location->locationId;
-						/** @var /Location $location */
 						//Get display name for preferred location 1
+						/** @var Location $myLocation1 */
+						$user->myLocation1Id     = ($location->nearbyLocation1 > 0) ? $location->nearbyLocation1 : $location->locationId;
 						$myLocation1             = new Location();
 						$myLocation1->locationId = $user->myLocation1Id;
 						if ($myLocation1->find(true)) {
@@ -332,8 +333,9 @@ class Millennium extends ScreenScrapingDriver
 					}
 
 					if (empty($user->myLocation2Id)){
-						$user->myLocation2Id  = ($location->nearbyLocation2 > 0) ? $location->nearbyLocation2 : $location->locationId;
 						//Get display name for preferred location 2
+						/** @var Location $myLocation1 */
+						$user->myLocation2Id     = ($location->nearbyLocation2 > 0) ? $location->nearbyLocation2 : $location->locationId;
 						$myLocation2             = new Location();
 						$myLocation2->locationId = $user->myLocation2Id;
 						if ($myLocation2->find(true)) {
@@ -352,11 +354,11 @@ class Millennium extends ScreenScrapingDriver
 			$user->expired     = 0; // default setting
 			$user->expireClose = 0;
 			//See if expiration date is close
-			if (trim($patronDump['EXP_DATE']) != '-  -'){
+			if (!empty($patronDump['EXP_DATE']) && trim($patronDump['EXP_DATE']) != '-  -'){
 				$user->expires = $patronDump['EXP_DATE'];
-				list ($monthExp, $dayExp, $yearExp) = explode("-",$patronDump['EXP_DATE']);
-				$timeExpire = strtotime($monthExp . "/" . $dayExp . "/" . $yearExp);
-				$timeNow = time();
+				list ($monthExp, $dayExp, $yearExp) = explode("-", $patronDump['EXP_DATE']);
+				$timeExpire   = strtotime($monthExp . "/" . $dayExp . "/" . $yearExp);
+				$timeNow      = time();
 				$timeToExpire = $timeExpire - $timeNow;
 				if ($timeToExpire <= 30 * 24 * 60 * 60){
 					if ($timeToExpire <= 0){
@@ -368,12 +370,11 @@ class Millennium extends ScreenScrapingDriver
 
 			//Get additional information that doesn't necessarily get stored in the User Table
 			if (isset($patronDump['ADDRESS'])){
-				$fullAddress = $patronDump['ADDRESS'];
+				$fullAddress  = $patronDump['ADDRESS'];
 				$addressParts = explode('$',$fullAddress);
 				if (count($addressParts) == 3) {
 					// Special handling for juvenile Sacramento Patrons with an initial C/O line
 					// $addressParts[0] will have the C/O line
-					//TODO: If
 					if (strpos($addressParts[0], 'C/O ') === 0) {
 						$user->careOf = $addressParts[0];
 					}
@@ -423,8 +424,8 @@ class Millennium extends ScreenScrapingDriver
 				$user->alt_username = $patronDump['ALT_ID'];
 			}
 
-			$numHoldsAvailable = 0;
-			$numHoldsRequested = 0;
+			$numHoldsAvailable    = 0;
+			$numHoldsRequested    = 0;
 			$availableStatusRegex = isset($configArray['Catalog']['patronApiAvailableHoldsRegex']) ? $configArray['Catalog']['patronApiAvailableHoldsRegex'] : "/ST=(105|98|106),/";
 			if (!empty($patronDump['HOLD']) && count($patronDump['HOLD']) > 0){
 				foreach ($patronDump['HOLD'] as $hold){
