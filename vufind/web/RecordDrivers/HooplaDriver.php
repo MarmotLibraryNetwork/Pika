@@ -156,7 +156,10 @@ class HooplaRecordDriver extends MarcRecord {
 
 		/** @var Library $searchLibrary */
 		$searchLibrary = Library::getSearchLibrary();
-		if ($searchLibrary->hooplaLibraryID > 0) { // Library is enabled for Hoopla patron action integration
+		global $configArray;
+		if ($searchLibrary->hooplaLibraryID > 0 &&
+			!empty($configArray['Hoopla']['HooplaAPIUser']) &&
+			!empty($configArray['Hoopla']['HooplaAPIpassword'])) { // Library is enabled for Hoopla patron action integration
 			$id = $this->getId();
 			$title = translate('hoopla_checkout_action');
 			$actions[] = array(
