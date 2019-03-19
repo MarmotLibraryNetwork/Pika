@@ -328,8 +328,7 @@ public class Cron {
 		logger.info("Loading site specific config from " + passwordFilename);
 		File siteSpecificPasswordFile = new File(passwordFilename);
 		if (!siteSpecificPasswordFile.exists()) {
-			logger.warn("Could not find server specific config password file: " + passwordFilename);
-//			System.exit(1);
+			logger.info("Could not find server specific config password file: " + passwordFilename);
 		} else {
 			try {
 				Ini siteSpecificIni = new Ini();
