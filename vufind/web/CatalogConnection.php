@@ -523,7 +523,7 @@ class CatalogConnection
 				}elseif ($sortOption == "author"){
 					$titleKey = $historyEntry['author'] . "_" . $historyEntry['title_sort'];
 				}elseif ($sortOption == "checkedOut" || $sortOption == "returned"){
-					$checkoutTime = DateTime::createFromFormat('m-d-Y', $historyEntry['checkout']) ;
+					$checkoutTime = DateTime::createFromFormat('m-d-Y', $historyEntry['checkout']);
 					if ($checkoutTime){
 						$titleKey = $checkoutTime->getTimestamp() . "_" . $historyEntry['title_sort'];
 					}else{
