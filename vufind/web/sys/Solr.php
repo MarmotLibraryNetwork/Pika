@@ -432,7 +432,7 @@ class Solr implements IndexEngine {
 				$result = $this->_process($this->client->getResponseBody());
 			}
 
-			if (isset($result['response']['docs'][0])){
+			if (!empty($result['response']['docs'][0])){
 				$record = $result['response']['docs'][0];
 				$memCache->set("solr_record_{$id}_{$solrScope}_{$fieldsToReturn}", $record, 0, $configArray['Caching']['solr_record']);
 			}else{

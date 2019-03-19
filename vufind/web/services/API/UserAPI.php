@@ -38,40 +38,39 @@ class UserAPI extends Action {
 	 * @access private
 	 * @author Mark Noble <mnoble@turningleaftech.com>
 	 */
-	function launch()
-	{
+	function launch(){
 		//header('Content-type: application/json');
-		header('Content-type: text/html');
+		header('Content-type: application/json');
 		header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
 		header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
 
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
-		if (method_exists($this, $method)) {
-			try{
+		if (method_exists($this, $method)){
+			try {
 				$result = $this->$_REQUEST['method']();
 				require_once ROOT_DIR . '/sys/Utils/ArrayUtils.php';
-				$utf8EncodedValue = ArrayUtils::utf8EncodeArray(array('result'=>$result));
-				$output = json_encode($utf8EncodedValue);
-				$error  = json_last_error();
-				if ($error != JSON_ERROR_NONE || $output === FALSE){
+				$utf8EncodedValue = ArrayUtils::utf8EncodeArray(array('result' => $result));
+				$output           = json_encode($utf8EncodedValue);
+				$error            = json_last_error();
+				if ($error != JSON_ERROR_NONE || $output === false){
 					if (function_exists('json_last_error_msg')){
-						$output = json_encode(array('error'=>'error_encoding_data', 'message' => json_last_error_msg()));
+						$output = json_encode(array('error' => 'error_encoding_data', 'message' => json_last_error_msg()));
 					}else{
-						$output = json_encode(array('error'=>'error_encoding_data', 'message' => json_last_error()));
+						$output = json_encode(array('error' => 'error_encoding_data', 'message' => json_last_error()));
 					}
 //					global $configArray;
 //					if ($configArray['System']['debug']){
 //						print_r($utf8EncodedValue);
 //					}
 				}
-			}catch (Exception $e){
-				$output = json_encode(array('error'=>'error_encoding_data', 'message' => $e));
+			} catch (Exception $e){
+				$output = json_encode(array('error' => 'error_encoding_data', 'message' => $e));
 				global $logger;
 				$logger->log("Error encoding json data $e", PEAR_LOG_ERR);
 			}
 
-		} else {
-			$output = json_encode(array('error'=>'invalid_method'));
+		}else{
+			$output = json_encode(array('error' => 'invalid_method'));
 		}
 
 		echo $output;
@@ -141,17 +140,17 @@ class UserAPI extends Action {
 		if (isset($_POST['username']) && isset($_POST['password'])){
 			$user = UserAccount::getLoggedInUser();
 			if ($user && !PEAR_Singleton::isError($user)){
-				return array('success'=>true,'name'=>ucwords($user->firstname . ' ' . $user->lastname));
+				return array('success' => true, 'name' => ucwords($user->firstname . ' ' . $user->lastname));
 			}else{
 				$user = UserAccount::login();
 				if ($user && !PEAR_Singleton::isError($user)){
-					return array('success'=>true,'name'=>ucwords($user->firstname . ' ' . $user->lastname));
+					return array('success' => true, 'name' => ucwords($user->firstname . ' ' . $user->lastname));
 				}else{
-					return array('success'=>false);
+					return array('success' => false);
 				}
 			}
 		}else{
-			return array('success'=>false,'message'=>'This method must be called via POST.');
+			return array('success' => false, 'message' => 'This method must be called via POST.');
 		}
 	}
 
@@ -255,9 +254,9 @@ class UserAPI extends Action {
 			unset($result->_lastError);
 			unset($result->N);
 
-			return array('success'=>$result);
+			return array('success' => $result);
 		}else{
-			return array('success'=>false);
+			return array('success' => false);
 		}
 	}
 
@@ -362,15 +361,15 @@ class UserAPI extends Action {
 			//Remove a bunch of junk from the user data
 			unset($user->N);
 			unset($user->query);
-			foreach ($user as $key => $value) {
+			foreach ($user as $key => $value){
 				if (substr($key, 0, 1) == '_'){
 					unset($user->$key);
 				}
 			}
 
-			return array('success'=>true, 'profile'=>$user);
+			return array('success' => true, 'profile' => $user);
 		}else{
-			return array('success'=>false, 'message'=>'Login unsuccessful');
+			return array('success' => false, 'message' => 'Login unsuccessful');
 		}
 	}
 
@@ -479,9 +478,9 @@ class UserAPI extends Action {
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !PEAR_Singleton::isError($user)){
 			$allHolds = $user->getMyHolds();
-			return array('success'=>true, 'holds'=>$allHolds);
+			return array('success' => true, 'holds' => $allHolds);
 		}else{
-			return array('success'=>false, 'message'=>'Login unsuccessful');
+			return array('success' => false, 'message' => 'Login unsuccessful');
 		}
 	}
 
@@ -554,10 +553,10 @@ class UserAPI extends Action {
 		if ($user && !PEAR_Singleton::isError($user)){
 			require_once ROOT_DIR . '/Drivers/OverDriveDriverFactory.php';
 			$eContentDriver = OverDriveDriverFactory::getDriver();
-			$eContentHolds = $eContentDriver->getOverDriveHolds($user);
-			return array('success'=>true, 'holds'=>$eContentHolds);
+			$eContentHolds  = $eContentDriver->getOverDriveHolds($user);
+			return array('success' => true, 'holds' => $eContentHolds);
 		}else{
-			return array('success'=>false, 'message'=>'Login unsuccessful');
+			return array('success' => false, 'message' => 'Login unsuccessful');
 		}
 	}
 
@@ -604,11 +603,11 @@ class UserAPI extends Action {
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !PEAR_Singleton::isError($user)){
 			require_once ROOT_DIR . '/Drivers/OverDriveDriverFactory.php';
-			$eContentDriver = OverDriveDriverFactory::getDriver();
+			$eContentDriver          = OverDriveDriverFactory::getDriver();
 			$eContentCheckedOutItems = $eContentDriver->getOverDriveCheckedOutItems($user);
-			return array('success'=>true, 'items'=>$eContentCheckedOutItems['items']);
+			return array('success' => true, 'items' => $eContentCheckedOutItems['items']);
 		}else{
-			return array('success'=>false, 'message'=>'Login unsuccessful');
+			return array('success' => false, 'message' => 'Login unsuccessful');
 		}
 	}
 
@@ -651,11 +650,11 @@ class UserAPI extends Action {
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !PEAR_Singleton::isError($user)){
 			require_once ROOT_DIR . '/Drivers/OverDriveDriverFactory.php';
-			$eContentDriver = OverDriveDriverFactory::getDriver();
+			$eContentDriver   = OverDriveDriverFactory::getDriver();
 			$overDriveSummary = $eContentDriver->getOverDriveSummary($user);
-			return array('success'=>true, 'summary'=>$overDriveSummary);
+			return array('success' => true, 'summary' => $overDriveSummary);
 		}else{
-			return array('success'=>false, 'message'=>'Login unsuccessful');
+			return array('success' => false, 'message' => 'Login unsuccessful');
 		}
 	}
 
@@ -698,12 +697,12 @@ class UserAPI extends Action {
 	function getPatronFines(){
 		list($username, $password) = $this->loadUsernameAndPassword();
 		$includeMessages = isset($_REQUEST['includeMessages']) ? $_REQUEST['includeMessages'] : false;
-		$user = UserAccount::validateAccount($username, $password);
+		$user            = UserAccount::validateAccount($username, $password);
 		if ($user && !PEAR_Singleton::isError($user)){
 			$fines = $this->getCatalogConnection()->getMyFines($user, $includeMessages);
-			return array('success'=>true, 'fines'=>$fines);
+			return array('success' => true, 'fines' => $fines);
 		}else{
-			return array('success'=>false, 'message'=>'Login unsuccessful');
+			return array('success' => false, 'message' => 'Login unsuccessful');
 		}
 	}
 
@@ -717,11 +716,11 @@ class UserAPI extends Action {
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !PEAR_Singleton::isError($user)){
 			require_once ROOT_DIR . '/Drivers/OverDriveDriverFactory.php';
-			$driver = OverDriveDriverFactory::getDriver();
+			$driver         = OverDriveDriverFactory::getDriver();
 			$accountDetails = $driver->getAccountDetails($user);
-			return array('success'=>true, 'lendingOptions'=>$accountDetails['lendingOptions']);
+			return array('success' => true, 'lendingOptions' => $accountDetails['lendingOptions']);
 		}else{
-			return array('success'=>false, 'message'=>'Login unsuccessful');
+			return array('success' => false, 'message' => 'Login unsuccessful');
 		}
 	}
 
@@ -772,16 +771,16 @@ class UserAPI extends Action {
 	 */
 	function getPatronCheckedOutItems(){
 		global $offlineMode;
-		if ($offlineMode) {
-			return array('success'=>false, 'message'=>'Circulation system is offline');
-		} else {
+		if ($offlineMode){
+			return array('success' => false, 'message' => 'Circulation system is offline');
+		}else{
 			list($username, $password) = $this->loadUsernameAndPassword();
 			$user = UserAccount::validateAccount($username, $password);
-			if ($user && !PEAR_Singleton::isError($user)) {
+			if ($user && !PEAR_Singleton::isError($user)){
 				$allCheckedOut = $user->getMyCheckouts(false);
 
 				return array('success' => true, 'checkedOutItems' => $allCheckedOut);
-			} else {
+			}else{
 				return array('success' => false, 'message' => 'Login unsuccessful');
 			}
 		}
@@ -831,12 +830,12 @@ class UserAPI extends Action {
 	function renewItem(){
 		list($username, $password) = $this->loadUsernameAndPassword();
 		$itemBarcode = $_REQUEST['itemBarcode'];
-		$user = UserAccount::validateAccount($username, $password);
+		$user        = UserAccount::validateAccount($username, $password);
 		if ($user && !PEAR_Singleton::isError($user)){
 			$renewalMessage = $this->getCatalogConnection()->renewItem($user->cat_username, $itemBarcode);
-			return array('success'=>true, 'renewalMessage'=>$renewalMessage);
+			return array('success' => true, 'renewalMessage' => $renewalMessage);
 		}else{
-			return array('success'=>false, 'message'=>'Login unsuccessful');
+			return array('success' => false, 'message' => 'Login unsuccessful');
 		}
 	}
 
@@ -870,9 +869,9 @@ class UserAPI extends Action {
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !PEAR_Singleton::isError($user)){
 			$renewalMessage = $this->getCatalogConnection()->renewAll($user->cat_username);
-			return array('success'=> $renewalMessage['success'], 'renewalMessage'=>$renewalMessage['message']);
+			return array('success' => $renewalMessage['success'], 'renewalMessage' => $renewalMessage['message']);
 		}else{
-			return array('success'=>false, 'message'=>'Login unsuccessful');
+			return array('success' => false, 'message' => 'Login unsuccessful');
 		}
 	}
 
@@ -924,46 +923,46 @@ class UserAPI extends Action {
 		$patron = UserAccount::validateAccount($username, $password);
 		if ($patron && !PEAR_Singleton::isError($patron)){
 			if (isset($_REQUEST['campus'])){
-				$pickupBranch=trim($_REQUEST['campus']);
+				$pickupBranch = trim($_REQUEST['campus']);
 			}else{
 				$pickupBranch = $patron->homeLocationCode;
 			}
 			$holdMessage = $patron->placeHold($bibId, $pickupBranch);
 			return $holdMessage;
 		}else{
-			return array('success'=>false, 'message'=>'Login unsuccessful');
+			return array('success' => false, 'message' => 'Login unsuccessful');
 		}
 	}
 
 	function placeItemHold(){
 		list($username, $password) = $this->loadUsernameAndPassword();
-		$bibId = $_REQUEST['bibId'];
+		$bibId  = $_REQUEST['bibId'];
 		$itemId = $_REQUEST['itemId'];
 
 		$patron = UserAccount::validateAccount($username, $password);
 		if ($patron && !PEAR_Singleton::isError($patron)){
 			if (isset($_REQUEST['campus'])){
-				$pickupBranch=trim($_REQUEST['campus']);
+				$pickupBranch = trim($_REQUEST['campus']);
 			}else{
 				$pickupBranch = $patron->homeLocationCode;
 			}
-			$holdMessage = $patron->placeItemHold($bibId, $itemId,$pickupBranch);
+			$holdMessage = $patron->placeItemHold($bibId, $itemId, $pickupBranch);
 			return $holdMessage;
 		}else{
-			return array('success'=>false, 'message'=>'Login unsuccessful');
+			return array('success' => false, 'message' => 'Login unsuccessful');
 		}
 	}
 
 	function changeHoldPickUpLocation(){
 		list($username, $password) = $this->loadUsernameAndPassword();
-		$holdId = $_REQUEST['holdId'];
+		$holdId      = $_REQUEST['holdId'];
 		$newLocation = $_REQUEST['location'];
-		$patron = UserAccount::validateAccount($username, $password);
+		$patron      = UserAccount::validateAccount($username, $password);
 		if ($patron && !PEAR_Singleton::isError($patron)){
 			$holdMessage = $patron->changeHoldPickUpLocation($holdId, $newLocation);
-			return array('success'=> $holdMessage['success'], 'holdMessage'=>$holdMessage['message']);
+			return array('success' => $holdMessage['success'], 'holdMessage' => $holdMessage['message']);
 		}else{
-			return array('success'=>false, 'message'=>'Login unsuccessful');
+			return array('success' => false, 'message' => 'Login unsuccessful');
 		}
 	}
 
@@ -1005,16 +1004,16 @@ class UserAPI extends Action {
 	function placeOverDriveHold(){
 		list($username, $password) = $this->loadUsernameAndPassword();
 		$overDriveId = $_REQUEST['overDriveId'];
-		$format = $_REQUEST['format'];
+		$format      = $_REQUEST['format'];
 
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !PEAR_Singleton::isError($user)){
 			require_once ROOT_DIR . '/Drivers/OverDriveDriverFactory.php';
-			$driver = OverDriveDriverFactory::getDriver();
+			$driver      = OverDriveDriverFactory::getDriver();
 			$holdMessage = $driver->placeOverDriveHold($overDriveId, $format, $user);
-			return array('success'=> $holdMessage['success'], 'message'=>$holdMessage['message']);
+			return array('success' => $holdMessage['success'], 'message' => $holdMessage['message']);
 		}else{
-			return array('success'=>false, 'message'=>'Login unsuccessful');
+			return array('success' => false, 'message' => 'Login unsuccessful');
 		}
 	}
 
@@ -1054,16 +1053,16 @@ class UserAPI extends Action {
 	function cancelOverDriveHold(){
 		list($username, $password) = $this->loadUsernameAndPassword();
 		$overDriveId = $_REQUEST['overDriveId'];
-		$format = $_REQUEST['format'];
+		$format      = $_REQUEST['format'];
 
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !PEAR_Singleton::isError($user)){
 			require_once ROOT_DIR . '/Drivers/OverDriveDriverFactory.php';
 			$driver = OverDriveDriverFactory::getDriver();
 			$result = $driver->cancelOverDriveHold($overDriveId, $format, $user);
-			return array('success'=> $result['success'], 'message'=>$result['message']);
+			return array('success' => $result['success'], 'message' => $result['message']);
 		}else{
-			return array('success'=>false, 'message'=>'Login unsuccessful');
+			return array('success' => false, 'message' => 'Login unsuccessful');
 		}
 	}
 
@@ -1113,16 +1112,16 @@ class UserAPI extends Action {
 	function addItemToOverDriveCart(){
 		list($username, $password) = $this->loadUsernameAndPassword();
 		$overDriveId = $_REQUEST['overDriveId'];
-		$format = $_REQUEST['format'];
+		$format      = $_REQUEST['format'];
 
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !PEAR_Singleton::isError($user)){
 			require_once ROOT_DIR . '/Drivers/OverDriveDriverFactory.php';
-			$driver = OverDriveDriverFactory::getDriver();
+			$driver      = OverDriveDriverFactory::getDriver();
 			$holdMessage = $driver->addItemToOverDriveCart($overDriveId, $format, $user);
-			return array('success'=> $holdMessage['success'], 'message'=>$holdMessage['message']);
+			return array('success' => $holdMessage['success'], 'message' => $holdMessage['message']);
 		}else{
-			return array('success'=>false, 'message'=>'Login unsuccessful');
+			return array('success' => false, 'message' => 'Login unsuccessful');
 		}
 	}
 
@@ -1163,19 +1162,20 @@ class UserAPI extends Action {
 	function checkoutOverDriveItem(){
 		list($username, $password) = $this->loadUsernameAndPassword();
 		$overDriveId = $_REQUEST['overDriveId'];
-		$format = $_REQUEST['format'];
+		$format      = $_REQUEST['format'];
 
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !PEAR_Singleton::isError($user)){
 			require_once ROOT_DIR . '/Drivers/OverDriveDriverFactory.php';
-			$driver = OverDriveDriverFactory::getDriver();
+			$driver        = OverDriveDriverFactory::getDriver();
 			$lendingPeriod = isset($_REQUEST['lendingPeriod']) ? $_REQUEST['lendingPeriod'] : -1;
-			$holdMessage = $driver->checkoutOverDriveItem($overDriveId, $format, $lendingPeriod, $user);
-			return array('success'=> $holdMessage['success'], 'message'=>$holdMessage['message']);
+			$holdMessage   = $driver->checkoutOverDriveItem($overDriveId, $format, $lendingPeriod, $user);
+			return array('success' => $holdMessage['success'], 'message' => $holdMessage['message']);
 		}else{
-			return array('success'=>false, 'message'=>'Login unsuccessful');
+			return array('success' => false, 'message' => 'Login unsuccessful');
 		}
 	}
+
 	/**
 	 * Process the account to checkout any titles within the OverDrive cart
 	 *
@@ -1214,12 +1214,12 @@ class UserAPI extends Action {
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !PEAR_Singleton::isError($user)){
 			require_once ROOT_DIR . '/Drivers/OverDriveDriverFactory.php';
-			$driver = OverDriveDriverFactory::getDriver();
-			$lendingPeriod = isset($_REQUEST['lendingPeriod']) ? $_REQUEST['lendingPeriod'] : -1;
+			$driver            = OverDriveDriverFactory::getDriver();
+			$lendingPeriod     = isset($_REQUEST['lendingPeriod']) ? $_REQUEST['lendingPeriod'] : -1;
 			$processCartResult = $driver->processOverDriveCart($user, $lendingPeriod);
-			return array('success'=> $processCartResult['success'], 'message'=>$processCartResult['message']);
+			return array('success' => $processCartResult['success'], 'message' => $processCartResult['message']);
 		}else{
-			return array('success'=>false, 'message'=>'Login unsuccessful');
+			return array('success' => false, 'message' => 'Login unsuccessful');
 		}
 	}
 
@@ -1272,19 +1272,19 @@ class UserAPI extends Action {
 
 		// Cancel Hold requires one of these, which one depends on the ILS
 		$recordId = $cancelId = null;
-		if (!empty($_REQUEST['recordId'])) {
+		if (!empty($_REQUEST['recordId'])){
 			$recordId = $_REQUEST['recordId'];
 		}
-		if (!empty($_REQUEST['cancelId'])) {
+		if (!empty($_REQUEST['cancelId'])){
 			$cancelId = $_REQUEST['cancelId'];
 		}
 
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !PEAR_Singleton::isError($user)){
 			$holdMessage = $user->cancelHold($recordId, $cancelId);
-			return array('success'=> $holdMessage['success'], 'holdMessage'=>$holdMessage['message']);
+			return array('success' => $holdMessage['success'], 'holdMessage' => $holdMessage['message']);
 		}else{
-			return array('success'=>false, 'message'=>'Login unsuccessful');
+			return array('success' => false, 'message' => 'Login unsuccessful');
 		}
 	}
 
@@ -1327,9 +1327,9 @@ class UserAPI extends Action {
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !PEAR_Singleton::isError($user)){
 			$holdMessage = $this->getCatalogConnection()->updateHoldDetailed('', $user->cat_username, 'update', '', null, null, 'on');
-			return array('success'=> $holdMessage['success'], 'holdMessage'=>$holdMessage['message']);
+			return array('success' => $holdMessage['success'], 'holdMessage' => $holdMessage['message']);
 		}else{
-			return array('success'=>false, 'message'=>'Login unsuccessful');
+			return array('success' => false, 'message' => 'Login unsuccessful');
 		}
 	}
 
@@ -1371,9 +1371,9 @@ class UserAPI extends Action {
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !PEAR_Singleton::isError($user)){
 			$holdMessage = $this->getCatalogConnection()->updateHoldDetailed('', $user->cat_username, 'update', '', null, null, 'off');
-			return array('success'=> $holdMessage['success'], 'holdMessage'=>$holdMessage['message']);
+			return array('success' => $holdMessage['success'], 'holdMessage' => $holdMessage['message']);
 		}else{
-			return array('success'=>false, 'message'=>'Login unsuccessful');
+			return array('success' => false, 'message' => 'Login unsuccessful');
 		}
 	}
 
@@ -1437,20 +1437,56 @@ class UserAPI extends Action {
 	 */
 	function getPatronReadingHistory(){
 		global $offlineMode;
-		if ($offlineMode) {
-			return array('success'=>false, 'message'=>'Circulation system is offline');
-		} else {
+		if ($offlineMode){
+			return array('success' => false, 'message' => 'Circulation system is offline');
+		}else{
 			list($username, $password) = $this->loadUsernameAndPassword();
 			$user = UserAccount::validateAccount($username, $password);
-			if ($user && !PEAR_Singleton::isError($user)) {
+			if ($user && !PEAR_Singleton::isError($user)){
 				$readingHistory = $this->getCatalogConnection()->getReadingHistory($user);
 
 				return array('success' => true, 'readingHistory' => $readingHistory['titles']);
-			} else {
+			}else{
 				return array('success' => false, 'message' => 'Login unsuccessful');
 			}
 		}
 	}
+
+	function loadReadingHistoryFromIls(){
+		global $offlineMode;
+		if ($offlineMode){
+			return array('success' => false, 'message' => 'Circulation system is offline');
+		}else{
+			list($username, $password) = $this->loadUsernameAndPassword();
+			$loadAdditional = null;
+			if (!empty($_REQUEST['nextRound']) && ctype_digit($_REQUEST['nextRound'])){
+				$loadAdditional = $_REQUEST['nextRound'];
+			}
+			$user = UserAccount::validateAccount($username, $password);
+			if (!empty($user) && !PEAR_Singleton::isError($user)){
+				if ($user->trackReadingHistory){
+					$loadReadingHistoryResponse = $user->loadReadingHistoryFromIls($loadAdditional);
+					if (!$loadReadingHistoryResponse){
+						return array('success' => false, 'message' => 'Did not load reading history from ILS.');
+					}
+					if (empty($loadReadingHistoryResponse['nextRound'])){
+						return array('success' => true, 'readingHistory' => $loadReadingHistoryResponse['titles']);
+					}else{
+						return array(
+							'success'        => true,
+							'nextRound'      => $loadReadingHistoryResponse['nextRound'],
+							'readingHistory' => $loadReadingHistoryResponse['titles'],
+						);
+					}
+				}else{
+					return array('success' => false, 'message' => 'User is not opted in for reading history');
+				}
+			}else{
+				return array('success' => false, 'message' => 'Login unsuccessful');
+			}
+		}
+	}
+
 
 	/**
 	 * Allows reading history to be collected for the patron.  If this option is not selected,
@@ -1484,9 +1520,9 @@ class UserAPI extends Action {
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !PEAR_Singleton::isError($user)){
 			$this->getCatalogConnection()->doReadingHistoryAction('optIn', array());
-			return array('success'=>true);
+			return array('success' => true);
 		}else{
-			return array('success'=>false, 'message'=>'Login unsuccessful');
+			return array('success' => false, 'message' => 'Login unsuccessful');
 		}
 	}
 
@@ -1521,9 +1557,9 @@ class UserAPI extends Action {
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !PEAR_Singleton::isError($user)){
 			$this->getCatalogConnection()->doReadingHistoryAction('optOut', array());
-			return array('success'=>true);
+			return array('success' => true);
 		}else{
-			return array('success'=>false, 'message'=>'Login unsuccessful');
+			return array('success' => false, 'message' => 'Login unsuccessful');
 		}
 	}
 
@@ -1558,9 +1594,9 @@ class UserAPI extends Action {
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !PEAR_Singleton::isError($user)){
 			$this->getCatalogConnection()->doReadingHistoryAction('deleteAll', array());
-			return array('success'=>true);
+			return array('success' => true);
 		}else{
-			return array('success'=>false, 'message'=>'Login unsuccessful');
+			return array('success' => false, 'message' => 'Login unsuccessful');
 		}
 	}
 
@@ -1594,34 +1630,33 @@ class UserAPI extends Action {
 	function deleteSelectedFromReadingHistory(){
 		list($username, $password) = $this->loadUsernameAndPassword();
 		$selectedTitles = $_REQUEST['selected'];
-		$user = UserAccount::validateAccount($username, $password);
+		$user           = UserAccount::validateAccount($username, $password);
 		if ($user && !PEAR_Singleton::isError($user)){
 			$this->getCatalogConnection()->doReadingHistoryAction('deleteMarked', $selectedTitles);
-			return array('success'=>true);
+			return array('success' => true);
 		}else{
-			return array('success'=>false, 'message'=>'Login unsuccessful');
+			return array('success' => false, 'message' => 'Login unsuccessful');
 		}
 	}
 
 	/**
 	 * @return array
 	 */
-	private function loadUsernameAndPassword()
-	{
+	private function loadUsernameAndPassword(){
 		if (isset($_REQUEST['username'])){
 			$username = $_REQUEST['username'];
 		}else{
 			$username = '';
 		}
-		if (isset($_REQUEST['password'])) {
+		if (isset($_REQUEST['password'])){
 			$password = $_REQUEST['password'];
 		}else{
 			$password = '';
 		}
-		if (is_array($username)) {
+		if (is_array($username)){
 			$username = reset($username);
 		}
-		if (is_array($password)) {
+		if (is_array($password)){
 			$password = reset($password);
 		}
 		return array($username, $password);
