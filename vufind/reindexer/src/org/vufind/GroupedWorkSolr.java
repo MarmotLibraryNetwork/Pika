@@ -99,6 +99,7 @@ public class GroupedWorkSolr implements Cloneable {
 	private HashSet<String>          topicFacets              = new HashSet<>();
 	private HashSet<String>          subjects                 = new HashSet<>();
 	private HashMap<String, Long>    upcs                     = new HashMap<>();
+	private float                    hooplaPrice              = 0.0f;
 
 	private Logger             logger;
 	private GroupedWorkIndexer groupedWorkIndexer;
@@ -353,6 +354,7 @@ public class GroupedWorkSolr implements Cloneable {
 		}
 		//EContent fields
 		doc.addField("econtent_device", econtentDevices);
+		doc.addField("hooplaPrice", hooplaPrice);
 
 		HashSet<String> eContentSources = getAllEContentSources();
 		keywords.addAll(eContentSources);
@@ -1134,6 +1136,11 @@ public class GroupedWorkSolr implements Cloneable {
 	Set<String> getIsbns(){
 		return isbns.keySet();
 	}
+
+	float getHooplaPrice(){
+		return hooplaPrice;
+	}
+
 	void addIssns(Set<String> issns) {
 		this.issns.addAll(issns);
 	}
@@ -1599,6 +1606,11 @@ public class GroupedWorkSolr implements Cloneable {
 		}
 	}
 
+	void setHooplaPrice(float price){
+		if (price > 0.0f){
+			this.hooplaPrice = price;
+		}
+	}
 	void addEContentDevices(HashSet<String> devices){
 		this.econtentDevices.addAll(Util.trimTrailingPunctuation(devices));
 	}
