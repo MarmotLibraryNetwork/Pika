@@ -207,7 +207,12 @@ cd /usr/local/vufind-plus/vufind/record_grouping; java -server -XX:+UseG1GC -jar
 #fi
 
 # Truncate Continuous Reindexing list of changed items
-#cat /dev/null >| /data/vufind-plus/${PIKASERVER}/marc/changed_items_to_process.csv
+cat /dev/null >| /data/vufind-plus/${PIKASERVER}/marc/changed_items_to_process.csv
+
+# Wait 2 minutes for solr replication to finish; then delete the inactive solr indexes folders older than 48 hours
+# Note: Running in the full update because we know there is a freshly created index.
+sleep 2m
+find /data/vufind-plus/${PIKASERVER}/solr_searcher/grouped/ -name "index.*" -type d -mmin +2880 -exec rm -rf {} \; >> ${OUTPUT_FILE}
 
 # Clean-up Solr Logs
 find /usr/local/vufind-plus/sites/default/solr/jetty/logs -name "solr_log_*" -mtime +7 -delete
