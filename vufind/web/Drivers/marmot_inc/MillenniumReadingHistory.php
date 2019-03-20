@@ -296,7 +296,7 @@ class MillenniumReadingHistory {
 					//echo("Title value is <br/>$currentColumn<br/>");
 					if (preg_match('/.*?<a href=\\"\/record=(.*?)(?:~S\\d{1,2})\\">(.*?)<\/a>.*/', $currentColumn, $matches)) {
 						$shortId                  = $matches[1];
-						$bibId                    = '.' . $matches[1] . $this->driver->getCheckDigit($shortId);;
+						$bibId                    = '.' . $matches[1] . $this->driver->getCheckDigit($shortId);
 						$historyEntry['id']       = $bibId;
 						$historyEntry['shortId']  = $shortId;
 						$historyEntry['recordId'] = $bibId;
@@ -308,12 +308,14 @@ class MillenniumReadingHistory {
 						$historyEntry['recordId'] = $bibId;
 					}
 
-					$title                 = trim(strip_tags($currentColumn));
+					$title                 = preg_replace('/\shttp:\/\/.+?<\/span>/', '', $currentColumn); // Remove authorities links
+					$title                 = trim(strip_tags($title));
 					$historyEntry['title'] = $title;
 				}
 
 				elseif (stripos($currentColumnKey,"Author") > -1) {
-					$historyEntry['author'] = trim(strip_tags($currentColumn));
+					$author                 = preg_replace('/\shttp:\/\/.+?$/', '', $currentColumn); // Remove authorities links
+					$historyEntry['author'] = trim(rtrim(strip_tags($author), ','));
 				}
 
 				elseif (stripos($currentColumnKey,"Checked Out") > -1) {
