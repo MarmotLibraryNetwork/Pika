@@ -162,9 +162,9 @@ class OverDriveDriver3 {
 					global $configArray;
 					$barcodeProperty = $configArray['Catalog']['barcodeProperty']; //TODO: this should use the account profile property instead
 					$patronPin       = ($barcodeProperty == 'cat_username') ? $user->cat_password : $user->cat_username; // determine which column is the pin by using the opposing field to the barcode. (between pin & username)
-					$postFields      = "grant_type=password&username={$patronBarcode}&password={$patronPin}&password_required=true&scope=websiteId:{$websiteId}%20ilsname:{$ILSName}";
+					$postFields      = "grant_type=password&username={$patronBarcode}&password={$patronPin}&password_required=true&scope=websiteId:{$websiteId}+ilsname:{$ILSName}";
 				}else{
-					$postFields      = "grant_type=password&username={$patronBarcode}&password=ignore&password_required=false&scope=websiteId:{$websiteId}%20ilsname:{$ILSName}";
+					$postFields      = "grant_type=password&username={$patronBarcode}&password=ignore&password_required=false&scope=websiteId:{$websiteId}+ilsname:{$ILSName}";
 				}
 				//$postFields = "grant_type=client_credentials&scope=websiteid:{$websiteId}%20ilsname:{$ILSName}%20cardnumber:{$patronBarcode}";
 
@@ -490,8 +490,10 @@ class OverDriveDriver3 {
 								$bookshelfItem['overdriveRead'] = true;
 							}else if ($format->formatType == 'audiobook-overdrive'){
 								$bookshelfItem['overdriveListen'] = true;
-							}else if ($format->formatType == 'video-streaming'){
+							}else if ($format->formatType == 'video-streaming') {
 								$bookshelfItem['overdriveVideo'] = true;
+							}else if ($format->formatType == 'magazine-overdrive') {
+								$bookshelfItem['overdriveMagazine'] = true;
 							}else{
 								$bookshelfItem['selectedFormat'] = array(
 									'name' => $this->format_map[$format->formatType],
@@ -537,8 +539,18 @@ class OverDriveDriver3 {
 								$bookshelfItem['formats'][] = $curFormat;
 							}
 						}else{
-							//No formats found for the title, do we need to do anything special?
+							$curFormat                  = array();
+							$curFormat['id']            = $format->formatType;
+							$curFormat['name']          = $this->format_map[$format];
+							$bookshelfItem['formats'][] = $curFormat;
 						}
+					} else if ($format->formatType == 'magazine-overdrive') {
+						//$bookshelfItem['formats'] = [];
+						//$curFormat                  = array();
+						//$curFormat['id']            = $format->formatType;
+						//$curFormat['name']          = $this->format_map[$format->formatType];
+						//$bookshelfItem['formats'][] = $curFormat;
+						unset($bookshelfItem['formats']);
 					}
 
 					if (isset($curTitle->actions->earlyReturn)){
