@@ -309,11 +309,11 @@ class MillenniumReadingHistory {
 					}
 
 					$title                 = trim(strip_tags($currentColumn));
-					$historyEntry['title'] = utf8_encode($title);
+					$historyEntry['title'] = $title;
 				}
 
 				elseif (stripos($currentColumnKey,"Author") > -1) {
-					$historyEntry['author'] = utf8_encode(trim(strip_tags($currentColumn)));
+					$historyEntry['author'] = trim(strip_tags($currentColumn));
 				}
 
 				elseif (stripos($currentColumnKey,"Checked Out") > -1) {
