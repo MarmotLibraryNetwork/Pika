@@ -1600,7 +1600,7 @@ class CarlX extends SIP2Driver{
 
 	public function placeHoldViaSIP($patron, $recordId, $pickupBranch = null, $cancelDate = null, $type = null){
 		global $configArray;
-		global $logger;
+		//global $logger;
 		//Place the hold via SIP 2
 		require_once ROOT_DIR . '/sys/SIP2.php';
 		$mySip = new sip2();
@@ -1679,8 +1679,8 @@ class CarlX extends SIP2Driver{
 
 				$in = $mySip->msgHold($mode, $expirationTime, '2', '', $holdId, '', $pickupBranchNumber);
 				$msg_result = $mySip->get_message($in);
-				$logger->log("\r\nHold request\r\n" . print_r($in, true), PEAR_LOG_DEBUG);
-				$logger->log("\r\nHold response\r\n" . print_r($msg_result, true), PEAR_LOG_DEBUG);
+				//$logger->log("\r\nHold request\r\n" . print_r($in, true), PEAR_LOG_DEBUG);
+				//$logger->log("\r\nHold response\r\n" . print_r($msg_result, true), PEAR_LOG_DEBUG);
 
 //				$title = $this->getRecordTitle($recordId); //TODO: method isn't defined
 
