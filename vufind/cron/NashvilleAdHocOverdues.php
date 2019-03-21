@@ -104,7 +104,7 @@ foreach ($aSchool as $sSchool) {
       and (TRANSITEM_V.transcode = 'O' or transitem_v.transcode='L' or transitem_v.transcode='C')
       and patronbranch.branchgroup = '2'
       and patronbranchgroup.branchgroup = patronbranch.branchgroup
-      and bty in ('13','21','22','23','24','25','26','27','28','29','30','31','32','33','34','35','36','37','40','42')
+      and bty in ('13','21','22','23','24','25','26','27','28','29','30','31','32','33','34','35','36','37','40','42','46','47')
       and patronbranch.branchcode = '$sSchool'
     order by 
       patronbranch.branchcode
