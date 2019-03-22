@@ -810,7 +810,7 @@ class Library extends DB_DataObject
 //					'helpLink'=>'',
 				'properties' => array(
 				'hooplaLibraryID'      => array('property'=>'hooplaLibraryID', 'type'=>'integer', 'label'=>'Hoopla Library ID', 'description'=>'The ID Number Hoopla uses for this library', 'hideInLists' => true),
-				'hooplaMaxPrice'       => array('property'=>'hooplaMaxPrice',  'type'=>'integer', 'label'=>'Hoopla Max. Price', 'description'=>'The maximum price per use to include in search results. (0 = include everything)', 'hideInLists' => true),
+				'hooplaMaxPrice'       => array('property'=>'hooplaMaxPrice',  'type'=>'integer', 'label'=>'Hoopla Max. Price', 'description'=>'The maximum price per use to include in search results. (0 = include everything)', 'min' => 0, 'step' => "0.01", 'hideInLists' => true),
 					)),
 			'archiveSection' => array('property'=>'archiveSection', 'type' => 'section', 'label' =>'Local Content Archive', 'hideInLists' => true, 'helpLink'=>'https://docs.google.com/a/marmot.org/document/d/128wrNtZu_sUqm2_NypC6Sx8cOvM2cdmeOUDp0hUhQb4/edit?usp=sharing_eid&ts=57324e27', 'properties' => array(
 					'enableArchive'                        => array('property'=>'enableArchive', 'type'=>'checkbox', 'label'=>'Allow Searching the Archive', 'description'=>'Whether or not information from the archive is shown in Pika.', 'hideInLists' => true, 'default' => 0),
