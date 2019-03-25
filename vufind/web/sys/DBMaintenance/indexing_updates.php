@@ -373,6 +373,14 @@ function getIndexingUpdates() {
 					)
 			),
 
+		'indexing_profile_material_type_field' => array(
+			'title' => 'Indexing Profiles - material type setting',
+			'description' => 'Material type field setting',
+			'sql' => array(
+				"ALTER TABLE indexing_profiles ADD COLUMN materialTypeField VARCHAR(3)",
+			)
+		),
+
 	);
 }
 

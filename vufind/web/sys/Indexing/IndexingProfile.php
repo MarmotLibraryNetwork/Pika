@@ -84,6 +84,7 @@ class IndexingProfile extends DB_DataObject{
 	public $orderCode3;
 	public $doAutomaticEcontentSuppression;
 	public $groupUnchangedFiles;
+	public $materialTypeField;
 
 	function getObjectStructure(){
 		$translationMapStructure = TranslationMap::getObjectStructure();
