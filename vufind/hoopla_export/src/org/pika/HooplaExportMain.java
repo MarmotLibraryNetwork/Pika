@@ -184,6 +184,11 @@ public class HooplaExportMain {
 					numProcessed += updateTitlesInDB(pikaConn, responseTitles);
 				} else {
 					logger.warn("Hoopla Extract call had no titles for updating: " + url);
+					if (startTime != null) {
+						addNoteToHooplaExportLog("Hoopla had no updates since "+ startTime);
+					} else if (doFullReload) {
+						addNoteToHooplaExportLog("Hoopla gave no information for a full Reload");
+					}
 					// If working on a short time frame, it is possible there are no updates. But we expect to do this no more that once a day at this point
 					// so we expect there to be changes.
 					// Having this warning will give us a hint if there is something wrong with the data in the calls
