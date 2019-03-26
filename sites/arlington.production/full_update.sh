@@ -171,7 +171,10 @@ then
 #		echo "" >> ${OUTPUT_FILE}
 #		echo "Based on today's export file (2), a new minimum filesize check level should be set to $NEWLEVEL" >> ${OUTPUT_FILE}
 
-
+		# Wait 2 minutes for solr replication to finish; then delete the inactive solr indexes folders older than 48 hours
+		# Note: Running in the full update because we know there is a freshly created index.
+		sleep 2m
+		find /data/vufind-plus/${PIKASERVER}/solr_searcher/grouped/ -name "index.*" -type d -mmin +2880 -exec rm -rf {} \; >> ${OUTPUT_FILE}
 
 #			else
 #				echo $FILE2 " size " $FILE2SIZE "is less than minimum size :" $MINFILE2SIZE "; Export was not moved to data directory." >> ${OUTPUT_FILE}
