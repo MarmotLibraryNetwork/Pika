@@ -56,6 +56,8 @@
 ###################################
 # Library supplied covers
 53 5 * * * /usr/local/vufind-plus/sites/arlington.test/copyCovers.sh
+# Hoopla
+3 20 * * * cd /usr/local/vufind-plus/vufind/hoopla_export; java -jar hoopla_export.jar arlington.test
 
 ############################################
 # New York Times Bestseller Lists Updating #
