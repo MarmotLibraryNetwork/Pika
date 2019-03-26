@@ -70,6 +70,8 @@ class HooplaProcessor extends MarcRecordProcessor {
 			if (hooplaExtractInfoRS.next()){
 				float hooplaPrice = hooplaExtractInfoRS.getFloat("price");
 				groupedWork.setHooplaPrice(hooplaPrice);
+			} else {
+				logger.info("Did not find Hoopla Extract information for " + identifier);
 			}
 		} catch (SQLException e) {
 			logger.error("Error adding hoopla extract data to solr document for hoopla record : " + identifier, e);
