@@ -14,7 +14,7 @@
 class HooplaDriver
 {
 	const memCacheKey = 'hoopla_api_access_token';
-	public $hooplaAPIBaseURL = 'hoopla-api-dev.hoopladigital.com';
+	public $hooplaAPIBaseURL = 'https://hoopla-erc.hoopladigital.com';
 	private $accessToken;
 	private $hooplaEnabled = false;
 
@@ -286,7 +286,7 @@ class HooplaDriver
 		return $this->accessToken;
 	}
 
-	private function renewAccessToken (){
+	private function renewAccessToken(){
 		global $configArray;
 		if (!empty($configArray['Hoopla']['HooplaAPIUser']) && !empty($configArray['Hoopla']['HooplaAPIpassword'])) {
 			$url = 'https://' . str_replace(array('http://', 'https://'),'', $this->hooplaAPIBaseURL) . '/v2/token';
