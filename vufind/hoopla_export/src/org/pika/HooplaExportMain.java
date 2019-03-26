@@ -90,7 +90,7 @@ public class HooplaExportMain {
 
 			addNoteToHooplaExportLogStmt = pikaConn.prepareStatement("UPDATE hoopla_export_log SET notes = ?, lastUpdate = ? WHERE id = ?");
 		} catch (SQLException e) {
-			logger.error("Unable to create log entry for record grouping process", e);
+			logger.error("Unable to create log entry for hoopla extract process", e);
 			System.exit(0);
 		}
 
