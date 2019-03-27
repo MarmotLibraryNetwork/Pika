@@ -178,7 +178,15 @@ EOD;
 
 			if($curRow['auto_renew'] == 1) {
 				$transaction['canrenew'] = false;
-				$transaction['renew_message'] = "This title will be auto-renewed.";
+				if($curRow['auto_renew_error'] == 'on_reserve') {
+					$transaction['renew_message'] = "This title is on hold by another patron and cannot be renewed.";
+				} elseif ($curRow['auto_renew_error'] == 'too_many') {
+					$transaction['renew_message'] = "You have reached your renewal limit for this title.";
+				} elseif($curRow['auto_renew_error'] == 'auto_too_much_oweing') {
+					$transaction['renew_message'] = "You have unpaid fines. This title cannot be renewed";
+				}else{
+					$transaction['renew_message'] = "This title will be auto-renewed.";
+				}
 			}
 
 			$transaction['dueDate'] = $dueTime;
