@@ -134,89 +134,99 @@ public class UpdateReadingHistory implements IProcessHandler {
 		boolean hadError = false;
 		boolean additionalRoundRequired;
 		String nextRound = "";
-		try {
-			logger.info("Loading initial reading history from ils for " + cat_username);
-			do {
-				additionalRoundRequired = false;
-				// Call the patron API to get their checked out items
-//			URL patronApiUrl = new URL(pikaUrl + "/API/UserAPI?method=getPatronReadingHistory&username=" + encode(cat_username) + "&password=" + encode(cat_password));
+		if (cat_username != null && !cat_username.isEmpty() ) {
+			if (cat_password != null && !cat_password.isEmpty()) {
+				try {
+					logger.info("Loading initial reading history from ils for " + cat_username);
+					do {
+						additionalRoundRequired = false;
+						// Call the patron API to get their checked out items
+		//			URL patronApiUrl = new URL(pikaUrl + "/API/UserAPI?method=getPatronReadingHistory&username=" + encode(cat_username) + "&password=" + encode(cat_password));
 
-				String loadReadingHistoryUrl = pikaUrl + "/API/UserAPI?method=loadReadingHistoryFromIls&username=" + encode(cat_username) + "&password=" + encode(cat_password)
-						+ (isNumeric(nextRound) ? "&nextRound=" + nextRound : "");
-				URL    patronApiUrl          = new URL(loadReadingHistoryUrl);
-				// loadReadingHistoryFromIls is intended to be a faster call, or at least contain only enough information to add entries into the database.
-				// (The regular getPatronReadingHistory included a lot of information that is not needed to update the database.
-				Object patronDataRaw = patronApiUrl.getContent();
-				if (patronDataRaw instanceof InputStream) {
-					String patronDataJson = "";
-					try {
-						patronDataJson = Util.convertStreamToString((InputStream) patronDataRaw);
-						if (patronDataJson != null && patronDataJson.length() > 0) {
-							logger.debug(patronApiUrl.toString());
-							logger.debug("Json for patron reading history " + patronDataJson);
+						String loadReadingHistoryUrl = pikaUrl + "/API/UserAPI?method=loadReadingHistoryFromIls&username=" + encode(cat_username) + "&password=" + encode(cat_password)
+								+ (isNumeric(nextRound) ? "&nextRound=" + nextRound : "");
+						URL    patronApiUrl          = new URL(loadReadingHistoryUrl);
+						// loadReadingHistoryFromIls is intended to be a faster call, or at least contain only enough information to add entries into the database.
+						// (The regular getPatronReadingHistory included a lot of information that is not needed to update the database.
+						Object patronDataRaw = patronApiUrl.getContent();
+						if (patronDataRaw instanceof InputStream) {
+							String patronDataJson = "";
+							try {
+								patronDataJson = Util.convertStreamToString((InputStream) patronDataRaw);
+								if (patronDataJson != null && patronDataJson.length() > 0) {
+									logger.debug(patronApiUrl.toString());
+									logger.debug("Json for patron reading history " + patronDataJson);
 
-							JSONObject patronData = new JSONObject(patronDataJson);
-							JSONObject result     = patronData.getJSONObject("result");
-							if (result.getBoolean("success") && result.has("readingHistory")) {
-								if (result.has("nextRound")){
-									nextRound = result.getString("nextRound");
-									additionalRoundRequired = true;
-									logger.info("Another round of calling the User API is required. Next Round is : " + nextRound);
-								}
-								if (result.get("readingHistory").getClass() == JSONObject.class) {
-									JSONObject readingHistoryItems = result.getJSONObject("readingHistory");
-									@SuppressWarnings("unchecked")
-									Iterator<String> keys = (Iterator<String>) readingHistoryItems.keys();
-									while (keys.hasNext()) {
-										String     curKey             = keys.next();
-										JSONObject readingHistoryItem = readingHistoryItems.getJSONObject(curKey);
-										processReadingHistoryTitle(readingHistoryItem, userId);
+									JSONObject patronData = new JSONObject(patronDataJson);
+									JSONObject result     = patronData.getJSONObject("result");
+									if (result.getBoolean("success") && result.has("readingHistory")) {
+										if (result.has("nextRound")){
+											nextRound = result.getString("nextRound");
+											additionalRoundRequired = true;
+											logger.info("Another round of calling the User API is required. Next Round is : " + nextRound);
+										}
+										if (result.get("readingHistory").getClass() == JSONObject.class) {
+											JSONObject readingHistoryItems = result.getJSONObject("readingHistory");
+											@SuppressWarnings("unchecked")
+											Iterator<String> keys = (Iterator<String>) readingHistoryItems.keys();
+											while (keys.hasNext()) {
+												String     curKey             = keys.next();
+												JSONObject readingHistoryItem = readingHistoryItems.getJSONObject(curKey);
+												processReadingHistoryTitle(readingHistoryItem, userId);
 
-									}
-								} else if (result.get("readingHistory").getClass() == JSONArray.class) {
-									JSONArray readingHistoryItems = result.getJSONArray("readingHistory");
-									for (int i = 0; i < readingHistoryItems.length(); i++) {
-										processReadingHistoryTitle(readingHistoryItems.getJSONObject(i), userId);
+											}
+										} else if (result.get("readingHistory").getClass() == JSONArray.class) {
+											JSONArray readingHistoryItems = result.getJSONArray("readingHistory");
+											for (int i = 0; i < readingHistoryItems.length(); i++) {
+												processReadingHistoryTitle(readingHistoryItems.getJSONObject(i), userId);
+											}
+										} else {
+											processLog.incErrors();
+											processLog.addNote("Unexpected JSON for patron reading history " + result.get("readingHistory").getClass());
+											logger.info("Unexpected JSON for patron reading history " + result.get("readingHistory").getClass());
+											hadError = true;
+										}
+									} else {
+										logger.warn("Call to loadReadingHistoryFromIls returned a success code of false for " + cat_username);
+										hadError = true;
 									}
 								} else {
-									processLog.incErrors();
-									processLog.addNote("Unexpected JSON for patron reading history " + result.get("readingHistory").getClass());
-									logger.info("Unexpected JSON for patron reading history " + result.get("readingHistory").getClass());
+									logger.error("Empty response loading initial history for " + cat_username);
 									hadError = true;
 								}
-							} else {
-								logger.warn("Call to loadReadingHistoryFromIls returned a success code of false for " + cat_username);
+							} catch (IOException e) {
+								logger.error("Error reading input stream for " + cat_username, e);
+								hadError = true;
+							} catch (JSONException e) {
+								logger.error("Unable to load patron information for " + cat_username + ", exception loading response ", e);
+								logger.error(patronDataJson);
+								processLog.incErrors();
+								processLog.addNote("Unable to load patron information from for " + cat_username + " exception loading response " + e.toString());
 								hadError = true;
 							}
 						} else {
-							logger.error("Empty response loading initial history for " + cat_username);
+							logger.error("Unable to load patron information from for " + cat_username + ": expected to get back an input stream, received a "
+									+ patronDataRaw.getClass().getName());
+							processLog.incErrors();
 							hadError = true;
 						}
-					} catch (IOException e) {
-						logger.error("Error reading input stream for " + cat_username, e);
-						hadError = true;
-					} catch (JSONException e) {
-						logger.error("Unable to load patron information for " + cat_username + ", exception loading response ", e);
-						logger.error(patronDataJson);
-						processLog.incErrors();
-						processLog.addNote("Unable to load patron information from for " + cat_username + " exception loading response " + e.toString());
-						hadError = true;
-					}
-				} else {
-					logger.error("Unable to load patron information from for " + cat_username + ": expected to get back an input stream, received a "
-							+ patronDataRaw.getClass().getName());
+					} while (additionalRoundRequired && !hadError);
+				} catch (MalformedURLException e) {
+					logger.error("Bad url for patron API " + e.toString());
+					processLog.incErrors();
+					hadError = true;
+				} catch (IOException e) {
+					logger.error("Unable to retrieve information from patron API for " + cat_username /*+ ": " + e.toString()*/);
 					processLog.incErrors();
 					hadError = true;
 				}
-			} while (additionalRoundRequired && !hadError);
-		} catch (MalformedURLException e) {
-			logger.error("Bad url for patron API " + e.toString());
-			processLog.incErrors();
+			} else {
+				hadError = true;
+				logger.error("cat_password was empty for patron " + cat_username);
+			}
+		} else {
 			hadError = true;
-		} catch (IOException e) {
-			logger.error("Unable to retrieve information from patron API for " + cat_username /*+ ": " + e.toString()*/);
-			processLog.incErrors();
-			hadError = true;
+			logger.error("A pika user's cat_username was empty.");
 		}
 		return !hadError;
 	}
@@ -243,6 +253,9 @@ public class UpdateReadingHistory implements IProcessHandler {
 		}
 		if (readingHistoryTitle.has("permanentId")) {
 			groupedWorkId = readingHistoryTitle.getString("permanentId");
+			if (groupedWorkId == null) {
+				groupedWorkId = "";
+			}
 		}
 		if (readingHistoryTitle.has("format")) {
 			format = readingHistoryTitle.getString("format");
