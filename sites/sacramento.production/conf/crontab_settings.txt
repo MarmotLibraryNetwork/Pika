@@ -61,6 +61,8 @@
 31 */2 * * * /usr/local/vufind-plus/sites/sacramento.production/copyCovers.sh
 #Lynda weekly update
 29 9 * * Fri /usr/local/vufind-plus/vufind/cron/fetch_lynda.sh sacramento
+# Hoopla
+02 20 * * * cd /usr/local/vufind-plus/vufind/hoopla_export; java -jar hoopla_export.jar sacramento.production
 
 ############################################
 # New York Times Bestseller Lists Updating #
