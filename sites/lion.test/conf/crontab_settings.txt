@@ -61,6 +61,8 @@
 31 */2 * * * /usr/local/vufind-plus/sites/lion.test/copyCovers.sh
 #Lynda weekly update
 23 8 * * Fri /usr/local/vufind-plus/vufind/cron/fetch_lynda.sh lion
+# Hoopla
+11 20 * * * cd /usr/local/vufind-plus/vufind/hoopla_export; java -jar hoopla_export.jar lion.test
 
 ############################################
 # New York Times Bestseller Lists Updating #

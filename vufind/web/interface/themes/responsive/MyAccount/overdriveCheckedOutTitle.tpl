@@ -101,7 +101,7 @@
 					<div class="result-value col-md-8 col-lg-9">
 						{if $record.formatSelected}
 							You downloaded the <strong>{$record.selectedFormat.name}</strong> format of this title.
-						{else}
+						{elseif isset($record.formats)}
 							<div class="form-inline">
 								<label for="downloadFormat_{$record.overDriveId}">Select one format to download.</label>
 								<br>
@@ -121,6 +121,9 @@
 			{* Actions for Title *}
 			<div class="col-xs-9 col-sm-8 col-md-4 col-lg-3">
 				<div class="btn-group btn-group-vertical btn-block">
+					{if $record.overdriveMagazine}
+						<a href="#" onclick="return VuFind.OverDrive.followOverDriveDownloadLink('{$record.userId}', '{$record.overDriveId}', 'magazine-overdrive')" class="btn btn-sm btn-primary">Read&nbsp;Online</a>
+					{/if}
 					{if $record.overdriveRead}
 						<a href="#" onclick="return VuFind.OverDrive.followOverDriveDownloadLink('{$record.userId}', '{$record.overDriveId}', 'ebook-overdrive')" class="btn btn-sm btn-primary">Read&nbsp;Online</a>
 					{/if}

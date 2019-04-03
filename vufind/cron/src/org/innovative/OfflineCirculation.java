@@ -60,13 +60,17 @@ public class OfflineCirculation implements IProcessHandler {
 	 * Enters any holds that were entered while the catalog was offline
 	 *
 	 * @param configIni   Configuration information for VuFind
-	 * @param vufindConn Connection to the database
+	 * @param pikaConn Connection to the database
 	 */
-	private void processOfflineHolds(Ini configIni, Connection vufindConn) {
+	private void processOfflineHolds(Ini configIni, Connection pikaConn) {
 		processLog.addNote("Processing offline holds");
 		try {
-			PreparedStatement holdsToProcessStmt = vufindConn.prepareStatement("SELECT offline_hold.*, cat_username, cat_password from offline_hold LEFT JOIN user on user.id = offline_hold.patronId where status='Not Processed' order by timeEntered ASC");
-			PreparedStatement updateHold         = vufindConn.prepareStatement("UPDATE offline_hold set timeProcessed = ?, status = ?, notes = ? where id = ?");
+			// Match by Pika patron ID
+			PreparedStatement holdsToProcessStmt = pikaConn.prepareStatement("SELECT offline_hold.*, cat_username, cat_password from offline_hold LEFT JOIN user on user.id = offline_hold.patronId where status='Not Processed' order by timeEntered ASC");
+//			PreparedStatement holdsToProcessStmt = pikaConn.prepareStatement("SELECT offline_hold.*, cat_username, cat_password from offline_hold LEFT JOIN user on (user.cat_password = offline_hold.patronBarcode) where status='Not Processed' order by timeEntered ASC");
+			// This was used for a data migration of holds transactions (where the assumption that a patron has logged into Pika is invalid)
+			// This matches by patron barcode when the barcode is saved in the cat_password field
+			PreparedStatement updateHold         = pikaConn.prepareStatement("UPDATE offline_hold set timeProcessed = ?, status = ?, notes = ? where id = ?");
 			String baseUrl                       = configIni.get("Site", "url");
 			ResultSet holdsToProcessRS           = holdsToProcessStmt.executeQuery();
 			while (holdsToProcessRS.next()){

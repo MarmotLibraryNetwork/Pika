@@ -69,9 +69,7 @@ from (
   where
     b.branchgroup = '2'
     and s.street2 is not null
-    and s.bty >= 21
-    and s.bty <= 34 -- excludes non-delivery, which conceivably could cause a mess...
---and b.branchnumber < 33 -- TEST LIMIT TO Amqui, Margaret Allen, Antioch High
+    and s.bty in ('13','21','22','23','24','25','26','27','28','29','30','31','32','33','34','35','36','37','40','42','46','47')
   order by
     b.branchcode
     , homeroomname
@@ -123,8 +121,7 @@ foreach ($aSchoolHomeroom as $sSchoolHomeroom) {
 			and patronbranch.branchnumber = patron_v.defaultbranch
 			and (
 				(
-					patron_v.bty >= 21
-					and patron_v.bty <= 37
+					patron_v.bty in ('21','22','23','24','25','26','27','28','29','30','31','32','33','34','35','36','37','46','47')
 					and patronbranch.branchcode = '$sSchool'
 					and patron_v.street2 = '$sHomeroom'
 				) or (

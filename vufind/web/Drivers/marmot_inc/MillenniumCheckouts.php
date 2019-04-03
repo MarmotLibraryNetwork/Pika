@@ -232,8 +232,7 @@ class MillenniumCheckouts {
 		$driver->_curl_login($patron);
 
 		//Pause briefly between logging in and posting the actual renewal
-//		usleep(150000);
-		// moved to millenium driver _curl_login()
+		//usleep(50000);
 
 		//Go to the items page
 		$scope = $driver->getDefaultScope();
@@ -333,8 +332,7 @@ class MillenniumCheckouts {
 		if ($driver->_curl_login($patron)) {
 
 			//Pause briefly between logging in and posting the actual renewal
-//		usleep(150000);
-			// moved to millenium driver _curl_login()
+			//usleep(150000);
 
 			//Go to the items page
 			$scope    = $driver->getDefaultScope();
@@ -377,6 +375,11 @@ class MillenniumCheckouts {
 					//$logger->log(print_r($rowMatches, true), PEAR_LOG_DEBUG);
 					foreach ($rowMatches as $i => $row) {
 						$rowData = $row[1];
+						// clean up item ids like 89789|0
+						if(strpos($itemId, '|')) {
+							$itemIdArray = explode('|', $itemId);
+							$itemId      = $itemIdArray[0];
+						}
 						if (preg_match("/{$itemId}/", $rowData)) {
 							//$logger->log("Found the row for this item", PEAR_LOG_DEBUG);
 							//Extract the renewal message

@@ -1,5 +1,5 @@
 <?xml version="1.0" ?>
-<schema name="VuFind Grouped Record Index" version="1.3">
+<schema name="Pika Grouped Record Index" version="1.3">
 	<types>
 		<fieldType name="string" class="solr.StrField" sortMissingLast="true" omitNorms="true"/>
 		<fieldType name="integer" class="solr.TrieIntField" omitNorms="true"/>
@@ -224,6 +224,7 @@
 		<field name="econtent_device" type="string" indexed="true" stored="true" multiValued="true" docValues="true"/>
 		<dynamicField name="econtent_source_*" type="string" indexed="true" stored="true" multiValued="true" docValues="true"/>
 		<dynamicField name="econtent_protection_type_*" type="string" indexed="true" stored="true" multiValued="true" docValues="true"/>
+		<field name="hooplaPrice" type="float" indexed="false" stored="true" multiValued="false" docValues="true"/>
 		<!-- Broad Search Terms -->
 		<field name="table_of_contents" type="text" indexed="true" stored="true" multiValued="true"/>
 		<field name="table_of_contents_proper" type="textProper" indexed="true" stored="true" multiValued="true"/>

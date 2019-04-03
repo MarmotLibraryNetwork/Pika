@@ -27,31 +27,31 @@ else
 			if [ $(ls -1A "$LOCAL/$SOURCE/" | grep -i .mrc | wc -l) -gt 0 ]; then
 				# only do copy command if there are files present to move
 
-				FILE1=$(ls -rt1 $LOCAL/$SOURCE/*|grep -i .mrc$|tail -1)
-				# Get only the latest file, and must end with .mrc
+				FILE1=$(ls -rt1 $LOCAL/$SOURCE/|grep -i .mrc$|tail -1)
+				# Get only the latest file, and must end with .mrc (Note the ls & tail is the paramter the number 1 (not letter l)
 				if [ -n "$FILE1" ]; then
-					if [ $(ls -1A "$LOCAL/$SOURCE/" | grep -i .mrc | wc -l) -gt 1 ]; then
+					if [ $(ls -1A "$LOCAL/$SOURCE/" | grep -i .mrc$| wc -l) -gt 1 ]; then
 						echo "There is more that 1 MARC file present in $LOCAL/$SOURCE/ during $0 process."
 					fi
 
 					$LOG "~~ Copy fullexport marc file."
-					$LOG "~~ cp --update $FILE1 /data/vufind-plus/$DESTINATION/marc/fullexport.mrc"
-					cp --update -v "$FILE1" /data/vufind-plus/$DESTINATION/marc/fullexport.mrc
+					$LOG "~~ cp --update $LOCAL/$SOURCE/$FILE1 /data/vufind-plus/$DESTINATION/marc/fullexport.mrc"
+					cp --update -v "$LOCAL/$SOURCE/$FILE1" /data/vufind-plus/$DESTINATION/marc/fullexport.mrc
 
 					if [ $? -ne 0 ]; then
-						$LOG "~~ Copying $FILE1 file failed."
-						echo "Copying $FILE1 file failed."
+						$LOG "~~ Copying $LOCAL/$SOURCE/$FILE1 file failed."
+						echo "Copying $LOCAL/$SOURCE/$FILE1 file failed."
 					else
-						$LOG "~~ $FILE1 file was copied."
-						echo "$FILE1 file was copied."
+						$LOG "~~ $LOCAL/$SOURCE/$FILE1 file was copied."
+						echo "$LOCAL/$SOURCE/$FILE1 file was copied."
 						if [[ ! $PIKASERVER =~ ".test" ]]; then
 							# Only move marc files to processed folder for production servers
 							# The test server MUST run before production or the file won't exist
 							if [ ! -d "$LOCAL/$SOURCE/processed/" ]; then
 								mkdir $LOCAL/$SOURCE/processed/
 							fi
-							echo "Moving $FILE1 on ftp server to processed directory."
-							mv "$FILE1" $LOCAL/$SOURCE/processed/
+							echo "Moving $LOCAL/$SOURCE/$FILE1 on ftp server to processed directory."
+							mv "$LOCAL/$SOURCE/$FILE1" $LOCAL/$SOURCE/processed/
 						fi
 					fi
 

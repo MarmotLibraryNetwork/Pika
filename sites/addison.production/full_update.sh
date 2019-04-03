@@ -14,7 +14,7 @@ PIKASERVER=addison.production
 PIKADBNAME=pika
 OUTPUT_FILE="/var/log/vufind-plus/${PIKASERVER}/full_update_output.log"
 
-MINFILE1SIZE=$((258000000))
+MINFILE1SIZE=$((256000000))
 
 # Check if full_update is already running
 #TODO: Verify that the PID file doesn't get log-rotated
@@ -126,17 +126,14 @@ cd /usr/local/vufind-plus/sites/${PIKASERVER}; ./${PIKASERVER}.sh restart
 /usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} addison/Biblioboard Biblioboard/addison >> ${OUTPUT_FILE}
 #TrueFlix
 /usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} addison/trueflix trueflix/addison >> ${OUTPUT_FILE}
-
 #Learning Express
-#/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} addison/learning_express learning_express/addison >> ${OUTPUT_FILE}
+/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} addison/learning_express learning_express/addison >> ${OUTPUT_FILE}
 #Bookflix
 /usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} addison/bookflix bookflix/addison >> ${OUTPUT_FILE}
-
 #Gale eCourses
 /usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} addison/gale_courses gale_courses/addison >> ${OUTPUT_FILE}
-
 #RB Digital
-#/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} addison/RBdigital_magazines RBdigital_magazines/addison >> ${OUTPUT_FILE}
+/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} addison/RBdigital_magazines RBdigital_magazines/addison >> ${OUTPUT_FILE}
 
 
 
@@ -201,6 +198,11 @@ then
 		NEWLEVEL=$(($FILE1SIZE * 97 / 100))
 		echo "" >> ${OUTPUT_FILE}
 		echo "Based on today's export file, a new minimum filesize check level should be set to $NEWLEVEL" >> ${OUTPUT_FILE}
+
+		# Wait 2 minutes for solr replication to finish; then delete the inactive solr indexes folders older than 48 hours
+		# Note: Running in the full update because we know there is a freshly created index.
+		sleep 2m
+		find /data/vufind-plus/${PIKASERVER}/solr_searcher/grouped/ -name "index.*" -type d -mmin +2880 -exec rm -rf {} \; >> ${OUTPUT_FILE}
 
 		else
 			umount /mnt/ftp

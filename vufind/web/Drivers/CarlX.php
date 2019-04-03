@@ -832,8 +832,8 @@ class CarlX extends SIP2Driver{
 		$fields[] = array('property'=>'middleName',  'type'=>'text', 'label'=>'Middle Name', 'description'=>'Your middle name', 'maxLength' => 40, 'required' => false);
 		$fields[] = array('property'=>'lastName',   'type'=>'text', 'label'=>'Last Name', 'description'=>'Your last name', 'maxLength' => 40, 'required' => true);
 		if ($library && $library->promptForBirthDateInSelfReg){
-			$birthDateMin = date('Y-m-d', strtotime('-114 years'));
-			$birthDateMax = date('Y-m-d', strtotime('-14 years'));
+			$birthDateMin = date('Y-m-d', strtotime('-113 years'));
+			$birthDateMax = date('Y-m-d', strtotime('-13 years'));
 			$fields[] = array('property'=>'birthDate', 'type'=>'date', 'label'=>'Date of Birth (MM-DD-YYYY)', 'description'=>'Date of birth', 'min'=>$birthDateMin, 'max'=>$birthDateMax, 'maxLength' => 10, 'required' => true);
 		}
 		$fields[] = array('property'=>'address',     'type'=>'text', 'label'=>'Mailing Address', 'description'=>'Mailing Address', 'maxLength' => 128, 'required' => true);
@@ -960,12 +960,12 @@ class CarlX extends SIP2Driver{
 				$request->Patron->RegisteredBy			= $configArray['Catalog']['selfRegRegisteredBy'];
 
 				// VALIDATE BIRTH DATE.
-				// DENY REGISTRATION IF REGISTRANT IS NOT 14 - 113 YEARS OLD
+				// DENY REGISTRATION IF REGISTRANT IS NOT 13 - 113 YEARS OLD
 				if ($library && $library->promptForBirthDateInSelfReg) {
 					$birthDate			= trim($_REQUEST['birthDate']);
 					$date				= strtotime(str_replace('-','/',$birthDate));
 					$birthDateMin			= strtotime('-113 years');
-					$birthDateMax			= strtotime('-14 years');
+					$birthDateMax			= strtotime('-13 years');
 					if ($date >= $birthDateMin && $date <= $birthDateMax) {
 						$request->Patron->BirthDate = date('Y-m-d', $date);
 					} else {
@@ -973,7 +973,7 @@ class CarlX extends SIP2Driver{
 						$logger->log('Online Registrant is too young : birth date : ' . date('Y-m-d', $date), PEAR_LOG_WARNING);
 						return array(
 							'success' => false,
-							'message' => 'You must be 14 years old to register.'
+							'message' => 'You must be 13 years old to register.'
 						);
 					}
 				}
@@ -1600,6 +1600,7 @@ class CarlX extends SIP2Driver{
 
 	public function placeHoldViaSIP($patron, $recordId, $pickupBranch = null, $cancelDate = null, $type = null){
 		global $configArray;
+		//global $logger;
 		//Place the hold via SIP 2
 		require_once ROOT_DIR . '/sys/SIP2.php';
 		$mySip = new sip2();
@@ -1678,6 +1679,8 @@ class CarlX extends SIP2Driver{
 
 				$in = $mySip->msgHold($mode, $expirationTime, '2', '', $holdId, '', $pickupBranchNumber);
 				$msg_result = $mySip->get_message($in);
+				//$logger->log("\r\nHold request\r\n" . print_r($in, true), PEAR_LOG_DEBUG);
+				//$logger->log("\r\nHold response\r\n" . print_r($msg_result, true), PEAR_LOG_DEBUG);
 
 //				$title = $this->getRecordTitle($recordId); //TODO: method isn't defined
 

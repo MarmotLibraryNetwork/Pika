@@ -7,7 +7,10 @@ import org.marc4j.marc.Record;
 import java.io.ByteArrayInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
@@ -21,20 +24,26 @@ import java.util.Set;
  * Time: 10:30 AM
  */
 class HooplaProcessor extends MarcRecordProcessor {
-	private String individualMarcPath;
-	private int numCharsToCreateFolderFrom;
-	private boolean createFolderFromLeadingCharacters;
+	private String            individualMarcPath;
+	private int               numCharsToCreateFolderFrom;
+	private boolean           createFolderFromLeadingCharacters;
+	private PreparedStatement hooplaExtractInfo;
 
-	HooplaProcessor(GroupedWorkIndexer indexer, ResultSet indexingProfileRS, Logger logger) {
+	HooplaProcessor(GroupedWorkIndexer indexer, Connection pikaConn, ResultSet indexingProfileRS, Logger logger) {
 		super(indexer, logger);
 
 		try {
-			individualMarcPath = indexingProfileRS.getString("individualMarcPath");
+			individualMarcPath                 = indexingProfileRS.getString("individualMarcPath");
 			numCharsToCreateFolderFrom         = indexingProfileRS.getInt("numCharsToCreateFolderFrom");
 			createFolderFromLeadingCharacters  = indexingProfileRS.getBoolean("createFolderFromLeadingCharacters");
 
 		}catch (Exception e){
 			logger.error("Error loading indexing profile information from database", e);
+		}
+		try {
+			hooplaExtractInfo = pikaConn.prepareStatement("SELECT * FROM hoopla_export WHERE hooplaId = ? LIMIT 1", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+		} catch (SQLException e) {
+			logger.error("Failed to set SQL statement to fetch Hoopla Extract data", e);
 		}
 	}
 
@@ -44,6 +53,7 @@ class HooplaProcessor extends MarcRecordProcessor {
 
 		if (record != null) {
 			try {
+				updateGroupedWorkSolrDataBasedOnHooplaExtract(groupedWork, identifier); // Add extract info first, then let regular processes happen in updateGroupedWorkSolrDataBasedOnMarc()
 				updateGroupedWorkSolrDataBasedOnMarc(groupedWork, record, identifier);
 			} catch (Exception e) {
 				logger.error("Error updating solr based on hoopla marc record", e);
@@ -51,20 +61,37 @@ class HooplaProcessor extends MarcRecordProcessor {
 		}
 	}
 
-	private Record loadMarcRecordFromDisk(String identifier){
+
+	private void updateGroupedWorkSolrDataBasedOnHooplaExtract(GroupedWorkSolr groupedWork, String identifier) {
+		try {
+			long hooplaId = Long.parseLong(identifier.replaceAll("^MWT", ""));
+			hooplaExtractInfo.setLong(1, hooplaId);
+			ResultSet hooplaExtractInfoRS = hooplaExtractInfo.executeQuery();
+			if (hooplaExtractInfoRS.next()){
+				float hooplaPrice = hooplaExtractInfoRS.getFloat("price");
+				groupedWork.setHooplaPrice(hooplaPrice);
+			} else {
+				logger.info("Did not find Hoopla Extract information for " + identifier);
+			}
+		} catch (SQLException e) {
+			logger.error("Error adding hoopla extract data to solr document for hoopla record : " + identifier, e);
+		}
+	}
+
+	private Record loadMarcRecordFromDisk(String identifier) {
 		Record record = null;
 		//Load the marc record from disc
 		String individualFilename = getFileForIlsRecord(identifier);
 		try {
-			byte[] fileContents = Util.readFileBytes(individualFilename);
-			InputStream inputStream = new ByteArrayInputStream(fileContents);
+			byte[]      fileContents = Util.readFileBytes(individualFilename);
+			InputStream inputStream  = new ByteArrayInputStream(fileContents);
 			//FileInputStream inputStream = new FileInputStream(individualFile);
 			MarcPermissiveStreamReader marcReader = new MarcPermissiveStreamReader(inputStream, true, true, "UTF-8");
 			if (marcReader.hasNext()) {
 				record = marcReader.next();
 			}
 			inputStream.close();
-		} catch (FileNotFoundException fnfe){
+		} catch (FileNotFoundException fnfe) {
 			logger.error("Hoopla file " + individualFilename + " did not exist");
 		} catch (Exception e) {
 			logger.error("Error reading data from hoopla file " + individualFilename, e);
@@ -197,28 +224,32 @@ class HooplaProcessor extends MarcRecordProcessor {
 	}
 
 	private void loadScopeInfoForEContentItem(GroupedWorkSolr groupedWork, RecordInfo recordInfo, ItemInfo itemInfo, Record record) {
+		float hooplaPrice = groupedWork.getHooplaPrice();
 		//Figure out ownership information
 		for (Scope curScope: indexer.getScopes()){
 			String originalUrl = itemInfo.geteContentUrl();
 			Scope.InclusionResult result = curScope.isItemPartOfScope("hoopla", "", "", null, groupedWork.getTargetAudiences(), recordInfo.getPrimaryFormat(), false, false, true, record, originalUrl);
 			if (result.isIncluded){
-				ScopingInfo scopingInfo = itemInfo.addScope(curScope);
-				scopingInfo.setAvailable(true);
-				scopingInfo.setStatus("Available Online");
-				scopingInfo.setGroupedStatus("Available Online");
-				scopingInfo.setHoldable(false);
-				if (curScope.isLocationScope()) {
-					scopingInfo.setLocallyOwned(curScope.isItemOwnedByScope("hoopla", "", ""));
-					if (curScope.getLibraryScope() != null) {
-						scopingInfo.setLibraryOwned(curScope.getLibraryScope().isItemOwnedByScope("hoopla", "", ""));
+				float hooplaMaxPriceForScope = curScope.getHooplaMaxPrice();
+				if (hooplaPrice == 0.0f || hooplaMaxPriceForScope == 0.0f || hooplaPrice < hooplaMaxPriceForScope) { // only include records below the set Max Price for the library
+					ScopingInfo scopingInfo = itemInfo.addScope(curScope);
+					scopingInfo.setAvailable(true);
+					scopingInfo.setStatus("Available Online");
+					scopingInfo.setGroupedStatus("Available Online");
+					scopingInfo.setHoldable(false);
+					if (curScope.isLocationScope()) {
+						scopingInfo.setLocallyOwned(curScope.isItemOwnedByScope("hoopla", "", ""));
+						if (curScope.getLibraryScope() != null) {
+							scopingInfo.setLibraryOwned(curScope.getLibraryScope().isItemOwnedByScope("hoopla", "", ""));
+						}
 					}
-				}
-				if (curScope.isLibraryScope()) {
-					 scopingInfo.setLibraryOwned(curScope.isItemOwnedByScope("hoopla", "", ""));
-				}
-				//Check to see if we need to do url rewriting
-				if (originalUrl != null && !originalUrl.equals(result.localUrl)){
-					scopingInfo.setLocalUrl(result.localUrl);
+					if (curScope.isLibraryScope()) {
+						 scopingInfo.setLibraryOwned(curScope.isItemOwnedByScope("hoopla", "", ""));
+					}
+					//Check to see if we need to do url rewriting
+					if (originalUrl != null && !originalUrl.equals(result.localUrl)){
+						scopingInfo.setLocalUrl(result.localUrl);
+					}
 				}
 			}
 		}

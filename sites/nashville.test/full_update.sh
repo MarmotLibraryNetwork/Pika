@@ -143,6 +143,11 @@ then
 		cd /usr/local/vufind-plus/vufind/reindexer;
 		java -server -XX:+UseG1GC -Xmx6G -jar reindexer.jar ${PIKASERVER} fullReindex >> ${OUTPUT_FILE}
 
+		# Wait 2 minutes for solr replication to finish; then delete the inactive solr indexes folders older than 48 hours
+		# Note: Running in the full update because we know there is a freshly created index.
+		sleep 2m
+		find /data/vufind-plus/${PIKASERVER}/solr_searcher/grouped/ -name "index.*" -type d -mmin +2880 -exec rm -rf {} \; >> ${OUTPUT_FILE}
+
 		# Clean-up Solr Logs
 		# (/usr/local/vufind-plus/sites/default/solr/jetty/logs is a symbolic link to /var/log/pika/solr)
 		find /var/log/pika/solr -name "solr_log_*" -mtime +7 -delete

@@ -29,21 +29,20 @@ import org.marc4j.marc.impl.SubfieldImpl;
 
 /**
  * Export data to
- * VuFind-Plus
+ * Pika
  * User: Mark Noble
  * Date: 10/15/13
  * Time: 8:59 AM
  */
 public class SierraExportMain{
-	private static Logger logger = Logger.getLogger(SierraExportMain.class);
-	private static String serverName;
-
+	private static Logger          logger                                           = Logger.getLogger(SierraExportMain.class);
+	private static String          serverName;
 	private static IndexingProfile indexingProfile;
-
-	private static boolean exportItemHolds = true;
-	private static boolean suppressOrderRecordsThatAreReceivedAndCatalogged = false;
-	private static boolean suppressOrderRecordsThatAreCatalogged = false;
-	private static String orderStatusesToExport;
+	private static boolean         exportItemHolds                                  = true;
+	private static boolean         suppressOrderRecordsThatAreReceivedAndCatalogged = false;
+	private static boolean         suppressOrderRecordsThatAreCatalogged            = false;
+	private static boolean         suppressOrderRecordsThatAreReceived              = false;
+	private static String          orderStatusesToExport;
 
 	public static void main(String[] args){
 		serverName = args[0];
@@ -58,7 +57,7 @@ public class SierraExportMain{
 		logger.info(startTime.toString() + ": Starting Sierra Extract");
 
 		// Read the base INI file to get information about the server (current directory/cron/config.ini)
-		Ini ini = loadConfigFile("config.ini");
+		Ini    ini        = loadConfigFile("config.ini");
 		String exportPath = ini.get("Reindex", "marcPath");
 		if (exportPath.startsWith("\"")){
 			exportPath = exportPath.substring(1, exportPath.length() - 1);
@@ -67,20 +66,12 @@ public class SierraExportMain{
 		if (exportItemHoldsStr != null){
 			exportItemHolds = exportItemHoldsStr.equalsIgnoreCase("true");
 		}
-		String suppressOrderRecordsThatAreReceivedAndCataloggedStr = ini.get("Catalog", "suppressOrderRecordsThatAreReceivedAndCatalogged");
-		if (suppressOrderRecordsThatAreReceivedAndCataloggedStr != null){
-			suppressOrderRecordsThatAreReceivedAndCatalogged = suppressOrderRecordsThatAreReceivedAndCataloggedStr.equalsIgnoreCase("true");
-		}
-		String suppressOrderRecordsThatAreCataloggedStr = ini.get("Catalog", "suppressOrderRecordsThatAreCatalogged");
-		if (suppressOrderRecordsThatAreCataloggedStr != null){
-			suppressOrderRecordsThatAreCatalogged = suppressOrderRecordsThatAreCataloggedStr.equalsIgnoreCase("true");
-		}
 
-		//Connect to the vufind database
-		Connection vufindConn = null;
+		//Connect to the pika database
+		Connection pikaConn = null;
 		try{
 			String databaseConnectionInfo = cleanIniValue(ini.get("Database", "database_vufind_jdbc"));
-			vufindConn = DriverManager.getConnection(databaseConnectionInfo);
+			pikaConn = DriverManager.getConnection(databaseConnectionInfo);
 		}catch (Exception e){
 			System.out.println("Error connecting to Pika database " + e.toString());
 			System.exit(1);
@@ -90,10 +81,10 @@ public class SierraExportMain{
 		if (args.length > 1){
 			profileToLoad = args[1];
 		}
-		indexingProfile = IndexingProfile.loadIndexingProfile(vufindConn, profileToLoad, logger);
+		indexingProfile = IndexingProfile.loadIndexingProfile(pikaConn, profileToLoad, logger);
 
 		//Get a list of works that have changed since the last index
-		getChangedRecordsFromApi(ini, vufindConn, exportPath);
+		getChangedRecordsFromApi(ini, pikaConn, exportPath);
 
 		//Connect to the sierra database
 		String url              = ini.get("Catalog", "sierra_db");
@@ -121,10 +112,22 @@ public class SierraExportMain{
 			if (orderStatusesToExport == null){
 				orderStatusesToExport = "o|1";
 			}
+			String suppressOrderRecordsThatAreReceivedAndCataloggedStr = ini.get("Catalog", "suppressOrderRecordsThatAreReceivedAndCatalogged");
+			if (suppressOrderRecordsThatAreReceivedAndCataloggedStr != null){
+				suppressOrderRecordsThatAreReceivedAndCatalogged = suppressOrderRecordsThatAreReceivedAndCataloggedStr.equalsIgnoreCase("true");
+			}
+			String suppressOrderRecordsThatAreCataloggedStr = ini.get("Catalog", "suppressOrderRecordsThatAreCatalogged");
+			if (suppressOrderRecordsThatAreCataloggedStr != null){
+				suppressOrderRecordsThatAreCatalogged = suppressOrderRecordsThatAreCataloggedStr.equalsIgnoreCase("true");
+			}
+			String suppressOrderRecordsThatAreReceivedStr = ini.get("Catalog", "suppressOrderRecordsThatAreReceived");
+			if (suppressOrderRecordsThatAreReceivedStr != null){
+				suppressOrderRecordsThatAreReceived = suppressOrderRecordsThatAreReceivedStr.equalsIgnoreCase("true");
+			}
 			exportActiveOrders(exportPath, conn);
 			exportDueDates(exportPath, conn);
 
-			exportHolds(conn, vufindConn);
+			exportHolds(conn, pikaConn);
 
 		}catch(Exception e){
 			System.out.println("Error: " + e.toString());
@@ -136,35 +139,33 @@ public class SierraExportMain{
 				//Close the connection
 				conn.close();
 			}catch(Exception e){
-				System.out.println("Error closing connection: " + e.toString());
-				e.printStackTrace();
+				logger.error("Error closing connection: " + e.toString(), e);
 			}
 		}
 
-		if (vufindConn != null){
+		if (pikaConn != null){
 			try{
 				//Close the connection
-				vufindConn.close();
+				pikaConn.close();
 			}catch(Exception e){
-				System.out.println("Error closing connection: " + e.toString());
-				e.printStackTrace();
+				logger.error("Error closing connection: " + e.toString(), e);
 			}
 		}
 		Date currentTime = new Date();
 		logger.info(currentTime.toString() + ": Finished Sierra Extract");
 	}
 
-	private static void exportHolds(Connection sierraConn, Connection vufindConn) {
+	private static void exportHolds(Connection sierraConn, Connection pikaConn) {
 		Savepoint startOfHolds = null;
 		try {
 			logger.info("Starting export of holds");
 
 			//Start a transaction so we can rebuild an entire table
-			startOfHolds = vufindConn.setSavepoint();
-			vufindConn.setAutoCommit(false);
-			vufindConn.prepareCall("TRUNCATE TABLE ils_hold_summary").executeQuery();
+			startOfHolds = pikaConn.setSavepoint();
+			pikaConn.setAutoCommit(false);
+			pikaConn.prepareCall("TRUNCATE TABLE ils_hold_summary").executeQuery();
 
-			PreparedStatement addIlsHoldSummary = vufindConn.prepareStatement("INSERT INTO ils_hold_summary (ilsId, numHolds) VALUES (?, ?)");
+			PreparedStatement addIlsHoldSummary = pikaConn.prepareStatement("INSERT INTO ils_hold_summary (ilsId, numHolds) VALUES (?, ?)");
 
 			HashMap<String, Long> numHoldsByBib = new HashMap<>();
 			HashMap<String, Long> numHoldsByVolume = new HashMap<>();
@@ -244,18 +245,18 @@ public class SierraExportMain{
 			}
 
 			try {
-				vufindConn.commit();
-				vufindConn.setAutoCommit(true);
+				pikaConn.commit();
+				pikaConn.setAutoCommit(true);
 			}catch (Exception e){
 				logger.warn("error committing hold updates rolling back", e);
-				vufindConn.rollback(startOfHolds);
+				pikaConn.rollback(startOfHolds);
 			}
 
 		} catch (Exception e) {
 			logger.error("Unable to export holds from Sierra", e);
 			if (startOfHolds != null) {
 				try {
-					vufindConn.rollback(startOfHolds);
+					pikaConn.rollback(startOfHolds);
 				}catch (Exception e1){
 					logger.error("Unable to rollback due to exception", e1);
 				}
@@ -264,7 +265,7 @@ public class SierraExportMain{
 		logger.info("Finished exporting holds");
 	}
 
-	private static void getChangedRecordsFromApi(Ini ini, Connection vufindConn, String exportPath) {
+	private static void getChangedRecordsFromApi(Ini ini, Connection pikaConn, String exportPath) {
 		//Get the time the last extract was done
 		try{
 			logger.info("Starting to load changed records from Sierra using the API");
@@ -285,7 +286,7 @@ public class SierraExportMain{
 				changedItemsReader.close();
 			}
 
-			PreparedStatement loadLastSierraExtractTimeStmt = vufindConn.prepareStatement("SELECT * from variables WHERE name = 'last_sierra_extract_time'", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement loadLastSierraExtractTimeStmt = pikaConn.prepareStatement("SELECT * from variables WHERE name = 'last_sierra_extract_time'", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			ResultSet lastSierraExtractTimeRS = loadLastSierraExtractTimeStmt.executeQuery();
 			if (lastSierraExtractTimeRS.next()){
 				lastSierraExtractTime = lastSierraExtractTimeRS.getLong("value");
@@ -333,9 +334,9 @@ public class SierraExportMain{
 				//That the grouped record has changed which will force the work to be indexed
 				//In reality, this will only update availability unless we pull the full marc record
 				//from the API since we only have updated availability, not location data or metadata
-				long firstRecordIdToLoad = 1;
+				long firstItemIdToLoad = 1;
 				boolean moreToRead = true;
-				PreparedStatement markGroupedWorkForBibAsChangedStmt = vufindConn.prepareStatement("UPDATE grouped_work SET date_updated = ? where id = (SELECT grouped_work_id from grouped_work_primary_identifiers WHERE type = 'ils' and identifier = ?)") ;
+				PreparedStatement markGroupedWorkForBibAsChangedStmt = pikaConn.prepareStatement("UPDATE grouped_work SET date_updated = ? where id = (SELECT grouped_work_id from grouped_work_primary_identifiers WHERE type = 'ils' and identifier = ?)") ;
 				HashMap<String, ArrayList<ItemChangeInfo>> changedBibs = new HashMap<>();
 				int bufferSize = 1000;
 				/*String recordsToExtractBatchSizeStr = ini.get("Sierra", "recordsToExtractBatchSize");
@@ -347,8 +348,8 @@ public class SierraExportMain{
 				//Get a list of everything that has changed, loading a minimum of data so we can get the ids as quickly as possible
 				int recordOffset = 50000;
 				while (moreToRead){
-					//long lastRecord = firstRecordIdToLoad + recordOffset;
-					logger.info("Loading items with changes from " + firstRecordIdToLoad);
+					//long lastRecord = firstItemIdToLoad + recordOffset;
+					logger.info("Loading items with changes, starting from item ID : " + firstItemIdToLoad);
 					JSONObject changedRecords = null;
 					int numTries = 0;
 					while ((numTries == 0 || lastCallTimedOut) && numTries < 5){
@@ -358,8 +359,8 @@ public class SierraExportMain{
 							logger.info(" - timed out, retrying");
 							Thread.sleep(2500);
 						}
-						//changedRecords = callSierraApiURL(ini, apiBaseUrl, apiBaseUrl + "/items/?updatedDate=[" + dateUpdated + ",]&limit=" + bufferSize + "&fields=id,bibIds,location,status,fixedFields&deleted=false&suppressed=false&id=[" + firstRecordIdToLoad + "," + (lastRecord > 999999999 ? "" : lastRecord) + "]", false);
-						changedRecords = callSierraApiURL(ini, apiBaseUrl, apiBaseUrl + "/items/?updatedDate=[" + dateUpdated + ",]&limit=" + bufferSize + "&fields=id,bibIds&deleted=false&suppressed=false&id=[" + firstRecordIdToLoad + ",]", false);
+						//changedRecords = callSierraApiURL(ini, apiBaseUrl, apiBaseUrl + "/items/?updatedDate=[" + dateUpdated + ",]&limit=" + bufferSize + "&fields=id,bibIds,location,status,fixedFields&deleted=false&suppressed=false&id=[" + firstItemIdToLoad + "," + (lastRecord > 999999999 ? "" : lastRecord) + "]", false);
+						changedRecords = callSierraApiURL(ini, apiBaseUrl, apiBaseUrl + "/items/?updatedDate=[" + dateUpdated + ",]&limit=" + bufferSize + "&fields=id,bibIds&deleted=false&suppressed=false&id=[" + firstItemIdToLoad + ",]", false);
 					}
 					if (lastCallTimedOut){
 						logger.error(" - call " + numTries + " timed out, data will be lost!");
@@ -379,16 +380,16 @@ public class SierraExportMain{
 							logger.debug("   item " + itemId + " changed");
 						}
 						if (numChangedIds >= bufferSize){
-							firstRecordIdToLoad = lastId + 1;
+							firstItemIdToLoad = lastId + 1;
 						}else{
-							firstRecordIdToLoad += recordOffset;
+							firstItemIdToLoad += recordOffset;
 						}
 					}else{
 						logger.info(" - Found no changes");
-						firstRecordIdToLoad += recordOffset;
+						firstItemIdToLoad += recordOffset;
 					}
 					//If we have the same number of records as the buffer that is ok.  Sierra does not return the correct total anymore
-					moreToRead = (numChangedIds >= bufferSize); // || firstRecordIdToLoad <= 999999999;
+					moreToRead = (numChangedIds >= bufferSize); // || firstItemIdToLoad <= 999999999;
 				}
 
 				//Get details for each change.  This is a bit slower so we will just load for up to 5 minutes and save the rest for later if needed
@@ -471,7 +472,7 @@ public class SierraExportMain{
 					}
 				}
 
-				vufindConn.setAutoCommit(false);
+				pikaConn.setAutoCommit(false);
 				logger.info("A total of " + changedBibs.size() + " bibs were updated");
 				int numUpdates = 0;
 				for (String curBibId : changedBibs.keySet()){
@@ -486,7 +487,7 @@ public class SierraExportMain{
 
 						numUpdates++;
 						if (numUpdates % 50 == 0){
-							vufindConn.commit();
+							pikaConn.commit();
 						}
 					}catch (SQLException e){
 						logger.error("Could not mark that " + curBibId + " was changed due to error ", e);
@@ -494,8 +495,8 @@ public class SierraExportMain{
 					}
 				}
 				//Turn auto commit back on
-				vufindConn.commit();
-				vufindConn.setAutoCommit(true);
+				pikaConn.commit();
+				pikaConn.setAutoCommit(true);
 
 				//TODO: Process deleted records as well?
 			}
@@ -512,18 +513,18 @@ public class SierraExportMain{
 			if (!errorUpdatingDatabase) {
 				//Update the last extract time
 				if (lastSierraExtractTimeVariableId != null) {
-					PreparedStatement updateVariableStmt = vufindConn.prepareStatement("UPDATE variables set value = ? WHERE id = ?");
+					PreparedStatement updateVariableStmt = pikaConn.prepareStatement("UPDATE variables set value = ? WHERE id = ?");
 					updateVariableStmt.setLong(1, exportStartTime);
 					updateVariableStmt.setLong(2, lastSierraExtractTimeVariableId);
 					updateVariableStmt.executeUpdate();
 					updateVariableStmt.close();
 				} else {
-					PreparedStatement insertVariableStmt = vufindConn.prepareStatement("INSERT INTO variables (`name`, `value`) VALUES ('last_sierra_extract_time', ?)");
+					PreparedStatement insertVariableStmt = pikaConn.prepareStatement("INSERT INTO variables (`name`, `value`) VALUES ('last_sierra_extract_time', ?)");
 					insertVariableStmt.setString(1, Long.toString(exportStartTime));
 					insertVariableStmt.executeUpdate();
 					insertVariableStmt.close();
 				}
-				PreparedStatement setRemainingRecordsStmt = vufindConn.prepareStatement("INSERT INTO variables (`name`, `value`) VALUES ('remaining_sierra_records', ?) ON DUPLICATE KEY UPDATE value=VALUES(value)");
+				PreparedStatement setRemainingRecordsStmt = pikaConn.prepareStatement("INSERT INTO variables (`name`, `value`) VALUES ('remaining_sierra_records', ?) ON DUPLICATE KEY UPDATE value=VALUES(value)");
 				setRemainingRecordsStmt.setString(1, Long.toString(itemsThatNeedToBeProcessed.size()));
 				setRemainingRecordsStmt.executeUpdate();
 				setRemainingRecordsStmt.close();
@@ -650,28 +651,30 @@ public class SierraExportMain{
 
 	private static void exportActiveOrders(String exportPath, Connection conn) throws SQLException, IOException {
 		logger.info("Starting export of active orders");
-		String[] orderStatusesToExportVals = orderStatusesToExport.split("\\|");
-		String orderStatusCodesSQL = "";
+		String[]      orderStatusesToExportVals = orderStatusesToExport.split("\\|");
+		StringBuilder orderStatusCodesSQL       = new StringBuilder();
 		for (String orderStatusesToExportVal : orderStatusesToExportVals){
 			if (orderStatusCodesSQL.length() > 0){
-				orderStatusCodesSQL += " or ";
+				orderStatusCodesSQL.append(" OR ");
 			}
-			orderStatusCodesSQL += " order_status_code = '" + orderStatusesToExportVal + "'";
+			orderStatusCodesSQL.append(" order_status_code = '").append(orderStatusesToExportVal).append("'");
 		}
-		String activeOrderSQL = "select bib_view.record_num as bib_record_num, order_view.record_num as order_record_num, accounting_unit_code_num, order_status_code, copies, location_code, catalog_date_gmt, received_date_gmt " +
-				"from sierra_view.order_view " +
-				"inner join sierra_view.bib_record_order_record_link on bib_record_order_record_link.order_record_id = order_view.record_id " +
-				"inner join sierra_view.bib_view on sierra_view.bib_view.id = bib_record_order_record_link.bib_record_id " +
-				"inner join sierra_view.order_record_cmf on order_record_cmf.order_record_id = order_view.id " +
-				"where (" + orderStatusCodesSQL + ") and order_view.is_suppressed = 'f' and location_code != 'multi' and ocode4 != 'n'";
-		if (suppressOrderRecordsThatAreReceivedAndCatalogged){
-			activeOrderSQL += " and (catalog_date_gmt IS NULL or received_date_gmt IS NULL) ";
-		}else if (suppressOrderRecordsThatAreCatalogged){
-			activeOrderSQL += " and (catalog_date_gmt IS NULL) ";
+		String activeOrderSQL = "SELECT bib_view.record_num AS bib_record_num, order_view.record_num AS order_record_num, accounting_unit_code_num, order_status_code, copies, location_code, catalog_date_gmt, received_date_gmt " +
+				"FROM sierra_view.order_view " +
+				"INNER JOIN sierra_view.bib_record_order_record_link ON bib_record_order_record_link.order_record_id = order_view.record_id " +
+				"INNER JOIN sierra_view.bib_view ON sierra_view.bib_view.id = bib_record_order_record_link.bib_record_id " +
+				"INNER JOIN sierra_view.order_record_cmf ON order_record_cmf.order_record_id = order_view.id " +
+				"WHERE (" + orderStatusCodesSQL + ") AND order_view.is_suppressed = 'f' AND location_code != 'multi' AND ocode4 != 'n'";
+		if (suppressOrderRecordsThatAreCatalogged){ // Ignore entries with a set catalog date more than a day old ( a day to allow for the transition from order item to regular item)
+			activeOrderSQL += " AND (catalog_date_gmt IS NULL OR NOW() - catalog_date_gmt < '1 DAY'::INTERVAL) ";
+		}else if (suppressOrderRecordsThatAreReceived){ // Ignore entries with a set received date more than a day old ( a day to allow for the transition from order item to regular item)
+			activeOrderSQL += " AND (received_date_gmt IS NULL OR NOW() - received_date_gmt < '1 DAY'::INTERVAL) ";
+		}else if (suppressOrderRecordsThatAreReceivedAndCatalogged){ // Only ignore entries that have both a received and catalog date, and a catalog date more than a day old
+			activeOrderSQL += " AND (catalog_date_gmt IS NULL or received_date_gmt IS NULL OR NOW() - catalog_date_gmt < '1 DAY'::INTERVAL) ";
 		}
 		PreparedStatement getActiveOrdersStmt = conn.prepareStatement(activeOrderSQL, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-		ResultSet activeOrdersRS = null;
-		boolean loadError = false;
+		ResultSet         activeOrdersRS      = null;
+		boolean           loadError           = false;
 		try{
 			activeOrdersRS = getActiveOrdersStmt.executeQuery();
 		} catch (SQLException e1){
@@ -679,7 +682,7 @@ public class SierraExportMain{
 			loadError = true;
 		}
 		if (!loadError){
-			File orderRecordFile = new File(exportPath + "/active_orders.csv");
+			File      orderRecordFile   = new File(exportPath + "/active_orders.csv");
 			CSVWriter orderRecordWriter = new CSVWriter(new FileWriter(orderRecordFile));
 			orderRecordWriter.writeAll(activeOrdersRS, true);
 			orderRecordWriter.close();

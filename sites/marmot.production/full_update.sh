@@ -8,7 +8,7 @@ PIKASERVER=marmot.production
 PIKADBNAME=pika
 OUTPUT_FILE="/var/log/vufind-plus/${PIKASERVER}/full_update_output.log"
 
-MINFILE1SIZE=$((4820000000))
+MINFILE1SIZE=$((4860000000))
 
 # Check for conflicting processes currently running
 function checkConflictingProcesses() {
@@ -70,8 +70,9 @@ cd /usr/local/vufind-plus/vufind/cron;./GetHooplaFromMarmot.sh >> ${OUTPUT_FILE}
 /usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} cmc/ebsco ebsco/cmc >> ${OUTPUT_FILE}
 /usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} fortlewis_sideload/EBSCO_Academic ebsco/fortlewis >> ${OUTPUT_FILE}
 
-# CCU Biblioboard Marc Updates
+# Biblioboard Marc Updates
 /usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} ccu/biblioboard biblioboard/ccu >> ${OUTPUT_FILE}
+/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} bemis/biblioboard biblioboard/bemis >> ${OUTPUT_FILE}
 
 # CMC Overdrive sideload
 /usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} cmc/overdrive overdrive/cmc >> ${OUTPUT_FILE}
@@ -109,9 +110,10 @@ cd /usr/local/vufind-plus/vufind/cron;./GetHooplaFromMarmot.sh >> ${OUTPUT_FILE}
 /usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} western/federalGovDocs federal_gov_docs/western >> ${OUTPUT_FILE}
 
 #Colorado State Goverment Documents Updates
-#curl --remote-name --remote-time --silent --show-error --compressed --time-cond /data/vufind-plus/colorado_gov_docs/marc/fullexport.mrc https://cassini.marmot.org/colorado_state_docs.mrc
+curl --remote-name --remote-time --silent --show-error --compressed --time-cond /data/vufind-plus/colorado_gov_docs/marc/fullexport.mrc https://cassini.marmot.org/colorado_state_docs.mrc
 # Colorado State Gov Docs Marc Updates
-/usr/local/vufind-plus/vufind/cron/moveFullExport.sh marmot/coloGovDocs colorado_gov_docs >> ${OUTPUT_FILE}
+#/usr/local/vufind-plus/vufind/cron/moveFullExport.sh marmot/coloGovDocs colorado_gov_docs >> ${OUTPUT_FILE}
+# Doesn't work like I though it would. Pascal 3/26/2019
 
 # Naxos
 /usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} fortlewis_sideload/naxos naxos/fortlewis >> ${OUTPUT_FILE}
@@ -172,6 +174,11 @@ then
 		NEWLEVEL=$(($FILE1SIZE * 97 / 100))
 		echo "" >> ${OUTPUT_FILE}
 		echo "Based on today's export file, a new minimum filesize check level should be set to $NEWLEVEL" >> ${OUTPUT_FILE}
+
+		# Wait 2 minutes for solr replication to finish; then delete the inactive solr indexes folders older than 48 hours
+		# Note: Running in the full update because we know there is a freshly created index.
+		sleep 2m
+		find /data/vufind-plus/${PIKASERVER}/solr_searcher/grouped/ -name "index.*" -type d -mmin +2880 -exec rm -rf {} \; >> ${OUTPUT_FILE}
 
 	else
 		echo $FILE " size " $FILE1SIZE "is less than minimum size :" $MINFILE1SIZE "; Export was not moved to data directory, Full Regrouping & Full Reindexing skipped." >> ${OUTPUT_FILE}

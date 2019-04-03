@@ -36,7 +36,7 @@ OUTPUT_FILE="/var/log/pika/${PIKASERVER}/full_update_output.log"
 DAYOFWEEK=$(date +"%u")
 
 # Actual CarlX extract size 2017 07 03 - 1021325895  - pascal
-MINFILE1SIZE=$((1050000000))
+MINFILE1SIZE=$((1060000000))
 # below values from millennium
 # JAMES set MIN 2016 11 03 actual extract size 825177201
 # JAMES set MIN 2017 01 31 actual extract size 823662098
@@ -159,6 +159,11 @@ then
 		NEWLEVEL=$(($FILE1SIZE * 97 / 100))
 		echo "" >> ${OUTPUT_FILE}
 		echo "Based on today's export file, a new minimum filesize check level should be set to $NEWLEVEL" >> ${OUTPUT_FILE}
+
+		# Wait 2 minutes for solr replication to finish; then delete the inactive solr indexes folders older than 48 hours
+		# Note: Running in the full update because we know there is a freshly created index.
+		sleep 2m
+		find /data/vufind-plus/${PIKASERVER}/solr_searcher/grouped/ -name "index.*" -type d -mmin +2880 -exec rm -rf {} \; >> ${OUTPUT_FILE}
 
 		else
 			echo $FILE1 " size " $FILE1SIZE "is less than minimum size :" $MINFILE1SIZE "." >> ${OUTPUT_FILE}

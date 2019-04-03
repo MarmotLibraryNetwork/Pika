@@ -19,8 +19,8 @@ public class Cron {
 
 	private static Logger logger = Logger.getLogger(Cron.class);
 	private static String serverName;
-	
-	private static Connection vufindConn;
+
+	private static Connection pikaConn;
 	private static Connection econtentConn;
 
 	/**
@@ -33,9 +33,9 @@ public class Cron {
 		}
 		serverName = args[0];
 		args = Arrays.copyOfRange(args, 1, args.length);
-		
+
 		Date currentTime = new Date();
-		File log4jFile = new File("../../sites/" + serverName + "/conf/log4j.cron.properties");
+		File log4jFile   = new File("../../sites/" + serverName + "/conf/log4j.cron.properties");
 		if (log4jFile.exists()){
 			PropertyConfigurator.configure(log4jFile.getAbsolutePath());
 		}else{
@@ -60,7 +60,7 @@ public class Cron {
 		//Connect to the database
 		String databaseConnectionInfo = Util.cleanIniValue(ini.get("Database","database_vufind_jdbc"));
 		if (databaseConnectionInfo == null || databaseConnectionInfo.length() == 0) {
-			logger.error("VuFind Database connection information not found in General Settings.  Please specify connection information in a database key.");
+			logger.error("Pika Database connection information not found in General Settings.  Please specify connection information in a database key.");
 			return;
 		}
 		String econtentConnectionInfo = Util.cleanIniValue(ini.get("Database","database_econtent_jdbc"));
@@ -70,7 +70,7 @@ public class Cron {
 		}
 		
 		try {
-			vufindConn = DriverManager.getConnection(databaseConnectionInfo);
+			pikaConn = DriverManager.getConnection(databaseConnectionInfo);
 		} catch (SQLException ex) {
 			// handle any errors
 			logger.error("Error establishing connection to database " + databaseConnectionInfo, ex);
@@ -86,24 +86,24 @@ public class Cron {
 		
 		//Create a log entry for the cron process
 		CronLogEntry cronEntry = new CronLogEntry();
-		if (!cronEntry.saveToDatabase(vufindConn, logger)){
+		if (!cronEntry.saveToDatabase(pikaConn, logger)){
 			logger.error("Could not save log entry to database, quitting");
 			return;
 		}
 		
 		// Read the cron INI file to get information about the processes to run
 		Ini cronIni = loadConfigFile("config.cron.ini");
-		File cronConfigFile = new File("../../sites/" + serverName + "/conf/config.cron.ini");
+//		File cronConfigFile = new File("../../sites/" + serverName + "/conf/config.cron.ini");
 		
 		//Check to see if a specific task has been specified to be run
 		ArrayList<ProcessToRun> processesToRun = new ArrayList<ProcessToRun>();
-		// INI file has a main section for processes to be run
+		// The Cron INI file has a main section for processes to be run
 		// The processes are in the format:
 		// name = handler class
 		Section processes = cronIni.get("Processes");
 		if (args.length >= 1){
 			logger.info("Found " + args.length + " arguments ");
-			String processName = args[0];
+			String processName    = args[0];
 			String processHandler = cronIni.get("Processes", processName);
 			if (processHandler == null){
 				processHandler = processName;
@@ -116,7 +116,7 @@ public class Cron {
 			loadLastRunTimeForProcess(process);
 			processesToRun.add(process);
 		}else{
-			//Load processes to run
+			// Load processes to run
 			processesToRun = loadProcessesToRun(cronIni, processes);
 		}
 		
@@ -154,10 +154,10 @@ public class Cron {
 					//Mark the time the run was started rather than finished so really long running processes
 					//can go on while faster processes execute multiple times in other threads.
 					markProcessStarted(processToRun);
-					processHandlerInstance.doCronProcess(serverName, ini, processSettings, vufindConn, econtentConn, cronEntry, logger);
+					processHandlerInstance.doCronProcess(serverName, ini, processSettings, pikaConn, econtentConn, cronEntry, logger);
 					//Log how long the process took
-					Date endTime = new Date();
-					long elapsedMillis = endTime.getTime() - currentTime.getTime();
+					Date  endTime        = new Date();
+					long  elapsedMillis  = endTime.getTime() - currentTime.getTime();
 					float elapsedMinutes = (elapsedMillis) / 60000;
 					logger.info("Finished process " + processToRun.getProcessName() + " in " + elapsedMinutes + " minutes (" + elapsedMillis + " milliseconds)");
 					cronEntry.addNote("Finished process " + processToRun.getProcessName() + " in " + elapsedMinutes + " minutes (" + elapsedMillis + " milliseconds)");
@@ -178,21 +178,21 @@ public class Cron {
 
 		cronEntry.setFinished();
 		cronEntry.addNote("Cron run finished");
-		cronEntry.saveToDatabase(vufindConn, logger);
+		cronEntry.saveToDatabase(pikaConn, logger);
 	}
 
 	private static void markProcessStarted(ProcessToRun processToRun) {
 		try{
 			Long finishTime = new Date().getTime() / 1000;
 			if (processToRun.getLastRunVariableId() != null) {
-				PreparedStatement updateVariableStmt = vufindConn.prepareStatement("UPDATE variables set value = ? WHERE id = ?");
+				PreparedStatement updateVariableStmt = pikaConn.prepareStatement("UPDATE variables set value = ? WHERE id = ?");
 				updateVariableStmt.setLong(1, finishTime);
 				updateVariableStmt.setLong(2, processToRun.getLastRunVariableId());
 				updateVariableStmt.executeUpdate();
 				updateVariableStmt.close();
 			} else {
 				String processVariableId = "last_" + processToRun.getProcessName().toLowerCase().replace(' ', '_') + "_time";
-				PreparedStatement insertVariableStmt = vufindConn.prepareStatement("INSERT INTO variables (`name`, `value`) VALUES (?, ?) ON DUPLICATE KEY UPDATE value = VALUES(value)");
+				PreparedStatement insertVariableStmt = pikaConn.prepareStatement("INSERT INTO variables (`name`, `value`) VALUES (?, ?) ON DUPLICATE KEY UPDATE value = VALUES(value)");
 				insertVariableStmt.setString(1, processVariableId);
 				insertVariableStmt.setString(2, Long.toString(finishTime));
 				insertVariableStmt.executeUpdate();
@@ -264,7 +264,7 @@ public class Cron {
 	private static void loadLastRunTimeForProcess(ProcessToRun newProcess) {
 		try{
 			String processVariableId = "last_" + newProcess.getProcessName().toLowerCase().replace(' ', '_') + "_time";
-			PreparedStatement loadLastRunTimeStmt = vufindConn.prepareStatement("SELECT * from variables WHERE name = '" + processVariableId + "'");
+			PreparedStatement loadLastRunTimeStmt = pikaConn.prepareStatement("SELECT * from variables WHERE name = '" + processVariableId + "'");
 			ResultSet lastRunTimeRS = loadLastRunTimeStmt.executeQuery();
 			if (lastRunTimeRS.next()){
 				newProcess.setLastRunTime(lastRunTimeRS.getLong("value"));
@@ -323,27 +323,28 @@ public class Cron {
 		}
 
 		//Now override with the site specific configuration
-		String passwordFilename = "../../sites/" + serverName + "/conf/config.pwd.ini";
-		logger.info("Loading site specific config from " + siteSpecificFilename);
+//		String passwordFilename = "../../sites/" + serverName + "/conf/config.pwd.ini";
+		String passwordFilename = siteSpecificFilename.replaceFirst(".ini", ".pwd.ini");
+		logger.info("Loading site specific config from " + passwordFilename);
 		File siteSpecificPasswordFile = new File(passwordFilename);
 		if (!siteSpecificPasswordFile.exists()) {
-			logger.error("Could not find server specific config password file");
-			System.exit(1);
-		}
-		try {
-			Ini siteSpecificIni = new Ini();
-			siteSpecificIni.load(new FileReader(siteSpecificPasswordFile));
-			for (Section curSection : siteSpecificIni.values()){
-				for (String curKey : curSection.keySet()){
-					//logger.debug("Overriding " + curSection.getName() + " " + curKey + " " + curSection.get(curKey));
-					//System.out.println("Overriding " + curSection.getName() + " " + curKey + " " + curSection.get(curKey));
-					ini.put(curSection.getName(), curKey, curSection.get(curKey));
+			logger.info("Could not find server specific config password file: " + passwordFilename);
+		} else {
+			try {
+				Ini siteSpecificIni = new Ini();
+				siteSpecificIni.load(new FileReader(siteSpecificPasswordFile));
+				for (Section curSection : siteSpecificIni.values()) {
+					for (String curKey : curSection.keySet()) {
+						//logger.debug("Overriding " + curSection.getName() + " " + curKey + " " + curSection.get(curKey));
+						//System.out.println("Overriding " + curSection.getName() + " " + curKey + " " + curSection.get(curKey));
+						ini.put(curSection.getName(), curKey, curSection.get(curKey));
+					}
 				}
+			} catch (InvalidFileFormatException e) {
+				logger.error("Site Specific config file is not valid.  Please check the syntax of the file.", e);
+			} catch (IOException e) {
+				logger.error("Site Specific config file could not be read.", e);
 			}
-		} catch (InvalidFileFormatException e) {
-			logger.error("Site Specific config file is not valid.  Please check the syntax of the file.", e);
-		} catch (IOException e) {
-			logger.error("Site Specific config file could not be read.", e);
 		}
 		return ini;
 	}

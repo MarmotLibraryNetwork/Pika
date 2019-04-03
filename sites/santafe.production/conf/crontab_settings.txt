@@ -60,6 +60,8 @@
 ###################################
 # Library supplied covers
 29 5 * * * /usr/local/vufind-plus/sites/santafe.production/copyCovers.sh
+# Hoopla
+02 20 * * * cd /usr/local/vufind-plus/vufind/hoopla_export; java -jar hoopla_export.jar santafe.production
 
 ############################################
 # New York Times Bestseller Lists Updating #

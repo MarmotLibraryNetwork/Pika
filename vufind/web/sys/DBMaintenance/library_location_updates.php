@@ -975,22 +975,6 @@ function getLibraryLocationUpdates(){
 			),
 		),
 
-		'hoopla_library_options' => array(
-			'title' => 'Updates to determine configuration for Hoopla inclusion/exclusion by library',
-			'description' => 'Additional configuration over how Hoopla information is included by library',
-			'sql' => array(
-				"ALTER TABLE `library` ADD COLUMN `includeHoopla` TINYINT(1) DEFAULT 0",
-			),
-		),
-
-		'hoopla_library_options_remove' => array(
-				'title' => 'Remove Hoopla setting since it can be done with inclusion rules now',
-				'description' => 'Remove Hoopla setting since it can be done with inclusion rules now',
-				'sql' => array(
-						"ALTER TABLE `library` DROP COLUMN `includeHoopla`",
-				),
-		),
-
 		'additional_library_contact_links' => array(
 			'title' => 'Additional Library Contact Links',
 			'description' => 'Add additional contact links for Youtube and Instagram to library config.',
@@ -1693,6 +1677,15 @@ function getLibraryLocationUpdates(){
 				'continueOnError' => true,
 				'sql' => array(
 					"ALTER TABLE `library` ADD COLUMN `hooplaLibraryID` INTEGER UNSIGNED;",
+				),
+			),
+
+			'hoopla_max_price' => array(
+				'title' => 'Hoopla max. price.',
+				'description' => 'Add settings for Hoopla Integration: Hoopla max price',
+				'continueOnError' => true,
+				'sql' => array(
+					"ALTER TABLE library ADD COLUMN hooplaMaxPrice DECIMAL(3,2) NULL DEFAULT 0.00 AFTER hooplaLibraryID;",
 				),
 			),
 

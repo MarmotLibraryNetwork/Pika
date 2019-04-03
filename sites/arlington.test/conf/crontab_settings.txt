@@ -37,6 +37,8 @@
 # Daily full update #
 #####################
 00 04 * * * cd /usr/local/vufind-plus/sites/arlington.test; ./full_update.sh
+# The full export on arlington production pika is moved by the production full update so this should start later than that one.
+# The timezone difference should be enough of a window.
 
 ######################
 # MySQL Nightly Dump #
@@ -56,6 +58,8 @@
 ###################################
 # Library supplied covers
 53 5 * * * /usr/local/vufind-plus/sites/arlington.test/copyCovers.sh
+# Hoopla
+#3 20 * * * cd /usr/local/vufind-plus/vufind/hoopla_export; java -jar hoopla_export.jar arlington.test
 
 ############################################
 # New York Times Bestseller Lists Updating #

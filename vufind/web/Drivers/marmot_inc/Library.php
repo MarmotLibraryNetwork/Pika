@@ -81,6 +81,7 @@ class Library extends DB_DataObject
 	public $overdriveAdvantageProductsKey;
 
 	public $hooplaLibraryID;
+	public $hooplaMaxPrice;
 	public $systemsToRepeatIn;
 	public $additionalLocationsToShowAvailabilityFor;
 	public $homeLink;
@@ -431,7 +432,7 @@ class Library extends DB_DataObject
 			'ilsSection' => array('property'=>'ilsSection', 'type' => 'section', 'label' =>'ILS/Account Integration', 'hideInLists' => true,
 					'helpLink'=>'https://docs.google.com/document/d/1SmCcWYIV8bnUEaGu4HYvyiF8iqOKt06ooBbJukkJdO8', 'properties' => array(
 				'ilsCode'                              => array('property'=>'ilsCode', 'type'=>'text', 'label'=>'ILS Code', 'description'=>'The location code that all items for this location start with.', 'size'=>'4', 'hideInLists' => false,),
-				'scope'                                => array('property'=>'scope', 'type'=>'text', 'label'=>'Scope', 'description'=>'The scope for the system in Millennium to refine holdings for the user.', 'size'=>'4', 'hideInLists' => true,),
+				'scope'                                => array('property'=>'scope', 'type'=>'text', 'label'=>'Sierra Scope', 'description'=>'The scope for the system in Millennium/Sierra. Used for Self-Registration', 'size'=>'4', 'hideInLists' => true,),
 				'useScope'                             => array('property'=>'useScope', 'type'=>'checkbox', 'label'=>'Use Scope', 'description'=>'Whether or not the scope should be used when displaying holdings.', 'hideInLists' => true,),
 				'showExpirationWarnings'               => array('property'=>'showExpirationWarnings', 'type'=>'checkbox', 'label'=>'Show Expiration Warnings', 'description'=>'Whether or not the user should be shown expiration warnings if their card is nearly expired.', 'hideInLists' => true, 'default' => 1),
 				'expirationNearMessage'                => array('property'=>'expirationNearMessage', 'type'=>'text', 'label'=>'Expiration Near Message (use the token %date% to insert the expiration date)', 'description'=>'A message to show in the menu when the user account will expire soon', 'hideInLists' => true, 'default' => ''),
@@ -792,7 +793,6 @@ class Library extends DB_DataObject
 					'goldRushCode'  => array('property'=>'goldRushCode', 'type'=>'text', 'label'=>'Gold Rush Inst Code', 'description'=>'The INST Code to use with Gold Rush.  Leave blank to not link to Gold Rush.', 'hideInLists' => true,),
 				)),
 
-
 			'overdriveSection' => array('property'=>'overdriveSection', 'type' => 'section', 'label' =>'OverDrive', 'hideInLists' => true,
 					'helpLink'=>'https://docs.google.com/document/d/1HG7duKI4-gbOlgDvMlQrib52LV0BBUhzGD7Q69QLziM', 'properties' => array(
 				'enableOverdriveCollection'      => array('property'=>'enableOverdriveCollection', 'type'=>'checkbox', 'label'=>'Enable Overdrive Collection', 'description'=>'Whether or not titles from the Overdrive collection should be included in searches', 'hideInLists' => true),
@@ -808,9 +808,10 @@ class Library extends DB_DataObject
 			)),
 			'hooplaSection' => array('property'=>'hooplaSection', 'type' => 'section', 'label' =>'Hoopla', 'hideInLists' => true,
 //					'helpLink'=>'',
-					                     'properties' => array(
+				'properties' => array(
 				'hooplaLibraryID'      => array('property'=>'hooplaLibraryID', 'type'=>'integer', 'label'=>'Hoopla Library ID', 'description'=>'The ID Number Hoopla uses for this library', 'hideInLists' => true),
-			)),
+				'hooplaMaxPrice'       => array('property'=>'hooplaMaxPrice',  'type'=>'integer', 'label'=>'Hoopla Max. Price', 'description'=>'The maximum price per use to include in search results. (0 = include everything)', 'min' => 0, 'step' => "0.01", 'hideInLists' => true),
+					)),
 			'archiveSection' => array('property'=>'archiveSection', 'type' => 'section', 'label' =>'Local Content Archive', 'hideInLists' => true, 'helpLink'=>'https://docs.google.com/a/marmot.org/document/d/128wrNtZu_sUqm2_NypC6Sx8cOvM2cdmeOUDp0hUhQb4/edit?usp=sharing_eid&ts=57324e27', 'properties' => array(
 					'enableArchive'                        => array('property'=>'enableArchive', 'type'=>'checkbox', 'label'=>'Allow Searching the Archive', 'description'=>'Whether or not information from the archive is shown in Pika.', 'hideInLists' => true, 'default' => 0),
 					'archiveNamespace'                     => array('property'=>'archiveNamespace', 'type'=>'text', 'label'=>'Archive Namespace', 'description'=>'The namespace of your library in the archive', 'hideInLists' => true, 'maxLength' => 30, 'size'=>'30'),

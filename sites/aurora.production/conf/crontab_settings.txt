@@ -59,7 +59,7 @@
 # Library supplied covers
 29 5 * * * /usr/local/vufind-plus/sites/aurora.production/copyCovers.sh
 # Hoopla
-#0 20 * * * cd /usr/local/vufind-plus/vufind/hoopla_export; java -jar hoopla_export.jar aurora.production
+0 20 * * * cd /usr/local/vufind-plus/vufind/hoopla_export; java -jar hoopla_export.jar aurora.production
 
 ############################################
 # New York Times Bestseller Lists Updating #

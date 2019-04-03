@@ -13,6 +13,7 @@ require_once ROOT_DIR . '/Drivers/Sierra.php';
 class Sacramento extends Sierra
 {
 
+ private $loggedIn;
 	/**
 	 * default login not quite right for Sacramento.
 	 *Login url is different; and on login response we look for a success message instead of error messages
@@ -23,44 +24,50 @@ class Sacramento extends Sierra
 	 * @return bool
 	 */
 	public function _curl_login($patron, $linkedAccount = false) {
-		global $logger;
-		$loginResult = false;
-
-		$curlUrl  = $this->getVendorOpacUrl() . '/iii/cas/login?scope=' .$this->getLibraryScope();
-		$curlUrl  = str_replace('http://', 'https://', $curlUrl);
-		$postData = $this->_getLoginFormValues($patron);
-
-		$logger->log('Loading page ' . $curlUrl, PEAR_LOG_INFO);
-
-		if ($linkedAccount) {
-			// For linked users, reset the curl connection so that subsequent logins for the linked users process correctly
-			$this->_close_curl();
-			$this->curl_connection = false;
-		}
-		$loginResponse = $this->_curlPostPage($curlUrl, $postData);
-
-		//When a library uses IPSSO, the initial login does a redirect and requires additional parameters.
-		if (preg_match('/<input type="hidden" name="lt" value="(.*?)" \/>/si', $loginResponse, $loginMatches)) {
-			$lt = $loginMatches[1]; //Get the lt value
-			//Login again
-			$postData['lt']       = $lt;
-			$postData['_eventId'] = 'submit';
-			$loginResponse = $this->_curlPostPage($curlUrl, $postData);
-		}
-
-		if ($loginResponse) {
+		if (isset($this->loggedIn) && $this->loggedIn) {
+			return $this->loggedIn;
+		} else{
+			global $logger;
 			$loginResult = false;
 
-			// Check for Login Error Responses
-			$numMatches = preg_match('/<span.\s?class="errormessage">(?P<error>.+?)<\/span>/is', $loginResponse, $matches);
-			if ($numMatches > 0) {
-				$logger->log('Sacramento Curl Login Attempt received an Error response : ' . $matches['error'], PEAR_LOG_DEBUG);
-			} else {
-				$numMatches = preg_match('/<div id="msg" class="success">/is', $loginResponse);
-				if ($numMatches > 0) {
-					$loginResult = true;
+			$curlUrl  = $this->getVendorOpacUrl() . '/iii/cas/login?scope=' . $this->getLibraryScope();
+			$curlUrl  = str_replace('http://', 'https://', $curlUrl);
+			$postData = $this->_getLoginFormValues($patron);
+
+			$logger->log('Loading page from Sacramento _curl_login ' . $curlUrl, PEAR_LOG_INFO);
+
+			if ($linkedAccount){
+				// For linked users, reset the curl connection so that subsequent logins for the linked users process correctly
+				$this->_close_curl();
+				$this->curl_connection = false;
+				$this->loggedIn = false;
+			}
+			$loginResponse = $this->_curlPostPage($curlUrl, $postData);
+
+			//When a library uses IPSSO, the initial login does a redirect and requires additional parameters.
+			if (preg_match('/<input type="hidden" name="lt" value="(.*?)" \/>/si', $loginResponse, $loginMatches)){
+				$lt = $loginMatches[1]; //Get the lt value
+				//Login again
+				$postData['lt']       = $lt;
+				$postData['_eventId'] = 'submit';
+				$loginResponse        = $this->_curlPostPage($curlUrl, $postData);
+			}
+
+			if ($loginResponse){
+				$loginResult = false;
+
+				// Check for Login Error Responses
+				$numMatches = preg_match('/<span.\s?class="errormessage">(?P<error>.+?)<\/span>/is', $loginResponse, $matches);
+				if ($numMatches > 0){
+					$logger->log('Sacramento Curl Login Attempt received an Error response : ' . $matches['error'], PEAR_LOG_DEBUG);
+				}else{
+					$numMatches = preg_match('/<div id="msg" class="success">/is', $loginResponse);
+					if ($numMatches > 0){
+						$loginResult = true;
+					}
 				}
 			}
+			$this->loggedIn = $loginResult;
 		}
 		return $loginResult;
 	}
@@ -205,10 +212,10 @@ class Sacramento extends Sierra
 		$firstNameOneLetter  = substr($_REQUEST['firstName'], 0, 1);
 		$firstNameOneLetter  = strtoupper($firstNameOneLetter[0]);
 		$birthDate           = trim($_REQUEST['birthDate']);
-		$dateArray           = date_parse($birthDate);
-		$birthDay            = str_pad($dateArray['day'], 2, "0", STR_PAD_LEFT);
-		$birthMonth          = str_pad($dateArray['month'], 2, "0", STR_PAD_LEFT);
-		$ddepartment = $lastNameFourLetters . $firstNameOneLetter . $birthDay . $birthMonth;
+		$birthDate           = date_create_from_format('m-d-Y', $birthDate);
+		$birthDay            = date_format($birthDate, 'd');
+		$birthMonth          = date_format($birthDate, 'm');
+		$ddepartment = $lastNameFourLetters . $firstNameOneLetter . $birthMonth . $birthDay;
 
 
 		$_REQUEST['ddepartment'] = $ddepartment;

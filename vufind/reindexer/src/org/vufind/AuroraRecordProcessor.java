@@ -12,6 +12,8 @@ class AuroraRecordProcessor extends IIIRecordProcessor  {
 		validCheckedOutStatusCodes.add("o"); // Library Use Only
 		validCheckedOutStatusCodes.add("d"); // Display
 
+		loadOrderInformationFromExport();
+
 	}
 	private String materialTypeSubField     = "d";
 	private String availableStatus          = "-do";

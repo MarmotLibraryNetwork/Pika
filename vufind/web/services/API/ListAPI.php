@@ -39,7 +39,7 @@ class ListAPI extends Action {
 				echo $xml;
 
 			}else{
-				header('Content-type: text/plain');
+				header('Content-type: application/json');
 				header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
 				header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
 				$output = json_encode(array('result'=>$this->$_REQUEST['method']()));
@@ -929,6 +929,39 @@ class ListAPI extends Action {
 	}
 
 	/**
+	 * Retrieves the Available New York Times Lists from their API
+	 * If url parameter 'name' is set to an list_name_encoded it will return their data about that list
+	 * @return array|mixed
+	 */
+	public function getAvailableListsFromNYT(){
+	global $configArray;
+
+	$results = array(
+		'success' => false,
+		'message' => 'Unknown error'
+	);
+
+	if (!isset($configArray['NYT_API']) || empty($configArray['NYT_API']['books_API_key'])){
+		return array(
+			'success' => false,
+			'message' => 'API Key missing'
+		);
+	}
+	$api_key      = $configArray['NYT_API']['books_API_key'];
+
+	$listName = 'names';
+	if (!empty($_REQUEST['name']) && !is_array($_REQUEST['name'])){
+		$listName = trim($_REQUEST['name']);
+	}
+
+	// Get the raw response from the API with a list of all the names
+	require_once ROOT_DIR . '/sys/NYTApi.php';
+	$nyt_api = new NYTApi($api_key);
+	$results = $nyt_api->get_list($listName);
+	return json_decode($results);
+}
+
+	/**
 	 * Creates or updates a user defined list from information obtained from the New York Times API
 	 *
 	 * @param string $selectedList machine readable name of the new york times list
@@ -1004,9 +1037,9 @@ class ListAPI extends Action {
 
 		// Look for selected List
 		require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
-		$nytList = new UserList();
+		$nytList          = new UserList();
 		$nytList->user_id = $pikaUser->id;
-		$nytList->title = $selectedListTitle;
+		$nytList->title   = $selectedListTitle;
 		$listExistsInPika = $nytList->find(1);
 
 		//We didn't find the list in Pika, create one

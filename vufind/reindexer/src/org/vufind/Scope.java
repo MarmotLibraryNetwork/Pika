@@ -46,6 +46,7 @@ public class Scope implements Comparable<Scope>{
 	private boolean                includeOnOrderRecordsInDateAddedFacetValues;
 	private boolean                baseAvailabilityToggleOnLocalHoldingsOnly = false;
 	private boolean                includeOnlineMaterialsInAvailableToggle   = true;
+	private float                  hooplaMaxPrice = 0.0f;
 
 	String getScopeName() {
 		return scopeName;
@@ -317,6 +318,14 @@ public class Scope implements Comparable<Scope>{
 
 	public void setIncludeOnOrderRecordsInDateAddedFacetValues(boolean includeOnOrderRecordsInDateAddedFacetValues) {
 		this.includeOnOrderRecordsInDateAddedFacetValues = includeOnOrderRecordsInDateAddedFacetValues;
+	}
+
+	public float getHooplaMaxPrice() {
+		return hooplaMaxPrice;
+	}
+
+	public void setHooplaMaxPrice(float hooplaMaxPrice) {
+		this.hooplaMaxPrice = hooplaMaxPrice;
 	}
 
 	class InclusionResult{

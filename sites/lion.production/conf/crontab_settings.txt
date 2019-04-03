@@ -63,8 +63,10 @@
 ###################################
 # Library supplied covers
 */9 * * * * /usr/local/vufind-plus/sites/lion.production/copyCovers.sh
-#Lynda weekly update
+# Lynda weekly update
 17 8 * * Fri /usr/local/vufind-plus/vufind/cron/fetch_lynda.sh lion
+# Hoopla
+02 20 * * * cd /usr/local/vufind-plus/vufind/hoopla_export; java -jar hoopla_export.jar lion.production
 
 ############################################
 # New York Times Bestseller Lists Updating #

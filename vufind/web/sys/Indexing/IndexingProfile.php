@@ -84,6 +84,7 @@ class IndexingProfile extends DB_DataObject{
 	public $orderCode3;
 	public $doAutomaticEcontentSuppression;
 	public $groupUnchangedFiles;
+	public $materialTypeField;
 
 	function getObjectStructure(){
 		$translationMapStructure = TranslationMap::getObjectStructure();
@@ -100,7 +101,8 @@ class IndexingProfile extends DB_DataObject{
 			'recordNumberField'          => array('property' => 'recordNumberField',          'type' => 'text', 'label' => 'Record Number Field', 'maxLength' => 1, 'description' => 'The subfield of the record number tag where the record number can be found', 'required' => true, 'default' => 'a'),
 			'recordNumberPrefix'         => array('property' => 'recordNumberPrefix',         'type' => 'text', 'label' => 'Record Number Prefix', 'maxLength' => 10, 'description' => 'A prefix to identify the bib record number if multiple MARC tags exist'),
 			'sierraRecordFixedFieldsTag' => array('property' => 'sierraRecordFixedFieldsTag', 'type' => 'text', 'label' => 'Sierra Record/Bib level Fixed Fields Tag', 'maxLength' => 3, 'description' => 'The MARC tag where the Sierra fixed fields can be found, specifically the bcode3'),
-//			'matTypeSubfield'            => array('property' => 'matTypeSubfield', 'type' => 'text', 'label' => 'Material Type Subfield (Sierra: BCode2)', 'maxLength' => 1, 'description' => 'Bib level Subfield for Material Type (depends on setting the Sierra Record/Bib level Fixed Fields Tag) '),
+			'materialTypeField'          => array('property' => 'materialTypeField',          'type' => 'text', 'label' => 'Material Type Sub Field', 'maxLength' => 3, 'description' => 'Material Type Field', 'hideInLists' => true),
+			//'matTypeSubfield'            => array('property' => 'matTypeSubfield', 'type' => 'text', 'label' => 'Material Type Subfield (Sierra: BCode2)', 'maxLength' => 1, 'description' => 'Bib level Subfield for Material Type (depends on setting the Sierra Record/Bib level Fixed Fields Tag) '),
 
 			'serverFileSection' =>array('property'=>'serverFileSection', 'type' => 'section', 'label' =>'MARC File Settings ', 'hideInLists' => true,
 			                            'helpLink' => '', 'properties' => array(

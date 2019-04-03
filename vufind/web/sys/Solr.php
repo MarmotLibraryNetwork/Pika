@@ -414,7 +414,7 @@ class Solr implements IndexEngine {
 		if ($record == false || isset($_REQUEST['reload'])){
 			$this->pingServer();
 			// Query String Parameters
-			$options = array('ids' => "$id");
+			$options       = array('ids' => "$id");
 			$options['fl'] = $fieldsToReturn;
 			$this->client->setMethod('GET');
 			$this->client->setURL($this->host . "/get");
@@ -430,16 +430,16 @@ class Solr implements IndexEngine {
 				PEAR_Singleton::raiseError($result);
 			}else{
 				$result = $this->_process($this->client->getResponseBody());
+				if (!empty($result['response']['docs'][0])){
+					$record = $result['response']['docs'][0];
+					$memCache->set("solr_record_{$id}_{$solrScope}_{$fieldsToReturn}", $record, 0, $configArray['Caching']['solr_record']);
+				}else{
+					//global $logger;
+					//$logger->log("Unable to find record $id in Solr", PEAR_LOG_ERR);
+					PEAR_Singleton::raiseError("Record not found $id");
+				}
 			}
 
-			if (isset($result['response']['docs'][0])){
-				$record = $result['response']['docs'][0];
-				$memCache->set("solr_record_{$id}_{$solrScope}_{$fieldsToReturn}", $record, 0, $configArray['Caching']['solr_record']);
-			}else{
-				//global $logger;
-				//$logger->log("Unable to find record $id in Solr", PEAR_LOG_ERR);
-				PEAR_Singleton::raiseError("Record not found $id");
-			}
 		}
 		return $record;
 	}

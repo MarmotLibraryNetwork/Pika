@@ -123,7 +123,8 @@ cd /usr/local/vufind-plus/sites/${PIKASERVER}; ./${PIKASERVER}.sh restart
 
 # Get Yesterday's Full Export From Arlington Production Server
 YESTERDAY=$(date -d "yesterday 13:00 " +"%m_%d_%Y")
-scp -Cqp -i /root/.ssh/id_rsa sierraftp@158.59.15.152:/data/vufind-plus/arlington.production/marc_export/pika1.$YESTERDAY.mrc /data/vufind-plus/arlington.test/marc/pika1.mrc >> ${OUTPUT_FILE}
+scp -Cqp -i /root/.ssh/id_rsa sierraftp@158.59.15.152:/data/vufind-plus/arlington.production/marc/pika1.mrc /data/vufind-plus/arlington.test/marc/pika1.mrc >> ${OUTPUT_FILE}
+#scp -Cqp -i /root/.ssh/id_rsa sierraftp@158.59.15.152:/data/vufind-plus/arlington.production/marc_export/pika1.$YESTERDAY.mrc /data/vufind-plus/arlington.test/marc/pika1.mrc >> ${OUTPUT_FILE}
 #scp -Cqp -i /root/.ssh/id_rsa sierraftp@158.59.15.152:/data/vufind-plus/arlington.production/marc_export/pika2.$YESTERDAY.mrc /data/vufind-plus/arlington.test/marc/pika2.mrc >> ${OUTPUT_FILE}
 
 #Extract from Hoopla
@@ -189,6 +190,11 @@ then
 			#Remove all ITEM_UPDATE_EXTRACT_PIKA files so continuous_partial_reindex can start fresh
 			find /data/vufind-plus/${PIKASERVER}/marc -name 'ITEM_UPDATE_EXTRACT_PIKA*' -delete
 			#TODO: Don't think this is needed any more
+
+			# Wait 2 minutes for solr replication to finish; then delete the inactive solr indexes folders older than 48 hours
+			# Note: Running in the full update because we know there is a freshly created index.
+			sleep 2m
+			find /data/vufind-plus/${PIKASERVER}/solr_searcher/grouped/ -name "index.*" -type d -mmin +2880 -exec rm -rf {} \; >> ${OUTPUT_FILE}
 
 #			else
 #				echo $FILE2 " size " $FILE2SIZE "is less than minimum size :" $MINFILE2SIZE "; Export was not moved to data directory." >> ${OUTPUT_FILE}

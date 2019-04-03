@@ -42,7 +42,7 @@ public class GroupedWorkIndexer {
 
 	private PreparedStatement getRatingStmt;
 	private PreparedStatement getNovelistStmt;
-	private Connection        vufindConn;
+	private Connection        pikaConn;
 
 	private int     availableAtLocationBoostValue;
 	private int     ownedByLocationBoostValue;
@@ -64,11 +64,11 @@ public class GroupedWorkIndexer {
 	private PreparedStatement getDateFirstDetectedStmt;
 
 
-	public GroupedWorkIndexer(String serverName, Connection vufindConn, Connection econtentConn, Ini configIni, boolean fullReindex, boolean singleWorkIndex, Logger logger) {
+	public GroupedWorkIndexer(String serverName, Connection pikaConn, Connection econtentConn, Ini configIni, boolean fullReindex, boolean singleWorkIndex, Logger logger) {
 		indexStartTime                = new Date().getTime() / 1000;
 		this.serverName               = serverName;
 		this.logger                   = logger;
-		this.vufindConn               = vufindConn;
+		this.pikaConn                 = pikaConn;
 		this.fullReindex              = fullReindex;
 		this.configIni                = configIni;
 
@@ -91,7 +91,7 @@ public class GroupedWorkIndexer {
 
 		//Load the last Index time
 		try{
-			PreparedStatement loadLastGroupingTime = vufindConn.prepareStatement("SELECT * from variables WHERE name = 'last_reindex_time'");
+			PreparedStatement loadLastGroupingTime = pikaConn.prepareStatement("SELECT * from variables WHERE name = 'last_reindex_time'");
 			ResultSet lastGroupingTimeRS           = loadLastGroupingTime.executeQuery();
 			if (lastGroupingTimeRS.next()){
 				lastReindexTime           = lastGroupingTimeRS.getLong("value");
@@ -105,7 +105,7 @@ public class GroupedWorkIndexer {
 
 		//Check to see if a partial reindex is running
 		try{
-			PreparedStatement loadPartialReindexRunning = vufindConn.prepareStatement("SELECT * from variables WHERE name = 'partial_reindex_running'");
+			PreparedStatement loadPartialReindexRunning = pikaConn.prepareStatement("SELECT * from variables WHERE name = 'partial_reindex_running'");
 			ResultSet loadPartialReindexRunningRS       = loadPartialReindexRunning.executeQuery();
 			if (loadPartialReindexRunningRS.next()){
 				partialReindexRunningVariableId = loadPartialReindexRunningRS.getLong("id");
@@ -120,14 +120,14 @@ public class GroupedWorkIndexer {
 
 		//Load a few statements we will need later
 		try{
-			getGroupedWorkPrimaryIdentifiers = vufindConn.prepareStatement("SELECT * FROM grouped_work_primary_identifiers where grouped_work_id = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+			getGroupedWorkPrimaryIdentifiers = pikaConn.prepareStatement("SELECT * FROM grouped_work_primary_identifiers where grouped_work_id = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			//MDN 4/14 - Do not restrict by valid for enrichment since many popular titles
 			//Wind up with different work id's due to differences in cataloging.
-			//getGroupedWorkIdentifiers = vufindConn.prepareStatement("SELECT * FROM grouped_work_identifiers inner join grouped_work_identifiers_ref on identifier_id = grouped_work_identifiers.id where grouped_work_id = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+			//getGroupedWorkIdentifiers = pikaConn.prepareStatement("SELECT * FROM grouped_work_identifiers inner join grouped_work_identifiers_ref on identifier_id = grouped_work_identifiers.id where grouped_work_id = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			//TODO: Restore functionality to not include any identifiers that aren't tagged as valid for enrichment
-			//getGroupedWorkIdentifiers = vufindConn.prepareStatement("SELECT * FROM grouped_work_identifiers inner join grouped_work_identifiers_ref on identifier_id = grouped_work_identifiers.id where grouped_work_id = ? and valid_for_enrichment = 1", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+			//getGroupedWorkIdentifiers = pikaConn.prepareStatement("SELECT * FROM grouped_work_identifiers inner join grouped_work_identifiers_ref on identifier_id = grouped_work_identifiers.id where grouped_work_id = ? and valid_for_enrichment = 1", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 
-			getDateFirstDetectedStmt          = vufindConn.prepareStatement("SELECT dateFirstDetected FROM ils_marc_checksums WHERE source = ? AND ilsId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+			getDateFirstDetectedStmt          = pikaConn.prepareStatement("SELECT dateFirstDetected FROM ils_marc_checksums WHERE source = ? AND ilsId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 		} catch (Exception e){
 			logger.error("Could not load statements to get identifiers ", e);
 		}
@@ -187,8 +187,8 @@ public class GroupedWorkIndexer {
 
 		//Initialize processors based on our indexing profiles and the primary identifiers for the records.
 		try {
-			PreparedStatement uniqueIdentifiersStmt = vufindConn.prepareStatement("SELECT DISTINCT type FROM grouped_work_primary_identifiers");
-			PreparedStatement getIndexingProfile    = vufindConn.prepareStatement("SELECT * from indexing_profiles where name = ?");
+			PreparedStatement uniqueIdentifiersStmt = pikaConn.prepareStatement("SELECT DISTINCT type FROM grouped_work_primary_identifiers");
+			PreparedStatement getIndexingProfile    = pikaConn.prepareStatement("SELECT * from indexing_profiles where name = ?");
 			ResultSet uniqueIdentifiersRS           = uniqueIdentifiersStmt.executeQuery();
 
 			while (uniqueIdentifiersRS.next()){
@@ -199,55 +199,55 @@ public class GroupedWorkIndexer {
 					String ilsIndexingClassString =    indexingProfileRS.getString("indexingClass");
 					switch (ilsIndexingClassString) {
 						case "Marmot":
-							ilsRecordProcessors.put(curIdentifier, new MarmotRecordProcessor(this, vufindConn, indexingProfileRS, logger, fullReindex));
+							ilsRecordProcessors.put(curIdentifier, new MarmotRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
 							break;
 //						case "Nashville":
-//							ilsRecordProcessors.put(curIdentifier, new NashvilleRecordProcessor(this, vufindConn, indexingProfileRS, logger, fullReindex));
+//							ilsRecordProcessors.put(curIdentifier, new NashvilleRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
 //							break;
 //						case "NashvilleSchools":
-//							ilsRecordProcessors.put(curIdentifier, new NashvilleSchoolsRecordProcessor(this, vufindConn, indexingProfileRS, logger, fullReindex));
+//							ilsRecordProcessors.put(curIdentifier, new NashvilleSchoolsRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
 //							break;
 						case "WCPL":
-							ilsRecordProcessors.put(curIdentifier, new WCPLRecordProcessor(this, vufindConn, indexingProfileRS, logger, fullReindex));
+							ilsRecordProcessors.put(curIdentifier, new WCPLRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
 							break;
 						case "Anythink":
-							ilsRecordProcessors.put(curIdentifier, new AnythinkRecordProcessor(this, vufindConn, indexingProfileRS, logger, fullReindex));
+							ilsRecordProcessors.put(curIdentifier, new AnythinkRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
 							break;
 						case "Aspencat":
-							ilsRecordProcessors.put(curIdentifier, new AspencatRecordProcessor(this, vufindConn, configIni, indexingProfileRS, logger, fullReindex));
+							ilsRecordProcessors.put(curIdentifier, new AspencatRecordProcessor(this, pikaConn, configIni, indexingProfileRS, logger, fullReindex));
 							break;
 						case "Flatirons":
-							ilsRecordProcessors.put(curIdentifier, new FlatironsRecordProcessor(this, vufindConn, indexingProfileRS, logger, fullReindex));
+							ilsRecordProcessors.put(curIdentifier, new FlatironsRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
 							break;
 						case "Addison":
-							ilsRecordProcessors.put(curIdentifier, new AddisonRecordProcessor(this, vufindConn, indexingProfileRS, logger, fullReindex));
+							ilsRecordProcessors.put(curIdentifier, new AddisonRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
 							break;
 						case "Aurora":
-							ilsRecordProcessors.put(curIdentifier, new AuroraRecordProcessor(this, vufindConn, indexingProfileRS, logger, fullReindex));
+							ilsRecordProcessors.put(curIdentifier, new AuroraRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
 							break;
 						case "Arlington":
-							ilsRecordProcessors.put(curIdentifier, new ArlingtonRecordProcessor(this, vufindConn, indexingProfileRS, logger, fullReindex));
+							ilsRecordProcessors.put(curIdentifier, new ArlingtonRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
 							break;
 						case "CarlX": // Currently the Nashville Processor
-							ilsRecordProcessors.put(curIdentifier, new CarlXRecordProcessor(this, vufindConn, indexingProfileRS, logger, fullReindex));
+							ilsRecordProcessors.put(curIdentifier, new CarlXRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
 							break;
 						case "SantaFe":
-							ilsRecordProcessors.put(curIdentifier, new SantaFeRecordProcessor(this, vufindConn, indexingProfileRS, logger, fullReindex));
+							ilsRecordProcessors.put(curIdentifier, new SantaFeRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
 							break;
 						case "Sacramento":
-							ilsRecordProcessors.put(curIdentifier, new SacramentoRecordProcessor(this, vufindConn, indexingProfileRS, logger, fullReindex));
+							ilsRecordProcessors.put(curIdentifier, new SacramentoRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
 							break;
 						case "AACPL":
-							ilsRecordProcessors.put(curIdentifier, new AACPLRecordProcessor(this, vufindConn, indexingProfileRS, logger, fullReindex));
+							ilsRecordProcessors.put(curIdentifier, new AACPLRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
 							break;
 						case "Lion":
-							ilsRecordProcessors.put(curIdentifier, new LionRecordProcessor(this, vufindConn, indexingProfileRS, logger, fullReindex));
+							ilsRecordProcessors.put(curIdentifier, new LionRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
 							break;
 						case "SideLoadedEContent":
-							ilsRecordProcessors.put(curIdentifier, new SideLoadedEContentProcessor(this, vufindConn, indexingProfileRS, logger, fullReindex));
+							ilsRecordProcessors.put(curIdentifier, new SideLoadedEContentProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
 							break;
 						case "Hoopla":
-							ilsRecordProcessors.put(curIdentifier, new HooplaProcessor(this, indexingProfileRS, logger));
+							ilsRecordProcessors.put(curIdentifier, new HooplaProcessor(this, pikaConn, indexingProfileRS, logger));
 							break;
 						default:
 							logger.error("Unknown indexing class " + ilsIndexingClassString);
@@ -271,8 +271,8 @@ public class GroupedWorkIndexer {
 		//Setup prepared statements to load local enrichment
 		try {
 			//No need to filter for ratings greater than 0 because the user has to rate from 1-5
-			getRatingStmt = vufindConn.prepareStatement("SELECT AVG(rating) as averageRating, groupedRecordPermanentId from user_work_review where groupedRecordPermanentId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-			getNovelistStmt = vufindConn.prepareStatement("SELECT * from novelist_data where groupedRecordPermanentId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			getRatingStmt = pikaConn.prepareStatement("SELECT AVG(rating) as averageRating, groupedRecordPermanentId from user_work_review where groupedRecordPermanentId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			getNovelistStmt = pikaConn.prepareStatement("SELECT * from novelist_data where groupedRecordPermanentId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 		} catch (SQLException e) {
 			logger.error("Could not prepare statements to load local enrichment", e);
 		}
@@ -327,7 +327,7 @@ public class GroupedWorkIndexer {
 	}
 
 	private void loadLocationScopes() throws SQLException {
-		PreparedStatement locationInformationStmt = vufindConn.prepareStatement("SELECT library.libraryId, locationId, code, subLocation, " +
+		PreparedStatement locationInformationStmt = pikaConn.prepareStatement("SELECT library.libraryId, locationId, code, subLocation, " +
 				"library.subdomain, location.facetLabel, location.displayName, library.pTypes, library.restrictOwningBranchesAndSystems, location.publicListsToInclude, " +
 				"library.enableOverdriveCollection as enableOverdriveCollectionLibrary, " +
 				"location.enableOverdriveCollection as enableOverdriveCollectionLocation, " +
@@ -335,14 +335,15 @@ public class GroupedWorkIndexer {
 				"library.includeOverdriveTeen as includeOverdriveTeenLibrary, location.includeOverdriveTeen as includeOverdriveTeenLocation, " +
 				"library.includeOverdriveKids as includeOverdriveKidsLibrary, location.includeOverdriveKids as includeOverdriveKidsLocation, " +
 				"library.sharedOverdriveCollection, " +
+				"library.hooplaMaxPrice, " +
 				"location.additionalLocationsToShowAvailabilityFor, includeAllLibraryBranchesInFacets, " +
 				"location.includeAllRecordsInShelvingFacets, location.includeAllRecordsInDateAddedFacets, location.includeOnOrderRecordsInDateAddedFacetValues, location.baseAvailabilityToggleOnLocalHoldingsOnly, " +
 				"location.includeOnlineMaterialsInAvailableToggle, location.includeLibraryRecordsToInclude " +
 				"FROM location INNER JOIN library on library.libraryId = location.libraryId ORDER BY code ASC",
 				ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
-		PreparedStatement locationOwnedRecordRulesStmt = vufindConn.prepareStatement("SELECT location_records_owned.*, indexing_profiles.name FROM location_records_owned INNER JOIN indexing_profiles ON indexingProfileId = indexing_profiles.id WHERE locationId = ?",
+		PreparedStatement locationOwnedRecordRulesStmt = pikaConn.prepareStatement("SELECT location_records_owned.*, indexing_profiles.name FROM location_records_owned INNER JOIN indexing_profiles ON indexingProfileId = indexing_profiles.id WHERE locationId = ?",
 				ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-		PreparedStatement locationRecordInclusionRulesStmt = vufindConn.prepareStatement("SELECT location_records_to_include.*, indexing_profiles.name FROM location_records_to_include INNER JOIN indexing_profiles ON indexingProfileId = indexing_profiles.id WHERE locationId = ?",
+		PreparedStatement locationRecordInclusionRulesStmt = pikaConn.prepareStatement("SELECT location_records_to_include.*, indexing_profiles.name FROM location_records_to_include INNER JOIN indexing_profiles ON indexingProfileId = indexing_profiles.id WHERE locationId = ?",
 				ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 
 		ResultSet locationInformationRS = locationInformationStmt.executeQuery();
@@ -382,6 +383,8 @@ public class GroupedWorkIndexer {
 			locationScopeInfo.setIncludeOverDriveAdultCollection(includeOverdriveAdult);
 			locationScopeInfo.setIncludeOverDriveTeenCollection(includeOverdriveTeen);
 			locationScopeInfo.setIncludeOverDriveKidsCollection(includeOverdriveKids);
+			float   hooplaMaxPrice        = locationInformationRS.getFloat("hooplaMaxPrice");
+			locationScopeInfo.setHooplaMaxPrice(hooplaMaxPrice);
 			locationScopeInfo.setRestrictOwningLibraryAndLocationFacets(locationInformationRS.getBoolean("restrictOwningBranchesAndSystems"));
 			locationScopeInfo.setPublicListsToInclude(locationInformationRS.getInt("publicListsToInclude"));
 			locationScopeInfo.setAdditionalLocationsToShowAvailabilityFor(locationInformationRS.getString("additionalLocationsToShowAvailabilityFor"));
@@ -466,14 +469,16 @@ public class GroupedWorkIndexer {
 
 	private PreparedStatement libraryRecordInclusionRulesStmt;
 	private void loadLibraryScopes() throws SQLException {
-		PreparedStatement libraryInformationStmt = vufindConn.prepareStatement("SELECT libraryId, subdomain, " +
+		PreparedStatement libraryInformationStmt = pikaConn.prepareStatement("SELECT libraryId, subdomain, " +
 				"displayName, facetLabel, pTypes, enableOverdriveCollection, restrictOwningBranchesAndSystems, publicListsToInclude, " +
-				"additionalLocationsToShowAvailabilityFor, sharedOverdriveCollection, includeOverdriveAdult, includeOverdriveTeen, includeOverdriveKids, " +
+				"additionalLocationsToShowAvailabilityFor, " +
+				"sharedOverdriveCollection, includeOverdriveAdult, includeOverdriveTeen, includeOverdriveKids, " +
+				"hooplaMaxPrice, " +
 				"includeAllRecordsInShelvingFacets, includeAllRecordsInDateAddedFacets, includeOnOrderRecordsInDateAddedFacetValues, includeOnlineMaterialsInAvailableToggle " +
 				"FROM library ORDER BY subdomain ASC",
 				ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
-		PreparedStatement libraryOwnedRecordRulesStmt = vufindConn.prepareStatement("SELECT library_records_owned.*, indexing_profiles.name from library_records_owned INNER JOIN indexing_profiles ON indexingProfileId = indexing_profiles.id WHERE libraryId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
-		libraryRecordInclusionRulesStmt = vufindConn.prepareStatement("SELECT library_records_to_include.*, indexing_profiles.name from library_records_to_include INNER JOIN indexing_profiles ON indexingProfileId = indexing_profiles.id WHERE libraryId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+		PreparedStatement libraryOwnedRecordRulesStmt = pikaConn.prepareStatement("SELECT library_records_owned.*, indexing_profiles.name from library_records_owned INNER JOIN indexing_profiles ON indexingProfileId = indexing_profiles.id WHERE libraryId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+		libraryRecordInclusionRulesStmt = pikaConn.prepareStatement("SELECT library_records_to_include.*, indexing_profiles.name from library_records_to_include INNER JOIN indexing_profiles ON indexingProfileId = indexing_profiles.id WHERE libraryId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 		ResultSet libraryInformationRS = libraryInformationStmt.executeQuery();
 		while (libraryInformationRS.next()){
 			String facetLabel  = libraryInformationRS.getString("facetLabel");
@@ -483,14 +488,15 @@ public class GroupedWorkIndexer {
 				facetLabel = displayName;
 			}
 			//These options determine how scoping is done
-			Long libraryId = libraryInformationRS.getLong("libraryId");
-			String pTypes = libraryInformationRS.getString("pTypes");
+			Long   libraryId = libraryInformationRS.getLong("libraryId");
+			String pTypes    = libraryInformationRS.getString("pTypes");
 			if (pTypes == null) {pTypes = "";}
 			boolean includeOverdrive            = libraryInformationRS.getBoolean("enableOverdriveCollection");
 			Long    sharedOverdriveCollectionId = libraryInformationRS.getLong("sharedOverdriveCollection");
 			boolean includeOverdriveAdult       = libraryInformationRS.getBoolean("includeOverdriveAdult");
 			boolean includeOverdriveTeen        = libraryInformationRS.getBoolean("includeOverdriveTeen");
 			boolean includeOverdriveKids        = libraryInformationRS.getBoolean("includeOverdriveKids");
+			float   hooplaMaxPrice              = libraryInformationRS.getFloat("hooplaMaxPrice");
 
 			//Determine if we need to build a scope for this library
 			//MDN 10/1/2014 always build scopes because it makes coding more consistent elsewhere.
@@ -515,6 +521,8 @@ public class GroupedWorkIndexer {
 			newScope.setIncludeOverDriveTeenCollection(includeOverdriveTeen);
 			newScope.setIncludeOverDriveKidsCollection(includeOverdriveKids);
 			newScope.setSharedOverdriveCollectionId(sharedOverdriveCollectionId);
+
+			newScope.setHooplaMaxPrice(hooplaMaxPrice);
 
 			newScope.setRestrictOwningLibraryAndLocationFacets(libraryInformationRS.getBoolean("restrictOwningBranchesAndSystems"));
 
@@ -683,7 +691,7 @@ public class GroupedWorkIndexer {
 		String maxUniqueTitlesDefault = configIni.get("SiteMap", "num_title_in_unique_sitemap");
 		String url = configIni.get("Site", "url");
 		try {
-			SiteMap siteMap = new SiteMap(logger, vufindConn, Integer.parseInt(maxUniqueTitlesDefault), Integer.parseInt(maxPopTitlesDefault));
+			SiteMap siteMap = new SiteMap(logger, pikaConn, Integer.parseInt(maxUniqueTitlesDefault), Integer.parseInt(maxPopTitlesDefault));
 			siteMap.createSiteMaps(url, dataDir, siteMapsByScope, uniqueGroupedWorks);
 
 		} catch (IOException ex) {
@@ -823,13 +831,13 @@ public class GroupedWorkIndexer {
 			//Update the last grouping time in the variables table
 			try {
 				if (partialReindexRunningVariableId != null) {
-					PreparedStatement updateVariableStmt = vufindConn.prepareStatement("UPDATE variables set value = ? WHERE id = ?");
+					PreparedStatement updateVariableStmt = pikaConn.prepareStatement("UPDATE variables set value = ? WHERE id = ?");
 					updateVariableStmt.setString(1, Boolean.toString(running));
 					updateVariableStmt.setLong(2, partialReindexRunningVariableId);
 					updateVariableStmt.executeUpdate();
 					updateVariableStmt.close();
 				} else {
-					PreparedStatement insertVariableStmt = vufindConn.prepareStatement("INSERT INTO variables (`name`, `value`) VALUES ('partial_reindex_running', ?)", Statement.RETURN_GENERATED_KEYS);
+					PreparedStatement insertVariableStmt = pikaConn.prepareStatement("INSERT INTO variables (`name`, `value`) VALUES ('partial_reindex_running', ?)", Statement.RETURN_GENERATED_KEYS);
 					insertVariableStmt.setString(1, Boolean.toString(running));
 					insertVariableStmt.executeUpdate();
 					ResultSet generatedKeys = insertVariableStmt.getGeneratedKeys();
@@ -849,13 +857,13 @@ public class GroupedWorkIndexer {
 		//Update the last grouping time in the variables table
 		try {
 			if (fullReindexRunningVariableId != null) {
-				PreparedStatement updateVariableStmt = vufindConn.prepareStatement("UPDATE variables set value = ? WHERE id = ?");
+				PreparedStatement updateVariableStmt = pikaConn.prepareStatement("UPDATE variables set value = ? WHERE id = ?");
 				updateVariableStmt.setString(1, Boolean.toString(running));
 				updateVariableStmt.setLong(2, fullReindexRunningVariableId);
 				updateVariableStmt.executeUpdate();
 				updateVariableStmt.close();
 			} else {
-				PreparedStatement insertVariableStmt = vufindConn.prepareStatement("INSERT INTO variables (`name`, `value`) VALUES ('full_reindex_running', ?) ON DUPLICATE KEY UPDATE value = VALUES(value)", Statement.RETURN_GENERATED_KEYS);
+				PreparedStatement insertVariableStmt = pikaConn.prepareStatement("INSERT INTO variables (`name`, `value`) VALUES ('full_reindex_running', ?) ON DUPLICATE KEY UPDATE value = VALUES(value)", Statement.RETURN_GENERATED_KEYS);
 				insertVariableStmt.setString(1, Boolean.toString(running));
 				insertVariableStmt.executeUpdate();
 				ResultSet generatedKeys = insertVariableStmt.getGeneratedKeys();
@@ -891,13 +899,13 @@ public class GroupedWorkIndexer {
 		//Update the last grouping time in the variables table.  This needs to be the time the index started to catch anything that changes during the index
 		try{
 			if (lastReindexTimeVariableId != null){
-				PreparedStatement updateVariableStmt  = vufindConn.prepareStatement("UPDATE variables set value = ? WHERE id = ?");
+				PreparedStatement updateVariableStmt  = pikaConn.prepareStatement("UPDATE variables set value = ? WHERE id = ?");
 				updateVariableStmt.setLong(1, indexStartTime);
 				updateVariableStmt.setLong(2, lastReindexTimeVariableId);
 				updateVariableStmt.executeUpdate();
 				updateVariableStmt.close();
 			} else{
-				PreparedStatement insertVariableStmt = vufindConn.prepareStatement("INSERT INTO variables (`name`, `value`) VALUES ('last_reindex_time', ?)");
+				PreparedStatement insertVariableStmt = pikaConn.prepareStatement("INSERT INTO variables (`name`, `value`) VALUES ('last_reindex_time', ?)");
 				insertVariableStmt.setString(1, Long.toString(indexStartTime));
 				insertVariableStmt.executeUpdate();
 				insertVariableStmt.close();
@@ -912,15 +920,15 @@ public class GroupedWorkIndexer {
 		try {
 			PreparedStatement getAllGroupedWorks;
 			PreparedStatement getNumWorksToIndex;
-			PreparedStatement setLastUpdatedTime = vufindConn.prepareStatement("UPDATE grouped_work set date_updated = ? where id = ?");
+			PreparedStatement setLastUpdatedTime = pikaConn.prepareStatement("UPDATE grouped_work set date_updated = ? where id = ?");
 			if (fullReindex){
-				getAllGroupedWorks = vufindConn.prepareStatement("SELECT * FROM grouped_work", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
-				getNumWorksToIndex = vufindConn.prepareStatement("SELECT count(id) FROM grouped_work", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+				getAllGroupedWorks = pikaConn.prepareStatement("SELECT * FROM grouped_work", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+				getNumWorksToIndex = pikaConn.prepareStatement("SELECT count(id) FROM grouped_work", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			}else{
 				//Load all grouped works that have changed since the last time the index ran
-				getAllGroupedWorks = vufindConn.prepareStatement("SELECT * FROM grouped_work WHERE date_updated IS NULL OR date_updated >= ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+				getAllGroupedWorks = pikaConn.prepareStatement("SELECT * FROM grouped_work WHERE date_updated IS NULL OR date_updated >= ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 				getAllGroupedWorks.setLong(1, lastReindexTime);
-				getNumWorksToIndex = vufindConn.prepareStatement("SELECT count(id) FROM grouped_work WHERE date_updated IS NULL OR date_updated >= ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+				getNumWorksToIndex = pikaConn.prepareStatement("SELECT count(id) FROM grouped_work WHERE date_updated IS NULL OR date_updated >= ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 				getNumWorksToIndex.setLong(1, lastReindexTime);
 			}
 
@@ -1027,7 +1035,7 @@ public class GroupedWorkIndexer {
 			}
 			groupedWorkIdentifiers.close();*/
 
-			//Load local (VuFind) enrichment for the work
+			//Load local (Pika) enrichment for the work
 			loadLocalEnrichment(groupedWork);
 			//Load lexile data for the work
 			loadLexileDataForWork(groupedWork);
@@ -1324,7 +1332,7 @@ public class GroupedWorkIndexer {
 	}
 
 	long processPublicUserLists() {
-		UserListProcessor listProcessor = new UserListProcessor(this, vufindConn, logger, fullReindex, availableAtLocationBoostValue, ownedByLocationBoostValue);
+		UserListProcessor listProcessor = new UserListProcessor(this, pikaConn, logger, fullReindex, availableAtLocationBoostValue, ownedByLocationBoostValue);
 		return listProcessor.processPublicUserLists(lastReindexTime, updateServer, solrServer);
 	}
 

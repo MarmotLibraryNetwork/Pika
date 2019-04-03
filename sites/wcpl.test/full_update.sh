@@ -154,7 +154,7 @@ if [ -n "$FILE1" ]; then
 
 		cp $FILE1 /data/vufind-plus/${PIKASERVER}/marc/fullexport.mrc
 
-#TODO: only do this in production script
+#(only do this in production script)
 #		#Delete full exports older than a week
 #		find /mnt/ftp/daily_exports -name *.mrc -mtime +7 -delete
 
@@ -168,6 +168,11 @@ if [ -n "$FILE1" ]; then
 
 		#Full Reindex
 		cd /usr/local/vufind-plus/vufind/reindexer; java -server -XX:+UseG1GC -Xmx2G -jar reindexer.jar ${PIKASERVER} fullReindex >> ${OUTPUT_FILE}
+
+		# Wait 2 minutes for solr replication to finish; then delete the inactive solr indexes folders older than 48 hours
+		# Note: Running in the full update because we know there is a freshly created index.
+		sleep 2m
+		find /data/vufind-plus/${PIKASERVER}/solr_searcher/grouped/ -name "index.*" -type d -mmin +2880 -exec rm -rf {} \; >> ${OUTPUT_FILE}
 
 		else
 			umount /mnt/ftp

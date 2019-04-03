@@ -146,6 +146,11 @@ if [ -n "$FILE" ]; then
 		# Truncate Continuous Reindexing list of changed items
 		cat /dev/null >| /data/vufind-plus/${PIKASERVER}/marc/changed_items_to_process.csv
 
+		# Wait 2 minutes for solr replication to finish; then delete the inactive solr indexes folders older than 48 hours
+		# Note: Running in the full update because we know there is a freshly created index.
+		sleep 2m
+		find /data/vufind-plus/${PIKASERVER}/solr_searcher/grouped/ -name "index.*" -type d -mmin +2880 -exec rm -rf {} \; >> ${OUTPUT_FILE}
+
 		# ON Monday early mornings, when processing the Sunday delivery of the full export, upon a good full reindex, set the Koha Extract time
 		# back to Saturday Night in order to recapture any item changes that occurred Sunday.
 		if [ "${DAYOFWEEK}" -eq 1 ];then

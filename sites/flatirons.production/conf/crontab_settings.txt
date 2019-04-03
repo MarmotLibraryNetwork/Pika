@@ -57,10 +57,13 @@
 # Clean Up Temporary Files
 26 * * * * cd /tmp; /bin/rm -rf CURLCOOKIE*
 
-###############################################
-# Copy Original Covers from Marmot FTP Server #
-###############################################
+###################################
+# Data Extract from other systems #
+###################################
+# Library supplied covers
 14 */2 * * * /usr/local/vufind-plus/sites/flatirons.production/copyCovers.sh
+# Hoopla
+02 20 * * * cd /usr/local/vufind-plus/vufind/hoopla_export; java -jar hoopla_export.jar flatirons.production
 
 ###################
 # Pika Cron Jobs  #

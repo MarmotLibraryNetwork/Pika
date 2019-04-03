@@ -52,6 +52,8 @@
 ###################################
 #Lynda weekly update
 39 0 * * Fri /usr/local/vufind-plus/vufind/cron/fetch_lynda.sh anythink
+# Hoopla
+02 20 * * * cd /usr/local/vufind-plus/vufind/hoopla_export; java -jar hoopla_export.jar anythink.production
 
 ###################
 # Pika Cron Jobs  #

@@ -125,7 +125,8 @@
 								{if $record.availableTime}
 									{$record.availableTime|date_format:"%b %d, %Y at %l:%M %p"}
 								{else}
-									{if strcasecmp($record.status, 'Hold Being Shelved') === 0}
+									{if strcasecmp($record.status, 'Hold Being Shelved') === 0
+									 || strcasecmp($record.status, 'Just checked in. Ask at desk.') === 0}
 										<strong>{$record.status}</strong>
 									{else}
 										Now
