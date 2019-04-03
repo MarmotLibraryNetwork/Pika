@@ -79,9 +79,11 @@ class Library extends DB_DataObject
 	public $overdriveRequirePin;
 	public $overdriveAdvantageName;
 	public $overdriveAdvantageProductsKey;
-
+	/* HOOPLA */
 	public $hooplaLibraryID;
 	public $hooplaMaxPrice;
+	public $hooplaSuppressMatureContent;
+
 	public $systemsToRepeatIn;
 	public $additionalLocationsToShowAvailabilityFor;
 	public $homeLink;
@@ -809,8 +811,9 @@ class Library extends DB_DataObject
 			'hooplaSection' => array('property'=>'hooplaSection', 'type' => 'section', 'label' =>'Hoopla', 'hideInLists' => true,
 //					'helpLink'=>'',
 				'properties' => array(
-				'hooplaLibraryID'      => array('property'=>'hooplaLibraryID', 'type'=>'integer', 'label'=>'Hoopla Library ID', 'description'=>'The ID Number Hoopla uses for this library', 'hideInLists' => true),
-				'hooplaMaxPrice'       => array('property'=>'hooplaMaxPrice',  'type'=>'integer', 'label'=>'Hoopla Max. Price', 'description'=>'The maximum price per use to include in search results. (0 = include everything)', 'min' => 0, 'step' => "0.01", 'hideInLists' => true),
+				'hooplaLibraryID'             => array('property'=>'hooplaLibraryID', 'type'=>'integer', 'label'=>'Hoopla Library ID', 'description'=>'The ID Number Hoopla uses for this library', 'hideInLists' => true),
+				'hooplaMaxPrice'              => array('property'=>'hooplaMaxPrice',  'type'=>'integer', 'label'=>'Hoopla Max. Price', 'description'=>'The maximum price per use to include in search results. (0 = include everything)', 'min' => 0, 'step' => "0.01", 'hideInLists' => true),
+				'hooplaSuppressMatureContent' => array('property'=>'hooplaSuppressMatureContent', 'type'=>'checkbox', 'label'=>'Suppress mature content', 'description'=>'Selecting this option will hide mature content from searches.', 'hideInLists' => true, 'default'=>true),
 					)),
 			'archiveSection' => array('property'=>'archiveSection', 'type' => 'section', 'label' =>'Local Content Archive', 'hideInLists' => true, 'helpLink'=>'https://docs.google.com/a/marmot.org/document/d/128wrNtZu_sUqm2_NypC6Sx8cOvM2cdmeOUDp0hUhQb4/edit?usp=sharing_eid&ts=57324e27', 'properties' => array(
 					'enableArchive'                        => array('property'=>'enableArchive', 'type'=>'checkbox', 'label'=>'Allow Searching the Archive', 'description'=>'Whether or not information from the archive is shown in Pika.', 'hideInLists' => true, 'default' => 0),

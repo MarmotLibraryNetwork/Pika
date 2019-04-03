@@ -1689,6 +1689,22 @@ function getLibraryLocationUpdates(){
 				),
 			),
 
+		'hoopla_suppress_mature_content_library' => array(
+			'title' => 'Library setting to suppress Hoopla mature content.',
+			'description' => 'Add Library setting to suppress Hoopla mature content',
+			'continueOnError' => true,
+			'sql' => array(
+				"ALTER TABLE library ADD COLUMN hooplaSuppressMatureContent TINYINT(4) NULL DEFAULT 1;",
+			),
+		),
+		'hoopla_suppress_mature_content_location' => array(
+			'title' => 'Location setting to suppress Hoopla mature content.',
+			'description' => 'Add Location setting to suppress Hoopla mature content',
+			'continueOnError' => true,
+			'sql' => array(
+				"ALTER TABLE location ADD COLUMN hooplaSuppressMatureContent TINYINT(4) NULL DEFAULT 1;",
+			),
+		),
 			'library_on_order_counts' => array(
 					'title' => 'Library On Order Counts',
 					'description' => 'Add a setting for whether or not on order counts should be shown to users',

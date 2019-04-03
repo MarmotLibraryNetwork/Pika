@@ -38,10 +38,15 @@ class Location extends DB_DataObject
 	public $useScope;
 	public $facetLabel;
 	public $restrictSearchByLocation;
+	/* OVERDRIVE */
 	public $enableOverdriveCollection;
 	public $includeOverDriveAdult;
 	public $includeOverDriveTeen;
 	public $includeOverDriveKids;
+
+	/* HOOPLA */
+	public $hooplaSuppressMatureContent;
+
 	public $showHoldButton;
 	public $showStandardReviews;
 	public $repeatSearchOption;
@@ -329,12 +334,17 @@ class Location extends DB_DataObject
 				      ),
 			      )),
 
-
+				/* OVERDRIVE SECTION */
 				'overdriveSection' => array('property'=>'overdriveSection', 'type' => 'section', 'label' =>'OverDrive', 'hideInLists' => true, 'properties' => array(
 					'enableOverdriveCollection' => array('property'=>'enableOverdriveCollection', 'type'=>'checkbox', 'label'=>'Enable Overdrive Collection', 'description'=>'Whether or not titles from the Overdrive collection should be included in searches', 'hideInLists' => true, 'default'=>true),
 					'includeOverDriveAdult' => array('property'=>'includeOverDriveAdult', 'type'=>'checkbox', 'label'=>'Include Adult Titles', 'description'=>'Whether or not adult titles from the Overdrive collection should be included in searches', 'hideInLists' => true, 'default' => true),
 					'includeOverDriveTeen' => array('property'=>'includeOverDriveTeen', 'type'=>'checkbox', 'label'=>'Include Teen Titles', 'description'=>'Whether or not teen titles from the Overdrive collection should be included in searches', 'hideInLists' => true, 'default' => true),
 					'includeOverDriveKids' => array('property'=>'includeOverDriveKids', 'type'=>'checkbox', 'label'=>'Include Kids Titles', 'description'=>'Whether or not kids titles from the Overdrive collection should be included in searches', 'hideInLists' => true, 'default' => true),
+				)),
+
+				/* HOOPLA SECTION */
+				'hooplaSection' => array('property'=>'hooplaSection', 'type' => 'section', 'label' =>'Hoopla', 'hideInLists' => true, 'properties' => array(
+					'hooplaSuppressMatureContent' => array('property'=>'hooplaSuppressMatureContent', 'type'=>'checkbox', 'label'=>'Suppress mature content', 'description'=>'Selecting this option will hide mature content from searches.', 'hideInLists' => true, 'default'=>true),
 				)),
 
 			array(
