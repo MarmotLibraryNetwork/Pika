@@ -85,6 +85,7 @@ class IndexingProfile extends DB_DataObject{
 	public $doAutomaticEcontentSuppression;
 	public $groupUnchangedFiles;
 	public $materialTypeField;
+	public $formatDeterminationMethod;
 
 	function getObjectStructure(){
 		$translationMapStructure = TranslationMap::getObjectStructure();
@@ -97,14 +98,8 @@ class IndexingProfile extends DB_DataObject{
 			'id'                         => array('property'=>'id',                           'type'=>'label',  'label'=>'Id', 'description'=>'The unique id within the database'),
 			'name'                       => array('property' => 'name',                       'type' => 'text', 'label' => 'Name', 'maxLength' => 50, 'description' => 'A name for this indexing profile', 'required' => true),
 			'recordUrlComponent'         => array('property' => 'recordUrlComponent',         'type' => 'text', 'label' => 'Record URL Component', 'maxLength' => 50, 'description' => 'The Module to use within the URL', 'required' => true, 'default' => 'Record', 'serverValidation' => 'validateRecordUrlComponent'),
-			'recordNumberTag'            => array('property' => 'recordNumberTag',            'type' => 'text', 'label' => 'Record Number Tag', 'maxLength' => 3, 'description' => 'The MARC tag where the record number can be found', 'required' => true),
-			'recordNumberField'          => array('property' => 'recordNumberField',          'type' => 'text', 'label' => 'Record Number Field', 'maxLength' => 1, 'description' => 'The subfield of the record number tag where the record number can be found', 'required' => true, 'default' => 'a'),
-			'recordNumberPrefix'         => array('property' => 'recordNumberPrefix',         'type' => 'text', 'label' => 'Record Number Prefix', 'maxLength' => 10, 'description' => 'A prefix to identify the bib record number if multiple MARC tags exist'),
-			'sierraRecordFixedFieldsTag' => array('property' => 'sierraRecordFixedFieldsTag', 'type' => 'text', 'label' => 'Sierra Record/Bib level Fixed Fields Tag', 'maxLength' => 3, 'description' => 'The MARC tag where the Sierra fixed fields can be found, specifically the bcode3'),
-			'materialTypeField'          => array('property' => 'materialTypeField',          'type' => 'text', 'label' => 'Material Type Sub Field', 'maxLength' => 3, 'description' => 'Material Type Field', 'hideInLists' => true),
-			//'matTypeSubfield'            => array('property' => 'matTypeSubfield', 'type' => 'text', 'label' => 'Material Type Subfield (Sierra: BCode2)', 'maxLength' => 1, 'description' => 'Bib level Subfield for Material Type (depends on setting the Sierra Record/Bib level Fixed Fields Tag) '),
 
-			'serverFileSection' =>array('property'=>'serverFileSection', 'type' => 'section', 'label' =>'MARC File Settings ', 'hideInLists' => true,
+			'serverFileSection' => array('property'=>'serverFileSection', 'type' => 'section', 'label' =>'MARC File Settings ', 'hideInLists' => true,
 			                            'helpLink' => '', 'properties' => array(
 
 			'marcPath'                          => array('property' => 'marcPath', 'type' => 'text', 'label' => 'MARC Path', 'maxLength' => 100, 'description' => 'The path on the server where MARC records can be found', 'required' => true),
@@ -116,26 +111,41 @@ class IndexingProfile extends DB_DataObject{
 			'createFolderFromLeadingCharacters' => array('property'=>'createFolderFromLeadingCharacters', 'type'=>'checkbox', 'label'=>'Create Folder From Leading Characters', 'description'=>'Whether we should look at the start or end of the folder when .', 'hideInLists' => true, 'default' => 0),
 				)),
 
-			'DriverSection' =>array('property'=>'DriverSection', 'type' => 'section', 'label' =>'Pika Driver Settings', 'hideInLists' => true,
+			'DriverSection' => array('property'=>'DriverSection', 'type' => 'section', 'label' =>'Pika Driver Settings', 'hideInLists' => true,
 			                                     'helpLink' => '', 'properties' => array(
-
-
-			'groupingClass' => array('property' => 'groupingClass', 'type' => 'text', 'label' => 'Grouping Class', 'maxLength' => 50, 'description' => 'The class to use while grouping the records', 'required' => true, 'default' => 'MarcRecordGrouper'),
-			'indexingClass' => array('property' => 'indexingClass', 'type' => 'text', 'label' => 'Indexing Class', 'maxLength' => 50, 'description' => 'The class to use while indexing the records', 'required' => true, 'default' => 'IlsRecord'),
-			'recordDriver'  => array('property' => 'recordDriver', 'type' => 'text', 'label' => 'Record Driver', 'maxLength' => 50, 'description' => 'The record driver to use while displaying information in Pika', 'required' => true, 'default' => 'MarcRecord'),
-			'catalogDriver' => array('property' => 'catalogDriver', 'type' => 'text', 'label' => 'Catalog Driver', 'maxLength' => 50, 'description' => 'The catalog driver to use for ILS integration', 'required' => true, 'default' => 'DriverInterface'),
+					'groupingClass' => array('property' => 'groupingClass', 'type' => 'text', 'label' => 'Grouping Class', 'maxLength' => 50, 'description' => 'The class to use while grouping the records', 'required' => true, 'default' => 'MarcRecordGrouper'),
+					'indexingClass' => array('property' => 'indexingClass', 'type' => 'text', 'label' => 'Indexing Class', 'maxLength' => 50, 'description' => 'The class to use while indexing the records', 'required' => true, 'default' => 'IlsRecord'),
+					'recordDriver'  => array('property' => 'recordDriver', 'type' => 'text', 'label' => 'Record Driver', 'maxLength' => 50, 'description' => 'The record driver to use while displaying information in Pika', 'required' => true, 'default' => 'MarcRecord'),
+					'catalogDriver' => array('property' => 'catalogDriver', 'type' => 'text', 'label' => 'Catalog Driver', 'maxLength' => 50, 'description' => 'The catalog driver to use for ILS integration', 'required' => true, 'default' => 'DriverInterface'),
 				)),
 
-			'formatDeterminationSection' =>array('property'=>'formatDeterminationSection', 'type' => 'section', 'label' =>'Format Determination Settings', 'hideInLists' => true,
+			'formatDeterminationSection' => array('property'=>'formatDeterminationSection', 'type' => 'section', 'label' =>'Format Determination Settings', 'hideInLists' => true,
 			                            'helpLink' => '', 'properties' => array(
 
-			'formatSource'            => array('property' => 'formatSource', 'type' => 'enum', 'label' => 'Load Format from', 'values' => array('bib' => 'Bib Record', 'item' => 'Item Record', 'specified'=> 'Specified Value'), 'default' => 'bib'),
-			'specifiedFormat'         => array('property' => 'specifiedFormat', 'type' => 'text', 'label' => 'Specified Format', 'maxLength' => 50, 'description' => 'The format to set when using a defined format', 'required' => false, 'default' => ''),
-			'specifiedFormatCategory' => array('property' => 'specifiedFormatCategory', 'type' => 'enum', 'values' => array('', 'Books' => 'Books', 'eBook' => 'eBook', 'Audio Books' => 'Audio Books', 'Movies' => 'Movies', 'Music' => 'Music', 'Other' => 'Other'), 'label' => 'Specified Format Category', 'maxLength' => 50, 'description' => 'The format category to set when using a defined format', 'required' => false, 'default' => ''),
-			'specifiedFormatBoost'    => array('property' => 'specifiedFormatBoost', 'type' => 'integer', 'label' => 'Specified Format Boost', 'maxLength' => 50, 'description' => 'The format boost to set when using a defined format', 'required' => false, 'default' => '8'),
+			'formatSource'              => array('property' => 'formatSource',              'type' => 'enum',    'label' => 'Determine Format based on', 'values' => array('bib' => 'Bib Record', 'item' => 'Item Record', 'specified'=> 'Specified Value'), 'default' => 'bib'),
+			'bibFormatSection' => array('property'=>'bibFormatSection', 'type' => 'section', 'label' =>'Bib Format Determination Settings', 'hideInLists' => true,
+			                                  'helpLink' => '', 'properties' => array(
+					'formatDeterminationMethod' => array('property' => 'formatDeterminationMethod', 'type' => 'enum',    'label' => 'Format Determination Method', 'values' => array('bib' => 'Bib Record', 'matType' => 'Material Type'), 'default' => 'bib'),
+			)),
+
+			'specifiedFormatSection' => array('property'=>'specifiedFormatSection', 'type' => 'section', 'label' =>'Specified Format Settings', 'hideInLists' => true,
+			                                      'helpLink' => '', 'properties' => array(
+
+					'specifiedFormat'           => array('property' => 'specifiedFormat',           'type' => 'text',    'label' => 'Specified Format', 'maxLength' => 50, 'description' => 'The format to set when using a defined format', 'required' => false, 'default' => ''),
+					'specifiedFormatCategory'   => array('property' => 'specifiedFormatCategory',   'type' => 'enum',    'label' => 'Specified Format Category', 'values' => array('', 'Books' => 'Books', 'eBook' => 'eBook', 'Audio Books' => 'Audio Books', 'Movies' => 'Movies', 'Music' => 'Music', 'Other' => 'Other'), 'description' => 'The format category to set when using a defined format', 'required' => false, 'default' => ''),
+					'specifiedFormatBoost'      => array('property' => 'specifiedFormatBoost',      'type' => 'integer', 'label' => 'Specified Format Boost', 'maxLength' => 50, 'description' => 'The format boost to set when using a defined format', 'required' => false, 'default' => '8'),
+						)),
+					)),
+
+
+			'bibRecordSection' => array('property'=>'bibRecordSection', 'type' => 'section', 'label' =>'Record Settings', 'hideInLists' => true,
+			                            'helpLink' => '', 'properties' => array(
+					'recordNumberTag'            => array('property' => 'recordNumberTag',            'type' => 'text', 'label' => 'Record Number Tag', 'maxLength' => 3, 'description' => 'The MARC tag where the record number can be found', 'required' => true),
+					'recordNumberField'          => array('property' => 'recordNumberField',          'type' => 'text', 'label' => 'Record Number Field', 'maxLength' => 1, 'description' => 'The subfield of the record number tag where the record number can be found', 'required' => true, 'default' => 'a'),
+					'recordNumberPrefix'         => array('property' => 'recordNumberPrefix',         'type' => 'text', 'label' => 'Record Number Prefix', 'maxLength' => 10, 'description' => 'A prefix to identify the bib record number if multiple MARC tags exist'),
+					'sierraRecordFixedFieldsTag' => array('property' => 'sierraRecordFixedFieldsTag', 'type' => 'text', 'label' => 'Sierra Record/Bib level Fixed Fields Tag (ils profile only)', 'maxLength' => 3, 'description' => 'The MARC tag where the Sierra fixed fields can be found, specifically the bcode3'),
+					'materialTypeField'          => array('property' => 'materialTypeField',          'type' => 'text', 'label' => 'Material Type Sub Field (ils profile only)', 'maxLength' => 1, 'description' => 'Bib level Subfield for Material Type (depends on setting the Sierra Record/Bib level Fixed Fields Tag)', 'hideInLists' => true),
 				)),
-
-
 
 			'itemRecordSection' => array('property'=>'itemRecordSection', 'type' => 'section', 'label' =>'Item Tag Settings (ils profile only)', 'hideInLists' => true,
 			                         'helpLink' => '', 'properties' => array(
@@ -175,7 +185,7 @@ class IndexingProfile extends DB_DataObject{
 			'eContentDescriptor'      => array('property' => 'eContentDescriptor', 'type' => 'text', 'label' => 'eContent Descriptor', 'maxLength' => 1, 'description' => 'Subfield to indicate that the item should be processed as eContent and how to process it'),
 				)),
 
-			'nonholdableSection' =>array('property'=>'nonholdableSection', 'type' => 'section', 'label' =>'Non-holdable Settings (ils profile only)', 'hideInLists' => true,
+			'nonholdableSection' => array('property'=>'nonholdableSection', 'type' => 'section', 'label' =>'Non-holdable Settings (ils profile only)', 'hideInLists' => true,
 			                         'helpLink' => '', 'properties' => array(
 					'nonHoldableStatuses'  => array('property' => 'nonHoldableStatuses', 'type' => 'text', 'label' => 'Non Holdable Statuses', 'maxLength' => 255, 'description' => 'A regular expression for any statuses that should not allow holds'),
 					'nonHoldableLocations' => array('property' => 'nonHoldableLocations', 'type' => 'text', 'label' => 'Non Holdable Locations', 'maxLength' => 255, 'description' => 'A regular expression for any locations that should not allow holds'),
@@ -183,9 +193,9 @@ class IndexingProfile extends DB_DataObject{
 
 			)),
 
-			'suppressionSection' =>array('property'=>'suppressionSection', 'type' => 'section', 'label' =>'Suppression Settings (ils profile only)', 'hideInLists' => true,
+			'suppressionSection' => array('property'=>'suppressionSection', 'type' => 'section', 'label' =>'Suppression Settings (ils profile only)', 'hideInLists' => true,
 					'helpLink' => '', 'properties' => array(
-					'itemSuppressionSection' =>array('property'=>'itemSuppressionSection', 'type' => 'section', 'label' =>'Item Level Suppression Settings', 'hideInLists' => true,
+					'itemSuppressionSection' => array('property'=>'itemSuppressionSection', 'type' => 'section', 'label' =>'Item Level Suppression Settings', 'hideInLists' => true,
 					                             'helpLink' => '', 'properties' => array(
 							'statusesToSuppress'    => array('property' => 'statusesToSuppress', 'type' => 'text', 'label' => 'Statuses To Suppress (use regex)', 'maxLength' => 100, 'description' => 'A regular expression for any statuses that should be suppressed'),
 							'iTypesToSuppress'      => array('property' => 'iTypesToSuppress', 'type' => 'text', 'label' => 'Itypes To Suppress (use regex)', 'maxLength' => 100, 'description' => 'A regular expression for any Itypes that should be suppressed'),
@@ -205,7 +215,7 @@ class IndexingProfile extends DB_DataObject{
 						)),
 				)),
 
-			'orderRecordSection' =>array('property'=>'orderRecordSection', 'type' => 'section', 'label' =>'Order Tag Settings (ils profile only)', 'hideInLists' => true,
+			'orderRecordSection' => array('property'=>'orderRecordSection', 'type' => 'section', 'label' =>'Order Tag Settings (ils profile only)', 'hideInLists' => true,
 			                            'helpLink' => '', 'properties' => array(
 			'orderTag'            => array('property' => 'orderTag', 'type' => 'text', 'label' => 'Order Tag', 'maxLength' => 3, 'description' => 'The MARC tag where order records can be found'),
 			'orderStatus'         => array('property' => 'orderStatus', 'type' => 'text', 'label' => 'Order Status', 'maxLength' => 1, 'description' => 'Subfield for status of the order item'),

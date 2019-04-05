@@ -289,6 +289,14 @@ function getIndexingUpdates() {
 			)
 		),
 
+		'indexing_profile_format_determination_setting' => array(
+			'title' => 'Indexing Profiles - Format determination setting',
+			'description' => 'When format source is bib, setting to choose type of format determination',
+			'sql' => array(
+				"ALTER TABLE `indexing_profiles` ADD COLUMN `formatDeterminationMethod` varchar(20) DEFAULT 'bib' ",
+			)
+		),
+
 		'translation_map_regex' => array(
 			'title' => 'Translation Maps Regex',
 			'description' => 'Setup Translation Maps to use regular expressions',
