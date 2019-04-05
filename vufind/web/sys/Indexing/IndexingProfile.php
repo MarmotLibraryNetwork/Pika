@@ -86,6 +86,7 @@ class IndexingProfile extends DB_DataObject{
 	public $groupUnchangedFiles;
 	public $materialTypeField;
 	public $formatDeterminationMethod;
+	public $materialTypesToIgnore;
 
 	function getObjectStructure(){
 		$translationMapStructure = TranslationMap::getObjectStructure();
@@ -125,7 +126,8 @@ class IndexingProfile extends DB_DataObject{
 			'formatSource'              => array('property' => 'formatSource',              'type' => 'enum',    'label' => 'Determine Format based on', 'values' => array('bib' => 'Bib Record', 'item' => 'Item Record', 'specified'=> 'Specified Value'), 'default' => 'bib'),
 			'bibFormatSection' => array('property'=>'bibFormatSection', 'type' => 'section', 'label' =>'Bib Format Determination Settings', 'hideInLists' => true,
 			                                  'helpLink' => '', 'properties' => array(
-					'formatDeterminationMethod' => array('property' => 'formatDeterminationMethod', 'type' => 'enum',    'label' => 'Format Determination Method', 'values' => array('bib' => 'Bib Record', 'matType' => 'Material Type'), 'default' => 'bib'),
+					'formatDeterminationMethod' => array('property' => 'formatDeterminationMethod', 'type' => 'enum', 'label' => 'Format Determination Method', 'values' => array('bib' => 'Bib Record', 'matType' => 'Material Type'), 'default' => 'bib'),
+					'materialTypesToIgnore'     => array('property' => 'materialTypesToIgnore',     'type' => 'text', 'label' => 'Material Type Values to Ignore (ils profile only)', 'maxLength' => 50, 'description' => 'MatType values to ignore when using the MatType format determination. The bib format determination will be used instead. " " & "-" are always ignored.', 'hideInLists' => true),
 			)),
 
 			'specifiedFormatSection' => array('property'=>'specifiedFormatSection', 'type' => 'section', 'label' =>'Specified Format Settings', 'hideInLists' => true,
