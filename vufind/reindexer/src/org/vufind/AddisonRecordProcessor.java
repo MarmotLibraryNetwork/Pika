@@ -24,7 +24,8 @@ public class AddisonRecordProcessor extends IIIRecordProcessor {
 	AddisonRecordProcessor(GroupedWorkIndexer indexer, Connection vufindConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 		super(indexer, vufindConn, indexingProfileRS, logger, fullReindex);
 
-		loadOrderInformationFromExport();
+		// Note: Mat-Type "v" is video games; they are to be excluded for the better default format determination		loadOrderInformationFromExport();
+
 //        loadVolumesFromExport(vufindConn);
 
 		validCheckedOutStatusCodes.add("o"); // Library Use Only

@@ -15,7 +15,8 @@ class AuroraRecordProcessor extends IIIRecordProcessor  {
 		loadOrderInformationFromExport();
 
 	}
-	private String materialTypeSubField     = "d";
+
+	//	private String materialTypeSubField     = "d";
 	private String availableStatus          = "-do";
 	private String libraryUseOnlyStatus     = "o";
 
