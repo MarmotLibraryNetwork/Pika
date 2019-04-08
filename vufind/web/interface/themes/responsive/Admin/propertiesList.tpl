@@ -38,7 +38,7 @@
 					<th><label title='{$property.description}'>{$property.label}</label></th>
 					{/if}
 				{/foreach}
-				<th>Actions</th>
+				<th class="sorter-false filter-false">Actions</th>
 			</tr>
 		</thead>
 		<tbody>
@@ -134,7 +134,8 @@
 {if isset($dataList) && is_array($dataList) && count($dataList) > 5}
 <script type="text/javascript">
 	{literal}
-	$("#adminTable").tablesorter({cssAsc: 'sortAscHeader', cssDesc: 'sortDescHeader', cssHeader: 'unsortedHeader', widgets:['zebra', 'filter'] });
+	$("#adminTable").tablesorter({cssAsc: 'sortAscHeader', cssDesc: 'sortDescHeader', cssHeader: 'unsortedHeader',
+		widgets:['zebra', 'filter'] });
 	{/literal}
 </script>
 {/if}
