@@ -40,12 +40,14 @@
 	<h3>Hoopla Extract Information</h3>
 	<table class="table-striped table table-condensed notranslate">
 		{foreach from=$hooplaExtract key='field' item='values'}
-			<tr>
-				<th>{$field|escape}</th>
-				<td>
-					{implode subject=$values glue=', ' sort=true}
-				</td>
-			</tr>
+			{if $field != 'id'}{* this id is the database table id, and will confuse most users as the hoopla id*}
+				<tr>
+					<th>{$field|escape}</th>
+					<td>
+						{implode subject=$values glue=', ' sort=true}
+					</td>
+				</tr>
+			{/if}
 		{/foreach}
 	</table>
 	{/if}

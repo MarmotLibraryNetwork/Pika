@@ -270,8 +270,7 @@ class HooplaRecordDriver extends MarcRecord {
 	{
 		parent::getStaffView();
 		$hooplaExtract = new HooplaExtract();
-//		$hooplaId = preg_replace('/^MWT/', '', $this->id);
-		$hooplaId = HooplaDriver::recordIDtoHooplaID($this->id);
+		$hooplaId      = HooplaDriver::recordIDtoHooplaID($this->id);
 		if ($hooplaExtract->get('hooplaId', $hooplaId) == 1) {
 			$hooplaData = array();
 			foreach ($hooplaExtract->table() as $fieldName => $value_ignored) {
