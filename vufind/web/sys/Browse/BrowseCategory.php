@@ -235,7 +235,7 @@ class BrowseCategory extends DB_DataObject{
 			'errors'      => array(),
 		);
 
-		if (!empty($this->textId)){
+		if (empty($this->textId)){
 			$this->textId = $this->label . ' ' . $this->sharing;
 			if ($this->sharing == 'private'){
 				$this->textId .= '_' . $this->userId;
