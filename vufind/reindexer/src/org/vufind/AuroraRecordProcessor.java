@@ -17,7 +17,7 @@ class AuroraRecordProcessor extends IIIRecordProcessor  {
 	}
 
 	//	private String materialTypeSubField     = "d";
-	private String availableStatus          = "-do";
+	private String availableStatus          = "-doj";
 	private String libraryUseOnlyStatus     = "o";
 
 	@Override
