@@ -816,7 +816,7 @@ class OverDriveDriver3 {
 		//print_r($response);
 		if (isset($response->expires)) {
 			$result['success'] = true;
-			$result['message'] = 'Your title was checked out successfully. You may now download the title from your Account.';
+			$result['message'] = 'Your title was checked out successfully. You may now view the title in your account.';
 			if ($analytics) {
 				$analytics->addEvent('OverDrive', 'Checkout Item', 'succeeded');
 			}
