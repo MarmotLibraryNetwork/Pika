@@ -1210,15 +1210,23 @@ class Library extends DB_DataObject
 			return $this->archiveSearchFacets;
 		}elseif ($name == 'libraryLinks'){
 			if (!isset($this->libraryLinks) && $this->libraryId){
-				$this->libraryLinks = array();
+				$libraryLinks = array();
 				$libraryLink = new LibraryLink();
 				$libraryLink->libraryId = $this->libraryId;
 				$libraryLink->orderBy('weight');
 				$libraryLink->find();
 				while ($libraryLink->fetch()){
-					$this->libraryLinks[$libraryLink->id] = clone($libraryLink);
+					$libraryLinks[$libraryLink->id] = clone($libraryLink);
 				}
+				// handle missing linkText
+				foreach($libraryLinks as $libLink) {
+					if(!isset($libLink->linkText) || $libLink->linkText == '') {
+						$libLink->linkText = 'link-' . $libLink->id;
+					}
+				}
+				$this->libraryLinks = $libraryLinks;
 			}
+
 			return $this->libraryLinks;
 		}elseif ($name == 'libraryTopLinks'){
 			if (!isset($this->libraryTopLinks) && $this->libraryId){
