@@ -390,6 +390,14 @@ function getIndexingUpdates() {
 			)
 		),
 
+		'ptype_label' => array(
+			'title' => 'P-type label field',
+			'description' => 'Add P-type label field.',
+			'sql' => array(
+				"ALTER TABLE ptype ADD COLUMN label VARCHAR(60) NULL",
+			)
+		),
+
 	);
 }
 
