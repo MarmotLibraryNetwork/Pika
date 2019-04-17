@@ -389,7 +389,7 @@ function getIndexingUpdates() {
 				"ALTER TABLE indexing_profiles ADD COLUMN materialTypeField VARCHAR(3)",
 			)
 		),
-
+		/* 2019.04.0 */
 		'ptype_label' => array(
 			'title' => 'P-type label field',
 			'description' => 'Add P-type label field.',
