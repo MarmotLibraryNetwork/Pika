@@ -30,7 +30,7 @@ class MillenniumHolds {
 				$numMatches = preg_match('/<div class="srchhelpText">(.*?)<\/div>/s', $holdResultPage, $matches);
 				if ($numMatches == 0){
 					// AuroraPL Results
-					$numMatches = preg_match('%<p>(Your request for <strong>.*?</strong> was successful.)</p>%si', $holdResultPage, $matches);
+					$numMatches = preg_match('%<p>(Your request for <strong>.*?</strong> was successful\.)</p>%si', $holdResultPage, $matches);
 				}
 			}
 		}
