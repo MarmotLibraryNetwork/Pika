@@ -228,49 +228,49 @@ class IndexingProfile extends DB_DataObject{
 				)),
 
 			'translationMaps' => array(
-				'property' => 'translationMaps',
-				'type'=> 'oneToMany',
-				'label' => 'Translation Maps',
-				'description' => 'The translation maps for the profile.',
-				'keyThis' => 'id',
-				'keyOther' => 'indexingProfileId',
+				'property'      => 'translationMaps',
+				'type'          => 'oneToMany',
+				'label'         => 'Translation Maps',
+				'description'   => 'The translation maps for the profile.',
+				'keyThis'       => 'id',
+				'keyOther'      => 'indexingProfileId',
 				'subObjectType' => 'TranslationMap',
-				'structure' => $translationMapStructure,
-				'sortable' => false,
-				'storeDb' => true,
-				'allowEdit' => true,
-				'canEdit' => true,
+				'structure'     => $translationMapStructure,
+				'sortable'      => false,
+				'storeDb'       => true,
+				'allowEdit'     => true,
+				'canEdit'       => true,
 			),
 
-				'timeToReshelve' => array(
-						'property' => 'timeToReshelve',
-						'type'=> 'oneToMany',
-						'label' => 'Time to Reshelve',
-						'description' => 'Overrides for time to reshelve.',
-						'keyThis' => 'id',
-						'keyOther' => 'indexingProfileId',
-						'subObjectType' => 'TimeToReshelve',
-						'structure' => TimeToReshelve::getObjectStructure(),
-						'sortable' => true,
-						'storeDb' => true,
-						'allowEdit' => true,
-						'canEdit' => false,
-				),
+			'timeToReshelve' => array(
+				'property'      => 'timeToReshelve',
+				'type'          => 'oneToMany',
+				'label'         => 'Time to Reshelve',
+				'description'   => 'Overrides for time to reshelve.',
+				'keyThis'       => 'id',
+				'keyOther'      => 'indexingProfileId',
+				'subObjectType' => 'TimeToReshelve',
+				'structure'     => TimeToReshelve::getObjectStructure(),
+				'sortable'      => true,
+				'storeDb'       => true,
+				'allowEdit'     => true,
+				'canEdit'       => false,
+			),
 
-				'sierraFieldMappings' => array(
-						'property' => 'sierraFieldMappings',
-						'type'=> 'oneToMany',
-						'label' => 'Sierra Field Mappings (Sierra Systems only)',
-						'description' => 'Field Mappings for exports from Sierra.',
-						'keyThis' => 'id',
-						'keyOther' => 'indexingProfileId',
-						'subObjectType' => 'SierraExportFieldMapping',
-						'structure' => $sierraMappingStructure,
-						'sortable' => false,
-						'storeDb' => true,
-						'allowEdit' => true,
-						'canEdit' => false,
-				),
+			'sierraFieldMappings' => array(
+				'property'      => 'sierraFieldMappings',
+				'type'          => 'oneToMany',
+				'label'         => 'Sierra Field Mappings (Sierra Systems only)',
+				'description'   => 'Field Mappings for exports from Sierra.',
+				'keyThis'       => 'id',
+				'keyOther'      => 'indexingProfileId',
+				'subObjectType' => 'SierraExportFieldMapping',
+				'structure'     => $sierraMappingStructure,
+				'sortable'      => false,
+				'storeDb'       => true,
+				'allowEdit'     => true,
+				'canEdit'       => false,
+			),
 		);
 		return $structure;
 	}
@@ -388,6 +388,7 @@ class IndexingProfile extends DB_DataObject{
 
 	public function saveTranslationMaps(){
 		if (isset ($this->translationMaps)){
+			/** @var TranslationMap $translationMap */
 			foreach ($this->translationMaps as $translationMap){
 				if (isset($translationMap->deleteOnSave) && $translationMap->deleteOnSave == true){
 					$translationMap->delete();
@@ -407,6 +408,7 @@ class IndexingProfile extends DB_DataObject{
 
 	public function saveTimeToReshelve(){
 		if (isset ($this->timeToReshelve)){
+			/** @var TimeToReshelve $timeToReshelve */
 			foreach ($this->timeToReshelve as $timeToReshelve){
 				if (isset($timeToReshelve->deleteOnSave) && $timeToReshelve->deleteOnSave == true){
 					$timeToReshelve->delete();
@@ -426,6 +428,7 @@ class IndexingProfile extends DB_DataObject{
 
 	public function saveSierraFieldMappings(){
 		if (isset ($this->sierraFieldMappings)){
+			/** @var SierraExportFieldMapping $sierraFieldMapping */
 			foreach ($this->sierraFieldMappings as $sierraFieldMapping){
 				if (isset($sierraFieldMapping->deleteOnSave) && $sierraFieldMapping->deleteOnSave == true){
 					$sierraFieldMapping->delete();
@@ -465,21 +468,74 @@ class IndexingProfile extends DB_DataObject{
 		//Setup validation return array
 		$validationResults = array(
 			'validatedOk' => true,
-			'errors' => array(),
+			'errors'      => array(),
 		);
 
 		$recordURLComponent = trim($_REQUEST['recordUrlComponent']);
-		$indexingProfile = new IndexingProfile();
-		$count = $indexingProfile->get('recordUrlComponent', $recordURLComponent);
-		if ($count > 0 && $this->id != $indexingProfile->id) { // include exception for editing the same profile
+		$indexingProfile    = new IndexingProfile();
+		$count              = $indexingProfile->get('recordUrlComponent', $recordURLComponent);
+		if ($count > 0 && $this->id != $indexingProfile->id){ // include exception for editing the same profile
 
 			$validationResults = array(
 				'validatedOk' => false,
-				'errors' => array('The Record Url Component is already in use by another indexing profile'),
+				'errors'      => array('The Record Url Component is already in use by another indexing profile'),
 			);
 
 		}
 		return $validationResults;
 	}
+
+//	function markProfileForRegrouping(){
+//		$result = array(
+//			'success' => false,
+//			'message' => 'Invalid Profile',
+//		);
+//		if (!empty($this->id) && ctype_digit($this->id) && !empty($this->name)){
+//			require_once ROOT_DIR . '/sys/Indexing/IlsMarcChecksum.php';
+//			$ilsMarcChecksum         = new IlsMarcChecksum();
+//			$ilsMarcChecksum->checksum = 0;
+//			$ilsMarcChecksum->whereAdd("source = '{$this->name}'");
+//			$success = $ilsMarcChecksum->update(DB_DATAOBJECT_WHEREADD_ONLY);
+//
+//
+//			if (PEAR_Singleton::isError($success)){
+//				/** @var PEAR_Error $success */
+//				$result = array(
+//					'success' => false,
+//					'message' => $success->getMessage(),
+//				);
+//			}else{
+//				$result = array(
+//					'success' => true,
+//					'message' => $success . ' grouped works with records from profile ' . $this->name . ' were marked for regrouping.',
+//				);
+//			}
+//		}
+//		return $result;
+//	}
+//
+//	function markProfileForReindexing(){
+//		$result = array(
+//			'success' => false,
+//			'message' => 'Invalid Profile',
+//		);
+//		if (!empty($this->id) && ctype_digit($this->id) && !empty($this->name)){
+//			/** @noinspection PhpVoidFunctionResultUsedInspection */
+//			$success = $this->query("UPDATE grouped_work LEFT JOIN grouped_work_primary_identifiers ON (grouped_work.id = grouped_work_primary_identifiers.grouped_work_id) SET grouped_work.date_updated = null WHERE grouped_work_primary_identifiers.type = '{$this->name}' AND grouped_work.date_updated IS NOT NULL");
+//			if (PEAR_Singleton::isError($success)){
+//				/** @var PEAR_Error $success */
+//				$result = array(
+//					'success' => false,
+//					'message' => $success->getMessage(),
+//				);
+//			}else{
+//				$result = array(
+//					'success' => true,
+//					'message' => $success . ' grouped works with records from profile ' . $this->name . ' were marked for reindexing.',
+//				);
+//			}
+//		}
+//		return $result;
+//	}
 
 }

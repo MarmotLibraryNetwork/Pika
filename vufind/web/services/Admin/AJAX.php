@@ -28,7 +28,8 @@ class Admin_AJAX extends Action {
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
 		if (method_exists($this, $method)) {
 			$timer->logTime("Starting method $method");
-			if (in_array($method, array('getReindexNotes', 'getReindexProcessNotes', 'getCronNotes', 'getCronProcessNotes', 'getAddToWidgetForm', 'getRecordGroupingNotes', 'getHooplaExportNotes', 'getSierraExportNotes'))) {
+			if (in_array($method, array('getReindexNotes', 'getReindexProcessNotes', 'getCronNotes', 'getCronProcessNotes', 'getAddToWidgetForm', 'getRecordGroupingNotes', 'getHooplaExportNotes', 'getSierraExportNotes',
+			                            'markProfileForRegrouping', 'markProfileForReindexing'))) {
 				//JSON Responses
 				header('Content-type: application/json');
 				header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
@@ -244,4 +245,40 @@ class Admin_AJAX extends Action {
 		);
 		return json_encode($results);
 	}
+
+//	function markProfileForRegrouping(){
+//		$result = array(
+//			'success' => false,
+//			'message' => 'Invalid Action',
+//		);
+//		$user = UserAccount::getLoggedInUser();
+//		if (UserAccount::userHasRole('opacAdmin')){
+//			$id = $_REQUEST['id'];
+//			if (!empty($id) && ctype_digit($id)){
+//				$indexProfile = new IndexingProfile();
+//				if ($indexProfile->get($id)){
+//					$result = $indexProfile->markProfileForRegrouping();
+//				}
+//			}
+//		}
+//		return json_encode($result);
+//	}
+//
+//	function markProfileForReindexing(){
+//		$result = array(
+//			'success' => false,
+//			'message' => 'Invalid Action',
+//		);
+//		$user = UserAccount::getLoggedInUser();
+//		if (UserAccount::userHasRole('opacAdmin')){
+//			$id = $_REQUEST['id'];
+//			if (!empty($id) && ctype_digit($id)){
+//				$indexProfile = new IndexingProfile();
+//				if ($indexProfile->get($id)){
+//					$result = $indexProfile->markProfileForReindexing();
+//				}
+//			}
+//		}
+//		return json_encode($result);
+//	}
 }

@@ -41,6 +41,42 @@ VuFind.Admin = (function(){
 		showOverDriveExtractNotes: function (id){
 			VuFind.Account.ajaxLightbox("/Admin/AJAX?method=getOverDriveExtractNotes&id=" + id, true);
 			return false;
-		}
+		},
+
+		// markProfileForReindexing: function (id){
+		// 	if (Globals.loggedIn) {
+		// 		VuFind.loadingMessage();
+		// 		var url = Globals.path + "/Admin/AJAX",
+		// 				params = { 'method' : 'markProfileForReindexing', id: id};
+		// 		$.getJSON(url, params, function (data) {
+		// 			if (data.success) {
+		// 				VuFind.showMessage("Success", data.message, true);
+		// 			} else {
+		// 				VuFind.showMessage("Error", data.message);
+		// 			}
+		// 		}).fail(VuFind.ajaxFail);
+		// 	} else {
+		// 		this.ajaxLogin(null, this.markProfileForReindexing, true);
+		// 	}
+		// 	return false;
+		// },
+		//
+		// markProfileForRegrouping: function (id){
+		// 	if (Globals.loggedIn) {
+		// 		VuFind.loadingMessage();
+		// 		var url = Globals.path + "/Admin/AJAX",
+		// 				params = { 'method' : 'markProfileForRegrouping', id: id};
+		// 		$.getJSON(url, params, function (data) {
+		// 			if (data.success) {
+		// 				VuFind.showMessage("Success", data.message, true);
+		// 			} else {
+		// 				VuFind.showMessage("Error", data.message);
+		// 			}
+		// 		}).fail(VuFind.ajaxFail);
+		// 	} else {
+		// 		this.ajaxLogin(null, this.markProfileForRegrouping, true);
+		// 	}
+		// 	return false;
+		// },
 	};
 }(VuFind.Admin || {}));
