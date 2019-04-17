@@ -138,7 +138,8 @@ cd /usr/local/vufind-plus/sites/${PIKASERVER}; ./${PIKASERVER}.sh restart
 #RB Digital
 #/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} aurora/RBdigital_magazines RBdigital_magazines/aurora >> ${OUTPUT_FILE}
 
-
+# Colorado State Gov docs
+curl --remote-time --show-error --compressed -o /data/vufind-plus/colorado_gov_docs/marc/fullexport.mrc https://cassini.marmot.org/colorado_state_docs.mrc
 
 
 #Extract from Hoopla

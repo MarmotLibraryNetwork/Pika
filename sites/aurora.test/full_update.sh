@@ -133,6 +133,9 @@ cd /data/vufind-plus/; curl --remote-name --remote-time --silent --show-error --
 #Extract AR Data
 cd /data/vufind-plus/accelerated_reader; curl --remote-name --remote-time --silent --show-error --compressed --time-cond /data/vufind-plus/accelerated_reader/RLI-ARDataTAB.txt https://cassini.marmot.org/RLI-ARDataTAB.txt
 
+# Colorado state gov docs
+curl --remote-time --show-error --compressed -o /data/vufind-plus/colorado_gov_docs/marc/fullexport.mrc https://cassini.marmot.org/colorado_state_docs.mrc
+
 ## SIDELOADS ##
 # Axis 360
 #/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} aurora/axis_360 axis_360/aurora >> ${OUTPUT_FILE}
