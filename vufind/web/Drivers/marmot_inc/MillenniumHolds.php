@@ -93,7 +93,14 @@ class MillenniumHolds {
 					$message = 'There are no holdable items for this title.';
 				}
 			}else{
-				$message = 'Received unrecognized response from the circulation system.';
+				// AuroraPL account issue (overdue fines, etc)
+				preg_match_all('/<div style="color:red; font-size:x-large">(.*?)<\/div>/im', $holdResultPage, $error_match);
+				if($error_match) {
+					// sending back the system message to the patron.
+					$message = $error_match[1][0];
+				}else {
+					$message = 'Received unrecognized response from the circulation system.';
+				}
 			}
 			$hold_result['success'] = false;
 			$hold_result['message'] = $message;
