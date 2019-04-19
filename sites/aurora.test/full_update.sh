@@ -137,8 +137,11 @@ cd /data/vufind-plus/accelerated_reader; curl --remote-name --remote-time --sile
 curl --remote-time --show-error --compressed -o /data/vufind-plus/colorado_gov_docs/marc/fullexport.mrc https://cassini.marmot.org/colorado_state_docs.mrc
 
 ## SIDELOADS ##
-# Axis 360
-#/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} aurora/axis_360 axis_360/aurora >> ${OUTPUT_FILE}
+# Kanopy
+/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} aurora/kanopy kanopy/aurora >> ${OUTPUT_FILE}
+
+###################
+# Other sideloads
 #Biblioboard
 #/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} aurora/Biblioboard Biblioboard/aurora >> ${OUTPUT_FILE}
 #TrueFlix
@@ -151,6 +154,7 @@ curl --remote-time --show-error --compressed -o /data/vufind-plus/colorado_gov_d
 #/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} aurora/gale_courses gale_courses/aurora >> ${OUTPUT_FILE}
 #RB Digital
 #/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} aurora/RBdigital_magazines RBdigital_magazines/aurora >> ${OUTPUT_FILE}
+##################
 
 #Do a full extract from OverDrive just once a week to catch anything that doesn't
 #get caught in the regular extract
