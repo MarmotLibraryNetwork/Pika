@@ -109,7 +109,7 @@ class ExternalEContent_Home extends Action{
 	}
 
 	/**
-	 * @param HooplaRecordDriver $recordDriver
+	 * @param ExternalEContentDriver $recordDriver
 	 */
 	function loadCitations($recordDriver)
 	{

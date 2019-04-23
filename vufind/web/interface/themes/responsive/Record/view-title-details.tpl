@@ -104,11 +104,12 @@
 		</div>
 	{/if}
 
-	{if $showPhysicalDescriptions && $physicalDescriptions}
+	{if $showPhysicalDescriptions && $recordDriver->getPhysicalDescriptions()}
 		<div class="row">
 			<div class="result-label col-sm-4">{translate text='Physical Desc'}:</div>
 			<div class="col-sm-8 result-value">
-				{implode subject=$physicalDescriptions glue="<br>"}
+				{implode subject=$recordDriver->getPhysicalDescriptions() glue=", "}
+{*				{implode subject=$physicalDescriptions glue=", <br>"}*}
 			</div>
 		</div>
 	{/if}
