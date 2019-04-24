@@ -41,7 +41,7 @@ class LibraryLink extends DB_DataObject{
 			'category' => array('property'=>'category', 'type'=>'text', 'label'=>'Category', 'description'=>'The category of the link', 'size'=>'80', 'maxLength'=>100),
 			'linkText' => array('property'=>'linkText', 'type'=>'text', 'label'=>'Link Text', 'description'=>'The text to display for the link ', 'size'=>'80', 'maxLength'=>100),
 			'url' => array('property'=>'url', 'type'=>'text', 'label'=>'URL', 'description'=>'The url to link to', 'size'=>'80', 'maxLength'=>255),
-			'htmlContents' => array('property'=>'htmlContents', 'type'=>'html', 'label'=>'HTML Contents', 'description'=>'Optional full HTML contents to show rather than showing a basic link within the sidebar.',),
+			'htmlContents' => array('property'=>'htmlContents', 'type'=>'html', 'label'=>'HTML Contents', 'description'=>'Optional full HTML contents to show rather than showing a basic link within the sidebar.','size'=>'80', 'maxLength' =>'512', 'allowableTags' => '<a><b><em><div><script><span><p><strong><sub><sup><img><p><strong><br><iframe>'),
 			'showInAccount' => array('property'=>'showInAccount', 'type'=>'checkbox', 'label'=>'Show in Account', 'description'=>'Show the link within the Account Menu.',),
 			'showInHelp' => array('property'=>'showInHelp', 'type'=>'checkbox', 'label'=>'Show In Help', 'description'=>'Show the link within the Help Menu','default'=>'1'),
 			'showExpanded' => array('property'=>'showExpanded', 'type'=>'checkbox', 'label'=>'Show Expanded', 'description'=>'Expand the category by default',),
