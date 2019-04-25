@@ -4,15 +4,16 @@
  * A class that allows generation of Lists from the New York Times API
  *
  * @category Pika
- * @author Mark Noble <mark@marmot.org>
+ * @author   Mark Noble <mark@marmot.org>
  * Date: 8/29/2016
  * Time: 12:07 PM
  */
 include_once ROOT_DIR . '/services/Admin/Admin.php';
 include_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+
 class NYTLists extends Admin_Admin {
 
-	function launch() {
+	function launch(){
 		global $interface;
 		global $configArray;
 
@@ -34,8 +35,8 @@ class NYTLists extends Admin_Admin {
 			$interface->assign('availableLists', $availableLists);
 
 			$isListSelected = !empty($_REQUEST['selectedList']);
-			$selectedList = null;
-			if ($isListSelected) {
+			$selectedList   = null;
+			if ($isListSelected){
 				$selectedList = $_REQUEST['selectedList'];
 				$interface->assign('selectedListName', $selectedList);
 
@@ -55,10 +56,10 @@ class NYTLists extends Admin_Admin {
 			// Fetch lists after any updating has been done
 
 			// Get user id
-			$nyTimesUser = new User();
+			$nyTimesUser               = new User();
 			$nyTimesUser->cat_username = $configArray['NYT_API']['pika_username'];
 			$nyTimesUser->cat_password = $configArray['NYT_API']['pika_password'];
-			if ($nyTimesUser->find(1)) {
+			if ($nyTimesUser->find(1)){
 				// Get User Lists
 				$nyTimesUserLists          = new UserList();
 				$nyTimesUserLists->user_id = $nyTimesUser->id;
@@ -73,7 +74,7 @@ class NYTLists extends Admin_Admin {
 		$this->display('nytLists.tpl', 'Lists from New York Times');
 	}
 
-	function getAllowableRoles() {
+	function getAllowableRoles(){
 		return array('opacAdmin', 'libraryAdmin', 'libraryManager', 'contentEditor');
 	}
 }
