@@ -1082,6 +1082,9 @@ class ListAPI extends Action {
 
 		// Include Search Engine Class
 		require_once ROOT_DIR . '/sys/' . $configArray['Index']['engine'] . '.php';
+		/** @var SearchObject_Solr $searchObject */
+		$searchObject = SearchObjectFactory::initSearchObject();
+
 		// Include UserListEntry Class
 		require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
 
@@ -1108,7 +1111,8 @@ class ListAPI extends Action {
 					$isbn = empty($isbns->isbn13) ? $isbns->isbn10 : $isbns->isbn13;
 					if ($isbn){
 						//look the title up in Pika by ISBN
-						$pikaID = $this->findByISBN($isbn);
+						$searchDocument = $searchObject->getRecordByIsbn(array($isbn));
+						$pikaID         = $searchDocument['id'];
 					}
 					//break if we found a pika id for the title
 					if ($pikaID != null){
@@ -1159,27 +1163,4 @@ class ListAPI extends Action {
 		return $results;
 	}
 
-	/**
-	 * @param string $isbn ISBN to search the Index for
-	 * @return string  ID for the Grouped Work that has the isbn
-	 */
-	private function findByISBN($isbn){
-		/** @var SearchObject_Solr $searchObject */
-		$searchObject = SearchObjectFactory::initSearchObject();
-		$searchObject->init();
-		$searchObject->clearFacets();
-		$searchObject->clearFilters();
-		$searchObject->setBasicQuery($isbn, "ISN");
-		$result = $searchObject->processSearch(true, false);
-		if ($result && $searchObject->getResultTotal() >= 1){
-			$recordSet = $searchObject->getResultRecordSet();
-			foreach ($recordSet as $recordKey => $record){
-				if (!empty($record['id'])){
-					$groupedWorkID = $record['id'];
-					break;
-				}
-			}
-		}
-		return $groupedWorkID;
-	}
 }
