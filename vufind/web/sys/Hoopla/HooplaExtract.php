@@ -3,14 +3,15 @@
  *
  *
  * @category Pika
- * @author: Pascal Brammeier
+ * @author   : Pascal Brammeier
  * Date: 4/24/2018
  *
  */
 
+require_once 'DB/DataObject.php';
 
-class HooplaExtract extends DB_DataObject
-{
+class HooplaExtract extends DB_DataObject {
+
 	public $id;
 	public $hooplaId;
 	public $active;

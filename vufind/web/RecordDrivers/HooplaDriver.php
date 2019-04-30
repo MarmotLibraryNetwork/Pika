@@ -267,6 +267,8 @@ class HooplaRecordDriver extends MarcRecord {
 
 	public function getStaffView(){
 		parent::getStaffView();
+
+		require_once ROOT_DIR . '/sys/Hoopla/HooplaExtract.php';
 		$hooplaExtract = new HooplaExtract();
 		$hooplaId      = HooplaDriver::recordIDtoHooplaID($this->id);
 		if ($hooplaExtract->get('hooplaId', $hooplaId) == 1){

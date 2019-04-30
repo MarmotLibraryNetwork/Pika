@@ -1671,40 +1671,48 @@ function getLibraryLocationUpdates(){
 					)
 			),
 
-			'hoopla_integration' => array(
-				'title' => 'Hoopla Integration',
-				'description' => 'Add settings for Hoopla Integration: Hoopla ID',
-				'continueOnError' => true,
-				'sql' => array(
-					"ALTER TABLE `library` ADD COLUMN `hooplaLibraryID` INTEGER UNSIGNED;",
-				),
-			),
-
-			'hoopla_max_price' => array(
-				'title' => 'Hoopla max. price.',
-				'description' => 'Add settings for Hoopla Integration: Hoopla max price',
-				'continueOnError' => true,
-				'sql' => array(
-					"ALTER TABLE library ADD COLUMN hooplaMaxPrice DECIMAL(3,2) NULL DEFAULT 0.00 AFTER hooplaLibraryID;",
-				),
-			),
-
-		'hoopla_suppress_mature_content_library' => array(
-			'title' => 'Library setting to suppress Hoopla mature content.',
-			'description' => 'Add Library setting to suppress Hoopla mature content',
+		'hoopla_integration' => array(
+			'title'           => 'Hoopla Integration',
+			'description'     => 'Add settings for Hoopla Integration: Hoopla ID',
 			'continueOnError' => true,
-			'sql' => array(
-				"ALTER TABLE library ADD COLUMN hooplaSuppressMatureContent TINYINT(4) NULL DEFAULT 1;",
+			'sql'             => array(
+				"ALTER TABLE `library` ADD COLUMN `hooplaLibraryID` INTEGER UNSIGNED;",
 			),
 		),
-		'hoopla_suppress_mature_content_location' => array(
-			'title' => 'Location setting to suppress Hoopla mature content.',
-			'description' => 'Add Location setting to suppress Hoopla mature content',
+
+		'hoopla_library_settings_table' => array(
+			'title'           => 'Add Library & Location settings tables to control Hoopla collection.',
+			'description'     => 'Add Library & Location settings tables to control Hoopla collection.',
 			'continueOnError' => true,
-			'sql' => array(
-				"ALTER TABLE location ADD COLUMN hooplaSuppressMatureContent TINYINT(4) NULL DEFAULT 1;",
+			'sql'             => array(
+				'CREATE TABLE `library_hoopla_setting` (
+					`id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+					`libraryId` INT UNSIGNED NULL,
+					`kind` VARCHAR(30) NULL,
+					`maxPrice` DECIMAL(3,2)NULL DEFAULT 0.00,
+					`excludeParentalAdvisory` TINYINT NULL DEFAULT 0,
+					`excludeProfanity` TINYINT NULL DEFAULT 0,
+					`includeChildrenTitlesOnly` TINYINT NULL DEFAULT 0,
+					PRIMARY KEY (`id`))
+					ENGINE = InnoDB
+					DEFAULT CHARACTER SET = utf8;',
+				'CREATE TABLE `location_hoopla_setting` (
+					`id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+					`locationId` INT UNSIGNED NULL,
+					`kind` VARCHAR(30) NULL,
+					`maxPrice` DECIMAL(3,2)NULL DEFAULT 0.00,
+					`excludeParentalAdvisory` TINYINT NULL DEFAULT 0,
+					`excludeProfanity` TINYINT NULL DEFAULT 0,
+					`includeChildrenTitlesOnly` TINYINT NULL DEFAULT 0,
+					PRIMARY KEY (`id`))
+					ENGINE = InnoDB
+					DEFAULT CHARACTER SET = utf8;',
+				'ALTER TABLE location DROP COLUMN hooplaSuppressMatureContent;',
+				'ALTER TABLE library DROP COLUMN hooplaSuppressMatureContent;',
+				'ALTER TABLE library DROP COLUMN hooplaMaxPrice;',
 			),
 		),
+
 			'library_on_order_counts' => array(
 					'title' => 'Library On Order Counts',
 					'description' => 'Add a setting for whether or not on order counts should be shown to users',
