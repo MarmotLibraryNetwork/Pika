@@ -26,6 +26,14 @@ class Library extends DB_DataObject {
 
 	use OneToManyDataObjectOperations;
 
+	/**
+	 * Needed override for OneToManyDataObjectOperations
+	 * @return string
+	 */
+	function getKeyOther(){
+		return 'libraryId';
+	}
+
 	public $__table = 'library';    // table name
 	public $isDefault;
 	public $libraryId; 				//int(11)

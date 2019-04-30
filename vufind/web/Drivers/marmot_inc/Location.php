@@ -18,6 +18,14 @@ class Location extends DB_DataObject {
 
 	use OneToManyDataObjectOperations;
 
+	/**
+	 * Needed override for OneToManyDataObjectOperations
+	 * @return string
+	 */
+	function getKeyOther(){
+		return 'locationId';
+	}
+
 	const DEFAULT_AUTOLOGOUT_TIME            = 90;
 	const DEFAULT_AUTOLOGOUT_TIME_LOGGED_OUT = 450;
 

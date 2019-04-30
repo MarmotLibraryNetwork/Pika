@@ -19,7 +19,8 @@ trait OneToManyDataObjectOperations {
 	 */
 	abstract function keys();
 
-	private $mainKeyName;
+	private $keyThis;  // ID field for parent Data Object
+	private $keyOther; // Id Field for OneToMany Data Object
 
 	/**
 	 * This uses the keys function above to set the table key to use for searching and/or setting in
@@ -27,13 +28,23 @@ trait OneToManyDataObjectOperations {
 	 *
 	 * @return mixed
 	 */
-	public function getMainKeyName(){
-		if (empty($this->mainKeyName)){
-			$firstKey          = reset($this->keys());
-			$this->mainKeyName = $firstKey;
+	private function getKeyThis(){
+		if (empty($this->keyThis)){
+			$firstKey      = reset($this->keys());
+			$this->keyThis = $firstKey;
 		}
-		return $this->mainKeyName;
+		return $this->keyThis;
 	}
+
+	/**
+	 * The property of the oneToMany Object that holds the Parent Object's Id (KeyThis).
+	 * This is needed to connect the oneToMany Objects to their parent.
+	 *
+	 * Store value at $this->keyOther
+	 *
+	 * @return mixed
+	 */
+	abstract function getKeyOther();
 
 	/**
 	 * Add or Update the oneToMany DB Objects.
@@ -42,8 +53,9 @@ trait OneToManyDataObjectOperations {
 	 * @return void
 	 */
 	private function saveOneToManyOptions($oneToManySettings){
-		$mainKeyName = $this->getMainKeyName();
-		if ($mainKeyName){
+		$parentIdColumn  = $this->getKeyThis();
+		$oneToManyColumn = $this->getKeyOther();
+		if ($parentIdColumn && $oneToManyColumn){
 			foreach ($oneToManySettings as $oneToManyDBObject){
 				if (isset($oneToManyDBObject->deleteOnSave) && $oneToManyDBObject->deleteOnSave == true){
 					$oneToManyDBObject->delete();
@@ -51,7 +63,7 @@ trait OneToManyDataObjectOperations {
 					if (isset($oneToManyDBObject->id) && is_numeric($oneToManyDBObject->id)){ // (negative ids need processed with insert)
 						$oneToManyDBObject->update();
 					}else{
-						$oneToManyDBObject->$mainKeyName = $this->$mainKeyName;
+						$oneToManyDBObject->$oneToManyColumn = $this->$parentIdColumn;
 						$oneToManyDBObject->insert();
 					}
 				}
@@ -66,10 +78,12 @@ trait OneToManyDataObjectOperations {
 	 * @return void
 	 */
 	private function clearOneToManyOptions($oneToManyDBObjectClassName){
-		$mainKeyName = $this->getMainKeyName();
-		if ($mainKeyName){
-			$oneToManyDBObject               = new $oneToManyDBObjectClassName();
-			$oneToManyDBObject->$mainKeyName = $this->$mainKeyName;
+		$parentIdColumn  = $this->getKeyThis();
+		$oneToManyColumn = $this->getKeyOther();
+		if ($parentIdColumn && $oneToManyColumn){
+			/** @var DB_DataObject $oneToManyDBObject */
+			$oneToManyDBObject                   = new $oneToManyDBObjectClassName();
+			$oneToManyDBObject->$oneToManyColumn = $this->$parentIdColumn;
 			$oneToManyDBObject->delete();
 		}
 	}
@@ -83,11 +97,12 @@ trait OneToManyDataObjectOperations {
 	 */
 	private function getOneToManyOptions($oneToManyDBObjectClassName, $orderBy = null){
 		$oneToManyOptions = array();
-		$mainKeyName      = $this->getMainKeyName();
-		if ($mainKeyName && $this->$mainKeyName){
+		$parentIdColumn   = $this->getKeyThis();
+		$oneToManyColumn  = $this->getKeyOther();
+		if ($parentIdColumn && $this->$parentIdColumn && $oneToManyColumn){
 			/** @var DB_DataObject $oneToManyDBObject */
-			$oneToManyDBObject               = new $oneToManyDBObjectClassName();
-			$oneToManyDBObject->$mainKeyName = $this->$mainKeyName;
+			$oneToManyDBObject                   = new $oneToManyDBObjectClassName();
+			$oneToManyDBObject->$oneToManyColumn = $this->$parentIdColumn;
 			if (!empty($orderBy)){
 				$oneToManyDBObject->orderBy($orderBy);
 			}
