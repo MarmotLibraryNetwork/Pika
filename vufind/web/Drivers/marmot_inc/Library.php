@@ -1224,75 +1224,33 @@ class Library extends DB_DataObject {
 
 	public function __get($name){
 		if ($name == "holidays"){
-			if (!isset($this->holidays) && $this->libraryId){
-				$this->holidays     = array();
-				$holiday            = new Holiday();
-				$holiday->libraryId = $this->libraryId;
-				$holiday->orderBy('date');
-				$holiday->find();
-				while ($holiday->fetch()){
-					$this->holidays[$holiday->id] = clone($holiday);
-				}
+			if (!isset($this->holidays)){
+				$this->holidays = $this->getOneToManyOptions('Holiday', 'date');
 			}
 			return $this->holidays;
 		}elseif ($name == "moreDetailsOptions"){
-			if (!isset($this->moreDetailsOptions) && $this->libraryId){
-				$this->moreDetailsOptions      = array();
-				$moreDetailsOptions            = new LibraryMoreDetails();
-				$moreDetailsOptions->libraryId = $this->libraryId;
-				$moreDetailsOptions->orderBy('weight');
-				$moreDetailsOptions->find();
-				while ($moreDetailsOptions->fetch()){
-					$this->moreDetailsOptions[$moreDetailsOptions->id] = clone($moreDetailsOptions);
-				}
+			if (!isset($this->moreDetailsOptions)){
+				$this->moreDetailsOptions = $this->getOneToManyOptions('LibraryMoreDetails', 'weight');
 			}
 			return $this->moreDetailsOptions;
 		}elseif ($name == "archiveMoreDetailsOptions"){
-			if (!isset($this->archiveMoreDetailsOptions) && $this->libraryId){
-				$this->archiveMoreDetailsOptions = array();
-				$moreDetailsOptions              = new LibraryArchiveMoreDetails();
-				$moreDetailsOptions->libraryId   = $this->libraryId;
-				$moreDetailsOptions->orderBy('weight');
-				$moreDetailsOptions->find();
-				while ($moreDetailsOptions->fetch()){
-					$this->archiveMoreDetailsOptions[$moreDetailsOptions->id] = clone($moreDetailsOptions);
-				}
+			if (!isset($this->archiveMoreDetailsOptions)){
+				$this->archiveMoreDetailsOptions = $this->getOneToManyOptions('LibraryArchiveMoreDetails', 'weight');
 			}
 			return $this->archiveMoreDetailsOptions;
 		}elseif ($name == "facets"){
 			if (!isset($this->facets) && $this->libraryId){
-				$this->facets     = array();
-				$facet            = new LibraryFacetSetting();
-				$facet->libraryId = $this->libraryId;
-				$facet->orderBy('weight');
-				$facet->find();
-				while ($facet->fetch()){
-					$this->facets[$facet->id] = clone($facet);
-				}
+				$this->facets = $this->getOneToManyOptions('LibraryFacetSetting', 'weight');
 			}
 			return $this->facets;
 		}elseif ($name == "archiveSearchFacets"){
-			if (!isset($this->archiveSearchFacets) && $this->libraryId){
-				$this->archiveSearchFacets = array();
-				$facet                     = new LibraryArchiveSearchFacetSetting();
-				$facet->libraryId          = $this->libraryId;
-				$facet->orderBy('weight');
-				$facet->find();
-				while ($facet->fetch()){
-					$this->archiveSearchFacets[$facet->id] = clone($facet);
-				}
+			if (!isset($this->archiveSearchFacets)){
+				$this->archiveSearchFacets = $this->getOneToManyOptions('LibraryArchiveSearchFacetSetting', 'weight');
 			}
 			return $this->archiveSearchFacets;
 		}elseif ($name == 'libraryLinks'){
-			if (!isset($this->libraryLinks) && $this->libraryId){
-				$libraryLinks           = array();
-				$libraryLink            = new LibraryLink();
-				$libraryLink->libraryId = $this->libraryId;
-				$libraryLink->orderBy('weight');
-				$libraryLink->find();
-				while ($libraryLink->fetch()){
-					$libraryLinks[$libraryLink->id] = clone($libraryLink);
-				}
+			if (!isset($this->libraryLinks)){
+				$libraryLinks = $this->getOneToManyOptions('LibraryLink', 'weight');
 				// handle missing linkText
 				foreach ($libraryLinks as $libLink){
 					if (!isset($libLink->linkText) || $libLink->linkText == ''){
@@ -1301,132 +1259,57 @@ class Library extends DB_DataObject {
 				}
 				$this->libraryLinks = $libraryLinks;
 			}
-
 			return $this->libraryLinks;
 		}elseif ($name == 'libraryTopLinks'){
-			if (!isset($this->libraryTopLinks) && $this->libraryId){
-				$this->libraryTopLinks  = array();
-				$libraryLink            = new LibraryTopLinks();
-				$libraryLink->libraryId = $this->libraryId;
-				$libraryLink->orderBy('weight');
-				$libraryLink->find();
-				while ($libraryLink->fetch()){
-					$this->libraryTopLinks[$libraryLink->id] = clone($libraryLink);
-				}
+			if (!isset($this->libraryTopLinks)){
+				$this->libraryTopLinks = $this->getOneToManyOptions('LibraryTopLinks', 'weight');
 			}
 			return $this->libraryTopLinks;
 		}elseif ($name == 'recordsOwned'){
-			if (!isset($this->recordsOwned) && $this->libraryId){
-				$this->recordsOwned = array();
-				$object             = new LibraryRecordOwned();
-				$object->libraryId  = $this->libraryId;
-				$object->find();
-				while ($object->fetch()){
-					$this->recordsOwned[$object->id] = clone($object);
-				}
+			if (!isset($this->recordsOwned)){
+				$this->recordsOwned = $this->getOneToManyOptions('LibraryRecordOwned');
 			}
 			return $this->recordsOwned;
 		}elseif ($name == 'recordsToInclude'){
-			if (!isset($this->recordsToInclude) && $this->libraryId){
-				$this->recordsToInclude = array();
-				$object                 = new LibraryRecordToInclude();
-				$object->libraryId      = $this->libraryId;
-				$object->orderBy('weight');
-				$object->find();
-				while ($object->fetch()){
-					$this->recordsToInclude[$object->id] = clone($object);
-				}
+			if (!isset($this->recordsToInclude)){
+				$this->recordsToInclude = $this->getOneToManyOptions('LibraryRecordToInclude', 'weight');
 			}
 			return $this->recordsToInclude;
 		}elseif ($name == 'browseCategories'){
-			if (!isset($this->browseCategories) && $this->libraryId){
-				$this->browseCategories    = array();
-				$browseCategory            = new LibraryBrowseCategory();
-				$browseCategory->libraryId = $this->libraryId;
-				$browseCategory->orderBy('weight');
-				$browseCategory->find();
-				while ($browseCategory->fetch()){
-					$this->browseCategories[$browseCategory->id] = clone($browseCategory);
-				}
+			if (!isset($this->browseCategories)){
+				$this->browseCategories = $this->getOneToManyOptions('LibraryBrowseCategory', 'weight');
 			}
 			return $this->browseCategories;
 		}elseif ($name == 'materialsRequestFieldsToDisplay'){
-			if (!isset($this->materialsRequestFieldsToDisplay) && $this->libraryId){
-				$this->materialsRequestFieldsToDisplay      = array();
-				$materialsRequestFieldsToDisplay            = new MaterialsRequestFieldsToDisplay();
-				$materialsRequestFieldsToDisplay->libraryId = $this->libraryId;
-				$materialsRequestFieldsToDisplay->orderBy('weight');
-				if ($materialsRequestFieldsToDisplay->find()){
-					while ($materialsRequestFieldsToDisplay->fetch()){
-						$this->materialsRequestFieldsToDisplay[$materialsRequestFieldsToDisplay->id] = clone $materialsRequestFieldsToDisplay;
-					}
-				}
-				return $this->materialsRequestFieldsToDisplay;
+			if (!isset($this->materialsRequestFieldsToDisplay)){
+				$this->materialsRequestFieldsToDisplay = $this->getOneToManyOptions('MaterialsRequestFieldsToDisplay', 'weight');
 			}
+			return $this->materialsRequestFieldsToDisplay;
 		}elseif ($name == 'materialsRequestFormats'){
-			if (!isset($this->materialsRequestFormats) && $this->libraryId){
-				$this->materialsRequestFormats      = array();
-				$materialsRequestFormats            = new MaterialsRequestFormats();
-				$materialsRequestFormats->libraryId = $this->libraryId;
-				$materialsRequestFormats->orderBy('weight');
-				if ($materialsRequestFormats->find()){
-					while ($materialsRequestFormats->fetch()){
-						$this->materialsRequestFormats[$materialsRequestFormats->id] = clone $materialsRequestFormats;
-					}
-				}
-				return $this->materialsRequestFormats;
+			if (!isset($this->materialsRequestFormats)){
+				$this->materialsRequestFormats = $this->getOneToManyOptions('MaterialsRequestFormats', 'weight');
 			}
+			return $this->materialsRequestFormats;
 		}elseif ($name == 'materialsRequestFormFields'){
-			if (!isset($this->materialsRequestFormFields) && $this->libraryId){
-				$this->materialsRequestFormFields      = array();
-				$materialsRequestFormFields            = new MaterialsRequestFormFields();
-				$materialsRequestFormFields->libraryId = $this->libraryId;
-				$materialsRequestFormFields->orderBy('weight');
-				if ($materialsRequestFormFields->find()){
-					while ($materialsRequestFormFields->fetch()){
-						$this->materialsRequestFormFields[$materialsRequestFormFields->id] = clone $materialsRequestFormFields;
-					}
-				}
-				return $this->materialsRequestFormFields;
+			if (!isset($this->materialsRequestFormFields)){
+				$this->materialsRequestFormFields = $this->getOneToManyOptions('MaterialsRequestFormFields', 'weight');
 			}
+			return $this->materialsRequestFormFields;
 		}elseif ($name == 'exploreMoreBar'){
-			if (!isset($this->exploreMoreBar) && $this->libraryId){
-				$this->exploreMoreBar      = array();
-				$exploreMoreBar            = new ArchiveExploreMoreBar();
-				$exploreMoreBar->libraryId = $this->libraryId;
-				$exploreMoreBar->orderBy('weight');
-				if ($exploreMoreBar->find()){
-					while ($exploreMoreBar->fetch()){
-						$this->exploreMoreBar[$exploreMoreBar->id] = clone $exploreMoreBar;
-					}
-				}
-				return $this->exploreMoreBar;
+			if (!isset($this->exploreMoreBar)){
+				$this->exploreMoreBar = $this->getOneToManyOptions('ArchiveExploreMoreBar', 'weight');
 			}
+			return $this->exploreMoreBar;
 		}elseif ($name == 'combinedResultSections'){
-			if (!isset($this->combinedResultSections) && $this->libraryId){
-				$this->combinedResultSections     = array();
-				$combinedResultSection            = new LibraryCombinedResultSection();
-				$combinedResultSection->libraryId = $this->libraryId;
-				$combinedResultSection->orderBy('weight');
-				if ($combinedResultSection->find()){
-					while ($combinedResultSection->fetch()){
-						$this->combinedResultSections[$combinedResultSection->id] = clone $combinedResultSection;
-					}
-				}
-				return $this->combinedResultSections;
+			if (!isset($this->combinedResultSections)){
+				$this->combinedResultSections = $this->getOneToManyOptions('LibraryCombinedResultSection', 'weight');
 			}
+			return $this->combinedResultSections;
 		}elseif ($name == 'hooplaSettings'){
-			if (!isset($this->hooplaSettings) && $this->libraryId){
-				$this->hooplaSettings     = array();
-				$hooplaSettings            = new LibraryHooplaSettings();
-				$hooplaSettings->libraryId = $this->libraryId;
-				if ($hooplaSettings->find()){
-					while ($hooplaSettings->fetch()){
-						$this->hooplaSettings[$hooplaSettings->id] = clone $hooplaSettings;
-					}
-				}
-				return $this->hooplaSettings;
+			if (!isset($this->hooplaSettings)){
+				$this->hooplaSettings = $this->getOneToManyOptions('LibraryHooplaSettings');
 			}
+			return $this->hooplaSettings;
 		}elseif ($name == 'patronNameDisplayStyle'){
 			return $this->patronNameDisplayStyle;
 		}else{

@@ -84,18 +84,16 @@ trait OneToManyDataObjectOperations {
 	private function getOneToManyOptions($oneToManyDBObjectClassName, $orderBy = null){
 		$oneToManyOptions = array();
 		$mainKeyName      = $this->getMainKeyName();
-		if ($mainKeyName){
-			if ($this->$mainKeyName){
-				/** @var DB_DataObject $oneToManyDBObject */
-				$oneToManyDBObject               = new $oneToManyDBObjectClassName();
-				$oneToManyDBObject->$mainKeyName = $this->$mainKeyName;
-				if (!empty($orderBy)){
-					$oneToManyDBObject->orderBy($orderBy);
-				}
-				if ($oneToManyDBObject->find()){
-					while ($oneToManyDBObject->fetch()){
-						$oneToManyOptions[$oneToManyDBObject->id] = clone $oneToManyDBObject;
-					}
+		if ($mainKeyName && $this->$mainKeyName){
+			/** @var DB_DataObject $oneToManyDBObject */
+			$oneToManyDBObject               = new $oneToManyDBObjectClassName();
+			$oneToManyDBObject->$mainKeyName = $this->$mainKeyName;
+			if (!empty($orderBy)){
+				$oneToManyDBObject->orderBy($orderBy);
+			}
+			if ($oneToManyDBObject->find()){
+				while ($oneToManyDBObject->fetch()){
+					$oneToManyOptions[$oneToManyDBObject->id] = clone $oneToManyDBObject;
 				}
 			}
 		}
