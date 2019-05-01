@@ -335,7 +335,6 @@ public class GroupedWorkIndexer {
 				"library.includeOverdriveTeen as includeOverdriveTeenLibrary, location.includeOverdriveTeen as includeOverdriveTeenLocation, " +
 				"library.includeOverdriveKids as includeOverdriveKidsLibrary, location.includeOverdriveKids as includeOverdriveKidsLocation, " +
 				"library.sharedOverdriveCollection, " +
-				"library.hooplaMaxPrice, " +
 				"location.additionalLocationsToShowAvailabilityFor, includeAllLibraryBranchesInFacets, " +
 				"location.includeAllRecordsInShelvingFacets, location.includeAllRecordsInDateAddedFacets, location.includeOnOrderRecordsInDateAddedFacetValues, location.baseAvailabilityToggleOnLocalHoldingsOnly, " +
 				"location.includeOnlineMaterialsInAvailableToggle, location.includeLibraryRecordsToInclude " +
@@ -373,6 +372,7 @@ public class GroupedWorkIndexer {
 			}
 			locationScopeInfo.setScopeName(scopeName);
 			locationScopeInfo.setLibraryId(libraryId);
+			locationScopeInfo.setLocationId(locationId);
 			locationScopeInfo.setRelatedPTypes(pTypes.split(","));
 			locationScopeInfo.setFacetLabel(facetLabel);
 			locationScopeInfo.setIncludeOverDriveCollection(includeOverDriveCollectionLibrary && includeOverDriveCollectionLocation);
@@ -383,8 +383,6 @@ public class GroupedWorkIndexer {
 			locationScopeInfo.setIncludeOverDriveAdultCollection(includeOverdriveAdult);
 			locationScopeInfo.setIncludeOverDriveTeenCollection(includeOverdriveTeen);
 			locationScopeInfo.setIncludeOverDriveKidsCollection(includeOverdriveKids);
-			float   hooplaMaxPrice        = locationInformationRS.getFloat("hooplaMaxPrice");
-			locationScopeInfo.setHooplaMaxPrice(hooplaMaxPrice);
 			locationScopeInfo.setRestrictOwningLibraryAndLocationFacets(locationInformationRS.getBoolean("restrictOwningBranchesAndSystems"));
 			locationScopeInfo.setPublicListsToInclude(locationInformationRS.getInt("publicListsToInclude"));
 			locationScopeInfo.setAdditionalLocationsToShowAvailabilityFor(locationInformationRS.getString("additionalLocationsToShowAvailabilityFor"));
@@ -473,7 +471,6 @@ public class GroupedWorkIndexer {
 				"displayName, facetLabel, pTypes, enableOverdriveCollection, restrictOwningBranchesAndSystems, publicListsToInclude, " +
 				"additionalLocationsToShowAvailabilityFor, " +
 				"sharedOverdriveCollection, includeOverdriveAdult, includeOverdriveTeen, includeOverdriveKids, " +
-				"hooplaMaxPrice, " +
 				"includeAllRecordsInShelvingFacets, includeAllRecordsInDateAddedFacets, includeOnOrderRecordsInDateAddedFacetValues, includeOnlineMaterialsInAvailableToggle " +
 				"FROM library ORDER BY subdomain ASC",
 				ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
@@ -496,7 +493,6 @@ public class GroupedWorkIndexer {
 			boolean includeOverdriveAdult       = libraryInformationRS.getBoolean("includeOverdriveAdult");
 			boolean includeOverdriveTeen        = libraryInformationRS.getBoolean("includeOverdriveTeen");
 			boolean includeOverdriveKids        = libraryInformationRS.getBoolean("includeOverdriveKids");
-			float   hooplaMaxPrice              = libraryInformationRS.getFloat("hooplaMaxPrice");
 
 			//Determine if we need to build a scope for this library
 			//MDN 10/1/2014 always build scopes because it makes coding more consistent elsewhere.
@@ -521,8 +517,6 @@ public class GroupedWorkIndexer {
 			newScope.setIncludeOverDriveTeenCollection(includeOverdriveTeen);
 			newScope.setIncludeOverDriveKidsCollection(includeOverdriveKids);
 			newScope.setSharedOverdriveCollectionId(sharedOverdriveCollectionId);
-
-			newScope.setHooplaMaxPrice(hooplaMaxPrice);
 
 			newScope.setRestrictOwningLibraryAndLocationFacets(libraryInformationRS.getBoolean("restrictOwningBranchesAndSystems"));
 

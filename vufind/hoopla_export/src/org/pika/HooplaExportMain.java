@@ -165,7 +165,6 @@ public class HooplaExportMain {
 
 			if (doFullReload) {
 				addNoteToHooplaExportLog("Doing a full reload of Hoopla data.");
-				logger.info("Doing a full reload of Hoopla data.");
 				//TODO: Should we truncate the Pika table?
 			}
 
@@ -185,7 +184,7 @@ public class HooplaExportMain {
 				} else {
 					logger.warn("Hoopla Extract call had no titles for updating: " + url);
 					if (startTime != null) {
-						addNoteToHooplaExportLog("Hoopla had no updates since "+ startTime);
+						addNoteToHooplaExportLog("Hoopla had no updates since " + startTime);
 					} else if (doFullReload) {
 						addNoteToHooplaExportLog("Hoopla gave no information for a full Reload");
 					}

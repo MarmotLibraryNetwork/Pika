@@ -24,10 +24,13 @@ import java.util.Set;
  * Time: 10:30 AM
  */
 class HooplaProcessor extends MarcRecordProcessor {
-	private String            individualMarcPath;
-	private int               numCharsToCreateFolderFrom;
-	private boolean           createFolderFromLeadingCharacters;
-	private PreparedStatement hooplaExtractInfo;
+	private String                       individualMarcPath;
+	private int                          numCharsToCreateFolderFrom;
+	private boolean                      createFolderFromLeadingCharacters;
+	private PreparedStatement            hooplaExtractInfoStatement;
+	private HooplaExtractInfo            hooplaExtractInfo;
+	private HashSet<HooplaInclusionRule> libraryHooplaInclusionRules  = new HashSet<>();
+	private HashSet<HooplaInclusionRule> locationHooplaInclusionRules = new HashSet<>();
 
 	HooplaProcessor(GroupedWorkIndexer indexer, Connection pikaConn, ResultSet indexingProfileRS, Logger logger) {
 		super(indexer, logger);
@@ -37,11 +40,45 @@ class HooplaProcessor extends MarcRecordProcessor {
 			numCharsToCreateFolderFrom         = indexingProfileRS.getInt("numCharsToCreateFolderFrom");
 			createFolderFromLeadingCharacters  = indexingProfileRS.getBoolean("createFolderFromLeadingCharacters");
 
-		}catch (Exception e){
+		} catch (Exception e) {
 			logger.error("Error loading indexing profile information from database", e);
 		}
 		try {
-			hooplaExtractInfo = pikaConn.prepareStatement("SELECT * FROM hoopla_export WHERE hooplaId = ? LIMIT 1", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			hooplaExtractInfoStatement = pikaConn.prepareStatement("SELECT * FROM hoopla_export WHERE hooplaId = ? LIMIT 1", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+
+			//Load Hoopla Inclusion Rules
+			PreparedStatement libraryHooplaInclusionRulesStatement  = pikaConn.prepareStatement("SELECT * FROM library_hoopla_setting");
+			PreparedStatement locationHooplaInclusionRulesStatement = pikaConn.prepareStatement("SELECT * FROM location_hoopla_setting");
+			ResultSet         libraryRulesResultSet                 = libraryHooplaInclusionRulesStatement.executeQuery();
+			while ((libraryRulesResultSet.next())) {
+				HooplaInclusionRule rule = new HooplaInclusionRule();
+
+				rule.setLibraryId(libraryRulesResultSet.getLong("libraryId"));
+				rule.setKind(libraryRulesResultSet.getString("kind"));
+				rule.setMaxPrice(libraryRulesResultSet.getFloat("maxPrice"));
+				rule.setExcludeParentalAdvisory(libraryRulesResultSet.getBoolean("excludeParentalAdvisory"));
+				rule.setExcludeProfanity(libraryRulesResultSet.getBoolean("excludeProfanity"));
+				rule.setIncludeChildrenTitlesOnly(libraryRulesResultSet.getBoolean("includeChildrenTitlesOnly"));
+
+				libraryHooplaInclusionRules.add(rule);
+			}
+			libraryRulesResultSet.close();
+
+			ResultSet locationRulesResultSet = locationHooplaInclusionRulesStatement.executeQuery();
+			while ((locationRulesResultSet.next())) {
+				HooplaInclusionRule rule = new HooplaInclusionRule();
+
+				rule.setLocationId(locationRulesResultSet.getLong("locationId"));
+				rule.setKind(locationRulesResultSet.getString("kind"));
+				rule.setMaxPrice(locationRulesResultSet.getFloat("maxPrice"));
+				rule.setExcludeParentalAdvisory(locationRulesResultSet.getBoolean("excludeParentalAdvisory"));
+				rule.setExcludeProfanity(locationRulesResultSet.getBoolean("excludeProfanity"));
+				rule.setIncludeChildrenTitlesOnly(locationRulesResultSet.getBoolean("includeChildrenTitlesOnly"));
+
+				locationHooplaInclusionRules.add(rule);
+			}
+			locationRulesResultSet.close();
+
 		} catch (SQLException e) {
 			logger.error("Failed to set SQL statement to fetch Hoopla Extract data", e);
 		}
@@ -53,7 +90,8 @@ class HooplaProcessor extends MarcRecordProcessor {
 
 		if (record != null) {
 			try {
-				updateGroupedWorkSolrDataBasedOnHooplaExtract(groupedWork, identifier); // Add extract info first, then let regular processes happen in updateGroupedWorkSolrDataBasedOnMarc()
+//				updateGroupedWorkSolrDataBasedOnHooplaExtract(groupedWork, identifier); // Add extract info first, then let regular processes happen in updateGroupedWorkSolrDataBasedOnMarc()
+				// Move to loadScopeInfoForEContentItem().  I don't think added the Hoopla price to the index is actually useful.
 				updateGroupedWorkSolrDataBasedOnMarc(groupedWork, record, identifier);
 			} catch (Exception e) {
 				logger.error("Error updating solr based on hoopla marc record", e);
@@ -62,16 +100,48 @@ class HooplaProcessor extends MarcRecordProcessor {
 	}
 
 
+	/**
+	 * @param groupedWork
+	 * @param identifier
+	 */
 	private void updateGroupedWorkSolrDataBasedOnHooplaExtract(GroupedWorkSolr groupedWork, String identifier) {
 		try {
-			long hooplaId = Long.parseLong(identifier.replaceAll("^MWT", ""));
-			hooplaExtractInfo.setLong(1, hooplaId);
-			ResultSet hooplaExtractInfoRS = hooplaExtractInfo.executeQuery();
-			if (hooplaExtractInfoRS.next()){
-				float hooplaPrice = hooplaExtractInfoRS.getFloat("price");
-				groupedWork.setHooplaPrice(hooplaPrice);
-			} else {
-				logger.info("Did not find Hoopla Extract information for " + identifier);
+			try {
+				long hooplaId = Long.parseLong(identifier.replaceAll("^MWT", ""));
+				hooplaExtractInfoStatement.setLong(1, hooplaId);
+				ResultSet hooplaExtractInfoRS = hooplaExtractInfoStatement.executeQuery();
+				if (hooplaExtractInfoRS.next()) {
+					float hooplaPrice = hooplaExtractInfoRS.getFloat("price");
+					groupedWork.setHooplaPrice(hooplaPrice); //TODO: is adding the price to the index really needed?
+
+					//Fetch other data for inclusion rules
+					String  kind             = hooplaExtractInfoRS.getString("kind");
+					boolean active           = hooplaExtractInfoRS.getBoolean("active");
+					boolean parentalAdvisory = hooplaExtractInfoRS.getBoolean("pa");
+					boolean profanity        = hooplaExtractInfoRS.getBoolean("profanity");
+					boolean abridged         = hooplaExtractInfoRS.getBoolean("abridged");
+					boolean children         = hooplaExtractInfoRS.getBoolean("children");
+
+					//For debugging, logging
+					String title   = hooplaExtractInfoRS.getString("title");
+					Long   titleId = hooplaExtractInfoRS.getLong("id");
+
+					hooplaExtractInfo = new HooplaExtractInfo();
+					hooplaExtractInfo.setTitleId(titleId);
+					hooplaExtractInfo.setTitle(title);
+
+					hooplaExtractInfo.setKind(kind);
+					hooplaExtractInfo.setPrice(hooplaPrice);
+					hooplaExtractInfo.setActive(active);
+					hooplaExtractInfo.setParentalAdvisory(parentalAdvisory);
+					hooplaExtractInfo.setProfanity(profanity);
+					hooplaExtractInfo.setAbridged(abridged);
+					hooplaExtractInfo.setChildren(children);
+				} else {
+					logger.info("Did not find Hoopla Extract information for " + identifier);
+				}
+			} catch (NumberFormatException e) {
+				logger.error("Error parsing identifier : " + identifier + " to a hoopla id number", e);
 			}
 		} catch (SQLException e) {
 			logger.error("Error adding hoopla extract data to solr document for hoopla record : " + identifier, e);
@@ -101,18 +171,18 @@ class HooplaProcessor extends MarcRecordProcessor {
 
 	private String getFileForIlsRecord(String recordNumber) {
 		String shortId = recordNumber.replace(".", "");
-		while (shortId.length() < 9){
+		while (shortId.length() < 9) {
 			shortId = "0" + shortId;
 		}
 
 		String subFolderName;
-		if (createFolderFromLeadingCharacters){
-			subFolderName        = shortId.substring(0, numCharsToCreateFolderFrom);
-		}else{
-			subFolderName        = shortId.substring(0, shortId.length() - numCharsToCreateFolderFrom);
+		if (createFolderFromLeadingCharacters) {
+			subFolderName = shortId.substring(0, numCharsToCreateFolderFrom);
+		} else {
+			subFolderName = shortId.substring(0, shortId.length() - numCharsToCreateFolderFrom);
 		}
 
-		String basePath           = individualMarcPath + "/" + subFolderName;
+		String basePath = individualMarcPath + "/" + subFolderName;
 		return basePath + "/" + shortId + ".mrc";
 	}
 
@@ -124,6 +194,7 @@ class HooplaProcessor extends MarcRecordProcessor {
 			format = format.replace(" hoopla", "");
 		} else {
 			logger.warn("No format found in 099a for Hoopla record " + identifier);
+			//TODO: We can fall back to the Hoopla Extract 'kind' now.
 		}
 
 		//Do updates based on the overall bib (shared regardless of scoping)
@@ -134,20 +205,20 @@ class HooplaProcessor extends MarcRecordProcessor {
 		//There are also not multiple formats within a record that we would need to split out.
 
 		String formatCategory = indexer.translateSystemValue("format_category_hoopla", format, identifier);
-		Long formatBoost = 8L; // Reasonable default value
+		Long   formatBoost    = 8L; // Reasonable default value
 		String formatBoostStr = indexer.translateSystemValue("format_boost_hoopla", format, identifier);
-		if (formatBoostStr != null && !formatBoostStr.isEmpty()){
-			formatBoost  = Long.parseLong(formatBoostStr);
+		if (formatBoostStr != null && !formatBoostStr.isEmpty()) {
+			formatBoost = Long.parseLong(formatBoostStr);
 		} else {
-			logger.warn("Did not find format boost for Hoopla format" + format);
+			logger.warn("Did not find format boost for Hoopla format : " + format);
 		}
 
 		String fullDescription = Util.getCRSeparatedString(MarcUtil.getFieldList(record, "520a"));
 		groupedWork.addDescription(fullDescription, format);
 
 		//Load editions
-		Set<String> editions = MarcUtil.getFieldList(record, "250a");
-		String primaryEdition = null;
+		Set<String> editions       = MarcUtil.getFieldList(record, "250a");
+		String      primaryEdition = null;
 		if (editions.size() > 0) {
 			primaryEdition = editions.iterator().next();
 		}
@@ -158,7 +229,7 @@ class HooplaProcessor extends MarcRecordProcessor {
 		Set<String> publishers = this.getPublishers(record);
 		groupedWork.addPublishers(publishers);
 		String publisher = null;
-		if (publishers.size() > 0){
+		if (publishers.size() > 0) {
 			publisher = publishers.iterator().next();
 		}
 
@@ -166,14 +237,14 @@ class HooplaProcessor extends MarcRecordProcessor {
 		Set<String> publicationDates = this.getPublicationDates(record);
 		groupedWork.addPublicationDates(publicationDates);
 		String publicationDate = null;
-		if (publicationDates.size() > 0){
+		if (publicationDates.size() > 0) {
 			publicationDate = publicationDates.iterator().next();
 		}
 
 		//Load physical description
 		Set<String> physicalDescriptions = MarcUtil.getFieldList(record, "300abcefg:530abcd");
-		String physicalDescription       = null;
-		if (physicalDescriptions.size() > 0){
+		String      physicalDescription  = null;
+		if (physicalDescriptions.size() > 0) {
 			physicalDescription = physicalDescriptions.iterator().next();
 		}
 		groupedWork.addPhysical(physicalDescriptions);
@@ -210,6 +281,7 @@ class HooplaProcessor extends MarcRecordProcessor {
 		itemInfo.setDateAdded(dateAdded);
 
 		recordInfo.addItem(itemInfo);
+		updateGroupedWorkSolrDataBasedOnHooplaExtract(groupedWork, recordInfo.getRecordIdentifier());
 		loadScopeInfoForEContentItem(groupedWork, recordInfo, itemInfo, record);
 
 
@@ -224,34 +296,66 @@ class HooplaProcessor extends MarcRecordProcessor {
 	}
 
 	private void loadScopeInfoForEContentItem(GroupedWorkSolr groupedWork, RecordInfo recordInfo, ItemInfo itemInfo, Record record) {
-		float hooplaPrice = groupedWork.getHooplaPrice();
-		//Figure out ownership information
-		for (Scope curScope: indexer.getScopes()){
-			String originalUrl = itemInfo.geteContentUrl();
-			Scope.InclusionResult result = curScope.isItemPartOfScope("hoopla", "", "", null, groupedWork.getTargetAudiences(), recordInfo.getPrimaryFormat(), false, false, true, record, originalUrl);
-			if (result.isIncluded){
-				float hooplaMaxPriceForScope = curScope.getHooplaMaxPrice();
-				if (hooplaPrice == 0.0f || hooplaMaxPriceForScope == 0.0f || hooplaPrice < hooplaMaxPriceForScope) { // only include records below the set Max Price for the library
-					ScopingInfo scopingInfo = itemInfo.addScope(curScope);
-					scopingInfo.setAvailable(true);
-					scopingInfo.setStatus("Available Online");
-					scopingInfo.setGroupedStatus("Available Online");
-					scopingInfo.setHoldable(false);
+		if (hooplaExtractInfo.isActive()) { // Only Include titles that are active according to the Hoopla Extract
+			//Figure out ownership information
+			for (Scope curScope : indexer.getScopes()) {
+				String                originalUrl = itemInfo.geteContentUrl();
+				Scope.InclusionResult result      = curScope.isItemPartOfScope("hoopla", "", "", null, groupedWork.getTargetAudiences(), recordInfo.getPrimaryFormat(), false, false, true, record, originalUrl);
+				if (result.isIncluded) {
+
+					boolean isHooplaIncluded = true;
+					boolean hadLocationRules = false;
 					if (curScope.isLocationScope()) {
-						scopingInfo.setLocallyOwned(curScope.isItemOwnedByScope("hoopla", "", ""));
-						if (curScope.getLibraryScope() != null) {
-							scopingInfo.setLibraryOwned(curScope.getLibraryScope().isItemOwnedByScope("hoopla", "", ""));
+						Long locationId = curScope.getLocationId();
+						for (HooplaInclusionRule curHooplaRule : locationHooplaInclusionRules) {
+							if (curHooplaRule.doesLocationRuleApply(hooplaExtractInfo, locationId)) {
+								hadLocationRules = true;
+								if (!curHooplaRule.isHooplaTitleIncluded(hooplaExtractInfo)) {
+									isHooplaIncluded = false;
+									break;
+								}
+							}
 						}
 					}
-					if (curScope.isLibraryScope()) {
-						 scopingInfo.setLibraryOwned(curScope.isItemOwnedByScope("hoopla", "", ""));
-					}
-					//Check to see if we need to do url rewriting
-					if (originalUrl != null && !originalUrl.equals(result.localUrl)){
-						scopingInfo.setLocalUrl(result.localUrl);
+
+					if (curScope.isLibraryScope() || curScope.isLocationScope() && !hadLocationRules) {
+						Long libraryId = curScope.getLibraryId();
+						for (HooplaInclusionRule curRule : libraryHooplaInclusionRules) {
+							if (curRule.doesLibraryRuleApply(hooplaExtractInfo, libraryId)) {
+								if (!curRule.isHooplaTitleIncluded(hooplaExtractInfo)) {
+									isHooplaIncluded = false;
+									break;
+								}
+							}
+						}
+
+						if (isHooplaIncluded) {
+							addScopeToItem(itemInfo, curScope, originalUrl, result);
+						}
 					}
 				}
 			}
+		}
+	}
+
+	private void addScopeToItem(ItemInfo itemInfo, Scope curScope, String originalUrl, Scope.InclusionResult result) {
+		ScopingInfo scopingInfo = itemInfo.addScope(curScope);
+		scopingInfo.setAvailable(true);
+		scopingInfo.setStatus("Available Online");
+		scopingInfo.setGroupedStatus("Available Online");
+		scopingInfo.setHoldable(false);
+		if (curScope.isLocationScope()) {
+			scopingInfo.setLocallyOwned(curScope.isItemOwnedByScope("hoopla", "", ""));
+			if (curScope.getLibraryScope() != null) {
+				scopingInfo.setLibraryOwned(curScope.getLibraryScope().isItemOwnedByScope("hoopla", "", ""));
+			}
+		}
+		if (curScope.isLibraryScope()) {
+			scopingInfo.setLibraryOwned(curScope.isItemOwnedByScope("hoopla", "", ""));
+		}
+		//Check to see if we need to do url rewriting
+		if (originalUrl != null && !originalUrl.equals(result.localUrl)) {
+			scopingInfo.setLocalUrl(result.localUrl);
 		}
 	}
 }
