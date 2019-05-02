@@ -1,6 +1,10 @@
 package org.vufind;
 
+import org.apache.log4j.Logger;
+
 public class HooplaInclusionRule {
+	protected Logger logger;
+
 
 	private Long libraryId;
 	private Long locationId;
@@ -9,6 +13,10 @@ public class HooplaInclusionRule {
 	private boolean excludeParentalAdvisory;
 	private boolean excludeProfanity;
 	private boolean includeChildrenTitlesOnly;
+
+	public HooplaInclusionRule(Logger logger) {
+		this.logger = logger;
+	}
 
 	public Long getLibraryId() {
 		return libraryId;
@@ -89,12 +97,22 @@ public class HooplaInclusionRule {
 	}
 
 	public boolean isHooplaTitleIncluded(HooplaExtractInfo hooplaExtractInfo) {
-		if (hooplaExtractInfo.getPrice() == 0 || hooplaExtractInfo.getPrice() <= maxPrice) {  // include title, if hoopla price isn't set or the price is less than or equal to the max price; and...
+		if (maxPrice == 0 || hooplaExtractInfo.getPrice() == 0 || hooplaExtractInfo.getPrice() <= maxPrice) {  // include title, if hoopla price isn't set or the max price isn't set or the hoopla price is less than or equal to the max price; and...
 			if (!hooplaExtractInfo.isParentalAdvisory() || !isExcludeParentalAdvisory()) {    // if the title doesn't have a PA warning or we aren't excluding PA warning titles; and...
 				if (!hooplaExtractInfo.isProfanity() || !isExcludeProfanity()) {              // if the title doesn't have profanity or we aren't excluding profanity; and...
-					return !isIncludeChildrenTitlesOnly() || hooplaExtractInfo.isChildren();  // if we aren't limiting to only children's titles or it is a children's title.
+					if (!isIncludeChildrenTitlesOnly() || hooplaExtractInfo.isChildren()) {  // if we aren't limiting to only children's titles or it is a children's title.
+						return true;
+					} else {
+						logger.info("Not include because is not a children's title for library " + this.libraryId + " or location " + this.locationId + " hoolpa id# " + hooplaExtractInfo.getTitleId() + " - " + hooplaExtractInfo.getTitle());
+					}
+				} else {
+					logger.info("Excluding due to profanity for library " + this.libraryId + " or location " + this.locationId + " hoolpa id# " + hooplaExtractInfo.getTitleId() + " - " + hooplaExtractInfo.getTitle());
 				}
+			} else {
+				logger.info("Excluding due to parental advisory for library " + this.libraryId + " or location " + this.locationId + " hoolpa id# " + hooplaExtractInfo.getTitleId() + " - " + hooplaExtractInfo.getTitle());
 			}
+		} else {
+			logger.info("Excluding due to price  for library " + this.libraryId + " or location " + this.locationId + " hoolpa id# " + hooplaExtractInfo.getTitleId() + " - " + hooplaExtractInfo.getTitle());
 		}
 		return false; // Otherwise, exclude the title.
 	}

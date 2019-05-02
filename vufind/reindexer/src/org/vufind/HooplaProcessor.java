@@ -51,7 +51,7 @@ class HooplaProcessor extends MarcRecordProcessor {
 			PreparedStatement locationHooplaInclusionRulesStatement = pikaConn.prepareStatement("SELECT * FROM location_hoopla_setting");
 			ResultSet         libraryRulesResultSet                 = libraryHooplaInclusionRulesStatement.executeQuery();
 			while ((libraryRulesResultSet.next())) {
-				HooplaInclusionRule rule = new HooplaInclusionRule();
+				HooplaInclusionRule rule = new HooplaInclusionRule(logger);
 
 				rule.setLibraryId(libraryRulesResultSet.getLong("libraryId"));
 				rule.setKind(libraryRulesResultSet.getString("kind"));
@@ -66,7 +66,7 @@ class HooplaProcessor extends MarcRecordProcessor {
 
 			ResultSet locationRulesResultSet = locationHooplaInclusionRulesStatement.executeQuery();
 			while ((locationRulesResultSet.next())) {
-				HooplaInclusionRule rule = new HooplaInclusionRule();
+				HooplaInclusionRule rule = new HooplaInclusionRule(logger);
 
 				rule.setLocationId(locationRulesResultSet.getLong("locationId"));
 				rule.setKind(locationRulesResultSet.getString("kind"));
@@ -336,6 +336,8 @@ class HooplaProcessor extends MarcRecordProcessor {
 					}
 				}
 			}
+		} else {
+			logger.info("Excluding due to title inactive for everyone hoopla id# " + hooplaExtractInfo.getTitleId() + " :" + hooplaExtractInfo.getTitle());
 		}
 	}
 
