@@ -50,6 +50,7 @@
 # └───────────────────────── min (0 - 59)
 ## taken from https://en.wikipedia.org/wiki/Cron
 ##############
+
 ###############
 # On Reboot
 ###############
@@ -57,15 +58,9 @@
 # restart continuous re-indexing on reboot.
 @reboot sleep 300 && /usr/local/vufind-plus/sites/wcpl.production/continuous_partial_reindex.sh
 
-#######################
-# Pika Cleanup #
-#######################
-27 0 * * * cd /tmp; rm -rf CURLCOOKIE*
-28 0 * * * cd /tmp; rm -rf epb*
-
-########################
+###############
 # Full Update #
-########################
+###############
 15 5 * * * cd /usr/local/vufind-plus/sites/wcpl.production; ./full_update.sh
 
 ######################
@@ -85,11 +80,23 @@
 # Check Apache Solr process and website that it has not stalled.
 */3 * * * * cd /usr/local/vufind-plus/vufind/cron/; ./solrTest.sh
 
+###################################
+# Data Extract from other systems #
+###################################
+# Library supplied covers
+*/15 * * * * /usr/local/vufind-plus/sites/wcpl.production/copyCovers.sh
+
 #################
 # Let's Encrypt #
 #################
 ###-- renew SSL certs at 11:42AM and 11:42PM everyday --###
 42 11,23 * * * certbot renew --quiet --preferred-challenges http-01
+
+#################
+# Pika Cleanup #
+################
+27 0 * * * cd /tmp; rm -rf CURLCOOKIE*
+28 0 * * * cd /tmp; rm -rf epb*
 
 #####################
 # Apache Web Server #
