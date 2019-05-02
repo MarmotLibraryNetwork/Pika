@@ -408,13 +408,13 @@ class Location extends DB_DataObject {
 						'canEdit'       => false,
 						'additionalOneToManyActions' => array(
 							array(
-								'text' => 'Copy Library Hoopla Settings',
+								'text'    => 'Copy Library Hoopla Settings',
 								'onclick' => 'VuFind.Admin.copyLibraryHooplaSettings($id)',
 							),
 							array(
-								'text'  => 'Clear Hoopla Settings',
+								'text'    => 'Clear Hoopla Settings',
 								'onclick' => 'VuFind.Admin.clearLocationHooplaSettings($id)',
-								'class' => 'btn-warning',
+								'class'   => 'btn-warning',
 							),
 						),
 					),

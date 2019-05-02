@@ -44,28 +44,27 @@ VuFind.Admin = (function(){
 		},
 
 		copyLibraryHooplaSettings: function (id) {
-			if (Globals.loggedIn) {
-				var url = Globals.path + "/Admin/AJAX?method=copyHooplaSettingsFromLibrary&id=" + id;
-				$.getJSON(url, function (data) {
-					VuFind.showMessage(data.title, data.body, 1, 1);
-				}).fail(VuFind.ajaxFail);
-			} else {
-				VuFind.Account.ajaxLogin(null, function () {
-					VuFind.Hoopla.copyLibraryHooplaSettings(id);
-				}, false);
-			}
-			return false;
+			return this.basicAjaxHandler('copyHooplaSettingsFromLibrary', id);
 		},
 
 		clearLocationHooplaSettings: function (id) {
+			return this.basicAjaxHandler('clearLocationHooplaSettings', id);
+		},
+
+		clearLibraryHooplaSettings: function (id) {
+			return this.basicAjaxHandler('clearLibraryHooplaSettings', id);
+		},
+
+		basicAjaxHandler: function (ajaxMethod, id) {
 			if (Globals.loggedIn) {
-				var url = Globals.path + "/Admin/AJAX?method=clearLocationHooplaSettings&id=" + id;
+				VuFind.loadingMessage();
+				var url = Globals.path + "/Admin/AJAX?method=" + ajaxMethod + "&id=" + id;
 				$.getJSON(url, function (data) {
 					VuFind.showMessage(data.title, data.body, 1, 1);
 				}).fail(VuFind.ajaxFail);
 			} else {
 				VuFind.Account.ajaxLogin(null, function () {
-					VuFind.Hoopla.copyLibraryHooplaSettings(id);
+					VuFind.Admin.basicAjaxHandler(ajaxMethod, id);
 				}, false);
 			}
 			return false;

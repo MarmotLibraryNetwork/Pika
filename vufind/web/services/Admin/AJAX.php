@@ -31,7 +31,7 @@ class Admin_AJAX extends Action {
 			if (in_array($method, array(
 				'getReindexNotes', 'getReindexProcessNotes', 'getCronNotes', 'getCronProcessNotes', 'getAddToWidgetForm', 'getRecordGroupingNotes', 'getHooplaExportNotes', 'getSierraExportNotes',
 				'markProfileForRegrouping', 'markProfileForReindexing',
-				'copyHooplaSettingsFromLibrary', 'clearLocationHooplaSettings',
+				'copyHooplaSettingsFromLibrary', 'clearLocationHooplaSettings', 'clearLibraryHooplaSettings',
 			))){
 				//JSON Responses
 				header('Content-type: application/json');
@@ -287,6 +287,30 @@ class Admin_AJAX extends Action {
 				if ($location->get($locationId)){
 
 					if ($location->clearHooplaSettings()){
+						$results['body'] = '<div class="alert alert-success">Hoopla settings were cleared.</div>';
+					}else{
+						$results['body'] = '<div class="alert alert-danger">Hoopla settings failed to clear.</div>';
+					}
+				}
+			}
+		}
+		return json_encode($results);
+	}
+
+	function clearLibraryHooplaSettings(){
+		$results = array(
+			'title'     => 'Clear Library Hoopla Settings',
+			'body' => '<div class="alert alert-danger">There was an error.</div>',
+		);
+
+		$user    = UserAccount::getLoggedInUser();
+		if (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('libraryAdmin')){
+			$libraryId = trim($_REQUEST['id']);
+			if (ctype_digit($libraryId)){
+				$library = new Library();
+				if ($library->get($libraryId)){
+
+					if ($library->clearHooplaSettings()){
 						$results['body'] = '<div class="alert alert-success">Hoopla settings were cleared.</div>';
 					}else{
 						$results['body'] = '<div class="alert alert-danger">Hoopla settings failed to clear.</div>';

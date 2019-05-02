@@ -870,6 +870,13 @@ class Library extends DB_DataObject {
 						'storeDb'       => true,
 						'allowEdit'     => true,
 						'canEdit'       => false,
+						'additionalOneToManyActions' => array(
+							array(
+								'text'    => 'Clear Hoopla Settings',
+								'onclick' => 'VuFind.Admin.clearLibraryHooplaSettings($id)',
+								'class'   => 'btn-warning',
+							),
+						),
 					),
 				),
 			),
@@ -1682,9 +1689,14 @@ class Library extends DB_DataObject {
 		}
 	}
 
+	/**
+	 * Delete any Hoopla settings there are for this library
+	 * @return bool  Whether or not the deletion was successful
+	 */
 	public function clearHooplaSettings(){
-		$this->clearOneToManyOptions('LibraryHooplaSettings');
+		$success = $this->clearOneToManyOptions('LibraryHooplaSettings');
 		$this->hooplaSettings = array();
+		return $success >= 1;
 	}
 
 	public function saveHolidays(){
