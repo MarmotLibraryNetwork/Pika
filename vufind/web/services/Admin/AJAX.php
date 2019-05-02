@@ -28,8 +28,11 @@ class Admin_AJAX extends Action {
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
 		if (method_exists($this, $method)) {
 			$timer->logTime("Starting method $method");
-			if (in_array($method, array('getReindexNotes', 'getReindexProcessNotes', 'getCronNotes', 'getCronProcessNotes', 'getAddToWidgetForm', 'getRecordGroupingNotes', 'getHooplaExportNotes', 'getSierraExportNotes',
-			                            'markProfileForRegrouping', 'markProfileForReindexing'))) {
+			if (in_array($method, array(
+				'getReindexNotes', 'getReindexProcessNotes', 'getCronNotes', 'getCronProcessNotes', 'getAddToWidgetForm', 'getRecordGroupingNotes', 'getHooplaExportNotes', 'getSierraExportNotes',
+				'markProfileForRegrouping', 'markProfileForReindexing',
+				'copyHooplaSettingsFromLibrary', 'clearLocationHooplaSettings',
+			))){
 				//JSON Responses
 				header('Content-type: application/json');
 				header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
@@ -246,7 +249,55 @@ class Admin_AJAX extends Action {
 		return json_encode($results);
 	}
 
-//	function markProfileForRegrouping(){
+	function copyHooplaSettingsFromLibrary(){
+		$results = array(
+			'title'     => 'Copy Library Hoopla Settings',
+			'body' => '<div class="alert alert-danger">There was an error.</div>',
+		);
+
+		$user    = UserAccount::getLoggedInUser();
+		if (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('libraryAdmin')){
+			$locationId = trim($_REQUEST['id']);
+			if (ctype_digit($locationId)){
+				$location = new Location();
+				if ($location->get($locationId)){
+					$location->clearHooplaSettings();
+					if ($location->copyLibraryHooplaSettings()){
+						$results['body'] = '<div class="alert alert-success">Hoopla settings copied successfully.</div>';
+					}else{
+						$results['body'] = '<div class="alert alert-danger">At least one Hoopla setting failed to copy.</div>';
+					}
+				}
+			}
+		}
+		return json_encode($results);
+	}
+
+	function clearLocationHooplaSettings(){
+		$results = array(
+			'title'     => 'Clear Location Hoopla Settings',
+			'body' => '<div class="alert alert-danger">There was an error.</div>',
+		);
+
+		$user    = UserAccount::getLoggedInUser();
+		if (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('libraryAdmin')){
+			$locationId = trim($_REQUEST['id']);
+			if (ctype_digit($locationId)){
+				$location = new Location();
+				if ($location->get($locationId)){
+
+					if ($location->clearHooplaSettings()){
+						$results['body'] = '<div class="alert alert-success">Hoopla settings were cleared.</div>';
+					}else{
+						$results['body'] = '<div class="alert alert-danger">Hoopla settings failed to clear.</div>';
+					}
+				}
+			}
+		}
+		return json_encode($results);
+	}
+
+	//	function markProfileForRegrouping(){
 //		$result = array(
 //			'success' => false,
 //			'message' => 'Invalid Action',

@@ -43,6 +43,34 @@ VuFind.Admin = (function(){
 			return false;
 		},
 
+		copyLibraryHooplaSettings: function (id) {
+			if (Globals.loggedIn) {
+				var url = Globals.path + "/Admin/AJAX?method=copyHooplaSettingsFromLibrary&id=" + id;
+				$.getJSON(url, function (data) {
+					VuFind.showMessage(data.title, data.body, 1, 1);
+				}).fail(VuFind.ajaxFail);
+			} else {
+				VuFind.Account.ajaxLogin(null, function () {
+					VuFind.Hoopla.copyLibraryHooplaSettings(id);
+				}, false);
+			}
+			return false;
+		},
+
+		clearLocationHooplaSettings: function (id) {
+			if (Globals.loggedIn) {
+				var url = Globals.path + "/Admin/AJAX?method=clearLocationHooplaSettings&id=" + id;
+				$.getJSON(url, function (data) {
+					VuFind.showMessage(data.title, data.body, 1, 1);
+				}).fail(VuFind.ajaxFail);
+			} else {
+				VuFind.Account.ajaxLogin(null, function () {
+					VuFind.Hoopla.copyLibraryHooplaSettings(id);
+				}, false);
+			}
+			return false;
+		},
+
 		// markProfileForReindexing: function (id){
 		// 	if (Globals.loggedIn) {
 		// 		VuFind.loadingMessage();

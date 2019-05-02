@@ -319,6 +319,7 @@ class HooplaProcessor extends MarcRecordProcessor {
 					}
 
 					if (curScope.isLibraryScope() || curScope.isLocationScope() && !hadLocationRules) {
+						// For Location Scopes, apply the Library settings if the locations didn't have any settings of its own
 						Long libraryId = curScope.getLibraryId();
 						for (HooplaInclusionRule curRule : libraryHooplaInclusionRules) {
 							if (curRule.doesLibraryRuleApply(hooplaExtractInfo, libraryId)) {

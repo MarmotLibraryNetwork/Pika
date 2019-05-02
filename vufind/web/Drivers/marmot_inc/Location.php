@@ -406,6 +406,17 @@ class Location extends DB_DataObject {
 						'storeDb'       => true,
 						'allowEdit'     => true,
 						'canEdit'       => false,
+						'additionalOneToManyActions' => array(
+							array(
+								'text' => 'Copy Library Hoopla Settings',
+								'onclick' => 'VuFind.Admin.copyLibraryHooplaSettings($id)',
+							),
+							array(
+								'text'  => 'Clear Hoopla Settings',
+								'onclick' => 'VuFind.Admin.clearLocationHooplaSettings($id)',
+								'class' => 'btn-warning',
+							),
+						),
 					),
 				),
 			),
@@ -471,17 +482,19 @@ class Location extends DB_DataObject {
 			unset($structure['recordsToInclude']);
 			unset($structure['hooplaSection']);
 
+			// Further Restrict location Manager settings
+			if (UserAccount::userHasRole('locationManager')){
+				unset($structure['nearbyLocation1']);
+				unset($structure['nearbyLocation2']);
+				unset($structure['showInLocationsAndHoursList']);
+				unset($structure['address']);
+				unset($structure['phone']);
+				unset($structure['automaticTimeoutLength']);
+				unset($structure['automaticTimeoutLengthLoggedOut']);
+			}
+
 		}
 
-		if (UserAccount::userHasRole('locationManager')){
-			unset($structure['nearbyLocation1']);
-			unset($structure['nearbyLocation2']);
-			unset($structure['showInLocationsAndHoursList']);
-			unset($structure['address']);
-			unset($structure['phone']);
-			unset($structure['automaticTimeoutLength']);
-			unset($structure['automaticTimeoutLengthLoggedOut']);
-		}
 		if (!UserAccount::userHasRole('opacAdmin') && !UserAccount::userHasRole('libraryAdmin')){
 			unset($structure['isMainBranch']);
 		}
@@ -1159,6 +1172,43 @@ class Location extends DB_DataObject {
 			$this->saveOneToManyOptions($this->hooplaSettings);
 			unset($this->hooplaSettings);
 		}
+	}
+
+	/**
+	 * Delete any Hoopla settings there are for this location
+	 * @return bool  Whether or not the deletion was successful
+	 */
+	public function clearHooplaSettings(){
+		$success = $this->clearOneToManyOptions('LocationHooplaSettings');
+		$this->hooplaSettings = array();
+		return $success >= 1;
+	}
+
+	/**
+	 * Copy the Hoopla settings for the parent library to the location.
+	 * This function will get called through an AJAX operation
+	 *
+	 * @return bool  returns false if any insert failed.
+	 */
+	public function copyLibraryHooplaSettings(){
+		$success = true;
+		$libraryHooplaSettings = new LibraryHooplaSettings();
+		$libraryHooplaSettings->libraryId = $this->libraryId;
+		/** @var LibraryHooplaSettings[] $hooplaSettings */
+		$hooplaSettings = $libraryHooplaSettings->fetchAll();
+		foreach ($hooplaSettings as $setting){
+			$locationHooplaSetting                            = new LocationHooplaSettings();
+			$locationHooplaSetting->locationId                = $this->locationId;
+			$locationHooplaSetting->kind                      = $setting->kind;
+			$locationHooplaSetting->maxPrice                  = $setting->maxPrice;
+			$locationHooplaSetting->excludeParentalAdvisory   = $setting->excludeParentalAdvisory;
+			$locationHooplaSetting->excludeProfanity          = $setting->excludeProfanity;
+			$locationHooplaSetting->includeChildrenTitlesOnly = $setting->includeChildrenTitlesOnly;
+			if (!$locationHooplaSetting->insert()){
+				$success = false;
+			}
+		}
+		return $success;
 	}
 
 	public static function getLibraryHours($locationId, $timeToCheck){

@@ -75,7 +75,7 @@ trait OneToManyDataObjectOperations {
 	 *  Delete any existing OneToMany Entries belonging to the parent object.
 	 *
 	 * @param string $oneToManyDBObjectClassName
-	 * @return void
+	 * @return mixed Int (No. of rows affected) on success, false on failure, 0 on no data affected
 	 */
 	private function clearOneToManyOptions($oneToManyDBObjectClassName){
 		$parentIdColumn  = $this->getKeyThis();
@@ -84,7 +84,7 @@ trait OneToManyDataObjectOperations {
 			/** @var DB_DataObject $oneToManyDBObject */
 			$oneToManyDBObject                   = new $oneToManyDBObjectClassName();
 			$oneToManyDBObject->$oneToManyColumn = $this->$parentIdColumn;
-			$oneToManyDBObject->delete();
+			return $oneToManyDBObject->delete();
 		}
 	}
 
