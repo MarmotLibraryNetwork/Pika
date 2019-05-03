@@ -90,7 +90,7 @@
 # Data Extract from other systems #
 ###################################
 # Library supplied covers
-*/10 * * * * /usr/local/vufind-plus/sites/wcpl.production/copyCovers.sh
+*/10 * * * * /usr/local/vufind-plus/sites/wcpl.test/copyCovers.sh
 # use a shorter interval than production so that test gets a chance to copy the cover as well
 
 #####################
