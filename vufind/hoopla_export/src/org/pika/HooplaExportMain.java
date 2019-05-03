@@ -404,26 +404,33 @@ public class HooplaExportMain {
 				retVal = new URLPostResponse(true, 200, response.toString());
 			} else {
 				logger.info("Received error " + conn.getResponseCode() + " posting to " + url);
-				// Get any errors
-				BufferedReader rd = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
-				String         line;
-				while ((line = rd.readLine()) != null) {
-					response.append(line);
-				}
+				try {
+					// Get any errors
+					String line;
+					if (conn.getErrorStream() != null) {
+						BufferedReader rd = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
+						while ((line = rd.readLine()) != null) {
+							response.append(line);
+						}
 
-				rd.close();
-
-				if (response.length() == 0) {
-					//Try to load the regular body as well
-					// Get the response
-					BufferedReader rd2 = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-					while ((line = rd2.readLine()) != null) {
-						response.append(line);
+						rd.close();
 					}
 
-					rd.close();
+					if (response.length() == 0) {
+						//Try to load the regular body as well
+						// Get the response
+						BufferedReader rd2 = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+						while ((line = rd2.readLine()) != null) {
+							response.append(line);
+						}
+
+						rd2.close();
+					}
+					retVal = new URLPostResponse(false, conn.getResponseCode(), response.toString());
+				} catch (IOException e) {
+					logger.error("Error reading error or input stream", e);
+					retVal = new URLPostResponse(false, -1, "Error reading error or input stream for \r\n" + url + "\r\n" + e.toString());
 				}
-				retVal = new URLPostResponse(false, conn.getResponseCode(), response.toString());
 			}
 
 		} catch (SocketTimeoutException e) {

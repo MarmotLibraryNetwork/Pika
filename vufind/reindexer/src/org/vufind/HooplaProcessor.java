@@ -138,7 +138,7 @@ class HooplaProcessor extends MarcRecordProcessor {
 					hooplaExtractInfo.setAbridged(abridged);
 					hooplaExtractInfo.setChildren(children);
 				} else {
-					logger.info("Did not find Hoopla Extract information for " + identifier);
+					logger.warn("Did not find Hoopla Extract information for " + identifier);
 				}
 			} catch (NumberFormatException e) {
 				logger.error("Error parsing identifier : " + identifier + " to a hoopla id number", e);
@@ -296,48 +296,52 @@ class HooplaProcessor extends MarcRecordProcessor {
 	}
 
 	private void loadScopeInfoForEContentItem(GroupedWorkSolr groupedWork, RecordInfo recordInfo, ItemInfo itemInfo, Record record) {
-		if (hooplaExtractInfo.isActive()) { // Only Include titles that are active according to the Hoopla Extract
-			//Figure out ownership information
-			for (Scope curScope : indexer.getScopes()) {
-				String                originalUrl = itemInfo.geteContentUrl();
-				Scope.InclusionResult result      = curScope.isItemPartOfScope("hoopla", "", "", null, groupedWork.getTargetAudiences(), recordInfo.getPrimaryFormat(), false, false, true, record, originalUrl);
-				if (result.isIncluded) {
+		if (hooplaExtractInfo != null) {
+			if (hooplaExtractInfo.isActive()) { // Only Include titles that are active according to the Hoopla Extract
+				//Figure out ownership information
+				for (Scope curScope : indexer.getScopes()) {
+					String                originalUrl = itemInfo.geteContentUrl();
+					Scope.InclusionResult result      = curScope.isItemPartOfScope("hoopla", "", "", null, groupedWork.getTargetAudiences(), recordInfo.getPrimaryFormat(), false, false, true, record, originalUrl);
+					if (result.isIncluded) {
 
-					boolean isHooplaIncluded = true;
-					boolean hadLocationRules = false;
-					if (curScope.isLocationScope()) {
-						Long locationId = curScope.getLocationId();
-						for (HooplaInclusionRule curHooplaRule : locationHooplaInclusionRules) {
-							if (curHooplaRule.doesLocationRuleApply(hooplaExtractInfo, locationId)) {
-								hadLocationRules = true;
-								if (!curHooplaRule.isHooplaTitleIncluded(hooplaExtractInfo)) {
-									isHooplaIncluded = false;
-									break;
-								}
-							}
-						}
-					}
-
-					if (curScope.isLibraryScope() || curScope.isLocationScope() && !hadLocationRules) {
-						// For Location Scopes, apply the Library settings if the locations didn't have any settings of its own
-						Long libraryId = curScope.getLibraryId();
-						for (HooplaInclusionRule curRule : libraryHooplaInclusionRules) {
-							if (curRule.doesLibraryRuleApply(hooplaExtractInfo, libraryId)) {
-								if (!curRule.isHooplaTitleIncluded(hooplaExtractInfo)) {
-									isHooplaIncluded = false;
-									break;
+						boolean isHooplaIncluded = true;
+						boolean hadLocationRules = false;
+						if (curScope.isLocationScope()) {
+							Long locationId = curScope.getLocationId();
+							for (HooplaInclusionRule curHooplaRule : locationHooplaInclusionRules) {
+								if (curHooplaRule.doesLocationRuleApply(hooplaExtractInfo, locationId)) {
+									hadLocationRules = true;
+									if (!curHooplaRule.isHooplaTitleIncluded(hooplaExtractInfo)) {
+										isHooplaIncluded = false;
+										break;
+									}
 								}
 							}
 						}
 
-						if (isHooplaIncluded) {
-							addScopeToItem(itemInfo, curScope, originalUrl, result);
+						if (curScope.isLibraryScope() || curScope.isLocationScope() && !hadLocationRules) {
+							// For Location Scopes, apply the Library settings if the locations didn't have any settings of its own
+							Long libraryId = curScope.getLibraryId();
+							for (HooplaInclusionRule curRule : libraryHooplaInclusionRules) {
+								if (curRule.doesLibraryRuleApply(hooplaExtractInfo, libraryId)) {
+									if (!curRule.isHooplaTitleIncluded(hooplaExtractInfo)) {
+										isHooplaIncluded = false;
+										break;
+									}
+								}
+							}
+
+							if (isHooplaIncluded) {
+								addScopeToItem(itemInfo, curScope, originalUrl, result);
+							}
 						}
 					}
 				}
+			} else {
+				logger.info("Excluding due to title inactive for everyone hoopla id# " + hooplaExtractInfo.getTitleId() + " :" + hooplaExtractInfo.getTitle());
 			}
 		} else {
-			logger.info("Excluding due to title inactive for everyone hoopla id# " + hooplaExtractInfo.getTitleId() + " :" + hooplaExtractInfo.getTitle());
+			logger.warn("There was no extract information for Hoopla record " + recordInfo.getRecordIdentifier());
 		}
 	}
 
