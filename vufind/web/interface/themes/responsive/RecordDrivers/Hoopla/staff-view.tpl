@@ -44,7 +44,11 @@
 				<tr>
 					<th>{$field|escape}</th>
 					<td>
-						{implode subject=$values glue=', ' sort=true}
+						{if $field == 'dateLastUpdated' || $field == 'dateCreated'}
+							{$values|date_format:"%b %d, %Y %r"}
+						{else}
+							{implode subject=$values glue=', ' sort=true}
+						{/if}
 					</td>
 				</tr>
 			{/if}
