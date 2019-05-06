@@ -101,8 +101,8 @@ class HooplaProcessor extends MarcRecordProcessor {
 
 
 	/**
-	 * @param groupedWork
-	 * @param identifier
+	 * @param groupedWork Solr Document to update
+	 * @param identifier  Record Identifier, used to get hoopla extract information
 	 */
 	private void updateGroupedWorkSolrDataBasedOnHooplaExtract(GroupedWorkSolr groupedWork, String identifier) {
 		try {
@@ -124,7 +124,7 @@ class HooplaProcessor extends MarcRecordProcessor {
 
 					//For debugging, logging
 					String title   = hooplaExtractInfoRS.getString("title");
-					Long   titleId = hooplaExtractInfoRS.getLong("id");
+					Long   titleId = hooplaExtractInfoRS.getLong("hooplaId");
 
 					hooplaExtractInfo = new HooplaExtractInfo();
 					hooplaExtractInfo.setTitleId(titleId);

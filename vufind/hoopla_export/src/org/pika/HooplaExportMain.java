@@ -29,6 +29,7 @@ public class HooplaExportMain {
 	private static Ini     configIni;
 	private static String  hooplaAPIBaseURL;
 	private static Long    lastExportTime;
+	private static Long    startTimeStamp;
 	private static Long    lastExportTimeVariableId = null;
 	private static boolean hadErrors                = false;
 
@@ -48,7 +49,6 @@ public class HooplaExportMain {
 			}
 		}
 
-		Date startTime = new Date();
 		File log4jFile = new File("../../sites/" + serverName + "/conf/log4j.hoopla_export.properties");
 		if (log4jFile.exists()) {
 			PropertyConfigurator.configure(log4jFile.getAbsolutePath());
@@ -60,7 +60,9 @@ public class HooplaExportMain {
 				System.out.println("Could not find log4j configuration " + log4jFile.toString());
 			}
 		}
+		Date startTime = new Date();
 		logger.info(startTime.toString() + ": Starting Hoopla Export");
+		startTimeStamp = startTime.getTime() / 1000;
 
 		// Read the base INI file to get information about the server (current directory/cron/config.ini)
 		configIni = loadConfigFile("config.ini");
@@ -79,8 +81,8 @@ public class HooplaExportMain {
 		try {
 			logger.info("Creating log entry for index");
 			PreparedStatement createLogEntryStatement = pikaConn.prepareStatement("INSERT INTO hoopla_export_log (startTime, lastUpdate, notes) VALUES (?, ?, ?)", PreparedStatement.RETURN_GENERATED_KEYS);
-			createLogEntryStatement.setLong(1, startTime.getTime() / 1000);
-			createLogEntryStatement.setLong(2, startTime.getTime() / 1000);
+			createLogEntryStatement.setLong(1, startTimeStamp);
+			createLogEntryStatement.setLong(2, startTimeStamp);
 			createLogEntryStatement.setString(3, "Initialization complete");
 			createLogEntryStatement.executeUpdate();
 			ResultSet generatedKeys = createLogEntryStatement.getGeneratedKeys();
@@ -119,7 +121,7 @@ public class HooplaExportMain {
 		exportHooplaData(pikaConn, lastExportTime, doFullReload);
 
 		if (!hadErrors) {
-			updateHooplaExportTime(pikaConn, startTime.getTime() / 1000);
+			updateHooplaExportTime(pikaConn, startTimeStamp);
 		}
 
 		logger.info("Finished exporting hoopla data " + new Date().toString());
@@ -224,7 +226,22 @@ public class HooplaExportMain {
 		}
 	}
 
-	private static PreparedStatement updateHooplaTitleInDB = null;
+	private static PreparedStatement updateHooplaTitleInDB              = null;
+	private static PreparedStatement markGroupedWorkForBibAsChangedStmt = null;
+
+	private static void markGroupedWorkForReindexing(Connection pikaConn, long hooplaTitleId) {
+		try {
+			if (markGroupedWorkForBibAsChangedStmt == null) {
+				markGroupedWorkForBibAsChangedStmt = pikaConn.prepareStatement("UPDATE grouped_work SET date_updated = ? where id = (SELECT grouped_work_id from grouped_work_primary_identifiers WHERE type = 'hoopla' and identifier = ?)");
+			}
+			String marcRecordID = "MWT" + hooplaTitleId;
+			markGroupedWorkForBibAsChangedStmt.setLong(1, startTimeStamp);
+			markGroupedWorkForBibAsChangedStmt.setString(2, marcRecordID);
+			markGroupedWorkForBibAsChangedStmt.executeUpdate();
+		} catch (SQLException e) {
+			logger.warn("Failed to mark grouped Work for reindexing ", e);
+		}
+	}
 
 	private static int updateTitlesInDB(Connection pikaConn, JSONArray responseTitles) {
 		int numUpdates = 0;
@@ -236,7 +253,8 @@ public class HooplaExportMain {
 			}
 			for (int i = 0; i < responseTitles.length(); i++) {
 				JSONObject curTitle = responseTitles.getJSONObject(i);
-				updateHooplaTitleInDB.setLong(1, curTitle.getLong("titleId"));
+				long       titleId  = curTitle.getLong("titleId");
+				updateHooplaTitleInDB.setLong(1, titleId);
 				updateHooplaTitleInDB.setBoolean(2, curTitle.getBoolean("active"));
 				updateHooplaTitleInDB.setString(3, curTitle.getString("title"));
 				updateHooplaTitleInDB.setString(4, curTitle.getString("kind"));
@@ -247,8 +265,12 @@ public class HooplaExportMain {
 				updateHooplaTitleInDB.setBoolean(9, curTitle.getBoolean("abridged"));
 				updateHooplaTitleInDB.setBoolean(10, curTitle.getBoolean("children"));
 				updateHooplaTitleInDB.setDouble(11, curTitle.getDouble("price"));
-				updateHooplaTitleInDB.executeUpdate();
-				numUpdates++;
+
+				int updated = updateHooplaTitleInDB.executeUpdate();
+				if (updated > 0) {
+					numUpdates++;
+					markGroupedWorkForReindexing(pikaConn, titleId);
+				}
 			}
 
 		} catch (Exception e) {
