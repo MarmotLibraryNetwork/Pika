@@ -23,7 +23,6 @@ class HooplaExtract extends DB_DataObject {
 	public $rating; // eg TV parental guidance rating
 	public $abridged;
 	public $price;
-	public $dateCreated;
 	public $dateLastUpdated;
 
 	public $__table = 'hoopla_export';

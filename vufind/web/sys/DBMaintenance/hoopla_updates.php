@@ -60,8 +60,7 @@ function getHooplaUpdates(){
 			'description' => 'Add Date created and updated columns to Hoopla Extract',
 			'sql'         => array(
 				"ALTER TABLE `hoopla_export` 
-									ADD COLUMN `dateCreated` DATETIME NULL DEFAULT CURRENT_TIMESTAMP AFTER `price`,
-									ADD COLUMN `dateLastUpdated` DATETIME NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP AFTER `dateCreated`;",
+									ADD COLUMN `dateLastUpdated` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP;",
 			),
 		),
 
