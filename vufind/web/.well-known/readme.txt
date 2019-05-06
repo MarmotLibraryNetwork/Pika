@@ -1,0 +1,1 @@
+The directory .well-known is required for Let's Encrypt validation
