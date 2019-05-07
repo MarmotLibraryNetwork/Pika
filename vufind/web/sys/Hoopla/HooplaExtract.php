@@ -17,12 +17,13 @@ class HooplaExtract extends DB_DataObject {
 	public $active;
 	public $title;
 	public $kind;
+	public $price;
+	public $children;
 	public $pa;  //Parental Advisory
-	public $demo;
 	public $profanity;
 	public $rating; // eg TV parental guidance rating
 	public $abridged;
-	public $price;
+	public $demo;
 	public $dateLastUpdated;
 
 	public $__table = 'hoopla_export';
