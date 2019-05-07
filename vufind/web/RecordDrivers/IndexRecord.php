@@ -520,76 +520,76 @@ class IndexRecord extends RecordInterface
 		return $interface->fetch('Record/ajax-description-popup.tpl');
 	}
 
-	public function getSupplementalSearchResult(){
-		global $configArray;
-		global $interface;
-
-		$id = $this->getUniqueID();
-		$interface->assign('summId', $id);
-		if (substr($id, 0, 1) == '.'){
-			$interface->assign('summShortId', substr($id, 1));
-		}else{
-			$interface->assign('summShortId', $id);
-		}
-		$interface->assign('module', $this->getModule());
-
-		$formats = $this->getFormats();
-		$interface->assign('summFormats', $formats);
-		$formatCategories = $this->getFormatCategory();
-		$interface->assign('summFormatCategory', $formatCategories);
-		$interface->assign('summTitle', $this->getTitle());
-		$interface->assign('summSubTitle', $this->getSubtitle());
-		$interface->assign('summTitleStatement', $this->getTitleSection());
-		$interface->assign('summAuthor', $this->getPrimaryAuthor());
-		$publishers = $this->getPublishers();
-		$pubDates = $this->getPublicationDates();
-		$pubPlaces = $this->getPlacesOfPublication();
-		$interface->assign('summPublicationDates', $pubDates);
-		$interface->assign('summPublishers', $publishers);
-		$interface->assign('summPublicationPlaces',$pubPlaces);
-		$interface->assign('summDate', $this->getPublicationDates());
-		$interface->assign('summISBN', $this->getCleanISBN());
-		$issn = $this->getCleanISSN();
-		$interface->assign('summISSN', $issn);
-		$upc = $this->getCleanUPC();
-		$interface->assign('summUPC', $upc);
-		if ($configArray['System']['debugSolr'] == 1){
-			$interface->assign('summScore', $this->getScore());
-			$interface->assign('summExplain', $this->getExplain());
-		}
-		$interface->assign('summPhysical', $this->getPhysicalDescriptions());
-		$interface->assign('summEditions', $this->getEdition());
-
-		// Obtain and assign snippet information:
-		$snippet = $this->getHighlightedSnippet();
-		$interface->assign('summSnippetCaption', $snippet ? $snippet['caption'] : false);
-		$interface->assign('summSnippet', $snippet ? $snippet['snippet'] : false);
-
-		//Get Rating
-		$interface->assign('summRating', $this->getRatingData());
-
-		//Determine the cover to use
-		$interface->assign('bookCoverUrl', $this->getBookcoverUrl('small'));
-		$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
-
-		$interface->assign('summUrl', $this->getRecordUrl());
-
-		// By default, do not display AJAX status; we won't assume that all
-		// records exist in the ILS.  Child classes can override this setting
-		// to turn on AJAX as needed:
-		$interface->assign('summAjaxStatus', false);
-
-		return 'RecordDrivers/Index/supplementalResult.tpl';
-	}
+//	public function getSupplementalSearchResult(){
+//		global $configArray;
+//		global $interface;
+//
+//		$id = $this->getUniqueID();
+//		$interface->assign('summId', $id);
+//		if (substr($id, 0, 1) == '.'){
+//			$interface->assign('summShortId', substr($id, 1));
+//		}else{
+//			$interface->assign('summShortId', $id);
+//		}
+//		$interface->assign('module', $this->getModule());
+//
+//		$formats = $this->getFormats();
+//		$interface->assign('summFormats', $formats);
+//		$formatCategories = $this->getFormatCategory();
+//		$interface->assign('summFormatCategory', $formatCategories);
+//		$interface->assign('summTitle', $this->getTitle());
+//		$interface->assign('summSubTitle', $this->getSubtitle());
+//		$interface->assign('summTitleStatement', $this->getTitleSection());
+//		$interface->assign('summAuthor', $this->getPrimaryAuthor());
+//		$publishers = $this->getPublishers();
+//		$pubDates = $this->getPublicationDates();
+//		$pubPlaces = $this->getPlacesOfPublication();
+//		$interface->assign('summPublicationDates', $pubDates);
+//		$interface->assign('summPublishers', $publishers);
+//		$interface->assign('summPublicationPlaces',$pubPlaces);
+//		$interface->assign('summDate', $this->getPublicationDates());
+//		$interface->assign('summISBN', $this->getCleanISBN());
+//		$issn = $this->getCleanISSN();
+//		$interface->assign('summISSN', $issn);
+//		$upc = $this->getCleanUPC();
+//		$interface->assign('summUPC', $upc);
+//		if ($configArray['System']['debugSolr'] == 1){
+//			$interface->assign('summScore', $this->getScore());
+//			$interface->assign('summExplain', $this->getExplain());
+//		}
+//		$interface->assign('summPhysical', $this->getPhysicalDescriptions());
+//		$interface->assign('summEditions', $this->getEdition());
+//
+//		// Obtain and assign snippet information:
+//		$snippet = $this->getHighlightedSnippet();
+//		$interface->assign('summSnippetCaption', $snippet ? $snippet['caption'] : false);
+//		$interface->assign('summSnippet', $snippet ? $snippet['snippet'] : false);
+//
+//		//Get Rating
+//		$interface->assign('summRating', $this->getRatingData());
+//
+//		//Determine the cover to use
+//		$interface->assign('bookCoverUrl', $this->getBookcoverUrl('small'));
+//		$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
+//
+//		$interface->assign('summUrl', $this->getRecordUrl());
+//
+//		// By default, do not display AJAX status; we won't assume that all
+//		// records exist in the ILS.  Child classes can override this setting
+//		// to turn on AJAX as needed:
+//		$interface->assign('summAjaxStatus', false);
+//
+//		return 'RecordDrivers/Index/supplementalResult.tpl';
+//	}
 
 	function getBookcoverUrl($size = 'small'){
-		$id = $this->getIdWithSource();
+		$id             = $this->getIdWithSource();
 		$formatCategory = $this->getFormatCategory();
 		if (is_array($formatCategory)){
 			$formatCategory = reset($formatCategory);
 		}
 		$formats = $this->getFormat();
-		$format = reset($formats);
+		$format  = reset($formats);
 		global $configArray;
 		$bookCoverUrl = $configArray['Site']['coverUrl'] . "/bookcover.php?id={$id}&amp;size={$size}&amp;category=" . urlencode($formatCategory) . "&amp;format=" . urlencode($format);
 		$isbn = $this->getCleanISBN();
@@ -1635,7 +1635,7 @@ class IndexRecord extends RecordInterface
 		global $interface;
 		$linkUrl = $this->getRecordUrl();
 		$extraParams = array();
-		if ($interface != null && strlen($interface->get_template_vars('searchId')) > 0){
+		if (!empty($interface->get_template_vars('searchId'))){
 			$extraParams[] = 'searchId=' . $interface->get_template_vars('searchId');
 			$extraParams[] = 'recordIndex=' . $interface->get_template_vars('recordIndex');
 			$extraParams[] = 'page='  . $interface->get_template_vars('page');

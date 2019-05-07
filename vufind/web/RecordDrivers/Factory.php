@@ -168,21 +168,13 @@ class RecordDriverFactory {
 		}elseif ($recordType == 'external_econtent'){
 			require_once ROOT_DIR . '/RecordDrivers/ExternalEContentDriver.php';
 			$recordDriver = new ExternalEContentDriver($recordId, $groupedWork);
-		}elseif ($recordType == 'hoopla'){
-			require_once ROOT_DIR . '/RecordDrivers/HooplaDriver.php';
-			$recordDriver = new HooplaRecordDriver($recordId, $groupedWork);
-			if (!$recordDriver->isValid()){
-				global $logger;
-				$logger->log("Unable to load record driver for hoopla record $recordId", PEAR_LOG_WARNING);
-				$recordDriver = null;
-			}
 		}else{
 			/** @var IndexingProfile[] $indexingProfiles */
 			global $indexingProfiles;
 
 			if (array_key_exists($recordType, $indexingProfiles)){
 				$indexingProfile = $indexingProfiles[$recordType];
-				$driverName = $indexingProfile->recordDriver;
+				$driverName      = $indexingProfile->recordDriver;
 				require_once ROOT_DIR . "/RecordDrivers/{$driverName}.php";
 				$recordDriver = new $driverName($id, $groupedWork);
 

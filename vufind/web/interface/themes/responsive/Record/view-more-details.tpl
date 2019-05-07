@@ -13,7 +13,7 @@
 		<div class="row">
 			<div class="result-label col-xs-3">{translate text='Format'}:</div>
 			<div class="col-xs-9 result-value">
-				{implode subject=$recordFormat glue=", "}
+				{implode subject=$recordDriver->getFormat() glue=", "}
 			</div>
 		</div>
 	{/if}
@@ -27,30 +27,32 @@
 		</div>
 	{/if}
 
-	{if !$showPhysicalDescriptions && $physicalDescriptions}
+	{if !$showPhysicalDescriptions && $recordDriver->getPhysicalDescriptions()}
 		<div class="row">
 			<div class="result-label col-xs-3">{translate text='Physical Desc'}:</div>
 			<div class="col-xs-9 result-value">
-				{implode subject=$physicalDescriptions glue="<br>"}
+				{implode subject=$recordDriver->getPhysicalDescriptions() glue="<br>"}
 			</div>
 		</div>
 	{/if}
 
-	{if $streetDate}
+	{if $recordDriver->getStreetDate()}
 		<div class="row">
 			<div class="result-label col-xs-3">{translate text='Street Date'}:</div>
 			<div class="col-xs-9 result-value">
-				{$streetDate|escape}
+				{$recordDriver->getStreetDate()|escape}
 			</div>
 		</div>
 	{/if}
 
-	<div class="row">
-		<div class="result-label col-xs-3">{translate text='Language'}:</div>
-		<div class="col-xs-9 result-value">
-			{implode subject=$recordLanguage glue=", "}
+	{if $recordDriver->getLanguage()}
+		<div class="row">
+			<div class="result-label col-xs-3">{translate text='Language'}:</div>
+			<div class="col-xs-9 result-value">
+				{$recordDriver->getLanguage()}
+			</div>
 		</div>
-	</div>
+	{/if}
 
 	{if $recordDriver && !$showISBNs && count($recordDriver->getISBNs()) > 0}
 		<div class="row">

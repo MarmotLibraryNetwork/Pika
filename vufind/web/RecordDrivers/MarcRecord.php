@@ -45,67 +45,62 @@ class MarcRecord extends IndexRecord
 	 * we will already have this data available, so we might as well
 	 * just pass it into the constructor.
 	 *
-	 * @param   array|File_MARC_Record||string   $recordData     Data to construct the driver from
-	 * @param  GroupedWork $groupedWork ;
+	 * @param array|File_MARC_Record|string $recordData  Data to construct the driver from
+	 * @param GroupedWork                   $groupedWork ;
 	 * @access  public
 	 */
-	public function __construct($recordData, $groupedWork = null)
-	{
-		if ($recordData instanceof File_MARC_Record) {
+	public function __construct($recordData, $groupedWork = null){
+		if ($recordData instanceof File_MARC_Record){
 			$this->marcRecord = $recordData;
-		} elseif (is_string($recordData)) {
+		}elseif (is_string($recordData)){
 			require_once ROOT_DIR . '/sys/MarcLoader.php';
-			if (strpos($recordData, ':') !== false) {
-				$recordInfo = explode(':', $recordData);
+			if (strpos($recordData, ':') !== false){
+				$recordInfo        = explode(':', $recordData);
 				$this->profileType = $recordInfo[0];
-				$this->id = $recordInfo[1];
-			} else {
+				$this->id          = $recordInfo[1];
+			}else{
 				$this->profileType = 'ils';
-				$this->id = $recordData;
+				$this->id          = $recordData;
 			}
 
 			global $indexingProfiles;
-			if (array_key_exists($this->profileType, $indexingProfiles)) {
+			if (array_key_exists($this->profileType, $indexingProfiles)){
 				$this->indexingProfile = $indexingProfiles[$this->profileType];
-			} else {
+			}else{
 				//Try to infer the indexing profile from the module
 				global $activeRecordProfile;
-				if ($activeRecordProfile) {
+				if ($activeRecordProfile){
 					$this->indexingProfile = $activeRecordProfile;
-				} else {
+				}else{
 					$this->indexingProfile = $indexingProfiles['ils'];
 				}
 			}
-		} else {
-			// Call the parent's constructor...
+		}else{
+			// Call the Index Records's constructor...
 			parent::__construct($recordData, $groupedWork);
 
 			// Also process the MARC record:
 			require_once ROOT_DIR . '/sys/MarcLoader.php';
 			$this->marcRecord = MarcLoader::loadMarcRecordFromRecord($recordData);
-			if (!$this->marcRecord) {
+			if (!$this->marcRecord){
 				$this->valid = false;
 			}
 		}
-		if (!isset($this->id) && $this->valid) {
+		if (!isset($this->id) && $this->valid){
 			/** @var File_MARC_Data_Field $idField */
 			global $configArray;
 			$idField = $this->marcRecord->getField($configArray['Reindex']['recordNumberTag']);
-			if ($idField) {
+			if ($idField){
 				$this->id = $idField->getSubfield('a')->getData();
 			}
 		}
 		global $timer;
 		$timer->logTime("Base initialization of MarcRecord Driver");
-		if ($groupedWork == null) {
+		if ($groupedWork == null){
 			parent::loadGroupedWork();
-		} else {
+		}else{
 			$this->groupedWork = $groupedWork;
 		}
-	}
-
-	public function getModule(){
-		return isset($this->indexingProfile) ? $this->indexingProfile->recordUrlComponent : 'Record';
 	}
 
 	// No references to the below methods & properties. Commented out 9/29/2017 pascal
@@ -265,7 +260,7 @@ class MarcRecord extends IndexRecord
 		global $configArray;
 		global $library;
 		$active = isset($configArray['Export']) ?
-				$configArray['Export'] : array('RefWorks' => true, 'EndNote' => true);
+			$configArray['Export'] : array('RefWorks' => true, 'EndNote' => true);
 
 		// These are the formats we can possibly support if they are turned on in
 		// config.ini:
@@ -598,7 +593,7 @@ class MarcRecord extends IndexRecord
 	{
 		$matches = $this->getFieldArray($field, $subfields);
 		return (is_array($matches) && count($matches) > 0) ?
-				$matches[0] : null;
+			$matches[0] : null;
 	}
 
 	/**
@@ -638,8 +633,8 @@ class MarcRecord extends IndexRecord
 		// Format the times to include colons ("HH:MM:SS" format).
 		for ($x = 0; $x < count($times); $x++) {
 			$times[$x] = substr($times[$x], 0, 2) . ':' .
-					substr($times[$x], 2, 2) . ':' .
-					substr($times[$x], 4, 2);
+				substr($times[$x], 2, 2) . ':' .
+				substr($times[$x], 4, 2);
 		}
 
 		return $times;
@@ -692,9 +687,9 @@ class MarcRecord extends IndexRecord
 		if ($seriesInfo == null || count($seriesInfo) == 0) {
 			// First check the 440, 800 and 830 fields for series information:
 			$primaryFields = array(
-					'440' => array('a', 'p'),
-					'800' => array('a', 'b', 'c', 'd', 'f', 'p', 'q', 't'),
-					'830' => array('a', 'p'));
+				'440' => array('a', 'p'),
+				'800' => array('a', 'b', 'c', 'd', 'f', 'p', 'q', 't'),
+				'830' => array('a', 'p'));
 			$matches = $this->getSeriesFromMARC($primaryFields);
 			if (!empty($matches)) {
 				return $matches;
@@ -983,7 +978,7 @@ class MarcRecord extends IndexRecord
 
 		// Build the URL to pass data to RefWorks:
 		$exportUrl = $configArray['Site']['url'] . '/Record/' .
-				urlencode($this->getUniqueID()) . '/Export?style=refworks_data';
+			urlencode($this->getUniqueID()) . '/Export?style=refworks_data';
 
 		// Build up the RefWorks URL:
 		$url = $configArray['RefWorks']['url'] . '/express/expressimport.asp';
@@ -1032,8 +1027,8 @@ class MarcRecord extends IndexRecord
 			$sevenHundredFields = $this->getMarcRecord()->getFields('700|710', true);
 			foreach ($sevenHundredFields as $field) {
 				$curContributor = array(
-						'name' => reset($this->getSubfieldArray($field, array('a', 'b', 'c', 'd'), true)),
-						'title' => reset($this->getSubfieldArray($field, array('t', 'm', 'n', 'r'), true)),
+					'name' => reset($this->getSubfieldArray($field, array('a', 'b', 'c', 'd'), true)),
+					'title' => reset($this->getSubfieldArray($field, array('t', 'm', 'n', 'r'), true)),
 				);
 				if ($field->getSubfield('4') != null) {
 					$contributorRole = $field->getSubfield('4')->getData();
@@ -1236,44 +1231,55 @@ class MarcRecord extends IndexRecord
 		}
 	}
 
-	function getFormats()
-	{
+	function getFormats(){
 		return $this->getFormat();
 	}
 
+	private $format;
 	/**
 	 * Load the format for the record based off of information stored within the grouped work.
 	 * Which was calculated at index time.
 	 *
 	 * @return string[]
 	 */
-	function getFormat()
-	{
-		//Rather than loading formats here, let's leverage the work we did at index time
-		$recordDetails = $this->getGroupedWorkDriver()->getSolrField('record_details');
-		if ($recordDetails) {
-			if (!is_array($recordDetails)) {
-				$recordDetails = array($recordDetails);
-			}
-			foreach ($recordDetails as $recordDetailRaw) {
-				$recordDetail = explode('|', $recordDetailRaw);
-				if ($recordDetail[0] == $this->getIdWithSource()) {
-					return array($recordDetail[1]);
+	function getFormat(){
+		if (empty($this->format)){
+			//Rather than loading formats here, let's leverage the work we did at index time
+			$recordDetails = $this->getGroupedWorkDriver()->getSolrField('record_details');
+			if ($recordDetails){
+				if (!is_array($recordDetails)){
+					$recordDetails = array($recordDetails);
+				}
+				foreach ($recordDetails as $recordDetailRaw){
+					$recordDetail = explode('|', $recordDetailRaw);
+					if ($recordDetail[0] == $this->getIdWithSource()){
+						$this->format = array($recordDetail[1]);
+						return $this->format;
+					}
 				}
 			}
 			//We did not find a record for this in the index.  It's probably been deleted.
-			return array('Unknown');
-		} else {
-			return array('Unknown');
+			$this->format = array('Unknown');
 		}
+		return $this->format;
 	}
 
-	function getRecordUrl()
-	{
+	public function getModule(){
+		return isset($this->indexingProfile) ? $this->indexingProfile->recordUrlComponent : 'Record';
+	}
+
+	function getRecordUrl(){
 		global $configArray;
 		$recordId = $this->getUniqueID();
 
 		return $configArray['Site']['path'] . "/{$this->indexingProfile->recordUrlComponent}/$recordId";
+	}
+
+	function getAbsoluteUrl(){
+		global $configArray;
+		$recordId = $this->getUniqueID();
+
+		return $configArray['Site']['url'] . "/{$this->indexingProfile->recordUrlComponent}/$recordId";
 	}
 
 	public function getItemActions($itemInfo)
@@ -1314,37 +1320,37 @@ class MarcRecord extends IndexRecord
 						$id = $this->getIdWithSource();
 						$id .= ':' . $volumeInfo->volumeId;
 						$actions[] = array(
-								'title'        => 'Hold ' . $volumeInfo->displayLabel,
-								'url'          => '',
-								'onclick'      => "return VuFind.Record.showPlaceHold('{$this->getModule()}', '$id');",
-								'requireLogin' => false,
+							'title'        => 'Hold ' . $volumeInfo->displayLabel,
+							'url'          => '',
+							'onclick'      => "return VuFind.Record.showPlaceHold('{$this->getModule()}', '$id');",
+							'requireLogin' => false,
 						);
 					}
 				}
 			} else {
 				$actions[] = array(
-						'title'        => 'Place Hold',
-						'url'          => '',
-						'onclick'      => "return VuFind.Record.showPlaceHold('{$this->getModule()}', '{$this->getIdWithSource()}');",
-						'requireLogin' => false,
+					'title'        => 'Place Hold',
+					'url'          => '',
+					'onclick'      => "return VuFind.Record.showPlaceHold('{$this->getModule()}', '{$this->getIdWithSource()}');",
+					'requireLogin' => false,
 				);
 			}
 		}
 		if ($isBookable && $library->enableMaterialsBooking) {
 			$actions[] = array(
-					'title'        => 'Schedule Item',
-					'url'          => '',
-					'onclick'      => "return VuFind.Record.showBookMaterial('{$this->getModule()}', '{$this->getId()}');",
-					'requireLogin' => false,
+				'title'        => 'Schedule Item',
+				'url'          => '',
+				'onclick'      => "return VuFind.Record.showBookMaterial('{$this->getModule()}', '{$this->getId()}');",
+				'requireLogin' => false,
 			);
 		}
 
 		$archiveLink = GroupedWorkDriver::getArchiveLinkForWork($this->getGroupedWorkId());
 		if ($archiveLink != null){
 			$actions[] = array(
-					'title'        => 'View Online',
-					'url'          => $archiveLink,
-					'requireLogin' => false,
+				'title'        => 'View Online',
+				'url'          => $archiveLink,
+				'requireLogin' => false,
 			);
 		}
 
@@ -1394,11 +1400,12 @@ class MarcRecord extends IndexRecord
 	 * @access  protected
 	 * @return  array
 	 */
-	public function getPhysicalDescriptions()
-	{
+	public function getPhysicalDescriptions(){
 		$physicalDescription1 = $this->getFieldArray("300", array('a', 'b', 'c', 'e', 'f', 'g'));
 		$physicalDescription2 = $this->getFieldArray("530", array('a', 'b', 'c', 'd'));
-		return array_merge($physicalDescription1, $physicalDescription2);
+		$physicalDescriptions = array_merge($physicalDescription1, $physicalDescription2);
+		$physicalDescriptions = preg_replace(array("/[\/|;:]$/","/p\./"), array('', 'pages'), $physicalDescriptions);
+		return $physicalDescriptions;
 	}
 
 	/**
@@ -1428,6 +1435,16 @@ class MarcRecord extends IndexRecord
 		}
 
 		return $publicationDates;
+	}
+
+	public function getStreetDate(){
+		$streetDate = $this->getFirstFieldValue('263'); // This will automatically look for subfield 'a'
+		return $streetDate;
+	}
+
+	public function getMPAARating(){
+		$streetDate = $this->getFirstFieldValue('521'); // This will automatically look for subfield 'a'
+		return $streetDate;
 	}
 
 	/**
@@ -1640,14 +1657,14 @@ class MarcRecord extends IndexRecord
 
 		if ($library->show856LinksAsTab && count($links) > 0) {
 			$moreDetailsOptions['links'] = array(
-					'label' => 'Links',
-					'body' => $interface->fetch('Record/view-links.tpl'),
+				'label' => 'Links',
+				'body' => $interface->fetch('Record/view-links.tpl'),
 			);
 		}
 		$moreDetailsOptions['copies'] = array(
-				'label' => 'Copies',
-				'body' => $interface->fetch('Record/view-holdings.tpl'),
-				'openByDefault' => true
+			'label' => 'Copies',
+			'body' => $interface->fetch('Record/view-holdings.tpl'),
+			'openByDefault' => true
 		);
 		//Other editions if applicable (only if we aren't the only record!)
 		$groupedWorkDriver = $this->getGroupedWorkDriver();
@@ -1656,31 +1673,31 @@ class MarcRecord extends IndexRecord
 			if (count($relatedRecords) > 1) {
 				$interface->assign('relatedManifestations', $groupedWorkDriver->getRelatedManifestations());
 				$moreDetailsOptions['otherEditions'] = array(
-						'label' => 'Other Editions and Formats',
-						'body' => $interface->fetch('GroupedWork/relatedManifestations.tpl'),
-						'hideByDefault' => false
+					'label' => 'Other Editions and Formats',
+					'body' => $interface->fetch('GroupedWork/relatedManifestations.tpl'),
+					'hideByDefault' => false
 				);
 			}
 		}
 
 		$moreDetailsOptions['moreDetails'] = array(
-				'label' => 'More Details',
-				'body' => $interface->fetch('Record/view-more-details.tpl'),
+			'label' => 'More Details',
+			'body' => $interface->fetch('Record/view-more-details.tpl'),
 		);
 		$this->loadSubjects();
 		$moreDetailsOptions['subjects'] = array(
-				'label' => 'Subjects',
-				'body' => $interface->fetch('Record/view-subjects.tpl'),
+			'label' => 'Subjects',
+			'body' => $interface->fetch('Record/view-subjects.tpl'),
 		);
 		$moreDetailsOptions['citations'] = array(
-				'label' => 'Citations',
-				'body' => $interface->fetch('Record/cite.tpl'),
+			'label' => 'Citations',
+			'body' => $interface->fetch('Record/cite.tpl'),
 		);
 
 		if ($interface->getVariable('showStaffView')) {
 			$moreDetailsOptions['staff'] = array(
-					'label' => 'Staff View',
-					'body' => $interface->fetch($this->getStaffView()),
+				'label' => 'Staff View',
+				'body' => $interface->fetch($this->getStaffView()),
 			);
 		}
 
@@ -1746,8 +1763,8 @@ class MarcRecord extends IndexRecord
 								}
 							}
 							$subject[$title] = array(
-									'search' => trim($search),
-									'title' => $title,
+								'search' => trim($search),
+								'title' => $title,
 							);
 							switch ($type) {
 								case 'fast' :
@@ -1820,7 +1837,8 @@ class MarcRecord extends IndexRecord
 		if ($this->marcRecord == null) {
 			disableErrorHandler();
 			try {
-				$this->marcRecord = MarcLoader::loadMarcRecordByILSId("{$this->profileType}:{$this->id}");
+//				$this->marcRecord = MarcLoader::loadMarcRecordByILSId("{$this->profileType}:{$this->id}");
+				$this->marcRecord = MarcLoader::loadMarcRecordByILSId($this->getIdWithSource());
 				if (PEAR_Singleton::isError($this->marcRecord) || $this->marcRecord == false) {
 					$this->valid = false;
 					$this->marcRecord = false;
@@ -1924,8 +1942,8 @@ class MarcRecord extends IndexRecord
 				$ilsHoldInfo->ilsId = $volumeInfo->volumeId;
 				if ($ilsHoldInfo->find(true)) {
 					$holdInfo[] = array(
-							'label' => $volumeInfo->displayLabel,
-							'numHolds' => $ilsHoldInfo->numHolds
+						'label' => $volumeInfo->displayLabel,
+						'numHolds' => $ilsHoldInfo->numHolds
 					);
 				}
 			}
@@ -1936,53 +1954,53 @@ class MarcRecord extends IndexRecord
 	function getNotes()
 	{
 		$additionalNotesFields = array(
-				'310' => 'Current Publication Frequency',
-				'321' => 'Former Publication Frequency',
-				'351' => 'Organization & arrangement of materials',
-				'362' => 'Dates of publication and/or sequential designation',
-				'500' => 'General Note',
-				'501' => '"With"',
-				'502' => 'Dissertation',
-				'504' => 'Bibliography',
-				'506' => 'Restrictions on Access',
-				'507' => 'Scale for Graphic Material',
-				'508' => 'Creation/Production Credits',
-				'510' => 'Citation/References',
-				'511' => 'Participants/Performers',
-				'513' => 'Type of Report an Period Covered',
-				'515' => 'Numbering Peculiarities',
-				'518' => 'Date/Time and Place of Event',
-				'520' => 'Description',
-				'521' => 'Target Audience',
-				'522' => 'Geographic Coverage',
-				'524' => 'Preferred Citation of Described Materials',
-				'525' => 'Supplement',
-				'526' => 'Study Program Information',
-				'530' => 'Additional Physical Form',
-				'533' => 'Reproduction',
-				'534' => 'Original Version',
-				'535' => 'Location of Originals/Duplicates',
-				'536' => 'Funding Information',
-				'538' => 'System Details',
-				'540' => 'Terms Governing Use and Reproduction',
-				'541' => 'Immediate Source of Acquisition',
-				'544' => 'Location of Other Archival Materials',
-				'545' => 'Biographical or Historical Data',
-				'546' => 'Language',
-				'547' => 'Former Title Complexity',
-				'550' => 'Issuing Body',
-				'555' => 'Cumulative Index/Finding Aids',
-				'556' => 'Information About Documentation',
-				'561' => 'Ownership and Custodial History',
-				'563' => 'Binding Information',
-				'580' => 'Linking Entry Complexity',
-				'581' => 'Publications About Described Materials',
-				'583' => 'Action',
-				'584' => 'Accumulation and Frequency of Use',
-				'585' => 'Exhibitions',
-				'586' => 'Awards',
-				'590' => 'Local note',
-				'599' => 'Differentiable Local note',
+			'310' => 'Current Publication Frequency',
+			'321' => 'Former Publication Frequency',
+			'351' => 'Organization & arrangement of materials',
+			'362' => 'Dates of publication and/or sequential designation',
+			'500' => 'General Note',
+			'501' => '"With"',
+			'502' => 'Dissertation',
+			'504' => 'Bibliography',
+			'506' => 'Restrictions on Access',
+			'507' => 'Scale for Graphic Material',
+			'508' => 'Creation/Production Credits',
+			'510' => 'Citation/References',
+			'511' => 'Participants/Performers',
+			'513' => 'Type of Report an Period Covered',
+			'515' => 'Numbering Peculiarities',
+			'518' => 'Date/Time and Place of Event',
+			'520' => 'Description',
+			'521' => 'Target Audience',
+			'522' => 'Geographic Coverage',
+			'524' => 'Preferred Citation of Described Materials',
+			'525' => 'Supplement',
+			'526' => 'Study Program Information',
+			'530' => 'Additional Physical Form',
+			'533' => 'Reproduction',
+			'534' => 'Original Version',
+			'535' => 'Location of Originals/Duplicates',
+			'536' => 'Funding Information',
+			'538' => 'System Details',
+			'540' => 'Terms Governing Use and Reproduction',
+			'541' => 'Immediate Source of Acquisition',
+			'544' => 'Location of Other Archival Materials',
+			'545' => 'Biographical or Historical Data',
+			'546' => 'Language',
+			'547' => 'Former Title Complexity',
+			'550' => 'Issuing Body',
+			'555' => 'Cumulative Index/Finding Aids',
+			'556' => 'Information About Documentation',
+			'561' => 'Ownership and Custodial History',
+			'563' => 'Binding Information',
+			'580' => 'Linking Entry Complexity',
+			'581' => 'Publications About Described Materials',
+			'583' => 'Action',
+			'584' => 'Accumulation and Frequency of Use',
+			'585' => 'Exhibitions',
+			'586' => 'Awards',
+			'590' => 'Local note',
+			'599' => 'Differentiable Local note',
 		);
 
 		$notes = array();
@@ -2027,9 +2045,9 @@ class MarcRecord extends IndexRecord
 						$sectionName = $copyInfo['sectionId'];
 						if (!array_key_exists($sectionName, $this->holdingSections)) {
 							$this->holdingSections[$sectionName] = array(
-									'name' => $copyInfo['section'],
-									'sectionId' => $copyInfo['sectionId'],
-									'holdings' => array(),
+								'name' => $copyInfo['section'],
+								'sectionId' => $copyInfo['sectionId'],
+								'holdings' => array(),
 							);
 						}
 						if ($copyInfo['shelfLocation'] != '') {
@@ -2141,7 +2159,7 @@ class MarcRecord extends IndexRecord
 					$haveIssueSummary = false;
 					$issueSummaryKey = null;
 					foreach ($issueSummaries as $issueKey => $issueSummary) {
-						if ($issueSummary['location'] == $holding['shelfLocation']) {
+						if (!empty($issueSummary['location']) && $issueSummary['location'] == $holding['shelfLocation']) {
 							$haveIssueSummary = true;
 							$issueSummaryKey = $issueKey;
 							break;
@@ -2152,9 +2170,9 @@ class MarcRecord extends IndexRecord
 					} else {
 						//Need to automatically add a summary so we don't lose data
 						$issueSummaries[$holding['shelfLocation']] = array(
-								'location' => $holding['shelfLocation'],
-								'type' => 'issue',
-								'holdings' => array(strtolower($key) => $holding),
+							'location' => $holding['shelfLocation'],
+							'type' => 'issue',
+							'holdings' => array(strtolower($key) => $holding),
 						);
 					}
 				}
@@ -2192,8 +2210,8 @@ class MarcRecord extends IndexRecord
 						$title = $url;
 					}
 					$links[] = array(
-							'title' => $title,
-							'url' => $url,
+						'title' => $title,
+						'url' => $url,
 					);
 				}
 			}
@@ -2202,21 +2220,21 @@ class MarcRecord extends IndexRecord
 		return $links;
 	}
 
-	public function getSemanticData() {
+	public function getSemanticData(){
 		// Schema.org
 		// Get information about the record
 		require_once ROOT_DIR . '/RecordDrivers/LDRecordOffer.php';
 		$linkedDataRecord = new LDRecordOffer($this->getGroupedWorkDriver()->getRelatedRecord($this->getIdWithSource()));
-		$semanticData [] = array(
-				'@context' => 'http://schema.org',
-				'@type' => $linkedDataRecord->getWorkType(),
-				'name' => $this->getTitle(),
-				'exampleOfWork' => $this->getGroupedWorkDriver()->getLinkUrl(true),
-				'author' => $this->getPrimaryAuthor(),
-				'bookEdition' => $this->getEdition(),
-				'isAccessibleForFree' => true,
-				'image' => $this->getBookcoverUrl('medium'),
-				"offers" => $linkedDataRecord->getOffers()
+		$semanticData []  = array(
+			'@context'            => 'http://schema.org',
+			'@type'               => $linkedDataRecord->getWorkType(),
+			'name'                => $this->getTitle(),
+			'exampleOfWork'       => $this->getGroupedWorkDriver()->getAbsoluteUrl(),
+			'author'              => $this->getPrimaryAuthor(),
+			'bookEdition'         => $this->getEdition(),
+			'isAccessibleForFree' => true,
+			'image'               => $this->getBookcoverUrl('medium'),
+			"offers"              => $linkedDataRecord->getOffers(),
 		);
 
 		//Open graph data (goes in meta tags)

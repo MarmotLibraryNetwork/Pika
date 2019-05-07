@@ -154,7 +154,7 @@ class Hoopla_AJAX extends Action
 					}
 					$checkOutStatus = $hooplaUserStatuses[$hooplaUser->id];
 					if (!$checkOutStatus) {
-						require_once ROOT_DIR . '/RecordDrivers/HooplaDriver.php';
+						require_once ROOT_DIR . '/RecordDrivers/HooplaRecordDriver.php';
 						$hooplaRecord = new HooplaRecordDriver($id);
 						$accessLink = reset($hooplaRecord->getAccessLink()); // Base Hoopla Title View Url
 						$hooplaRegistrationUrl = $accessLink['url'];

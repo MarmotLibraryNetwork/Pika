@@ -2837,7 +2837,7 @@ class GroupedWorkDriver extends RecordInterface{
 	 * @param array       $activePTypes
 	 * @param Location    $searchLocation
 	 * @param Library     $library
-	 * @param bool       $forCovers
+	 * @param bool        $forCovers
 	 * @return array
 	 */
 	//TODO: this function should be optimized much more when loading for covers
@@ -3186,6 +3186,12 @@ class GroupedWorkDriver extends RecordInterface{
 		$recordId = $this->getUniqueID();
 
 		return $configArray['Site']['path'] . '/GroupedWork/' . urlencode($recordId) . '/Home';
+	}
+
+	public function getAbsoluteUrl() {
+		global $configArray;
+		$recordId = $this->getUniqueID();
+		return $configArray['Site']['url'] . '/' . $this->getModule() . '/' . urlencode($recordId) . '/Home';
 	}
 
 	public function getModule() {

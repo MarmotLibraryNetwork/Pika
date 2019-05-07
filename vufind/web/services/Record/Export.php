@@ -23,7 +23,19 @@ require_once ROOT_DIR . '/sys/Proxy_Request.php';
 
 class Record_Export extends Record_Record
 {
-    function launch()
+
+	function __construct($subAction = false, $record_id = null){
+		parent::__construct($subAction, $record_id);
+		$marcRecord = $this->recordDriver->getMarcRecord();
+		if ($marcRecord){
+			global $interface;
+			$interface->assign('marc', $marcRecord);
+			$interface->assign('recordLanguage', $this->recordDriver->getLanguage());
+			$interface->assign('recordFormat', $this->recordDriver->getFormat());
+		}
+	}
+
+	function launch()
     {
         global $interface;
 

@@ -53,7 +53,7 @@ class BookCoverProcessor{
 			}
 		}else if ($this->type == 'hoopla'){
 			//Will exit if we find a cover
-			if ($this->getHooplaCover($this->id)){
+			if ($this->getHooplaCover($this->type.':'.$this->id)){
 				return;
 			}
 		}elseif ($this->type == 'Colorado State Government Documents'){
@@ -129,13 +129,9 @@ class BookCoverProcessor{
 
 	}
 
-	private function getHooplaCover($id){
-		require_once ROOT_DIR . '/RecordDrivers/HooplaDriver.php';
-		if (strpos($id, ':') !== false){
-			list(, $id) = explode(":", $id);
-		}
-
-		$driver = new HooplaRecordDriver($id);
+	private function getHooplaCover($sourceAndId){
+		require_once ROOT_DIR . '/RecordDrivers/HooplaRecordDriver.php';
+		$driver = new HooplaRecordDriver($sourceAndId);
 		if ($driver->isValid()){
 			/** @var File_MARC_Data_Field[] $linkFields */
 			$linkFields = $driver->getMarcRecord()->getFields('856');
@@ -227,7 +223,9 @@ class BookCoverProcessor{
 		require_once ROOT_DIR . '/sys/OverDrive/OverDriveAPIProduct.php';
 		require_once ROOT_DIR . '/sys/OverDrive/OverDriveAPIProductMetaData.php';
 		$overDriveProduct = new OverDriveAPIProduct();
-		list(, $id) = explode(":", $id);
+		if (!empty($id)){
+			list(, $id) = explode(":", $id);
+		}
 		$overDriveProduct->overdriveId = $id == null ? $this->id : $id;
 		if ($overDriveProduct->find(true)){
 			$overDriveMetadata = new OverDriveAPIProductMetaData();

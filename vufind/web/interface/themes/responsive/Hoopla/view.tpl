@@ -7,11 +7,11 @@
 
 		{* Display Title *}
 		<h2>
-			{$recordDriver->getTitle()|escape}
+			{$recordDriver->getTitle()|removeTrailingPunctuation|escape}
 			{if $recordDriver->getSubTitle()}: {$recordDriver->getSubTitle()|escape}{/if}
 			{if $recordDriver->getTitleSection()} {$recordDriver->getTitleSection()|escape}{/if}
 			{if $recordDriver->getFormats()}
-				<br/><small>({implode subject=$recordDriver->getFormats() glue=", "})</small>
+				<br><small>({implode subject=$recordDriver->getFormats() glue=", "})</small>
 			{/if}
 		</h2>
 
@@ -38,7 +38,6 @@
 				{/if}
 
 				<div class="row">
-
 					<div id="record-details-column" class="col-xs-12 col-sm-12 col-md-9">
 						{include file="Hoopla/view-title-details.tpl"}
 					</div>
@@ -47,21 +46,19 @@
 						<div class="btn-toolbar">
 							<div class="btn-group btn-group-vertical btn-block">
 								{* Options for the user to view online or download *}
-								{foreach from=$summaryActions item=link}
-									<a href="{if $link.url}{$link.url}{else}#{/if}" {if $link.onclick && strlen($link.onclick) > 0}onclick="{$link.onclick}"{/if} class="btn btn-sm btn-primary"{if $link.url} target="_blank"{/if}>{$link.title}</a>&nbsp;
+								{foreach from=$actions item=link}
+									<a href="{if $link.url}{$link.url}{else}#{/if}" {if !empty($link.onclick)}onclick="{$link.onclick}"{/if} class="btn btn-sm btn-primary"{if $link.url} target="_blank"{/if}>{$link.title}</a>&nbsp;
 								{/foreach}
 							</div>
 						</div>
 					</div>
+				</div>
 
 					<div class="row">
 						<div class="col-xs-12">
 							{include file='GroupedWork/result-tools-horizontal.tpl' summId=$recordDriver->getPermanentId() summShortId=$recordDriver->getPermanentId() ratingData=$recordDriver->getRatingData() recordUrl=$recordDriver->getLinkUrl() showMoreInfo=false}
 						</div>
 					</div>
-
-				</div>
-
 
 			</div>
 		</div>
