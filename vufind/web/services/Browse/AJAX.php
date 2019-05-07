@@ -178,10 +178,12 @@ class Browse_AJAX extends Action {
 		if ($this->browseCategory && !$reload) return $this->browseCategory;
 
 		require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
-		$browseCategory = new BrowseCategory();
+		$browseCategory         = new BrowseCategory();
 		$browseCategory->textId = $this->textId;
-		$result = $browseCategory->find(true);
-		if ($result) $this->browseCategory = $browseCategory;
+		$result                 = $browseCategory->find(true);
+		if ($result){
+			$this->browseCategory = $browseCategory;
+		}
 		return $this->browseCategory;
 	}
 
@@ -191,8 +193,8 @@ class Browse_AJAX extends Action {
 		if (!isset($_REQUEST['reload'])) {
 			/** @var Memcache $memCache */
 			global $memCache, $solrScope;
-			$activeUserId = UserAccount::getActiveUserId();
-			$key = 'browse_category_' . $this->textId . '_' . $activeUserId . '_' . $solrScope . '_' . $browseMode;
+			$activeUserId       = UserAccount::getActiveUserId();
+			$key                = 'browse_category_' . $this->textId . '_' . $activeUserId . '_' . $solrScope . '_' . $browseMode;
 			$browseCategoryInfo = $memCache->get($key);
 			if ($browseCategoryInfo != false){
 				return $browseCategoryInfo;
@@ -201,14 +203,14 @@ class Browse_AJAX extends Action {
 
 		global $interface;
 		$interface->assign('browseCategoryId', $this->textId);
-		$result['success'] = true;
-		$result['textId'] = $this->textId;
-		$result['label'] = translate('Recommended for you');
+		$result['success']   = true;
+		$result['textId']    = $this->textId;
+		$result['label']     = translate('Recommended for you');
 		$result['searchUrl'] = '/MyAccount/SuggestedTitles';
 
 		require_once ROOT_DIR . '/services/MyResearch/lib/Suggestions.php';
 		$suggestions = Suggestions::getSuggestions(-1, self::ITEMS_PER_PAGE);
-		$records = array();
+		$records     = array();
 		foreach ($suggestions as $suggestedItemId => $suggestionData) {
 			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 			if (array_key_exists('recordDriver', $suggestionData['titleInfo'])) {

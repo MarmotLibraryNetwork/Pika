@@ -106,6 +106,10 @@ class BookCoverProcessor{
 			if ($this->getZinioCover($this->type.':'.$this->id)) {
 				return;
 			}
+		} elseif (stripos($this->type, 'Creative Bug') !== false){
+			if ($this->getCreativeBugCover($this->type.':'.$this->id)) {
+				return;
+			}
 		}
 		$this->log("Looking for cover from providers", PEAR_LOG_INFO);
 		if ($this->getCoverFromProvider()){
@@ -255,6 +259,28 @@ class BookCoverProcessor{
 						$coverUrl = $linkField->getSubfield('u')->getData();
 						$coverUrl = str_replace('size=200','size=lg',$coverUrl);
 						return $this->processImageURL($coverUrl, true);
+					}
+				}
+			}
+		}
+		return false;
+	}
+
+	private function getCreativeBugCover($sourceAndId) {
+		if (strpos($sourceAndId, ':') !== false){
+			// Sideloaded Record requires both source & id
+			require_once ROOT_DIR . '/RecordDrivers/SideLoadedRecord.php';
+			$driver = new SideLoadedRecord($sourceAndId);
+			if ($driver) {
+				$linkFields = $driver->getMarcRecord()->getFields('856');
+				foreach ($linkFields as $linkField) {
+					// TODO: use additional field checks like in getCoverFromMarc() ?
+					if ($linkField->getIndicator(1) == 4 && $linkField->getSubfield('a')) {
+						$fieldData = $linkField->getSubfield('a')->getData();
+						if(stripos($fieldData, '.jpg') > 0 || stripos($fieldData, '.png') > 0) {
+							$coverUrl = $fieldData;
+							return $this->processImageURL($coverUrl, true);
+						}
 					}
 				}
 			}
@@ -1166,6 +1192,10 @@ class BookCoverProcessor{
 					}
 				} elseif (stripos($relatedRecord['source'], 'cloud') !== false){
 					if ($this->getSideLoadedCover($relatedRecord['id'])) {
+						return true;
+					}
+				} elseif (stripos($relatedRecord['source'], 'Creative Bug') !== false){
+					if ($this->getCreativeBugCover($relatedRecord['id'])) {
 						return true;
 					}
 				} elseif (stripos($relatedRecord['source'], 'rbdigital') !== false || stripos($relatedRecord['source'], 'zinio') !== false){

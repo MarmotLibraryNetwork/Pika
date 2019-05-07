@@ -85,6 +85,8 @@ class IndexingProfile extends DB_DataObject{
 	public $doAutomaticEcontentSuppression;
 	public $groupUnchangedFiles;
 	public $materialTypeField;
+	public $formatDeterminationMethod;
+	public $materialTypesToIgnore;
 
 	function getObjectStructure(){
 		$translationMapStructure = TranslationMap::getObjectStructure();
@@ -97,45 +99,59 @@ class IndexingProfile extends DB_DataObject{
 			'id'                         => array('property'=>'id',                           'type'=>'label',  'label'=>'Id', 'description'=>'The unique id within the database'),
 			'name'                       => array('property' => 'name',                       'type' => 'text', 'label' => 'Name', 'maxLength' => 50, 'description' => 'A name for this indexing profile', 'required' => true),
 			'recordUrlComponent'         => array('property' => 'recordUrlComponent',         'type' => 'text', 'label' => 'Record URL Component', 'maxLength' => 50, 'description' => 'The Module to use within the URL', 'required' => true, 'default' => 'Record', 'serverValidation' => 'validateRecordUrlComponent'),
-			'recordNumberTag'            => array('property' => 'recordNumberTag',            'type' => 'text', 'label' => 'Record Number Tag', 'maxLength' => 3, 'description' => 'The MARC tag where the record number can be found', 'required' => true),
-			'recordNumberField'          => array('property' => 'recordNumberField',          'type' => 'text', 'label' => 'Record Number Field', 'maxLength' => 1, 'description' => 'The subfield of the record number tag where the record number can be found', 'required' => true, 'default' => 'a'),
-			'recordNumberPrefix'         => array('property' => 'recordNumberPrefix',         'type' => 'text', 'label' => 'Record Number Prefix', 'maxLength' => 10, 'description' => 'A prefix to identify the bib record number if multiple MARC tags exist'),
-			'sierraRecordFixedFieldsTag' => array('property' => 'sierraRecordFixedFieldsTag', 'type' => 'text', 'label' => 'Sierra Record/Bib level Fixed Fields Tag', 'maxLength' => 3, 'description' => 'The MARC tag where the Sierra fixed fields can be found, specifically the bcode3'),
-			'materialTypeField'          => array('property' => 'materialTypeField',          'type' => 'text', 'label' => 'Material Type Sub Field', 'maxLength' => 3, 'description' => 'Material Type Field', 'hideInLists' => true),
-			//'matTypeSubfield'            => array('property' => 'matTypeSubfield', 'type' => 'text', 'label' => 'Material Type Subfield (Sierra: BCode2)', 'maxLength' => 1, 'description' => 'Bib level Subfield for Material Type (depends on setting the Sierra Record/Bib level Fixed Fields Tag) '),
 
-			'serverFileSection' =>array('property'=>'serverFileSection', 'type' => 'section', 'label' =>'MARC File Settings ', 'hideInLists' => true,
+			'serverFileSection' => array('property'=>'serverFileSection', 'type' => 'section', 'label' =>'MARC File Settings ', 'hideInLists' => true,
 			                            'helpLink' => '', 'properties' => array(
 
 			'marcPath'                          => array('property' => 'marcPath', 'type' => 'text', 'label' => 'MARC Path', 'maxLength' => 100, 'description' => 'The path on the server where MARC records can be found', 'required' => true),
 			'filenamesToInclude'                => array('property' => 'filenamesToInclude', 'type' => 'text', 'label' => 'Filenames to Include', 'maxLength' => 250, 'description' => 'A regular expression to determine which files should be grouped and indexed', 'required' => true, 'default' => '.*\.ma?rc'),
-			'groupUnchangedFiles'               => array('property' => 'groupUnchangedFiles', 'type' => 'checkbox', 'label' => 'Group unchanged files', 'description' => 'Whether or not files that have not changed since the last time grouping has run will be processed.', 'default' => true),
 			'marcEncoding'                      => array('property' => 'marcEncoding', 'type' => 'enum', 'label' => 'MARC Encoding', 'values' => array('MARC8' => 'MARC8', 'UTF8' => 'UTF8', 'UNIMARC' => 'UNIMARC', 'ISO8859_1' => 'ISO8859_1', 'BESTGUESS' => 'BESTGUESS'), 'default' => 'MARC8'),
-			'individualMarcPath'                => array('property' => 'individualMarcPath', 'type' => 'text', 'label' => 'Individual MARC Path', 'maxLength' => 100, 'description' => 'The path on the server where individual MARC records can be found', 'required' => true),
-			'numCharsToCreateFolderFrom'        => array('property' => 'numCharsToCreateFolderFrom', 'type' => 'integer', 'label' => 'Number of characters to create folder from', 'maxLength' => 50, 'description' => 'The number of characters to use when building a sub folder for individual marc records', 'required' => false, 'default' => '4'),
-			'createFolderFromLeadingCharacters' => array('property'=>'createFolderFromLeadingCharacters', 'type'=>'checkbox', 'label'=>'Create Folder From Leading Characters', 'description'=>'Whether we should look at the start or end of the folder when .', 'hideInLists' => true, 'default' => 0),
+			'groupUnchangedFiles'               => array('property' => 'groupUnchangedFiles', 'type' => 'checkbox', 'label' => 'Group unchanged files', 'description' => 'Whether or not files that have not changed since the last time grouping has run will be processed.', 'default' => true),
+			'individualMARCFileSettingsSection' => array(
+				'property' => 'individualMARCFileSettingsSection', 'type' => 'section', 'label' => 'Individual Record Files', 'hideInLists' => true,
+				'helpLink' => '', 'properties' => array(
+					'individualMarcPath'                => array('property' => 'individualMarcPath', 'type' => 'text', 'label' => 'Individual MARC Path', 'maxLength' => 100, 'description' => 'The path on the server where individual MARC records can be found', 'required' => true),
+					'numCharsToCreateFolderFrom'        => array('property' => 'numCharsToCreateFolderFrom', 'type' => 'integer', 'label' => 'Number of characters to create folder from', 'maxLength' => 50, 'description' => 'The number of characters to use when building a sub folder for individual marc records', 'required' => false, 'default' => '4'),
+					'createFolderFromLeadingCharacters' => array('property'=>'createFolderFromLeadingCharacters', 'type'=>'checkbox', 'label'=>'Create Folder From Leading Characters', 'description'=>'Whether we should look at the start or end of the folder when .', 'hideInLists' => true, 'default' => 0),
+						)),
 				)),
 
-			'DriverSection' =>array('property'=>'DriverSection', 'type' => 'section', 'label' =>'Pika Driver Settings', 'hideInLists' => true,
+			'DriverSection' => array('property'=>'DriverSection', 'type' => 'section', 'label' =>'Pika Driver Settings', 'hideInLists' => true,
 			                                     'helpLink' => '', 'properties' => array(
-
-
-			'groupingClass' => array('property' => 'groupingClass', 'type' => 'text', 'label' => 'Grouping Class', 'maxLength' => 50, 'description' => 'The class to use while grouping the records', 'required' => true, 'default' => 'MarcRecordGrouper'),
-			'indexingClass' => array('property' => 'indexingClass', 'type' => 'text', 'label' => 'Indexing Class', 'maxLength' => 50, 'description' => 'The class to use while indexing the records', 'required' => true, 'default' => 'IlsRecord'),
-			'recordDriver'  => array('property' => 'recordDriver', 'type' => 'text', 'label' => 'Record Driver', 'maxLength' => 50, 'description' => 'The record driver to use while displaying information in Pika', 'required' => true, 'default' => 'MarcRecord'),
-			'catalogDriver' => array('property' => 'catalogDriver', 'type' => 'text', 'label' => 'Catalog Driver', 'maxLength' => 50, 'description' => 'The catalog driver to use for ILS integration', 'required' => true, 'default' => 'DriverInterface'),
+					'groupingClass' => array('property' => 'groupingClass', 'type' => 'text', 'label' => 'Grouping Class', 'maxLength' => 50, 'description' => 'The class to use while grouping the records', 'required' => true, 'default' => 'MarcRecordGrouper'),
+					'indexingClass' => array('property' => 'indexingClass', 'type' => 'text', 'label' => 'Indexing Class', 'maxLength' => 50, 'description' => 'The class to use while indexing the records', 'required' => true, 'default' => 'IlsRecord'),
+					'recordDriver'  => array('property' => 'recordDriver', 'type' => 'text', 'label' => 'Record Driver', 'maxLength' => 50, 'description' => 'The record driver to use while displaying information in Pika', 'required' => true, 'default' => 'MarcRecord'),
+					'catalogDriver' => array('property' => 'catalogDriver', 'type' => 'text', 'label' => 'Catalog Driver', 'maxLength' => 50, 'description' => 'The catalog driver to use for ILS integration', 'required' => true, 'default' => 'DriverInterface'),
 				)),
 
-			'formatDeterminationSection' =>array('property'=>'formatDeterminationSection', 'type' => 'section', 'label' =>'Format Determination Settings', 'hideInLists' => true,
+			'formatDeterminationSection' => array('property'=>'formatDeterminationSection', 'type' => 'section', 'label' =>'Format Determination Settings', 'hideInLists' => true,
 			                            'helpLink' => '', 'properties' => array(
 
-			'formatSource'            => array('property' => 'formatSource', 'type' => 'enum', 'label' => 'Load Format from', 'values' => array('bib' => 'Bib Record', 'item' => 'Item Record', 'specified'=> 'Specified Value'), 'default' => 'bib'),
-			'specifiedFormat'         => array('property' => 'specifiedFormat', 'type' => 'text', 'label' => 'Specified Format', 'maxLength' => 50, 'description' => 'The format to set when using a defined format', 'required' => false, 'default' => ''),
-			'specifiedFormatCategory' => array('property' => 'specifiedFormatCategory', 'type' => 'enum', 'values' => array('', 'Books' => 'Books', 'eBook' => 'eBook', 'Audio Books' => 'Audio Books', 'Movies' => 'Movies', 'Music' => 'Music', 'Other' => 'Other'), 'label' => 'Specified Format Category', 'maxLength' => 50, 'description' => 'The format category to set when using a defined format', 'required' => false, 'default' => ''),
-			'specifiedFormatBoost'    => array('property' => 'specifiedFormatBoost', 'type' => 'integer', 'label' => 'Specified Format Boost', 'maxLength' => 50, 'description' => 'The format boost to set when using a defined format', 'required' => false, 'default' => '8'),
+			'formatSource'              => array('property' => 'formatSource',              'type' => 'enum',    'label' => 'Determine Format based on', 'values' => array('bib' => 'Bib Record', 'item' => 'Item Record', 'specified'=> 'Specified Value'), 'default' => 'bib'),
+			'bibFormatSection' => array('property'=>'bibFormatSection', 'type' => 'section', 'label' =>'Bib Format Determination Settings', 'hideInLists' => true,
+			                                  'helpLink' => '', 'properties' => array(
+					'formatDeterminationMethod' => array('property' => 'formatDeterminationMethod', 'type' => 'enum', 'label' => 'Format Determination Method', 'values' => array('bib' => 'Bib Record', 'matType' => 'Material Type'), 'default' => 'bib'),
+					'materialTypesToIgnore'     => array('property' => 'materialTypesToIgnore',     'type' => 'text', 'label' => 'Material Type Values to Ignore (ils profile only)', 'maxLength' => 50, 'description' => 'MatType values to ignore when using the MatType format determination. The bib format determination will be used instead. " " & "-" are always ignored.', 'hideInLists' => true),
+			)),
+
+			'specifiedFormatSection' => array('property'=>'specifiedFormatSection', 'type' => 'section', 'label' =>'Specified Format Settings', 'hideInLists' => true,
+			                                      'helpLink' => '', 'properties' => array(
+
+					'specifiedFormat'           => array('property' => 'specifiedFormat',           'type' => 'text',    'label' => 'Specified Format', 'maxLength' => 50, 'description' => 'The format to set when using a defined format', 'required' => false, 'default' => ''),
+					'specifiedFormatCategory'   => array('property' => 'specifiedFormatCategory',   'type' => 'enum',    'label' => 'Specified Format Category', 'values' => array('', 'Books' => 'Books', 'eBook' => 'eBook', 'Audio Books' => 'Audio Books', 'Movies' => 'Movies', 'Music' => 'Music', 'Other' => 'Other'), 'description' => 'The format category to set when using a defined format', 'required' => false, 'default' => ''),
+					'specifiedFormatBoost'      => array('property' => 'specifiedFormatBoost',      'type' => 'integer', 'label' => 'Specified Format Boost', 'maxLength' => 50, 'description' => 'The format boost to set when using a defined format', 'required' => false, 'default' => '8'),
+						)),
+					)),
+
+
+			'bibRecordSection' => array('property'=>'bibRecordSection', 'type' => 'section', 'label' =>'Record Settings', 'hideInLists' => true,
+			                            'helpLink' => '', 'properties' => array(
+					'recordNumberTag'            => array('property' => 'recordNumberTag',            'type' => 'text', 'label' => 'Record Number Tag', 'maxLength' => 3, 'description' => 'The MARC tag where the record number can be found', 'required' => true),
+					'recordNumberField'          => array('property' => 'recordNumberField',          'type' => 'text', 'label' => 'Record Number Field', 'maxLength' => 1, 'description' => 'The subfield of the record number tag where the record number can be found', 'required' => true, 'default' => 'a'),
+					'recordNumberPrefix'         => array('property' => 'recordNumberPrefix',         'type' => 'text', 'label' => 'Record Number Prefix', 'maxLength' => 10, 'description' => 'A prefix to identify the bib record number if multiple MARC tags exist'),
+					'sierraRecordFixedFieldsTag' => array('property' => 'sierraRecordFixedFieldsTag', 'type' => 'text', 'label' => 'Sierra Record/Bib level Fixed Fields Tag (ils profile only)', 'maxLength' => 3, 'description' => 'The MARC tag where the Sierra fixed fields can be found, specifically the bcode3'),
+					'materialTypeField'          => array('property' => 'materialTypeField',          'type' => 'text', 'label' => 'Material Type Sub Field (ils profile only)', 'maxLength' => 1, 'description' => 'Bib level Subfield for Material Type (depends on setting the Sierra Record/Bib level Fixed Fields Tag)', 'hideInLists' => true),
 				)),
-
-
 
 			'itemRecordSection' => array('property'=>'itemRecordSection', 'type' => 'section', 'label' =>'Item Tag Settings (ils profile only)', 'hideInLists' => true,
 			                         'helpLink' => '', 'properties' => array(
@@ -175,7 +191,7 @@ class IndexingProfile extends DB_DataObject{
 			'eContentDescriptor'      => array('property' => 'eContentDescriptor', 'type' => 'text', 'label' => 'eContent Descriptor', 'maxLength' => 1, 'description' => 'Subfield to indicate that the item should be processed as eContent and how to process it'),
 				)),
 
-			'nonholdableSection' =>array('property'=>'nonholdableSection', 'type' => 'section', 'label' =>'Non-holdable Settings (ils profile only)', 'hideInLists' => true,
+			'nonholdableSection' => array('property'=>'nonholdableSection', 'type' => 'section', 'label' =>'Non-holdable Settings (ils profile only)', 'hideInLists' => true,
 			                         'helpLink' => '', 'properties' => array(
 					'nonHoldableStatuses'  => array('property' => 'nonHoldableStatuses', 'type' => 'text', 'label' => 'Non Holdable Statuses', 'maxLength' => 255, 'description' => 'A regular expression for any statuses that should not allow holds'),
 					'nonHoldableLocations' => array('property' => 'nonHoldableLocations', 'type' => 'text', 'label' => 'Non Holdable Locations', 'maxLength' => 255, 'description' => 'A regular expression for any locations that should not allow holds'),
@@ -183,9 +199,9 @@ class IndexingProfile extends DB_DataObject{
 
 			)),
 
-			'suppressionSection' =>array('property'=>'suppressionSection', 'type' => 'section', 'label' =>'Suppression Settings (ils profile only)', 'hideInLists' => true,
+			'suppressionSection' => array('property'=>'suppressionSection', 'type' => 'section', 'label' =>'Suppression Settings (ils profile only)', 'hideInLists' => true,
 					'helpLink' => '', 'properties' => array(
-					'itemSuppressionSection' =>array('property'=>'itemSuppressionSection', 'type' => 'section', 'label' =>'Item Level Suppression Settings', 'hideInLists' => true,
+					'itemSuppressionSection' => array('property'=>'itemSuppressionSection', 'type' => 'section', 'label' =>'Item Level Suppression Settings', 'hideInLists' => true,
 					                             'helpLink' => '', 'properties' => array(
 							'statusesToSuppress'    => array('property' => 'statusesToSuppress', 'type' => 'text', 'label' => 'Statuses To Suppress (use regex)', 'maxLength' => 100, 'description' => 'A regular expression for any statuses that should be suppressed'),
 							'iTypesToSuppress'      => array('property' => 'iTypesToSuppress', 'type' => 'text', 'label' => 'Itypes To Suppress (use regex)', 'maxLength' => 100, 'description' => 'A regular expression for any Itypes that should be suppressed'),
@@ -205,7 +221,7 @@ class IndexingProfile extends DB_DataObject{
 						)),
 				)),
 
-			'orderRecordSection' =>array('property'=>'orderRecordSection', 'type' => 'section', 'label' =>'Order Tag Settings (ils profile only)', 'hideInLists' => true,
+			'orderRecordSection' => array('property'=>'orderRecordSection', 'type' => 'section', 'label' =>'Order Tag Settings (ils profile only)', 'hideInLists' => true,
 			                            'helpLink' => '', 'properties' => array(
 			'orderTag'            => array('property' => 'orderTag', 'type' => 'text', 'label' => 'Order Tag', 'maxLength' => 3, 'description' => 'The MARC tag where order records can be found'),
 			'orderStatus'         => array('property' => 'orderStatus', 'type' => 'text', 'label' => 'Order Status', 'maxLength' => 1, 'description' => 'Subfield for status of the order item'),
@@ -216,49 +232,49 @@ class IndexingProfile extends DB_DataObject{
 				)),
 
 			'translationMaps' => array(
-				'property' => 'translationMaps',
-				'type'=> 'oneToMany',
-				'label' => 'Translation Maps',
-				'description' => 'The translation maps for the profile.',
-				'keyThis' => 'id',
-				'keyOther' => 'indexingProfileId',
+				'property'      => 'translationMaps',
+				'type'          => 'oneToMany',
+				'label'         => 'Translation Maps',
+				'description'   => 'The translation maps for the profile.',
+				'keyThis'       => 'id',
+				'keyOther'      => 'indexingProfileId',
 				'subObjectType' => 'TranslationMap',
-				'structure' => $translationMapStructure,
-				'sortable' => false,
-				'storeDb' => true,
-				'allowEdit' => true,
-				'canEdit' => true,
+				'structure'     => $translationMapStructure,
+				'sortable'      => false,
+				'storeDb'       => true,
+				'allowEdit'     => true,
+				'canEdit'       => true,
 			),
 
-				'timeToReshelve' => array(
-						'property' => 'timeToReshelve',
-						'type'=> 'oneToMany',
-						'label' => 'Time to Reshelve',
-						'description' => 'Overrides for time to reshelve.',
-						'keyThis' => 'id',
-						'keyOther' => 'indexingProfileId',
-						'subObjectType' => 'TimeToReshelve',
-						'structure' => TimeToReshelve::getObjectStructure(),
-						'sortable' => true,
-						'storeDb' => true,
-						'allowEdit' => true,
-						'canEdit' => false,
-				),
+			'timeToReshelve' => array(
+				'property'      => 'timeToReshelve',
+				'type'          => 'oneToMany',
+				'label'         => 'Time to Reshelve',
+				'description'   => 'Overrides for time to reshelve.',
+				'keyThis'       => 'id',
+				'keyOther'      => 'indexingProfileId',
+				'subObjectType' => 'TimeToReshelve',
+				'structure'     => TimeToReshelve::getObjectStructure(),
+				'sortable'      => true,
+				'storeDb'       => true,
+				'allowEdit'     => true,
+				'canEdit'       => false,
+			),
 
-				'sierraFieldMappings' => array(
-						'property' => 'sierraFieldMappings',
-						'type'=> 'oneToMany',
-						'label' => 'Sierra Field Mappings (Sierra Systems only)',
-						'description' => 'Field Mappings for exports from Sierra.',
-						'keyThis' => 'id',
-						'keyOther' => 'indexingProfileId',
-						'subObjectType' => 'SierraExportFieldMapping',
-						'structure' => $sierraMappingStructure,
-						'sortable' => false,
-						'storeDb' => true,
-						'allowEdit' => true,
-						'canEdit' => false,
-				),
+			'sierraFieldMappings' => array(
+				'property'      => 'sierraFieldMappings',
+				'type'          => 'oneToMany',
+				'label'         => 'Sierra Field Mappings (Sierra Systems only)',
+				'description'   => 'Field Mappings for exports from Sierra.',
+				'keyThis'       => 'id',
+				'keyOther'      => 'indexingProfileId',
+				'subObjectType' => 'SierraExportFieldMapping',
+				'structure'     => $sierraMappingStructure,
+				'sortable'      => false,
+				'storeDb'       => true,
+				'allowEdit'     => true,
+				'canEdit'       => false,
+			),
 		);
 		return $structure;
 	}
@@ -376,6 +392,7 @@ class IndexingProfile extends DB_DataObject{
 
 	public function saveTranslationMaps(){
 		if (isset ($this->translationMaps)){
+			/** @var TranslationMap $translationMap */
 			foreach ($this->translationMaps as $translationMap){
 				if (isset($translationMap->deleteOnSave) && $translationMap->deleteOnSave == true){
 					$translationMap->delete();
@@ -395,6 +412,7 @@ class IndexingProfile extends DB_DataObject{
 
 	public function saveTimeToReshelve(){
 		if (isset ($this->timeToReshelve)){
+			/** @var TimeToReshelve $timeToReshelve */
 			foreach ($this->timeToReshelve as $timeToReshelve){
 				if (isset($timeToReshelve->deleteOnSave) && $timeToReshelve->deleteOnSave == true){
 					$timeToReshelve->delete();
@@ -414,6 +432,7 @@ class IndexingProfile extends DB_DataObject{
 
 	public function saveSierraFieldMappings(){
 		if (isset ($this->sierraFieldMappings)){
+			/** @var SierraExportFieldMapping $sierraFieldMapping */
 			foreach ($this->sierraFieldMappings as $sierraFieldMapping){
 				if (isset($sierraFieldMapping->deleteOnSave) && $sierraFieldMapping->deleteOnSave == true){
 					$sierraFieldMapping->delete();
@@ -453,21 +472,74 @@ class IndexingProfile extends DB_DataObject{
 		//Setup validation return array
 		$validationResults = array(
 			'validatedOk' => true,
-			'errors' => array(),
+			'errors'      => array(),
 		);
 
 		$recordURLComponent = trim($_REQUEST['recordUrlComponent']);
-		$indexingProfile = new IndexingProfile();
-		$count = $indexingProfile->get('recordUrlComponent', $recordURLComponent);
-		if ($count > 0 && $this->id != $indexingProfile->id) { // include exception for editing the same profile
+		$indexingProfile    = new IndexingProfile();
+		$count              = $indexingProfile->get('recordUrlComponent', $recordURLComponent);
+		if ($count > 0 && $this->id != $indexingProfile->id){ // include exception for editing the same profile
 
 			$validationResults = array(
 				'validatedOk' => false,
-				'errors' => array('The Record Url Component is already in use by another indexing profile'),
+				'errors'      => array('The Record Url Component is already in use by another indexing profile'),
 			);
 
 		}
 		return $validationResults;
 	}
+
+//	function markProfileForRegrouping(){
+//		$result = array(
+//			'success' => false,
+//			'message' => 'Invalid Profile',
+//		);
+//		if (!empty($this->id) && ctype_digit($this->id) && !empty($this->name)){
+//			require_once ROOT_DIR . '/sys/Indexing/IlsMarcChecksum.php';
+//			$ilsMarcChecksum         = new IlsMarcChecksum();
+//			$ilsMarcChecksum->checksum = 0;
+//			$ilsMarcChecksum->whereAdd("source = '{$this->name}'");
+//			$success = $ilsMarcChecksum->update(DB_DATAOBJECT_WHEREADD_ONLY);
+//
+//
+//			if (PEAR_Singleton::isError($success)){
+//				/** @var PEAR_Error $success */
+//				$result = array(
+//					'success' => false,
+//					'message' => $success->getMessage(),
+//				);
+//			}else{
+//				$result = array(
+//					'success' => true,
+//					'message' => $success . ' grouped works with records from profile ' . $this->name . ' were marked for regrouping.',
+//				);
+//			}
+//		}
+//		return $result;
+//	}
+//
+//	function markProfileForReindexing(){
+//		$result = array(
+//			'success' => false,
+//			'message' => 'Invalid Profile',
+//		);
+//		if (!empty($this->id) && ctype_digit($this->id) && !empty($this->name)){
+//			/** @noinspection PhpVoidFunctionResultUsedInspection */
+//			$success = $this->query("UPDATE grouped_work LEFT JOIN grouped_work_primary_identifiers ON (grouped_work.id = grouped_work_primary_identifiers.grouped_work_id) SET grouped_work.date_updated = null WHERE grouped_work_primary_identifiers.type = '{$this->name}' AND grouped_work.date_updated IS NOT NULL");
+//			if (PEAR_Singleton::isError($success)){
+//				/** @var PEAR_Error $success */
+//				$result = array(
+//					'success' => false,
+//					'message' => $success->getMessage(),
+//				);
+//			}else{
+//				$result = array(
+//					'success' => true,
+//					'message' => $success . ' grouped works with records from profile ' . $this->name . ' were marked for reindexing.',
+//				);
+//			}
+//		}
+//		return $result;
+//	}
 
 }

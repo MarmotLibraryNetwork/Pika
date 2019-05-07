@@ -202,7 +202,7 @@ table {
     max-width: 100% !important;
   }
   @page {
-    margin: 2cm 0.5cm;
+    margin: 2cm .5cm;
   }
   p,
   h2,
@@ -710,83 +710,13 @@ pre code {
 .row:after {
   clear: both;
 }
-.col-tn-1,
-.col-xs-1,
-.col-sm-1,
-.col-md-1,
-.col-lg-1,
-.col-tn-2,
-.col-xs-2,
-.col-sm-2,
-.col-md-2,
-.col-lg-2,
-.col-tn-3,
-.col-xs-3,
-.col-sm-3,
-.col-md-3,
-.col-lg-3,
-.col-tn-4,
-.col-xs-4,
-.col-sm-4,
-.col-md-4,
-.col-lg-4,
-.col-tn-5,
-.col-xs-5,
-.col-sm-5,
-.col-md-5,
-.col-lg-5,
-.col-tn-6,
-.col-xs-6,
-.col-sm-6,
-.col-md-6,
-.col-lg-6,
-.col-tn-7,
-.col-xs-7,
-.col-sm-7,
-.col-md-7,
-.col-lg-7,
-.col-tn-8,
-.col-xs-8,
-.col-sm-8,
-.col-md-8,
-.col-lg-8,
-.col-tn-9,
-.col-xs-9,
-.col-sm-9,
-.col-md-9,
-.col-lg-9,
-.col-tn-10,
-.col-xs-10,
-.col-sm-10,
-.col-md-10,
-.col-lg-10,
-.col-tn-11,
-.col-xs-11,
-.col-sm-11,
-.col-md-11,
-.col-lg-11,
-.col-tn-12,
-.col-xs-12,
-.col-sm-12,
-.col-md-12,
-.col-lg-12 {
+.col-tn-1, .col-xs-1, .col-sm-1, .col-md-1, .col-lg-1, .col-tn-2, .col-xs-2, .col-sm-2, .col-md-2, .col-lg-2, .col-tn-3, .col-xs-3, .col-sm-3, .col-md-3, .col-lg-3, .col-tn-4, .col-xs-4, .col-sm-4, .col-md-4, .col-lg-4, .col-tn-5, .col-xs-5, .col-sm-5, .col-md-5, .col-lg-5, .col-tn-6, .col-xs-6, .col-sm-6, .col-md-6, .col-lg-6, .col-tn-7, .col-xs-7, .col-sm-7, .col-md-7, .col-lg-7, .col-tn-8, .col-xs-8, .col-sm-8, .col-md-8, .col-lg-8, .col-tn-9, .col-xs-9, .col-sm-9, .col-md-9, .col-lg-9, .col-tn-10, .col-xs-10, .col-sm-10, .col-md-10, .col-lg-10, .col-tn-11, .col-xs-11, .col-sm-11, .col-md-11, .col-lg-11, .col-tn-12, .col-xs-12, .col-sm-12, .col-md-12, .col-lg-12 {
   position: relative;
   min-height: 1px;
   padding-left: 15px;
   padding-right: 15px;
 }
-.col-tn-1,
-.col-tn-2,
-.col-tn-3,
-.col-tn-4,
-.col-tn-5,
-.col-tn-6,
-.col-tn-7,
-.col-tn-8,
-.col-tn-9,
-.col-tn-10,
-.col-tn-11,
-.col-tn-12 {
+.col-tn-1, .col-tn-2, .col-tn-3, .col-tn-4, .col-tn-5, .col-tn-6, .col-tn-7, .col-tn-8, .col-tn-9, .col-tn-10, .col-tn-11, .col-tn-12 {
   float: left;
 }
 .col-tn-12 {
@@ -943,18 +873,7 @@ pre code {
   margin-left: 0%;
 }
 @media (min-width: 480px) {
-  .col-xs-1,
-  .col-xs-2,
-  .col-xs-3,
-  .col-xs-4,
-  .col-xs-5,
-  .col-xs-6,
-  .col-xs-7,
-  .col-xs-8,
-  .col-xs-9,
-  .col-xs-10,
-  .col-xs-11,
-  .col-xs-12 {
+  .col-xs-1, .col-xs-2, .col-xs-3, .col-xs-4, .col-xs-5, .col-xs-6, .col-xs-7, .col-xs-8, .col-xs-9, .col-xs-10, .col-xs-11, .col-xs-12 {
     float: left;
   }
   .col-xs-12 {
@@ -1112,18 +1031,7 @@ pre code {
   }
 }
 @media (min-width: 768px) {
-  .col-sm-1,
-  .col-sm-2,
-  .col-sm-3,
-  .col-sm-4,
-  .col-sm-5,
-  .col-sm-6,
-  .col-sm-7,
-  .col-sm-8,
-  .col-sm-9,
-  .col-sm-10,
-  .col-sm-11,
-  .col-sm-12 {
+  .col-sm-1, .col-sm-2, .col-sm-3, .col-sm-4, .col-sm-5, .col-sm-6, .col-sm-7, .col-sm-8, .col-sm-9, .col-sm-10, .col-sm-11, .col-sm-12 {
     float: left;
   }
   .col-sm-12 {
@@ -1281,18 +1189,7 @@ pre code {
   }
 }
 @media (min-width: 992px) {
-  .col-md-1,
-  .col-md-2,
-  .col-md-3,
-  .col-md-4,
-  .col-md-5,
-  .col-md-6,
-  .col-md-7,
-  .col-md-8,
-  .col-md-9,
-  .col-md-10,
-  .col-md-11,
-  .col-md-12 {
+  .col-md-1, .col-md-2, .col-md-3, .col-md-4, .col-md-5, .col-md-6, .col-md-7, .col-md-8, .col-md-9, .col-md-10, .col-md-11, .col-md-12 {
     float: left;
   }
   .col-md-12 {
@@ -1450,18 +1347,7 @@ pre code {
   }
 }
 @media (min-width: 1200px) {
-  .col-lg-1,
-  .col-lg-2,
-  .col-lg-3,
-  .col-lg-4,
-  .col-lg-5,
-  .col-lg-6,
-  .col-lg-7,
-  .col-lg-8,
-  .col-lg-9,
-  .col-lg-10,
-  .col-lg-11,
-  .col-lg-12 {
+  .col-lg-1, .col-lg-2, .col-lg-3, .col-lg-4, .col-lg-5, .col-lg-6, .col-lg-7, .col-lg-8, .col-lg-9, .col-lg-10, .col-lg-11, .col-lg-12 {
     float: left;
   }
   .col-lg-12 {
@@ -4486,7 +4372,7 @@ textarea.input-group-sm > .input-group-btn > .btn {
 }
 .label {
   display: inline;
-  padding: 0.2em 0.6em 0.3em;
+  padding: .2em .6em .3em;
   font-size: 75%;
   font-weight: bold;
   line-height: 1;
@@ -4494,7 +4380,7 @@ textarea.input-group-sm > .input-group-btn > .btn {
   text-align: center;
   white-space: nowrap;
   vertical-align: baseline;
-  border-radius: 0.25em;
+  border-radius: .25em;
 }
 .label[href]:hover,
 .label[href]:focus {
@@ -7069,7 +6955,7 @@ body > .container {
 .modal-header .close {
   margin-top: -10px;
   font-size: 40px;
-  opacity: 0.4;
+  opacity: .4;
 }
 .btn:active,
 .btn.active {
@@ -8180,7 +8066,7 @@ fieldset[disabled] .datepicker table tr td span.active.disabled:hover.active {
 }
 .bootstrap-switch.bootstrap-switch-disabled,
 .bootstrap-switch.bootstrap-switch-readonly {
-  opacity: 0.5;
+  opacity: .5;
   filter: alpha(opacity=50);
   cursor: default !important;
 }
@@ -8272,46 +8158,133 @@ fieldset[disabled] .datepicker table tr td span.active.disabled:hover.active {
   filter: alpha(opacity=0);
   z-index: -1;
 }
-/* tables */
-table.tablesorter {
-  font-family: arial;
-  background-color: #CDCDCD;
-  margin: 10px 0pt 15px;
-  font-size: 8pt;
+/* Tablesorter Custom LESS Theme by Rob Garrison
+ To create your own theme, modify the code below and run it through
+ a LESS compiler, like this one: http://leafo.net/lessphp/editor.html
+ or download less.js from http://lesscss.org/
+Test out these custom less files live
+ Basic Theme : http://codepen.io/Mottie/pen/eqBbn
+ Bootstrap   : http://codepen.io/Mottie/pen/Ltzpi
+ Metro Style : http://codepen.io/Mottie/pen/gCslk
+ Basic SCSS  : http://codepen.io/Mottie/pen/LbXdNR
+ */
+.allRows {
+  background-color: #fff;
+  color: #000;
+}
+.evenRows {
+  background-color: #F0F0F6;
+  color: #000;
+}
+.oddRows {
+  background-color: #ffffff;
+}
+.filterWidgetTransition {
+  transition: line-height 0.1s ease;
+}
+.tablesorter {
+  font: 11px 'trebuchet ms', verdana, arial;
   width: 100%;
   text-align: left;
+  border-spacing: 0;
+  border: #cdcdcd 1px solid;
+  border-width: 1px 0 0 1px;
 }
-table.tablesorter thead tr th,
-table.tablesorter tfoot tr th {
-  background-color: #e6EEEE;
-  border: 1px solid #FFF;
-  font-size: 8pt;
+.tablesorter th,
+.tablesorter td {
+  border: #cdcdcd 1px solid;
+  border-width: 0 1px 1px 0;
+}
+.tablesorter th,
+.tablesorter thead td {
+  font: 11px 'trebuchet ms', verdana, arial;
+  font-weight: bold;
+  background-color: #E6EEEE;
+  color: #000;
+  border-collapse: collapse;
   padding: 4px;
 }
-table.tablesorter thead tr .header {
-  background-image: url(lib/tablesorter/bg.gif);
+.tablesorter .tablesorter-header {
+  background-image: url(data:image/gif;base64,R0lGODlhFQAJAIAAACMtMP///yH5BAEAAAEALAAAAAAVAAkAAAIXjI+AywnaYnhUMoqt3gZXPmVg94yJVQAAOw==);
   background-repeat: no-repeat;
-  background-position: center right;
+  background-position: right 5px center;
+  padding: 4px 20px 4px 4px;
   cursor: pointer;
 }
-table.tablesorter tbody td {
-  color: #3D3D3D;
+.tablesorter .tablesorter-header.sorter-false {
+  background-image: none;
+  cursor: default;
   padding: 4px;
-  background-color: #FFF;
+}
+.tablesorter .tablesorter-headerAsc {
+  background-color: #c8d8d9;
+  background-image: url(data:image/gif;base64,R0lGODlhFQAEAIAAACMtMP///yH5BAEAAAEALAAAAAAVAAQAAAINjI8Bya2wnINUMopZAQA7);
+}
+.tablesorter .tablesorter-headerDesc {
+  background-color: #f5f8f8;
+  background-image: url(data:image/gif;base64,R0lGODlhFQAEAIAAACMtMP///yH5BAEAAAEALAAAAAAVAAQAAAINjB+gC+jP2ptn0WskLQA7);
+}
+.tablesorter .disabled {
+  opacity: 0.5;
+  filter: alpha(opacity=50);
+  cursor: not-allowed;
+}
+.tablesorter tbody td {
+  background-color: #fff;
+  color: #000;
+  padding: 4px;
   vertical-align: top;
 }
-table.tablesorter tbody tr.odd td {
+.tablesorter tbody tr.odd > td {
+  background-color: #ffffff;
+}
+.tablesorter tbody tr.even > td {
   background-color: #F0F0F6;
+  color: #000;
 }
-table.tablesorter thead tr .headerSortUp {
-  background-image: url(lib/tablesorter/asc.gif);
+.tablesorter .tablesorter-processing {
+  background-image: url('data:image/gif;base64,R0lGODlhFAAUAKEAAO7u7lpaWgAAAAAAACH/C05FVFNDQVBFMi4wAwEAAAAh+QQBCgACACwAAAAAFAAUAAACQZRvoIDtu1wLQUAlqKTVxqwhXIiBnDg6Y4eyx4lKW5XK7wrLeK3vbq8J2W4T4e1nMhpWrZCTt3xKZ8kgsggdJmUFACH5BAEKAAIALAcAAAALAAcAAAIUVB6ii7jajgCAuUmtovxtXnmdUAAAIfkEAQoAAgAsDQACAAcACwAAAhRUIpmHy/3gUVQAQO9NetuugCFWAAAh+QQBCgACACwNAAcABwALAAACE5QVcZjKbVo6ck2AF95m5/6BSwEAIfkEAQoAAgAsBwANAAsABwAAAhOUH3kr6QaAcSrGWe1VQl+mMUIBACH5BAEKAAIALAIADQALAAcAAAIUlICmh7ncTAgqijkruDiv7n2YUAAAIfkEAQoAAgAsAAAHAAcACwAAAhQUIGmHyedehIoqFXLKfPOAaZdWAAAh+QQFCgACACwAAAIABwALAAACFJQFcJiXb15zLYRl7cla8OtlGGgUADs=');
+  background-position: center center;
+  background-repeat: no-repeat;
 }
-table.tablesorter thead tr .headerSortDown {
-  background-image: url(lib/tablesorter/desc.gif);
+.tablesorter .tablesorter-filter-row input,
+.tablesorter .tablesorter-filter-row select {
+  width: 98%;
+  height: auto;
+  margin: 0;
+  padding: 4px;
+  color: #333;
+  background-color: #fff;
+  border: 1px solid #bbb;
+  box-sizing: border-box;
+  transition: line-height 0.1s ease;
 }
-table.tablesorter thead tr .headerSortDown,
-table.tablesorter thead tr .headerSortUp {
-  background-color: #8dbdd8;
+.tablesorter .tablesorter-filter-row {
+  background-color: #eee;
+}
+.tablesorter .tablesorter-filter-row td {
+  background-color: #eee;
+  line-height: normal;
+  text-align: center;
+  transition: line-height 0.1s ease;
+}
+.tablesorter .tablesorter-filter-row.hideme td {
+  padding: 2px;
+  margin: 0;
+  line-height: 0;
+  cursor: pointer;
+}
+.tablesorter .tablesorter-filter-row.hideme * {
+  height: 1px;
+  min-height: 0;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  opacity: 0;
+  filter: alpha(opacity=0);
+}
+.tablesorter .filtered {
+  display: none;
 }
 /* Preload images */
 body:after {
@@ -9694,10 +9667,10 @@ a.browse-thumbnail-sorted.active {
   *display: inline;
 }
 .scrollerTitle img {
-  opacity: 0.6;
+  opacity: .6;
 }
 .scrollerTitle:hover img {
-  opacity: 0.8;
+  opacity: .8;
 }
 .scrollerTitle.selected {
   border: 3px solid #00125E;

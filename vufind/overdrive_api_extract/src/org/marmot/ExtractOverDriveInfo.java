@@ -574,8 +574,8 @@ class ExtractOverDriveInfo {
 			PreparedStatement loadProductsStmt = econtentConn.prepareStatement("Select * from overdrive_api_products");
 			ResultSet loadProductsRS = loadProductsStmt.executeQuery();
 			while (loadProductsRS.next()){
-				String overdriveId = loadProductsRS.getString("overdriveId").toLowerCase();
-				OverDriveDBInfo curProduct = new OverDriveDBInfo();
+				String          overdriveId = loadProductsRS.getString("overdriveId").toLowerCase();
+				OverDriveDBInfo curProduct  = new OverDriveDBInfo();
 				curProduct.setDbId(loadProductsRS.getLong("id"));
 				curProduct.setCrossRefId(loadProductsRS.getLong("crossRefId"));
 				curProduct.setMediaType(loadProductsRS.getString("mediaType"));
@@ -766,12 +766,13 @@ class ExtractOverDriveInfo {
 	}
 
 	private OverDriveRecordInfo loadOverDriveRecordFromJSON(Long libraryId, JSONObject curProduct) throws JSONException {
-		OverDriveRecordInfo curRecord = new OverDriveRecordInfo();
-		curRecord.setId(curProduct.getString("id"));
+		OverDriveRecordInfo curRecord    = new OverDriveRecordInfo();
+		String              curProductId = curProduct.getString("id");
+		curRecord.setId(curProductId);
 		//logger.debug("Processing overdrive title " + curRecord.getId());
 		if (!curProduct.has("title")){
-			logger.debug("Product " + curProduct.getString("id") + " did not have a title, skipping");
-			results.addNote("Product " + curProduct.getString("id") + " did not have a title, skipping");
+			logger.debug("Product " + curProductId + " did not have a title, skipping");
+			results.addNote("Product " + curProductId + " did not have a title, skipping");
 			return null;
 		}
 		curRecord.setTitle(curProduct.getString("title"));
@@ -781,7 +782,13 @@ class ExtractOverDriveInfo {
 		}
 		curRecord.setMediaType(curProduct.getString("mediaType"));
 		if (curProduct.has("series")){
-			curRecord.setSeries(curProduct.getString("series"));
+			String series = curProduct.getString("series");
+			if (series.length() > 215){
+				series = series.substring(0, 215);
+				logger.warn("Product " + curProductId + " has a series name longer than database column. Series name will be truncated to '" + series + "'");
+			}
+			curRecord.setSeries(series);
+
 		}
 		if (curProduct.has("primaryCreator")){
 			curRecord.setPrimaryCreatorName(curProduct.getJSONObject("primaryCreator").getString("name"));

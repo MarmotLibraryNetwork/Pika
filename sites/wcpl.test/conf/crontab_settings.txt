@@ -58,9 +58,9 @@
 # restart continuous re-indexing on reboot.
 @reboot sleep 300 && /usr/local/vufind-plus/sites/wcpl.test/continuous_partial_reindex.sh
 
-#######################
+################
 # Pika Cleanup #
-#######################
+################
 27 0 * * * cd /tmp; rm -rf CURLCOOKIE*
 28 0 * * * cd /tmp; rm -rf epb*
 
@@ -85,6 +85,13 @@
 
 # Check Apache Solr process and website that it has not stalled.
 */3 * * * * cd /usr/local/vufind-plus/vufind/cron/; ./solrTest.sh
+
+###################################
+# Data Extract from other systems #
+###################################
+# Library supplied covers
+*/10 * * * * /usr/local/vufind-plus/sites/wcpl.test/copyCovers.sh
+# use a shorter interval than production so that test gets a chance to copy the cover as well
 
 #####################
 # Apache Web Server #

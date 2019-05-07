@@ -289,6 +289,15 @@ function getIndexingUpdates() {
 			)
 		),
 
+		'indexing_profile_format_determination_setting' => array(
+			'title' => 'Indexing Profiles - Format determination setting, & MatTypes to ignore settings',
+			'description' => 'When format source is bib, setting to choose type of format determination',
+			'sql' => array(
+				"ALTER TABLE `indexing_profiles` ADD COLUMN `formatDeterminationMethod` varchar(20) DEFAULT 'bib' ",
+				"ALTER TABLE `indexing_profiles` ADD COLUMN `materialTypesToIgnore` varchar(50) ",
+			)
+		),
+
 		'translation_map_regex' => array(
 			'title' => 'Translation Maps Regex',
 			'description' => 'Setup Translation Maps to use regular expressions',
@@ -380,6 +389,14 @@ function getIndexingUpdates() {
 				"ALTER TABLE indexing_profiles ADD COLUMN materialTypeField VARCHAR(3)",
 			)
 		),
+		/* 2019.04.0 */
+		'ptype_label' => array(
+			'title' => 'P-type label field',
+			'description' => 'Add P-type label field.',
+			'sql' => array(
+				"ALTER TABLE ptype ADD COLUMN label VARCHAR(60) NULL",
+			)
+		),
 
 	);
 }
@@ -393,52 +410,52 @@ function setupIndexingProfiles($update){
 	if ($ilsIndexingProfile->find(true)){
 		$profileExists = true;
 	}
-	$ilsIndexingProfile->marcPath = $configArray['Reindex']['marcPath'];
-	$ilsIndexingProfile->marcEncoding = $configArray['Reindex']['marcEncoding'];
-	$ilsIndexingProfile->individualMarcPath = $configArray['Reindex']['individualMarcPath'];
-	$ilsIndexingProfile->groupingClass = 'MarcRecordGrouper';
-	$ilsIndexingProfile->indexingClass = 'IlsRecordProcessor';
-	$ilsIndexingProfile->catalogDriver = $configArray['Catalog']['driver'];
-	$ilsIndexingProfile->recordDriver = 'MarcRecord';
-	$ilsIndexingProfile->recordUrlComponent = 'Record';
-	$ilsIndexingProfile->formatSource = $configArray['Reindex']['useItemBasedCallNumbers'] == true ? 'item' : 'bib';
-	$ilsIndexingProfile->recordNumberTag = $configArray['Reindex']['recordNumberTag'];
-	$ilsIndexingProfile->recordNumberPrefix = $configArray['Reindex']['recordNumberPrefix'];
-	$ilsIndexingProfile->suppressItemlessBibs = $configArray['Reindex']['suppressItemlessBibs'] == true ? 1 : 0;
-	$ilsIndexingProfile->itemTag = $configArray['Reindex']['itemTag'];
-	$ilsIndexingProfile->itemRecordNumber = $configArray['Reindex']['itemRecordNumberSubfield'];
+	$ilsIndexingProfile->marcPath                = $configArray['Reindex']['marcPath'];
+	$ilsIndexingProfile->marcEncoding            = $configArray['Reindex']['marcEncoding'];
+	$ilsIndexingProfile->individualMarcPath      = $configArray['Reindex']['individualMarcPath'];
+	$ilsIndexingProfile->groupingClass           = 'MarcRecordGrouper';
+	$ilsIndexingProfile->indexingClass           = 'IlsRecordProcessor';
+	$ilsIndexingProfile->catalogDriver           = $configArray['Catalog']['driver'];
+	$ilsIndexingProfile->recordDriver            = 'MarcRecord';
+	$ilsIndexingProfile->recordUrlComponent      = 'Record';
+	$ilsIndexingProfile->formatSource            = $configArray['Reindex']['useItemBasedCallNumbers'] == true ? 'item' : 'bib';
+	$ilsIndexingProfile->recordNumberTag         = $configArray['Reindex']['recordNumberTag'];
+	$ilsIndexingProfile->recordNumberPrefix      = $configArray['Reindex']['recordNumberPrefix'];
+	$ilsIndexingProfile->suppressItemlessBibs    = $configArray['Reindex']['suppressItemlessBibs'] == true ? 1 : 0;
+	$ilsIndexingProfile->itemTag                 = $configArray['Reindex']['itemTag'];
+	$ilsIndexingProfile->itemRecordNumber        = $configArray['Reindex']['itemRecordNumberSubfield'];
 	$ilsIndexingProfile->useItemBasedCallNumbers = $configArray['Reindex']['useItemBasedCallNumbers'] == true ? 1 : 0;
-	$ilsIndexingProfile->callNumberPrestamp = $configArray['Reindex']['callNumberPrestampSubfield'];
-	$ilsIndexingProfile->callNumber = $configArray['Reindex']['callNumberSubfield'];
-	$ilsIndexingProfile->callNumberCutter = $configArray['Reindex']['callNumberCutterSubfield'];
-	$ilsIndexingProfile->callNumberPoststamp = $configArray['Reindex']['callNumberPoststampSubfield'];
-	$ilsIndexingProfile->location = $configArray['Reindex']['locationSubfield'];
-	$ilsIndexingProfile->locationsToSuppress = isset($configArray['Reindex']['locationsToSuppress']) ? $configArray['Reindex']['locationsToSuppress'] : '';
-	$ilsIndexingProfile->subLocation = '';
-	$ilsIndexingProfile->shelvingLocation = $configArray['Reindex']['locationSubfield'];
-	$ilsIndexingProfile->collection = $configArray['Reindex']['collectionSubfield'];
-	$ilsIndexingProfile->volume = $configArray['Reindex']['volumeSubfield'];
-	$ilsIndexingProfile->itemUrl = $configArray['Reindex']['itemUrlSubfield'];
-	$ilsIndexingProfile->barcode = $configArray['Reindex']['barcodeSubfield'];
-	$ilsIndexingProfile->status = $configArray['Reindex']['statusSubfield'];
-	$ilsIndexingProfile->statusesToSuppress = '';
-	$ilsIndexingProfile->totalCheckouts = $configArray['Reindex']['totalCheckoutSubfield'];
-	$ilsIndexingProfile->lastYearCheckouts = $configArray['Reindex']['lastYearCheckoutSubfield'];
-	$ilsIndexingProfile->yearToDateCheckouts = $configArray['Reindex']['ytdCheckoutSubfield'];
-	$ilsIndexingProfile->totalRenewals = $configArray['Reindex']['totalRenewalSubfield'];
-	$ilsIndexingProfile->iType = $configArray['Reindex']['iTypeSubfield'];
-	$ilsIndexingProfile->dueDate = $configArray['Reindex']['dueDateSubfield'];
-	$ilsIndexingProfile->dateCreated = $configArray['Reindex']['dateCreatedSubfield'];
-	$ilsIndexingProfile->dateCreatedFormat = $configArray['Reindex']['dateAddedFormat'];
-	$ilsIndexingProfile->iCode2 = $configArray['Reindex']['iCode2Subfield'];
-	$ilsIndexingProfile->useICode2Suppression = $configArray['Reindex']['useICode2Suppression'];
-	$ilsIndexingProfile->format = isset($configArray['Reindex']['formatSubfield']) ? $configArray['Reindex']['formatSubfield'] : '';
-	$ilsIndexingProfile->eContentDescriptor = $configArray['Reindex']['eContentSubfield'];
-	$ilsIndexingProfile->orderTag = isset($configArray['Reindex']['orderTag']) ? $configArray['Reindex']['orderTag'] : '';
-	$ilsIndexingProfile->orderStatus = isset($configArray['Reindex']['orderStatusSubfield']) ? $configArray['Reindex']['orderStatusSubfield'] : '';
-	$ilsIndexingProfile->orderLocation = isset($configArray['Reindex']['orderLocationsSubfield']) ? $configArray['Reindex']['orderLocationsSubfield'] : '';
-	$ilsIndexingProfile->orderCopies = isset($configArray['Reindex']['orderCopiesSubfield']) ? $configArray['Reindex']['orderCopiesSubfield'] : '';
-	$ilsIndexingProfile->orderCode3 = isset($configArray['Reindex']['orderCode3Subfield']) ? $configArray['Reindex']['orderCode3Subfield'] : '';
+	$ilsIndexingProfile->callNumberPrestamp      = $configArray['Reindex']['callNumberPrestampSubfield'];
+	$ilsIndexingProfile->callNumber              = $configArray['Reindex']['callNumberSubfield'];
+	$ilsIndexingProfile->callNumberCutter        = $configArray['Reindex']['callNumberCutterSubfield'];
+	$ilsIndexingProfile->callNumberPoststamp     = $configArray['Reindex']['callNumberPoststampSubfield'];
+	$ilsIndexingProfile->location                = $configArray['Reindex']['locationSubfield'];
+	$ilsIndexingProfile->locationsToSuppress     = isset($configArray['Reindex']['locationsToSuppress']) ? $configArray['Reindex']['locationsToSuppress'] : '';
+	$ilsIndexingProfile->subLocation             = '';
+	$ilsIndexingProfile->shelvingLocation        = $configArray['Reindex']['locationSubfield'];
+	$ilsIndexingProfile->collection              = $configArray['Reindex']['collectionSubfield'];
+	$ilsIndexingProfile->volume                  = $configArray['Reindex']['volumeSubfield'];
+	$ilsIndexingProfile->itemUrl                 = $configArray['Reindex']['itemUrlSubfield'];
+	$ilsIndexingProfile->barcode                 = $configArray['Reindex']['barcodeSubfield'];
+	$ilsIndexingProfile->status                  = $configArray['Reindex']['statusSubfield'];
+	$ilsIndexingProfile->statusesToSuppress      = '';
+	$ilsIndexingProfile->totalCheckouts          = $configArray['Reindex']['totalCheckoutSubfield'];
+	$ilsIndexingProfile->lastYearCheckouts       = $configArray['Reindex']['lastYearCheckoutSubfield'];
+	$ilsIndexingProfile->yearToDateCheckouts     = $configArray['Reindex']['ytdCheckoutSubfield'];
+	$ilsIndexingProfile->totalRenewals           = $configArray['Reindex']['totalRenewalSubfield'];
+	$ilsIndexingProfile->iType                   = $configArray['Reindex']['iTypeSubfield'];
+	$ilsIndexingProfile->dueDate                 = $configArray['Reindex']['dueDateSubfield'];
+	$ilsIndexingProfile->dateCreated             = $configArray['Reindex']['dateCreatedSubfield'];
+	$ilsIndexingProfile->dateCreatedFormat       = $configArray['Reindex']['dateAddedFormat'];
+	$ilsIndexingProfile->iCode2                  = $configArray['Reindex']['iCode2Subfield'];
+	$ilsIndexingProfile->useICode2Suppression    = $configArray['Reindex']['useICode2Suppression'];
+	$ilsIndexingProfile->format                  = isset($configArray['Reindex']['formatSubfield']) ? $configArray['Reindex']['formatSubfield'] : '';
+	$ilsIndexingProfile->eContentDescriptor      = $configArray['Reindex']['eContentSubfield'];
+	$ilsIndexingProfile->orderTag                = isset($configArray['Reindex']['orderTag']) ? $configArray['Reindex']['orderTag'] : '';
+	$ilsIndexingProfile->orderStatus             = isset($configArray['Reindex']['orderStatusSubfield']) ? $configArray['Reindex']['orderStatusSubfield'] : '';
+	$ilsIndexingProfile->orderLocation           = isset($configArray['Reindex']['orderLocationsSubfield']) ? $configArray['Reindex']['orderLocationsSubfield'] : '';
+	$ilsIndexingProfile->orderCopies             = isset($configArray['Reindex']['orderCopiesSubfield']) ? $configArray['Reindex']['orderCopiesSubfield'] : '';
+	$ilsIndexingProfile->orderCode3              = isset($configArray['Reindex']['orderCode3Subfield']) ? $configArray['Reindex']['orderCode3Subfield'] : '';
 
 	if ($profileExists){
 		$ilsIndexingProfile->update();

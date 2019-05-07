@@ -23,10 +23,10 @@ class Sacramento extends Sierra
 	 * @param bool $linkedAccount  When using linked accounts for Sierra Encore, the curl connection for linked accounts has to be reset
 	 * @return bool
 	 */
-	public function _curl_login($patron, $linkedAccount = false) {
-		if (isset($this->loggedIn) && $this->loggedIn) {
+	public function _curl_login($patron, $linkedAccount = false){
+		if (!$linkedAccount && isset($this->loggedIn) && $this->loggedIn){
 			return $this->loggedIn;
-		} else{
+		}else{
 			global $logger;
 			$loginResult = false;
 
@@ -40,7 +40,7 @@ class Sacramento extends Sierra
 				// For linked users, reset the curl connection so that subsequent logins for the linked users process correctly
 				$this->_close_curl();
 				$this->curl_connection = false;
-				$this->loggedIn = false;
+				$this->loggedIn        = false;
 			}
 			$loginResponse = $this->_curlPostPage($curlUrl, $postData);
 

@@ -118,27 +118,28 @@ rm /data/vufind-plus/${PIKASERVER}/grouped_work_primary_identifiers.sql
 #Restart Solr
 cd /usr/local/vufind-plus/sites/${PIKASERVER}; ./${PIKASERVER}.sh restart
 
+# Colorado state gov docs
+curl --remote-time --show-error --compressed -o /data/vufind-plus/colorado_gov_docs/marc/fullexport.mrc https://cassini.marmot.org/colorado_state_docs.mrc
 
 ## SIDELOADS ##
-# Axis 360
-/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} aurora/axis_360 axis_360/aurora >> ${OUTPUT_FILE}
-#Biblioboard
-/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} aurora/Biblioboard Biblioboard/aurora >> ${OUTPUT_FILE}
-#TrueFlix
-/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} aurora/trueflix trueflix/aurora >> ${OUTPUT_FILE}
+# Kanopy
+/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} aurora/kanopy kanopy/aurora >> ${OUTPUT_FILE}
 
+###################
+# Other sideloads
+#Biblioboard
+#/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} aurora/Biblioboard Biblioboard/aurora >> ${OUTPUT_FILE}
+#TrueFlix
+#/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} aurora/trueflix trueflix/aurora >> ${OUTPUT_FILE}
 #Learning Express
 #/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} aurora/learning_express learning_express/aurora >> ${OUTPUT_FILE}
 #Bookflix
-/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} aurora/bookflix bookflix/aurora >> ${OUTPUT_FILE}
-
+#/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} aurora/bookflix bookflix/aurora >> ${OUTPUT_FILE}
 #Gale eCourses
-/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} aurora/gale_courses gale_courses/aurora >> ${OUTPUT_FILE}
-
+#/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} aurora/gale_courses gale_courses/aurora >> ${OUTPUT_FILE}
 #RB Digital
 #/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} aurora/RBdigital_magazines RBdigital_magazines/aurora >> ${OUTPUT_FILE}
-
-
+##################
 
 
 #Extract from Hoopla

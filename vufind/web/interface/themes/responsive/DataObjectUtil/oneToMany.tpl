@@ -4,33 +4,36 @@
 		<thead>
 			<tr>
 				{if $property.sortable}
-					<th>Sort</th>
+					<th class="sorter-false filter-false">Sort</th>
 				{/if}
 				{foreach from=$property.structure item=subProperty}
-					{if in_array($subProperty.type, array('text', 'enum', 'date', 'checkbox', 'integer', 'textarea', 'html', 'multiSelect')) }
-						<th{if in_array($subProperty.type, array('text', 'enum', 'html', 'multiSelect'))} style="min-width:150px"{/if}>{$subProperty.label}</th>
+					{if in_array($subProperty.type, array('text', 'enum', 'date', 'checkbox', 'integer', 'number', 'textarea', 'html', 'multiSelect')) }
+						<th{if in_array($subProperty.type, array('text', 'enum', 'html', 'multiSelect'))} style="min-width:150px"{/if} class="{if $subProperty.type == 'text'}sorter-text-input{elseif $subProperty.type == 'enum'}sorter-text-select{else}sorter-false filter-false{/if}">{$subProperty.label}</th>
 					{/if}
 				{/foreach}
-				<th>Actions</th>
+				<th class="sorter-false filter-false">Actions</th>
 			</tr>
 		</thead>
 		<tbody>
 		{foreach from=$propValue item=subObject}
 			<tr id="{$propName}{$subObject->id}">
-				<input type="hidden" id="{$propName}Id_{$subObject->id}" name="{$propName}Id[{$subObject->id}]" value="{$subObject->id}"/>
+				<input type="hidden" id="{$propName}Id_{$subObject->id}" name="{$propName}Id[{$subObject->id}]" value="{$subObject->id}">
 				{if $property.sortable}
 					<td>
 					<span class="glyphicon glyphicon-resize-vertical"></span>
-					<input type="hidden" id="{$propName}Weight_{$subObject->id}" name="{$propName}Weight[{$subObject->id}]" value="{$subObject->weight}"/>
+					<input type="hidden" id="{$propName}Weight_{$subObject->id}" name="{$propName}Weight[{$subObject->id}]" value="{$subObject->weight}">
 					</td>
 				{/if}
 				{foreach from=$property.structure item=subProperty}
-					{if in_array($subProperty.type, array('text', 'enum', 'date', 'checkbox', 'integer', 'textarea', 'html')) }
+					{if in_array($subProperty.type, array('text', 'enum', 'date', 'checkbox', 'integer', 'number', 'textarea', 'html')) }
 						<td>
 							{assign var=subPropName value=$subProperty.property}
 							{assign var=subPropValue value=$subObject->$subPropName}
-							{if $subProperty.type=='text' || $subProperty.type=='date' || $subProperty.type=='integer' || $subProperty.type=='textarea' || $subProperty.type=='html'}
+{*							{if $subProperty.type=='text' || $subProperty.type=='date' || $subProperty.type=='integer' || $subProperty.type=='textarea' || $subProperty.type=='html'}*}
+							{if in_array($subProperty.type, array('text', 'date', 'integer', 'textarea', 'html'))}
 								<input type="text" name="{$propName}_{$subPropName}[{$subObject->id}]" value="{$subPropValue|escape}" class="form-control{if $subProperty.type=='date'} datepicker{elseif $subProperty.type=="integer"} integer{/if}{if $subProperty.required == true} required{/if}">
+							{elseif $subProperty.type=='number'}
+								<input type="number" name='{$propName}_{$subPropName}[{$subObject->id}]' value="{$subPropValue|escape}" class="form-control {if $subProperty.required}required{/if}"{if $subProperty.max} max="{$subProperty.max}"{/if}{if $subProperty.min} min="{$subProperty.min}"{/if}{if $subProperty.maxLength} maxlength='{$subProperty.maxLength}'{/if}{if $subProperty.size} size='{$subProperty.size}'{/if}{if $subProperty.step} step='{$subProperty.step}'{/if}>
 							{elseif $subProperty.type=='checkbox'}
 								<input type='checkbox' name='{$propName}_{$subPropName}[{$subObject->id}]' {if $subPropValue == 1}checked='checked'{/if}/>
 							{else}
@@ -84,12 +87,52 @@
 		{/foreach}
 		</tbody>
 	</table>
+	{if !$property.sortable && isset($propValue) && is_array($propValue) && count($propValue) > 5}
+		<script type="text/javascript">
+			{* /* Custom parsers derived from: https://github.com/Mottie/tablesorter/blob/master/js/parsers/parser-input-select.js*/ *}
+			{literal}$(function(){
+				$.tablesorter.addParser({
+					id: 'text-input',
+					is: function(){return false},
+					format : function(txt, table, cell) {
+						var $input = $(cell).find('input');
+						return $input.length ? $input.val() : txt;
+					},
+					type: 'text', /*set type, either numeric or text*/
+					parsed: true,
+				});
+
+				$.tablesorter.addParser({
+					id : 'text-select',
+					is : function() {
+						return false;
+					},
+					format : function( txt, table, cell ) {
+						var $select = $( cell ).find( 'select' );
+						return $select.length ? $select.find( 'option:selected' ).text() || '' : txt;
+					},
+					parsed : true, // filter widget flag
+					type : 'text'
+				});
+
+				$("#{/literal}{$propName}{literal}").tablesorter({
+					cssAsc: 'sortAscHeader', cssDesc: 'sortDescHeader', cssHeader: 'unsortedHeader',
+					widgets:['zebra', 'filter'],
+					widgetOptions: {
+						filter_useParsedData: true,
+					},
+				})
+			});
+			{/literal}
+		</script>
+	{/if}
+
 	<div class="{$propName}Actions">
 		<a href="#" onclick="addNew{$propName}();return false;"  class="btn btn-primary btn-sm">Add New</a>
 		{if $property.additionalOneToManyActions && $id}{* Only display these actions for an existing object *}
 			<div class="btn-group pull-right">
 				{foreach from=$property.additionalOneToManyActions item=action}
-					<a class="btn {if $action.class}{$action.class}{else}btn-default{/if} btn-sm" href="{$action.url|replace:'$id':$id}">{$action.text}</a>
+					<a class="btn {if $action.class}{$action.class}{else}btn-default{/if} btn-sm"{if $action.url} href="{$action.url|replace:'$id':$id}"{/if}{if $action.onclick} onclick="{$action.onclick|replace:'$id':$id}"{/if}>{$action.text}</a>
 				{/foreach}
 			</div>
 		{/if}
@@ -122,12 +165,14 @@
 				newRow += "</td>";
 			{/if}
 			{foreach from=$property.structure item=subProperty}
-				{if in_array($subProperty.type, array('text', 'enum', 'date', 'checkbox', 'integer', 'textarea', 'html')) }
+				{if in_array($subProperty.type, array('text', 'enum', 'date', 'checkbox', 'integer', 'number', 'textarea', 'html')) }
 					newRow += "<td>";
 					{assign var=subPropName value=$subProperty.property}
 					{assign var=subPropValue value=$subObject->$subPropName}
 					{if $subProperty.type=='text' || $subProperty.type=='date' || $subProperty.type=='integer' || $subProperty.type=='textarea' || $subProperty.type=='html'}
 						newRow += "<input type='text' name='{$propName}_{$subPropName}[" + numAdditional{$propName} +"]' value='{if $subProperty.default}{$subProperty.default}{/if}' class='form-control{if $subProperty.type=="date"} datepicker{elseif $subProperty.type=="integer"} integer{/if}{if $subProperty.required == true} required{/if}'>";
+					{elseif $subProperty.type=='number'}
+						newRow += "<input type='number' name='{$propName}_{$subPropName}[" + numAdditional{$propName} +"]' value='{if $subProperty.default}{$subProperty.default}{/if}' class='form-control{if $subProperty.required == true} required{/if}'{if $subProperty.max} max='{$subProperty.max}'{/if}{if $subProperty.min} min='{$subProperty.min}'{/if}{if $subProperty.maxLength} maxlength='{$subProperty.maxLength}'{/if}{if $subProperty.size} size='{$subProperty.size}'{/if}{if $subProperty.step} step='{$subProperty.step}'{/if}>";
 					{elseif $subProperty.type=='checkbox'}
 						newRow += "<input type='checkbox' name='{$propName}_{$subPropName}[" + numAdditional{$propName} +"]' {if $subProperty.default == 1}checked='checked'{/if}>";
 					{else}

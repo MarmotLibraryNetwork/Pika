@@ -15,7 +15,7 @@ class ArrayUtils {
 		if (function_exists('mb_convert_encoding')){
 			array_walk_recursive($array, 'ArrayUtils::encode_item');
 		} else {
-			array_walk_recursive($array, 'ArrayUtils::old encode_item');
+			array_walk_recursive($array, 'ArrayUtils::old_encode_item');
 		}
 		return $array;
 	}

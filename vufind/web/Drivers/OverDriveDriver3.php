@@ -120,7 +120,7 @@ class OverDriveDriver3 {
 			$timer->logTime("Connected to OverDrive API");
 			if ($tokenData){
 				global $configArray;
-				$ch = curl_init("https://oauth-patron.overdrive.com/patrontoken");
+				$ch = curl_init('https://oauth-patron.overdrive.com/patrontoken');
 				if (empty($configArray['OverDrive']['patronWebsiteId'])){
 					return false;
 				} elseif (strpos($configArray['OverDrive']['patronWebsiteId'], ',') > 0) {
@@ -152,7 +152,7 @@ class OverDriveDriver3 {
 				$encodedAuthValue = base64_encode($configArray['OverDrive']['clientKey'] . ":" . $clientSecret);
 				$header           = array(
 					'Content-Type: application/x-www-form-urlencoded;charset=UTF-8',
-					"Authorization: Basic " . $encodedAuthValue,
+					'Authorization: Basic ' . $encodedAuthValue,
 					"User-Agent: $userAgent"
 				);
 
@@ -816,7 +816,7 @@ class OverDriveDriver3 {
 		//print_r($response);
 		if (isset($response->expires)) {
 			$result['success'] = true;
-			$result['message'] = 'Your title was checked out successfully. You may now download the title from your Account.';
+			$result['message'] = 'Your title was checked out successfully. You may now view the title in your account.';
 			if ($analytics) {
 				$analytics->addEvent('OverDrive', 'Checkout Item', 'succeeded');
 			}

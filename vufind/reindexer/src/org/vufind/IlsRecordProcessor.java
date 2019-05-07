@@ -34,10 +34,12 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	String formatSource;
 	String specifiedFormat;
 	String specifiedFormatCategory;
-	int specifiedFormatBoost;
-	char formatSubfield;
-	char barcodeSubfield;
-	char statusSubfieldIndicator;
+	String formatDeterminationMethod = "bib";
+	String matTypesToIgnore          = "";
+	int    specifiedFormatBoost;
+	char   formatSubfield;
+	char   barcodeSubfield;
+	char   statusSubfieldIndicator;
 	private Pattern nonHoldableStatuses;
 	char shelvingLocationSubfield;
 	char collectionSubfield;
@@ -64,9 +66,10 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	private char ytdCheckoutSubfield;
 	private char totalCheckoutSubfield;
 	boolean useICode2Suppression;
-	char iCode2Subfield;
-	String sierraRecordFixedFieldsTag;
-	char bCode3Subfield;
+	char    iCode2Subfield;
+	String  sierraRecordFixedFieldsTag;
+	String  materialTypeSubField;
+	char    bCode3Subfield;
 	private boolean useItemBasedCallNumbers;
 	private char callNumberPrestampSubfield;
 	private char callNumberSubfield;
@@ -160,6 +163,14 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			itemUrlSubfieldIndicator = getSubfieldIndicatorFromConfig(indexingProfileRS, "itemUrl");
 
 			formatSource = indexingProfileRS.getString("formatSource");
+			formatDeterminationMethod = indexingProfileRS.getString("formatDeterminationMethod");
+			if (formatDeterminationMethod == null) {
+				formatDeterminationMethod = "";
+			}
+			matTypesToIgnore = indexingProfileRS.getString("materialTypesToIgnore");
+			if (matTypesToIgnore == null) {
+				matTypesToIgnore = "";
+			}
 			specifiedFormat = indexingProfileRS.getString("specifiedFormat");
 			specifiedFormatCategory = indexingProfileRS.getString("specifiedFormatCategory");
 			specifiedFormatBoost = indexingProfileRS.getInt("specifiedFormatBoost");
@@ -206,10 +217,10 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 			sierraRecordFixedFieldsTag = indexingProfileRS.getString("sierraRecordFixedFieldsTag");
 			bCode3Subfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "bCode3");
+			materialTypeSubField = indexingProfileRS.getString("materialTypeField");
 
 			eContentSubfieldIndicator = getSubfieldIndicatorFromConfig(indexingProfileRS, "eContentDescriptor");
 			useEContentSubfield = eContentSubfieldIndicator != ' ';
-
 
 
 			orderTag = indexingProfileRS.getString("orderTag");
@@ -1413,7 +1424,12 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			recordInfo.addFormatCategories(translatedFormatCategories);
 			recordInfo.setFormatBoost(specifiedFormatBoost);
 		} else {
-			loadPrintFormatFromBib(recordInfo, record);
+			if (formatDeterminationMethod.equalsIgnoreCase("matType")) {
+				loadPrintFormatFromMatType(recordInfo, record);
+			} else {
+				// Format source presumed to be "bib" by default
+				loadPrintFormatFromBib(recordInfo, record);
+			}
 		}
 	}
 
@@ -1444,6 +1460,52 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			}
 		}
 		recordInfo.setFormatBoost(formatBoost);
+	}
+
+	private boolean isMatTypeToIgnore(String matType) {
+		return matType.isEmpty() || matType.equals("-") || matType.equals(" ") || matTypesToIgnore.indexOf(matType.charAt(0)) >= 0;
+	}
+
+	private void loadPrintFormatFromMatType(RecordInfo recordInfo, Record record) {
+		if (sierraRecordFixedFieldsTag != null && !sierraRecordFixedFieldsTag.isEmpty()) {
+			if (materialTypeSubField != null && !materialTypeSubField.isEmpty()) {
+				String matType = MarcUtil.getFirstFieldVal(record, sierraRecordFixedFieldsTag + materialTypeSubField);
+				if (matType != null) {
+					if (!isMatTypeToIgnore(matType)) {
+						String translatedFormat = translateValue("format", matType, recordInfo.getRecordIdentifier());
+						if (translatedFormat != null && !translatedFormat.equals(matType)) {
+							recordInfo.addFormat(translatedFormat);
+							String translatedFormatCategory = translateValue("format_category", matType, recordInfo.getRecordIdentifier());
+							if (translatedFormatCategory != null && !translatedFormatCategory.equals(matType)) {
+								recordInfo.addFormatCategory(translatedFormatCategory);
+							}
+							// use translated value
+							String formatBoost = translateValue("format_boost", matType, recordInfo.getRecordIdentifier());
+							try {
+								long tmpFormatBoostLong = Long.parseLong(formatBoost);
+								recordInfo.setFormatBoost(tmpFormatBoostLong);
+								return;
+							} catch (NumberFormatException e) {
+								logger.warn("Could not load format boost for format " + formatBoost + " profile " + profileType + "; Falling back to default format determination process");
+							}
+						} else {
+							logger.info("Material Type " + matType + " had no translation, falling back to default format determination.");
+						}
+					} else {
+						logger.info("Material Type for " + recordInfo.getRecordIdentifier() + " has ignored value '" + matType + "', falling back to default format determination.");
+					}
+				} else {
+					logger.info(recordInfo.getRecordIdentifier() + " did not have a material type, falling back to default format determination.");
+				}
+			} else {
+				logger.error("The materialTypeSubField is not set. Material Type format determination skipped.");
+			}
+		} else {
+			logger.error("The sierraRecordFixedFieldsTag is not set. Material Type format determination skipped.");
+		}
+
+		// Fall back to the format determination based on the Bib when the Material Type format determination failed
+		loadPrintFormatFromBib(recordInfo, record);
 	}
 
 	LinkedHashSet<String> getFormatsFromBib(Record record, RecordInfo recordInfo){
@@ -1501,13 +1563,15 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			String formatsString = Util.getCsvSeparatedString(printFormats);
 			if (!formatsToFilter.contains(formatsString)){
 				formatsToFilter.add(formatsString);
-				if (fullReindex) {
-					logger.warn("Found more than 1 format for " + recordInfo.getFullIdentifier() + " - " + formatsString);
-				}
+//				if (fullReindex) {
+//					logger.warn("Found more than 1 format for " + recordInfo.getFullIdentifier() + " - " + formatsString);
+//				}
+				//pascal 5/2/2019 cutting out warning noise for now
 			}
 		}
 		return printFormats;
 	}
+
 	private HashSet<String> formatsToFilter = new HashSet<>();
 
 	private void getFormatFromDigitalFileCharacteristics(Record record, LinkedHashSet<String> printFormats) {

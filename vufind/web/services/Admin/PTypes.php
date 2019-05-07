@@ -36,19 +36,19 @@ class PTypes extends ObjectEditor
 		return 'PTypes';
 	}
 	function getAllObjects(){
-		$libraryList = array();
+		$PTypeList = array();
 
 		$user = UserAccount::getLoggedInUser();
 		if (UserAccount::userHasRole('opacAdmin')){
-			$library = new PType();
-			$library->orderBy('pType');
-			$library->find();
-			while ($library->fetch()){
-				$libraryList[$library->id] = clone $library;
+			$PType = new PType();
+			$PType->orderBy('pType');
+			$PType->find();
+			while ($PType->fetch()){
+				$PTypeList[$PType->id] = clone $PType;
 			}
 		}
 
-		return $libraryList;
+		return $PTypeList;
 	}
 	function getObjectStructure(){
 		return PType::getObjectStructure();

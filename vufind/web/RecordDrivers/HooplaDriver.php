@@ -3,36 +3,37 @@
  * Record Driver to handle loading data for Hoopla Records
  *
  * @category Pika
- * @author Mark Noble <mark@marmot.org>
+ * @author   Mark Noble <mark@marmot.org>
  * Date: 12/18/14
  * Time: 10:50 AM
  */
 
 require_once ROOT_DIR . '/RecordDrivers/MarcRecord.php';
+
 class HooplaRecordDriver extends MarcRecord {
 	/**
 	 * Constructor.  We build the object using data from the Hoopla records stored on disk.
 	 * Will be similar to a MarcRecord with slightly different functionality
 	 *
 	 * @param array|File_MARC_Record|string $record
-	 * @param  GroupedWork $groupedWork;
+	 * @param GroupedWork                   $groupedWork ;
 	 * @access  public
 	 */
-	public function __construct($record, $groupedWork = null) {
+	public function __construct($record, $groupedWork = null){
 		if ($record instanceof File_MARC_Record){
 			$this->marcRecord = $record;
 		}elseif (is_string($record)){
 			require_once ROOT_DIR . '/sys/MarcLoader.php';
 			$this->profileType = 'hoopla';
-			$this->id = $record;
+			$this->id          = $record;
 
 			$this->valid = MarcLoader::marcExistsForHooplaId($record);
 
 			// Code block taken from MarcRecord.php, to set the indexing profile so that method getAbsoluteURL() works correctly. pascal 4-27-2017
 			global $indexingProfiles;
-			if (array_key_exists($this->profileType, $indexingProfiles)) {
+			if (array_key_exists($this->profileType, $indexingProfiles)){
 				$this->indexingProfile = $indexingProfiles[$this->profileType];
-			} else {
+			}else{
 //				//Try to infer the indexing profile from the module
 //				global $activeRecordProfile;
 //				if ($activeRecordProfile) {
@@ -50,7 +51,7 @@ class HooplaRecordDriver extends MarcRecord {
 			// Also process the MARC record:
 			require_once ROOT_DIR . '/sys/MarcLoader.php';
 			$this->marcRecord = MarcLoader::loadMarcRecordFromRecord($record);
-			if (!$this->marcRecord) {
+			if (!$this->marcRecord){
 				$this->valid = false;
 			}
 		}
@@ -69,8 +70,7 @@ class HooplaRecordDriver extends MarcRecord {
 	 * @access  public
 	 * @return  string              Unique identifier.
 	 */
-	public function getShortId()
-	{
+	public function getShortId(){
 		return $this->id;
 	}
 
@@ -91,24 +91,23 @@ class HooplaRecordDriver extends MarcRecord {
 	 * @return array
 	 * @throws File_MARC_Exception
 	 */
-	public function getAccessLink($actions = null)
-	{
+	public function getAccessLink($actions = null){
 		$title      = translate('hoopla_url_action');
 		$marcRecord = $this->getMarcRecord();
 		/** @var File_MARC_Data_Field[] $linkFields */
 		$linkFields = $marcRecord->getFields('856');
 		$fileOrUrl  = null;
-		foreach ($linkFields as $linkField) {
-			if ($linkField->getIndicator(1) == 4 && $linkField->getIndicator(2) == 0) {
+		foreach ($linkFields as $linkField){
+			if ($linkField->getIndicator(1) == 4 && $linkField->getIndicator(2) == 0){
 				$linkSubfield = $linkField->getSubfield('u');
 				$fileOrUrl    = $linkSubfield->getData();
 				break;
 			}
 		}
-		if ($fileOrUrl != null) {
+		if ($fileOrUrl != null){
 			$actions[] = array(
-				'url' => $fileOrUrl,
-				'title' => $title,
+				'url'          => $fileOrUrl,
+				'title'        => $title,
 				'requireLogin' => false,
 			);
 		}
@@ -126,21 +125,21 @@ class HooplaRecordDriver extends MarcRecord {
 		return $configArray['Site']['path'] . '/Hoopla/' . $recordId;
 	}
 
-	function getActions() {
+	function getActions(){
 		//TODO: If this is added to the related record, pass in the value
 		$actions = array();
 
 		/** @var Library $searchLibrary */
 		$searchLibrary = Library::getSearchLibrary();
-		if ($searchLibrary->hooplaLibraryID > 0) { // Library is enabled for Hoopla patron action integration
-			$id = $this->getId();
-			$title = translate('hoopla_checkout_action');
+		if ($searchLibrary->hooplaLibraryID > 0){ // Library is enabled for Hoopla patron action integration
+			$id        = $this->getId();
+			$title     = translate('hoopla_checkout_action');
 			$actions[] = array(
 				'onclick' => "return VuFind.Hoopla.getHooplaCheckOutPrompt('$id')",
-				'title'   => $title
+				'title'   => $title,
 			);
 
-		} else {
+		}else{
 			$actions = $this->getAccessLink($actions);
 		}
 
@@ -159,20 +158,20 @@ class HooplaRecordDriver extends MarcRecord {
 		global $configArray;
 		if ($searchLibrary->hooplaLibraryID > 0 &&
 			!empty($configArray['Hoopla']['HooplaAPIUser']) &&
-			!empty($configArray['Hoopla']['HooplaAPIpassword'])) { // Library is enabled for Hoopla patron action integration
-			$id = $this->getId();
-			$title = translate('hoopla_checkout_action');
+			!empty($configArray['Hoopla']['HooplaAPIpassword'])){ // Library is enabled for Hoopla patron action integration
+			$id        = $this->getId();
+			$title     = translate('hoopla_checkout_action');
 			$actions[] = array(
 				'onclick' => "return VuFind.Hoopla.getHooplaCheckOutPrompt('$id')",
-				'title'   => $title
+				'title'   => $title,
 			);
 
-		} else {
+		}else{
 			$title = translate('hoopla_url_action');
 			foreach ($relatedUrls as $url){
 				$actions[] = array(
-					'url' => $url['url'],
-					'title' => $title,
+					'url'          => $url['url'],
+					'title'        => $title,
 					'requireLogin' => false,
 				);
 			}
@@ -198,9 +197,9 @@ class HooplaRecordDriver extends MarcRecord {
 		if (count($relatedRecords) > 1){
 			$interface->assign('relatedManifestations', $this->getGroupedWorkDriver()->getRelatedManifestations());
 			$moreDetailsOptions['otherEditions'] = array(
-				'label' => 'Other Editions and Formats',
-				'body' => $interface->fetch('GroupedWork/relatedManifestations.tpl'),
-				'hideByDefault' => false
+				'label'         => 'Other Editions and Formats',
+				'body'          => $interface->fetch('GroupedWork/relatedManifestations.tpl'),
+				'hideByDefault' => false,
 			);
 		}
 
@@ -211,21 +210,21 @@ class HooplaRecordDriver extends MarcRecord {
 
 		$moreDetailsOptions['moreDetails'] = array(
 			'label' => 'More Details',
-			'body' => $interface->fetch('Hoopla/view-more-details.tpl'),
+			'body'  => $interface->fetch('Hoopla/view-more-details.tpl'),
 		);
 		$this->loadSubjects();
-		$moreDetailsOptions['subjects'] = array(
+		$moreDetailsOptions['subjects']  = array(
 			'label' => 'Subjects',
-			'body' => $interface->fetch('Record/view-subjects.tpl'),
+			'body'  => $interface->fetch('Record/view-subjects.tpl'),
 		);
 		$moreDetailsOptions['citations'] = array(
 			'label' => 'Citations',
-			'body' => $interface->fetch('Record/cite.tpl'),
+			'body'  => $interface->fetch('Record/cite.tpl'),
 		);
 		if ($interface->getVariable('showStaffView')){
 			$moreDetailsOptions['staff'] = array(
 				'label' => 'Staff View',
-				'body' => $interface->fetch($this->getStaffView()),
+				'body'  => $interface->fetch($this->getStaffView()),
 			);
 		}
 
@@ -233,13 +232,13 @@ class HooplaRecordDriver extends MarcRecord {
 	}
 
 	function getBookcoverUrl($size = 'small', $absolutePath = false){
-		$id = $this->getUniqueID();
+		$id             = $this->getUniqueID();
 		$formatCategory = $this->getFormatCategory();
 		if (is_array($formatCategory)){
 			$formatCategory = reset($formatCategory);
 		}
 		$formats = $this->getFormat();
-		$format = reset($formats);
+		$format  = reset($formats);
 		global $configArray;
 		if ($absolutePath){
 			$bookCoverUrl = $configArray['Site']['url'];
@@ -247,7 +246,7 @@ class HooplaRecordDriver extends MarcRecord {
 			$bookCoverUrl = $configArray['Site']['path'];
 		}
 		$bookCoverUrl .= "/bookcover.php?id={$id}&amp;size={$size}&amp;category=" . urlencode($formatCategory) . "&amp;format=" . urlencode($format) . "&amp;type=hoopla";
-		$isbn = $this->getCleanISBN();
+		$isbn         = $this->getCleanISBN();
 		if ($isbn){
 			$bookCoverUrl .= "&amp;isn={$isbn}";
 		}
@@ -266,15 +265,15 @@ class HooplaRecordDriver extends MarcRecord {
 		return 0;
 	}
 
-	public function getStaffView()
-	{
+	public function getStaffView(){
 		parent::getStaffView();
+
+		require_once ROOT_DIR . '/sys/Hoopla/HooplaExtract.php';
 		$hooplaExtract = new HooplaExtract();
-//		$hooplaId = preg_replace('/^MWT/', '', $this->id);
-		$hooplaId = HooplaDriver::recordIDtoHooplaID($this->id);
-		if ($hooplaExtract->get('hooplaId', $hooplaId) == 1) {
+		$hooplaId      = HooplaDriver::recordIDtoHooplaID($this->id);
+		if ($hooplaExtract->get('hooplaId', $hooplaId) == 1){
 			$hooplaData = array();
-			foreach ($hooplaExtract->table() as $fieldName => $value_ignored) {
+			foreach ($hooplaExtract->table() as $fieldName => $value_ignored){
 				$hooplaData[$fieldName] = $hooplaExtract->$fieldName;
 			}
 			global $interface;

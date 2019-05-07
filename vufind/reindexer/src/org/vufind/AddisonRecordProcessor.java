@@ -16,22 +16,22 @@ public class AddisonRecordProcessor extends IIIRecordProcessor {
 	private PreparedStatement getDateAddedStmt; // to set date added for ils (itemless) econtent records
 
 	//TODO: These should be added to indexing profile
-	private String materialTypeSubField     = "d";
 	private String availableStatus          = "-oy";
 	private String validOnOrderRecordStatus = "o1a";
 	private String libraryUseOnlyStatus     = "o";
 
-	AddisonRecordProcessor(GroupedWorkIndexer indexer, Connection vufindConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
-		super(indexer, vufindConn, indexingProfileRS, logger, fullReindex);
+	AddisonRecordProcessor(GroupedWorkIndexer indexer, Connection pikaConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
+		super(indexer, pikaConn, indexingProfileRS, logger, fullReindex);
 
-		loadOrderInformationFromExport();
-//        loadVolumesFromExport(vufindConn);
+		// Note: Mat-Type "v" is video games; they are to be excluded for the better default format determination		loadOrderInformationFromExport();
+
+//        loadVolumesFromExport(pikaConn);
 
 		validCheckedOutStatusCodes.add("o"); // Library Use Only
 		validCheckedOutStatusCodes.add("d"); // Display
 
 		try {
-			getDateAddedStmt = vufindConn.prepareStatement("SELECT dateFirstDetected FROM ils_marc_checksums WHERE ilsId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			getDateAddedStmt = pikaConn.prepareStatement("SELECT dateFirstDetected FROM ils_marc_checksums WHERE ilsId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 		} catch (Exception e) {
 			logger.error("Unable to setup prepared statement for date added to catalog");
 		}
@@ -61,39 +61,6 @@ public class AddisonRecordProcessor extends IIIRecordProcessor {
 			}
 		}
 		return available;
-	}
-
-
-	public void loadPrintFormatInformation(RecordInfo recordInfo, Record record) {
-		String matType = MarcUtil.getFirstFieldVal(record, sierraRecordFixedFieldsTag + materialTypeSubField);
-		if (matType != null) {
-			if (!matType.equals("-") && !matType.equals(" ") && !matType.equals("v")) { // Mat-Type "v" is video games; they are to be excluded for the better default format determination
-				String translatedFormat = translateValue("material_type", matType, recordInfo.getRecordIdentifier());
-				if (translatedFormat != null && !translatedFormat.equals(matType)) {
-					recordInfo.addFormat(translatedFormat);
-					String translatedFormatCategory = translateValue("format_category", matType, recordInfo.getRecordIdentifier());
-					if (translatedFormatCategory != null && !translatedFormatCategory.equals(matType)) {
-						recordInfo.addFormatCategory(translatedFormatCategory);
-					}
-					// use translated value
-					String formatBoost = translateValue("format_boost", matType, recordInfo.getRecordIdentifier());
-					try {
-						Long tmpFormatBoostLong = Long.parseLong(formatBoost);
-						recordInfo.setFormatBoost(tmpFormatBoostLong);
-						return;
-					} catch (NumberFormatException e) {
-						logger.warn("Could not load format boost for format " + formatBoost + " profile " + profileType + "; Falling back to default format determination process");
-					}
-				} else {
-					logger.info("Material Type " + matType + " had no translation, falling back to default format determination.");
-				}
-			} else {
-				logger.info("Material Type for " + recordInfo.getRecordIdentifier() + " has empty value '" + matType + "', falling back to default format determination.");
-			}
-		} else {
-			logger.info(recordInfo.getRecordIdentifier() + " did not have a material type, falling back to default format determination.");
-		}
-		super.loadPrintFormatInformation(recordInfo, record);
 	}
 
 

@@ -2,7 +2,7 @@
 /**
  *
  *
- * @category VuFind-Plus
+ * @category Pika
  * @author   : Chris Froese
  * Date: 2/27/2019
  *

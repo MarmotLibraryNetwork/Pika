@@ -20,8 +20,10 @@
 
 		<script src="{$path}/js/jquery-1.9.1.min.js?v={$gitBranch|urlencode}"></script>
 		{* Load Libraries*}
+{*		<script src="{$path}/interface/themes/responsive/js/lib/jquery.tablesorter.js?v={$gitBranch|urlencode}"></script>*}
 		<script src="{$path}/interface/themes/responsive/js/lib/jquery.tablesorter.min.js?v={$gitBranch|urlencode}"></script>
 		<script src="{$path}/interface/themes/responsive/js/lib/jquery.tablesorter.pager.min.js?v={$gitBranch|urlencode}"></script>
+{*		<script src="{$path}/interface/themes/responsive/js/lib/jquery.tablesorter.widgets.js?v={$gitBranch|urlencode}"></script>*}
 		<script src="{$path}/interface/themes/responsive/js/lib/jquery.tablesorter.widgets.min.js?v={$gitBranch|urlencode}"></script>
 		{* Validator has two library files *}
 		{*<script src="{$path}/interface/themes/responsive/js/lib/jquery.validate.js?v={$gitBranch|urlencode}"></script>*}

@@ -33,15 +33,6 @@
 		</div>
 	{/if}
 
-	{if $showPhysicalDespriptions && $recordDriver->getPhysicalDescriptions()}
-		<div class="row">
-			<div class="result-label col-md-3">{translate text='Physical Description'}:</div>
-			<div class="col-md-9 result-value">
-				{implode subject=$recordDriver->getPhysicalDescriptions() glue=", "}
-			</div>
-		</div>
-	{/if}
-
 	{if $showFormats}
 		<div class="row">
 			<div class="result-label col-md-3">{translate text='Format'}:</div>
@@ -65,6 +56,16 @@
 			<div class="result-label col-xs-3">{translate text='ISBN'}:</div>
 			<div class="col-xs-9 result-value">
 				{implode subject=$recordDriver->getISBNs() glue=", "}
+			</div>
+		</div>
+	{/if}
+
+	{if $showPhysicalDescriptions && $recordDriver->getPhysicalDescriptions()}
+		<div class="row">
+			{* Use a different label for Econtent Views *}
+			<div class="result-label col-md-3">{translate text='Content Description'}:</div>
+			<div class="col-md-9 result-value">
+				{implode subject=$recordDriver->getPhysicalDescriptions() glue=", "}
 			</div>
 		</div>
 	{/if}
@@ -96,6 +97,14 @@
 		</div>
 	{/if}
 
+	{if $mpaaRating}
+		<div class="row">
+			<div class="result-label col-sm-4">{translate text='Rating'}:</div>
+			<div class="col-sm-8 result-value">{$mpaaRating|escape}</div>
+		</div>
+	{/if}
+
+	{* Detailed status information *}
 	<div class="row">
 		<div class="result-label col-md-3">{translate text='Status'}:</div>
 		<div class="col-md-9 result-value result-value-bold statusValue here" id="statusValue">

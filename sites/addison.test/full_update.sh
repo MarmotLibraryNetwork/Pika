@@ -148,6 +148,8 @@ cd /data/vufind-plus/accelerated_reader; curl --remote-name --remote-time --sile
 /usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} addison/gale_courses gale_courses/addison >> ${OUTPUT_FILE}
 #RB Digital
 /usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} addison/RBdigital_magazines RBdigital_magazines/addison >> ${OUTPUT_FILE}
+#Creative Bug
+/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} addison/creative_bug creative_bug/addison >> ${OUTPUT_FILE}
 
 #Do a full extract from OverDrive just once a week to catch anything that doesn't
 #get caught in the regular extract

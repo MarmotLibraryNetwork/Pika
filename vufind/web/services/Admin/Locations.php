@@ -22,18 +22,20 @@ require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 require_once 'XML/Unserializer.php';
 
-class Locations extends ObjectEditor
-{
+class Locations extends ObjectEditor {
 
 	function getObjectType(){
 		return 'Location';
 	}
+
 	function getToolName(){
 		return 'Locations';
 	}
+
 	function getPageTitle(){
 		return 'Locations (Branches)';
 	}
+
 	function getAllObjects(){
 		//Look lookup information for display in the user interface
 		$user = UserAccount::getLoggedInUser();
@@ -42,10 +44,12 @@ class Locations extends ObjectEditor
 		$location->orderBy('displayName');
 		if (UserAccount::userHasRole('locationManager')){
 			$location->locationId = $user->homeLocationId;
-		} else if (!UserAccount::userHasRole('opacAdmin')){
-			//Scope to just locations for the user based on home library
-			$patronLibrary = Library::getLibraryForLocation($user->homeLocationId);
-			$location->libraryId = $patronLibrary->libraryId;
+		}else{
+			if (!UserAccount::userHasRole('opacAdmin')){
+				//Scope to just locations for the user based on home library
+				$patronLibrary       = Library::getLibraryForLocation($user->homeLocationId);
+				$location->libraryId = $patronLibrary->libraryId;
+			}
 		}
 		$location->find();
 		$locationList = array();
@@ -66,33 +70,37 @@ class Locations extends ObjectEditor
 	function getIdKeyColumn(){
 		return 'locationId';
 	}
+
 	function getAllowableRoles(){
 		return array('opacAdmin', 'libraryAdmin', 'libraryManager', 'locationManager');
 	}
+
 	function canAddNew(){
 		$user = UserAccount::getLoggedInUser();
 		return UserAccount::userHasRole('opacAdmin');
 	}
+
 	function canDelete(){
 		$user = UserAccount::getLoggedInUser();
 		return UserAccount::userHasRole('opacAdmin');
 	}
+
 	function getAdditionalObjectActions($existingObject){
-		$user = UserAccount::getLoggedInUser();
- 		$objectActions = array();
+		$user          = UserAccount::getLoggedInUser();
+		$objectActions = array();
 		if ($existingObject != null){
 			$objectActions[] = array(
 				'text' => 'Reset Facets To Default',
-				'url' => '/Admin/Locations?objectAction=resetFacetsToDefault&amp;id=' . $existingObject->locationId,
+				'url'  => '/Admin/Locations?objectAction=resetFacetsToDefault&amp;id=' . $existingObject->locationId,
 			);
 			$objectActions[] = array(
 				'text' => 'Reset More Details To Default',
-				'url' => '/Admin/Locations?id=' . $existingObject->locationId . '&amp;objectAction=resetMoreDetailsToDefault',
+				'url'  => '/Admin/Locations?id=' . $existingObject->locationId . '&amp;objectAction=resetMoreDetailsToDefault',
 			);
 			if (!UserAccount::userHasRole('libraryManager') && !UserAccount::userHasRole('locationManager')){
 				$objectActions[] = array(
-						'text' => 'Copy Location Data',
-						'url' => '/Admin/Locations?id=' . $existingObject->locationId . '&amp;objectAction=copyDataFromLocation',
+					'text' => 'Copy Location Data',
+					'url'  => '/Admin/Locations?id=' . $existingObject->locationId . '&amp;objectAction=copyDataFromLocation',
 				);
 			}
 		}else{
@@ -104,12 +112,12 @@ class Locations extends ObjectEditor
 	function copyDataFromLocation(){
 		$locationId = $_REQUEST['id'];
 		if (isset($_REQUEST['submit'])){
-			$location = new Location();
+			$location             = new Location();
 			$location->locationId = $locationId;
 			$location->find(true);
 
-			$locationToCopyFromId = $_REQUEST['locationToCopyFrom'];
-			$locationToCopyFrom = new Location();
+			$locationToCopyFromId           = $_REQUEST['locationToCopyFrom'];
+			$locationToCopyFrom             = new Location();
 			$locationToCopyFrom->locationId = $locationToCopyFromId;
 			$location->find(true);
 
@@ -118,8 +126,8 @@ class Locations extends ObjectEditor
 
 				$facetsToCopy = $locationToCopyFrom->facets;
 				foreach ($facetsToCopy as $facetKey => $facet){
-					$facet->locationId = $locationId;
-					$facet->id = null;
+					$facet->locationId       = $locationId;
+					$facet->id               = null;
 					$facetsToCopy[$facetKey] = $facet;
 				}
 				$location->facets = $facetsToCopy;
@@ -129,8 +137,8 @@ class Locations extends ObjectEditor
 
 				$browseCategoriesToCopy = $locationToCopyFrom->browseCategories;
 				foreach ($browseCategoriesToCopy as $key => $category){
-					$category->locationId = $locationId;
-					$category->id = null;
+					$category->locationId         = $locationId;
+					$category->id                 = null;
 					$browseCategoriesToCopy[$key] = $category;
 				}
 				$location->browseCategories = $browseCategoriesToCopy;
@@ -155,8 +163,8 @@ class Locations extends ObjectEditor
 	}
 
 	function resetFacetsToDefault(){
-		$location = new Location();
-		$locationId = $_REQUEST['id'];
+		$location             = new Location();
+		$locationId           = $_REQUEST['id'];
 		$location->locationId = $locationId;
 		if ($location->find(true)){
 			$location->clearFacets();
@@ -173,8 +181,8 @@ class Locations extends ObjectEditor
 	}
 
 	function resetMoreDetailsToDefault(){
-		$location = new Location();
-		$locationId = $_REQUEST['id'];
+		$location             = new Location();
+		$locationId           = $_REQUEST['id'];
 		$location->locationId = $locationId;
 		if ($location->find(true)){
 			$location->clearMoreDetailsOptions();
@@ -182,14 +190,14 @@ class Locations extends ObjectEditor
 			$defaultOptions = array();
 			require_once ROOT_DIR . '/RecordDrivers/Interface.php';
 			$defaultMoreDetailsOptions = RecordInterface::getDefaultMoreDetailsOptions();
-			$i = 0;
+			$i                         = 0;
 			foreach ($defaultMoreDetailsOptions as $source => $defaultState){
-				$optionObj = new LocationMoreDetails();
-				$optionObj->locationId = $locationId;
+				$optionObj                    = new LocationMoreDetails();
+				$optionObj->locationId        = $locationId;
 				$optionObj->collapseByDefault = $defaultState == 'closed';
-				$optionObj->source = $source;
-				$optionObj->weight = $i++;
-				$defaultOptions[] = $optionObj;
+				$optionObj->source            = $source;
+				$optionObj->weight            = $i++;
+				$defaultOptions[]             = $optionObj;
 			}
 
 			$location->moreDetailsOptions = $defaultOptions;

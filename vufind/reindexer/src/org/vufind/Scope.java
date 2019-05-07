@@ -26,6 +26,7 @@ public class Scope implements Comparable<Scope>{
 	private boolean        isLibraryScope;
 	private HashSet<Scope> locationScopes = new HashSet<>(); //If this is a library scope, we want to store pointers to the individual location scopes
 	private boolean        isLocationScope;
+	private Long           locationId;
 	private Scope          libraryScope;
 
 	private boolean                restrictOwningLibraryAndLocationFacets;
@@ -46,7 +47,6 @@ public class Scope implements Comparable<Scope>{
 	private boolean                includeOnOrderRecordsInDateAddedFacetValues;
 	private boolean                baseAvailabilityToggleOnLocalHoldingsOnly = false;
 	private boolean                includeOnlineMaterialsInAvailableToggle   = true;
-	private float                  hooplaMaxPrice = 0.0f;
 
 	String getScopeName() {
 		return scopeName;
@@ -100,6 +100,7 @@ public class Scope implements Comparable<Scope>{
 		for(InclusionRule curRule: inclusionRules){
 			if (curRule.isItemIncluded(recordType, locationCode, subLocationCode, iType, audiences, format, isHoldable, isOnOrder, isEContent, marcRecord)){
 				if (econtentUrl != null) {
+					// Do any URL Replacement needed
 					econtentUrl = curRule.getLocalUrl(econtentUrl);
 				}
 				return new InclusionResult(true, econtentUrl);
@@ -149,6 +150,14 @@ public class Scope implements Comparable<Scope>{
 
 	Long getLibraryId() {
 		return libraryId;
+	}
+
+	public Long getLocationId() {
+		return locationId;
+	}
+
+	public void setLocationId(Long locationId) {
+		this.locationId = locationId;
 	}
 
 
@@ -318,14 +327,6 @@ public class Scope implements Comparable<Scope>{
 
 	public void setIncludeOnOrderRecordsInDateAddedFacetValues(boolean includeOnOrderRecordsInDateAddedFacetValues) {
 		this.includeOnOrderRecordsInDateAddedFacetValues = includeOnOrderRecordsInDateAddedFacetValues;
-	}
-
-	public float getHooplaMaxPrice() {
-		return hooplaMaxPrice;
-	}
-
-	public void setHooplaMaxPrice(float hooplaMaxPrice) {
-		this.hooplaMaxPrice = hooplaMaxPrice;
 	}
 
 	class InclusionResult{

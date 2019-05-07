@@ -334,11 +334,11 @@ public class SierraExportMain{
 				//That the grouped record has changed which will force the work to be indexed
 				//In reality, this will only update availability unless we pull the full marc record
 				//from the API since we only have updated availability, not location data or metadata
-				long firstItemIdToLoad = 1;
-				boolean moreToRead = true;
-				PreparedStatement markGroupedWorkForBibAsChangedStmt = pikaConn.prepareStatement("UPDATE grouped_work SET date_updated = ? where id = (SELECT grouped_work_id from grouped_work_primary_identifiers WHERE type = 'ils' and identifier = ?)") ;
-				HashMap<String, ArrayList<ItemChangeInfo>> changedBibs = new HashMap<>();
-				int bufferSize = 1000;
+				long                                       firstItemIdToLoad                  = 1;
+				boolean                                    moreToRead                         = true;
+				PreparedStatement                          markGroupedWorkForBibAsChangedStmt = pikaConn.prepareStatement("UPDATE grouped_work SET date_updated = ? where id = (SELECT grouped_work_id from grouped_work_primary_identifiers WHERE type = 'ils' and identifier = ?)");
+				HashMap<String, ArrayList<ItemChangeInfo>> changedBibs                        = new HashMap<>();
+				int                                        bufferSize                         = 1000;
 				/*String recordsToExtractBatchSizeStr = ini.get("Sierra", "recordsToExtractBatchSize");
 				if (recordsToExtractBatchSizeStr != null){
 					bufferSize = Integer.parseInt(recordsToExtractBatchSizeStr);

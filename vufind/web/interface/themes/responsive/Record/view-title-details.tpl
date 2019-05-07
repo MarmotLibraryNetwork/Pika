@@ -6,7 +6,7 @@
 			<div class="result-label col-sm-4">Uniform Title: </div>
 			<div class="col-sm-8 result-value">
 				{foreach from=$recordDriver->getUniformTitle() item=uniformTitle}
-					<a href="{$path}/Search/Results?lookfor={$uniformTitle|escape:"url"}">{$uniformTitle|highlight}</a><br/>
+					<a href="{$path}/Search/Results?lookfor={$uniformTitle|escape:"url"}">{$uniformTitle|highlight}</a><br>
 				{/foreach}
 			</div>
 		</div>
@@ -16,7 +16,7 @@
 		<div class="row">
 			<div class="result-label col-sm-4">Author: </div>
 			<div class="col-sm-8 result-value">
-				<a href='{$path}/Author/Home?author="{$recordDriver->getAuthor()|escape:"url"}"'>{$recordDriver->getAuthor()|highlight}</a><br/>
+				<a href='{$path}/Author/Home?author="{$recordDriver->getAuthor()|escape:"url"}"'>{$recordDriver->getAuthor()|highlight}</a><br>
 			</div>
 		</div>
 	{/if}
@@ -104,11 +104,12 @@
 		</div>
 	{/if}
 
-	{if $showPhysicalDescriptions && $physicalDescriptions}
+	{if $showPhysicalDescriptions && $recordDriver->getPhysicalDescriptions()}
 		<div class="row">
 			<div class="result-label col-sm-4">{translate text='Physical Desc'}:</div>
 			<div class="col-sm-8 result-value">
-				{implode subject=$physicalDescriptions glue="<br>"}
+				{implode subject=$recordDriver->getPhysicalDescriptions() glue=", "}
+{*				{implode subject=$physicalDescriptions glue=", <br>"}*}
 			</div>
 		</div>
 	{/if}
