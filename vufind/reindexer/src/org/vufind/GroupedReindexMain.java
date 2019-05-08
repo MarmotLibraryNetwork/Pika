@@ -349,7 +349,7 @@ public class GroupedReindexMain {
 		try {
 			vufindConn = DriverManager.getConnection(databaseConnectionInfo);
 		} catch (SQLException e) {
-			logger.error("Could not connect to vufind database", e);
+			logger.error("Could not connect to pika database", e);
 			System.exit(1);
 		}
 
