@@ -42,7 +42,6 @@ class AnodeAPI extends Action {
 	 * Returns information about the titles within a list
 	 * according to the parameters of
 	 * Anode Pika API Description at
-	 * https://docs.google.com/document/d/1N_LiYaK56WLWXTIxzDvmwdVQ3WgogopTnHHixKc_2zk
 	 *
 	 * @param string $listId - The list to show
 	 * @param integer $numGroupedWorksToShow - the maximum number of titles that should be shown
