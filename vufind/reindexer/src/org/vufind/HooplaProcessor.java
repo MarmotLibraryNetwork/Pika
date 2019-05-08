@@ -24,16 +24,18 @@ import java.util.Set;
  * Time: 10:30 AM
  */
 class HooplaProcessor extends MarcRecordProcessor {
-	private String                       individualMarcPath;
-	private int                          numCharsToCreateFolderFrom;
-	private boolean                      createFolderFromLeadingCharacters;
-	private PreparedStatement            hooplaExtractInfoStatement;
-	private HooplaExtractInfo            hooplaExtractInfo;
-	private HashSet<HooplaInclusionRule> libraryHooplaInclusionRules  = new HashSet<>();
-	private HashSet<HooplaInclusionRule> locationHooplaInclusionRules = new HashSet<>();
+	protected boolean                      fullReindex;
+	private   String                       individualMarcPath;
+	private   int                          numCharsToCreateFolderFrom;
+	private   boolean                      createFolderFromLeadingCharacters;
+	private   PreparedStatement            hooplaExtractInfoStatement;
+	private   HooplaExtractInfo            hooplaExtractInfo;
+	private   HashSet<HooplaInclusionRule> libraryHooplaInclusionRules  = new HashSet<>();
+	private   HashSet<HooplaInclusionRule> locationHooplaInclusionRules = new HashSet<>();
 
-	HooplaProcessor(GroupedWorkIndexer indexer, Connection pikaConn, ResultSet indexingProfileRS, Logger logger) {
+	HooplaProcessor(GroupedWorkIndexer indexer, Connection pikaConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 		super(indexer, logger);
+		this.fullReindex = fullReindex;
 
 		try {
 			individualMarcPath                 = indexingProfileRS.getString("individualMarcPath");
@@ -137,7 +139,7 @@ class HooplaProcessor extends MarcRecordProcessor {
 					hooplaExtractInfo.setProfanity(profanity);
 					hooplaExtractInfo.setAbridged(abridged);
 					hooplaExtractInfo.setChildren(children);
-				} else {
+				} else if (fullReindex) {
 					logger.warn("Did not find Hoopla Extract information for " + identifier);
 				}
 			} catch (NumberFormatException e) {
