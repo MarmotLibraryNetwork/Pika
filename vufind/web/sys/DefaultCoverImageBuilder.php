@@ -17,7 +17,7 @@ class DefaultCoverImageBuilder {
 	private $imagePrintableAreaWidth  = 254; //Area printable in Pixels (includes 13px margin on both sides)
 	private $imagePrintableAreaHeight = 380; //Area printable in Pixels (includes 10px margin on both sides)
 	private $titleFont                = ROOT_DIR . '/fonts/DejaVuSansCondensed-Bold.ttf';
-	private $authorFont               = ROOT_DIR . 'fonts/DejaVuSansCondensed-BoldOblique.ttf';
+	private $authorFont               = ROOT_DIR . '/fonts/DejaVuSansCondensed-BoldOblique.ttf';
 	private $colorText                = array("red" => 1, "green" => 1, "blue" => 1);
 
 	/**
@@ -44,12 +44,12 @@ class DefaultCoverImageBuilder {
 		$this->imageWidth  = imagesx($blankCover);
 		$this->imageHeight = imagesy($blankCover);
 
-		$colorText = imagecolorallocate($blankCover, $this->colorText['red'], $this->colorText['green'], $this->colorText['blue']); //#444444
+		$colorText = imagecolorallocate($blankCover, $this->colorText['red'], $this->colorText['green'], $this->colorText['blue']);
 
 		//Add the title to the background image
 		$textYPos = $this->addWrappedTextToImage($blankCover, $this->titleFont, $title, 25, 5, 10, $colorText);
-		//Add the author to the background image
 		if (strlen($author) > 0){
+			//Add the author to the background image
 			$this->addWrappedTextToImage($blankCover, $this->authorFont, $author, 18, 10, $textYPos + 6, $colorText);
 		}
 
@@ -81,8 +81,8 @@ class DefaultCoverImageBuilder {
 			$lineHeight = abs($lineBox[3] - $lineBox[5]); //Get the height of this line
 			$x          = ($this->imageWidth - $lineWidth) / 2; //Get the starting position for the text
 			if ($this->imagePrintableAreaHeight > $startY + $lineHeight){
-				$startY += $lineHeight; //Write the text to the image
-				imagefttext($imageHandle, $fontSize, 0, $x, $startY, $color, $font, $line);
+				$startY += $lineHeight;
+				imagefttext($imageHandle, $fontSize, 0, $x, $startY, $color, $font, $line); //Write the text to the image
 				$startY += $lineSpacing;
 			}else{
 				break; // Don't write text outside of the printable area
