@@ -247,7 +247,7 @@ public class GroupedWorkIndexer {
 							ilsRecordProcessors.put(curIdentifier, new SideLoadedEContentProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
 							break;
 						case "Hoopla":
-							ilsRecordProcessors.put(curIdentifier, new HooplaProcessor(this, pikaConn, indexingProfileRS, logger));
+							ilsRecordProcessors.put(curIdentifier, new HooplaProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
 							break;
 						default:
 							logger.error("Unknown indexing class " + ilsIndexingClassString);
