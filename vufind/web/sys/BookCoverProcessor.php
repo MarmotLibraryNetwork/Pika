@@ -670,7 +670,7 @@ class BookCoverProcessor {
 			if ($recordDriver->isValid()){
 				$title  = $recordDriver->getTitle();
 				$author = $recordDriver->getAuthor();
-				$this->category = 'blank'; // Use the blank image for record view default covers over the no Cover iamge
+				$this->category = 'blank'; // Use the blank image for record view default covers over the no Cover image
 			}
 		}
 

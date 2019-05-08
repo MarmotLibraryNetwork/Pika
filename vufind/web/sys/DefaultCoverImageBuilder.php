@@ -16,9 +16,19 @@ class DefaultCoverImageBuilder {
 	private $imageHeight              = 400; // Pixels
 	private $imagePrintableAreaWidth  = 254; //Area printable in Pixels (includes 13px margin on both sides)
 	private $imagePrintableAreaHeight = 380; //Area printable in Pixels (includes 10px margin on both sides)
-	private $titleFont                = ROOT_DIR . '/fonts/DejaVuSansCondensed-Bold.ttf';
-	private $authorFont               = ROOT_DIR . '/fonts/DejaVuSansCondensed-BoldOblique.ttf';
 	private $colorText                = array("red" => 1, "green" => 1, "blue" => 1);
+	private $titleFont;
+	private $authorFont;
+
+	/**
+	 * DefaultCoverImageBuilder constructor.
+	 * Sets the font files
+	 */
+	public function __construct(){
+		// ROOT_DIR may not be defined when the class is first included.
+		$this->titleFont  = ROOT_DIR . '/fonts/DejaVuSansCondensed-Bold.ttf';
+		$this->authorFont = ROOT_DIR . '/fonts/DejaVuSansCondensed-BoldOblique.ttf';
+	}
 
 	/**
 	 * Main method which generates the default cover with title & author if possible on the image
