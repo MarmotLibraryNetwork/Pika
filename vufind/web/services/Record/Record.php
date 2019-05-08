@@ -91,6 +91,7 @@ abstract class Record_Record extends Action
 
 			$timer->logTime('Got detailed data from Marc Record');
 
+			//TODO : should use call in templates consistent with other data calls
 			$notes = $this->recordDriver->getNotes();
 			if (count($notes) > 0){
 				$interface->assign('notes', $notes);

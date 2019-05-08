@@ -1837,7 +1837,6 @@ class MarcRecord extends IndexRecord
 		if ($this->marcRecord == null) {
 			disableErrorHandler();
 			try {
-//				$this->marcRecord = MarcLoader::loadMarcRecordByILSId("{$this->profileType}:{$this->id}");
 				$this->marcRecord = MarcLoader::loadMarcRecordByILSId($this->getIdWithSource());
 				if (PEAR_Singleton::isError($this->marcRecord) || $this->marcRecord == false) {
 					$this->valid = false;
@@ -1951,71 +1950,72 @@ class MarcRecord extends IndexRecord
 		return $holdInfo;
 	}
 
-	function getNotes()
-	{
-		$additionalNotesFields = array(
-			'310' => 'Current Publication Frequency',
-			'321' => 'Former Publication Frequency',
-			'351' => 'Organization & arrangement of materials',
-			'362' => 'Dates of publication and/or sequential designation',
-			'500' => 'General Note',
-			'501' => '"With"',
-			'502' => 'Dissertation',
-			'504' => 'Bibliography',
-			'506' => 'Restrictions on Access',
-			'507' => 'Scale for Graphic Material',
-			'508' => 'Creation/Production Credits',
-			'510' => 'Citation/References',
-			'511' => 'Participants/Performers',
-			'513' => 'Type of Report an Period Covered',
-			'515' => 'Numbering Peculiarities',
-			'518' => 'Date/Time and Place of Event',
-			'520' => 'Description',
-			'521' => 'Target Audience',
-			'522' => 'Geographic Coverage',
-			'524' => 'Preferred Citation of Described Materials',
-			'525' => 'Supplement',
-			'526' => 'Study Program Information',
-			'530' => 'Additional Physical Form',
-			'533' => 'Reproduction',
-			'534' => 'Original Version',
-			'535' => 'Location of Originals/Duplicates',
-			'536' => 'Funding Information',
-			'538' => 'System Details',
-			'540' => 'Terms Governing Use and Reproduction',
-			'541' => 'Immediate Source of Acquisition',
-			'544' => 'Location of Other Archival Materials',
-			'545' => 'Biographical or Historical Data',
-			'546' => 'Language',
-			'547' => 'Former Title Complexity',
-			'550' => 'Issuing Body',
-			'555' => 'Cumulative Index/Finding Aids',
-			'556' => 'Information About Documentation',
-			'561' => 'Ownership and Custodial History',
-			'563' => 'Binding Information',
-			'580' => 'Linking Entry Complexity',
-			'581' => 'Publications About Described Materials',
-			'583' => 'Action',
-			'584' => 'Accumulation and Frequency of Use',
-			'585' => 'Exhibitions',
-			'586' => 'Awards',
-			'590' => 'Local note',
-			'599' => 'Differentiable Local note',
-		);
-
+	function getNotes(){
 		$notes = array();
-		foreach ($additionalNotesFields as $tag => $label) {
-			/** @var File_MARC_Data_Field[] $marcFields */
-			$marcFields = $this->marcRecord->getFields($tag);
-			foreach ($marcFields as $marcField) {
-				$noteText = array();
-				foreach ($marcField->getSubFields() as $subfield) {
-					/** @var File_MARC_Subfield $subfield */
-					$noteText[] = $subfield->getData();
-				}
-				$note = implode(',', $noteText);
-				if (strlen($note) > 0) {
-					$notes[] = array('label' => $label, 'note' => $note);
+
+		if ($this->getMarcRecord()){
+			$additionalNotesFields = array(
+				'310' => 'Current Publication Frequency',
+				'321' => 'Former Publication Frequency',
+				'351' => 'Organization & arrangement of materials',
+				'362' => 'Dates of publication and/or sequential designation',
+				'500' => 'General Note',
+				'501' => '"With"',
+				'502' => 'Dissertation',
+				'504' => 'Bibliography',
+				'506' => 'Restrictions on Access',
+				'507' => 'Scale for Graphic Material',
+				'508' => 'Creation/Production Credits',
+				'510' => 'Citation/References',
+				'511' => 'Participants/Performers',
+				'513' => 'Type of Report an Period Covered',
+				'515' => 'Numbering Peculiarities',
+				'518' => 'Date/Time and Place of Event',
+				'520' => 'Description',
+				'521' => 'Target Audience',
+				'522' => 'Geographic Coverage',
+				'524' => 'Preferred Citation of Described Materials',
+				'525' => 'Supplement',
+				'526' => 'Study Program Information',
+				'530' => 'Additional Physical Form',
+				'533' => 'Reproduction',
+				'534' => 'Original Version',
+				'535' => 'Location of Originals/Duplicates',
+				'536' => 'Funding Information',
+				'538' => 'System Details',
+				'540' => 'Terms Governing Use and Reproduction',
+				'541' => 'Immediate Source of Acquisition',
+				'544' => 'Location of Other Archival Materials',
+				'545' => 'Biographical or Historical Data',
+				'546' => 'Language',
+				'547' => 'Former Title Complexity',
+				'550' => 'Issuing Body',
+				'555' => 'Cumulative Index/Finding Aids',
+				'556' => 'Information About Documentation',
+				'561' => 'Ownership and Custodial History',
+				'563' => 'Binding Information',
+				'580' => 'Linking Entry Complexity',
+				'581' => 'Publications About Described Materials',
+				'583' => 'Action',
+				'584' => 'Accumulation and Frequency of Use',
+				'585' => 'Exhibitions',
+				'586' => 'Awards',
+				'590' => 'Local note',
+				'599' => 'Differentiable Local note',
+			);
+			foreach ($additionalNotesFields as $tag => $label){
+				/** @var File_MARC_Data_Field[] $marcFields */
+				$marcFields = $this->marcRecord->getFields($tag);
+				foreach ($marcFields as $marcField){
+					$noteText = array();
+					foreach ($marcField->getSubFields() as $subfield){
+						/** @var File_MARC_Subfield $subfield */
+						$noteText[] = $subfield->getData();
+					}
+					$note = implode(',', $noteText);
+					if (strlen($note) > 0){
+						$notes[] = array('label' => $label, 'note' => $note);
+					}
 				}
 			}
 		}
