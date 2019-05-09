@@ -70,7 +70,7 @@ public class SierraExportAPIMain {
 		if (log4jFile.exists()){
 			PropertyConfigurator.configure(log4jFile.getAbsolutePath());
 		}else{
-			System.out.println("Could not find log4j configuration " + log4jFile.toString());
+			logger.error("Could not find log4j configuration " + log4jFile.toString());
 		}
 		logger.info(startTime.toString() + ": Starting Sierra Extract");
 
@@ -97,14 +97,14 @@ public class SierraExportAPIMain {
 			suppressOrderRecordsThatAreReceived = suppressOrderRecordsThatAreReceivedStr.equalsIgnoreCase("true");
 		}
 
-		//Connect to the vufind database
-		Connection vufindConn = null;
+		//Connect to the pika database
+		Connection pikaConn = null;
 		try{
 			String databaseConnectionInfo = cleanIniValue(ini.get("Database", "database_vufind_jdbc"));
-			vufindConn = DriverManager.getConnection(databaseConnectionInfo);
+			pikaConn = DriverManager.getConnection(databaseConnectionInfo);
 		}catch (Exception e){
-			System.out.println("Error connecting to vufind database " + e.toString());
-			System.exit(1);
+			logger.error("Error connecting to Pika database " + e.toString());
+			System.exit(2); // Exiting with a status code of 2 so that our executing bash scripts knows there has been a database communication error
 		}
 		//Connect to the vufind database
 		Connection econtentConn = null;
@@ -120,16 +120,16 @@ public class SierraExportAPIMain {
 		if (args.length > 1){
 			profileToLoad = args[1];
 		}
-		indexingProfile = IndexingProfile.loadIndexingProfile(vufindConn, profileToLoad, logger);
+		indexingProfile = IndexingProfile.loadIndexingProfile(pikaConn, profileToLoad, logger);
 
 		//Setup other systems we will use
-		recordGroupingProcessor = new MarcRecordGrouper(vufindConn, indexingProfile, logger, false);
-		groupedWorkIndexer = new GroupedWorkIndexer(serverName, vufindConn, econtentConn, ini, false, false, logger);
+		recordGroupingProcessor = new MarcRecordGrouper(pikaConn, indexingProfile, logger, false);
+		groupedWorkIndexer = new GroupedWorkIndexer(serverName, pikaConn, econtentConn, ini, false, false, logger);
 
 		//Start an export log entry
 		try {
 			logger.info("Creating log entry for index");
-			PreparedStatement createLogEntryStatement = vufindConn.prepareStatement("INSERT INTO sierra_api_export_log (startTime, lastUpdate, notes) VALUES (?, ?, ?)", PreparedStatement.RETURN_GENERATED_KEYS);
+			PreparedStatement createLogEntryStatement = pikaConn.prepareStatement("INSERT INTO sierra_api_export_log (startTime, lastUpdate, notes) VALUES (?, ?, ?)", PreparedStatement.RETURN_GENERATED_KEYS);
 			createLogEntryStatement.setLong(1, startTime.getTime() / 1000);
 			createLogEntryStatement.setLong(2, startTime.getTime() / 1000);
 			createLogEntryStatement.setString(3, "Initialization complete");
@@ -139,7 +139,7 @@ public class SierraExportAPIMain {
 				exportLogId = generatedKeys.getLong(1);
 			}
 
-			addNoteToExportLogStmt = vufindConn.prepareStatement("UPDATE sierra_api_export_log SET notes = ?, lastUpdate = ? WHERE id = ?");
+			addNoteToExportLogStmt = pikaConn.prepareStatement("UPDATE sierra_api_export_log SET notes = ?, lastUpdate = ? WHERE id = ?");
 		} catch (SQLException e) {
 			logger.error("Unable to create log entry for record grouping process", e);
 			System.exit(0);
@@ -151,11 +151,11 @@ public class SierraExportAPIMain {
 		File changedBibsFile = new File(exportPath + "/changed_bibs_to_process.csv");
 
 		//Process MARC record changes
-		getBibsAndItemUpdatesFromSierra(ini, vufindConn, changedBibsFile);
+		getBibsAndItemUpdatesFromSierra(ini, pikaConn, changedBibsFile);
 
 		//Write the number of updates to the log
 		try {
-			PreparedStatement setNumProcessedStmt = vufindConn.prepareStatement("UPDATE sierra_api_export_log SET numRecordsToProcess = ? WHERE id = ?", PreparedStatement.RETURN_GENERATED_KEYS);
+			PreparedStatement setNumProcessedStmt = pikaConn.prepareStatement("UPDATE sierra_api_export_log SET numRecordsToProcess = ? WHERE id = ?", PreparedStatement.RETURN_GENERATED_KEYS);
 			setNumProcessedStmt.setLong(1, allBibsToUpdate.size());
 			setNumProcessedStmt.setLong(2, exportLogId);
 			setNumProcessedStmt.executeUpdate();
@@ -192,7 +192,7 @@ public class SierraExportAPIMain {
 			exportActiveOrders(exportPath, conn);
 			exportDueDates(exportPath, conn);
 
-			exportHolds(conn, vufindConn);
+			exportHolds(conn, pikaConn);
 
 		}catch(Exception e){
 			System.out.println("Error: " + e.toString());
@@ -200,7 +200,7 @@ public class SierraExportAPIMain {
 		}
 
 		try {
-			PreparedStatement setNumProcessedStmt = vufindConn.prepareStatement("UPDATE sierra_api_export_log SET numRecordsToProcess = ? WHERE id = ?", PreparedStatement.RETURN_GENERATED_KEYS);
+			PreparedStatement setNumProcessedStmt = pikaConn.prepareStatement("UPDATE sierra_api_export_log SET numRecordsToProcess = ? WHERE id = ?", PreparedStatement.RETURN_GENERATED_KEYS);
 			setNumProcessedStmt.setLong(1, allBibsToUpdate.size());
 			setNumProcessedStmt.setLong(2, exportLogId);
 			setNumProcessedStmt.executeUpdate();
@@ -228,7 +228,7 @@ public class SierraExportAPIMain {
 
 		//Write stats to the log
 		try {
-			PreparedStatement setNumProcessedStmt = vufindConn.prepareStatement("UPDATE sierra_api_export_log SET numRecordsProcessed = ?, numErrors = ?, numRemainingRecords =? WHERE id = ?", PreparedStatement.RETURN_GENERATED_KEYS);
+			PreparedStatement setNumProcessedStmt = pikaConn.prepareStatement("UPDATE sierra_api_export_log SET numRecordsProcessed = ?, numErrors = ?, numRemainingRecords =? WHERE id = ?", PreparedStatement.RETURN_GENERATED_KEYS);
 			setNumProcessedStmt.setLong(1, numRecordsProcessed);
 			setNumProcessedStmt.setLong(2, bibsWithErrors.size());
 			setNumProcessedStmt.setLong(3, allBibsToUpdate.size());
@@ -238,7 +238,7 @@ public class SierraExportAPIMain {
 			logger.error("Unable to update log entry with final stats", e);
 		}
 
-		updateLastExportTime(vufindConn, startTime.getTime() / 1000);
+		updateLastExportTime(pikaConn, startTime.getTime() / 1000);
 		addNoteToExportLog("Setting last export time to " + (startTime.getTime() / 1000));
 
 		addNoteToExportLog("Finished exporting sierra data " + new Date().toString());
@@ -247,7 +247,7 @@ public class SierraExportAPIMain {
 		addNoteToExportLog("Elapsed Minutes " + (elapsedTime / 60000));
 
 		try {
-			PreparedStatement finishedStatement = vufindConn.prepareStatement("UPDATE sierra_api_export_log SET endTime = ? WHERE id = ?");
+			PreparedStatement finishedStatement = pikaConn.prepareStatement("UPDATE sierra_api_export_log SET endTime = ? WHERE id = ?");
 			finishedStatement.setLong(1, endTime / 1000);
 			finishedStatement.setLong(2, exportLogId);
 			finishedStatement.executeUpdate();
@@ -267,7 +267,7 @@ public class SierraExportAPIMain {
 
 		try{
 			//Close the connection
-			vufindConn.close();
+			pikaConn.close();
 		}catch(Exception e){
 			System.out.println("Error closing connection: " + e.toString());
 			e.printStackTrace();

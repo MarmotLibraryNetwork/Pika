@@ -52,7 +52,7 @@ public class SierraExportMain{
 		if (log4jFile.exists()){
 			PropertyConfigurator.configure(log4jFile.getAbsolutePath());
 		}else{
-			System.out.println("Could not find log4j configuration " + log4jFile.toString());
+			logger.error("Could not find log4j configuration " + log4jFile.toString());
 		}
 		logger.info(startTime.toString() + ": Starting Sierra Extract");
 
@@ -73,8 +73,8 @@ public class SierraExportMain{
 			String databaseConnectionInfo = cleanIniValue(ini.get("Database", "database_vufind_jdbc"));
 			pikaConn = DriverManager.getConnection(databaseConnectionInfo);
 		}catch (Exception e){
-			System.out.println("Error connecting to Pika database " + e.toString());
-			System.exit(1);
+			logger.error("Error connecting to Pika database " + e.toString());
+			System.exit(2); // Exiting with a status code of 2 so that our executing bash scripts knows there has been a database communication error
 		}
 
 		String profileToLoad = "ils";
@@ -800,9 +800,9 @@ public class SierraExportMain{
 			conn.setConnectTimeout(30000);
 			conn.setRequestMethod("POST");
 			conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
-			String clientKey = cleanIniValue(configIni.get("Catalog", "clientKey"));
+			String clientKey    = cleanIniValue(configIni.get("Catalog", "clientKey"));
 			String clientSecret = cleanIniValue(configIni.get("Catalog", "clientSecret"));
-			String encoded = Base64.encodeBase64String((clientKey + ":" + clientSecret).getBytes());
+			String encoded      = Base64.encodeBase64String((clientKey + ":" + clientSecret).getBytes());
 			conn.setRequestProperty("Authorization", "Basic "+encoded);
 			conn.setDoOutput(true);
 			OutputStreamWriter wr = new OutputStreamWriter(conn.getOutputStream(), "UTF8");
