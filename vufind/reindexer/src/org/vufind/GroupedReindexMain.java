@@ -39,7 +39,7 @@ public class GroupedReindexMain {
 	private static PreparedStatement addNoteToReindexLogStmt;
 
 	//Database connections and prepared statements
-	private static Connection vufindConn   = null;
+	private static Connection pikaConn     = null;
 	private static Connection econtentConn = null;
 	
 	/**
@@ -91,14 +91,14 @@ public class GroupedReindexMain {
 		long numWorksProcessed = 0;
 		long numListsProcessed = 0;
 		try {
-			GroupedWorkIndexer groupedWorkIndexer = new GroupedWorkIndexer(serverName, vufindConn, econtentConn, configIni, fullReindex, individualWorkToProcess != null, logger);
+			GroupedWorkIndexer groupedWorkIndexer = new GroupedWorkIndexer(serverName, pikaConn, econtentConn, configIni, fullReindex, individualWorkToProcess != null, logger);
 			HashMap<Scope, ArrayList<SiteMapEntry>> siteMapsByScope = new HashMap<>();
 			HashSet<Long> uniqueGroupedWorks = new HashSet<>();
 			if (groupedWorkIndexer.isOkToIndex()) {
 				if (individualWorkToProcess != null) {
 					//Get more information about the work
 					try {
-						PreparedStatement getInfoAboutWorkStmt = vufindConn.prepareStatement("SELECT * from grouped_work where permanent_id = ?");
+						PreparedStatement getInfoAboutWorkStmt = pikaConn.prepareStatement("SELECT * from grouped_work where permanent_id = ?");
 						getInfoAboutWorkStmt.setString(1, individualWorkToProcess);
 						ResultSet infoAboutWork = getInfoAboutWorkStmt.executeQuery();
 						if (infoAboutWork.next()) {
@@ -340,17 +340,17 @@ public class GroupedReindexMain {
 		}
 		
 		logger.info("Setting up database connections");
-		//Setup connections to vufind and econtent databases
+		//Setup connections to pika and econtent databases
 		String databaseConnectionInfo = Util.cleanIniValue(configIni.get("Database", "database_vufind_jdbc"));
 		if (databaseConnectionInfo == null || databaseConnectionInfo.length() == 0) {
-			logger.error("VuFind Database connection information not found in Database Section.  Please specify connection information in database_vufind_jdbc.");
+			logger.error("Pika Database connection information not found in Database Section.  Please specify connection information in database_vufind_jdbc.");
 			System.exit(1);
 		}
 		try {
-			vufindConn = DriverManager.getConnection(databaseConnectionInfo);
+			pikaConn = DriverManager.getConnection(databaseConnectionInfo);
 		} catch (SQLException e) {
-			logger.error("Could not connect to pika database", e);
-			System.exit(1);
+			logger.error("Could not connect to pika database : " + e.getMessage());
+			System.exit(2); // Exiting with a status code of 2 so that our executing bash scripts knows there has been a database communication error
 		}
 
 		String econtentDBConnectionInfo = Util.cleanIniValue(configIni.get("Database", "database_econtent_jdbc"));
@@ -362,13 +362,13 @@ public class GroupedReindexMain {
 			econtentConn = DriverManager.getConnection(econtentDBConnectionInfo);
 		} catch (SQLException e) {
 			logger.error("Could not connect to econtent database", e);
-			System.exit(1);
+			System.exit(2); // Exiting with a status code of 2 so that our executing bash scripts knows there has been a database communication error
 		}
 		
 		//Start a reindex log entry 
 		try {
 			logger.info("Creating log entry for index");
-			PreparedStatement createLogEntryStatement = vufindConn.prepareStatement("INSERT INTO reindex_log (startTime, lastUpdate, notes) VALUES (?, ?, ?)", PreparedStatement.RETURN_GENERATED_KEYS);
+			PreparedStatement createLogEntryStatement = pikaConn.prepareStatement("INSERT INTO reindex_log (startTime, lastUpdate, notes) VALUES (?, ?, ?)", PreparedStatement.RETURN_GENERATED_KEYS);
 			createLogEntryStatement.setLong(1, new Date().getTime() / 1000);
 			createLogEntryStatement.setLong(2, new Date().getTime() / 1000);
 			createLogEntryStatement.setString(3, "Initialization complete");
@@ -378,7 +378,7 @@ public class GroupedReindexMain {
 				reindexLogId = generatedKeys.getLong(1);
 			}
 			
-			addNoteToReindexLogStmt = vufindConn.prepareStatement("UPDATE reindex_log SET notes = ?, lastUpdate = ? WHERE id = ?");
+			addNoteToReindexLogStmt = pikaConn.prepareStatement("UPDATE reindex_log SET notes = ?, lastUpdate = ? WHERE id = ?");
 		} catch (SQLException e) {
 			logger.error("Unable to create log entry for reindex process", e);
 			System.exit(0);
@@ -392,7 +392,7 @@ public class GroupedReindexMain {
 		logger.info("Time elapsed: " + elapsedMinutes + " minutes");
 		
 		try {
-			PreparedStatement finishedStatement = vufindConn.prepareStatement("UPDATE reindex_log SET endTime = ?, numWorksProcessed = ?, numListsProcessed = ? WHERE id = ?");
+			PreparedStatement finishedStatement = pikaConn.prepareStatement("UPDATE reindex_log SET endTime = ?, numWorksProcessed = ?, numListsProcessed = ? WHERE id = ?");
 			finishedStatement.setLong(1, new Date().getTime() / 1000);
 			finishedStatement.setLong(2, numWorksProcessed);
 			finishedStatement.setLong(3, numListsProcessed);
@@ -405,7 +405,7 @@ public class GroupedReindexMain {
 		//Update variables table to mark the index as complete
 		if (individualWorkToProcess == null){
 			try {
-				PreparedStatement finishedStatement = vufindConn.prepareStatement("INSERT INTO variables (name, value) VALUES(?, ?) ON DUPLICATE KEY UPDATE value = VALUES(value)");
+				PreparedStatement finishedStatement = pikaConn.prepareStatement("INSERT INTO variables (name, value) VALUES(?, ?) ON DUPLICATE KEY UPDATE value = VALUES(value)");
 				if (fullReindex){
 					finishedStatement.setString(1, "lastFullReindexFinish");
 				} else{
@@ -424,7 +424,7 @@ public class GroupedReindexMain {
 	public static void updateNumWorksProcessed(long numWorksProcessed){
 		try {
 			if (updateNumWorksStatement == null){
-				updateNumWorksStatement = vufindConn.prepareStatement("UPDATE reindex_log SET lastUpdate = ?, numWorksProcessed = ? WHERE id = ?");
+				updateNumWorksStatement = pikaConn.prepareStatement("UPDATE reindex_log SET lastUpdate = ?, numWorksProcessed = ? WHERE id = ?");
 			}
 			updateNumWorksStatement.setLong(1, new Date().getTime() / 1000);
 			updateNumWorksStatement.setLong(2, numWorksProcessed);
