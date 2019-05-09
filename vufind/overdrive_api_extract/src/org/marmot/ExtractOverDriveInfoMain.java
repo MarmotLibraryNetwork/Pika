@@ -80,14 +80,14 @@ public class ExtractOverDriveInfoMain {
 		
 		String databaseConnectionInfo = Util.cleanIniValue(configIni.get("Database", "database_vufind_jdbc"));
 		if (databaseConnectionInfo == null || databaseConnectionInfo.length() == 0) {
-			logger.error("VuFind Database connection information not found in Database Section.  Please specify connection information in database_vufind_jdbc.");
+			logger.error("Pka Database connection information not found in Database Section.  Please specify connection information in database_vufind_jdbc.");
 			System.exit(1);
 		}
 		try {
 			vufindConn = DriverManager.getConnection(databaseConnectionInfo);
 		} catch (SQLException e) {
-			logger.error("Could not connect to vufind database", e);
-			System.exit(1);
+			logger.error("Could not connect to pika database : " + e.getMessage());
+			System.exit(2); // Exiting with a status code of 2 so that our executing bash scripts knows there has been a database communication error
 		}
 		
 		

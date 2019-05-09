@@ -361,7 +361,7 @@ public class GroupedReindexMain {
 		try {
 			econtentConn = DriverManager.getConnection(econtentDBConnectionInfo);
 		} catch (SQLException e) {
-			logger.error("Could not connect to econtent database", e);
+			logger.error("Could not connect to econtent database : " + e.getMessage());
 			System.exit(2); // Exiting with a status code of 2 so that our executing bash scripts knows there has been a database communication error
 		}
 		

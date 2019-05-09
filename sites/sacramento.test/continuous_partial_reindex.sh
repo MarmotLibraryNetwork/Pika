@@ -16,6 +16,27 @@ USE_SIERRA_API_EXTRACT=0
 
 source "/usr/local/vufind-plus/vufind/bash/checkConflicts.sh"
 
+function sendEmail() {
+	# add any logic wanted for when to send the emails here. (eg errors only)
+	FILESIZE=$(stat -c%s ${OUTPUT_FILE})
+	if [[ ${FILESIZE} > 0 ]]
+	then
+			# send mail
+			mail -s "Continuous Extract and Reindexing - ${PIKASERVER}" $EMAIL < ${OUTPUT_FILE}
+	fi
+}
+
+function checkForDBCrash() {
+# Pass this function the exit code ($?) of pika java programs.
+# If the exit code is zero that indicates that the pika database is down or unreachable,
+# so we will pause our operations here
+	EXITCODE=$1
+	if [ $EXITCODE -eq 2 ];then
+		sleep 180
+		echo "Received database connection lost error, paused for 180 seconds" >> ${OUTPUT_FILE}
+	fi
+}
+
 while true
 do
 	#####
@@ -59,23 +80,13 @@ do
 	wait
 
 	#run reindex
-	#echo "Starting Reindexing - `date`" >> ${OUTPUT_FILE}
 	cd /usr/local/vufind-plus/vufind/reindexer
 	nice -n -5 java -server -XX:+UseG1GC -jar reindexer.jar ${PIKASERVER} >> ${OUTPUT_FILE}
-	EXITCODE=$?
-	if [ $EXITCODE -eq 2 ];then
-		sleep 180
-		echo "Received database connection lost error, paused for 180 seconds" >> ${OUTPUT_FILE}
-	fi
+	checkForDBCrash $?
 
 
-	# add any logic wanted for when to send the emails here. (eg errors only)
-	FILESIZE=$(stat -c%s ${OUTPUT_FILE})
-	if [[ ${FILESIZE} > 0 ]]
-	then
-			# send mail
-			mail -s "Continuous Extract and Reindexing - ${PIKASERVER}" $EMAIL < ${OUTPUT_FILE}
-	fi
+	# send notice of any issues
+	sendEmail
 
 		#end block
 done
