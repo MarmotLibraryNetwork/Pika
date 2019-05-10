@@ -23,7 +23,9 @@ public class AddisonRecordProcessor extends IIIRecordProcessor {
 	AddisonRecordProcessor(GroupedWorkIndexer indexer, Connection pikaConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 		super(indexer, pikaConn, indexingProfileRS, logger, fullReindex);
 
-		// Note: Mat-Type "v" is video games; they are to be excluded for the better default format determination		loadOrderInformationFromExport();
+		// Note: Mat-Type "v" is video games; they are to be excluded for the better default format determination
+
+		loadOrderInformationFromExport();
 
 //        loadVolumesFromExport(pikaConn);
 
