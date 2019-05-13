@@ -92,12 +92,12 @@ interface DriverInterface
 	 *
 	 * This is responsible for retrieving all holds for a specific patron.
 	 *
-	 * @param User $user    The user to load transactions for
+	 * @param User $patron The user to load transactions for
 	 *
 	 * @return array        Array of the patron's holds
 	 * @access public
 	 */
-	public function getMyHolds($user);
+	public function getMyHolds($patron);
 
 	/**
 	 * Place Hold
