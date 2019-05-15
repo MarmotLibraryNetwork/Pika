@@ -13,7 +13,7 @@ class ExploreMore {
 
 	/**
 	 * @param string $activeSection
-	 * @param IndexRecord $recordDriver
+	 * @param IndexRecord|IslandoraDriver $recordDriver
 	 */
 	function loadExploreMoreSidebar($activeSection, $recordDriver){
 		//TODO: remove title from $exploreMoreSectionsToShow array
@@ -124,12 +124,12 @@ class ExploreMore {
 		}
 
 		//Get subjects that can be used for searching other systems
-		$subjects = $recordDriver->getAllSubjectHeadings();
-		$subjectsForSearching = array();
+		$subjects                   = $recordDriver->getAllSubjectHeadings(true, 5);
+		$subjectsForSearching       = array();
 		$quotedSubjectsForSearching = array();
 		foreach ($subjects as $subject){
 			if (is_array($subject)){
-				$searchSubject =  implode(" ", $subject);
+				$searchSubject = implode(" ", $subject);
 			}else{
 				$searchSubject = $subject;
 			}
@@ -137,15 +137,15 @@ class ExploreMore {
 			if ($separatorPosition > 0){
 				$searchSubject = substr($searchSubject, 0, $separatorPosition);
 			}
-			$searchSubject = preg_replace('/\(.*?\)/',"", $searchSubject);
-			$searchSubject = trim(preg_replace('/[\/|:.,"]/',"", $searchSubject));
-			$subjectsForSearching[] = $searchSubject;
+			$searchSubject                = preg_replace('/\(.*?\)/', "", $searchSubject);
+			$searchSubject                = trim(preg_replace('/[\/|:.,"]/', "", $searchSubject));
+			$subjectsForSearching[]       = $searchSubject;
 			$quotedSubjectsForSearching[] = '"' . $searchSubject . '"';
 		}
 
 		$subjectsForSearching = array_slice($subjectsForSearching, 0, 5);
-		$searchTerm = implode(' or ', $subjectsForSearching);
-		$quotedSearchTerm = implode(' OR ', $quotedSubjectsForSearching);
+		$searchTerm           = implode(' or ', $subjectsForSearching);
+		$quotedSearchTerm     = implode(' OR ', $quotedSubjectsForSearching);
 
 		//Get objects from the archive based on search subjects
 		if ($activeSection != 'archive'){
@@ -210,14 +210,14 @@ class ExploreMore {
 			}
 		}
 
-		$searchSubjectsOnly = $activeSection == 'archive';
-		$driver = $activeSection == 'archive' ? $recordDriver : null;
+		$searchSubjectsOnly    = $activeSection == 'archive';
+		$driver                = $activeSection == 'archive' ? $recordDriver : null;
 		$relatedArchiveContent = $this->getRelatedArchiveObjects($quotedSearchTerm, $searchSubjectsOnly, $driver);
-		if (count($relatedArchiveContent) > 0) {
+		if (count($relatedArchiveContent) > 0){
 			$exploreMoreSectionsToShow['relatedArchiveData'] = array(
-//					'title' => 'From the Archive',
-					'format' => 'subsections',
-					'values' => $relatedArchiveContent
+//				'title'  => 'From the Archive',
+				'format' => 'subsections',
+				'values' => $relatedArchiveContent,
 			);
 		}
 

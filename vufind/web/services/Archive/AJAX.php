@@ -684,17 +684,18 @@ class Archive_AJAX extends Action {
 	function getExploreMoreContent(){
 		if (!isset($_REQUEST['id'])){
 			return array(
-					'success' => false,
-					'message' => 'You must supply the id to load explore more content for'
+				'success' => false,
+				'message' => 'You must supply the id to load explore more content for',
 			);
 		}
 		global $interface;
 		global $timer;
 		require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
 		$fedoraUtils = FedoraUtils::getInstance();
-		$pid = urldecode($_REQUEST['id']);
+		$pid         = urldecode($_REQUEST['id']);
 		$interface->assign('pid', $pid);
 		$archiveObject = $fedoraUtils->getObject($pid);
+		/** @var IslandoraDriver $recordDriver */
 		$recordDriver = RecordDriverFactory::initRecordDriver($archiveObject);
 		$interface->assign('recordDriver', $recordDriver);
 		$timer->logTime("Loaded record driver for main object");
@@ -704,9 +705,8 @@ class Archive_AJAX extends Action {
 		$exploreMore->loadExploreMoreSidebar('archive', $recordDriver);
 		$timer->logTime("Called loadExploreMoreSidebar");
 
-		$relatedSubjects = $recordDriver->getAllSubjectHeadings();
-
-		$ebscoMatches = $exploreMore->loadEbscoOptions('archive', array(), implode($relatedSubjects, " or "));
+		$relatedSubjects = $recordDriver->getAllSubjectHeadings(true, 5);
+		$ebscoMatches    = $exploreMore->loadEbscoOptions('archive', array(), implode($relatedSubjects, " or "));
 		if (count($ebscoMatches) > 0){
 			$interface->assign('relatedArticles', $ebscoMatches);
 		}
@@ -714,7 +714,7 @@ class Archive_AJAX extends Action {
 
 		global $library;
 		$exploreMoreSettings = $library->exploreMoreBar;
-		if (empty($exploreMoreSettings)) {
+		if (empty($exploreMoreSettings)){
 			$exploreMoreSettings = ArchiveExploreMoreBar::getDefaultArchiveExploreMoreOptions();
 		}
 		$interface->assign('exploreMoreSettings', $exploreMoreSettings);
@@ -722,8 +722,8 @@ class Archive_AJAX extends Action {
 		$timer->logTime("Loaded Settings");
 
 		return array(
-				'success' => true,
-				'exploreMore' => $interface->fetch('explore-more-sidebar.tpl')
+			'success'     => true,
+			'exploreMore' => $interface->fetch('explore-more-sidebar.tpl'),
 		);
 	}
 
