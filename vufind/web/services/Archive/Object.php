@@ -149,6 +149,13 @@ abstract class Archive_Object extends Action {
 		// Replace 'object:pid' with the PID of the object to be loaded.
 		$this->pid = urldecode($_REQUEST['id']);
 		$interface->assign('pid', $this->pid);
+		// For analytics:
+		// * grab owing library id
+		// * let page know it's an archive page
+		$objOwner = explode(':', $this->pid);
+		$objOwner = $objOwner[0];
+		$interface->assign('lid', $objOwner);
+		$interface->assign('archivePage', TRUE);
 
 		list($namespace) = explode(':', $this->pid);
 		//Find the owning library
