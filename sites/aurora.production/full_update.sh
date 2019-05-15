@@ -128,6 +128,9 @@ curl --remote-time --show-error --compressed -o /data/vufind-plus/colorado_gov_d
 #Learning Express
 /usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} aurora/learning_express learning_express/aurora >> ${OUTPUT_FILE}
 
+#Lynda
+/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} aurora/lynda lynda/aurora >> ${OUTPUT_FILE}
+
 ###################
 # Other sideloads
 #Biblioboard
