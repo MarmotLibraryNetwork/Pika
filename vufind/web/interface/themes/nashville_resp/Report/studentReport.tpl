@@ -22,15 +22,17 @@
 				&nbsp;
 				<input type="submit" name="showData" value="Show Data" class="btn btn-sm btn-primary"/>
 				&nbsp;
-				<input type="button" name="printSlips" value="Print Slips" class="btn btn-sm btn-primary" onclick="{literal} var x = document.querySelectorAll('.overdueSlip'); var i; for (i = 0; i < x.length; i++) { x[i].style.pageBreakBefore = 'auto'; } window.print(); {/literal}" />
+				<input type="button" name="printSlips" value="Print Slips" class="btn btn-sm btn-primary" onclick="{literal} var x = document.querySelectorAll('.overdueSlipContainer'); var i; for (i = 0; i < x.length; i++) { x[i].style.pageBreakBefore = 'auto'; } window.print(); {/literal}" />
 				&nbsp;
-				<input type="button" name="printPages" value="Print Pages" class="btn btn-sm btn-primary" onclick="{literal} var x = document.querySelectorAll('.overdueSlip'); var i; for (i = 0; i < x.length; i++) { x[i].style.pageBreakBefore = 'always'; } window.print(); {/literal}" />
+				<input type="button" name="printPages" value="Print Pages" class="btn btn-sm btn-primary" onclick="{literal} var x = document.querySelectorAll('.overdueSlipContainer'); var i; for (i = 0; i < x.length; i++) { x[i].style.pageBreakBefore = 'always'; } window.print(); {/literal}" />
+				&nbsp;
+				<input type="submit" name="download" value="Download CSV" class="btn btn-sm btn-info"/>
 				&nbsp;
 			</form>
 			{if $reportData}
 				<br/>
 				<p>
-					There are a total of <strong>{$reportData|@count}</strong> overdue items.
+					There are a total of <strong>{$reportData|@count}</strong> {if $showOverdueOnly}overdue items{else}items out{/if}.
 				</p>
 {literal}
 <style type="text/css">
@@ -106,52 +108,105 @@
 		text-align: right;
 		width: .75in !important;
 	}
+	table#studentReportTable {
+		width: 7in;
+		margin-left: 0;
+		margin-right: auto;
+		font: inherit;
+		border: 0;
+	}
+	table#studentReportTable .hideit {
+		display: none;
+	}
+	table#studentReportTable thead {
+		display: table !important;
+	}
+	table#studentReportTable tbody tr td {
+		border: 0;
+	}
+
 </style>
 {/literal}
 
+		<table id="studentReportTable">
+			<thead>
+				<tr>
+					<th class="filter-select filter-onlyAvail">Grade</th>
+					<th class="filter-select filter-onlyAvail">Homeroom</th>
+					<th class="sorter-false">Student ID</th>
+					<th class="filter">Student Name</th>
+					<th class="sorter-false">Notice</th>
+				<tr>
+			</thead>
+			<tbody>
 {assign var=previousPatron value=0}
 {foreach from=$reportData item=dataRow name=overdueData}
+	{if !$smarty.foreach.overdueData.first}
 	{if $dataRow[6] != $previousPatron}
-		{if $smarty.foreach.overdueData.index > 0}</div></div>{/if}
-		<div class="overdueSlip">
-			<div class="patronHeader">
-				<div class="P_TYPE">{$dataRow[3]|replace:' student':''}</div>
-				<div class="HOME_ROOM">{$dataRow[4]|lower|capitalize:true}</div>
-				<div class="PATRON_NAME">{$dataRow[5]|upper}</div>
-				<div class="P_BARCODE">{$dataRow[6]}</div>
-			</div>
-			<div class="overdueRecordTable">
-				<div class="overdueRecordTableMessage">
-					The items below are
-					{if $showOverdueOnly}&nbsp;overdue{/if}
-					{if !$showOverdueOnly}&nbsp;checked out{/if}
-					. &nbsp; 
-					Please return them to your library. This notice was created {$reportDateTime}<br>
-					Check your account online at https://school.library.nashville.org/
-				</div>
-				<div class="overdueRecord">
-                                        <div class="SYSTEM">SYSTEM</div>
-                                        <div class="ITEM_ID">BARCODE</div>
-                                        <div class="CALL_NUMBER">CALL NUMBER</div>
-                                        <div class="TITLE">TITLE</div>
-                                        <div class="DUE_DATE">DUE DATE</div>
-                                        <div class="PRICE">PRICE</div>
-				</div>
+		{if $smarty.foreach.overdueData.index > 0}</div></div></td></tr>{/if}
+				<tr class="overdueSlipContainer">
+					<td class="hideit">{$dataRow[3]|replace:' student':''|replace:'MNPS School Librar':'0.0 MNPS School Librar'|replace:'MNPS Staff':'0.1 MNPS Staff'|replace:'Pre-K':'0.2 Pre-K'|replace:'Kindergar':'0.3 Kindergar'|replace:'First':'1 First'|replace:'Second':'2 Second'|replace:'Third':'3 Third'|replace:'Fourth':'4 Fourth'|replace:'Fifth':'5 Fifth'|replace:'Sixth':'6 Sixth'|replace:'Seventh':'7 Seventh'|replace:'Eighth':'8 Eighth'|replace:'Ninth':'9 Ninth'|replace:'Tenth':'10 Tenth'|replace:'Eleventh':'11 Eleventh'|replace:'Twelfth':'12 Twelfth'|regex_replace:'/^.*no LL delivery/':'13 no LL delivery'|replace:'MNPS 18+':'13 MNPS 18+'}</td>
+					<td class="hideit">{$dataRow[4]|lower|capitalize:true}</td>
+					<td class="hideit">{$dataRow[6]}</td>
+					<td class="hideit">{$dataRow[5]}</td>
+					<td>
+						<div class="overdueSlip">
+							<div class="patronHeader">
+								<div class="P_TYPE">{$dataRow[3]|replace:' student':''}</div>
+								<div class="HOME_ROOM">{$dataRow[4]|lower|capitalize:true}</div>
+								<div class="PATRON_NAME">{$dataRow[5]|upper}</div>
+								<div class="P_BARCODE">{$dataRow[6]}</div>
+							</div>
+							<div class="overdueRecordTable">
+								<div class="overdueRecordTableMessage">
+									The items below are
+									{if $showOverdueOnly}&nbsp;overdue{/if}
+									{if !$showOverdueOnly}&nbsp;checked out{/if}
+									. &nbsp; 
+									Please return them to your library. This notice was created {$reportDateTime}<br>
+									Check your account online at https://school.library.nashville.org/
+								</div>
+								<div class="overdueRecord">
+                                        				<div class="SYSTEM">SYSTEM</div>
+                                        				<div class="ITEM_ID">BARCODE</div>
+                                        				<div class="CALL_NUMBER">CALL NUMBER</div>
+                                        				<div class="TITLE">TITLE</div>
+                                        				<div class="DUE_DATE">DUE DATE</div>
+									<div class="PRICE">PRICE</div>
+								</div>
 		{assign var=previousPatron value=$dataRow[6]}
 	{/if}
-			<div class="overdueRecord">
-				<div class="SYSTEM">{$dataRow[7]|replace:"1":"NPL"|replace:"2":"MNPS"}</div>
-                                <div class="ITEM_ID">{$dataRow[13]}</div>
-				<div class="CALL_NUMBER">{$dataRow[8]}</div>
-				<div class="TITLE">{$dataRow[9]|regex_replace:"/ *\/ *$/":""}</div>
-				<div class="DUE_DATE">{$dataRow[10]}</div>
-				<div class="PRICE">{$dataRow[11]|regex_replace:"/^ *0\.00$/":"10.00"}</div>
-			</div>	
+								<div class="overdueRecord">
+									<div class="SYSTEM">{$dataRow[7]|replace:"1":"NPL"|replace:"2":"MNPS"}</div>
+					                                <div class="ITEM_ID">{$dataRow[13]}</div>
+									<div class="CALL_NUMBER">{$dataRow[8]}</div>
+									<div class="TITLE">{$dataRow[9]|regex_replace:"/ *\/ *$/":""}</div>
+									<div class="DUE_DATE">{$dataRow[10]}</div>
+									<div class="PRICE">{$dataRow[11]|regex_replace:"/^ *0\.00$/":"10.00"}</div>
+								</div>	
+	{/if}
 {/foreach}
-			{/if}
+					</td>
+				</tr>
+			</tbody>
+		</table>
+		<script type="text/javascript">
+			{literal}
+				$(document).ready(function(){
+					$('#studentReportTable').tablesorter({
+						widgets: ["filter"],
+						widgetOptions: {
+							filter_hideFilters : false,
+							filter_ignoreCase: true
+						}
+					});
+				});
+			{/literal}
+		</script>
 
-		{else}
-			You must login to view this information. Click <a href="{$path}/MyAccount/Login">here</a> to login.
-		{/if}
+{/if}
+{else}
+	You must login to view this information. Click <a href="{$path}/MyAccount/Login">here</a> to login.
+{/if}
 	</div>
 {/strip}
