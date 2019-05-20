@@ -69,48 +69,56 @@ public class DPLAFeed implements IProcessHandler {
 					tryAgain = false;
 					currentPage--;
 					tries++;
+				} else if (tryAgain && tries == 3) {
+					processLog.incErrors();
+					tryAgain = false;
+					continue;
 				} else {
 					tries = 0;
 				}
 				try {
 					String urlStringThisRound = DLPAFeedUrlString + (currentPage > 1 ? "&page=" + currentPage : "");
 					URL    DPLAFeedUrl        = new URL(urlStringThisRound);
-					logger.info("Fetching page : " + currentPage + " of " + numPages);
 					Object dplaFeedRaw = DPLAFeedUrl.getContent();
 					if (dplaFeedRaw instanceof InputStream) {
 						String jsonData = "";
 						jsonData = Util.convertStreamToString((InputStream) dplaFeedRaw);
 						if (jsonData != null && jsonData.length() > 0) {
-							logger.debug("Fetched page " + currentPage);
-							JSONObject dplaFeedData = new JSONObject(jsonData);
-							JSONObject result       = dplaFeedData.getJSONObject("result");
-							if (numPages == 0 && result.has("numPages")) {
-								numPages = result.getInt("numPages");
-							}
-							if (result.has("docs")) {
-								String docs = null;
-								try {
-									docs = result.getString("docs");
-									StringBuilder pageOfEntries = new StringBuilder(docs);
-									pageOfEntries.deleteCharAt(0) // remove the beginning [
-											.deleteCharAt(pageOfEntries.length() - 1); // remove the ending ]
-									if (currentPage == 1) {
-										pageOfEntries.insert(0, '[');
-									}
-									if (currentPage != numPages) {
-										pageOfEntries.append(','); // add a comma between json object to concatenate the list
-									} else {
-										pageOfEntries.append(']'); // add closing ] at end of content
-									}
+							logger.debug("Fetched page " + currentPage + " of " + numPages);
+							try {
+								JSONObject dplaFeedData = new JSONObject(jsonData);
+								JSONObject result       = dplaFeedData.getJSONObject("result");
+								if (numPages == 0 && result.has("numPages")) {
+									numPages = result.getInt("numPages");
+								}
+								if (result.has("docs")) {
+									String docs = null;
+									try {
+										docs = result.getString("docs");
+										StringBuilder pageOfEntries = new StringBuilder(docs);
+										pageOfEntries.deleteCharAt(0) // remove the beginning [
+												.deleteCharAt(pageOfEntries.length() - 1); // remove the ending ]
+										if (currentPage == 1) {
+											pageOfEntries.insert(0, '[');
+										}
+										if (currentPage != numPages) {
+											pageOfEntries.append(','); // add a comma between json object to concatenate the list
+										} else {
+											pageOfEntries.append(']'); // add closing ] at end of content
+										}
 
-									bufferedWriter.write(pageOfEntries.toString());
-									bufferedWriter.newLine();
-								} catch (JSONException e) {
-									logger.error("Error retrieving feed entries", e);
+										bufferedWriter.write(pageOfEntries.toString());
+										bufferedWriter.newLine();
+									} catch (JSONException e) {
+										logger.error("Error retrieving feed entries", e);
+										tryAgain = true;
+									}
+								} else {
+									logger.error("DPLA Feed Call did not return any archive objects : " + DPLAFeedUrl + " response : " + jsonData);
 									tryAgain = true;
 								}
-							} else {
-								logger.error("DPLA Feed Call did not return any archive objects: " + DPLAFeedUrl + " response : " + jsonData);
+							} catch (JSONException e) {
+								logger.error("DPLA Feed JSON Error for call : " + DPLAFeedUrl, e);
 								tryAgain = true;
 							}
 						} else {
@@ -127,15 +135,17 @@ public class DPLAFeed implements IProcessHandler {
 				} catch (IOException e) {
 					logger.error("DPLA Feed IO Exception error.", e);
 //					fatal = true;
-				} catch (JSONException e) {
-					logger.error("DPLA Feed JSON Error", e);
-					tryAgain = true;
 				} catch (Exception e) {
 					logger.error("Unknown error.", e);
+					fatal = true;
 				}
-			} while (!fatal && currentPage++ < numPages);
+			} while (!fatal && currentPage++ < numPages || tryAgain); // tryAgain check is for problems in very first call or very last call
 		} catch (IOException e) {
 			logger.error("Error with writing file", e);
+		}
+		if (fatal) {
+			processLog.incErrors();
+			//TODO: rework file to be valid JSON even with an error
 		}
 
 		logger.info("Finished building DPLA Feed File");
