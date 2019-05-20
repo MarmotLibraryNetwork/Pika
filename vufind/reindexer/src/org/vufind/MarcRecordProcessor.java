@@ -169,36 +169,40 @@ abstract class MarcRecordProcessor {
 				case "650": {
 					boolean isLCSubject    = true;
 					boolean isBisacSubject = false;
-					boolean hasBisacMarkers = curSubjectField.getSubfield('2') != null && (curSubjectField.getSubfield('2').getData().equals("bisacsh") ||
-							curSubjectField.getSubfield('2').getData().equals("bisacmt") || curSubjectField.getSubfield('2').getData().equals("bisacrt"));
+					String  bisacCode      = null;
+					if (curSubjectField.getSubfield('2') != null) {
+						bisacCode = curSubjectField.getSubfield('2').getData();
+					}
+					boolean hasBisacMarkers = bisacCode != null &&
+							(bisacCode.equals("bisacsh") || bisacCode.equals("bisacmt") || bisacCode.equals("bisacrt"));
 					if (hasBisacMarkers) {
 						isLCSubject    = false;
 						isBisacSubject = true;
 					}
 					StringBuilder curSubject = new StringBuilder();
 					for (Subfield curSubfield : curSubjectField.getSubfields()) {
-						if ((curSubfield.getCode() >= 'a' && curSubfield.getCode() <= 'e') ||
-								curSubfield.getCode() >= 'v' ||
-								(curSubfield.getCode() >= 'x' && curSubfield.getCode() <= 'z')) {
+						char   curSubfieldCode = curSubfield.getCode();
+						String curSubfieldData = curSubfield.getData();
+						if ("abcdevxyz".indexOf(curSubfieldCode) >= 0) {
 							if (curSubject.length() > 0) curSubject.append(" -- ");
-							curSubject.append(curSubfield.getData());
+							curSubject.append(curSubfieldData);
 
-							groupedWork.addTopic(curSubfield.getData());
-						}
-						if (curSubfield.getCode() == 'a' || curSubfield.getCode() == 'x') {
-							groupedWork.addTopicFacet(curSubfield.getData());
-							if (isLCSubject) {
-								groupedWork.addLCSubject(curSubfield.getData());
+							groupedWork.addTopic(curSubfieldData);
+							if (curSubfieldCode == 'a' || curSubfieldCode == 'x') {
+								groupedWork.addTopicFacet(curSubfieldData);
+								if (isLCSubject) {
+									groupedWork.addLCSubject(curSubfieldData);
+								}
+								if (isBisacSubject) {
+									groupedWork.addBisacSubject(curSubfieldData);
+								}
+							} else if (curSubfieldCode == 'v') {
+								groupedWork.addGenreFacet(curSubfieldData);
+							} else if (curSubfieldCode == 'z') {
+								groupedWork.addGeographicFacet(curSubfieldData);
+							} else if (curSubfieldCode == 'y') {
+								groupedWork.addEra(curSubfieldData);
 							}
-							if (isBisacSubject) {
-								groupedWork.addBisacSubject(curSubfield.getData());
-							}
-						} else if (curSubfield.getCode() == 'v') {
-							groupedWork.addGenreFacet(curSubfield.getData());
-						} else if (curSubfield.getCode() == 'z') {
-							groupedWork.addGeographicFacet(curSubfield.getData());
-						} else if (curSubfield.getCode() == 'y') {
-							groupedWork.addEra(curSubfield.getData());
 						}
 					}
 					subjects.add(curSubject.toString());
