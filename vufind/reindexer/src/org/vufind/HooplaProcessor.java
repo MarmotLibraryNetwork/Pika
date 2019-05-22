@@ -172,9 +172,9 @@ class HooplaProcessor extends MarcRecordProcessor {
 	}
 
 	private String getFileForIlsRecord(String recordNumber) {
-		String shortId = recordNumber.replace(".", "");
+		StringBuilder shortId = new StringBuilder(recordNumber.replace(".", ""));
 		while (shortId.length() < 9) {
-			shortId = "0" + shortId;
+			shortId.insert(0, "0");
 		}
 
 		String subFolderName;
@@ -332,17 +332,18 @@ class HooplaProcessor extends MarcRecordProcessor {
 									}
 								}
 							}
+						}
 
-							if (isHooplaIncluded) {
-								addScopeToItem(itemInfo, curScope, originalUrl, result);
-							}
+						// Add to scope after all applicable rules are tested
+						if (isHooplaIncluded) {
+							addScopeToItem(itemInfo, curScope, originalUrl, result);
 						}
 					}
 				}
 			} else {
 				logger.info("Excluding due to title inactive for everyone hoopla id# " + hooplaExtractInfo.getTitleId() + " :" + hooplaExtractInfo.getTitle());
 			}
-		} else {
+		} else if (fullReindex) {
 			logger.warn("There was no extract information for Hoopla record " + recordInfo.getRecordIdentifier());
 		}
 	}
