@@ -1014,16 +1014,18 @@ abstract class IslandoraDriver extends RecordInterface {
 					$searchSubject = preg_replace('/\(.*?\)/', "", $subject['label']);
 					$searchSubject = trim(preg_replace('/[\/|:.,"]/', "", $searchSubject));
 					$lowerSubject  = strtolower($searchSubject);
-					if (!array_key_exists($lowerSubject, $subjectsToIgnore)){
-						if ($i == 0){
-							//First pass, just add primary subjects
-							if (!array_key_exists($lowerSubject, $subjectsToRestrict)){
-								$relatedSubjects[$lowerSubject] = '"' . $searchSubject . '"';
-							}
-						}else{
-							//Second pass, add restricted subjects, but only if we don't have $limit subjects already
-							if (array_key_exists($lowerSubject, $subjectsToRestrict) && count($relatedSubjects) <= $limit){
-								$relatedSubjects[$lowerSubject] = '"' . $searchSubject . '"';
+					if (!empty($searchSubject)){
+						if (!array_key_exists($lowerSubject, $subjectsToIgnore)){
+							if ($i == 0){
+								//First pass, just add primary subjects
+								if (!array_key_exists($lowerSubject, $subjectsToRestrict)){
+									$relatedSubjects[$lowerSubject] = '"' . $searchSubject . '"';
+								}
+							}else{
+								//Second pass, add restricted subjects, but only if we don't have $limit subjects already
+								if (array_key_exists($lowerSubject, $subjectsToRestrict) && count($relatedSubjects) <= $limit){
+									$relatedSubjects[$lowerSubject] = '"' . $searchSubject . '"';
+								}
 							}
 						}
 					}
@@ -1043,19 +1045,21 @@ abstract class IslandoraDriver extends RecordInterface {
 	}
 
 	private $subjectsWithLinks = null;
-	public function getAllSubjectsWithLinks() {
+
+	public function getAllSubjectsWithLinks(){
 		global $configArray;
-		if ($this->subjectsWithLinks == null) {
+		if ($this->subjectsWithLinks == null){
 			//Extract Subjects
 			$this->subjectsWithLinks = array();
-			$matches = $this->getModsValues('topic', 'mods');
-			foreach ($matches as $subjectPart) {
+			$matches                 = $this->getModsValues('topic', 'mods');
+			foreach ($matches as $subjectPart){
+				$subjectPart = trim($subjectPart);
 				$subjectLink = $configArray['Site']['path'] . '/Archive/Results?lookfor=';
-				if (strlen($subjectPart) > 0) {
-					$subjectLink .= '&filter[]=mods_subject_topic_ms%3A' . urlencode('"' .(string)$subjectPart . '"');
+				if (!empty($subjectPart)){
+					$subjectLink               .= '&filter[]=mods_subject_topic_ms%3A' . urlencode('"' . (string)$subjectPart . '"');
 					$this->subjectsWithLinks[] = array(
-							'link' => $subjectLink,
-							'label' => (string)$subjectPart
+						'link'  => $subjectLink,
+						'label' => (string)$subjectPart,
 					);
 				}
 			}
