@@ -608,7 +608,7 @@ EOD;
 					$bibId          = $curRow['biblionumber'];
 					$expireDate     = $curRow['expirationdate'];
 					$createDate     = $curRow['reservedate'];
-					$fillByDate     = $curRow['cancellationdate']; //TODO: Is this the cancellation date or is 'waitingdate'
+					$fillByDate     = $curRow['cancellationdate'];
 					$reactivateDate = $curRow['suspend_until'];
 					$branchCode     = $curRow['branchcode'];
 
@@ -662,6 +662,7 @@ EOD;
 
 					$curPickupBranch       = new Location();
 					$curPickupBranch->code = $branchCode;
+					$curPickupBranch->validHoldPickupBranch = '1';
 					if ($curPickupBranch->find(true)){
 						$curPickupBranch->fetch();
 						$curHold['currentPickupId']   = $curPickupBranch->locationId;
