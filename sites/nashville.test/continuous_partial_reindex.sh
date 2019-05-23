@@ -17,24 +17,27 @@ EMAIL=James.Staub@nashville.gov,bryan.n.jones@nashville.gov,pikaservers@marmot.o
 PIKASERVER=nashville.test
 OUTPUT_FILE="/var/log/pika/${PIKASERVER}/continuous_partial_reindex_output.log"
 
-# Check for conflicting processes currently running
-function checkConflictingProcesses() {
-	#Check to see if the conflict exists.
-	countConflictingProcesses=$(ps aux | grep -v sudo | grep -c "$1")
-	#subtract one to get rid of our grep command
-	countConflictingProcesses=$((countConflictingProcesses-1))
+source "/usr/local/vufind-plus/vufind/bash/checkConflicts.sh"
 
-	let numInitialConflicts=countConflictingProcesses
-	#Wait until the conflict is gone.
-	until ((${countConflictingProcesses} == 0)); do
-		countConflictingProcesses=$(ps aux | grep -v sudo | grep -c "$1")
-		#subtract one to get rid of our grep command
-		countConflictingProcesses=$((countConflictingProcesses-1))
-		#echo "Count of conflicting process" $1 $countConflictingProcesses
-		sleep 300
-	done
-	#Return the number of conflicts we found initially.
-	echo ${numInitialConflicts};
+function sendEmail() {
+	# add any logic wanted for when to send the emails here. (eg errors only)
+	FILESIZE=$(stat -c%s ${OUTPUT_FILE})
+	if [[ ${FILESIZE} > 0 ]]
+	then
+			# send mail
+			mail -s "Continuous Extract and Reindexing - ${PIKASERVER}" $EMAIL < ${OUTPUT_FILE}
+	fi
+}
+
+function checkForDBCrash() {
+# Pass this function the exit code ($?) of pika java programs.
+# If the exit code is zero that indicates that the pika database is down or unreachable,
+# so we will pause our operations here
+	EXITCODE=$1
+	if [ $EXITCODE -eq 2 ];then
+		sleep 180
+		echo "Received database connection lost error, paused for 180 seconds" >> ${OUTPUT_FILE}
+	fi
 }
 
 while true 

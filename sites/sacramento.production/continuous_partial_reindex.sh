@@ -14,55 +14,27 @@ USE_SIERRA_API_EXTRACT=0
 # set to USE_SIERRA_API_EXTRACT to 1 enable
 
 
-# Check for conflicting processes currently running
-function checkConflictingProcesses() {
-	#Check to see if the conflict exists.
-	countConflictingProcesses=$(ps aux | grep -v sudo | grep -c "$1")
-	#subtract one to get rid of our grep command
-	countConflictingProcesses=$((countConflictingProcesses-1))
+source "/usr/local/vufind-plus/vufind/bash/checkConflicts.sh"
 
-	numInitialConflicts=${countConflictingProcesses}
-	#Wait until the conflict is gone.
-	until ((${countConflictingProcesses} == 0)); do
-		countConflictingProcesses=$(ps aux | grep -v sudo | grep -c "$1")
-		#subtract one to get rid of our grep command
-		countConflictingProcesses=$((countConflictingProcesses-1))
-		#echo "Count of conflicting process" $1 $countConflictingProcesses
-		sleep 300
-	done
-	#Return the number of conflicts we found initially.
-	echo ${numInitialConflicts};
+function sendEmail() {
+	# add any logic wanted for when to send the emails here. (eg errors only)
+	FILESIZE=$(stat -c%s ${OUTPUT_FILE})
+	if [[ ${FILESIZE} > 0 ]]
+	then
+			# send mail
+			mail -s "Continuous Extract and Reindexing - ${PIKASERVER}" $EMAIL < ${OUTPUT_FILE}
+	fi
 }
 
-# Prohibited time ranges - for, e.g., ILS backup
-function checkProhibitedTimes() {
-	start=$(date --date=$1 +%s)
-	stop=$(date --date=$2 +%s)
-	NOW=$(date +%H:%M:%S)
-	NOW=$(date --date=$NOW +%s)
-
-	let hasConflicts=0
-	if (( $start < $stop ))
-	then
-		if (( $NOW > $start && $NOW < $stop ))
-		then
-			#echo "Sleeping:" $(($stop - $NOW))
-			sleep $(($stop - $NOW))
-			hasConflicts = 1
-		fi
-	elif (( $start > $stop ))
-	then
-		if (( $NOW < $stop ))
-		then
-			sleep $(($stop - $NOW))
-			hasConflicts = 1
-		elif (( $NOW > $start ))
-		then
-			sleep $(($stop + 86400 - $NOW))
-			hasConflicts = 1
-		fi
+function checkForDBCrash() {
+# Pass this function the exit code ($?) of pika java programs.
+# If the exit code is zero that indicates that the pika database is down or unreachable,
+# so we will pause our operations here
+	EXITCODE=$1
+	if [ $EXITCODE -eq 2 ];then
+		sleep 180
+		echo "Received database connection lost error, paused for 180 seconds" >> ${OUTPUT_FILE}
 	fi
-	echo ${hasConflicts};
 }
 
 while true
@@ -111,14 +83,11 @@ do
 	#echo "Starting Reindexing - `date`" >> ${OUTPUT_FILE}
 	cd /usr/local/vufind-plus/vufind/reindexer
 	nice -n -5 java -server -XX:+UseG1GC -jar reindexer.jar ${PIKASERVER} >> ${OUTPUT_FILE}
+	checkForDBCrash $?
 
-	# add any logic wanted for when to send the emails here. (eg errors only)
-	FILESIZE=$(stat -c%s ${OUTPUT_FILE})
-	if [[ ${FILESIZE} > 0 ]]
-	then
-			# send mail
-			mail -s "Continuous Extract and Reindexing - ${PIKASERVER}" $EMAIL < ${OUTPUT_FILE}
-	fi
+
+	# send notice of any issues
+	sendEmail
 
 		#end block
 done
