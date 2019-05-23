@@ -617,7 +617,7 @@ EOD;
 					$curHold['recordId']              = $bibId;
 					$curHold['shortId']               = $bibId;
 					$curHold['holdSource']            = 'ILS';
-					$curHold['itemId']                = $curRow['itemnumber']; //TODO: verify this is really an item id (by db documentation, I'm pretty sure)
+					$curHold['itemId']                = $curRow['itemnumber'];
 					$curHold['title']                 = $curRow['title'];
 					$curHold['author']                = $curRow['author'];
 					$curHold['create']                = strtotime($createDate);
