@@ -205,7 +205,6 @@ class ArlingtonRecordProcessor extends IIIRecordProcessor {
 		}else{
 			//No items so we can continue on.
 			//Check the mat type
-//			String matType = MarcUtil.getFirstFieldVal(record, "998d");
 			String matType = MarcUtil.getFirstFieldVal(record, sierraRecordFixedFieldsTag + materialTypeSubField);
 			//Get the bib location
 			String bibLocation = null;
@@ -272,7 +271,8 @@ class ArlingtonRecordProcessor extends IIIRecordProcessor {
 					int boost = Integer.parseInt(boostStr);
 					relatedRecord.setFormatBoost(boost);
 				} catch (Exception e){
-					logger.warn("Unable to load boost for " + identifier + " got boost " + boostStr);
+					logger.warn("Unable to load boost for " + identifier + " for matType " + matType + ", got boost " + boostStr);
+					relatedRecord.setFormatBoost(8);
 				}
 
 				itemInfo.setDetailedStatus("Available Online");
