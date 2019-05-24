@@ -67,7 +67,7 @@
 #Lynda weekly update
 23 0 * * Fri /usr/local/vufind-plus/vufind/cron/fetch_lynda.sh marmot
 #Overdrive Weekly Full Reload
-07 22 * * Thu cd /usr/local/vufind-plus/vufind/overdrive_api_extract/nice -n -10 java -server -XX:+UseG1GC -jar overdrive_extract.jar marmot.test fullReload
+07 22 * * Thu cd /usr/local/vufind-plus/vufind/overdrive_api_extract; nice -n -10 java -server -XX:+UseG1GC -jar overdrive_extract.jar marmot.test fullReload
 
 ############################################
 # New York Times Bestseller Lists Updating #

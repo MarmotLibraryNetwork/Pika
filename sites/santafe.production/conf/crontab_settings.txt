@@ -67,7 +67,6 @@
 # New York Times Bestseller Lists Updating #
 ############################################
 31 7 * * * /usr/local/vufind-plus/vufind/cron/updateNYTLists.sh santafe.production
-# update on Sundays at 7:37
 
 ##########
 # Cron   #
