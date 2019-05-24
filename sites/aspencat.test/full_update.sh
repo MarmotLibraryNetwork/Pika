@@ -75,8 +75,7 @@ rm /data/vufind-plus/${PIKASERVER}/grouped_work_primary_identifiers.sql
 cd /usr/local/vufind-plus/sites/${PIKASERVER}; ./${PIKASERVER}.sh restart
 
 #Extract from Hoopla
-# No Aspencat libraries use hoopla, no need to copy them
-#cd /usr/local/vufind-plus/vufind/cron;./GetHooplaFromMarmot.sh >> ${OUTPUT_FILE}
+cd /usr/local/vufind-plus/vufind/cron;./GetHooplaFromMarmot.sh >> ${OUTPUT_FILE}
 
 #Unite for Literacy
 /usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} aspencat/unite_literacy unite_literacy/aspencat >> ${OUTPUT_FILE}
@@ -105,10 +104,6 @@ then
 	cd /usr/local/vufind-plus/vufind/overdrive_api_extract/
 	nice -n -10 java -server -XX:+UseG1GC -jar overdrive_extract.jar ${PIKASERVER} fullReload >> ${OUTPUT_FILE}
 fi
-
-#TODO: Use new nightly export
-## Copy Export from ILS
-#/usr/local/vufind-plus/sites/${PIKASERVER}/copyExport.sh >> ${OUTPUT_FILE}
 
 #Fetch Deletions
 cd /usr/local/vufind-plus/vufind/koha_export/;java -server -XX:+UseG1GC -jar koha_export.jar ${PIKASERVER} getDeletedBibs >> ${OUTPUT_FILE}
