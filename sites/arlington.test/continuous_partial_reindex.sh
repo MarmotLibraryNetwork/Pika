@@ -32,35 +32,27 @@ function checkConflictingProcesses() {
 	echo ${numInitialConflicts};
 }
 
-# Prohibited time ranges - for, e.g., ILS backup
-function checkProhibitedTimes() {
-	start=$(date --date=$1 +%s)
-	stop=$(date --date=$2 +%s)
-	NOW=$(date +%H:%M:%S)
-	NOW=$(date --date=$NOW +%s)
+source "/usr/local/vufind-plus/vufind/bash/checkConflicts.sh"
 
-	let hasConflicts=0
-	if (( $start < $stop ))
+function sendEmail() {
+	# add any logic wanted for when to send the emails here. (eg errors only)
+	FILESIZE=$(stat -c%s ${OUTPUT_FILE})
+	if [[ ${FILESIZE} > 0 ]]
 	then
-		if (( $NOW > $start && $NOW < $stop ))
-		then
-			#echo "Sleeping:" $(($stop - $NOW))
-			sleep $(($stop - $NOW))
-			hasConflicts = 1
-		fi
-	elif (( $start > $stop ))
-	then
-		if (( $NOW < $stop ))
-		then
-			sleep $(($stop - $NOW))
-			hasConflicts = 1
-		elif (( $NOW > $start ))
-		then
-			sleep $(($stop + 86400 - $NOW))
-			hasConflicts = 1
-		fi
+			# send mail
+			mail -s "Continuous Extract and Reindexing - ${PIKASERVER}" $EMAIL < ${OUTPUT_FILE}
 	fi
-	echo ${hasConflicts};
+}
+
+function checkForDBCrash() {
+# Pass this function the exit code ($?) of pika java programs.
+# If the exit code is zero that indicates that the pika database is down or unreachable,
+# so we will pause our operations here
+	EXITCODE=$1
+	if [ $EXITCODE -eq 2 ];then
+		sleep 180
+		echo "Received database connection lost error, paused for 180 seconds" >> ${OUTPUT_FILE}
+	fi
 }
 
 while true
