@@ -49,21 +49,21 @@ abstract class MarcRecordProcessor {
 					StringBuilder curSubject = new StringBuilder();
 					for (Subfield curSubfield : curSubjectField.getSubfields()) {
 						char   curSubfieldCode = curSubfield.getCode();
-						String curSubfieldData = curSubfield.getData();
+						String curSubfieldData = curSubfield.getData().trim();
 						if ((curSubfieldCode >= 'a' && curSubfieldCode <= 'z' && curSubfieldCode != 'i' && curSubfieldCode != 'w')) { // any letter but i & w
 							if (curSubject.length() > 0) curSubject.append(" -- ");
 							curSubject.append(curSubfieldData);
 
 							groupedWork.addTopic(curSubfieldData);
-						}
-						if (curSubfieldCode == 'a' || curSubfieldCode == 'x') {
-							groupedWork.addTopicFacet(curSubfieldData);
-						} else if (curSubfieldCode == 'v') {
-							groupedWork.addGenreFacet(curSubfieldData);
-						} else if (curSubfieldCode == 'z') {
-							groupedWork.addGeographicFacet(curSubfieldData);
-						} else if (curSubfieldCode == 'd') {
-							groupedWork.addEra(curSubfieldData);
+							if (curSubfieldCode == 'a' || curSubfieldCode == 'x') {
+								groupedWork.addTopicFacet(curSubfieldData);
+							} else if (curSubfieldCode == 'v') {
+								groupedWork.addGenreFacet(curSubfieldData);
+							} else if (curSubfieldCode == 'z') {
+								groupedWork.addGeographicFacet(curSubfieldData);
+							} else if (curSubfieldCode == 'd') {
+								groupedWork.addEra(curSubfieldData);
+							}
 						}
 					}
 					subjects.add(curSubject.toString());
@@ -73,21 +73,21 @@ abstract class MarcRecordProcessor {
 					StringBuilder curSubject = new StringBuilder();
 					for (Subfield curSubfield : curSubjectField.getSubfields()) {
 						char   curSubfieldCode = curSubfield.getCode();
-						String curSubfieldData = curSubfield.getData();
+						String curSubfieldData = curSubfield.getData().trim();
 						if ((curSubfieldCode >= 'a' && curSubfieldCode <= 'z' && curSubfieldCode != 'i' && curSubfieldCode != 'w')) { // any letter but i & w
 							if (curSubject.length() > 0) curSubject.append(" -- ");
 							curSubject.append(curSubfieldData);
 
 							groupedWork.addTopic(curSubfieldData);
-						}
-						if (curSubfieldCode == 'x') {
-							groupedWork.addTopicFacet(curSubfieldData);
-						} else if (curSubfieldCode == 'v') {
-							groupedWork.addGenreFacet(curSubfieldData);
-						} else if (curSubfieldCode == 'z') {
-							groupedWork.addGeographicFacet(curSubfieldData);
-						} else if (curSubfieldCode == 'y') {
-							groupedWork.addEra(curSubfieldData);
+							if (curSubfieldCode == 'x') {
+								groupedWork.addTopicFacet(curSubfieldData);
+							} else if (curSubfieldCode == 'v') {
+								groupedWork.addGenreFacet(curSubfieldData);
+							} else if (curSubfieldCode == 'z') {
+								groupedWork.addGeographicFacet(curSubfieldData);
+							} else if (curSubfieldCode == 'y') {
+								groupedWork.addEra(curSubfieldData);
+							}
 						}
 					}
 					subjects.add(curSubject.toString());
@@ -97,21 +97,21 @@ abstract class MarcRecordProcessor {
 					StringBuilder curSubject = new StringBuilder();
 					for (Subfield curSubfield : curSubjectField.getSubfields()) {
 						char   curSubfieldCode = curSubfield.getCode();
-						String curSubfieldData = curSubfield.getData();
+						String curSubfieldData = curSubfield.getData().trim();
 						if (curSubfieldCode >= 'a' && curSubfieldCode <= 'z' && "bijmow".indexOf(curSubfieldCode) == -1) { // any letter but b, i, j, m, o, or w
 							if (curSubject.length() > 0) curSubject.append(" -- ");
 							curSubject.append(curSubfieldData);
 
 							groupedWork.addTopic(curSubfieldData);
-						}
-						if (curSubfieldCode == 'x') {
-							groupedWork.addTopicFacet(curSubfieldData);
-						} else if (curSubfieldCode == 'v') {
-							groupedWork.addGenreFacet(curSubfieldData);
-						} else if (curSubfieldCode == 'z') {
-							groupedWork.addGeographicFacet(curSubfieldData);
-						} else if (curSubfieldCode == 'y') {
-							groupedWork.addEra(curSubfieldData);
+							if (curSubfieldCode == 'x') {
+								groupedWork.addTopicFacet(curSubfieldData);
+							} else if (curSubfieldCode == 'v') {
+								groupedWork.addGenreFacet(curSubfieldData);
+							} else if (curSubfieldCode == 'z') {
+								groupedWork.addGeographicFacet(curSubfieldData);
+							} else if (curSubfieldCode == 'y') {
+								groupedWork.addEra(curSubfieldData);
+							}
 						}
 					}
 					subjects.add(curSubject.toString());
@@ -121,21 +121,21 @@ abstract class MarcRecordProcessor {
 					StringBuilder curSubject = new StringBuilder();
 					for (Subfield curSubfield : curSubjectField.getSubfields()) {
 						char   curSubfieldCode = curSubfield.getCode();
-						String curSubfieldData = curSubfield.getData();
+						String curSubfieldData = curSubfield.getData().trim();
 						if (curSubfieldCode >= 'a' && curSubfieldCode <= 'z' && "cdeijqw".indexOf(curSubfieldCode) == -1) { // any letter but b, c, d, e, i, j, m, o, or w
 							if (curSubject.length() > 0) curSubject.append(" -- ");
 							curSubject.append(curSubfieldData);
 
 							groupedWork.addTopic(curSubfieldData);
-						}
-						if (curSubfieldCode == 'x') {
-							groupedWork.addTopicFacet(curSubfieldData);
-						} else if (curSubfieldCode == 'v') {
-							groupedWork.addGenreFacet(curSubfieldData);
-						} else if (curSubfieldCode == 'z') {
-							groupedWork.addGeographicFacet(curSubfieldData);
-						} else if (curSubfieldCode == 'y') {
-							groupedWork.addEra(curSubfieldData);
+							if (curSubfieldCode == 'x') {
+								groupedWork.addTopicFacet(curSubfieldData);
+							} else if (curSubfieldCode == 'v') {
+								groupedWork.addGenreFacet(curSubfieldData);
+							} else if (curSubfieldCode == 'z') {
+								groupedWork.addGeographicFacet(curSubfieldData);
+							} else if (curSubfieldCode == 'y') {
+								groupedWork.addEra(curSubfieldData);
+							}
 						}
 					}
 					subjects.add(curSubject.toString());
@@ -145,7 +145,7 @@ abstract class MarcRecordProcessor {
 					String curSubject = "";
 					for (Subfield curSubfield : curSubjectField.getSubfields()) {
 						char   curSubfieldCode = curSubfield.getCode();
-						String curSubfieldData = curSubfield.getData();
+						String curSubfieldData = curSubfield.getData().trim();
 						if (curSubfieldCode == 'x') {
 							groupedWork.addTopicFacet(curSubfieldData);
 						} else if (curSubfieldCode == 'v') {
@@ -160,22 +160,22 @@ abstract class MarcRecordProcessor {
 					break;
 				}
 				case "650": {
+					// Assume subject is an LC subject by default
 					boolean isLCSubject    = true;
 					boolean isBisacSubject = false;
-					String  bisacCode      = null;
 					if (curSubjectField.getSubfield('2') != null) {
-						bisacCode = curSubjectField.getSubfield('2').getData();
-					}
-					boolean hasBisacMarkers = bisacCode != null &&
-							(bisacCode.equals("bisacsh") || bisacCode.equals("bisacmt") || bisacCode.equals("bisacrt"));
-					if (hasBisacMarkers) {
-						isLCSubject    = false;
-						isBisacSubject = true;
+						String  bisacCode       = curSubjectField.getSubfield('2').getData().trim();
+						boolean hasBisacMarkers = bisacCode.equalsIgnoreCase("bisacsh") || bisacCode.equalsIgnoreCase("bisacmt") || bisacCode.equalsIgnoreCase("bisacrt");
+						if (hasBisacMarkers) {
+							// Since the subject has a Bisac Marker, it is a bisac subject and not an LC subject
+							isLCSubject    = false;
+							isBisacSubject = true;
+						}
 					}
 					StringBuilder curSubject = new StringBuilder();
 					for (Subfield curSubfield : curSubjectField.getSubfields()) {
 						char   curSubfieldCode = curSubfield.getCode();
-						String curSubfieldData = curSubfield.getData();
+						String curSubfieldData = curSubfield.getData().trim();
 						if ("abcdevxyz".indexOf(curSubfieldCode) >= 0) {
 							if (curSubject.length() > 0) curSubject.append(" -- ");
 							curSubject.append(curSubfieldData);
@@ -205,25 +205,25 @@ abstract class MarcRecordProcessor {
 					StringBuilder curSubject = new StringBuilder();
 					for (Subfield curSubfield : curSubjectField.getSubfields()) {
 						char   curSubfieldCode = curSubfield.getCode();
-						String curSubfieldData = curSubfield.getData();
+						String curSubfieldData = curSubfield.getData().trim();
 						if ("abcdevxyz".indexOf(curSubfieldCode) >= 0) {
 							if (curSubject.length() > 0) curSubject.append(" -- ");
 							curSubject.append(curSubfieldData);
 
 							groupedWork.addTopic(curSubfieldData);
-						}
-						if (curSubfieldCode == 'x') {
-							groupedWork.addTopicFacet(curSubfieldData);
-							groupedWork.addGeographic(curSubfieldData);
-						} else if (curSubfieldCode == 'v') {
-							groupedWork.addGenreFacet(curSubfieldData);
-							groupedWork.addGeographic(curSubfieldData);
-						} else if (curSubfieldCode == 'a' || curSubfieldCode == 'z') {
-							groupedWork.addGeographicFacet(curSubfieldData);
-							groupedWork.addGeographic(curSubfieldData);
-						} else if (curSubfieldCode == 'y') {
-							groupedWork.addEra(curSubfieldData);
-							groupedWork.addGeographic(curSubfieldData);
+							if (curSubfieldCode == 'x') {
+								groupedWork.addTopicFacet(curSubfieldData);
+								groupedWork.addGeographic(curSubfieldData);
+							} else if (curSubfieldCode == 'v') {
+								groupedWork.addGenreFacet(curSubfieldData);
+								groupedWork.addGeographic(curSubfieldData);
+							} else if (curSubfieldCode == 'a' || curSubfieldCode == 'z') {
+								groupedWork.addGeographicFacet(curSubfieldData);
+								groupedWork.addGeographic(curSubfieldData);
+							} else if (curSubfieldCode == 'y') {
+								groupedWork.addEra(curSubfieldData);
+								groupedWork.addGeographic(curSubfieldData);
+							}
 						}
 					}
 					subjects.add(curSubject.toString());
@@ -233,25 +233,26 @@ abstract class MarcRecordProcessor {
 					StringBuilder curSubject = new StringBuilder();
 					for (Subfield curSubfield : curSubjectField.getSubfields()) {
 						char   curSubfieldCode = curSubfield.getCode();
-						String curSubfieldData = curSubfield.getData();
+						String curSubfieldData = curSubfield.getData().trim();
 						if ("abcvxyz".indexOf(curSubfieldCode) >= 0) {
 							if (curSubject.length() > 0) curSubject.append(" -- ");
 							curSubject.append(curSubfieldData);
-						}
-						if (curSubfieldCode == 'x') {
-							groupedWork.addTopicFacet(curSubfieldData);
-							groupedWork.addGenre(curSubfieldData);
-						} else if (curSubfieldCode == 'a' || curSubfieldCode == 'v') {
-							groupedWork.addGenreFacet(curSubfieldData);
-							groupedWork.addGenre(curSubfieldData);
-						} else if (curSubfieldCode == 'z') {
-							groupedWork.addGeographicFacet(curSubfieldData);
-							groupedWork.addGenre(curSubfieldData);
-						} else if (curSubfieldCode == 'y') {
-							groupedWork.addEra(curSubfieldData);
-							groupedWork.addGenre(curSubfieldData);
-						} else if (curSubfieldCode == 'b') {
-							groupedWork.addGenre(curSubfieldData);
+
+							if (curSubfieldCode == 'x') {
+								groupedWork.addTopicFacet(curSubfieldData);
+								groupedWork.addGenre(curSubfieldData);
+							} else if (curSubfieldCode == 'a' || curSubfieldCode == 'v') {
+								groupedWork.addGenreFacet(curSubfieldData);
+								groupedWork.addGenre(curSubfieldData);
+							} else if (curSubfieldCode == 'z') {
+								groupedWork.addGeographicFacet(curSubfieldData);
+								groupedWork.addGenre(curSubfieldData);
+							} else if (curSubfieldCode == 'y') {
+								groupedWork.addEra(curSubfieldData);
+								groupedWork.addGenre(curSubfieldData);
+							} else if (curSubfieldCode == 'b') {
+								groupedWork.addGenre(curSubfieldData);
+							}
 						}
 					}
 					subjects.add(curSubject.toString());
@@ -261,7 +262,7 @@ abstract class MarcRecordProcessor {
 					StringBuilder curSubject = new StringBuilder();
 					for (Subfield curSubfield : curSubjectField.getSubfields()) {
 						char   curSubfieldCode = curSubfield.getCode();
-						String curSubfieldData = curSubfield.getData();
+						String curSubfieldData = curSubfield.getData().trim();
 						if (curSubfieldCode == 'a' ||
 								(curSubfieldCode >= 'x' && curSubfieldCode <= 'z')) {
 							if (curSubject.length() > 0) curSubject.append(" -- ");
