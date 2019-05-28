@@ -83,13 +83,13 @@
 # SIDELOADED ECONTENT MARC triggered HERE (and commented out in full_update.sh)
 0 22 * * * cd /usr/local/vufind-plus/vufind/cron; ./sideload.sh nashville.production
 # Hoopla
-02 20 * * * cd /usr/local/vufind-plus/vufind/hoopla_export; java -jar hoopla_export.jar nashville.production
+35 19 * * * cd /usr/local/vufind-plus/vufind/hoopla_export; java -jar hoopla_export.jar nashville.production
 # Download Lexile and AR files triggered in full_update.sh
 
 ###############################
 # MNPS School Overdues Report #
 ###############################
-58 5-15 * * * cd /usr/local/vufind-plus/vufind/cron; /opt/rh/php55/root/usr/bin/php NashvilleAdHocOverdues.php nashville.production
+58 5,7,8,9,10,11,12,13,15 * * * cd /usr/local/vufind-plus/vufind/cron; /opt/rh/php55/root/usr/bin/php NashvilleAdHocOverdues.php nashville.production
 
 ###############################
 # MNPS School Barcodes Report #
