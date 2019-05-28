@@ -112,9 +112,9 @@ with
 -- There has GOT to be a better way...
   g as (
     select
-      sponsorid,
-      P_Type,
-      count(P_Barcode) as studentcount
+      sponsorid
+      , P_Type
+      , count(P_Barcode) as studentcount
     from p
     where p.P_Type between 21 and 34 
     group by
@@ -127,17 +127,23 @@ with
   homeroom_grade as (
     select
       sponsorid
-      , P_Type
-      , studentcount
+      , min(P_Type) as P_Type
     from (
       select
         sponsorid
         , P_Type
         , studentcount
         , max(studentcount) over (partition by sponsorid) as rmax_studentcount
-      from g)
+      from g
+      order by
+        sponsorid
+        , studentcount
+        , P_Type
+    )
     where studentcount = rmax_studentcount
- )
+    group by sponsorid
+    order by sponsorid
+  )
 select
   Home_Lib_Code
   , Home_Lib
@@ -155,7 +161,9 @@ select
   , i.Item
 from
   p inner join i on p.P_Barcode = i.patronid
-  inner join homeroom_grade on p.sponsorid = homeroom_grade.sponsorid
+  full outer join homeroom_grade on p.sponsorid = homeroom_grade.sponsorid
+where 
+  Home_Lib_Code is not null
 order by
   homeroom_grade.P_Type
   , Home_Room
