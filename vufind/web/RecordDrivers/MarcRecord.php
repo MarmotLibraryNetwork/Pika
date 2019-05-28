@@ -1704,59 +1704,58 @@ class MarcRecord extends IndexRecord
 		return $this->filterAndSortMoreDetailsOptions($moreDetailsOptions);
 	}
 
-	public function loadSubjects()
-	{
+	public function loadSubjects(){
 		global $interface;
 		global $configArray;
 		global $library;
-		$marcRecord = $this->getMarcRecord();
-		$subjects = array();
-		$otherSubjects = array();
-		$lcSubjects = array();
-		$bisacSubjects = array();
+		$marcRecord       = $this->getMarcRecord();
+		$subjects         = array();
+		$otherSubjects    = array();
+		$lcSubjects       = array();
+		$bisacSubjects    = array();
 		$oclcFastSubjects = array();
-		$localSubjects = array();
-		if ($marcRecord) {
-			if (isset($configArray['Content']['subjectFieldsToShow'])) {
+		$localSubjects    = array();
+		if ($marcRecord){
+			if (isset($configArray['Content']['subjectFieldsToShow'])){
 				$subjectFieldsToShow = $configArray['Content']['subjectFieldsToShow'];
-				$subjectFields = explode(',', $subjectFieldsToShow);
+				$subjectFields       = explode(',', $subjectFieldsToShow);
 
 				$lcSubjectTagNumbers = array(600, 610, 611, 630, 650, 651); // Official LC subject Tags (from CMU)
-				foreach ($subjectFields as $subjectField) {
+				foreach ($subjectFields as $subjectField){
 					/** @var File_MARC_Data_Field[] $marcFields */
 					$marcFields = $marcRecord->getFields($subjectField);
-					if ($marcFields) {
-						foreach ($marcFields as $marcField) {
-							$searchSubject = "";
-							$subject = array();
+					if ($marcFields){
+						foreach ($marcFields as $marcField){
+							$subject       = array();
 							//Determine the type of the subject
 							$type = 'other';
-							if (in_array($subjectField, $lcSubjectTagNumbers) && $marcField->getIndicator(2) == 0) {
+							if (in_array($subjectField, $lcSubjectTagNumbers) && $marcField->getIndicator(2) == 0){
 								$type = 'lc';
 							}
 							$subjectSource = $marcField->getSubfield('2');
-							if ($subjectSource != null) {
-								if (preg_match('/bisac/i', $subjectSource->getData())) {
+							if ($subjectSource != null){
+								if (preg_match('/bisac/i', $subjectSource->getData())){
 									$type = 'bisac';
-								} elseif (preg_match('/fast/i', $subjectSource->getData())) {
+								}elseif (preg_match('/fast/i', $subjectSource->getData())){
 									$type = 'fast';
 								}
 							}
-							if ($marcField->getTag() == '690') {
+							if ($marcField->getTag() == '690'){
 								$type = 'local';
 							}
 
 							$search = '';
-							$title = '';
-							foreach ($marcField->getSubFields() as $subField) {
+							$title  = '';
+							foreach ($marcField->getSubFields() as $subField){
 								/** @var File_MARC_Subfield $subField */
-								if ($subField->getCode() != '2' && $subField->getCode() != '0') {
+								$subFieldCode = $subField->getCode();
+								if (!ctype_digit($subFieldCode)){ //Subfields with numeric codes aren't meant to be displayed as part of the subject
 									$subFieldData = $subField->getData();
-									if ($type == 'bisac' && $subField->getCode() == 'a') {
+									if ($type == 'bisac' && $subFieldCode == 'a'){
 										$subFieldData = ucwords(strtolower($subFieldData));
 									}
-									$search .= " " . $subFieldData;
-									if (strlen($title) > 0) {
+									$search .= " " . str_replace('/', '', $subFieldData);
+									if (strlen($title) > 0){
 										$title .= ' -- ';
 									}
 									$title .= $subFieldData;
@@ -1764,24 +1763,24 @@ class MarcRecord extends IndexRecord
 							}
 							$subject[$title] = array(
 								'search' => trim($search),
-								'title' => $title,
+								'title'  => $title,
 							);
-							switch ($type) {
+							switch ($type){
 								case 'fast' :
 									// Suppress fast subjects by default
 									$oclcFastSubjects[] = $subject;
 									break;
 								case 'local' :
 									$localSubjects[] = $subject;
-									$subjects[] = $subject;
+									$subjects[]      = $subject;
 									break;
 								case 'bisac' :
 									$bisacSubjects[] = $subject;
-									$subjects[] = $subject;
+									$subjects[]      = $subject;
 									break;
 								case 'lc' :
 									$lcSubjects[] = $subject;
-									$subjects[] = $subject;
+									$subjects[]   = $subject;
 									break;
 								case 'other' :
 									$otherSubjects[] = $subject;
@@ -1793,25 +1792,25 @@ class MarcRecord extends IndexRecord
 					}
 				}
 			}
-			$subjectTitleCompareFunction = function ($subjectArray0, $subjectArray1) {
+			$subjectTitleCompareFunction = function ($subjectArray0, $subjectArray1){
 				return strcasecmp(key($subjectArray0), key($subjectArray1));
 			};
 
 			usort($subjects, $subjectTitleCompareFunction);
 			$interface->assign('subjects', $subjects);
-			if ($library->showLCSubjects) {
+			if ($library->showLCSubjects){
 				usort($lcSubjects, $subjectTitleCompareFunction);
 				$interface->assign('lcSubjects', $lcSubjects);
 			}
-			if ($library->showOtherSubjects) {
+			if ($library->showOtherSubjects){
 				usort($otherSubjects, $subjectTitleCompareFunction);
 				$interface->assign('otherSubjects', $otherSubjects);
 			}
-			if ($library->showBisacSubjects) {
+			if ($library->showBisacSubjects){
 				usort($bisacSubjects, $subjectTitleCompareFunction);
 				$interface->assign('bisacSubjects', $bisacSubjects);
 			}
-			if ($library->showFastAddSubjects) {
+			if ($library->showFastAddSubjects){
 				usort($oclcFastSubjects, $subjectTitleCompareFunction);
 				$interface->assign('oclcFastSubjects', $oclcFastSubjects);
 			}
