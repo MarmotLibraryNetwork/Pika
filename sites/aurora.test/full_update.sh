@@ -186,8 +186,8 @@ then
 
 			cp $FILE1 /data/vufind-plus/${PIKASERVER}/marc/fullexport.mrc
 
-			#Delete full exports older than a week
-			find /mnt/ftp/ -name fullexport*.mrc -mtime +7 -delete
+			#Delete full exports older than 3 days (production pika only)
+#			find /mnt/ftp/ -name fullexport*.mrc -mtime +3 -delete
 			umount /mnt/ftp
 
 		#Validate the export

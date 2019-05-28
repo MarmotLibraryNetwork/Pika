@@ -152,12 +152,11 @@ abstract class Archive_Object extends Action {
 		// For analytics:
 		// * grab owing library id
 		// * let page know it's an archive page
-		$objOwner = explode(':', $this->pid);
-		$objOwner = $objOwner[0];
-		$interface->assign('lid', $objOwner);
-		$interface->assign('archivePage', TRUE);
+		$namespace = explode(':', $this->pid);
+		$namespace = $namespace[0];
+		$interface->assign('lid',$namespace);
+		$interface->assign('archivePage', true);
 
-		list($namespace) = explode(':', $this->pid);
 		//Find the owning library
 		$owningLibrary = new Library();
 		$owningLibrary->archiveNamespace = $namespace;

@@ -608,7 +608,7 @@ EOD;
 					$bibId          = $curRow['biblionumber'];
 					$expireDate     = $curRow['expirationdate'];
 					$createDate     = $curRow['reservedate'];
-					$fillByDate     = $curRow['cancellationdate']; //TODO: Is this the cancellation date or is 'waitingdate'
+					$fillByDate     = $curRow['cancellationdate'];
 					$reactivateDate = $curRow['suspend_until'];
 					$branchCode     = $curRow['branchcode'];
 
@@ -617,7 +617,7 @@ EOD;
 					$curHold['recordId']              = $bibId;
 					$curHold['shortId']               = $bibId;
 					$curHold['holdSource']            = 'ILS';
-					$curHold['itemId']                = $curRow['itemnumber']; //TODO: verify this is really an item id (by db documentation, I'm pretty sure)
+					$curHold['itemId']                = $curRow['itemnumber'];
 					$curHold['title']                 = $curRow['title'];
 					$curHold['author']                = $curRow['author'];
 					$curHold['create']                = strtotime($createDate);
@@ -662,6 +662,7 @@ EOD;
 
 					$curPickupBranch       = new Location();
 					$curPickupBranch->code = $branchCode;
+					$curPickupBranch->validHoldPickupBranch = '1';
 					if ($curPickupBranch->find(true)){
 						$curPickupBranch->fetch();
 						$curHold['currentPickupId']   = $curPickupBranch->locationId;
