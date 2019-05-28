@@ -103,14 +103,11 @@ do
 	#echo "Starting Reindexing - `date`" >> ${OUTPUT_FILE}
 	cd /usr/local/vufind-plus/vufind/reindexer
 	nice -n -5 java -server -XX:+UseG1GC -jar reindexer.jar ${PIKASERVER} >> ${OUTPUT_FILE}
+	checkForDBCrash $?
 
-	# add any logic wanted for when to send the emails here. (eg errors only)
-	FILESIZE=$(stat -c%s ${OUTPUT_FILE})
-	if [[ ${FILESIZE} > 0 ]]
-	then
-			# send mail
-			mail -s "Continuous Extract and Reindexing - ${PIKASERVER}" $EMAIL < ${OUTPUT_FILE}
-	fi
+
+	# send notice of any issues
+	sendEmail
 
 		#end block
 done

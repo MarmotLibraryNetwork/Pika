@@ -11,7 +11,7 @@ EMAIL=root
 PIKASERVER=sacramento.test
 OUTPUT_FILE="/var/log/vufind-plus/${PIKASERVER}/continuous_partial_reindex_output.log"
 USE_SIERRA_API_EXTRACT=0
-# set to USE_SIERRA_API_EXTRACT to 1 enable
+# set to USE_SIERRA_API_EXTRACT to 1 enabledddd
 
 
 source "/usr/local/vufind-plus/vufind/bash/checkConflicts.sh"

@@ -125,14 +125,18 @@ curl --remote-time --show-error --compressed -o /data/vufind-plus/colorado_gov_d
 # Kanopy
 /usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} aurora/kanopy kanopy/aurora >> ${OUTPUT_FILE}
 
+#Learning Express
+/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} aurora/learning_express learning_express/aurora >> ${OUTPUT_FILE}
+
+#Lynda
+/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} aurora/lynda lynda/aurora >> ${OUTPUT_FILE}
+
 ###################
 # Other sideloads
 #Biblioboard
 #/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} aurora/Biblioboard Biblioboard/aurora >> ${OUTPUT_FILE}
 #TrueFlix
 #/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} aurora/trueflix trueflix/aurora >> ${OUTPUT_FILE}
-#Learning Express
-#/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} aurora/learning_express learning_express/aurora >> ${OUTPUT_FILE}
 #Bookflix
 #/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} aurora/bookflix bookflix/aurora >> ${OUTPUT_FILE}
 #Gale eCourses
@@ -183,8 +187,8 @@ then
 
 			cp $FILE1 /data/vufind-plus/${PIKASERVER}/marc/fullexport.mrc
 
-			#Delete full exports older than a week
-			find /mnt/ftp/ -name fullexport*.mrc -mtime +7 -delete
+			#Delete full exports older than 3 days
+			find /mnt/ftp/ -name fullexport*.mrc -mtime +3 -delete
 			umount /mnt/ftp
 
 		#Validate the export
