@@ -14,9 +14,9 @@ import org.ini4j.InvalidFileFormatException;
 import org.ini4j.Profile.Section;
 
 public class ExtractOverDriveInfoMain {
-	private static Logger logger;
-	private static String serverName;
-	private static Connection vufindConn;
+	private static Logger     logger;
+	private static String     serverName;
+	private static Connection pikaConn;
 
 	public static void main(String[] args) {
 		if (args.length == 0){
@@ -80,14 +80,14 @@ public class ExtractOverDriveInfoMain {
 		
 		String databaseConnectionInfo = Util.cleanIniValue(configIni.get("Database", "database_vufind_jdbc"));
 		if (databaseConnectionInfo == null || databaseConnectionInfo.length() == 0) {
-			logger.error("VuFind Database connection information not found in Database Section.  Please specify connection information in database_vufind_jdbc.");
+			logger.error("Pika Database connection information not found in Database Section.  Please specify connection information in database_vufind_jdbc.");
 			System.exit(1);
 		}
 		try {
-			vufindConn = DriverManager.getConnection(databaseConnectionInfo);
+			pikaConn = DriverManager.getConnection(databaseConnectionInfo);
 		} catch (SQLException e) {
-			logger.error("Could not connect to vufind database", e);
-			System.exit(1);
+			logger.error("Could not connect to pika database : " + e.getMessage());
+			System.exit(2); // Exiting with a status code of 2 so that our executing bash scripts knows there has been a database communication error
 		}
 		
 		
@@ -101,9 +101,9 @@ public class ExtractOverDriveInfoMain {
 		Connection econtentConn;
 		try {
 			econtentConn = DriverManager.getConnection(econtentConnectionInfo);
-		} catch (SQLException ex) {
-			// handle any errors
-			logger.error("Error establishing connection to database " + econtentConnectionInfo, ex);
+		} catch (SQLException e) {
+			logger.error("Could not connect to econtent database : " + e.getMessage());
+			System.exit(2); // Exiting with a status code of 2 so that our executing bash scripts knows there has been a database communication error
 			return;
 		}
 		
@@ -114,7 +114,7 @@ public class ExtractOverDriveInfoMain {
 		}
 		
 		ExtractOverDriveInfo extractor = new ExtractOverDriveInfo();
-		extractor.extractOverDriveInfo(configIni, vufindConn, econtentConn, logEntry, doFullReload, individualIdToProcess);
+		extractor.extractOverDriveInfo(configIni, pikaConn, econtentConn, logEntry, doFullReload, individualIdToProcess);
 
 		logEntry.setFinished();
 		logEntry.addNote("Finished OverDrive extraction");

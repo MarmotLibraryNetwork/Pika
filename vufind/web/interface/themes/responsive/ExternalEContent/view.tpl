@@ -8,6 +8,8 @@
 		{* Display Title *}
 		<h2>
 			{$recordDriver->getTitle()|removeTrailingPunctuation|escape}
+			{if $recordDriver->getSubTitle()}: {$recordDriver->getSubTitle()|escape}{/if}
+			{if $recordDriver->getTitleSection()} {$recordDriver->getTitleSection()|escape}{/if}
 			{if $recordDriver->getFormats()}
 				<br><small>({implode subject=$recordDriver->getFormats() glue=", "})</small>
 			{/if}
@@ -45,7 +47,7 @@
 							<div class="btn-group btn-group-vertical btn-block">
 								{* Options for the user to view online or download *}
 								{foreach from=$actions item=link}
-									<a href="{if $link.url}{$link.url}{else}#{/if}" {if $link.onclick}onclick="{$link.onclick}"{/if} class="btn btn-sm btn-primary" target="_blank">{$link.title}</a>&nbsp;
+									<a href="{if $link.url}{$link.url}{else}#{/if}" {if !empty($link.onclick)}onclick="{$link.onclick}"{/if} class="btn btn-sm btn-primary"{if $link.url} target="_blank"{/if}>{$link.title}</a>&nbsp;
 								{/foreach}
 							</div>
 						</div>
@@ -53,7 +55,9 @@
 				</div>
 
 				<div class="row">
-					{include file='GroupedWork/result-tools-horizontal.tpl' summId=$recordDriver->getPermanentId() summShortId=$recordDriver->getPermanentId() ratingData=$recordDriver->getRatingData() recordUrl=$recordDriver->getLinkUrl() showMoreInfo=false}
+					<div class="col-xs-12">
+						{include file='GroupedWork/result-tools-horizontal.tpl' summId=$recordDriver->getPermanentId() summShortId=$recordDriver->getPermanentId() ratingData=$recordDriver->getRatingData() recordUrl=$recordDriver->getLinkUrl() showMoreInfo=false}
+					</div>
 				</div>
 
 			</div>

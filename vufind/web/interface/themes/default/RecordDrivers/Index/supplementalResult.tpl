@@ -1,3 +1,4 @@
+{*
 <div id="supplementalRecord{if $summShortId}{$summShortId}{else}{$summId|escape}{/if}" class="resultsList">
 	<div class="imageColumn">
 		{if $disableCoverArt != 1}
@@ -47,4 +48,4 @@
 		{/if}
 	</div>
 
-</div>
+</div>*}

@@ -25,9 +25,9 @@ import java.util.Iterator;
 
 public class UpdateReadingHistory implements IProcessHandler {
 	private CronProcessLogEntry processLog;
-	private PreparedStatement   insertReadingHistoryStmt;
 	private String              pikaUrl;
 	private Logger              logger;
+	private PreparedStatement   insertReadingHistoryStmt;
 
 	public void doCronProcess(String serverName, Ini configIni, Section processSettings, Connection pikaConn, Connection econtentConn, CronLogEntry cronEntry, Logger logger) {
 		processLog = new CronProcessLogEntry(cronEntry.getLogEntryId(), "Update Reading History");
@@ -216,7 +216,7 @@ public class UpdateReadingHistory implements IProcessHandler {
 					processLog.incErrors();
 					hadError = true;
 				} catch (IOException e) {
-					logger.error("Unable to retrieve information from patron API for " + cat_username /*+ ": " + e.toString()*/);
+					logger.error("Unable to retrieve information from patron API for " + cat_username, e);
 					processLog.incErrors();
 					hadError = true;
 				}
@@ -353,7 +353,7 @@ public class UpdateReadingHistory implements IProcessHandler {
 			logger.error("Bad url for patron API " + e.toString());
 			processLog.incErrors();
 		} catch (IOException e) {
-			logger.error("Unable to retrieve information from patron API for " + cat_username /*+ ": " + e.toString()*/);
+			logger.error("Unable to retrieve information from patron API for " + cat_username, e);
 			processLog.incErrors();
 		}
 	}

@@ -175,7 +175,9 @@ EOD;
 				$dueTime = null;
 			}
 
-
+			// TODO: Koha specific
+			// Do not show the renew button when a title will be auto renewed.
+			// https://marmot.myjetbrains.com/youtrack/issue/D-2985
 			if($curRow['auto_renew'] == 1) {
 				$transaction['canrenew'] = false;
 				if($curRow['auto_renew_error'] == 'on_reserve') {
@@ -490,8 +492,8 @@ EOD;
 	 *
 	 * This is responsible for retrieving all fines by a specific patron.
 	 *
-	 * @param User $patron
-	 * @param bool $includeMessages
+	 * @param  User $patron
+	 * @param  bool $includeMessages
 	 * @return mixed        Array of the patron's fines on success, PEAR_Error
 	 * otherwise.
 	 * @access public
@@ -601,6 +603,7 @@ EOD;
 
 
 
+
 			$results = mysqli_query($this->dbConnection, $sql);
 			if ($results){
 				while ($curRow = $results->fetch_assoc()){
@@ -608,7 +611,7 @@ EOD;
 					$bibId          = $curRow['biblionumber'];
 					$expireDate     = $curRow['expirationdate'];
 					$createDate     = $curRow['reservedate'];
-					$fillByDate     = $curRow['cancellationdate']; //TODO: Is this the cancellation date or is 'waitingdate'
+					$fillByDate     = $curRow['cancellationdate'];
 					$reactivateDate = $curRow['suspend_until'];
 					$branchCode     = $curRow['branchcode'];
 
@@ -617,7 +620,7 @@ EOD;
 					$curHold['recordId']              = $bibId;
 					$curHold['shortId']               = $bibId;
 					$curHold['holdSource']            = 'ILS';
-					$curHold['itemId']                = $curRow['itemnumber']; //TODO: verify this is really an item id (by db documentation, I'm pretty sure)
+					$curHold['itemId']                = $curRow['itemnumber'];
 					$curHold['title']                 = $curRow['title'];
 					$curHold['author']                = $curRow['author'];
 					$curHold['create']                = strtotime($createDate);
@@ -628,14 +631,13 @@ EOD;
 					$curHold['location']              = $branchCode;
 					$curHold['currentPickupName']     = $branchCode;
 					$curHold['position']              = $curRow['priority'];
-					$curHold['cancelId']              = $curRow['reserve_id'];//$curRow['reservenumber'];
+					$curHold['cancelId']              = $curRow['reserve_id'];
 					$curHold['cancelable']            = true;
 					$curHold['locationUpdateable']    = false;
 					$curHold['frozen']                = false;
 					$curHold['freezeable']            = false;
 
-
-
+					// Status messages for Koha
 					switch ($curRow['found']){
 						case 'S':
 							$curHold['status']     = "Frozen";
@@ -661,12 +663,37 @@ EOD;
 					}
 
 					$curPickupBranch       = new Location();
-					$curPickupBranch->code = $branchCode;
+					$curPickupBranch->whereAdd("code = '{$branchCode}'");
+					$curPickupBranch->whereAdd( 'validHoldPickupBranch = 1 OR validHoldPickupBranch = 2');
+					// TODO: Aspencat specific -- should move this to aspencat driver.
+					// https://marmot.myjetbrains.com/youtrack/issue/D-3120
+					// For Aspencat locations with a sublocation code should display the library district as the pickup location
+					// all others should display the location.
 					if ($curPickupBranch->find(true)){
 						$curPickupBranch->fetch();
-						$curHold['currentPickupId']   = $curPickupBranch->locationId;
-						$curHold['currentPickupName'] = $curPickupBranch->displayName;
-						$curHold['location']          = $curPickupBranch->displayName;
+						// check the sublocation for a value.
+						if(isset($curPickupBranch->subLocation) && $curPickupBranch->subLocation != '') {
+							// if it's a sublocation, use the library settings for the pickup location
+							$library = new Library();
+							$library->libraryId = $curPickupBranch->libraryId;
+							if($library->find(true)) {
+								$library->fetch();
+								$curHold['currentPickupId']   = $curPickupBranch->locationId;
+								$curHold['currentPickupName'] = $library->displayName;
+								$curHold['location']          = $library->displayName;
+							} else {
+								// TODO: Don't really need this as a location must belong to a library.
+								// Keeping it just in case.
+								$curHold['currentPickupId']   = $curPickupBranch->locationId;
+								$curHold['currentPickupName'] = $curPickupBranch->displayName;
+								$curHold['location']          = $curPickupBranch->displayName;
+							}
+						} else {
+							// not a sublocation, use the location settings.
+							$curHold['currentPickupId']   = $curPickupBranch->locationId;
+							$curHold['currentPickupName'] = $curPickupBranch->displayName;
+							$curHold['location']          = $curPickupBranch->displayName;
+						}
 					}
 
 					if (!empty($bibId)){
@@ -747,7 +774,7 @@ EOD;
 		}
 
 		if ($this->dbConnection != null){
-			mysqli_close($this->dbConnection);
+			@mysqli_close($this->dbConnection);
 		}
 	}
 

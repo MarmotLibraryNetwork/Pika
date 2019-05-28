@@ -2,7 +2,7 @@
 /**
  * Record Driver to Handle the display of eContent that is stored in the ILS, but accessed
  *
- * @category VuFind-Plus 
+ * @category Pika
  * @author Mark Noble <mark@marmot.org>
  * Date: 2/7/14
  * Time: 9:48 AM
@@ -14,13 +14,6 @@ class ExternalEContentDriver extends BaseEContentDriver{
 		return array('external');
 	}
 
-	function getRecordUrl(){
-		global $configArray;
-		$recordId = $this->getUniqueID();
-
-		return $configArray['Site']['path'] . '/ExternalEContent/' . $recordId;
-	}
-
 	function isItemAvailable($itemId, $totalCopies){
 		return true;
 	}
@@ -28,38 +21,38 @@ class ExternalEContentDriver extends BaseEContentDriver{
 		return false;
 	}
 	// This function is not called anywhere. pascal 7-17-2018
-	function isLocalItem($locationCode, $eContentFieldData){
-		return $this->isLibraryItem($locationCode, $eContentFieldData);
-	}
+//	function isLocalItem($locationCode, $eContentFieldData){
+//		return $this->isLibraryItem($locationCode, $eContentFieldData);
+//	}
 
 	// This function is not called anywhere. pascal 7-17-2018
-	function isLibraryItem($locationCode, $eContentFieldData){
-		$sharing = $this->getSharing($locationCode, $eContentFieldData);
-		if ($sharing == 'shared'){
-			return true;
-		}else if ($sharing == 'library'){
-			$searchLibrary = Library::getSearchLibrary();
-			if ($searchLibrary == null
-				|| $searchLibrary->econtentLocationsToInclude == 'all'
-				|| strlen($searchLibrary->econtentLocationsToInclude) == 0
-				|| $searchLibrary->includeOutOfSystemExternalLinks
-				|| (strlen($searchLibrary->ilsCode) > 0 && strpos($locationCode, $searchLibrary->ilsCode) === 0)){
-				// TODO: econtentLocationsToInclude setting no longer in use. plb 5-17-2016
-				// TODO: I think using the ilsCode here is obsolete also pascal 7-17-2018
-				return true;
-			}else{
-				return false;
-			}
-		}else{
-			$searchLibrary = Library::getSearchLibrary();
-			$searchLocation = Location::getSearchLocation();
-			if ($searchLibrary == null || $searchLibrary->includeOutOfSystemExternalLinks || strpos($locationCode, $searchLocation->code) === 0){
-				return true;
-			}else{
-				return false;
-			}
-		}
-	}
+//	function isLibraryItem($locationCode, $eContentFieldData){
+//		$sharing = $this->getSharing($locationCode, $eContentFieldData);
+//		if ($sharing == 'shared'){
+//			return true;
+//		}else if ($sharing == 'library'){
+//			$searchLibrary = Library::getSearchLibrary();
+//			if ($searchLibrary == null
+//				|| $searchLibrary->econtentLocationsToInclude == 'all'
+//				|| strlen($searchLibrary->econtentLocationsToInclude) == 0
+//				|| $searchLibrary->includeOutOfSystemExternalLinks
+//				|| (strlen($searchLibrary->ilsCode) > 0 && strpos($locationCode, $searchLibrary->ilsCode) === 0)){
+//				// TODO: econtentLocationsToInclude setting no longer in use. plb 5-17-2016
+//				// TODO: I think using the ilsCode here is obsolete also pascal 7-17-2018
+//				return true;
+//			}else{
+//				return false;
+//			}
+//		}else{
+//			$searchLibrary = Library::getSearchLibrary();
+//			$searchLocation = Location::getSearchLocation();
+//			if ($searchLibrary == null || $searchLibrary->includeOutOfSystemExternalLinks || strpos($locationCode, $searchLocation->code) === 0){
+//				return true;
+//			}else{
+//				return false;
+//			}
+//		}
+//	}
 
 	function isValidForUser($locationCode, $eContentFieldData){
 		$sharing = $this->getSharing($locationCode, $eContentFieldData);
@@ -100,6 +93,10 @@ class ExternalEContentDriver extends BaseEContentDriver{
 		}
 	}
 
+	protected function isValidProtectionType($protectionType) {
+		return in_array(strtolower($protectionType), $this->getValidProtectionTypes());
+	}
+
 	public function getMoreDetailsOptions(){
 		global $interface;
 
@@ -118,9 +115,9 @@ class ExternalEContentDriver extends BaseEContentDriver{
 		$moreDetailsOptions = $this->getBaseMoreDetailsOptions($isbn);
 
 		$moreDetailsOptions['copies'] = array(
-			'label' => 'Copies',
-			'body' => $interface->fetch('ExternalEContent/view-items.tpl'),
-			'openByDefault' => true
+			'label'         => 'Copies',
+			'body'          => $interface->fetch('ExternalEContent/view-items.tpl'),
+			'openByDefault' => true,
 		);
 
 		$notes = $this->getNotes();
@@ -130,22 +127,22 @@ class ExternalEContentDriver extends BaseEContentDriver{
 
 		$moreDetailsOptions['moreDetails'] = array(
 			'label' => 'More Details',
-			'body' => $interface->fetch('ExternalEContent/view-more-details.tpl'),
+			'body'  => $interface->fetch('ExternalEContent/view-more-details.tpl'),
 		);
 
 		$this->loadSubjects();
-		$moreDetailsOptions['subjects'] = array(
-				'label' => 'Subjects',
-				'body' => $interface->fetch('Record/view-subjects.tpl'),
+		$moreDetailsOptions['subjects']  = array(
+			'label' => 'Subjects',
+			'body'  => $interface->fetch('Record/view-subjects.tpl'),
 		);
 		$moreDetailsOptions['citations'] = array(
 			'label' => 'Citations',
-			'body' => $interface->fetch('Record/cite.tpl'),
+			'body'  => $interface->fetch('Record/cite.tpl'),
 		);
 		if ($interface->getVariable('showStaffView')){
 			$moreDetailsOptions['staff'] = array(
 				'label' => 'Staff View',
-				'body' => $interface->fetch($this->getStaffView()),
+				'body'  => $interface->fetch($this->getStaffView()),
 			);
 		}
 
@@ -156,7 +153,21 @@ class ExternalEContentDriver extends BaseEContentDriver{
 		return $this->profileType;
 	}
 
-	function getModuleName(){
+	function getRecordUrl(){
+		global $configArray;
+		$recordId = $this->getUniqueID();
+
+		return $configArray['Site']['path'] . '/' . $this->getModule() . '/' . $recordId;
+	}
+
+	function getAbsoluteUrl(){
+		global $configArray;
+		$recordId = $this->getUniqueID();
+
+		return $configArray['Site']['url'] . '/' . $this->getModule() . '/' . $recordId;
+	}
+
+	function getModule(){
 		return 'ExternalEContent';
 	}
 
@@ -183,36 +194,36 @@ class ExternalEContentDriver extends BaseEContentDriver{
 		}
 		return $formats;
 	}
-
+	//TODO: doesn't get used, should it?
 	function getEContentFormat($fileOrUrl, $iType){
 		return mapValue('econtent_itype_format', $iType);
 	}
 
-	/**
-	 * @param string $itemId
-	 * @param string $fileOrUrl
-	 * @param string|null $acsId
-	 * @return array
-	 */
-	function getActionsForItem($itemId, $fileOrUrl, $acsId){
-		$actions = array();
-		$title = translate('externalEcontent_url_action');
-		if (strlen($fileOrUrl) > 0){
-			if (strlen($fileOrUrl) >= 3){
-				$extension =strtolower(substr($fileOrUrl, strlen($fileOrUrl), 3));
-				if ($extension == 'pdf'){
-					$title = 'Access PDF';
-				}
-			}
-			$actions[] = array(
-				'url' => $fileOrUrl,
-				'title' => $title,
-				'requireLogin' => false,
-			);
-		}
-
-		return $actions;
-	}
+//	/**
+//	 * @param string $itemId
+//	 * @param string $fileOrUrl
+//	 * @param string|null $acsId
+//	 * @return array
+//	 */
+//	function getActionsForItem($itemId, $fileOrUrl, $acsId){
+//		$actions = array();
+//		$title   = translate('externalEcontent_url_action');
+//		if (!empty($fileOrUrl)){
+//			if (strlen($fileOrUrl) >= 3){
+//				$extension = strtolower(substr($fileOrUrl, strlen($fileOrUrl), 3));
+//				if ($extension == 'pdf'){
+//					$title = 'Access PDF';
+//				}
+//			}
+//			$actions[] = array(
+//				'url'          => $fileOrUrl,
+//				'title'        => $title,
+//				'requireLogin' => false,
+//			);
+//		}
+//
+//		return $actions;
+//	}
 
 	public function getItemActions($itemInfo){
 		return $this->createActionsFromUrls($itemInfo['relatedUrls']);
@@ -222,7 +233,7 @@ class ExternalEContentDriver extends BaseEContentDriver{
 		return $this->createActionsFromUrls($relatedUrls);
 	}
 
-	function createActionsFromUrls($relatedUrls){
+	private function createActionsFromUrls($relatedUrls){
 		$actions = array();
 		foreach ($relatedUrls as $urlInfo){
 			//Revert to access online per Karen at CCU.  If people want to switch it back, we can add a per library switch

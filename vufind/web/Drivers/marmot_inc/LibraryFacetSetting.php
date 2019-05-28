@@ -9,7 +9,7 @@ class LibraryFacetSetting extends FacetSetting {
 		$library = new Library();
 		$library->orderBy('displayName');
 		if (UserAccount::userHasRole('libraryAdmin') || UserAccount::userHasRole('libraryManager')){
-			$homeLibrary = Library::getPatronHomeLibrary();
+			$homeLibrary        = Library::getPatronHomeLibrary();
 			$library->libraryId = $homeLibrary->libraryId;
 		}
 		$library->find();
@@ -17,8 +17,8 @@ class LibraryFacetSetting extends FacetSetting {
 			$libraryList[$library->libraryId] = $library->displayName;
 		}
 
-		$structure = parent::getObjectStructure();
-		$structure['libraryId'] = array('property'=>'libraryId', 'type'=>'enum', 'values'=>$libraryList, 'label'=>'Library', 'description'=>'The id of a library');
+		$structure              = parent::getObjectStructure();
+		$structure['libraryId'] = array('property' => 'libraryId', 'type' => 'enum', 'values' => $libraryList, 'label' => 'Library', 'description' => 'The id of a library');
 
 		return $structure;
 	}

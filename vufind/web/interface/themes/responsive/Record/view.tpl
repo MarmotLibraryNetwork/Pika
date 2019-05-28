@@ -50,7 +50,6 @@
 					{/if}
 
 					<div class="row">
-
 						<div id="record-details-column" class="col-xs-12 col-sm-12 col-md-9">
 							{include file="Record/view-title-details.tpl"}
 						</div>

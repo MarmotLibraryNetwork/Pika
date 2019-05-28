@@ -185,8 +185,8 @@ class API_ArchiveAPI extends Action {
 				$dplaDoc['place'] = $dplaRelatedPlaces;
 			}
 
-			// Subjects
-			$subjects = $record->getAllSubjectHeadings(false); // DPLA does not want the title included as a subject
+			// Primary Subjects
+			$subjects = $record->getAllSubjectHeadings(false, 0); // DPLA does not want the title included as a subject
 			// Marmot wants related Collections included in the subjects
 			if (empty($subjects)) {
 				$subjects = $dplaRelations;
@@ -194,25 +194,40 @@ class API_ArchiveAPI extends Action {
 				$subjects = array_keys($subjects);
 				$subjects = array_merge($subjects, $dplaRelations);
 			}
-			$dplaDoc['subject'] = $subjects;
 
-			// Publishers
+			// Add Persons that are Publishers & Related People as DPLA Subjects
 			$publishers     = array();
 			$relatedPeople = $record->getRelatedPeople();
 			foreach ($relatedPeople as $relatedPerson){
 				if ($relatedPerson['role'] == 'publisher'){
 					$publishers[] = $relatedPerson['label'];
+				} else {
+					// Include related Entities as Subjects
+					$subjects[] = $relatedPerson['label'];
 				}
 			}
+
+			// Add organizations that are Publishes & related organizations as DPLA Subjects
 			$relatedOrganizations = $record->getRelatedOrganizations();
 			foreach ($relatedOrganizations as $relatedOrganization){
 				if ($relatedOrganization['role'] == 'publisher'){
 					$publishers[] = $relatedOrganization['label'];
+				} else {
+					// Include related Entities as Subjects
+					$subjects[]  = $relatedOrganization['label'];
 				}
 			}
 			if (count($publishers) > 0){
 				$dplaDoc['publisher'] = $publishers;
 			}
+
+			// Events as DPLA subjects
+			$relatedEvents = $record->getRelatedEvents();
+			foreach ($relatedEvents as $relatedEvent){
+				$subjects[] = $relatedEvent['label'];
+			}
+
+			$dplaDoc['subject'] = $subjects;
 
 			$dplaDocs[] = $dplaDoc;
 		}

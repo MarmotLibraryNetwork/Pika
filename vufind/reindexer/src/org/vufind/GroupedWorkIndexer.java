@@ -841,7 +841,7 @@ public class GroupedWorkIndexer {
 					insertVariableStmt.close();
 				}
 			} catch (Exception e) {
-				logger.error("Error setting last grouping time", e);
+				logger.error("Error setting last partial reindexing time", e);
 			}
 		}
 	}
@@ -905,7 +905,7 @@ public class GroupedWorkIndexer {
 				insertVariableStmt.close();
 			}
 		}catch (Exception e){
-			logger.error("Error setting last grouping time", e);
+			logger.error("Error setting last full reindex time", e);
 		}
 	}
 

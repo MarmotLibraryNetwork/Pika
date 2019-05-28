@@ -1,6 +1,7 @@
 <?php
 /**
- * Record Driver to handle loading data for Hoopla Records
+ * eContent Record Driver to handle data for Side Loaded collections.
+ * Each side loaded collection is specified by an indexing profile stored in the database.
  *
  * @category Pika
  * @author Mark Noble <mark@marmot.org>
@@ -8,30 +9,8 @@
  * Time: 10:50 AM
  */
 
-require_once ROOT_DIR . '/RecordDrivers/ExternalEContentDriver.php';
-class SideLoadedRecord extends ExternalEContentDriver {
-	/**
-	 * Constructor.  We build the object using data from the Side-loaded records stored on disk.
-	 * Will be similar to a MarcRecord with slightly different functionality
-	 *
-	 * @param array|File_MARC_Record|string $record
-	 * @param  GroupedWork $groupedWork;
-	 * @access  public
-	 */
-	public function __construct($record, $groupedWork = null) {
-		parent::__construct($record, $groupedWork);
-	}
-
-	function getRecordUrl(){
-		global $configArray;
-		$recordId = $this->getUniqueID();
-
-		/** @var IndexingProfile[] $indexingProfiles */
-		global $indexingProfiles;
-		$indexingProfile = $indexingProfiles[$this->profileType];
-
-		return $configArray['Site']['path'] . "/{$indexingProfile->recordUrlComponent}/$recordId";
-	}
+require_once ROOT_DIR . '/RecordDrivers/BaseEContentDriver.php';
+class SideLoadedRecord extends BaseEContentDriver {
 
 	public function getMoreDetailsOptions(){
 		global $interface;
@@ -83,7 +62,37 @@ class SideLoadedRecord extends ExternalEContentDriver {
 		return $this->filterAndSortMoreDetailsOptions($moreDetailsOptions);
 	}
 
+	/**
+	 * Return the unique identifier of this record within the Solr index;
+	 * useful for retrieving additional information (like tags and user
+	 * comments) from the external MySQL database.
+	 *
+	 * @access  public
+	 * @return  string              Unique identifier.
+	 */
+	public function getShortId(){
+		return $this->id;
+	}
+
 	protected function getRecordType(){
 		return $this->profileType;
 	}
+
+	function getNumHolds(){
+		return 0;
+	}
+
+	function getFormats(){
+		return $this->getFormat();
+	}
+
+	/**
+	 * This method is strictly for Physical Records.
+	 * This overwrites functionality in the Marc Record Driver
+	 * @return bool
+	 */
+	public function hasOpacFieldMessage(){
+		return false;
+	}
+
 }

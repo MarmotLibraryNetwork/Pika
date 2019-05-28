@@ -8,7 +8,7 @@ PIKASERVER=aspencat.production
 PIKADBNAME=pika
 OUTPUT_FILE="/var/log/vufind-plus/${PIKASERVER}/full_update_output.log"
 
-MINFILE1SIZE=$((1060000000))
+MINFILE1SIZE=$((999000000))
 
 # Check for conflicting processes currently running
 function checkConflictingProcesses() {
@@ -46,8 +46,7 @@ rm /data/vufind-plus/${PIKASERVER}/grouped_work_primary_identifiers.sql
 cd /usr/local/vufind-plus/sites/${PIKASERVER}; ./${PIKASERVER}.sh restart
 
 #Extract from Hoopla
-# No Aspencat libraries use hoopla, no need to copy them
-#cd /usr/local/vufind-plus/vufind/cron;./GetHooplaFromMarmot.sh >> ${OUTPUT_FILE}
+cd /usr/local/vufind-plus/vufind/cron;./GetHooplaFromMarmot.sh >> ${OUTPUT_FILE}
 
 #Unite for Literacy
 /usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} aspencat/unite_literacy unite_literacy/aspencat >> ${OUTPUT_FILE}
@@ -74,9 +73,6 @@ if [ "${DAYOFWEEK}" -eq 6 ];then
 	cd /usr/local/vufind-plus/vufind/overdrive_api_extract/
 	nice -n -10 java -server -XX:+UseG1GC -jar overdrive_extract.jar ${PIKASERVER} fullReload >> ${OUTPUT_FILE}
 fi
-
-## Copy Export from ILS
-#/usr/local/vufind-plus/sites/${PIKASERVER}/copyExport.sh >> ${OUTPUT_FILE}
 
 #Fetch Deletions
 cd /usr/local/vufind-plus/vufind/koha_export/;java -server -XX:+UseG1GC -jar koha_export.jar ${PIKASERVER} getDeletedBibs >> ${OUTPUT_FILE}

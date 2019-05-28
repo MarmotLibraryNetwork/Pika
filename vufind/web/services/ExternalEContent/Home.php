@@ -91,16 +91,13 @@ class ExternalEContent_Home extends Action{
 			// Set Show in Main Details Section options for templates
 			// (needs to be set before moreDetailsOptions)
 			global $library;
-			foreach ($library->showInMainDetails as $detailoption) {
-				$interface->assign($detailoption, true);
+			foreach ($library->showInMainDetails as $detailOption) {
+				$interface->assign($detailOption, true);
 			}
 
 			$interface->assign('moreDetailsOptions', $recordDriver->getMoreDetailsOptions());
 
 			$interface->assign('semanticData', json_encode($recordDriver->getSemanticData()));
-
-			//Load Staff Details
-			$interface->assign('staffDetails', $recordDriver->getStaffView());
 
 			// Display Page
 			$this->display('view.tpl', $recordDriver->getTitle());

@@ -2369,31 +2369,31 @@ class GroupedWorkDriver extends RecordInterface{
 	}
 
 	public function getSubjects(){
-		global  $library,
-						$interface;
+		global $library,
+		       $interface;
 
-		$subjects = array();
-		$otherSubjects = array();
-		$lcSubjects = array();
-		$bisacSubjects = array();
+		$subjects         = array();
+		$otherSubjects    = array();
+		$lcSubjects       = array();
+		$bisacSubjects    = array();
 		$oclcFastSubjects = array();
-		$localSubjects = array();
+		$localSubjects    = array();
 
-		if (!empty($this->fields['lc_subject'])) {
+		if (!empty($this->fields['lc_subject'])){
 			$lcSubjects = $this->fields['lc_subject'];
 			$subjects   = array_merge($subjects, $this->fields['lc_subject']);
 		}
 
-		if (!empty($this->fields['bisac_subject'])) {
+		if (!empty($this->fields['bisac_subject'])){
 			$bisacSubjects = $this->fields['bisac_subject'];
 			$subjects      = array_merge($subjects, $this->fields['bisac_subject']);
 		}
 
-		if (!empty($this->fields['topic_facet'])) {
+		if (!empty($this->fields['topic_facet'])){
 			$subjects = array_merge($subjects, $this->fields['topic_facet']);
 		}
 
-		if (!empty($this->fields['subject_facet'])) {
+		if (!empty($this->fields['subject_facet'])){
 			$subjects = array_merge($subjects, $this->fields['subject_facet']);
 		}
 
@@ -2417,19 +2417,19 @@ class GroupedWorkDriver extends RecordInterface{
 		$interface->assign('showFastAddSubjects', $library->showFastAddSubjects);
 		$interface->assign('showOtherSubjects', $library->showOtherSubjects);
 
-		if ($library->showLCSubjects) {
+		if ($library->showLCSubjects){
 			natcasesort($lcSubjects);
 			$interface->assign('lcSubjects', $lcSubjects);
 		}
-		if ($library->showBisacSubjects) {
+		if ($library->showBisacSubjects){
 			natcasesort($bisacSubjects);
 			$interface->assign('bisacSubjects', $bisacSubjects);
 		}
-		if ($library->showFastAddSubjects) {
+		if ($library->showFastAddSubjects){
 			natcasesort($oclcFastSubjects);
 			$interface->assign('oclcFastSubjects', $oclcFastSubjects);
 		}
-		if ($library->showOtherSubjects) {
+		if ($library->showOtherSubjects){
 			natcasesort($otherSubjects);
 			$interface->assign('otherSubjects', $otherSubjects);
 		}
@@ -2837,7 +2837,7 @@ class GroupedWorkDriver extends RecordInterface{
 	 * @param array       $activePTypes
 	 * @param Location    $searchLocation
 	 * @param Library     $library
-	 * @param bool       $forCovers
+	 * @param bool        $forCovers
 	 * @return array
 	 */
 	//TODO: this function should be optimized much more when loading for covers
@@ -3186,6 +3186,12 @@ class GroupedWorkDriver extends RecordInterface{
 		$recordId = $this->getUniqueID();
 
 		return $configArray['Site']['path'] . '/GroupedWork/' . urlencode($recordId) . '/Home';
+	}
+
+	public function getAbsoluteUrl() {
+		global $configArray;
+		$recordId = $this->getUniqueID();
+		return $configArray['Site']['url'] . '/' . $this->getModule() . '/' . urlencode($recordId) . '/Home';
 	}
 
 	public function getModule() {

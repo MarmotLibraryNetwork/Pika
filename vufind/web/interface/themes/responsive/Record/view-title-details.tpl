@@ -78,12 +78,12 @@
 	{/if}
 
 	{if $showFormats}
-	<div class="row">
-		<div class="result-label col-sm-4">{translate text='Format'}:</div>
-		<div class="col-sm-8 result-value">
-			{implode subject=$recordFormat glue=", "}
+		<div class="row">
+			<div class="result-label col-sm-4">{translate text='Format'}:</div>
+			<div class="col-sm-8 result-value">
+				{implode subject=$recordDriver->getFormat() glue=", "}
+			</div>
 		</div>
-	</div>
 	{/if}
 
 	{if $showEditions && $recordDriver->getEdition()}
@@ -141,10 +141,10 @@
 		</div>
 	{/if}
 
-	{if $mpaaRating}
+	{if $recordDriver->getMPAARating()}
 		<div class="row">
 			<div class="result-label col-sm-4">{translate text='Rating'}:</div>
-			<div class="col-sm-8 result-value">{$mpaaRating|escape}</div>
+			<div class="col-sm-8 result-value">{$recordDriver->getMPAARating()|escape}</div>
 		</div>
 	{/if}
 

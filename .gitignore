@@ -118,6 +118,10 @@ documentation/~*.tmp
 ########################
 *.min.min.js
 
+# Compiled DPLA Feed #
+######################
+dplaFeed.json
+
 # Marmot Symbolic Links #
 #########################
 sites/*.marmot.org

@@ -21,12 +21,10 @@ class SubBrowseCategories extends DB_DataObject {
 	static function getObjectStructure(){
 		$browseCategoryList = self::listBrowseCategories();
 		$structure = array(
-			'id' => array('property'=>'id', 'type'=>'label', 'label'=>'Id', 'description'=>'The unique id of the sub-category row within the database'),
-			'browseCategoryId' => array('property'=>'browseCategoryId', 'type'=>'label', 'label'=>'Browse Category', 'description'=>'The parent browse category'),
-//			'browseCategoryId' => array('property'=>'browseCategoryId', 'type'=>'enum', 'values'=>$browseCategoryList, 'label'=>'Browse Category', 'description'=>'The parent browse category'),
-			'subCategoryId'    => array('property'=>'subCategoryId', 'type'=>'enum', 'values'=>$browseCategoryList, 'label'=>'Sub-Category', 'description'=>'The sub-category of the parent browse category'),
-			'weight' => array('property' => 'weight', 'type' => 'numeric', 'label' => 'Weight', 'weight' => 'Defines the order of the sub-categories .  Lower weights are displayed to the left of the screen.', 'required'=> true),
-
+			'id'               => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id of the sub-category row within the database'),
+			'browseCategoryId' => array('property' => 'browseCategoryId', 'type' => 'label', 'label' => 'Browse Category', 'description' => 'The parent browse category'),
+			'subCategoryId'    => array('property' => 'subCategoryId', 'type' => 'enum', 'values' => $browseCategoryList, 'label' => 'Sub-Category', 'description' => 'The sub-category of the parent browse category'),
+			'weight'           => array('property' => 'weight', 'type' => 'numeric', 'label' => 'Weight', 'weight' => 'Defines the order of the sub-categories .  Lower weights are displayed to the left of the screen.', 'required' => true),
 		);
 		return $structure;
 	}

@@ -718,7 +718,7 @@ class GoDeeperData{
 		global $configArray;
 		$interface->assign('recordType', $recordType);
 		$id = !empty($_REQUEST['id']) ? $_REQUEST['id'] : $_GET['id'];
-		// TODO: request id is not always set here. a quick of static call
+		// TODO: request id is not always set here. a quirk of static call
 		$interface->assign('id', $id);
 		$interface->assign('isbn', $isbn);
 		$interface->assign('upc', $upc);

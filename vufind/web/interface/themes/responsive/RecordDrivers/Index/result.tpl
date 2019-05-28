@@ -1,5 +1,5 @@
 {strip}
-{* //QUESTION: is this Depricated *}
+{* //TODO: QUESTION: is this Depricated? *}
 <div id="record{if $summShortId}{$summShortId}{else}{$summId|escape}{/if}" class="resultsList row">
 	<div class="imageColumn col-md-3">
 		<div class="row">

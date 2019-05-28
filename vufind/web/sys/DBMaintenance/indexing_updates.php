@@ -397,6 +397,13 @@ function getIndexingUpdates() {
 				"ALTER TABLE ptype ADD COLUMN label VARCHAR(60) NULL",
 			)
 		),
+		'refactor_hoopla_record_driver' => array(
+			'title'       => 'Change Hoopla Record Driver Name',
+			'description' => 'Change the name of the Hoopla Record Driver in the Hoopla indexing profile',
+			'sql'         => array(
+				"UPDATE indexing_profiles  SET `recordDriver`='HooplaRecordDriver' WHERE name = 'hoopla'",
+			),
+		),
 
 	);
 }
@@ -475,7 +482,7 @@ function setupIndexingProfiles($update){
 	$hooplaIndexingProfile->individualMarcPath = $configArray['Hoopla']['individualMarcPath'];
 	$hooplaIndexingProfile->groupingClass = 'HooplaRecordGrouper';
 	$hooplaIndexingProfile->indexingClass = 'Hoopla';
-	$hooplaIndexingProfile->recordDriver = 'HooplaDriver';
+	$hooplaIndexingProfile->recordDriver = 'HooplaRecordDriver';
 	$hooplaIndexingProfile->recordUrlComponent = 'Hoopla';
 	$hooplaIndexingProfile->formatSource = 'bib';
 	$hooplaIndexingProfile->recordNumberTag = '001';

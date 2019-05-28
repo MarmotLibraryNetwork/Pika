@@ -2,8 +2,8 @@
 	{* Display more information about the title*}
 	{if $recordDriver->getAuthor()}
 		<div class="row">
-			<div class="result-label col-sm-3">Author: </div>
-			<div class="col-sm-9 result-value">
+			<div class="result-label col-sm-4">Author: </div>
+			<div class="col-sm-8 result-value">
 				<a href='{$path}/Author/Home?author="{$recordDriver->getAuthor()|escape:"url"}"'>{$recordDriver->getAuthor()|highlight}</a>
 			</div>
 		</div>
@@ -12,8 +12,8 @@
 	{assign var=series value=$recordDriver->getSeries()}
 	{if $series}
 		<div class="series row">
-			<div class="result-label col-sm-3">Series: </div>
-			<div class="col-sm-9 result-value">
+			<div class="result-label col-sm-4">Series: </div>
+			<div class="col-sm-8 result-value">
 				{if is_array($series) && !isset($series.seriesTitle)}
 					{foreach from=$series item=seriesItem name=loop}
 						<a href="{$path}/Search/Results?basicType=Series&lookfor=%22{$seriesItem.seriesTitle|removeTrailingPunctuation|escape:"url"}%22">{$seriesItem.seriesTitle|removeTrailingPunctuation|escape}</a>{if $seriesItem.volume} volume {$seriesItem.volume}{/if}<br/>
@@ -27,8 +27,8 @@
 
 	{if $showPublicationDetails && $recordDriver->getPublicationDetails()}
 		<div class="row">
-			<div class="result-label col-sm-3">{translate text='Published'}:</div>
-			<div class="col-sm-9 result-value">
+			<div class="result-label col-sm-4">{translate text='Published'}:</div>
+			<div class="col-sm-8 result-value">
 				{implode subject=$recordDriver->getPublicationDetails() glue=", "}
 			</div>
 		</div>
@@ -36,8 +36,8 @@
 
 	{if $showFormats}
 		<div class="row">
-			<div class="result-label col-sm-3">{translate text='Format'}:</div>
-			<div class="col-sm-9 result-value">
+			<div class="result-label col-sm-4">{translate text='Format'}:</div>
+			<div class="col-sm-8 result-value">
 				{implode subject=$recordDriver->getFormats() glue=", "}
 			</div>
 		</div>
@@ -45,8 +45,8 @@
 
 	{if $showEditions && $recordDriver->getEdition()}
 		<div class="row">
-			<div class="result-label col-sm-3">{translate text='Edition'}:</div>
-			<div class="col-sm-9 result-value">
+			<div class="result-label col-sm-4">{translate text='Edition'}:</div>
+			<div class="col-sm-8 result-value">
 				{implode subject=$recordDriver->getEdition() glue=", "}
 			</div>
 		</div>
@@ -54,9 +54,19 @@
 
 	{if $showISBNs && count($recordDriver->getISBNs()) > 0}
 		<div class="row">
-			<div class="result-label col-sm-3">{translate text='ISBN'}:</div>
-			<div class="col-sm-9 result-value">
+			<div class="result-label col-sm-4">{translate text='ISBN'}:</div>
+			<div class="col-sm-8 result-value">
 				{implode subject=$recordDriver->getISBNs() glue=", "}
+			</div>
+		</div>
+	{/if}
+
+	{if $showPhysicalDescriptions && $recordDriver->getPhysicalDescriptions()}
+		<div class="row">
+			{* Use a different label for Econtent Views *}
+			<div class="result-label col-sm-4">{translate text='Content Description'}:</div>
+			<div class="col-sm-8 result-value">
+				{implode subject=$recordDriver->getPhysicalDescriptions() glue=", "}
 			</div>
 		</div>
 	{/if}
@@ -81,16 +91,26 @@
 
 	{if $showFountasPinnell && $recordDriver->getFountasPinnellLevel()}
 		<div class="row">
-			<div class="result-label col-sm-3">{translate text='Fountas &amp; Pinnell'}:</div>
-			<div class="col-sm-9 result-value">
+			<div class="result-label col-sm-4">{translate text='Fountas &amp; Pinnell'}:</div>
+			<div class="col-sm-8 result-value">
 				{$recordDriver->getFountasPinnellLevel()|escape}
 			</div>
 		</div>
 	{/if}
 
+	{if $recordDriver->getMPAARating()}
+		<div class="row">
+			<div class="result-label col-sm-4">{translate text='Rating'}:</div>
+			<div class="col-sm-8 result-value">{$recordDriver->getMPAARating()|escape}</div>
+		</div>
+	{/if}
+
+	{* Detailed status information *}
 	<div class="row">
-		<div class="result-label col-sm-3">{translate text='Status'}:</div>
-		<div class="col-sm-9 result-value result-value-bold statusValue here" id="statusValue">Available Online</div>
+		<div class="result-label col-sm-4">{translate text='Status'}:</div>
+		<div class="col-sm-8 result-value result-value-bold statusValue here" id="statusValue">
+			Available Online
+		</div>
 	</div>
 
 {/strip}
