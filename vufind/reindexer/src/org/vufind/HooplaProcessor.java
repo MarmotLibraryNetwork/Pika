@@ -368,4 +368,15 @@ class HooplaProcessor extends MarcRecordProcessor {
 			scopingInfo.setLocalUrl(result.localUrl);
 		}
 	}
+
+	protected void loadTitles(GroupedWorkSolr groupedWork, Record record, String format, String identifier) {
+		//title (full title done by index process by concatenating short and subtitle
+		Set<String> titleTags = MarcUtil.getFieldList(record, "245a");
+		if (titleTags.size() > 1) {
+			logger.warn("More than 1 245a title tag for Hoopla record : " + identifier);
+		}
+		super.loadTitles(groupedWork, record, format, identifier);
+	}
+
+
 }
