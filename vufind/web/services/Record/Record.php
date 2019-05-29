@@ -56,7 +56,7 @@ abstract class Record_Record extends Action
 		global $configArray;
 		global $timer;
 
-		$interface->assign('page_body_style', 'sidebar_left');
+//		$interface->assign('page_body_style', 'sidebar_left');
 
 		//Load basic information needed in subclasses
 		if ($record_id == null || !isset($record_id)){
@@ -76,15 +76,13 @@ abstract class Record_Record extends Action
 		//Check to see if the record exists within the resources table
 		$this->recordDriver = RecordDriverFactory::initRecordDriverById($this->source . ':' . $this->id);
 		if (is_null($this->recordDriver) || !$this->recordDriver->isValid()){  // initRecordDriverById itself does a validity check and returns null if not.
-			$this->display('invalidRecord.tpl', 'Invalid Record');
-			die();
+			$this->displayInvalidRecord();
 		}
 		$interface->assign('recordDriver', $this->recordDriver);
 
 		$groupedWork = $this->recordDriver->getGroupedWorkDriver();
 		if (is_null($groupedWork) || !$groupedWork->isValid()){  // initRecordDriverById itself does a validity check and returns null if not.
-			$this->display('invalidRecord.tpl', 'Invalid Record');
-			die();
+			$this->displayInvalidRecord();
 		}
 
 		$this->setClassicViewLinks();
@@ -216,6 +214,15 @@ abstract class Record_Record extends Action
 			$shortId = ltrim($shortId, '0');
 			$interface->assign('staffClientUrl', $configArray['Catalog']['staffClientUrl'] . '/Items/' . $shortId);
 		}
+	}
+
+	private function displayInvalidRecord(){
+		global $interface;
+		$module = $interface->getVariable('module');
+
+		$mainTemplate = $module == "Record" ? 'invalidRecord.tpl' :'../Record/invalidRecord.tpl';
+		$this->display($mainTemplate, 'Invalid Record');
+		die();
 	}
 
 }
