@@ -207,7 +207,7 @@ class HooplaProcessor extends MarcRecordProcessor {
 		//There are also not multiple formats within a record that we would need to split out.
 
 		String formatCategory = indexer.translateSystemValue("format_category_hoopla", format, identifier);
-		Long   formatBoost    = 8L; // Reasonable default value
+		long   formatBoost    = 8L; // Reasonable default value
 		String formatBoostStr = indexer.translateSystemValue("format_boost_hoopla", format, identifier);
 		if (formatBoostStr != null && !formatBoostStr.isEmpty()) {
 			formatBoost = Long.parseLong(formatBoostStr);

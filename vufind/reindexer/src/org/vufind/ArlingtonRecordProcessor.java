@@ -154,6 +154,26 @@ class ArlingtonRecordProcessor extends IIIRecordProcessor {
 		return false;
 	}
 
+	/**
+	 * Load format information for the record.  For arlington, we will load from the material type (998d)
+	 */
+	public void loadPrintFormatInformation(RecordInfo recordInfo, Record record) {
+		String matType                  = MarcUtil.getFirstFieldVal(record, sierraRecordFixedFieldsTag + materialTypeSubField);
+		String translatedFormat         = translateValue("format", matType, recordInfo.getRecordIdentifier());
+		String translatedFormatCategory = translateValue("format_category", matType, recordInfo.getRecordIdentifier());
+		recordInfo.addFormat(translatedFormat);
+		if (translatedFormatCategory != null) {
+			recordInfo.addFormatCategory(translatedFormatCategory);
+		}
+		String formatBoost = translateValue("format_boost", matType, recordInfo.getRecordIdentifier());
+		try {
+			long tmpFormatBoostLong = Long.parseLong(formatBoost);
+			recordInfo.setFormatBoost(tmpFormatBoostLong);
+		} catch (NumberFormatException e) {
+			logger.warn("Could not load format boost for format " + formatBoost + " profile " + profileType);
+		}
+	}
+
 	protected void loadUnsuppressedPrintItems(GroupedWorkSolr groupedWork, RecordInfo recordInfo, String identifier, Record record){
 		super.loadUnsuppressedPrintItems(groupedWork, recordInfo, identifier, record);
 		if (recordInfo.getNumPrintCopies() == 0){
