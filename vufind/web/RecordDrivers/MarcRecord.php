@@ -96,7 +96,7 @@ class MarcRecord extends IndexRecord
 		}
 		global $timer;
 		$timer->logTime("Base initialization of MarcRecord Driver");
-		if ($groupedWork == null){
+		if (empty($groupedWork)){
 			parent::loadGroupedWork();
 		}else{
 			$this->groupedWork = $groupedWork;
@@ -1819,11 +1819,10 @@ class MarcRecord extends IndexRecord
 		}
 	}
 
-	protected function getRecordType()
-	{
-		if ($this->profileType) {
+	protected function getRecordType(){
+		if ($this->profileType){
 			return $this->profileType;
-		} else {
+		}else{
 			return 'ils';
 		}
 	}
@@ -1831,19 +1830,18 @@ class MarcRecord extends IndexRecord
 	/**
 	 * @return File_MARC_Record
 	 */
-	public function getMarcRecord()
-	{
-		if ($this->marcRecord == null) {
+	public function getMarcRecord(){
+		if ($this->marcRecord == null){
 			disableErrorHandler();
 			try {
 				$this->marcRecord = MarcLoader::loadMarcRecordByILSId($this->getIdWithSource());
-				if (PEAR_Singleton::isError($this->marcRecord) || $this->marcRecord == false) {
-					$this->valid = false;
+				if (PEAR_Singleton::isError($this->marcRecord) || $this->marcRecord == false){
+					$this->valid      = false;
 					$this->marcRecord = false;
 				}
-			} catch (Exception $e) {
+			} catch (Exception $e){
 				//Unable to load record this happens from time to time
-				$this->valid = false;
+				$this->valid      = false;
 				$this->marcRecord = false;
 			}
 			enableErrorHandler();

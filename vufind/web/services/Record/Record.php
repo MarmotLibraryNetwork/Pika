@@ -194,29 +194,31 @@ abstract class Record_Record extends Action
 	 * that Pika is replacing.
 	 */
 	protected function setClassicViewLinks(){
-		global $configArray;
-		global $interface;
+		if ($this->source == 'ils'){
+			global $configArray;
+			global $interface;
 
-		if ($configArray['Catalog']['ils'] == 'Millennium' || $configArray['Catalog']['ils'] == 'Sierra'){
-			$classicId = substr($this->id, 1, strlen($this->id) - 2);
-			$interface->assign('classicId', $classicId);
-			$millenniumScope = $interface->getVariable('millenniumScope');
-			if (isset($configArray['Catalog']['linking_url'])){
-				$interface->assign('classicUrl', $configArray['Catalog']['linking_url'] . "/record=$classicId&amp;searchscope={$millenniumScope}");
+			if ($configArray['Catalog']['ils'] == 'Millennium' || $configArray['Catalog']['ils'] == 'Sierra'){
+				$classicId = substr($this->id, 1, strlen($this->id) - 2);
+				$interface->assign('classicId', $classicId);
+				$millenniumScope = $interface->getVariable('millenniumScope');
+				if (isset($configArray['Catalog']['linking_url'])){
+					$interface->assign('classicUrl', $configArray['Catalog']['linking_url'] . "/record=$classicId&amp;searchscope={$millenniumScope}");
+				}
+
+			}elseif ($configArray['Catalog']['ils'] == 'Koha'){
+				$interface->assign('classicId', $this->id);
+				$interface->assign('classicUrl', $configArray['Catalog']['url'] . '/cgi-bin/koha/opac-detail.pl?biblionumber=' . $this->id);
+				$interface->assign('staffClientUrl', $configArray['Catalog']['staffClientUrl'] . '/cgi-bin/koha/catalogue/detail.pl?biblionumber=' . $this->id);
+			}elseif ($configArray['Catalog']['ils'] == 'CarlX'){
+				$shortId = str_replace('CARL', '', $this->id);
+				$shortId = ltrim($shortId, '0');
+				$interface->assign('staffClientUrl', $configArray['Catalog']['staffClientUrl'] . '/Items/' . $shortId);
 			}
-
-		}elseif ($configArray['Catalog']['ils'] == 'Koha'){
-			$interface->assign('classicId', $this->id);
-			$interface->assign('classicUrl', $configArray['Catalog']['url'] . '/cgi-bin/koha/opac-detail.pl?biblionumber=' . $this->id);
-			$interface->assign('staffClientUrl', $configArray['Catalog']['staffClientUrl'] . '/cgi-bin/koha/catalogue/detail.pl?biblionumber=' . $this->id);
-		}elseif ($configArray['Catalog']['ils'] == 'CarlX'){
-			$shortId = str_replace('CARL', '', $this->id);
-			$shortId = ltrim($shortId, '0');
-			$interface->assign('staffClientUrl', $configArray['Catalog']['staffClientUrl'] . '/Items/' . $shortId);
 		}
 	}
 
-	private function displayInvalidRecord(){
+	function displayInvalidRecord(){
 		global $interface;
 		$module = $interface->getVariable('module');
 

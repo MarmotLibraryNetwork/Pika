@@ -1,5 +1,5 @@
 <?php
-define ('ROOT_DIR', __DIR__);
+define('ROOT_DIR', __DIR__);
 /**
  *
  * Copyright (C) Villanova University 2007.
@@ -23,15 +23,14 @@ require_once ROOT_DIR . '/sys/PEAR_Singleton.php';
 PEAR_Singleton::init();
 require_once ROOT_DIR . '/sys/Timer.php';
 require_once ROOT_DIR . '/sys/Logger.php';
-require_once ROOT_DIR . '/sys/BookCoverProcessor.php';
-require_once ROOT_DIR . '/sys/Proxy_Request.php';
 //Bootstrap the process
 if (!function_exists('vufind_autoloader')){
 	// Set up autoloader (needed for YAML)
-	function vufind_autoloader($class) {
+	function vufind_autoloader($class){
 		$fullClassName = str_replace('_', '/', $class) . '.php';
 		require $fullClassName;
 	}
+
 	spl_autoload_register('vufind_autoloader');
 }
 global $timer;
@@ -51,7 +50,7 @@ if (isset($configArray['System']['timings'])){
 $logger = new Logger();
 
 //Update error handling
-if ($configArray['System']['debug']) {
+if ($configArray['System']['debug']){
 	ini_set('display_errors', true);
 	error_reporting(E_ALL & ~E_DEPRECATED);
 }
@@ -60,13 +59,14 @@ date_default_timezone_set($configArray['Site']['timezone']);
 $timer->logTime("bootstrap");
 
 //Create the QR Code if it doesn't exit
-$type = $_REQUEST['type'];
-$id = $_REQUEST['id'];
+$type     = $_REQUEST['type'];
+$id       = $_REQUEST['id'];
 $filename = $configArray['Site']['qrcodePath'] . "/{$type}_{$id}.png";
 if (!file_exists($filename)){
 	include ROOT_DIR . '/sys/phpqrcode/qrlib.php';
 	$codeContents = $configArray['Site']['url'] . "/{$type}/{$id}/Home";
 	QRcode::png($codeContents, $filename, QR_ECLEVEL_L, 3);
 }
+header('Content-type: image/png');
 readfile($filename);
 $timer->writeTimings();
