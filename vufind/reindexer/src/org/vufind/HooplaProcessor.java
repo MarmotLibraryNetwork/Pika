@@ -207,7 +207,7 @@ class HooplaProcessor extends MarcRecordProcessor {
 		//There are also not multiple formats within a record that we would need to split out.
 
 		String formatCategory = indexer.translateSystemValue("format_category_hoopla", format, identifier);
-		Long   formatBoost    = 8L; // Reasonable default value
+		long   formatBoost    = 8L; // Reasonable default value
 		String formatBoostStr = indexer.translateSystemValue("format_boost_hoopla", format, identifier);
 		if (formatBoostStr != null && !formatBoostStr.isEmpty()) {
 			formatBoost = Long.parseLong(formatBoostStr);
@@ -368,4 +368,15 @@ class HooplaProcessor extends MarcRecordProcessor {
 			scopingInfo.setLocalUrl(result.localUrl);
 		}
 	}
+
+	protected void loadTitles(GroupedWorkSolr groupedWork, Record record, String format, String identifier) {
+		//title (full title done by index process by concatenating short and subtitle
+		Set<String> titleTags = MarcUtil.getFieldList(record, "245a");
+		if (titleTags.size() > 1) {
+			logger.warn("More than 1 245a title tag for Hoopla record : " + identifier);
+		}
+		super.loadTitles(groupedWork, record, format, identifier);
+	}
+
+
 }

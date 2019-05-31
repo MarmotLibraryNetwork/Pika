@@ -93,8 +93,7 @@ public class Cron {
 		
 		// Read the cron INI file to get information about the processes to run
 		Ini cronIni = loadConfigFile("config.cron.ini");
-//		File cronConfigFile = new File("../../sites/" + serverName + "/conf/config.cron.ini");
-		
+
 		//Check to see if a specific task has been specified to be run
 		ArrayList<ProcessToRun> processesToRun = new ArrayList<ProcessToRun>();
 		// The Cron INI file has a main section for processes to be run
@@ -227,7 +226,6 @@ public class Cron {
 				logger.info("Skipping Process " + processName + " because it must be run manually.");
 			}else{
 				loadLastRunTimeForProcess(newProcess);
-				String lastRun = cronIni.get(processName, "lastRun");
 
 				//Frequency is a number of hours.  See if we should run based on the last run.
 				if (newProcess.getLastRunTime() == null) {

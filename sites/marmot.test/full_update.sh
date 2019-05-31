@@ -172,6 +172,9 @@ cd /usr/local/vufind-plus/vufind/cron;./HOOPLA.sh ${PIKASERVER} >> ${OUTPUT_FILE
 # Creative Bug
 /usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} bemis/creative_bug creative_bug/bemis >> ${OUTPUT_FILE}
 
+# Elsevier
+/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} western/elsevier elsevier/western >> ${OUTPUT_FILE}
+
 #echo "finished sideload fetching"
 
 #Extracts for sideloaded eContent; settings defined in config.pwd.ini [Sideload]

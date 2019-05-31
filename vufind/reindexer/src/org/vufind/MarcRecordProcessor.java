@@ -280,7 +280,7 @@ abstract class MarcRecordProcessor {
 	}
 
 	void updateGroupedWorkSolrDataBasedOnStandardMarcData(GroupedWorkSolr groupedWork, Record record, HashSet<ItemInfo> printItems, String identifier, String format) {
-		loadTitles(groupedWork, record, format);
+		loadTitles(groupedWork, record, format, identifier);
 		loadAuthors(groupedWork, record, identifier);
 		loadSubjects(groupedWork, record);
 		/*List<DataField> seriesFields = getDataFields(record, "490");
@@ -849,7 +849,7 @@ abstract class MarcRecordProcessor {
 		groupedWork.setAuthorDisplay(displayAuthor);
 	}
 
-	private void loadTitles(GroupedWorkSolr groupedWork, Record record, String format) {
+	protected void loadTitles(GroupedWorkSolr groupedWork, Record record, String format, String identifier) {
 		//title (full title done by index process by concatenating short and subtitle
 
 		//title short
@@ -915,7 +915,7 @@ abstract class MarcRecordProcessor {
 	 *         with non-filing characters omitted. Null returned if no title can
 	 *         be found.
 	 */
-	private String getSortableTitle(Record record) {
+	protected String getSortableTitle(Record record) {
 		DataField titleField = record.getDataField("245");
 		if (titleField == null || titleField.getSubfield('a') == null)
 			return "";
