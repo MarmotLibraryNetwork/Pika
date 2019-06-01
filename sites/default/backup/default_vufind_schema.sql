@@ -866,23 +866,6 @@ CREATE TABLE IF NOT EXISTS `user_list` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `user_rating`
---
-
-CREATE TABLE IF NOT EXISTS `user_rating` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `userid` int(11) NOT NULL,
-  `resourceid` int(11) NOT NULL,
-  `rating` int(1) NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `uniqueness` (`userid`,`resourceid`),
-  KEY `Resourceid` (`resourceid`),
-  KEY `UserId` (`userid`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=60 ;
-
--- --------------------------------------------------------
-
---
 -- Table structure for table `user_reading_history`
 --
 
