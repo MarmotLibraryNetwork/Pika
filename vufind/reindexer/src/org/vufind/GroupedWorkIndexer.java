@@ -1125,7 +1125,7 @@ public class GroupedWorkIndexer {
 			if (ratingsRS.next()){
 				Float averageRating = ratingsRS.getFloat("averageRating");
 				if (!ratingsRS.wasNull()){
-					groupedWork.setRating(averageRating);
+					groupedWork.setUserRating(averageRating);
 				}
 			}
 			ratingsRS.close();
