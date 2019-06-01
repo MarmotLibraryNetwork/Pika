@@ -37,7 +37,7 @@
 						{/if}
 					</div>
 
-					<div id="accordion_body_{$property.label|escapeCSS}" class="panel-collapse collapse">
+					<div id="accordion_body_{$property.label|escapeCSS}" class="panel-collapse {if $property.open}active{else}collapse{/if}">
 						<div class="panel-body">
 							{if $property.instructions}
 								<div class="alert alert-info">
