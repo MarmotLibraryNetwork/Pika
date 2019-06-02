@@ -530,7 +530,8 @@ class BookCoverProcessor {
 			//Process the marc record
 			require_once ROOT_DIR . '/sys/MarcLoader.php';
 			if ($this->type != 'overdrive' && $this->type != 'hoopla'){
-				$marcRecord = MarcLoader::loadMarcRecordByILSId($this->type . ':' . $this->id);
+				require_once ROOT_DIR . '/services/sourceAndId.php';
+				$marcRecord = MarcLoader::loadMarcRecordByILSId( new sourceAndId($this->type . ':' . $this->id));
 			}
 		}
 
