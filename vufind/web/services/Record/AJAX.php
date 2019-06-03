@@ -66,9 +66,10 @@ class Record_AJAX extends Action {
 	function downloadMarc(){
 		$id = $_REQUEST['id'];
 		$marcData = MarcLoader::loadMarcRecordByILSId($id);
+		$downloadFileName = urlencode($id);
 		header('Content-Description: File Transfer');
 		header('Content-Type: application/octet-stream');
-		header("Content-Disposition: attachment; filename={$id}.mrc");
+		header("Content-Disposition: attachment; filename*={$downloadFileName}.mrc");
 		header('Content-Transfer-Encoding: binary');
 		header('Expires: 0');
 		header('Cache-Control: must-revalidate');

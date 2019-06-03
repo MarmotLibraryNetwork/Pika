@@ -1,6 +1,8 @@
 <?php
 /**
- *  Extends the AJAX Record class so that ExternalEcontent AJAX calls can be processed too
+ *  Extends the AJAX Record class so that ExternalEcontent AJAX calls can be processed too.
+ *
+ * (This class has to exist because the parent directory causes the action loading to expect it)
  *
  * @category Pika
  * @author   : Pascal Brammeier
