@@ -1218,7 +1218,7 @@ class GroupedWorkDriver extends RecordInterface{
 		global $configArray;
 
 		if ($absolutePath){
-			$bookCoverUrl = $configArray['Site']['url'];
+			$bookCoverUrl = empty($configArray['Site']['coverUrl']) ? $configArray['Site']['url'] : $configArray['Site']['coverUrl'];
 		}else{
 			$bookCoverUrl = $configArray['Site']['path'];
 		}

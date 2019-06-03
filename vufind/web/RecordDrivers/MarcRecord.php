@@ -1680,6 +1680,12 @@ class MarcRecord extends IndexRecord
 			}
 		}
 
+		//TODO : should use call in templates consistent with other data calls
+			$notes = $this->getNotes();
+			if (count($notes) > 0){
+				$interface->assign('notes', $notes);
+			}
+
 		$moreDetailsOptions['moreDetails'] = array(
 			'label' => 'More Details',
 			'body' => $interface->fetch('Record/view-more-details.tpl'),

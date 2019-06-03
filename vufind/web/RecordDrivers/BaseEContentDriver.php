@@ -50,7 +50,23 @@ abstract class BaseEContentDriver extends MarcRecord {
 			}
 		}
 
-
 		return $actions;
 	}
+
+	/**
+	 * Override the ils record function
+	 * @return null
+	 */
+	function getNumHolds(){
+		return null;
+	}
+
+	/**
+	 * Override the record function
+	 * @return null
+	 */
+	function getVolumeHolds($volumeData){
+		return null;
+	}
+
 }
