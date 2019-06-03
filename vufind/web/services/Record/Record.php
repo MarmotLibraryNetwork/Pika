@@ -44,14 +44,7 @@ abstract class Record_Record extends Action
 
 	public $cacheId;
 
-	/** @var  Solr */
-//	public $db;
-
-//	public $description;
-//	protected $mergedRecords = array();
-
-	function __construct($subAction = false, $record_id = null)
-	{
+	function __construct($record_id = null){
 		global $interface;
 		global $configArray;
 		global $timer;
@@ -67,7 +60,7 @@ abstract class Record_Record extends Action
 		if (strpos($this->id, ':')){
 			list($source, $id) = explode(":", $this->id);
 			$this->source = $source;
-			$this->id = $id;
+			$this->id     = $id;
 		}else{
 			$this->source = 'ils';
 		}
@@ -87,30 +80,16 @@ abstract class Record_Record extends Action
 
 		$this->setClassicViewLinks();
 
-			$timer->logTime('Got detailed data from Marc Record');
-
-			//TODO : should use call in templates consistent with other data calls
-			$notes = $this->recordDriver->getNotes();
-			if (count($notes) > 0){
-				$interface->assign('notes', $notes);
+		// Define External Content Provider
+		//TODO: These template switches don't look to be used any more.
+		if (!empty($this->recordDriver->hasReviews())){
+			if (isset($configArray['Content']['reviews'])){
+				$interface->assign('hasReviews', true);
 			}
-
-			// Define External Content Provider
-			//TODO: These template switches don't look to be used any more.
-			if (!empty($this->recordDriver->hasReviews())) {
-				if (isset($configArray['Content']['reviews'])) {
-					$interface->assign('hasReviews', true);
-				}
-				if (isset($configArray['Content']['excerpts'])) {
-					$interface->assign('hasExcerpt', true);
-				}
+			if (isset($configArray['Content']['excerpts'])){
+				$interface->assign('hasExcerpt', true);
 			}
-
-		//		$timer->logTime("Got basic data from Marc Record subaction = $subAction, record_id = $record_id");
-//		//stop if this is not the main action.
-//		if ($subAction == true){
-//			return;
-//		}
+		}
 
 		//Do actions needed if this is the main action.
 
@@ -123,20 +102,11 @@ abstract class Record_Record extends Action
 		}
 
 		//TODO: This RDF link doesn't seem to work
-		$interface->assign('addHeader', '<link rel="alternate" type="application/rdf+xml" title="RDF Representation" href="' . $configArray['Site']['path']  . '/Record/' . urlencode($this->id) . '/RDF" />');
-
-//		// Define Default Tab
-//		$tab = (isset($_GET['action'])) ? $_GET['action'] : 'Description';
-//		$interface->assign('tab', $tab);
-
-//		if (isset($_REQUEST['detail'])){
-//			$detail = strip_tags($_REQUEST['detail']);
-//			$interface->assign('defaultDetailsTab', $detail);
-//		}
+		$interface->assign('addHeader', '<link rel="alternate" type="application/rdf+xml" title="RDF Representation" href="' . $configArray['Site']['path'] . '/Record/' . urlencode($this->id) . '/RDF" />');
 
 		// Retrieve User Search History
-		$interface->assign('lastsearch', isset($_SESSION['lastSearchURL']) ?
-		$_SESSION['lastSearchURL'] : false);
+		$interface->assign('lastsearch', isset($_SESSION['lastSearchURL']) ? $_SESSION['lastSearchURL'] : false);
+		//TODO camel case lastsearch
 
 		$this->cacheId = 'Record|' . $_GET['id'] . '|' . get_class($this);
 
@@ -148,7 +118,7 @@ abstract class Record_Record extends Action
 
 		// Set AddThis User
 		$interface->assign('addThis', isset($configArray['AddThis']['key']) ?
-		$configArray['AddThis']['key'] : false);
+			$configArray['AddThis']['key'] : false);
 
 		//Get Next/Previous Links
 		$searchSource = isset($_REQUEST['searchSource']) ? $_REQUEST['searchSource'] : 'local';
@@ -157,29 +127,6 @@ abstract class Record_Record extends Action
 		$searchObject->getNextPrevLinks();
 
 	}
-
-	/**
-	 * @param File_MARC_Data_Field[] $noteFields
-	 * @return array
-	 */
-//	function processNoteFields($noteFields){
-//		$notes = array();
-//		/** File_MARC_Data_Field $marcField */
-//		foreach ($noteFields as $marcField){
-//			/** @var File_MARC_Subfield $subfield */
-//			foreach ($marcField->getSubfields() as $subfield){
-//				$note = $subfield->getData();
-//				if ($subfield->getCode() == 't'){
-//					$note = "&nbsp;&nbsp;&nbsp;" . $note;
-//				}
-//				$note = trim($note);
-//				if (strlen($note) > 0){
-//					$notes[] = $note;
-//				}
-//			}
-//		}
-//		return $notes;
-//	}
 
 	/**
 	 * Record a record hit to the statistics index when stat tracking is enabled;
@@ -218,6 +165,9 @@ abstract class Record_Record extends Action
 		}
 	}
 
+	/**
+	 *  Display Invalid Record page for any record module including sideloaded records
+	 */
 	function displayInvalidRecord(){
 		global $interface;
 		$module = $interface->getVariable('module');

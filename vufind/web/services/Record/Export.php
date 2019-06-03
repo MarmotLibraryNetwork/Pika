@@ -24,8 +24,8 @@ require_once ROOT_DIR . '/sys/Proxy_Request.php';
 class Record_Export extends Record_Record
 {
 
-	function __construct($subAction = false, $record_id = null){
-		parent::__construct($subAction, $record_id);
+	function __construct($record_id = null){
+		parent::__construct($record_id);
 		$marcRecord = $this->recordDriver->getMarcRecord();
 		if ($marcRecord){
 			global $interface;
