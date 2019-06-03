@@ -11,6 +11,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
@@ -38,9 +39,9 @@ class HooplaProcessor extends MarcRecordProcessor {
 		this.fullReindex = fullReindex;
 
 		try {
-			individualMarcPath                 = indexingProfileRS.getString("individualMarcPath");
-			numCharsToCreateFolderFrom         = indexingProfileRS.getInt("numCharsToCreateFolderFrom");
-			createFolderFromLeadingCharacters  = indexingProfileRS.getBoolean("createFolderFromLeadingCharacters");
+			individualMarcPath                = indexingProfileRS.getString("individualMarcPath");
+			numCharsToCreateFolderFrom        = indexingProfileRS.getInt("numCharsToCreateFolderFrom");
+			createFolderFromLeadingCharacters = indexingProfileRS.getBoolean("createFolderFromLeadingCharacters");
 
 		} catch (Exception e) {
 			logger.error("Error loading indexing profile information from database", e);
@@ -115,6 +116,7 @@ class HooplaProcessor extends MarcRecordProcessor {
 				if (hooplaExtractInfoRS.next()) {
 					float hooplaPrice = hooplaExtractInfoRS.getFloat("price");
 					groupedWork.setHooplaPrice(hooplaPrice); //TODO: is adding the price to the index really needed?
+					//TODO: this can't be a grouped work level value.  Another reason to remove it.
 
 					//Fetch other data for inclusion rules
 					String  kind             = hooplaExtractInfoRS.getString("kind");
@@ -343,8 +345,16 @@ class HooplaProcessor extends MarcRecordProcessor {
 			} else {
 				logger.info("Excluding due to title inactive for everyone hoopla id# " + hooplaExtractInfo.getTitleId() + " :" + hooplaExtractInfo.getTitle());
 			}
-		} else if (fullReindex) {
-			logger.warn("There was no extract information for Hoopla record " + recordInfo.getRecordIdentifier());
+		} else {
+			//Exclude Records that don't have extract info for now.
+			groupedWork.removeRelatedRecord(recordInfo);
+
+			if (fullReindex) {
+				logger.info("There was no extract information for Hoopla record " + recordInfo.getRecordIdentifier());
+				if (!GroupedReindexMain.hooplaRecordWithOutExtractInfo.contains(recordInfo.getRecordIdentifier())) {
+					GroupedReindexMain.hooplaRecordWithOutExtractInfo.add(recordInfo.getRecordIdentifier());
+				}
+			}
 		}
 	}
 
@@ -373,7 +383,7 @@ class HooplaProcessor extends MarcRecordProcessor {
 		//title (full title done by index process by concatenating short and subtitle
 		Set<String> titleTags = MarcUtil.getFieldList(record, "245a");
 		if (titleTags.size() > 1) {
-			logger.warn("More than 1 245a title tag for Hoopla record : " + identifier);
+			logger.info("More than 1 245a title tag for Hoopla record : " + identifier);
 		}
 		super.loadTitles(groupedWork, record, format, identifier);
 	}
