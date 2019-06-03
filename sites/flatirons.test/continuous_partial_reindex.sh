@@ -12,26 +12,6 @@ EMAIL=root@iapetus
 PIKASERVER=flatirons.test
 OUTPUT_FILE="/var/log/vufind-plus/${PIKASERVER}/continuous_partial_reindex_output.log"
 
-# Check for conflicting processes currently running
-function checkConflictingProcesses() {
-	#Check to see if the conflict exists.
-	countConflictingProcesses=$(ps aux | grep -v sudo | grep -c "$1")
-	#subtract one to get rid of our grep command
-	countConflictingProcesses=$((countConflictingProcesses-1))
-
-	let numInitialConflicts=countConflictingProcesses
-	#Wait until the conflict is gone.
-	until ((${countConflictingProcesses} == 0)); do
-		countConflictingProcesses=$(ps aux | grep -v sudo | grep -c "$1")
-		#subtract one to get rid of our grep command
-		countConflictingProcesses=$((countConflictingProcesses-1))
-		#echo "Count of conflicting process" $1 $countConflictingProcesses
-		sleep 300
-	done
-	#Return the number of conflicts we found initially.
-	echo ${numInitialConflicts};
-}
-
 source "/usr/local/vufind-plus/vufind/bash/checkConflicts.sh"
 
 function sendEmail() {
