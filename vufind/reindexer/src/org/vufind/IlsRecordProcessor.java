@@ -824,7 +824,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		//if the status and location are null, we can assume this is not a valid item
 		if (!isItemValid(itemStatus, itemLocation)) return null;
 		if (itemStatus.isEmpty()) {
-			logger.warn("Item contained no status value for item " + itemInfo.getItemIdentifier() + "for location " + itemLocation + " in record " + recordInfo.getRecordIdentifier());
+			logger.warn("Item contained no status value for item " + itemInfo.getItemIdentifier() + " for location " + itemLocation + " in record " + recordInfo.getRecordIdentifier());
 		}
 
 		setShelfLocationCode(itemField, itemInfo, recordInfo.getRecordIdentifier());
