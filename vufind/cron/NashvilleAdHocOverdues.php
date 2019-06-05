@@ -1,9 +1,6 @@
 <?php
 
 // TO DO: copy pika config > [catalog|school] > basic display > additional css from galacto to production
-// TO DO: ensure MNPS Staff, Library Staff, and Libraries should be included (privacy?)
-// TO DO: maybe sort teachers with their homerooms
-// TO DO: sort opted-outs with homeroom
 
 // SYNTAX: path/to/php NashvilleAdHocOverdues.php $_SERVER['SERVER_NAME'], e.g., 
 // $ sudo /opt/rh/php55/root/usr/bin/php NashvilleAdHocOverdues.php nashville.test
@@ -66,54 +63,111 @@ foreach ($aSchool as $sSchool) {
 	//echo $sSchool . "\n";
 
 	$sql = <<<EOT
+with
+  i as (
     select
-      patronbranch.branchcode AS Home_Lib_Code
-      , patronbranch.branchname AS Home_Lib
-      , bty_v.btynumber AS P_Type
-      , bty_v.btyname AS Grd_Lvl
-      , patron_v.sponsor AS Home_Room
-      , patron_v.name AS Patron_Name
-      , patron_v.patronid AS P_Barcode
-      , itembranch.branchgroup AS SYSTEM
-      , item_v.cn AS Call_#
-      , bbibmap_v.title AS Title
-      , to_char(jts.todate(transitem_v.dueornotneededafterdate),'MM/DD/YYYY') AS Due_Date
-      , item_v.price AS Owed
-      , to_char(jts.todate(transitem_v.dueornotneededafterdate),'MM/DD/YYYY') AS Due_Date_Dup
-      , item_v.item AS Item
-    from 
-      bbibmap_v
-      , branch_v patronbranch
-      , branch_v itembranch
-      , branchgroup_v patronbranchgroup
-      , branchgroup_v itembranchgroup
-      , bty_v
-      , item_v
-      , location_v
-      , patron_v
-      , transitem_v
-    where
-      patron_v.patronid = transitem_v.patronid
-      and patron_v.bty = bty_v.btynumber
-      and transitem_v.item = item_v.item
-      and bbibmap_v.bid = item_v.bid
-      and patronbranch.branchnumber = patron_v.defaultbranch
-      and location_v.locnumber = item_v.location
-      and itembranch.branchnumber = transitem_v.holdingbranch
-      and itembranchgroup.branchgroup = itembranch.branchgroup
-      and (TRANSITEM_V.transcode = 'O' or transitem_v.transcode='L' or transitem_v.transcode='C')
-      and patronbranch.branchgroup = '2'
-      and patronbranchgroup.branchgroup = patronbranch.branchgroup
-      and bty in ('13','21','22','23','24','25','26','27','28','29','30','31','32','33','34','35','36','37','40','42','46','47')
-      and patronbranch.branchcode = '$sSchool'
-    order by 
-      patronbranch.branchcode
-      , patron_v.bty
-      , patron_v.sponsor
-      , patron_v.name
-      , itembranch.branchgroup
-      , item_v.cn
-      , bbibmap_v.title
+      transitem_v.patronid
+      , branch_v.branchgroup as SYSTEM
+      , item_v.cn as Call_#
+      , bbibmap_v.title as Title
+      , to_char(jts.todate(transitem_v.dueornotneededafterdate),'MM/DD/YYYY') as Due_Date
+      , item_v.price as Owed
+      , to_char(jts.todate(transitem_v.dueornotneededafterdate),'MM/DD/YYYY') as Due_Date_Dup
+      , item_v.item as Item
+      from transitem_v
+      left join item_v on transitem_v.item = item_v.item
+      left join bbibmap_v on item_v.bid = bbibmap_v.bid
+      left join branch_v on item_v.owningbranch = branch_v.branchnumber
+      where
+        transitem_v.transcode in ('C','L','O')
+  ), 
+  p as (
+    select
+	    branch_v.branchcode as Home_Lib_Code
+	    , branch_v.branchname as Home_Lib
+	    , patron_v.bty as P_Type
+	    , bty_v.btyname as Grd_Lvl
+	    , ( case
+	      when patron_v.sponsor is null and bty_v.btynumber in ('13','40') then (patron_v.lastname || ', ' || patron_v.firstname)
+	      else patron_v.sponsor
+	      end
+	    ) as Home_Room
+      , patron_v.name as Patron_Name
+      , patron_v.patronid as P_Barcode
+	    , ( case
+	      when patron_v.sponsor is null and bty_v.btynumber in ('13','40') then (patron_v.patronid)
+	      when patron_v.sponsor is not null then (patron_v.street2)
+	      end
+	    ) as sponsorid
+	from patron_v
+	inner join branch_v on patron_v.defaultbranch = branch_v.branchnumber
+    inner join bty_v on patron_v.bty = bty_v.btynumber
+	where 
+	  branch_v.branchcode = '$sSchool'
+	  and branch_v.branchgroup = 2
+	  and patron_v.bty in ('13','21','22','23','24','25','26','27','28','29','30','31','32','33','34','35','36','37','40','42','46','47')
+  ),
+-- In order to sort LL no delivery PTYPES with their classmates and have homerooms sorted by grade for Elementary/Middle schools,
+-- get a count of students per bty per sponsor, set the most common bty for the sponsor as the homeroom grade.
+-- There has GOT to be a better way...
+  g as (
+    select
+      sponsorid
+      , P_Type
+      , count(P_Barcode) as studentcount
+    from p
+    where p.P_Type between 21 and 34 
+    group by
+      sponsorid,
+      P_Type
+    order by
+      sponsorid,
+      P_Type      
+  ), 
+  homeroom_grade as (
+    select
+      sponsorid
+      , min(P_Type) as P_Type
+    from (
+      select
+        sponsorid
+        , P_Type
+        , studentcount
+        , max(studentcount) over (partition by sponsorid) as rmax_studentcount
+      from g
+      order by
+        sponsorid
+        , studentcount
+        , P_Type
+    )
+    where studentcount = rmax_studentcount
+    group by sponsorid
+    order by sponsorid
+  )
+select
+  Home_Lib_Code
+  , Home_Lib
+  , p.P_Type
+  , Grd_Lvl
+  , Home_Room
+  , Patron_Name
+  , P_Barcode
+  , SYSTEM
+  , Call_#
+  , Title
+  , Due_Date
+  , Owed
+  , Due_Date_Dup
+  , i.Item
+from
+  p inner join i on p.P_Barcode = i.patronid
+  full outer join homeroom_grade on p.sponsorid = homeroom_grade.sponsorid
+where 
+  Home_Lib_Code is not null
+order by
+  homeroom_grade.P_Type
+  , Home_Room
+  , Patron_Name
 EOT;
 
 	$stid = oci_parse($conn, $sql);
@@ -123,7 +177,12 @@ EOT;
 	// start a new file for the new school
 	$df;
 	$df = fopen($reportPath . $sSchool . "_school_report.csv", 'w');
+	$header = false;
 	while (($row = oci_fetch_array ($stid, OCI_ASSOC+OCI_RETURN_NULLS)) != false) {
+		if ($header == false) {
+			$header = array_keys($row);;
+			fputcsv($df, $header);
+		} 
 		// CSV OUTPUT
 		fputcsv($df, $row);
 	}

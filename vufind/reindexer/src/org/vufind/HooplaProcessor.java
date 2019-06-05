@@ -11,6 +11,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
@@ -38,9 +39,9 @@ class HooplaProcessor extends MarcRecordProcessor {
 		this.fullReindex = fullReindex;
 
 		try {
-			individualMarcPath                 = indexingProfileRS.getString("individualMarcPath");
-			numCharsToCreateFolderFrom         = indexingProfileRS.getInt("numCharsToCreateFolderFrom");
-			createFolderFromLeadingCharacters  = indexingProfileRS.getBoolean("createFolderFromLeadingCharacters");
+			individualMarcPath                = indexingProfileRS.getString("individualMarcPath");
+			numCharsToCreateFolderFrom        = indexingProfileRS.getInt("numCharsToCreateFolderFrom");
+			createFolderFromLeadingCharacters = indexingProfileRS.getBoolean("createFolderFromLeadingCharacters");
 
 		} catch (Exception e) {
 			logger.error("Error loading indexing profile information from database", e);
@@ -92,29 +93,23 @@ class HooplaProcessor extends MarcRecordProcessor {
 
 		if (record != null) {
 			try {
-//				updateGroupedWorkSolrDataBasedOnHooplaExtract(groupedWork, identifier); // Add extract info first, then let regular processes happen in updateGroupedWorkSolrDataBasedOnMarc()
-				// Move to loadScopeInfoForEContentItem().  I don't think added the Hoopla price to the index is actually useful.
-				updateGroupedWorkSolrDataBasedOnMarc(groupedWork, record, identifier);
+				if (getHooplaExtractInfo(identifier)) {
+					updateGroupedWorkSolrDataBasedOnMarc(groupedWork, record, identifier);
+					updateGroupedWorkSolrDataBasedOnHooplaExtract(groupedWork, identifier);
+				}
 			} catch (Exception e) {
 				logger.error("Error updating solr based on hoopla marc record", e);
 			}
 		}
 	}
 
-
-	/**
-	 * @param groupedWork Solr Document to update
-	 * @param identifier  Record Identifier, used to get hoopla extract information
-	 */
-	private void updateGroupedWorkSolrDataBasedOnHooplaExtract(GroupedWorkSolr groupedWork, String identifier) {
+	private boolean getHooplaExtractInfo(String identifier) {
 		try {
-			try {
-				long hooplaId = Long.parseLong(identifier.replaceAll("^MWT", ""));
-				hooplaExtractInfoStatement.setLong(1, hooplaId);
-				ResultSet hooplaExtractInfoRS = hooplaExtractInfoStatement.executeQuery();
+			long hooplaId = Long.parseLong(identifier.replaceAll("^MWT", ""));
+			hooplaExtractInfoStatement.setLong(1, hooplaId);
+			try (ResultSet hooplaExtractInfoRS = hooplaExtractInfoStatement.executeQuery()) {
 				if (hooplaExtractInfoRS.next()) {
 					float hooplaPrice = hooplaExtractInfoRS.getFloat("price");
-					groupedWork.setHooplaPrice(hooplaPrice); //TODO: is adding the price to the index really needed?
 
 					//Fetch other data for inclusion rules
 					String  kind             = hooplaExtractInfoRS.getString("kind");
@@ -139,15 +134,30 @@ class HooplaProcessor extends MarcRecordProcessor {
 					hooplaExtractInfo.setProfanity(profanity);
 					hooplaExtractInfo.setAbridged(abridged);
 					hooplaExtractInfo.setChildren(children);
+					return true;
 				} else if (fullReindex) {
-					logger.warn("Did not find Hoopla Extract information for " + identifier);
+					logger.info("Did not find Hoopla Extract information for " + identifier);
+					if (!GroupedReindexMain.hooplaRecordWithOutExtractInfo.contains(identifier)) {
+						GroupedReindexMain.hooplaRecordWithOutExtractInfo.add(identifier);
+					}
 				}
-			} catch (NumberFormatException e) {
-				logger.error("Error parsing identifier : " + identifier + " to a hoopla id number", e);
 			}
+		} catch (NumberFormatException e) {
+			logger.error("Error parsing identifier : " + identifier + " to a hoopla id number", e);
 		} catch (SQLException e) {
 			logger.error("Error adding hoopla extract data to solr document for hoopla record : " + identifier, e);
 		}
+		return false;
+	}
+
+	/**
+	 * @param groupedWork Solr Document to update
+	 * @param identifier  Record Identifier, used to get hoopla extract information
+	 */
+	private void updateGroupedWorkSolrDataBasedOnHooplaExtract(GroupedWorkSolr groupedWork, String identifier) {
+		float hooplaPrice = (float) hooplaExtractInfo.getPrice();
+		groupedWork.setHooplaPrice(hooplaPrice); //TODO: is adding the price to the index really needed?
+		//TODO: this can't be a grouped work level value.  Another reason to remove it.
 	}
 
 	private Record loadMarcRecordFromDisk(String identifier) {
@@ -207,7 +217,7 @@ class HooplaProcessor extends MarcRecordProcessor {
 		//There are also not multiple formats within a record that we would need to split out.
 
 		String formatCategory = indexer.translateSystemValue("format_category_hoopla", format, identifier);
-		Long   formatBoost    = 8L; // Reasonable default value
+		long   formatBoost    = 8L; // Reasonable default value
 		String formatBoostStr = indexer.translateSystemValue("format_boost_hoopla", format, identifier);
 		if (formatBoostStr != null && !formatBoostStr.isEmpty()) {
 			formatBoost = Long.parseLong(formatBoostStr);
@@ -253,6 +263,7 @@ class HooplaProcessor extends MarcRecordProcessor {
 
 		//Setup the per Record information
 		RecordInfo recordInfo = groupedWork.addRelatedRecord("hoopla", identifier);
+
 		recordInfo.setFormatBoost(formatBoost);
 		recordInfo.setEdition(primaryEdition);
 		recordInfo.setPhysicalDescription(physicalDescription);
@@ -283,7 +294,7 @@ class HooplaProcessor extends MarcRecordProcessor {
 		itemInfo.setDateAdded(dateAdded);
 
 		recordInfo.addItem(itemInfo);
-		updateGroupedWorkSolrDataBasedOnHooplaExtract(groupedWork, recordInfo.getRecordIdentifier());
+
 		loadScopeInfoForEContentItem(groupedWork, recordInfo, itemInfo, record);
 
 
@@ -292,9 +303,6 @@ class HooplaProcessor extends MarcRecordProcessor {
 		//From Pika to Hoopla, but that wouldn't count plays directly within the app
 		//(which may be ok).
 		groupedWork.addPopularity(1);
-
-		//Related Record
-		groupedWork.addRelatedRecord("hoopla", identifier);
 	}
 
 	private void loadScopeInfoForEContentItem(GroupedWorkSolr groupedWork, RecordInfo recordInfo, ItemInfo itemInfo, Record record) {
@@ -343,8 +351,16 @@ class HooplaProcessor extends MarcRecordProcessor {
 			} else {
 				logger.info("Excluding due to title inactive for everyone hoopla id# " + hooplaExtractInfo.getTitleId() + " :" + hooplaExtractInfo.getTitle());
 			}
-		} else if (fullReindex) {
-			logger.warn("There was no extract information for Hoopla record " + recordInfo.getRecordIdentifier());
+		} else {
+			//Exclude Records that don't have extract info for now.
+			groupedWork.removeRelatedRecord(recordInfo);
+
+			if (fullReindex) {
+				logger.info("There was no extract information for Hoopla record " + recordInfo.getRecordIdentifier());
+				if (!GroupedReindexMain.hooplaRecordWithOutExtractInfo.contains(recordInfo.getRecordIdentifier())) {
+					GroupedReindexMain.hooplaRecordWithOutExtractInfo.add(recordInfo.getRecordIdentifier());
+				}
+			}
 		}
 	}
 
@@ -368,4 +384,15 @@ class HooplaProcessor extends MarcRecordProcessor {
 			scopingInfo.setLocalUrl(result.localUrl);
 		}
 	}
+
+	protected void loadTitles(GroupedWorkSolr groupedWork, Record record, String format, String identifier) {
+		//title (full title done by index process by concatenating short and subtitle
+		Set<String> titleTags = MarcUtil.getFieldList(record, "245a");
+		if (titleTags.size() > 1) {
+			logger.info("More than 1 245a title tag for Hoopla record : " + identifier);
+		}
+		super.loadTitles(groupedWork, record, format, identifier);
+	}
+
+
 }

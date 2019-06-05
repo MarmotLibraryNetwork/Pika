@@ -8,7 +8,7 @@ PIKASERVER=marmot.production
 PIKADBNAME=pika
 OUTPUT_FILE="/var/log/vufind-plus/${PIKASERVER}/full_update_output.log"
 
-MINFILE1SIZE=$((4870000000))
+MINFILE1SIZE=$((5040000000))
 
 # Check for conflicting processes currently running
 function checkConflictingProcesses() {
@@ -130,6 +130,9 @@ curl --remote-time --show-error --compressed -o /data/vufind-plus/colorado_gov_d
 # Docuseek Marc Updates
 /usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} cmc/docuseek docuseek/cmc >> ${OUTPUT_FILE}
 
+# Elsevier
+/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} western/elsevier elsevier/western >> ${OUTPUT_FILE}
+
 #Extracts for sideloaded eContent; settings defined in config.pwd.ini [Sideload]
 cd /usr/local/vufind-plus/vufind/cron; ./sideload.sh ${PIKASERVER}
 
@@ -141,12 +144,13 @@ cd /data/vufind-plus/accelerated_reader; curl --remote-name --remote-time --sile
 
 #Do a full extract from OverDrive just once a week to catch anything that doesn't
 #get caught in the regular extract
-#DAYOFWEEK=$(date +"%u")
-#if [ "${DAYOFWEEK}" -eq 6 ];
-#then
-#	cd /usr/local/vufind-plus/vufind/overdrive_api_extract/
-#	nice -n -10 java -server -XX:+UseG1GC -jar overdrive_extract.jar ${PIKASERVER} fullReload >> ${OUTPUT_FILE}
-#fi
+DAYOFWEEK=$(date +"%u")
+if [[ "${DAYOFWEEK}" -eq 7 ]]; then
+echo $(date +"%T") "Starting Overdrive fullReload."  >> ${OUTPUT_FILE}
+	cd /usr/local/vufind-plus/vufind/overdrive_api_extract/
+	nice -n -10 java -server -XX:+UseG1GC -jar overdrive_extract.jar ${PIKASERVER} fullReload >> ${OUTPUT_FILE}
+echo $(date +"%T") "Completed Overdrive fullReload."  >> ${OUTPUT_FILE}
+fi
 
 FILE=$(find /data/vufind-plus/${PIKASERVER}/marc/ -name fullexport.mrc -mtime -1 | sort -n | tail -1)
 

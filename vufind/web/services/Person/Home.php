@@ -24,7 +24,7 @@ require_once ROOT_DIR . '/sys/Genealogy/Person.php';
 
 class Person_Home extends Action
 {
-	function __construct($subAction = false, $record_id = null)
+	function __construct($record_id = null)
 	{
 		global $interface;
 		global $configArray;

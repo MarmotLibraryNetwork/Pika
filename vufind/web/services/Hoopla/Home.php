@@ -22,14 +22,4 @@ require_once ROOT_DIR . '/services/Record/Home.php';
 
 class Hoopla_Home extends Record_Home{
 
-	function launch(){
-		global $interface;
-
-		/* var HooplaRecordDriver $this->recordDriver */
-		$actions = $this->recordDriver->getActions();
-		$interface->assign('actions', $actions);
-		parent::launch();
-
-	}
-
 }

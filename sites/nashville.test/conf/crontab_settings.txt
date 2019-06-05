@@ -30,6 +30,7 @@
 #############
 # On Reboot #
 #############
+@reboot mkdir /var/run/mysqld; chown mysql:mysql /var/run/mysqld
 @reboot cd /usr/local/vufind-plus/sites/nashville.test/; ./nashville.test.sh start
 # Continuous Re-Indexing
 @reboot sleep 300 &&  /usr/local/VuFind-Plus/sites/nashville.test/continuous_partial_reindex.sh
@@ -84,7 +85,7 @@
 0 22 * * * cd /usr/local/vufind-plus/vufind/cron; ./sideload.sh nashville.test
 
 # Hoopla extract from API
-0 19 * * * cd /usr/local/vufind-plus/vufind/hoopla_export; java -jar hoopla_export.jar nashville.test
+30 19 * * * cd /usr/local/vufind-plus/vufind/hoopla_export; java -jar hoopla_export.jar nashville.test
 
 # Download Lexile and AR files triggered in full_update.sh
 

@@ -157,12 +157,15 @@ class BookCoverProcessor {
 			$driver = new SideLoadedRecord($sourceAndId);
 			if ($driver){
 				/** @var File_MARC_Data_Field[] $linkFields */
-				$linkFields = $driver->getMarcRecord()->getFields('856');
-				foreach ($linkFields as $linkField){
-					// TODO: use additional field checks like in getCoverFromMarc() ?
-					if ($linkField->getIndicator(1) == 4 && $linkField->getIndicator(2) == 2){
-						$coverUrl = $linkField->getSubfield('u')->getData();
-						return $this->processImageURL($coverUrl, true);
+				$fileMARCRecord = $driver->getMarcRecord();
+				if ($fileMARCRecord){
+					$linkFields = $fileMARCRecord->getFields('856');
+					foreach ($linkFields as $linkField){
+						// TODO: use additional field checks like in getCoverFromMarc() ?
+						if ($linkField->getIndicator(1) == 4 && $linkField->getIndicator(2) == 2){
+							$coverUrl = $linkField->getSubfield('u')->getData();
+							return $this->processImageURL($coverUrl, true);
+						}
 					}
 				}
 			}
@@ -302,6 +305,7 @@ class BookCoverProcessor {
 
 	private function initMemcache(){
 		global $memCache;
+		global $configArray;
 		if (!isset($memCache)){
 			// Set defaults if nothing set in config file.
 			$host    = isset($configArray['Caching']['memcache_host']) ? $configArray['Caching']['memcache_host'] : 'localhost';
@@ -666,7 +670,7 @@ class BookCoverProcessor {
 			}
 		}else{
 			require_once ROOT_DIR . '/RecordDrivers/MarcRecord.php';
-			$recordDriver = new MarcRecord($this->id);
+			$recordDriver = new MarcRecord($this->type . ':' . $this->id, $this->groupedWork);
 			if ($recordDriver->isValid()){
 				$title  = $recordDriver->getTitle();
 				$author = $recordDriver->getAuthor();

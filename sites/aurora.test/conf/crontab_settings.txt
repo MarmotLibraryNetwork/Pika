@@ -61,7 +61,7 @@
 # Hoopla
 3 20 * * * cd /usr/local/vufind-plus/vufind/hoopla_export; java -jar hoopla_export.jar aurora.test
 #Lynda weekly update
-#37 0 * * Fri /usr/local/vufind-plus/vufind/cron/fetch_lynda.sh aurora
+37 0 * * Fri /usr/local/vufind-plus/vufind/cron/fetch_lynda.sh aurora
 
 ############################################
 # New York Times Bestseller Lists Updating #

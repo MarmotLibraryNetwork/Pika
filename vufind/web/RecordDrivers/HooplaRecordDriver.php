@@ -52,7 +52,7 @@ class HooplaRecordDriver extends SideLoadedRecord {
 		return $actions;
 	}
 
-	function getRecordActions($recordAvailable, $recordHoldable, $recordBookable, $relatedUrls = null, $volumeData = null){
+	function getRecordActions($recordAvailable = null, $recordHoldable = null, $recordBookable = null, $relatedUrls = null, $volumeData = null){
 		$actions = array();
 
 		if ($this->isHooplaIntegrationEnabled()){
@@ -69,6 +69,10 @@ class HooplaRecordDriver extends SideLoadedRecord {
 		}
 
 		return $actions;
+	}
+
+	public function getRecordActionsFromIndex(){
+		return $this->getRecordActions();
 	}
 
 	public function getItemActions($itemInfo){

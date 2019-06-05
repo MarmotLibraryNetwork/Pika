@@ -95,12 +95,13 @@ class IndexingProfile extends DB_DataObject{
 		$sierraMappingStructure = SierraExportFieldMapping::getObjectStructure();
 		unset($sierraMappingStructure['indexingProfileId']);
 
+		//Sections that are set open by default allow the javascript form validator to check that required fields are in fact filled in.
 		$structure = array(
 			'id'                         => array('property'=>'id',                           'type'=>'label',  'label'=>'Id', 'description'=>'The unique id within the database'),
 			'name'                       => array('property' => 'name',                       'type' => 'text', 'label' => 'Name', 'maxLength' => 50, 'description' => 'A name for this indexing profile', 'required' => true),
 			'recordUrlComponent'         => array('property' => 'recordUrlComponent',         'type' => 'text', 'label' => 'Record URL Component', 'maxLength' => 50, 'description' => 'The Module to use within the URL', 'required' => true, 'default' => 'Record', 'serverValidation' => 'validateRecordUrlComponent'),
 
-			'serverFileSection' => array('property'=>'serverFileSection', 'type' => 'section', 'label' =>'MARC File Settings ', 'hideInLists' => true,
+			'serverFileSection' => array('property'=>'serverFileSection', 'type' => 'section', 'label' =>'MARC File Settings ', 'hideInLists' => true, 'open' => true,
 			                            'helpLink' => '', 'properties' => array(
 
 			'marcPath'                          => array('property' => 'marcPath', 'type' => 'text', 'label' => 'MARC Path', 'maxLength' => 100, 'description' => 'The path on the server where MARC records can be found', 'required' => true),
@@ -108,7 +109,7 @@ class IndexingProfile extends DB_DataObject{
 			'marcEncoding'                      => array('property' => 'marcEncoding', 'type' => 'enum', 'label' => 'MARC Encoding', 'values' => array('MARC8' => 'MARC8', 'UTF8' => 'UTF8', 'UNIMARC' => 'UNIMARC', 'ISO8859_1' => 'ISO8859_1', 'BESTGUESS' => 'BESTGUESS'), 'default' => 'MARC8'),
 			'groupUnchangedFiles'               => array('property' => 'groupUnchangedFiles', 'type' => 'checkbox', 'label' => 'Group unchanged files', 'description' => 'Whether or not files that have not changed since the last time grouping has run will be processed.', 'default' => true),
 			'individualMARCFileSettingsSection' => array(
-				'property' => 'individualMARCFileSettingsSection', 'type' => 'section', 'label' => 'Individual Record Files', 'hideInLists' => true,
+				'property' => 'individualMARCFileSettingsSection', 'type' => 'section', 'label' => 'Individual Record Files', 'hideInLists' => true, 'open' => true,
 				'helpLink' => '', 'properties' => array(
 					'individualMarcPath'                => array('property' => 'individualMarcPath', 'type' => 'text', 'label' => 'Individual MARC Path', 'maxLength' => 100, 'description' => 'The path on the server where individual MARC records can be found', 'required' => true),
 					'numCharsToCreateFolderFrom'        => array('property' => 'numCharsToCreateFolderFrom', 'type' => 'integer', 'label' => 'Number of characters to create folder from', 'maxLength' => 50, 'description' => 'The number of characters to use when building a sub folder for individual marc records', 'required' => false, 'default' => '4'),
@@ -116,7 +117,7 @@ class IndexingProfile extends DB_DataObject{
 						)),
 				)),
 
-			'DriverSection' => array('property'=>'DriverSection', 'type' => 'section', 'label' =>'Pika Driver Settings', 'hideInLists' => true,
+			'DriverSection' => array('property'=>'DriverSection', 'type' => 'section', 'label' =>'Pika Driver Settings', 'hideInLists' => true,  'open' => true,
 			                                     'helpLink' => '', 'properties' => array(
 					'groupingClass' => array('property' => 'groupingClass', 'type' => 'text', 'label' => 'Grouping Class', 'maxLength' => 50, 'description' => 'The class to use while grouping the records', 'required' => true, 'default' => 'MarcRecordGrouper'),
 					'indexingClass' => array('property' => 'indexingClass', 'type' => 'text', 'label' => 'Indexing Class', 'maxLength' => 50, 'description' => 'The class to use while indexing the records', 'required' => true, 'default' => 'IlsRecord'),
@@ -144,7 +145,7 @@ class IndexingProfile extends DB_DataObject{
 					)),
 
 
-			'bibRecordSection' => array('property'=>'bibRecordSection', 'type' => 'section', 'label' =>'Record Settings', 'hideInLists' => true,
+			'bibRecordSection' => array('property'=>'bibRecordSection', 'type' => 'section', 'label' =>'Record Settings', 'hideInLists' => true, 'open' => true,
 			                            'helpLink' => '', 'properties' => array(
 					'recordNumberTag'            => array('property' => 'recordNumberTag',            'type' => 'text', 'label' => 'Record Number Tag', 'maxLength' => 3, 'description' => 'The MARC tag where the record number can be found', 'required' => true),
 					'recordNumberField'          => array('property' => 'recordNumberField',          'type' => 'text', 'label' => 'Record Number Field', 'maxLength' => 1, 'description' => 'The subfield of the record number tag where the record number can be found', 'required' => true, 'default' => 'a'),

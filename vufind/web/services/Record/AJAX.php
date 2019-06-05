@@ -66,9 +66,10 @@ class Record_AJAX extends Action {
 	function downloadMarc(){
 		$id = $_REQUEST['id'];
 		$marcData = MarcLoader::loadMarcRecordByILSId($id);
+		$downloadFileName = urlencode($id);
 		header('Content-Description: File Transfer');
 		header('Content-Type: application/octet-stream');
-		header("Content-Disposition: attachment; filename={$id}.mrc");
+		header("Content-Disposition: attachment; filename*={$downloadFileName}.mrc");
 		header('Content-Transfer-Encoding: binary');
 		header('Expires: 0');
 		header('Cache-Control: must-revalidate');
@@ -86,6 +87,7 @@ class Record_AJAX extends Action {
 		(UserAccount::isLoggedIn() ? "True" : "False") . "</result>";
 	}
 
+	//TODO: Don't think this gets used anymore.
 	function GetProspectorInfo(){
 		require_once ROOT_DIR . '/Drivers/marmot_inc/Prospector.php';
 		global $configArray;
@@ -547,17 +549,16 @@ class Record_AJAX extends Action {
 		//Also reload covers for the grouped work
 		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 		$groupedWorkDriver = new GroupedWorkDriver($recordDriver->getGroupedWorkId());
-		global $configArray;
 		//Reload small cover
-		$smallCoverUrl = $configArray['Site']['coverUrl'] . str_replace('&amp;', '&', $groupedWorkDriver->getBookcoverUrl('small')) . '&reload';
+		$smallCoverUrl = str_replace('&amp;', '&', $groupedWorkDriver->getBookcoverUrl('small', true)) . '&reload';
 		file_get_contents($smallCoverUrl);
 
 		//Reload medium cover
-		$mediumCoverUrl = $configArray['Site']['coverUrl'] . str_replace('&amp;', '&', $groupedWorkDriver->getBookcoverUrl('medium')) . '&reload';
+		$mediumCoverUrl = str_replace('&amp;', '&', $groupedWorkDriver->getBookcoverUrl('medium', true)) . '&reload';
 		file_get_contents($mediumCoverUrl);
 
 		//Reload large cover
-		$largeCoverUrl = $configArray['Site']['coverUrl'] . str_replace('&amp;', '&', $groupedWorkDriver->getBookcoverUrl('large')) . '&reload';
+		$largeCoverUrl = str_replace('&amp;', '&', $groupedWorkDriver->getBookcoverUrl('large', true)) . '&reload';
 		file_get_contents($largeCoverUrl);
 
 		return array('success' => true, 'message' => 'Covers have been reloaded.  You may need to refresh the page to clear your local cache.');

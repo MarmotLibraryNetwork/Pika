@@ -41,7 +41,11 @@ public class GroupedReindexMain {
 	//Database connections and prepared statements
 	private static Connection pikaConn     = null;
 	private static Connection econtentConn = null;
-	
+
+
+	public static ArrayList<String> hooplaRecordWithOutExtractInfo = new ArrayList<>();
+
+
 	/**
 	 * Starts the re-indexing process
 	 * 
@@ -120,6 +124,11 @@ public class GroupedReindexMain {
 				if (fullReindex) {
 					logger.info("Creating Site Maps");
 					groupedWorkIndexer.createSiteMaps(siteMapsByScope, uniqueGroupedWorks);
+
+					// Log info about missing hoopla data
+					if (hooplaRecordWithOutExtractInfo.size() > 0) {
+						logger.warn("Hoopla Records without extract info : " + String.join(", ", hooplaRecordWithOutExtractInfo));
+					}
 				}
 
 				groupedWorkIndexer.finishIndexing();

@@ -172,6 +172,9 @@ cd /usr/local/vufind-plus/vufind/cron;./HOOPLA.sh ${PIKASERVER} >> ${OUTPUT_FILE
 # Creative Bug
 /usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} bemis/creative_bug creative_bug/bemis >> ${OUTPUT_FILE}
 
+# Elsevier
+/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} western/elsevier elsevier/western >> ${OUTPUT_FILE}
+
 #echo "finished sideload fetching"
 
 #Extracts for sideloaded eContent; settings defined in config.pwd.ini [Sideload]
@@ -187,12 +190,13 @@ cd /usr/local/vufind-plus/vufind/cron; ./sideload.sh ${PIKASERVER}
 
 #Do a full extract from OverDrive just once a week to catch anything that doesn't
 #get caught in the regular extract
-#DAYOFWEEK=$(date +"%u")
-#if [ "${DAYOFWEEK}" -eq 5 ];
-#then
-#	cd /usr/local/vufind-plus/vufind/overdrive_api_extract/
-#	nice -n -10 java -jar overdrive_extract.jar ${PIKASERVER} fullReload >> ${OUTPUT_FILE}
-#fi
+DAYOFWEEK=$(date +"%u")
+if [[ "${DAYOFWEEK}" -eq 7 ]]; then
+	echo $(date +"%T") "Starting Overdrive fullReload."  >> ${OUTPUT_FILE}
+	cd /usr/local/vufind-plus/vufind/overdrive_api_extract/
+	nice -n -10 java -server -XX:+UseG1GC -jar overdrive_extract.jar ${PIKASERVER} fullReload >> ${OUTPUT_FILE}
+	echo $(date +"%T") "Completed Overdrive fullReload."  >> ${OUTPUT_FILE}
+fi
 
 #Note, no need to extract from Lexile for this server since it is the master
 
