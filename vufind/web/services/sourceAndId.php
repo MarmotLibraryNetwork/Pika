@@ -17,6 +17,8 @@ class sourceAndId {
 	private $source;                // The indexing profile that this Id is a part of
 	private $recordId;              // The id for the particular profile. The Id that would be found in the record
 	public  $isIlsEContent = false; // Whether or not this Id is related to an eContent record stored in the ILS
+	/** var IndexingProfile */
+	private $indexingProfile;
 
 	function __construct($fullIdWithSource){
 		$this->setSourceAndId($fullIdWithSource);
@@ -54,4 +56,21 @@ class sourceAndId {
 	public function getRecordId(){
 		return $this->recordId;
 	}
+
+	/**
+	 * Get the indexing profile object associated with this record Id's source
+	 *
+	 * @return IndexingProfile|null
+	 */
+	public function getIndexingProfile(){
+		if (empty($this->indexingProfile)){
+			/** @var $indexingProfiles IndexingProfile[] */
+			global $indexingProfiles;
+			if (array_key_exists($this->source, $indexingProfiles)){
+				$this->indexingProfile = $indexingProfiles[$this->source];
+			}
+		}
+		return $this->indexingProfile;
+	}
+
 }

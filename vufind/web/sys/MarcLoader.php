@@ -27,7 +27,7 @@ class MarcLoader{
 	 *
 	 * @return File_MARC_Record
 	 */
-	public static function loadMarcRecordByILSId($sourceAndId){
+	public static function loadMarcRecordByILSId(sourceAndId $sourceAndId){
 		$fullId = $sourceAndId->getSourceAndId();
 
 		if (array_key_exists($fullId, MarcLoader::$loadedMarcRecords)){
@@ -95,11 +95,11 @@ class MarcLoader{
 	 *
 	 * @return string
 	 */
-	private static function getIndividualMarcFileName($sourceAndId){
-		$indexingProfile = self::getIndexingProfileForId($sourceAndId);
-		$shortId = str_replace('.', '', $sourceAndId->getRecordId());
+	private static function getIndividualMarcFileName(sourceAndId $sourceAndId){
+		$indexingProfile = $sourceAndId->getIndexingProfile();
+		$shortId         = str_replace('.', '', $sourceAndId->getRecordId());
 		if (strlen($shortId) < 9){
-			$shortId = str_pad($shortId, 9, "0", STR_PAD_LEFT);
+			$shortId = str_pad($shortId, 9, '0', STR_PAD_LEFT);
 		}
 		if ($indexingProfile->createFolderFromLeadingCharacters){
 			$firstChars = substr($shortId, 0, $indexingProfile->numCharsToCreateFolderFrom);
@@ -113,12 +113,12 @@ class MarcLoader{
 	}
 
 	/**
-	 * @param sourceAndId $fullId
+	 * @param sourceAndId $sourceAndId
 	 *
 	 * @return IndexingProfile
 	 */
-	public static function getIndexingProfileForId($fullId){
-		$recordType = $fullId->getSource();
+	public static function getIndexingProfileForId(sourceAndId $sourceAndId){
+		$recordType = $sourceAndId->getSource();
 		/** @var $indexingProfiles IndexingProfile[] */
 		global $indexingProfiles;
 		if (array_key_exists($recordType, $indexingProfiles)){

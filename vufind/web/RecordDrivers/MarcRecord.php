@@ -55,12 +55,12 @@ class MarcRecord extends IndexRecord
 			$this->marcRecord = $recordData;
 		}elseif (is_string($recordData) || $recordData instanceof sourceAndId){
 			require_once ROOT_DIR . '/sys/MarcLoader.php';
-			if (is_string($recordData)){
+			if (is_string($recordData)){ //TODO: make use of string for id's obsolete
 				$recordData = new sourceAndId($recordData);
 			}
 			$this->profileType     = $recordData->getSource();
 			$this->id              = $recordData->getRecordId();
-			$this->indexingProfile = MarcLoader::getIndexingProfileForId($recordData);
+			$this->indexingProfile = $recordData->getIndexingProfile();
 		}else{ //TODO: find when this happens!
 			// Call the Index Records's constructor...
 			parent::__construct($recordData, $groupedWork);
@@ -71,13 +71,13 @@ class MarcRecord extends IndexRecord
 			if (!$this->marcRecord){
 				$this->valid = false;
 			}
-		}
-		if (!isset($this->id) && $this->valid){
-			/** @var File_MARC_Data_Field $idField */
-			global $configArray;
-			$idField = $this->marcRecord->getField($configArray['Reindex']['recordNumberTag']);
-			if ($idField){
-				$this->id = $idField->getSubfield('a')->getData();
+			if (!isset($this->id) && $this->valid){
+				/** @var File_MARC_Data_Field $idField */
+				global $configArray;
+				$idField = $this->marcRecord->getField($configArray['Reindex']['recordNumberTag']);
+				if ($idField){
+					$this->id = $idField->getSubfield('a')->getData();
+				}
 			}
 		}
 		global $timer;
