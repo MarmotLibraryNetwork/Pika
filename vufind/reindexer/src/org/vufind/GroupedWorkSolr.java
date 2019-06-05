@@ -5,7 +5,6 @@ import org.apache.log4j.Logger;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.SolrInputField;
 
-import java.time.Year;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -82,7 +81,7 @@ public class GroupedWorkSolr implements Cloneable {
 	private double                   popularity;
 	private HashSet<String>          publishers               = new HashSet<>();
 	private HashSet<String>          publicationDates         = new HashSet<>();
-	private float                    rating                   = 2.5f;
+	private float                    userRating               = 0.0f;
 	private HashMap<String, String>  series                   = new HashMap<>();
 	private HashMap<String, String>  series2                  = new HashMap<>();
 	private HashMap<String, String>  seriesWithVolume         = new HashMap<>();
@@ -388,8 +387,8 @@ public class GroupedWorkSolr implements Cloneable {
 		doc.addField("popularity", Long.toString((long)popularity));
 		doc.addField("num_holdings", numHoldings);
 		//pika enrichment
-		doc.addField("rating", rating);
-		doc.addField("rating_facet", getRatingFacet(rating));
+		doc.addField("rating", userRating == 0.0f ? 2.5f : userRating); // Since the user rating is used in boost factor and sorting, when there has been no ratings, use a "neutral" value of 2.5
+		doc.addField("rating_facet", getUserRatingFacetValues(userRating));
 		doc.addField("description", Util.getCRSeparatedString(description));
 		doc.addField("display_description", displayDescription);
 
@@ -1519,27 +1518,31 @@ public class GroupedWorkSolr implements Cloneable {
 		targetAudienceFull.add(target_audience);
 	}
 
-	private Set<String> getRatingFacet(Float rating) {
-		Set<String> ratingFacet = new HashSet<>();
-		if (rating >= 4.75) {
-			ratingFacet.add("fiveStar");
+	/**
+	 * @param averagePatronRating The average of patron ratings for a grouped work
+	 * @return The values to populate the rating_facet with
+	 */
+	private Set<String> getUserRatingFacetValues(Float averagePatronRating) {
+		Set<String> patronRatingFacet = new HashSet<>();
+		if (averagePatronRating >= 4.75) {
+			patronRatingFacet.add("fiveStar");
 		}
-		if (rating >= 4) {
-			ratingFacet.add("fourStar");
+		if (averagePatronRating >= 4) {
+			patronRatingFacet.add("fourStar");
 		}
-		if (rating >= 3) {
-			ratingFacet.add("threeStar");
+		if (averagePatronRating >= 3) {
+			patronRatingFacet.add("threeStar");
 		}
-		if (rating >= 2) {
-			ratingFacet.add("twoStar");
+		if (averagePatronRating >= 2) {
+			patronRatingFacet.add("twoStar");
 		}
-		if (rating >= 0.0001) {
-			ratingFacet.add("oneStar");
+		if (averagePatronRating > 0) {
+			patronRatingFacet.add("oneStar");
 		}
-		if (ratingFacet.size() == 0){
-			ratingFacet.add("Unrated");
+		if (patronRatingFacet.size() == 0) {
+			patronRatingFacet.add("Unrated");
 		}
-		return ratingFacet;
+		return patronRatingFacet;
 	}
 
 	void addMpaaRating(String mpaaRating) {
@@ -1550,8 +1553,8 @@ public class GroupedWorkSolr implements Cloneable {
 		this.barcodes.addAll(barcodeList);
 	}
 
-	void setRating(float rating) {
-		this.rating = rating;
+	void setUserRating(float userRating) {
+		this.userRating = userRating;
 	}
 
 	void setLexileScore(String lexileScore) {
