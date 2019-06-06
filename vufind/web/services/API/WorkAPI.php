@@ -8,7 +8,7 @@
  * Time: 9:21 AM
  */
 
-require_once ROOT_DIR . '/AJAXHAndler.php';
+require_once ROOT_DIR . '/AJAXHandler.php';
 
 class WorkAPI extends AJAXHandler {
 

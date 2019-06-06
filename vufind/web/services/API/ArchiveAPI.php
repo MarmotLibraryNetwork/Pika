@@ -6,7 +6,7 @@
  * Time: 11:00 AM
  */
 
-require_once ROOT_DIR . '/AJAXHAndler.php';
+require_once ROOT_DIR . '/AJAXHandler.php';
 
 class API_ArchiveAPI extends AJAXHandler {
 
