@@ -93,9 +93,6 @@ class User extends DB_DataObject {
 	public $phoneType;
 
 
-	/* the code above is auto generated do not remove the tag below */
-	###END_AUTOCODE
-
 	function getTags(){
 		require_once ROOT_DIR . '/sys/LocalEnrichment/UserTag.php';
 		$tagList = array();
