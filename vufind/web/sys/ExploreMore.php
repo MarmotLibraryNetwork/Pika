@@ -1040,7 +1040,7 @@ class ExploreMore {
 						'label' => $section['title'],
 				);
 				if (!$currentlyShowingBook){
-					$section['link'] = $bookDriver->getRecordUrl(false) . '?pagePid=' . $firstPageInSection['pid'];
+					$section['link'] = $bookDriver->getRecordUrl() . '?pagePid=' . $firstPageInSection['pid'];
 				}
 				$exploreMoreSectionsToShow['tableOfContents']['values'][] = $section;
 			}

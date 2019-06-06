@@ -56,7 +56,7 @@ class Circa_Home extends Action
 		$interface->assign('lastUpdateIncorrectStatuses', $updateIncorrectStatuses);
 
 		try {
-			$catalog = CatalogFactory::getCatalogConnectionInstance();;
+			$catalog = CatalogFactory::getCatalogConnectionInstance();
 			$results = $catalog->doInventory($login, $password1, null, null, $barcodes, $updateIncorrectStatuses);
 			return $results;
 		} catch (PDOException $e) {

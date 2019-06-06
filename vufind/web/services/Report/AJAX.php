@@ -18,28 +18,14 @@
  *
  */
 
-require_once ROOT_DIR . '/Action.php';
+require_once ROOT_DIR . '/AJAXHandler.php';
 
-class Report_AJAX extends Action {
+class Report_AJAX extends AJAXHandler {
 
-	function launch() {
-		global $timer;
-		global $analytics;
-		$analytics->disableTracking();
-		$method = $_GET['method'];
-		$timer->logTime("Starting method $method");
-
-		//JSON Responses
-		header('Content-type: text/plain');
-		header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
-		header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
-		if (method_exists($this, $method)){
-			echo json_encode($this->$method());
-		}else{
-			$data = $analytics->getReportData($method, isset($_REQUEST['forGraph']));
-			echo json_encode($data['data']);
-		}
-	}
+	protected $methodsThatRepondWithJSONUnstructured = array(
+		'getActiveSessions',
+		'getRecentActivity',
+	);
 
 	/**
 	 * Active sessions are any sessions where the last request happened less than 1 minute ago.
@@ -63,8 +49,8 @@ class Report_AJAX extends Action {
 	function getRecentActivity(){
 		global $analytics;
 
-		$interval = isset($_REQUEST['interval']) ? $_REQUEST['interval'] : 10;
-		$curTime = time();
+		$interval         = isset($_REQUEST['interval']) ? $_REQUEST['interval'] : 10;
+		$curTime          = time();
 		$activityByMinute = array();
 
 		$analyticsSession = $analytics->getSessionFilters();

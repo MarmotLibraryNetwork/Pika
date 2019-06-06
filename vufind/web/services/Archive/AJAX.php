@@ -18,21 +18,31 @@
  *
  */
 
-require_once ROOT_DIR . '/Action.php';
+require_once ROOT_DIR . '/AJAXHandler.php';
 
-class Archive_AJAX extends Action {
+class Archive_AJAX extends AJAXHandler {
 
-
-	function launch() {
-		global $timer;
-		$method = $_GET['method'];
-		$timer->logTime("Starting method $method");
-		//JSON Responses
-		header('Content-type: application/json');
-		header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
-		header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
-		echo json_encode($this->$method());
-	}
+	protected $methodsThatRepondWithJSONUnstructured = array(
+		'getRelatedObjectsForScroller',
+		'getRelatedObjectsForTimelineExhibit',
+		'getRelatedObjectsForMappedCollection',
+		'getEntityFacetValuesForExhibit',
+		'getFacetValuesForExhibit',
+		'getExploreMoreContent',
+		'getObjectInfo',
+		'getMetadata',
+		'setMoreDetailsDisplayMode',
+		'getNextRandomObject',
+		'getTranscript',
+		'getAdditionalRelatedObjects',
+		'getSaveToListForm',
+		'saveToList',
+		'setupTimelineFacetsAndFilters',
+		'setupTimelineSorts',
+		'processTimelineData',
+		'setCoversDisplayMode',
+		'clearCache',
+	);
 
 	function getRelatedObjectsForExhibit(){
 		if (isset($_REQUEST['collectionId'])){
@@ -40,7 +50,7 @@ class Archive_AJAX extends Action {
 			global $timer;
 			require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
 			$fedoraUtils = FedoraUtils::getInstance();
-			$pid = urldecode($_REQUEST['collectionId']);
+			$pid         = urldecode($_REQUEST['collectionId']);
 			$interface->assign('exhibitPid', $pid);
 
 			$page = isset($_REQUEST['page']) ? $_REQUEST['page'] : 1;
@@ -79,38 +89,38 @@ class Archive_AJAX extends Action {
 			//TODO: Do these sorts work for a basic exhibit?
 
 			$relatedObjects = array();
-			$response = $searchObject->processSearch(true, false);
+			$response       = $searchObject->processSearch(true, false);
 			if ($response && isset($response['error'])){
 				$interface->assign('solrError', $response['error']['msg']);
 				$interface->assign('solrLink', $searchObject->getFullSearchUrl());
 			}
-			if ($response && isset($response['response']) && $response['response']['numFound'] > 0) {
+			if ($response && isset($response['response']) && $response['response']['numFound'] > 0){
 				$summary = $searchObject->getResultSummary();
 				$interface->assign('recordCount', $summary['resultTotal']);
 				$interface->assign('recordStart', $summary['startRecord']);
 				$interface->assign('recordEnd', $summary['endRecord']);
 
 				$recordIndex = $summary['startRecord'];
-				if ($displayMode == 'list') {
+				if ($displayMode == 'list'){
 					$recordSet = $searchObject->getResultRecordHTML();
 					$interface->assign('recordSet', $recordSet);
-				} else {
+				}else{
 					$interface->assign('showThumbnailsSorted', true);
-					foreach ($response['response']['docs'] as $objectInCollection) {
+					foreach ($response['response']['docs'] as $objectInCollection){
 						/** @var IslandoraDriver $firstObjectDriver */
 						$firstObjectDriver = RecordDriverFactory::initRecordDriver($objectInCollection);
 						$relatedObject     = array(
-							'title' => $firstObjectDriver->getTitle(),
+							'title'       => $firstObjectDriver->getTitle(),
 							'description' => $firstObjectDriver->getDescription(),
-							'image' => $firstObjectDriver->getBookcoverUrl('medium'),
+							'image'       => $firstObjectDriver->getBookcoverUrl('medium'),
 							'dateCreated' => $firstObjectDriver->getDateCreated(),
-							'link' => $firstObjectDriver->getRecordUrl(),
-							'pid' => $firstObjectDriver->getUniqueID(),
-							'recordIndex' => $recordIndex++
+							'link'        => $firstObjectDriver->getRecordUrl(),
+							'pid'         => $firstObjectDriver->getUniqueID(),
+							'recordIndex' => $recordIndex++,
 						);
-						if ($sort == 'dateAdded') {
+						if ($sort == 'dateAdded'){
 							$relatedObject['dateCreated'] = date('M j, Y', strtotime($objectInCollection['fgs_createdDate_dt']));
-						} elseif ($sort == 'dateModified') {
+						}elseif ($sort == 'dateModified'){
 							$relatedObject['dateCreated'] = date('M j, Y', strtotime($objectInCollection['fgs_lastModifiedDate_dt']));
 						}
 						$relatedObjects[] = $relatedObject;
@@ -125,13 +135,13 @@ class Archive_AJAX extends Action {
 				$interface->assign('relatedObjects', $relatedObjects);
 			}
 			return array(
-					'success' => true,
-					'relatedObjects' => $interface->fetch('Archive/relatedObjects.tpl')
+				'success'        => true,
+				'relatedObjects' => $interface->fetch('Archive/relatedObjects.tpl'),
 			);
 		}else{
 			return array(
-					'success' => false,
-					'message' => 'You must supply the collection and place to load data for'
+				'success' => false,
+				'message' => 'You must supply the collection and place to load data for',
 			);
 		}
 	}
@@ -143,7 +153,7 @@ class Archive_AJAX extends Action {
 			global $logger;
 			require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
 			$fedoraUtils = FedoraUtils::getInstance();
-			$pid = urldecode($_REQUEST['pid']);
+			$pid         = urldecode($_REQUEST['pid']);
 			$interface->assign('exhibitPid', $pid);
 
 			if (isset($_REQUEST['reloadHeader'])){
@@ -165,7 +175,7 @@ class Archive_AJAX extends Action {
 			$displayMode = $this->setCoversDisplayMode();
 
 			/** @var SearchObject_Islandora $searchObject */
- 			$searchObject = SearchObjectFactory::initSearchObject('Islandora');
+			$searchObject = SearchObjectFactory::initSearchObject('Islandora');
 			$searchObject->init();
 			$searchObject->setDebugging(false, false);
 			$searchObject->clearHiddenFilters();
@@ -175,8 +185,8 @@ class Archive_AJAX extends Action {
 			$searchObject->clearFacets();
 
 			$searchObject->setSearchTerms(array(
-					'lookfor' => '"' . $pid . '"',
-					'index' => 'IslandoraRelationshipsById'
+				'lookfor' => '"' . $pid . '"',
+				'index'   => 'IslandoraRelationshipsById',
 			));
 
 			$searchObject->setLimit(24);
@@ -185,12 +195,12 @@ class Archive_AJAX extends Action {
 			$interface->assign('showThumbnailsSorted', true);
 
 			$relatedObjects = array();
-			$response = $searchObject->processSearch(true, false);
+			$response       = $searchObject->processSearch(true, false);
 			if ($response && isset($response['error'])){
 				$interface->assign('solrError', $response['error']['msg']);
 				$interface->assign('solrLink', $searchObject->getFullSearchUrl());
 			}
-			if ($response && isset($response['response']) && $response['response']['numFound'] > 0) {
+			if ($response && isset($response['response']) && $response['response']['numFound'] > 0){
 				$summary = $searchObject->getResultSummary();
 				$interface->assign('recordCount', $summary['resultTotal']);
 				$interface->assign('recordStart', $summary['startRecord']);
@@ -199,7 +209,7 @@ class Archive_AJAX extends Action {
 				$page        = $summary['page'];
 				$interface->assign('page', $page);
 
-				if ($displayMode == 'list') {
+				if ($displayMode == 'list'){
 					$recordSet = $searchObject->getResultRecordHTML();
 					$interface->assign('recordSet', $recordSet);
 				}
@@ -210,22 +220,22 @@ class Archive_AJAX extends Action {
 				$_SESSION['exhibitSearchId'] = $lastExhibitObjectsSearch;
 				$logger->log("Setting exhibit search id to $lastExhibitObjectsSearch", PEAR_LOG_DEBUG);
 
-				if ($displayMode == 'covers') {
-					foreach ($response['response']['docs'] as $objectInCollection) {
+				if ($displayMode == 'covers'){
+					foreach ($response['response']['docs'] as $objectInCollection){
 						/** @var IslandoraDriver $firstObjectDriver */
 						$firstObjectDriver = RecordDriverFactory::initRecordDriver($objectInCollection);
 						$relatedObject     = array(
-							'title' => $firstObjectDriver->getTitle(),
+							'title'       => $firstObjectDriver->getTitle(),
 							'description' => $firstObjectDriver->getDescription(),
-							'image' => $firstObjectDriver->getBookcoverUrl('medium'),
+							'image'       => $firstObjectDriver->getBookcoverUrl('medium'),
 							'dateCreated' => $firstObjectDriver->getDateCreated(),
-							'link' => $firstObjectDriver->getRecordUrl(),
-							'pid' => $firstObjectDriver->getUniqueID(),
-							'recordIndex' => $recordIndex++
+							'link'        => $firstObjectDriver->getRecordUrl(),
+							'pid'         => $firstObjectDriver->getUniqueID(),
+							'recordIndex' => $recordIndex++,
 						);
-						if ($sort == 'dateAdded') {
+						if ($sort == 'dateAdded'){
 							$relatedObject['dateCreated'] = date('M j, Y', strtotime($objectInCollection['fgs_createdDate_dt']));
-						} elseif ($sort == 'dateModified') {
+						}elseif ($sort == 'dateModified'){
 							$relatedObject['dateCreated'] = date('M j, Y', strtotime($objectInCollection['fgs_lastModifiedDate_dt']));
 						}
 						$relatedObjects[] = $relatedObject;
@@ -240,13 +250,13 @@ class Archive_AJAX extends Action {
 			$interface->assign('relatedObjects', $relatedObjects);
 
 			return array(
-					'success' => true,
-					'relatedObjects' => $interface->fetch('Archive/relatedObjects.tpl')
+				'success'        => true,
+				'relatedObjects' => $interface->fetch('Archive/relatedObjects.tpl'),
 			);
 		}else{
 			return array(
-					'success' => false,
-					'message' => 'You must supply the collection and place to load data for'
+				'success' => false,
+				'message' => 'You must supply the collection and place to load data for',
 			);
 		}
 	}
@@ -290,11 +300,11 @@ class Archive_AJAX extends Action {
 			$searchObject->clearFacets();
 			//Add filtering based on date filters
 			$timeLineSetUp = false;
-			if (!empty($_SESSION['ExhibitContext']) && $_SESSION['ExhibitContext'] == $pid) {
+			if (!empty($_SESSION['ExhibitContext']) && $_SESSION['ExhibitContext'] == $pid){
 
-				if (!empty($_REQUEST['dateFilter']) && $_REQUEST['dateFilter'] != 'all') {
+				if (!empty($_REQUEST['dateFilter']) && $_REQUEST['dateFilter'] != 'all'){
 					$_SESSION['dateFilter'] = $_REQUEST['dateFilter']; // store applied date filters
-				} else {
+				}else{
 					// Clear time data
 					unset($_SESSION['dateFilter']);
 				}
@@ -307,23 +317,23 @@ class Archive_AJAX extends Action {
 			$interface->assign('showThumbnailsSorted', true);
 
 			$relatedObjects = array();
-			$response = $searchObject->processSearch(true, false);
+			$response       = $searchObject->processSearch(true, false);
 			if ($response && isset($response['error'])){
 				$interface->assign('solrError', $response['error']['msg']);
 				$interface->assign('solrLink', $searchObject->getFullSearchUrl());
 			}
-			if ($response && isset($response['response']) && $response['response']['numFound'] > 0) {
+			if ($response && isset($response['response']) && $response['response']['numFound'] > 0){
 				$summary = $searchObject->getResultSummary();
-				if (!$timeLineSetUp) {
+				if (!$timeLineSetUp){
 					$interface->assign('recordCount', $summary['resultTotal']);
 				}
 				$interface->assign('recordStart', $summary['startRecord']);
-				$interface->assign('recordEnd',   $summary['endRecord']);
+				$interface->assign('recordEnd', $summary['endRecord']);
 				$recordIndex = $summary['startRecord'];
-				$page = $summary['page'];
+				$page        = $summary['page'];
 				$interface->assign('page', $page);
 
-				if ($displayMode == 'list') {
+				if ($displayMode == 'list'){
 					$recordSet = $searchObject->getResultRecordHTML();
 					$interface->assign('recordSet', $recordSet);
 				}
@@ -331,26 +341,26 @@ class Archive_AJAX extends Action {
 
 				// Save the search with Map query and filters
 				$searchObject->close(); // Trigger save search
-				$lastExhibitObjectsSearch = $searchObject->getSearchId(); // Have to save the search first.
+				$lastExhibitObjectsSearch    = $searchObject->getSearchId(); // Have to save the search first.
 				$_SESSION['exhibitSearchId'] = $lastExhibitObjectsSearch;
 				$logger->log("Setting exhibit search id to $lastExhibitObjectsSearch", PEAR_LOG_DEBUG);
 
-				if ($displayMode == 'covers') {
-					foreach ($response['response']['docs'] as $objectInCollection) {
+				if ($displayMode == 'covers'){
+					foreach ($response['response']['docs'] as $objectInCollection){
 						/** @var IslandoraDriver $firstObjectDriver */
 						$firstObjectDriver = RecordDriverFactory::initRecordDriver($objectInCollection);
 						$relatedObject     = array(
-							'title' => $firstObjectDriver->getTitle(),
+							'title'       => $firstObjectDriver->getTitle(),
 							'description' => $firstObjectDriver->getDescription(),
-							'image' => $firstObjectDriver->getBookcoverUrl('medium'),
+							'image'       => $firstObjectDriver->getBookcoverUrl('medium'),
 							'dateCreated' => $firstObjectDriver->getDateCreated(),
-							'link' => $firstObjectDriver->getRecordUrl(),
-							'pid' => $firstObjectDriver->getUniqueID(),
-							'recordIndex' => $recordIndex++
+							'link'        => $firstObjectDriver->getRecordUrl(),
+							'pid'         => $firstObjectDriver->getUniqueID(),
+							'recordIndex' => $recordIndex++,
 						);
-						if ($sort == 'dateAdded') {
+						if ($sort == 'dateAdded'){
 							$relatedObject['dateCreated'] = date('M j, Y', strtotime($objectInCollection['fgs_createdDate_dt']));
-						} elseif ($sort == 'dateModified') {
+						}elseif ($sort == 'dateModified'){
 							$relatedObject['dateCreated'] = date('M j, Y', strtotime($objectInCollection['fgs_lastModifiedDate_dt']));
 						}
 						$relatedObjects[] = $relatedObject;
@@ -365,13 +375,13 @@ class Archive_AJAX extends Action {
 
 			$interface->assign('relatedObjects', $relatedObjects);
 			return array(
-					'success' => true,
-					'relatedObjects' => $interface->fetch('Archive/relatedObjects.tpl')
+				'success'        => true,
+				'relatedObjects' => $interface->fetch('Archive/relatedObjects.tpl'),
 			);
 		}else{
 			return array(
-					'success' => false,
-					'message' => 'You must supply the collection and place to load data for'
+				'success' => false,
+				'message' => 'You must supply the collection and place to load data for',
 			);
 		}
 	}
@@ -383,7 +393,7 @@ class Archive_AJAX extends Action {
 			global $logger;
 			require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
 			$fedoraUtils = FedoraUtils::getInstance();
-			$pid = urldecode($_REQUEST['collectionId']);
+			$pid         = urldecode($_REQUEST['collectionId']);
 			/** @var IslandoraDriver $collectionDriver */
 			$collectionDriver = RecordDriverFactory::initIslandoraDriverFromPid($pid);
 			$interface->assign('exhibitPid', $pid);
@@ -397,8 +407,8 @@ class Archive_AJAX extends Action {
 			if ($collectionDriver->getModsValue('pikaCollectionDisplay', 'marmot') == 'custom'){
 				//Load the options to show
 				$collectionOptionsOriginalRaw = $collectionDriver->getModsValue('collectionOptions', 'marmot');
-				$collectionOptionsOriginal = explode("\r\n", html_entity_decode($collectionOptionsOriginalRaw));
-				$additionalCollections = array();
+				$collectionOptionsOriginal    = explode("\r\n", html_entity_decode($collectionOptionsOriginalRaw));
+				$additionalCollections        = array();
 				if (isset($collectionOptionsOriginal)){
 					foreach ($collectionOptionsOriginal as $collectionOption){
 						if (strpos($collectionOption, 'googleMap') === 0){
@@ -423,11 +433,11 @@ class Archive_AJAX extends Action {
 			$placeId = urldecode($_REQUEST['placeId']);
 			$logger->log("Setting place information for context $placeId", PEAR_LOG_DEBUG);
 			@session_start();
-			$_SESSION['placePid'] =  $placeId;
+			$_SESSION['placePid'] = $placeId;
 			$interface->assign('placePid', $placeId);
 
 			/** @var FedoraObject $placeObject */
-			$placeObject = $fedoraUtils->getObject($placeId);
+			$placeObject            = $fedoraUtils->getObject($placeId);
 			$_SESSION['placeLabel'] = $placeObject->label;
 			$logger->log("Setting place label for context $placeObject->label", PEAR_LOG_DEBUG);
 
@@ -466,14 +476,14 @@ class Archive_AJAX extends Action {
 				$searchObject->addFilter("RELS_EXT_isMemberOfCollection_uri_ms:\"info:fedora/{$pid}\"");
 			}
 			$searchObject->setBasicQuery("mods_extension_marmotLocal_relatedEntity_place_entityPid_ms:\"{$placeId}\" OR " .
-					"mods_extension_marmotLocal_relatedPlace_entityPlace_entityPid_ms:\"{$placeId}\" OR " .
-					"mods_extension_marmotLocal_militaryService_militaryRecord_relatedPlace_entityPlace_entityPid_ms:\"{$placeId}\" OR " .
-					"mods_extension_marmotLocal_describedEntity_entityPid_ms:\"{$placeId}\" OR " .
-					"mods_extension_marmotLocal_picturedEntity_entityPid_ms:\"{$placeId}\""
+				"mods_extension_marmotLocal_relatedPlace_entityPlace_entityPid_ms:\"{$placeId}\" OR " .
+				"mods_extension_marmotLocal_militaryService_militaryRecord_relatedPlace_entityPlace_entityPid_ms:\"{$placeId}\" OR " .
+				"mods_extension_marmotLocal_describedEntity_entityPid_ms:\"{$placeId}\" OR " .
+				"mods_extension_marmotLocal_picturedEntity_entityPid_ms:\"{$placeId}\""
 			);
 
 			$searchObject->clearFacets();
-			if ($showTimeline) {
+			if ($showTimeline){
 				$this->setupTimelineFacetsAndFilters($searchObject);
 			}
 			$this->setupTimelineSorts($sort, $searchObject);
@@ -482,45 +492,45 @@ class Archive_AJAX extends Action {
 			$searchObject->setLimit(24);
 
 			$relatedObjects = array();
-			$response = $searchObject->processSearch(true, false, true);
+			$response       = $searchObject->processSearch(true, false, true);
 			if ($response && isset($response['error'])){
 				$interface->assign('solrError', $response['error']['msg']);
 				$interface->assign('solrLink', $searchObject->getFullSearchUrl());
 			}
-			if ($response && isset($response['response']) && $response['response']['numFound'] > 0) {
+			if ($response && isset($response['response']) && $response['response']['numFound'] > 0){
 				$summary = $searchObject->getResultSummary();
 				$interface->assign('recordCount', $summary['resultTotal']);
 				$interface->assign('recordStart', $summary['startRecord']);
-				$interface->assign('recordEnd',   $summary['endRecord']);
+				$interface->assign('recordEnd', $summary['endRecord']);
 				$recordIndex = $summary['startRecord'];
 
-				if ($displayMode == 'list') {
+				if ($displayMode == 'list'){
 					$recordSet = $searchObject->getResultRecordHTML();
 					$interface->assign('recordSet', $recordSet);
 				}
 
 				// Save the search with Map query and filters
 				$searchObject->close(); // Trigger save search
-				$lastExhibitObjectsSearch = $searchObject->getSearchId(); // Have to save the search first.
+				$lastExhibitObjectsSearch    = $searchObject->getSearchId(); // Have to save the search first.
 				$_SESSION['exhibitSearchId'] = $lastExhibitObjectsSearch;
 				$logger->log("Setting exhibit search id to $lastExhibitObjectsSearch", PEAR_LOG_DEBUG);
 
-				if ($displayMode == 'covers') {
-					foreach ($response['response']['docs'] as $objectInCollection) {
+				if ($displayMode == 'covers'){
+					foreach ($response['response']['docs'] as $objectInCollection){
 						/** @var IslandoraDriver $firstObjectDriver */
 						$firstObjectDriver = RecordDriverFactory::initRecordDriver($objectInCollection);
 						$relatedObject     = array(
-							'title' => $firstObjectDriver->getTitle(),
+							'title'       => $firstObjectDriver->getTitle(),
 							'description' => $firstObjectDriver->getDescription(),
-							'image' => $firstObjectDriver->getBookcoverUrl('medium'),
+							'image'       => $firstObjectDriver->getBookcoverUrl('medium'),
 							'dateCreated' => $firstObjectDriver->getDateCreated(),
-							'link' => $firstObjectDriver->getRecordUrl(),
-							'pid' => $firstObjectDriver->getUniqueID(),
-							'recordIndex' => $recordIndex++
+							'link'        => $firstObjectDriver->getRecordUrl(),
+							'pid'         => $firstObjectDriver->getUniqueID(),
+							'recordIndex' => $recordIndex++,
 						);
-						if ($sort == 'dateAdded') {
+						if ($sort == 'dateAdded'){
 							$relatedObject['dateCreated'] = date('M j, Y', strtotime($objectInCollection['fgs_createdDate_dt']));
-						} elseif ($sort == 'dateModified') {
+						}elseif ($sort == 'dateModified'){
 							$relatedObject['dateCreated'] = date('M j, Y', strtotime($objectInCollection['fgs_lastModifiedDate_dt']));
 						}
 						$relatedObjects[] = $relatedObject;
@@ -534,13 +544,13 @@ class Archive_AJAX extends Action {
 
 			$interface->assign('relatedObjects', $relatedObjects);
 			return array(
-					'success' => true,
-					'relatedObjects' => $interface->fetch('Archive/relatedObjects.tpl')
+				'success'        => true,
+				'relatedObjects' => $interface->fetch('Archive/relatedObjects.tpl'),
 			);
 		}else{
 			return array(
-					'success' => false,
-					'message' => 'You must supply the collection and place to load data for'
+				'success' => false,
+				'message' => 'You must supply the collection and place to load data for',
 			);
 		}
 	}
@@ -548,14 +558,14 @@ class Archive_AJAX extends Action {
 	function getEntityFacetValuesForExhibit(){
 		if (!isset($_REQUEST['id'])){
 			return array(
-					'success' => false,
-					'message' => 'You must supply the id to load facet data for'
+				'success' => false,
+				'message' => 'You must supply the id to load facet data for',
 			);
 		}
 		if (!isset($_REQUEST['facetName'])){
 			return array(
-					'success' => false,
-					'message' => 'You must supply the facetName to load facet data for'
+				'success' => false,
+				'message' => 'You must supply the facetName to load facet data for',
 			);
 		}
 
@@ -563,7 +573,7 @@ class Archive_AJAX extends Action {
 
 		//get a list of all collections and books within the main exhibit so we can find all related data.
 		require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
-		$fedoraUtils = FedoraUtils::getInstance();
+		$fedoraUtils   = FedoraUtils::getInstance();
 		$exhibitObject = $fedoraUtils->getObject($pid);
 		/** @var IslandoraDriver $exhibitDriver */
 		$exhibitDriver = RecordDriverFactory::initRecordDriver($exhibitObject);
@@ -587,7 +597,7 @@ class Archive_AJAX extends Action {
 		$searchObject->setLimit(1);
 
 		$facetValues = array();
-		$response = $searchObject->processSearch(true, false);
+		$response    = $searchObject->processSearch(true, false);
 		if ($response && isset($response['error'])){
 			$interface->assign('solrError', $response['error']['msg']);
 			$interface->assign('solrLink', $searchObject->getFullSearchUrl());
@@ -598,9 +608,9 @@ class Archive_AJAX extends Action {
 				$entityDriver = RecordDriverFactory::initIslandoraDriverFromPid($field[0]);
 				if (!PEAR_Singleton::isError($entityDriver) && $entityDriver != null){
 					$facetValues[$entityDriver->getTitle()] = array(
-							'display' => $entityDriver->getTitle(),
-							'url' => $entityDriver->getRecordUrl(),
-							'count' => $field[1]
+						'display' => $entityDriver->getTitle(),
+						'url'     => $entityDriver->getRecordUrl(),
+						'count'   => $field[1],
 					);
 				}
 			}
@@ -609,7 +619,7 @@ class Archive_AJAX extends Action {
 
 		$interface->assign('facetValues', $facetValues);
 		$results = array(
-				'modalBody' => $interface->fetch("Archive/browseFacetPopup.tpl"),
+			'modalBody' => $interface->fetch("Archive/browseFacetPopup.tpl"),
 		);
 		return $results;
 	}
@@ -617,14 +627,14 @@ class Archive_AJAX extends Action {
 	function getFacetValuesForExhibit(){
 		if (!isset($_REQUEST['id'])){
 			return array(
-					'success' => false,
-					'message' => 'You must supply the id to load facet data for'
+				'success' => false,
+				'message' => 'You must supply the id to load facet data for',
 			);
 		}
 		if (!isset($_REQUEST['facetName'])){
 			return array(
-					'success' => false,
-					'message' => 'You must supply the facetName to load facet data for'
+				'success' => false,
+				'message' => 'You must supply the facetName to load facet data for',
 			);
 		}
 
@@ -632,7 +642,7 @@ class Archive_AJAX extends Action {
 
 		//get a list of all collections and books within the main exhibit so we can find all related data.
 		require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
-		$fedoraUtils = FedoraUtils::getInstance();
+		$fedoraUtils   = FedoraUtils::getInstance();
 		$exhibitObject = $fedoraUtils->getObject($pid);
 		/** @var IslandoraDriver $exhibitDriver */
 		$exhibitDriver = RecordDriverFactory::initRecordDriver($exhibitObject);
@@ -656,7 +666,7 @@ class Archive_AJAX extends Action {
 		$searchObject->setLimit(1);
 
 		$facetValues = array();
-		$response = $searchObject->processSearch(true, false);
+		$response    = $searchObject->processSearch(true, false);
 		if ($response && isset($response['error'])){
 			$interface->assign('solrError', $response['error']['msg']);
 			$interface->assign('solrLink', $searchObject->getFullSearchUrl());
@@ -664,11 +674,11 @@ class Archive_AJAX extends Action {
 		if (isset($response['facet_counts']) && isset($response['facet_counts']['facet_fields'][$facetName])){
 			$facetFieldData = $response['facet_counts']['facet_fields'][$facetName];
 			foreach ($facetFieldData as $field){
-				$searchLink = $searchObject->renderLinkWithFilter("$facetName:$field[0]");
+				$searchLink             = $searchObject->renderLinkWithFilter("$facetName:$field[0]");
 				$facetValues[$field[0]] = array(
-						'display' => $field[0],
-						'url' => $searchLink,
-						'count' => $field[1]
+					'display' => $field[0],
+					'url'     => $searchLink,
+					'count'   => $field[1],
 				);
 			}
 			ksort($facetValues);
@@ -676,7 +686,7 @@ class Archive_AJAX extends Action {
 
 		$interface->assign('facetValues', $facetValues);
 		$results = array(
-				'modalBody' => $interface->fetch("Archive/browseFacetPopup.tpl"),
+			'modalBody' => $interface->fetch("Archive/browseFacetPopup.tpl"),
 		);
 		return $results;
 	}
@@ -696,7 +706,7 @@ class Archive_AJAX extends Action {
 		$interface->assign('pid', $pid);
 		$archiveObject = $fedoraUtils->getObject($pid);
 		/** @var IslandoraDriver $recordDriver */
-		$recordDriver = RecordDriverFactory::initRecordDriver($archiveObject);
+		$recordDriver  = RecordDriverFactory::initRecordDriver($archiveObject);
 		$interface->assign('recordDriver', $recordDriver);
 		$timer->logTime("Loaded record driver for main object");
 
@@ -735,7 +745,7 @@ class Archive_AJAX extends Action {
 		$pid = urldecode($_REQUEST['id']);
 		$interface->assign('pid', $pid);
 		$archiveObject = $fedoraUtils->getObject($pid);
-		$recordDriver = RecordDriverFactory::initRecordDriver($archiveObject);
+		$recordDriver  = RecordDriverFactory::initRecordDriver($archiveObject);
 		$interface->assign('recordDriver', $recordDriver);
 
 		$url = $recordDriver->getLinkUrl();
@@ -743,14 +753,14 @@ class Archive_AJAX extends Action {
 		$interface->assign('description', $recordDriver->getDescription());
 		$interface->assign('image', $recordDriver->getBookcoverUrl('medium'));
 
-		$urlStr = "<a href=\"$url\" onclick='VuFind.Archive.setForExhibitNavigation({$_COOKIE['recordIndex']},{$_COOKIE['page']})'>";
-		$escapedPid = urlencode($pid);
-		$addToFavoritesLabel = translate('Add to favorites');
+		$urlStr               = "<a href=\"$url\" onclick='VuFind.Archive.setForExhibitNavigation({$_COOKIE['recordIndex']},{$_COOKIE['page']})'>";
+		$escapedPid           = urlencode($pid);
+		$addToFavoritesLabel  = translate('Add to favorites');
 		$addToFavoritesButton = "<button onclick=\"return VuFind.Archive.showSaveToListForm(this, '$escapedPid');\" class=\"modal-buttons btn btn-primary\" style='float: left'>$addToFavoritesLabel</button>";
 		return array(
-			'title' => "{$urlStr}{$recordDriver->getTitle()}</a>",
-			'modalBody' => $interface->fetch('Archive/archivePopup.tpl'),
-			'modalButtons' => "$addToFavoritesButton{$urlStr}<button class='modal-buttons btn btn-primary'>More Info</button></a>"
+			'title'        => "{$urlStr}{$recordDriver->getTitle()}</a>",
+			'modalBody'    => $interface->fetch('Archive/archivePopup.tpl'),
+			'modalButtons' => "$addToFavoritesButton{$urlStr}<button class='modal-buttons btn btn-primary'>More Info</button></a>",
 		);
 	}
 
@@ -786,8 +796,8 @@ class Archive_AJAX extends Action {
 
 		$metadata = $interface->fetch('Archive/moredetails-accordion.tpl');
 		return array(
-				'success' => true,
-				'metadata' => $metadata,
+			'success'  => true,
+			'metadata' => $metadata,
 		);
 	}
 
@@ -804,9 +814,9 @@ class Archive_AJAX extends Action {
 		require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
 		$fedoraUtils = FedoraUtils::getInstance();
 
-		$pids = explode(',', $_REQUEST['id']);
+		$pids     = explode(',', $_REQUEST['id']);
 		$pidIndex = rand(0, count($pids) - 1);
-		$pid = $pids[$pidIndex];
+		$pid      = $pids[$pidIndex];
 
 		$archiveObject = $fedoraUtils->getObject(trim($pid));
 		/** @var IslandoraDriver $recordDriver */
@@ -814,58 +824,58 @@ class Archive_AJAX extends Action {
 
 		$randomImagePid = $recordDriver->getRandomObject();
 		if ($randomImagePid != null){
-			$randomObject = RecordDriverFactory::initRecordDriver($fedoraUtils->getObject($randomImagePid));
+			$randomObject     = RecordDriverFactory::initRecordDriver($fedoraUtils->getObject($randomImagePid));
 			$randomObjectInfo = array(
-					'label' => $randomObject->getTitle(),
-					'link' => $randomObject->getRecordUrl(),
-					'image' => $randomObject->getBookcoverUrl('medium')
+				'label' => $randomObject->getTitle(),
+				'link'  => $randomObject->getRecordUrl(),
+				'image' => $randomObject->getBookcoverUrl('medium'),
 			);
 			$interface->assign('randomObject', $randomObjectInfo);
 			return array(
-					'success' => true,
-					'image' => $interface->fetch('Archive/randomImage.tpl')
+				'success' => true,
+				'image'   => $interface->fetch('Archive/randomImage.tpl'),
 			);
 		}else{
 			return array(
-					'success' => false,
-					'message' => 'No ID provided'
+				'success' => false,
+				'message' => 'No ID provided',
 			);
 		}
 	}
 
 	public function getTranscript(){
 		global $configArray;
-		$objectUrl = $configArray['Islandora']['objectUrl'];
+		$objectUrl            = $configArray['Islandora']['objectUrl'];
 		$transcriptIdentifier = urldecode($_REQUEST['transcriptId']);
 		if (strlen($transcriptIdentifier) == 0){
 			//Check to see if we can get it based on the
 			return array(
-					'success' => true,
-					'transcript' => "There is no transcription available for this page.",
+				'success'    => true,
+				'transcript' => "There is no transcription available for this page.",
 			);
 		}elseif (strpos($transcriptIdentifier, 'mods:') === 0){
 			$objectPid = str_replace('mods:', '', $transcriptIdentifier);
 			require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
 			$fedoraUtils = FedoraUtils::getInstance();
-			$pageObject = $fedoraUtils->getObject($objectPid);
-			$mods = $fedoraUtils->getModsData($pageObject);
-			$transcript = $fedoraUtils->getModsValue('transcriptionText', 'marmot', $mods);
-			$transcript = str_replace("\r\n", '<br/>', $transcript);
-			$transcript = str_replace("&#xD;", '<br>', $transcript);
+			$pageObject  = $fedoraUtils->getObject($objectPid);
+			$mods        = $fedoraUtils->getModsData($pageObject);
+			$transcript  = $fedoraUtils->getModsValue('transcriptionText', 'marmot', $mods);
+			$transcript  = str_replace("\r\n", '<br/>', $transcript);
+			$transcript  = str_replace("&#xD;", '<br>', $transcript);
 			if (strlen($transcript) > 0){
 				return array(
-						'success' => true,
-						'transcript' => $transcript,
+					'success'    => true,
+					'transcript' => $transcript,
 				);
 			}
 		}else{
 			$transcriptUrl = $objectUrl . '/' . $transcriptIdentifier;
-			$transcript = file_get_contents($transcriptUrl);
+			$transcript    = file_get_contents($transcriptUrl);
 
-			if ($transcript) {
+			if ($transcript){
 				return array(
-						'success' => true,
-						'transcript' => $transcript,
+					'success'    => true,
+					'transcript' => $transcript,
 				);
 			}
 		}
@@ -892,8 +902,8 @@ class Archive_AJAX extends Action {
 		$this->setMoreDetailsDisplayMode();
 
 		return array(
-				'success' => true,
-				'additionalObjects' => $interface->fetch('Archive/additionalRelatedObjects.tpl')
+			'success'           => true,
+			'additionalObjects' => $interface->fetch('Archive/additionalRelatedObjects.tpl'),
 		);
 	}
 
@@ -907,28 +917,28 @@ class Archive_AJAX extends Action {
 		require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
 
 		//Get a list of all lists for the user
-		$containingLists = array();
+		$containingLists    = array();
 		$nonContainingLists = array();
 
-		$userLists = new UserList();
+		$userLists          = new UserList();
 		$userLists->user_id = UserAccount::getActiveUserId();
 		$userLists->deleted = 0;
 		$userLists->orderBy('title');
 		$userLists->find();
 		while ($userLists->fetch()){
 			//Check to see if the user has already added the title to the list.
-			$userListEntry = new UserListEntry();
-			$userListEntry->listId = $userLists->id;
+			$userListEntry                         = new UserListEntry();
+			$userListEntry->listId                 = $userLists->id;
 			$userListEntry->groupedWorkPermanentId = $id;
 			if ($userListEntry->find(true)){
 				$containingLists[] = array(
-					'id' => $userLists->id,
-					'title' => $userLists->title
+					'id'    => $userLists->id,
+					'title' => $userLists->title,
 				);
 			}else{
 				$nonContainingLists[] = array(
-					'id' => $userLists->id,
-					'title' => $userLists->title
+					'id'    => $userLists->id,
+					'title' => $userLists->title,
 				);
 			}
 		}
@@ -937,9 +947,9 @@ class Archive_AJAX extends Action {
 		$interface->assign('nonContainingLists', $nonContainingLists);
 
 		$results = array(
-			'title' => 'Add To List',
-			'modalBody' => $interface->fetch("GroupedWork/save.tpl"),
-			'modalButtons' => "<button class='tool btn btn-primary' onclick='VuFind.Archive.saveToList(\"{$id}\"); return false;'>Save To List</button>"
+			'title'        => 'Add To List',
+			'modalBody'    => $interface->fetch("GroupedWork/save.tpl"),
+			'modalButtons' => "<button class='tool btn btn-primary' onclick='VuFind.Archive.saveToList(\"{$id}\"); return false;'>Save To List</button>",
 		);
 		return $results;
 	}
@@ -947,36 +957,36 @@ class Archive_AJAX extends Action {
 	function saveToList(){
 		$result = array();
 
-		if (!UserAccount::isLoggedIn()) {
+		if (!UserAccount::isLoggedIn()){
 			$result['success'] = false;
 			$result['message'] = 'Please login before adding a title to list.';
 		}else{
 			require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
 			require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
 			$result['success'] = true;
-			$id = urldecode($_REQUEST['id']);
-			if (!preg_match("/^[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}|[A-Z0-9_-]+:[A-Z0-9_-]+$/i",$id)){
+			$id                = urldecode($_REQUEST['id']);
+			if (!preg_match("/^[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}|[A-Z0-9_-]+:[A-Z0-9_-]+$/i", $id)){
 				$result['success'] = false;
 				$result['message'] = 'That is not a valid title to add to the list.';
 			}else{
 				$listId = $_REQUEST['listId'];
-				$notes = $_REQUEST['notes'];
+				$notes  = $_REQUEST['notes'];
 
 				//Check to see if we need to create a list
 				$userList = new UserList();
-				$listOk = true;
+				$listOk   = true;
 				if (empty($listId)){
-					$existingList = new UserList();
+					$existingList          = new UserList();
 					$existingList->user_id = UserAccount::getActiveUserId();
-					$existingList->title = "My Favorites";
+					$existingList->title   = "My Favorites";
 					$existingList->deleted = 0;
 					//Make sure we don't create duplicate My Favorites List
 					if ($existingList->find(true)){
 						$userList = $existingList;
 					}else{
-						$userList->title = "My Favorites";
-						$userList->user_id = UserAccount::getActiveUserId();
-						$userList->public = 0;
+						$userList->title       = "My Favorites";
+						$userList->user_id     = UserAccount::getActiveUserId();
+						$userList->public      = 0;
 						$userList->description = '';
 						$userList->insert();
 					}
@@ -986,20 +996,20 @@ class Archive_AJAX extends Action {
 					if (!$userList->find(true)){
 						$result['success'] = false;
 						$result['message'] = 'Sorry, we could not find that list in the system.';
-						$listOk = false;
+						$listOk            = false;
 					}
 				}
 
 				if ($listOk){
-					$userListEntry = new UserListEntry();
-					$userListEntry->listId = $userList->id;
+					$userListEntry                         = new UserListEntry();
+					$userListEntry->listId                 = $userList->id;
 					$userListEntry->groupedWorkPermanentId = $id;
 
 					$existingEntry = false;
 					if ($userListEntry->find(true)){
 						$existingEntry = true;
 					}
-					$userListEntry->notes = strip_tags($notes);
+					$userListEntry->notes     = strip_tags($notes);
 					$userListEntry->dateAdded = time();
 					if ($existingEntry){
 						$userListEntry->update();
@@ -1019,20 +1029,19 @@ class Archive_AJAX extends Action {
 	/**
 	 * @param SearchObject_Islandora $searchObject
 	 */
-	public function setupTimelineFacetsAndFilters($searchObject)
-	{
-		if (isset($_REQUEST['dateFilter']) && $_REQUEST['dateFilter'] != 'all') {
+	public function setupTimelineFacetsAndFilters($searchObject){
+		if (isset($_REQUEST['dateFilter']) && $_REQUEST['dateFilter'] != 'all'){
 
 			$filter = '';
-			$date = $_REQUEST['dateFilter'];
-			if ($date == 'before1880') {
+			$date   = $_REQUEST['dateFilter'];
+			if ($date == 'before1880'){
 				$filter .= "dateCreated:[* TO 1879-12-31T23:59:59Z]";
-			} elseif ($date == 'unknown') {
+			}elseif ($date == 'unknown'){
 				$filter .= '-dateCreated:[* TO *]';
-			} else {
+			}else{
 				$startYear = substr($date, 0, 4);
-				$endYear = (int)$startYear + 9;
-				$filter .= "dateCreated:[$date TO $endYear-12-31T23:59:59Z]";
+				$endYear   = (int)$startYear + 9;
+				$filter    .= "dateCreated:[$date TO $endYear-12-31T23:59:59Z]";
 			}
 
 			if (strlen($filter)){
@@ -1044,31 +1053,30 @@ class Archive_AJAX extends Action {
 		$searchObject->addFacet('dateCreated', 'Date Created');
 
 		$searchObject->addFacetOptions(array(
-				'facet.range' => array('dateCreated'),
-				'f.dateCreated.facet.missing' => 'true',
-				'f.dateCreated.facet.range.start' => '1880-01-01T00:00:00Z',
-				'f.dateCreated.facet.range.end' => 'NOW/YEAR',
-				'f.dateCreated.facet.range.hardend' => 'true',
-				'f.dateCreated.facet.range.gap' => '+10YEAR',
-				'f.dateCreated.facet.range.other' => 'all',
+			'facet.range'                       => array('dateCreated'),
+			'f.dateCreated.facet.missing'       => 'true',
+			'f.dateCreated.facet.range.start'   => '1880-01-01T00:00:00Z',
+			'f.dateCreated.facet.range.end'     => 'NOW/YEAR',
+			'f.dateCreated.facet.range.hardend' => 'true',
+			'f.dateCreated.facet.range.gap'     => '+10YEAR',
+			'f.dateCreated.facet.range.other'   => 'all',
 		));
 	}
 
 	/**
-	 * @param $sort
+	 * @param                        $sort
 	 * @param SearchObject_Islandora $searchObject
 	 */
-	public function setupTimelineSorts($sort, $searchObject)
-	{
-		if ($sort == 'title') {
+	public function setupTimelineSorts($sort, $searchObject){
+		if ($sort == 'title'){
 			$searchObject->setSort('fgs_label_s');
-		} elseif ($sort == 'newest') {
+		}elseif ($sort == 'newest'){
 			$searchObject->setSort('mods_originInfo_qualifier__dateIssued_dt desc,dateCreated desc,fgs_label_s asc');
-		} elseif ($sort == 'oldest') {
+		}elseif ($sort == 'oldest'){
 			$searchObject->setSort('mods_originInfo_qualifier__dateIssued_dt asc,dateCreated asc,fgs_label_s asc');
-		} elseif ($sort == 'dateAdded') {
+		}elseif ($sort == 'dateAdded'){
 			$searchObject->setSort('fgs_createdDate_dt desc,fgs_label_s asc');
-		} elseif ($sort == 'dateModified') {
+		}elseif ($sort == 'dateModified'){
 			$searchObject->setSort('fgs_lastModifiedDate_dt desc,fgs_label_s asc');
 		}
 	}
@@ -1077,31 +1085,30 @@ class Archive_AJAX extends Action {
 	 * @param $response
 	 * @param $interface
 	 */
-	public function processTimelineData($response, $interface)
-	{
-		if (isset($response['facet_counts']) && count($response['facet_counts']['facet_ranges']) > 0) {
+	public function processTimelineData($response, $interface){
+		if (isset($response['facet_counts']) && count($response['facet_counts']['facet_ranges']) > 0){
 			$dateFacetInfo = array();
-			if (isset($response['facet_counts']['facet_ranges']['dateCreated'])) {
+			if (isset($response['facet_counts']['facet_ranges']['dateCreated'])){
 				$dateCreatedInfo = $response['facet_counts']['facet_ranges']['dateCreated'];
-				if ($dateCreatedInfo['before'] > 0) {
+				if ($dateCreatedInfo['before'] > 0){
 					$dateFacetInfo['1870'] = array(
-							'label' => 'Before 1880',
-							'count' => $dateCreatedInfo['before'],
-							'value' => 'before1880'
+						'label' => 'Before 1880',
+						'count' => $dateCreatedInfo['before'],
+						'value' => 'before1880',
 					);
 				}
-				foreach ($dateCreatedInfo['counts'] as $facetInfo) {
+				foreach ($dateCreatedInfo['counts'] as $facetInfo){
 					$dateFacetInfo[substr($facetInfo[0], 0, 4) . '\'s'] = array(
-							'label' => substr($facetInfo[0], 0, 4) . '\'s',
-							'count' => $facetInfo[1],
-							'value' => $facetInfo[0]
+						'label' => substr($facetInfo[0], 0, 4) . '\'s',
+						'count' => $facetInfo[1],
+						'value' => $facetInfo[0],
 					);
 				}
 			}
 
 			//Figure out how many unknown dates there are
 			$totalFound = 0;
-			foreach($dateFacetInfo as $dateFacet){
+			foreach ($dateFacetInfo as $dateFacet){
 				$totalFound += $dateFacet['count'];
 			}
 			$numUnknown = $response['response']['numFound'] - $totalFound;
@@ -1120,17 +1127,16 @@ class Archive_AJAX extends Action {
 		}
 	}
 
-	private function setCoversDisplayMode()
-	{
+	private function setCoversDisplayMode(){
 		global $interface,
-		$library;
-		if (!empty($_REQUEST['archiveCollectionView'])) {
+		       $library;
+		if (!empty($_REQUEST['archiveCollectionView'])){
 			$displayMode = $_REQUEST['archiveCollectionView'];
-		} elseif (!empty($_SESSION['archiveCollectionDisplayMode'])) {
+		}elseif (!empty($_SESSION['archiveCollectionDisplayMode'])){
 			$displayMode = $_SESSION['archiveCollectionDisplayMode'];
-		} elseif (!empty($library->defaultArchiveCollectionBrowseMode)) {
+		}elseif (!empty($library->defaultArchiveCollectionBrowseMode)){
 			$displayMode = $library->defaultArchiveCollectionBrowseMode;
-		} else {
+		}else{
 			$displayMode = 'covers'; // Pika default mode is covers
 		}
 
@@ -1142,16 +1148,16 @@ class Archive_AJAX extends Action {
 	public function clearCache(){
 		if (!isset($_REQUEST['id'])){
 			return array(
-					'success' => false,
-					'message' => 'You must supply the id to clear cached data for.'
+				'success' => false,
+				'message' => 'You must supply the id to clear cached data for.',
 			);
 		}
 		$id = $_REQUEST['id'];
 
 		$mainCacheCleared = false;
-		$cacheMessage = '';
+		$cacheMessage     = '';
 		require_once ROOT_DIR . '/sys/Islandora/IslandoraObjectCache.php';
-		$objectCache = new IslandoraObjectCache();
+		$objectCache      = new IslandoraObjectCache();
 		$objectCache->pid = $id;
 		if ($objectCache->find(true)){
 			if ($objectCache->delete()){
@@ -1165,13 +1171,13 @@ class Archive_AJAX extends Action {
 			}
 		}else{
 			$mainCacheCleared = true;
-			$cacheMessage = 'Cached data does not exist for that id.<br/>';
+			$cacheMessage     = 'Cached data does not exist for that id.<br/>';
 		}
 
 		$samePikaCleared = false;
 		require_once ROOT_DIR . '/sys/Islandora/IslandoraSamePikaCache.php';
 		//Check for cached links
-		$samePikaCache = new IslandoraSamePikaCache();
+		$samePikaCache      = new IslandoraSamePikaCache();
 		$samePikaCache->pid = $id;
 		if ($samePikaCache->find(true)){
 			if ($samePikaCache->delete()){
@@ -1185,8 +1191,8 @@ class Archive_AJAX extends Action {
 		}
 
 		return array(
-				'success' => $mainCacheCleared || $samePikaCleared,
-				'message' => $cacheMessage
+			'success' => $mainCacheCleared || $samePikaCleared,
+			'message' => $cacheMessage,
 		);
 	}
 }

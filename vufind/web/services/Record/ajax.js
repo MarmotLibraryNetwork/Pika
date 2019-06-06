@@ -1,3 +1,4 @@
+/* Doesn't appear to be used. pascal 4/36/2019
 function SendEmail(id, to, from, message, strings) {
 	var url = path + "/Record/" + encodeURIComponent(id) + "/AJAX";
 	var params = "method=SendEmail&" + "from=" + encodeURIComponent(from) + "&" + "to=" + encodeURIComponent(to) + "&" + "message=" + encodeURIComponent(message);
@@ -94,9 +95,9 @@ function LoadComments(id) {
 	});
 }
 
-/**
+/!**
  * @return {boolean}
- */
+ *!/
 function GetPreferredBranches() {
 	var username = document.forms['placeHoldForm'].elements['username'].value;
 	var barcode = document.forms['placeHoldForm'].elements['password'].value;
@@ -250,3 +251,4 @@ libraryThingWidgetsLoaded = function(){
 		$("#ltfl_related_button").show();
 	}
 };
+*/

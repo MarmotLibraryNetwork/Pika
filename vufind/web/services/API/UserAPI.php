@@ -21,60 +21,48 @@ require_once ROOT_DIR . '/CatalogConnection.php';
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * @version 1.0
- * @author Mark Noble <mnoble@turningleaftech.com>
+ * @version   1.0
+ * @author    Mark Noble <mnoble@turningleaftech.com>
  * @copyright Copyright (C) Douglas County Libraries 2011.
  */
-class UserAPI extends Action {
+class UserAPI extends AJAXHandler {
 
+	protected $methodsThatRepondWithJSONResultWrapper = array(
+		'isLoggedIn',
+		'login',
+		'logout',
+		'validateAccount',
+		'getPatronProfile',
+		'getPatronHolds',
+		'getPatronHoldsOverDrive',
+		'getPatronCheckedOutItemsOverDrive',
+		'getPatronOverDriveSummary',
+		'getPatronFines',
+		'getOverDriveLendingOptions',
+		'getPatronCheckedOutItems',
+		'renewItem',
+		'renewAll',
+		'placeHold',
+		'placeItemHold',
+		'changeHoldPickUpLocation',
+		'placeOverDriveHold',
+		'cancelOverDriveHold',
+		'addItemToOverDriveCart',
+		'checkoutOverDriveItem',
+		'processOverDriveCart',
+		'cancelHold',
+		'freezeHold',
+		'activateHold',
+		'getPatronReadingHistory',
+		'loadReadingHistoryFromIls',
+		'optIntoReadingHistory',
+		'optOutOfReadingHistory',
+		'deleteAllFromReadingHistory',
+		'deleteSelectedFromReadingHistory',
+		'loadUsernameAndPassword',
+	);
 	/** @var CatalogConnection */
 	private $catalog;
-
-	/**
-	 * Processes method to determine return type and calls the correct method.
-	 * Should not be called directly.
-	 *
-	 * @see Action::launch()
-	 * @access private
-	 * @author Mark Noble <mnoble@turningleaftech.com>
-	 */
-	function launch(){
-		//header('Content-type: application/json');
-		header('Content-type: application/json');
-		header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
-		header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
-
-		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
-		if (method_exists($this, $method)){
-			try {
-				$result = $this->$_REQUEST['method']();
-				require_once ROOT_DIR . '/sys/Utils/ArrayUtils.php';
-				$utf8EncodedValue = ArrayUtils::utf8EncodeArray(array('result' => $result));
-				$output           = json_encode($utf8EncodedValue);
-				$error            = json_last_error();
-				if ($error != JSON_ERROR_NONE || $output === false){
-					if (function_exists('json_last_error_msg')){
-						$output = json_encode(array('error' => 'error_encoding_data', 'message' => json_last_error_msg()));
-					}else{
-						$output = json_encode(array('error' => 'error_encoding_data', 'message' => json_last_error()));
-					}
-//					global $configArray;
-//					if ($configArray['System']['debug']){
-//						print_r($utf8EncodedValue);
-//					}
-				}
-			} catch (Exception $e){
-				$output = json_encode(array('error' => 'error_encoding_data', 'message' => $e));
-				global $logger;
-				$logger->log("Error encoding json data $e", PEAR_LOG_ERR);
-			}
-
-		}else{
-			$output = json_encode(array('error' => 'invalid_method'));
-		}
-
-		echo $output;
-	}
 
 	function getCatalogConnection(){
 		if ($this->catalog == null){
@@ -196,7 +184,7 @@ class UserAPI extends Action {
 	 * <li>lastname � The last name of the patron in the ILS</li>
 	 * <li>email � The patron's e-mail address if set within Horizon.</li>
 	 * <li>college, major � not currently used</li>
-	 * <li>homeLocationId � the id of the patron's home libarary within VuFind.</li>
+	 * <li>homeLocationId � the id of the patron's home library within VuFind.</li>
 	 * <li>MyLocation1Id, myLocation2Id � not currently used</li>
 	 * </ul>
 	 *
@@ -832,7 +820,7 @@ class UserAPI extends Action {
 		$itemBarcode = $_REQUEST['itemBarcode'];
 		$user        = UserAccount::validateAccount($username, $password);
 		if ($user && !PEAR_Singleton::isError($user)){
-			$renewalMessage = $this->getCatalogConnection()->renewItem($user->cat_username, $itemBarcode);
+			$renewalMessage = $this->getCatalogConnection()->renewItem($user, $itemBarcode);
 			return array('success' => true, 'renewalMessage' => $renewalMessage);
 		}else{
 			return array('success' => false, 'message' => 'Login unsuccessful');

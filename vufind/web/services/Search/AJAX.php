@@ -9,102 +9,50 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA	02111-1307	USA
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
 
 require_once ROOT_DIR . '/Action.php';
 
-class AJAX extends Action {
+class AJAX extends AJAXHandler {
 
-	function launch()
-	{
-		global $analytics;
-		$analytics->disableTracking();
-		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
-		if (method_exists($this, $method)) {
-			$text_methods = array('GetAutoSuggestList', 'SysListTitles', 'getEmailForm', 'sendEmail', 'getDplaResults');
-			//TODO reconfig to use the JSON outputting here.
-			$json_methods = array('getMoreSearchResults', 'GetListTitles', 'loadExploreMoreBar');
-			// Plain Text Methods //
-			if (in_array($method, $text_methods)) {
-				header('Content-type: text/plain');
-				header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
-				header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
-				$this->$method();
-			} // JSON Methods //
-			elseif (in_array($method, $json_methods)) {
-				//			$response = $this->$method();
+	protected $methodsThatRespondWithHTML = array(
+		'sendEmail',
+		'GetAutoSuggestList',
+		'getProspectorResults',
+		'SysListTitles',
+		'getEmailForm',
+		'getDplaResults',
+	);
 
-				//			header ('Content-type: application/json');
-				header('Content-type: text/html');
-				header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
-				header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
+	protected $methodsThatRepondWithJSONUnstructured = array(
+		'getMoreSearchResults',
+		'GetListTitles',
+		'loadExploreMoreBar',
+	);
 
-				try {
-					$result = $this->$method();
-//					require_once ROOT_DIR . '/sys/Utils/ArrayUtils.php';
-					// This only encodes an ISO-8859-1 string to UTF-8
-//					$utf8EncodedValue = ArrayUtils::utf8EncodeArray($result);
-					// This only encodes an ISO-8859-1 string to UTF-8
-					// It is best to encode to UTF-8 when ingesting from whatever source that encoding comes from
-					// pascal 8-27-2018
-//					$output = json_encode($utf8EncodedValue);
-					$output = json_encode($result);
-					$error = json_last_error();
-					if ($error != JSON_ERROR_NONE || $output === FALSE) {
-						if (function_exists('json_last_error_msg')) {
-							$output = json_encode(array('error' => 'error_encoding_data', 'message' => json_last_error_msg()));
-						} else {
-							$output = json_encode(array('error' => 'error_encoding_data', 'message' => json_last_error()));
-						}
-						global $configArray;
-						if ($configArray['System']['debug']) {
-//							print_r($utf8EncodedValue);
-						}
-					}
-				} catch (Exception $e) {
-					$output = json_encode(array('error' => 'error_encoding_data', 'message' => $e));
-					global $logger;
-					$logger->log("Error encoding json data $e", PEAR_LOG_ERR);
-				}
+	protected $methodsThatRespondWithXML = array(
+		'IsLoggedIn',
+	);
 
-				echo $output;
-			} else {
-				header('Content-type: text/xml');
-				header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
-				header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
-				echo '<?xml version="1.0" encoding="UTF-8"?' . ">\n";
-				echo "<AJAXResponse>\n";
-				$this->$method();
-				echo '</AJAXResponse>';
-			}
-		}else {
-			$output = json_encode(array('error'=>'invalid_method'));
-			echo $output;
-		}
-	}
-
-	function IsLoggedIn()
-	{
-		echo "<result>" .
-		(UserAccount::isLoggedIn() ? "True" : "False") . "</result>";
+	function IsLoggedIn(){
+		echo "<result>" . (UserAccount::isLoggedIn() ? "True" : "False") . "</result>";
 	}
 
 	// Email Search Results
-	function sendEmail()
-	{
+	function sendEmail(){
 		global $interface;
 
 		$subject = translate('Library Catalog Search Result');
-		$url = $_REQUEST['sourceUrl'];
-		$to = $_REQUEST['to'];
-		$from = $_REQUEST['from'];
+		$url     = $_REQUEST['sourceUrl'];
+		$to      = $_REQUEST['to'];
+		$from    = $_REQUEST['from'];
 		$message = $_REQUEST['message'];
 		$interface->assign('from', $from);
 		if (strpos($message, 'http') === false && strpos($message, 'mailto') === false && $message == strip_tags($message)){
@@ -113,33 +61,33 @@ class AJAX extends Action {
 			$body = $interface->fetch('Emails/share-link.tpl');
 
 			require_once ROOT_DIR . '/sys/Mailer.php';
-			$mail = new VuFindMailer();
+			$mail        = new VuFindMailer();
 			$emailResult = $mail->send($to, $from, $subject, $body);
 
 			if ($emailResult === true){
 				$result = array(
-						'result' => true,
-						'message' => 'Your e-mail was sent successfully.'
+					'result'  => true,
+					'message' => 'Your e-mail was sent successfully.',
 				);
 			}elseif (PEAR_Singleton::isError($emailResult)){
 				$result = array(
-						'result' => false,
-						'message' => "Your e-mail message could not be sent: {$emailResult->message}."
+					'result'  => false,
+					'message' => "Your e-mail message could not be sent: {$emailResult->message}.",
 				);
 			}else{
 				$result = array(
-						'result' => false,
-						'message' => 'Your e-mail message could not be sent due to an unknown error.'
+					'result'  => false,
+					'message' => 'Your e-mail message could not be sent due to an unknown error.',
 				);
 			}
 		}else{
 			$result = array(
-					'result' => false,
-					'message' => 'Sorry, we can&apos;t send e-mails with html or other data in it.'
+				'result'  => false,
+				'message' => 'Sorry, we can&apos;t send e-mails with html or other data in it.',
 			);
 		}
 
-		echo json_encode($result);
+		return $result;
 	}
 
 	function GetAutoSuggestList(){
@@ -148,13 +96,13 @@ class AJAX extends Action {
 		global $configArray;
 		/** @var Memcache $memCache */
 		global $memCache;
-		$searchTerm = isset($_REQUEST['searchTerm']) ? $_REQUEST['searchTerm'] : $_REQUEST['q'];
-		$searchType = isset($_REQUEST['type']) ? $_REQUEST['type'] : '';
-		$cacheKey = 'auto_suggest_list_' . urlencode($searchType) . '_' . urlencode($searchTerm);
+		$searchTerm        = isset($_REQUEST['searchTerm']) ? $_REQUEST['searchTerm'] : $_REQUEST['q'];
+		$searchType        = isset($_REQUEST['type']) ? $_REQUEST['type'] : '';
+		$cacheKey          = 'auto_suggest_list_' . urlencode($searchType) . '_' . urlencode($searchTerm);
 		$searchSuggestions = $memCache->get($cacheKey);
 		if ($searchSuggestions == false || isset($_REQUEST['reload'])){
-			$suggestions = new SearchSuggestions();
-			$commonSearches = $suggestions->getAllSuggestions($searchTerm, $searchType);
+			$suggestions       = new SearchSuggestions();
+			$commonSearches    = $suggestions->getAllSuggestions($searchTerm, $searchType);
 			$commonSearchTerms = array();
 			foreach ($commonSearches as $searchTerm){
 				if (is_array($searchTerm)){
@@ -164,15 +112,15 @@ class AJAX extends Action {
 				}
 			}
 			$searchSuggestions = json_encode($commonSearchTerms);
-			$memCache->set($cacheKey, $searchSuggestions, 0, $configArray['Caching']['search_suggestions'] );
+			$memCache->set($cacheKey, $searchSuggestions, 0, $configArray['Caching']['search_suggestions']);
 			$timer->logTime("Loaded search suggestions $cacheKey");
 		}
-		echo $searchSuggestions;
+		return $searchSuggestions;
 	}
 
 	function getProspectorResults(){
 		$prospectorSavedSearchId = $_GET['prospectorSavedSearchId'];
-		if (ctype_digit($prospectorSavedSearchId)) {
+		if (ctype_digit($prospectorSavedSearchId)){
 			require_once ROOT_DIR . '/Drivers/marmot_inc/Prospector.php';
 			global $configArray;
 			global $interface;
@@ -192,7 +140,7 @@ class AJAX extends Action {
 			$prospector = new Prospector();
 
 			// Only show prospector results within search results if enabled
-			if ($library && $library->enablePospectorIntegration && $library->showProspectorResultsAtEndOfSearch) {
+			if ($library && $library->enablePospectorIntegration && $library->showProspectorResultsAtEndOfSearch){
 				$prospectorResults = $prospector->getTopSearchResults($searchObject->getSearchTerms(), 5);
 				$interface->assign('prospectorResults', $prospectorResults['records']);
 			}
@@ -202,12 +150,12 @@ class AJAX extends Action {
 			$prospectorLink = $prospector->getSearchLink($searchObject->getSearchTerms());
 			$interface->assign('prospectorLink', $prospectorLink);
 			$timer->logTime('load Prospector titles');
-			echo $interface->fetch('Search/ajax-prospector.tpl');
+			return $interface->fetch('Search/ajax-prospector.tpl');
 		}
 	}
 
 	/**
-	 * For historical purposes.	Make sure the old API wll still work.
+	 * For historical purposes.  Make sure the old API wll still work.
 	 */
 	function SysListTitles(){
 		if (!isset($_GET['id'])){
@@ -217,19 +165,18 @@ class AJAX extends Action {
 	}
 
 	/**
-	 * @return string JSON encoded data representing the list information
+	 * @return array Data representing the list information
 	 */
 	function GetListTitles(){
 		/** @var Memcache $memCache */
 		global $memCache;
-		global $configArray;
 		global $timer;
 
 		$listName = strip_tags(isset($_GET['scrollerName']) ? $_GET['scrollerName'] : 'List' . $_GET['id']);
 
 		//Determine the caching parameters
 		require_once(ROOT_DIR . '/services/API/ListAPI.php');
-		$listAPI = new ListAPI();
+		$listAPI   = new ListAPI();
 		$cacheInfo = $listAPI->getCacheInfoForList();
 
 		$cacheName = $cacheInfo['cacheName'];
@@ -256,7 +203,7 @@ class AJAX extends Action {
 						$interface->assign('key', $key);
 						// 20131206 James Staub: bookTitle is in the list API and it removes the final frontslash, but I didn't get $rawData['bookTitle'] to load
 
-						$titleShort = preg_replace(array('/\:.*?$/', '/\s*\/$\s*/'),'', $rawData['title']);
+						$titleShort = preg_replace(array('/\:.*?$/', '/\s*\/$\s*/'), '', $rawData['title']);
 //						$titleShort = preg_replace('/\:.*?$/','', $rawData['title']);
 //						$titleShort = preg_replace('/\s*\/$\s*/','', $titleShort);
 
@@ -265,15 +212,15 @@ class AJAX extends Action {
 							$imageUrl = $rawData['image'];
 						}
 
-						$interface->assign('title',       $titleShort);
-						$interface->assign('author',      $rawData['author']);
+						$interface->assign('title', $titleShort);
+						$interface->assign('author', $rawData['author']);
 						$interface->assign('description', isset($rawData['description']) ? $rawData['description'] : null);
-						$interface->assign('length',      isset($rawData['length']) ? $rawData['length'] : null);
-						$interface->assign('publisher',   isset($rawData['publisher']) ? $rawData['publisher'] : null);
-						$interface->assign('shortId',     $rawData['shortId']);
-						$interface->assign('id',          $rawData['id']);
-						$interface->assign('titleURL',    $rawData['titleURL']);
-						$interface->assign('imageUrl',    $imageUrl);
+						$interface->assign('length', isset($rawData['length']) ? $rawData['length'] : null);
+						$interface->assign('publisher', isset($rawData['publisher']) ? $rawData['publisher'] : null);
+						$interface->assign('shortId', $rawData['shortId']);
+						$interface->assign('id', $rawData['id']);
+						$interface->assign('titleURL', $rawData['titleURL']);
+						$interface->assign('imageUrl', $imageUrl);
 
 						if ($showRatings){
 							$interface->assign('ratingData', $rawData['ratingData']);
@@ -294,7 +241,9 @@ class AJAX extends Action {
 				$memCache->set($cacheInfo['cacheName'], $listData, 0, $cacheInfo['cacheLength']);
 			}else{
 				$listData = array('titles' => array(), 'currentIndex' => 0);
-				if ($titles['message']) $listData['error'] = $titles['message']; // send error message to widget javascript
+				if ($titles['message']){
+					$listData['error'] = $titles['message'];
+				} // send error message to widget javascript
 			}
 		}
 		return $listData;
@@ -303,27 +252,27 @@ class AJAX extends Action {
 	function getEmailForm(){
 		global $interface;
 		$results = array(
-			'title' => 'E-Mail Search',
-			'modalBody' => $interface->fetch('Search/email.tpl'),
-			'modalButtons' => "<span class='tool btn btn-primary' onclick='$(\"#emailSearchForm\").submit();'>Send E-Mail</span>"
+			'title'        => 'E-Mail Search',
+			'modalBody'    => $interface->fetch('Search/email.tpl'),
+			'modalButtons' => "<span class='tool btn btn-primary' onclick='$(\"#emailSearchForm\").submit();'>Send E-Mail</span>",
 		);
-		echo json_encode($results);
+		return $results;
 	}
 
 	function getDplaResults(){
 		require_once ROOT_DIR . '/sys/SearchObject/DPLA.php';
-		$dpla = new DPLA();
-		$searchTerm = $_REQUEST['searchTerm'];
-		$results = $dpla->getDPLAResults($searchTerm);
+		$dpla             = new DPLA();
+		$searchTerm       = $_REQUEST['searchTerm'];
+		$results          = $dpla->getDPLAResults($searchTerm);
 		$formattedResults = $dpla->formatResults($results['records']);
 
 		$returnVal = array(
-			'rawResults' => $results['records'],
+			'rawResults'       => $results['records'],
 			'formattedResults' => $formattedResults,
 		);
 
 		//Format the results
-		echo(json_encode($returnVal));
+		return $returnVal;
 	}
 
 	function getMoreSearchResults($displayMode = 'covers'){
@@ -341,7 +290,9 @@ class AJAX extends Action {
 //		$test = array_merge($_REQUEST, $searchParams, array('page' => $currentPage));
 //		$_REQUEST = $test;
 
-		if (isset($_REQUEST['view'])) $_REQUEST['view'] = $displayMode; // overwrite any display setting for now
+		if (isset($_REQUEST['view'])){
+			$_REQUEST['view'] = $displayMode;
+		} // overwrite any display setting for now
 
 		/** @var string $searchSource */
 //		$searchSource = isset($searchParams['searchSource']) ? $searchParams['searchSource'] : 'local';
@@ -353,12 +304,12 @@ class AJAX extends Action {
 		$searchObject->init($searchSource);
 
 //		if ($displayMode == 'covers') {
-			$searchObject->setLimit(24); // a set of 24 covers looks better in display
+		$searchObject->setLimit(24); // a set of 24 covers looks better in display
 //		}
 
 		// Process Search
 		$result = $searchObject->processSearch(true, true);
-		if (PEAR_Singleton::isError($result)) {
+		if (PEAR_Singleton::isError($result)){
 			PEAR_Singleton::raiseError($result->getMessage());
 			$success = false;
 		}
@@ -367,16 +318,22 @@ class AJAX extends Action {
 		// Process for Display //
 		$recordSet = $searchObject->getResultRecordHTML($displayMode);
 //		if ($displayMode == 'covers'){
-			$displayTemplate = 'Search/covers-list.tpl'; // structure for bookcover tiles
+		$displayTemplate = 'Search/covers-list.tpl'; // structure for bookcover tiles
 
 		// Rating Settings
 		global $library, $location;
 		$browseCategoryRatingsMode = null;
-		if ($location) $browseCategoryRatingsMode = $location->browseCategoryRatingsMode; // Try Location Setting
-		if (!$browseCategoryRatingsMode) $browseCategoryRatingsMode = $library->browseCategoryRatingsMode;  // Try Library Setting
+		if ($location){
+			$browseCategoryRatingsMode = $location->browseCategoryRatingsMode;
+		} // Try Location Setting
+		if (!$browseCategoryRatingsMode){
+			$browseCategoryRatingsMode = $library->browseCategoryRatingsMode;
+		}  // Try Library Setting
 
 		// when the Ajax rating is turned on, they have to be initialized with each load of the category.
-		if ($browseCategoryRatingsMode == 'stars') $recordSet[] = '<script type="text/javascript">VuFind.Ratings.initializeRaters()</script>';
+		if ($browseCategoryRatingsMode == 'stars'){
+			$recordSet[] = '<script type="text/javascript">VuFind.Ratings.initializeRaters()</script>';
+		}
 
 //		}
 //		else { // default
@@ -385,19 +342,21 @@ class AJAX extends Action {
 		global $interface;
 		$interface->assign('recordSet', $recordSet);
 		$records = $interface->fetch($displayTemplate);
-		$result = array(
+		$result  = array(
 			'success' => $success,
 			'records' => $records,
 		);
 		// let front end know if we have reached the end of the result set
-		if ($searchObject->getPage() * $searchObject->getLimit() >= $searchObject->getResultTotal()) $result['lastPage'] = true;
+		if ($searchObject->getPage() * $searchObject->getLimit() >= $searchObject->getResultTotal()){
+			$result['lastPage'] = true;
+		}
 		return $result;
 	}
 
 	function loadExploreMoreBar(){
 		global $interface;
 
-		$section = $_REQUEST['section'];
+		$section    = $_REQUEST['section'];
 		$searchTerm = $_REQUEST['searchTerm'];
 		if (is_array($searchTerm)){
 			$searchTerm = reset($searchTerm);
@@ -406,16 +365,16 @@ class AJAX extends Action {
 
 		//Load explore more data
 		require_once ROOT_DIR . '/sys/ExploreMore.php';
-		$exploreMore = new ExploreMore();
+		$exploreMore        = new ExploreMore();
 		$exploreMoreOptions = $exploreMore->loadExploreMoreBar($section, $searchTerm);
 		if (count($exploreMoreOptions) == 0){
 			$result = array(
-					'success' => false,
+				'success' => false,
 			);
 		}else{
 			$result = array(
-					'success' => true,
-					'exploreMoreBar' => $interface->fetch("Search/explore-more-bar.tpl")
+				'success'        => true,
+				'exploreMoreBar' => $interface->fetch("Search/explore-more-bar.tpl"),
 			);
 		}
 
@@ -424,13 +383,12 @@ class AJAX extends Action {
 
 }
 
-function ar2xml($ar)
-{
-	$doc = new DOMDocument('1.0', 'utf-8');
+function ar2xml($ar){
+	$doc               = new DOMDocument('1.0', 'utf-8');
 	$doc->formatOutput = true;
-	foreach ($ar as $facet => $value) {
+	foreach ($ar as $facet => $value){
 		$element = $doc->createElement($facet);
-		foreach ($value as $term => $cnt) {
+		foreach ($value as $term => $cnt){
 			$child = $doc->createElement('term', $term);
 			$child->setAttribute('count', $cnt);
 			$element->appendChild($child);

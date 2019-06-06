@@ -93,13 +93,6 @@ class OverDriveRecordDriver extends RecordInterface {
 		}
 	}
 
-	function getAbsoluteUrl(){
-		global $configArray;
-		$recordId = $this->getUniqueID();
-
-		return $configArray['Site']['url'] . '/' . $this->getModule() . '/' . $recordId;
-	}
-
 	public function getPermanentId(){
 		return $this->getGroupedWorkId();
 	}
@@ -888,6 +881,14 @@ class OverDriveRecordDriver extends RecordInterface {
 		$linkUrl = '/OverDrive/' . $id . '/Home';
 		return $linkUrl;
 	}
+
+	function getAbsoluteUrl(){
+		global $configArray;
+		$recordId = $this->getUniqueID();
+
+		return $configArray['Site']['url'] . '/' . $this->getModule() . '/' . $recordId;
+	}
+
 	public function getLinkUrl($useUnscopedHoldingsSummary = false) {
 		global $interface;
 		$id = $this->getUniqueID();

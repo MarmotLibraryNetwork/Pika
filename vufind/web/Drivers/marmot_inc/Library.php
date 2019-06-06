@@ -162,7 +162,7 @@ class Library extends DB_DataObject {
 	public $barcodePrefix;
 	public $minBarcodeLength;
 	public $maxBarcodeLength;
-	public $econtentLocationsToInclude;
+	public $econtentLocationsToInclude; //TODO: No longer used. Replaced with Records To Include functionality
 	public $showExpirationWarnings;
 	public $availabilityToggleLabelSuperScope;
 	public $availabilityToggleLabelLocal;
