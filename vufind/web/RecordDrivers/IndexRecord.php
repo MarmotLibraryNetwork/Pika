@@ -590,20 +590,27 @@ class IndexRecord extends RecordInterface
 		}
 		$formats = $this->getFormat();
 		$format  = reset($formats);
-		global $configArray;
-		$bookCoverUrl = $configArray['Site']['coverUrl'] . "/bookcover.php?id={$id}&amp;size={$size}&amp;category=" . urlencode($formatCategory) . "&amp;format=" . urlencode($format);
-		$isbn = $this->getCleanISBN();
+		$parameters = array(
+			'id'       => $id,
+			'size'     => $size,
+			'category' => $formatCategory,
+		'format'   => $format,
+
+		);
+		$isbn       = $this->getCleanISBN();
 		if ($isbn){
-			$bookCoverUrl .= "&amp;isn={$isbn}";
+			$parameters['isn'] = $isbn;
 		}
 		$upc = $this->getCleanUPC();
 		if ($upc){
-			$bookCoverUrl .= "&amp;upc={$upc}";
+			$parameters['upc'] = $upc;
 		}
 		$issn = $this->getCleanISSN();
 		if ($issn){
-			$bookCoverUrl .= "&amp;issn={$issn}";
+			$parameters['issn'] = $issn;
 		}
+		global $configArray;
+		$bookCoverUrl = $configArray['Site']['coverUrl'] . '/bookcover.php?' . http_build_query($parameters);
 		return $bookCoverUrl;
 	}
 
