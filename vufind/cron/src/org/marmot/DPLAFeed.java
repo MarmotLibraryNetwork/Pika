@@ -5,11 +5,10 @@ import org.ini4j.Ini;
 import org.ini4j.Profile;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.json.JSONArray;
-import org.vufind.CronLogEntry;
-import org.vufind.CronProcessLogEntry;
-import org.vufind.IProcessHandler;
-import org.vufind.Util;
+import org.pika.CronLogEntry;
+import org.pika.CronProcessLogEntry;
+import org.pika.IProcessHandler;
+import org.pika.Util;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;

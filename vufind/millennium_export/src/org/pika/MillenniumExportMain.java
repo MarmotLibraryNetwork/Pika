@@ -50,13 +50,13 @@ public class MillenniumExportMain{
 			exportPath = exportPath.substring(1, exportPath.length() - 1);
 		}
 
-		//Connect to the vufind database
+		//Connect to the pika database
 		vufindConn = null;
 		try{
 			String databaseConnectionInfo = cleanIniValue(ini.get("Database", "database_vufind_jdbc"));
 			vufindConn = DriverManager.getConnection(databaseConnectionInfo);
 		}catch (Exception e){
-			logger.error("Error connecting to vufind database ", e);
+			logger.error("Error connecting to pika database ", e);
 			System.exit(1);
 		}
 
