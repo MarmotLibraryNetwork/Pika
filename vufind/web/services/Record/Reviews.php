@@ -35,7 +35,7 @@ class Record_Reviews extends Record_Record
 		$interface->setPageTitle('Reviews: ' . $this->record['title_short']);
 
 		//Load the data for the reviews and populate in the user interface
-		$this->loadReviews($this->id, $this->isbn, true);
+		$this->loadReviews($this->sourceAndId->getRecordId(), $this->isbn, true);
 
 		$interface->assign('subTemplate', 'view-reviews.tpl');
 		$interface->setTemplate('view.tpl');

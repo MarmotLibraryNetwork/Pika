@@ -25,7 +25,7 @@ class Record_Home extends Record_Record{
 		global $interface;
 		global $timer;
 
-		$recordId = $this->id;
+		$recordId = $this->sourceAndId->getRecordId();
 
 		$this->loadCitations();
 		$timer->logTime('Loaded Citations');

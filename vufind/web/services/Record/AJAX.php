@@ -19,7 +19,8 @@
  */
 
 require_once ROOT_DIR . '/Action.php';
-require_once ROOT_DIR . '/sys/Proxy_Request.php';
+//require_once ROOT_DIR . '/sys/Proxy_Request.php';
+require_once ROOT_DIR . '/services/SourceAndId.php';
 
 global $configArray;
 
@@ -130,7 +131,7 @@ class Record_AJAX extends Action {
 		global $interface;
 		$user = UserAccount::getLoggedInUser();
 		if (UserAccount::isLoggedIn()) {
-			$id = $_REQUEST['id'];
+			$sourceAndId = new SourceAndId($_REQUEST['id']);
 			$recordSource = $_REQUEST['recordSource'];
 			$interface->assign('recordSource', $recordSource);
 			if (isset($_REQUEST['volume'])){
@@ -191,9 +192,9 @@ class Record_AJAX extends Action {
 
 			$interface->assign('holdDisclaimers', $holdDisclaimers);
 
-			require_once ROOT_DIR . '/RecordDrivers/MarcRecord.php';
-			$marcRecord = new MarcRecord($id);
-			$title = rtrim($marcRecord->getTitle(), ' /');
+			/** @var MarcRecord $marcRecord */
+			$marcRecord = RecordDriverFactory::initRecordDriverById($sourceAndId);
+			$title      = rtrim($marcRecord->getTitle(), ' /');
 			$interface->assign('id', $marcRecord->getId());
 			if (count($locations) == 0){
 				$results = array(
@@ -230,8 +231,8 @@ class Record_AJAX extends Action {
 				$interface->assign('volume', $_REQUEST['volume']);
 			}
 
-			require_once ROOT_DIR . '/RecordDrivers/MarcRecord.php';
-			$marcRecord = new MarcRecord($id);
+			/** @var MarcRecord $marcRecord */
+			$marcRecord = RecordDriverFactory::initRecordDriverById($id);
 			$groupedWork = $marcRecord->getGroupedWorkDriver();
 			$relatedManifestations = $groupedWork->getRelatedManifestations();
 			$format = $marcRecord->getFormat();
@@ -257,8 +258,8 @@ class Record_AJAX extends Action {
 		if (UserAccount::isLoggedIn()){
 			$id = $_REQUEST['id'];
 
-			require_once ROOT_DIR . '/RecordDrivers/MarcRecord.php';
-			$marcRecord = new MarcRecord($id);
+			/** @var MarcRecord $marcRecord */
+			$marcRecord = RecordDriverFactory::initRecordDriverById($id);
 			$title = $marcRecord->getTitle();
 			$interface->assign('id', $id);
 			if ($errorMessage) $interface->assign('errorMessage', $errorMessage);
@@ -530,8 +531,8 @@ class Record_AJAX extends Action {
 
 	function reloadCover(){
 		require_once ROOT_DIR . '/RecordDrivers/MarcRecord.php';
-		$id = $_REQUEST['id'];
-		$recordDriver = new MarcRecord($id);
+		$sourceAndId  = new SourceAndId($_REQUEST['id']);
+		$recordDriver = RecordDriverFactory::initRecordDriverById($sourceAndId);
 
 		//Reload small cover
 		$smallCoverUrl = str_replace('&amp;', '&', $recordDriver->getBookcoverUrl('small')) . '&reload';

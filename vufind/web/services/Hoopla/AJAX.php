@@ -76,9 +76,8 @@ class Hoopla_AJAX extends Action
 	}
 
 	function reloadCover(){
-		require_once ROOT_DIR . '/RecordDrivers/MarcRecord.php';
-		$id = $_REQUEST['id'];
-		$recordDriver = new MarcRecord($id);
+		$sourceAndId = new SourceAndId($_REQUEST['id']);
+		$recordDriver = RecordDriverFactory::initRecordDriverById($sourceAndId);
 
 		//Reload small cover
 		$smallCoverUrl = str_replace('&amp;', '&', $recordDriver->getBookcoverUrl('small')) . '&reload';

@@ -32,6 +32,8 @@ class MarcRecord extends IndexRecord
 	/** @var File_MARC_Record $marcRecord */
 	protected $marcRecord = null;
 
+	/** @var SourceAndId $sourceAndId */
+	protected $sourceAndId;
 	protected $profileType;
 	protected $id;
 	/** @var  IndexingProfile $indexingProfile */
@@ -58,6 +60,7 @@ class MarcRecord extends IndexRecord
 			if (is_string($recordData)){ //TODO: make use of string for id's obsolete
 				$recordData = new SourceAndId($recordData);
 			}
+			$this->sourceAndId     = $recordData;
 			$this->profileType     = $recordData->getSource();
 			$this->id              = $recordData->getRecordId();
 			$this->indexingProfile = $recordData->getIndexingProfile();
@@ -96,7 +99,7 @@ class MarcRecord extends IndexRecord
 	 */
 	public function isValid(){
 		if ($this->valid === null){
-			$this->valid = MarcLoader::marcExistsForILSId(new SourceAndId($this->getIdWithSource()));
+			$this->valid = MarcLoader::marcExistsForILSId($this->sourceAndId);
 		}
 		return $this->valid;
 	}
@@ -130,7 +133,7 @@ class MarcRecord extends IndexRecord
 	}
 
 	public function getIdWithSource(){
-		return $this->profileType . ':' . $this->id;
+		return $this->sourceAndId->getSourceAndId();
 	}
 
 	/**
@@ -144,8 +147,8 @@ class MarcRecord extends IndexRecord
 	public function getShortId()
 	{
 		$shortId = '';
-		if (isset($this->id)) {
-			$shortId = $this->id;
+		if (!empty($this->sourceAndId->getRecordId())) {
+			$shortId = $this->sourceAndId->getRecordId();
 			if (strpos($shortId, '.b') === 0) {
 				$shortId = str_replace('.b', 'b', $shortId);
 				$shortId = substr($shortId, 0, strlen($shortId) - 1);
@@ -306,7 +309,7 @@ class MarcRecord extends IndexRecord
 
 		$interface->assign('marcRecord', $this->getMarcRecord());
 
-		$lastMarcModificationTime = MarcLoader::lastModificationTimeForIlsId(new SourceAndId($this->getIdWithSource()));
+		$lastMarcModificationTime = MarcLoader::lastModificationTimeForIlsId($this->sourceAndId);
 		$interface->assign('lastMarcModificationTime', $lastMarcModificationTime);
 
 		if ($this->groupedWork != null){
@@ -1793,7 +1796,7 @@ class MarcRecord extends IndexRecord
 		if ($this->marcRecord == null){
 			disableErrorHandler();
 			try {
-				$this->marcRecord = MarcLoader::loadMarcRecordByILSId(new SourceAndId($this->getIdWithSource()));
+				$this->marcRecord = MarcLoader::loadMarcRecordByILSId($this->sourceAndId);
 				if (PEAR_Singleton::isError($this->marcRecord) || $this->marcRecord == false){
 					$this->valid      = false;
 					$this->marcRecord = false;
