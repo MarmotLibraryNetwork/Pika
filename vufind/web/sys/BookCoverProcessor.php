@@ -1,5 +1,5 @@
 <?php
-require_once ROOT_DIR . '/services/sourceAndId.php';
+require_once ROOT_DIR . '/services/SourceAndId.php';
 
 class BookCoverProcessor {
 
@@ -16,7 +16,7 @@ class BookCoverProcessor {
 //	private $isbn10;
 //	private $isbn13;
 
-	/** @var null|sourceAndId */
+	/** @var null|SourceAndId */
 	private $sourceAndId;
 	private $groupedWorkId;
 
@@ -147,7 +147,7 @@ class BookCoverProcessor {
 	/**
 	 * Check the MARC of a side loaded record for image URLs
 	 *
-	 * @param sourceAndId $sourceAndId
+	 * @param SourceAndId $sourceAndId
 	 *
 	 * @return bool
 	 */
@@ -186,11 +186,11 @@ class BookCoverProcessor {
 	}
 
 	/**
-	 * @param sourceAndId $sourceAndId
+	 * @param SourceAndId $sourceAndId
 	 *
 	 * @return bool
 	 */
-	private function getEbraryCover(sourceAndId $sourceAndId){
+	private function getEbraryCover(SourceAndId $sourceAndId){
 		$coverId  = preg_replace('/^[a-zA-Z]+/', '', $sourceAndId->getRecordId());
 		$coverUrl = "http://ebookcentral.proquest.com/covers/$coverId-l.jpg";
 		if ($this->processImageURL($coverUrl)){
@@ -199,7 +199,7 @@ class BookCoverProcessor {
 		return false;
 	}
 
-	private function getClassroomVideoOnDemandCover(sourceAndId $sourceAndId){
+	private function getClassroomVideoOnDemandCover(SourceAndId $sourceAndId){
 		$coverId  = preg_replace('/^10+/', '', $sourceAndId->getRecordId());
 		$coverUrl = "http://cvod.infobase.com/image/$coverId";
 		if ($this->processImageURL($coverUrl)){
@@ -208,7 +208,7 @@ class BookCoverProcessor {
 		return false;
 	}
 
-	private function getFilmsOnDemandCover(sourceAndId $sourceAndId){
+	private function getFilmsOnDemandCover(SourceAndId $sourceAndId){
 		$coverId  = preg_replace('/^10+/', '', $sourceAndId->getRecordId());
 		$coverUrl = "http://fod.infobase.com/image/$coverId";
 		if ($this->processImageURL($coverUrl)){
@@ -217,7 +217,7 @@ class BookCoverProcessor {
 		return false;
 	}
 
-	private function getOverDriveCover(sourceAndId $sourceAndId){
+	private function getOverDriveCover(SourceAndId $sourceAndId){
 		require_once ROOT_DIR . '/sys/OverDrive/OverDriveAPIProduct.php';
 		require_once ROOT_DIR . '/sys/OverDrive/OverDriveAPIProductMetaData.php';
 		$overDriveProduct = new OverDriveAPIProduct();
@@ -233,7 +233,7 @@ class BookCoverProcessor {
 		return false;
 	}
 
-	private function getZinioCover(sourceAndId $sourceAndId){
+	private function getZinioCover(SourceAndId $sourceAndId){
 		require_once ROOT_DIR . '/RecordDrivers/SideLoadedRecord.php';
 		$driver = new SideLoadedRecord($sourceAndId);
 		if ($driver && $driver->isValid()){
@@ -251,7 +251,7 @@ class BookCoverProcessor {
 	}
 
 	/**
-	 * @param sourceAndId $sourceAndId
+	 * @param SourceAndId $sourceAndId
 	 *
 	 * @return bool
 	 */
@@ -318,19 +318,19 @@ class BookCoverProcessor {
 			$_GET['id'] = trim($_GET['id']);
 
 			if (strpos($_GET['id'], ':') > 0){
-				$this->sourceAndId = new sourceAndId($_GET['id']);
+				$this->sourceAndId = new SourceAndId($_GET['id']);
 			}else{
 				if (isset($_GET['type'])){
 					$type = strtolower($_GET['type']);
 					if ($type == 'grouped_work' || $type == 'groupedwork'){
 						$this->groupedWorkId = $_GET['id'];
 					}else{
-						$this->sourceAndId = new sourceAndId($_GET['type'] . ':' . $_GET['id']);
+						$this->sourceAndId = new SourceAndId($_GET['type'] . ':' . $_GET['id']);
 					}
 				}elseif (preg_match('/[a-f\\d]{8}-[a-f\\d]{4}-[a-f\\d]{4}-[a-f\\d]{4}-[a-f\\d]{12}/', $_GET['id'])){
 					$this->groupedWorkId = $_GET['id'];
 				}else{
-					$this->sourceAndId = new sourceAndId('ils:' . $_GET['id']);
+					$this->sourceAndId = new SourceAndId('ils:' . $_GET['id']);
 				}
 			}
 		}
@@ -701,7 +701,7 @@ class BookCoverProcessor {
 			foreach ($recordDetails as $recordDetail){
 				$fullId      = strtok($recordDetail, '|');
 				if (!isset($this->sourceAndId) || $fullId != $this->sourceAndId->getSourceAndId()){ //Don't check the main record again when going through the related records
-					$sourceAndId = new sourceAndId($fullId);
+					$sourceAndId = new SourceAndId($fullId);
 
 					// Check for a cached image for the related record
 					if (!$this->reload){

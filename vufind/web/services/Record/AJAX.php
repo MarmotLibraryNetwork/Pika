@@ -65,8 +65,8 @@ class Record_AJAX extends Action {
 
 	function downloadMarc(){
 		$id = $_REQUEST['id'];
-		require_once ROOT_DIR . '/services/sourceAndId.php';
-		$marcData = MarcLoader::loadMarcRecordByILSId(new sourceAndId($id));
+		require_once ROOT_DIR . '/services/SourceAndId.php';
+		$marcData = MarcLoader::loadMarcRecordByILSId(new SourceAndId($id));
 		header('Content-Description: File Transfer');
 		header('Content-Type: application/octet-stream');
 		header("Content-Disposition: attachment; filename={$id}.mrc");

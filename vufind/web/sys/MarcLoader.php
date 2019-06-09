@@ -1,6 +1,6 @@
 <?php
 require_once 'File/MARC.php';
-require_once ROOT_DIR . '/services/sourceAndId.php';
+require_once ROOT_DIR . '/services/SourceAndId.php';
 /**
  * Class MarcLoader
  *
@@ -13,7 +13,7 @@ class MarcLoader{
 	 */
 	public static function loadMarcRecordFromRecord($record){
 		if ($record['recordtype'] == 'marc'){
-			return MarcLoader::loadMarcRecordByILSId(new sourceAndId($record['id']));
+			return MarcLoader::loadMarcRecordByILSId(new SourceAndId($record['id']));
 		}else{
 			return null;
 		}
@@ -23,11 +23,11 @@ class MarcLoader{
 	private static $loadedMarcRecords = array();
 
 	/**
-	 * @param sourceAndId $sourceAndId The id of the record within the ils
+	 * @param SourceAndId $sourceAndId The id of the record within the ils
 	 *
 	 * @return File_MARC_Record
 	 */
-	public static function loadMarcRecordByILSId(sourceAndId $sourceAndId){
+	public static function loadMarcRecordByILSId(SourceAndId $sourceAndId){
 		$fullId = $sourceAndId->getSourceAndId();
 
 		if (array_key_exists($fullId, MarcLoader::$loadedMarcRecords)){
@@ -61,7 +61,7 @@ class MarcLoader{
 	}
 
 	/**
-	 * @param sourceAndId $sourceAndId Passed as <type>:<id>
+	 * @param SourceAndId $sourceAndId Passed as <type>:<id>
 	 *
 	 * @return int|boolean
 	 */
@@ -75,7 +75,7 @@ class MarcLoader{
 	}
 
 	/**
-	 * @param sourceAndId $sourceAndId Passed as <type>:<id>
+	 * @param SourceAndId $sourceAndId Passed as <type>:<id>
 	 *
 	 * @return boolean
 	 */
@@ -91,11 +91,11 @@ class MarcLoader{
 	/**
 	 * Gets the full path (and name) for the Individual Marc File associated with the record
 	 *
-	 * @param sourceAndId     $sourceAndId     The ID of the record to get file path for
+	 * @param SourceAndId $sourceAndId The ID of the record to get file path for
 	 *
 	 * @return string
 	 */
-	private static function getIndividualMarcFileName(sourceAndId $sourceAndId){
+	private static function getIndividualMarcFileName(SourceAndId $sourceAndId){
 		$indexingProfile = $sourceAndId->getIndexingProfile();
 		$shortId         = str_replace('.', '', $sourceAndId->getRecordId());
 		if (strlen($shortId) < 9){
@@ -113,11 +113,11 @@ class MarcLoader{
 	}
 
 	/**
-	 * @param sourceAndId $sourceAndId
+	 * @param SourceAndId $sourceAndId
 	 *
 	 * @return IndexingProfile
 	 */
-	public static function getIndexingProfileForId(sourceAndId $sourceAndId){
+	public static function getIndexingProfileForId(SourceAndId $sourceAndId){
 		$recordType = $sourceAndId->getSource();
 		/** @var $indexingProfiles IndexingProfile[] */
 		global $indexingProfiles;

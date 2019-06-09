@@ -143,18 +143,18 @@ class RecordDriverFactory {
 
 	static $recordDrivers = array();
 	/**
-	 * @param string|sourceAndId       $fullId
-	 * @param  GroupedWork $groupedWork;
+	 * @param string|SourceAndId $fullId
+	 * @param  GroupedWork       $groupedWork;
 	 *
 	 * @return ExternalEContentDriver|MarcRecord|OverDriveRecordDriver|null
 	 */
 	static function initRecordDriverById($fullId, $groupedWork = null){
-		//TODO: require $fullId be an sourceAndId object, but check archive drivers getting called here first
-		require_once ROOT_DIR . '/services/sourceAndId.php';
-		if ($fullId instanceof sourceAndId){
+		//TODO: require $fullId be an SourceAndId object, but check archive drivers getting called here first
+		require_once ROOT_DIR . '/services/SourceAndId.php';
+		if ($fullId instanceof SourceAndId){
 			$sourceAndId = $fullId;
 		} else {
-			$sourceAndId = new sourceAndId($fullId);
+			$sourceAndId = new SourceAndId($fullId);
 		}
 		$fullId = $sourceAndId->getSourceAndId(); // Make sure the full Id is handled uniformly
 		if (isset(RecordDriverFactory::$recordDrivers[$fullId])){

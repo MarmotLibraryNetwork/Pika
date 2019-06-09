@@ -19,7 +19,7 @@
  */
 require_once 'File/MARC.php';
 require_once ROOT_DIR . '/RecordDrivers/IndexRecord.php';
-require_once ROOT_DIR . '/services/sourceAndId.php';
+require_once ROOT_DIR . '/services/SourceAndId.php';
 
 /**
  * MARC Record Driver
@@ -45,18 +45,18 @@ class MarcRecord extends IndexRecord
 	 * we will already have this data available, so we might as well
 	 * just pass it into the constructor.
 	 *
-	 * @param File_MARC_Record|string|sourceAndId|array $recordData  Data to construct the driver from
-	 * @param GroupedWork                         $groupedWork ;
+	 * @param SourceAndId|File_MARC_Record|string|array $recordData  Data to construct the driver from
+	 * @param GroupedWork                               $groupedWork ;
 	 *
 	 * @access  public
 	 */
 	public function __construct($recordData, $groupedWork = null){
 		if ($recordData instanceof File_MARC_Record){ //TODO: find when this happens
 			$this->marcRecord = $recordData;
-		}elseif (is_string($recordData) || $recordData instanceof sourceAndId){
+		}elseif (is_string($recordData) || $recordData instanceof SourceAndId){
 			require_once ROOT_DIR . '/sys/MarcLoader.php';
 			if (is_string($recordData)){ //TODO: make use of string for id's obsolete
-				$recordData = new sourceAndId($recordData);
+				$recordData = new SourceAndId($recordData);
 			}
 			$this->profileType     = $recordData->getSource();
 			$this->id              = $recordData->getRecordId();
@@ -96,7 +96,7 @@ class MarcRecord extends IndexRecord
 	 */
 	public function isValid(){
 		if ($this->valid === null){
-			$this->valid = MarcLoader::marcExistsForILSId(new sourceAndId($this->getIdWithSource()));
+			$this->valid = MarcLoader::marcExistsForILSId(new SourceAndId($this->getIdWithSource()));
 		}
 		return $this->valid;
 	}
@@ -306,7 +306,7 @@ class MarcRecord extends IndexRecord
 
 		$interface->assign('marcRecord', $this->getMarcRecord());
 
-		$lastMarcModificationTime = MarcLoader::lastModificationTimeForIlsId(new sourceAndId($this->getIdWithSource()));
+		$lastMarcModificationTime = MarcLoader::lastModificationTimeForIlsId(new SourceAndId($this->getIdWithSource()));
 		$interface->assign('lastMarcModificationTime', $lastMarcModificationTime);
 
 		if ($this->groupedWork != null){
@@ -1793,7 +1793,7 @@ class MarcRecord extends IndexRecord
 		if ($this->marcRecord == null){
 			disableErrorHandler();
 			try {
-				$this->marcRecord = MarcLoader::loadMarcRecordByILSId(new sourceAndId($this->getIdWithSource()));
+				$this->marcRecord = MarcLoader::loadMarcRecordByILSId(new SourceAndId($this->getIdWithSource()));
 				if (PEAR_Singleton::isError($this->marcRecord) || $this->marcRecord == false){
 					$this->valid      = false;
 					$this->marcRecord = false;

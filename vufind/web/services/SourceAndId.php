@@ -1,6 +1,10 @@
 <?php
 /**
+ * Class that handles Ids from various record sources. The class makes it
+ * explicit which part of the Id is being used.
  *
+ * A SourceAndId object should be passed between classes and methods
+ * when dealing with the IDs from specific sources.
  *
  * @category Pika
  * @author   : Pascal Brammeier
@@ -9,9 +13,9 @@
  */
 
 
-class sourceAndId {
+class SourceAndId {
 
-	const DEFAULT_SOURCE = 'ils';
+	static $defaultSource = 'ils'; // When an SourceAndId object is constructed with Id info without source data, fallback to this source
 
 	private $fullId;                // The full id in the form of 'source:id' or 'ExternalEcontent:ils:id'
 	private $source;                // The indexing profile that this Id is a part of
@@ -24,6 +28,10 @@ class sourceAndId {
 		$this->setSourceAndId($fullIdWithSource);
 	}
 
+	/**
+	 * Set the source and record Id
+	 * @param string $fullIdWithSource  A string that contains the fullId pattern of 'source:id' or 'ExternalEcontent:ils:id'
+	 */
 	public function setSourceAndId($fullIdWithSource){
 		$idParts  = explode(':', $fullIdWithSource);
 		$numParts = count($idParts);
@@ -35,7 +43,7 @@ class sourceAndId {
 			$this->source        = $idParts[1];
 			$this->recordId      = $idParts[2];
 		}elseif ($numParts == 1){ // bare record id. Have to assume the source.
-			$this->source   = self::DEFAULT_SOURCE;
+			$this->source   = self::$defaultSource;
 			$this->recordId = $idParts[0];
 		}
 		$this->fullId = $this->source . ':' . $this->recordId;
@@ -45,6 +53,9 @@ class sourceAndId {
 		return $this->getSourceAndId();
 	}
 
+	/**
+	 * @return string|null The full ID string which has the source part and record id part in the form 'source:id'
+	 */
 	public function getSourceAndId(){
 		return $this->fullId;
 	}
