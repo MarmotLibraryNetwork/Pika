@@ -20,7 +20,9 @@
 
 /** CORE APPLICATION CONTROLLER **/
 require_once 'bootstrap.php';
-
+// Composer autoloader
+// TODO: Add composer path to include paths on servers.
+require_once "vendor\autoload.php";
 global $timer;
 global $memoryWatcher;
 
@@ -28,7 +30,10 @@ global $memoryWatcher;
 loadModuleActionId();
 $timer->logTime("Loaded Module and Action Id");
 $memoryWatcher->logMemory("Loaded Module and Action Id");
+// autoloader stack
+spl_autoload_register('pika_autoloader');
 spl_autoload_register('vufind_autoloader');
+
 initializeSession();
 $timer->logTime("Initialized session");
 
@@ -55,8 +60,6 @@ if (isset($configArray['Site']['smallLogo'])){
 if (isset($configArray['Site']['largeLogo'])){
 	$interface->assign('largeLogo', $configArray['Site']['largeLogo']);
 }
-//Set focus to the search box by default.
-//$interface->assign('focusElementId', 'lookfor'); // No references in templates. TODO delete
 
 //Set footer information
 /** @var Location $locationSingleton */
@@ -74,6 +77,7 @@ $analytics = new Analytics($active_ip, $startTime);
 $timer->logTime('Setup Analytics');
 
 $googleAnalyticsId        = isset($configArray['Analytics']['googleAnalyticsId'])        ? $configArray['Analytics']['googleAnalyticsId'] : false;
+#TODO: What is $googleAnalyticsLinkingId
 $googleAnalyticsLinkingId = isset($configArray['Analytics']['googleAnalyticsLinkingId']) ? $configArray['Analytics']['googleAnalyticsLinkingId'] : false;
 $trackTranslation         = isset($configArray['Analytics']['trackTranslation'])         ? $configArray['Analytics']['trackTranslation'] : false;
 $interface->assign('googleAnalyticsId', $googleAnalyticsId);
@@ -166,25 +170,6 @@ if ($mode['online'] === false) {
 	exit();
 }
 $timer->logTime('Checked availability mode');
-
-////Check to see if we have a collection applied.
-//// TODO: collection url parameter doesn't look to be used for anything
-//global $defaultCollection;
-//if (isset($_GET['collection'])){
-//	$defaultCollection = $_GET['collection'];
-//	//Set a cookie so we don't have to transfer the ip from page to page.
-//	if ($defaultCollection == '' || $defaultCollection == 'all'){
-//		setcookie('collection', '', 0, '/');
-//		$defaultCollection = null;
-//	}else{
-//		setcookie('collection', $defaultCollection, 0, '/');
-//	}
-//}elseif (isset($_COOKIE['collection'])){
-//	$defaultCollection = $_COOKIE['collection'];
-//}else{
-//	//No collection has been set.
-//}
-//$timer->logTime('Check default collection');
 
 // Proxy server settings
 if (isset($configArray['Proxy']['host'])) {
@@ -625,21 +610,6 @@ if (isset($_REQUEST['followup'])) {
 	$timer->logTime('Process followup');
 }
 
-//If there is a hold_message, make sure it gets displayed.
-/* //TODO deprecated, but there are still references in scripts that likely need removed
-if (isset($_SESSION['hold_message'])) {
-	$interface->assign('hold_message', formatHoldMessage($_SESSION['hold_message']));
-	unset($_SESSION['hold_message']);
-}elseif (isset($_SESSION['renew_message'])){ // this routine should be deprecated now. plb 2-2-2015
-	$interface->assign('renew_message', formatRenewMessage($_SESSION['renew_message']));
-}elseif (isset($_SESSION['checkout_message'])){
-	global $logger;
-	$logger->log("Found checkout message", PEAR_LOG_DEBUG);
-	$checkoutMessage = $_SESSION['checkout_message'];
-	unset($_SESSION['checkout_message']);
-	$interface->assign('checkout_message', formatCheckoutMessage($checkoutMessage));
-}*/
-
 // Process Solr shard settings
 processShards();
 $timer->logTime('Process Shards');
@@ -689,7 +659,6 @@ $timer->logTime('Finished Index');
 $timer->writeTimings();
 $memoryWatcher->logMemory("Finished index");
 $memoryWatcher->writeMemory();
-//$analytics->finish();
 
 function processFollowup(){
 	global $configArray;
@@ -823,6 +792,20 @@ function getGitBranch(){
 	}
 	$interface->assign('gitBranch', $branchName);
 }
+
+// Pika drivers autoloader PSR-4 style
+function pika_autoloader($class) {
+    $sourcePath = __DIR__ . DIRECTORY_SEPARATOR . 'sys' . DIRECTORY_SEPARATOR;
+    $filePath   = str_replace('\\', DIRECTORY_SEPARATOR, $class);
+    $fullPath   = $sourcePath.$filePath.'.php';
+
+    if(file_exists($fullPath)) {
+        include_once($fullPath);
+    }
+
+    //include 'sys/' . $class . '.php';
+}
+
 // Set up autoloader (needed for YAML)
 function vufind_autoloader($class) {
 	if (substr($class, 0, 4) == 'CAS_') {
