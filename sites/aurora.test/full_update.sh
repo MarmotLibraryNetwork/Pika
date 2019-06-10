@@ -144,7 +144,7 @@ cd /data/vufind-plus/accelerated_reader; curl --remote-name --remote-time --sile
 /usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} aurora/learning_express learning_express/aurora >> ${OUTPUT_FILE}
 
 #Lynda
-/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} aurora/lynda lynda/aurora >> ${OUTPUT_FILE}
+#/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} aurora/lynda lynda/aurora >> ${OUTPUT_FILE}
 
 #Rb digital books
 /usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} aurora/rbdigital_books rbdigital_books/aurora >> ${OUTPUT_FILE}
