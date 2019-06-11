@@ -115,7 +115,7 @@ cd /data/vufind-plus/accelerated_reader; curl --remote-name --remote-time --sile
 /usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} flatirons_sideload/kanopy/boulder kanopy/boulder >> ${OUTPUT_FILE}
 
 #Creative Bug
-#/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} flatirons_sideload/creativebug creative_bug/flatirons_sideload >> ${OUTPUT_FILE}
+/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} flatirons_sideload/creativebug creative_bug/flatirons_sideload >> ${OUTPUT_FILE}
 
 #Colorado State Goverment Documents Updates
 curl --remote-time --show-error --compressed -o /data/vufind-plus/colorado_gov_docs/marc/fullexport.mrc https://cassini.marmot.org/colorado_state_docs.mrc
