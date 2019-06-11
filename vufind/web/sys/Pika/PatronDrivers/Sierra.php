@@ -305,7 +305,6 @@ class Sierra extends PatronDriverInterface {
             $patron->expires = $expiresDate->format('m-d-Y');
             $nowDate     = new \DateTime('now');
             $dateDiff    = $nowDate->diff($expiresDate);
-            //$expiresInDays = $dateDiff->format('%r%d');
             if($dateDiff->days <= 30) {
                 $patron->expireClose = 1;
             } else {
@@ -434,7 +433,7 @@ class Sierra extends PatronDriverInterface {
      */
     public function getMyFines($patron){
         // TODO: finish this up.
-        return [];
+        //return [];
         // find the sierra patron id
         if (!isset($this->patronId)) {
             $patronId = $this->getPatronId($patron);
@@ -488,6 +487,7 @@ class Sierra extends PatronDriverInterface {
 
     public function placeHold($patron, $recordId, $pickupBranch, $cancelDate = null){
         // TODO: Implement placeHold() method.
+
     }
 
     public function placeItemHold($patron, $recordId, $itemId, $pickupBranch){
