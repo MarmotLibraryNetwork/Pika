@@ -616,18 +616,18 @@ public class GroupedWorkIndexer {
 
 	private void loadLexileData(String lexileExportPath) {
 		String[] lexileFields = new String[0];
-		int curLine = 0;
-		try{
-			File lexileData = new File(lexileExportPath);
+		int      curLine      = 0;
+		try {
+			File           lexileData   = new File(lexileExportPath);
 			BufferedReader lexileReader = new BufferedReader(new FileReader(lexileData));
 			//Skip over the header
 			lexileReader.readLine();
 			String lexileLine = lexileReader.readLine();
 			curLine++;
-			while (lexileLine != null){
+			while (lexileLine != null) {
 				lexileFields = lexileLine.split("\\t");
 				LexileTitle titleInfo = new LexileTitle();
-				if (lexileFields.length >= 11){
+				if (lexileFields.length >= 11) {
 					titleInfo.setTitle(lexileFields[0]);
 					titleInfo.setAuthor(lexileFields[1]);
 					String isbn = lexileFields[3];
@@ -648,8 +648,8 @@ public class GroupedWorkIndexer {
 				curLine++;
 			}
 			logger.info("Read " + lexileInformation.size() + " lines of lexile data");
-		}catch (Exception e){
-			logger.error("Error loading lexile data on " + curLine +  Arrays.toString(lexileFields), e);
+		} catch (Exception e) {
+			logger.error("Error loading lexile data on " + curLine + Arrays.toString(lexileFields), e);
 		}
 	}
 
@@ -1085,16 +1085,16 @@ public class GroupedWorkIndexer {
 	}
 
 	private void loadLexileDataForWork(GroupedWorkSolr groupedWork) {
-		for(String isbn : groupedWork.getIsbns()){
-			if (lexileInformation.containsKey(isbn)){
+		for (String isbn : groupedWork.getIsbns()) {
+			if (lexileInformation.containsKey(isbn)) {
 				LexileTitle lexileTitle = lexileInformation.get(isbn);
-				String lexileCode = lexileTitle.getLexileCode();
-				if (lexileCode.length() > 0){
+				String      lexileCode  = lexileTitle.getLexileCode();
+				if (lexileCode.length() > 0) {
 					groupedWork.setLexileCode(this.translateSystemValue("lexile_code", lexileCode, groupedWork.getId()));
 				}
 				groupedWork.setLexileScore(lexileTitle.getLexileScore());
 				groupedWork.addAwards(lexileTitle.getAwards());
-				if (lexileTitle.getSeries().length() > 0){
+				if (lexileTitle.getSeries().length() > 0) {
 					groupedWork.addSeries(lexileTitle.getSeries());
 				}
 				break;

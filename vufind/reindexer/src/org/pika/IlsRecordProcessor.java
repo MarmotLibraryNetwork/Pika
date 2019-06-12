@@ -103,24 +103,24 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		this.fullReindex = fullReindex;
 		//String marcRecordPath = configIni.get("Reindex", "marcPath");
 		try {
-			profileType = indexingProfileRS.getString("name");
-			individualMarcPath = indexingProfileRS.getString("individualMarcPath");
-			marcPath = indexingProfileRS.getString("marcPath");
-			numCharsToCreateFolderFrom         = indexingProfileRS.getInt("numCharsToCreateFolderFrom");
-			createFolderFromLeadingCharacters  = indexingProfileRS.getBoolean("createFolderFromLeadingCharacters");
+			profileType                       = indexingProfileRS.getString("name");
+			individualMarcPath                = indexingProfileRS.getString("individualMarcPath");
+			marcPath                          = indexingProfileRS.getString("marcPath");
+			numCharsToCreateFolderFrom        = indexingProfileRS.getInt("numCharsToCreateFolderFrom");
+			createFolderFromLeadingCharacters = indexingProfileRS.getBoolean("createFolderFromLeadingCharacters");
 
-			recordNumberTag = indexingProfileRS.getString("recordNumberTag");
+			recordNumberTag      = indexingProfileRS.getString("recordNumberTag");
 			suppressItemlessBibs = indexingProfileRS.getBoolean("suppressItemlessBibs");
 
-			itemTag = indexingProfileRS.getString("itemTag");
+			itemTag                           = indexingProfileRS.getString("itemTag");
 			itemRecordNumberSubfieldIndicator = getSubfieldIndicatorFromConfig(indexingProfileRS, "itemRecordNumber");
 
-			callNumberPrestampSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "callNumberPrestamp");
-			callNumberSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "callNumber");
-			callNumberCutterSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "callNumberCutter");
+			callNumberPrestampSubfield  = getSubfieldIndicatorFromConfig(indexingProfileRS, "callNumberPrestamp");
+			callNumberSubfield          = getSubfieldIndicatorFromConfig(indexingProfileRS, "callNumber");
+			callNumberCutterSubfield    = getSubfieldIndicatorFromConfig(indexingProfileRS, "callNumberCutter");
 			callNumberPoststampSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "callNumberPoststamp");
-			useItemBasedCallNumbers = indexingProfileRS.getBoolean("useItemBasedCallNumbers");
-			volumeSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "volume");
+			useItemBasedCallNumbers     = indexingProfileRS.getBoolean("useItemBasedCallNumbers");
+			volumeSubfield              = getSubfieldIndicatorFromConfig(indexingProfileRS, "volume");
 
 			locationSubfieldIndicator = getSubfieldIndicatorFromConfig(indexingProfileRS, "location");
 			try {
@@ -128,41 +128,41 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				if (pattern != null && pattern.length() > 0) {
 					nonHoldableLocations = Pattern.compile("^(" + pattern + ")$");
 				}
-			}catch (Exception e){
+			} catch (Exception e) {
 				logger.error("Could not load non holdable locations", e);
 			}
-			subLocationSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "subLocation");
+			subLocationSubfield      = getSubfieldIndicatorFromConfig(indexingProfileRS, "subLocation");
 			shelvingLocationSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "shelvingLocation");
-			collectionSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "collection");
+			collectionSubfield       = getSubfieldIndicatorFromConfig(indexingProfileRS, "collection");
 
 			String locationsToSuppress = indexingProfileRS.getString("locationsToSuppress");
-			if (locationsToSuppress != null && locationsToSuppress.length() > 0){
+			if (locationsToSuppress != null && locationsToSuppress.length() > 0) {
 				locationsToSuppressPattern = Pattern.compile(locationsToSuppress);
 			}
 			String collectionsToSuppress = indexingProfileRS.getString("collectionsToSuppress");
-			if (collectionsToSuppress != null && collectionsToSuppress.length() > 0){
+			if (collectionsToSuppress != null && collectionsToSuppress.length() > 0) {
 				collectionsToSuppressPattern = Pattern.compile(collectionsToSuppress);
 			}
 			String statusesToSuppress = indexingProfileRS.getString("statusesToSuppress");
-			if (statusesToSuppress != null && statusesToSuppress.length() > 0){
+			if (statusesToSuppress != null && statusesToSuppress.length() > 0) {
 				statusesToSuppressPattern = Pattern.compile(statusesToSuppress);
 			}
 			String bCode3sToSuppress = indexingProfileRS.getString("bCode3sToSuppress");
-			if (bCode3sToSuppress != null && bCode3sToSuppress.length() > 0){
+			if (bCode3sToSuppress != null && bCode3sToSuppress.length() > 0) {
 				bCode3sToSuppressPattern = Pattern.compile(bCode3sToSuppress);
 			}
 			String iCode2sToSuppress = indexingProfileRS.getString("iCode2sToSuppress");
-			if (iCode2sToSuppress != null && iCode2sToSuppress.length() > 0){
+			if (iCode2sToSuppress != null && iCode2sToSuppress.length() > 0) {
 				iCode2sToSuppressPattern = Pattern.compile(iCode2sToSuppress);
 			}
 			String iTypesToSuppress = indexingProfileRS.getString("iTypesToSuppress");
-			if (iTypesToSuppress != null && iTypesToSuppress.length() > 0){
+			if (iTypesToSuppress != null && iTypesToSuppress.length() > 0) {
 				iTypesToSuppressPattern = Pattern.compile(iTypesToSuppress);
 			}
 
 			itemUrlSubfieldIndicator = getSubfieldIndicatorFromConfig(indexingProfileRS, "itemUrl");
 
-			formatSource = indexingProfileRS.getString("formatSource");
+			formatSource              = indexingProfileRS.getString("formatSource");
 			formatDeterminationMethod = indexingProfileRS.getString("formatDeterminationMethod");
 			if (formatDeterminationMethod == null) {
 				formatDeterminationMethod = "";
@@ -171,18 +171,18 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			if (matTypesToIgnore == null) {
 				matTypesToIgnore = "";
 			}
-			specifiedFormat = indexingProfileRS.getString("specifiedFormat");
+			specifiedFormat         = indexingProfileRS.getString("specifiedFormat");
 			specifiedFormatCategory = indexingProfileRS.getString("specifiedFormatCategory");
-			specifiedFormatBoost = indexingProfileRS.getInt("specifiedFormatBoost");
-			formatSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "format");
-			barcodeSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "barcode");
+			specifiedFormatBoost    = indexingProfileRS.getInt("specifiedFormatBoost");
+			formatSubfield          = getSubfieldIndicatorFromConfig(indexingProfileRS, "format");
+			barcodeSubfield         = getSubfieldIndicatorFromConfig(indexingProfileRS, "barcode");
 			statusSubfieldIndicator = getSubfieldIndicatorFromConfig(indexingProfileRS, "status");
 			try {
 				String pattern = indexingProfileRS.getString("nonHoldableStatuses");
 				if (pattern != null && pattern.length() > 0) {
 					nonHoldableStatuses = Pattern.compile("^(" + pattern + ")$");
 				}
-			}catch (Exception e){
+			} catch (Exception e) {
 				logger.error("Could not load non holdable statuses", e);
 			}
 
@@ -192,9 +192,9 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				dueDateFormatter = new SimpleDateFormat(dueDateFormat);
 			}
 
-			ytdCheckoutSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "yearToDateCheckouts");
+			ytdCheckoutSubfield      = getSubfieldIndicatorFromConfig(indexingProfileRS, "yearToDateCheckouts");
 			lastYearCheckoutSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "lastYearCheckouts");
-			totalCheckoutSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "totalCheckouts");
+			totalCheckoutSubfield    = getSubfieldIndicatorFromConfig(indexingProfileRS, "totalCheckouts");
 
 			iTypeSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "iType");
 			try {
@@ -202,33 +202,33 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				if (pattern != null && pattern.length() > 0) {
 					nonHoldableITypes = Pattern.compile("^(" + pattern + ")$");
 				}
-			}catch (Exception e){
+			} catch (Exception e) {
 				logger.error("Could not load non holdable iTypes", e);
 			}
 
 			dateCreatedSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "dateCreated");
-			dateAddedFormat = indexingProfileRS.getString("dateCreatedFormat");
+			dateAddedFormat     = indexingProfileRS.getString("dateCreatedFormat");
 
 			lastCheckInSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "lastCheckinDate");
-			lastCheckInFormat = indexingProfileRS.getString("lastCheckinFormat");
+			lastCheckInFormat   = indexingProfileRS.getString("lastCheckinFormat");
 
-			iCode2Subfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "iCode2");
+			iCode2Subfield       = getSubfieldIndicatorFromConfig(indexingProfileRS, "iCode2");
 			useICode2Suppression = indexingProfileRS.getBoolean("useICode2Suppression");
 
 			sierraRecordFixedFieldsTag = indexingProfileRS.getString("sierraRecordFixedFieldsTag");
-			bCode3Subfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "bCode3");
-			materialTypeSubField = indexingProfileRS.getString("materialTypeField");
+			bCode3Subfield             = getSubfieldIndicatorFromConfig(indexingProfileRS, "bCode3");
+			materialTypeSubField       = indexingProfileRS.getString("materialTypeField");
 
 			eContentSubfieldIndicator = getSubfieldIndicatorFromConfig(indexingProfileRS, "eContentDescriptor");
-			useEContentSubfield = eContentSubfieldIndicator != ' ';
+			useEContentSubfield       = eContentSubfieldIndicator != ' ';
 
 
-			orderTag = indexingProfileRS.getString("orderTag");
-			orderLocationSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "orderLocation");
+			orderTag                    = indexingProfileRS.getString("orderTag");
+			orderLocationSubfield       = getSubfieldIndicatorFromConfig(indexingProfileRS, "orderLocation");
 			singleOrderLocationSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "orderLocationSingle");
-			orderCopiesSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "orderCopies");
-			orderStatusSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "orderStatus");
-			orderCode3Subfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "orderCode3");
+			orderCopiesSubfield         = getSubfieldIndicatorFromConfig(indexingProfileRS, "orderCopies");
+			orderStatusSubfield         = getSubfieldIndicatorFromConfig(indexingProfileRS, "orderStatus");
+			orderCode3Subfield          = getSubfieldIndicatorFromConfig(indexingProfileRS, "orderCode3");
 
 			//loadAvailableItemBarcodes(marcRecordPath, logger);
 			loadHoldsByIdentifier(vufindConn, logger);
