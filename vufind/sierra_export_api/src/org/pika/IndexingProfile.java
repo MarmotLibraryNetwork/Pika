@@ -74,7 +74,7 @@ public class IndexingProfile {
 	char   eContentDescriptor;
 	String specifiedFormatCategory;
 
-	String bcode3DestinationField;
+	String sierraBibLevelFieldTag;
 	char   bcode3DestinationSubfield;
 	String callNumberExportFieldTag;
 	String callNumberPrestampExportSubfield;
@@ -237,7 +237,10 @@ public class IndexingProfile {
 				PreparedStatement getSierraFieldMappingsStmt = pikaConn.prepareStatement("SELECT * FROM sierra_export_field_mapping where indexingProfileId =" + indexingProfile.id);
 				ResultSet         getSierraFieldMappingsRS   = getSierraFieldMappingsStmt.executeQuery();
 				if (getSierraFieldMappingsRS.next()) {
-					indexingProfile.bcode3DestinationField = getSierraFieldMappingsRS.getString("bcode3DestinationField");
+					indexingProfile.sierraBibLevelFieldTag = getSierraFieldMappingsRS.getString("bcode3DestinationField");
+					//TODO: rename database column to sierraBibLevelFieldTag
+					//TODO: Determine why these settings are needed separate from their corresponding values in other indexing profile settings?
+					// Are the duplicates?  Or Why are they needed?
 					indexingProfile.setBcode3DestinationSubfield(getSierraFieldMappingsRS.getString("bcode3DestinationSubfield"));
 					indexingProfile.callNumberExportFieldTag          = getSierraFieldMappingsRS.getString("callNumberExportFieldTag");
 					indexingProfile.callNumberPrestampExportSubfield  = getSierraFieldMappingsRS.getString("callNumberPrestampExportSubfield");

@@ -13,6 +13,7 @@ import au.com.bytecode.opencsv.CSVReader;
 import au.com.bytecode.opencsv.CSVWriter;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
+import org.apache.solr.client.solrj.impl.ConcurrentUpdateSolrServer;
 import org.ini4j.Ini;
 import org.ini4j.InvalidFileFormatException;
 import org.ini4j.Profile.Section;
@@ -59,6 +60,9 @@ public class SierraExportAPIMain {
 	private static PreparedStatement addNoteToExportLogStmt;
 	private static String            exportPath;
 	private static boolean           debug = false;
+
+	private static ConcurrentUpdateSolrServer updateServer;
+	private static String                     solrPort;
 
 	//Temporary
 	private static char bibLevelLocationsSubfield = 'a'; //TODO: may need to make bib -level locations field an indexing setting
@@ -121,6 +125,10 @@ public class SierraExportAPIMain {
 			profileToLoad = args[1];
 		}
 		indexingProfile = IndexingProfile.loadIndexingProfile(pikaConn, profileToLoad, logger);
+		if (indexingProfile.sierraBibLevelFieldTag == null || indexingProfile.sierraBibLevelFieldTag.isEmpty()) {
+			logger.error("Sierra Field Mappings need to be set.");
+			System.exit(0);
+		}
 
 
 		//Start an export log entry
@@ -145,19 +153,18 @@ public class SierraExportAPIMain {
 		File changedBibsFile = new File(exportPath + "/changed_bibs_to_process.csv");
 
 		// Inititalize Reindexer (used in deleteRecord() )
-		groupedWorkIndexer = new GroupedWorkIndexer(serverName, pikaConn, econtentConn, ini, false, false, logger);
+//		groupedWorkIndexer = new GroupedWorkIndexer(serverName, pikaConn, econtentConn, ini, false, false, logger);
+
+		// Since we only need the reindexer at this time to delete entries, let's just skip over the reindexer to the Solr handler
+		solrPort     = cleanIniValue(ini.get("Reindex", "solrPort"));
+		updateServer = new ConcurrentUpdateSolrServer("http://localhost:" + solrPort + "/solr/grouped", 500, 8);
+//		updateServer.setRequestWriter(new BinaryRequestWriter());
 
 		//Process MARC record changes
 		getBibsAndItemUpdatesFromSierra(ini, pikaConn, changedBibsFile);
 
 		//Write the number of updates to the log
-		try (PreparedStatement setNumProcessedStmt = pikaConn.prepareStatement("UPDATE sierra_api_export_log SET numRecordsToProcess = ? WHERE id = ?", PreparedStatement.RETURN_GENERATED_KEYS)) {
-			setNumProcessedStmt.setLong(1, allBibsToUpdate.size());
-			setNumProcessedStmt.setLong(2, exportLogId);
-			setNumProcessedStmt.executeUpdate();
-		} catch (SQLException e) {
-			logger.error("Unable to update log entry with number of records that have changed", e);
-		}
+		updateSierraExtractLogNumToProcess(pikaConn);
 
 		//Connect to the sierra database
 		String url              = cleanIniValue(ini.get("Catalog", "sierra_db"));
@@ -176,8 +183,9 @@ public class SierraExportAPIMain {
 					conn = DriverManager.getConnection(url);
 				}
 
+				// Data extracted from the Sierra Database
 				exportActiveOrders(exportPath, conn);
-				exportDueDates(exportPath, conn);
+//				exportDueDates(exportPath, conn); // Shouldn't be needed any longer. Pascal 6/13/2019
 				exportHolds(conn, pikaConn);
 
 			} catch (Exception e) {
@@ -186,18 +194,11 @@ public class SierraExportAPIMain {
 			}
 		}
 
-		try (PreparedStatement setNumProcessedStmt = pikaConn.prepareStatement("UPDATE sierra_api_export_log SET numRecordsToProcess = ? WHERE id = ?", PreparedStatement.RETURN_GENERATED_KEYS)) {
-			setNumProcessedStmt.setLong(1, allBibsToUpdate.size());
-			setNumProcessedStmt.setLong(2, exportLogId);
-			setNumProcessedStmt.executeUpdate();
-		} catch (SQLException e) {
-			logger.error("Unable to update log entry with number of records that have changed", e);
-		}
-
 		//Setup other systems we will use
 		recordGroupingProcessor = new MarcRecordGrouper(pikaConn, indexingProfile, logger, false);
 
-		int numRecordsProcessed = updateBibs(ini);
+		int numRecordsProcessed = updateBibs(ini, pikaConn);
+		updateSierraExtractLogNumToProcess(pikaConn);
 
 		//Write any records that still haven't been processed
 
@@ -210,7 +211,6 @@ public class SierraExportAPIMain {
 				itemsToProcessWriter.write(bibToUpdate + "\r\n");
 			}
 			itemsToProcessWriter.flush();
-			itemsToProcessWriter.close();
 
 		} catch (Exception e) {
 			logger.error("Error saving remaining bibs to process", e);
@@ -264,6 +264,17 @@ public class SierraExportAPIMain {
 		}
 		Date currentTime = new Date();
 		logger.info(currentTime.toString() + ": Finished Sierra Extract");
+	}
+
+	private static void updateSierraExtractLogNumToProcess(Connection pikaConn) {
+		// Log how many bibs are left to process
+		try (PreparedStatement setNumProcessedStmt = pikaConn.prepareStatement("UPDATE sierra_api_export_log SET numRecordsToProcess = ? WHERE id = ?", PreparedStatement.RETURN_GENERATED_KEYS)) {
+			setNumProcessedStmt.setLong(1, allBibsToUpdate.size());
+			setNumProcessedStmt.setLong(2, exportLogId);
+			setNumProcessedStmt.executeUpdate();
+		} catch (SQLException e) {
+			logger.error("Unable to update log entry with number of records that have changed", e);
+		}
 	}
 
 	private static void updateLastExportTime(Connection pikaConn, long exportStartTime) {
@@ -377,15 +388,15 @@ public class SierraExportAPIMain {
 
 	}
 
-	private static int updateBibs(Ini ini) {
+	private static int updateBibs(Ini ini, Connection pikaConn) {
 		//This section uses the batch method which doesn't work in Sierra because we are limited to 100 exports per hour
 
 		addNoteToExportLog("Found " + allBibsToUpdate.size() + " bib records that need to be updated with data from Sierra.");
-		int     batchSize           = 25;
-		int     numProcessed        = 0;
-		Long    exportStartTime     = new Date().getTime() / 1000;
-		boolean hasMoreIdsToProcess = true;
-		while (hasMoreIdsToProcess) {
+		boolean hasMoreIdsToProcess;
+		int     batchSize       = 25;
+		int     numProcessed    = 0;
+		Long    exportStartTime = new Date().getTime() / 1000;
+		do {
 			hasMoreIdsToProcess = false;
 			StringBuilder     idsToProcess = new StringBuilder();
 			int               maxIndex     = Math.min(allBibsToUpdate.size(), batchSize);
@@ -400,20 +411,19 @@ public class SierraExportAPIMain {
 				allBibsToUpdate.remove(lastId);
 			}
 			updateMarcAndRegroupRecordIds(ini, idsToProcess.toString(), ids);
-			if (allBibsToUpdate.size() >= 0) {
-				numProcessed += maxIndex;
-				if (numProcessed % 250 == 0 || allBibsToUpdate.size() == 0) {
-					addNoteToExportLog("Processed " + numProcessed);
-					if ((new Date().getTime() / 1000) - exportStartTime >= 5 * 60) {
-						addNoteToExportLog("Stopping export due to time constraints, there are " + allBibsToUpdate.size() + " bibs remaining to be processed.");
-						break;
-					}
-				}
-				if (allBibsToUpdate.size() > 0) {
-					hasMoreIdsToProcess = true;
+			numProcessed += maxIndex;
+			if (numProcessed % 250 == 0 || allBibsToUpdate.size() == 0) {
+				addNoteToExportLog("Processed " + numProcessed);
+				if ((new Date().getTime() / 1000) - exportStartTime >= 5 * 60) {
+					addNoteToExportLog("Stopping export due to time constraints, there are " + allBibsToUpdate.size() + " bibs remaining to be processed.");
+					break;
 				}
 			}
-		}
+			if (allBibsToUpdate.size() > 0) {
+				hasMoreIdsToProcess = true;
+				updateSierraExtractLogNumToProcess(pikaConn);
+			}
+		} while (hasMoreIdsToProcess);
 
 		return numProcessed;
 	}
@@ -598,7 +608,7 @@ public class SierraExportAPIMain {
 	}
 
 	private static boolean deleteRecord(long updateTime, String idFromAPI) {
-		String bibId = ".b" + idFromAPI + getCheckDigit(idFromAPI);
+		String bibId = getfullSierraBibId(idFromAPI);
 		try {
 			//Check to see if the identifier is in the grouped work primary identifiers table
 			getWorkForPrimaryIdentifierStmt.setString(1, indexingProfile.name);
@@ -624,7 +634,10 @@ public class SierraExportAPIMain {
 							String permanentId = getPermanentIdForGroupedWork(groupedWorkId);
 							if (permanentId != null && !permanentId.isEmpty()) {
 								//Delete the work from solr index
-								groupedWorkIndexer.deleteRecord(permanentId);
+//								groupedWorkIndexer.deleteRecord(permanentId);
+
+								deleteGroupedWorkFromSolr(permanentId); //Trying to skip using the Reindexer
+
 //								logger.warn("Sierra API extract deleted Group Work " + permanentId + " from index. Investigate if it is an anomalous deletion by the Sierra API extract");
 								//pascal 5/2/2019 cutting out warning noise for now
 
@@ -647,6 +660,18 @@ public class SierraExportAPIMain {
 			logger.error("Error processing deleted bibs", e);
 		}
 		return false;
+	}
+
+	static void deleteGroupedWorkFromSolr(String id) {
+		logger.info("Clearing existing work from index");
+		try {
+			updateServer.deleteById(id);
+			//With this commit, we get errors in the log "Previous SolrRequestInfo was not closed!"
+			//Allow auto commit functionality to handle this
+			//updateServer.commit(true, false, false);
+		} catch (Exception e) {
+			logger.error("Error deleting work from index", e);
+		}
 	}
 
 	private static void deleteGroupedWorkPrimaryIdentifier(Long primaryIdentifierId) {
@@ -944,7 +969,7 @@ public class SierraExportAPIMain {
 						logger.debug("id " + id + " was deleted");
 						return true;
 					} else {
-						logger.error("Unknown error " + marcResults);
+						logger.error("Unknown error, code : " + marcResults.getInt("code") + ", " + marcResults);
 						return false;
 					}
 				}
@@ -979,15 +1004,15 @@ public class SierraExportAPIMain {
 				logger.debug("Converted JSON to MARC for Bib");
 
 				//Add the identifier
-				marcRecord.addVariableField(marcFactory.newDataField(indexingProfile.recordNumberTag, ' ', ' ', "" + indexingProfile.recordNumberField /*convert to string*/, getfullSierraBibId(id)));
+				DataField recordNumberField = marcFactory.newDataField(indexingProfile.recordNumberTag, ' ', ' ', "" + indexingProfile.recordNumberField /*convert to string*/, getfullSierraBibId(id));
 
 				//Load Sierra Fixed Field / Bib Level Tag
-				JSONObject fixedFieldResults = getMarcJSONFromSierraApiURL(ini, apiBaseUrl, apiBaseUrl + "/bibs/" + id + "?fields=fixedFields,locations");
+				JSONObject fixedFieldResults = getMarcJSONFromSierraApiURL(ini, apiBaseUrl, apiBaseUrl + "/bibs/" + id + "?fields=fixedFields,locations,copies");
 				if (fixedFieldResults != null) {
 					String    bCode3           = fixedFieldResults.getJSONObject("fixedFields").getJSONObject("31").getString("value");
 					String    matType          = fixedFieldResults.getJSONObject("fixedFields").getJSONObject("30").getString("value");
 					String    location         = fixedFieldResults.getJSONObject("fixedFields").getJSONObject("26").getString("value");
-					DataField sierraFixedField = marcFactory.newDataField(indexingProfile.bcode3DestinationField, ' ', ' ');
+					DataField sierraFixedField = marcFactory.newDataField(indexingProfile.sierraBibLevelFieldTag, ' ', ' ');
 					sierraFixedField.addSubfield(marcFactory.newSubfield(indexingProfile.bcode3DestinationSubfield, bCode3));
 					sierraFixedField.addSubfield(marcFactory.newSubfield(indexingProfile.materialTypeSubField, matType));
 					if (location.equalsIgnoreCase("multi")) {
@@ -998,26 +1023,34 @@ public class SierraExportAPIMain {
 						}
 					} else {
 						sierraFixedField.addSubfield(marcFactory.newSubfield(bibLevelLocationsSubfield, location));
+					}
+					marcRecord.addVariableField(sierraFixedField);
 
+					//TODO: Add locations for Flatirons
+
+					marcRecord.addVariableField(recordNumberField);
+
+					if (fixedFieldResults.has("copies")) {
+						//Get Items for the bib record
+						getItemsForBib(ini, id, marcRecord);
+						logger.debug("Processed items for Bib");
 					}
 
-					marcRecord.addVariableField(sierraFixedField);
-				}
+					RecordIdentifier recordIdentifier = recordGroupingProcessor.getPrimaryIdentifierFromMarcRecord(marcRecord, indexingProfile.name, indexingProfile.doAutomaticEcontentSuppression);
+					String           identifier       = recordIdentifier.getIdentifier();
+					writeMarcRecord(marcRecord, identifier);
+					logger.debug("Wrote marc record for " + identifier);
 
-				//Get Items for the bib record
-				getItemsForBib(ini, id, marcRecord);
-				logger.debug("Processed items for Bib");
-				RecordIdentifier recordIdentifier = recordGroupingProcessor.getPrimaryIdentifierFromMarcRecord(marcRecord, indexingProfile.name, indexingProfile.doAutomaticEcontentSuppression);
-				String           identifier       = recordIdentifier.getIdentifier();
-				writeMarcRecord(marcRecord, identifier);
-				logger.debug("Wrote marc record for " + identifier);
-
-				//Setup the grouped work for the record.  This will take care of either adding it to the proper grouped work
-				//or creating a new grouped work
-				if (!recordGroupingProcessor.processMarcRecord(marcRecord, true)) {
-					logger.warn(identifier + " was suppressed");
+					//Setup the grouped work for the record.  This will take care of either adding it to the proper grouped work
+					//or creating a new grouped work
+					if (!recordGroupingProcessor.processMarcRecord(marcRecord, true)) {
+						logger.warn(identifier + " was suppressed");
+					} else {
+						logger.debug("Finished record grouping for " + identifier);
+					}
 				} else {
-					logger.debug("Finished record grouping for " + identifier);
+					logger.error("Error exporting marc record for " + id + " call for fixed fields returned null");
+					return false;
 				}
 			} else {
 				logger.error("Error exporting marc record for " + id + " call returned null");
