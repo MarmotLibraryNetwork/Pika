@@ -64,6 +64,8 @@ public class SierraExportAPIMain {
 	private static ConcurrentUpdateSolrServer updateServer;
 	private static String                     solrPort;
 
+	private static int minutesToProcessExport;
+
 	//Temporary
 	private static char bibLevelLocationsSubfield = 'a'; //TODO: may need to make bib -level locations field an indexing setting
 
@@ -81,15 +83,12 @@ public class SierraExportAPIMain {
 		logger.info(startTime.toString() + ": Starting Sierra Extract");
 
 		// Read the base INI file to get information about the server (current directory/cron/config.ini)
-		ini = loadConfigFile("config.ini");
-		String exportItemHoldsStr = cleanIniValue(ini.get("Catalog", "exportItemHolds"));
-		if (exportItemHoldsStr != null) {
-			exportItemHolds = exportItemHoldsStr.equalsIgnoreCase("true") || exportItemHoldsStr.equals("1");
-		}
-		String debugStr = cleanIniValue(ini.get("System", "debug"));
-		if (debugStr != null) {
-			debug = debugStr.equalsIgnoreCase("true") || debugStr.equals("1");
-		}
+		ini             = loadConfigFile("config.ini");
+		exportItemHolds = booleanIniValue("Catalog", "exportItemHolds");
+		debug           = booleanIniValue("System", "debug");
+
+		Integer minsToProcess = intIniValue("Catalog", "minutesToProcessExport");
+		minutesToProcessExport = (minsToProcess == null) ? 5 : minsToProcess;
 
 		//Connect to the pika database
 		Connection pikaConn = null;
@@ -105,20 +104,22 @@ public class SierraExportAPIMain {
 			logger.error("Error connecting to Pika database " + e.toString());
 			System.exit(2); // Exiting with a status code of 2 so that our executing bash scripts knows there has been a database communication error
 		}
-		//Connect to the pika database
-		Connection econtentConn = null;
-		try {
-			String databaseConnectionInfo = cleanIniValue(ini.get("Database", "database_econtent_jdbc"));
-			if (databaseConnectionInfo != null) {
-				econtentConn = DriverManager.getConnection(databaseConnectionInfo);
-			} else {
-				logger.error("No eContent database connection info");
-				System.exit(2); // Exiting with a status code of 2 so that our executing bash scripts knows there has been a database communication error
-			}
-		} catch (Exception e) {
-			System.out.println("Error connecting to econtent database " + e.toString());
-			System.exit(2); // Exiting with a status code of 2 so that our executing bash scripts knows there has been a database communication error
-		}
+
+		//Only needed for reindexer
+//		//Connect to the pika  econtent database
+//		Connection econtentConn = null;
+//		try {
+//			String databaseConnectionInfo = cleanIniValue(ini.get("Database", "database_econtent_jdbc"));
+//			if (databaseConnectionInfo != null) {
+//				econtentConn = DriverManager.getConnection(databaseConnectionInfo);
+//			} else {
+//				logger.error("No eContent database connection info");
+//				System.exit(2); // Exiting with a status code of 2 so that our executing bash scripts knows there has been a database communication error
+//			}
+//		} catch (Exception e) {
+//			System.out.println("Error connecting to econtent database " + e.toString());
+//			System.exit(2); // Exiting with a status code of 2 so that our executing bash scripts knows there has been a database communication error
+//		}
 
 		String profileToLoad = "ils";
 		if (args.length > 1) {
@@ -414,7 +415,7 @@ public class SierraExportAPIMain {
 			numProcessed += maxIndex;
 			if (numProcessed % 250 == 0 || allBibsToUpdate.size() == 0) {
 				addNoteToExportLog("Processed " + numProcessed);
-				if ((new Date().getTime() / 1000) - exportStartTime >= 5 * 60) {
+				if (minutesToProcessExport > 0 && (new Date().getTime() / 1000) - exportStartTime >= minutesToProcessExport * 60) {
 					addNoteToExportLog("Stopping export due to time constraints, there are " + allBibsToUpdate.size() + " bibs remaining to be processed.");
 					break;
 				}
@@ -638,7 +639,7 @@ public class SierraExportAPIMain {
 
 								deleteGroupedWorkFromSolr(permanentId); //Trying to skip using the Reindexer
 
-//								logger.warn("Sierra API extract deleted Group Work " + permanentId + " from index. Investigate if it is an anomalous deletion by the Sierra API extract");
+								logger.warn("Sierra API extract deleted Group Work " + permanentId + " from index. Investigate if it is an anomalous deletion by the Sierra API extract");
 								//pascal 5/2/2019 cutting out warning noise for now
 
 								// See https://marmot.myjetbrains.com/youtrack/issue/D-2364
@@ -1521,6 +1522,23 @@ public class SierraExportAPIMain {
 			value = value.substring(0, value.length() - 1);
 		}
 		return value;
+	}
+
+	private static boolean booleanIniValue(String sectionName, String optionName) {
+		String booleanValueStr = cleanIniValue(ini.get(sectionName, optionName));
+		if (booleanValueStr != null) {
+			return booleanValueStr.equalsIgnoreCase("true") || booleanValueStr.equals("1");
+		}
+		return false;
+	}
+
+
+	private static Integer intIniValue(String sectionName, String optionName) {
+		String intValueStr = cleanIniValue(ini.get(sectionName, optionName));
+		if (intValueStr != null) {
+			return Integer.parseInt(intValueStr);
+		}
+		return null;
 	}
 
 	private static void writeToFileFromSQLResultFile(File dataFile, ResultSet dataRS) {
