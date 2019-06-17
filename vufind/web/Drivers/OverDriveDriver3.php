@@ -30,39 +30,40 @@ class OverDriveDriver3 {
 
 
 	protected $format_map = array(
-		'ebook-epub-adobe' => 'Adobe EPUB eBook',
-		'ebook-epub-open' => 'Open EPUB eBook',
-		'ebook-pdf-adobe' => 'Adobe PDF eBook',
-		'ebook-pdf-open' => 'Open PDF eBook',
-		'ebook-kindle' => 'Kindle Book',
-		'ebook-disney' => 'Disney Online Book',
-		'ebook-overdrive' => 'OverDrive Read',
-		'ebook-microsoft' => 'Microsoft eBook',
-		'audiobook-wma' => 'OverDrive WMA Audiobook',
-		'audiobook-mp3' => 'OverDrive MP3 Audiobook',
+		'ebook-epub-adobe'    => 'Adobe EPUB eBook',
+		'ebook-epub-open'     => 'Open EPUB eBook',
+		'ebook-pdf-adobe'     => 'Adobe PDF eBook',
+		'ebook-pdf-open'      => 'Open PDF eBook',
+		'ebook-kindle'        => 'Kindle Book',
+		'ebook-disney'        => 'Disney Online Book',
+		'ebook-overdrive'     => 'OverDrive Read',
+		'ebook-microsoft'     => 'Microsoft eBook',
+		'audiobook-wma'       => 'OverDrive WMA Audiobook',
+		'audiobook-mp3'       => 'OverDrive MP3 Audiobook',
 		'audiobook-streaming' => 'Streaming Audiobook',
-		'music-wma' => 'OverDrive Music',
-		'video-wmv' => 'OverDrive Video',
-		'video-wmv-mobile' => 'OverDrive Video (mobile)',
-		'periodicals-nook' => 'NOOK Periodicals',
+		'music-wma'           => 'OverDrive Music',
+		'video-wmv'           => 'OverDrive Video',
+		'video-wmv-mobile'    => 'OverDrive Video (mobile)',
+		'periodicals-nook'    => 'NOOK Periodicals',
 		'audiobook-overdrive' => 'OverDrive Listen',
-		'video-streaming' => 'OverDrive Video',
-		'ebook-mediado' => 'MediaDo Reader',
-		'magazine-overdrive'=> 'OverDrive Magazine'
+		'video-streaming'     => 'OverDrive Video',
+		'ebook-mediado'       => 'MediaDo Reader',
+		'magazine-overdrive'  => 'OverDrive Magazine',
 	);
 
 	private function setCurlDefaults($curlConnection, $headers = array()){
-		$default_curl_options  = array(
-			CURLOPT_USERAGENT         => "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)",
-			CURLOPT_CONNECTTIMEOUT    => 20,
-			CURLOPT_TIMEOUT           => 10,
-			CURLOPT_HTTPHEADER        => $headers,
-			CURLOPT_RETURNTRANSFER    => true,
-			CURLOPT_SSL_VERIFYPEER    => false,
-			CURLOPT_SSL_VERIFYHOST    => false,
-			CURLOPT_FOLLOWLOCATION    => true,
-			CURLOPT_HEADER            => false,
-			CURLOPT_AUTOREFERER       => true,
+		$userAgent            = empty($configArray['Catalog']['catalogUserAgent']) ? 'Pika' : $configArray['Catalog']['catalogUserAgent'];
+		$default_curl_options = array(
+			CURLOPT_USERAGENT      => $userAgent,
+			CURLOPT_CONNECTTIMEOUT => 2,  // A low connect time out prevents Pika from slowing down when there is an Overdrive outage
+			CURLOPT_TIMEOUT        => 10,
+			CURLOPT_HTTPHEADER     => $headers,
+			CURLOPT_RETURNTRANSFER => true,
+			CURLOPT_SSL_VERIFYPEER => false,
+			CURLOPT_SSL_VERIFYHOST => false,
+			CURLOPT_FOLLOWLOCATION => true,
+			CURLOPT_HEADER         => false,
+			CURLOPT_AUTOREFERER    => true,
 			//  CURLOPT_HEADER => true, // debugging only
 			//  CURLOPT_VERBOSE => true, // debugging only
 		);
@@ -79,14 +80,8 @@ class OverDriveDriver3 {
 			global $configArray;
 			if (!empty($configArray['OverDrive']['clientKey'])  && !empty($configArray['OverDrive']['clientSecret'])){
 				$ch = curl_init("https://oauth.overdrive.com/token");
-				curl_setopt($ch, CURLOPT_USERAGENT,"Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)");
-				curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-				curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-				curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
-				curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/x-www-form-urlencoded;charset=UTF-8'));
+				$this->setCurlDefaults($ch, array('Content-Type: application/x-www-form-urlencoded;charset=UTF-8'));
 				curl_setopt($ch, CURLOPT_USERPWD, $configArray['OverDrive']['clientKey'] . ":" . $configArray['OverDrive']['clientSecret']);
-				curl_setopt($ch, CURLOPT_TIMEOUT, 10);
-				curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 1);
 				curl_setopt($ch, CURLOPT_POST, 1);
 				curl_setopt($ch, CURLOPT_POSTFIELDS, "grant_type=client_credentials");
 				curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
@@ -147,16 +142,8 @@ class OverDriveDriver3 {
 					return false;
 				}
 
-				$userAgent        = empty($configArray['Catalog']['catalogUserAgent']) ? 'Pika' : $configArray['Catalog']['catalogUserAgent'];
-				$clientSecret     = $configArray['OverDrive']['clientSecret'];
-				$encodedAuthValue = base64_encode($configArray['OverDrive']['clientKey'] . ":" . $clientSecret);
-				$header           = array(
-					'Content-Type: application/x-www-form-urlencoded;charset=UTF-8',
-					'Authorization: Basic ' . $encodedAuthValue,
-					"User-Agent: $userAgent"
-				);
-
-				$this->setCurlDefaults($ch, $header);
+				$this->setCurlDefaults($ch, array('Content-Type: application/x-www-form-urlencoded;charset=UTF-8'));
+				curl_setopt($ch, CURLOPT_USERPWD, $configArray['OverDrive']['clientKey'] . ":" . $configArray['OverDrive']['clientSecret']);
 
 				if ($this->getRequirePin($user)){
 					global $configArray;
@@ -172,7 +159,7 @@ class OverDriveDriver3 {
 				curl_setopt($ch, CURLOPT_POSTFIELDS, $postFields);
 
 				$return   = curl_exec($ch);
-				$curlInfo = curl_getinfo($ch);
+//				$curlInfo = curl_getinfo($ch); // for debugging
 				$timer->logTime("Logged $patronBarcode into OverDrive API");
 				curl_close($ch);
 				$patronTokenData = json_decode($return);
@@ -203,18 +190,8 @@ class OverDriveDriver3 {
 	public function _callUrl($url){
 		$tokenData = $this->_connectToAPI();
 		if ($tokenData){
-			global $configArray;
-			$userAgent = empty($configArray['Catalog']['catalogUserAgent']) ? 'Pika' : $configArray['Catalog']['catalogUserAgent'];
-
 			$ch = curl_init($url);
-			curl_setopt($ch, CURLOPT_USERAGENT,"Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)");
-			curl_setopt($ch, CURLOPT_HTTPHEADER, array("Authorization: {$tokenData->token_type} {$tokenData->access_token}", "User-Agent: $userAgent"));
-			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-			curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
-			curl_setopt($ch, CURLOPT_TIMEOUT, 10);
-			curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 1);
-			curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
-			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+			$this->setCurlDefaults($ch, array("Authorization: {$tokenData->token_type} {$tokenData->access_token}"));
 			$return = curl_exec($ch);
 			curl_close($ch);
 			$returnVal = json_decode($return);
@@ -278,13 +255,10 @@ class OverDriveDriver3 {
 		$tokenData = $this->_connectToPatronAPI($user);
 		if ($tokenData){
 			$ch = curl_init($url);
-//			curl_setopt($ch, CURLOPT_USERAGENT,"Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)");
 			if (isset($tokenData->token_type) && isset($tokenData->access_token)){
 				$authorizationData = $tokenData->token_type . ' ' . $tokenData->access_token;
-				$userAgent         = empty($configArray['Catalog']['catalogUserAgent']) ? 'Pika' : $configArray['Catalog']['catalogUserAgent'];
 				$headers           = array(
 					"Authorization: $authorizationData",
-					"User-Agent: $userAgent",
 					"Host: patron.api.overdrive.com" // production
 					//"Host: integration-patron.api.overdrive.com" // testing
 				);
@@ -309,7 +283,7 @@ class OverDriveDriver3 {
 				foreach ($postParams as $key => $value){
 					$jsonData['fields'][] = array(
 						'name'  => $key,
-						'value' => $value
+						'value' => $value,
 					);
 				}
 				$postData = json_encode($jsonData);
@@ -320,7 +294,7 @@ class OverDriveDriver3 {
 			}
 
 			$return   = curl_exec($ch);
-			$curlInfo = curl_getinfo($ch);
+//			$curlInfo = curl_getinfo($ch); // for debug
 			curl_close($ch);
 			$returnVal = json_decode($return);
 			//print_r($returnVal);
@@ -338,18 +312,15 @@ class OverDriveDriver3 {
 		//TODO: Remove || true when oauth works
 		if ($tokenData || true){
 			$ch = curl_init($url);
-			global $configArray;
-			$userAgent = empty($configArray['Catalog']['catalogUserAgent']) ? 'Pika' : $configArray['Catalog']['catalogUserAgent'];
 			if ($tokenData){
 				$authorizationData = $tokenData->token_type . ' ' . $tokenData->access_token;
 				$headers = array(
 					"Authorization: $authorizationData",
-					"User-Agent: $userAgent",
 					"Host: patron.api.overdrive.com",
 					//"Host: integration-patron.api.overdrive.com"
 				);
 			}else{
-				$headers = array("User-Agent: $userAgent", "Host: api.overdrive.com");
+				$headers = array("Host: api.overdrive.com");
 			}
 
 			$this->setCurlDefaults($ch, $headers);
@@ -1082,16 +1053,16 @@ class OverDriveDriver3 {
 		$holdPosition = 0;
 
 		$availableCopies = 0;
-		$totalCopies = 0;
-		$onOrderCopies = 0;
-		$checkedOut = 0;
-		$onHold = 0;
-		$wishListSize = 0;
-		$numHolds = 0;
+		$totalCopies     = 0;
+		$onOrderCopies   = 0;
+		$checkedOut      = 0;
+		$onHold          = 0;
+		$wishListSize    = 0;
+		$numHolds        = 0;
 		if (count($scopedAvailability['mine']) > 0){
 			foreach ($scopedAvailability['mine'] as $curAvailability){
 				$availableCopies += $curAvailability->copiesAvailable;
-				$totalCopies += $curAvailability->copiesOwned;
+				$totalCopies     += $curAvailability->copiesOwned;
 				if ($curAvailability->numberOfHolds > $numHolds){
 					$numHolds = $curAvailability->numberOfHolds;
 				}
