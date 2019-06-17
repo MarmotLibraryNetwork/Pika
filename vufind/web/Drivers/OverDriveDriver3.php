@@ -30,25 +30,25 @@ class OverDriveDriver3 {
 
 
 	protected $format_map = array(
-		'ebook-epub-adobe' => 'Adobe EPUB eBook',
-		'ebook-epub-open' => 'Open EPUB eBook',
-		'ebook-pdf-adobe' => 'Adobe PDF eBook',
-		'ebook-pdf-open' => 'Open PDF eBook',
-		'ebook-kindle' => 'Kindle Book',
-		'ebook-disney' => 'Disney Online Book',
-		'ebook-overdrive' => 'OverDrive Read',
-		'ebook-microsoft' => 'Microsoft eBook',
-		'audiobook-wma' => 'OverDrive WMA Audiobook',
-		'audiobook-mp3' => 'OverDrive MP3 Audiobook',
+		'ebook-epub-adobe'    => 'Adobe EPUB eBook',
+		'ebook-epub-open'     => 'Open EPUB eBook',
+		'ebook-pdf-adobe'     => 'Adobe PDF eBook',
+		'ebook-pdf-open'      => 'Open PDF eBook',
+		'ebook-kindle'        => 'Kindle Book',
+		'ebook-disney'        => 'Disney Online Book',
+		'ebook-overdrive'     => 'OverDrive Read',
+		'ebook-microsoft'     => 'Microsoft eBook',
+		'audiobook-wma'       => 'OverDrive WMA Audiobook',
+		'audiobook-mp3'       => 'OverDrive MP3 Audiobook',
 		'audiobook-streaming' => 'Streaming Audiobook',
-		'music-wma' => 'OverDrive Music',
-		'video-wmv' => 'OverDrive Video',
-		'video-wmv-mobile' => 'OverDrive Video (mobile)',
-		'periodicals-nook' => 'NOOK Periodicals',
+		'music-wma'           => 'OverDrive Music',
+		'video-wmv'           => 'OverDrive Video',
+		'video-wmv-mobile'    => 'OverDrive Video (mobile)',
+		'periodicals-nook'    => 'NOOK Periodicals',
 		'audiobook-overdrive' => 'OverDrive Listen',
-		'video-streaming' => 'OverDrive Video',
-		'ebook-mediado' => 'MediaDo Reader',
-		'magazine-overdrive'=> 'OverDrive Magazine'
+		'video-streaming'     => 'OverDrive Video',
+		'ebook-mediado'       => 'MediaDo Reader',
+		'magazine-overdrive'  => 'OverDrive Magazine',
 	);
 
 	private function setCurlDefaults($curlConnection, $headers = array()){
@@ -82,16 +82,20 @@ class OverDriveDriver3 {
 				curl_setopt($ch, CURLOPT_USERAGENT,"Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)");
 				curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 				curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+				curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
 				curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
 				curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/x-www-form-urlencoded;charset=UTF-8'));
 				curl_setopt($ch, CURLOPT_USERPWD, $configArray['OverDrive']['clientKey'] . ":" . $configArray['OverDrive']['clientSecret']);
 				curl_setopt($ch, CURLOPT_TIMEOUT, 10);
-				curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 1);
+				curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 30);
 				curl_setopt($ch, CURLOPT_POST, 1);
 				curl_setopt($ch, CURLOPT_POSTFIELDS, "grant_type=client_credentials");
-				curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
 				$return = curl_exec($ch);
+//				$curlInfo = curl_getinfo($ch);
 				curl_close($ch);
+				global $logger;
+				$logger->log("connecting to the overdrive API, return Value : " . $return, PEAR_LOG_DEBUG);
+//				$logger->log("curlinfo : " .var_export($curlInfo, true), PEAR_LOG_DEBUG);
 				$tokenData = json_decode($return);
 				if ($tokenData){
 					$memCache->set('overdrive_token' . $serverName, $tokenData, 0, $tokenData->expires_in - 10);
@@ -212,13 +216,14 @@ class OverDriveDriver3 {
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 			curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
 			curl_setopt($ch, CURLOPT_TIMEOUT, 10);
-			curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 1);
+			curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 30);
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
 			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 			$return = curl_exec($ch);
+			global $logger;
+			$logger->log("Return Value : " . $return, PEAR_LOG_DEBUG);
 			curl_close($ch);
 			$returnVal = json_decode($return);
-			//print_r($returnVal);
 			if ($returnVal != null){
 				if (!isset($returnVal->message) || $returnVal->message != 'An unexpected error has occurred.'){
 					return $returnVal;
