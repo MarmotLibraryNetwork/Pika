@@ -7,7 +7,7 @@ EMAIL=root@titan
 PIKASERVER=marmot.test
 PIKADBNAME=pika
 OUTPUT_FILE="/var/log/vufind-plus/${PIKASERVER}/full_update_output.log"
-USE_SIERRA_API_EXTRACT=0
+USE_SIERRA_API_EXTRACT=1
 
 # Check if full_update is already running
 #TODO: Verify that the PID file doesn't get log-rotated
