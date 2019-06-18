@@ -1006,10 +1006,12 @@ public class SierraExportAPIMain {
 
 					marcRecord.addVariableField(recordNumberField);
 
-					if (fixedFieldResults.has("copies")) {
+					if (fixedFieldResults.getJSONObject("fixedFields").has("27")) { // Copies fixed field
 						//Get Items for the bib record
 						getItemsForBib(id, marcRecord);
 						logger.debug("Processed items for Bib");
+					} else {
+						logger.warn("Bib : " + id + " does not have a copies fixed field");
 					}
 
 					RecordIdentifier recordIdentifier = recordGroupingProcessor.getPrimaryIdentifierFromMarcRecord(marcRecord, indexingProfile.name, indexingProfile.doAutomaticEcontentSuppression);
