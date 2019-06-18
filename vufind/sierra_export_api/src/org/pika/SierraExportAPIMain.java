@@ -983,7 +983,7 @@ public class SierraExportAPIMain {
 				DataField recordNumberField = marcFactory.newDataField(indexingProfile.recordNumberTag, ' ', ' ', "" + indexingProfile.recordNumberField /*convert to string*/, getfullSierraBibId(id));
 
 				//Load Sierra Fixed Field / Bib Level Tag
-				JSONObject fixedFieldResults = getMarcJSONFromSierraApiURL(apiBaseUrl + "/bibs/" + id + "?fields=fixedFields,locations,copies");
+				JSONObject fixedFieldResults = getMarcJSONFromSierraApiURL(apiBaseUrl + "/bibs/" + id + "?fields=fixedFields,locations");
 				if (fixedFieldResults != null) {
 					String    bCode3           = fixedFieldResults.getJSONObject("fixedFields").getJSONObject("31").getString("value");
 					String    matType          = fixedFieldResults.getJSONObject("fixedFields").getJSONObject("30").getString("value");
