@@ -29,7 +29,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	String marcPath;
 	String profileType;
 
-	private String recordNumberTag;
+	String recordNumberTag;
 	String itemTag;
 	String formatSource;
 	String specifiedFormat;
@@ -62,6 +62,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	private Pattern nonHoldableITypes;
 	boolean useEContentSubfield = false;
 	char eContentSubfieldIndicator;
+	boolean doAutomaticEcontentSuppression = false;
 	private char lastYearCheckoutSubfield;
 	private char ytdCheckoutSubfield;
 	private char totalCheckoutSubfield;
@@ -98,7 +99,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	HashMap<String, TranslationMap> translationMaps = new HashMap<>();
 	private ArrayList<TimeToReshelve> timesToReshelve = new ArrayList<>();
 
-	IlsRecordProcessor(GroupedWorkIndexer indexer, Connection vufindConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
+	IlsRecordProcessor(GroupedWorkIndexer indexer, Connection pikaConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 		super(indexer, logger);
 		this.fullReindex = fullReindex;
 		//String marcRecordPath = configIni.get("Reindex", "marcPath");
@@ -222,6 +223,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			eContentSubfieldIndicator = getSubfieldIndicatorFromConfig(indexingProfileRS, "eContentDescriptor");
 			useEContentSubfield       = eContentSubfieldIndicator != ' ';
 
+			doAutomaticEcontentSuppression = indexingProfileRS.getBoolean("doAutomaticEcontentSuppression");
 
 			orderTag                    = indexingProfileRS.getString("orderTag");
 			orderLocationSubfield       = getSubfieldIndicatorFromConfig(indexingProfileRS, "orderLocation");
@@ -231,18 +233,18 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			orderCode3Subfield          = getSubfieldIndicatorFromConfig(indexingProfileRS, "orderCode3");
 
 			//loadAvailableItemBarcodes(marcRecordPath, logger);
-			loadHoldsByIdentifier(vufindConn, logger);
+			loadHoldsByIdentifier(pikaConn, logger);
 
-			loadTranslationMapsForProfile(vufindConn, indexingProfileRS.getLong("id"));
+			loadTranslationMapsForProfile(pikaConn, indexingProfileRS.getLong("id"));
 
-			loadTimeToReshelve(vufindConn, indexingProfileRS.getLong("id"));
+			loadTimeToReshelve(pikaConn, indexingProfileRS.getLong("id"));
 		}catch (Exception e){
 			logger.error("Error loading indexing profile information from database", e);
 		}
 	}
 
-	private void loadTimeToReshelve(Connection vufindConn, long id) throws SQLException{
-		PreparedStatement getTimesToReshelveStmt = vufindConn.prepareStatement("SELECT * from time_to_reshelve WHERE indexingProfileId = ? ORDER by weight");
+	private void loadTimeToReshelve(Connection pikaConn, long id) throws SQLException{
+		PreparedStatement getTimesToReshelveStmt = pikaConn.prepareStatement("SELECT * from time_to_reshelve WHERE indexingProfileId = ? ORDER by weight");
 		getTimesToReshelveStmt.setLong(1, id);
 		ResultSet timesToReshelveRS = getTimesToReshelveStmt.executeQuery();
 		while (timesToReshelveRS.next()){
@@ -254,9 +256,10 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			timesToReshelve.add(timeToReshelve);
 		}
 	}
-	private void loadTranslationMapsForProfile(Connection vufindConn, long id) throws SQLException{
-		PreparedStatement getTranslationMapsStmt = vufindConn.prepareStatement("SELECT * from translation_maps WHERE indexingProfileId = ?");
-		PreparedStatement getTranslationMapValuesStmt = vufindConn.prepareStatement("SELECT * from translation_map_values WHERE translationMapId = ?");
+
+	private void loadTranslationMapsForProfile(Connection pikaConn, long id) throws SQLException{
+		PreparedStatement getTranslationMapsStmt = pikaConn.prepareStatement("SELECT * from translation_maps WHERE indexingProfileId = ?");
+		PreparedStatement getTranslationMapValuesStmt = pikaConn.prepareStatement("SELECT * from translation_map_values WHERE translationMapId = ?");
 		getTranslationMapsStmt.setLong(1, id);
 		ResultSet translationsMapRS = getTranslationMapsStmt.executeQuery();
 		while (translationsMapRS.next()){
@@ -271,9 +274,9 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		}
 	}
 
-	private void loadHoldsByIdentifier(Connection vufindConn, Logger logger) {
+	private void loadHoldsByIdentifier(Connection pikaConn, Logger logger) {
 		try{
-			PreparedStatement loadHoldsStmt = vufindConn.prepareStatement("SELECT ilsId, numHolds from ils_hold_summary", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement loadHoldsStmt = pikaConn.prepareStatement("SELECT ilsId, numHolds from ils_hold_summary", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			ResultSet holdsRS = loadHoldsStmt.executeQuery();
 			while (holdsRS.next()) {
 				numberOfHoldsByIdentifier.put(holdsRS.getString("ilsId"), holdsRS.getInt("numHolds"));
