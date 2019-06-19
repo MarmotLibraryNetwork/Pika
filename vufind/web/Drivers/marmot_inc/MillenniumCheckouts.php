@@ -367,7 +367,7 @@ class MillenniumCheckouts {
 				if ($analytics) {
 					$analytics->addEvent('ILS Integration', 'Renew Failed', 'Account in Use');
 				}
-			} elseif (preg_match('/<table border="0" class="patFunc">(.*?)<\/table>/s', $checkedOutPageText, $matches)) {
+			} elseif (preg_match('/<table.*?class="patFunc">(.*?)<\/table>/s', $checkedOutPageText, $matches)) {
 				$checkedOutTitleTable = $matches[1];
 				//$logger->log("Found checked out titles table", PEAR_LOG_DEBUG);
 				if (preg_match_all('/<tr class="patFuncEntry">(.*?)<\/tr>/s', $checkedOutTitleTable, $rowMatches, PREG_SET_ORDER)) {
