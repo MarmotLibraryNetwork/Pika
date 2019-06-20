@@ -230,9 +230,10 @@ public class SierraExportAPIMain {
 		addNoteToExportLog("Elapsed Minutes " + (elapsedTime / 60000));
 
 
-		try (PreparedStatement finishedStatement = pikaConn.prepareStatement("UPDATE sierra_api_export_log SET endTime = ? WHERE id = ?")) {
+		try (PreparedStatement finishedStatement = pikaConn.prepareStatement("UPDATE sierra_api_export_log SET endTime = ?, numRemainingRecords = ? WHERE id = ?")) {
 			finishedStatement.setLong(1, endTime / 1000);
-			finishedStatement.setLong(2, exportLogId);
+			finishedStatement.setLong(2, allBibsToUpdate.size());
+			finishedStatement.setLong(3, exportLogId);
 			finishedStatement.executeUpdate();
 		} catch (SQLException e) {
 			logger.error("Unable to update sierra api export log with completion time.", e);
@@ -322,11 +323,10 @@ public class SierraExportAPIMain {
 
 		Date now       = new Date();
 		Date yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-
-		//TODO: this is a bad assumption now
 		if (lastExtractDate.before(yesterday)) {
-			logger.warn("Last Extract date was more than 24 hours ago.  Just getting the last 24 hours since we should have a full extract.");
-			lastExtractDate = yesterday;
+			logger.warn("Last Extract date was more than 24 hours ago.");
+			// We used to only extract the last 24 hours because there would have been a full export marc file delivered,
+			// but with this process that isn't a good assumption any longer.  Now we will just issue a warning
 		}
 
 
@@ -1088,8 +1088,8 @@ public class SierraExportAPIMain {
 							String statusCode = curItem.getJSONObject("status").getString("code");
 							itemField.addSubfield(marcFactory.newSubfield(indexingProfile.itemStatusSubfield, statusCode));
 							if (curItem.getJSONObject("status").has("duedate")) {
-								Date createdDate = sierraAPIDateFormatter.parse(curItem.getJSONObject("status").getString("duedate"));
-								itemField.addSubfield(marcFactory.newSubfield(indexingProfile.dueDateSubfield, indexingProfile.dueDateFormatter.format(createdDate)));
+								Date dueDate = sierraAPIDateFormatter.parse(curItem.getJSONObject("status").getString("duedate"));
+								itemField.addSubfield(marcFactory.newSubfield(indexingProfile.dueDateSubfield, indexingProfile.dueDateFormatter.format(dueDate)));
 							} else {
 								itemField.addSubfield(marcFactory.newSubfield(indexingProfile.dueDateSubfield, ""));
 							}
