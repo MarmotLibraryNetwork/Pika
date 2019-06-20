@@ -1,27 +1,29 @@
 <?php
 /**
- *
+ * Horizon ROA web services driver.
  *
  * @category Pika
- * @author: Pascal Brammeier
- * Date: 9/10/2018
+ * @author   Pascal Brammeier
+ * @author   Chris Froese
+ *
+ * Updated
  *
  */
-
-require_once 'DriverInterface.php';
 
 abstract class HorizonROA implements DriverInterface
 {
 
 	private static $sessionIdsForUsers = array();
+	private $webServiceURL;
 
 	public function __construct($accountProfile){
 		$this->accountProfile = $accountProfile;
+		$this->webServiceURL  = $this->getWebServiceURL();
 	}
 
 	/**
 	 * Split a name into firstName, lastName, middleName.
-	 *a
+	 *
 	 * Assumes the name is entered as LastName, FirstName MiddleName
 	 * @param $fullName
 	 * @return array
@@ -38,7 +40,7 @@ abstract class HorizonROA implements DriverInterface
 		return array($fullName, $lastName, $firstName);
 	}
 
-	private $webServiceURL = null;
+
 	public function getWebServiceURL()
 	{
 		if (empty($this->webServiceURL)) {
@@ -499,13 +501,6 @@ abstract class HorizonROA implements DriverInterface
 
 		// Now that we have the session token, get checkout  information
 		$webServiceURL = $this->getWebServiceURL();
-
-//		$circRecordDescribe  = $this->getWebServiceResponse($webServiceURL . "/v1/circulation/circRecord/describe", null, $sessionToken);
-//		$circRecordRenewDescribe  = $this->getWebServiceResponse($webServiceURL . "/v1/circulation/circRecord/renew/describe", null, $sessionToken);
-//		$itemDescribe  = $this->getWebServiceResponse($webServiceURL . "/v1/catalog/item/describe", null, $sessionToken);
-//		$callDescribe  = $this->getWebServiceResponse($webServiceURL . "/v1/catalog/call/describe", null, $sessionToken);
-//		$copyDescribe  = $this->getWebServiceResponse($webServiceURL . "/v1/catalog/copy/describe", null, $sessionToken);
-
 
 		//Get a list of checkouts for the user
 		$patronCheckouts = $this->getWebServiceResponse($webServiceURL . '/v1/user/patron/key/' . $patron->username . '?includeFields=circRecordList', null, $sessionToken);
@@ -1431,7 +1426,7 @@ abstract class HorizonROA implements DriverInterface
 		}
 	}
 
-	function resetPin($user, $newPin, $resetToken){
+	public function resetPin($user, $newPin, $resetToken){
 		//TODO: the reset PIN call looks to need a staff priviledged account to complete
 		if (empty($resetToken)) {
 			global $logger;
@@ -1476,15 +1471,12 @@ abstract class HorizonROA implements DriverInterface
 	function updatePatronInfo($patron, $canUpdateContactInfo) {
 		$updateErrors = array();
 		if ($canUpdateContactInfo) {
-//			list($userValid, $sessionToken, $horizonRoaUserID) = $this->loginViaWebService($username, $password);
 			$sessionToken = $this->getSessionToken($patron);
 			if ($sessionToken) {
 				$horizonRoaUserId = $patron->username;
 
 				$updatePatronInfoParameters = array(
 					'fields' => array(),
-//					'key'      => $horizonRoaUserId,
-//					'resource' => '/user/patron',
 				);
 
 				$emailAddress = trim($_REQUEST['email']);
@@ -1526,6 +1518,53 @@ abstract class HorizonROA implements DriverInterface
 		return $updateErrors;
 	}
 
+	public function selfRegister() {
+
+
+
+	}
+
+	/**
+	 * Get self registration fields from Horizon web services.
+	 *
+	 * Checks if self registration is enabled. Gets self registration fields from web service and builds form fields.
+	 *
+	 * @return array|bool An array of form fields or false if user registration isn't enabled (or something goes wrong)
+	 */
+	public function getSelfRegistrationFields()
+	{
+		// 1. isPatronSelfRegistrationEnabled
+		// TODO: need to get the secret for the call below.
+		//$r = $this->getWebServiceResponse($this->webServiceURL . '/rest/standard/isPatronSelfRegistrationEnabled?profile=');
+		// get sef reg fields
+			$req = $this->getWebServiceResponse($this->webServiceURL . '/rest/standard/lookupSelfRegistrationFields');
+			if(!$req) {
+				return false;
+			}
+			// build form fields
+			foreach($req->registrationField as $field) {
+				$f = [
+					'property' => $field->column,
+					'label' => $field->label,
+					'maxLength' => $field->length,
+					'required' => $field->required,
+				];
+				if (isset($field->values)) {
+					// select list
+					$f['type'] = 'enum';
+					$values = [];
+					foreach($field->values->value as $value) {
+						$key = $value->code;
+						$values[$key] = $value->description;
+					}
+					$f['values'] = $values;
+				} else {
+					$f['type'] = 'text';
+				}
+				$fields[] = $f;
+			}
+			return $fields;
+	}
 	/**
 	 * A place holder method to override with site specific logic
 	 *
