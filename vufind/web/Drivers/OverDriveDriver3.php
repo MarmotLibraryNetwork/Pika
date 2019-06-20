@@ -84,9 +84,12 @@ class OverDriveDriver3 {
 				curl_setopt($ch, CURLOPT_USERPWD, $configArray['OverDrive']['clientKey'] . ":" . $configArray['OverDrive']['clientSecret']);
 				curl_setopt($ch, CURLOPT_POST, 1);
 				curl_setopt($ch, CURLOPT_POSTFIELDS, "grant_type=client_credentials");
-				curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
 				$return = curl_exec($ch);
+//				$curlInfo = curl_getinfo($ch);
 				curl_close($ch);
+				global $logger;
+				$logger->log("connecting to the overdrive API, return Value : " . $return, PEAR_LOG_DEBUG);
+//				$logger->log("curlinfo : " .var_export($curlInfo, true), PEAR_LOG_DEBUG);
 				$tokenData = json_decode($return);
 				if ($tokenData){
 					$memCache->set('overdrive_token' . $serverName, $tokenData, 0, $tokenData->expires_in - 10);
@@ -193,9 +196,10 @@ class OverDriveDriver3 {
 			$ch = curl_init($url);
 			$this->setCurlDefaults($ch, array("Authorization: {$tokenData->token_type} {$tokenData->access_token}"));
 			$return = curl_exec($ch);
+			global $logger;
+			$logger->log("Return Value : " . $return, PEAR_LOG_DEBUG);
 			curl_close($ch);
 			$returnVal = json_decode($return);
-			//print_r($returnVal);
 			if ($returnVal != null){
 				if (!isset($returnVal->message) || $returnVal->message != 'An unexpected error has occurred.'){
 					return $returnVal;
