@@ -1517,10 +1517,33 @@ abstract class HorizonROA implements DriverInterface
 		}
 		return $updateErrors;
 	}
+	
 
 	public function selfRegister() {
 
+		unset($_POST['objectAction']);
+		unset($_POST['id']);
+		unset($_POST['submit']);
 
+		$profile = trim($_POST['city_st']);
+		$entries = [];
+		foreach ($_POST as $column=>$value) {
+			$column = trim($column);
+			$value  = trim($value);
+			$entry  = ["column"=>$column, "value"=>$value];
+			$entries[] = $entry;
+		}
+
+		$body = [
+			"profile" => $profile,
+			"entries" => $entries
+		];
+		//TODO: Need a staff session token before creating the patron.
+		$xtraHeaders = ['x-sirs-secret'=>'casa0080'];
+		$res = $this->getWebServiceResponse($this->webServiceURL . '/rest/standard/createSelfRegisteredPatron', $body, null, "POST", $xtraHeaders);
+		if(!$res) {
+			$bad = "bad";
+		}
 
 	}
 
@@ -1537,12 +1560,12 @@ abstract class HorizonROA implements DriverInterface
 		// TODO: need to get the secret for the call below.
 		//$r = $this->getWebServiceResponse($this->webServiceURL . '/rest/standard/isPatronSelfRegistrationEnabled?profile=');
 		// get sef reg fields
-			$req = $this->getWebServiceResponse($this->webServiceURL . '/rest/standard/lookupSelfRegistrationFields');
-			if(!$req) {
+			$res = $this->getWebServiceResponse($this->webServiceURL . '/rest/standard/lookupSelfRegistrationFields');
+			if(!$res) {
 				return false;
 			}
 			// build form fields
-			foreach($req->registrationField as $field) {
+			foreach($res->registrationField as $field) {
 				$f = [
 					'property' => $field->column,
 					'label' => $field->label,
