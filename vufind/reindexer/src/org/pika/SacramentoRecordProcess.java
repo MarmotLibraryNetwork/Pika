@@ -23,30 +23,18 @@ class SacramentoRecordProcessor extends IIIRecordProcessor {
 
 	//TODO: These should be added to indexing profile
 	private String materialTypeSubField     = "d";
-	private String availableStatus          = "-od(j";
-	private String validOnOrderRecordStatus = "o1";
-	private String libraryUseOnlyStatus     = "o";
 
 	SacramentoRecordProcessor(GroupedWorkIndexer indexer, Connection vufindConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 		super(indexer, vufindConn, indexingProfileRS, logger, fullReindex);
-
-		loadOrderInformationFromExport();
+		availableStatus          = "-od(j";
 
 		validCheckedOutStatusCodes.add("o");
 		validCheckedOutStatusCodes.add("d");
+
+		loadOrderInformationFromExport();
 	}
 
-	//TODO: this could become the base method when statuses settings are added to the index
-	protected boolean isOrderItemValid(String status, String code3) {
-		return !status.isEmpty() && validOnOrderRecordStatus.indexOf(status.charAt(0)) >= 0;
-	}
-
-	//TODO: this could become the base method when statuses settings are added to the index
-	protected boolean determineLibraryUseOnly(ItemInfo itemInfo, Scope curScope) {
-		String status = itemInfo.getStatusCode();
-		return !status.isEmpty() && libraryUseOnlyStatus.indexOf(status.charAt(0)) >= 0;
-	}
-
+	// This version of this method has a special case for KitKeepers
 	@Override
 	protected boolean isItemAvailable(ItemInfo itemInfo) {
 		boolean available = false;
@@ -57,7 +45,7 @@ class SacramentoRecordProcessor extends IIIRecordProcessor {
 			if (status.equals("KitKeeperStatus")) {
 				available = true;
 			} else if (availableStatus.indexOf(status.charAt(0)) >= 0) {
-				if (dueDate.length() == 0 || dueDate.trim().equals("-  -")) {
+				if (isEmptyDueDate(itemInfo.getDueDate())) {
 					available = true;
 				}
 			}

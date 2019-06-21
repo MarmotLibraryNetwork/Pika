@@ -640,7 +640,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		}
 	}
 
-	//TODO: this version should move to the iii handler; and a blank method put here instead
+	//TODO: this should be an abstract method; this version doesn't really apply to non- III library systems
 	protected boolean isOrderItemValid(String status, String code3) {
 		return status.equals("o") || status.equals("1");
 	}

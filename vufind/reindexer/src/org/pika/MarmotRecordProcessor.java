@@ -20,8 +20,10 @@ import java.util.*;
  * Time: 3:00 PM
  */
 class MarmotRecordProcessor extends IIIRecordProcessor {
-	MarmotRecordProcessor(GroupedWorkIndexer indexer, Connection vufindConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
-		super(indexer, vufindConn, indexingProfileRS, logger, fullReindex);
+	MarmotRecordProcessor(GroupedWorkIndexer indexer, Connection pikaConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
+		super(indexer, pikaConn, indexingProfileRS, logger, fullReindex);
+		availableStatus = "-dowju(";
+		libraryUseOnlyStatus = "ohu";
 
 		loadOrderInformationFromExport();
 
@@ -57,20 +59,6 @@ class MarmotRecordProcessor extends IIIRecordProcessor {
 		}
 	}
 
-	@Override
-	protected boolean isItemAvailable(ItemInfo itemInfo) {
-		boolean available = false;
-		String status = itemInfo.getStatusCode();
-		String dueDate = itemInfo.getDueDate() == null ? "" : itemInfo.getDueDate();
-		String availableStatus = "-dowju(";
-		if (status.length() > 0 && availableStatus.indexOf(status.charAt(0)) >= 0) {
-			if (dueDate.length() == 0) {
-				available = true;
-			}
-		}
-
-		return available;
-	}
 
 //	protected boolean isBibSuppressed(Record record) {
 //		DataField field907 = record.getDataField("998");
@@ -169,7 +157,4 @@ class MarmotRecordProcessor extends IIIRecordProcessor {
 		}
 	}
 
-	protected boolean determineLibraryUseOnly(ItemInfo itemInfo, Scope curScope) {
-		return itemInfo.getStatusCode().equals("o") || itemInfo.getStatusCode().equals("h") || itemInfo.getStatusCode().equals("u");
-	}
 }

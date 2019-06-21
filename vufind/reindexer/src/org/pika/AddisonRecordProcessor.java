@@ -15,14 +15,10 @@ import java.util.Set;
 public class AddisonRecordProcessor extends IIIRecordProcessor {
 	private PreparedStatement getDateAddedStmt; // to set date added for ils (itemless) econtent records
 
-	//TODO: These should be added to indexing profile
-	private String availableStatus          = "-oy";
-	private String validOnOrderRecordStatus = "o1a";
-	private String libraryUseOnlyStatus     = "o";
-
 	AddisonRecordProcessor(GroupedWorkIndexer indexer, Connection pikaConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 		super(indexer, pikaConn, indexingProfileRS, logger, fullReindex);
-
+		availableStatus          = "-oy";
+		validOnOrderRecordStatus = "o1a";
 		// Note: Mat-Type "v" is video games; they are to be excluded for the better default format determination		loadOrderInformationFromExport();
 
 //        loadVolumesFromExport(pikaConn);
@@ -35,32 +31,6 @@ public class AddisonRecordProcessor extends IIIRecordProcessor {
 		} catch (Exception e) {
 			logger.error("Unable to setup prepared statement for date added to catalog");
 		}
-	}
-
-	//TODO: this could become the base method when statuses settings are added to the index
-	protected boolean isOrderItemValid(String status, String code3) {
-		return !status.isEmpty() && validOnOrderRecordStatus.indexOf(status.charAt(0)) >= 0;
-	}
-
-	//TODO: this could become the base method when statuses settings are added to the index
-	protected boolean determineLibraryUseOnly(ItemInfo itemInfo, Scope curScope) {
-		String status = itemInfo.getStatusCode();
-		return !status.isEmpty() && libraryUseOnlyStatus.indexOf(status.charAt(0)) >= 0;
-	}
-
-	@Override
-	//TODO: this could become the base III method when statuses settings are added to the index
-	protected boolean isItemAvailable(ItemInfo itemInfo) {
-		boolean available = false;
-		String  status    = itemInfo.getStatusCode();
-		String  dueDate   = itemInfo.getDueDate() == null ? "" : itemInfo.getDueDate();
-
-		if (!status.isEmpty() && availableStatus.indexOf(status.charAt(0)) >= 0) {
-			if (dueDate.length() == 0 || dueDate.trim().equals("-  -")) {
-				available = true;
-			}
-		}
-		return available;
 	}
 
 

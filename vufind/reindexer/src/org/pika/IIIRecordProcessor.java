@@ -28,8 +28,13 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 	private HashMap<Long, LoanRule> loanRules = new HashMap<>();
 	private ArrayList<LoanRuleDeterminer> loanRuleDeterminers = new ArrayList<>();
 	private String exportPath;
+
 	// A list of status codes that are eligible to show items as checked out.
+	//TODO: These should be added to indexing profile
 	HashSet<String> validCheckedOutStatusCodes = new HashSet<>();
+	protected String availableStatus = "-"; // Reset these values for the particular site
+	protected String libraryUseOnlyStatus = "o"; // Reset these values for the particular site
+	protected String validOnOrderRecordStatus = "o1"; // Reset these values for the particular site
 
 	IIIRecordProcessor(GroupedWorkIndexer indexer, Connection vufindConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 		super(indexer, vufindConn, indexingProfileRS, logger, fullReindex);
@@ -41,6 +46,28 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 		loadLoanRuleInformation(vufindConn, logger);
 //		loadDueDateInformation();
 		validCheckedOutStatusCodes.add("-");
+	}
+
+	protected boolean determineLibraryUseOnly(ItemInfo itemInfo, Scope curScope) {
+		String status = itemInfo.getStatusCode();
+		return !status.isEmpty() && libraryUseOnlyStatus.indexOf(status.charAt(0)) >= 0;
+	}
+
+	@Override
+	protected boolean isItemAvailable(ItemInfo itemInfo) {
+		boolean available = false;
+		String  status    = itemInfo.getStatusCode();
+
+		if (!status.isEmpty() && availableStatus.indexOf(status.charAt(0)) >= 0) {
+			if (isEmptyDueDate(itemInfo.getDueDate())) {
+				available = true;
+			}
+		}
+		return available;
+	}
+
+	protected boolean isOrderItemValid(String status, String code3) {
+		return !status.isEmpty() && validOnOrderRecordStatus.indexOf(status.charAt(0)) >= 0;
 	}
 
 	private void loadLoanRuleInformation(Connection vufindConn, Logger logger) {
@@ -272,7 +299,7 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 		}
 	}
 
-	private boolean isEmptyDueDate(String dueDate) {
+	public boolean isEmptyDueDate(String dueDate) {
 		return dueDate == null || dueDate.length() == 0 || dueDate.trim().equals("-  -");
 	}
 

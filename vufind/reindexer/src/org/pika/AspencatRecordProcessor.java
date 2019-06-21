@@ -24,7 +24,7 @@ import java.util.*;
 class AspencatRecordProcessor extends IlsRecordProcessor {
 	private HashSet<String> inTransitItems                 = new HashSet<>();
 	private HashSet<String> onHoldShelfItems               = new HashSet<>();
-	private boolean         doAutomaticEcontentSuppression = false;
+//	private boolean         doAutomaticEcontentSuppression = false;
 
 	// Item subfields (Copied from Koha Export Main)
 	private char withdrawnSubfield  = '0';

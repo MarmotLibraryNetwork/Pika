@@ -21,39 +21,17 @@ import java.util.HashSet;
 class LionRecordProcessor extends IIIRecordProcessor {
 	LionRecordProcessor(GroupedWorkIndexer indexer, Connection pikaConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 		super(indexer, pikaConn, indexingProfileRS, logger, fullReindex);
-
-		loadOrderInformationFromExport();
+		availableStatus          = "-&covy";
+		validOnOrderRecordStatus = "o1aq";
 
 		validCheckedOutStatusCodes.add("&");
 		validCheckedOutStatusCodes.add("c");
 		validCheckedOutStatusCodes.add("o");
 		validCheckedOutStatusCodes.add("y");
 		validCheckedOutStatusCodes.add("u");
-	}
 
-	private String availableStatus          = "-&covy";
-	private String libraryUseOnlyStatus     = "o";
-	private String validOnOrderRecordStatus = "o1aq";
+		loadOrderInformationFromExport();
 
-	@Override
-	//TODO: this could become the base III method when statuses settings are added to the index
-	protected boolean isItemAvailable(ItemInfo itemInfo) {
-		boolean available = false;
-		String  status    = itemInfo.getStatusCode();
-		String  dueDate   = itemInfo.getDueDate() == null ? "" : itemInfo.getDueDate();
-
-		if (!status.isEmpty() && availableStatus.indexOf(status.charAt(0)) >= 0) {
-			if (dueDate.length() == 0 || dueDate.trim().equals("-  -")) {
-				available = true;
-			}
-		}
-		return available;
-	}
-
-	//TODO: this could become the base method when statuses settings are added to the index
-	protected boolean determineLibraryUseOnly(ItemInfo itemInfo, Scope curScope) {
-		String status = itemInfo.getStatusCode();
-		return !status.isEmpty() && libraryUseOnlyStatus.indexOf(status.charAt(0)) >= 0;
 	}
 
 
@@ -122,11 +100,6 @@ class LionRecordProcessor extends IIIRecordProcessor {
 		HashSet<String> translatedAudiences = translateCollection("target_audience", targetAudiences, identifier);
 		groupedWork.addTargetAudiences(translatedAudiences);
 		groupedWork.addTargetAudiencesFull(translatedAudiences);
-	}
-
-	//TODO: this could become the base method when statuses settings are added to the index
-	protected boolean isOrderItemValid(String status, String code3) {
-		return !status.isEmpty() && validOnOrderRecordStatus.indexOf(status.charAt(0)) >= 0;
 	}
 
 }

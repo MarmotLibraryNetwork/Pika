@@ -21,9 +21,10 @@ import java.util.*;
  */
 class ArlingtonRecordProcessor extends IIIRecordProcessor {
 	private HashSet<String> recordsWithVolumes = new HashSet<>();
-	private String availableStatus = "-o";
+
 	ArlingtonRecordProcessor(GroupedWorkIndexer indexer, Connection vufindConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 		super(indexer, vufindConn, indexingProfileRS, logger, fullReindex);
+		availableStatus = "-o";
 
 		languageFields = "008[35-37]";
 
@@ -34,9 +35,9 @@ class ArlingtonRecordProcessor extends IIIRecordProcessor {
 		validCheckedOutStatusCodes.add("o");
 	}
 
-	private void loadVolumesFromExport(Connection vufindConn){
+	private void loadVolumesFromExport(Connection pikaConn){
 		try{
-			PreparedStatement loadVolumesStmt = vufindConn.prepareStatement("SELECT distinct(recordId) FROM ils_volume_info", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement loadVolumesStmt = pikaConn.prepareStatement("SELECT distinct(recordId) FROM ils_volume_info", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			ResultSet volumeInfoRS = loadVolumesStmt.executeQuery();
 			while (volumeInfoRS.next()){
 				String recordId = volumeInfoRS.getString(1);
@@ -46,21 +47,6 @@ class ArlingtonRecordProcessor extends IIIRecordProcessor {
 		}catch (SQLException e){
 			logger.error("Error loading volumes from the export", e);
 		}
-	}
-
-	@Override
-	//TODO: this could become the base III method when statuses settings are added to the index
-	protected boolean isItemAvailable(ItemInfo itemInfo) {
-		boolean available = false;
-		String  status    = itemInfo.getStatusCode();
-		String  dueDate   = itemInfo.getDueDate() == null ? "" : itemInfo.getDueDate();
-
-		if (!status.isEmpty() && availableStatus.indexOf(status.charAt(0)) >= 0) {
-			if (dueDate.length() == 0 || dueDate.trim().equals("-  -")) {
-				available = true;
-			}
-		}
-		return available;
 	}
 
 	@Override

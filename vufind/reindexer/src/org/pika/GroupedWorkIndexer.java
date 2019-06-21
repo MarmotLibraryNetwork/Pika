@@ -254,6 +254,10 @@ public class GroupedWorkIndexer {
 							okToIndex = false;
 							return;
 					}
+				} else if (curIdentifier.equalsIgnoreCase("overdrive")) {
+					//Overdrive doesn't have an indexing profile.
+					//Only load processor if there are overdrive titles
+					overDriveProcessor = new OverDriveProcessor(this, econtentConn, logger);
 				}else{
 					logger.debug("Could not find indexing profile for type " + curIdentifier);
 				}
@@ -264,7 +268,6 @@ public class GroupedWorkIndexer {
 		}catch (Exception e){
 			logger.error("Error loading record processors for ILS records", e);
 		}
-		overDriveProcessor = new OverDriveProcessor(this, econtentConn, logger);
 		//Load translation maps
 		loadSystemTranslationMaps();
 
