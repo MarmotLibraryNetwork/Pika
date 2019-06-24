@@ -7,6 +7,25 @@
 				There are {$numOutstandingChanges} changes that still need to be loaded from the API.
 			</div>
 		{/if}
+	<form class="navbar form-inline row">
+		<div class="form-group col-xs-7">
+			<label for="productsLimit" class="control-label">Min Products Processed: </label>
+			<input style="width: 125px;" id="productsLimit" name="productsLimit" type="number" min="0" class="form-control" {if !empty($smarty.request.productsLimit)} value="{$smarty.request.productsLimit}"{/if}>
+			<button class="btn btn-primary" type="submit">Go</button>
+		</div>
+		<div class="form-group col-xs-5">
+				<span class="pull-right">
+					<label for="pagesize" class="control-label">Entries Per Page&nbsp;</label>
+					<select id="pagesize" name="pagesize" class="pagesize form-control input-sm" onchange="VuFind.changePageSize()">
+						<option value="30"{if $recordsPerPage == 30} selected="selected"{/if}>30</option>
+						<option value="50"{if $recordsPerPage == 50} selected="selected"{/if}>50</option>
+						<option value="75"{if $recordsPerPage == 75} selected="selected"{/if}>75</option>
+						<option value="100"{if $recordsPerPage == 100} selected="selected"{/if}>100</option>
+					</select>
+				</span>
+		</div>
+	</form>
+	<div id="econtentAttachLogContainer">
 
 		<div>
 			<table class="logEntryDetails table table-bordered table-striped">
