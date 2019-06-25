@@ -1520,12 +1520,27 @@ abstract class HorizonROA implements DriverInterface
 	
 
 	public function selfRegister() {
+		global $configArray;
+		global $interface;
+		//Get a staff token
+		$staffUser = $configArray['Catalog']['webServiceStaffUser'];
+		$staffPass = $configArray['Catalog']['webServiceStaffPass'];
+		$body = ['login'=>$staffUser, 'password'=>$staffPass];
+		$xtraHeaders = ['sd-originating-app-id'=>'Pika'];
+		$res = $this->getWebServiceResponse($this->webServiceURL . '/v1/user/staff/login', $body, null, "POST", $xtraHeaders);
 
+		if(!$res || !isset($res->sessionToken)) {
+			return ['success' => false, 'barcode' => ''];
+		}
+
+		$sessionToken = $res->sessionToken;
+
+		// remove things from post
 		unset($_POST['objectAction']);
 		unset($_POST['id']);
 		unset($_POST['submit']);
 
-		$profile = trim($_POST['city_st']);
+		$profile = $configArray['Catalog']['webServiceSelfRegProfile'];
 		$entries = [];
 		foreach ($_POST as $column=>$value) {
 			$column = trim($column);
@@ -1538,13 +1553,17 @@ abstract class HorizonROA implements DriverInterface
 			"profile" => $profile,
 			"entries" => $entries
 		];
-		//TODO: Need a staff session token before creating the patron.
-		$xtraHeaders = ['x-sirs-secret'=>'casa0080'];
-		$res = $this->getWebServiceResponse($this->webServiceURL . '/rest/standard/createSelfRegisteredPatron', $body, null, "POST", $xtraHeaders);
-		if(!$res) {
-			$bad = "bad";
+		//$body = json_encode($body); // gets encoded in getWebServiceResponse
+
+		$secret = $configArray['Catalog']['webServiceSecret'];
+		$xtraHeaders = ['x-sirs-secret'=>$secret];
+		$res = $this->getWebServiceResponse($this->webServiceURL . '/rest/standard/createSelfRegisteredPatron', $body, $sessionToken, "POST", $xtraHeaders);
+
+		if(!$res || isset($res->Fault)) {
+			return ['success' => false, 'barcode' => ''];
 		}
 
+		return ['success' => true, 'barcode' => $res];
 	}
 
 	/**
