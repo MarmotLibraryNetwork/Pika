@@ -80,7 +80,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 		$id = $_REQUEST['id'];
 
-		if (preg_match('/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}/i', $id)){
+		if (GroupedWork::validGroupedWorkId($id)){
 			$groupedWork               = new GroupedWork();
 			$groupedWork->permanent_id = $id;
 			if ($groupedWork->find(true)){

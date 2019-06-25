@@ -17,6 +17,10 @@ class GroupedWork extends DB_DataObject {
 	public $grouping_category;
 	public $date_updated;
 
+	public static function validGroupedWorkId($id){
+		return preg_match('/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}/i', $id) === 1;
+	}
+
 	function forceRegrouping() {
 //		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 		if (!empty($this->id)) {
@@ -56,4 +60,11 @@ class GroupedWork extends DB_DataObject {
 		}
 		return false;
 	}
+
+	public function forceReindex(){
+		$this->date_updated = null;
+		$numRows            = $this->update();
+		return $numRows == 1;
+	}
+
 }
