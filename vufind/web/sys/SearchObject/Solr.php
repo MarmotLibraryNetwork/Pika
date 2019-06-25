@@ -1300,9 +1300,9 @@ class SearchObject_Solr extends SearchObject_Base
 		if (count($search) == 1 && isset($search[0]['index']) && $search[0]['index'] == 'tag'){
 			// If we managed to find some tag matches, the query will be a list of Ids.
 			// If we didn't find any tag matches, we should return an empty record set.
+			$this->publicQuery = $search[0]['lookfor'];
 			if (!$this->processTagSearch($search[0]['lookfor'])){
 				// Save search so it displays correctly on the "no hits" page:
-				$this->publicQuery = $search[0]['lookfor'];
 				return array('response' => array('numFound' => 0, 'docs' => array()));
 			}
 			$timer->logTime("process Tag search");
