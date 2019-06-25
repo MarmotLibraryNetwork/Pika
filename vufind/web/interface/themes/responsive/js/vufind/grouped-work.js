@@ -296,28 +296,22 @@ VuFind.GroupedWork = (function(){
 		},
 
 		saveTag: function(id){
-			var tag = $("#tags_to_apply").val();
+			var tag = $("#tags_to_apply").val(),
+					url = Globals.path + "/GroupedWork/" + id + "/AJAX",
+					params = {
+						method : 'saveTag',
+						tag : tag
+					};
 			$("#saveToList-button").prop('disabled', true);
-
-			var url = Globals.path + "/GroupedWork/" + id + "/AJAX";
-			var params = "method=SaveTag&" +
-					"tag=" + encodeURIComponent(tag);
-			$.ajax({
-				url: url+'?'+params,
-				dataType: "json",
-				success: function(data) {
-					if (data.success) {
-						VuFind.showMessage("Success", data.message);
-						setTimeout("VuFind.closeLightbox();", 3000);
-					} else {
-						VuFind.showMessage("Error adding tags", "There was an unexpected error adding tags to this title.<br/>" + data.message);
-					}
-
-				},
-				error: function(jqXHR, textStatus) {
-					VuFind.showMessage("Error adding tags", "There was an unexpected error adding tags to this title.<br/>" + textStatus);
-				}
-			});
+			$.getJSON(url, params,
+					function(data) {
+						if (data.success) {
+							VuFind.showMessage("Success", data.message, 1);
+						} else {
+							VuFind.showMessage("Error adding tags", "There was an unexpected error adding tags to this title.<br>" + data.message);
+						}
+					}).fail(VuFind.ajaxFail);
+			return false;
 		},
 
 		saveToList: function(id){
@@ -338,7 +332,7 @@ VuFind.GroupedWork = (function(){
 								VuFind.showMessage("Error", data.message);
 							}
 						}
-				).fail(VuFind.ajaxFail);
+				)
 			}
 			return false;
 		},
