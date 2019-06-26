@@ -323,8 +323,9 @@ public class SierraExportAPIMain {
 
 		Long lastSierraExtractTime = systemVariables.getLongValuedVariable("last_sierra_extract_time");
 		//Last Update in UTC
-		//Add a small buffer to be safe, this was 2 minutes.  Reducing to 15 seconds, should be 0
-		Date lastExtractDate = new Date((lastSierraExtractTime - 15) * 1000);
+		//Add a small buffer to be safe, this was 2 minutes.  Reducing to 15 seconds, should be 0 TODO: make a configuration setting
+		long bufferInterval  = 300; //5min in seconds
+		Date lastExtractDate = new Date((lastSierraExtractTime - bufferInterval) * 1000);
 
 		Date now       = new Date();
 		Date yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
