@@ -1306,7 +1306,7 @@ abstract class HorizonROA implements DriverInterface
 		return $blockPolicy;
 	}
 
-	public 	function updatePin($patron, $oldPin, $newPin, $confirmNewPin){
+	public function updatePin($patron, $oldPin, $newPin, $confirmNewPin){
 		$updatePinResponse = $this->changeMyPin($patron, $newPin, $oldPin);
 		if (isset($updatePinResponse->messageList)) {
 			$errors = '';
@@ -1342,15 +1342,13 @@ abstract class HorizonROA implements DriverInterface
 			}
 
 		} else {
-			$sessionToken = null; //$this->getStaffSessionToken();
-			//if(!$sessionToken) {
-				//return "Sorry, we are unable to connect to the service. Please try again later.";
-			//}
+			$sessionToken = null;
+
 			$profile = $configArray['Catalog']['webServiceSelfRegProfile'];
 			$xtraHeaders = ['sd-working-libraryid'=>$profile];
 			$jsonParameters = array(
 				'newPin'     => $newPin,
-				'resetToken' => $resetToken
+				'resetPinToken' => $resetToken
 			);
 		}
 
