@@ -367,38 +367,42 @@ public class SierraExportAPIMain {
 		//This section uses the batch method which doesn't work in Sierra because we are limited to 100 exports per hour
 
 		addNoteToExportLog("Found " + allBibsToUpdate.size() + " bib records that need to be updated with data from Sierra.");
-		boolean hasMoreIdsToProcess;
-		int     batchSize       = 25;
-		int     numProcessed    = 0;
-		Long    exportStartTime = new Date().getTime() / 1000;
-		do {
-			hasMoreIdsToProcess = false;
-			StringBuilder   idsToProcess = new StringBuilder();
-			int             maxIndex     = Math.min(allBibsToUpdate.size(), batchSize);
-			ArrayList<Long> ids          = new ArrayList<>();
-			for (int i = 0; i < maxIndex; i++) {
-				if (idsToProcess.length() > 0) {
-					idsToProcess.append(",");
+		int numProcessed = 0;
+		if (allBibsToUpdate.size() > 0) {
+			boolean hasMoreIdsToProcess;
+			int     batchSize       = 25;
+			Long    exportStartTime = new Date().getTime() / 1000;
+			do {
+				hasMoreIdsToProcess = false;
+				StringBuilder   idsToProcess = new StringBuilder();
+				int             maxIndex     = Math.min(allBibsToUpdate.size(), batchSize);
+				ArrayList<Long> ids          = new ArrayList<>();
+				for (int i = 0; i < maxIndex; i++) {
+					if (idsToProcess.length() > 0) {
+						idsToProcess.append(",");
+					}
+					Long lastId = allBibsToUpdate.last();
+					idsToProcess.append(lastId);
+					ids.add(lastId);
+					allBibsToUpdate.remove(lastId);
 				}
-				Long lastId = allBibsToUpdate.last();
-				idsToProcess.append(lastId);
-				ids.add(lastId);
-				allBibsToUpdate.remove(lastId);
-			}
-			updateMarcAndRegroupRecordIds(idsToProcess.toString(), ids);
-			numProcessed += maxIndex;
-			if (numProcessed % 250 == 0 || allBibsToUpdate.size() == 0) {
-				addNoteToExportLog("Processed " + numProcessed);
-				if (minutesToProcessExport > 0 && (new Date().getTime() / 1000) - exportStartTime >= minutesToProcessExport * 60) {
-					addNoteToExportLog("Stopping export due to time constraints, there are " + allBibsToUpdate.size() + " bibs remaining to be processed.");
-					break;
+				if (ids.size() > 0) {
+					updateMarcAndRegroupRecordIds(idsToProcess.toString(), ids);
 				}
-			}
-			if (allBibsToUpdate.size() > 0) {
-				hasMoreIdsToProcess = true;
-				updateSierraExtractLogNumToProcess(pikaConn, numProcessed);
-			}
-		} while (hasMoreIdsToProcess);
+				numProcessed += maxIndex;
+				if (numProcessed % 250 == 0 || allBibsToUpdate.size() == 0) {
+					addNoteToExportLog("Processed " + numProcessed);
+					if (minutesToProcessExport > 0 && (new Date().getTime() / 1000) - exportStartTime >= minutesToProcessExport * 60) {
+						addNoteToExportLog("Stopping export due to time constraints, there are " + allBibsToUpdate.size() + " bibs remaining to be processed.");
+						break;
+					}
+				}
+				if (allBibsToUpdate.size() > 0) {
+					hasMoreIdsToProcess = true;
+					updateSierraExtractLogNumToProcess(pikaConn, numProcessed);
+				}
+			} while (hasMoreIdsToProcess);
+		}
 
 		return numProcessed;
 	}
