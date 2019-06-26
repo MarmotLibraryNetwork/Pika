@@ -45,10 +45,10 @@ public class RecordGrouperMain {
 	private static PreparedStatement removeMarcRecordChecksum;
 	private static PreparedStatement removePrimaryIdentifier;
 
-	private static Long lastGroupingTime;
-	private static Long lastGroupingTimeVariableId;
-	private static boolean fullRegrouping = false;
-	private static boolean fullRegroupingNoClear = false;
+	private static Long    lastGroupingTime;
+	private static Long    lastGroupingTimeVariableId;
+	private static boolean fullRegrouping            = false; //todo: refactor name so that it is clear that this option clears out the database tables for grouped works
+	private static boolean fullRegroupingNoClear     = false;
 	private static boolean validateChecksumsFromDisk = false;
 
 	//Reporting information
@@ -1248,24 +1248,24 @@ public class RecordGrouperMain {
 					int numRecordsRead = 0;
 					try {
 						FileInputStream marcFileStream = new FileInputStream(curBibFile);
-						MarcReader catalogReader = new MarcPermissiveStreamReader(marcFileStream, true, true, marcEncoding);
+						MarcReader      catalogReader  = new MarcPermissiveStreamReader(marcFileStream, true, true, marcEncoding);
 						while (catalogReader.hasNext()) {
-							try{
-								Record curBib = catalogReader.next();
+							try { //TODO: move recordidentifier up so that we can use the id if it has been set in the case of a marc exception
+								Record           curBib           = catalogReader.next();
 								RecordIdentifier recordIdentifier = recordGroupingProcessor.getPrimaryIdentifierFromMarcRecord(curBib, curProfile.name, curProfile.doAutomaticEcontentSuppression);
 								if (recordIdentifier == null) {
 									//logger.debug("Record with control number " + curBib.getControlNumber() + " was suppressed or is eContent");
 									String controlNumber = curBib.getControlNumber();
 									if (controlNumber != null) {
 										suppressedControlNumbersInExport.add(controlNumber);
-									}else{
+									} else {
 										//TODO: give more info to identify the record
 										logger.warn("Bib did not have control number or identifier");
 									}
-								}else if (recordIdentifier.isSuppressed()) {
+								} else if (recordIdentifier.isSuppressed()) {
 									//logger.debug("Record with control number " + curBib.getControlNumber() + " was suppressed or is eContent");
 									suppressedControlNumbersInExport.add(recordIdentifier.getIdentifier());
-								}else{
+								} else {
 									String recordNumber = recordIdentifier.getIdentifier();
 
 									boolean marcUpToDate = writeIndividualMarc(curProfile, curBib, recordNumber, marcRecordsWritten, marcRecordsOverwritten);
@@ -1287,7 +1287,7 @@ public class RecordGrouperMain {
 									}
 									lastRecordProcessed = recordNumber;
 								}
-							}catch (MarcException me){
+							} catch (MarcException me) {
 								logger.warn("Error processing individual record  on record " + numRecordsRead + " of " + curBibFile.getAbsolutePath() + " the last record processed was " + lastRecordProcessed + " trying to continue", me);
 							}
 							numRecordsRead++;
@@ -1302,7 +1302,7 @@ public class RecordGrouperMain {
 						}
 						marcFileStream.close();
 					} catch (Exception e) {
-						logger.error("Error loading catalog bibs on record " + numRecordsRead + " in profile " +  curProfile.name + " the last record processed was " + lastRecordProcessed, e);
+						logger.error("Error loading catalog bibs on record " + numRecordsRead + " in profile " + curProfile.name + " the last record processed was " + lastRecordProcessed, e);
 					}
 					logger.info("Finished grouping " + numRecordsRead + " records with " + numRecordsProcessed + " actual changes from the ils file " + curBibFile.getName() + " in profile " + curProfile.name);
 					addNoteToGroupingLog("&nbsp;&nbsp; - Finished grouping " + numRecordsRead + " records from the ils file " + curBibFile.getName());
@@ -1447,11 +1447,11 @@ public class RecordGrouperMain {
 		boolean marcRecordUpToDate = false;
 		//Copy the record to the individual marc path
 		if (recordNumber != null){
-			Long checksum = getChecksum(marcRecord);
-			File individualFile = indexingProfile.getFileForIlsRecord(recordNumber);
-
 			String recordNumberWithSource = indexingProfile.name + ":" + recordNumber;
-			Long existingChecksum = getExistingChecksum(recordNumberWithSource);
+			Long   checksum               = getChecksum(marcRecord);
+			Long   existingChecksum       = getExistingChecksum(recordNumberWithSource);
+			File   individualFile         = indexingProfile.getFileForIlsRecord(recordNumber);
+
 			//If we are doing partial regrouping or full regrouping without clearing the previous results,
 			//Check to see if the record needs to be written before writing it.
 			if (!fullRegrouping){
@@ -1485,8 +1485,8 @@ public class RecordGrouperMain {
 			if (!marcRecordUpToDate){
 				try {
 					outputMarcRecord(marcRecord, individualFile);
-					getDateAddedForRecord(marcRecord, recordNumber, indexingProfile.name, individualFile);
-					updateMarcRecordChecksum(recordNumber, indexingProfile.name, checksum);
+					getDateAddedForRecord(marcRecord, recordNumber, indexingProfile.name, individualFile); //TODO: use recordNumberWithSource
+					updateMarcRecordChecksum(recordNumber, indexingProfile.name, checksum); //TODO: use recordNumberWithSource
 					//logger.debug("checksum changed for " + recordNumber + " was " + existingChecksum + " now its " + checksum);
 				} catch (IOException e) {
 					logger.error("Error writing marc", e);
@@ -1494,8 +1494,8 @@ public class RecordGrouperMain {
 			}else {
 				//Update date first detected if needed
 				if (marcRecordFirstDetectionDates.containsKey(recordNumberWithSource) && marcRecordFirstDetectionDates.get(recordNumberWithSource) == null){
-					getDateAddedForRecord(marcRecord, recordNumber, indexingProfile.name, individualFile);
-					updateMarcRecordChecksum(recordNumber, indexingProfile.name, checksum);
+					getDateAddedForRecord(marcRecord, recordNumber, indexingProfile.name, individualFile); //TODO: use recordNumberWithSource
+					updateMarcRecordChecksum(recordNumber, indexingProfile.name, checksum); //TODO: use recordNumberWithSource
 				}
 			}
 		}else{

@@ -49,7 +49,6 @@ public class IndexingProfile {
 	char             lastYearCheckoutsSubfield;
 	char             yearToDateCheckoutsSubfield;
 	char             totalRenewalsSubfield;
-	char             iTypeSubfield;
 	char             dateCreatedSubfield;
 	private String dateCreatedFormat;
 	SimpleDateFormat dateCreatedFormatter;
@@ -65,6 +64,7 @@ public class IndexingProfile {
 	char             callNumberPoststampSubfield;
 	char             volume;
 	char             itemUrl;
+	char             iTypeSubfield;
 
 	//These are used from Record Grouping and Reindexing
 	boolean doAutomaticEcontentSuppression;

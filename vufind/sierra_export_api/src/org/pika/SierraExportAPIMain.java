@@ -34,8 +34,9 @@ import org.marc4j.marc.Record;
  * Date: 1/15/18
  */
 public class SierraExportAPIMain {
-	private static Logger              logger = Logger.getLogger(SierraExportAPIMain.class);
+	private static Logger              logger                        = Logger.getLogger(SierraExportAPIMain.class);
 	private static String              serverName;
+	public static  boolean             fetchSingleBibFromCommandLine = false;
 	//	private static Ini    ini;
 	private static PikaSystemVariables systemVariables;
 
@@ -118,7 +119,11 @@ public class SierraExportAPIMain {
 
 		String profileToLoad = "ils";
 		if (args.length > 1) {
-			profileToLoad = args[1];
+			if (args[1].startsWith(".b")) {
+				fetchSingleBibFromCommandLine = true;
+			} else {
+				profileToLoad = args[1];
+			}
 		}
 		indexingProfile = IndexingProfile.loadIndexingProfile(pikaConn, profileToLoad, logger);
 		if (indexingProfile.sierraBibLevelFieldTag == null || indexingProfile.sierraBibLevelFieldTag.isEmpty()) {
@@ -622,7 +627,7 @@ public class SierraExportAPIMain {
 
 								deleteGroupedWorkFromSolr(permanentId); //Trying to skip using the Reindexer
 
-								logger.warn("Sierra API extract deleted Group Work " + permanentId + " from index. Investigate if it is an anomalous deletion by the Sierra API extract");
+								logger.info("Sierra API extract deleted Group Work " + permanentId + " from index. Investigate if it is an anomalous deletion by the Sierra API extract");
 								//pascal 5/2/2019 cutting out warning noise for now
 
 								// See https://marmot.myjetbrains.com/youtrack/issue/D-2364
@@ -1079,10 +1084,6 @@ public class SierraExportAPIMain {
 							String locationCode = curItem.getJSONObject("location").getString("code");
 							itemField.addSubfield(marcFactory.newSubfield(indexingProfile.locationSubfield, locationCode));
 						}
-						//call number (can we get prestamp cutter, poststamp?
-					/*if (curItem.has("callNumber") && indexingProfile.callNumberSubfield != ' '){
-						itemField.addSubfield(marcFactory.newSubfield(indexingProfile.callNumberSubfield, curItem.getString("callNumber")));
-					}*/
 						//status
 						if (curItem.has("status")) {
 							String statusCode = curItem.getJSONObject("status").getString("code");
@@ -1131,6 +1132,7 @@ public class SierraExportAPIMain {
 							itemField.addSubfield(marcFactory.newSubfield(indexingProfile.iCode2Subfield, fixedFields.getJSONObject("60").getString("value")));
 						}
 
+//						boolean hadCallNumberVarField = false;
 						//Process variable fields
 						for (int j = 0; j < varFields.length(); j++) {
 							JSONObject    curVarField     = varFields.getJSONObject(j);
@@ -1149,6 +1151,7 @@ public class SierraExportAPIMain {
 
 							if (fieldTag.equals(indexingProfile.callNumberExportFieldTag)) {
 								if (subfields != null) {
+//									hadCallNumberVarField = true;
 									for (int k = 0; k < subfields.length(); k++) {
 										JSONObject subfield = subfields.getJSONObject(k);
 										String     tag      = subfield.getString("tag");
@@ -1179,6 +1182,14 @@ public class SierraExportAPIMain {
 								//logger.debug("Unhandled item variable field " + fieldTag);
 							}
 						}
+
+						//The item level call number info seems to always be in the var field (at least for Marmot) TODO: this may not be needed
+//						//if there wasn't call number data is the varfields
+//						if (!hadCallNumberVarField && curItem.has("callNumber") && indexingProfile.callNumberSubfield != ' '){
+//							itemField.addSubfield(marcFactory.newSubfield(indexingProfile.callNumberSubfield, curItem.getString("callNumber")));
+//						}
+
+						// Now Add the item record to the MARC
 						marcRecord.addVariableField(itemField);
 					}
 				}
@@ -1561,7 +1572,8 @@ public class SierraExportAPIMain {
 						return null;
 					}
 
-				} else if (responseCode == 500) {
+				} else if (responseCode == 500 || responseCode == 404) {
+					// 404 is record not found
 					if (logErrors) {
 						logger.info("Received response code " + responseCode + " calling sierra API " + sierraUrl);
 						// Get any errors
@@ -1573,8 +1585,7 @@ public class SierraExportAPIMain {
 						logger.error("Received error " + responseCode + " calling sierra API " + sierraUrl);
 						// Get any errors
 						response = getTheResponse(conn.getErrorStream());
-						logger.error("  Finished reading response");
-						logger.error(response.toString());
+						logger.error("  Finished reading response : " + response.toString());
 					}
 				}
 

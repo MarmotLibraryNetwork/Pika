@@ -442,7 +442,7 @@ class RecordGroupingProcessor {
 
 	private HashSet<Long> updatedAndInsertedWorksThisRun = new HashSet<>();
 	private void markWorkUpdated(long groupedWorkId) {
-		//Optimize to not continually mark the same works as updateed
+		//Optimize to not continually mark the same works as updated
 		if (!updatedAndInsertedWorksThisRun.contains(groupedWorkId)) {
 			try {
 				updateDateUpdatedForGroupedWorkStmt.setLong(1, updateTime);
@@ -880,7 +880,7 @@ class RecordGroupingProcessor {
 		formatsToGroupingCategory.put("Photo", "other");
 		formatsToGroupingCategory.put("MotionPicture", "movie");
 		formatsToGroupingCategory.put("Kit", "other");
-		formatsToGroupingCategory.put("MusicalScore", "book");
+//		formatsToGroupingCategory.put("MusicalScore", "book");
 		formatsToGroupingCategory.put("SensorImage", "other");
 		formatsToGroupingCategory.put("SoundDisc", "audio");
 		formatsToGroupingCategory.put("SoundCassette", "audio");
