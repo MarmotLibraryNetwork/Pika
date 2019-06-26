@@ -986,19 +986,21 @@ public class GroupedWorkSolr implements Cloneable {
 				}
 				this.title = shortTitle;
 				this.titleFormat = recordFormat;
-				//Strip out anything in brackets unless that would cause us to show nothing
-				tmpTitle = removeBracketsPattern.matcher(sortableTitle).replaceAll("").trim();
-				if (tmpTitle.length() > 0){
-					sortableTitle = tmpTitle;
+				if (sortableTitle != null) {
+					//Strip out anything in brackets unless that would cause us to show nothing
+					tmpTitle = removeBracketsPattern.matcher(sortableTitle).replaceAll("").trim();
+					if (tmpTitle.length() > 0) {
+						sortableTitle = tmpTitle;
+					}
+					//Remove common formats
+					tmpTitle = commonSubtitlePattern.matcher(sortableTitle).replaceAll("").trim();
+					if (tmpTitle.length() > 0) {
+						sortableTitle = tmpTitle;
+					}
+					//remove punctuation from the sortable title
+					sortableTitle  = punctuationPattern.matcher(sortableTitle).replaceAll("");
+					this.titleSort = sortableTitle.trim();
 				}
-				//Remove common formats
-				tmpTitle = commonSubtitlePattern.matcher(sortableTitle).replaceAll("").trim();
-				if (tmpTitle.length() > 0){
-					sortableTitle = tmpTitle;
-				}
-				//remove punctuation from the sortable title
-				sortableTitle = punctuationPattern.matcher(sortableTitle).replaceAll("");
-				this.titleSort = sortableTitle.trim();
 				displayTitle = Util.trimTrailingPunctuation(displayTitle);
 				//Strip out anything in brackets unless that would cause us to show nothing
 				tmpTitle = removeBracketsPattern.matcher(displayTitle).replaceAll("").trim();

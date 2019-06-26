@@ -852,7 +852,8 @@ abstract class MarcRecordProcessor {
 		//title (full title done by index process by concatenating short and subtitle
 
 		//title short
-		groupedWork.setTitle(MarcUtil.getFirstFieldVal(record, "245a"), MarcUtil.getFirstFieldVal(record, "245abnp"), this.getSortableTitle(record), format);
+		String titleValue = MarcUtil.getFirstFieldVal(record, "245a");
+		groupedWork.setTitle(titleValue, MarcUtil.getFirstFieldVal(record, "245abnp"), this.getSortableTitle(record), format);
 		//title sub
 		//MDN 2/6/2016 add np to subtitle #ARL-163
 		groupedWork.setSubTitle(MarcUtil.getFirstFieldVal(record, "245bnp"));

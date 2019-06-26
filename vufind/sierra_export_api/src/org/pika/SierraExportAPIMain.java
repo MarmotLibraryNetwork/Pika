@@ -1124,7 +1124,7 @@ public class SierraExportAPIMain {
 						}
 						//last check in date
 						if (fixedFields.has("68") && indexingProfile.lastCheckinDateSubfield != ' ') {
-							Date lastCheckin = sierraAPIDateFormatter.parse(fixedFields.getString("68"));
+							Date lastCheckin = sierraAPIDateFormatter.parse(fixedFields.getJSONObject("68").getString("value"));
 							itemField.addSubfield(marcFactory.newSubfield(indexingProfile.lastCheckinDateSubfield, indexingProfile.lastCheckinFormatter.format(lastCheckin)));
 						}
 						//icode2
