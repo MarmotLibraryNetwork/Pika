@@ -11095,7 +11095,8 @@ fieldset[disabled] .btn-masquerade.active {
   margin-bottom: 15px;
   border-radius: 4px;
 }
-#home-page-library-section .panel-title {
+#home-page-library-section .panel-title,
+#home-account-links .panel-title {
   color: #FFF;
   text-shadow: none;
 }
