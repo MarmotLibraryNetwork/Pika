@@ -266,7 +266,7 @@ class IndexingProfile extends DB_DataObject{
 				'property'      => 'sierraFieldMappings',
 				'type'          => 'oneToMany',
 				'label'         => 'Sierra Field Mappings (Sierra Systems only)',
-				'description'   => 'Field Mappings for exports from Sierra.',
+				'description'   => 'Field Mappings for exports from Sierra API.',
 				'keyThis'       => 'id',
 				'keyOther'      => 'indexingProfileId',
 				'subObjectType' => 'SierraExportFieldMapping',

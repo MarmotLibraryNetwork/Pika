@@ -6,6 +6,8 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.sql.*;
 import java.text.SimpleDateFormat;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.*;
 import java.util.Date;
 
@@ -28,15 +30,16 @@ import org.marc4j.marc.MarcFactory;
 import org.marc4j.marc.Record;
 
 /**
- * Export data to
- * Pika
+ * Export data from the Sierra ILS to Pika
+ *
  * User: Mark Noble
  * Date: 1/15/18
  */
 public class SierraExportAPIMain {
-	private static Logger              logger                        = Logger.getLogger(SierraExportAPIMain.class);
+	private static Logger              logger  = Logger.getLogger(SierraExportAPIMain.class);
 	private static String              serverName;
-	public static  boolean             fetchSingleBibFromCommandLine = false;
+	//	public static  boolean fetchSingleBibFromCommandLine = false;
+	public static  boolean             timeAPI = false;
 	//	private static Ini    ini;
 	private static PikaSystemVariables systemVariables;
 
@@ -81,8 +84,13 @@ public class SierraExportAPIMain {
 		PikaConfigIni.loadConfigFile("config.ini", serverName, logger);
 
 		debug = PikaConfigIni.getBooleanIniValue("System", "debug");
-		Integer minutesToProcessFor = PikaConfigIni.getIntIniValue("Catalog", "minutesToProcessExport");
-		minutesToProcessExport = (minutesToProcessFor == null) ? 5 : minutesToProcessFor;
+
+		String apiVersion = PikaConfigIni.getIniValue("Catalog", "api_version");
+		if (apiVersion == null || apiVersion.length() == 0) {
+			logger.error("Sierra API version must be set.");
+			System.exit(1);
+		}
+		apiBaseUrl = PikaConfigIni.getIniValue("Catalog", "url") + "/iii/sierra-api/v" + apiVersion;
 
 		//Connect to the pika database
 		Connection pikaConn = null;
@@ -119,20 +127,34 @@ public class SierraExportAPIMain {
 
 		String profileToLoad = "ils";
 		if (args.length > 1) {
-			if (args[1].startsWith(".b")) {
+			/*if (args[1].startsWith(".b")) {
 				fetchSingleBibFromCommandLine = true;
+			} else*/
+			if (args[1].equalsIgnoreCase("timeAPI")) {
+				timeAPI = true;
 			} else {
 				profileToLoad = args[1];
 			}
 		}
 		indexingProfile = IndexingProfile.loadIndexingProfile(pikaConn, profileToLoad, logger);
+
+		if (timeAPI) {
+			measureDelayInItemsAPIupdates();
+			System.exit(0);
+		}
+
+		//API timing doesn't require Sierra Field Mapping
 		if (indexingProfile.sierraBibLevelFieldTag == null || indexingProfile.sierraBibLevelFieldTag.isEmpty()) {
 			logger.error("Sierra Field Mappings need to be set.");
 			System.exit(0);
 		}
 
+
 		exportPath = indexingProfile.marcPath;
 		File changedBibsFile = new File(exportPath + "/changed_bibs_to_process.csv");
+
+		Integer minutesToProcessFor = PikaConfigIni.getIntIniValue("Catalog", "minutesToProcessExport");
+		minutesToProcessExport = (minutesToProcessFor == null) ? 5 : minutesToProcessFor;
 
 		// Initialize Reindexer (used in deleteRecord() )
 //		groupedWorkIndexer = new GroupedWorkIndexer(serverName, pikaConn, econtentConn, ini, false, false, logger);
@@ -314,13 +336,6 @@ public class SierraExportAPIMain {
 			systemVariables.setVariable("allow_sierra_fast_export", "1");
 		}
 
-		String apiVersion = PikaConfigIni.getIniValue("Catalog", "api_version");
-		if (apiVersion == null || apiVersion.length() == 0) {
-			logger.error("Sierra API version must be set.");
-			return;
-		}
-		apiBaseUrl = PikaConfigIni.getIniValue("Catalog", "url") + "/iii/sierra-api/v" + apiVersion;
-
 		Long lastSierraExtractTime = systemVariables.getLongValuedVariable("last_sierra_extract_time");
 		//Last Update in UTC
 		//Add a small buffer to be safe, this was 2 minutes.  Reducing to 15 seconds, should be 0 TODO: make a configuration setting
@@ -336,12 +351,10 @@ public class SierraExportAPIMain {
 		}
 
 
-		SimpleDateFormat dateTimeFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
-		SimpleDateFormat dateFormatter     = new SimpleDateFormat("yyyy-MM-dd");
+		String           lastExtractDateFormatted = getSierraAPIDateTimeString(lastExtractDate);
+		SimpleDateFormat dateTimeFormatter        = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
 		dateTimeFormatter.setTimeZone(TimeZone.getTimeZone("UTC"));
-		dateFormatter.setTimeZone(TimeZone.getTimeZone("UTC"));
 		String lastExtractDateTimeFormatted = dateTimeFormatter.format(lastExtractDate);
-		String lastExtractDateFormatted     = dateFormatter.format(lastExtractDate);
 		long   updateTime                   = new Date().getTime() / 1000;
 		logger.info("Loading records changed since " + lastExtractDateTimeFormatted);
 
@@ -364,6 +377,15 @@ public class SierraExportAPIMain {
 
 	}
 
+	private static String getSierraAPIDateTimeString(Date dateTime) {
+		SimpleDateFormat dateTimeFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+		dateTimeFormatter.setTimeZone(TimeZone.getTimeZone("UTC"));
+		return dateTimeFormatter.format(dateTime);
+	}
+
+	private static String getSierraAPIDateTimeString(Instant dateTime) {
+		return getSierraAPIDateTimeString(Date.from(dateTime));
+	}
 	private static int updateBibs(Connection pikaConn) {
 		//This section uses the batch method which doesn't work in Sierra because we are limited to 100 exports per hour
 
@@ -848,8 +870,52 @@ public class SierraExportAPIMain {
 		addNoteToExportLog("Finished fetching bibIds for newly created items, " + numNewRecords + " additional bibs to update");
 	}
 
+	private static void measureDelayInItemsAPIupdates() {
+		Instant timeLimitUsedInRequest    = Instant.now();
+		String  startofTestDateTimeString = getSierraAPIDateTimeString(timeLimitUsedInRequest);
+		String  url                       = apiBaseUrl + "/items/?updatedDate=[" + startofTestDateTimeString + ",]&deleted=false&fields=id,updatedDate,bibIds&limit=1"; //&id=[1,]";
+		int     items                     = 0;
+		do {
+			Instant    timeOfRequest = Instant.now();
+			JSONObject delayTest     = callSierraApiURL(url, debug);
+			if (delayTest != null && delayTest.has("total")) {
+				try {
+					items = delayTest.getInt("total");
+					if (items > 0 && delayTest.has("entries")) {
+						JSONArray entries     = delayTest.getJSONArray("entries");
+						String    updateDate  = entries.getJSONObject(0).getString("updatedDate");
+						Instant   updateTime  = Instant.parse(updateDate); // parse uses ISO 8601 formats (expecting "yyyy-MM-dd'T'HH:mm:ss'Z'")
+						long      difference  = Duration.between(updateTime, timeOfRequest).getSeconds();
+						long      difference2 = Duration.between(timeLimitUsedInRequest, updateTime).getSeconds();
+						long      difference3 = Duration.between(timeLimitUsedInRequest, timeOfRequest).getSeconds();
+//						long timeToGetMeasurement = Duration.between(timeLimitUsedInRequest, Instant.now()).getSeconds();
+						long delay = difference - difference2;
+						logger.info("Difference between item update time and the time of the request call is : " + difference + " seconds");
+						logger.info("Difference between item update time and the time limit in the request is  : " + difference2 + " seconds");
+						logger.info("Difference between the time of this request call and the time limit in the request is  : " + difference3 + " seconds");
+						logger.info("Delay is currently : " + delay + " seconds");
+
+						System.out.println("Difference between item update time and the time of the request call is : " + difference + " seconds");
+						System.out.println("Difference between item update time and the time limit in the request is  : " + difference2 + " seconds");
+						System.out.println("Difference between the time of this request call and the time limit in the request is  : " + difference3 + " seconds");
+						System.out.println("Delay is currently : " + delay + " seconds");
+					}
+				} catch (/*ParseException | */JSONException e) {
+					e.printStackTrace(); //TODO
+				}
+			}
+			if (items == 0) {
+				try {
+					Thread.sleep(1000); // Wait a second before next round
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+		} while (items == 0);
+	}
+
 	private static void getChangedItemsFromAPI(String lastExtractDateFormatted) {
-		addNoteToExportLog("Starting to bibIds with items that have updated since " + lastExtractDateFormatted);
+		addNoteToExportLog("Starting to fetch bibIds with items that have updated since " + lastExtractDateFormatted);
 		boolean       hasMoreItems;
 		int           bufferSize        = 1000;
 		long          itemIdToStartWith = 1;
@@ -999,7 +1065,7 @@ public class SierraExportAPIMain {
 					String    matType          = fixedFieldResults.getJSONObject("fixedFields").getJSONObject("30").getString("value");
 					String    location         = fixedFieldResults.getJSONObject("fixedFields").getJSONObject("26").getString("value");
 					DataField sierraFixedField = marcFactory.newDataField(indexingProfile.sierraBibLevelFieldTag, ' ', ' ');
-					sierraFixedField.addSubfield(marcFactory.newSubfield(indexingProfile.bcode3DestinationSubfield, bCode3));
+					sierraFixedField.addSubfield(marcFactory.newSubfield(indexingProfile.bcode3Subfield, bCode3));
 					sierraFixedField.addSubfield(marcFactory.newSubfield(indexingProfile.materialTypeSubField, matType));
 					if (location.equalsIgnoreCase("multi")) {
 						JSONArray locationsJSON = fixedFieldResults.getJSONArray("locations");
