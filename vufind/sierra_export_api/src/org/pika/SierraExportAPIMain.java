@@ -350,11 +350,8 @@ public class SierraExportAPIMain {
 			// but with this process that isn't a good assumption any longer.  Now we will just issue a warning
 		}
 
-
-		String           lastExtractDateFormatted = getSierraAPIDateTimeString(lastExtractDate);
-		SimpleDateFormat dateTimeFormatter        = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
-		dateTimeFormatter.setTimeZone(TimeZone.getTimeZone("UTC"));
-		String lastExtractDateTimeFormatted = dateTimeFormatter.format(lastExtractDate);
+		String lastExtractDateTimeFormatted = getSierraAPIDateTimeString(lastExtractDate);
+		String lastExtractDateFormatted     = getSierraAPIDateString(lastExtractDate); // date component only, is needed for fetching deleted things
 		long   updateTime                   = new Date().getTime() / 1000;
 		logger.info("Loading records changed since " + lastExtractDateTimeFormatted);
 
@@ -377,6 +374,13 @@ public class SierraExportAPIMain {
 
 	}
 
+	/**
+	 * Build a string that is in the format for a dateTime expected by the Sierra API from a Date
+	 * (in ISO 8601 format (yyyy-MM-dd'T'HH:mm:ssZZ))
+	 *
+	 * @param dateTime the dateTime to format
+	 * @return a string representing the dateTime in the expected format
+	 */
 	private static String getSierraAPIDateTimeString(Date dateTime) {
 		SimpleDateFormat dateTimeFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
 		dateTimeFormatter.setTimeZone(TimeZone.getTimeZone("UTC"));
@@ -386,6 +390,20 @@ public class SierraExportAPIMain {
 	private static String getSierraAPIDateTimeString(Instant dateTime) {
 		return getSierraAPIDateTimeString(Date.from(dateTime));
 	}
+
+	/**
+	 * Build a string that is in the format for a date (date only, no time component) expected by the Sierra API from a Date
+	 * (in ISO 8601 format (yyyy-MM-dd'T'HH:mm:ssZZ))
+	 *
+	 * @param dateTime the dateTime to format
+	 * @return a string representing the date (date only, no time component) in the expected format
+	 */
+	private static String getSierraAPIDateString(Date dateTime) {
+		SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd");
+		dateFormatter.setTimeZone(TimeZone.getTimeZone("UTC"));
+		return dateFormatter.format(dateTime);
+	}
+
 	private static int updateBibs(Connection pikaConn) {
 		//This section uses the batch method which doesn't work in Sierra because we are limited to 100 exports per hour
 
@@ -439,8 +457,6 @@ public class SierraExportAPIMain {
 			startOfHolds = pikaConn.setSavepoint();
 			pikaConn.setAutoCommit(false);
 			pikaConn.prepareCall("TRUNCATE TABLE ils_hold_summary").executeQuery();
-
-			PreparedStatement addIlsHoldSummary = pikaConn.prepareStatement("INSERT INTO ils_hold_summary (ilsId, numHolds) VALUES (?, ?)");
 
 			HashMap<String, Long> numHoldsByBib    = new HashMap<>();
 			HashMap<String, Long> numHoldsByVolume = new HashMap<>();
@@ -515,16 +531,19 @@ public class SierraExportAPIMain {
 			}
 
 
-			for (String bibId : numHoldsByBib.keySet()) {
-				addIlsHoldSummary.setString(1, bibId);
-				addIlsHoldSummary.setLong(2, numHoldsByBib.get(bibId));
-				addIlsHoldSummary.executeUpdate();
-			}
+			try (PreparedStatement addIlsHoldSummary = pikaConn.prepareStatement("INSERT INTO ils_hold_summary (ilsId, numHolds) VALUES (?, ?)")) {
 
-			for (String volumeId : numHoldsByVolume.keySet()) {
-				addIlsHoldSummary.setString(1, volumeId);
-				addIlsHoldSummary.setLong(2, numHoldsByVolume.get(volumeId));
-				addIlsHoldSummary.executeUpdate();
+				for (String bibId : numHoldsByBib.keySet()) {
+					addIlsHoldSummary.setString(1, bibId);
+					addIlsHoldSummary.setLong(2, numHoldsByBib.get(bibId));
+					addIlsHoldSummary.executeUpdate();
+				}
+
+				for (String volumeId : numHoldsByVolume.keySet()) {
+					addIlsHoldSummary.setString(1, volumeId);
+					addIlsHoldSummary.setLong(2, numHoldsByVolume.get(volumeId));
+					addIlsHoldSummary.executeUpdate();
+				}
 			}
 
 			try {
@@ -901,14 +920,14 @@ public class SierraExportAPIMain {
 						System.out.println("Delay is currently : " + delay + " seconds");
 					}
 				} catch (/*ParseException | */JSONException e) {
-					e.printStackTrace(); //TODO
+					logger.error("Error processing while measuring delay", e);
 				}
 			}
 			if (items == 0) {
 				try {
 					Thread.sleep(1000); // Wait a second before next round
 				} catch (InterruptedException e) {
-					e.printStackTrace();
+					logger.error("Error processing while measuring delay", e);
 				}
 			}
 		} while (items == 0);
