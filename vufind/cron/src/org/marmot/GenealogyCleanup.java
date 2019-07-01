@@ -19,9 +19,9 @@ import java.sql.PreparedStatement;
 
 import org.ini4j.Ini;
 import org.ini4j.Profile.Section;
-import org.vufind.CronLogEntry;
-import org.vufind.CronProcessLogEntry;
-import org.vufind.IProcessHandler;
+import org.pika.CronLogEntry;
+import org.pika.CronProcessLogEntry;
+import org.pika.IProcessHandler;
 import org.apache.log4j.Logger;
 
 import au.com.bytecode.opencsv.CSVReader;

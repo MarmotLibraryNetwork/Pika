@@ -1,15 +1,12 @@
 package org.innovative;
 
-import au.com.bytecode.opencsv.CSVWriter;
 import org.apache.log4j.Logger;
 import org.ini4j.Ini;
 import org.ini4j.Profile;
-import org.vufind.CronLogEntry;
-import org.vufind.CronProcessLogEntry;
-import org.vufind.IProcessHandler;
+import org.pika.CronLogEntry;
+import org.pika.CronProcessLogEntry;
+import org.pika.IProcessHandler;
 
-import java.io.File;
-import java.io.FileWriter;
 import java.sql.*;
 
 /**
