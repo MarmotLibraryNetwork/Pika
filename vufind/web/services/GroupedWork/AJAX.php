@@ -109,7 +109,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 				if ($groupedWork->date_updated == null){
 					return array('success' => true, 'message' => 'This title was already marked to be indexed again next time the index is run.');
 				}
-				$numRows = $groupedWork->forceReindexing();
+				$numRows = $groupedWork->forceReindex();
 				if ($numRows == 1){
 					return array('success' => true, 'message' => 'This title will be indexed again next time the index is run.');
 				}else{
@@ -119,6 +119,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 				return array('success' => false, 'message' => 'Unable to mark the title for indexing. Could not find the title.');
 			}
 		}else{
+			return array('success' => false, 'message' => 'Invalid Grouped Work Id');
 		}
 	}
 
@@ -1081,6 +1082,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 		if ($samePikaCache->find(true)){
 			if ($samePikaCache->delete()){
 				$samePikaCleared = true;
+				$cacheMessage = 'Deleted same pika cache';
 			}else{
 				$cacheMessage = 'Could not delete same pika cache';
 			}

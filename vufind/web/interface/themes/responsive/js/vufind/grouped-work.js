@@ -49,19 +49,31 @@ VuFind.GroupedWork = (function(){
 
 		forceRegrouping: function (id){
 			var url = Globals.path + '/GroupedWork/' + id + '/AJAX?method=forceRegrouping';
-			$.getJSON(url, function (data){
-						VuFind.showMessage("Success", data.message, true, true);
-						setTimeout("VuFind.closeLightbox();", 3000);
-					}
-			);
-			return false;
+			return this.basicShowMessageReloadOnSuccess(url);
 		},
 
 		forceReindex: function (id){
 			var url = Globals.path + '/GroupedWork/' + id + '/AJAX?method=forceReindex';
+			return this.basicShowMessageReloadOnSuccess(url);
+		},
+
+		reloadCover: function (id){
+			var url = Globals.path + '/GroupedWork/' + id + '/AJAX?method=reloadCover';
+			return this.basicShowMessageReloadOnSuccess(url);
+		},
+
+		reloadIslandora: function(id){
+			var url = Globals.path + '/GroupedWork/' + id + '/AJAX?method=reloadIslandora';
+			return this.basicShowMessageReloadOnSuccess(url);
+		},
+
+		basicShowMessageReloadOnSuccess: function(url){
 			$.getJSON(url, function (data){
-						VuFind.showMessage("Success", data.message, true, true);
-						setTimeout("VuFind.closeLightbox();", 3000);
+						if (data.success) {
+							VuFind.showMessage("Success", data.message, true, true);
+						} else {
+							VuFind.showMessage("Error", data.message);
+						}
 					}
 			);
 			return false;
@@ -221,29 +233,10 @@ VuFind.GroupedWork = (function(){
 			}
 		},
 
-		reloadCover: function (id){
-			var url = Globals.path + '/GroupedWork/' + id + '/AJAX?method=reloadCover';
-			$.getJSON(url, function (data){
-						VuFind.showMessage("Success", data.message, true, true);
-						//setTimeout("VuFind.closeLightbox();", 3000);
-					}
-			);
-			return false;
-		},
-
 		reloadEnrichment: function (id){
 			VuFind.GroupedWork.loadEnrichmentInfo(id, true);
 		},
 
-		reloadIslandora: function(id){
-			var url = Globals.path + '/GroupedWork/' + id + '/AJAX?method=reloadIslandora';
-			$.getJSON(url, function (data){
-					VuFind.showMessage("Success", data.message, true, true);
-					//setTimeout("VuFind.closeLightbox();", 3000);
-				}
-			);
-			return false;
-		},
 
 		removeTag:function(id, tag){
 			if (confirm("Are you sure you want to remove the tag \"" + tag + "\" from this title?")){
