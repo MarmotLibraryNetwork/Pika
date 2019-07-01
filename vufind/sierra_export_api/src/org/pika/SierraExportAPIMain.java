@@ -337,9 +337,13 @@ public class SierraExportAPIMain {
 		}
 
 		Long lastSierraExtractTime = systemVariables.getLongValuedVariable("last_sierra_extract_time");
-		//Last Update in UTC
-		//Add a small buffer to be safe, this was 2 minutes.  Reducing to 15 seconds, should be 0 TODO: make a configuration setting
-		long bufferInterval  = 300; //5min in seconds
+
+		//Last Update time in UTC
+		// Use a buffer value to cover gaps in extraction rounds
+		Integer bufferInterval = PikaConfigIni.getIntIniValue("Catalog", "SierraAPIExtractBuffer");
+		if (bufferInterval == null || bufferInterval < 0) {
+			bufferInterval = 300; // 5 mins
+		}
 		Date lastExtractDate = new Date((lastSierraExtractTime - bufferInterval) * 1000);
 
 		Date now       = new Date();
