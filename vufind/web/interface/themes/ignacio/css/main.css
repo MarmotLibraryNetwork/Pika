@@ -11106,6 +11106,12 @@ fieldset[disabled] .btn-masquerade.active {
 #header-logo {
   padding: 0;
 }
+#vertical-menu-bar {
+  background-color: #5a314f;
+}
+#vertical-menu-bar-container .menu-bar-option.menu-icon-selected {
+  background-color: #7A4B6E;
+}
 #browse-label {
   background-color: #ffffff;
   border-bottom: 1px solid #a13835;
