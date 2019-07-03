@@ -97,7 +97,7 @@ public class KohaExportMain {
 						logger.warn("Could not parse number of hours to fetch parameter: " + args[2] + "; Using default 24 instead.");
 					}
 				}
-				exportPath = "/data/vufind-plus/bywaterkoha/deletes/marc"; // default path
+				exportPath = "/data/pika-plus/bywaterkoha/deletes/marc"; // default path
 				if (args.length > 3) {
 					exportPath = args[3];
 				}

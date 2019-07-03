@@ -51,7 +51,7 @@ public class HorizonExportMain {
 		// Read the base INI file to get information about the server (current directory/conf/config.ini)
 		Ini ini = loadConfigFile("config.ini");
 
-		//Connect to the vufind database
+		//Connect to the pika database
 		vufindConn = null;
 		try {
 			String databaseConnectionInfo = cleanIniValue(ini.get("Database", "database_vufind_jdbc"));
@@ -63,7 +63,7 @@ public class HorizonExportMain {
 
 			markGroupedWorkForBibAsChangedStmt = vufindConn.prepareStatement("UPDATE grouped_work SET date_updated = ? where id = (SELECT grouped_work_id from grouped_work_primary_identifiers WHERE type = 'ils' and identifier = ?)") ;
 		} catch (Exception e) {
-			logger.error("Error connecting to vufind database ", e);
+			logger.error("Error connecting to pika database ", e);
 			System.exit(1);
 		}
 
@@ -98,7 +98,7 @@ public class HorizonExportMain {
 	 * we just process the last extract.
 	 *
 	 * Expects extracts to already be copied to the server and to be in the
-	 * /data/vufind-plus/{sitename}/marc_changes directory
+	 * /data/pika-plus/{sitename}/marc_changes directory
 	 *
 	 * @param ini the configuration INI file for Pika
 	 */

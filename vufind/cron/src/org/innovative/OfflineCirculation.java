@@ -5,7 +5,7 @@ import org.ini4j.Ini;
 import org.ini4j.Profile;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.vufind.*;
+import org.pika.*;
 
 import java.io.IOException;
 import java.io.InputStream;

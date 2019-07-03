@@ -44,6 +44,12 @@ require_once 'JSON.php';
  */
 class JSON_Autocomplete extends JSON
 {
+    // define some status constants
+    // ( used by JSON_Autocomplete )
+    const STATUS_OK        = 'OK';           // good
+    const STATUS_ERROR     = 'ERROR';        // bad
+    const STATUS_NEED_AUTH = 'NEED_AUTH';    // must login first
+
     /**
      * Process search query and display suggestion as a JSON object.
      *
@@ -55,6 +61,24 @@ class JSON_Autocomplete extends JSON
         $this->output(
             array_values(AutocompleteFactory::getSuggestions()), JSON::STATUS_OK
         );
+    }
+
+    /**
+     * Send output data and exit.
+     *
+     * @param mixed  $data   The response data
+     * @param string $status Status of the request
+     *
+     * @return void
+     * @access public
+     */
+    protected function output($data, $status) {
+        header('Content-type: application/javascript');
+        header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
+        header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
+        $output = array('data'=>$data,'status'=>$status);
+        echo json_encode($output);
+        exit;
     }
 }
 ?>

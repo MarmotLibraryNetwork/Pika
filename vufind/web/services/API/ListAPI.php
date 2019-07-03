@@ -18,38 +18,32 @@
  *
  */
 
-require_once ROOT_DIR . '/Action.php';
+require_once ROOT_DIR . '/AJAXHandler.php';
 require_once ROOT_DIR . '/sys/Pager.php';
 require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
 require_once ROOT_DIR . '/sys/Utils/SwitchDatabase.php';
 require_once ROOT_DIR . '/sys/Utils/Pagination.php';
 
-class ListAPI extends Action {
+class ListAPI extends AJAXHandler {
 
-	function launch(){
-		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
-		if (method_exists($this, $method)){
-			if ($method == 'getRSSFeed'){
-				header('Content-type: text/xml');
-				header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
-				header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
-				$xml = '<?xml version="1.0" encoding="UTF-8"?' . ">\n";
-				$xml .= $this->$_REQUEST['method']();
+	protected $methodsThatRepondWithJSONResultWrapper = array(
+		'getAllListIds',
+		'getPublicLists',
+		'getUserLists',
+		'getSystemLists',
+		'getListTitles',
+		'getCacheInfoForList',
+		'getCacheInfoForListId',
+		'createList',
+		'addTitlesToList',
+		'clearListTitles',
+		'getAvailableListsFromNYT',
+		'createUserListFromNYT',
+	);
 
-				echo $xml;
-
-			}else{
-				header('Content-type: application/json');
-				header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
-				header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
-				$output = json_encode(array('result' => $this->$_REQUEST['method']()));
-
-				echo $output;
-			}
-		}else{
-			echo json_encode(array('error' => 'invalid_method'));
-		}
-	}
+	protected $methodsThatRespondThemselves = array(
+		'getRSSFeed',
+	);
 
 	function getAllListIds(){
 		$allListNames = array();
@@ -143,7 +137,7 @@ class ListAPI extends Action {
 	}
 
 	/**
-	 * Get's RSS Feed
+	 * Gets RSS Feed version of a User List
 	 */
 	function getRSSFeed(){
 		global $configArray;
@@ -216,8 +210,12 @@ class ListAPI extends Action {
 		$rssFeed .= '</channel>';
 		$rssFeed .= '</rss>';
 
+		$xml = '<?xml version="1.0" encoding="UTF-8"?' . ">\n";
+		$xml .= $$rssFeed;
 
-		return $rssFeed;
+		$this->sendHTTPHeaders('text/xml');
+		echo $xml;
+
 	}
 
 	/**
@@ -317,24 +315,24 @@ class ListAPI extends Action {
 			'description' => 'A selection of Music Tiles that are on order and due in soon.',
 			'numTitles'   => 30,
 		);
-		/*$systemLists[] = array(
-		 'id' => 'popularEpub',
-		 'title' => 'Popular Online Books',
-		 'description' => 'The most popular books that are available to read online.',
-		 'numTitles' => 30,
-		 );
-		 $systemLists[] = array(
-		 'id' => 'availableEpub',
-		 'title' => 'Available Online Books',
-		 'description' => 'Online books that can be read immediately.',
-		 'numTitles' => 30,
-		 );
-		 $systemLists[] = array(
-		 'id' => 'recommendedEpub',
-		 'title' => 'Recommended Online Books',
-		 'description' => 'Online books that you may like based on your ratings and reading history.',
-		 'numTitles' => 30,
-		 );*/
+/*		$systemLists[] = array(
+			'id'          => 'popularEpub',
+			'title'       => 'Popular Online Books',
+			'description' => 'The most popular books that are available to read online.',
+			'numTitles'   => 30,
+		);
+		$systemLists[] = array(
+			'id'          => 'availableEpub',
+			'title'       => 'Available Online Books',
+			'description' => 'Online books that can be read immediately.',
+			'numTitles'   => 30,
+		);
+		$systemLists[] = array(
+			'id'          => 'recommendedEpub',
+			'title'       => 'Recommended Online Books',
+			'description' => 'Online books that you may like based on your ratings and reading history.',
+			'numTitles'   => 30,
+		);*/
 		$systemLists[] = array(
 			'id'          => 'recentlyReviewed',
 			'title'       => 'Recently Reviewed',
@@ -472,14 +470,15 @@ class ListAPI extends Action {
 			}
 			//The list is a system generated list
 			if ($listId == 'highestRated'){
-				$query  = "SELECT record_id, AVG(rating) FROM `user_rating` inner join resource on resourceid = resource.id GROUP BY resourceId order by AVG(rating) DESC LIMIT $numTitlesToShow";
-				$result = mysql_query($query);
-				$ids    = array();
-				while ($epubInfo = mysql_fetch_assoc($result)){
-					$ids[] = $epubInfo['record_id'];
-				}
-				$titles = $this->loadTitleInformationForIds($ids, $numTitlesToShow);
-				return array('success' => true, 'listTitle' => $systemList['title'], 'listDescription' => $systemList['description'], 'titles' => $titles, 'cacheLength' => 1);
+				// user_rating is no longer used
+//				$query  = "SELECT record_id, AVG(rating) FROM `user_rating` inner join resource on resourceid = resource.id GROUP BY resourceId order by AVG(rating) DESC LIMIT $numTitlesToShow";
+//				$result = mysql_query($query);
+//				$ids    = array();
+//				while ($epubInfo = mysql_fetch_assoc($result)){
+//					$ids[] = $epubInfo['record_id'];
+//				}
+//				$titles = $this->loadTitleInformationForIds($ids, $numTitlesToShow);
+//				return array('success' => true, 'listTitle' => $systemList['title'], 'listDescription' => $systemList['description'], 'titles' => $titles, 'cacheLength' => 1);
 			}elseif ($listId == 'recentlyReviewed'){
 				$query  = "SELECT record_id, MAX(created) FROM `comments` inner join resource on resource_id = resource.id group by resource_id order by max(created) DESC LIMIT $numTitlesToShow";
 				$result = mysql_query($query);
@@ -646,7 +645,7 @@ class ListAPI extends Action {
 		}
 	}
 
-	function loadTitleInformationForIds($ids, $numTitlesToShow, $orderedListOfIds = array()){
+	private function loadTitleInformationForIds($ids, $numTitlesToShow, $orderedListOfIds = array()){
 		$titles = array();
 		if (count($ids) > 0){
 			/** @var SearchObject_Solr $searchObject */
@@ -660,7 +659,7 @@ class ListAPI extends Action {
 		return $titles;
 	}
 
-	function loadArchiveInformationForIds($ids, $numTitlesToShow, $orderedListOfIds = array()){
+	private function loadArchiveInformationForIds($ids, $numTitlesToShow, $orderedListOfIds = array()){
 		$titles = array();
 		if (count($ids) > 0){
 			/** @var SearchObject_Islandora $archiveSearchObject */
@@ -677,7 +676,7 @@ class ListAPI extends Action {
 		return $titles;
 	}
 
-	function getSavedSearchTitles($searchId, $numTitlesToShow){
+	private function getSavedSearchTitles($searchId, $numTitlesToShow){
 		/** @var Memcache $memCache */
 		global $memCache;
 		global $configArray;
@@ -903,7 +902,7 @@ class ListAPI extends Action {
 		}
 	}
 
-	function getSystemListTitles($listName, $numTitlesToShow){
+	private function getSystemListTitles($listName, $numTitlesToShow){
 		/** @var Memcache $memCache */
 		global $memCache;
 		global $configArray;
@@ -1103,7 +1102,7 @@ class ListAPI extends Action {
 						$isbnEntry,
 					);
 				}
-			} else {
+			}else{
 				$isbnsArray = $titleResult->isbns;
 			}
 			if (!empty($isbnsArray)){

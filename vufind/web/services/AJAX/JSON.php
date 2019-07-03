@@ -18,54 +18,40 @@
  *
  */
 
-require_once ROOT_DIR . '/Action.php';
+require_once ROOT_DIR . '/AJAXHandler.php';
 
-class AJAX_JSON extends Action {
+class AJAX_JSON extends AJAXHandler {
 
-	// define some status constants
- // ( used by JSON_Autocomplete )
-	const STATUS_OK        = 'OK';           // good
-	const STATUS_ERROR     = 'ERROR';        // bad
-	const STATUS_NEED_AUTH = 'NEED_AUTH';    // must login first
+	protected $methodsThatRepondWithJSONUnstructured = array(
+		'getAutoLogoutPrompt',
+		'getReturnToHomePrompt',
+		'getPayFinesAfterAction',
+	);
 
-	function launch()
-	{
-		global $analytics;
-		$analytics->disableTracking();
+	protected $methodsThatRepondWithJSONResultWrapper = array(
+		'getUserLists',
+		'loginUser',
+//		'trackEvent',
+		'getPayFinesAfterAction',
+	);
 
-		//header('Content-type: application/json');
-		header('Content-type: text/html');
-		header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
-		header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
-
-		$method = $_GET['method'];
-		if (method_exists($this, $method)) {
-			if ($method == 'getHoursAndLocations'){
-				$output = $this->$method();
-			}elseif (in_array($method, array('getAutoLogoutPrompt', 'getReturnToHomePrompt', 'getPayFinesAfterAction'))) {
-				$output = json_encode($this->$method());
-				// Browser-side handler ajaxLightbox() doesn't use the input format in else block below
-			}else{
-				$output = json_encode(array('result'=>$this->$method()));
-			}
-		} else {
-			$output = json_encode(array('error'=>'invalid_method'));
-		}
-
-		echo $output;
-	}
+	protected $methodsThatRespondWithHTML = array(
+		'getHoursAndLocations',
+	);
 
 	function isLoggedIn(){
 		return UserAccount::isLoggedIn();
 	}
 
 	function getUserLists(){
-		$user = UserAccount::getLoggedInUser();
-		$lists = $user->getLists();
+		$user      = UserAccount::getLoggedInUser();
+		$lists     = $user->getLists();
 		$userLists = array();
-		foreach($lists as $current) {
-			$userLists[] = array('id' => $current->id,
-                    'title' => $current->title);
+		foreach ($lists as $current){
+			$userLists[] = array(
+				'id'    => $current->id,
+				'title' => $current->title,
+			);
 		}
 		return $userLists;
 	}
@@ -81,20 +67,20 @@ class AJAX_JSON extends Action {
 			if (!$user || PEAR_Singleton::isError($user)){
 
 				// Expired Card Notice
-				if ($user && $user->message == 'expired_library_card') {
+				if ($user && $user->message == 'expired_library_card'){
 					return array(
 						'success' => false,
-						'message' => translate('expired_library_card')
+						'message' => translate('expired_library_card'),
 					);
 				}
 
 				// General Login Error
 				/** @var PEAR_Error $error */
-				$error = $user;
+				$error   = $user;
 				$message = PEAR_Singleton::isError($user) ? translate($error->getMessage()) : translate("Sorry that login information was not recognized, please try again.");
 				return array(
 					'success' => false,
-					'message' => $message
+					'message' => $message,
 				);
 			}
 		}else{
@@ -116,36 +102,18 @@ class AJAX_JSON extends Action {
 		);
 	}
 
-	/**
-	 * Send output data and exit.
-	 *
-	 * @param mixed  $data   The response data
-	 * @param string $status Status of the request
-	 *
-	 * @return void
-	 * @access public
-	 */
-	protected function output($data, $status) {
-		header('Content-type: application/javascript');
-		header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
-		header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
-		$output = array('data'=>$data,'status'=>$status);
-		echo json_encode($output);
-		exit;
-	}
-
-	function trackEvent(){
-		global $analytics;
-		if (!isset($_REQUEST['category']) || !isset($_REQUEST['eventAction'])){
-			return 'Must provide a category and action to track an event';
-		}
-		$analytics->enableTracking();
-		$category = strip_tags($_REQUEST['category']);
-		$action = strip_tags($_REQUEST['eventAction']);
-		$data = isset($_REQUEST['data']) ? strip_tags($_REQUEST['data']) : '';
-		$analytics->addEvent($category, $action, $data);
-		return true;
-	}
+//	function trackEvent(){
+//		global $analytics;
+//		if (!isset($_REQUEST['category']) || !isset($_REQUEST['eventAction'])){
+//			return 'Must provide a category and action to track an event';
+//		}
+//		$analytics->enableTracking();
+//		$category = strip_tags($_REQUEST['category']);
+//		$action   = strip_tags($_REQUEST['eventAction']);
+//		$data     = isset($_REQUEST['data']) ? strip_tags($_REQUEST['data']) : '';
+//		$analytics->addEvent($category, $action, $data);
+//		return true;
+//	}
 
 	function getHoursAndLocations(){
 		//Get a list of locations for the current library
@@ -158,7 +126,7 @@ class AJAX_JSON extends Action {
 		$tmpLocation->find();
 		if ($tmpLocation->N == 0){
 			//Get all locations
-			$tmpLocation = new Location();
+			$tmpLocation                              = new Location();
 			$tmpLocation->showInLocationsAndHoursList = 1;
 			$tmpLocation->orderBy('displayName');
 			$tmpLocation->find();
@@ -176,15 +144,15 @@ class AJAX_JSON extends Action {
 	function getAutoLogoutPrompt(){
 		global $interface;
 		$masqueradeMode = UserAccount::isUserMasquerading();
-		$result = array(
+		$result         = array(
 			'title'        => 'Still There?',
 			'modalBody'    => $interface->fetch('AJAX/autoLogoutPrompt.tpl'),
 			'modalButtons' => "<div id='continueSession' class='btn btn-primary' onclick='continueSession();'>Continue</div>" .
-				( $masqueradeMode ?
-												"<div id='endSession' class='btn btn-masquerade' onclick='VuFind.Account.endMasquerade()'>End Masquerade</div>" .
-												"<div id='endSession' class='btn btn-warning' onclick='endSession()'>Logout</div>"
+				($masqueradeMode ?
+					"<div id='endSession' class='btn btn-masquerade' onclick='VuFind.Account.endMasquerade()'>End Masquerade</div>" .
+					"<div id='endSession' class='btn btn-warning' onclick='endSession()'>Logout</div>"
 					:
-												"<div id='endSession' class='btn btn-warning' onclick='endSession()'>Logout</div>" )
+					"<div id='endSession' class='btn btn-warning' onclick='endSession()'>Logout</div>"),
 		);
 		return $result;
 	}
@@ -192,9 +160,9 @@ class AJAX_JSON extends Action {
 	function getReturnToHomePrompt(){
 		global $interface;
 		$result = array(
-				'title'        => 'Still There?',
-				'modalBody'    => $interface->fetch('AJAX/autoReturnToHomePrompt.tpl'),
-				'modalButtons' => "<a id='continueSession' class='btn btn-primary' onclick='continueSession();'>Continue</a>"
+			'title'        => 'Still There?',
+			'modalBody'    => $interface->fetch('AJAX/autoReturnToHomePrompt.tpl'),
+			'modalButtons' => "<a id='continueSession' class='btn btn-primary' onclick='continueSession();'>Continue</a>",
 		);
 		return $result;
 	}
@@ -203,9 +171,9 @@ class AJAX_JSON extends Action {
 		global $interface,
 		       $configArray;
 		$result = array(
-				'title'        => 'Pay Fines',
-				'modalBody'    => $interface->fetch('AJAX/refreshFinesAccountInfo.tpl'),
-				'modalButtons' => '<a class="btn btn-primary" href="' .$configArray['Site']['path']. '/MyAccount/Fines?reload">Refresh My Fines Information</a>'
+			'title'        => 'Pay Fines',
+			'modalBody'    => $interface->fetch('AJAX/refreshFinesAccountInfo.tpl'),
+			'modalButtons' => '<a class="btn btn-primary" href="' . $configArray['Site']['path'] . '/MyAccount/Fines?reload">Refresh My Fines Information</a>',
 		);
 		return $result;
 	}

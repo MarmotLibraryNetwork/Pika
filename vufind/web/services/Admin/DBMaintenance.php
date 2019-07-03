@@ -518,14 +518,6 @@ class DBMaintenance extends Admin_Admin {
 					),
 				),
 
-				'userRatings1' => array(
-					'title' => 'User Ratings Update 1',
-					'description' => 'Add date rated for user ratings',
-					'sql' => array(
-						"ALTER TABLE user_rating ADD COLUMN dateRated INT(11)",
-					),
-				),
-
 				'materialsRequest' => array(
 					'title' => 'Materials Request Table Creation',
 					'description' => 'Update reading History to include an id table',
@@ -991,7 +983,6 @@ class DBMaintenance extends Admin_Admin {
 						//"ALTER TABLE usage_tracking CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
 						"ALTER TABLE user CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
 						"ALTER TABLE user_list CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
-						"ALTER TABLE user_rating CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
 						"ALTER TABLE user_reading_history CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
 						"ALTER TABLE user_resource CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
 						"ALTER TABLE user_roles CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
@@ -1397,8 +1388,6 @@ class DBMaintenance extends Admin_Admin {
 					'description' => 'Add additional indexes to tables that were not defined originally',
 					'continueOnError' => true,
 					'sql' => array(
-						'ALTER TABLE `user_rating` ADD INDEX `Resourceid` ( `resourceid` ) ',
-						'ALTER TABLE `user_rating` ADD INDEX `UserId` ( `userid` ) ',
 						'ALTER TABLE `materials_request_status` ADD INDEX ( `isDefault` )',
 						'ALTER TABLE `materials_request_status` ADD INDEX ( `isOpen` )',
 						'ALTER TABLE `materials_request_status` ADD INDEX ( `isPatronCancel` )',

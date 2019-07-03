@@ -17,10 +17,13 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
+// TODO: Proxy_Request.php isn't used in the class. need to remove to save memory.
 require_once ROOT_DIR . '/sys/Proxy_Request.php';
 require_once ROOT_DIR . '/Drivers/marmot_inc/LoanRule.php';
 require_once ROOT_DIR . '/Drivers/marmot_inc/LoanRuleDeterminer.php';
+// TODO: Not needed since vu-find will autoload file again. Save some memory.
 require_once ROOT_DIR . '/Drivers/ScreenScrapingDriver.php';
+// use ScreenScrapingDriver;
 
 /**
  * Pika Connector for Marmot's Innovative catalog (millennium)
@@ -38,11 +41,6 @@ require_once ROOT_DIR . '/Drivers/ScreenScrapingDriver.php';
  */
 class Millennium extends ScreenScrapingDriver
 {
-//	var $statusTranslations = null;
-//	var $holdableStatiRegex = null;
-//	var $availableStatiRegex = null;
-//	/** @var  Solr */
-//	public $db;
 
 	/** @var LoanRule[] $loanRules  */
 	var $loanRules = null;

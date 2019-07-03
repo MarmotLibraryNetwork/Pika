@@ -18,57 +18,32 @@
  *
  */
 
-require_once ROOT_DIR . '/Action.php';
+require_once ROOT_DIR . '/AJAXHandler.php';
 
-class Admin_AJAX extends Action {
+class Admin_AJAX extends AJAXHandler {
 
-
-	function launch() {
-		global $timer;
-		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
-		if (method_exists($this, $method)) {
-			$timer->logTime("Starting method $method");
-			if (in_array($method, array(
-				'getReindexNotes', 'getReindexProcessNotes', 'getCronNotes', 'getCronProcessNotes', 'getAddToWidgetForm', 'getRecordGroupingNotes', 'getHooplaExportNotes', 'getSierraExportNotes',
-				'markProfileForRegrouping', 'markProfileForReindexing',
-				'copyHooplaSettingsFromLibrary', 'clearLocationHooplaSettings', 'clearLibraryHooplaSettings',
-			))){
-				//JSON Responses
-				header('Content-type: application/json');
-				header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
-				header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
-				echo $this->$method();
-			} else if (in_array($method, array('getOverDriveExtractNotes'))) {
-				//HTML responses
-				header('Content-type: text/html');
-				header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
-				header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
-				echo $this->$method();
-			} else {
-				//XML responses
-				header('Content-type: text/xml');
-				header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
-				header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
-				$xml = '<?xml version="1.0" encoding="UTF-8"?' . ">\n" .
-						"<AJAXResponse>\n";
-				$xml .= $this->$_GET['method']();
-				$xml .= '</AJAXResponse>';
-
-				echo $xml;
-			}
-		}else {
-			echo json_encode(array('error'=>'invalid_method'));
-		}
-	}
+	protected $methodsThatRepondWithJSONUnstructured = array(
+		'getReindexNotes',
+		'getReindexProcessNotes',
+		'getCronNotes',
+		'getCronProcessNotes',
+		'getAddToWidgetForm',
+		'getRecordGroupingNotes',
+		'getHooplaExportNotes',
+		'getSierraExportNotes',
+		'markProfileForRegrouping',
+		'markProfileForReindexing',
+		'getOverDriveExtractNotes',
+	);
 
 	function getReindexNotes(){
-		$id = $_REQUEST['id'];
-		$reindexProcess = new ReindexLogEntry();
+		$id                 = $_REQUEST['id'];
+		$reindexProcess     = new ReindexLogEntry();
 		$reindexProcess->id = $id;
-		$results = array(
-				'title' => '',
-				'modalBody' => '',
-				'modalButtons' => ''
+		$results            = array(
+			'title'        => '',
+			'modalBody'    => '',
+			'modalButtons' => '',
 		);
 		if ($reindexProcess->find(true)){
 			$results['title'] = "Reindex Notes";
@@ -78,20 +53,20 @@ class Admin_AJAX extends Action {
 				$results['modalBody'] = "<div class='helpText'>{$reindexProcess->notes}</div>";
 			}
 		}else{
-			$results['title'] = "Error";
+			$results['title']     = "Error";
 			$results['modalBody'] = "We could not find a reindex entry with that id.  No notes available.";
 		}
-		return json_encode($results);
+		return $results;
 	}
 
 	function getRecordGroupingNotes(){
-		$id = $_REQUEST['id'];
-		$recordGroupingProcess = new RecordGroupingLogEntry();
+		$id                        = $_REQUEST['id'];
+		$recordGroupingProcess     = new RecordGroupingLogEntry();
 		$recordGroupingProcess->id = $id;
-		$results = array(
-				'title' => '',
-				'modalBody' => '',
-				'modalButtons' => ''
+		$results                   = array(
+			'title'        => '',
+			'modalBody'    => '',
+			'modalButtons' => '',
 		);
 		if ($recordGroupingProcess->find(true)){
 			$results['title'] = "Record Grouping Notes";
@@ -101,20 +76,20 @@ class Admin_AJAX extends Action {
 				$results['modalBody'] = "<div class='helpText'>{$recordGroupingProcess->notes}</div>";
 			}
 		}else{
-			$results['title'] = "Error";
+			$results['title']     = "Error";
 			$results['modalBody'] = "We could not find a record grouping log entry with that id.  No notes available.";
 		}
-		return json_encode($results);
+		return $results;
 	}
 
 	function getHooplaExportNotes(){
-		$id = $_REQUEST['id'];
-		$hooplaExportProcess = new HooplaExportLogEntry();
+		$id                      = $_REQUEST['id'];
+		$hooplaExportProcess     = new HooplaExportLogEntry();
 		$hooplaExportProcess->id = $id;
-		$results = array(
-				'title' => '',
-				'modalBody' => '',
-				'modalButtons' => ''
+		$results                 = array(
+			'title'        => '',
+			'modalBody'    => '',
+			'modalButtons' => '',
 		);
 		if ($hooplaExportProcess->find(true)){
 			$results['title'] = "Hoopla Export Notes";
@@ -124,20 +99,20 @@ class Admin_AJAX extends Action {
 				$results['modalBody'] = "<div class='helpText'>{$hooplaExportProcess->notes}</div>";
 			}
 		}else{
-			$results['title'] = "Error";
+			$results['title']     = "Error";
 			$results['modalBody'] = "We could not find a hoopla extract log entry with that id.  No notes available.";
 		}
-		return json_encode($results);
+		return $results;
 	}
 
 	function getSierraExportNotes(){
-		$id = $_REQUEST['id'];
-		$sierraExportProcess = new SierraExportLogEntry();
+		$id                      = $_REQUEST['id'];
+		$sierraExportProcess     = new SierraExportLogEntry();
 		$sierraExportProcess->id = $id;
-		$results = array(
-				'title' => '',
-				'modalBody' => '',
-				'modalButtons' => ''
+		$results                 = array(
+			'title'        => '',
+			'modalBody'    => '',
+			'modalButtons' => '',
 		);
 		if ($sierraExportProcess->find(true)){
 			$results['title'] = "Sierra Export Notes";
@@ -147,21 +122,21 @@ class Admin_AJAX extends Action {
 				$results['modalBody'] = "<div class='helpText'>{$sierraExportProcess->notes}</div>";
 			}
 		}else{
-			$results['title'] = "Error";
+			$results['title']     = "Error";
 			$results['modalBody'] = "We could not find a sierra extract log entry with that id.  No notes available.";
 		}
-		return json_encode($results);
+		return $results;
 	}
 
 
 	function getCronProcessNotes(){
-		$id = $_REQUEST['id'];
-		$cronProcess = new CronProcessLogEntry();
+		$id              = $_REQUEST['id'];
+		$cronProcess     = new CronProcessLogEntry();
 		$cronProcess->id = $id;
-		$results = array(
-				'title' => '',
-				'modalBody' => '',
-				'modalButtons' => ""
+		$results         = array(
+			'title'        => '',
+			'modalBody'    => '',
+			'modalButtons' => "",
 		);
 		if ($cronProcess->find(true)){
 			$results['title'] = "{$cronProcess->processName} Notes";
@@ -171,21 +146,21 @@ class Admin_AJAX extends Action {
 				$results['modalBody'] = "<div class='helpText'>{$cronProcess->notes}</div>";
 			}
 		}else{
-			$results['title'] = "Error";
+			$results['title']     = "Error";
 			$results['modalBody'] = "We could not find a process with that id.  No notes available.";
 		}
-		return json_encode($results);
+		return $results;
 	}
 
-	function getCronNotes()	{
-		$id = $_REQUEST['id'];
-		$cronLog = new CronLogEntry();
+	function getCronNotes(){
+		$id          = $_REQUEST['id'];
+		$cronLog     = new CronLogEntry();
 		$cronLog->id = $id;
 
 		$results = array(
-				'title' => '',
-				'modalBody' => '',
-				'modalButtons' => ""
+			'title'        => '',
+			'modalBody'    => '',
+			'modalButtons' => "",
 		);
 		if ($cronLog->find(true)){
 			$results['title'] = "Cron Process {$cronLog->id} Notes";
@@ -195,22 +170,22 @@ class Admin_AJAX extends Action {
 				$results['modalBody'] = "<div class='helpText'>{$cronLog->notes}</div>";
 			}
 		}else{
-			$results['title'] = "Error";
+			$results['title']     = "Error";
 			$results['modalBody'] = "We could not find a cron entry with that id.  No notes available.";
 		}
-		return json_encode($results);
+		return $results;
 	}
 
-  function getOverDriveExtractNotes()	{
+	function getOverDriveExtractNotes(){
 		global $interface;
-		$id = $_REQUEST['id'];
-		$overdriveExtractLog = new OverDriveExtractLogEntry();
+		$id                      = $_REQUEST['id'];
+		$overdriveExtractLog     = new OverDriveExtractLogEntry();
 		$overdriveExtractLog->id = $id;
-	  $results = array(
-			  'title' => '',
-			  'modalBody' => '',
-			  'modalButtons' => ""
-	  );
+		$results                 = array(
+			'title'        => '',
+			'modalBody'    => '',
+			'modalButtons' => "",
+		);
 		if ($overdriveExtractLog->find(true)){
 			$results['title'] = "OverDrive Extract {$overdriveExtractLog->id} Notes";
 			if (strlen($overdriveExtractLog->notes) == 0){
@@ -219,10 +194,10 @@ class Admin_AJAX extends Action {
 				$results['modalBody'] = "<div class='helpText'>{$overdriveExtractLog->notes}</div>";
 			}
 		}else{
-			$results['title'] = "Error";
+			$results['title']     = "Error";
 			$results['modalBody'] = "We could not find a OverDrive Extract entry with that id.  No notes available.";
 		}
-	  return json_encode($results);
+		return $results;
 	}
 
 	function getAddToWidgetForm(){
@@ -232,21 +207,21 @@ class Admin_AJAX extends Action {
 		$interface->assign('id', strip_tags($_REQUEST['id']));
 		$interface->assign('source', strip_tags($_REQUEST['source']));
 		$existingWidgets = array();
-		$listWidget = new ListWidget();
+		$listWidget      = new ListWidget();
 		if (UserAccount::userHasRole('libraryAdmin') || UserAccount::userHasRole('contentEditor') || UserAccount::userHasRole('libraryManager') || UserAccount::userHasRole('locationManager')){
 			//Get all widgets for the library
-			$userLibrary = Library::getPatronHomeLibrary();
+			$userLibrary           = Library::getPatronHomeLibrary();
 			$listWidget->libraryId = $userLibrary->libraryId;
 		}
 		$listWidget->orderBy('name');
 		$existingWidgets = $listWidget->fetchAll('id', 'name');
 		$interface->assign('existingWidgets', $existingWidgets);
 		$results = array(
-				'title' => 'Create a Widget',
-				'modalBody' => $interface->fetch('Admin/addToWidgetForm.tpl'),
-				'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#bulkAddToList\").submit();'>Create Widget</button>"
+			'title'        => 'Create a Widget',
+			'modalBody'    => $interface->fetch('Admin/addToWidgetForm.tpl'),
+			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#bulkAddToList\").submit();'>Create Widget</button>",
 		);
-		return json_encode($results);
+		return $results;
 	}
 
 	function copyHooplaSettingsFromLibrary(){

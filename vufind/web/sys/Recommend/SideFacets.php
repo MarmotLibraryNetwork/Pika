@@ -335,15 +335,15 @@ class SideFacets implements RecommendationInterface
 	private function updateUserRatingsFacet($userRatingFacet){
 		global $interface;
 		$ratingApplied = false;
-		$ratingLabels = array();
-		foreach ($userRatingFacet['list'] as $facetValue ){
+		$ratingLabels  = array();
+		foreach ($userRatingFacet['list'] as $facetValue){
 			if ($facetValue['isApplied']){
-				$ratingApplied = true;
-				$ratingLabels = array($facetValue['value']);
+				$ratingApplied  = true;
+				$ratingLabels[] = $facetValue['value'];
 			}
 		}
 		if (!$ratingApplied){
-			$ratingLabels =array('fiveStar','fourStar','threeStar','twoStar','oneStar', 'Unrated');
+			$ratingLabels = array('fiveStar', 'fourStar', 'threeStar', 'twoStar', 'oneStar', 'Unrated');
 		}
 		$interface->assign('ratingLabels', $ratingLabels);
 		return $userRatingFacet;

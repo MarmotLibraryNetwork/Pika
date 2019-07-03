@@ -172,3 +172,8 @@ sites/arlington.localhost/sql_backup/arlington_econtent.sql
 *.sql
 vufind/web/interface/themes/pitkin_resp/images/Winter.JPG
 main.tmpcss
+
+# Chris' VM   #
+###############
+sites/*.vm-server.net
+

@@ -15,7 +15,7 @@
 							<div class="myAccountLink">
 								<a href='{$path}/Search/Results?lookfor={$tag->tag|escape:"url"}&amp;basicType=tag'>{$tag->tag|escape:"html"}</a> ({$tag->cnt})&nbsp;
 								<a href='#' onclick="return VuFind.Account.removeTag('{$tag->tag}');">
-									<span class="glyphicon glyphicon-remove-circle" title="Delete Tag">&nbsp;</span>
+								<span class="glyphicon glyphicon-remove-circle" title="Delete Tag">&nbsp;</span>
 								</a>
 							</div>
 						{/foreach}

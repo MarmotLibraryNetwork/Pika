@@ -7,7 +7,7 @@ EMAIL=root@titan
 PIKASERVER=marmot.test
 PIKADBNAME=pika
 OUTPUT_FILE="/var/log/vufind-plus/${PIKASERVER}/full_update_output.log"
-USE_SIERRA_API_EXTRACT=0
+USE_SIERRA_API_EXTRACT=1
 
 # Check if full_update is already running
 #TODO: Verify that the PID file doesn't get log-rotated
@@ -39,22 +39,8 @@ else
 fi
 
 # Check for conflicting processes currently running
-function checkConflictingProcesses() {
-	#Check to see if the conflict exists.
-	countConflictingProcesses=$(ps aux | grep -v sudo | grep -c "$1")
-	countConflictingProcesses=$((countConflictingProcesses-1))
+source "/usr/local/vufind-plus/vufind/bash/checkConflicts.sh"
 
-	let numInitialConflicts=countConflictingProcesses
-	#Wait until the conflict is gone.
-	until ((${countConflictingProcesses} == 0)); do
-		countConflictingProcesses=$(ps aux | grep -v sudo | grep -c "$1")
-		countConflictingProcesses=$((countConflictingProcesses-1))
-		#echo "Count of conflicting process" $1 $countConflictingProcesses
-		sleep 300
-	done
-	#Return the number of conflicts we found initially.
-	echo ${numInitialConflicts};
-}
 
 #Check for any conflicting processes that we shouldn't do a full index during.
 checkConflictingProcesses "sierra_export_api.jar ${PIKASERVER}" >> ${OUTPUT_FILE}
@@ -192,10 +178,10 @@ cd /usr/local/vufind-plus/vufind/cron; ./sideload.sh ${PIKASERVER}
 #get caught in the regular extract
 DAYOFWEEK=$(date +"%u")
 if [[ "${DAYOFWEEK}" -eq 7 ]]; then
-	echo $(date +"%T") "Starting Overdrive fullReload."  >> ${OUTPUT_FILE}
+	echo $(date +"%T") "Starting Overdrive fullReload." >> ${OUTPUT_FILE}
 	cd /usr/local/vufind-plus/vufind/overdrive_api_extract/
 	nice -n -10 java -server -XX:+UseG1GC -jar overdrive_extract.jar ${PIKASERVER} fullReload >> ${OUTPUT_FILE}
-	echo $(date +"%T") "Completed Overdrive fullReload."  >> ${OUTPUT_FILE}
+	echo $(date +"%T") "Completed Overdrive fullReload." >> ${OUTPUT_FILE}
 fi
 
 #Note, no need to extract from Lexile for this server since it is the master

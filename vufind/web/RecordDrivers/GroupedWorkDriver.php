@@ -471,16 +471,6 @@ class GroupedWorkDriver extends RecordInterface{
 		);
 	}
 
-	public function getLinkUrl($absolutePath = false){
-		global $configArray;
-		if ($absolutePath){
-			return $configArray['Site']['url'] . '/GroupedWork/' . $this->getPermanentId() . '/Home';
-		}else{
-			return $configArray['Site']['path'] . '/GroupedWork/' . $this->getPermanentId() . '/Home';
-		}
-
-	}
-
 	/**
 	 * Get an XML RDF representation of the data in this record.
 	 *
@@ -853,7 +843,7 @@ class GroupedWorkDriver extends RecordInterface{
 				'image' =>       $this->getBookcoverUrl('medium'),
 				'small_image' => $this->getBookcoverUrl('small'),
 				'title' =>       $this->getTitle(),
-				'titleURL' =>    $this->getLinkUrl(true),
+				'titleURL' =>    $this->getAbsoluteUrl(),
 				'author' =>      $this->getPrimaryAuthor(),
 				'description' => $this->getDescriptionFast(),
 				'length' =>      '',
@@ -2302,28 +2292,25 @@ class GroupedWorkDriver extends RecordInterface{
 		return $this->filterAndSortMoreDetailsOptions($moreDetailsOptions);
 	}
 
+	private $userTagsForThisWork;
 	public function getTags(){
-		/** @var UserTag[] $tags */
-		$tags = array();
-		require_once ROOT_DIR . '/sys/LocalEnrichment/UserTag.php';
-		$userTags = new UserTag();
-		$userTags->groupedRecordPermanentId = $this->getPermanentId();
-		$userTags->find();
-		while ($userTags->fetch()){
-			if (!isset($tags[$userTags->tag])){
-				$tags[$userTags->tag] = clone $userTags;
-				$tags[$userTags->tag]->userAddedThis = false;
-			}
-			$tags[$userTags->tag]->cnt++;
-			if (UserAccount::isLoggedIn()){
-				return false;
-			}else{
-				if (UserAccount::getActiveUserId() == $tags[$userTags->tag]->userId){
-					$tags[$userTags->tag]->userAddedThis = true;
+		if (!isset($this->userTagsForThisWork)){
+			require_once ROOT_DIR . '/sys/LocalEnrichment/UserTag.php';
+			/** @var UserTag[] $tags */
+			$tags                               = array();
+			$userTags                           = new UserTag();
+			$userTags->groupedRecordPermanentId = $this->getPermanentId();
+			$userTags->find();
+			while ($userTags->fetch()){
+				if (!isset($tags[$userTags->tag])){
+					$tags[$userTags->tag]                = clone $userTags;
+					$tags[$userTags->tag]->userAddedThis = UserAccount::getActiveUserId() == $tags[$userTags->tag]->userId;
 				}
+				$tags[$userTags->tag]->cnt++;
 			}
+			$this->userTagsForThisWork = $tags;
 		}
-		return $tags;
+		return $this->userTagsForThisWork;
 	}
 
 	public function getAcceleratedReaderData(){
@@ -2737,7 +2724,7 @@ class GroupedWorkDriver extends RecordInterface{
 		$interface->assign('og_title', $this->getTitle());
 		$interface->assign('og_type', $this->getOGType());
 		$interface->assign('og_image', $this->getBookcoverUrl('medium', true));
-		$interface->assign('og_url', $this->getLinkUrl(true));
+		$interface->assign('og_url', $this->getAbsoluteUrl());
 
 		//TODO: add audience, award, content
 		return $semanticData;
@@ -3185,13 +3172,18 @@ class GroupedWorkDriver extends RecordInterface{
 		global $configArray;
 		$recordId = $this->getUniqueID();
 
-		return $configArray['Site']['path'] . '/GroupedWork/' . urlencode($recordId) . '/Home';
+		return $configArray['Site']['path'] . '/' . $this->getModule() . '/' . urlencode($recordId) . '/Home';
 	}
 
 	public function getAbsoluteUrl() {
 		global $configArray;
 		$recordId = $this->getUniqueID();
 		return $configArray['Site']['url'] . '/' . $this->getModule() . '/' . urlencode($recordId) . '/Home';
+	}
+
+	public function getLinkUrl($unscoped = false){
+		//TODO: Need to add search navigation parameters to the URL; and need to determine which existing calls should really use getRecordUrl() instead
+		return $this->getRecordUrl();
 	}
 
 	public function getModule() {

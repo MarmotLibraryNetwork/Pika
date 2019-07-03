@@ -1,5 +1,4 @@
 <?php
-require_once ROOT_DIR . '/Action.php';
 /**
  * APIs related to Digital Archive functionality
  * User: mnoble
@@ -7,20 +6,14 @@ require_once ROOT_DIR . '/Action.php';
  * Time: 11:00 AM
  */
 
-class API_ArchiveAPI extends Action {
-	function launch(){
-		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
+require_once ROOT_DIR . '/AJAXHandler.php';
 
-		if ($method != 'getDPLASearchResults' && method_exists($this, $method)) {
-			$output = json_encode(array('result' => $this->$method()));
-		} else {
-			$output = json_encode(array('error'=>"invalid_method '$method'"));
-		}
-		header('Content-type: application/json');
-		header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
-		header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
-		echo $output;
-	}
+class API_ArchiveAPI extends AJAXHandler {
+
+	protected $methodsThatRepondWithJSONResultWrapper = array(
+		'getDPLAFeed',
+		'getDPLACounts',
+	);
 
 	private $organizationRolesToIncludeInDPLA = array(
 		'owner',
@@ -55,11 +48,11 @@ class API_ArchiveAPI extends Action {
 			$dplaDoc['preview']       = $record->getBookcoverUrl('small');
 			$dplaDoc['includeInDPLA'] = isset($doc['mods_extension_marmotLocal_pikaOptions_dpla_s']) ? $doc['mods_extension_marmotLocal_pikaOptions_dpla_s'] : 'default';
 
-			$dateCreated             = $record->getDateCreated('Y-m-d'); // Reformat back to YYYY-MM-DD
-			if ($dateCreated == 'Date Unknown') {
-				$dateCreated           = null;
+			$dateCreated = $record->getDateCreated('Y-m-d'); // Reformat back to YYYY-MM-DD
+			if ($dateCreated == 'Date Unknown'){
+				$dateCreated = null;
 			}
-			$dplaDoc['dateCreated']  = $dateCreated ? $dateCreated : null;
+			$dplaDoc['dateCreated'] = $dateCreated ? $dateCreated : null;
 
 			$language = $record->getModsValue('languageTerm');
 			if (strlen($language)){
@@ -82,7 +75,7 @@ class API_ArchiveAPI extends Action {
 			}
 
 			// Marmot Contributor
-			$contributingLibrary       = $record->getContributingLibrary();
+			$contributingLibrary = $record->getContributingLibrary();
 			if ($contributingLibrary == null){
 				list($namespace) = explode(':', $record->getUniqueID());
 				global $configArray;
@@ -97,22 +90,22 @@ class API_ArchiveAPI extends Action {
 			// Partner Contributors
 			$additionalContributors    = $record->getBrandingInformation();
 			$institutionalContributors = array();
-			foreach ($additionalContributors as $pid => $contributor) {
-				if ($pid != $contributingLibrary['pid'] && strpos($pid, 'organization') === 0 && ( !empty($contributor['role']) && in_array($contributor['role'], $this->organizationRolesToIncludeInDPLA) )) {
+			foreach ($additionalContributors as $pid => $contributor){
+				if ($pid != $contributingLibrary['pid'] && strpos($pid, 'organization') === 0 && (!empty($contributor['role']) && in_array($contributor['role'], $this->organizationRolesToIncludeInDPLA))){
 					// Include only organizations with specific roles that aren't the library itself
-					if (empty($contributor['label'])) {
+					if (empty($contributor['label'])){
 						/** @var OrganizationDriver $islandoraObject */
 						$islandoraObject = RecordDriverFactory::initIslandoraDriverFromPid($pid);
 						$title           = $islandoraObject->getTitle();
-						if (!empty($title)) {
+						if (!empty($title)){
 							$institutionalContributors[] = $title;
 						}
-					} else {
+					}else{
 						$institutionalContributors[] = $contributor['label'];
 					}
 				}
 			}
-			if (!empty($institutionalContributors)) {
+			if (!empty($institutionalContributors)){
 				// Institutional Contributors becomes the data Provider & the Marmot Contributor becomes the intermediate data provider
 				$intermediateProvider            = $dplaDoc['dataProvider'];
 				$dplaDoc['intermediateProvider'] = $intermediateProvider;
@@ -147,15 +140,15 @@ class API_ArchiveAPI extends Action {
 			if (isset($doc['mods_accessCondition_marmot_rightsStatementOrg_t'])){
 				$rightsStatement = $doc['mods_accessCondition_marmot_rightsStatementOrg_t'];
 			}else{
-				if (!empty($doc['RELS_EXT_isMemberOfCollection_uri_mt'])) {
-					foreach ($doc['RELS_EXT_isMemberOfCollection_uri_mt'] as $parentCollectionURI) {
+				if (!empty($doc['RELS_EXT_isMemberOfCollection_uri_mt'])){
+					foreach ($doc['RELS_EXT_isMemberOfCollection_uri_mt'] as $parentCollectionURI){
 						$parentCollectionPid = str_replace('info:fedora/', '', $parentCollectionURI);
-						if (!empty($parentCollectionPid)) {
+						if (!empty($parentCollectionPid)){
 							/** @var CollectionDriver $collectionDriver */
 							$collectionDriver = RecordDriverFactory::initIslandoraDriverFromPid($parentCollectionPid);
-							if (!empty($collectionDriver) && !PEAR_Singleton::isError($collectionDriver)) {
+							if (!empty($collectionDriver) && !PEAR_Singleton::isError($collectionDriver)){
 								$rightsStatement = $collectionDriver->getModsValue('rightsStatementOrg', 'marmot');
-								if ($rightsStatement) {
+								if ($rightsStatement){
 									break;
 								}
 							}
@@ -164,7 +157,7 @@ class API_ArchiveAPI extends Action {
 				}
 
 			}
-			if (empty($rightsStatement)) {
+			if (empty($rightsStatement)){
 				$rightsStatement = 'http://rightsstatements.org/page/CNE/1.0/?language=en';
 			}
 			$rightsStatement   = str_replace('?language=en', '', $rightsStatement); // Our DPLA hub requested removal of language parameter
@@ -188,15 +181,15 @@ class API_ArchiveAPI extends Action {
 			// Primary Subjects
 			$subjects = $record->getAllSubjectHeadings(false, 0); // DPLA does not want the title included as a subject
 			// Marmot wants related Collections included in the subjects
-			if (empty($subjects)) {
+			if (empty($subjects)){
 				$subjects = $dplaRelations;
-			} else {
+			}else{
 				$subjects = array_keys($subjects);
 				$subjects = array_merge($subjects, $dplaRelations);
 			}
 
 			// Add Persons that are Publishers & Related People as DPLA Subjects
-			$publishers     = array();
+			$publishers    = array();
 			$relatedPeople = $record->getRelatedPeople();
 			foreach ($relatedPeople as $relatedPerson){
 				if ($relatedPerson['role'] == 'publisher'){
@@ -235,38 +228,39 @@ class API_ArchiveAPI extends Action {
 		$recordsByLibrary = array();
 		if (isset($searchResult['facet_counts'])){
 			$namespaceFacet = $searchResult['facet_counts']['facet_fields']['namespace_ms'];
-			foreach($namespaceFacet as $facetInfo){
+			foreach ($namespaceFacet as $facetInfo){
 				$recordsByLibrary[$facetInfo[0]] = $facetInfo[1];
 			}
 		}
 
 		$summary = $searchObject->getResultSummary();
 		$results = array(
-				'numResults'          => $summary['resultTotal'],
-				'numPages'            => ceil($summary['resultTotal'] / $pageSize),
-				'recordsByLibrary'    => $recordsByLibrary,
-				'includedCollections' => $collectionsToInclude,
-				'docs'                => $dplaDocs,
+			'numResults'          => $summary['resultTotal'],
+			'numPages'            => ceil($summary['resultTotal'] / $pageSize),
+			'recordsByLibrary'    => $recordsByLibrary,
+			'includedCollections' => $collectionsToInclude,
+			'docs'                => $dplaDocs,
 		);
 
 		return $results;
 	}
 
 	private $formatMap = array(
-			"Academic Paper"  => "Text",
-			"Art"             => "Image",
-			"Article"         => "Text",
-			"Book"            => "Text",
-			"Document"        => "Text",
-			"Image"           => "Still Image",
-			"Magazine"        => "Text",
-			"Music Recording" => "Sound",
-			"Newspaper"       => "Text",
-			"Page"            => "Text",
-			"Postcard"        => "Still Image",
-			"Video"           => "Moving Image",
-			"Voice Recording" => "Sound",
+		"Academic Paper"  => "Text",
+		"Art"             => "Image",
+		"Article"         => "Text",
+		"Book"            => "Text",
+		"Document"        => "Text",
+		"Image"           => "Still Image",
+		"Magazine"        => "Text",
+		"Music Recording" => "Sound",
+		"Newspaper"       => "Text",
+		"Page"            => "Text",
+		"Postcard"        => "Still Image",
+		"Video"           => "Moving Image",
+		"Voice Recording" => "Sound",
 	);
+
 	private function mapFormat($format){
 		if (array_key_exists($format, $this->formatMap)){
 			return $this->formatMap[$format];
@@ -282,8 +276,7 @@ class API_ArchiveAPI extends Action {
 	 * @param $pageSize
 	 * @return array
 	 */
-	private function getDPLASearchResults($namespace, $changesSince, $curPage, $pageSize)
-	{
+	private function getDPLASearchResults($namespace, $changesSince, $curPage, $pageSize){
 //Query for collections that should not be exported to DPLA
 		/** @var SearchObject_Islandora $searchObject */
 		$searchObject = SearchObjectFactory::initSearchObject('Islandora');
@@ -296,12 +289,12 @@ class API_ArchiveAPI extends Action {
 		$searchObject->setPage(1);
 		$searchObject->setLimit(100);
 		$searchCollectionsResult = $searchObject->processSearch(true, false);
-		$collectionsToInclude = array();
-		$ancestors = "";
+		$collectionsToInclude    = array();
+		$ancestors               = "";
 
-		foreach ($searchCollectionsResult['response']['docs'] as $doc) {
+		foreach ($searchCollectionsResult['response']['docs'] as $doc){
 			$collectionsToInclude[] = $doc['PID'];
-			if (strlen($ancestors) > 0) {
+			if (strlen($ancestors) > 0){
 				$ancestors .= ' OR ';
 			}
 			$ancestors .= 'ancestors_ms:"' . $doc['PID'] . '"';
@@ -327,21 +320,21 @@ class API_ArchiveAPI extends Action {
 		$searchObject->addHiddenFilter('!PID', "place*");
 		$searchObject->addHiddenFilter('!RELS_EXT_hasModel_uri_ms', '"info:fedora/islandora:collectionCModel"');
 		$searchObject->addHiddenFilter('!RELS_EXT_hasModel_uri_ms', '"info:fedora/islandora:pageCModel"');
-		if ($namespace != null) {
+		if ($namespace != null){
 			$searchObject->addHiddenFilter('namespace_ms', $namespace);
 		}
 
 		//Filter to only see DPLA records
-		if ($changesSince != null) {
+		if ($changesSince != null){
 			$searchObject->addHiddenFilter('fgs_lastModifiedDate_dt', "[$changesSince TO *]");
 		}
 		$searchObject->addFieldsToReturn(array(
-				'mods_accessCondition_marmot_rightsStatementOrg_t',
-				'mods_accessCondition_rightsHolder_entityTitle_ms',
-				'mods_extension_marmotLocal_hasCreator_entityTitle_ms',
-				'mods_physicalDescription_extent_s',
-				'mods_extension_marmotLocal_pikaOptions_dpla_s',
-				'RELS_EXT_isMemberOfCollection_uri_mt',
+			'mods_accessCondition_marmot_rightsStatementOrg_t',
+			'mods_accessCondition_rightsHolder_entityTitle_ms',
+			'mods_extension_marmotLocal_hasCreator_entityTitle_ms',
+			'mods_physicalDescription_extent_s',
+			'mods_extension_marmotLocal_pikaOptions_dpla_s',
+			'RELS_EXT_isMemberOfCollection_uri_mt',
 		));
 		$searchObject->setPage($curPage);
 		$searchObject->setLimit($pageSize);
@@ -354,16 +347,16 @@ class API_ArchiveAPI extends Action {
 	}
 
 	public function getDPLACounts(){
-		$curPage = isset($_REQUEST['page']) ? $_REQUEST['page'] : 1;
-		$pageSize = isset($_REQUEST['pageSize']) ? $_REQUEST['pageSize'] : 100;
+		$curPage      = isset($_REQUEST['page']) ? $_REQUEST['page'] : 1;
+		$pageSize     = isset($_REQUEST['pageSize']) ? $_REQUEST['pageSize'] : 100;
 		$changesSince = isset($_REQUEST['changesSince']) ? $_REQUEST['changesSince'] : null;
-		$namespace = isset($_REQUEST['namespace']) ? $_REQUEST['namespace'] : null;
+		$namespace    = isset($_REQUEST['namespace']) ? $_REQUEST['namespace'] : null;
 		list($searchObject, $collectionsToInclude, $searchResult) = $this->getDPLASearchResults($namespace, $changesSince, $curPage, $pageSize);
 
 		$recordsByLibrary = array();
 		if (isset($searchResult['facet_counts'])){
 			$namespaceFacet = $searchResult['facet_counts']['facet_fields']['namespace_ms'];
-			foreach($namespaceFacet as $facetInfo){
+			foreach ($namespaceFacet as $facetInfo){
 				$recordsByLibrary[$facetInfo[0]] = $facetInfo[1];
 			}
 		}

@@ -33,7 +33,7 @@ public class LibrarySolutionExportMain {
 		// Read the base INI file to get information about the server (current directory/conf/config.ini)
 		Ini ini = loadConfigFile("config.ini");
 
-		//Connect to the vufind database
+		//Connect to the pika database
 		Connection vufindConn = null;
 		try {
 			String databaseConnectionInfo = cleanIniValue(ini.get("Database", "database_vufind_jdbc"));
@@ -43,7 +43,7 @@ public class LibrarySolutionExportMain {
 			}
 			vufindConn = DriverManager.getConnection(databaseConnectionInfo);
 		} catch (Exception e) {
-			logger.error("Error connecting to vufind database ", e);
+			logger.error("Error connecting to pika database ", e);
 			System.exit(1);
 		}
 

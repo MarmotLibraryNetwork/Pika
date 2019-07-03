@@ -173,22 +173,22 @@ abstract class IslandoraDriver extends RecordInterface {
 
 		return 'RecordDrivers/Islandora/browse_result.tpl';
 	}
+
 	public function getListWidgetTitle(){
 		$widgetTitleInfo = array(
-			'id' =>          $this->getUniqueID(),
-			'shortId' =>     $this->getUniqueID(),
-			'recordtype' => 'archive', //TODO: meh, islandora?
-			'image' =>       $this->getBookcoverUrl('medium'),
+			'id'          => $this->getUniqueID(),
+			'shortId'     => $this->getUniqueID(),
+			'recordtype'  => 'archive', //TODO: meh, islandora?
+			'image'       => $this->getBookcoverUrl('medium'),
 			'small_image' => $this->getBookcoverUrl('small'),
-			'title' =>       $this->getTitle(),
-		  'titleURL' =>    $this->getLinkUrl(true), // Include site URL
-//			'author' =>      $this->getPrimaryAuthor(),
-			'author' =>      $this->getFormat(), // Display the Format of Archive Object where the author would be otherwise displayed in the ListWidget
+			'title'       => $this->getTitle(),
+			'titleURL'    => $this->getAbsoluteUrl(), // Include site URL
+			'author'      => $this->getFormat(), // Display the Format of Archive Object where the author would be otherwise displayed in the ListWidget
 			'description' => $this->getDescription(),
-			'length' =>      '', // TODO: do list widgets use this
-			'publisher' =>   '', // TODO: do list widgets use this
-			'ratingData' =>  null,
-//			'ratingData' =>  $this->getRatingData(),
+			'length'      => '', // TODO: do list widgets use this
+			'publisher'   => '', // TODO: do list widgets use this
+			'ratingData'  => null,
+//			'ratingData'  => $this->getRatingData(),
 		);
 		return $widgetTitleInfo;
 	}
@@ -956,19 +956,21 @@ abstract class IslandoraDriver extends RecordInterface {
 		return array();
 	}
 
-//	public function getLinkUrl($unscoped = false) {
-	public function getLinkUrl($absolutePath = false) {  // Signature is modeled after Grouped Work Driver to implement URLs for List Widgets
-		$linkUrl = $this->getRecordUrl($absolutePath);
+	public function getLinkUrl($unscoped = false) {
+		$linkUrl = $this->getRecordUrl();
 		return $linkUrl;
 	}
-	function getRecordUrl($absolutePath = false){
+
+	function getRecordUrl(){
 		global $configArray;
 		$recordId = $this->getUniqueID();
-		if ($absolutePath){
-			return $configArray['Site']['url'] . '/Archive/' . urlencode($recordId) . '/' . $this->getViewAction();
-		}else{
-			return $configArray['Site']['path'] . '/Archive/' . urlencode($recordId) . '/' . $this->getViewAction();
-		}
+		return $configArray['Site']['path'] . '/Archive/' . urlencode($recordId) . '/' . $this->getViewAction();
+	}
+
+	function getAbsoluteUrl(){
+		global $configArray;
+		$recordId = $this->getUniqueID();
+		return $configArray['Site']['url'] . '/Archive/' . urlencode($recordId) . '/' . $this->getViewAction();
 	}
 
 	public abstract function getViewAction();

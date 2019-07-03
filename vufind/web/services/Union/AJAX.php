@@ -9,77 +9,46 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA	02111-1307	USA
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
 
-require_once ROOT_DIR . '/Action.php';
+require_once ROOT_DIR . '/AJAXHandler.php';
 
-class Union_AJAX extends Action {
+class Union_AJAX extends AJAXHandler {
 
-	function launch()
-	{
-		global $analytics;
-		$analytics->disableTracking();
-		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
-		header ('Content-type: application/json');
-		header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
-		header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
+	protected $methodsThatRepondWithJSONUnstructured = array(
+		'getCombinedResults',
+		'getResultsFromPika',
+		'getResultsFromEDS',
+		'getResultsFromArchive',
+		'getResultsFromDPLA',
+		'getResultsFromProspector',
+	);
 
-		if (method_exists($this, $method)) {
-			try{
-				$result = $this->$method();
-				require_once ROOT_DIR . '/sys/Utils/ArrayUtils.php';
-				$utf8EncodedValue = ArrayUtils::utf8EncodeArray($result);
-				$output = json_encode($utf8EncodedValue);
-				$error = json_last_error();
-				if ($error != JSON_ERROR_NONE || $output === FALSE){
-					if (function_exists('json_last_error_msg')){
-						$output = json_encode(array('error'=>'error_encoding_data', 'message' => json_last_error_msg()));
-					}else{
-						$output = json_encode(array('error'=>'error_encoding_data', 'message' => json_last_error()));
-					}
-					global $configArray;
-					if ($configArray['System']['debug']){
-						print_r($utf8EncodedValue);
-					}
-				}
-			}catch (Exception $e){
-				$output = json_encode(array('error'=>'error_encoding_data', 'message' => $e));
-				global $logger;
-				$logger->log("Error encoding json data $e", PEAR_LOG_ERR);
-			}
-
-		} else {
-			$output = json_encode(array('error'=>'invalid_method'));
-		}
-		echo $output;
-	}
-
-	function getCombinedResults()
-	{
-		$source = $_REQUEST['source'];
+	function getCombinedResults(){
+		$source          = $_REQUEST['source'];
 		$numberOfResults = $_REQUEST['numberOfResults'];
-		$sectionId = $_REQUEST['id'];
+		$sectionId       = $_REQUEST['id'];
 		list($className, $id) = explode(':', $sectionId);
 		$sectionObject = null;
 		if ($className == 'LibraryCombinedResultSection'){
-			$sectionObject = new LibraryCombinedResultSection();
+			$sectionObject     = new LibraryCombinedResultSection();
 			$sectionObject->id = $id;
 			$sectionObject->find(true);
 		}elseif ($className == 'LocationCombinedResultSection'){
-			$sectionObject = new LocationCombinedResultSection();
+			$sectionObject     = new LocationCombinedResultSection();
 			$sectionObject->id = $id;
 			$sectionObject->find(true);
 		}else{
 			return array(
-					'success' => false,
-					'error' => 'Invalid section id pased in'
+				'success' => false,
+				'error'   => 'Invalid section id pased in',
 			);
 		}
 		$searchTerm = $_REQUEST['searchTerm'];
@@ -88,9 +57,9 @@ class Union_AJAX extends Action {
 		$this->setShowCovers();
 
 		$fullResultsLink = $sectionObject->getResultsLink($searchTerm, $searchType);
-		if ($source == 'eds') {
+		if ($source == 'eds'){
 			$results = $this->getResultsFromEDS($searchTerm, $numberOfResults, $fullResultsLink);
-		}elseif ($source == 'pika') {
+		}elseif ($source == 'pika'){
 			$results = $this->getResultsFromPika($searchTerm, $numberOfResults, $searchType, $fullResultsLink);
 		}elseif ($source == 'archive'){
 			$results = $this->getResultsFromArchive($numberOfResults, $searchType, $searchTerm, $fullResultsLink);
@@ -106,8 +75,8 @@ class Union_AJAX extends Action {
 
 
 		return array(
-				'success' => true,
-				'results' => $results
+			'success' => true,
+			'results' => $results,
 		);
 	}
 
@@ -117,8 +86,7 @@ class Union_AJAX extends Action {
 	 * @param $searchType
 	 * @return string
 	 */
-	private function getResultsFromPika($searchTerm, $numberOfResults, $searchType, $fullResultsLink)
-	{
+	private function getResultsFromPika($searchTerm, $numberOfResults, $searchType, $fullResultsLink){
 		global $interface;
 		$interface->assign('viewingCombinedResults', true);
 		/** @var SearchObject_Solr $searchObject */
@@ -126,10 +94,10 @@ class Union_AJAX extends Action {
 		$searchObject->init('local', $searchTerm);
 		$searchObject->setLimit($numberOfResults);
 		$searchObject->setSearchTerms(array(
-				'index' => $searchType,
-				'lookfor' => $searchTerm
+			'index'   => $searchType,
+			'lookfor' => $searchTerm,
 		));
-		$result = $searchObject->processSearch(true, false);
+		$result  = $searchObject->processSearch(true, false);
 		$summary = $searchObject->getResultSummary();
 		$records = $searchObject->getCombinedResultsHTML();
 		if ($summary['resultTotal'] == 0){
@@ -150,21 +118,20 @@ class Union_AJAX extends Action {
 	 * @param $numberOfResults
 	 * @return string
 	 */
-	private function getResultsFromEDS($searchTerm, $numberOfResults, $fullResultsLink)
-	{
+	private function getResultsFromEDS($searchTerm, $numberOfResults, $fullResultsLink){
 		global $interface;
 		$interface->assign('viewingCombinedResults', true);
 		if ($searchTerm == ''){
 			$results = '<div class="clearfix"></div><div>Enter search terms to see results.</div>';
-		}else {
+		}else{
 			require_once ROOT_DIR . '/sys/Ebsco/EDS_API.php';
-			$edsApi = EDS_API::getInstance();
+			$edsApi        = EDS_API::getInstance();
 			$searchResults = $edsApi->getSearchResults($searchTerm);
-			$summary = $edsApi->getResultSummary();
-			$records = $edsApi->getCombinedResultHTML();
-			if ($summary['resultTotal'] == 0) {
+			$summary       = $edsApi->getResultSummary();
+			$records       = $edsApi->getCombinedResultHTML();
+			if ($summary['resultTotal'] == 0){
 				$results = '<div class="clearfix"></div><div>No results match your search.</div>';
-			} else {
+			}else{
 				$results = "<a href='{$fullResultsLink}' class='btn btn-info combined-results-button' target='_blank'>&gt; See all {$summary['resultTotal']} results</a><div class='clearfix'></div>";
 
 				$records = array_slice($records, 0, $numberOfResults);
@@ -184,8 +151,7 @@ class Union_AJAX extends Action {
 	 * @param $searchTerm
 	 * @return string
 	 */
-	private function getResultsFromArchive($numberOfResults, $searchType, $searchTerm, $fullResultsLink)
-	{
+	private function getResultsFromArchive($numberOfResults, $searchType, $searchTerm, $fullResultsLink){
 		global $interface;
 		$interface->assign('viewingCombinedResults', true);
 		/** @var SearchObject_Islandora $searchObject */
@@ -194,23 +160,23 @@ class Union_AJAX extends Action {
 		$searchObject->addHiddenFilter('!RELS_EXT_isViewableByRole_literal_ms', "administrator");
 		$searchObject->addHiddenFilter('!mods_extension_marmotLocal_pikaOptions_showInSearchResults_ms', "no");
 		$searchObject->setLimit($numberOfResults);
-		if ($searchType == 'Title') {
+		if ($searchType == 'Title'){
 			$searchType = 'IslandoraTitle';
-		} elseif ($searchType == 'Subject') {
+		}elseif ($searchType == 'Subject'){
 			$searchType = 'IslandoraSubject';
-		} else {
+		}else{
 			$searchType = 'IslandoraKeyword';
 		}
 		$searchObject->setSearchTerms(array(
-				'index' => $searchType,
-				'lookfor' => $searchTerm
+			'index'   => $searchType,
+			'lookfor' => $searchTerm,
 		));
-		$result = $searchObject->processSearch(true, false);
+		$result  = $searchObject->processSearch(true, false);
 		$summary = $searchObject->getResultSummary();
 		$records = $searchObject->getCombinedResultHTML();
 		if ($summary['resultTotal'] == 0){
 			$results = '<div class="clearfix"></div><div>No results match your search.</div>';
-		}else {
+		}else{
 			$results = "<a href='{$fullResultsLink}' class='btn btn-info combined-results-button' target='_blank'>&gt; See all {$summary['resultTotal']} results</a><div class='clearfix'></div>";
 
 			global $interface;
@@ -226,16 +192,15 @@ class Union_AJAX extends Action {
 	 * @param $numberOfResults
 	 * @return string
 	 */
-	private function getResultsFromDPLA($searchTerm, $numberOfResults, $fullResultsLink)
-	{
+	private function getResultsFromDPLA($searchTerm, $numberOfResults, $fullResultsLink){
 		global $interface;
 		$interface->assign('viewingCombinedResults', true);
 		require_once ROOT_DIR . '/sys/SearchObject/DPLA.php';
-		$dpla = new DPLA();
+		$dpla        = new DPLA();
 		$dplaResults = $dpla->getDPLAResults($searchTerm, $numberOfResults);
 		if ($dplaResults['resultTotal'] == 0){
 			$results = '<div class="clearfix"></div><div>No results match your search.</div>';
-		}else {
+		}else{
 			$results = "<a href='{$fullResultsLink}' class='btn btn-info combined-results-button' target='_blank'>&gt; See all {$dplaResults['resultTotal']} results</a><div class='clearfix'></div>";
 		}
 		$results .= $dpla->formatCombinedResults($dplaResults['records'], false);
@@ -248,24 +213,25 @@ class Union_AJAX extends Action {
 	 * @param $numberOfResults
 	 * @return string
 	 */
-	private function getResultsFromProspector($searchType, $searchTerm, $numberOfResults, $fullResultsLink)
-	{
+	private function getResultsFromProspector($searchType, $searchTerm, $numberOfResults, $fullResultsLink){
 		global $interface;
 		$interface->assign('viewingCombinedResults', true);
 		require_once ROOT_DIR . '/Drivers/marmot_inc/Prospector.php';
 		if ($searchTerm == ''){
 			$results = '<div class="clearfix"></div><div>Enter search terms to see results.</div>';
-		}else {
-			$prospector = new Prospector();
-			$searchTerms = array(array(
-					'index' => $searchType,
-					'lookfor' => $searchTerm
-			));
+		}else{
+			$prospector        = new Prospector();
+			$searchTerms       = array(
+				array(
+					'index'   => $searchType,
+					'lookfor' => $searchTerm,
+				),
+			);
 			$prospectorResults = $prospector->getTopSearchResults($searchTerms, $numberOfResults);
 			global $interface;
-			if ($prospectorResults['resultTotal'] == 0) {
+			if ($prospectorResults['resultTotal'] == 0){
 				$results = '<div class="clearfix"></div><div>No results match your search.</div>';
-			} else {
+			}else{
 				$results = "<a href='{$fullResultsLink}' class='btn btn-info combined-results-button' target='_blank'>&gt; See all {$prospectorResults['resultTotal']} results</a><div class='clearfix'></div>";
 				$interface->assign('prospectorResults', $prospectorResults['records']);
 				$results .= $interface->fetch('Union/prospector.tpl');
