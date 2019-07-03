@@ -11,7 +11,6 @@
 class MillenniumHolds {
 	/** @var  Millennium $driver */
 	private $driver;
-	// TODO: Remove $holds variable. Not in class.
 	private $holds = array();
 
 	public function __construct($driver){

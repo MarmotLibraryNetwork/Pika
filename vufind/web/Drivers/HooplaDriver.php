@@ -244,8 +244,7 @@ class HooplaDriver
 						}
 
 						require_once ROOT_DIR . '/RecordDrivers/HooplaRecordDriver.php';
-//						$hooplaRecordDriver = new HooplaRecordDriver($hooplaRecordID);
-						$hooplaRecordDriver = new HooplaRecordDriver('hoopla:'.$hooplaRecordID); //TODO: need a proper solution here
+						$hooplaRecordDriver = new HooplaRecordDriver($hooplaRecordID);
 						if ($hooplaRecordDriver->isValid()) {
 							// Get Record For other details
 							$currentTitle['coverUrl']      = $hooplaRecordDriver->getBookcoverUrl('medium');
