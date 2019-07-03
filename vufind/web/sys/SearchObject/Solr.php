@@ -244,10 +244,10 @@ class SearchObject_Solr extends SearchObject_Base
 		} elseif (isset($_REQUEST['tag']) && $module != 'MyAccount') {
 			// Tags, just treat them as normal searches for now.
 			// The search processor knows what to do with them.
-			if ($_REQUEST['tag'] != '') {
+			if (!empty($_REQUEST['tag'])) {
 				$this->searchTerms[] = array(
-                    'index'   => 'tag',
-                    'lookfor' => strip_tags($_REQUEST['tag'])
+					'index' => 'tag',
+					'lookfor' => strip_tags($_REQUEST['tag'])
 				);
 			}
 		} else {
@@ -1201,7 +1201,7 @@ class SearchObject_Solr extends SearchObject_Base
 	 *
 	 * @access  private
 	 * @param   string  $lookfor    The tag to search for
-	 * @return  array   A revised searchTerms array to get matching Solr records
+	 * @return  boolean   A revised searchTerms array to get matching Solr records
 	 *                  (empty if no tag matches found).
 	 */
 	private function processTagSearch($lookfor)
@@ -1215,20 +1215,16 @@ class SearchObject_Solr extends SearchObject_Base
 		$tag->tag = $lookfor;
 		$tag->selectAdd(null);
 		$tag->selectAdd('DISTINCT(groupedRecordPermanentId) as groupedRecordPermanentId');
-		$newSearch = array();
-		$newSearch[0] = array('join' => 'OR', 'group' => array());
-		$tag->find();
-		while ($tag->fetch()) {
-			// Grab the list of records tagged with this tag
-			$id = $tag->groupedRecordPermanentId;
-			$newSearch[0]['group'][] = array(
-                    'field' => 'id',
-                    'lookfor' => $id,
-                    'bool' => 'OR'
-                    );
+		if ($tag->find()){
+			$groupedWorkIds = array();
+			while ($tag->fetch()){
+				// Grab the list of records tagged with this tag
+				$groupedWorkIds[] = $tag->groupedRecordPermanentId;
+			}
+			$this->setQueryIDs($groupedWorkIds);
+			return true;
 		}
-
-		return $newSearch;
+		return false;
 	}
 
 	/**
@@ -1279,7 +1275,7 @@ class SearchObject_Solr extends SearchObject_Base
 	 * @param   bool   $preventQueryModification   Should we allow the search engine
 	 *                                             to modify the query or is it already
 	 *                                             a well formatted query
-	 * @return  object solr result structure (for now)
+	 * @return array|object
 	 */
 	public function processSearch($returnIndexErrors = false, $recommendations = false, $preventQueryModification = false) {
 		global $timer;
@@ -1301,30 +1297,27 @@ class SearchObject_Solr extends SearchObject_Base
 
 
 		// Tag searches need to be handled differently
-		if (count($search) == 1 && isset($search[0]['index']) && $search[0]['index'] == 'tag') {
-			// If we managed to find some tag matches, let's override the search
-			// array.  If we didn't find any tag matches, we should return an
-			// empty record set.
-			$newSearch = $this->processTagSearch($search[0]['lookfor']);
-			$timer->logTime("process Tag search");
-			// Save search so it displays correctly on the "no hits" page:
+		if (count($search) == 1 && isset($search[0]['index']) && $search[0]['index'] == 'tag'){
+			// If we managed to find some tag matches, the query will be a list of Ids.
+			// If we didn't find any tag matches, we should return an empty record set.
 			$this->publicQuery = $search[0]['lookfor'];
-			if (empty($newSearch)) {
+			if (!$this->processTagSearch($search[0]['lookfor'])){
+				// Save search so it displays correctly on the "no hits" page:
 				return array('response' => array('numFound' => 0, 'docs' => array()));
-			} else {
-				$search = $newSearch;
 			}
-		}
-
-		// Build Query
-		if ($preventQueryModification){
-			$query = $search;
+			$timer->logTime("process Tag search");
 		}else{
-			$query = $this->indexEngine->buildQuery($search, false);
-		}
-		$timer->logTime("build query");
-		if (PEAR_Singleton::isError($query)) {
-			return $query;
+
+			// Build Query
+			if ($preventQueryModification){
+				$query = $search;
+			}else{
+				$query = $this->indexEngine->buildQuery($search, false);
+			}
+			$timer->logTime("build query");
+			if (PEAR_Singleton::isError($query)){
+				return $query;
+			}
 		}
 
 		// Only use the query we just built if there isn't an override in place.
@@ -1343,42 +1336,42 @@ class SearchObject_Solr extends SearchObject_Base
 		}
 
 		$availabilityToggleValue = null;
-		$availabilityAtValue = null;
-		$formatValue = null;
-		$formatCategoryValue = null;
-		foreach ($this->filterList as $field => $filter) {
-			foreach ($filter as $value) {
+		$availabilityAtValue     = null;
+		$formatValue             = null;
+		$formatCategoryValue     = null;
+		foreach ($this->filterList as $field => $filter){
+			foreach ($filter as $value){
 				$analytics->addEvent('Apply Facet', $field, $value);
 				$isAvailabilityToggle = false;
-				$isAvailableAt = false;
-				if (substr($field, 0, strlen('availability_toggle')) == 'availability_toggle') {
+				$isAvailableAt        = false;
+				if (substr($field, 0, strlen('availability_toggle')) == 'availability_toggle'){
 					$availabilityToggleValue = $value;
-					$isAvailabilityToggle = true;
+					$isAvailabilityToggle    = true;
 				}elseif (substr($field, 0, strlen('available_at')) == 'available_at'){
 					$availabilityAtValue = $value;
-					$isAvailableAt = true;
+					$isAvailableAt       = true;
 				}elseif (substr($field, 0, strlen('format_category')) == 'format_category'){
 					$formatCategoryValue = $value;
 				}elseif (substr($field, 0, strlen('format')) == 'format'){
 					$formatValue = $value;
 				}
 				// Special case -- allow trailing wildcards:
-				if (substr($value, -1) == '*') {
+				if (substr($value, -1) == '*'){
 					$filterQuery[] = "$field:$value";
-				} elseif (preg_match('/\\A\\[.*?\\sTO\\s.*?]\\z/', $value)){
+				}elseif (preg_match('/\\A\\[.*?\\sTO\\s.*?]\\z/', $value)){
 					$filterQuery[] = "$field:$value";
-				} elseif (preg_match('/^\\(.*?\\)$/', $value)){
+				}elseif (preg_match('/^\\(.*?\\)$/', $value)){
 					$filterQuery[] = "$field:$value";
-				} else {
+				}else{
 					if (!empty($value)){
-						if ($isAvailabilityToggle) {
+						if ($isAvailabilityToggle){
 							$filterQuery['availability_toggle'] = "$field:\"$value\"";
 						}elseif ($isAvailableAt){
 							$filterQuery['available_at'] = "$field:\"$value\"";
 						}else{
 							if (is_numeric($field)){
 								$filterQuery[] = $value;
-							}else {
+							}else{
 								$filterQuery[] = "$field:\"$value\"";
 							}
 						}
@@ -1525,6 +1518,7 @@ class SearchObject_Solr extends SearchObject_Base
 		if ($recommendations && is_array($this->recommend)) {
 			foreach($this->recommend as $currentSet) {
 				foreach($currentSet as $current) {
+					/** @var SideFacets|TopFacets $current */
 					$current->process();
 				}
 			}

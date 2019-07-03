@@ -54,7 +54,7 @@ public class SymphonyExportMain {
 			String databaseConnectionInfo = cleanIniValue(ini.get("Database", "database_vufind_jdbc"));
 			pikaConn                      = DriverManager.getConnection(databaseConnectionInfo);
 		}catch (Exception e){
-			System.out.println("Error connecting to vufind database " + e.toString());
+			System.out.println("Error connecting to pika database " + e.toString());
 			System.exit(1);
 		}
 

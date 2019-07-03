@@ -7,12 +7,12 @@
  * Time: 12:17 PM
  */
 
-class SierraExportFieldMapping extends DB_DataObject{
+class SierraExportFieldMapping extends DB_DataObject {
 	public $__table = 'sierra_export_field_mapping';    // table name
 	public $id;
 	public $indexingProfileId;
-	public $bcode3DestinationField;
-	public $bcode3DestinationSubfield;
+//	public $bcode3DestinationField; //TODO: remove these obsolete columns from the table
+//	public $bcode3DestinationSubfield; //TODO: remove these obsolete columns from the table
 	public $callNumberExportFieldTag;
 	public $callNumberPrestampExportSubfield;
 	public $callNumberExportSubfield;
@@ -32,18 +32,18 @@ class SierraExportFieldMapping extends DB_DataObject{
 			$indexingProfiles[$indexingProfile->id] = $indexingProfile->name;
 		}
 		$structure = array(
-				'id' => array('property'=>'id', 'type'=>'label', 'label'=>'Id', 'description'=>'The unique id within the database'),
-				'indexingProfileId'                 => array('property' => 'indexingProfileId',                 'type' => 'enum', 'label' => 'Indexing Profile Id',                                     'description' => 'The Indexing Profile this map is associated with', 'values' => $indexingProfiles,),
-				'bcode3DestinationField'            => array('property' => 'bcode3DestinationField',            'type' => 'text', 'label' => 'BCode3 Destination Field', 'maxLength' => 3,              'description' => 'The MARC field where BCode3 should be stored'),
-				'bcode3DestinationSubfield'         => array('property' => 'bcode3DestinationSubfield',         'type' => 'text', 'label' => 'BCode3 Destination Subfield', 'maxLength' => 1,           'description' => 'Subfield for where BCode3 should be stored'),
-				'callNumberExportFieldTag'          => array('property' => 'callNumberExportFieldTag',          'type' => 'text', 'label' => 'Call Number Export Field Tag', 'maxLength' => 1,          'description' => 'The Item Variable field tag where call number is exported (in JSON)'),
-				'callNumberPrestampExportSubfield'  => array('property' => 'callNumberPrestampExportSubfield',  'type' => 'text', 'label' => 'Call Number Prestamp Export Subfield', 'maxLength' => 1,  'description' => 'The subfield where the call number prestamp is exported (in JSON)'),
-				'callNumberExportSubfield'          => array('property' => 'callNumberExportSubfield',          'type' => 'text', 'label' => 'Call Number Export Subfield', 'maxLength' => 1,           'description' => 'The subfield where the call number is exported (in JSON)'),
-				'callNumberCutterExportSubfield'    => array('property' => 'callNumberCutterExportSubfield',    'type' => 'text', 'label' => 'Call Number Cutter Export Subfield', 'maxLength' => 1,    'description' => 'The subfield where the call number cutter is exported (in JSON)'),
-				'callNumberPoststampExportSubfield' => array('property' => 'callNumberPoststampExportSubfield', 'type' => 'text', 'label' => 'Call Number Poststamp Export Subfield', 'maxLength' => 5, 'description' => 'The subfield where the call number poststamp is exported (in JSON).  Multiple can be specified.  I.e. eS is both e and S'),
-				'volumeExportFieldTag'              => array('property' => 'volumeExportFieldTag',              'type' => 'text', 'label' => 'Volume Export Field Tag', 'maxLength' => 1,               'description' => 'The Item Variable field tag where volume is exported (in JSON)'),
-				'urlExportFieldTag'                 => array('property' => 'urlExportFieldTag',                 'type' => 'text', 'label' => 'URL Export Field Tag', 'maxLength' => 1,                  'description' => 'The Item Variable field tag where the url is exported (in JSON)'),
-				'eContentExportFieldTag'            => array('property' => 'eContentExportFieldTag',            'type' => 'text', 'label' => 'eContent Export Field Tag', 'maxLength' => 1,             'description' => 'The Item Variable field tag where eContent information (Marmot Only) is exported (in JSON)'),
+			'id'                                => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id within the database'),
+			'indexingProfileId'                 => array('property' => 'indexingProfileId', 'type' => 'enum', 'label' => 'Indexing Profile Id', 'description' => 'The Indexing Profile this map is associated with', 'values' => $indexingProfiles,),
+//			'bcode3DestinationField'            => array('property' => 'bcode3DestinationField', 'type' => 'text', 'label' => 'BCode3 Destination Field', 'maxLength' => 3, 'description' => 'The MARC field where BCode3 should be stored'),
+//			'bcode3DestinationSubfield'         => array('property' => 'bcode3DestinationSubfield', 'type' => 'text', 'label' => 'BCode3 Destination Subfield', 'maxLength' => 1, 'description' => 'Subfield for where BCode3 should be stored'),
+			'callNumberExportFieldTag'          => array('property' => 'callNumberExportFieldTag', 'type' => 'text', 'label' => 'Call Number Export Field Tag', 'maxLength' => 1, 'description' => 'The Item Variable field tag where call number is exported (in JSON)'),
+			'callNumberPrestampExportSubfield'  => array('property' => 'callNumberPrestampExportSubfield', 'type' => 'text', 'label' => 'Call Number Prestamp Export Subfield', 'maxLength' => 1, 'description' => 'The subfield where the call number prestamp is exported (in JSON)'),
+			'callNumberExportSubfield'          => array('property' => 'callNumberExportSubfield', 'type' => 'text', 'label' => 'Call Number Export Subfield', 'maxLength' => 1, 'description' => 'The subfield where the call number is exported (in JSON)'),
+			'callNumberCutterExportSubfield'    => array('property' => 'callNumberCutterExportSubfield', 'type' => 'text', 'label' => 'Call Number Cutter Export Subfield', 'maxLength' => 1, 'description' => 'The subfield where the call number cutter is exported (in JSON)'),
+			'callNumberPoststampExportSubfield' => array('property' => 'callNumberPoststampExportSubfield', 'type' => 'text', 'label' => 'Call Number Poststamp Export Subfield', 'maxLength' => 5, 'description' => 'The subfield where the call number poststamp is exported (in JSON).  Multiple can be specified.  I.e. eS is both e and S'),
+			'volumeExportFieldTag'              => array('property' => 'volumeExportFieldTag', 'type' => 'text', 'label' => 'Volume Export Field Tag', 'maxLength' => 1, 'description' => 'The Item Variable field tag where volume is exported (in JSON)'),
+			'urlExportFieldTag'                 => array('property' => 'urlExportFieldTag', 'type' => 'text', 'label' => 'URL Export Field Tag', 'maxLength' => 1, 'description' => 'The Item Variable field tag where the url is exported (in JSON)'),
+			'eContentExportFieldTag'            => array('property' => 'eContentExportFieldTag', 'type' => 'text', 'label' => 'eContent Export Field Tag', 'maxLength' => 1, 'description' => 'The Item Variable field tag where eContent information (Marmot Only) is exported (in JSON)'),
 		);
 		return $structure;
 	}

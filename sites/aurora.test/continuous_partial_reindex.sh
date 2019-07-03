@@ -11,6 +11,8 @@
 EMAIL=root@helene
 PIKASERVER=aurora.test
 OUTPUT_FILE="/var/log/vufind-plus/${PIKASERVER}/extract_and_reindex_output.log"
+USE_SIERRA_API_EXTRACT=1
+# set to USE_SIERRA_API_EXTRACT to 1 enable
 
 source "/usr/local/vufind-plus/vufind/bash/checkConflicts.sh"
 
@@ -48,6 +50,7 @@ do
 		continue
 	fi
 
+#TODO: what is the real values for this for Aurora
 	# Do not run while the export from Sierra is running to prevent inconsistencies with MARC records
 	# export starts at 10 pm the file is copied to the FTP server at about 11:40
 	hasConflicts=$(checkProhibitedTimes "21:50" "23:40")
@@ -63,18 +66,26 @@ do
 	#truncate the file
 	: > $OUTPUT_FILE;
 
-	#echo "Starting new extract and index - `date`" > ${OUTPUT_FILE}
-	# reset the output file each round
-
-	#export from sierra (items, holds, and orders)
-	#echo "Starting Sierra Export - `date`" >> ${OUTPUT_FILE}
-	cd /usr/local/vufind-plus/vufind/sierra_export/
-	nice -n -10 java -server -XX:+UseG1GC -jar sierra_export.jar ${PIKASERVER} >> ${OUTPUT_FILE}
+  #Note: Sierra Export and OverDrive export run in parallel
+	if [ $USE_SIERRA_API_EXTRACT -eq 1 ]; then
+		#export from sierra (items, holds, and orders)
+		#echo "Starting Sierra Export - `date`" >> ${OUTPUT_FILE}
+		cd /usr/local/vufind-plus/vufind/sierra_export_api/
+		nice -n -10 java -server -XX:+UseG1GC -jar sierra_export_api.jar ${PIKASERVER} >> ${OUTPUT_FILE} &
+	else
+		#export from sierra (items, holds, and orders)
+		#echo "Starting Sierra Export - `date`" >> ${OUTPUT_FILE}
+		cd /usr/local/vufind-plus/vufind/sierra_export/
+		nice -n -10 java -server -XX:+UseG1GC -jar sierra_export.jar ${PIKASERVER} >> ${OUTPUT_FILE} &
+	fi
 
 	#export from overdrive
 	#echo "Starting OverDrive Extract - `date`" >> ${OUTPUT_FILE}
 	cd /usr/local/vufind-plus/vufind/overdrive_api_extract/
-	nice -n -10 java -server -XX:+UseG1GC -jar overdrive_extract.jar ${PIKASERVER} >> ${OUTPUT_FILE}
+	nice -n -10 java -server -XX:+UseG1GC -jar overdrive_extract.jar ${PIKASERVER} >> ${OUTPUT_FILE} &
+
+    #wait for Sierra Export and overdrive export to finish
+	wait
 
 	#run reindex
 	#echo "Starting Reindexing - `date`" >> ${OUTPUT_FILE}

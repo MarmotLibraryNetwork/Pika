@@ -1,27 +1,29 @@
 <?php
 /**
- *
+ * Horizon ROA web services driver.
  *
  * @category Pika
- * @author: Pascal Brammeier
- * Date: 9/10/2018
+ * @author   Pascal Brammeier
+ * @author   Chris Froese
+ *
+ * Updated
  *
  */
-
-require_once 'DriverInterface.php';
 
 abstract class HorizonROA implements DriverInterface
 {
 
 	private static $sessionIdsForUsers = array();
+	private $webServiceURL;
 
 	public function __construct($accountProfile){
 		$this->accountProfile = $accountProfile;
+		$this->webServiceURL  = $this->getWebServiceURL();
 	}
 
 	/**
 	 * Split a name into firstName, lastName, middleName.
-	 *a
+	 *
 	 * Assumes the name is entered as LastName, FirstName MiddleName
 	 * @param $fullName
 	 * @return array
@@ -38,7 +40,7 @@ abstract class HorizonROA implements DriverInterface
 		return array($fullName, $lastName, $firstName);
 	}
 
-	private $webServiceURL = null;
+
 	public function getWebServiceURL()
 	{
 		if (empty($this->webServiceURL)) {
@@ -257,7 +259,11 @@ abstract class HorizonROA implements DriverInterface
 				if (isset($lookupMyAccountInfoResponse->fields->primaryAddress)) {
 					$preferredAddress = $lookupMyAccountInfoResponse->fields->primaryAddress->fields;
 					// Set for Account Updating
-					$cityState = $preferredAddress->area;
+					// TODO: area isn't valid any longer. Response from server looks like this:
+					// {"ROAObject":"\/ROAObject\/primaryPatronAddressObject","fields":{"line1":"4020 Carya Dr","line2":"1","line3":"Lizard Lick, NC","line4":null,"postalCode":"20001","emailAddress":"askwcpl@wakegov.com"}}
+					// city state looks to be line3
+					//$cityState = $preferredAddress->area;
+					$cityState = $preferredAddress->line3;
 					if (strpos($cityState, ', ')) {
 						list($City, $State) = explode(', ', $cityState);
 					} elseif ($preferredAddress->area == 'other' && !empty($preferredAddress->line3)) {
@@ -499,13 +505,6 @@ abstract class HorizonROA implements DriverInterface
 
 		// Now that we have the session token, get checkout  information
 		$webServiceURL = $this->getWebServiceURL();
-
-//		$circRecordDescribe  = $this->getWebServiceResponse($webServiceURL . "/v1/circulation/circRecord/describe", null, $sessionToken);
-//		$circRecordRenewDescribe  = $this->getWebServiceResponse($webServiceURL . "/v1/circulation/circRecord/renew/describe", null, $sessionToken);
-//		$itemDescribe  = $this->getWebServiceResponse($webServiceURL . "/v1/catalog/item/describe", null, $sessionToken);
-//		$callDescribe  = $this->getWebServiceResponse($webServiceURL . "/v1/catalog/call/describe", null, $sessionToken);
-//		$copyDescribe  = $this->getWebServiceResponse($webServiceURL . "/v1/catalog/copy/describe", null, $sessionToken);
-
 
 		//Get a list of checkouts for the user
 		$patronCheckouts = $this->getWebServiceResponse($webServiceURL . '/v1/user/patron/key/' . $patron->username . '?includeFields=circRecordList', null, $sessionToken);
@@ -1307,7 +1306,7 @@ abstract class HorizonROA implements DriverInterface
 		return $blockPolicy;
 	}
 
-	public 	function updatePin($patron, $oldPin, $newPin, $confirmNewPin){
+	public function updatePin($patron, $oldPin, $newPin, $confirmNewPin){
 		$updatePinResponse = $this->changeMyPin($patron, $newPin, $oldPin);
 		if (isset($updatePinResponse->messageList)) {
 			$errors = '';
@@ -1327,6 +1326,7 @@ abstract class HorizonROA implements DriverInterface
 	}
 
 	private function changeMyPin($patron, $newPin, $currentPin = null, $resetToken = null) {
+		global $configArray;
 		if (empty($resetToken)) {
 			$sessionToken = $this->getSessionToken($patron);
 			if (!$sessionToken) {
@@ -1342,17 +1342,20 @@ abstract class HorizonROA implements DriverInterface
 			}
 
 		} else {
-			$sessionToken = $this->getSessionToken($patron);
+			$sessionToken = null;
+
+			$profile = $configArray['Catalog']['webServiceSelfRegProfile'];
+			$xtraHeaders = ['sd-working-libraryid'=>$profile];
 			$jsonParameters = array(
 				'newPin'     => $newPin,
-				'resetToken' => $resetToken
+				'resetPinToken' => $resetToken
 			);
-
 		}
+
 		$webServiceURL = $this->getWebServiceURL();
 		$updatePinUrl =  $webServiceURL . '/v1/user/patron/changeMyPin';
 
-		$updatePinResponse = $this->getWebServiceResponse($updatePinUrl, $jsonParameters, empty($sessionToken) ? null : $sessionToken, 'POST');
+		$updatePinResponse = $this->getWebServiceResponse($updatePinUrl, $jsonParameters, empty($sessionToken) ? null : $sessionToken, 'POST', empty($xtraHeaders) ? null : $xtraHeaders);
 		return $updatePinResponse;
 	}
 
@@ -1431,7 +1434,7 @@ abstract class HorizonROA implements DriverInterface
 		}
 	}
 
-	function resetPin($user, $newPin, $resetToken){
+	public function resetPin($user, $newPin, $resetToken){
 		//TODO: the reset PIN call looks to need a staff priviledged account to complete
 		if (empty($resetToken)) {
 			global $logger;
@@ -1452,7 +1455,7 @@ abstract class HorizonROA implements DriverInterface
 			return array(
 				'error' => 'Sorry, we encountered an error while attempting to update your pin. Please contact your local library.'
 			);
-		} elseif (!empty($changeMyPinResponse->essionToken)){
+		} elseif (!empty($changeMyPinResponse->sessionToken)){
 			if ($user->username == $changeMyPinResponse->patronKey) { // Check that the ILS user matches the Pika user
 				//TODO: check that this still applies
 				$user->cat_password = $newPin;
@@ -1468,6 +1471,23 @@ abstract class HorizonROA implements DriverInterface
 		}
 	}
 
+
+	private function getStaffSessionToken() {
+		global $configArray;
+
+		//Get a staff token
+		$staffUser = $configArray['Catalog']['webServiceStaffUser'];
+		$staffPass = $configArray['Catalog']['webServiceStaffPass'];
+		$body = ['login'=>$staffUser, 'password'=>$staffPass];
+		$xtraHeaders = ['sd-originating-app-id'=>'Pika'];
+		$res = $this->getWebServiceResponse($this->webServiceURL . '/v1/user/staff/login', $body, null, "POST", $xtraHeaders);
+
+		if(!$res || !isset($res->sessionToken)) {
+			return false;
+		}
+
+		return $res->sessionToken;
+	}
 	/**
 	 * @param User $patron                   The User Object to make updates to
 	 * @param boolean $canUpdateContactInfo  Permission check that updating is allowed
@@ -1476,15 +1496,12 @@ abstract class HorizonROA implements DriverInterface
 	function updatePatronInfo($patron, $canUpdateContactInfo) {
 		$updateErrors = array();
 		if ($canUpdateContactInfo) {
-//			list($userValid, $sessionToken, $horizonRoaUserID) = $this->loginViaWebService($username, $password);
 			$sessionToken = $this->getSessionToken($patron);
 			if ($sessionToken) {
 				$horizonRoaUserId = $patron->username;
 
 				$updatePatronInfoParameters = array(
 					'fields' => array(),
-//					'key'      => $horizonRoaUserId,
-//					'resource' => '/user/patron',
 				);
 
 				$emailAddress = trim($_REQUEST['email']);
@@ -1492,20 +1509,22 @@ abstract class HorizonROA implements DriverInterface
 					$emailAddress = '';
 				}
 				$primaryAddress = array(
+					// TODO: check this may need to add address from patron.
 					'ROAObject' => '/ROAObject/primaryPatronAddressObject',
 					'fields' => array(
 						'line1' => '4020 Carya Dr',
 						//						'line2' => NULL,
 						//						'line3' => NULL,
 						//						'line4' => NULL,
-						'area' => 'Raleigh, NC',
+						'line3' => 'Raleigh, NC',
 						'postalCode' => '27610',
 						'emailAddress' => $emailAddress,
 					)
 				);
 				$updatePatronInfoParameters['fields'][] = $primaryAddress;
 
-
+				//$staffSessionToken = $this->getStaffSessionToken();
+				// TODO: update call not working.
 				$webServiceURL             = $this->getWebServiceURL();
 				$updateAccountInfoResponse = $this->getWebServiceResponse($webServiceURL . '/v1/user/patron/key/' . $horizonRoaUserId, $updatePatronInfoParameters, $sessionToken, 'PUT');
 
@@ -1526,6 +1545,89 @@ abstract class HorizonROA implements DriverInterface
 		return $updateErrors;
 	}
 
+
+	public function selfRegister() {
+		global $configArray;
+		// global $interface;
+		// Get a staff token
+		if(!$staffSessionToken = $this->getStaffSessionToken()) {
+			return ['success' => false, 'barcode' => ''];
+		}
+
+		// remove things from post
+		unset($_POST['objectAction']);
+		unset($_POST['id']);
+		unset($_POST['submit']);
+
+		$profile = $configArray['Catalog']['webServiceSelfRegProfile'];
+		$entries = [];
+		foreach ($_POST as $column=>$value) {
+			$column = trim($column);
+			$value  = trim($value);
+			$entry  = ["column"=>$column, "value"=>$value];
+			$entries[] = $entry;
+		}
+
+		$body = [
+			"profile" => $profile,
+			"entries" => $entries
+		];
+		//$body = json_encode($body); // gets encoded in getWebServiceResponse
+
+		$secret = $configArray['Catalog']['webServiceSecret'];
+		$xtraHeaders = ['x-sirs-secret'=>$secret];
+		$res = $this->getWebServiceResponse($this->webServiceURL . '/rest/standard/createSelfRegisteredPatron', $body, $staffSessionToken, "POST", $xtraHeaders);
+
+		if(!$res || isset($res->Fault)) {
+			return ['success' => false, 'barcode' => ''];
+		}
+
+		return ['success' => true, 'barcode' => $res];
+	}
+
+	/**
+	 * Get self registration fields from Horizon web services.
+	 *
+	 * Checks if self registration is enabled. Gets self registration fields from web service and builds form fields.
+	 *
+	 * @return array|bool An array of form fields or false if user registration isn't enabled (or something goes wrong)
+	 */
+	public function getSelfRegistrationFields()
+	{
+		global $configArray;
+
+		// SelfRegistrationEnabled?
+		$wsProfile = $configArray['Catalog']['webServiceSelfRegProfile'];
+		$r = $this->getWebServiceResponse($this->webServiceURL . '/rest/standard/isPatronSelfRegistrationEnabled?profile='.$wsProfile);
+		// get sef reg fields
+			$res = $this->getWebServiceResponse($this->webServiceURL . '/rest/standard/lookupSelfRegistrationFields');
+			if(!$res) {
+				return false;
+			}
+			// build form fields
+			foreach($res->registrationField as $field) {
+				$f = [
+					'property' => $field->column,
+					'label' => $field->label,
+					'maxLength' => $field->length,
+					'required' => $field->required,
+				];
+				if (isset($field->values)) {
+					// select list
+					$f['type'] = 'enum';
+					$values = [];
+					foreach($field->values->value as $value) {
+						$key = $value->code;
+						$values[$key] = $value->description;
+					}
+					$f['values'] = $values;
+				} else {
+					$f['type'] = 'text';
+				}
+				$fields[] = $f;
+			}
+			return $fields;
+	}
 	/**
 	 * A place holder method to override with site specific logic
 	 *
