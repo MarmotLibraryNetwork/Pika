@@ -1,1 +1,1 @@
-Location where original covers (from Syndetics, Goolge, publisher) will be stored
+Location where original covers (from library) will be stored
