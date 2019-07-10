@@ -215,6 +215,15 @@ find /usr/local/vufind-plus/sites/default/solr/jetty/logs -name "solr_gc_log_*" 
 #Restart Solr
 cd /usr/local/vufind-plus/sites/${PIKASERVER}; ./${PIKASERVER}.sh restart
 
+# Check that the complete DPLA feed file is up to date
+OLDDPLAFEED=$(find /usr/local/vufind-plus/vufind/web -name "dplaFeed.json" -mtime +30)
+if [ -n "$OLDDPLAFEED" ]
+then
+	echo "The DPLA feed file is older than 30 days : "
+	echo "$OLDDPLAFEED"
+fi
+
+
 #Email results
 FILESIZE=$(stat -c%s ${OUTPUT_FILE})
 if [[ ${FILESIZE} > 0 ]]
