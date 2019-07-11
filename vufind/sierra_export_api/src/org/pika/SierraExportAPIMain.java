@@ -38,10 +38,11 @@ import org.marc4j.marc.Record;
 public class SierraExportAPIMain {
 	private static Logger              logger  = Logger.getLogger(SierraExportAPIMain.class);
 	private static String              serverName;
-	//	public static  boolean fetchSingleBibFromCommandLine = false;
-	public static  boolean             timeAPI = false;
-	//	private static Ini    ini;
 	private static PikaSystemVariables systemVariables;
+	private static Long                lastSierraExtractTime;
+	private static Date                lastExtractDate; // Will include buffered value
+	private static boolean             timeAPI = false;
+	//	public static  boolean fetchSingleBibFromCommandLine = false;
 
 	private static IndexingProfile   indexingProfile;
 	private static MarcRecordGrouper recordGroupingProcessor;
@@ -51,16 +52,18 @@ public class SierraExportAPIMain {
 	private static boolean allowFastExportMethod           = true;
 
 	private static TreeSet<Long> allBibsToUpdate = new TreeSet<>();
+	private static TreeSet<Long> bibsToProcess   = new TreeSet<>();
 	private static TreeSet<Long> allDeletedIds   = new TreeSet<>();
 	private static TreeSet<Long> bibsWithErrors  = new TreeSet<>();
 
 	//Reporting information
 	private static long              exportLogId;
 	private static PreparedStatement addNoteToExportLogStmt;
-	private static String            exportPath;
+//	private static String            exportPath;
 
-	private static boolean debug = false;
+	private static boolean debug     = false;
 	private static int     minutesToProcessExport;
+	private static Date    startTime = new Date();
 
 	// Connector to Solr for deleting index entries
 	private static ConcurrentUpdateSolrServer updateServer;
@@ -71,7 +74,6 @@ public class SierraExportAPIMain {
 	public static void main(String[] args) {
 		serverName = args[0];
 
-		Date startTime = new Date();
 		File log4jFile = new File("../../sites/" + serverName + "/conf/log4j.sierra_extract.properties");
 		if (log4jFile.exists()) {
 			PropertyConfigurator.configure(log4jFile.getAbsolutePath());
@@ -84,13 +86,6 @@ public class SierraExportAPIMain {
 		PikaConfigIni.loadConfigFile("config.ini", serverName, logger);
 
 		debug = PikaConfigIni.getBooleanIniValue("System", "debug");
-
-		String apiVersion = PikaConfigIni.getIniValue("Catalog", "api_version");
-		if (apiVersion == null || apiVersion.length() == 0) {
-			logger.error("Sierra API version must be set.");
-			System.exit(1);
-		}
-		apiBaseUrl = PikaConfigIni.getIniValue("Catalog", "url") + "/iii/sierra-api/v" + apiVersion;
 
 		//Connect to the pika database
 		Connection pikaConn = null;
@@ -138,6 +133,34 @@ public class SierraExportAPIMain {
 		}
 		indexingProfile = IndexingProfile.loadIndexingProfile(pikaConn, profileToLoad, logger);
 
+		String apiVersion = PikaConfigIni.getIniValue("Catalog", "api_version");
+		if (apiVersion == null || apiVersion.length() == 0) {
+			logger.error("Sierra API version must be set.");
+			System.exit(1);
+		}
+
+		String sierraUrl;
+		try (
+				PreparedStatement accountProfileStatement = pikaConn.prepareStatement("SELECT * FROM account_profiles WHERE name = '" + indexingProfile.name + "'");
+				ResultSet accountProfileResult = accountProfileStatement.executeQuery()
+		) {
+			if (accountProfileResult.next()) {
+				sierraUrl = PikaConfigIni.trimTrailingPunctuation(accountProfileResult.getString("vendorOpacUrl"));
+			} else {
+				//This should be depreciated
+				logger.warn("No accounting profile found for this indexing profile, falling back to config ini setting.");
+				sierraUrl = PikaConfigIni.trimTrailingPunctuation(PikaConfigIni.getIniValue("Catalog", "url"));
+			}
+			apiBaseUrl = sierraUrl + "/iii/sierra-api/v" + apiVersion;
+		} catch (SQLException e) {
+			logger.error("Error retrieving account profile for " + indexingProfile.name, e);
+		}
+		if (apiBaseUrl == null || apiBaseUrl.length() == 0) {
+			logger.error("Sierra API url must be set in account profile column vendorOpacUrl.");
+			System.exit(1);
+		}
+
+		//Diagnostic routine to probe how near-real time the API info is
 		if (timeAPI) {
 			measureDelayInItemsAPIupdates();
 			System.exit(0);
@@ -150,8 +173,8 @@ public class SierraExportAPIMain {
 		}
 
 
-		exportPath = indexingProfile.marcPath;
-		File changedBibsFile = new File(exportPath + "/changed_bibs_to_process.csv");
+//		exportPath = indexingProfile.marcPath;
+//		File changedBibsFile = new File(exportPath + "/changed_bibs_to_process.csv");
 
 		Integer minutesToProcessFor = PikaConfigIni.getIntIniValue("Catalog", "minutesToProcessExport");
 		minutesToProcessExport = (minutesToProcessFor == null) ? 5 : minutesToProcessFor;
@@ -184,7 +207,8 @@ public class SierraExportAPIMain {
 		}
 
 		//Process MARC record changes
-		getBibsAndItemUpdatesFromSierra(pikaConn, changedBibsFile);
+		getBibsAndItemUpdatesFromSierra(pikaConn);
+//		getBibsAndItemUpdatesFromSierra(pikaConn, changedBibsFile);
 
 		//Write the number of updates to the log
 		updateSierraExtractLogNumToProcess(pikaConn);
@@ -195,29 +219,30 @@ public class SierraExportAPIMain {
 		String sierraDBPassword = PikaConfigIni.getIniValue("Catalog", "sierra_db_password");
 
 		if (url != null) {
-			Connection conn = null;
+			Connection sierraDBConn = null;
 			try {
 				//Open the connection to the database
 				if (sierraDBUser != null && sierraDBPassword != null && !sierraDBPassword.isEmpty() && !sierraDBUser.isEmpty()) {
 					// Use specific user name and password when the are issues with special characters
-					conn = DriverManager.getConnection(url, sierraDBUser, sierraDBPassword);
+					sierraDBConn = DriverManager.getConnection(url, sierraDBUser, sierraDBPassword);
 				} else {
 					// This version assumes user name and password are supplied in the url
-					conn = DriverManager.getConnection(url);
+					sierraDBConn = DriverManager.getConnection(url);
 				}
 
 				// Data extracted from the Sierra Database
-				exportActiveOrders(exportPath, conn);
-//				exportDueDates(exportPath, conn); // Shouldn't be needed any longer. Pascal 6/13/2019
-				exportHolds(conn, pikaConn);
+				exportActiveOrders(sierraDBConn);
+//				exportActiveOrders(exportPath, sierraDBConn);
+//				exportDueDates(exportPath, sierraDBConn); // Shouldn't be needed any longer. Pascal 6/13/2019
+				exportHolds(sierraDBConn, pikaConn);
 
 			} catch (Exception e) {
 				logger.error("Error: " + e.toString(), e);
 			}
-			if (conn != null) {
+			if (sierraDBConn != null) {
 				try {
 					//Close the connection
-					conn.close();
+					sierraDBConn.close();
 				} catch (Exception e) {
 					logger.error("Error: " + e.toString(), e);
 				}
@@ -232,19 +257,8 @@ public class SierraExportAPIMain {
 		updateSierraExtractLogNumToProcess(pikaConn, numRecordsProcessed);
 
 		//Write any records that still haven't been processed
-		try (BufferedWriter bibIdsToProcessWriter = new BufferedWriter(new FileWriter(changedBibsFile, false))) {
-			for (Long bibToUpdate : allBibsToUpdate) {
-				bibIdsToProcessWriter.write(bibToUpdate + "\r\n");
-			}
-			//Write any bibs that had errors
-			for (Long bibToUpdate : bibsWithErrors) {
-				bibIdsToProcessWriter.write(bibToUpdate + "\r\n");
-			}
-			bibIdsToProcessWriter.flush();
-
-		} catch (Exception e) {
-			logger.error("Error saving remaining bibs to process", e);
-		}
+		markBibsToProcess();
+//		markBibsToProcess(changedBibsFile);
 
 		updateSierraExtractLogNumToProcess(pikaConn, numRecordsProcessed);
 
@@ -272,10 +286,39 @@ public class SierraExportAPIMain {
 			pikaConn.close();
 		} catch (Exception e) {
 			System.out.println("Error closing connection: " + e.toString());
-			e.printStackTrace();
+			logger.error("Error closing connection to Pika DB", e);
 		}
 		Date currentTime = new Date();
 		logger.info(currentTime.toString() + " : Finished Sierra Extract");
+	}
+
+	private static void markBibsToProcess() {
+//	private static void markBibsToProcess(File changedBibsFile) {
+//		try (BufferedWriter bibIdsToProcessWriter = new BufferedWriter(new FileWriter(changedBibsFile, false))) {
+//			for (Long bibToUpdate : allBibsToUpdate) {
+//				bibIdsToProcessWriter.write(bibToUpdate + "\r\n");
+//			}
+//			//Write any bibs that had errors
+//			for (Long bibToUpdate : bibsWithErrors) {
+//				bibIdsToProcessWriter.write(bibToUpdate + "\r\n");
+//			}
+//			bibIdsToProcessWriter.flush();
+//
+//		} catch (Exception e) {
+//			logger.error("Error saving remaining bibs to process", e);
+//		}
+
+		for (Long bibToUpdate : allBibsToUpdate) {
+			if (!bibsToProcess.contains(bibToUpdate)) { // If it was in the bibsToProcess list already, then it was already marked for re-extraction
+				markRecordForReExtraction(bibToUpdate);
+			}
+		}
+		//Write any bibs that had errors
+		for (Long bibToUpdate : bibsWithErrors) {
+			if (!bibsToProcess.contains(bibToUpdate)) { // If it was in the bibsToProcess list already, then it was already marked for re-extraction
+				markRecordForReExtraction(bibToUpdate);
+			}
+		}
 	}
 
 	private static void updateSierraExtractLogNumToProcess(Connection pikaConn) {
@@ -304,30 +347,59 @@ public class SierraExportAPIMain {
 
 	private static void updateLastExportTime(long exportStartTime, long numBibsRemainingToProcess) {
 		try {
-			systemVariables.setVariable("last_sierra_extract_time", Long.toString(exportStartTime));
-			systemVariables.setVariable("remaining_sierra_records", Long.toString(numBibsRemainingToProcess));
-			//Update the last extract time
+			Long lastSierraExtractTimeConfirm = systemVariables.getLongValuedVariable("last_sierra_extract_time");
+			if (lastSierraExtractTimeConfirm.equals(lastSierraExtractTime)) {
+				systemVariables.setVariable("last_sierra_extract_time", Long.toString(exportStartTime));
+				systemVariables.setVariable("remaining_sierra_records", Long.toString(numBibsRemainingToProcess));
+				//Update the last extract time
+			} else {
+				logger.warn("Last Sierra Extract time was changed in database during extraction. Not updating last extract time");
+
+			}
 		} catch (Exception e) {
 			logger.error("There was an error updating the database, not setting last extract time.", e);
 		}
 	}
 
-	private static void getBibsAndItemUpdatesFromSierra(Connection pikaConn, File changedBibsFile) {
-		//Load unprocessed transactions
-		try {
-			if (changedBibsFile.exists()) {
-				try (BufferedReader changedBibsReader = new BufferedReader(new FileReader(changedBibsFile))) {
-					String curLine = changedBibsReader.readLine();
-					while (curLine != null) {
-						Long bibId = Long.parseLong(curLine);
-						allBibsToUpdate.add(bibId);
-						curLine = changedBibsReader.readLine();
-					}
-				}
+
+	private static void loadUnprocessedBibs(Connection pikaConn) {
+//	private static void loadUnprocessedBibs(Connection pikaConn, File changedBibsFile) {
+//		try {
+//			if (changedBibsFile.exists()) {
+//				try (BufferedReader changedBibsReader = new BufferedReader(new FileReader(changedBibsFile))) {
+//					String curLine = changedBibsReader.readLine();
+//					while (curLine != null) {
+//						Long bibId = Long.parseLong(curLine);
+//						allBibsToUpdate.add(bibId);
+//						curLine = changedBibsReader.readLine();
+//					}
+//				}
+//			}
+//		} catch (Exception e) {
+//			logger.error("Error loading changed bibs to process", e);
+//		}
+		try (
+				PreparedStatement bibsToProcessStatement = pikaConn.prepareStatement("SELECT ilsId FROM ils_extract_info WHERE lastExtracted IS NULL AND indexingProfileId = " + indexingProfile.id, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+				ResultSet bibsToProcessResults = bibsToProcessStatement.executeQuery()
+		) {
+			while (bibsToProcessResults.next()) {
+				String fullSierraBibId = bibsToProcessResults.getString("ilsId");
+				Long   bibId           = Long.parseLong(fullSierraBibId.substring(2, fullSierraBibId.length() - 1));
+				// Strip off .b at start and ending check digit to get a number to use with API calls
+				bibsToProcess.add(bibId);
+				allBibsToUpdate.add(bibId);
 			}
-		} catch (Exception e) {
+
+		} catch (SQLException e) {
 			logger.error("Error loading changed bibs to process", e);
 		}
+	}
+
+	private static void getBibsAndItemUpdatesFromSierra(Connection pikaConn) {
+//	private static void getBibsAndItemUpdatesFromSierra(Connection pikaConn, File changedBibsFile) {
+		//Load unprocessed transactions
+//		loadUnprocessedBibs(pikaConn, changedBibsFile);
+		loadUnprocessedBibs(pikaConn);
 
 		Long id = systemVariables.getVariableId("allow_sierra_fast_export");
 		if (id != null) {
@@ -336,7 +408,7 @@ public class SierraExportAPIMain {
 			systemVariables.setVariable("allow_sierra_fast_export", "1");
 		}
 
-		Long lastSierraExtractTime = systemVariables.getLongValuedVariable("last_sierra_extract_time");
+		lastSierraExtractTime = systemVariables.getLongValuedVariable("last_sierra_extract_time");
 
 		//Last Update time in UTC
 		// Use a buffer value to cover gaps in extraction rounds
@@ -344,7 +416,7 @@ public class SierraExportAPIMain {
 		if (bufferInterval == null || bufferInterval < 0) {
 			bufferInterval = 300; // 5 mins
 		}
-		Date lastExtractDate = new Date((lastSierraExtractTime - bufferInterval) * 1000);
+		lastExtractDate = new Date((lastSierraExtractTime - bufferInterval) * 1000);
 
 		Date now       = new Date();
 		Date yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
@@ -364,8 +436,11 @@ public class SierraExportAPIMain {
 			deletePrimaryIdentifierStmt               = pikaConn.prepareStatement("DELETE from grouped_work_primary_identifiers where id = ? LIMIT 1");
 			getAdditionalPrimaryIdentifierForWorkStmt = pikaConn.prepareStatement("SELECT * from grouped_work_primary_identifiers where grouped_work_id = ?");
 			markGroupedWorkAsChangedStmt              = pikaConn.prepareStatement("UPDATE grouped_work SET date_updated = ? where id = ?");
-			deleteGroupedWorkStmt                     = pikaConn.prepareStatement("DELETE from grouped_work where id = ?");
-			getPermanentIdByWorkIdStmt                = pikaConn.prepareStatement("SELECT permanent_id from grouped_work WHERE id = ?");
+//			deleteGroupedWorkStmt                     = pikaConn.prepareStatement("DELETE from grouped_work where id = ?");
+			getPermanentIdByWorkIdStmt      = pikaConn.prepareStatement("SELECT permanent_id from grouped_work WHERE id = ?");
+			updateExtractInfoStatement      = pikaConn.prepareStatement("INSERT INTO ils_extract_info (indexingProfileId, ilsId, lastExtracted) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE lastExtracted=VALUES(lastExtracted)"); // unique key is indexingProfileId and ilsId combined
+			markDeletedExtractInfoStatement = pikaConn.prepareStatement("INSERT INTO ils_extract_info (indexingProfileId, ilsId, lastExtracted, deleted) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE lastExtracted=VALUES(lastExtracted), deleted=VALUES(deleted)"); // unique key is indexingProfileId and ilsId combined
+			//TODO: note Starting in MariaDB 10.3.3 function VALUES() becomes VALUE(). But documentation notes "The VALUES() function can still be used even from MariaDB 10.3.3, but only in INSERT ... ON DUPLICATE KEY UPDATE statements; it's a syntax error otherwise."
 		} catch (Exception e) {
 			logger.error("Error setting up prepared statements for deleting bibs", e);
 		}
@@ -592,7 +667,7 @@ public class SierraExportAPIMain {
 	private static PreparedStatement getAdditionalPrimaryIdentifierForWorkStmt;
 	private static PreparedStatement deletePrimaryIdentifierStmt;
 	private static PreparedStatement markGroupedWorkAsChangedStmt;
-	private static PreparedStatement deleteGroupedWorkStmt;
+	//	private static PreparedStatement deleteGroupedWorkStmt;
 	private static PreparedStatement getPermanentIdByWorkIdStmt;
 
 	private static void processDeletedBibs(String lastExtractDateFormatted, long updateTime) {
@@ -634,7 +709,7 @@ public class SierraExportAPIMain {
 
 		if (allDeletedIds.size() > 0) {
 			for (Long id : allDeletedIds) {
-				if (deleteRecord(updateTime, id)) {
+				if (deleteRecord(updateTime, id) && markRecordDeletedInExtractInfo(id)) {
 					numDeletions++;
 				} else {
 					logger.info("Failed to delete from index bib Id : " + id);
@@ -681,18 +756,12 @@ public class SierraExportAPIMain {
 								//pascal 5/2/2019 cutting out warning noise for now
 
 								// See https://marmot.myjetbrains.com/youtrack/issue/D-2364
-
-								//Prevent deletion of the grouped work entry for now. Pascal 8-3-2018
-								//Delete the work from the database?
-								//TODO: Should we do this or leave a record if it was linked to lists, reading history, etc?
-								//regular indexer deletes them too
-//								deleteGroupedWorkStmt.setLong(1, groupedWorkId);
-//								deleteGroupedWorkStmt.executeUpdate();
-
 								return true;
 							}
 						}
 					}
+				} else {
+					logger.info("Found no grouped work primary identifiers for bib id : " + bibId);
 				}
 			}
 		} catch (Exception e) {
@@ -773,7 +842,7 @@ public class SierraExportAPIMain {
 						}
 						if (isSuppressed) {
 							allDeletedIds.add(bibId);
-							if (deleteRecord(updateTime, bibId)) {
+							if (deleteRecord(updateTime, bibId) && markRecordDeletedInExtractInfo(bibId)) {
 								numSuppressedRecords++;
 							} else {
 								logger.info("Failed to delete from index bib Id : " + bibId);
@@ -826,7 +895,7 @@ public class SierraExportAPIMain {
 						}
 						if (isSuppressed) {
 							allDeletedIds.add(bibId);
-							if (deleteRecord(updateTime, bibId)) {
+							if (deleteRecord(updateTime, bibId) && markRecordDeletedInExtractInfo(bibId)) {
 								numSuppressedRecords++;
 							} else {
 								logger.info("Failed to delete from index newly created but suppressed bib Id : " + bibId);
@@ -1382,9 +1451,56 @@ public class SierraExportAPIMain {
 			MarcWriter marcWriter = new MarcStreamWriter(new FileOutputStream(marcFile), true);
 			marcWriter.write(marcRecord);
 			marcWriter.close();
+			updateLastExtractTimeForRecord(identifier);
 		} catch (FileNotFoundException e) {
 			logger.warn("File not found exception ", e);
 		}
+	}
+
+	private static PreparedStatement updateExtractInfoStatement;
+
+	private static void markRecordForReExtraction(Long bibToUpdate) {
+		updateLastExtractTimeForRecord(getfullSierraBibId(bibToUpdate), null);
+	}
+
+	private static boolean updateLastExtractTimeForRecord(String identifier) {
+		return updateLastExtractTimeForRecord(identifier, startTime.getTime() / 1000);
+	}
+
+	private static boolean updateLastExtractTimeForRecord(String identifier, Long lastExtractTime) {
+		if (identifier != null && !identifier.isEmpty()) {
+			try {
+				updateExtractInfoStatement.setLong(1, indexingProfile.id);
+				updateExtractInfoStatement.setString(2, identifier);
+				if (lastExtractTime == null) {
+					updateExtractInfoStatement.setNull(3, Types.INTEGER);
+				} else {
+					updateExtractInfoStatement.setLong(3, lastExtractTime);
+				}
+				int result = updateExtractInfoStatement.executeUpdate();
+				return result == 1 || result == 2;
+			} catch (SQLException e) {
+				logger.error("Unable to update ils_extract_info table for " + identifier, e);
+			}
+		}
+		return false;
+	}
+
+	private static PreparedStatement markDeletedExtractInfoStatement;
+
+	private static boolean markRecordDeletedInExtractInfo(Long bibId) {
+		String identifier = getfullSierraBibId(bibId);
+		try {
+			markDeletedExtractInfoStatement.setLong(1, indexingProfile.id);
+			markDeletedExtractInfoStatement.setString(2, identifier);
+			markDeletedExtractInfoStatement.setLong(3, startTime.getTime() / 1000);
+			markDeletedExtractInfoStatement.setDate(4, new java.sql.Date(startTime.getTime()));
+			int result = markDeletedExtractInfoStatement.executeUpdate();
+			return result == 1 || result == 2;
+		} catch (Exception e) {
+			logger.error("Failed to mark record as deleted in extract info table", e);
+		}
+		return false;
 	}
 
 //	private static void exportDueDates(String exportPath, Connection conn) throws SQLException, IOException {
@@ -1423,10 +1539,11 @@ public class SierraExportAPIMain {
 //		addNoteToExportLog("Finished exporting due dates");
 //	}
 
-	private static void exportActiveOrders(String exportPath, Connection conn) throws SQLException, IOException {
+	private static void exportActiveOrders(Connection sierraConn) throws IOException {
 		addNoteToExportLog("Starting export of active orders");
 
 		//Load the orders we had last time
+		String                 exportPath             = indexingProfile.marcPath;
 		File                   orderRecordFile        = new File(exportPath + "/active_orders.csv");
 		HashMap<Long, Integer> existingBibsWithOrders = new HashMap<>();
 		readOrdersFile(orderRecordFile, existingBibsWithOrders);
@@ -1474,7 +1591,7 @@ public class SierraExportAPIMain {
 		int numBibsOrdersChanged = 0;
 		int numBibsOrdersRemoved = 0;
 		try (
-				PreparedStatement getActiveOrdersStmt = conn.prepareStatement(activeOrderSQL, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+				PreparedStatement getActiveOrdersStmt = sierraConn.prepareStatement(activeOrderSQL, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 				ResultSet activeOrdersRS = getActiveOrdersStmt.executeQuery()
 		) {
 			writeToFileFromSQLResultFile(orderRecordFile, activeOrdersRS);

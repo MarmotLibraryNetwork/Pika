@@ -94,6 +94,6 @@ if [ $EXITCODE -ne 0 ];then
   exit 3
 fi
 
-$LOG "~> finished copyCovers.sh"
+$LOG "~> finished copyCovers.sh ${PIKASITENAME}"
 #-------------------------------------------------------------------------
 #-- eof --
