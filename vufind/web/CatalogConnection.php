@@ -77,7 +77,9 @@ class CatalogConnection
 	 */
 	public function __construct($driver, $accountProfile)
 	{
-		$path = ROOT_DIR . "/Drivers/{$driver}.php";
+
+        $path = ROOT_DIR . "/Drivers/{$driver}.php";
+
 		if (is_readable($path) && $driver != 'DriverInterface') {
 			require_once $path;
 
@@ -91,7 +93,17 @@ class CatalogConnection
 
 			$this->accountProfile = $accountProfile;
 			$this->status = true;
-		}
+		} else {
+		    try{
+		      $this->driver = new $driver($accountProfile);
+        } catch (Exception $e) {
+            global $logger;
+            $logger->log("Unable to create driver $driver for account profile {$accountProfile->name}", PEAR_LOG_ERR);
+            throw $e;
+        }
+        $this->accountProfile = $accountProfile;
+        $this->status = true;
+    }
 	}
 
 	/**

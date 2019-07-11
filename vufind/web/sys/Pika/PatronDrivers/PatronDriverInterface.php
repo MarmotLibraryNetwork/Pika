@@ -1,14 +1,5 @@
 <?php
 /**
- *
- *
- * @category Pika
- * @author   : Pascal Brammeier
- * Date: 5/13/2019
- *
- */
-
-/**
  * Interface PatronDriverInterface
  *
  * This interface defines the methods needed for all patron-related interactions that happen between
@@ -24,7 +15,12 @@
  *  PatronSelfRegistrationOperations
  *  PatronPinOperations
  *
+ * @category Pika
+ * @author   : Pascal Brammeier
+ * Date: 5/13/2019
+ *
  */
+namespace Pika\PatronDrivers;
 abstract class PatronDriverInterface {
 
 	/**
@@ -37,8 +33,8 @@ abstract class PatronDriverInterface {
 	 * @param string  $password        The patron password
 	 * @param boolean $validatedViaSSO True if the patron has already been validated via SSO.  If so we don't need to validation, just retrieve information
 	 *
-	 * @return  null|User|PEAR_Error   The User object for the patron
-	 *                                 If an error occurs, return a PEAR_Error
+	 * @return User|Exception          The User object for the patron
+	 *                                 If an error occurs, return an appropriate exception.
 	 * @access  public
 	 */
 
