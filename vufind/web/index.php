@@ -22,7 +22,7 @@
 require_once 'bootstrap.php';
 // Composer autoloader
 // TODO: Add composer path to include paths on servers.
-require_once "/usr/share/composer/vendor/autoload.php";
+require_once "vendor/autoload.php";
 global $timer;
 global $memoryWatcher;
 
