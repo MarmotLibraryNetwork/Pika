@@ -8,6 +8,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
 
@@ -133,6 +135,21 @@ public class PikaConfigIni {
 
 	public static String getIniValue(String sectionName, String optionName) {
 		return cleanIniValue(ourInstance.get(sectionName, optionName));
+	}
+
+	// Taken from src/org/pika/Util.java
+	private static Pattern trimPunctuationPattern = Pattern.compile("^(.*?)[\\s/,.;|]+$");
+
+	public static String trimTrailingPunctuation(String string) {
+		if (string == null) {
+			return "";
+		}
+		Matcher trimPunctuationMatcher = trimPunctuationPattern.matcher(string);
+		if (trimPunctuationMatcher.matches()) {
+			return trimPunctuationMatcher.group(1);
+		} else {
+			return string;
+		}
 	}
 
 }
