@@ -220,7 +220,7 @@ class CatalogConnection
 			}else{
 				$password = $barcode;
 			}
-
+			// TODO: this is called several times after the patron is logged in.
 			$user = $this->driver->patronLogin($username, $password, $validatedViaSSO);
 		}
 

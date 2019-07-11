@@ -22,7 +22,7 @@
 require_once 'bootstrap.php';
 // Composer autoloader
 // TODO: Add composer path to include paths on servers.
-require_once "vendor\autoload.php";
+require_once "/usr/share/composer/vendor/autoload.php";
 global $timer;
 global $memoryWatcher;
 
@@ -963,10 +963,6 @@ function loadUserData(){
 	global $timer;
 
 	//Assign User information to the interface
-	if (UserAccount::isLoggedIn()) {
-		//$user = UserAccount::getLoggedInUser();
-	}
-
 	if (UserAccount::isLoggedIn()){
 		if (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('libraryAdmin') || UserAccount::userHasRole('cataloging') || UserAccount::userHasRole('libraryManager') || UserAccount::userHasRole('locationManager')){
 			$variable = new Variable();

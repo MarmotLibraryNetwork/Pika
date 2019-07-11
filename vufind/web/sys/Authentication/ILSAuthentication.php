@@ -79,6 +79,7 @@ class ILSAuthentication implements Authentication {
 			$catalog = CatalogFactory::getCatalogConnectionInstance($this->driverName);
 
 			if ($catalog->status) {
+				// TODO: Another call to patron login?
 				$patron = $catalog->patronLogin($this->username, $this->password, $parentAccount, $validatedViaSSO);
 				if ($patron && !PEAR_Singleton::isError($patron)) {
 					$validUser = $patron;
