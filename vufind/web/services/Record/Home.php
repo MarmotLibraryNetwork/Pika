@@ -26,12 +26,6 @@ class Record_Home extends Record_Record {
 		global $interface;
 		global $timer;
 
-
-//		$interface->assign('recordId', $this->id);
-		//TODO Does this needed to be assigned still
-
-		$recordId = $this->sourceAndId->getRecordId();
-
 		$this->loadCitations();
 		$timer->logTime('Loaded Citations');
 

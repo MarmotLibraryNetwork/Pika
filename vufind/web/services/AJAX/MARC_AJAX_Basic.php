@@ -28,16 +28,16 @@ trait MARC_AJAX_Basic {
 	}
 
 	function downloadMarc(){
-		$id       = $_REQUEST['id'];
-		$marcData = MarcLoader::loadMarcRecordByILSId($id);
+		$sourceAndId      = new SourceAndId($_REQUEST['id']);
+		$marcData         = MarcLoader::loadMarcRecordByILSId($sourceAndId);
+		$downloadFileName = urlencode($sourceAndId);
 		header('Content-Description: File Transfer');
 		header('Content-Type: application/octet-stream');
-		header("Content-Disposition: attachment; filename={$id}.mrc");
+		header("Content-Disposition: attachment; filename*={$downloadFileName}.mrc");
 		header('Content-Transfer-Encoding: binary');
 		header('Expires: 0');
 		header('Cache-Control: must-revalidate');
 		header('Pragma: public');
-
 		header('Content-Length: ' . strlen($marcData->toRaw()));
 		ob_clean();
 		flush();
