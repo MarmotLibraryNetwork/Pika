@@ -143,41 +143,39 @@ class RecordDriverFactory {
 
 	static $recordDrivers = array();
 	/**
-	 * @param $id
-	 * @param  GroupedWork $groupedWork;
-	 * @return ExternalEContentDriver|MarcRecord|null|OverDriveRecordDriver
+	 * @param string|SourceAndId $fullId
+	 * @param  GroupedWork       $groupedWork;
+	 *
+	 * @return ExternalEContentDriver|MarcRecord|OverDriveRecordDriver|null
 	 */
-	static function initRecordDriverById($id, $groupedWork = null){
-		global $configArray;
-		if (isset(RecordDriverFactory::$recordDrivers[$id])){
-			return RecordDriverFactory::$recordDrivers[$id];
+	static function initRecordDriverById($fullId, $groupedWork = null){
+		//TODO: require $fullId be an SourceAndId object, but check archive drivers getting called here first
+		require_once ROOT_DIR . '/services/SourceAndId.php';
+		if ($fullId instanceof SourceAndId){
+			$sourceAndId = $fullId;
+		} else {
+			$sourceAndId = new SourceAndId($fullId);
 		}
-		if (strpos($id, ':') !== false){
-			$recordInfo = explode(':', $id, 2);
-			$recordType = $recordInfo[0];
-			$recordId = $recordInfo[1];
-		}else{
-			$recordType = 'ils';
-			$recordId = $id;
+		$fullId = $sourceAndId->getSourceAndId(); // Make sure the full Id is handled uniformly
+		if (isset(RecordDriverFactory::$recordDrivers[$fullId])){
+			return RecordDriverFactory::$recordDrivers[$fullId];
 		}
+		$recordType  = $sourceAndId->getSource();
+		$recordId    = $sourceAndId->getRecordId();
 
 		disableErrorHandler();
 		if ($recordType == 'overdrive'){
 			require_once ROOT_DIR . '/RecordDrivers/OverDriveRecordDriver.php';
 			$recordDriver = new OverDriveRecordDriver($recordId, $groupedWork);
-		}elseif ($recordType == 'external_econtent'){
+		}elseif ($sourceAndId->isIlsEContent){
 			require_once ROOT_DIR . '/RecordDrivers/ExternalEContentDriver.php';
-			$recordDriver = new ExternalEContentDriver($recordId, $groupedWork);
+			$recordDriver = new ExternalEContentDriver($sourceAndId, $groupedWork);
 		}else{
-			/** @var IndexingProfile[] $indexingProfiles */
-			global $indexingProfiles;
-
-			if (array_key_exists($recordType, $indexingProfiles)){
-				$indexingProfile = $indexingProfiles[$recordType];
+			$indexingProfile = $sourceAndId->getIndexingProfile();
+			if (!empty($indexingProfile)){
 				$driverName      = $indexingProfile->recordDriver;
 				require_once ROOT_DIR . "/RecordDrivers/{$driverName}.php";
-				$recordDriver = new $driverName($id, $groupedWork);
-
+				$recordDriver = new $driverName($sourceAndId, $groupedWork);
 			}else{
 				//Check to see if this is an object from the archive
 				$driverNameParts = explode('_', $recordType);
@@ -185,8 +183,9 @@ class RecordDriverFactory {
 				foreach ($driverNameParts as $driverPart){
 					$normalizedRecordType .= (ucfirst($driverPart));
 				}
-				$driver = $normalizedRecordType . 'Driver' ;
-				$path = "{$configArray['Site']['local']}/RecordDrivers/{$driver}.php";
+				global $configArray;
+				$driver = $normalizedRecordType . 'Driver';
+				$path   = "{$configArray['Site']['local']}/RecordDrivers/{$driver}.php";
 
 				// If we can't load the driver, fall back to the default, index-based one:
 				if (!is_readable($path)) {
@@ -197,7 +196,7 @@ class RecordDriverFactory {
 					require_once $path;
 					if (class_exists($driver)) {
 						disableErrorHandler();
-						$obj = new $driver($id);
+						$obj = new $driver($fullId);
 						if (PEAR_Singleton::isError($obj)){
 							global $logger;
 							$logger->log("Error loading record driver", PEAR_LOG_DEBUG);
@@ -207,11 +206,10 @@ class RecordDriverFactory {
 					}
 				}
 
-
 			}
 		}
 		enableErrorHandler();
-		RecordDriverFactory::$recordDrivers[$id] = $recordDriver;
+		RecordDriverFactory::$recordDrivers[$fullId] = $recordDriver;
 		return $recordDriver;
 	}
 

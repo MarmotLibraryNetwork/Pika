@@ -94,8 +94,8 @@ class Record_AJAX extends AJAXHandler {
 	function getPlaceHoldForm(){
 		global $interface;
 		$user = UserAccount::getLoggedInUser();
-		if (UserAccount::isLoggedIn()){
-			$id           = $_REQUEST['id'];
+		if (UserAccount::isLoggedIn()) {
+			$sourceAndId = new SourceAndId($_REQUEST['id']);
 			$recordSource = $_REQUEST['recordSource'];
 			$interface->assign('recordSource', $recordSource);
 			if (isset($_REQUEST['volume'])){
@@ -156,8 +156,8 @@ class Record_AJAX extends AJAXHandler {
 
 			$interface->assign('holdDisclaimers', $holdDisclaimers);
 
-			require_once ROOT_DIR . '/RecordDrivers/MarcRecord.php';
-			$marcRecord = new MarcRecord($id);
+			/** @var MarcRecord $marcRecord */
+			$marcRecord = RecordDriverFactory::initRecordDriverById($sourceAndId);
 			$title      = rtrim($marcRecord->getTitle(), ' /');
 			$interface->assign('id', $marcRecord->getId());
 			if (count($locations) == 0){
@@ -195,9 +195,9 @@ class Record_AJAX extends AJAXHandler {
 				$interface->assign('volume', $_REQUEST['volume']);
 			}
 
-			require_once ROOT_DIR . '/RecordDrivers/MarcRecord.php';
-			$marcRecord            = new MarcRecord($id);
-			$groupedWork           = $marcRecord->getGroupedWorkDriver();
+			/** @var MarcRecord $marcRecord */
+			$marcRecord = RecordDriverFactory::initRecordDriverById($id);
+			$groupedWork = $marcRecord->getGroupedWorkDriver();
 			$relatedManifestations = $groupedWork->getRelatedManifestations();
 			$format                = $marcRecord->getFormat();
 			$relatedManifestations = $relatedManifestations[$format[0]];
@@ -215,7 +215,7 @@ class Record_AJAX extends AJAXHandler {
 			);
 		}
 		return $results;
-	}
+		}
 
 	function placeHold(){
 		global $interface;
@@ -409,8 +409,8 @@ class Record_AJAX extends AJAXHandler {
 		if (UserAccount::isLoggedIn()){
 			$id = $_REQUEST['id'];
 
-			require_once ROOT_DIR . '/RecordDrivers/MarcRecord.php';
-			$marcRecord = new MarcRecord($id);
+			/** @var MarcRecord $marcRecord */
+			$marcRecord = RecordDriverFactory::initRecordDriverById($id);
 			$title      = $marcRecord->getTitle();
 			$interface->assign('id', $id);
 			if ($errorMessage){
@@ -426,7 +426,7 @@ class Record_AJAX extends AJAXHandler {
 			$results = array(
 				'title'        => 'Please login',
 				'modalBody'    => "You must be logged in.  Please close this dialog and login before scheduling this item.",
-				'modalButtons' => "",
+				'modalButtons' => ""
 			);
 		}
 		return $results;

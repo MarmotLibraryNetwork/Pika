@@ -52,6 +52,12 @@ class GroupedWorkDriver extends RecordInterface{
 		'spellingShingle', 'collection', 'title_proper',
 		'display_description'
 	);
+
+	/**
+	 * GroupedWorkDriver constructor.
+	 *
+	 * @param $indexFields
+	 */
 	public function __construct($indexFields)
 	{
 		if (is_string($indexFields)){
@@ -59,6 +65,7 @@ class GroupedWorkDriver extends RecordInterface{
 			$id = str_replace('groupedWork:', '', $id);
 			//Just got a record id, let's load the full record from Solr
 			// Setup Search Engine Connection
+			/** @var SearchObject_Solr $searchObject */
 			$searchObject = SearchObjectFactory::initSearchObject();
 			$searchObject->disableScoping();
 			if (function_exists('disableErrorHandler')){
@@ -1440,7 +1447,7 @@ class GroupedWorkDriver extends RecordInterface{
 		require_once ROOT_DIR . '/sys/Novelist/NovelistData.php';
 		$novelistData = new NovelistData();
 		$novelistData->groupedRecordPermanentId = $this->getPermanentId();
-		if (!isset($_REQUEST['reload']) && $this->getPermanentId() != null && $this->getPermanentId() != '' && $novelistData->find(true) && $novelistData->primaryISBN != null){
+		if (!isset($_REQUEST['reload']) && !empty($this->getPermanentId()) && $novelistData->find(true) && $novelistData->primaryISBN != null){
 			return $novelistData->primaryISBN;
 		}else{
 			// Get all the ISBNs and initialize the return value:
