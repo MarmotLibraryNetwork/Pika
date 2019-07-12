@@ -18,7 +18,7 @@
  *
  */
 
-require_once ROOT_DIR . '/AJAXHAndler.php';
+require_once ROOT_DIR . '/AJAXHandler.php';
 require_once ROOT_DIR . '/sys/Pager.php';
 require_once ROOT_DIR . '/sys/ISBN.php';
 require_once ROOT_DIR . '/CatalogConnection.php';
@@ -532,7 +532,7 @@ class ItemAPI extends AJAXHandler {
 	}
 
 	public function getCopyAndHoldCounts(){
-		if (!isset($_REQUEST['recordId']) || strlen($_REQUEST['recordId']) == 0){
+		if (empty($_REQUEST['recordId'])){
 			return array('error' => 'Please provide a record to load data for');
 		}
 		$recordId = $_REQUEST['recordId'];
