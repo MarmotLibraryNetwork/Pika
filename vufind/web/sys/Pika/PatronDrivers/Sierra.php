@@ -47,6 +47,7 @@ namespace Pika\PatronDrivers;
 //require_once 'C:\Composer\vendor\php-curl-class\php-curl-class\src\Curl\Curl.php';
 use Curl\Curl;
 use Location;
+use RecordDriverFactory;
 use User;
 
 
@@ -162,7 +163,7 @@ class Sierra extends PatronDriverInterface {
 
 		$pObjCacheKey = 'patron_' . $patronId . '_obj';
 		if ($pObj = $this->memCache->get($pObjCacheKey)) {
-			return unserialize($pObj);
+			return $pObj;
 		}
 
 		$createPatron = false;
@@ -363,7 +364,7 @@ class Sierra extends PatronDriverInterface {
 		} elseif ($updatePatron && !$createPatron) {
 			$patron->update();
 		}
-		$this->memCache->set($pObjCacheKey, $patron, MEMCACHE_COMPRESSED, $this->configArray['Caching']['patron_profile']);
+		$e = $this->memCache->set($pObjCacheKey, $patron, MEMCACHE_COMPRESSED, $this->configArray['Caching']['patron_profile']);
 		return $patron;
 	}
 
@@ -406,8 +407,16 @@ class Sierra extends PatronDriverInterface {
 	 */
 	public function getPatronId($patron)
 	{
+		if(isset($this->patronId)) {
+			return $this->patronId;
+		}
 		$barcode = $patron->barcode;
 		$barcode = trim($barcode);
+
+		if($patronId = $this->memCache->get($barcode)) {
+			return $patronId;
+		}
+
 		$params = [
 			'varFieldTag'     => 'b',
 			'varFieldContent' => $barcode,
@@ -415,10 +424,13 @@ class Sierra extends PatronDriverInterface {
 		];
 		// make the request
 		$r = $this->_doRequest('patrons/find', $params);
-		// there was an error with the last call
+		// there was an error with the last call -- use $this->apiLastError for messages.
 		if(!$r) {
 			return false;
 		}
+
+		$this->memCache->set($barcode, $r->id, 0, $this->configArray['Caching']['koha_patron_id']);
+
 		$this->patronId = $r->id;
 
 		return $this->patronId;
@@ -494,11 +506,18 @@ class Sierra extends PatronDriverInterface {
 	}
 
 	public function getMyHolds($patron){
-		// TODO: Implement getMyHolds() method.
+		if(!$patronId = $this->getPatronId($patron)) {
+			// TODO: need to do something here
+			return false;
+		}
+
+
 	}
 
 	/**
 	 * Determines the hold type and places the hold
+	 *
+	 * patrons/{patronId}}/holds/requests
 	 *
 	 * @param User        $patron
 	 * @param string      $recordId
@@ -506,14 +525,50 @@ class Sierra extends PatronDriverInterface {
 	 * @param string|null $cancelDate
 	 * @return array
 	 */
-	public function placeHold($patron, $recordId, $pickupBranch, $cancelDate = null){
-		// 1. Determine the hold type b = bib, i = item, j = volume
-		$recordType   = substr($recordId, 1,1);
-		$recordNumber = substr($recordId, 2, -1); // remove the .x and the last check digit
-		$h = "hello";
+	public function placeHold($patron, $recordId, $pickupBranch, $cancelDate = null) {
 
-		// TODO: Implement placeHold() method.
+		$d = \DateTime::createFromFormat('m/d/Y', $cancelDate); // convert needed by date
+		$recordType     = substr($recordId, 1,1); // determine the hold type b = bib, i = item, j = volume
+		$recordNumber   = substr($recordId, 2, -1); // remove the .x and the last check digit
+		$pickupLocation = $pickupBranch;
+		$neededBy       = $d->format('Y-m-d');
+		$patronId       = $this->getPatronId($patron);
 
+		// get title of record
+		$record = RecordDriverFactory::initRecordDriverById($this->accountProfile->recordSource . ':' . $recordId);
+		$recordTitle  = $record->isValid() ? $record->getTitle() : null;
+
+		$params = [
+			"recordType"     => $recordType,
+			"recordNumber"   => (int)$recordNumber,
+			"pickupLocation" => $pickupLocation,
+			"neededBy"       => $neededBy
+		];
+
+		$operation = "patrons/{$patronId}/holds/requests";
+
+		$r = $this->_doRequest($operation, $params, "POST");
+		$return = [];
+		// oops! something went wrong.
+		if(!$r) {
+			$return['success'] = false;
+			if ($this->apiLastError) {
+				$return['message'] = $this->apiLastError;
+			} else {
+				$return['message'] = "Unable to place your hold. Please contact our library.";
+			}
+			return $return;
+		}
+		// success! weeee :)
+		$return['success'] = true;
+		if($recordTitle) {
+			$recordTitle = trim($recordTitle, ' /');
+			$return['message'] = "Your hold for <strong>{$recordTitle}</strong> was successfully placed.";
+		} else {
+			$return['message'] = "Your hold was successfully placed.";
+		}
+
+		return $return;
 	}
 
 	public function placeItemHold($patron, $recordId, $itemId, $pickupBranch){
@@ -731,26 +786,27 @@ class Sierra extends PatronDriverInterface {
 		// setup headers
 		// These headers are common to all Sierra API except token requests.
 		$headers = [
-			'Host: '.$this->configArray['Catalog']['sierraApiHost'],
-			'Authorization: Bearer '.$this->oAuthToken,
-			'User-Agent: Pika',
-			'X-Forwarded-For: '.$_SERVER['SERVER_ADDR']
+			'Host'           => $this->configArray['Catalog']['sierraApiHost'],
+			'Authorization'  => 'Bearer '.$this->oAuthToken,
+			'User-Agent'     => 'Pika',
+			'X-Forwarded-For'=> $_SERVER['SERVER_ADDR']
 		];
+
 		// merge headers
 		if ($extraHeaders) {
 			$headers = array_merge($headers, $extraHeaders);
 		}
 		// setup default curl opts
 		$opts = [
-			CURLOPT_RETURNTRANSFER => TRUE,
-			CURLOPT_HEADER         => FALSE,
-			CURLOPT_HTTPHEADER     => $headers,
+			CURLOPT_RETURNTRANSFER => true,
+			CURLOPT_HEADER         => false,
 		];
 		// instantiate the Curl object and set the base url
+		$operationUrl = $this->apiUrl.$operation;
 		try {
-			$c = new Curl($this->apiUrl.$operation);
+			$c = new Curl();
 		} catch (ErrorException $e) {
-			// TODO: log exception
+			// TODO: log exception, set curl error
 			return false;
 		}
 		$c->setHeaders($headers);
@@ -760,25 +816,24 @@ class Sierra extends PatronDriverInterface {
 		$method = strtolower($method);
 		switch($method) {
 			case 'get':
-				$c->get($params);
+				$c->get($operationUrl, $params);
 				break;
 			case 'post':
 				$c->setHeader('Content-Type', 'application/json');
-				$c->post($params);
+				$c->post($operationUrl, $params);
 				break;
 			case 'put':
 				$c->setHeader('Content-Type', 'application/json');
-				$c->put($params);
+				$c->put($operationUrl, $params);
 				break;
 			case 'delete':
-				$c->delete($params);
+				$c->delete($operationUrl, $params);
 				break;
 			default:
-				$c->get($params);
+				$c->get($operationUrl, $params);
 		}
 
 		### ERROR CHECKS ###
-		// for HTTP errors we'll grab the code from curl->info and the message from API.
 		// if an error does occur set the $this->apiLastError.
 
 		// get the info so we can check the headers for a good response.
@@ -787,17 +842,29 @@ class Sierra extends PatronDriverInterface {
 		// we don't want to use $c->error because it will report HTTP errors.
 		if ($c->isCurlError()) {
 			// This will probably never be triggered since we have the try/catch above.
-			$message = $c->errorCode.': '.$c->errorMessage;
+			$message = 'curl Error: '.$c->getCurlErrorCode().': '.$c->getCurlErrorMessage();
 			$this->apiLastError = $message;
 			return false;
-		} elseif ($cInfo['http_code'] != 200) { // check the request returned success (HTTP 200)
-			$message = 'API Error '.$c->response->code.': '.$c->response->name;
+		} elseif ($c->isHttpError()) {
+			// this will be a 4xx response
+			if(isset($c->response->code)) {
+				$message = 'API Error ' . $c->response->code . ': ' . $c->response->name;
+			} else {
+				$message = 'HTTP Error: '.$c->getErrorCode().': '.$c->getErrorMessage();
+			}
 			$this->apiLastError = $message;
 			return false;
 		}
+		// no errors
 		// make sure apiLastError is false after error checks
 		$this->apiLastError = false;
-		$r = $c->response;
+		// handle a "no response body" status code
+		if($c->getHttpStatusCode() == '204') {
+			$r = true;
+		} else {
+			$r = $c->response;
+		}
+
 		$c->close();
 		return $r;
 	}
