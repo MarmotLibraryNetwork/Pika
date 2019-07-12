@@ -32,6 +32,7 @@ class Record_AJAX extends AJAXHandler {
 		'placeHold',
 		'bookMaterial',
 		'reloadCover',
+		'forceReExtract'
 	);
 
 	protected $methodsThatRespondWithHTML = array(
@@ -474,4 +475,15 @@ class Record_AJAX extends AJAXHandler {
 		}
 	}
 
+	function forceReExtract(){
+		if (!empty($_REQUEST['id'])){
+			$recordId = $_REQUEST['id'];
+			if (strpos($recordId, ':') !== false){
+				list($sourceName, $recordId) = explode(':', $recordId, 2);
+			} // remove any prefix from the recordId
+		}
+		if (empty($recordId)){
+			return array('success' => false, 'message' => 'Record Id is required.');
+		}
+	}
 }

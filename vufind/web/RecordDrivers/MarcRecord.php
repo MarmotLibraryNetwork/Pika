@@ -312,6 +312,21 @@ class MarcRecord extends IndexRecord
 		$lastMarcModificationTime = MarcLoader::lastModificationTimeForIlsId($this->sourceAndId);
 		$interface->assign('lastMarcModificationTime', $lastMarcModificationTime);
 
+		global $configArray;
+		if ($configArray['Catalog']['ils'] == 'Sierra'){
+			$user        = UserAccount::getLoggedInUser();
+			$userIsStaff = $user && $user->isStaff();
+			$interface->assign('userIsStaff', $userIsStaff);
+			require_once ROOT_DIR . '/sys/Extracting/IlsExtractInfo.php';
+			$extractInfo                    = new IlsExtractInfo();
+			$extractInfo->indexingProfileId = $this->sourceAndId->getIndexingProfile()->id;
+			$extractInfo->ilsId             = $this->sourceAndId->getRecordId();
+			if ($extractInfo->find(true)){
+				$interface->assign('lastRecordExtractTime', $extractInfo->lastExtracted);
+				$interface->assign('recordExtractMarkedDeleted', $extractInfo->deleted);
+			}
+		}
+
 		if ($this->groupedWork != null){
 			$lastGroupedWorkModificationTime = $this->groupedWork->date_updated;
 			$interface->assign('lastGroupedWorkModificationTime', $lastGroupedWorkModificationTime);
@@ -322,7 +337,7 @@ class MarcRecord extends IndexRecord
 			ksort($solrRecord);
 		}
 		$interface->assign('solrRecord', $solrRecord);
-		return 'RecordDrivers/Marc/staff.tpl';
+		return 'RecordDrivers/Marc/staff-view.tpl';
 	}
 
 	/**
