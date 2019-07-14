@@ -23,11 +23,7 @@
  *    name is stored in cat_username field
  *
  * memcache keys
- * All keys are stored in memcache using this scheme (XXX = patron id or barcode):
- * patron_XXX_uid   -> sierra uid
- * patron_XXX_obj   -> cached patron object
- * patron_XXX_info  -> cached patron extra info (patron record returned from Sierra API)
- * patron_XXX_fines -> patron fines object
+ * // TODO: We need a standard for caching and keys so they can be reused.
  *
  *
  * @category Pika
@@ -39,24 +35,14 @@
  */
 namespace Pika\PatronDrivers;
 
-//require_once __DIR__.'/PatronDriverInterface.php';
-//require_once __DIR__.'/Traits/PatronHoldsOperations.php';
-//require_once __DIR__.'/Traits/PatronCheckOutsOperations.php';
-//require_once __DIR__.'/Traits/PatronFineOperations.php';
-//require_once __DIR__.'/Traits/PatronReadingHistoryOperations.php';
-//require_once 'C:\Composer\vendor\php-curl-class\php-curl-class\src\Curl\Curl.php';
 use Curl\Curl;
 use Location;
+use MarcRecord;
 use RecordDriverFactory;
 use User;
 
 
 class Sierra extends PatronDriverInterface {
-
-	//use PatronHoldsOperations;
-	//use PatronCheckOutsOperations;
-	//use PatronFineOperations;
-	//use PatronReadingHistoryOperations;
 
 	// Adding global variables to class during object construction to avoid repeated calls to global.
 	public  $memCache;
@@ -125,9 +111,10 @@ class Sierra extends PatronDriverInterface {
 		//global $logger;
 		//$logger->log("patronLogin called for $username using password $password", PEAR_LOG_INFO);
 		// get the login configuration barcode_pin or name_barcode
-		// TODO: Need to pull login from or session, db, memcache, etc, so login isn't called repeatably on each request.
+		// TODO: Need to pull login from session, db, memcache, etc, so login isn't called repeatably on each request.
 		$loginMethod = $this->accountProfile->loginConfiguration;
 		// check patron credentials depending on login config.
+		// the returns from _auth methods should be either a sierra patron id or false.
 		if ($loginMethod == "barcode_pin"){
 			$barcode = $username;
 			$this->patronBarcode = $barcode;
@@ -153,6 +140,10 @@ class Sierra extends PatronDriverInterface {
 		return $patron;
 	}
 
+	/**
+	 * @param int $patronId
+	 * @return User|null
+	 */
 	public function getPatron($patronId = null) {
 		// grab everything from the patron record the api can provide.
 		if(!isset($patronId) && !isset($this->patronId)) {
@@ -293,11 +284,23 @@ class Sierra extends PatronDriverInterface {
 		// city state zip
 		if($patron->address2 != '') {
 			$addressParts = explode(',', $patron->address2);
-			$city = trim($addressParts[0]);
-			$stateZip = trim($addressParts[1]);
-			$stateZipParts = explode(' ', $stateZip);
-			$state = trim($stateZipParts[0]);
-			$zip   = trim($stateZipParts[1]);
+			// some libraries may not use ','  after city so make sure we have parts
+			if (count($addressParts) > 1 ){
+				$city = trim($addressParts[0]);
+				$stateZip = trim($addressParts[1]);
+				$stateZipParts = explode(' ', $stateZip);
+				$state = trim($stateZipParts[0]);
+				$zip   = trim($stateZipParts[1]);
+			} else {
+				$regExp = "/^([^,]+)\s([A-Z]{2})(?:\s(\d{5}))?$/";
+				preg_match($regExp, $patron->address2, $matches);
+				if($matches) {
+					$city  = $matches[1];
+					$state = $matches[2];
+					$zip   = $matches[3];
+				}
+			}
+
 			$patron->city  = $city;
 			$patron->state = $state;
 			$patron->zip   = $zip;
@@ -368,50 +371,56 @@ class Sierra extends PatronDriverInterface {
 		return $patron;
 	}
 
-	public function getPatronInfo($uid = null) {
-		// GET patrons/{uid}
-		// names, addresses (a = main, p = alternate, h = alternate), phones (t = main,o = mobile), expirationDate,
-		// homeLibraryCode, moneyOwed, patronType, homeLibraryCode
-
-		// grab everything from the patron record the api can provide.
-		if(!isset($uid) && !isset($this->patronId)) {
-			trigger_error("ERROR: getPatronInfo expects at least on parameter. ", E_USER_ERROR);
-		} else {
-			$uid = isset($uid) ? $uid : $this->patronId;
-		}
-
-		$cacheKey = 'patron_' . $uid . '_info';
-		if ($pInfo = $this->memCache->get($cacheKey)) {
-			return $pInfo;
-		}
-
-		$params = [
-			'fields' => 'names,addresses,phones,emails,expirationDate,homeLibraryCode,moneyOwed,patronType,barcodes,patronType,patronCodes,createdDate,blockInfo,message,pMessage,langPref,fixedFields,varFields,updatedDate,createdDate'
-		];
-		$operation = 'patrons/'.$uid;
-		$pInfo = $this->_doRequest($operation, $params);
-		if(!$pInfo) {
-			// TODO: check last error.
-			return false;
-		}
-
-		$this->memCache->set($cacheKey, $pInfo, MEMCACHE_COMPRESSED, $this->configArray['Caching']['patron_profile']);
-		return $pInfo;
-	}
+	// todo: this goes.
+//	public function getPatronInfo($uid = null) {
+//		// GET patrons/{uid}
+//		// names, addresses (a = main, p = alternate, h = alternate), phones (t = main,o = mobile), expirationDate,
+//		// homeLibraryCode, moneyOwed, patronType, homeLibraryCode
+//
+//		// grab everything from the patron record the api can provide.
+//		if(!isset($uid) && !isset($this->patronId)) {
+//			trigger_error("ERROR: getPatronInfo expects at least on parameter. ", E_USER_ERROR);
+//		} else {
+//			$uid = isset($uid) ? $uid : $this->patronId;
+//		}
+//
+//		$cacheKey = 'patron_' . $uid . '_info';
+//		if ($pInfo = $this->memCache->get($cacheKey)) {
+//			return $pInfo;
+//		}
+//
+//		$params = [
+//			'fields' => 'names,addresses,phones,emails,expirationDate,homeLibraryCode,moneyOwed,patronType,barcodes,patronType,patronCodes,createdDate,blockInfo,message,pMessage,langPref,fixedFields,varFields,updatedDate,createdDate'
+//		];
+//		$operation = 'patrons/'.$uid;
+//		$pInfo = $this->_doRequest($operation, $params);
+//		if(!$pInfo) {
+//			// TODO: check last error.
+//			return false;
+//		}
+//
+//		$this->memCache->set($cacheKey, $pInfo, MEMCACHE_COMPRESSED, $this->configArray['Caching']['patron_profile']);
+//		return $pInfo;
+//	}
 
 	/**
 	 * Get the unique Sierra patron ID by searching for barcode.
 	 *
-	 * @param  $patron
-	 * @return int
+	 * @param  User|string $patronOrBarcode
+	 * @return int|false   returns the patron ID or false
 	 */
-	public function getPatronId($patron)
+	public function getPatronId($patronOrBarcode)
 	{
 		if(isset($this->patronId)) {
 			return $this->patronId;
 		}
-		$barcode = $patron->barcode;
-		$barcode = trim($barcode);
+		// if a patron object was passed
+		if(is_object($patronOrBarcode)) {
+			$barcode = $patronOrBarcode->barcode;
+			$barcode = trim($barcode);
+		} elseif (is_string($patronOrBarcode)) {
+			$barcode = $patronOrBarcode;
+		}
 
 		if($patronId = $this->memCache->get($barcode)) {
 			return $patronId;
@@ -435,6 +444,7 @@ class Sierra extends PatronDriverInterface {
 
 		return $this->patronId;
 	}
+
 	public function updatePatronInfo($patron, $canUpdateContactInfo){
 		// TODO: Implement updatePatronInfo() method.
 	}
@@ -505,13 +515,91 @@ class Sierra extends PatronDriverInterface {
 		return $r;
 	}
 
+	/**
+	 *
+	 * patrons/$patronId/holds
+	 * default,locations
+	 * @param  User $patron
+	 * @return array|bool
+	 */
+//$user;        // The name of the patron that the hold belongs to
+//$userId;      // The Pika Id number of the patron the hold belongs to
+//
+//$id;          // The id of the hold? or the record Id?
+//$cancelId;    // The hold id needed to cancel, freeze, thaw or change pickup location of this hold
+//$cancelable;  // Whether or not the hold can be cancelled
+//
+//$coverUrl;
+//$linkUrl;
+//
+//$title;
+//$title2;
+//$volume;
+//$author; // Can be an array
+//$format = array();
+//
+//$location;           // The name of the location the hold will arrive at
+//$locationUpdateable; // Whether or not the pick up location can be changed for this hold
+//
+//$create;                 // The date the hold was placed
+//$availableTime;          //The date the hold became available for pick up
+//$expire;                 // The date an available hold will expire.  The Pick-Up By date
+//$automaticCancellation;  // The date the hold will automatically cancel if not fulfilled
+//
+//$status;     // The status of the hold
+//$position;   //The place that the hold is in the hold queue. (eg. 4 of 24)
+//
+//$allowFreezeHolds; // Whether or not freezing/thawing holds is allowed
+//$frozen;           // Whether or not the hold is frozen
+//$reactivate;       // The date the frozen hold will automatically thaw
+//$freezable;        // Whether or not the hold is freezable
 	public function getMyHolds($patron){
+		//return [];
 		if(!$patronId = $this->getPatronId($patron)) {
 			// TODO: need to do something here
 			return false;
 		}
 
+		$operation = "patrons/{$patronId}/holds";
+		$holds = $this->_doRequest($operation);
 
+		if(!$holds) {
+			// todo: message? log?
+			return false;
+		}
+
+		if($holds->total == 0) {
+			return [];
+		}
+
+		if (!empty($bibId)){
+			$recordDriver = new MarcRecord($bibId);
+			if ($recordDriver->isValid()){
+				$curHold['title']           = $recordDriver->getTitle();
+				$curHold['author']          = $recordDriver->getPrimaryAuthor();
+				$curHold['sortTitle']       = $recordDriver->getSortableTitle();
+				$curHold['format']          = $recordDriver->getFormat();
+				$curHold['isbn']            = $recordDriver->getCleanISBN();
+				$curHold['upc']             = $recordDriver->getCleanUPC();
+				$curHold['format_category'] = $recordDriver->getFormatCategory();
+				$curHold['coverUrl']        = $recordDriver->getBookcoverUrl('medium');
+				$curHold['link']            = $recordDriver->getRecordUrl();
+				$curHold['ratingData']      = $recordDriver->getRatingData(); //Load rating information
+			}else{
+				$simpleSortTitle      = preg_replace('/^The\s|^A\s/i', '', $curRow['title']); // remove beginning The or A
+				$curHold['sortTitle'] = empty($simpleSortTitle) ? $curRow['title'] : $simpleSortTitle;
+			}
+		}
+		//$curPickupBranch       = new Location();
+		//$curPickupBranch->whereAdd("code = '{$branchCode}'");
+		/////////////// status
+//		0   On hold.
+//		// ready for pickup
+//		b   Bib hold ready for pickup.
+//		j   Volume hold ready for pickup.
+//		i   Item hold ready for pickup.
+//		// in transit
+//		t   Bib, item, or volume in transit to pickup location.
 	}
 
 	/**
@@ -624,7 +712,7 @@ class Sierra extends PatronDriverInterface {
 	 *
 	 * @param  $username  string   login name
 	 * @param  $barcode   string   barcode
-	 * @return $uid|FALSE Returns unique patron id from Sierra on success or FALSE on fail.
+	 * @return string|false Returns unique patron id from Sierra on success or false on fail.
 	 */
 	private function _authNameBarcode($username, $barcode) {
 		// tidy up barcode
@@ -692,9 +780,30 @@ class Sierra extends PatronDriverInterface {
 		return $result;
 	}
 
+	/**
+	 * patrons/validate
+	 *
+	 * @param string $barcode
+	 * @param string $pin
+	 * @return string|false Returns patron id on success false on fail.
+	 */
 	private function _authBarcodePin($barcode, $pin) {
 
-		return false;
+		$params = [
+			"barcode" =>$barcode,
+			"pin"     => $pin
+		];
+
+		if (!$this->_doRequest("patrons/validate", $params, "POST")) {
+			// todo: need to do error checks here
+			return false;
+		}
+
+		if(!$patronId = $this->getPatronId($barcode)){
+			return false;
+		}
+
+		return $patronId;
 
 	}
 
