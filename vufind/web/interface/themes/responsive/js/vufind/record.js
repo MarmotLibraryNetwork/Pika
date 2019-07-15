@@ -191,7 +191,7 @@ VuFind.Record = (function(){
 		forceReExtract: function (module, id) {
 			var url = Globals.path + '/' + module + '/' + id + '/AJAX?method=forceReExtract';
 			$.getJSON(url, function (data) {
-				VuFind.showMessage("Success", data.message, true, true);
+				VuFind.showMessage(data.success ? "Success" : "Error", data.message, data.success, data.success);
 					}
 			).fail(VuFind.ajaxFail);
 			return false;

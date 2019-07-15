@@ -477,13 +477,31 @@ class Record_AJAX extends AJAXHandler {
 
 	function forceReExtract(){
 		if (!empty($_REQUEST['id'])){
-			$recordId = $_REQUEST['id'];
-			if (strpos($recordId, ':') !== false){
-				list($sourceName, $recordId) = explode(':', $recordId, 2);
-			} // remove any prefix from the recordId
+			require_once ROOT_DIR . '/services/SourceAndId.php';
+			$recordId = new SourceAndId($_REQUEST['id']);
+			if ($recordId->getSource() && $recordId->getRecordId()){
+				require_once ROOT_DIR . '/sys/Extracting/IlsExtractInfo.php';
+				$extractInfo                    = new IlsExtractInfo();
+				$extractInfo->indexingProfileId = $recordId->getIndexingProfile()->id;
+				$extractInfo->ilsId             = $recordId->getRecordId();
+				if ($extractInfo->find(true)){
+					$extractInfo->lastExtracted = null;
+					if ($extractInfo->update()){
+						return array('success' => true, 'message' => 'Record was marked for re-extraction.');
+					}else{
+						return array('success' => false, 'message' => 'Failed to mark record for re-extraction.');
+					}
+				}else{
+//					$extractInfo->lastExtracted = null;
+					if ($extractInfo->insert()){
+						return array('success' => true, 'message' => 'Record was marked for re-extraction.');
+					}else{
+						return array('success' => false, 'message' => 'Failed to mark record for re-extraction.');
+					}
+				}
+			}
 		}
-		if (empty($recordId)){
-			return array('success' => false, 'message' => 'Record Id is required.');
-		}
+		return array('success' => false, 'message' => 'Invalid record Id.');
 	}
+
 }
