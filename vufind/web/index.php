@@ -20,9 +20,7 @@
 
 /** CORE APPLICATION CONTROLLER **/
 require_once 'bootstrap.php';
-// Composer autoloader
-// TODO: Add composer path to include paths on servers.
-require_once "vendor/autoload.php";
+
 global $timer;
 global $memoryWatcher;
 
