@@ -27,7 +27,7 @@
  *
  *
  * @category Pika
- * @package  Patron
+ * @package  PatronDrivers
  * @author   Chris Froese
  * @author   Pascal Brammeier
  * Date      5/13/2019
@@ -60,6 +60,8 @@ class Sierra extends PatronDriverInterface {
 	private $patronBarcode;
 	/* @var $apiUrl string The url for the Sierra API */
 	private $apiUrl;
+	// many ids come from url. example: https://sierra.marmot.org/iii/sierra-api/v5/items/5130034
+	private $urlIdRegExp = "/.*\/(\d*)$/";
 
 	public function __construct($accountProfile) {
 		// Adding standard globals to class to avoid repeated calling of global.
@@ -371,38 +373,6 @@ class Sierra extends PatronDriverInterface {
 		return $patron;
 	}
 
-	// todo: this goes.
-//	public function getPatronInfo($uid = null) {
-//		// GET patrons/{uid}
-//		// names, addresses (a = main, p = alternate, h = alternate), phones (t = main,o = mobile), expirationDate,
-//		// homeLibraryCode, moneyOwed, patronType, homeLibraryCode
-//
-//		// grab everything from the patron record the api can provide.
-//		if(!isset($uid) && !isset($this->patronId)) {
-//			trigger_error("ERROR: getPatronInfo expects at least on parameter. ", E_USER_ERROR);
-//		} else {
-//			$uid = isset($uid) ? $uid : $this->patronId;
-//		}
-//
-//		$cacheKey = 'patron_' . $uid . '_info';
-//		if ($pInfo = $this->memCache->get($cacheKey)) {
-//			return $pInfo;
-//		}
-//
-//		$params = [
-//			'fields' => 'names,addresses,phones,emails,expirationDate,homeLibraryCode,moneyOwed,patronType,barcodes,patronType,patronCodes,createdDate,blockInfo,message,pMessage,langPref,fixedFields,varFields,updatedDate,createdDate'
-//		];
-//		$operation = 'patrons/'.$uid;
-//		$pInfo = $this->_doRequest($operation, $params);
-//		if(!$pInfo) {
-//			// TODO: check last error.
-//			return false;
-//		}
-//
-//		$this->memCache->set($cacheKey, $pInfo, MEMCACHE_COMPRESSED, $this->configArray['Caching']['patron_profile']);
-//		return $pInfo;
-//	}
-
 	/**
 	 * Get the unique Sierra patron ID by searching for barcode.
 	 *
@@ -522,37 +492,7 @@ class Sierra extends PatronDriverInterface {
 	 * @param  User $patron
 	 * @return array|bool
 	 */
-//$user;        // The name of the patron that the hold belongs to
-//$userId;      // The Pika Id number of the patron the hold belongs to
-//
-//$id;          // The id of the hold? or the record Id?
-//$cancelId;    // The hold id needed to cancel, freeze, thaw or change pickup location of this hold
-//$cancelable;  // Whether or not the hold can be cancelled
-//
-//$coverUrl;
-//$linkUrl;
-//
-//$title;
-//$title2;
-//$volume;
-//$author; // Can be an array
-//$format = array();
-//
-//$location;           // The name of the location the hold will arrive at
-//$locationUpdateable; // Whether or not the pick up location can be changed for this hold
-//
-//$create;                 // The date the hold was placed
-//$availableTime;          //The date the hold became available for pick up
-//$expire;                 // The date an available hold will expire.  The Pick-Up By date
-//$automaticCancellation;  // The date the hold will automatically cancel if not fulfilled
-//
-//$status;     // The status of the hold
-//$position;   //The place that the hold is in the hold queue. (eg. 4 of 24)
-//
-//$allowFreezeHolds; // Whether or not freezing/thawing holds is allowed
-//$frozen;           // Whether or not the hold is frozen
-//$reactivate;       // The date the frozen hold will automatically thaw
-//$freezable;        // Whether or not the hold is freezable
+	
 	public function getMyHolds($patron){
 		//return [];
 		if(!$patronId = $this->getPatronId($patron)) {
@@ -561,7 +501,8 @@ class Sierra extends PatronDriverInterface {
 		}
 
 		$operation = "patrons/{$patronId}/holds";
-		$holds = $this->_doRequest($operation);
+		$params=["fields"=>"default,pickupByDate,frozen"];
+		$holds = $this->_doRequest($operation, $params);
 
 		if(!$holds) {
 			// todo: message? log?
@@ -571,35 +512,121 @@ class Sierra extends PatronDriverInterface {
 		if($holds->total == 0) {
 			return [];
 		}
+		// these will be consistent for every hold
+		$displayName  = $patron->getNameAndLibraryLabel();
+		$pikaPatronId = $patron->id;
+		//
+		$availableHolds   = [];
+		$unavailableHolds = [];
+		foreach ($holds->entries as $hold) {
+			// 1. standard stuff
+			$h['holdSource']      = 'ILS';
+			$h['userId']          = $pikaPatronId;
+			$h['user']            = $displayName;
 
-		if (!empty($bibId)){
-			$recordDriver = new MarcRecord($bibId);
-			if ($recordDriver->isValid()){
-				$curHold['title']           = $recordDriver->getTitle();
-				$curHold['author']          = $recordDriver->getPrimaryAuthor();
-				$curHold['sortTitle']       = $recordDriver->getSortableTitle();
-				$curHold['format']          = $recordDriver->getFormat();
-				$curHold['isbn']            = $recordDriver->getCleanISBN();
-				$curHold['upc']             = $recordDriver->getCleanUPC();
-				$curHold['format_category'] = $recordDriver->getFormatCategory();
-				$curHold['coverUrl']        = $recordDriver->getBookcoverUrl('medium');
-				$curHold['link']            = $recordDriver->getRecordUrl();
-				$curHold['ratingData']      = $recordDriver->getRatingData(); //Load rating information
-			}else{
-				$simpleSortTitle      = preg_replace('/^The\s|^A\s/i', '', $curRow['title']); // remove beginning The or A
-				$curHold['sortTitle'] = empty($simpleSortTitle) ? $curRow['title'] : $simpleSortTitle;
+			// 2. get what's available from this call
+			$h["position"]              = $hold->priority;
+			$h['frozen']                = $hold->frozen;
+			$h['create']                = strtotime($hold->placed); // date hold created
+			$h['automaticCancellation'] = strtotime($hold->notNeededAfterDate); // not needed after date
+			$h['expire'] = isset($hold->pickUpByDate) ? strtotime($hold->pickUpByDate) : false; // pick up by date
+			// cancel id
+			preg_match($this->urlIdRegExp, $hold->id, $m);
+			$h['cancelId'] = $m[1];
+
+			// status, cancelable, freezable
+			switch ($hold->status->code) {
+				case "0":
+					$status     = "On hold";
+					$cancelable = true;
+					$freezeable = true;
+					break;
+				case "b":
+				case "j":
+				case "i":
+					$status     = "Ready";
+					$cancelable = false;
+					$freezeable = false;
+					break;
+				case "t":
+					$status     = "In transit";
+					$cancelable = false;
+					$freezeable = false;
+					break;
+				default:
+					$status     = "Unknown";
+					$cancelable = false;
+					$freezeable = true;
 			}
-		}
-		//$curPickupBranch       = new Location();
-		//$curPickupBranch->whereAdd("code = '{$branchCode}'");
-		/////////////// status
-//		0   On hold.
-//		// ready for pickup
-//		b   Bib hold ready for pickup.
-//		j   Volume hold ready for pickup.
-//		i   Item hold ready for pickup.
-//		// in transit
-//		t   Bib, item, or volume in transit to pickup location.
+			$h['status']    = $status;
+			$h['freezeable']= $freezeable;
+			$h['cancelable']= $cancelable;
+
+			// pick up location
+			$pickupBranch = new Location();
+			$where = "code = '{$hold->pickupLocation->code}'";
+			$pickupBranch->whereAdd($where);
+			$pickupBranch->find(1);
+			if ($pickupBranch->N > 0){
+				$pickupBranch->fetch();
+				$h['currentPickupId']   = $pickupBranch->locationId;
+				$h['currentPickupName'] = $pickupBranch->displayName;
+				$h['location']          = $pickupBranch->displayName;
+			} else {
+				$h['currentPickupId']   = false;
+				$h['currentPickupName'] = $hold->pickupLocation->name;
+				$h['location']          = $hold->pickupLocation->name;
+			}
+
+			////// record type and record id
+			$recordType = $hold->recordType;
+			preg_match($this->urlIdRegExp, $hold->record,$m);
+			// for item level holds we need to grab the bib id.
+			$id = $m[1];
+			if($recordType == "i") {
+				// items/{itemId}
+				$operation = "items/".$id;
+				$params = ["fields"=>"bibIds"];
+				$r = $this->_doRequest($operation, $params);
+				if($r) {
+					$id = $r->bibIds[0];
+				}
+			}
+			// for Pika we need the check digit.
+			$recordXD  = $this->getCheckDigit($id);
+
+			// get more info from record
+			$bibId = 'b'.$id.$recordXD;
+			disableErrorHandler();
+			$recordDriver = new MarcRecord($this->accountProfile->recordSource . ":" . $bibId);
+			if ($recordDriver->isValid()){
+				$h['id']              = $recordDriver->getUniqueID();
+				$h['shortId']         = $recordDriver->getShortId();
+				$h['title']           = $recordDriver->getTitle();
+				$h['sortTitle']       = $recordDriver->getSortableTitle();
+				$h['author']          = $recordDriver->getAuthor();
+				$h['format']          = $recordDriver->getFormat();
+				$h['isbn']            = $recordDriver->getCleanISBN();  //TODO these may not be used anywhere now that the links are built here, have to check
+				$h['upc']             = $recordDriver->getCleanUPC();    //TODO these may not be used anywhere now that the links are built here, have to check
+				$h['format_category'] = $recordDriver->getFormatCategory();
+				$h['link']            = $recordDriver->getRecordUrl();
+				$h['coverUrl']        = $recordDriver->getBookcoverUrl('medium');
+			}
+			enableErrorHandler();
+			// bji
+			if($hold->status->code == "b" || $hold->status->code == "j" || $hold->status->code == "i") {
+				$availableHolds[] = $h;
+			} else {
+				$unavailableHolds[] = $h;
+			}
+
+		} // end foreach
+
+		$return['available']   = $availableHolds;
+		$return['unavailable'] = $unavailableHolds;
+
+		return $return;
+
 	}
 
 	/**
@@ -977,5 +1004,20 @@ class Sierra extends PatronDriverInterface {
 		$c->close();
 		return $r;
 	}
+
+	private function getCheckDigit($baseId){
+		$baseId = preg_replace('/\.?[bij]/', '', $baseId);
+		$sumOfDigits = 0;
+		for ($i = 0; $i < strlen($baseId); $i++){
+			$curDigit = substr($baseId, $i, 1);
+			$sumOfDigits += ((strlen($baseId) + 1) - $i) * $curDigit;
+		}
+		$modValue = $sumOfDigits % 11;
+		if ($modValue == 10){
+			return "x";
+		}else{
+			return $modValue;
+		}
+}
 
 }
