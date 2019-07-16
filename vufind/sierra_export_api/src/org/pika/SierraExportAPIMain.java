@@ -1342,7 +1342,8 @@ public class SierraExportAPIMain {
 								itemField.addSubfield(marcFactory.newSubfield(indexingProfile.itemUrl, allFieldContent.toString()));
 							} else if (indexingProfile.eContentExportFieldTag.length() > 0 && fieldTag.equals(indexingProfile.eContentExportFieldTag)) {
 								itemField.addSubfield(marcFactory.newSubfield(indexingProfile.eContentDescriptor, allFieldContent.toString()));
-							} else {
+							} else if (!fieldTag.equalsIgnoreCase("b")) {
+								// fieldTag b is for barcode (Do not need to handle)
 								logger.warn("Unhandled item variable field " + fieldTag + " ; " + curVarField.toString());
 							}
 						}
