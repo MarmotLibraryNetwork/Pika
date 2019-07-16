@@ -250,11 +250,11 @@ class SideFacets implements RecommendationInterface
 						$anyLocationLabel = $this->searchObject->getFacetSetting("Availability", "anyLocationLabel");
 						//print_r ("anyLocationLabel = $anyLocationLabel");
 						$availableAtFacets['*'] = array(
-							'value' => '*',
-							'display' => $anyLocationLabel == '' ? "Any Marmot Location" : $anyLocationLabel,
-							'count' => $this->searchObject->getResultTotal() - (isset($oldFacetValues['']['count']) ? $oldFacetValues['']['count'] : 0),
-							'url' => $this->searchObject->renderLinkWithFilter('available_at:*'),
-							'isApplied' => array_key_exists('*', $appliedAvailability),
+							'value'      => '*',
+							'display'    => $anyLocationLabel == '' ? "Any Marmot Location" : $anyLocationLabel,
+							'count'      => $this->searchObject->getResultTotal() - (isset($oldFacetValues['']['count']) ? $oldFacetValues['']['count'] : 0),
+							'url'        => $this->searchObject->renderLinkWithFilter('available_at:*'),
+							'isApplied'  => array_key_exists('*', $appliedAvailability),
 							'removalUrl' => array_key_exists('*', $appliedAvailability) ? $appliedAvailability['*'] : null
 						);
 					}

@@ -1327,8 +1327,9 @@ public class SierraExportAPIMain {
 											itemField.addSubfield(marcFactory.newSubfield(indexingProfile.callNumberCutterSubfield, content));
 										} else if (indexingProfile.callNumberPoststampExportSubfield.length() > 0 && tag.indexOf(indexingProfile.callNumberPoststampExportSubfield) > 0) {
 											itemField.addSubfield(marcFactory.newSubfield(indexingProfile.callNumberPoststampSubfield, content));
-											//}else{
-											//logger.debug("Unhandled call number subfield " + tag);
+										} else {
+											logger.warn("Unhandled call number subfield " + tag + " ; " + curVarField.toString());
+											//This is to catch any settings not handled in the field mappings.
 										}
 									}
 								} else {
@@ -1341,8 +1342,8 @@ public class SierraExportAPIMain {
 								itemField.addSubfield(marcFactory.newSubfield(indexingProfile.itemUrl, allFieldContent.toString()));
 							} else if (indexingProfile.eContentExportFieldTag.length() > 0 && fieldTag.equals(indexingProfile.eContentExportFieldTag)) {
 								itemField.addSubfield(marcFactory.newSubfield(indexingProfile.eContentDescriptor, allFieldContent.toString()));
-								//}else{
-								//logger.debug("Unhandled item variable field " + fieldTag);
+							} else {
+								logger.warn("Unhandled item variable field " + fieldTag + " ; " + curVarField.toString());
 							}
 						}
 

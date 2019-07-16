@@ -1,5 +1,6 @@
 <?php
-require_once ('File/MARC.php');
+require_once 'File/MARC.php';
+require_once ROOT_DIR . '/services/SourceAndId.php';
 /**
  * Class MarcLoader
  *
@@ -12,36 +13,35 @@ class MarcLoader{
 	 */
 	public static function loadMarcRecordFromRecord($record){
 		if ($record['recordtype'] == 'marc'){
-			return MarcLoader::loadMarcRecordByILSId($record['id']);
+			return MarcLoader::loadMarcRecordByILSId(new SourceAndId($record['id']));
 		}else{
 			return null;
 		}
 
 	}
 
+	private static $loadedMarcRecords = array();
+
 	/**
-	 * @param string $ilsId       The id of the record within the ils
-	 * @param string $recordType  The type of the record in the system
+	 * @param SourceAndId $sourceAndId The id of the record within the ils
+	 *
 	 * @return File_MARC_Record
 	 */
-	private static $loadedMarcRecords = array();
-	public static function loadMarcRecordByILSId($id){
-		$recordInfo = explode(':', $id);
-		$ilsId      = $recordInfo[1];
+	public static function loadMarcRecordByILSId(SourceAndId $sourceAndId){
+		$fullId = $sourceAndId->getSourceAndId();
 
-		if (array_key_exists($ilsId, MarcLoader::$loadedMarcRecords)){
-			return MarcLoader::$loadedMarcRecords[$ilsId];
+		if (array_key_exists($fullId, MarcLoader::$loadedMarcRecords)){
+			return MarcLoader::$loadedMarcRecords[$fullId];
 		}
-		$marcRecord = false;
 
-		list($indexingProfile, $ilsId) = self::getIndexingProfileForId($id);
-		$individualName = self::getIndividualMarcFileName($ilsId, $indexingProfile);
+		$marcRecord     = false;
+		$individualName = self::getIndividualMarcFileName($sourceAndId);
 		if (file_exists($individualName)){
 			$rawMarc = file_get_contents($individualName);
 			try {
 				$marc = new File_MARC($rawMarc, File_MARC::SOURCE_STRING);
 				if (!($marcRecord = $marc->next())){
-					PEAR_Singleton::raiseError(new PEAR_Error('Could not load marc record for record ' . $id));
+					PEAR_Singleton::raiseError(new PEAR_Error('Could not load marc record for record ' . $fullId));
 				}
 
 				//Make sure not to use too much memory
@@ -50,10 +50,10 @@ class MarcLoader{
 					array_shift(MarcLoader::$loadedMarcRecords);
 					$memoryWatcher->logMemory("Removed Cached MARC");
 				}
-				$memoryWatcher->logMemory("Loaded MARC for $id");
-				MarcLoader::$loadedMarcRecords[$id] = $marcRecord;
+				$memoryWatcher->logMemory("Loaded MARC for $fullId");
+				MarcLoader::$loadedMarcRecords[$fullId] = $marcRecord;
 			} catch (File_MARC_Exception $e){
-				PEAR_Singleton::raiseError(new PEAR_Error('Could not load marc record for record ' . $id));
+				PEAR_Singleton::raiseError(new PEAR_Error('Could not load marc record for record ' . $fullId));
 			}
 		}
 
@@ -61,12 +61,12 @@ class MarcLoader{
 	}
 
 	/**
-	 * @param string $id       Passed as <type>:<id>
-	 * @return int
+	 * @param SourceAndId $sourceAndId Passed as <type>:<id>
+	 *
+	 * @return int|boolean
 	 */
-	public static function lastModificationTimeForIlsId($id){
-		list($indexingProfile, $ilsId) = self::getIndexingProfileForId($id);
-		$individualName = self::getIndividualMarcFileName($ilsId, $indexingProfile);
+	public static function lastModificationTimeForIlsId($sourceAndId){
+		$individualName = self::getIndividualMarcFileName($sourceAndId);
 		if (!empty($individualName)){
 			return filemtime($individualName);
 		}else{
@@ -75,12 +75,12 @@ class MarcLoader{
 	}
 
 	/**
-	 * @param string $id       Passed as <type>:<id>
+	 * @param SourceAndId $sourceAndId Passed as <type>:<id>
+	 *
 	 * @return boolean
 	 */
-	public static function marcExistsForILSId($id){
-		list($indexingProfile, $ilsId) = self::getIndexingProfileForId($id);
-		$individualName = self::getIndividualMarcFileName($ilsId, $indexingProfile);
+	public static function marcExistsForILSId($sourceAndId){
+		$individualName = self::getIndividualMarcFileName($sourceAndId);
 		if (!empty($individualName)){
 			return file_exists($individualName);
 		}else{
@@ -89,16 +89,17 @@ class MarcLoader{
 	}
 
 	/**
-	 * Gets the full path (and name) for the Indivdual Marc File associated with the record
+	 * Gets the full path (and name) for the Individual Marc File associated with the record
 	 *
-	 * @param string          $individualRecordId The ID of the record to get file path for
-	 * @param IndexingProfile $indexingProfile    The Indexing Profile of the collection the record is a part of
+	 * @param SourceAndId $sourceAndId The ID of the record to get file path for
+	 *
 	 * @return string
 	 */
-	private static function getIndividualMarcFileName($individualRecordId, $indexingProfile){
-		$shortId = str_replace('.', '', $individualRecordId);
+	private static function getIndividualMarcFileName(SourceAndId $sourceAndId){
+		$indexingProfile = $sourceAndId->getIndexingProfile();
+		$shortId         = str_replace('.', '', $sourceAndId->getRecordId());
 		if (strlen($shortId) < 9){
-			$shortId = str_pad($shortId, 9, "0", STR_PAD_LEFT);
+			$shortId = str_pad($shortId, 9, '0', STR_PAD_LEFT);
 		}
 		if ($indexingProfile->createFolderFromLeadingCharacters){
 			$firstChars = substr($shortId, 0, $indexingProfile->numCharsToCreateFolderFrom);
@@ -111,31 +112,17 @@ class MarcLoader{
 		return $individualMarcFileName;
 	}
 
-	private static function getIndexingProfileForId($id){
-		if (strpos($id, ':') !== false){
-			$recordInfo = explode(':', $id);
-			$recordType = $recordInfo[0];
-			$ilsId      = $recordInfo[1];
-		}else{
-			//Try to infer the indexing profile from the module
-			/** @var IndexingProfile $activeRecordProfile */
-			global $activeRecordProfile;
-			if ($activeRecordProfile){
-				$recordType = $activeRecordProfile->name;
-			}else{
-				$recordType = 'ils';
-			}
-			$ilsId = $id;
-		}
-
+	/**
+	 * @param SourceAndId $sourceAndId
+	 *
+	 * @return IndexingProfile
+	 */
+	public static function getIndexingProfileForId(SourceAndId $sourceAndId){
+		$recordType = $sourceAndId->getSource();
 		/** @var $indexingProfiles IndexingProfile[] */
 		global $indexingProfiles;
 		if (array_key_exists($recordType, $indexingProfiles)){
-			$indexingProfile = $indexingProfiles[$recordType];
-		}else{
-			$indexingProfile = $indexingProfiles['ils'];
+			return $indexingProfiles[$recordType];
 		}
-
-		return array($indexingProfile, $ilsId);
 	}
 }

@@ -10,6 +10,7 @@
 
 require_once ROOT_DIR . '/AJAXHandler.php';
 require_once ROOT_DIR . '/services/AJAX/MARC_AJAX_Basic.php';
+require_once ROOT_DIR . '/services/SourceAndId.php';
 
 class Hoopla_AJAX extends AJAXHandler {
 
@@ -26,75 +27,21 @@ class Hoopla_AJAX extends AJAXHandler {
 		'downloadMarc',
 	);
 
-	function downloadMarc(){
-		$id       = $_REQUEST['id'];
-		$marcData = MarcLoader::loadMarcRecordByILSId($id);
-		header('Content-Description: File Transfer');
-		header('Content-Type: application/octet-stream');
-		header("Content-Disposition: attachment; filename={$id}.mrc");
-		header('Content-Transfer-Encoding: binary');
-		header('Expires: 0');
-		header('Cache-Control: must-revalidate');
-		header('Pragma: public');
-
-		header('Content-Length: ' . strlen($marcData->toRaw()));
-		ob_clean();
-		flush();
-		echo($marcData->toRaw());
-	}
-
-	function reloadCover(){
-		require_once ROOT_DIR . '/RecordDrivers/MarcRecord.php';
-		$id           = $_REQUEST['id'];
-		$recordDriver = new MarcRecord($id);
-
-		//Reload small cover
-		$smallCoverUrl = str_replace('&amp;', '&', $recordDriver->getBookcoverUrl('small')) . '&reload';
-		file_get_contents($smallCoverUrl);
-
-		//Reload medium cover
-		$mediumCoverUrl = str_replace('&amp;', '&', $recordDriver->getBookcoverUrl('medium')) . '&reload';
-		file_get_contents($mediumCoverUrl);
-
-		//Reload large cover
-		$largeCoverUrl = str_replace('&amp;', '&', $recordDriver->getBookcoverUrl('large')) . '&reload';
-		file_get_contents($largeCoverUrl);
-
-		//Also reload covers for the grouped work
-		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
-		$groupedWorkDriver = new GroupedWorkDriver($recordDriver->getGroupedWorkId());
-		//Reload small cover
-		$smallCoverUrl =  str_replace('&amp;', '&', $groupedWorkDriver->getBookcoverUrl('small', true)) . '&reload';
-		file_get_contents($smallCoverUrl);
-
-		//Reload medium cover
-		$mediumCoverUrl = str_replace('&amp;', '&', $groupedWorkDriver->getBookcoverUrl('medium', true)) . '&reload';
-		file_get_contents($mediumCoverUrl);
-
-		//Reload large cover
-		$largeCoverUrl =  str_replace('&amp;', '&', $groupedWorkDriver->getBookcoverUrl('large', true)) . '&reload';
-		file_get_contents($largeCoverUrl);
-
-		return array('success' => true, 'message' => 'Covers have been reloaded.  You may need to refresh the page to clear your local cache.');
-	}
-
 
 	/**
 	 * @return array
 	 */
 	function getHooplaCheckOutPrompt(){
-		$user = UserAccount::getLoggedInUser();
-		$id   = $_REQUEST['id'];
-		if (strpos($id, ':') !== false){
-			list(, $id) = explode(':', $id);
-		}
+		$user   = UserAccount::getLoggedInUser();
+		$fullId = new SourceAndId($_REQUEST['id']);
+		$id     = $fullId->getRecordId();
 		if ($user){
 			$hooplaUsers = $user->getRelatedHooplaUsers();
 
-			require_once ROOT_DIR . '/Drivers/HooplaDriver.php';
-			$driver = new HooplaDriver();
-
 			if ($id){
+				require_once ROOT_DIR . '/Drivers/HooplaDriver.php';
+				$driver = new HooplaDriver();
+
 				global $interface;
 				$interface->assign('hooplaId', $id);
 
@@ -124,8 +71,8 @@ class Hoopla_AJAX extends AJAXHandler {
 					$checkOutStatus = $hooplaUserStatuses[$hooplaUser->id];
 					if (!$checkOutStatus){
 						require_once ROOT_DIR . '/RecordDrivers/HooplaRecordDriver.php';
-						$hooplaRecord = new HooplaRecordDriver('hoopla:'.$id); //TODO: need a proper solution here
-						$accessLink = reset($hooplaRecord->getAccessLink()); // Base Hoopla Title View Url
+						$hooplaRecord          = new HooplaRecordDriver($fullId);
+						$accessLink            = reset($hooplaRecord->getAccessLink()); // Base Hoopla Title View Url
 						$hooplaRegistrationUrl = $accessLink['url'];
 						$hooplaRegistrationUrl .= (parse_url($hooplaRegistrationUrl, PHP_URL_QUERY) ? '&' : '?') . 'showRegistration=true'; // Add Registration URL parameter
 
@@ -167,6 +114,13 @@ class Hoopla_AJAX extends AJAXHandler {
 							'buttons' => '',
 						);
 				}
+			} else {
+				return
+					array(
+						'title'   => 'Invalid Hoopla ID',
+						'body'    => '<p class="alert alert-danger">Invalid Hoopla Id provided.</p>',
+						'buttons' => '',
+					);
 			}
 		}else{
 			return
@@ -191,11 +145,11 @@ class Hoopla_AJAX extends AJAXHandler {
 					$interface->assign('hooplaUser', $patron); // Display the account name when not using the main user
 				}
 
-				$id = $_REQUEST['id'];
+				$sourceAndId = new SourceAndId($_REQUEST['id']);
 				require_once ROOT_DIR . '/Drivers/HooplaDriver.php';
 				$driver = new HooplaDriver();
-				$result = $driver->checkoutHooplaItem($id, $patron);
-				if (!empty($_REQUEST['stopHooplaConfirmation'])){
+				$result = $driver->checkoutHooplaItem($sourceAndId, $patron);
+				if (!empty($_REQUEST['stopHooplaConfirmation'])) {
 					$patron->hooplaCheckOutConfirmation = false;
 					$patron->update();
 				}
@@ -225,11 +179,11 @@ class Hoopla_AJAX extends AJAXHandler {
 		if ($user){
 			$patronId = $_REQUEST['patronId'];
 			$patron   = $user->getUserReferredTo($patronId);
-			if ($patron){
-				$id = $_REQUEST['id'];
+			if ($patron) {
+				$sourceAndID = new HooplaSourceAndId($_REQUEST['id']);
 				require_once ROOT_DIR . '/Drivers/HooplaDriver.php';
 				$driver = new HooplaDriver();
-				$result = $driver->returnHooplaItem($id, $patron);
+				$result = $driver->returnHooplaItem($sourceAndID, $patron);
 				return $result;
 			}else{
 				return array('success' => false, 'message' => 'Sorry, it looks like you don\'t have permissions to return titles for that user.');
@@ -239,4 +193,12 @@ class Hoopla_AJAX extends AJAXHandler {
 		}
 	}
 
+}
+
+/**
+ * Class HooplaSourceAndID  Modified the default source and ID handler so that the
+ * assumed source if none is provided is hoopla
+ */
+class HooplaSourceAndID extends SourceAndId {
+	static $defaultSource = 'hoopla';
 }

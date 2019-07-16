@@ -163,7 +163,7 @@ class HooplaRecordDriver extends SideLoadedRecord {
 
 		require_once ROOT_DIR . '/sys/Hoopla/HooplaExtract.php';
 		$hooplaExtract = new HooplaExtract();
-		$hooplaId      = HooplaDriver::recordIDtoHooplaID($this->id);
+		$hooplaId      = HooplaDriver::recordIDtoHooplaID($this->sourceAndId);
 		if ($hooplaExtract->get('hooplaId', $hooplaId) == 1){
 			$hooplaData = array();
 			foreach ($hooplaExtract->table() as $fieldName => $value_ignored){

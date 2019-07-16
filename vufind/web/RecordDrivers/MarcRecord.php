@@ -18,8 +18,8 @@
  *
  */
 require_once 'File/MARC.php';
-
 require_once ROOT_DIR . '/RecordDrivers/IndexRecord.php';
+require_once ROOT_DIR . '/services/SourceAndId.php';
 
 /**
  * MARC Record Driver
@@ -32,6 +32,8 @@ class MarcRecord extends IndexRecord
 	/** @var File_MARC_Record $marcRecord */
 	protected $marcRecord = null;
 
+	/** @var SourceAndId $sourceAndId */
+	protected $sourceAndId;
 	protected $profileType;
 	protected $id;
 	/** @var  IndexingProfile $indexingProfile */
@@ -45,37 +47,24 @@ class MarcRecord extends IndexRecord
 	 * we will already have this data available, so we might as well
 	 * just pass it into the constructor.
 	 *
-	 * @param array|File_MARC_Record|string $recordData  Data to construct the driver from
-	 * @param GroupedWork                   $groupedWork ;
+	 * @param SourceAndId|File_MARC_Record|string|array $recordData  Data to construct the driver from
+	 * @param GroupedWork                               $groupedWork ;
+	 *
 	 * @access  public
 	 */
 	public function __construct($recordData, $groupedWork = null){
-		if ($recordData instanceof File_MARC_Record){
+		if ($recordData instanceof File_MARC_Record){ //TODO: find when this happens
 			$this->marcRecord = $recordData;
-		}elseif (is_string($recordData)){
+		}elseif (is_string($recordData) || $recordData instanceof SourceAndId){
 			require_once ROOT_DIR . '/sys/MarcLoader.php';
-			if (strpos($recordData, ':') !== false){
-				$recordInfo        = explode(':', $recordData);
-				$this->profileType = $recordInfo[0];
-				$this->id          = $recordInfo[1];
-			}else{
-				$this->profileType = 'ils';
-				$this->id          = $recordData;
+			if (is_string($recordData)){ //TODO: make use of string for id's obsolete
+				$recordData = new SourceAndId($recordData);
 			}
-
-			global $indexingProfiles;
-			if (array_key_exists($this->profileType, $indexingProfiles)){
-				$this->indexingProfile = $indexingProfiles[$this->profileType];
-			}else{
-				//Try to infer the indexing profile from the module
-				global $activeRecordProfile;
-				if ($activeRecordProfile){
-					$this->indexingProfile = $activeRecordProfile;
-				}else{
-					$this->indexingProfile = $indexingProfiles['ils'];
-				}
-			}
-		}else{
+			$this->sourceAndId     = $recordData;
+			$this->profileType     = $recordData->getSource();
+			$this->id              = $recordData->getRecordId();
+			$this->indexingProfile = $recordData->getIndexingProfile();
+		}else{ //TODO: find when this happens!
 			// Call the Index Records's constructor...
 			parent::__construct($recordData, $groupedWork);
 
@@ -85,13 +74,13 @@ class MarcRecord extends IndexRecord
 			if (!$this->marcRecord){
 				$this->valid = false;
 			}
-		}
-		if (!isset($this->id) && $this->valid){
-			/** @var File_MARC_Data_Field $idField */
-			global $configArray;
-			$idField = $this->marcRecord->getField($configArray['Reindex']['recordNumberTag']);
-			if ($idField){
-				$this->id = $idField->getSubfield('a')->getData();
+			if (!isset($this->id) && $this->valid){
+				/** @var File_MARC_Data_Field $idField */
+				global $configArray;
+				$idField = $this->marcRecord->getField($configArray['Reindex']['recordNumberTag']);
+				if ($idField){
+					$this->id = $idField->getSubfield('a')->getData();
+				}
 			}
 		}
 		global $timer;
@@ -103,33 +92,14 @@ class MarcRecord extends IndexRecord
 		}
 	}
 
-	// No references to the below methods & properties. Commented out 9/29/2017 pascal
-//	protected $itemsFromIndex;
-//
-//	public function setItemsFromIndex($itemsFromIndex, $realTimeStatusNeeded){
-//		global $configArray;
-//		global $offlineMode;
-//		//TODO: offline mode check below has not been tested
-//		if ($configArray['Catalog']['supportsRealtimeIndexing'] || !$realTimeStatusNeeded || $offlineMode) {
-//			$this->itemsFromIndex = $itemsFromIndex;
-//		}
-//	}
-//
-//	protected $detailedRecordInfoFromIndex;
-//
-//	public function setDetailedRecordInfoFromIndex($detailedRecordInfoFromIndex, $realTimeStatusNeeded){
-//		global $configArray;
-//		global $offlineMode;
-//		//TODO: offline mode check below has not been tested
-//		if ($configArray['Catalog']['supportsRealtimeIndexing'] || !$realTimeStatusNeeded || $offlineMode) {
-//			$this->detailedRecordInfoFromIndex = $detailedRecordInfoFromIndex;
-//		}
-//	}
-
-	public function isValid()
-	{
-		if ($this->valid === null) {
-			$this->valid = MarcLoader::marcExistsForILSId($this->getIdWithSource());
+	/**
+	 * Determine whether or not there is a MARC file which information can be taken from
+	 *
+	 * @return bool|null
+	 */
+	public function isValid(){
+		if ($this->valid === null){
+			$this->valid = MarcLoader::marcExistsForILSId($this->sourceAndId);
 		}
 		return $this->valid;
 	}
@@ -142,13 +112,8 @@ class MarcRecord extends IndexRecord
 	 * @access  public
 	 * @return  string              Unique identifier.
 	 */
-	public function getUniqueID()
-	{
-		if (isset($this->id)) {
-			return $this->id;
-		} else {
-			return $this->fields['id'];
-		}
+	public function getUniqueID(){
+		return $this->getId();
 	}
 
 	/**
@@ -159,18 +124,16 @@ class MarcRecord extends IndexRecord
 	 * @access  public
 	 * @return  string              Unique identifier.
 	 */
-	public function getId()
-	{
-		if (isset($this->id)) {
+	public function getId(){
+		if (isset($this->id)){
 			return $this->id;
-		} else {
+		}else{
 			return $this->fields['id'];
 		}
 	}
 
-	public function getIdWithSource()
-	{
-		return $this->profileType . ':' . $this->id;
+	public function getIdWithSource(){
+		return $this->sourceAndId->getSourceAndId();
 	}
 
 	/**
@@ -184,8 +147,8 @@ class MarcRecord extends IndexRecord
 	public function getShortId()
 	{
 		$shortId = '';
-		if (isset($this->id)) {
-			$shortId = $this->id;
+		if (!empty($this->sourceAndId->getRecordId())) {
+			$shortId = $this->sourceAndId->getRecordId();
 			if (strpos($shortId, '.b') === 0) {
 				$shortId = str_replace('.b', 'b', $shortId);
 				$shortId = substr($shortId, 0, strlen($shortId) - 1);
@@ -341,26 +304,40 @@ class MarcRecord extends IndexRecord
 	 * @access  public
 	 * @return  string              Name of Smarty template file to display.
 	 */
-	public function getStaffView()
-	{
+	public function getStaffView(){
 		global $interface;
 
 		$interface->assign('marcRecord', $this->getMarcRecord());
 
-		$lastMarcModificationTime = MarcLoader::lastModificationTimeForIlsId("{$this->profileType}:{$this->id}");
+		$lastMarcModificationTime = MarcLoader::lastModificationTimeForIlsId($this->sourceAndId);
 		$interface->assign('lastMarcModificationTime', $lastMarcModificationTime);
 
-		if ($this->groupedWork != null) {
+		global $configArray;
+		if ($configArray['Catalog']['ils'] == 'Sierra'){
+			$user        = UserAccount::getLoggedInUser();
+			$userIsStaff = $user && $user->isStaff();
+			$interface->assign('userIsStaff', $userIsStaff);
+			require_once ROOT_DIR . '/sys/Extracting/IlsExtractInfo.php';
+			$extractInfo                    = new IlsExtractInfo();
+			$extractInfo->indexingProfileId = $this->sourceAndId->getIndexingProfile()->id;
+			$extractInfo->ilsId             = $this->sourceAndId->getRecordId();
+			if ($extractInfo->find(true)){
+				$interface->assign('lastRecordExtractTime', $extractInfo->lastExtracted);
+				$interface->assign('recordExtractMarkedDeleted', $extractInfo->deleted);
+			}
+		}
+
+		if ($this->groupedWork != null){
 			$lastGroupedWorkModificationTime = $this->groupedWork->date_updated;
 			$interface->assign('lastGroupedWorkModificationTime', $lastGroupedWorkModificationTime);
 		}
 
 		$solrRecord = $this->fields;
-		if ($solrRecord) {
+		if ($solrRecord){
 			ksort($solrRecord);
 		}
 		$interface->assign('solrRecord', $solrRecord);
-		return 'RecordDrivers/Marc/staff.tpl';
+		return 'RecordDrivers/Marc/staff-view.tpl';
 	}
 
 	/**
@@ -1840,7 +1817,7 @@ class MarcRecord extends IndexRecord
 		if ($this->marcRecord == null){
 			disableErrorHandler();
 			try {
-				$this->marcRecord = MarcLoader::loadMarcRecordByILSId($this->getIdWithSource());
+				$this->marcRecord = MarcLoader::loadMarcRecordByILSId($this->sourceAndId);
 				if (PEAR_Singleton::isError($this->marcRecord) || $this->marcRecord == false){
 					$this->valid      = false;
 					$this->marcRecord = false;
