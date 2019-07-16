@@ -132,58 +132,87 @@ then
 	echo $(date +"%T") "Completed Overdrive fullReload." >> ${OUTPUT_FILE}
 fi
 
-#Extract from ILS
-#TODO: For now, leave the traditional fullexport process in place, but should switch to the assumption of not depending on whether or not the full export is present
-#Copy extracts from FTP Server
-mount 10.1.2.7:/ftp/aurora/sierra /mnt/ftp
-FILE1=$(find /mnt/ftp/ -name fullexport*.mrc -mtime -1 | sort -n | tail -1)
+function copySierraExport() {
+	#Copy extracts from FTP Server
+	FTPSERVERPATH=$1
+	MINFILESIZE=$2
 
-if [ -n "$FILE1" ]
-then
-		FILE1SIZE=$(wc -c <"$FILE1")
-		if [ $FILE1SIZE -ge $MINFILE1SIZE ]; then
+	mount 10.1.2.7:$FTPSERVERPATH /mnt/ftp
+	FILE=$(find /mnt/ftp/ -name fullexport*.mrc -mtime -1 | sort -n | tail -1)
 
-			echo "Latest file is " $FILE1 >> ${OUTPUT_FILE}
-			DIFF=$(($FILE1SIZE - $MINFILE1SIZE))
-			PERCENTABOVE=$((100 * $DIFF / $MINFILE1SIZE))
-			echo "The export file is $PERCENTABOVE (%) larger than the minimum size check." >> ${OUTPUT_FILE}
+	if [ -n "$FILE" ]; then
+			FILE1SIZE=$(wc -c < "$FILE")
+			if [ $FILE1SIZE -ge $MINFILESIZE ]; then
 
-			cp $FILE1 /data/vufind-plus/${PIKASERVER}/marc/fullexport.mrc
+				echo "New export file is " $FILE
+				DIFF=$(($FILE1SIZE - $MINFILESIZE))
+				PERCENTABOVE=$((100 * $DIFF / $MINFILESIZE))
+				echo "The export file is $PERCENTABOVE (%) larger than the minimum size check."
+				NEWLEVEL=$(($FILE1SIZE * 97 / 100))
+				echo "Based on today's export file, a new minimum filesize check level should be set to $NEWLEVEL"
+				echo ""
 
-			#Delete full exports older than 3 days (production pika only)
-#			find /mnt/ftp/ -name fullexport*.mrc -mtime +3 -delete
-			umount /mnt/ftp
+				cp $FILE /data/vufind-plus/${PIKASERVER}/marc/fullexport.mrc
 
-		#Validate the export
-		cd /usr/local/vufind-plus/vufind/cron; java -server -XX:+UseG1GC -jar cron.jar ${PIKASERVER} ValidateMarcExport >> ${OUTPUT_FILE}
+				#Delete full exports older than 3 days (production pika only)
+	#			find /mnt/ftp/ -name fullexport*.mrc -mtime +3 -delete
 
-		#Full Regroup
-		cd /usr/local/vufind-plus/vufind/record_grouping; java -server -XX:+UseG1GC -Xmx2G -jar record_grouping.jar ${PIKASERVER} fullRegroupingNoClear >> ${OUTPUT_FILE}
+			#Validate the export
+			cd /usr/local/vufind-plus/vufind/cron; java -server -XX:+UseG1GC -jar cron.jar ${PIKASERVER} ValidateMarcExport >> ${OUTPUT_FILE}
 
-		#Full Reindex
-		cd /usr/local/vufind-plus/vufind/reindexer; java -server -XX:+UseG1GC -Xmx2G -jar reindexer.jar ${PIKASERVER} fullReindex >> ${OUTPUT_FILE}
-
-		# Truncate Continous Reindexing list of changed items
-		cat /dev/null >| /data/vufind-plus/${PIKASERVER}/marc/changed_items_to_process.csv
-
-		# Wait 2 minutes for solr replication to finish; then delete the inactive solr indexes folders older than 48 hours
-		# Note: Running in the full update because we know there is a freshly created index.
-		sleep 2m
-		find /data/vufind-plus/${PIKASERVER}/solr_searcher/grouped/ -name "index.*" -type d -mmin +2880 -exec rm -rf {} \; >> ${OUTPUT_FILE}
-
-		NEWLEVEL=$(($FILE1SIZE * 97 / 100))
-		echo "" >> ${OUTPUT_FILE}
-		echo "Based on today's export file, a new minimum filesize check level should be set to $NEWLEVEL" >> ${OUTPUT_FILE}
-
-		else
-			umount /mnt/ftp
-			echo $FILE1 " size " $FILE1SIZE "is less than minimum size :" $MINFILE1SIZE "; Export was not moved to data directory." >> ${OUTPUT_FILE}
-		fi
-
-else
+			else
+				echo $FILE " size " $FILE1SIZE "is less than minimum size :" $MINFILESIZE "; Export was not moved to data directory."
+			fi
+	fi
 	umount /mnt/ftp
-	echo "Did not find a Sierra export file from the last 24 hours, Full Regrouping & Full Reindexing skipped." >> ${OUTPUT_FILE}
-fi
+}
+
+copySierraExport "/ftp/aurora/sierra" "${MINFILE1SIZE}" >> ${OUTPUT_FILE}
+
+##Extract from ILS
+##Copy extracts from FTP Server
+#mount 10.1.2.7:/ftp/aurora/sierra /mnt/ftp
+#FILE1=$(find /mnt/ftp/ -name fullexport*.mrc -mtime -1 | sort -n | tail -1)
+#
+#if [ -n "$FILE1" ]; then
+#		FILE1SIZE=$(wc -c <"$FILE1")
+#		if [ $FILE1SIZE -ge $MINFILE1SIZE ]; then
+#
+#			echo "Latest file is " $FILE1 >> ${OUTPUT_FILE}
+#			DIFF=$(($FILE1SIZE - $MINFILE1SIZE))
+#			PERCENTABOVE=$((100 * $DIFF / $MINFILE1SIZE))
+#			echo "The export file is $PERCENTABOVE (%) larger than the minimum size check." >> ${OUTPUT_FILE}
+#			NEWLEVEL=$(($FILE1SIZE * 97 / 100))
+#			echo "Based on today's export file, a new minimum filesize check level should be set to $NEWLEVEL" >> ${OUTPUT_FILE}
+#			echo "" >> ${OUTPUT_FILE}
+#
+#			cp $FILE1 /data/vufind-plus/${PIKASERVER}/marc/fullexport.mrc
+#
+#			#Delete full exports older than 3 days (production pika only)
+##			find /mnt/ftp/ -name fullexport*.mrc -mtime +3 -delete
+#
+#		#Validate the export
+#		cd /usr/local/vufind-plus/vufind/cron; java -server -XX:+UseG1GC -jar cron.jar ${PIKASERVER} ValidateMarcExport >> ${OUTPUT_FILE}
+#
+#		else
+#			echo $FILE1 " size " $FILE1SIZE "is less than minimum size :" $MINFILE1SIZE "; Export was not moved to data directory." >> ${OUTPUT_FILE}
+#		fi
+#fi
+#umount /mnt/ftp
+
+#Full Regroup
+cd /usr/local/vufind-plus/vufind/record_grouping; java -server -XX:+UseG1GC -Xmx2G -jar record_grouping.jar ${PIKASERVER} fullRegroupingNoClear >> ${OUTPUT_FILE}
+
+#Full Reindex
+cd /usr/local/vufind-plus/vufind/reindexer; java -server -XX:+UseG1GC -Xmx2G -jar reindexer.jar ${PIKASERVER} fullReindex >> ${OUTPUT_FILE}
+
+# Truncate Continuous Reindexing list of changed items
+cat /dev/null >| /data/vufind-plus/${PIKASERVER}/marc/changed_items_to_process.csv
+
+# Wait 2 minutes for solr replication to finish; then delete the inactive solr indexes folders older than 48 hours
+# Note: Running in the full update because we know there is a freshly created index.
+sleep 2m
+find /data/vufind-plus/${PIKASERVER}/solr_searcher/grouped/ -name "index.*" -type d -mmin +2880 -exec rm -rf {} \; >> ${OUTPUT_FILE}
 
 # Clean-up Solr Logs
 find /usr/local/vufind-plus/sites/default/solr/jetty/logs -name "solr_log_*" -mtime +7 -delete
@@ -194,8 +223,7 @@ cd /usr/local/vufind-plus/sites/${PIKASERVER}; ./${PIKASERVER}.sh restart
 
 #Email results
 FILESIZE=$(stat -c%s ${OUTPUT_FILE})
-if [[ ${FILESIZE} > 0 ]]
-then
+if [[ ${FILESIZE} > 0 ]]; then
 # send mail
 mail -s "Full Extract and Reindexing - ${PIKASERVER}" $EMAIL < ${OUTPUT_FILE}
 fi

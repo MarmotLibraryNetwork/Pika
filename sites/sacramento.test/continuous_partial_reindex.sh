@@ -1,7 +1,6 @@
 #!/bin/bash
 # Mark Noble, Marmot Library Network
 # James Staub, Nashville Public Library
-# 20150218
 # Script executes continuous re-indexing.
 
 # CONFIGURATION
@@ -10,9 +9,8 @@
 EMAIL=root
 PIKASERVER=sacramento.test
 OUTPUT_FILE="/var/log/vufind-plus/${PIKASERVER}/continuous_partial_reindex_output.log"
-USE_SIERRA_API_EXTRACT=0
-# set to USE_SIERRA_API_EXTRACT to 1 enabledddd
-
+USE_SIERRA_API_EXTRACT=1
+# set to USE_SIERRA_API_EXTRACT to 1 enable
 
 source "/usr/local/vufind-plus/vufind/bash/checkConflicts.sh"
 
@@ -50,13 +48,21 @@ do
 		continue
 	fi
 
+#TODO: Does this matter with the sierra api extract now?
+	# Do not run while the export from Sierra is running to prevent inconsistencies with MARC records
+	# export starts at 10 pm the file is copied to the FTP server at about 11:40
+	hasConflicts=$(checkProhibitedTimes "21:50" "23:40")
+	#If we did get a conflict, restart the loop to make sure that all tests run
+	if (($? != 0)); then
+		continue
+	fi
+
 	#####
 	# Start of the actual indexing code
 	#####
 
-	#truncate the file
-	: > $OUTPUT_FILE;
 	# reset the output file each round
+	: > $OUTPUT_FILE;
 
   #Note: Sierra Export and OverDrive export run in parallel
 	if [ $USE_SIERRA_API_EXTRACT -eq 1 ]; then

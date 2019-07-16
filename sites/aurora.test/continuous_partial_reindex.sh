@@ -1,9 +1,7 @@
 #!/bin/bash
 # Mark Noble, Marmot Library Network
 # James Staub, Nashville Public Library
-# 20150218
 # Script executes continuous re-indexing.
-# Millennium 1.6_3
 
 # CONFIGURATION
 # PLEASE SET CONFLICTING PROCESSES AND PROHIBITED TIMES IN FUNCTION CALLS IN SCRIPT MAIN DO LOOP
@@ -50,7 +48,7 @@ do
 		continue
 	fi
 
-#TODO: what is the real values for this for Aurora
+#TODO: Does this matter with the sierra api extract now?
 	# Do not run while the export from Sierra is running to prevent inconsistencies with MARC records
 	# export starts at 10 pm the file is copied to the FTP server at about 11:40
 	hasConflicts=$(checkProhibitedTimes "21:50" "23:40")
@@ -63,7 +61,7 @@ do
 	# Start of the actual indexing code
 	#####
 
-	#truncate the file
+	# reset the output file each round
 	: > $OUTPUT_FILE;
 
   #Note: Sierra Export and OverDrive export run in parallel
@@ -88,7 +86,6 @@ do
 	wait
 
 	#run reindex
-	#echo "Starting Reindexing - `date`" >> ${OUTPUT_FILE}
 	cd /usr/local/vufind-plus/vufind/reindexer
 	nice -n -5 java -server -XX:+UseG1GC -jar reindexer.jar ${PIKASERVER} >> ${OUTPUT_FILE}
 	checkForDBCrash $?
