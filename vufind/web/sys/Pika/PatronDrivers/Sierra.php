@@ -148,6 +148,7 @@ class Sierra extends PatronDriverInterface {
 	 */
 	public function getPatron($patronId = null) {
 		// grab everything from the patron record the api can provide.
+		// todo: need to add fines amount, titles on hold to patron object
 		if(!isset($patronId) && !isset($this->patronId)) {
 			trigger_error("ERROR: getPatron expects at least on parameter.", E_USER_ERROR);
 		} else {
@@ -190,7 +191,6 @@ class Sierra extends PatronDriverInterface {
 		}
 
 		// checks; make sure patron info from sierra matches database. update if needed.
-
 		// check names
 		if ($loginMethod == "name_barcode") {
 			if($patron->cat_username != $pInfo->names[0]) {
@@ -359,7 +359,9 @@ class Sierra extends PatronDriverInterface {
 		// number of checkouts from ils
 		$patron->numCheckedOutIls = $pInfo->fixedFields->{'50'}->value;
 		// fines
+		// todo: figure out wich of the fines vars shows in the Pika sidebar.
 		$patron->fines = number_format($pInfo->moneyOwed, 2, '.', '');
+		$patron->finesVal = number_format($pInfo->moneyOwed, 2, '.', '');
 		// holds
 		//$this->getMyHolds();
 
@@ -454,7 +456,7 @@ class Sierra extends PatronDriverInterface {
 		// check memCache
 
 		$params = [
-			'fields' => 'id,item,assessedDate,itemCharge,chargeType,paidAmount,datePaid,description,returnDate,location'
+			'fields' => 'default,id,item,assessedDate,itemCharge,chargeType,paidAmount,datePaid,description,returnDate,location'
 		];
 		$operation = 'patrons/' . $this->patronId . '/fines';
 		$fInfo = $this->_doRequest($operation, $params);
@@ -492,19 +494,25 @@ class Sierra extends PatronDriverInterface {
 	 * @param  User $patron
 	 * @return array|bool
 	 */
-	
+
 	public function getMyHolds($patron){
-		//return [];
+
 		if(!$patronId = $this->getPatronId($patron)) {
 			// TODO: need to do something here
 			return false;
 		}
 
-		$operation = "patrons/{$patronId}/holds";
+		$patronHoldsCacheKey = "patron_".$patron->barcode."_holds";
+		if($patronHolds = $this->memCache->get($patronHoldsCacheKey)) {
+			return $patronHolds;
+		}
+
+		$operation = "patrons/".$patronId."/holds";
 		$params=["fields"=>"default,pickupByDate,frozen"];
 		$holds = $this->_doRequest($operation, $params);
 
 		if(!$holds) {
+			// check last error
 			// todo: message? log?
 			return false;
 		}
@@ -525,11 +533,11 @@ class Sierra extends PatronDriverInterface {
 			$h['user']            = $displayName;
 
 			// 2. get what's available from this call
-			$h["position"]              = $hold->priority;
+			$h['position']              = $hold->priority;
 			$h['frozen']                = $hold->frozen;
 			$h['create']                = strtotime($hold->placed); // date hold created
 			$h['automaticCancellation'] = strtotime($hold->notNeededAfterDate); // not needed after date
-			$h['expire'] = isset($hold->pickUpByDate) ? strtotime($hold->pickUpByDate) : false; // pick up by date
+			$h['expire']                = isset($hold->pickUpByDate) ? strtotime($hold->pickUpByDate) : false; // pick up by date
 			// cancel id
 			preg_match($this->urlIdRegExp, $hold->id, $m);
 			$h['cancelId'] = $m[1];
@@ -545,12 +553,12 @@ class Sierra extends PatronDriverInterface {
 				case "j":
 				case "i":
 					$status     = "Ready";
-					$cancelable = false;
+					$cancelable = true;
 					$freezeable = false;
 					break;
 				case "t":
 					$status     = "In transit";
-					$cancelable = false;
+					$cancelable = true;
 					$freezeable = false;
 					break;
 				default:
@@ -597,7 +605,7 @@ class Sierra extends PatronDriverInterface {
 
 			// get more info from record
 			$bibId = 'b'.$id.$recordXD;
-			disableErrorHandler();
+
 			$recordDriver = new MarcRecord($this->accountProfile->recordSource . ":" . $bibId);
 			if ($recordDriver->isValid()){
 				$h['id']              = $recordDriver->getUniqueID();
@@ -611,9 +619,8 @@ class Sierra extends PatronDriverInterface {
 				$h['format_category'] = $recordDriver->getFormatCategory();
 				$h['link']            = $recordDriver->getRecordUrl();
 				$h['coverUrl']        = $recordDriver->getBookcoverUrl('medium');
-			}
-			enableErrorHandler();
-			// bji
+			};
+
 			if($hold->status->code == "b" || $hold->status->code == "j" || $hold->status->code == "i") {
 				$availableHolds[] = $h;
 			} else {
@@ -624,6 +631,8 @@ class Sierra extends PatronDriverInterface {
 
 		$return['available']   = $availableHolds;
 		$return['unavailable'] = $unavailableHolds;
+
+		$this->memCache->set($patronHoldsCacheKey, $return, 0, $this->configArray['Caching']['patron_profile']);
 
 		return $return;
 
