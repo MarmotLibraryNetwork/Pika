@@ -167,7 +167,7 @@ public class SierraExportAPIMain {
 		}
 
 		//API timing doesn't require Sierra Field Mapping
-		if (indexingProfile.sierraBibLevelFieldTag == null || indexingProfile.sierraBibLevelFieldTag.isEmpty()) {
+		if (indexingProfile.callNumberExportFieldTag == null || indexingProfile.callNumberExportFieldTag.isEmpty()) {
 			logger.error("Sierra Field Mappings need to be set.");
 			System.exit(0);
 		}
@@ -1325,12 +1325,13 @@ public class SierraExportAPIMain {
 											itemField.addSubfield(marcFactory.newSubfield(indexingProfile.callNumberSubfield, content));
 										} else if (indexingProfile.callNumberCutterExportSubfield.length() > 0 && tag.equalsIgnoreCase(indexingProfile.callNumberCutterExportSubfield)) {
 											itemField.addSubfield(marcFactory.newSubfield(indexingProfile.callNumberCutterSubfield, content));
-										} else if (indexingProfile.callNumberPoststampExportSubfield.length() > 0 && tag.indexOf(indexingProfile.callNumberPoststampExportSubfield) > 0) {
+										} else if (indexingProfile.callNumberPoststampExportSubfield.length() > 0 && tag.equalsIgnoreCase(indexingProfile.callNumberPoststampExportSubfield)) {
 											itemField.addSubfield(marcFactory.newSubfield(indexingProfile.callNumberPoststampSubfield, content));
-										} else {
-											logger.warn("For item " + getfullSierraItemId(itemId) + " (" + getfullSierraBibId(id) + "), unhandled call number subfield " + tag + " ; " + curVarField.toString());
-											//This is to catch any settings not handled in the field mappings.
 										}
+//										else {
+//											logger.warn("For item " + getfullSierraItemId(itemId) + " (" + getfullSierraBibId(id) + "), unhandled call number subfield " + tag + " with content : "+ content + "; " + curVarField.toString());
+											//This is to catch any settings not handled in the field mappings.
+//										}
 									}
 								} else {
 									String content = curVarField.getString("content");
@@ -1342,15 +1343,15 @@ public class SierraExportAPIMain {
 								itemField.addSubfield(marcFactory.newSubfield(indexingProfile.itemUrl, allFieldContent.toString()));
 							} else if (indexingProfile.eContentExportFieldTag.length() > 0 && fieldTag.equals(indexingProfile.eContentExportFieldTag)) {
 								itemField.addSubfield(marcFactory.newSubfield(indexingProfile.eContentDescriptor, allFieldContent.toString()));
-							} else if (
-									!fieldTag.equalsIgnoreCase("b") // fieldTag b is for barcode (Do not need to handle)
-											&& !fieldTag.equalsIgnoreCase("x") // fieldTag x is for Internal Note (Do not need to handle)
-											&& !fieldTag.equalsIgnoreCase("m") // fieldTag m is for free text message field (Do not need to handle)
-											&& !fieldTag.equalsIgnoreCase("r") // fieldTag r is for Course Reserves note (Do not need to handle)
-							) {
-
-								logger.warn("For item " + getfullSierraItemId(itemId) + " (" + getfullSierraBibId(id) + "), unhandled item variable field " + fieldTag + " ; " + curVarField.toString());
 							}
+//							else if (
+//									!fieldTag.equalsIgnoreCase("b") // fieldTag b is for barcode (Do not need to handle)
+//											&& !fieldTag.equalsIgnoreCase("x") // fieldTag x is for Internal Note (Do not need to handle)
+//											&& !fieldTag.equalsIgnoreCase("m") // fieldTag m is for free text message field (Do not need to handle)
+//											&& !fieldTag.equalsIgnoreCase("r") // fieldTag r is for Course Reserves note (Do not need to handle)
+//							) {
+//								logger.warn("For item " + getfullSierraItemId(itemId) + " (" + getfullSierraBibId(id) + "), unhandled item variable field " + fieldTag + " ; " + curVarField.toString());
+//							}
 						}
 
 						//The item level call number info seems to always be in the var field (at least for Marmot) TODO: this may not be needed

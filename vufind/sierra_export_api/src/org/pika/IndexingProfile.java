@@ -35,8 +35,6 @@ public class IndexingProfile {
 		return materialTypeSubField;
 	}
 
-	char materialTypeSubField;
-
 	String           itemTag;
 	char             itemRecordNumberSubfield;
 	char             barcodeSubfield;
@@ -68,6 +66,7 @@ public class IndexingProfile {
 
 	String sierraBibLevelFieldTag;
 	char   bcode3Subfield;
+	char   materialTypeSubField;
 
 	//These are used from Record Grouping and Reindexing
 	boolean doAutomaticEcontentSuppression;
