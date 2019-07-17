@@ -1328,7 +1328,7 @@ public class SierraExportAPIMain {
 										} else if (indexingProfile.callNumberPoststampExportSubfield.length() > 0 && tag.indexOf(indexingProfile.callNumberPoststampExportSubfield) > 0) {
 											itemField.addSubfield(marcFactory.newSubfield(indexingProfile.callNumberPoststampSubfield, content));
 										} else {
-											logger.warn("Unhandled call number subfield " + tag + " ; " + curVarField.toString());
+											logger.warn("For item " + itemId + ", unhandled call number subfield " + tag + " ; " + curVarField.toString());
 											//This is to catch any settings not handled in the field mappings.
 										}
 									}
@@ -1342,9 +1342,14 @@ public class SierraExportAPIMain {
 								itemField.addSubfield(marcFactory.newSubfield(indexingProfile.itemUrl, allFieldContent.toString()));
 							} else if (indexingProfile.eContentExportFieldTag.length() > 0 && fieldTag.equals(indexingProfile.eContentExportFieldTag)) {
 								itemField.addSubfield(marcFactory.newSubfield(indexingProfile.eContentDescriptor, allFieldContent.toString()));
-							} else if (!fieldTag.equalsIgnoreCase("b")) {
-								// fieldTag b is for barcode (Do not need to handle)
-								logger.warn("Unhandled item variable field " + fieldTag + " ; " + curVarField.toString());
+							} else if (
+									!fieldTag.equalsIgnoreCase("b") // fieldTag b is for barcode (Do not need to handle)
+											&& !fieldTag.equalsIgnoreCase("x") // fieldTag x is for Internal Note (Do not need to handle)
+											&& !fieldTag.equalsIgnoreCase("m") // fieldTag m is for free text message field (Do not need to handle)
+											&& !fieldTag.equalsIgnoreCase("r") // fieldTag r is for Course Reserves note (Do not need to handle)
+							) {
+
+								logger.warn("For item " + itemId + ", unhandled item variable field " + fieldTag + " ; " + curVarField.toString());
 							}
 						}
 
