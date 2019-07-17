@@ -24,6 +24,12 @@
  *
  * memcache keys
  * // TODO: We need a standard for caching and keys so they can be reused.
+ * caching keys follow this pattern
+ * User
+ * patron_{barcode}_{object}
+ * ie; patron_123456789_checkouts, patron_123456789_holds
+ * the patron object is patron_{barcode}_patron
+ * when calling an action (ie; placeHold) cache should be unset
  *
  *
  * @category Pika
@@ -110,8 +116,6 @@ class Sierra extends PatronDriverInterface {
 	 * @access  public
 	 */
 	public function patronLogin($username, $password, $validatedViaSSO = FALSE){
-		//global $logger;
-		//$logger->log("patronLogin called for $username using password $password", PEAR_LOG_INFO);
 		// get the login configuration barcode_pin or name_barcode
 		// TODO: Need to pull login from session, db, memcache, etc, so login isn't called repeatably on each request.
 		$loginMethod = $this->accountProfile->loginConfiguration;
@@ -148,15 +152,15 @@ class Sierra extends PatronDriverInterface {
 	 */
 	public function getPatron($patronId = null) {
 		// grab everything from the patron record the api can provide.
-		// todo: need to add fines amount, titles on hold to patron object
+		// titles on hold to patron object
 		if(!isset($patronId) && !isset($this->patronId)) {
 			trigger_error("ERROR: getPatron expects at least on parameter.", E_USER_ERROR);
 		} else {
 			$patronId = isset($patronId) ? $patronId : $this->patronId;
 		}
 
-		$pObjCacheKey = 'patron_' . $patronId . '_obj';
-		if ($pObj = $this->memCache->get($pObjCacheKey)) {
+		$patronObjectCacheKey = 'patron_' . $patronId . '_patron';
+		if ($pObj = $this->memCache->get($patronObjectCacheKey)) {
 			return $pObj;
 		}
 
@@ -276,7 +280,6 @@ class Sierra extends PatronDriverInterface {
 				$patron->address2 = $address->lines[1];
 			}
 		}
-
 		if(!isset($patron->address1)) {
 			$patron->address1 = '';
 		}
@@ -359,11 +362,15 @@ class Sierra extends PatronDriverInterface {
 		// number of checkouts from ils
 		$patron->numCheckedOutIls = $pInfo->fixedFields->{'50'}->value;
 		// fines
-		// todo: figure out wich of the fines vars shows in the Pika sidebar.
 		$patron->fines = number_format($pInfo->moneyOwed, 2, '.', '');
 		$patron->finesVal = number_format($pInfo->moneyOwed, 2, '.', '');
 		// holds
-		//$this->getMyHolds();
+		$holds = $this->getMyHolds($patron);
+		if($holds && isset($holds['available'])){
+			$patron->numHoldsAvailableIls = count($holds['available']);
+			$patron->numHoldsRequestedIls = count($holds['unavailable']);
+			$patron->numHoldsIls = $patron->numHoldsAvailableIls + $patron->numHoldsRequestedIls;
+		}
 
 		if($createPatron) {
 			$patron->created = date('Y-m-d');
@@ -371,7 +378,7 @@ class Sierra extends PatronDriverInterface {
 		} elseif ($updatePatron && !$createPatron) {
 			$patron->update();
 		}
-		$e = $this->memCache->set($pObjCacheKey, $patron, MEMCACHE_COMPRESSED, $this->configArray['Caching']['patron_profile']);
+		$e = $this->memCache->set($patronObjectCacheKey, $patron, MEMCACHE_COMPRESSED, $this->configArray['Caching']['patron_profile']);
 		return $patron;
 	}
 
@@ -394,7 +401,8 @@ class Sierra extends PatronDriverInterface {
 			$barcode = $patronOrBarcode;
 		}
 
-		if($patronId = $this->memCache->get($barcode)) {
+		$patronIdCacheKey = "patron_".$barcode."barcode";
+		if($patronId = $this->memCache->get($patronIdCacheKey)) {
 			return $patronId;
 		}
 
@@ -410,7 +418,7 @@ class Sierra extends PatronDriverInterface {
 			return false;
 		}
 
-		$this->memCache->set($barcode, $r->id, 0, $this->configArray['Caching']['koha_patron_id']);
+		$this->memCache->set($patronIdCacheKey, $r->id, 0, $this->configArray['Caching']['koha_patron_id']);
 
 		$this->patronId = $r->id;
 
@@ -449,9 +457,9 @@ class Sierra extends PatronDriverInterface {
 				return false;
 			}
 		}
-		$finesCacheKey = 'patron_'.$this->patronId.'_fines';
-		if($this->memCache->get($finesCacheKey)) {
-			return $this->memCache->get($finesCacheKey);
+		$patronFinesCacheKey = 'patron_'.$this->patronId.'_fines';
+		if($this->memCache->get($patronFinesCacheKey)) {
+			return $this->memCache->get($patronFinesCacheKey);
 		}
 		// check memCache
 
@@ -483,7 +491,7 @@ class Sierra extends PatronDriverInterface {
 			];
 		}
 
-		$this->memCache->set($finesCacheKey, $r, 0, $this->configArray['Caching']['patron_profile']);
+		$this->memCache->set($patronFinesCacheKey, $r, 0, $this->configArray['Caching']['patron_profile']);
 		return $r;
 	}
 
@@ -586,7 +594,7 @@ class Sierra extends PatronDriverInterface {
 				$h['location']          = $hold->pickupLocation->name;
 			}
 
-			////// record type and record id
+			// record type and record id
 			$recordType = $hold->recordType;
 			preg_match($this->urlIdRegExp, $hold->record,$m);
 			// for item level holds we need to grab the bib id.
@@ -613,9 +621,7 @@ class Sierra extends PatronDriverInterface {
 				$h['title']           = $recordDriver->getTitle();
 				$h['sortTitle']       = $recordDriver->getSortableTitle();
 				$h['author']          = $recordDriver->getAuthor();
-				$h['format']          = $recordDriver->getFormat();
-				$h['isbn']            = $recordDriver->getCleanISBN();  //TODO these may not be used anywhere now that the links are built here, have to check
-				$h['upc']             = $recordDriver->getCleanUPC();    //TODO these may not be used anywhere now that the links are built here, have to check
+				$h['format']          = $recordDriver->getFormat(); // todo: this isn't pulling in tyhe format
 				$h['format_category'] = $recordDriver->getFormatCategory();
 				$h['link']            = $recordDriver->getRecordUrl();
 				$h['coverUrl']        = $recordDriver->getBookcoverUrl('medium');
@@ -635,7 +641,6 @@ class Sierra extends PatronDriverInterface {
 		$this->memCache->set($patronHoldsCacheKey, $return, 0, $this->configArray['Caching']['patron_profile']);
 
 		return $return;
-
 	}
 
 	/**
@@ -657,6 +662,10 @@ class Sierra extends PatronDriverInterface {
 		$pickupLocation = $pickupBranch;
 		$neededBy       = $d->format('Y-m-d');
 		$patronId       = $this->getPatronId($patron);
+
+		// delete memcache holds
+		$patronHoldsCacheKey = "patron_".$patron->barcode."_holds";
+		$this->memCache->delete($patronHoldsCacheKey);
 
 		// get title of record
 		$record = RecordDriverFactory::initRecordDriverById($this->accountProfile->recordSource . ':' . $recordId);
@@ -711,8 +720,13 @@ class Sierra extends PatronDriverInterface {
 		// TODO: Implement cancelHold() method.
 	}
 
+	/**
+	 * @param      $patron
+	 * @param      $holdToFreezeId
+	 * @param null $dateToReactivate
+	 */
 	public function freezeHold($patron, $holdToFreezeId, $dateToReactivate = null){
-		// TODO: Implement freezeHold() method.
+
 	}
 
 	public function thawHold($patron, $holdToThawId){
