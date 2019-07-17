@@ -1328,7 +1328,7 @@ public class SierraExportAPIMain {
 										} else if (indexingProfile.callNumberPoststampExportSubfield.length() > 0 && tag.indexOf(indexingProfile.callNumberPoststampExportSubfield) > 0) {
 											itemField.addSubfield(marcFactory.newSubfield(indexingProfile.callNumberPoststampSubfield, content));
 										} else {
-											logger.warn("For item " + itemId + ", unhandled call number subfield " + tag + " ; " + curVarField.toString());
+											logger.warn("For item " + getfullSierraItemId(itemId) + " (" + getfullSierraBibId(id) + "), unhandled call number subfield " + tag + " ; " + curVarField.toString());
 											//This is to catch any settings not handled in the field mappings.
 										}
 									}
@@ -1349,7 +1349,7 @@ public class SierraExportAPIMain {
 											&& !fieldTag.equalsIgnoreCase("r") // fieldTag r is for Course Reserves note (Do not need to handle)
 							) {
 
-								logger.warn("For item " + itemId + ", unhandled item variable field " + fieldTag + " ; " + curVarField.toString());
+								logger.warn("For item " + getfullSierraItemId(itemId) + " (" + getfullSierraBibId(id) + "), unhandled item variable field " + fieldTag + " ; " + curVarField.toString());
 							}
 						}
 
