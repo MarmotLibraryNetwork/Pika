@@ -1,20 +1,16 @@
 <?php
 /**
- *
+ * Sierra API functions specific to Addison Public Library.
  *
  * @category Pika
- * @author   : Pascal Brammeier
+ * @package  PatronDrivers
+ * @author   Chris Froese
+ * @author   Pascal Brammeier
  * Date: 5/13/2019
- *
  */
-
-require_once ROOT_DIR . "/PatronDrivers/Sierra.php";
-require_once ROOT_DIR . "/PatronDrivers/Traits/SierraPatronSelfRegistrationOperations.php";
-require_once ROOT_DIR . "/PatronDrivers/Traits/SierraPatronPinOperations.php";
+namespace Pika\PatronDrivers;
 
 class Addison extends Sierra {
-	use SierraPatronSelfRegistrationOperations;
-	use SierraPatronPinOperations;
 
 
 }
