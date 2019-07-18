@@ -385,7 +385,7 @@ class Sierra extends PatronDriverInterface {
 	/**
 	 * Get the unique Sierra patron ID by searching for barcode.
 	 *
-	 * @param  User|string $patronOrBarcode
+	 * @param  User|string $patronOrBarcode  Either a barcode as a string or a User object.
 	 * @return int|false   returns the patron ID or false
 	 */
 	public function getPatronId($patronOrBarcode)
@@ -556,6 +556,7 @@ class Sierra extends PatronDriverInterface {
 					$status     = "On hold";
 					$cancelable = true;
 					$freezeable = true;
+					$updatePickup = true;
 					break;
 				case "b":
 				case "j":
@@ -563,20 +564,28 @@ class Sierra extends PatronDriverInterface {
 					$status     = "Ready";
 					$cancelable = true;
 					$freezeable = false;
+					$updatePickup = false;
 					break;
 				case "t":
 					$status     = "In transit";
 					$cancelable = true;
 					$freezeable = false;
+					$updatePickup = true;
 					break;
 				default:
 					$status     = "Unknown";
 					$cancelable = false;
-					$freezeable = true;
+					$freezeable = false;
+					$updatePickup = false;
+			}
+
+			if((int)$hold->priority <= 2) {
+				$freezeable = false;
 			}
 			$h['status']    = $status;
 			$h['freezeable']= $freezeable;
 			$h['cancelable']= $cancelable;
+			$h['locationUpdateable'] = $updatePickup;
 
 			// pick up location
 			$pickupBranch = new Location();
@@ -621,7 +630,7 @@ class Sierra extends PatronDriverInterface {
 				$h['title']           = $recordDriver->getTitle();
 				$h['sortTitle']       = $recordDriver->getSortableTitle();
 				$h['author']          = $recordDriver->getAuthor();
-				$h['format']          = $recordDriver->getFormat(); // todo: this isn't pulling in tyhe format
+				$h['format']          = $recordDriver->getFormat(); // todo: this isn't pulling in the format
 				$h['format_category'] = $recordDriver->getFormatCategory();
 				$h['link']            = $recordDriver->getRecordUrl();
 				$h['coverUrl']        = $recordDriver->getBookcoverUrl('medium');
@@ -712,25 +721,137 @@ class Sierra extends PatronDriverInterface {
 		// TODO: Implement placeVolumeHold() method.
 	}
 
-	public function changeHoldPickupLocation($patron, $holdId, $newPickupLocation){
-		// TODO: Implement changeHoldPickupLocation() method.
-	}
+	public function changeHoldPickupLocation($patron, $bibId, $holdId, $newPickupLocation){
 
-	public function cancelHold($patron, $cancelId){
-		// TODO: Implement cancelHold() method.
+		$operation = "patrons/holds/".$holdId;
+		$params = ["pickupLocation"=>$newPickupLocation];
+
+		// delete holds cache
+		$patronHoldsCacheKey = "patron_".$patron->barcode."_holds";
+		$this->memCache->delete($patronHoldsCacheKey);
+
+		$r = $this->_doRequest($operation,$params, "PUT");
+
+		// something went wrong
+		if(!$r) {
+			$return = ['success' => false];
+			if($this->apiLastError) {
+				$return['message'] = $this->apiLastError;
+			} else {
+				$return['message'] = "Unable to change pickup location. Please contact your library for further assistance.";
+			}
+			return $return;
+		}
+		// todo: get title
+		$return = [
+			'success' => true,
+			'message' => 'Pickup location updated.'];
+
+		return $return;
 	}
 
 	/**
+	 * DELETE patrons/holds/{holdId}
+	 * @param $patron
+	 * @param $bibId
+	 * @param $holdId
+	 * @return array
+	 */
+	public function cancelHold($patron, $bibId, $holdId){
+
+		$operation = "patrons/holds/".$holdId;
+
+		// delete holds cache
+		$patronHoldsCacheKey = "patron_".$patron->barcode."_holds";
+		$this->memCache->delete($patronHoldsCacheKey);
+
+		// because the patron object has holds information we need to clear that cache too.
+		$patronObjectCacheKey = 'patron_' . $patronId . '_patron';
+		$this->memCache->delete($patronObjectCacheKey);
+
+		$r = $this->_doRequest($operation, [], "DELETE");
+
+		// something went wrong
+		if(!$r) {
+			$return = ['success' => false];
+			if($this->apiLastError) {
+				$return['message'] = $this->apiLastError;
+			} else {
+				$return['message'] = "Unable to cancel your hold. Please contact your library for further assistance.";
+			}
+			return $return;
+		}
+		// todo: get title
+		$return = [
+			'success' => true,
+			'message' => 'Your hold has been canceled.'];
+
+		return $return;
+	}
+
+	/**
+	 * PUT patrons/holds/{holdId}
+	 *
 	 * @param      $patron
 	 * @param      $holdToFreezeId
 	 * @param null $dateToReactivate
+	 * @return array An array with success and message
 	 */
-	public function freezeHold($patron, $holdToFreezeId, $dateToReactivate = null){
+	public function freezeHold($patron, $bibId, $holdId, $dateToReactivate = null){
 
+		$operation = "patrons/holds/".$holdId;
+		$params = ["freeze"=>true];
+
+		// delete holds cache
+		$patronHoldsCacheKey = "patron_".$patron->barcode."_holds";
+		$this->memCache->delete($patronHoldsCacheKey);
+
+		$r = $this->_doRequest($operation,$params, "PUT");
+
+		// something went wrong
+		if(!$r) {
+			$return = ['success' => false];
+				if($this->apiLastError) {
+					$return['message'] = $this->apiLastError;
+				} else {
+					$return['message'] = "Unable to freeze your hold. Please contact your library for further assistance.";
+				}
+			return $return;
+		}
+
+		$return = [
+			'success' => true,
+			'message' => 'Your hold has been frozen.'];
+
+		return $return;
 	}
 
-	public function thawHold($patron, $holdToThawId){
-		// TODO: Implement thawHold() method.
+	public function thawHold($patron, $bibId, $holdId){
+		$operation = "patrons/holds/".$holdId;
+		$params = ["freeze"=>false];
+
+		// delete holds cache
+		$patronHoldsCacheKey = "patron_".$patron->barcode."_holds";
+		$this->memCache->delete($patronHoldsCacheKey);
+
+		$r = $this->_doRequest($operation,$params, "PUT");
+
+		// something went wrong
+		if(!$r) {
+			$return = ['success' => false];
+			if($this->apiLastError) {
+				$return['message'] = $this->apiLastError;
+			} else {
+				$return['message'] = "Unable to thaw your hold. Please contact your library for further assistance.";
+			}
+			return $return;
+		}
+		// todo: get title
+		$return = [
+			'success' => true,
+			'message' => 'Your hold has been thawed.'];
+
+		return $return;
 	}
 
 	public function hasNativeReadingHistory(){
@@ -986,7 +1107,11 @@ class Sierra extends PatronDriverInterface {
 				$c->put($operationUrl, $params);
 				break;
 			case 'delete':
-				$c->delete($operationUrl, $params);
+				if(!empty($params)) {
+					$c->delete($operationUrl, $params);
+				} else {
+					$c->delete($operationUrl);
+				}
 				break;
 			default:
 				$c->get($operationUrl, $params);
@@ -1006,8 +1131,13 @@ class Sierra extends PatronDriverInterface {
 			return false;
 		} elseif ($c->isHttpError()) {
 			// this will be a 4xx response
+			// first we need to check the response for a code, message from the API because many failed operations (ie,
+			// freezeing a hold) will send back a 4xx response code if the operation couldn't be completed.
 			if(isset($c->response->code)) {
 				$message = 'API Error ' . $c->response->code . ': ' . $c->response->name;
+				if(isset($c->response->description)){
+					$message = $message . " " . $c->response->description;
+				}
 			} else {
 				$message = 'HTTP Error: '.$c->getErrorCode().': '.$c->getErrorMessage();
 			}
