@@ -485,7 +485,7 @@ class Record_AJAX extends AJAXHandler {
 				$extractInfo->indexingProfileId = $recordId->getIndexingProfile()->id;
 				$extractInfo->ilsId             = $recordId->getRecordId();
 				if ($extractInfo->find(true)){
-					$extractInfo->lastExtracted = null;
+					$extractInfo->lastExtracted = "null"; // DB Object has special processing to set an column value to null (note: the vufind.ini value is important in this)
 					if ($extractInfo->update()){
 						return array('success' => true, 'message' => 'Record was marked for re-extraction.');
 					}else{

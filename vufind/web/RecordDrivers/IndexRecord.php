@@ -594,8 +594,7 @@ class IndexRecord extends RecordInterface
 			'id'       => $id,
 			'size'     => $size,
 			'category' => $formatCategory,
-		'format'   => $format,
-
+			'format'   => $format,
 		);
 		$isbn       = $this->getCleanISBN();
 		if ($isbn){
