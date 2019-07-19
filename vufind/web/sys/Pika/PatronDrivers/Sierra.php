@@ -168,6 +168,7 @@ class Sierra extends PatronDriverInterface {
 		$updatePatron = false;
 
 		$patron = new User();
+		$patron->barcode = $this->patronBarcode;
 		// check if the user exists in database
 		// use barcode as sierra patron id is no longer be stored in database as username.
 		// get the login configuration barcode_pin or name_barcode
@@ -994,7 +995,7 @@ class Sierra extends PatronDriverInterface {
 	private function _authBarcodePin($barcode, $pin) {
 
 		$params = [
-			"barcode" =>$barcode,
+			"barcode" => $barcode,
 			"pin"     => $pin
 		];
 
