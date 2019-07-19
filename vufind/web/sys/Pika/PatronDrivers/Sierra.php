@@ -599,6 +599,8 @@ class Sierra extends PatronDriverInterface {
 					$freezeable = true;
 					if($canUpdatePL) {
 						$updatePickup = true;
+					} else {
+						$updatePickup = false;
 					}
 					break;
 				case "b":
@@ -615,6 +617,8 @@ class Sierra extends PatronDriverInterface {
 					$freezeable = false;
 					if($canUpdatePL) {
 						$updatePickup = true;
+					} else {
+						$updatePickup = false;
 					}
 					break;
 				default:
