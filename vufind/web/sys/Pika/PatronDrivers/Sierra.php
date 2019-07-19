@@ -159,7 +159,7 @@ class Sierra extends PatronDriverInterface {
 			$patronId = isset($patronId) ? $patronId : $this->patronId;
 		}
 
-		$patronObjectCacheKey = 'patron_' . $patronId . '_patron';
+		$patronObjectCacheKey = 'patron_'.$this->patronBarcode.'_patron';
 		if ($pObj = $this->memCache->get($patronObjectCacheKey)) {
 			return $pObj;
 		}
@@ -724,7 +724,7 @@ class Sierra extends PatronDriverInterface {
 		$this->memCache->delete($patronHoldsCacheKey);
 
 		// because the patron object has holds information we need to clear that cache too.
-		$patronObjectCacheKey = 'patron_' . $patronId . '_patron';
+		$patronObjectCacheKey = 'patron_'. $patron->barcode.'_patron';
 		$this->memCache->delete($patronObjectCacheKey);
 
 		// get title of record
@@ -818,7 +818,7 @@ class Sierra extends PatronDriverInterface {
 
 		// because the patron object has holds information we need to clear that cache too.
 		$patronId = $this->getPatronId($patron);
-		$patronObjectCacheKey = 'patron_' . $patronId . '_patron';
+		$patronObjectCacheKey = 'patron_'.$patron->barcode.'_patron';
 		$this->memCache->delete($patronObjectCacheKey);
 
 		$r = $this->_doRequest($operation, [], "DELETE");
