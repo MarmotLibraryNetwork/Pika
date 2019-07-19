@@ -90,4 +90,10 @@
 # Fetch Marmot SSL Certificate
 50 8 * * Mon /usr/local/vufind-plus/vufind/cron/fetchMarmotCertFiles.sh
 
+#################
+# Let's Encrypt #
+#################
+#update aurora production certificate twice daily
+15 3,19 * * * certbot renew --quiet --preferred-challenges http-01
+
 #-- EOF -
