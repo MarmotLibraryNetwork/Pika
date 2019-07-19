@@ -480,17 +480,46 @@ class Sierra extends PatronDriverInterface {
 		$fines = $fInfo->entries;
 		$r = [];
 		foreach($fines as $fine) {
+			// get the bib ids for this item
+			preg_match($this->urlIdRegExp, $fine->item, $m);
+			$itemId    = $m[1];
+			$operation = "items/" . $itemId;
+			$params    = ["fields" => "bibIds"];
+			$resp      = $this->_doRequest($operation, $params);
+			$title = false;
+			if (isset($resp->bibIds[0])) {
+				$id = $resp->bibIds[0];
+				// for Pika we need the check digit.
+				$recordXD = $this->getCheckDigit($id);
+				// get more info from record
+				$bibId        = 'b' . $id . $recordXD;
+				$recordDriver = new MarcRecord($this->accountProfile->recordSource . ":" . $bibId);
+				if ($recordDriver->isValid()) {
+					$title = $recordDriver->getTitle();
+				} else {
+					$title = "Unknown Title";
+				}
+			}
+			if(!$title) {
+				$title = "Unknown title";
+			}
 			$amount = number_format($fine->itemCharge, 2);
 			$date   = date('m-d-Y', strtotime($fine->assessedDate));
-			$r[] = [
-				'date'              => $date,
-				'reason'            => $fine->chargeType->display,
-				'amount'            => $amount,
+			$details = [[
+				"label" => "Returned: ",
+				"value" => date('m-d-Y', strtotime($fine->returnDate))
+			]];
+
+			$r[]    = [
+				'title'  => $title,
+				'date'   => $date,
+				'reason' => $fine->chargeType->display,
+				'amount' => $amount,
 				'amountOutstanding' => $amount,
-				'message'           => ''
+				'message' => $title,
+				'details' => $details
 			];
 		}
-
 		$this->memCache->set($patronFinesCacheKey, $r, 0, $this->configArray['Caching']['patron_profile']);
 		return $r;
 	}
@@ -675,6 +704,10 @@ class Sierra extends PatronDriverInterface {
 		// delete memcache holds
 		$patronHoldsCacheKey = "patron_".$patron->barcode."_holds";
 		$this->memCache->delete($patronHoldsCacheKey);
+
+		// because the patron object has holds information we need to clear that cache too.
+		$patronObjectCacheKey = 'patron_' . $patronId . '_patron';
+		$this->memCache->delete($patronObjectCacheKey);
 
 		// get title of record
 		$record = RecordDriverFactory::initRecordDriverById($this->accountProfile->recordSource . ':' . $recordId);
