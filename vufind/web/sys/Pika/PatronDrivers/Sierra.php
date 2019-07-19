@@ -579,14 +579,26 @@ class Sierra extends PatronDriverInterface {
 			// cancel id
 			preg_match($this->urlIdRegExp, $hold->id, $m);
 			$h['cancelId'] = $m[1];
-
+			// can we change pickup location?
+			$pickupLocations = $patron->getValidPickupBranches('ils');
+			if(is_array($pickupLocations)) {
+				if (count($pickupLocations) > 1) {
+					$canUpdatePL = true;
+				} else {
+					$canUpdatePL = false;
+				}
+			} else {
+				$canUpdatePL = false;
+			}
 			// status, cancelable, freezable
 			switch ($hold->status->code) {
 				case "0":
 					$status     = "On hold";
 					$cancelable = true;
 					$freezeable = true;
-					$updatePickup = true;
+					if($canUpdatePL) {
+						$updatePickup = true;
+					}
 					break;
 				case "b":
 				case "j":
@@ -600,7 +612,9 @@ class Sierra extends PatronDriverInterface {
 					$status     = "In transit";
 					$cancelable = true;
 					$freezeable = false;
-					$updatePickup = true;
+					if($canUpdatePL) {
+						$updatePickup = true;
+					}
 					break;
 				default:
 					$status     = "Unknown";
