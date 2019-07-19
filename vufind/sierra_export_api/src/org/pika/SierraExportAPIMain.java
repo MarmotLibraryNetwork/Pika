@@ -1189,9 +1189,15 @@ public class SierraExportAPIMain {
 					}
 
 					RecordIdentifier recordIdentifier = recordGroupingProcessor.getPrimaryIdentifierFromMarcRecord(marcRecord, indexingProfile.name, indexingProfile.doAutomaticEcontentSuppression);
-					String           identifier       = recordIdentifier.getIdentifier();
-					writeMarcRecord(marcRecord, identifier);
-					logger.debug("Wrote marc record for " + identifier);
+					String           identifier;
+					if (recordIdentifier != null) {
+						identifier = recordIdentifier.getIdentifier();
+						writeMarcRecord(marcRecord, identifier);
+						logger.debug("Wrote marc record for " + identifier);
+					} else {
+						logger.warn("Failed to set record identifier in record grouper getPrimaryIdentifierFromMarcRecord(); possible error or automatic econtent suppression trigger.");
+						identifier = getfullSierraBibId(id);
+					}
 
 					//Setup the grouped work for the record.  This will take care of either adding it to the proper grouped work
 					//or creating a new grouped work

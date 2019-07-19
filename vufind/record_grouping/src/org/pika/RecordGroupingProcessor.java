@@ -133,30 +133,34 @@ class RecordGroupingProcessor {
 	//above pattern not strictly valid because urls don't have to contain the lib.overdrive.com
 	private static Pattern overdrivePattern = Pattern.compile("(?i)^http://.*?/ContentDetails\\.htm\\?id=[\\da-f]{8}-[\\da-f]{4}-[\\da-f]{4}-[\\da-f]{4}-[\\da-f]{12}$|^http://link\\.overdrive\\.com");
 	RecordIdentifier getPrimaryIdentifierFromMarcRecord(Record marcRecord, String recordType, boolean doAutomaticEcontentSuppression){
-		RecordIdentifier identifier = null;
-		VariableField recordNumberFieldValue = marcRecord.getVariableField(recordNumberTag);
-		//Make sure we only get one ils identifier
-		logger.debug("getPrimaryIdentifierFromMarcRecord - Got record number field");
-		if (recordNumberFieldValue != null){
-			if (recordNumberFieldValue instanceof DataField) {
-				logger.debug("getPrimaryIdentifierFromMarcRecord - Record number field is a data field");
+		RecordIdentifier    identifier         = null;
+		List<VariableField> recordNumberFields = marcRecord.getVariableFields(recordNumberTag);
+		for (VariableField recordNumberFieldValue : recordNumberFields) {
+			//Make sure we only get one ils identifier
+			logger.debug("getPrimaryIdentifierFromMarcRecord - Got record number field");
+			if (recordNumberFieldValue != null) {
+				if (recordNumberFieldValue instanceof DataField) {
+					logger.debug("getPrimaryIdentifierFromMarcRecord - Record number field is a data field");
 
-				DataField curRecordNumberField = (DataField) recordNumberFieldValue;
-				Subfield  recordNumberSubfield = curRecordNumberField.getSubfield(recordNumberField);
-				if (recordNumberSubfield != null && (recordNumberPrefix.length() == 0 || recordNumberSubfield.getData().length() > recordNumberPrefix.length())) {
-					if (recordNumberSubfield.getData().substring(0, recordNumberPrefix.length()).equals(recordNumberPrefix)) {
-						String recordNumber = recordNumberSubfield.getData().trim();
-						identifier = new RecordIdentifier();
-						identifier.setValue(recordType, recordNumber);
+					DataField curRecordNumberField = (DataField) recordNumberFieldValue;
+					Subfield  recordNumberSubfield = curRecordNumberField.getSubfield(recordNumberField);
+					if (recordNumberSubfield != null && (recordNumberPrefix.length() == 0 || recordNumberSubfield.getData().length() > recordNumberPrefix.length())) {
+						if (recordNumberSubfield.getData().substring(0, recordNumberPrefix.length()).equals(recordNumberPrefix)) {
+							String recordNumber = recordNumberSubfield.getData().trim();
+							identifier = new RecordIdentifier();
+							identifier.setValue(recordType, recordNumber);
+							break;
+						}
 					}
+				} else {
+					//It's a control field
+					logger.debug("getPrimaryIdentifierFromMarcRecord - Record number field is a control field");
+					ControlField curRecordNumberField = (ControlField) recordNumberFieldValue;
+					String       recordNumber         = curRecordNumberField.getData().trim();
+					identifier = new RecordIdentifier();
+					identifier.setValue(recordType, recordNumber);
+					break;
 				}
-			}else{
-				//It's a control field
-				logger.debug("getPrimaryIdentifierFromMarcRecord - Record number field is a control field");
-				ControlField curRecordNumberField = (ControlField)recordNumberFieldValue;
-				String recordNumber = curRecordNumberField.getData().trim();
-				identifier = new RecordIdentifier();
-				identifier.setValue(recordType, recordNumber);
 			}
 		}
 
