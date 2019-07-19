@@ -817,6 +817,7 @@ class Sierra extends PatronDriverInterface {
 		$this->memCache->delete($patronHoldsCacheKey);
 
 		// because the patron object has holds information we need to clear that cache too.
+		$patronId = $this->getPatronId($patron);
 		$patronObjectCacheKey = 'patron_' . $patronId . '_patron';
 		$this->memCache->delete($patronObjectCacheKey);
 
