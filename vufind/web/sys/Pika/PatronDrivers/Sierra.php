@@ -561,16 +561,27 @@ class Sierra extends PatronDriverInterface {
 		// these will be consistent for every hold
 		$displayName  = $patron->getNameAndLibraryLabel();
 		$pikaPatronId = $patron->id;
+		// can we change pickup location?
+		$pickupLocations = $patron->getValidPickupBranches('ils');
+		if(is_array($pickupLocations)) {
+			if (count($pickupLocations) > 1) {
+				$canUpdatePL = true;
+			} else {
+				$canUpdatePL = false;
+			}
+		} else {
+			$canUpdatePL = false;
+		}
 		//
 		$availableHolds   = [];
 		$unavailableHolds = [];
 		foreach ($holds->entries as $hold) {
-			// 1. standard stuff
+			// standard stuff
 			$h['holdSource']      = 'ILS';
 			$h['userId']          = $pikaPatronId;
 			$h['user']            = $displayName;
 
-			// 2. get what's available from this call
+			// get what's available from this call
 			$h['position']              = $hold->priority;
 			$h['frozen']                = $hold->frozen;
 			$h['create']                = strtotime($hold->placed); // date hold created
@@ -579,17 +590,7 @@ class Sierra extends PatronDriverInterface {
 			// cancel id
 			preg_match($this->urlIdRegExp, $hold->id, $m);
 			$h['cancelId'] = $m[1];
-			// can we change pickup location?
-			$pickupLocations = $patron->getValidPickupBranches('ils');
-			if(is_array($pickupLocations)) {
-				if (count($pickupLocations) > 1) {
-					$canUpdatePL = true;
-				} else {
-					$canUpdatePL = false;
-				}
-			} else {
-				$canUpdatePL = false;
-			}
+
 			// status, cancelable, freezable
 			switch ($hold->status->code) {
 				case "0":
@@ -622,7 +623,7 @@ class Sierra extends PatronDriverInterface {
 					$freezeable = false;
 					$updatePickup = false;
 			}
-
+			// for sierra holds can't be frozen if next in line
 			if((int)$hold->priority <= 2) {
 				$freezeable = false;
 			}
@@ -630,6 +631,8 @@ class Sierra extends PatronDriverInterface {
 			$h['freezeable']= $freezeable;
 			$h['cancelable']= $cancelable;
 			$h['locationUpdateable'] = $updatePickup;
+			// unset for next round.
+			unset($status, $freezeable, $cancelable, $updatePickup);
 
 			// pick up location
 			$pickupBranch = new Location();
