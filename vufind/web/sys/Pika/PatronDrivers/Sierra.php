@@ -511,7 +511,7 @@ class Sierra extends PatronDriverInterface {
 				]];
 			// if it's not an item charge look for a description
 			} elseif (isset($fine->description)) {
-				$title = $fine->description;
+				$title = 'Description: '.$fine->description;
 				$details = false;
 			} else {
 				$title = 'Unknown';
@@ -638,7 +638,7 @@ class Sierra extends PatronDriverInterface {
 					$updatePickup = false;
 			}
 			// for sierra, holds can't be frozen if patron is next in line
-			if((int)$hold->priority <= 2) {
+			if((int)$hold->priority <= 2 && (int)$hold->priorityQueueLength >= 2) {
 				$freezeable = false;
 			}
 			$h['status']    = $status;
