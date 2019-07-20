@@ -218,7 +218,7 @@ class Sierra extends PatronDriverInterface {
 			$patron->patronType = $pInfo->patronType;
 		}
 		// check email
-		if($pInfo->emails[0] != $patron->email) {
+		if(isset($pInfo->emails) && $pInfo->emails[0] != $patron->email) {
 			$updatePatron = true;
 			$patron->email = $pInfo->emails[0];
 		}
@@ -465,7 +465,7 @@ class Sierra extends PatronDriverInterface {
 		// check memCache
 
 		$params = [
-			'fields' => 'default,id,item,assessedDate,itemCharge,chargeType,paidAmount,datePaid,description,returnDate,location'
+			'fields' => 'default,assessedDate,itemCharge,chargeType,paidAmount,datePaid,description,returnDate,location,description'
 		];
 		$operation = 'patrons/' . $this->patronId . '/fines';
 		$fInfo = $this->_doRequest($operation, $params);
@@ -481,35 +481,45 @@ class Sierra extends PatronDriverInterface {
 		$fines = $fInfo->entries;
 		$r = [];
 		foreach($fines as $fine) {
-			// get the bib ids for this item
-			preg_match($this->urlIdRegExp, $fine->item, $m);
-			$itemId    = $m[1];
-			$operation = "items/" . $itemId;
-			$params    = ["fields" => "bibIds"];
-			$resp      = $this->_doRequest($operation, $params);
-			$title = false;
-			if (isset($resp->bibIds[0])) {
-				$id = $resp->bibIds[0];
-				// for Pika we need the check digit.
-				$recordXD = $this->getCheckDigit($id);
-				// get more info from record
-				$bibId        = 'b' . $id . $recordXD;
-				$recordDriver = new MarcRecord($this->accountProfile->recordSource . ":" . $bibId);
-				if ($recordDriver->isValid()) {
-					$title = $recordDriver->getTitle();
-				} else {
-					$title = "Unknown Title";
+			// get the bib ids if item is present
+			if (isset($fine->item)){
+				preg_match($this->urlIdRegExp, $fine->item, $m);
+				$itemId    = $m[1];
+				$operation = "items/" . $itemId;
+				$params    = ["fields" => "bibIds"];
+				$resp      = $this->_doRequest($operation, $params);
+				$title = false;
+				if (isset($resp->bibIds[0])) {
+					$id = $resp->bibIds[0];
+					// for Pika we need the check digit.
+					$recordXD = $this->getCheckDigit($id);
+					// get more info from record
+					$bibId        = 'b' . $id . $recordXD;
+					$recordDriver = new MarcRecord($this->accountProfile->recordSource . ":" . $bibId);
+					if ($recordDriver->isValid()) {
+						$title = $recordDriver->getTitle();
+					} else {
+						$title = "Unknown Title";
+					}
 				}
-			}
-			if(!$title) {
-				$title = "Unknown title";
+				if(!$title) {
+					$title = "Unknown title";
+				}
+				$details = [[
+					"label" => "Returned: ",
+					"value" => date('m-d-Y', strtotime($fine->returnDate))
+				]];
+			// if it's not an item charge look for a description
+			} elseif (isset($fine->description)) {
+				$title = $fine->description;
+				$details = false;
+			} else {
+				$title = 'Unknown';
+				$details = false;
 			}
 			$amount = number_format($fine->itemCharge, 2);
 			$date   = date('m-d-Y', strtotime($fine->assessedDate));
-			$details = [[
-				"label" => "Returned: ",
-				"value" => date('m-d-Y', strtotime($fine->returnDate))
-			]];
+
 
 			$r[]    = [
 				'title'  => $title,
@@ -526,13 +536,13 @@ class Sierra extends PatronDriverInterface {
 	}
 
 	/**
+	 * Get the holds for a patron
 	 *
-	 * patrons/$patronId/holds
+	 * GET patrons/$patronId/holds
 	 * default,locations
 	 * @param  User $patron
 	 * @return array|bool
 	 */
-
 	public function getMyHolds($patron){
 
 		if(!$patronId = $this->getPatronId($patron)) {
@@ -681,8 +691,7 @@ class Sierra extends PatronDriverInterface {
 				$h['title']           = $recordDriver->getTitle();
 				$h['sortTitle']       = $recordDriver->getSortableTitle();
 				$h['author']          = $recordDriver->getAuthor();
-				$h['format']          = $recordDriver->getFormat(); // todo: this isn't pulling in the format
-				$h['format_category'] = $recordDriver->getFormatCategory();
+				$h['format']          = $recordDriver->getFormat();
 				$h['link']            = $recordDriver->getRecordUrl();
 				$h['coverUrl']        = $recordDriver->getBookcoverUrl('medium');
 			};
@@ -777,7 +786,6 @@ class Sierra extends PatronDriverInterface {
 	}
 
 	public function changeHoldPickupLocation($patron, $bibId, $holdId, $newPickupLocation){
-
 		$operation = "patrons/holds/".$holdId;
 		$params = ["pickupLocation"=>$newPickupLocation];
 
