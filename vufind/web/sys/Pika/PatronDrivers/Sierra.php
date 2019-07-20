@@ -627,7 +627,7 @@ class Sierra extends PatronDriverInterface {
 					$freezeable = false;
 					$updatePickup = false;
 			}
-			// for sierra holds can't be frozen if next in line
+			// for sierra, holds can't be frozen if patron is next in line
 			if((int)$hold->priority <= 2) {
 				$freezeable = false;
 			}
@@ -672,7 +672,7 @@ class Sierra extends PatronDriverInterface {
 			$recordXD  = $this->getCheckDigit($id);
 
 			// get more info from record
-			$bibId = 'b'.$id.$recordXD;
+			$bibId = '.b'.$id.$recordXD;
 
 			$recordDriver = new MarcRecord($this->accountProfile->recordSource . ":" . $bibId);
 			if ($recordDriver->isValid()){
