@@ -447,8 +447,7 @@ class Sierra extends PatronDriverInterface {
 	 * @return array|bool
 	 */
 	public function getMyFines($patron){
-		// TODO: finish this up.
-		//return [];
+
 		// find the sierra patron id
 		if (!isset($this->patronId)) {
 			$patronId = $this->getPatronId($patron);
@@ -458,22 +457,22 @@ class Sierra extends PatronDriverInterface {
 				return false;
 			}
 		}
-		$patronFinesCacheKey = 'patron_'.$this->patronId.'_fines';
+		// check memCache
+		$patronFinesCacheKey = 'patron_'.$patron->barcode.'_fines';
 		if($this->memCache->get($patronFinesCacheKey)) {
 			return $this->memCache->get($patronFinesCacheKey);
 		}
-		// check memCache
-
+		// make the call
 		$params = [
 			'fields' => 'default,assessedDate,itemCharge,chargeType,paidAmount,datePaid,description,returnDate,location,description'
 		];
-		$operation = 'patrons/' . $this->patronId . '/fines';
+		$operation = 'patrons/'.$this->patronId.'/fines';
 		$fInfo = $this->_doRequest($operation, $params);
 		if(!$fInfo) {
 			// TODO: check last error.
 			return false;
 		}
-		//
+		// no fines. good person.
 		if($fInfo->total == 0) {
 			return [];
 		}
@@ -499,11 +498,11 @@ class Sierra extends PatronDriverInterface {
 					if ($recordDriver->isValid()) {
 						$title = $recordDriver->getTitle();
 					} else {
-						$title = "Unknown Title";
+						$title = 'Unknown Title';
 					}
 				}
 				if(!$title) {
-					$title = "Unknown title";
+					$title = 'Unknown title';
 				}
 				$details = [[
 					"label" => "Returned: ",
@@ -539,7 +538,7 @@ class Sierra extends PatronDriverInterface {
 	 * Get the holds for a patron
 	 *
 	 * GET patrons/$patronId/holds
-	 * default,locations
+	 *
 	 * @param  User $patron
 	 * @return array|bool
 	 */
@@ -603,8 +602,8 @@ class Sierra extends PatronDriverInterface {
 
 			// status, cancelable, freezable
 			switch ($hold->status->code) {
-				case "0":
-					$status     = "On hold";
+				case '0':
+					$status     = 'On hold';
 					$cancelable = true;
 					$freezeable = true;
 					if($canUpdatePL) {
@@ -613,16 +612,16 @@ class Sierra extends PatronDriverInterface {
 						$updatePickup = false;
 					}
 					break;
-				case "b":
-				case "j":
-				case "i":
-					$status     = "Ready";
+				case 'b':
+				case 'j':
+				case 'i':
+					$status     = 'Ready';
 					$cancelable = true;
 					$freezeable = false;
 					$updatePickup = false;
 					break;
-				case "t":
-					$status     = "In transit";
+				case 't':
+					$status     = 'In transit';
 					$cancelable = true;
 					$freezeable = false;
 					if($canUpdatePL) {
@@ -632,14 +631,16 @@ class Sierra extends PatronDriverInterface {
 					}
 					break;
 				default:
-					$status     = "Unknown";
+					$status     = 'Unknown';
 					$cancelable = false;
 					$freezeable = false;
 					$updatePickup = false;
 			}
 			// for sierra, holds can't be frozen if patron is next in line
-			if((int)$hold->priority <= 2 && (int)$hold->priorityQueueLength >= 2) {
-				$freezeable = false;
+			if(isset($hold->priorityQueueLength)){
+				if((int)$hold->priority <= 2 && (int)$hold->priorityQueueLength >= 2) {
+					$freezeable = false;
+				}
 			}
 			$h['status']    = $status;
 			$h['freezeable']= $freezeable;
@@ -669,7 +670,7 @@ class Sierra extends PatronDriverInterface {
 			preg_match($this->urlIdRegExp, $hold->record,$m);
 			// for item level holds we need to grab the bib id.
 			$id = $m[1];
-			if($recordType == "i") {
+			if($recordType == 'i') {
 				// items/{itemId}
 				$operation = "items/".$id;
 				$params = ["fields"=>"bibIds"];
@@ -737,7 +738,7 @@ class Sierra extends PatronDriverInterface {
 		$this->memCache->delete($patronHoldsCacheKey);
 
 		// because the patron object has holds information we need to clear that cache too.
-		$patronObjectCacheKey = 'patron_'. $patron->barcode.'_patron';
+		$patronObjectCacheKey = 'patron_'.$patron->barcode.'_patron';
 		$this->memCache->delete($patronObjectCacheKey);
 
 		// get title of record
@@ -745,10 +746,10 @@ class Sierra extends PatronDriverInterface {
 		$recordTitle  = $record->isValid() ? $record->getTitle() : null;
 
 		$params = [
-			"recordType"     => $recordType,
-			"recordNumber"   => (int)$recordNumber,
-			"pickupLocation" => $pickupLocation,
-			"neededBy"       => $neededBy
+			'recordType'     => $recordType,
+			'recordNumber'   => (int)$recordNumber,
+			'pickupLocation' => $pickupLocation,
+			'neededBy'       => $neededBy
 		];
 
 		$operation = "patrons/{$patronId}/holds/requests";
@@ -761,7 +762,7 @@ class Sierra extends PatronDriverInterface {
 			if ($this->apiLastError) {
 				$return['message'] = $this->apiLastError;
 			} else {
-				$return['message'] = "Unable to place your hold. Please contact our library.";
+				$return['message'] = 'Unable to place your hold. Please contact our library.';
 			}
 			return $return;
 		}
