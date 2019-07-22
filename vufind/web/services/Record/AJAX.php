@@ -93,10 +93,11 @@ class Record_AJAX extends AJAXHandler {
 	}
 
 	function getPlaceHoldForm(){
-		global $interface;
 		$user = UserAccount::getLoggedInUser();
-		if (UserAccount::isLoggedIn()) {
-			$sourceAndId = new SourceAndId($_REQUEST['id']);
+		if (UserAccount::isLoggedIn()){
+			global $interface;
+			require_once ROOT_DIR . '/services/SourceAndId.php';
+			$sourceAndId  = new SourceAndId($_REQUEST['id']);
 			$recordSource = $_REQUEST['recordSource'];
 			$interface->assign('recordSource', $recordSource);
 			if (isset($_REQUEST['volume'])){
