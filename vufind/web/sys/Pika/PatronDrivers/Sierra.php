@@ -94,12 +94,87 @@ class Sierra extends PatronDriverInterface {
 		}
 	}
 
+	/**
+	 * Retrieve a patrons checkouts
+	 *
+	 * GET patrons/1139316/checkouts?fields=default%2Cbarcode&expand=item
+	 *
+	 * @param $patron
+	 * @return array|false
+	 */
 	public function getMyCheckouts($patron){
-		// TODO: Implement getMyCheckouts() method.
+
+		$patronId = $this->getPatronId($patron);
+
+		$operation = 'patrons/'.$patronId.'/checkouts';
+		$params = [
+			'fields'=>'default',
+			'expand'=>'item'];
+
+		$r = $this->_doRequest($operation,$params);
+
+		if (!$r) {
+			return false;
+			//todo: error message and log.
+		}
+
+		// no checkouts
+		if($r->total == 0) {
+			return [];
+		}
+
+		$checkouts = [];
+		foreach($r->entries as $entry) {
+			// grab the bib id and make Pika-tize it
+			$id = $entry->item->bibIds[0];
+			// for Pika we need the check digit.
+			$recordXD  = $this->getCheckDigit($id);
+			$bibId = '.b'.$id.$recordXD;
+
+			// get checkout id
+			preg_match($this->urlIdRegExp, $entry->id, $m);
+			$chekoutId = $m[1];
+
+			$checkout['checkoutSource'] = 'ILS';
+			$checkout['recordId']       = $bibId;
+			$checkout['id']             = $bibId;
+			$checkout['dueDate']        = strtotime($entry->dueDate);
+			$checkout['checkoutDate']   = strtotime($entry->outDate);
+			$checkout['renewCount']     = $entry->numberOfRenewals;
+			$checkout['barcode']        = $entry->barcode;
+			$curTitle['request']        = $entry->callNumber;
+			$checkout['itemid']         = $entry->item->id;
+
+			$checkout['canrenew']       = true;
+
+			$checkout['renewIndicator'] = $chekoutId;
+			$checkout['renewMessage']   = '';
+			$recordDriver = new MarcRecord($this->driver->accountProfile->recordSource . ":" . $curTitle['recordId']);
+			if ($recordDriver->isValid()) {
+				$checkout['coverUrl']      = $recordDriver->getBookcoverUrl('medium');
+				$checkout['groupedWorkId'] = $recordDriver->getGroupedWorkId();
+				$checkout['ratingData']    = $recordDriver->getRatingData();
+				$checkout['format']        = $recordDriver->getPrimaryFormat();
+				$checkout['author']        = $recordDriver->getPrimaryAuthor();
+				$checkout['title']         = $recordDriver->getTitle();
+				$checkout['title_sort']    = $recordDriver->getSortableTitle();
+				$checkout['link']          = $recordDriver->getLinkUrl();
+			} else {
+				$checkout['coverUrl']      = "";
+				$checkout['groupedWorkId'] = "";
+				$checkout['format']        = "Unknown";
+				$checkout['author']        = "";
+			}
+
+			$checkouts[] = $checkout;
+		}
+
+		return $checkouts;
+
 	}
 
-	public function renewItem($patron, $renewItemId){
-		// TODO: Implement renewItem() method.
+	public function renewItem($patron, $checkoutId, $itemIndex = NULL){
+		$patronId = $this->getPatronId($patron);
 	}
 
 	/**
@@ -714,23 +789,26 @@ class Sierra extends PatronDriverInterface {
 	}
 
 	/**
-	 * Determines the hold type and places the hold
+	 * Place hold
 	 *
-	 * patrons/{patronId}}/holds/requests
+	 * POST patrons/{patronId}}/holds/requests
 	 *
 	 * @param User        $patron
 	 * @param string      $recordId
 	 * @param string      $pickupBranch
 	 * @param string|null $cancelDate
-	 * @return array
+	 * @return array|false
 	 */
 	public function placeHold($patron, $recordId, $pickupBranch, $cancelDate = null) {
-
-		$d = \DateTime::createFromFormat('m/d/Y', $cancelDate); // convert needed by date
+		if($cancelDate) {
+			$d        = \DateTime::createFromFormat('m/d/Y', $cancelDate); // convert needed by date
+			$neededBy = $d->format('Y-m-d');
+		} else {
+			$neededBy = false;
+		}
 		$recordType     = substr($recordId, 1,1); // determine the hold type b = bib, i = item, j = volume
 		$recordNumber   = substr($recordId, 2, -1); // remove the .x and the last check digit
 		$pickupLocation = $pickupBranch;
-		$neededBy       = $d->format('Y-m-d');
 		$patronId       = $this->getPatronId($patron);
 
 		// delete memcache holds
@@ -749,13 +827,27 @@ class Sierra extends PatronDriverInterface {
 			'recordType'     => $recordType,
 			'recordNumber'   => (int)$recordNumber,
 			'pickupLocation' => $pickupLocation,
-			'neededBy'       => $neededBy
 		];
+		if($neededBy) {
+			$params['neededBy'] = $neededBy;
+		}
 
 		$operation = "patrons/{$patronId}/holds/requests";
 
 		$r = $this->_doRequest($operation, $params, "POST");
-		$return = [];
+
+		// check if error we need to do an item level hold
+		if($this->apiLastError && stristr($this->apiLastError,"Volume record selection is required to proceed")) {
+			$items = $this->getItemVolumes($recordId);
+			$return = [
+				'message' => 'This title requires item level holds, please select an item to place a hold on.',
+				'success' => 'true',
+				'canceldate' => $neededBy,
+				'items'   => $items
+			];
+			return $return;
+		}
+
 		// oops! something went wrong.
 		if(!$r) {
 			$return['success'] = false;
@@ -778,12 +870,14 @@ class Sierra extends PatronDriverInterface {
 		return $return;
 	}
 
+
 	public function placeItemHold($patron, $recordId, $itemId, $pickupBranch){
-		// TODO: Implement placeItemHold() method.
+		return $this->placeHold($patron, $itemId, $pickupBranch);
 	}
 
 	public function placeVolumeHold($patron, $recordId, $volumeId, $pickupBranch){
-		// TODO: Implement placeVolumeHold() method.
+		return[];
+		$recordId = $recordId;
 	}
 
 	public function changeHoldPickupLocation($patron, $bibId, $holdId, $newPickupLocation){
@@ -1223,6 +1317,33 @@ class Sierra extends PatronDriverInterface {
 		return $r;
 	}
 
+	/**
+	 * Get volumes for item level holds
+	 *
+	 * @param $bibId
+	 * @return array|false
+	 */
+	public function getItemVolumes($bibId) {
+		$record = RecordDriverFactory::initRecordDriverById($this->accountProfile->recordSource . ':' . $bibId);
+		$solrRecords = $record->getGroupedWorkDriver()->getRelatedRecord($this->accountProfile->recordSource . ':' . $bibId);
+
+		if(!isset($solrRecords['itemDetails']) || count($solrRecords['itemDetails']) > 1) {
+			// todo: something
+		}
+
+		$items = [];
+		foreach($solrRecords['itemDetails'] as $record) {
+			// todo: is holdable?
+			$items[] = array(
+				'itemNumber' => $record['itemId'],
+				'location'   => $record['shelfLocation'],
+				'callNumber' => $record['callNumber'],
+				'status'     => $record['status']
+			);
+		}
+		return $items;
+	}
+
 	private function getCheckDigit($baseId){
 		$baseId = preg_replace('/\.?[bij]/', '', $baseId);
 		$sumOfDigits = 0;
@@ -1236,6 +1357,6 @@ class Sierra extends PatronDriverInterface {
 		}else{
 			return $modValue;
 		}
-}
+	}
 
 }
