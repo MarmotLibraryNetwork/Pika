@@ -715,6 +715,9 @@ class Sierra extends PatronDriverInterface {
 			if(isset($hold->priorityQueueLength)){
 				if((int)$hold->priority <= 2 && (int)$hold->priorityQueueLength >= 2) {
 					$freezeable = false;
+				// if the patron is the only person on wait list hold can't be frozen
+				} elseif($hold->priority == 1 && (int)$hold->priorityQueueLength == 1) {
+					$freezeable = false;
 				}
 			}
 			$h['status']    = $status;
