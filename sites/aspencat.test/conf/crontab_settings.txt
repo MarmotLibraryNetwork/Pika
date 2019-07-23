@@ -59,6 +59,8 @@
 ###################################
 # Library supplied covers
 31 */2 * * * /usr/local/vufind-plus/sites/aspencat.test/copyCovers.sh
+# Hoopla
+07 19 * * * cd /usr/local/vufind-plus/vufind/hoopla_export; java -jar hoopla_export.jar aspencat.test
 
 ############################################
 # New York Times Bestseller Lists Updating #
