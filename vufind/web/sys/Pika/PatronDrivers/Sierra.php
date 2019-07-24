@@ -147,12 +147,12 @@ class Sierra extends PatronDriverInterface {
 
 			$checkout['checkoutSource'] = 'ILS';
 			$checkout['recordId']       = $bibId;
-			$checkout['id']             = $bibId;
+			$checkout['id']             = $chekoutId;
 			$checkout['dueDate']        = strtotime($entry->dueDate);
 			$checkout['checkoutDate']   = strtotime($entry->outDate);
 			$checkout['renewCount']     = $entry->numberOfRenewals;
 			$checkout['barcode']        = $entry->barcode;
-			$curTitle['request']        = $entry->callNumber;
+			$checkout['request']        = $entry->callNumber;
 			$checkout['itemid']         = $itemId;
 
 			$checkout['canrenew']       = true;
@@ -183,8 +183,44 @@ class Sierra extends PatronDriverInterface {
 
 	}
 
-	public function renewItem($patron, $checkoutId, $itemIndex = NULL){
-		$patronId = $this->getPatronId($patron);
+	/**
+	 * Renew a checkout
+	 * POST patrons/checkouts/{checkoutId}/renewal
+	 *
+	 * @param      $patron
+	 * @param      $bibId
+	 * @param      $checkoutId
+	 * @param null $itemIndex
+	 * @return array
+	 */
+	public function renewItem($patron, $bibId, $checkoutId, $itemIndex = NULL){
+
+		$operation = 'patrons/checkouts/'.$checkoutId.'/renewal';
+
+		$r = $this->_doRequest($operation, [], 'POST');
+		if(!$r) {
+			$return = [
+				'success' => false,
+				'message' => $this->apiLastError
+			];
+		}
+
+		$recordDriver = new MarcRecord($this->accountProfile->recordSource . ":" . $bibId);
+		if ($recordDriver->isValid()) {
+			$title = $recordDriver->getTitle();
+		} else {
+			$title = false;
+		}
+
+		$return = ['success' => true];
+		if($title) {
+			$return['message'] = $title . ' has been renewed.';
+		} else {
+			$return['message'] = "Your item has been renewed";
+		}
+		return $return;
+
+
 	}
 
 	/**
