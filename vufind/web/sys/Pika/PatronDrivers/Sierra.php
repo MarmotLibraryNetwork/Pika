@@ -108,8 +108,8 @@ class Sierra extends PatronDriverInterface {
 
 		$operation = 'patrons/'.$patronId.'/checkouts';
 		$params = [
-			'fields'=>'default',
-			'expand'=>'item'];
+			'fields'=>'default,barcode,callNumber'
+		];
 
 		$r = $this->_doRequest($operation,$params);
 
@@ -126,10 +126,20 @@ class Sierra extends PatronDriverInterface {
 		$checkouts = [];
 		foreach($r->entries as $entry) {
 			// grab the bib id and make Pika-tize it
-			$id = $entry->item->bibIds[0];
+			preg_match($this->urlIdRegExp, $entry->item, $m);
+			$itemId = $m[1];
+			$operation = "items/".$itemId;
+			$params = ["fields"=>"bibIds"];
+			$iR = $this->_doRequest($operation, $params);
+			if($iR) {
+				$bid = $iR->bibIds[0];
+			} else {
+				$bid = 'x';
+			}
+
 			// for Pika we need the check digit.
-			$recordXD  = $this->getCheckDigit($id);
-			$bibId = '.b'.$id.$recordXD;
+			$recordXD  = $this->getCheckDigit($bid);
+			$bibId = '.b'.$bid.$recordXD;
 
 			// get checkout id
 			preg_match($this->urlIdRegExp, $entry->id, $m);
@@ -143,13 +153,13 @@ class Sierra extends PatronDriverInterface {
 			$checkout['renewCount']     = $entry->numberOfRenewals;
 			$checkout['barcode']        = $entry->barcode;
 			$curTitle['request']        = $entry->callNumber;
-			$checkout['itemid']         = $entry->item->id;
+			$checkout['itemid']         = $itemId;
 
 			$checkout['canrenew']       = true;
 
 			$checkout['renewIndicator'] = $chekoutId;
 			$checkout['renewMessage']   = '';
-			$recordDriver = new MarcRecord($this->driver->accountProfile->recordSource . ":" . $curTitle['recordId']);
+			$recordDriver = new MarcRecord($this->accountProfile->recordSource . ":" . $bibId);
 			if ($recordDriver->isValid()) {
 				$checkout['coverUrl']      = $recordDriver->getBookcoverUrl('medium');
 				$checkout['groupedWorkId'] = $recordDriver->getGroupedWorkId();
@@ -712,7 +722,7 @@ class Sierra extends PatronDriverInterface {
 					$updatePickup = false;
 			}
 			// for sierra, holds can't be frozen if patron is next in line
-			if(isset($hold->priorityQueueLength)){
+			if(isset($hold->priorityQueueLength)) {
 				if((int)$hold->priority <= 2 && (int)$hold->priorityQueueLength >= 2) {
 					$freezeable = false;
 				// if the patron is the only person on wait list hold can't be frozen
@@ -855,7 +865,12 @@ class Sierra extends PatronDriverInterface {
 		if(!$r) {
 			$return['success'] = false;
 			if ($this->apiLastError) {
-				$return['message'] = $this->apiLastError;
+				// grab a user friendlier string for the fail message
+				$messageParts = explode(':', $this->apiLastError);
+				// just grab the last part of message
+				$offset = (count($messageParts) - 1);
+				$message = $messageParts[$offset];
+				$return['message'] = $message;
 			} else {
 				$return['message'] = 'Unable to place your hold. Please contact our library.';
 			}
@@ -1296,7 +1311,7 @@ class Sierra extends PatronDriverInterface {
 			// first we need to check the response for a code, message from the API because many failed operations (ie,
 			// freezeing a hold) will send back a 4xx response code if the operation couldn't be completed.
 			if(isset($c->response->code)) {
-				$message = 'API Error ' . $c->response->code . ': ' . $c->response->name;
+				$message = 'API Error: ' . $c->response->code . ': ' . $c->response->name;
 				if(isset($c->response->description)){
 					$message = $message . " " . $c->response->description;
 				}
