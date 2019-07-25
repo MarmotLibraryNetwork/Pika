@@ -92,41 +92,40 @@ class MarmotRecordProcessor extends IIIRecordProcessor {
 //	}
 
 	@Override
-	protected List<RecordInfo> loadUnsuppressedEContentItems(GroupedWorkSolr groupedWork, String identifier, Record record){
-		List<DataField> itemRecords = MarcUtil.getDataFields(record, itemTag);
+	protected List<RecordInfo> loadUnsuppressedEContentItems(GroupedWorkSolr groupedWork, String identifier, Record record) {
 		List<RecordInfo> unsuppressedEcontentRecords = new ArrayList<>();
-		for (DataField itemField : itemRecords){
-			if (!isItemSuppressed(itemField)){
+		List<DataField>  itemRecords                 = MarcUtil.getDataFields(record, itemTag);
+		for (DataField itemField : itemRecords) {
+			if (!isItemSuppressed(itemField)) {
 				//Check to see if the item has an eContent indicator
-				boolean isEContent = false;
-				boolean isOverDrive = false;
-				boolean isHoopla = false;
-				if (useEContentSubfield){
-					if (itemField.getSubfield(eContentSubfieldIndicator) != null){
+				if (useEContentSubfield) {
+					if (itemField.getSubfield(eContentSubfieldIndicator) != null) {
 						String eContentData = itemField.getSubfield(eContentSubfieldIndicator).getData();
-						if (eContentData.indexOf(':') >= 0){
-							isEContent = true;
-							String[] eContentFields = eContentData.split(":");
-							String sourceType = eContentFields[0].toLowerCase().trim();
-							if (sourceType.equals("overdrive")){
-								isOverDrive = true;
-							}else if (sourceType.equals("hoopla")){
-								isHoopla = true;
+						if (eContentData != null && !eContentData.isEmpty()) {
+							// Is an eContent Item
+							RecordInfo eContentRecord = null;
+							if (doAutomaticEcontentSuppression) {
+								// Skip Hoopla and Overdrive items
+								String  source;
+								if (eContentData.indexOf(':') >= 0) {
+									//The econtent field used to require multiple parts separated by a colon; this in now longer required,
+									//But this will take the source from data that still has the other pieces
+									String[] eContentFields = eContentData.split(":");
+									source = eContentFields[0].trim().toLowerCase();
+								} else {
+									source = itemField.getSubfield(eContentSubfieldIndicator).getData().trim().toLowerCase();
+								}
+								// Don't index Overdrive or Hoopla Items
+								if (!source.contains("overdrive") && !source.contains("hoopla")) {
+									eContentRecord = getEContentIlsRecord(groupedWork, record, identifier, itemField);
+								}
+							} else {
+								eContentRecord = getEContentIlsRecord(groupedWork, record, identifier, itemField);
 							}
-						}else{
-							String source = itemField.getSubfield(eContentSubfieldIndicator).getData().trim();
-							if (source.equalsIgnoreCase("overdrive")){
-								isOverDrive = true;
-							}else if (source.equalsIgnoreCase("hoopla")){
-								isHoopla = true;
+							if (eContentRecord != null) {
+								unsuppressedEcontentRecords.add(eContentRecord);
 							}
 						}
-					}
-				}
-				if (!isOverDrive && !isHoopla && isEContent){
-					RecordInfo eContentRecord = getEContentIlsRecord(groupedWork, record, identifier, itemField);
-					if (eContentRecord != null) {
-						unsuppressedEcontentRecords.add(eContentRecord);
 					}
 				}
 			}
@@ -136,25 +135,18 @@ class MarmotRecordProcessor extends IIIRecordProcessor {
 
 	@Override
 	protected void loadEContentFormatInformation(Record record, RecordInfo econtentRecord, ItemInfo econtentItem) {
-		String protectionType = econtentItem.geteContentProtectionType();
-		switch (protectionType) {
-			case "external":
-				String iType = econtentItem.getITypeCode();
-				if (iType != null) {
-					String translatedFormat = translateValue("econtent_itype_format", iType, econtentRecord.getRecordIdentifier());
-					String translatedFormatCategory = translateValue("econtent_itype_format_category", iType, econtentRecord.getRecordIdentifier());
-					String translatedFormatBoost = translateValue("econtent_itype_format_boost", iType, econtentRecord.getRecordIdentifier());
-					econtentItem.setFormat(translatedFormat);
-					econtentItem.setFormatCategory(translatedFormatCategory);
-					econtentRecord.setFormatBoost(Long.parseLong(translatedFormatBoost));
-				} else {
-					logger.warn("Did not get a iType for external eContent " + econtentRecord.getFullIdentifier());
-				}
-				break;
-			default:
-				logger.warn("Unknown protection type " + protectionType);
-				break;
+		String iType = econtentItem.getITypeCode();
+		if (iType != null) {
+			String translatedFormat         = translateValue("econtent_itype_format", iType, econtentRecord.getRecordIdentifier());
+			String translatedFormatCategory = translateValue("econtent_itype_format_category", iType, econtentRecord.getRecordIdentifier());
+			String translatedFormatBoost    = translateValue("econtent_itype_format_boost", iType, econtentRecord.getRecordIdentifier());
+			econtentItem.setFormat(translatedFormat);
+			econtentItem.setFormatCategory(translatedFormatCategory);
+			econtentRecord.setFormatBoost(Long.parseLong(translatedFormatBoost));
+		} else {
+			logger.warn("Did not get a iType for external eContent " + econtentRecord.getFullIdentifier());
 		}
+
 	}
 
 }
