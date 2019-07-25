@@ -924,11 +924,11 @@ class RecordGroupingProcessor {
 		formatsToGroupingCategory.put("externalMP3", "audio");
 		formatsToGroupingCategory.put("interactiveBook", "ebook");
 		formatsToGroupingCategory.put("overdrive", "ebook");
-		formatsToGroupingCategory.put("external_web", "ebook");
-		formatsToGroupingCategory.put("external_ebook", "ebook");
-		formatsToGroupingCategory.put("external_eaudio", "audio");
-		formatsToGroupingCategory.put("external_emusic", "music");
-		formatsToGroupingCategory.put("external_evideo", "movie");
+		formatsToGroupingCategory.put("external_web", "ebook"); //TODO: external_ values obsolete
+		formatsToGroupingCategory.put("external_ebook", "ebook"); //TODO: external_ values obsolete
+		formatsToGroupingCategory.put("external_eaudio", "audio"); //TODO: external_ values obsolete
+		formatsToGroupingCategory.put("external_emusic", "music"); //TODO: external_ values obsolete
+		formatsToGroupingCategory.put("external_evideo", "movie"); //TODO: external_ values obsolete
 		formatsToGroupingCategory.put("text", "ebook");
 		formatsToGroupingCategory.put("gifs", "other");
 		formatsToGroupingCategory.put("itunes", "audio");
