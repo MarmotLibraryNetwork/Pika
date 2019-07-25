@@ -76,14 +76,14 @@ public class IndexingProfile {
 	char   eContentDescriptor;
 	String specifiedFormatCategory;
 
-	String callNumberExportFieldTag;
-	String callNumberPrestampExportSubfield;
-	String callNumberExportSubfield;
-	String callNumberCutterExportSubfield;
-	String callNumberPoststampExportSubfield;
-	String volumeExportFieldTag;
-	String urlExportFieldTag;
-	String eContentExportFieldTag;
+	String APIItemCallNumberFieldTag;
+	String APIItemCallNumberPrestampSubfield;
+	String APIItemCallNumberSubfield;
+	String APIItemCallNumberCutterSubfield;
+	String APICallNumberPoststampSubfield;
+	String APIItemVolumeFieldTag;
+	String APIItemURLFieldTag;
+	String APIItemEContentExportFieldTag;
 
 	private char getCharFromString(String stringValue) {
 		char result = ' ';
@@ -237,21 +237,22 @@ public class IndexingProfile {
 					indexingProfile.setShelvingLocationSubfield(indexingProfileRS.getString("shelvingLocation"));
 
 
-					PreparedStatement getSierraFieldMappingsStmt = pikaConn.prepareStatement("SELECT * FROM sierra_export_field_mapping where indexingProfileId =" + indexingProfile.id);
-					ResultSet         getSierraFieldMappingsRS   = getSierraFieldMappingsStmt.executeQuery();
-					if (getSierraFieldMappingsRS.next()) {
-						indexingProfile.callNumberExportFieldTag          = getSierraFieldMappingsRS.getString("callNumberExportFieldTag");
-						indexingProfile.callNumberPrestampExportSubfield  = getSierraFieldMappingsRS.getString("callNumberPrestampExportSubfield");
-						indexingProfile.callNumberExportSubfield          = getSierraFieldMappingsRS.getString("callNumberExportSubfield");
-						indexingProfile.callNumberCutterExportSubfield    = getSierraFieldMappingsRS.getString("callNumberCutterExportSubfield");
-						indexingProfile.callNumberPoststampExportSubfield = getSierraFieldMappingsRS.getString("callNumberPoststampExportSubfield");
-						indexingProfile.volumeExportFieldTag              = getSierraFieldMappingsRS.getString("volumeExportFieldTag");
-						indexingProfile.urlExportFieldTag                 = getSierraFieldMappingsRS.getString("urlExportFieldTag");
-						indexingProfile.eContentExportFieldTag            = getSierraFieldMappingsRS.getString("eContentExportFieldTag");
-
-						getSierraFieldMappingsRS.close();
+					// Sierra API Item Field Mapping
+					try (
+						PreparedStatement getSierraFieldMappingsStmt = pikaConn.prepareStatement("SELECT * FROM sierra_export_field_mapping where indexingProfileId =" + indexingProfile.id);
+						ResultSet getSierraFieldMappingsRS = getSierraFieldMappingsStmt.executeQuery()
+					) {
+						if (getSierraFieldMappingsRS.next()) {
+							indexingProfile.APIItemCallNumberFieldTag         = getSierraFieldMappingsRS.getString("callNumberExportFieldTag");
+							indexingProfile.APIItemCallNumberPrestampSubfield = getSierraFieldMappingsRS.getString("callNumberPrestampExportSubfield");
+							indexingProfile.APIItemCallNumberSubfield         = getSierraFieldMappingsRS.getString("callNumberExportSubfield");
+							indexingProfile.APIItemCallNumberCutterSubfield   = getSierraFieldMappingsRS.getString("callNumberCutterExportSubfield");
+							indexingProfile.APICallNumberPoststampSubfield    = getSierraFieldMappingsRS.getString("callNumberPoststampExportSubfield");
+							indexingProfile.APIItemVolumeFieldTag             = getSierraFieldMappingsRS.getString("volumeExportFieldTag");
+							indexingProfile.APIItemURLFieldTag                = getSierraFieldMappingsRS.getString("urlExportFieldTag");
+							indexingProfile.APIItemEContentExportFieldTag     = getSierraFieldMappingsRS.getString("eContentExportFieldTag");
+						}
 					}
-					getSierraFieldMappingsStmt.close();
 				} else {
 					logger.error("Unable to find " + profileToLoad + " indexing profile, please create a profile with the name ils.");
 				}
