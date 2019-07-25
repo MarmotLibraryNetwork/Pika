@@ -167,7 +167,7 @@ public class SierraExportAPIMain {
 		}
 
 		//API timing doesn't require Sierra Field Mapping
-		if (indexingProfile.callNumberExportFieldTag == null || indexingProfile.callNumberExportFieldTag.isEmpty()) {
+		if (indexingProfile.APIItemCallNumberFieldTag == null || indexingProfile.APIItemCallNumberFieldTag.isEmpty()) {
 			logger.error("Sierra Field Mappings need to be set.");
 			System.exit(0);
 		}
@@ -1189,9 +1189,15 @@ public class SierraExportAPIMain {
 					}
 
 					RecordIdentifier recordIdentifier = recordGroupingProcessor.getPrimaryIdentifierFromMarcRecord(marcRecord, indexingProfile.name, indexingProfile.doAutomaticEcontentSuppression);
-					String           identifier       = recordIdentifier.getIdentifier();
-					writeMarcRecord(marcRecord, identifier);
-					logger.debug("Wrote marc record for " + identifier);
+					String           identifier;
+					if (recordIdentifier != null) {
+						identifier = recordIdentifier.getIdentifier();
+						writeMarcRecord(marcRecord, identifier);
+						logger.debug("Wrote marc record for " + identifier);
+					} else {
+						logger.warn("Failed to set record identifier in record grouper getPrimaryIdentifierFromMarcRecord(); possible error or automatic econtent suppression trigger.");
+						identifier = getfullSierraBibId(id);
+					}
 
 					//Setup the grouped work for the record.  This will take care of either adding it to the proper grouped work
 					//or creating a new grouped work
@@ -1323,36 +1329,36 @@ public class SierraExportAPIMain {
 									allFieldContent.append(curVarField.getString("content"));
 								}
 
-								if (fieldTag.equals(indexingProfile.callNumberExportFieldTag)) {
+								if (fieldTag.equals(indexingProfile.APIItemCallNumberFieldTag)) {
 									if (subfields != null) {
-										//									hadCallNumberVarField = true;
+										//hadCallNumberVarField = true;
 										for (int k = 0; k < subfields.length(); k++) {
 											JSONObject subfield = subfields.getJSONObject(k);
 											String     tag      = subfield.getString("tag");
 											String     content  = subfield.getString("content");
-											if (indexingProfile.callNumberPrestampExportSubfield.length() > 0 && tag.equalsIgnoreCase(indexingProfile.callNumberPrestampExportSubfield)) {
+											if (indexingProfile.APIItemCallNumberPrestampSubfield.length() > 0 && tag.equalsIgnoreCase(indexingProfile.APIItemCallNumberPrestampSubfield)) {
 												itemField.addSubfield(marcFactory.newSubfield(indexingProfile.callNumberPrestampSubfield, content));
-											} else if (indexingProfile.callNumberExportSubfield.length() > 0 && tag.equalsIgnoreCase(indexingProfile.callNumberExportSubfield)) {
+											} else if (indexingProfile.APIItemCallNumberSubfield.length() > 0 && tag.equalsIgnoreCase(indexingProfile.APIItemCallNumberSubfield)) {
 												itemField.addSubfield(marcFactory.newSubfield(indexingProfile.callNumberSubfield, content));
-											} else if (indexingProfile.callNumberCutterExportSubfield.length() > 0 && tag.equalsIgnoreCase(indexingProfile.callNumberCutterExportSubfield)) {
+											} else if (indexingProfile.APIItemCallNumberCutterSubfield.length() > 0 && tag.equalsIgnoreCase(indexingProfile.APIItemCallNumberCutterSubfield)) {
 												itemField.addSubfield(marcFactory.newSubfield(indexingProfile.callNumberCutterSubfield, content));
-											} else if (indexingProfile.callNumberPoststampExportSubfield.length() > 0 && tag.equalsIgnoreCase(indexingProfile.callNumberPoststampExportSubfield)) {
+											} else if (indexingProfile.APICallNumberPoststampSubfield.length() > 0 && tag.equalsIgnoreCase(indexingProfile.APICallNumberPoststampSubfield)) {
 												itemField.addSubfield(marcFactory.newSubfield(indexingProfile.callNumberPoststampSubfield, content));
 											}
-											//										else {
-											//											logger.warn("For item " + getfullSierraItemId(itemId) + " (" + getfullSierraBibId(id) + "), unhandled call number subfield " + tag + " with content : "+ content + "; " + curVarField.toString());
+											//else {
+											//	logger.warn("For item " + getfullSierraItemId(itemId) + " (" + getfullSierraBibId(id) + "), unhandled call number subfield " + tag + " with content : "+ content + "; " + curVarField.toString());
 											//This is to catch any settings not handled in the field mappings.
-											//										}
+											//}
 										}
 									} else {
 										String content = curVarField.getString("content");
 										itemField.addSubfield(marcFactory.newSubfield(indexingProfile.callNumberSubfield, content));
 									}
-								} else if (indexingProfile.volumeExportFieldTag.length() > 0 && fieldTag.equals(indexingProfile.volumeExportFieldTag)) {
+								} else if (indexingProfile.APIItemVolumeFieldTag.length() > 0 && fieldTag.equals(indexingProfile.APIItemVolumeFieldTag)) {
 									itemField.addSubfield(marcFactory.newSubfield(indexingProfile.volume, allFieldContent.toString()));
-								} else if (indexingProfile.urlExportFieldTag.length() > 0 && fieldTag.equals(indexingProfile.urlExportFieldTag)) {
+								} else if (indexingProfile.APIItemURLFieldTag.length() > 0 && fieldTag.equals(indexingProfile.APIItemURLFieldTag)) {
 									itemField.addSubfield(marcFactory.newSubfield(indexingProfile.itemUrl, allFieldContent.toString()));
-								} else if (indexingProfile.eContentExportFieldTag.length() > 0 && fieldTag.equals(indexingProfile.eContentExportFieldTag)) {
+								} else if (indexingProfile.APIItemEContentExportFieldTag.length() > 0 && fieldTag.equals(indexingProfile.APIItemEContentExportFieldTag)) {
 									itemField.addSubfield(marcFactory.newSubfield(indexingProfile.eContentDescriptor, allFieldContent.toString()));
 								}
 								//							else if (

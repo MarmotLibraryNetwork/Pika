@@ -138,10 +138,10 @@ abstract class KohaILSDI extends ScreenScrapingDriver {
 		if (!empty($holdResponse)){
 			if (!empty($holdResponse->title)){
 				$holdResult = array(
-					'title' => $holdResponse->title,
-					'bib' => $recordId,
+					'title'   => $holdResponse->title,
+					'bib'     => $recordId,
 					'success' => true,
-					'message' => "You hold has been placed."
+					'message' => "Your hold has been placed."
 				);
 			}elseif(isset($holdResponse->message)){
 				$holdResult['message'] = $errorMessage;

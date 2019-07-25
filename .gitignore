@@ -51,7 +51,6 @@ horizon_export.properties
 
 # Unneeded files that are large or built at runtime #
 #####################################################
-III_Telnet_Extract.pl
 LexileTitles.txt
 
 # Packages #

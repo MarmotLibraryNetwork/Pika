@@ -173,6 +173,7 @@ class ExternalEContentDriver extends BaseEContentDriver{
 
 	function getFormats(){
 		global $configArray;
+		//TODO: use indexing profile settings
 		$formats = array();
 		//Get the format based on the iType
 		$itemFields = $this->getMarcRecord()->getFields('989');

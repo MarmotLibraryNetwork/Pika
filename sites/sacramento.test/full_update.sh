@@ -42,8 +42,8 @@ fi
 source "/usr/local/vufind-plus/vufind/bash/checkConflicts.sh"
 
 #Check for any conflicting processes that we shouldn't do a full index during.
-checkConflictingProcesses "sierra_export.jar ${PIKASERVER}" >> ${OUTPUT_FILE}
 checkConflictingProcesses "sierra_export_api.jar ${PIKASERVER}" >> ${OUTPUT_FILE}
+checkConflictingProcesses "sierra_export.jar ${PIKASERVER}" >> ${OUTPUT_FILE}
 checkConflictingProcesses "overdrive_extract.jar ${PIKASERVER}" >> ${OUTPUT_FILE}
 checkConflictingProcesses "reindexer.jar ${PIKASERVER}" >> ${OUTPUT_FILE}
 
@@ -99,10 +99,11 @@ cd /data/vufind-plus/accelerated_reader; curl --remote-name --remote-time --sile
 #Do a full extract from OverDrive just once a week to catch anything that doesn't
 #get caught in the regular extract
 DAYOFWEEK=$(date +"%u")
-if [ "${DAYOFWEEK}" -eq 5 ];
-then
+if [[ "${DAYOFWEEK}" -eq 7 ]]; then
+	echo $(date +"%T") "Starting Overdrive fullReload." >> ${OUTPUT_FILE}
 	cd /usr/local/vufind-plus/vufind/overdrive_api_extract/
-	nice -n -10 java -jar overdrive_extract.jar ${PIKASERVER} fullReload >> ${OUTPUT_FILE}
+	nice -n -10 java -server -XX:+UseG1GC -jar overdrive_extract.jar ${PIKASERVER} fullReload >> ${OUTPUT_FILE}
+	echo $(date +"%T") "Completed Overdrive fullReload." >> ${OUTPUT_FILE}
 fi
 
 #Validate the export

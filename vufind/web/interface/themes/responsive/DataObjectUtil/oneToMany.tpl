@@ -8,7 +8,7 @@
 				{/if}
 				{foreach from=$property.structure item=subProperty}
 					{if in_array($subProperty.type, array('text', 'enum', 'date', 'checkbox', 'integer', 'number', 'textarea', 'html', 'multiSelect')) }
-						<th{if in_array($subProperty.type, array('text', 'enum', 'html', 'multiSelect'))} style="min-width:150px"{/if} class="{if $subProperty.type == 'text'}sorter-text-input{elseif $subProperty.type == 'enum'}sorter-text-select{else}sorter-false filter-false{/if}">{$subProperty.label}</th>
+						<th{if in_array($subProperty.type, array('text', 'enum', 'html', 'multiSelect'))} style="min-width:150px"{/if} class="{if $subProperty.type == 'text'}sorter-text-input{elseif $subProperty.type == 'enum'}sorter-text-select{else}sorter-false filter-false{/if}"{if $subProperty.description}  title="{$subProperty.description}"{/if}>{$subProperty.label}</th>
 					{/if}
 				{/foreach}
 				<th class="sorter-false filter-false">Actions</th>

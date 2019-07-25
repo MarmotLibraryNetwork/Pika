@@ -189,7 +189,9 @@ class IndexingProfile extends DB_DataObject{
 			'lastCheckinFormat'       => array('property' => 'lastCheckinFormat', 'type' => 'text', 'label' => 'Last Check In Format', 'maxLength' => 20, 'description' => 'The format of the date the item was last checked in.  I.e. yyMMdd see SimpleDateFormat for Java'),
 			'iCode2'                  => array('property' => 'iCode2', 'type' => 'text', 'label' => 'Item Suppression Field', 'maxLength' => 1, 'description' => 'Subfield for itemSuppressionField'),
 			'format'                  => array('property' => 'format', 'type' => 'text', 'label' => 'Format subfield', 'maxLength' => 1, 'description' => 'The subfield to use when determining format based on item information'),
-			'eContentDescriptor'      => array('property' => 'eContentDescriptor', 'type' => 'text', 'label' => 'eContent Descriptor', 'maxLength' => 1, 'description' => 'Subfield to indicate that the item should be processed as eContent and how to process it'),
+			'iType'                   => array('property' => 'iType', 'type' => 'text', 'label' => 'iType', 'maxLength' => 1, 'description' => 'Subfield for iType'),
+			'eContentDescriptor'      => array('property' => 'eContentDescriptor', 'type' => 'text', 'label' => 'eContent Descriptor', 'maxLength' => 1, 'description' => 'Subfield that indicates the item should be treated as eContent (For Libraries using the Marmot ILS eContent Standard)'),
+			'itemUrl'                 => array('property' => 'itemUrl', 'type' => 'text', 'label' => 'Item URL', 'maxLength' => 1, 'description' => 'Subfield for a URL specific to the item (For Libraries using the Marmot ILS eContent Standard)'),
 				)),
 
 			'nonholdableSection' => array('property'=>'nonholdableSection', 'type' => 'section', 'label' =>'Non-holdable Settings (ils profile only)', 'hideInLists' => true,
@@ -265,8 +267,8 @@ class IndexingProfile extends DB_DataObject{
 			'sierraFieldMappings' => array(
 				'property'      => 'sierraFieldMappings',
 				'type'          => 'oneToMany',
-				'label'         => 'Sierra Field Mappings (Sierra Systems only)',
-				'description'   => 'Field Mappings for exports from Sierra.',
+				'label'         => 'Sierra API Item Field Mappings (Sierra Systems only)',
+				'description'   => 'For mapping Item tags from the Sierra API to the equivalent values in the indexing profile (and Sierra\'s export profile).',
 				'keyThis'       => 'id',
 				'keyOther'      => 'indexingProfileId',
 				'subObjectType' => 'SierraExportFieldMapping',

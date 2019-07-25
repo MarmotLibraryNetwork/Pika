@@ -26,6 +26,7 @@ class Archive_AJAX extends AJAXHandler {
 		'getRelatedObjectsForScroller',
 		'getRelatedObjectsForTimelineExhibit',
 		'getRelatedObjectsForMappedCollection',
+		'getRelatedObjectsForExhibit',
 		'getEntityFacetValuesForExhibit',
 		'getFacetValuesForExhibit',
 		'getExploreMoreContent',

@@ -28,6 +28,8 @@ trait MARC_AJAX_Basic {
 	}
 
 	function downloadMarc(){
+		require_once ROOT_DIR . '/services/SourceAndId.php';
+		require_once ROOT_DIR . '/RecordDrivers/MarcRecord.php';
 		$sourceAndId      = new SourceAndId($_REQUEST['id']);
 		$marcData         = MarcLoader::loadMarcRecordByILSId($sourceAndId);
 		$downloadFileName = urlencode($sourceAndId);
@@ -45,6 +47,7 @@ trait MARC_AJAX_Basic {
 	}
 
 	function reloadCover(){
+		require_once ROOT_DIR . '/services/SourceAndId.php';
 		require_once ROOT_DIR . '/RecordDrivers/MarcRecord.php';
 		$sourceAndId  = new SourceAndId($_REQUEST['id']);
 		$recordDriver = RecordDriverFactory::initRecordDriverById($sourceAndId);
