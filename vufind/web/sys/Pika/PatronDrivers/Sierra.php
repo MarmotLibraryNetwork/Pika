@@ -23,13 +23,12 @@
  *    name is stored in cat_username field
  *
  * memcache keys
- * // TODO: We need a standard for caching and keys so they can be reused.
+ *
  * caching keys follow this pattern
- * User
  * patron_{barcode}_{object}
  * ie; patron_123456789_checkouts, patron_123456789_holds
  * the patron object is patron_{barcode}_patron
- * when calling an action (ie; placeHold) cache should be unset
+ * when calling an action (ie; placeHold, freezeHold) both the patron cache and the object cache should be unset
  *
  *
  * @category Pika
@@ -97,7 +96,7 @@ class Sierra extends PatronDriverInterface {
 	/**
 	 * Retrieve a patrons checkouts
 	 *
-	 * GET patrons/1139316/checkouts?fields=default%2Cbarcode&expand=item
+	 * GET patrons/{patronId}/checkouts?fields=default%2Cbarcode
 	 *
 	 * @param $patron
 	 * @return array|false
@@ -128,14 +127,7 @@ class Sierra extends PatronDriverInterface {
 			// grab the bib id and make Pika-tize it
 			preg_match($this->urlIdRegExp, $entry->item, $m);
 			$itemId = $m[1];
-			$operation = "items/".$itemId;
-			$params = ["fields"=>"bibIds"];
-			$iR = $this->_doRequest($operation, $params);
-			if($iR) {
-				$bid = $iR->bibIds[0];
-			} else {
-				$bid = 'x';
-			}
+			$bid = $this->_getBibIdFromItemId($itemId);
 
 			// for Pika we need the check digit.
 			$recordXD  = $this->getCheckDigit($bid);
@@ -203,6 +195,7 @@ class Sierra extends PatronDriverInterface {
 				'success' => false,
 				'message' => $this->apiLastError
 			];
+			return $return;
 		}
 
 		$recordDriver = new MarcRecord($this->accountProfile->recordSource . ":" . $bibId);
@@ -214,13 +207,12 @@ class Sierra extends PatronDriverInterface {
 
 		$return = ['success' => true];
 		if($title) {
-			$return['message'] = $title . ' has been renewed.';
+			$return['message'] = $title.' has been renewed.';
 		} else {
-			$return['message'] = "Your item has been renewed";
+			$return['message'] = 'Your item has been renewed';
 		}
+
 		return $return;
-
-
 	}
 
 	/**
@@ -664,6 +656,7 @@ class Sierra extends PatronDriverInterface {
 	 * @return array|bool
 	 */
 	public function getMyHolds($patron){
+		// need status code & = Prospetor requested
 
 		if(!$patronId = $this->getPatronId($patron)) {
 			// TODO: need to do something here
@@ -706,6 +699,22 @@ class Sierra extends PatronDriverInterface {
 		$availableHolds   = [];
 		$unavailableHolds = [];
 		foreach ($holds->entries as $hold) {
+			// first, is this an inn reach hold?
+			preg_match($this->urlIdRegExp, $hold->record, $m);
+			$checkId = $m[1];
+			if(strstr($checkId, "@")) {
+				// do stuff
+				$h = $this->getInnReachHold($hold);
+				if(!$h) {
+					// do stuff
+				}
+				// figure out if it's available or not
+
+				// add to either available or unavailable
+				// break this iteration
+				break;
+			}
+
 			// standard stuff
 			$h['holdSource']      = 'ILS';
 			$h['userId']          = $pikaPatronId;
@@ -736,9 +745,9 @@ class Sierra extends PatronDriverInterface {
 				case 'b':
 				case 'j':
 				case 'i':
-					$status     = 'Ready';
-					$cancelable = true;
-					$freezeable = false;
+					$status       = 'Ready';
+					$cancelable   = true;
+					$freezeable   = false;
 					$updatePickup = false;
 					break;
 				case 't':
@@ -751,10 +760,17 @@ class Sierra extends PatronDriverInterface {
 						$updatePickup = false;
 					}
 					break;
+					// todo: need to figure out what
+				case "&":
+					$status       = "Requested from Prospector";
+					$cancelable   = true;
+					$freezeable   = false;
+					$updatePickup = false;
+					break;
 				default:
-					$status     = 'Unknown';
-					$cancelable = false;
-					$freezeable = false;
+					$status       = 'Unknown';
+					$cancelable   = false;
+					$freezeable   = false;
 					$updatePickup = false;
 			}
 			// for sierra, holds can't be frozen if patron is next in line
@@ -795,13 +811,7 @@ class Sierra extends PatronDriverInterface {
 			// for item level holds we need to grab the bib id.
 			$id = $m[1];
 			if($recordType == 'i') {
-				// items/{itemId}
-				$operation = "items/".$id;
-				$params = ["fields"=>"bibIds"];
-				$r = $this->_doRequest($operation, $params);
-				if($r) {
-					$id = $r->bibIds[0];
-				}
+				$id = $this->_getBibIdFromItemId($id);
 			}
 			// for Pika we need the check digit.
 			$recordXD  = $this->getCheckDigit($id);
@@ -826,6 +836,8 @@ class Sierra extends PatronDriverInterface {
 			} else {
 				$unavailableHolds[] = $h;
 			}
+			// unset for next loop
+			unset($h);
 
 		} // end foreach
 
@@ -835,6 +847,29 @@ class Sierra extends PatronDriverInterface {
 		$this->memCache->set($patronHoldsCacheKey, $return, 0, $this->configArray['Caching']['patron_profile']);
 
 		return $return;
+	}
+
+
+	/**
+	 * @param object $hold a single $holds->entries->{obj} from api call: GET /v5/patrons/{id}/holds
+	 * @return array
+	 */
+	public function getInnReachHold($hold) {
+		// innreach status
+		//# = Prospector Received
+//		$ = Lost and Paid
+//		% = Prospector Returned
+//		( = Prospector Paged
+//) = Prospector Canceled
+//		* = Prospector Missing
+//1 = Gone
+//@ = Prospector Off Campus
+//_ = Prospector Re-Requested
+//		& is prospector status but is not in the pika status map
+
+
+
+		return [];
 	}
 
 	/**
@@ -901,16 +936,15 @@ class Sierra extends PatronDriverInterface {
 		if(!$r) {
 			$return['success'] = false;
 			if ($this->apiLastError) {
-				// grab a user friendlier string for the fail message
-				$messageParts = explode(':', $this->apiLastError);
-				// just grab the last part of message
-				$offset = (count($messageParts) - 1);
-				$message = $messageParts[$offset];
-				$return['message'] = $message;
-			} else {
-				$return['message'] = 'Unable to place your hold. Please contact our library.';
+				$message = $this->_getPrettyError();
+				if($message) {
+					$return['message'] = $message;
+				} else {
+					$return['message'] = 'Unable to place your hold. Please contact our library.';
+				}
+				return $return;
 			}
-			return $return;
+
 		}
 		// success! weeee :)
 		$return['success'] = true;
@@ -1396,6 +1430,41 @@ class Sierra extends PatronDriverInterface {
 			);
 		}
 		return $items;
+	}
+
+	/**
+	 * @param $itemId
+	 * @return int
+	 */
+	private function _getBibIdFromItemId($itemId) {
+		$operation = "items/".$itemId;
+		$params = ["fields"=>"bibIds"];
+		$iR = $this->_doRequest($operation, $params);
+		if($iR) {
+			$bid = $iR->bibIds[0];
+		} else {
+			$bid = false;
+		}
+		return $bid;
+	}
+
+	/**
+	 * Try to find a prettier error message.
+	 *
+	 * @return string|false
+	 */
+	private function _getPrettyError() {
+		if($this->apiLastError) {
+			// grab a user friendlier string for the fail message
+			$messageParts = explode(':', $this->apiLastError);
+			// just grab the last part of message
+			$offset = (count($messageParts) - 1);
+			$message = $messageParts[$offset];
+			$return = $message;
+		} else {
+			$return = false;
+		}
+		return $return;
 	}
 
 	private function getCheckDigit($baseId){
