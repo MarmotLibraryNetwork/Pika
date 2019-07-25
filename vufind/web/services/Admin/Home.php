@@ -23,36 +23,40 @@ require_once ROOT_DIR . '/services/Admin/Admin.php';
 require_once 'XML/Unserializer.php';
 
 class Home extends Admin_Admin {
-	function launch() {
+	function launch(){
 		global $configArray;
 		global $interface;
 
 		require_once ROOT_DIR . '/services/API/SearchAPI.php';
 		$indexStatus = new SearchAPI();
-		$pikaStatus = $indexStatus->getIndexStatus();
+		$pikaStatus  = $indexStatus->getIndexStatus();
 		$interface->assign('PikaStatus', $pikaStatus['status']);
 		$interface->assign('PikaStatusMessages', explode(';', $pikaStatus['message']));
 
 		// Load SOLR Statistics
-		if ($configArray['Index']['engine'] == 'Solr') {
+		if ($configArray['Index']['engine'] == 'Solr'){
 			$xml = @file_get_contents($configArray['Index']['url'] . '/admin/cores');
 
-			if ($xml) {
-				$options = array('parseAttributes' => 'true',
-						'keyAttribute' => 'name');
-				$unxml = new XML_Unserializer($options);
+			if ($xml){
+				$options = array(
+					'parseAttributes' => 'true',
+					'keyAttribute'    => 'name'
+				);
+				$unxml   = new XML_Unserializer($options);
 				$unxml->unserialize($xml);
 				$data = $unxml->getUnserializedData();
 				$interface->assign('data', $data['status']);
 			}
 
 			$masterIndexUrl = str_replace(':80', ':81', $configArray['Index']['url']) . '/admin/cores';
-			$masterXml = @file_get_contents($masterIndexUrl);
+			$masterXml      = @file_get_contents($masterIndexUrl);
 
-			if ($masterXml) {
-				$options = array('parseAttributes' => 'true',
-						'keyAttribute' => 'name');
-				$unxml = new XML_Unserializer($options);
+			if ($masterXml){
+				$options = array(
+					'parseAttributes' => 'true',
+					'keyAttribute'    => 'name'
+				);
+				$unxml   = new XML_Unserializer($options);
 				$unxml->unserialize($masterXml);
 				$masterData = $unxml->getUnserializedData();
 				$interface->assign('master_data', $masterData['status']);
@@ -62,7 +66,7 @@ class Home extends Admin_Admin {
 		$this->display('home.tpl', 'Solr Information');
 	}
 
-	function getAllowableRoles() {
+	function getAllowableRoles(){
 		return array('userAdmin', 'opacAdmin');
 	}
 }
