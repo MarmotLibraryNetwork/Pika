@@ -450,12 +450,12 @@ public class SierraExportAPIMain {
 		} catch (Exception e) {
 			logger.error("Error setting up prepared statements for deleting bibs", e);
 		}
-		processDeletedBibs(lastExtractDateFormatted, updateTime);
+//		processDeletedBibs(lastExtractDateFormatted, updateTime); //TODO: undo
 		getNewRecordsFromAPI(lastExtractDateTimeFormatted, updateTime);
 		getChangedRecordsFromAPI(lastExtractDateTimeFormatted, updateTime);
 		getNewItemsFromAPI(lastExtractDateTimeFormatted);
 		getChangedItemsFromAPI(lastExtractDateTimeFormatted);
-		getDeletedItemsFromAPI(lastExtractDateFormatted);
+//		getDeletedItemsFromAPI(lastExtractDateFormatted); //TODO: undo
 
 	}
 
@@ -1408,47 +1408,56 @@ public class SierraExportAPIMain {
 				ArrayList<Long> processedIds = new ArrayList<>();
 				String          dataFileUrl  = marcResults.getString("file");
 				String          marcData     = getMarcFromSierraApiURL(dataFileUrl, debug);
-				logger.debug("Got marc record file");
-				MarcReader marcReader = new MarcPermissiveStreamReader(new ByteArrayInputStream(marcData.getBytes(StandardCharsets.UTF_8)), true, true);
-				while (marcReader.hasNext()) {
-					try {
-						logger.debug("Starting to process the next marc Record");
+				if (marcData != null) {
+					logger.debug("Got marc record file");
+					byte[]               bytes      = marcData.getBytes(StandardCharsets.UTF_8);
+					MarcReader           marcReader;
+					try (ByteArrayInputStream input = new ByteArrayInputStream(bytes)) {
+						marcReader = new MarcPermissiveStreamReader(input, true, true);
 
-						Record marcRecord = marcReader.next();
-						logger.debug("Got the next marc Record data");
+						while (marcReader.hasNext()) {
+							try {
+								logger.debug("Starting to process the next marc Record");
 
-						RecordIdentifier recordIdentifier = recordGroupingProcessor.getPrimaryIdentifierFromMarcRecord(marcRecord, indexingProfile.name, indexingProfile.doAutomaticEcontentSuppression);
-						String           identifier       = recordIdentifier.getIdentifier();
-						logger.debug("Writing marc record for " + identifier);
+								Record marcRecord = marcReader.next();
+								logger.debug("Got the next marc Record data");
 
-						writeMarcRecord(marcRecord, identifier);
-						logger.debug("Wrote marc record for " + identifier);
+								RecordIdentifier recordIdentifier = recordGroupingProcessor.getPrimaryIdentifierFromMarcRecord(marcRecord, indexingProfile.name, indexingProfile.doAutomaticEcontentSuppression);
+								String           identifier       = recordIdentifier.getIdentifier();
+								logger.debug("Writing marc record for " + identifier);
 
-						//Setup the grouped work for the record.  This will take care of either adding it to the proper grouped work
-						//or creating a new grouped work
-						if (!recordGroupingProcessor.processMarcRecord(marcRecord, true)) {
-							logger.warn(identifier + " was suppressed during record grouping");
-						} else {
-							logger.debug("Finished record grouping for " + identifier);
+								writeMarcRecord(marcRecord, identifier);
+								logger.debug("Wrote marc record for " + identifier);
+
+								//Setup the grouped work for the record.  This will take care of either adding it to the proper grouped work
+								//or creating a new grouped work
+								if (!recordGroupingProcessor.processMarcRecord(marcRecord, true)) {
+									logger.warn(identifier + " was suppressed during record grouping");
+								} else {
+									logger.debug("Finished record grouping for " + identifier);
+								}
+								Long shortId = Long.parseLong(identifier.substring(2, identifier.length() - 1));
+								processedIds.add(shortId);
+								logger.debug("Processed " + identifier);
+							} catch (MarcException mre) {
+								logger.info("Error loading marc record from file, will load manually");
+							}
 						}
-						Long shortId = Long.parseLong(identifier.substring(2, identifier.length() - 1));
-						processedIds.add(shortId);
-						logger.debug("Processed " + identifier);
-					} catch (MarcException mre) {
-						logger.info("Error loading marc record from file, will load manually");
-					}
-				}
-				for (Long id : idArray) {
-					if (!processedIds.contains(id)) {
-						if (!updateMarcAndRegroupRecordId(id)) {
-							//Don't fail the entire process.  We will just reprocess next time the export runs
-							logger.debug("Processing " + id + " failed");
-							addNoteToExportLog("Processing " + id + " failed");
-							bibsWithErrors.add(id);
-							//allPass = false;
-						} else {
-							logger.debug("Processed " + id);
+						for (Long id : idArray) {
+							if (!processedIds.contains(id)) {
+								if (!updateMarcAndRegroupRecordId(id)) {
+									//Don't fail the entire process.  We will just reprocess next time the export runs
+									logger.debug("Processing " + id + " failed");
+									addNoteToExportLog("Processing " + id + " failed");
+									bibsWithErrors.add(id);
+									//allPass = false;
+								} else {
+									logger.debug("Processed " + id);
+								}
+							}
 						}
+					} catch (Exception e){
+						logger.error("Error occurring while processing binary MARC files from the API.", e);
 					}
 				}
 			} else {
@@ -1820,14 +1829,14 @@ public class SierraExportAPIMain {
 						logger.info("Received response code " + responseCode + " calling sierra API " + sierraUrl);
 						// Get any errors
 						response = getTheResponse(conn.getErrorStream());
-						logger.info("  Finished reading response : " + response.toString());
+						logger.info("Finished reading response : " + response.toString());
 					}
 				} else {
 					if (logErrors) {
 						logger.error("Received error " + responseCode + " calling sierra API " + sierraUrl);
 						// Get any errors
 						response = getTheResponse(conn.getErrorStream());
-						logger.error("  Finished reading response : " + response.toString());
+						logger.error("Finished reading response : " + response.toString());
 					}
 				}
 
@@ -1870,8 +1879,7 @@ public class SierraExportAPIMain {
 						logger.error("Received error " + conn.getResponseCode() + " calling sierra API " + sierraUrl);
 						// Get any errors
 						response = getTheResponse(conn.getErrorStream());
-						logger.error("  Finished reading response");
-						logger.error(response.toString());
+						logger.error("Finished reading response : " + response.toString());
 					}
 				}
 
