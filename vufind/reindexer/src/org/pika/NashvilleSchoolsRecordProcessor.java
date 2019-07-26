@@ -87,7 +87,7 @@ class NashvilleSchoolsRecordProcessor extends IlsRecordProcessor {
 	}
 
 	@Override
-	protected double getItemPopularity(DataField itemField) {
+	protected double getItemPopularity(DataField itemField, String identifier) {
 		String itemBarcode = getItemSubfieldData(barcodeSubfield, itemField);
 		LSSItemInformation itemInformation = allItemInformation.get(itemBarcode);
 		if (itemInformation != null){

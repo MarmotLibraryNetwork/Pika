@@ -806,7 +806,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			itemInfo.setIType(translateValue("itype", getItemSubfieldData(iTypeSubfield, itemField), recordInfo.getRecordIdentifier()));
 		}
 
-		double itemPopularity = getItemPopularity(itemField);
+		double itemPopularity = getItemPopularity(itemField, recordInfo.getRecordIdentifier());
 		groupedWork.addPopularity(itemPopularity);
 
 		loadItemCallNumber(record, itemField, itemInfo);
@@ -1021,14 +1021,14 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		}
 	}
 
-	protected double getItemPopularity(DataField itemField) {
+	protected double getItemPopularity(DataField itemField, String identifier) {
 		String totalCheckoutsField = getItemSubfieldData(totalCheckoutSubfield, itemField);
 		int totalCheckouts = 0;
 		if (totalCheckoutsField != null){
 			try{
 				totalCheckouts = Integer.parseInt(totalCheckoutsField);
 			}catch (NumberFormatException e){
-				logger.warn("Did not get a number for total checkouts. Got " + totalCheckoutsField);
+				logger.warn("Did not get a number for total checkouts. Got " + totalCheckoutsField + " for " + identifier);
 			}
 
 		}
