@@ -177,8 +177,8 @@ public class SierraExportAPIMain {
 //		File changedBibsFile = new File(exportPath + "/changed_bibs_to_process.csv");
 
 
-		boolean running = systemVariables.getBooleanValuedVariable("sierra_extract_running");
-		if (running){
+		Boolean running = systemVariables.getBooleanValuedVariable("sierra_extract_running");
+		if (running != null && running){
 			logger.warn("System variable 'sierra_extract_running' is already set to true. This may indicator another Sierra Extract process is running.");
 		} else {
 			updatePartialExtractRunning(true);
