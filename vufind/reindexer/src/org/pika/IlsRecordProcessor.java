@@ -1424,7 +1424,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 					formatBoost = tmpFormatBoostLong;
 				}
 			} catch (NumberFormatException e) {
-				logger.warn("Could not load format boost for format " + tmpFormatBoost + " profile " + profileType);
+				logger.warn("Could not load format boost for format " + tmpFormatBoost + " profile " + profileType + " for " + recordInfo.getRecordIdentifier(), e);
 			}
 		}
 		recordInfo.setFormatBoost(formatBoost);
