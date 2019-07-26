@@ -151,7 +151,7 @@ public class SierraExportAPIMain {
 				logger.warn("No accounting profile found for this indexing profile, falling back to config ini setting.");
 				sierraUrl = PikaConfigIni.trimTrailingPunctuation(PikaConfigIni.getIniValue("Catalog", "url"));
 			}
-			apiBaseUrl = sierraUrl /*+ ":443"*/ + "/iii/sierra-api/v" + apiVersion;
+			apiBaseUrl = sierraUrl + "/iii/sierra-api/v" + apiVersion;
 		} catch (SQLException e) {
 			logger.error("Error retrieving account profile for " + indexingProfile.name, e);
 		}
@@ -176,6 +176,13 @@ public class SierraExportAPIMain {
 //		exportPath = indexingProfile.marcPath;
 //		File changedBibsFile = new File(exportPath + "/changed_bibs_to_process.csv");
 
+
+		boolean running = systemVariables.getBooleanValuedVariable("sierra_extract_running");
+		if (running){
+			logger.warn("System variable 'sierra_extract_running' is already set to true. This may indicator another Sierra Extract process is running.");
+		} else {
+			updatePartialExtractRunning(true);
+		}
 		Integer minutesToProcessFor = PikaConfigIni.getIntIniValue("Catalog", "minutesToProcessExport");
 		minutesToProcessExport = (minutesToProcessFor == null) ? 5 : minutesToProcessFor;
 
@@ -248,6 +255,7 @@ public class SierraExportAPIMain {
 			logger.error("Unable to update sierra api export log with completion time.", e);
 		}
 
+		updatePartialExtractRunning(false);
 
 		try {
 			//Close the connection
@@ -450,13 +458,12 @@ public class SierraExportAPIMain {
 		} catch (Exception e) {
 			logger.error("Error setting up prepared statements for deleting bibs", e);
 		}
-//		processDeletedBibs(lastExtractDateFormatted, updateTime); //TODO: undo
+		processDeletedBibs(lastExtractDateFormatted, updateTime);
 		getNewRecordsFromAPI(lastExtractDateTimeFormatted, updateTime);
 		getChangedRecordsFromAPI(lastExtractDateTimeFormatted, updateTime);
 		getNewItemsFromAPI(lastExtractDateTimeFormatted);
 		getChangedItemsFromAPI(lastExtractDateTimeFormatted);
-//		getDeletedItemsFromAPI(lastExtractDateFormatted); //TODO: undo
-
+		getDeletedItemsFromAPI(lastExtractDateFormatted);
 	}
 
 	/**
@@ -1894,6 +1901,10 @@ public class SierraExportAPIMain {
 			}
 		}
 		return null;
+	}
+
+	private static void updatePartialExtractRunning(boolean running) {
+		systemVariables.setVariable("sierra_extract_running", Boolean.toString(running));
 	}
 
 	private static JSONObject getMarcJSONFromSierraApiURL(String sierraUrl) {
