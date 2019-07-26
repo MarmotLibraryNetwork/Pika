@@ -1420,7 +1420,7 @@ public class SierraExportAPIMain {
 					byte[]               bytes      = marcData.getBytes(StandardCharsets.UTF_8);
 					MarcReader           marcReader;
 					try (ByteArrayInputStream input = new ByteArrayInputStream(bytes)) {
-						marcReader = new MarcPermissiveStreamReader(input, true, true);
+						marcReader = new MarcPermissiveStreamReader(input, true, true, "UTF8");
 
 						while (marcReader.hasNext()) {
 							try {
@@ -1446,8 +1446,8 @@ public class SierraExportAPIMain {
 								Long shortId = Long.parseLong(identifier.substring(2, identifier.length() - 1));
 								processedIds.add(shortId);
 								logger.debug("Processed " + identifier);
-							} catch (MarcException mre) {
-								logger.info("Error loading marc record from file, will load manually");
+							} catch (MarcException e) {
+								logger.info("Error loading marc record from file, will load manually. ", e);
 							}
 						}
 						for (Long id : idArray) {
