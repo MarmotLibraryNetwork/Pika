@@ -10,7 +10,6 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
 import java.util.Date;
-import java.util.stream.Stream;
 
 import au.com.bytecode.opencsv.CSVReader;
 import au.com.bytecode.opencsv.CSVWriter;
@@ -199,7 +198,8 @@ public class SierraExportAPIMain {
 		if (singleRecordToProcess != null && !singleRecordToProcess.isEmpty()) {
 			try {
 				long id = Long.parseLong(singleRecordToProcess);
-				initialRecordGrouper(pikaConn);
+				initializeRecordGrouper(pikaConn);
+				allowFastExportMethod      = systemVariables.getBooleanValuedVariable("allow_sierra_fast_export");
 				updateExtractInfoStatement = pikaConn.prepareStatement("INSERT INTO ils_extract_info (indexingProfileId, ilsId, lastExtracted) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE lastExtracted=VALUES(lastExtracted)"); // unique key is indexingProfileId and ilsId combined
 				updateMarcAndRegroupRecordIds(singleRecordToProcess, Collections.singletonList(id));
 				System.out.println("Extract process for record " + singleRecordToProcess + " finished.");
@@ -261,7 +261,7 @@ public class SierraExportAPIMain {
 		updateSierraExtractLogNumToProcess(pikaConn);
 
 		//Setup other systems we will use
-		initialRecordGrouper(pikaConn);
+		initializeRecordGrouper(pikaConn);
 
 		// Process the Bibs that need updating
 		int numRecordsProcessed = updateBibs(pikaConn);
@@ -308,7 +308,7 @@ public class SierraExportAPIMain {
 		logger.info(currentTime.toString() + " : Finished Sierra Extract");
 	}
 
-	private static void initialRecordGrouper(Connection pikaConn) {
+	private static void initializeRecordGrouper(Connection pikaConn) {
 		recordGroupingProcessor = new MarcRecordGrouper(pikaConn, indexingProfile, logger, false);
 	}
 
@@ -1466,8 +1466,8 @@ public class SierraExportAPIMain {
 				String          marcData     = getMarcFromSierraApiURL(dataFileUrl, debug);
 				if (marcData != null) {
 					logger.debug("Got marc record file");
-					byte[]               bytes      = marcData.getBytes(StandardCharsets.UTF_8);
-					MarcReader           marcReader;
+					byte[]     bytes = marcData.getBytes(StandardCharsets.UTF_8);
+					MarcReader marcReader;
 					try (ByteArrayInputStream input = new ByteArrayInputStream(bytes)) {
 						marcReader = new MarcPermissiveStreamReader(input, true, true, "UTF8");
 
@@ -1506,7 +1506,7 @@ public class SierraExportAPIMain {
 								if (!updateMarcAndRegroupRecordId(id)) {
 									//Don't fail the entire process.  We will just reprocess next time the export runs
 									logger.debug("Processing " + id + " failed");
-									addNoteToExportLog("Processing " + id + " failed");
+//									addNoteToExportLog("Processing " + id + " failed"); //Fails in singleRecord mode
 									bibsWithErrors.add(id);
 									//allPass = false;
 								} else {
@@ -1514,7 +1514,7 @@ public class SierraExportAPIMain {
 								}
 							}
 						}
-					} catch (Exception e){
+					} catch (Exception e) {
 						logger.error("Error occurring while processing binary MARC files from the API.", e);
 					}
 				}
@@ -1527,7 +1527,7 @@ public class SierraExportAPIMain {
 					if (!updateMarcAndRegroupRecordId(id)) {
 						//Don't fail the entire process.  We will just reprocess next time the export runs
 						logger.debug("Processing " + id + " failed");
-						addNoteToExportLog("Processing " + id + " failed");
+//						addNoteToExportLog("Processing " + id + " failed"); //Fails in singleRecord mode
 						bibsWithErrors.add(id);
 						//allPass = false;
 					}
@@ -1986,9 +1986,9 @@ public class SierraExportAPIMain {
 
 					try {
 						return new JSONObject(response.toString());
-					} catch (JSONException jse) {
+					} catch (JSONException e) {
 						logger.error("Received error " + conn.getResponseCode() + " calling sierra API " + sierraUrl);
-						logger.error(response.toString());
+						logger.error(response.toString(), e);
 					}
 				}
 
