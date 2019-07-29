@@ -25,7 +25,7 @@ import java.util.regex.Pattern;
  */
 abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	protected boolean fullReindex;
-	private String individualMarcPath;
+	private   String  individualMarcPath;
 	String marcPath;
 	String profileType;
 
@@ -34,35 +34,35 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	String formatSource;
 	String specifiedFormat;
 	String specifiedFormatCategory;
+	int    specifiedFormatBoost;
 	String formatDeterminationMethod = "bib";
 	String matTypesToIgnore          = "";
-	int    specifiedFormatBoost;
 	char   formatSubfield;
 	char   barcodeSubfield;
 	char   statusSubfieldIndicator;
 	private Pattern nonHoldableStatuses;
-	char shelvingLocationSubfield;
-	char collectionSubfield;
-	char dueDateSubfield;
+	char             shelvingLocationSubfield;
+	char             collectionSubfield;
+	char             dueDateSubfield;
 	SimpleDateFormat dueDateFormatter;
-	private char lastCheckInSubfield;
+	private char   lastCheckInSubfield;
 	private String lastCheckInFormat;
-	private char dateCreatedSubfield;
+	private char   dateCreatedSubfield;
 	private String dateAddedFormat;
 	char locationSubfieldIndicator;
 	private Pattern nonHoldableLocations;
-	Pattern statusesToSuppressPattern = null;
-	Pattern locationsToSuppressPattern = null;
+	Pattern statusesToSuppressPattern    = null;
+	Pattern locationsToSuppressPattern   = null;
 	Pattern collectionsToSuppressPattern = null;
-	Pattern iTypesToSuppressPattern = null;
-	Pattern iCode2sToSuppressPattern = null;
-	Pattern bCode3sToSuppressPattern = null;
-	char subLocationSubfield;
-	char iTypeSubfield;
+	Pattern iTypesToSuppressPattern      = null;
+	Pattern iCode2sToSuppressPattern     = null;
+	Pattern bCode3sToSuppressPattern     = null;
+	char    subLocationSubfield;
+	char    iTypeSubfield;
 	private Pattern nonHoldableITypes;
-	boolean useEContentSubfield = false;
-	char eContentSubfieldIndicator;
+	boolean useEContentSubfield            = false;
 	boolean doAutomaticEcontentSuppression = false;
+	char    eContentSubfieldIndicator;
 	private char lastYearCheckoutSubfield;
 	private char ytdCheckoutSubfield;
 	private char totalCheckoutSubfield;
@@ -72,11 +72,11 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	String  materialTypeSubField;
 	char    bCode3Subfield;
 	private boolean useItemBasedCallNumbers;
-	private char callNumberPrestampSubfield;
-	private char callNumberSubfield;
-	private char callNumberCutterSubfield;
-	private char callNumberPoststampSubfield;
-	private char volumeSubfield;
+	private char    callNumberPrestampSubfield;
+	private char    callNumberSubfield;
+	private char    callNumberCutterSubfield;
+	private char    callNumberPoststampSubfield;
+	private char    volumeSubfield;
 	char itemRecordNumberSubfieldIndicator;
 	private char itemUrlSubfieldIndicator;
 	boolean suppressItemlessBibs;
@@ -1377,20 +1377,26 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	/**
 	 * Determine Record Format(s)
 	 */
-	public void loadPrintFormatInformation(RecordInfo recordInfo, Record record){
+	public void loadPrintFormatInformation(RecordInfo recordInfo, Record record) {
 		//We should already have formats based on the items
-		if (formatSource.equals("item") && formatSubfield != ' ' && recordInfo.hasItemFormats()){
+		if (formatSource.equals("item") && formatSubfield != ' ' && recordInfo.hasItemFormats()) {
 			return;
 		}
 
-		if (formatSource.equals("specified")){
-			HashSet<String> translatedFormats = new HashSet<>();
-			translatedFormats.add(specifiedFormat);
-			HashSet<String> translatedFormatCategories = new HashSet<>();
-			translatedFormatCategories.add(specifiedFormatCategory);
-			recordInfo.addFormats(translatedFormats);
-			recordInfo.addFormatCategories(translatedFormatCategories);
-			recordInfo.setFormatBoost(specifiedFormatBoost);
+		if (formatSource.equals("specified")) {
+			if (!specifiedFormat.isEmpty()) {
+				HashSet<String> translatedFormats = new HashSet<>();
+				translatedFormats.add(specifiedFormat);
+				HashSet<String> translatedFormatCategories = new HashSet<>();
+				translatedFormatCategories.add(specifiedFormatCategory);
+				recordInfo.addFormats(translatedFormats);
+				recordInfo.addFormatCategories(translatedFormatCategories);
+				recordInfo.setFormatBoost(specifiedFormatBoost);
+			} else {
+				logger.error("Specified Format is not set in indexing profile. Can not use specified format for format determination. Fall back to bib format determination.");
+				loadPrintFormatFromBib(recordInfo, record);
+
+			}
 		} else {
 			if (formatDeterminationMethod.equalsIgnoreCase("matType")) {
 				loadPrintFormatFromMatType(recordInfo, record);
