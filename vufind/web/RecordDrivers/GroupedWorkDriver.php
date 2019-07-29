@@ -2955,6 +2955,7 @@ class GroupedWorkDriver extends RecordInterface {
 				}
 			}
 			if ($holdable){
+				// If this item is holdable, then treat the record as holdable when building action buttons
 				$recordHoldable = true;
 			}
 
@@ -2966,6 +2967,7 @@ class GroupedWorkDriver extends RecordInterface {
 				}
 			}
 			if ($bookable){
+				// If this item is bookable, then treat the reacord as bookable when building action buttons
 				$recordBookable = true;
 			}
 
@@ -3099,32 +3101,33 @@ class GroupedWorkDriver extends RecordInterface {
 			}
 			//Add the item to the item summary
 			$itemSummaryInfo = array(
-				'description'       => $description,
-				'shelfLocation'     => $shelfLocation,
-				'callNumber'        => $callNumber,
-				'totalCopies'       => 1,
-				'availableCopies'   => ($available && !$isOrderItem) ? $numCopies : 0,
-				'isLocalItem'       => $locallyOwned,
-				'isLibraryItem'     => $libraryOwned,
-				'inLibraryUseOnly'  => $inLibraryUseOnly,
-				'allLibraryUseOnly' => $inLibraryUseOnly,
-				'displayByDefault'  => $displayByDefault,
-				'onOrderCopies'     => $isOrderItem ? $numCopies : 0,
-				'status'            => $groupedStatus,
-				'statusFull'        => $status,
-				'available'         => $available,
-				'holdable'          => $holdable,
-				'bookable'          => $bookable,
-				'sectionId'         => $sectionId,
-				'section'           => $section,
-				'relatedUrls'       => $relatedUrls,
-				'lastCheckinDate'   => isset($curItem[14]) ? $curItem[14] : '',
-				'volume'            => $volume,
-				'volumeId'          => $volumeId,
-				'isEContent'        => $isEcontent,
-				'locationCode'      => $locationCode,
-				'subLocation'       => $subLocation,
-				'itemId'            => $itemId
+				'description'        => $description,
+				'shelfLocation'      => $shelfLocation,
+				'callNumber'         => $callNumber,
+				'totalCopies'        => 1,
+				'availableCopies'    => ($available && !$isOrderItem) ? $numCopies : 0,
+				'isLocalItem'        => $locallyOwned,
+				'isLibraryItem'      => $libraryOwned,
+				'inLibraryUseOnly'   => $inLibraryUseOnly,
+				'allLibraryUseOnly'  => $inLibraryUseOnly,
+				'displayByDefault'   => $displayByDefault,
+				'onOrderCopies'      => $isOrderItem ? $numCopies : 0,
+				'isAvailableToOrder' => $groupedStatus == 'Available to Order', // special status for patron-driven acquisitions; The item is available for the patron to request it be Ordered.
+				'status'             => $groupedStatus,
+				'statusFull'         => $status,
+				'available'          => $available,
+				'holdable'           => $holdable,
+				'bookable'           => $bookable,
+				'sectionId'          => $sectionId,
+				'section'            => $section,
+				'relatedUrls'        => $relatedUrls,
+				'lastCheckinDate'    => isset($curItem[14]) ? $curItem[14] : '',
+				'volume'             => $volume,
+				'volumeId'           => $volumeId,
+				'isEContent'         => $isEcontent,
+				'locationCode'       => $locationCode,
+				'subLocation'        => $subLocation,
+				'itemId'             => $itemId
 			);
 			if (!$forCovers){
 				$itemSummaryInfo['actions'] = $recordDriver != null ? $recordDriver->getItemActions($itemSummaryInfo) : array();
