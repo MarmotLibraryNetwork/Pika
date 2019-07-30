@@ -53,5 +53,3 @@ function checkProhibitedTimes() {
 	fi
 	echo ${hasConflicts};
 }
-
-}

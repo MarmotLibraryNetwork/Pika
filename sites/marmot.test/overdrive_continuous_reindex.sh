@@ -61,8 +61,8 @@ do
 	cd /usr/local/vufind-plus/vufind/overdrive_api_extract/
 	nice -n -10 java -server -XX:+UseG1GC -jar overdrive_extract.jar ${PIKASERVER} >> ${OUTPUT_FILE}
 
-	# Pause if another reindexer is running
-	checkConflictingProcesses "reindexer.jar"
+	# Pause if another reindexer is running; check in 10 second intervals
+	checkConflictingProcesses "reindexer.jar" 10
 
 	#run reindex
 	cd /usr/local/vufind-plus/vufind/reindexer
