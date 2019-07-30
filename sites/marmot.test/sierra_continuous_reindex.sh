@@ -16,7 +16,7 @@ function sendEmail() {
 	if [[ ${FILESIZE} -gt 0 ]]
 	then
 			# send mail
-			mail -s "Continuous Extract and Reindexing - ${PIKASERVER}" $EMAIL < ${OUTPUT_FILE}
+			mail -s "Sierra Continuous Extract and Reindexing - ${PIKASERVER}" $EMAIL < ${OUTPUT_FILE}
 	fi
 }
 

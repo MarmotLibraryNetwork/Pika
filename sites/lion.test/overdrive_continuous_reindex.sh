@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-EMAIL=root@titan
-PIKASERVER=marmot.test
+EMAIL=root@hyperion
+PIKASERVER=lion.test
 
 OUTPUT_FILE="/var/log/vufind-plus/${PIKASERVER}/overdrive_continuous_reindex_output.log"
 

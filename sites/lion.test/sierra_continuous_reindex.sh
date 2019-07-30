@@ -1,9 +1,12 @@
 #!/usr/bin/env bash
 
-EMAIL=root@titan
-PIKASERVER=marmot.test
+EMAIL=root@hyperion
+PIKASERVER=lion.test
 
-OUTPUT_FILE="/var/log/vufind-plus/${PIKASERVER}/overdrive_continuous_reindex_output.log"
+USE_SIERRA_API_EXTRACT=1
+# set to USE_SIERRA_API_EXTRACT to 1 enable
+
+OUTPUT_FILE="/var/log/vufind-plus/${PIKASERVER}/sierra_continuous_reindex_output.log"
 
 source "/usr/local/vufind-plus/vufind/bash/checkConflicts.sh"
 
@@ -13,7 +16,7 @@ function sendEmail() {
 	if [[ ${FILESIZE} -gt 0 ]]
 	then
 			# send mail
-			mail -s "Overdrive Continuous Extract and Reindexing - ${PIKASERVER}" $EMAIL < ${OUTPUT_FILE}
+			mail -s "Sierra Continuous Extract and Reindexing - ${PIKASERVER}" $EMAIL < ${OUTPUT_FILE}
 	fi
 }
 
@@ -57,9 +60,17 @@ do
 	# reset the output file each round
 	: > $OUTPUT_FILE;
 
-	#export from overdrive
-	cd /usr/local/vufind-plus/vufind/overdrive_api_extract/
-	nice -n -10 java -server -XX:+UseG1GC -jar overdrive_extract.jar ${PIKASERVER} >> ${OUTPUT_FILE}
+	if [ $USE_SIERRA_API_EXTRACT -eq 1 ]; then
+		#export from sierra (items, holds, and orders)
+		#echo "Starting Sierra Export - `date`" >> ${OUTPUT_FILE}
+		cd /usr/local/vufind-plus/vufind/sierra_export_api/
+		nice -n -10 java -server -XX:+UseG1GC -jar sierra_export_api.jar ${PIKASERVER} >> ${OUTPUT_FILE}
+	else
+		#export from sierra (items, holds, and orders)
+		#echo "Starting Sierra Export - `date`" >> ${OUTPUT_FILE}
+		cd /usr/local/vufind-plus/vufind/sierra_export/
+		nice -n -10 java -server -XX:+UseG1GC -jar sierra_export.jar ${PIKASERVER} >> ${OUTPUT_FILE}
+	fi
 
 	# Pause if another reindexer is running; check in 10 second intervals
 	paused=$(checkConflictingProcesses "reindexer.jar" 10)
