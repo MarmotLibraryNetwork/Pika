@@ -1,5 +1,7 @@
 #!/bin/bash
 
+PIKASERVER=marmot.test
+
 source "/usr/local/vufind-plus/vufind/bash/checkConflicts.sh"
 
 # Kick-off Sierra Extract/Reindex loop

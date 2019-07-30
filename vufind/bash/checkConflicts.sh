@@ -2,6 +2,7 @@
 
 # Check for conflicting processes currently running
 function checkConflictingProcesses() {
+  local pause=$2
 	#Check to see if the conflict exists.
 	countConflictingProcesses=$(ps aux | grep -v sudo | grep -c "$1")
 	countConflictingProcesses=$((countConflictingProcesses-1))
@@ -11,11 +12,11 @@ function checkConflictingProcesses() {
 	until ((${countConflictingProcesses} == 0)); do
 		countConflictingProcesses=$(ps aux | grep -v sudo | grep -c "$1")
 		countConflictingProcesses=$((countConflictingProcesses-1))
-		if (( $# -eq "2" ))
+		if [[ -z $pause ]];
 		then
-			sleep $2
-		else
 			sleep 300
+		else
+			sleep $pause
 		fi
 	done
 	#Return the number of conflicts we found initially.
@@ -51,4 +52,6 @@ function checkProhibitedTimes() {
 		fi
 	fi
 	echo ${hasConflicts};
+}
+
 }
