@@ -191,9 +191,10 @@ class Sierra extends PatronDriverInterface {
 
 		$r = $this->_doRequest($operation, [], 'POST');
 		if(!$r) {
+			$message = $this->_getPrettyError();
 			$return = [
 				'success' => false,
-				'message' => $this->apiLastError
+				'message' => "Unable to renew your checkout: ".$message
 			];
 			return $return;
 		}
