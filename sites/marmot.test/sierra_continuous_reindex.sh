@@ -73,7 +73,7 @@ do
 	fi
 
 	# Pause if another reindexer is running
-	checkConflictingProcesses "reindexer.jar" 10
+	checkConflictingProcesses "reindexer.jar" 10 >/dev/null
 
 	#run reindex
 	cd /usr/local/vufind-plus/vufind/reindexer

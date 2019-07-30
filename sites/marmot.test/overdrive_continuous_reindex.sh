@@ -3,7 +3,7 @@
 EMAIL=root@titan
 PIKASERVER=marmot.test
 
-OUTPUT_FILE="/var/log/vufind-plus/${PIKASERVER}/sierra_continuous_reindex_output.log"
+OUTPUT_FILE="/var/log/vufind-plus/${PIKASERVER}/overdrive_continuous_reindex_output.log"
 
 source "/usr/local/vufind-plus/vufind/bash/checkConflicts.sh"
 
@@ -62,7 +62,7 @@ do
 	nice -n -10 java -server -XX:+UseG1GC -jar overdrive_extract.jar ${PIKASERVER} >> ${OUTPUT_FILE}
 
 	# Pause if another reindexer is running; check in 10 second intervals
-	checkConflictingProcesses "reindexer.jar" 10
+	checkConflictingProcesses "reindexer.jar" 10 >/dev/null
 
 	#run reindex
 	cd /usr/local/vufind-plus/vufind/reindexer
