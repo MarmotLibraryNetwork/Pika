@@ -24,8 +24,7 @@ require_once 'XML/Unserializer.php';
 
 abstract class ObjectEditor extends Admin_Admin
 {
-	function launch()
-	{
+	function launch(){
 		global $interface;
 
 		if (isset($_SESSION['lastError'])){
@@ -43,7 +42,7 @@ abstract class ObjectEditor extends Admin_Admin
 		//Define the structure of the object.
 		$structure = $this->getObjectStructure();
 		$interface->assign('structure', $structure);
-		$objectAction = isset($_REQUEST['objectAction']) ? $_REQUEST['objectAction'] : null;
+		$objectAction      = isset($_REQUEST['objectAction']) ? $_REQUEST['objectAction'] : null;
 		$customListActions = $this->customListActions();
 		$interface->assign('customListActions', $customListActions);
 		if (is_null($objectAction) || $objectAction == 'list'){
@@ -251,7 +250,7 @@ abstract class ObjectEditor extends Admin_Admin
 						$_SESSION['lastError'] = "An error occurred validating {$this->getObjectType()} with id of $id <br/>{$errorDescription}";
 						$errorOccurred         = true;
 					}
-				}else if ($objectAction =='delete'){
+				}elseif ($objectAction =='delete'){
 					//Delete the record
 					$ret = $curObject->delete();
 					if ($ret === false){

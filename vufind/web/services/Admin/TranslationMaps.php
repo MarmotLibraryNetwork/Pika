@@ -79,21 +79,20 @@ class Admin_TranslationMaps extends ObjectEditor {
 
 			//Show the results
 			$_REQUEST['objectAction'] = 'edit';
-		}else{
-			if ($objectAction == 'viewAsINI'){
-				$id                 = $_REQUEST['id'];
-				$translationMap     = new TranslationMap();
-				$translationMap->id = $id;
-				if ($translationMap->find(true)){
-					$interface->assign('id', $id);
-					$interface->assign('additionalObjectActions', $this->getAdditionalObjectActions($translationMap));
-					$interface->assign('translationMapValues', $translationMap->translationMapValues);
-					$this->display('../Admin/viewTranslationMapAsIni.tpl', 'View Translation Map Data');
-					exit();
-				}else{
-					$interface->assign('error', "Sorry we could not find a translation map with that id");
-				}
+		}elseif ($objectAction == 'viewAsINI'){
+			$id                 = $_REQUEST['id'];
+			$translationMap     = new TranslationMap();
+			$translationMap->id = $id;
+			if ($translationMap->find(true)){
+				$interface->assign('id', $id);
+				$interface->assign('additionalObjectActions', $this->getAdditionalObjectActions($translationMap));
+				$interface->assign('translationMapValues', $translationMap->translationMapValues);
+				$this->display('../Admin/viewTranslationMapAsIni.tpl', 'View Translation Map Data');
+				exit();
+			}else{
+				$interface->assign('error', "Sorry we could not find a translation map with that id");
 			}
+
 		}
 		parent::launch();
 	}
