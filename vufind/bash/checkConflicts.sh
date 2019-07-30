@@ -11,15 +11,18 @@ function checkConflictingProcesses() {
 	until ((${countConflictingProcesses} == 0)); do
 		countConflictingProcesses=$(ps aux | grep -v sudo | grep -c "$1")
 		countConflictingProcesses=$((countConflictingProcesses-1))
-		#echo "Count of conflicting process" $1 $countConflictingProcesses
-		sleep 300
+		if (($# = 2 ))
+		then
+			sleep $2
+		else
+			sleep 300
+		fi
 	done
 	#Return the number of conflicts we found initially.
 	echo ${numInitialConflicts};
 }
 
 # Prohibited time ranges - for, e.g., ILS backup
-# JAMES is currently giving all Nashville prohibited times a ten minute buffer
 function checkProhibitedTimes() {
 	start=$(date --date=$1 +%s)
 	stop=$(date --date=$2 +%s)
