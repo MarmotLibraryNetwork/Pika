@@ -33,9 +33,7 @@ class Circa_Home extends Action
 		}
 
 		//Get view & load template
-		$interface->assign('sidebar', 'MyAccount/account-sidebar.tpl');
-		$interface->setTemplate('home.tpl');
-		$interface->display('layout.tpl', 'Circa');
+		$this->display('home.tpl', 'Circa');
 	}
 
 	function processInventory(){

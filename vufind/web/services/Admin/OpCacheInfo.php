@@ -7,7 +7,6 @@
  *
  */
 
-require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/Admin.php';
 
 class Admin_OpCacheInfo extends Admin_Admin {
@@ -20,12 +19,9 @@ class Admin_OpCacheInfo extends Admin_Admin {
 		ob_end_clean();
 
 		$interface->assign("info", $info);
-		$interface->assign('title', 'Zend OpCache Information');
+		$interface->assign('title', 'OpCache Information');
 
-		$interface->assign('sidebar', 'MyAccount/account-sidebar.tpl');
-		$interface->setTemplate('adminInfo.tpl');
-		$interface->setPageTitle('Zend OpCache Information');
-		$interface->display('layout.tpl');
+		$this->display('adminInfo.tpl', 'OpCache Information');
 	}
 
 	function getAllowableRoles() {

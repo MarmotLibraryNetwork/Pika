@@ -68,7 +68,7 @@ class Circa_OfflineHoldsReport extends Admin_Admin{
 		}
 
 		$interface->assign('offlineHolds', $offlineHolds);
-		$this->display('offlineHoldsReport.tpl','Offline Holds Report', 'MyAccount/account-sidebar.tpl');
+		$this->display('offlineHoldsReport.tpl','Offline Holds Report');
 	}
 
 	function getAllowableRoles() {
