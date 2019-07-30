@@ -1,5 +1,11 @@
 #!/usr/bin/env bash
 
+EMAIL=root@titan
+PIKASERVER=marmot.test
+
+USE_SIERRA_API_EXTRACT=1
+# set to USE_SIERRA_API_EXTRACT to 1 enable
+
 OUTPUT_FILE="/var/log/vufind-plus/${PIKASERVER}/sierra_continuous_reindex_output.log"
 
 source "/usr/local/vufind-plus/vufind/bash/checkConflicts.sh"

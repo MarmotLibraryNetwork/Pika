@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+EMAIL=root@titan
+PIKASERVER=marmot.test
+
 OUTPUT_FILE="/var/log/vufind-plus/${PIKASERVER}/sierra_continuous_reindex_output.log"
 
 source "/usr/local/vufind-plus/vufind/bash/checkConflicts.sh"
