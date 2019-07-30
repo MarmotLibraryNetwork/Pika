@@ -62,7 +62,8 @@ do
 	nice -n -10 java -server -XX:+UseG1GC -jar overdrive_extract.jar ${PIKASERVER} >> ${OUTPUT_FILE}
 
 	# Pause if another reindexer is running; check in 10 second intervals
-	checkConflictingProcesses "reindexer.jar" 10 >/dev/null
+	paused=$(checkConflictingProcesses "reindexer.jar" 10)
+	# push output into a variable to avoid so it doesn't echo out of the script
 
 	#run reindex
 	cd /usr/local/vufind-plus/vufind/reindexer

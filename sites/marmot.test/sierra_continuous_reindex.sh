@@ -72,8 +72,9 @@ do
 		nice -n -10 java -server -XX:+UseG1GC -jar sierra_export.jar ${PIKASERVER} >> ${OUTPUT_FILE}
 	fi
 
-	# Pause if another reindexer is running
-	checkConflictingProcesses "reindexer.jar" 10 >/dev/null
+	# Pause if another reindexer is running; check in 10 second intervals
+	paused=$(checkConflictingProcesses "reindexer.jar" 10)
+	# push output into a variable to avoid so it doesn't echo out of the script
 
 	#run reindex
 	cd /usr/local/vufind-plus/vufind/reindexer
