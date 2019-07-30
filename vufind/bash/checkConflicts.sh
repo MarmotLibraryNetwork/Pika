@@ -11,7 +11,7 @@ function checkConflictingProcesses() {
 	until ((${countConflictingProcesses} == 0)); do
 		countConflictingProcesses=$(ps aux | grep -v sudo | grep -c "$1")
 		countConflictingProcesses=$((countConflictingProcesses-1))
-		if (($# = 2 ))
+		if (( $# = 2 ))
 		then
 			sleep $2
 		else
