@@ -88,7 +88,7 @@ class Admin_Variables extends ObjectEditor {
 					'text' => '<span class="glyphicon glyphicon-minus-sign" aria-hidden="true"></span> Set to false',
 					'url'  => "/{$this->getModule()}/{$this->getToolName()}?objectAction=SwitchBooleanVariable&amp;id=" . $existingObject->id,
 				);
-			}elseif ( $existingObject->value == '0' || $existingObject->value = 'false'){
+			}elseif ( $existingObject->value == '0' || $existingObject->value == 'false'){
 				$actions[] = array(
 					'text' => '<span class="glyphicon glyphicon-plus-sign" aria-hidden="true"></span> Set to true',
 					'url'  => "/{$this->getModule()}/{$this->getToolName()}?objectAction=SwitchBooleanVariable&amp;id=" . $existingObject->id,
