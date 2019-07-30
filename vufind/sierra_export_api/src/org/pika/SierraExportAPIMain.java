@@ -1162,7 +1162,8 @@ public class SierraExportAPIMain {
 
 	private static boolean updateMarcAndRegroupRecordId(Long id) {
 		try {
-			JSONObject marcResults = getMarcJSONFromSierraApiURL(apiBaseUrl + "/bibs/" + id + "/marc");
+			String     sierraUrl   = apiBaseUrl + "/bibs/" + id + "/marc";
+			JSONObject marcResults = getMarcJSONFromSierraApiURL(sierraUrl);
 			if (marcResults != null) {
 				if (marcResults.has("httpStatus")) {
 					if (marcResults.getInt("code") == 107) {
@@ -1170,6 +1171,7 @@ public class SierraExportAPIMain {
 						logger.debug("id " + id + " was deleted");
 						return true;
 					} else {
+						logger.error("Error response calling " + sierraUrl);
 						logger.error("Unknown error, code : " + marcResults.getInt("code") + ", " + marcResults);
 						return false;
 					}
@@ -1929,13 +1931,22 @@ public class SierraExportAPIMain {
 				conn.setConnectTimeout(5000);
 
 				StringBuilder response;
-				if (conn.getResponseCode() == 200) {
+				int           responseCode = conn.getResponseCode();
+				if (responseCode == 200) {
 					// Get the response
 					response = getTheResponse(conn.getInputStream());
 					return response.toString();
+				} else if (responseCode == 404) {
+					// 404 is record not found
+					if (logErrors) {
+						logger.info("Received response code " + responseCode + " calling sierra API " + sierraUrl);
+						// Get any errors
+						response = getTheResponse(conn.getErrorStream());
+						logger.info("Finished reading response : " + response.toString());
+					}
 				} else {
 					if (logErrors) {
-						logger.error("Received error " + conn.getResponseCode() + " calling sierra API " + sierraUrl);
+						logger.error("Received error " + responseCode + " calling sierra API " + sierraUrl);
 						// Get any errors
 						response = getTheResponse(conn.getErrorStream());
 						logger.error("Finished reading response : " + response.toString());
