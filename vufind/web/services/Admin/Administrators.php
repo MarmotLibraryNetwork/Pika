@@ -18,21 +18,21 @@
  *
  */
 
-require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
-require_once 'XML/Unserializer.php';
 
-class Admin_Administrators extends ObjectEditor
-{
+class Admin_Administrators extends ObjectEditor {
 	function getObjectType(){
 		return 'User';
 	}
+
 	function getToolName(){
 		return 'Administrators';
 	}
+
 	function getPageTitle(){
 		return 'Administrators';
 	}
+
 	function getAllObjects(){
 		/** @var User $admin */
 		$admin = new User();
@@ -46,9 +46,9 @@ class Admin_Administrators extends ObjectEditor
 				$admin->homeLibraryName = 'Unknown';
 			}
 
-			$location = new Location();
+			$location             = new Location();
 			$location->locationId = $admin->homeLocationId;
-			if ($location->find(true)) {
+			if ($location->find(true)){
 				$admin->homeLocation = $location->displayName;
 			}else{
 				$admin->homeLocation = 'Unknown';
@@ -58,36 +58,44 @@ class Admin_Administrators extends ObjectEditor
 		}
 		return $adminList;
 	}
+
 	function getObjectStructure(){
 		return User::getObjectStructure();
 	}
+
 	function getPrimaryKeyColumn(){
 		return 'cat_password';
 	}
+
 	function getIdKeyColumn(){
 		return 'id';
 	}
+
 	function getAllowableRoles(){
 		return array('userAdmin');
 	}
+
 	function canAddNew(){
 		return false;
 	}
+
 	function customListActions(){
 		return array(
-		array('label'=>'Add Administrator', 'action'=>'addAdministrator'),
+			array('label' => 'Add Administrator', 'action' => 'addAdministrator'),
 		);
 	}
+
 	function addAdministrator(){
 		global $interface;
 		//Basic List
 		$interface->setTemplate('addAdministrator.tpl');
 	}
+
 	function processNewAdministrator(){
 		global $interface;
 		global $configArray;
-		$login = $_REQUEST['login'];
-		$newAdmin = new User();
+		$login           = $_REQUEST['login'];
+		$newAdmin        = new User();
 		$barcodeProperty = $configArray['Catalog']['barcodeProperty'];
 
 		$newAdmin->$barcodeProperty = $login;
@@ -121,6 +129,7 @@ class Admin_Administrators extends ObjectEditor
 	function getInstructions(){
 		return 'For more information about what each role can do, see the <a href="https://docs.google.com/spreadsheets/d/1sPR8mIidkg00B2XzgiEq1MMDO3Y2ZOZNH-y_xonN-zA">online documentation</a>.';
 	}
+
 	function getListInstructions(){
 		return $this->getInstructions();
 	}
