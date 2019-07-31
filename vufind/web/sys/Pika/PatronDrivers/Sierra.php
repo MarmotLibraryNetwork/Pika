@@ -700,32 +700,17 @@ class Sierra extends PatronDriverInterface {
 		$availableHolds   = [];
 		$unavailableHolds = [];
 		foreach ($holds->entries as $hold) {
-			// first, is this an inn reach hold?
-			preg_match($this->urlIdRegExp, $hold->record, $m);
-			$checkId = $m[1];
-			if(strstr($checkId, "@")) {
-				// do stuff
-				$h = $this->getInnReachHold($hold);
-				if(!$h) {
-					// do stuff
-				}
-				// figure out if it's available or not
-
-				// add to either available or unavailable
-				// break this iteration
-				break;
-			}
-
 			// standard stuff
 			$h['holdSource']      = 'ILS';
 			$h['userId']          = $pikaPatronId;
 			$h['user']            = $displayName;
 
 			// get what's available from this call
-			$h['position']              = $hold->priority;
+			$h['position']              = isset($hold->priority) ? $hold->priority : 1;
 			$h['frozen']                = $hold->frozen;
 			$h['create']                = strtotime($hold->placed); // date hold created
-			$h['automaticCancellation'] = strtotime($hold->notNeededAfterDate); // not needed after date
+			// innreach holds don't include notNeededAfterDate
+			$h['automaticCancellation'] = isset($hold->notNeededAfterDate) ? strtotime($hold->notNeededAfterDate) : null; // not needed after date
 			$h['expire']                = isset($hold->pickUpByDate) ? strtotime($hold->pickUpByDate) : false; // pick up by date
 			// cancel id
 			preg_match($this->urlIdRegExp, $hold->id, $m);
@@ -806,32 +791,54 @@ class Sierra extends PatronDriverInterface {
 				$h['location']          = $hold->pickupLocation->name;
 			}
 
-			// record type and record id
-			$recordType = $hold->recordType;
-			preg_match($this->urlIdRegExp, $hold->record,$m);
-			// for item level holds we need to grab the bib id.
-			$id = $m[1];
-			if($recordType == 'i') {
-				$id = $this->_getBibIdFromItemId($id);
+			// determine if this is an innreach hold
+			// or if it's a regular ILS hold
+			if(strstr($hold->record, "@")) {
+				///////////////
+				// INNREACH HOLD
+				///////////////
+				// get the hold id
+				preg_match($this->urlIdRegExp, $hold->id, $mIr);
+				$innReachHoldId = $mIr[1];
+				$innReach = new InnReach();
+				$titleAndAuthor = $innReach->getHoldTitleAuthor($innReachHoldId);
+				if(!$titleAndAuthor) {
+					break;
+				}
+				$h['title']     = $titleAndAuthor['title'];
+				$h['author']    = $titleAndAuthor['author'];
+				$h['sortTitle'] = $titleAndAuthor['sort_title'];
+				$h['coverUrl']  = false;
+			} else {
+				///////////////
+				// ILS HOLD
+				//////////////
+				// record type and record id
+				$recordType = $hold->recordType;
+				preg_match($this->urlIdRegExp, $hold->record,$m);
+				// for item level holds we need to grab the bib id.
+				$id = $m[1];
+				if($recordType == 'i') {
+					$id = $this->_getBibIdFromItemId($id);
+				}
+				// for Pika we need the check digit.
+				$recordXD  = $this->getCheckDigit($id);
+
+				// get more info from record
+				$bibId = '.b'.$id.$recordXD;
+
+				$recordDriver = new MarcRecord($this->accountProfile->recordSource . ":" . $bibId);
+				if ($recordDriver->isValid()){
+					$h['id']              = $recordDriver->getUniqueID();
+					$h['shortId']         = $recordDriver->getShortId();
+					$h['title']           = $recordDriver->getTitle();
+					$h['sortTitle']       = $recordDriver->getSortableTitle();
+					$h['author']          = $recordDriver->getAuthor();
+					$h['format']          = $recordDriver->getFormat();
+					$h['link']            = $recordDriver->getRecordUrl();
+					$h['coverUrl']        = $recordDriver->getBookcoverUrl('medium');
+				};
 			}
-			// for Pika we need the check digit.
-			$recordXD  = $this->getCheckDigit($id);
-
-			// get more info from record
-			$bibId = '.b'.$id.$recordXD;
-
-			$recordDriver = new MarcRecord($this->accountProfile->recordSource . ":" . $bibId);
-			if ($recordDriver->isValid()){
-				$h['id']              = $recordDriver->getUniqueID();
-				$h['shortId']         = $recordDriver->getShortId();
-				$h['title']           = $recordDriver->getTitle();
-				$h['sortTitle']       = $recordDriver->getSortableTitle();
-				$h['author']          = $recordDriver->getAuthor();
-				$h['format']          = $recordDriver->getFormat();
-				$h['link']            = $recordDriver->getRecordUrl();
-				$h['coverUrl']        = $recordDriver->getBookcoverUrl('medium');
-			};
-
 			if($hold->status->code == "b" || $hold->status->code == "j" || $hold->status->code == "i") {
 				$availableHolds[] = $h;
 			} else {
@@ -1046,7 +1053,6 @@ class Sierra extends PatronDriverInterface {
 	 * @return array An array with success and message
 	 */
 	public function freezeHold($patron, $bibId, $holdId, $dateToReactivate = null){
-
 		$operation = "patrons/holds/".$holdId;
 		$params = ["freeze"=>true];
 
@@ -1060,7 +1066,8 @@ class Sierra extends PatronDriverInterface {
 		if(!$r) {
 			$return = ['success' => false];
 				if($this->apiLastError) {
-					$return['message'] = $this->apiLastError;
+					$message = $this->_getPrettyError();
+					$return['message'] = $message;
 				} else {
 					$return['message'] = "Unable to freeze your hold. Please contact your library for further assistance.";
 				}
@@ -1069,7 +1076,8 @@ class Sierra extends PatronDriverInterface {
 
 		$return = [
 			'success' => true,
-			'message' => 'Your hold has been frozen.'];
+			'message' => 'Your hold has been frozen.'
+		];
 
 		return $return;
 	}
@@ -1088,7 +1096,8 @@ class Sierra extends PatronDriverInterface {
 		if(!$r) {
 			$return = ['success' => false];
 			if($this->apiLastError) {
-				$return['message'] = $this->apiLastError;
+				$message = $this->_getPrettyError();
+				$return['message'] = $message;
 			} else {
 				$return['message'] = "Unable to thaw your hold. Please contact your library for further assistance.";
 			}
