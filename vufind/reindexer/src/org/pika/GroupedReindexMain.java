@@ -131,7 +131,7 @@ public class GroupedReindexMain {
 					}
 				}
 
-				groupedWorkIndexer.finishIndexing();
+				groupedWorkIndexer.finishIndexing(individualWorkToProcess != null);
 			}
 		} catch (Error e) {
 			logger.error("Error processing reindex ", e);
@@ -345,7 +345,7 @@ public class GroupedReindexMain {
 
 		solrDir = configIni.get("Index", "local");
 		if (solrDir == null){
-			solrDir = "/data/pika-plus/" + serverName + "/solr";
+			solrDir = "/data/pika/" + serverName + "/solr";
 		}
 		
 		logger.info("Setting up database connections");

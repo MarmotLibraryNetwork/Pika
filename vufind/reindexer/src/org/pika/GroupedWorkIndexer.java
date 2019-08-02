@@ -697,7 +697,7 @@ public class GroupedWorkIndexer {
 	}
 
 
-	void finishIndexing(){
+	void finishIndexing(boolean processingIndividualWork){
 		GroupedReindexMain.addNoteToReindexLog("Finishing indexing");
 		logger.info("Finishing indexing");
 		if (fullReindex) {
@@ -738,7 +738,9 @@ public class GroupedWorkIndexer {
 		}
 
 		writeWorksWithInvalidLiteraryForms();
-		updateLastReindexTime();
+		if (!processingIndividualWork) {
+			updateLastReindexTime();
+		}
 
 		//Write validation information
 		if (fullReindex) {
