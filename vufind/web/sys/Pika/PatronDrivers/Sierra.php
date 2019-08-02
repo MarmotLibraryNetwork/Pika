@@ -69,14 +69,17 @@ class Sierra extends PatronDriverInterface {
 	// many ids come from url. example: https://sierra.marmot.org/iii/sierra-api/v5/items/5130034
 	private $urlIdRegExp = "/.*\/(\d*)$/";
 
+	private $logger;
+
 	public function __construct($accountProfile) {
 		// Adding standard globals to class to avoid repeated calling of global.
 		global $configArray;
 		global $memCache;
-		//global $logger;
+
 		$this->configArray    = $configArray;
 		$this->memCache       = $memCache;
 		$this->accountProfile = $accountProfile;
+		// TODO: Experimental logger.
 		//$this->logger = new \Pika\Logger('SierraPatronAPI');
 		//$this->logger->info("Logger is now ready");
 		// build the api url
@@ -84,7 +87,6 @@ class Sierra extends PatronDriverInterface {
 		$apiUrl = trim($accountProfile->patronApiUrl,'/ ');
 		$apiUrl = $apiUrl . '/iii/sierra-api/v'.$configArray['Catalog']['api_version'] . '/';
 		$this->apiUrl = $apiUrl;
-
 
 		// grab an oAuthToken
 		if(!isset($this->oAuthToken)) {
@@ -106,6 +108,12 @@ class Sierra extends PatronDriverInterface {
 	 */
 	public function getMyCheckouts($patron){
 
+		$patronCheckoutsCacheKey = "patron_".$patron->barcode."_checkouts";
+		if($patronCheckouts = $this->memCache->get($patronCheckoutsCacheKey)) {
+			//$this->logger->info("Found holds in memcache:".$patronCheckoutsCacheKey);
+			return $patronCheckouts;
+		}
+
 		$patronId = $this->getPatronId($patron);
 
 		$operation = 'patrons/'.$patronId.'/checkouts';
@@ -116,8 +124,8 @@ class Sierra extends PatronDriverInterface {
 		$r = $this->_doRequest($operation,$params);
 
 		if (!$r) {
+			//$this->logger->info($this->apiLastError);
 			return false;
-			//todo: error message and log.
 		}
 
 		// no checkouts
@@ -127,6 +135,40 @@ class Sierra extends PatronDriverInterface {
 
 		$checkouts = [];
 		foreach($r->entries as $entry) {
+			// standard stuff
+			// get checkout id
+			preg_match($this->urlIdRegExp, $entry->id, $m);
+			$checkoutId = $m[1];
+
+			if(strstr($entry->item, "@")) {
+				///////////////
+				// INNREACH CHECKOUT
+				///////////////
+				$innReach = new InnReach();
+				$titleAndAuthor = $innReach->getCheckoutTitleAuthor($checkoutId);
+
+				$checkout['checkoutSource'] = 'ILS';
+				$checkout['id']             = $checkoutId;
+				$checkout['dueDate']        = strtotime($entry->dueDate);
+				$checkout['checkoutDate']   = strtotime($entry->outDate);
+				$checkout['renewCount']     = $entry->numberOfRenewals;
+				$checkout['recordId']       = 0;
+				$checkout['renewIndicator'] = $checkoutId;
+				$checkout['renewMessage']   = '';
+				$checkout['coverUrl']       = '/interface/themes/marmot/images/InnReachCover.png';
+				$checkout['barcode']        = $entry->barcode;
+				$checkout['request']        = $entry->callNumber;
+				$checkout['author']        = $titleAndAuthor['author'];
+				$checkout['title']         = $titleAndAuthor['title'];
+				$checkout['title_sort']    = $titleAndAuthor['sort_title'];
+				// todo: can innreach checkouts be renewed?
+				$checkout['canrenew']       = true;
+
+				$checkouts[] = $checkout;
+				unset($checkout);
+				continue;
+			}
+
 			// grab the bib id and make Pika-tize it
 			preg_match($this->urlIdRegExp, $entry->item, $m);
 			$itemId = $m[1];
@@ -136,23 +178,17 @@ class Sierra extends PatronDriverInterface {
 			$recordXD  = $this->getCheckDigit($bid);
 			$bibId = '.b'.$bid.$recordXD;
 
-			// get checkout id
-			preg_match($this->urlIdRegExp, $entry->id, $m);
-			$chekoutId = $m[1];
-
 			$checkout['checkoutSource'] = 'ILS';
 			$checkout['recordId']       = $bibId;
-			$checkout['id']             = $chekoutId;
+			$checkout['id']             = $checkoutId;
 			$checkout['dueDate']        = strtotime($entry->dueDate);
 			$checkout['checkoutDate']   = strtotime($entry->outDate);
 			$checkout['renewCount']     = $entry->numberOfRenewals;
 			$checkout['barcode']        = $entry->barcode;
 			$checkout['request']        = $entry->callNumber;
 			$checkout['itemid']         = $itemId;
-
 			$checkout['canrenew']       = true;
-
-			$checkout['renewIndicator'] = $chekoutId;
+			$checkout['renewIndicator'] = $checkoutId;
 			$checkout['renewMessage']   = '';
 			$recordDriver = new MarcRecord($this->accountProfile->recordSource . ":" . $bibId);
 			if ($recordDriver->isValid()) {
@@ -172,7 +208,11 @@ class Sierra extends PatronDriverInterface {
 			}
 
 			$checkouts[] = $checkout;
+			unset($checkout);
 		}
+
+		$this->memCache->set($patronCheckoutsCacheKey, $checkouts, 0, $this->configArray['Caching']['patron_profile']);
+		//$this->logger->info("Saving checkouts in memcache:".$patronCheckoutsCacheKey);
 
 		return $checkouts;
 
@@ -189,6 +229,10 @@ class Sierra extends PatronDriverInterface {
 	 * @return array
 	 */
 	public function renewItem($patron, $bibId, $checkoutId, $itemIndex = NULL){
+		// unset cache
+		$patronCheckoutsCacheKey = "patron_".$patron->barcode."_checkouts";
+		//$this->logger->info("Removing checkouts from memcache:".$patronCheckoutsCacheKey);
+		$this->memCache->delete($patronCheckoutsCacheKey);
 
 		$operation = 'patrons/checkouts/'.$checkoutId.'/renewal';
 
@@ -278,6 +322,7 @@ class Sierra extends PatronDriverInterface {
 
 		$patronObjectCacheKey = 'patron_'.$this->patronBarcode.'_patron';
 		if ($pObj = $this->memCache->get($patronObjectCacheKey)) {
+			//$this->logger->info("Found patron in memcache:".$patronObjectCacheKey);
 			return $pObj;
 		}
 
@@ -496,6 +541,7 @@ class Sierra extends PatronDriverInterface {
 		} elseif ($updatePatron && !$createPatron) {
 			$patron->update();
 		}
+		//$this->logger->info("Saving patron to memcache:".$patronObjectCacheKey);
 		$e = $this->memCache->set($patronObjectCacheKey, $patron, MEMCACHE_COMPRESSED, $this->configArray['Caching']['patron_profile']);
 		return $patron;
 	}
@@ -660,15 +706,16 @@ class Sierra extends PatronDriverInterface {
 	 * @return array|bool
 	 */
 	public function getMyHolds($patron){
-		if(!$patronId = $this->getPatronId($patron)) {
-			// TODO: need to do something here
-			return false;
-		}
 
 		$patronHoldsCacheKey = "patron_".$patron->barcode."_holds";
 		if($patronHolds = $this->memCache->get($patronHoldsCacheKey)) {
-			//$this->logger->info("Found holds in memcache.");
+			//$this->logger->info("Found holds in memcache:".$patronHoldsCacheKey);
 			return $patronHolds;
+		}
+
+		if(!$patronId = $this->getPatronId($patron)) {
+			// TODO: need to do something here
+			return false;
 		}
 
 		$operation = "patrons/".$patronId."/holds";
@@ -748,7 +795,6 @@ class Sierra extends PatronDriverInterface {
 						$updatePickup = false;
 					}
 					break;
-					// todo: need to figure out what
 				case "&":
 					$status       = "Requested from Prospector";
 					$cancelable   = true;
@@ -805,7 +851,8 @@ class Sierra extends PatronDriverInterface {
 				$innReach = new InnReach();
 				$titleAndAuthor = $innReach->getHoldTitleAuthor($innReachHoldId);
 				if(!$titleAndAuthor) {
-					break;
+					// todo: this needs attention
+					continue;
 				}
 				$h['title']              = $titleAndAuthor['title'];
 				$h['author']             = $titleAndAuthor['author'];
@@ -849,38 +896,15 @@ class Sierra extends PatronDriverInterface {
 			}
 			// unset for next loop
 			unset($h);
-
 		} // end foreach
 
 		$return['available']   = $availableHolds;
 		$return['unavailable'] = $unavailableHolds;
 
 		$this->memCache->set($patronHoldsCacheKey, $return, 0, $this->configArray['Caching']['patron_profile']);
+		//$this->logger->info("Saving holds in memcache:".$patronHoldsCacheKey);
 
 		return $return;
-	}
-
-
-	/**
-	 * @param object $hold a single $holds->entries->{obj} from api call: GET /v5/patrons/{id}/holds
-	 * @return array
-	 */
-	public function getInnReachHold($hold) {
-		// innreach status
-		//# = Prospector Received
-//		$ = Lost and Paid
-//		% = Prospector Returned
-//		( = Prospector Paged
-//) = Prospector Canceled
-//		* = Prospector Missing
-//1 = Gone
-//@ = Prospector Off Campus
-//_ = Prospector Re-Requested
-//		& is prospector status but is not in the pika status map
-
-
-
-		return [];
 	}
 
 	/**
@@ -908,10 +932,12 @@ class Sierra extends PatronDriverInterface {
 
 		// delete memcache holds
 		$patronHoldsCacheKey = "patron_".$patron->barcode."_holds";
+		//$this->logger->info("Removing holds from memcache:".$patronHoldsCacheKey);
 		$this->memCache->delete($patronHoldsCacheKey);
 
 		// because the patron object has holds information we need to clear that cache too.
 		$patronObjectCacheKey = 'patron_'.$patron->barcode.'_patron';
+		//$this->logger->info("Removing patron from memcache:".$patronObjectCacheKey);
 		$this->memCache->delete($patronObjectCacheKey);
 
 		// get title of record
@@ -1061,6 +1087,7 @@ class Sierra extends PatronDriverInterface {
 
 		// delete holds cache
 		$patronHoldsCacheKey = "patron_".$patron->barcode."_holds";
+		//$this->logger->info("Removing holds from memcache:".$patronHoldsCacheKey);
 		$this->memCache->delete($patronHoldsCacheKey);
 
 		$r = $this->_doRequest($operation,$params, "PUT");
@@ -1091,6 +1118,7 @@ class Sierra extends PatronDriverInterface {
 
 		// delete holds cache
 		$patronHoldsCacheKey = "patron_".$patron->barcode."_holds";
+		//$this->logger->info("Removing holds from memcache:".$patronHoldsCacheKey);
 		$this->memCache->delete($patronHoldsCacheKey);
 
 		$r = $this->_doRequest($operation,$params, "PUT");
