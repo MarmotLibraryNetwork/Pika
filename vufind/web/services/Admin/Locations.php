@@ -18,9 +18,7 @@
  *
  */
 
-require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
-require_once 'XML/Unserializer.php';
 
 class Locations extends ObjectEditor {
 
@@ -44,12 +42,10 @@ class Locations extends ObjectEditor {
 		$location->orderBy('displayName');
 		if (UserAccount::userHasRole('locationManager')){
 			$location->locationId = $user->homeLocationId;
-		}else{
-			if (!UserAccount::userHasRole('opacAdmin')){
-				//Scope to just locations for the user based on home library
-				$patronLibrary       = Library::getLibraryForLocation($user->homeLocationId);
-				$location->libraryId = $patronLibrary->libraryId;
-			}
+		}elseif (!UserAccount::userHasRole('opacAdmin')){
+			//Scope to just locations for the user based on home library
+			$patronLibrary       = Library::getLibraryForLocation($user->homeLocationId);
+			$location->libraryId = $patronLibrary->libraryId;
 		}
 		$location->find();
 		$locationList = array();

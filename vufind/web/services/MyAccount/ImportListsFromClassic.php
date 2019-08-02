@@ -2,14 +2,15 @@
 /**
  * Imports Lists for a user from prior catalog (Millennium WebPAC, Encore, Etc).
  *
- * @category VuFind-Plus
+ * @category Pika
  * @author Mark Noble <mark@marmot.org>
  * Date: 2/26/14
  * Time: 10:35 PM
  */
 
 require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
-class ImportListsFromClassic extends MyAccount{
+
+class ImportListsFromClassic extends MyAccount {
 
 	/**
 	 * Process parameters and display the page.
@@ -17,8 +18,7 @@ class ImportListsFromClassic extends MyAccount{
 	 * @return void
 	 * @access public
 	 */
-	public function launch()
-	{
+	public function launch(){
 		global $interface;
 		$user = UserAccount::getLoggedInUser();
 
@@ -30,11 +30,7 @@ class ImportListsFromClassic extends MyAccount{
 		$listList = $user->getLists();
 		$interface->assign('listList', $listList);
 
-		$interface->setPageTitle('Import Results');
-		$interface->assign('sidebar', 'MyAccount/account-sidebar.tpl');
-		$interface->setTemplate('listImportResults.tpl');
-
-		$interface->display('layout.tpl');
+		$this->display('listImportResults.tpl', 'Import List');
 	}
 
 }

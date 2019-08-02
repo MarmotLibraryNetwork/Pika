@@ -120,13 +120,30 @@ public class SierraExportAPIMain {
 //			System.exit(2); // Exiting with a status code of 2 so that our executing bash scripts knows there has been a database communication error
 //		}
 
-		String profileToLoad = "ils";
+		String  profileToLoad       = "ils";
+		String  singleRecordToProcess = null;
 		if (args.length > 1) {
 			/*if (args[1].startsWith(".b")) {
 				fetchSingleBibFromCommandLine = true;
 			} else*/
 			if (args[1].equalsIgnoreCase("timeAPI")) {
 				timeAPI = true;
+			} else if (args[1].equalsIgnoreCase("singleRecord")) {
+				if (args.length == 3) {
+					singleRecordToProcess = args[2].replaceAll(".b", "").trim();
+					singleRecordToProcess = singleRecordToProcess.substring(0, singleRecordToProcess.length() - 1);
+				} else {
+					//get input from user
+					//  open up standard input
+					try (BufferedReader br = new BufferedReader(new InputStreamReader(System.in))) {
+						System.out.print("Enter the full Sierra record Id to process (with trailing check digit) : ");
+						singleRecordToProcess = br.readLine().replaceAll(".b", "").trim();
+						singleRecordToProcess = singleRecordToProcess.substring(0, singleRecordToProcess.length() - 1);
+					} catch (IOException e) {
+						System.out.println("Error while reading input from user." + e.toString());
+						System.exit(1);
+					}
+				}
 			} else {
 				profileToLoad = args[1];
 			}
@@ -151,7 +168,7 @@ public class SierraExportAPIMain {
 				logger.warn("No accounting profile found for this indexing profile, falling back to config ini setting.");
 				sierraUrl = PikaConfigIni.trimTrailingPunctuation(PikaConfigIni.getIniValue("Catalog", "url"));
 			}
-			apiBaseUrl = sierraUrl /*+ ":443"*/ + "/iii/sierra-api/v" + apiVersion;
+			apiBaseUrl = sierraUrl + "/iii/sierra-api/v" + apiVersion;
 		} catch (SQLException e) {
 			logger.error("Error retrieving account profile for " + indexingProfile.name, e);
 		}
@@ -171,11 +188,41 @@ public class SierraExportAPIMain {
 			logger.error("Sierra Field Mappings need to be set.");
 			System.exit(0);
 		}
+		if (indexingProfile.sierraBibLevelFieldTag == null || indexingProfile.sierraBibLevelFieldTag.isEmpty()) {
+			logger.error("Sierra Bib level/fixed field tag needs to be set in the indexing profile.");
+			System.exit(0);
+		}
 
+
+		//Extract a Single Bib/Record
+		if (singleRecordToProcess != null && !singleRecordToProcess.isEmpty()) {
+			try {
+				long id = Long.parseLong(singleRecordToProcess);
+				initializeRecordGrouper(pikaConn);
+				allowFastExportMethod      = systemVariables.getBooleanValuedVariable("allow_sierra_fast_export");
+				updateExtractInfoStatement = pikaConn.prepareStatement("INSERT INTO ils_extract_info (indexingProfileId, ilsId, lastExtracted) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE lastExtracted=VALUES(lastExtracted)"); // unique key is indexingProfileId and ilsId combined
+				updateMarcAndRegroupRecordIds(singleRecordToProcess, Collections.singletonList(id));
+				System.out.println("Extract process for record " + singleRecordToProcess + " finished.");
+				System.exit(0);
+			} catch (SQLException e) {
+				logger.error("Error setting up prepared statements for Record extraction processing", e);
+				System.exit(1);
+			} catch (NumberFormatException e) {
+				logger.error("Record " + singleRecordToProcess + " failed to get extracted.", e);
+				System.exit(1);
+			}
+		}
 
 //		exportPath = indexingProfile.marcPath;
 //		File changedBibsFile = new File(exportPath + "/changed_bibs_to_process.csv");
 
+
+		Boolean running = systemVariables.getBooleanValuedVariable("sierra_extract_running");
+		if (running != null && running){
+			logger.warn("System variable 'sierra_extract_running' is already set to true. This may indicator another Sierra Extract process is running.");
+		} else {
+			updatePartialExtractRunning(true);
+		}
 		Integer minutesToProcessFor = PikaConfigIni.getIntIniValue("Catalog", "minutesToProcessExport");
 		minutesToProcessExport = (minutesToProcessFor == null) ? 5 : minutesToProcessFor;
 
@@ -214,7 +261,7 @@ public class SierraExportAPIMain {
 		updateSierraExtractLogNumToProcess(pikaConn);
 
 		//Setup other systems we will use
-		recordGroupingProcessor = new MarcRecordGrouper(pikaConn, indexingProfile, logger, false);
+		initializeRecordGrouper(pikaConn);
 
 		// Process the Bibs that need updating
 		int numRecordsProcessed = updateBibs(pikaConn);
@@ -248,6 +295,7 @@ public class SierraExportAPIMain {
 			logger.error("Unable to update sierra api export log with completion time.", e);
 		}
 
+		updatePartialExtractRunning(false);
 
 		try {
 			//Close the connection
@@ -258,6 +306,10 @@ public class SierraExportAPIMain {
 		}
 		Date currentTime = new Date();
 		logger.info(currentTime.toString() + " : Finished Sierra Extract");
+	}
+
+	private static void initializeRecordGrouper(Connection pikaConn) {
+		recordGroupingProcessor = new MarcRecordGrouper(pikaConn, indexingProfile, logger, false);
 	}
 
 	private static void retrieveDataFromSierraDNA(Connection pikaConn) {
@@ -448,7 +500,7 @@ public class SierraExportAPIMain {
 			markDeletedExtractInfoStatement = pikaConn.prepareStatement("INSERT INTO ils_extract_info (indexingProfileId, ilsId, lastExtracted, deleted) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE lastExtracted=VALUES(lastExtracted), deleted=VALUES(deleted)"); // unique key is indexingProfileId and ilsId combined
 			//TODO: note Starting in MariaDB 10.3.3 function VALUES() becomes VALUE(). But documentation notes "The VALUES() function can still be used even from MariaDB 10.3.3, but only in INSERT ... ON DUPLICATE KEY UPDATE statements; it's a syntax error otherwise."
 		} catch (Exception e) {
-			logger.error("Error setting up prepared statements for deleting bibs", e);
+			logger.error("Error setting up prepared statements for Record extraction processing", e);
 		}
 		processDeletedBibs(lastExtractDateFormatted, updateTime);
 		getNewRecordsFromAPI(lastExtractDateTimeFormatted, updateTime);
@@ -456,7 +508,6 @@ public class SierraExportAPIMain {
 		getNewItemsFromAPI(lastExtractDateTimeFormatted);
 		getChangedItemsFromAPI(lastExtractDateTimeFormatted);
 		getDeletedItemsFromAPI(lastExtractDateFormatted);
-
 	}
 
 	/**
@@ -513,7 +564,7 @@ public class SierraExportAPIMain {
 					allBibsToUpdate.remove(lastId);
 				}
 				if (ids.size() > 0) {
-					updateMarcAndRegroupRecordIds(idsToProcess.toString(), ids);
+					updateMarcAndRegroupRecordIds(idsToProcess, ids);
 				}
 				numProcessed += maxIndex;
 				if (numProcessed % 250 == 0 || allBibsToUpdate.size() == 0) {
@@ -1111,7 +1162,8 @@ public class SierraExportAPIMain {
 
 	private static boolean updateMarcAndRegroupRecordId(Long id) {
 		try {
-			JSONObject marcResults = getMarcJSONFromSierraApiURL(apiBaseUrl + "/bibs/" + id + "/marc");
+			String     sierraUrl   = apiBaseUrl + "/bibs/" + id + "/marc";
+			JSONObject marcResults = getMarcJSONFromSierraApiURL(sierraUrl);
 			if (marcResults != null) {
 				if (marcResults.has("httpStatus")) {
 					if (marcResults.getInt("code") == 107) {
@@ -1119,6 +1171,7 @@ public class SierraExportAPIMain {
 						logger.debug("id " + id + " was deleted");
 						return true;
 					} else {
+						logger.error("Error response calling " + sierraUrl);
 						logger.error("Unknown error, code : " + marcResults.getInt("code") + ", " + marcResults);
 						return false;
 					}
@@ -1153,32 +1206,37 @@ public class SierraExportAPIMain {
 				}
 				logger.debug("Converted JSON to MARC for Bib");
 
-				//Add the identifier
-				DataField recordNumberField = marcFactory.newDataField(indexingProfile.recordNumberTag, ' ', ' ', "" + indexingProfile.recordNumberField /*convert to string*/, getfullSierraBibId(id));
-
 				//Load Sierra Fixed Field / Bib Level Tag
 				JSONObject fixedFieldResults = getMarcJSONFromSierraApiURL(apiBaseUrl + "/bibs/" + id + "?fields=fixedFields,locations");
 				if (fixedFieldResults != null && !fixedFieldResults.has("code")) {
-					String    bCode3           = fixedFieldResults.getJSONObject("fixedFields").getJSONObject("31").getString("value");
-					String    matType          = fixedFieldResults.getJSONObject("fixedFields").getJSONObject("30").getString("value");
-					String    location         = fixedFieldResults.getJSONObject("fixedFields").getJSONObject("26").getString("value");
 					DataField sierraFixedField = marcFactory.newDataField(indexingProfile.sierraBibLevelFieldTag, ' ', ' ');
-					sierraFixedField.addSubfield(marcFactory.newSubfield(indexingProfile.bcode3Subfield, bCode3));
-					sierraFixedField.addSubfield(marcFactory.newSubfield(indexingProfile.materialTypeSubField, matType));
-					if (location.equalsIgnoreCase("multi")) {
-						JSONArray locationsJSON = fixedFieldResults.getJSONArray("locations");
-						for (int k = 0; k < locationsJSON.length(); k++) {
-							location = locationsJSON.getJSONObject(k).getString("code");
+					if (indexingProfile.bcode3Subfield != ' ') {
+						String    bCode3           = fixedFieldResults.getJSONObject("fixedFields").getJSONObject("31").getString("value");
+						sierraFixedField.addSubfield(marcFactory.newSubfield(indexingProfile.bcode3Subfield, bCode3));
+					}
+					if (indexingProfile.itemRecordNumberSubfield != ' ') {
+						String matType = fixedFieldResults.getJSONObject("fixedFields").getJSONObject("30").getString("value");
+						sierraFixedField.addSubfield(marcFactory.newSubfield(indexingProfile.materialTypeSubField, matType));
+					}
+					if (bibLevelLocationsSubfield != ' ') { // Probably should be added to the indexing profile at some point
+						String location = fixedFieldResults.getJSONObject("fixedFields").getJSONObject("26").getString("value");
+						if (location.equalsIgnoreCase("multi")) {
+							JSONArray locationsJSON = fixedFieldResults.getJSONArray("locations");
+							for (int k = 0; k < locationsJSON.length(); k++) {
+								location = locationsJSON.getJSONObject(k).getString("code");
+								sierraFixedField.addSubfield(marcFactory.newSubfield(bibLevelLocationsSubfield, location));
+							}
+						} else {
 							sierraFixedField.addSubfield(marcFactory.newSubfield(bibLevelLocationsSubfield, location));
 						}
-					} else {
-						sierraFixedField.addSubfield(marcFactory.newSubfield(bibLevelLocationsSubfield, location));
 					}
 					marcRecord.addVariableField(sierraFixedField);
 
-					//TODO: Add locations for Flatirons
-
+					//Add the identifier
+					DataField recordNumberField = marcFactory.newDataField(indexingProfile.recordNumberTag, ' ', ' ', "" + indexingProfile.recordNumberField /*convert to string*/, getfullSierraBibId(id));
 					marcRecord.addVariableField(recordNumberField);
+
+					//TODO: Add locations for Flatirons
 
 					if (fixedFieldResults.getJSONObject("fixedFields").has("27")) { // Copies fixed field
 						//Get Items for the bib record
@@ -1395,7 +1453,7 @@ public class SierraExportAPIMain {
 		} while (hasMoreItems);
 	}
 
-	private static void updateMarcAndRegroupRecordIds(String ids, ArrayList<Long> idArray) {
+	private static void updateMarcAndRegroupRecordIds(CharSequence ids, List<Long> idArray) {
 		try {
 			JSONObject marcResults = null;
 			if (allowFastExportMethod) {
@@ -1408,47 +1466,58 @@ public class SierraExportAPIMain {
 				ArrayList<Long> processedIds = new ArrayList<>();
 				String          dataFileUrl  = marcResults.getString("file");
 				String          marcData     = getMarcFromSierraApiURL(dataFileUrl, debug);
-				logger.debug("Got marc record file");
-				MarcReader marcReader = new MarcPermissiveStreamReader(new ByteArrayInputStream(marcData.getBytes(StandardCharsets.UTF_8)), true, true);
-				while (marcReader.hasNext()) {
-					try {
-						logger.debug("Starting to process the next marc Record");
+				if (marcData != null) {
+					logger.debug("Got marc record file");
+					byte[]     bytes = marcData.getBytes(StandardCharsets.UTF_8);
+					MarcReader marcReader;
+					try (ByteArrayInputStream input = new ByteArrayInputStream(bytes)) {
+						marcReader = new MarcPermissiveStreamReader(input, true, true, "UTF8");
 
-						Record marcRecord = marcReader.next();
-						logger.debug("Got the next marc Record data");
+						while (marcReader.hasNext()) {
+							try {
+								logger.debug("Starting to process the next marc Record");
 
-						RecordIdentifier recordIdentifier = recordGroupingProcessor.getPrimaryIdentifierFromMarcRecord(marcRecord, indexingProfile.name, indexingProfile.doAutomaticEcontentSuppression);
-						String           identifier       = recordIdentifier.getIdentifier();
-						logger.debug("Writing marc record for " + identifier);
+								Record marcRecord = marcReader.next();
+								logger.debug("Got the next marc Record data");
 
-						writeMarcRecord(marcRecord, identifier);
-						logger.debug("Wrote marc record for " + identifier);
+								RecordIdentifier recordIdentifier = recordGroupingProcessor.getPrimaryIdentifierFromMarcRecord(marcRecord, indexingProfile.name, indexingProfile.doAutomaticEcontentSuppression);
+								String           identifier       = recordIdentifier.getIdentifier();
+								logger.debug("Writing marc record for " + identifier);
 
-						//Setup the grouped work for the record.  This will take care of either adding it to the proper grouped work
-						//or creating a new grouped work
-						if (!recordGroupingProcessor.processMarcRecord(marcRecord, true)) {
-							logger.warn(identifier + " was suppressed during record grouping");
-						} else {
-							logger.debug("Finished record grouping for " + identifier);
+								writeMarcRecord(marcRecord, identifier);
+								logger.debug("Wrote marc record for " + identifier);
+
+								//Setup the grouped work for the record.  This will take care of either adding it to the proper grouped work
+								//or creating a new grouped work
+								if (!recordGroupingProcessor.processMarcRecord(marcRecord, true)) {
+									logger.warn(identifier + " was suppressed during record grouping");
+								} else {
+									logger.debug("Finished record grouping for " + identifier);
+								}
+								Long shortId = Long.parseLong(identifier.substring(2, identifier.length() - 1));
+								processedIds.add(shortId);
+								logger.debug("Processed " + identifier);
+							} catch (MarcException e) {
+								logger.info("Error loading marc record from file, will load manually. ", e);
+							}
 						}
-						Long shortId = Long.parseLong(identifier.substring(2, identifier.length() - 1));
-						processedIds.add(shortId);
-						logger.debug("Processed " + identifier);
-					} catch (MarcException mre) {
-						logger.info("Error loading marc record from file, will load manually");
-					}
-				}
-				for (Long id : idArray) {
-					if (!processedIds.contains(id)) {
-						if (!updateMarcAndRegroupRecordId(id)) {
-							//Don't fail the entire process.  We will just reprocess next time the export runs
-							logger.debug("Processing " + id + " failed");
-							addNoteToExportLog("Processing " + id + " failed");
-							bibsWithErrors.add(id);
-							//allPass = false;
-						} else {
-							logger.debug("Processed " + id);
+						// For any records that failed in the fast method,
+						for (Long id : idArray) {
+							if (!processedIds.contains(id)) {
+								logger.debug("starting to process " + id + " with the not-fast method");
+								if (!updateMarcAndRegroupRecordId(id)) {
+									//Don't fail the entire process.  We will just reprocess next time the export runs
+									logger.debug("Processing " + id + " failed");
+//									addNoteToExportLog("Processing " + id + " failed"); //Fails in singleRecord mode
+									bibsWithErrors.add(id);
+									//allPass = false;
+								} else {
+									logger.debug("Processed " + id);
+								}
+							}
 						}
+					} catch (Exception e) {
+						logger.error("Error occurring while processing binary MARC files from the API.", e);
 					}
 				}
 			} else {
@@ -1459,7 +1528,8 @@ public class SierraExportAPIMain {
 					logger.debug("starting to process " + id);
 					if (!updateMarcAndRegroupRecordId(id)) {
 						//Don't fail the entire process.  We will just reprocess next time the export runs
-						addNoteToExportLog("Processing " + id + " failed");
+						logger.debug("Processing " + id + " failed");
+//						addNoteToExportLog("Processing " + id + " failed"); //Fails in singleRecord mode
 						bibsWithErrors.add(id);
 						//allPass = false;
 					}
@@ -1820,14 +1890,14 @@ public class SierraExportAPIMain {
 						logger.info("Received response code " + responseCode + " calling sierra API " + sierraUrl);
 						// Get any errors
 						response = getTheResponse(conn.getErrorStream());
-						logger.info("  Finished reading response : " + response.toString());
+						logger.info("Finished reading response : " + response.toString());
 					}
 				} else {
 					if (logErrors) {
 						logger.error("Received error " + responseCode + " calling sierra API " + sierraUrl);
 						// Get any errors
 						response = getTheResponse(conn.getErrorStream());
-						logger.error("  Finished reading response : " + response.toString());
+						logger.error("Finished reading response : " + response.toString());
 					}
 				}
 
@@ -1861,17 +1931,25 @@ public class SierraExportAPIMain {
 				conn.setConnectTimeout(5000);
 
 				StringBuilder response;
-				if (conn.getResponseCode() == 200) {
+				int           responseCode = conn.getResponseCode();
+				if (responseCode == 200) {
 					// Get the response
 					response = getTheResponse(conn.getInputStream());
 					return response.toString();
-				} else {
+				} else if (responseCode == 404) {
+					// 404 is record not found
 					if (logErrors) {
-						logger.error("Received error " + conn.getResponseCode() + " calling sierra API " + sierraUrl);
+						logger.info("Received response code " + responseCode + " calling sierra API " + sierraUrl);
 						// Get any errors
 						response = getTheResponse(conn.getErrorStream());
-						logger.error("  Finished reading response");
-						logger.error(response.toString());
+						logger.info("Finished reading response : " + response.toString());
+					}
+				} else {
+					if (logErrors) {
+						logger.error("Received error " + responseCode + " calling sierra API " + sierraUrl);
+						// Get any errors
+						response = getTheResponse(conn.getErrorStream());
+						logger.error("Finished reading response : " + response.toString());
 					}
 				}
 
@@ -1886,6 +1964,10 @@ public class SierraExportAPIMain {
 			}
 		}
 		return null;
+	}
+
+	private static void updatePartialExtractRunning(boolean running) {
+		systemVariables.setVariable("sierra_extract_running", Boolean.toString(running));
 	}
 
 	private static JSONObject getMarcJSONFromSierraApiURL(String sierraUrl) {
@@ -1915,9 +1997,9 @@ public class SierraExportAPIMain {
 
 					try {
 						return new JSONObject(response.toString());
-					} catch (JSONException jse) {
+					} catch (JSONException e) {
 						logger.error("Received error " + conn.getResponseCode() + " calling sierra API " + sierraUrl);
-						logger.error(response.toString());
+						logger.error(response.toString(), e);
 					}
 				}
 

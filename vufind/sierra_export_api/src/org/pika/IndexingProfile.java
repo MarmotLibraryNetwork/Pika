@@ -21,6 +21,7 @@ public class IndexingProfile {
 	Long id;
 
 	String name;
+//	String marcEncoding;
 	private String  individualMarcPath;
 	public  String  marcPath;
 	private int     numCharsToCreateFolderFrom;
@@ -199,6 +200,7 @@ public class IndexingProfile {
 					indexingProfile.lastCheckinFormatter              = new SimpleDateFormat(indexingProfile.lastCheckinFormat);
 					indexingProfile.individualMarcPath                = indexingProfileRS.getString("individualMarcPath");
 					indexingProfile.marcPath                          = indexingProfileRS.getString("marcPath");
+//					indexingProfile.marcEncoding                      = indexingProfileRS.getString("marcEncoding");
 					indexingProfile.name                              = indexingProfileRS.getString("name");
 					indexingProfile.numCharsToCreateFolderFrom        = indexingProfileRS.getInt("numCharsToCreateFolderFrom");
 					indexingProfile.createFolderFromLeadingCharacters = indexingProfileRS.getBoolean("createFolderFromLeadingCharacters");

@@ -10,14 +10,15 @@
  */
 require_once ROOT_DIR . '/services/Admin/Admin.php';
 require_once ROOT_DIR . '/sys/ArchiveSubject.php';
-class Admin_ArchiveSubjects extends Admin_Admin{
 
-	function launch() {
+class Admin_ArchiveSubjects extends Admin_Admin {
+
+	function launch(){
 		global $interface;
 		$archiveSubjects = new ArchiveSubject();
 		$archiveSubjects->find(true);
 		if (isset($_POST['subjectsToIgnore'])){
-			$archiveSubjects->subjectsToIgnore = strip_tags($_POST['subjectsToIgnore']);
+			$archiveSubjects->subjectsToIgnore   = strip_tags($_POST['subjectsToIgnore']);
 			$archiveSubjects->subjectsToRestrict = strip_tags($_POST['subjectsToRestrict']);
 			if ($archiveSubjects->id){
 				$archiveSubjects->update();
@@ -31,7 +32,7 @@ class Admin_ArchiveSubjects extends Admin_Admin{
 		$this->display('archiveSubjects.tpl', 'Archive Subjects');
 	}
 
-	function getAllowableRoles() {
+	function getAllowableRoles(){
 		return array('opacAdmin', 'archives');
 	}
 }

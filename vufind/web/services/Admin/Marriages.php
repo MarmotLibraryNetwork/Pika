@@ -18,22 +18,22 @@
  *
  */
 
-require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 require_once ROOT_DIR . '/sys/Genealogy/Marriage.php';
-require_once 'XML/Unserializer.php';
 
-class Marriages extends ObjectEditor
-{
+class Marriages extends ObjectEditor {
 	function getObjectType(){
 		return 'Marriage';
 	}
+
 	function getToolName(){
 		return 'Marriages';
 	}
+
 	function getPageTitle(){
 		return 'Marriages';
 	}
+
 	function getAllObjects(){
 		$object = new Marriage();
 		$object->orderBy('marriageDate');
@@ -44,22 +44,28 @@ class Marriages extends ObjectEditor
 		}
 		return $objectList;
 	}
+
 	function getObjectStructure(){
 		return Marriage::getObjectStructure();
 	}
+
 	function getPrimaryKeyColumn(){
 		return array('personId', 'spouseName', 'date');
 	}
+
 	function getIdKeyColumn(){
 		return 'marriageId';
 	}
+
 	function getAllowableRoles(){
 		return array('genealogyContributor');
 	}
+
 	function getRedirectLocation($objectAction, $curObject){
 		global $configArray;
 		return $configArray['Site']['path'] . '/Person/' . $curObject->personId;
 	}
+
 	function showReturnToList(){
 		return false;
 	}

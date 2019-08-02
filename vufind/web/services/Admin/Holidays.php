@@ -18,23 +18,23 @@
  *
  */
 
-require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
-require_once 'XML/Unserializer.php';
 require_once ROOT_DIR . '/Drivers/marmot_inc/Holiday.php';
 
-class Holidays extends ObjectEditor
-{
-	
+class Holidays extends ObjectEditor {
+
 	function getObjectType(){
 		return 'Holiday';
 	}
+
 	function getToolName(){
 		return 'Holidays';
 	}
+
 	function getPageTitle(){
 		return 'Holidays';
 	}
+
 	function getAllObjects(){
 		$holiday = new Holiday();
 		$holiday->orderBy('date');
@@ -45,15 +45,19 @@ class Holidays extends ObjectEditor
 		}
 		return $list;
 	}
+
 	function getObjectStructure(){
 		return Holiday::getObjectStructure();
 	}
+
 	function getPrimaryKeyColumn(){
 		return 'id';
 	}
+
 	function getIdKeyColumn(){
 		return 'id';
 	}
+
 	function getAllowableRoles(){
 		return array('opacAdmin');
 	}

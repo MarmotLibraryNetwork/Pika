@@ -21,7 +21,6 @@
  *
  */
 
-require_once ROOT_DIR . '/Action.php';
 require_once(ROOT_DIR . '/services/Admin/Admin.php');
 require_once(ROOT_DIR . '/sys/MaterialsRequest.php');
 require_once(ROOT_DIR . '/sys/MaterialsRequestStatus.php');
@@ -184,10 +183,7 @@ class MaterialsRequest_SummaryReport extends Admin_Admin {
 			$this->generateGraph($periodData, $statuses);
 		}
 
-		$interface->setTemplate('summaryReport.tpl');
-		$interface->assign('sidebar', 'MyAccount/account-sidebar.tpl');
-		$interface->setPageTitle('Materials Request Summary Report');
-		$interface->display('layout.tpl');
+		$this->display('summaryReport.tpl','Materials Request Summary Report');
 	}
 
 	function exportToExcel($periodData, $statuses){

@@ -110,12 +110,8 @@ function mapValue($mapName, $value){
 		return $map[$value];
 	}elseif (isset($map[strtolower($value)])){
 		return $map[strtolower($value)];
-	}elseif(isset($map['*'])){
-		if ($map['*'] == 'nomap'){
-			return $value;
-		}else{
-			return $map['*'];
-		}
+	}elseif (isset($map['*'])){
+		return ($map['*'] == 'nomap') ?  $value : $map['*'];
 	}else{
 		return '';
 	}

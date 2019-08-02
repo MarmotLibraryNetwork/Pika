@@ -123,16 +123,4 @@ class Admin_IndexingProfiles extends ObjectEditor {
 		return $actions;
 	}
 
-	//TODO Add to ObjectEditor Class
-	function display($mainContentTemplate, $pageTitle, $sidebarTemplate = 'Search/home-sidebar.tpl'){
-		global $interface;
-		if (!empty($sidebarTemplate)){
-			$interface->assign('sidebar', $sidebarTemplate);
-		}
-		$interface->setTemplate($mainContentTemplate);
-		$interface->setPageTitle($pageTitle);
-		$interface->assign('moreDetailsTemplate', 'GroupedWork/moredetails-accordion.tpl');
-		$interface->display('layout.tpl');
-	}
-
 }

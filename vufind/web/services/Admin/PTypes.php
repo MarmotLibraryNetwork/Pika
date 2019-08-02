@@ -18,9 +18,7 @@
  *
  */
 
-require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
-require_once 'XML/Unserializer.php';
 require_once ROOT_DIR . '/Drivers/marmot_inc/PType.php';
 
 class PTypes extends ObjectEditor

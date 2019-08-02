@@ -77,13 +77,13 @@ class MyAccount_Login extends Action
                     '' : '&mode=' . urlencode($_REQUEST['mode']);
 				$interface->assign('recordId', 'delete=' .
 				urlencode($_REQUEST['delete']) . $mode);*/
-			} else if (isset($_REQUEST['save'])) {
+			} elseif (isset($_REQUEST['save'])) {
 				$interface->assign('returnUrl', $_SERVER['REQUEST_URI']);
 				/*$mode = !isset($_REQUEST['mode']) ?
                     '' : '&mode=' . urlencode($_REQUEST['mode']);
 				$interface->assign('recordId', 'save=' .
 				urlencode($_REQUEST['save']) . $mode);*/
-			} else if (isset($_REQUEST['recordId'])) {
+			} elseif (isset($_REQUEST['recordId'])) {
 				$interface->assign('returnUrl', $_REQUEST['recordId']);
 			}
 

@@ -266,7 +266,7 @@ class AACPLRecordProcessor extends IlsRecordProcessor {
 
 		itemInfo.setCollection(econtentSource);
 
-		itemInfo.seteContentProtectionType("external");
+		itemInfo.seteContentProtectionType("external"); //TODO: remove protection type
 		itemInfo.seteContentSource(econtentSource);
 		itemInfo.setDetailedStatus("Available Online");
 
@@ -284,6 +284,7 @@ class AACPLRecordProcessor extends IlsRecordProcessor {
 
 	@Override
 	protected void loadEContentFormatInformation(Record record, RecordInfo econtentRecord, ItemInfo econtentItem) {
+		//TODO: remove protection type (see MarmotRecordProcessor)
 		String protectionType = econtentItem.geteContentProtectionType();
 		switch (protectionType) {
 			case "external":

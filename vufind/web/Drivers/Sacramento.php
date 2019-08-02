@@ -287,7 +287,7 @@ class Sacramento extends Sierra
 				if ($pinSetSuccess) {
 					$interface->assign('pinSetSuccess', 'Your PIN has been set');
 				} else {
-					$interface->assign('pinSetFail', 'Your PIN was not set');
+					$interface->assign('pinSetFail', 'Your PIN was set. To confirm, please login with your temporary library card number and PIN. If you are unable to login with that information, please reset your PIN <a href="/MyAccount/EmailResetPin">here</a> and follow email instructions');
 				}
 			}
 		}

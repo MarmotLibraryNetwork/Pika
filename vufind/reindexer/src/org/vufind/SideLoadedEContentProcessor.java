@@ -94,7 +94,6 @@ class SideLoadedEContentProcessor extends IlsRecordProcessor{
 		itemInfo.setIsEContent(true);
 
 		loadDateAdded(identifier, itemInfo);
-		String itemLocation = profileType;
 		itemInfo.setLocationCode(profileType);
 		//No itypes for Side loaded econtent
 		//itemInfo.setITypeCode();

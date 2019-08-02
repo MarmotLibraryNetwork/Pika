@@ -92,10 +92,7 @@ class Report_StudentBarcodes extends Admin_Admin {
 			exit;
 		}
 
-		$interface->setPageTitle('Student Barcodes');
-		$interface->assign('sidebar', 'MyAccount/account-sidebar.tpl');
-		$interface->setTemplate('studentBarcodes.tpl');
-		$interface->display('layout.tpl');
+		$this->display('studentBarcodes.tpl', 'Student Barcodes');
 	}
 
 	function getAllowableRoles(){

@@ -8,7 +8,6 @@
  * Based on PHPInfo.php
  */
 
-require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/Admin.php';
 
 class Admin_MemCacheInfo extends Admin_Admin {
@@ -21,10 +20,7 @@ class Admin_MemCacheInfo extends Admin_Admin {
 		$interface->assign("info", $info->output);
 		$interface->assign('title', 'MemCache Information');
 
-		$interface->assign('sidebar', 'MyAccount/account-sidebar.tpl');
-		$interface->setTemplate('adminInfo.tpl');
-		$interface->setPageTitle('MemCache Information');
-		$interface->display('layout.tpl');
+		$this->display('adminInfo.tpl', 'MemCache Information');
 	}
 
 	function getAllowableRoles() {

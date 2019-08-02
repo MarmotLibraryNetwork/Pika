@@ -48,6 +48,10 @@
 		{else}
 			<div class="related-manifestation-shelf-status availableOther">{translate text='Available from another library'}</div>
 		{/if}
+	{elseif $statusInformation.isAvailableToOrder}
+		<div class="related-manifestation-shelf-status isAvailableToOrder">
+				{if $statusInformation.groupedStatus}{$statusInformation.groupedStatus}{else}Withdrawn/Unavailable{/if}
+		</div>
 	{else}
 		<div class="related-manifestation-shelf-status checked_out">
 			{if $statusInformation.groupedStatus}{$statusInformation.groupedStatus}{else}Withdrawn/Unavailable{/if}
