@@ -41,6 +41,7 @@
 namespace Pika\PatronDrivers;
 
 use Curl\Curl;
+//use Pika\Logger;
 use Location;
 use MarcRecord;
 use RecordDriverFactory;
@@ -76,12 +77,14 @@ class Sierra extends PatronDriverInterface {
 		$this->configArray    = $configArray;
 		$this->memCache       = $memCache;
 		$this->accountProfile = $accountProfile;
-		//$this->logger         = $logger;
+		//$this->logger = new \Pika\Logger('SierraPatronAPI');
+		//$this->logger->info("Logger is now ready");
 		// build the api url
 		// JIC strip any trailing slash and spaces.
 		$apiUrl = trim($accountProfile->patronApiUrl,'/ ');
 		$apiUrl = $apiUrl . '/iii/sierra-api/v'.$configArray['Catalog']['api_version'] . '/';
 		$this->apiUrl = $apiUrl;
+
 
 		// grab an oAuthToken
 		if(!isset($this->oAuthToken)) {
@@ -657,8 +660,6 @@ class Sierra extends PatronDriverInterface {
 	 * @return array|bool
 	 */
 	public function getMyHolds($patron){
-		// need status code & = Prospetor requested
-
 		if(!$patronId = $this->getPatronId($patron)) {
 			// TODO: need to do something here
 			return false;
@@ -666,6 +667,7 @@ class Sierra extends PatronDriverInterface {
 
 		$patronHoldsCacheKey = "patron_".$patron->barcode."_holds";
 		if($patronHolds = $this->memCache->get($patronHoldsCacheKey)) {
+			//$this->logger->info("Found holds in memcache.");
 			return $patronHolds;
 		}
 
@@ -805,10 +807,12 @@ class Sierra extends PatronDriverInterface {
 				if(!$titleAndAuthor) {
 					break;
 				}
-				$h['title']     = $titleAndAuthor['title'];
-				$h['author']    = $titleAndAuthor['author'];
-				$h['sortTitle'] = $titleAndAuthor['sort_title'];
-				$h['coverUrl']  = false;
+				$h['title']              = $titleAndAuthor['title'];
+				$h['author']             = $titleAndAuthor['author'];
+				$h['sortTitle']          = $titleAndAuthor['sort_title'];
+				$h['coverUrl']           = '/interface/themes/marmot/images/InnReachCover.png';
+				$h['freezeable']         = false;
+				$h['locationUpdateable'] = false;
 			} else {
 				///////////////
 				// ILS HOLD
@@ -826,7 +830,6 @@ class Sierra extends PatronDriverInterface {
 
 				// get more info from record
 				$bibId = '.b'.$id.$recordXD;
-
 				$recordDriver = new MarcRecord($this->accountProfile->recordSource . ":" . $bibId);
 				if ($recordDriver->isValid()){
 					$h['id']              = $recordDriver->getUniqueID();
@@ -1244,10 +1247,13 @@ class Sierra extends PatronDriverInterface {
 	 */
 	private function _oAuthToken() {
 		// check memcache for valid token and set $this
+		//$this->logger->info('Checking for oAuth token in memcache');
 		if ($token = $this->memCache->get("sierra_oauth_token")) {
+			//$this->logger->info('Found oAuth token in memcache');
 			$this->oAuthToken = $token;
 			return TRUE;
 		}
+		//$this->logger->info('No oAuth token in memcache. Requesting new toke.');
 		// setup url
 		$url = $this->apiUrl."token";
 		// grab clientKey and clientSecret from configArray
@@ -1288,12 +1294,14 @@ class Sierra extends PatronDriverInterface {
 		// we don't want to use $c->error because it will report HTTP errors.
 		if ($c->isCurlError()) {
 			// This will probably never be triggered since we have the try/catch above.
-			$message = $c->errorCode.': '.$c->errorMessage;
+			$message = 'cUrl Error: '.$c->errorCode.': '.$c->errorMessage;
 			$this->apiLastError = $message;
+			//$this->logger->info($message);
 			return false;
 		} elseif ($cInfo['http_code'] != 200) { // check the request returned success (HTTP 200)
-			$message = 'API Error '.$c->response->code.': '.$c->response->name;
+			$message = 'API Error: '.$c->response->code.': '.$c->response->name;
 			$this->apiLastError = $message;
+			//$this->logger->info($message);
 			return false;
 		}
 		// make sure to set last error to false if no errors.
@@ -1304,6 +1312,7 @@ class Sierra extends PatronDriverInterface {
 		$c->close();
 		$this->oAuthToken = $token;
 		$this->memCache->set("sierra_oauth_token", $token, 0, $expires);
+		//$this->logger->info('Got new oAuth token.');
 		return TRUE;
 	}
 
