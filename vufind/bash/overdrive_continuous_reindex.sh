@@ -5,7 +5,6 @@ OUTPUT_FILE="/var/log/vufind-plus/${PIKASERVER}/overdrive_continuous_reindex_out
 source "/usr/local/vufind-plus/vufind/bash/checkConflicts.sh"
 source "/usr/local/vufind-plus/vufind/bash/continuousFunctions.sh"
 
-
 while true
 do
 	#####
