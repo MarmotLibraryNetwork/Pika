@@ -2608,7 +2608,7 @@ class GroupedWorkDriver extends RecordInterface {
 
 	private static $statusRankings = array(
 		'Currently Unavailable' => 1,
-		'Available to Order'    => 1.5,
+		'Available to Order'    => 1.6,
 		'On Order'              => 2,
 		'Coming Soon'           => 3,
 		'In Processing'         => 3.5,
@@ -3027,7 +3027,8 @@ class GroupedWorkDriver extends RecordInterface {
 			if ($bookable){
 				$relatedRecord['bookable'] = true;
 			}
-			$relatedRecord['groupedStatus'] = GroupedWorkDriver::keepBestGroupedStatus($relatedRecord['groupedStatus'], $groupedStatus);
+			$relatedRecord['groupedStatus']      = GroupedWorkDriver::keepBestGroupedStatus($relatedRecord['groupedStatus'], $groupedStatus);
+			$relatedRecord['isAvailableToOrder'] = $relatedRecord['groupedStatus'] == 'Available to Order';
 
 			$volume   = null;
 			$volumeId = null;
@@ -3112,7 +3113,7 @@ class GroupedWorkDriver extends RecordInterface {
 				'allLibraryUseOnly'  => $inLibraryUseOnly,
 				'displayByDefault'   => $displayByDefault,
 				'onOrderCopies'      => $isOrderItem ? $numCopies : 0,
-				'isAvailableToOrder' => $groupedStatus == 'Available to Order', // special status for patron-driven acquisitions; The item is available for the patron to request it be Ordered.
+//				'isAvailableToOrder' => $groupedStatus == 'Available to Order', // special status for patron-driven acquisitions; The item is available for the patron to request it be Ordered.
 				'status'             => $groupedStatus,
 				'statusFull'         => $status,
 				'available'          => $available,
