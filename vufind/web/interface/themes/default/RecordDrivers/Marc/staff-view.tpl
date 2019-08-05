@@ -12,27 +12,27 @@
 				<a href="{$path}/GroupedWork/{$recordDriver->getPermanentId()}" class="btn btn-sm btn-default">Go To Grouped
 					Work</a>
 				<button onclick="return VuFind.Record.reloadCover('{$recordDriver->getModule()}', '{$id}')"
-				        class="btn btn-sm btn-default">Reload Cover
+								class="btn btn-sm btn-default">Reload Cover
 				</button>
 				<button onclick="return VuFind.GroupedWork.reloadEnrichment('{$recordDriver->getPermanentId()}')"
-				        class="btn btn-sm btn-default">Reload Enrichment
+								class="btn btn-sm btn-default">Reload Enrichment
 				</button>
-          {if $staffClientUrl}
+					{if $staffClientUrl}
 						<a href="{$staffClientUrl}" class="btn btn-sm btn-info">View in Staff Client</a>
-          {/if}
+					{/if}
 			</div>
 		</div>
 	</div>
-    {if $loggedIn}
-        {if $userIsStaff}
+		{if $loggedIn}
+				{if $userIsStaff}
 					<div class="row">
 						<div class="col-xs-12">
 							<div class="btn-group" role="group" aria-label="...">
-                  {if $classicUrl}
+									{if $classicUrl}
 										<a href="{$classicUrl}" class="btn btn-sm btn-info">View in Classic</a>
-                  {/if}
+									{/if}
 								<a href="{$path}/{$recordDriver->getModule()}/{$id|escape:"url"}/AJAX?method=downloadMarc"
-								   class="btn btn-sm btn-default">{translate text="Download Marc"}</a>
+									 class="btn btn-sm btn-default">{translate text="Download Marc"}</a>
 							</div>
 						</div>
 					</div>
@@ -40,31 +40,31 @@
 					<div class="col-xs-12">
 					<div class="btn-group" role="group" aria-label="...">
 					<button onclick="return VuFind.GroupedWork.forceReindex('{$recordDriver->getPermanentId()}')"
-					        class="btn btn-sm btn-default">Force Reindex
+									class="btn btn-sm btn-default">Force Reindex
 					</button>
 					<button onclick="return VuFind.GroupedWork.forceRegrouping('{$recordDriver->getPermanentId()}')"
-					        class="btn btn-sm btn-default">Force Regrouping
+									class="btn btn-sm btn-default">Force Regrouping
 					</button>
-            {if $ils == 'Sierra'}
+						{if $ils == 'Sierra'}
 							<button onclick="return VuFind.Record.forceReExtract('{$recordDriver->getModule()}', '{$id|escape}')"
-							        class="btn btn-sm btn-default">Force Extract from {$ils}</button>
-            {/if}
-        {/if}
+											class="btn btn-sm btn-default">Force Extract from {$ils}</button>
+						{/if}
+				{/if}
 			</div>
 			</div>
 			</div>
-        {if $enableArchive && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('archives', $userRoles))}
+				{if $enableArchive && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('archives', $userRoles))}
 					<div class="row">
 						<div class="col-xs-12">
 							<div class="btn-group" role="group" aria-label="...">
 								<button onclick="return VuFind.GroupedWork.reloadIslandora('{$recordDriver->getPermanentId()}')"
-								        class="btn btn-sm btn-default">Clear Islandora Cache
+												class="btn btn-sm btn-default">Clear Islandora Cache
 								</button>
 							</div>
 						</div>
 					</div>
-        {/if}
-    {/if}
+				{/if}
+		{/if}
 
 	{* QR Code *}
 	{if $showQRCode}
@@ -74,18 +74,19 @@
 
 {if $marcRecord}
 	<table class="table-striped table table-condensed notranslate">
-      {if isset($lastRecordExtractTime)}
+			{if isset($lastRecordExtractTime)}
 				<tr>
 					<th>Last {$ils} Extract Time</th>
-					<td>{$lastRecordExtractTime|date_format:"%b %d, %Y %r"}</td>
+					<td>{if $lastRecordExtractTime == 'null'}Marked for Re-extraction{else}{$lastRecordExtractTime|date_format:"%b %d, %Y %r"}{/if}</td>
+					{* $lastRecordExtractTime variable is set to string 'null' to signal that is marked for re-extraction *}
 				</tr>
-      {/if}
-      {if $recordExtractMarkedDeleted}
+			{/if}
+			{if $recordExtractMarkedDeleted}
 				<tr>
 					<th>{$ils} Extract Marked Deleted Date</th>
 					<td>{$recordExtractMarkedDeleted|date_format:"%b %d, %Y"}</td>
 				</tr>
-      {/if}
+			{/if}
 		<tr>
 			<th>Last File Modification Time</th>
 			<td>{$lastMarcModificationTime|date_format:"%b %d, %Y %r"}</td>

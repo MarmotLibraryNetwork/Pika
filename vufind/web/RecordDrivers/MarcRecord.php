@@ -322,7 +322,7 @@ class MarcRecord extends IndexRecord
 			$extractInfo->indexingProfileId = $this->sourceAndId->getIndexingProfile()->id;
 			$extractInfo->ilsId             = $this->sourceAndId->getRecordId();
 			if ($extractInfo->find(true)){
-				$interface->assign('lastRecordExtractTime', $extractInfo->lastExtracted);
+				$interface->assign('lastRecordExtractTime', is_null($extractInfo->lastExtracted) ? 'null' : $extractInfo->lastExtracted);
 				$interface->assign('recordExtractMarkedDeleted', $extractInfo->deleted);
 			}
 		}
@@ -2242,7 +2242,7 @@ class MarcRecord extends IndexRecord
 			// Include MarcTag and subfields with a colon to separate for easylook up: example '945:i:r'
 			// of form ItemTagNumber:ItemIdSubfield:OpacMessageSubfield
 			list($itemTag, $itemIdSubfield, $opacMessageSubfield) = explode(':', $opacMessageField, 3);
-			if ($this->getMarcRecord()){
+			if ($this->getMarcRecord() && $this->isValid()){
 				$itemRecords = $this->marcRecord->getFields($itemTag);
 				foreach ($itemRecords as $itemRecord){
 					/** @var File_MARC_Subfield $subfield */
