@@ -1725,6 +1725,7 @@ class GroupedWorkDriver extends RecordInterface {
 // For Reference
 //			static $statusRankings = array(
 //				'currently unavailable' => 1,
+//			  'available to order'    => 1.6,
 //				'on order'              => 2,
 //				'coming soon'           => 3,
 //				'in processing'         => 3.5,
@@ -1734,18 +1735,19 @@ class GroupedWorkDriver extends RecordInterface {
 //				'in transit'           => 6.5,
 //				'on shelf'              => 7
 //			);
-			if (isset($curRecord['groupedStatus']) && $curRecord['groupedStatus'] != ''){
-				$groupedStatus = $relatedManifestations[$curRecord['format']]['groupedStatus'];
+			if (!empty($curRecord['groupedStatus'])){
+				$manifestationCurrentGroupedStatus = $relatedManifestations[$curRecord['format']]['groupedStatus'];
 
 				//Check to see if we have a better status here
 				if (array_key_exists(strtolower($curRecord['groupedStatus']), $statusRankings)){
-					if ($groupedStatus == ''){
-						$groupedStatus = $curRecord['groupedStatus'];
-						//Check to see if we are getting a better status
-					}elseif ($statusRankings[strtolower($curRecord['groupedStatus'])] > $statusRankings[strtolower($groupedStatus)]){
-						$groupedStatus = $curRecord['groupedStatus'];
+					if (empty($manifestationCurrentGroupedStatus)){
+						$manifestationCurrentGroupedStatus = $curRecord['groupedStatus']; // Use the first one we find if we haven't set a grouped status yet
+					}elseif ($statusRankings[strtolower($curRecord['groupedStatus'])] > $statusRankings[strtolower($manifestationCurrentGroupedStatus)]){
+						$manifestationCurrentGroupedStatus = $curRecord['groupedStatus']; // Update to the better ranked status if we find a better ranked one
 					}
-					$relatedManifestations[$curRecord['format']]['groupedStatus'] = $groupedStatus;
+					//Update the manifestation's grouped status elements
+					$relatedManifestations[$curRecord['format']]['groupedStatus']      = $manifestationCurrentGroupedStatus;
+					$relatedManifestations[$curRecord['format']]['isAvailableToOrder'] = $manifestationCurrentGroupedStatus == 'Available to Order';
 				}
 			}
 		}
