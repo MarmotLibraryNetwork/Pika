@@ -21,21 +21,16 @@ public class IndexingProfile {
 	Long id;
 
 	String name;
-//	String marcEncoding;
+	//String marcEncoding;
 	private String  individualMarcPath;
 	public  String  marcPath;
 	private int     numCharsToCreateFolderFrom;
 	private boolean createFolderFromLeadingCharacters;
 
 	//Used in record grouping
-	String recordNumberTag;
-	char   recordNumberField;
-	String recordNumberPrefix;
-
-	public char getMaterialTypeSubField() {
-		return materialTypeSubField;
-	}
-
+	String           recordNumberTag;
+	char             recordNumberField;
+	String           recordNumberPrefix;
 	String           itemTag;
 	char             itemRecordNumberSubfield;
 	char             barcodeSubfield;
@@ -67,7 +62,7 @@ public class IndexingProfile {
 
 	String sierraBibLevelFieldTag;
 	char   bcode3Subfield;
-	char   materialTypeSubField;
+	char materialTypeSubField;
 
 	//These are used from Record Grouping and Reindexing
 	boolean doAutomaticEcontentSuppression;
@@ -77,6 +72,7 @@ public class IndexingProfile {
 	char   eContentDescriptor;
 	String specifiedFormatCategory;
 
+	// Sierra API Field Mapping
 	String APIItemCallNumberFieldTag;
 	String APIItemCallNumberPrestampSubfield;
 	String APIItemCallNumberSubfield;
@@ -182,6 +178,10 @@ public class IndexingProfile {
 		this.bcode3Subfield = getCharFromString(bcode3Subfield);
 	}
 
+	public void setMaterialTypeSubField(String subfield) {
+		this.materialTypeSubField = getCharFromString(subfield);
+	}
+
 	static IndexingProfile loadIndexingProfile(Connection pikaConn, String profileToLoad, Logger logger) {
 		//Get the Indexing Profile from the database
 		IndexingProfile indexingProfile = new IndexingProfile();
@@ -200,7 +200,6 @@ public class IndexingProfile {
 					indexingProfile.lastCheckinFormatter              = new SimpleDateFormat(indexingProfile.lastCheckinFormat);
 					indexingProfile.individualMarcPath                = indexingProfileRS.getString("individualMarcPath");
 					indexingProfile.marcPath                          = indexingProfileRS.getString("marcPath");
-//					indexingProfile.marcEncoding                      = indexingProfileRS.getString("marcEncoding");
 					indexingProfile.name                              = indexingProfileRS.getString("name");
 					indexingProfile.numCharsToCreateFolderFrom        = indexingProfileRS.getInt("numCharsToCreateFolderFrom");
 					indexingProfile.createFolderFromLeadingCharacters = indexingProfileRS.getBoolean("createFolderFromLeadingCharacters");
@@ -209,6 +208,8 @@ public class IndexingProfile {
 					indexingProfile.recordNumberPrefix                = indexingProfileRS.getString("recordNumberPrefix");
 					indexingProfile.formatSource                      = indexingProfileRS.getString("formatSource");
 					indexingProfile.specifiedFormatCategory           = indexingProfileRS.getString("specifiedFormatCategory");
+					indexingProfile.sierraBibLevelFieldTag            = indexingProfileRS.getString("sierraRecordFixedFieldsTag");
+//					indexingProfile.marcEncoding                      = indexingProfileRS.getString("marcEncoding");
 
 					indexingProfile.setEContentDescriptor(indexingProfileRS.getString("eContentDescriptor"));
 					indexingProfile.setRecordNumberField(indexingProfileRS.getString("recordNumberField"));
@@ -216,6 +217,7 @@ public class IndexingProfile {
 					indexingProfile.setItemRecordNumberSubfield(indexingProfileRS.getString("itemRecordNumber"));
 					indexingProfile.setBarcodeSubfield(indexingProfileRS.getString("barcode"));
 					indexingProfile.setLocationSubfield(indexingProfileRS.getString("location"));
+					indexingProfile.setShelvingLocationSubfield(indexingProfileRS.getString("shelvingLocation"));
 					indexingProfile.setCallNumberPrestampSubfield(indexingProfileRS.getString("callNumberPrestamp"));
 					indexingProfile.setCallNumberSubfield(indexingProfileRS.getString("callNumber"));
 					indexingProfile.setCallNumberCutterSubfield(indexingProfileRS.getString("callNumberCutter"));
@@ -232,17 +234,14 @@ public class IndexingProfile {
 					indexingProfile.setICode2Subfield(indexingProfileRS.getString("iCode2"));
 					indexingProfile.setVolume(indexingProfileRS.getString("volume"));
 					indexingProfile.setItemUrl(indexingProfileRS.getString("itemUrl"));
-					indexingProfile.sierraBibLevelFieldTag = indexingProfileRS.getString("sierraRecordFixedFieldsTag");
 					indexingProfile.setBcode3Subfield(indexingProfileRS.getString("bCode3"));
-
-
-					indexingProfile.setShelvingLocationSubfield(indexingProfileRS.getString("shelvingLocation"));
+					indexingProfile.setMaterialTypeSubField(indexingProfileRS.getString("materialTypeField"));
 
 
 					// Sierra API Item Field Mapping
 					try (
-						PreparedStatement getSierraFieldMappingsStmt = pikaConn.prepareStatement("SELECT * FROM sierra_export_field_mapping where indexingProfileId =" + indexingProfile.id);
-						ResultSet getSierraFieldMappingsRS = getSierraFieldMappingsStmt.executeQuery()
+							PreparedStatement getSierraFieldMappingsStmt = pikaConn.prepareStatement("SELECT * FROM sierra_export_field_mapping where indexingProfileId =" + indexingProfile.id);
+							ResultSet getSierraFieldMappingsRS = getSierraFieldMappingsStmt.executeQuery()
 					) {
 						if (getSierraFieldMappingsRS.next()) {
 							indexingProfile.APIItemCallNumberFieldTag         = getSierraFieldMappingsRS.getString("callNumberExportFieldTag");
