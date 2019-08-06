@@ -62,7 +62,7 @@ class GroupedWork extends DB_DataObject {
 	}
 
 	public function forceReindex(){
-		$this->date_updated = null;
+		$this->date_updated = "null";  // DB Object has special processing to set an column value to null (note: the vufind.ini value is important in this)
 		$numRows            = $this->update();
 		return $numRows == 1;
 	}
