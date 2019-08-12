@@ -268,7 +268,7 @@ class AACPLRecordProcessor extends IlsRecordProcessor {
 		itemInfo.setDetailedStatus("Available Online");
 
 		//Get the url if any
-		loadEContentUrl(record, itemInfo);
+		loadEContentUrl(record, itemInfo, identifier);
 
 		relatedRecord = groupedWork.addRelatedRecord("external_econtent", identifier);
 		relatedRecord.setSubSource(profileType);

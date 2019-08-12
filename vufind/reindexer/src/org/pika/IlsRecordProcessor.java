@@ -305,10 +305,6 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 	private Record loadMarcRecordFromDisk(String identifier) {
 		Record record = null;
-		String shortId = identifier.replace(".", "");
-		while (shortId.length() < 9){
-			shortId = "0" + shortId;
-		}
 		String individualFilename = getFileForIlsRecord(identifier);
 		try {
 			byte[] fileContents = Util.readFileBytes(individualFilename);
@@ -720,24 +716,9 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			//Item-level 856 (Gets exported into the itemUrlSubfield)
 			itemInfo.seteContentUrl(urlSubfield.getData().trim());
 		} else {
-			//Check the 856 tag to see if there is a link there
-			List<DataField> urlFields = MarcUtil.getDataFields(record, "856");
-			for (DataField urlField : urlFields) {
-				//load url into the item
-				if (urlField.getSubfield('u') != null) {
-					//Try to determine if this is a resource or not.
-					if (urlField.getIndicator1() == '4' || urlField.getIndicator1() == ' ' || urlField.getIndicator1() == '0' || urlField.getIndicator1() == '7') {
-						if (urlField.getIndicator2() != '2') {
-							itemInfo.seteContentUrl(urlField.getSubfield('u').getData().trim());
-							break;
-						}
-					}
-
-				}
-			}
+			loadEContentUrl(record, itemInfo, identifier);
 
 		}
-
 		itemInfo.setDetailedStatus("Available Online");
 
 		return relatedRecord;
