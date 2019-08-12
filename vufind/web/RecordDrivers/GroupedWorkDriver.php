@@ -884,7 +884,7 @@ class GroupedWorkDriver extends RecordInterface {
 			$groupedWorkDetails['Grouping Title']       = $groupedWork->full_title;
 			$groupedWorkDetails['Grouping Author']      = $groupedWork->author;
 			$groupedWorkDetails['Grouping Category']    = $groupedWork->grouping_category;
-			$groupedWorkDetails['Last Grouping Update'] = date('Y-m-d H:i:sA', $groupedWork->date_updated);
+			$groupedWorkDetails['Last Grouping Update'] = empty($groupedWork->date_updated) ? 'Marked for re-index' : date('Y-m-d H:i:sA', $groupedWork->date_updated);
 			if (array_key_exists('last_indexed', $fields)){
 				$groupedWorkDetails['Last Indexed'] = date('Y-m-d H:i:sA', strtotime($fields['last_indexed']));
 			}
