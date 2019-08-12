@@ -12,6 +12,7 @@ namespace Pika;
 use \Monolog\Logger as MonoLogger;
 use \Monolog\Handler\StreamHandler;
 use \Monolog\Handler\PHPConsoleHandler;
+use \Monolog\ErrorHandler;
 
 class Logger extends MonoLogger {
 

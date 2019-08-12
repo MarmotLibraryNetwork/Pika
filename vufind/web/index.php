@@ -794,14 +794,19 @@ function getGitBranch(){
 // Pika drivers autoloader PSR-4 style
 function pika_autoloader($class) {
     $sourcePath = __DIR__ . DIRECTORY_SEPARATOR . 'sys' . DIRECTORY_SEPARATOR;
-    $filePath   = str_replace('\\', DIRECTORY_SEPARATOR, $class);
-    $fullPath   = $sourcePath.$filePath.'.php';
 
-    if(file_exists($fullPath)) {
-        include_once($fullPath);
+    $filePath       = str_replace('\\', DIRECTORY_SEPARATOR, $class);
+    $pathParts      = explode("\\", $class);
+    $directoryIndex = count($pathParts) - 1;
+    $directory      = $pathParts[$directoryIndex];
+    $fullFilePath   = $sourcePath.$filePath.'.php';
+		$fullFolderPath = $sourcePath.$filePath.DIRECTORY_SEPARATOR.$directory.'.php';
+    if(file_exists($fullFilePath)) {
+    	include_once($fullFilePath);
+    } elseif (file_exists($fullFolderPath)) {
+	    include_once($fullFolderPath);
     }
 
-    //include 'sys/' . $class . '.php';
 }
 
 // Set up autoloader (needed for YAML)
@@ -830,7 +835,11 @@ function vufind_autoloader($class) {
 	           $className = ROOT_DIR . '/services/' . $class . '.php';
 			require_once $className;
 		}else{
-			require_once $nameSpaceClass;
+			try {
+				include_once $nameSpaceClass;
+			} catch (Exception $e) {
+				PEAR_Singleton::raiseError("Error loading class $class");
+			}
 		}
 	}catch (Exception $e){
 		PEAR_Singleton::raiseError("Error loading class $class");
