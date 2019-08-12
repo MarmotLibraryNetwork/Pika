@@ -41,7 +41,8 @@
 namespace Pika\PatronDrivers;
 
 use Curl\Curl;
-//use Pika\Logger;
+use \Pika\Logger;
+use \Pika\Cache;
 use Location;
 use MarcRecord;
 use RecordDriverFactory;
@@ -74,14 +75,17 @@ class Sierra extends PatronDriverInterface {
 	public function __construct($accountProfile) {
 		// Adding standard globals to class to avoid repeated calling of global.
 		global $configArray;
-		global $memCache;
+		//global $memCache;
 
 		$this->configArray    = $configArray;
-		$this->memCache       = $memCache;
+		//$this->memCache       = $memCache;
 		$this->accountProfile = $accountProfile;
 		// TODO: Experimental logger.
-		//$this->logger = new \Pika\Logger('SierraPatronAPI');
-		//$this->logger->info("Logger is now ready");
+		$this->logger = new Logger('SierraPatronAPI');
+		$this->logger->info("Logger is now ready");
+		// TODO: Cache
+		$cache = initCache();
+		$this->memCache = new Cache($cache);
 		// build the api url
 		// JIC strip any trailing slash and spaces.
 		$apiUrl = trim($accountProfile->patronApiUrl,'/ ');
@@ -110,7 +114,7 @@ class Sierra extends PatronDriverInterface {
 
 		$patronCheckoutsCacheKey = "patron_".$patron->barcode."_checkouts";
 		if($patronCheckouts = $this->memCache->get($patronCheckoutsCacheKey)) {
-			//$this->logger->info("Found holds in memcache:".$patronCheckoutsCacheKey);
+			$this->logger->info("Found holds in memcache:".$patronCheckoutsCacheKey);
 			return $patronCheckouts;
 		}
 
@@ -124,7 +128,7 @@ class Sierra extends PatronDriverInterface {
 		$r = $this->_doRequest($operation,$params);
 
 		if (!$r) {
-			//$this->logger->info($this->apiLastError);
+			$this->logger->info($this->apiLastError);
 			return false;
 		}
 
@@ -211,8 +215,8 @@ class Sierra extends PatronDriverInterface {
 			unset($checkout);
 		}
 
-		$this->memCache->set($patronCheckoutsCacheKey, $checkouts, 0, $this->configArray['Caching']['patron_profile']);
-		//$this->logger->info("Saving checkouts in memcache:".$patronCheckoutsCacheKey);
+		$this->memCache->set($patronCheckoutsCacheKey, $checkouts, $this->configArray['Caching']['patron_profile']);
+		$this->logger->info("Saving checkouts in memcache:".$patronCheckoutsCacheKey);
 
 		return $checkouts;
 
@@ -231,7 +235,7 @@ class Sierra extends PatronDriverInterface {
 	public function renewItem($patron, $bibId, $checkoutId, $itemIndex = NULL){
 		// unset cache
 		$patronCheckoutsCacheKey = "patron_".$patron->barcode."_checkouts";
-		//$this->logger->info("Removing checkouts from memcache:".$patronCheckoutsCacheKey);
+		$this->logger->info("Removing checkouts from memcache:".$patronCheckoutsCacheKey);
 		$this->memCache->delete($patronCheckoutsCacheKey);
 
 		$operation = 'patrons/checkouts/'.$checkoutId.'/renewal';
@@ -277,6 +281,7 @@ class Sierra extends PatronDriverInterface {
 	 * @access  public
 	 */
 	public function patronLogin($username, $password, $validatedViaSSO = FALSE){
+		$this->logger->info("patronLogin called from ".debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]['class']);
 		// get the login configuration barcode_pin or name_barcode
 		// TODO: Need to pull login from session, db, memcache, etc, so login isn't called repeatably on each request.
 		$loginMethod = $this->accountProfile->loginConfiguration;
@@ -322,7 +327,7 @@ class Sierra extends PatronDriverInterface {
 
 		$patronObjectCacheKey = 'patron_'.$this->patronBarcode.'_patron';
 		if ($pObj = $this->memCache->get($patronObjectCacheKey)) {
-			//$this->logger->info("Found patron in memcache:".$patronObjectCacheKey);
+			$this->logger->info("Found patron in memcache:".$patronObjectCacheKey);
 			return $pObj;
 		}
 
@@ -541,8 +546,8 @@ class Sierra extends PatronDriverInterface {
 		} elseif ($updatePatron && !$createPatron) {
 			$patron->update();
 		}
-		//$this->logger->info("Saving patron to memcache:".$patronObjectCacheKey);
-		$e = $this->memCache->set($patronObjectCacheKey, $patron, MEMCACHE_COMPRESSED, $this->configArray['Caching']['patron_profile']);
+		$this->logger->info("Saving patron to memcache:".$patronObjectCacheKey);
+		$this->memCache->set($patronObjectCacheKey, $patron, $this->configArray['Caching']['patron_profile']);
 		return $patron;
 	}
 
@@ -582,7 +587,7 @@ class Sierra extends PatronDriverInterface {
 			return false;
 		}
 
-		$this->memCache->set($patronIdCacheKey, $r->id, 0, $this->configArray['Caching']['koha_patron_id']);
+		$this->memCache->set($patronIdCacheKey, $r->id, $this->configArray['Caching']['koha_patron_id']);
 
 		$this->patronId = $r->id;
 
@@ -693,7 +698,7 @@ class Sierra extends PatronDriverInterface {
 				'details' => $details
 			];
 		}
-		$this->memCache->set($patronFinesCacheKey, $r, 0, $this->configArray['Caching']['patron_profile']);
+		$this->memCache->set($patronFinesCacheKey, $r, $this->configArray['Caching']['patron_profile']);
 		return $r;
 	}
 
@@ -709,7 +714,7 @@ class Sierra extends PatronDriverInterface {
 
 		$patronHoldsCacheKey = "patron_".$patron->barcode."_holds";
 		if($patronHolds = $this->memCache->get($patronHoldsCacheKey)) {
-			//$this->logger->info("Found holds in memcache:".$patronHoldsCacheKey);
+			$this->logger->info("Found holds in memcache:".$patronHoldsCacheKey);
 			return $patronHolds;
 		}
 
@@ -901,8 +906,8 @@ class Sierra extends PatronDriverInterface {
 		$return['available']   = $availableHolds;
 		$return['unavailable'] = $unavailableHolds;
 
-		$this->memCache->set($patronHoldsCacheKey, $return, 0, $this->configArray['Caching']['patron_profile']);
-		//$this->logger->info("Saving holds in memcache:".$patronHoldsCacheKey);
+		$this->memCache->set($patronHoldsCacheKey, $return, $this->configArray['Caching']['patron_profile']);
+		$this->logger->info("Saving holds in memcache:".$patronHoldsCacheKey);
 
 		return $return;
 	}
@@ -932,12 +937,12 @@ class Sierra extends PatronDriverInterface {
 
 		// delete memcache holds
 		$patronHoldsCacheKey = "patron_".$patron->barcode."_holds";
-		//$this->logger->info("Removing holds from memcache:".$patronHoldsCacheKey);
+		$this->logger->info("Removing holds from memcache:".$patronHoldsCacheKey);
 		$this->memCache->delete($patronHoldsCacheKey);
 
 		// because the patron object has holds information we need to clear that cache too.
 		$patronObjectCacheKey = 'patron_'.$patron->barcode.'_patron';
-		//$this->logger->info("Removing patron from memcache:".$patronObjectCacheKey);
+		$this->logger->info("Removing patron from memcache:".$patronObjectCacheKey);
 		$this->memCache->delete($patronObjectCacheKey);
 
 		// get title of record
@@ -1076,9 +1081,10 @@ class Sierra extends PatronDriverInterface {
 	/**
 	 * PUT patrons/holds/{holdId}
 	 *
-	 * @param      $patron
-	 * @param      $holdToFreezeId
-	 * @param null $dateToReactivate
+	 * @param  User   $patron
+	 * @param  string $bibId
+	 * @param  string $holdId
+	 * @param  null   $dateToReactivate
 	 * @return array An array with success and message
 	 */
 	public function freezeHold($patron, $bibId, $holdId, $dateToReactivate = null){
@@ -1087,7 +1093,7 @@ class Sierra extends PatronDriverInterface {
 
 		// delete holds cache
 		$patronHoldsCacheKey = "patron_".$patron->barcode."_holds";
-		//$this->logger->info("Removing holds from memcache:".$patronHoldsCacheKey);
+		$this->logger->info("Removing holds from memcache:".$patronHoldsCacheKey);
 		$this->memCache->delete($patronHoldsCacheKey);
 
 		$r = $this->_doRequest($operation,$params, "PUT");
@@ -1112,13 +1118,21 @@ class Sierra extends PatronDriverInterface {
 		return $return;
 	}
 
+	/**
+	 * Thaw a frozen hold
+	 * PUT patrons/holds/{holdId}
+	 * @param  User   $patron
+	 * @param  string $bibId
+	 * @param  string $holdId
+	 * @return array
+	 */
 	public function thawHold($patron, $bibId, $holdId){
 		$operation = "patrons/holds/".$holdId;
 		$params = ["freeze"=>false];
 
 		// delete holds cache
 		$patronHoldsCacheKey = "patron_".$patron->barcode."_holds";
-		//$this->logger->info("Removing holds from memcache:".$patronHoldsCacheKey);
+		$this->logger->info("Removing holds from memcache:".$patronHoldsCacheKey);
 		$this->memCache->delete($patronHoldsCacheKey);
 
 		$r = $this->_doRequest($operation,$params, "PUT");
@@ -1146,8 +1160,14 @@ class Sierra extends PatronDriverInterface {
 		// TODO: Implement hasNativeReadingHistory() method.
 	}
 
+	public function getReadingHistory($patron, $page = 1, $recordsPerPage = -1, $sortOption = "checkedOut")
+	{
+		return [];
+	}
+
 	public function loadReadingHistoryFromIls($patron, $loadAdditional = null){
 		// TODO: Implement loadReadingHistoryFromIls() method.
+		return [];
 	}
 
 
@@ -1275,13 +1295,13 @@ class Sierra extends PatronDriverInterface {
 	 */
 	private function _oAuthToken() {
 		// check memcache for valid token and set $this
-		//$this->logger->info('Checking for oAuth token in memcache');
+		$this->logger->info('Checking for oAuth token in memcache');
 		if ($token = $this->memCache->get("sierra_oauth_token")) {
-			//$this->logger->info('Found oAuth token in memcache');
+			$this->logger->info('Found oAuth token in memcache');
 			$this->oAuthToken = $token;
 			return TRUE;
 		}
-		//$this->logger->info('No oAuth token in memcache. Requesting new toke.');
+		$this->logger->info('No oAuth token in memcache. Requesting new toke.');
 		// setup url
 		$url = $this->apiUrl."token";
 		// grab clientKey and clientSecret from configArray
@@ -1324,12 +1344,12 @@ class Sierra extends PatronDriverInterface {
 			// This will probably never be triggered since we have the try/catch above.
 			$message = 'cUrl Error: '.$c->errorCode.': '.$c->errorMessage;
 			$this->apiLastError = $message;
-			//$this->logger->info($message);
+			$this->logger->info($message);
 			return false;
 		} elseif ($cInfo['http_code'] != 200) { // check the request returned success (HTTP 200)
 			$message = 'API Error: '.$c->response->code.': '.$c->response->name;
 			$this->apiLastError = $message;
-			//$this->logger->info($message);
+			$this->logger->info($message);
 			return false;
 		}
 		// make sure to set last error to false if no errors.
@@ -1339,8 +1359,8 @@ class Sierra extends PatronDriverInterface {
 		$expires = $c->response->expires_in;
 		$c->close();
 		$this->oAuthToken = $token;
-		$this->memCache->set("sierra_oauth_token", $token, 0, $expires);
-		//$this->logger->info('Got new oAuth token.');
+		$this->memCache->set("sierra_oauth_token", $token, $expires);
+		$this->logger->info('Got new oAuth token.');
 		return TRUE;
 	}
 
