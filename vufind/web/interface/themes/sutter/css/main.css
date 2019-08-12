@@ -11089,9 +11089,9 @@ fieldset[disabled] .btn-masquerade.active {
 .container > div:nth-child(1).breadcrumbs {
   background-color: #fff;
 }
-div#more-details-accordion.panel-group .panel a.collapsed {
+div#more-details-accordion.panel-group .panel a .panel-title {
   color: #fff;
-  text-shadow: 1px 1px #555;
+  text-shadow: none;
 }
 #headingInfo:before {
   content: '';
