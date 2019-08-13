@@ -1548,13 +1548,17 @@ public class SierraExportAPIMain {
 				logger.error("Could not create directories for " + marcFile.getAbsolutePath());
 			}
 		}
-		try {
-			MarcWriter marcWriter = new MarcStreamWriter(new FileOutputStream(marcFile), true);
+
+		try (FileOutputStream outputStream = new FileOutputStream(marcFile)) {
+			MarcWriter marcWriter = new MarcStreamWriter(outputStream, "UTF8", true);
 			marcWriter.write(marcRecord);
 			marcWriter.close();
+
 			updateLastExtractTimeForRecord(identifier);
 		} catch (FileNotFoundException e) {
 			logger.warn("File not found exception ", e);
+		} catch (IOException e) {
+			logger.warn("IO exception ", e);
 		}
 	}
 
