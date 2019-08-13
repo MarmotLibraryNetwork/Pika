@@ -24,7 +24,7 @@ require_once ROOT_DIR . '/sys/Solr.php';
 
 class AnodeAPI extends AJAXHandler {
 
-	protected $methodsThatRepondWithJSONResultWrapper = array(
+	protected $methodsThatRespondWithJSONResultWrapper = array(
 		'getAnodeListGroupedWorks',
 		'getAnodeRelatedGroupedWorks',
 		'getAnodeGroupedWorks',

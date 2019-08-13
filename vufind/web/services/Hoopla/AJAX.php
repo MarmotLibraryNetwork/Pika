@@ -16,7 +16,7 @@ class Hoopla_AJAX extends AJAXHandler {
 
 	use MARC_AJAX_Basic;
 
-	protected $methodsThatRepondWithJSONUnstructured = array(
+	protected $methodsThatRespondWithJSONUnstructured = array(
 		'reloadCover',
 		'getHooplaCheckOutPrompt',
 		'checkOutHooplaTitle',

@@ -22,7 +22,7 @@ require_once ROOT_DIR . '/AJAXHandler.php';
 
 class Admin_AJAX extends AJAXHandler {
 
-	protected $methodsThatRepondWithJSONUnstructured = array(
+	protected $methodsThatRespondWithJSONUnstructured = array(
 		'getReindexNotes',
 		'getReindexProcessNotes',
 		'getCronNotes',

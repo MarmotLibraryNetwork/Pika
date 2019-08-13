@@ -31,7 +31,7 @@ class AJAX extends AJAXHandler {
 		'getDplaResults',
 	);
 
-	protected $methodsThatRepondWithJSONUnstructured = array(
+	protected $methodsThatRespondWithJSONUnstructured = array(
 		'getMoreSearchResults',
 		'GetListTitles',
 		'loadExploreMoreBar',

@@ -26,7 +26,7 @@ require_once ROOT_DIR . '/sys/Utils/Pagination.php';
 
 class ListAPI extends AJAXHandler {
 
-	protected $methodsThatRepondWithJSONResultWrapper = array(
+	protected $methodsThatRespondWithJSONResultWrapper = array(
 		'getAllListIds',
 		'getPublicLists',
 		'getUserLists',

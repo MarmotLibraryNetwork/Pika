@@ -27,7 +27,7 @@ class Browse_AJAX extends AJAXHandler {
 	/** @var SearchObject_Solr|SearchObject_Base $searchObject */
 	private $searchObject;
 
-	protected $methodsThatRepondWithJSONUnstructured = array(
+	protected $methodsThatRespondWithJSONUnstructured = array(
 		'getAddBrowseCategoryForm',
 		'createBrowseCategory',
 		'getMoreBrowseResults',

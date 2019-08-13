@@ -12,7 +12,7 @@ require_once ROOT_DIR . '/AJAXHandler.php';
 
 class WorkAPI extends AJAXHandler {
 
-	protected $methodsThatRepondWithJSONResultWrapper = array(
+	protected $methodsThatRespondWithJSONResultWrapper = array(
 		'getRatingData',
 		'getIsbnsForWork',
 		'generateWorkId',

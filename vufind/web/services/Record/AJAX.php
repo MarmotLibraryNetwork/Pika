@@ -25,7 +25,7 @@ class Record_AJAX extends AJAXHandler {
 
 	use MARC_AJAX_Basic;
 
-	protected $methodsThatRepondWithJSONUnstructured = array(
+	protected $methodsThatRespondWithJSONUnstructured = array(
 		'getPlaceHoldForm',
 		'getPlaceHoldEditionsForm',
 		'getBookMaterialForm',

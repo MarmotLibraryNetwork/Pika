@@ -11,7 +11,7 @@ require_once ROOT_DIR . '/AJAXHandler.php';
 
 class MyAccount_AJAX extends AJAXHandler {
 
-	protected $methodsThatRepondWithJSONUnstructured = array(
+	protected $methodsThatRespondWithJSONUnstructured = array(
 		'GetSuggestions', // not checked
 		'GetListTitles', // only used by MyAccount/ImportListsFromClassic.php && ajax.js //not checked
 		'getOverDriveSummary', //called by getOverDriveSummary() is scripts.js // not checked
