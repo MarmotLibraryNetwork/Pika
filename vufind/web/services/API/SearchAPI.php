@@ -36,7 +36,7 @@ class SearchAPI extends AJAXHandler {
 		'search',
 	);
 
-	protected $methodsThatRepondWithJSONUnstructured = array(
+	protected $methodsThatRespondWithJSONUnstructured = array(
 		'getIndexStatus',
 	);
 

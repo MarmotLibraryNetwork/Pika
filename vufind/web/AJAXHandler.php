@@ -17,8 +17,8 @@ abstract class AJAXHandler extends Action {
 	 * The array that an AJAX call method is a part of determines how the output is handled.
 	 */
 
-	protected $methodsThatRepondWithJSONUnstructured  = array();
-	protected $methodsThatRepondWithJSONResultWrapper = array();
+	protected $methodsThatRespondWithJSONUnstructured  = array();
+	protected $methodsThatRespondWithJSONResultWrapper = array();
 	protected $methodsThatRespondWithXML              = array();
 	protected $methodsThatRespondWithHTML             = array();
 	protected $methodsThatRespondThemselves           = array();
@@ -30,11 +30,11 @@ abstract class AJAXHandler extends Action {
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
 
 		if (!empty($method) && method_exists($this, $method)){
-			if (in_array($method, $this->methodsThatRepondWithJSONUnstructured)){
+			if (in_array($method, $this->methodsThatRespondWithJSONUnstructured)){
 				$result = $this->$method();
 				$this->sendHTTPHeaders('application/json');
 				echo $this->jsonUTF8EncodeResponse($result);
-			}elseif (in_array($method, $this->methodsThatRepondWithJSONResultWrapper)){
+			}elseif (in_array($method, $this->methodsThatRespondWithJSONResultWrapper)){
 				$result = array('result' => $this->$method());
 				$this->sendHTTPHeaders('application/json');
 				echo $this->jsonUTF8EncodeResponse($result);

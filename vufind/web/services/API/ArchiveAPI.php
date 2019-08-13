@@ -10,7 +10,7 @@ require_once ROOT_DIR . '/AJAXHandler.php';
 
 class API_ArchiveAPI extends AJAXHandler {
 
-	protected $methodsThatRepondWithJSONResultWrapper = array(
+	protected $methodsThatRespondWithJSONResultWrapper = array(
 		'getDPLAFeed',
 		'getDPLACounts',
 	);

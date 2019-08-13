@@ -70,12 +70,12 @@ class ItemAPI extends AJAXHandler {
 	/** @var  Solr $db */
 	public $db;
 
-	protected $methodsThatRepondWithJSONUnstructured = array(
+	protected $methodsThatRespondWithJSONUnstructured = array(
 		'getDescriptionByRecordId',
 		'getDescriptionByTitleAndAuthor',
 	);
 
-	protected $methodsThatRepondWithJSONResultWrapper = array(
+	protected $methodsThatRespondWithJSONResultWrapper = array(
 		'getItem',
 		'getBasicItemInfo',
 		'getItemAvailability',
