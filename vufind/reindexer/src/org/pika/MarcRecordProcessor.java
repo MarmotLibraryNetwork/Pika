@@ -890,20 +890,35 @@ abstract class MarcRecordProcessor {
 		}
 	}
 
-	void loadEContentUrl(Record record, ItemInfo itemInfo) {
+	void loadEContentUrl(Record record, ItemInfo itemInfo, String identifier) {
 		List<DataField> urlFields = MarcUtil.getDataFields(record, "856");
-		for (DataField urlField : urlFields){
+		for (DataField urlField : urlFields) {
 			//load url into the item
-			if (urlField.getSubfield('u') != null){
+			if (urlField.getSubfield('u') != null) {
 				//Try to determine if this is a resource or not.
-				if (urlField.getIndicator1() == '4' || urlField.getIndicator1() == ' ' || urlField.getIndicator1() == '0'){
-					if (urlField.getIndicator2() == ' ' || urlField.getIndicator2() == '0' || urlField.getIndicator2() == '1' || urlField.getIndicator2() == '4') {
-						itemInfo.seteContentUrl(urlField.getSubfield('u').getData().trim());
-						break;
+				if (urlField.getIndicator1() == '4' || urlField.getIndicator1() == ' ' || urlField.getIndicator1() == '0' || urlField.getIndicator1() == '7') {
+					if (urlField.getIndicator2() != '2') {
+						// Avoid Cover Image Links
+						// (some image links do not have a 2nd indicator of 2)
+						// (a subfield 3 or z will often contain the text 'Image' or 'Cover Image' if the link is for an image)
+						String subFieldZ = "";
+						String subField3 = "";
+						if (urlField.getSubfield('z') != null) {
+							subFieldZ = urlField.getSubfield('z').getData().toLowerCase();
+						}
+						if (urlField.getSubfield('3') != null) {
+							subField3 = urlField.getSubfield('3').getData().toLowerCase();
+						}
+						if (!subFieldZ.contains("image") && !subField3.contains("image")) {
+							itemInfo.seteContentUrl(urlField.getSubfield('u').getData().trim());
+							return;
+						}
 					}
 				}
-
 			}
+		}
+		if (itemInfo.geteContentUrl() == null) {
+			logger.warn("Item for " + identifier + "  had no eContent URL set");
 		}
 	}
 

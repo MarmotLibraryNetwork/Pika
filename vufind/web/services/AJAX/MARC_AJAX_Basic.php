@@ -28,16 +28,18 @@ trait MARC_AJAX_Basic {
 	}
 
 	function downloadMarc(){
-		$id       = $_REQUEST['id'];
-		$marcData = MarcLoader::loadMarcRecordByILSId($id);
+		require_once ROOT_DIR . '/services/SourceAndId.php';
+		require_once ROOT_DIR . '/RecordDrivers/MarcRecord.php';
+		$sourceAndId      = new SourceAndId($_REQUEST['id']);
+		$marcData         = MarcLoader::loadMarcRecordByILSId($sourceAndId);
+		$downloadFileName = urlencode($sourceAndId);
 		header('Content-Description: File Transfer');
 		header('Content-Type: application/octet-stream');
-		header("Content-Disposition: attachment; filename={$id}.mrc");
+		header("Content-Disposition: attachment; filename*={$downloadFileName}.mrc");
 		header('Content-Transfer-Encoding: binary');
 		header('Expires: 0');
 		header('Cache-Control: must-revalidate');
 		header('Pragma: public');
-
 		header('Content-Length: ' . strlen($marcData->toRaw()));
 		ob_clean();
 		flush();
@@ -45,9 +47,10 @@ trait MARC_AJAX_Basic {
 	}
 
 	function reloadCover(){
+		require_once ROOT_DIR . '/services/SourceAndId.php';
 		require_once ROOT_DIR . '/RecordDrivers/MarcRecord.php';
-		$id           = $_REQUEST['id'];
-		$recordDriver = new MarcRecord($id);
+		$sourceAndId  = new SourceAndId($_REQUEST['id']);
+		$recordDriver = RecordDriverFactory::initRecordDriverById($sourceAndId);
 
 		//Reload small cover
 		$smallCoverUrl = str_replace('&amp;', '&', $recordDriver->getBookcoverUrl('small')) . '&reload';

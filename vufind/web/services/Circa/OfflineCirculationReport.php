@@ -92,11 +92,7 @@ class Circa_OfflineCirculationReport extends Admin_Admin{
 		$interface->assign('totalFailed', $totalFailed);
 		$interface->assign('totalNotProcessed', $totalNotProcessed);
 
-		$interface->setPageTitle('Offline Circulation Report');
-		$interface->assign('sidebar', 'MyAccount/account-sidebar.tpl');
-		$interface->assign('offlineCirculation', $offlineCirculationEntries);
-		$interface->setTemplate('offlineCirculationReport.tpl');
-		$interface->display('layout.tpl');
+		$this->display('offlineCirculationReport.tpl', 'Offline Circulation Report');
 	}
 
 	function getAllowableRoles() {

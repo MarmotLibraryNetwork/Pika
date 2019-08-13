@@ -25,7 +25,7 @@ import java.util.regex.Pattern;
  */
 abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	protected boolean fullReindex;
-	private String individualMarcPath;
+	private   String  individualMarcPath;
 	String marcPath;
 	String profileType;
 
@@ -34,35 +34,35 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	String formatSource;
 	String specifiedFormat;
 	String specifiedFormatCategory;
+	int    specifiedFormatBoost;
 	String formatDeterminationMethod = "bib";
 	String matTypesToIgnore          = "";
-	int    specifiedFormatBoost;
 	char   formatSubfield;
 	char   barcodeSubfield;
 	char   statusSubfieldIndicator;
 	private Pattern nonHoldableStatuses;
-	char shelvingLocationSubfield;
-	char collectionSubfield;
-	char dueDateSubfield;
+	char             shelvingLocationSubfield;
+	char             collectionSubfield;
+	char             dueDateSubfield;
 	SimpleDateFormat dueDateFormatter;
-	private char lastCheckInSubfield;
+	private char   lastCheckInSubfield;
 	private String lastCheckInFormat;
-	private char dateCreatedSubfield;
+	private char   dateCreatedSubfield;
 	private String dateAddedFormat;
 	char locationSubfieldIndicator;
 	private Pattern nonHoldableLocations;
-	Pattern statusesToSuppressPattern = null;
-	Pattern locationsToSuppressPattern = null;
+	Pattern statusesToSuppressPattern    = null;
+	Pattern locationsToSuppressPattern   = null;
 	Pattern collectionsToSuppressPattern = null;
-	Pattern iTypesToSuppressPattern = null;
-	Pattern iCode2sToSuppressPattern = null;
-	Pattern bCode3sToSuppressPattern = null;
-	char subLocationSubfield;
-	char iTypeSubfield;
+	Pattern iTypesToSuppressPattern      = null;
+	Pattern iCode2sToSuppressPattern     = null;
+	Pattern bCode3sToSuppressPattern     = null;
+	char    subLocationSubfield;
+	char    iTypeSubfield;
 	private Pattern nonHoldableITypes;
-	boolean useEContentSubfield = false;
-	char eContentSubfieldIndicator;
+	boolean useEContentSubfield            = false;
 	boolean doAutomaticEcontentSuppression = false;
+	char    eContentSubfieldIndicator;
 	private char lastYearCheckoutSubfield;
 	private char ytdCheckoutSubfield;
 	private char totalCheckoutSubfield;
@@ -72,11 +72,11 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	String  materialTypeSubField;
 	char    bCode3Subfield;
 	private boolean useItemBasedCallNumbers;
-	private char callNumberPrestampSubfield;
-	private char callNumberSubfield;
-	private char callNumberCutterSubfield;
-	private char callNumberPoststampSubfield;
-	private char volumeSubfield;
+	private char    callNumberPrestampSubfield;
+	private char    callNumberSubfield;
+	private char    callNumberCutterSubfield;
+	private char    callNumberPoststampSubfield;
+	private char    volumeSubfield;
 	char itemRecordNumberSubfieldIndicator;
 	private char itemUrlSubfieldIndicator;
 	boolean suppressItemlessBibs;
@@ -305,10 +305,6 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 	private Record loadMarcRecordFromDisk(String identifier) {
 		Record record = null;
-		String shortId = identifier.replace(".", "");
-		while (shortId.length() < 9){
-			shortId = "0" + shortId;
-		}
 		String individualFilename = getFileForIlsRecord(identifier);
 		try {
 			byte[] fileContents = Util.readFileBytes(individualFilename);
@@ -670,109 +666,59 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		}
 	}
 
-	RecordInfo getEContentIlsRecord(GroupedWorkSolr groupedWork, Record record, String identifier, DataField itemField){
-		RecordInfo relatedRecord = null;
-		ItemInfo   itemInfo      = new ItemInfo();
-		itemInfo.setIsEContent(true);
+	RecordInfo getEContentIlsRecord(GroupedWorkSolr groupedWork, Record record, String identifier, DataField itemField) {
+		String   itemLocation    = getItemSubfieldData(locationSubfieldIndicator, itemField);
+		String   itemSublocation = getItemSubfieldData(subLocationSubfield, itemField);
+		String   iTypeValue      = getItemSubfieldData(iTypeSubfield, itemField);
+		ItemInfo itemInfo        = new ItemInfo();
 
 		loadDateAdded(identifier, itemField, itemInfo);
-		String itemLocation = getItemSubfieldData(locationSubfieldIndicator, itemField);
+		itemInfo.setIsEContent(true);
 		itemInfo.setLocationCode(itemLocation);
-		String itemSublocation = getItemSubfieldData(subLocationSubfield, itemField);
-		if (itemSublocation == null){
-			itemSublocation = "";
-		}
-		if (itemSublocation.length() > 0){
+		if (itemSublocation != null && itemSublocation.length() > 0) {
 			itemInfo.setSubLocation(translateValue("sub_location", itemSublocation, identifier));
 		}
-		String iTypeValue = getItemSubfieldData(iTypeSubfield, itemField);
 		itemInfo.setITypeCode(iTypeValue);
 		itemInfo.setIType(translateValue("itype", getItemSubfieldData(iTypeSubfield, itemField), identifier));
 		loadItemCallNumber(record, itemField, itemInfo);
 		itemInfo.setItemIdentifier(getItemSubfieldData(itemRecordNumberSubfieldIndicator, itemField));
 		itemInfo.setShelfLocation(getShelfLocationForItem(itemInfo, itemField, identifier));
-
 		itemInfo.setCollection(translateValue("collection", getItemSubfieldData(collectionSubfield, itemField), identifier));
 
 		Subfield eContentSubfield = itemField.getSubfield(eContentSubfieldIndicator);
-		if (eContentSubfield != null){
+		if (eContentSubfield != null) {
 			String eContentData = eContentSubfield.getData().trim();
 			if (eContentData.indexOf(':') > 0) {
 				String[] eContentFields = eContentData.split(":");
 				//First element is the source, and we will always have at least the source and protection type
+				// The ':' was once used to separate additional pieces of data.  Those pieces aren't needed anymore
 				itemInfo.seteContentSource(eContentFields[0].trim());
-				itemInfo.seteContentProtectionType(eContentFields[1].trim().toLowerCase());
-
-				//Remaining fields have variable definitions based on content that has been loaded over the past year or so
-				if (eContentFields.length >= 4){
-					//If the 4th field is numeric, it is the number of copies that can be checked out.
-					if (Util.isNumeric(eContentFields[3].trim())){
-						//ilsEContentItem.setNumberOfCopies(eContentFields[3].trim());
-						if (eContentFields.length >= 5){
-							itemInfo.seteContentFilename(eContentFields[4].trim());
-						}else{
-							logger.warn("Filename for local econtent not specified " + eContentData + " " + identifier);
-						}
-					}else{
-						//Field 4 is the filename
-						itemInfo.seteContentFilename(eContentFields[3].trim());
-					}
-				}
+			} else if (!eContentData.isEmpty()) {
+				itemInfo.seteContentSource(eContentData);
+			} else {
+				itemInfo.seteContentSource(getILSeContentSourceType(record, itemField));
 			}
-		}else{
+		} else {
 			//This is for a "less advanced" catalog, set some basic info
-			itemInfo.seteContentProtectionType("external");
+//			itemInfo.seteContentProtectionType("external");
 			itemInfo.seteContentSource(getILSeContentSourceType(record, itemField));
 		}
 
-		//Set record type
-		String protectionType = itemInfo.geteContentProtectionType();
-		switch (protectionType) {
-			case "external":
-				relatedRecord = groupedWork.addRelatedRecord("external_econtent", identifier);
-				relatedRecord.setSubSource(profileType);
-				relatedRecord.addItem(itemInfo);
-				break;
-			case "acs":
-			case "drm":
-			case "public domain":
-			case "free":
-				//Remove restricted (ACS) eContent from Pika #PK-1199
-				//Remove free public domain, but stored locally eContent from Pika #PK-1199
-				//relatedRecord = groupedWork.addRelatedRecord("public_domain_econtent", identifier);
-				//relatedRecord.setSubSource(profileType);
-				//relatedRecord.addItem(itemInfo);
-				return null;
-			default:
-				logger.warn("Unknown protection type " + protectionType + " found in record " + identifier);
-				break;
-		}
+		RecordInfo relatedRecord = groupedWork.addRelatedRecord("external_econtent", identifier);
+		relatedRecord.setSubSource(profileType);
+		relatedRecord.addItem(itemInfo);
 
 		loadEContentFormatInformation(record, relatedRecord, itemInfo);
 
 		//Get the url if any
 		Subfield urlSubfield = itemField.getSubfield(itemUrlSubfieldIndicator);
-		if (urlSubfield != null){
+		if (urlSubfield != null) {
+			//Item-level 856 (Gets exported into the itemUrlSubfield)
 			itemInfo.seteContentUrl(urlSubfield.getData().trim());
-		}else if (protectionType.equals("external")){
-			//Check the 856 tag to see if there is a link there
-			List<DataField> urlFields = MarcUtil.getDataFields(record, "856");
-			for (DataField urlField : urlFields){
-				//load url into the item
-				if (urlField.getSubfield('u') != null){
-					//Try to determine if this is a resource or not.
-					if (urlField.getIndicator1() == '4' || urlField.getIndicator1() == ' ' || urlField.getIndicator1() == '0' || urlField.getIndicator1() == '7'){
-						if (urlField.getIndicator2() == ' ' || urlField.getIndicator2() == '0' || urlField.getIndicator2() == '1' || urlField.getIndicator2() == '8') {
-							itemInfo.seteContentUrl(urlField.getSubfield('u').getData().trim());
-							break;
-						}
-					}
-
-				}
-			}
+		} else {
+			loadEContentUrl(record, itemInfo, identifier);
 
 		}
-
 		itemInfo.setDetailedStatus("Available Online");
 
 		return relatedRecord;
@@ -841,7 +787,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			itemInfo.setIType(translateValue("itype", getItemSubfieldData(iTypeSubfield, itemField), recordInfo.getRecordIdentifier()));
 		}
 
-		double itemPopularity = getItemPopularity(itemField);
+		double itemPopularity = getItemPopularity(itemField, recordInfo.getRecordIdentifier());
 		groupedWork.addPopularity(itemPopularity);
 
 		loadItemCallNumber(record, itemField, itemInfo);
@@ -1056,14 +1002,14 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		}
 	}
 
-	protected double getItemPopularity(DataField itemField) {
+	protected double getItemPopularity(DataField itemField, String identifier) {
 		String totalCheckoutsField = getItemSubfieldData(totalCheckoutSubfield, itemField);
 		int totalCheckouts = 0;
 		if (totalCheckoutsField != null){
 			try{
 				totalCheckouts = Integer.parseInt(totalCheckoutsField);
 			}catch (NumberFormatException e){
-				logger.warn("Did not get a number for total checkouts. Got " + totalCheckoutsField);
+				logger.warn("Did not get a number for total checkouts. Got " + totalCheckoutsField + " for " + identifier);
 			}
 
 		}
@@ -1412,20 +1358,26 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	/**
 	 * Determine Record Format(s)
 	 */
-	public void loadPrintFormatInformation(RecordInfo recordInfo, Record record){
+	public void loadPrintFormatInformation(RecordInfo recordInfo, Record record) {
 		//We should already have formats based on the items
-		if (formatSource.equals("item") && formatSubfield != ' ' && recordInfo.hasItemFormats()){
+		if (formatSource.equals("item") && formatSubfield != ' ' && recordInfo.hasItemFormats()) {
 			return;
 		}
 
-		if (formatSource.equals("specified")){
-			HashSet<String> translatedFormats = new HashSet<>();
-			translatedFormats.add(specifiedFormat);
-			HashSet<String> translatedFormatCategories = new HashSet<>();
-			translatedFormatCategories.add(specifiedFormatCategory);
-			recordInfo.addFormats(translatedFormats);
-			recordInfo.addFormatCategories(translatedFormatCategories);
-			recordInfo.setFormatBoost(specifiedFormatBoost);
+		if (formatSource.equals("specified")) {
+			if (!specifiedFormat.isEmpty()) {
+				HashSet<String> translatedFormats = new HashSet<>();
+				translatedFormats.add(specifiedFormat);
+				HashSet<String> translatedFormatCategories = new HashSet<>();
+				translatedFormatCategories.add(specifiedFormatCategory);
+				recordInfo.addFormats(translatedFormats);
+				recordInfo.addFormatCategories(translatedFormatCategories);
+				recordInfo.setFormatBoost(specifiedFormatBoost);
+			} else {
+				logger.error("Specified Format is not set in indexing profile. Can not use specified format for format determination. Fall back to bib format determination.");
+				loadPrintFormatFromBib(recordInfo, record);
+
+			}
 		} else {
 			if (formatDeterminationMethod.equalsIgnoreCase("matType")) {
 				loadPrintFormatFromMatType(recordInfo, record);
@@ -1459,7 +1411,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 					formatBoost = tmpFormatBoostLong;
 				}
 			} catch (NumberFormatException e) {
-				logger.warn("Could not load format boost for format " + tmpFormatBoost + " profile " + profileType);
+				logger.warn("Could not load format boost for format " + tmpFormatBoost + " profile " + profileType + " for " + recordInfo.getRecordIdentifier(), e);
 			}
 		}
 		recordInfo.setFormatBoost(formatBoost);
@@ -1489,7 +1441,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 								recordInfo.setFormatBoost(tmpFormatBoostLong);
 								return;
 							} catch (NumberFormatException e) {
-								logger.warn("Could not load format boost for format " + formatBoost + " profile " + profileType + "; Falling back to default format determination process");
+								logger.warn("Could not load format boost for format " + formatBoost + " profile " + profileType + " for " + recordInfo.getRecordIdentifier() + "; Falling back to default format determination process");
 							}
 						} else {
 							logger.info("Material Type " + matType + " had no translation, falling back to default format determination.");

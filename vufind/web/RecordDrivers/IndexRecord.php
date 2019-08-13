@@ -594,8 +594,7 @@ class IndexRecord extends RecordInterface
 			'id'       => $id,
 			'size'     => $size,
 			'category' => $formatCategory,
-		'format'   => $format,
-
+			'format'   => $format,
 		);
 		$isbn       = $this->getCleanISBN();
 		if ($isbn){
@@ -1041,19 +1040,20 @@ class IndexRecord extends RecordInterface
 	}
 
 	static $groupedWorks = array();
+
 	/**
 	 * Load the grouped work that this record is connected to.
 	 */
-	public function loadGroupedWork() {
+	public function loadGroupedWork(){
 		if ($this->groupedWork == null){
 			global $timer;
 			require_once ROOT_DIR . '/sys/Grouping/GroupedWorkPrimaryIdentifier.php';
 			require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
-			$groupedWorkPrimaryIdentifier = new GroupedWorkPrimaryIdentifier();
-			$groupedWorkPrimaryIdentifier->type = $this->getRecordType();
+			$groupedWorkPrimaryIdentifier             = new GroupedWorkPrimaryIdentifier();
+			$groupedWorkPrimaryIdentifier->type       = $this->getRecordType();
 			$groupedWorkPrimaryIdentifier->identifier = $this->getUniqueID();
 			if ($groupedWorkPrimaryIdentifier->find(true)){
-				$groupedWork = new GroupedWork();
+				$groupedWork     = new GroupedWork();
 				$groupedWork->id = $groupedWorkPrimaryIdentifier->grouped_work_id;
 				if ($groupedWork->find(true)){
 					$this->groupedWork = clone $groupedWork;

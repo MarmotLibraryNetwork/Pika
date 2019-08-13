@@ -79,21 +79,20 @@ class Admin_TranslationMaps extends ObjectEditor {
 
 			//Show the results
 			$_REQUEST['objectAction'] = 'edit';
-		}else{
-			if ($objectAction == 'viewAsINI'){
-				$id                 = $_REQUEST['id'];
-				$translationMap     = new TranslationMap();
-				$translationMap->id = $id;
-				if ($translationMap->find(true)){
-					$interface->assign('id', $id);
-					$interface->assign('additionalObjectActions', $this->getAdditionalObjectActions($translationMap));
-					$interface->assign('translationMapValues', $translationMap->translationMapValues);
-					$this->display('../Admin/viewTranslationMapAsIni.tpl', 'View Translation Map Data');
-					exit();
-				}else{
-					$interface->assign('error', "Sorry we could not find a translation map with that id");
-				}
+		}elseif ($objectAction == 'viewAsINI'){
+			$id                 = $_REQUEST['id'];
+			$translationMap     = new TranslationMap();
+			$translationMap->id = $id;
+			if ($translationMap->find(true)){
+				$interface->assign('id', $id);
+				$interface->assign('additionalObjectActions', $this->getAdditionalObjectActions($translationMap));
+				$interface->assign('translationMapValues', $translationMap->translationMapValues);
+				$this->display('../Admin/viewTranslationMapAsIni.tpl', 'View Translation Map Data');
+				exit();
+			}else{
+				$interface->assign('error', "Sorry we could not find a translation map with that id");
 			}
+
 		}
 		parent::launch();
 	}
@@ -163,18 +162,6 @@ class Admin_TranslationMaps extends ObjectEditor {
 		}
 
 		return $actions;
-	}
-
-	//TODO Add to ObjectEditor Class
-	function display($mainContentTemplate, $pageTitle, $sidebarTemplate = 'Search/home-sidebar.tpl'){
-		global $interface;
-		if (!empty($sidebarTemplate)){
-			$interface->assign('sidebar', $sidebarTemplate);
-		}
-		$interface->setTemplate($mainContentTemplate);
-		$interface->setPageTitle($pageTitle);
-		$interface->assign('moreDetailsTemplate', 'GroupedWork/moredetails-accordion.tpl');
-		$interface->display('layout.tpl');
 	}
 
 }

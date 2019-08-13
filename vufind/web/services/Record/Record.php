@@ -24,10 +24,12 @@ require_once ROOT_DIR  . '/sys/Language.php';
 
 require_once ROOT_DIR  . '/RecordDrivers/Factory.php';
 
+require_once ROOT_DIR . '/services/SourceAndId.php';
+
 abstract class Record_Record extends Action
 {
-	public $source;
-	public $id;
+	/** @var SourceAndId $sourceAndId */
+	public $sourceAndId;
 
 	/** @var MarcRecord|HooplaRecordDriver $recordDriver */
 	protected $recordDriver;
@@ -52,22 +54,11 @@ abstract class Record_Record extends Action
 //		$interface->assign('page_body_style', 'sidebar_left');
 
 		//Load basic information needed in subclasses
-		if ($record_id == null || !isset($record_id)){
-			$this->id = $_GET['id'];
-		}else{
-			$this->id = $record_id;
-		}
-		if (strpos($this->id, ':')){
-			list($source, $id) = explode(":", $this->id);
-			$this->source = $source;
-			$this->id     = $id;
-		}else{
-			$this->source = 'ils';
-		}
-		$interface->assign('id', $this->id);
+		$this->sourceAndId = new SourceAndId(empty($record_id) ? $_GET['id'] : $record_id);
+		$interface->assign('id', $this->sourceAndId->getRecordId());
 
 		//Check to see if the record exists within the resources table
-		$this->recordDriver = RecordDriverFactory::initRecordDriverById($this->source . ':' . $this->id);
+		$this->recordDriver = RecordDriverFactory::initRecordDriverById($this->sourceAndId);
 		if (is_null($this->recordDriver) || !$this->recordDriver->isValid()){  // initRecordDriverById itself does a validity check and returns null if not.
 			$this->displayInvalidRecord();
 		}
@@ -94,15 +85,14 @@ abstract class Record_Record extends Action
 		//Do actions needed if this is the main action.
 
 		//$interface->caching = 1;
-		$interface->assign('id', $this->id);
-		if (substr($this->id, 0, 1) == '.'){
-			$interface->assign('shortId', substr($this->id, 1));
+		if (substr($this->sourceAndId->getRecordId(), 0, 1) == '.'){
+			$interface->assign('shortId', substr($this->sourceAndId->getRecordId(), 1));
 		}else{
-			$interface->assign('shortId', $this->id);
+			$interface->assign('shortId', $this->sourceAndId->getRecordId());
 		}
 
 		//TODO: This RDF link doesn't seem to work
-		$interface->assign('addHeader', '<link rel="alternate" type="application/rdf+xml" title="RDF Representation" href="' . $configArray['Site']['path'] . '/Record/' . urlencode($this->id) . '/RDF" />');
+		$interface->assign('addHeader', '<link rel="alternate" type="application/rdf+xml" title="RDF Representation" href="' . $configArray['Site']['path']  . '/Record/' . urlencode($this->sourceAndId->getRecordId()) . '/RDF" />');
 
 		// Retrieve User Search History
 		$interface->assign('lastsearch', isset($_SESSION['lastSearchURL']) ? $_SESSION['lastSearchURL'] : false);
@@ -141,12 +131,13 @@ abstract class Record_Record extends Action
 	 * that Pika is replacing.
 	 */
 	protected function setClassicViewLinks(){
-		if ($this->source == 'ils'){
+		if ($this->sourceAndId->getSource() == 'ils'){
 			global $configArray;
 			global $interface;
 
+			$recordId = $this->sourceAndId->getRecordId();
 			if ($configArray['Catalog']['ils'] == 'Millennium' || $configArray['Catalog']['ils'] == 'Sierra'){
-				$classicId = substr($this->id, 1, strlen($this->id) - 2);
+				$classicId = substr($recordId, 1, strlen($recordId) - 2);
 				$interface->assign('classicId', $classicId);
 				$millenniumScope = $interface->getVariable('millenniumScope');
 				if (isset($configArray['Catalog']['linking_url'])){
@@ -154,11 +145,11 @@ abstract class Record_Record extends Action
 				}
 
 			}elseif ($configArray['Catalog']['ils'] == 'Koha'){
-				$interface->assign('classicId', $this->id);
-				$interface->assign('classicUrl', $configArray['Catalog']['url'] . '/cgi-bin/koha/opac-detail.pl?biblionumber=' . $this->id);
-				$interface->assign('staffClientUrl', $configArray['Catalog']['staffClientUrl'] . '/cgi-bin/koha/catalogue/detail.pl?biblionumber=' . $this->id);
+				$interface->assign('classicId', $recordId);
+				$interface->assign('classicUrl', $configArray['Catalog']['url'] . '/cgi-bin/koha/opac-detail.pl?biblionumber=' . $recordId);
+				$interface->assign('staffClientUrl', $configArray['Catalog']['staffClientUrl'] . '/cgi-bin/koha/catalogue/detail.pl?biblionumber=' . $recordId);
 			}elseif ($configArray['Catalog']['ils'] == 'CarlX'){
-				$shortId = str_replace('CARL', '', $this->id);
+				$shortId = str_replace('CARL', '', $recordId);
 				$shortId = ltrim($shortId, '0');
 				$interface->assign('staffClientUrl', $configArray['Catalog']['staffClientUrl'] . '/Items/' . $shortId);
 			}

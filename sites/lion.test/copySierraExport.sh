@@ -1,4 +1,5 @@
-#!/usr/bin/env bash
+#!/bin/bash
+
 #Retrieve marc records from the FTP server
 mount 10.1.2.7:/ftp/lion/marc_export /mnt/ftp
 # sftp.marmot.org server

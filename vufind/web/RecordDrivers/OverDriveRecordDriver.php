@@ -362,10 +362,11 @@ class OverDriveRecordDriver extends RecordInterface {
 			$interface->assign('overDriveMetaDataRaw', $overDriveMetadata);
 		}
 
-		$lastGroupedWorkModificationTime = $this->groupedWork->date_updated;
+		$lastGroupedWorkModificationTime = empty($this->groupedWork->date_updated) ? 'null' : $this->groupedWork->date_updated;
+		// Mark with text 'null' so that the template handles the display properly
 		$interface->assign('lastGroupedWorkModificationTime', $lastGroupedWorkModificationTime);
 
-		return 'RecordDrivers/OverDrive/staff.tpl';
+		return 'RecordDrivers/OverDrive/staff-view.tpl';
 	}
 
 	/**

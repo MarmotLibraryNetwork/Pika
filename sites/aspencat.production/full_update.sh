@@ -8,25 +8,10 @@ PIKASERVER=aspencat.production
 PIKADBNAME=pika
 OUTPUT_FILE="/var/log/vufind-plus/${PIKASERVER}/full_update_output.log"
 
-MINFILE1SIZE=$((1030000000))
+MINFILE1SIZE=$((1060000000))
 
 # Check for conflicting processes currently running
-function checkConflictingProcesses() {
-	#Check to see if the conflict exists.
-	countConflictingProcesses=$(ps aux | grep -v sudo | grep -c "$1")
-	countConflictingProcesses=$((countConflictingProcesses-1))
-
-	let numInitialConflicts=countConflictingProcesses
-	#Wait until the conflict is gone.
-	until ((${countConflictingProcesses} == 0)); do
-		countConflictingProcesses=$(ps aux | grep -v sudo | grep -c "$1")
-		countConflictingProcesses=$((countConflictingProcesses-1))
-		#echo "Count of conflicting process" $1 $countConflictingProcesses
-		sleep 300
-	done
-	#Return the number of conflicts we found initially.
-	echo ${numInitialConflicts};
-}
+source "/usr/local/vufind-plus/vufind/bash/checkConflicts.sh"
 
 #truncate the output file so you don't spend a week debugging an error from a week ago!
 : > $OUTPUT_FILE;
@@ -72,9 +57,11 @@ cd /data/vufind-plus/accelerated_reader; curl --remote-name --remote-time --sile
 #Do a full extract from OverDrive just once a week to catch anything that doesn't
 #get caught in the regular extract
 DAYOFWEEK=$(date +"%u")
-if [ "${DAYOFWEEK}" -eq 6 ];then
+if [[ "${DAYOFWEEK}" -eq 7 ]]; then
+	echo $(date +"%T") "Starting Overdrive fullReload." >> ${OUTPUT_FILE}
 	cd /usr/local/vufind-plus/vufind/overdrive_api_extract/
 	nice -n -10 java -server -XX:+UseG1GC -jar overdrive_extract.jar ${PIKASERVER} fullReload >> ${OUTPUT_FILE}
+	echo $(date +"%T") "Completed Overdrive fullReload." >> ${OUTPUT_FILE}
 fi
 
 #Fetch Deletions
@@ -134,10 +121,7 @@ if [ -n "$FILE" ]; then
 		echo $FILE " size " $FILE1SIZE "is less than minimum size :" $MINFILE1SIZE "; Export was not moved to data directory, Full Regrouping & Full Reindexing skipped." >> ${OUTPUT_FILE}
 	fi
 else
-	echo "Did not find a export file from the last 24 hours, Full Regrouping & Full Reindexing skipped." >> ${OUTPUT_FILE}
-#TODO: update this error message when export is setup
-#	echo "The full export file has not been updated in the last 24 hours, meaning the full export file or the add/deletes files were not delivered. Full Regrouping & Full Reindexing skipped." >> ${OUTPUT_FILE}
-#	echo "The full export is delivered Saturday Mornings. The adds/deletes are delivered every night except Friday night." >> ${OUTPUT_FILE}
+	echo "Did not find a export file that was updated in the last 24 hours, Full Regrouping & Full Reindexing skipped." >> ${OUTPUT_FILE}
 fi
 
 # Clean-up Solr Logs

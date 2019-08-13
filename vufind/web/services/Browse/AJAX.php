@@ -532,7 +532,7 @@ class Browse_AJAX extends AJAXHandler {
 	 *
 	 * TODO: Support loading sub categories.
 	 */
-	private function getActiveBrowseCategories(){
+	function getActiveBrowseCategories(){
 		//Figure out which library or location we are looking at
 		global $library;
 		/** @var Location $locationSingleton */

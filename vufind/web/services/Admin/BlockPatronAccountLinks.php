@@ -8,47 +8,40 @@
  *
  */
 
-require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/sys/Administration/BlockPatronAccountLink.php'; // Database object
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 
-class Admin_BlockPatronAccountLinks extends ObjectEditor
-{
+class Admin_BlockPatronAccountLinks extends ObjectEditor {
 
-	function getAllowableRoles()
-	{
+	function getAllowableRoles(){
 		return array('opacAdmin', 'libraryAdmin', 'libraryManager', 'locationManager');
 	}
 
 	/**
 	 * The class name of the object which is being edited
 	 */
-	function getObjectType()
-	{
+	function getObjectType(){
 		return 'BlockPatronAccountLink';
 	}
 
 	/**
 	 * The page name of the tool (typically the plural of the object)
 	 */
-	function getToolName()
-	{
+	function getToolName(){
 		return 'BlockPatronAccountLinks';
 	}
 
 	/**
 	 * The title of the page to be displayed
 	 */
-	function getPageTitle()
-	{
+	function getPageTitle(){
 		return 'Block Patron Account Links';
 	}
 
 	/**
 	 * Load all objects into an array keyed by the primary key
 	 */
-	function getAllObjects()
-	{
+	function getAllObjects(){
 		$object = new BlockPatronAccountLink();
 		$object->find();
 		$objectList = array();
@@ -62,24 +55,21 @@ class Admin_BlockPatronAccountLinks extends ObjectEditor
 	 * Define the properties which are editable for the object
 	 * as well as how they should be treated while editing, and a description for the property
 	 */
-	function getObjectStructure()
-	{
+	function getObjectStructure(){
 		return BlockPatronAccountLink::getObjectStructure();
 	}
 
 	/**
 	 * The name of the column which defines this as unique
 	 */
-	function getPrimaryKeyColumn()
-	{
+	function getPrimaryKeyColumn(){
 		return 'id';
 	}
 
 	/**
 	 * The id of the column which serves to join other columns
 	 */
-	function getIdKeyColumn()
-	{
+	function getIdKeyColumn(){
 		return 'id';
 	}
 

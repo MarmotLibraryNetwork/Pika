@@ -32,7 +32,8 @@
 # backup important bits at 12:10am daily
 15 2 * * * /usr/local/vufind-plus/vufind/cron/nightly_mysql_dump.sh marmot.production 2>&1 >/dev/null
 # backup to backup server at 02:15am daily
-15 02 * * * /root/cron/backup 2>&1 >/dev/null
+#15 02 * * * /root/cron/backup 2>&1 >/dev/null
+15 02 * * Sun,Mon,Tue,Wed,Thu,Fri /root/cron/backup
 
 #############
 # On Reboot #
@@ -83,9 +84,6 @@
 17 0 * * Fri /usr/local/vufind-plus/vufind/cron/fetch_lynda.sh marmot
 # Hoopla
 02 20 * * * cd /usr/local/vufind-plus/vufind/hoopla_export; java -jar hoopla_export.jar marmot.production
-#Overdrive Weekly Full Reload
-#07 22 * * Sat cd /usr/local/vufind-plus/vufind/overdrive_api_extract; nice -n -10 java -server -XX:+UseG1GC -jar overdrive_extract.jar marmot.production fullReload
-# May not use after all. See https://marmot.myjetbrains.com/youtrack/issue/D-3116
 
 #####################
 # Apache Web Server #

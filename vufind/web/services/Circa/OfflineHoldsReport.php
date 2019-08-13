@@ -8,6 +8,8 @@
  * Time: 10:39 AM
  */
 require_once ROOT_DIR . '/services/Admin/Admin.php';
+require_once ROOT_DIR . '/services/SourceAndId.php';
+
 class Circa_OfflineHoldsReport extends Admin_Admin{
 	public function launch(){
 		global $interface;
@@ -50,8 +52,10 @@ class Circa_OfflineHoldsReport extends Admin_Admin{
 		$offlineHoldsObj->find();
 		while ($offlineHoldsObj->fetch()){
 			$offlineHold = array();
-			require_once ROOT_DIR . '/RecordDrivers/MarcRecord.php';
-			$recordDriver = new MarcRecord($offlineHoldsObj->bibId);
+//			require_once ROOT_DIR . '/RecordDrivers/MarcRecord.php';
+			/** @var MarcRecord $marcRecord */
+			$recordDriver = RecordDriverFactory::initRecordDriverById(new SourceAndId($offlineHoldsObj->bibId));
+
 			if ($recordDriver->isValid()){
 				$offlineHold['title'] = $recordDriver->getTitle();
 			}
@@ -63,11 +67,8 @@ class Circa_OfflineHoldsReport extends Admin_Admin{
 			$offlineHolds[] = $offlineHold;
 		}
 
-		$interface->setPageTitle('Offline Holds Report');
-		$interface->assign('sidebar', 'MyAccount/account-sidebar.tpl');
 		$interface->assign('offlineHolds', $offlineHolds);
-		$interface->setTemplate('offlineHoldsReport.tpl');
-		$interface->display('layout.tpl');
+		$this->display('offlineHoldsReport.tpl','Offline Holds Report');
 	}
 
 	function getAllowableRoles() {

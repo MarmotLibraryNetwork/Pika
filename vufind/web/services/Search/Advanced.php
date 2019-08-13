@@ -19,15 +19,15 @@
  */
 
 require_once ROOT_DIR . '/services/Search/AdvancedBase.php';
+
 class Search_Advanced extends Search_AdvancedBase {
 
-	function launch()
-	{
+	function launch(){
 		global $interface;
 		global $searchObject;
 
 		// Create our search object if the one initialized in index.php is not available
-		if (!$searchObject) {
+		if (!$searchObject){
 			$searchObject = SearchObjectFactory::initSearchObject();
 		}
 		$searchObject->initAdvancedFacets();
@@ -49,7 +49,7 @@ class Search_Advanced extends Search_AdvancedBase {
 		if (array_key_exists('format_category', $facetList)){
 			$label = $facetList['format_category']['label'];
 			foreach ($facets[$label]['values'] as $key => $optionInfo){
-				$optionInfo['imageName'] = str_replace(" ", "", strtolower($key)) . '.png';
+				$optionInfo['imageName']        = str_replace(" ", "", strtolower($key)) . '.png';
 				$facets[$label]['values'][$key] = $optionInfo;
 			}
 			$interface->assign('formatCategoryLimit', $facets[$label]['values']);
@@ -64,9 +64,9 @@ class Search_Advanced extends Search_AdvancedBase {
 		// Process settings to control special-purpose facets not supported by the
 		//     more generic configuration options.
 		$specialFacets = $searchObject->getFacetSetting('Advanced_Settings', 'special_facets');
-		if (stristr($specialFacets, 'illustrated')) {
+		if (stristr($specialFacets, 'illustrated')){
 			$interface->assign('illustratedLimit',
-			$this->getIllustrationSettings($savedSearch));
+				$this->getIllustrationSettings($savedSearch));
 		}
 
 
@@ -74,44 +74,43 @@ class Search_Advanced extends Search_AdvancedBase {
 		$interface->assign('advSearchTypes', $searchObject->getAdvancedTypes());
 
 		// If we found a saved search, let's assign some details to the interface:
-		if ($savedSearch) {
+		if ($savedSearch){
 			$interface->assign('searchDetails', $savedSearch->getSearchTerms());
 			$interface->assign('searchFilters', $savedSearch->getFilterList());
 		}
 
-		$interface->setPageTitle('Advanced Search');
-		$interface->setTemplate('advanced.tpl');
-		$interface->assign('sidebar', 'Search/results-sidebar.tpl');
-		$interface->display('layout.tpl');
+		$this->display('advanced.tpl', 'Advanced Search', 'Search/results-sidebar.tpl');
 	}
 
 	/**
 	 * Get the possible legal values for the illustration limit radio buttons.
 	 *
 	 * @access  private
-	 * @param   object  $savedSearch    Saved search object (false if none)
+	 * @param object $savedSearch Saved search object (false if none)
 	 * @return  array                   Legal options, with selected value flagged.
 	 */
-	private function getIllustrationSettings($savedSearch = false)
-	{
+	private function getIllustrationSettings($savedSearch = false){
 		$illYes = array('text' => 'Has Illustrations', 'value' => 1, 'selected' => false);
-		$illNo = array('text' => 'Not Illustrated', 'value' => 0, 'selected' => false);
+		$illNo  = array('text' => 'Not Illustrated', 'value' => 0, 'selected' => false);
 		$illAny = array('text' => 'No Preference', 'value' => -1, 'selected' => false);
 
 		// Find the selected value by analyzing facets -- if we find match, remove
 		// the offending facet to avoid inappropriate items appearing in the
 		// "applied filters" sidebar!
-		if ($savedSearch && $savedSearch->hasFilter('illustrated:Illustrated')) {
+		if ($savedSearch && $savedSearch->hasFilter('illustrated:Illustrated')){
 			$illYes['selected'] = true;
 			$savedSearch->removeFilter('illustrated:Illustrated');
-		} else if ($savedSearch && $savedSearch->hasFilter('illustrated:"Not Illustrated"')) {
-			$illNo['selected'] = true;
-			$savedSearch->removeFilter('illustrated:"Not Illustrated"');
-		} else {
-			$illAny['selected'] = true;
+		}else{
+			if ($savedSearch && $savedSearch->hasFilter('illustrated:"Not Illustrated"')){
+				$illNo['selected'] = true;
+				$savedSearch->removeFilter('illustrated:"Not Illustrated"');
+			}else{
+				$illAny['selected'] = true;
+			}
 		}
 		return array($illYes, $illNo, $illAny);
 	}
 
 }
+
 ?>

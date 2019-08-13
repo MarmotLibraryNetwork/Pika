@@ -24,12 +24,11 @@ require_once(ROOT_DIR . '/sys/LocalEnrichment/EditorialReview.php');
 
 class EditorialReview_View extends Admin_Admin {
 
-	function launch()
-	{
+	function launch(){
 		global $interface;
 
 		$interface->assign('id', $_REQUEST['id']);
-		$editorialReview = new EditorialReview();
+		$editorialReview                    = new EditorialReview();
 		$editorialReview->editorialReviewId = $_REQUEST['id'];
 		$editorialReview->find();
 		if ($editorialReview->N > 0){
@@ -37,13 +36,10 @@ class EditorialReview_View extends Admin_Admin {
 			$interface->assign('editorialReview', $editorialReview);
 		}
 
-		$interface->assign('sidebar', 'MyAccount/account-sidebar.tpl');
-		$interface->setTemplate('view.tpl');
-
-		$interface->display('layout.tpl');
+		$this->display('view.tpl', 'Editorial Review');
 	}
 
-  function getAllowableRoles(){
-    return array('opacAdmin', 'libraryAdmin', 'contentEditor');
-  }
+	function getAllowableRoles(){
+		return array('opacAdmin', 'libraryAdmin', 'contentEditor');
+	}
 }

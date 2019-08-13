@@ -21,7 +21,6 @@ require_once ROOT_DIR . '/sys/IndexEngine.php';
 require_once ROOT_DIR . '/sys/Proxy_Request.php';
 require_once ROOT_DIR . '/sys/ConfigArray.php';
 require_once ROOT_DIR . '/sys/SolrUtils.php';
-require_once ROOT_DIR . '/sys/VuFindCache.php';
 
 require_once 'XML/Unserializer.php';
 require_once 'XML/Serializer.php';
@@ -327,22 +326,16 @@ class Solr implements IndexEngine {
 	 * @return void
 	 * @access private
 	 */
-	private function _loadSearchSpecs()
-	{
-		// Generate cache key:
-		$key = md5(
-			basename($this->searchSpecsFile) . '-' . filemtime($this->searchSpecsFile)
-		);
-
-		// Load cache manager:
-		$cache = new VuFindCache($this->_specCache, 'searchspecs');
-
-		// Generate data if not found in cache:
-		if (!($results = $cache->load($key))) {
+	private function _loadSearchSpecs(){
+		/** @var Memcache $memCache */
+		global $memCache;
+		$results = $memCache->get('searchSpecs');
+		if (!$results){
 			$results = Horde_Yaml::load(
 				file_get_contents($this->searchSpecsFile)
 			);
-			$cache->save($results, $key);
+			global $configArray;
+			$memCache->set('searchSpecs', $results, 0, $configArray['Caching']['searchSpecs']);
 		}
 		$this->_searchSpecs = $results;
 	}
@@ -1673,10 +1666,10 @@ class Solr implements IndexEngine {
 
 			unset($facet['limit']);
 			if (isset($facet['field']) && is_array($facet['field']) && in_array('date_added', $facet['field'])){
-				$options['facet.date'] = 'date_added';
-				$options['facet.date.end'] = 'NOW';
+				$options['facet.date']       = 'date_added';
+				$options['facet.date.end']   = 'NOW';
 				$options['facet.date.start'] = 'NOW-1YEAR';
-				$options['facet.date.gap'] = '+1WEEK';
+				$options['facet.date.gap']   = '+1WEEK';
 				foreach ($facet['field'] as $key => $value){
 					if ($value == 'date_added'){
 						unset($facet['field'][$key]);

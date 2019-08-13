@@ -38,22 +38,7 @@ else
 fi
 
 # Check for conflicting processes currently running
-function checkConflictingProcesses() {
-	#Check to see if the conflict exists.
-	countConflictingProcesses=$(ps aux | grep -v sudo | grep -c "$1")
-	countConflictingProcesses=$((countConflictingProcesses-1))
-
-	let numInitialConflicts=countConflictingProcesses
-	#Wait until the conflict is gone.
-	until ((${countConflictingProcesses} == 0)); do
-		countConflictingProcesses=$(ps aux | grep -v sudo | grep -c "$1")
-		countConflictingProcesses=$((countConflictingProcesses-1))
-		#echo "Count of conflicting process" $1 $countConflictingProcesses
-		sleep 300
-	done
-	#Return the number of conflicts we found initially.
-	echo ${numInitialConflicts};
-}
+source "/usr/local/vufind-plus/vufind/bash/checkConflicts.sh"
 
 #Check for any conflicting processes that we shouldn't do a full index during.
 checkConflictingProcesses "sierra_export_api.jar ${PIKASERVER}" >> ${OUTPUT_FILE}
@@ -101,10 +86,11 @@ cd /data/vufind-plus/accelerated_reader; curl --remote-name --remote-time --sile
 #Do a full extract from OverDrive just once a week to catch anything that doesn't
 #get caught in the regular extract
 DAYOFWEEK=$(date +"%u")
-if [ "${DAYOFWEEK}" -eq 5 ];
-then
+if [[ "${DAYOFWEEK}" -eq 7 ]]; then
+	echo $(date +"%T") "Starting Overdrive fullReload." >> ${OUTPUT_FILE}
 	cd /usr/local/vufind-plus/vufind/overdrive_api_extract/
-	nice -n -10 java -jar overdrive_extract.jar ${PIKASERVER} fullReload >> ${OUTPUT_FILE}
+	nice -n -10 java -server -XX:+UseG1GC -jar overdrive_extract.jar ${PIKASERVER} fullReload >> ${OUTPUT_FILE}
+	echo $(date +"%T") "Completed Overdrive fullReload." >> ${OUTPUT_FILE}
 fi
 
 #Validate the export
@@ -113,14 +99,7 @@ cd /usr/local/vufind-plus/vufind/cron; java -server -XX:+UseG1GC -jar cron.jar $
 #Full Regroup
 cd /usr/local/vufind-plus/vufind/record_grouping; java -server -XX:+UseG1GC -jar record_grouping.jar ${PIKASERVER} fullRegroupingNoClear >> ${OUTPUT_FILE}
 
-#Full Reindex - since this takes so long, just run the full index once a week and let Sierra Export keep it up to date the rest of the time.
-#MDN 4/12/2018 run everyday while we are changing settings
-#if [ "${DAYOFWEEK}" -eq 5 ];
-#then
 cd /usr/local/vufind-plus/vufind/reindexer; nice -n -3 java -server -XX:+UseG1GC -jar reindexer.jar ${PIKASERVER} fullReindex >> ${OUTPUT_FILE}
-#else
-#cd /usr/local/vufind-plus/vufind/reindexer; nice -n -3 java -server -XX:+UseG1GC -jar reindexer.jar ${PIKASERVER} >> ${OUTPUT_FILE}
-#fi
 
 # Truncate Continuous Reindexing list of changed items
 cat /dev/null >| /data/vufind-plus/${PIKASERVER}/marc/changed_items_to_process.csv

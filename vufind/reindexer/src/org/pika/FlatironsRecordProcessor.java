@@ -90,7 +90,7 @@ class FlatironsRecordProcessor extends IIIRecordProcessor {
 					relatedRecord.setSubSource(profileType);
 					relatedRecord.addItem(itemInfo);
 					//Check the 856 tag to see if there is a link there
-					loadEContentUrl(record, itemInfo);
+					loadEContentUrl(record, itemInfo, identifier);
 					if (itemInfo.geteContentUrl() == null) {
 						itemInfo.seteContentUrl(url);
 					}

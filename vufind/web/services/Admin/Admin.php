@@ -21,22 +21,22 @@
 require_once ROOT_DIR . '/Action.php';
 
 abstract class Admin_Admin extends Action {
-	protected $db;
+//	protected $db;
 
-	function __construct() {
+	function __construct(){
 		global $configArray;
 		$user = UserAccount::getLoggedInUser();
 
 		//If the user isn't logged in, take them to the login page
 		if (!$user){
-			header("Location: {$configArray['Site']['path']}/MyAccount/Login");
-			die();
+			header("Location: {$configArray['Site']['path']}/MyAccount/Home?followupModule={$_REQUEST['module']}&followupAction={$_REQUEST['action']}");
+			die;
 		}
 
 		//Make sure the user has permission to access the page
 		$allowableRoles = $this->getAllowableRoles();
-		$userCanAccess = false;
-		foreach($allowableRoles as $roleId => $roleName){
+		$userCanAccess  = false;
+		foreach ($allowableRoles as $roleId => $roleName){
 			if (UserAccount::userHasRole($roleName)){
 				$userCanAccess = true;
 				break;
@@ -45,7 +45,7 @@ abstract class Admin_Admin extends Action {
 
 		if (!$userCanAccess){
 			$this->display('../Admin/noPermission.tpl', 'Access Error');
-			exit();
+			die;
 		}
 	}
 

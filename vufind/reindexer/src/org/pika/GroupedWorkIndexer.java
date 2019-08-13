@@ -186,80 +186,81 @@ public class GroupedWorkIndexer {
 		loadScopes();
 
 		//Initialize processors based on our indexing profiles and the primary identifiers for the records.
-		try {
+		try (
 			PreparedStatement uniqueIdentifiersStmt = pikaConn.prepareStatement("SELECT DISTINCT type FROM grouped_work_primary_identifiers");
 			PreparedStatement getIndexingProfile    = pikaConn.prepareStatement("SELECT * from indexing_profiles where name = ?");
 			ResultSet uniqueIdentifiersRS           = uniqueIdentifiersStmt.executeQuery();
-
+		){
 			while (uniqueIdentifiersRS.next()){
 				String curIdentifier = uniqueIdentifiersRS.getString("type");
 				getIndexingProfile.setString(1, curIdentifier);
-				ResultSet indexingProfileRS = getIndexingProfile.executeQuery();
-				if (indexingProfileRS.next()){
-					String ilsIndexingClassString =    indexingProfileRS.getString("indexingClass");
-					switch (ilsIndexingClassString) {
-						case "Marmot":
-							ilsRecordProcessors.put(curIdentifier, new MarmotRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
-							break;
-//						case "Nashville":
-//							ilsRecordProcessors.put(curIdentifier, new NashvilleRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
-//							break;
-//						case "NashvilleSchools":
-//							ilsRecordProcessors.put(curIdentifier, new NashvilleSchoolsRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
-//							break;
-						case "WCPL":
-							ilsRecordProcessors.put(curIdentifier, new WCPLRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
-							break;
-						case "Anythink":
-							ilsRecordProcessors.put(curIdentifier, new AnythinkRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
-							break;
-						case "Aspencat":
-							ilsRecordProcessors.put(curIdentifier, new AspencatRecordProcessor(this, pikaConn, configIni, indexingProfileRS, logger, fullReindex));
-							break;
-						case "Flatirons":
-							ilsRecordProcessors.put(curIdentifier, new FlatironsRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
-							break;
-						case "Addison":
-							ilsRecordProcessors.put(curIdentifier, new AddisonRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
-							break;
-						case "Aurora":
-							ilsRecordProcessors.put(curIdentifier, new AuroraRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
-							break;
-						case "Arlington":
-							ilsRecordProcessors.put(curIdentifier, new ArlingtonRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
-							break;
-						case "CarlX": // Currently the Nashville Processor
-							ilsRecordProcessors.put(curIdentifier, new CarlXRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
-							break;
-						case "SantaFe":
-							ilsRecordProcessors.put(curIdentifier, new SantaFeRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
-							break;
-						case "Sacramento":
-							ilsRecordProcessors.put(curIdentifier, new SacramentoRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
-							break;
-						case "AACPL":
-							ilsRecordProcessors.put(curIdentifier, new AACPLRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
-							break;
-						case "Lion":
-							ilsRecordProcessors.put(curIdentifier, new LionRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
-							break;
-						case "SideLoadedEContent":
-							ilsRecordProcessors.put(curIdentifier, new SideLoadedEContentProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
-							break;
-						case "Hoopla":
-							ilsRecordProcessors.put(curIdentifier, new HooplaProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
-							break;
-						default:
-							logger.error("Unknown indexing class " + ilsIndexingClassString);
-							okToIndex = false;
-							return;
+				try (ResultSet indexingProfileRS = getIndexingProfile.executeQuery()) {
+					if (indexingProfileRS.next()) {
+						String ilsIndexingClassString = indexingProfileRS.getString("indexingClass");
+						switch (ilsIndexingClassString) {
+							case "Marmot":
+								ilsRecordProcessors.put(curIdentifier, new MarmotRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
+								break;
+	//						case "Nashville":
+	//							ilsRecordProcessors.put(curIdentifier, new NashvilleRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
+	//							break;
+	//						case "NashvilleSchools":
+	//							ilsRecordProcessors.put(curIdentifier, new NashvilleSchoolsRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
+	//							break;
+							case "WCPL":
+								ilsRecordProcessors.put(curIdentifier, new WCPLRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
+								break;
+							case "Anythink":
+								ilsRecordProcessors.put(curIdentifier, new AnythinkRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
+								break;
+							case "Aspencat":
+								ilsRecordProcessors.put(curIdentifier, new AspencatRecordProcessor(this, pikaConn, configIni, indexingProfileRS, logger, fullReindex));
+								break;
+							case "Flatirons":
+								ilsRecordProcessors.put(curIdentifier, new FlatironsRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
+								break;
+							case "Addison":
+								ilsRecordProcessors.put(curIdentifier, new AddisonRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
+								break;
+							case "Aurora":
+								ilsRecordProcessors.put(curIdentifier, new AuroraRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
+								break;
+							case "Arlington":
+								ilsRecordProcessors.put(curIdentifier, new ArlingtonRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
+								break;
+							case "CarlX": // Currently the Nashville Processor
+								ilsRecordProcessors.put(curIdentifier, new CarlXRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
+								break;
+							case "SantaFe":
+								ilsRecordProcessors.put(curIdentifier, new SantaFeRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
+								break;
+							case "Sacramento":
+								ilsRecordProcessors.put(curIdentifier, new SacramentoRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
+								break;
+							case "AACPL":
+								ilsRecordProcessors.put(curIdentifier, new AACPLRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
+								break;
+							case "Lion":
+								ilsRecordProcessors.put(curIdentifier, new LionRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
+								break;
+							case "SideLoadedEContent":
+								ilsRecordProcessors.put(curIdentifier, new SideLoadedEContentProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
+								break;
+							case "Hoopla":
+								ilsRecordProcessors.put(curIdentifier, new HooplaProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
+								break;
+							default:
+								logger.error("Unknown indexing class " + ilsIndexingClassString);
+								okToIndex = false;
+								return;
+						}
+					} else if (curIdentifier.equalsIgnoreCase("overdrive")) {
+						//Overdrive doesn't have an indexing profile.
+						//Only load processor if there are overdrive titles
+						overDriveProcessor = new OverDriveProcessor(this, econtentConn, logger);
+					} else {
+						logger.debug("Could not find indexing profile for type " + curIdentifier);
 					}
-				} else if (curIdentifier.equalsIgnoreCase("overdrive")) {
-					//Overdrive doesn't have an indexing profile.
-					//Only load processor if there are overdrive titles
-					overDriveProcessor = new OverDriveProcessor(this, econtentConn, logger);
-				}else{
-					logger.debug("Could not find indexing profile for type " + curIdentifier);
 				}
 			}
 
@@ -697,7 +698,7 @@ public class GroupedWorkIndexer {
 	}
 
 
-	void finishIndexing(){
+	void finishIndexing(boolean processingIndividualWork){
 		GroupedReindexMain.addNoteToReindexLog("Finishing indexing");
 		logger.info("Finishing indexing");
 		if (fullReindex) {
@@ -738,7 +739,9 @@ public class GroupedWorkIndexer {
 		}
 
 		writeWorksWithInvalidLiteraryForms();
-		updateLastReindexTime();
+		if (!processingIndividualWork) {
+			updateLastReindexTime();
+		}
 
 		//Write validation information
 		if (fullReindex) {

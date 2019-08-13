@@ -112,10 +112,6 @@ class Circa_OfflineCirculation extends Action{
 		$interface->assign('ILSname', $ils_name);
 
 		//Get view & load template
-		$interface->setPageTitle('Offline Circulation');
-
-		$interface->assign('sidebar', 'MyAccount/account-sidebar.tpl');
-		$interface->setTemplate('offlineCirculation.tpl');
-		$interface->display('layout.tpl', 'Circa');
+		$this->display('offlineCirculation.tpl', 'Offline Circulation');
 	}
 }

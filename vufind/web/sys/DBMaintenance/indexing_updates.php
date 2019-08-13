@@ -8,12 +8,12 @@
  * Time: 2:25 PM
  */
 
-function getIndexingUpdates() {
+function getIndexingUpdates(){
 	return array(
 		'ils_hold_summary' => array(
-			'title' => 'ILS Hold Summary',
+			'title'       => 'ILS Hold Summary',
 			'description' => 'Create ils hold summary table to store summary information about the available holds',
-			'sql' => array(
+			'sql'         => array(
 				"CREATE TABLE ils_hold_summary (
 							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 							ilsId VARCHAR (20) NOT NULL,
@@ -24,9 +24,9 @@ function getIndexingUpdates() {
 		),
 
 		'indexing_profile' => array(
-			'title' => 'Indexing profile setup',
+			'title'       => 'Indexing profile setup',
 			'description' => 'Setup indexing information table to store information about how to index ',
-			'sql' => array(
+			'sql'         => array(
 				"CREATE TABLE IF NOT EXISTS `indexing_profiles` (
 							  `id` int(11) NOT NULL AUTO_INCREMENT,
 							  `name` varchar(50) NOT NULL,
@@ -138,25 +138,25 @@ function getIndexingUpdates() {
 		),
 
 		'indexing_profile_collection' => array(
-			'title' => 'Indexing profile collections',
+			'title'       => 'Indexing profile collections',
 			'description' => 'Add handling of collections to indexing profile table',
-			'sql' => array(
+			'sql'         => array(
 				"ALTER TABLE indexing_profiles ADD COLUMN `collection` char(1) DEFAULT NULL"
 			)
 		),
 
 		'indexing_profile_catalog_driver' => array(
-			'title' => 'Indexing profile catalog driver',
+			'title'       => 'Indexing profile catalog driver',
 			'description' => 'Add handling catalog driver to indexing profile table',
-			'sql' => array(
+			'sql'         => array(
 				"ALTER TABLE indexing_profiles ADD COLUMN `catalogDriver` varchar(50) DEFAULT NULL"
 			)
 		),
 
 		'indexing_profile_holdability' => array(
-			'title' => 'Setup additional holdability filters',
+			'title'       => 'Setup additional holdability filters',
 			'description' => 'Setup additional filters for determining if something is holdable',
-			'sql' => array(
+			'sql'         => array(
 				"ALTER TABLE indexing_profiles ADD COLUMN `nonHoldableITypes` varchar(255) DEFAULT NULL",
 				"ALTER TABLE indexing_profiles ADD COLUMN `nonHoldableStatuses` varchar(255) DEFAULT NULL",
 				"ALTER TABLE indexing_profiles ADD COLUMN `nonHoldableLocations` varchar(512) DEFAULT NULL",
@@ -164,34 +164,34 @@ function getIndexingUpdates() {
 		),
 
 		'indexing_profile_marc_encoding' => array(
-			'title' => 'Indexing Profiles - marc encoding',
+			'title'       => 'Indexing Profiles - marc encoding',
 			'description' => 'Correct UTF8 setting for marc encoding',
-			'sql' => array(
+			'sql'         => array(
 				"ALTER TABLE indexing_profiles CHANGE marcEncoding `marcEncoding` enum('MARC8','UTF8','UNIMARC','ISO8859_1','BESTGUESS') NOT NULL DEFAULT 'MARC8'"
 			)
 		),
 
 		'indexing_profile_last_checkin_date' => array(
-			'title' => 'Indexing Profiles - last checkin date',
+			'title'       => 'Indexing Profiles - last checkin date',
 			'description' => 'add field for last check in date',
-			'sql' => array(
+			'sql'         => array(
 				"ALTER TABLE indexing_profiles ADD COLUMN `lastCheckinFormat` varchar(20) DEFAULT NULL",
 				"ALTER TABLE indexing_profiles ADD COLUMN `lastCheckinDate` char(1) DEFAULT NULL",
 			)
 		),
 
 		'indexing_profile_specific_order_location' => array(
-			'title' => 'Indexing Profiles - specific order location',
+			'title'       => 'Indexing Profiles - specific order location',
 			'description' => 'add field for the specific location code since Millennium/Sierra do not always export the detailed',
-			'sql' => array(
+			'sql'         => array(
 				"ALTER TABLE indexing_profiles ADD COLUMN `orderLocationSingle` char(1) DEFAULT NULL",
 			)
 		),
 
 		'indexing_profile_speicified_formats' => array(
-			'title' => 'Indexing Profiles - specified format',
+			'title'       => 'Indexing Profiles - specified format',
 			'description' => 'Allow specified formats for use with side loaded eContent',
-			'sql' => array(
+			'sql'         => array(
 				"ALTER TABLE indexing_profiles CHANGE formatSource `formatSource` enum('bib','item', 'specified') NOT NULL DEFAULT 'bib'",
 				"ALTER TABLE indexing_profiles ADD COLUMN `specifiedFormat` varchar(50) DEFAULT NULL",
 				"ALTER TABLE indexing_profiles ADD COLUMN `specifiedFormatCategory` varchar(50) DEFAULT NULL",
@@ -200,124 +200,124 @@ function getIndexingUpdates() {
 		),
 
 		'indexing_profile_filenames_to_include' => array(
-			'title' => 'Indexing Profiles - filenames to include',
+			'title'       => 'Indexing Profiles - filenames to include',
 			'description' => 'Allow additional control over which files are included in an indexing profile',
-			'sql' => array(
-					"ALTER TABLE indexing_profiles ADD COLUMN `filenamesToInclude` varchar(250) DEFAULT '.*\\\\.ma?rc'",
+			'sql'         => array(
+				"ALTER TABLE indexing_profiles ADD COLUMN `filenamesToInclude` varchar(250) DEFAULT '.*\\\\.ma?rc'",
 			)
 		),
 
 		'indexing_profile_collectionsToSuppress' => array(
-				'title' => 'Indexing Profiles - collections to suppress',
-				'description' => 'Allow specific collection codes to be suppressed',
-				'sql' => array(
-						"ALTER TABLE indexing_profiles ADD COLUMN `collectionsToSuppress` varchar(100) DEFAULT ''",
-				)
+			'title'       => 'Indexing Profiles - collections to suppress',
+			'description' => 'Allow specific collection codes to be suppressed',
+			'sql'         => array(
+				"ALTER TABLE indexing_profiles ADD COLUMN `collectionsToSuppress` varchar(100) DEFAULT ''",
+			)
 		),
 
 		'indexing_profile_additional_fields_ToSuppress' => array(
-				'title' => 'Indexing Profiles - ITypes, ICode2s & BCode3s to suppress',
-				'description' => 'Allow specific Itype, ICode2 & BCode3 codes to be suppressed',
-				'sql' => array(
-						"ALTER TABLE indexing_profiles ADD COLUMN `iTypesToSuppress`  varchar(100) DEFAULT null ",
-						"ALTER TABLE indexing_profiles ADD COLUMN `iCode2sToSuppress` varchar(100) DEFAULT null ",
-						"ALTER TABLE indexing_profiles ADD COLUMN `bCode3sToSuppress` varchar(100) DEFAULT null ",
-				)
+			'title'       => 'Indexing Profiles - ITypes, ICode2s & BCode3s to suppress',
+			'description' => 'Allow specific Itype, ICode2 & BCode3 codes to be suppressed',
+			'sql'         => array(
+				"ALTER TABLE indexing_profiles ADD COLUMN `iTypesToSuppress`  varchar(100) DEFAULT null ",
+				"ALTER TABLE indexing_profiles ADD COLUMN `iCode2sToSuppress` varchar(100) DEFAULT null ",
+				"ALTER TABLE indexing_profiles ADD COLUMN `bCode3sToSuppress` varchar(100) DEFAULT null ",
+			)
 		),
 
 		'indexing_profile_additional_fields_bcode3' => array(
-				'title' => 'Indexing Profiles - BCode3s settings',
-				'description' => 'Allow specific collection codes to be suppressed',
-				'sql' => array(
-					"ALTER TABLE indexing_profiles ADD COLUMN `sierraRecordFixedFieldsTag` char(3) DEFAULT null ",
-					"ALTER TABLE indexing_profiles ADD COLUMN `bCode3` char(1) DEFAULT NULL ",
-				)
+			'title'       => 'Indexing Profiles - BCode3s settings',
+			'description' => 'Allow specific collection codes to be suppressed',
+			'sql'         => array(
+				"ALTER TABLE indexing_profiles ADD COLUMN `sierraRecordFixedFieldsTag` char(3) DEFAULT null ",
+				"ALTER TABLE indexing_profiles ADD COLUMN `bCode3` char(1) DEFAULT NULL ",
+			)
 		),
 
 		'indexing_profile_folderCreation' => array(
-				'title' => 'Indexing Profiles - Individual Folder Creation',
-				'description' => 'Determine how marc record folders should be created',
-				'sql' => array(
-						"ALTER TABLE indexing_profiles ADD COLUMN `numCharsToCreateFolderFrom` int(11) DEFAULT 4",
-						"ALTER TABLE indexing_profiles ADD COLUMN `createFolderFromLeadingCharacters` tinyint(1) DEFAULT 1",
-						"UPDATE indexing_profiles SET `numCharsToCreateFolderFrom` = 7 WHERE name = 'hoopla'",
-				)
+			'title'       => 'Indexing Profiles - Individual Folder Creation',
+			'description' => 'Determine how marc record folders should be created',
+			'sql'         => array(
+				"ALTER TABLE indexing_profiles ADD COLUMN `numCharsToCreateFolderFrom` int(11) DEFAULT 4",
+				"ALTER TABLE indexing_profiles ADD COLUMN `createFolderFromLeadingCharacters` tinyint(1) DEFAULT 1",
+				"UPDATE indexing_profiles SET `numCharsToCreateFolderFrom` = 7 WHERE name = 'hoopla'",
+			)
 		),
 
 		'indexing_profile_dueDateFormat' => array(
-				'title' => 'Indexing Profiles - Due Date Format',
-				'description' => 'Set the Due Date Format for an indexing profile',
-				'continueOnError' => true,
-				'sql' => array(
-						"ALTER TABLE indexing_profiles ADD COLUMN `dueDateFormat` varchar(20) DEFAULT 'yyMMdd'",
-						"updateDueDateFormat",
-				)
+			'title'           => 'Indexing Profiles - Due Date Format',
+			'description'     => 'Set the Due Date Format for an indexing profile',
+			'continueOnError' => true,
+			'sql'             => array(
+				"ALTER TABLE indexing_profiles ADD COLUMN `dueDateFormat` varchar(20) DEFAULT 'yyMMdd'",
+				"updateDueDateFormat",
+			)
 		),
 
 		'indexing_profile_extendLocationsToSuppress' => array(
-				'title' => 'Indexing Profiles - Extend Locations To Suppress Size',
-				'description' => 'Extend Locations To Suppress Size for an indexing profile',
-				'continueOnError' => true,
-				'sql' => array(
-						"ALTER TABLE indexing_profiles CHANGE `locationsToSuppress` `locationsToSuppress` varchar(255)",
-				)
+			'title'           => 'Indexing Profiles - Extend Locations To Suppress Size',
+			'description'     => 'Extend Locations To Suppress Size for an indexing profile',
+			'continueOnError' => true,
+			'sql'             => array(
+				"ALTER TABLE indexing_profiles CHANGE `locationsToSuppress` `locationsToSuppress` varchar(255)",
+			)
 		),
 
 		'indexing_profile_doAutomaticEcontentSuppression' => array(
-				'title' => 'Indexing Profiles - Do Automatic EContent Suppression',
-				'description' => 'Allow logic for whether or not automatic econtent suppression is enabled or disabled in an indexing profile',
-				'continueOnError' => true,
-				'sql' => array(
-						"ALTER TABLE indexing_profiles ADD COLUMN `doAutomaticEcontentSuppression` tinyint(1) DEFAULT 1",
-				)
+			'title'           => 'Indexing Profiles - Do Automatic EContent Suppression',
+			'description'     => 'Allow logic for whether or not automatic econtent suppression is enabled or disabled in an indexing profile',
+			'continueOnError' => true,
+			'sql'             => array(
+				"ALTER TABLE indexing_profiles ADD COLUMN `doAutomaticEcontentSuppression` tinyint(1) DEFAULT 1",
+			)
 		),
 
 		'indexing_profile_groupUnchangedFiles' => array(
-				'title' => 'Indexing Profiles - Group Unchanged Files',
-				'description' => 'Allow logic for whether or not files that haven\'t changed since the last grouping are regrouped',
-				'continueOnError' => true,
-				'sql' => array(
-						"ALTER TABLE indexing_profiles ADD COLUMN `groupUnchangedFiles` tinyint(1) DEFAULT 0",
-				)
+			'title'           => 'Indexing Profiles - Group Unchanged Files',
+			'description'     => 'Allow logic for whether or not files that haven\'t changed since the last grouping are regrouped',
+			'continueOnError' => true,
+			'sql'             => array(
+				"ALTER TABLE indexing_profiles ADD COLUMN `groupUnchangedFiles` tinyint(1) DEFAULT 0",
+			)
 		),
 
 		'indexing_profile_record_number_subfield' => array(
-			'title' => 'Indexing Profiles - recordNumberField setting',
+			'title'       => 'Indexing Profiles - recordNumberField setting',
 			'description' => 'Allow the record number sub-field to be specified.',
-			'sql' => array(
+			'sql'         => array(
 				"ALTER TABLE indexing_profiles ADD COLUMN `recordNumberField` char(1) DEFAULT 'a' ",
 			)
 		),
 
 		'indexing_profile_format_determination_setting' => array(
-			'title' => 'Indexing Profiles - Format determination setting, & MatTypes to ignore settings',
+			'title'       => 'Indexing Profiles - Format determination setting, & MatTypes to ignore settings',
 			'description' => 'When format source is bib, setting to choose type of format determination',
-			'sql' => array(
+			'sql'         => array(
 				"ALTER TABLE `indexing_profiles` ADD COLUMN `formatDeterminationMethod` varchar(20) DEFAULT 'bib' ",
 				"ALTER TABLE `indexing_profiles` ADD COLUMN `materialTypesToIgnore` varchar(50) ",
 			)
 		),
 
 		'translation_map_regex' => array(
-			'title' => 'Translation Maps Regex',
+			'title'       => 'Translation Maps Regex',
 			'description' => 'Setup Translation Maps to use regular expressions',
-			'sql' => array(
+			'sql'         => array(
 				"ALTER TABLE translation_maps ADD COLUMN `usesRegularExpressions` tinyint(1) DEFAULT 0",
 			)
 		),
 
 		'setup_default_indexing_profiles' => array(
-			'title' => 'Setup Default Indexing Profiles',
+			'title'       => 'Setup Default Indexing Profiles',
 			'description' => 'Setup indexing profiles based off historic information',
-			'sql' => array(
+			'sql'         => array(
 				'setupIndexingProfiles'
 			)
 		),
 
 		'volume_information' => array(
-			'title' => 'Volume Information',
+			'title'       => 'Volume Information',
 			'description' => 'Store information about volumes for use within display.  These do not need to be indexed independently.',
-			'sql' => array(
+			'sql'         => array(
 				"CREATE TABLE IF NOT EXISTS `ils_volume_info` (
 							  `id` int(11) NOT NULL AUTO_INCREMENT,
 							  `recordId` varchar(50) NOT NULL COMMENT 'Full Record ID including the source',
@@ -332,10 +332,10 @@ function getIndexingUpdates() {
 		),
 
 		'last_check_in_status_adjustments' => array(
-				'title' => 'Last Check In Time Status Adjustments',
-				'description' => 'Add additional fields to adjust status based on last check-in time.',
-				'sql' => array(
-						"CREATE TABLE IF NOT EXISTS `time_to_reshelve` (
+			'title'       => 'Last Check In Time Status Adjustments',
+			'description' => 'Add additional fields to adjust status based on last check-in time.',
+			'sql'         => array(
+				"CREATE TABLE IF NOT EXISTS `time_to_reshelve` (
 							  `id` int(11) NOT NULL AUTO_INCREMENT,
 							  `indexingProfileId` int(11) NOT NULL,
 							  `locations` varchar(100) NOT NULL,
@@ -346,58 +346,58 @@ function getIndexingUpdates() {
 							  PRIMARY KEY (`id`),
 							  KEY (indexingProfileId)
 							) ENGINE=InnoDB DEFAULT CHARSET=utf8",
-				)
+			)
 		),
 
-			'records_to_include_2017-06' => array(
-					'title' => 'Records To Include Updates 2017.06',
-					'description' => 'Additional control over what is included, URL rewriting.',
-					'sql' => array(
-							"ALTER TABLE library_records_to_include ADD COLUMN iType VARCHAR(100)",
-							"ALTER TABLE library_records_to_include ADD COLUMN audience VARCHAR(100)",
-							"ALTER TABLE library_records_to_include ADD COLUMN format VARCHAR(100)",
-							"ALTER TABLE library_records_to_include ADD COLUMN marcTagToMatch VARCHAR(100)",
-							"ALTER TABLE library_records_to_include ADD COLUMN marcValueToMatch VARCHAR(100)",
-							"ALTER TABLE library_records_to_include ADD COLUMN includeExcludeMatches TINYINT default 1",
-							"ALTER TABLE library_records_to_include ADD COLUMN urlToMatch VARCHAR(100)",
-							"ALTER TABLE library_records_to_include ADD COLUMN urlReplacement VARCHAR(100)",
+		'records_to_include_2017-06' => array(
+			'title'       => 'Records To Include Updates 2017.06',
+			'description' => 'Additional control over what is included, URL rewriting.',
+			'sql'         => array(
+				"ALTER TABLE library_records_to_include ADD COLUMN iType VARCHAR(100)",
+				"ALTER TABLE library_records_to_include ADD COLUMN audience VARCHAR(100)",
+				"ALTER TABLE library_records_to_include ADD COLUMN format VARCHAR(100)",
+				"ALTER TABLE library_records_to_include ADD COLUMN marcTagToMatch VARCHAR(100)",
+				"ALTER TABLE library_records_to_include ADD COLUMN marcValueToMatch VARCHAR(100)",
+				"ALTER TABLE library_records_to_include ADD COLUMN includeExcludeMatches TINYINT default 1",
+				"ALTER TABLE library_records_to_include ADD COLUMN urlToMatch VARCHAR(100)",
+				"ALTER TABLE library_records_to_include ADD COLUMN urlReplacement VARCHAR(100)",
 
-							"ALTER TABLE location_records_to_include ADD COLUMN iType VARCHAR(100)",
-							"ALTER TABLE location_records_to_include ADD COLUMN audience VARCHAR(100)",
-							"ALTER TABLE location_records_to_include ADD COLUMN format VARCHAR(100)",
-							"ALTER TABLE location_records_to_include ADD COLUMN marcTagToMatch VARCHAR(100)",
-							"ALTER TABLE location_records_to_include ADD COLUMN marcValueToMatch VARCHAR(100)",
-							"ALTER TABLE location_records_to_include ADD COLUMN includeExcludeMatches TINYINT default 1",
-							"ALTER TABLE location_records_to_include ADD COLUMN urlToMatch VARCHAR(100)",
-							"ALTER TABLE location_records_to_include ADD COLUMN urlReplacement VARCHAR(100)",
-					)
-			),
+				"ALTER TABLE location_records_to_include ADD COLUMN iType VARCHAR(100)",
+				"ALTER TABLE location_records_to_include ADD COLUMN audience VARCHAR(100)",
+				"ALTER TABLE location_records_to_include ADD COLUMN format VARCHAR(100)",
+				"ALTER TABLE location_records_to_include ADD COLUMN marcTagToMatch VARCHAR(100)",
+				"ALTER TABLE location_records_to_include ADD COLUMN marcValueToMatch VARCHAR(100)",
+				"ALTER TABLE location_records_to_include ADD COLUMN includeExcludeMatches TINYINT default 1",
+				"ALTER TABLE location_records_to_include ADD COLUMN urlToMatch VARCHAR(100)",
+				"ALTER TABLE location_records_to_include ADD COLUMN urlReplacement VARCHAR(100)",
+			)
+		),
 
-			'records_to_include_2018-03' => array(
-					'title' => 'Increase Records To Include URL Replacement Column',
-					'description' => 'Increase Records To Include URL Replacement Column to 255 characters.',
-					'sql' => array(
-							"ALTER TABLE `library_records_to_include` CHANGE COLUMN `urlReplacement` `urlReplacement` VARCHAR(255) NULL DEFAULT NULL",
-							"ALTER TABLE `location_records_to_include` CHANGE COLUMN `urlReplacement` `urlReplacement` VARCHAR(255) NULL DEFAULT NULL",
-					)
-			),
+		'records_to_include_2018-03' => array(
+			'title'       => 'Increase Records To Include URL Replacement Column',
+			'description' => 'Increase Records To Include URL Replacement Column to 255 characters.',
+			'sql'         => array(
+				"ALTER TABLE `library_records_to_include` CHANGE COLUMN `urlReplacement` `urlReplacement` VARCHAR(255) NULL DEFAULT NULL",
+				"ALTER TABLE `location_records_to_include` CHANGE COLUMN `urlReplacement` `urlReplacement` VARCHAR(255) NULL DEFAULT NULL",
+			)
+		),
 
 		'indexing_profile_material_type_field' => array(
-			'title' => 'Indexing Profiles - material type setting',
+			'title'       => 'Indexing Profiles - material type setting',
 			'description' => 'Material type field setting',
-			'sql' => array(
+			'sql'         => array(
 				"ALTER TABLE indexing_profiles ADD COLUMN materialTypeField VARCHAR(3)",
 			)
 		),
 		/* 2019.04.0 */
-		'ptype_label' => array(
-			'title' => 'P-type label field',
+		'ptype_label'                          => array(
+			'title'       => 'P-type label field',
 			'description' => 'Add P-type label field.',
-			'sql' => array(
+			'sql'         => array(
 				"ALTER TABLE ptype ADD COLUMN label VARCHAR(60) NULL",
 			)
 		),
-		'refactor_hoopla_record_driver' => array(
+		'refactor_hoopla_record_driver'        => array(
 			'title'       => 'Change Hoopla Record Driver Name',
 			'description' => 'Change the name of the Hoopla Record Driver in the Hoopla indexing profile',
 			'sql'         => array(
@@ -405,6 +405,24 @@ function getIndexingUpdates() {
 			),
 		),
 
+		//2019.07.0
+		'create_extract_info_table' => array(
+			'title'       => 'Create ILS Extract Info table',
+			'description' => 'Create a table to track when an ils record was last extracted and if it was deleted.',
+			'sql'         => array(
+				'CREATE TABLE `ils_extract_info` (
+					  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+					  `indexingProfileId` INT NOT NULL,
+					  `ilsId` VARCHAR(50) NOT NULL,
+					  `lastExtracted` INT NULL,
+					  `deleted` DATE NULL,
+					  PRIMARY KEY (`id`),
+					  UNIQUE INDEX `ilsId_UNIQUE` (`indexingProfileId` ASC, `ilsId` ASC)
+					)
+					ENGINE = InnoDB
+					DEFAULT CHARACTER SET = utf8;',
+			),
+		)
 	);
 }
 
@@ -412,7 +430,7 @@ function setupIndexingProfiles($update){
 	global $configArray;
 	$profileExists = false;
 	//Create a default indexing profile
-	$ilsIndexingProfile = new IndexingProfile();
+	$ilsIndexingProfile       = new IndexingProfile();
 	$ilsIndexingProfile->name = 'ils';
 	if ($ilsIndexingProfile->find(true)){
 		$profileExists = true;
@@ -466,31 +484,31 @@ function setupIndexingProfiles($update){
 
 	if ($profileExists){
 		$ilsIndexingProfile->update();
-	}else {
+	}else{
 		$ilsIndexingProfile->insert();
 	}
 
 	//Create a profile for hoopla
-	$profileExists = false;
-	$hooplaIndexingProfile = new IndexingProfile();
+	$profileExists               = false;
+	$hooplaIndexingProfile       = new IndexingProfile();
 	$hooplaIndexingProfile->name = 'hoopla';
 	if ($hooplaIndexingProfile->find(true)){
 		$profileExists = true;
 	}
-	$hooplaIndexingProfile->marcPath = $configArray['Hoopla']['marcPath'];
-	$hooplaIndexingProfile->marcEncoding = $configArray['Hoopla']['marcEncoding'];
+	$hooplaIndexingProfile->marcPath           = $configArray['Hoopla']['marcPath'];
+	$hooplaIndexingProfile->marcEncoding       = $configArray['Hoopla']['marcEncoding'];
 	$hooplaIndexingProfile->individualMarcPath = $configArray['Hoopla']['individualMarcPath'];
-	$hooplaIndexingProfile->groupingClass = 'HooplaRecordGrouper';
-	$hooplaIndexingProfile->indexingClass = 'Hoopla';
-	$hooplaIndexingProfile->recordDriver = 'HooplaRecordDriver';
+	$hooplaIndexingProfile->groupingClass      = 'HooplaRecordGrouper';
+	$hooplaIndexingProfile->indexingClass      = 'Hoopla';
+	$hooplaIndexingProfile->recordDriver       = 'HooplaRecordDriver';
 	$hooplaIndexingProfile->recordUrlComponent = 'Hoopla';
-	$hooplaIndexingProfile->formatSource = 'bib';
-	$hooplaIndexingProfile->recordNumberTag = '001';
+	$hooplaIndexingProfile->formatSource       = 'bib';
+	$hooplaIndexingProfile->recordNumberTag    = '001';
 	$hooplaIndexingProfile->recordNumberPrefix = '';
-	$hooplaIndexingProfile->itemTag = '';
+	$hooplaIndexingProfile->itemTag            = '';
 	if ($profileExists){
 		$hooplaIndexingProfile->update();
-	}else {
+	}else{
 		$hooplaIndexingProfile->insert();
 	}
 
@@ -498,38 +516,38 @@ function setupIndexingProfiles($update){
 	$allLibraries = new Library();
 	$allLibraries->find();
 	while ($allLibraries->fetch()){
-		$ownershipRule = new LibraryRecordOwned();
-		$ownershipRule->indexingProfileId  = $ilsIndexingProfile->id;
-		$ownershipRule->libraryId = $allLibraries->libraryId;
-		$ownershipRule->location = $allLibraries->ilsCode;
-		$ownershipRule->subLocation = '';
+		$ownershipRule                    = new LibraryRecordOwned();
+		$ownershipRule->indexingProfileId = $ilsIndexingProfile->id;
+		$ownershipRule->libraryId         = $allLibraries->libraryId;
+		$ownershipRule->location          = $allLibraries->ilsCode;
+		$ownershipRule->subLocation       = '';
 		$ownershipRule->insert();
 
 		//Other print titles
 		if (!$allLibraries->restrictSearchByLibrary){
-			$inclusionRule = new LibraryRecordToInclude();
-			$inclusionRule->indexingProfileId = $ilsIndexingProfile->id;
-			$inclusionRule->libraryId = $allLibraries->libraryId;
-			$inclusionRule->location = ".*";
-			$inclusionRule->subLocation = '';
+			$inclusionRule                      = new LibraryRecordToInclude();
+			$inclusionRule->indexingProfileId   = $ilsIndexingProfile->id;
+			$inclusionRule->libraryId           = $allLibraries->libraryId;
+			$inclusionRule->location            = ".*";
+			$inclusionRule->subLocation         = '';
 			$inclusionRule->includeHoldableOnly = 1;
-			$inclusionRule->includeEContent = 0;
+			$inclusionRule->includeEContent     = 0;
 			$inclusionRule->includeItemsOnOrder = 0;
-			$inclusionRule->weight = 1;
+			$inclusionRule->weight              = 1;
 			$inclusionRule->insert();
 		}
 
 		//eContent titles
 		if ($allLibraries->econtentLocationsToInclude){
-			$inclusionRule = new LibraryRecordToInclude();
-			$inclusionRule->indexingProfileId = $ilsIndexingProfile->id;
-			$inclusionRule->libraryId = $allLibraries->libraryId;
-			$inclusionRule->location = str_replace(',', '|', $allLibraries->econtentLocationsToInclude);
-			$inclusionRule->subLocation = '';
+			$inclusionRule                      = new LibraryRecordToInclude();
+			$inclusionRule->indexingProfileId   = $ilsIndexingProfile->id;
+			$inclusionRule->libraryId           = $allLibraries->libraryId;
+			$inclusionRule->location            = str_replace(',', '|', $allLibraries->econtentLocationsToInclude);
+			$inclusionRule->subLocation         = '';
 			$inclusionRule->includeHoldableOnly = 0;
-			$inclusionRule->includeEContent = 1;
+			$inclusionRule->includeEContent     = 1;
 			$inclusionRule->includeItemsOnOrder = 0;
-			$inclusionRule->weight = 1;
+			$inclusionRule->weight              = 1;
 			$inclusionRule->insert();
 		}
 
@@ -552,54 +570,54 @@ function setupIndexingProfiles($update){
 	$allLocations = new Location();
 	$allLocations->find();
 	while ($allLocations->fetch()){
-		$ownershipRule = new LocationRecordOwned();
-		$ownershipRule->indexingProfileId  = $ilsIndexingProfile->id;
-		$ownershipRule->locationId = $allLocations->locationId;
-		$ownershipRule->location = $allLocations->code;
-		$ownershipRule->subLocation = '';
+		$ownershipRule                    = new LocationRecordOwned();
+		$ownershipRule->indexingProfileId = $ilsIndexingProfile->id;
+		$ownershipRule->locationId        = $allLocations->locationId;
+		$ownershipRule->location          = $allLocations->code;
+		$ownershipRule->subLocation       = '';
 		$ownershipRule->insert();
 
 		//Other print titles
 		if ($allLocations->restrictSearchByLocation){
-			$inclusionRule = new LocationRecordToInclude();
-			$inclusionRule->indexingProfileId = $ilsIndexingProfile->id;
-			$inclusionRule->locationId = $allLocations->locationId;
-			$inclusionRule->location = ".*";
-			$inclusionRule->subLocation = '';
+			$inclusionRule                      = new LocationRecordToInclude();
+			$inclusionRule->indexingProfileId   = $ilsIndexingProfile->id;
+			$inclusionRule->locationId          = $allLocations->locationId;
+			$inclusionRule->location            = ".*";
+			$inclusionRule->subLocation         = '';
 			$inclusionRule->includeHoldableOnly = 1;
-			$inclusionRule->includeEContent = 0;
+			$inclusionRule->includeEContent     = 0;
 			$inclusionRule->includeItemsOnOrder = 0;
-			$inclusionRule->weight = 1;
+			$inclusionRule->weight              = 1;
 			$inclusionRule->insert();
 		}
 
 		//eContent titles
 		if ($allLocations->econtentLocationsToInclude){
-			$inclusionRule = new LocationRecordToInclude();
-			$inclusionRule->indexingProfileId = $ilsIndexingProfile->id;
-			$inclusionRule->locationId = $allLocations->locationId;
-			$inclusionRule->location = str_replace(',', '|', $allLibraries->econtentLocationsToInclude);
-			$inclusionRule->subLocation = '';
+			$inclusionRule                      = new LocationRecordToInclude();
+			$inclusionRule->indexingProfileId   = $ilsIndexingProfile->id;
+			$inclusionRule->locationId          = $allLocations->locationId;
+			$inclusionRule->location            = str_replace(',', '|', $allLibraries->econtentLocationsToInclude);
+			$inclusionRule->subLocation         = '';
 			$inclusionRule->includeHoldableOnly = 0;
-			$inclusionRule->includeEContent = 1;
+			$inclusionRule->includeEContent     = 1;
 			$inclusionRule->includeItemsOnOrder = 0;
-			$inclusionRule->weight = 1;
+			$inclusionRule->weight              = 1;
 			$inclusionRule->insert();
 		}
 
 		//Hoopla titles
-		$relatedLibrary = new Library();
+		$relatedLibrary            = new Library();
 		$relatedLibrary->libraryId = $allLocations->libraryId;
 		if ($relatedLibrary->find(true) && $relatedLibrary->includeHoopla){
-			$inclusionRule = new LocationRecordToInclude();
-			$inclusionRule->indexingProfileId = $hooplaIndexingProfile->id;
-			$inclusionRule->locationId = $allLocations->locationId;
-			$inclusionRule->location = '.*';
-			$inclusionRule->subLocation = '';
+			$inclusionRule                      = new LocationRecordToInclude();
+			$inclusionRule->indexingProfileId   = $hooplaIndexingProfile->id;
+			$inclusionRule->locationId          = $allLocations->locationId;
+			$inclusionRule->location            = '.*';
+			$inclusionRule->subLocation         = '';
 			$inclusionRule->includeHoldableOnly = 0;
-			$inclusionRule->includeEContent = 1;
+			$inclusionRule->includeEContent     = 1;
 			$inclusionRule->includeItemsOnOrder = 0;
-			$inclusionRule->weight = 1;
+			$inclusionRule->weight              = 1;
 			$inclusionRule->insert();
 		}
 	}
