@@ -15,10 +15,10 @@ trait MARC_AJAX_Basic {
 	function __construct(){
 
 		// Add allowed AJAX method calls to the ones already set
-		$this->methodsThatRepondWithJSONUnstructured  = array_merge($this->methodsThatRepondWithJSONUnstructured, array(
+		$this->methodsThatRespondWithJSONUnstructured  = array_merge($this->methodsThatRespondWithJSONUnstructured, array(
 			'reloadCover',
 		));
-		$this->methodsThatRepondWithJSONResultWrapper = array_merge($this->methodsThatRepondWithJSONResultWrapper, array());
+		$this->methodsThatRespondWithJSONResultWrapper = array_merge($this->methodsThatRespondWithJSONResultWrapper, array());
 		$this->methodsThatRespondWithHTML             = array_merge($this->methodsThatRespondWithHTML, array());
 		$this->methodsThatRespondWithXML              = array_merge($this->methodsThatRespondWithXML, array());
 		$this->methodsThatRespondThemselves           = array_merge($this->methodsThatRespondThemselves, array(
