@@ -884,7 +884,7 @@ class GroupedWorkDriver extends RecordInterface {
 			$groupedWorkDetails['Grouping Title']       = $groupedWork->full_title;
 			$groupedWorkDetails['Grouping Author']      = $groupedWork->author;
 			$groupedWorkDetails['Grouping Category']    = $groupedWork->grouping_category;
-			$groupedWorkDetails['Last Grouping Update'] = date('Y-m-d H:i:sA', $groupedWork->date_updated);
+			$groupedWorkDetails['Last Grouping Update'] = empty($groupedWork->date_updated) ? 'Marked for re-index' : date('Y-m-d H:i:sA', $groupedWork->date_updated);
 			if (array_key_exists('last_indexed', $fields)){
 				$groupedWorkDetails['Last Indexed'] = date('Y-m-d H:i:sA', strtotime($fields['last_indexed']));
 			}
@@ -1725,6 +1725,7 @@ class GroupedWorkDriver extends RecordInterface {
 // For Reference
 //			static $statusRankings = array(
 //				'currently unavailable' => 1,
+//			  'available to order'    => 1.6,
 //				'on order'              => 2,
 //				'coming soon'           => 3,
 //				'in processing'         => 3.5,
@@ -1734,18 +1735,19 @@ class GroupedWorkDriver extends RecordInterface {
 //				'in transit'           => 6.5,
 //				'on shelf'              => 7
 //			);
-			if (isset($curRecord['groupedStatus']) && $curRecord['groupedStatus'] != ''){
-				$groupedStatus = $relatedManifestations[$curRecord['format']]['groupedStatus'];
+			if (!empty($curRecord['groupedStatus'])){
+				$manifestationCurrentGroupedStatus = $relatedManifestations[$curRecord['format']]['groupedStatus'];
 
 				//Check to see if we have a better status here
 				if (array_key_exists(strtolower($curRecord['groupedStatus']), $statusRankings)){
-					if ($groupedStatus == ''){
-						$groupedStatus = $curRecord['groupedStatus'];
-						//Check to see if we are getting a better status
-					}elseif ($statusRankings[strtolower($curRecord['groupedStatus'])] > $statusRankings[strtolower($groupedStatus)]){
-						$groupedStatus = $curRecord['groupedStatus'];
+					if (empty($manifestationCurrentGroupedStatus)){
+						$manifestationCurrentGroupedStatus = $curRecord['groupedStatus']; // Use the first one we find if we haven't set a grouped status yet
+					}elseif ($statusRankings[strtolower($curRecord['groupedStatus'])] > $statusRankings[strtolower($manifestationCurrentGroupedStatus)]){
+						$manifestationCurrentGroupedStatus = $curRecord['groupedStatus']; // Update to the better ranked status if we find a better ranked one
 					}
-					$relatedManifestations[$curRecord['format']]['groupedStatus'] = $groupedStatus;
+					//Update the manifestation's grouped status elements
+					$relatedManifestations[$curRecord['format']]['groupedStatus']      = $manifestationCurrentGroupedStatus;
+					$relatedManifestations[$curRecord['format']]['isAvailableToOrder'] = $manifestationCurrentGroupedStatus == 'Available to Order';
 				}
 			}
 		}
@@ -2608,7 +2610,7 @@ class GroupedWorkDriver extends RecordInterface {
 
 	private static $statusRankings = array(
 		'Currently Unavailable' => 1,
-		'Available to Order'    => 1.5,
+		'Available to Order'    => 1.6,
 		'On Order'              => 2,
 		'Coming Soon'           => 3,
 		'In Processing'         => 3.5,
@@ -3027,7 +3029,8 @@ class GroupedWorkDriver extends RecordInterface {
 			if ($bookable){
 				$relatedRecord['bookable'] = true;
 			}
-			$relatedRecord['groupedStatus'] = GroupedWorkDriver::keepBestGroupedStatus($relatedRecord['groupedStatus'], $groupedStatus);
+			$relatedRecord['groupedStatus']      = GroupedWorkDriver::keepBestGroupedStatus($relatedRecord['groupedStatus'], $groupedStatus);
+			$relatedRecord['isAvailableToOrder'] = $relatedRecord['groupedStatus'] == 'Available to Order';
 
 			$volume   = null;
 			$volumeId = null;
@@ -3112,7 +3115,7 @@ class GroupedWorkDriver extends RecordInterface {
 				'allLibraryUseOnly'  => $inLibraryUseOnly,
 				'displayByDefault'   => $displayByDefault,
 				'onOrderCopies'      => $isOrderItem ? $numCopies : 0,
-				'isAvailableToOrder' => $groupedStatus == 'Available to Order', // special status for patron-driven acquisitions; The item is available for the patron to request it be Ordered.
+//				'isAvailableToOrder' => $groupedStatus == 'Available to Order', // special status for patron-driven acquisitions; The item is available for the patron to request it be Ordered.
 				'status'             => $groupedStatus,
 				'statusFull'         => $status,
 				'available'          => $available,

@@ -17,11 +17,11 @@ import java.util.*;
  */
 class SideLoadedEContentProcessor extends IlsRecordProcessor{
 	private PreparedStatement getDateAddedStmt;
-	SideLoadedEContentProcessor(GroupedWorkIndexer indexer, Connection vufindConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
-		super(indexer, vufindConn, indexingProfileRS, logger, fullReindex);
+	SideLoadedEContentProcessor(GroupedWorkIndexer indexer, Connection pikaConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
+		super(indexer, pikaConn, indexingProfileRS, logger, fullReindex);
 
 		try{
-			getDateAddedStmt = vufindConn.prepareStatement("SELECT dateFirstDetected FROM ils_marc_checksums WHERE ilsId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			getDateAddedStmt = pikaConn.prepareStatement("SELECT dateFirstDetected FROM ils_marc_checksums WHERE ilsId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 		}catch (Exception e){
 			logger.error("Unable to setup prepared statement for date added to catalog");
 		}
@@ -110,7 +110,7 @@ class SideLoadedEContentProcessor extends IlsRecordProcessor{
 
 		RecordInfo relatedRecord = groupedWork.addRelatedRecord(profileType, identifier);
 		relatedRecord.addItem(itemInfo);
-		loadEContentUrl(record, itemInfo);
+		loadEContentUrl(record, itemInfo, identifier);
 
 		loadEContentFormatInformation(record, relatedRecord, itemInfo);
 

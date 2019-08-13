@@ -136,8 +136,8 @@ public class SierraExportAPIMain {
 					//get input from user
 					//  open up standard input
 					try (BufferedReader br = new BufferedReader(new InputStreamReader(System.in))) {
-						System.out.print("Enter the full Sierra record Id to process (with trailing check digit) : ");
-						singleRecordToProcess = br.readLine().replaceAll(".b", "").trim();
+						System.out.print("Enter the full Sierra record Id to process (with trailing check digit [use x if you don't know it]) : ");
+						singleRecordToProcess = br.readLine().replaceAll(".b", "").replaceAll("b", "").trim();
 						singleRecordToProcess = singleRecordToProcess.substring(0, singleRecordToProcess.length() - 1);
 					} catch (IOException e) {
 						System.out.println("Error while reading input from user." + e.toString());
@@ -1214,7 +1214,7 @@ public class SierraExportAPIMain {
 						String    bCode3           = fixedFieldResults.getJSONObject("fixedFields").getJSONObject("31").getString("value");
 						sierraFixedField.addSubfield(marcFactory.newSubfield(indexingProfile.bcode3Subfield, bCode3));
 					}
-					if (indexingProfile.itemRecordNumberSubfield != ' ') {
+					if (indexingProfile.materialTypeSubField != ' ') {
 						String matType = fixedFieldResults.getJSONObject("fixedFields").getJSONObject("30").getString("value");
 						sierraFixedField.addSubfield(marcFactory.newSubfield(indexingProfile.materialTypeSubField, matType));
 					}

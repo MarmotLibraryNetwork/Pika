@@ -67,7 +67,7 @@
 				</tr>
 				<tr>
 					<th>Last Grouped Work Modification Time</th>
-					<td>{$lastGroupedWorkModificationTime|date_format:"%b %d, %Y %r"}</td>
+					<td>{if $lastGroupedWorkModificationTime == 'null'}Marked for re-index{else}{$lastGroupedWorkModificationTime|date_format:"%b %d, %Y %r"}{/if}</td>
 				</tr>
 			</table>
 

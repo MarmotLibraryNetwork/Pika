@@ -123,6 +123,10 @@ cd /usr/local/vufind-plus/vufind/cron;./HOOPLA.sh ${PIKASERVER} >> ${OUTPUT_FILE
 /usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} marmot/rbdigital zinio >> ${OUTPUT_FILE}
 /usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} marmot/rbdigitalBackIssues zinio/backIssues >> ${OUTPUT_FILE}
 
+# Marmot RBDigital (magazine) Marc Updates Test Sites
+/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER}  marmot/rbdigtial_active_test rbdigital_active_test/marmot >> ${OUTPUT_FILE}
+/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} marmot/rbdigtial_backissue_test rbdigital_backissue_test/marmot >> ${OUTPUT_FILE}
+
 # Western Oxford Reference Marc Updates
 /usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} western/oxfordReference oxfordReference/western >> ${OUTPUT_FILE}
 
