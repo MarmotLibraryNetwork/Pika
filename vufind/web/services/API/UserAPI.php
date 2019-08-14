@@ -27,7 +27,7 @@ require_once ROOT_DIR . '/CatalogConnection.php';
  */
 class UserAPI extends AJAXHandler {
 
-	protected $methodsThatRepondWithJSONResultWrapper = array(
+	protected $methodsThatRespondWithJSONResultWrapper = array(
 		'isLoggedIn',
 		'login',
 		'logout',

@@ -30,7 +30,7 @@ require_once ROOT_DIR . '/sys/MaterialsRequestStatus.php';
  */
 class MaterialsRequest_AJAX extends AJAXHandler {
 
-	protected $methodsThatRepondWithJSONUnstructured = array(
+	protected $methodsThatRespondWithJSONUnstructured = array(
 		'CancelRequest',
 		'GetWorldCatTitles',
 		'GetWorldCatIdentifiers',

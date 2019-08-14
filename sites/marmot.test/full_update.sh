@@ -73,20 +73,17 @@ sleep 2m
 tar -czf /data/vufind-plus/${PIKASERVER}/solr_master_backup.tar.gz /data/vufind-plus/${PIKASERVER}/solr_master/grouped/index/ /data/vufind-plus/${PIKASERVER}/grouped_work_primary_identifiers.sql >> ${OUTPUT_FILE}
 rm /data/vufind-plus/${PIKASERVER}/grouped_work_primary_identifiers.sql
 
-#echo "Finished index backups"
+echo "Finished index backups" >> ${OUTPUT_FILE}
 
 #Restart Solr
 cd /usr/local/vufind-plus/sites/${PIKASERVER}; ./${PIKASERVER}.sh restart
 
-#echo "Finished solr restart"
+echo "Finished solr restart" >> ${OUTPUT_FILE}
 
-if [ $USE_SIERRA_API_EXTRACT -ne 1 ]; then
-	#Extract from ILS
-	#Do not copy the Sierra export, we will just
+	#If a fresh full export file for the ILS has been sent, it should get processed
 	/usr/local/vufind-plus/sites/${PIKASERVER}/copySierraExport.sh >> ${OUTPUT_FILE}
-fi
+#	echo "Finished export copy" >> ${OUTPUT_FILE}
 
-#echo "Finished export copy"
 
 #Extract from Hoopla
 cd /usr/local/vufind-plus/vufind/cron;./HOOPLA.sh ${PIKASERVER} >> ${OUTPUT_FILE}
@@ -237,8 +234,8 @@ cd /usr/local/vufind-plus/sites/${PIKASERVER}; ./${PIKASERVER}.sh restart
 OLDDPLAFEED=$(find /usr/local/vufind-plus/vufind/web -name "dplaFeed.json" -mtime +30)
 if [ -n "$OLDDPLAFEED" ]
 then
-	echo "The DPLA feed file is older than 30 days : "
-	echo "$OLDDPLAFEED"
+	echo "The DPLA feed file is older than 30 days : " >> ${OUTPUT_FILE}
+	echo "$OLDDPLAFEED" >> ${OUTPUT_FILE}
 fi
 
 

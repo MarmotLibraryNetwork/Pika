@@ -12,7 +12,7 @@ require_once ROOT_DIR . '/AJAXHandler.php';
 
 class Author_AJAX extends AJAXHandler {
 
-	protected $methodsThatRepondWithJSONUnstructured = array(
+	protected $methodsThatRespondWithJSONUnstructured = array(
 		'Author_AJAX',
 	);
 
