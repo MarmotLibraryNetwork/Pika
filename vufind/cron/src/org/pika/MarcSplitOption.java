@@ -12,7 +12,7 @@ import java.util.regex.Pattern;
 
 /**
  * Information about how to split a MARC record
- * VuFind-Plus
+ * Pika
  * User: Mark Noble
  * Date: 11/21/2014
  * Time: 6:18 PM
@@ -31,7 +31,7 @@ class MarcSplitOption {
 		if (!basePathFile.exists()){
 			basePathFile.mkdirs();
 		}
-		marcWriter = new MarcStreamWriter(new FileOutputStream(basePath + "/" + filename));
+		marcWriter = new MarcStreamWriter(new FileOutputStream(basePath + "/" + filename), "UTF8", true);
 	}
 
 	void setLocationsToInclude(String locationsToInclude) {
