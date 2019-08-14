@@ -31,7 +31,7 @@ class Variable extends DB_DataObject {
 
 	static function getObjectStructure(){
 		$structure = array(
-			'id'    => array(
+			'id'          => array(
 				'property'    => 'id',
 				'type'        => 'hidden',
 				'label'       => 'Id',
@@ -39,7 +39,7 @@ class Variable extends DB_DataObject {
 				'primaryKey'  => true,
 				'storeDb'     => true,
 			),
-			'name'  => array(
+			'name'        => array(
 				'property'    => 'name',
 				'type'        => 'text',
 				'label'       => 'Name',
@@ -48,7 +48,7 @@ class Variable extends DB_DataObject {
 				'size'        => 100,
 				'storeDb'     => true,
 			),
-			'value' => array(
+			'value'       => array(
 				'property'    => 'value',
 				'type'        => 'text',
 				'label'       => 'Value',
@@ -57,7 +57,24 @@ class Variable extends DB_DataObject {
 				'maxLength'   => 255,
 				'size'        => 100,
 			),
+			'timeDisplay' => array(
+				'property'    => 'timeDisplay',
+				'type'        => 'text',
+				'label'       => 'Date Time',
+				'description' => 'Date Time equivalent for any time stamp variables',
+				'storeDb'     => false,
+			),
 		);
 		return $structure;
+	}
+
+	/**
+	 * Adds a header for this object in the edit form pages
+	 * @return string|null
+	 */
+	function label(){
+		if (!empty($this->name)){
+			return $this->name;
+		}
 	}
 } 
