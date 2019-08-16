@@ -91,6 +91,8 @@ cd /usr/local/vufind-plus/vufind/cron;./GetHooplaFromMarmot.sh >> ${OUTPUT_FILE}
 /usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} sacramento/rbdigital_magazine/folsom rbdigital_magazine/folsom >> ${OUTPUT_FILE}
 /usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} sacramento/rbdigital_magazine/woodland rbdigital_magazine/woodland >> ${OUTPUT_FILE}
 
+#Enki
+/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} sacramento/enki/spl enki/spl >> ${OUTPUT_FILE}
 
 
 #Extract Lexile Data
