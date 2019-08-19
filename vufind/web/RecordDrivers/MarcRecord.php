@@ -317,18 +317,30 @@ class MarcRecord extends IndexRecord
 			$user        = UserAccount::getLoggedInUser();
 			$userIsStaff = $user && $user->isStaff();
 			$interface->assign('userIsStaff', $userIsStaff);
+
+			// Determine whether or not we need to show the Re-extract button
+			// (Right now, only appropriate for Sierra libraries)
+			require_once ROOT_DIR . '/sys/Account/AccountProfile.php';
+			$accountProfile   = new AccountProfile();
+			$ilsRecordSources = $accountProfile->fetchAll('id', 'recordSource');
+			if (in_array($this->sourceAndId->getSource(), $ilsRecordSources)){
+				$interface->assign("recordExtractable", true);
+			}
+
 			require_once ROOT_DIR . '/sys/Extracting/IlsExtractInfo.php';
 			$extractInfo                    = new IlsExtractInfo();
 			$extractInfo->indexingProfileId = $this->sourceAndId->getIndexingProfile()->id;
 			$extractInfo->ilsId             = $this->sourceAndId->getRecordId();
 			if ($extractInfo->find(true)){
 				$interface->assign('lastRecordExtractTime', is_null($extractInfo->lastExtracted) ? 'null' : $extractInfo->lastExtracted);
+				// Mark with text 'null' so that the template handles the display properly
 				$interface->assign('recordExtractMarkedDeleted', $extractInfo->deleted);
 			}
 		}
 
 		if ($this->groupedWork != null){
-			$lastGroupedWorkModificationTime = $this->groupedWork->date_updated;
+			$lastGroupedWorkModificationTime = empty($this->groupedWork->date_updated) ? 'null' : $this->groupedWork->date_updated;
+			// Mark with text 'null' so that the template handles the display properly
 			$interface->assign('lastGroupedWorkModificationTime', $lastGroupedWorkModificationTime);
 		}
 
@@ -2007,8 +2019,7 @@ class MarcRecord extends IndexRecord
 	private $holdingSections;
 	private $statusSummary;
 
-	private function loadCopies()
-	{
+	private function loadCopies(){
 		if (!$this->copiesInfoLoaded) {
 			$this->copiesInfoLoaded = true;
 			//Load copy information from the grouped work rather than from the driver.
@@ -2053,8 +2064,7 @@ class MarcRecord extends IndexRecord
 
 	}
 
-	public function assignCopiesInformation()
-	{
+	public function assignCopiesInformation(){
 		$this->loadCopies();
 		global $interface;
 		$hasLastCheckinData = false;
