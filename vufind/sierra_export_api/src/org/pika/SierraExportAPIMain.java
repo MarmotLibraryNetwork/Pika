@@ -13,6 +13,7 @@ import java.util.Date;
 
 import au.com.bytecode.opencsv.CSVReader;
 import au.com.bytecode.opencsv.CSVWriter;
+import netscape.javascript.JSObject;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 import org.apache.solr.client.solrj.impl.ConcurrentUpdateSolrServer;
@@ -199,14 +200,14 @@ public class SierraExportAPIMain {
 			try {
 				long id = Long.parseLong(singleRecordToProcess);
 				initializeRecordGrouper(pikaConn);
-				allowFastExportMethod      = systemVariables.getBooleanValuedVariable("allow_sierra_fast_export");
-				updateExtractInfoStatement = pikaConn.prepareStatement("INSERT INTO ils_extract_info (indexingProfileId, ilsId, lastExtracted) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE lastExtracted=VALUES(lastExtracted)"); // unique key is indexingProfileId and ilsId combined
+				allowFastExportMethod = systemVariables.getBooleanValuedVariable("allow_sierra_fast_export");
+				setUpSqlStatements(pikaConn);
 				updateMarcAndRegroupRecordIds(singleRecordToProcess, Collections.singletonList(id));
 				System.out.println("Extract process for record " + singleRecordToProcess + " finished.");
 				System.exit(0);
-			} catch (SQLException e) {
-				logger.error("Error setting up prepared statements for Record extraction processing", e);
-				System.exit(1);
+//			} catch (SQLException e) {
+//				logger.error("Error setting up prepared statements for Record extraction processing", e);
+//				System.exit(1);
 			} catch (NumberFormatException e) {
 				logger.error("Record " + singleRecordToProcess + " failed to get extracted.", e);
 				System.exit(1);
@@ -489,6 +490,16 @@ public class SierraExportAPIMain {
 		long   updateTime                   = new Date().getTime() / 1000;
 		logger.info("Loading records changed since " + lastExtractDateTimeFormatted);
 
+		setUpSqlStatements(pikaConn);
+		processDeletedBibs(lastExtractDateFormatted, updateTime);
+		getNewRecordsFromAPI(lastExtractDateTimeFormatted, updateTime);
+		getChangedRecordsFromAPI(lastExtractDateTimeFormatted, updateTime);
+		getNewItemsFromAPI(lastExtractDateTimeFormatted);
+		getChangedItemsFromAPI(lastExtractDateTimeFormatted);
+		getDeletedItemsFromAPI(lastExtractDateFormatted);
+	}
+
+	private static void setUpSqlStatements(Connection pikaConn) {
 		try {
 			getWorkForPrimaryIdentifierStmt           = pikaConn.prepareStatement("SELECT id, grouped_work_id from grouped_work_primary_identifiers where type = ? and identifier = ?");
 			deletePrimaryIdentifierStmt               = pikaConn.prepareStatement("DELETE from grouped_work_primary_identifiers where id = ? LIMIT 1");
@@ -502,12 +513,6 @@ public class SierraExportAPIMain {
 		} catch (Exception e) {
 			logger.error("Error setting up prepared statements for Record extraction processing", e);
 		}
-		processDeletedBibs(lastExtractDateFormatted, updateTime);
-		getNewRecordsFromAPI(lastExtractDateTimeFormatted, updateTime);
-		getChangedRecordsFromAPI(lastExtractDateTimeFormatted, updateTime);
-		getNewItemsFromAPI(lastExtractDateTimeFormatted);
-		getChangedItemsFromAPI(lastExtractDateTimeFormatted);
-		getDeletedItemsFromAPI(lastExtractDateFormatted);
 	}
 
 	/**
@@ -778,6 +783,29 @@ public class SierraExportAPIMain {
 		}
 	}
 
+	/**
+	 * Checks the API if the Bib is deleted or suppressed
+	 *
+	 * @param id Bib Id with out the .b prefix or the trailing check digit
+	 * @return
+	 */
+	private static boolean isDeletedInAPI(long id) {
+		String     url               = apiBaseUrl + "/bibs/" + id + "?fields=id,deleted,suppressed";
+		JSONObject isDeletedResponse = callSierraApiURL(url, debug);
+		if (isDeletedResponse != null) {
+			try {
+				if (isDeletedResponse.has("deleted") && isDeletedResponse.getBoolean("deleted")) {
+					return true;
+				} else {
+					return isDeletedResponse.has("suppressed") && isDeletedResponse.getBoolean("suppressed");
+				}
+			} catch (JSONException e) {
+				logger.error("Error checking if a bib was deleted", e);
+			}
+		}
+		return false;
+	}
+
 	private static boolean deleteRecord(long updateTime, Long idFromAPI) {
 		String bibId = getfullSierraBibId(idFromAPI);
 		try {
@@ -805,12 +833,9 @@ public class SierraExportAPIMain {
 							String permanentId = getPermanentIdForGroupedWork(groupedWorkId);
 							if (permanentId != null && !permanentId.isEmpty()) {
 								//Delete the work from solr index
-//								groupedWorkIndexer.deleteRecord(permanentId);
-
-								deleteGroupedWorkFromSolr(permanentId); //Trying to skip using the Reindexer
+								deleteGroupedWorkFromSolr(permanentId);
 
 								logger.info("Sierra API extract deleted Group Work " + permanentId + " from index. Investigate if it is an anomalous deletion by the Sierra API extract");
-								//pascal 5/2/2019 cutting out warning noise for now
 
 								// See https://marmot.myjetbrains.com/youtrack/issue/D-2364
 								return true;
@@ -819,6 +844,9 @@ public class SierraExportAPIMain {
 					}
 				} else {
 					logger.info("Found no grouped work primary identifiers for bib id : " + bibId);
+					if (isDeletedInAPI(idFromAPI)) {
+						return true;
+					}
 				}
 			}
 		} catch (Exception e) {
@@ -1167,9 +1195,17 @@ public class SierraExportAPIMain {
 			if (marcResults != null) {
 				if (marcResults.has("httpStatus")) {
 					if (marcResults.getInt("code") == 107) {
+						//TODO: test if the API Confirms is deleted/suppressed, then remove ( This can happen when the deletion was originally missed)
 						//This record was deleted
-						logger.debug("id " + id + " was deleted");
-						return true;
+						if (isDeletedInAPI(id)) {
+							if (deleteRecord(new Date().getTime() / 1000, id)) {
+								markRecordDeletedInExtractInfo(id);
+								logger.debug("id " + id + " was deleted");
+								return true;
+							}
+						}
+						logger.error("Recieved error code 107 but record is not deleted or suppressed " + id);
+						return false;
 					} else {
 						logger.error("Error response calling " + sierraUrl);
 						logger.error("Unknown error, code : " + marcResults.getInt("code") + ", " + marcResults);
