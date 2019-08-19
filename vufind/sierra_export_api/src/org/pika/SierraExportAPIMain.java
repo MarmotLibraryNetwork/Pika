@@ -1282,24 +1282,9 @@ public class SierraExportAPIMain {
 						logger.warn("Bib : " + id + " does not have a copies fixed field");
 					}
 
-					RecordIdentifier recordIdentifier = recordGroupingProcessor.getPrimaryIdentifierFromMarcRecord(marcRecord, indexingProfile.name, indexingProfile.doAutomaticEcontentSuppression);
-					String           identifier;
-					if (recordIdentifier != null) {
-						identifier = recordIdentifier.getIdentifier();
-						writeMarcRecord(marcRecord, identifier);
-						logger.debug("Wrote marc record for " + identifier);
-					} else {
-						logger.warn("Failed to set record identifier in record grouper getPrimaryIdentifierFromMarcRecord(); possible error or automatic econtent suppression trigger.");
-						identifier = getfullSierraBibId(id);
-					}
+					// Write marc to File and Do the Record Grouping
+					groupAndWriteTheMarcRecord(marcRecord, id);
 
-					//Setup the grouped work for the record.  This will take care of either adding it to the proper grouped work
-					//or creating a new grouped work
-					if (!recordGroupingProcessor.processMarcRecord(marcRecord, true)) {
-						logger.warn(identifier + " was suppressed");
-					} else {
-						logger.debug("Finished record grouping for " + identifier);
-					}
 				} else {
 					logger.error("Error exporting marc record for " + id + " call for fixed fields returned an error code or null");
 					return false;
@@ -1313,6 +1298,40 @@ public class SierraExportAPIMain {
 			return false;
 		}
 		return true;
+	}
+
+	private static String groupAndWriteTheMarcRecord(Record marcRecord) {
+		return groupAndWriteTheMarcRecord(marcRecord, null);
+	}
+
+	private static String groupAndWriteTheMarcRecord(Record marcRecord, Long id) {
+		String           identifier = null;
+		if (id != null){
+			identifier = getfullSierraBibId(id);
+		} else {
+			RecordIdentifier recordIdentifier = recordGroupingProcessor.getPrimaryIdentifierFromMarcRecord(marcRecord, indexingProfile.name, indexingProfile.doAutomaticEcontentSuppression);
+			if (recordIdentifier != null) {
+				identifier = recordIdentifier.getIdentifier();
+			} else {
+				logger.warn("Failed to set record identifier in record grouper getPrimaryIdentifierFromMarcRecord(); possible error or automatic econtent suppression trigger.");
+			}
+		}
+		if (identifier != null && !identifier.isEmpty()) {
+			logger.debug("Writing marc record for " + identifier);
+			writeMarcRecord(marcRecord, identifier);
+			logger.debug("Wrote marc record for " + identifier);
+		} else {
+			logger.warn("Failed to set record identifier in record grouper getPrimaryIdentifierFromMarcRecord(); possible error or automatic econtent suppression trigger.");
+		}
+
+		//Setup the grouped work for the record.  This will take care of either adding it to the proper grouped work
+		//or creating a new grouped work
+		if (!recordGroupingProcessor.processMarcRecord(marcRecord, true)) {
+			logger.warn(identifier + " was suppressed");
+		} else {
+			logger.debug("Finished record grouping for " + identifier);
+		}
+		return identifier;
 	}
 
 
@@ -1516,20 +1535,9 @@ public class SierraExportAPIMain {
 								Record marcRecord = marcReader.next();
 								logger.debug("Got the next marc Record data");
 
-								RecordIdentifier recordIdentifier = recordGroupingProcessor.getPrimaryIdentifierFromMarcRecord(marcRecord, indexingProfile.name, indexingProfile.doAutomaticEcontentSuppression);
-								String           identifier       = recordIdentifier.getIdentifier();
-								logger.debug("Writing marc record for " + identifier);
+								// Write marc to File and Do the Record Grouping
+								String identifier = groupAndWriteTheMarcRecord(marcRecord);
 
-								writeMarcRecord(marcRecord, identifier);
-								logger.debug("Wrote marc record for " + identifier);
-
-								//Setup the grouped work for the record.  This will take care of either adding it to the proper grouped work
-								//or creating a new grouped work
-								if (!recordGroupingProcessor.processMarcRecord(marcRecord, true)) {
-									logger.warn(identifier + " was suppressed during record grouping");
-								} else {
-									logger.debug("Finished record grouping for " + identifier);
-								}
 								Long shortId = Long.parseLong(identifier.substring(2, identifier.length() - 1));
 								processedIds.add(shortId);
 								logger.debug("Processed " + identifier);
