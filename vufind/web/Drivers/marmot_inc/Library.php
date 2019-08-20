@@ -92,8 +92,12 @@ class Library extends DB_DataObject {
 	public $overdriveRequirePin;
 	public $overdriveAdvantageName;
 	public $overdriveAdvantageProductsKey;
+
 	/* HOOPLA */
 	public $hooplaLibraryID;
+
+	/* GOOGLE ANALYTICS */
+	public $gaTrackingId;
 
 	public $systemsToRepeatIn;
 	public $additionalLocationsToShowAvailabilityFor;
@@ -619,8 +623,6 @@ class Library extends DB_DataObject {
 							'additionalOneToManyActions' => array(),
 						),
 				)),
-
-
 			)),
 
 			// Catalog Enrichment //
@@ -1023,6 +1025,14 @@ class Library extends DB_DataObject {
 				'helpLink'   => 'https://docs.google.com/document/d/1I6RuNhKNwDJOMpM63a4V5Lm0URgWp23465HegEIkP_w',
 				'properties' => array(
 					'includeDplaResults' => array('property' => 'includeDplaResults', 'type' => 'checkbox', 'label' => 'Include DPLA content in search results', 'description' => 'Whether or not DPLA data should be included for this library.', 'hideInLists' => true, 'default' => 0),
+				),
+			),
+
+			'googleAnalyticsSection' => array(
+				'property'   => 'googleAnalyticsSection', 'type' => 'section', 'label' => 'Google Analytics', 'hideInLists' => true,
+				//'helpLink'   => 'https://docs.google.com/document/d/1I6RuNhKNwDJOMpM63a4V5Lm0URgWp23465HegEIkP_w',
+				'properties' => array(
+					'gaTrackingId' => array('property' => 'gaTrackingId', 'type' => 'text', 'label' => 'Tracking ID', 'description' => 'For use with library GA account.', 'hideInLists' => true, 'default' => ''),
 				),
 			),
 

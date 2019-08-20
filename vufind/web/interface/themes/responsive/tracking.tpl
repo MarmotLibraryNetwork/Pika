@@ -1,5 +1,8 @@
 {* Add Google Analytics*}
 
+<!-- Respect browser do not track setting -->
+<script>var dnt = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;</script>
+
 {if $archivePage}
 	{*
 	* Archive specific tracking code
@@ -8,7 +11,8 @@
 	*}
 {literal}
 	<!-- Google Analytics -->
-	<script>
+<script>
+	if (dnt != "1" && dnt != "yes") {
 		(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
 		(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
 				m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
@@ -23,31 +27,62 @@
 		{/if}
 		{literal}
 		ga('archiveTracker.send', 'pageview');
-	</script>{/literal}
+	}
+</script>{/literal}
 	<!-- End Google Analytics -->
 {else}
 	{if $googleAnalyticsId}
+	{* OPAC tracking code *}
 	{literal}
-		<script type="text/javascript">
-			var _gaq = _gaq || [];
-			_gaq.push(['_setAccount', '{/literal}{$googleAnalyticsId}{literal}']);
-			_gaq.push(['_setCustomVar', 1, 'theme', {/literal}'{$primaryTheme}'{literal}, '2']);
-			_gaq.push(['_setCustomVar', 2, 'mobile', {/literal}'{$isMobile}'{literal}, '2']);
-			_gaq.push(['_setCustomVar', 3, 'physicalLocation', {/literal}'{$physicalLocation}'{literal}, '2']);
-			_gaq.push(['_setCustomVar', 4, 'pType', {/literal}'{$pType}'{literal}, '2']);
-			_gaq.push(['_setCustomVar', 5, 'homeLibrary', {/literal}'{$homeLibrary}'{literal}, '2']);
-			_gaq.push(['_setDomainName', {/literal}'{$googleAnalyticsDomainName}'{literal}]);
-			_gaq.push(['_trackPageview']);
-			_gaq.push(['_trackPageLoadTime']);
+<script>
+	function trackBrowseTitleClick(el) {
+		if (dnt != "1" && dnt != "yes") {
+			var cat    = $('.selected-browse-label-search-text').text();
+			var subcat = $('.selected-browse-sub-category-label-search-text').text();
+			var title = el.title;
+			var browseCatString = cat;
+			if(subcat != '') {
+				browseCatString += '/'+subcat;
+			}
+			browseCatString += '/'+title;
 
-			(function() {
-				var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-				ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-				var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-			})();
+			ga('opacTracker.send', 'event', {
+				eventCategory: 'Browse Category',
+				eventAction: 'click',
+				eventLabel: browseCatString
+			});{/literal}
+			{if $googleAnalyticsLibraryId}{literal}
+			ga('libraryTracker.send', 'event', {
+				eventCategory: 'Browse Category',
+				eventAction: 'click',
+				eventLabel: browseCatString
+			});{/literal}
+			{/if}{literal}
+		}
+	}
 
-		</script>
-	{/literal}
+	if (dnt != "1" && dnt != "yes") {
+		(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+		(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+				m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+		})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+		ga('create', '{/literal}{$googleAnalyticsId}{literal}', 'auto', 'opacTracker');{/literal}
+		{if $googleAnalyticsLibraryId} {* Library tracking code *}{literal}
+		ga('create', '{/literal}{$googleAnalyticsLibraryId}{literal}', 'auto', 'libraryTracker');
+		ga('libraryTracker.set', 'dimension1', {/literal}'{$pType}'{literal}); // Patron Type
+		ga('libraryTracker.set', 'dimension2', {/literal}'{$homeLibrary}'{literal}); // Home Library
+		ga('libraryTracker.set', 'dimension3',{/literal}'{$physicalLocation}'{literal});{/literal}
+		{/if}
+		{literal}ga('opacTracker.set', 'dimension1', {/literal}'{$pType}'{literal}); // Patron Type
+		ga('opacTracker.set', 'dimension2', {/literal}'{$homeLibrary}'{literal}); // Home Library
+		ga('opacTracker.set', 'dimension3',{/literal}'{$physicalLocation}'{literal});
+		ga('opacTracker.send', 'pageview');{/literal}
+		{if $googleAnalyticsLibraryId}{literal}
+		ga('libraryTracker.send', 'pageview');{/literal}
+		{/if}{literal}
+	}
+</script>{/literal}
+
 	{/if}
-
 {/if}

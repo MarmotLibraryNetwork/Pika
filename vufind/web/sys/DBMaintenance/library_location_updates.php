@@ -1745,6 +1745,14 @@ function getLibraryLocationUpdates(){
 			'sql' => array(
 				'ALTER TABLE `library` ADD COLUMN `sharedOverdriveCollection` TINYINT(1) DEFAULT -1;',
 			)
-		)
+		),
+
+		'library_ga_tracking_id' => array(
+			'title' => 'GA tracking ID',
+			'description' => 'Add GA tracking ID to Library admin options.',
+			'sql' => array(
+				"ALTER TABLE `library` ADD COLUMN `gaTrackingId` VARCHAR(20) NULL DEFAULT '';",
+			),
+		),
 	);
 }
