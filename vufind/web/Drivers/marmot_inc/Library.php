@@ -1030,6 +1030,7 @@ class Library extends DB_DataObject {
 
 			'googleAnalyticsSection' => array(
 				'property'   => 'googleAnalyticsSection', 'type' => 'section', 'label' => 'Google Analytics', 'hideInLists' => true,
+				// TODO: Add documentation link.
 				//'helpLink'   => 'https://docs.google.com/document/d/1I6RuNhKNwDJOMpM63a4V5Lm0URgWp23465HegEIkP_w',
 				'properties' => array(
 					'gaTrackingId' => array('property' => 'gaTrackingId', 'type' => 'text', 'label' => 'Tracking ID', 'description' => 'For use with library GA account.', 'hideInLists' => true, 'default' => ''),
