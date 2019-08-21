@@ -21,6 +21,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.Date;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.zip.CRC32;
 
 /**
@@ -827,6 +828,8 @@ public class RecordGrouperMain {
 					logger.error("Error removing " + recordNumber + " from grouped_work_primary_identifiers table", e);
 				}
 			}
+			TreeSet<String> theList = new TreeSet<String>(primaryIdentifiersInDatabase.keySet());
+			writeExistingRecordsFile(theList, "remaining_primary_identifiers_to_be_deleted");
 			primaryIdentifiersInDatabase.clear();
 		}
 	}
@@ -865,18 +868,18 @@ public class RecordGrouperMain {
 		}
 	}
 
-	private static void updateLastGroupingTime(Connection vufindConn) {
+	private static void updateLastGroupingTime(Connection pikaConn) {
 		//Update the last grouping time in the variables table
 		try {
 			Long finishTime = new Date().getTime() / 1000;
 			if (lastGroupingTimeVariableId != null) {
-				PreparedStatement updateVariableStmt = vufindConn.prepareStatement("UPDATE variables set value = ? WHERE id = ?");
+				PreparedStatement updateVariableStmt = pikaConn.prepareStatement("UPDATE variables set value = ? WHERE id = ?");
 				updateVariableStmt.setLong(1, finishTime);
 				updateVariableStmt.setLong(2, lastGroupingTimeVariableId);
 				updateVariableStmt.executeUpdate();
 				updateVariableStmt.close();
 			} else {
-				PreparedStatement insertVariableStmt = vufindConn.prepareStatement("INSERT INTO variables (`name`, `value`) VALUES ('last_grouping_time', ?)");
+				PreparedStatement insertVariableStmt = pikaConn.prepareStatement("INSERT INTO variables (`name`, `value`) VALUES ('last_grouping_time', ?)");
 				insertVariableStmt.setString(1, Long.toString(finishTime));
 				insertVariableStmt.executeUpdate();
 				insertVariableStmt.close();
@@ -1068,7 +1071,7 @@ public class RecordGrouperMain {
 	}
 
 	private static void loadIlsChecksums(Connection pikaConn, String indexingProfileToRun) {
-		//Load MARC Existing MARC Record checksums from VuFind
+		//Load MARC Existing MARC Record checksums from Pika
 		try {
 			if (insertMarcRecordChecksum == null) {
 				insertMarcRecordChecksum = pikaConn.prepareStatement("INSERT INTO ils_marc_checksums (ilsId, source, checksum, dateFirstDetected) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE checksum = VALUES(checksum), dateFirstDetected=VALUES(dateFirstDetected), source=VALUES(source)");
