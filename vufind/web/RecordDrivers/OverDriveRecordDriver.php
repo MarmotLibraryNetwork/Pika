@@ -601,36 +601,6 @@ class OverDriveRecordDriver extends RecordInterface {
 		return $isbn13;
 	}
 
-	// TODO: Fix this
-	public function getCleanISBNs()
-	{
-		require_once ROOT_DIR . '/sys/ISBN.php';
-
-		// Get all the ISBNs and initialize the return value:
-		$isbns     = $this->getISBNs();
-		$cleanIsbns = [];
-		// Loop through the ISBNs:
-		foreach($isbns as $isbn) {
-			// Strip off any unwanted notes:
-			if ($pos = strpos($isbn, ' ')) {
-				$isbn = substr($isbn, 0, $pos);
-			}
-
-			$isbnObj = new ISBN($isbn);
-			if ($isbn10 = $isbnObj->get10()) {
-				if (!array_key_exists($isbn10, $cleanIsbns)){
-					$cleanIsbns[$isbn10] = $isbn10;
-				}
-			}
-			if ($isbn13 = $isbnObj->get13()) {
-				if (!array_key_exists($isbn13, $cleanIsbns)) {
-					$cleanIsbns[$isbn13] = $isbn13;
-				}
-			}
-		}
-		return $cleanIsbns;
-	}
-
 	/**
 	 * Get an array of all ISBNs associated with the record (may be empty).
 	 *
