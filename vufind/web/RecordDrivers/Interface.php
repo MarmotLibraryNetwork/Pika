@@ -178,7 +178,7 @@ abstract class RecordInterface {
 
 	/**
 	 * Get structured linked data related to the record.
-	 * 
+	 *
 	 * @see https://schema.org/
 	 * @see http://linkeddata.org/
 	 * @see https://json-ld.org/
