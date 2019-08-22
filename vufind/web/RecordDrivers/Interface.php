@@ -177,6 +177,16 @@ abstract class RecordInterface {
 	public abstract function getReviews();
 
 	/**
+	 * Get structured linked data related to the record.
+	 * 
+	 * @see https://schema.org/
+	 * @see http://linkeddata.org/
+	 * @see https://json-ld.org/
+	 * @return array
+	 */
+	public abstract function getSemanticData();
+
+	/**
 	 * Assign necessary Smarty variables and return a template name to
 	 * load in order to display a summary of the item suitable for use in
 	 * search results.

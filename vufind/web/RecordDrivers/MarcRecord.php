@@ -2219,7 +2219,7 @@ class MarcRecord extends IndexRecord
 		if($linkedDataRecord->getWorkType()) {
 			$type = $linkedDataRecord->getWorkType();
 		} else {
-			$type = 'CreativeWork';
+			$type = 'Book';
 		}
 		// handle null author
 		if($this->getPrimaryAuthor()) {
