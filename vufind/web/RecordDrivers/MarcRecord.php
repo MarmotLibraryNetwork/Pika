@@ -2215,12 +2215,25 @@ class MarcRecord extends IndexRecord
 		// Get information about the record
 		require_once ROOT_DIR . '/RecordDrivers/LDRecordOffer.php';
 		$linkedDataRecord = new LDRecordOffer($this->getGroupedWorkDriver()->getRelatedRecord($this->getIdWithSource()));
+		// handle null @type
+		if($linkedDataRecord->getWorkType()) {
+			$type = $linkedDataRecord->getWorkType();
+		} else {
+			$type = 'CreativeWork';
+		}
+		// handle null author
+		if($this->getPrimaryAuthor()) {
+			$author = $this->getPrimaryAuthor();
+		} else {
+			$author = "N/A";
+		}
+
 		$semanticData []  = array(
 			'@context'            => 'http://schema.org',
-			'@type'               => $linkedDataRecord->getWorkType(),
+			'@type'               => $type,
 			'name'                => $this->getTitle(),
 			'exampleOfWork'       => $this->getGroupedWorkDriver()->getAbsoluteUrl(),
-			'author'              => $this->getPrimaryAuthor(),
+			'author'              => $author,
 			'bookEdition'         => $this->getEdition(),
 			'isAccessibleForFree' => true,
 			'image'               => $this->getBookcoverUrl('medium'),
