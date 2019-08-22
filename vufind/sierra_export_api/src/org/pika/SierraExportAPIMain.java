@@ -597,7 +597,6 @@ public class SierraExportAPIMain {
 			//Start a transaction so we can rebuild an entire table
 			startOfHolds = pikaConn.setSavepoint();
 			pikaConn.setAutoCommit(false);
-			pikaConn.prepareCall("TRUNCATE TABLE ils_hold_summary").executeQuery();
 
 			HashMap<String, Long> numHoldsByBib    = new HashMap<>();
 			HashMap<String, Long> numHoldsByVolume = new HashMap<>();
@@ -671,6 +670,7 @@ public class SierraExportAPIMain {
 				}
 			}
 
+			pikaConn.prepareCall("TRUNCATE TABLE ils_hold_summary").executeQuery();
 
 			try (PreparedStatement addIlsHoldSummary = pikaConn.prepareStatement("INSERT INTO ils_hold_summary (ilsId, numHolds) VALUES (?, ?)")) {
 
@@ -1204,7 +1204,7 @@ public class SierraExportAPIMain {
 								return true;
 							}
 						}
-						logger.error("Recieved error code 107 but record is not deleted or suppressed " + id);
+						logger.error("Received error code 107 but record is not deleted or suppressed " + id);
 						return false;
 					} else {
 						logger.error("Error response calling " + sierraUrl);
@@ -1693,7 +1693,8 @@ public class SierraExportAPIMain {
 
 		//Load the orders we had last time
 		String                 exportPath             = indexingProfile.marcPath;
-		File                   orderRecordFile        = new File(exportPath + "/active_orders.csv");
+		String                 orderFilePath                      = exportPath + "/active_orders.csv";
+		File                   orderRecordFile        = new File(orderFilePath);
 		HashMap<Long, Integer> existingBibsWithOrders = new HashMap<>();
 		readOrdersFile(orderRecordFile, existingBibsWithOrders);
 
@@ -1743,13 +1744,22 @@ public class SierraExportAPIMain {
 				PreparedStatement getActiveOrdersStmt = sierraConn.prepareStatement(activeOrderSQL, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 				ResultSet activeOrdersRS = getActiveOrdersStmt.executeQuery()
 		) {
-			writeToFileFromSQLResultFile(orderRecordFile, activeOrdersRS);
+			File tempWriteFile = new File(orderRecordFile + ".tmp");
+			writeToFileFromSQLResultFile(tempWriteFile, activeOrdersRS);
 			activeOrdersRS.close();
-
-			HashMap<Long, Integer> updatedBibsWithOrders = new HashMap<>();
-			readOrdersFile(orderRecordFile, updatedBibsWithOrders);
+			if (!tempWriteFile.renameTo(orderRecordFile)){
+				if (orderRecordFile.exists() && orderRecordFile.delete()){
+					if (!tempWriteFile.renameTo(orderRecordFile)){
+						logger.error("failed to delete existing order record file and replace with temp file");
+					}
+				}else {
+					logger.warn("Failed to rename temp order record file");
+				}
+			}
 
 			//Check to see which bibs either have new or deleted orders
+			HashMap<Long, Integer> updatedBibsWithOrders = new HashMap<>();
+			readOrdersFile(orderRecordFile, updatedBibsWithOrders);
 			for (Long bibId : updatedBibsWithOrders.keySet()) {
 				if (!existingBibsWithOrders.containsKey(bibId)) {
 					//We didn't have a bib with an order before, update it
@@ -1772,8 +1782,8 @@ public class SierraExportAPIMain {
 			allBibsToUpdate.addAll(bibsWithOrdersRemoved);
 			numBibsOrdersRemoved = bibsWithOrdersRemoved.size();
 			numBibsToProcess += numBibsOrdersRemoved;
-		} catch (SQLException e1) {
-			logger.error("Error loading active orders", e1);
+		} catch (SQLException e) {
+			logger.error("Error loading active orders", e);
 		}
 		addNoteToExportLog("Finished exporting active orders");
 		addNoteToExportLog(numBibsToProcess + " total records to update.<br> " + numBibsOrdersAdded + " records have new order records.<br>" + numBibsOrdersChanged + " records have order record updates.<br>" + numBibsOrdersRemoved + " records have no order records now.");
