@@ -1698,8 +1698,8 @@ public class SierraExportAPIMain {
 		HashMap<Long, Integer> existingBibsWithOrders = new HashMap<>();
 		readOrdersFile(orderRecordFile, existingBibsWithOrders);
 
-		boolean suppressOrderRecordsThatAreReceivedAndCatalogged = PikaConfigIni.getBooleanIniValue("Catalog", "suppressOrderRecordsThatAreReceivedAndCatalogged");
-		boolean suppressOrderRecordsThatAreCatalogged            = PikaConfigIni.getBooleanIniValue("Catalog", "suppressOrderRecordsThatAreCatalogged");
+		boolean suppressOrderRecordsThatAreReceivedAndCataloged = PikaConfigIni.getBooleanIniValue("Catalog", "suppressOrderRecordsThatAreReceivedAndCatalogged");
+		boolean suppressOrderRecordsThatAreCataloged            = PikaConfigIni.getBooleanIniValue("Catalog", "suppressOrderRecordsThatAreCatalogged");
 		boolean suppressOrderRecordsThatAreReceived              = PikaConfigIni.getBooleanIniValue("Catalog", "suppressOrderRecordsThatAreReceived");
 
 		String orderStatusesToExport = PikaConfigIni.getIniValue("Reindex", "orderStatusesToExport");
@@ -1728,12 +1728,15 @@ public class SierraExportAPIMain {
 			}
 			activeOrderSQL += " AND NOW() - order_date_gmt < '" + auroraOrderRecordInterval + " DAY'::INTERVAL";
 		} else {
-			if (suppressOrderRecordsThatAreCatalogged) { // Ignore entries with a set catalog date more than a day old ( a day to allow for the transition from order item to regular item)
-				activeOrderSQL += " AND (catalog_date_gmt IS NULL OR NOW() - catalog_date_gmt < '1 DAY'::INTERVAL) ";
+			if (suppressOrderRecordsThatAreCataloged) { // Ignore entries with a set catalog date more than a day old ( a day to allow for the transition from order item to regular item)
+//				activeOrderSQL += " AND (catalog_date_gmt IS NULL OR NOW() - catalog_date_gmt < '1 DAY'::INTERVAL) ";
+				activeOrderSQL += " AND catalog_date_gmt IS NULL";
 			} else if (suppressOrderRecordsThatAreReceived) { // Ignore entries with a set received date more than a day old ( a day to allow for the transition from order item to regular item)
-				activeOrderSQL += " AND (received_date_gmt IS NULL OR NOW() - received_date_gmt < '1 DAY'::INTERVAL) ";
-			} else if (suppressOrderRecordsThatAreReceivedAndCatalogged) { // Only ignore entries that have both a received and catalog date, and a catalog date more than a day old
-				activeOrderSQL += " AND (catalog_date_gmt IS NULL or received_date_gmt IS NULL OR NOW() - catalog_date_gmt < '1 DAY'::INTERVAL) ";
+//				activeOrderSQL += " AND (received_date_gmt IS NULL OR NOW() - received_date_gmt < '1 DAY'::INTERVAL) ";
+				activeOrderSQL += " AND received_date_gmt IS NULL";
+			} else if (suppressOrderRecordsThatAreReceivedAndCataloged) { // Only ignore entries that have both a received and catalog date, and a catalog date more than a day old
+//				activeOrderSQL += " AND (catalog_date_gmt IS NULL or received_date_gmt IS NULL OR NOW() - catalog_date_gmt < '1 DAY'::INTERVAL) ";
+				activeOrderSQL += " AND catalog_date_gmt IS NULL or received_date_gmt IS NULL";
 			}
 		}
 		int numBibsToProcess     = 0;
