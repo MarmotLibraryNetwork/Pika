@@ -80,16 +80,18 @@ $googleAnalyticsId        = isset($configArray['Analytics']['googleAnalyticsId']
 $googleAnalyticsLibraryId = isset($library->gaTrackingId)                                ? $library->gaTrackingId : false;
 #TODO: What is $googleAnalyticsLinkingId
 $googleAnalyticsLinkingId = isset($configArray['Analytics']['googleAnalyticsLinkingId']) ? $configArray['Analytics']['googleAnalyticsLinkingId'] : false;
+$googleVerificationKey    = isset($configArray['Analytics']['googleVerificationKey'])    ? $configArray['Analytics']['googleVerificationKey'] : false;
 $trackTranslation         = isset($configArray['Analytics']['trackTranslation'])         ? $configArray['Analytics']['trackTranslation'] : false;
 $interface->assign('googleAnalyticsId', $googleAnalyticsId);
 $interface->assign('googleAnalyticsLibraryId', $googleAnalyticsLibraryId);
-$interface->assign('googleAnalyticsLinkingId', $googleAnalyticsLinkingId);
+$interface->assign('googleVerificationKey', $googleVerificationKey);
 $interface->assign('trackTranslation', $trackTranslation);
 if ($googleAnalyticsId) {
 	$googleAnalyticsDomainName = isset($configArray['Analytics']['domainName']) ? $configArray['Analytics']['domainName'] : strstr($_SERVER['SERVER_NAME'], '.');
 	// check for a config setting, use that if found, otherwise grab domain name  but remove the first subdomain
 	$interface->assign('googleAnalyticsDomainName', $googleAnalyticsDomainName);
 }
+
 
 global $offlineMode;
 //Set System Message
