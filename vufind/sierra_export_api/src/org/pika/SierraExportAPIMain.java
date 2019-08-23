@@ -1688,7 +1688,7 @@ public class SierraExportAPIMain {
 //		addNoteToExportLog("Finished exporting due dates");
 //	}
 
-	private static void exportActiveOrders(Connection sierraConn) throws IOException {
+	private static void exportActiveOrders(Connection sierraConn){
 		addNoteToExportLog("Starting export of active orders");
 
 		//Load the orders we had last time
@@ -1789,23 +1789,29 @@ public class SierraExportAPIMain {
 		addNoteToExportLog(numBibsToProcess + " total records to update.<br> " + numBibsOrdersAdded + " records have new order records.<br>" + numBibsOrdersChanged + " records have order record updates.<br>" + numBibsOrdersRemoved + " records have no order records now.");
 	}
 
-	private static void readOrdersFile(File orderRecordFile, HashMap<Long, Integer> bibsWithOrders) throws IOException {
-		if (orderRecordFile.exists()) {
-			try (CSVReader orderReader = new CSVReader(new FileReader(orderRecordFile))) {
-				//Skip the header
-				orderReader.readNext();
-				String[] recordData = orderReader.readNext();
-				while (recordData != null) {
-					Long bibId = Long.parseLong(recordData[0]);
-					if (bibsWithOrders.containsKey(bibId)) {
-						bibsWithOrders.put(bibId, bibsWithOrders.get(bibId) + 1);
-					} else {
-						bibsWithOrders.put(bibId, 1);
-					}
+	private static void readOrdersFile(File orderRecordFile, HashMap<Long, Integer> bibsWithOrders){
+		try {
+			if (orderRecordFile.exists()) {
+				try (CSVReader orderReader = new CSVReader(new FileReader(orderRecordFile))) {
+					//Skip the header
+					orderReader.readNext();
+					String[] recordData = orderReader.readNext();
+					while (recordData != null) {
+						Long bibId = Long.parseLong(recordData[0]);
+						if (bibsWithOrders.containsKey(bibId)) {
+							bibsWithOrders.put(bibId, bibsWithOrders.get(bibId) + 1);
+						} else {
+							bibsWithOrders.put(bibId, 1);
+						}
 
-					recordData = orderReader.readNext();
+						recordData = orderReader.readNext();
+					}
 				}
 			}
+		} catch (IOException e) {
+			logger.error("Error reading order records file", e);
+		} catch (NumberFormatException e) {
+			logger.error("Error while reading order records file", e);
 		}
 	}
 
@@ -2048,7 +2054,11 @@ public class SierraExportAPIMain {
 				if (conn.getResponseCode() == 200) {
 					// Get the response
 					response = getTheResponse(conn.getInputStream());
-					return new JSONObject(response.toString());
+					try {
+						return new JSONObject(response.toString());
+					} catch (JSONException e) {
+						logger.error("JSON error parsing response from MARC JSON call : " + response.toString(), e);
+					}
 				} else {
 					// Get any errors
 					response = getTheResponse(conn.getErrorStream());
