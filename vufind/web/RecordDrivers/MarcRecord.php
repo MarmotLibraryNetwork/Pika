@@ -2180,29 +2180,37 @@ class MarcRecord extends IndexRecord
 		return $issueSummaries;
 	}
 
-	private function getLinks()
-	{
-		$links = array();
+	private function getLinks(){
+		$links      = array();
 		$marcRecord = $this->getMarcRecord();
-		if ($marcRecord != false) {
+		if ($marcRecord != false){
 			$linkFields = $marcRecord->getFields('856');
 			/** @var File_MARC_Data_Field $field */
-			foreach ($linkFields as $field) {
-				if ($field->getSubfield('u') != null) {
-					$url = $field->getSubfield('u')->getData();
-					if ($field->getSubfield('y') != null) {
-						$title = $field->getSubfield('y')->getData();
-					} else if ($field->getSubfield('3') != null) {
-						$title = $field->getSubfield('3')->getData();
-					} else if ($field->getSubfield('z') != null) {
-						$title = $field->getSubfield('z')->getData();
-					} else {
-						$title = $url;
+			foreach ($linkFields as $field){
+				if ($field->getSubfield('u') != null){
+					// Exclude custom cover URLs
+					$isCustomCover = false;
+					if (!empty($field->getSubfield('2'))){
+						$customCoverCode = strtolower(trim($field->getSubfield('2')->getData()));
+						$isCustomCover   = in_array($customCoverCode, array('pika', 'pikaimage', 'pika_image', 'image', 'vufind_image', 'vufindimage', 'vufind'));
 					}
-					$links[] = array(
-						'title' => $title,
-						'url' => $url,
-					);
+					if (!$isCustomCover){
+						$url = $field->getSubfield('u')->getData();
+
+						if ($field->getSubfield('y') != null){
+							$title = $field->getSubfield('y')->getData();
+						}elseif ($field->getSubfield('3') != null){
+							$title = $field->getSubfield('3')->getData();
+						}elseif ($field->getSubfield('z') != null){
+							$title = $field->getSubfield('z')->getData();
+						}else{
+							$title = $url;
+						}
+						$links[] = array(
+							'title' => $title,
+							'url'   => $url,
+						);
+					}
 				}
 			}
 		}
