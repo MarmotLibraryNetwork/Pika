@@ -5,24 +5,34 @@
 // Always include the base .less file
 @import "../../responsive/css/responsive_base.less";
 
+#home-page-login .loginOptions a.loginLink {
+  color: #FFF;
+}
+
+#headerLoginLink div.header-button {
+  color: #fff;
+  font-weight: bold;
+}
+
 .header-login-button-mixin(@header-buttons-background-color, @header-buttons-color);
 .header-button {
   text-transform: uppercase;
-  border: 2px solid @spl-orange;
+  border: 2px solid @gold;
+  margin-top: 30px;
   &:hover {
-    background-color: @spl-darker-orange;
+    background-color: @dark-gold;
   }
 }
 #logoutLink > .header-button {
   background-color: #fff;
-  border: 1px solid @spl-orange;
+  border: 1px solid @gold;
   &:hover {
-    background-color: #FAEDC5;
+    background-color: @dark-gold;
   }
 }
 
 #header-logo {
-  padding-top: 20px;
+  padding-bottom: 10px;
 }
 
 // This vertically centers #library-name-header (taken from https://css-tricks.com/centering-in-the-unknown/)
@@ -68,12 +78,12 @@
   padding: 0;
   margin-left: 1px;
   margin-right: 1px;
-  height: 60px;
+  height: 90px;
   cursor: pointer;
   font-weight: 600;
   border: 1px solid @spl-border-gray;
   div {
-    height: 60px;
+    height: 90px;
     padding: 15px;
     //font-size: 20px;
     &:hover {
@@ -101,8 +111,8 @@
 
 #browse-category-picker {
   .jcarousel-control-prev, .jcarousel-control-next {
-    height: 60px;
-    line-height: 60px;
+    height: 90px;
+    line-height: 75px;
     border: 1px solid #ccc;
     &:hover {
       text-decoration: none;
@@ -268,7 +278,7 @@
 
 .btn-primary, .btn-info {
   &:hover {
-    background-color: @spl-green;
+    background-color: lighten(@green, 7%);
     border-color: #7BAD42;
   }
 }
