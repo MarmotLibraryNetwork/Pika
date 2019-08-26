@@ -106,7 +106,7 @@ class Library extends DB_DataObject {
 	public $useHomeLinkInBreadcrumbs;
 	public $useHomeLinkForLogo;
 	public $showAdvancedSearchbox;
-	public $enablePospectorIntegration;
+	public $enableProspectorIntegration;
 	public $showProspectorResultsAtEndOfSearch;
 	public $prospectorCode;
 	public $enableGenealogy;
@@ -815,7 +815,7 @@ class Library extends DB_DataObject {
 						'property' => 'prospectorSection', 'type' => 'section', 'label' => $innReachEncoreName . ' (III INN-Reach & Encore)', 'hideInLists' => true,
 						'helpLink' => 'https://docs.google.com/document/d/18SVEhciSjO99hcFLLdFR6OpC4_OtjOafTkuWPGXOhu4', 'properties' => array(
 							'repeatInProspector'                 => array('property' => 'repeatInProspector', 'type' => 'checkbox', 'label' => 'Repeat In ' . $innReachEncoreName, 'description' => 'Turn on to allow repeat search in ' . $innReachEncoreName . ' functionality.', 'hideInLists' => true, 'default' => 1),
-							'enablePospectorIntegration'         => array('property' => 'enablePospectorIntegration', 'type' => 'checkbox', 'label' => 'Enable ' . $innReachEncoreName . ' Integration', 'description' => 'Whether or not ' . $innReachEncoreName . ' Integrations should be displayed for this library.', 'hideInLists' => true, 'default' => 1),
+							'enableProspectorIntegration'         => array('property' => 'enableProspectorIntegration', 'type' => 'checkbox', 'label' => 'Enable ' . $innReachEncoreName . ' Integration', 'description' => 'Whether or not ' . $innReachEncoreName . ' Integrations should be displayed for this library.', 'hideInLists' => true, 'default' => 1),
 							'showProspectorResultsAtEndOfSearch' => array('property' => 'showProspectorResultsAtEndOfSearch', 'type' => 'checkbox', 'label' => 'Show ' . $innReachEncoreName . ' Results At End Of Search', 'description' => 'Whether or not ' . $innReachEncoreName . ' Search Results should be shown at the end of search results.', 'hideInLists' => true, 'default' => 1),
 							//'prospectorCode'                   => array('property'=>'prospectorCode', 'type'=>'text', 'label'=>'Prospector Code', 'description'=>'The code used to identify this location within Prospector. Leave blank if items for this location are not in Prospector.', 'hideInLists' => true,),
 							// No references in pika code. pascal 8-24-2018
