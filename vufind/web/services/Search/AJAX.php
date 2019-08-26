@@ -121,7 +121,6 @@ class AJAX extends AJAXHandler {
 	function getProspectorResults(){
 		$prospectorSavedSearchId = $_GET['prospectorSavedSearchId'];
 		if (ctype_digit($prospectorSavedSearchId)){
-			require_once ROOT_DIR . '/Drivers/marmot_inc/Prospector.php';
 			global $configArray;
 			global $interface;
 			global $library;
@@ -130,17 +129,17 @@ class AJAX extends AJAXHandler {
 			/** @var SearchObject_Solr $searchObject */
 			$searchObject = SearchObjectFactory::initSearchObject();
 			$searchObject->init();
-			// Setup Search Engine Connection
-			$class        = $configArray['Index']['engine'];
-			$url          = $configArray['Index']['url'];
-			$db           = new $class($url);
 			$searchObject = $searchObject->restoreSavedSearch($prospectorSavedSearchId, false);
 
 			//Load results from Prospector
-			$prospector = new Prospector();
+			$ILLDriver = $configArray['InterLibraryLoan']['ILLDriver'];
+//			$prospector = new Prospector();
+			/** @var Prospector|AutoGraphicsShareIt $ILLDriver */
+			require_once ROOT_DIR . '/InterLibraryLoanDrivers/' . $ILLDriver . '.php';
+			$prospector = new $ILLDriver();
 
 			// Only show prospector results within search results if enabled
-			if ($library && $library->enablePospectorIntegration && $library->showProspectorResultsAtEndOfSearch){
+			if ($library && $library->enableProspectorIntegration && $library->showProspectorResultsAtEndOfSearch){
 				$prospectorResults = $prospector->getTopSearchResults($searchObject->getSearchTerms(), 5);
 				$interface->assign('prospectorResults', $prospectorResults['records']);
 			}
