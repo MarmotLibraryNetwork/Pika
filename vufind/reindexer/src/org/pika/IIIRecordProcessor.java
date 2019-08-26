@@ -362,25 +362,26 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 		File activeOrders = new File(this.exportPath + "/active_orders.csv");
 		if (activeOrders.exists()){
 			try{
-				CSVReader reader = new CSVReader(new FileReader(activeOrders));
-				//First line is headers
-				reader.readNext();
-				String[] orderData;
-				while ((orderData = reader.readNext()) != null){
-					OrderInfo orderRecord   = new OrderInfo();
-					String    recordId      = ".b" + orderData[0] + getCheckDigit(orderData[0]);
-					String    orderRecordId = ".o" + orderData[1] + getCheckDigit(orderData[1]);
-					orderRecord.setOrderRecordId(orderRecordId);
-					orderRecord.setStatus(orderData[3]);
-					orderRecord.setNumCopies(Integer.parseInt(orderData[4]));
-					//Get the order record based on the accounting unit
-					orderRecord.setLocationCode(orderData[5]);
-					if (orderInfoFromExport.containsKey(recordId)){
-						orderInfoFromExport.get(recordId).add(orderRecord);
-					}else{
-						ArrayList<OrderInfo> orderRecordColl = new ArrayList<>();
-						orderRecordColl.add(orderRecord);
-						orderInfoFromExport.put(recordId, orderRecordColl);
+				try (CSVReader reader = new CSVReader(new FileReader(activeOrders))) {
+					//First line is headers
+					reader.readNext();
+					String[] orderData;
+					while ((orderData = reader.readNext()) != null) {
+						OrderInfo orderRecord   = new OrderInfo();
+						String    recordId      = ".b" + orderData[0] + getCheckDigit(orderData[0]);
+						String    orderRecordId = ".o" + orderData[1] + getCheckDigit(orderData[1]);
+						orderRecord.setOrderRecordId(orderRecordId);
+						orderRecord.setStatus(orderData[3]);
+						orderRecord.setNumCopies(Integer.parseInt(orderData[4]));
+						//Get the order record based on the accounting unit
+						orderRecord.setLocationCode(orderData[5]);
+						if (orderInfoFromExport.containsKey(recordId)) {
+							orderInfoFromExport.get(recordId).add(orderRecord);
+						} else {
+							ArrayList<OrderInfo> orderRecordColl = new ArrayList<>();
+							orderRecordColl.add(orderRecord);
+							orderInfoFromExport.put(recordId, orderRecordColl);
+						}
 					}
 				}
 			}catch(Exception e){
