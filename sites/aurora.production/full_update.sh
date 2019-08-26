@@ -17,7 +17,6 @@ OUTPUT_FILE="/var/log/vufind-plus/${PIKASERVER}/full_update_output.log"
 MINFILE1SIZE=$((267000000))
 
 # Check if full_update is already running
-#TODO: Verify that the PID file doesn't get log-rotated
 PIDFILE="/var/log/vufind-plus/${PIKASERVER}/full_update.pid"
 if [ -f $PIDFILE ]
 then
@@ -197,4 +196,7 @@ then
 # send mail
 mail -s "Full Extract and Reindexing - ${PIKASERVER}" $EMAIL < ${OUTPUT_FILE}
 fi
+
+# Now that script is completed, remove the PID file
+rm $PIDFILE
 

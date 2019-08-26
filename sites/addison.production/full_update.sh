@@ -185,3 +185,6 @@ then
 mail -s "Full Extract and Reindexing - ${PIKASERVER}" $EMAIL < ${OUTPUT_FILE}
 fi
 
+# Now that script is completed, remove the PID file
+rm $PIDFILE
+
