@@ -62,7 +62,7 @@ abstract class CombinedResultSection extends DB_DataObject{
 		if ($this->source == 'pika') {
 			return "/Search/Results?lookfor=$searchTerm&basicType=$searchType&searchSource=local";
 		}elseif ($this->source == 'prospector'){
-			require_once ROOT_DIR . '/Drivers/marmot_inc/Prospector.php';
+			require_once ROOT_DIR . '/InterLibraryLoanDrivers/Prospector.php';
 			$prospector = new Prospector();
 			$search = array(array('lookfor' => $searchTerm, 'index' => $searchType));
 			return $prospector->getSearchLink($search);

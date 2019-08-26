@@ -1000,7 +1000,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 	}
 
 	function getProspectorInfo(){
-		require_once ROOT_DIR . '/Drivers/marmot_inc/Prospector.php';
+		require_once ROOT_DIR . '/InterLibraryLoanDrivers/Prospector.php';
 		global $configArray;
 		global $interface;
 		$id = $_REQUEST['id'];
