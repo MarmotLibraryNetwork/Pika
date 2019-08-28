@@ -222,7 +222,7 @@ class AACPLRecordProcessor extends IlsRecordProcessor {
 		// AACPL should only have 1 item record on a eContent record
 		if (itemRecords.size() == 1) {
 			for (DataField itemField : itemRecords) {
-				String location = itemField.getSubfield(locationSubfieldIndicator).getData();
+				String location = getItemSubfieldData(locationSubfieldIndicator, itemField);
 				if (location != null) {
 					if (location.equalsIgnoreCase("Z-ELIBRARY") || location.equalsIgnoreCase("Z-ONLINEBK")) {
 						RecordInfo eContentRecord = getEContentIlsRecord(groupedWork, record, identifier, itemField);
