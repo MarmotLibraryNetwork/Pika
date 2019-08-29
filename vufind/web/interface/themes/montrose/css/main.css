@@ -11125,9 +11125,6 @@ fieldset[disabled] .btn-masquerade.active {
   padding: 0 3px;
   font-weight: 600;
 }
-#browse-label {
-  display: none;
-}
 #selected-browse-label {
   background: none;
 }
@@ -11261,20 +11258,10 @@ fieldset[disabled] .btn-masquerade.active {
   line-height: 1.7;
   border-bottom: none;
 }
-#home-page-search-label {
-  text-shadow: none;
-}
-#home-page-search-label .glyphicon-search {
-  display: none;
-}
 .searchTypeHome,
 .searchSource {
   color: #333;
   background-color: #fff;
-}
-#home-page-hours-locations,
-#home-page-home-button {
-  display: none;
 }
 #home-page-login {
   text-shadow: none;
