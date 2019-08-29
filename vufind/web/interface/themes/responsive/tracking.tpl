@@ -32,7 +32,15 @@
 	<!-- End Google Analytics -->
 {else}
 	{if $googleAnalyticsId}
-	{* OPAC tracking code *}
+	{* OPAC and Library specific tracking code
+	Besides standard page tracking included is:
+	* Browse catagory click tracking
+	* Place hold click tracking
+	*
+	* Place hold click tracking sends 2 events
+			* The first sends title and format
+			* The second sends title and grouped work ID
+	*}
 	{literal}
 <script>
 	function trackBrowseTitleClick(el) {
@@ -42,9 +50,9 @@
 			var title = el.title;
 			var browseCatString = cat;
 			if(subcat != '') {
-				browseCatString += '/'+subcat;
+				browseCatString += '/' + subcat;
 			}
-			browseCatString += '/'+title;
+			browseCatString += '/' + title;
 
 			ga('opacTracker.send', 'event', {
 				eventCategory: 'Browse Category',
@@ -61,6 +69,49 @@
 		}
 	}
 
+	function trackHoldTitleClick(workId) {
+		if (dnt != "1" && dnt != "yes") {
+
+			$.get('/API/WorkAPI?method=getBasicWorkInfo&id='+workId,
+					function(data) {
+
+						var title  = data.result.title;
+						var format = data.result.format;
+						var groupedWorkId = data.result.groupedWorkId;
+						var titleAndFormat = title + '/' + format;
+						var titleAndGwId = title  + '/' + groupedWorkId;
+						// Send title and format of hold
+						ga('opacTracker.send', 'event', {
+							eventCategory: 'Place Hold Title',
+							eventAction: 'click',
+							eventLabel: titleAndFormat,
+						});
+						// Send title and grouped work ID
+						ga('opacTracker.send', 'event', {
+							eventCategory: 'Place Hold Grouped Work',
+							eventAction: 'click',
+							eventLabel: titleAndGwId,
+						});
+							{/literal}
+              {if $googleAnalyticsLibraryId}{literal}
+						// Send title and format of hold
+						ga('libraryTracker.send', 'event', {
+							eventCategory: 'Place Hold Title',
+							eventAction: 'click',
+							eventLabel: titleAndFormat,
+						});
+						// Send title and grouped work ID
+						ga('libraryTracker.send', 'event', {
+							eventCategory: 'Place Hold Grouped Work',
+							eventAction: 'click',
+							eventLabel: titleAndGwId,
+						});{/literal}
+              {/if}{literal}
+					});
+		}
+		return true;
+	}
+
 	if (dnt != "1" && dnt != "yes") {
 		(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
 		(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
@@ -72,13 +123,15 @@
 		ga('create', '{/literal}{$googleAnalyticsLibraryId}{literal}', 'auto', 'libraryTracker');
 		ga('libraryTracker.set', 'dimension1', {/literal}'{$pType}'{literal}); // Patron Type
 		ga('libraryTracker.set', 'dimension2', {/literal}'{$homeLibrary}'{literal}); // Home Library
-		ga('libraryTracker.set', 'dimension3',{/literal}'{$physicalLocation}'{literal});{/literal}
+		ga('libraryTracker.set', 'dimension3', {/literal}'{$physicalLocation}'{literal}); // Physical Location {/literal}
 		{/if}
 		{literal}ga('opacTracker.set', 'dimension1', {/literal}'{$pType}'{literal}); // Patron Type
 		ga('opacTracker.set', 'dimension2', {/literal}'{$homeLibrary}'{literal}); // Home Library
-		ga('opacTracker.set', 'dimension3',{/literal}'{$physicalLocation}'{literal});
+		ga('opacTracker.set', 'dimension3', {/literal}'{$physicalLocation}'{literal}); // Physical Location
+		// Send opac tracker pageview
 		ga('opacTracker.send', 'pageview');{/literal}
 		{if $googleAnalyticsLibraryId}{literal}
+		// Send library tracker page view
 		ga('libraryTracker.send', 'pageview');{/literal}
 		{/if}{literal}
 	}

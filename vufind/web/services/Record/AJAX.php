@@ -172,7 +172,7 @@ class Record_AJAX extends AJAXHandler {
 				$results = array(
 					'title'        => empty($title) ? 'Place Hold' : 'Place Hold on ' . $title,
 					'modalBody'    => $interface->fetch("Record/hold-popup.tpl"),
-					'modalButtons' => "<input type='submit' name='submit' id='requestTitleButton' value='Submit Hold Request' class='btn btn-primary' onclick='return VuFind.Record.submitHoldForm();'>",
+					'modalButtons' => "<input type='submit' name='submit' id='requestTitleButton' value='Submit Hold Request' class='btn btn-primary' onclick=\"trackHoldTitleClick('{$sourceAndId}'); return VuFind.Record.submitHoldForm();\">",
 				);
 			}
 
