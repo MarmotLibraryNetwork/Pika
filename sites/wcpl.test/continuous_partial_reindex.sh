@@ -6,7 +6,7 @@ PIKASERVER=wcpl.test
 set +a
 
 # Kick-off Sierra Extract/Reindex loop
-/usr/local/vufind-plus/sites/${PIKASERVER}/wcpl_horizon_continuous_reindex.sh &
+/usr/local/vufind-plus/vufind/bash/wcpl_horizon_continuous_reindex.sh &
 
 # Kick-off Overdrive Extract/Reindex loop
 /usr/local/vufind-plus/vufind/bash/overdrive_continuous_reindex.sh &

@@ -36,9 +36,12 @@ do
 		else
 			cp $FILE /data/vufind-plus/${PIKASERVER}/marc_updates/ >> ${OUTPUT_FILE}
 
-			#	# Move to processed (Production Only does this)
-			#	mv $FILE /mnt/ftp/continuous_exports/processed/ >> ${OUTPUT_FILE}
+			if [[ ! ${PIKASERVER} =~ ".test" ]]; then
+				# Move to processed (Production Only does this)
+				mv $FILE /mnt/ftp/continuous_exports/processed/ >> ${OUTPUT_FILE}
 			#	echo "mv $FILE /mnt/ftp/continuous_exports/processed/"
+			fi
+
 		fi
 	done
 	umount /mnt/ftp >> ${OUTPUT_FILE}
