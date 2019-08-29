@@ -2223,6 +2223,10 @@ class MarcRecord extends IndexRecord
 		// Get information about the record
 		require_once ROOT_DIR . '/RecordDrivers/LDRecordOffer.php';
 		$linkedDataRecord = new LDRecordOffer($this->getGroupedWorkDriver()->getRelatedRecord($this->getIdWithSource()));
+
+		if(!$offers = $linkedDataRecord->getOffers()) {
+			return [];
+		}
 		// handle null @type
 		if($linkedDataRecord->getWorkType()) {
 			$type = $linkedDataRecord->getWorkType();
@@ -2245,7 +2249,7 @@ class MarcRecord extends IndexRecord
 			'bookEdition'         => $this->getEdition(),
 			'isAccessibleForFree' => true,
 			'image'               => $this->getBookcoverUrl('medium'),
-			"offers"              => $linkedDataRecord->getOffers(),
+			"offers"              => $offers,
 		);
 
 		//Open graph data (goes in meta tags)
