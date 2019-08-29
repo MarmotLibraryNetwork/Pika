@@ -82,28 +82,28 @@
 						var titleAndGwId = title  + '/' + groupedWorkId;
 						// Send title and format of hold
 						ga('opacTracker.send', 'event', {
-							eventCategory: 'Place Hold Title',
-							eventAction: 'click',
+							eventCategory: 'Holds',
+							eventAction: 'Place Hold Title & Format',
 							eventLabel: titleAndFormat,
 						});
 						// Send title and grouped work ID
 						ga('opacTracker.send', 'event', {
-							eventCategory: 'Place Hold Grouped Work',
-							eventAction: 'click',
+							eventCategory: 'Holds',
+							eventAction: 'Place Hold Title & Grouped Work',
 							eventLabel: titleAndGwId,
 						});
 							{/literal}
               {if $googleAnalyticsLibraryId}{literal}
 						// Send title and format of hold
 						ga('libraryTracker.send', 'event', {
-							eventCategory: 'Place Hold Title',
-							eventAction: 'click',
+							eventCategory: 'Holds',
+							eventAction: 'Place Hold Title & Format',
 							eventLabel: titleAndFormat,
 						});
 						// Send title and grouped work ID
 						ga('libraryTracker.send', 'event', {
-							eventCategory: 'Place Hold Grouped Work',
-							eventAction: 'click',
+							eventCategory: 'Holds',
+							eventAction: 'Place Hold Title & Grouped Work',
 							eventLabel: titleAndGwId,
 						});{/literal}
               {/if}{literal}
