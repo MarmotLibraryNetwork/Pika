@@ -43,6 +43,7 @@
 	*}
 	{literal}
 <script>
+	// Track a browse category title click
 	function trackBrowseTitleClick(el) {
 		if (dnt != "1" && dnt != "yes") {
 			var cat    = $('.selected-browse-label-search-text').text();
@@ -53,7 +54,6 @@
 				browseCatString += '/' + subcat;
 			}
 			browseCatString += '/' + title;
-
 			ga('opacTracker.send', 'event', {
 				eventCategory: 'Browse Category',
 				eventAction: 'click',
@@ -69,44 +69,32 @@
 		}
 	}
 
+	// Track a place hold action
 	function trackHoldTitleClick(workId) {
 		if (dnt != "1" && dnt != "yes") {
 
 			$.get('/API/WorkAPI?method=getBasicWorkInfo&id='+workId,
 					function(data) {
 
-						var title  = data.result.title;
-						var format = data.result.format;
+						var title  = data.result.title.replace('/', '');
+						var format = data.result.format.replace('/', '');
 						var groupedWorkId = data.result.groupedWorkId;
-						var titleAndFormat = title + '/' + format;
-						var titleAndGwId = title  + '/' + groupedWorkId;
-						// Send title and format of hold
+						var holdTitleFormatGroupedWorkId = title + '/' + format + '/' + groupedWorkId;
+						// Send title, format and grouped work if of hold
 						ga('opacTracker.send', 'event', {
 							eventCategory: 'Holds',
-							eventAction: 'Place Hold Title & Format',
-							eventLabel: titleAndFormat,
-						});
-						// Send title and grouped work ID
-						ga('opacTracker.send', 'event', {
-							eventCategory: 'Holds',
-							eventAction: 'Place Hold Title & Grouped Work',
-							eventLabel: titleAndGwId,
+							eventAction: 'Place Hold',
+							eventLabel: holdTitleFormatGroupedWorkId,
 						});
 							{/literal}
               {if $googleAnalyticsLibraryId}{literal}
 						// Send title and format of hold
 						ga('libraryTracker.send', 'event', {
 							eventCategory: 'Holds',
-							eventAction: 'Place Hold Title & Format',
-							eventLabel: titleAndFormat,
-						});
-						// Send title and grouped work ID
-						ga('libraryTracker.send', 'event', {
-							eventCategory: 'Holds',
-							eventAction: 'Place Hold Title & Grouped Work',
-							eventLabel: titleAndGwId,
+							eventAction: 'Place Hold',
+							eventLabel: holdTitleFormatGroupedWorkId,
 						});{/literal}
-              {/if}{literal}
+							{/if}{literal}
 					});
 		}
 		return true;
