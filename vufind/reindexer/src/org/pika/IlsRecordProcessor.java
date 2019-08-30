@@ -1567,6 +1567,12 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			printFormats.add("MusicCD");
 			return;
 		}
+		if (printFormats.contains("WonderBook")){
+			// This should come before Play Away because wonderbooks will get mis-determined as playaway
+			printFormats.clear();
+			printFormats.add("WonderBook");
+			return;
+		}
 		if (printFormats.contains("PlayawayView")){
 			printFormats.clear();
 			printFormats.add("PlayawayView");
@@ -1800,6 +1806,8 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 						result.add("LargePrint");
 					} else if (editionData.contains("go reader")) {
 						result.add("GoReader");
+					} else if (editionData.contains("wonderbook")) {
+						result.add("WonderBook");
 //				} else if (find4KUltraBluRayPhrases(editionData)) {
 //					result.add("4KUltraBlu-Ray");
 						// not sure this is a good idea yet. see D-2432
@@ -1840,6 +1848,8 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 							result.add("SoundCassette");
 						} else if (physicalDescriptionData.contains("sound discs") || physicalDescriptionData.contains("audio discs") || physicalDescriptionData.contains("compact disc")) {
 							result.add("SoundDisc");
+						} else if (physicalDescriptionData.contains("wonderbook")) {
+							result.add("WonderBook");
 						}
 						//Since this is fairly generic, only use it if we have no other formats yet
 						if (result.size() == 0 && subfield.getCode() == 'f' && physicalDescriptionData.matches("^.*?\\d+\\s+(p\\.|pages).*$")) {
@@ -1887,6 +1897,8 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 					result.add("VerticalFile");
 				}else if (noteValue.contains("vox books")) {
 					result.add("VoxBooks");
+				}else if (noteValue.contains("wonderbook")) {
+					result.add("WonderBook");
 				}
 			}
 		}
