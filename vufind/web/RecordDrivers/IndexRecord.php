@@ -399,6 +399,12 @@ class IndexRecord extends RecordInterface
 		return false;
 	}
 
+	public function getSemanticData()
+	{
+		// TODO: Implement getSemanticData() method.
+		return [];
+	}
+
 	/**
 	 * Get any reviews associated with this record.  For details of
 	 * the return format, see sys/Reviews.php.

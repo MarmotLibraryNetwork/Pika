@@ -251,6 +251,7 @@ class FlatironsRecordProcessor extends IIIRecordProcessor {
 				//Check to see if this is Carnegie eContent
 				for (DataField itemField : itemRecords) {
 					if (itemField.getSubfield(locationSubfieldIndicator) != null && itemField.getSubfield(locationSubfieldIndicator).getData().startsWith("bc")) {
+						//TODO: this will make all the items on this BIB econtent, which is not *always* the case
 						//Check to see if we have related links
 						if (has856) {
 							isEContent = true;

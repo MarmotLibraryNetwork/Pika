@@ -623,33 +623,34 @@ public class GroupedWorkIndexer {
 		int      curLine      = 0;
 		try {
 			File           lexileData   = new File(lexileExportPath);
-			BufferedReader lexileReader = new BufferedReader(new FileReader(lexileData));
-			//Skip over the header
-			lexileReader.readLine();
-			String lexileLine = lexileReader.readLine();
-			curLine++;
-			while (lexileLine != null) {
-				lexileFields = lexileLine.split("\\t");
-				LexileTitle titleInfo = new LexileTitle();
-				if (lexileFields.length >= 11) {
-					titleInfo.setTitle(lexileFields[0]);
-					titleInfo.setAuthor(lexileFields[1]);
-					String isbn = lexileFields[3];
-					titleInfo.setLexileCode(lexileFields[4]);
-					titleInfo.setLexileScore(lexileFields[5]);
-					if (lexileFields.length >= 11) {
-						titleInfo.setSeries(lexileFields[10]);
-					}
-					if (lexileFields.length >= 12) {
-						titleInfo.setAwards(lexileFields[11]);
-					}
-					if (lexileFields.length >= 13) {
-						titleInfo.setDescription(lexileFields[12]);
-					}
-					lexileInformation.put(isbn, titleInfo);
-				}
-				lexileLine = lexileReader.readLine();
+			try (BufferedReader lexileReader = new BufferedReader(new FileReader(lexileData))) {
+				//Skip over the header
+				lexileReader.readLine();
+				String lexileLine = lexileReader.readLine();
 				curLine++;
+				while (lexileLine != null) {
+					lexileFields = lexileLine.split("\\t");
+					LexileTitle titleInfo = new LexileTitle();
+					if (lexileFields.length >= 11) {
+						titleInfo.setTitle(lexileFields[0]);
+						titleInfo.setAuthor(lexileFields[1]);
+						String isbn = lexileFields[3];
+						titleInfo.setLexileCode(lexileFields[4]);
+						titleInfo.setLexileScore(lexileFields[5]);
+						if (lexileFields.length >= 11) {
+							titleInfo.setSeries(lexileFields[10]);
+						}
+						if (lexileFields.length >= 12) {
+							titleInfo.setAwards(lexileFields[11]);
+						}
+						if (lexileFields.length >= 13) {
+							titleInfo.setDescription(lexileFields[12]);
+						}
+						lexileInformation.put(isbn, titleInfo);
+					}
+					lexileLine = lexileReader.readLine();
+					curLine++;
+				}
 			}
 			logger.info("Read " + lexileInformation.size() + " lines of lexile data");
 		} catch (Exception e) {

@@ -31,7 +31,8 @@
 				{/if}
 				<small class='version_info'>{if !$productionServer} / {/if}v. {$gitBranch}</small>
 				{if $debug}
-					<small class='session_info'> / session. {$session}</small>
+					<small class='session_info'> / session {$session}</small>
+					<small class='session_info'> / Smarty v. {$smarty.version}</small>
 				{/if}
 				{if $debug}
 					<small class='scope_info'> / scope {$solrScope}</small>

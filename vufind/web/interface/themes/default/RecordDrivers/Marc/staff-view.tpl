@@ -1,3 +1,4 @@
+{strip}
 {if $recordDriver}
 	<div class="row">
 		<div class="result-label col-xs-2">Grouped Work ID: </div>
@@ -45,7 +46,7 @@
 					<button onclick="return VuFind.GroupedWork.forceRegrouping('{$recordDriver->getPermanentId()}')"
 									class="btn btn-sm btn-default">Force Regrouping
 					</button>
-						{if $ils == 'Sierra'}
+						{if $recordExtractable}
 							<button onclick="return VuFind.Record.forceReExtract('{$recordDriver->getModule()}', '{$id|escape}')"
 											class="btn btn-sm btn-default">Force Extract from {$ils}</button>
 						{/if}
@@ -131,3 +132,4 @@
 		</dl>
 	</div>
 {/if}
+{/strip}

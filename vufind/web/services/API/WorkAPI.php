@@ -16,6 +16,7 @@ class WorkAPI extends AJAXHandler {
 		'getRatingData',
 		'getIsbnsForWork',
 		'generateWorkId',
+		'getBasicWorkInfo',
 	);
 
 	public function getRatingData($permanentId = null){
@@ -121,4 +122,31 @@ class WorkAPI extends AJAXHandler {
 		$result             = shell_exec($commandToRun);
 		return json_decode($result);
 	}
+
+	public function getBasicWorkInfo() {
+		$recordId = $_REQUEST['id'];
+		$recordDriver = new MarcRecord($recordId);
+		$work = [];
+		if ($recordDriver->isValid()) {
+			$work['coverUrl']      = $recordDriver->getBookcoverUrl('medium');
+			$work['groupedWorkId'] = $recordDriver->getGroupedWorkId();
+			$work['format']        = $recordDriver->getPrimaryFormat();
+			$work['author']        = $recordDriver->getPrimaryAuthor();
+			$work['title']         = $recordDriver->getTitle();
+			$work['title_sort']    = $recordDriver->getSortableTitle();
+			$work['link']          = $recordDriver->getLinkUrl();
+		} else {
+			$work['coverUrl']      = "";
+			$work['groupedWorkId'] = "";
+			$work['format']        = "Unknown";
+			$work['author']        = "Unknown";
+			$work['title']         = "Unknown";
+			$work['title_sort']    = "Unknown";
+			$work['link']          = '';
+		}
+
+		return $work;
+	}
+
+
 }

@@ -28,7 +28,10 @@ global $memoryWatcher;
 loadModuleActionId();
 $timer->logTime("Loaded Module and Action Id");
 $memoryWatcher->logMemory("Loaded Module and Action Id");
+// autoloader stack
+spl_autoload_register('pika_autoloader');
 spl_autoload_register('vufind_autoloader');
+
 initializeSession();
 $timer->logTime("Initialized session");
 
@@ -55,8 +58,6 @@ if (isset($configArray['Site']['smallLogo'])){
 if (isset($configArray['Site']['largeLogo'])){
 	$interface->assign('largeLogo', $configArray['Site']['largeLogo']);
 }
-//Set focus to the search box by default.
-//$interface->assign('focusElementId', 'lookfor'); // No references in templates. TODO delete
 
 //Set footer information
 /** @var Location $locationSingleton */
@@ -73,20 +74,24 @@ global $active_ip;
 $analytics = new Analytics($active_ip, $startTime);
 $timer->logTime('Setup Analytics');
 
+// Google Analytics
+global $library;
 $googleAnalyticsId        = isset($configArray['Analytics']['googleAnalyticsId'])        ? $configArray['Analytics']['googleAnalyticsId'] : false;
+$googleAnalyticsLibraryId = isset($library->gaTrackingId)                                ? $library->gaTrackingId : false;
+#TODO: What is $googleAnalyticsLinkingId
 $googleAnalyticsLinkingId = isset($configArray['Analytics']['googleAnalyticsLinkingId']) ? $configArray['Analytics']['googleAnalyticsLinkingId'] : false;
 $trackTranslation         = isset($configArray['Analytics']['trackTranslation'])         ? $configArray['Analytics']['trackTranslation'] : false;
 $interface->assign('googleAnalyticsId', $googleAnalyticsId);
-$interface->assign('googleAnalyticsLinkingId', $googleAnalyticsLinkingId);
+$interface->assign('googleAnalyticsLibraryId', $googleAnalyticsLibraryId);
 $interface->assign('trackTranslation', $trackTranslation);
 if ($googleAnalyticsId) {
 	$googleAnalyticsDomainName = isset($configArray['Analytics']['domainName']) ? $configArray['Analytics']['domainName'] : strstr($_SERVER['SERVER_NAME'], '.');
 	// check for a config setting, use that if found, otherwise grab domain name  but remove the first subdomain
 	$interface->assign('googleAnalyticsDomainName', $googleAnalyticsDomainName);
 }
-global $library;
-global $offlineMode;
 
+
+global $offlineMode;
 //Set System Message
 if ($configArray['System']['systemMessage']){
 	$interface->assign('systemMessage', $configArray['System']['systemMessage']);
@@ -166,25 +171,6 @@ if ($mode['online'] === false) {
 	exit();
 }
 $timer->logTime('Checked availability mode');
-
-////Check to see if we have a collection applied.
-//// TODO: collection url parameter doesn't look to be used for anything
-//global $defaultCollection;
-//if (isset($_GET['collection'])){
-//	$defaultCollection = $_GET['collection'];
-//	//Set a cookie so we don't have to transfer the ip from page to page.
-//	if ($defaultCollection == '' || $defaultCollection == 'all'){
-//		setcookie('collection', '', 0, '/');
-//		$defaultCollection = null;
-//	}else{
-//		setcookie('collection', $defaultCollection, 0, '/');
-//	}
-//}elseif (isset($_COOKIE['collection'])){
-//	$defaultCollection = $_COOKIE['collection'];
-//}else{
-//	//No collection has been set.
-//}
-//$timer->logTime('Check default collection');
 
 // Proxy server settings
 if (isset($configArray['Proxy']['host'])) {
@@ -625,21 +611,6 @@ if (isset($_REQUEST['followup'])) {
 	$timer->logTime('Process followup');
 }
 
-//If there is a hold_message, make sure it gets displayed.
-/* //TODO deprecated, but there are still references in scripts that likely need removed
-if (isset($_SESSION['hold_message'])) {
-	$interface->assign('hold_message', formatHoldMessage($_SESSION['hold_message']));
-	unset($_SESSION['hold_message']);
-}elseif (isset($_SESSION['renew_message'])){ // this routine should be deprecated now. plb 2-2-2015
-	$interface->assign('renew_message', formatRenewMessage($_SESSION['renew_message']));
-}elseif (isset($_SESSION['checkout_message'])){
-	global $logger;
-	$logger->log("Found checkout message", PEAR_LOG_DEBUG);
-	$checkoutMessage = $_SESSION['checkout_message'];
-	unset($_SESSION['checkout_message']);
-	$interface->assign('checkout_message', formatCheckoutMessage($checkoutMessage));
-}*/
-
 // Process Solr shard settings
 processShards();
 $timer->logTime('Process Shards');
@@ -689,7 +660,6 @@ $timer->logTime('Finished Index');
 $timer->writeTimings();
 $memoryWatcher->logMemory("Finished index");
 $memoryWatcher->writeMemory();
-//$analytics->finish();
 
 function processFollowup(){
 	global $configArray;
@@ -823,6 +793,25 @@ function getGitBranch(){
 	}
 	$interface->assign('gitBranch', $branchName);
 }
+
+// Pika drivers autoloader PSR-4 style
+function pika_autoloader($class) {
+    $sourcePath = __DIR__ . DIRECTORY_SEPARATOR . 'sys' . DIRECTORY_SEPARATOR;
+
+    $filePath       = str_replace('\\', DIRECTORY_SEPARATOR, $class);
+    $pathParts      = explode("\\", $class);
+    $directoryIndex = count($pathParts) - 1;
+    $directory      = $pathParts[$directoryIndex];
+    $fullFilePath   = $sourcePath.$filePath.'.php';
+		$fullFolderPath = $sourcePath.$filePath.DIRECTORY_SEPARATOR.$directory.'.php';
+    if(file_exists($fullFilePath)) {
+    	include_once($fullFilePath);
+    } elseif (file_exists($fullFolderPath)) {
+	    include_once($fullFolderPath);
+    }
+
+}
+
 // Set up autoloader (needed for YAML)
 function vufind_autoloader($class) {
 	if (substr($class, 0, 4) == 'CAS_') {
@@ -839,11 +828,21 @@ function vufind_autoloader($class) {
 		}elseif (file_exists('Drivers/' . $class . '.php')){
 			$className = ROOT_DIR . '/Drivers/' . $class . '.php';
 			require_once $className;
+		}elseif (file_exists('RecordDrivers/' . $class . '.php')){
+			$className = ROOT_DIR . '/RecordDrivers/' . $class . '.php';
+			require_once $className;
 		}elseif (file_exists('services/MyAccount/lib/' . $class . '.php')){
 			$className = ROOT_DIR . '/services/MyAccount/lib/' . $class . '.php';
 			require_once $className;
+		}elseif (file_exists('services/' . $class . '.php')){
+	           $className = ROOT_DIR . '/services/' . $class . '.php';
+			require_once $className;
 		}else{
-			require_once $nameSpaceClass;
+			try {
+				include_once $nameSpaceClass;
+			} catch (Exception $e) {
+				PEAR_Singleton::raiseError("Error loading class $class");
+			}
 		}
 	}catch (Exception $e){
 		PEAR_Singleton::raiseError("Error loading class $class");
@@ -980,10 +979,6 @@ function loadUserData(){
 	global $timer;
 
 	//Assign User information to the interface
-	if (UserAccount::isLoggedIn()) {
-		//$user = UserAccount::getLoggedInUser();
-	}
-
 	if (UserAccount::isLoggedIn()){
 		if (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('libraryAdmin') || UserAccount::userHasRole('cataloging') || UserAccount::userHasRole('libraryManager') || UserAccount::userHasRole('locationManager')){
 			$variable = new Variable();

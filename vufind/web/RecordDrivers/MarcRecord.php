@@ -317,18 +317,30 @@ class MarcRecord extends IndexRecord
 			$user        = UserAccount::getLoggedInUser();
 			$userIsStaff = $user && $user->isStaff();
 			$interface->assign('userIsStaff', $userIsStaff);
+
+			// Determine whether or not we need to show the Re-extract button
+			// (Right now, only appropriate for Sierra libraries)
+			require_once ROOT_DIR . '/sys/Account/AccountProfile.php';
+			$accountProfile   = new AccountProfile();
+			$ilsRecordSources = $accountProfile->fetchAll('id', 'recordSource');
+			if (in_array($this->sourceAndId->getSource(), $ilsRecordSources)){
+				$interface->assign("recordExtractable", true);
+			}
+
 			require_once ROOT_DIR . '/sys/Extracting/IlsExtractInfo.php';
 			$extractInfo                    = new IlsExtractInfo();
 			$extractInfo->indexingProfileId = $this->sourceAndId->getIndexingProfile()->id;
 			$extractInfo->ilsId             = $this->sourceAndId->getRecordId();
 			if ($extractInfo->find(true)){
 				$interface->assign('lastRecordExtractTime', is_null($extractInfo->lastExtracted) ? 'null' : $extractInfo->lastExtracted);
+				// Mark with text 'null' so that the template handles the display properly
 				$interface->assign('recordExtractMarkedDeleted', $extractInfo->deleted);
 			}
 		}
 
 		if ($this->groupedWork != null){
-			$lastGroupedWorkModificationTime = $this->groupedWork->date_updated;
+			$lastGroupedWorkModificationTime = empty($this->groupedWork->date_updated) ? 'null' : $this->groupedWork->date_updated;
+			// Mark with text 'null' so that the template handles the display properly
 			$interface->assign('lastGroupedWorkModificationTime', $lastGroupedWorkModificationTime);
 		}
 
@@ -2007,8 +2019,7 @@ class MarcRecord extends IndexRecord
 	private $holdingSections;
 	private $statusSummary;
 
-	private function loadCopies()
-	{
+	private function loadCopies(){
 		if (!$this->copiesInfoLoaded) {
 			$this->copiesInfoLoaded = true;
 			//Load copy information from the grouped work rather than from the driver.
@@ -2053,8 +2064,7 @@ class MarcRecord extends IndexRecord
 
 	}
 
-	public function assignCopiesInformation()
-	{
+	public function assignCopiesInformation(){
 		$this->loadCopies();
 		global $interface;
 		$hasLastCheckinData = false;
@@ -2170,29 +2180,37 @@ class MarcRecord extends IndexRecord
 		return $issueSummaries;
 	}
 
-	private function getLinks()
-	{
-		$links = array();
+	private function getLinks(){
+		$links      = array();
 		$marcRecord = $this->getMarcRecord();
-		if ($marcRecord != false) {
+		if ($marcRecord != false){
 			$linkFields = $marcRecord->getFields('856');
 			/** @var File_MARC_Data_Field $field */
-			foreach ($linkFields as $field) {
-				if ($field->getSubfield('u') != null) {
-					$url = $field->getSubfield('u')->getData();
-					if ($field->getSubfield('y') != null) {
-						$title = $field->getSubfield('y')->getData();
-					} else if ($field->getSubfield('3') != null) {
-						$title = $field->getSubfield('3')->getData();
-					} else if ($field->getSubfield('z') != null) {
-						$title = $field->getSubfield('z')->getData();
-					} else {
-						$title = $url;
+			foreach ($linkFields as $field){
+				if ($field->getSubfield('u') != null){
+					// Exclude custom cover URLs
+					$isCustomCover = false;
+					if (!empty($field->getSubfield('2'))){
+						$customCoverCode = strtolower(trim($field->getSubfield('2')->getData()));
+						$isCustomCover   = in_array($customCoverCode, array('pika', 'pikaimage', 'pika_image', 'image', 'vufind_image', 'vufindimage', 'vufind'));
 					}
-					$links[] = array(
-						'title' => $title,
-						'url' => $url,
-					);
+					if (!$isCustomCover){
+						$url = $field->getSubfield('u')->getData();
+
+						if ($field->getSubfield('y') != null){
+							$title = $field->getSubfield('y')->getData();
+						}elseif ($field->getSubfield('3') != null){
+							$title = $field->getSubfield('3')->getData();
+						}elseif ($field->getSubfield('z') != null){
+							$title = $field->getSubfield('z')->getData();
+						}else{
+							$title = $url;
+						}
+						$links[] = array(
+							'title' => $title,
+							'url'   => $url,
+						);
+					}
 				}
 			}
 		}
@@ -2205,16 +2223,33 @@ class MarcRecord extends IndexRecord
 		// Get information about the record
 		require_once ROOT_DIR . '/RecordDrivers/LDRecordOffer.php';
 		$linkedDataRecord = new LDRecordOffer($this->getGroupedWorkDriver()->getRelatedRecord($this->getIdWithSource()));
+
+		if(!$offers = $linkedDataRecord->getOffers()) {
+			return [];
+		}
+		// handle null @type
+		if($linkedDataRecord->getWorkType()) {
+			$type = $linkedDataRecord->getWorkType();
+		} else {
+			$type = 'Book';
+		}
+		// handle null author
+		if($this->getPrimaryAuthor()) {
+			$author = $this->getPrimaryAuthor();
+		} else {
+			$author = "N/A";
+		}
+
 		$semanticData []  = array(
 			'@context'            => 'http://schema.org',
-			'@type'               => $linkedDataRecord->getWorkType(),
+			'@type'               => $type,
 			'name'                => $this->getTitle(),
 			'exampleOfWork'       => $this->getGroupedWorkDriver()->getAbsoluteUrl(),
-			'author'              => $this->getPrimaryAuthor(),
+			'author'              => $author,
 			'bookEdition'         => $this->getEdition(),
 			'isAccessibleForFree' => true,
 			'image'               => $this->getBookcoverUrl('medium'),
-			"offers"              => $linkedDataRecord->getOffers(),
+			"offers"              => $offers,
 		);
 
 		//Open graph data (goes in meta tags)

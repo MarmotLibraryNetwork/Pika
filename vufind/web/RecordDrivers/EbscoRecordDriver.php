@@ -192,6 +192,11 @@ class EbscoRecordDriver extends RecordInterface {
 		// TODO: Implement getRDFXML() method.
 	}
 
+	public function getSemanticData()
+	{
+		// TODO: Implement getSemanticData() method.
+	}
+
 	/**
 	 * Get any reviews associated with this record.  For details of
 	 * the return format, see sys/Reviews.php.

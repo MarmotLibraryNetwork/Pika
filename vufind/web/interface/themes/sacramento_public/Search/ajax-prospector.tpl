@@ -1,4 +1,3 @@
-<ProspectorSearchResults>
 {strip}
 	<![CDATA[
 	<div class="row" id="prospectorSection">
@@ -49,6 +48,4 @@
 		}
 		{/literal}
 	</style>
-	]]>
 {/strip}
-</ProspectorSearchResults>

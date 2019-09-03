@@ -1,0 +1,296 @@
+// Core variables and mixins
+@import (reference) "../../responsive/css/variables.less";
+@import (reference) "variables";
+
+// Always include the base .less file
+@import "../../responsive/css/responsive_base.less";
+
+#home-page-login .loginOptions a.loginLink {
+  color: #FFF;
+}
+
+#headerLoginLink div.header-button {
+  color: #fff;
+  font-weight: bold;
+}
+
+.header-login-button-mixin(@header-buttons-background-color, @header-buttons-color);
+.header-button {
+  text-transform: uppercase;
+  border: 2px solid @gold;
+  margin-top: 30px;
+  &:hover {
+    background-color: @dark-gold;
+  }
+}
+#logoutLink > .header-button {
+  background-color: #fff;
+  border: 1px solid @gold;
+  &:hover {
+    background-color: @dark-gold;
+  }
+}
+
+#header-logo {
+  padding-bottom: 10px;
+}
+
+// This vertically centers #library-name-header (taken from https://css-tricks.com/centering-in-the-unknown/)
+// looks to only work when the library name doesn't wrap
+#headingInfo:before {
+  content: '';
+  display: inline-block;
+  height: 100%;
+  vertical-align: middle;
+  margin-right: -0.25em; // Adjusts for spacing
+}
+#headingInfo {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+
+
+// Adopting Nashville styling of browse categories
+#main-content-with-sidebar>.row.breadcrumbs,
+#home-page-browse-header {
+  margin-left: 0; // to give a gap of white background between the search box and the browse category carousel
+}
+.selected-browse-label-search {
+  margin-left: 0;
+  float: left;
+  padding: 0 3px;
+  font-weight: 600;
+}
+#browse-label {
+
+}
+#selected-browse-label {
+  background: none;
+
+  > .btn-group {
+    margin-right: 0;
+    padding: 0 3px;
+  }
+}
+#browse-category-carousel .browse-category {
+  text-shadow: none;
+  padding: 0;
+  margin-left: 1px;
+  margin-right: 1px;
+  height: 90px;
+  cursor: pointer;
+  font-weight: 600;
+  border: 1px solid @spl-border-gray;
+  div {
+    height: 90px;
+    padding: 15px;
+    //font-size: 20px;
+    &:hover {
+      text-decoration: none;
+    }
+  }
+  &.selected {
+    border: 1px solid @selectedCategoryBorderColor;
+     div {
+      background: @selectedCategoryColor;
+      //color:#fff;
+      font-size: @browse-category-font-size;
+      &:hover {
+        background: @selectedCategoryColor;
+      }
+    }
+  }
+  &:hover {
+    background: #E4E4E4;
+    //text-decoration: none;
+    transition: all .3s ease-in-out;
+  }
+
+}
+
+#browse-category-picker {
+  .jcarousel-control-prev, .jcarousel-control-next {
+    height: 90px;
+    line-height: 75px;
+    border: 1px solid #ccc;
+    &:hover {
+      text-decoration: none;
+      background: #E4E4E4;
+      transition: all .3s ease-in-out;
+    }
+  }
+  .jcarousel-pagination a {
+    &.active {
+      background: @browseCarouselControlColor;
+      // keep shadowing in place on active item
+      .box-shadow(0 0 2px #4E443C);
+    }
+    &, &:hover, &:active, &:visited  {outline: none};
+  }
+}
+
+.jcarousel-wrapper {
+  margin: 10px auto;
+  position: relative;
+}
+
+
+// this controls the subcategory menu button are and menu buttons on browse
+#browse-sub-category-menu {
+  margin-top: 20px;
+  .btn {
+    padding: 6px 10px;
+    margin-right: 5px;
+    margin-bottom: 5px;
+  }
+  button {
+    &.selected {
+      border: 1px solid @selectedCategoryBorderColor;
+    }
+  }
+}
+
+#home-page-browse-results hr {
+  margin-top: 0;
+  margin-bottom: 0;
+  border: 0 solid #eee;
+}
+
+
+.panel-title{
+  font-size: 16px;
+}
+
+// Remove gradients from accordions & facets; set a white background for body content //
+#account-settings-accordion, #more-details-accordion, .sidebar-links, #account-settings-accordion {
+  .panel-heading{
+    background: @accordion-header-bg-color;
+  }
+  .active .panel-heading{
+    background: @accordion-active-header-backgroundcolor;
+  }
+  .panel,.panel-heading {
+    border-radius: 0;
+  }
+  .panel-body {
+    background-color: transparent;
+    border: 1px solid #c5c5c5;
+  }
+}
+.facetTitle, .exploreMoreTitle{
+  background: @spl-other-gray;
+}
+
+.facetDetails {
+  padding: 10px;
+  border: 1px solid #c5c5c5;
+  border-top: none;
+  background-color: #fff;
+}
+.facetValue {
+  padding: 3px 5px;
+  //color: #888;
+  font-size: medium;
+  a {
+    color: #428bca;
+    line-height: 1.7;
+    border-bottom: none;
+  }
+}
+
+.searchTypeHome,.searchSource{
+  color: #333;
+  background-color: #fff;
+}
+
+#home-page-login {
+  text-shadow: none;
+}
+
+#more-details-accordion, #account-settings-accordion{
+  .active {
+    .panel-title {
+      color: @accordion-active-header-color;
+      text-shadow: 1px 1px #fff;
+    }
+  }
+}
+.sidebar-links {
+  .panel {
+    &.active {
+      & > a { // keep the title's link underlining the same color as the title
+        // these end up applying to content in .active div.panel-title
+        &, &:visited, &:hover {
+          text-shadow: 1px 1px #fff;
+        }
+      }
+    }
+  }
+}
+//TODO: I think this should go into the main styling.
+#refineSearch~#home-account-links{
+  padding-top:15px;
+}
+.sidebar-label{
+  background: @sidebar-label-background-color;
+  font-weight: bold;
+}
+
+.related-manifestation-shelf-status.availableOther{
+  color: #000;
+  font-weight: bold;
+}
+
+// Vertically Align cover images with the thumbnail block; up to a maximum size.  so that the thumbnail blocks have a uniform height and fall into columns evenly
+.browse-thumbnail {
+  div:first-child {
+    height: 180px;
+    display: flex;
+    align-items: center;
+  }
+  a {
+    img {
+      max-height: 180px;
+    }
+  }
+}
+.column-fix {
+  -webkit-column-break-inside: avoid;
+  -moz-column-break-inside: avoid;
+  -o-column-break-inside: avoid;
+  column-break-inside: avoid;
+  display: table;
+}
+
+.btn-primary, .btn-info {
+  &:hover {
+    background-color: lighten(@green, 7%);
+    border-color: #7BAD42;
+  }
+}
+
+.panel-group,
+#home-page-library-section {
+  > a {
+    text-decoration-color: #333333;
+    color: #333333;
+  }
+}
+
+.sidebar-button {
+  color: #333333;
+  background: #f0efef;
+  padding: 5px 15px;
+  border-bottom: 1px solid #a1a1a1;
+  text-shadow: 1px 1px #fff;
+  font-size: 16px;
+  text-align: left;
+}
+// Return Now button.  Had bad side effects. Turned off
+//.btn-warning {
+//  &:hover {
+//    background-color: #E9E9E9;
+//    border-color:@btn-warning-border;
+//  }
+//}

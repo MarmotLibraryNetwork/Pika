@@ -48,7 +48,7 @@
 #####################
 # Daily full update #
 #####################
-00 20 * * * cd /usr/local/vufind-plus/sites/marmot.test; ./full_update.sh
+20 0 * * * cd /usr/local/vufind-plus/sites/marmot.test; ./full_update.sh
 
 ################
 # Pika Cleanup #

@@ -226,7 +226,7 @@ CREATE TABLE IF NOT EXISTS `library` (
   `boopsieLink` varchar(150) NOT NULL,
   `enableAlphaBrowse` tinyint(4) DEFAULT '1',
   `showHoldCancelDate` tinyint(4) NOT NULL DEFAULT '0',
-  `enablePospectorIntegration` tinyint(4) NOT NULL DEFAULT '0',
+  `enableProspectorIntegration` tinyint(4) NOT NULL DEFAULT '0',
   `prospectorCode` varchar(10) NOT NULL DEFAULT '',
   `showRatings` tinyint(4) NOT NULL DEFAULT '1',
   `searchesFile` varchar(15) NOT NULL DEFAULT 'default',

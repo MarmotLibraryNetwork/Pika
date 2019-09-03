@@ -1,6 +1,6 @@
 <?php
 /**
- * Display a list of internal variables that have been defined in the system.
+ * Display a list of internal variables that have been defined in the database table 'variables'.
  *
  * @category Pika
  * @author Mark Noble <mark@marmot.org>
@@ -30,6 +30,11 @@ class Admin_Variables extends ObjectEditor {
 		$variable->orderBy('name');
 		$variable->find();
 		while ($variable->fetch()){
+			// Add a human readable date time  of timestamp values in an additional column
+			$variable->timeDisplay = null;
+			if (ctype_digit($variable->value) && $variable->value > strtotime('-10 years')){
+				$variable->timeDisplay = date("Y-m-d H:i:s T", $variable->value);
+			}
 			$variableList[$variable->id] = clone $variable;
 		}
 		return $variableList;

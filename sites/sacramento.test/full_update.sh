@@ -89,6 +89,9 @@ cd /usr/local/vufind-plus/vufind/cron;./GetHooplaFromMarmot.sh >> ${OUTPUT_FILE}
 /usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} sacramento/rbdigital_magazine/folsom rbdigital_magazine/folsom >> ${OUTPUT_FILE}
 /usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} sacramento/rbdigital_magazine/woodland rbdigital_magazine/woodland >> ${OUTPUT_FILE}
 
+#Enki
+/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} sacramento/enki enki/spl >> ${OUTPUT_FILE}
+
 
 #Extract Lexile Data
 cd /data/vufind-plus/; curl --remote-name --remote-time --silent --show-error --compressed --time-cond /data/vufind-plus/lexileTitles.txt https://cassini.marmot.org/lexileTitles.txt

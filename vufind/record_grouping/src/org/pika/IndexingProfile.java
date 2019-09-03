@@ -14,23 +14,24 @@ import java.util.HashSet;
 public class IndexingProfile {
 	Long id;
 	public String name;
-	String marcPath;
-	String filenamesToInclude;
-	String marcEncoding;
-	String individualMarcPath;
-	int numCharsToCreateFolderFrom;
+	String  marcPath;
+	String  filenamesToInclude;
+	String  marcEncoding;
+	String  individualMarcPath;
+	int     numCharsToCreateFolderFrom;
 	boolean createFolderFromLeadingCharacters;
-	String groupingClass;
-	String recordNumberTag;
-	char recordNumberField;
-	String recordNumberPrefix;
-	String itemTag;
-	String formatSource;
-	char format;
-	char eContentDescriptor;
-	String specifiedFormatCategory;
+	String  groupingClass;
+	String  recordNumberTag;
+	char    recordNumberField;
+	String  recordNumberPrefix;
+	String  itemTag;
+	String  formatSource;
+	char    format;
+	char    eContentDescriptor;
+	String  specifiedFormatCategory;
 	boolean doAutomaticEcontentSuppression;
 	boolean groupUnchangedFiles;
+	boolean usingSierraAPIExtract = false;
 
 	File getFileForIlsRecord(String recordNumber) {
 		StringBuilder shortId = new StringBuilder(recordNumber.replace(".", ""));
@@ -39,26 +40,27 @@ public class IndexingProfile {
 		}
 
 		String subFolderName;
-		if (createFolderFromLeadingCharacters){
-			subFolderName        = shortId.substring(0, numCharsToCreateFolderFrom);
-		}else{
-			subFolderName        = shortId.substring(0, shortId.length() - numCharsToCreateFolderFrom);
+		if (createFolderFromLeadingCharacters) {
+			subFolderName = shortId.substring(0, numCharsToCreateFolderFrom);
+		} else {
+			subFolderName = shortId.substring(0, shortId.length() - numCharsToCreateFolderFrom);
 		}
 
-		String basePath           = individualMarcPath + "/" + subFolderName;
+		String basePath = individualMarcPath + "/" + subFolderName;
 		createBaseDirectory(basePath);
 		String individualFilename = basePath + "/" + shortId + ".mrc";
 		return new File(individualFilename);
 	}
 
 	private static HashSet<String> basePathsValidated = new HashSet<>();
+
 	private static void createBaseDirectory(String basePath) {
 		if (basePathsValidated.contains(basePath)) {
 			return;
 		}
 		File baseFile = new File(basePath);
-		if (!baseFile.exists()){
-			if (!baseFile.mkdirs()){
+		if (!baseFile.exists()) {
+			if (!baseFile.mkdirs()) {
 				System.out.println("Could not create directory to store individual marc");
 			}
 		}

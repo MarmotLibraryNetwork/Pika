@@ -24,7 +24,7 @@ require_once ROOT_DIR . '/sys/mobile_device_detect.php';
 // Smarty Extension class
 class UInterface extends Smarty
 {
-	public $lang;
+	public  $lang;
 	private $vufindTheme;   // which theme(s) are active?
 	private $themes; // The themes that are active
 	private $isMobile = false;
@@ -104,9 +104,14 @@ class UInterface extends Smarty
 				die();
 			}
 		}
-		$this->plugins_dir   = array('plugins', "$local/interface/plugins");
+		$this->plugins_dir   = array('plugins', "$local/interface/plugins", 'Smarty/plugins');
+		// TODO: The correct setting for caching is 0, 1 or 2
+		// 0 will turn caching off. Not sure what a false value will do.
 		$this->caching       = false;
 		$this->debug         = true;
+		// TODO: Smarty doesn't have a setting for debug. The class var is debugging.
+		// debug may be used for something else.
+		$this->debugging     = false;
 		$this->compile_check = true;
 
 		unset($local);
@@ -385,7 +390,7 @@ class UInterface extends Smarty
 			$this->assign('generalContactLink', $library->generalContactLink);
 			$this->assign('showLoginButton', $library->showLoginButton);
 			$this->assign('showAdvancedSearchbox', $library->showAdvancedSearchbox);
-			$this->assign('enablePospectorIntegration', $library->enablePospectorIntegration);
+			$this->assign('enableProspectorIntegration', $library->enableProspectorIntegration);
 			$this->assign('showTagging', $library->showTagging);
 			$this->assign('showRatings', $library->showRatings);
 			$this->assign('show856LinksAsTab', $library->show856LinksAsTab);
@@ -417,7 +422,7 @@ class UInterface extends Smarty
 		}else{
 			$this->assign('showLoginButton', 1);
 			$this->assign('showAdvancedSearchbox', 1);
-			$this->assign('enablePospectorIntegration', isset($configArray['Content']['Prospector']) && $configArray['Content']['Prospector'] == true ? 1 : 0);
+			$this->assign('enableProspectorIntegration', isset($configArray['Content']['Prospector']) && $configArray['Content']['Prospector'] == true ? 1 : 0);
 			$this->assign('showTagging', 1);
 			$this->assign('showRatings', 1);
 			$this->assign('show856LinksAsTab', 1);

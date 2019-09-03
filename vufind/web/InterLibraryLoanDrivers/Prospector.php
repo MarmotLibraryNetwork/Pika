@@ -8,7 +8,10 @@ class Prospector {
 	 * Load search results from Prospector using the encore interface.
 	 * If $prospectorRecordDetails are provided, will sort the existing result to the
 	 * top and tag it as being the record.
-	 **/
+	 * @param string $searchTerms
+	 * @param int $maxResults
+	 * @return array|null
+	 */
 	function getTopSearchResults($searchTerms, $maxResults){
 		$prospectorUrl = $this->getSearchLink($searchTerms);
 		//Load the HTML from Prospector
@@ -111,6 +114,12 @@ class Prospector {
 
 	}
 
+	/**
+	 * Generate a search URL for the ILL website
+	 *
+	 * @param string[] $searchTerms
+	 * @return string
+	 */
 	function getSearchLink($searchTerms){
 		$search = "";
 		foreach ($searchTerms as $term){
