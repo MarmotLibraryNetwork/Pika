@@ -917,9 +917,10 @@ abstract class MarcRecordProcessor {
 				}
 			}
 		}
-		if (itemInfo.geteContentUrl() == null) {
-			logger.warn("Item for " + identifier + "  had no eContent URL set");
-		}
+//		if (itemInfo.geteContentUrl() == null) {
+//			logger.warn("Item for " + identifier + "  had no eContent URL set");
+//		}
+		//will turn back on after initial problem records have been cleaned up. pascal 8/30/2019
 	}
 
 	/**

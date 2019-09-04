@@ -309,14 +309,15 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		try {
 			byte[] fileContents = Util.readFileBytes(individualFilename);
 			//FileInputStream inputStream = new FileInputStream(individualFile);
-			InputStream inputStream = new ByteArrayInputStream(fileContents);
-			//Don't need to use a permissive reader here since we've written good individual MARCs as part of record grouping
-			//Actually we do need to since we can still get MARC records over the max length.
-			MarcReader marcReader = new MarcPermissiveStreamReader(inputStream, true, false, "UTF-8");
-			if (marcReader.hasNext()) {
-				record = marcReader.next();
+			try (InputStream inputStream = new ByteArrayInputStream(fileContents)) {
+				//Don't need to use a permissive reader here since we've written good individual MARCs as part of record grouping
+				//Actually we do need to since we can still get MARC records over the max length.
+				// Assuming we have correctly saved the individual MARC file in utf-8 encoding; and should handle in utf-8 as well
+				MarcReader marcReader = new MarcPermissiveStreamReader(inputStream, true, true, "UTF8");
+				if (marcReader.hasNext()) {
+					record = marcReader.next();
+				}
 			}
-			inputStream.close();
 		}catch (FileNotFoundException fe){
 			logger.warn("Could not find MARC record at " + individualFilename + " for " + identifier);
 		} catch (Exception e) {
@@ -1566,6 +1567,12 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			printFormats.add("MusicCD");
 			return;
 		}
+		if (printFormats.contains("WonderBook")){
+			// This should come before Play Away because wonderbooks will get mis-determined as playaway
+			printFormats.clear();
+			printFormats.add("WonderBook");
+			return;
+		}
 		if (printFormats.contains("PlayawayView")){
 			printFormats.clear();
 			printFormats.add("PlayawayView");
@@ -1799,6 +1806,8 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 						result.add("LargePrint");
 					} else if (editionData.contains("go reader")) {
 						result.add("GoReader");
+					} else if (editionData.contains("wonderbook")) {
+						result.add("WonderBook");
 //				} else if (find4KUltraBluRayPhrases(editionData)) {
 //					result.add("4KUltraBlu-Ray");
 						// not sure this is a good idea yet. see D-2432
@@ -1839,6 +1848,8 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 							result.add("SoundCassette");
 						} else if (physicalDescriptionData.contains("sound discs") || physicalDescriptionData.contains("audio discs") || physicalDescriptionData.contains("compact disc")) {
 							result.add("SoundDisc");
+						} else if (physicalDescriptionData.contains("wonderbook")) {
+							result.add("WonderBook");
 						}
 						//Since this is fairly generic, only use it if we have no other formats yet
 						if (result.size() == 0 && subfield.getCode() == 'f' && physicalDescriptionData.matches("^.*?\\d+\\s+(p\\.|pages).*$")) {
@@ -1886,6 +1897,8 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 					result.add("VerticalFile");
 				}else if (noteValue.contains("vox books")) {
 					result.add("VoxBooks");
+				}else if (noteValue.contains("wonderbook")) {
+					result.add("WonderBook");
 				}
 			}
 		}

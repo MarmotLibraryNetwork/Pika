@@ -289,6 +289,7 @@ class RecordGroupingProcessor {
 		} else if (field260 != null && field260.getSubfield('b') != null) {
 			author = field260.getSubfield('b').getData();
 		} else if (!groupingFormat.equals("book") && field245 != null && field245.getSubfield('c') != null) {
+			// if not a book, check 245c as final resort
 			author = field245.getSubfield('c').getData();
 			if (author.indexOf(';') > 0) {
 				author = author.substring(0, author.indexOf(';') - 1);

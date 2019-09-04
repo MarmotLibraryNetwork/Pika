@@ -26,7 +26,7 @@ class ArlingtonRecordProcessor extends IIIRecordProcessor {
 	ArlingtonRecordProcessor(GroupedWorkIndexer indexer, Connection vufindConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 		super(indexer, vufindConn, indexingProfileRS, logger, fullReindex);
 
-		languageFields = "008[35-37]";
+		languageFields = "008[35-37]"; //TODO: unneeded override of base setting
 
 		loadOrderInformationFromExport();
 

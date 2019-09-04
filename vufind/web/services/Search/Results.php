@@ -20,7 +20,6 @@
 
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/MyResearch/lib/Search.php';
-require_once ROOT_DIR . '/Drivers/marmot_inc/Prospector.php';
 
 require_once ROOT_DIR . '/sys/Pager.php';
 
@@ -254,7 +253,7 @@ class Search_Results extends Action {
 		$showRatings = 1;
 		$enableProspectorIntegration = isset($configArray['Content']['Prospector']) ? $configArray['Content']['Prospector'] : false;
 		if (isset($library)){
-			$enableProspectorIntegration = ($library->enablePospectorIntegration == 1);
+			$enableProspectorIntegration = ($library->enableProspectorIntegration == 1);
 			$showRatings = $library->showRatings;
 		}
 		if ($enableProspectorIntegration){

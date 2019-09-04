@@ -13,6 +13,7 @@ import java.util.Date;
 
 import au.com.bytecode.opencsv.CSVReader;
 import au.com.bytecode.opencsv.CSVWriter;
+import netscape.javascript.JSObject;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 import org.apache.solr.client.solrj.impl.ConcurrentUpdateSolrServer;
@@ -199,14 +200,14 @@ public class SierraExportAPIMain {
 			try {
 				long id = Long.parseLong(singleRecordToProcess);
 				initializeRecordGrouper(pikaConn);
-				allowFastExportMethod      = systemVariables.getBooleanValuedVariable("allow_sierra_fast_export");
-				updateExtractInfoStatement = pikaConn.prepareStatement("INSERT INTO ils_extract_info (indexingProfileId, ilsId, lastExtracted) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE lastExtracted=VALUES(lastExtracted)"); // unique key is indexingProfileId and ilsId combined
+				allowFastExportMethod = systemVariables.getBooleanValuedVariable("allow_sierra_fast_export");
+				setUpSqlStatements(pikaConn);
 				updateMarcAndRegroupRecordIds(singleRecordToProcess, Collections.singletonList(id));
 				System.out.println("Extract process for record " + singleRecordToProcess + " finished.");
 				System.exit(0);
-			} catch (SQLException e) {
-				logger.error("Error setting up prepared statements for Record extraction processing", e);
-				System.exit(1);
+//			} catch (SQLException e) {
+//				logger.error("Error setting up prepared statements for Record extraction processing", e);
+//				System.exit(1);
 			} catch (NumberFormatException e) {
 				logger.error("Record " + singleRecordToProcess + " failed to get extracted.", e);
 				System.exit(1);
@@ -489,6 +490,16 @@ public class SierraExportAPIMain {
 		long   updateTime                   = new Date().getTime() / 1000;
 		logger.info("Loading records changed since " + lastExtractDateTimeFormatted);
 
+		setUpSqlStatements(pikaConn);
+		processDeletedBibs(lastExtractDateFormatted, updateTime);
+		getNewRecordsFromAPI(lastExtractDateTimeFormatted, updateTime);
+		getChangedRecordsFromAPI(lastExtractDateTimeFormatted, updateTime);
+		getNewItemsFromAPI(lastExtractDateTimeFormatted);
+		getChangedItemsFromAPI(lastExtractDateTimeFormatted);
+		getDeletedItemsFromAPI(lastExtractDateFormatted);
+	}
+
+	private static void setUpSqlStatements(Connection pikaConn) {
 		try {
 			getWorkForPrimaryIdentifierStmt           = pikaConn.prepareStatement("SELECT id, grouped_work_id from grouped_work_primary_identifiers where type = ? and identifier = ?");
 			deletePrimaryIdentifierStmt               = pikaConn.prepareStatement("DELETE from grouped_work_primary_identifiers where id = ? LIMIT 1");
@@ -502,12 +513,6 @@ public class SierraExportAPIMain {
 		} catch (Exception e) {
 			logger.error("Error setting up prepared statements for Record extraction processing", e);
 		}
-		processDeletedBibs(lastExtractDateFormatted, updateTime);
-		getNewRecordsFromAPI(lastExtractDateTimeFormatted, updateTime);
-		getChangedRecordsFromAPI(lastExtractDateTimeFormatted, updateTime);
-		getNewItemsFromAPI(lastExtractDateTimeFormatted);
-		getChangedItemsFromAPI(lastExtractDateTimeFormatted);
-		getDeletedItemsFromAPI(lastExtractDateFormatted);
 	}
 
 	/**
@@ -592,7 +597,6 @@ public class SierraExportAPIMain {
 			//Start a transaction so we can rebuild an entire table
 			startOfHolds = pikaConn.setSavepoint();
 			pikaConn.setAutoCommit(false);
-			pikaConn.prepareCall("TRUNCATE TABLE ils_hold_summary").executeQuery();
 
 			HashMap<String, Long> numHoldsByBib    = new HashMap<>();
 			HashMap<String, Long> numHoldsByVolume = new HashMap<>();
@@ -666,6 +670,7 @@ public class SierraExportAPIMain {
 				}
 			}
 
+			pikaConn.prepareCall("TRUNCATE TABLE ils_hold_summary").executeQuery();
 
 			try (PreparedStatement addIlsHoldSummary = pikaConn.prepareStatement("INSERT INTO ils_hold_summary (ilsId, numHolds) VALUES (?, ?)")) {
 
@@ -778,6 +783,29 @@ public class SierraExportAPIMain {
 		}
 	}
 
+	/**
+	 * Checks the API if the Bib is deleted or suppressed
+	 *
+	 * @param id Bib Id with out the .b prefix or the trailing check digit
+	 * @return
+	 */
+	private static boolean isDeletedInAPI(long id) {
+		String     url               = apiBaseUrl + "/bibs/" + id + "?fields=id,deleted,suppressed";
+		JSONObject isDeletedResponse = callSierraApiURL(url, debug);
+		if (isDeletedResponse != null) {
+			try {
+				if (isDeletedResponse.has("deleted") && isDeletedResponse.getBoolean("deleted")) {
+					return true;
+				} else {
+					return isDeletedResponse.has("suppressed") && isDeletedResponse.getBoolean("suppressed");
+				}
+			} catch (JSONException e) {
+				logger.error("Error checking if a bib was deleted", e);
+			}
+		}
+		return false;
+	}
+
 	private static boolean deleteRecord(long updateTime, Long idFromAPI) {
 		String bibId = getfullSierraBibId(idFromAPI);
 		try {
@@ -805,12 +833,9 @@ public class SierraExportAPIMain {
 							String permanentId = getPermanentIdForGroupedWork(groupedWorkId);
 							if (permanentId != null && !permanentId.isEmpty()) {
 								//Delete the work from solr index
-//								groupedWorkIndexer.deleteRecord(permanentId);
-
-								deleteGroupedWorkFromSolr(permanentId); //Trying to skip using the Reindexer
+								deleteGroupedWorkFromSolr(permanentId);
 
 								logger.info("Sierra API extract deleted Group Work " + permanentId + " from index. Investigate if it is an anomalous deletion by the Sierra API extract");
-								//pascal 5/2/2019 cutting out warning noise for now
 
 								// See https://marmot.myjetbrains.com/youtrack/issue/D-2364
 								return true;
@@ -819,6 +844,9 @@ public class SierraExportAPIMain {
 					}
 				} else {
 					logger.info("Found no grouped work primary identifiers for bib id : " + bibId);
+					if (isDeletedInAPI(idFromAPI)) {
+						return true;
+					}
 				}
 			}
 		} catch (Exception e) {
@@ -1167,9 +1195,17 @@ public class SierraExportAPIMain {
 			if (marcResults != null) {
 				if (marcResults.has("httpStatus")) {
 					if (marcResults.getInt("code") == 107) {
+						//TODO: test if the API Confirms is deleted/suppressed, then remove ( This can happen when the deletion was originally missed)
 						//This record was deleted
-						logger.debug("id " + id + " was deleted");
-						return true;
+						if (isDeletedInAPI(id)) {
+							if (deleteRecord(new Date().getTime() / 1000, id)) {
+								markRecordDeletedInExtractInfo(id);
+								logger.debug("id " + id + " was deleted");
+								return true;
+							}
+						}
+						logger.error("Received error code 107 but record is not deleted or suppressed " + id);
+						return false;
 					} else {
 						logger.error("Error response calling " + sierraUrl);
 						logger.error("Unknown error, code : " + marcResults.getInt("code") + ", " + marcResults);
@@ -1246,24 +1282,9 @@ public class SierraExportAPIMain {
 						logger.warn("Bib : " + id + " does not have a copies fixed field");
 					}
 
-					RecordIdentifier recordIdentifier = recordGroupingProcessor.getPrimaryIdentifierFromMarcRecord(marcRecord, indexingProfile.name, indexingProfile.doAutomaticEcontentSuppression);
-					String           identifier;
-					if (recordIdentifier != null) {
-						identifier = recordIdentifier.getIdentifier();
-						writeMarcRecord(marcRecord, identifier);
-						logger.debug("Wrote marc record for " + identifier);
-					} else {
-						logger.warn("Failed to set record identifier in record grouper getPrimaryIdentifierFromMarcRecord(); possible error or automatic econtent suppression trigger.");
-						identifier = getfullSierraBibId(id);
-					}
+					// Write marc to File and Do the Record Grouping
+					groupAndWriteTheMarcRecord(marcRecord, id);
 
-					//Setup the grouped work for the record.  This will take care of either adding it to the proper grouped work
-					//or creating a new grouped work
-					if (!recordGroupingProcessor.processMarcRecord(marcRecord, true)) {
-						logger.warn(identifier + " was suppressed");
-					} else {
-						logger.debug("Finished record grouping for " + identifier);
-					}
 				} else {
 					logger.error("Error exporting marc record for " + id + " call for fixed fields returned an error code or null");
 					return false;
@@ -1277,6 +1298,40 @@ public class SierraExportAPIMain {
 			return false;
 		}
 		return true;
+	}
+
+	private static String groupAndWriteTheMarcRecord(Record marcRecord) {
+		return groupAndWriteTheMarcRecord(marcRecord, null);
+	}
+
+	private static String groupAndWriteTheMarcRecord(Record marcRecord, Long id) {
+		String           identifier = null;
+		if (id != null){
+			identifier = getfullSierraBibId(id);
+		} else {
+			RecordIdentifier recordIdentifier = recordGroupingProcessor.getPrimaryIdentifierFromMarcRecord(marcRecord, indexingProfile.name, indexingProfile.doAutomaticEcontentSuppression);
+			if (recordIdentifier != null) {
+				identifier = recordIdentifier.getIdentifier();
+			} else {
+				logger.warn("Failed to set record identifier in record grouper getPrimaryIdentifierFromMarcRecord(); possible error or automatic econtent suppression trigger.");
+			}
+		}
+		if (identifier != null && !identifier.isEmpty()) {
+			logger.debug("Writing marc record for " + identifier);
+			writeMarcRecord(marcRecord, identifier);
+			logger.debug("Wrote marc record for " + identifier);
+		} else {
+			logger.warn("Failed to set record identifier in record grouper getPrimaryIdentifierFromMarcRecord(); possible error or automatic econtent suppression trigger.");
+		}
+
+		//Setup the grouped work for the record.  This will take care of either adding it to the proper grouped work
+		//or creating a new grouped work
+		if (!recordGroupingProcessor.processMarcRecord(marcRecord, true)) {
+			logger.warn(identifier + " was suppressed");
+		} else {
+			logger.debug("Finished record grouping for " + identifier);
+		}
+		return identifier;
 	}
 
 
@@ -1480,20 +1535,9 @@ public class SierraExportAPIMain {
 								Record marcRecord = marcReader.next();
 								logger.debug("Got the next marc Record data");
 
-								RecordIdentifier recordIdentifier = recordGroupingProcessor.getPrimaryIdentifierFromMarcRecord(marcRecord, indexingProfile.name, indexingProfile.doAutomaticEcontentSuppression);
-								String           identifier       = recordIdentifier.getIdentifier();
-								logger.debug("Writing marc record for " + identifier);
+								// Write marc to File and Do the Record Grouping
+								String identifier = groupAndWriteTheMarcRecord(marcRecord);
 
-								writeMarcRecord(marcRecord, identifier);
-								logger.debug("Wrote marc record for " + identifier);
-
-								//Setup the grouped work for the record.  This will take care of either adding it to the proper grouped work
-								//or creating a new grouped work
-								if (!recordGroupingProcessor.processMarcRecord(marcRecord, true)) {
-									logger.warn(identifier + " was suppressed during record grouping");
-								} else {
-									logger.debug("Finished record grouping for " + identifier);
-								}
 								Long shortId = Long.parseLong(identifier.substring(2, identifier.length() - 1));
 								processedIds.add(shortId);
 								logger.debug("Processed " + identifier);
@@ -1644,17 +1688,18 @@ public class SierraExportAPIMain {
 //		addNoteToExportLog("Finished exporting due dates");
 //	}
 
-	private static void exportActiveOrders(Connection sierraConn) throws IOException {
+	private static void exportActiveOrders(Connection sierraConn){
 		addNoteToExportLog("Starting export of active orders");
 
 		//Load the orders we had last time
 		String                 exportPath             = indexingProfile.marcPath;
-		File                   orderRecordFile        = new File(exportPath + "/active_orders.csv");
+		String                 orderFilePath                      = exportPath + "/active_orders.csv";
+		File                   orderRecordFile        = new File(orderFilePath);
 		HashMap<Long, Integer> existingBibsWithOrders = new HashMap<>();
 		readOrdersFile(orderRecordFile, existingBibsWithOrders);
 
-		boolean suppressOrderRecordsThatAreReceivedAndCatalogged = PikaConfigIni.getBooleanIniValue("Catalog", "suppressOrderRecordsThatAreReceivedAndCatalogged");
-		boolean suppressOrderRecordsThatAreCatalogged            = PikaConfigIni.getBooleanIniValue("Catalog", "suppressOrderRecordsThatAreCatalogged");
+		boolean suppressOrderRecordsThatAreReceivedAndCataloged = PikaConfigIni.getBooleanIniValue("Catalog", "suppressOrderRecordsThatAreReceivedAndCatalogged");
+		boolean suppressOrderRecordsThatAreCataloged            = PikaConfigIni.getBooleanIniValue("Catalog", "suppressOrderRecordsThatAreCatalogged");
 		boolean suppressOrderRecordsThatAreReceived              = PikaConfigIni.getBooleanIniValue("Catalog", "suppressOrderRecordsThatAreReceived");
 
 		String orderStatusesToExport = PikaConfigIni.getIniValue("Reindex", "orderStatusesToExport");
@@ -1683,12 +1728,15 @@ public class SierraExportAPIMain {
 			}
 			activeOrderSQL += " AND NOW() - order_date_gmt < '" + auroraOrderRecordInterval + " DAY'::INTERVAL";
 		} else {
-			if (suppressOrderRecordsThatAreCatalogged) { // Ignore entries with a set catalog date more than a day old ( a day to allow for the transition from order item to regular item)
-				activeOrderSQL += " AND (catalog_date_gmt IS NULL OR NOW() - catalog_date_gmt < '1 DAY'::INTERVAL) ";
+			if (suppressOrderRecordsThatAreCataloged) { // Ignore entries with a set catalog date more than a day old ( a day to allow for the transition from order item to regular item)
+//				activeOrderSQL += " AND (catalog_date_gmt IS NULL OR NOW() - catalog_date_gmt < '1 DAY'::INTERVAL) ";
+				activeOrderSQL += " AND catalog_date_gmt IS NULL";
 			} else if (suppressOrderRecordsThatAreReceived) { // Ignore entries with a set received date more than a day old ( a day to allow for the transition from order item to regular item)
-				activeOrderSQL += " AND (received_date_gmt IS NULL OR NOW() - received_date_gmt < '1 DAY'::INTERVAL) ";
-			} else if (suppressOrderRecordsThatAreReceivedAndCatalogged) { // Only ignore entries that have both a received and catalog date, and a catalog date more than a day old
-				activeOrderSQL += " AND (catalog_date_gmt IS NULL or received_date_gmt IS NULL OR NOW() - catalog_date_gmt < '1 DAY'::INTERVAL) ";
+//				activeOrderSQL += " AND (received_date_gmt IS NULL OR NOW() - received_date_gmt < '1 DAY'::INTERVAL) ";
+				activeOrderSQL += " AND received_date_gmt IS NULL";
+			} else if (suppressOrderRecordsThatAreReceivedAndCataloged) { // Only ignore entries that have both a received and catalog date, and a catalog date more than a day old
+//				activeOrderSQL += " AND (catalog_date_gmt IS NULL or received_date_gmt IS NULL OR NOW() - catalog_date_gmt < '1 DAY'::INTERVAL) ";
+				activeOrderSQL += " AND catalog_date_gmt IS NULL or received_date_gmt IS NULL";
 			}
 		}
 		int numBibsToProcess     = 0;
@@ -1699,13 +1747,22 @@ public class SierraExportAPIMain {
 				PreparedStatement getActiveOrdersStmt = sierraConn.prepareStatement(activeOrderSQL, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 				ResultSet activeOrdersRS = getActiveOrdersStmt.executeQuery()
 		) {
-			writeToFileFromSQLResultFile(orderRecordFile, activeOrdersRS);
+			File tempWriteFile = new File(orderRecordFile + ".tmp");
+			writeToFileFromSQLResultFile(tempWriteFile, activeOrdersRS);
 			activeOrdersRS.close();
-
-			HashMap<Long, Integer> updatedBibsWithOrders = new HashMap<>();
-			readOrdersFile(orderRecordFile, updatedBibsWithOrders);
+			if (!tempWriteFile.renameTo(orderRecordFile)){
+				if (orderRecordFile.exists() && orderRecordFile.delete()){
+					if (!tempWriteFile.renameTo(orderRecordFile)){
+						logger.error("failed to delete existing order record file and replace with temp file");
+					}
+				}else {
+					logger.warn("Failed to rename temp order record file");
+				}
+			}
 
 			//Check to see which bibs either have new or deleted orders
+			HashMap<Long, Integer> updatedBibsWithOrders = new HashMap<>();
+			readOrdersFile(orderRecordFile, updatedBibsWithOrders);
 			for (Long bibId : updatedBibsWithOrders.keySet()) {
 				if (!existingBibsWithOrders.containsKey(bibId)) {
 					//We didn't have a bib with an order before, update it
@@ -1728,30 +1785,36 @@ public class SierraExportAPIMain {
 			allBibsToUpdate.addAll(bibsWithOrdersRemoved);
 			numBibsOrdersRemoved = bibsWithOrdersRemoved.size();
 			numBibsToProcess += numBibsOrdersRemoved;
-		} catch (SQLException e1) {
-			logger.error("Error loading active orders", e1);
+		} catch (SQLException e) {
+			logger.error("Error loading active orders", e);
 		}
 		addNoteToExportLog("Finished exporting active orders");
 		addNoteToExportLog(numBibsToProcess + " total records to update.<br> " + numBibsOrdersAdded + " records have new order records.<br>" + numBibsOrdersChanged + " records have order record updates.<br>" + numBibsOrdersRemoved + " records have no order records now.");
 	}
 
-	private static void readOrdersFile(File orderRecordFile, HashMap<Long, Integer> bibsWithOrders) throws IOException {
-		if (orderRecordFile.exists()) {
-			try (CSVReader orderReader = new CSVReader(new FileReader(orderRecordFile))) {
-				//Skip the header
-				orderReader.readNext();
-				String[] recordData = orderReader.readNext();
-				while (recordData != null) {
-					Long bibId = Long.parseLong(recordData[0]);
-					if (bibsWithOrders.containsKey(bibId)) {
-						bibsWithOrders.put(bibId, bibsWithOrders.get(bibId) + 1);
-					} else {
-						bibsWithOrders.put(bibId, 1);
-					}
+	private static void readOrdersFile(File orderRecordFile, HashMap<Long, Integer> bibsWithOrders){
+		try {
+			if (orderRecordFile.exists()) {
+				try (CSVReader orderReader = new CSVReader(new FileReader(orderRecordFile))) {
+					//Skip the header
+					orderReader.readNext();
+					String[] recordData = orderReader.readNext();
+					while (recordData != null) {
+						Long bibId = Long.parseLong(recordData[0]);
+						if (bibsWithOrders.containsKey(bibId)) {
+							bibsWithOrders.put(bibId, bibsWithOrders.get(bibId) + 1);
+						} else {
+							bibsWithOrders.put(bibId, 1);
+						}
 
-					recordData = orderReader.readNext();
+						recordData = orderReader.readNext();
+					}
 				}
 			}
+		} catch (IOException e) {
+			logger.error("Error reading order records file", e);
+		} catch (NumberFormatException e) {
+			logger.error("Error while reading order records file", e);
 		}
 	}
 
@@ -1994,7 +2057,11 @@ public class SierraExportAPIMain {
 				if (conn.getResponseCode() == 200) {
 					// Get the response
 					response = getTheResponse(conn.getInputStream());
-					return new JSONObject(response.toString());
+					try {
+						return new JSONObject(response.toString());
+					} catch (JSONException e) {
+						logger.error("JSON error parsing response from MARC JSON call : " + response.toString(), e);
+					}
 				} else {
 					// Get any errors
 					response = getTheResponse(conn.getErrorStream());

@@ -3,7 +3,7 @@
 /**
  * A Grouped Work that has been manually merged
  *
- * @category VuFind-Plus-2014
+ * @category Pika
  * @author Mark Noble <mark@marmot.org>
  * Date: 7/29/14
  * Time: 3:14 PM
@@ -15,48 +15,55 @@ class MergedGroupedWork extends DB_DataObject {
 	public $destinationGroupedWorkId;
 	public $notes;
 
-	static function getObjectStructure() {
+	static function getObjectStructure(){
 		$structure = array(
 			array(
-				'property' => 'id',
-				'type' => 'hidden',
-				'label' => 'Id',
+				'property'    => 'id',
+				'type'        => 'hidden',
+				'label'       => 'Id',
 				'description' => 'The unique id of the merged grouped work in the database',
-				'storeDb' => true,
-				'primaryKey' => true,
+				'storeDb'     => true,
+				'primaryKey'  => true,
 			),
 			array(
-				'property' => 'sourceGroupedWorkId',
-				'type' => 'text',
-				'size' => 36,
-				'maxLength' => 40,
-				'label' => 'Source Grouped Work Id',
-				'description' => 'The id of the grouped work to be merged.',
-				'serverValidation' => 'validateSource',
-				'storeDb' => true,
-				'required' => true,
-			),
-			array(
-				'property' => 'destinationGroupedWorkId',
-				'type' => 'text',
-				'size' => 36,
-				'maxLength' => 40,
-				'label' => 'Destination Grouped Work Id',
-				'description' => 'The id of the grouped work to merge the work into.',
+				'property'         => 'destinationGroupedWorkId',
+				'type'             => 'text',
+				'size'             => 36,
+				'maxLength'        => 40,
+				'label'            => 'Destination Grouped Work Id',
+				'description'      => 'The id of the grouped work to merge the work into.',
 				'serverValidation' => 'validateDestination',
-				'storeDb' => true,
-				'required' => true,
+				'storeDb'          => true,
+				'required'         => true,
 			),
 			array(
-				'property' => 'notes',
-				'type' => 'text',
-				'size' => 250,
-				'maxLength' => 250,
-				'label' => 'Notes',
-				'description' => 'Notes related to the merged work.',
-				'storeDb' => true,
-				'required' => true,
+				'property'         => 'sourceGroupedWorkId',
+				'type'             => 'text',
+				'size'             => 36,
+				'maxLength'        => 40,
+				'label'            => 'Source Grouped Work Id',
+				'description'      => 'The id of the grouped work to be merged.',
+				'serverValidation' => 'validateSource',
+				'storeDb'          => true,
+				'required'         => true,
 			),
+			array(
+				'property'    => 'notes',
+				'type'        => 'textarea',
+				'size'        => 250,
+				'maxLength'   => 250,
+				'label'       => 'Notes',
+				'description' => 'Notes related to the merged work.',
+				'storeDb'     => true,
+				'required'    => true,
+			),
+//			// For display only
+//			array(
+//				'property'         => 'full_title',
+//				'type'             => 'text',
+//				'label'            => 'Grouping Title',
+//				'storeDb'          => false,
+//			),
 		);
 		return $structure;
 	}

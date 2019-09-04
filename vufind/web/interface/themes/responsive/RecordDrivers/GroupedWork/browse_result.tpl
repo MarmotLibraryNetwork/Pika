@@ -12,7 +12,7 @@
 		<div class="browse-thumbnail">
 			<a onclick="return VuFind.GroupedWork.showGroupedWorkInfo('{$summId}','{$browseCategoryId}')" href="{$summUrl}">
 				<div>
-					<img src="{$bookCoverUrlMedium}" alt="{$summTitle} by {$summAuthor}" title="{$summTitle} by {$summAuthor}">
+					<img onclick="trackBrowseTitleClick(this)" src="{$bookCoverUrlMedium}" alt="{$summTitle} by {$summAuthor}" title="{$summTitle} by {$summAuthor}">
 				</div>
 			</a>
 			{if $showRatings && $browseCategoryRatingsMode != 'none'}
@@ -24,7 +24,7 @@
 					data-average_rating="{$ratingData.average}" data-id="{$summId}"
 					data-show_review="{$showComments}"
 				{/if}
-				>
+
 				<span class="ui-rater-starsOff" style="width:90px">
 {* Don't show a user's ratings in browse results because the results get cached so shouldn't be particular to a single user.*}
 {*					{if $ratingData.user}

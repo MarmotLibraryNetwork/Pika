@@ -55,11 +55,11 @@ function getLibraryLocationUpdates(){
 
 		'library_6' => array(
 			'title' => 'Library 6',
-			'description' => 'Add fields orginally defined for Marmot',
+			'description' => 'Add fields originally defined for Marmot',
 			'continueOnError' => true,
 			'sql' => array(
 				"ALTER TABLE `library` ADD `showHoldCancelDate` TINYINT(4) NOT NULL DEFAULT '0';",
-				"ALTER TABLE `library` ADD `enablePospectorIntegration` TINYINT(4) NOT NULL DEFAULT '0';",
+				"ALTER TABLE `library` ADD `enableProspectorIntegration` TINYINT(4) NOT NULL DEFAULT '0';",
 				"ALTER TABLE `library` ADD `prospectorCode` VARCHAR(10) NOT NULL DEFAULT '';",
 				"ALTER TABLE `library` ADD `showRatings` TINYINT(4) NOT NULL DEFAULT '1';",
 				"ALTER TABLE `library` ADD `searchesFile` VARCHAR(15) NOT NULL DEFAULT 'default';",
@@ -1745,6 +1745,22 @@ function getLibraryLocationUpdates(){
 			'sql' => array(
 				'ALTER TABLE `library` ADD COLUMN `sharedOverdriveCollection` TINYINT(1) DEFAULT -1;',
 			)
-		)
+		),
+
+		'library_ga_tracking_id' => array(
+			'title' => 'GA tracking ID',
+			'description' => 'Add GA tracking ID to Library admin options.',
+			'sql' => array(
+				"ALTER TABLE `library` ADD COLUMN `gaTrackingId` VARCHAR(20) NULL DEFAULT '';",
+			),
+		),
+
+		'library_typo_fix' => array(
+			'title'       => 'Fix typo in column name',
+			'description' => 'Fix typo in column name in the Library settings table',
+			'sql'         => array(
+				"ALTER TABLE `library` CHANGE COLUMN `enablePospectorIntegration` `enableProspectorIntegration` TINYINT(4) NOT NULL DEFAULT '0' ;",
+			),
+		),
 	);
 }

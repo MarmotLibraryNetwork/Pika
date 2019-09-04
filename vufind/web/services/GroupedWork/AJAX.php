@@ -999,7 +999,6 @@ class GroupedWork_AJAX extends AJAXHandler {
 	}
 
 	function getProspectorInfo(){
-		require_once ROOT_DIR . '/Drivers/marmot_inc/Prospector.php';
 		global $configArray;
 		global $interface;
 		$id = $_REQUEST['id'];
@@ -1014,7 +1013,11 @@ class GroupedWork_AJAX extends AJAXHandler {
 			PEAR_Singleton::raiseError(new PEAR_Error('Record Does Not Exist'));
 		}
 
-		$prospector = new Prospector();
+		//Load results from Prospector
+		$ILLDriver = $configArray['InterLibraryLoan']['ILLDriver'];
+		/** @var Prospector|AutoGraphicsShareIt $ILLDriver */
+		require_once ROOT_DIR . '/InterLibraryLoanDrivers/' . $ILLDriver . '.php';
+		$prospector = new $ILLDriver();
 
 		$searchTerms = array(
 			array(

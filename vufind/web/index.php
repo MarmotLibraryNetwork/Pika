@@ -74,21 +74,24 @@ global $active_ip;
 $analytics = new Analytics($active_ip, $startTime);
 $timer->logTime('Setup Analytics');
 
+// Google Analytics
+global $library;
 $googleAnalyticsId        = isset($configArray['Analytics']['googleAnalyticsId'])        ? $configArray['Analytics']['googleAnalyticsId'] : false;
+$googleAnalyticsLibraryId = isset($library->gaTrackingId)                                ? $library->gaTrackingId : false;
 #TODO: What is $googleAnalyticsLinkingId
 $googleAnalyticsLinkingId = isset($configArray['Analytics']['googleAnalyticsLinkingId']) ? $configArray['Analytics']['googleAnalyticsLinkingId'] : false;
 $trackTranslation         = isset($configArray['Analytics']['trackTranslation'])         ? $configArray['Analytics']['trackTranslation'] : false;
 $interface->assign('googleAnalyticsId', $googleAnalyticsId);
-$interface->assign('googleAnalyticsLinkingId', $googleAnalyticsLinkingId);
+$interface->assign('googleAnalyticsLibraryId', $googleAnalyticsLibraryId);
 $interface->assign('trackTranslation', $trackTranslation);
 if ($googleAnalyticsId) {
 	$googleAnalyticsDomainName = isset($configArray['Analytics']['domainName']) ? $configArray['Analytics']['domainName'] : strstr($_SERVER['SERVER_NAME'], '.');
 	// check for a config setting, use that if found, otherwise grab domain name  but remove the first subdomain
 	$interface->assign('googleAnalyticsDomainName', $googleAnalyticsDomainName);
 }
-global $library;
-global $offlineMode;
 
+
+global $offlineMode;
 //Set System Message
 if ($configArray['System']['systemMessage']){
 	$interface->assign('systemMessage', $configArray['System']['systemMessage']);
