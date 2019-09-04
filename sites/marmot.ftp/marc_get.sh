@@ -1,5 +1,5 @@
 #!/bin/bash
-#
+# TODO: this script can be deleted
 # marc_get
 #
 # get marc records via ftp
