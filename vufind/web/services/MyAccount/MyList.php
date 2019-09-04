@@ -33,7 +33,8 @@ class MyAccount_MyList extends MyAccount {
 		$this->requireLogin = false;
 		parent::__construct();
 	}
-	function launch() {
+
+	function launch(){
 		global $configArray;
 		global $interface;
 
@@ -41,7 +42,7 @@ class MyAccount_MyList extends MyAccount {
 		$listId = $_REQUEST['id'];
 		require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
 		require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
-		$list = new UserList();
+		$list     = new UserList();
 		$list->id = $listId;
 
 		//QUESTION : When does this intentionally come into play?
@@ -49,19 +50,19 @@ class MyAccount_MyList extends MyAccount {
 		// Pascal this would create the default "My Favorites" list if none currently exists.
 		if (!$list->find(true)){
 			//TODO: Use the first list?
-			$list = new UserList();
+			$list          = new UserList();
 			$list->user_id = UserAccount::getActiveUserId();
-			$list->public = false;
-			$list->title = "My Favorites";
+			$list->public  = false;
+			$list->title   = "My Favorites";
 		}
 
 		// Ensure user has privileges to view the list
-		if (!isset($list) || (!$list->public && !UserAccount::isLoggedIn())) {
+		if (!isset($list) || (!$list->public && !UserAccount::isLoggedIn())){
 			require_once ROOT_DIR . '/services/MyAccount/Login.php';
 			MyAccount_Login::launch();
 			exit();
 		}
-		if (!$list->public && $list->user_id != UserAccount::getActiveUserId()) {
+		if (!$list->public && $list->user_id != UserAccount::getActiveUserId()){
 			//Allow the user to view if they are admin
 			if (UserAccount::isLoggedIn() && UserAccount::userHasRole('opacAdmin')){
 				//Allow the user to view
@@ -78,7 +79,7 @@ class MyAccount_MyList extends MyAccount {
 
 		//Perform an action on the list, but verify that the user has permission to do so.
 		$userCanEdit = false;
-		$userObj = UserAccount::getActiveUserObj();
+		$userObj     = UserAccount::getActiveUserObj();
 		if ($userObj != false){
 			$userCanEdit = $userObj->canEditList($list);
 		}
@@ -93,7 +94,7 @@ class MyAccount_MyList extends MyAccount {
 					$list->public = 0;
 					$list->update();
 				}elseif ($actionToPerform == 'saveList'){
-					$list->title = $_REQUEST['newTitle'];
+					$list->title       = $_REQUEST['newTitle'];
 					$list->description = strip_tags($_REQUEST['newDescription']);
 					$list->defaultSort = $_REQUEST['defaultSort'];
 					$list->update();
@@ -102,8 +103,9 @@ class MyAccount_MyList extends MyAccount {
 					header("Location: {$configArray['Site']['path']}/MyAccount/Home");
 					die();
 				}elseif ($actionToPerform == 'bulkAddTitles'){
-					$notes = $this->bulkAddTitles($list);
+					$notes                 = $this->bulkAddTitles($list);
 					$_SESSION['listNotes'] = $notes;
+					session_commit();
 				}
 			}elseif (isset($_REQUEST['myListActionItem']) && strlen($_REQUEST['myListActionItem']) > 0){
 				$actionToPerform = $_REQUEST['myListActionItem'];
@@ -119,7 +121,7 @@ class MyAccount_MyList extends MyAccount {
 					$list->removeAllListEntries();
 				}
 				$list->update();
-			}elseif (isset($_REQUEST['delete'])) {
+			}elseif (isset($_REQUEST['delete'])){
 				$recordToDelete = $_REQUEST['delete'];
 				$list->removeListEntry($recordToDelete);
 				$list->update();
@@ -135,12 +137,12 @@ class MyAccount_MyList extends MyAccount {
 		$interface->assign('listSelected', $list->id);
 
 		// Load the User object for the owner of the list (if necessary):
-		if (UserAccount::isLoggedIn() && (UserAccount::getActiveUserId() == $list->user_id)) {
+		if (UserAccount::isLoggedIn() && (UserAccount::getActiveUserId() == $list->user_id)){
 			$listUser = UserAccount::getActiveUserObj();
-		} elseif ($list->user_id != 0){
-			$listUser = new User();
+		}elseif ($list->user_id != 0){
+			$listUser     = new User();
 			$listUser->id = $list->user_id;
-			if (!$listUser->fetch(true)){
+			if (!$listUser->find(true)){
 				$listUser = false;
 			}
 		}else{
@@ -158,15 +160,19 @@ class MyAccount_MyList extends MyAccount {
 		// this template path is used when an Archive object is in the list; TODO: Need to verify this works when the list is only catalog items
 	}
 
+	/**
+	 * @param UserList $list
+	 * @return array
+	 */
 	function bulkAddTitles($list){
-		$numAdded = 0;
-		$notes = array();
-		$titlesToAdd = $_REQUEST['titlesToAdd'];
+		$numAdded        = 0;
+		$notes           = array();
+		$titlesToAdd     = $_REQUEST['titlesToAdd'];
 		$titleSearches[] = preg_split("/\\r\\n|\\r|\\n/", $titlesToAdd);
 
 		foreach ($titleSearches[0] as $titleSearch){
 			$titleSearch = trim($titleSearch);
-			if (!empty($titleSearch)) {
+			if (!empty($titleSearch)){
 				$_REQUEST['lookfor'] = $titleSearch;
 				$_REQUEST['type']    = 'Keyword';// Initialise from the current search globals
 				$searchObject        = SearchObjectFactory::initSearchObject();
@@ -174,7 +180,7 @@ class MyAccount_MyList extends MyAccount {
 				$searchObject->init();
 				$searchObject->clearFacets();
 				$results = $searchObject->processSearch(false, false);
-				if ($results['response'] && $results['response']['numFound'] >= 1) {
+				if ($results['response'] && $results['response']['numFound'] >= 1){
 					$firstDoc = $results['response']['docs'][0];
 					//Get the id of the document
 					$id = $firstDoc['id'];
@@ -183,17 +189,17 @@ class MyAccount_MyList extends MyAccount {
 					$userListEntry->listId                 = $list->id;
 					$userListEntry->groupedWorkPermanentId = $id;
 					$existingEntry                         = false;
-					if ($userListEntry->find(true)) {
+					if ($userListEntry->find(true)){
 						$existingEntry = true;
 					}
 					$userListEntry->notes     = '';
 					$userListEntry->dateAdded = time();
-					if ($existingEntry) {
+					if ($existingEntry){
 						$userListEntry->update();
-					} else {
+					}else{
 						$userListEntry->insert();
 					}
-				} else {
+				}else{
 					$notes[] = "Could not find a title matching " . $titleSearch;
 				}
 			}
@@ -204,7 +210,7 @@ class MyAccount_MyList extends MyAccount {
 
 		if ($numAdded > 0){
 			$notes[] = "Added $numAdded titles to the list";
-		} elseif ($numAdded === 0) {
+		}elseif ($numAdded === 0){
 			$notes[] = 'No titles were added to the list';
 		}
 
