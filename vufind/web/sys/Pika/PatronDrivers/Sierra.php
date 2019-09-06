@@ -49,7 +49,7 @@ use RecordDriverFactory;
 use User;
 
 
-class Sierra extends PatronDriverInterface {
+class Sierra {
 
 	// Adding global variables to class during object construction to avoid repeated calls to global.
 	public  $memCache;
@@ -1162,6 +1162,7 @@ class Sierra extends PatronDriverInterface {
 
 	public function getReadingHistory($patron, $page = 1, $recordsPerPage = -1, $sortOption = "checkedOut")
 	{
+
 		return [];
 	}
 
@@ -1311,7 +1312,7 @@ class Sierra extends PatronDriverInterface {
 		$requestAuth  = base64_encode($clientKey . ':' . $clientSecret);
 
 		$headers = [
-			'Host: '.$this->configArray['Catalog']['sierraApiHost'],
+			'Host: '.$_SERVER['SERVER_NAME'],
 			'Authorization: Basic ' . $requestAuth,
 			'Content-Type: application/x-www-form-urlencoded',
 			'grant_type=client_credentials'
@@ -1380,7 +1381,7 @@ class Sierra extends PatronDriverInterface {
 		// setup headers
 		// These headers are common to all Sierra API except token requests.
 		$headers = [
-			'Host'           => $this->configArray['Catalog']['sierraApiHost'],
+			'Host'           => $_SERVER['SERVER_NAME'],
 			'Authorization'  => 'Bearer '.$this->oAuthToken,
 			'User-Agent'     => 'Pika',
 			'X-Forwarded-For'=> $_SERVER['SERVER_ADDR']
