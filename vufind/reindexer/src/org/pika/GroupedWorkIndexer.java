@@ -707,8 +707,8 @@ public class GroupedWorkIndexer {
 			try {
 				GroupedReindexMain.addNoteToReindexLog("Calling final commit");
 				logger.info("Calling commit");
-//				updateServer.commit(true, true, false);
-				updateServer.commit();
+				updateServer.commit(true, true, false);
+//				updateServer.commit();
 			} catch (IOException e) {
 				logger.error("Error calling final commit", e);
 			} catch (SolrServerException e) {
