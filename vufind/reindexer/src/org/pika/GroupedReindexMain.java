@@ -119,7 +119,7 @@ public class GroupedReindexMain {
 				} else {
 					logger.info("Running Reindex");
 					numWorksProcessed = groupedWorkIndexer.processGroupedWorks(siteMapsByScope, uniqueGroupedWorks);
-//					numListsProcessed = groupedWorkIndexer.processPublicUserLists();
+					numListsProcessed = groupedWorkIndexer.processPublicUserLists();
 				}
 				if (fullReindex) {
 					logger.info("Creating Site Maps");
