@@ -607,8 +607,9 @@ class Solr implements IndexEngine {
 	function getMoreLikeThis2($id, $originalResult = null)
 	{
 		global $configArray;
+		global $solrScope;
 		if ($originalResult == null){
-			$originalResult = $this->getRecord($id, 'target_audience_full,target_audience_full,literary_form,language,isbn,upc');
+			$originalResult = $this->getRecord($id, 'target_audience_full,target_audience_full,literary_form,isbn,upc,language_'.$solrScope);
 		}
 		// Query String Parameters
 		$options = array('q' => "id:$id", 'qt' => 'morelikethis2', 'mlt.interestingTerms' => 'details', 'rows' => 25, 'fl' => SearchObject_Solr::$fields);
@@ -650,8 +651,8 @@ class Solr implements IndexEngine {
 					$options['fq'][] = 'literary_form:"' . $originalResult['literary_form'] . '"';
 				}
 			}
-			if (isset($originalResult['language'])){
-				$options['fq'][] = 'language:"' . $originalResult['language'][0] . '"';
+			if (isset($originalResult['language_'.$solrScope])){
+				$options['fq'][] = "language_$solrScope:\"" . $originalResult["language_$solrScope"][0] . '"';
 			}
 			//Don't want to get other editions of the same work (that's a different query)
 			if ($this->index != 'grouped'){
@@ -924,32 +925,31 @@ class Solr implements IndexEngine {
 	 * @param Location $searchLocation
 	 * @return array
 	 */
-	public function getBoostFactors($searchLibrary, $searchLocation)
-	{
+	public function getBoostFactors($searchLibrary, $searchLocation){
 		$boostFactors = array();
 
+		global $solrScope;
 		global $language;
-		if ($language == 'es') {
-			$boostFactors[] = 'language_boost_es';
-		} else {
-			$boostFactors[] = 'language_boost';
+		if ($language == 'es'){
+			$boostFactors[] = "language_boost_es_{$solrScope}";
+		}else{
+			$boostFactors[] = "language_boost_{$solrScope}";
 		}
 
 		$applyHoldingsBoost = true;
-		if (isset($searchLibrary) && !is_null($searchLibrary)) {
+		if (isset($searchLibrary) && !is_null($searchLibrary)){
 			$applyHoldingsBoost = $searchLibrary->applyNumberOfHoldingsBoost;
 		}
-		if ($applyHoldingsBoost) {
+		if ($applyHoldingsBoost){
 			//$boostFactors[] = 'product(num_holdings,15,div(format_boost,50))';
 			$boostFactors[] = 'product(sum(popularity,1),format_boost)';
-		} else {
+		}else{
 			$boostFactors[] = 'format_boost';
 		}
 		//Add rating as part of the ranking, normalize so ratings of less that 2.5 are below unrated entries.
 		$boostFactors[] = 'sum(rating,1)';
 
-		global $solrScope;
-		if (isset($searchLibrary) && !is_null($searchLibrary) && $searchLibrary->boostByLibrary == 1) {
+		if (isset($searchLibrary) && !is_null($searchLibrary) && $searchLibrary->boostByLibrary == 1){
 			if ($searchLibrary->additionalLocalBoostFactor > 1){
 				$boostFactors[] = "sum(product(lib_boost_{$solrScope},{$searchLibrary->additionalLocalBoostFactor}),1)";
 			}else{
@@ -959,7 +959,7 @@ class Solr implements IndexEngine {
 			//Handle boosting even if we are in a global scope
 			global $library;
 			if ($library && $library->boostByLibrary == 1){
-				if ($library->additionalLocalBoostFactor > 1) {
+				if ($library->additionalLocalBoostFactor > 1){
 					$boostFactors[] = "sum(product(lib_boost_{$solrScope},{$library->additionalLocalBoostFactor}),1)";
 				}else{
 					$boostFactors[] = "sum(lib_boost_{$solrScope},1)";
@@ -967,7 +967,7 @@ class Solr implements IndexEngine {
 			}
 		}
 
-		if (isset($searchLocation) && !is_null($searchLocation) && $searchLocation->boostByLocation == 1) {
+		if (isset($searchLocation) && !is_null($searchLocation) && $searchLocation->boostByLocation == 1){
 			if ($searchLocation->boostByLocation > 1){
 				$boostFactors[] = "sum(product(lib_boost_{$solrScope},{$searchLocation->additionalLocalBoostFactor}),1)";
 			}else{
@@ -978,7 +978,7 @@ class Solr implements IndexEngine {
 			//Handle boosting even if we are in a global scope
 			global $locationSingleton;
 			$physicalLocation = $locationSingleton->getActiveLocation();
-			if ($physicalLocation != null && $physicalLocation->boostByLocation ==1){
+			if ($physicalLocation != null && $physicalLocation->boostByLocation == 1){
 				if ($physicalLocation->additionalLocalBoostFactor > 1){
 					$boostFactors[] = "sum(product(lib_boost_{$solrScope},{$physicalLocation->additionalLocalBoostFactor}),1)";
 				}else{
@@ -1016,12 +1016,10 @@ class Solr implements IndexEngine {
 			$values['onephrase'] = '"' . str_replace('"', '', implode(' ', $tokenized)) . '"';
 			if (count($tokenized) > 1){
 				$values['proximal'] = $values['onephrase'] . '~10';
+			}elseif (!array_key_exists(0, $tokenized)){
+				$values['proximal'] = '';
 			}else{
-				if (!array_key_exists(0, $tokenized)){
-					$values['proximal'] = '';
-				}else{
-					$values['proximal'] = $tokenized[0];
-				}
+				$values['proximal'] = $tokenized[0];
 			}
 
 			$values['exact'] = str_replace(':', '\\:', $lookfor);
@@ -1600,7 +1598,6 @@ class Solr implements IndexEngine {
 			}
 			//Check the filters to make sure they are for the correct scope
 			$validFields = $this->_loadValidFields();
-			$dynamicFields = $this->_loadDynamicFields();
 			global $solrScope;
 			$validFilters = array();
 			foreach ($filter as $id => $filterTerm){
@@ -1616,9 +1613,16 @@ class Solr implements IndexEngine {
 					}else{
 						//Field doesn't exist, check to see if it is a dynamic field
 						//Where we can replace the scope with the current scope
+						if (!isset($dynamicField)){
+							$dynamicFields = $this->_loadDynamicFields();
+						}
 						foreach ($dynamicFields as $dynamicField){
 							if (preg_match("/^{$dynamicField}[^_]+$/", $fieldName)){
 								//This is a dynamic field with the wrong scope
+								$validFilters[$id] = $dynamicField . $solrScope . ":" . $term;
+								break;
+							} elseif ($fieldName == rtrim($dynamicField, '_')){
+								//This is a regular field that is now a dynamic field so needs the scope applied
 								$validFilters[$id] = $dynamicField . $solrScope . ":" . $term;
 								break;
 							}
@@ -1629,7 +1633,7 @@ class Solr implements IndexEngine {
 				}
 			}
 			$filters = array_merge($validFilters, $scopingFilters);
-		}else if ($filter == null){
+		}elseif ($filter == null){
 			$filters = $scopingFilters;
 		}else{
 			$filters = $filter;

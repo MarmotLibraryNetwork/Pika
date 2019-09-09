@@ -142,7 +142,7 @@ public class OverDriveProcessor {
 
 						productRS.close();
 
-						String primaryLanguage = loadOverDriveLanguages(groupedWork, productId, identifier);
+						String primaryLanguage = loadOverDriveLanguages(groupedWork, overDriveRecord, productId, identifier);
 						String targetAudience = loadOverDriveSubjects(groupedWork, productId);
 
 						//Load the formats for the record.  For OverDrive, we will create a separate item for each format.
@@ -389,32 +389,32 @@ public class OverDriveProcessor {
 		}
 	}
 
-	private String loadOverDriveLanguages(GroupedWorkSolr groupedWork, Long productId, String identifier) throws SQLException {
+	private String loadOverDriveLanguages(GroupedWorkSolr groupedWork, RecordInfo overDriveRecord, Long productId, String identifier) throws SQLException {
 		String primaryLanguage = null;
 		//Load languages
 		getProductLanguagesStmt.setLong(1, productId);
-		ResultSet languagesRS = getProductLanguagesStmt.executeQuery();
-		HashSet<String> languages = new HashSet<>();
-		while (languagesRS.next()){
-			String language = languagesRS.getString("name");
-			languages.add(language);
-			if (primaryLanguage == null){
-				primaryLanguage = language;
+		try (ResultSet languagesRS = getProductLanguagesStmt.executeQuery()) {
+			HashSet<String> languages = new HashSet<>();
+			while (languagesRS.next()) {
+				String language = languagesRS.getString("name");
+				languages.add(language);
+				if (primaryLanguage == null) {
+					primaryLanguage = language;
+				}
+				String languageCode  = languagesRS.getString("code");
+				String languageBoost = indexer.translateSystemValue("language_boost", languageCode, identifier);
+				if (languageBoost != null) {
+					Long languageBoostVal = Long.parseLong(languageBoost);
+					overDriveRecord.setLanguageBoost(languageBoostVal);
+				}
+				String languageBoostEs = indexer.translateSystemValue("language_boost_es", languageCode, identifier);
+				if (languageBoostEs != null) {
+					Long languageBoostVal = Long.parseLong(languageBoostEs);
+					overDriveRecord.setLanguageBoostSpanish(languageBoostVal);
+				}
 			}
-			String languageCode = languagesRS.getString("code");
-			String languageBoost = indexer.translateSystemValue("language_boost", languageCode, identifier);
-			if (languageBoost != null){
-				Long languageBoostVal = Long.parseLong(languageBoost);
-				groupedWork.setLanguageBoost(languageBoostVal);
-			}
-			String languageBoostEs = indexer.translateSystemValue("language_boost_es", languageCode, identifier);
-			if (languageBoostEs != null){
-				Long languageBoostVal = Long.parseLong(languageBoostEs);
-				groupedWork.setLanguageBoostSpanish(languageBoostVal);
-			}
+			overDriveRecord.setLanguages(languages);
 		}
-		groupedWork.setLanguages(languages);
-		languagesRS.close();
 		if (primaryLanguage == null){
 			primaryLanguage = "English";
 		}

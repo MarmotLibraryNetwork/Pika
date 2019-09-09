@@ -173,7 +173,7 @@ public class GroupedWorkIndexer {
 			if (partialReindexRunning){
 				//Oops, a reindex is already running.
 				//No longer really care about this since it doesn't happen and there are other ways of finding a stuck process
-				//logger.warn("A partial reindex is already running, check to make sure that reindexes don't overlap since that can cause poor performance");
+				logger.warn("A partial reindex is already running, check to make sure that reindexes don't overlap since that can cause poor performance");
 				GroupedReindexMain.addNoteToReindexLog("A partial reindex is already running, check to make sure that reindexes don't overlap since that can cause poor performance");
 			}else{
 				updatePartialReindexRunning(true);
@@ -988,38 +988,40 @@ public class GroupedWorkIndexer {
 		groupedWork.setGroupingCategory(grouping_category);
 
 		getGroupedWorkPrimaryIdentifiers.setLong(1, id);
-		ResultSet groupedWorkPrimaryIdentifiers = getGroupedWorkPrimaryIdentifiers.executeQuery();
-		int       numPrimaryIdentifiers         = 0;
-		while (groupedWorkPrimaryIdentifiers.next()){
-			String type       = groupedWorkPrimaryIdentifiers.getString("type");
-			String identifier = groupedWorkPrimaryIdentifiers.getString("identifier");
+		int numPrimaryIdentifiers;
+		try (ResultSet groupedWorkPrimaryIdentifiers = getGroupedWorkPrimaryIdentifiers.executeQuery()) {
+			numPrimaryIdentifiers = 0;
+			while (groupedWorkPrimaryIdentifiers.next()) {
+				String type       = groupedWorkPrimaryIdentifiers.getString("type");
+				String identifier = groupedWorkPrimaryIdentifiers.getString("identifier");
 
-			//Make a copy of the grouped work so we can revert if we don't add any records
-			GroupedWorkSolr originalWork;
-			try {
-				originalWork = groupedWork.clone();
-			}catch (CloneNotSupportedException cne){
-				logger.error("Could not clone grouped work", cne);
-				return;
+				//Make a copy of the grouped work so we can revert if we don't add any records
+				GroupedWorkSolr originalWork;
+				try {
+					originalWork = groupedWork.clone();
+				} catch (CloneNotSupportedException cne) {
+					logger.error("Could not clone grouped work", cne);
+					return;
+				}
+				//Figure out how many records we had originally
+				int numRecords = groupedWork.getNumRecords();
+				logger.debug("Processing " + type + ":" + identifier + " work currently has " + numRecords + " records");
+
+				//This does the bulk of the work building fields for the solr document
+				updateGroupedWorkForPrimaryIdentifier(groupedWork, type, identifier);
+
+				//If we didn't add any records to the work (because they are all suppressed) revert to the original
+				if (groupedWork.getNumRecords() == numRecords) {
+					//No change in the number of records, revert to the previous
+					logger.debug("Record " + identifier + " did not contribute any records to the work, reverting to previous state " + groupedWork.getNumRecords());
+					groupedWork = originalWork;
+				} else {
+					logger.debug("Record " + identifier + " added to work " + permanentId);
+					numPrimaryIdentifiers++;
+				}
 			}
-			//Figure out how many records we had originally
-			int numRecords = groupedWork.getNumRecords();
-			logger.debug("Processing " + type + ":" + identifier + " work currently has " + numRecords + " records");
-
-			//This does the bulk of the work building fields for the solr document
-			updateGroupedWorkForPrimaryIdentifier(groupedWork, type, identifier);
-
-			//If we didn't add any records to the work (because they are all suppressed) revert to the original
-			if (groupedWork.getNumRecords() == numRecords){
-				//No change in the number of records, revert to the previous
-				logger.debug("Record " + identifier + " did not contribute any records to the work, reverting to previous state " + groupedWork.getNumRecords());
-				groupedWork = originalWork;
-			}else{
-				logger.debug("Record " + identifier + " added to work " + permanentId);
-				numPrimaryIdentifiers++;
-			}
+			groupedWorkPrimaryIdentifiers.close();
 		}
-		groupedWorkPrimaryIdentifiers.close();
 
 		if (numPrimaryIdentifiers > 0) {
 			//Add a grouped work to any scopes that are relevant
@@ -1048,6 +1050,7 @@ public class GroupedWorkIndexer {
 			//Write the record to Solr.
 			try {
 				SolrInputDocument inputDocument = groupedWork.getSolrDocument(availableAtLocationBoostValue, ownedByLocationBoostValue);
+				logger.debug("Adding solr document for work " + groupedWork.getId());
 				updateServer.add(inputDocument);
 				//logger.debug("Updated solr \r\n" + inputDocument.toString());
 

@@ -67,5 +67,3 @@ interface RecommendationInterface
      */
     public function getTemplate();
 }
-
-?>

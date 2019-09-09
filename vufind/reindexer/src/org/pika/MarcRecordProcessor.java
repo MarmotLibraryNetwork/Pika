@@ -770,42 +770,57 @@ abstract class MarcRecordProcessor {
 		return publisher;
 	}
 
-	String languageFields = "008[35-37]";
-
 	void loadLanguageDetails(GroupedWorkSolr groupedWork, Record record, HashSet<RecordInfo> ilsRecords, String identifier) {
-		Set <String> languages = MarcUtil.getFieldList(record, languageFields);
+		// Note: ilsRecords are alternate manifestations for the same record, like for an order record or ILS econtent items
+
+		String languageFields = "008[35-37]";
+		Set<String>     languages           = MarcUtil.getFieldList(record, languageFields);
 		HashSet<String> translatedLanguages = new HashSet<>();
-		boolean isFirstLanguage = true;
-		for (String language : languages){
+		boolean         isFirstLanguage     = true;
+		String primaryLanguage = null;
+		Long            languageBoost        = 1L;
+		Long            languageBoostSpanish = 1L;
+		for (String language : languages) {
 			String translatedLanguage = indexer.translateSystemValue("language", language, identifier);
 			translatedLanguages.add(translatedLanguage);
-			if (isFirstLanguage){
-				for (RecordInfo ilsRecord : ilsRecords){
-					ilsRecord.setPrimaryLanguage(translatedLanguage);
-				}
+			if (isFirstLanguage) {
+				primaryLanguage = translatedLanguage;
 			}
 			isFirstLanguage = false;
-			String languageBoost = indexer.translateSystemValue("language_boost", language, identifier);
-			if (languageBoost != null){
-				Long languageBoostVal = Long.parseLong(languageBoost);
-				groupedWork.setLanguageBoost(languageBoostVal);
+
+			String languageBoostStr = indexer.translateSystemValue("language_boost", language, identifier);
+			if (languageBoostStr != null) {
+				Long languageBoostVal = Long.parseLong(languageBoostStr);
+				if (languageBoostVal > languageBoost){
+					languageBoost = languageBoostVal;
+				}
 			}
 			String languageBoostEs = indexer.translateSystemValue("language_boost_es", language, identifier);
-			if (languageBoostEs != null){
+			if (languageBoostEs != null) {
 				Long languageBoostVal = Long.parseLong(languageBoostEs);
-				groupedWork.setLanguageBoostSpanish(languageBoostVal);
+				if (languageBoostVal > languageBoostSpanish){
+					languageBoostSpanish = languageBoostVal;
+				}
 			}
 		}
-		groupedWork.setLanguages(translatedLanguages);
 
-		String translationFields = "041b:041d:041h:041j";
-		Set<String> translations = MarcUtil.getFieldList(record, translationFields);
-		translatedLanguages = new HashSet<>();
+		String      translationFields = "041b:041d:041h:041j";
+		Set<String> translations      = MarcUtil.getFieldList(record, translationFields);
+		HashSet<String> translatedTranslations = new HashSet<>();
 		for (String translation : translations) {
 			String translatedLanguage = indexer.translateSystemValue("language", translation, identifier);
-			translatedLanguages.add(translatedLanguage);
+			translatedTranslations.add(translatedLanguage);
 		}
-		groupedWork.setTranslations(translatedLanguages);
+
+		for (RecordInfo ilsRecord : ilsRecords) {
+			if (primaryLanguage != null) {
+				ilsRecord.setPrimaryLanguage(primaryLanguage);
+			}
+			ilsRecord.setLanguages(translatedLanguages);
+			ilsRecord.setLanguageBoost(languageBoost);
+			ilsRecord.setLanguageBoostSpanish(languageBoostSpanish);
+			ilsRecord.setTranslations(translatedTranslations);
+		}
 	}
 
 	private void loadAuthors(GroupedWorkSolr groupedWork, Record record, String identifier) {

@@ -247,14 +247,14 @@ public class GroupedWorkSolr implements Cloneable {
 		doc.addField("format_boost", getTotalFormatBoost());
 
 		//language related fields
-		//Check to see if we have Unknown plus a valid value
+		//Check to see if we have Unknown plus a valid value TODO: include at record info level
 		if (languages.size() > 1 && languages.contains("Unknown")){
 			languages.remove("Unknown");
 		}
-		doc.addField("language", languages);
-		doc.addField("translation", translations);
-		doc.addField("language_boost", languageBoost);
-		doc.addField("language_boost_es", languageBoostSpanish);
+//		doc.addField("language", languages);
+//		doc.addField("translation", translations);
+//		doc.addField("language_boost", languageBoost);
+//		doc.addField("language_boost_es", languageBoostSpanish);
 		//Publication related fields
 		doc.addField("publisher", publishers);
 		doc.addField("publishDate", publicationDates);
@@ -353,7 +353,7 @@ public class GroupedWorkSolr implements Cloneable {
 		}
 		//EContent fields
 		doc.addField("econtent_device", econtentDevices);
-		doc.addField("hooplaPrice", hooplaPrice);
+//		doc.addField("hooplaPrice", hooplaPrice);
 
 		HashSet<String> eContentSources = getAllEContentSources();
 		keywords.addAll(eContentSources);
@@ -484,11 +484,17 @@ public class GroupedWorkSolr implements Cloneable {
 					if (formats.contains("eAudiobook")){
 						formatCategories.add("eBook");
 					}
-					if (formats.contains("VOX Books")){
+					if (formats.contains("VOX Books") || formats.contains("WonderBook")){
 						formatCategories.add("Books");
 						formatCategories.add("Audio Books");
 					}
 					addUniqueFieldValues(doc, "format_category_" + curScopeName, formatCategories);
+
+					// Add_languages
+					addUniqueFieldValues(doc, "language_" + curScopeName, curRecord.getLanguages());
+					addUniqueFieldValues(doc, "translation_" + curScopeName, curRecord.getTranslations());
+					updateMaxValueField(doc, "language_boost_" + curScopeName, curRecord.getLanguageBoost());
+					updateMaxValueField(doc, "language_boost_es_" + curScopeName, curRecord.getLanguageBoostSpanish());
 
 					//Setup ownership & availability toggle values
 					setupAvailabilityToggleAndOwnershipForItemWithinScope(doc, curRecord, curItem, curScopeName, curScope);
@@ -743,6 +749,17 @@ public class GroupedWorkSolr implements Cloneable {
 			doc.addField(fieldName, value);
 		}else{
 			if ((Integer)curValue < value){
+				doc.setField(fieldName, value);
+			}
+		}
+	}
+
+	private void updateMaxValueField(SolrInputDocument doc, String fieldName, long value) {
+		Object curValue = doc.getFieldValue(fieldName);
+		if (curValue == null){
+			doc.addField(fieldName, value);
+		}else{
+			if ((Long)curValue < value){
 				doc.setField(fieldName, value);
 			}
 		}

@@ -270,9 +270,12 @@ class HooplaProcessor extends MarcRecordProcessor {
 		recordInfo.setPublisher(publisher);
 
 		//Load Languages
-		HashSet<RecordInfo> records = new HashSet<>();
-		records.add(recordInfo);
-		loadLanguageDetails(groupedWork, record, records, identifier);
+		//For ILS Records, we can create multiple different records, one for print and order items,
+		//and one or more for ILS eContent items.
+		//For Hoopla Econtent there will only be one related record
+		HashSet<RecordInfo> relatedRecords = new HashSet<>();
+		relatedRecords.add(recordInfo);
+		loadLanguageDetails(groupedWork, record, relatedRecords, identifier);
 
 		//For Hoopla, we just have a single item always
 		ItemInfo itemInfo = new ItemInfo();

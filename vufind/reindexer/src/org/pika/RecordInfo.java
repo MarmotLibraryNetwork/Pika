@@ -20,20 +20,28 @@ public class RecordInfo {
 
 	//Formats exist at both the item and record level because
 	//Various systems define them in both ways.
-	private HashSet<String> formats = new HashSet<>();
-	private HashSet<String> formatCategories = new HashSet<>();
-	private long formatBoost = 1;
+	private HashSet<String> formats             = new HashSet<>();
+	private HashSet<String> formatCategories    = new HashSet<>();
+	private HashSet<String> allFormatCategories = null;
+	private long            formatBoost         = 1;
+	private String          primaryFormat       = null;
 
-	private String edition;
-	private String primaryLanguage;
-	private String publisher;
-	private String publicationDate;
-	private String physicalDescription;
+	private String  edition;
+	private String  publisher;
+	private String  publicationDate;
+	private String  physicalDescription;
 	private boolean hasVolumes;
 
+	private String          primaryLanguage;
+	private HashSet<String> languages            = new HashSet<>();
+	private HashSet<String> translations         = new HashSet<>();
+	private Long            languageBoost        = 1L;
+	private Long            languageBoostSpanish = 1L;
+
 	private HashSet<ItemInfo> relatedItems = new HashSet<>();
-	public RecordInfo(String source, String recordIdentifier){
-		this.source = source;
+
+	public RecordInfo(String source, String recordIdentifier) {
+		this.source           = source;
 		this.recordIdentifier = recordIdentifier;
 	}
 
@@ -76,7 +84,7 @@ public class RecordInfo {
 	}
 
 	void setRecordIdentifier(String source, String recordIdentifier) {
-		this.source = source;
+		this.source           = source;
 		this.recordIdentifier = recordIdentifier;
 	}
 
@@ -85,6 +93,7 @@ public class RecordInfo {
 	}
 
 	private String recordDetails = null;
+
 	String getDetails() {
 		if (recordDetails == null) {
 			//None of this changes by scope so we can just form it once and then return the previous value
@@ -96,19 +105,18 @@ public class RecordInfo {
 					Util.getCleanDetailValue(publisher) + "|" +
 					Util.getCleanDetailValue(publicationDate) + "|" +
 					Util.getCleanDetailValue(physicalDescription)
-					;
+			;
 		}
 		return recordDetails;
 	}
 
-	String primaryFormat = null;
 	String getPrimaryFormat() {
-		if (primaryFormat == null){
+		if (primaryFormat == null) {
 			HashMap<String, Integer> relatedFormats = new HashMap<>();
-			for (String format : formats){
+			for (String format : formats) {
 				relatedFormats.put(format, 1);
 			}
-			for (ItemInfo curItem : relatedItems){
+			for (ItemInfo curItem : relatedItems) {
 				if (curItem.getFormat() != null) {
 					if (relatedFormats.containsKey(curItem.getFormat())) {
 						relatedFormats.put(curItem.getFormat(), relatedFormats.get(curItem.getFormat()));
@@ -117,17 +125,17 @@ public class RecordInfo {
 					}
 				}
 			}
-			int timesUsed = 0;
+			int    timesUsed      = 0;
 			String mostUsedFormat = null;
-			for (String curFormat : relatedFormats.keySet()){
-				if (relatedFormats.get(curFormat) > timesUsed){
+			for (String curFormat : relatedFormats.keySet()) {
+				if (relatedFormats.get(curFormat) > timesUsed) {
 					mostUsedFormat = curFormat;
-					timesUsed = relatedFormats.get(curFormat);
+					timesUsed      = relatedFormats.get(curFormat);
 				}
 			}
-			if (mostUsedFormat == null){
+			if (mostUsedFormat == null) {
 				return "Unknown";
-			}else{
+			} else {
 				primaryFormat = mostUsedFormat;
 			}
 		}
@@ -137,10 +145,10 @@ public class RecordInfo {
 
 	private String getPrimaryFormatCategory() {
 		HashMap<String, Integer> relatedFormats = new HashMap<>();
-		for (String format : formatCategories){
+		for (String format : formatCategories) {
 			relatedFormats.put(format, 1);
 		}
-		for (ItemInfo curItem : relatedItems){
+		for (ItemInfo curItem : relatedItems) {
 			if (curItem.getFormatCategory() != null) {
 				if (relatedFormats.containsKey(curItem.getFormatCategory())) {
 					relatedFormats.put(curItem.getFormatCategory(), relatedFormats.get(curItem.getFormatCategory()));
@@ -149,15 +157,15 @@ public class RecordInfo {
 				}
 			}
 		}
-		int timesUsed = 0;
+		int    timesUsed      = 0;
 		String mostUsedFormat = null;
-		for (String curFormat : relatedFormats.keySet()){
-			if (relatedFormats.get(curFormat) > timesUsed){
+		for (String curFormat : relatedFormats.keySet()) {
+			if (relatedFormats.get(curFormat) > timesUsed) {
 				mostUsedFormat = curFormat;
-				timesUsed = relatedFormats.get(curFormat);
+				timesUsed      = relatedFormats.get(curFormat);
 			}
 		}
-		if (mostUsedFormat == null){
+		if (mostUsedFormat == null) {
 			return "Unknown";
 		}
 		return mostUsedFormat;
@@ -168,15 +176,16 @@ public class RecordInfo {
 		itemInfo.setRecordInfo(this);
 	}
 
-	private HashSet<String> allFormats = null;
-	private Pattern nonWordPattern = Pattern.compile("\\W");
+	private HashSet<String> allFormats     = null;
+	private Pattern         nonWordPattern = Pattern.compile("\\W");
+
 	HashSet<String> getAllSolrFieldEscapedFormats() {
-		if (allFormats == null){
+		if (allFormats == null) {
 			allFormats = new HashSet<>();
-			for (String curFormat : formats){
+			for (String curFormat : formats) {
 				allFormats.add(nonWordPattern.matcher(curFormat).replaceAll("_").toLowerCase());
 			}
-			for (ItemInfo curItem : relatedItems){
+			for (ItemInfo curItem : relatedItems) {
 				if (curItem.getFormat() != null) {
 					allFormats.add(nonWordPattern.matcher(curItem.getFormat()).replaceAll("_").toLowerCase());
 				}
@@ -189,11 +198,10 @@ public class RecordInfo {
 		return formats;
 	}
 
-	private HashSet<String> allFormatCategories = null;
 	HashSet<String> getAllSolrFieldEscapedFormatCategories() {
 		if (allFormatCategories == null) {
 			allFormatCategories = new HashSet<>();
-			for (String curFormat : formatCategories){
+			for (String curFormat : formatCategories) {
 				allFormatCategories.add(nonWordPattern.matcher(curFormat).replaceAll("_").toLowerCase());
 			}
 			for (ItemInfo curItem : relatedItems) {
@@ -211,8 +219,8 @@ public class RecordInfo {
 
 	private HashSet<ItemInfo> getRelatedItemsForScope(String scopeName) {
 		HashSet<ItemInfo> values = new HashSet<>();
-		for (ItemInfo curItem : relatedItems){
-			if (curItem.isValidForScope(scopeName)){
+		for (ItemInfo curItem : relatedItems) {
+			if (curItem.isValidForScope(scopeName)) {
 				values.add(curItem);
 			}
 		}
@@ -221,8 +229,8 @@ public class RecordInfo {
 
 	int getNumCopiesOnOrder() {
 		int numOrders = 0;
-		for (ItemInfo curItem : relatedItems){
-			if (curItem.isOrderItem()){
+		for (ItemInfo curItem : relatedItems) {
+			if (curItem.isOrderItem()) {
 				numOrders += curItem.getNumCopies();
 			}
 		}
@@ -231,9 +239,9 @@ public class RecordInfo {
 
 	String getFullIdentifier() {
 		String fullIdentifier;
-		if (subSource != null && subSource.length() > 0){
+		if (subSource != null && subSource.length() > 0) {
 			fullIdentifier = source + ":" + subSource + ":" + recordIdentifier;
-		}else{
+		} else {
 			fullIdentifier = source + ":" + recordIdentifier;
 		}
 		return fullIdentifier;
@@ -241,8 +249,8 @@ public class RecordInfo {
 
 	int getNumPrintCopies() {
 		int numPrintCopies = 0;
-		for (ItemInfo curItem : relatedItems){
-			if (!curItem.isOrderItem() && !curItem.isEContent()){
+		for (ItemInfo curItem : relatedItems) {
+			if (!curItem.isOrderItem() && !curItem.isEContent()) {
 				numPrintCopies += curItem.getNumCopies();
 			}
 		}
@@ -251,15 +259,15 @@ public class RecordInfo {
 
 	HashSet<String> getAllEContentSources() {
 		HashSet<String> values = new HashSet<>();
-		for (ItemInfo curItem : relatedItems){
+		for (ItemInfo curItem : relatedItems) {
 			values.add(curItem.geteContentSource());
 		}
 		return values;
 	}
 
-	HashSet<String> getAllCallNumbers(){
+	HashSet<String> getAllCallNumbers() {
 		HashSet<String> values = new HashSet<>();
-		for (ItemInfo curItem : relatedItems){
+		for (ItemInfo curItem : relatedItems) {
 			values.add(curItem.getCallNumber());
 		}
 		return values;
@@ -269,7 +277,7 @@ public class RecordInfo {
 		this.formats.addAll(translatedFormats);
 	}
 
-	void addFormat(String translatedFormat){
+	void addFormat(String translatedFormat) {
 		this.formats.add(translatedFormat);
 	}
 
@@ -277,43 +285,43 @@ public class RecordInfo {
 		this.formatCategories.addAll(translatedFormatCategories);
 	}
 
-	void addFormatCategory(String translatedFormatCategory){
+	void addFormatCategory(String translatedFormatCategory) {
 		this.formatCategories.add(translatedFormatCategory);
 	}
 
 	void updateIndexingStats(TreeMap<String, ScopedIndexingStats> indexingStats) {
-		for (ScopedIndexingStats scopedStats : indexingStats.values()){
-			String recordProcessor = this.subSource == null ? this.source : this.subSource;
-			RecordProcessorIndexingStats stats = scopedStats.recordProcessorIndexingStats.get(recordProcessor.toLowerCase());
-			HashSet<ItemInfo> itemsForScope = getRelatedItemsForScope(scopedStats.getScopeName());
+		for (ScopedIndexingStats scopedStats : indexingStats.values()) {
+			String                       recordProcessor = this.subSource == null ? this.source : this.subSource;
+			RecordProcessorIndexingStats stats           = scopedStats.recordProcessorIndexingStats.get(recordProcessor.toLowerCase());
+			HashSet<ItemInfo>            itemsForScope   = getRelatedItemsForScope(scopedStats.getScopeName());
 			if (itemsForScope.size() > 0) {
 				stats.numRecordsTotal++;
 				boolean recordLocallyOwned = false;
-				for (ItemInfo curItem : itemsForScope){
+				for (ItemInfo curItem : itemsForScope) {
 					//Check the type (physical, eContent, on order)
 					boolean locallyOwned = curItem.isLocallyOwned(scopedStats.getScopeName())
 							|| curItem.isLibraryOwned(scopedStats.getScopeName());
-					if (locallyOwned){
+					if (locallyOwned) {
 						recordLocallyOwned = true;
 					}
-					if (curItem.isEContent()){
+					if (curItem.isEContent()) {
 						stats.numEContentTotal += curItem.getNumCopies();
-						if (locallyOwned){
+						if (locallyOwned) {
 							stats.numEContentOwned += curItem.getNumCopies();
 						}
-					}else if (curItem.isOrderItem()){
+					} else if (curItem.isOrderItem()) {
 						stats.numOrderItemsTotal += curItem.getNumCopies();
-						if (locallyOwned){
+						if (locallyOwned) {
 							stats.numOrderItemsOwned += curItem.getNumCopies();
 						}
-					}else{
+					} else {
 						stats.numPhysicalItemsTotal += curItem.getNumCopies();
-						if (locallyOwned){
+						if (locallyOwned) {
 							stats.numPhysicalItemsOwned += curItem.getNumCopies();
 						}
 					}
 				}
-				if (recordLocallyOwned){
+				if (recordLocallyOwned) {
 					stats.numRecordsOwned++;
 				}
 			}
@@ -321,19 +329,57 @@ public class RecordInfo {
 	}
 
 	boolean hasItemFormats() {
-		for (ItemInfo curItem : relatedItems){
-			if (curItem.getFormat() != null){
+		for (ItemInfo curItem : relatedItems) {
+			if (curItem.getFormat() != null) {
 				return true;
 			}
 		}
 		return false;
 	}
 
+	// These pertain to Sierra Volume records (eg with ids starting with .j)
 	void setHasVolumes(boolean hasVolumes) {
 		this.hasVolumes = hasVolumes;
 	}
 
-	boolean hasVolumes(){
-		return true;
+	boolean hasVolumes() {
+		return hasVolumes;
 	}
+
+	public HashSet<String> getLanguages() {
+		return languages;
+	}
+
+	public HashSet<String> getTranslations() {
+		return translations;
+	}
+
+	public Long getLanguageBoost() {
+		return languageBoost;
+	}
+
+	public Long getLanguageBoostSpanish() {
+		return languageBoostSpanish;
+	}
+
+	void setLanguageBoost(Long languageBoost) {
+		if (languageBoost > this.languageBoost){
+			this.languageBoost = languageBoost;
+		}
+	}
+
+	void setLanguageBoostSpanish(Long languageBoostSpanish) {
+		if (languageBoostSpanish > this.languageBoostSpanish){
+			this.languageBoostSpanish = languageBoostSpanish;
+		}
+	}
+
+	void setLanguages(HashSet<String> languages) {
+		this.languages.addAll(languages);
+	}
+
+	void setTranslations(HashSet<String> translations){
+		this.translations.addAll(translations);
+	}
+
 }
