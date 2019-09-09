@@ -94,7 +94,7 @@ class HooplaProcessor extends MarcRecordProcessor {
 			try {
 				if (getHooplaExtractInfo(identifier)) {
 					updateGroupedWorkSolrDataBasedOnMarc(groupedWork, record, identifier);
-					updateGroupedWorkSolrDataBasedOnHooplaExtract(groupedWork, identifier);
+//					updateGroupedWorkSolrDataBasedOnHooplaExtract(groupedWork, identifier);
 				}
 			} catch (Exception e) {
 				logger.error("Error updating solr based on hoopla marc record", e);
@@ -147,16 +147,6 @@ class HooplaProcessor extends MarcRecordProcessor {
 			logger.error("Error adding hoopla extract data to solr document for hoopla record : " + identifier, e);
 		}
 		return false;
-	}
-
-	/**
-	 * @param groupedWork Solr Document to update
-	 * @param identifier  Record Identifier, used to get hoopla extract information
-	 */
-	private void updateGroupedWorkSolrDataBasedOnHooplaExtract(GroupedWorkSolr groupedWork, String identifier) {
-		float hooplaPrice = (float) hooplaExtractInfo.getPrice();
-		groupedWork.setHooplaPrice(hooplaPrice); //TODO: is adding the price to the index really needed?
-		//TODO: this can't be a grouped work level value.  Another reason to remove it.
 	}
 
 	private Record loadMarcRecordFromDisk(String identifier) {
