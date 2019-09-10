@@ -182,7 +182,7 @@ public class OverDriveProcessor {
 							//Just create one item for each with a list of sub formats.
 							ItemInfo itemInfo = new ItemInfo();
 							itemInfo.seteContentSource("OverDrive");
-							itemInfo.seteContentProtectionType("Limited Access");
+//							itemInfo.seteContentProtectionType("Limited Access");
 							itemInfo.setIsEContent(true);
 							itemInfo.setShelfLocation("Online OverDrive Collection");
 							itemInfo.setCallNumber("Online OverDrive");

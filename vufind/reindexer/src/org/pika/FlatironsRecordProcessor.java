@@ -78,7 +78,7 @@ class FlatironsRecordProcessor extends IIIRecordProcessor {
 					groupedWork.addTargetAudienceFull(translateValue("target_audience", lastCharacter, identifier));
 
 					itemInfo.seteContentSource("External eContent");
-					itemInfo.seteContentProtectionType("external");
+//					itemInfo.seteContentProtectionType("external");
 					if (url.contains("ebrary.com")) {
 						itemInfo.seteContentSource("ebrary");
 					} else {
