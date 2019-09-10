@@ -1181,9 +1181,50 @@ class Sierra {
 		return [];
 	}
 
+	/**
+	 * Get patron's reading history
+	 *
+	 * GET patrons/{patron_id}/checkouts/history
+	 * This method is meant to be used by the Pika cron process load patron's reading history.
+	 *
+	 * @param  User        $patron          Patron Object
+	 * @param  null|int    $loadAdditional  ????????
+	 * @return array|false [titles]=>[borrower_num(Pika ID), recordId(bib ID), permanentId(grouped work ID), title, author, checkout]
+	 */
 	public function loadReadingHistoryFromIls($patron, $loadAdditional = null){
-		// TODO: Implement loadReadingHistoryFromIls() method.
-		return [];
+		$patronId = $this->getPatronId($patron->barcode);
+		$operation = "patrons/".$patronId."/checkouts/history";
+		$history = $this->_doRequest($operation);
+
+		if(!$history) {
+			return false;
+		}
+
+		if($history->total == 0) {
+			return [];
+		}
+		$patronPikaId = $patronId;
+		$readingHistory = [];
+		foreach($history->entries as $historyEntry) {
+			$titleEntry = [];
+			// make the Pika style bib Id
+			preg_match($this->urlIdRegExp, $historyEntry->bib, $m);
+			$x = $this->getCheckDigit($m[1]);
+			$bibId = '.b'.$m[1].$x; // full bib id
+			// get the rest from the MARC record
+			$record = new MarcRecord($this->accountProfile->recordSource.':'.$bibId);
+			$titleEntry['borrower_num'] = $patronPikaId;
+			$titleEntry['recordId']     = $bibId;
+			$titleEntry['permanentId']  = $record->getPermanentId();
+			$titleEntry['title']        = $record->getTitle();
+			$titleEntry['author']       = $record->getAuthor();
+			$titleEntry['format']       = $record->getFormat();
+			$titleEntry['checkout']     = $historyEntry->outDate;
+
+			$readingHistory[] = $titleEntry;
+		}
+
+		return ['title'=>$readingHistory];
 	}
 
 
