@@ -1213,14 +1213,17 @@ class Sierra {
 			$bibId = '.b'.$m[1].$x; // full bib id
 			// get the rest from the MARC record
 			$record = new MarcRecord($this->accountProfile->recordSource.':'.$bibId);
+
+			if ($record->isValid()) {
+				$titleEntry['permanentId'] = $record->getPermanentId();
+				$titleEntry['title']       = $record->getTitle();
+				$titleEntry['author']      = $record->getAuthor();
+				$titleEntry['format']      = $record->getFormat();
+			}
+			$titleEntry['checkout']     = $historyEntry->outDate;
 			$titleEntry['borrower_num'] = $patronPikaId;
 			$titleEntry['recordId']     = $bibId;
-			$titleEntry['permanentId']  = $record->getPermanentId();
-			$titleEntry['title']        = $record->getTitle();
-			$titleEntry['author']       = $record->getAuthor();
-			$titleEntry['format']       = $record->getFormat();
-			$titleEntry['checkout']     = $historyEntry->outDate;
-
+			
 			$readingHistory[] = $titleEntry;
 		}
 
