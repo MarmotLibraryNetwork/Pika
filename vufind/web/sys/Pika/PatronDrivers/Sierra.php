@@ -882,16 +882,17 @@ class Sierra {
 
 				// get more info from record
 				$bibId = '.b'.$id.$recordXD;
-				$recordDriver = new MarcRecord($this->accountProfile->recordSource . ":" . $bibId);
-				if ($recordDriver->isValid()){
-					$h['id']              = $recordDriver->getUniqueID();
-					$h['shortId']         = $recordDriver->getShortId();
-					$h['title']           = $recordDriver->getTitle();
-					$h['sortTitle']       = $recordDriver->getSortableTitle();
-					$h['author']          = $recordDriver->getAuthor();
-					$h['format']          = $recordDriver->getFormat();
-					$h['link']            = $recordDriver->getRecordUrl();
-					$h['coverUrl']        = $recordDriver->getBookcoverUrl('medium');
+				$recordSourceAndId = new \SourceAndId($this->accountProfile->recordSource . ":" . $bibId);
+				$record = RecordDriverFactory::initRecordDriverById($recordSourceAndId);
+				if ($record->isValid()){
+					$h['id']              = $record->getUniqueID();
+					$h['shortId']         = $record->getShortId();
+					$h['title']           = $record->getTitle();
+					$h['sortTitle']       = $record->getSortableTitle();
+					$h['author']          = $record->getAuthor();
+					$h['format']          = $record->getFormat();
+					$h['link']            = $record->getRecordUrl();
+					$h['coverUrl']        = $record->getBookcoverUrl('medium');
 				};
 			}
 			if($hold->status->code == "b" || $hold->status->code == "j" || $hold->status->code == "i") {
@@ -937,13 +938,21 @@ class Sierra {
 
 		// delete memcache holds
 		$patronHoldsCacheKey = "patron_".$patron->barcode."_holds";
-		$this->logger->info("Removing holds from memcache:".$patronHoldsCacheKey);
-		$this->memCache->delete($patronHoldsCacheKey);
+
+		if($this->memCache->delete($patronHoldsCacheKey)) {
+			$this->logger->info("Removed holds from memcache: ".$patronHoldsCacheKey);
+		} else {
+			$this->logger->warn("Failed to remove holds from memcache: ".$patronHoldsCacheKey);
+		}
 
 		// because the patron object has holds information we need to clear that cache too.
 		$patronObjectCacheKey = 'patron_'.$patron->barcode.'_patron';
-		$this->logger->info("Removing patron from memcache:".$patronObjectCacheKey);
-		$this->memCache->delete($patronObjectCacheKey);
+
+		if($this->memCache->delete($patronObjectCacheKey)) {
+			$this->logger->info("Removed patron from memcache: ".$patronObjectCacheKey);
+		} else {
+			$this->logger->warn("Failed to remove patron from memcache: ".$patronObjectCacheKey);
+		}
 
 		// get title of record
 		$record = RecordDriverFactory::initRecordDriverById($this->accountProfile->recordSource . ':' . $recordId);
@@ -1046,17 +1055,23 @@ class Sierra {
 	 * @return array
 	 */
 	public function cancelHold($patron, $bibId, $holdId){
-
 		$operation = "patrons/holds/".$holdId;
 
 		// delete holds cache
 		$patronHoldsCacheKey = "patron_".$patron->barcode."_holds";
-		$this->memCache->delete($patronHoldsCacheKey);
+		if($this->memCache->delete($patronHoldsCacheKey)) {
+			$this->logger->info("Removed patron from memcache: ".$patronHoldsCacheKey);
+		} else {
+			$this->logger->warn("Failed to remove from memcache: ".$patronHoldsCacheKey);
+		}
 
 		// because the patron object has holds information we need to clear that cache too.
-		$patronId = $this->getPatronId($patron);
 		$patronObjectCacheKey = 'patron_'.$patron->barcode.'_patron';
-		$this->memCache->delete($patronObjectCacheKey);
+		if($this->memCache->delete($patronObjectCacheKey)) {
+			$this->logger->info("Removed patron from memcache: ".$patronObjectCacheKey);
+		} else {
+			$this->logger->warn("Failed to remove patron from memcache: ".$patronObjectCacheKey);
+		}
 
 		$r = $this->_doRequest($operation, [], "DELETE");
 
