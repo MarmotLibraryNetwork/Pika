@@ -2,6 +2,7 @@ package org.pika;
 
 import au.com.bytecode.opencsv.CSVWriter;
 import org.apache.solr.client.solrj.SolrServer;
+import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.BinaryRequestWriter;
 import org.apache.solr.client.solrj.impl.ConcurrentUpdateSolrServer;
 import org.apache.solr.client.solrj.impl.HttpSolrServer;
@@ -707,8 +708,11 @@ public class GroupedWorkIndexer {
 				GroupedReindexMain.addNoteToReindexLog("Calling final commit");
 				logger.info("Calling commit");
 				updateServer.commit(true, true, false);
-			} catch (Exception e) {
+//				updateServer.commit();
+			} catch (IOException e) {
 				logger.error("Error calling final commit", e);
+			} catch (SolrServerException e) {
+				logger.error("Error with Solr calling final commit", e);
 			}
 			//Swap the indexes
 			if (fullReindex)  {

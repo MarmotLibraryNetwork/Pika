@@ -318,9 +318,10 @@ public class GroupedWorkSolr implements Cloneable {
 					bibDaysSinceAdded = 0;
 					doc.addField("days_since_added", Long.toString(bibDaysSinceAdded));
 					doc.addField("time_since_added", Util.getTimeSinceAddedForDate(Util.getIndexDate()));
+				} else {
+					doc.addField("days_since_added", Long.toString(bibDaysSinceAdded));
+					doc.addField("time_since_added", Util.getTimeSinceAddedForDate(publicationDate.getTime()));
 				}
-				doc.addField("days_since_added", Long.toString(bibDaysSinceAdded));
-				doc.addField("time_since_added", Util.getTimeSinceAddedForDate(publicationDate.getTime()));
 			}else{
 				doc.addField("days_since_added", Long.toString(Integer.MAX_VALUE));
 			}

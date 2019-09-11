@@ -440,7 +440,7 @@ class RecordGroupingProcessor {
 				logger.error("Error removing primary identifiers for merged work " + sourceGroupedWorkPermanentId + " (" + originalGroupedWorkId + ")");
 			}
 		}
-		return sourceGroupedWorkPermanentId;
+		return targetGroupedWorkPermanentId;
 	}
 
 	private HashSet<Long> updatedAndInsertedWorksThisRun = new HashSet<>();
