@@ -7,6 +7,7 @@
 
 			{* Display Title *}
 		<h2>
+				{*Short Title excludes the sub-title *}
 				{$recordDriver->getShortTitle()|removeTrailingPunctuation|escape}
 				{if $recordDriver->getSubTitle()}: {$recordDriver->getSubTitle()|escape}{/if}
 				{if $recordDriver->getTitleSection()}:&nbsp;{$recordDriver->getTitleSection()|removeTrailingPunctuation|escape}{/if}
