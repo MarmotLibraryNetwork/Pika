@@ -856,7 +856,7 @@ class MarcRecord extends IndexRecord
 	}
 
 	/**
-	 * Get the full title of the record.
+	 * Get the short (pre-subtitle) title of the record.
 	 *
 	 * @return  string
 	 */

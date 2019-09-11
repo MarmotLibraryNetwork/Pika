@@ -7,12 +7,12 @@
 
 		{* Display Title *}
 		<h2>
-			{$recordDriver->getTitle()|removeTrailingPunctuation|escape}
-			{if $recordDriver->getSubTitle()}: {$recordDriver->getSubTitle()|escape}{/if}
-			{if $recordDriver->getTitleSection()} {$recordDriver->getTitleSection()|escape}{/if}
-			{if $recordDriver->getFormats()}
-				<br><small>({implode subject=$recordDriver->getFormats() glue=", "})</small>
-			{/if}
+				{$recordDriver->getShortTitle()|removeTrailingPunctuation|escape}
+				{if $recordDriver->getSubTitle()}: {$recordDriver->getSubTitle()|escape}{/if}
+				{if $recordDriver->getTitleSection()}:&nbsp;{$recordDriver->getTitleSection()|removeTrailingPunctuation|escape}{/if}
+				{if $recordDriver->getFormats()}
+					<br><small>({implode subject=$recordDriver->getFormats() glue=", "})</small>
+				{/if}
 		</h2>
 
 		<div class="row">
