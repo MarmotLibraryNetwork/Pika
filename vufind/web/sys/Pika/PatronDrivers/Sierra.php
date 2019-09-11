@@ -1223,7 +1223,7 @@ class Sierra {
 			$titleEntry['checkout']     = $historyEntry->outDate;
 			$titleEntry['borrower_num'] = $patronPikaId;
 			$titleEntry['recordId']     = $bibId;
-			
+
 			$readingHistory[] = $titleEntry;
 		}
 
