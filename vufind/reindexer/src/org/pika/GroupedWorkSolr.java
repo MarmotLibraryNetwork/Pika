@@ -247,10 +247,10 @@ public class GroupedWorkSolr implements Cloneable {
 		doc.addField("format_boost", getTotalFormatBoost());
 
 		//language related fields
-		//Check to see if we have Unknown plus a valid value TODO: include at record info level
-		if (languages.size() > 1 && languages.contains("Unknown")){
-			languages.remove("Unknown");
-		}
+//		//Check to see if we have Unknown plus a valid value TODO: include at record info level
+//		if (languages.size() > 1 && languages.contains("Unknown")){
+//			languages.remove("Unknown");
+//		}
 //		doc.addField("language", languages);
 //		doc.addField("translation", translations);
 //		doc.addField("language_boost", languageBoost);

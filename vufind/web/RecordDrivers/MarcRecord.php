@@ -855,18 +855,28 @@ class MarcRecord extends IndexRecord
 		return $this->getFieldArray('240', array('a', 'd', 'f', 'g', 'h', 'k', 'l', 'm', 'n', 'o', 'p', 'r', 's'));
 	}
 
+	private $shortTitle;
 	/**
 	 * Get the short (pre-subtitle) title of the record.
 	 *
 	 * @return  string
 	 */
-	public function getShortTitle()
-	{
-		return $this->getFirstFieldValue('245', array('a'));
+	public function getShortTitle(){
+		if (!isset($this->shortTitle)){
+		$shortTitle     = $this->getFirstFieldValue('245', array('a'));
+		$subTitle       = $this->getSubtitle();
+		$subTitleLength = strlen($subTitle);
+		//TODO: do these tests work with multibyte characters
+		if (!empty($shortTitle) && $subTitleLength > 0 && strcasecmp(substr($shortTitle, -$subTitleLength), $subTitle) === 0){
+			$shortTitle = trim(rtrim(trim(substr($shortTitle, 0, -$subTitleLength)), ':'));
+		}
+		$this->shortTitle = $shortTitle;
+		}
+		return $this->shortTitle;
 	}
 
 	/**
-	 * Get the full title of the record.
+	 * Get the title of the record with the non-filing chars removed from the start of the title.
 	 *
 	 * @return  string
 	 */

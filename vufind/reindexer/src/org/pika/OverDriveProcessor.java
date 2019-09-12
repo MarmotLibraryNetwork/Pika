@@ -80,11 +80,16 @@ public class OverDriveProcessor {
 						RecordInfo overDriveRecord = groupedWork.addRelatedRecord("overdrive", identifier);
 						overDriveRecord.setRecordIdentifier("overdrive", identifier);
 
-						String subtitle = productRS.getString("subtitle");
-						String series = productRS.getString("series");
-						if (subtitle == null) {
-							subtitle = "";
+						String subTitle = productRS.getString("subtitle");
+						if (subTitle == null) {
+							subTitle = "";
+						} else if (title.toLowerCase().endsWith(subTitle.toLowerCase())){
+							// Pika should treat the title as not including the subtitle, so remove subtitle from title if it is there
+							logger.warn(identifier + " Overdrive title  '" + title + "' ends with the subtitle '" + subTitle);
+							title = title.substring(0, title.lastIndexOf(subTitle));
+							title = title.replaceAll("\\s+$", "").replaceAll(":+$", ""); // remove ending white space; then remove any ending colon characters.
 						}
+						String series = productRS.getString("series");
 						String mediaType = productRS.getString("mediaType");
 						String formatCategory;
 						String primaryFormat;
@@ -105,10 +110,10 @@ public class OverDriveProcessor {
 
 						HashMap<String, String> metadata = loadOverDriveMetadata(groupedWork, productId, primaryFormat);
 
-						String fullTitle = title + " " + subtitle;
+						String fullTitle = title + " " + subTitle;
 						fullTitle = fullTitle.trim();
 						groupedWork.setTitle(title, title, metadata.get("sortTitle"), primaryFormat);
-						groupedWork.setSubTitle(subtitle);
+						groupedWork.setSubTitle(subTitle);
 						groupedWork.addFullTitle(fullTitle);
 
 						groupedWork.addSeries(series);
