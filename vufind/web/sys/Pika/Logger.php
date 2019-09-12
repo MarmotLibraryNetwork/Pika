@@ -25,6 +25,6 @@ class Logger extends MonoLogger {
 			$this->pushHandler(new BrowserConsoleHandler(\Monolog\Logger::DEBUG));
 		}
 		$this->pushHandler(new StreamHandler($logFile, \Monolog\Logger::DEBUG));
-		\Monolog\ErrorHandler::register($this);
+		ErrorHandler::register($this);
 	}
 }

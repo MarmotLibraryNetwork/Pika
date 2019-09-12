@@ -80,10 +80,9 @@ class Sierra {
 		$this->configArray    = $configArray;
 		//$this->memCache       = $memCache;
 		$this->accountProfile = $accountProfile;
-		// TODO: Experimental logger.
+		// TODO: logger.
 		$this->logger = new Logger('SierraPatronAPI');
-		$this->logger->info("Logger is now ready");
-		// TODO: Cache
+		// TODO: cache
 		$cache = initCache();
 		$this->memCache = new Cache($cache);
 		// build the api url
@@ -114,7 +113,7 @@ class Sierra {
 
 		$patronCheckoutsCacheKey = "patron_".$patron->barcode."_checkouts";
 		if($patronCheckouts = $this->memCache->get($patronCheckoutsCacheKey)) {
-			$this->logger->info("Found holds in memcache:".$patronCheckoutsCacheKey);
+			$this->logger->info("Found checkouts in memcache:".$patronCheckoutsCacheKey);
 			return $patronCheckouts;
 		}
 

@@ -22,7 +22,9 @@ class Cache implements CacheInterface
 
 	const PSR16_RESERVED_CHARACTERS = ['{','}','(',')','/','@',':'];
 
-	public $handler;
+	public  $handler;
+
+	private $logger = false;
 
 	/**
 	 * Cache constructor.
@@ -30,7 +32,11 @@ class Cache implements CacheInterface
 	 */
 	public function __construct(Memcache $handler)
 	{
+		global $configArray;
 		$this->handler = $handler;
+		if((bool)$configArray['System']['debug']) {
+			$this->logger = new Logger('PikaCache');
+		}
 	}
 
 	/**
@@ -46,7 +52,9 @@ class Cache implements CacheInterface
 	 */
 	public function get($key, $default = null)
 	{
-		return $this->handler->get($key) ? $this->handler->get($key) : $default;
+		$return = $this->handler->get($key) ? $this->handler->get($key) : $default;
+		$this->_log('Get', $key, $return);
+		return $return;
 	}
 
 	/**
@@ -68,7 +76,9 @@ class Cache implements CacheInterface
 		if ($ttl instanceof DateInterval) {
 			$ttl = (new DateTime('now'))->add($ttl)->getTimeStamp() - time();
 		}
-		return (bool)$this->handler->set($key, $value, 0, (int)$ttl);
+		$return = (bool)$this->handler->set($key, $value, 0, (int)$ttl);
+		$this->_log('Set', $key, $return);
+		return $return;
 	}
 
 	/**
@@ -83,7 +93,9 @@ class Cache implements CacheInterface
 	 */
 	public function delete($key)
 	{
-		return (bool)$this->handler->delete($key);
+		$return = (bool)$this->handler->delete($key);
+		$this->_log('Delete', $key, $return);
+		return $return;
 	}
 
 	/**
@@ -93,7 +105,9 @@ class Cache implements CacheInterface
 	 */
 	public function clear()
 	{
-		return (bool)$this->handler->flush();
+		$return = (bool)$this->handler->flush();
+		$this->_log('Clear', 'All', $return);
+		return $return;
 	}
 
 	/**
@@ -200,4 +214,14 @@ class Cache implements CacheInterface
 		}
 	}
 
+	private function _log($action, $key, $result) {
+		if($this->logger) {
+			if($result != false) {
+				$result = 'true';
+			} else {
+				$result = 'false';
+			}
+			$this->logger->info($action . ':' . $key . ':' . strval($result));
+		}
+	}
 }
