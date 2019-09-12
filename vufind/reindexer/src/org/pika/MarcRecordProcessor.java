@@ -875,18 +875,22 @@ abstract class MarcRecordProcessor {
 		String titleValue    = MarcUtil.getFirstFieldVal(record, "245a");
 		String subTitleValue = MarcUtil.getFirstFieldVal(record, "245bnp"); //MDN 2/6/2016 add np to subtitle #ARL-163
 		if (subTitleValue != null && titleValue != null && titleValue.toLowerCase().endsWith(subTitleValue.toLowerCase())) {
+			// Remove subtitle from title in order to avoid repeats of sub-title in display & title fields in index
 			logger.warn(identifier + " title (245a) '" + titleValue + "' ends with the subtitle (245bnp) '" + subTitleValue);
 			titleValue = titleValue.substring(0, titleValue.lastIndexOf(subTitleValue));
-			titleValue = titleValue.trim().replaceAll(":+$", ""); // remove ending white space; then remove any ending colon characters.
 		}
-		String displayTitle = (subTitleValue == null || subTitleValue.isEmpty()) ? titleValue : titleValue + ": " + subTitleValue;
+		if (titleValue != null) {
+			// Trim ending colon character and whitespace often appended for expected subtitle display, we'll add it back if we have a subtitle
+			titleValue = titleValue.trim().replaceAll(":+$", "").trim(); // remove ending white space; then remove any ending colon characters.
+		}
+		String displayTitle = (subTitleValue == null || subTitleValue.isEmpty()) ? titleValue : titleValue + " : " + subTitleValue;
 
 		String sortableTitle = titleValue;
 		// Skip non-filing chars, if possible.
 		DataField titleField = record.getDataField("245");
 		if (titleField != null && titleField.getSubfield('a') != null && titleValue != null && !titleValue.isEmpty()) {
 			int nonFilingInt = getInd2AsInt(titleField);
-			sortableTitle = (titleValue.length() > nonFilingInt) ? titleValue.substring(nonFilingInt) : titleValue;
+			sortableTitle = (nonFilingInt > 0 && titleValue.length() > nonFilingInt) ? titleValue.substring(nonFilingInt) : titleValue;
 		}
 		if (subTitleValue != null && !subTitleValue.isEmpty()) {
 			sortableTitle += " " + subTitleValue;
