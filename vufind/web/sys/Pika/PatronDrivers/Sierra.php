@@ -1172,13 +1172,42 @@ class Sierra {
 	}
 
 	public function hasNativeReadingHistory(){
-		// TODO: Implement hasNativeReadingHistory() method.
+		return true;
 	}
 
 	public function getReadingHistory($patron, $page = 1, $recordsPerPage = -1, $sortOption = "checkedOut")
 	{
+			// history enabled?
+		if($patron->trackReadingHistory != 1) {
+			return ['historyActive' => false, 'numTitles' => 0, 'titles' => []];
+		}
 
-		return [];
+		$history = $this->loadReadingHistoryFromIls($patron);
+
+		if(!$history) {
+			return false;
+		}
+		$history['historyActive'] = true;
+		// todo: show this search test
+		//$search =  $this->searchReadingHistory($patron, 'colorado');
+		//$history['titles'] = $search;
+		//return $history;
+
+		$historyPages = array_chunk($history['titles'], $recordsPerPage);
+		$pageIndex = $page - 1;
+		$history['titles'] = $historyPages[$pageIndex];
+
+		return $history;
+	}
+
+	public function searchReadingHistory($patron, $search) {
+		$history = $this->loadReadingHistoryFromIls($patron);
+
+		$found = array_filter($history['titles'], function($k) use ($search) {
+      return stristr($k['title'], $search) || stristr($k['author'], $search);
+		});
+
+		return $found;
 	}
 
 	/**
@@ -1193,8 +1222,17 @@ class Sierra {
 	 */
 	public function loadReadingHistoryFromIls($patron, $loadAdditional = null){
 		$patronId = $this->getPatronId($patron->barcode);
+
+		$patronReadingHistoryCacheKey = "patron_".$patron->barcode."_history";
+		if($patronReadingHistory = $this->memCache->get($patronReadingHistoryCacheKey)) {
+			$this->logger->info("Found reading history in memcache:".$patronReadingHistoryCacheKey);
+			return $patronReadingHistory;
+		}
 		$operation = "patrons/".$patronId."/checkouts/history";
-		$history = $this->_doRequest($operation);
+		$params = ['limit'     => 2000, // Sierra api max results as of 9-12-2019
+		           'sortField' => 'outDate',
+		           'sortOrder' => 'desc'];
+		$history = $this->_doRequest($operation, $params);
 
 		if(!$history) {
 			return false;
@@ -1208,9 +1246,15 @@ class Sierra {
 		foreach($history->entries as $historyEntry) {
 			$titleEntry = [];
 			// make the Pika style bib Id
-			preg_match($this->urlIdRegExp, $historyEntry->bib, $m);
-			$x = $this->getCheckDigit($m[1]);
-			$bibId = '.b'.$m[1].$x; // full bib id
+			preg_match($this->urlIdRegExp, $historyEntry->bib, $bibMatch);
+			$x = $this->getCheckDigit($bibMatch[1]);
+			$bibId = '.b'.$bibMatch[1].$x; // full bib id
+			// get the checkout id --> becomes itemindex
+			preg_match($this->urlIdRegExp, $historyEntry->id, $coIdMatch);
+			$itemindex = $coIdMatch[1];
+			// format the date
+			$ts = strtotime($historyEntry->outDate);
+			$checkOutDate = date('m-d-Y', $ts);
 			// get the rest from the MARC record
 			$record = new MarcRecord($this->accountProfile->recordSource.':'.$bibId);
 
@@ -1219,15 +1263,42 @@ class Sierra {
 				$titleEntry['title']       = $record->getTitle();
 				$titleEntry['author']      = $record->getAuthor();
 				$titleEntry['format']      = $record->getFormat();
+				$titleEntry['title_sort']  = $record->getSortableTitle();
+				$titleEntry['ratingData']  = $record->getRatingData();
+				$titleEntry['permanentId'] = $record->getPermanentId();
+				$titleEntry['linkUrl']     = $record->getGroupedWorkDriver()->getLinkUrl();
+				$titleEntry['coverUrl']    = $record->getBookcoverUrl('medium');
+				$titleEntry['format']      = $record->getFormats();
+
+			} else {
+				$titleEntry['permanentId'] = '';
+				$titleEntry['ratingData']  = '';
+				$titleEntry['permanentId'] = '';
+				$titleEntry['linkUrl']     = '';
+				$titleEntry['coverUrl']    = '';
+				$titleEntry['format']      = '';
+				// todo: should fall back to api here
+				$titleEntry['title']       = '';
+				$titleEntry['author']      = '';
+				$titleEntry['format']      = '';
+				$titleEntry['title_sort']  = '';
 			}
-			$titleEntry['checkout']     = $historyEntry->outDate;
+			$titleEntry['checkout']     = $checkOutDate;
+			$titleEntry['shortId']      = $bibMatch[1];
 			$titleEntry['borrower_num'] = $patronPikaId;
 			$titleEntry['recordId']     = $bibId;
-
+			$titleEntry['itemindex']    = $itemindex; // checkout id
+			$titleEntry['details']      = ''; // todo: nothing to put here
 			$readingHistory[] = $titleEntry;
 		}
+		$total = count($readingHistory);
+		$return = ['numTitles'  => $total,
+		           'titles'     => $readingHistory];
 
-		return ['title'=>$readingHistory];
+		$this->memCache->set($patronReadingHistoryCacheKey, $return, 21600);
+		$this->logger->info("Saving reading history in memcache:".$patronReadingHistoryCacheKey);
+
+		return $return;
 	}
 
 

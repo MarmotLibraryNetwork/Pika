@@ -29,7 +29,7 @@ abstract class ByWaterKoha extends KohaILSDI {
 		$this->accountProfile = $accountProfile;
 		$this->sipHost        = $configArray['SIP2']['host'];
 		$this->sipPort        = $configArray['SIP2']['port'];
-		$this->debug          = isset($configArray['System']['debug'])        ? $configArray['System']['debug'] : false;
+		$this->debug          = isset($configArray['System']['debug']) ? $configArray['System']['debug'] : false;
 	}
 
 	protected function initSipConnection($host = null, $port = null){

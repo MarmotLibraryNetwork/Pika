@@ -82,10 +82,10 @@ class ReadingHistory extends MyAccount
 				}
 
 				// Define sorting options
-				$sortOptions = array('title' => 'Title',
-				                     'author' => 'Author',
+				$sortOptions = array('title'      => 'Title',
+				                     'author'     => 'Author',
 				                     'checkedOut' => 'Checkout Date',
-				                     'format' => 'Format',
+				                     'format'     => 'Format',
 				);
 				$selectedSortOption = isset($_REQUEST['accountSort']) ? $_REQUEST['accountSort'] : 'checkedOut';
 				$interface->assign('sortOptions', $sortOptions);
