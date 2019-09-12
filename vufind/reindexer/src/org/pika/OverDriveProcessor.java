@@ -113,7 +113,11 @@ public class OverDriveProcessor {
 						String fullTitle = title + " " + subTitle;
 						fullTitle = fullTitle.trim();
 						groupedWork.setTitle(title, title, metadata.get("sortTitle"), primaryFormat);
-						groupedWork.setSubTitle(subTitle);
+						if (!subTitle.toLowerCase().startsWith(series.toLowerCase() + " series, book")){
+							// If the overdrive subtitle is just a series statement, do not add to the index as the subtitle
+							// In these cases, the subtitle takes the form "{series title} Series, Book {Book Number}
+							groupedWork.setSubTitle(subTitle);
+						}
 						groupedWork.addFullTitle(fullTitle);
 
 						groupedWork.addSeries(series);

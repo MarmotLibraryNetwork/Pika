@@ -866,7 +866,7 @@ class MarcRecord extends IndexRecord
 		$shortTitle     = $this->getFirstFieldValue('245', array('a'));
 		$subTitle       = $this->getSubtitle();
 		$subTitleLength = strlen($subTitle);
-		//TODO: do these tests work with multibyte characters
+		//TODO: do these tests work with multibyte characters? Diacritic characters?
 		if (!empty($shortTitle) && $subTitleLength > 0 && strcasecmp(substr($shortTitle, -$subTitleLength), $subTitle) === 0){
 			$shortTitle = trim(rtrim(trim(substr($shortTitle, 0, -$subTitleLength)), ':'));
 		}
