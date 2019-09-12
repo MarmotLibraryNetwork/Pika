@@ -101,18 +101,16 @@ public class GroupedReindexMain {
 			if (groupedWorkIndexer.isOkToIndex()) {
 				if (individualWorkToProcess != null) {
 					//Get more information about the work
-					try {
-						PreparedStatement getInfoAboutWorkStmt = pikaConn.prepareStatement("SELECT * from grouped_work where permanent_id = ?");
+					try (PreparedStatement getInfoAboutWorkStmt = pikaConn.prepareStatement("SELECT * from grouped_work where permanent_id = ?") ){
 						getInfoAboutWorkStmt.setString(1, individualWorkToProcess);
-						ResultSet infoAboutWork = getInfoAboutWorkStmt.executeQuery();
-						if (infoAboutWork.next()) {
-
-							groupedWorkIndexer.deleteRecord(individualWorkToProcess);
-							groupedWorkIndexer.processGroupedWork(infoAboutWork.getLong("id"), individualWorkToProcess, infoAboutWork.getString("grouping_category"), null, null);
-						} else {
-							logger.error("Could not find a work with id " + individualWorkToProcess);
+						try (ResultSet infoAboutWork = getInfoAboutWorkStmt.executeQuery()) {
+							if (infoAboutWork.next()) {
+								groupedWorkIndexer.deleteRecord(individualWorkToProcess);
+								groupedWorkIndexer.processGroupedWork(infoAboutWork.getLong("id"), individualWorkToProcess, infoAboutWork.getString("grouping_category"), null, null);
+							} else {
+								logger.error("Could not find a work with id " + individualWorkToProcess);
+							}
 						}
-						getInfoAboutWorkStmt.close();
 					} catch (Exception e) {
 						logger.error("Unable to process individual work " + individualWorkToProcess, e);
 					}
