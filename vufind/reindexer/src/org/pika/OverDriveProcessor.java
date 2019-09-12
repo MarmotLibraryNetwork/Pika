@@ -60,8 +60,8 @@ public class OverDriveProcessor {
 			ResultSet productRS = getProductInfoStmt.executeQuery();
 			if (productRS.next()) {
 				//Make sure the record isn't deleted
-				Long productId = productRS.getLong("id");
-				String title = productRS.getString("title");
+				Long   productId = productRS.getLong("id");
+				String title     = productRS.getString("title");
 
 				if (productRS.getInt("deleted") == 1) {
 					logger.info("Not processing deleted overdrive product " + title + " - " + identifier);
@@ -80,48 +80,58 @@ public class OverDriveProcessor {
 						RecordInfo overDriveRecord = groupedWork.addRelatedRecord("overdrive", identifier);
 						overDriveRecord.setRecordIdentifier("overdrive", identifier);
 
-						String subTitle = productRS.getString("subtitle");
-						String subTitleLowerCase = "";
-						if (subTitle == null) {
-							subTitle = "";
-						} else {
-							String titleLowerCase = title.toLowerCase();
-							subTitleLowerCase     = subTitle.toLowerCase();
-							if (titleLowerCase.endsWith(subTitleLowerCase)){
-								// Pika should treat the title as not including the subtitle, so remove subtitle from title if it is there
-								logger.warn(identifier + " Overdrive title  '" + title + "' ends with the subtitle '" + subTitle);
-								title = title.substring(0, titleLowerCase.lastIndexOf(subTitleLowerCase));
-								title = title.replaceAll("\\s+$", "").replaceAll(":+$", ""); // remove ending white space; then remove any ending colon characters.
+						String                  series         = null;
+						String                  formatCategory = null;
+						String                  primaryFormat  = null;
+						String                  fullTitle      = null;
+						HashMap<String, String> metadata       = null;
+						try {
+							String subTitle          = productRS.getString("subtitle");
+							String subTitleLowerCase = "";
+							if (subTitle == null) {
+								subTitle = "";
+							} else {
+								String titleLowerCase = title.toLowerCase();
+								subTitleLowerCase = subTitle.toLowerCase();
+								if (titleLowerCase.endsWith(subTitleLowerCase)) {
+									// Pika should treat the title as not including the subtitle, so remove subtitle from title if it is there
+									logger.warn(identifier + " Overdrive title  '" + title + "' ends with the subtitle '" + subTitle);
+									title = title.substring(0, titleLowerCase.lastIndexOf(subTitleLowerCase));
+									title = title.replaceAll("\\s+$", "").replaceAll(":+$", ""); // remove ending white space; then remove any ending colon characters.
+								}
 							}
-						}
-						String series = productRS.getString("series");
-						String mediaType = productRS.getString("mediaType");
-						String formatCategory;
-						String primaryFormat;
-						switch (mediaType) {
-							case "Audiobook":
-								formatCategory = "Audio Books";
-								primaryFormat = "eAudiobook";
-								break;
-							case "Video":
-								formatCategory = "Movies";
-								primaryFormat = "eVideo";
-								break;
-							default:
-								formatCategory = mediaType;
-								primaryFormat = mediaType;
-								break;
-						}
+							String mediaType = productRS.getString("mediaType");
+							switch (mediaType) {
+								case "Audiobook":
+									formatCategory = "Audio Books";
+									primaryFormat = "eAudiobook";
+									break;
+								case "Video":
+									formatCategory = "Movies";
+									primaryFormat = "eVideo";
+									break;
+								default:
+									formatCategory = mediaType;
+									primaryFormat = mediaType;
+									break;
+							}
 
-						HashMap<String, String> metadata = loadOverDriveMetadata(groupedWork, productId, primaryFormat);
+							metadata = loadOverDriveMetadata(groupedWork, productId, primaryFormat);
 
-						String fullTitle = title + " " + subTitle;
-						fullTitle = fullTitle.trim();
-						groupedWork.setTitle(title, title, metadata.get("sortTitle"), primaryFormat);
-						if (!subTitleLowerCase.startsWith(series.toLowerCase() + " series, book")){
-							// If the overdrive subtitle is just a series statement, do not add to the index as the subtitle
-							// In these cases, the subtitle takes the form "{series title} Series, Book {Book Number}
-							groupedWork.setSubTitle(subTitle);
+							fullTitle = "";
+							series = productRS.getString("series");
+							if (!subTitle.isEmpty()) {
+								fullTitle = title + " " + subTitle;
+								if (series == null || series.isEmpty() || !subTitleLowerCase.startsWith(series.toLowerCase() + " series, book")) {
+									// If the overdrive subtitle is just a series statement, do not add to the index as the subtitle
+									// In these cases, the subtitle takes the form "{series title} Series, Book {Book Number}
+									groupedWork.setSubTitle(subTitle);
+								}
+							}
+							groupedWork.setTitle(title, title, metadata.get("sortTitle"), primaryFormat);
+							fullTitle = fullTitle.trim();
+						} catch (Exception e) {
+							logger.error("Error processing Overdrive title info for " + identifier, e);
 						}
 						groupedWork.addFullTitle(fullTitle);
 
@@ -157,11 +167,11 @@ public class OverDriveProcessor {
 						productRS.close();
 
 						String primaryLanguage = loadOverDriveLanguages(groupedWork, overDriveRecord, productId, identifier);
-						String targetAudience = loadOverDriveSubjects(groupedWork, productId);
+						String targetAudience  = loadOverDriveSubjects(groupedWork, productId);
 
 						//Load the formats for the record.  For OverDrive, we will create a separate item for each format.
-						HashSet<String> validFormats = loadOverDriveFormats(groupedWork, productId, identifier);
-						String detailedFormats = Util.getCsvSeparatedString(validFormats);
+						HashSet<String> validFormats    = loadOverDriveFormats(groupedWork, productId, identifier);
+						String          detailedFormats = Util.getCsvSeparatedString(validFormats);
 						//overDriveRecord.addFormats(validFormats);
 
 						loadOverDriveIdentifiers(groupedWork, productId, primaryFormat);
@@ -205,7 +215,7 @@ public class OverDriveProcessor {
 
 							overDriveRecord.addItem(itemInfo);
 
-							long libraryId = availabilityRS.getLong("libraryId");
+							long    libraryId = availabilityRS.getLong("libraryId");
 							boolean available = availabilityRS.getBoolean("available");
 
 							itemInfo.setFormat(primaryFormat);
