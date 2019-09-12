@@ -81,13 +81,18 @@ public class OverDriveProcessor {
 						overDriveRecord.setRecordIdentifier("overdrive", identifier);
 
 						String subTitle = productRS.getString("subtitle");
+						String subTitleLowerCase = "";
 						if (subTitle == null) {
 							subTitle = "";
-						} else if (title.toLowerCase().endsWith(subTitle.toLowerCase())){
-							// Pika should treat the title as not including the subtitle, so remove subtitle from title if it is there
-							logger.warn(identifier + " Overdrive title  '" + title + "' ends with the subtitle '" + subTitle);
-							title = title.substring(0, title.lastIndexOf(subTitle));
-							title = title.replaceAll("\\s+$", "").replaceAll(":+$", ""); // remove ending white space; then remove any ending colon characters.
+						} else {
+							String titleLowerCase = title.toLowerCase();
+							subTitleLowerCase     = subTitle.toLowerCase();
+							if (titleLowerCase.endsWith(subTitleLowerCase)){
+								// Pika should treat the title as not including the subtitle, so remove subtitle from title if it is there
+								logger.warn(identifier + " Overdrive title  '" + title + "' ends with the subtitle '" + subTitle);
+								title = title.substring(0, titleLowerCase.lastIndexOf(subTitleLowerCase));
+								title = title.replaceAll("\\s+$", "").replaceAll(":+$", ""); // remove ending white space; then remove any ending colon characters.
+							}
 						}
 						String series = productRS.getString("series");
 						String mediaType = productRS.getString("mediaType");
@@ -113,7 +118,7 @@ public class OverDriveProcessor {
 						String fullTitle = title + " " + subTitle;
 						fullTitle = fullTitle.trim();
 						groupedWork.setTitle(title, title, metadata.get("sortTitle"), primaryFormat);
-						if (!subTitle.toLowerCase().startsWith(series.toLowerCase() + " series, book")){
+						if (!subTitleLowerCase.startsWith(series.toLowerCase() + " series, book")){
 							// If the overdrive subtitle is just a series statement, do not add to the index as the subtitle
 							// In these cases, the subtitle takes the form "{series title} Series, Book {Book Number}
 							groupedWork.setSubTitle(subTitle);
