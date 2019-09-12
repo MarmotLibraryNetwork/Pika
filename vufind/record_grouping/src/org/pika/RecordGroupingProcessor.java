@@ -266,10 +266,10 @@ class RecordGroupingProcessor {
 
 	private void setWorkAuthorBasedOnMarcRecord(Record marcRecord, GroupedWorkBase workForTitle, DataField field245, String groupingFormat) {
 		String    author   = null;
-		DataField field100 = marcRecord.getDataField("100");
-		DataField field110 = marcRecord.getDataField("110");
-		DataField field260 = marcRecord.getDataField("260");
-		DataField field710 = marcRecord.getDataField("710");
+		DataField field100 = marcRecord.getDataField("100"); // Heading - Personal Name
+		DataField field110 = marcRecord.getDataField("110"); // Heading - Corporate Name
+		DataField field260 = marcRecord.getDataField("260"); // Publication, Distribution, etc.
+		DataField field710 = marcRecord.getDataField("710"); // Added Entry-Corporate Name
 
 		//Depending on the format we will promote the use of the 245c
 		if (field100 != null && field100.getSubfield('a') != null) {
