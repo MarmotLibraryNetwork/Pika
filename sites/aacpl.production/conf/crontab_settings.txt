@@ -60,9 +60,13 @@
 # Check Apache Solr process and website that it has not stalled.
 */3 * * * * cd /usr/local/vufind-plus/vufind/cron/; ./solrTest.sh
 
-###############################################
-# Copy Original Covers from Marmot FTP Server #
-###############################################
+###################################
+# Data Extract from other systems #
+###################################
+# Library supplied covers
+*/10 * * * * /usr/local/vufind-plus/sites/aacpl.production/copyCovers.sh
+# Lynda weekly update
+37 0 * * Fri /usr/local/vufind-plus/vufind/cron/fetch_lynda.sh aacpl
 
 ################
 # Pika Cleanup #
