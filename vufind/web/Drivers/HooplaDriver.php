@@ -353,8 +353,8 @@ class HooplaDriver
 			$checkoutURL = $this->getHooplaBasePatronURL($user);
 			if (!empty($checkoutURL)) {
 
-				$hooplaId         = self::recordIDtoHooplaID($hooplaId);
-				$checkoutURL      .= '/' . $hooplaId;
+				$id = self::recordIDtoHooplaID($hooplaId);
+				$checkoutURL      .= '/' . $id;
 				$checkoutResponse = $this->getAPIResponse($checkoutURL, array(), 'POST');
 				if ($checkoutResponse) {
 					if (!empty($checkoutResponse->contentId)) {
