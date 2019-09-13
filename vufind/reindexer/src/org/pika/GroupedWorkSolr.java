@@ -1016,7 +1016,7 @@ public class GroupedWorkSolr implements Cloneable {
 					}
 					//remove punctuation from the sortable title
 					sortableTitle  = punctuationPattern.matcher(sortableTitle).replaceAll("");
-					this.titleSort = sortableTitle.trim();
+					this.titleSort = sortableTitle.trim().toLowerCase();
 				}
 				displayTitle = Util.trimTrailingPunctuation(displayTitle);
 				//Strip out anything in brackets unless that would cause us to show nothing
@@ -1044,7 +1044,7 @@ public class GroupedWorkSolr implements Cloneable {
 
 
 	void setSubTitle(String subTitle) {
-		if (subTitle != null){
+		if (subTitle != null && !subTitle.isEmpty()){
 			subTitle = Util.trimTrailingPunctuation(subTitle);
 			//TODO: determine if the subtitle should be changed?
 			//Strip out anything in brackets unless that would cause us to show nothing

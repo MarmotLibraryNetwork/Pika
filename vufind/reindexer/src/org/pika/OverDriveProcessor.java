@@ -93,11 +93,14 @@ public class OverDriveProcessor {
 							} else {
 								String titleLowerCase = title.toLowerCase();
 								subTitleLowerCase = subTitle.toLowerCase();
-								if (titleLowerCase.endsWith(subTitleLowerCase)) {
+								if (titleLowerCase.equals(subTitleLowerCase)) {
+									logger.warn(identifier + " overdrive title '" + title + "' is the same as the subtitle '" + subTitle + "'");
+									subTitle = "";
+								} else if (titleLowerCase.endsWith(subTitleLowerCase)) {
 									// Pika should treat the title as not including the subtitle, so remove subtitle from title if it is there
 									logger.warn(identifier + " Overdrive title  '" + title + "' ends with the subtitle '" + subTitle);
 									title = title.substring(0, titleLowerCase.lastIndexOf(subTitleLowerCase));
-									title = title.replaceAll("\\s+$", "").replaceAll(":+$", ""); // remove ending white space; then remove any ending colon characters.
+									title = title.replaceAll("[\\s:]+$", ""); // remove ending white space and any ending colon characters.
 								}
 							}
 							String mediaType = productRS.getString("mediaType");
@@ -119,7 +122,7 @@ public class OverDriveProcessor {
 							metadata = loadOverDriveMetadata(groupedWork, productId, primaryFormat);
 
 							fullTitle = "";
-							series = productRS.getString("series");
+							series    = productRS.getString("series");
 							if (!subTitle.isEmpty()) {
 								fullTitle = title + " " + subTitle;
 								if (series == null || series.isEmpty() || !subTitleLowerCase.startsWith(series.toLowerCase() + " series, book")) {

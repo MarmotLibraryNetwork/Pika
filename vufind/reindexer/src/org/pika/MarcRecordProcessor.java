@@ -877,15 +877,18 @@ abstract class MarcRecordProcessor {
 		if (subTitleValue != null && titleValue != null) {
 			String subTitleLowerCase = subTitleValue.toLowerCase();
 			String titleLowerCase    = titleValue.toLowerCase();
-			if (titleLowerCase.endsWith(subTitleLowerCase)) {
+			if (titleLowerCase.equals(subTitleLowerCase)){
+				logger.warn(identifier + " title (245a) '" + titleValue + "' is the same as the subtitle '" + subTitleValue + "'");
+				subTitleValue = null;
+			} else if (titleLowerCase.endsWith(subTitleLowerCase)) {
 				// Remove subtitle from title in order to avoid repeats of sub-title in display & title fields in index
-				logger.warn(identifier + " title (245a) '" + titleValue + "' ends with the subtitle (245bnp) '" + subTitleValue);
+				logger.warn(identifier + " title (245a) '" + titleValue + "' ends with the subtitle (245bnp) '" + subTitleValue + "'");
 				titleValue = titleValue.substring(0, titleLowerCase.lastIndexOf(subTitleLowerCase));
 			}
 		}
 		if (titleValue != null) {
 			// Trim ending colon character and whitespace often appended for expected subtitle display, we'll add it back if we have a subtitle
-			titleValue = titleValue.trim().replaceAll(":+$", "").trim(); // remove ending white space; then remove any ending colon characters.
+			titleValue = titleValue.replaceAll("[\\s:]+$", ""); // remove ending white space; then remove any ending colon characters.
 		}
 		String displayTitle = (subTitleValue == null || subTitleValue.isEmpty()) ? titleValue : titleValue + " : " + subTitleValue;
 
