@@ -98,7 +98,7 @@ public class GroupedWorkSolr implements Cloneable {
 	private HashSet<String>          topicFacets              = new HashSet<>();
 	private HashSet<String>          subjects                 = new HashSet<>();
 	private HashMap<String, Long>    upcs                     = new HashMap<>();
-	private float                    hooplaPrice              = 0.0f;
+//	private float                    hooplaPrice              = 0.0f;
 
 	private Logger             logger;
 	private GroupedWorkIndexer groupedWorkIndexer;

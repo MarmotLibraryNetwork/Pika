@@ -879,31 +879,31 @@ abstract class MarcRecordProcessor {
 			String titleLowerCase    = titleValue.toLowerCase();
 			if (titleLowerCase.equals(subTitleLowerCase)){
 				logger.warn(identifier + " title (245a) '" + titleValue + "' is the same as the subtitle '" + subTitleValue + "'");
-				subTitleValue = null;
+				subTitleValue = null; // null out so that it doesn't get added to sort or display titles
 			} else if (titleLowerCase.endsWith(subTitleLowerCase)) {
 				// Remove subtitle from title in order to avoid repeats of sub-title in display & title fields in index
 				logger.warn(identifier + " title (245a) '" + titleValue + "' ends with the subtitle (245bnp) '" + subTitleValue + "'");
 				titleValue = titleValue.substring(0, titleLowerCase.lastIndexOf(subTitleLowerCase));
 			}
-		}
-		if (titleValue != null) {
 			// Trim ending colon character and whitespace often appended for expected subtitle display, we'll add it back if we have a subtitle
 			titleValue = titleValue.replaceAll("[\\s:]+$", ""); // remove ending white space; then remove any ending colon characters.
 		}
+
 		String displayTitle = (subTitleValue == null || subTitleValue.isEmpty()) ? titleValue : titleValue + " : " + subTitleValue;
 
 		String sortableTitle = titleValue;
 		// Skip non-filing chars, if possible.
-		DataField titleField = record.getDataField("245");
-		if (titleField != null && titleField.getSubfield('a') != null && titleValue != null && !titleValue.isEmpty()) {
-			int nonFilingInt = getInd2AsInt(titleField);
-			sortableTitle = (nonFilingInt > 0 && titleValue.length() > nonFilingInt) ? titleValue.substring(nonFilingInt) : titleValue;
-		}
-		if (subTitleValue != null && !subTitleValue.isEmpty()) {
-			sortableTitle += " " + subTitleValue;
-		}
-		if (sortableTitle != null) {
-			sortableTitle = sortableTitle.toLowerCase();
+		if (titleValue != null && !titleValue.isEmpty()) {
+			DataField titleField = record.getDataField("245");
+			if (titleField != null && titleField.getSubfield('a') != null) {
+				int nonFilingInt = getInd2AsInt(titleField);
+				if (nonFilingInt > 0 && titleValue.length() > nonFilingInt)  {
+					sortableTitle = titleValue.substring(nonFilingInt);
+				}
+			}
+			if (subTitleValue != null && !subTitleValue.isEmpty()) {
+				sortableTitle += " " + subTitleValue;
+			}
 		}
 
 		groupedWork.setTitle(titleValue, displayTitle, sortableTitle, format);
