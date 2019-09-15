@@ -874,26 +874,34 @@ abstract class MarcRecordProcessor {
 		//title short
 		String titleValue    = MarcUtil.getFirstFieldVal(record, "245a");
 		String subTitleValue = MarcUtil.getFirstFieldVal(record, "245bnp"); //MDN 2/6/2016 add np to subtitle #ARL-163
-		if (subTitleValue != null && titleValue != null) {
-			String subTitleLowerCase = subTitleValue.toLowerCase();
-			String titleLowerCase    = titleValue.toLowerCase();
-			if (titleLowerCase.equals(subTitleLowerCase)){
-				logger.warn(identifier + " title (245a) '" + titleValue + "' is the same as the subtitle '" + subTitleValue + "'");
-				subTitleValue = null; // null out so that it doesn't get added to sort or display titles
-			} else if (titleLowerCase.endsWith(subTitleLowerCase)) {
-				// Remove subtitle from title in order to avoid repeats of sub-title in display & title fields in index
-				logger.warn(identifier + " title (245a) '" + titleValue + "' ends with the subtitle (245bnp) '" + subTitleValue + "'");
-				titleValue = titleValue.substring(0, titleLowerCase.lastIndexOf(subTitleLowerCase));
+		if (titleValue == null){
+			logger.warn(identifier + " has no title value (245a)");
+			titleValue = "";
+		} else {
+			if (subTitleValue != null) {
+				String subTitleLowerCase = subTitleValue.toLowerCase();
+				String titleLowerCase    = titleValue.toLowerCase();
+				if (titleLowerCase.equals(subTitleLowerCase)){
+					logger.warn(identifier + " title (245a) '" + titleValue + "' is the same as the subtitle '" + subTitleValue + "'");
+					subTitleValue = null; // null out so that it doesn't get added to sort or display titles
+				} else {
+					groupedWork.setSubTitle(subTitleValue);
+					if (titleLowerCase.endsWith(subTitleLowerCase)) {
+						// Remove subtitle from title in order to avoid repeats of sub-title in display & title fields in index
+						logger.warn(identifier + " title (245a) '" + titleValue + "' ends with the subtitle (245bnp) '" + subTitleValue + "'");
+						titleValue = titleValue.substring(0, titleLowerCase.lastIndexOf(subTitleLowerCase));
+					}
+				}
+				// Trim ending colon character and whitespace often appended for expected subtitle display, we'll add it back if we have a subtitle
+				titleValue = titleValue.replaceAll("[\\s:]+$", ""); // remove ending white space; then remove any ending colon characters.
 			}
-			// Trim ending colon character and whitespace often appended for expected subtitle display, we'll add it back if we have a subtitle
-			titleValue = titleValue.replaceAll("[\\s:]+$", ""); // remove ending white space; then remove any ending colon characters.
 		}
 
 		String displayTitle = (subTitleValue == null || subTitleValue.isEmpty()) ? titleValue : titleValue + " : " + subTitleValue;
 
 		String sortableTitle = titleValue;
 		// Skip non-filing chars, if possible.
-		if (titleValue != null && !titleValue.isEmpty()) {
+		if (!titleValue.isEmpty()) {
 			DataField titleField = record.getDataField("245");
 			if (titleField != null && titleField.getSubfield('a') != null) {
 				int nonFilingInt = getInd2AsInt(titleField);
@@ -907,7 +915,6 @@ abstract class MarcRecordProcessor {
 		}
 
 		groupedWork.setTitle(titleValue, displayTitle, sortableTitle, format);
-		groupedWork.setSubTitle(subTitleValue);
 		//title full
 		String authorInTitleField = MarcUtil.getFirstFieldVal(record, "245c");
 		String standardAuthorData = MarcUtil.getFirstFieldVal(record, "100abcdq:110ab");

@@ -952,7 +952,9 @@ public class GroupedWorkSolr implements Cloneable {
 
 	private static Pattern removeBracketsPattern = Pattern.compile("\\[.*?\\]");
 	private static Pattern commonSubtitlePattern = Pattern.compile("(?i)((?:[(])?(?:a )?graphic novel|audio cd|book club kit|large print(?:[)])?)$");
-	private static Pattern punctuationPattern = Pattern.compile("[.\\\\/()\\[\\]:;]");
+	private static Pattern punctuationPattern    = Pattern.compile("[.\\\\/()\\[\\]:;]");
+	private static Pattern multipleSpacesPattern = Pattern.compile("\\s{2,}");
+
 	void setTitle(String shortTitle, String displayTitle, String sortableTitle, String recordFormat) {
 		if (shortTitle != null){
 			shortTitle = Util.trimTrailingPunctuation(shortTitle);
@@ -1015,8 +1017,10 @@ public class GroupedWorkSolr implements Cloneable {
 						sortableTitle = tmpTitle;
 					}
 					//remove punctuation from the sortable title
-					sortableTitle  = punctuationPattern.matcher(sortableTitle).replaceAll("");
-					this.titleSort = sortableTitle.trim().toLowerCase();
+					sortableTitle  = punctuationPattern.matcher(sortableTitle).replaceAll("").trim(); //TODO: remove "!" or "?" or " -- "
+					//TODO: replace & with and? Overdrive does this with their provided sort title
+					sortableTitle = multipleSpacesPattern.matcher(sortableTitle).replaceAll(" ");
+					this.titleSort = sortableTitle.toLowerCase();
 				}
 				displayTitle = Util.trimTrailingPunctuation(displayTitle);
 				//Strip out anything in brackets unless that would cause us to show nothing
@@ -1032,11 +1036,14 @@ public class GroupedWorkSolr implements Cloneable {
 				this.displayTitle = displayTitle.trim();
 			}
 
-			//Create an alternate title for searching by replacing ampersands with the word and.
-			String tmpTitle = shortTitle.replace("&", " and ").replace("  ", " ");
-			if (!tmpTitle.equals(shortTitle)){
-				this.titleAlt.add(shortTitle);
-				// alt title has multiple values
+			if (shortTitle.contains("&")) {
+				//Create an alternate title for searching by replacing ampersands with the word and.
+				String titleWithAnds = multipleSpacesPattern.matcher(shortTitle.replaceAll("&", " and ")).replaceAll( " ");
+				// sometimes there's no spaces around the & so we need to add them, eg "P&B" becomes "P and B" instead of "PandB"
+				if (!titleWithAnds.equals(shortTitle)){
+					this.titleAlt.add(titleWithAnds);
+					// alt title has multiple values
+				}
 			}
 			keywords.add(shortTitle);
 		}
