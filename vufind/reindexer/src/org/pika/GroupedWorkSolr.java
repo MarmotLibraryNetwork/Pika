@@ -839,10 +839,14 @@ public class GroupedWorkSolr implements Cloneable {
 					literaryForm.put("Unknown", 1);
 					groupedWorkIndexer.addWorkWithInvalidLiteraryForms(id);
 				}else if (numFictionIndicators.compareTo(numNonFictionIndicators) > 0){
-					logger.debug("Popularity dictates that Fiction is the correct literary form for grouped work " + id);
+					if (logger.isDebugEnabled()) {
+						logger.debug("Popularity dictates that Fiction is the correct literary form for grouped work " + id);
+					}
 					literaryForm.remove("Non Fiction");
-				}else if (numFictionIndicators.compareTo(numNonFictionIndicators) > 0){
-					logger.debug("Popularity dictates that Non Fiction is the correct literary form for grouped work " + id);
+				}else if (numNonFictionIndicators.compareTo(numFictionIndicators) > 0){
+					if (logger.isDebugEnabled()) {
+						logger.debug("Popularity dictates that Non Fiction is the correct literary form for grouped work " + id);
+					}
 					literaryForm.remove("Fiction");
 				}
 			}
@@ -892,7 +896,9 @@ public class GroupedWorkSolr implements Cloneable {
 			changeMade = false;
 			for (String curLiteraryForm : literaryFormFull.keySet()){
 				if (firstLiteraryFormIsNonFiction != nonFictionFullLiteraryForms.contains(curLiteraryForm)){
-					logger.debug(curLiteraryForm + " got voted off the island for grouped work " + id + " because it was inconsistent with other full literary forms.");
+					if (logger.isDebugEnabled()) {
+						logger.debug(curLiteraryForm + " got voted off the island for grouped work " + id + " because it was inconsistent with other full literary forms.");
+					}
 					literaryFormFull.remove(curLiteraryForm);
 					changeMade = true;
 					break;

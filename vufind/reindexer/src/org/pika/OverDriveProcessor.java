@@ -65,7 +65,9 @@ public class OverDriveProcessor {
 					String title     = productRS.getString("title");
 
 					if (productRS.getInt("deleted") == 1) {
-						logger.info("Not processing deleted overdrive product " + title + " - " + identifier);
+						if (logger.isInfoEnabled()) {
+							logger.info("Not processing deleted overdrive product " + title + " - " + identifier);
+						}
 						indexer.overDriveRecordsSkipped.add(identifier);
 
 					} else {
@@ -73,7 +75,9 @@ public class OverDriveProcessor {
 						try (ResultSet numCopiesRS = getNumCopiesStmt.executeQuery()) {
 							numCopiesRS.next();
 							if (numCopiesRS.getInt("totalOwned") == 0) {
-								logger.debug("Not processing overdrive product with no copies owned" + title + " - " + identifier);
+								if (logger.isDebugEnabled()) {
+									logger.debug("Not processing overdrive product with no copies owned" + title + " - " + identifier);
+								}
 								indexer.overDriveRecordsSkipped.add(identifier);
 							} else {
 
@@ -112,11 +116,11 @@ public class OverDriveProcessor {
 										String titleLowerCase    = title.toLowerCase();
 										String subTitleLowerCase = subTitle.toLowerCase();
 										if (titleLowerCase.equals(subTitleLowerCase)) {
-											logger.warn(identifier + " overdrive title '" + title + "' is the same as the subtitle '" + subTitle + "'");
+											logger.warn(identifier + " overdrive title '" + title + "' is the same as the subtitle :" + subTitle );
 											subTitle = "";
 										} else if (titleLowerCase.endsWith(subTitleLowerCase)) {
 											// Pika should treat the title as not including the subtitle, so remove subtitle from title if it is there
-											logger.warn(identifier + " Overdrive title  '" + title + "' ends with the subtitle '" + subTitle);
+											logger.warn(identifier + " Overdrive title '" + title + "' ends with the subtitle :" + subTitle);
 											title = title.substring(0, titleLowerCase.lastIndexOf(subTitleLowerCase));
 											title = title.replaceAll("[\\s:]+$", ""); // remove ending white space and any ending colon characters. //TODO: remove trailing "--"
 										} else if (series != null && !series.isEmpty() && subTitleLowerCase.startsWith(series.toLowerCase() + " series, book")){

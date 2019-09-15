@@ -89,7 +89,7 @@ public class GroupedReindexMain {
 		}
 		
 		//Reload schemas as needed
-		reloadDefaultSchemas();
+//		reloadDefaultSchemas();
 
 		//Process grouped works
 		long numWorksProcessed = 0;
@@ -155,7 +155,7 @@ public class GroupedReindexMain {
 
 	}
 
-	private static void reloadDefaultSchemas() {
+//	private static void reloadDefaultSchemas() {
 		/*logger.info("Reloading schemas from default");
 		try {
 			//Copy schema to grouped2
@@ -182,9 +182,9 @@ public class GroupedReindexMain {
 		reloadSchema("grouped2");
 		//genealogy
 		reloadSchema("genealogy");*/
-	}
+//	}
 
-	private static void reloadSchema(String schemaName) {
+	/*private static void reloadSchema(String schemaName) {
 		boolean errorCopyingFiles = false;
 		boolean fileChanged = false;
 		try {
@@ -267,7 +267,7 @@ public class GroupedReindexMain {
 		}else{
 			logger.debug("Not reloading core because nothing changed.");
 		}
-	}
+	}*/
 
 	private static StringBuffer reindexNotes = new StringBuffer();
 	private static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -283,7 +283,9 @@ public class GroupedReindexMain {
 			addNoteToReindexLogStmt.setLong(2, new Date().getTime() / 1000);
 			addNoteToReindexLogStmt.setLong(3, reindexLogId);
 			addNoteToReindexLogStmt.executeUpdate();
-			logger.info(note);
+			if (logger.isInfoEnabled()) {
+				logger.info(note);
+			}
 		} catch (SQLException e) {
 			logger.error("Error adding note to Reindex Log", e);
 		}

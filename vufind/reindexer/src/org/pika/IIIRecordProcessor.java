@@ -85,7 +85,9 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 
 					loanRules.put(loanRule.getLoanRuleId(), loanRule);
 				}
-				logger.debug("Loaded " + loanRules.size() + " loan rules");
+				if (logger.isDebugEnabled()) {
+					logger.debug("Loaded " + loanRules.size() + " loan rules");
+				}
 
 				PreparedStatement loanRuleDeterminersStmt = vufindConn.prepareStatement("SELECT * from loan_rule_determiners where active = 1 order by rowNumber DESC", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 				ResultSet loanRuleDeterminersRS = loanRuleDeterminersStmt.executeQuery();
@@ -101,7 +103,9 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 					loanRuleDeterminers.add(loanRuleDeterminer);
 				}
 
-				logger.debug("Loaded " + loanRuleDeterminers.size() + " loan rule determiner");
+				if (logger.isDebugEnabled()) {
+					logger.debug("Loaded " + loanRuleDeterminers.size() + " loan rule determiner");
+				}
 			} catch (SQLException e) {
 				logger.error("Unable to load loan rules", e);
 			}

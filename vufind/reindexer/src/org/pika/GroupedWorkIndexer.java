@@ -91,30 +91,28 @@ public class GroupedWorkIndexer {
 		}
 
 		//Load the last Index time
-		try{
+		try(
 			PreparedStatement loadLastGroupingTime = pikaConn.prepareStatement("SELECT * from variables WHERE name = 'last_reindex_time'");
 			ResultSet lastGroupingTimeRS           = loadLastGroupingTime.executeQuery();
+		){
 			if (lastGroupingTimeRS.next()){
 				lastReindexTime           = lastGroupingTimeRS.getLong("value");
 				lastReindexTimeVariableId = lastGroupingTimeRS.getLong("id");
 			}
-			lastGroupingTimeRS.close();
-			loadLastGroupingTime.close();
 		} catch (Exception e){
 			logger.error("Could not load last index time from variables table ", e);
 		}
 
 		//Check to see if a partial reindex is running
-		try{
+		try(
 			PreparedStatement loadPartialReindexRunning = pikaConn.prepareStatement("SELECT * from variables WHERE name = 'partial_reindex_running'");
 			ResultSet loadPartialReindexRunningRS       = loadPartialReindexRunning.executeQuery();
+		){
 			if (loadPartialReindexRunningRS.next()){
 				partialReindexRunningVariableId = loadPartialReindexRunningRS.getLong("id");
 				String value                    = loadPartialReindexRunningRS.getString("value");
 				partialReindexRunning           = (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("1"));
 			}
-			loadPartialReindexRunningRS.close();
-			loadPartialReindexRunning.close();
 		} catch (Exception e){
 			logger.error("Could not load last index time from variables table ", e);
 		}
@@ -159,8 +157,10 @@ public class GroupedWorkIndexer {
 			long minIndexingInterval = 2 * 60;
 			if (elapsedTime < minIndexingInterval && !singleWorkIndex) {
 				try {
-					logger.debug("Pausing between indexes, last index ran " + Math.ceil(elapsedTime / 60) + " minutes ago");
-					logger.debug("Pausing for " + (minIndexingInterval - elapsedTime) + " seconds");
+					if (logger.isDebugEnabled()) {
+						logger.debug("Pausing between indexes, last index ran " + Math.ceil(elapsedTime / 60) + " minutes ago");
+						logger.debug("Pausing for " + (minIndexingInterval - elapsedTime) + " seconds");
+					}
 					GroupedReindexMain.addNoteToReindexLog("Pausing between indexes, last index ran " + Math.ceil(elapsedTime / 60) + " minutes ago");
 					GroupedReindexMain.addNoteToReindexLog("Pausing for " + (minIndexingInterval - elapsedTime) + " seconds");
 					Thread.sleep((minIndexingInterval - elapsedTime) * 1000);
@@ -260,7 +260,7 @@ public class GroupedWorkIndexer {
 						//Only load processor if there are overdrive titles
 						overDriveProcessor = new OverDriveProcessor(this, econtentConn, logger);
 					} else {
-						logger.debug("Could not find indexing profile for type " + curIdentifier);
+						logger.error("Could not find indexing profile for type " + curIdentifier);
 					}
 				}
 			}
@@ -327,7 +327,9 @@ public class GroupedWorkIndexer {
 				logger.error("Error setting up system maps", e);
 			}
 			libraryAndLocationDataLoaded = true;
-			logger.info("Loaded " + scopes.size() + " scopes");
+			if (logger.isInfoEnabled()) {
+				logger.info("Loaded " + scopes.size() + " scopes");
+			}
 		}
 	}
 
@@ -459,7 +461,9 @@ public class GroupedWorkIndexer {
 				}
 				scopes.add(locationScopeInfo);
 			}else{
-				logger.debug("Not adding location scope because a library scope with the name " + locationScopeInfo.getScopeName() + " exists already.");
+				if (logger.isDebugEnabled()) {
+					logger.debug("Not adding location scope because a library scope with the name " + locationScopeInfo.getScopeName() + " exists already.");
+				}
 				for (Scope existingLibraryScope : scopes){
 					if (existingLibraryScope.getScopeName().equals(locationScopeInfo.getScopeName())){
 						existingLibraryScope.setIsLocationScope(true);
@@ -613,7 +617,9 @@ public class GroupedWorkIndexer {
 				}
 				arDataLine = arDataReader.readLine();
 			}
-			logger.info("Read " + numLines + " lines of accelerated reader data");
+			if (logger.isInfoEnabled()) {
+				logger.info("Read " + numLines + " lines of accelerated reader data");
+			}
 		}catch (Exception e){
 			logger.error("Error loading accelerated reader data", e);
 		}
@@ -653,7 +659,9 @@ public class GroupedWorkIndexer {
 					curLine++;
 				}
 			}
-			logger.info("Read " + lexileInformation.size() + " lines of lexile data");
+			if (logger.isInfoEnabled()) {
+				logger.info("Read " + lexileInformation.size() + " lines of lexile data");
+			}
 		} catch (Exception e) {
 			logger.error("Error loading lexile data on " + curLine + Arrays.toString(lexileFields), e);
 		}
@@ -661,7 +669,9 @@ public class GroupedWorkIndexer {
 
 	private void clearIndex() {
 		//Check to see if we should clear the existing index
-		logger.info("Clearing existing marc records from index");
+		if (logger.isInfoEnabled()) {
+			logger.info("Clearing existing marc records from index");
+		}
 		try {
 			updateServer.deleteByQuery("recordtype:grouped_work");
 			//With this commit, we get errors in the log "Previous SolrRequestInfo was not closed!"
@@ -673,7 +683,9 @@ public class GroupedWorkIndexer {
 	}
 
 	void deleteRecord(String id) {
-		logger.info("Clearing existing work from index");
+		if (logger.isInfoEnabled()) {
+			logger.info("Clearing existing work from index");
+		}
 		try {
 			updateServer.deleteById(id);
 			//With this commit, we get errors in the log "Previous SolrRequestInfo was not closed!"
@@ -702,11 +714,9 @@ public class GroupedWorkIndexer {
 
 	void finishIndexing(boolean processingIndividualWork){
 		GroupedReindexMain.addNoteToReindexLog("Finishing indexing");
-		logger.info("Finishing indexing");
 		if (fullReindex) {
 			try {
 				GroupedReindexMain.addNoteToReindexLog("Calling final commit");
-				logger.info("Calling commit");
 				updateServer.commit(true, true, false);
 //				updateServer.commit();
 			} catch (IOException e) {
@@ -832,7 +842,9 @@ public class GroupedWorkIndexer {
 
 	private void updatePartialReindexRunning(boolean running) {
 		if (!fullReindex) {
-			logger.info("Updating partial reindex running");
+			if (logger.isInfoEnabled()) {
+				logger.info("Updating partial reindex running");
+			}
 			//Update the last grouping time in the variables table
 			try {
 				if (partialReindexRunningVariableId != null) {
@@ -858,7 +870,9 @@ public class GroupedWorkIndexer {
 	}
 
 	private void updateFullReindexRunning(boolean running) {
-		logger.info("Updating full reindex running");
+		if (logger.isInfoEnabled()) {
+			logger.info("Updating full reindex running");
+		}
 		//Update the last grouping time in the variables table
 		try {
 			if (fullReindexRunningVariableId != null) {
@@ -883,16 +897,20 @@ public class GroupedWorkIndexer {
 	}
 
 	private void writeWorksWithInvalidLiteraryForms() {
-		logger.info("Writing works with invalid literary forms");
+		if (logger.isInfoEnabled()) {
+			logger.info("Writing works with invalid literary forms");
+		}
 		File worksWithInvalidLiteraryFormsFile = new File (baseLogPath + "/" + serverName + "/worksWithInvalidLiteraryForms.txt");
 		try {
 			if (worksWithInvalidLiteraryForms.size() > 0) {
-				FileWriter writer = new FileWriter(worksWithInvalidLiteraryFormsFile, false);
-				logger.debug("Found " + worksWithInvalidLiteraryForms.size() + " grouped works with invalid literary forms\r\n");
-				writer.write("Found " + worksWithInvalidLiteraryForms.size() + " grouped works with invalid literary forms\r\n");
-				writer.write("Works with inconsistent literary forms\r\n");
-				for (String curId : worksWithInvalidLiteraryForms){
-					writer.write(curId + "\r\n");
+				try (FileWriter writer = new FileWriter(worksWithInvalidLiteraryFormsFile, false)) {
+					final String message = "Found " + worksWithInvalidLiteraryForms.size() + " grouped works with invalid literary forms\r\n";
+					logger.debug(message);
+					writer.write(message);
+					writer.write("Works with inconsistent literary forms\r\n");
+					for (String curId : worksWithInvalidLiteraryForms) {
+						writer.write(curId + "\r\n");
+					}
 				}
 			}
 		}catch(Exception e){
@@ -981,7 +999,9 @@ public class GroupedWorkIndexer {
 		} catch (SQLException e) {
 			logger.error("Unexpected SQL error", e);
 		}
-		logger.info("Finished processing grouped works.  Processed a total of " + numWorksProcessed + " grouped works");
+		if (logger.isInfoEnabled()) {
+			logger.info("Finished processing grouped works.  Processed a total of " + numWorksProcessed + " grouped works");
+		}
 		return numWorksProcessed;
 	}
 
@@ -1009,7 +1029,9 @@ public class GroupedWorkIndexer {
 				}
 				//Figure out how many records we had originally
 				int numRecords = groupedWork.getNumRecords();
-				logger.debug("Processing " + type + ":" + identifier + " work currently has " + numRecords + " records");
+				if (logger.isDebugEnabled()) {
+					logger.debug("Processing " + type + ":" + identifier + " work currently has " + numRecords + " records");
+				}
 
 				//This does the bulk of the work building fields for the solr document
 				updateGroupedWorkForPrimaryIdentifier(groupedWork, type, identifier);
@@ -1017,10 +1039,14 @@ public class GroupedWorkIndexer {
 				//If we didn't add any records to the work (because they are all suppressed) revert to the original
 				if (groupedWork.getNumRecords() == numRecords) {
 					//No change in the number of records, revert to the previous
-					logger.debug("Record " + identifier + " did not contribute any records to the work, reverting to previous state " + groupedWork.getNumRecords());
+					if (logger.isDebugEnabled()) {
+						logger.debug("Record " + identifier + " did not contribute any records to the work, reverting to previous state " + groupedWork.getNumRecords());
+					}
 					groupedWork = originalWork;
 				} else {
-					logger.debug("Record " + identifier + " added to work " + permanentId);
+					if (logger.isDebugEnabled()) {
+						logger.debug("Record " + identifier + " added to work " + permanentId);
+					}
 					numPrimaryIdentifiers++;
 				}
 			}
@@ -1054,7 +1080,9 @@ public class GroupedWorkIndexer {
 			//Write the record to Solr.
 			try {
 				SolrInputDocument inputDocument = groupedWork.getSolrDocument(availableAtLocationBoostValue, ownedByLocationBoostValue);
-				logger.debug("Adding solr document for work " + groupedWork.getId());
+				if (logger.isDebugEnabled()) {
+					logger.debug("Adding solr document for work " + groupedWork.getId());
+				}
 				updateServer.add(inputDocument);
 				//logger.debug("Updated solr \r\n" + inputDocument.toString());
 
@@ -1063,7 +1091,9 @@ public class GroupedWorkIndexer {
 			}
 		}else{
 			//Log that this record did not have primary identifiers after
-			logger.debug("Grouped work " + permanentId + " did not have any primary identifiers for it, suppressing");
+			if (logger.isDebugEnabled()) {
+				logger.debug("Grouped work " + permanentId + " did not have any primary identifiers for it, suppressing");
+			}
 			if (!fullReindex){
 				try {
 					updateServer.deleteById(permanentId);
@@ -1180,7 +1210,7 @@ public class GroupedWorkIndexer {
 			default:
 				if (ilsRecordProcessors.containsKey(type)) {
 					ilsRecordProcessors.get(type).processRecord(groupedWork, identifier);
-				}else{
+				}else if (logger.isDebugEnabled()){
 					logger.debug("Could not find a record processor for type " + type);
 				}
 				break;
