@@ -12,7 +12,7 @@
  */
 namespace Pika\PatronDrivers;
 
-use function pg_connect;
+//use function pg_connect;
 
 class InnReach {
 
@@ -76,7 +76,7 @@ EOT;
 	}
 
 	private function _connect() {
-		return pg_connect($this->connectionString);
+		return \pg_connect($this->connectionString);
 	}
 
 }
