@@ -20,7 +20,7 @@ use DateTime;
 class Cache implements CacheInterface
 {
 
-	private PSR16_RESERVED_CHARACTERS = ['{','}','(',')','/','@',':'];
+	private $PSR16_RESERVED_CHARACTERS = ['{','}','(',')','/','@',':'];
 
 	public  $handler;
 
