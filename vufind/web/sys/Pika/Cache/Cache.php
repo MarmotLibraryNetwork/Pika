@@ -20,7 +20,7 @@ use DateTime;
 class Cache implements CacheInterface
 {
 
-	const PSR16_RESERVED_CHARACTERS = ['{','}','(',')','/','@',':'];
+	private PSR16_RESERVED_CHARACTERS = ['{','}','(',')','/','@',':'];
 
 	public  $handler;
 
@@ -206,7 +206,7 @@ class Cache implements CacheInterface
 			$message = sprintf('key %s is not a string.', $key);
 			throw new CacheException($message);
 		}
-		foreach (self::PSR16_RESERVED_CHARACTERS as $needle) {
+		foreach ($this->PSR16_RESERVED_CHARACTERS as $needle) {
 			if (strpos($key, $needle) !== false) {
 				$message = sprintf('%s string is not a legal value.', $key);
 				throw new CacheException($message);
