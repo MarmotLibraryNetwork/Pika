@@ -12,6 +12,8 @@
  */
 namespace Pika\PatronDrivers;
 
+use function pg_connect;
+
 class InnReach {
 
 	private $connectionString;
