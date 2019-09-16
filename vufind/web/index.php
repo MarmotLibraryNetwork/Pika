@@ -809,7 +809,6 @@ function pika_autoloader($class) {
     } elseif (file_exists($fullFolderPath)) {
 	    include_once($fullFolderPath);
     }
-
 }
 
 // Set up autoloader (needed for YAML)
