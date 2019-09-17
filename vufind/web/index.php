@@ -812,6 +812,7 @@ function pika_autoloader($class) {
 }
 
 // Set up autoloader (needed for YAML)
+// todo: this needs a total rewrite. it doesn't account for autoloader stacks and throws a fatal error.
 function vufind_autoloader($class) {
 	if (substr($class, 0, 4) == 'CAS_') {
 		return CAS_autoload($class);
@@ -840,11 +841,13 @@ function vufind_autoloader($class) {
 			try {
 				include_once $nameSpaceClass;
 			} catch (Exception $e) {
-				PEAR_Singleton::raiseError("Error loading class $class");
+				// todo: This should fail over to next instead of throwing fatal error.
+				//PEAR_Singleton::raiseError("Error loading class $class");
 			}
 		}
 	}catch (Exception $e){
-		PEAR_Singleton::raiseError("Error loading class $class");
+		//PEAR_Singleton::raiseError("Error loading class $class");
+		// todo: This should fail over to next instead of throwing fatal error.
 	}
 }
 

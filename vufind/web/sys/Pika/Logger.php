@@ -22,9 +22,9 @@ class Logger extends MonoLogger {
 
 		$logFile = $configArray['Logging']['logFile'];
 		if($configArray['System']['debug'] == true) {
-			$this->pushHandler(new BrowserConsoleHandler(\Monolog\Logger::DEBUG));
+			$this->pushHandler(new BrowserConsoleHandler(MonoLogger::DEBUG));
 		}
-		$this->pushHandler(new StreamHandler($logFile, \Monolog\Logger::DEBUG));
+		$this->pushHandler(new StreamHandler($logFile, MonoLogger::DEBUG));
 		ErrorHandler::register($this);
 	}
 }
