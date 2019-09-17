@@ -868,7 +868,7 @@ class MarcRecord extends IndexRecord
 				$subTitle       = $this->getSubtitle();
 				if (strcasecmp($subTitle, $shortTitle) !== 0){ // If the short title and the subtitle are the same skip this check
 					$subTitleLength = strlen($subTitle);
-					if ($subTitleLength > 0 && strcasecmp(substr($shortTitle, -$subTitleLength), $subTitle) === 0){ // TODO: do these tests work with multibyte characters? Diacritic characters?
+					if ($subTitleLength > 0 && strcasecmp(substr($shortTitle, -$subTitleLength), $subTitle) === 0){ // TODO: do these work with multibyte characters? Diacritic characters?
 						// If the subtitle is at the end of the short title, trim out the subtitle from the short title
 						$shortTitle = trim(rtrim(trim(substr($shortTitle, 0, -$subTitleLength)), ':'));
 						// remove ending white space and colon characters
