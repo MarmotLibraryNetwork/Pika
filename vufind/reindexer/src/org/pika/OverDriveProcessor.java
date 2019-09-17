@@ -112,7 +112,7 @@ public class OverDriveProcessor {
 									series = productRS.getString("series");
 									String sortTitle         = metadata.get("sortTitle");
 									String subTitle          = productRS.getString("subtitle");
-									if (subTitle != null) {
+									if (subTitle != null && !subTitle.isEmpty()) {
 										String titleLowerCase    = title.toLowerCase();
 										String subTitleLowerCase = subTitle.toLowerCase();
 										if (titleLowerCase.equals(subTitleLowerCase)) {
