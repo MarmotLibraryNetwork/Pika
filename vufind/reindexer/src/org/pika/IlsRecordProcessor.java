@@ -1743,7 +1743,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				printFormats.add("SoundCassette");
 			}else if (titleMedium.contains("large print")){
 				printFormats.add("LargePrint");
-			}else if (titleMedium.contains("book club kit")){
+			}else if (titleMedium.contains("book club kit") || titleMedium.contains("bookclub kit")){
 				printFormats.add("BookClubKit");
 			}else if (titleMedium.contains("ebook")){
 				printFormats.add("eBook");
@@ -1775,7 +1775,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				printFormats.add("SoundCassette");
 			}else if (titleForm.contains("large print")){
 				printFormats.add("LargePrint");
-			}else if (titleForm.contains("book club kit")){
+			}else if (titleForm.contains("book club kit") || titleForm.contains("bookclub kit")){
 				printFormats.add("BookClubKit");
 			}
 		}
@@ -1791,7 +1791,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		String title = MarcUtil.getFirstFieldVal(record, "245a");
 		if (title != null){
 			title = title.toLowerCase();
-			if (title.contains("book club kit")){
+			if (title.contains("book club kit") || title.contains("bookclub kit")){
 				printFormats.add("BookClubKit");
 			}
 		}
