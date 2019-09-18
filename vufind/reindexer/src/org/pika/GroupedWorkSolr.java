@@ -766,7 +766,7 @@ public class GroupedWorkSolr implements Cloneable {
 	}
 
 	private void addUniqueFieldValue(SolrInputDocument doc, String fieldName, String value){
-		if (value == null) return;
+		if (value == null || value.isEmpty()) return;
 		Collection<Object> fieldValues = doc.getFieldValues(fieldName);
 		if (fieldValues == null){
 			doc.addField(fieldName, value);
