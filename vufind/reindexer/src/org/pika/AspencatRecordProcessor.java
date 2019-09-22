@@ -2,7 +2,6 @@ package org.pika;
 
 import au.com.bytecode.opencsv.CSVReader;
 import org.apache.log4j.Logger;
-import org.ini4j.Ini;
 import org.marc4j.marc.DataField;
 import org.marc4j.marc.Record;
 import org.marc4j.marc.Subfield;
@@ -35,8 +34,8 @@ class AspencatRecordProcessor extends IlsRecordProcessor {
 	private char dueDateSubfield    = 'q';
 	private char itemSourceSubfield = 'e';
 
-	AspencatRecordProcessor(GroupedWorkIndexer indexer, Connection vufindConn, Ini configIni, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
-		super(indexer, vufindConn, indexingProfileRS, logger, fullReindex);
+	AspencatRecordProcessor(GroupedWorkIndexer indexer, Connection pikaConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
+		super(indexer, pikaConn, indexingProfileRS, logger, fullReindex);
 
 		try {
 			doAutomaticEcontentSuppression = indexingProfileRS.getBoolean("doAutomaticEcontentSuppression");

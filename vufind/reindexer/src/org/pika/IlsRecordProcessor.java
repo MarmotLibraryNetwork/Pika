@@ -102,7 +102,6 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	IlsRecordProcessor(GroupedWorkIndexer indexer, Connection pikaConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 		super(indexer, logger);
 		this.fullReindex = fullReindex;
-		//String marcRecordPath = configIni.get("Reindex", "marcPath");
 		try {
 			profileType                       = indexingProfileRS.getString("name");
 			individualMarcPath                = indexingProfileRS.getString("individualMarcPath");
@@ -232,7 +231,6 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			orderStatusSubfield         = getSubfieldIndicatorFromConfig(indexingProfileRS, "orderStatus");
 			orderCode3Subfield          = getSubfieldIndicatorFromConfig(indexingProfileRS, "orderCode3");
 
-			//loadAvailableItemBarcodes(marcRecordPath, logger);
 			loadHoldsByIdentifier(pikaConn, logger);
 
 			loadTranslationMapsForProfile(pikaConn, indexingProfileRS.getLong("id"));

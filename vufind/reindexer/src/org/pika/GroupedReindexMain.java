@@ -27,7 +27,6 @@ public class GroupedReindexMain {
 	private static String serverName;
 	private static boolean fullReindex = false;
 	private static String individualWorkToProcess;
-	private static Ini configIni;
 	private static String baseLogPath;
 	private static String solrPort;
 	private static String solrDir;
@@ -95,13 +94,13 @@ public class GroupedReindexMain {
 		long numWorksProcessed = 0;
 		long numListsProcessed = 0;
 		try {
-			GroupedWorkIndexer groupedWorkIndexer = new GroupedWorkIndexer(serverName, pikaConn, econtentConn, configIni, fullReindex, individualWorkToProcess != null, logger);
+			GroupedWorkIndexer groupedWorkIndexer = new GroupedWorkIndexer(serverName, pikaConn, econtentConn, fullReindex, individualWorkToProcess != null, logger);
 			HashMap<Scope, ArrayList<SiteMapEntry>> siteMapsByScope = new HashMap<>();
 			HashSet<Long> uniqueGroupedWorks = new HashSet<>();
 			if (groupedWorkIndexer.isOkToIndex()) {
 				if (individualWorkToProcess != null) {
 					//Get more information about the work
-					try (PreparedStatement getInfoAboutWorkStmt = pikaConn.prepareStatement("SELECT * from grouped_work where permanent_id = ?") ){
+					try (PreparedStatement getInfoAboutWorkStmt = pikaConn.prepareStatement("SELECT * FROM grouped_work WHERE permanent_id = ?") ){
 						getInfoAboutWorkStmt.setString(1, individualWorkToProcess);
 						try (ResultSet infoAboutWork = getInfoAboutWorkStmt.executeQuery()) {
 							if (infoAboutWork.next()) {
@@ -333,24 +332,23 @@ public class GroupedReindexMain {
 		
 		logger.info("Starting Reindex for " + serverName);
 
-		// Parse the configuration file
-		configIni = loadConfigFile();
+		PikaConfigIni.loadConfigFile("config.ini", serverName, logger);
 
-		baseLogPath = configIni.get("Site", "baseLogPath");
-		solrPort = configIni.get("Reindex", "solrPort");
+		baseLogPath = PikaConfigIni.getIniValue("Site", "baseLogPath");
+		solrPort = PikaConfigIni.getIniValue("Reindex", "solrPort");
 		if (solrPort == null || solrPort.length() == 0) {
 			logger.error("You must provide the port where the solr index is loaded in the import configuration file");
 			System.exit(1);
 		}
 
-		solrDir = configIni.get("Index", "local");
+		solrDir = PikaConfigIni.getIniValue("Index", "local");
 		if (solrDir == null){
 			solrDir = "/data/pika/" + serverName + "/solr";
 		}
 		
 		logger.info("Setting up database connections");
 		//Setup connections to pika and econtent databases
-		String databaseConnectionInfo = Util.cleanIniValue(configIni.get("Database", "database_vufind_jdbc"));
+		String databaseConnectionInfo = PikaConfigIni.getIniValue("Database", "database_vufind_jdbc");
 		if (databaseConnectionInfo == null || databaseConnectionInfo.length() == 0) {
 			logger.error("Pika Database connection information not found in Database Section.  Please specify connection information in database_vufind_jdbc.");
 			System.exit(1);
@@ -362,7 +360,7 @@ public class GroupedReindexMain {
 			System.exit(2); // Exiting with a status code of 2 so that our executing bash scripts knows there has been a database communication error
 		}
 
-		String econtentDBConnectionInfo = Util.cleanIniValue(configIni.get("Database", "database_econtent_jdbc"));
+		String econtentDBConnectionInfo = PikaConfigIni.getIniValue("Database", "database_econtent_jdbc");
 		if (econtentDBConnectionInfo == null || econtentDBConnectionInfo.length() == 0) {
 			logger.error("Database connection information for eContent database not found in Database Section.  Please specify connection information as database_econtent_jdbc key.");
 			System.exit(1);

@@ -36,14 +36,14 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 	protected String libraryUseOnlyStatus = "o"; // Reset these values for the particular site
 	protected String validOnOrderRecordStatus = "o1"; // Reset these values for the particular site
 
-	IIIRecordProcessor(GroupedWorkIndexer indexer, Connection vufindConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
-		super(indexer, vufindConn, indexingProfileRS, logger, fullReindex);
+	IIIRecordProcessor(GroupedWorkIndexer indexer, Connection pikaConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
+		super(indexer, pikaConn, indexingProfileRS, logger, fullReindex);
 		try {
 			exportPath = indexingProfileRS.getString("marcPath");
 		}catch (Exception e){
 			logger.error("Unable to load marc path from indexing profile");
 		}
-		loadLoanRuleInformation(vufindConn, logger);
+		loadLoanRuleInformation(pikaConn, logger);
 //		loadDueDateInformation();
 		validCheckedOutStatusCodes.add("-");
 	}
