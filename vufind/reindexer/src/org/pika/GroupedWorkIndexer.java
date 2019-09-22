@@ -818,7 +818,7 @@ public class GroupedWorkIndexer {
 			}
 			//Update that the partial re-indexing is in the variables table
 			if (!systemVariables.setVariable("partial_reindex_running", running)){
-				logger.error("Error setting last partial reindexing time");
+				logger.error("Error updating partial_reindex_running");
 			}
 		}
 	}
@@ -829,7 +829,7 @@ public class GroupedWorkIndexer {
 		}
 		//Update that the full reindexing running in the variables table
 		if (!systemVariables.setVariable("full_reindex_running", running)) {
-			logger.error("Error setting that full index is running");
+			logger.error("Error updating full_reindex_running");
 		}
 	}
 
@@ -858,7 +858,7 @@ public class GroupedWorkIndexer {
 	private void updateLastReindexTime() {
 		//Update the last re-index time in the variables table.  This needs to be the time the index started to catch anything that changes during the index
 		if (!systemVariables.setVariable("last_reindex_time", indexStartTime)){
-			logger.error("Error setting last full reindex time");
+			logger.error("Error setting last reindex time");
 		}
 	}
 
