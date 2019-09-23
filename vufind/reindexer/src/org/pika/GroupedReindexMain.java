@@ -79,7 +79,7 @@ public class GroupedReindexMain {
 				System.exit(1);
 			}
 		}
-		
+
 		initializeReindex();
 		
 		addNoteToReindexLog("Initialized Reindex ");
@@ -397,10 +397,11 @@ public class GroupedReindexMain {
 		long elapsedTime = endTime - startTime;
 		float elapsedMinutes = (float)elapsedTime / (float)(60000); 
 		logger.info("Time elapsed: " + elapsedMinutes + " minutes");
-		
+
+		final long finishedTimestamp = new Date().getTime() / 1000;
 		try {
 			PreparedStatement finishedStatement = pikaConn.prepareStatement("UPDATE reindex_log SET endTime = ?, numWorksProcessed = ?, numListsProcessed = ? WHERE id = ?");
-			finishedStatement.setLong(1, new Date().getTime() / 1000);
+			finishedStatement.setLong(1, finishedTimestamp);
 			finishedStatement.setLong(2, numWorksProcessed);
 			finishedStatement.setLong(3, numListsProcessed);
 			finishedStatement.setLong(4, reindexLogId);
@@ -411,17 +412,9 @@ public class GroupedReindexMain {
 
 		//Update variables table to mark the index as complete
 		if (individualWorkToProcess == null){
-			try {
-				PreparedStatement finishedStatement = pikaConn.prepareStatement("INSERT INTO variables (name, value) VALUES(?, ?) ON DUPLICATE KEY UPDATE value = VALUES(value)");
-				if (fullReindex){
-					finishedStatement.setString(1, "lastFullReindexFinish");
-				} else{
-					finishedStatement.setString(1, "lastPartialReindexFinish");
-				}
-				finishedStatement.setLong(2, new Date().getTime() / 1000);
-				finishedStatement.executeUpdate();
-			} catch (SQLException e) {
-				logger.error("Unable to update variables with completion time.", e);
+			PikaSystemVariables systemVariables = new PikaSystemVariables(logger, pikaConn);
+			if (!systemVariables.setVariable(fullReindex ? "lastFullReindexFinish" : "lastPartialReindexFinish", finishedTimestamp)){
+				logger.error("Unable to update variables with completion time.");
 			}
 		}
 
