@@ -31,7 +31,8 @@ do
 		#Above find is for production only. Copy any partial exports from the last 30 minutes
 		# Note: the space after the equals is important in  "while FILES= read FILE;"
 		if test "`find $FILE -mmin -1`"; then
-			echo "$FILE was modified less than 1 minute ago, waiting to copy " >> ${OUTPUT_FILE}
+#			echo "$FILE was modified less than 1 minute ago, waiting to copy " >> ${OUTPUT_FILE}
+			continue
 		else
 			cp --update --preserve=timestamps $FILE /data/vufind-plus/${PIKASERVER}/marc_updates/ >> ${OUTPUT_FILE}
 		fi
