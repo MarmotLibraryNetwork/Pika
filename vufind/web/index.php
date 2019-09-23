@@ -83,6 +83,7 @@ $trackTranslation         = isset($configArray['Analytics']['trackTranslation'])
 $interface->assign('googleAnalyticsId', $googleAnalyticsId);
 $interface->assign('googleAnalyticsLibraryId', $googleAnalyticsLibraryId);
 $interface->assign('trackTranslation', $trackTranslation);
+$interface->assign('googleAnalyticsLinkingId', $googleAnalyticsLinkingId);
 if ($googleAnalyticsId) {
 	$googleAnalyticsDomainName = isset($configArray['Analytics']['domainName']) ? $configArray['Analytics']['domainName'] : strstr($_SERVER['SERVER_NAME'], '.');
 	// check for a config setting, use that if found, otherwise grab domain name  but remove the first subdomain
