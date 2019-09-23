@@ -7,7 +7,9 @@
 
 		{* Display Title *}
 		<h2>
-			{$recordDriver->getTitle()|removeTrailingPunctuation|escape}{if $recordDriver->getSubTitle()}: {$recordDriver->getSubTitle()|removeTrailingPunctuation|escape}{/if}
+			{$recordDriver->getTitle()|removeTrailingPunctuation|escape}
+			{if $recordDriver->getSubTitle() && $recordDriver->getSubTitle()|lower != $recordDriver->getTitle()|lower}: {$recordDriver->getSubTitle()|removeTrailingPunctuation|escape}{/if}
+			{* Don't display the subtitle if it is the same text as the short title *}
 			{if $recordDriver->getFormats()}
 				<br><small>({implode subject=$recordDriver->getFormats() glue=", "})</small>
 			{/if}

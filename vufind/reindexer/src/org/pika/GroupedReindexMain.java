@@ -27,7 +27,6 @@ public class GroupedReindexMain {
 	private static String serverName;
 	private static boolean fullReindex = false;
 	private static String individualWorkToProcess;
-	private static Ini configIni;
 	private static String baseLogPath;
 	private static String solrPort;
 	private static String solrDir;
@@ -80,7 +79,7 @@ public class GroupedReindexMain {
 				System.exit(1);
 			}
 		}
-		
+
 		initializeReindex();
 		
 		addNoteToReindexLog("Initialized Reindex ");
@@ -89,30 +88,28 @@ public class GroupedReindexMain {
 		}
 		
 		//Reload schemas as needed
-		reloadDefaultSchemas();
+//		reloadDefaultSchemas();
 
 		//Process grouped works
 		long numWorksProcessed = 0;
 		long numListsProcessed = 0;
 		try {
-			GroupedWorkIndexer groupedWorkIndexer = new GroupedWorkIndexer(serverName, pikaConn, econtentConn, configIni, fullReindex, individualWorkToProcess != null, logger);
+			GroupedWorkIndexer groupedWorkIndexer = new GroupedWorkIndexer(serverName, pikaConn, econtentConn, fullReindex, individualWorkToProcess != null, logger);
 			HashMap<Scope, ArrayList<SiteMapEntry>> siteMapsByScope = new HashMap<>();
 			HashSet<Long> uniqueGroupedWorks = new HashSet<>();
 			if (groupedWorkIndexer.isOkToIndex()) {
 				if (individualWorkToProcess != null) {
 					//Get more information about the work
-					try {
-						PreparedStatement getInfoAboutWorkStmt = pikaConn.prepareStatement("SELECT * from grouped_work where permanent_id = ?");
+					try (PreparedStatement getInfoAboutWorkStmt = pikaConn.prepareStatement("SELECT * FROM grouped_work WHERE permanent_id = ?") ){
 						getInfoAboutWorkStmt.setString(1, individualWorkToProcess);
-						ResultSet infoAboutWork = getInfoAboutWorkStmt.executeQuery();
-						if (infoAboutWork.next()) {
-
-							groupedWorkIndexer.deleteRecord(individualWorkToProcess);
-							groupedWorkIndexer.processGroupedWork(infoAboutWork.getLong("id"), individualWorkToProcess, infoAboutWork.getString("grouping_category"), null, null);
-						} else {
-							logger.error("Could not find a work with id " + individualWorkToProcess);
+						try (ResultSet infoAboutWork = getInfoAboutWorkStmt.executeQuery()) {
+							if (infoAboutWork.next()) {
+								groupedWorkIndexer.deleteRecord(individualWorkToProcess);
+								groupedWorkIndexer.processGroupedWork(infoAboutWork.getLong("id"), individualWorkToProcess, infoAboutWork.getString("grouping_category"), null, null);
+							} else {
+								logger.error("Could not find a work with id " + individualWorkToProcess);
+							}
 						}
-						getInfoAboutWorkStmt.close();
 					} catch (Exception e) {
 						logger.error("Unable to process individual work " + individualWorkToProcess, e);
 					}
@@ -157,7 +154,7 @@ public class GroupedReindexMain {
 
 	}
 
-	private static void reloadDefaultSchemas() {
+//	private static void reloadDefaultSchemas() {
 		/*logger.info("Reloading schemas from default");
 		try {
 			//Copy schema to grouped2
@@ -184,9 +181,9 @@ public class GroupedReindexMain {
 		reloadSchema("grouped2");
 		//genealogy
 		reloadSchema("genealogy");*/
-	}
+//	}
 
-	private static void reloadSchema(String schemaName) {
+	/*private static void reloadSchema(String schemaName) {
 		boolean errorCopyingFiles = false;
 		boolean fileChanged = false;
 		try {
@@ -269,7 +266,7 @@ public class GroupedReindexMain {
 		}else{
 			logger.debug("Not reloading core because nothing changed.");
 		}
-	}
+	}*/
 
 	private static StringBuffer reindexNotes = new StringBuffer();
 	private static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -285,7 +282,9 @@ public class GroupedReindexMain {
 			addNoteToReindexLogStmt.setLong(2, new Date().getTime() / 1000);
 			addNoteToReindexLogStmt.setLong(3, reindexLogId);
 			addNoteToReindexLogStmt.executeUpdate();
-			logger.info(note);
+			if (logger.isInfoEnabled()) {
+				logger.info(note);
+			}
 		} catch (SQLException e) {
 			logger.error("Error adding note to Reindex Log", e);
 		}
@@ -333,24 +332,23 @@ public class GroupedReindexMain {
 		
 		logger.info("Starting Reindex for " + serverName);
 
-		// Parse the configuration file
-		configIni = loadConfigFile();
+		PikaConfigIni.loadConfigFile("config.ini", serverName, logger);
 
-		baseLogPath = configIni.get("Site", "baseLogPath");
-		solrPort = configIni.get("Reindex", "solrPort");
+		baseLogPath = PikaConfigIni.getIniValue("Site", "baseLogPath");
+		solrPort = PikaConfigIni.getIniValue("Reindex", "solrPort");
 		if (solrPort == null || solrPort.length() == 0) {
 			logger.error("You must provide the port where the solr index is loaded in the import configuration file");
 			System.exit(1);
 		}
 
-		solrDir = configIni.get("Index", "local");
+		solrDir = PikaConfigIni.getIniValue("Index", "local");
 		if (solrDir == null){
 			solrDir = "/data/pika/" + serverName + "/solr";
 		}
 		
 		logger.info("Setting up database connections");
 		//Setup connections to pika and econtent databases
-		String databaseConnectionInfo = Util.cleanIniValue(configIni.get("Database", "database_vufind_jdbc"));
+		String databaseConnectionInfo = PikaConfigIni.getIniValue("Database", "database_vufind_jdbc");
 		if (databaseConnectionInfo == null || databaseConnectionInfo.length() == 0) {
 			logger.error("Pika Database connection information not found in Database Section.  Please specify connection information in database_vufind_jdbc.");
 			System.exit(1);
@@ -362,7 +360,7 @@ public class GroupedReindexMain {
 			System.exit(2); // Exiting with a status code of 2 so that our executing bash scripts knows there has been a database communication error
 		}
 
-		String econtentDBConnectionInfo = Util.cleanIniValue(configIni.get("Database", "database_econtent_jdbc"));
+		String econtentDBConnectionInfo = PikaConfigIni.getIniValue("Database", "database_econtent_jdbc");
 		if (econtentDBConnectionInfo == null || econtentDBConnectionInfo.length() == 0) {
 			logger.error("Database connection information for eContent database not found in Database Section.  Please specify connection information as database_econtent_jdbc key.");
 			System.exit(1);
@@ -399,10 +397,11 @@ public class GroupedReindexMain {
 		long elapsedTime = endTime - startTime;
 		float elapsedMinutes = (float)elapsedTime / (float)(60000); 
 		logger.info("Time elapsed: " + elapsedMinutes + " minutes");
-		
+
+		final long finishedTimestamp = new Date().getTime() / 1000;
 		try {
 			PreparedStatement finishedStatement = pikaConn.prepareStatement("UPDATE reindex_log SET endTime = ?, numWorksProcessed = ?, numListsProcessed = ? WHERE id = ?");
-			finishedStatement.setLong(1, new Date().getTime() / 1000);
+			finishedStatement.setLong(1, finishedTimestamp);
 			finishedStatement.setLong(2, numWorksProcessed);
 			finishedStatement.setLong(3, numListsProcessed);
 			finishedStatement.setLong(4, reindexLogId);
@@ -413,17 +412,9 @@ public class GroupedReindexMain {
 
 		//Update variables table to mark the index as complete
 		if (individualWorkToProcess == null){
-			try {
-				PreparedStatement finishedStatement = pikaConn.prepareStatement("INSERT INTO variables (name, value) VALUES(?, ?) ON DUPLICATE KEY UPDATE value = VALUES(value)");
-				if (fullReindex){
-					finishedStatement.setString(1, "lastFullReindexFinish");
-				} else{
-					finishedStatement.setString(1, "lastPartialReindexFinish");
-				}
-				finishedStatement.setLong(2, new Date().getTime() / 1000);
-				finishedStatement.executeUpdate();
-			} catch (SQLException e) {
-				logger.error("Unable to update variables with completion time.", e);
+			PikaSystemVariables systemVariables = new PikaSystemVariables(logger, pikaConn);
+			if (!systemVariables.setVariable(fullReindex ? "lastFullReindexFinish" : "lastPartialReindexFinish", finishedTimestamp)){
+				logger.error("Unable to update variables with completion time.");
 			}
 		}
 

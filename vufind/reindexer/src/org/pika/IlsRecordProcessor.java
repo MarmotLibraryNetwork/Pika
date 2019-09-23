@@ -102,7 +102,6 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	IlsRecordProcessor(GroupedWorkIndexer indexer, Connection pikaConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 		super(indexer, logger);
 		this.fullReindex = fullReindex;
-		//String marcRecordPath = configIni.get("Reindex", "marcPath");
 		try {
 			profileType                       = indexingProfileRS.getString("name");
 			individualMarcPath                = indexingProfileRS.getString("individualMarcPath");
@@ -232,7 +231,6 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			orderStatusSubfield         = getSubfieldIndicatorFromConfig(indexingProfileRS, "orderStatus");
 			orderCode3Subfield          = getSubfieldIndicatorFromConfig(indexingProfileRS, "orderCode3");
 
-			//loadAvailableItemBarcodes(marcRecordPath, logger);
 			loadHoldsByIdentifier(pikaConn, logger);
 
 			loadTranslationMapsForProfile(pikaConn, indexingProfileRS.getLong("id"));
@@ -352,19 +350,25 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		try{
 			//If the entire bib is suppressed, update stats and bail out now.
 			if (isBibSuppressed(record)){
-				logger.debug("Bib record " + identifier + " is suppressed, skipping");
+				if (logger.isDebugEnabled()) {
+					logger.debug("Bib record " + identifier + " is suppressed, skipping");
+				}
 				return;
 			}
 
 			// Let's first look for the print/order record
 			RecordInfo recordInfo = groupedWork.addRelatedRecord(profileType, identifier);
-			logger.debug("Added record for " + identifier + " work now has " + groupedWork.getNumRecords() + " records");
+			if (logger.isDebugEnabled()) {
+				logger.debug("Added record for " + identifier + " work now has " + groupedWork.getNumRecords() + " records");
+			}
 			loadUnsuppressedPrintItems(groupedWork, recordInfo, identifier, record);
 			loadOnOrderItems(groupedWork, recordInfo, record, recordInfo.getNumPrintCopies() > 0);
 			//If we don't get anything remove the record we just added
 			if (checkIfBibShouldBeRemovedAsItemless(recordInfo)) {
 				groupedWork.removeRelatedRecord(recordInfo);
-				logger.debug("Removing related print record for " + identifier + " because there are no print copies, no on order copies and suppress itemless bibs is on");
+				if (logger.isDebugEnabled()) {
+					logger.debug("Removing related print record for " + identifier + " because there are no print copies, no on order copies and suppress itemless bibs is on");
+				}
 			}else{
 				allRelatedRecords.add(recordInfo);
 			}
@@ -461,7 +465,9 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				if (suppressionSubfield != null){
 					String bCode3 = suppressionSubfield.getData().toLowerCase().trim();
 					if (bCode3sToSuppressPattern.matcher(bCode3).matches()){
-						logger.debug("Bib record is suppressed due to BCode3 " + bCode3);
+						if (logger.isDebugEnabled()) {
+							logger.debug("Bib record is suppressed due to BCode3 " + bCode3);
+						}
 						return true;
 					}
 				}
@@ -655,13 +661,15 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 	protected void loadUnsuppressedPrintItems(GroupedWorkSolr groupedWork, RecordInfo recordInfo, String identifier, Record record){
 		List<DataField> itemRecords = MarcUtil.getDataFields(record, itemTag);
-		logger.debug("Found " + itemRecords.size() + " items for record " + identifier);
+		if (logger.isDebugEnabled()) {
+			logger.debug("Found " + itemRecords.size() + " items for record " + identifier);
+		}
 		for (DataField itemField : itemRecords){
 			if (!isItemSuppressed(itemField)){
 				getPrintIlsItem(groupedWork, recordInfo, record, itemField);
 				//Can return null if the record does not have status and location
 				//This happens with secondary call numbers sometimes.
-			}else{
+			}else if (logger.isDebugEnabled()){
 				logger.debug("item was suppressed");
 			}
 		}
@@ -802,7 +810,9 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				try {
 					lastCheckIn = lastCheckInFormatter.parse(lastCheckInDate);
 				} catch (ParseException e) {
-					logger.debug("Could not parse check in date " + lastCheckInDate, e);
+					if (logger.isDebugEnabled()) {
+						logger.debug("Could not parse check in date " + lastCheckInDate, e);
+					}
 				}
 			itemInfo.setLastCheckinDate(lastCheckIn);
 		}
@@ -1243,7 +1253,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 							subfieldData.append(' ');
 						}
 						subfieldData.append(trimmedValue);
-					}else{
+					}else if (logger.isDebugEnabled()){
 						logger.debug("Not appending subfield because the value looks redundant");
 					}
 				}
@@ -1335,7 +1345,9 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			}else{
 				String iType = iTypeSubfieldValue.getData().trim();
 				if (iTypesToSuppressPattern != null && iTypesToSuppressPattern.matcher(iType).matches()){
-					logger.debug("Item record is suppressed due to Itype " + iType);
+					if (logger.isDebugEnabled()) {
+						logger.debug("Item record is suppressed due to Itype " + iType);
+					}
 					return true;
 				}
 			}
@@ -1347,7 +1359,9 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 				//Suppress iCode2 codes
 				if (iCode2sToSuppressPattern != null && iCode2sToSuppressPattern.matcher(iCode2).matches()) {
-					logger.debug("Item record is suppressed due to ICode2 " + iCode2);
+					if (logger.isDebugEnabled()) {
+						logger.debug("Item record is suppressed due to ICode2 " + iCode2);
+					}
 					return true;
 				}
 			}
@@ -1444,13 +1458,13 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 							} catch (NumberFormatException e) {
 								logger.warn("Could not load format boost for format " + formatBoost + " profile " + profileType + " for " + recordInfo.getRecordIdentifier() + "; Falling back to default format determination process");
 							}
-						} else {
+						} else if (logger.isInfoEnabled()) {
 							logger.info("Material Type " + matType + " had no translation, falling back to default format determination.");
 						}
-					} else {
+					} else if (logger.isInfoEnabled()) {
 						logger.info("Material Type for " + recordInfo.getRecordIdentifier() + " has ignored value '" + matType + "', falling back to default format determination.");
 					}
-				} else {
+				} else if (logger.isInfoEnabled()) {
 					logger.info(recordInfo.getRecordIdentifier() + " did not have a material type, falling back to default format determination.");
 				}
 			} else {
@@ -1494,20 +1508,26 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			//fixed fields is not kept up to date reliably.  #D-87
 			getFormatFrom007(record, printFormats);
 			if (printFormats.size() > 1){
-				logger.info("Found more than 1 format for " + recordInfo.getFullIdentifier() + " looking at just 007");
+				if (logger.isInfoEnabled()) {
+					logger.info("Found more than 1 format for " + recordInfo.getFullIdentifier() + " looking at just 007");
+				}
 			}
 			if (printFormats.size() == 0) {
 				getFormatFromLeader(printFormats, leader, fixedField);
 				if (printFormats.size() > 1){
-					logger.info("Found more than 1 format for " + recordInfo.getFullIdentifier() + " looking at just the leader");
+					if (logger.isInfoEnabled()) {
+						logger.info("Found more than 1 format for " + recordInfo.getFullIdentifier() + " looking at just the leader");
+					}
 				}
 			}
 		}
 
 		if (printFormats.size() == 0){
-			logger.debug("Did not get any formats for print record " + recordInfo.getFullIdentifier() + ", assuming it is a book ");
+			if (fullReindex) {
+				logger.warn("Did not get any formats for record " + recordInfo.getFullIdentifier() + ", assuming it is a book ");
+			}
 			printFormats.add("Book");
-		}else{
+		}else if (logger.isDebugEnabled()){
 			for(String format: printFormats){
 				logger.debug("    found format " + format);
 			}
@@ -1723,7 +1743,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				printFormats.add("SoundCassette");
 			}else if (titleMedium.contains("large print")){
 				printFormats.add("LargePrint");
-			}else if (titleMedium.contains("book club kit")){
+			}else if (titleMedium.contains("book club kit") || titleMedium.contains("bookclub kit")){
 				printFormats.add("BookClubKit");
 			}else if (titleMedium.contains("ebook")){
 				printFormats.add("eBook");
@@ -1755,7 +1775,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				printFormats.add("SoundCassette");
 			}else if (titleForm.contains("large print")){
 				printFormats.add("LargePrint");
-			}else if (titleForm.contains("book club kit")){
+			}else if (titleForm.contains("book club kit") || titleForm.contains("bookclub kit")){
 				printFormats.add("BookClubKit");
 			}
 		}
@@ -1771,7 +1791,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		String title = MarcUtil.getFirstFieldVal(record, "245a");
 		if (title != null){
 			title = title.toLowerCase();
-			if (title.contains("book club kit")){
+			if (title.contains("book club kit") || title.contains("bookclub kit")){
 				printFormats.add("BookClubKit");
 			}
 		}

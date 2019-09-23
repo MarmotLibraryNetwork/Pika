@@ -615,7 +615,7 @@
 					<str name="facet.field">econtent_device</str>
 					<str name="facet.field">era</str>
 					<str name="facet.field">genre_facet</str>
-					<str name="facet.field">language</str>
+<!--					<str name="facet.field">language</str>-->
 					<str name="facet.field">lexile_code</str>
 					<str name="facet.field">lexile_score</str>
 					<str name="facet.field">mpaa_rating</str>
@@ -642,7 +642,7 @@
 					<str name="facet.field">econtent_device</str>
 					<str name="facet.field">era</str>
 					<str name="facet.field">genre_facet</str>
-					<str name="facet.field">language</str>
+<!--					<str name="facet.field">language</str>-->
 					<str name="facet.field">lexile_code</str>
 					<str name="facet.field">lexile_score</str>
 					<str name="facet.field">mpaa_rating</str>
@@ -670,7 +670,7 @@
 					<str name="facet.field">econtent_device</str>
 					<str name="facet.field">era</str>
 					<str name="facet.field">genre_facet</str>
-					<str name="facet.field">language</str>
+<!--					<str name="facet.field">language</str>-->
 					<str name="facet.field">lexile_code</str>
 					<str name="facet.field">lexile_score</str>
 					<str name="facet.field">mpaa_rating</str>
@@ -698,7 +698,7 @@
 					<str name="facet.field">econtent_device</str>
 					<str name="facet.field">era</str>
 					<str name="facet.field">genre_facet</str>
-					<str name="facet.field">language</str>
+<!--					<str name="facet.field">language</str>-->
 					<str name="facet.field">lexile_code</str>
 					<str name="facet.field">lexile_score</str>
 					<str name="facet.field">mpaa_rating</str>

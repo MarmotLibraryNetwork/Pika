@@ -91,7 +91,14 @@ class OverDrive_Home extends Action{
 			$interface->assign('semanticData', json_encode($recordDriver->getSemanticData()));
 
 			// Display Page
-			$this->display('view.tpl', $recordDriver->getTitle());
+			$title = $recordDriver->getTitle();
+			if (!empty($recordDriver->getSubtitle())){
+				if (!empty($title)){
+					$title .= ' : ';
+				}
+				$title .=  $recordDriver->getSubtitle();
+			}
+			$this->display('view.tpl', $title);
 
 		}
 	}

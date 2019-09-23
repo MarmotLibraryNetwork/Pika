@@ -5,14 +5,16 @@
 		{* Search Navigation *}
 		{include file="GroupedWork/search-results-navigation.tpl"}
 
-		{* Display Title *}
+			{* Display Title *}
 		<h2>
-			{$recordDriver->getTitle()|removeTrailingPunctuation|escape}
-			{if $recordDriver->getSubTitle()}: {$recordDriver->getSubTitle()|escape}{/if}
-			{if $recordDriver->getTitleSection()} {$recordDriver->getTitleSection()|escape}{/if}
-			{if $recordDriver->getFormats()}
-				<br><small>({implode subject=$recordDriver->getFormats() glue=", "})</small>
-			{/if}
+				{*Short Title excludes the sub-title *}
+				{$recordDriver->getShortTitle()|removeTrailingPunctuation|escape}
+				{if $recordDriver->getSubTitle() && $recordDriver->getSubTitle()|lower != $recordDriver->getShortTitle()|lower}: {$recordDriver->getSubTitle()|removeTrailingPunctuation|escape}{/if}
+				{* Don't display the subtitle if it is the same text as the short title *}
+				{if $recordDriver->getTitleSection()}:&nbsp;{$recordDriver->getTitleSection()|removeTrailingPunctuation|escape}{/if}
+				{if $recordDriver->getFormats()}
+					<br><small>({implode subject=$recordDriver->getFormats() glue=", "})</small>
+				{/if}
 		</h2>
 
 		<div class="row">

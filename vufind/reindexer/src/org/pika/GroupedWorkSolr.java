@@ -98,7 +98,7 @@ public class GroupedWorkSolr implements Cloneable {
 	private HashSet<String>          topicFacets              = new HashSet<>();
 	private HashSet<String>          subjects                 = new HashSet<>();
 	private HashMap<String, Long>    upcs                     = new HashMap<>();
-	private float                    hooplaPrice              = 0.0f;
+//	private float                    hooplaPrice              = 0.0f;
 
 	private Logger             logger;
 	private GroupedWorkIndexer groupedWorkIndexer;
@@ -247,10 +247,10 @@ public class GroupedWorkSolr implements Cloneable {
 		doc.addField("format_boost", getTotalFormatBoost());
 
 		//language related fields
-		//Check to see if we have Unknown plus a valid value TODO: include at record info level
-		if (languages.size() > 1 && languages.contains("Unknown")){
-			languages.remove("Unknown");
-		}
+//		//Check to see if we have Unknown plus a valid value TODO: include at record info level
+//		if (languages.size() > 1 && languages.contains("Unknown")){
+//			languages.remove("Unknown");
+//		}
 //		doc.addField("language", languages);
 //		doc.addField("translation", translations);
 //		doc.addField("language_boost", languageBoost);
@@ -318,9 +318,10 @@ public class GroupedWorkSolr implements Cloneable {
 					bibDaysSinceAdded = 0;
 					doc.addField("days_since_added", Long.toString(bibDaysSinceAdded));
 					doc.addField("time_since_added", Util.getTimeSinceAddedForDate(Util.getIndexDate()));
+				} else {
+					doc.addField("days_since_added", Long.toString(bibDaysSinceAdded));
+					doc.addField("time_since_added", Util.getTimeSinceAddedForDate(publicationDate.getTime()));
 				}
-				doc.addField("days_since_added", Long.toString(bibDaysSinceAdded));
-				doc.addField("time_since_added", Util.getTimeSinceAddedForDate(publicationDate.getTime()));
 			}else{
 				doc.addField("days_since_added", Long.toString(Integer.MAX_VALUE));
 			}
@@ -765,7 +766,7 @@ public class GroupedWorkSolr implements Cloneable {
 	}
 
 	private void addUniqueFieldValue(SolrInputDocument doc, String fieldName, String value){
-		if (value == null) return;
+		if (value == null || value.isEmpty()) return;
 		Collection<Object> fieldValues = doc.getFieldValues(fieldName);
 		if (fieldValues == null){
 			doc.addField(fieldName, value);
@@ -838,10 +839,14 @@ public class GroupedWorkSolr implements Cloneable {
 					literaryForm.put("Unknown", 1);
 					groupedWorkIndexer.addWorkWithInvalidLiteraryForms(id);
 				}else if (numFictionIndicators.compareTo(numNonFictionIndicators) > 0){
-					logger.debug("Popularity dictates that Fiction is the correct literary form for grouped work " + id);
+					if (logger.isDebugEnabled()) {
+						logger.debug("Popularity dictates that Fiction is the correct literary form for grouped work " + id);
+					}
 					literaryForm.remove("Non Fiction");
-				}else if (numFictionIndicators.compareTo(numNonFictionIndicators) > 0){
-					logger.debug("Popularity dictates that Non Fiction is the correct literary form for grouped work " + id);
+				}else if (numNonFictionIndicators.compareTo(numFictionIndicators) > 0){
+					if (logger.isDebugEnabled()) {
+						logger.debug("Popularity dictates that Non Fiction is the correct literary form for grouped work " + id);
+					}
 					literaryForm.remove("Fiction");
 				}
 			}
@@ -891,7 +896,9 @@ public class GroupedWorkSolr implements Cloneable {
 			changeMade = false;
 			for (String curLiteraryForm : literaryFormFull.keySet()){
 				if (firstLiteraryFormIsNonFiction != nonFictionFullLiteraryForms.contains(curLiteraryForm)){
-					logger.debug(curLiteraryForm + " got voted off the island for grouped work " + id + " because it was inconsistent with other full literary forms.");
+					if (logger.isDebugEnabled()) {
+						logger.debug(curLiteraryForm + " got voted off the island for grouped work " + id + " because it was inconsistent with other full literary forms.");
+					}
 					literaryFormFull.remove(curLiteraryForm);
 					changeMade = true;
 					break;
@@ -951,7 +958,9 @@ public class GroupedWorkSolr implements Cloneable {
 
 	private static Pattern removeBracketsPattern = Pattern.compile("\\[.*?\\]");
 	private static Pattern commonSubtitlePattern = Pattern.compile("(?i)((?:[(])?(?:a )?graphic novel|audio cd|book club kit|large print(?:[)])?)$");
-	private static Pattern punctuationPattern = Pattern.compile("[.\\\\/()\\[\\]:;]");
+	private static Pattern punctuationPattern    = Pattern.compile("[.\\\\/()\\[\\]:;]");
+	private static Pattern multipleSpacesPattern = Pattern.compile("\\s{2,}");
+
 	void setTitle(String shortTitle, String displayTitle, String sortableTitle, String recordFormat) {
 		if (shortTitle != null){
 			shortTitle = Util.trimTrailingPunctuation(shortTitle);
@@ -1014,8 +1023,10 @@ public class GroupedWorkSolr implements Cloneable {
 						sortableTitle = tmpTitle;
 					}
 					//remove punctuation from the sortable title
-					sortableTitle  = punctuationPattern.matcher(sortableTitle).replaceAll("");
-					this.titleSort = sortableTitle.trim();
+					sortableTitle  = punctuationPattern.matcher(sortableTitle).replaceAll("").trim(); //TODO: remove "!" or "?" or " -- "
+					//TODO: replace & with and? Overdrive does this with their provided sort title
+					sortableTitle = multipleSpacesPattern.matcher(sortableTitle).replaceAll(" ");
+					this.titleSort = sortableTitle.toLowerCase();
 				}
 				displayTitle = Util.trimTrailingPunctuation(displayTitle);
 				//Strip out anything in brackets unless that would cause us to show nothing
@@ -1031,11 +1042,14 @@ public class GroupedWorkSolr implements Cloneable {
 				this.displayTitle = displayTitle.trim();
 			}
 
-			//Create an alternate title for searching by replacing ampersands with the word and.
-			String tmpTitle = shortTitle.replace("&", " and ").replace("  ", " ");
-			if (!tmpTitle.equals(shortTitle)){
-				this.titleAlt.add(shortTitle);
-				// alt title has multiple values
+			if (shortTitle.contains("&")) {
+				//Create an alternate title for searching by replacing ampersands with the word and.
+				String titleWithAnds = multipleSpacesPattern.matcher(shortTitle.replaceAll("&", " and ")).replaceAll( " ");
+				// sometimes there's no spaces around the & so we need to add them, eg "P&B" becomes "P and B" instead of "PandB"
+				if (!titleWithAnds.equals(shortTitle)){
+					this.titleAlt.add(titleWithAnds);
+					// alt title has multiple values
+				}
 			}
 			keywords.add(shortTitle);
 		}
@@ -1043,7 +1057,7 @@ public class GroupedWorkSolr implements Cloneable {
 
 
 	void setSubTitle(String subTitle) {
-		if (subTitle != null){
+		if (subTitle != null && !subTitle.isEmpty()){
 			subTitle = Util.trimTrailingPunctuation(subTitle);
 			//TODO: determine if the subtitle should be changed?
 			//Strip out anything in brackets unless that would cause us to show nothing

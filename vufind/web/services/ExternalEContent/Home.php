@@ -29,8 +29,8 @@ class ExternalEContent_Home extends Action{
 
 		if (isset($_REQUEST['searchId'])){
 			$_SESSION['searchId'] = $_REQUEST['searchId'];
-			$interface->assign('searchId', $_SESSION['searchId']);
-		}else if (isset($_SESSION['searchId'])){
+		}
+		if (isset($_SESSION['searchId'])){
 			$interface->assign('searchId', $_SESSION['searchId']);
 		}
 
@@ -100,7 +100,14 @@ class ExternalEContent_Home extends Action{
 			$interface->assign('semanticData', json_encode($recordDriver->getSemanticData()));
 
 			// Display Page
-			$this->display('view.tpl', $recordDriver->getTitle());
+			$title = $recordDriver->getShortTitle();
+			if (!empty($recordDriver->getSubtitle())){
+				if (!empty($title)){
+					$title .= ' : ';
+				}
+				$title .=  $recordDriver->getSubtitle();
+			}
+			$this->display('view.tpl', $title);
 
 		}
 	}

@@ -855,45 +855,64 @@ class MarcRecord extends IndexRecord
 		return $this->getFieldArray('240', array('a', 'd', 'f', 'g', 'h', 'k', 'l', 'm', 'n', 'o', 'p', 'r', 's'));
 	}
 
+	private $shortTitle;
 	/**
-	 * Get the full title of the record.
+	 * Get the short (pre-subtitle) title of the record.
 	 *
 	 * @return  string
 	 */
-	public function getShortTitle()
-	{
-		return $this->getFirstFieldValue('245', array('a'));
+	public function getShortTitle(){
+		if (!isset($this->shortTitle)){
+		$shortTitle     = $this->getFirstFieldValue('245', array('a'));
+			if (!empty($shortTitle)){
+				$subTitle       = $this->getSubtitle();
+				if (strcasecmp($subTitle, $shortTitle) !== 0){ // If the short title and the subtitle are the same skip this check
+					$subTitleLength = strlen($subTitle);
+					if ($subTitleLength > 0 && strcasecmp(substr($shortTitle, -$subTitleLength), $subTitle) === 0){ // TODO: do these work with multibyte characters? Diacritic characters?
+						// If the subtitle is at the end of the short title, trim out the subtitle from the short title
+						$shortTitle = trim(rtrim(trim(substr($shortTitle, 0, -$subTitleLength)), ':'));
+						// remove ending white space and colon characters
+					}
+				}
+			}
+			$this->shortTitle = $shortTitle;
+		}
+		return $this->shortTitle;
 	}
 
 	/**
-	 * Get the full title of the record.
+	 * Get the title of the record with the non-filing chars removed from the start of the title.
 	 *
 	 * @return  string
 	 */
-	public function getSortableTitle()
-	{
+	public function getSortableTitle(){
 		/** @var File_MARC_Data_Field $titleField */
 		$titleField = $this->getMarcRecord()->getField('245');
-		if ($titleField != null && $titleField->getSubfield('a') != null) {
+		if ($titleField != null && $titleField->getSubfield('a') != null){
 			$untrimmedTitle = $titleField->getSubfield('a')->getData();
-			$charsToTrim = $titleField->getIndicator(2);
-			if (is_numeric($charsToTrim)) {
-				return substr($untrimmedTitle, $charsToTrim);
-			} else {
-				return $untrimmedTitle;
+			try {
+				$charsToTrim = $titleField->getIndicator(2);
+				if (is_numeric($charsToTrim)){
+					return substr($untrimmedTitle, $charsToTrim);
+				}
+			} catch (File_MARC_Exception $e){
 			}
+			return $untrimmedTitle;
 		}
 		return 'Unknown';
 	}
 
+	private $subTitle;
 	/**
-	 * Get the title of the record.
+	 * Get the sub-title of the record.
 	 *
 	 * @return  string
 	 */
-	public function getSubtitle()
-	{
-		return $this->getFirstFieldValue('245', array('b'));
+	public function getSubtitle(){
+		if (!isset($this->subTitle)){
+			$this->subTitle = $this->getFirstFieldValue('245', array('b'));
+		}
+		return $this->subTitle;
 	}
 
 	/**

@@ -36,14 +36,14 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 	protected String libraryUseOnlyStatus = "o"; // Reset these values for the particular site
 	protected String validOnOrderRecordStatus = "o1"; // Reset these values for the particular site
 
-	IIIRecordProcessor(GroupedWorkIndexer indexer, Connection vufindConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
-		super(indexer, vufindConn, indexingProfileRS, logger, fullReindex);
+	IIIRecordProcessor(GroupedWorkIndexer indexer, Connection pikaConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
+		super(indexer, pikaConn, indexingProfileRS, logger, fullReindex);
 		try {
 			exportPath = indexingProfileRS.getString("marcPath");
 		}catch (Exception e){
 			logger.error("Unable to load marc path from indexing profile");
 		}
-		loadLoanRuleInformation(vufindConn, logger);
+		loadLoanRuleInformation(pikaConn, logger);
 //		loadDueDateInformation();
 		validCheckedOutStatusCodes.add("-");
 	}
@@ -85,7 +85,9 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 
 					loanRules.put(loanRule.getLoanRuleId(), loanRule);
 				}
-				logger.debug("Loaded " + loanRules.size() + " loan rules");
+				if (logger.isDebugEnabled()) {
+					logger.debug("Loaded " + loanRules.size() + " loan rules");
+				}
 
 				PreparedStatement loanRuleDeterminersStmt = vufindConn.prepareStatement("SELECT * from loan_rule_determiners where active = 1 order by rowNumber DESC", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 				ResultSet loanRuleDeterminersRS = loanRuleDeterminersStmt.executeQuery();
@@ -101,7 +103,9 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 					loanRuleDeterminers.add(loanRuleDeterminer);
 				}
 
-				logger.debug("Loaded " + loanRuleDeterminers.size() + " loan rule determiner");
+				if (logger.isDebugEnabled()) {
+					logger.debug("Loaded " + loanRuleDeterminers.size() + " loan rule determiner");
+				}
 			} catch (SQLException e) {
 				logger.error("Unable to load loan rules", e);
 			}

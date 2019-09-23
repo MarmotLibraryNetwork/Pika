@@ -312,7 +312,7 @@ class HooplaProcessor extends MarcRecordProcessor {
 							for (HooplaInclusionRule curHooplaRule : locationHooplaInclusionRules) {
 								if (curHooplaRule.doesLocationRuleApply(hooplaExtractInfo, locationId)) {
 									hadLocationRules = true;
-									if (!curHooplaRule.isHooplaTitleIncluded(hooplaExtractInfo)) {
+									if (curHooplaRule.isHooplaTitleExcluded(hooplaExtractInfo)) {
 										isHooplaIncluded = false;
 										break;
 									}
@@ -325,7 +325,7 @@ class HooplaProcessor extends MarcRecordProcessor {
 							Long libraryId = curScope.getLibraryId();
 							for (HooplaInclusionRule curRule : libraryHooplaInclusionRules) {
 								if (curRule.doesLibraryRuleApply(hooplaExtractInfo, libraryId)) {
-									if (!curRule.isHooplaTitleIncluded(hooplaExtractInfo)) {
+									if (curRule.isHooplaTitleExcluded(hooplaExtractInfo)) {
 										isHooplaIncluded = false;
 										break;
 									}
@@ -339,7 +339,7 @@ class HooplaProcessor extends MarcRecordProcessor {
 						}
 					}
 				}
-			} else {
+			} else  if (logger.isInfoEnabled()){
 				logger.info("Excluding due to title inactive for everyone hoopla id# " + hooplaExtractInfo.getTitleId() + " :" + hooplaExtractInfo.getTitle());
 			}
 		} else {

@@ -63,7 +63,14 @@ class Record_Home extends Record_Record {
 			$interface->assign('showExploreMore', true);
 		}
 
-		$this->display('view.tpl', $this->recordDriver->getTitle());
+		$title = $this->recordDriver->getShortTitle();
+		if (!empty($this->recordDriver->getSubtitle())){
+			if (!empty($title)){
+				$title .= ' : ';
+			}
+			$title .=  $this->recordDriver->getSubtitle();
+		}
+		$this->display('view.tpl', $title);
 
 	}
 
