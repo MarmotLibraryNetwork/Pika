@@ -101,7 +101,7 @@ trait PatronHoldsOperations {
 	 *
 	 * @return  array
 	 */
-	public abstract function cancelHold($patron, $cancelId);
+	public abstract function cancelHold($patron, $bibId, $holdId);
 
 	/**
 	 * Freezes/Suspends/Pauses a hold for a patron.
@@ -116,7 +116,7 @@ trait PatronHoldsOperations {
 	 * @return array
 	 * @access  public
 	 */
-	public abstract function freezeHold($patron, $holdToFreezeId, $dateToReactivate = null);
+	public abstract function freezeHold($patron, $bibId, $holdId, $dateToReactivate = null);
 
 
 	/**
@@ -128,7 +128,7 @@ trait PatronHoldsOperations {
 	 * @return array
 	 * @access  public
 	 */
-	public abstract function thawHold($patron, $holdToThawId);
+	public abstract function thawHold($patron, $bibId, $holdId);
 
 }
 

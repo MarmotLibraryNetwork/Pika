@@ -63,6 +63,7 @@ class User extends DB_DataObject {
 	public $expireClose;
 	public $fines;
 	public $finesVal;
+	private $ilsFinesForUser;
 	public $homeLibrary;
 	public $homeLibraryName; //Only populated as part of loading administrators
 	public $homeLocationCode;
@@ -83,6 +84,15 @@ class User extends DB_DataObject {
 	public $noticePreferenceLabel;
 	private $numMaterialsRequests = 0;
 	private $readingHistorySize = 0;
+	private $accountProfile;
+	private $catalogDriver;
+	private $materialsRequestReplyToAddress;
+	private $materialsRequestEmailSignature;
+	private $barcode;
+	private $linkedUserObjects;
+// Account Blocks //
+	private $blockAll = null; // set to null to signal unset, boolean when set
+	private $blockedAccounts = null; // set to null to signal unset, array when set
 
 	private $data = array();
 
@@ -109,10 +119,8 @@ class User extends DB_DataObject {
 				$tagList[] = clone($tag);
 			}
 		}
-
 		return $tagList;
 	}
-
 
 	function getLists(){
 		require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
@@ -130,11 +138,8 @@ class User extends DB_DataObject {
 				$lists[] = clone($list);
 			}
 		}
-
 		return $lists;
 	}
-
-	private $catalogDriver;
 
 	/**
 	 * Get a connection to the catalog for the user
@@ -152,8 +157,6 @@ class User extends DB_DataObject {
 		}
 		return $this->catalogDriver;
 	}
-
-	private $accountProfile;
 
 	/**
 	 * @return AccountProfile
@@ -249,7 +252,6 @@ class User extends DB_DataObject {
 			}
 		}
 
-
 		$masqueradeMode = UserAccount::isUserMasquerading();
 		if ($masqueradeMode && !$isGuidingUser){
 			if (is_null($this->masqueradingRoles)){
@@ -266,9 +268,6 @@ class User extends DB_DataObject {
 		}
 		return $this->roles;
 	}
-
-	private $materialsRequestReplyToAddress;
-	private $materialsRequestEmailSignature;
 
 	function getStaffSettings(){
 		require_once ROOT_DIR . '/sys/Account/UserStaffSettings.php';
@@ -291,8 +290,6 @@ class User extends DB_DataObject {
 			$staffSettings->insert();
 		}
 	}
-
-	private $barcode;
 
 	function getBarcode(){
 		if (isset($this->barcode)){
@@ -380,8 +377,6 @@ class User extends DB_DataObject {
 		return $this->linkedUsers;
 	}
 
-	private $linkedUserObjects;
-
 	function getLinkedUserObjects(){
 		if (is_null($this->linkedUserObjects)){
 			$this->linkedUserObjects = array();
@@ -410,10 +405,6 @@ class User extends DB_DataObject {
 	public function setParentUser($user){
 		$this->parentUser = $user;
 	}
-
-	// Account Blocks //
-	private $blockAll = null; // set to null to signal unset, boolean when set
-	private $blockedAccounts = null; // set to null to signal unset, array when set
 
 	/**
 	 * Checks if there is any settings disallowing the account $accountIdToCheck to be linked to this user.
@@ -1052,7 +1043,7 @@ class User extends DB_DataObject {
 		return $ilsBookings;
 	}
 
-	private $ilsFinesForUser;
+
 
 	public function getMyFines($includeLinkedUsers = true){
 

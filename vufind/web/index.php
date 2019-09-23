@@ -78,12 +78,12 @@ $timer->logTime('Setup Analytics');
 global $library;
 $googleAnalyticsId        = isset($configArray['Analytics']['googleAnalyticsId'])        ? $configArray['Analytics']['googleAnalyticsId'] : false;
 $googleAnalyticsLibraryId = isset($library->gaTrackingId)                                ? $library->gaTrackingId : false;
-#TODO: What is $googleAnalyticsLinkingId
 $googleAnalyticsLinkingId = isset($configArray['Analytics']['googleAnalyticsLinkingId']) ? $configArray['Analytics']['googleAnalyticsLinkingId'] : false;
 $trackTranslation         = isset($configArray['Analytics']['trackTranslation'])         ? $configArray['Analytics']['trackTranslation'] : false;
 $interface->assign('googleAnalyticsId', $googleAnalyticsId);
 $interface->assign('googleAnalyticsLibraryId', $googleAnalyticsLibraryId);
 $interface->assign('trackTranslation', $trackTranslation);
+$interface->assign('googleAnalyticsLinkingId', $googleAnalyticsLinkingId);
 if ($googleAnalyticsId) {
 	$googleAnalyticsDomainName = isset($configArray['Analytics']['domainName']) ? $configArray['Analytics']['domainName'] : strstr($_SERVER['SERVER_NAME'], '.');
 	// check for a config setting, use that if found, otherwise grab domain name  but remove the first subdomain
@@ -809,10 +809,10 @@ function pika_autoloader($class) {
     } elseif (file_exists($fullFolderPath)) {
 	    include_once($fullFolderPath);
     }
-
 }
 
 // Set up autoloader (needed for YAML)
+// todo: this needs a total rewrite. it doesn't account for autoloader stacks and throws a fatal error.
 function vufind_autoloader($class) {
 	if (substr($class, 0, 4) == 'CAS_') {
 		return CAS_autoload($class);
@@ -841,11 +841,13 @@ function vufind_autoloader($class) {
 			try {
 				include_once $nameSpaceClass;
 			} catch (Exception $e) {
-				PEAR_Singleton::raiseError("Error loading class $class");
+				// todo: This should fail over to next instead of throwing fatal error.
+				//PEAR_Singleton::raiseError("Error loading class $class");
 			}
 		}
 	}catch (Exception $e){
-		PEAR_Singleton::raiseError("Error loading class $class");
+		//PEAR_Singleton::raiseError("Error loading class $class");
+		// todo: This should fail over to next instead of throwing fatal error.
 	}
 }
 
