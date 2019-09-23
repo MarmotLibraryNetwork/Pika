@@ -24,17 +24,18 @@ import java.util.regex.Pattern;
  */
 public class OverDriveProcessor {
 	private GroupedWorkIndexer indexer;
-	private Logger logger;
-	private PreparedStatement getProductInfoStmt;
-	private PreparedStatement getNumCopiesStmt;
-	private PreparedStatement getProductMetadataStmt;
-	private PreparedStatement getProductAvailabilityStmt;
-	private PreparedStatement getProductFormatsStmt;
-	private PreparedStatement getProductLanguagesStmt;
-	private PreparedStatement getProductSubjectsStmt;
-	private PreparedStatement getProductIdentifiersStmt;
+	private Logger             logger;
+	private boolean            fullReindex;
+	private PreparedStatement  getProductInfoStmt;
+	private PreparedStatement  getNumCopiesStmt;
+	private PreparedStatement  getProductMetadataStmt;
+	private PreparedStatement  getProductAvailabilityStmt;
+	private PreparedStatement  getProductFormatsStmt;
+	private PreparedStatement  getProductLanguagesStmt;
+	private PreparedStatement  getProductSubjectsStmt;
+	private PreparedStatement  getProductIdentifiersStmt;
 
-	public OverDriveProcessor(GroupedWorkIndexer groupedWorkIndexer, Connection econtentConn, Logger logger) {
+	public OverDriveProcessor(GroupedWorkIndexer groupedWorkIndexer, Connection econtentConn, Logger logger, boolean fullReindex) {
 		this.indexer = groupedWorkIndexer;
 		this.logger = logger;
 		try {
@@ -116,11 +117,15 @@ public class OverDriveProcessor {
 										String titleLowerCase    = title.toLowerCase();
 										String subTitleLowerCase = subTitle.toLowerCase();
 										if (titleLowerCase.equals(subTitleLowerCase)) {
-											logger.warn(identifier + " overdrive title '" + title + "' is the same as the subtitle :" + subTitle );
+											if (fullReindex) {
+												logger.warn(identifier + " overdrive title '" + title + "' is the same as the subtitle :" + subTitle );
+											}
 											subTitle = "";
 										} else if (titleLowerCase.endsWith(subTitleLowerCase)) {
 											// Pika should treat the title as not including the subtitle, so remove subtitle from title if it is there
-											logger.warn(identifier + " Overdrive title '" + title + "' ends with the subtitle :" + subTitle);
+											if (fullReindex) {
+												logger.warn(identifier + " Overdrive title '" + title + "' ends with the subtitle :" + subTitle);
+											}
 											title = title.substring(0, titleLowerCase.lastIndexOf(subTitleLowerCase));
 											title = title.replaceAll("[\\s:]+$", ""); // remove ending white space and any ending colon characters. //TODO: remove trailing "--"
 										} else if (series != null && !series.isEmpty() && subTitleLowerCase.startsWith(series.toLowerCase() + " series, book")){
@@ -133,7 +138,9 @@ public class OverDriveProcessor {
 											if (sortTitle.contains(seriesNameInSortTitle)) {
 												sortTitle = sortTitle.replaceAll("\\d+$", "").replace( seriesNameInSortTitle + " Series Book", "");
 												if (sortTitle.contains("Series Book")) {
-													logger.warn(identifier + " : Failed to remove series info from Overdrive sort title '" + sortTitle + "'");
+													if (fullReindex) {
+														logger.warn(identifier + " : Failed to remove series info from Overdrive sort title '" + sortTitle + "'");
+													}
 												}
 											}
 										}

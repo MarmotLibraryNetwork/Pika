@@ -34,7 +34,7 @@ class HooplaProcessor extends MarcRecordProcessor {
 	private   HashSet<HooplaInclusionRule> locationHooplaInclusionRules = new HashSet<>();
 
 	HooplaProcessor(GroupedWorkIndexer indexer, Connection pikaConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
-		super(indexer, logger);
+		super(indexer, logger, fullReindex);
 		this.fullReindex = fullReindex;
 
 		try {

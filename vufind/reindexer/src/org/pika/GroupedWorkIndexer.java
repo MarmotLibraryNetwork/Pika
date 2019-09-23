@@ -236,7 +236,7 @@ public class GroupedWorkIndexer {
 					} else if (curIdentifier.equalsIgnoreCase("overdrive")) {
 						//Overdrive doesn't have an indexing profile.
 						//Only load processor if there are overdrive titles
-						overDriveProcessor = new OverDriveProcessor(this, econtentConn, logger);
+						overDriveProcessor = new OverDriveProcessor(this, econtentConn, logger, fullReindex);
 					} else if (fullReindex){
 						logger.error("Could not find indexing profile for type " + curIdentifier);
 					}

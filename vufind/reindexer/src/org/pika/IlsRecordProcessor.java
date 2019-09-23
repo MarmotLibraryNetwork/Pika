@@ -100,7 +100,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	private ArrayList<TimeToReshelve> timesToReshelve = new ArrayList<>();
 
 	IlsRecordProcessor(GroupedWorkIndexer indexer, Connection pikaConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
-		super(indexer, logger);
+		super(indexer, logger, fullReindex);
 		this.fullReindex = fullReindex;
 		try {
 			profileType                       = indexingProfileRS.getString("name");
@@ -1539,10 +1539,9 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			String formatsString = Util.getCsvSeparatedString(printFormats);
 			if (!formatsToFilter.contains(formatsString)){
 				formatsToFilter.add(formatsString);
-//				if (fullReindex) {
-//					logger.warn("Found more than 1 format for " + recordInfo.getFullIdentifier() + " - " + formatsString);
-//				}
-				//pascal 5/2/2019 cutting out warning noise for now
+				if (fullReindex) {
+					logger.warn("Found more than 1 format for " + recordInfo.getFullIdentifier() + " - " + formatsString);
+				}
 			}
 		}
 		return printFormats;

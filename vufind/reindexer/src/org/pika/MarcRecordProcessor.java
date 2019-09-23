@@ -18,15 +18,17 @@ import java.util.regex.PatternSyntaxException;
 abstract class MarcRecordProcessor {
 	protected      Logger             logger;
 	protected      GroupedWorkIndexer indexer;
+	private        boolean            fullReindex;
 	private static Pattern            mpaaRatingRegex1    = Pattern.compile("(?:.*?)[rR]ated:?\\s(G|PG-13|PG|R|NC-17|NR|X)(?:.*)", Pattern.CANON_EQ);
 	private static Pattern            mpaaRatingRegex2    = Pattern.compile("(?:.*?)[rR]ating:?\\s(G|PG-13|PG|R|NC-17|NR|X)(?:.*)", Pattern.CANON_EQ);
 	private static Pattern            mpaaRatingRegex3    = Pattern.compile("(?:.*?)(G|PG-13|PG|R|NC-17|NR|X)\\sRated(?:.*)", Pattern.CANON_EQ);
 	private static Pattern            mpaaNotRatedRegex   = Pattern.compile("Rated\\sNR\\.?|Not Rated\\.?|NR");
 	private        HashSet<String>    unknownSubjectForms = new HashSet<>();
 
-	MarcRecordProcessor(GroupedWorkIndexer indexer, Logger logger) {
+	MarcRecordProcessor(GroupedWorkIndexer indexer, Logger logger, boolean fullReindex) {
 		this.indexer = indexer;
 		this.logger = logger;
+		this.fullReindex = fullReindex;
 	}
 
 	/**
@@ -875,20 +877,26 @@ abstract class MarcRecordProcessor {
 		String titleValue    = MarcUtil.getFirstFieldVal(record, "245a");
 		String subTitleValue = MarcUtil.getFirstFieldVal(record, "245bnp"); //MDN 2/6/2016 add np to subtitle #ARL-163
 		if (titleValue == null){
-			logger.warn(identifier + " has no title value (245a)");
+			if (fullReindex) {
+				logger.warn(identifier + " has no title value (245a)");
+			}
 			titleValue = "";
 		} else {
 			if (subTitleValue != null) {
 				String subTitleLowerCase = subTitleValue.toLowerCase();
 				String titleLowerCase    = titleValue.toLowerCase();
 				if (titleLowerCase.equals(subTitleLowerCase)){
-					logger.warn(identifier + " title (245a) '" + titleValue + "' is the same as the subtitle '" + subTitleValue + "'");
+					if (fullReindex) {
+						logger.warn(identifier + " title (245a) '" + titleValue + "' is the same as the subtitle : " + subTitleValue);
+					}
 					subTitleValue = null; // null out so that it doesn't get added to sort or display titles
 				} else {
 					groupedWork.setSubTitle(subTitleValue);
 					if (titleLowerCase.endsWith(subTitleLowerCase)) {
 						// Remove subtitle from title in order to avoid repeats of sub-title in display & title fields in index
-						logger.warn(identifier + " title (245a) '" + titleValue + "' ends with the subtitle (245bnp) '" + subTitleValue + "'");
+						if (fullReindex) {
+							logger.warn(identifier + " title (245a) '" + titleValue + "' ends with the subtitle (245bnp) : " + subTitleValue );
+						}
 						titleValue = titleValue.substring(0, titleLowerCase.lastIndexOf(subTitleLowerCase));
 					}
 				}
