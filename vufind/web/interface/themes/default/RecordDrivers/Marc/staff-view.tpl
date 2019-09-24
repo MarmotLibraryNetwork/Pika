@@ -84,7 +84,7 @@
 			{/if}
 			{if $recordExtractMarkedDeleted}
 				<tr>
-					<th>{$ils} Extract Marked Deleted Date</th>
+					<th>{$ils} Extract Marked Suppressed/Deleted Date</th>
 					<td>{$recordExtractMarkedDeleted|date_format:"%b %d, %Y"}</td>
 				</tr>
 			{/if}
