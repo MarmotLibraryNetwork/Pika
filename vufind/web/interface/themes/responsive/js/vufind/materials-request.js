@@ -158,7 +158,7 @@ VuFind.MaterialsRequest = (function(){
 			//Update labels as needed
 			if (VuFind.MaterialsRequest.authorLabels){
 				if (VuFind.MaterialsRequest.authorLabels[selectedFormat]) {
-					$("#authorFieldLabel").html(VuFind.MaterialsRequest.authorLabels[selectedFormat] + ': ');
+					$("#authorFieldLabel").text(VuFind.MaterialsRequest.authorLabels[selectedFormat] + ': ');
 				//	TODO: Set when required
 				}
 			}
