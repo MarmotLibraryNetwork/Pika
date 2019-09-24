@@ -1,5 +1,6 @@
 {strip}
-
+{* wcpl theme has custom version -- if upgrading please check their template folder and update as
+necassary *}
 <div class="materialsRequestLoggedInFields" {if !$loggedIn}style="display:none"{/if}>
 {foreach from=$requestFormFields key=category item=formFields}
 	<fieldset>
