@@ -151,7 +151,7 @@
                     {* Author Field *}
                 {elseif $formField->fieldType == 'author'}
 									<div class="row form-group">
-										<label id="authorFieldLabel" class="control-label col-sm-3" for="author">{$materialsRequest->authorLabel}: <span class="requiredIndicator">*</span></label>
+										<label id="authorFieldLabel1" class="control-label col-sm-3" for="author">Author: <span class="requiredIndicator">*</span></label>
 										<div class="request_detail_field_value col-sm-9">
 											<input name="author" id="author" size="90" maxlength="255" class="required form-control" value="{$materialsRequest->author}">
 										</div>
