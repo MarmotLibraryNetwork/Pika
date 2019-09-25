@@ -1523,9 +1523,9 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		}
 
 		if (printFormats.size() == 0){
-			if (fullReindex) {
-				logger.warn("Did not get any formats for record " + recordInfo.getFullIdentifier() + ", assuming it is a book ");
-			}
+//			if (fullReindex) {
+//				logger.warn("Did not get any formats for record " + recordInfo.getFullIdentifier() + ", assuming it is a book ");
+//			}
 			printFormats.add("Book");
 		}else if (logger.isDebugEnabled()){
 			for(String format: printFormats){

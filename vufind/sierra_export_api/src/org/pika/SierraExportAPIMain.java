@@ -1230,7 +1230,7 @@ public class SierraExportAPIMain {
 								JSONObject subfieldData         = subfields.getJSONObject(j);
 								String     subfieldIndicatorStr = (String) subfieldData.keys().next();
 								char       subfieldIndicator    = subfieldIndicatorStr.charAt(0);
-								String     subfieldValue        = subfieldData.getString(subfieldIndicatorStr);
+								String     subfieldValue        = subfieldData.getString(subfieldIndicatorStr); //TODO: this doesn't interpret some slash-u notations
 								dataField.addSubfield(marcFactory.newSubfield(subfieldIndicator, subfieldValue));
 							}
 							marcRecord.addVariableField(dataField);
@@ -1294,7 +1294,7 @@ public class SierraExportAPIMain {
 				return false;
 			}
 		} catch (Exception e) {
-			logger.error("Error in updateMarcAndRegroupRecordId processing bib from Sierra API", e);
+			logger.error("Error in updateMarcAndRegroupRecordId processing bib " + id + " from Sierra API", e);
 			return false;
 		}
 		return true;
@@ -1911,6 +1911,7 @@ public class SierraExportAPIMain {
 	private static StringBuilder getTheResponse(InputStream inputStream) {
 		StringBuilder response = new StringBuilder();
 		try (BufferedReader rd = new BufferedReader(new InputStreamReader(inputStream))) {
+//		try (BufferedReader rd = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"))) { //TODO: Is this additional setting needed?
 			String line;
 			while ((line = rd.readLine()) != null) {
 				response.append(line);

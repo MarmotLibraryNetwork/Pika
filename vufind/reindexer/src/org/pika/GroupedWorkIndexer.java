@@ -689,28 +689,25 @@ public class GroupedWorkIndexer {
 			try {
 				GroupedReindexMain.addNoteToReindexLog("Calling final commit");
 				updateServer.commit(true, true, false);
-//				updateServer.commit();
 			} catch (IOException e) {
 				logger.error("Error calling final commit", e);
 			} catch (SolrServerException e) {
 				logger.error("Error with Solr calling final commit", e);
 			}
-			//Swap the indexes
-			if (fullReindex)  {
-				//Restart replication from the master
-				String url = "http://localhost:" + solrPort + "/solr/grouped/replication?command=enablereplication";
-				URLPostResponse startReplicationResponse = Util.getURL(url, logger);
-				if (!startReplicationResponse.isSuccess()){
-					logger.error("Error restarting replication " + startReplicationResponse.getMessage());
-				}
+			//Restart replication from the master
+			String url = "http://localhost:" + solrPort + "/solr/grouped/replication?command=enablereplication";
+			URLPostResponse startReplicationResponse = Util.getURL(url, logger);
+			if (!startReplicationResponse.isSuccess()){
+				logger.error("Error restarting replication " + startReplicationResponse.getMessage());
 
-				//MDN 10-21-2015 do not swap indexes when using replication
-				/*GroupedReindexMain.addNoteToReindexLog("Swapping indexes");
-				try {
-					Util.getURL("http://localhost:" + solrPort + "/solr/admin/cores?action=SWAP&core=grouped2&other=grouped", logger);
-				} catch (Exception e) {
-					logger.error("Error shutting down update server", e);
-				}*/
+			//MDN 10-21-2015 do not swap indexes when using replication
+			//Swap the indexes
+			/*GroupedReindexMain.addNoteToReindexLog("Swapping indexes");
+			try {
+				Util.getURL("http://localhost:" + solrPort + "/solr/admin/cores?action=SWAP&core=grouped2&other=grouped", logger);
+			} catch (Exception e) {
+				logger.error("Error shutting down update server", e);
+			}*/
 			}
 		}else {
 			try {
@@ -974,7 +971,6 @@ public class GroupedWorkIndexer {
 					numPrimaryIdentifiers++;
 				}
 			}
-			groupedWorkPrimaryIdentifiers.close();
 		}
 
 		if (numPrimaryIdentifiers > 0) {
