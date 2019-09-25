@@ -25,6 +25,8 @@ class RecordGroupingProcessor {
 	char    eContentDescriptor  = ' ';
 	String  itemTag;
 	private PreparedStatement insertGroupedWorkStmt;
+	private PreparedStatement checkHistoricalGroupedWorkStmt;
+	private PreparedStatement insertHistoricalGroupedWorkStmt;
 	private PreparedStatement groupedWorkForIdentifierStmt;
 	private PreparedStatement updateDateUpdatedForGroupedWorkStmt;
 	private PreparedStatement addPrimaryIdentifierForWorkStmt;
@@ -83,6 +85,8 @@ class RecordGroupingProcessor {
 	void setupDatabaseStatements(Connection dbConnection) {
 		try {
 			insertGroupedWorkStmt                     = dbConnection.prepareStatement("INSERT INTO " + RecordGrouperMain.groupedWorkTableName + " (full_title, author, grouping_category, permanent_id, date_updated) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE date_updated = VALUES(date_updated), id=LAST_INSERT_ID(id) ", Statement.RETURN_GENERATED_KEYS);
+			insertHistoricalGroupedWorkStmt           = dbConnection.prepareStatement("INSERT INTO grouped_work_historical (permanent_id, grouping_title, grouping_author, grouping_category, grouping_version) VALUES (?, ?, ?, ?, ?) ");
+			checkHistoricalGroupedWorkStmt            = dbConnection.prepareStatement("SELECT COUNT(*) FROM grouped_work_historical WHERE permanent_id = ? AND grouping_title = ? AND grouping_author = ? AND grouping_category = ? AND grouping_version = ?", ResultSet.CONCUR_READ_ONLY);
 			updateDateUpdatedForGroupedWorkStmt       = dbConnection.prepareStatement("UPDATE grouped_work SET date_updated = ? where id = ?");
 			addPrimaryIdentifierForWorkStmt           = dbConnection.prepareStatement("INSERT INTO grouped_work_primary_identifiers (grouped_work_id, type, identifier) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE id=LAST_INSERT_ID(id), grouped_work_id = VALUES(grouped_work_id)", Statement.RETURN_GENERATED_KEYS);
 			removePrimaryIdentifiersForMergedWorkStmt = dbConnection.prepareStatement("DELETE FROM grouped_work_primary_identifiers where grouped_work_id = ?");
@@ -333,6 +337,44 @@ class RecordGroupingProcessor {
 		return field245;
 	}
 
+	private boolean workNotInHistoricalTable(GroupedWorkBase groupedWork){
+		try {
+			checkHistoricalGroupedWorkStmt.setString( 1, groupedWork.getPermanentId());
+			checkHistoricalGroupedWorkStmt.setString( 2, groupedWork.fullTitle);
+			checkHistoricalGroupedWorkStmt.setString( 3, groupedWork.author);
+			checkHistoricalGroupedWorkStmt.setString( 4, groupedWork.groupingCategory);
+			checkHistoricalGroupedWorkStmt.setInt( 5, groupedWork.getGroupedWorkVersion());
+
+			try (ResultSet existingHistoricalEntryRS = checkHistoricalGroupedWorkStmt.executeQuery()){
+				existingHistoricalEntryRS.next();
+				int count = existingHistoricalEntryRS.getInt(1);
+				return count == 0;
+			}
+		} catch (SQLException e){
+			logger.warn("Error looking up work in historical table", e);
+		}
+		return true;  // When things go awry, say work is not in table.  If it is, the follow-up INSERT statement will fail on unique check anyway.
+	}
+
+	private void addToHistoricalTable(GroupedWorkBase groupedWork){
+		try {
+			insertHistoricalGroupedWorkStmt.setString( 1, groupedWork.permanentId);
+			insertHistoricalGroupedWorkStmt.setString( 2, groupedWork.fullTitle);
+			insertHistoricalGroupedWorkStmt.setString( 3, groupedWork.author);
+			insertHistoricalGroupedWorkStmt.setString( 4, groupedWork.groupingCategory);
+			insertHistoricalGroupedWorkStmt.setInt( 5, groupedWork.getGroupedWorkVersion());
+
+			int success = insertHistoricalGroupedWorkStmt.executeUpdate();
+			if (success != 1){
+				logger.error("Error adding to historical grouping table: " + groupedWork.permanentId + " with title '" + groupedWork.fullTitle + "' and author '" + groupedWork.author + "'");
+			}
+
+		} catch (SQLException e){
+			logger.warn("Error adding entry to historical table", e);
+		}
+
+	}
+
 	/**
 	 * Add a work to the database
 	 *
@@ -340,6 +382,13 @@ class RecordGroupingProcessor {
 	 * @param groupedWork       Information about the work itself
 	 */
 	void addGroupedWorkToDatabase(RecordIdentifier primaryIdentifier, GroupedWorkBase groupedWork, boolean primaryDataChanged) {
+		if (workNotInHistoricalTable(groupedWork)){
+			// Add grouping factors to historical table in order to track permanent Ids across grouping versions
+			// Do this before unmerging or merging because we want to track the original factors and id
+
+			addToHistoricalTable(groupedWork);
+		}
+
 		//Check to see if we need to ungroup this
 		if (recordsToNotGroup.contains(primaryIdentifier.toString().toLowerCase())) {
 			groupedWork.makeUnique(primaryIdentifier.toString());

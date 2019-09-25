@@ -33,6 +33,11 @@ public class GroupedWork3 extends GroupedWorkBase implements Cloneable {
 	static Pattern commonAuthorPrefixPattern = Pattern.compile("^(?:edited by|by the editors of|by|chosen by|translated by|prepared by|translated and edited by|completely rev by|pictures by|selected and adapted by|with a foreword by|with a new foreword by|introd by|introduction by|intro by|retold by)\\s(.+)$");
 
 	static Logger logger = Logger.getLogger(GroupedWork3.class);
+
+	GroupedWork3() {
+		version = 3;
+	}
+
 	private String normalizeAuthor(String author) {
 		//Check to see if there is an authority record for the author
 		try {

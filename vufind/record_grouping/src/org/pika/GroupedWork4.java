@@ -19,8 +19,6 @@ import java.util.regex.Pattern;
  * Time: 9:02 AM
  */
 class GroupedWork4 extends GroupedWorkBase implements Cloneable {
-
-
 	private static Pattern initialsFix = Pattern.compile("(?<=[A-Z])\\.(?=(\\s|[A-Z]|$))");
 	private static Pattern apostropheStrip = Pattern.compile("'s");
 	private static Pattern specialCharacterStrip = Pattern.compile("[^\\p{L}\\d\\s]");
@@ -28,6 +26,10 @@ class GroupedWork4 extends GroupedWorkBase implements Cloneable {
 	private static Pattern bracketedCharacterStrip = Pattern.compile("\\[(.*?)\\]");
 
 	static Logger logger = Logger.getLogger(GroupedWork4.class);
+
+	GroupedWork4() {
+		version = 4;
+	}
 
 	private String normalizeAuthor(String author) {
 		return AuthorNormalizer.getNormalizedName(author);
@@ -78,7 +80,7 @@ class GroupedWork4 extends GroupedWorkBase implements Cloneable {
 		groupingTitle = initialsFix.matcher(groupingTitle).replaceAll(" ");
 		//Replace & with and for better matching
 		groupingTitle = dashPattern.matcher(groupingTitle).replaceAll("-");
-		groupingTitle = ampersandPattern.matcher(groupingTitle).replaceAll("and");
+		groupingTitle = ampersandPattern.matcher(groupingTitle).replaceAll("and"); // TODO: avoid encoded sequences like &#174;
 
 		groupingTitle = apostropheStrip.matcher(groupingTitle).replaceAll("s");
 		groupingTitle = specialCharacterStrip.matcher(groupingTitle).replaceAll(" ").toLowerCase();
@@ -186,7 +188,7 @@ class GroupedWork4 extends GroupedWorkBase implements Cloneable {
 	}
 
 	private String normalizePassedInSubtitle(String title, String subtitle) {
-		if (!title.endsWith(subtitle)){
+		if (!title.endsWith(subtitle)){ //TODO: remove overdrive series statements in subtitle
 			//Remove any complex subtitles since we know the beginning of the string
 			String newSubtitle = cleanTitleCharacters(subtitle);
 			if (newSubtitle.length() > 0) {

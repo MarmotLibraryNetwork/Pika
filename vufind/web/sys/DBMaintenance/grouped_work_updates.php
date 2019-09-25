@@ -221,5 +221,26 @@ function getGroupedWorkUpdates(){
 				"ALTER TABLE `ils_marc_checksums` CHANGE COLUMN `ilsId` `ilsId` VARCHAR(50) NOT NULL ;",
 			),
 		),
+
+		'historical_grouped_works' => array(
+			'title'       => 'Create a historical grouped work factors table',
+			'description' => 'Table to track grouping factors that lead to the unique permanent id among grouping versions. Do not remove entries even if there are no longer contributing records in the catalog. ',
+			'sql'         => array(
+				"CREATE TABLE IF NOT EXISTS `grouped_work_historical` (
+				  `permanent_id` CHAR(36) NOT NULL,
+				  `grouping_title` VARCHAR(300) NOT NULL,
+				  `grouping_author` VARCHAR(50) NOT NULL,
+				  `grouping_category` VARCHAR(25) NOT NULL,
+				  `grouping_version` SMALLINT(1) UNSIGNED NOT NULL,
+				  UNIQUE INDEX `index1` (`permanent_id` ASC, `grouping_title` ASC, `grouping_author` ASC, `grouping_category` ASC, `grouping_version` ASC))
+				ENGINE = InnoDB
+				DEFAULT CHARACTER SET = utf8
+				COMMENT = 'Table to track grouping factors that lead to the unique permanent id among grouping versions. Do not remove entries even if there are no longer contributing records in the catalog. ';
+",
+			),
+
+		),
+
+
 	);
 }

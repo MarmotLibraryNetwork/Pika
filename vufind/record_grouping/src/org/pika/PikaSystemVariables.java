@@ -93,7 +93,7 @@ public class PikaSystemVariables {
 				preparedStatement.setString(1, name);
 				preparedStatement.setString(2, value);
 				int result = preparedStatement.executeUpdate();
-				return result == 1;
+				return result == 1 || result == 2;
 			} catch (SQLException e) {
 				logger.error("Unable to save variable " + name, e);
 			}
