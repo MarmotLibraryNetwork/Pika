@@ -109,6 +109,7 @@ class SideFacets implements RecommendationInterface
 						'econtent_source',
 						'econtent_protection_type', //TODO remove
 						'language',
+						'translation',
 						'detailed_location',
 						'owning_location',
 						'owning_library',
