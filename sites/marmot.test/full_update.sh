@@ -162,6 +162,9 @@ cd /usr/local/vufind-plus/vufind/cron;./HOOPLA.sh ${PIKASERVER} >> ${OUTPUT_FILE
 # Elsevier
 /usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} western/elsevier elsevier/western >> ${OUTPUT_FILE}
 
+# Gale In Context (Mesa)
+/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} mesa/gale_virtual gale_virtual/mesa >> ${OUTPUT_FILE}
+
 #echo "finished sideload fetching"
 
 #Extracts for sideloaded eContent; settings defined in config.pwd.ini [Sideload]
