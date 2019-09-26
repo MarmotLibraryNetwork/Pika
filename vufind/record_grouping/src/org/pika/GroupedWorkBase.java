@@ -169,6 +169,9 @@ public abstract class GroupedWorkBase {
 
 	void makeUnique(String primaryIdentifier) {
 		uniqueIdentifier = primaryIdentifier;
+		// Update the GroupedWork permanent Id now
+		permanentId = null;
+		getPermanentId();
 	}
 
 	public int getGroupedWorkVersion() {
