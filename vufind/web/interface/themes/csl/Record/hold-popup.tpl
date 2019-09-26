@@ -1,8 +1,3 @@
-{*
-Custom themes (if upading this please check these themes)
-* csl/Record/hold-popup.tpl
-* arlington/Record/hold-popup.tpl
-*}
 {strip}
 <div id="page-content" class="content">
 	<form name="placeHoldForm" id="placeHoldForm" method="post" class="form">
@@ -21,23 +16,7 @@ Custom themes (if upading this please check these themes)
 
 			<p class="alert alert-info">
 				{/strip}
-				Holds allow you to request that a title be delivered to the library.
-				{if $showDetailedHoldNoticeInformation}
-					Once the title arrives at the library you will
-					{if $profile->noticePreferenceLabel eq 'Mail' && !$treatPrintNoticesAsPhoneNotices}
-						be mailed a notification
-					{elseif $profile->noticePreferenceLabel eq 'Telephone' || ($profile->noticePreferenceLabel eq 'Mail' && $treatPrintNoticesAsPhoneNotices)}
-						receive a phone call
-					{elseif $profile->noticePreferenceLabel eq 'E-mail'}
-						be emailed a notification
-					{else}
-						receive a notification
-					{/if}
-					 informing you that the title is ready for you.
-				{else}
-					Once the title arrives at the library you will receive a notification informing you that the title is ready for you.
-				{/if}
-				You will then have {translate text='Hold Pickup Period'} to pick up the title from the library.
+				Requested items will be delivered to you via courier and do not require pickup at the Colorado State Library.
 				{strip}
 			</p>
 
