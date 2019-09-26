@@ -8,7 +8,10 @@
  * Date: 7/29/14
  * Time: 3:14 PM
  */
-class MergedGroupedWork extends DB_DataObject {
+
+require_once ROOT_DIR . '/sys/Grouping/CommonGroupingAlterationOperations.php';
+
+class MergedGroupedWork extends CommonGroupingAlterationOperations {
 	public $__table = 'merged_grouped_works';
 	public $id;
 	public $sourceGroupedWorkId;
@@ -57,13 +60,13 @@ class MergedGroupedWork extends DB_DataObject {
 				'storeDb'     => true,
 				'required'    => true,
 			),
-//			// For display only
-//			array(
-//				'property'         => 'full_title',
-//				'type'             => 'text',
-//				'label'            => 'Grouping Title',
-//				'storeDb'          => false,
-//			),
+			//			// For display only
+			//			array(
+			//				'property'         => 'full_title',
+			//				'type'             => 'text',
+			//				'label'            => 'Grouping Title',
+			//				'storeDb'          => false,
+			//			),
 		);
 		return $structure;
 	}
@@ -128,31 +131,6 @@ class MergedGroupedWork extends DB_DataObject {
 		return $validationResults;
 	}
 
-
-	function update($dataObject = false){
-		$success = parent::update($dataObject);
-		if ($success){
-			$this->followUpActions();
-		}
-		return $success;
-	}
-
-	function insert(){
-		$success = parent::insert();
-		if ($success){
-			$this->followUpActions();
-		}
-		return $success;
-	}
-
-	function delete($useWhere = false){
-		$success = parent::delete($useWhere);
-		if ($success){
-			$this->followUpActions();
-		}
-		return $success;
-	}
-
 	private function markForForcedRegrouping(){
 		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 		$groupedWork               = new GroupedWork();
@@ -173,7 +151,10 @@ class MergedGroupedWork extends DB_DataObject {
 		}
 	}
 
-	private function followUpActions(){
+	/**
+	 * Steps to take after saving data to database
+	 */
+	protected function followUpActions(){
 		global $configArray;
 		if ($configArray['Catalog']['ils'] == 'Sierra'){
 			// Merge Works require re-extraction in the Sierra API Extract process
@@ -187,17 +168,8 @@ class MergedGroupedWork extends DB_DataObject {
 				$groupedWorkPrimaryIdentifier->grouped_work_id = $groupedWork->id;
 				$groupedWorkPrimaryIdentifier->find();
 				while ($groupedWorkPrimaryIdentifier->fetch()){
-					$sourceAndId     = $groupedWorkPrimaryIdentifier->getSourceAndId();
-					$indexingProfile = $sourceAndId->getIndexingProfile();
-					if (!empty($indexingProfile)){
-						require_once ROOT_DIR . '/sys/Extracting/IlsExtractInfo.php';
-						$extractInfo                    = new IlsExtractInfo();
-						$extractInfo->indexingProfileId = $indexingProfile->id;
-						$extractInfo->ilsId             = $sourceAndId->getRecordId();
-						if ($extractInfo->find(true)){
-							$success                    = $extractInfo->markForReExtraction();
-						}
-					}
+					$sourceAndId = $groupedWorkPrimaryIdentifier->getSourceAndId();
+					$this->markRecordForReExtraction($sourceAndId);
 				}
 			}
 		}

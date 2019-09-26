@@ -1,14 +1,17 @@
 <?php
 
 /**
- * Description goes here
+ * Records that should not contribute to their normally determined Grouped Work
  *
- * @category VuFind-Plus-2014
+ * @category Pika
  * @author Mark Noble <mark@marmot.org>
  * Date: 3/29/2016
  * Time: 12:05 PM
  */
-class NonGroupedRecord extends DB_DataObject{
+
+require_once ROOT_DIR . '/sys/Grouping/CommonGroupingAlterationOperations.php';
+
+class NonGroupedRecord extends CommonGroupingAlterationOperations {
 	public $__table = 'nongrouped_records';
 	public $id;
 	public $source;
@@ -16,7 +19,7 @@ class NonGroupedRecord extends DB_DataObject{
 	public $notes;
 	private $groupedWork;
 
-	static function getObjectStructure() {
+	static function getObjectStructure(){
 		global $indexingProfiles;
 		$availableSources = array();
 		foreach ($indexingProfiles as $profile){
@@ -26,70 +29,70 @@ class NonGroupedRecord extends DB_DataObject{
 
 		$structure = array(
 			array(
-				'property' => 'id',
-				'type' => 'hidden',
-				'label' => 'Id',
+				'property'    => 'id',
+				'type'        => 'hidden',
+				'label'       => 'Id',
 				'description' => 'The unique id of the merged grouped work in the database',
-				'storeDb' => true,
-				'primaryKey' => true,
+				'storeDb'     => true,
+				'primaryKey'  => true,
 			),
 			array(
-				'property' => 'source',
-				'type' => 'enum',
-				'values' => $availableSources,
-				'label' => 'Source of the Record Id',
+				'property'    => 'source',
+				'type'        => 'enum',
+				'values'      => $availableSources,
+				'label'       => 'Source of the Record Id',
 				'description' => 'The source of the record to avoid merging.',
-				'default' => 'ils',
-				'storeDb' => true,
-				'required' => true,
+				'default'     => 'ils',
+				'storeDb'     => true,
+				'required'    => true,
 			),
 			array(
-				'property' => 'recordId',
-				'type' => 'text',
-				'size' => 36,
-				'maxLength' => 36,
-				'label' => 'Record Id',
-				'description' => 'The id of the record that should not be merged.',
-				'storeDb' => true,
+				'property'         => 'recordId',
+				'type'             => 'text',
+				'size'             => 36,
+				'maxLength'        => 36,
+				'label'            => 'Record Id',
+				'description'      => 'The id of the record that should not be merged.',
+				'storeDb'          => true,
 				'serverValidation' => 'validateRecordId',
-				'required' => true,
+				'required'         => true,
 			),
 			array(
-				'property' => 'notes',
-				'type' => 'text',
-				'size' => 255,
-				'maxLength' => 255,
-				'label' => 'Notes',
+				'property'    => 'notes',
+				'type'        => 'textarea',
+				//				'size'        => 255,
+				//				'maxLength'   => 255,
+				'label'       => 'Notes',
 				'description' => 'Notes related to the record.',
-				'storeDb' => true,
-				'required' => true,
+				'storeDb'     => true,
+				'required'    => true,
 			),
 		);
 		return $structure;
 	}
 
-	public function validateRecordId() {
+	public function validateRecordId(){
 		//Setup validation return array
 		$validationResults = array(
 			'validatedOk' => true,
 			'errors'      => array(),
 		);
-		if (!empty($this->source) && !empty($this->recordId)) {
-			if (!$this->getGroupedWork()) {
+		if (!empty($this->source) && !empty($this->recordId)){
+			if (!$this->getGroupedWork()){
 				$validationResults['validatedOk'] = false;
 				$validationResults['errors'][]    = 'Did not find a grouped work for record Id ' . $this->recordId . ' in source ' . $this->source;
 			}
-			if (empty($this->id)) {
+			if (empty($this->id)){
 				// for new entries, check for duplication
 				$checkDuplicate           = new NonGroupedRecord();
 				$checkDuplicate->source   = $this->source;
 				$checkDuplicate->recordId = $this->recordId;
-				if ($checkDuplicate->find()) {
+				if ($checkDuplicate->find()){
 					$validationResults['validatedOk'] = false;
 					$validationResults['errors'][]    = 'A Record To Not Merge entry for record Id ' . $this->recordId . ' in source ' . $this->source . ' already exists.';
 				}
 			}
-		} else {
+		}else{
 			$validationResults = array(
 				'validatedOk' => false,
 				'errors'      => array('No Record Id or source provided.'),
@@ -99,19 +102,19 @@ class NonGroupedRecord extends DB_DataObject{
 		return $validationResults;
 	}
 
-	private function getGroupedWork() {
-		if (isset($this->groupedWork)) {
+	private function getGroupedWork(){
+		if (isset($this->groupedWork)){
 			return $this->groupedWork;
-		} else {
-			if (!empty($this->source) && !empty($this->recordId)) {
+		}else{
+			if (!empty($this->source) && !empty($this->recordId)){
 				require_once ROOT_DIR . '/sys/Grouping/GroupedWorkPrimaryIdentifier.php';
 				$primaryIdentifierEntry             = new GroupedWorkPrimaryIdentifier();
 				$primaryIdentifierEntry->type       = $this->source;
 				$primaryIdentifierEntry->identifier = $this->recordId;
-				if ($primaryIdentifierEntry->find(true)) {
+				if ($primaryIdentifierEntry->find(true)){
 					require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 					$groupedWork = new GroupedWork();
-					if ($groupedWork->get($primaryIdentifierEntry->grouped_work_id)) {
+					if ($groupedWork->get($primaryIdentifierEntry->grouped_work_id)){
 						$this->groupedWork = $groupedWork;
 						return $this->groupedWork;
 					}
@@ -121,42 +124,28 @@ class NonGroupedRecord extends DB_DataObject{
 		}
 	}
 
-	private function markForForcedRegrouping() {
+	private function markForForcedRegrouping(){
 		$groupedWork = $this->getGroupedWork();
-		if ($groupedWork) {
-			if (!$groupedWork->forceRegrouping()) {
+		if ($groupedWork){
+			if (!$groupedWork->forceRegrouping()){
 				global $logger;
-				$logger->log('Error occurred marking grouped work ' . $this->destinationGroupedWorkId .' for forced regrouping', PEAR_LOG_ERR);
+				$logger->log('Error occurred marking grouped work ' . $groupedWork->permanent_id . ' for forced regrouping', PEAR_LOG_ERR);
 			};
 		}
 	}
 
-	function update($dataObject = false)
-	{
-		$success = parent::update($dataObject);
-		if ($success) {
-			$this->markForForcedRegrouping();
+	/**
+	 * Steps to take after saving data to database
+	 *
+	 */
+	protected function followUpActions(){
+		global $configArray;
+		if ($configArray['Catalog']['ils'] == 'Sierra'){
+			require_once ROOT_DIR . '/services/SourceAndId.php';
+			$sourceAndId = new SourceAndId($this->source . ':' . $this->recordId);
+			$this->markRecordForReExtraction($sourceAndId);
 		}
-		return $success;
-	}
-
-	function insert()
-	{
-		$success = parent::insert();
-		if ($success) {
-			$this->markForForcedRegrouping();
+		$this->markForForcedRegrouping();
 		}
-		return $success;
-	}
-
-	function delete($useWhere = false)
-	{
-		$success = parent::delete($useWhere);
-		if ($success) {
-			$this->markForForcedRegrouping();
-		}
-		return $success;
-	}
-
 
 }

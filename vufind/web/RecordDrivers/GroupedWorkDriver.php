@@ -872,6 +872,10 @@ class GroupedWorkDriver extends RecordInterface {
 	public function getStaffView(){
 		global $interface;
 
+		$user        = UserAccount::getLoggedInUser();
+		$userIsStaff = $user && $user->isStaff();
+		$interface->assign('userIsStaff', $userIsStaff);
+
 		$fields = $this->fields;
 		ksort($fields);
 		$interface->assign('details', $fields);

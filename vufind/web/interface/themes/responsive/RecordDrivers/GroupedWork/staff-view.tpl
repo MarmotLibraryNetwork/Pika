@@ -1,10 +1,15 @@
-<strip>
+{strip}
 <button onclick="return VuFind.GroupedWork.reloadCover('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">Reload Cover</button>
 <button onclick="return VuFind.GroupedWork.reloadEnrichment('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">Reload Enrichment</button>
-{if $loggedIn && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('catalogging', $userRoles))}
+    {if $loggedIn && $userIsStaff}
 	<button onclick="return VuFind.GroupedWork.forceReindex('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">Force Reindex</button>
 	<button onclick="return VuFind.GroupedWork.forceRegrouping('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">Force Regrouping</button>
 {/if}
+    {if array_key_exists('opacAdmin', $userRoles) || array_key_exists('catalogging', $userRoles)}
+			<a href="/Admin/MergedGroupedWorks?objectAction=addNew&sourceGroupedWorkId={$recordDriver->getPermanentId()}"
+			   target="_blank" class="btn btn-sm btn-default">Merge this Work to another
+			</a>
+    {/if}
 {if $loggedIn && $enableArchive && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('archives', $userRoles))}
 	<button onclick="return VuFind.GroupedWork.reloadIslandora('{$recordDriver->getUniqueID()}')" class="btn btn-sm btn-default">Clear Islandora Cache</button>
 {/if}
@@ -102,4 +107,4 @@
 		</tr>
 	{/foreach}
 </table>
-</strip>
+{/strip}

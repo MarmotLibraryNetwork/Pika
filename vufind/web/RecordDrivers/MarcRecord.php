@@ -312,11 +312,12 @@ class MarcRecord extends IndexRecord
 		$lastMarcModificationTime = MarcLoader::lastModificationTimeForIlsId($this->sourceAndId);
 		$interface->assign('lastMarcModificationTime', $lastMarcModificationTime);
 
+		$user        = UserAccount::getLoggedInUser();
+		$userIsStaff = $user && $user->isStaff();
+		$interface->assign('userIsStaff', $userIsStaff);
+
 		global $configArray;
 		if ($configArray['Catalog']['ils'] == 'Sierra'){
-			$user        = UserAccount::getLoggedInUser();
-			$userIsStaff = $user && $user->isStaff();
-			$interface->assign('userIsStaff', $userIsStaff);
 
 			// Determine whether or not we need to show the Re-extract button
 			// (Right now, only appropriate for Sierra libraries)
@@ -1833,7 +1834,7 @@ class MarcRecord extends IndexRecord
 		}
 	}
 
-	protected function getRecordType(){
+	function getRecordType(){
 		if ($this->profileType){
 			return $this->profileType;
 		}else{

@@ -172,8 +172,8 @@ class HooplaRecordDriver extends SideLoadedRecord {
 			global $interface;
 			$interface->assign('hooplaExtract', $hooplaData);
 		}
-		return 'RecordDrivers/Hoopla/staff-view.tpl';
 
+		return 'RecordDrivers/Marc/staff-view.tpl';
 	}
 
 	function getRecordUrl(){
@@ -195,7 +195,7 @@ class HooplaRecordDriver extends SideLoadedRecord {
 		return $this->id;
 	}
 
-	protected function getRecordType(){
+	function getRecordType(){
 		return 'hoopla';
 	}
 
