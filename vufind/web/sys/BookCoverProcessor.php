@@ -597,7 +597,7 @@ class BookCoverProcessor {
 	 * @return bool
 	 */
 	private function getCachedCover($filename = null){
-		if (empty($filename)){
+		if (!isset($filename)){
 			$filename = $this->cacheFile;
 		}
 		if (is_readable($filename)){ // Load local cache if available
@@ -697,9 +697,21 @@ class BookCoverProcessor {
 				return true;
 			}
 
+			if($primaryIsbn = $this->groupedWork->getSolrField('primary_isbn')) {
+				$this->isn = $primaryIsbn;
+				if ($this->getCoverFromProvider()) {
+					return true;
+				}
+			}
+
 			$recordDetails = $this->groupedWork->getSolrField('record_details');
 			foreach ($recordDetails as $recordDetail){
-				$fullId      = strtok($recordDetail, '|');
+				// don't use playaway covers for grouped work 'cause they yuck.
+				if(stristr($recordDetail, 'playaway')) {
+					continue;
+				}
+
+				$fullId = strtok($recordDetail, '|');
 				if (!isset($this->sourceAndId) || $fullId != $this->sourceAndId->getSourceAndId()){ //Don't check the main record again when going through the related records
 					$sourceAndId = new SourceAndId($fullId);
 
@@ -799,10 +811,6 @@ class BookCoverProcessor {
 
 	private function loadGroupedWork(){
 		if ($this->groupedWork == null){
-			// Include Search Engine Class
-//			require_once ROOT_DIR . '/sys/Solr.php'; // bootstrap.php does this
-//			$this->initMemcache(); // bootstrap.php does this
-
 			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 			if (!empty($this->groupedWorkId)){
 				$this->groupedWork = new GroupedWorkDriver($this->groupedWorkId);
