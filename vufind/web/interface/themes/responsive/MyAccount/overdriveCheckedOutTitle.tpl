@@ -145,6 +145,7 @@
 		</div>
 
 		{if !empty($record.supplementalTitle)}
+				{* Note: the supplemental title template has modifications of html built here *}
 				<br>
 				{foreach from=$record.supplementalTitle key="keyIgnored" item="supplementalTitle"}
 					{include file="MyAccount/overdriveSupplementTitle.tpl" }
