@@ -143,6 +143,13 @@
 
 			</div>
 		</div>
+
+		{if !empty($record.supplementalTitle)}
+				<br>
+				{foreach from=$record.supplementalTitle key="keyIgnored" item="supplementalTitle"}
+					{include file="MyAccount/overdriveSupplementTitle.tpl" }
+        {/foreach}
+		{/if}
 	</div>
 </div>
 {/strip}
