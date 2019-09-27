@@ -1246,24 +1246,27 @@ public class SierraExportAPIMain {
 				JSONObject fixedFieldResults = getMarcJSONFromSierraApiURL(apiBaseUrl + "/bibs/" + id + "?fields=fixedFields,locations");
 				if (fixedFieldResults != null && !fixedFieldResults.has("code")) {
 					DataField sierraFixedField = marcFactory.newDataField(indexingProfile.sierraBibLevelFieldTag, ' ', ' ');
+					final JSONObject fixedFields = fixedFieldResults.getJSONObject("fixedFields");
 					if (indexingProfile.bcode3Subfield != ' ') {
-						String    bCode3           = fixedFieldResults.getJSONObject("fixedFields").getJSONObject("31").getString("value");
+						String    bCode3           = fixedFields.getJSONObject("31").getString("value");
 						sierraFixedField.addSubfield(marcFactory.newSubfield(indexingProfile.bcode3Subfield, bCode3));
 					}
 					if (indexingProfile.materialTypeSubField != ' ') {
-						String matType = fixedFieldResults.getJSONObject("fixedFields").getJSONObject("30").getString("value");
+						String matType = fixedFields.getJSONObject("30").getString("value");
 						sierraFixedField.addSubfield(marcFactory.newSubfield(indexingProfile.materialTypeSubField, matType));
 					}
 					if (bibLevelLocationsSubfield != ' ') { // Probably should be added to the indexing profile at some point
-						String location = fixedFieldResults.getJSONObject("fixedFields").getJSONObject("26").getString("value");
-						if (location.equalsIgnoreCase("multi")) {
-							JSONArray locationsJSON = fixedFieldResults.getJSONArray("locations");
-							for (int k = 0; k < locationsJSON.length(); k++) {
-								location = locationsJSON.getJSONObject(k).getString("code");
+						if (fixedFields.has("26")) {
+							String location = fixedFields.getJSONObject("26").getString("value");
+							if (location.equalsIgnoreCase("multi")) {
+								JSONArray locationsJSON = fixedFieldResults.getJSONArray("locations");
+								for (int k = 0; k < locationsJSON.length(); k++) {
+									location = locationsJSON.getJSONObject(k).getString("code");
+									sierraFixedField.addSubfield(marcFactory.newSubfield(bibLevelLocationsSubfield, location));
+								}
+							} else {
 								sierraFixedField.addSubfield(marcFactory.newSubfield(bibLevelLocationsSubfield, location));
 							}
-						} else {
-							sierraFixedField.addSubfield(marcFactory.newSubfield(bibLevelLocationsSubfield, location));
 						}
 					}
 					marcRecord.addVariableField(sierraFixedField);
@@ -1274,7 +1277,7 @@ public class SierraExportAPIMain {
 
 					//TODO: Add locations for Flatirons
 
-					if (fixedFieldResults.getJSONObject("fixedFields").has("27")) { // Copies fixed field
+					if (fixedFields.has("27")) { // Copies fixed field
 						//Get Items for the bib record
 						getItemsForBib(id, marcRecord);
 						logger.debug("Processed items for Bib");
