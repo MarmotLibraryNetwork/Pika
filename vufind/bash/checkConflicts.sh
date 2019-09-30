@@ -10,14 +10,15 @@ function checkConflictingProcesses() {
 	let numInitialConflicts=countConflictingProcesses
 	#Wait until the conflict is gone.
 	until ((${countConflictingProcesses} == 0)); do
-		countConflictingProcesses=$(ps aux | grep -v sudo | grep -c "$1")
-		countConflictingProcesses=$((countConflictingProcesses-1))
+		#Pause, then test.
 		if [[ -z $pause ]];
 		then
 			sleep 300
 		else
 			sleep $pause
 		fi
+		countConflictingProcesses=$(ps aux | grep -v sudo | grep -c "$1")
+		countConflictingProcesses=$((countConflictingProcesses-1))
 	done
 	#Return the number of conflicts we found initially.
 	echo ${numInitialConflicts};
