@@ -41,6 +41,7 @@
 namespace Pika\PatronDrivers;
 
 use Curl\Curl;
+use ErrorException;
 use \Pika\Logger;
 use \Pika\Cache;
 use Location;
@@ -78,11 +79,9 @@ class Sierra {
 		//global $memCache;
 
 		$this->configArray    = $configArray;
-		//$this->memCache       = $memCache;
 		$this->accountProfile = $accountProfile;
-		// TODO: logger.
 		$this->logger = new Logger('SierraPatronAPI');
-		// TODO: cache
+
 		$cache = initCache();
 		$this->memCache = new Cache($cache);
 		// build the api url
@@ -95,7 +94,7 @@ class Sierra {
 		if(!isset($this->oAuthToken)) {
 			if(!$this->_oAuthToken()) {
 				// logging happens in _oAuthToken()
-				# TODO: what is the return if error
+
 				return FALSE;
 			}
 		}
@@ -147,6 +146,10 @@ class Sierra {
 				///////////////
 				// INNREACH CHECKOUT
 				///////////////
+
+				// $theme to look for cover image
+				$theme = $this->configArray['Site']['theme'];
+
 				$innReach = new InnReach();
 				$titleAndAuthor = $innReach->getCheckoutTitleAuthor($checkoutId);
 
@@ -158,7 +161,8 @@ class Sierra {
 				$checkout['recordId']       = 0;
 				$checkout['renewIndicator'] = $checkoutId;
 				$checkout['renewMessage']   = '';
-				$checkout['coverUrl']       = '/interface/themes/marmot/images/InnReachCover.png';
+				// todo: cover url need to be somehting global
+				$checkout['coverUrl']       = '/interface/themes/'.$theme.'/images/InnReachCover.png';
 				$checkout['barcode']        = $entry->barcode;
 				$checkout['request']        = $entry->callNumber;
 				$checkout['author']        = $titleAndAuthor['author'];
@@ -1422,6 +1426,7 @@ class Sierra {
 	 * Send oAuth token request
 	 *
 	 * @return boolean true on success, false otherwise
+	 * @throws ErrorException
 	 */
 	private function _oAuthToken() {
 		// check memcache for valid token and set $this
@@ -1453,12 +1458,8 @@ class Sierra {
 			CURLOPT_HEADER         => false
 		];
 
-		try {
-			$c = new Curl();
-		} catch (ErrorException $e) {
-			// TODO: log exception
-			return false;
-		}
+		// If there's an exception here, let it play out
+		$c = new Curl();
 
 		$c->setHeaders($headers);
 		$c->setOpts($opts);
@@ -1474,13 +1475,13 @@ class Sierra {
 			// This will probably never be triggered since we have the try/catch above.
 			$message = 'cUrl Error: '.$c->errorCode.': '.$c->errorMessage;
 			$this->apiLastError = $message;
-			$this->logger->info($message);
-			return false;
+			$this->logger->error($message);
+			throw new ErrorException($message);
 		} elseif ($cInfo['http_code'] != 200) { // check the request returned success (HTTP 200)
 			$message = 'API Error: '.$c->response->code.': '.$c->response->name;
 			$this->apiLastError = $message;
-			$this->logger->info($message);
-			return false;
+			$this->logger->error($message);
+			throw new ErrorException($message);
 		}
 		// make sure to set last error to false if no errors.
 		$this->apiLastError = false;
@@ -1491,7 +1492,7 @@ class Sierra {
 		$this->oAuthToken = $token;
 		$this->memCache->set("sierra_oauth_token", $token, $expires);
 		$this->logger->info('Got new oAuth token.');
-		return TRUE;
+		return true;
 	}
 
 	/**
