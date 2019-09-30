@@ -49,6 +49,7 @@ if (isset($_REQUEST['test_role'])){
 // Start Interface
 $interface = new UInterface();
 $timer->logTime('Create interface');
+// todo: these should be moved to Interface.php
 if (isset($configArray['Site']['responsiveLogo'])){
 	$interface->assign('responsiveLogo', $configArray['Site']['responsiveLogo']);
 }
@@ -67,6 +68,7 @@ getGitBranch();
 $interface->loadDisplayOptions();
 $timer->logTime('Loaded display options within interface');
 
+// todo: Does anyone use Pika Analytics? Need to remove
 require_once ROOT_DIR . '/sys/Analytics.php';
 //Define tracking to be done
 global $analytics;
