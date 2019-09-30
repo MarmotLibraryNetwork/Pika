@@ -441,6 +441,7 @@ class OverDriveDriver3 {
 		//print_r($response);
 		$checkedOutTitles = array();
 		if (isset($response->checkouts)){
+			$supplementalTitles    = array();
 			foreach ($response->checkouts as $curTitle){
 				$bookshelfItem = array();
 				//Load data from api
@@ -452,6 +453,15 @@ class OverDriveDriver3 {
 				$checkOutDate                    = new DateTime($curTitle->checkoutDate);
 				$bookshelfItem['checkoutdate']   = $checkOutDate->getTimestamp();
 				$bookshelfItem['overdriveRead']  = false;
+
+				if (!empty($curTitle->links->bundledChildren)){
+					foreach ($curTitle->links->bundledChildren as $supplementalTitle){
+						$supplementalTitleId                  = ltrim(strrchr($supplementalTitle->href, '/'), '/'); // The Overdrive ID of a supplemental title is at the end of the url
+						$bookshelfItem['supplementalTitle'][$supplementalTitleId] = array();
+						$supplementalTitles[]                 = $supplementalTitleId;
+					}
+				}
+
 				if (isset($curTitle->isFormatLockedIn) && $curTitle->isFormatLockedIn == 1){
 					$bookshelfItem['formatSelected'] = true;
 				}else{
@@ -471,14 +481,14 @@ class OverDriveDriver3 {
 								$bookshelfItem['overdriveMagazine'] = true;
 							}else{
 								$bookshelfItem['selectedFormat'] = array(
-									'name' => $this->format_map[$format->formatType],
+									'name'   => $this->format_map[$format->formatType],
 									'format' => $format->formatType,
 								);
 							}
-							$curFormat = array();
-							$curFormat['id'] = $id;
+							$curFormat           = array();
+							$curFormat['id']     = $id;
 							$curFormat['format'] = $format;
-							$curFormat['name'] = $format->formatType;
+							$curFormat['name']   = $format->formatType;
 							if (isset($format->links->self)){
 								$curFormat['downloadUrl'] = $format->links->self->href . '/downloadlink';
 							}
@@ -534,25 +544,39 @@ class OverDriveDriver3 {
 					//Figure out which eContent record this is for.
 					require_once ROOT_DIR . '/RecordDrivers/OverDriveRecordDriver.php';
 					$overDriveRecord           = new OverDriveRecordDriver($bookshelfItem['overDriveId']);
-					$bookshelfItem['recordId'] = $overDriveRecord->getUniqueID();
-					$groupedWorkId             = $overDriveRecord->getGroupedWorkId();
-					if ($groupedWorkId != null){
-						$bookshelfItem['groupedWorkId'] = $groupedWorkId;
+					if ($overDriveRecord->isValid()){
+						$bookshelfItem['recordId'] = $overDriveRecord->getUniqueID();
+						$groupedWorkId             = $overDriveRecord->getGroupedWorkId();
+						if ($groupedWorkId != null){
+							$bookshelfItem['groupedWorkId'] = $groupedWorkId;
+						}
+						$formats                     = $overDriveRecord->getFormats();
+						$bookshelfItem['format']     = reset($formats);
+						$bookshelfItem['coverUrl']   = $overDriveRecord->getCoverUrl('medium');
+						$bookshelfItem['recordUrl']  = $configArray['Site']['path'] . '/OverDrive/' . $overDriveRecord->getUniqueID() . '/Home';
+						$bookshelfItem['title']      = $overDriveRecord->getTitle();
+						$bookshelfItem['author']     = $overDriveRecord->getAuthor();
+						$bookshelfItem['linkUrl']    = $overDriveRecord->getLinkUrl(false);
+						$bookshelfItem['ratingData'] = $overDriveRecord->getRatingData();
 					}
-					$formats = $overDriveRecord->getFormats();
-					$bookshelfItem['format']     = reset($formats);
-					$bookshelfItem['coverUrl']   = $overDriveRecord->getCoverUrl('medium');
-					$bookshelfItem['recordUrl']  = $configArray['Site']['path'] . '/OverDrive/' . $overDriveRecord->getUniqueID() . '/Home';
-					$bookshelfItem['title']      = $overDriveRecord->getTitle();
-					$bookshelfItem['author']     = $overDriveRecord->getAuthor();
-					$bookshelfItem['linkUrl']    = $overDriveRecord->getLinkUrl(false);
-					$bookshelfItem['ratingData'] = $overDriveRecord->getRatingData();
 				}
 				$bookshelfItem['user']   = $user->getNameAndLibraryLabel();
 				$bookshelfItem['userId'] = $user->id;
 
 				$key                    = $bookshelfItem['checkoutSource'] . $bookshelfItem['overDriveId'];
 				$checkedOutTitles[$key] = $bookshelfItem;
+			}
+		}
+		if (!empty($supplementalTitles)){
+			foreach ($supplementalTitles as $supplementalTitleId){
+				$key = $bookshelfItem['checkoutSource'] . $supplementalTitleId;
+				$supplementalTitle = $checkedOutTitles[$key];
+				unset($checkedOutTitles[$key]);
+				foreach ($checkedOutTitles as &$checkedOutTitle){
+					if (!empty($checkedOutTitle['supplementalTitle']) && in_array($supplementalTitleId, array_keys($checkedOutTitle['supplementalTitle']))){
+						$checkedOutTitle['supplementalTitle'][$supplementalTitleId] = $supplementalTitle;
+					}
+				}
 			}
 		}
 		if (!$forSummary){
