@@ -54,7 +54,7 @@
                 {/if}
 
                 {if (array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles))}
-									<a href="/Admin/NonGroupedRecords?objectAction=addNew&recordId={$recordDriver->getId()}&sourceSelect={$recordDriver->getRecordType()}"
+									<a href="/Admin/NonGroupedRecords?objectAction=addNew&recordId={$recordDriver->getId()}&sourceSelect={$recordDriver->getRecordType()}&notes={$recordDriver->getShortTitle()|removeTrailingPunctuation|escape}%0A{$userDisplayName}, {$homeLibrary}, {$smarty.now|date_format}%0A"
 									   target="_blank" class="btn btn-sm btn-default">UnMerge from Work
 									</a>
                 {/if}
@@ -84,25 +84,25 @@
 	{/if}
 {/if}
 
-    {if $hooplaExtract}
+		{if $hooplaExtract}
 			<h3>Hoopla Extract Information</h3>
 			<table class="table-striped table table-condensed notranslate">
-          {foreach from=$hooplaExtract key='field' item='values'}
-              {if $field != 'id'}{* this id is the database table id, and will confuse most users as the hoopla id*}
+					{foreach from=$hooplaExtract key='field' item='values'}
+							{if $field != 'id'}{* this id is the database table id, and will confuse most users as the hoopla id*}
 								<tr>
 									<th>{$field|escape}</th>
 									<td>
-                      {if $field == 'dateLastUpdated'}
-                          {$values|date_format:"%b %d, %Y %r"}
-                      {else}
-                          {implode subject=$values glue=', ' sort=true}
-                      {/if}
+											{if $field == 'dateLastUpdated'}
+													{$values|date_format:"%b %d, %Y %r"}
+											{else}
+													{implode subject=$values glue=', ' sort=true}
+											{/if}
 									</td>
 								</tr>
-              {/if}
-          {/foreach}
+							{/if}
+					{/foreach}
 			</table>
-    {/if}
+		{/if}
 
     {if $marcRecord}
 			<h3>Record Information</h3>

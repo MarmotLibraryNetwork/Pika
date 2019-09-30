@@ -6,7 +6,7 @@
 			<button onclick="return VuFind.GroupedWork.forceRegrouping('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">Force Regrouping</button>
 
 				{if array_key_exists('opacAdmin', $userRoles) || array_key_exists('catalogging', $userRoles)}
-					<a href="/Admin/MergedGroupedWorks?objectAction=addNew&sourceGroupedWorkId={$recordDriver->getPermanentId()}"
+					<a href="/Admin/MergedGroupedWorks?objectAction=addNew&sourceGroupedWorkId={$recordDriver->getPermanentId()}&notes={$recordDriver->getTitle()|removeTrailingPunctuation|escape}%0A{$userDisplayName}, {$homeLibrary}, {$smarty.now|date_format}%0A"
 						 target="_blank" class="btn btn-sm btn-default">Merge this Work to another
 					</a>
 				{/if}
