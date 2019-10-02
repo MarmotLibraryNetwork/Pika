@@ -14,14 +14,11 @@
 		{else}
 			{* Display Title *}
 			<h2>
-				{*{$recordDriver->getTitle()|escape}*}{* // ever a case when the trailing punction is needed? *}
-				{$recordDriver->getTitle()|removeTrailingPunctuation|escape}
-				{if $recordDriver->getTitleSection()}
-					:&nbsp;{$recordDriver->getTitleSection()|removeTrailingPunctuation|escape}
-				{/if}
-				{* if $recordDriver->getTitleStatement()}
-					<br><small>{$recordDriver->getTitleStatement()}</small>
-				{/if *}
+					{*Short Title excludes the sub-title *}
+				{$recordDriver->getShortTitle()|removeTrailingPunctuation|escape}
+				{if $recordDriver->getSubTitle() && $recordDriver->getSubTitle()|lower != $recordDriver->getShortTitle()|lower}: {$recordDriver->getSubTitle()|removeTrailingPunctuation|escape}{/if}
+				{* Don't display the subtitle if it is the same text as the short title *}
+				{if $recordDriver->getTitleSection()}:&nbsp;{$recordDriver->getTitleSection()|removeTrailingPunctuation|escape}{/if}
 				{if $recordDriver->getFormats()}
 					<br><small>({implode subject=$recordDriver->getFormats() glue=", "})</small>
 				{/if}

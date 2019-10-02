@@ -1,5 +1,6 @@
 <?xml version="1.0" ?>
-<schema name="Pika Grouped Record Index" version="1.3">
+<schema name="Pika Grouped Work Index" version="1.5">
+<!--	The solr documents id is based on the grouped work id, except for user list documents -->
 	<types>
 		<fieldType name="string" class="solr.StrField" sortMissingLast="true" omitNorms="true"/>
 		<fieldType name="integer" class="solr.TrieIntField" omitNorms="true"/>
@@ -166,11 +167,6 @@
 		<dynamicField name="format_category_*" type="string" indexed="true" stored="true" multiValued="true" omitNorms="true" docValues="true"/>
 		<!-- Link availability and format for better FRBR display -->
 		<dynamicField name="availability_by_format_*" type="string" indexed="true" stored="true" multiValued="true" omitNorms="true"/>
-		<!-- Language Related Fields -->
-		<field name="language" type="string" indexed="true" stored="true" multiValued="true" omitNorms="true" docValues="true"/>
-		<field name="translation" type="string" indexed="true" stored="true" multiValued="true" omitNorms="true" docValues="true"/>
-		<field name="language_boost" type="integer" indexed="true" stored="true" multiValued="false" omitNorms="true" default="1"/>
-		<field name="language_boost_es" type="integer" indexed="true" stored="true" multiValued="false" omitNorms="true" default="1"/>
 		<!-- Publication information -->
 		<field name="publisher" type="textProper" indexed="true" stored="true" multiValued="true"/>
 		<field name="publisherStr" type="string" indexed="true" stored="true" multiValued="true"/>
@@ -224,7 +220,6 @@
 		<field name="econtent_device" type="string" indexed="true" stored="true" multiValued="true" docValues="true"/>
 		<dynamicField name="econtent_source_*" type="string" indexed="true" stored="true" multiValued="true" docValues="true"/>
 		<dynamicField name="econtent_protection_type_*" type="string" indexed="true" stored="true" multiValued="true" docValues="true"/>
-		<field name="hooplaPrice" type="float" indexed="true" stored="true" multiValued="false" docValues="true"/>
 		<!-- Broad Search Terms -->
 		<field name="table_of_contents" type="text" indexed="true" stored="true" multiValued="true"/>
 		<field name="table_of_contents_proper" type="textProper" indexed="true" stored="true" multiValued="true"/>
@@ -251,6 +246,11 @@
 		<dynamicField name="local_callnumber_exact_*" type="text-exact" indexed="true" stored="true" multiValued="true"/>
 		<dynamicField name="local_callnumber_left_*" type="text-left" indexed="true" stored="true" multiValued="true"/>
 		<dynamicField name="callnumber_sort_*" type="text-exact" indexed="true" stored="true" multiValued="false"/>
+		<!-- Language Related Fields -->
+		<dynamicField name="language_*" type="string" indexed="true" stored="true" multiValued="true" omitNorms="true" docValues="true"/>
+		<dynamicField name="translation_*" type="string" indexed="true" stored="true" multiValued="true" omitNorms="true" docValues="true"/>
+		<dynamicField name="language_boost_*" type="integer" indexed="true" stored="true" multiValued="false" omitNorms="true"/>
+		<dynamicField name="language_boost_es_*" type="integer" indexed="true" stored="true" multiValued="false" omitNorms="true"/>
 		<!-- Fields for boosting branch holdings -->
 		<dynamicField name="lib_boost_*" type="integer" indexed="true" stored="true" multiValued="false" omitNorms="true"/>
 		<!-- relevance determiners -->

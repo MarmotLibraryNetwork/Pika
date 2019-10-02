@@ -1621,7 +1621,7 @@ class IndexRecord extends RecordInterface
 		return $workAPI->getRatingData($this->getGroupedWorkId());
 	}
 
-	protected function getRecordType(){
+	public function getRecordType(){
 		return 'unknown';
 	}
 

@@ -1,3 +1,4 @@
+//TODO: delete me
 $(document).ready(function(){
 	$("#typeSelect").bind('change', function(){
 		if (this.value == 'mp3'){

@@ -1,3 +1,8 @@
+{*
+Custom themes (if upading this please check these themes)
+* csl/Record/hold-popup.tpl
+* arlington/Record/hold-popup.tpl
+*}
 {strip}
 <div id="page-content" class="content">
 	<form name="placeHoldForm" id="placeHoldForm" method="post" class="form">

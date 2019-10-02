@@ -11,9 +11,9 @@
 function getGroupedWorkUpdates(){
 	return array(
 		'grouped_works' => array(
-			'title' => 'Setup Grouped Works',
+			'title'       => 'Setup Grouped Works',
 			'description' => 'Sets up tables for grouped works so we can index and display them.',
-			'sql' => array(
+			'sql'         => array(
 				"CREATE TABLE IF NOT EXISTS grouped_work (
 					id BIGINT(20) NOT NULL AUTO_INCREMENT,
 					permanent_id CHAR(36) NOT NULL,
@@ -39,9 +39,9 @@ function getGroupedWorkUpdates(){
 		),
 
 		'grouped_works_1' => array(
-			'title' => 'Grouped Work update 1',
+			'title'       => 'Grouped Work update 1',
 			'description' => 'Updates grouped works to normalize identifiers and add a reference table to link to .',
-			'sql' => array(
+			'sql'         => array(
 				"CREATE TABLE IF NOT EXISTS grouped_work_identifiers_ref (
 					grouped_work_id BIGINT(20) NOT NULL,
 					identifier_id BIGINT(20) NOT NULL,
@@ -56,27 +56,27 @@ function getGroupedWorkUpdates(){
 		),
 
 		'grouped_works_2' => array(
-			'title' => 'Grouped Work update 2',
+			'title'       => 'Grouped Work update 2',
 			'description' => 'Updates grouped works to add a full title field.',
-			'sql' => array(
+			'sql'         => array(
 				"ALTER TABLE `grouped_work` ADD `full_title` VARCHAR( 276 ) NOT NULL",
 				"ALTER TABLE `grouped_work` ADD INDEX(`full_title`)",
 			),
 		),
 
 		'grouped_works_remove_split_titles' => array(
-			'title' => 'Grouped Work Remove Split Titles',
+			'title'       => 'Grouped Work Remove Split Titles',
 			'description' => 'Updates grouped works to add a full title field.',
-			'sql' => array(
+			'sql'         => array(
 				"ALTER TABLE `grouped_work` DROP COLUMN `title`",
 				"ALTER TABLE `grouped_work` DROP COLUMN `subtitle`",
 			),
 		),
 
 		'grouped_works_primary_identifiers' => array(
-			'title' => 'Grouped Work Primary Identifiers',
+			'title'       => 'Grouped Work Primary Identifiers',
 			'description' => 'Add primary identifiers table for works.',
-			'sql' => array(
+			'sql'         => array(
 				"CREATE TABLE IF NOT EXISTS grouped_work_primary_identifiers (
 					id BIGINT(20) NOT NULL AUTO_INCREMENT,
 					grouped_work_id BIGINT(20) NOT NULL,
@@ -90,26 +90,26 @@ function getGroupedWorkUpdates(){
 		),
 
 		'grouped_works_primary_identifiers_1' => array(
-			'title' => 'Grouped Work Primary Identifiers Update 1',
+			'title'       => 'Grouped Work Primary Identifiers Update 1',
 			'description' => 'Add additional types of identifiers.',
-			'sql' => array(
+			'sql'         => array(
 				"ALTER TABLE grouped_work_primary_identifiers CHANGE `type` `type` ENUM('ils', 'external', 'drm', 'free', 'overdrive' ) NOT NULL",
 			),
 		),
 
 		'grouped_work_identifiers_ref_indexing' => array(
-			'title' => 'Grouped Work Identifiers Ref Indexing',
+			'title'       => 'Grouped Work Identifiers Ref Indexing',
 			'description' => 'Add indexing to identifiers re.',
-			'sql' => array(
+			'sql'         => array(
 				"ALTER TABLE grouped_work_identifiers_ref ADD INDEX(identifier_id)",
 				"ALTER TABLE grouped_work_identifiers_ref ADD INDEX(grouped_work_id)",
 			),
 		),
 
 		'grouped_works_partial_updates' => array(
-			'title' => 'Grouped Work Partial Updates',
+			'title'       => 'Grouped Work Partial Updates',
 			'description' => 'Updates to allow only changed records to be regrouped.',
-			'sql' => array(
+			'sql'         => array(
 				"ALTER TABLE grouped_work ADD date_updated INT(11)",
 				"CREATE TABLE grouped_work_primary_to_secondary_id_ref (
 					primary_identifier_id BIGINT(20),
@@ -123,9 +123,9 @@ function getGroupedWorkUpdates(){
 		),
 
 		'grouped_work_engine' => array(
-			'title' => 'Grouped Work Engine',
+			'title'       => 'Grouped Work Engine',
 			'description' => 'Change storage engine to INNODB for grouped work tables',
-			'sql' => array(
+			'sql'         => array(
 				'ALTER TABLE `grouped_work` ENGINE = InnoDB',
 				'ALTER TABLE `grouped_work_identifiers` ENGINE = InnoDB',
 				'ALTER TABLE `grouped_work_identifiers_ref` ENGINE = InnoDB',
@@ -136,9 +136,9 @@ function getGroupedWorkUpdates(){
 		),
 
 		'grouped_work_merging' => array(
-			'title' => 'Grouped Work Merging',
+			'title'       => 'Grouped Work Merging',
 			'description' => 'Add a new table to allow manual merging of grouped works',
-			'sql' => array(
+			'sql'         => array(
 				"CREATE TABLE IF NOT EXISTS merged_grouped_works(
 					id BIGINT(20) NOT NULL AUTO_INCREMENT,
 					sourceGroupedWorkId CHAR(36) NOT NULL,
@@ -151,34 +151,34 @@ function getGroupedWorkUpdates(){
 		),
 
 		'grouped_work_index_date_updated' => array(
-			'title' => 'Grouped Work Index Date Update',
+			'title'       => 'Grouped Work Index Date Update',
 			'description' => 'Index date updated to improve performance',
-			'sql' => array(
+			'sql'         => array(
 				"ALTER TABLE `grouped_work` ADD INDEX(`date_updated`)",
 			)
 		),
 
 		'grouped_work_evoke' => array(
-			'title' => 'Grouped Work eVoke',
+			'title'       => 'Grouped Work eVoke',
 			'description' => 'Allow eVoke as a valid identifier type ',
-			'sql' => array(
+			'sql'         => array(
 				"ALTER TABLE grouped_work_primary_identifiers CHANGE `type` `type` ENUM('ils', 'external', 'drm', 'free', 'overdrive', 'evoke' ) NOT NULL",
 			)
 		),
 
 		'grouped_work_primary_identifiers_hoopla' => array(
-			'title' => 'Grouped Work Updates to support Hoopla',
+			'title'       => 'Grouped Work Updates to support Hoopla',
 			'description' => 'Allow hoopla as a valid identifier type',
-			'sql' => array(
+			'sql'         => array(
 				"ALTER TABLE grouped_work_primary_identifiers CHANGE `type` `type` ENUM('ils', 'external', 'drm', 'free', 'overdrive', 'evoke', 'hoopla' ) NOT NULL",
 			),
 		),
 
 		'grouped_work_index_cleanup' => array(
-			'title' => 'Cleanup Grouped Work Indexes',
-			'description' => 'Cleanup Indexes for better performance',
+			'title'           => 'Cleanup Grouped Work Indexes',
+			'description'     => 'Cleanup Indexes for better performance',
 			'continueOnError' => true,
-			'sql' => array(
+			'sql'             => array(
 				"DROP INDEX title on grouped_work",
 				"DROP INDEX full_title on grouped_work",
 				"DROP INDEX grouped_work_id on grouped_work_identifiers",
@@ -192,10 +192,10 @@ function getGroupedWorkUpdates(){
 		),
 
 		'grouped_work_duplicate_identifiers' => array(
-			'title' => 'Cleanup Grouped Duplicate Identifiers within ',
-			'description' => 'Cleanup Duplicate Identifiers that were added mistakenly',
+			'title'           => 'Cleanup Grouped Duplicate Identifiers within ',
+			'description'     => 'Cleanup Duplicate Identifiers that were added mistakenly',
 			'continueOnError' => true,
-			'sql' => array(
+			'sql'             => array(
 				"TRUNCATE table grouped_work_identifiers",
 				"TRUNCATE table grouped_work_identifiers_ref",
 				"TRUNCATE table grouped_work_primary_to_secondary_id_ref",
@@ -205,21 +205,42 @@ function getGroupedWorkUpdates(){
 		),
 
 		'grouped_work_primary_identifier_types' => array(
-			'title' => 'Expand Primary Identifiers Types ',
-			'description' => 'Expand Primary Identifiers so they can be any type to make it easier to index different collections.',
+			'title'           => 'Expand Primary Identifiers Types ',
+			'description'     => 'Expand Primary Identifiers so they can be any type to make it easier to index different collections.',
 			'continueOnError' => true,
-			'sql' => array(
+			'sql'             => array(
 				"ALTER TABLE grouped_work_primary_identifiers CHANGE `type` `type` VARCHAR(50) NOT NULL",
 			),
 		),
 
 		'increase_ilsID_size_for_ils_marc_checksums' => array(
-			'title' => 'Expand ilsId Size',
-			'description' => 'Increase the column size of the ilsId in the ils_marc_checksums table to accomodate larger Sideload Ids.',
+			'title'           => 'Expand ilsId Size',
+			'description'     => 'Increase the column size of the ilsId in the ils_marc_checksums table to accomodate larger Sideload Ids.',
 			'continueOnError' => true,
-			'sql' => array(
+			'sql'             => array(
 				"ALTER TABLE `ils_marc_checksums` CHANGE COLUMN `ilsId` `ilsId` VARCHAR(50) NOT NULL ;",
 			),
 		),
+
+		'historical_grouped_works' => array(
+			'title'       => 'Create a historical grouped work factors table',
+			'description' => 'Table to track grouping factors that lead to the unique permanent id among grouping versions. Do not remove entries even if there are no longer contributing records in the catalog. ',
+			'sql'         => array(
+				"CREATE TABLE IF NOT EXISTS `grouped_work_historical` (
+				  `permanent_id` CHAR(36) NOT NULL,
+				  `grouping_title` VARCHAR(250) NOT NULL,
+				  `grouping_author` VARCHAR(50) NOT NULL,
+				  `grouping_category` VARCHAR(25) NOT NULL,
+				  `grouping_version` SMALLINT(1) UNSIGNED NOT NULL,
+				  UNIQUE INDEX `index1` (`permanent_id` ASC, `grouping_title` ASC, `grouping_author` ASC, `grouping_category` ASC, `grouping_version` ASC))
+				ENGINE = InnoDB
+				DEFAULT CHARACTER SET = utf8
+				COMMENT = 'Table to track grouping factors that lead to the unique permanent id among grouping versions. Do not remove entries even if there are no longer contributing records in the catalog. ';
+",
+			),
+
+		),
+
+
 	);
 }

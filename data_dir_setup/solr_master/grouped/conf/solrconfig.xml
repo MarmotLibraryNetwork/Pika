@@ -798,7 +798,7 @@
 	<requestHandler name="/replication" class="solr.ReplicationHandler" >
 		<lst name="master">
 			<!--Replicate on 'startup' and 'commit'. 'optimize' is also a valid value for replicateAfter. -->
-			<str name="replicateAfter">startup</str>
+<!--			<str name="replicateAfter">startup</str>-->
 			<str name="replicateAfter">commit</str>
 			<str name="confFiles">schema.xml,mapping-ISOLatin1Accent.txt,protwords.txt,stopwords.txt,synonyms.txt,elevate.xml</str>
 		</lst>

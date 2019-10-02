@@ -2,11 +2,11 @@ package org.pika;
 
 import au.com.bytecode.opencsv.CSVWriter;
 import org.apache.solr.client.solrj.SolrServer;
+import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.BinaryRequestWriter;
 import org.apache.solr.client.solrj.impl.ConcurrentUpdateSolrServer;
 import org.apache.solr.client.solrj.impl.HttpSolrServer;
 import org.apache.solr.common.SolrInputDocument;
-import org.ini4j.Ini;
 
 import java.io.*;
 import java.sql.*;
@@ -17,7 +17,7 @@ import java.util.Date;
 import org.apache.log4j.Logger;
 
 /**
- * Indexes records extracted from the ILS
+ * Indexer
  *
  * Pika
  * User: Mark Noble
@@ -25,98 +25,75 @@ import org.apache.log4j.Logger;
  * Time: 2:26 PM
  */
 public class GroupedWorkIndexer {
-	private Ini                                      configIni;
-	private String                                   baseLogPath;
-	private String                                   serverName;
-	private String                                   solrPort;
-	private Logger                                   logger;
-	private SolrServer                               solrServer;
-	private Long                                     indexStartTime;
-	private ConcurrentUpdateSolrServer               updateServer;
-	private HashMap<String, MarcRecordProcessor>     ilsRecordProcessors = new HashMap<>();
-	private OverDriveProcessor                       overDriveProcessor;
-	private HashMap<String, HashMap<String, String>> translationMaps     = new HashMap<>();
-	private HashMap<String, LexileTitle>             lexileInformation   = new HashMap<>();
-	private HashMap<String, ARTitle>                 arInformation       = new HashMap<>();
-	private Long                                     maxWorksToProcess   = -1L;
+	private       String                                   serverName;
+	private       Logger                                   logger;
+	private final PikaSystemVariables                      systemVariables;
+	private       SolrServer                               solrServer;
+	private       ConcurrentUpdateSolrServer               updateServer;
+	private       HashMap<String, MarcRecordProcessor>     ilsRecordProcessors                   = new HashMap<>();
+	private       OverDriveProcessor                       overDriveProcessor;
+	private       HashMap<String, HashMap<String, String>> translationMaps                       = new HashMap<>();
+	private       HashMap<String, LexileTitle>             lexileInformation                     = new HashMap<>();
+	private       HashMap<String, ARTitle>                 arInformation                         = new HashMap<>();
+	private       String                                   solrPort                              = PikaConfigIni.getIniValue("Reindex", "solrPort");
+	private       String                                   baseLogPath                           = PikaConfigIni.getIniValue("Site", "baseLogPath");
+	private       Integer                                  maxWorksToProcess                     = PikaConfigIni.getIntIniValue("Reindex", "maxWorksToProcess");
+	private       Integer                                  availableAtLocationBoostValue         = PikaConfigIni.getIntIniValue("Reindex", "availableAtLocationBoostValue");
+	private       Integer                                  ownedByLocationBoostValue             = PikaConfigIni.getIntIniValue("Reindex", "ownedByLocationBoostValue");
+	private       boolean                                  giveOnOrderItemsTheirOwnShelfLocation = PikaConfigIni.getBooleanIniValue("Reindex", "giveOnOrderItemsTheirOwnShelfLocation");
 
+	private Connection        pikaConn;
 	private PreparedStatement getRatingStmt;
 	private PreparedStatement getNovelistStmt;
-	private Connection        pikaConn;
+	private PreparedStatement getGroupedWorkPrimaryIdentifiers;
+	private PreparedStatement getDateFirstDetectedStmt;
 
-	private int     availableAtLocationBoostValue;
-	private int     ownedByLocationBoostValue;
-	private boolean giveOnOrderItemsTheirOwnShelfLocation = false;
-
+	private Long    indexStartTime;
 	private boolean fullReindex;
 	private long    lastReindexTime;
-	private Long    lastReindexTimeVariableId;
 	private boolean partialReindexRunning;
-	private Long    partialReindexRunningVariableId;
-	private Long    fullReindexRunningVariableId;
 	private boolean okToIndex = true;
-
 
 	private HashSet<String> worksWithInvalidLiteraryForms = new HashSet<>();
 	private TreeSet<Scope>  scopes                        = new TreeSet<>();
 
-	private PreparedStatement getGroupedWorkPrimaryIdentifiers;
-	private PreparedStatement getDateFirstDetectedStmt;
+	//Keep track of what we are indexing for validation purposes
+	private TreeMap<String, TreeSet<String>>     ilsRecordsIndexed = new TreeMap<>();
+	private TreeMap<String, TreeSet<String>>     ilsRecordsSkipped = new TreeMap<>();
+	private TreeMap<String, ScopedIndexingStats> indexingStats     = new TreeMap<>();
+	TreeSet<String> overDriveRecordsIndexed = new TreeSet<>();
+	TreeSet<String> overDriveRecordsSkipped = new TreeSet<>();
 
 
-	public GroupedWorkIndexer(String serverName, Connection pikaConn, Connection econtentConn, Ini configIni, boolean fullReindex, boolean singleWorkIndex, Logger logger) {
-		indexStartTime                = new Date().getTime() / 1000;
-		this.serverName               = serverName;
-		this.logger                   = logger;
-		this.pikaConn                 = pikaConn;
-		this.fullReindex              = fullReindex;
-		this.configIni                = configIni;
 
-		solrPort                      = configIni.get("Reindex", "solrPort");
-
-		availableAtLocationBoostValue = Integer.parseInt(configIni.get("Reindex", "availableAtLocationBoostValue"));
-		ownedByLocationBoostValue     = Integer.parseInt(configIni.get("Reindex", "ownedByLocationBoostValue"));
-		giveOnOrderItemsTheirOwnShelfLocation = Boolean.parseBoolean(configIni.get("Reindex", "giveOnOrderItemsTheirOwnShelfLocation"));
-		baseLogPath                   = Util.cleanIniValue(configIni.get("Site", "baseLogPath"));
-
-		String maxWorksToProcessStr   = Util.cleanIniValue(configIni.get("Reindex", "maxWorksToProcess"));
-		if (maxWorksToProcessStr != null && maxWorksToProcessStr.length() > 0){
-			try{
-				maxWorksToProcess = Long.parseLong(maxWorksToProcessStr);
-				logger.warn("Processing a maximum of " + maxWorksToProcess + " works");
-			}catch (NumberFormatException e){
-				logger.warn("Unable to parse max works to process " + maxWorksToProcessStr);
-			}
+	public GroupedWorkIndexer(String serverName, Connection pikaConn, Connection econtentConn, boolean fullReindex, boolean singleWorkIndex, Logger logger) {
+		indexStartTime                        = new Date().getTime() / 1000;
+		this.serverName                       = serverName;
+		this.logger                           = logger;
+		this.pikaConn                         = pikaConn;
+		this.fullReindex                      = fullReindex;
+//		solrPort                              = PikaConfigIni.getIniValue("Reindex", "solrPort");
+//		availableAtLocationBoostValue         = PikaConfigIni.getIntIniValue("Reindex", "availableAtLocationBoostValue");
+//		ownedByLocationBoostValue             = PikaConfigIni.getIntIniValue("Reindex", "ownedByLocationBoostValue");
+//		giveOnOrderItemsTheirOwnShelfLocation = PikaConfigIni.getBooleanIniValue("Reindex", "giveOnOrderItemsTheirOwnShelfLocation");
+//		baseLogPath                           = PikaConfigIni.getIniValue("Site", "baseLogPath");
+//		maxWorksToProcess                     = PikaConfigIni.getIntIniValue("Reindex", "maxWorksToProcess");
+		if (availableAtLocationBoostValue == null){
+			availableAtLocationBoostValue = 1; // No boost
+		}
+		if (ownedByLocationBoostValue == null){
+			ownedByLocationBoostValue = 1; //No boost
+		}
+		if (maxWorksToProcess == null){
+			maxWorksToProcess = -1;
 		}
 
+		systemVariables = new PikaSystemVariables(this.logger, this.pikaConn);
 		//Load the last Index time
-		try{
-			PreparedStatement loadLastGroupingTime = pikaConn.prepareStatement("SELECT * from variables WHERE name = 'last_reindex_time'");
-			ResultSet lastGroupingTimeRS           = loadLastGroupingTime.executeQuery();
-			if (lastGroupingTimeRS.next()){
-				lastReindexTime           = lastGroupingTimeRS.getLong("value");
-				lastReindexTimeVariableId = lastGroupingTimeRS.getLong("id");
-			}
-			lastGroupingTimeRS.close();
-			loadLastGroupingTime.close();
-		} catch (Exception e){
-			logger.error("Could not load last index time from variables table ", e);
-		}
+		lastReindexTime = systemVariables.getLongValuedVariable("last_reindex_time");
 
 		//Check to see if a partial reindex is running
-		try{
-			PreparedStatement loadPartialReindexRunning = pikaConn.prepareStatement("SELECT * from variables WHERE name = 'partial_reindex_running'");
-			ResultSet loadPartialReindexRunningRS       = loadPartialReindexRunning.executeQuery();
-			if (loadPartialReindexRunningRS.next()){
-				partialReindexRunningVariableId = loadPartialReindexRunningRS.getLong("id");
-				String value                    = loadPartialReindexRunningRS.getString("value");
-				partialReindexRunning           = (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("1"));
-			}
-			loadPartialReindexRunningRS.close();
-			loadPartialReindexRunning.close();
-		} catch (Exception e){
-			logger.error("Could not load last index time from variables table ", e);
-		}
+		partialReindexRunning = systemVariables.getBooleanValuedVariable("partial_reindex_running");
 
 		//Load a few statements we will need later
 		try{
@@ -158,8 +135,10 @@ public class GroupedWorkIndexer {
 			long minIndexingInterval = 2 * 60;
 			if (elapsedTime < minIndexingInterval && !singleWorkIndex) {
 				try {
-					logger.debug("Pausing between indexes, last index ran " + Math.ceil(elapsedTime / 60) + " minutes ago");
-					logger.debug("Pausing for " + (minIndexingInterval - elapsedTime) + " seconds");
+					if (logger.isDebugEnabled()) {
+						logger.debug("Pausing between indexes, last index ran " + Math.ceil(elapsedTime / 60) + " minutes ago");
+						logger.debug("Pausing for " + (minIndexingInterval - elapsedTime) + " seconds");
+					}
 					GroupedReindexMain.addNoteToReindexLog("Pausing between indexes, last index ran " + Math.ceil(elapsedTime / 60) + " minutes ago");
 					GroupedReindexMain.addNoteToReindexLog("Pausing for " + (minIndexingInterval - elapsedTime) + " seconds");
 					Thread.sleep((minIndexingInterval - elapsedTime) * 1000);
@@ -173,7 +152,7 @@ public class GroupedWorkIndexer {
 			if (partialReindexRunning){
 				//Oops, a reindex is already running.
 				//No longer really care about this since it doesn't happen and there are other ways of finding a stuck process
-				//logger.warn("A partial reindex is already running, check to make sure that reindexes don't overlap since that can cause poor performance");
+				logger.warn("A partial reindex is already running, check to make sure that reindexes don't overlap since that can cause poor performance");
 				GroupedReindexMain.addNoteToReindexLog("A partial reindex is already running, check to make sure that reindexes don't overlap since that can cause poor performance");
 			}else{
 				updatePartialReindexRunning(true);
@@ -188,7 +167,7 @@ public class GroupedWorkIndexer {
 		//Initialize processors based on our indexing profiles and the primary identifiers for the records.
 		try (
 			PreparedStatement uniqueIdentifiersStmt = pikaConn.prepareStatement("SELECT DISTINCT type FROM grouped_work_primary_identifiers");
-			PreparedStatement getIndexingProfile    = pikaConn.prepareStatement("SELECT * from indexing_profiles where name = ?");
+			PreparedStatement getIndexingProfile    = pikaConn.prepareStatement("SELECT * FROM indexing_profiles WHERE name = ?");
 			ResultSet uniqueIdentifiersRS           = uniqueIdentifiersStmt.executeQuery();
 		){
 			while (uniqueIdentifiersRS.next()){
@@ -214,7 +193,7 @@ public class GroupedWorkIndexer {
 								ilsRecordProcessors.put(curIdentifier, new AnythinkRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
 								break;
 							case "Aspencat":
-								ilsRecordProcessors.put(curIdentifier, new AspencatRecordProcessor(this, pikaConn, configIni, indexingProfileRS, logger, fullReindex));
+								ilsRecordProcessors.put(curIdentifier, new AspencatRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
 								break;
 							case "Flatirons":
 								ilsRecordProcessors.put(curIdentifier, new FlatironsRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
@@ -257,9 +236,9 @@ public class GroupedWorkIndexer {
 					} else if (curIdentifier.equalsIgnoreCase("overdrive")) {
 						//Overdrive doesn't have an indexing profile.
 						//Only load processor if there are overdrive titles
-						overDriveProcessor = new OverDriveProcessor(this, econtentConn, logger);
-					} else {
-						logger.debug("Could not find indexing profile for type " + curIdentifier);
+						overDriveProcessor = new OverDriveProcessor(this, econtentConn, logger, fullReindex);
+					} else if (fullReindex){
+						logger.error("Could not find indexing profile for type " + curIdentifier);
 					}
 				}
 			}
@@ -275,16 +254,16 @@ public class GroupedWorkIndexer {
 		//Setup prepared statements to load local enrichment
 		try {
 			//No need to filter for ratings greater than 0 because the user has to rate from 1-5
-			getRatingStmt = pikaConn.prepareStatement("SELECT AVG(rating) as averageRating, groupedRecordPermanentId from user_work_review where groupedRecordPermanentId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-			getNovelistStmt = pikaConn.prepareStatement("SELECT * from novelist_data where groupedRecordPermanentId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			getRatingStmt = pikaConn.prepareStatement("SELECT AVG(rating) AS averageRating, groupedRecordPermanentId FROM user_work_review WHERE groupedRecordPermanentId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			getNovelistStmt = pikaConn.prepareStatement("SELECT * FROM novelist_data WHERE groupedRecordPermanentId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 		} catch (SQLException e) {
 			logger.error("Could not prepare statements to load local enrichment", e);
 		}
 
-		String lexileExportPath = configIni.get("Reindex", "lexileExportPath");
+		String lexileExportPath = PikaConfigIni.getIniValue("Reindex", "lexileExportPath");
 		loadLexileData(lexileExportPath);
 
-		String arExportPath = configIni.get("Reindex", "arExportPath");
+		String arExportPath = PikaConfigIni.getIniValue("Reindex", "arExportPath");
 		loadAcceleratedReaderData(arExportPath);
 
 		if (fullReindex){
@@ -308,13 +287,6 @@ public class GroupedWorkIndexer {
 
 	private boolean libraryAndLocationDataLoaded = false;
 
-	//Keep track of what we are indexing for validation purposes
-	private TreeMap<String, TreeSet<String>> ilsRecordsIndexed = new TreeMap<>();
-	TreeSet<String> overDriveRecordsIndexed = new TreeSet<>();
-	private TreeMap<String, TreeSet<String>> ilsRecordsSkipped = new TreeMap<>();
-	TreeSet<String> overDriveRecordsSkipped = new TreeSet<>();
-	private TreeMap<String, ScopedIndexingStats> indexingStats = new TreeMap<>();
-
 	private void loadScopes() {
 		if (!libraryAndLocationDataLoaded){
 			//Setup translation maps for system and location
@@ -326,7 +298,9 @@ public class GroupedWorkIndexer {
 				logger.error("Error setting up system maps", e);
 			}
 			libraryAndLocationDataLoaded = true;
-			logger.info("Loaded " + scopes.size() + " scopes");
+			if (logger.isInfoEnabled()) {
+				logger.info("Loaded " + scopes.size() + " scopes");
+			}
 		}
 	}
 
@@ -458,7 +432,9 @@ public class GroupedWorkIndexer {
 				}
 				scopes.add(locationScopeInfo);
 			}else{
-				logger.debug("Not adding location scope because a library scope with the name " + locationScopeInfo.getScopeName() + " exists already.");
+				if (logger.isDebugEnabled()) {
+					logger.debug("Not adding location scope because a library scope with the name " + locationScopeInfo.getScopeName() + " exists already.");
+				}
 				for (Scope existingLibraryScope : scopes){
 					if (existingLibraryScope.getScopeName().equals(locationScopeInfo.getScopeName())){
 						existingLibraryScope.setIsLocationScope(true);
@@ -612,7 +588,9 @@ public class GroupedWorkIndexer {
 				}
 				arDataLine = arDataReader.readLine();
 			}
-			logger.info("Read " + numLines + " lines of accelerated reader data");
+			if (logger.isInfoEnabled()) {
+				logger.info("Read " + numLines + " lines of accelerated reader data");
+			}
 		}catch (Exception e){
 			logger.error("Error loading accelerated reader data", e);
 		}
@@ -652,7 +630,9 @@ public class GroupedWorkIndexer {
 					curLine++;
 				}
 			}
-			logger.info("Read " + lexileInformation.size() + " lines of lexile data");
+			if (logger.isInfoEnabled()) {
+				logger.info("Read " + lexileInformation.size() + " lines of lexile data");
+			}
 		} catch (Exception e) {
 			logger.error("Error loading lexile data on " + curLine + Arrays.toString(lexileFields), e);
 		}
@@ -660,7 +640,9 @@ public class GroupedWorkIndexer {
 
 	private void clearIndex() {
 		//Check to see if we should clear the existing index
-		logger.info("Clearing existing marc records from index");
+		if (logger.isInfoEnabled()) {
+			logger.info("Clearing existing marc records from index");
+		}
 		try {
 			updateServer.deleteByQuery("recordtype:grouped_work");
 			//With this commit, we get errors in the log "Previous SolrRequestInfo was not closed!"
@@ -672,7 +654,9 @@ public class GroupedWorkIndexer {
 	}
 
 	void deleteRecord(String id) {
-		logger.info("Clearing existing work from index");
+		if (logger.isInfoEnabled()) {
+			logger.info("Clearing existing work from index");
+		}
 		try {
 			updateServer.deleteById(id);
 			//With this commit, we get errors in the log "Previous SolrRequestInfo was not closed!"
@@ -685,10 +669,10 @@ public class GroupedWorkIndexer {
 
 	void createSiteMaps(HashMap<Scope, ArrayList<SiteMapEntry>>siteMapsByScope, HashSet<Long> uniqueGroupedWorks ) {
 
-		File dataDir = new File(configIni.get("SiteMap", "filePath"));
-		String maxPopTitlesDefault = configIni.get("SiteMap", "num_titles_in_most_popular_sitemap");
-		String maxUniqueTitlesDefault = configIni.get("SiteMap", "num_title_in_unique_sitemap");
-		String url = configIni.get("Site", "url");
+		File dataDir = new File(PikaConfigIni.getIniValue("SiteMap", "filePath"));
+		String maxPopTitlesDefault = PikaConfigIni.getIniValue("SiteMap", "num_titles_in_most_popular_sitemap");
+		String maxUniqueTitlesDefault = PikaConfigIni.getIniValue("SiteMap", "num_title_in_unique_sitemap");
+		String url = PikaConfigIni.getIniValue("Site", "url");
 		try {
 			SiteMap siteMap = new SiteMap(logger, pikaConn, Integer.parseInt(maxUniqueTitlesDefault), Integer.parseInt(maxPopTitlesDefault));
 			siteMap.createSiteMaps(url, dataDir, siteMapsByScope, uniqueGroupedWorks);
@@ -701,31 +685,29 @@ public class GroupedWorkIndexer {
 
 	void finishIndexing(boolean processingIndividualWork){
 		GroupedReindexMain.addNoteToReindexLog("Finishing indexing");
-		logger.info("Finishing indexing");
 		if (fullReindex) {
 			try {
 				GroupedReindexMain.addNoteToReindexLog("Calling final commit");
-				logger.info("Calling commit");
 				updateServer.commit(true, true, false);
-			} catch (Exception e) {
+			} catch (IOException e) {
 				logger.error("Error calling final commit", e);
+			} catch (SolrServerException e) {
+				logger.error("Error with Solr calling final commit", e);
 			}
-			//Swap the indexes
-			if (fullReindex)  {
-				//Restart replication from the master
-				String url = "http://localhost:" + solrPort + "/solr/grouped/replication?command=enablereplication";
-				URLPostResponse startReplicationResponse = Util.getURL(url, logger);
-				if (!startReplicationResponse.isSuccess()){
-					logger.error("Error restarting replication " + startReplicationResponse.getMessage());
-				}
+			//Restart replication from the master
+			String url = "http://localhost:" + solrPort + "/solr/grouped/replication?command=enablereplication";
+			URLPostResponse startReplicationResponse = Util.getURL(url, logger);
+			if (!startReplicationResponse.isSuccess()){
+				logger.error("Error restarting replication " + startReplicationResponse.getMessage());
 
-				//MDN 10-21-2015 do not swap indexes when using replication
-				/*GroupedReindexMain.addNoteToReindexLog("Swapping indexes");
-				try {
-					Util.getURL("http://localhost:" + solrPort + "/solr/admin/cores?action=SWAP&core=grouped2&other=grouped", logger);
-				} catch (Exception e) {
-					logger.error("Error shutting down update server", e);
-				}*/
+			//MDN 10-21-2015 do not swap indexes when using replication
+			//Swap the indexes
+			/*GroupedReindexMain.addNoteToReindexLog("Swapping indexes");
+			try {
+				Util.getURL("http://localhost:" + solrPort + "/solr/admin/cores?action=SWAP&core=grouped2&other=grouped", logger);
+			} catch (Exception e) {
+				logger.error("Error shutting down update server", e);
+			}*/
 			}
 		}else {
 			try {
@@ -756,7 +738,7 @@ public class GroupedWorkIndexer {
 
 	private void writeStats() {
 		try {
-			File dataDir = new File(configIni.get("Reindex", "marcPath"));
+			File dataDir = new File(PikaConfigIni.getIniValue("Reindex", "marcPath"));
 			dataDir = dataDir.getParentFile();
 			//write the records in CSV format to the data directory
 			Date curDate = new Date();
@@ -809,7 +791,7 @@ public class GroupedWorkIndexer {
 	private SimpleDateFormat dayFormatter = new SimpleDateFormat("yyyy-MM-dd");
 	private void writeExistingRecordsFile(TreeSet<String> recordNumbersInExport, String filePrefix) {
 		try {
-			File dataDir = new File(configIni.get("Reindex", "marcPath"));
+			File dataDir = new File(PikaConfigIni.getIniValue("Reindex", "marcPath"));
 			dataDir = dataDir.getParentFile();
 			//write the records in CSV format to the data directory
 			Date curDate = new Date();
@@ -828,67 +810,41 @@ public class GroupedWorkIndexer {
 
 	private void updatePartialReindexRunning(boolean running) {
 		if (!fullReindex) {
-			logger.info("Updating partial reindex running");
-			//Update the last grouping time in the variables table
-			try {
-				if (partialReindexRunningVariableId != null) {
-					PreparedStatement updateVariableStmt = pikaConn.prepareStatement("UPDATE variables set value = ? WHERE id = ?");
-					updateVariableStmt.setString(1, Boolean.toString(running));
-					updateVariableStmt.setLong(2, partialReindexRunningVariableId);
-					updateVariableStmt.executeUpdate();
-					updateVariableStmt.close();
-				} else {
-					PreparedStatement insertVariableStmt = pikaConn.prepareStatement("INSERT INTO variables (`name`, `value`) VALUES ('partial_reindex_running', ?)", Statement.RETURN_GENERATED_KEYS);
-					insertVariableStmt.setString(1, Boolean.toString(running));
-					insertVariableStmt.executeUpdate();
-					ResultSet generatedKeys = insertVariableStmt.getGeneratedKeys();
-					if (generatedKeys.next()){
-						partialReindexRunningVariableId = generatedKeys.getLong(1);
-					}
-					insertVariableStmt.close();
-				}
-			} catch (Exception e) {
-				logger.error("Error setting last partial reindexing time", e);
+			if (logger.isInfoEnabled()) {
+				logger.info("Updating partial reindex running");
+			}
+			//Update that the partial re-indexing is in the variables table
+			if (!systemVariables.setVariable("partial_reindex_running", running)){
+				logger.error("Error updating partial_reindex_running");
 			}
 		}
 	}
 
 	private void updateFullReindexRunning(boolean running) {
-		logger.info("Updating full reindex running");
-		//Update the last grouping time in the variables table
-		try {
-			if (fullReindexRunningVariableId != null) {
-				PreparedStatement updateVariableStmt = pikaConn.prepareStatement("UPDATE variables set value = ? WHERE id = ?");
-				updateVariableStmt.setString(1, Boolean.toString(running));
-				updateVariableStmt.setLong(2, fullReindexRunningVariableId);
-				updateVariableStmt.executeUpdate();
-				updateVariableStmt.close();
-			} else {
-				PreparedStatement insertVariableStmt = pikaConn.prepareStatement("INSERT INTO variables (`name`, `value`) VALUES ('full_reindex_running', ?) ON DUPLICATE KEY UPDATE value = VALUES(value)", Statement.RETURN_GENERATED_KEYS);
-				insertVariableStmt.setString(1, Boolean.toString(running));
-				insertVariableStmt.executeUpdate();
-				ResultSet generatedKeys = insertVariableStmt.getGeneratedKeys();
-				if (generatedKeys.next()){
-					fullReindexRunningVariableId = generatedKeys.getLong(1);
-				}
-				insertVariableStmt.close();
-			}
-		} catch (Exception e) {
-			logger.error("Error setting that full index is running", e);
+		if (logger.isInfoEnabled()) {
+			logger.info("Updating full reindex running");
+		}
+		//Update that the full reindexing running in the variables table
+		if (!systemVariables.setVariable("full_reindex_running", running)) {
+			logger.error("Error updating full_reindex_running");
 		}
 	}
 
 	private void writeWorksWithInvalidLiteraryForms() {
-		logger.info("Writing works with invalid literary forms");
+		if (logger.isInfoEnabled()) {
+			logger.info("Writing works with invalid literary forms");
+		}
 		File worksWithInvalidLiteraryFormsFile = new File (baseLogPath + "/" + serverName + "/worksWithInvalidLiteraryForms.txt");
 		try {
 			if (worksWithInvalidLiteraryForms.size() > 0) {
-				FileWriter writer = new FileWriter(worksWithInvalidLiteraryFormsFile, false);
-				logger.debug("Found " + worksWithInvalidLiteraryForms.size() + " grouped works with invalid literary forms\r\n");
-				writer.write("Found " + worksWithInvalidLiteraryForms.size() + " grouped works with invalid literary forms\r\n");
-				writer.write("Works with inconsistent literary forms\r\n");
-				for (String curId : worksWithInvalidLiteraryForms){
-					writer.write(curId + "\r\n");
+				try (FileWriter writer = new FileWriter(worksWithInvalidLiteraryFormsFile, false)) {
+					final String message = "Found " + worksWithInvalidLiteraryForms.size() + " grouped works with invalid literary forms\r\n";
+					logger.debug(message);
+					writer.write(message);
+					writer.write("Works with inconsistent literary forms\r\n");
+					for (String curId : worksWithInvalidLiteraryForms) {
+						writer.write(curId + "\r\n");
+					}
 				}
 			}
 		}catch(Exception e){
@@ -897,22 +853,9 @@ public class GroupedWorkIndexer {
 	}
 
 	private void updateLastReindexTime() {
-		//Update the last grouping time in the variables table.  This needs to be the time the index started to catch anything that changes during the index
-		try{
-			if (lastReindexTimeVariableId != null){
-				PreparedStatement updateVariableStmt  = pikaConn.prepareStatement("UPDATE variables set value = ? WHERE id = ?");
-				updateVariableStmt.setLong(1, indexStartTime);
-				updateVariableStmt.setLong(2, lastReindexTimeVariableId);
-				updateVariableStmt.executeUpdate();
-				updateVariableStmt.close();
-			} else{
-				PreparedStatement insertVariableStmt = pikaConn.prepareStatement("INSERT INTO variables (`name`, `value`) VALUES ('last_reindex_time', ?)");
-				insertVariableStmt.setString(1, Long.toString(indexStartTime));
-				insertVariableStmt.executeUpdate();
-				insertVariableStmt.close();
-			}
-		}catch (Exception e){
-			logger.error("Error setting last full reindex time", e);
+		//Update the last re-index time in the variables table.  This needs to be the time the index started to catch anything that changes during the index
+		if (!systemVariables.setVariable("last_reindex_time", indexStartTime)){
+			logger.error("Error setting last reindex time");
 		}
 	}
 
@@ -921,7 +864,7 @@ public class GroupedWorkIndexer {
 		try {
 			PreparedStatement getAllGroupedWorks;
 			PreparedStatement getNumWorksToIndex;
-			PreparedStatement setLastUpdatedTime = pikaConn.prepareStatement("UPDATE grouped_work set date_updated = ? where id = ?");
+			PreparedStatement setLastUpdatedTime = pikaConn.prepareStatement("UPDATE grouped_work SET date_updated = ? WHERE id = ?");
 			if (fullReindex){
 				getAllGroupedWorks = pikaConn.prepareStatement("SELECT * FROM grouped_work", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 				getNumWorksToIndex = pikaConn.prepareStatement("SELECT count(id) FROM grouped_work", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
@@ -977,7 +920,9 @@ public class GroupedWorkIndexer {
 		} catch (SQLException e) {
 			logger.error("Unexpected SQL error", e);
 		}
-		logger.info("Finished processing grouped works.  Processed a total of " + numWorksProcessed + " grouped works");
+		if (logger.isInfoEnabled()) {
+			logger.info("Finished processing grouped works.  Processed a total of " + numWorksProcessed + " grouped works");
+		}
 		return numWorksProcessed;
 	}
 
@@ -988,38 +933,45 @@ public class GroupedWorkIndexer {
 		groupedWork.setGroupingCategory(grouping_category);
 
 		getGroupedWorkPrimaryIdentifiers.setLong(1, id);
-		ResultSet groupedWorkPrimaryIdentifiers = getGroupedWorkPrimaryIdentifiers.executeQuery();
-		int       numPrimaryIdentifiers         = 0;
-		while (groupedWorkPrimaryIdentifiers.next()){
-			String type       = groupedWorkPrimaryIdentifiers.getString("type");
-			String identifier = groupedWorkPrimaryIdentifiers.getString("identifier");
+		int numPrimaryIdentifiers;
+		try (ResultSet groupedWorkPrimaryIdentifiers = getGroupedWorkPrimaryIdentifiers.executeQuery()) {
+			numPrimaryIdentifiers = 0;
+			while (groupedWorkPrimaryIdentifiers.next()) {
+				String type       = groupedWorkPrimaryIdentifiers.getString("type");
+				String identifier = groupedWorkPrimaryIdentifiers.getString("identifier");
 
-			//Make a copy of the grouped work so we can revert if we don't add any records
-			GroupedWorkSolr originalWork;
-			try {
-				originalWork = groupedWork.clone();
-			}catch (CloneNotSupportedException cne){
-				logger.error("Could not clone grouped work", cne);
-				return;
-			}
-			//Figure out how many records we had originally
-			int numRecords = groupedWork.getNumRecords();
-			logger.debug("Processing " + type + ":" + identifier + " work currently has " + numRecords + " records");
+				//Make a copy of the grouped work so we can revert if we don't add any records
+				GroupedWorkSolr originalWork;
+				try {
+					originalWork = groupedWork.clone();
+				} catch (CloneNotSupportedException cne) {
+					logger.error("Could not clone grouped work", cne);
+					return;
+				}
+				//Figure out how many records we had originally
+				int numRecords = groupedWork.getNumRecords();
+				if (logger.isDebugEnabled()) {
+					logger.debug("Processing " + type + ":" + identifier + " work currently has " + numRecords + " records");
+				}
 
-			//This does the bulk of the work building fields for the solr document
-			updateGroupedWorkForPrimaryIdentifier(groupedWork, type, identifier);
+				//This does the bulk of the work building fields for the solr document
+				updateGroupedWorkForPrimaryIdentifier(groupedWork, type, identifier);
 
-			//If we didn't add any records to the work (because they are all suppressed) revert to the original
-			if (groupedWork.getNumRecords() == numRecords){
-				//No change in the number of records, revert to the previous
-				logger.debug("Record " + identifier + " did not contribute any records to the work, reverting to previous state " + groupedWork.getNumRecords());
-				groupedWork = originalWork;
-			}else{
-				logger.debug("Record " + identifier + " added to work " + permanentId);
-				numPrimaryIdentifiers++;
+				//If we didn't add any records to the work (because they are all suppressed) revert to the original
+				if (groupedWork.getNumRecords() == numRecords) {
+					//No change in the number of records, revert to the previous
+					if (logger.isDebugEnabled()) {
+						logger.debug("Record " + identifier + " did not contribute any records to the work, reverting to previous state " + groupedWork.getNumRecords());
+					}
+					groupedWork = originalWork;
+				} else {
+					if (logger.isDebugEnabled()) {
+						logger.debug("Record " + identifier + " added to work " + permanentId);
+					}
+					numPrimaryIdentifiers++;
+				}
 			}
 		}
-		groupedWorkPrimaryIdentifiers.close();
 
 		if (numPrimaryIdentifiers > 0) {
 			//Add a grouped work to any scopes that are relevant
@@ -1048,6 +1000,9 @@ public class GroupedWorkIndexer {
 			//Write the record to Solr.
 			try {
 				SolrInputDocument inputDocument = groupedWork.getSolrDocument(availableAtLocationBoostValue, ownedByLocationBoostValue);
+				if (logger.isDebugEnabled()) {
+					logger.debug("Adding solr document for work " + groupedWork.getId());
+				}
 				updateServer.add(inputDocument);
 				//logger.debug("Updated solr \r\n" + inputDocument.toString());
 
@@ -1056,7 +1011,9 @@ public class GroupedWorkIndexer {
 			}
 		}else{
 			//Log that this record did not have primary identifiers after
-			logger.debug("Grouped work " + permanentId + " did not have any primary identifiers for it, suppressing");
+			if (logger.isDebugEnabled()) {
+				logger.debug("Grouped work " + permanentId + " did not have any primary identifiers for it, suppressing");
+			}
 			if (!fullReindex){
 				try {
 					updateServer.deleteById(permanentId);
@@ -1173,7 +1130,7 @@ public class GroupedWorkIndexer {
 			default:
 				if (ilsRecordProcessors.containsKey(type)) {
 					ilsRecordProcessors.get(type).processRecord(groupedWork, identifier);
-				}else{
+				}else if (logger.isDebugEnabled()){
 					logger.debug("Could not find a record processor for type " + type);
 				}
 				break;

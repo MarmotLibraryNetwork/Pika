@@ -28,13 +28,13 @@ class AJAX extends AJAXHandler {
 		'getProspectorResults',
 		'SysListTitles',
 		'getEmailForm',
-		'getDplaResults',
 	);
 
 	protected $methodsThatRespondWithJSONUnstructured = array(
 		'getMoreSearchResults',
 		'GetListTitles',
 		'loadExploreMoreBar',
+		'getDplaResults',
 	);
 
 	protected $methodsThatRespondWithXML = array(

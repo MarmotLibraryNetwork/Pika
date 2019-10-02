@@ -10,9 +10,10 @@ For more information on how to ungroup works, see the <a href="https://docs.goog
 	<div class="alert alert-warning">
 		For the Notes field please include the following information:
 		<ul>
-			<li>Your library name</li>
-			<li>Your initials</li>
 			<li>The title of the record to un-group</li>
+			<li>Your initials</li>
+			<li>Your library name</li>
+			<li>The Date</li>
 		</ul>
 	</div>
 	{*</div>*}

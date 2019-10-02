@@ -9,9 +9,10 @@
 	<div class="alert alert-warning">
 		For the Notes field please include the following information:
 		<ul>
-			<li>Your library name</li>
-			<li>Your initials</li>
 			<li>The title of the work to merge</li>
+			<li>Your initials</li>
+			<li>Your library name</li>
+			<li>The Date</li>
 		</ul>
 	</div>
 	{*</div>*}

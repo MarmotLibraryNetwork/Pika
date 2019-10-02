@@ -26,8 +26,6 @@ class ArlingtonRecordProcessor extends IIIRecordProcessor {
 		super(indexer, vufindConn, indexingProfileRS, logger, fullReindex);
 		availableStatus = "-o";
 
-		languageFields = "008[35-37]"; //TODO: unneeded override of base setting
-
 		loadOrderInformationFromExport();
 
 		loadVolumesFromExport(vufindConn);
@@ -258,7 +256,7 @@ class ArlingtonRecordProcessor extends IIIRecordProcessor {
 				ItemInfo itemInfo = new ItemInfo();
 				itemInfo.setIsEContent(true);
 				itemInfo.setLocationCode(bibLocation);
-				itemInfo.seteContentProtectionType("external");
+//				itemInfo.seteContentProtectionType("external");
 				itemInfo.setCallNumber("Online");
 				itemInfo.seteContentSource(econtentSource);
 				itemInfo.setShelfLocation(econtentSource);

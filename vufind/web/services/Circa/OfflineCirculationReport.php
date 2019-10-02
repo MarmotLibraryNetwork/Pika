@@ -91,6 +91,7 @@ class Circa_OfflineCirculationReport extends Admin_Admin{
 		$interface->assign('totalPassed', $totalPassed);
 		$interface->assign('totalFailed', $totalFailed);
 		$interface->assign('totalNotProcessed', $totalNotProcessed);
+		$interface->assign('offlineCirculation', $offlineCirculationEntries);
 
 		$this->display('offlineCirculationReport.tpl', 'Offline Circulation Report');
 	}

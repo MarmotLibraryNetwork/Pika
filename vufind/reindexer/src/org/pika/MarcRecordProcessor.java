@@ -16,17 +16,19 @@ import java.util.regex.PatternSyntaxException;
  * Time: 12:01 PM
  */
 abstract class MarcRecordProcessor {
-	protected Logger logger;
-	protected GroupedWorkIndexer indexer;
-	private static Pattern mpaaRatingRegex1 = Pattern.compile("(?:.*?)[rR]ated:?\\s(G|PG-13|PG|R|NC-17|NR|X)(?:.*)", Pattern.CANON_EQ);
-	private static Pattern mpaaRatingRegex2 = Pattern.compile("(?:.*?)[rR]ating:?\\s(G|PG-13|PG|R|NC-17|NR|X)(?:.*)", Pattern.CANON_EQ);
-	private static Pattern mpaaRatingRegex3 = Pattern.compile("(?:.*?)(G|PG-13|PG|R|NC-17|NR|X)\\sRated(?:.*)", Pattern.CANON_EQ);
-	private static Pattern mpaaNotRatedRegex = Pattern.compile("Rated\\sNR\\.?|Not Rated\\.?|NR");
-	private HashSet<String> unknownSubjectForms = new HashSet<>();
+	protected      Logger             logger;
+	protected      GroupedWorkIndexer indexer;
+	private        boolean            fullReindex;
+	private static Pattern            mpaaRatingRegex1    = Pattern.compile("(?:.*?)[rR]ated:?\\s(G|PG-13|PG|R|NC-17|NR|X)(?:.*)", Pattern.CANON_EQ);
+	private static Pattern            mpaaRatingRegex2    = Pattern.compile("(?:.*?)[rR]ating:?\\s(G|PG-13|PG|R|NC-17|NR|X)(?:.*)", Pattern.CANON_EQ);
+	private static Pattern            mpaaRatingRegex3    = Pattern.compile("(?:.*?)(G|PG-13|PG|R|NC-17|NR|X)\\sRated(?:.*)", Pattern.CANON_EQ);
+	private static Pattern            mpaaNotRatedRegex   = Pattern.compile("Rated\\sNR\\.?|Not Rated\\.?|NR");
+	private        HashSet<String>    unknownSubjectForms = new HashSet<>();
 
-	MarcRecordProcessor(GroupedWorkIndexer indexer, Logger logger) {
+	MarcRecordProcessor(GroupedWorkIndexer indexer, Logger logger, boolean fullReindex) {
 		this.indexer = indexer;
 		this.logger = logger;
+		this.fullReindex = fullReindex;
 	}
 
 	/**
@@ -770,42 +772,62 @@ abstract class MarcRecordProcessor {
 		return publisher;
 	}
 
-	String languageFields = "008[35-37]";
-
 	void loadLanguageDetails(GroupedWorkSolr groupedWork, Record record, HashSet<RecordInfo> ilsRecords, String identifier) {
-		Set <String> languages = MarcUtil.getFieldList(record, languageFields);
+		// Note: ilsRecords are alternate manifestations for the same record, like for an order record or ILS econtent items
+
+		String languageFields = "008[35-37]";
+		Set<String>     languages           = MarcUtil.getFieldList(record, languageFields);
 		HashSet<String> translatedLanguages = new HashSet<>();
-		boolean isFirstLanguage = true;
-		for (String language : languages){
+		boolean         isFirstLanguage     = true;
+		String primaryLanguage = null;
+		Long            languageBoost        = 1L;
+		Long            languageBoostSpanish = 1L;
+		for (String language : languages) {
 			String translatedLanguage = indexer.translateSystemValue("language", language, identifier);
 			translatedLanguages.add(translatedLanguage);
-			if (isFirstLanguage){
-				for (RecordInfo ilsRecord : ilsRecords){
-					ilsRecord.setPrimaryLanguage(translatedLanguage);
-				}
+			if (isFirstLanguage) {
+				primaryLanguage = translatedLanguage;
 			}
 			isFirstLanguage = false;
-			String languageBoost = indexer.translateSystemValue("language_boost", language, identifier);
-			if (languageBoost != null){
-				Long languageBoostVal = Long.parseLong(languageBoost);
-				groupedWork.setLanguageBoost(languageBoostVal);
+
+			String languageBoostStr = indexer.translateSystemValue("language_boost", language, identifier);
+			if (languageBoostStr != null) {
+				Long languageBoostVal = Long.parseLong(languageBoostStr);
+				if (languageBoostVal > languageBoost){
+					languageBoost = languageBoostVal;
+				}
 			}
 			String languageBoostEs = indexer.translateSystemValue("language_boost_es", language, identifier);
-			if (languageBoostEs != null){
+			if (languageBoostEs != null) {
 				Long languageBoostVal = Long.parseLong(languageBoostEs);
-				groupedWork.setLanguageBoostSpanish(languageBoostVal);
+				if (languageBoostVal > languageBoostSpanish){
+					languageBoostSpanish = languageBoostVal;
+				}
 			}
 		}
-		groupedWork.setLanguages(translatedLanguages);
 
-		String translationFields = "041b:041d:041h:041j";
-		Set<String> translations = MarcUtil.getFieldList(record, translationFields);
-		translatedLanguages = new HashSet<>();
+		String      translationFields = "041b:041d:041h:041j";
+		Set<String> translations      = MarcUtil.getFieldList(record, translationFields);
+		HashSet<String> translatedTranslations = new HashSet<>();
 		for (String translation : translations) {
 			String translatedLanguage = indexer.translateSystemValue("language", translation, identifier);
-			translatedLanguages.add(translatedLanguage);
+			translatedTranslations.add(translatedLanguage);
 		}
-		groupedWork.setTranslations(translatedLanguages);
+
+		//Check to see if we have Unknown plus a valid value
+		if (translatedLanguages.size() > 1 && translatedLanguages.contains("Unknown")){
+			languages.remove("Unknown");
+		}
+
+		for (RecordInfo ilsRecord : ilsRecords) {
+			if (primaryLanguage != null) {
+				ilsRecord.setPrimaryLanguage(primaryLanguage);
+			}
+			ilsRecord.setLanguages(translatedLanguages);
+			ilsRecord.setLanguageBoost(languageBoost);
+			ilsRecord.setLanguageBoostSpanish(languageBoostSpanish);
+			ilsRecord.setTranslations(translatedTranslations);
+		}
 	}
 
 	private void loadAuthors(GroupedWorkSolr groupedWork, Record record, String identifier) {
@@ -852,20 +874,64 @@ abstract class MarcRecordProcessor {
 		//title (full title done by index process by concatenating short and subtitle
 
 		//title short
-		String titleValue = MarcUtil.getFirstFieldVal(record, "245a");
-		groupedWork.setTitle(titleValue, MarcUtil.getFirstFieldVal(record, "245abnp"), this.getSortableTitle(record), format);
-		//title sub
-		//MDN 2/6/2016 add np to subtitle #ARL-163
-		groupedWork.setSubTitle(MarcUtil.getFirstFieldVal(record, "245bnp"));
+		String titleValue    = MarcUtil.getFirstFieldVal(record, "245a");
+		String subTitleValue = MarcUtil.getFirstFieldVal(record, "245bnp"); //MDN 2/6/2016 add np to subtitle #ARL-163
+		if (titleValue == null){
+			if (fullReindex) {
+				logger.warn(identifier + " has no title value (245a)");
+			}
+			titleValue = "";
+		} else {
+			if (subTitleValue != null) {
+				String subTitleLowerCase = subTitleValue.toLowerCase();
+				String titleLowerCase    = titleValue.toLowerCase();
+				if (titleLowerCase.equals(subTitleLowerCase)){
+					if (fullReindex) {
+						logger.warn(identifier + " title (245a) '" + titleValue + "' is the same as the subtitle : " + subTitleValue);
+					}
+					subTitleValue = null; // null out so that it doesn't get added to sort or display titles
+				} else {
+					groupedWork.setSubTitle(subTitleValue);
+					if (titleLowerCase.endsWith(subTitleLowerCase)) {
+						// Remove subtitle from title in order to avoid repeats of sub-title in display & title fields in index
+						if (fullReindex) {
+							logger.warn(identifier + " title (245a) '" + titleValue + "' ends with the subtitle (245bnp) : " + subTitleValue );
+						}
+						titleValue = titleValue.substring(0, titleLowerCase.lastIndexOf(subTitleLowerCase));
+					}
+				}
+				// Trim ending colon character and whitespace often appended for expected subtitle display, we'll add it back if we have a subtitle
+				titleValue = titleValue.replaceAll("[\\s:]+$", ""); // remove ending white space; then remove any ending colon characters.
+			}
+		}
+
+		String displayTitle = (subTitleValue == null || subTitleValue.isEmpty()) ? titleValue : titleValue + " : " + subTitleValue;
+
+		String sortableTitle = titleValue;
+		// Skip non-filing chars, if possible.
+		if (!titleValue.isEmpty()) {
+			DataField titleField = record.getDataField("245");
+			if (titleField != null && titleField.getSubfield('a') != null) {
+				int nonFilingInt = getInd2AsInt(titleField);
+				if (nonFilingInt > 0 && titleValue.length() > nonFilingInt)  {
+					sortableTitle = titleValue.substring(nonFilingInt);
+				}
+			}
+			if (subTitleValue != null && !subTitleValue.isEmpty()) {
+				sortableTitle += " " + subTitleValue;
+			}
+		}
+
+		groupedWork.setTitle(titleValue, displayTitle, sortableTitle, format);
 		//title full
 		String authorInTitleField = MarcUtil.getFirstFieldVal(record, "245c");
 		String standardAuthorData = MarcUtil.getFirstFieldVal(record, "100abcdq:110ab");
 		if ((authorInTitleField != null && authorInTitleField.length() > 0) || (standardAuthorData == null || standardAuthorData.length() == 0)) {
 			groupedWork.addFullTitles(MarcUtil.getAllSubfields(record, "245", " "));
-		}else{
+		} else {
 			//We didn't get an author from the 245, combine with the 100
 			Set<String> titles = MarcUtil.getAllSubfields(record, "245", " ");
-			for (String title : titles){
+			for (String title : titles) {
 				groupedWork.addFullTitle(title + " " + standardAuthorData);
 			}
 		}
@@ -936,21 +1002,29 @@ abstract class MarcRecordProcessor {
 		if (titleField == null || titleField.getSubfield('a') == null)
 			return "";
 
+		// Skip non-filing chars, if possible.
 		int nonFilingInt = getInd2AsInt(titleField);
-
-		String title = MarcUtil.getFirstFieldVal(record, "245abnp");
+		String title    = MarcUtil.getFirstFieldVal(record, "245a");
 		if (title == null){
 			return null;
-		}
-		title = title.toLowerCase();
-
-		// Skip non-filing chars, if possible.
-		if (title.length() > nonFilingInt) {
+		} else if (title.length() > nonFilingInt) {
 			title = title.substring(nonFilingInt);
 		}
 
 		if (title.length() == 0) {
 			return null;
+		}
+
+		String subTitle = MarcUtil.getFirstFieldVal(record, "245bnp");
+		if (subTitle != null && title.toLowerCase().endsWith(subTitle.toLowerCase())) {
+			title = title.substring(0, title.lastIndexOf(subTitle));
+			title = title.trim().replaceAll(":+$", ""); // remove ending white space; then remove any ending colon characters.
+		}
+		title += " "+ subTitle;
+		title = title.toLowerCase();
+		String title_alt  = MarcUtil.getFirstFieldVal(record, "245abnp"); //old style TOOD: temp
+		if (title_alt.length() > nonFilingInt) {
+			title_alt = title_alt.substring(nonFilingInt);
 		}
 
 		return title;

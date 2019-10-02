@@ -77,7 +77,7 @@ public class AddisonRecordProcessor extends IIIRecordProcessor {
 
 				ItemInfo itemInfo = new ItemInfo();
 				itemInfo.setIsEContent(true);
-				itemInfo.seteContentProtectionType("external");
+//				itemInfo.seteContentProtectionType("external");
 				itemInfo.setCallNumber("Online");
 				itemInfo.setIType("eCollection");
 				itemInfo.setDetailedStatus("Available Online");

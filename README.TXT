@@ -8,7 +8,7 @@ Additional features include
 - etc
 
 We develop based off branches, the latest branch deployed in production can be seen in the the footer at 
-http://mercury.marmot.org.
+https://opac.marmot.org.
 
 Directory structure: 
 conf       - contains configuration information for each server at each library.  

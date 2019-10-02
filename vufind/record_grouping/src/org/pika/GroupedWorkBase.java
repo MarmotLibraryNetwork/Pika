@@ -26,15 +26,16 @@ public abstract class GroupedWorkBase {
 	//The id of the work within the database.
 	String permanentId;
 
-	String fullTitle = "";              //Up to 100 chars
+	String fullTitle          = ""; //Up to 100 chars
 	String originalAuthorName = "";
-	protected String author = "";             //Up to 50  chars
-	String groupingCategory = "";   //Up to 25  chars
-	private String uniqueIdentifier = null;
+	protected String author = ""; //Up to 50  chars
+	String groupingCategory = "";  //Up to 25  chars
+	private   String uniqueIdentifier = null;
+	protected int    version          = 0; // The grouped work version number
 
 	//Load authorities
 	private static HashMap<String, String> authorAuthorities = new HashMap<>();
-	private static HashMap<String, String> titleAuthorities = new HashMap<>();
+	private static HashMap<String, String> titleAuthorities  = new HashMap<>();
 
 	static {
 		loadAuthorities();
@@ -42,7 +43,7 @@ public abstract class GroupedWorkBase {
 
 	String getPermanentId() {
 		if (this.permanentId == null){
-			String permanentId;
+			StringBuilder permanentId;
 			try {
 				MessageDigest idGenerator = MessageDigest.getInstance("MD5");
 				String fullTitle = getAuthoritativeTitle();
@@ -66,9 +67,9 @@ public abstract class GroupedWorkBase {
 				if (uniqueIdentifier != null){
 					idGenerator.update(uniqueIdentifier.getBytes());
 				}
-				permanentId = new BigInteger(1, idGenerator.digest()).toString(16);
+				permanentId = new StringBuilder(new BigInteger(1, idGenerator.digest()).toString(16));
 				while (permanentId.length() < 32){
-					permanentId = "0" + permanentId;
+					permanentId.insert(0, "0");
 				}
 				//Insert -'s for formatting
 				this.permanentId = permanentId.substring(0, 8) + "-" + permanentId.substring(8, 12) + "-" + permanentId.substring(12, 16) + "-" + permanentId.substring(16, 20) + "-" + permanentId.substring(20);
@@ -138,11 +139,10 @@ public abstract class GroupedWorkBase {
 	}
 
 	private static void loadAuthorities() {
-		try {
-			CSVReader csvReader = new CSVReader(new FileReader(new File("../record_grouping/author_authorities.properties")));
+		try (CSVReader csvReader = new CSVReader(new FileReader(new File("../record_grouping/author_authorities.properties")))) {
 			String[] curLine = csvReader.readNext();
-			while (curLine != null){
-				if (curLine.length >= 2){
+			while (curLine != null) {
+				if (curLine.length >= 2) {
 					authorAuthorities.put(curLine[0], curLine[1]);
 				}
 				curLine = csvReader.readNext();
@@ -150,11 +150,10 @@ public abstract class GroupedWorkBase {
 		} catch (IOException e) {
 			logger.error("Unable to load author authorities", e);
 		}
-		try {
-			CSVReader csvReader = new CSVReader(new FileReader(new File("../record_grouping/title_authorities.properties")));
+		try (CSVReader csvReader = new CSVReader(new FileReader(new File("../record_grouping/title_authorities.properties")))) {
 			String[] curLine = csvReader.readNext();
-			while (curLine != null){
-				if (curLine.length >= 2){
+			while (curLine != null) {
+				if (curLine.length >= 2) {
 					titleAuthorities.put(curLine[0], curLine[1]);
 				}
 				curLine = csvReader.readNext();
@@ -170,5 +169,14 @@ public abstract class GroupedWorkBase {
 
 	void makeUnique(String primaryIdentifier) {
 		uniqueIdentifier = primaryIdentifier;
+		// Update the GroupedWork permanent Id now
+		permanentId = null;
+		getPermanentId();
 	}
+
+	public int getGroupedWorkVersion() {
+		return this.version;  // Return the version number of whichever grouper class this work belongs to
+	}
+
+
 }

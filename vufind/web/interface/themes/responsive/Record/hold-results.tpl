@@ -1,3 +1,4 @@
+{* No longer used
 {strip}
 <div class="contents">
 	{if $hold_message_data.showItemForm}
@@ -45,3 +46,4 @@
 	<div class='hold_result_notes'>It may take up to 45 seconds for new holds to appear on your account.</div>
 </div>
 {/strip}
+*}

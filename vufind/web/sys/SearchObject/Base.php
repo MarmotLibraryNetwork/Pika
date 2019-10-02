@@ -1135,14 +1135,14 @@ abstract class SearchObject_Base
 	 * @return  mixed    various internal variables
 	 */
 	public function getAdvancedTypes()  {return $this->advancedTypes;}
-	public function getBasicTypes() {
-		$searchIndex = $this->getSearchIndex();
+	public function getBasicTypes(){
+		$searchIndex      = $this->getSearchIndex();
 		$basicSearchTypes = $this->basicTypes;
-		$searchSource = isset($_REQUEST['searchSource']) ? $_REQUEST['searchSource'] : 'local';
+		$searchSource     = isset($_REQUEST['searchSource']) ? $_REQUEST['searchSource'] : 'local';
 		if ($this->searchType != 'genealogy' && $searchSource != 'genealogy' &&
-				$this->searchType != 'islandora' && $searchSource != 'islandora'
-			) {
-			if (!array_key_exists($searchIndex, $basicSearchTypes)) {
+			$this->searchType != 'islandora' && $searchSource != 'islandora'
+		){
+			if (!array_key_exists($searchIndex, $basicSearchTypes)){
 				$basicSearchTypes[$searchIndex] = $searchIndex;
 			}
 		}

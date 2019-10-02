@@ -184,25 +184,24 @@ public class Util {
 			if (conn.getResponseCode() == 200) {
 				//logger.debug("  Got successful response");
 				// Get the response
-				BufferedReader rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-				String line;
-				while ((line = rd.readLine()) != null) {
-					response.append(line);
+				try (BufferedReader rd = new BufferedReader(new InputStreamReader(conn.getInputStream()))) {
+					String line;
+					while ((line = rd.readLine()) != null) {
+						response.append(line);
+					}
+					//logger.debug("  Finished reading response");
 				}
-				//logger.debug("  Finished reading response");
-				rd.close();
 				retVal = new URLPostResponse(true, 200, response.toString());
 			} else {
 				logger.error("Received error " + conn.getResponseCode() + " getting " + url);
 				// Get any errors
-				BufferedReader rd = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
-				String line;
-				while ((line = rd.readLine()) != null) {
-					response.append(line);
+				try (BufferedReader rd = new BufferedReader(new InputStreamReader(conn.getErrorStream()))) {
+					String line;
+					while ((line = rd.readLine()) != null) {
+						response.append(line);
+					}
+					logger.debug("  Finished reading response");
 				}
-				logger.debug("  Finished reading response");
-
-				rd.close();
 				retVal = new URLPostResponse(false, conn.getResponseCode(), response.toString());
 			}
 

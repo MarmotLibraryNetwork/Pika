@@ -480,19 +480,19 @@ class Record_AJAX extends AJAXHandler {
 		if (!empty($_REQUEST['id'])){
 			require_once ROOT_DIR . '/services/SourceAndId.php';
 			$recordId = new SourceAndId($_REQUEST['id']);
-			if ($recordId->getSource() && $recordId->getRecordId()){
+			if ($recordId->getSource() && $recordId->getRecordId() && $recordId->getIndexingProfile() != null){
 				require_once ROOT_DIR . '/sys/Extracting/IlsExtractInfo.php';
 				$extractInfo                    = new IlsExtractInfo();
 				$extractInfo->indexingProfileId = $recordId->getIndexingProfile()->id;
 				$extractInfo->ilsId             = $recordId->getRecordId();
 				if ($extractInfo->find(true)){
-					$extractInfo->lastExtracted = "null"; // DB Object has special processing to set an column value to null (note: the vufind.ini value is important in this)
-					if ($extractInfo->update()){
+					if ($extractInfo->markForReExtraction()){
 						return array('success' => true, 'message' => 'Record was marked for re-extraction.');
 					}else{
 						return array('success' => false, 'message' => 'Failed to mark record for re-extraction.');
 					}
 				}else{
+					// This is for cases where a record is present but has never been extracted before
 //					$extractInfo->lastExtracted = null;
 					if ($extractInfo->insert()){
 						return array('success' => true, 'message' => 'Record was marked for re-extraction.');

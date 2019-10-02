@@ -34,7 +34,7 @@ class HooplaProcessor extends MarcRecordProcessor {
 	private   HashSet<HooplaInclusionRule> locationHooplaInclusionRules = new HashSet<>();
 
 	HooplaProcessor(GroupedWorkIndexer indexer, Connection pikaConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
-		super(indexer, logger);
+		super(indexer, logger, fullReindex);
 		this.fullReindex = fullReindex;
 
 		try {
@@ -94,7 +94,7 @@ class HooplaProcessor extends MarcRecordProcessor {
 			try {
 				if (getHooplaExtractInfo(identifier)) {
 					updateGroupedWorkSolrDataBasedOnMarc(groupedWork, record, identifier);
-					updateGroupedWorkSolrDataBasedOnHooplaExtract(groupedWork, identifier);
+//					updateGroupedWorkSolrDataBasedOnHooplaExtract(groupedWork, identifier);
 				}
 			} catch (Exception e) {
 				logger.error("Error updating solr based on hoopla marc record", e);
@@ -147,16 +147,6 @@ class HooplaProcessor extends MarcRecordProcessor {
 			logger.error("Error adding hoopla extract data to solr document for hoopla record : " + identifier, e);
 		}
 		return false;
-	}
-
-	/**
-	 * @param groupedWork Solr Document to update
-	 * @param identifier  Record Identifier, used to get hoopla extract information
-	 */
-	private void updateGroupedWorkSolrDataBasedOnHooplaExtract(GroupedWorkSolr groupedWork, String identifier) {
-		float hooplaPrice = (float) hooplaExtractInfo.getPrice();
-		groupedWork.setHooplaPrice(hooplaPrice); //TODO: is adding the price to the index really needed?
-		//TODO: this can't be a grouped work level value.  Another reason to remove it.
 	}
 
 	private Record loadMarcRecordFromDisk(String identifier) {
@@ -270,9 +260,12 @@ class HooplaProcessor extends MarcRecordProcessor {
 		recordInfo.setPublisher(publisher);
 
 		//Load Languages
-		HashSet<RecordInfo> records = new HashSet<>();
-		records.add(recordInfo);
-		loadLanguageDetails(groupedWork, record, records, identifier);
+		//For ILS Records, we can create multiple different records, one for print and order items,
+		//and one or more for ILS eContent items.
+		//For Hoopla Econtent there will only be one related record
+		HashSet<RecordInfo> relatedRecords = new HashSet<>();
+		relatedRecords.add(recordInfo);
+		loadLanguageDetails(groupedWork, record, relatedRecords, identifier);
 
 		//For Hoopla, we just have a single item always
 		ItemInfo itemInfo = new ItemInfo();
@@ -281,12 +274,11 @@ class HooplaProcessor extends MarcRecordProcessor {
 		itemInfo.setFormat(format);
 		itemInfo.setFormatCategory(formatCategory);
 		itemInfo.seteContentSource("Hoopla");
-		itemInfo.seteContentProtectionType("Always Available");
 		itemInfo.setShelfLocation("Online Hoopla Collection");
 		itemInfo.setCallNumber("Online Hoopla");
 		itemInfo.setSortableCallNumber("Online Hoopla");
 		itemInfo.seteContentSource("Hoopla");
-		itemInfo.seteContentProtectionType("Always Available");
+//		itemInfo.seteContentProtectionType("Always Available");
 		itemInfo.setDetailedStatus("Available Online");
 		loadEContentUrl(record, itemInfo, identifier);
 		Date dateAdded = indexer.getDateFirstDetected("hoopla", identifier);
@@ -320,7 +312,7 @@ class HooplaProcessor extends MarcRecordProcessor {
 							for (HooplaInclusionRule curHooplaRule : locationHooplaInclusionRules) {
 								if (curHooplaRule.doesLocationRuleApply(hooplaExtractInfo, locationId)) {
 									hadLocationRules = true;
-									if (!curHooplaRule.isHooplaTitleIncluded(hooplaExtractInfo)) {
+									if (curHooplaRule.isHooplaTitleExcluded(hooplaExtractInfo)) {
 										isHooplaIncluded = false;
 										break;
 									}
@@ -333,7 +325,7 @@ class HooplaProcessor extends MarcRecordProcessor {
 							Long libraryId = curScope.getLibraryId();
 							for (HooplaInclusionRule curRule : libraryHooplaInclusionRules) {
 								if (curRule.doesLibraryRuleApply(hooplaExtractInfo, libraryId)) {
-									if (!curRule.isHooplaTitleIncluded(hooplaExtractInfo)) {
+									if (curRule.isHooplaTitleExcluded(hooplaExtractInfo)) {
 										isHooplaIncluded = false;
 										break;
 									}
@@ -347,7 +339,7 @@ class HooplaProcessor extends MarcRecordProcessor {
 						}
 					}
 				}
-			} else {
+			} else  if (logger.isInfoEnabled()){
 				logger.info("Excluding due to title inactive for everyone hoopla id# " + hooplaExtractInfo.getTitleId() + " :" + hooplaExtractInfo.getTitle());
 			}
 		} else {

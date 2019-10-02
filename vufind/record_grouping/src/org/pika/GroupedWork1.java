@@ -27,6 +27,11 @@ public class GroupedWork1 extends GroupedWorkBase implements Cloneable {
 	static Pattern commonAuthorPrefixPattern = Pattern.compile("^(?:edited by|by the editors of|by|chosen by|translated by|prepared by|translated and edited by|completely rev by|pictures by|selected and adapted by|with a foreword by|with a new foreword by|introd by|introduction by|intro by|retold by)\\s(.+)$");
 
 	static Logger logger = Logger.getLogger(GroupedWork1.class);
+
+	GroupedWork1() {
+		version = 1;
+	}
+
 	private String normalizeAuthor(String author) {
 		String groupingAuthor = initialsFix.matcher(author).replaceAll(" ");
 		groupingAuthor = bracketedCharacterStrip.matcher(groupingAuthor).replaceAll("");

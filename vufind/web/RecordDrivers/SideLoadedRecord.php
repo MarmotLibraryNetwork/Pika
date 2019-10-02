@@ -33,9 +33,9 @@ class SideLoadedRecord extends BaseEContentDriver {
 		$moreDetailsOptions = $this->getBaseMoreDetailsOptions($isbn);
 
 		$moreDetailsOptions['copies'] = array(
-				'label' => 'Copies',
-				'body' => $interface->fetch('ExternalEContent/view-items.tpl'),
-				'openByDefault' => true
+			'label'         => 'Copies',
+			'body'          => $interface->fetch('ExternalEContent/view-items.tpl'),
+			'openByDefault' => true,
 		);
 
 		$moreDetailsOptions['moreDetails'] = array(
@@ -74,7 +74,7 @@ class SideLoadedRecord extends BaseEContentDriver {
 		return $this->id;
 	}
 
-	protected function getRecordType(){
+	function getRecordType(){
 		return $this->profileType;
 	}
 

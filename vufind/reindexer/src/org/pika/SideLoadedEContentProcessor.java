@@ -35,7 +35,8 @@ class SideLoadedEContentProcessor extends IlsRecordProcessor{
 	@Override
 	protected void updateGroupedWorkSolrDataBasedOnMarc(GroupedWorkSolr groupedWork, Record record, String identifier) {
 		//For ILS Records, we can create multiple different records, one for print and order items,
-		//and one or more for eContent items.
+		//and one or more for ILS eContent items.
+		//For Sideloaded Econtent there will only be one related record
 		HashSet<RecordInfo> allRelatedRecords = new HashSet<>();
 
 		try{
@@ -106,7 +107,7 @@ class SideLoadedEContentProcessor extends IlsRecordProcessor{
 		//itemInfo.setCollection(translateValue("collection", getItemSubfieldData(collectionSubfield, itemField), identifier));
 
 		itemInfo.seteContentSource(profileType);
-		itemInfo.seteContentProtectionType("external");
+//		itemInfo.seteContentProtectionType("external");
 
 		RecordInfo relatedRecord = groupedWork.addRelatedRecord(profileType, identifier);
 		relatedRecord.addItem(itemInfo);

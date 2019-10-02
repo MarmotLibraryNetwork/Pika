@@ -24,48 +24,59 @@
 			</div>
 		</div>
 	</div>
+	<p></p>
+    {*A little space between regular buttons and staff buttons*}
 		{if $loggedIn}
 				{if $userIsStaff}
 					<div class="row">
 						<div class="col-xs-12">
-							<div class="btn-group" role="group" aria-label="...">
+                {*							<div class="btn-group" role="group" aria-label="...">*}
 									{if $classicUrl}
 										<a href="{$classicUrl}" class="btn btn-sm btn-info">View in Classic</a>
 									{/if}
 								<a href="{$path}/{$recordDriver->getModule()}/{$id|escape:"url"}/AJAX?method=downloadMarc"
 									 class="btn btn-sm btn-default">{translate text="Download Marc"}</a>
-							</div>
+                {*							</div>*}
 						</div>
 					</div>
-					<div class="row">
-					<div class="col-xs-12">
-					<div class="btn-group" role="group" aria-label="...">
-					<button onclick="return VuFind.GroupedWork.forceReindex('{$recordDriver->getPermanentId()}')"
-									class="btn btn-sm btn-default">Force Reindex
-					</button>
-					<button onclick="return VuFind.GroupedWork.forceRegrouping('{$recordDriver->getPermanentId()}')"
-									class="btn btn-sm btn-default">Force Regrouping
-					</button>
-						{if $recordExtractable}
-							<button onclick="return VuFind.Record.forceReExtract('{$recordDriver->getModule()}', '{$id|escape}')"
-											class="btn btn-sm btn-default">Force Extract from {$ils}</button>
-						{/if}
-				{/if}
-			</div>
-			</div>
-			</div>
-				{if $enableArchive && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('archives', $userRoles))}
 					<div class="row">
 						<div class="col-xs-12">
-							<div class="btn-group" role="group" aria-label="...">
-								<button onclick="return VuFind.GroupedWork.reloadIslandora('{$recordDriver->getPermanentId()}')"
-												class="btn btn-sm btn-default">Clear Islandora Cache
-								</button>
-							</div>
+                {*							<div class="btn-group" role="group" aria-label="...">*}
+							<button onclick="return VuFind.GroupedWork.forceReindex('{$recordDriver->getPermanentId()}')"
+							        class="btn btn-sm btn-default">Force Reindex
+							</button>
+							<button onclick="return VuFind.GroupedWork.forceRegrouping('{$recordDriver->getPermanentId()}')"
+							        class="btn btn-sm btn-default">Force Regrouping
+							</button>
+                {if $recordExtractable}
+									<button onclick="return VuFind.Record.forceReExtract('{$recordDriver->getModule()}', '{$id|escape}')"
+									        class="btn btn-sm btn-default">Force Extract from {$ils}</button>
+                {/if}
+
+                {if (array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles))}
+									<a href="/Admin/NonGroupedRecords?objectAction=addNew&recordId={$recordDriver->getId()}&sourceSelect={$recordDriver->getRecordType()}&notes={$recordDriver->getShortTitle()|removeTrailingPunctuation|escape}%0A{$userDisplayName}, {$homeLibrary}, {$smarty.now|date_format}%0A"
+									   target="_blank" class="btn btn-sm btn-default">UnMerge from Work
+									</a>
+                {/if}
+
+                {*							</div>*}
 						</div>
 					</div>
-				{/if}
-		{/if}
+            {if $enableArchive && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('archives', $userRoles))}
+							<div class="row">
+								<div class="col-xs-12">
+                    {*									<div class="btn-group" role="group" aria-label="...">*}
+									<button onclick="return VuFind.GroupedWork.reloadIslandora('{$recordDriver->getPermanentId()}')"
+									        class="btn btn-sm btn-default">Clear Islandora Cache
+									</button>
+                    {*									</div>*}
+								</div>
+							</div>
+            {/if}
+
+        {/if} {*End of userIsStaff *}
+
+    {/if} {* End of loggedIn*}
 
 	{* QR Code *}
 	{if $showQRCode}
@@ -73,7 +84,28 @@
 	{/if}
 {/if}
 
-{if $marcRecord}
+		{if $hooplaExtract}
+			<h3>Hoopla Extract Information</h3>
+			<table class="table-striped table table-condensed notranslate">
+					{foreach from=$hooplaExtract key='field' item='values'}
+							{if $field != 'id'}{* this id is the database table id, and will confuse most users as the hoopla id*}
+								<tr>
+									<th>{$field|escape}</th>
+									<td>
+											{if $field == 'dateLastUpdated'}
+													{$values|date_format:"%b %d, %Y %r"}
+											{else}
+													{implode subject=$values glue=', ' sort=true}
+											{/if}
+									</td>
+								</tr>
+							{/if}
+					{/foreach}
+			</table>
+		{/if}
+
+    {if $marcRecord}
+			<h3>Record Information</h3>
 	<table class="table-striped table table-condensed notranslate">
 			{if isset($lastRecordExtractTime)}
 				<tr>
@@ -84,7 +116,7 @@
 			{/if}
 			{if $recordExtractMarkedDeleted}
 				<tr>
-					<th>{$ils} Extract Marked Deleted Date</th>
+					<th>{$ils} Extract Marked Suppressed/Deleted Date</th>
 					<td>{$recordExtractMarkedDeleted|date_format:"%b %d, %Y"}</td>
 				</tr>
 			{/if}

@@ -8,7 +8,10 @@
  * Date: 7/29/14
  * Time: 3:14 PM
  */
-class MergedGroupedWork extends DB_DataObject {
+
+require_once ROOT_DIR . '/sys/Grouping/CommonGroupingAlterationOperations.php';
+
+class MergedGroupedWork extends CommonGroupingAlterationOperations {
 	public $__table = 'merged_grouped_works';
 	public $id;
 	public $sourceGroupedWorkId;
@@ -57,13 +60,13 @@ class MergedGroupedWork extends DB_DataObject {
 				'storeDb'     => true,
 				'required'    => true,
 			),
-//			// For display only
-//			array(
-//				'property'         => 'full_title',
-//				'type'             => 'text',
-//				'label'            => 'Grouping Title',
-//				'storeDb'          => false,
-//			),
+			//			// For display only
+			//			array(
+			//				'property'         => 'full_title',
+			//				'type'             => 'text',
+			//				'label'            => 'Grouping Title',
+			//				'storeDb'          => false,
+			//			),
 		);
 		return $structure;
 	}
@@ -71,23 +74,23 @@ class MergedGroupedWork extends DB_DataObject {
 	function validateSource(){
 		//Setup validation return array
 		$validationResults = array(
-				'validatedOk' => true,
-				'errors' => array(),
+			'validatedOk' => true,
+			'errors'      => array(),
 		);
 
 		$this->sourceGroupedWorkId = trim($this->sourceGroupedWorkId);
 		if (!preg_match('/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}/i', $this->sourceGroupedWorkId)){
 			$validationResults = array(
-					'validatedOk' => false,
-					'errors' => array("The format of the source {$this->sourceGroupedWorkId} is not a valid work id"),
+				'validatedOk' => false,
+				'errors'      => array("The format of the source {$this->sourceGroupedWorkId} is not a valid work id"),
 			);
-		} else {
-			$destination_check = new MergedGroupedWork();
+		}else{
+			$destination_check                           = new MergedGroupedWork();
 			$destination_check->destinationGroupedWorkId = $this->sourceGroupedWorkId;
-			if ($destination_check->find()) {
+			if ($destination_check->find()){
 				$validationResults = array(
 					'validatedOk' => false,
-					'errors' => array("The source {$this->sourceGroupedWorkId} is a destination work for another manual merging entry. A Destination work can not be the source work in another manual merging."),
+					'errors'      => array("The source {$this->sourceGroupedWorkId} is a destination work for another manual merging entry. A Destination work can not be the source work in another manual merging."),
 				);
 			}
 		}
@@ -96,31 +99,31 @@ class MergedGroupedWork extends DB_DataObject {
 
 	function validateDestination(){
 		//Setup validation return array
-		$validationResults = array(
+		$validationResults              = array(
 			'validatedOk' => true,
-			'errors' => array(),
+			'errors'      => array(),
 		);
 		$this->destinationGroupedWorkId = trim($this->destinationGroupedWorkId);
 
 		if ($this->destinationGroupedWorkId == $this->sourceGroupedWorkId){
 			$validationResults = array(
 				'validatedOk' => false,
-				'errors' => array('The source work id cannot match the destination work id'),
+				'errors'      => array('The source work id cannot match the destination work id'),
 			);
 		}elseif (!preg_match('/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}/i', $this->destinationGroupedWorkId)){
 			$validationResults = array(
-					'validatedOk' => false,
-					'errors' => array('The format of the destination is not a valid work id'),
+				'validatedOk' => false,
+				'errors'      => array('The format of the destination is not a valid work id'),
 			);
 		}else{
 			//Make sure the destination actually exists (not a big deal if the source doesn't since invalid ones will just be skipped)
 			require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
-			$groupedWork = new GroupedWork();
+			$groupedWork               = new GroupedWork();
 			$groupedWork->permanent_id = $this->destinationGroupedWorkId;
 			if (!$groupedWork->find(true)){
 				$validationResults = array(
-						'validatedOk' => false,
-						'errors' => array('The destination work id does not exist'),
+					'validatedOk' => false,
+					'errors'      => array('The destination work id does not exist'),
 				);
 			}
 		}
@@ -128,51 +131,49 @@ class MergedGroupedWork extends DB_DataObject {
 		return $validationResults;
 	}
 
-
-	function update($dataObject = false)
-	{
-		$success = parent::update($dataObject);
-		if ($success) {
-			$this->markForForcedRegrouping();
-		}
-		return $success;
-	}
-
-	function insert()
-	{
-		$success = parent::insert();
-		if ($success) {
-			$this->markForForcedRegrouping();
-		}
-		return $success;
-	}
-
-	function delete($useWhere = false)
-	{
-		$success = parent::delete($useWhere);
-		if ($success) {
-			$this->markForForcedRegrouping();
-		}
-		return $success;
-	}
-
-	private function markForForcedRegrouping() {
+	private function markForForcedRegrouping(){
 		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
-		$groupedWork = new GroupedWork();
+		$groupedWork               = new GroupedWork();
 		$groupedWork->permanent_id = $this->destinationGroupedWorkId;
 		if ($groupedWork->find(true)){
-			if (!$groupedWork->forceRegrouping()) {
+			if (!$groupedWork->forceRegrouping()){
 				global $logger;
-				$logger->log('Error occurred marking destination grouped work ' . $this->destinationGroupedWorkId .' for forced regrouping', PEAR_LOG_ERR);
+				$logger->log('Error occurred marking destination grouped work ' . $this->destinationGroupedWorkId . ' for forced regrouping', PEAR_LOG_ERR);
 			};
 		}
-		$groupedWork = new GroupedWork();
+		$groupedWork               = new GroupedWork();
 		$groupedWork->permanent_id = $this->sourceGroupedWorkId;
 		if ($groupedWork->find(true)){
-			if (!$groupedWork->forceRegrouping()) {
+			if (!$groupedWork->forceRegrouping()){
 				global $logger;
-				$logger->log('Error occurred marking destination grouped work ' . $this->sourceGroupedWorkId .' for forced regrouping', PEAR_LOG_ERR);
+				$logger->log('Error occurred marking destination grouped work ' . $this->sourceGroupedWorkId . ' for forced regrouping', PEAR_LOG_ERR);
 			};
 		}
 	}
+
+	/**
+	 * Steps to take after saving data to database
+	 */
+	protected function followUpActions(){
+		global $configArray;
+		if ($configArray['Catalog']['ils'] == 'Sierra'){
+			// Merge Works require re-extraction in the Sierra API Extract process
+			// The full regrouping process will ignore forced-regrouping markings for Sierra records
+			require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+			$groupedWork               = new GroupedWork();
+			$groupedWork->permanent_id = $this->sourceGroupedWorkId;
+			if ($groupedWork->find(true)){
+				require_once ROOT_DIR . '/sys/Grouping/GroupedWorkPrimaryIdentifier.php';
+				$groupedWorkPrimaryIdentifier                  = new GroupedWorkPrimaryIdentifier();
+				$groupedWorkPrimaryIdentifier->grouped_work_id = $groupedWork->id;
+				$groupedWorkPrimaryIdentifier->find();
+				while ($groupedWorkPrimaryIdentifier->fetch()){
+					$sourceAndId = $groupedWorkPrimaryIdentifier->getSourceAndId();
+					$this->markRecordForReExtraction($sourceAndId);
+				}
+			}
+		}
+		$this->markForForcedRegrouping();
+	}
+
 }

@@ -8,7 +8,7 @@ PIKASERVER=aspencat.production
 PIKADBNAME=pika
 OUTPUT_FILE="/var/log/vufind-plus/${PIKASERVER}/full_update_output.log"
 
-MINFILE1SIZE=$((1060000000))
+MINFILE1SIZE=$((1070000000))
 
 # Check for conflicting processes currently running
 source "/usr/local/vufind-plus/vufind/bash/checkConflicts.sh"
@@ -46,7 +46,10 @@ cd /usr/local/vufind-plus/vufind/cron;./GetHooplaFromMarmot.sh >> ${OUTPUT_FILE}
 curl --remote-time --show-error --compressed -o /data/vufind-plus/colorado_gov_docs/marc/fullexport.mrc https://cassini.marmot.org/colorado_state_docs.mrc
 
 # Gutenberg
-#/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} aspencat/gutenberg gutenberg/aspencat >> ${OUTPUT_FILE}
+/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} aspencat/gutenberg gutenberg/aspencat >> ${OUTPUT_FILE}
+
+# MackinVia Abdo
+#/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} aspencat/mackin_abdo mackin_abdo/aspencat >> ${OUTPUT_FILE}
 
 #Extract Lexile Data
 cd /data/vufind-plus/; curl --remote-name --remote-time --silent --show-error --compressed --time-cond /data/vufind-plus/lexileTitles.txt https://cassini.marmot.org/lexileTitles.txt
