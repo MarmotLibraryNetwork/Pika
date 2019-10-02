@@ -96,6 +96,8 @@ class SideFacets implements RecommendationInterface
 			}
 			$this->facetSettings = array();
 			$this->mainFacets    = array();
+
+			// The below block of code is common with SearchObject_Solr method initAdvancedFacets()
 			global $solrScope;
 			foreach ($facets as $facet){
 				$facetName = $facet->facetName;

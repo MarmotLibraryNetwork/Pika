@@ -358,30 +358,33 @@ class SearchObject_Solr extends SearchObject_Base
 		}
 
 		$this->facetConfig = array();
+
+		// The below block of code is common with SideFacets method _construct()
 		global $solrScope;
 		foreach ($facets as $facet){
 			$facetName = $facet->facetName;
+
 			//Adjust facet name for local scoping
 			if ($solrScope){
-				if ($facet->facetName == 'availability_toggle'){
-					$facetName = 'availability_toggle_' . $solrScope;
-				}elseif ($facet->facetName == 'format'){
-					$facetName = 'format_' . $solrScope;
-				}elseif ($facet->facetName == 'format_category'){
-					$facetName = 'format_category_' . $solrScope;
-				}elseif ($facet->facetName == 'econtent_source'){
-					$facetName = 'econtent_source_' . $solrScope;
-				}elseif ($facet->facetName == 'econtent_protection_type'){
-					$facetName = 'econtent_protection_type_' . $solrScope;
-				}elseif ($facet->facetName == 'detailed_location'){
-					$facetName = 'detailed_location_' . $solrScope;
-				}elseif ($facet->facetName == 'owning_location'){
-					$facetName = 'owning_location_' . $solrScope;
-				}elseif ($facet->facetName == 'owning_library'){
-					$facetName = 'owning_library_' . $solrScope;
-				}elseif ($facet->facetName == 'available_at'){
-					$facetName = 'available_at_' . $solrScope;
-				}elseif ($facet->facetName == 'collection' || $facet->facetName == 'collection_group'){
+				if (in_array($facetName, array(
+					'availability_toggle',
+					'format',
+					'format_category',
+					'econtent_source',
+					'econtent_protection_type', //TODO remove
+					'language',
+					'translation',
+					'detailed_location',
+					'owning_location',
+					'owning_library',
+					'available_at',
+					'collection',
+				))){
+					$facetName .= '_' . $solrScope;
+				}
+
+				// Handle obsolete facet name
+				if ($facet->facetName == 'collection_group'){
 					$facetName = 'collection_' . $solrScope;
 				}
 			}
@@ -680,7 +683,7 @@ class SearchObject_Solr extends SearchObject_Base
 			if (is_array($recordSet)){
 				foreach ($recordSet as $key => $record){
 					//Trim off the dot from the start
-					$record['shortId'] = substr($record['id'], 1);
+					$record['shortId'] = ltrim($record['id'], '.'); // TODO: does this shortID even get used anymore. (record['id'] Should be always be a grouped work instead of a bib ID)
 					if (!$this->debug){
 						unset($record['explain']);
 						unset($record['score']);
