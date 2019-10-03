@@ -121,8 +121,8 @@ public class SierraExportAPIMain {
 //			System.exit(2); // Exiting with a status code of 2 so that our executing bash scripts knows there has been a database communication error
 //		}
 
-		String  profileToLoad       = "ils";
-		String  singleRecordToProcess = null;
+		String profileToLoad         = "ils";
+		String singleRecordToProcess = null;
 		if (args.length > 1) {
 			/*if (args[1].startsWith(".b")) {
 				fetchSingleBibFromCommandLine = true;
@@ -219,7 +219,7 @@ public class SierraExportAPIMain {
 
 
 		Boolean running = systemVariables.getBooleanValuedVariable("sierra_extract_running");
-		if (running != null && running){
+		if (running != null && running) {
 			logger.warn("System variable 'sierra_extract_running' is already set to true. This may indicator another Sierra Extract process is running.");
 		} else {
 			updatePartialExtractRunning(true);
@@ -1245,10 +1245,10 @@ public class SierraExportAPIMain {
 				//Load Sierra Fixed Field / Bib Level Tag
 				JSONObject fixedFieldResults = getMarcJSONFromSierraApiURL(apiBaseUrl + "/bibs/" + id + "?fields=fixedFields,locations");
 				if (fixedFieldResults != null && !fixedFieldResults.has("code")) {
-					DataField sierraFixedField = marcFactory.newDataField(indexingProfile.sierraBibLevelFieldTag, ' ', ' ');
-					final JSONObject fixedFields = fixedFieldResults.getJSONObject("fixedFields");
+					DataField        sierraFixedField = marcFactory.newDataField(indexingProfile.sierraBibLevelFieldTag, ' ', ' ');
+					final JSONObject fixedFields      = fixedFieldResults.getJSONObject("fixedFields");
 					if (indexingProfile.bcode3Subfield != ' ') {
-						String    bCode3           = fixedFields.getJSONObject("31").getString("value");
+						String bCode3 = fixedFields.getJSONObject("31").getString("value");
 						sierraFixedField.addSubfield(marcFactory.newSubfield(indexingProfile.bcode3Subfield, bCode3));
 					}
 					if (indexingProfile.materialTypeSubField != ' ') {
@@ -1308,8 +1308,8 @@ public class SierraExportAPIMain {
 	}
 
 	private static String groupAndWriteTheMarcRecord(Record marcRecord, Long id) {
-		String           identifier = null;
-		if (id != null){
+		String identifier = null;
+		if (id != null) {
 			identifier = getfullSierraBibId(id);
 		} else {
 			RecordIdentifier recordIdentifier = recordGroupingProcessor.getPrimaryIdentifierFromMarcRecord(marcRecord, indexingProfile.name, indexingProfile.doAutomaticEcontentSuppression);
@@ -1431,15 +1431,20 @@ public class SierraExportAPIMain {
 							//						boolean hadCallNumberVarField = false;
 							//Process variable fields
 							for (int j = 0; j < varFields.length(); j++) {
-								JSONObject    curVarField     = varFields.getJSONObject(j);
-								String        fieldTag        = curVarField.getString("fieldTag");
-								StringBuilder allFieldContent = new StringBuilder();
-								JSONArray     subfields       = null;
+								JSONObject    curVarField          = varFields.getJSONObject(j);
+								String        fieldTag             = curVarField.getString("fieldTag");
+								StringBuilder allFieldContent      = new StringBuilder();
+								JSONArray     subfields            = null;
+								boolean       lookingForEContent   = indexingProfile.APIItemEContentExportFieldTag.length() > 0;
+								boolean       isThisAnEContentItem = lookingForEContent && fieldTag.equals(indexingProfile.APIItemEContentExportFieldTag);
 								if (curVarField.has("subfields")) {
 									subfields = curVarField.getJSONArray("subfields");
 									for (int k = 0; k < subfields.length(); k++) {
 										JSONObject subfield = subfields.getJSONObject(k);
-										allFieldContent.append(subfield.getString("content"));
+										if (k == 0 || !lookingForEContent || !isThisAnEContentItem) {
+											// Don't concatenate subfields if this is an econtent Item tag
+											allFieldContent.append(subfield.getString("content"));
+										}
 									}
 								} else {
 									allFieldContent.append(curVarField.getString("content"));
@@ -1691,19 +1696,19 @@ public class SierraExportAPIMain {
 //		addNoteToExportLog("Finished exporting due dates");
 //	}
 
-	private static void exportActiveOrders(Connection sierraConn){
+	private static void exportActiveOrders(Connection sierraConn) {
 		addNoteToExportLog("Starting export of active orders");
 
 		//Load the orders we had last time
 		String                 exportPath             = indexingProfile.marcPath;
-		String                 orderFilePath                      = exportPath + "/active_orders.csv";
+		String                 orderFilePath          = exportPath + "/active_orders.csv";
 		File                   orderRecordFile        = new File(orderFilePath);
 		HashMap<Long, Integer> existingBibsWithOrders = new HashMap<>();
 		readOrdersFile(orderRecordFile, existingBibsWithOrders);
 
 		boolean suppressOrderRecordsThatAreReceivedAndCataloged = PikaConfigIni.getBooleanIniValue("Catalog", "suppressOrderRecordsThatAreReceivedAndCatalogged");
 		boolean suppressOrderRecordsThatAreCataloged            = PikaConfigIni.getBooleanIniValue("Catalog", "suppressOrderRecordsThatAreCatalogged");
-		boolean suppressOrderRecordsThatAreReceived              = PikaConfigIni.getBooleanIniValue("Catalog", "suppressOrderRecordsThatAreReceived");
+		boolean suppressOrderRecordsThatAreReceived             = PikaConfigIni.getBooleanIniValue("Catalog", "suppressOrderRecordsThatAreReceived");
 
 		String orderStatusesToExport = PikaConfigIni.getIniValue("Reindex", "orderStatusesToExport");
 		if (orderStatusesToExport == null) {
@@ -1753,12 +1758,12 @@ public class SierraExportAPIMain {
 			File tempWriteFile = new File(orderRecordFile + ".tmp");
 			writeToFileFromSQLResultFile(tempWriteFile, activeOrdersRS);
 			activeOrdersRS.close();
-			if (!tempWriteFile.renameTo(orderRecordFile)){
-				if (orderRecordFile.exists() && orderRecordFile.delete()){
-					if (!tempWriteFile.renameTo(orderRecordFile)){
+			if (!tempWriteFile.renameTo(orderRecordFile)) {
+				if (orderRecordFile.exists() && orderRecordFile.delete()) {
+					if (!tempWriteFile.renameTo(orderRecordFile)) {
 						logger.error("failed to delete existing order record file and replace with temp file");
 					}
-				}else {
+				} else {
 					logger.warn("Failed to rename temp order record file");
 				}
 			}
@@ -1795,7 +1800,7 @@ public class SierraExportAPIMain {
 		addNoteToExportLog(numBibsToProcess + " total records to update.<br> " + numBibsOrdersAdded + " records have new order records.<br>" + numBibsOrdersChanged + " records have order record updates.<br>" + numBibsOrdersRemoved + " records have no order records now.");
 	}
 
-	private static void readOrdersFile(File orderRecordFile, HashMap<Long, Integer> bibsWithOrders){
+	private static void readOrdersFile(File orderRecordFile, HashMap<Long, Integer> bibsWithOrders) {
 		try {
 			if (orderRecordFile.exists()) {
 				try (CSVReader orderReader = new CSVReader(new FileReader(orderRecordFile))) {
