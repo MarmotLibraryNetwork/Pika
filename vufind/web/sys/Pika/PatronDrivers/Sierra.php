@@ -42,6 +42,7 @@ namespace Pika\PatronDrivers;
 
 use Curl\Curl;
 use ErrorException;
+use InvalidArgumentException;
 use \Pika\Logger;
 use \Pika\Cache;
 use Location;
@@ -279,8 +280,7 @@ class Sierra {
 	 * @param   string  $password         The patron barcode or pin
 	 * @param   boolean $validatedViaSSO  FALSE
 	 *
-	 * @return  User|null           User object
-	 *                              If an error occurs, return a exception
+	 * @return  User|null           User object or null
 	 * @access  public
 	 */
 	public function patronLogin($username, $password, $validatedViaSSO = FALSE){
@@ -299,17 +299,19 @@ class Sierra {
 			$this->patronBarcode = $barcode;
 			$patronId = $this->_authNameBarcode($username, $password);
 		} else {
-			// TODO: log error
-			trigger_error("ERROR: Invalid loginConfiguration setting.", E_USER_ERROR);
+			$msg = "Invalid loginConfiguration setting.";
+			$this->logger->error($msg);
+			throw new InvalidArgumentException($msg);
+			return null;
 		}
 		// can't find patron
 		if (!$patronId) {
-			// need a better return
+			$msg = "Can't get patron id from Sierra API.";
+			$this->logger->warn($msg, ['barcode'=>$this->patronBarcode]);
 			return null;
 		}
 
 		$this->patronId = $patronId;
-
 		$patron = $this->getPatron($patronId);
 
 		return $patron;
@@ -323,7 +325,7 @@ class Sierra {
 		// grab everything from the patron record the api can provide.
 		// titles on hold to patron object
 		if(!isset($patronId) && !isset($this->patronId)) {
-			trigger_error("ERROR: getPatron expects at least on parameter.", E_USER_ERROR);
+			throw new InvalidArgumentException("ERROR: getPatron expects at least on parameter.");
 		} else {
 			$patronId = isset($patronId) ? $patronId : $this->patronId;
 		}
@@ -339,8 +341,8 @@ class Sierra {
 
 		$patron = new User();
 		$patron->barcode = $this->patronBarcode;
-		// check if the user exists in database
-		// use barcode as sierra patron id is no longer be stored in database as username.
+		// check if the user exists in Pika database
+		// use barcode as sierra patron id is no longer stored in database as username.
 		// get the login configuration barcode_pin or name_barcode
 		$loginMethod    = $this->accountProfile->loginConfiguration;
 		$patron->source = $this->accountProfile->name;
@@ -351,6 +353,7 @@ class Sierra {
 		}
 		// does the user exist in database?
 		if(!$patron->find(true)) {
+			$this->logger->info('Patron does not exits in Pika database.', ['barcode'=>$this->patronBarcode]);
 			$createPatron = true;
 		}
 
@@ -391,7 +394,17 @@ class Sierra {
 		if(isset($pInfo->emails) && $pInfo->emails[0] != $patron->email) {
 			$updatePatron = true;
 			$patron->email = $pInfo->emails[0];
+		} else {
+			$patron->email = '';
 		}
+		// username -- this is unique?
+		if(!empty($patron->email)) {
+			$patron->username = $patron->email;
+		} else {
+			$username = strtolower($firstName) . '.' . strtolower($lastName);
+			$patron->username = $username;
+		}
+
 		// check phones
 		$homePhone   = '';
 		$mobilePhone = '';
@@ -403,9 +416,15 @@ class Sierra {
 			}
 		}
 		// TODO: Need to figure out which phone to use. Maybe mobile phone?
+		// try home phone first then mobile phone
 		if(isset($homePhone) && $patron->phone != $homePhone) {
 			$updatePatron = true;
 			$patron->phone = $homePhone;
+		} elseif(!isset($homePhone) && isset($mobilePhone) && $patron->phone != $mobilePhone) {
+			$updatePatron = true;
+			$patron->phone = $mobilePhone;
+		} else {
+			$patron->phone = '';
 		}
 		// check home location
 		$location       = new Location();
@@ -545,7 +564,15 @@ class Sierra {
 
 		if($createPatron) {
 			$patron->created = date('Y-m-d');
-			$patron->insert();
+			if($patron->insert() === false) {
+				$this->logger->error('Could not save patron to Pika database.', ['barcode'=>$this->patronBarcode,
+				                                                                 'error'=>$patron->_lastError->userinfo,
+				                                                                 'backtrace'=>$patron->_lastError->backtrace]);
+				throw new ErrorException('Error saving patron to Pika database');
+				return null;
+			} else {
+				$this->logger->info('Saved patron to Pika database.', ['barcode'=>$this->patronBarcode]);
+			}
 		} elseif ($updatePatron && !$createPatron) {
 			$patron->update();
 		}
@@ -573,7 +600,7 @@ class Sierra {
 			$barcode = $patronOrBarcode;
 		}
 
-		$patronIdCacheKey = "patron_".$barcode."barcode";
+		$patronIdCacheKey = "patron_".$barcode."_sierraid";
 		if($patronId = $this->memCache->get($patronIdCacheKey)) {
 			return $patronId;
 		}

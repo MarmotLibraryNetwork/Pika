@@ -38,6 +38,9 @@ $timer->logTime("Initialized session");
 //global $logger;
 //$logger->log("Opening URL " . $_SESSION['REQUEST_URI'], PEAR_LOG_DEBUG);
 
+// PHP 7 logger
+$pikaLogger = new Pika\Logger('PikaLogger', true);
+
 if (isset($_REQUEST['test_role'])){
 	if ($_REQUEST['test_role'] == ''){
 		setcookie('test_role', $_REQUEST['test_role'], time() - 1000, '/');
