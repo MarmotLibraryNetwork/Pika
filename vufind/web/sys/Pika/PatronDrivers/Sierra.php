@@ -41,6 +41,7 @@
 namespace Pika\PatronDrivers;
 
 use Curl\Curl;
+use DateTime;
 use ErrorException;
 use InvalidArgumentException;
 use \Pika\Logger;
@@ -53,8 +54,11 @@ use User;
 
 class Sierra {
 
-	// Adding global variables to class during object construction to avoid repeated calls to global.
+	// @var Pika/Memcache instance
 	public  $memCache;
+	// @var $logger Pika/Logger instance
+	private $logger;
+
 	private $configArray;
 	// ----------------------
 	/* @var $oAuthToken oAuth2Token */
@@ -72,12 +76,9 @@ class Sierra {
 	// many ids come from url. example: https://sierra.marmot.org/iii/sierra-api/v5/items/5130034
 	private $urlIdRegExp = "/.*\/(\d*)$/";
 
-	private $logger;
 
 	public function __construct($accountProfile) {
-		// Adding standard globals to class to avoid repeated calling of global.
 		global $configArray;
-		//global $memCache;
 
 		$this->configArray    = $configArray;
 		$this->accountProfile = $accountProfile;
@@ -95,8 +96,7 @@ class Sierra {
 		if(!isset($this->oAuthToken)) {
 			if(!$this->_oAuthToken()) {
 				// logging happens in _oAuthToken()
-
-				return FALSE;
+				return null;
 			}
 		}
 	}
@@ -223,7 +223,6 @@ class Sierra {
 		$this->logger->info("Saving checkouts in memcache:".$patronCheckoutsCacheKey);
 
 		return $checkouts;
-
 	}
 
 	/**
@@ -512,9 +511,9 @@ class Sierra {
 		}
 		// account expiration
 		try {
-			$expiresDate = new \DateTime($pInfo->expirationDate);
+			$expiresDate = new DateTime($pInfo->expirationDate);
 			$patron->expires = $expiresDate->format('m-d-Y');
-			$nowDate     = new \DateTime('now');
+			$nowDate     = new DateTime('now');
 			$dateDiff    = $nowDate->diff($expiresDate);
 			if($dateDiff->days <= 30) {
 				$patron->expireClose = 1;
@@ -892,6 +891,7 @@ class Sierra {
 				$h['title']              = $titleAndAuthor['title'];
 				$h['author']             = $titleAndAuthor['author'];
 				$h['sortTitle']          = $titleAndAuthor['sort_title'];
+				// todo: Need to make this specific to the theme.
 				$h['coverUrl']           = '/interface/themes/marmot/images/InnReachCover.png';
 				$h['freezeable']         = false;
 				$h['locationUpdateable'] = false;
@@ -956,7 +956,7 @@ class Sierra {
 	 */
 	public function placeHold($patron, $recordId, $pickupBranch, $cancelDate = null) {
 		if($cancelDate) {
-			$d        = \DateTime::createFromFormat('m/d/Y', $cancelDate); // convert needed by date
+			$d        = DateTime::createFromFormat('m/d/Y', $cancelDate); // convert needed by date
 			$neededBy = $d->format('Y-m-d');
 		} else {
 			$neededBy = false;
@@ -1557,8 +1557,8 @@ class Sierra {
 		$operationUrl = $this->apiUrl.$operation;
 		try {
 			$c = new Curl();
-		} catch (ErrorException $e) {
-			// TODO: log exception, set curl error
+		} catch (Exception $e) {
+			$this->logger->error($e->getMessage(), ['stacktrace'=>$e->getTraceAsString()]);
 			return false;
 		}
 		$c->setHeaders($headers);
@@ -1600,6 +1600,7 @@ class Sierra {
 			// This will probably never be triggered since we have the try/catch above.
 			$message = 'curl Error: '.$c->getCurlErrorCode().': '.$c->getCurlErrorMessage();
 			$this->apiLastError = $message;
+			$this->logger->warning($message);
 			return false;
 		} elseif ($c->isHttpError()) {
 			// this will be a 4xx response
@@ -1609,9 +1610,11 @@ class Sierra {
 				$message = 'API Error: ' . $c->response->code . ': ' . $c->response->name;
 				if(isset($c->response->description)){
 					$message = $message . " " . $c->response->description;
+					$this->logger->warning($message, ['api_response'=>$c->response]);
 				}
 			} else {
 				$message = 'HTTP Error: '.$c->getErrorCode().': '.$c->getErrorMessage();
+				$this->logger->warning($message);
 			}
 			$this->apiLastError = $message;
 			return false;
