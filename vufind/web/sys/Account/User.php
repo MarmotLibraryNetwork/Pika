@@ -954,6 +954,8 @@ class User extends DB_DataObject {
 		if ($includeLinkedUsers){
 			if ($this->getLinkedUsers() != null){
 				/** @var User $user */
+				// TODO: this shouldn't reuse the same user object for a different user . ie; should be $user = new User();
+				// todo: This creates a highly likely case of variable collision.
 				foreach ($this->getLinkedUsers() as $user){
 					$allHolds = array_merge_recursive($allHolds, $user->getMyHolds(false, $unavailableSort, $availableSort));
 				}
