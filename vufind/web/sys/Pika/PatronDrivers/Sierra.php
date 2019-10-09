@@ -67,8 +67,6 @@ class Sierra {
 	private $apiLastError = false;
 	// Needs to be public
 	public $accountProfile;
-	/* @var $patronId int Sierra patron id used for all REST calls. */
-	private $patronId;
 	/* @var $patronBarcode string The patrons barcode */
 	private $patronBarcode;
 	/* @var $apiUrl string The url for the Sierra API */
@@ -106,17 +104,19 @@ class Sierra {
 	 *
 	 * GET patrons/{patronId}/checkouts?fields=default%2Cbarcode
 	 *
-	 * @param $patron
+	 * @param User $patron
+	 * @param bool $linkedAccount
 	 * @return array|false
 	 */
-	public function getMyCheckouts($patron){
+	public function getMyCheckouts($patron, $linkedAccount = false){
 
 		$patronCheckoutsCacheKey = "patron_".$patron->barcode."_checkouts";
-		if($patronCheckouts = $this->memCache->get($patronCheckoutsCacheKey)) {
-			$this->logger->info("Found checkouts in memcache:".$patronCheckoutsCacheKey);
-			return $patronCheckouts;
+		if(!$linkedAccount) {
+			if($patronCheckouts = $this->memCache->get($patronCheckoutsCacheKey)) {
+				$this->logger->info("Found checkouts in memcache:".$patronCheckoutsCacheKey);
+				return $patronCheckouts;
+			}
 		}
-
 		$patronId = $this->getPatronId($patron);
 
 		$operation = 'patrons/'.$patronId.'/checkouts';
@@ -219,9 +219,10 @@ class Sierra {
 			unset($checkout);
 		}
 
-		$this->memCache->set($patronCheckoutsCacheKey, $checkouts, $this->configArray['Caching']['patron_profile']);
-		$this->logger->info("Saving checkouts in memcache:".$patronCheckoutsCacheKey);
-
+		if(!$linkedAccount) {
+			$this->memCache->set($patronCheckoutsCacheKey, $checkouts, $this->configArray['Caching']['patron_profile']);
+			$this->logger->info("Saving checkouts in memcache:".$patronCheckoutsCacheKey);
+		}
 		return $checkouts;
 	}
 
@@ -310,7 +311,6 @@ class Sierra {
 			return null;
 		}
 
-		$this->patronId = $patronId;
 		$patron = $this->getPatron($patronId);
 
 		return $patron;
@@ -320,13 +320,11 @@ class Sierra {
 	 * @param int $patronId
 	 * @return User|null
 	 */
-	public function getPatron($patronId = null) {
+	public function getPatron($patronId) {
 		// grab everything from the patron record the api can provide.
 		// titles on hold to patron object
-		if(!isset($patronId) && !isset($this->patronId)) {
+		if(!isset($patronId)) {
 			throw new InvalidArgumentException("ERROR: getPatron expects at least on parameter.");
-		} else {
-			$patronId = isset($patronId) ? $patronId : $this->patronId;
 		}
 
 		$patronObjectCacheKey = 'patron_'.$this->patronBarcode.'_patron';
@@ -588,9 +586,6 @@ class Sierra {
 	 */
 	public function getPatronId($patronOrBarcode)
 	{
-		if(isset($this->patronId)) {
-			return $this->patronId;
-		}
 		// if a patron object was passed
 		if(is_object($patronOrBarcode)) {
 			$barcode = $patronOrBarcode->barcode;
@@ -618,9 +613,7 @@ class Sierra {
 
 		$this->memCache->set($patronIdCacheKey, $r->id, $this->configArray['Caching']['koha_patron_id']);
 
-		$this->patronId = $r->id;
-
-		return $this->patronId;
+		return $r->id;
 	}
 
 	public function updatePatronInfo($patron, $canUpdateContactInfo){
@@ -646,13 +639,9 @@ class Sierra {
 	public function getMyFines($patron){
 
 		// find the sierra patron id
-		if (!isset($this->patronId)) {
-			$patronId = $this->getPatronId($patron);
-			if($patronId) {
-				$this->patronId = $patronId;
-			} else {
-				return false;
-			}
+		$patronId = $this->getPatronId($patron);
+		if(!$patronId) {
+			return false;
 		}
 		// check memCache
 		$patronFinesCacheKey = 'patron_'.$patron->barcode.'_fines';
@@ -663,7 +652,7 @@ class Sierra {
 		$params = [
 			'fields' => 'default,assessedDate,itemCharge,chargeType,paidAmount,datePaid,description,returnDate,location,description'
 		];
-		$operation = 'patrons/'.$this->patronId.'/fines';
+		$operation = 'patrons/'.$patronId.'/fines';
 		$fInfo = $this->_doRequest($operation, $params);
 		if(!$fInfo) {
 			// TODO: check last error.
@@ -739,16 +728,15 @@ class Sierra {
 	 * @param  User $patron
 	 * @return array|bool
 	 */
-	public function getMyHolds($patron){
+	public function getMyHolds($patron, $linkedAccount = false) {
 
 		$patronHoldsCacheKey = "patron_".$patron->barcode."_holds";
-		if($patronHolds = $this->memCache->get($patronHoldsCacheKey)) {
-			$this->logger->info("Found holds in memcache:".$patronHoldsCacheKey);
+		if ($patronHolds = $this->memCache->get($patronHoldsCacheKey)) {
+			$this->logger->info("Found holds in memcache:" . $patronHoldsCacheKey);
 			return $patronHolds;
 		}
 
 		if(!$patronId = $this->getPatronId($patron)) {
-			// TODO: need to do something here
 			return false;
 		}
 
@@ -757,8 +745,6 @@ class Sierra {
 		$holds = $this->_doRequest($operation, $params);
 
 		if(!$holds) {
-			// check last error
-			// todo: message? log?
 			return false;
 		}
 
@@ -936,9 +922,13 @@ class Sierra {
 
 		$return['available']   = $availableHolds;
 		$return['unavailable'] = $unavailableHolds;
+		// for linked accounts we might run into problems
+		unset($availableHolds, $unavailableHolds);
 
-		$this->memCache->set($patronHoldsCacheKey, $return, $this->configArray['Caching']['patron_profile']);
-		$this->logger->info("Saving holds in memcache:".$patronHoldsCacheKey);
+		if(!$linkedAccount){
+			$this->memCache->set($patronHoldsCacheKey, $return, $this->configArray['Caching']['patron_profile']);
+			$this->logger->info("Saving holds in memcache:".$patronHoldsCacheKey);
+		}
 
 		return $return;
 	}
@@ -1413,7 +1403,6 @@ class Sierra {
 		// return either false on fail or user sierra id on success.
 		if($valid === TRUE) {
 			$result = $r->id;
-			$this->patronId = $result;
 		} else {
 			$result = FALSE;
 		}
