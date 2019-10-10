@@ -261,8 +261,8 @@ public class GroupedWorkIndexer {
 			logger.error("Could not prepare statements to load local enrichment", e);
 		}
 
-		loadAcceleratedReaderData();
 		loadLexileData();
+		loadAcceleratedReaderData();
 
 		if (fullReindex){
 			clearIndex();
@@ -535,6 +535,9 @@ public class GroupedWorkIndexer {
 			String acceleratedReaderPath = PikaConfigIni.getIniValue("Reindex", "arExportPath");
 			File arFile = new File(acceleratedReaderPath);
 			if (arFile.exists()) {
+				if (logger.isInfoEnabled()){
+					logger.info("Starting to read lexile data");
+				}
 				int    numLines = 0;
 				try (CSVReader arDataReader = new CSVReader(new FileReader(arFile), '\t')) {
 					//Skip over the header
@@ -591,6 +594,9 @@ public class GroupedWorkIndexer {
 		try {
 			File lexileData = new File(lexileExportPath);
 			if (lexileData.exists()) {
+				if (logger.isInfoEnabled()){
+					logger.info("Starting to read lexile data");
+				}
 				try (CSVReader lexileReader = new CSVReader(new FileReader(lexileData), '\t')) {
 					//Skip over the header
 					lexileReader.readNext();

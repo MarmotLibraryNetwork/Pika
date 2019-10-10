@@ -37,10 +37,12 @@ public class Util {
 			@SuppressWarnings("unchecked")
 			Iterable<String> valuesIterable = (Iterable<String>)values;
 			for (String curValue : valuesIterable) {
-				if (crSeparatedString.length() > 0) {
-					crSeparatedString.append("\r\n");
+				if (curValue != null && curValue.length() > 0) {
+					if (crSeparatedString.length() > 0) {
+						crSeparatedString.append("\r\n");
+					}
+					crSeparatedString.append(curValue);
 				}
-				crSeparatedString.append(curValue);
 			}
 		}
 		return crSeparatedString.toString();
@@ -54,10 +56,12 @@ public class Util {
 		}
 		StringBuilder crSeparatedString = new StringBuilder();
 		for (String curValue : values) {
-			if (crSeparatedString.length() > 0) {
-				crSeparatedString.append("\r\n");
+			if (curValue != null && curValue.length() > 0) {
+				if (crSeparatedString.length() > 0) {
+					crSeparatedString.append("\r\n");
+				}
+				crSeparatedString.append(curValue);
 			}
-			crSeparatedString.append(curValue);
 		}
 		return crSeparatedString.toString();
 	}
@@ -70,10 +74,12 @@ public class Util {
 		}
 		StringBuilder crSeparatedString = new StringBuilder();
 		for (String curValue : values) {
-			if (crSeparatedString.length() > 0) {
-				crSeparatedString.append("\r\n");
+			if (curValue != null && curValue.length() > 0) {
+				if (crSeparatedString.length() > 0) {
+					crSeparatedString.append("\r\n");
+				}
+				crSeparatedString.append(curValue);
 			}
-			crSeparatedString.append(curValue);
 		}
 		return crSeparatedString.toString();
 	}
@@ -359,14 +365,14 @@ public class Util {
 		return curLine1 == null && curLine2 == null || !(curLine1 == null || curLine2 == null) && curLine1.equals(curLine2);
 	}
 
-	private final static Pattern FOUR_DIGIT_PATTERN_BRACES							= Pattern.compile("\\[[12]\\d{3}\\]");
-	private final static Pattern				FOUR_DIGIT_PATTERN_ONE_BRACE					= Pattern.compile("\\[[12]\\d{3}");
-	private final static Pattern				FOUR_DIGIT_PATTERN_STARTING_WITH_1_2	= Pattern.compile("(20|19|18|17|16|15)[0-9][0-9]");
-	private final static Pattern				FOUR_DIGIT_PATTERN_OTHER_1						= Pattern.compile("l\\d{3}");
-	private final static Pattern				FOUR_DIGIT_PATTERN_OTHER_2						= Pattern.compile("\\[19\\]\\d{2}");
-	private final static Pattern				FOUR_DIGIT_PATTERN_OTHER_3						= Pattern.compile("(20|19|18|17|16|15)[0-9][-?0-9]");
-	private final static Pattern				FOUR_DIGIT_PATTERN_OTHER_4						= Pattern.compile("i.e. (20|19|18|17|16|15)[0-9][0-9]");
-	private final static Pattern				BC_DATE_PATTERN												= Pattern.compile("[0-9]+ [Bb][.]?[Cc][.]?");
+	private final static Pattern FOUR_DIGIT_PATTERN_BRACES            = Pattern.compile("\\[[12]\\d{3}\\]");
+	private final static Pattern FOUR_DIGIT_PATTERN_ONE_BRACE         = Pattern.compile("\\[[12]\\d{3}");
+	private final static Pattern FOUR_DIGIT_PATTERN_STARTING_WITH_1_2 = Pattern.compile("(20|19|18|17|16|15)[0-9][0-9]");
+	private final static Pattern FOUR_DIGIT_PATTERN_OTHER_1           = Pattern.compile("l\\d{3}");
+	private final static Pattern FOUR_DIGIT_PATTERN_OTHER_2           = Pattern.compile("\\[19\\]\\d{2}");
+	private final static Pattern FOUR_DIGIT_PATTERN_OTHER_3           = Pattern.compile("(20|19|18|17|16|15)[0-9][-?0-9]");
+	private final static Pattern FOUR_DIGIT_PATTERN_OTHER_4           = Pattern.compile("i.e. (20|19|18|17|16|15)[0-9][0-9]");
+	private final static Pattern BC_DATE_PATTERN                      = Pattern.compile("[0-9]+ [Bb][.]?[Cc][.]?");
 
 	/**
 	 * Cleans non-digits from a String
