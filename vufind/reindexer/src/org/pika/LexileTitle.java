@@ -13,7 +13,7 @@ public class LexileTitle {
 	private String title;
 	private String author;
 	private String lexileCode;
-	private String lexileScore;
+	private int lexileScore = -1;
 	private String series;
 	private HashSet<String> awards = new HashSet<>();
 	private String description;
@@ -50,12 +50,20 @@ public class LexileTitle {
 		this.lexileCode = lexileCode;
 	}
 
-	public String getLexileScore() {
+	public int getLexileScore() {
 		return lexileScore;
 	}
 
-	public void setLexileScore(String lexileScore) {
-		this.lexileScore = lexileScore;
+	public void setLexileScore(String lexileScore) throws NumberFormatException {
+		if (lexileScore != null && !lexileScore.isEmpty()){
+			int value;
+			try {
+				value = Integer.parseInt(lexileScore);
+			} catch (NumberFormatException e){
+				value = Integer.parseInt(lexileScore.replaceAll("[^0-9]", ""));
+			}
+			this.lexileScore = value;
+		}
 	}
 
 	public String getSeries() {

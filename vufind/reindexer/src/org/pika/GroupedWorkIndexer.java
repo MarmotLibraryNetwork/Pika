@@ -1,5 +1,6 @@
 package org.pika;
 
+import au.com.bytecode.opencsv.CSVReader;
 import au.com.bytecode.opencsv.CSVWriter;
 import org.apache.solr.client.solrj.SolrServer;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -97,7 +98,7 @@ public class GroupedWorkIndexer {
 
 		//Load a few statements we will need later
 		try{
-			getGroupedWorkPrimaryIdentifiers = pikaConn.prepareStatement("SELECT * FROM grouped_work_primary_identifiers where grouped_work_id = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+			getGroupedWorkPrimaryIdentifiers = pikaConn.prepareStatement("SELECT * FROM grouped_work_primary_identifiers WHERE grouped_work_id = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			//MDN 4/14 - Do not restrict by valid for enrichment since many popular titles
 			//Wind up with different work id's due to differences in cataloging.
 			//getGroupedWorkIdentifiers = pikaConn.prepareStatement("SELECT * FROM grouped_work_identifiers inner join grouped_work_identifiers_ref on identifier_id = grouped_work_identifiers.id where grouped_work_id = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
@@ -260,11 +261,8 @@ public class GroupedWorkIndexer {
 			logger.error("Could not prepare statements to load local enrichment", e);
 		}
 
-		String lexileExportPath = PikaConfigIni.getIniValue("Reindex", "lexileExportPath");
-		loadLexileData(lexileExportPath);
-
-		String arExportPath = PikaConfigIni.getIniValue("Reindex", "arExportPath");
-		loadAcceleratedReaderData(arExportPath);
+		loadAcceleratedReaderData();
+		loadLexileData();
 
 		if (fullReindex){
 			clearIndex();
@@ -532,106 +530,104 @@ public class GroupedWorkIndexer {
 		}
 	}
 
-	private void loadAcceleratedReaderData(String acceleratedReaderPath){
+	private void loadAcceleratedReaderData(){
 		try{
+			String acceleratedReaderPath = PikaConfigIni.getIniValue("Reindex", "arExportPath");
 			File arFile = new File(acceleratedReaderPath);
-			BufferedReader arDataReader = new BufferedReader(new FileReader(arFile));
-			//Skip over the header
-			arDataReader.readLine();
-			String arDataLine = arDataReader.readLine();
-			int numLines = 0;
-			while (arDataLine != null){
-				ARTitle titleInfo = new ARTitle();
-				String[] arFields = arDataLine.split("\\t");
-				if (arFields.length >= 29){
-					titleInfo.setTitle(arFields[2]);
-					titleInfo.setAuthor(arFields[6]);
-					titleInfo.setBookLevel(arFields[7]);
-					titleInfo.setArPoints(arFields[8]);
-					titleInfo.setInterestLevel(arFields[10]);
-					String isbn1 = arFields[11];
-					if (isbn1.length() > 0) {
-						isbn1 = isbn1.replaceAll("[^\\dX]", "");
-						arInformation.put(isbn1, titleInfo);
-					}
-					String isbn2 = arFields[14];
-					if (isbn2.length() > 0) {
-						isbn2 = isbn2.replaceAll("[^\\dX]", "");
-						arInformation.put(isbn2, titleInfo);
-					}
-					String isbn3 = arFields[17];
-					if (isbn3.length() > 0) {
-						isbn3 = isbn3.replaceAll("[^\\dX]", "");
-						arInformation.put(isbn3, titleInfo);
-					}
-					String isbn4 = arFields[20];
-					if (isbn4.length() > 0) {
-						isbn4 = isbn4.replaceAll("[^\\dX]", "");
-						arInformation.put(isbn4, titleInfo);
-					}
-					String isbn5 = arFields[23];
-					if (isbn5.length() > 0) {
-						isbn5 = isbn5.replaceAll("[^\\dX]", "");
-						arInformation.put(isbn5, titleInfo);
-					}
-					String isbn6 = arFields[26];
-					if (isbn6.length() > 0) {
-						isbn6 = isbn6.replaceAll("[^\\dX]", "");
-						arInformation.put(isbn6, titleInfo);
-					}
-					String isbn7 = arFields[29];
-					if (isbn7.length() > 0) {
-						isbn7 = isbn7.replaceAll("[^\\dX]", "");
-						arInformation.put(isbn7, titleInfo);
-					}
+			if (arFile.exists()) {
+				int    numLines = 0;
+				try (CSVReader arDataReader = new CSVReader(new FileReader(arFile), '\t')) {
+					//Skip over the header
+					arDataReader.readNext();
+					String[] arFields = arDataReader.readNext();
 					numLines++;
+					while (arFields != null) {
+						ARTitle  titleInfo = new ARTitle();
+						if (arFields.length >= 29) {
+							titleInfo.setTitle(arFields[2]);
+							titleInfo.setAuthor(arFields[6]);
+							titleInfo.setBookLevel(arFields[7]);
+							titleInfo.setArPoints(arFields[8]);
+							titleInfo.setInterestLevel(arFields[10]);
+							String[] ISBNs = {
+									arFields[11].trim(),
+									arFields[14].trim(),
+									arFields[17].trim(),
+									arFields[20].trim(),
+									arFields[23].trim(),
+									arFields[26].trim(),
+									arFields[29].trim()
+							};
+							for (String isbn : ISBNs) {
+								if (isbn.length() > 0) {
+									isbn = isbn.replaceAll("[^\\dX]", "");
+									arInformation.put(isbn, titleInfo);
+								}
+							}
+							numLines++;
+//							if (logger.isInfoEnabled() && (numLines % 100 == 0 /*|| numLines > 5200*/)){
+//								logger.info("Processed accelerated reader data file line " + numLines);
+//							}
+						}
+
+						arFields = arDataReader.readNext();
+					}
 				}
-				arDataLine = arDataReader.readLine();
-			}
-			if (logger.isInfoEnabled()) {
-				logger.info("Read " + numLines + " lines of accelerated reader data");
+				if (logger.isInfoEnabled()) {
+					logger.info("Read " + numLines + " lines of accelerated reader data");
+				}
+			} else if (fullReindex) {
+				logger.warn("Accelerated Reader data file not found : " + acceleratedReaderPath);
 			}
 		}catch (Exception e){
 			logger.error("Error loading accelerated reader data", e);
 		}
 	}
 
-	private void loadLexileData(String lexileExportPath) {
-		String[] lexileFields = new String[0];
-		int      curLine      = 0;
+	private void loadLexileData() {
+		String   lexileExportPath = PikaConfigIni.getIniValue("Reindex", "lexileExportPath");
+		String[] lexileFields     = new String[0];
+		int      curLine          = 0;
 		try {
-			File           lexileData   = new File(lexileExportPath);
-			try (BufferedReader lexileReader = new BufferedReader(new FileReader(lexileData))) {
-				//Skip over the header
-				lexileReader.readLine();
-				String lexileLine = lexileReader.readLine();
-				curLine++;
-				while (lexileLine != null) {
-					lexileFields = lexileLine.split("\\t");
-					LexileTitle titleInfo = new LexileTitle();
-					if (lexileFields.length >= 11) {
-						titleInfo.setTitle(lexileFields[0]);
-						titleInfo.setAuthor(lexileFields[1]);
-						String isbn = lexileFields[3];
-						titleInfo.setLexileCode(lexileFields[4]);
-						titleInfo.setLexileScore(lexileFields[5]);
-						if (lexileFields.length >= 11) {
-							titleInfo.setSeries(lexileFields[10]);
-						}
-						if (lexileFields.length >= 12) {
-							titleInfo.setAwards(lexileFields[11]);
-						}
-						if (lexileFields.length >= 13) {
-							titleInfo.setDescription(lexileFields[12]);
-						}
-						lexileInformation.put(isbn, titleInfo);
-					}
-					lexileLine = lexileReader.readLine();
+			File lexileData = new File(lexileExportPath);
+			if (lexileData.exists()) {
+				try (CSVReader lexileReader = new CSVReader(new FileReader(lexileData), '\t')) {
+					//Skip over the header
+					lexileReader.readNext();
+					lexileFields = lexileReader.readNext();
 					curLine++;
+					while (lexileFields != null) {
+						LexileTitle titleInfo = new LexileTitle();
+						if (lexileFields.length >= 11) {
+							String isbn = lexileFields[3];
+							titleInfo.setTitle(lexileFields[0]);
+							titleInfo.setAuthor(lexileFields[1]);
+							titleInfo.setLexileCode(lexileFields[4]);
+							try {
+								titleInfo.setLexileScore(lexileFields[5]);
+							} catch (NumberFormatException e) {
+								logger.warn("Failed to parse lexile score " + lexileFields[5], e);
+							}
+							if (!lexileFields[10].equalsIgnoreCase("none")) {
+								titleInfo.setSeries(lexileFields[10]);
+							}
+							if (lexileFields.length >= 12) {
+								titleInfo.setAwards(lexileFields[11]);
+							}
+	//						if (lexileFields.length >= 13) {
+	//							titleInfo.setDescription(lexileFields[12]);
+	//						}
+							lexileInformation.put(isbn, titleInfo);
+						}
+						lexileFields = lexileReader.readNext();
+						curLine++;
+					}
 				}
-			}
-			if (logger.isInfoEnabled()) {
-				logger.info("Read " + lexileInformation.size() + " lines of lexile data");
+				if (logger.isInfoEnabled()) {
+					logger.info("Read " + lexileInformation.size() + " lines of lexile data");
+				}
+			} else if (fullReindex) {
+				logger.warn("Lexile data file not found : " + lexileExportPath);
 			}
 		} catch (Exception e) {
 			logger.error("Error loading lexile data on " + curLine + Arrays.toString(lexileFields), e);
@@ -669,10 +665,10 @@ public class GroupedWorkIndexer {
 
 	void createSiteMaps(HashMap<Scope, ArrayList<SiteMapEntry>>siteMapsByScope, HashSet<Long> uniqueGroupedWorks ) {
 
-		File dataDir = new File(PikaConfigIni.getIniValue("SiteMap", "filePath"));
-		String maxPopTitlesDefault = PikaConfigIni.getIniValue("SiteMap", "num_titles_in_most_popular_sitemap");
+		File   dataDir                = new File(PikaConfigIni.getIniValue("SiteMap", "filePath"));
+		String maxPopTitlesDefault    = PikaConfigIni.getIniValue("SiteMap", "num_titles_in_most_popular_sitemap");
 		String maxUniqueTitlesDefault = PikaConfigIni.getIniValue("SiteMap", "num_title_in_unique_sitemap");
-		String url = PikaConfigIni.getIniValue("Site", "url");
+		String url                    = PikaConfigIni.getIniValue("Site", "url");
 		try {
 			SiteMap siteMap = new SiteMap(logger, pikaConn, Integer.parseInt(maxUniqueTitlesDefault), Integer.parseInt(maxPopTitlesDefault));
 			siteMap.createSiteMaps(url, dataDir, siteMapsByScope, uniqueGroupedWorks);
@@ -1058,8 +1054,9 @@ public class GroupedWorkIndexer {
 				}
 				groupedWork.setLexileScore(lexileTitle.getLexileScore());
 				groupedWork.addAwards(lexileTitle.getAwards());
-				if (lexileTitle.getSeries().length() > 0) {
-					groupedWork.addSeries(lexileTitle.getSeries());
+				final String lexileSeries = lexileTitle.getSeries();
+				if (lexileSeries != null && !lexileSeries.isEmpty()) {
+					groupedWork.addSeries(lexileSeries);
 				}
 				break;
 			}

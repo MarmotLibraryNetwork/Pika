@@ -69,7 +69,7 @@ public class GroupedWorkSolr implements Cloneable {
 	private Long                     languageBoostSpanish     = 1L;
 	private HashSet<String>          lccns                    = new HashSet<>();
 	private HashSet<String>          lcSubjects               = new HashSet<>();
-	private String                   lexileScore              = "-1";
+	private int                      lexileScore              = -1;
 	private String                   lexileCode               = "";
 	private String                   fountasPinnell           = "";
 	private HashMap<String, Integer> literaryFormFull         = new HashMap<>();
@@ -246,15 +246,6 @@ public class GroupedWorkSolr implements Cloneable {
 		doc.addField("grouping_category", groupingCategory);
 		doc.addField("format_boost", getTotalFormatBoost());
 
-		//language related fields
-//		//Check to see if we have Unknown plus a valid value TODO: include at record info level
-//		if (languages.size() > 1 && languages.contains("Unknown")){
-//			languages.remove("Unknown");
-//		}
-//		doc.addField("language", languages);
-//		doc.addField("translation", translations);
-//		doc.addField("language_boost", languageBoost);
-//		doc.addField("language_boost_es", languageBoostSpanish);
 		//Publication related fields
 		doc.addField("publisher", publishers);
 		doc.addField("publishDate", publicationDates);
@@ -334,18 +325,16 @@ public class GroupedWorkSolr implements Cloneable {
 		//Awards and ratings
 		doc.addField("mpaa_rating", mpaaRatings);
 		doc.addField("awards_facet", awards);
-		if (lexileScore.length() == 0){
-			doc.addField("lexile_score", -1);
-		}else{
-			doc.addField("lexile_score", lexileScore);
-		}
+		doc.addField("lexile_score", lexileScore);
 		if (lexileCode.length() > 0) {
 			doc.addField("lexile_code", Util.trimTrailingPunctuation(lexileCode));
 		}
 		if (fountasPinnell.length() > 0){
 			doc.addField("fountas_pinnell", fountasPinnell);
 		}
-		doc.addField("accelerated_reader_interest_level", Util.trimTrailingPunctuation(acceleratedReaderInterestLevel));
+		if (acceleratedReaderInterestLevel != null && acceleratedReaderInterestLevel.length() > 0) {
+			doc.addField("accelerated_reader_interest_level", Util.trimTrailingPunctuation(acceleratedReaderInterestLevel));
+		}
 		if (Util.isNumeric(acceleratedReaderReadingLevel)) {
 			doc.addField("accelerated_reader_reading_level", acceleratedReaderReadingLevel);
 		}
@@ -353,7 +342,9 @@ public class GroupedWorkSolr implements Cloneable {
 			doc.addField("accelerated_reader_point_value", acceleratedReaderPointValue);
 		}
 		//EContent fields
-		doc.addField("econtent_device", econtentDevices);
+		if (econtentDevices.size() > 0) {
+			doc.addField("econtent_device", econtentDevices);
+		}
 
 		HashSet<String> eContentSources = getAllEContentSources();
 		keywords.addAll(eContentSources);
@@ -378,7 +369,6 @@ public class GroupedWorkSolr implements Cloneable {
 		doc.addField("issn", issns);
 		doc.addField("primary_upc", getPrimaryUpc());
 		doc.addField("upc", upcs.keySet());
-		
 		//call numbers
 		doc.addField("callnumber-a", callNumberA);
 		doc.addField("callnumber-first", callNumberFirst);
@@ -1585,7 +1575,7 @@ public class GroupedWorkSolr implements Cloneable {
 		this.userRating = userRating;
 	}
 
-	void setLexileScore(String lexileScore) {
+	void setLexileScore(int lexileScore) {
 		this.lexileScore = lexileScore;
 	}
 
