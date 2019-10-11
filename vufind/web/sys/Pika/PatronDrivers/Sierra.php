@@ -53,6 +53,7 @@ use User;
 
 
 class Sierra {
+	// TODO: Clean up logging
 
 	// @var Pika/Memcache instance
 	public  $memCache;
@@ -312,7 +313,6 @@ class Sierra {
 		}
 
 		$patron = $this->getPatron($patronId);
-
 		return $patron;
 	}
 
@@ -392,7 +392,9 @@ class Sierra {
 			$updatePatron = true;
 			$patron->email = $pInfo->emails[0];
 		} else {
-			$patron->email = '';
+			if(empty($patron->email)) {
+				$patron->email = '';
+			}
 		}
 		// username -- this is unique?
 		if(!empty($patron->email)) {
@@ -410,18 +412,23 @@ class Sierra {
 				$homePhone  = $phone->number;
 			} elseif ($phone->type == 'o') {
 				$mobilePhone = $phone->number;
+			} elseif ($phone->type == 'p') {
+				$patron->workPhone = $phone->number;
 			}
 		}
+
 		// TODO: Need to figure out which phone to use. Maybe mobile phone?
 		// try home phone first then mobile phone
-		if(isset($homePhone) && $patron->phone != $homePhone) {
+		if(!empty($homePhone) && $patron->phone != $homePhone) {
 			$updatePatron = true;
 			$patron->phone = $homePhone;
 		} elseif(!isset($homePhone) && isset($mobilePhone) && $patron->phone != $mobilePhone) {
 			$updatePatron = true;
 			$patron->phone = $mobilePhone;
 		} else {
-			$patron->phone = '';
+			if(empty($patron->phone)) {
+				$patron->phone = '';
+			}
 		}
 		// check home location
 		$location       = new Location();
@@ -477,6 +484,7 @@ class Sierra {
 		if($patron->address2 != '') {
 			$addressParts = explode(',', $patron->address2);
 			// some libraries may not use ','  after city so make sure we have parts
+			// todo: need to handle more than 2 address lines for sites like Sacramento
 			if (count($addressParts) > 1 ){
 				$city = trim($addressParts[0]);
 				$stateZip = trim($addressParts[1]);
@@ -526,7 +534,7 @@ class Sierra {
 		} catch (\Exception $e) {
 			$patron->expires = '00-00-0000';
 			// TODO: need to log the error
-			echo $e->getMessage();
+			//echo $e->getMessage();
 		}
 		// notices
 		$patron->notices = $pInfo->fixedFields->{'268'}->value;
@@ -616,28 +624,125 @@ class Sierra {
 		return $r->id;
 	}
 
+
+	/**
+	 * Update a patrons profile information
+	 *
+	 * Address is in the form of:
+	 * [care of(CO) optional]
+	 * Street[, optional] [APT/Suite optional]
+	 * City[, optional] State Zip
+	 *
+	 * ty: {
+	"label": "Notice Preference",
+	"value": "z"
+	},
+	 *
+	 * PUT patrons/{id}
+	 * @param  User  $patron
+	 * @param  bool  $canUpdateContactInfo
+	 * @return array Array of errors or empty array on success
+	 */
 	public function updatePatronInfo($patron, $canUpdateContactInfo){
-		// TODO: Implement updatePatronInfo() method.
+		if(!$canUpdateContactInfo) {
+			return ['You can not update your information.'];
+		}
+
+		$patronId = $this->getPatronId($patron);
+		if(!$patronId) {
+			return ['An error occurred. Please try again later.'];
+		}
+
+		// store city, state, zip in address2 so we can put them together.
+		$cityStZip = [];
+		$phones    = [];
+		$emails    = [];
+		$errors    = [];
+		foreach($_POST as $key=>$val) {
+			switch($key) {
+				case 'address1':
+					if(empty($val)) {
+						$errors[] = "Street address is required.";
+					} else {
+						$address1 = $val;
+					}
+					break;
+				case 'city':
+				case 'state':
+				case 'zip':
+					if(empty($val)) {
+						$errors[] = "City, state and ZIP are required.";
+					} else {
+						$cityStZip[$key] = $val;
+					}
+					break;
+				case 'phone': // primary phone
+					// todo: does this need to set an empty object-- if someone wanted to remove their phone #?
+					if(!empty($val)){
+						$phones[] = (object)['number'=>$val, 'type'=>'t'];
+					}
+					break;
+				case 'workPhone': // alt phone
+					if(!empty($val)){
+						$phones[] = (object)['number'=>$val, 'type'=>'p'];
+					}
+					break;
+				case 'email':
+					if(!empty($val)) {
+						$emails[] = $val;
+					}
+					break;
+				case 'pickupLocation':
+					$homeLibraryCode = $val;
+					break;
+				case 'notices':
+					if(!empty($val)) {
+						$notices = $val;
+					} else {
+						$notices = '-';
+					}
+			}
+		}
+		//->fixedFields->{'268'}->value
+		if(!empty($errors)) {
+			return $errors;
+		}
+
+		// fix up city state zip
+		$address2 = $cityStZip['city'] . ', ' . $cityStZip['state'] . ' ' . $cityStZip['zip'];
+
+		$params = [
+			'emails'          => $emails,
+			'addresses'       => [ (object)['lines' => [$address1, $address2], "type" => 'a'] ],
+			'phones'          => $phones,
+			'homeLibraryCode' => $homeLibraryCode,
+			'fixedFields'     => (object)['268'=>(object)["label" => "Notice Preference", "value" => $notices]]
+		];
+
+		$operation = 'patrons/'.$patronId;
+		$r = $this->_doRequest($operation, $params, 'PUT');
+
+		if(!$r){
+			$this->logger->warn("Unable to update patron", ["message"=>$this->apiLastError]);
+			$errors[] = "An error occurred. Please try in again later.";
+		}
+
+		// remove patron object from cache
+		$this->memCache->delete('patron_'.$patron->barcode.'_patron');
+
+		return $errors;
 	}
 
 	/**
 	 * Get fines for a patron
 	 * GET patrons/{uid}/fines
 	 * Returns array of fines
-	 * array(
-	 * [
-	 * amount,
-	 * amountOutstanding,
-	 * date,
-	 * reason,
-	 * message
-	 * ]
+	 * array([amount,amountOutstanding,date,reason,message])
 	 *
 	 * @param $patron User
 	 * @return array|bool
 	 */
 	public function getMyFines($patron){
-
 		// find the sierra patron id
 		$patronId = $this->getPatronId($patron);
 		if(!$patronId) {
@@ -1617,7 +1722,7 @@ class Sierra {
 		} else {
 			$r = $c->response;
 		}
-
+		$this->logger->debug('API response for ['.$method.']'.$operation, ['method'=>$operation, 'response'=>$r]);
 		$c->close();
 		return $r;
 	}
