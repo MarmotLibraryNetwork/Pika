@@ -16,7 +16,7 @@ use \Monolog\ErrorHandler;
 
 class Logger extends MonoLogger {
 
-	public function __construct($name) {
+	public function __construct($name, $registerErrorHandler = false) {
 		parent::__construct($name);
 		global $configArray;
 
@@ -25,6 +25,8 @@ class Logger extends MonoLogger {
 			$this->pushHandler(new BrowserConsoleHandler(MonoLogger::DEBUG));
 		}
 		$this->pushHandler(new StreamHandler($logFile, MonoLogger::DEBUG));
-		ErrorHandler::register($this);
+		if($registerErrorHandler) {
+			ErrorHandler::register($this);
+		}
 	}
 }

@@ -21,10 +21,10 @@ trait PatronHoldsOperations {
 	 * This is responsible for retrieving all holds for a specific patron.
 	 *
 	 * @param User $patron The user to fetch holds for
-	 *
+	 * @param bool $linkedAccount
 	 * @return MyHold[]  An array of the patron's MyHold objects
 	 */
-	public abstract function getMyHolds($patron);
+	public abstract function getMyHolds($patron, $linkedAccount);
 
 	/**
 	 * Place Hold on a Bib Record
