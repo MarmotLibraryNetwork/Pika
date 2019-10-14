@@ -16,7 +16,18 @@
 trait SierraPatronPinOperations {
 	use PatronPinOperations;
 
-	public function updatePin($patron, $oldPin, $newPin){
+	/**
+	 * Update a users PIN
+	 *
+	 * PUT patrons/{id}
+	 *
+	 * @param User   $patron
+	 * @param string $oldPin
+	 * @param string $newPin
+	 * @param string $confirmNewPin
+	 * @return string Error or success message.
+	 */
+	public function updatePin($patron, $oldPin, $newPin, $confirmNewPin){
 		// TODO: Implement updatePin() method.
 	}
 

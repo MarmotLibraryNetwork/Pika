@@ -221,7 +221,7 @@ class Sierra {
 		}
 
 		if(!$linkedAccount) {
-			$this->memCache->set($patronCheckoutsCacheKey, $checkouts, $this->configArray['Caching']['patron_profile']);
+			$this->memCache->set($patronCheckoutsCacheKey, $checkouts, $this->configArray['Caching']['user']);
 			$this->logger->info("Saving checkouts in memcache:".$patronCheckoutsCacheKey);
 		}
 		return $checkouts;
@@ -582,7 +582,7 @@ class Sierra {
 			$patron->update();
 		}
 		$this->logger->info("Saving patron to memcache:".$patronObjectCacheKey);
-		$this->memCache->set($patronObjectCacheKey, $patron, $this->configArray['Caching']['patron_profile']);
+		$this->memCache->set($patronObjectCacheKey, $patron, $this->configArray['Caching']['user']);
 		return $patron;
 	}
 
@@ -616,6 +616,7 @@ class Sierra {
 		$r = $this->_doRequest('patrons/find', $params);
 		// there was an error with the last call -- use $this->apiLastError for messages.
 		if(!$r) {
+			$this->logger->warn('Could not get patron ID.', ['barcode'=>$patron->barcode, 'error'=>$this->apiLastError]);
 			return false;
 		}
 
@@ -729,6 +730,47 @@ class Sierra {
 		return $errors;
 	}
 
+
+	/**
+	 * Update a users PIN
+	 *
+	 * PUT patrons/{id}
+	 *
+	 * @param User   $patron
+	 * @param string $oldPin
+	 * @param string $newPin
+	 * @param string $confirmNewPin
+	 * @return string Error or success message.
+	 */
+	public function updatePin($patron, $oldPin, $newPin, $confirmNewPin){
+		$patronId = $this->_authBarcodePin($patron->barcode, $oldPin);
+
+		if(!$patronId) {
+			return "Your current PIN is incorrect. Please try again.";
+		}
+
+		if(!($newPin == $confirmNewPin)) {
+			return "PIN and PIN confirmation do not match. Please try again.";
+		}
+
+		$operation = 'patrons/'.$patronId;
+		$params    = ['pin' => $newPin];
+
+		$r = $this->_doRequest($operation, $params, 'PUT');
+
+		if(!$r) {
+			$message = $this->_getPrettyError();
+			return 'Could not update PIN: '. $message;
+		}
+		$patron->cat_password = $newPin;
+		$patron->update();
+
+		return 'Your PIN has been updated';
+	}
+
+	public function resetPin($patron, $newPin, $resetToken = null){
+		// TODO: Implement resetPin() method.
+	}
 	/**
 	 * Get fines for a patron
 	 * GET patrons/{uid}/fines
@@ -817,7 +859,7 @@ class Sierra {
 				'details' => $details
 			];
 		}
-		$this->memCache->set($patronFinesCacheKey, $r, $this->configArray['Caching']['patron_profile']);
+		$this->memCache->set($patronFinesCacheKey, $r, $this->configArray['Caching']['user']);
 		return $r;
 	}
 
@@ -1031,7 +1073,7 @@ class Sierra {
 		unset($availableHolds, $unavailableHolds);
 
 		if(!$linkedAccount){
-			$this->memCache->set($patronHoldsCacheKey, $return, $this->configArray['Caching']['patron_profile']);
+			$this->memCache->set($patronHoldsCacheKey, $return, $this->configArray['Caching']['user']);
 			$this->logger->info("Saving holds in memcache:".$patronHoldsCacheKey);
 		}
 
