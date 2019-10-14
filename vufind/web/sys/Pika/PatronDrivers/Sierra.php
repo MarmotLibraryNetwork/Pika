@@ -633,10 +633,6 @@ class Sierra {
 	 * Street[, optional] [APT/Suite optional]
 	 * City[, optional] State Zip
 	 *
-	 * ty: {
-	"label": "Notice Preference",
-	"value": "z"
-	},
 	 *
 	 * PUT patrons/{id}
 	 * @param  User  $patron
@@ -703,7 +699,7 @@ class Sierra {
 					}
 			}
 		}
-		//->fixedFields->{'268'}->value
+
 		if(!empty($errors)) {
 			return $errors;
 		}
@@ -893,7 +889,11 @@ class Sierra {
 			// status, cancelable, freezable
 			switch ($hold->status->code) {
 				case '0':
-					$status     = 'On hold';
+					if($hold->frozen) {
+						$status = "Frozen";
+					} else {
+						$status = 'On hold';
+					}
 					$cancelable = true;
 					$freezeable = true;
 					if($canUpdatePL) {
@@ -1158,7 +1158,8 @@ class Sierra {
 		if(!$r) {
 			$return = ['success' => false];
 			if($this->apiLastError) {
-				$return['message'] = $this->apiLastError;
+				$message = $this->_getPrettyError();
+				$return['message'] = $message;
 			} else {
 				$return['message'] = "Unable to change pickup location. Please contact your library for further assistance.";
 			}
@@ -1204,7 +1205,8 @@ class Sierra {
 		if(!$r) {
 			$return = ['success' => false];
 			if($this->apiLastError) {
-				$return['message'] = $this->apiLastError;
+				$message = $this->_getPrettyError();
+				$return['message'] = $message;
 			} else {
 				$return['message'] = "Unable to cancel your hold. Please contact your library for further assistance.";
 			}
