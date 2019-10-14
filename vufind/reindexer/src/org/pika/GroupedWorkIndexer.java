@@ -2,6 +2,7 @@ package org.pika;
 
 import au.com.bytecode.opencsv.CSVReader;
 import au.com.bytecode.opencsv.CSVWriter;
+import org.apache.commons.text.similarity.FuzzyScore;
 import org.apache.solr.client.solrj.SolrServer;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.BinaryRequestWriter;
@@ -10,6 +11,7 @@ import org.apache.solr.client.solrj.impl.HttpSolrServer;
 import org.apache.solr.common.SolrInputDocument;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -536,35 +538,63 @@ public class GroupedWorkIndexer {
 			File arFile = new File(acceleratedReaderPath);
 			if (arFile.exists()) {
 				if (logger.isInfoEnabled()){
-					logger.info("Starting to read lexile data");
+					logger.info("Starting to read accelerated reader data");
 				}
 				int    numLines = 0;
-				try (CSVReader arDataReader = new CSVReader(new FileReader(arFile), '\t')) {
+				try (CSVReader arDataReader = new CSVReader(new InputStreamReader(new FileInputStream(acceleratedReaderPath), StandardCharsets.ISO_8859_1), '\t')) {
+//				try (CSVReader arDataReader = new CSVReader(new FileReader(arFile), '\t')) {
 					//Skip over the header
-					arDataReader.readNext();
+					String[] keys = arDataReader.readNext();
+					ArrayList<Integer> isbnKeys = new ArrayList<>();
+					for (int i = 14; i < keys.length; i++){
+						if (keys[i].startsWith("ISBN")){
+							isbnKeys.add(i);
+						}
+					}
 					String[] arFields = arDataReader.readNext();
 					numLines++;
 					while (arFields != null) {
 						ARTitle  titleInfo = new ARTitle();
-						if (arFields.length >= 29) {
-							titleInfo.setTitle(arFields[2]);
-							titleInfo.setAuthor(arFields[6]);
+						if (arFields.length >= 11) {
+							// arFields[0] is language code
+							// arFields[9] is fiction/nonfiction
+							if (logger.isDebugEnabled()) {
+								//Only ever use the title & author to check if something is wrong
+								titleInfo.setTitle(arFields[2]);
+								titleInfo.setAuthor(arFields[6]);
+							}
 							titleInfo.setBookLevel(arFields[7]);
 							titleInfo.setArPoints(arFields[8]);
 							titleInfo.setInterestLevel(arFields[10]);
-							String[] ISBNs = {
-									arFields[11].trim(),
-									arFields[14].trim(),
-									arFields[17].trim(),
-									arFields[20].trim(),
-									arFields[23].trim(),
-									arFields[26].trim(),
-									arFields[29].trim()
-							};
-							for (String isbn : ISBNs) {
-								if (isbn.length() > 0) {
-									isbn = isbn.replaceAll("[^\\dX]", "");
-									arInformation.put(isbn, titleInfo);
+//							String[] ISBNs = {
+//									arFields[14].trim(),
+//									arFields[17].trim(),
+//									arFields[20].trim(),
+//									arFields[23].trim(),
+//									arFields[26].trim(),
+//									arFields[29].trim(),
+//									arFields[32].trim(),
+//									arFields[35].trim(),
+//									arFields[38].trim(),
+//									arFields[41].trim(),
+//									arFields[44].trim(),
+//									arFields[47].trim(),
+//									arFields[50].trim(),
+//							};
+//							for (String isbn : ISBNs) {
+//								if (isbn.length() > 0) {
+//									isbn = isbn.replaceAll("[^\\dX]", "");
+//									arInformation.put(isbn, titleInfo);
+//								}
+//							}
+
+							for (int i : isbnKeys){
+								if (arFields.length >= i) {
+									String isbn = arFields[i].trim();
+									if (isbn.length() > 0) {
+										isbn = isbn.replaceAll("[^\\dX]", "");
+										arInformation.put(isbn, titleInfo);
+									}
 								}
 							}
 							numLines++;
@@ -1070,9 +1100,18 @@ public class GroupedWorkIndexer {
 	}
 
 	private void loadAcceleratedDataForWork(GroupedWorkSolr groupedWork){
+		FuzzyScore score = new FuzzyScore(Locale.ENGLISH);
 		for(String isbn : groupedWork.getIsbns()){
 			if (arInformation.containsKey(isbn)){
 				ARTitle arTitle = arInformation.get(isbn);
+				if (logger.isDebugEnabled()){
+					final String groupTitle   = groupedWork.getTitle();
+					final String title        = arTitle.getTitle();
+					int          titleMatches = score.fuzzyScore(groupTitle, title);
+					if (groupTitle.length() > 10 && titleMatches < 10) {
+						logger.warn("Probable mismatch of AR Data for grouped work title '" + groupTitle + "' and AR data for isbn " + isbn + ", ar title " + title);
+					}
+				}
 				String bookLevel = arTitle.getBookLevel();
 				if (bookLevel.length() > 0){
 					groupedWork.setAcceleratedReaderReadingLevel(bookLevel);

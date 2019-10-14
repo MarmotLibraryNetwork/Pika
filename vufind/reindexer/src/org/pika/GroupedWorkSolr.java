@@ -1422,25 +1422,25 @@ public class GroupedWorkSolr implements Cloneable {
 		this.eras.add(Util.trimTrailingPunctuation(fieldValue));
 	}
 
-	void setLanguageBoost(Long languageBoost) {
-		if (languageBoost > this.languageBoost){
-			this.languageBoost = languageBoost;
-		}
-	}
-
-	void setLanguageBoostSpanish(Long languageBoostSpanish) {
-		if (languageBoostSpanish > this.languageBoostSpanish){
-			this.languageBoostSpanish = languageBoostSpanish;
-		}
-	}
-
-	void setLanguages(HashSet<String> languages) {
-		this.languages.addAll(languages);
-	}
-
-	void setTranslations(HashSet<String> translations){
-		this.translations.addAll(translations);
-	}
+//	void setLanguageBoost(Long languageBoost) {
+//		if (languageBoost > this.languageBoost){
+//			this.languageBoost = languageBoost;
+//		}
+//	}
+//
+//	void setLanguageBoostSpanish(Long languageBoostSpanish) {
+//		if (languageBoostSpanish > this.languageBoostSpanish){
+//			this.languageBoostSpanish = languageBoostSpanish;
+//		}
+//	}
+//
+//	void setLanguages(HashSet<String> languages) {
+//		this.languages.addAll(languages);
+//	}
+//
+//	void setTranslations(HashSet<String> translations){
+//		this.translations.addAll(translations);
+//	}
 
 	void addPublishers(Set<String> publishers) {
 		this.publishers.addAll(publishers);
@@ -1740,5 +1740,9 @@ public class GroupedWorkSolr implements Cloneable {
 
 	TreeSet<String> getTargetAudiences() {
 		return targetAudience;
+	}
+
+	public String getTitle() {
+		return title;
 	}
 }
