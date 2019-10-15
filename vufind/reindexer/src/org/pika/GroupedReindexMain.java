@@ -126,6 +126,14 @@ public class GroupedReindexMain {
 				}
 
 				groupedWorkIndexer.finishIndexing(individualWorkToProcess != null);
+				long lexileDataMatches = groupedWorkIndexer.getLexileDataMatches();
+				if (lexileDataMatches > 0){
+					addNoteToReindexLog("Lexile matches for " + lexileDataMatches + " grouped Works");
+				}
+				long ARDataMatches = groupedWorkIndexer.getARDataMatches();
+				if (ARDataMatches > 0) {
+					addNoteToReindexLog("Accelerated Reader matches for " + ARDataMatches + " grouped Works");
+				}
 			}
 		} catch (Error e) {
 			logger.error("Error processing reindex ", e);

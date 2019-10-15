@@ -1080,6 +1080,12 @@ public class GroupedWorkIndexer {
 
 	}
 
+	private long lexileDataMatches = 0;
+
+	long getLexileDataMatches(){
+		return lexileDataMatches;
+	}
+
 	private void loadLexileDataForWork(GroupedWorkSolr groupedWork) {
 		for (String isbn : groupedWork.getIsbns()) {
 			if (lexileInformation.containsKey(isbn)) {
@@ -1094,9 +1100,16 @@ public class GroupedWorkIndexer {
 				if (lexileSeries != null && !lexileSeries.isEmpty()) {
 					groupedWork.addSeries(lexileSeries);
 				}
+				lexileDataMatches++;
 				break;
 			}
 		}
+	}
+
+	private long ARDataMatches = 0;
+
+	long getARDataMatches() {
+		return ARDataMatches;
 	}
 
 	private void loadAcceleratedDataForWork(GroupedWorkSolr groupedWork){
@@ -1110,11 +1123,14 @@ public class GroupedWorkIndexer {
 					int          titleMatches = score.fuzzyScore(groupTitle, title);
 					if (groupTitle.length() > 10 && titleMatches < 10) {
 						logger.warn("Probable mismatch of AR Data for grouped work title '" + groupTitle + "' and AR data for isbn " + isbn + ", ar title " + title);
+					} else {
+						logger.debug("Matched AR Data for grouped Title '" + groupTitle + "' on isbn " + isbn + " with AR Title : " + title);
 					}
 				}
 				String bookLevel = arTitle.getBookLevel();
 				if (bookLevel.length() > 0){
 					groupedWork.setAcceleratedReaderReadingLevel(bookLevel);
+					ARDataMatches++;
 				}
 				groupedWork.setAcceleratedReaderPointValue(arTitle.getArPoints());
 				groupedWork.setAcceleratedReaderInterestLevel(arTitle.getInterestLevel());
@@ -1125,17 +1141,15 @@ public class GroupedWorkIndexer {
 
 	private void loadLocalEnrichment(GroupedWorkSolr groupedWork) {
 		//Load rating
-		try{
+		try {
 			getRatingStmt.setString(1, groupedWork.getId());
-			ResultSet ratingsRS = getRatingStmt.executeQuery();
-			if (ratingsRS.next()){
-				Float averageRating = ratingsRS.getFloat("averageRating");
-				if (!ratingsRS.wasNull()){
+			try (ResultSet ratingsRS = getRatingStmt.executeQuery()) {
+				if (ratingsRS.next() && !ratingsRS.wasNull()) {
+					float averageRating = ratingsRS.getFloat("averageRating");
 					groupedWork.setUserRating(averageRating);
 				}
 			}
-			ratingsRS.close();
-		}catch (Exception e){
+		} catch (Exception e) {
 			logger.error("Unable to load local enrichment", e);
 		}
 	}
