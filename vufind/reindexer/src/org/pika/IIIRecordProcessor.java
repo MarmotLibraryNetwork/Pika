@@ -70,12 +70,13 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 		return !status.isEmpty() && validOnOrderRecordStatus.indexOf(status.charAt(0)) >= 0;
 	}
 
-	private void loadLoanRuleInformation(Connection vufindConn, Logger logger) {
-		if (!loanRuleDataLoaded){
+	private void loadLoanRuleInformation(Connection pikaConn, Logger logger) {
+		if (!loanRuleDataLoaded) {
 			//Load loan rules
-			try {
-				PreparedStatement loanRuleStmt = vufindConn.prepareStatement("SELECT * from loan_rules", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-				ResultSet loanRulesRS = loanRuleStmt.executeQuery();
+			try (
+					PreparedStatement loanRuleStmt = pikaConn.prepareStatement("SELECT * FROM loan_rules", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+					ResultSet loanRulesRS = loanRuleStmt.executeQuery()
+			) {
 				while (loanRulesRS.next()) {
 					LoanRule loanRule = new LoanRule();
 					loanRule.setLoanRuleId(loanRulesRS.getLong("loanRuleId"));
@@ -89,22 +90,25 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 					logger.debug("Loaded " + loanRules.size() + " loan rules");
 				}
 
-				PreparedStatement loanRuleDeterminersStmt = vufindConn.prepareStatement("SELECT * from loan_rule_determiners where active = 1 order by rowNumber DESC", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-				ResultSet loanRuleDeterminersRS = loanRuleDeterminersStmt.executeQuery();
-				while (loanRuleDeterminersRS.next()) {
-					LoanRuleDeterminer loanRuleDeterminer = new LoanRuleDeterminer();
-					loanRuleDeterminer.setRowNumber(loanRuleDeterminersRS.getLong("rowNumber"));
-					loanRuleDeterminer.setLocation(loanRuleDeterminersRS.getString("location"));
-					loanRuleDeterminer.setPatronType(loanRuleDeterminersRS.getString("patronType"));
-					loanRuleDeterminer.setItemType(loanRuleDeterminersRS.getString("itemType"));
-					loanRuleDeterminer.setLoanRuleId(loanRuleDeterminersRS.getLong("loanRuleId"));
-					loanRuleDeterminer.setActive(loanRuleDeterminersRS.getBoolean("active"));
+				try (
+						PreparedStatement loanRuleDeterminersStmt = pikaConn.prepareStatement("SELECT * FROM loan_rule_determiners WHERE active = 1 ORDER BY rowNumber DESC", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+						ResultSet loanRuleDeterminersRS = loanRuleDeterminersStmt.executeQuery()
+				) {
+					while (loanRuleDeterminersRS.next()) {
+						LoanRuleDeterminer loanRuleDeterminer = new LoanRuleDeterminer();
+						loanRuleDeterminer.setRowNumber(loanRuleDeterminersRS.getLong("rowNumber"));
+						loanRuleDeterminer.setLocation(loanRuleDeterminersRS.getString("location"));
+						loanRuleDeterminer.setPatronType(loanRuleDeterminersRS.getString("patronType"));
+						loanRuleDeterminer.setItemType(loanRuleDeterminersRS.getString("itemType"));
+						loanRuleDeterminer.setLoanRuleId(loanRuleDeterminersRS.getLong("loanRuleId"));
+						loanRuleDeterminer.setActive(loanRuleDeterminersRS.getBoolean("active"));
 
-					loanRuleDeterminers.add(loanRuleDeterminer);
-				}
+						loanRuleDeterminers.add(loanRuleDeterminer);
+					}
 
-				if (logger.isDebugEnabled()) {
-					logger.debug("Loaded " + loanRuleDeterminers.size() + " loan rule determiner");
+					if (logger.isDebugEnabled()) {
+						logger.debug("Loaded " + loanRuleDeterminers.size() + " loan rule determiner");
+					}
 				}
 			} catch (SQLException e) {
 				logger.error("Unable to load loan rules", e);
@@ -114,29 +118,26 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 	}
 
 	private boolean isWildCardValue(String value) {
-		if (value.equals("9999") || value.equals("999")) {
-			return true;
-		}
-		return false;
+		return value.equals("9999") || value.equals("999");
 	}
 
 	private HashMap<String, HashMap<RelevantLoanRule, LoanRuleDeterminer>> cachedRelevantLoanRules = new HashMap<>();
-	private HashMap<RelevantLoanRule, LoanRuleDeterminer> getRelevantLoanRules(String iType, String locationCode, HashSet<Long> pTypesToCheck){
+	private HashMap<RelevantLoanRule, LoanRuleDeterminer> getRelevantLoanRules(String iType, String locationCode, HashSet<Long> pTypesToCheck) {
 		//Look for ac cached value
-		String key = iType + locationCode + pTypesToCheck.toString();
+		String                                        key               = iType + locationCode + pTypesToCheck.toString();
 		HashMap<RelevantLoanRule, LoanRuleDeterminer> relevantLoanRules = cachedRelevantLoanRules.get(key);
-		if (relevantLoanRules == null){
+		if (relevantLoanRules == null) {
 			relevantLoanRules = new HashMap<>();
-		}else{
+		} else {
 			return relevantLoanRules;
 		}
 
-		HashSet<Long> pTypesNotAccountedFor = new HashSet<>();
+		HashSet<Long> pTypesNotAccountedFor = new HashSet<>(pTypesToCheck);
 		pTypesNotAccountedFor.addAll(pTypesToCheck);
 		Long iTypeLong;
-		if (iType == null){
+		if (iType == null) {
 			iTypeLong = 9999L;
-		}else{
+		} else {
 			iTypeLong = Long.parseLong(iType);
 		}
 
