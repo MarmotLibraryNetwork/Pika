@@ -36,6 +36,7 @@ class UInterface extends Smarty
 		global $timer;
 
 		$local = $configArray['Site']['local'];
+		// todo: this is set in the database
 		$this->vufindTheme = $configArray['Site']['theme'];
 
 		$this->isMobile = mobile_device_detect();

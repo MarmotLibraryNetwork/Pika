@@ -163,7 +163,6 @@ class Sierra {
 				$checkout['recordId']       = 0;
 				$checkout['renewIndicator'] = $checkoutId;
 				$checkout['renewMessage']   = '';
-				// todo: cover url need to be somehting global
 				$checkout['coverUrl']       = '/interface/themes/'.$theme.'/images/InnReachCover.png';
 				$checkout['barcode']        = $entry->barcode;
 				$checkout['request']        = $entry->callNumber;
@@ -361,7 +360,6 @@ class Sierra {
 		$operation = 'patrons/'.$patronId;
 		$pInfo = $this->_doRequest($operation, $params);
 		if(!$pInfo) {
-			// TODO: check last error.
 			return null;
 		}
 
@@ -485,6 +483,7 @@ class Sierra {
 			$addressParts = explode(',', $patron->address2);
 			// some libraries may not use ','  after city so make sure we have parts
 			// todo: need to handle more than 2 address lines for sites like Sacramento
+			// can assume street as a line and city, st. zip as a line
 			if (count($addressParts) > 1 ){
 				$city = trim($addressParts[0]);
 				$stateZip = trim($addressParts[1]);
@@ -533,8 +532,6 @@ class Sierra {
 			}
 		} catch (\Exception $e) {
 			$patron->expires = '00-00-0000';
-			// TODO: need to log the error
-			//echo $e->getMessage();
 		}
 		// notices
 		$patron->notices = $pInfo->fixedFields->{'268'}->value;
@@ -798,7 +795,6 @@ class Sierra {
 		$operation = 'patrons/'.$patronId.'/fines';
 		$fInfo = $this->_doRequest($operation, $params);
 		if(!$fInfo) {
-			// TODO: check last error.
 			return false;
 		}
 		// no fines. good person.
@@ -1013,19 +1009,23 @@ class Sierra {
 				// INNREACH HOLD
 				///////////////
 				// get the hold id
+				// grab the theme for Inn reach cover
+				$themeParts = explode(',', $this->configArray['Site']['theme']);
+				$theme = $themeParts[0];
 				preg_match($this->urlIdRegExp, $hold->id, $mIr);
 				$innReachHoldId = $mIr[1];
 				$innReach = new InnReach();
 				$titleAndAuthor = $innReach->getHoldTitleAuthor($innReachHoldId);
 				if(!$titleAndAuthor) {
-					// todo: this needs attention
-					continue;
+					$h['title']     = 'Unknown';
+					$h['author']    = 'Unknown';
+					$h['sortTitle'] = '';
+				} else {
+					$h['title']     = $titleAndAuthor['title'];
+					$h['author']    = $titleAndAuthor['author'];
+					$h['sortTitle'] = $titleAndAuthor['sort_title'];
 				}
-				$h['title']              = $titleAndAuthor['title'];
-				$h['author']             = $titleAndAuthor['author'];
-				$h['sortTitle']          = $titleAndAuthor['sort_title'];
-				// todo: Need to make this specific to the theme.
-				$h['coverUrl']           = '/interface/themes/marmot/images/InnReachCover.png';
+				$h['coverUrl']           = '/interface/themes/' . $theme . '/images/InnReachCover.png';
 				$h['freezeable']         = false;
 				$h['locationUpdateable'] = false;
 			} else {
@@ -1207,7 +1207,7 @@ class Sierra {
 			}
 			return $return;
 		}
-		// todo: get title
+
 		$return = [
 			'success' => true,
 			'message' => 'Pickup location updated.'];
@@ -1254,7 +1254,7 @@ class Sierra {
 			}
 			return $return;
 		}
-		// todo: get title
+
 		$return = [
 			'success' => true,
 			'message' => 'Your hold has been canceled.'];
@@ -1332,7 +1332,7 @@ class Sierra {
 			}
 			return $return;
 		}
-		// todo: get title
+
 		$return = [
 			'success' => true,
 			'message' => 'Your hold has been thawed.'];
@@ -1357,7 +1357,7 @@ class Sierra {
 			return false;
 		}
 		$history['historyActive'] = true;
-		// todo: show this search test
+		// search test
 		//$search =  $this->searchReadingHistory($patron, 'colorado');
 		//$history['titles'] = $search;
 		//return $history;
@@ -1446,7 +1446,7 @@ class Sierra {
 				$titleEntry['linkUrl']     = '';
 				$titleEntry['coverUrl']    = '';
 				$titleEntry['format']      = '';
-				// todo: should fall back to api here
+				// todo: should fall back to api here?
 				$titleEntry['title']       = '';
 				$titleEntry['author']      = '';
 				$titleEntry['format']      = '';
@@ -1457,7 +1457,7 @@ class Sierra {
 			$titleEntry['borrower_num'] = $patronPikaId;
 			$titleEntry['recordId']     = $bibId;
 			$titleEntry['itemindex']    = $itemindex; // checkout id
-			$titleEntry['details']      = ''; // todo: nothing to put here
+			$titleEntry['details']      = ''; // todo: nothing to put here?
 			$readingHistory[] = $titleEntry;
 		}
 		$total = count($readingHistory);
@@ -1476,7 +1476,8 @@ class Sierra {
 	}
 
 	public function optOutReadingHistory($patron){
-		// TODO: Implement optOutReadingHistory() method.
+		$patron->trackReadingHistory = false;
+		$patron->update();
 	}
 
 	public function deleteAllReadingHistory($patron){
@@ -1573,7 +1574,6 @@ class Sierra {
 		];
 
 		if (!$this->_doRequest("patrons/validate", $params, "POST")) {
-			// todo: need to do error checks here
 			return false;
 		}
 
