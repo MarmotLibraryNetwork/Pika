@@ -316,8 +316,12 @@ class Sierra {
 	}
 
 	/**
-	 * @param int $patronId
+	 * Builds and returns the patron object
+	 *
+	 * @param int $patronId Unique Sierra patron id
 	 * @return User|null
+	 * @throws InvalidArgumentException
+	 * @throws ErrorException
 	 */
 	public function getPatron($patronId) {
 		// grab everything from the patron record the api can provide.
@@ -571,7 +575,7 @@ class Sierra {
 				                                                                 'error'=>$patron->_lastError->userinfo,
 				                                                                 'backtrace'=>$patron->_lastError->backtrace]);
 				throw new ErrorException('Error saving patron to Pika database');
-				return null;
+
 			} else {
 				$this->logger->info('Saved patron to Pika database.', ['barcode'=>$this->patronBarcode]);
 			}
@@ -625,11 +629,6 @@ class Sierra {
 
 	/**
 	 * Update a patrons profile information
-	 *
-	 * Address is in the form of:
-	 * [care of(CO) optional]
-	 * Street[, optional] [APT/Suite optional]
-	 * City[, optional] State Zip
 	 *
 	 *
 	 * PUT patrons/{id}
@@ -768,6 +767,119 @@ class Sierra {
 	public function resetPin($patron, $newPin, $resetToken = null){
 		// TODO: Implement resetPin() method.
 	}
+
+	/**
+	 * Send a Self Registration request to the ILS.
+	 *
+	 * @return  array  [success = bool, barcode = null or barcode]
+
+	 */
+	public function selfRegister(){
+
+	}
+
+	/**
+	 * Used to build the form for self registration.
+	 * Fields will be displayed order
+	 *
+	 * @return array Self registration fields
+	 */
+	public function getSelfRegistrationFields(){
+		$fields = [];
+
+		global $library;
+		// if library would like a birthdate
+		if ($library && $library->promptForBirthDateInSelfReg){
+			$fields[] = ['property'   => 'birthDate',
+			             'type'       => 'date',
+			             'label'      => 'Date of Birth (MM-DD-YYYY)',
+			             'description'=> 'Date of birth',
+			             'maxLength'  => 10,
+			             'required'   => true];
+		}
+
+		$fields[] = ['property'   => 'name',
+		             'type'       => 'Text',
+		             'label'      => 'First and last name',
+		             'description'=> 'Your full name. You may include a salutation and middle inital.',
+		             'maxLength'  => 40,
+		             'required'   => true];
+
+		$fields[] = ['property'   => 'address',
+		             'type'       => 'text',
+		             'label'      => 'Address',
+		             'description'=> 'Street address or PO Box where you receive mail.',
+		             'maxLength'  => 40,
+		             'required'   => true];
+
+		$fields[] = ['property'   => 'city',
+		             'type'       => 'Text',
+		             'label'      => 'City',
+		             'description'=> 'The city you receive mail in.',
+		             'maxLength'  => 20,
+		             'required'   => true];
+
+		$fields[] = ['property'   => 'state',
+		             'type'       => 'text',
+		             'label'      => 'State',
+		             'description'=> 'The state you receive mail in.',
+		             'maxLength'  => 20,
+		             'required'   => true];
+
+		$fields[] = ['property'   => 'zip',
+		             'type'       => 'text',
+		             'label'      => 'ZIP code',
+		             'description'=> 'The ZIP code for your mail.',
+		             'maxLength'  => 16,
+		             'required'   => true];
+
+		$fields[] = ['property'   => 'email',
+		             'type'       => 'email',
+		             'label'      => 'Email',
+		             'description'=> 'Your email address',
+		             'maxLength'  => 50,
+		             'required'   => false];
+
+		$fields[] = ['property'   => 'homephone',
+		             'type'       => 'tel',
+		             'label'      => 'Home phone',
+		             'description'=> 'Your primary phone number.',
+		             'maxLength'  => 20,
+		             'required'   => false];
+		if ($library && $library->showWorkPhoneInProfile) {
+			$fields[] = [
+				'property'    => 'workphone',
+				'type'        => 'tel',
+				'label'       => 'Work phone',
+				'description' => 'Alternate phone number.',
+				'maxLength'   => 20,
+				'required'    => false
+			];
+		}
+
+		if($this->accountProfile->loginConfiguration == "barcode_pin") {
+			$fields[] = [
+				'property'    => 'pin',
+				'type'        => 'pin',
+				'label'       => 'PIN',
+				'description' => 'Please set a PIN (personal identification number).',
+				'maxLength'   => 10,
+				'required'    => true
+			];
+
+			$fields[] = [
+				'property'    => 'pinconfirm',
+				'type'        => 'pin',
+				'label'       => 'Confirm PIN',
+				'description' => 'Please reenter your PIN.',
+				'maxLength'   => 10,
+				'required'    => true
+			];
+		}
+
+		return $fields;
+	}
+
 	/**
 	 * Get fines for a patron
 	 * GET patrons/{uid}/fines
@@ -1476,6 +1588,7 @@ class Sierra {
 	}
 
 	public function optOutReadingHistory($patron){
+
 		$patron->trackReadingHistory = false;
 		$patron->update();
 	}
