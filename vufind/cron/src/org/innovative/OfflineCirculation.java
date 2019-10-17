@@ -31,10 +31,10 @@ public class OfflineCirculation implements IProcessHandler {
 	private CookieManager manager = new CookieManager();
 	private String ils = "Millennium";
 	@Override
-	public void doCronProcess(String servername, Ini configIni, Profile.Section processSettings, Connection vufindConn, Connection econtentConn, CronLogEntry cronEntry, Logger logger) {
+	public void doCronProcess(String servername, Ini configIni, Profile.Section processSettings, Connection pikaConn, Connection econtentConn, CronLogEntry cronEntry, Logger logger) {
 		this.logger = logger;
 		processLog = new CronProcessLogEntry(cronEntry.getLogEntryId(), "Offline Circulation");
-		processLog.saveToDatabase(vufindConn, logger);
+		processLog.saveToDatabase(pikaConn, logger);
 
 		ils = configIni.get("Catalog", "ils");
 
@@ -47,13 +47,13 @@ public class OfflineCirculation implements IProcessHandler {
 //			processLog.addNote("Not processing offline circulation because the system is currently offline.");
 //		}else{
 			//process checkouts and check ins (do this before holds)
-			processOfflineCirculationEntries(configIni, vufindConn);
+			processOfflineCirculationEntries(configIni, pikaConn);
 
 			//process holds
-			processOfflineHolds(configIni, vufindConn);
+			processOfflineHolds(configIni, pikaConn);
 //		}
 		processLog.setFinished();
-		processLog.saveToDatabase(vufindConn, logger);
+		processLog.saveToDatabase(pikaConn, logger);
 	}
 
 	/**
@@ -65,16 +65,19 @@ public class OfflineCirculation implements IProcessHandler {
 	private void processOfflineHolds(Ini configIni, Connection pikaConn) {
 		processLog.addNote("Processing offline holds");
 		try {
+//			PreparedStatement holdsToProcessStmt = pikaConn.prepareStatement("SELECT offline_hold.*, cat_username, cat_password FROM offline_hold LEFT JOIN user ON user.id = offline_hold.patronId WHERE status='Not Processed' ORDER BY timeEntered ASC");
 			// Match by Pika patron ID
-			PreparedStatement holdsToProcessStmt = pikaConn.prepareStatement("SELECT offline_hold.*, cat_username, cat_password from offline_hold LEFT JOIN user on user.id = offline_hold.patronId where status='Not Processed' order by timeEntered ASC");
-//			PreparedStatement holdsToProcessStmt = pikaConn.prepareStatement("SELECT offline_hold.*, cat_username, cat_password from offline_hold LEFT JOIN user on (user.cat_password = offline_hold.patronBarcode) where status='Not Processed' order by timeEntered ASC");
+
+			PreparedStatement holdsToProcessStmt = pikaConn.prepareStatement("SELECT offline_hold.*, cat_username, cat_password FROM offline_hold LEFT JOIN user on (user.cat_password = offline_hold.patronBarcode) WHERE status='Not Processed' ORDER BY timeEntered ASC");
 			// This was used for a data migration of holds transactions (where the assumption that a patron has logged into Pika is invalid)
 			// This matches by patron barcode when the barcode is saved in the cat_password field
+
 			PreparedStatement updateHold         = pikaConn.prepareStatement("UPDATE offline_hold set timeProcessed = ?, status = ?, notes = ? where id = ?");
 			String baseUrl                       = configIni.get("Site", "url");
-			ResultSet holdsToProcessRS           = holdsToProcessStmt.executeQuery();
-			while (holdsToProcessRS.next()){
-				processOfflineHold(updateHold, baseUrl, holdsToProcessRS);
+			try (ResultSet holdsToProcessRS = holdsToProcessStmt.executeQuery()) {
+				while (holdsToProcessRS.next()) {
+					processOfflineHold(updateHold, baseUrl, holdsToProcessRS);
+				}
 			}
 		} catch (SQLException e) {
 			processLog.incErrors();
@@ -153,14 +156,13 @@ public class OfflineCirculation implements IProcessHandler {
 	 * Processes any checkouts and check-ins that were done while the system was offline.
 	 *
 	 * @param configIni   Configuration information for VuFind
-	 * @param vufindConn Connection to the database
+	 * @param pikaConn Connection to the database
 	 */
-	private void processOfflineCirculationEntries(Ini configIni, Connection vufindConn) {
+	private void processOfflineCirculationEntries(Ini configIni, Connection pikaConn) {
 		processLog.addNote("Processing offline checkouts and check-ins");
 		try {
-//			PreparedStatement circulationEntryToProcessStmt = vufindConn.prepareStatement("SELECT offline_circulation.* from offline_circulation where status='Not Processed' order by timeEntered ASC");
-			PreparedStatement circulationEntryToProcessStmt = vufindConn.prepareStatement("SELECT offline_circulation.* from offline_circulation where status='Not Processed' order by login ASC, initials ASC, patronBarcode ASC, timeEntered ASC");
-			PreparedStatement updateCirculationEntry        = vufindConn.prepareStatement("UPDATE offline_circulation set timeProcessed = ?, status = ?, notes = ? where id = ?");
+			PreparedStatement circulationEntryToProcessStmt = pikaConn.prepareStatement("SELECT offline_circulation.* FROM offline_circulation WHERE status='Not Processed' ORDER BY login ASC, initials ASC, patronBarcode ASC, timeEntered ASC");
+			PreparedStatement updateCirculationEntry        = pikaConn.prepareStatement("UPDATE offline_circulation SET timeProcessed = ?, status = ?, notes = ? WHERE id = ?");
 			String baseUrl                                  = configIni.get("Catalog", "linking_url") + "/iii/airwkst";
 			ResultSet circulationEntriesToProcessRS         = circulationEntryToProcessStmt.executeQuery();
 			int numProcessed = 0;
