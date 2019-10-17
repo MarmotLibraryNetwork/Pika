@@ -437,13 +437,19 @@ class Solr implements IndexEngine {
 		return $record;
 	}
 
-	function getRecordByBarcode($barcode){
+	function getRecordByBarcode($barcode, $fieldsToReturn = null){
 		if ($this->debug) {
-			echo "<pre>Get Record by Barcode: $barcode</pre>\n";
+			global $logger;
+			$logger->log("Get Record by Barcode: $barcode", PEAR_LOG_DEBUG);
+//			echo "<pre>Get Record by Barcode: $barcode</pre>\n";
+		}
+		if ($fieldsToReturn == null){
+			$fieldsToReturn = SearchObject_Solr::$fields;
 		}
 
+
 		// Query String Parameters
-		$options = array('q' => "barcode:\"$barcode\"", 'fl' => SearchObject_Solr::$fields);
+		$options = array('q' => "barcode:\"$barcode\"", 'fl' => $fieldsToReturn);
 		$result = $this->_select('GET', $options);
 		if (PEAR_Singleton::isError($result)) {
 			PEAR_Singleton::raiseError($result);
