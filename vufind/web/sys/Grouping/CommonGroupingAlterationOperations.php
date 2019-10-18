@@ -14,9 +14,9 @@ abstract class CommonGroupingAlterationOperations extends DB_DataObject {
 
 	function update($dataObject = false){
 		$success = parent::update($dataObject);
-		if ($success){
+//		if ($success){ //May not have resulted in any changes, so $sucess may be 0
 			$this->followUpActions();
-		}
+//		}
 		return $success;
 	}
 
@@ -32,9 +32,9 @@ abstract class CommonGroupingAlterationOperations extends DB_DataObject {
 
 	function delete($useWhere = false){
 		$success = parent::delete($useWhere);
-		if ($success){
+//		if ($success){
 			$this->followUpActions();
-		}
+//		}
 		return $success;
 	}
 
@@ -53,6 +53,9 @@ abstract class CommonGroupingAlterationOperations extends DB_DataObject {
 			$extractInfo->ilsId             = $sourceAndId->getRecordId();
 			if ($extractInfo->find(true)){
 				return $extractInfo->markForReExtraction();
+			} elseif ($indexingProfile->name == 'ils'){
+				//TODO: the above should check against the accountProfiles
+				$extractInfo->insert();
 			}
 		}
 		return false;
