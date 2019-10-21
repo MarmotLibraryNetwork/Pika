@@ -318,6 +318,10 @@ class Sierra {
 	/**
 	 * Builds and returns the patron object
 	 *
+	 * Because every library has a unique way of entering address, a "hook" has been included to do accommodate.
+	 * Any class extending this base class can include a method name processPatronAddress($addresses) for handling
+	 * that particularly finicky bit.
+	 *
 	 * @param int $patronId Unique Sierra patron id
 	 * @return User|null
 	 * @throws InvalidArgumentException
@@ -468,49 +472,56 @@ class Sierra {
 		$patron->fullname  = $pInfo->names[0];
 		// barcodes
 		$patron->barcode   = $pInfo->barcodes[0];
-		// address1 and address2
-		foreach ($pInfo->addresses as $address) {
-			// a = primary address, h = alt address
-			if ($address->type == 'a') {
-				$patron->address1 = $address->lines[0];
-				$patron->address2 = $address->lines[1];
-			}
-		}
-		if(!isset($patron->address1)) {
-			$patron->address1 = '';
-		}
-		if(!isset($patron->address2)) {
-			$patron->address2 = '';
-		}
-		// city state zip
-		if($patron->address2 != '') {
-			$addressParts = explode(',', $patron->address2);
-			// some libraries may not use ','  after city so make sure we have parts
-			// todo: need to handle more than 2 address lines for sites like Sacramento
-			// can assume street as a line and city, st. zip as a line
-			if (count($addressParts) > 1 ){
-				$city = trim($addressParts[0]);
-				$stateZip = trim($addressParts[1]);
-				$stateZipParts = explode(' ', $stateZip);
-				$state = trim($stateZipParts[0]);
-				$zip   = trim($stateZipParts[1]);
-			} else {
-				$regExp = "/^([^,]+)\s([A-Z]{2})(?:\s(\d{5}))?$/";
-				preg_match($regExp, $patron->address2, $matches);
-				if($matches) {
-					$city  = $matches[1];
-					$state = $matches[2];
-					$zip   = $matches[3];
+
+
+		if(method_exists($this, 'processPatronAddress')) {
+			/** Hook for processing addresses **/
+			$patron = $this->processPatronAddress($pInfo->addresses, $patron);
+		} else {
+			foreach ($pInfo->addresses as $address) {
+				// a = primary address, h = alt address
+				if ($address->type == 'a') {
+					$lineCount = count($address->lines) - 1;
+
+					$patron->address1 = $address->lines[$lineCount - 1];
+					$patron->address2 = $address->lines[$lineCount];
 				}
 			}
+			if (!isset($patron->address1)) {
+				$patron->address1 = '';
+			}
+			if (!isset($patron->address2)) {
+				$patron->address2 = '';
+			}
+			// city state zip
+			if ($patron->address2 != '') {
+				$addressParts = explode(',', $patron->address2);
+				// some libraries may not use ','  after city so make sure we have parts
+				// can assume street as a line and city, st. zip as a line
+				if (count($addressParts) > 1) {
+					$city          = trim($addressParts[0]);
+					$stateZip      = trim($addressParts[1]);
+					$stateZipParts = explode(' ', $stateZip);
+					$state         = trim($stateZipParts[0]);
+					$zip           = trim($stateZipParts[1]);
+				} else {
+					$regExp = "/^([^,]+)\s([A-Z]{2})(?:\s(\d{5}))?$/";
+					preg_match($regExp, $patron->address2, $matches);
+					if ($matches) {
+						$city  = $matches[1];
+						$state = $matches[2];
+						$zip   = $matches[3];
+					}
+				}
 
-			$patron->city  = $city;
-			$patron->state = $state;
-			$patron->zip   = $zip;
-		} else {
-			$patron->city  = '';
-			$patron->state = '';
-			$patron->zip   = '';
+				$patron->city  = $city;
+				$patron->state = $state;
+				$patron->zip   = $zip;
+			} else {
+				$patron->city  = '';
+				$patron->state = '';
+				$patron->zip   = '';
+			}
 		}
 		// mobile phone
 		if(isset($mobilePhone)) {
@@ -771,16 +782,93 @@ class Sierra {
 	/**
 	 * Send a Self Registration request to the ILS.
 	 *
+	 * PUT patrons
 	 * @return  array  [success = bool, barcode = null or barcode]
-
 	 */
 	public function selfRegister(){
 
+		$params = [];
+
+		global $library;
+		// get library code
+		$location            = new Location();
+		$location->libraryId = $library->libraryId;
+		$location->find(true);
+		if(!$location) {
+			return ['success'=>false, 'barcode'=>''];
+		}
+		$params['homeLibraryCode'] = $location->code;
+		// default patron type
+		$params['patronType']      = (int)$library->defaultPType;
+		// generate a random 8 digit number to serve as temp barcode
+		$barcode = (string)rand(10000000, 99999999);
+		$params['barcodes'][] = $barcode;
+
+		foreach ($_POST as $key=>$val) {
+			switch ($key) {
+				case 'email':
+					$val = trim($val);
+					$params['emails'][] = $val;
+					break;
+				case 'address': // street part of address
+					$val = trim($val);
+					$params['addresses'][0]['lines'][0] = $val;
+					$params['addresses'][0]['type'] = 'a';
+					break;
+				case 'primaryphone':
+					$val = trim($val);
+					$params['phones'][] = ['number'=>$val, 'type'=>'t'];
+					break;
+				case 'altphone':
+					$val = trim($val);
+					$params['phones'][] = ['number'=>$val, 'type'=>'p'];
+					break;
+				case 'birthdate':
+					$date = DateTime::createFromFormat('d-m-Y', $val);
+					$params['birthDate'] = $date->format('Y-m-d');
+					break;
+			}
+		}
+
+		// name
+		$name = trim($_POST['firstname']);
+		if(!empty($_POST['middlename'])) {
+			$name .= ' '.trim($_POST['middlename']);
+		}
+		$name .= ' '.trim($_POST['lastname']);
+		$params['names'][] = $name;
+
+		// city state and zip
+		$cityStateZip = trim($_POST['city']).', '.trim($_POST['state']).' '.trim($_POST['zip']);
+		// address line 2
+		$params['addresses'][0]['lines'][1] = $cityStateZip;
+
+		// if library uses pins
+		if($this->accountProfile->loginConfiguration == "barcode_pin") {
+			$pin = trim($_POST['pin']);
+			$pinConfirm = trim($_POST['pinconfirm']);
+
+			if(!($pin == $pinConfirm)) {
+				return ['success'=>false, 'barcode'=>''];
+			} else {
+				$params['pin'] = $pin;
+			}
+		}
+
+		$this->logger->debug('Preparing to self registering patron', ['params'=>$params]);
+		$operation = "patrons/";
+		$r = $this->_doRequest($operation, $params, "POST");
+
+		if(!$r) {
+			return ['success'=>false, 'barcode'=>''];
+		}
+
+		return ['success' => true, 'barcode' => $barcode];
 	}
 
 	/**
 	 * Used to build the form for self registration.
-	 * Fields will be displayed order
+	 * Fields will be displayed in order of indexed array
 	 *
 	 * @return array Self registration fields
 	 */
@@ -788,22 +876,37 @@ class Sierra {
 		$fields = [];
 
 		global $library;
+		$fields[] = ['property'   => 'firstname',
+		             'type'       => 'text',
+		             'label'      => 'First name',
+		             'description'=> 'Your first name',
+		             'maxLength'  => 30,
+		             'required'   => true];
+
+		$fields[] = ['property'   => 'middlename',
+		             'type'       => 'text',
+		             'label'      => 'Middle name',
+		             'description'=> 'Your middle name or initial',
+		             'maxLength'  => 30,
+		             'required'   => false
+
+		];
+		$fields[] = ['property'   => 'lastname',
+		             'type'       => 'text',
+		             'label'      => 'Last name',
+		             'description'=> 'Your last name (surname)',
+		             'maxLength'  => 30,
+		             'required'   => true];
+
 		// if library would like a birthdate
 		if ($library && $library->promptForBirthDateInSelfReg){
-			$fields[] = ['property'   => 'birthDate',
+			$fields[] = ['property'   => 'birthdate',
 			             'type'       => 'date',
 			             'label'      => 'Date of Birth (MM-DD-YYYY)',
 			             'description'=> 'Date of birth',
 			             'maxLength'  => 10,
 			             'required'   => true];
 		}
-
-		$fields[] = ['property'   => 'name',
-		             'type'       => 'Text',
-		             'label'      => 'First and last name',
-		             'description'=> 'Your full name. You may include a salutation and middle inital.',
-		             'maxLength'  => 40,
-		             'required'   => true];
 
 		$fields[] = ['property'   => 'address',
 		             'type'       => 'text',
@@ -813,7 +916,7 @@ class Sierra {
 		             'required'   => true];
 
 		$fields[] = ['property'   => 'city',
-		             'type'       => 'Text',
+		             'type'       => 'text',
 		             'label'      => 'City',
 		             'description'=> 'The city you receive mail in.',
 		             'maxLength'  => 20,
@@ -840,23 +943,26 @@ class Sierra {
 		             'maxLength'  => 50,
 		             'required'   => false];
 
-		$fields[] = ['property'   => 'homephone',
-		             'type'       => 'tel',
-		             'label'      => 'Home phone',
+		$fields[] = ['property'   => 'primaryphone',
+		             'type'       => 'text',
+		             'label'      => 'Primary phone (XXX-XXX-XXXX)',
 		             'description'=> 'Your primary phone number.',
 		             'maxLength'  => 20,
 		             'required'   => false];
+
+		// if library wants an alt phone
 		if ($library && $library->showWorkPhoneInProfile) {
 			$fields[] = [
-				'property'    => 'workphone',
-				'type'        => 'tel',
-				'label'       => 'Work phone',
+				'property'    => 'altphone',
+				'type'        => 'text',
+				'label'       => 'Work phone (XXX-XXX-XXXX)',
 				'description' => 'Alternate phone number.',
 				'maxLength'   => 20,
 				'required'    => false
 			];
 		}
 
+		// if library uses pins
 		if($this->accountProfile->loginConfiguration == "barcode_pin") {
 			$fields[] = [
 				'property'    => 'pin',
