@@ -24,6 +24,8 @@ class CatalogFactory {
 			global $activeRecordProfile;
 			if ($activeRecordProfile == null || strlen($activeRecordProfile->catalogDriver) == 0){
 				global $configArray;
+				// todo: which do we use? driver in config array or driver set in database?
+				// this is pulling from config array instead of the database.
 				$driver = $configArray['Catalog']['driver'];
 				if ($accountProfile == null && !empty($driver)) {
 					$accountProfile = new AccountProfile();
