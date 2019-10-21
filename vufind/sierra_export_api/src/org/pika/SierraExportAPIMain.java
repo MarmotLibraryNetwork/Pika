@@ -1436,13 +1436,13 @@ public class SierraExportAPIMain {
 								StringBuilder allFieldContent      = new StringBuilder();
 								JSONArray     subfields            = null;
 								boolean       lookingForEContent   = indexingProfile.APIItemEContentExportFieldTag.length() > 0;
-								boolean       isThisAnEContentItem = lookingForEContent && fieldTag.equals(indexingProfile.APIItemEContentExportFieldTag);
+								boolean       isThisAnEContentItemURL = lookingForEContent && curVarField.has("marcTag") && curVarField.getString("marcTag").equals("856");
 								if (curVarField.has("subfields")) {
 									subfields = curVarField.getJSONArray("subfields");
 									for (int k = 0; k < subfields.length(); k++) {
 										JSONObject subfield = subfields.getJSONObject(k);
-										if (k == 0 || !lookingForEContent || !isThisAnEContentItem) {
-											// Don't concatenate subfields if this is an econtent Item tag
+										if (k == 0 || !isThisAnEContentItemURL) {
+											// Don't concatenate subfields if this is an econtent Item URL
 											allFieldContent.append(subfield.getString("content"));
 										}
 									}
