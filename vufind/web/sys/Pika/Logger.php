@@ -20,7 +20,9 @@ class Logger extends MonoLogger {
 		parent::__construct($name);
 		global $configArray;
 
-		$logFile = $configArray['Logging']['logFile'];
+		$logPath = $configArray['Logging']['file'];
+		$logPathParts = explode(":", $logPath);
+		$logFile = $logPathParts[0];
 		if($configArray['System']['debug'] == true) {
 			$this->pushHandler(new BrowserConsoleHandler(MonoLogger::DEBUG));
 		}
