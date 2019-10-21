@@ -125,6 +125,7 @@
 		<dynamicField name="owning_library_*" type="string" indexed="true" stored="true" multiValued="true" omitNorms="false" docValues="true"/>
 		<dynamicField name="owning_location_*" type="string" indexed="true" stored="true" multiValued="true" omitNorms="false" docValues="true"/>
 		<field name="collection_group" type="string" indexed="true" stored="true" multiValued="true" omitNorms="false"/>
+		<!-- TODO: collection_group appears obsolete; replaced with field below pascal 10/21/2019-->
 		<dynamicField name="collection_*" type="string" indexed="true" stored="true" multiValued="true" omitNorms="false" docValues="true"/>
 		<dynamicField name="detailed_location_*" type="string" indexed="true" stored="true" multiValued="true" omitNorms="true" docValues="true"/>
 		<!-- Fields to determine availability -->
