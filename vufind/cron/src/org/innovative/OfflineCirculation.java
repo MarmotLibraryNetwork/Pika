@@ -70,7 +70,7 @@ public class OfflineCirculation implements IProcessHandler {
 //			PreparedStatement holdsToProcessStmt = pikaConn.prepareStatement("SELECT offline_hold.*, cat_username, cat_password FROM offline_hold LEFT JOIN user ON user.id = offline_hold.patronId WHERE status='Not Processed' ORDER BY timeEntered ASC");
 			// Match by Pika patron ID
 
-			PreparedStatement holdsToProcessStmt = pikaConn.prepareStatement("SELECT offline_hold.*, cat_username, cat_password FROM offline_hold LEFT JOIN user ON (user.cat_password = offline_hold.patronBarcode) WHERE status='Not Processed' ORDER BY timeEntered ASC");
+			PreparedStatement holdsToProcessStmt = pikaConn.prepareStatement("SELECT offline_hold.*, cat_username, cat_password FROM `offline_hold` LEFT JOIN `user` ON (user.cat_password = offline_hold.patronBarcode) WHERE status = 'Not Processed' ORDER BY timeEntered ASC");
 			// This was used for a data migration of holds transactions (where the assumption that a patron has logged into Pika is invalid)
 			// This matches by patron barcode when the barcode is saved in the cat_password field
 

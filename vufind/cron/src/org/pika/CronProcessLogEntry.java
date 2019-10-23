@@ -70,7 +70,7 @@ public class CronProcessLogEntry {
 	}
 
 	public String getNotesHtml() {
-		StringBuffer notesText = new StringBuffer("<ol class='cronProcessNotes'>");
+		StringBuilder notesText = new StringBuilder("<ol class='cronProcessNotes'>");
 		for (String curNote : notes) {
 			String cleanedNote = curNote;
 			cleanedNote = cleanedNote.replaceAll("<pre>", "<code>");
