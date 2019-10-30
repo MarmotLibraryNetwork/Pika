@@ -3,7 +3,7 @@
 /**
  * Record Driver for display of LargeImages from Islandora
  *
- * @category VuFind-Plus-2014
+ * @category Pika
  * @author Mark Noble <mark@marmot.org>
  * Date: 12/9/2015
  * Time: 1:47 PM
@@ -47,6 +47,10 @@ abstract class IslandoraDriver extends RecordInterface {
 		$this->highlight = $configArray['Index']['enableHighlighting'];
 		$this->snippet = $configArray['Index']['enableSnippets'];
 		$this->snippetCaptions = isset($searchSettings['Snippet_Captions']) && is_array($searchSettings['Snippet_Captions']) ? $searchSettings['Snippet_Captions'] : array();
+	}
+
+	public function getSemanticData(){
+		// TODO: Implement getSemanticData() method.
 	}
 
 	function getArchiveObject(){
@@ -370,11 +374,6 @@ abstract class IslandoraDriver extends RecordInterface {
 	 */
 	public function getRDFXML() {
 		// TODO: Implement getRDFXML() method.
-	}
-
-	public function getSemanticData()
-	{
-		// TODO: Implement getSemanticData() method.
 	}
 
 	/**
@@ -1494,6 +1493,7 @@ abstract class IslandoraDriver extends RecordInterface {
 		return $visibleLinks;
 	}
 	protected $links = null;
+
 	public function getLinks(){
 		if ($this->links == null){
 			global $timer;
@@ -1548,7 +1548,7 @@ abstract class IslandoraDriver extends RecordInterface {
 								'type' => $linkType,
 								'link' => $link,
 								'text' => $linkText,
-								'hidden' => $isHidden
+							'hidden' => $isHidden,
 						);
 					}
 				}
@@ -1996,20 +1996,32 @@ abstract class IslandoraDriver extends RecordInterface {
 
 				//Add links to timestamps
 				$transcriptionTextWithLinks = $transcriptionText;
+
+				// Format is (mm:ss)
 				if (preg_match_all('/\\(\\d{1,2}:\d{1,2}\\)/', $transcriptionText, $allMatches)){
 					foreach ($allMatches[0] as $match){
-						$offset = str_replace('(', '', $match);
-						$offset = str_replace(')', '', $offset);
+						$offset = str_replace(array('(', ')'), '', $match);
 						list($minutes, $seconds) = explode(':', $offset);
+						/** @var Logger $logger */
+						global $logger;
+						if (!is_numeric($minutes) || !is_numeric($seconds)){
+							$logger->log("Failed to parse a transcript timestamp: " . $match, PEAR_LOG_WARNING);
+						}
 						$offset = $minutes * 60 + $seconds;
 						$replacement = '<a onclick="document.getElementById(\'player\').currentTime=\'' . $offset . '\';" style="cursor:pointer">' . $match . '</a>';
 						$transcriptionTextWithLinks = str_replace($match, $replacement, $transcriptionTextWithLinks);
 					}
+
+				// Format is [hh:mm:ss]
 				}elseif (preg_match_all('/\\[\\d{1,2}:\d{1,2}:\d{1,2}\\]/', $transcriptionText, $allMatches)){
 					foreach ($allMatches[0] as $match){
-						$offset = str_replace('(', '', $match);
-						$offset = str_replace(')', '', $offset);
+						$offset = str_replace(array('[', ']'), '', $match);
 						list($hours, $minutes, $seconds) = explode(':', $offset);
+						 /** @var Logger $logger */
+						global $logger;
+						if (!is_numeric($hours) || !is_numeric($minutes) || !is_numeric($seconds)){
+							$logger->log("Failed to parse a transcript timestamp: " . $match, PEAR_LOG_WARNING);
+						}
 						$offset = $hours * 3600 + $minutes * 60 + $seconds;
 						$replacement = '<a onclick="document.getElementById(\'player\').currentTime=\'' . $offset . '\';" style="cursor:pointer">' . $match . '</a>';
 						$transcriptionTextWithLinks = str_replace($match, $replacement, $transcriptionTextWithLinks);
@@ -2017,9 +2029,9 @@ abstract class IslandoraDriver extends RecordInterface {
 				}
 				if (strlen($transcriptionTextWithLinks) > 0){
 					$transcript = array(
-							'language' => $this->getModsValue('transcriptionLanguage', 'marmot', $transcription),
-							'text' => $transcriptionTextWithLinks,
-							'location' => $this->getModsValue('transcriptionLocation', 'marmot', $transcription)
+						'language' => $this->getModsValue('transcriptionLanguage', 'marmot', $transcription),
+						'text'     => $transcriptionTextWithLinks,
+						'location' => $this->getModsValue('transcriptionLocation', 'marmot', $transcription)
 					);
 					$transcriptionInfo[] = $transcript;
 				}
