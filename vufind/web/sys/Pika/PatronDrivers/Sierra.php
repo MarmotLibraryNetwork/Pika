@@ -348,7 +348,6 @@ class Sierra {
 		$updatePatron = false;
 
 		$patron = new User();
-		$patron->barcode = $this->patronBarcode;
 		// check if the user exists in Pika database
 		// use barcode as sierra patron id is no longer stored in database as username.
 		// get the login configuration barcode_pin or name_barcode
@@ -359,6 +358,8 @@ class Sierra {
 		} else {
 			$patron->cat_password = $this->patronBarcode;
 		}
+
+		$patron->barcode = $this->patronBarcode;
 		// does the user exist in database?
 		if(!$patron->find(true)) {
 			$this->logger->info('Patron does not exits in Pika database.', ['barcode'=>$this->patronBarcode]);
@@ -1846,6 +1847,7 @@ class Sierra {
 			$r = $this->_doRequest($operation, $params);
 			if($r) {
 				$barcode = $r->barcodes[0];
+				$this->patronBarcode = $barcode;
 			}
 		}
 
