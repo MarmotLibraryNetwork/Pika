@@ -50,6 +50,7 @@ use Location;
 use MarcRecord;
 use RecordDriverFactory;
 use User;
+use function array_key_first;
 
 
 class Sierra {
@@ -72,6 +73,8 @@ class Sierra {
 	private $patronBarcode;
 	/* @var $apiUrl string The url for the Sierra API */
 	private $apiUrl;
+	/* @var $tokenUrl string The url for token */
+	private $tokenUrl;
 	// many ids come from url. example: https://sierra.marmot.org/iii/sierra-api/v5/items/5130034
 	private $urlIdRegExp = "/.*\/(\d*)$/";
 
@@ -87,9 +90,11 @@ class Sierra {
 		$this->memCache = new Cache($cache);
 		// build the api url
 		// JIC strip any trailing slash and spaces.
-		$apiUrl = trim($accountProfile->patronApiUrl,'/ ');
-		$apiUrl = $apiUrl . '/iii/sierra-api/v'.$configArray['Catalog']['api_version'] . '/';
-		$this->apiUrl = $apiUrl;
+		$baseApiUrl = trim($accountProfile->patronApiUrl,'/ ');
+		$apiUrl = $baseApiUrl . '/iii/sierra-api/v'.$configArray['Catalog']['api_version'] . '/';
+		$tokenUrl = $baseApiUrl . '/iii/sierra-api/token';
+		$this->apiUrl   = $apiUrl;
+		$this->tokenUrl = $tokenUrl;
 
 		// grab an oAuthToken
 		if(!isset($this->oAuthToken)) {
@@ -402,14 +407,30 @@ class Sierra {
 				$patron->email = '';
 			}
 		}
-		// username -- this is unique?
-		if(!empty($patron->email)) {
-			$patron->username = $patron->email;
+		// username
+		if($this->hasUsernameField()) {
+			$fields = $pInfo->varFields;
+			$i = array_filter($fields, function($k) {
+				return ($k->fieldTag == 'i');
+			});
+			if(empty($i)) {
+				$username = strtolower($firstName) . '.' . strtolower($lastName);
+			} else {
+				$key = array_key_first($i);
+				$patron->alt_username = $i[$key]->content;
+				$username = $patron->alt_username;
+			}
 		} else {
-			$username = strtolower($firstName) . '.' . strtolower($lastName);
-			$patron->username = $username;
+			if(!empty($patron->email)) {
+				$username = $patron->email;
+			} else {
+				$username = strtolower($firstName) . '.' . strtolower($lastName);
+			}
 		}
-
+		if($username != $patron->username) {
+			$patron->username = $username;
+			//$updatePatron = true;
+		}
 		// check phones
 		$homePhone   = '';
 		$mobilePhone = '';
@@ -422,8 +443,6 @@ class Sierra {
 				$patron->workPhone = $phone->number;
 			}
 		}
-
-		// TODO: Need to figure out which phone to use. Maybe mobile phone?
 		// try home phone first then mobile phone
 		if(!empty($homePhone) && $patron->phone != $homePhone) {
 			$updatePatron = true;
@@ -691,6 +710,11 @@ class Sierra {
 						$phones[] = (object)['number'=>$val, 'type'=>'p'];
 					}
 					break;
+				case 'mobileNumber': // mobile phone -- this triggers sms opt in for sierra
+					if(!empty($val)){
+						$phones[] = (object)['number'=>$val, 'type'=>'o'];
+					}
+					break;
 				case 'email':
 					if(!empty($val)) {
 						$emails[] = $val;
@@ -830,12 +854,13 @@ class Sierra {
 			}
 		}
 
-		// name
-		$name = trim($_POST['firstname']);
+		// names -- standard is Last, First Middle
+		$name  = trim($_POST['lasttname']) . ", ";
+		$name .= trim($_POST['firstname']);
 		if(!empty($_POST['middlename'])) {
 			$name .= ' '.trim($_POST['middlename']);
 		}
-		$name .= ' '.trim($_POST['lastname']);
+
 		$params['names'][] = $name;
 
 		// city state and zip
@@ -855,17 +880,31 @@ class Sierra {
 			}
 		}
 
-		$this->logger->debug('Preparing to self registering patron', ['params'=>$params]);
+		$this->logger->debug('Self registering patron', ['params'=>$params]);
 		$operation = "patrons/";
 		$r = $this->_doRequest($operation, $params, "POST");
 
 		if(!$r) {
+			$this->logger->warning('Failed to self register patron');
 			return ['success'=>false, 'barcode'=>''];
 		}
-
+		$this->logger->debug('Success self registering patron');
 		return ['success' => true, 'barcode' => $barcode];
 	}
 
+
+	/**
+	 * If library uses username field
+	 *
+	 * @return bool
+	 */
+	public function hasUsernameField(){
+		if(isset($this->configArray['OPAC']['allowUsername'])) {
+			return (bool)$this->configArray['OPAC']['allowUsername'];
+		} else {
+			return false;
+		}
+	}
 	/**
 	 * Used to build the form for self registration.
 	 * Fields will be displayed in order of indexed array
@@ -897,7 +936,15 @@ class Sierra {
 		             'description'=> 'Your last name (surname)',
 		             'maxLength'  => 30,
 		             'required'   => true];
-
+		// allow usernames?
+		if($this->hasUsernameField()) {
+			$fields[] = ['property'   => 'username',
+			             'type'       => 'text',
+			             'label'      => 'Username',
+			             'description'=> 'Set an optional username.',
+			             'maxLength'  => 20,
+			             'required'   => false];
+		}
 		// if library would like a birthdate
 		if ($library && $library->promptForBirthDateInSelfReg){
 			$fields[] = ['property'   => 'birthdate',
@@ -1787,6 +1834,22 @@ class Sierra {
 	 */
 	private function _authBarcodePin($barcode, $pin) {
 
+		// if using username field check if username exists
+		// username replaces barcode
+		if($this->hasUsernameField()) {
+			$params = [
+			'varFieldTag'     => 'i',
+			'varFieldContent' => $barcode,
+			'fields'          => 'barcodes',
+			];
+
+			$operation = 'patrons/find';
+			$r = $this->_doRequest($operation, $params);
+			if($r) {
+				$barcode = $r->barcodes[0];
+			}
+		}
+
 		$params = [
 			"barcode" => $barcode,
 			"pin"     => $pin
@@ -1820,9 +1883,9 @@ class Sierra {
 			$this->oAuthToken = $token;
 			return TRUE;
 		}
-		$this->logger->info('No oAuth token in memcache. Requesting new toke.');
+		$this->logger->info('No oAuth token in memcache. Requesting new token.');
 		// setup url
-		$url = $this->apiUrl."token";
+		$url = $this->tokenUrl;
 		// grab clientKey and clientSecret from configArray
 		$clientKey    = $this->configArray['Catalog']['clientKey'];
 		$clientSecret = $this->configArray['Catalog']['clientSecret'];
@@ -1862,7 +1925,8 @@ class Sierra {
 			$this->logger->error($message);
 			throw new ErrorException($message);
 		} elseif ($cInfo['http_code'] != 200) { // check the request returned success (HTTP 200)
-			$message = 'API Error: '.$c->response->code.': '.$c->response->name;
+			$message = 'API Error: '.$c->errorCode.': '.$c->errorMessage;
+			//$message = 'API Error: '.$c->response->code.': '.$c->response->name;
 			$this->apiLastError = $message;
 			$this->logger->error($message);
 			throw new ErrorException($message);
@@ -2015,6 +2079,27 @@ class Sierra {
 			);
 		}
 		return $items;
+	}
+
+	/**
+	 * Get a variable field value.
+	 *
+	 * @param  string $tag       The single letter tag to return
+	 * @param  array  $varFields The variable fields array
+	 * @return false|string      Returns false if the field isn't found or the variable field value
+	 */
+	private function getVarField($tag, array $varFields) {
+		$i = array_filter($varFields, function($k) use ($tag) {
+			return ($k->fieldTag == $tag);
+		});
+
+		if(empty($i)) {
+			$content = false;
+		} else {
+			$key = array_key_first($i);
+			$content = $i[$key]->content;
+		}
+		return $content;
 	}
 
 	/**
