@@ -1588,9 +1588,14 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		}
 		if (printFormats.contains("WonderBook")){
 			// This should come before Play Away because wonderbooks will get mis-determined as playaway
-			printFormats.clear();
-			printFormats.add("WonderBook");
-			return;
+			if (printFormats.contains("PlayStation3")) {
+				// There is PS3 game with a "wonderbook" controller. The game is called "Wonderbook. Book of potions"
+				printFormats.remove("WonderBook");
+			} else {
+				printFormats.clear();
+				printFormats.add("WonderBook");
+				return;
+			}
 		}
 		if (printFormats.contains("PlayawayView")){
 			printFormats.clear();
