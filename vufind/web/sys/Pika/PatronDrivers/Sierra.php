@@ -50,7 +50,6 @@ use Location;
 use MarcRecord;
 use RecordDriverFactory;
 use User;
-use function array_key_first;
 
 
 class Sierra {
