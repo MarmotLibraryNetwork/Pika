@@ -590,10 +590,9 @@ public class GroupedWorkIndexer {
 
 							for (int i : isbnKeys){
 								if (arFields.length >= i) {
-									String isbn = arFields[i].trim();
-									if (isbn.length() > 0) {
-										isbn = isbn.replaceAll("[^\\dX]", "");
-										arInformation.put(isbn, titleInfo);
+									ISBN isbn = new ISBN(arFields[i]);
+									if (isbn.isValidIsbn()) {
+										arInformation.put(isbn.toString(), titleInfo);
 									}
 								}
 							}
@@ -635,25 +634,27 @@ public class GroupedWorkIndexer {
 					while (lexileFields != null) {
 						LexileTitle titleInfo = new LexileTitle();
 						if (lexileFields.length >= 11) {
-							String isbn = lexileFields[3];
-							titleInfo.setTitle(lexileFields[0]);
-							titleInfo.setAuthor(lexileFields[1]);
-							titleInfo.setLexileCode(lexileFields[4]);
-							try {
-								titleInfo.setLexileScore(lexileFields[5]);
-							} catch (NumberFormatException e) {
-								logger.warn("Failed to parse lexile score " + lexileFields[5], e);
+							ISBN isbn = new ISBN(lexileFields[3]);
+							if (isbn.isValidIsbn()) {
+								titleInfo.setTitle(lexileFields[0]);
+								titleInfo.setAuthor(lexileFields[1]);
+								titleInfo.setLexileCode(lexileFields[4]);
+								try {
+									titleInfo.setLexileScore(lexileFields[5]);
+								} catch (NumberFormatException e) {
+									logger.warn("Failed to parse lexile score " + lexileFields[5], e);
+								}
+								if (!lexileFields[10].equalsIgnoreCase("none")) {
+									titleInfo.setSeries(lexileFields[10]);
+								}
+								if (lexileFields.length >= 12) {
+									titleInfo.setAwards(lexileFields[11]);
+								}
+//								if (lexileFields.length >= 13) {
+//									titleInfo.setDescription(lexileFields[12]);
+//								}
+								lexileInformation.put(isbn.toString(), titleInfo);
 							}
-							if (!lexileFields[10].equalsIgnoreCase("none")) {
-								titleInfo.setSeries(lexileFields[10]);
-							}
-							if (lexileFields.length >= 12) {
-								titleInfo.setAwards(lexileFields[11]);
-							}
-	//						if (lexileFields.length >= 13) {
-	//							titleInfo.setDescription(lexileFields[12]);
-	//						}
-							lexileInformation.put(isbn, titleInfo);
 						}
 						lexileFields = lexileReader.readNext();
 						curLine++;
@@ -1115,26 +1116,28 @@ public class GroupedWorkIndexer {
 	private void loadAcceleratedDataForWork(GroupedWorkSolr groupedWork){
 		FuzzyScore score = new FuzzyScore(Locale.ENGLISH);
 		for(String isbn : groupedWork.getIsbns()){
-			if (arInformation.containsKey(isbn)){
-				ARTitle arTitle = arInformation.get(isbn);
-				if (logger.isDebugEnabled()){
-					final String groupTitle   = groupedWork.getTitle();
-					final String title        = arTitle.getTitle();
-					int          titleMatches = score.fuzzyScore(groupTitle, title);
-					if (groupTitle.length() > 10 && titleMatches < 10) {
-						logger.warn("Probable mismatch of AR Data for grouped work title '" + groupTitle + "' and AR data for isbn " + isbn + ", ar title " + title);
-					} else {
-						logger.debug("Matched AR Data for grouped Title '" + groupTitle + "' on isbn " + isbn + " with AR Title : " + title);
+			if (isbn != null && !isbn.isEmpty()) {
+				if (arInformation.containsKey(isbn)){
+					ARTitle arTitle = arInformation.get(isbn);
+					if (logger.isDebugEnabled()){
+						final String groupTitle   = groupedWork.getTitle();
+						final String title        = arTitle.getTitle();
+						int          titleMatches = score.fuzzyScore(groupTitle, title);
+						if (groupTitle.length() > 10 && titleMatches < 10) {
+							logger.warn("Probable mismatch of AR Data for grouped work title '" + groupTitle + "' and AR data for isbn " + isbn + ", ar title " + title);
+						} else {
+							logger.debug("Matched AR Data for grouped Title '" + groupTitle + "' on isbn " + isbn + " with AR Title : " + title);
+						}
 					}
+					String bookLevel = arTitle.getBookLevel();
+					if (bookLevel.length() > 0){
+						groupedWork.setAcceleratedReaderReadingLevel(bookLevel);
+						ARDataMatches++;
+					}
+					groupedWork.setAcceleratedReaderPointValue(arTitle.getArPoints());
+					groupedWork.setAcceleratedReaderInterestLevel(arTitle.getInterestLevel());
+					break;
 				}
-				String bookLevel = arTitle.getBookLevel();
-				if (bookLevel.length() > 0){
-					groupedWork.setAcceleratedReaderReadingLevel(bookLevel);
-					ARDataMatches++;
-				}
-				groupedWork.setAcceleratedReaderPointValue(arTitle.getArPoints());
-				groupedWork.setAcceleratedReaderInterestLevel(arTitle.getInterestLevel());
-				break;
 			}
 		}
 	}

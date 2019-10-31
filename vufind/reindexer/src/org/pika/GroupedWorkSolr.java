@@ -1122,38 +1122,40 @@ public class GroupedWorkSolr implements Cloneable {
 			addIsbn(isbn, format);
 		}
 	}
-	void addIsbn(String isbn, String format) {
-		isbn = isbn.replaceAll("\\D", "");
-		if (isbn.length() == 10){
-			isbn = Util.convertISBN10to13(isbn);
-		}
-		if (isbns.containsKey(isbn)){
-			isbns.put(isbn, isbns.get(isbn) + 1);
-		}else{
-			isbns.put(isbn, 1L);
-		}
-		//Determine if we should set the primary isbn
-		boolean updatePrimaryIsbn = false;
-		boolean newIsbnIsBook = format.equalsIgnoreCase("book");
-		if (primaryIsbn == null) {
-			updatePrimaryIsbn = true;
-		} else if (!primaryIsbn.equals(isbn)){
-			if (!primaryIsbnIsBook && newIsbnIsBook){
+
+	void addIsbn(String isbnStr, String format) {
+		ISBN isbn = new ISBN(isbnStr);
+		if (isbn.isValidIsbn()) {
+			isbnStr = isbn.toString();
+			if (isbns.containsKey(isbnStr)) {
+				isbns.put(isbnStr, isbns.get(isbnStr) + 1); // Count how many times we got this isbn
+			} else {
+				isbns.put(isbnStr, 1L);
+			}
+			//Determine if we should set the primary isbn
+			boolean updatePrimaryIsbn = false;
+			boolean newIsbnIsBook     = format.equalsIgnoreCase("book");
+			if (primaryIsbn == null) {
 				updatePrimaryIsbn = true;
-			} else if (primaryIsbnIsBook == newIsbnIsBook){
-				//Both are books or both are not books
-				if (isbns.get(isbn) > primaryIsbnUsageCount){
+			} else if (!primaryIsbn.equals(isbnStr)) {
+				if (!primaryIsbnIsBook && newIsbnIsBook) {
 					updatePrimaryIsbn = true;
+				} else if (primaryIsbnIsBook == newIsbnIsBook) {
+					//Both are books or both are not books
+					if (isbns.get(isbnStr) > primaryIsbnUsageCount) {
+						updatePrimaryIsbn = true;
+					}
 				}
 			}
-		}
 
-		if (updatePrimaryIsbn){
-			primaryIsbn = isbn;
-			primaryIsbnIsBook = format.equalsIgnoreCase("book");
-			primaryIsbnUsageCount = isbns.get(isbn);
+			if (updatePrimaryIsbn) {
+				primaryIsbn           = isbnStr;
+				primaryIsbnIsBook     = format.equalsIgnoreCase("book");
+				primaryIsbnUsageCount = isbns.get(isbnStr);
+			}
 		}
 	}
+
 	Set<String> getIsbns(){
 		return isbns.keySet();
 	}
@@ -1161,6 +1163,7 @@ public class GroupedWorkSolr implements Cloneable {
 	void addIssns(Set<String> issns) {
 		this.issns.addAll(issns);
 	}
+
 	void addUpc(String upc) {
 		if (upcs.containsKey(upc)){
 			upcs.put(upc, upcs.get(upc) + 1);
