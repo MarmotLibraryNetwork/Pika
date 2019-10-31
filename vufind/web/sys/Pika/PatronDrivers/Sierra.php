@@ -806,6 +806,8 @@ class Sierra {
 		$patron->cat_password = $newPin;
 		$patron->update();
 
+		$this->memCache->delete('patron_'.$patron->barcode.'_patron');
+
 		return 'Your PIN has been updated';
 	}
 
@@ -1234,7 +1236,7 @@ class Sierra {
 					}
 					break;
 				case "&":
-					$status       = "Requested from Prospector";
+					$status       = "Requested from INN-Reach";
 					$cancelable   = true;
 					$freezeable   = false;
 					$updatePickup = false;
