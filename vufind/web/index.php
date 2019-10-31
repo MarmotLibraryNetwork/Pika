@@ -840,7 +840,10 @@ function vufind_autoloader($class) {
 			$className = ROOT_DIR . '/services/MyAccount/lib/' . $class . '.php';
 			require_once $className;
 		}elseif (file_exists('services/' . $class . '.php')){
-	           $className = ROOT_DIR . '/services/' . $class . '.php';
+			$className = ROOT_DIR . '/services/' . $class . '.php';
+			require_once $className;
+		}elseif (file_exists('sys/Authentication/' . $class . '.php')){
+			$className = ROOT_DIR . '/sys/Authentication/' . $class . '.php';
 			require_once $className;
 		}else{
 			try {
@@ -1005,4 +1008,12 @@ function loadUserData(){
 			$timer->logTime("Load Information about Index status");
 		}
 	}
+}
+
+// polyfill for php 7
+function array_key_first(array $arr) {
+	foreach($arr as $key => $unused) {
+		return $key;
+	}
+	return NULL;
 }
