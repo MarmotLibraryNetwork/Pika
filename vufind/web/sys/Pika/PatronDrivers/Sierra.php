@@ -1834,6 +1834,22 @@ class Sierra {
 	 */
 	private function _authBarcodePin($barcode, $pin) {
 
+		// if using username field check if username exists
+		// username replaces barcode
+		if($this->hasUsernameField()) {
+			$params = [
+			'varFieldTag'     => 'i',
+			'varFieldContent' => $barcode,
+			'fields'          => 'barcodes',
+			];
+
+			$operation = 'patrons/find';
+			$r = $this->_doRequest($operation, $params);
+			if($r) {
+				$barcode = $r->barcodes[0];
+			}
+		}
+
 		$params = [
 			"barcode" => $barcode,
 			"pin"     => $pin
