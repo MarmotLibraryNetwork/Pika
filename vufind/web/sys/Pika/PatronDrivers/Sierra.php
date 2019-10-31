@@ -729,6 +729,10 @@ class Sierra {
 					} else {
 						$notices = '-';
 					}
+					break;
+				case 'alternate_username':
+					$altUsername = $val;
+					break;
 			}
 		}
 
@@ -746,6 +750,12 @@ class Sierra {
 			'homeLibraryCode' => $homeLibraryCode,
 			'fixedFields'     => (object)['268'=>(object)["label" => "Notice Preference", "value" => $notices]]
 		];
+
+		// username if present
+		if (isset($altUsername)) {
+			$params['varFields'] = [(object)['fieldTag'=>'i', 'content'=>$altUsername]];
+		}
+
 
 		$operation = 'patrons/'.$patronId;
 		$r = $this->_doRequest($operation, $params, 'PUT');
