@@ -14,8 +14,6 @@ PIKASERVER=arlington.test
 PIKADBNAME=pika
 OUTPUT_FILE="/var/log/vufind-plus/${PIKASERVER}/full_update_output.log"
 
-MINFILE1SIZE=$((505000000))
-
 # Check if full_update is already running (test sites only)
 PIDFILE="/var/log/vufind-plus/${PIKASERVER}/full_update.pid"
 if [ -f $PIDFILE ]
