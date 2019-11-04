@@ -1065,6 +1065,10 @@ public class GroupedWorkSolr implements Cloneable {
 		}
 	}
 
+	public String getSubTitle() {
+		return subTitle;
+	}
+
 	void addFullTitles(Set<String> fullTitles){
 		this.fullTitles.addAll(fullTitles);
 	}
