@@ -1295,11 +1295,14 @@ class Sierra {
 				$itemOperation = 'items/'.$itemId[1];
 				$itemRes = $this->_doRequest($itemOperation,$itemParams);
 				if($itemRes) {
+					if($itemRes->status->code != '&') {
+						$h['cancelable']         = false;
+					}
 					if($itemRes->status->code == '#') {
 						$hold->status->code = 'i';
 						$h['status']             = 'Ready';
 						$h['freezeable']         = false;
-						$h['cancelable']         = true;
+						$h['cancelable']         = false;
 						$h['locationUpdateable'] = false;
 					}
 				}
