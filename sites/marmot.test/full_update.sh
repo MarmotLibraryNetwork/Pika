@@ -67,7 +67,7 @@ cd /usr/local/vufind-plus/sites/${PIKASERVER}; ./${PIKASERVER}.sh restart
 echo "Finished solr restart" >> ${OUTPUT_FILE}
 
 	#If a fresh full export file for the ILS has been sent, it should get processed
-	/usr/local/vufind-plus/sites/${PIKASERVER}/copySierraExport.sh >> ${OUTPUT_FILE}
+#	/usr/local/vufind-plus/sites/${PIKASERVER}/copySierraExport.sh >> ${OUTPUT_FILE}
 #	echo "Finished export copy" >> ${OUTPUT_FILE}
 
 
