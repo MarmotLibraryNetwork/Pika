@@ -1671,8 +1671,8 @@ class MarcRecord extends IndexRecord
 			);
 		}
 		$moreDetailsOptions['copies'] = array(
-			'label' => 'Copies',
-			'body' => $interface->fetch('Record/view-holdings.tpl'),
+			'label'         => 'Copies',
+			'body'          => $interface->fetch('Record/view-holdings.tpl'),
 			'openByDefault' => true
 		);
 		//Other editions if applicable (only if we aren't the only record!)
@@ -2056,9 +2056,9 @@ class MarcRecord extends IndexRecord
 						$sectionName = $copyInfo['sectionId'];
 						if (!array_key_exists($sectionName, $this->holdingSections)) {
 							$this->holdingSections[$sectionName] = array(
-								'name' => $copyInfo['section'],
+								'name'      => $copyInfo['section'],
 								'sectionId' => $copyInfo['sectionId'],
-								'holdings' => array(),
+								'holdings'  => array(),
 							);
 						}
 						if ($copyInfo['shelfLocation'] != '') {
@@ -2071,14 +2071,14 @@ class MarcRecord extends IndexRecord
 					$this->statusSummary['driver'] = null;
 					unset($this->statusSummary['driver']);
 				} else {
-					$this->holdings = array();
+					$this->holdings        = array();
 					$this->holdingSections = array();
-					$this->statusSummary = array();
+					$this->statusSummary   = array();
 				}
 			} else {
-				$this->holdings = array();
+				$this->holdings        = array();
 				$this->holdingSections = array();
-				$this->statusSummary = array();
+				$this->statusSummary   = array();
 			}
 		}
 
@@ -2086,27 +2086,29 @@ class MarcRecord extends IndexRecord
 
 	public function assignCopiesInformation(){
 		$this->loadCopies();
-		global $interface;
 		$hasLastCheckinData = false;
-		$hasVolume = false;
-		foreach ($this->holdings as $holding) {
-			if ($holding['lastCheckinDate']) {
+		$hasVolume          = false;
+		foreach ($this->holdings as $holding){
+			if ($holding['lastCheckinDate']){
 				$hasLastCheckinData = true;
 			}
-			if ($holding['volume']) {
+			if ($holding['volume']){
 				$hasVolume = true;
+			}
+			if ($hasLastCheckinData && $hasVolume){
+				break;
 			}
 		}
 		// Consolidate ON Order Copies Data for display
-		foreach ($this->holdingSections as $holdingSection) {
+		foreach ($this->holdingSections as $holdingSection){
 			$onOrderCopies = array();
-			foreach ($holdingSection['holdings'] as $index => $holding) {
-				if ($holding['status'] == 'On Order') {
+			foreach ($holdingSection['holdings'] as $index => $holding){
+				if ($holding['status'] == 'On Order'){
 					$shelfLocation = $holding['shelfLocation'];
-					if (array_key_exists($shelfLocation, $onOrderCopies)) {
+					if (array_key_exists($shelfLocation, $onOrderCopies)){
 						// Increase the copy count
 						$onOrderCopies[$shelfLocation]['onOrderCopies'] += $holding['onOrderCopies'];
-					} else {
+					}else{
 						// Create the initial On Order holding entry
 						$onOrderCopies[$shelfLocation] = array(
 							'shelfLocation' => $shelfLocation,
@@ -2115,19 +2117,20 @@ class MarcRecord extends IndexRecord
 							'onOrderCopies' => $holding['onOrderCopies'],
 							'status'        => $holding['status'],
 							'statusFull'    => $holding['statusFull'],
-							'holdable'      => true,  //TODO: is this always true?
+							'holdable'      => true,
 						);
 					}
 					unset($this->holdingSections[$holdingSection['sectionId']]['holdings'][$index]);
 				}
 			}
-			if (!empty($onOrderCopies)) {
-				foreach ($onOrderCopies as $copy) {
+			if (!empty($onOrderCopies)){
+				foreach ($onOrderCopies as $copy){
 					$this->holdingSections[$holdingSection['sectionId']]['holdings'][] = $copy;
 				}
 			}
 
 		}
+		global $interface;
 		$interface->assign('hasLastCheckinData', $hasLastCheckinData);
 		$interface->assign('hasVolume', $hasVolume);
 		$interface->assign('holdings', $this->holdings);

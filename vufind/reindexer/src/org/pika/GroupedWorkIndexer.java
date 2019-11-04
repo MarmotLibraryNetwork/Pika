@@ -1117,7 +1117,7 @@ public class GroupedWorkIndexer {
 								// So we test the subtitle too, if it is long enough
 								final String groupSubTitle = groupedWork.getSubTitle();
 
-								if (groupSubTitle.length() > 10) {
+								if (groupSubTitle != null && groupSubTitle.length() > 10) {
 									int subTitleMatches = score.fuzzyScore(groupSubTitle, lexTitle);
 									if (subTitleMatches < 10) {
 										logger.warn("Possible mismatch of Lexile Data for grouped work " + groupWorkPermanentId + " title '" + groupTitle + "' with subtitle '" + groupSubTitle + "' for isbn " + isbn + ", Lexile Title " + lexTitle);
@@ -1165,7 +1165,7 @@ public class GroupedWorkIndexer {
 									// So we test the subtitle too, if it is long enough
 									final String groupSubTitle = groupedWork.getSubTitle();
 
-									if (groupSubTitle.length() > 10) {
+									if (groupSubTitle != null && groupSubTitle.length() > 10) {
 										int subTitleMatches = score.fuzzyScore(groupSubTitle, ARTitle);
 										if (subTitleMatches < 10) {
 											logger.warn("Possible mismatch of AR Data for grouped work " + groupWorkPermanentId + " title '" + groupTitle + "' with subtitle '" + groupSubTitle + "' and AR data for isbn " + isbn + ", ar title " + ARTitle);
