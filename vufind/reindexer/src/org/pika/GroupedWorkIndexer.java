@@ -1109,24 +1109,28 @@ public class GroupedWorkIndexer {
 					final String lexTitle              = lexileTitle.getTitle();
 					if (groupTitle.length() > 10) {
 						// Only check titles with more than 10 characters, bcs the mismatch testing is probably not useful with less
-						int titleMatches = score.fuzzyScore(groupTitle, lexTitle);
-						if (titleMatches < 10) {
-							//TODO: just testing matching of lexile title to grouped title for now
+						if (lexTitle != null && !lexTitle.isEmpty()) {
+							int titleMatches = score.fuzzyScore(groupTitle, lexTitle);
+							if (titleMatches < 10) {
+								//TODO: just testing matching of lexile title to grouped title for now
 
-							// A large piece of the mismatches are where the ArTitle is the work subtitle instead
-							// So we test the subtitle too, if it is long enough
-//							final String groupSubTitle = groupedWork.getSubTitle();
-//
-//							if (groupSubTitle.length() > 10) {
-//								int subTitleMatches = score.fuzzyScore(groupSubTitle, lexTitle);
-//								if (subTitleMatches < 10) {
-//									logger.warn("Probable mismatch of Lexile Data for grouped work " + groupWorkPermanentId + " title '" + groupTitle + "' with subtitle '" + groupSubTitle + "' for isbn " + isbn + ", Lexile Title " + lexTitle);
-//								}
-//							} else {
-								logger.warn("Probable mismatch of Lexile Data for grouped work " + groupWorkPermanentId + " title '" + groupTitle + "' for isbn " + isbn + ", Lexile Title " + lexTitle);
-//							}
+								// A large piece of the mismatches are where the ArTitle is the work subtitle instead
+								// So we test the subtitle too, if it is long enough
+	//							final String groupSubTitle = groupedWork.getSubTitle();
+	//
+	//							if (groupSubTitle.length() > 10) {
+	//								int subTitleMatches = score.fuzzyScore(groupSubTitle, lexTitle);
+	//								if (subTitleMatches < 10) {
+	//									logger.warn("Probable mismatch of Lexile Data for grouped work " + groupWorkPermanentId + " title '" + groupTitle + "' with subtitle '" + groupSubTitle + "' for isbn " + isbn + ", Lexile Title " + lexTitle);
+	//								}
+	//							} else {
+									logger.warn("Probable mismatch of Lexile Data for grouped work " + groupWorkPermanentId + " title '" + groupTitle + "' for isbn " + isbn + ", Lexile Title " + lexTitle);
+	//							}
+							} else {
+								logger.debug("Matched Lexile Data for grouped work " + groupWorkPermanentId + " title '" + groupTitle + "' on isbn " + isbn + " with Lexile Title : " + lexTitle);
+							}
 						} else {
-							logger.debug("Matched Lexile Data for grouped work " + groupWorkPermanentId + " title '" + groupTitle + "' on isbn " + isbn + " with Lexile Title : " + lexTitle);
+							logger.warn("Lexile match had no title for isbn " + isbn);
 						}
 					} else {
 						logger.debug("Matched Lexile Data for grouped work " + groupWorkPermanentId + " title '" + groupTitle + "' on isbn " + isbn + " with Lexile Title : " + lexTitle);
@@ -1155,22 +1159,26 @@ public class GroupedWorkIndexer {
 						final String ARTitle              = arTitle.getTitle();
 						if (groupTitle.length() > 10) {
 							// Only check titles with more than 10 characters, bcs the mismatch testing is probably not useful with less
-							int titleMatches = score.fuzzyScore(groupTitle, ARTitle);
-							if (titleMatches < 10) {
-								// A large piece of the mismatches are where the ArTitle is the work subtitle instead
-								// So we test the subtitle too, if it is long enough
-								final String groupSubTitle = groupedWork.getSubTitle();
+							if (ARTitle != null && !ARTitle.isEmpty()) {
+								int titleMatches = score.fuzzyScore(groupTitle, ARTitle);
+								if (titleMatches < 10) {
+									// A large piece of the mismatches are where the ArTitle is the work subtitle instead
+									// So we test the subtitle too, if it is long enough
+									final String groupSubTitle = groupedWork.getSubTitle();
 
-								if (groupSubTitle.length() > 10) {
-									int subTitleMatches = score.fuzzyScore(groupSubTitle, ARTitle);
-									if (subTitleMatches < 10) {
-										logger.warn("Probable mismatch of AR Data for grouped work " + groupWorkPermanentId + " title '" + groupTitle + "' with subtitle '" + groupSubTitle + "' and AR data for isbn " + isbn + ", ar title " + ARTitle);
+									if (groupSubTitle.length() > 10) {
+										int subTitleMatches = score.fuzzyScore(groupSubTitle, ARTitle);
+										if (subTitleMatches < 10) {
+											logger.warn("Probable mismatch of AR Data for grouped work " + groupWorkPermanentId + " title '" + groupTitle + "' with subtitle '" + groupSubTitle + "' and AR data for isbn " + isbn + ", ar title " + ARTitle);
+										}
+									} else {
+										logger.warn("Probable mismatch of AR Data for grouped work " + groupWorkPermanentId + " title '" + groupTitle + "' and AR data for isbn " + isbn + ", ar title " + ARTitle);
 									}
 								} else {
-									logger.warn("Probable mismatch of AR Data for grouped work " + groupWorkPermanentId + " title '" + groupTitle + "' and AR data for isbn " + isbn + ", ar title " + ARTitle);
+									logger.debug("Matched AR Data for grouped work " + groupWorkPermanentId + " title '" + groupTitle + "' on isbn " + isbn + " with AR Title : " + ARTitle);
 								}
 							} else {
-								logger.debug("Matched AR Data for grouped work " + groupWorkPermanentId + " title '" + groupTitle + "' on isbn " + isbn + " with AR Title : " + ARTitle);
+								logger.warn("Accelerated Reader match had no title for isbn isbn");
 							}
 						} else {
 							logger.debug("Matched AR Data for grouped work " + groupWorkPermanentId + " title '" + groupTitle + "' on isbn " + isbn + " with AR Title : " + ARTitle);
