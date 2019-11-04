@@ -1199,7 +1199,7 @@ class Sierra {
 			$h['create']                = strtotime($hold->placed); // date hold created
 			// innreach holds don't include notNeededAfterDate
 			$h['automaticCancellation'] = isset($hold->notNeededAfterDate) ? strtotime($hold->notNeededAfterDate) : null; // not needed after date
-			$h['expire']                = isset($hold->pickUpByDate) ? strtotime($hold->pickUpByDate) : false; // pick up by date
+			$h['expire']                = isset($hold->pickupByDate) ? strtotime($hold->pickupByDate) : false; // pick up by date
 			// cancel id
 			preg_match($this->urlIdRegExp, $hold->id, $m);
 			$h['cancelId'] = $m[1];
