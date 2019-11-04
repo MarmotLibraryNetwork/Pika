@@ -22,13 +22,13 @@
  *    barcode is stored in cat_password field
  *    name is stored in cat_username field
  *
- * memcache keys
+ * Caching
  *
  * caching keys follow this pattern
  * patron_{barcode}_{object}
  * ie; patron_123456789_checkouts, patron_123456789_holds
  * the patron object is patron_{barcode}_patron
- * when calling an action (ie; placeHold, freezeHold) both the patron cache and the object cache should be unset
+ * when calling an action (ie; placeHold, updatePatronInfo) both the patron cache and the object cache should be unset
  *
  *
  * @category Pika
@@ -280,6 +280,8 @@ class Sierra {
 	 *
 	 * Authenticate a patron against the Sierra REST API.
 	 *
+	 * TODO: Use caution with sites using usernames. If you don't write functions for usernames it will break.
+	 *
 	 * @param   string  $username         The patron username or barcode
 	 * @param   string  $password         The patron barcode or pin
 	 * @param   boolean $validatedViaSSO  FALSE
@@ -306,7 +308,6 @@ class Sierra {
 			$msg = "Invalid loginConfiguration setting.";
 			$this->logger->error($msg);
 			throw new InvalidArgumentException($msg);
-			return null;
 		}
 		// can't find patron
 		if (!$patronId) {
@@ -321,6 +322,8 @@ class Sierra {
 
 	/**
 	 * Builds and returns the patron object
+	 *
+	 * TODO: Use caution with sites using usernames. If you don't write functions for usernames it will break.
 	 *
 	 * Because every library has a unique way of entering address, a "hook" has been included to do accommodate.
 	 * Any class extending this base class can include a method name processPatronAddress($addresses) for handling
@@ -1285,10 +1288,22 @@ class Sierra {
 				///////////////
 				// INNREACH HOLD
 				///////////////
+				// get the inn-reach item id
+				$regExp = '/.*\/(.*)$/';
+				preg_match($regExp, $hold->record, $itemId);
+				$itemParams    = ['fields'=>'status'];
+				$itemOperation = 'items/'.$itemId[1];
+				$itemRes = $this->_doRequest($itemOperation,$itemParams);
+				if($itemRes) {
+					if($itemRes->status->code == '#') {
+						$hold->status->code = 'i';
+						$h['status']             = 'Ready';
+						$h['freezeable']         = false;
+						$h['cancelable']         = true;
+						$h['locationUpdateable'] = false;
+					}
+				}
 				// get the hold id
-				// grab the theme for Inn reach cover
-				$themeParts = explode(',', $this->configArray['Site']['theme']);
-				$theme = $themeParts[0];
 				preg_match($this->urlIdRegExp, $hold->id, $mIr);
 				$innReachHoldId = $mIr[1];
 				$innReach = new InnReach();
@@ -1302,9 +1317,13 @@ class Sierra {
 					$h['author']    = $titleAndAuthor['author'];
 					$h['sortTitle'] = $titleAndAuthor['sort_title'];
 				}
-				$h['coverUrl']           = '/interface/themes/' . $theme . '/images/InnReachCover.png';
 				$h['freezeable']         = false;
 				$h['locationUpdateable'] = false;
+
+				// grab the theme for Inn reach cover
+				$themeParts = explode(',', $this->configArray['Site']['theme']);
+				$theme = $themeParts[0];
+				$h['coverUrl'] = '/interface/themes/' . $theme . '/images/InnReachCover.png';
 			} else {
 				///////////////
 				// ILS HOLD

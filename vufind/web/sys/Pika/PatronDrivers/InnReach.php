@@ -32,7 +32,7 @@ class InnReach {
 SELECT 
   bib_record_property.best_title as title,
   bib_record_property.best_author as author,
-  --hold.expires_gmt as not_needed_after,
+  --hold.status, -- this shows sierra hold status not inn-reach status
   bib_record_property.best_title_norm as sort_title
 FROM 
   sierra_view.hold, 
