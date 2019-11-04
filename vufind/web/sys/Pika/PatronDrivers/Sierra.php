@@ -729,6 +729,10 @@ class Sierra {
 					} else {
 						$notices = '-';
 					}
+					break;
+				case 'alternate_username':
+					$altUsername = $val;
+					break;
 			}
 		}
 
@@ -746,6 +750,12 @@ class Sierra {
 			'homeLibraryCode' => $homeLibraryCode,
 			'fixedFields'     => (object)['268'=>(object)["label" => "Notice Preference", "value" => $notices]]
 		];
+
+		// username if present
+		if (isset($altUsername)) {
+			$params['varFields'] = [(object)['fieldTag'=>'i', 'content'=>$altUsername]];
+		}
+
 
 		$operation = 'patrons/'.$patronId;
 		$r = $this->_doRequest($operation, $params, 'PUT');
@@ -795,6 +805,8 @@ class Sierra {
 		}
 		$patron->cat_password = $newPin;
 		$patron->update();
+
+		$this->memCache->delete('patron_'.$patron->barcode.'_patron');
 
 		return 'Your PIN has been updated';
 	}
@@ -1224,7 +1236,7 @@ class Sierra {
 					}
 					break;
 				case "&":
-					$status       = "Requested from Prospector";
+					$status       = "Requested from INN-Reach";
 					$cancelable   = true;
 					$freezeable   = false;
 					$updatePickup = false;
