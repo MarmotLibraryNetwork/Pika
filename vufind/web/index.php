@@ -39,7 +39,7 @@ $timer->logTime("Initialized session");
 //$logger->log("Opening URL " . $_SESSION['REQUEST_URI'], PEAR_LOG_DEBUG);
 
 // PHP 7 logger
-$pikaLogger = new Pika\Logger('PikaLogger', true);
+//$pikaLogger = new Pika\Logger('PikaLogger', true);
 
 if (isset($_REQUEST['test_role'])){
 	if ($_REQUEST['test_role'] == ''){
