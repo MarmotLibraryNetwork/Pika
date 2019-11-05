@@ -10,13 +10,13 @@ import java.util.HashSet;
  * Time: 8:56 AM
  */
 public class LexileTitle {
-	private String title;
-	private String author;
-	private String lexileCode;
-	private String lexileScore;
-	private String series;
-	private HashSet<String> awards = new HashSet<>();
-	private String description;
+	private String          title;
+	private String          author;
+	private String          lexileCode;
+	private int             lexileScore = -1;
+	private String          series;
+	private HashSet<String> awards      = new HashSet<>();
+	private String          description;
 
 	public String getDescription() {
 		return description;
@@ -50,12 +50,20 @@ public class LexileTitle {
 		this.lexileCode = lexileCode;
 	}
 
-	public String getLexileScore() {
+	public int getLexileScore() {
 		return lexileScore;
 	}
 
-	public void setLexileScore(String lexileScore) {
-		this.lexileScore = lexileScore;
+	public void setLexileScore(String lexileScore) throws NumberFormatException {
+		if (lexileScore != null && !lexileScore.isEmpty()) {
+			int value;
+			try {
+				value = Integer.parseInt(lexileScore);
+			} catch (NumberFormatException e) {
+				value = Integer.parseInt(lexileScore.replaceAll("[^0-9]", ""));
+			}
+			this.lexileScore = value;
+		}
 	}
 
 	public String getSeries() {
@@ -72,10 +80,10 @@ public class LexileTitle {
 
 	public void setAwards(String awards) {
 		//Remove anything in quotes
-		if (awards != null && awards.length() > 0){
+		if (awards != null && awards.length() > 0) {
 			awards = awards.replaceAll("\\(.*?\\)", "");
 			String[] individualAwards = awards.split(",");
-			for (String individualAward : individualAwards){
+			for (String individualAward : individualAwards) {
 				this.awards.add(individualAward.trim());
 			}
 		}

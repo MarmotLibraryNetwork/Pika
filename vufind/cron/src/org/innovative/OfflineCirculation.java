@@ -20,21 +20,21 @@ import java.util.regex.Pattern;
 
 /**
  * Processes holds and checkouts that were done offline when the system comes back up.
- * VuFind-Plus
+ * Pika
  * User: Mark Noble
  * Date: 8/5/13
  * Time: 5:18 PM
  */
 public class OfflineCirculation implements IProcessHandler {
 	private CronProcessLogEntry processLog;
-	private Logger logger;
-	private CookieManager manager = new CookieManager();
-	private String ils = "Millennium";
+	private Logger              logger;
+	private CookieManager       manager = new CookieManager();
+	private String              ils     = "Sierra";
 	@Override
-	public void doCronProcess(String servername, Ini configIni, Profile.Section processSettings, Connection vufindConn, Connection econtentConn, CronLogEntry cronEntry, Logger logger) {
+	public void doCronProcess(String servername, Ini configIni, Profile.Section processSettings, Connection pikaConn, Connection econtentConn, CronLogEntry cronEntry, Logger logger) {
 		this.logger = logger;
-		processLog = new CronProcessLogEntry(cronEntry.getLogEntryId(), "Offline Circulation");
-		processLog.saveToDatabase(vufindConn, logger);
+		processLog  = new CronProcessLogEntry(cronEntry.getLogEntryId(), "Offline Circulation");
+		processLog.saveToDatabase(pikaConn, logger);
 
 		ils = configIni.get("Catalog", "ils");
 
@@ -43,38 +43,43 @@ public class OfflineCirculation implements IProcessHandler {
 
 		//Check to see if the system is offline
 		String offlineStr = configIni.get("Catalog", "offline");
-//		if (offlineStr.toLowerCase().equals("true")){
+		if (offlineStr.toLowerCase().equals("true")) {
+			logger.warn("Pika Offline Mode is currently on. Ensure the ILS is available before running OfflineCirculation.");
 //			processLog.addNote("Not processing offline circulation because the system is currently offline.");
-//		}else{
-			//process checkouts and check ins (do this before holds)
-			processOfflineCirculationEntries(configIni, vufindConn);
+		}
+//		else{
+		//process checkouts and check ins (do this before holds)
+		processOfflineCirculationEntries(configIni, pikaConn);
 
-			//process holds
-			processOfflineHolds(configIni, vufindConn);
+		//process holds
+		processOfflineHolds(configIni, pikaConn);
 //		}
 		processLog.setFinished();
-		processLog.saveToDatabase(vufindConn, logger);
+		processLog.saveToDatabase(pikaConn, logger);
 	}
 
 	/**
 	 * Enters any holds that were entered while the catalog was offline
 	 *
-	 * @param configIni   Configuration information for VuFind
-	 * @param pikaConn Connection to the database
+	 * @param configIni Configuration information for Pika
+	 * @param pikaConn  Connection to the database
 	 */
 	private void processOfflineHolds(Ini configIni, Connection pikaConn) {
 		processLog.addNote("Processing offline holds");
 		try {
+//			PreparedStatement holdsToProcessStmt = pikaConn.prepareStatement("SELECT offline_hold.*, cat_username, cat_password FROM offline_hold LEFT JOIN user ON user.id = offline_hold.patronId WHERE status='Not Processed' ORDER BY timeEntered ASC");
 			// Match by Pika patron ID
-			PreparedStatement holdsToProcessStmt = pikaConn.prepareStatement("SELECT offline_hold.*, cat_username, cat_password from offline_hold LEFT JOIN user on user.id = offline_hold.patronId where status='Not Processed' order by timeEntered ASC");
-//			PreparedStatement holdsToProcessStmt = pikaConn.prepareStatement("SELECT offline_hold.*, cat_username, cat_password from offline_hold LEFT JOIN user on (user.cat_password = offline_hold.patronBarcode) where status='Not Processed' order by timeEntered ASC");
+
+			PreparedStatement holdsToProcessStmt = pikaConn.prepareStatement("SELECT offline_hold.*, cat_username, cat_password FROM `offline_hold` LEFT JOIN `user` ON (user.cat_password = offline_hold.patronBarcode) WHERE status = 'Not Processed' ORDER BY timeEntered ASC");
 			// This was used for a data migration of holds transactions (where the assumption that a patron has logged into Pika is invalid)
 			// This matches by patron barcode when the barcode is saved in the cat_password field
-			PreparedStatement updateHold         = pikaConn.prepareStatement("UPDATE offline_hold set timeProcessed = ?, status = ?, notes = ? where id = ?");
-			String baseUrl                       = configIni.get("Site", "url");
-			ResultSet holdsToProcessRS           = holdsToProcessStmt.executeQuery();
-			while (holdsToProcessRS.next()){
-				processOfflineHold(updateHold, baseUrl, holdsToProcessRS);
+
+			PreparedStatement updateHold = pikaConn.prepareStatement("UPDATE offline_hold set timeProcessed = ?, status = ?, notes = ? where id = ?");
+			String            baseUrl    = configIni.get("Site", "url");
+			try (ResultSet holdsToProcessRS = holdsToProcessStmt.executeQuery()) {
+				while (holdsToProcessRS.next()) {
+					processOfflineHold(updateHold, baseUrl, holdsToProcessRS);
+				}
 			}
 		} catch (SQLException e) {
 			processLog.incErrors();
@@ -152,21 +157,21 @@ public class OfflineCirculation implements IProcessHandler {
 	/**
 	 * Processes any checkouts and check-ins that were done while the system was offline.
 	 *
-	 * @param configIni   Configuration information for VuFind
-	 * @param vufindConn Connection to the database
+	 * @param configIni   Configuration information for Pika
+	 * @param pikaConn Connection to the database
 	 */
-	private void processOfflineCirculationEntries(Ini configIni, Connection vufindConn) {
+	private void processOfflineCirculationEntries(Ini configIni, Connection pikaConn) {
 		processLog.addNote("Processing offline checkouts and check-ins");
 		try {
-//			PreparedStatement circulationEntryToProcessStmt = vufindConn.prepareStatement("SELECT offline_circulation.* from offline_circulation where status='Not Processed' order by timeEntered ASC");
-			PreparedStatement circulationEntryToProcessStmt = vufindConn.prepareStatement("SELECT offline_circulation.* from offline_circulation where status='Not Processed' order by login ASC, initials ASC, patronBarcode ASC, timeEntered ASC");
-			PreparedStatement updateCirculationEntry        = vufindConn.prepareStatement("UPDATE offline_circulation set timeProcessed = ?, status = ?, notes = ? where id = ?");
+			PreparedStatement circulationEntryToProcessStmt = pikaConn.prepareStatement("SELECT offline_circulation.* FROM offline_circulation WHERE status='Not Processed' ORDER BY login ASC, initials ASC, patronBarcode ASC, timeEntered ASC");
+			PreparedStatement updateCirculationEntry        = pikaConn.prepareStatement("UPDATE offline_circulation SET timeProcessed = ?, status = ?, notes = ? WHERE id = ?");
 			String baseUrl                                  = configIni.get("Catalog", "linking_url") + "/iii/airwkst";
-			ResultSet circulationEntriesToProcessRS         = circulationEntryToProcessStmt.executeQuery();
 			int numProcessed = 0;
-			while (circulationEntriesToProcessRS.next()){
-				processOfflineCirculationEntry(updateCirculationEntry, baseUrl, circulationEntriesToProcessRS);
-				numProcessed++;
+			try (ResultSet circulationEntriesToProcessRS = circulationEntryToProcessStmt.executeQuery()) {
+				while (circulationEntriesToProcessRS.next()) {
+					processOfflineCirculationEntry(updateCirculationEntry, baseUrl, circulationEntriesToProcessRS);
+					numProcessed++;
+				}
 			}
 			if (numProcessed > 0) {
 				//Logout of the system
@@ -238,7 +243,7 @@ public class OfflineCirculation implements IProcessHandler {
 				}
 				lastLogin = login;
 			}
-			if (bypassLogin == false){
+			if (!bypassLogin){
 				StringBuilder loginParams = new StringBuilder("action=ValidateAirWkstUserAction")
 						.append("&login=").append(login)
 						.append("&loginpassword=").append(loginPassword)
@@ -259,7 +264,7 @@ public class OfflineCirculation implements IProcessHandler {
 					bypassInitials = false;
 					lastInitials   = initials;
 				}
-				if (bypassInitials == false){
+				if (!bypassInitials){
 					//Login to airpac (initials)
 					initialsPassword             = encode(initialsPassword);
 					StringBuilder initialsParams = new StringBuilder("action=ValidateAirWkstUserAction")
@@ -315,17 +320,32 @@ public class OfflineCirculation implements IProcessHandler {
 								.append("&searchtype=b")
 								.append("&sourcebrowse=airwkstpage");
 						URLPostResponse itemBarcodeResponse = Util.postToURL(baseAirpacUrl + "/airwkstcore?" + itemBarcodeParams.toString(), null, "text/html", baseAirpacUrl + "/", logger);
+						String    itemBarcodeMessage            = itemBarcodeResponse.getMessage();
 						if (itemBarcodeResponse.isSuccess()) {
-							errorMessage = getErrorMessage(itemBarcodeResponse.getMessage());
+							if (itemBarcodeMessage.contains("<h4>Item has message")){
+								// Additional confirmation required due to item message
+								itemBarcodeParams = new StringBuilder("action=CheckOutAirWkstItemAction&purpose=checkout&checkoutdespiteiormmessage=true&itembarcode=").append(itemBarcode);
+								//Tested example also included this param: &itemrecordkey=i12755587
+								itemBarcodeResponse = Util.postToURL(baseAirpacUrl + "/airwkstcore?" + itemBarcodeParams.toString(), null, "text/html", baseAirpacUrl + "/", logger);
+								itemBarcodeMessage = itemBarcodeResponse.getMessage();
+							}
+							errorMessage = getErrorMessage(itemBarcodeMessage);
 							if (errorMessage != null) {
 								result.setSuccess(false);
 								result.setNote(errorMessage);
 							} else {
+
 								//Everything seems to have worked
-								result.setSuccess(true);
+								if (itemBarcodeMessage.contains("checked out; due")){
+									// Success page says item is checked out, and gives the due date
+									result.setSuccess(true);
+								} else {
+									result.setSuccess(false);
+									result.setNote("Expected a success message but did not find it. (Did not find an error message either.) ");
+								}
 							}
 						} else {
-							logger.debug("Item Barcode response\r\n" + itemBarcodeResponse.getMessage());
+							logger.debug("Item Barcode response\r\n" + itemBarcodeMessage);
 							result.setSuccess(false);
 							result.setNote("Could not process check out because the item response was not successful");
 						}

@@ -475,7 +475,7 @@ class Millennium extends ScreenScrapingDriver
 	 * @param boolean $forceReload whether or not cached data can be used.
 	 * @return array
 	 */
-	public function _getPatronDump(&$barcode, $forceReload = false)
+	public function _getPatronDump($barcode, $forceReload = false)
 	{
 		global $configArray;
 		/** @var Memcache $memCache */

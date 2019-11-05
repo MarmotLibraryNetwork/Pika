@@ -72,12 +72,12 @@ class SearchAPI extends AJAXHandler {
 		if ($lastExportValidVariable){
 			//Check to see if the last export was valid
 			if ($lastExportValidVariable->value == false){
-				$status[] = self::STATUS_CRITICAL;
-				$notes[]  = 'The Last Export was not valid';
+				$status[] = self::STATUS_WARN;
+				$notes[]  = 'MARC file(s) failed validation';
 			}
 		}else{
 			$status[] = self::STATUS_WARN;
-			$notes[]  = 'Have not checked the export yet to see if it is valid.';
+			$notes[]  = 'MARC file validation has never been run';
 		}
 
 		// Full Index //

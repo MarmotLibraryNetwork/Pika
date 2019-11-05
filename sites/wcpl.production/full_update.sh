@@ -14,7 +14,7 @@ PIKASERVER=wcpl.production
 PIKADBNAME=pika
 OUTPUT_FILE="/var/log/vufind-plus/${PIKASERVER}/full_update_output.log"
 
-MINFILE1SIZE=$((341000000))
+MINFILE1SIZE=$((342000000))
 
 # Check if full_update is already running
 #TODO: Verify that the PID file doesn't get log-rotated
@@ -74,7 +74,7 @@ cd /usr/local/vufind-plus/sites/${PIKASERVER}; ./${PIKASERVER}.sh restart
 cd /data/vufind-plus/; curl --remote-name --remote-time --silent --show-error --compressed --time-cond /data/vufind-plus/lexileTitles.txt https://cassini.marmot.org/lexileTitles.txt
 
 #Extract AR Data
-cd /data/vufind-plus/accelerated_reader; curl --remote-name --remote-time --silent --show-error --compressed --time-cond /data/vufind-plus/accelerated_reader/RLI-ARDataTAB.txt https://cassini.marmot.org/RLI-ARDataTAB.txt
+cd /data/vufind-plus/accelerated_reader; curl --remote-name --remote-time --silent --show-error --compressed --time-cond /data/vufind-plus/accelerated_reader/RLI-ARDataTABv2.txt https://cassini.marmot.org/RLI-ARDataTABv2.txt
 
 # Gale
 /usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} wcpl/gale gale/wcpl >> ${OUTPUT_FILE}

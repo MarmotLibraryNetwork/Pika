@@ -2,9 +2,6 @@ package org.pika;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
-import org.ini4j.Ini;
-import org.ini4j.InvalidFileFormatException;
-import org.ini4j.Profile.Section;
 
 import java.io.*;
 import java.sql.*;
@@ -129,6 +126,14 @@ public class GroupedReindexMain {
 				}
 
 				groupedWorkIndexer.finishIndexing(individualWorkToProcess != null);
+				long lexileDataMatches = groupedWorkIndexer.getLexileDataMatches();
+				if (lexileDataMatches > 0){
+					addNoteToReindexLog("Lexile matches for " + lexileDataMatches + " grouped Works");
+				}
+				long ARDataMatches = groupedWorkIndexer.getARDataMatches();
+				if (ARDataMatches > 0) {
+					addNoteToReindexLog("Accelerated Reader matches for " + ARDataMatches + " grouped Works");
+				}
 			}
 		} catch (Error e) {
 			logger.error("Error processing reindex ", e);
@@ -384,7 +389,6 @@ public class GroupedReindexMain {
 			if (generatedKeys.next()){
 				reindexLogId = generatedKeys.getLong(1);
 			}
-			
 			addNoteToReindexLogStmt = pikaConn.prepareStatement("UPDATE reindex_log SET notes = ?, lastUpdate = ? WHERE id = ?");
 		} catch (SQLException e) {
 			logger.error("Unable to create log entry for reindex process", e);
@@ -417,7 +421,6 @@ public class GroupedReindexMain {
 				logger.error("Unable to update variables with completion time.");
 			}
 		}
-
 	}
 
 	private static PreparedStatement updateNumWorksStatement;
@@ -433,67 +436,6 @@ public class GroupedReindexMain {
 		} catch (SQLException e) {
 			logger.error("Unable to update reindex log with number of works processed.", e);
 		}
-	}
-	
-	private static Ini loadConfigFile(){
-		//First load the default config file 
-		String configName = "../../sites/default/conf/config.ini";
-		logger.info("Loading configuration from " + configName);
-		File configFile = new File(configName);
-		if (!configFile.exists()) {
-			logger.error("Could not find configuration file " + configName);
-			System.exit(1);
-		}
-
-		// Parse the configuration file
-		Ini ini = new Ini();
-		try {
-			ini.load(new FileReader(configFile));
-		} catch (InvalidFileFormatException e) {
-			logger.error("Configuration file is not valid.  Please check the syntax of the file.", e);
-		} catch (FileNotFoundException e) {
-			logger.error("Configuration file could not be found.  You must supply a configuration file in conf called config.ini.", e);
-		} catch (IOException e) {
-			logger.error("Configuration file could not be read.", e);
-		}
-		
-		//Now override with the site specific configuration
-		String siteSpecificFilename = "../../sites/" + serverName + "/conf/config.ini";
-		logger.info("Loading site specific config from " + siteSpecificFilename);
-		File siteSpecificFile = new File(siteSpecificFilename);
-		if (!siteSpecificFile.exists()) {
-			logger.error("Could not find server specific config file");
-			System.exit(1);
-		}
-		try {
-			Ini siteSpecificIni = new Ini();
-			siteSpecificIni.load(new FileReader(siteSpecificFile));
-			for (Section curSection : siteSpecificIni.values()){
-				for (String curKey : curSection.keySet()){
-					//logger.debug("Overriding " + curSection.getName() + " " + curKey + " " + curSection.get(curKey));
-					//System.out.println("Overriding " + curSection.getName() + " " + curKey + " " + curSection.get(curKey));
-					ini.put(curSection.getName(), curKey, curSection.get(curKey));
-				}
-			}
-			//Also load password files if they exist
-			String siteSpecificPassword = "../../sites/" + serverName + "/conf/config.pwd.ini";
-			logger.info("Loading password config from " + siteSpecificPassword);
-			File siteSpecificPasswordFile = new File(siteSpecificPassword);
-			if (siteSpecificPasswordFile.exists()) {
-				Ini siteSpecificPwdIni = new Ini();
-				siteSpecificPwdIni.load(new FileReader(siteSpecificPasswordFile));
-				for (Section curSection : siteSpecificPwdIni.values()){
-					for (String curKey : curSection.keySet()){
-						ini.put(curSection.getName(), curKey, curSection.get(curKey));
-					}
-				}
-			}
-		} catch (InvalidFileFormatException e) {
-			logger.error("Site Specific config file is not valid.  Please check the syntax of the file.", e);
-		} catch (IOException e) {
-			logger.error("Site Specific config file could not be read.", e);
-		}
-		return ini;
 	}
 
 }

@@ -24,8 +24,8 @@ class SacramentoRecordProcessor extends IIIRecordProcessor {
 	//TODO: These should be added to indexing profile
 	private String materialTypeSubField     = "d";
 
-	SacramentoRecordProcessor(GroupedWorkIndexer indexer, Connection vufindConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
-		super(indexer, vufindConn, indexingProfileRS, logger, fullReindex);
+	SacramentoRecordProcessor(GroupedWorkIndexer indexer, Connection pikaConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
+		super(indexer, pikaConn, indexingProfileRS, logger, fullReindex);
 		availableStatus          = "-od(j";
 
 		validCheckedOutStatusCodes.add("o");
@@ -51,6 +51,16 @@ class SacramentoRecordProcessor extends IIIRecordProcessor {
 			}
 		}
 		return available;
+	}
+
+	@Override
+	protected HoldabilityInformation isItemHoldable(ItemInfo itemInfo, Scope curScope, HoldabilityInformation isHoldableUnscoped) {
+		String  status    = itemInfo.getStatusCode();
+		if (!status.isEmpty() && status.equals("KitKeeperStatus")) {
+			// If the record is Kit Keeper, make it not holdable.
+			return new HoldabilityInformation(false, new HashSet<Long>());
+		}
+		return super.isItemHoldable(itemInfo, curScope, isHoldableUnscoped);
 	}
 
 	protected void loadTargetAudiences(GroupedWorkSolr groupedWork, Record record, HashSet<ItemInfo> printItems, String identifier) {

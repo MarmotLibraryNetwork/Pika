@@ -2,8 +2,8 @@
 define ('ROOT_DIR', __DIR__);
 set_include_path(get_include_path() . PATH_SEPARATOR . "/usr/share/composer");
 
-// Composer autoloader/
-require_once "vendor/autoload.php";
+// Composer autoloader
+//require_once "vendor/autoload.php";
 
 global $errorHandlingEnabled;
 $errorHandlingEnabled = true;

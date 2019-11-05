@@ -69,7 +69,7 @@ public class GroupedWorkSolr implements Cloneable {
 	private Long                     languageBoostSpanish     = 1L;
 	private HashSet<String>          lccns                    = new HashSet<>();
 	private HashSet<String>          lcSubjects               = new HashSet<>();
-	private String                   lexileScore              = "-1";
+	private int                      lexileScore              = -1;
 	private String                   lexileCode               = "";
 	private String                   fountasPinnell           = "";
 	private HashMap<String, Integer> literaryFormFull         = new HashMap<>();
@@ -246,15 +246,6 @@ public class GroupedWorkSolr implements Cloneable {
 		doc.addField("grouping_category", groupingCategory);
 		doc.addField("format_boost", getTotalFormatBoost());
 
-		//language related fields
-//		//Check to see if we have Unknown plus a valid value TODO: include at record info level
-//		if (languages.size() > 1 && languages.contains("Unknown")){
-//			languages.remove("Unknown");
-//		}
-//		doc.addField("language", languages);
-//		doc.addField("translation", translations);
-//		doc.addField("language_boost", languageBoost);
-//		doc.addField("language_boost_es", languageBoostSpanish);
 		//Publication related fields
 		doc.addField("publisher", publishers);
 		doc.addField("publishDate", publicationDates);
@@ -334,18 +325,16 @@ public class GroupedWorkSolr implements Cloneable {
 		//Awards and ratings
 		doc.addField("mpaa_rating", mpaaRatings);
 		doc.addField("awards_facet", awards);
-		if (lexileScore.length() == 0){
-			doc.addField("lexile_score", -1);
-		}else{
-			doc.addField("lexile_score", lexileScore);
-		}
+		doc.addField("lexile_score", lexileScore);
 		if (lexileCode.length() > 0) {
 			doc.addField("lexile_code", Util.trimTrailingPunctuation(lexileCode));
 		}
 		if (fountasPinnell.length() > 0){
 			doc.addField("fountas_pinnell", fountasPinnell);
 		}
-		doc.addField("accelerated_reader_interest_level", Util.trimTrailingPunctuation(acceleratedReaderInterestLevel));
+		if (acceleratedReaderInterestLevel != null && acceleratedReaderInterestLevel.length() > 0) {
+			doc.addField("accelerated_reader_interest_level", Util.trimTrailingPunctuation(acceleratedReaderInterestLevel));
+		}
 		if (Util.isNumeric(acceleratedReaderReadingLevel)) {
 			doc.addField("accelerated_reader_reading_level", acceleratedReaderReadingLevel);
 		}
@@ -353,7 +342,9 @@ public class GroupedWorkSolr implements Cloneable {
 			doc.addField("accelerated_reader_point_value", acceleratedReaderPointValue);
 		}
 		//EContent fields
-		doc.addField("econtent_device", econtentDevices);
+		if (econtentDevices.size() > 0) {
+			doc.addField("econtent_device", econtentDevices);
+		}
 
 		HashSet<String> eContentSources = getAllEContentSources();
 		keywords.addAll(eContentSources);
@@ -378,7 +369,6 @@ public class GroupedWorkSolr implements Cloneable {
 		doc.addField("issn", issns);
 		doc.addField("primary_upc", getPrimaryUpc());
 		doc.addField("upc", upcs.keySet());
-		
 		//call numbers
 		doc.addField("callnumber-a", callNumberA);
 		doc.addField("callnumber-first", callNumberFirst);
@@ -1075,6 +1065,10 @@ public class GroupedWorkSolr implements Cloneable {
 		}
 	}
 
+	public String getSubTitle() {
+		return subTitle;
+	}
+
 	void addFullTitles(Set<String> fullTitles){
 		this.fullTitles.addAll(fullTitles);
 	}
@@ -1132,38 +1126,40 @@ public class GroupedWorkSolr implements Cloneable {
 			addIsbn(isbn, format);
 		}
 	}
-	void addIsbn(String isbn, String format) {
-		isbn = isbn.replaceAll("\\D", "");
-		if (isbn.length() == 10){
-			isbn = Util.convertISBN10to13(isbn);
-		}
-		if (isbns.containsKey(isbn)){
-			isbns.put(isbn, isbns.get(isbn) + 1);
-		}else{
-			isbns.put(isbn, 1L);
-		}
-		//Determine if we should set the primary isbn
-		boolean updatePrimaryIsbn = false;
-		boolean newIsbnIsBook = format.equalsIgnoreCase("book");
-		if (primaryIsbn == null) {
-			updatePrimaryIsbn = true;
-		} else if (!primaryIsbn.equals(isbn)){
-			if (!primaryIsbnIsBook && newIsbnIsBook){
+
+	void addIsbn(String isbnStr, String format) {
+		ISBN isbn = new ISBN(isbnStr);
+		if (isbn.isValidIsbn()) {
+			isbnStr = isbn.toString();
+			if (isbns.containsKey(isbnStr)) {
+				isbns.put(isbnStr, isbns.get(isbnStr) + 1); // Count how many times we got this isbn
+			} else {
+				isbns.put(isbnStr, 1L);
+			}
+			//Determine if we should set the primary isbn
+			boolean updatePrimaryIsbn = false;
+			boolean newIsbnIsBook     = format.equalsIgnoreCase("book");
+			if (primaryIsbn == null) {
 				updatePrimaryIsbn = true;
-			} else if (primaryIsbnIsBook == newIsbnIsBook){
-				//Both are books or both are not books
-				if (isbns.get(isbn) > primaryIsbnUsageCount){
+			} else if (!primaryIsbn.equals(isbnStr)) {
+				if (!primaryIsbnIsBook && newIsbnIsBook) {
 					updatePrimaryIsbn = true;
+				} else if (primaryIsbnIsBook == newIsbnIsBook) {
+					//Both are books or both are not books
+					if (isbns.get(isbnStr) > primaryIsbnUsageCount) {
+						updatePrimaryIsbn = true;
+					}
 				}
 			}
-		}
 
-		if (updatePrimaryIsbn){
-			primaryIsbn = isbn;
-			primaryIsbnIsBook = format.equalsIgnoreCase("book");
-			primaryIsbnUsageCount = isbns.get(isbn);
+			if (updatePrimaryIsbn) {
+				primaryIsbn           = isbnStr;
+				primaryIsbnIsBook     = format.equalsIgnoreCase("book");
+				primaryIsbnUsageCount = isbns.get(isbnStr);
+			}
 		}
 	}
+
 	Set<String> getIsbns(){
 		return isbns.keySet();
 	}
@@ -1171,6 +1167,7 @@ public class GroupedWorkSolr implements Cloneable {
 	void addIssns(Set<String> issns) {
 		this.issns.addAll(issns);
 	}
+
 	void addUpc(String upc) {
 		if (upcs.containsKey(upc)){
 			upcs.put(upc, upcs.get(upc) + 1);
@@ -1432,25 +1429,25 @@ public class GroupedWorkSolr implements Cloneable {
 		this.eras.add(Util.trimTrailingPunctuation(fieldValue));
 	}
 
-	void setLanguageBoost(Long languageBoost) {
-		if (languageBoost > this.languageBoost){
-			this.languageBoost = languageBoost;
-		}
-	}
-
-	void setLanguageBoostSpanish(Long languageBoostSpanish) {
-		if (languageBoostSpanish > this.languageBoostSpanish){
-			this.languageBoostSpanish = languageBoostSpanish;
-		}
-	}
-
-	void setLanguages(HashSet<String> languages) {
-		this.languages.addAll(languages);
-	}
-
-	void setTranslations(HashSet<String> translations){
-		this.translations.addAll(translations);
-	}
+//	void setLanguageBoost(Long languageBoost) {
+//		if (languageBoost > this.languageBoost){
+//			this.languageBoost = languageBoost;
+//		}
+//	}
+//
+//	void setLanguageBoostSpanish(Long languageBoostSpanish) {
+//		if (languageBoostSpanish > this.languageBoostSpanish){
+//			this.languageBoostSpanish = languageBoostSpanish;
+//		}
+//	}
+//
+//	void setLanguages(HashSet<String> languages) {
+//		this.languages.addAll(languages);
+//	}
+//
+//	void setTranslations(HashSet<String> translations){
+//		this.translations.addAll(translations);
+//	}
 
 	void addPublishers(Set<String> publishers) {
 		this.publishers.addAll(publishers);
@@ -1585,7 +1582,7 @@ public class GroupedWorkSolr implements Cloneable {
 		this.userRating = userRating;
 	}
 
-	void setLexileScore(String lexileScore) {
+	void setLexileScore(int lexileScore) {
 		this.lexileScore = lexileScore;
 	}
 
@@ -1750,5 +1747,9 @@ public class GroupedWorkSolr implements Cloneable {
 
 	TreeSet<String> getTargetAudiences() {
 		return targetAudience;
+	}
+
+	public String getTitle() {
+		return title;
 	}
 }
