@@ -1125,13 +1125,13 @@ public class GroupedWorkIndexer {
 								} else {
 									logger.warn("Possible mismatch of Lexile Data for grouped work " + groupWorkPermanentId + " title '" + groupTitle + "' for isbn " + isbn + ", Lexile Title " + lexTitle);
 								}
-							} else {
+							} else if (logger.isDebugEnabled()) {
 								logger.debug("Matched Lexile Data for grouped work " + groupWorkPermanentId + " title '" + groupTitle + "' on isbn " + isbn + " with Lexile Title : " + lexTitle);
 							}
 						} else {
-							logger.warn("Lexile match had no title for isbn " + isbn);
+							logger.info("Lexile match had no title for isbn " + isbn + " on group work " + groupWorkPermanentId);
 						}
-					} else {
+					} else if (logger.isDebugEnabled()) {
 						logger.debug("Matched Lexile Data for grouped work " + groupWorkPermanentId + " title '" + groupTitle + "' on isbn " + isbn + " with Lexile Title : " + lexTitle);
 					}
 				}
@@ -1173,13 +1173,13 @@ public class GroupedWorkIndexer {
 									} else {
 										logger.warn("Possible mismatch of AR Data for grouped work " + groupWorkPermanentId + " title '" + groupTitle + "' and AR data for isbn " + isbn + ", ar title " + ARTitle);
 									}
-								} else {
+								} else if (logger.isDebugEnabled()) {
 									logger.debug("Matched AR Data for grouped work " + groupWorkPermanentId + " title '" + groupTitle + "' on isbn " + isbn + " with AR Title : " + ARTitle);
 								}
 							} else {
-								logger.warn("Accelerated Reader match had no title for isbn " + isbn);
+								logger.info("Accelerated Reader match had no title for isbn " + isbn + " on group work " + groupWorkPermanentId);
 							}
-						} else {
+						} else if (logger.isDebugEnabled()) {
 							logger.debug("Matched AR Data for grouped work " + groupWorkPermanentId + " title '" + groupTitle + "' on isbn " + isbn + " with AR Title : " + ARTitle);
 						}
 					}
