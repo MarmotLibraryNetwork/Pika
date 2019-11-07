@@ -1,7 +1,7 @@
 <?php
 /**
  *
- * Copyright (C) Villanova University 2007.
+ * Copyright (C) Marmot Library Network 2019.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2,
@@ -23,9 +23,7 @@ require_once ROOT_DIR . '/services/Admin/Admin.php';
 
 /**
  * Provides a method of running SQL updates to the database.
- * Shows a list of updates that are available with a description of the
- *
- * @author Mark Noble
+ * Shows a list of updates that are available with a description of the updates
  *
  */
 class DBMaintenance extends Admin_Admin {
@@ -2370,6 +2368,19 @@ class DBMaintenance extends Admin_Admin {
 									ADD COLUMN `searchSource` VARCHAR(30) NOT NULL DEFAULT 'local' AFTER `search_object`;",
 							)
 					),
+
+				'add_admin_self_registration_fields' => array(
+					'title' => 'Add admin self registration fields',
+					'description' => 'Add columns for self registration patron type, expire days, agency code, barcode length',
+					'continueOnError' => true,
+					'sql' => array(
+						"ALTER TABLE pika.library
+ADD COLUMN selfRegistrationDefaultpType INT(6) NULL DEFAULT NULL,
+ADD COLUMN selfRegistrationBarcodeLength TINYINT(2) NULL DEFAULT 6,
+ADD COLUMN selfRegistrationDaysUntilExpire SMALLINT(3) NULL DEFAULT 90,
+ADD COLUMN selfRegistrationAgencyCode INT(10) NULL;",
+					)
+				),
 
 					'record_grouping_log' => array(
 							'title' => 'Record Grouping Log',

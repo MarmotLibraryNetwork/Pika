@@ -9,9 +9,10 @@
  *    https://sandbox.iii.com/iii/sierra-api/swagger/index.html#!/patrons
  *
  * NOTES:
- *  Pika stores the Sierra patron id in the username field in user table.
- *  Currently, in the database password and cat_username represent the patron bar codes. The password is now obsolete
- *  and it's preferred to not store the Sierra ID in the database and prefer barcode as an index for finding a patron
+ *  TODO: For Sierra patrons we will use the Sierra patron ID as a username as this must be unique although a different approach would be preferred.
+ *
+ *  Currently, in the database password and cat_username represent the patron barcodes. The password is now obsolete
+ *  and it's preferred to not store the Sierra ID in the database (see above to do) and prefer barcode as an index for finding a patron
  *  in the database.
  *
  *  For auth type barcode_pin
@@ -402,7 +403,7 @@ class Sierra {
 			$patron->patronType = $pInfo->patronType;
 		}
 		// check email
-		if(isset($pInfo->emails) && $pInfo->emails[0] != $patron->email) {
+		if((isset($pInfo->emails) && !empty($pInfo->emails)) && $pInfo->emails[0] != $patron->email) {
 			$updatePatron = true;
 			$patron->email = $pInfo->emails[0];
 		} else {
@@ -410,30 +411,30 @@ class Sierra {
 				$patron->email = '';
 			}
 		}
+
 		// username
+		$username = $pInfo->id;
+		if($username != $patron->username) {
+			$patron->username = $username;
+			$updatePatron = true;
+		}
+
+		// alt username -- comes into play for sites allowing username login.
 		if($this->hasUsernameField()) {
 			$fields = $pInfo->varFields;
 			$i = array_filter($fields, function($k) {
 				return ($k->fieldTag == 'i');
 			});
 			if(empty($i)) {
-				$username = strtolower($firstName) . '.' . strtolower($lastName);
+				$patron->alt_username = '';
 			} else {
 				$key = array_key_first($i);
-				$patron->alt_username = $i[$key]->content;
+				$alt_username = $i[$key]->content;
+				$patron->alt_username = $alt_username;
 				$username = $patron->alt_username;
 			}
-		} else {
-			if(!empty($patron->email)) {
-				$username = $patron->email;
-			} else {
-				$username = strtolower($firstName) . '.' . strtolower($lastName);
-			}
 		}
-		if($username != $patron->username) {
-			$patron->username = $username;
-			//$updatePatron = true;
-		}
+
 		// check phones
 		$homePhone   = '';
 		$mobilePhone = '';
@@ -504,7 +505,6 @@ class Sierra {
 				// a = primary address, h = alt address
 				if ($address->type == 'a') {
 					$lineCount = count($address->lines) - 1;
-
 					$patron->address1 = $address->lines[$lineCount - 1];
 					$patron->address2 = $address->lines[$lineCount];
 				}
@@ -650,7 +650,7 @@ class Sierra {
 		$r = $this->_doRequest('patrons/find', $params);
 		// there was an error with the last call -- use $this->apiLastError for messages.
 		if(!$r) {
-			$this->logger->warn('Could not get patron ID.', ['barcode'=>$patron->barcode, 'error'=>$this->apiLastError]);
+			$this->logger->warn('Could not get patron ID.', ['barcode'=>$barcode, 'error'=>$this->apiLastError]);
 			return false;
 		}
 
@@ -819,30 +819,41 @@ class Sierra {
 	}
 
 	/**
+	 * If library uses username field
+	 *
+	 * @return bool
+	 */
+	public function hasUsernameField(){
+		if(isset($this->configArray['OPAC']['allowUsername'])) {
+			return (bool)$this->configArray['OPAC']['allowUsername'];
+		} else {
+			return false;
+		}
+	}
+
+	/**
 	 * Send a Self Registration request to the ILS.
 	 *
 	 * PUT patrons
 	 * @return  array  [success = bool, barcode = null or barcode]
+	 * @throws InvalidArgumentException If missing configuration parameters
 	 */
 	public function selfRegister(){
 
-		$params = [];
-
 		global $library;
-		// get library code
-		$location            = new Location();
-		$location->libraryId = $library->libraryId;
-		$location->find(true);
-		if(!$location) {
-			return ['success'=>false, 'barcode'=>''];
+		// sanity checks
+		if(!property_exists($library, 'selfRegistrationDefaultpType') || empty($library->selfRegistrationDefaultpType)) {
+			$message = 'Missing configuration parameter selfRegistrationDefaultpType for ' . $library->displayName;
+			$this->logger->error($message);
+			throw new InvalidArgumentException($message);
 		}
-		$params['homeLibraryCode'] = $location->code;
-		// default patron type
-		$params['patronType']      = (int)$library->defaultPType;
-		// generate a random 8 digit number to serve as temp barcode
-		$barcode = (string)rand(10000000, 99999999);
-		$params['barcodes'][] = $barcode;
+		if(!property_exists($library, 'selfRegistrationAgencyCode') || empty($library->selfRegistrationAgencyCode)) {
+			$message = 'Missing configuration parameter selfRegistrationAgencyCode for ' . $library->displayName;
+			$this->logger->error($message);
+			throw new InvalidArgumentException($message);
+		}
 
+		$params = [];
 		foreach ($_POST as $key=>$val) {
 			switch ($key) {
 				case 'email':
@@ -866,16 +877,41 @@ class Sierra {
 					$date = DateTime::createFromFormat('d-m-Y', $val);
 					$params['birthDate'] = $date->format('Y-m-d');
 					break;
+				case 'homelibrarycode':
+					$params['homeLibraryCode'] = $val;
+					break;
 			}
 		}
 
+		// default patron type
+		$params['patronType'] = (int)$library->selfRegistrationDefaultpType;
+
+		// generate a random temp barcode
+		$min = str_pad(1, $library->selfRegistrationBarcodeLength, 0);
+		$max = str_pad(9, $library->selfRegistrationBarcodeLength, 9);
+		// it's possible to register a patron with a barcode that is already in Sierra so make sure this doesn't happen
+		$barcodeTest = true;
+		do {
+			$barcode = (string)mt_rand((int)$min, (int)$max);
+			$barcodeTest = $this->getPatronId($barcode);
+		} while ($barcodeTest === true);
+		$params['barcodes'][] = $barcode;
+
+		// agency code
+		$params['fixedFields']["158"] = ["label" => "PAT AGENCY",
+		                                 "value" => $library->selfRegistrationAgencyCode];
+		// expiration date
+		$interval = 'P'.$library->selfRegistrationDaysUntilExpire.'D';
+		$expireDate = new DateTime();
+		$expireDate->add(new \DateInterval($interval));
+		$params['expirationDate'] = $expireDate->format('Y-m-d');
+
 		// names -- standard is Last, First Middle
-		$name  = trim($_POST['lasttname']) . ", ";
+		$name  = trim($_POST['lastname']) . ", ";
 		$name .= trim($_POST['firstname']);
 		if(!empty($_POST['middlename'])) {
 			$name .= ' '.trim($_POST['middlename']);
 		}
-
 		$params['names'][] = $name;
 
 		// city state and zip
@@ -907,19 +943,6 @@ class Sierra {
 		return ['success' => true, 'barcode' => $barcode];
 	}
 
-
-	/**
-	 * If library uses username field
-	 *
-	 * @return bool
-	 */
-	public function hasUsernameField(){
-		if(isset($this->configArray['OPAC']['allowUsername'])) {
-			return (bool)$this->configArray['OPAC']['allowUsername'];
-		} else {
-			return false;
-		}
-	}
 	/**
 	 * Used to build the form for self registration.
 	 * Fields will be displayed in order of indexed array
@@ -930,6 +953,17 @@ class Sierra {
 		$fields = [];
 
 		global $library;
+		// get the valid home/pickup locations
+		$l = new Location();
+		$l->libraryId = $library->libraryId;
+		$l->validHoldPickupBranch = '1';
+		$l->find();
+		if(!$l->N) {
+			return ['success'=>false, 'barcode'=>''];
+		}
+		$l->orderBy('displayName');
+		$homeLocations = $l->fetchAll('code', 'displayName');
+
 		$fields[] = ['property'   => 'firstname',
 		             'type'       => 'text',
 		             'label'      => 'First name',
@@ -942,15 +976,23 @@ class Sierra {
 		             'label'      => 'Middle name',
 		             'description'=> 'Your middle name or initial',
 		             'maxLength'  => 30,
-		             'required'   => false
+		             'required'   => false];
 
-		];
 		$fields[] = ['property'   => 'lastname',
 		             'type'       => 'text',
 		             'label'      => 'Last name',
 		             'description'=> 'Your last name (surname)',
 		             'maxLength'  => 30,
 		             'required'   => true];
+
+		$fields[] = ['property'   => 'homelibrarycode',
+		             'type'       => 'enum',
+		             'label'      => 'Home Library/Preferred pickup location',
+		             'description'=> 'Your home library and preferred pickup location.',
+		             'values'     => $homeLocations,
+		             'required'   => true];
+
+
 		// allow usernames?
 		if($this->hasUsernameField()) {
 			$fields[] = ['property'   => 'username',
@@ -1011,18 +1053,6 @@ class Sierra {
 		             'description'=> 'Your primary phone number.',
 		             'maxLength'  => 20,
 		             'required'   => false];
-
-		// if library wants an alt phone
-		if ($library && $library->showWorkPhoneInProfile) {
-			$fields[] = [
-				'property'    => 'altphone',
-				'type'        => 'text',
-				'label'       => 'Work phone (XXX-XXX-XXXX)',
-				'description' => 'Alternate phone number.',
-				'maxLength'   => 20,
-				'required'    => false
-			];
-		}
 
 		// if library uses pins
 		if($this->accountProfile->loginConfiguration == "barcode_pin") {
@@ -1290,6 +1320,8 @@ class Sierra {
 				///////////////
 				// get the inn-reach item id
 				$regExp = '/.*\/(.*)$/';
+				// we have to query for the item status (it will be an innreach status) as hold status for
+				// inn-reach will always show 0
 				preg_match($regExp, $hold->record, $itemId);
 				$itemParams    = ['fields'=>'status'];
 				$itemOperation = 'items/'.$itemId[1];
@@ -1309,6 +1341,7 @@ class Sierra {
 				// get the hold id
 				preg_match($this->urlIdRegExp, $hold->id, $mIr);
 				$innReachHoldId = $mIr[1];
+				// We need to get title and author info from Sierra DNA as none will be found in Sierra API
 				$innReach = new InnReach();
 				$titleAndAuthor = $innReach->getHoldTitleAuthor($innReachHoldId);
 				if(!$titleAndAuthor) {

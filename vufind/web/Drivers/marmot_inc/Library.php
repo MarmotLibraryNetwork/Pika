@@ -81,6 +81,17 @@ class Library extends DB_DataObject {
 	public $repeatInProspector;
 	public $repeatInWorldCat;
 
+	/* Self Registration */
+	public $selfRegistrationFormMessage;
+	public $selfRegistrationSuccessMessage;
+	public $selfRegistrationTemplate;
+	public $enableSelfRegistration;
+	public $promptForBirthDateInSelfReg;
+	public $selfRegistrationDefaultpType;
+	public $selfRegistrationBarcodeLength;
+	public $selfRegistrationDaysUntilExpire;
+	public $selfRegistrationAgencyCode;
+
 	//Overdrive Settings
 	public $enableOverdriveCollection;
 	public $sharedOverdriveCollection;
@@ -112,8 +123,7 @@ class Library extends DB_DataObject {
 	public $enableGenealogy;
 	public $showHoldCancelDate;
 	public $enableCourseReserves;
-	public $enableSelfRegistration;
-	public $promptForBirthDateInSelfReg;
+
 	public $showItsHere;
 	public $holdDisclaimer;
 	public $enableMaterialsRequest;
@@ -180,9 +190,6 @@ class Library extends DB_DataObject {
 	public $includeDplaResults;
 	public $showInMainDetails;
 	public $showInSearchResultsMainDetails;
-	public $selfRegistrationFormMessage;
-	public $selfRegistrationSuccessMessage;
-	public $selfRegistrationTemplate;
 	public $addSMSIndicatorToPhone;
 	public $defaultBrowseMode;
 	public $browseCategoryRatingsMode;
@@ -512,6 +519,13 @@ class Library extends DB_DataObject {
 				'selfRegistrationSection' => array('property' => 'selfRegistrationSection', 'type' => 'section', 'label' => 'Self Registration', 'hideInLists' => true,
 						'helpLink' => 'https://docs.google.com/document/d/1MZAOlg3F2IEa0WKsJmDQiCFUrw-pVo_fnSNexAV4MbQ', 'properties' => array(
 					'enableSelfRegistration'         => array('property'=>'enableSelfRegistration', 'type'=>'checkbox', 'label'=>'Enable Self Registration', 'description'=>'Whether or not patrons can self register on the site', 'hideInLists' => true),
+						/* sierra patron api self reg */
+					'selfRegistrationAgencyCode'     => array('property'=>'selfRegistrationAgencyCode', 'type'=>'text', 'label'=>'Agency Code', 'description'=>'Sierra library agency code.', 'hideInLists' => true, 'default' => '', 'maxLength' => '3'),
+					'selfRegistrationDefaultpType'   => array('property'=>'selfRegistrationDefaultpType', 'type'=>'text', 'label'=>'Self Registration Patron Type', 'description'=>'The default patron type for self registered patrons.', 'hideInLists' => true, 'default' => ''),
+					'selfRegistrationBarcodeLength'  => array('property'=>'selfRegistrationBarcodeLength', 'type'=>'text', 'label'=>'Barcode length', 'description'=>'The barcode length of a self registered patron.', 'hideInLists' => true, 'default' => '6', 'maxLength' => '2'),
+					'selfRegistrationDaysUntilExpire'=> array('property'=>'selfRegistrationDaysUntilExpire', 'type'=>'text', 'label'=>'Days Until Expiration', 'description'=>'The number of days the account will be valid.', 'hideInLists' => true, 'default' => '90', 'maxLength' => '3'),
+
+					/* sierra patron api self reg */
 					'promptForBirthDateInSelfReg'    => array('property' => 'promptForBirthDateInSelfReg', 'type' => 'checkbox', 'label' => 'Prompt For Birth Date', 'description'=>'Whether or not to prompt for birth date when self registering'),
 					'selfRegistrationFormMessage'    => array('property'=>'selfRegistrationFormMessage', 'type'=>'html', 'label'=>'Self Registration Form Message', 'description'=>'Message shown to users with the form to submit the self registration.  Leave blank to give users the default message.', 'allowableTags' => '<a><b><em><div><script><span><p><strong><sub><sup><ul><li>', 'hideInLists' => true),
 					'selfRegistrationSuccessMessage' => array('property'=>'selfRegistrationSuccessMessage', 'type'=>'html', 'label'=>'Self Registration Success Message', 'description'=>'Message shown to users when the self registration has been completed successfully.  Leave blank to give users the default message.',  'allowableTags' => '<a><b><em><div><script><span><p><strong><sub><sup><ul><li>', 'hideInLists' => true),
