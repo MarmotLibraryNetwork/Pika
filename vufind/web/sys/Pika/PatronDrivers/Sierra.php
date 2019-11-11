@@ -608,7 +608,6 @@ class Sierra {
 				                                                                 'error'=>$patron->_lastError->userinfo,
 				                                                                 'backtrace'=>$patron->_lastError->backtrace]);
 				throw new ErrorException('Error saving patron to Pika database');
-
 			} else {
 				$this->logger->info('Saved patron to Pika database.', ['barcode'=>$this->patronBarcode]);
 			}

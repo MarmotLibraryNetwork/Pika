@@ -289,10 +289,11 @@
 													<br><br>
 													To sign up for SMS/Text messages, you must opt-in above and enter your Mobile (cell phone) number below.
 													<br><br>
+													<strong>To opt-out from SMS Alerts, U.S.-based patrons can send a text message with the word STOP, STOP ALL, END, QUIT, CANCEL, or
+														UNSUBSCRIBE to 82453 or 35143 from the mobile phone number specified during the opt-in process.</strong>
+													<br><br>
 													<a href="{if $smsTermsLink}{$smsTermsLink}{else}{$path}/Help/Home?topic=smsTerms{/if}" data-title="SMS Notice Terms" class="modalDialogTrigger">View Terms and Conditions</a>
 												</p>
-											{else}
-
 											{/if}
 										</div>
 									</div>
