@@ -1735,11 +1735,29 @@ class Sierra {
 	/**
 	 * Delete all Reading History within the ILS for the patron.
 	 *
+	 * [DELETE] patrons/{id}/checkouts/history
 	 * @param  User    $patron
 	 * @return bool    Whether or not the delete all action was successful
 	 */
 	public function deleteAllReadingHistory($patron) {
 
+		$patronId = $this->getPatronId($patron->barcode);
+		if(!$patronId) {
+			return false;
+		}
+
+		$patronReadingHistoryCacheKey = "patron_".$patron->barcode."_history";
+
+		$operation = 'patrons/'.$patronId.'/checkouts/history';
+		$r = $this->_doRequest($operation, [], 'DELETE');
+
+		if(!$r) {
+			return false;
+		}
+
+		$this->memCache->delete($patronReadingHistoryCacheKey);
+
+		return true;
 	}
 
 	/**
@@ -1765,11 +1783,16 @@ class Sierra {
 		}
 
 		$history = $this->loadReadingHistoryFromIls($patron);
-
 		if(!$history) {
 			return false;
 		}
+
 		$history['historyActive'] = true;
+
+		if($history['numTitles'] == 0) {
+			return $history;
+		}
+		
 		// search test
 		//$search =  $this->searchReadingHistory($patron, 'colorado');
 		//$history['titles'] = $search;
@@ -1821,7 +1844,10 @@ class Sierra {
 		}
 
 		if($history->total == 0) {
-			return [];
+			return [
+				'numTitles'  => 0,
+				'titles'     => []
+			];
 		}
 		$patronPikaId = $patronId;
 		$readingHistory = [];
