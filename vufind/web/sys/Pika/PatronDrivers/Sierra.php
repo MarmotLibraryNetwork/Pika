@@ -171,9 +171,9 @@ class Sierra {
 				$checkout['coverUrl']       = '/interface/themes/'.$theme.'/images/InnReachCover.png';
 				$checkout['barcode']        = $entry->barcode;
 				$checkout['request']        = $entry->callNumber;
-				$checkout['author']        = $titleAndAuthor['author'];
-				$checkout['title']         = $titleAndAuthor['title'];
-				$checkout['title_sort']    = $titleAndAuthor['sort_title'];
+				$checkout['author']         = $titleAndAuthor['author'];
+				$checkout['title']          = $titleAndAuthor['title'];
+				$checkout['title_sort']     = $titleAndAuthor['sort_title'];
 				// todo: can innreach checkouts be renewed?
 				$checkout['canrenew']       = true;
 
@@ -1671,6 +1671,88 @@ class Sierra {
 		return $return;
 	}
 
+	/****
+	 * READING HISTORY
+	 ***/
+
+	/**
+	 * Route reading history actions to the appropriate function according to the readingHistoryAction
+	 * URL parameter which will be one of:
+	 *
+	 * deleteAll    -> deleteAllReadingHistory
+	 * deleteMarked -> deleteMarkedReadingHistory
+	 * optIn        -> optInReadingHistory
+	 * optOut       -> optOutReadingHistory
+	 *
+	 * @param  User   $patron
+	 * @param  string $action One of the following; deleteAll, deleteMarked, optIn, optOut
+	 * @return mixed
+	 */
+	public function doReadingHistoryAction($patron, $action, $selectedTitles) {
+
+		switch ($action) {
+			case 'optIn':
+				return $this->optInReadingHistory($patron);
+				break;
+			case 'optOut':
+				return $this->optOutReadingHistory($patron);
+				break;
+			case 'deleteAll':
+				return $this->deleteAllReadingHistory($patron);
+				break;
+			case 'deleteMarked':
+				return $this->deleteMarkedReadingHistory($patron, $selectedTitles);
+				break;
+			default:
+				return false;
+		}
+	}
+
+	/**
+	 * Opt the patron into Reading History within the ILS.
+	 *
+	 * @param  User $patron
+	 * @return bool $success  Whether or not the opt-in action was successful
+	 */
+	public function optInReadingHistory($patron) {
+		$patron->trackReadingHistory = true;
+		$patron->update();
+		return true;
+	}
+
+	/**
+	 * Opt out the patron from Reading History within the ILS.
+	 *
+	 * @param  User $patron
+	 * @return bool Whether or not the opt-out action was successful
+	 */
+	public function optOutReadingHistory($patron) {
+		$patron->trackReadingHistory = false;
+		$patron->update();
+		return true;
+	}
+
+	/**
+	 * Delete all Reading History within the ILS for the patron.
+	 *
+	 * @param  User    $patron
+	 * @return bool    Whether or not the delete all action was successful
+	 */
+	public function deleteAllReadingHistory($patron) {
+
+	}
+
+	/**
+	 * Delete selected items from reading history
+	 *
+	 * @param  User  $patron
+	 * @param  array $selectedTitles
+	 * @return bool
+	 */
+	public function deleteMarkedReadingHistory($patron, $selectedTitles) {
+		$selectedTitles = $selectedTitles;
+	}
+
 	public function hasNativeReadingHistory(){
 		return true;
 	}
@@ -1790,6 +1872,8 @@ class Sierra {
 			$titleEntry['itemindex']    = $itemindex; // checkout id
 			$titleEntry['details']      = ''; // todo: nothing to put here?
 			$readingHistory[] = $titleEntry;
+			// clear out before
+			unset($titleEntry);
 		}
 		$total = count($readingHistory);
 		$return = ['numTitles'  => $total,
@@ -1799,21 +1883,6 @@ class Sierra {
 		$this->logger->info("Saving reading history in memcache:".$patronReadingHistoryCacheKey);
 
 		return $return;
-	}
-
-
-	public function optInReadingHistory($patron){
-		// TODO: Implement optInReadingHistory() method.
-	}
-
-	public function optOutReadingHistory($patron){
-
-		$patron->trackReadingHistory = false;
-		$patron->update();
-	}
-
-	public function deleteAllReadingHistory($patron){
-		// TODO: Implement deleteAllReadingHistory() method.
 	}
 
 	/**
@@ -1870,23 +1939,25 @@ class Sierra {
 				// The following will fail:
 				// johndoe, jo, jo doe, john do
 				if (preg_match('~\\b' . $userNamePart . '\\b~i', $patronName, $m)) {
-					$valid = TRUE;
+					$valid = true;
 				} else {
-					$valid = FALSE;
+					$valid = false;
 					break;
 				}
 			}
 			// If a match is found, break outer foreach and valid is true
-			if ($valid === TRUE) {
+			if ($valid === true) {
+				$this->logger->debug('Logging in patron: '. $barcode);
 				break;
 			}
 		}
 
 		// return either false on fail or user sierra id on success.
-		if($valid === TRUE) {
+		if($valid === true) {
 			$result = $r->id;
 		} else {
-			$result = FALSE;
+			$this->logger->debug('Can not login patron: ' . $barcode . '. Name and barcode do not match.');
+			$result = false;
 		}
 		return $result;
 	}

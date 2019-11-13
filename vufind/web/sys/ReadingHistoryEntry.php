@@ -11,6 +11,7 @@ class ReadingHistoryEntry extends DB_DataObject
 	public $id;
 	public $userId;
 	public $groupedWorkPermanentId;
+	public $ilsHistoryId;
 	public $source;
 	public $sourceId;
 	public $title;

@@ -24,7 +24,7 @@ trait PatronReadingHistoryOperations {
 	public abstract function hasNativeReadingHistory();
 
 	/**
-	 * Method to extract a patron's existing reading history in the ILS.
+	 * Method to get a patron's existing reading history in the ILS.
 	 * This method is meant to be used by the Pika cron process to do the initial load
 	 * of a patron's reading history.
 	 *
@@ -33,19 +33,16 @@ trait PatronReadingHistoryOperations {
 	 *
 	 * @param User     $patron         The patron to fetch reading history entries for from the ILS
 	 * @param null|int $loadAdditional The number of the next round needed for fetching more entries
-	 *
 	 * @return  array                 An array with the following keys
 	 *                                titles  - An array of reading history entries
 	 *                                nextRound - The number of the next round of entries to fetch
 	 */
 	public abstract function loadReadingHistoryFromIls($patron, $loadAdditional = null);
-	//TODO: Make explicit definition of the elements of a reading history entry.
 
 	/**
 	 * Opt the patron into Reading History within the ILS.
 	 *
 	 * @param User $patron
-	 *
 	 * @return boolean $success  Whether or not the opt-in action was successful
 	 */
 	public abstract function optInReadingHistory($patron);
@@ -53,8 +50,7 @@ trait PatronReadingHistoryOperations {
 	/**
 	 * Opt out the patron from Reading History within the ILS.
 	 *
-	 * @param User $patron
-	 *
+	 * @param  User $patron
 	 * @return boolean $success  Whether or not the opt-out action was successful
 	 */
 	public abstract function optOutReadingHistory($patron);
@@ -62,10 +58,33 @@ trait PatronReadingHistoryOperations {
 	/**
 	 * Delete all Reading History within the ILS for the patron.
 	 *
-	 * @param User $patron
-	 *
+	 * @param  User $patron
 	 * @return boolean $success  Whether or not the delete all action was successful
 	 */
 	public abstract function deleteAllReadingHistory($patron);
+
+	/**
+	 * Delete selected items from reading history
+	 *
+	 * @param User  $patron
+	 * @param array $selectedTitles
+	 * @return mixed
+	 */
+	public abstract function deleteMarkedReadingHistory($patron, $selectedTitles);
+
+	/**
+	 * Route reading history actions to the appropriate function according to the readingHistoryAction
+	 * URL parameter which will be one of:
+	 *
+	 * deleteAll    -> deleteAllReadingHistory
+	 * deleteMarked -> deleteMarkedReadingHistory
+	 * optIn        -> optInReadingHistory
+	 * optOut       -> optOutReadingHistory
+	 *
+	 * @param  User   $patron
+	 * @param  string $action One of the following; deleteAll, deleteMarked, optIn, optOut
+	 * @return mixed
+	 */
+	public abstract function doReadingHistoryAction($patron, $action, $selectedTitles);
 
 }
