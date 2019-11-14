@@ -520,6 +520,10 @@ class CatalogConnection
 			//Don't know enough to load internally, check the ILS.
 			$result = $this->driver->getReadingHistory($patron, $page, $recordsPerPage, $sortOption);
 
+			// keep the rest of this method from throwing errors and warnings.
+			if($result['historyActive'] == false || $result['numTitles'] == 0) {
+				return $result;
+			}
 			//Do not try to mark that the initial load has been done since we only load a subset of the reading history above.
 
 			//Sort the records
