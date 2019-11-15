@@ -212,6 +212,7 @@
 															<label for="sendEmail" class="btn btn-sm btn-default {if $profile->notices == 'send email'}active{/if}"><input type="radio" value="send email" id="sendEmail" name="notices" {if $profile->notices == 'send email'}checked="checked"{/if}> Send Email</label>
 															<label for="dontSendEmail" class="btn btn-sm btn-default {if $profile->notices == 'do not send email'}active{/if}"><input type="radio" value="do not send email" id="dontSendEmail" name="notices" {if $profile->notices == 'do not send email'}checked="checked"{/if}> Do not send email</label>
 															<label for="optOut" class="btn btn-sm btn-default {if $profile->notices == 'opted out'}active{/if}"><input type="radio" value="opted out" id="optOut" name="notices" {if $profile->notices == 'opted out'}checked="checked"{/if}> Opt-out</label>
+														<label for="noticesNone" class="btn btn-sm btn-default {if $profile->notices == '-'}active{/if}"><input type="radio" value="-" id="noticesNone" name="notices" {if $profile->notices == '-'}checked="checked"{/if}> No Preference</label>
 													</div>
 												{else}
 													{$profile->notices}
@@ -289,7 +290,7 @@
 													To sign up for SMS/Text messages, you must opt-in above and enter your Mobile (cell phone) number below.
 													<br><br>
 													<strong>To opt-out from SMS Alerts, U.S.-based patrons can send a text message with the word STOP, STOP ALL, END, QUIT, CANCEL, or
-														UNSUBSCRIBE to 82453 or 35143 from the mobile phone number specified during the opt-in process.</strong>
+														 UNSUBSCRIBE to 82453 or 35143 from the mobile phone number specified during the opt-in process.</strong>
 													<br><br>
 													<a href="https://www.saclibrarycatalog.org/smsterms~S51" data-title="SMS Notice Terms" target="_blank">View Terms and Conditions</a>
 												</p>
