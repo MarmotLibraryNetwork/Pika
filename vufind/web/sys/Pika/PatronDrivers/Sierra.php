@@ -459,6 +459,10 @@ class Sierra {
 				$patron->phone = '';
 			}
 		}
+		if(!isset($patron->phone)) {
+			$patron->phone = '';
+		}
+
 		// check home location
 		$location       = new Location();
 		$location->code = $pInfo->homeLibraryCode;
@@ -516,7 +520,7 @@ class Sierra {
 				$patron->address2 = '';
 			}
 			// city state zip
-			if ($patron->address2 != '') {
+			if (isset($patron->address2) && $patron->address2 != '') {
 				$addressParts = explode(',', $patron->address2);
 				// some libraries may not use ','  after city so make sure we have parts
 				// can assume street as a line and city, st. zip as a line
@@ -1715,8 +1719,16 @@ class Sierra {
 	 * @return bool $success  Whether or not the opt-in action was successful
 	 */
 	public function optInReadingHistory($patron) {
+		$success = $this->_curlOptInOptOut($patron, 'OptIn');
+		if(!$success) {
+			return false;
+		}
 		$patron->trackReadingHistory = true;
 		$patron->update();
+		// clear memcache
+		$patronObjectCacheKey = 'patron_'.$patron->barcode.'_patron';
+		$this->memCache->delete($patronObjectCacheKey);
+
 		return true;
 	}
 
@@ -1727,8 +1739,16 @@ class Sierra {
 	 * @return bool Whether or not the opt-out action was successful
 	 */
 	public function optOutReadingHistory($patron) {
+		$success = $this->_curlOptInOptOut($patron, 'OptOut');
+		if(!$success) {
+			return false;
+		}
 		$patron->trackReadingHistory = false;
 		$patron->update();
+		// clear memcache
+		$patronObjectCacheKey = 'patron_'.$patron->barcode.'_patron';
+		$this->memCache->delete($patronObjectCacheKey);
+
 		return true;
 	}
 
@@ -1736,11 +1756,11 @@ class Sierra {
 	 * Delete all Reading History within the ILS for the patron.
 	 *
 	 * [DELETE] patrons/{id}/checkouts/history
-	 * @param  User    $patron
+	 * @param User $patron
 	 * @return bool    Whether or not the delete all action was successful
+	 * @throws ErrorException
 	 */
 	public function deleteAllReadingHistory($patron) {
-
 		$patronId = $this->getPatronId($patron->barcode);
 		if(!$patronId) {
 			return false;
@@ -1792,7 +1812,7 @@ class Sierra {
 		if($history['numTitles'] == 0) {
 			return $history;
 		}
-		
+
 		// search test
 		//$search =  $this->searchReadingHistory($patron, 'colorado');
 		//$history['titles'] = $search;
@@ -1821,9 +1841,11 @@ class Sierra {
 	 * GET patrons/{patron_id}/checkouts/history
 	 * This method is meant to be used by the Pika cron process load patron's reading history.
 	 *
-	 * @param  User        $patron          Patron Object
-	 * @param  null|int    $loadAdditional  ????????
-	 * @return array|false [titles]=>[borrower_num(Pika ID), recordId(bib ID), permanentId(grouped work ID), title, author, checkout]
+	 * @param User     $patron         Patron Object
+	 * @param null|int $loadAdditional ????????
+	 * @return array|false [titles]=>[borrower_num(Pika ID), recordId(bib ID), permanentId(grouped work ID), title,
+	 *                     author, checkout]
+	 * @throws ErrorException
 	 */
 	public function loadReadingHistoryFromIls($patron, $loadAdditional = null){
 		$patronId = $this->getPatronId($patron->barcode);
@@ -1877,15 +1899,15 @@ class Sierra {
 				$titleEntry['linkUrl']     = $record->getGroupedWorkDriver()->getLinkUrl();
 				$titleEntry['coverUrl']    = $record->getBookcoverUrl('medium');
 				$titleEntry['format']      = $record->getFormats();
-
 			} else {
+				// todo: should fall back to api here?
 				$titleEntry['permanentId'] = '';
 				$titleEntry['ratingData']  = '';
 				$titleEntry['permanentId'] = '';
 				$titleEntry['linkUrl']     = '';
 				$titleEntry['coverUrl']    = '';
 				$titleEntry['format']      = '';
-				// todo: should fall back to api here?
+
 				$titleEntry['title']       = '';
 				$titleEntry['author']      = '';
 				$titleEntry['format']      = '';
@@ -1912,6 +1934,34 @@ class Sierra {
 	}
 
 	/**
+	 * Get volumes for item level holds
+	 *
+	 * @param $bibId
+	 * @return array|false
+	 */
+	public function getItemVolumes($bibId) {
+		$record = RecordDriverFactory::initRecordDriverById($this->accountProfile->recordSource . ':' . $bibId);
+		$solrRecords = $record->getGroupedWorkDriver()->getRelatedRecord($this->accountProfile->recordSource . ':' . $bibId);
+
+		if(!isset($solrRecords['itemDetails']) || count($solrRecords['itemDetails']) > 1) {
+			// todo: something
+		}
+
+		$items = [];
+		foreach($solrRecords['itemDetails'] as $record) {
+			// todo: is holdable?
+			$items[] = array(
+				'itemNumber' => $record['itemId'],
+				'location'   => $record['shelfLocation'],
+				'callNumber' => $record['callNumber'],
+				'status'     => $record['status']
+			);
+		}
+		return $items;
+	}
+
+
+	/**
 	 * _authNameBarcode
 	 *
 	 * Find a patron by barcode (field b) and match username against API response from patron/find API call that returns
@@ -1920,6 +1970,7 @@ class Sierra {
 	 * @param  $username  string   login name
 	 * @param  $barcode   string   barcode
 	 * @return string|false Returns unique patron id from Sierra on success or false on fail.
+	 * @throws ErrorException
 	 */
 	private function _authNameBarcode($username, $barcode) {
 		// tidy up barcode
@@ -2112,11 +2163,12 @@ class Sierra {
 	 *
 	 * Perform a curl request to the Sierra API.
 	 *
-	 * @param  string $operation       The API method to call ie; patrons/find
-	 * @param  array  $params          Request parameters
-	 * @param  string $method          Request method
-	 * @param  null   $extraHeaders    Additional headers
+	 * @param string $operation    The API method to call ie; patrons/find
+	 * @param array  $params       Request parameters
+	 * @param string $method       Request method
+	 * @param null   $extraHeaders Additional headers
 	 * @return bool|object             Returns false fail or JSON object
+	 * @throws ErrorException
 	 */
 	private function _doRequest($operation, $params = array(), $method = "GET", $extraHeaders = null) {
 		$this->apiLastError = false;
@@ -2218,31 +2270,83 @@ class Sierra {
 		return $r;
 	}
 
-	/**
-	 * Get volumes for item level holds
-	 *
-	 * @param $bibId
-	 * @return array|false
-	 */
-	public function getItemVolumes($bibId) {
-		$record = RecordDriverFactory::initRecordDriverById($this->accountProfile->recordSource . ':' . $bibId);
-		$solrRecords = $record->getGroupedWorkDriver()->getRelatedRecord($this->accountProfile->recordSource . ':' . $bibId);
 
-		if(!isset($solrRecords['itemDetails']) || count($solrRecords['itemDetails']) > 1) {
-			// todo: something
+	private function _curlOptInOptOut($patron, $optInOptOut = 'OptIn') {
+
+		$c = new Curl();
+
+		// base url for following calls
+		$vendorOpacUrl = $this->accountProfile->vendorOpacUrl;
+
+		$headers = [
+			"Accept"         => "text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5",
+			"Cache-Control"  => "max-age=0",
+			"Connection"     => "keep-alive",
+			"Accept-Charset" => "ISO-8859-1,utf-8;q=0.7,*;q=0.7",
+			"Accept-Language"=> "en-us,en;q=0.5",
+			"User-Agent"     => "Pika"
+		];
+		$c->setHeaders($headers);
+
+		$cookie = tempnam("/tmp", "CURLCOOKIE");
+		$curlOpts  = [
+			CURLOPT_CONNECTTIMEOUT    => 20,
+			CURLOPT_TIMEOUT           => 60,
+			CURLOPT_RETURNTRANSFER    => true,
+			CURLOPT_FOLLOWLOCATION    => true,
+			CURLOPT_UNRESTRICTED_AUTH => true,
+			CURLOPT_COOKIEJAR         => $cookie,
+			CURLOPT_COOKIESESSION     => false,
+			CURLOPT_HEADER            => false,
+			CURLOPT_AUTOREFERER       => true,
+		];
+		$c->setOpts($curlOpts);
+
+		// first log patron in
+		$postData = [
+			'name' => $patron->cat_username,
+			'code' => $patron->cat_password
+		];
+		$loginUrl = $vendorOpacUrl . '/patroninfo/';
+		$r = $c->post($loginUrl, $postData);
+
+		if($c->isError()) {
+			$c->close();
+			return false;
 		}
 
-		$items = [];
-		foreach($solrRecords['itemDetails'] as $record) {
-			// todo: is holdable?
-			$items[] = array(
-				'itemNumber' => $record['itemId'],
-				'location'   => $record['shelfLocation'],
-				'callNumber' => $record['callNumber'],
-				'status'     => $record['status']
-			);
+		if(!stristr($r, $patron->cat_username)) {
+			$c->close();
+			return false;
 		}
-		return $items;
+
+		// now we can call the optin or optout url
+		$scope = isset($this->configArray['OPAC']['defaultScope']) ? $this->configArray['OPAC']['defaultScope'] : '93';
+		$patronId = $this->getPatronId($patron->barcode);
+		$optUrl = $vendorOpacUrl . "/patroninfo~S". $scope. "/" . $patronId . "/readinghistory/" . $optInOptOut;
+
+		$c->setUrl($optUrl);
+		$r = $c->get();
+
+		if($c->isError()) {
+			$c->close();
+			return false;
+		}
+
+		if($optInOptOut == 'OptIn') {
+			if (stristr($r, 'Stop recording')) {
+				$success = true;
+			} else {
+				$success = false;
+			}
+		} elseif($optInOptOut == 'OptOut') {
+			$success = true;
+		} else {
+			$success = false;
+		}
+
+		$c->close();
+		return $success;
 	}
 
 	/**
