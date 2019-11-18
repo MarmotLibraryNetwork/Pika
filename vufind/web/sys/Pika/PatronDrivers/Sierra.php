@@ -390,7 +390,7 @@ class Sierra {
 				}
 			}
 		}
-		// barcode isn't actually a database, but is stored in User->data['barcode']
+		// barcode isn't actually in database, but is stored in User->data['barcode']
 		$patron->barcode = $barcode;
 
 		// 5. check all the places barcodes are stored and determine if they need updated.

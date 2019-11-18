@@ -144,6 +144,7 @@ class Cache implements CacheInterface
 	 * @return bool True on success and false on failure.
 	 *
 	 * @throws InvalidArgumentException
+	 * @throws \Exception
 	 *   MUST be thrown if $values is neither an array nor a Traversable,
 	 *   or if any of the $values are not a legal value.
 	 */
