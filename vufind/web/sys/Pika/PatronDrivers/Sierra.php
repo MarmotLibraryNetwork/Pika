@@ -45,6 +45,7 @@ use Curl\Curl;
 use DateTime;
 use ErrorException;
 use InvalidArgumentException;
+use Library;
 use \Pika\Logger;
 use \Pika\Cache;
 use Location;
@@ -240,6 +241,7 @@ class Sierra {
 	 * @param      $checkoutId
 	 * @param null $itemIndex
 	 * @return array
+	 * @throws ErrorException
 	 */
 	public function renewItem($patron, $bibId, $checkoutId, $itemIndex = NULL){
 		// unset cache
@@ -283,12 +285,13 @@ class Sierra {
 	 *
 	 * TODO: Use caution with sites using usernames. If you don't write functions for usernames it will break.
 	 *
-	 * @param   string  $username         The patron username or barcode
-	 * @param   string  $password         The patron barcode or pin
-	 * @param   boolean $validatedViaSSO  FALSE
+	 * @param string  $username        The patron username or barcode
+	 * @param string  $password        The patron barcode or pin
+	 * @param boolean $validatedViaSSO FALSE
 	 *
 	 * @return  User|null           User object or null
 	 * @access  public
+	 * @throws ErrorException
 	 */
 	public function patronLogin($username, $password, $validatedViaSSO = FALSE){
 		$this->logger->info("patronLogin called from ".debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]['class']);
@@ -322,9 +325,9 @@ class Sierra {
 	}
 
 	/**
-	 * Builds and returns the patron object
+	 * Builds, updates (if needed) and returns the patron object
 	 *
-	 * TODO: Use caution with sites using usernames. If you don't write functions for usernames it will break.
+	 * Use caution with sites using usernames. If you don't write functions for usernames it will break.
 	 *
 	 * Because every library has a unique way of entering address, a "hook" has been included to do accommodate.
 	 * Any class extending this base class can include a method name processPatronAddress($addresses) for handling
@@ -336,41 +339,18 @@ class Sierra {
 	 * @throws ErrorException
 	 */
 	public function getPatron($patronId) {
-		// grab everything from the patron record the api can provide.
-		// titles on hold to patron object
-		if(!isset($patronId)) {
-			throw new InvalidArgumentException("ERROR: getPatron expects at least on parameter.");
-		}
 
+		$createPatron = false;
+		$updatePatron = false;
+
+		// 1. check for a cached user object
 		$patronObjectCacheKey = 'patron_'.$this->patronBarcode.'_patron';
 		if ($pObj = $this->memCache->get($patronObjectCacheKey)) {
 			$this->logger->info("Found patron in memcache:".$patronObjectCacheKey);
 			return $pObj;
 		}
 
-		$createPatron = false;
-		$updatePatron = false;
-
-		$patron = new User();
-		// check if the user exists in Pika database
-		// use barcode as sierra patron id is no longer stored in database as username.
-		// get the login configuration barcode_pin or name_barcode
-		$loginMethod    = $this->accountProfile->loginConfiguration;
-		$patron->source = $this->accountProfile->name;
-		if ($loginMethod == "barcode_pin") {
-			$patron->cat_username = $this->patronBarcode;
-		} else {
-			$patron->cat_password = $this->patronBarcode;
-		}
-
-		$patron->barcode = $this->patronBarcode;
-		// does the user exist in database?
-		if(!$patron->find(true)) {
-			$this->logger->info('Patron does not exits in Pika database.', ['barcode'=>$this->patronBarcode]);
-			$createPatron = true;
-		}
-
-		// make api call for info
+		// 2. grab everything from the patron record the api can provide.
 		$params = [
 			'fields' => 'names,addresses,phones,emails,expirationDate,homeLibraryCode,moneyOwed,patronType,barcodes,patronType,patronCodes,createdDate,blockInfo,message,pMessage,langPref,fixedFields,varFields,updatedDate,createdDate'
 		];
@@ -380,14 +360,77 @@ class Sierra {
 			return null;
 		}
 
-		// checks; make sure patron info from sierra matches database. update if needed.
-		// check names
+		// 3. Check to see if the user exists in the database
+		// the username db field stores the sierra patron id. we'll use that to determine if the user exists.
+		// todo: store the sierra id in another database column.
+		$patron = new User();
+		$patron->username = $patronId;
+		// does the user exist in database?
+		if(!$patron->find(true)) {
+			$this->logger->info('Patron does not exits in Pika database.', ['barcode'=>$this->patronBarcode]);
+			$createPatron = true;
+		}
+
+		// 4. Find the right barcode
+		// we need to monkey with the barcodes. barcodes can change!
+		// self registered users may have something in the api response that looks like this
+		// -- before getting a physical card
+		// $pInfo->barcodes['', '201975']
+		// -- after getting a physical card
+		// $pInfo->barcodes['56369856985', '201975']
+		// so we need to look for both barcodes and determine if the temp barcode needs updated to the permanent one
+		$barcode = '';
+		if(count($pInfo->barcodes > 1)) {
+			// if the first barcode is set this should be the permanent barcode.
+			if($pInfo->barcodes[0] != '') {
+				$barcode = $pInfo->barcodes[0];
+			} else {
+				if($pInfo->barcodes[1] != '') {
+					$barcode = $pInfo->barcodes[1];
+				}
+			}
+		}
+		// barcode isn't actually a database, but is stored in User->data['barcode']
+		$patron->barcode = $barcode;
+
+		// 5. check all the places barcodes are stored and determine if they need updated.
+		$loginMethod    = $this->accountProfile->loginConfiguration;
+		$patron->source = $this->accountProfile->name;
+
+		if ($loginMethod == "barcode_pin") {
+			if($patron->cat_username != $barcode) {
+				$updatePatron = true;
+				$patron->cat_username = $barcode;
+			}
+		} else {
+			if($patron->cat_password != $barcode) {
+				$updatePatron = true;
+				$patron->cat_password = $barcode;
+			}
+		}
+
+		// 5. Checks; make sure patron info from sierra matches database. update if needed.
+		// 5.1 username
+		$username = $pInfo->id;
+		if($username != $patron->username) {
+			$patron->username = $username;
+			$updatePatron = true;
+		}
+
+		// 5.2 check patron type
+		if((int)$pInfo->patronType !== (int)$patron->patronType) {
+			$updatePatron = true;
+			$patron->patronType = $pInfo->patronType;
+		}
+
+		// 5.3 check names
 		if ($loginMethod == "name_barcode") {
 			if($patron->cat_username != $pInfo->names[0]) {
 				$updatePatron = true;
 				$patron->cat_username = $pInfo->names[0];
 			}
 		}
+		// this assumes the name is in form last, first middle
 		$nameParts = explode(',', $pInfo->names[0]);
 		$firstName = trim($nameParts[1]);
 		$lastName  = trim($nameParts[0]);
@@ -397,12 +440,7 @@ class Sierra {
 			$patron->lastname  = $lastName;
 		}
 
-		// check patron type
-		if((int)$pInfo->patronType !== (int)$patron->patronType) {
-			$updatePatron = true;
-			$patron->patronType = $pInfo->patronType;
-		}
-		// check email
+		// 5.4 check email
 		if((isset($pInfo->emails) && !empty($pInfo->emails)) && $pInfo->emails[0] != $patron->email) {
 			$updatePatron = true;
 			$patron->email = $pInfo->emails[0];
@@ -412,14 +450,43 @@ class Sierra {
 			}
 		}
 
-		// username
-		$username = $pInfo->id;
-		if($username != $patron->username) {
-			$patron->username = $username;
+		// 5.5 check locations
+		// 5.5.1 home locations
+		$location       = new Location();
+		$location->code = $pInfo->homeLibraryCode;
+		$location->find(true);
+		$homeLocationId = $location->locationId;
+		if($homeLocationId != $patron->homeLocationId) {
 			$updatePatron = true;
+			$patron->homeLocationId = $homeLocationId;
+		}
+		$patron->homeLocation = $location->displayName;
+
+		// 5.5.2 location1
+		if(empty($patron->myLocation1Id)) {
+			$updatePatron = true;
+			$patron->myLocation1Id     = ($location->nearbyLocation1 > 0) ? $location->nearbyLocation1 : $location->locationId;
+			$myLocation1             = new Location();
+			$myLocation1->locationId = $patron->myLocation1Id;
+			if ($myLocation1->find(true)) {
+				$patron->myLocation1 = $myLocation1->displayName;
+			}
 		}
 
-		// alt username -- comes into play for sites allowing username login.
+		// 5.5.3 location2
+		if(empty($patron->myLocation2Id)) {
+			$updatePatron = true;
+			$patron->myLocation2Id     = ($location->nearbyLocation2 > 0) ? $location->nearbyLocation2 : $location->locationId;
+			$myLocation2             = new Location();
+			$myLocation2->locationId = $patron->myLocation2Id;
+			if ($myLocation2->find(true)) {
+				$patron->myLocation2 = $myLocation2->displayName;
+			}
+		}
+
+		// 6. things not stored in database so don't need to check for updates but do need to add to object.
+		// 6.1 alt username
+		// this is used on sites allowing username login.
 		if($this->hasUsernameField()) {
 			$fields = $pInfo->varFields;
 			$i = array_filter($fields, function($k) {
@@ -431,11 +498,10 @@ class Sierra {
 				$key = array_key_first($i);
 				$alt_username = $i[$key]->content;
 				$patron->alt_username = $alt_username;
-				$username = $patron->alt_username;
 			}
 		}
 
-		// check phones
+		// 6.2 check phones
 		$homePhone   = '';
 		$mobilePhone = '';
 		foreach($pInfo->phones as $phone) {
@@ -463,44 +529,10 @@ class Sierra {
 			$patron->phone = '';
 		}
 
-		// check home location
-		$location       = new Location();
-		$location->code = $pInfo->homeLibraryCode;
-		$location->find(true);
-		$homeLocationId = $location->locationId;
-		if($homeLocationId != $patron->homeLocationId) {
-			$updatePatron = true;
-			$patron->homeLocationId = $homeLocationId;
-		}
-		$patron->homeLocation = $location->displayName;
-
-		// location1
-		if(empty($patron->myLocation1Id)) {
-			$updatePatron = true;
-			$patron->myLocation1Id     = ($location->nearbyLocation1 > 0) ? $location->nearbyLocation1 : $location->locationId;
-			$myLocation1             = new Location();
-			$myLocation1->locationId = $patron->myLocation1Id;
-			if ($myLocation1->find(true)) {
-				$patron->myLocation1 = $myLocation1->displayName;
-			}
-		}
-		// location2
-		if(empty($patron->myLocation2Id)) {
-			$updatePatron = true;
-			$patron->myLocation2Id     = ($location->nearbyLocation2 > 0) ? $location->nearbyLocation2 : $location->locationId;
-			$myLocation2             = new Location();
-			$myLocation2->locationId = $patron->myLocation2Id;
-			if ($myLocation2->find(true)) {
-				$patron->myLocation2 = $myLocation2->displayName;
-			}
-		}
-		// things not stored in database so don't need to check but need to add to object.
-		// fullname
+		// 6.3 fullname
 		$patron->fullname  = $pInfo->names[0];
-		// barcodes
-		$patron->barcode   = $pInfo->barcodes[0];
 
-
+		// 6.4 address
 		if(method_exists($this, 'processPatronAddress')) {
 			/** Hook for processing addresses **/
 			$patron = $this->processPatronAddress($pInfo->addresses, $patron);
@@ -549,13 +581,16 @@ class Sierra {
 				$patron->zip   = '';
 			}
 		}
-		// mobile phone
+
+		// 6.5 mobile phone
+		// this triggers sms notifications for libraries using Sierra SMS
 		if(isset($mobilePhone)) {
 			$patron->mobileNumber = $mobilePhone;
 		} else {
 			$patron->mobileNumber = '';
 		}
-		// account expiration
+
+		// 6.6 account expiration
 		try {
 			$expiresDate = new DateTime($pInfo->expirationDate);
 			$patron->expires = $expiresDate->format('m-d-Y');
@@ -574,7 +609,8 @@ class Sierra {
 		} catch (\Exception $e) {
 			$patron->expires = '00-00-0000';
 		}
-		// notices
+
+		// 6.7 notices
 		$patron->notices = $pInfo->fixedFields->{'268'}->value;
 		switch($pInfo->fixedFields->{'268'}->value) {
 			case '-':
@@ -592,12 +628,15 @@ class Sierra {
 			default:
 				$patron->noticePreferenceLabel = 'none';
 		}
-		// number of checkouts from ils
+
+		// 6.8 number of checkouts from ils
 		$patron->numCheckedOutIls = $pInfo->fixedFields->{'50'}->value;
-		// fines
+
+		// 6.9 fines
 		$patron->fines = number_format($pInfo->moneyOwed, 2, '.', '');
 		$patron->finesVal = number_format($pInfo->moneyOwed, 2, '.', '');
-		// holds
+
+		// 6.10 hold counts
 		$holds = $this->getMyHolds($patron);
 		if($holds && isset($holds['available'])){
 			$patron->numHoldsAvailableIls = count($holds['available']);
@@ -618,6 +657,7 @@ class Sierra {
 		} elseif ($updatePatron && !$createPatron) {
 			$patron->update();
 		}
+
 		$this->logger->info("Saving patron to memcache:".$patronObjectCacheKey);
 		$this->memCache->set($patronObjectCacheKey, $patron, $this->configArray['Caching']['user']);
 		return $patron;
@@ -1727,7 +1767,9 @@ class Sierra {
 		$patron->update();
 		// clear memcache
 		$patronObjectCacheKey = 'patron_'.$patron->barcode.'_patron';
-		$this->memCache->delete($patronObjectCacheKey);
+		if($this->memCache->delete($patronObjectCacheKey)) {
+			$this->logger->debug('Removed patron from memcache after opting in to reading history.');
+		}
 
 		return true;
 	}
@@ -1747,7 +1789,9 @@ class Sierra {
 		$patron->update();
 		// clear memcache
 		$patronObjectCacheKey = 'patron_'.$patron->barcode.'_patron';
-		$this->memCache->delete($patronObjectCacheKey);
+		if($this->memCache->delete($patronObjectCacheKey)) {
+			$this->logger->debug('Removed patron from memcache after opting in to reading history.');
+		}
 
 		return true;
 	}
