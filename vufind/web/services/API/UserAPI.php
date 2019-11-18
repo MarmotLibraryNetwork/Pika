@@ -22,7 +22,7 @@ require_once ROOT_DIR . '/CatalogConnection.php';
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * @version   1.0
- * @author    Mark Noble <mnoble@turningleaftech.com>
+ * @author    Mark Noble <pika@marmot.org>
  * @copyright Copyright (C) Douglas County Libraries 2011.
  */
 class UserAPI extends AJAXHandler {
@@ -85,7 +85,7 @@ class UserAPI extends AJAXHandler {
 	 *
 	 * Sample call:
 	 * <code>
-	 * http://catalog.douglascountylibraries.org/API/UserAPI?method=isLoggedIn
+	 * https://example.marmot.org/API/UserAPI?method=isLoggedIn
 	 * </code>
 	 *
 	 * Sample response:
@@ -94,7 +94,7 @@ class UserAPI extends AJAXHandler {
 	 * </code>
 	 *
 	 * @access private
-	 * @author Mark Noble <mnoble@turningleaftech.com>
+	 * @author Mark Noble <pika@marmot.org>
 	 */
 	function isLoggedIn(){
 		return UserAccount::isLoggedIn();
@@ -108,7 +108,7 @@ class UserAPI extends AJAXHandler {
 	 *
 	 * Sample call:
 	 * <code>
-	 * http://catalog.douglascountylibraries.org/API/UserAPI
+	 * https://example.marmot.org/API/UserAPI
 	 * Post variables:
 	 *   method=login
 	 *   username=23025003575917
@@ -121,7 +121,7 @@ class UserAPI extends AJAXHandler {
 	 * </code>
 	 *
 	 * @access private
-	 * @author Mark Noble <mnoble@turningleaftech.com>
+	 * @author Mark Noble <pika@marmot.org>
 	 */
 	function login(){
 		//Login the user.  Must be called via Post parameters.
@@ -149,7 +149,7 @@ class UserAPI extends AJAXHandler {
 	 *
 	 * Sample call:
 	 * <code>
-	 * http://catalog.douglascountylibraries.org/API/UserAPI?method=logout
+	 * https://example.marmot.org/API/UserAPI?method=logout
 	 * </code>
 	 *
 	 * Sample response:
@@ -158,7 +158,7 @@ class UserAPI extends AJAXHandler {
 	 * </code>
 	 *
 	 * @access private
-	 * @author Mark Noble <mnoble@turningleaftech.com>
+	 * @author Mark Noble <pika@marmot.org>
 	 */
 	function logout(){
 		UserAccount::logout();
@@ -177,20 +177,20 @@ class UserAPI extends AJAXHandler {
 	 * Returns JSON encoded data as follows:
 	 * <ul>
 	 * <li>success - false if the username or password could not be found, or the folowing user information if the account is valid.</li>
-	 * <li>id � The id of the user within VuFind</li>
-	 * <li>username, cat_username � The patron's library card number</li>
-	 * <li>password, cat_password � The patron's PIN number</li>
-	 * <li>firstname � The first name of the patron in the ILS</li>
-	 * <li>lastname � The last name of the patron in the ILS</li>
-	 * <li>email � The patron's e-mail address if set within Horizon.</li>
-	 * <li>college, major � not currently used</li>
-	 * <li>homeLocationId � the id of the patron's home library within VuFind.</li>
-	 * <li>MyLocation1Id, myLocation2Id � not currently used</li>
+	 * <li>id  The id of the user within VuFind</li>
+	 * <li>username, cat_username  The patron's library card number</li>
+	 * <li>password, cat_password  The patron's PIN number</li>
+	 * <li>firstname  The first name of the patron in the ILS</li>
+	 * <li>lastname  The last name of the patron in the ILS</li>
+	 * <li>email  The patron's e-mail address if set within Horizon.</li>
+	 * <li>college, major  not currently used</li>
+	 * <li>homeLocationId  the id of the patron's home library within VuFind.</li>
+	 * <li>MyLocation1Id, myLocation2Id  not currently used</li>
 	 * </ul>
 	 *
 	 * Sample Call:
 	 * <code>
-	 * http://catalog.douglascountylibraries.org/API/UserAPI?method=validateAccount&username=23025003575917&password=7604
+	 * https://example.marmot.org/API/UserAPI?method=validateAccount&username=23025003575917&password=7604
 	 * </code>
 	 *
 	 * Sample Response:
@@ -220,7 +220,7 @@ class UserAPI extends AJAXHandler {
 	 * {"result":{"success":false}}
 	 * </code>
 	 *
-	 * @author Mark Noble <mnoble@turningleaftech.com>
+	 * @author Mark Noble <pika@marmot.org>
 	 */
 	function validateAccount(){
 		list($username, $password) = $this->loadUsernameAndPassword();
@@ -266,27 +266,27 @@ class UserAPI extends AJAXHandler {
 	 *
 	 * Returns JSON encoded data as follows:
 	 * <ul>
-	 * <li>success � true if the account is valid, false if the username or password were incorrect</li>
-	 * <li>message � a reason why the method failed if success is false</li>
-	 * <li>profile � profile information including name, address, e-mail, number of holds, number of checked out items, fines.</li>
-	 * <li>firstname � The first name of the patron in the ILS</li>
-	 * <li>lastname � The last name of the patron in the ILS</li>
-	 * <li>fullname � The combined first and last name for the patron in the ILS</li>
-	 * <li>address1 � The street information for the patron</li>
-	 * <li>city � The city where the patron lives</li>
-	 * <li>state � The state where the patron lives</li>
-	 * <li>zip � The zip code for the patron</li>
-	 * <li>phone � The phone number for the patron</li>
-	 * <li>email � The email for the patron</li>
-	 * <li>homeLocationId � The id of the patron's home branch within VuFind</li>
-	 * <li>homeLocationName � The full name of the patron's home branch</li>
-	 * <li>expires � The expiration date of the patron's library card</li>
-	 * <li>fines � the amount of fines on the patron's account formatted for display</li>
-	 * <li>finesVal � the amount of  fines on the patron's account without formatting</li>
-	 * <li>numHolds � The number of holds the patron currently has</li>
-	 * <li>numHoldsAvailable � The number of holds the patron currently has that are available</li>
-	 * <li>numHoldsRequested � The number of holds the patron currently has that are not available</li>
-	 * <li>numCheckedOut � The number of items the patron currently has checked out.</li>
+	 * <li>success  true if the account is valid, false if the username or password were incorrect</li>
+	 * <li>message  a reason why the method failed if success is false</li>
+	 * <li>profile  profile information including name, address, e-mail, number of holds, number of checked out items, fines.</li>
+	 * <li>firstname  The first name of the patron in the ILS</li>
+	 * <li>lastname  The last name of the patron in the ILS</li>
+	 * <li>fullname  The combined first and last name for the patron in the ILS</li>
+	 * <li>address1  The street information for the patron</li>
+	 * <li>city  The city where the patron lives</li>
+	 * <li>state  The state where the patron lives</li>
+	 * <li>zip  The zip code for the patron</li>
+	 * <li>phone  The phone number for the patron</li>
+	 * <li>email  The email for the patron</li>
+	 * <li>homeLocationId  The id of the patron's home branch within VuFind</li>
+	 * <li>homeLocationName  The full name of the patron's home branch</li>
+	 * <li>expires  The expiration date of the patron's library card</li>
+	 * <li>fines  the amount of fines on the patron's account formatted for display</li>
+	 * <li>finesVal  the amount of  fines on the patron's account without formatting</li>
+	 * <li>numHolds  The number of holds the patron currently has</li>
+	 * <li>numHoldsAvailable  The number of holds the patron currently has that are available</li>
+	 * <li>numHoldsRequested  The number of holds the patron currently has that are not available</li>
+	 * <li>numCheckedOut  The number of items the patron currently has checked out.</li>
 	 * <li>bypassAutoLogout - 1 if the user has chosen to bypass te automatic logout script or 0 if they have not.</li>
 	 * <li>numEContentCheckedOut - The number of eContent items that the user currently has checked out. </li>
 	 * <li>numEContentAvailableHolds - The number of available eContent holds for the user that can be checked out. </li>
@@ -296,7 +296,7 @@ class UserAPI extends AJAXHandler {
 	 *
 	 * Sample Call:
 	 * <code>
-	 * http://catalog.douglascountylibraries.org/API/UserAPI?method=getPatronProfile&username=23025003575917&password=7604
+	 * https://example.marmot.org/API/UserAPI?method=getPatronProfile&username=23025003575917&password=7604
 	 * </code>
 	 *
 	 * Sample Response failed login:
@@ -339,7 +339,7 @@ class UserAPI extends AJAXHandler {
 	 * } }
 	 * </code>
 	 *
-	 * @author Mark Noble <mnoble@turningleaftech.com>
+	 * @author Mark Noble <pika@marmot.org>
 	 */
 	function getPatronProfile(){
 		list($username, $password) = $this->loadUsernameAndPassword();
@@ -372,27 +372,27 @@ class UserAPI extends AJAXHandler {
 	 *
 	 * Returns:
 	 * <ul>
-	 * <li>success � true if the account is valid, false if the username or password were incorrect</li>
-	 * <li>message � a reason why the method failed if success is false</li>
-	 * <li>holds � information about each hold including when it was placed, when it expires, and whether or not it is available for pickup.  Holds are broken into two sections: available and unavailable.  Available holds are ready for pickup.</li>
-	 * <li>Id � the record/bib id of the title being held</li>
-	 * <li>location � The location where the title will be picked up</li>
-	 * <li>expire � the date the hold will expire if it is unavailable or the date that it must be picked up if the hold is available</li>
-	 * <li>expireTime � the expire information in number of days since January 1, 1970 </li>
-	 * <li>create � the date the hold was originally placed</li>
-	 * <li>createTime � the create information in number of days since January 1, 1970</li>
-	 * <li>reactivate � The date the hold will be reactivated if the hold is suspended</li>
-	 * <li>reactivateTime � the reactivate information in number of days since January 1, 1970</li>
-	 * <li>available � whether or not the hold is available for pickup</li>
-	 * <li>position � the patron's position in the hold queue</li>
-	 * <li>frozen � whether or not the hold is frozen</li>
-	 * <li>itemId � the barcode of the item that filled the hold if the hold has been filled.</li>
-	 * <li>Status � a textual status of the item (Available, Suspended, Active, In Transit)</li>
+	 * <li>success  true if the account is valid, false if the username or password were incorrect</li>
+	 * <li>message  a reason why the method failed if success is false</li>
+	 * <li>holds  information about each hold including when it was placed, when it expires, and whether or not it is available for pickup.  Holds are broken into two sections: available and unavailable.  Available holds are ready for pickup.</li>
+	 * <li>Id  the record/bib id of the title being held</li>
+	 * <li>location  The location where the title will be picked up</li>
+	 * <li>expire  the date the hold will expire if it is unavailable or the date that it must be picked up if the hold is available</li>
+	 * <li>expireTime  the expire information in number of days since January 1, 1970 </li>
+	 * <li>create  the date the hold was originally placed</li>
+	 * <li>createTime  the create information in number of days since January 1, 1970</li>
+	 * <li>reactivate  The date the hold will be reactivated if the hold is suspended</li>
+	 * <li>reactivateTime  the reactivate information in number of days since January 1, 1970</li>
+	 * <li>available  whether or not the hold is available for pickup</li>
+	 * <li>position  the patron's position in the hold queue</li>
+	 * <li>frozen  whether or not the hold is frozen</li>
+	 * <li>itemId  the barcode of the item that filled the hold if the hold has been filled.</li>
+	 * <li>Status  a textual status of the item (Available, Suspended, Active, In Transit)</li>
 	 * </ul>
 	 *
 	 * Sample Call:
 	 * <code>
-	 * http://catalog.douglascountylibraries.org/API/UserAPI?method=getPatronHolds&username=23025003575917&password=7604
+	 * https://example.marmot.org/API/UserAPI?method=getPatronHolds&username=23025003575917&password=7604
 	 * </code>
 	 *
 	 * Sample Response:
@@ -458,7 +458,7 @@ class UserAPI extends AJAXHandler {
 	 * }
 	 * </code>
 	 *
-	 * @author Mark Noble <mnoble@turningleaftech.com>
+	 * @author Mark Noble <pika@marmot.org>
 	 */
 	function getPatronHolds(){
 		list($username, $password) = $this->loadUsernameAndPassword();
@@ -485,7 +485,7 @@ class UserAPI extends AJAXHandler {
 	 *
 	 * Sample Call:
 	 * <code>
-	 * http://catalog.douglascountylibraries.org/API/UserAPI?method=getPatronHoldsOverDrive&username=23025003575917&password=7604
+	 * https://example.marmot.org/API/UserAPI?method=getPatronHoldsOverDrive&username=23025003575917&password=7604
 	 * </code>
 	 *
 	 * Sample Response:
@@ -533,7 +533,7 @@ class UserAPI extends AJAXHandler {
 	 * }}
 	 * </code>
 	 *
-	 * @author Mark Noble <mnoble@turningleaftech.com>
+	 * @author Mark Noble <pika@marmot.org>
 	 */
 	function getPatronHoldsOverDrive(){
 		list($username, $password) = $this->loadUsernameAndPassword();
@@ -561,7 +561,7 @@ class UserAPI extends AJAXHandler {
 	 *
 	 * Sample Call:
 	 * <code>
-	 * http://catalog.douglascountylibraries.org/API/UserAPI?method=getPatronCheckedOutItemsOverDrive&username=23025003575917&password=7604
+	 * https://example.marmot.org/API/UserAPI?method=getPatronCheckedOutItemsOverDrive&username=23025003575917&password=7604
 	 * </code>
 	 *
 	 * Sample Response:
@@ -584,7 +584,7 @@ class UserAPI extends AJAXHandler {
 	 * }}
 	 * </code>
 	 *
-	 * @author Mark Noble <mnoble@turningleaftech.com>
+	 * @author Mark Noble <pika@marmot.org>
 	 */
 	function getPatronCheckedOutItemsOverDrive(){
 		list($username, $password) = $this->loadUsernameAndPassword();
@@ -615,7 +615,7 @@ class UserAPI extends AJAXHandler {
 	 *
 	 * Sample Call:
 	 * <code>
-	 * http://catalog.douglascountylibraries.org/API/UserAPI?method=getPatronOverDriveSummary&username=23025003575917&password=7604
+	 * https://example.marmot.org/API/UserAPI?method=getPatronOverDriveSummary&username=23025003575917&password=7604
 	 * </code>
 	 *
 	 * Sample Response:
@@ -631,7 +631,7 @@ class UserAPI extends AJAXHandler {
 	 * }}
 	 * </code>
 	 *
-	 * @author Mark Noble <mnoble@turningleaftech.com>
+	 * @author Mark Noble <pika@marmot.org>
 	 */
 	function getPatronOverDriveSummary(){
 		list($username, $password) = $this->loadUsernameAndPassword();
@@ -658,7 +658,7 @@ class UserAPI extends AJAXHandler {
 	 *
 	 * Sample Call:
 	 * <code>
-	 * http://catalog.douglascountylibraries.org/API/UserAPI?method=getPatronFines&username=23025003575917&password=7604
+	 * https://example.marmot.org/API/UserAPI?method=getPatronFines&username=23025003575917&password=7604
 	 * </code>
 	 *
 	 * Sample Response:
@@ -680,7 +680,7 @@ class UserAPI extends AJAXHandler {
 	 * }}
 	 * </code>
 	 *
-	 * @author Mark Noble <mnoble@turningleaftech.com>
+	 * @author Mark Noble <pika@marmot.org>
 	 */
 	function getPatronFines(){
 		list($username, $password) = $this->loadUsernameAndPassword();
@@ -724,7 +724,7 @@ class UserAPI extends AJAXHandler {
 	 *
 	 * Sample Call:
 	 * <code>
-	 * http://catalog.douglascountylibraries.org/API/UserAPI?method=getPatronCheckedOutItems&username=23025003575917&password=7604
+	 * https://example.marmot.org/API/UserAPI?method=getPatronCheckedOutItems&username=23025003575917&password=7604
 	 * </code>
 	 *
 	 * Sample Response:
@@ -755,7 +755,7 @@ class UserAPI extends AJAXHandler {
 	 * }}
 	 * </code>
 	 *
-	 * @author Mark Noble <mnoble@turningleaftech.com>
+	 * @author Mark Noble <pika@marmot.org>
 	 */
 	function getPatronCheckedOutItems(){
 		global $offlineMode;
@@ -763,6 +763,7 @@ class UserAPI extends AJAXHandler {
 			return array('success' => false, 'message' => 'Circulation system is offline');
 		}else{
 			list($username, $password) = $this->loadUsernameAndPassword();
+			/** @var User $user */
 			$user = UserAccount::validateAccount($username, $password);
 			if ($user && !PEAR_Singleton::isError($user)){
 				$allCheckedOut = $user->getMyCheckouts(false);
@@ -786,7 +787,7 @@ class UserAPI extends AJAXHandler {
 	 *
 	 * Sample Call:
 	 * <code>
-	 * http://catalog.douglascountylibraries.org/API/UserAPI?method=renewItem&username=23025003575917&password=7604&itemBarcode=33025021368319
+	 * https://example.marmot.org/API/UserAPI?method=renewItem&username=23025003575917&password=7604&itemBarcode=33025021368319
 	 * </code>
 	 *
 	 * Sample Response (failed renewal):
@@ -813,7 +814,7 @@ class UserAPI extends AJAXHandler {
 	 * }}
 	 * </code>
 	 *
-	 * @author Mark Noble <mnoble@turningleaftech.com>
+	 * @author Mark Noble <pika@marmot.org>
 	 */
 	function renewItem(){
 		list($username, $password) = $this->loadUsernameAndPassword();
@@ -839,7 +840,7 @@ class UserAPI extends AJAXHandler {
 	 *
 	 * Sample Call:
 	 * <code>
-	 * http://catalog.douglascountylibraries.org/API/UserAPI?method=renewAll&username=23025003575917&password=7604
+	 * https://example.marmot.org/API/UserAPI?method=renewAll&username=23025003575917&password=7604
 	 * </code>
 	 *
 	 * Sample Response:
@@ -850,7 +851,7 @@ class UserAPI extends AJAXHandler {
 	 * }}
 	 * </code>
 	 *
-	 * @author Mark Noble <mnoble@turningleaftech.com>
+	 * @author Mark Noble <pika@marmot.org>
 	 */
 	function renewAll(){
 		list($username, $password) = $this->loadUsernameAndPassword();
@@ -872,18 +873,18 @@ class UserAPI extends AJAXHandler {
 	 * <li>username - The barcode of the user.  Can be truncated to the last 7 or 9 digits.</li>
 	 * <li>password - The pin number for the user. </li>
 	 * <li>bibId    - The id of the record within the ILS.</li>
-	 * <li>campus   � the location where the patron would like to pickup the title (optional). If not provided, the patron's home location will be used.</li>
+	 * <li>campus    the location where the patron would like to pickup the title (optional). If not provided, the patron's home location will be used.</li>
 	 * </ul>
 	 *
 	 * Returns JSON encoded data as follows:
 	 * <ul>
-	 * <li>success � true if the account is valid and the hold could be placed, false if the username or password were incorrect or the hold could not be placed.</li>
-	 * <li>holdMessage � a reason why the method failed if success is false, or information about hold queue position if successful.</li>
+	 * <li>success  true if the account is valid and the hold could be placed, false if the username or password were incorrect or the hold could not be placed.</li>
+	 * <li>holdMessage  a reason why the method failed if success is false, or information about hold queue position if successful.</li>
 	 * </ul>
 	 *
 	 * Sample Call:
 	 * <code>
-	 * http://catalog.douglascountylibraries.org/API/UserAPI?method=renewAll&username=23025003575917&password=7604&bibId=1004012&campus=pa
+	 * https://example.marmot.org/API/UserAPI?method=renewAll&username=23025003575917&password=7604&bibId=1004012&campus=pa
 	 * </code>
 	 *
 	 * Sample Response (successful hold):
@@ -902,7 +903,7 @@ class UserAPI extends AJAXHandler {
 	 * }}
 	 * </code>
 	 *
-	 * @author Mark Noble <mnoble@turningleaftech.com>
+	 * @author Mark Noble <pika@marmot.org>
 	 */
 	function placeHold(){
 		list($username, $password) = $this->loadUsernameAndPassword();
@@ -970,13 +971,13 @@ class UserAPI extends AJAXHandler {
 	 *
 	 * Returns JSON encoded data as follows:
 	 * <ul>
-	 * <li>success � true if the account is valid and the hold could be placed, false if the username or password were incorrect or the hold could not be placed.</li>
-	 * <li>message � information about the process for display to the user.</li>
+	 * <li>success  true if the account is valid and the hold could be placed, false if the username or password were incorrect or the hold could not be placed.</li>
+	 * <li>message  information about the process for display to the user.</li>
 	 * </ul>
 	 *
 	 * Sample Call:
 	 * <code>
-	 * http://catalog.douglascountylibraries.org/API/UserAPI?method=placeOverDriveHold&username=23025003575917&password=1234&overDriveId=A3365DAC-EEC3-4261-99D3-E39B7C94A90F&format=420
+	 * https://example.marmot.org/API/UserAPI?method=placeOverDriveHold&username=23025003575917&password=1234&overDriveId=A3365DAC-EEC3-4261-99D3-E39B7C94A90F&format=420
 	 * </code>
 	 *
 	 * Sample Response:
@@ -987,7 +988,7 @@ class UserAPI extends AJAXHandler {
 	 * }}
 	 * </code>
 	 *
-	 * @author Mark Noble <mnoble@turningleaftech.com>
+	 * @author Mark Noble <pika@marmot.org>
 	 */
 	function placeOverDriveHold(){
 		list($username, $password) = $this->loadUsernameAndPassword();
@@ -1019,13 +1020,13 @@ class UserAPI extends AJAXHandler {
 	 *
 	 * Returns JSON encoded data as follows:
 	 * <ul>
-	 * <li>success � true if the account is valid and the hold could be cancelled, false if the username or password were incorrect or the hold could not be cancelled.</li>
-	 * <li>message � information about the process for display to the user.</li>
+	 * <li>success  true if the account is valid and the hold could be cancelled, false if the username or password were incorrect or the hold could not be cancelled.</li>
+	 * <li>message  information about the process for display to the user.</li>
 	 * </ul>
 	 *
 	 * Sample Call:
 	 * <code>
-	 * http://catalog.douglascountylibraries.org/API/UserAPI?method=cancelOverDriveHold&username=23025003575917&password=1234&overDriveId=A3365DAC-EEC3-4261-99D3-E39B7C94A90F&format=420
+	 * https://example.marmot.org/API/UserAPI?method=cancelOverDriveHold&username=23025003575917&password=1234&overDriveId=A3365DAC-EEC3-4261-99D3-E39B7C94A90F&format=420
 	 * </code>
 	 *
 	 * Sample Response:
@@ -1036,7 +1037,7 @@ class UserAPI extends AJAXHandler {
 	 * }}
 	 * </code>
 	 *
-	 * @author Mark Noble <mnoble@turningleaftech.com>
+	 * @author Mark Noble <pika@marmot.org>
 	 */
 	function cancelOverDriveHold(){
 		list($username, $password) = $this->loadUsernameAndPassword();
@@ -1047,7 +1048,7 @@ class UserAPI extends AJAXHandler {
 		if ($user && !PEAR_Singleton::isError($user)){
 			require_once ROOT_DIR . '/Drivers/OverDriveDriverFactory.php';
 			$driver = OverDriveDriverFactory::getDriver();
-			$result = $driver->cancelOverDriveHold($overDriveId, $format, $user);
+			$result = $driver->cancelOverDriveHold($overDriveId, $user);
 			return array('success' => $result['success'], 'message' => $result['message']);
 		}else{
 			return array('success' => false, 'message' => 'Login unsuccessful');
@@ -1070,13 +1071,13 @@ class UserAPI extends AJAXHandler {
 	 *
 	 * Returns JSON encoded data as follows:
 	 * <ul>
-	 * <li>success � true if the account is valid and the title could be removed from the wishlist, false if the username or password were incorrect or the hold could not be removed from the wishlist.</li>
-	 * <li>message � information about the process for display to the user.</li>
+	 * <li>success  true if the account is valid and the title could be removed from the wishlist, false if the username or password were incorrect or the hold could not be removed from the wishlist.</li>
+	 * <li>message  information about the process for display to the user.</li>
 	 * </ul>
 	 *
 	 * Sample Call:
 	 * <code>
-	 * http://catalog.douglascountylibraries.org/API/UserAPI?method=addItemToOverDriveCart&username=23025003575917&password=1234&overDriveId=A3365DAC-EEC3-4261-99D3-E39B7C94A90F&format=420
+	 * https://example.marmot.org/API/UserAPI?method=addItemToOverDriveCart&username=23025003575917&password=1234&overDriveId=A3365DAC-EEC3-4261-99D3-E39B7C94A90F&format=420
 	 * </code>
 	 *
 	 * Sample Response (fail):
@@ -1095,23 +1096,23 @@ class UserAPI extends AJAXHandler {
 	 * }}
 	 * </code>
 	 *
-	 * @author Mark Noble <mnoble@turningleaftech.com>
+	 * @author Mark Noble <pika@marmot.org>
 	 */
-	function addItemToOverDriveCart(){
-		list($username, $password) = $this->loadUsernameAndPassword();
-		$overDriveId = $_REQUEST['overDriveId'];
-		$format      = $_REQUEST['format'];
-
-		$user = UserAccount::validateAccount($username, $password);
-		if ($user && !PEAR_Singleton::isError($user)){
-			require_once ROOT_DIR . '/Drivers/OverDriveDriverFactory.php';
-			$driver      = OverDriveDriverFactory::getDriver();
-			$holdMessage = $driver->addItemToOverDriveCart($overDriveId, $format, $user);
-			return array('success' => $holdMessage['success'], 'message' => $holdMessage['message']);
-		}else{
-			return array('success' => false, 'message' => 'Login unsuccessful');
-		}
-	}
+//	function addItemToOverDriveCart(){
+//		list($username, $password) = $this->loadUsernameAndPassword();
+//		$overDriveId = $_REQUEST['overDriveId'];
+//		$format      = $_REQUEST['format'];
+//
+//		$user = UserAccount::validateAccount($username, $password);
+//		if ($user && !PEAR_Singleton::isError($user)){
+//			require_once ROOT_DIR . '/Drivers/OverDriveDriverFactory.php';
+//			$driver      = OverDriveDriverFactory::getDriver();
+//			$holdMessage = $driver->addItemToOverDriveCart($overDriveId, $format, $user);
+//			return array('success' => $holdMessage['success'], 'message' => $holdMessage['message']);
+//		}else{
+//			return array('success' => false, 'message' => 'Login unsuccessful');
+//		}
+//	}
 
 	/**
 	 * Checkout an item in OverDrive by first adding to the cart and then processing the cart.
@@ -1128,13 +1129,13 @@ class UserAPI extends AJAXHandler {
 	 *
 	 * Returns JSON encoded data as follows:
 	 * <ul>
-	 * <li>success � true if the account is valid and the title could be checked out, false if the username or password were incorrect or the hold could not be checked out.</li>
-	 * <li>message � information about the process for display to the user.</li>
+	 * <li>success  true if the account is valid and the title could be checked out, false if the username or password were incorrect or the hold could not be checked out.</li>
+	 * <li>message  information about the process for display to the user.</li>
 	 * </ul>
 	 *
 	 * Sample Call:
 	 * <code>
-	 * http://catalog.douglascountylibraries.org/API/UserAPI?method=checkoutOverDriveItem&username=23025003575917&password=1234&overDriveId=A3365DAC-EEC3-4261-99D3-E39B7C94A90F&format=420
+	 * https://example.marmot.org/API/UserAPI?method=checkoutOverDriveItem&username=23025003575917&password=1234&overDriveId=A3365DAC-EEC3-4261-99D3-E39B7C94A90F&format=420
 	 * </code>
 	 *
 	 * Sample Response:
@@ -1145,7 +1146,7 @@ class UserAPI extends AJAXHandler {
 	 * }}
 	 * </code>
 	 *
-	 * @author Mark Noble <mnoble@turningleaftech.com>
+	 * @author Mark Noble <pika@marmot.org>
 	 */
 	function checkoutOverDriveItem(){
 		list($username, $password) = $this->loadUsernameAndPassword();
@@ -1157,7 +1158,7 @@ class UserAPI extends AJAXHandler {
 			require_once ROOT_DIR . '/Drivers/OverDriveDriverFactory.php';
 			$driver        = OverDriveDriverFactory::getDriver();
 			$lendingPeriod = isset($_REQUEST['lendingPeriod']) ? $_REQUEST['lendingPeriod'] : -1;
-			$holdMessage   = $driver->checkoutOverDriveItem($overDriveId, $format, $lendingPeriod, $user);
+			$holdMessage   = $driver->checkoutOverDriveItem($overDriveId, $user/*, $format, $lendingPeriod*/);
 			return array('success' => $holdMessage['success'], 'message' => $holdMessage['message']);
 		}else{
 			return array('success' => false, 'message' => 'Login unsuccessful');
@@ -1176,13 +1177,13 @@ class UserAPI extends AJAXHandler {
 	 *
 	 * Returns JSON encoded data as follows:
 	 * <ul>
-	 * <li>success � true if the cart was processed, false if the username or password were incorrect or the hold could not be removed from the wishlist.</li>
-	 * <li>message � information about the process for display to the user.</li>
+	 * <li>success  true if the cart was processed, false if the username or password were incorrect or the hold could not be removed from the wishlist.</li>
+	 * <li>message  information about the process for display to the user.</li>
 	 * </ul>
 	 *
 	 * Sample Call:
 	 * <code>
-	 * http://catalog.douglascountylibraries.org/API/UserAPI?method=processOverDriveCart&username=23025003575917&password=1234&lendingPeriod=14
+	 * https://example.marmot.org/API/UserAPI?method=processOverDriveCart&username=23025003575917&password=1234&lendingPeriod=14
 	 * </code>
 	 *
 	 * Sample Response:
@@ -1193,23 +1194,23 @@ class UserAPI extends AJAXHandler {
 	 * }}
 	 * </code>
 	 *
-	 * @author Mark Noble <mnoble@turningleaftech.com>
+	 * @author Mark Noble <pika@marmot.org>
 	 *
 	 */
-	function processOverDriveCart(){
-		list($username, $password) = $this->loadUsernameAndPassword();
-
-		$user = UserAccount::validateAccount($username, $password);
-		if ($user && !PEAR_Singleton::isError($user)){
-			require_once ROOT_DIR . '/Drivers/OverDriveDriverFactory.php';
-			$driver            = OverDriveDriverFactory::getDriver();
-			$lendingPeriod     = isset($_REQUEST['lendingPeriod']) ? $_REQUEST['lendingPeriod'] : -1;
-			$processCartResult = $driver->processOverDriveCart($user, $lendingPeriod);
-			return array('success' => $processCartResult['success'], 'message' => $processCartResult['message']);
-		}else{
-			return array('success' => false, 'message' => 'Login unsuccessful');
-		}
-	}
+//	function processOverDriveCart(){
+//		list($username, $password) = $this->loadUsernameAndPassword();
+//
+//		$user = UserAccount::validateAccount($username, $password);
+//		if ($user && !PEAR_Singleton::isError($user)){
+//			require_once ROOT_DIR . '/Drivers/OverDriveDriverFactory.php';
+//			$driver            = OverDriveDriverFactory::getDriver();
+//			$lendingPeriod     = isset($_REQUEST['lendingPeriod']) ? $_REQUEST['lendingPeriod'] : -1;
+//			$processCartResult = $driver->processOverDriveCart($user, $lendingPeriod);
+//			return array('success' => $processCartResult['success'], 'message' => $processCartResult['message']);
+//		}else{
+//			return array('success' => false, 'message' => 'Login unsuccessful');
+//		}
+//	}
 
 	/**
 	 * Cancel a hold that was placed within the ILS.
@@ -1218,19 +1219,19 @@ class UserAPI extends AJAXHandler {
 	 * <ul>
 	 * <li>username - The barcode of the user.  Can be truncated to the last 7 or 9 digits.</li>
 	 * <li>password - The pin number for the user. </li>
-	 * <li>availableholdselected[] � an array of holds that should be canceled.  Each item should be specfied as <bibId>:<itemId>. BibId and itemId can be retrieved as part of the getPatronHolds API</li>
+	 * <li>availableholdselected[]  an array of holds that should be canceled.  Each item should be specfied as <bibId>:<itemId>. BibId and itemId can be retrieved as part of the getPatronHolds API</li>
 	 * <li>waitingholdselected[] - an array of holds that are not ready for pickup that should be canceled.  Each item should be specified as <bibId>:0.</li>
 	 * </ul>
 	 *
 	 * Returns:
 	 * <ul>
-	 * <li>success � true if the account is valid and the hold could be canceled, false if the username or password were incorrect or the hold could not be canceled.</li>
-	 * <li>holdMessage � a reason why the method failed if success is false</li>
+	 * <li>success  true if the account is valid and the hold could be canceled, false if the username or password were incorrect or the hold could not be canceled.</li>
+	 * <li>holdMessage  a reason why the method failed if success is false</li>
 	 * </ul>
 	 *
 	 * Sample Call:
 	 * <code>
-	 * http://catalog.douglascountylibraries.org/API/UserAPI?method=cancelHold&username=23025003575917&password=1234&waitingholdselected[]=1003198
+	 * https://example.marmot.org/API/UserAPI?method=cancelHold&username=23025003575917&password=1234&waitingholdselected[]=1003198
 	 * </code>
 	 *
 	 * Sample Response:
@@ -1253,7 +1254,7 @@ class UserAPI extends AJAXHandler {
 	 * }}
 	 * </code>
 	 *
-	 * @author Mark Noble <mnoble@turningleaftech.com>
+	 * @author Mark Noble <pika@marmot.org>
 	 */
 	function cancelHold(){
 		list($username, $password) = $this->loadUsernameAndPassword();
@@ -1291,13 +1292,13 @@ class UserAPI extends AJAXHandler {
 	 *
 	 * Returns:
 	 * <ul>
-	 * <li>success � true if the account is valid and the hold could be frozen, false if the username or password were incorrect or the hold could not be frozen.</li>
-	 * <li>holdMessage � a reason why the method failed if success is false</li>
+	 * <li>success  true if the account is valid and the hold could be frozen, false if the username or password were incorrect or the hold could not be frozen.</li>
+	 * <li>holdMessage  a reason why the method failed if success is false</li>
 	 * </ul>
 	 *
 	 * Sample Call:
 	 * <code>
-	 * http://catalog.douglascountylibraries.org/API/UserAPI?method=freezeHold&username=23025003575917&password=1234&waitingholdselected[]=1004012:0&suspendDate=1/25/2012
+	 * https://example.marmot.org/API/UserAPI?method=freezeHold&username=23025003575917&password=1234&waitingholdselected[]=1004012:0&suspendDate=1/25/2012
 	 * </code>
 	 *
 	 * Sample Response:
@@ -1308,7 +1309,7 @@ class UserAPI extends AJAXHandler {
 	 * }}
 	 * </code>
 	 *
-	 * @author Mark Noble <mnoble@turningleaftech.com>
+	 * @author Mark Noble <pika@marmot.org>
 	 */
 	function freezeHold(){
 		list($username, $password) = $this->loadUsernameAndPassword();
@@ -1335,13 +1336,13 @@ class UserAPI extends AJAXHandler {
 	 *
 	 * Returns:
 	 * <ul>
-	 * <li>success � true if the account is valid and the hold could be activated, false if the username or password were incorrect or the hold could not be activated.</li>
-	 * <li>holdMessage � a reason why the method failed if success is false</li>
+	 * <li>success  true if the account is valid and the hold could be activated, false if the username or password were incorrect or the hold could not be activated.</li>
+	 * <li>holdMessage  a reason why the method failed if success is false</li>
 	 * </ul>
 	 *
 	 * Sample Call:
 	 * <code>
-	 * http://catalog.douglascountylibraries.org/API/UserAPI?method=activateHold&username=23025003575917&password=1234&waitingholdselected[]=1004012:0
+	 * https://example.marmot.org/API/UserAPI?method=activateHold&username=23025003575917&password=1234&waitingholdselected[]=1004012:0
 	 * </code>
 	 *
 	 * Sample Response:
@@ -1352,7 +1353,7 @@ class UserAPI extends AJAXHandler {
 	 * }}
 	 * </code>
 	 *
-	 * @author Mark Noble <mnoble@turningleaftech.com>
+	 * @author Mark Noble <pika@marmot.org>
 	 */
 	function activateHold(){
 		list($username, $password) = $this->loadUsernameAndPassword();
@@ -1377,13 +1378,13 @@ class UserAPI extends AJAXHandler {
 	 *
 	 * Returns:
 	 * <ul>
-	 * <li>success � true if the account is valid and the hold could be canceled, false if the username or password were incorrect or the hold could not be canceled.</li>
-	 * <li>holdMessage � a reason why the method failed if success is false</li>
+	 * <li>success  true if the account is valid and the hold could be canceled, false if the username or password were incorrect or the hold could not be canceled.</li>
+	 * <li>holdMessage  a reason why the method failed if success is false</li>
 	 * </ul>
 	 *
 	 * Sample Call:
 	 * <code>
-	 * http://catalog.douglascountylibraries.org/API/UserAPI?method=getPatronReadingHistory&username=23025003575917&password=1234
+	 * https://example.marmot.org/API/UserAPI?method=getPatronReadingHistory&username=23025003575917&password=1234
 	 * </code>
 	 *
 	 * Sample Response:
@@ -1421,7 +1422,7 @@ class UserAPI extends AJAXHandler {
 	 * }}
 	 * </code>
 	 *
-	 * @author Mark Noble <mnoble@turningleaftech.com>
+	 * @author Mark Noble <pika@marmot.org>
 	 */
 	function getPatronReadingHistory(){
 		global $offlineMode;
@@ -1440,6 +1441,11 @@ class UserAPI extends AJAXHandler {
 		}
 	}
 
+	/**
+	 *  Process to load a user's reading history from the ILS from the Pika cron process UpdateReadingHistory
+	 *
+	 * @return array
+	 */
 	function loadReadingHistoryFromIls(){
 		global $offlineMode;
 		if ($offlineMode){
@@ -1488,12 +1494,12 @@ class UserAPI extends AJAXHandler {
 	 *
 	 * Returns:
 	 * <ul>
-	 * <li>success � true if the account is valid and the reading history could be turned on, false if the username or password were incorrect or the reading history could not be turned on.</li>
+	 * <li>success  true if the account is valid and the reading history could be turned on, false if the username or password were incorrect or the reading history could not be turned on.</li>
 	 * </ul>
 	 *
 	 * Sample Call:
 	 * <code>
-	 * http://catalog.douglascountylibraries.org/API/UserAPI?method=optIntoReadingHistory&username=23025003575917&password=1234
+	 * https://example.marmot.org/API/UserAPI?method=optIntoReadingHistory&username=23025003575917&password=1234
 	 * </code>
 	 *
 	 * Sample Response:
@@ -1501,14 +1507,14 @@ class UserAPI extends AJAXHandler {
 	 * {"result":{"success":true}}
 	 * </code>
 	 *
-	 * @author Mark Noble <mnoble@turningleaftech.com>
+	 * @author Mark Noble <pika@marmot.org>
 	 */
 	function optIntoReadingHistory(){
 		list($username, $password) = $this->loadUsernameAndPassword();
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !PEAR_Singleton::isError($user)){
-			$this->getCatalogConnection()->doReadingHistoryAction('optIn', array());
-			return array('success' => true);
+			$result = $user->optInReadingHistory();
+			return array('success' => $result);
 		}else{
 			return array('success' => false, 'message' => 'Login unsuccessful');
 		}
@@ -1525,12 +1531,12 @@ class UserAPI extends AJAXHandler {
 	 *
 	 * Returns:
 	 * <ul>
-	 * <li>success � true if the account is valid and the reading history could be turned off, false if the username or password were incorrect or the reading history could not be turned off.</li>
+	 * <li>success  true if the account is valid and the reading history could be turned off, false if the username or password were incorrect or the reading history could not be turned off.</li>
 	 * </ul>
 	 *
 	 * Sample Call:
 	 * <code>
-	 * http://catalog.douglascountylibraries.org/API/UserAPI?method=optOutOfReadingHistory&username=23025003575917&password=1234
+	 * https://example.marmot.org/API/UserAPI?method=optOutOfReadingHistory&username=23025003575917&password=1234
 	 * </code>
 	 *
 	 * Sample Response:
@@ -1538,14 +1544,14 @@ class UserAPI extends AJAXHandler {
 	 * {"result":{"success":true}}
 	 * </code>
 	 *
-	 * @author Mark Noble <mnoble@turningleaftech.com>
+	 * @author Mark Noble <pika@marmot.org>
 	 */
 	function optOutOfReadingHistory(){
 		list($username, $password) = $this->loadUsernameAndPassword();
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !PEAR_Singleton::isError($user)){
-			$this->getCatalogConnection()->doReadingHistoryAction('optOut', array());
-			return array('success' => true);
+			$result = $user->optOutReadingHistory();
+			return array('success' => $result);
 		}else{
 			return array('success' => false, 'message' => 'Login unsuccessful');
 		}
@@ -1563,26 +1569,26 @@ class UserAPI extends AJAXHandler {
 	 *
 	 * Returns:
 	 * <ul>
-	 * <li>success � true if the account is valid and the reading history could cleared, false if the username or password were incorrect or the reading history could not be cleared.</li>
+	 * <li>success  true if the account is valid and the reading history could cleared, false if the username or password were incorrect or the reading history could not be cleared.</li>
 	 * </ul>
 	 *
 	 * Sample Call:
 	 * <code>
-	 * http://catalog.douglascountylibraries.org/API/UserAPI?method=deleteAllFromReadingHistory&username=23025003575917&password=1234
+	 * https://example.marmot.org/API/UserAPI?method=deleteAllFromReadingHistory&username=23025003575917&password=1234
 	 * </code>
 	 *
 	 * Sample Response:
 	 * <code>
 	 * </code>
 	 *
-	 * @author Mark Noble <mnoble@turningleaftech.com>
+	 * @author Mark Noble <pika@marmot.org>
 	 */
 	function deleteAllFromReadingHistory(){
 		list($username, $password) = $this->loadUsernameAndPassword();
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !PEAR_Singleton::isError($user)){
-			$this->getCatalogConnection()->doReadingHistoryAction('deleteAll', array());
-			return array('success' => true);
+			$result = $user->deleteAllReadingHistory();
+			return array('success' => $result);
 		}else{
 			return array('success' => false, 'message' => 'Login unsuccessful');
 		}
@@ -1600,12 +1606,12 @@ class UserAPI extends AJAXHandler {
 	 *
 	 * Returns:
 	 * <ul>
-	 * <li>success � true if the account is valid and the items could be removed from the reading history, false if the username or password were incorrect or the items could not be removed from the reading history.</li>
+	 * <li>success  true if the account is valid and the items could be removed from the reading history, false if the username or password were incorrect or the items could not be removed from the reading history.</li>
 	 * </ul>
 	 *
 	 * Sample Call:
 	 * <code>
-	 * http://catalog.douglascountylibraries.org/API/UserAPI?method=deleteSelectedFromReadingHistory&username=23025003575917&password=1234&selected[]=25855
+	 * https://example.marmot.org/API/UserAPI?method=deleteSelectedFromReadingHistory&username=23025003575917&password=1234&selected[]=25855
 	 * </code>
 	 *
 	 * Sample Response:
@@ -1613,15 +1619,15 @@ class UserAPI extends AJAXHandler {
 	 * {"result":{"success":true}}
 	 * </code>
 	 *
-	 * @author Mark Noble <mnoble@turningleaftech.com>
+	 * @author Mark Noble <pika@marmot.org>
 	 */
 	function deleteSelectedFromReadingHistory(){
 		list($username, $password) = $this->loadUsernameAndPassword();
-		$selectedTitles = $_REQUEST['selected'];
-		$user           = UserAccount::validateAccount($username, $password);
+		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !PEAR_Singleton::isError($user)){
-			$this->getCatalogConnection()->doReadingHistoryAction('deleteMarked', $selectedTitles);
-			return array('success' => true);
+			$selectedTitles = $_REQUEST['selected'];
+			$result         = $user->deleteMarkedReadingHistory($selectedTitles);
+			return array('success' => $result);
 		}else{
 			return array('success' => false, 'message' => 'Login unsuccessful');
 		}

@@ -84,7 +84,8 @@ trait PatronReadingHistoryOperations {
 	 * @param  User   $patron
 	 * @param  string $action One of the following; deleteAll, deleteMarked, optIn, optOut
 	 * @return mixed
+	 * @deprecated
 	 */
-	public abstract function doReadingHistoryAction($patron, $action, $selectedTitles);
+//	public abstract function doReadingHistoryAction($patron, $action, $selectedTitles);
 
 }

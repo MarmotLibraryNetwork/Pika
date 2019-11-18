@@ -130,16 +130,7 @@ class Location extends DB_DataObject {
 		}
 
 		//Look lookup information for display in the user interface
-		$location = new Location();
-		$location->orderBy('displayName');
-		$location->find();
-		$locationList           = array();
-		$locationLookupList     = array();
-		$locationLookupList[-1] = '<No Nearby Location>';
-		while ($location->fetch()){
-			$locationLookupList[$location->locationId] = $location->displayName;
-			$locationList[$location->locationId]       = clone $location;
-		}
+		$locationLookupList = self::getLocationLookupList();
 
 		// get the structure for the location's hours
 		$hoursStructure = LocationHours::getObjectStructure();
@@ -1560,6 +1551,23 @@ class Location extends DB_DataObject {
 			}
 		}
 		return $hours;
+	}
+
+	/**
+	 * @return array
+	 */
+	public static function getLocationLookupList(){
+		$location = new Location();
+		$location->orderBy('displayName');
+		$location->find();
+		$locationList           = array();
+		$locationLookupList     = array();
+		$locationLookupList[-1] = '<No Nearby Location>';
+		while ($location->fetch()){
+			$locationLookupList[$location->locationId] = $location->displayName;
+			$locationList[$location->locationId]       = clone $location;
+		}
+		return $locationLookupList;
 	}
 
 	public function getLocationInformation(){
