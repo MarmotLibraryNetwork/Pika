@@ -664,7 +664,7 @@ class CatalogConnection
 				$curTitle['user']             = $user->getNameAndLibraryLabel();
 				$curTitle['userId']           = $user->id;
 				$curTitle['allowFreezeHolds'] = $user->getHomeLibrary()->allowFreezeHolds;
-				if (!isset($curTitle['sortTitle'])){
+				if (!isset($curTitle['sortTitle']) && !empty($curTitle['title'])){
 					$curTitle['sortTitle'] = $curTitle['title'];
 				}
 				$holds[$section][$key] = $curTitle;
@@ -978,9 +978,8 @@ class CatalogConnection
 
 		$activeHistoryTitles = array();
 		while ($readingHistoryDB->fetch()){
-			$historyEntry = $this->getHistoryEntryForDatabaseEntry($readingHistoryDB);
-
-			$key = $historyEntry['source'] . ':' . $historyEntry['id'];
+			$historyEntry              = $this->getHistoryEntryForDatabaseEntry($readingHistoryDB);
+			$key                       = $historyEntry['source'] . ':' . $historyEntry['id'];
 			$activeHistoryTitles[$key] = $historyEntry;
 		}
 
@@ -988,21 +987,26 @@ class CatalogConnection
 		$checkouts = $patron->getMyCheckouts(false);
 		foreach ($checkouts as $checkout){
 			$sourceId = '?';
-			$source = $checkout['checkoutSource'];
-			if ($source == 'OverDrive'){
+			$source   = $checkout['checkoutSource'];
+			switch ($source){
+				case 'OverDrive':
 				$sourceId = $checkout['overDriveId'];
-			}elseif ($source == 'Hoopla'){
+					break;
+				case 'Hoopla':
 				$sourceId = $checkout['hooplaId'];
-			}elseif ($source == 'ILS'){
-				$sourceId = $checkout['fullId'];
-				//TODO: I believe below is the better approach. The above creates duplicates. (The reading history update cron process does not do this.)
-//				$sourceId = $checkout['recordId'];
-//				// This needs to be the record Id only and not the full Id
-
-			}elseif ($source == 'eContent'){
-				$source = $checkout['recordType'];
-				$sourceId = $checkout['id'];
+					break;
+				case 'eContent':
+					$source   = $checkout['recordType'];
+					$sourceId = $checkout['id'];
+					break;
+				default:
+				case 'ILS':
+					$source = 'ils'; // make all ILS sources lower case too
+				case 'ils':
+					$sourceId = $checkout['recordId'];
+					break;
 			}
+
 			$key = $source . ':' . $sourceId;
 			if (array_key_exists($key, $activeHistoryTitles)){
 				unset($activeHistoryTitles[$key]);

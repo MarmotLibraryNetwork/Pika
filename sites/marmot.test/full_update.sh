@@ -204,9 +204,6 @@ cd /usr/local/vufind-plus/vufind/record_grouping; java -server -XX:+UseG1GC -jar
 #	cd /usr/local/vufind-plus/vufind/reindexer; nice -n -3 java -server -XX:+UseG1GC -jar reindexer.jar ${PIKASERVER} >> ${OUTPUT_FILE}
 #fi
 
-# Truncate Continuous Reindexing list of changed items
-cat /dev/null >| /data/vufind-plus/${PIKASERVER}/marc/changed_items_to_process.csv
-
 # Wait 2 minutes for solr replication to finish; then delete the inactive solr indexes folders older than 48 hours
 # Note: Running in the full update because we know there is a freshly created index.
 sleep 2m

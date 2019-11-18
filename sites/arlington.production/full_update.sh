@@ -74,9 +74,6 @@ cd /usr/local/vufind-plus/vufind/record_grouping; java -server -XX:+UseG1GC -Xmx
 #Full Reindex
 cd /usr/local/vufind-plus/vufind/reindexer; java -server -XX:+UseG1GC -Xmx2G -jar reindexer.jar ${PIKASERVER} fullReindex >> ${OUTPUT_FILE}
 
-# Truncate Continous Reindexing list of changed items
-cat /dev/null >| /data/vufind-plus/${PIKASERVER}/marc/changed_items_to_process.csv
-
 # Delete any exports over 7 days
 find /data/vufind-plus/arlington.production/marc_export/ -mindepth 1 -maxdepth 1 -name *.mrc -type f -mtime +7 -delete
 
