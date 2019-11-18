@@ -52,6 +52,7 @@ use Location;
 use MarcRecord;
 use RecordDriverFactory;
 use User;
+use ReadingHistoryEntry;
 
 
 class Sierra {
@@ -1832,15 +1833,59 @@ class Sierra {
 	 * @return bool
 	 */
 	public function deleteMarkedReadingHistory($patron, $selectedTitles) {
-		$selectedTitles = $selectedTitles;
+
+		$bibIds = [];
+		foreach($selectedTitles as $key => $val) {
+			$selectedId = trim($val, 'rsh');
+			$h = new ReadingHistoryEntry();
+			$h->id = $selectedId;
+			$h->find(true);
+			if($h) {
+				$bibId = 0;
+			}
+		}
+
+		$patronId = $this->getPatronId($patron->barcode);
+		if(!$patronId) {
+			return false;
+		}
+
+		$operation = "patrons/" . $patronId . "/checkouts/history";
+
+		$offset = 0;
+		$total  = 0;
+		$count  = 0;
+		$limit  = 2000;
+
+		$historyEntries = [];
+		 do {
+		 	$params = [
+				 'limit' => $limit,
+				 'offset'=> $offset
+		  ];
+			$rawHistory = $this->_doRequest($operation, $params);
+			if(!$rawHistory) {
+				return false;
+			}
+
+			$historyEntries = array_merge($rawHistory->entries, $historyEntries);
+			$offset += $limit;
+			$total   = $rawHistory->total;
+			$count   = count($historyEntries) + 1;
+		} while ($count < $total);
+
+		// selected -> get bib
+		// format bib # for reading history search
+		// iterate entries stristr bib #
+		// if found get history id
+
 	}
 
 	public function hasNativeReadingHistory(){
 		return true;
 	}
 
-	public function getReadingHistory($patron, $page = 1, $recordsPerPage = -1, $sortOption = "checkedOut")
-	{
+	public function getReadingHistory($patron, $page = 1, $recordsPerPage = -1, $sortOption = "checkedOut") {
 			// history enabled?
 		if($patron->trackReadingHistory != 1) {
 			return ['historyActive' => false, 'numTitles' => 0, 'titles' => []];

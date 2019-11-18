@@ -114,7 +114,7 @@ class MyAccount_AJAX extends AJAXHandler {
 					'message' => 'Successfully removed linked account.',
 				);
 				// todo: since this doesn't call a patron driver have to remove cache here for Pika/PatronDrivers/Sierra
-				// this is pretty sloppy need a better way to control caching on objects -- getters and setters would be best.
+				// this is pretty sloppy need a better way to control caching on objects -- setters would be best.
 				global $memCache;
 				$patronCacheKey = "patron_".$user->barcode."_patron";
 				if($memCache->get($patronCacheKey)) {
