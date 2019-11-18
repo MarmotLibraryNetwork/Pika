@@ -68,9 +68,7 @@ class MyAccount_AJAX extends AJAXHandler {
 		}else{
 			$username = $_REQUEST['username'];
 			$password = $_REQUEST['password'];
-
 			$accountToLink = UserAccount::validateAccount($username, $password);
-
 			if ($accountToLink){
 				$user      = UserAccount::getLoggedInUser();
 				$addResult = $user->addLinkedUser($accountToLink);
@@ -79,6 +77,12 @@ class MyAccount_AJAX extends AJAXHandler {
 						'result'  => true,
 						'message' => 'Successfully linked accounts.',
 					);
+					// todo: since this doesn't call a patron driver have to remove cache here for Pika/PatronDrivers/Sierra
+					global $memCache;
+					$patronCacheKey = "patron_".$user->barcode."_patron";
+					if($memCache->get($patronCacheKey)) {
+						$memCache->delete($patronCacheKey);
+					}
 				}else{ // insert failure or user is blocked from linking account or account & account to link are the same account
 					$result = array(
 						'result'  => false,
@@ -92,7 +96,6 @@ class MyAccount_AJAX extends AJAXHandler {
 				);
 			}
 		}
-
 		return $result;
 	}
 
@@ -110,6 +113,13 @@ class MyAccount_AJAX extends AJAXHandler {
 					'result'  => true,
 					'message' => 'Successfully removed linked account.',
 				);
+				// todo: since this doesn't call a patron driver have to remove cache here for Pika/PatronDrivers/Sierra
+				// this is pretty sloppy need a better way to control caching on objects -- setters would be best.
+				global $memCache;
+				$patronCacheKey = "patron_".$user->barcode."_patron";
+				if($memCache->get($patronCacheKey)) {
+					$memCache->delete($patronCacheKey);
+				}
 			}else{
 				$result = array(
 					'result'  => false,
