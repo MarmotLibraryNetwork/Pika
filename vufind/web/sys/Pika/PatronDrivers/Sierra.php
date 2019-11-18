@@ -68,6 +68,7 @@ class Sierra {
 	/* @var $apiLastError false|string false if no error or last error message */
 	private $apiLastError = false;
 	// Needs to be public
+	/** @var  \AccountProfile $accountProfile */
 	public $accountProfile;
 	/* @var $patronBarcode string The patrons barcode */
 	private $patronBarcode;
@@ -79,7 +80,7 @@ class Sierra {
 	private $urlIdRegExp = "/.*\/(\d*)$/";
 
 
-	public function __construct($accountProfile) {
+	public function __construct(\AccountProfile $accountProfile) {
 		global $configArray;
 
 		$this->configArray    = $configArray;
@@ -160,7 +161,7 @@ class Sierra {
 				$innReach = new InnReach();
 				$titleAndAuthor = $innReach->getCheckoutTitleAuthor($checkoutId);
 
-				$checkout['checkoutSource'] = 'ILS';
+				$checkout['checkoutSource'] = $this->accountProfile->recordSource;
 				$checkout['id']             = $checkoutId;
 				$checkout['dueDate']        = strtotime($entry->dueDate);
 				$checkout['checkoutDate']   = strtotime($entry->outDate);
@@ -191,7 +192,7 @@ class Sierra {
 			$recordXD  = $this->getCheckDigit($bid);
 			$bibId = '.b'.$bid.$recordXD;
 
-			$checkout['checkoutSource'] = 'ILS';
+			$checkout['checkoutSource'] = $this->accountProfile->recordSource;
 			$checkout['recordId']       = $bibId;
 			$checkout['id']             = $checkoutId;
 			$checkout['dueDate']        = strtotime($entry->dueDate);
@@ -1207,7 +1208,7 @@ class Sierra {
 		$displayName  = $patron->getNameAndLibraryLabel();
 		$pikaPatronId = $patron->id;
 		// can we change pickup location?
-		$pickupLocations = $patron->getValidPickupBranches('ils');
+		$pickupLocations = $patron->getValidPickupBranches($this->accountProfile->recordSource);
 		if(is_array($pickupLocations)) {
 			if (count($pickupLocations) > 1) {
 				$canUpdatePL = true;
@@ -1222,7 +1223,7 @@ class Sierra {
 		$unavailableHolds = [];
 		foreach ($holds->entries as $hold) {
 			// standard stuff
-			$h['holdSource']      = 'ILS';
+			$h['holdSource']      = $this->accountProfile->recordSource;
 			$h['userId']          = $pikaPatronId;
 			$h['user']            = $displayName;
 
@@ -1795,21 +1796,96 @@ class Sierra {
 		return true;
 	}
 
-	public function getReadingHistory($patron, $page = 1, $recordsPerPage = -1, $sortOption = "checkedOut")
-	{
-			// history enabled?
-		if($patron->trackReadingHistory != 1) {
+	public function getReadingHistory($patron, $page = 1, $recordsPerPage = -1, $sortOption = "checkedOut"){
+		// history enabled?
+		if ($patron->trackReadingHistory != 1){
 			return ['historyActive' => false, 'numTitles' => 0, 'titles' => []];
 		}
 
-		$history = $this->loadReadingHistoryFromIls($patron);
-		if(!$history) {
+
+		$patronId = $this->getPatronId($patron->barcode);
+
+		$patronReadingHistoryCacheKey = "patron_" . $patron->barcode . "_history";
+		if ($patronReadingHistory = $this->memCache->get($patronReadingHistoryCacheKey)){
+			$this->logger->info("Found reading history in memcache:" . $patronReadingHistoryCacheKey);
+			return $patronReadingHistory;
+		}
+		$operation = "patrons/" . $patronId . "/checkouts/history";
+		$params    = ['limit'     => 2000, // Sierra api max results as of 9-12-2019
+		              'sortField' => 'outDate',
+		              'sortOrder' => 'desc'];
+		$history   = $this->_doRequest($operation, $params);
+
+		if (!$history){
 			return false;
 		}
 
+		if ($history->total == 0){
+			return [
+				'numTitles' => 0,
+				'titles'    => []
+			];
+		}
+		$patronPikaId   = $patronId;
+		$readingHistory = [];
+		foreach ($history->entries as $historyEntry){
+			$titleEntry = [];
+			// make the Pika style bib Id
+			preg_match($this->urlIdRegExp, $historyEntry->bib, $bibMatch);
+			$x     = $this->getCheckDigit($bibMatch[1]);
+			$bibId = '.b' . $bibMatch[1] . $x; // full bib id
+			// get the checkout id --> becomes itemindex
+			preg_match($this->urlIdRegExp, $historyEntry->id, $coIdMatch);
+			$itemindex = $coIdMatch[1];
+			// format the date
+			$ts           = strtotime($historyEntry->outDate);
+			$checkOutDate = date('m-d-Y', $ts);
+			// get the rest from the MARC record
+			$record = new MarcRecord($this->accountProfile->recordSource . ':' . $bibId);
+
+			if ($record->isValid()){
+				$titleEntry['permanentId'] = $record->getPermanentId();
+				$titleEntry['title']       = $record->getTitle();
+				$titleEntry['author']      = $record->getAuthor();
+				$titleEntry['format']      = $record->getFormat();
+				$titleEntry['title_sort']  = $record->getSortableTitle();
+				$titleEntry['ratingData']  = $record->getRatingData();
+				$titleEntry['permanentId'] = $record->getPermanentId();
+				$titleEntry['linkUrl']     = $record->getGroupedWorkDriver()->getLinkUrl();
+				$titleEntry['coverUrl']    = $record->getBookcoverUrl('medium');
+				$titleEntry['format']      = $record->getFormats();
+			}else{
+				$titleEntry['permanentId'] = '';
+				$titleEntry['ratingData']  = '';
+				$titleEntry['permanentId'] = '';
+				$titleEntry['linkUrl']     = '';
+				$titleEntry['coverUrl']    = '';
+				// todo: should fall back to api here?
+				//  YES for below
+				$titleEntry['title']      = '';
+				$titleEntry['author']     = '';
+				$titleEntry['format']     = '';
+				$titleEntry['title_sort'] = '';
+			}
+			$titleEntry['checkout']     = $checkOutDate; //TODO use timestamp
+			$titleEntry['shortId']      = $bibMatch[1];
+			$titleEntry['borrower_num'] = $patronPikaId;
+			$titleEntry['recordId']     = $bibId;
+			$titleEntry['itemindex']    = $itemindex; // checkout id
+			$readingHistory[]           = $titleEntry;
+			// clear out before
+			unset($titleEntry);
+		}
+		$total   = count($readingHistory);
+		$history = ['numTitles' => $total,
+		            'titles'    => $readingHistory];
+
+		$this->memCache->set($patronReadingHistoryCacheKey, $history, 21600);
+		$this->logger->info("Saving reading history in memcache:" . $patronReadingHistoryCacheKey);
+
 		$history['historyActive'] = true;
 
-		if($history['numTitles'] == 0) {
+		if ($history['numTitles'] == 0){
 			return $history;
 		}
 
@@ -1818,15 +1894,15 @@ class Sierra {
 		//$history['titles'] = $search;
 		//return $history;
 
-		$historyPages = array_chunk($history['titles'], $recordsPerPage);
-		$pageIndex = $page - 1;
+		$historyPages      = array_chunk($history['titles'], $recordsPerPage);
+		$pageIndex         = $page - 1;
 		$history['titles'] = $historyPages[$pageIndex];
 
 		return $history;
 	}
 
 	public function searchReadingHistory($patron, $search) {
-		$history = $this->loadReadingHistoryFromIls($patron);
+		$history = $this->getReadingHistory($patron);
 
 		$found = array_filter($history['titles'], function($k) use ($search) {
       return stristr($k['title'], $search) || stristr($k['author'], $search);
@@ -1839,26 +1915,28 @@ class Sierra {
 	 * Get patron's reading history
 	 *
 	 * GET patrons/{patron_id}/checkouts/history
-	 * This method is meant to be used by the Pika cron process load patron's reading history.
+	 * This method is meant to be used by the Pika cron process load patron's reading history. It returns only the information needed
+	 * to add reading history entries into the database.
 	 *
 	 * @param User     $patron         Patron Object
-	 * @param null|int $loadAdditional ????????
+	 * @param null|int $loadAdditional The batch of reading history entries to load, eg 2nd batch, 3rd, etc
 	 * @return array|false [titles]=>[borrower_num(Pika ID), recordId(bib ID), permanentId(grouped work ID), title,
 	 *                     author, checkout]
 	 * @throws ErrorException
 	 */
 	public function loadReadingHistoryFromIls($patron, $loadAdditional = null){
-		$patronId = $this->getPatronId($patron->barcode);
+		$patronId       = $this->getPatronId($patron->barcode);
+		$operation      = "patrons/" . $patronId . "/checkouts/history";
+		$limitPerCall   = 2000; // Sierra api max results as of 9-12-2019
+		$params         = ['limit'     => $limitPerCall,
+		                   'sortField' => 'outDate',
+		                   'sortOrder' => 'desc'];
+		$loadAdditional = empty($loadAdditional) ? 0 : $loadAdditional;
+		$startAt        = $loadAdditional * $limitPerCall;
 
-		$patronReadingHistoryCacheKey = "patron_".$patron->barcode."_history";
-		if($patronReadingHistory = $this->memCache->get($patronReadingHistoryCacheKey)) {
-			$this->logger->info("Found reading history in memcache:".$patronReadingHistoryCacheKey);
-			return $patronReadingHistory;
+		if ($startAt){
+			$params['offset'] = $startAt;
 		}
-		$operation = "patrons/".$patronId."/checkouts/history";
-		$params = ['limit'     => 2000, // Sierra api max results as of 9-12-2019
-		           'sortField' => 'outDate',
-		           'sortOrder' => 'desc'];
 		$history = $this->_doRequest($operation, $params);
 
 		if(!$history) {
@@ -1871,54 +1949,44 @@ class Sierra {
 				'titles'     => []
 			];
 		}
-		$patronPikaId = $patronId;
+		$additionalLoadsRequired = false;
+		if ($history->total > $startAt + $limitPerCall){
+			$additionalLoadsRequired = true;
+			$nextRound               = empty($loadAdditional) ? 1 : $loadAdditional + 1;
+		}
+
 		$readingHistory = [];
 		foreach($history->entries as $historyEntry) {
 			$titleEntry = [];
 			// make the Pika style bib Id
 			preg_match($this->urlIdRegExp, $historyEntry->bib, $bibMatch);
-			$x = $this->getCheckDigit($bibMatch[1]);
-			$bibId = '.b'.$bibMatch[1].$x; // full bib id
-			// get the checkout id --> becomes itemindex
+			$x     = $this->getCheckDigit($bibMatch[1]);
+			$bibId = '.b' . $bibMatch[1] . $x; // full bib id
+
+			// get the checkout id --> becomes ilsReadingHistoryId
 			preg_match($this->urlIdRegExp, $historyEntry->id, $coIdMatch);
-			$itemindex = $coIdMatch[1];
-			// format the date
-			$ts = strtotime($historyEntry->outDate);
-			$checkOutDate = date('m-d-Y', $ts);
+			$ilsReadingHistoryId               = $coIdMatch[1];
+			$ts                                = strtotime($historyEntry->outDate);
+			$titleEntry['checkout']            = $ts;
+			$titleEntry['recordId']            = $bibId;
+			$titleEntry['ilsReadingHistoryId'] = $ilsReadingHistoryId; // checkout id
+			$titleEntry['source']              = $this->accountProfile->recordSource; // Record source for this catalog that the user is attached to)
+
 			// get the rest from the MARC record
 			$record = new MarcRecord($this->accountProfile->recordSource.':'.$bibId);
-
 			if ($record->isValid()) {
 				$titleEntry['permanentId'] = $record->getPermanentId();
 				$titleEntry['title']       = $record->getTitle();
 				$titleEntry['author']      = $record->getAuthor();
 				$titleEntry['format']      = $record->getFormat();
-				$titleEntry['title_sort']  = $record->getSortableTitle();
-				$titleEntry['ratingData']  = $record->getRatingData();
-				$titleEntry['permanentId'] = $record->getPermanentId();
-				$titleEntry['linkUrl']     = $record->getGroupedWorkDriver()->getLinkUrl();
-				$titleEntry['coverUrl']    = $record->getBookcoverUrl('medium');
-				$titleEntry['format']      = $record->getFormats();
 			} else {
+				$titleEntry['permanentId'] = '';
 				// todo: should fall back to api here?
-				$titleEntry['permanentId'] = '';
-				$titleEntry['ratingData']  = '';
-				$titleEntry['permanentId'] = '';
-				$titleEntry['linkUrl']     = '';
-				$titleEntry['coverUrl']    = '';
-				$titleEntry['format']      = '';
-
+				//  YES for below
 				$titleEntry['title']       = '';
 				$titleEntry['author']      = '';
 				$titleEntry['format']      = '';
-				$titleEntry['title_sort']  = '';
 			}
-			$titleEntry['checkout']     = $checkOutDate;
-			$titleEntry['shortId']      = $bibMatch[1];
-			$titleEntry['borrower_num'] = $patronPikaId;
-			$titleEntry['recordId']     = $bibId;
-			$titleEntry['itemindex']    = $itemindex; // checkout id
-			$titleEntry['details']      = ''; // todo: nothing to put here?
 			$readingHistory[] = $titleEntry;
 			// clear out before
 			unset($titleEntry);
@@ -1926,9 +1994,9 @@ class Sierra {
 		$total = count($readingHistory);
 		$return = ['numTitles'  => $total,
 		           'titles'     => $readingHistory];
-
-		$this->memCache->set($patronReadingHistoryCacheKey, $return, 21600);
-		$this->logger->info("Saving reading history in memcache:".$patronReadingHistoryCacheKey);
+		if ($additionalLoadsRequired) {
+			$return['nextRound'] = $nextRound;
+		}
 
 		return $return;
 	}
