@@ -1194,7 +1194,8 @@ public class SierraExportAPIMain {
 			JSONObject marcResults = getMarcJSONFromSierraApiURL(sierraUrl);
 			if (marcResults != null) {
 				if (marcResults.has("httpStatus")) {
-					if (marcResults.getInt("code") == 107) {
+					final int code = marcResults.getInt("code");
+					if (code == 107) {
 						//TODO: test if the API Confirms is deleted/suppressed, then remove ( This can happen when the deletion was originally missed)
 						//This record was deleted
 						if (isDeletedInAPI(id)) {
@@ -1206,9 +1207,15 @@ public class SierraExportAPIMain {
 						}
 						logger.error("Received error code 107 but record is not deleted or suppressed " + id);
 						return false;
+					} else if (code == 100){
+						if (marcResults.has("name") && marcResults.getString("name").startsWith("InvalidMARCException")){
+							logger.warn("Sierra API reporting '" + marcResults.getString("name") + "', please investigate & correct bib " + getfullSierraBibId(id));
+							return false;
+						}
+
 					} else {
 						logger.error("Error response calling " + sierraUrl);
-						logger.error("Unknown error, code : " + marcResults.getInt("code") + ", " + marcResults);
+						logger.error("Unknown error, code : " + code + ", " + marcResults);
 						return false;
 					}
 				}
