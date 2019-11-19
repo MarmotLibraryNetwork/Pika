@@ -1989,18 +1989,28 @@ class Sierra {
 				$titleEntry['coverUrl']    = $record->getBookcoverUrl('medium');
 				$titleEntry['format']      = $record->getFormats();
 			} else {
-				// todo: should fall back to api here?
+				// see if we can get info from the api
+				$operation = 'bibs/'.$bibMatch[1];
+				$params = [
+					'fields' => 'deleted,title,author,materialType,normTitle'
+				];
+				$bibRes = $this->_doRequest($operation, $params);
+				if(!$bibRes || $bibRes->deleted == true) {
+					$titleEntry['title']      = '';
+					$titleEntry['author']     = '';
+					$titleEntry['format']     = '';
+					$titleEntry['title_sort'] = '';
+				} else {
+					$titleEntry['title']      = $bibRes->title;
+					$titleEntry['author']     = $bibRes->author;
+					$titleEntry['format']     = $bibRes->materialType;
+					$titleEntry['title_sort'] = $bibRes->normTitle;
+				}
 				$titleEntry['permanentId'] = '';
 				$titleEntry['ratingData']  = '';
 				$titleEntry['permanentId'] = '';
 				$titleEntry['linkUrl']     = '';
 				$titleEntry['coverUrl']    = '';
-				$titleEntry['format']      = '';
-
-				$titleEntry['title']       = '';
-				$titleEntry['author']      = '';
-				$titleEntry['format']      = '';
-				$titleEntry['title_sort']  = '';
 			}
 			$titleEntry['checkout']     = $checkOutDate;
 			$titleEntry['shortId']      = $bibMatch[1];
