@@ -283,7 +283,6 @@
 										<div class="col-xs-4"><label for="smsNotices">{translate text='Receive SMS/Text Messages'}:</label></div>
 										<div class="col-xs-8">
 											{if $edit == true && $canUpdateContactInfo == true}
-												<input type="checkbox" name="smsNotices" id="smsNotices" {if $profile->mobileNumber}checked='checked'{/if} data-switch="">
 												<p class="help-block alert alert-warning">
 													SMS/Text Messages are sent <strong>in addition</strong> to postal mail/e-mail/phone alerts. <strong>Message and data rates may apply.</strong>
 													<br><br>
@@ -292,7 +291,7 @@
 													<strong>To opt-out from SMS Alerts, U.S.-based patrons can send a text message with the word STOP, STOP ALL, END, QUIT, CANCEL, or
 														 UNSUBSCRIBE to 82453 or 35143 from the mobile phone number specified during the opt-in process.</strong>
 													<br><br>
-													<a href="{if $smsTermsLink}{$smsTermsLink}{else}{$path}/Help/Home?topic=smsTerms{/if}" data-title="SMS Notice Terms" class="modalDialogTrigger">View Terms and Conditions</a>
+													<a href="https://www.saclibrarycatalog.org/smsterms~S51" data-title="SMS Notice Terms" target="_blank">View Terms and Conditions</a>
 												</p>
 											{/if}
 										</div>
