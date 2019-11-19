@@ -17,9 +17,11 @@ namespace Pika\PatronDrivers;
 class InnReach {
 
 	private $connectionString;
+	private $configArray;
 
 	public function __construct() {
 		global $configArray;
+		$this->configArray = $configArray;
 		$this->connectionString = $configArray['Catalog']['sierra_conn_php'];
 	}
 
@@ -77,6 +79,23 @@ EOT;
 
 	private function _connect() {
 		return \pg_connect($this->connectionString);
+	}
+
+	public function getInnReachCover() {
+		$coverUrl = '';
+		// grab the theme for Inn reach cover
+		$themeParts = explode(',', $this->configArray['Site']['theme']);
+		// start with the base theme and work up to local theme checking for image
+		$themeParts = array_reverse($themeParts);
+		$path = $this->configArray['Site']['local'];
+		foreach ($themeParts as $themePart) {
+			$themePart = trim($themePart);
+			$imagePath = $path . '/interface/themes/' . $themePart . '/images/InnReachCover.png';
+			if (file_exists($imagePath)) {
+				$coverUrl = '/interface/themes/' . $themePart . '/images/InnReachCover.png';
+			}
+		}
+		return $coverUrl;
 	}
 
 }

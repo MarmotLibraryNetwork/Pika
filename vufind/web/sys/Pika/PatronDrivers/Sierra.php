@@ -155,13 +155,9 @@ class Sierra {
 				///////////////
 				// INNREACH CHECKOUT
 				///////////////
-
-				// $theme to look for cover image
-				$theme = $this->configArray['Site']['theme'];
-
 				$innReach = new InnReach();
 				$titleAndAuthor = $innReach->getCheckoutTitleAuthor($checkoutId);
-
+				$coverUrl = $innReach->getInnReachCover();
 				$checkout['checkoutSource'] = 'ILS';
 				$checkout['id']             = $checkoutId;
 				$checkout['dueDate']        = strtotime($entry->dueDate);
@@ -170,13 +166,12 @@ class Sierra {
 				$checkout['recordId']       = 0;
 				$checkout['renewIndicator'] = $checkoutId;
 				$checkout['renewMessage']   = '';
-				$checkout['coverUrl']       = '/interface/themes/'.$theme.'/images/InnReachCover.png';
+				$checkout['coverUrl']       = $coverUrl;
 				$checkout['barcode']        = $entry->barcode;
 				$checkout['request']        = $entry->callNumber;
 				$checkout['author']         = $titleAndAuthor['author'];
 				$checkout['title']          = $titleAndAuthor['title'];
 				$checkout['title_sort']     = $titleAndAuthor['sort_title'];
-				// todo: can innreach checkouts be renewed?
 				$checkout['canrenew']       = true;
 
 				$checkouts[] = $checkout;
@@ -1385,9 +1380,10 @@ class Sierra {
 				// get the hold id
 				preg_match($this->urlIdRegExp, $hold->id, $mIr);
 				$innReachHoldId = $mIr[1];
-				// We need to get title and author info from Sierra DNA as none will be found in Sierra API
+
 				$innReach = new InnReach();
 				$titleAndAuthor = $innReach->getHoldTitleAuthor($innReachHoldId);
+				$coverImage = $innReach->getInnReachCover();
 				if(!$titleAndAuthor) {
 					$h['title']     = 'Unknown';
 					$h['author']    = 'Unknown';
@@ -1399,11 +1395,7 @@ class Sierra {
 				}
 				$h['freezeable']         = false;
 				$h['locationUpdateable'] = false;
-
-				// grab the theme for Inn reach cover
-				$themeParts = explode(',', $this->configArray['Site']['theme']);
-				$theme = $themeParts[0];
-				$h['coverUrl'] = '/interface/themes/' . $theme . '/images/InnReachCover.png';
+				$h['coverUrl']           = $coverImage;
 			} else {
 				///////////////
 				// ILS HOLD
@@ -2468,6 +2460,7 @@ class Sierra {
 		}
 		return $content;
 	}
+
 
 	/**
 	 * @param $itemId
