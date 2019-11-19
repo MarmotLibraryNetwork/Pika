@@ -415,10 +415,10 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 	}
 
 	private void createAndAddOrderItem(GroupedWorkSolr groupedWork, RecordInfo recordInfo, OrderInfo orderItem, Record record) {
-		ItemInfo itemInfo = new ItemInfo();
-		String orderNumber = orderItem.getOrderRecordId();
-		String location = orderItem.getLocationCode();
-		if (location == null){
+		ItemInfo itemInfo    = new ItemInfo();
+		String   orderNumber = orderItem.getOrderRecordId();
+		String   location    = orderItem.getLocationCode();
+		if (location == null) {
 			logger.warn("No location set for order " + orderNumber + " skipping");
 			return;
 		}
@@ -443,7 +443,7 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 
 		String status = orderItem.getStatus();
 
-		if (isOrderItemValid(status, null)){
+		if (isOrderItemValid(status, null)) {
 			recordInfo.addItem(itemInfo);
 		}
 	}
