@@ -108,7 +108,7 @@ class MyAccount_Profile extends MyAccount
 			$interface->assign('allowAccountLinking', $allowAccountLinking);
 
 			// Determine Pickup Locations
-			$pickupLocations = $patron->getValidPickupBranches($patron->getAccountProfile()->recordSource);
+			$pickupLocations = $patron->getValidPickupBranches($patron->getAccountProfile()->recordSource, false);
 			$interface->assign('pickupLocations', $pickupLocations);
 
 			// Save/Update Actions

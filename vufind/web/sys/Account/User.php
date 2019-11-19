@@ -1081,7 +1081,7 @@ class User extends DB_DataObject {
 	 *
 	 * @return Location[]
 	 */
-	public function getValidPickupBranches($recordSource){
+	public function getValidPickupBranches($recordSource, $includeLinkedAccounts = true){
 		//Get the list of pickup branch locations for display in the user interface.
 		// using $user to be consistent with other code use of getPickupBranches()
 		$userLocation = new Location();
@@ -1090,37 +1090,39 @@ class User extends DB_DataObject {
 		}else{
 			$locations = array();
 		}
-		$linkedUsers = $this->getLinkedUsers();
-		foreach ($linkedUsers as $linkedUser){
-			if ($recordSource == $linkedUser->source){
-				$linkedUserLocation        = new Location();
-				$linkedUserPickupLocations = $linkedUserLocation->getPickupBranches($linkedUser, null, true);
-				foreach ($linkedUserPickupLocations as $sortingKey => $pickupLocation){
-					foreach ($locations as $mainSortingKey => $mainPickupLocation){
-						// Check For Duplicated Pickup Locations
-						if ($mainPickupLocation->libraryId == $pickupLocation->libraryId && $mainPickupLocation->locationId == $pickupLocation->locationId){
-							// Merge Linked Users that all have this pick-up location
-							$pickupUsers                     = array_unique(array_merge($mainPickupLocation->pickupUsers, $pickupLocation->pickupUsers));
-							$mainPickupLocation->pickupUsers = $pickupUsers;
-							$pickupLocation->pickupUsers     = $pickupUsers;
+		if($includeLinkedAccounts) {
+			$linkedUsers = $this->getLinkedUsers();
+			foreach ($linkedUsers as $linkedUser){
+				if ($recordSource == $linkedUser->source){
+					$linkedUserLocation        = new Location();
+					$linkedUserPickupLocations = $linkedUserLocation->getPickupBranches($linkedUser, null, true);
+					foreach ($linkedUserPickupLocations as $sortingKey => $pickupLocation){
+						foreach ($locations as $mainSortingKey => $mainPickupLocation){
+							// Check For Duplicated Pickup Locations
+							if ($mainPickupLocation->libraryId == $pickupLocation->libraryId && $mainPickupLocation->locationId == $pickupLocation->locationId){
+								// Merge Linked Users that all have this pick-up location
+								$pickupUsers                     = array_unique(array_merge($mainPickupLocation->pickupUsers, $pickupLocation->pickupUsers));
+								$mainPickupLocation->pickupUsers = $pickupUsers;
+								$pickupLocation->pickupUsers     = $pickupUsers;
 
-							// keep location with better sort key, remove the other
-							if ($mainSortingKey == $sortingKey || $mainSortingKey[0] < $sortingKey[0]){
-								unset ($linkedUserPickupLocations[$sortingKey]);
-							}elseif ($mainSortingKey[0] == $sortingKey[0]){
-								if (strcasecmp($mainSortingKey, $sortingKey) > 0){
-									unset ($locations[$mainSortingKey]);
-								}else{
+								// keep location with better sort key, remove the other
+								if ($mainSortingKey == $sortingKey || $mainSortingKey[0] < $sortingKey[0]){
 									unset ($linkedUserPickupLocations[$sortingKey]);
+								}elseif ($mainSortingKey[0] == $sortingKey[0]){
+									if (strcasecmp($mainSortingKey, $sortingKey) > 0){
+										unset ($locations[$mainSortingKey]);
+									}else{
+										unset ($linkedUserPickupLocations[$sortingKey]);
+									}
+								}else{
+									unset ($locations[$mainSortingKey]);
 								}
-							}else{
-								unset ($locations[$mainSortingKey]);
-							}
 
+							}
 						}
 					}
+					$locations = array_merge($locations, $linkedUserPickupLocations);
 				}
-				$locations = array_merge($locations, $linkedUserPickupLocations);
 			}
 		}
 		ksort($locations);
