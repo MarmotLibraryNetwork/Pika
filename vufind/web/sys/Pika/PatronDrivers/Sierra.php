@@ -429,9 +429,19 @@ class Sierra {
 			}
 		}
 		// this assumes the name is in form last, first middle
-		$nameParts = explode(',', $pInfo->names[0]);
-		$firstName = trim($nameParts[1]);
-		$lastName  = trim($nameParts[0]);
+		if(stristr($pInfo->names[0], ',')) {
+			$nameParts = explode(',', $pInfo->names[0]);
+			$firstName = trim($nameParts[1]);
+			$lastName  = trim($nameParts[0]);
+
+			// only spaces assume last name is last
+		} else {
+			$nameParts = explode(' ', $pInfo->names[0], 2);
+			$firstName = trim($nameParts[0]);
+			if(isset($nameParts[1])) {
+				$lastName  = trim($nameParts[1]);
+			}
+		}
 		if($firstName != $patron->firstname || $lastName != $patron->lastname) {
 			$updatePatron = true;
 			$patron->firstname = $firstName;
