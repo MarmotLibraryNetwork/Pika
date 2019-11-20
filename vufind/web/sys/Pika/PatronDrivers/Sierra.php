@@ -433,8 +433,7 @@ class Sierra {
 			$nameParts = explode(',', $pInfo->names[0]);
 			$firstName = trim($nameParts[1]);
 			$lastName  = trim($nameParts[0]);
-
-			// only spaces assume last name is last
+			// only spaces --assume last name is last
 		} else {
 			$nameParts = explode(' ', $pInfo->names[0], 2);
 			$firstName = trim($nameParts[0]);
@@ -780,7 +779,7 @@ class Sierra {
 					$homeLibraryCode = $val;
 					break;
 				case 'notices':
-					if(!empty($val)) {
+					if(!empty($val) && $val != '') {
 						$notices = $val;
 					} else {
 						$notices = '-';
