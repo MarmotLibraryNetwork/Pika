@@ -512,25 +512,27 @@ class Sierra {
 		// 6.2 check phones
 		$homePhone   = '';
 		$mobilePhone = '';
-		foreach($pInfo->phones as $phone) {
-			if($phone->type == 't') {
-				$homePhone  = $phone->number;
-			} elseif ($phone->type == 'o') {
-				$mobilePhone = $phone->number;
-			} elseif ($phone->type == 'p') {
-				$patron->workPhone = $phone->number;
+		if(is_set($pInfo->phones && is_array($pInfo->phones))){
+			foreach($pInfo->phones as $phone) {
+				if($phone->type == 't') {
+					$homePhone  = $phone->number;
+				} elseif ($phone->type == 'o') {
+					$mobilePhone = $phone->number;
+				} elseif ($phone->type == 'p') {
+					$patron->workPhone = $phone->number;
+				}
 			}
-		}
-		// try home phone first then mobile phone
-		if(!empty($homePhone) && $patron->phone != $homePhone) {
-			$updatePatron = true;
-			$patron->phone = $homePhone;
-		} elseif(!isset($homePhone) && isset($mobilePhone) && $patron->phone != $mobilePhone) {
-			$updatePatron = true;
-			$patron->phone = $mobilePhone;
-		} else {
-			if(empty($patron->phone)) {
-				$patron->phone = '';
+			// try home phone first then mobile phone
+			if(!empty($homePhone) && $patron->phone != $homePhone) {
+				$updatePatron = true;
+				$patron->phone = $homePhone;
+			} elseif(!isset($homePhone) && isset($mobilePhone) && $patron->phone != $mobilePhone) {
+				$updatePatron = true;
+				$patron->phone = $mobilePhone;
+			} else {
+				if(empty($patron->phone)) {
+					$patron->phone = '';
+				}
 			}
 		}
 		if(!isset($patron->phone)) {
