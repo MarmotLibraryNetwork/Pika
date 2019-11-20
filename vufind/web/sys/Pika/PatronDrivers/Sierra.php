@@ -512,7 +512,7 @@ class Sierra {
 		// 6.2 check phones
 		$homePhone   = '';
 		$mobilePhone = '';
-		if(is_set($pInfo->phones && is_array($pInfo->phones))){
+		if(isset($pInfo->phones) && is_array($pInfo->phones)){
 			foreach($pInfo->phones as $phone) {
 				if($phone->type == 't') {
 					$homePhone  = $phone->number;
