@@ -156,13 +156,10 @@ class Sierra {
 				///////////////
 				// INNREACH CHECKOUT
 				///////////////
-
-				// $theme to look for cover image
-				$theme = $this->configArray['Site']['theme'];
-
 				$innReach = new InnReach();
 				$titleAndAuthor = $innReach->getCheckoutTitleAuthor($checkoutId);
-
+				$coverUrl = $innReach->getInnReachCover();
+        
 				$checkout['checkoutSource'] = $this->accountProfile->recordSource;
 				$checkout['id']             = $checkoutId;
 				$checkout['dueDate']        = strtotime($entry->dueDate);
@@ -171,13 +168,12 @@ class Sierra {
 				$checkout['recordId']       = 0;
 				$checkout['renewIndicator'] = $checkoutId;
 				$checkout['renewMessage']   = '';
-				$checkout['coverUrl']       = '/interface/themes/'.$theme.'/images/InnReachCover.png';
+				$checkout['coverUrl']       = $coverUrl;
 				$checkout['barcode']        = $entry->barcode;
 				$checkout['request']        = $entry->callNumber;
 				$checkout['author']         = $titleAndAuthor['author'];
 				$checkout['title']          = $titleAndAuthor['title'];
 				$checkout['title_sort']     = $titleAndAuthor['sort_title'];
-				// todo: can innreach checkouts be renewed?
 				$checkout['canrenew']       = true;
 
 				$checkouts[] = $checkout;
@@ -1386,9 +1382,10 @@ class Sierra {
 				// get the hold id
 				preg_match($this->urlIdRegExp, $hold->id, $mIr);
 				$innReachHoldId = $mIr[1];
-				// We need to get title and author info from Sierra DNA as none will be found in Sierra API
+
 				$innReach = new InnReach();
 				$titleAndAuthor = $innReach->getHoldTitleAuthor($innReachHoldId);
+				$coverImage = $innReach->getInnReachCover();
 				if(!$titleAndAuthor) {
 					$h['title']     = 'Unknown';
 					$h['author']    = 'Unknown';
@@ -1400,11 +1397,7 @@ class Sierra {
 				}
 				$h['freezeable']         = false;
 				$h['locationUpdateable'] = false;
-
-				// grab the theme for Inn reach cover
-				$themeParts = explode(',', $this->configArray['Site']['theme']);
-				$theme = $themeParts[0];
-				$h['coverUrl'] = '/interface/themes/' . $theme . '/images/InnReachCover.png';
+				$h['coverUrl']           = $coverImage;
 			} else {
 				///////////////
 				// ILS HOLD
@@ -2070,12 +2063,29 @@ class Sierra {
 				$titleEntry['author']      = $record->getAuthor();
 				$titleEntry['format']      = $record->getFormat();
 			} else {
+
+				// see if we can get info from the api
+				$operation = 'bibs/'.$bibMatch[1];
+				$params = [
+					'fields' => 'deleted,title,author,materialType,normTitle'
+				];
+				$bibRes = $this->_doRequest($operation, $params);
+				if(!$bibRes || $bibRes->deleted == true) {
+					$titleEntry['title']      = '';
+					$titleEntry['author']     = '';
+					$titleEntry['format']     = '';
+					$titleEntry['title_sort'] = '';
+				} else {
+					$titleEntry['title']      = $bibRes->title;
+					$titleEntry['author']     = $bibRes->author;
+					$titleEntry['format']     = $bibRes->materialType;
+					$titleEntry['title_sort'] = $bibRes->normTitle;
+				}
 				$titleEntry['permanentId'] = '';
-				// todo: should fall back to api here?
-				//  YES for below
-				$titleEntry['title']       = '';
-				$titleEntry['author']      = '';
-				$titleEntry['format']      = '';
+				$titleEntry['ratingData']  = '';
+				$titleEntry['permanentId'] = '';
+				$titleEntry['linkUrl']     = '';
+				$titleEntry['coverUrl']    = '';
 			}
 			$readingHistory[] = $titleEntry;
 			// clear out before
@@ -2527,6 +2537,7 @@ class Sierra {
 		}
 		return $content;
 	}
+
 
 	/**
 	 * @param $itemId
