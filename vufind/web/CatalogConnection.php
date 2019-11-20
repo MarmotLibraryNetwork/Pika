@@ -116,6 +116,7 @@ class CatalogConnection
 	 * @return mixed On success, an associative array with specific function keys
 	 * and values; on failure, false.
 	 * @access public
+	 * @deprecated Just use method_exists(); The additional functionality doesn't come into effect
 	 */
 	public function checkFunction($function)
 	{
@@ -575,77 +576,191 @@ class CatalogConnection
 	 * @param   string  $action         The action to perform
 	 * @param   array   $selectedTitles The titles to do the action on if applicable
 	 */
-	function doReadingHistoryAction($patron, $action, $selectedTitles){
-		if (($patron->trackReadingHistory && $patron->initialReadingHistoryLoaded) || ! $this->driver->hasNativeReadingHistory()){
-			if ($action == 'deleteMarked'){
-				//Remove titles from database (do not remove from ILS)
-				foreach ($selectedTitles as $id => $titleId){
-					list($source, $sourceId) = explode('_', $titleId);
+//	function doReadingHistoryAction($patron, $action, $selectedTitles = array()){
+//		if (($patron->trackReadingHistory && $patron->initialReadingHistoryLoaded) || ! $this->driver->hasNativeReadingHistory()){
+//			if ($action == 'deleteMarked'){
+//			}elseif ($action == 'deleteAll'){
+//
+//			}elseif ($action == 'optOut'){
+//			}
+//		}else{
+//			return $this->driver->doReadingHistoryAction($patron, $action, $selectedTitles);
+//		}
+//		return $result;
+//	}
+
+	/**
+	 * @param User $patron
+	 * @return bool
+	 */
+	public function optInReadingHistory($patron){
+		$driverHasReadingHistory = $this->driver->hasNativeReadingHistory();
+		//Opt in within the ILS if possible
+		if ($driverHasReadingHistory){
+			if (method_exists($this->driver, 'optInReadingHistory')){
+				$result = $this->driver->optInReadingHistory($patron);
+				if (!$result){
+					return false;
+				}
+			} elseif (method_exists($this->driver, 'doReadingHistoryAction')){
+				//Deprecated process
+				$this->driver->doReadingHistoryAction($patron, 'optIn');
+			}
+		}
+
+		//Opt in within Pika since the ILS does not seem to implement this functionality
+		$patron->trackReadingHistory = true;
+		$result = $patron->update();
+		return $result !== false;  // The update can return 0 for no rows affected
+	}
+
+	/**
+	 * @param User $patron
+	 * @return bool
+	 */
+	public function optOutReadingHistory($patron){
+		$success                 = true;
+		$driverHasReadingHistory = $this->driver->hasNativeReadingHistory();
+
+		//Opt out within the ILS if possible
+		if ($driverHasReadingHistory){
+
+			//First run delete all
+			if (method_exists($this->driver, 'deleteAllReadingHistory')){
+				$result = $this->driver->deleteAllReadingHistory($patron);
+				if (!$result){
+					$success = false;
+					global $logger;
+					$logger->log('Failed to delete all reading history in ILS for an opt out for user ' . $patron->id, PEAR_LOG_WARNING);
+				}
+			}elseif (method_exists($this->driver, 'doReadingHistoryAction')){
+				//Deprecated process
+				$this->driver->doReadingHistoryAction($patron, 'deleteAll');
+			}
+
+			// Now opt of reading history in the ILS
+			if (method_exists($this->driver, 'optOutReadingHistory')){
+				$result = $this->driver->optOutReadingHistory($patron);
+				if (!$result){
+					$success = false;
+					global $logger;
+					$logger->log('Failed to opt out of reading history in ILS for user ' . $patron->id, PEAR_LOG_WARNING);
+				}
+			} elseif (method_exists($this->driver, 'doReadingHistoryAction')){
+				//Deprecated process
+				$this->driver->doReadingHistoryAction($patron, 'optOut');
+			}
+		}
+
+			//Delete the reading history (permanently this time since we are opting out)
+			$readingHistoryDB         = new ReadingHistoryEntry();
+			$readingHistoryDB->userId = $patron->id;
+			$result                   = $readingHistoryDB->delete();
+			if ($result !== false){  // The delete can return 0 for no rows affected
+				$success = false;
+				global $logger;
+				$logger->log('Failed to delete all reading history entries in Pika for user ' . $patron->id, PEAR_LOG_WARNING);
+			}
+
+			//Opt out within Pika since the ILS does not seem to implement this functionality
+			$patron->trackReadingHistory         = false;
+			$patron->initialReadingHistoryLoaded = false;
+			$result                              = $patron->update();
+			if ($result !== false){  // The update can return 0 for no rows affected
+				$success = false;
+			}
+
+			return $success;
+	}
+
+	/**
+	 * @param $patron
+	 * @return boolean
+	 */
+	public function deleteAllReadingHistory($patron){
+		if (is_a($patron, 'User') && !empty($patron->id)){
+			//Remove all titles from database
+			$success                  = true;
+			$readingHistoryDB         = new ReadingHistoryEntry();
+			$readingHistoryDB->userId = $patron->id;
+			$readingHistoryDB->find();
+			while ($readingHistoryDB->fetch()){
+				// Mark as deleted instead of deleting
+				$readingHistoryDB->deleted = 1;
+				$result                    = $readingHistoryDB->update();
+				if ($success){
+					// Set to false if any updates fail; stop checking after the first failure
+					$success = $result != false;
+					global $logger;
+					$logger->log('Failed to delete all reading history entries for user id ' . $patron->id, PEAR_LOG_WARNING);
+				}
+			}
+			//TODO: discuss. delete all reading history in ILS only on opt out (Apparent previous behavior)
+//			if ($success){
+//				$driverHasReadingHistory = $this->driver->hasNativeReadingHistory();
+//				if ($driverHasReadingHistory){
+//					if (method_exists($this->driver, 'deleteAllReadingHistory')){
+//						return $this->driver->deleteAllReadingHistory($patron);
+//					}elseif (method_exists($this->driver, 'doReadingHistoryAction')){
+//						//Deprecated process
+//						$this->driver->doReadingHistoryAction($patron, 'deleteAll');
+//					}
+//				}
+//			}
+			return $success;
+		}
+		return false;
+	}
+
+		/**
+		 * @param User $patron
+		 * @param array $selectedTitles
+		 * @return boolean
+		 */
+	public function deleteMarkedReadingHistory($patron, $selectedTitles){
+	//Remove titles from database (do not remove from ILS)
+		if (is_a($patron, 'User') && !empty($patron->id)){
+			$success = true;
+			foreach ($selectedTitles as $groupedWorkId => $titleId){
+				if (!empty($groupedWorkId)){
+					// Reading History entries tied to a grouped work
 					$readingHistoryDB                         = new ReadingHistoryEntry();
 					$readingHistoryDB->userId                 = $patron->id;
-					$readingHistoryDB->groupedWorkPermanentId = strtolower($id);
+					$readingHistoryDB->groupedWorkPermanentId = strtolower($groupedWorkId);
 					$readingHistoryDB->find();
-					if ($id && $readingHistoryDB->N > 0){
+					if ($readingHistoryDB->N > 0){
 						while ($readingHistoryDB->fetch()){
 							$readingHistoryDB->deleted = 1;
-							$readingHistoryDB->update();
+							$result                    = $readingHistoryDB->update();
+							if ($success){
+								// Set to false if any updates fail; stop checking after the first failure
+								$success = $result != false;
+								global $logger;
+								$logger->log('Failed to delete selected reading history entry for user id ' . $patron->id, PEAR_LOG_WARNING);
+							}
 						}
-					}else{
-						$readingHistoryDB         = new ReadingHistoryEntry();
-						$readingHistoryDB->userId = $patron->id;
-						$readingHistoryDB->id     = str_replace('rsh', '', $titleId);
-						if ($readingHistoryDB->find(true)){
-							$readingHistoryDB->deleted = 1;
-							$readingHistoryDB->update();
+					}
+				}else{
+					// Reading history entries that aren't tied to a grouped work, like inter-library loan titles
+					$readingHistoryDB         = new ReadingHistoryEntry();
+					$readingHistoryDB->userId = $patron->id;
+					$readingHistoryDB->id     = str_replace('rsh', '', $titleId); // reading history ids are prefixes with rsh in the template
+					if ($readingHistoryDB->find(true)){
+						$readingHistoryDB->deleted = 1;
+						$result                    = $readingHistoryDB->update();
+						if ($success){
+							// Set to false if any updates fail; stop checking after the first failure
+							$success = $result != false;
+							global $logger;
+							$logger->log('Failed to delete selected reading history entry for user id ' . $patron->id, PEAR_LOG_WARNING);
 						}
 					}
 				}
-			}elseif ($action == 'deleteAll'){
-				//Remove all titles from database (do not remove from ILS)
-				$readingHistoryDB         = new ReadingHistoryEntry();
-				$readingHistoryDB->userId = $patron->id;
-				$readingHistoryDB->find();
-				while ($readingHistoryDB->fetch()){
-					$readingHistoryDB->deleted = 1;
-					$readingHistoryDB->update();
-				}
-			}elseif ($action == 'exportList'){
-				//Leave this unimplemented for now.
-			}elseif ($action == 'optOut'){
-				$driverHasReadingHistory = $this->driver->hasNativeReadingHistory();
-
-				//Opt out within the ILS if possible
-				if ($driverHasReadingHistory && $this->checkFunction('doReadingHistoryAction')){
-					//First run delete all
-					$result = $this->driver->doReadingHistoryAction($patron, 'deleteAll', $selectedTitles);
-
-					$result = $this->driver->doReadingHistoryAction($patron, $action, $selectedTitles);
-				}
-
-				//Delete the reading history (permanently this time since we are opting out)
-				$readingHistoryDB = new ReadingHistoryEntry();
-				$readingHistoryDB->userId = $patron->id;
-				$readingHistoryDB->delete();
-
-				//Opt out within Pika since the ILS does not seem to implement this functionality
-				$patron->trackReadingHistory = false;
-				$patron->update();
-			}elseif ($action == 'optIn'){
-				$driverHasReadingHistory = $this->driver->hasNativeReadingHistory();
-				//Opt in within the ILS if possible
-				if ($driverHasReadingHistory){
-					$result = $this->driver->doReadingHistoryAction($patron, $action, $selectedTitles);
-				}
-
-				//Opt in within Pika since the ILS does not seem to implement this functionality
-				$patron->trackReadingHistory = true;
-				$patron->update();
 			}
-		}else{
-			return $this->driver->doReadingHistoryAction($patron, $action, $selectedTitles);
+			return $success;
 		}
+		return false;
 	}
-
 
 	/**
 	 * Get Patron Holds
@@ -664,7 +779,7 @@ class CatalogConnection
 				$curTitle['user']             = $user->getNameAndLibraryLabel();
 				$curTitle['userId']           = $user->id;
 				$curTitle['allowFreezeHolds'] = $user->getHomeLibrary()->allowFreezeHolds;
-				if (!isset($curTitle['sortTitle'])){
+				if (!isset($curTitle['sortTitle']) && !empty($curTitle['title'])){
 					$curTitle['sortTitle'] = $curTitle['title'];
 				}
 				$holds[$section][$key] = $curTitle;
@@ -721,10 +836,10 @@ class CatalogConnection
 	 * @return  mixed               True if successful, otherwise return a PEAR_Error
 	 * @access  public
 	 */
-	function getHoldLink($recordId)
-	{
-		return $this->driver->getHoldLink($recordId);
-	}
+//	function getHoldLink($recordId)
+//	{
+//		return $this->driver->getHoldLink($recordId);
+//	}
 
 	function updatePatronInfo($user, $canUpdateContactInfo)
 	{
@@ -748,6 +863,7 @@ class CatalogConnection
 
 	/**
 	 * @param User $patron
+	 * @return array
 	 */
 	function getMyBookings($patron){
 		$bookings = $this->driver->getMyBookings($patron);
@@ -780,11 +896,11 @@ class CatalogConnection
 	 * @return array       Associative array with 'count' and 'results' keys
 	 * @access public
 	 */
-	public function getNewItems($page = 1, $limit = 20, $daysOld = 30,
-	$fundId = null
-	) {
-		return $this->driver->getNewItems($page, $limit, $daysOld, $fundId);
-	}
+//	public function getNewItems($page = 1, $limit = 20, $daysOld = 30,
+//	$fundId = null
+//	) {
+//		return $this->driver->getNewItems($page, $limit, $daysOld, $fundId);
+//	}
 
 	/**
 	 * Get Funds
@@ -794,12 +910,12 @@ class CatalogConnection
 	 * @return array An associative array with key = fund ID, value = fund name.
 	 * @access public
 	 */
-	public function getFunds()
-	{
-		// Graceful degradation -- return empty fund list if no method supported.
-		return method_exists($this->driver, 'getFunds') ?
-		$this->driver->getFunds() : array();
-	}
+//	public function getFunds()
+//	{
+//		// Graceful degradation -- return empty fund list if no method supported.
+//		return method_exists($this->driver, 'getFunds') ?
+//		$this->driver->getFunds() : array();
+//	}
 
 	/**
 	 * Get Departments
@@ -809,12 +925,12 @@ class CatalogConnection
 	 * @return array An associative array with key = dept. ID, value = dept. name.
 	 * @access public
 	 */
-	public function getDepartments()
-	{
-		// Graceful degradation -- return empty list if no method supported.
-		return method_exists($this->driver, 'getDepartments') ?
-		$this->driver->getDepartments() : array();
-	}
+//	public function getDepartments()
+//	{
+//		// Graceful degradation -- return empty list if no method supported.
+//		return method_exists($this->driver, 'getDepartments') ?
+//		$this->driver->getDepartments() : array();
+//	}
 
 	/**
 	 * Get Instructors
@@ -824,12 +940,12 @@ class CatalogConnection
 	 * @return array An associative array with key = ID, value = name.
 	 * @access public
 	 */
-	public function getInstructors()
-	{
-		// Graceful degradation -- return empty list if no method supported.
-		return method_exists($this->driver, 'getInstructors') ?
-		$this->driver->getInstructors() : array();
-	}
+//	public function getInstructors()
+//	{
+//		// Graceful degradation -- return empty list if no method supported.
+//		return method_exists($this->driver, 'getInstructors') ?
+//		$this->driver->getInstructors() : array();
+//	}
 
 	/**
 	 * Get Courses
@@ -839,12 +955,12 @@ class CatalogConnection
 	 * @return array An associative array with key = ID, value = name.
 	 * @access public
 	 */
-	public function getCourses()
-	{
-		// Graceful degradation -- return empty list if no method supported.
-		return method_exists($this->driver, 'getCourses') ?
-		$this->driver->getCourses() : array();
-	}
+//	public function getCourses()
+//	{
+//		// Graceful degradation -- return empty list if no method supported.
+//		return method_exists($this->driver, 'getCourses') ?
+//		$this->driver->getCourses() : array();
+//	}
 
 	/**
 	 * Find Reserves
@@ -859,10 +975,10 @@ class CatalogConnection
 	 * PEAR_Error object if there is a problem)
 	 * @access public
 	 */
-	public function findReserves($course, $inst, $dept)
-	{
-		return $this->driver->findReserves($course, $inst, $dept);
-	}
+//	public function findReserves($course, $inst, $dept)
+//	{
+//		return $this->driver->findReserves($course, $inst, $dept);
+//	}
 
 	/**
 	 * Process inventory for a particular item in the catalog
@@ -886,10 +1002,10 @@ class CatalogConnection
 	 * @return array ID numbers of suppressed records in the system.
 	 * @access public
 	 */
-	public function getSuppressedRecords()
-	{
-		return $this->driver->getSuppressedRecords();
-	}
+//	public function getSuppressedRecords()
+//	{
+//		return $this->driver->getSuppressedRecords();
+//	}
 
 	/**
 	 * Default method -- pass along calls to the driver if available; return
@@ -978,9 +1094,8 @@ class CatalogConnection
 
 		$activeHistoryTitles = array();
 		while ($readingHistoryDB->fetch()){
-			$historyEntry = $this->getHistoryEntryForDatabaseEntry($readingHistoryDB);
-
-			$key = $historyEntry['source'] . ':' . $historyEntry['id'];
+			$historyEntry              = $this->getHistoryEntryForDatabaseEntry($readingHistoryDB);
+			$key                       = $historyEntry['source'] . ':' . $historyEntry['id'];
 			$activeHistoryTitles[$key] = $historyEntry;
 		}
 
@@ -988,21 +1103,26 @@ class CatalogConnection
 		$checkouts = $patron->getMyCheckouts(false);
 		foreach ($checkouts as $checkout){
 			$sourceId = '?';
-			$source = $checkout['checkoutSource'];
-			if ($source == 'OverDrive'){
+			$source   = $checkout['checkoutSource'];
+			switch ($source){
+				case 'OverDrive':
 				$sourceId = $checkout['overDriveId'];
-			}elseif ($source == 'Hoopla'){
+					break;
+				case 'Hoopla':
 				$sourceId = $checkout['hooplaId'];
-			}elseif ($source == 'ILS'){
-				$sourceId = $checkout['fullId'];
-				//TODO: I believe below is the better approach. The above creates duplicates. (The reading history update cron process does not do this.)
-//				$sourceId = $checkout['recordId'];
-//				// This needs to be the record Id only and not the full Id
-
-			}elseif ($source == 'eContent'){
-				$source = $checkout['recordType'];
-				$sourceId = $checkout['id'];
+					break;
+				case 'eContent':
+					$source   = $checkout['recordType'];
+					$sourceId = $checkout['id'];
+					break;
+				default:
+				case 'ILS':
+					$source = 'ils'; // make all ILS sources lower case too
+				case 'ils':
+					$sourceId = $checkout['recordId'];
+					break;
 			}
+
 			$key = $source . ':' . $sourceId;
 			if (array_key_exists($key, $activeHistoryTitles)){
 				unset($activeHistoryTitles[$key]);

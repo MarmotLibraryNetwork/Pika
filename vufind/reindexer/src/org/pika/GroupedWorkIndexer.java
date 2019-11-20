@@ -1102,36 +1102,39 @@ public class GroupedWorkIndexer {
 					groupedWork.addSeries(lexileSeries);
 				}
 				lexileDataMatches++;
-				if (logger.isInfoEnabled() && fullReindex) {
+				if (logger.isDebugEnabled() && fullReindex) {
 					FuzzyScore   score                = new FuzzyScore(Locale.ENGLISH);
-					final String groupTitle           = groupedWork.getTitle();
+					String groupTitle           = groupedWork.getTitle();
 					final String groupWorkPermanentId = groupedWork.getId();
-					final String lexTitle              = lexileTitle.getTitle();
+					String lexTitle              = lexileTitle.getTitle();
 					if (groupTitle.length() > 10) {
 						// Only check titles with more than 10 characters, bcs the mismatch testing is probably not useful with less
+						groupTitle = groupTitle.toLowerCase();
 						if (lexTitle != null && !lexTitle.isEmpty()) {
+							lexTitle = lexTitle.toLowerCase();
 							int titleMatches = score.fuzzyScore(groupTitle, lexTitle);
 							if (titleMatches < 10) {
 
 								// A large piece of the mismatches are where the ArTitle is the work subtitle instead
 								// So we test the subtitle too, if it is long enough
-								final String groupSubTitle = groupedWork.getSubTitle();
+								String groupSubTitle = groupedWork.getSubTitle();
 
 								if (groupSubTitle != null && groupSubTitle.length() > 10) {
+									groupSubTitle = groupSubTitle.toLowerCase();
 									int subTitleMatches = score.fuzzyScore(groupSubTitle, lexTitle);
 									if (subTitleMatches < 10) {
 										logger.warn("Possible mismatch of Lexile Data for grouped work " + groupWorkPermanentId + " title '" + groupTitle + "' with subtitle '" + groupSubTitle + "' for isbn " + isbn + ", Lexile Title " + lexTitle);
 									}
 								} else {
-									logger.warn("Possible mismatch of Lexile Data for grouped work " + groupWorkPermanentId + " title '" + groupTitle + "' for isbn " + isbn + ", Lexile Title " + lexTitle);
+									logger.warn("Possible mismatch of Lexile Data for grouped work " + groupWorkPermanentId + " title '" + groupTitle + "' for isbn " + isbn + ", Lexile Title : " + lexTitle);
 								}
-							} else {
+							} else if (logger.isDebugEnabled()) {
 								logger.debug("Matched Lexile Data for grouped work " + groupWorkPermanentId + " title '" + groupTitle + "' on isbn " + isbn + " with Lexile Title : " + lexTitle);
 							}
-						} else {
-							logger.warn("Lexile match had no title for isbn " + isbn);
+						} else if (logger.isDebugEnabled()) {
+							logger.debug("Lexile match had no title for isbn " + isbn + " on group work " + groupWorkPermanentId);
 						}
-					} else {
+					} else if (logger.isDebugEnabled()) {
 						logger.debug("Matched Lexile Data for grouped work " + groupWorkPermanentId + " title '" + groupTitle + "' on isbn " + isbn + " with Lexile Title : " + lexTitle);
 					}
 				}
@@ -1151,21 +1154,25 @@ public class GroupedWorkIndexer {
 			if (isbn != null && !isbn.isEmpty()) {
 				if (arInformation.containsKey(isbn)) {
 					ARTitle arTitle = arInformation.get(isbn);
-					if (logger.isInfoEnabled() && fullReindex) {
+					if (logger.isDebugEnabled() && fullReindex) {
+						// Only do title match checking for debugging
 						FuzzyScore   score                = new FuzzyScore(Locale.ENGLISH);
-						final String groupTitle           = groupedWork.getTitle();
+						 String groupTitle           = groupedWork.getTitle();
 						final String groupWorkPermanentId = groupedWork.getId();
-						final String ARTitle              = arTitle.getTitle();
+						 String ARTitle              = arTitle.getTitle();
 						if (groupTitle.length() > 10) {
 							// Only check titles with more than 10 characters, bcs the mismatch testing is probably not useful with less
+							groupTitle = groupTitle.toLowerCase();
 							if (ARTitle != null && !ARTitle.isEmpty()) {
+								ARTitle = ARTitle.toLowerCase();
 								int titleMatches = score.fuzzyScore(groupTitle, ARTitle);
 								if (titleMatches < 10) {
 									// A large piece of the mismatches are where the ArTitle is the work subtitle instead
 									// So we test the subtitle too, if it is long enough
-									final String groupSubTitle = groupedWork.getSubTitle();
+									String groupSubTitle = groupedWork.getSubTitle();
 
 									if (groupSubTitle != null && groupSubTitle.length() > 10) {
+										groupSubTitle = groupSubTitle.toLowerCase();
 										int subTitleMatches = score.fuzzyScore(groupSubTitle, ARTitle);
 										if (subTitleMatches < 10) {
 											logger.warn("Possible mismatch of AR Data for grouped work " + groupWorkPermanentId + " title '" + groupTitle + "' with subtitle '" + groupSubTitle + "' and AR data for isbn " + isbn + ", ar title " + ARTitle);
@@ -1173,13 +1180,13 @@ public class GroupedWorkIndexer {
 									} else {
 										logger.warn("Possible mismatch of AR Data for grouped work " + groupWorkPermanentId + " title '" + groupTitle + "' and AR data for isbn " + isbn + ", ar title " + ARTitle);
 									}
-								} else {
+								} else if (logger.isDebugEnabled()) {
 									logger.debug("Matched AR Data for grouped work " + groupWorkPermanentId + " title '" + groupTitle + "' on isbn " + isbn + " with AR Title : " + ARTitle);
 								}
-							} else {
-								logger.warn("Accelerated Reader match had no title for isbn " + isbn);
+							} else if (logger.isDebugEnabled()) {
+								logger.debug("Accelerated Reader match had no title for isbn " + isbn + " on group work " + groupWorkPermanentId);
 							}
-						} else {
+						} else if (logger.isDebugEnabled()) {
 							logger.debug("Matched AR Data for grouped work " + groupWorkPermanentId + " title '" + groupTitle + "' on isbn " + isbn + " with AR Title : " + ARTitle);
 						}
 					}

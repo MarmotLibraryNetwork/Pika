@@ -53,11 +53,28 @@ class ReadingHistory extends MyAccount
 				$interface->assign('selectedUser', $patronId); // needs to be set even when there is only one user so that the patronId hidden input gets a value in the reading history form.
 
 				//Check to see if there is an action to perform.
-				if (!empty($_REQUEST['readingHistoryAction']) && $_REQUEST['readingHistoryAction'] != 'exportToExcel'){
+				if (!empty($_REQUEST['readingHistoryAction']) && !is_array($_REQUEST['readingHistoryAction']) && $_REQUEST['readingHistoryAction'] != 'exportToExcel'){
 					//Perform the requested action
 					$selectedTitles = isset($_REQUEST['selected']) ? $_REQUEST['selected'] : array();
-					$readingHistoryAction = $_REQUEST['readingHistoryAction'];
-					$patron->doReadingHistoryAction($readingHistoryAction, $selectedTitles);
+					$readingHistoryAction = trim($_REQUEST['readingHistoryAction']);
+					switch ($readingHistoryAction) {
+						case 'optIn':
+							$patron->optInReadingHistory();
+							break;
+						case 'optOut':
+							$patron->optOutReadingHistory();
+							break;
+						case 'deleteAll':
+							$patron->deleteAllReadingHistory();
+							break;
+						case 'deleteMarked':
+							$patron->deleteMarkedReadingHistory($selectedTitles);
+							break;
+						default:
+							// Deprecated action; should be replaced with above action-specific calls
+							global $logger;
+							$logger->log('Call to undefined reading history action : ' . $readingHistoryAction, PEAR_LOG_WARNING);
+					}
 
 					//redirect back to the current location without the action.
 					$newLocation = "{$configArray['Site']['path']}/MyAccount/ReadingHistory";

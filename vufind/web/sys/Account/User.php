@@ -1472,10 +1472,32 @@ class User extends DB_DataObject {
 		}
 	}
 
-	public function doReadingHistoryAction($readingHistoryAction, $selectedTitles){
-		$result = $this->getCatalogDriver()->doReadingHistoryAction($this, $readingHistoryAction, $selectedTitles);
+	/**
+	 * Opt the user into Pika's reading history functionality
+	 */
+	public function optInReadingHistory(){
+		$result = $this->getCatalogDriver()->optInReadingHistory($this);
 		$this->clearCache();
 		return $result;
+	}
+
+	public function optOutReadingHistory(){
+		$result = $this->getCatalogDriver()->optOutReadingHistory($this);
+		$this->clearCache();
+		return $result;
+	}
+
+	public function deleteAllReadingHistory(){
+		$result = $this->getCatalogDriver()->deleteAllReadingHistory($this);
+		$this->clearCache();
+		return $result;
+	}
+
+	public function deleteMarkedReadingHistory($selectedTitles) {
+		$result = $this->getCatalogDriver()->deleteMarkedReadingHistory($this, $selectedTitles);
+		$this->clearCache();
+		return $result;
+
 	}
 
 	/**

@@ -79,6 +79,14 @@ public class PikaSystemVariables {
 		return null;
 	}
 
+	public boolean setVariable(String name, Long value) {
+		return setVariable(name, value.toString());
+	}
+
+	public boolean setVariable(String name, boolean value) {
+		return setVariable(name, Boolean.toString(value));
+	}
+
 	public boolean setVariable(String name, String value) {
 		if (name != null && !name.isEmpty()) {
 			try (PreparedStatement preparedStatement = pikaConn.prepareStatement("INSERT INTO variables (name, value) VALUES (?, ?) ON DUPLICATE KEY UPDATE value=VALUES(value)")) {
