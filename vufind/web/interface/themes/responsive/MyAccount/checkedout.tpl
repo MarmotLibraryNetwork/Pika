@@ -46,7 +46,7 @@
 
 					<div class="striped">
 						{foreach from=$transList item=checkedOutTitle name=checkedOutTitleLoop key=checkedOutKey}
-							{if $checkedOutTitle.checkoutSource == 'ils'}
+							{if strtolower($checkedOutTitle.checkoutSource) == 'ils'}
 								{include file="MyAccount/ilsCheckedOutTitle.tpl" record=$checkedOutTitle resultIndex=$smarty.foreach.checkedOutTitleLoop.iteration}
 							{elseif $checkedOutTitle.checkoutSource == 'OverDrive'}
 								{include file="MyAccount/overdriveCheckedOutTitle.tpl" record=$checkedOutTitle resultIndex=$smarty.foreach.checkedOutTitleLoop.iteration}
