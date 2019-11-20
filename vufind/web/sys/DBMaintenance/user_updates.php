@@ -148,13 +148,14 @@ function getUserUpdates(){
 					),
 			),
 
-			'user_reading_history_ils_reading_history_id' => array(
-				'title'       => 'The history entry Id in the ILS',
-				'description' => 'The history entry Id in the ILS which may be needed to get more information from the ILS',
-				'sql'         => array(
-					"ALTER TABLE `user_reading_history_work` ADD COLUMN `ilsReadingHistoryId` VARCHAR(50) NULL AFTER `sourceId`;"
-				),
-			),
+// NOT Added: See D-3389 & D-3348
+//			'user_reading_history_ils_reading_history_id' => array(
+//				'title'       => 'The history entry Id in the ILS',
+//				'description' => 'The history entry Id in the ILS which may be needed to get more information from the ILS',
+//				'sql'         => array(
+//					"ALTER TABLE `user_reading_history_work` ADD COLUMN `ilsReadingHistoryId` VARCHAR(50) NULL AFTER `sourceId`;"
+//				),
+//			),
 
 			'user_hoopla_confirmation_checkout' => array(
 					'title' => 'Hoopla Checkout Confirmation Prompt',
