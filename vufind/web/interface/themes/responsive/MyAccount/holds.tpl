@@ -53,7 +53,7 @@
 
 				<div class="striped">
 					{foreach from=$recordList.$sectionKey item=record name="recordLoop"}
-						{if $record.holdSource == 'ils'}
+						{if strtolower($record.holdSource) == 'ils'}
 							{include file="MyAccount/ilsHold.tpl" record=$record section=$sectionKey resultIndex=$smarty.foreach.recordLoop.iteration}
 						{elseif $record.holdSource == 'OverDrive'}
 							{include file="MyAccount/overdriveHold.tpl" record=$record section=$sectionKey resultIndex=$smarty.foreach.recordLoop.iteration}
