@@ -1874,6 +1874,9 @@ EOT;
 	 * @return bool $success  Whether or not the opt-in action was successful
 	 */
 	public function optInReadingHistory($patron) {
+		$patronObjectCacheKey = 'patron_'.$patron->barcode.'_patron';
+		$this->memCache->delete($patronObjectCacheKey);
+
 		$success = $this->_curlOptInOptOut($patron, 'OptIn');
 		if(!$success) {
 			return false;
@@ -1896,17 +1899,15 @@ EOT;
 	 * @return bool Whether or not the opt-out action was successful
 	 */
 	public function optOutReadingHistory($patron) {
+		$patronObjectCacheKey = 'patron_'.$patron->barcode.'_patron';
+		$this->memCache->delete($patronObjectCacheKey);
+
 		$success = $this->_curlOptInOptOut($patron, 'OptOut');
 		if(!$success) {
 			return false;
 		}
 		$patron->trackReadingHistory = false;
 		$patron->update();
-		// clear memcache
-		$patronObjectCacheKey = 'patron_'.$patron->barcode.'_patron';
-		if($this->memCache->delete($patronObjectCacheKey)) {
-			$this->logger->debug('Removed patron from memcache after opting in to reading history.');
-		}
 
 		return true;
 	}
