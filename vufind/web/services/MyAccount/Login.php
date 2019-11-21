@@ -116,13 +116,13 @@ class MyAccount_Login extends Action
 		if ($configArray['Catalog']['ils'] == 'Horizon' || $configArray['Catalog']['ils'] == 'Symphony'){
 			$interface->assign('showForgotPinLink', true);
 			$catalog = CatalogFactory::getCatalogConnectionInstance();
-			$useEmailResetPin = $catalog->checkFunction('emailResetPin');
+			$useEmailResetPin = method_exists($catalog, 'emailResetPin');
 			$interface->assign('useEmailResetPin', $useEmailResetPin);
 		} elseif ($configArray['Catalog']['ils'] == 'Sierra') {
 			$catalog = CatalogFactory::getCatalogConnectionInstance();
 			if (!empty($catalog->accountProfile->loginConfiguration) && $catalog->accountProfile->loginConfiguration == 'barcode_pin') {
 				$interface->assign('showForgotPinLink', true);
-				$useEmailResetPin = $catalog->checkFunction('emailResetPin');
+				$useEmailResetPin = method_exists($catalog, 'emailResetPin');
 				$interface->assign('useEmailResetPin', $useEmailResetPin);
 			}
 		}
