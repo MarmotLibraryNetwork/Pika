@@ -870,7 +870,7 @@ class Sierra {
 
 		$this->memCache->delete('patron_'.$patron->barcode.'_patron');
 
-		return 'Your PIN has been updated';
+		return 'Your pin number was updated successfully.';
 	}
 
 	public function resetPin($patron, $newPin, $resetToken){
