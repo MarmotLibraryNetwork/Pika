@@ -27,7 +27,7 @@ class EmailResetPin extends Action{
 
 			$this->catalog = CatalogFactory::getCatalogConnectionInstance(null, null);
 			$driver        = $this->catalog->driver;
-			if ($this->catalog->checkFunction('emailResetPin')){
+			if (method_exists($driver, 'emailResetPin')){
 				$barcode     = strip_tags($_REQUEST['barcode']);
 				$emailResult = $driver->emailResetPin($barcode);
 			}else{

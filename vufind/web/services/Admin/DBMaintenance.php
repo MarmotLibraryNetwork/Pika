@@ -2397,6 +2397,21 @@ ADD COLUMN selfRegistrationAgencyCode INT(10) NULL;",
 									) ENGINE = MYISAM;",
 							)
 					),
+
+				'create_pin_reset_table' => array(
+					'title' => 'Create table for secure pin reset.',
+					'description' => 'Creates table for pin reset',
+					'continueOnError' => true,
+					'sql' => array(
+						"CREATE TABLE IF NOT EXISTS pin_reset (
+				    id INT(11) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+				    userId VARCHAR(255),
+				    selector CHAR(16),
+				    token CHAR(64),
+				    expires BIGINT(20)
+						)",
+					)
+				),
 			)
 		);
 	}

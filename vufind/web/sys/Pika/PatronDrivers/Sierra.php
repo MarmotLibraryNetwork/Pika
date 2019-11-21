@@ -42,10 +42,10 @@
 namespace Pika\PatronDrivers;
 
 use Curl\Curl;
+use DateInterval;
 use DateTime;
 use ErrorException;
 use InvalidArgumentException;
-use Library;
 use \Pika\Logger;
 use \Pika\Cache;
 use Location;
@@ -53,10 +53,11 @@ use MarcRecord;
 use RecordDriverFactory;
 use User;
 use ReadingHistoryEntry;
+use PinReset;
+use PHPMailer\PHPMailer\PHPMailer;
 
 
 class Sierra {
-	// TODO: Clean up logging
 
 	// @var Pika/Memcache instance
 	public  $memCache;
@@ -69,8 +70,7 @@ class Sierra {
 	private $oAuthToken;
 	/* @var $apiLastError false|string false if no error or last error message */
 	private $apiLastError = false;
-	// Needs to be public
-	/** @var  \AccountProfile $accountProfile */
+	/** @var  AccountProfile $accountProfile */
 	public $accountProfile;
 	/* @var $patronBarcode string The patrons barcode */
 	private $patronBarcode;
@@ -82,7 +82,7 @@ class Sierra {
 	private $urlIdRegExp = "/.*\/(\d*)$/";
 
 
-	public function __construct(\AccountProfile $accountProfile) {
+	public function __construct($accountProfile) {
 		global $configArray;
 
 		$this->configArray    = $configArray;
@@ -160,7 +160,7 @@ class Sierra {
 				$titleAndAuthor = $innReach->getCheckoutTitleAuthor($checkoutId);
 				$coverUrl = $innReach->getInnReachCover();
         
-				$checkout['checkoutSource'] = $this->accountProfile->recordSource;
+				$checkout['checkoutSource'] =  $this->accountProfile->recordSource;
 				$checkout['id']             = $checkoutId;
 				$checkout['dueDate']        = strtotime($entry->dueDate);
 				$checkout['checkoutDate']   = strtotime($entry->outDate);
@@ -190,7 +190,7 @@ class Sierra {
 			$recordXD  = $this->getCheckDigit($bid);
 			$bibId = '.b'.$bid.$recordXD;
 
-			$checkout['checkoutSource'] = $this->accountProfile->recordSource;
+			$checkout['checkoutSource'] =  $this->accountProfile->recordSource;
 			$checkout['recordId']       = $bibId;
 			$checkout['id']             = $checkoutId;
 			$checkout['dueDate']        = strtotime($entry->dueDate);
@@ -546,12 +546,14 @@ class Sierra {
 			/** Hook for processing addresses **/
 			$patron = $this->processPatronAddress($pInfo->addresses, $patron);
 		} else {
-			foreach ($pInfo->addresses as $address) {
-				// a = primary address, h = alt address
-				if ($address->type == 'a') {
-					$lineCount = count($address->lines) - 1;
-					$patron->address1 = $address->lines[$lineCount - 1];
-					$patron->address2 = $address->lines[$lineCount];
+			if(isset($pInfo->addresses) && is_array($pInfo->addresses)){
+				foreach ($pInfo->addresses as $address) {
+					// a = primary address, h = alt address
+					if ($address->type == 'a') {
+						$lineCount = count($address->lines) - 1;
+						$patron->address1 = $address->lines[$lineCount - 1];
+						$patron->address2 = $address->lines[$lineCount];
+					}
 				}
 			}
 			if (!isset($patron->address1)) {
@@ -802,9 +804,11 @@ class Sierra {
 			'emails'          => $emails,
 			'addresses'       => [ (object)['lines' => [$address1, $address2], "type" => 'a'] ],
 			'phones'          => $phones,
-			'homeLibraryCode' => $homeLibraryCode,
-			'fixedFields'     => (object)['268'=>(object)["label" => "Notice Preference", "value" => $notices]]
+			'homeLibraryCode' => $homeLibraryCode
 		];
+		if(isset($notices)) {
+			$params['fixedFields'] = (object)['268'=>(object)["label" => "Notice Preference", "value" => $notices]];
+		}
 
 		// username if present
 		if (isset($altUsername)) {
@@ -837,6 +841,7 @@ class Sierra {
 	 * @param string $newPin
 	 * @param string $confirmNewPin
 	 * @return string Error or success message.
+	 * @throws ErrorException
 	 */
 	public function updatePin($patron, $oldPin, $newPin, $confirmNewPin){
 		$patronId = $this->_authBarcodePin($patron->barcode, $oldPin);
@@ -851,7 +856,6 @@ class Sierra {
 
 		$operation = 'patrons/'.$patronId;
 		$params    = ['pin' => $newPin];
-
 		$r = $this->_doRequest($operation, $params, 'PUT');
 
 		if(!$r) {
@@ -866,8 +870,109 @@ class Sierra {
 		return 'Your PIN has been updated';
 	}
 
-	public function resetPin($patron, $newPin, $resetToken = null){
-		// TODO: Implement resetPin() method.
+	public function resetPin($patron, $newPin, $resetToken){
+
+		$pinReset = new PinReset();
+		$pinReset->userId = $patron->id;
+		$pinReset->find(true);
+		if(!$pinReset->N) {
+			return ['error' => 'Unable to reset your PIN. Please try again later.'];
+		} elseif($pinReset->N == 0) {
+			return ['error' => 'Unable to reset your PIN. You have not requested a PIN reset.'];
+		}
+		// expired?
+		if($pinReset->expires < time()) {
+			return ['error' => 'The reset token has expired. Please request a new PIN reset.'];
+		}
+		$token = $pinReset->selector.$pinReset->token;
+		// make sure and type cast the two numbers
+		if ((int)$token != (int)$resetToken) {
+			return ['error' => 'Unable to reset your PIN. Invalid reset token.'];
+		}
+		// everything is good
+		$patronId = $this->getPatronId($patron);
+		$operation = 'patrons/'.$patronId;
+		$params    = ['pin' => (string)$newPin];
+
+		// update sierra first
+		$r = $this->_doRequest($operation, $params, 'PUT');
+		if(!$r) {
+			$message = $this->_getPrettyError();
+			return ['error' => 'Could not update PIN: '. $message];
+		}
+
+		$patron->cat_password = $newPin;
+		if(!$patron->update()) {
+			// this shouldn't matter since we hit the api first when logging in a patron, but ....
+			$this->memCache->delete('patron_'.$patron->barcode.'_patron');
+			return ['error' => 'Please try logging in with you new PIN. If you are unable to login please contact your library.'];
+		}
+		$pinReset->delete();
+		$this->memCache->delete('patron_'.$patron->barcode.'_patron');
+
+		return true;
+	}
+
+	public function emailResetPin($barcode) {
+		$patron = new User();
+
+		$loginMethod = $this->accountProfile->loginConfiguration;
+		if ($loginMethod == "barcode_pin"){
+			$patron->cat_username = $barcode;
+		} elseif ($loginMethod == "name_barcode") {
+			$patron->cat_password = $barcode;
+		}
+
+		$patron->find(true);
+		if(! $patron->N || $patron->N == 0) {
+			return ['error' => 'Unable to find an account associated with barcode: '.$barcode ];
+		}
+		if(!isset($patron->email) || $patron->email == '') {
+			return ['error' => 'You do not have an email address on your account. Please visit your library to reset your pin.'];
+		}
+		// Create tokens
+		// todo: PHP7 use random_int or random_bytes
+		$selector = bin2hex(mt_rand(10000000, 900000000));
+		$token = mt_rand(1000000000000000, 9999999999999999);
+		$now = new DateTime('NOW');
+		$now->add(new DateInterval('PT01H')); // 1 hour
+		$expires = $now->format('U');
+		$resetToken = $selector.$token;
+		// make sure there's no old token.
+		$pinReset = new PinReset();
+		$pinReset->userId = $patron->id;
+		$pinReset->delete();
+
+		// insert pin reset request
+		$pinReset->expires = $expires;
+		$pinReset->token = $token;
+		$pinReset->selector = $selector;
+		$pinReset->insert();
+
+		// build reset url
+		$resetUrl = $this->configArray['Site']['url'] . "/MyAccount/ResetPin?uid=".$patron->id.'&resetToken='.$resetToken;
+
+		// build the message
+		$subject = "Pin Reset Link";
+		$htmlMessage = <<<EOT
+		<p>We received a password reset request. The link to reset your password is below.  
+If you did not make this request, you can ignore this email</p>  
+<p>Here is your password reset link:</br>  
+$resetUrl
+EOT;
+
+		$mail = new PHPMailer;
+		$mail->setFrom($this->configArray['Site']['email']);
+		$mail->addAddress($patron->email);
+		$mail->Subject = $subject;
+		$mail->msgHTML($htmlMessage);
+		$mail->AltBody = strip_tags($htmlMessage);
+
+		if(!$mail->send()) {
+			$this->logger->error('Can not send email from Sierra.php');
+			return ['error' => "We're sorry. We are unable to send mail at this time. Please try again."];
+		}
+		return true;
 	}
 
 	/**
@@ -889,6 +994,7 @@ class Sierra {
 	 * PUT patrons
 	 * @return  array  [success = bool, barcode = null or barcode]
 	 * @throws InvalidArgumentException If missing configuration parameters
+	 * @throws ErrorException
 	 */
 	public function selfRegister(){
 
@@ -955,7 +1061,7 @@ class Sierra {
 		// expiration date
 		$interval = 'P'.$library->selfRegistrationDaysUntilExpire.'D';
 		$expireDate = new DateTime();
-		$expireDate->add(new \DateInterval($interval));
+		$expireDate->add(new DateInterval($interval));
 		$params['expirationDate'] = $expireDate->format('Y-m-d');
 
 		// names -- standard is Last, First Middle

@@ -39,7 +39,7 @@ $timer->logTime("Initialized session");
 //$logger->log("Opening URL " . $_SESSION['REQUEST_URI'], PEAR_LOG_DEBUG);
 
 // PHP 7 logger
-//$pikaLogger = new Pika\Logger('PikaLogger', true);
+$pikaLogger = new Pika\Logger('PikaLogger', true);
 
 if (isset($_REQUEST['test_role'])){
 	if ($_REQUEST['test_role'] == ''){
@@ -833,7 +833,10 @@ function vufind_autoloader($class) {
 		}elseif (file_exists('Drivers/' . $class . '.php')){
 			$className = ROOT_DIR . '/Drivers/' . $class . '.php';
 			require_once $className;
-		}elseif (file_exists('RecordDrivers/' . $class . '.php')){
+		}elseif (file_exists('Drivers/marmot_inc/' . $class . '.php')){
+			$className = ROOT_DIR . '/Drivers/marmot_inc/' . $class . '.php';
+			require_once $className;
+		} elseif (file_exists('RecordDrivers/' . $class . '.php')){
 			$className = ROOT_DIR . '/RecordDrivers/' . $class . '.php';
 			require_once $className;
 		}elseif (file_exists('services/MyAccount/lib/' . $class . '.php')){
@@ -850,11 +853,11 @@ function vufind_autoloader($class) {
 				include_once $nameSpaceClass;
 			} catch (Exception $e) {
 				// todo: This should fail over to next instead of throwing fatal error.
-				//PEAR_Singleton::raiseError("Error loading class $class");
+				// PEAR_Singleton::raiseError("Error loading class $class");
 			}
 		}
 	}catch (Exception $e){
-		//PEAR_Singleton::raiseError("Error loading class $class");
+		// PEAR_Singleton::raiseError("Error loading class $class");
 		// todo: This should fail over to next instead of throwing fatal error.
 	}
 }
