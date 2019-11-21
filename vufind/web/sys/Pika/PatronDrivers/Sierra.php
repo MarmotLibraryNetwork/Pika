@@ -684,8 +684,11 @@ class Sierra {
 	{
 		// if a patron object was passed
 		if(is_object($patronOrBarcode)) {
-			$barcode = $patronOrBarcode->barcode;
-			$barcode = trim($barcode);
+			if ($this->configArray->loginMethod == "barcode_pin") {
+				$barcode = $patronOrBarcode->cat_username ;
+			} else {
+				$barcode = $patronOrBarcode->cat_password;
+			}
 		} elseif (is_string($patronOrBarcode)) {
 			$barcode = $patronOrBarcode;
 		}
