@@ -186,11 +186,13 @@ class User extends DB_DataObject {
 				$this->getStaffSettings();
 			}
 			return $this->materialsRequestReplyToAddress;
-		}elseif ($name == 'materialsRequestEmailSignature'){
-			if (!isset($this->materialsRequestEmailSignature)){
+		}elseif ($name == 'materialsRequestEmailSignature') {
+			if (!isset($this->materialsRequestEmailSignature)) {
 				$this->getStaffSettings();
 			}
 			return $this->materialsRequestEmailSignature;
+		}elseif ($name == 'barcode') {
+			return $this->getBarcode();
 		}else{
 			return $this->data[$name];
 		}
