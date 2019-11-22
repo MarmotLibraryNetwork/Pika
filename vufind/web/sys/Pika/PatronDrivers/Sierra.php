@@ -56,13 +56,6 @@ use ReadingHistoryEntry;
 use PinReset;
 use PHPMailer\PHPMailer\PHPMailer;
 
-require_once ROOT_DIR . "/sys/Pika/PatronDrivers/Traits/PatronCheckOutsOperations.php";
-require_once ROOT_DIR . "/sys/Pika/PatronDrivers/Traits/PatronHoldsOperations.php";
-require_once ROOT_DIR . "/sys/Pika/PatronDrivers/Traits/PatronFinesOperations.php";
-require_once ROOT_DIR . "/sys/Pika/PatronDrivers/Traits/PatronReadingHistoryOperations.php";
-require_once ROOT_DIR . "/sys/Pika/PatronDrivers/Traits/PatronSelfRegistrationOperations.php";
-require_once ROOT_DIR . "/sys/Pika/PatronDrivers/Traits/PatronPinOperations.php";
-
 class Sierra extends PatronDriverInterface{
 	use \PatronCheckOutsOperations;
 	use \PatronHoldsOperations;
@@ -71,8 +64,6 @@ class Sierra extends PatronDriverInterface{
 	use \PatronReadingHistoryOperations;
 	use \PatronPinOperations;
 	use \PatronSelfRegistrationOperations;
-
-	// TODO: Clean up logging
 
 	// @var Pika/Memcache instance
 	public  $memCache;
@@ -97,7 +88,7 @@ class Sierra extends PatronDriverInterface{
 	private $urlIdRegExp = "/.*\/(\d*)$/";
 
 
-	public function __construct(\AccountProfile $accountProfile) {
+	public function __construct($accountProfile) {
 		global $configArray;
 
 		$this->configArray    = $configArray;
@@ -2671,10 +2662,6 @@ EOT;
 
 		$c->close();
 		return $success;
-	}
-
-	private function _curlCasLogin($patron, $curl) {
-
 	}
 
 	/**
