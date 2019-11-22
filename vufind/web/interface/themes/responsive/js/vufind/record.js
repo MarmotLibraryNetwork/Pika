@@ -113,8 +113,6 @@ VuFind.Record = (function(){
 					var idParts = id.split(":", 2);
 					//source = idParts[0];
 					id = idParts[1];
-				//}else{
-				//	source = 'ils';
 				}
 				$.getJSON(Globals.path + "/" + module + "/" + id + "/AJAX?method=getBookMaterialForm", function(data){
 					VuFind.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
@@ -127,14 +125,14 @@ VuFind.Record = (function(){
 			return false;
 		},
 
-		submitBookMaterialForm: function(){
-			var params = $('#bookMaterialForm').serialize();
-			var module = $('#module').val();
+		submitBookMaterialForm: function() {
+			var params = $('#bookMaterialForm').serialize() + '&method=bookMaterial',
+					module = $('#module').val();
 			VuFind.showMessage('Scheduling', 'Processing, please wait.');
-			$.getJSON(Globals.path + "/" + module +"/AJAX", params+'&method=bookMaterial', function(data){
+			$.getJSON(Globals.path + "/" + module + "/AJAX", params, function (data) {
 				if (data.modalBody) VuFind.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
-					// For errors that can be fixed by the user, the form will be re-displayed
-				if (data.success) VuFind.showMessage('Success', data.message/*, true*/);
+				// For errors that can be fixed by the user, the form will be re-displayed
+				if (data.success) VuFind.showMessageWithButtons('Success', data.message, data.buttons);
 				else if (data.message) VuFind.showMessage('Error', data.message);
 			}).fail(VuFind.ajaxFail);
 		},
@@ -166,6 +164,7 @@ VuFind.Record = (function(){
 				alert("Please select a location to pick up your hold when it is ready.");
 				return false;
 			}
+			VuFind.loadingMessage();
 			$.getJSON(Globals.path + "/" + module +  "/" + id + "/AJAX", params, function(data){
 				if (data.success){
 					if (data.needsItemLevelHold){

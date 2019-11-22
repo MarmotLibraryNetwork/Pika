@@ -4,19 +4,23 @@
 VuFind.MaterialsRequest = (function(){
 	return {
 		getWorldCatIdentifiers: function(){
-			var title = $("#title").val();
-			var author = $("#author").val();
-			var format = $("#format").val();
+			var title = $("#title").val(),
+					author = $("#author").val(),
+					format = $("#format").val();
 			if (title == '' && author == ''){
 				alert("Please enter a title and author before checking for an ISBN and OCLC Number");
 			}else{
-				var requestUrl = Globals.path + "/MaterialsRequest/AJAX?method=GetWorldCatIdentifiers&title=" + encodeURIComponent(title) + "&author=" + encodeURIComponent(author)  + "&format=" + encodeURIComponent(format);
-				$.getJSON(requestUrl, function(data){
-					if (data.success == true){
-						//Dislay the results of the suggestions
-						var suggestedIdentifiers = $("#suggestedIdentifiers");
-						suggestedIdentifiers.html(data.formattedSuggestions);
-						suggestedIdentifiers.slideDown();
+				var requestUrl = Globals.path + "/MaterialsRequest/AJAX",
+						params = {
+							'method': 'GetWorldCatIdentifiers',
+							title: title,
+							author: author,
+							format: format
+						};
+				$.getJSON(requestUrl, params, function (data) {
+					if (data.success) {
+						//Display the results of the suggestions
+						$("#suggestedIdentifiers").html(data.formattedSuggestions).slideDown();
 					}else{
 						alert(data.error);
 					}
@@ -27,9 +31,14 @@ VuFind.MaterialsRequest = (function(){
 
 		cancelMaterialsRequest: function(id){
 			if (confirm("Are you sure you want to cancel this request?")){
-				var url = Globals.path + "/MaterialsRequest/AJAX?method=CancelRequest&id=" + id;
+				var url = Globals.path + "/MaterialsRequest/AJAX",
+						params = {
+							'method': 'CancelRequest',
+							id: id
+						};
 				$.getJSON(
 						url,
+						params,
 						function(data){
 							if (data.success){
 								alert("Your request was cancelled successfully.");
@@ -39,10 +48,8 @@ VuFind.MaterialsRequest = (function(){
 							}
 						}
 				);
-				return false;
-			}else{
-				return false;
 			}
+			return false;
 		},
 
 		showMaterialsRequestDetails: function(id, staffView){
@@ -94,8 +101,7 @@ VuFind.MaterialsRequest = (function(){
 			}).get().join("&");
 			if (selectedRequests.length == 0){
 				if (promptToSelectAll){
-					var ret = confirm('You have not selected any requests, process all requests?');
-					if (ret == true){
+					if (confirm('You have not selected any requests, process all requests?')) {
 						selectedRequests = $("input.select").map(function() {
 							return $(this).attr('name') + "=on";
 						}).get().join("&");
@@ -188,8 +194,7 @@ VuFind.MaterialsRequest = (function(){
 					$("#bookmobileStopField").hide();
 				}
 			}else{
-				$("#bookmobileStopField").hide();
-				$("#pickupLocationField").hide();
+				$("#bookmobileStopField,#pickupLocationField").hide();
 			}
 		}
 

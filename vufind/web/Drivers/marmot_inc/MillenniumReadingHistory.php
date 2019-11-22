@@ -23,7 +23,7 @@ class MillenniumReadingHistory {
 	 * of a patron's reading history.
 	 *
 	 * @param User $patron
-	 * @param null|int $loadAdditional
+	 * @param null|int $loadAdditional The batch of reading history entries to load, eg 2nd batch, etc
 	 * @return array
 	 */
 	public function loadReadingHistoryFromIls($patron, $loadAdditional = null) {

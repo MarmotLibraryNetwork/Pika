@@ -429,10 +429,7 @@ class MillenniumBooking {
 				$calendarTable = '<table class="table table-condensed">'. $calendarTable . '</table>'; // add table tag with styling attributes
 
 				return $calendarTable;
-
 			}
-
-
 	}
 
 }

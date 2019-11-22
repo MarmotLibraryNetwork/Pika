@@ -56,15 +56,30 @@ use ReadingHistoryEntry;
 use PinReset;
 use PHPMailer\PHPMailer\PHPMailer;
 
+require_once ROOT_DIR . "/sys/Pika/PatronDrivers/Traits/PatronCheckOutsOperations.php";
+require_once ROOT_DIR . "/sys/Pika/PatronDrivers/Traits/PatronHoldsOperations.php";
+require_once ROOT_DIR . "/sys/Pika/PatronDrivers/Traits/PatronFinesOperations.php";
+require_once ROOT_DIR . "/sys/Pika/PatronDrivers/Traits/PatronReadingHistoryOperations.php";
+require_once ROOT_DIR . "/sys/Pika/PatronDrivers/Traits/PatronSelfRegistrationOperations.php";
+require_once ROOT_DIR . "/sys/Pika/PatronDrivers/Traits/PatronPinOperations.php";
 
-class Sierra {
+class Sierra extends PatronDriverInterface{
+	use \PatronCheckOutsOperations;
+	use \PatronHoldsOperations;
+	use \PatronFinesOperations;
+
+	use \PatronReadingHistoryOperations;
+	use \PatronPinOperations;
+	use \PatronSelfRegistrationOperations;
+
+	// TODO: Clean up logging
 
 	// @var Pika/Memcache instance
 	public  $memCache;
 	// @var $logger Pika/Logger instance
-	private $logger;
+	protected $logger;
 
-	private $configArray;
+	protected $configArray;
 	// ----------------------
 	/* @var $oAuthToken oAuth2Token */
 	private $oAuthToken;
@@ -82,7 +97,7 @@ class Sierra {
 	private $urlIdRegExp = "/.*\/(\d*)$/";
 
 
-	public function __construct($accountProfile) {
+	public function __construct(\AccountProfile $accountProfile) {
 		global $configArray;
 
 		$this->configArray    = $configArray;
@@ -1847,25 +1862,25 @@ EOT;
 	 * @param  string $action One of the following; deleteAll, deleteMarked, optIn, optOut
 	 * @return mixed
 	 */
-	public function doReadingHistoryAction($patron, $action, $selectedTitles) {
-
-		switch ($action) {
-			case 'optIn':
-				return $this->optInReadingHistory($patron);
-				break;
-			case 'optOut':
-				return $this->optOutReadingHistory($patron);
-				break;
-			case 'deleteAll':
-				return $this->deleteAllReadingHistory($patron);
-				break;
-			case 'deleteMarked':
-				return $this->deleteMarkedReadingHistory($patron, $selectedTitles);
-				break;
-			default:
-				return false;
-		}
-	}
+//	public function doReadingHistoryAction($patron, $action, $selectedTitles) {
+//
+//		switch ($action) {
+//			case 'optIn':
+//				return $this->optInReadingHistory($patron);
+//				break;
+//			case 'optOut':
+//				return $this->optOutReadingHistory($patron);
+//				break;
+//			case 'deleteAll':
+//				return $this->deleteAllReadingHistory($patron);
+//				break;
+//			case 'deleteMarked':
+//				return $this->deleteMarkedReadingHistory($patron, $selectedTitles);
+//				break;
+//			default:
+//				return false;
+//		}
+//	}
 
 	/**
 	 * Opt the patron into Reading History within the ILS.
@@ -1899,7 +1914,7 @@ EOT;
 
 		$success = $this->_curlOptInOptOut($patron, 'OptOut');
 		if(!$success) {
-			$this->logger->warning('Can not opt out of reading history for patron '.$patron->barcode.'. Falling back to Pika reading history.');
+			return false;
 		}
 		$patron->trackReadingHistory = false;
 		$patron->update();
@@ -2719,7 +2734,7 @@ EOT;
 		return $return;
 	}
 
-	private function getCheckDigit($baseId){
+	protected function getCheckDigit($baseId){
 		$baseId = preg_replace('/\.?[bij]/', '', $baseId);
 		$sumOfDigits = 0;
 		for ($i = 0; $i < strlen($baseId); $i++){

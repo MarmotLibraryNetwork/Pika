@@ -8,7 +8,6 @@
  *
  */
 
-//TODO:  This is likely to be for Sierra only; and likely will require screen scraping to use stull
 trait PatronBookingsOperations {
 
 	/**
@@ -18,7 +17,7 @@ trait PatronBookingsOperations {
 	 *
 	 * @return array
 	 */
-	public abstract function getMyBookings($patron);
+	public abstract function getMyBookings(\User $patron);
 
 	/**
 	 * @param User        $patron    The user to book an item for
@@ -35,10 +34,17 @@ trait PatronBookingsOperations {
 	/**
 	 * Cancel a Booking
 	 *
-	 * @param User   $patron  The user the booking belongs to
-	 * @param string $cancelId The Id needed to cancel the booking
+	 * @param User   $patron          The user the booking belongs to
+	 * @param string|array $cancelIds The Id or array of Ids needed to cancel the booking
 	 */
-	public abstract function cancelBookedMaterial($patron, $cancelId);
+	public abstract function cancelBookedMaterial(\User $patron, $cancelIds);
+
+	/**
+	 * Cancel all Bookings
+	 *
+	 * @param User   $patron          The user the bookings belongs to
+	 */
+	public abstract function cancelAllBookedMaterial(\User $patron);
 
 	/**
 	 *  Fetch the calendar to use with scheduling a booking
@@ -48,5 +54,5 @@ trait PatronBookingsOperations {
 	 *
 	 * @return string  An HTML table
 	 */
-	public abstract function getBookingCalendar($patron, $recordId);
+	public abstract function getBookingCalendar(\User $patron, $recordId);
 }

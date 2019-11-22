@@ -42,7 +42,7 @@
 						<a href="{$path}/MyAccount/CheckedOut?exportToExcel{if isset($defaultSortOption)}&accountSort={$defaultSortOption}{/if}" class="btn btn-sm btn-default" id="exportToExcelTop">Export to Excel</a>
 					</div>
 
-					<br>
+					<br><br>
 
 					<div class="striped">
 						{foreach from=$transList item=checkedOutTitle name=checkedOutTitleLoop key=checkedOutKey}
@@ -61,6 +61,7 @@
 					</div>
 
 					{if translate('CheckedOut_Econtent_notice')}
+							<br>
 						<p class="alert alert-info">
 							{translate text='CheckedOut_Econtent_notice'}
 						</p>
@@ -80,6 +81,9 @@
 			{/if}
 		{/if}
 	{else}
+      {* This should never get displayed. Users should automatically be redirected to login page*}
+		<div class="alert alert-warning">
 		You must login to view this information. Click <a href="{$path}/MyAccount/Login">here</a> to login.
+		</div>
 	{/if}
 {/strip}
