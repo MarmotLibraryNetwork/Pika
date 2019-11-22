@@ -2608,9 +2608,25 @@ EOT;
 		}
 
 		if(!stristr($r, $patron->cat_username)) {
-			// Check for cas login
-
-			//$this->_curlCasLogin();
+			// check for cas login. do cas login if possible
+			$casUrl = '/iii/cas/login';
+			if(stristr($r, $casUrl)) {
+				$this->logger->info('Trying cas login.');
+				preg_match('|<input type="hidden" name="lt" value="(.*)"|', $r, $m);
+				if($m) {
+					$postData['lt']       = $m[1];
+					$postData['_eventId'] = 'submit';
+				} else {
+					return false;
+				}
+				$casLoginUrl = $vendorOpacUrl.$casUrl;
+				$r = $c->post($casLoginUrl, $postData);
+				if(!stristr($r, $patron->cat_username)) {
+					$this->logger->info('cas login failed.');
+					return false;
+				}
+				$this->logger->info('cas login success.');
+			}
 		}
 
 		// now we can call the optin or optout url
@@ -2642,7 +2658,7 @@ EOT;
 		return $success;
 	}
 
-	private function _curlCasLogin() {
+	private function _curlCasLogin($patron, $curl) {
 
 	}
 
