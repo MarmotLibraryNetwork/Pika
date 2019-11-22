@@ -2,7 +2,7 @@
 	<div id="{$linksId}" class="sidebar-links accordion">
 		<div class="panel-group" id="link-accordion">
 			{foreach from=$libraryLinks item=linkCategory key=categoryName name=linkLoop}
-				{if $categoryName}
+          {if $categoryName && !is_numeric($categoryName)}{* Display any subsequent numeric indexes as uncategorized links *}
 					{* Put the links within a collapsible section *}
 					<div class="panel {if array_key_exists($categoryName, $expandedLinkCategories)}active{/if}">
 						<a data-toggle="collapse" data-parent="#link-accordion" href="#{$categoryName|escapeCSS}{$section}Panel">
