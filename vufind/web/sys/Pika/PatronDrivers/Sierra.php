@@ -57,13 +57,14 @@ use PinReset;
 use PHPMailer\PHPMailer\PHPMailer;
 
 class Sierra extends PatronDriverInterface{
-	use \PatronCheckOutsOperations;
-	use \PatronHoldsOperations;
-	use \PatronFinesOperations;
-
-	use \PatronReadingHistoryOperations;
-	use \PatronPinOperations;
-	use \PatronSelfRegistrationOperations;
+	// let's swing back around to this later.
+//	use \PatronCheckOutsOperations;
+//	use \PatronHoldsOperations;
+//	use \PatronFinesOperations;
+//
+//	use \PatronReadingHistoryOperations;
+//	use \PatronPinOperations;
+//	use \PatronSelfRegistrationOperations;
 
 	// @var Pika/Memcache instance
 	public  $memCache;
