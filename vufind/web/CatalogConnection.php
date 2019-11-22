@@ -611,7 +611,12 @@ class CatalogConnection
 		//Opt in within Pika since the ILS does not seem to implement this functionality
 		$patron->trackReadingHistory = true;
 		$result = $patron->update();
-		return $result !== false;  // The update can return 0 for no rows affected
+		// Other parts may not use strict checking // set to true to pass back up the chain.
+		if($result !== false) {
+			$result = true;
+		}
+		return $result;
+		//return $result !== false;  // The update can return 0 for no rows affected
 	}
 
 	/**

@@ -1879,15 +1879,10 @@ EOT;
 
 		$success = $this->_curlOptInOptOut($patron, 'OptIn');
 		if(!$success) {
-			return false;
+			$this->logger->warning('Can not opt in to reading history for patron '.$patron->barcode.'. Falling back to Pika reading history.');
 		}
 		$patron->trackReadingHistory = true;
 		$patron->update();
-		// clear memcache
-		$patronObjectCacheKey = 'patron_'.$patron->barcode.'_patron';
-		if($this->memCache->delete($patronObjectCacheKey)) {
-			$this->logger->debug('Removed patron from memcache after opting in to reading history.');
-		}
 
 		return true;
 	}
@@ -1904,7 +1899,7 @@ EOT;
 
 		$success = $this->_curlOptInOptOut($patron, 'OptOut');
 		if(!$success) {
-			return false;
+			$this->logger->warning('Can not opt out of reading history for patron '.$patron->barcode.'. Falling back to Pika reading history.');
 		}
 		$patron->trackReadingHistory = false;
 		$patron->update();
@@ -2026,6 +2021,7 @@ EOT;
 
 		if ($history->total == 0){
 			return [
+				'historyActive' => true,
 				'numTitles' => 0,
 				'titles'    => []
 			];
@@ -2592,10 +2588,17 @@ EOT;
 		$c->setOpts($curlOpts);
 
 		// first log patron in
-		$postData = [
-			'name' => $patron->cat_username,
-			'code' => $patron->cat_password
-		];
+		if($this->accountProfile->loginConfiguration == "barcode_pin") {
+			$postData = [
+				'code' => $patron->cat_username,
+				'pin'  => $patron->cat_password
+			];
+		} else {
+			$postData = [
+				'name' => $patron->cat_username,
+				'code' => $patron->cat_password
+			];
+		}
 		$loginUrl = $vendorOpacUrl . '/patroninfo/';
 		$r = $c->post($loginUrl, $postData);
 
@@ -2605,8 +2608,9 @@ EOT;
 		}
 
 		if(!stristr($r, $patron->cat_username)) {
-			$c->close();
-			return false;
+			// Check for cas login
+
+			//$this->_curlCasLogin();
 		}
 
 		// now we can call the optin or optout url
@@ -2636,6 +2640,10 @@ EOT;
 
 		$c->close();
 		return $success;
+	}
+
+	private function _curlCasLogin() {
+
 	}
 
 	/**
