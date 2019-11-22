@@ -850,7 +850,10 @@ class User extends DB_DataObject {
 	}
 
 	public function getNumBookingsTotal($includeLinkedUsers = true){
-		$myBookings = $this->numBookings;
+		$homeLibrary = $this->getHomeLibrary();
+		if ($homeLibrary->enableMaterialsBooking){
+			$myBookings = count($this->getMyBookings(false));
+		}
 		if ($includeLinkedUsers){
 			if ($this->getLinkedUsers() != null){
 				/** @var User $user */

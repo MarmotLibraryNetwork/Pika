@@ -3,17 +3,16 @@
 	<div class="col-xs-12 col-sm-3">
 		<div class="row">
 			<div class="selectTitle col-xs-2">
-				{if $record.cancelValue}
-					{*<input type="checkbox" name="cancelId[{if $record.userId}{$record.userId}:{/if}{$record.cancelName}]" value="{$record.cancelValue}" id="selected{$record.cancelValue}" class="titleSelect">&nbsp;*}
-					<input type="checkbox" name="cancelId[{$record.userId}][{$record.cancelName}]" value="{$record.cancelValue}" id="selected{$record.cancelValue}" class="titleSelect">&nbsp;
+				{if $myBooking->cancelValue}
+					<input type="checkbox" name="cancelId[{$myBooking->userId}][{$myBooking->cancelName}]" value="{$myBooking->cancelValue}" id="selected{$myBooking->cancelValue}" class="titleSelect">&nbsp;
 				{/if}
 			</div>
 			<div class="col-xs-9 text-center">
-				{if $record.id}
-				<a href="{$record.linkUrl}">
+				{if $myBooking->id}
+				<a href="{$myBooking->linkUrl}">
 					{/if}
-					<img src="{$record.coverUrl}" class="listResultImage img-thumbnail img-responsive" alt="{translate text='Cover Image'}">
-					{if $record.id}
+					<img src="{$myBooking->coverUrl}" class="listResultImage img-thumbnail img-responsive" alt="{translate text='Cover Image'}">
+					{if $myBooking->id}
 				</a>
 				{/if}
 			</div>
@@ -24,17 +23,12 @@
 		<div class="row">
 			<div class="col-xs-12">
 				<span class="result-index">{$resultIndex})</span>&nbsp;
-				{if $record.id}
-					<a href="{$record.linkUrl}" class="result-title notranslate">
+				{if $myBooking->id}
+					<a href="{$myBooking->linkUrl}" class="result-title notranslate">
 				{/if}
-				{if !$record.title|removeTrailingPunctuation}{translate text='Title not available'}{else}{$record.title|removeTrailingPunctuation|truncate:180:"..."|highlight}{/if}
-				{if $record.id}
+				{if !$myBooking->title|removeTrailingPunctuation}{translate text='Title not available'}{else}{$myBooking->title|removeTrailingPunctuation|truncate:180:"..."|highlight}{/if}
+				{if $myBooking->id}
 					</a>
-				{/if}
-				{if $record.title2}
-					<div class="searchResultSectionInfo">
-						{$record.title2|removeTrailingPunctuation|truncate:180:"..."|highlight}
-					</div>
 				{/if}
 			</div>
 		</div>
@@ -42,74 +36,83 @@
 		<div class="row">
 			<div class="resultDetails col-xs-12 col-md-9">
 
-				{if $record.author}
+				{if $myBooking->author}
 					<div class="row">
 						<div class="result-label col-xs-3">{translate text='Author'}</div>
 						<div class="col-xs-9 result-value">
-							{if is_array($record.author)}
-								{foreach from=$record.author item=author}
+							{if is_array($myBooking->author)}
+								{foreach from=$myBooking->author item=author}
 									<a href='{$path}/Author/Home?author="{$author|escape:"url"}"'>{$author|highlight}</a>
 								{/foreach}
 							{else}
-								<a href='{$path}/Author/Home?author="{$record.author|escape:"url"}"'>{$record.author|highlight}</a>
+								<a href='{$path}/Author/Home?author="{$myBooking->author|escape:"url"}"'>{$myBooking->author|highlight}</a>
 							{/if}
 						</div>
 					</div>
 				{/if}
 
-				{if $record.format}
+				{if $myBooking->format}
 					<div class="row">
 						<div class="result-label col-xs-3">{translate text='Format'}</div>
 						<div class="col-xs-9 result-value">
-							{implode subject=$record.format glue=", "}
+							{implode subject=$myBooking->format glue=", "}
 						</div>
 					</div>
 				{/if}
 
-				{if $record.user}
+        {if $showRatings && $myBooking->groupedWorkId && $myBooking->ratingData}
+					<div class="row">
+						<div class="result-label col-tn-4 col-lg-3">{translate text='Rating'}</div>
+						<div class="result-value col-tn-8 col-lg-9">
+                {include file="GroupedWork/title-rating.tpl" ratingClass="" id=$myBooking->groupedWorkId ratingData=$myBooking->ratingData showNotInterested=false}
+						</div>
+					</div>
+        {/if}
+
+				{if $myBooking->user}
 				<div class="row">
 					<div class="result-label col-xs-3">{translate text='Scheduled For'}</div>
 					<div class="col-xs-9 result-value">
-						{$record.user}
+						{$myBooking->userDisplayName}
 					</div>
 				</div>
 				{/if}
 
-				{if $record.startDateTime == $record.endDateTime}
+				{if $myBooking->startDateTime == $myBooking->endDateTime}
 					{* Items Booked for a day will have the same start & end. (time is usually 4) *}
 					<div class="row">
 						<div class="result-label col-xs-3">{translate text='Scheduled Date'}</div>
 						<div class="col-xs-9 result-value">
-							{$record.startDateTime|date_format:"%b %d, %Y"} (All Day)
+							{$myBooking->startDateTime|date_format:"%b %d, %Y"} (All Day)
 						</div>
 					</div>
 				{else}
 
 					{* Otherwise display full datetime for start & end *}
-					{if $record.startDateTime}
+					{if $myBooking->startDateTime}
 						<div class="row">
 							<div class="result-label col-xs-3">{translate text='Starting at'}</div>
 							<div class="col-xs-9 result-value">
-								{*{$record.startDateTime|date_format:"%b %d, %Y at %l:%M %p"}*}
-								{$record.startDateTime|date_format:"%b %d, %Y"}
+								{*{$myBooking->startDateTime|date_format:"%b %d, %Y at %l:%M %p"}*}
+								{$myBooking->startDateTime|date_format:"%b %d, %Y"}
 							</div>
 						</div>
 					{/if}
 
-					{if $record.endDateTime}
+					{if $myBooking->endDateTime}
 						<div class="row">
 							<div class="result-label col-xs-3">{translate text='Ending at'}</div>
 							<div class="col-xs-9 result-value">
-								{*{$record.endDateTime|date_format:"%b %d, %Y at %l:%M %p"}*}
-								{$record.endDateTime|date_format:"%b %d, %Y"}
+								{*{$myBooking->endDateTime|date_format:"%b %d, %Y at %l:%M %p"}*}
+								{$myBooking->endDateTime|date_format:"%b %d, %Y"}
 							</div>
 						</div>
 					{/if}
 				{/if}
-				{if $record.status}
+				{if $myBooking->status}
 					<div class="row">
 						<div class="result-label col-xs-3">{translate text='Status'}</div>
-						<div class="col-xs-9 result-value">{$record.status}</div>
+						<div class="col-xs-9 result-value">{$myBooking->status}</div>
 					</div>
 				{/if}
 
@@ -117,8 +120,8 @@
 
 			<div class="col-xs-12 col-md-3">
 				<div class="btn-group btn-group-vertical btn-block">
-					{if $record.cancelValue}
-						<button onclick="return VuFind.Account.cancelBooking('{$record.userId}', '{$record.cancelValue}')" class="btn btn-sm btn-warning">Cancel Item</button>
+					{if $myBooking->cancelValue}
+						<button onclick="return VuFind.Account.cancelBooking('{$myBooking->userId}', '{$myBooking->cancelValue}')" class="btn btn-sm btn-warning">Cancel Item</button>
 					{/if}
 				</div>
 			</div>

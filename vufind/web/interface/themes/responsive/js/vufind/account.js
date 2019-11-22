@@ -428,8 +428,6 @@ VuFind.Account = (function(){
 					VuFind.loadingMessage();
 					var c = {};
 					c[patronId] = cancelId;
-					//console.log(c);
-					//$.getJSON(Globals.path + "/MyAccount/AJAX", {method:"cancelBooking", patronId:patronId, cancelId:cancelId}, function(data){
 					$.getJSON(Globals.path + "/MyAccount/AJAX", {method:"cancelBooking", cancelId:c}, function(data){
 						VuFind.showMessage(data.title, data.modalBody, data.success); // autoclose when successful
 						if (data.success) {

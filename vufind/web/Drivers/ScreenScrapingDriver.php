@@ -81,8 +81,6 @@ abstract class ScreenScrapingDriver implements DriverInterface {
 				CURLOPT_TIMEOUT           => 60,
 				CURLOPT_HTTPHEADER        => $header,
 				CURLOPT_RETURNTRANSFER    => true,
-				CURLOPT_SSL_VERIFYPEER    => false,
-				CURLOPT_SSL_VERIFYHOST    => false,
 				CURLOPT_FOLLOWLOCATION    => true,
 				CURLOPT_UNRESTRICTED_AUTH => true,
 				CURLOPT_COOKIEJAR         => $cookie,

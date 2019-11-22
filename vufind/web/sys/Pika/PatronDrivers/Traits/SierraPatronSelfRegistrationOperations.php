@@ -7,6 +7,7 @@
  * Date: 5/13/2019
  *
  */
+require_once ROOT_DIR . "/sys/Pika/PatronDrivers/Traits/PatronSelfRegistrationOperations.php";
 
 /**
  * Trait SierraPatronSelfRegistrationOperations
@@ -14,7 +15,7 @@
  * These methods will be common among Sierra Libraries but are not used by every Sierra Library
  */
 trait SierraPatronSelfRegistrationOperations {
-	use PatronSelfRegistrationOperations;
+	use \PatronSelfRegistrationOperations;
 
 	public function selfRegister(){
 		// TODO: Implement selfRegister() method.

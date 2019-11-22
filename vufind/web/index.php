@@ -330,7 +330,7 @@ if ($isLoggedIn) {
 $timer->logTime('User authentication');
 
 //Load user data for the user as long as we aren't in the act of logging out.
-if (UserAccount::isLoggedIn() && (!isset($_REQUEST['action']) || $_REQUEST['action'] != 'Logout')){
+if ($isLoggedIn && (!isset($_REQUEST['action']) || $_REQUEST['action'] != 'Logout')){
 	loadUserData();
 	$timer->logTime('Load user data');
 
@@ -374,7 +374,7 @@ if (!$analytics->isTrackingDisabled()){
 	$analytics->setMobile($interface->isMobile() ? 1 : 0);
 	$analytics->setDevice(get_device_name());
 	$analytics->setPhysicalLocation($physicalLocation);
-	if (UserAccount::isLoggedIn()){
+	if ($isLoggedIn){
 		$analytics->setPatronType(UserAccount::getUserPType());
 		$analytics->setHomeLocationId(UserAccount::getUserHomeLocationId());
 	}else{
@@ -393,7 +393,7 @@ if ($module == null && $action == null){
 	$action = 'Home';
 }
 //Override MyAccount Home as needed
-if ($module == 'MyAccount' && $action == 'Home' && UserAccount::isLoggedIn()){
+if ($module == 'MyAccount' && $action == 'Home' && $isLoggedIn){
 	$user = UserAccount::getLoggedInUser();
 	if ($user->getNumCheckedOutTotal() > 0){
 		$action ='CheckedOut';
@@ -562,7 +562,7 @@ if (($isOpac || $masqueradeMode || (!empty($ipLocation) && $ipLocation->getOpacS
 			$automaticTimeoutLength = empty($library->masqueradeAutomaticTimeoutLength) ? 90 : $library->masqueradeAutomaticTimeoutLength;
 	} else {
 		// Determine Regular Time Out Lengths
-		if (UserAccount::isLoggedIn()) {
+		if ($isLoggedIn) {
 			if (!isset($user)){
 				$user = UserAccount::getActiveUserObj();
 			}

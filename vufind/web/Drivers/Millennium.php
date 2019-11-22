@@ -864,7 +864,7 @@ class Millennium extends ScreenScrapingDriver
 		return $millenniumBooking->cancelAllBookedMaterial($patron);
 	}
 
-	public function getBookingCalendar($recordId) {
+	public function getBookingCalendar($user, $recordId) {
 		require_once ROOT_DIR . '/Drivers/marmot_inc/MillenniumBooking.php';
 		$millenniumBooking = new MillenniumBooking($this);
 		return $millenniumBooking->getBookingCalendar($recordId);

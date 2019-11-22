@@ -435,45 +435,43 @@ class Record_AJAX extends AJAXHandler {
 	}
 
 	function getBookingCalendar(){
-		$recordId = $_REQUEST['id'];
-		if (strpos($recordId, ':') !== false){
-			list(, $recordId) = explode(':', $recordId, 2);
-		} // remove any prefix from the recordId
-		if (!empty($recordId)){
-			$user    = UserAccount::getLoggedInUser();
-			$catalog = $user->getCatalogDriver();
-//			$catalog = CatalogFactory::getCatalogConnectionInstance();
-			return $catalog->getBookingCalendar($recordId);
+		if (!empty($_REQUEST['id'])){
+			$sourceAndId = new SourceAndId(trim($_REQUEST['id']));
+			$user        = UserAccount::getLoggedInUser();
+			if (!empty($user)){ // The user should be logged in at this point
+				$catalog = $user->getCatalogDriver();
+				return $catalog->getBookingCalendar($user, $sourceAndId);
+			}
 		}
 	}
 
+
 	function bookMaterial(){
-		if (!empty($_REQUEST['id'])){
-			$recordId = $_REQUEST['id'];
-			if (strpos($recordId, ':') !== false){
-				list(, $recordId) = explode(':', $recordId, 2);
-			} // remove any prefix from the recordId
-		}
-		if (empty($recordId)){
-			return array('success' => false, 'message' => 'Item ID is required.');
-		}
-		if (isset($_REQUEST['startDate'])){
-			$startDate = $_REQUEST['startDate'];
-		}else{
-			return array('success' => false, 'message' => 'Start Date is required.');
-		}
-
-		$startTime = empty($_REQUEST['startTime']) ? null : $_REQUEST['startTime'];
-		$endDate   = empty($_REQUEST['endDate']) ? null : $_REQUEST['endDate'];
-		$endTime   = empty($_REQUEST['endTime']) ? null : $_REQUEST['endTime'];
-
 		$user = UserAccount::getLoggedInUser();
 		if ($user){ // The user is already logged in
-			return $user->bookMaterial($recordId, $startDate, $startTime, $endDate, $endTime);
+			if (!empty($_REQUEST['id'])){
+				$recordId = new SourceAndId($_REQUEST['id']);
+				if (!empty($recordId->getRecordId())){
 
-		}else{
-			return array('success' => false, 'message' => 'User not logged in.');
+					if (!empty($_REQUEST['startDate'])){
+						$startDate = $_REQUEST['startDate'];
+
+						$startTime = empty($_REQUEST['startTime']) ? null : $_REQUEST['startTime'];
+						$endDate   = empty($_REQUEST['endDate']) ? null : $_REQUEST['endDate'];
+						$endTime   = empty($_REQUEST['endTime']) ? null : $_REQUEST['endTime'];
+
+						$result = $user->bookMaterial($recordId, $startDate, $startTime, $endDate, $endTime);
+						if ($result['success']){
+							$result['buttons'] = '<a class="btn btn-primary" href="/MyAccount/Bookings" role="button">View My Scheduled Items</a>';
+						}
+						return $result;
+					}
+					return array('success' => false, 'message' => 'Start Date is required.');
+				}
+			}
+			return array('success' => false, 'message' => 'Record ID is required.');
 		}
+		return array('success' => false, 'message' => 'User not logged in.');
 	}
 
 	function forceReExtract(){

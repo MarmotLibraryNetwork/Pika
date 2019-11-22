@@ -846,13 +846,12 @@ class CatalogConnection
 //		return $this->driver->getHoldLink($recordId);
 //	}
 
-	function updatePatronInfo($user, $canUpdateContactInfo)
-	{
+	function updatePatronInfo($user, $canUpdateContactInfo){
 		return $errors = $this->driver->updatePatronInfo($user, $canUpdateContactInfo);
 	}
 
 	// TODO Millennium only at this time, set other drivers to return false.
-	function bookMaterial($patron, $recordId, $startDate, $startTime = null, $endDate = null, $endTime = null){
+	function bookMaterial(User $patron, SourceAndId $recordId, $startDate, $startTime = null, $endDate = null, $endTime = null){
 		return $this->driver->bookMaterial($patron, $recordId, $startDate, $startTime, $endDate, $endTime);
 	}
 
@@ -872,10 +871,6 @@ class CatalogConnection
 	 */
 	function getMyBookings($patron){
 		$bookings = $this->driver->getMyBookings($patron);
-		foreach ($bookings as &$booking) {
-			$booking['user'] = $patron->getNameAndLibraryLabel();
-			$booking['userId'] = $patron->id;
-		}
 		return $bookings;
 	}
 
@@ -1208,10 +1203,10 @@ class CatalogConnection
 		return $this->driver->changeHoldPickupLocation($patron, $recordId, $itemToUpdateId, $newPickupLocation);
 	}
 
-	public function getBookingCalendar($recordId) {
+	public function getBookingCalendar(User $patron, SourceAndId $sourceAndId) {
 		// Graceful degradation -- return null if method not supported by driver.
 		return method_exists($this->driver, 'getBookingCalendar') ?
-			$this->driver->getBookingCalendar($recordId) : null;
+			$this->driver->getBookingCalendar($patron, $sourceAndId) : null;
 	}
 
 	public function renewItem($patron, $recordId, $itemId, $itemIndex){

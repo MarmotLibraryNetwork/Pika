@@ -35,10 +35,10 @@
 
 			<label for="endDate" class="control-label" >End Date</label>
 				<div class="input-group input-append date">
-					<input id="endDate" name="endDate" type="text" class="form-control required" placeholder="mm/dd/yyyy"
+					<input id="endDate" name="endDate" type="text" class="form-control" placeholder="mm/dd/yyyy"
 					       {if $smarty.request.endDate} value="{$smarty.request.endDate}" {/if}
 					       data-provide="datepicker" data-date-format="mm/dd/yyyy" data-date-start-date="0d" data-date-end-date="+2y"
-					       data-date-autoclose="true" data-disabletouchkeyboard="true" {* TODO: test that does this works on mibile devices*}
+					       data-date-autoclose="true" data-disabletouchkeyboard="true" {* TODO: test that does this works on mobile devices*}
 									>
 					<span class="input-group-addon"><span class="glyphicon glyphicon-calendar" onclick="$('#endDate').focus().datepicker('show')" aria-hidden="true"></span></span>
 				</div>
@@ -62,6 +62,9 @@
 			<style type="text/css" scoped>
 				#bookingCalendar table td.active {ldelim} {* muted text applied to closed and unavailable times. *}
 					color: #999999;
+				{rdelim}
+				#bookingCalendar table td.success {ldelim} {* bolded text applied to closed and unavailable times. *}
+					font-weight: bold;
 				{rdelim}
 			</style>
 

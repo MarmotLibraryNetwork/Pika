@@ -266,7 +266,8 @@
 	{/strip}
 			{/if}
 {else}
-	<div class="page">
+		{* This should never get displayed. Users should automatically be redirected to login page*}
+	<div class="alert alert-info">
 		You must login to view this information. Click <a href="{$path}/MyAccount/Login">here</a> to login.
 	</div>
 {/if}
