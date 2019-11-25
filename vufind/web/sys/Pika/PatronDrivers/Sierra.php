@@ -2393,6 +2393,7 @@ EOT;
 		$this->logger->info('No oAuth token in memcache. Requesting new token.');
 		// setup url
 		$url = $this->tokenUrl;
+		$this->logger->info('oAuth URL '.$url);
 		// grab clientKey and clientSecret from configArray
 		$clientKey    = $this->configArray['Catalog']['clientKey'];
 		$clientSecret = $this->configArray['Catalog']['clientSecret'];

@@ -758,6 +758,7 @@ class User extends DB_DataObject {
 		/** @var Memcache $memCache */
 		global $memCache, $serverName;
 		$memCache->delete("user_{$serverName}_" . $this->id); // now stored by User object id column
+		$memCache->delete("patron_" . $this->getBarcode() . '_patron'); // and variations
 	}
 
 	/**
