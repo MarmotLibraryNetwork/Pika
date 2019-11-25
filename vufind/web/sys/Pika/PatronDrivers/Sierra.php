@@ -2428,7 +2428,7 @@ EOT;
 			// This will probably never be triggered since we have the try/catch above.
 			$message = 'cUrl Error: '.$c->errorCode.': '.$c->errorMessage;
 			$this->apiLastError = $message;
-			$this->logger->error($message);
+			$this->logger->error($message, ['oauth_url'=>$url]);
 			throw new ErrorException($message);
 		} elseif ($cInfo['http_code'] != 200) { // check the request returned success (HTTP 200)
 			$message = 'API Error: '.$c->errorCode.': '.$c->errorMessage;
