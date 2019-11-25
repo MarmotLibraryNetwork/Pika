@@ -2400,15 +2400,14 @@ EOT;
 		$requestAuth  = base64_encode($clientKey . ':' . $clientSecret);
 
 		$headers = [
-			'Host: '.$_SERVER['SERVER_NAME'],
-			'Authorization: Basic ' . $requestAuth,
-			'Content-Type: application/x-www-form-urlencoded',
-			'grant_type=client_credentials'
+			'Host' => $_SERVER['SERVER_NAME'],
+			'Authorization' => 'Basic ' . $requestAuth,
+			'Content-Type' => 'application/x-www-form-urlencoded',
+			'grant_type' => 'client_credentials'
 		];
 
 		$opts = [
 			CURLOPT_RETURNTRANSFER => true,
-			CURLOPT_HTTPHEADER     => $headers,
 			CURLOPT_HEADER         => false
 		];
 
@@ -2433,7 +2432,6 @@ EOT;
 			throw new ErrorException($message);
 		} elseif ($cInfo['http_code'] != 200) { // check the request returned success (HTTP 200)
 			$message = 'API Error: '.$c->errorCode.': '.$c->errorMessage;
-			//$message = 'API Error: '.$c->response->code.': '.$c->response->name;
 			$this->apiLastError = $message;
 			$this->logger->error($message);
 			throw new ErrorException($message);
