@@ -194,6 +194,7 @@
 															<label for="noticesTel" class="btn btn-sm btn-default {if $profile->notices == 'p'}active{/if}"><input type="radio" value="p" id="noticesTel" name="notices" {if $profile->notices == 'p'}checked="checked"{/if}> Telephone</label>
 													{/if}
 													<label for="noticesEmail" class="btn btn-sm btn-default {if $profile->notices == 'z'}active{/if}"><input type="radio" value="z" id="noticesEmail" name="notices" {if $profile->notices == 'z'}checked="checked"{/if}> Email</label>
+													<label for="noticesNone" class="btn btn-sm btn-default {if $profile->notices == '-'}active{/if}"><input type="radio" value="-" id="noticesNone" name="notices" {if $profile->notices == '-'}checked="checked"{/if}> No Preference</label>
 												</div>
 											{else}
 												{$profile->noticePreferenceLabel|escape}
@@ -212,7 +213,6 @@
 															<label for="sendEmail" class="btn btn-sm btn-default {if $profile->notices == 'send email'}active{/if}"><input type="radio" value="send email" id="sendEmail" name="notices" {if $profile->notices == 'send email'}checked="checked"{/if}> Send Email</label>
 															<label for="dontSendEmail" class="btn btn-sm btn-default {if $profile->notices == 'do not send email'}active{/if}"><input type="radio" value="do not send email" id="dontSendEmail" name="notices" {if $profile->notices == 'do not send email'}checked="checked"{/if}> Do not send email</label>
 															<label for="optOut" class="btn btn-sm btn-default {if $profile->notices == 'opted out'}active{/if}"><input type="radio" value="opted out" id="optOut" name="notices" {if $profile->notices == 'opted out'}checked="checked"{/if}> Opt-out</label>
-															<label for="noticesNone" class="btn btn-sm btn-default {if $profile->notices == '-'}active{/if}"><input type="radio" value="-" id="noticesNone" name="notices" {if $profile->notices == '-'}checked="checked"{/if}> No Preference</label>
 													</div>
 												{else}
 													{$profile->notices}
