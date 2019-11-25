@@ -2433,7 +2433,7 @@ EOT;
 		} elseif ($cInfo['http_code'] != 200) { // check the request returned success (HTTP 200)
 			$message = 'API Error: '.$c->errorCode.': '.$c->errorMessage;
 			$this->apiLastError = $message;
-			$this->logger->error($message);
+			$this->logger->error($message, ['oauth_url'=>$url]);
 			throw new ErrorException($message);
 		}
 		// make sure to set last error to false if no errors.
