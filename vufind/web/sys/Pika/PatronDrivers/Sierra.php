@@ -1886,7 +1886,7 @@ EOT;
 
 		$success = $this->_curlOptInOptOut($patron, 'OptIn');
 		if(!$success) {
-			$this->logger->warning('Can not opt in to reading history for patron '.$patron->barcode.'. Falling back to Pika reading history.');
+			$this->logger->warning('Unable to opt in patron '. $patron->barcode . ' from ILS reading history. Falling back to Pika.');
 		}
 		$patron->trackReadingHistory = true;
 		$patron->update();
@@ -1906,7 +1906,7 @@ EOT;
 
 		$success = $this->_curlOptInOptOut($patron, 'OptOut');
 		if(!$success) {
-			return false;
+			$this->logger->warning('Unable to opt out patron '. $patron->barcode . ' from ILS reading history. Falling back to Pika.');
 		}
 		$patron->trackReadingHistory = false;
 		$patron->update();
@@ -2629,7 +2629,7 @@ EOT;
 				$casLoginUrl = $vendorOpacUrl.$casUrl;
 				$r = $c->post($casLoginUrl, $postData);
 				if(!stristr($r, $patron->cat_username)) {
-					$this->logger->info('cas login failed.');
+					$this->logger->warning('cas login failed.');
 					return false;
 				}
 				$this->logger->info('cas login success.');
