@@ -25,6 +25,11 @@ class Marmot extends Sierra {
 
 	use \PatronBookingsOperations;
 
+	public function __construct($accountProfile)
+	{
+		parent::__construct($accountProfile);
+	}
+
 	/**
 	 * Fetch the patron's bookings
 	 *
