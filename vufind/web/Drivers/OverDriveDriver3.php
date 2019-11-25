@@ -172,15 +172,12 @@ class OverDriveDriver3 {
 						if ($patronTokenData->error == 'unauthorized_client'){ // login failure
 							// patrons with too high a fine amount will get this result.
 							return false;
-						}else{
-							if ($configArray['System']['debug']){
-								echo("Error connecting to overdrive apis ". $patronTokenData->error);
-							}
+						}elseif ($configArray['System']['debug']){
+							global $logger;
+							$logger->log('Error connecting to overdrive apis ' . $patronTokenData->error, PEAR_LOG_ERR);
 						}
-					}else{
-						if (property_exists($patronTokenData, 'expires_in')){
-							$memCache->set('overdrive_patron_token_' . $patronBarcode, $patronTokenData, 0, $patronTokenData->expires_in - 10);
-						}
+					}elseif (property_exists($patronTokenData, 'expires_in')){
+						$memCache->set('overdrive_patron_token_' . $patronBarcode, $patronTokenData, 0, $patronTokenData->expires_in - 10);
 					}
 				}
 			}else{
