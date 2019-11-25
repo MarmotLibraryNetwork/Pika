@@ -1336,7 +1336,7 @@ class MyAccount_AJAX extends AJAXHandler {
 
 			//Count of bookings
 			$homeLibrary = $user->getHomeLibrary();
-			if ($homeLibrary->enableMaterialsBooking){
+			if (!empty($homeLibrary) && $homeLibrary->enableMaterialsBooking){
 				$result['bookings'] = '</div><span class="badge">' . $user->getNumBookingsTotal() . '</span>';
 			}else{
 				$result['bookings'] = '';
