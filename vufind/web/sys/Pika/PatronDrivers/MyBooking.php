@@ -10,7 +10,7 @@
  */
 
 
-namespace Pika\PatronDriver;
+namespace Pika\PatronDrivers;
 
 
 class MyBooking {

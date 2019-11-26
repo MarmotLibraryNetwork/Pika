@@ -51,7 +51,7 @@ use \Pika\Logger;
 use \Pika\Cache;
 use Location;
 use MarcRecord;
-use Pika\PatronDriver\MyBooking;
+use \Pika\PatronDrivers\MyBooking as MyBooking;
 use RecordDriverFactory;
 use User;
 use ReadingHistoryEntry;
