@@ -46,6 +46,7 @@ use DateInterval;
 use DateTime;
 use ErrorException;
 use InvalidArgumentException;
+use Library;
 use \Pika\Logger;
 use \Pika\Cache;
 use Location;
@@ -436,8 +437,9 @@ class Sierra {
 				$patron->cat_username = $pInfo->names[0];
 			}
 		}
-		// this assumes the name is in form last, first middle
+
 		if(stristr($pInfo->names[0], ',')) {
+			// find a comma-- assume the name is in form last, first middle
 			$nameParts = explode(',', $pInfo->names[0]);
 			$firstName = trim($nameParts[1]);
 			$lastName  = trim($nameParts[0]);
