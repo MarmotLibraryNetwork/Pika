@@ -2063,17 +2063,28 @@ EOT;
 				$titleEntry['coverUrl']    = $record->getBookcoverUrl('medium');
 				$titleEntry['format']      = $record->getFormats();
 			}else{
+				// check the api
+				$operation = 'bibs/'.$bibMatch[1];
+				$params = [
+					'fields' => 'deleted,title,author,materialType,normTitle'
+				];
+				$bibRes = $this->_doRequest($operation, $params);
+				if(!$bibRes || $bibRes->deleted == true) {
+					$titleEntry['title']      = '';
+					$titleEntry['author']     = '';
+					$titleEntry['format']     = '';
+					$titleEntry['title_sort'] = '';
+				} else {
+					$titleEntry['title']      = $bibRes->title;
+					$titleEntry['author']     = $bibRes->author;
+					$titleEntry['format']     = $bibRes->materialType;
+					$titleEntry['title_sort'] = $bibRes->normTitle;
+				}
 				$titleEntry['permanentId'] = '';
 				$titleEntry['ratingData']  = '';
 				$titleEntry['permanentId'] = '';
 				$titleEntry['linkUrl']     = '';
 				$titleEntry['coverUrl']    = '';
-				// todo: should fall back to api here?
-				//  YES for below
-				$titleEntry['title']      = '';
-				$titleEntry['author']     = '';
-				$titleEntry['format']     = '';
-				$titleEntry['title_sort'] = '';
 			}
 			$titleEntry['checkout']     = $checkOutDate; //TODO use timestamp
 			$titleEntry['shortId']      = $bibMatch[1];
