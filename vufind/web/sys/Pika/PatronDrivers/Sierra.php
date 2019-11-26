@@ -441,12 +441,18 @@ class Sierra {
 			$nameParts = explode(',', $pInfo->names[0]);
 			$firstName = trim($nameParts[1]);
 			$lastName  = trim($nameParts[0]);
-			// only spaces --assume last name is last
+
 		} else {
-			$nameParts = explode(' ', $pInfo->names[0], 2);
-			$firstName = trim($nameParts[0]);
-			if(isset($nameParts[1])) {
-				$lastName  = trim($nameParts[1]);
+			// only spaces --assume last name is last
+			$nameParts = explode(' ', $pInfo->names[0]);
+			// get the last index
+			$countNameParts = count($nameParts) - 1;
+			$lastName = $nameParts[$countNameParts];
+			if ($countNameParts >= 1) {
+				unset($nameParts[$countNameParts]);
+				$firstName = implode(' ', $nameParts);
+			} else {
+				$firstName = '';
 			}
 		}
 		if($firstName != $patron->firstname || $lastName != $patron->lastname) {
@@ -2040,13 +2046,12 @@ EOT;
 			$titleEntry = [];
 			// make the Pika style bib Id
 			preg_match($this->urlIdRegExp, $historyEntry->bib, $bibMatch);
-			$x     = $this->getCheckDigit($bibMatch[1]);
+			$x = $this->getCheckDigit($bibMatch[1]);
 			$bibId = '.b' . $bibMatch[1] . $x; // full bib id
 			// get the checkout id --> becomes itemindex
 			preg_match($this->urlIdRegExp, $historyEntry->id, $coIdMatch);
 			$itemindex = $coIdMatch[1];
-			// format the date
-			$ts           = strtotime($historyEntry->outDate);
+			$ts = strtotime($historyEntry->outDate);
 			$checkOutDate = date('m-d-Y', $ts);
 			// get the rest from the MARC record
 			$record = new MarcRecord($this->accountProfile->recordSource . ':' . $bibId);
@@ -2070,9 +2075,9 @@ EOT;
 				];
 				$bibRes = $this->_doRequest($operation, $params);
 				if(!$bibRes || $bibRes->deleted == true) {
-					$titleEntry['title']      = '';
-					$titleEntry['author']     = '';
-					$titleEntry['format']     = '';
+					$titleEntry['title']      = 'This title has been deleted from our catalog.';
+					$titleEntry['author']     = 'Not available';
+					$titleEntry['format']     = 'Not available';
 					$titleEntry['title_sort'] = '';
 				} else {
 					$titleEntry['title']      = $bibRes->title;
@@ -2086,23 +2091,22 @@ EOT;
 				$titleEntry['linkUrl']     = '';
 				$titleEntry['coverUrl']    = '';
 			}
-			$titleEntry['checkout']     = $checkOutDate; //TODO use timestamp
+			$titleEntry['checkout']     = $checkOutDate;
 			$titleEntry['shortId']      = $bibMatch[1];
 			$titleEntry['borrower_num'] = $patronPikaId;
 			$titleEntry['recordId']     = $bibId;
-			$titleEntry['itemindex']    = $itemindex; // checkout id
+			$titleEntry['itemindex']    = $itemindex;
 			$readingHistory[]           = $titleEntry;
 			// clear out before
 			unset($titleEntry);
 		}
 		$total   = count($readingHistory);
-		$history = ['numTitles' => $total,
+		$history = ['historyActive' => true,
+		            'numTitles' => $total,
 		            'titles'    => $readingHistory];
 
 		$this->memCache->set($patronReadingHistoryCacheKey, $history, 21600);
 		$this->logger->info("Saving reading history in memcache:" . $patronReadingHistoryCacheKey);
-
-		$history['historyActive'] = true;
 
 		if ($history['numTitles'] == 0){
 			return $history;
@@ -2207,7 +2211,7 @@ EOT;
 				];
 				$bibRes = $this->_doRequest($operation, $params);
 				if(!$bibRes || $bibRes->deleted == true) {
-					$titleEntry['title']      = '';
+					$titleEntry['title']      = 'This title has been deleted from the catalog ';
 					$titleEntry['author']     = '';
 					$titleEntry['format']     = '';
 					$titleEntry['title_sort'] = '';
@@ -2344,6 +2348,8 @@ EOT;
 	}
 
 	/**
+	 * Validate a barcode and pin
+	 *
 	 * patrons/validate
 	 *
 	 * @param string $barcode
