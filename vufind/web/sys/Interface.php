@@ -64,6 +64,7 @@ class UInterface extends Smarty
 			$this->assign('mapsBrowserKey', $mapsKey);
 		}
 
+		//TODO: Doesn't seem to have a purpose.
 		if (isset($_REQUEST['print'])) {
 			$this->assign('print', true);
 		}
@@ -548,23 +549,33 @@ class UInterface extends Smarty
 
 		//Load library links
 		if (isset($library)){
-			$links = $library->libraryLinks;
-			$libraryHelpLinks = array();
-			$libraryAccountLinks = array();
+			$links                  = $library->libraryLinks;
+			$libraryHelpLinks       = array();
+			$libraryAccountLinks    = array();
 			$expandedLinkCategories = array();
 			/** @var LibraryLink $libraryLink */
 			foreach ($links as $libraryLink){
 				if ($libraryLink->showInHelp || (!$libraryLink->showInHelp && !$libraryLink->showInAccount)){
-					if (!array_key_exists($libraryLink->category, $libraryHelpLinks)){
-						$libraryHelpLinks[$libraryLink->category] = array();
+					if (empty($libraryLink->category)){
+						// Links without categories should be displayed in the order they are listed
+						$libraryHelpLinks[][$libraryLink->linkText] = $libraryLink;
+					}else{
+						if (!array_key_exists($libraryLink->category, $libraryHelpLinks)){
+							$libraryHelpLinks[$libraryLink->category] = array();
+						}
+						$libraryHelpLinks[$libraryLink->category][$libraryLink->linkText] = $libraryLink;
 					}
-					$libraryHelpLinks[$libraryLink->category][$libraryLink->linkText] = $libraryLink;
 				}
 				if ($libraryLink->showInAccount){
-					if (!array_key_exists($libraryLink->category, $libraryAccountLinks)){
-						$libraryAccountLinks[$libraryLink->category] = array();
+					if (empty($libraryLink->category)){
+						// Links without categories should be displayed in the order they are listed
+						$libraryHelpLinks[][$libraryLink->linkText] = $libraryLink;
+					}else{
+						if (!array_key_exists($libraryLink->category, $libraryAccountLinks)){
+							$libraryAccountLinks[$libraryLink->category] = array();
+						}
+						$libraryAccountLinks[$libraryLink->category][$libraryLink->linkText] = $libraryLink;
 					}
-					$libraryAccountLinks[$libraryLink->category][$libraryLink->linkText] = $libraryLink;
 				}
 				if ($libraryLink->showExpanded){
 					$expandedLinkCategories[$libraryLink->category] = 1;
