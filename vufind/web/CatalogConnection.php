@@ -60,7 +60,7 @@ class CatalogConnection
 	 * The object of the appropriate driver.
 	 *
 	 * @access private
-	 * @var    Millennium|DriverInterface
+	 * @var    \Pika\PatronDrivers\Sierra|HorizonROA|SirsiDynixROA|DriverInterface
 	 */
 	public $driver;
 
@@ -374,8 +374,7 @@ class CatalogConnection
 	 * PEAR_Error otherwise.
 	 * @access public
 	 */
-	public function getMyCheckouts($user, $linkedAccount = false)
-	{
+	public function getMyCheckouts($user, $linkedAccount = false){
 		$transactions = $this->driver->getMyCheckouts($user, $linkedAccount);
 		foreach ($transactions as $key => $curTitle){
 			$curTitle['user']   = $user->getNameAndLibraryLabel();
@@ -383,11 +382,11 @@ class CatalogConnection
 			$curTitle['fullId'] = $this->accountProfile->recordSource . ':' . $curTitle['id'];
 
 			if ($curTitle['dueDate']){
-				// use the same time of day to calculate days until due, in order to avoid errors wiht rounding
-				$dueDate      = strtotime('midnight', $curTitle['dueDate']);
-				$today        = strtotime('midnight');
-				$daysUntilDue = ceil(($dueDate - $today) / (24 * 60 * 60));
-				$overdue      = $daysUntilDue < 0;
+				// use the same time of day to calculate days until due, in order to avoid errors with rounding
+				$dueDate                  = strtotime('midnight', $curTitle['dueDate']);
+				$today                    = strtotime('midnight');
+				$daysUntilDue             = ceil(($dueDate - $today) / (24 * 60 * 60));
+				$overdue                  = $daysUntilDue < 0;
 				$curTitle['overdue']      = $overdue;
 				$curTitle['daysUntilDue'] = $daysUntilDue;
 			}
@@ -415,21 +414,17 @@ class CatalogConnection
 	}
 
 	/**
-	 * @param User $user
-	 * @param array $readingHistoryDataToSave
+	 * This method is called by the cron process that populates Pika reading history data.
+	 * An implementation of this method should return only the data needed to store a reading
+	 * history entry, and not all the info needed to display reading history on a page.
+	 * Also the pagination should be implemented with respect to what the ILS allows so that
+	 * the cron process can work through as many entries as can be reliably delivered
+	 *
+	 * @param User $patron
+	 * @param boolean|null $loadAdditional
+	 * @return array|bool|false
+	 * @throws ErrorException
 	 */
-//	private function saveReadingHistory($user, $readingHistoryDataToSave) {
-//		require_once ROOT_DIR . '/RecordDrivers/MarcRecord.php';
-//		foreach ($readingHistoryDataToSave as $readingHistoryItem) {
-//			$recordDriver = new MarcRecord($this->driver->accountProfile->recordSource . ':' . $readingHistoryItem['recordId']);
-//			if ($recordDriver->isValid()){
-//				$readingHistoryItem['permanentId'] = $recordDriver->getPermanentId();
-//			}
-//
-//
-//		}
-//	}
-
 	function loadReadingHistoryFromIls($patron, $loadAdditional = null){
 		if (!empty($patron) && $patron->trackReadingHistory){
 //			if (!$patron->initialReadingHistoryLoaded) {
@@ -440,6 +435,8 @@ class CatalogConnection
 					}
 				}
 				// Fall back
+			//TODO: all drivers that fallback to this, need to implement the above method
+			// so that Pika can reliably maintain a patron's reading history
 				return $this->getReadingHistory($patron);
 //			}
 		}
@@ -450,6 +447,10 @@ class CatalogConnection
 	 * Get Reading History
 	 *
 	 * This is responsible for retrieving a history of checked out items for the patron.
+	 *
+	 * This method is used for display of reading history on the MyAccount/ReadingHistory page,
+	 * so each entry returned should contain all the information needed for display (covers, links, ratings
+	 * etc.)
 	 *
 	 * @param   User   $patron     The patron array
 	 * @param   int     $page
@@ -484,13 +485,13 @@ class CatalogConnection
 				// Set the order for the query of all entries
 				if ($sortOption == "checkedOut"){
 					$readingHistoryDB->orderBy('checkOutDate DESC, title ASC');
-				}else if ($sortOption == "returned"){
-					$readingHistoryDB->orderBy('checkInDate DESC, title ASC');
-				}else if ($sortOption == "title"){
+//				}elseif ($sortOption == "returned"){
+//					$readingHistoryDB->orderBy('checkInDate DESC, title ASC');
+				}elseif ($sortOption == "title"){
 					$readingHistoryDB->orderBy('title ASC, checkOutDate DESC');
-				}else if ($sortOption == "author"){
+				}elseif ($sortOption == "author"){
 					$readingHistoryDB->orderBy('author ASC, title ASC, checkOutDate DESC');
-				}else if ($sortOption == "format"){
+				}elseif ($sortOption == "format"){
 					$readingHistoryDB->orderBy('format ASC, title ASC, checkOutDate DESC');
 				}
 
@@ -517,12 +518,17 @@ class CatalogConnection
 				return array('historyActive' => $patron->trackReadingHistory, 'titles' => array(), 'numTitles' => 0);
 			}
 
-		}else{
-			//Don't know enough to load internally, check the ILS.
-			$result = $this->driver->getReadingHistory($patron, $page, $recordsPerPage, $sortOption);
+		}elseif ($this->driver->hasNativeReadingHistory() && method_exists($this->driver, 'getReadingHistory')){
+			//Since ILSes rarely implement fetching of reading history with the pagination *plus* the sorting we would like,
+			// this section should be avoided.  Previous implementations would fetch a patron's entire reading history and
+			// then resort based on our desired criteria, and then paginate to the desired section.  This method is incredibly
+			// slow for a single page load.
+
+			// Get complete reading history from ILS; We can't assume it was sorted as we want by the ILS
+			$result = $this->driver->getReadingHistory($patron, $page, -1, $sortOption);
 
 			// keep the rest of this method from throwing errors and warnings.
-			if($result['historyActive'] == false || $result['numTitles'] == 0) {
+			if($result['numTitles'] == 0 || $result['historyActive'] == false) {
 				return $result;
 			}
 			//Do not try to mark that the initial load has been done since we only load a subset of the reading history above.
@@ -531,25 +537,35 @@ class CatalogConnection
 			$count = 0;
 			foreach ($result['titles'] as $key => $historyEntry){
 				$count++;
-				if (!isset($historyEntry['title_sort'])){
+				if (!isset($historyEntry['title_sort']) && !empty($historyEntry['title'])){
 					$historyEntry['title_sort'] = preg_replace('/[^a-z\s]/', '', strtolower($historyEntry['title']));
 				}
-				if ($sortOption == "title"){
-					$titleKey = $historyEntry['title_sort'];
-				}elseif ($sortOption == "author"){
-					$titleKey = $historyEntry['author'] . "_" . $historyEntry['title_sort'];
-				}elseif ($sortOption == "checkedOut" || $sortOption == "returned"){
-					$checkoutTime = DateTime::createFromFormat('m-d-Y', $historyEntry['checkout']);
-					if ($checkoutTime){
-						$titleKey = $checkoutTime->getTimestamp() . "_" . $historyEntry['title_sort'];
-					}else{
-						//print_r($historyEntry);
+				switch ($sortOption){
+					case "author":
+						$titleKey = $historyEntry['author'] . "_" . $historyEntry['title_sort'];
+						break;
+					case "checkedOut":
+						$titleKey = $historyEntry['title_sort']; // Default if there is no checkout time to use
+						if (!empty($historyEntry['checkout'])){
+							if (is_int($historyEntry['checkout'])){
+								// already a timestamp
+								$titleKey = $historyEntry['checkout'] . '_' .  $historyEntry['title_sort'];
+							}else{
+								//Simple date sting, convert to timestamp
+								$checkoutTime = DateTime::createFromFormat('m-d-Y', $historyEntry['checkout']);
+								if ($checkoutTime){
+									$titleKey = $checkoutTime->getTimestamp() . "_" . $historyEntry['title_sort'];
+								}
+							}
+						}
+						break;
+					case "format":
+						$titleKey = $historyEntry['format'] . "_" . $historyEntry['title_sort'];
+						break;
+					case "title":
+					default:
 						$titleKey = $historyEntry['title_sort'];
-					}
-				}elseif ($sortOption == "format"){
-					$titleKey = $historyEntry['format'] . "_" . $historyEntry['title_sort'];
-				}else{
-					$titleKey = $historyEntry['title_sort'];
+						break;
 				}
 				$titleKey .= '_' . ($count);
 				$result['titles'][$titleKey] = $historyEntry;
@@ -559,6 +575,12 @@ class CatalogConnection
 				krsort($result['titles']);
 			}else{
 				ksort($result['titles']);
+			}
+
+			if ($recordsPerPage != -1 && $count > $recordsPerPage){
+				$historyPages = array_chunk($result['titles'], $recordsPerPage, true);
+				$pageIndex         = $page - 1;
+				$result['titles'] = $historyPages[$pageIndex];
 			}
 
 			return $result;
@@ -1057,7 +1079,7 @@ class CatalogConnection
 		if (!empty($readingHistoryDB->groupedWorkPermanentId)){
 			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 			$recordDriver = new GroupedWorkDriver($readingHistoryDB->groupedWorkPermanentId);
-			if ($recordDriver != null && $recordDriver->isValid){
+			if ($recordDriver != null && $recordDriver->isValid()){
 				$historyEntry['ratingData']  = $recordDriver->getRatingData();
 				$historyEntry['permanentId'] = $recordDriver->getPermanentId();
 				$historyEntry['coverUrl']    = $recordDriver->getBookcoverUrl('medium');
@@ -1068,15 +1090,19 @@ class CatalogConnection
 			}
 		}
 		//TODO: Fallback to other drivers if we have the source & sourceId
-//		elseif (!empty($readingHistoryDB->source) && !empty($readingHistoryDB->sourceId)){
-//			if ($readingHistoryDB->source == 'ILS') {
-//				require_once ROOT_DIR . '/RecordDrivers/MarcRecord.php';
-//				$recordDriver = new MarcRecord($historyEntry['id']);
-//			} elseif ($readingHistoryDB->source == 'OverDrive') {
-//				require_once ROOT_DIR . '/RecordDrivers/OverDriveRecordDriver.php';
-//				$recordDriver = new OverDriveRecordDriver($historyEntry['id']);
-//			}
-//		}
+		elseif (!empty($readingHistoryDB->source) && !empty($readingHistoryDB->sourceId)){
+			$sourceAndID = new sourceAndId($readingHistoryDB->source . ':' . $readingHistoryDB->sourceId);
+			$recordDriver = RecordDriverFactory::initRecordDriverById($sourceAndID);
+			$historyEntry['ratingData']  = $recordDriver->getRatingData();
+			$historyEntry['coverUrl']    = $recordDriver->getBookcoverUrl('medium');
+			$historyEntry['linkUrl']     = $recordDriver->getLinkUrl();
+			$historyEntry['permanentId'] = $recordDriver->getPermanentId();
+			if (empty($historyEntry['title'])){
+				$historyEntry['title'] = $recordDriver->getTitle();
+			}
+			//TODO: update history db entry with any missing information
+
+		}
 		$recordDriver = null;
 		return $historyEntry;
 	}

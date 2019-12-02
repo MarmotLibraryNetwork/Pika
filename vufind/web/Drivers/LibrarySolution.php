@@ -309,7 +309,7 @@ class LibrarySolution extends ScreenScrapingDriver {
 
 			foreach ($loanInfo->loans as $loan){
 				$curTitle = array();
-				$curTitle['checkoutSource'] = 'ILS';
+				$curTitle['checkoutSource'] = 'ils';
 				$curTitle['itemId'] = $loan->itemId;
 				$curTitle['renewIndicator'] = $loan->itemId;
 				$curTitle['id'] = $loan->bibliographicId;

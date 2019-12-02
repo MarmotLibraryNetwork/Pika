@@ -12,10 +12,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -31,7 +28,7 @@ public class UpdateReadingHistory implements IProcessHandler {
 	public void doCronProcess(String serverName, Ini configIni, Section processSettings, Connection pikaConn, Connection econtentConn, CronLogEntry cronEntry, Logger logger) {
 		processLog = new CronProcessLogEntry(cronEntry.getLogEntryId(), "Update Reading History");
 		processLog.saveToDatabase(pikaConn, logger);
-		
+
 		this.logger = logger;
 		logger.info("Updating Reading History");
 		processLog.addNote("Updating Reading History");
@@ -45,17 +42,19 @@ public class UpdateReadingHistory implements IProcessHandler {
 		}
 
 		// Connect to the Pika MySQL database
-		try {
-			// Get a list of all patrons that have reading history turned on.
-			PreparedStatement getUsersStmt                            = pikaConn.prepareStatement("SELECT id, cat_username, cat_password, initialReadingHistoryLoaded FROM user WHERE trackReadingHistory=1 ORDER BY initialReadingHistoryLoaded", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-			PreparedStatement updateInitialReadingHistoryLoaded       = pikaConn.prepareStatement("UPDATE user SET initialReadingHistoryLoaded = 1 WHERE id = ?");
-			PreparedStatement getCheckedOutTitlesForUser              = pikaConn.prepareStatement("SELECT id, groupedWorkPermanentId, source, sourceId, title FROM user_reading_history_work WHERE userId=? and checkInDate is null", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-			PreparedStatement updateReadingHistoryStmt                = pikaConn.prepareStatement("UPDATE user_reading_history_work SET checkInDate=? WHERE id = ?");
+		try (
 //			PreparedStatement lookForPreviousEntriesBeforeInitialLoad = pikaConn.prepareStatement("SELECT COUNT(id) FROM user_reading_history_work WHERE userId = ?");
 //			PreparedStatement deletePreviousEntriesBeforeInitialLoad  = pikaConn.prepareStatement("DELETE FROM user_reading_history_work WHERE userId = ?");
+			// Get a list of all patrons that have reading history turned on.
+				//Order by make it so that reading histories that haven't been processed yet are done first.
+				PreparedStatement getUsersStmt                      = pikaConn.prepareStatement("SELECT id, cat_username, cat_password, initialReadingHistoryLoaded FROM user WHERE trackReadingHistory=1 ORDER BY initialReadingHistoryLoaded", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+				PreparedStatement updateInitialReadingHistoryLoaded = pikaConn.prepareStatement("UPDATE user SET initialReadingHistoryLoaded = 1 WHERE id = ?");
+				PreparedStatement getUserCheckedOutTitlesAlreadyInReadingHistory        = pikaConn.prepareStatement("SELECT id, groupedWorkPermanentId, source, sourceId, title FROM user_reading_history_work WHERE userId=? AND checkInDate IS NULL", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+				PreparedStatement updateReadingHistoryStmt          = pikaConn.prepareStatement("UPDATE user_reading_history_work SET checkInDate=? WHERE id = ?");
+				ResultSet userResults                               = getUsersStmt.executeQuery(); // Fetches patrons that haven't had the initial load done first
+		){
 			insertReadingHistoryStmt = pikaConn.prepareStatement("INSERT INTO user_reading_history_work (userId, groupedWorkPermanentId, source, sourceId, title, author, format, checkOutDate) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-			
-			ResultSet userResults = getUsersStmt.executeQuery(); // Fetches patrons that haven't had the initial load done first
+
 			while (userResults.next()) {
 				// For each patron
 				Long    userId                            = userResults.getLong("id");
@@ -63,17 +62,17 @@ public class UpdateReadingHistory implements IProcessHandler {
 				String  cat_password                      = userResults.getString("cat_password");
 				boolean initialReadingHistoryLoaded       = userResults.getBoolean("initialReadingHistoryLoaded");
 				boolean errorLoadingInitialReadingHistory = false;
-				if (!initialReadingHistoryLoaded){
+				if (!initialReadingHistoryLoaded) {
 					//Get the initial reading history from the ILS
 					try {
 						if (loadInitialReadingHistoryForUser(userId, cat_username, cat_password)) {
 							updateInitialReadingHistoryLoaded.setLong(1, userId);
 							updateInitialReadingHistoryLoaded.executeUpdate();
-						}else{
+						} else {
 							errorLoadingInitialReadingHistory = true;
 							logger.warn("Failed loading Initial Reading History for user " + cat_username);
 						}
-					}catch (SQLException e){
+					} catch (SQLException e) {
 						logger.error("Error loading initial reading history", e);
 						errorLoadingInitialReadingHistory = true;
 					}
@@ -81,25 +80,27 @@ public class UpdateReadingHistory implements IProcessHandler {
 
 				if (!errorLoadingInitialReadingHistory) {
 					//Get a list of titles that are currently checked out
-					getCheckedOutTitlesForUser.setLong(1, userId);
-					ResultSet                  checkedOutTitlesRS = getCheckedOutTitlesForUser.executeQuery();
-					ArrayList<CheckedOutTitle> checkedOutTitles   = new ArrayList<>();
-					while (checkedOutTitlesRS.next()) {
-						CheckedOutTitle curCheckout = new CheckedOutTitle();
-						curCheckout.setId(checkedOutTitlesRS.getLong("id"));
-						curCheckout.setGroupedWorkPermanentId(checkedOutTitlesRS.getString("groupedWorkPermanentId"));
-						curCheckout.setSource(checkedOutTitlesRS.getString("source"));
-						curCheckout.setSourceId(checkedOutTitlesRS.getString("sourceId"));
-						curCheckout.setTitle(checkedOutTitlesRS.getString("title"));
-						checkedOutTitles.add(curCheckout);
+					getUserCheckedOutTitlesAlreadyInReadingHistory.setLong(1, userId);
+					ArrayList<CheckedOutTitle> checkedOutTitlesAlreadyInReadingHistory;
+					try (ResultSet checkedOutTitlesRS = getUserCheckedOutTitlesAlreadyInReadingHistory.executeQuery()) {
+						checkedOutTitlesAlreadyInReadingHistory = new ArrayList<>();
+						while (checkedOutTitlesRS.next()) {
+							CheckedOutTitle curCheckout = new CheckedOutTitle();
+							curCheckout.setId(checkedOutTitlesRS.getLong("id"));
+							curCheckout.setGroupedWorkPermanentId(checkedOutTitlesRS.getString("groupedWorkPermanentId"));
+							curCheckout.setSource(checkedOutTitlesRS.getString("source"));
+							curCheckout.setSourceId(checkedOutTitlesRS.getString("sourceId"));
+							curCheckout.setTitle(checkedOutTitlesRS.getString("title"));
+							checkedOutTitlesAlreadyInReadingHistory.add(curCheckout);
+						}
 					}
 
 					logger.info("Loading Reading History for patron " + cat_username);
-					processTitlesForUser(userId, cat_username, cat_password, checkedOutTitles);
+					processTitlesForUser(userId, cat_username, cat_password, checkedOutTitlesAlreadyInReadingHistory);
 
-					//Any titles that are left in checkedOutTitles were checked out previously and are no longer checked out.
+					//Any titles that are left in checkedOutTitlesAlreadyInReadingHistory were checked out previously and are no longer checked out.
 					Long curTime = new Date().getTime() / 1000;
-					for (CheckedOutTitle curTitle : checkedOutTitles) {
+					for (CheckedOutTitle curTitle : checkedOutTitlesAlreadyInReadingHistory) {
 						updateReadingHistoryStmt.setLong(1, curTime);
 						updateReadingHistoryStmt.setLong(2, curTitle.getId());
 						updateReadingHistoryStmt.executeUpdate();
@@ -110,7 +111,7 @@ public class UpdateReadingHistory implements IProcessHandler {
 				processLog.saveToDatabase(pikaConn, logger);
 				try {
 					Thread.sleep(1000);
-				}catch (Exception e){
+				} catch (Exception e) {
 					logger.warn("Sleep was interrupted while processing reading history for user.");
 				}
 			}
@@ -120,7 +121,7 @@ public class UpdateReadingHistory implements IProcessHandler {
 			processLog.incErrors();
 			processLog.addNote("Unable get a list of users that need to have their reading list updated " + e.toString());
 		}
-		
+
 		processLog.setFinished();
 		processLog.saveToDatabase(pikaConn, logger);
 	}
@@ -130,21 +131,23 @@ public class UpdateReadingHistory implements IProcessHandler {
 	}
 
 	private boolean loadInitialReadingHistoryForUser(Long userId, String cat_username, String cat_password) throws SQLException {
-		boolean hadError = false;
+		boolean hadError  = false;
 		boolean additionalRoundRequired;
-		String nextRound = "";
-		if (cat_username != null && !cat_username.isEmpty() ) {
+		String  nextRound = "";
+		if (cat_username != null && !cat_username.isEmpty()) {
 			if (cat_password != null && !cat_password.isEmpty()) {
 				try {
-					logger.info("Loading initial reading history from ils for " + cat_username);
+					if (logger.isInfoEnabled()) {
+						logger.info("Loading initial reading history from ils for " + cat_username);
+					}
 					do {
 						additionalRoundRequired = false;
 						// Call the patron API to get their checked out items
-		//			URL patronApiUrl = new URL(pikaUrl + "/API/UserAPI?method=getPatronReadingHistory&username=" + encode(cat_username) + "&password=" + encode(cat_password));
+						//			URL patronApiUrl = new URL(pikaUrl + "/API/UserAPI?method=getPatronReadingHistory&username=" + encode(cat_username) + "&password=" + encode(cat_password));
 
 						String loadReadingHistoryUrl = pikaUrl + "/API/UserAPI?method=loadReadingHistoryFromIls&username=" + encode(cat_username) + "&password=" + encode(cat_password)
 								+ (isNumeric(nextRound) ? "&nextRound=" + nextRound : "");
-						URL    patronApiUrl          = new URL(loadReadingHistoryUrl);
+						URL patronApiUrl = new URL(loadReadingHistoryUrl);
 						// loadReadingHistoryFromIls is intended to be a faster call, or at least contain only enough information to add entries into the database.
 						// (The regular getPatronReadingHistory included a lot of information that is not needed to update the database.
 						Object patronDataRaw = patronApiUrl.getContent();
@@ -153,16 +156,20 @@ public class UpdateReadingHistory implements IProcessHandler {
 							try {
 								patronDataJson = Util.convertStreamToString((InputStream) patronDataRaw);
 								if (patronDataJson != null && patronDataJson.length() > 0) {
-									logger.debug(patronApiUrl.toString());
-									logger.debug("Json for patron reading history " + patronDataJson);
+									if (logger.isDebugEnabled()) {
+										logger.debug(patronApiUrl.toString());
+										logger.debug("Json for patron reading history " + patronDataJson);
+									}
 
 									JSONObject patronData = new JSONObject(patronDataJson);
 									JSONObject result     = patronData.getJSONObject("result");
 									if (result.getBoolean("success") && result.has("readingHistory")) {
-										if (result.has("nextRound")){
-											nextRound = result.getString("nextRound");
+										if (result.has("nextRound")) {
+											nextRound               = result.getString("nextRound");
 											additionalRoundRequired = true;
-											logger.info("Another round of calling the User API is required. Next Round is : " + nextRound);
+											if (logger.isInfoEnabled()) {
+												logger.info("Another round of calling the User API is required. Next Round is : " + nextRound);
+											}
 										}
 										if (result.get("readingHistory").getClass() == JSONObject.class) {
 											JSONObject readingHistoryItems = result.getJSONObject("readingHistory");
@@ -182,7 +189,9 @@ public class UpdateReadingHistory implements IProcessHandler {
 										} else {
 											processLog.incErrors();
 											processLog.addNote("Unexpected JSON for patron reading history " + result.get("readingHistory").getClass());
-											logger.info("Unexpected JSON for patron reading history " + result.get("readingHistory").getClass());
+											if (logger.isInfoEnabled()) {
+												logger.info("Unexpected JSON for patron reading history " + result.get("readingHistory").getClass());
+											}
 											hadError = true;
 										}
 									} else {
@@ -231,12 +240,13 @@ public class UpdateReadingHistory implements IProcessHandler {
 	}
 
 	private boolean processReadingHistoryTitle(JSONObject readingHistoryTitle, Long userId) throws JSONException {
-		String source        = "ILS";
-		String sourceId      = "";
-		String author        = "";
-		String format        = "";
-		String groupedWorkId = "";
-		String title         = "";
+		String source              = "ils";
+		String sourceId            = "";
+		String author              = "";
+		String format              = "";
+		String groupedWorkId       = "";
+		String title               = "";
+		String ilsReadingHistoryId = null;
 		if (readingHistoryTitle.has("recordId")) {
 			sourceId = readingHistoryTitle.getString("recordId");
 		}
@@ -246,8 +256,9 @@ public class UpdateReadingHistory implements IProcessHandler {
 		if (readingHistoryTitle.has("author")) {
 			author = readingHistoryTitle.getString("author");
 		}
-		if ((sourceId == null || sourceId.length() == 0) && (title == null || title.length() == 0) && (author == null || author.length() == 0)){
+		if ((sourceId == null || sourceId.length() == 0) && (title == null || title.length() == 0) && (author == null || author.length() == 0)) {
 			//Don't try to add records we know nothing about.
+			//Note: Source & sourceID won't exist for InterLibrary Loan titles
 			return false;
 		}
 		if (readingHistoryTitle.has("permanentId")) {
@@ -258,7 +269,7 @@ public class UpdateReadingHistory implements IProcessHandler {
 		}
 		if (readingHistoryTitle.has("format")) {
 			format = readingHistoryTitle.getString("format");
-			if (format.startsWith("[")){
+			if (format.startsWith("[")) {
 				//This is an array of formats, just grab one
 				format = format.replace("[", "");
 				format = format.replace("]", "");
@@ -267,7 +278,16 @@ public class UpdateReadingHistory implements IProcessHandler {
 				format = formats[0];
 			}
 		}
-		SimpleDateFormat checkoutDateFormat = new SimpleDateFormat("MM-dd-yyyy");
+		if (readingHistoryTitle.has("ilsReadingHistoryId")) {
+			ilsReadingHistoryId = readingHistoryTitle.getString("ilsReadingHistoryId");
+		}
+		if (readingHistoryTitle.has("source")){
+			source = readingHistoryTitle.getString("source");
+			if (source.isEmpty()){
+				//Note that No source is a valid option for Interlibrary loan titles
+				source = "";
+			}
+		}
 
 		//This is a newly checked out title
 		try {
@@ -279,12 +299,13 @@ public class UpdateReadingHistory implements IProcessHandler {
 			insertReadingHistoryStmt.setString(5, Util.trimTo(150, title));
 			insertReadingHistoryStmt.setString(6, Util.trimTo(75, author));
 			insertReadingHistoryStmt.setString(7, Util.trimTo(50, format));
+			long   checkoutTime = new Date().getTime(); // default check out time is now if we have nothing else
 			String checkoutDate = readingHistoryTitle.getString("checkout");
-			long checkoutTime = new Date().getTime();
-			if (isNumeric(checkoutDate)){ // Timestamp
+			if (isNumeric(checkoutDate)) { // Timestamp
 				checkoutTime = Long.parseLong(checkoutDate);
-			}else{
+			} else {
 				try {
+					SimpleDateFormat checkoutDateFormat = new SimpleDateFormat("MM-dd-yyyy");
 					checkoutTime = checkoutDateFormat.parse(checkoutDate).getTime() / 1000;
 				} catch (ParseException e) {
 					logger.error("Error loading checkout date " + checkoutDate + " was not the expected format", e);
@@ -292,49 +313,55 @@ public class UpdateReadingHistory implements IProcessHandler {
 			}
 
 			insertReadingHistoryStmt.setLong(8, checkoutTime);
+//			if (ilsReadingHistoryId == null || ilsReadingHistoryId.isEmpty()){
+//				insertReadingHistoryStmt.setNull(9, Types.VARCHAR);
+//			} else {
+//				insertReadingHistoryStmt.setString(9, ilsReadingHistoryId);
+//			}
 			insertReadingHistoryStmt.executeUpdate();
 			processLog.incUpdated();
 			return true;
-		}catch (SQLException e){
+		} catch (SQLException e) {
 			logger.error("Error adding title for user " + userId + " " + title, e);
 			processLog.incErrors();
 			return false;
 		}
 	}
 
-	private void processTitlesForUser(Long userId, String cat_username, String cat_password, ArrayList<CheckedOutTitle> checkedOutTitles) throws SQLException{
+	private void processTitlesForUser(Long userId, String cat_username, String cat_password, ArrayList<CheckedOutTitle> checkedOutTitlesAlreadyInReadingHistory) throws SQLException {
 		try {
 			// Call the patron API to get their checked out items
 			URL    patronApiUrl  = new URL(pikaUrl + "/API/UserAPI?method=getPatronCheckedOutItems&username=" + encode(cat_username) + "&password=" + encode(cat_password));
 			Object patronDataRaw = patronApiUrl.getContent();
 			if (patronDataRaw instanceof InputStream) {
 				String patronDataJson = Util.convertStreamToString((InputStream) patronDataRaw);
-				logger.debug(patronApiUrl.toString());
-				logger.debug("Json for patron checked out items " + patronDataJson);
+				if (logger.isDebugEnabled()) {
+					logger.debug(patronApiUrl.toString());
+					logger.debug("Json for patron checked out items " + patronDataJson);
+				}
 				try {
 					JSONObject patronData = new JSONObject(patronDataJson);
 					JSONObject result     = patronData.getJSONObject("result");
 					if (result.getBoolean("success") && result.has("checkedOutItems")) {
-						if (result.get("checkedOutItems").getClass() == JSONObject.class){
+						if (result.get("checkedOutItems").getClass() == JSONObject.class) {
 							JSONObject checkedOutItems = result.getJSONObject("checkedOutItems");
 							@SuppressWarnings("unchecked")
 							Iterator<String> keys = (Iterator<String>) checkedOutItems.keys();
 							while (keys.hasNext()) {
-								String curKey = keys.next();
+								String     curKey         = keys.next();
 								JSONObject checkedOutItem = checkedOutItems.getJSONObject(curKey);
-								processCheckedOutTitle(checkedOutItem, userId, checkedOutTitles);
-								
+								processCheckedOutTitle(checkedOutItem, userId, checkedOutTitlesAlreadyInReadingHistory);
 							}
-						}else if (result.get("checkedOutItems").getClass() == JSONArray.class){
+						} else if (result.get("checkedOutItems").getClass() == JSONArray.class) {
 							JSONArray checkedOutItems = result.getJSONArray("checkedOutItems");
-							for (int i = 0; i < checkedOutItems.length(); i++){
-								processCheckedOutTitle(checkedOutItems.getJSONObject(i), userId, checkedOutTitles);
+							for (int i = 0; i < checkedOutItems.length(); i++) {
+								processCheckedOutTitle(checkedOutItems.getJSONObject(i), userId, checkedOutTitlesAlreadyInReadingHistory);
 							}
-						}else{
+						} else {
 							processLog.incErrors();
 							processLog.addNote("Unexpected JSON for patron checked out items received " + result.get("checkedOutItems").getClass());
 						}
-					} else {
+					} else if (logger.isInfoEnabled()) {
 						logger.info("Call to getPatronCheckedOutItems returned a success code of false for " + cat_username);
 					}
 				} catch (JSONException e) {
@@ -356,18 +383,23 @@ public class UpdateReadingHistory implements IProcessHandler {
 			processLog.incErrors();
 		}
 	}
-	
-	private boolean processCheckedOutTitle(JSONObject checkedOutItem, long userId, ArrayList<CheckedOutTitle> checkedOutTitles) throws JSONException, SQLException, IOException{
+
+	private boolean processCheckedOutTitle(JSONObject checkedOutItem, long userId, ArrayList<CheckedOutTitle> checkedOutTitlesAlreadyInReadingHistory) throws JSONException, SQLException, IOException {
+		String source   = "";
+		String sourceId = "?"; // The record/Title Id
 		try {
 			// System.out.println(checkedOutItem.toString());
-			String source = checkedOutItem.getString("checkoutSource");
-			String sourceId = "?";
+			source   = checkedOutItem.getString("checkoutSource");
+
 			switch (source) {
 				case "OverDrive":
 					sourceId = checkedOutItem.getString("overDriveId");
 					break;
 				case "ILS":
-					sourceId = checkedOutItem.getString("id");
+					source = "ils"; // Any driver that still capitalizes the traditional default catalog source should be made lowercase
+				case "ils":
+					sourceId = checkedOutItem.getString("recordId");
+					//Specifically need the record id (sometime's the 'id' provided is the checkout's ID
 					break;
 				case "Hoopla":
 					sourceId = checkedOutItem.getString("hooplaId");
@@ -381,31 +413,32 @@ public class UpdateReadingHistory implements IProcessHandler {
 			}
 
 			//Check to see if this is an existing checkout.  If it is, skip inserting
-			if (checkedOutTitles != null) {
-				for (CheckedOutTitle curTitle : checkedOutTitles) {
+			if (checkedOutTitlesAlreadyInReadingHistory != null) {
+				for (CheckedOutTitle curTitle : checkedOutTitlesAlreadyInReadingHistory) {
 					boolean sourceMatches   = Util.compareStrings(curTitle.getSource(), source);
 					boolean sourceIdMatches = Util.compareStrings(curTitle.getSourceId(), sourceId);
-					boolean titleMatches    = Util.compareStrings(curTitle.getTitle(), checkedOutItem.getString("title"));
-					if (
-							(sourceMatches && sourceIdMatches) ||
-							titleMatches
-						 ) {
-						checkedOutTitles.remove(curTitle);
+					boolean titleMatches    = false;
+					if (checkedOutItem.has("title")){
+						titleMatches    = Util.compareStrings(curTitle.getTitle(), checkedOutItem.getString("title"));
+					}
+
+						if ((sourceMatches && sourceIdMatches) || titleMatches) {
+						checkedOutTitlesAlreadyInReadingHistory.remove(curTitle);
 						return true;
 					}
 				}
 			}
 
-		//This is a newly checked out title
+			//This is a newly checked out title
 			insertReadingHistoryStmt.setLong(1, userId);
 			String groupedWorkId = checkedOutItem.has("groupedWorkId") ? checkedOutItem.getString("groupedWorkId") : "";
-			if (groupedWorkId == null){
+			if (groupedWorkId == null) {
 				groupedWorkId = "";
 			}
 			insertReadingHistoryStmt.setString(2, groupedWorkId);
 			insertReadingHistoryStmt.setString(3, source);
 			insertReadingHistoryStmt.setString(4, sourceId);
-			insertReadingHistoryStmt.setString(5, Util.trimTo(150, checkedOutItem.getString("title")));
+			insertReadingHistoryStmt.setString(5, checkedOutItem.has("title")  ? Util.trimTo(150, checkedOutItem.getString("title")) : "");
 			insertReadingHistoryStmt.setString(6, checkedOutItem.has("author") ? Util.trimTo(75, checkedOutItem.getString("author")) : "");
 			insertReadingHistoryStmt.setString(7, checkedOutItem.has("format") ? Util.trimTo(50, checkedOutItem.getString("format")) : "");
 			long checkoutTime = new Date().getTime() / 1000;
@@ -413,12 +446,8 @@ public class UpdateReadingHistory implements IProcessHandler {
 			insertReadingHistoryStmt.executeUpdate();
 			processLog.incUpdated();
 			return true;
-		}catch (Exception e){
-			if (checkedOutItem.has("title")) {
-				logger.error("Error adding title for user " + userId + " " + checkedOutItem.getString("title"), e);
-			}else{
-				logger.error("Error adding title for user " + userId + " " + checkedOutItem.toString(), e);
-			}
+		} catch (Exception e) {
+			logger.error("Error adding title for user " + userId + " for id " + source +":"+ sourceId + ", " + ( checkedOutItem.has("title") ? checkedOutItem.getString("title") : checkedOutItem.toString()), e);
 			processLog.incErrors();
 			return false;
 		}
@@ -433,8 +462,7 @@ public class UpdateReadingHistory implements IProcessHandler {
 		StringBuilder result = new StringBuilder(input);
 		for (int i = input.length() - 1; i >= 0; i--) {
 			if (VALUES.indexOf(input.charAt(i)) != -1) {
-				result.replace(i, i + 1,
-						"%" + Integer.toHexString(input.charAt(i)).toUpperCase());
+				result.replace(i, i + 1, "%" + Integer.toHexString(input.charAt(i)).toUpperCase());
 			}
 		}
 		return result.toString();

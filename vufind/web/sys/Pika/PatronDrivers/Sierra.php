@@ -2018,100 +2018,104 @@ EOT;
 			return ['historyActive' => false, 'numTitles' => 0, 'titles' => []];
 		}
 
-		$patronId = $this->getPatronId($patron->barcode);
+		$patronSierraId = $this->getPatronId($patron->barcode);
 
 		$patronReadingHistoryCacheKey = "patron_" . $patron->barcode . "_history";
-		if ($patronReadingHistory = $this->memCache->get($patronReadingHistoryCacheKey)){
-			$this->logger->info("Found reading history in memcache:" . $patronReadingHistoryCacheKey);
-			return $patronReadingHistory;
-		}
-		$operation = "patrons/" . $patronId . "/checkouts/history";
-		$params    = ['limit'     => 2000, // Sierra api max results as of 9-12-2019
-		              'sortField' => 'outDate',
-		              'sortOrder' => 'desc'];
-		$history   = $this->_doRequest($operation, $params);
+		$patronCachedReadingHistory         = $this->memCache->get($patronReadingHistoryCacheKey);
+		if (!$patronCachedReadingHistory || isset($_REQUEST['reload'])){
+			//TODO: loop to fetch histories with more than a 2000 entries
+			$operation = "patrons/" . $patronSierraId . "/checkouts/history";
+			$params    = ['limit'     => 2000, // Sierra api max results as of 9-12-2019
+			              'sortField' => 'outDate',
+			              'sortOrder' => 'desc'];
+			$history   = $this->_doRequest($operation, $params);
 
-		if (!$history){
-			return false;
-		}
-
-		if ($history->total == 0){
-			return [
-				'historyActive' => true,
-				'numTitles' => 0,
-				'titles'    => []
-			];
-		}
-		$patronPikaId   = $patronId;
-		$readingHistory = [];
-		foreach ($history->entries as $historyEntry){
-			$titleEntry = [];
-			// make the Pika style bib Id
-			preg_match($this->urlIdRegExp, $historyEntry->bib, $bibMatch);
-			$x = $this->getCheckDigit($bibMatch[1]);
-			$bibId = '.b' . $bibMatch[1] . $x; // full bib id
-			// get the checkout id --> becomes itemindex
-			preg_match($this->urlIdRegExp, $historyEntry->id, $coIdMatch);
-			$itemindex = $coIdMatch[1];
-			$ts = strtotime($historyEntry->outDate);
-			$checkOutDate = date('m-d-Y', $ts);
-			// get the rest from the MARC record
-			$record = new MarcRecord($this->accountProfile->recordSource . ':' . $bibId);
-
-			if ($record->isValid()){
-				$titleEntry['permanentId'] = $record->getPermanentId();
-				$titleEntry['title']       = $record->getTitle();
-				$titleEntry['author']      = $record->getAuthor();
-				$titleEntry['format']      = $record->getFormat();
-				$titleEntry['title_sort']  = $record->getSortableTitle();
-				$titleEntry['ratingData']  = $record->getRatingData();
-				$titleEntry['permanentId'] = $record->getPermanentId();
-				$titleEntry['linkUrl']     = $record->getGroupedWorkDriver()->getLinkUrl();
-				$titleEntry['coverUrl']    = $record->getBookcoverUrl('medium');
-				$titleEntry['format']      = $record->getFormats();
-			}else{
-				// check the api
-				$operation = 'bibs/'.$bibMatch[1];
-				$params = [
-					'fields' => 'deleted,title,author,materialType,normTitle'
-				];
-				$bibRes = $this->_doRequest($operation, $params);
-				if(!$bibRes || $bibRes->deleted == true) {
-					$titleEntry['title']      = 'This title has been deleted from our catalog.';
-					$titleEntry['author']     = 'Not available';
-					$titleEntry['format']     = 'Not available';
-					$titleEntry['title_sort'] = '';
-				} else {
-					$titleEntry['title']      = $bibRes->title;
-					$titleEntry['author']     = $bibRes->author;
-					$titleEntry['format']     = $bibRes->materialType;
-					$titleEntry['title_sort'] = $bibRes->normTitle;
-				}
-				$titleEntry['permanentId'] = '';
-				$titleEntry['ratingData']  = '';
-				$titleEntry['permanentId'] = '';
-				$titleEntry['linkUrl']     = '';
-				$titleEntry['coverUrl']    = '';
+			if (!$history){
+				return false;
 			}
-			$titleEntry['checkout']     = $checkOutDate;
-			$titleEntry['shortId']      = $bibMatch[1];
-			$titleEntry['borrower_num'] = $patronPikaId;
-			$titleEntry['recordId']     = $bibId;
-			$titleEntry['itemindex']    = $itemindex;
-			$readingHistory[]           = $titleEntry;
-			// clear out before
-			unset($titleEntry);
-		}
-		$total   = count($readingHistory);
-		$history = ['historyActive' => true,
-		            'numTitles' => $total,
-		            'titles'    => $readingHistory];
 
-		$this->memCache->set($patronReadingHistoryCacheKey, $history, 21600);
-		$this->logger->info("Saving reading history in memcache:" . $patronReadingHistoryCacheKey);
+			if ($history->total == 0){
+				return [
+					'historyActive' => true,
+					'numTitles'     => 0,
+					'titles'        => []
+				];
+			}
+			$readingHistory = [];
+			foreach ($history->entries as $historyEntry){
+				$titleEntry = [];
+				// make the Pika style bib Id
+				preg_match($this->urlIdRegExp, $historyEntry->bib, $bibMatch);
+				$x     = $this->getCheckDigit($bibMatch[1]);
+				$bibId = '.b' . $bibMatch[1] . $x; // full bib id
+				// get the checkout id --> becomes itemindex
+				preg_match($this->urlIdRegExp, $historyEntry->id, $coIdMatch);
+				$itemindex         = $coIdMatch[1];
+				$checkOutTimestamp = strtotime($historyEntry->outDate);
+				// get the rest from the MARC record
+				$record = new MarcRecord($this->accountProfile->recordSource . ':' . $bibId);
 
-		if ($history['numTitles'] == 0){
-			return $history;
+				if ($record->isValid()){
+					$titleEntry['permanentId'] = $record->getPermanentId();
+					$titleEntry['title']       = $record->getTitle();
+					$titleEntry['author']      = $record->getPrimaryAuthor();
+					$titleEntry['format']      = $record->getFormat();
+					$titleEntry['title_sort']  = $record->getSortableTitle();
+					$titleEntry['ratingData']  = $record->getRatingData();
+					$titleEntry['permanentId'] = $record->getPermanentId();
+					$titleEntry['linkUrl']     = $record->getGroupedWorkDriver()->getLinkUrl();
+					$titleEntry['coverUrl']    = $record->getBookcoverUrl('medium');
+					$titleEntry['format']      = $record->getFormats();
+				}else{
+					// check the api
+					$operation = 'bibs/' . $bibMatch[1];
+					$params    = [
+						'fields' => 'deleted,title,author,materialType,normTitle'
+					];
+					$bibRes    = $this->_doRequest($operation, $params);
+					if (!$bibRes || $bibRes->deleted == true){
+						$titleEntry['title']      = '';
+						$titleEntry['author']     = '';
+						$titleEntry['format']     = '';
+						$titleEntry['title_sort'] = '';
+					}else{
+						$titleEntry['title']      = $bibRes->title;
+						$titleEntry['author']     = $bibRes->author;
+//						$titleEntry['format']     = $bibRes->materialType->value;
+						$titleEntry['title_sort'] = $bibRes->normTitle;
+					}
+					$titleEntry['permanentId'] = '';
+					$titleEntry['ratingData']  = '';
+					$titleEntry['permanentId'] = '';
+					$titleEntry['linkUrl']     = '';
+					$titleEntry['coverUrl']    = '';
+				}
+				$titleEntry['checkout']     = $checkOutTimestamp;
+				$titleEntry['shortId']      = $bibMatch[1];
+				$titleEntry['borrower_num'] = $patronSierraId;
+				$titleEntry['recordId']     = $bibId;
+				$titleEntry['itemindex']    = $itemindex; // checkout id
+				$readingHistory[]           = $titleEntry;
+				// clear out before
+				unset($titleEntry);
+			}
+
+			$total   = count($readingHistory);
+			$history = [
+				'historyActive' => true,
+				'numTitles'     => $total,
+				'titles'        => $readingHistory,
+			];
+
+			if ($recordsPerPage == -1){
+				// Only cache if fetching all of the reading history
+				$this->memCache->set($patronReadingHistoryCacheKey, $history, 21600);
+				$this->logger->info("Saving reading history in memcache:" . $patronReadingHistoryCacheKey);
+			}
+
+		}else{
+			$history = $patronCachedReadingHistory;
+			$this->logger->info("Found reading history in memcache:" . $patronReadingHistoryCacheKey);
 		}
 
 		// search test
@@ -2119,18 +2123,23 @@ EOT;
 		//$history['titles'] = $search;
 		//return $history;
 
-		$historyPages      = array_chunk($history['titles'], $recordsPerPage);
-		$pageIndex         = $page - 1;
-		$history['titles'] = $historyPages[$pageIndex];
+		// Let the CatalogConnection Driver sort the results if $recordsPerPage == -1
+
+		if ($recordsPerPage > -1){
+			//TODO: sorting routine
+			$historyPages      = array_chunk($history['titles'], $recordsPerPage);
+			$pageIndex         = $page - 1;
+			$history['titles'] = $historyPages[$pageIndex];
+		}
 
 		return $history;
 	}
 
-	public function searchReadingHistory($patron, $search) {
-		$history = $this->getReadingHistory($patron);
+	public function searchReadingHistory($patron, $search){
+		$history = $this->getReadingHistory($patron, 1, -1); // Fetch all of the patron's reading history from the ILS
 
-		$found = array_filter($history['titles'], function($k) use ($search) {
-      return stristr($k['title'], $search) || stristr($k['author'], $search);
+		$found = array_filter($history['titles'], function ($k) use ($search){
+			return stristr($k['title'], $search) || stristr($k['author'], $search);
 		});
 
 		return $found;
@@ -2143,13 +2152,14 @@ EOT;
 	 * This method is meant to be used by the Pika cron process load patron's reading history. It returns only the information needed
 	 * to add reading history entries into the database.
 	 *
-	 * @param User     $patron         Patron Object
+	 * @param User $patron Patron Object
 	 * @param null|int $loadAdditional The batch of reading history entries to load, eg 2nd batch, 3rd, etc
 	 * @return array|false [titles]=>[borrower_num(Pika ID), recordId(bib ID), permanentId(grouped work ID), title,
 	 *                     author, checkout]
 	 * @throws ErrorException
 	 */
 	public function loadReadingHistoryFromIls($patron, $loadAdditional = null){
+		set_time_limit(300);
 		$patronId       = $this->getPatronId($patron->barcode);
 		$operation      = "patrons/" . $patronId . "/checkouts/history";
 		$limitPerCall   = 2000; // Sierra api max results as of 9-12-2019
@@ -2164,14 +2174,14 @@ EOT;
 		}
 		$history = $this->_doRequest($operation, $params);
 
-		if(!$history) {
+		if (!$history){
 			return false;
 		}
 
-		if($history->total == 0) {
+		if ($history->total == 0){
 			return [
-				'numTitles'  => 0,
-				'titles'     => []
+				'numTitles' => 0,
+				'titles'    => []
 			];
 		}
 		$additionalLoadsRequired = false;
@@ -2181,7 +2191,7 @@ EOT;
 		}
 
 		$readingHistory = [];
-		foreach($history->entries as $historyEntry) {
+		foreach ($history->entries as $historyEntry){
 			$titleEntry = [];
 			// make the Pika style bib Id
 			preg_match($this->urlIdRegExp, $historyEntry->bib, $bibMatch);
@@ -2198,45 +2208,39 @@ EOT;
 			$titleEntry['source']              = $this->accountProfile->recordSource; // Record source for this catalog that the user is attached to)
 
 			// get the rest from the MARC record
-			$record = new MarcRecord($this->accountProfile->recordSource.':'.$bibId);
-			if ($record->isValid()) {
+			$record = new MarcRecord($this->accountProfile->recordSource . ':' . $bibId);
+			if ($record->isValid()){
 				$titleEntry['permanentId'] = $record->getPermanentId();
 				$titleEntry['title']       = $record->getTitle();
-				$titleEntry['author']      = $record->getAuthor();
+				$titleEntry['author']      = $record->getPrimaryAuthor();
 				$titleEntry['format']      = $record->getFormat();
-			} else {
+			}else{
 
 				// see if we can get info from the api
-				$operation = 'bibs/'.$bibMatch[1];
-				$params = [
-					'fields' => 'deleted,title,author,materialType,normTitle'
+				$operation = 'bibs/' . $bibMatch[1];
+				$params    = [
+					'fields' => 'deleted,title,author,normTitle'
 				];
-				$bibRes = $this->_doRequest($operation, $params);
-				if(!$bibRes || $bibRes->deleted == true) {
-					$titleEntry['title']      = 'This title has been deleted from the catalog ';
+				$bibRes    = $this->_doRequest($operation, $params);
+				if (!$bibRes || $bibRes->deleted == true){
+					$titleEntry['title']      = '';
 					$titleEntry['author']     = '';
 					$titleEntry['format']     = '';
 					$titleEntry['title_sort'] = '';
-				} else {
-					$titleEntry['title']      = $bibRes->title;
-					$titleEntry['author']     = $bibRes->author;
-					$titleEntry['format']     = $bibRes->materialType;
-					$titleEntry['title_sort'] = $bibRes->normTitle;
+				}else{
+					$titleEntry['title']      = empty($bibRes->title) ? '' : $bibRes->title;
+					$titleEntry['author']     = empty($bibRes->author) ? '' :$bibRes->author;
+					$titleEntry['title_sort'] = empty($bibRes->normTitle) ? '' :$bibRes->normTitle;
 				}
-				$titleEntry['permanentId'] = '';
-				$titleEntry['ratingData']  = '';
-				$titleEntry['permanentId'] = '';
-				$titleEntry['linkUrl']     = '';
-				$titleEntry['coverUrl']    = '';
 			}
 			$readingHistory[] = $titleEntry;
 			// clear out before
 			unset($titleEntry);
 		}
-		$total = count($readingHistory);
-		$return = ['numTitles'  => $total,
-		           'titles'     => $readingHistory];
-		if ($additionalLoadsRequired) {
+		$total  = count($readingHistory);
+		$return = ['numTitles' => $total,
+		           'titles'    => $readingHistory];
+		if ($additionalLoadsRequired){
 			$return['nextRound'] = $nextRound;
 		}
 

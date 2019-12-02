@@ -1,9 +1,9 @@
 <div class="col-xs-12">
 {if $loggedIn}
 
-	{if $profile->web_note}
+	{if $user->web_note}
 		<div class="row">
-			<div id="web_note" class="alert alert-info text-center col-xs-12">{$profile->web_note}</div>
+			<div id="web_note" class="alert alert-info text-center col-xs-12">{$user->web_note}</div>
 		</div>
 	{/if}
 
@@ -18,7 +18,7 @@
 
 	<br>
 		{if $offline}
-		<div class="alert alert-warning"><strong>The library system is currently offline.</strong> We are unable to retrieve information about your reading history at this time.</div>
+			<div class="alert alert-warning"><strong>The library system is currently offline.</strong> We are unable to retrieve information about your reading history at this time.</div>
 		{else}
 			{strip}
 
@@ -40,6 +40,16 @@
 	</div>
 
 	{if !$masqueradeMode || ($masqueradeMode && $allowReadingHistoryDisplayInMasqueradeMode)}
+
+			{if $user->trackReadingHistory && !$user->initialReadingHistoryLoaded}
+					{*Notice for users that have opted in to reading history *}
+					<div class="alert alert-warning">
+						<p>Note that your reading history has not been completely processed yet. So results displayed below may be incomplete or take a long time to load for display. It generally takes overnight for your reading history to processed once you have opted in to have reading history recorded.
+						</p>
+					</div>
+			{/if}
+
+
 		{* Do not display Reading History in Masquerade Mode, unless the library has allowed it *}
 	<form id="readingListForm" action="{$fullPath}" class="form-inline">
 
@@ -112,14 +122,14 @@
 					</div>
 					{if $showCovers}
 					<div class="col-sm-2">
-						{translate text='Cover'}
+						<strong>{translate text='Cover'}</strong>
 					</div>
 					{/if}
 					<div class="{if $showCovers}col-sm-7{else}col-sm-9{/if}">
-						{translate text='Title'}
+						<strong>{translate text='Title'}</strong>
 					</div>
 					<div class="col-sm-2">
-						{translate text='Checked Out'}
+						<strong>{translate text='Last Read Around'}</strong>
 					</div>
 				</div>
 
@@ -257,7 +267,7 @@
 				{if $pageLinks.all}<div class="text-center">{$pageLinks.all}</div>{/if}
 			{elseif $historyActive == true}
 				{* No Items in the history, but the history is active *}
-				You do not have any items in your reading list.	It may take up to 3 hours for your reading history to be updated after you start recording your history.
+				<div class="alert alert-info">You do not have any items in your reading list.</div>
 			{/if}
 			</div>
 		</form>

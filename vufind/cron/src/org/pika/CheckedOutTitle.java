@@ -2,7 +2,7 @@ package org.pika;
 
 /**
  * A title that is checked out to a user for reading history
- * VuFind-Plus
+ * Pika
  * User: Mark Noble
  * Date: 12/11/2014
  * Time: 1:34 PM

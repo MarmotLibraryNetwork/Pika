@@ -61,7 +61,9 @@ trait PatronReadingHistoryOperations {
 	 * @param  User $patron
 	 * @return boolean $success  Whether or not the delete all action was successful
 	 */
-	public abstract function deleteAllReadingHistory($patron);
+	// As currently implemented, Pika doesn't delete reading history entries in the ILS
+	//TODO: discuss and document whether we should or not in fact delete reading history in the ILS
+//	public abstract function deleteAllReadingHistory($patron);
 
 	/**
 	 * Delete selected items from reading history
@@ -70,7 +72,9 @@ trait PatronReadingHistoryOperations {
 	 * @param array $selectedTitles
 	 * @return mixed
 	 */
-	public abstract function deleteMarkedReadingHistory($patron, $selectedTitles);
+	// As currently implemented, Pika doesn't delete reading history entries in the ILS
+	//TODO: discuss and document whether we should or not in fact delete reading history in the ILS
+//	public abstract function deleteMarkedReadingHistory($patron, $selectedTitles);
 
 	/**
 	 * Route reading history actions to the appropriate function according to the readingHistoryAction

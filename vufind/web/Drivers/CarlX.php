@@ -650,7 +650,7 @@ class CarlX extends SIP2Driver{
 			foreach ($itemsToLoad as $chargeItem) {
 				$carlID = $this->fullCarlIDfromBID($chargeItem->BID);
 				$dueDate = strstr($chargeItem->DueDate, 'T', true);
-				$curTitle['checkoutSource']  = 'ILS';
+				$curTitle['checkoutSource']  = 'ils';
 				$curTitle['recordId']        = $carlID;
 				$curTitle['shortId']         = $chargeItem->BID;
 				$curTitle['id']              = $chargeItem->BID;

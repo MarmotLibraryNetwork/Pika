@@ -533,7 +533,7 @@ abstract class HorizonROA implements DriverInterface
 						}
 
 						$curTitle                   = array();
-						$curTitle['checkoutSource'] = 'ILS';
+						$curTitle['checkoutSource'] = 'ils';
 						$curTitle['recordId']       = $bibId;
 						$curTitle['shortId']        = $bibId;
 						$curTitle['id']             = $bibId;
