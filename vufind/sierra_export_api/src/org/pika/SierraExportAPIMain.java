@@ -1448,7 +1448,12 @@ public class SierraExportAPIMain {
 									subfields = curVarField.getJSONArray("subfields");
 									for (int k = 0; k < subfields.length(); k++) {
 										JSONObject subfield = subfields.getJSONObject(k);
-										if (k == 0 || !isThisAnEContentItemURL) {
+										if (isThisAnEContentItemURL){
+											if (subfield.has("tag") && subfield.getString("tag").equalsIgnoreCase("u")){
+												allFieldContent.append(subfield.getString("content"));
+												break;  //Only need the url
+											}
+										} else {
 											// Don't concatenate subfields if this is an econtent Item tag
 											allFieldContent.append(subfield.getString("content"));
 										}
