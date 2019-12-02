@@ -164,7 +164,7 @@ VuFind.Record = (function(){
 				alert("Please select a location to pick up your hold when it is ready.");
 				return false;
 			}
-			VuFind.loadingMessage();
+			VuFind.showMessageWithButtons($("#myModalLabel").html(), 'Loading, please wait.', $('.modal-buttons').html()); // Can't use standard VuFind.loadingMessage() bcs the buttons need to stay for follow-up Item-level hold prompts
 			$.getJSON(Globals.path + "/" + module +  "/" + id + "/AJAX", params, function(data){
 				if (data.success){
 					if (data.needsItemLevelHold){
