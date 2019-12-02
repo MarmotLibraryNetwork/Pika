@@ -42,6 +42,9 @@
 # backup important bits at 12:10am daily
 10 0 * * * /usr/local/vufind-plus/vufind/cron/nightly_mysql_dump.sh flatirons.production 2>&1 >/dev/null
 
+# backup important bits at 12:10am daily
+10 0 * * * /root/cron/backup 2>&1 >/dev/null
+
 # Restart apache
 0 0-7 * * * /usr/sbin/apachectl restart > /dev/null 2>&1
 
@@ -82,13 +85,3 @@
 # New York Times Best seller Lists Updating #
 #############################################
 07 7 * * * /usr/local/vufind-plus/vufind/cron/updateNYTLists.sh flatirons.production
-# update on Sundays at 7:07
-
-################
-# Pika Cleanup #
-################
-# Clean Up Temporary Files
-27 */2 * * * cd /tmp; /bin/rm -rf epb*
-
-# backup important bits at 12:10am daily
-10 0 * * * /root/cron/backup 2>&1 >/dev/null

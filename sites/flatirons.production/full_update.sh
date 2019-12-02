@@ -114,9 +114,6 @@ if [ -n "$FILE" ]; then
 		find /mnt/ftp -mindepth 1 -maxdepth 1 -name "script.MARC.*" -type f -mtime +7 -delete
 		umount /mnt/ftp
 
-		# Copy to marc_export to keep as a backup
-		cp /data/vufind-plus/${PIKASERVER}/marc/fullexport.mrc /data/vufind-plus/${PIKASERVER}/marc_export/pika.$TODAY.mrc
-
 		#Validate the export
 		cd /usr/local/vufind-plus/vufind/cron; java -server -XX:+UseG1GC -jar cron.jar ${PIKASERVER} ValidateMarcExport >> ${OUTPUT_FILE}
 
@@ -128,9 +125,6 @@ if [ -n "$FILE" ]; then
 
 		# Truncate Continous Reindexing list of changed items
 		cat /dev/null >| /data/vufind-plus/${PIKASERVER}/marc/changed_items_to_process.csv
-
-		# Delete any exports over 7 days
-		find /data/vufind-plus/flatirons.production/marc_export/ -mindepth 1 -maxdepth 1 -name *.mrc -type f -mtime +7 -delete
 
 		NEWLEVEL=$(($FILE1SIZE * 97 / 100))
 		echo "" >> ${OUTPUT_FILE}
