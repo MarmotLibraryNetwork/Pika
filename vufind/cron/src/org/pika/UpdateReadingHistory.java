@@ -110,12 +110,11 @@ public class UpdateReadingHistory implements IProcessHandler {
 				processLog.incUpdated();
 				processLog.saveToDatabase(pikaConn, logger);
 				try {
-					Thread.sleep(1000);
+					Thread.sleep(500);
 				} catch (Exception e) {
 					logger.warn("Sleep was interrupted while processing reading history for user.");
 				}
 			}
-			userResults.close();
 		} catch (SQLException e) {
 			logger.error("Unable get a list of users that need to have their reading list updated ", e);
 			processLog.incErrors();
@@ -206,14 +205,15 @@ public class UpdateReadingHistory implements IProcessHandler {
 								logger.error("Error reading input stream for " + cat_username, e);
 								hadError = true;
 							} catch (JSONException e) {
-								logger.error("Unable to load patron information for " + cat_username + ", exception loading response ", e);
+								final String message = "Unable to load patron information for " + cat_username + ", exception loading response ";
+								logger.error(message, e);
 								logger.error(patronDataJson);
 								processLog.incErrors();
-								processLog.addNote("Unable to load patron information from for " + cat_username + " exception loading response " + e.toString());
+								processLog.addNote(message + e.toString());
 								hadError = true;
 							}
 						} else {
-							logger.error("Unable to load patron information from for " + cat_username + ": expected to get back an input stream, received a "
+							logger.error("Unable to load patron information for " + cat_username + ": expected to get back an input stream, received a "
 									+ patronDataRaw.getClass().getName());
 							processLog.incErrors();
 							hadError = true;
@@ -239,7 +239,7 @@ public class UpdateReadingHistory implements IProcessHandler {
 		return !hadError;
 	}
 
-	private boolean processReadingHistoryTitle(JSONObject readingHistoryTitle, Long userId) throws JSONException {
+	private void processReadingHistoryTitle(JSONObject readingHistoryTitle, Long userId) throws JSONException {
 		String source              = "ils";
 		String sourceId            = "";
 		String author              = "";
@@ -259,7 +259,7 @@ public class UpdateReadingHistory implements IProcessHandler {
 		if ((sourceId == null || sourceId.length() == 0) && (title == null || title.length() == 0) && (author == null || author.length() == 0)) {
 			//Don't try to add records we know nothing about.
 			//Note: Source & sourceID won't exist for InterLibrary Loan titles
-			return false;
+			return;
 		}
 		if (readingHistoryTitle.has("permanentId")) {
 			groupedWorkId = readingHistoryTitle.getString("permanentId");
@@ -320,11 +320,9 @@ public class UpdateReadingHistory implements IProcessHandler {
 //			}
 			insertReadingHistoryStmt.executeUpdate();
 			processLog.incUpdated();
-			return true;
 		} catch (SQLException e) {
 			logger.error("Error adding title for user " + userId + " " + title, e);
 			processLog.incErrors();
-			return false;
 		}
 	}
 
@@ -365,13 +363,14 @@ public class UpdateReadingHistory implements IProcessHandler {
 						logger.info("Call to getPatronCheckedOutItems returned a success code of false for " + cat_username);
 					}
 				} catch (JSONException e) {
-					logger.error("Unable to load patron information from for " + cat_username + " exception loading response ", e);
+					final String message = "Unable to load patron information for " + cat_username + ", exception loading response ";
+					logger.error(message, e);
 					logger.error(patronDataJson);
 					processLog.incErrors();
-					processLog.addNote("Unable to load patron information from for " + cat_username + " exception loading response " + e.toString());
+					processLog.addNote(message + e.toString());
 				}
 			} else {
-				logger.error("Unable to load patron information from for " + cat_username + ": expected to get back an input stream, received a "
+				logger.error("Unable to load patron information for " + cat_username + ": expected to get back an input stream, received a "
 						+ patronDataRaw.getClass().getName());
 				processLog.incErrors();
 			}
@@ -384,12 +383,12 @@ public class UpdateReadingHistory implements IProcessHandler {
 		}
 	}
 
-	private boolean processCheckedOutTitle(JSONObject checkedOutItem, long userId, ArrayList<CheckedOutTitle> checkedOutTitlesAlreadyInReadingHistory) throws JSONException, SQLException, IOException {
+	private void processCheckedOutTitle(JSONObject checkedOutItem, long userId, ArrayList<CheckedOutTitle> checkedOutTitlesAlreadyInReadingHistory) throws JSONException, SQLException, IOException {
 		String source   = "";
 		String sourceId = "?"; // The record/Title Id
 		try {
 			// System.out.println(checkedOutItem.toString());
-			source   = checkedOutItem.getString("checkoutSource");
+			source   = checkedOutItem.getString("checkoutSource").trim();
 
 			switch (source) {
 				case "OverDrive":
@@ -409,7 +408,7 @@ public class UpdateReadingHistory implements IProcessHandler {
 					sourceId = checkedOutItem.getString("id");
 					break;
 				default:
-					logger.error("Unknown source updating reading history: " + source);
+					logger.error("Unknown source updating reading history: '" + source + "'");
 			}
 
 			//Check to see if this is an existing checkout.  If it is, skip inserting
@@ -424,7 +423,7 @@ public class UpdateReadingHistory implements IProcessHandler {
 
 						if ((sourceMatches && sourceIdMatches) || titleMatches) {
 						checkedOutTitlesAlreadyInReadingHistory.remove(curTitle);
-						return true;
+						return;
 					}
 				}
 			}
@@ -445,11 +444,9 @@ public class UpdateReadingHistory implements IProcessHandler {
 			insertReadingHistoryStmt.setLong(8, checkoutTime);
 			insertReadingHistoryStmt.executeUpdate();
 			processLog.incUpdated();
-			return true;
 		} catch (Exception e) {
 			logger.error("Error adding title for user " + userId + " for id " + source +":"+ sourceId + ", " + ( checkedOutItem.has("title") ? checkedOutItem.getString("title") : checkedOutItem.toString()), e);
 			processLog.incErrors();
-			return false;
 		}
 	}
 
