@@ -1093,12 +1093,14 @@ class CatalogConnection
 		elseif (!empty($readingHistoryDB->source) && !empty($readingHistoryDB->sourceId)){
 			$sourceAndID = new sourceAndId($readingHistoryDB->source . ':' . $readingHistoryDB->sourceId);
 			$recordDriver = RecordDriverFactory::initRecordDriverById($sourceAndID);
-			$historyEntry['ratingData']  = $recordDriver->getRatingData();
-			$historyEntry['coverUrl']    = $recordDriver->getBookcoverUrl('medium');
-			$historyEntry['linkUrl']     = $recordDriver->getLinkUrl();
-			$historyEntry['permanentId'] = $recordDriver->getPermanentId();
-			if (empty($historyEntry['title'])){
-				$historyEntry['title'] = $recordDriver->getTitle();
+			if ($recordDriver->isValid()){
+				$historyEntry['ratingData']  = $recordDriver->getRatingData();
+				$historyEntry['coverUrl']    = $recordDriver->getBookcoverUrl('medium');
+				$historyEntry['linkUrl']     = $recordDriver->getLinkUrl();
+				$historyEntry['permanentId'] = $recordDriver->getPermanentId();
+				if (empty($historyEntry['title'])){
+					$historyEntry['title'] = $recordDriver->getTitle();
+				}
 			}
 			//TODO: update history db entry with any missing information
 
