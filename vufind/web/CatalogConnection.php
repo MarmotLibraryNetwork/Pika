@@ -1079,7 +1079,7 @@ class CatalogConnection
 		if (!empty($readingHistoryDB->groupedWorkPermanentId)){
 			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 			$recordDriver = new GroupedWorkDriver($readingHistoryDB->groupedWorkPermanentId);
-			if ($recordDriver != null && $recordDriver->isValid()){
+			if (!empty($recordDriver) && $recordDriver->isValid()){
 				$historyEntry['ratingData']  = $recordDriver->getRatingData();
 				$historyEntry['permanentId'] = $recordDriver->getPermanentId();
 				$historyEntry['coverUrl']    = $recordDriver->getBookcoverUrl('medium');
@@ -1093,7 +1093,7 @@ class CatalogConnection
 		elseif (!empty($readingHistoryDB->source) && !empty($readingHistoryDB->sourceId)){
 			$sourceAndID = new sourceAndId($readingHistoryDB->source . ':' . $readingHistoryDB->sourceId);
 			$recordDriver = RecordDriverFactory::initRecordDriverById($sourceAndID);
-			if ($recordDriver->isValid()){
+			if (!empty($recordDriver) && $recordDriver->isValid()){
 				$historyEntry['ratingData']  = $recordDriver->getRatingData();
 				$historyEntry['coverUrl']    = $recordDriver->getBookcoverUrl('medium');
 				$historyEntry['linkUrl']     = $recordDriver->getLinkUrl();
