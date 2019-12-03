@@ -4,7 +4,7 @@
 		<h2>{translate text='Reset My PIN'}</h2>
 		<div class="alert alert-info">
 			<p>Please enter a new PIN.</p>
-			<p><strong>&bull; {if $alphaNumericOnlyPins}Use numbers or letters.{else}Use only numbers.{/if}</strong></p>
+			<p><strong>&bull; {if $alphaNumericOnlyPins}Use numbers and letters.{else}Use only numbers.{/if}</strong></p>
 			<p><strong>&bull; Your new PIN must be at least {$pinMinimumLength} characters in length.</strong></p>
 		</div>
 

@@ -1051,8 +1051,10 @@ EOT;
 					$params['phones'][] = ['number'=>$val, 'type'=>'p'];
 					break;
 				case 'birthdate':
-					$date = DateTime::createFromFormat('d-m-Y', $val);
-					$params['birthDate'] = $date->format('Y-m-d');
+					if(isset($val) && $val != '') {
+						$date                = DateTime::createFromFormat('d-m-Y', $val);
+						$params['birthDate'] = $date->format('Y-m-d');
+					}
 					break;
 				case 'homelibrarycode':
 					$params['homeLibraryCode'] = $val;
