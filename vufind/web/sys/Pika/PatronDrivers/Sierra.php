@@ -206,7 +206,7 @@ class Sierra {
 			$checkout['checkoutDate']   = strtotime($entry->outDate);
 			$checkout['renewCount']     = $entry->numberOfRenewals;
 			$checkout['barcode']        = $entry->barcode;
-			$checkout['request']        = $entry->callNumber;
+//			$checkout['request']        = $entry->callNumber;
 			$checkout['itemid']         = $itemId;
 			$checkout['canrenew']       = true;
 			$checkout['renewIndicator'] = $checkoutId;
@@ -583,12 +583,19 @@ class Sierra {
 				$addressParts = explode(',', $patron->address2);
 				// some libraries may not use ','  after city so make sure we have parts
 				// can assume street as a line and city, st. zip as a line
+				// Note: There are other unusual entries for address as well:
+				// ART
+				// CAMPUS ADDRESS
 				if (count($addressParts) > 1) {
 					$city          = trim($addressParts[0]);
+					if (!empty($addressParts[1])){
 					$stateZip      = trim($addressParts[1]);
 					$stateZipParts = explode(' ', $stateZip);
 					$state         = trim($stateZipParts[0]);
+						if (!empty($stateZipParts[1])){
 					$zip           = trim($stateZipParts[1]);
+						}
+					}
 				} else {
 					$regExp = "/^([^,]+)\s([A-Z]{2})(?:\s(\d{5}))?$/";
 					preg_match($regExp, $patron->address2, $matches);
@@ -598,15 +605,10 @@ class Sierra {
 						$zip   = $matches[3];
 					}
 				}
-
-				$patron->city  = $city;
-				$patron->state = $state;
-				$patron->zip   = $zip;
-			} else {
-				$patron->city  = '';
-				$patron->state = '';
-				$patron->zip   = '';
 			}
+			$patron->city  = isset($city) ? $city : '';
+			$patron->state = isset($state) ? $state : '';
+			$patron->zip   = isset($zip) ? $zip : '';
 		}
 
 		// 6.5 mobile phone
@@ -618,6 +620,7 @@ class Sierra {
 		}
 
 		// 6.6 account expiration
+		if (!empty($pInfo->expirationDate)){
 		try {
 			$expiresDate = new DateTime($pInfo->expirationDate);
 			$patron->expires = $expiresDate->format('m-d-Y');
@@ -634,6 +637,9 @@ class Sierra {
 				$patron->expired = 0;
 			}
 		} catch (\Exception $e) {
+			$patron->expires = '00-00-0000';
+		}
+		}else{
 			$patron->expires = '00-00-0000';
 		}
 

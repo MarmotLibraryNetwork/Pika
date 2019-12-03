@@ -494,7 +494,7 @@ class User extends DB_DataObject {
 	}
 
 	/**
-	 * Returns a list of users that can view this account
+	 * Returns a list of users that can view this account through Pika's Linked Accounts
 	 *
 	 * @return User[]
 	 */
@@ -803,8 +803,14 @@ class User extends DB_DataObject {
 		return $this->homeLibrary;
 	}
 
+	/**
+	 * Get the display name of the User's library
+	 *
+	 * @return string
+	 */
 	function getHomeLibrarySystemName(){
-		return $this->getHomeLibrary()->displayName;
+		$library = $this->getHomeLibrary();
+		return empty($library) ? '' : $library->displayName;
 	}
 
 	public function getNumCheckedOutTotal($includeLinkedUsers = true){
@@ -900,7 +906,6 @@ class User extends DB_DataObject {
 	 */
 	public function getMyCheckouts($includeLinkedUsers = true){
 		global $timer;
-		global $configArray;
 
 		//Get checked out titles from the ILS
 		$ilsCheckouts = $this->getCatalogDriver()->getMyCheckouts($this, !$includeLinkedUsers);
