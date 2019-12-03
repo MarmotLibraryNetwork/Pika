@@ -379,7 +379,7 @@ class CatalogConnection
 		foreach ($transactions as $key => $curTitle){
 			$curTitle['user']   = $user->getNameAndLibraryLabel();
 			$curTitle['userId'] = $user->id;
-			$curTitle['fullId'] = $this->accountProfile->recordSource . ':' . $curTitle['id'];
+			$curTitle['fullId'] = $this->accountProfile->recordSource . ':' . $curTitle['recordId'];
 
 			if ($curTitle['dueDate']){
 				// use the same time of day to calculate days until due, in order to avoid errors with rounding
