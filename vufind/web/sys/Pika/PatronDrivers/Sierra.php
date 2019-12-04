@@ -176,7 +176,7 @@ class Sierra {
 				$checkout['renewCount']     = $entry->numberOfRenewals;
 				$checkout['recordId']       = 0;
 				$checkout['renewIndicator'] = $checkoutId;
-				$checkout['renewMessage']   = '';
+//				$checkout['renewMessage']   = '';
 				$checkout['coverUrl']       = $coverUrl;
 				$checkout['barcode']        = $entry->barcode;
 				$checkout['request']        = $entry->callNumber;
@@ -566,9 +566,20 @@ class Sierra {
 				foreach ($pInfo->addresses as $address) {
 					// a = primary address, h = alt address
 					if ($address->type == 'a') {
-						$lineCount = count($address->lines) - 1;
-						$patron->address1 = $address->lines[$lineCount - 1];
-						$patron->address2 = $address->lines[$lineCount];
+						$lineCount = count($address->lines);
+						switch ($lineCount){
+							case 3:
+								// When there are three address lines, this means the first line is something like "Care of" and the rest is the stuff we want
+								$patron->address2 = $address->lines[2];
+								$patron->address1 = $address->lines[1];
+								break 2;
+							case 2:
+								// Set address2 when there are two lines, then go onto case 1 to set address1
+								$patron->address2 = $address->lines[1];
+							case 1:
+								$patron->address1 = $address->lines[0];
+								break 2;
+						}
 					}
 				}
 			}
@@ -586,6 +597,8 @@ class Sierra {
 				// Note: There are other unusual entries for address as well:
 				// ART
 				// CAMPUS ADDRESS
+				// another:
+				// Words on Wheels Patron Wednesday 1 (Aaron)
 				if (count($addressParts) > 1) {
 					$city          = trim($addressParts[0]);
 					if (!empty($addressParts[1])){
