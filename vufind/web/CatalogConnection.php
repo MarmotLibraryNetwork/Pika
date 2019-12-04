@@ -717,9 +717,10 @@ class CatalogConnection
 				$result                    = $readingHistoryDB->update();
 				if ($success){
 					// Set to false if any updates fail; stop checking after the first failure
-					$success = $result != false;
-					global $logger;
-					$logger->log('Failed to delete all reading history entries for user id ' . $patron->id, PEAR_LOG_WARNING);
+					if (!$success = $result != false){
+						global $logger;
+						$logger->log('Failed to delete all reading history entries for user id ' . $patron->id . ', starting with history entry ' . $readingHistoryDB->id, PEAR_LOG_WARNING);
+					}
 				}
 			}
 			//TODO: discuss. delete all reading history in ILS only on opt out (Apparent previous behavior)
@@ -1057,15 +1058,13 @@ class CatalogConnection
 	 * @param ReadingHistoryEntry $readingHistoryDB
 	 * @return mixed
 	 */
-	public function getHistoryEntryForDatabaseEntry($readingHistoryDB) {
+	public function getHistoryEntryForDatabaseEntry(ReadingHistoryEntry $readingHistoryDB) {
 		$historyEntry = array();
 
 		$historyEntry['itemindex']   = $readingHistoryDB->id;
 		$historyEntry['deletable']   = true;
 		$historyEntry['source']      = $readingHistoryDB->source;
-		$historyEntry['id']          = $readingHistoryDB->sourceId;
 		$historyEntry['recordId']    = $readingHistoryDB->sourceId;
-		$historyEntry['shortId']     = $readingHistoryDB->sourceId;
 		$historyEntry['title']       = $readingHistoryDB->title;
 		$historyEntry['author']      = $readingHistoryDB->author;
 		$historyEntry['format']      = $readingHistoryDB->format;
@@ -1089,7 +1088,6 @@ class CatalogConnection
 				}
 			}
 		}
-		//TODO: Fallback to other drivers if we have the source & sourceId
 		elseif (!empty($readingHistoryDB->source) && !empty($readingHistoryDB->sourceId)){
 			$sourceAndID = new sourceAndId($readingHistoryDB->source . ':' . $readingHistoryDB->sourceId);
 			$recordDriver = RecordDriverFactory::initRecordDriverById($sourceAndID);
@@ -1102,7 +1100,7 @@ class CatalogConnection
 					$historyEntry['title'] = $recordDriver->getTitle();
 				}
 			}
-			//TODO: update history db entry with any missing information
+			//TODO: update history db entry with any missing information?
 
 		}
 		$recordDriver = null;
@@ -1122,8 +1120,9 @@ class CatalogConnection
 
 		$activeHistoryTitles = array();
 		while ($readingHistoryDB->fetch()){
+			$key                       = $readingHistoryDB->source. ':' .$readingHistoryDB->sourceId; //TODO: what about an ILL check out
 			$historyEntry              = $this->getHistoryEntryForDatabaseEntry($readingHistoryDB);
-			$key                       = $historyEntry['source'] . ':' . $historyEntry['id'];
+//			$key                       = $historyEntry['source'] . ':' . $historyEntry['recordId'];
 			$activeHistoryTitles[$key] = $historyEntry;
 		}
 
@@ -1153,7 +1152,10 @@ class CatalogConnection
 
 			$key = $source . ':' . $sourceId;
 			if (array_key_exists($key, $activeHistoryTitles)){
-				unset($activeHistoryTitles[$key]);
+				$activeHistoryTitles[$key]['stillActiveCheckout'] = true;
+				// can't merely unset the entry because it is possible for the user to have more than one item from the same bib
+				// checked out (eg 2 copies of a title), and we don't to duplicate entries in reading history when only
+				// bib-level data is recorded
 			}else{
 				$historyEntryDB         = new ReadingHistoryEntry();
 				$historyEntryDB->userId = $patron->id;
@@ -1182,20 +1184,22 @@ class CatalogConnection
 			}
 		}
 
-		//Anything that was still active is now checked in
+		// Active reading histories that were checked out but aren't checked out anymore
 		foreach ($activeHistoryTitles as $historyEntry){
-			//Update even if deleted to make sure code is cleaned up correctly
-			$historyEntryDB              = new ReadingHistoryEntry();
-			$historyEntryDB->source      = $historyEntry['source'];
-			$historyEntryDB->sourceId    = $historyEntry['id'];
-			$historyEntryDB->checkInDate = null;
-			if ($historyEntryDB->find(true)){
-				$historyEntryDB->checkInDate = time();
-				$numUpdates = $historyEntryDB->update();
-				if ($numUpdates != 1){
-					global $logger;
-					$key = $historyEntry['source'] . ':' . $historyEntry['id'];
-					$logger->log("Could not update reading history entry $key", PEAR_LOG_ERR);
+			if (empty($activeHistoryTitles[$key]['stillActiveCheckout'])){ //No longer an active checkout
+				//Update even if deleted to make sure code is cleaned up correctly
+				$historyEntryDB              = new ReadingHistoryEntry();
+				$historyEntryDB->source      = $historyEntry['source'];
+				$historyEntryDB->sourceId    = $historyEntry['recordId'];
+				$historyEntryDB->checkInDate = null;
+				if ($historyEntryDB->find(true)){
+					$historyEntryDB->checkInDate = time();
+					$numUpdates                  = $historyEntryDB->update();
+					if ($numUpdates != 1){
+						global $logger;
+						$key = $historyEntry['source'] . ':' . $historyEntry['recordId'];
+						$logger->log("Could not update reading history entry $key", PEAR_LOG_ERR);
+					}
 				}
 			}
 		}

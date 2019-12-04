@@ -44,7 +44,7 @@
 			{if $user->trackReadingHistory && !$user->initialReadingHistoryLoaded}
 					{*Notice for users that have opted in to reading history *}
 					<div class="alert alert-warning">
-						<p>Note that your reading history has not been completely processed yet. So results displayed below may be incomplete or take a long time to load for display. It generally takes overnight for your reading history to processed once you have opted in to have reading history recorded.
+						<p>Please note that your reading history has not been completely processed yet. The titles displayed below may initially be incomplete or take a long time to load. The process generally takes overnight for your reading history to display in full once you have opted in to have your reading history recorded.
 						</p>
 					</div>
 			{/if}
@@ -266,8 +266,8 @@
 
 				{if $pageLinks.all}<div class="text-center">{$pageLinks.all}</div>{/if}
 			{elseif $historyActive == true}
-				{* No Items in the history, but the history is active *}
-				<div class="alert alert-info">You do not have any items in your reading list.</div>
+				{* No entries in the history, but the history is active *}
+				<div class="alert alert-info">There are no entries in your reading list.</div>
 			{/if}
 			</div>
 		</form>
