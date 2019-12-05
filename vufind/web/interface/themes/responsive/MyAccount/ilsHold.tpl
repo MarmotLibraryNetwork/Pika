@@ -104,7 +104,7 @@
 					<div class="row">
 						<div class="result-label col-tn-3">{translate text='Pickup'}</div>
 						<div class="col-tn-9 result-value">
-							{$record.location}
+							{if empty($record.location)}Not Set{else}{$record.location}{/if}
 						</div>
 					</div>
 

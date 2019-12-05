@@ -1608,19 +1608,27 @@ EOT;
 			unset($status, $freezeable, $cancelable, $updatePickup);
 
 			// pick up location
-			$pickupBranch = new Location();
-			$where = "code = '{$hold->pickupLocation->code}'";
-			$pickupBranch->whereAdd($where);
-			$pickupBranch->find(1);
-			if ($pickupBranch->N > 0){
-				$pickupBranch->fetch();
-				$h['currentPickupId']   = $pickupBranch->locationId;
-				$h['currentPickupName'] = $pickupBranch->displayName;
-				$h['location']          = $pickupBranch->displayName;
-			} else {
+			if (!empty($hold->pickupLocation)){
+				$pickupBranch = new Location();
+				$where        = "code = '{$hold->pickupLocation->code}'";
+				$pickupBranch->whereAdd($where);
+				$pickupBranch->find(1);
+				if ($pickupBranch->N > 0){
+					$pickupBranch->fetch();
+					$h['currentPickupId']   = $pickupBranch->locationId;
+					$h['currentPickupName'] = $pickupBranch->displayName;
+					$h['location']          = $pickupBranch->displayName;
+				}else{
+					$h['currentPickupId']   = false;
+					$h['currentPickupName'] = $hold->pickupLocation->name;
+					$h['location']          = $hold->pickupLocation->name;
+				}
+			} else{
+				//This shouldn't happen but we have had examples where it did
+				$this->logger->error("Patron with barcode {$patron->getBarcode()} has a hold with out a pickup location ");
 				$h['currentPickupId']   = false;
-				$h['currentPickupName'] = $hold->pickupLocation->name;
-				$h['location']          = $hold->pickupLocation->name;
+				$h['currentPickupName'] = false;
+				$h['location']          = false;
 			}
 
 			// determine if this is an innreach hold

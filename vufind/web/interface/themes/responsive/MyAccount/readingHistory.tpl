@@ -267,7 +267,7 @@
 				{if $pageLinks.all}<div class="text-center">{$pageLinks.all}</div>{/if}
 			{elseif $historyActive == true}
 				{* No entries in the history, but the history is active *}
-				<div class="alert alert-info">There are no entries in your reading list.</div>
+				<div class="alert alert-info">There are no entries in your reading history.</div>
 			{/if}
 			</div>
 		</form>
