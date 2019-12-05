@@ -558,8 +558,104 @@ class Sierra {
 		$patron->fullname  = $pInfo->names[0];
 
 		// 6.4 address
+		// some libraries may not use ','  after city so make sure we have all the parts
+		// can assume street as a line and city, st. zip as a line
+		// Note: There are other unusual entries for address as well:
+		// ART
+		// CAMPUS ADDRESS
+		// another:
+		// Words on Wheels Patron Wednesday 1 (Aaron)
+		// another:
+		// Salida Co, 81201 <- comma in the wrong place
+
+		// set these early to avoid warnings.
+		$patron->address1    = '';
+		$patron->address2    = '';
+		$patron->city        = '';
+		$patron->state       = '';
+		$patron->zip         = '';
+		$patronCity          = '';
+		$patronState         = '';
+		$patronZip           = '';
+
+		$zipRegExp    = '|\d{5}$|';
+		$splitRegExp  = '%([a-zA-Z]+)[\s|,]%'; // splits on spaces or commas -- doesn't include zip
+		if(isset($pInfo->addresses) && is_array($pInfo->addresses)){
+			// get the home address -- we won't handle alt addresses in Pika.
+			$homeAddressArray = false;
+			foreach ($pInfo->addresses as $address) {
+				// a = primary address, h = alt address
+				if ($address->type == 'a') {
+					$homeAddressArray = $address->lines;
+				}
+			}
+			// found a home address
+			if($homeAddressArray) {
+				$addressLineCount = count($homeAddressArray);
+				// 3 lines - if we have three lines the first is c/o or something similar, currently don't need
+				if ($addressLineCount == 3) {
+					array_shift($homeAddressArray); // shift off the first line
+					$addressLineCount = count($homeAddressArray); // reset line count
+				}
+				// 2 lines (or previously 3) - if we have at least 2 lines we should have a full address
+			  if($addressLineCount == 2) {
+					// we can set address1 and address2
+				  $patron->address1 = $homeAddressArray[0];
+				  $patron->address2 = $homeAddressArray[1];
+				  // check last line for a zip -- this is where we assume it lives
+				  $zipTest = preg_match($zipRegExp, trim($homeAddressArray[1]), $zipMatch);
+				  if($zipTest === 1) {
+					  // OK, this should be a full address
+					  $patronZip = $zipMatch[0];
+					  // now split out the rest of the address
+					  $cityStateTest = preg_match_all($splitRegExp, trim($homeAddressArray[1]), $cityStateMatches);
+					  if($cityStateTest) {
+						  $cityState = $cityStateMatches[1];
+						  $cityStateCount = count($cityState) - 1; // zero index
+						  // state should be last
+						  $patronState = $cityState[$cityStateCount];
+						  // pop last value and join array
+						  array_pop($cityState);
+						  $patronCity = implode(' ', $cityState);
+					  }
+				  } else {
+				  	// no zip, not a full address
+					  // todo: how to handle, if at all
+				  }
+				} else {
+				  // 1 line - only one address line -- this could be anything so start checking
+				  $patron->address1 = $homeAddressArray[0];
+					  // does it contain a zip? It might be some like grand junction, co 81501
+				  $zipTest = preg_match($zipRegExp, $homeAddressArray[0], $zipMatch);
+				  if($zipTest === 1) {
+					  // found a zip
+					  $patronZip = $zipMatch[0];
+					  // find a city and state?
+					  $cityStateTest = preg_match_all($splitRegExp, trim($homeAddressArray[1]), $cityStateMatches);
+					  if($cityStateTest) {
+						  $cityState = $cityStateMatches[1];
+						  $cityStateCount = count($cityState) - 1; // zero index
+						  // state should be last
+						  $patronState = $cityState[$cityStateCount];
+						  // unset last value and join array
+						  array_pop($cityState);
+						  $patronCity = implode(' ', $cityState);
+					  } else {
+					  	// well, that should'a matched something
+					  }
+				  } else {
+				  	// couldn't find a zip -- not much to do
+
+				  }
+				}
+			}
+		}
+		$patron->city  = $patronCity;
+		$patron->state = $patronState;
+		$patron->zip   = $patronZip;
+		/*
 		if(method_exists($this, 'processPatronAddress')) {
-			/** Hook for processing addresses **/
+			// Hook for processing addresses
 			$patron = $this->processPatronAddress($pInfo->addresses, $patron);
 		} else {
 			if(isset($pInfo->addresses) && is_array($pInfo->addresses)){
@@ -599,6 +695,8 @@ class Sierra {
 				// CAMPUS ADDRESS
 				// another:
 				// Words on Wheels Patron Wednesday 1 (Aaron)
+				// another:
+				// Salida Co, 81201 <- comma in the wrong place
 				if (count($addressParts) > 1) {
 					$city          = trim($addressParts[0]);
 					if (!empty($addressParts[1])){
@@ -623,6 +721,11 @@ class Sierra {
 			$patron->state = isset($state) ? $state : '';
 			$patron->zip   = isset($zip) ? $zip : '';
 		}
+		$patron->city  = isset($city) ? $city : '';
+		$patron->state = isset($state) ? $state : '';
+		$patron->zip   = isset($zip) ? $zip : '';
+		*/
+
 
 		// 6.5 mobile phone
 		// this triggers sms notifications for libraries using Sierra SMS
@@ -771,6 +874,8 @@ class Sierra {
 			return ['An error occurred. Please try again later.'];
 		}
 
+		$library = $patron->getHomeLibrary();
+
 		// store city, state, zip in address2 so we can put them together.
 		$cityStZip = [];
 		$phones    = [];
@@ -788,10 +893,13 @@ class Sierra {
 				case 'city':
 				case 'state':
 				case 'zip':
-					if(empty($val)) {
-						$errors[] = "City, state and ZIP are required.";
-					} else {
-						$cityStZip[$key] = $val;
+					// if library allows address updates
+					if((boolean)$library->allowPatronAddressUpdates){
+						if(empty($val)) {
+							$errors[] = "City, state and ZIP are required.";
+						} else {
+							$cityStZip[$key] = $val;
+						}
 					}
 					break;
 				case 'phone': // primary phone
@@ -835,15 +943,20 @@ class Sierra {
 			return $errors;
 		}
 
-		// fix up city state zip
-		$address2 = $cityStZip['city'] . ', ' . $cityStZip['state'] . ' ' . $cityStZip['zip'];
-
 		$params = [
 			'emails'          => $emails,
-			'addresses'       => [ (object)['lines' => [$address1, $address2], "type" => 'a'] ],
 			'phones'          => $phones,
 			'homeLibraryCode' => $homeLibraryCode
 		];
+
+		// allow address updates?
+		if((boolean)$library->allowPatronAddressUpdates) {
+			// fix up city state zip
+			$address2 = $cityStZip['city'] . ', ' . $cityStZip['state'] . ' ' . $cityStZip['zip'];
+			$params['addresses'] = [ (object)['lines' => [$address1, $address2], "type" => 'a'] ];
+		}
+
+		// if notice preference is present
 		if(isset($notices)) {
 			$params['fixedFields'] = (object)['268'=>(object)["label" => "Notice Preference", "value" => $notices]];
 		}
