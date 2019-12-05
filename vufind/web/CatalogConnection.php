@@ -427,18 +427,16 @@ class CatalogConnection
 	 */
 	function loadReadingHistoryFromIls($patron, $loadAdditional = null){
 		if (!empty($patron) && $patron->trackReadingHistory){
-//			if (!$patron->initialReadingHistoryLoaded) {
 				if ($this->driver->hasNativeReadingHistory()){
 					if (method_exists($this->driver, 'loadReadingHistoryFromIls')){
 						$result = $this->driver->loadReadingHistoryFromIls($patron, $loadAdditional);
 						return $result;
 					}
+					// Fall back
+					//TODO: all drivers that fallback to this, need to implement the above method
+					// so that Pika can reliably maintain a patron's reading history
+					return $this->getReadingHistory($patron);
 				}
-				// Fall back
-			//TODO: all drivers that fallback to this, need to implement the above method
-			// so that Pika can reliably maintain a patron's reading history
-				return $this->getReadingHistory($patron);
-//			}
 		}
 		return false;
 	}
