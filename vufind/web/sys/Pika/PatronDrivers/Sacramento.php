@@ -54,12 +54,12 @@ class Sacramento extends Sierra
 		// library specific field
 		// four letters of last name, first letter of first name, two digit birth month, two digit birth day
 		// short last names get padded with Z
-		$lastNameFourLetters = substr($_REQUEST['lastName'], 0, 4);
+		$lastNameFourLetters = substr($_REQUEST['lastname'], 0, 4);
 		$lastNameFourLetters = strtoupper($lastNameFourLetters);
 		$lastNameFourLetters = str_pad($lastNameFourLetters, 4, "Z", STR_PAD_RIGHT);
-		$firstNameOneLetter  = substr($_REQUEST['firstName'], 0, 1);
+		$firstNameOneLetter  = substr($_REQUEST['firstname'], 0, 1);
 		$firstNameOneLetter  = strtoupper($firstNameOneLetter[0]);
-		$birthDate           = trim($_REQUEST['birthDate']);
+		$birthDate           = trim($_REQUEST['birthdate']);
 		$birthDate           = date_create_from_format('m-d-Y', $birthDate);
 		$birthDay            = date_format($birthDate, 'd');
 		$birthMonth          = date_format($birthDate, 'm');
