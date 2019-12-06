@@ -326,9 +326,8 @@ class Sierra {
 			$this->logger->warn($msg, ['barcode'=>$this->patronBarcode]);
 			return null;
 		}
+		return $this->getPatron($patronId);
 
-		$patron = $this->getPatron($patronId);
-		return $patron;
 	}
 
 	/**
@@ -929,8 +928,6 @@ class Sierra {
 				case 'notices':
 					if(!empty($val) && $val != '') {
 						$notices = $val;
-					} else {
-						$notices = '-';
 					}
 					break;
 				case 'alternate_username':
@@ -943,12 +940,17 @@ class Sierra {
 			return $errors;
 		}
 
-		$params = [
-			'emails'          => $emails,
-			'phones'          => $phones,
-			'homeLibraryCode' => $homeLibraryCode
-		];
+		$params = [];
 
+		if(isset($homeLibraryCode) && $homeLibraryCode != '') {
+			$params['homeLibraryCode'] = $homeLibraryCode;
+		}
+		if(isset($emails) && !empty($emails)) {
+			$params['emails'] = $emails;
+		}
+		if(isset($phones) && !empty($phones)) {
+			$params['phones'] = $phones;
+		}
 		// allow address updates?
 		if((boolean)$library->allowPatronAddressUpdates) {
 			// fix up city state zip
@@ -962,7 +964,7 @@ class Sierra {
 		}
 
 		// username if present
-		if (isset($altUsername)) {
+		if (isset($altUsername) && $altUsername != '') {
 			$params['varFields'] = [(object)['fieldTag'=>'i', 'content'=>$altUsername]];
 		}
 
@@ -1509,7 +1511,10 @@ EOT;
 		}
 
 		if($holds->total == 0) {
-			return [];
+			return [
+				'available'   => [],
+				'unavailable' => []
+			];
 		}
 		// these will be consistent for every hold
 		$displayName  = $patron->getNameAndLibraryLabel();
@@ -2536,8 +2541,24 @@ EOT;
 			return false;
 		}
 
-		return $patronId;
+		// check that pin matches database
+		$patron = new User();
+		$patron->username = $patronId;
+		$patron->find(true);
+		// if we don't find a patron then new user create it. Will be populated
+		if($patron->N == 0) {
+			$patron->created      = date('Y-m-d');
+			$patron->username     = $patronId;
+			$patron->cat_username = $barcode;
+			$patron->insert();
+		}
 
+		if($patron->cat_password != $pin) {
+			$patron->cat_password = $pin;
+			$patron->update();
+		}
+
+		return $patronId;
 	}
 
 	/**

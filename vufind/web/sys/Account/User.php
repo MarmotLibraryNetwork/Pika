@@ -996,7 +996,7 @@ class User extends DB_DataObject {
 			// This will sort numerically correctly as well
 		};
 
-		if (count($allHolds['available'])){
+		if (isset($allHolds['available']) && count($allHolds['available']) >= 1){
 			switch ($availableSort){
 				case 'author' :
 				case 'format' :
@@ -1014,7 +1014,7 @@ class User extends DB_DataObject {
 			}
 			uasort($allHolds['available'], $holdSort);
 		}
-		if (count($allHolds['unavailable'])){
+		if(isset($allHolds['unavailable']) && count($allHolds['unavailable']) >= 1){
 			switch ($unavailableSort){
 				case 'author' :
 				case 'location' :

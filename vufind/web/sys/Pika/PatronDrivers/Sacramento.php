@@ -83,8 +83,17 @@ class Sacramento extends Sierra
 					break;
 				case 'birthdate':
 					if(isset($val) && $val != '') {
-						$date                = DateTime::createFromFormat('d-m-Y', $val);
-						$params['birthDate'] = $date->format('Y-m-d');
+						// don't let registration occur if birthdate less than 30 days ago.
+						$birthDate = DateTime::createFromFormat('d-m-Y', $val);
+						$todayDate = new DateTime();
+						$dateDiff  = $birthDate->diff($todayDate);
+						$days      = (integer)$dateDiff->format('d');
+						if($days < 30) {
+							return ['success'=>false, 'barcode'=>''];
+						}
+						$params['birthDate'] = $birthDate->format('Y-m-d');
+					} else {
+						return ['success'=>false, 'barcode'=>''];
 					}
 					break;
 			}
