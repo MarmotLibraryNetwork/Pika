@@ -139,7 +139,13 @@ class Sacramento extends Sierra
 			$params['addresses'][0]['lines'][] = 'C/O' . ' ' . trim($_POST['guardianFirstName']) . ' ' . trim($_POST['guardianLastName']);
 		}
 		// street address
-		$params['addresses'][0]['lines'][] = trim($_POST['address']);
+		$address = trim($_POST['address']);
+		// apt number
+		if(isset($_POST['apartmentnumber']) && $_POST['apartmentnumber'] != '') {
+			$address .= ' APT ' . trim($_POST['apartmentnumber']);
+		}
+
+		$params['addresses'][0]['lines'][] = $address;
 		// city state and zip -- no comma for Sacramento
 		$cityStateZip = trim($_POST['city']).' '.trim($_POST['state']).' '.trim($_POST['zip']);
 		$params['addresses'][0]['lines'][] = $cityStateZip;
@@ -219,7 +225,7 @@ class Sacramento extends Sierra
 			'required' => true
 		);
 		$fields[] = array(
-			'property' => 'apartmentNumber',
+			'property' => 'apartmentnumber',
 			'type' => 'text',
 			'label' => 'Apartment Number',
 			'description' => 'Apartment Number',
