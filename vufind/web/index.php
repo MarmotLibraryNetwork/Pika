@@ -947,22 +947,22 @@ function loadModuleActionId(){
 			}
 		}
 	}
-	global $activeRecordProfile;
-	//Check to see if the module is a profile
+	global $activeRecordIndexingProfile;
+	//Check to see if the module is an indexing profile
 	if (isset($_REQUEST['module'])){
-		/** @var IndexingProfile[] */
-		/** @var IndexingProfile $profile */
+		/** @var IndexingProfile[] $indexingProfiles*/
 		global $indexingProfiles;
-		foreach ($indexingProfiles as $profile) {
-			if ($profile->recordUrlComponent == $_REQUEST['module']) {
-				$newId = $profile->name . ':' . $_REQUEST['id'];
-				$_GET['id'] = $newId;
+		foreach ($indexingProfiles as $profile){
+			if ($profile->recordUrlComponent == $_REQUEST['module']){
+				$newId          = $profile->name . ':' . $_REQUEST['id'];
+				$_GET['id']     = $newId;
 				$_REQUEST['id'] = $newId;
 				if (!file_exists(ROOT_DIR . '/services/' . $_REQUEST['module'])){
-					$_GET['module'] = 'Record';
+					// When a record view, doesn't have an explicit made drivers, fallback to the standard Record Driver
+					$_GET['module']     = 'Record';
 					$_REQUEST['module'] = 'Record';
 				}
-				$activeRecordProfile = $profile;
+				$activeRecordIndexingProfile = $profile;
 				break;
 			}
 		}

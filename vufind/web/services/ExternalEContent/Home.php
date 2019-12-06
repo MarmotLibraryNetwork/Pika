@@ -38,9 +38,9 @@ class ExternalEContent_Home extends Action{
 		$interface->assign('id', $this->id);
 		//$recordDriver = new ExternalEContentDriver($this->id);
 
-		global $activeRecordProfile;
-		if (isset($activeRecordProfile)){
-			$subType = $activeRecordProfile;
+		global $activeRecordIndexingProfile;
+		if (isset($activeRecordIndexingProfile)){
+			$subType = $activeRecordIndexingProfile;
 		}else{
 			$indexingProfile = new IndexingProfile();
 			$indexingProfile->name = 'ils';

@@ -228,10 +228,10 @@ class UInterface extends Smarty
 			$this->assign('session', session_id() . ' - not saved');
 		}
 
-		/** @var IndexingProfile $activeRecordProfile */
-		global $activeRecordProfile;
-		if ($activeRecordProfile){
-			$this->assign('activeRecordProfileModule', $activeRecordProfile->recordUrlComponent);
+		/** @var IndexingProfile $activeRecordIndexingProfile */
+		global $activeRecordIndexingProfile;
+		if ($activeRecordIndexingProfile){
+			$this->assign('activeRecordProfileModule', $activeRecordIndexingProfile->recordUrlComponent);
 		}
 	}
 
