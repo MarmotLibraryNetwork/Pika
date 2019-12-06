@@ -90,15 +90,43 @@ class Sacramento extends Sierra
 			}
 		}
 
-		// sacramento defaults to this for self reg users
-		$params['homeLibraryCode'] = 'yyy';
+		// get the right pCode3
+		$librarySubDomain = $library->subdomain;
+		switch($librarySubDomain) {
+			case 'colusa':
+			case 'countyofcolusa':
+				$pCode3 = 30;
+				break;
+			case 'folsom':
+				$pCode3 = 44;
+				break;
+			case 'spl':
+			case 'catalog':
+				$pCode3 = 117;
+				break;
+			case 'sutter':
+			case 'suttercounty':
+				$pCode3 = 158;
+				break;
+			case 'woodland':
+			case 'cityofwoodland':
+				$pCode3 = 172;
+				break;
+		}
 		// sacramento defaults for pcodes
 		$params['patronCodes'] = [
 			"pcode1" => "e",
 			"pcode2" => "3",
-			"pcode3" => 117,
+			"pcode3" => $pCode3,
 			"pcode4" => 0
 		];
+
+		// sacramento default message field
+		$params['message'] = [
+			'code' => 'o',
+		];
+		// sacramento defaults to this for self reg users
+		$params['homeLibraryCode'] = 'yyy';
 
 		// default patron type
 		$params['patronType'] = (int)$library->selfRegistrationDefaultpType;
