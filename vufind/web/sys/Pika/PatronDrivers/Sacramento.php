@@ -258,7 +258,7 @@ class Sacramento extends Sierra
 			'required' => true
 		);
 		$fields[] = array(
-			'property' => 'phone',
+			'property' => 'primaryphone',
 			'type' => 'text',
 			'label' => 'Phone (xxx-xxx-xxxx)',
 			'description' => 'Phone',
