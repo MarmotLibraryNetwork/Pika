@@ -9,6 +9,9 @@
  */
 namespace Pika\PatronDrivers;
 
+use DateInterval;
+use DateTime;
+
 class Sacramento extends Sierra
 {
 	public function __construct($accountProfile)
