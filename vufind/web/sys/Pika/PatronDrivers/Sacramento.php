@@ -17,6 +17,7 @@ class Sacramento extends Sierra
 	public function __construct($accountProfile)
 	{
 		parent::__construct($accountProfile);
+		$this->logger->info('Using driver: Pika\PatronDrivers\Sacramento');
 	}
 
 	public function hasUsernameField(){
@@ -176,7 +177,7 @@ class Sacramento extends Sierra
 		$fields = array();
 		if ($library && $library->promptForBirthDateInSelfReg) {
 			$fields[] = array(
-				'property' => 'birthDate',
+				'property' => 'birthdate',
 				'type' => 'date',
 				'label' => 'Date of Birth (MM-DD-YYYY)',
 				'description' => 'Date of birth',
@@ -185,7 +186,7 @@ class Sacramento extends Sierra
 			);
 		}
 		$fields[] = array(
-			'property' => 'firstName',
+			'property' => 'firstname',
 			'type' => 'text',
 			'label' => 'First Name',
 			'description' => 'Your first name',
@@ -193,7 +194,7 @@ class Sacramento extends Sierra
 			'required' => true
 		);
 		$fields[] = array(
-			'property' => 'middleName',
+			'property' => 'middlename',
 			'type' => 'text',
 			'label' => 'Middle Initial',
 			'description' => 'Your middle initial',
@@ -202,7 +203,7 @@ class Sacramento extends Sierra
 		);
 
 		$fields[] = array(
-			'property' => 'lastName',
+			'property' => 'lastname',
 			'type' => 'text',
 			'label' => 'Last Name',
 			'description' => 'Your last name',
@@ -294,7 +295,7 @@ class Sacramento extends Sierra
 			'required' => true
 		);
 		$fields[] = array(
-			'property' => 'pin1',
+			'property' => 'pinconfirm',
 			'type' => 'pin',
 			'label' => 'Confirm Pin',
 			'description' => 'Re-type your desired pin',
