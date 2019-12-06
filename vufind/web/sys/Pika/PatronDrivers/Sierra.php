@@ -76,19 +76,19 @@ class Sierra {
 	protected $configArray;
 	// ----------------------
 	/* @var $oAuthToken oAuth2Token */
-	private $oAuthToken;
+	protected $oAuthToken;
 	/* @var $apiLastError false|string false if no error or last error message */
-	private $apiLastError = false;
+	protected $apiLastError = false;
 	/** @var  AccountProfile $accountProfile */
 	public $accountProfile;
 	/* @var $patronBarcode string The patrons barcode */
-	private $patronBarcode;
+	protected $patronBarcode;
 	/* @var $apiUrl string The url for the Sierra API */
-	private $apiUrl;
+	protected $apiUrl;
 	/* @var $tokenUrl string The url for token */
-	private $tokenUrl;
+	protected $tokenUrl;
 	// many ids come from url. example: https://sierra.marmot.org/iii/sierra-api/v5/items/5130034
-	private $urlIdRegExp = "/.*\/(\d*)$/";
+	protected $urlIdRegExp = "/.*\/(\d*)$/";
 
 
 	public function __construct($accountProfile) {
@@ -2428,7 +2428,7 @@ EOT;
 	 * @return string|false Returns unique patron id from Sierra on success or false on fail.
 	 * @throws ErrorException
 	 */
-	private function _authNameBarcode($username, $barcode) {
+	protected function _authNameBarcode($username, $barcode) {
 		// tidy up barcode
 		$barcode = trim($barcode);
 		// build get params
@@ -2504,7 +2504,7 @@ EOT;
 	 * @param string $pin
 	 * @return string|false Returns patron id on success false on fail.
 	 */
-	private function _authBarcodePin($barcode, $pin) {
+	protected function _authBarcodePin($barcode, $pin) {
 
 		// if using username field check if username exists
 		// username replaces barcode
@@ -2548,7 +2548,7 @@ EOT;
 	 * @return boolean true on success, false otherwise
 	 * @throws ErrorException
 	 */
-	private function _oAuthToken() {
+	protected function _oAuthToken() {
 		// check memcache for valid token and set $this
 		$this->logger->info('Checking for oAuth token in memcache');
 		if ($token = $this->memCache->get("sierra_oauth_token")) {
@@ -2627,7 +2627,7 @@ EOT;
 	 * @return bool|object             Returns false fail or JSON object
 	 * @throws ErrorException
 	 */
-	private function _doRequest($operation, $params = array(), $method = "GET", $extraHeaders = null) {
+	protected function _doRequest($operation, $params = array(), $method = "GET", $extraHeaders = null) {
 		$this->apiLastError = false;
 		// setup headers
 		// These headers are common to all Sierra API except token requests.
@@ -2728,10 +2728,8 @@ EOT;
 	}
 
 
-	private function _curlOptInOptOut($patron, $optInOptOut = 'OptIn') {
-
+	protected function _curlOptInOptOut($patron, $optInOptOut = 'OptIn') {
 		$c = new Curl();
-
 		// base url for following calls
 		$vendorOpacUrl = $this->accountProfile->vendorOpacUrl;
 
@@ -2837,7 +2835,7 @@ EOT;
 	 * @param  array  $varFields The variable fields array
 	 * @return false|string      Returns false if the field isn't found or the variable field value
 	 */
-	private function getVarField($tag, array $varFields) {
+	protected function getVarField($tag, array $varFields) {
 		$i = array_filter($varFields, function($k) use ($tag) {
 			return ($k->fieldTag == $tag);
 		});
@@ -2856,7 +2854,7 @@ EOT;
 	 * @param $itemId
 	 * @return int
 	 */
-	private function _getBibIdFromItemId($itemId) {
+	protected function _getBibIdFromItemId($itemId) {
 		$operation = "items/".$itemId;
 		$params = ["fields"=>"bibIds"];
 		$iR = $this->_doRequest($operation, $params);
@@ -2873,7 +2871,7 @@ EOT;
 	 *
 	 * @return string|false
 	 */
-	private function _getPrettyError() {
+	protected function _getPrettyError() {
 		if($this->apiLastError) {
 			// grab a user friendlier string for the fail message
 			$messageParts = explode(':', $this->apiLastError);
