@@ -132,9 +132,8 @@ class Sacramento extends Sierra
 		];
 
 		// sacramento default message field
-		$params['message'] = [
-			'code' => 'o',
-		];
+		$params['pMessage'] = 'o';
+		
 		// sacramento defaults to this for self reg users
 		$params['homeLibraryCode'] = 'yyy';
 
