@@ -70,7 +70,7 @@ public class UpdateReadingHistory implements IProcessHandler {
 							updateInitialReadingHistoryLoaded.executeUpdate();
 						} else {
 							errorLoadingInitialReadingHistory = true;
-							logger.warn("Failed loading Initial Reading History for user " + cat_username);
+							logger.warn("Failed loading Initial Reading History for user id " + userId);
 						}
 					} catch (SQLException e) {
 						logger.error("Error loading initial reading history", e);
@@ -95,7 +95,9 @@ public class UpdateReadingHistory implements IProcessHandler {
 						}
 					}
 
-					logger.info("Loading Reading History for patron " + cat_username);
+					if (logger.isInfoEnabled()) {
+						logger.info("Loading Reading History for patron user Id " + userId);
+					}
 					processTitlesForUser(userId, cat_username, cat_password, checkedOutTitlesAlreadyInReadingHistory);
 
 					//Any titles that are left in checkedOutTitlesAlreadyInReadingHistory were checked out previously and are no longer checked out.
@@ -105,6 +107,8 @@ public class UpdateReadingHistory implements IProcessHandler {
 						updateReadingHistoryStmt.setLong(2, curTitle.getId());
 						updateReadingHistoryStmt.executeUpdate();
 					}
+
+					//TODO: properly delete entries that are marked as deleted and checked in
 				}
 
 				processLog.incUpdated();
@@ -137,7 +141,7 @@ public class UpdateReadingHistory implements IProcessHandler {
 			if (cat_password != null && !cat_password.isEmpty()) {
 				try {
 					if (logger.isInfoEnabled()) {
-						logger.info("Loading initial reading history from ils for " + cat_username);
+						logger.info("Loading initial reading history from ils for user Id " + userId);
 					}
 					do {
 						additionalRoundRequired = false;
@@ -194,18 +198,18 @@ public class UpdateReadingHistory implements IProcessHandler {
 											hadError = true;
 										}
 									} else {
-										logger.warn("Call to loadReadingHistoryFromIls returned a success code of false for " + cat_username);
+										logger.warn("Call to loadReadingHistoryFromIls returned a success code of false for user Id " + userId);
 										hadError = true;
 									}
 								} else {
-									logger.error("Empty response loading initial history for " + cat_username);
+									logger.error("Empty response loading initial history for user Id " + userId);
 									hadError = true;
 								}
 							} catch (IOException e) {
-								logger.error("Error reading input stream for " + cat_username, e);
+								logger.error("Error reading input stream for user Id " + userId, e);
 								hadError = true;
 							} catch (JSONException e) {
-								final String message = "Unable to load patron information for " + cat_username + ", exception loading response ";
+								final String message = "Unable to load patron information for user Id " + userId + ", exception loading response ";
 								logger.error(message, e);
 								logger.error(patronDataJson);
 								processLog.incErrors();
@@ -213,7 +217,7 @@ public class UpdateReadingHistory implements IProcessHandler {
 								hadError = true;
 							}
 						} else {
-							logger.error("Unable to load patron information for " + cat_username + ": expected to get back an input stream, received a "
+							logger.error("Unable to load patron information for user id " + userId + ": expected to get back an input stream, received a "
 									+ patronDataRaw.getClass().getName());
 							processLog.incErrors();
 							hadError = true;
@@ -224,29 +228,29 @@ public class UpdateReadingHistory implements IProcessHandler {
 					processLog.incErrors();
 					hadError = true;
 				} catch (IOException e) {
-					logger.error("Unable to retrieve information from patron API for " + cat_username, e);
+					logger.error("Unable to retrieve information from patron API for user Id " + userId, e);
 					processLog.incErrors();
 					hadError = true;
 				}
 			} else {
 				hadError = true;
-				logger.error("cat_password was empty for patron " + cat_username);
+				logger.error("cat_password was empty for user Id " + userId);
 			}
 		} else {
 			hadError = true;
-			logger.error("A pika user's cat_username was empty.");
+			logger.error("A pika user's cat_username was empty for user Id" +userId);
 		}
 		return !hadError;
 	}
 
 	private void processReadingHistoryTitle(JSONObject readingHistoryTitle, Long userId) throws JSONException {
-		String source              = "ils";
+		String source              = "";
 		String sourceId            = "";
 		String author              = "";
 		String format              = "";
 		String groupedWorkId       = "";
 		String title               = "";
-		String ilsReadingHistoryId = null;
+//		String ilsReadingHistoryId = null;
 		if (readingHistoryTitle.has("recordId")) {
 			sourceId = readingHistoryTitle.getString("recordId");
 		}
@@ -278,9 +282,9 @@ public class UpdateReadingHistory implements IProcessHandler {
 				format = formats[0];
 			}
 		}
-		if (readingHistoryTitle.has("ilsReadingHistoryId")) {
-			ilsReadingHistoryId = readingHistoryTitle.getString("ilsReadingHistoryId");
-		}
+//		if (readingHistoryTitle.has("ilsReadingHistoryId")) {
+//			ilsReadingHistoryId = readingHistoryTitle.getString("ilsReadingHistoryId");
+//		}
 		if (readingHistoryTitle.has("source")){
 			source = readingHistoryTitle.getString("source");
 			if (source.isEmpty()){
@@ -360,17 +364,17 @@ public class UpdateReadingHistory implements IProcessHandler {
 							processLog.addNote("Unexpected JSON for patron checked out items received " + result.get("checkedOutItems").getClass());
 						}
 					} else if (logger.isInfoEnabled()) {
-						logger.info("Call to getPatronCheckedOutItems returned a success code of false for " + cat_username);
+						logger.info("Call to getPatronCheckedOutItems returned a success code of false for user Id " + userId);
 					}
 				} catch (JSONException e) {
-					final String message = "Unable to load patron information for " + cat_username + ", exception loading response ";
+					final String message = "Unable to load patron information for user Id " + userId + ", exception loading response ";
 					logger.error(message, e);
 					logger.error(patronDataJson);
 					processLog.incErrors();
 					processLog.addNote(message + e.toString());
 				}
 			} else {
-				logger.error("Unable to load patron information for " + cat_username + ": expected to get back an input stream, received a "
+				logger.error("Unable to load patron information for user Id " + userId + ": expected to get back an input stream, received a "
 						+ patronDataRaw.getClass().getName());
 				processLog.incErrors();
 			}
@@ -378,7 +382,7 @@ public class UpdateReadingHistory implements IProcessHandler {
 			logger.error("Bad url for patron API " + e.toString());
 			processLog.incErrors();
 		} catch (IOException e) {
-			logger.error("Unable to retrieve information from patron API for " + cat_username, e);
+			logger.error("Unable to retrieve information from patron API for user Id " + userId, e);
 			processLog.incErrors();
 		}
 	}
