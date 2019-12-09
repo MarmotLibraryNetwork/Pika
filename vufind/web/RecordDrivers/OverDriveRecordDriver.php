@@ -393,6 +393,14 @@ class OverDriveRecordDriver extends RecordInterface {
 		return $this->id;
 	}
 
+	public function getId() {
+		return $this->id;
+	}
+
+	function getRecordType(){
+		return 'overdrive';
+	}
+
 	/**
 	 * Does this record have audio content available?
 	 *
@@ -499,32 +507,33 @@ class OverDriveRecordDriver extends RecordInterface {
 	function getAvailability(){
 		if ($this->availability == null){
 			$this->availability = array();
-			require_once ROOT_DIR . '/sys/OverDrive/OverDriveAPIProductAvailability.php';
-			$availability = new OverDriveAPIProductAvailability();
-			$availability->productId = $this->overDriveProduct->id;
-			//Only include shared collection if include digital collection is on
-			$searchLibrary = Library::getSearchLibrary();
-			$searchLocation = Location::getSearchLocation();
-			$includeSharedTitles = true;
-			if($searchLocation != null){
-				$includeSharedTitles = $searchLocation->enableOverdriveCollection != 0;
-			}elseif ($searchLibrary != null){
-				$includeSharedTitles = $searchLibrary->enableOverdriveCollection != 0;
-			}
-			$libraryScopingId = $this->getLibraryScopingId();
-			if ($includeSharedTitles){
-				$sharedCollectionId = $searchLibrary->sharedOverdriveCollection;
-				$availability->whereAdd('libraryId = ' . $sharedCollectionId . ' OR libraryId = ' . $libraryScopingId);
-			}else{
-				if ($libraryScopingId == -1){
-					return $this->availability;
-				}else{
-					$availability->whereAdd('libraryId = ' . $libraryScopingId);
+			if (!empty($this->overDriveProduct->id)){ // Don't do the below search when there isn't an ID to look for.
+				require_once ROOT_DIR . '/sys/OverDrive/OverDriveAPIProductAvailability.php';
+				$availability            = new OverDriveAPIProductAvailability();
+				$availability->productId = $this->overDriveProduct->id;//Only include shared collection if include digital collection is on
+				$searchLibrary           = Library::getSearchLibrary();
+				$searchLocation          = Location::getSearchLocation();
+				$includeSharedTitles     = true;
+				if ($searchLocation != null){
+					$includeSharedTitles = $searchLocation->enableOverdriveCollection != 0;
+				}elseif ($searchLibrary != null){
+					$includeSharedTitles = $searchLibrary->enableOverdriveCollection != 0;
 				}
-			}
-			$availability->find();
-			while ($availability->fetch()){
-				$this->availability[] = clone $availability;
+				$libraryScopingId = $this->getLibraryScopingId();
+				if ($includeSharedTitles){
+					$sharedCollectionId = $searchLibrary->sharedOverdriveCollection;
+					$availability->whereAdd('libraryId = ' . $sharedCollectionId . ' OR libraryId = ' . $libraryScopingId);
+				}else{
+					if ($libraryScopingId == -1){
+						return $this->availability;
+					}else{
+						$availability->whereAdd('libraryId = ' . $libraryScopingId);
+					}
+				}
+				$availability->find();
+				while ($availability->fetch()){
+					$this->availability[] = clone $availability;
+				}
 			}
 		}
 		return $this->availability;
