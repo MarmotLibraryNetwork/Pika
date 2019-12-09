@@ -2658,7 +2658,7 @@ EOT;
 		// setup headers
 		// These headers are common to all Sierra API except token requests.
 		$headers = [
-			'Host'           => $_SERVER['SERVER_NAME'],
+			'Host'           => parse_url($this->apiUrl, PHP_URL_HOST),
 			'Authorization'  => 'Bearer '.$this->oAuthToken,
 			'User-Agent'     => 'Pika',
 			'X-Forwarded-For'=> $_SERVER['SERVER_ADDR']
