@@ -1465,9 +1465,14 @@ EOT;
 				$details = false;
 			}
 			$amount = number_format($fine->itemCharge, 2);
-			$date   = date('m-d-Y', strtotime($fine->assessedDate));
-
-
+			if(isset($fine->assessedDate) && !empty($fine->assessedDate)) {
+				$date   = date('m-d-Y', strtotime($fine->assessedDate));
+				if(!$date) {
+					$date = '';
+				}
+			} else {
+				$date = '';
+			}
 			$r[]    = [
 				'title'  => $title,
 				'date'   => $date,
