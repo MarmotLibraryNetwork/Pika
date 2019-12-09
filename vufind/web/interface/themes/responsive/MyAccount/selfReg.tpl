@@ -77,7 +77,7 @@
 		{literal}
 		if ($('#guardianFirstName').length){
 
-			$('#birthDate').focusout(function(){
+			$('#birthdate').focusout(function(){
 				var birthDate = $(this).datepicker('getDate');
 				if (birthDate) {
 					var today = new Date(),

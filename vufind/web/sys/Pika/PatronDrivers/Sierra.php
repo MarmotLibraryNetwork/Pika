@@ -2654,7 +2654,7 @@ EOT;
 	 * @param array  $params       Request parameters
 	 * @param string $method       Request method
 	 * @param null   $extraHeaders Additional headers
-	 * @return bool|object             Returns false fail or JSON object
+	 * @return bool|object         Returns false fail or JSON object
 	 * @throws ErrorException
 	 */
 	protected function _doRequest($operation, $params = array(), $method = "GET", $extraHeaders = null) {
@@ -2752,7 +2752,7 @@ EOT;
 		} else {
 			$r = $c->response;
 		}
-		$this->logger->debug('API response for ['.$method.']'.$operation, ['method'=>$operation, 'response'=>$r]);
+		//$this->logger->debug('API response for ['.$method.']'.$operation, ['method'=>$operation, 'response'=>$r]);
 		$c->close();
 		return $r;
 	}

@@ -11,6 +11,7 @@ namespace Pika\PatronDrivers;
 
 use DateInterval;
 use DateTime;
+use InvalidArgumentException;
 
 class Sacramento extends Sierra
 {
