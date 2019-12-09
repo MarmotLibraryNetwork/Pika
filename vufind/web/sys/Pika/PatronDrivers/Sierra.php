@@ -1508,7 +1508,11 @@ EOT;
 		}
 
 		$operation = "patrons/".$patronId."/holds";
-		$params=["fields"=>"default,pickupByDate,frozen"];
+		if((integer)$this->configArray['Catalog']['api_version'] > 4) {
+			$params=["fields"=>"default,pickupByDate,frozen"];
+		} else {
+			$params=["fields"=>"default,frozen"];
+		}
 		$holds = $this->_doRequest($operation, $params);
 
 		if(!$holds) {
@@ -1549,7 +1553,7 @@ EOT;
 			$h['frozen']                = $hold->frozen;
 			$h['create']                = strtotime($hold->placed); // date hold created
 			// innreach holds don't include notNeededAfterDate
-			$h['automaticCancellation'] = isset($hold->notNeededAfterDate) ? strtotime($hold->notNeededAfterDate) : null; // not needed after date
+			$h['automaticCancellation'] = isset($hold->notNeededAfterDate) ? strtotime($hold->notNeededAfterDate) : null; // not needed after date // this isn't available in api v4
 			$h['expire']                = isset($hold->pickupByDate) ? strtotime($hold->pickupByDate) : false; // pick up by date
 			// cancel id
 			preg_match($this->urlIdRegExp, $hold->id, $m);
