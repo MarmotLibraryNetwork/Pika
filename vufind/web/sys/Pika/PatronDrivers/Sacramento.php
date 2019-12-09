@@ -133,7 +133,7 @@ class Sacramento extends Sierra
 
 		// sacramento default message field
 		$params['pMessage'] = 'o';
-		
+
 		// sacramento defaults to this for self reg users
 		$params['homeLibraryCode'] = 'yyy';
 
@@ -154,6 +154,9 @@ class Sacramento extends Sierra
 		// agency code
 		$params['fixedFields']["158"] = ["label" => "PAT AGENCY",
 		                                 "value" => $library->selfRegistrationAgencyCode];
+		// notice preference -- default to z
+		$params['fixedFields']['268'] = ["label" => "Notice Preference",
+		                                 "value" => 'z'];
 		// expiration date
 		$interval = 'P'.$library->selfRegistrationDaysUntilExpire.'D';
 		$expireDate = new DateTime();
