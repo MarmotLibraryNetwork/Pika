@@ -32,7 +32,8 @@ class Record_AJAX extends AJAXHandler {
 		'placeHold',
 		'bookMaterial',
 		'reloadCover',
-		'forceReExtract'
+		'forceReExtract',
+		'getCheckInGrid',
 	);
 
 	protected $methodsThatRespondWithHTML = array(
@@ -52,7 +53,7 @@ class Record_AJAX extends AJAXHandler {
 		return "<result>" . (UserAccount::isLoggedIn() ? "True" : "False") . "</result>";
 	}
 
-// Appears deprecated.  GroupedWork version appears to be the version still in use.  pascal 4/26/2019
+// TODO Appears deprecated.  GroupedWork version appears to be the version still in use.  pascal 4/26/2019
 	function GetProspectorInfo(){
 		global $configArray;
 		global $interface;
@@ -445,6 +446,22 @@ class Record_AJAX extends AJAXHandler {
 		}
 	}
 
+	function getCheckInGrid(){
+		if (!empty($_REQUEST['id'])){
+			if (!empty($_REQUEST['checkInGridId'])){
+				$driver      = CatalogFactory::getCatalogConnectionInstance();
+				$checkInGrid = $driver->getCheckInGrid(strip_tags($_REQUEST['id']), strip_tags($_REQUEST['checkInGridId']));
+
+				global $interface;
+				$interface->assign('checkInGrid', $checkInGrid);
+				return array(
+					'title'        => 'Check-In Grid',
+					'modalBody'    => $interface->fetch('Record/checkInGrid.tpl'),
+					'modalButtons' => ""
+				);
+			}
+		}
+	}
 
 	function bookMaterial(){
 		$user = UserAccount::getLoggedInUser();

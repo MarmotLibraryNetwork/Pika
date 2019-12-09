@@ -65,6 +65,7 @@ class MarcRecord extends IndexRecord
 			$this->id              = $recordData->getRecordId();
 			$this->indexingProfile = $recordData->getIndexingProfile();
 		}else{ //TODO: find when this happens!
+			//When solr document is returned; see Solr buildRSS()
 			// Call the Index Records's constructor...
 			parent::__construct($recordData, $groupedWork);
 
@@ -128,7 +129,7 @@ class MarcRecord extends IndexRecord
 		if (isset($this->id)){
 			return $this->id;
 		}else{
-			return $this->fields['id'];
+//			return $this->fields['id'];
 		}
 	}
 
@@ -1386,12 +1387,12 @@ class MarcRecord extends IndexRecord
 	protected static function getCatalogDriver()
 	{
 		if (MarcRecord::$catalogDriver == null) {
-			global $configArray;
 			try {
 				require_once ROOT_DIR . '/CatalogFactory.php';
 				MarcRecord::$catalogDriver = CatalogFactory::getCatalogConnectionInstance();
 			} catch (PDOException $e) {
 				// What should we do with this error?
+				global $configArray;
 				if ($configArray['System']['debug']) {
 					echo '<pre>';
 					echo 'DEBUG: ' . $e->getMessage();
@@ -2145,12 +2146,11 @@ class MarcRecord extends IndexRecord
 		return $this->holdings;
 	}
 
-	public function loadPeriodicalInformation()
-	{
+	public function loadPeriodicalInformation(){
 		$catalogDriver = $this->getCatalogDriver();
-		if ($catalogDriver->checkFunction('getIssueSummaries')) {
+		if ($catalogDriver->checkFunction('getIssueSummaries')){
 			$issueSummaries = $catalogDriver->getIssueSummaries($this->id);
-			if (count($issueSummaries)) {
+			if (count($issueSummaries)){
 				//Insert copies into the information about the periodicals
 				$copies = $this->getCopies();
 				//Remove any copies with no location to get rid of temporary items added only for scoping
@@ -2167,37 +2167,37 @@ class MarcRecord extends IndexRecord
 				}
 				krsort($copies);
 				//Group holdings under the issue issue summary that is related.
-				foreach ($copies as $key => $holding) {
+				foreach ($copies as $key => $holding){
 					//Have issue summary = false
 					$haveIssueSummary = false;
-					$issueSummaryKey = null;
-					foreach ($issueSummaries as $issueKey => $issueSummary) {
-						if (!empty($issueSummary['location']) && $issueSummary['location'] == $holding['shelfLocation']) {
+					$issueSummaryKey  = null;
+					foreach ($issueSummaries as $issueKey => $issueSummary){
+						if (!empty($issueSummary['location']) && $issueSummary['location'] == $holding['shelfLocation']){
 							$haveIssueSummary = true;
-							$issueSummaryKey = $issueKey;
+							$issueSummaryKey  = $issueKey;
 							break;
 						}
 					}
-					if ($haveIssueSummary) {
+					if ($haveIssueSummary){
 						$issueSummaries[$issueSummaryKey]['holdings'][strtolower($key)] = $holding;
-					} else {
+					}else{
 						//Need to automatically add a summary so we don't lose data
 						$issueSummaries[$holding['shelfLocation']] = array(
 							'location' => $holding['shelfLocation'],
-							'type' => 'issue',
+							'type'     => 'issue',
 							'holdings' => array(strtolower($key) => $holding),
 						);
 					}
 				}
-				foreach ($issueSummaries as $key => $issueSummary) {
-					if (isset($issueSummary['holdings']) && is_array($issueSummary['holdings'])) {
+				foreach ($issueSummaries as $key => $issueSummary){
+					if (isset($issueSummary['holdings']) && is_array($issueSummary['holdings'])){
 						krsort($issueSummary['holdings']);
 						$issueSummaries[$key] = $issueSummary;
 					}
 				}
 				ksort($issueSummaries);
 			}
-		} else {
+		}else{
 			$issueSummaries = null;
 		}
 		return $issueSummaries;

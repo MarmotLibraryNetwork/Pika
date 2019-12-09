@@ -38,29 +38,12 @@
 				{/if}
 
 				{if count($issueSummary.holdings) > 0}
-					<span id='showHoldings-{$smarty.foreach.summaryLoop.iteration}' class="btn btn-xs btn-info">Show Individual Issues</span>
-					<script	type="text/javascript">
-						$('#showHoldings-{$smarty.foreach.summaryLoop.iteration}').click(function(){literal} { {/literal}
-							if (!$('#showHoldings-{$smarty.foreach.summaryLoop.iteration}').hasClass('expanded')){literal} { {/literal}
-								$('#issue-summary-holdings-{$smarty.foreach.summaryLoop.iteration}').slideDown();
-								$('#showHoldings-{$smarty.foreach.summaryLoop.iteration}').html('Hide Individual Issues');
-								$('#showHoldings-{$smarty.foreach.summaryLoop.iteration}').addClass('expanded');
-								{literal} }else{ {/literal}
-								$('#issue-summary-holdings-{$smarty.foreach.summaryLoop.iteration}').slideUp();
-								$('#showHoldings-{$smarty.foreach.summaryLoop.iteration}').removeClass('expanded');
-								$('#showHoldings-{$smarty.foreach.summaryLoop.iteration}').html('Show Individual Issues');
-								{literal} } {/literal}
-							{literal} }); {/literal}
-					</script>
-				{/if}
-				{if $showCheckInGrid && $issueSummary.checkInGridId}
+					<button onclick="VuFind.showMessage('{$issueSummary.location}', $('#issue-summary-holdings-{$smarty.foreach.summaryLoop.iteration}').html())" class="btn btn-xs btn-info">Show Individual Issues</button>
 					&nbsp;
-					<span id='showCheckInGrid-{$smarty.foreach.summaryLoop.iteration}' class="btn btn-xs btn-info">Show Check-in Grid</span>
-					<script	type="text/javascript">
-						$('#showCheckInGrid-{$smarty.foreach.summaryLoop.iteration}').click(function(){literal} { {/literal}
-							VuFind.Account.ajaxLightbox('{$path}/{$activeRecordProfileModule}/{$id}/CheckInGrid?lookfor={$issueSummary.checkInGridId}', false);
-							{literal} }); {/literal}
-					</script>
+				{/if}
+
+				{if $showCheckInGrid && $issueSummary.checkInGridId}
+					<button onclick="VuFind.Account.ajaxLightbox('{$path}/{$activeRecordProfileModule}/{$id}/AJAX?method=getCheckInGrid&checkInGridId={$issueSummary.checkInGridId}');" class="btn btn-xs btn-info">Show Check-in Grid</button>
 				{/if}
 			</div>
 
