@@ -54,7 +54,7 @@
                 {/if}
 
                 {if (array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles))}
-									<a href="/Admin/NonGroupedRecords?objectAction=addNew&recordId={$recordDriver->getId()}&sourceSelect={$recordDriver->getRecordType()}&notes={$recordDriver->getShortTitle()|removeTrailingPunctuation|escape}%0A{$userDisplayName}, {$homeLibrary}, {$smarty.now|date_format}%0A"
+									<a href="/Admin/NonGroupedRecords?objectAction=addNew&recordId={$recordDriver->getId()}&source={$recordDriver->getRecordType()}&notes={$recordDriver->getShortTitle()|removeTrailingPunctuation|escape}%0A{$userDisplayName}, {$homeLibrary}, {$smarty.now|date_format}%0A"
 									   target="_blank" class="btn btn-sm btn-default">UnMerge from Work
 									</a>
                 {/if}
