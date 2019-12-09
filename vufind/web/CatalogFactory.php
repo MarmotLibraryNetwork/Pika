@@ -13,44 +13,62 @@ class CatalogFactory {
 	private static $catalogConnections = array();
 
 	/**
-	 * @param string|null     $driver
-	 * @param AccountProfile  $accountProfile
+	 * @param string|null $driver
+	 * @param AccountProfile $accountProfile
 	 * @return CatalogConnection
 	 */
 	public static function getCatalogConnectionInstance($driver = null, $accountProfile = null){
-		require_once ROOT_DIR . '/CatalogConnection.php';
 		if ($driver == null){
-			/** @var IndexingProfile $activeRecordProfile */
-			global $activeRecordProfile;
-			if ($activeRecordProfile == null || strlen($activeRecordProfile->catalogDriver) == 0){
-				global $configArray;
-				// todo: which do we use? driver in config array or driver set in database?
-				// this is pulling from config array instead of the database.
-				$driver = $configArray['Catalog']['driver'];
-				if ($accountProfile == null && !empty($driver)) {
-					$accountProfile = new AccountProfile();
-					$accountProfile->get('driver', $driver);
-					if (PEAR_Singleton::isError($accountProfile)) {
-						$accountProfile = null;
-					}
+			// When the driver & account profile aren't set, we are dealing with a situation where a user is not logged in
+			// but we need a connection to circulation system
 
-				}
-			}else{
-				$driver = $activeRecordProfile->catalogDriver;
+			/** @var IndexingProfile $activeRecordIndexingProfile */
+			global $activeRecordIndexingProfile;
+			if (!empty($activeRecordIndexingProfile->catalogDriver)){
+				// The is for when we are in a record view and we need additional bibliographic-related information from the circulation system
+				// eg. periodical issue summaries, periodical checkin grids, current hold queue size
 
-				//Load the account profile based on the indexing profile
-				$accountProfile = new AccountProfile();
-				$accountProfile->recordSource = $activeRecordProfile->name;
+				$driver = $activeRecordIndexingProfile->catalogDriver;
+
+				// Load the account profile based on the indexing profile name.  The AccountProfile is where we determine which
+				// external system is associated with a record source
+				$accountProfile               = new AccountProfile();
+				$accountProfile->recordSource = $activeRecordIndexingProfile->name;
 				if (!$accountProfile->find(true)){
 					$accountProfile = null;
 				}
+			}else{
+				// This is for situations where we need to connect to a circulation system but can't log in a User
+				// eg. Self Registration, Pin Reset, Email Pin
+
+				$accountProfiles = new AccountProfile();
+				$accountProfiles = $accountProfiles->fetchAll();
+				if (count($accountProfiles) == 1){
+					/** @var AccountProfile $accountProfile */
+					$accountProfile = current($accountProfiles);
+					$driver         = $accountProfile->driver;
+				} else{
+					die ("Multiple Account Profiles. Need handling for this");
+
+					// TODO: build handling for multiple external systems when a user isn't logged in
+//					global $configArray;
+//					$driver = $configArray['Catalog']['driver'];
+//					if ($accountProfile == null && !empty($driver)){
+//						$accountProfile = new AccountProfile();
+//						$accountProfile->get('driver', $driver);
+//						// Another issue is that account profiles can also have the same driver
+//						if (PEAR_Singleton::isError($accountProfile)){
+//							$accountProfile = null;
+//						}
+//					}
+				}
 			}
-
-
 		}
+
 		if (isset(CatalogFactory::$catalogConnections[$driver])){
 			return CatalogFactory::$catalogConnections[$driver];
 		}else{
+			require_once ROOT_DIR . '/CatalogConnection.php';
 			CatalogFactory::$catalogConnections[$driver] = new CatalogConnection($driver, $accountProfile);
 			return CatalogFactory::$catalogConnections[$driver];
 		}

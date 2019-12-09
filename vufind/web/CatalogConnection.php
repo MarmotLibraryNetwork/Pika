@@ -71,38 +71,28 @@ class CatalogConnection
 	 *
 	 * @param string         $driver         The name of the driver to load.
 	 * @param AccountProfile $accountProfile
-	 * @throws PDOException error if we cannot connect to the driver.
+	 * @throws Exception error if we cannot connect to the driver.
 	 *
 	 * @access public
 	 */
-	public function __construct($driver, $accountProfile)
-	{
-		$path = ROOT_DIR . "/Drivers/{$driver}.php";
-
-		if (is_readable($path) && $driver != 'DriverInterface') {
-			require_once $path;
-
-			try {
-				$this->driver = new $driver($accountProfile);
-			} catch (PDOException $e) {
-				global $logger;
-				$logger->log("Unable to create driver $driver for account profile {$accountProfile->name}", PEAR_LOG_ERR);
-				throw $e;
+	public function __construct($driver, $accountProfile){
+		if ($driver != 'DriverInterface'){
+			$path = ROOT_DIR . "/Drivers/{$driver}.php";
+			if (is_readable($path)){
+				require_once $path;
 			}
 
-			$this->accountProfile = $accountProfile;
-			$this->status = true;
-		} else {
-		    try{
-		      $this->driver = new $driver($accountProfile);
-        } catch (Exception $e) {
-            global $logger;
-            $logger->log("Unable to create driver $driver for account profile {$accountProfile->name}", PEAR_LOG_ERR);
-            throw $e;
-        }
-        $this->accountProfile = $accountProfile;
-        $this->status = true;
-    }
+				try {
+					$this->driver = new $driver($accountProfile);
+				} catch (Exception $e){
+					global $logger;
+					$logger->log("Unable to create driver $driver for account profile {$accountProfile->name}", PEAR_LOG_ERR);
+					throw $e;
+				}
+
+				$this->accountProfile = $accountProfile;
+				$this->status         = true;
+		}
 	}
 
 	/**
