@@ -1465,9 +1465,14 @@ EOT;
 				$details = false;
 			}
 			$amount = number_format($fine->itemCharge, 2);
-			$date   = date('m-d-Y', strtotime($fine->assessedDate));
-
-
+			if(isset($fine->assessedDate) && !empty($fine->assessedDate)) {
+				$date   = date('m-d-Y', strtotime($fine->assessedDate));
+				if(!$date) {
+					$date = '';
+				}
+			} else {
+				$date = '';
+			}
 			$r[]    = [
 				'title'  => $title,
 				'date'   => $date,
@@ -2588,10 +2593,10 @@ EOT;
 		$requestAuth  = base64_encode($clientKey . ':' . $clientSecret);
 
 		$headers = [
-			'Host' => $_SERVER['SERVER_NAME'],
+			'Host'          => parse_url($url, PHP_URL_HOST),
 			'Authorization' => 'Basic ' . $requestAuth,
-			'Content-Type' => 'application/x-www-form-urlencoded',
-			'grant_type' => 'client_credentials'
+			'Content-Type'  => 'application/x-www-form-urlencoded',
+			'grant_type'    => 'client_credentials'
 		];
 
 		$opts = [
@@ -2653,7 +2658,7 @@ EOT;
 		// setup headers
 		// These headers are common to all Sierra API except token requests.
 		$headers = [
-			'Host'           => $_SERVER['SERVER_NAME'],
+			'Host'           => parse_url($this->apiUrl, PHP_URL_HOST),
 			'Authorization'  => 'Bearer '.$this->oAuthToken,
 			'User-Agent'     => 'Pika',
 			'X-Forwarded-For'=> $_SERVER['SERVER_ADDR']

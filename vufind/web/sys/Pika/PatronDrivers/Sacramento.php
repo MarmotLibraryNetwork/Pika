@@ -87,7 +87,7 @@ class Sacramento extends Sierra
 						$birthDate = DateTime::createFromFormat('d-m-Y', $val);
 						$todayDate = new DateTime();
 						$dateDiff  = $birthDate->diff($todayDate);
-						$days      = (integer)$dateDiff->format('d');
+						$days      = (integer)$dateDiff->format('%d');
 						if($days < 30) {
 							return ['success'=>false, 'barcode'=>''];
 						}
