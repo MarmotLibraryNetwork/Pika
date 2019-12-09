@@ -2593,10 +2593,10 @@ EOT;
 		$requestAuth  = base64_encode($clientKey . ':' . $clientSecret);
 
 		$headers = [
-			'Host' => $_SERVER['SERVER_NAME'],
+			'Host'          => parse_url($url, PHP_URL_HOST),
 			'Authorization' => 'Basic ' . $requestAuth,
-			'Content-Type' => 'application/x-www-form-urlencoded',
-			'grant_type' => 'client_credentials'
+			'Content-Type'  => 'application/x-www-form-urlencoded',
+			'grant_type'    => 'client_credentials'
 		];
 
 		$opts = [
