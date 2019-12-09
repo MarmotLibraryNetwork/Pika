@@ -1187,7 +1187,7 @@ EOT;
 					break;
 				case 'birthdate':
 					if(isset($val) && $val != '') {
-						$date                = DateTime::createFromFormat('d-m-Y', $val);
+						$date                = DateTime::createFromFormat('m-d-Y', $val);
 						$params['birthDate'] = $date->format('Y-m-d');
 					}
 					break;

@@ -85,7 +85,7 @@ class Sacramento extends Sierra
 				case 'birthdate':
 					if(isset($val) && $val != '') {
 						// don't let registration occur if birthdate less than 30 days ago.
-						$birthDate = DateTime::createFromFormat('d-m-Y', $val);
+						$birthDate = DateTime::createFromFormat('m-d-Y', $val);
 						$todayDate = new DateTime();
 						$dateDiff  = $birthDate->diff($todayDate);
 						$days      = (integer)$dateDiff->days;
