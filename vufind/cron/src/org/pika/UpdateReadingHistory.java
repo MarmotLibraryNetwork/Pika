@@ -211,7 +211,7 @@ public class UpdateReadingHistory implements IProcessHandler {
 							} catch (JSONException e) {
 								final String message = "Unable to load patron information for user Id " + userId + ", exception loading response ";
 								logger.error(message, e);
-								logger.error(patronDataJson);
+								logger.error(patronDataRaw); // Display the raw response when we have a JSON exception
 								processLog.incErrors();
 								processLog.addNote(message + e.toString());
 								hadError = true;
