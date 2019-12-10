@@ -1456,7 +1456,7 @@ EOT;
 				}
 				$details = [[
 					"label" => "Returned: ",
-					"value" => date('m-d-Y', strtotime($fine->returnDate))
+					"value" => empty($fine->returnDate) ? null : date('m-d-Y', strtotime($fine->returnDate))
 				]];
 			// if it's not an item charge look for a description
 			} elseif (isset($fine->description)) {
