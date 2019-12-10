@@ -2146,8 +2146,14 @@ class MarcRecord extends IndexRecord
 		return $this->holdings;
 	}
 
+	/**
+	 * Load additional information for issues of periodicals. Currently only goes into effect for Marmot
+	 *
+	 * @return array|null
+	 */
 	public function loadPeriodicalInformation(){
-		$catalogDriver = $this->getCatalogDriver();
+		$issueSummaries = null;
+		$catalogDriver  = $this->getCatalogDriver();
 		if ($catalogDriver->checkFunction('getIssueSummaries')){
 			$issueSummaries = $catalogDriver->getIssueSummaries($this->id);
 			if (count($issueSummaries)){
@@ -2155,10 +2161,10 @@ class MarcRecord extends IndexRecord
 				$copies = $this->getCopies();
 				//Remove any copies with no location to get rid of temporary items added only for scoping
 				$changeMade = true;
-				while ($changeMade) {
+				while ($changeMade){
 					$changeMade = false;
-					foreach ($copies as $i => $copy) {
-						if ($copy['shelfLocation'] == '') {
+					foreach ($copies as $i => $copy){
+						if ($copy['shelfLocation'] == ''){
 							unset($copies[$i]);
 							$changeMade = true;
 							break;
@@ -2197,8 +2203,6 @@ class MarcRecord extends IndexRecord
 				}
 				ksort($issueSummaries);
 			}
-		}else{
-			$issueSummaries = null;
 		}
 		return $issueSummaries;
 	}
