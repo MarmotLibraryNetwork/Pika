@@ -15,9 +15,17 @@ namespace Pika\PatronDrivers;
 
 class Lion extends Sierra
 {
+	public function __construct($accountProfile)
+	{
+		parent::__construct($accountProfile);
+		$this->logger->info('Using Pika\PatronDrivers\Lion.');
+	}
 
 	public function getSelfRegistrationFields()
 	{
+		$location = new \Location();
+		$activeLocation = $location->getActiveLocation();
+
 		$fields = array();
 		$fields[] = array(
 			'property' => 'firstname',
