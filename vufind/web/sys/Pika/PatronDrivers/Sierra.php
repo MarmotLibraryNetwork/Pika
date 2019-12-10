@@ -1430,6 +1430,7 @@ EOT;
 		$fines = $fInfo->entries;
 		$r = [];
 		foreach($fines as $fine) {
+			$details = false;
 			// get the bib ids if item is present
 			if (isset($fine->item)){
 				preg_match($this->urlIdRegExp, $fine->item, $m);
@@ -1454,17 +1455,17 @@ EOT;
 				if(!$title) {
 					$title = 'Unknown title';
 				}
-				$details = [[
-					"label" => "Returned: ",
-					"value" => empty($fine->returnDate) ? null : date('m-d-Y', strtotime($fine->returnDate))
-				]];
-			// if it's not an item charge look for a description
+				if (!empty($fine->returnDate)){
+					$details = [[
+						            "label" => "Returned: ",
+						            "value" => date('m-d-Y', strtotime($fine->returnDate))
+					            ]];
+				}
+				// if it's not an item charge look for a description
 			} elseif (isset($fine->description)) {
 				$title = 'Description: '.$fine->description;
-				$details = false;
 			} else {
 				$title = 'Unknown';
-				$details = false;
 			}
 			$amount = number_format($fine->itemCharge, 2);
 			if(isset($fine->assessedDate) && !empty($fine->assessedDate)) {
