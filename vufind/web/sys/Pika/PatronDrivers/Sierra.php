@@ -359,7 +359,7 @@ class Sierra {
 
 		// 2. grab everything from the patron record the api can provide.
 		$params = [
-			'fields' => 'names,addresses,phones,emails,expirationDate,homeLibraryCode,moneyOwed,patronType,barcodes,patronType,patronCodes,createdDate,blockInfo,message,pMessage,langPref,fixedFields,varFields,updatedDate,createdDate'
+			'fields' => 'names,addresses,phones,emails,expirationDate,homeLibraryCode,moneyOwed,patronType,barcodes,patronCodes,createdDate,blockInfo,message,pMessage,langPref,fixedFields,varFields,updatedDate,createdDate'
 		];
 		$operation = 'patrons/'.$patronId;
 		$pInfo = $this->_doRequest($operation, $params);
