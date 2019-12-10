@@ -567,6 +567,7 @@ class Sierra {
 		// Words on Wheels Patron Wednesday 1 (Aaron)
 		// another:
 		// Salida Co, 81201 <- comma in the wrong place
+		//Another ugly one; single line (actual street address removed): 123 streetname Drive Apt 8 Woody Creek, CO 81656
 
 		// set these early to avoid warnings.
 		$patron->address1    = '';
@@ -3440,7 +3441,7 @@ EOT;
 	 * @param bool $checkLibraryRestrictions  Whether or not to condition the use of Sierra OPAC scope by the library setting $restrictSearchByLibrary;
 	 * @return mixed|string
 	 */
-	private function getLibraryScope($checkLibraryRestrictions = false){
+	protected function getLibraryScope($checkLibraryRestrictions = false){
 
 		//Load the holding label for the branch where the user is physically.
 		$searchLocation = Location::getSearchLocation();
@@ -3457,7 +3458,7 @@ EOT;
 		return $this->getDefaultScope();
 	}
 
-	private function getDefaultScope(){
+	protected function getDefaultScope(){
 		global $configArray;
 		return isset($configArray['OPAC']['defaultScope']) ? $configArray['OPAC']['defaultScope'] : '93';
 	}
@@ -3468,7 +3469,7 @@ EOT;
 	 * @param string $longId III record Id with a trailing check digit included
 	 * @return mixed|string   the initial dot & the trailing check digit removed
 	 */
-	private static function getShortId($longId){
+	protected static function getShortId($longId){
 		$shortId = str_replace('.b', 'b', $longId);
 		$shortId = substr($shortId, 0, strlen($shortId) - 1);
 		return $shortId;
