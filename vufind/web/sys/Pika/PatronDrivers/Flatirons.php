@@ -15,7 +15,22 @@ class Flatirons extends Sierra
 	public function getSelfRegistrationFields()
 	{
 		global $library;
-		$fields   = array();
+		global $library;
+		// get library code
+		$location            = new Location();
+		$location->libraryId = $library->libraryId;
+		$location->find(true);
+		if(!$location) {
+			//return ['success'=>false, 'barcode'=>''];
+		}
+		$homeLibraryCode = $location->code;
+
+		$fields = array();
+		$fields[] = [
+			'property' => 'homelibrarycode',
+			'type'     => 'hidden',
+			'default'  => $homeLibraryCode
+		];
 		$fields[] = array(
 			'property' => 'firstName',
 			'type' => 'text',

@@ -13,6 +13,8 @@
 namespace Pika\PatronDrivers;
 
 
+use Location;
+
 class Lion extends Sierra
 {
 	public function __construct($accountProfile)
@@ -23,10 +25,22 @@ class Lion extends Sierra
 
 	public function getSelfRegistrationFields()
 	{
-		$location = new \Location();
-		$activeLocation = $location->getActiveLocation();
+		global $library;
+		// get library code
+		$location            = new Location();
+		$location->libraryId = $library->libraryId;
+		$location->find(true);
+		if(!$location) {
+			//return ['success'=>false, 'barcode'=>''];
+		}
+		$homeLibraryCode = $location->code;
 
 		$fields = array();
+		$fields[] = [
+			'property' => 'homelibrarycode',
+			'type'     => 'hidden',
+			'default'  => $homeLibraryCode
+		];
 		$fields[] = array(
 			'property' => 'firstname',
 			'type' => 'text',
