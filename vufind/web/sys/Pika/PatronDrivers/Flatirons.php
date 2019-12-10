@@ -10,6 +10,8 @@
 namespace Pika\PatronDrivers;
 
 
+use Location;
+
 class Flatirons extends Sierra
 {
 	public function getSelfRegistrationFields()
