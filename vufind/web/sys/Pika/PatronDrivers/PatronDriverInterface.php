@@ -62,4 +62,13 @@ abstract class PatronDriverInterface {
 		return false;
 	}
 
+	/**
+	 *   When the ILS provides the capability to look up users with out having login info already, implement this function
+	 * so that Pika can create an User object for users that haven't been stored in Pika's database already.
+	 * @param $patronBarcode
+	 * @return bool|User
+	 */
+	public function findNewUser($patronBarcode) {
+		return false;
+	}
 }
