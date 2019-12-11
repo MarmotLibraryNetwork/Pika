@@ -1405,6 +1405,17 @@ EOT;
 				'required'    => true
 			];
 		}
+		// Bemis Signature Field
+		if ($library->selfRegistrationTemplate == 'beself'){
+			$fields[] = [
+				'property' => 'signature',
+				'type' => 'text',
+				'label' => 'Signature',
+				'description' => 'Enter your name',
+				'maxLength' => 40,
+				'required' => true
+			];
+		}
 
 		return $fields;
 	}
