@@ -1179,7 +1179,9 @@ EOT;
 			switch ($key) {
 				case 'email':
 					$val = trim($val);
-					$params['emails'][] = $val;
+					if(!empty($val)){
+						$params['emails'][] = $val;
+					}
 					break;
 				case 'address': // street part of address
 					$val = trim($val);
@@ -1188,20 +1190,26 @@ EOT;
 					break;
 				case 'primaryphone':
 					$val = trim($val);
-					$params['phones'][] = ['number'=>$val, 'type'=>'t'];
+					if(!empty($val)){
+						$params['phones'][] = ['number'=>$val, 'type'=>'t'];
+					}
 					break;
 				case 'altphone':
 					$val = trim($val);
-					$params['phones'][] = ['number'=>$val, 'type'=>'p'];
+					if(!empty($val)){
+						$params['phones'][] = ['number'=>$val, 'type'=>'p'];
+					}
 					break;
 				case 'birthdate':
-					if(isset($val) && $val != '') {
+					if(!empty($val)) {
 						$date                = DateTime::createFromFormat('m-d-Y', $val);
 						$params['birthDate'] = $date->format('Y-m-d');
 					}
 					break;
 				case 'homelibrarycode':
-					$params['homeLibraryCode'] = $val;
+					if(!empty($val)){
+						$params['homeLibraryCode'] = $val;
+					}
 					break;
 			}
 		}
