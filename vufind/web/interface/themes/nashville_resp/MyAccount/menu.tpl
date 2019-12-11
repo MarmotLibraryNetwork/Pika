@@ -329,15 +329,12 @@
 					<a href="#circulationMenu" data-toggle="collapse" data-parent="#adminMenuAccordion">
 						<div class="panel-heading">
 							<div class="panel-title">
-								Circulation
+								Offline Circulation
 							</div>
 						</div>
 					</a>
 					<div id="circulationMenu" class="panel-collapse collapse {if $curSection}in{/if}">
 						<div class="panel-body">
-							{if array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles)}
-								<div class="adminMenuLink{if $action == "Home" && $module == "Circa"} active{/if}"><a href="{$path}/Circa/Home">Inventory</a></div>
-							{/if}
 							<div class="adminMenuLink{if $action == "OfflineCirculation" && $module == "Circa"} active{/if}"><a href="{$path}/Circa/OfflineCirculation">Offline Circulation</a></div>
 							<div class="adminMenuLink{if $action == "OfflineHoldsReport" && $module == "Circa"} active{/if}"><a href="{$path}/Circa/OfflineHoldsReport">Offline Holds Report</a></div>
 							<div class="adminMenuLink{if $action == "OfflineCirculationReport" && $module == "Circa"} active{/if}"><a href="{$path}/Circa/OfflineCirculationReport">Offline Circulation Report</a></div>

@@ -1,6 +1,7 @@
 <?php
 /**
- *
+ * Quick template of functions to aid in the migration of holds for onboarding new libraries into Marmot's circulation
+ * system.
  *
  * @category Pika
  * @author: Pascal Brammeier
