@@ -241,6 +241,14 @@ class Sierra {
 	}
 
 	/**
+	 * todo: Legacy?
+	 * 
+	 */
+	public function hasFastRenewAll() {
+		return false;
+	}
+
+	/**
 	 * Renew a checkout
 	 * POST patrons/checkouts/{checkoutId}/renewal
 	 *
@@ -3661,5 +3669,6 @@ EOT;
 		}
 		return null;
 	}
+
 
 }
