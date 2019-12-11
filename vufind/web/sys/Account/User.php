@@ -81,6 +81,9 @@ class User extends DB_DataObject {
 	private $numCheckedOutHoopla = 0;
 	public $numBookings;
 	public $notices;
+	// $noticePreferenceLabel
+	// This is strict and used for comparison in several places. values are:
+  // Mail, Telephone, E-mail
 	public $noticePreferenceLabel;
 	private $numMaterialsRequests = 0;
 	private $readingHistorySize = 0;

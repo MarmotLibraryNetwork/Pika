@@ -775,13 +775,13 @@ class Sierra {
 				$patron->noticePreferenceLabel = 'none';
 				break;
 			case 'a':
-				$patron->noticePreferenceLabel = 'mail';
+				$patron->noticePreferenceLabel = 'Mail';
 				break;
 			case 'p':
-				$patron->noticePreferenceLabel = 'phone';
+				$patron->noticePreferenceLabel = 'Telephone';
 				break;
 			case 'z':
-				$patron->noticePreferenceLabel = 'email';
+				$patron->noticePreferenceLabel = 'E-mail';
 				break;
 			default:
 				$patron->noticePreferenceLabel = 'none';
