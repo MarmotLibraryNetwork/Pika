@@ -81,9 +81,11 @@ $timer->logTime('Setup Analytics');
 
 // Google Analytics
 global $library;
+
 $googleAnalyticsId        = isset($configArray['Analytics']['googleAnalyticsId'])        ? $configArray['Analytics']['googleAnalyticsId'] : false;
 $googleAnalyticsLibraryId = isset($library->gaTrackingId)                                ? $library->gaTrackingId : false;
 $googleAnalyticsLinkingId = isset($configArray['Analytics']['googleAnalyticsLinkingId']) ? $configArray['Analytics']['googleAnalyticsLinkingId'] : false;
+$trackTranslation         = false;
 $trackTranslation         = isset($configArray['Analytics']['trackTranslation'])         ? $configArray['Analytics']['trackTranslation'] : false;
 $interface->assign('googleAnalyticsId', $googleAnalyticsId);
 $interface->assign('googleAnalyticsLibraryId', $googleAnalyticsLibraryId);

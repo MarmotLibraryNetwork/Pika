@@ -242,7 +242,7 @@ class Sierra {
 
 	/**
 	 * todo: Legacy?
-	 * 
+	 *
 	 */
 	public function hasFastRenewAll() {
 		return false;
