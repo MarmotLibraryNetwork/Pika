@@ -30,8 +30,7 @@ class UInterface extends Smarty
 	private $isMobile = false;
 	private $url;
 
-	function UInterface()
-	{
+	function __construct(){
 		global $configArray;
 		global $timer;
 
@@ -62,11 +61,6 @@ class UInterface extends Smarty
 		if (isset($configArray['Maps']) && isset($configArray['Maps']['browserKey'])){
 			$mapsKey = $configArray['Maps']['browserKey'];
 			$this->assign('mapsBrowserKey', $mapsKey);
-		}
-
-		//TODO: Doesn't seem to have a purpose.
-		if (isset($_REQUEST['print'])) {
-			$this->assign('print', true);
 		}
 
 		// Check to see if multiple themes were requested; if so, build an array,
@@ -148,7 +142,6 @@ class UInterface extends Smarty
 		}
 
 		$this->assign('fullPath', str_replace('&', '&amp;', $_SERVER['REQUEST_URI']));
-		$this->assign('requestHasParams', strpos($_SERVER['REQUEST_URI'], '?') > 0);
 		if (isset($configArray['Site']['email'])) {
 			$this->assign('supportEmail', $configArray['Site']['email']);
 		}
@@ -199,10 +192,6 @@ class UInterface extends Smarty
 			$displaySidebarMenu = (bool) $configArray['Site']['sidebarMenu'];
 		}
 		$this->assign('displaySidebarMenu', $displaySidebarMenu);
-
-		$this->assign('currentTab', 'Search');
-
-		$this->assign('authMethod', $configArray['Authentication']['method']);
 
 		if ($configArray['System']['debug']){
 			$this->assign('debug', true);
