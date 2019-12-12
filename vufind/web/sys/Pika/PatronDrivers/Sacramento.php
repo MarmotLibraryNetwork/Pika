@@ -138,7 +138,7 @@ class Sacramento extends Sierra
 		}
 
 		$cc->close();
-		return ['SMS preferences updates.'];
+		return true;
 	}
 
 	public function hasUsernameField(){
