@@ -22,18 +22,17 @@ VuFind.Account = (function(){
 		addList: function(){
 			var form = $("#addListForm"),
 					isPublic = form.find("#public").prop("checked"),
-					recordId = form.find("input[name=recordId]").val(),
-					source = form.find("input[name=source]").val(),
+					groupedWorkId = form.find("input[name=groupedWorkId]").val(),
 					title = form.find("input[name=title]").val(),
 					desc = $("#listDesc").val(),
 					url = Globals.path + "/MyAccount/AJAX",
 					params = {
-							'method':'AddList',
-							title: title,
-							public: isPublic,
-							desc: desc,
-							recordId: recordId
-						};
+						'method': 'AddList',
+						title: title,
+						public: isPublic,
+						desc: desc,
+						groupedWorkIdId: groupedWorkId
+					};
 			$.getJSON(url, params,function (data) {
 					if (data.success) {
 						VuFind.showMessage("Added Successfully", data.message, true, true);
@@ -694,8 +693,8 @@ VuFind.Account = (function(){
 			if (Globals.loggedIn){
 				var url = Globals.path + "/MyAccount/AJAX",
 						params = {method:"getCreateListForm"};
-				if (id != undefined){
-					params.recordId= id;
+				if (id !== undefined){
+					params.groupedWorkId = id;
 				}
 				$.getJSON(url, params, function(data){
 					VuFind.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);

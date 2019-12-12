@@ -1,8 +1,10 @@
 <form class="form-horizontal" id="save-to-list-form">
 	<div>
+{* TODO: these variables are likely obsolete
 		<input type="hidden" name="submit" value="1">
 		<input type="hidden" name="record_id" value="{$id|escape}">
 		<input type="hidden" name="source" value="{$source|escape}">
+*}
 		{if !empty($containingLists)}
 		  <p>
 		  {translate text='This item is already part of the following list/lists'}:<br>

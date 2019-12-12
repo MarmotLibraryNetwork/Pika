@@ -513,10 +513,12 @@ class MyAccount_AJAX extends AJAXHandler {
 		return $result;
 	}
 
-	//TODO: Review these methods to see what can be deleted
-	// Create new list
+/**
+ * Used for creating a new User list
+ * */
 	function AddList(){
-		$return = array();
+		$recordToAdd = false;
+		$return      = array();
 		if (UserAccount::isLoggedIn()){
 			$user = UserAccount::getLoggedInUser();
 			require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
@@ -526,9 +528,9 @@ class MyAccount_AJAX extends AJAXHandler {
 				$return['message'] = "You must provide a title for the list";
 			}else{
 				//If the record is not valid, skip the whole thing since the title could be bad too
-				if (!empty($_REQUEST['recordId']) && !is_array($_REQUEST['recordId'])){
-					$recordToAdd = urldecode($_REQUEST['recordId']);
-					if (!preg_match("/^[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}|[A-Z0-9_-]+:[A-Z0-9_-]+$/i", $recordToAdd)){
+				if (!empty($_REQUEST['groupedWorkId']) && !is_array($_REQUEST['groupedWorkId'])){
+					$recordToAdd = urldecode($_REQUEST['groupedWorkId']);
+					if (!GroupedWork::validGroupedWorkId($recordToAdd)){
 						$return['success'] = false;
 						$return['message'] = 'The item to add to the list is not valid';
 						return $return;
@@ -543,16 +545,15 @@ class MyAccount_AJAX extends AJAXHandler {
 				if ($list->find(true)){
 					$existingList = true;
 				}
+				$description = '';
 				if (isset($_REQUEST['desc'])){
-					$desc = $_REQUEST['desc'];
-					if (is_array($desc)){
-						$desc = reset($desc);
+					$description = $_REQUEST['desc'];
+					if (is_array($description)){
+						$description = reset($description);
 					}
-				}else{
-					$desc = "";
 				}
 
-				$list->description = strip_tags(urldecode($desc));
+				$list->description = strip_tags(urldecode($description));
 				$list->public      = isset($_REQUEST['public']) && $_REQUEST['public'] == 'true';
 				if ($existingList){
 					$list->update();
@@ -560,8 +561,7 @@ class MyAccount_AJAX extends AJAXHandler {
 					$list->insert();
 				}
 
-				if (!empty($_REQUEST['recordId']) && !is_array($_REQUEST['recordId'])){
-					$recordToAdd = urldecode($_REQUEST['recordId']);
+				if ($recordToAdd){
 					require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
 					//Check to see if the user has already added the title to the list.
 					$userListEntry                         = new UserListEntry();
@@ -592,19 +592,18 @@ class MyAccount_AJAX extends AJAXHandler {
 	function getCreateListForm(){
 		global $interface;
 
-		if (isset($_REQUEST['recordId'])){
-			$id = $_REQUEST['recordId'];
-			$interface->assign('recordId', $id);
+		if (isset($_REQUEST['groupedWorkId'])){
+			$id = $_REQUEST['groupedWorkId'];
+			$interface->assign('groupedWorkId', $id);
 		}else{
 			$id = '';
 		}
 
-		$results = array(
+		return array(
 			'title'        => 'Create new List',
-			'modalBody'    => $interface->fetch("MyResearch/list-form.tpl"),
-			'modalButtons' => "<span class='tool btn btn-primary' onclick='VuFind.Account.addList(\"{$id}\"); return false;'>Create List</span>",
+			'modalBody'    => $interface->fetch("MyAccount/list-form.tpl"),
+			'modalButtons' => "<span class='tool btn btn-primary' onclick='return VuFind.Account.addList(\"{$id}\");'>Create List</span>",
 		);
-		return $results;
 	}
 
 	/**

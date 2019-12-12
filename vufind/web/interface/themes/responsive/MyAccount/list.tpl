@@ -4,7 +4,7 @@
 			<input type="hidden" name="myListActionHead" id="myListActionHead" class="form">
 			<h3 id="listTitle">{*<span class="silk list">&nbsp;</span>*}{$favList->title|escape:"html"}</h3>
 			{if $notes}
-				<div id="listNotes">
+				<div id="listNotes" class="alert alert-info">
 				{foreach from=$notes item="note"}
 					<div class="listNote">{$note}</div>
 				{/foreach}
@@ -186,7 +186,9 @@
 
 			{if strlen($pageLinks.all) > 0}<div class="text-center">{$pageLinks.all}</div>{/if}
 		{else}
-			{translate text='You do not have any saved resources'}
+				<div class="alert alert-warning">
+						{translate text='You do not have any saved resources'}
+				</div>
 		{/if}
 	{/if}
 {*{/strip}*}

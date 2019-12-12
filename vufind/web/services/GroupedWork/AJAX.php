@@ -182,6 +182,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 		$memoryWatcher->logMemory('Loaded Similar series from Novelist');
 
 		//Load Similar titles (from Solr)
+		//TODO: solr factory, or main solr object
 		$class = $configArray['Index']['engine'];
 		$url   = $configArray['Index']['url'];
 		/** @var Solr $db */
@@ -748,7 +749,8 @@ class GroupedWork_AJAX extends AJAXHandler {
 			if ($listOk){
 				$userListEntry         = new UserListEntry();
 				$userListEntry->listId = $userList->id;
-				if (!preg_match("/^[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}|[A-Z0-9_-]+:[A-Z0-9_-]+$/i", $id)){
+				require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+				if (!GroupedWork::validGroupedWorkId($id)){
 					$result['success'] = false;
 					$result['message'] = 'Sorry, that is not a valid entry for the list.';
 				}else{
@@ -767,6 +769,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 					}
 					$result['success'] = true;
 					$result['message'] = 'This title was saved to your list successfully.';
+					$result['buttons'] = '<a class="btn btn-primary" href="/MyAccount/MyList/'. $userList->id . '" role="button">View My list</a>';
 				}
 			}
 
@@ -817,7 +820,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 		$results = array(
 			'title'        => 'Add To List',
 			'modalBody'    => $interface->fetch("GroupedWork/save.tpl"),
-			'modalButtons' => "<button class='tool btn btn-primary' onclick='VuFind.GroupedWork.saveToList(\"{$id}\"); return false;'>Save To List</button>",
+			'modalButtons' => "<button class='tool btn btn-primary' onclick='VuFind.GroupedWork.saveToList(\"{$id}\");'>Save To List</button>",
 		);
 		return $results;
 	}
