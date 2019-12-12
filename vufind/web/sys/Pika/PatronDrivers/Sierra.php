@@ -869,13 +869,26 @@ class Sierra {
 	 *
 	 *
 	 * PUT patrons/{id}
-	 * @param  User  $patron
-	 * @param  bool  $canUpdateContactInfo
+	 * @param User $patron
+	 * @param bool $canUpdateContactInfo
 	 * @return array Array of errors or empty array on success
+	 * @throws ErrorException
 	 */
 	public function updatePatronInfo($patron, $canUpdateContactInfo){
 		if(!$canUpdateContactInfo) {
 			return ['You can not update your information.'];
+		}
+
+		/*
+		 * hack to shuffle off some actions
+		 * This would be better in a router class
+		 * If a method exits in a class extending this class it will be passed a User object.
+		 */
+		if(isset($_POST['profileUpdateAction'])) {
+			$profileUpdateAction = trim($_POST['profileUpdateAction']);
+			if(method_exists($this, $profileUpdateAction)) {
+				return $this->$profileUpdateAction($patron);
+			}
 		}
 
 		$patronId = $this->getPatronId($patron);
