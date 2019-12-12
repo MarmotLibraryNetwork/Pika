@@ -355,12 +355,11 @@ class MarcRecord extends IndexRecord
 	}
 
 	/**
-	 * Assign necessary Smarty variables and return a template name to
-	 * load in order to display the Table of Contents extracted from the
-	 * record.  Returns null if no Table of Contents is available.
+	 * load in order to display the Table of Contents for the title.
+	 *  Returns null if no Table of Contents is available.
 	 *
 	 * @access  public
-	 * @return  string              Name of Smarty template file to display.
+	 * @return  string[]|null              contents to display.
 	 */
 	public function getTOC()
 	{
@@ -376,20 +375,6 @@ class MarcRecord extends IndexRecord
 		return $tableOfContents;
 	}
 
-	/**
-	 * Does this record have a Table of Contents available?
-	 *
-	 * @access  public
-	 * @return  bool
-	 */
-	public function hasTOC()
-	{
-		// Is there a table of contents in the MARC record?
-		if ($this->getMarcRecord()->getFields('505')) {
-			return true;
-		}
-		return false;
-	}
 
 	/**
 	 * Does this record support an RDF representation?

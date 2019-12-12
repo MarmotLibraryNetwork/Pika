@@ -117,10 +117,10 @@ class OverDriveRecordDriver extends RecordInterface {
 	 * breadcrumbs.
 	 *
 	 * @access  public
-	 * @return  string              Breadcrumb text to represent this record.
+	 * @return  string              Breadcrumb text to represent this title.
 	 */
 	public function getBreadcrumb() {
-		// TODO: Implement getBreadcrumb() method.
+		return $this->getTitle();
 	}
 
 	/**
@@ -200,17 +200,6 @@ class OverDriveRecordDriver extends RecordInterface {
 	}
 
 	/**
-	 * Get any excerpts associated with this record.  For details of
-	 * the return format, see sys/Excerpts.php.
-	 *
-	 * @access  public
-	 * @return  array               Excerpt information.
-	 */
-	public function getExcerpts() {
-		// TODO: Implement getExcerpts() method.
-	}
-
-	/**
 	 * Assign necessary Smarty variables and return a template name to
 	 * load in order to export the record in the requested format.  For
 	 * legal values, see getExportFormats().  Returns null if format is
@@ -234,19 +223,6 @@ class OverDriveRecordDriver extends RecordInterface {
 	 */
 	public function getExportFormats() {
 		// TODO: Implement getExportFormats() method.
-	}
-
-	/**
-	 * Assign necessary Smarty variables and return a template name to
-	 * load in order to display extended metadata (more details beyond
-	 * what is found in getCoreMetadata() -- used as the contents of the
-	 * Description tab of the record view).
-	 *
-	 * @access  public
-	 * @return  string              Name of Smarty template file to display.
-	 */
-	public function getExtendedMetadata() {
-		// TODO: Implement getExtendedMetadata() method.
 	}
 
 	/**
@@ -370,15 +346,14 @@ class OverDriveRecordDriver extends RecordInterface {
 	}
 
 	/**
-	 * Assign necessary Smarty variables and return a template name to
-	 * load in order to display the Table of Contents extracted from the
-	 * record.  Returns null if no Table of Contents is available.
+	 * load in order to display the Table of Contents for the title.
+	 *  Returns null if no Table of Contents is available.
 	 *
 	 * @access  public
-	 * @return  string              Name of Smarty template file to display.
+	 * @return  string[]|null              contents to display.
 	 */
 	public function getTOC() {
-		return array();
+		return null;
 	}
 
 	/**
@@ -402,26 +377,6 @@ class OverDriveRecordDriver extends RecordInterface {
 	}
 
 	/**
-	 * Does this record have audio content available?
-	 *
-	 * @access  public
-	 * @return  bool
-	 */
-	public function hasAudio() {
-		// TODO: Implement hasAudio() method.
-	}
-
-	/**
-	 * Does this record have an excerpt available?
-	 *
-	 * @access  public
-	 * @return  bool
-	 */
-	public function hasExcerpt() {
-		// TODO: Implement hasExcerpt() method.
-	}
-
-	/**
 	 * Does this record have searchable full text in the index?
 	 *
 	 * Note: As of this writing, searchable full text is not a VuFind feature,
@@ -434,15 +389,6 @@ class OverDriveRecordDriver extends RecordInterface {
 		// TODO: Implement hasFullText() method.
 	}
 
-	/**
-	 * Does this record have image content available?
-	 *
-	 * @access  public
-	 * @return  bool
-	 */
-	public function hasImages() {
-		// TODO: Implement hasImages() method.
-	}
 
 	/**
 	 * Does this record support an RDF representation?
@@ -452,36 +398,6 @@ class OverDriveRecordDriver extends RecordInterface {
 	 */
 	public function hasRDF() {
 		// TODO: Implement hasRDF() method.
-	}
-
-	/**
-	 * Does this record have reviews available?
-	 *
-	 * @access  public
-	 * @return  bool
-	 */
-	public function hasReviews() {
-		// TODO: Implement hasReviews() method.
-	}
-
-	/**
-	 * Does this record have a Table of Contents available?
-	 *
-	 * @access  public
-	 * @return  bool
-	 */
-	public function hasTOC() {
-		// TODO: Implement hasTOC() method.
-	}
-
-	/**
-	 * Does this record have video content available?
-	 *
-	 * @access  public
-	 * @return  bool
-	 */
-	public function hasVideo() {
-		// TODO: Implement hasVideo() method.
 	}
 
 	function getLanguage(){
@@ -944,16 +860,15 @@ class OverDriveRecordDriver extends RecordInterface {
 		return $configArray['Site']['url'] . '/' . $this->getModule() . '/' . $recordId;
 	}
 
+	/**
+	 * A relative URL that is a link to the Full Record View AND additional search parameters
+	 * to the recent search the user has navigated from
+	 *
+	 * @param bool $useUnscopedHoldingsSummary //TODO: this parameter is obsolete
+	 * @return string
+	 */
 	public function getLinkUrl($useUnscopedHoldingsSummary = false) {
-		global $interface;
-		$id = $this->getUniqueID();
-		$linkUrl = '/OverDrive/' . $id . '/Home?searchId=' . $interface->get_template_vars('searchId') . '&amp;recordIndex=' . $interface->get_template_vars('recordIndex') . '&amp;page='  . $interface->get_template_vars('page');
-		if ($useUnscopedHoldingsSummary){
-			$linkUrl .= '&amp;searchSource=marmot';
-		}else{
-			$linkUrl .= '&amp;searchSource=' . $interface->get_template_vars('searchSource');
-		}
-		return $linkUrl;
+		return parent::getLinkUrl();
 	}
 
 	function getQRCodeUrl(){

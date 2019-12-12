@@ -267,17 +267,6 @@ class GroupedWorkDriver extends RecordInterface {
 	}
 
 	/**
-	 * Get any excerpts associated with this record.  For details of
-	 * the return format, see sys/Excerpts.php.
-	 *
-	 * @access  public
-	 * @return  array               Excerpt information.
-	 */
-	public function getExcerpts(){
-		// TODO: Implement getExcerpts() method.
-	}
-
-	/**
 	 * Assign necessary Smarty variables and return a template name to
 	 * load in order to export the record in the requested format.  For
 	 * legal values, see getExportFormats().  Returns null if format is
@@ -301,19 +290,6 @@ class GroupedWorkDriver extends RecordInterface {
 	 */
 	public function getExportFormats(){
 		// TODO: Implement getExportFormats() method.
-	}
-
-	/**
-	 * Assign necessary Smarty variables and return a template name to
-	 * load in order to display extended metadata (more details beyond
-	 * what is found in getCoreMetadata() -- used as the contents of the
-	 * Description tab of the record view).
-	 *
-	 * @access  public
-	 * @return  string              Name of Smarty template file to display.
-	 */
-	public function getExtendedMetadata(){
-		// TODO: Implement getExtendedMetadata() method.
 	}
 
 	/**
@@ -899,12 +875,11 @@ class GroupedWorkDriver extends RecordInterface {
 	}
 
 	/**
-	 * Assign necessary Smarty variables and return a template name to
-	 * load in order to display the Table of Contents extracted from the
-	 * record.  Returns null if no Table of Contents is available.
+	 * load in order to display the Table of Contents for the title.
+	 *  Returns null if no Table of Contents is available.
 	 *
 	 * @access  public
-	 * @return  string              Name of Smarty template file to display.
+	 * @return  string[]|null              contents to display.
 	 */
 	public function getTOC(){
 		$tableOfContents = array();
@@ -936,26 +911,6 @@ class GroupedWorkDriver extends RecordInterface {
 	}
 
 	/**
-	 * Does this record have audio content available?
-	 *
-	 * @access  public
-	 * @return  bool
-	 */
-	public function hasAudio(){
-		// TODO: Implement hasAudio() method.
-	}
-
-	/**
-	 * Does this record have an excerpt available?
-	 *
-	 * @access  public
-	 * @return  bool
-	 */
-	public function hasExcerpt(){
-		// TODO: Implement hasExcerpt() method.
-	}
-
-	/**
 	 * Does this record have searchable full text in the index?
 	 *
 	 * Note: As of this writing, searchable full text is not a VuFind feature,
@@ -969,16 +924,6 @@ class GroupedWorkDriver extends RecordInterface {
 	}
 
 	/**
-	 * Does this record have image content available?
-	 *
-	 * @access  public
-	 * @return  bool
-	 */
-	public function hasImages(){
-		// TODO: Implement hasImages() method.
-	}
-
-	/**
 	 * Does this record support an RDF representation?
 	 *
 	 * @access  public
@@ -986,36 +931,6 @@ class GroupedWorkDriver extends RecordInterface {
 	 */
 	public function hasRDF(){
 		// TODO: Implement hasRDF() method.
-	}
-
-	/**
-	 * Does this record have reviews available?
-	 *
-	 * @access  public
-	 * @return  bool
-	 */
-	public function hasReviews(){
-		// TODO: Implement hasReviews() method.
-	}
-
-	/**
-	 * Does this record have a Table of Contents available?
-	 *
-	 * @access  public
-	 * @return  bool
-	 */
-	public function hasTOC(){
-		// TODO: Implement hasTOC() method.
-	}
-
-	/**
-	 * Does this record have video content available?
-	 *
-	 * @access  public
-	 * @return  bool
-	 */
-	public function hasVideo(){
-		// TODO: Implement hasVideo() method.
 	}
 
 	/**
@@ -3198,9 +3113,15 @@ class GroupedWorkDriver extends RecordInterface {
 		return $configArray['Site']['url'] . '/' . $this->getModule() . '/' . urlencode($recordId) . '/Home';
 	}
 
-	public function getLinkUrl($unscoped = false){
-		//TODO: Need to add search navigation parameters to the URL; and need to determine which existing calls should really use getRecordUrl() instead
-		return $this->getRecordUrl();
+	/**
+	 * A relative URL that is a link to the Full Record View AND additional search parameters
+	 * to the recent search the user has navigated from
+	 *
+	 * @param bool $useUnscopedHoldingsSummary //TODO: this parameter is obsolete
+	 * @return string
+	 */
+	public function getLinkUrl($useUnscopedHoldingsSummary = false) {
+		return parent::getLinkUrl();
 	}
 
 	public function getModule(){

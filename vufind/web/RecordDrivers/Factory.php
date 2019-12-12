@@ -209,6 +209,9 @@ class RecordDriverFactory {
 			}
 		}
 		enableErrorHandler();
+		if (count(RecordDriverFactory::$recordDrivers) > 300){
+			array_shift(RecordDriverFactory::$recordDrivers);
+		}
 		RecordDriverFactory::$recordDrivers[$fullId] = $recordDriver;
 		return $recordDriver;
 	}
@@ -320,7 +323,7 @@ class RecordDriverFactory {
 		if ($path) {
 			require_once $path;
 			if (class_exists($driver)) {
-				$timer->logTime("Error loading record driver");
+				$timer->logTime("Start of loading record driver");
 				disableErrorHandler();
 				/** @var RecordInterface $obj */
 				$obj = new $driver($record);
@@ -337,6 +340,7 @@ class RecordDriverFactory {
 		}
 
 		// If we got here, something went very wrong:
+		$timer->logTime("No path for record driver found");
 		return new PEAR_Error("Problem loading record driver: {$driver}");
 	}
 

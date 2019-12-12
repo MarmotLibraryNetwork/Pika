@@ -68,7 +68,7 @@ class GroupedWork_Series extends Action
 				if ($title['libraryOwned']){
 					/** @var GroupedWorkDriver $tmpRecordDriver */
 					$tmpRecordDriver = $title['recordDriver'];
-					$resourceList[] = $interface->fetch($tmpRecordDriver->getSearchResult('list', false));
+					$resourceList[] = $interface->fetch($tmpRecordDriver->getSearchResult('list'));
 				}else{
 					$interface->assign('record', $title);
 					$resourceList[] = $interface->fetch('RecordDrivers/Index/nonowned_result.tpl');

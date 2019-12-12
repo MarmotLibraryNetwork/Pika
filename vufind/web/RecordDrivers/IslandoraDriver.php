@@ -232,16 +232,6 @@ abstract class IslandoraDriver extends RecordInterface {
 		// TODO: Implement getEmail() method.
 	}
 
-	/**
-	 * Get any excerpts associated with this record.  For details of
-	 * the return format, see sys/Excerpts.php.
-	 *
-	 * @access  public
-	 * @return  array               Excerpt information.
-	 */
-	public function getExcerpts() {
-		// TODO: Implement getExcerpts() method.
-	}
 
 	/**
 	 * Assign necessary Smarty variables and return a template name to
@@ -267,19 +257,6 @@ abstract class IslandoraDriver extends RecordInterface {
 	 */
 	public function getExportFormats() {
 		// TODO: Implement getExportFormats() method.
-	}
-
-	/**
-	 * Assign necessary Smarty variables and return a template name to
-	 * load in order to display extended metadata (more details beyond
-	 * what is found in getCoreMetadata() -- used as the contents of the
-	 * Description tab of the record view).
-	 *
-	 * @access  public
-	 * @return  string              Name of Smarty template file to display.
-	 */
-	public function getExtendedMetadata() {
-		// TODO: Implement getExtendedMetadata() method.
 	}
 
 	/**
@@ -504,15 +481,14 @@ abstract class IslandoraDriver extends RecordInterface {
 	}
 
 	/**
-	 * Assign necessary Smarty variables and return a template name to
-	 * load in order to display the Table of Contents extracted from the
-	 * record.  Returns null if no Table of Contents is available.
+	 * load in order to display the Table of Contents for the title.
+	 *  Returns null if no Table of Contents is available.
 	 *
 	 * @access  public
-	 * @return  string              Name of Smarty template file to display.
+	 * @return  string[]|null              contents to display.
 	 */
-	public function getTOC() {
-		// TODO: Implement getTOC() method.
+	public function getTOC(){
+		return null;
 	}
 
 	/**
@@ -534,26 +510,6 @@ abstract class IslandoraDriver extends RecordInterface {
 	}
 
 	/**
-	 * Does this record have audio content available?
-	 *
-	 * @access  public
-	 * @return  bool
-	 */
-	public function hasAudio() {
-		return false;
-	}
-
-	/**
-	 * Does this record have an excerpt available?
-	 *
-	 * @access  public
-	 * @return  bool
-	 */
-	public function hasExcerpt() {
-		return false;
-	}
-
-	/**
 	 * Does this record have searchable full text in the index?
 	 *
 	 * Note: As of this writing, searchable full text is not a VuFind feature,
@@ -567,16 +523,6 @@ abstract class IslandoraDriver extends RecordInterface {
 	}
 
 	/**
-	 * Does this record have image content available?
-	 *
-	 * @access  public
-	 * @return  bool
-	 */
-	public function hasImages() {
-		return true;
-	}
-
-	/**
 	 * Does this record support an RDF representation?
 	 *
 	 * @access  public
@@ -584,36 +530,6 @@ abstract class IslandoraDriver extends RecordInterface {
 	 */
 	public function hasRDF() {
 		// TODO: Implement hasRDF() method.
-	}
-
-	/**
-	 * Does this record have reviews available?
-	 *
-	 * @access  public
-	 * @return  bool
-	 */
-	public function hasReviews() {
-		return false;
-	}
-
-	/**
-	 * Does this record have a Table of Contents available?
-	 *
-	 * @access  public
-	 * @return  bool
-	 */
-	public function hasTOC() {
-		return false;
-	}
-
-	/**
-	 * Does this record have video content available?
-	 *
-	 * @access  public
-	 * @return  bool
-	 */
-	public function hasVideo() {
-		return false;
 	}
 
 	public function getDescription() {
@@ -960,7 +876,15 @@ abstract class IslandoraDriver extends RecordInterface {
 		return array();
 	}
 
+	/**
+	 * A relative URL that is a link to the Full Record View AND additional search parameters
+	 * to the recent search the user has navigated from
+	 *
+	 * @param bool $unscoped
+	 * @return string
+	 */
 	public function getLinkUrl($unscoped = false) {
+		//TODO: Need to add search navigation parameters to the URL; and need to determine which existing calls should really use getRecordUrl() instead
 		$linkUrl = $this->getRecordUrl();
 		return $linkUrl;
 	}

@@ -3,7 +3,7 @@
 /**
  * Displays full record information
  *
- * @category VuFind-Plus-2014
+ * @category Pika
  * @author Mark Noble <mark@marmot.org>
  * Date: 3/2/2016
  * Time: 10:31 AM

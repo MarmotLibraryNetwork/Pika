@@ -71,17 +71,6 @@ abstract class Record_Record extends Action
 
 		$this->setClassicViewLinks();
 
-		// Define External Content Provider
-		//TODO: These template switches don't look to be used any more.
-		if (!empty($this->recordDriver->hasReviews())){
-			if (isset($configArray['Content']['reviews'])){
-				$interface->assign('hasReviews', true);
-			}
-			if (isset($configArray['Content']['excerpts'])){
-				$interface->assign('hasExcerpt', true);
-			}
-		}
-
 		//Do actions needed if this is the main action.
 
 		//$interface->caching = 1;
