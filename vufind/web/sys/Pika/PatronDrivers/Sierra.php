@@ -303,7 +303,7 @@ class Sierra {
 	 *
 	 * @param string  $username        The patron username or barcode
 	 * @param string  $password        The patron barcode or pin
-	 * @param boolean $validatedViaSSO FALSE
+	 * @param boolean $validatedViaSSO If the patron was validated outside Pika
 	 *
 	 * @return  User|null           User object or null
 	 * @access  public
@@ -319,7 +319,10 @@ class Sierra {
 		$username = trim($username);
 		$password = trim($password);
 
-		if ($loginMethod == "barcode_pin"){
+		if($validatedViaSSO) {
+			$patronId = $this->getPatronId($password);
+			$this->patronBarcode = $password;
+		} elseif ($loginMethod == "barcode_pin") {
 			$barcode = $username;
 			$this->patronBarcode = $barcode;
 			$patronId = $this->_authBarcodePin($username, $password);
