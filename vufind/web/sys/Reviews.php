@@ -17,8 +17,9 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
-require_once ROOT_DIR . '/sys/Amazon.php';
-require_once ROOT_DIR . '/sys/Proxy_Request.php';
+
+use Curl\Curl;
+use \Pika\Logger;
 
 /**
  * ExternalReviews Class
@@ -29,10 +30,11 @@ require_once ROOT_DIR . '/sys/Proxy_Request.php';
  * @author      Demian Katz <demian.katz@villanova.edu>
  * @access      public
  */
-class ExternalReviews
-{
+class ExternalReviews {
 	private $isbn;
 	private $results;
+	// @var $logger Pika/Logger instance
+	private $logger;
 
 	/**
 	 * Constructor
@@ -40,41 +42,51 @@ class ExternalReviews
 	 * Do the actual work of loading the reviews.
 	 *
 	 * @access  public
-	 * @param   string      $isbn           ISBN of book to find reviews for
+	 * @param   string      $isbn           ISBN of title to find reviews for
 	 */
-	public function __construct($isbn)
-	{
-		global $configArray;
-
-		$this->isbn = $isbn;
+	public function __construct($isbn){
+		$this->isbn    = $isbn;
 		$this->results = array();
+		$this->logger  = new Logger(__CLASS__);
+
 
 		// We can't proceed without an ISBN:
-		if (empty($this->isbn)) {
+		if (empty($this->isbn)){
 			return;
 		}
 
-		// Fetch from provider
-		if (isset($configArray['Content']['reviews'])) {
-			$providers = explode(',', $configArray['Content']['reviews']);
-			foreach ($providers as $provider) {
-				$provider = explode(':', trim($provider));
-				$func = strtolower($provider[0]);
-				$key = $provider[1];
-				$this->results[$func] = method_exists($this, $func) ? $this->$func($key) : false;
+		/** @var Memcache $memCache */
+		global $memCache;
 
-				// If the current provider had no valid reviews, store nothing:
-				if (empty($this->results[$func]) || PEAR_Singleton::isError($this->results[$func])) {
-					unset($this->results[$func]);
-				}else{
-					if (is_array($this->results[$func])){
-						foreach ($this->results[$func] as $key => $reviewData){
-							$this->results[$func][$key] = self::cleanupReview($this->results[$func][$key]);
-						}
+		$memCacheKey = "reviews_{$isbn}";
+		$reviews     = $memCache->get($memCacheKey);
+		if ($reviews && !isset($_REQUEST['reload'])){
+			$this->results = $reviews;
+		}else{
+			// Fetch from provider
+			global $configArray;
+			if (isset($configArray['Content']['reviews'])){
+				$providers = explode(',', $configArray['Content']['reviews']);
+				foreach ($providers as $provider){
+					$provider             = explode(':', trim($provider));
+					$func                 = strtolower($provider[0]);
+					$key                  = $provider[1];
+					$this->results[$func] = method_exists($this, $func) ? $this->$func($key) : false;
+
+					// If the current provider had no valid reviews, store nothing:
+					if (empty($this->results[$func]) || PEAR_Singleton::isError($this->results[$func])){
+						unset($this->results[$func]);
 					}else{
-						$this->results[$func] = self::cleanupReview($this->results[$func]);
+						if (is_array($this->results[$func])){
+							foreach ($this->results[$func] as $key => $reviewData){
+								$this->results[$func][$key] = self::cleanupReview($this->results[$func][$key]);
+							}
+						}else{
+							$this->results[$func] = self::cleanupReview($this->results[$func]);
+						}
 					}
 				}
+				$memCache->set($memCacheKey, $this->results, 0, $configArray['Caching']['purchased_reviews']);
 			}
 		}
 	}
@@ -168,6 +180,19 @@ class ExternalReviews
                'index.xml&client=' . $id . '&type=rw12,hw7';
 
 		//find out if there are any reviews
+		try {
+			$curl     = new Curl();
+			$response = $curl->get($url);
+		} catch (Exception $e){
+			//TODO: Add logger
+			return [];
+		}
+		if ($curl->isCurlError()) {
+			//TODO: Add logger
+			return [];
+		}
+
+
 		$client = new Proxy_Request();
 		$client->setMethod(HTTP_REQUEST_METHOD_GET);
 		$client->setURL($url);
@@ -245,8 +270,8 @@ class ExternalReviews
 					// @codeCoverageIgnoreEnd
 				}
 
-				$review[$i]['Source'] = $sourceInfo['title'];  //changes the xml to actual title
-				$review[$i]['ISBN'] = $this->isbn; //show more link
+				$review[$i]['Source']   = $sourceInfo['title'];  //changes the xml to actual title
+				$review[$i]['ISBN']     = $this->isbn; //show more link
 				$review[$i]['username'] = isset($configArray['BookReviews']) ? $configArray['BookReviews']['id'] : '';
 
 				$i++;

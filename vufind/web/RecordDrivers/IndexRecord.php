@@ -354,20 +354,6 @@ class IndexRecord extends RecordInterface
 		return [];
 	}
 
-	/**
-	 * Get any reviews associated with this record.  For details of
-	 * the return format, see sys/Reviews.php.
-	 *
-	 * @access  public
-	 * @return  array               Review information.
-	 */
-	public function getReviews()
-	{
-		require_once ROOT_DIR . '/sys/Reviews.php';
-
-		$rev = new ExternalReviews($this->getCleanISBN());
-		return $rev->fetch();
-	}
 
 	/**
 	 * TODO: probably obsolete

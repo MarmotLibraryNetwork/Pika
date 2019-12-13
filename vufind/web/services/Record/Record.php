@@ -37,14 +37,14 @@ abstract class Record_Record extends Action
 	/*var File_MARC_Record $marcRecord */
 	public $marcRecord;
 
-	public $record;
+//	public $record;
 //	public $similarTitles;
 
 	public $isbn;
 //	public $issn;
 //	public $upc;
 
-	public $cacheId;
+//	public $cacheId;
 
 	function __construct($record_id = null){
 		global $interface;

@@ -1202,55 +1202,6 @@ class BookCoverProcessor {
 //		return $this->processImageURL($url);
 //	}
 
-	// Stopped using amazon as a source a long time ago. Retaining just in case
-//	function amazon($id){
-//		if (is_null($this->isn)){
-//			return false;
-//		}
-//		require_once ROOT_DIR . '/sys/Amazon.php';
-//		require_once 'XML/Unserializer.php';
-//
-//		$params  = array('ResponseGroup' => 'Images', 'ItemId' => $this->isn);
-//		$request = new AWS_Request($id, 'ItemLookup', $params);
-//		$result  = $request->sendRequest();
-//		if (!PEAR_Singleton::isError($result)){
-//			$unxml = new XML_Unserializer();
-//			$unxml->unserialize($result);
-//			$data = $unxml->getUnserializedData();
-//			if (PEAR_Singleton::isError($data)){
-//				return false;
-//			}
-//			if (isset($data['Items']['Item']) && !$data['Items']['Item']['ASIN']){
-//				$data['Items']['Item'] = $data['Items']['Item'][0];
-//			}
-//			if (isset($data['Items']['Item'])){
-//				// Where in the XML can we find the URL we need?
-//				switch ($this->size){
-//					case 'small':
-//						$imageIndex = 'SmallImage';
-//						break;
-//					case 'medium':
-//						$imageIndex = 'MediumImage';
-//						break;
-//					case 'large':
-//						$imageIndex = 'LargeImage';
-//						break;
-//					default:
-//						$imageIndex = false;
-//						break;
-//				}
-//
-//				// Does a URL exist?
-//				if ($imageIndex && isset($data['Items']['Item'][$imageIndex]['URL'])){
-//					$imageUrl = $data['Items']['Item'][$imageIndex]['URL'];
-//					return $this->processImageURL($imageUrl, false);
-//				}
-//			}
-//		}
-//
-//		return false;
-//	}
-
 // Not used at all. Keeping in case it becomes handy in the future
 //	function getCoverFromPublisher($folderToCheck){
 //		if (!file_exists($folderToCheck)){

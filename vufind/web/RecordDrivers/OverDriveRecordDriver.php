@@ -271,17 +271,6 @@ class OverDriveRecordDriver extends RecordInterface {
 	}
 
 	/**
-	 * Get any reviews associated with this record.  For details of
-	 * the return format, see sys/Reviews.php.
-	 *
-	 * @access  public
-	 * @return  array               Review information.
-	 */
-	public function getReviews() {
-		// TODO: Implement getReviews() method.
-	}
-
-	/**
 	 * Assign necessary Smarty variables and return a template name to
 	 * load in order to display a summary of the item suitable for use in
 	 * search results.
@@ -1130,4 +1119,12 @@ class OverDriveRecordDriver extends RecordInterface {
 		return $this->getGroupedWorkDriver()->getRelatedRecord($id);
 	}
 
+	/**
+	 * This is for retrieving Volume Records, which are a collection of item records of a Bib. (eg Part 1 of a DVD set would
+	 * be a volume record, part 2 another volume record ) This is different from the volume on an item record.
+	 * @return IlsVolumeInfo[]  An array of VolumeInfoObjects
+	 */
+	function getVolumeInfoForRecord(){
+		return [];
+	}
 }

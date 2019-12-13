@@ -167,13 +167,14 @@ abstract class RecordInterface {
 	public abstract function getRDFXML();
 
 	/**
-	 * Get any reviews associated with this record.  For details of
-	 * the return format, see sys/Reviews.php.
-	 *
-	 * @access  public
-	 * @return  array               Review information.
+	 * Get Reviews for this title using an ISBN associated with this record
+	 * @return string[]
 	 */
-	public abstract function getReviews();
+//	public function getReviews(){
+//		require_once ROOT_DIR . '/sys/Reviews.php';
+//		$rev = new ExternalReviews($this->getCleanISBN());
+//		return $rev->fetch();
+//	}
 
 	/**
 	 * Get structured linked data related to the record.
