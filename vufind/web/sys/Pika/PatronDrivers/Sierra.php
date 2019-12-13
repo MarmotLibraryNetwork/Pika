@@ -1207,6 +1207,15 @@ EOT;
 					$params['addresses'][0]['lines'][0] = $val;
 					$params['addresses'][0]['type'] = 'a';
 					break;
+				case 'altaddress':
+					$val = trim($val);
+					if(!empty($val)){
+						$params['addresses'][1]['lines'][0] = $val;
+					}else{
+						$params['addresses'][1]['lines'][0] = 'none';
+					}
+					$params['addresses'][1]['type'] = 'h';
+					break;
 				case 'primaryphone':
 					$val = trim($val);
 					if(!empty($val)){
@@ -1269,6 +1278,18 @@ EOT;
 		// address line 2
 		$params['addresses'][0]['lines'][1] = $cityStateZip;
 
+		// todo: special handling for VAIL
+		// include test and production
+		$libSubDomain = strtolower($library->subdomain);
+		if($libSubDomain == 'vail' || $libSubDomain == 'vail2') {
+			$params['varFields'][] = ["fieldTag" => "u",
+		                            "content"  => "#"];
+			$params['varFields'][] = ["fieldTag" => "i",
+			                          "content"  => "#"];
+			$params['varFields'][] = ["fieldTag" => "q",
+			                          "content"  => "#"];
+			$params['pMessage']    = 'f';
+		}
 		// if library uses pins
 		if($this->accountProfile->loginConfiguration == "barcode_pin") {
 			$pin = trim($_POST['pin']);
@@ -1342,7 +1363,6 @@ EOT;
 		             'values'     => $homeLocations,
 		             'required'   => true];
 
-
 		// allow usernames?
 		if($this->hasUsernameField()) {
 			$fields[] = ['property'   => 'username',
@@ -1364,10 +1384,17 @@ EOT;
 
 		$fields[] = ['property'   => 'address',
 		             'type'       => 'text',
-		             'label'      => 'Address',
-		             'description'=> 'Street address or PO Box where you receive mail.',
+		             'label'      => 'Mailing Address',
+		             'description'=> 'Mailing Address.',
 		             'maxLength'  => 40,
 		             'required'   => true];
+
+		$fields[] = ['property'   => 'altaddress',
+		             'type'       => 'text',
+		             'label'      => 'Physical Address',
+		             'description'=> 'Physical Address.',
+		             'maxLength'  => 40,
+		             'required'   => false];
 
 		$fields[] = ['property'   => 'city',
 		             'type'       => 'text',
@@ -1558,9 +1585,9 @@ EOT;
 
 		$operation = "patrons/".$patronId."/holds";
 		if((integer)$this->configArray['Catalog']['api_version'] > 4) {
-			$params=["fields"=>"default,pickupByDate,frozen"];
+			$params=["fields"=>"default,pickupByDate,frozen,priority,priorityQueueLength"];
 		} else {
-			$params=["fields"=>"default,frozen"];
+			$params=["fields"=>"default,frozen,priority,priorityQueueLength"];
 		}
 		$holds = $this->_doRequest($operation, $params);
 
@@ -1602,8 +1629,8 @@ EOT;
 			$h['frozen']                = $hold->frozen;
 			$h['create']                = strtotime($hold->placed); // date hold created
 			// innreach holds don't include notNeededAfterDate
-			$h['automaticCancellation'] = isset($hold->notNeededAfterDate) ? strtotime($hold->notNeededAfterDate) : null; // not needed after date // this isn't available in api v4
-			$h['expire']                = isset($hold->pickupByDate) ? strtotime($hold->pickupByDate) : false; // pick up by date
+			$h['automaticCancellation'] = isset($hold->notNeededAfterDate) ? strtotime($hold->notNeededAfterDate) : null; // not needed after date
+			$h['expire']                = isset($hold->pickupByDate) ? strtotime($hold->pickupByDate) : false; // pick up by date // this isn't available in api v4
 			// cancel id
 			preg_match($this->urlIdRegExp, $hold->id, $m);
 			$h['cancelId'] = $m[1];
