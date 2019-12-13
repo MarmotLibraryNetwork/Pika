@@ -466,17 +466,6 @@ class GroupedWorkDriver extends RecordInterface {
 	}
 
 	/**
-	 * Get any reviews associated with this record.  For details of
-	 * the return format, see sys/Reviews.php.
-	 *
-	 * @access  public
-	 * @return  array               Review information.
-	 */
-	public function getReviews(){
-		// TODO: Implement getReviews() method.
-	}
-
-	/**
 	 * Assign necessary Smarty variables and return a template name to
 	 * load in order to display a summary of the item suitable for use in
 	 * search results.
@@ -2759,7 +2748,6 @@ class GroupedWorkDriver extends RecordInterface {
 	protected function setupRelatedRecordDetails($recordDetails, $groupedWork, $timer, $scopingInfo, $activePTypes, $searchLocation, $library, $forCovers = false){
 		//Check to see if we have any volume data for the record
 		global $memoryWatcher;
-		$volumeData = $this->getVolumeInfoForRecord($recordDetails[0]);
 
 		//		list($source) = explode(':', $recordDetails[0], 1); // this does not work for 'overdrive:27770ba9-9e68-410c-902b-de2de8e2b7fe', returns 'overdrive:27770ba9-9e68-410c-902b-de2de8e2b7fe'
 		// when loading book covers.
@@ -2768,6 +2756,8 @@ class GroupedWorkDriver extends RecordInterface {
 		$recordDriver = RecordDriverFactory::initRecordDriverById($recordDetails[0], $groupedWork);
 		$timer->logTime("Loaded Record Driver for $recordDetails[0]");
 		$memoryWatcher->logMemory("Loaded Record Driver for $recordDetails[0]");
+
+//		$volumeData = $recordDriver->getVolumeInfoForRecord();
 
 		//Setup the base record
 		$relatedRecord = array(
@@ -2795,7 +2785,7 @@ class GroupedWorkDriver extends RecordInterface {
 			'localAvailableCopies'   => 0,
 			'localCopies'            => 0,
 			'numHolds'               => !$forCovers && $recordDriver != null ? $recordDriver->getNumHolds() : 0,
-			'volumeHolds'            => !$forCovers && $recordDriver != null ? $recordDriver->getVolumeHolds($volumeData) : null,
+//			'volumeHolds'            => !$forCovers && $recordDriver != null ? $recordDriver->getVolumeHolds($volumeData) : null,
 			'hasLocalItem'           => false,
 			'holdRatio'              => 0,
 			'locationLabel'          => '',
@@ -2951,28 +2941,28 @@ class GroupedWorkDriver extends RecordInterface {
 			$relatedRecord['groupedStatus']      = GroupedWorkDriver::keepBestGroupedStatus($relatedRecord['groupedStatus'], $groupedStatus);
 			$relatedRecord['isAvailableToOrder'] = $relatedRecord['groupedStatus'] == 'Available to Order';
 
-			$volume   = null;
-			$volumeId = null;
-			if (count($volumeData)){
-				/** @var IlsVolumeInfo $volumeDataPoint */
-				foreach ($volumeData as $volumeDataPoint){
-					if ((strlen($volumeDataPoint->relatedItems) == 0) || (strpos($volumeDataPoint->relatedItems, $curItem[1]) !== false)){
-						if ($holdable){
-							$volumeDataPoint->holdable = true;
-						}
-						if (strlen($volumeDataPoint->relatedItems) > 0){
-							$volume   = $volumeDataPoint->displayLabel;
-							$volumeId = $volumeDataPoint->volumeId;
-							break;
-						}
-					}
-				}
-			}
-			if ($volume){
-				$description = $shelfLocation . ':' . $volume . $callNumber;
-			}else{
+//			$volumeRecordLabel = null;
+//			$volumeId          = null;
+//			if (count($volumeData)){
+//				/** @var IlsVolumeInfo $volumeDataPoint */
+//				foreach ($volumeData as $volumeDataPoint){
+//					if ((strlen($volumeDataPoint->relatedItems) == 0) || (strpos($volumeDataPoint->relatedItems, $curItem[1]) !== false)){
+//						if ($holdable){
+//							$volumeDataPoint->holdable = true;
+//						}
+//						if (strlen($volumeDataPoint->relatedItems) > 0){
+//							$volumeRecordLabel   = $volumeDataPoint->displayLabel;
+//							$volumeId = $volumeDataPoint->volumeId;
+//							break;
+//						}
+//					}
+//				}
+//			}
+//			if ($volumeRecordLabel){
+//				$description = $shelfLocation . ':' . $volumeRecordLabel . $callNumber;
+//			}else{
 				$description = $shelfLocation . ':' . $callNumber;
-			}
+//			}
 
 			$section = 'Other Locations';
 			if ($locallyOwned){
@@ -3018,9 +3008,9 @@ class GroupedWorkDriver extends RecordInterface {
 				$sectionId = 6;
 			}
 
-			if ((strlen($volume) > 0) && !substr($callNumber, -strlen($volume)) == $volume){
-				$callNumber = trim($callNumber . ' ' . $volume);
-			}
+//			if ((strlen($volumeRecordLabel) > 0) && !substr($callNumber, -strlen($volumeRecordLabel)) == $volumeRecordLabel){
+//				$callNumber = trim($callNumber . ' ' . $volumeRecordLabel);
+//			}
 			//Add the item to the item summary
 			$itemSummaryInfo = array(
 				'description'        => $description,
@@ -3044,8 +3034,8 @@ class GroupedWorkDriver extends RecordInterface {
 				'section'            => $section,
 				'relatedUrls'        => $relatedUrls,
 				'lastCheckinDate'    => isset($curItem[14]) ? $curItem[14] : '',
-				'volume'             => $volume,
-				'volumeId'           => $volumeId,
+//				'volume'             => $volumeRecordLabel,
+//				'volumeId'           => $volumeId,
 				'isEContent'         => $isEcontent,
 				'locationCode'       => $locationCode,
 				'subLocation'        => $subLocation,
@@ -3091,7 +3081,7 @@ class GroupedWorkDriver extends RecordInterface {
 		$memoryWatcher->logMemory("Setup record items");
 
 		if (!$forCovers){
-			$relatedRecord['actions'] = $recordDriver != null ? $recordDriver->getRecordActions($relatedRecord['availableLocally'] || $relatedRecord['availableOnline'], $recordHoldable, $recordBookable, $relatedUrls, $volumeData) : array();
+			$relatedRecord['actions'] = $recordDriver != null ? $recordDriver->getRecordActions($relatedRecord['availableLocally'] || $relatedRecord['availableOnline'], $recordHoldable, $recordBookable, $relatedUrls/*, $volumeData*/) : array();
 			$timer->logTime("Loaded actions");
 			$memoryWatcher->logMemory("Loaded actions");
 		}
@@ -3352,24 +3342,4 @@ class GroupedWorkDriver extends RecordInterface {
 		return $url;
 	}
 
-	/**
-	 * @param string $recordID
-	 * @return array
-	 */
-	private function getVolumeInfoForRecord($recordID){
-		require_once ROOT_DIR . '/Drivers/marmot_inc/IlsVolumeInfo.php';
-		$volumeData             = array();
-		$volumeDataDB           = new IlsVolumeInfo();
-		$volumeDataDB->recordId = $recordID;
-		//D-81 show volume information even if there aren't related items
-		//$volumeDataDB->whereAdd('length(relatedItems) > 0');
-		if ($volumeDataDB->find()){
-			while ($volumeDataDB->fetch()){
-				$volumeData[] = clone($volumeDataDB);
-			}
-		}
-		$volumeDataDB = null;
-		unset($volumeDataDB);
-		return $volumeData;
-	}
 }
