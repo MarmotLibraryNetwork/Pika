@@ -2568,6 +2568,8 @@ EOT;
 				// there's been a bit of uproar at libraries over name matches. To revert behavior to full matches
 				// uncomment the else statement below and the above description will work.
 				// cf 12-13-2019
+				// #D-3416
+				// #D-3417
 				//else {
 					//$valid = false;
 					//break;
