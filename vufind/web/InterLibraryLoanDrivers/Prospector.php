@@ -2,24 +2,45 @@
 /**
  * Handles integration with Prospector
  */
+use Curl\Curl;
+use \Pika\Logger;
 
 class Prospector {
+
+	// @var $logger Pika/Logger instance
+	private $logger;
+
+	/**
+	 * Prospector constructor.
+	 */
+	public function __construct(){
+		$this->logger  = new Logger(__CLASS__);
+	}
+
 	/**
 	 * Load search results from Prospector using the encore interface.
 	 * If $prospectorRecordDetails are provided, will sort the existing result to the
 	 * top and tag it as being the record.
-	 * @param string $searchTerms
+	 * @param string[] $searchTerms
 	 * @param int $maxResults
 	 * @return array|null
 	 */
 	function getTopSearchResults($searchTerms, $maxResults){
 		$prospectorUrl = $this->getSearchLink($searchTerms);
+
 		//Load the HTML from Prospector
-		$req = new Proxy_Request($prospectorUrl);
-		if (PEAR_Singleton::isError($req->sendRequest())){
+		try {
+			$curl            = new Curl();
+			$prospectorInfo = $curl->get($prospectorUrl);
+		} catch (ErrorException $e){
+			$this->logger->error($e->getMessage(), ['stacktrace'=>$e->getTraceAsString()]);
 			return null;
 		}
-		$prospectorInfo = $req->getResponseBody();
+		if ($curl->isCurlError()) {
+			$message = 'curl Error: '.$curl->getCurlErrorCode().': '.$curl->getCurlErrorMessage();
+			$this->logger->warning($message);
+			return null;
+		}
 
 		//Get the total number of results
 		if (preg_match('/<span class="noResultsHideMessage">.*?(\d+) - (\d+) of (\d+).*?<\/span>/s', $prospectorInfo, $summaryInfo)){
@@ -126,45 +147,18 @@ class Prospector {
 			if (strlen($search) > 0){
 				$search .= ' ';
 			}
+			//Parse Advanced Pika search
 			if (is_array($term) && isset($term['group'])){
 				foreach ($term['group'] as $groupTerm){
 					if (strlen($search) > 0){
 						$search .= ' ';
 					}
 					if (isset($groupTerm['lookfor'])){
-						$termValue = $groupTerm['lookfor'];
-						if (isset($groupTerm['index'])){
-							if ($term['index'] == 'Author'){
-								$search .= "a:($termValue)";
-							}elseif ($groupTerm['index'] == 'Title'){
-								$search .= "t:($termValue)";
-							}elseif ($groupTerm['index'] == 'Subject'){
-								$search .= "d:($termValue)";
-							}else{
-								$search .= $termValue;
-							}
-						}else{
-							$search .= $termValue;
-						}
+						$search = $this->parseSearchTermsForProspectorURL($groupTerm['field'], $groupTerm['lookfor'], $search);
 					}
 				}
 			}else{
-				if (isset($term['lookfor'])){
-					$termValue = $term['lookfor'];
-					if (isset($term['index'])){
-						if ($term['index'] == 'Author'){
-							$search .= "a:($termValue)";
-						}elseif ($term['index'] == 'Title'){
-							$search .= "t:($termValue)";
-						}elseif ($term['index'] == 'Subject'){
-							$search .= "d:($termValue)";
-						}else{
-							$search .= $termValue;
-						}
-					}else{
-						$search .= $termValue;
-					}
-				}
+				$search = $this->parseSearchTermsForProspectorURL($term['index'], $term['lookfor'], $search);
 			}
 		}
 		//Setup the link to Prospector (search classic)
@@ -177,5 +171,32 @@ class Prospector {
 		$innReachEncoreHostUrl = $configArray['InterLibraryLoan']['innReachEncoreHostUrl'];
 		$prospectorUrl         = $innReachEncoreHostUrl . '/iii/encore/search/C__S' . $search . '__Orightresult__U1?lang=eng&amp;suite=def';
 		return $prospectorUrl;
+	}
+
+	/**
+	 * @param string $searchType Which type of search term is this, eg. title, author, subject
+	 * @param string $termValue The search phrase
+	 * @param string $searchString The search string that has already been built
+	 * @return string  The search string
+	 */
+	private function parseSearchTermsForProspectorURL($searchType, $termValue, $searchString){
+		if (isset($searchType)){
+			switch ($searchType){
+				case 'Author' :
+					$searchString .= "a:($termValue)";
+					break;
+				case 'Title' :
+					$searchString .= "t:($termValue)";
+					break;
+				case 'Subject' :
+					$searchString .= "d:($termValue)";
+					break;
+				default:
+					$searchString .= $termValue;
+			}
+		}else{
+			$searchString .= $termValue;
+		}
+		return $searchString;
 	}
 }
