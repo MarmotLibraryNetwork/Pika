@@ -2539,6 +2539,7 @@ EOT;
 		$patronNames = $r->names;
 		$username = trim($username);
 		// break the username into an array
+		$username = str_replace('-', ' ', $username);
 		$usernameParts = explode(' ', $username);
 		$valid = FALSE;
 		// check each part of the username for a match against $j->name
@@ -2563,14 +2564,18 @@ EOT;
 				// johndoe, jo, jo doe, john do
 				if (preg_match('~\\b' . $userNamePart . '\\b~i', $patronName, $m)) {
 					$valid = true;
-				} else {
-					$valid = false;
-					break;
 				}
+				// there's been a bit of uproar at libraries over name matches. To revert behavior to full matches
+				// uncomment the else statement below and the above description will work.
+				// cf 12-13-2019
+				//else {
+					//$valid = false;
+					//break;
+				//}
 			}
 			// If a match is found, break outer foreach and valid is true
 			if ($valid === true) {
-				$this->logger->debug('Logging in patron: '. $barcode);
+				$this->logger->info('Logging in patron: '. $barcode);
 				break;
 			}
 		}
@@ -2579,7 +2584,7 @@ EOT;
 		if($valid === true) {
 			$result = $r->id;
 		} else {
-			$this->logger->debug('Can not login patron: ' . $barcode . '. Name and barcode do not match.');
+			$this->logger->warning('Can not login patron: ' . $barcode . '. Name and barcode do not match.');
 			$result = false;
 		}
 		return $result;
