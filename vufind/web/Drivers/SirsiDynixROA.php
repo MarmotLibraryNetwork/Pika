@@ -902,14 +902,13 @@ abstract class SirsiDynixROA extends HorizonAPI //TODO: This class doesn't need 
 
 			foreach ($patronCheckouts->fields->circRecordList as $checkout) {
 				if (empty($checkout->fields->claimsReturnedDate) && $checkout->fields->status != 'INACTIVE') { // Titles with a claims return date will not be displayed in check outs.
-					$curTitle = array();
-					$curTitle['checkoutSource'] = 'ils';
-
 					list($bibId) = explode(':', $checkout->key);
+					$sourceAndId                = new SourceAndId($this->accountProfile->recordSource . ':a' . $bibId);
+					$curTitle = array();
+					$curTitle['checkoutSource'] = $this->accountProfile->recordSource;
 					$curTitle['recordId'] = $bibId;
 					$curTitle['shortId']  = $bibId;
 					$curTitle['id']       = $bibId;
-
 					$curTitle['dueDate']      = strtotime($checkout->fields->dueDate);
 					$curTitle['checkoutdate'] = strtotime($checkout->fields->checkOutDate);
 					// Note: there is an overdue flag
@@ -918,7 +917,7 @@ abstract class SirsiDynixROA extends HorizonAPI //TODO: This class doesn't need 
 					$curTitle['renewIndicator'] = $checkout->fields->item->key;
 
 					$curTitle['format'] = 'Unknown';
-					$recordDriver       = new MarcRecord('a' . $bibId);
+					$recordDriver       = new MarcRecord($sourceAndId);
 					if ($recordDriver->isValid()) {
 						$curTitle['coverUrl']      = $recordDriver->getBookcoverUrl('medium');
 						$curTitle['groupedWorkId'] = $recordDriver->getGroupedWorkId();
@@ -972,6 +971,7 @@ abstract class SirsiDynixROA extends HorizonAPI //TODO: This class doesn't need 
 		}
 		return $checkedOutTitles;
 	}
+
 	/**
 	 * Get Patron Holds
 	 *

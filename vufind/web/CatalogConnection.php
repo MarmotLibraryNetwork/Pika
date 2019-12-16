@@ -994,12 +994,15 @@ class CatalogConnection
 			}
 
 			$key = $source . ':' . $sourceId;
+
+			//TODO: case where $key is ':' or 'ils:' or even 'ils:0' for ILL checkouts (At this point more than one ILL checkout will end up as one entry)
 			if (array_key_exists($key, $activeHistoryTitles)){
 				$activeHistoryTitles[$key]['stillActiveCheckout'] = true;
 				// can't merely unset the entry because it is possible for the user to have more than one item from the same bib
 				// checked out (eg 2 copies of a title), and we don't to duplicate entries in reading history when only
 				// bib-level data is recorded
 			}else{
+				// A new checkout that *isn't* is the users reading history yet; so we will add it to the reading history
 				$historyEntryDB         = new ReadingHistoryEntry();
 				$historyEntryDB->userId = $patron->id;
 				if (isset($checkout['groupedWorkId'])){
