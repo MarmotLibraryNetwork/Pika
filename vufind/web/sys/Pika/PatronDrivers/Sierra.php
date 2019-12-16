@@ -140,7 +140,8 @@ class Sierra {
 
 		$operation = 'patrons/'.$patronId.'/checkouts';
 		$params = [
-			'fields'=>'default,barcode,callNumber'
+			'fields' => 'default,barcode,callNumber',
+			'limit'  => 500
 		];
 
 		$r = $this->_doRequest($operation,$params);
