@@ -1585,9 +1585,11 @@ EOT;
 
 		$operation = "patrons/".$patronId."/holds";
 		if((integer)$this->configArray['Catalog']['api_version'] > 4) {
-			$params=["fields"=>"default,pickupByDate,frozen,priority,priorityQueueLength"];
+			$params=["fields" => "default,pickupByDate,frozen,priority,priorityQueueLength",
+			         "limit"  => 1000];
 		} else {
-			$params=["fields"=>"default,frozen,priority,priorityQueueLength"];
+			$params=["fields" => "default,frozen,priority,priorityQueueLength",
+			         "limit"  => 1000];
 		}
 		$holds = $this->_doRequest($operation, $params);
 
