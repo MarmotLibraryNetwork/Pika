@@ -462,6 +462,7 @@ class CatalogConnection
 					$patron->initialReadingHistoryLoaded = 1;
 					$patron->update();
 				}
+				set_time_limit(180);
 
 				$this->updateReadingHistoryBasedOnCurrentCheckouts($patron);
 
@@ -1108,16 +1109,23 @@ class CatalogConnection
 
 		$activeHistoryTitles = array();
 		while ($readingHistoryDB->fetch()){
+			if ($readingHistoryDB->source == 'ILS'){
+				$readingHistoryDB->source = 'ils';
+			}
 			$key                       = $readingHistoryDB->source. ':' .$readingHistoryDB->sourceId; //TODO: what about an ILL check out
-			$historyEntry              = $this->getHistoryEntryForDatabaseEntry($readingHistoryDB);
-//			$key                       = $historyEntry['source'] . ':' . $historyEntry['recordId'];
-			$activeHistoryTitles[$key] = $historyEntry;
+//			$historyEntry              = $this->getHistoryEntryForDatabaseEntry($readingHistoryDB);
+//			$activeHistoryTitles[$key] = $historyEntry;
+			//The getHistoryEntryForDatabaseEntry() fetches additional information that we don't actually use.
+			$activeHistoryTitles[$key] = [
+				'source'   => $readingHistoryDB->source,
+				'recordId' => $readingHistoryDB->sourceId,
+			];
 		}
 
 		//Update reading history based on current checkouts.  That way it never looks out of date
 		$checkouts = $patron->getMyCheckouts(false);
 		foreach ($checkouts as $checkout){
-			$sourceId = '?';
+//			$sourceId = '?';
 			$source   = $checkout['checkoutSource'];
 			switch ($source){
 				case 'OverDrive':
@@ -1139,10 +1147,11 @@ class CatalogConnection
 			}
 
 			$key = $source . ':' . $sourceId;
+			//TODO: case where $key is ':' or 'ils:' for ILL checkouts (At this point more than one ILL checkout will end up as one entry)
 			if (array_key_exists($key, $activeHistoryTitles)){
 				$activeHistoryTitles[$key]['stillActiveCheckout'] = true;
 				// can't merely unset the entry because it is possible for the user to have more than one item from the same bib
-				// checked out (eg 2 copies of a title), and we don't to duplicate entries in reading history when only
+				// checked out (eg 2 copies of a title), and we don't want to duplicate entries in reading history when only
 				// bib-level data is recorded
 			}else{
 				$historyEntryDB         = new ReadingHistoryEntry();
@@ -1173,8 +1182,8 @@ class CatalogConnection
 		}
 
 		// Active reading histories that were checked out but aren't checked out anymore
-		foreach ($activeHistoryTitles as $historyEntry){
-			if (empty($activeHistoryTitles[$key]['stillActiveCheckout'])){ //No longer an active checkout
+		foreach ($activeHistoryTitles as $key => $historyEntry){
+			if (empty($historyEntry['stillActiveCheckout'])){ //No longer an active checkout
 				//Update even if deleted to make sure code is cleaned up correctly
 				$historyEntryDB              = new ReadingHistoryEntry();
 				$historyEntryDB->source      = $historyEntry['source'];
@@ -1185,7 +1194,7 @@ class CatalogConnection
 					$numUpdates                  = $historyEntryDB->update();
 					if ($numUpdates != 1){
 						global $logger;
-						$key = $historyEntry['source'] . ':' . $historyEntry['recordId'];
+//						$key = $historyEntry['source'] . ':' . $historyEntry['recordId'];
 						$logger->log("Could not update reading history entry $key", PEAR_LOG_ERR);
 					}
 				}
