@@ -139,25 +139,37 @@ class Sierra {
 		$patronId = $this->getPatronId($patron);
 
 		$operation = 'patrons/'.$patronId.'/checkouts';
-		$params = [
-			'fields' => 'default,barcode,callNumber',
-			'limit'  => 500
-		];
 
-		$r = $this->_doRequest($operation,$params);
+		$offset = 0;
+		$total  = 0;
+		$count  = 0;
+		$limit  = 100;
 
-		if (!$r) {
-			$this->logger->info($this->apiLastError);
-			return [];
-		}
+		$checkoutEntries = [];
+		do {
+			$params = [
+			 'fields' => 'default,barcode,callNumber',
+			 'limit'  => $limit,
+			 'offset' => $offset
+			];
+			$rawCheckouts = $this->_doRequest($operation, $params);
+			if(!$rawCheckouts) {
+				$this->logger->info($this->apiLastError);
+				return [];
+			} elseif($rawCheckouts->total == 0) {
+				// no checkouts
+				return [];
+			}
 
-		// no checkouts
-		if($r->total == 0) {
-			return [];
-		}
+			$checkoutEntries = array_merge($rawCheckouts->entries, $checkoutEntries);
+			$offset += $limit;
+			$total   = $rawCheckouts->total;
+			$count   = count($checkoutEntries) + 1;
+		} while ($count < $total);
+
 
 		$checkouts = [];
-		foreach($r->entries as $entry) {
+		foreach($checkoutEntries as $entry) {
 			// standard stuff
 			// get checkout id
 			preg_match($this->urlIdRegExp, $entry->id, $m);
@@ -167,6 +179,7 @@ class Sierra {
 				///////////////
 				// INNREACH CHECKOUT
 				///////////////
+				// todo: need to get inn-reach item id.
 				$innReach = new InnReach();
 				$titleAndAuthor = $innReach->getCheckoutTitleAuthor($checkoutId);
 				$coverUrl = $innReach->getInnReachCover();
@@ -1686,12 +1699,15 @@ EOT;
 			}
 			// for sierra, holds can't be frozen if patron is next in line
 			if(isset($hold->priorityQueueLength)) {
-				if((int)$hold->priority <= 2 && (int)$hold->priorityQueueLength >= 2) {
+				if(isset($hold->priority) && ((int)$hold->priority <= 2 && (int)$hold->priorityQueueLength >= 2)) {
 					$freezeable = false;
 				// if the patron is the only person on wait list hold can't be frozen
-				} elseif($hold->priority == 1 && (int)$hold->priorityQueueLength == 1) {
+				} elseif(isset($hold->priority) && ($hold->priority == 1 && (int)$hold->priorityQueueLength == 1)) {
 					$freezeable = false;
-				}
+				// if there is no priority set but queueLength = 1
+				} elseif(!isset($hold->priority) && $hold->priorityQueueLength == 1) {
+					$freezeable = false;
+				} 
 			}
 			$h['status']    = $status;
 			$h['freezeable']= $freezeable;
