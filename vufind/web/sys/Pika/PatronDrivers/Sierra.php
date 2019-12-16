@@ -1287,7 +1287,7 @@ EOT;
 			$params['varFields'][] = ["fieldTag" => "i",
 			                          "content"  => "#"];
 			$params['varFields'][] = ["fieldTag" => "q",
-			                          "content"  => "#"];
+			                          "content"  => "XXXLLFF"];
 			$params['pMessage']    = 'f';
 		}
 		// if library uses pins
