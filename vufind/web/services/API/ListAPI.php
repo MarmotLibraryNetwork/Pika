@@ -21,7 +21,6 @@
 require_once ROOT_DIR . '/AJAXHandler.php';
 require_once ROOT_DIR . '/sys/Pager.php';
 require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
-require_once ROOT_DIR . '/sys/Utils/SwitchDatabase.php';
 require_once ROOT_DIR . '/sys/Utils/Pagination.php';
 
 class ListAPI extends AJAXHandler {
