@@ -21,9 +21,8 @@
  */
 
 require_once ROOT_DIR . '/services/Admin/Admin.php';
-require_once ROOT_DIR . '/sys/ListWidget.php';
-require_once ROOT_DIR . '/sys/ListWidgetList.php';
-require_once ROOT_DIR . '/sys/DataObjectUtil.php';
+require_once ROOT_DIR . '/sys/Widgets/ListWidget.php';
+require_once ROOT_DIR . '/sys/Widgets/ListWidgetList.php';
 
 /**
  * Provides a method of running SQL updates to the database.
@@ -47,11 +46,11 @@ class ListWidgetsListsLinks extends Admin_Admin {
 			case 'save':
 				$this->launchSave();//Yes, there is not a break after this case.
 			case 'edit':
+			default :
 				$this->launchEdit($_REQUEST['widgetId'], $_REQUEST['widgetListId']);
 				break;
 		}
-		$interface->assign('sidebar', 'Search/home-sidebar.tpl');
-		$interface->display('layout.tpl');
+		$this->display('listWidgetListLinks.tpl', 'List Widgets');
 	}
 
 
@@ -90,34 +89,30 @@ class ListWidgetsListsLinks extends Admin_Admin {
 
 	private function launchEdit($widgetId, $widgetListId){
 		global $interface;
-		$interface->setPageTitle('List Widgets');
 
 		//Get Info about the Widget
 		$widget = new ListWidget();
-		$widget->whereAdd('id = ' . $widgetId);
-		$widget->find();
-		$widget->fetch();
+		$widget->get($widgetId);
 		$interface->assign('widgetName', $widget->name);
 		$interface->assign('widgetId', $widget->id);
 
 		//Get Info about the current TAB
-		$widgetList = new ListWidgetList();
-		$widgetList->whereAdd('id = ' . $widgetListId);
-		$widgetList->find();
-		$widgetList->fetch();
+		$widgetList     = new ListWidgetList();
+		$widgetList->id = $widgetListId;
+		$widgetList->find(true);
 		$interface->assign('widgetListName', $widgetList->name);
 
 		//Get all available links
-		$availableLinks  = array();
-		$listWidgetLinks = new ListWidgetListsLinks();
-		$listWidgetLinks->whereAdd('listWidgetListsId = ' . $widgetListId);
+		$availableLinks                     = array();
+		$listWidgetLinks                    = new ListWidgetListsLinks();
+		$listWidgetLinks->listWidgetListsId = $widgetListId;
 		$listWidgetLinks->orderBy('weight ASC');
-		$listWidgetLinks->find();
-		while ($listWidgetLinks->fetch()){
-			$availableLinks[$listWidgetLinks->id] = clone($listWidgetLinks);
+		if ($listWidgetLinks->find()){
+			while ($listWidgetLinks->fetch()){
+				$availableLinks[$listWidgetLinks->id] = clone($listWidgetLinks);
+			}
 		}
 		$interface->assign('availableLinks', $availableLinks);
-		$interface->setTemplate('listWidgetListLinks.tpl');
 	}
 
 	private function setRequestValues($id, $name, $listWidgetListsId, $link, $weight){

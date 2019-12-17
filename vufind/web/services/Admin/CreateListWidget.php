@@ -20,8 +20,8 @@
 
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/Admin.php';
-require_once ROOT_DIR . '/sys/ListWidget.php';
-require_once ROOT_DIR . '/sys/ListWidgetList.php';
+require_once ROOT_DIR . '/sys/Widgets/ListWidget.php';
+require_once ROOT_DIR . '/sys/Widgets/ListWidgetList.php';
 require_once ROOT_DIR . '/sys/DataObjectUtil.php';
 
 /**

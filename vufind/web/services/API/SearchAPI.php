@@ -547,9 +547,9 @@ class SearchAPI extends AJAXHandler {
 			$user = UserAccount::getLoggedInUser();
 		}
 		//Load the widget configuration
-		require_once ROOT_DIR . '/sys/ListWidget.php';
-		require_once ROOT_DIR . '/sys/ListWidgetList.php';
-		require_once ROOT_DIR . '/sys/ListWidgetListsLinks.php';
+		require_once ROOT_DIR . '/sys/Widgets/ListWidget.php';
+		require_once ROOT_DIR . '/sys/Widgets/ListWidgetList.php';
+		require_once ROOT_DIR . '/sys/Widgets/ListWidgetListsLinks.php';
 		$widget = new ListWidget();
 		$id     = $_REQUEST['id'];
 
@@ -601,9 +601,6 @@ class SearchAPI extends AJAXHandler {
 		require_once ROOT_DIR . '/sys/' . $configArray['Index']['engine'] . '.php';
 		$timer->logTime('Include search engine');
 
-		//setup the results array.
-		$jsonResults = array();
-
 		// Initialise from the current search globals
 		/** @var SearchObject_Solr $searchObject */
 		$searchObject = SearchObjectFactory::initSearchObject();
@@ -646,9 +643,6 @@ class SearchAPI extends AJAXHandler {
 		// Include Search Engine Class
 		require_once ROOT_DIR . '/sys/' . $configArray['Index']['engine'] . '.php';
 		$timer->logTime('Include search engine');
-
-		//setup the results array.
-		$jsonResults = array();
 
 		// Initialise from the current search globals
 		/** @var SearchObject_Solr $searchObject */
