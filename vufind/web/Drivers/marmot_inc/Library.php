@@ -49,8 +49,8 @@ class Library extends DB_DataObject {
 	public $includeOutOfSystemExternalLinks;
 	public $allowProfileUpdates;   //tinyint(4)
 	public $allowFreezeHolds;   //tinyint(4)
-	public $scope; 					//smallint(6)
-	public $useScope;		 		//tinyint(4)
+	public $scope; 					//smallint(6) // The Sierra OPAC scope
+	public $useScope;		 		//tinyint(4) //TODO: this is ambiguous with Sierra OPAC scope, probably best to replace occurrences with the $restrictSearchByLibrary setting
 	public $hideCommentsWithBadWords; //tinyint(4)
 	public $showStandardReviews;
 	public $showHoldButton;
@@ -380,7 +380,7 @@ class Library extends DB_DataObject {
 		$hooplaSettingsStructure = LibraryHooplaSettings::getObjectStructure();
 		unset($hooplaSettingsStructure['libraryId']);
 
-		require_once ROOT_DIR . '/sys/ListWidget.php';
+		require_once ROOT_DIR . '/sys/Widgets/ListWidget.php';
 		$widget = new ListWidget();
 		if ((UserAccount::userHasRole('libraryAdmin') || UserAccount::userHasRole('contentEditor')) && !UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('libraryManager') || UserAccount::userHasRole('locationManager')){
 			$patronLibrary = Library::getPatronHomeLibrary();
