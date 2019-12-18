@@ -434,22 +434,6 @@ class DBMaintenance extends Admin_Admin {
 					),
 				),
 
-				'externalLinkTracking' => array(
-					'title' => 'Create External Link Tracking Table',
-					'description' => 'Build table to track links to external sites from 856 tags or eContent',
-					'sql' => array(
-						'CREATE TABLE IF NOT EXISTS external_link_tracking (' .
-						'externalLinkId int(11) NOT NULL AUTO_INCREMENT, ' .
-						'ipAddress varchar(30) NULL, ' .
-						'recordId varchar(50) NOT NULL, ' .
-						'linkUrl varchar(400) NOT NULL, ' .
-						'linkHost varchar(200) NOT NULL, ' .
-						'trackingDate timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP, ' .
-						'PRIMARY KEY (externalLinkId) ' .
-						') ENGINE=InnoDB',
-					),
-				),
-
 				'readingHistoryUpdate1' => array(
 					'title' => 'Reading History Update 1',
 					'description' => 'Update reading History to include an id table',
@@ -944,15 +928,11 @@ class DBMaintenance extends Admin_Admin {
 						"ALTER TABLE comments CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
 						"ALTER TABLE db_update CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
 						"ALTER TABLE editorial_reviews CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
-						"ALTER TABLE external_link_tracking CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
 						"ALTER TABLE ip_lookup CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
 						"ALTER TABLE library CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
 						"ALTER TABLE list_widgets CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
 						"ALTER TABLE list_widget_lists CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
 						"ALTER TABLE location CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
-						//"ALTER TABLE nonHoldableLocations CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
-						//"ALTER TABLE ptype_restricted_locations CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
-						//"ALTER TABLE purchase_link_tracking CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
 						"ALTER TABLE resource CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
 						"ALTER TABLE resource_tags CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
 						"ALTER TABLE roles CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
@@ -961,7 +941,6 @@ class DBMaintenance extends Admin_Admin {
 						"ALTER TABLE session CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
 						"ALTER TABLE spelling_words CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
 						"ALTER TABLE tags CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
-						//"ALTER TABLE usage_tracking CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
 						"ALTER TABLE user CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
 						"ALTER TABLE user_list CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
 						"ALTER TABLE user_reading_history CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
@@ -1395,19 +1374,6 @@ class DBMaintenance extends Admin_Admin {
 					),
 				),
 
-				'rename_tables' => array(
-					'title' => 'Rename tables',
-					'description' => 'Rename tables for consistency and cross platform usage',
-					'sql' => array(
-						//Update resource table indexes
-						'RENAME TABLE usageTracking TO usage_tracking',
-						'RENAME TABLE nonHoldableLocations TO non_holdable_locations',
-						'RENAME TABLE pTypeRestrictedLocations TO ptype_restricted_locations',
-						'RENAME TABLE externalLinkTracking TO external_link_tracking',
-//						'RENAME TABLE purchaseLinkTracking TO purchase_link_tracking'
-					),
-				),
-
 				'addTablelistWidgetListsLinks' => array(
 					'title' => 'Widget Lists',
 					'description' => 'Add a new table: list_widget_lists_links',
@@ -1496,43 +1462,6 @@ class DBMaintenance extends Admin_Admin {
 						"ALTER TABLE holiday ADD INDEX Date (`date`) ",
 						"ALTER TABLE holiday ADD INDEX Library (`libraryId`) ",
 						"ALTER TABLE holiday ADD UNIQUE KEY LibraryDate(`date`, `libraryId`) ",
-					),
-				),
-				'book_store' => array(
-					'title' => 'Book store table',
-					'description' => 'Create a table to store information about book stores.',
-					'sql' => array(
-						"CREATE TABLE IF NOT EXISTS book_store(" .
-						"`id` INT(11) NOT NULL AUTO_INCREMENT COMMENT 'The id of the book store', " .
-						"`storeName` VARCHAR(100) NOT NULL COMMENT 'The name of the book store', " .
-						"`link` VARCHAR(256) NOT NULL COMMENT 'The URL prefix for searching', " .
-						"`linkText` VARCHAR(100) NOT NULL COMMENT 'The link text', " .
-						"`image` VARCHAR(256) NOT NULL COMMENT 'The URL to the icon/image to display', " .
-						"`resultRegEx` VARCHAR(100) NOT NULL COMMENT 'The regex used to check the search results', " .
-						"PRIMARY KEY ( `id` )" .
-						") ENGINE = InnoDB"
-					),
-				),
-				'book_store_1' => array(
-					'title' => 'Book store table update 1',
-					'description' => 'Add a default column to determine if a book store should be used if a library does not override.',
-					'sql' => array(
-						"ALTER TABLE book_store ADD COLUMN `showByDefault` TINYINT NOT NULL DEFAULT 1 COMMENT 'Whether or not the book store should be used by default for al library systems.'",
-						"ALTER TABLE book_store CHANGE `image` `image` VARCHAR(256) NULL COMMENT 'The URL to the icon/image to display'",
-					),
-				),
-				'nearby_book_store' => array(
-					'title' => 'Nearby book stores',
-					'description' => 'Create a table to store book stores near a location.',
-					'sql' => array(
-						"CREATE TABLE IF NOT EXISTS nearby_book_store(" .
-						"`id` INT(11) NOT NULL AUTO_INCREMENT COMMENT 'The id of this association', " .
-						"`libraryId` INT(11) NOT NULL COMMENT 'The id of the library', " .
-						"`storeId` INT(11) NOT NULL COMMENT 'The id of the book store', " .
-						"`weight` INT(11) NOT NULL DEFAULT 0 COMMENT 'The listing order of the book store', " .
-						"KEY ( `libraryId`, `storeId` ), " .
-						"PRIMARY KEY ( `id` )" .
-						") ENGINE = InnoDB"
 					),
 				),
 
