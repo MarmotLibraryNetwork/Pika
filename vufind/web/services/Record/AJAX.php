@@ -109,10 +109,10 @@ class Record_AJAX extends AJAXHandler {
 			require_once ROOT_DIR . '/Drivers/marmot_inc/PType.php';
 			$maxHolds = -1;
 			//Determine if we should show a warning
-			$ptype        = new PType();
-			$ptype->pType = UserAccount::getUserPType();
-			if ($ptype->find(true)){
-				$maxHolds = $ptype->maxHolds;
+			$pType        = new PType();
+			$pType->pType = UserAccount::getUserPType();
+			if ($pType->find(true)){
+				$maxHolds = $pType->maxHolds;
 			}
 			$currentHolds = $user->numHoldsIls;
 			//TODO: this check will need to account for linked accounts now
@@ -173,8 +173,12 @@ class Record_AJAX extends AJAXHandler {
 				$results = array(
 					'title'        => empty($title) ? 'Place Hold' : 'Place Hold on ' . $title,
 					'modalBody'    => $interface->fetch("Record/hold-popup.tpl"),
-					'modalButtons' => "<input type='submit' name='submit' id='requestTitleButton' value='Submit Hold Request' class='btn btn-primary' onclick=\"trackHoldTitleClick('{$sourceAndId}'); return VuFind.Record.submitHoldForm();\">",
+					'modalButtons' => "<input type='submit' name='submit' id='requestTitleButton' value='Submit Hold Request' class='btn btn-primary' onclick=\"return VuFind.Record.submitHoldForm();\">",
 				);
+			}
+			if (!empty($interface->getVariable('googleAnalyticsId'))){ // this template variable gets set in the bootstap
+				$results['modalButtons'] = "<input type='submit' name='submit' id='requestTitleButton' value='Submit Hold Request' class='btn btn-primary' onclick=\"trackHoldTitleClick('{$sourceAndId}'); return VuFind.Record.submitHoldForm();\">";
+
 			}
 
 		}else{
