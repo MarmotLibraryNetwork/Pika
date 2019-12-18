@@ -380,22 +380,6 @@ class Library extends DB_DataObject {
 		$hooplaSettingsStructure = LibraryHooplaSettings::getObjectStructure();
 		unset($hooplaSettingsStructure['libraryId']);
 
-		require_once ROOT_DIR . '/sys/Widgets/ListWidget.php';
-		$widget = new ListWidget();
-		if ((UserAccount::userHasRole('libraryAdmin') || UserAccount::userHasRole('contentEditor')) && !UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('libraryManager') || UserAccount::userHasRole('locationManager')){
-			$patronLibrary = Library::getPatronHomeLibrary();
-			if ($patronLibrary){
-				$widget->libraryId = $patronLibrary->libraryId;
-			}
-		}
-		$availableWidgets = array();
-		$widget->orderBy('name');
-		$widget->find();
-		$availableWidgets[0] = 'No Widget';
-		while ($widget->fetch()){
-			$availableWidgets[$widget->id] = $widget->name;
-		}
-
 		$sharedOverdriveCollectionChoices = array();
 		global $configArray;
 		if (!empty($configArray['OverDrive']['accountId'])) {
