@@ -131,7 +131,6 @@ class ExternalReviews {
 		global $locationSingleton;
 		global $configArray;
 		global $timer;
-		global $logger;
 
 		$review = array();
 		$location = $locationSingleton->getActiveLocation();
@@ -154,7 +153,8 @@ class ExternalReviews {
 				$sourceList[$key] = array('title' => $label, 'file' => "$key.XML");
 			}
 		}else{
-			$sourceList = array(/*'CHREVIEW' => array('title' => 'Choice Review',
+			$sourceList = array(
+				/*'CHREVIEW' => array('title' => 'Choice Review',
 			'file' => 'CHREVIEW.XML'),*/
 	                            'BLREVIEW' => array('title' => 'Booklist Review',
 	                                                'file' => 'BLREVIEW.XML'),
@@ -169,7 +169,8 @@ class ExternalReviews {
 			 'KIREVIEW' => array('title' => 'Kirkus Book Review',
 			 'file' => 'KIREVIEW.XML'),
 			 'CRITICASEREVIEW' => array('title' => 'Criti Case Review',
-			 'file' => 'CRITICASEREVIEW.XML')*/);
+			 'file' => 'CRITICASEREVIEW.XML')*/
+			);
 		}
 		$timer->logTime("Got list of syndetic reviews to show");
 
@@ -182,92 +183,66 @@ class ExternalReviews {
 		//find out if there are any reviews
 		try {
 			$curl     = new Curl();
-			$response = $curl->get($url);
+			$curl->setXmlDecoder('DOMDocument::loadXML');
+			/** @var DOMDocument $xmlDoc */
+			$xmlDoc = $curl->get($url);
 		} catch (Exception $e){
-			//TODO: Add logger
+			$this->logger->error($e->getMessage(), ['stacktrace'=>$e->getTraceAsString()]);
 			return [];
 		}
 		if ($curl->isCurlError()) {
-			//TODO: Add logger
+			$message = 'curl Error: '.$curl->getCurlErrorCode().': '.$curl->getCurlErrorMessage();
+			$this->logger->warning($message);
 			return [];
 		}
 
 
-		$client = new Proxy_Request();
-		$client->setMethod(HTTP_REQUEST_METHOD_GET);
-		$client->setURL($url);
-		if (PEAR_Singleton::isError($http = $client->sendRequest())) {
-			// @codeCoverageIgnoreStart
-			$logger->log("Error connecting to $url", PEAR_LOG_ERR);
-			$logger->log("$http", PEAR_LOG_ERR);
-			return $http;
-			// @codeCoverageIgnoreEnd
-		}
-
-		// Test XML Response
-		if (!($xmldoc = @DOMDocument::loadXML($client->getResponseBody()))) {
-			// @codeCoverageIgnoreStart
-			$logger->log("Did not receive XML from $url", PEAR_LOG_ERR);
-			return new PEAR_Error('Invalid XML');
-			// @codeCoverageIgnoreEnd
-		}
 
 		$review = array();
 		$i = 0;
-		foreach ($sourceList as $source => $sourceInfo) {
-			$nodes = $xmldoc->getElementsByTagName($source);
-			if ($nodes->length) {
+		foreach ($sourceList as $source => $sourceInfo){
+			$nodes = $xmlDoc->getElementsByTagName($source);
+			if ($nodes->length){
 				// Load reviews
 				$url = $baseUrl . '/index.aspx?isbn=' . $this->isbn . '/' .
-				$sourceInfo['file'] . '&client=' . $id . '&type=rw12,hw7';
-				$client->setURL($url);
-				if (PEAR_Singleton::isError($http = $client->sendRequest())) {
-					// @codeCoverageIgnoreStart
-					$logger->log("Error connecting to $url", PEAR_LOG_ERR);
-					$logger->log("$http", PEAR_LOG_ERR);
+					$sourceInfo['file'] . '&client=' . $id . '&type=rw12,hw7';
+
+				/** @var DOMDocument $xmlDoc2 */
+				$xmlDoc2 = $curl->get($url);
+				if ($curl->isCurlError()){
+					$message = 'curl Error: ' . $curl->getCurlErrorCode() . ': ' . $curl->getCurlErrorMessage();
+					$this->logger->error($message);
+					$this->logger->error($xmlDoc2);
 					continue;
-					// @codeCoverageIgnoreEnd
 				}
 
 				// Test XML Response
-				$responseBody = $client->getResponseBody();
-				if (!($xmldoc2 = @DOMDocument::loadXML($responseBody))) {
-					// @codeCoverageIgnoreStart
-					return new PEAR_Error('Invalid XML');
-					// @codeCoverageIgnoreEnd
+				if ($xmlDoc2 === false){
+					$this->logger->error('Invalid XML from ' . $url);
+					continue;
 				}
 
 				// Get the marc field for reviews (520)
-				$nodes = $xmldoc2->GetElementsbyTagName("Fld520");
-				if (!$nodes->length) {
-					// @codeCoverageIgnoreStart
+				$nodes = $xmlDoc2->GetElementsbyTagName("Fld520");
+				if (!$nodes->length){
 					// Skip reviews with missing text
 					continue;
-					// @codeCoverageIgnoreEnd
 				}
-				$review[$i]['Content'] = html_entity_decode($xmldoc2->saveXML($nodes->item(0)));
-				$review[$i]['Content'] = str_replace("<a>","<p>",$review[$i]['Content']);
-				$review[$i]['Content'] = str_replace("</a>","</p>",$review[$i]['Content']);
+				$review[$i]['Content'] = html_entity_decode($xmlDoc2->saveXML($nodes->item(0)));
+				$review[$i]['Content'] = str_ireplace("<a>", "<p>", $review[$i]['Content']);
+				$review[$i]['Content'] = str_ireplace("</a>", "</p>", $review[$i]['Content']);
 
 				// Get the marc field for copyright (997)
-				$nodes = $xmldoc2->GetElementsbyTagName("Fld997");
-				if ($nodes->length) {
-					$review[$i]['Copyright'] = html_entity_decode($xmldoc2->saveXML($nodes->item(0)));
-				} else {
-					// @codeCoverageIgnoreStart
-					$review[$i]['Copyright'] = null;
-					// @codeCoverageIgnoreEnd
-				}
+				$nodes = $xmlDoc2->GetElementsbyTagName("Fld997");
+				$review[$i]['Copyright'] = ($nodes->length) ? null : html_entity_decode($xmlDoc2->saveXML($nodes->item(0)));
 
 				//Check to see if the copyright is contained in the main body of the review and if so, remove it.
 				//Does not happen often.
-				if ($review[$i]['Copyright']) {  //stop duplicate copyrights
+				if ($review[$i]['Copyright']){  //stop duplicate copyrights
 					$location = strripos($review[0]['Content'], $review[0]['Copyright']);
-					// @codeCoverageIgnoreStart
-					if ($location > 0) {
+					if ($location > 0){
 						$review[$i]['Content'] = substr($review[0]['Content'], 0, $location);
 					}
-					// @codeCoverageIgnoreEnd
 				}
 
 				$review[$i]['Source']   = $sourceInfo['title'];  //changes the xml to actual title

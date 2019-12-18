@@ -278,23 +278,6 @@ class DBMaintenance extends Admin_Admin {
 					),
 				),
 
-				'purchase_link_tracking' => array(
-					'title' => 'Create Purchase Link Tracking Table',
-					'description' => 'Create Purchase Links tables to track links that were clicked',
-					'sql' => array(
-						'CREATE TABLE IF NOT EXISTS purchase_link_tracking (' .
-						'purchaseLinkId int(11) NOT NULL AUTO_INCREMENT, ' .
-						'ipAddress varchar(30) NULL, ' .
-						'recordId VARCHAR(50) NOT NULL, ' .
-						'store VARCHAR(255) NOT NULL, ' .
-						'trackingDate timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP, ' .
-						'PRIMARY KEY (purchaseLinkId) ' .
-						') ENGINE=InnoDB',
-
-						'ALTER TABLE purchase_link_tracking ADD INDEX ( `purchaseLinkId` )',
-					),
-				),
-
 				'resource_update_table' => array(
 					'title' => 'Update resource table',
 					'description' => 'Update resource tracking table to include additional information resources for sorting',
@@ -969,7 +952,7 @@ class DBMaintenance extends Admin_Admin {
 						"ALTER TABLE location CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
 						//"ALTER TABLE nonHoldableLocations CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
 						//"ALTER TABLE ptype_restricted_locations CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
-						"ALTER TABLE purchase_link_tracking CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
+						//"ALTER TABLE purchase_link_tracking CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
 						"ALTER TABLE resource CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
 						"ALTER TABLE resource_tags CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
 						"ALTER TABLE roles CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
@@ -1421,7 +1404,7 @@ class DBMaintenance extends Admin_Admin {
 						'RENAME TABLE nonHoldableLocations TO non_holdable_locations',
 						'RENAME TABLE pTypeRestrictedLocations TO ptype_restricted_locations',
 						'RENAME TABLE externalLinkTracking TO external_link_tracking',
-						'RENAME TABLE purchaseLinkTracking TO purchase_link_tracking'
+//						'RENAME TABLE purchaseLinkTracking TO purchase_link_tracking'
 					),
 				),
 
@@ -1431,38 +1414,6 @@ class DBMaintenance extends Admin_Admin {
 					'sql' => array('addTableListWidgetListsLinks'),
 				),
 
-
-				'millenniumTables' => array(
-					'title' => 'Millennium table setup',
-					'description' => 'Add new tables for millennium installations',
-					'continueOnError' => true,
-					'sql' => array(
-						"CREATE TABLE `millennium_cache` (
-								`recordId` VARCHAR( 20 ) NOT NULL COMMENT 'The recordId being checked',
-								`scope` INT(16) NOT NULL COMMENT 'The scope that was loaded',
-								`holdingsInfo` MEDIUMTEXT NOT NULL COMMENT 'Raw HTML returned from Millennium for holdings',
-								`framesetInfo` MEDIUMTEXT NOT NULL COMMENT 'Raw HTML returned from Millennium on the frameset page',
-								`cacheDate` INT(16) NOT NULL COMMENT 'When the entry was recorded in the cache'
-						) ENGINE = MYISAM COMMENT = 'Caches information from Millennium so we do not have to continually load it.';",
-						"ALTER TABLE `millennium_cache` ADD PRIMARY KEY ( `recordId` , `scope` ) ;",
-
-						"CREATE TABLE IF NOT EXISTS `ptype_restricted_locations` (
-							`locationId` INT(11) NOT NULL AUTO_INCREMENT COMMENT 'A unique id for the non holdable location',
-							`millenniumCode` VARCHAR(5) NOT NULL COMMENT 'The internal 5 letter code within Millennium',
-							`holdingDisplay` VARCHAR(30) NOT NULL COMMENT 'The text displayed in the holdings list within Millennium can use regular expression syntax to match multiple locations',
-							`allowablePtypes` VARCHAR(50) NOT NULL COMMENT 'A list of PTypes that are allowed to place holds on items with this location separated with pipes (|).',
-							PRIMARY KEY (`locationId`)
-						) ENGINE=MYISAM",
-
-						"CREATE TABLE IF NOT EXISTS `non_holdable_locations` (
-							`locationId` INT(11) NOT NULL AUTO_INCREMENT COMMENT 'A unique id for the non holdable location',
-							`millenniumCode` VARCHAR(5) NOT NULL COMMENT 'The internal 5 letter code within Millennium',
-							`holdingDisplay` VARCHAR(30) NOT NULL COMMENT 'The text displayed in the holdings list within Millennium',
-							`availableAtCircDesk` TINYINT(4) NOT NULL COMMENT 'The item is available if the patron visits the circulation desk.',
-							PRIMARY KEY (`locationId`)
-						) ENGINE=MYISAM"
-					),
-				),
 
 				'loan_rule_determiners_1' => array(
 					'title' => 'Loan Rule Determiners',
@@ -1987,27 +1938,6 @@ class DBMaintenance extends Admin_Admin {
 						) ENGINE = MYISAM",
 					),
 				),
-
-				'syndetics_data' => array(
-					'title' => 'Syndetics Data',
-					'description' => 'Stores basic information from Syndetics for efficiency purposes.',
-					'sql' => array(
-						"CREATE TABLE syndetics_data (
-							id INT(11) NOT NULL AUTO_INCREMENT,
-							groupedRecordPermanentId VARCHAR(36),
-							lastUpdate INT(11),
-							hasSyndeticsData TINYINT(1),
-							primaryIsbn VARCHAR(13),
-							primaryUpc VARCHAR(25),
-							description MEDIUMTEXT,
-							tableOfContents MEDIUMTEXT,
-							excerpt MEDIUMTEXT,
-							INDEX(`groupedRecordPermanentId`),
-							PRIMARY KEY(`id`)
-						) ENGINE = MYISAM",
-					),
-				),
-
 
 				'ils_marc_checksums' => array(
 					'title' => 'ILS MARC Checksums',
