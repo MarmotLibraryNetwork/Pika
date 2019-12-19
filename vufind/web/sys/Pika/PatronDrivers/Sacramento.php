@@ -289,6 +289,25 @@ class Sacramento extends Sierra
 		if(!empty($_POST['middlename'])) {
 			$name .= ' ' . trim($_POST['middlename']);
 		}
+		// for sacramento check if the name exists
+		$nameCheckParams = [
+		  'varFieldTag'     => 'n',
+		  'varFieldContent' => $name,
+		  'fields'          => 'names,birthDate'
+		];
+		$nameCheckOperation = 'patrons/find';
+		$nameCheckRes = $this->_doRequest($nameCheckOperation, $nameCheckParams, 'GET');
+		// the api returns an error if it finds more than one patron (silly!) so need to check for "duplicate"
+		// the api returns ALSO returns an error if the name isn't found so be careful here
+		// if $nameCheckRes is not false than a record was found matching the name.
+		if(!$nameCheckRes) {
+			//return false;
+			if(stristr($this->apiLastError, "duplicate")) {
+				return false;
+			}
+		} elseif($nameCheckRes) {
+			return false;
+		}
 		$params['names'][] = $name;
 
 		// address
