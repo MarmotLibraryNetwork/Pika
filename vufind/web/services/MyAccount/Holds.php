@@ -23,8 +23,13 @@ class MyAccount_Holds extends MyAccount{
 
 		// Set Holds settings that are based on the ILS system
 		$ils = $configArray['Catalog']['ils'];
-		// todo: showPosition for Sierra should be a setting in config. For consortium we do not recommend
 		$showPosition                    = ($ils == 'Horizon' || $ils == 'Koha' || $ils == 'Symphony' || $ils == 'CarlX');
+		// for other ils capable of showing hold position.
+		// If $showPosition is already true don't override that setting
+		// #D-3420
+		if(!$showPosition && isset($configArray['OPAC']['showPosition'])) {
+			$showPosition = (boolean)$configArray['OPAC']['showPosition'];
+		}
 		$showExpireTime                  = ($ils == 'Horizon' || $ils == 'Symphony');
 		$suspendRequiresReactivationDate = ($ils == 'Horizon' || $ils == 'CarlX' || $ils == 'Symphony');
 		$canChangePickupLocation         = ($ils != 'Koha');

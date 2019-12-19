@@ -1559,7 +1559,7 @@ EOT;
 		} else {
 			$canUpdatePL = false;
 		}
-		//
+
 		$availableHolds   = [];
 		$unavailableHolds = [];
 		foreach ($holds->entries as $hold) {
@@ -1569,12 +1569,22 @@ EOT;
 			$h['user']            = $displayName;
 
 			// get what's available from this call
-			$h['position']              = isset($hold->priority) ? $hold->priority : 1;
 			$h['frozen']                = $hold->frozen;
 			$h['create']                = strtotime($hold->placed); // date hold created
 			// innreach holds don't include notNeededAfterDate
 			$h['automaticCancellation'] = isset($hold->notNeededAfterDate) ? strtotime($hold->notNeededAfterDate) : null; // not needed after date
 			$h['expire']                = isset($hold->pickupByDate) ? strtotime($hold->pickupByDate) : false; // pick up by date // this isn't available in api v4
+
+			// fix up hold position
+			// #D-3420
+			if (isset($hold->priority) && isset($hold->priorityQueueLength)) {
+				$h['position'] = $hold->priority . ' of ' . $hold->priorityQueueLength;
+			} elseif (isset($hold->priority) && !isset($hold->priorityQueueLength)) {
+				$h['position'] = $hold->priority;
+			} else {
+				$h['position'] = false;
+			}
+
 			// cancel id
 			preg_match($this->urlIdRegExp, $hold->id, $m);
 			$h['cancelId'] = $m[1];
