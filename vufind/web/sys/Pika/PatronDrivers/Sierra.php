@@ -984,14 +984,14 @@ class Sierra {
 
 		if(!$r) {
 			$message = $this->_getPrettyError();
-			return 'Could not update PIN: '. $message;
+			return [['Could not update PIN: '. $message]];
 		}
 		$patron->cat_password = $newPin;
 		$patron->update();
 
 		$this->memCache->delete('patron_'.$patron->barcode.'_patron');
 
-		return 'Your pin number was updated successfully.';
+		return [['Your pin number was updated successfully.']];
 	}
 
 	public function resetPin($patron, $newPin, $resetToken){

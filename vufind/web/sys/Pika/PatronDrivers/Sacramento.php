@@ -109,7 +109,6 @@ class Sacramento extends Sierra
 		// even if this request fails we'll still try to opt out of sms messages
 		if(!$res) {
 			$this->logger->warn("Unable to update patron mobile phone.", ["message"=>$this->apiLastError]);
-			$errors[] = "Could not remove your mobile phone number.";
 		}
 
 		// remove patron object from cache
@@ -138,7 +137,7 @@ class Sacramento extends Sierra
 		}
 
 		$cc->close();
-		return true;
+		return $success;
 	}
 
 	public function hasUsernameField(){
