@@ -1833,7 +1833,8 @@ EOT;
 		$r = $this->_doRequest($operation, $params, "POST");
 
 		// check if error we need to do an item level hold
-		if($this->apiLastError && stristr($this->apiLastError,"Volume record selection is required to proceed")) {
+		if($this->apiLastError && stristr($this->apiLastError,"Volume record selection is required to proceed")
+		   || (stristr($this->apiLastError,"This record is not available") && (integer)$this->configArray['Catalog']['api_version'] == 4)) {
 			$items = $this->getItemVolumes($recordId);
 			$return = [
 				'message' => 'This title requires item level holds, please select an item to place a hold on.',
