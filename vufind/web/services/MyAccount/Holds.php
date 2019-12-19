@@ -3,9 +3,6 @@
  * Shows all titles that are on hold for a user (combines all sources)
  *
  * @category Pika
- * @author Mark Noble <mark@marmot.org>
- * Date: 10/10/13
- * Time: 1:11 PM
  */
 
 require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
@@ -34,6 +31,12 @@ class MyAccount_Holds extends MyAccount{
 		$suspendRequiresReactivationDate = ($ils == 'Horizon' || $ils == 'CarlX' || $ils == 'Symphony');
 		$canChangePickupLocation         = ($ils != 'Koha');
 		$showPlacedColumn                = ($ils == 'Symphony' || $ils == 'Horizon'); //TODO: is this true for earlier versions of Horizon Drivers
+		// for other ils capable of showing date hold was placed.
+		// If $showPlacedColumn is already true don't override that setting
+		// #D-3420
+		if(!$showPlacedColumn && isset($configArray['OPAC']['showDatePlaced'])) {
+			$showPlacedColumn = (boolean)$configArray['OPAC']['showDatePlaced'];
+		}
 		$showDateWhenSuspending          = ($ils == 'Horizon' || $ils == 'CarlX' || $ils == 'Symphony' || $ils == 'Koha');
 		if (isset($configArray['suspend_requires_reactivation_date'])) {
 			$suspendRequiresReactivationDate = $configArray['suspend_requires_reactivation_date'];
