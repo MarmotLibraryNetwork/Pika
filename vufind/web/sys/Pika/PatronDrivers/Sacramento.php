@@ -131,13 +131,13 @@ class Sacramento extends Sierra
 		}
 
 		if (stristr($r, 'Patron information updated')) {
-			$success = true;
+			$errors = false;
 		} else {
-			$success = false;
+			$errors = true;
 		}
 
 		$cc->close();
-		return $success;
+		return $errors;
 	}
 
 	public function hasUsernameField(){
