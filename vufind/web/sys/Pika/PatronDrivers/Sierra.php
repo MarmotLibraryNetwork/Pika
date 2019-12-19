@@ -1584,9 +1584,15 @@ EOT;
 			// fix up hold position
 			// #D-3420
 			if (isset($hold->priority) && isset($hold->priorityQueueLength)) {
-				$h['position'] = $hold->priority . ' of ' . $hold->priorityQueueLength;
+				if($hold->priority == 0) {
+					$holdPriority = 1;
+				}
+				$h['position'] = $holdPriority . ' of ' . $hold->priorityQueueLength;
 			} elseif (isset($hold->priority) && !isset($hold->priorityQueueLength)) {
-				$h['position'] = $hold->priority;
+				if($hold->priority == 0) {
+					$holdPriority = 1;
+				}
+				$h['position'] = $holdPriority;
 			} else {
 				$h['position'] = false;
 			}
@@ -1864,7 +1870,6 @@ EOT;
 				}
 				return $return;
 			}
-
 		}
 		// success! weeee :)
 		$return['success'] = true;
