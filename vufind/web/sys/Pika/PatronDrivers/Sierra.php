@@ -651,18 +651,18 @@ class Sierra {
 				  	// no zip, not a full address
 					  // todo: how to handle, if at all
 				  }
-				} else {
+			  } else {
 				  // 1 line - only one address line -- this could be anything so start checking
 				  $patron->address1 = $homeAddressArray[0];
-					  // does it contain a zip? It might be some like grand junction, co 81501
+				  // does it contain a zip? It might be some like grand junction, co 81501
 				  $zipTest = preg_match($zipRegExp, $homeAddressArray[0], $zipMatch);
-				  if($zipTest === 1) {
+				  if ($zipTest === 1) {
 					  // found a zip
 					  $patronZip = $zipMatch[0];
 					  // find a city and state?
 					  $cityStateTest = preg_match_all($splitRegExp, trim($homeAddressArray[0]), $cityStateMatches);
-					  if($cityStateTest) {
-						  $cityState = $cityStateMatches[1];
+					  if ($cityStateTest) {
+						  $cityState      = $cityStateMatches[1];
 						  $cityStateCount = count($cityState) - 1; // zero index
 						  // state should be last
 						  $patronState = $cityState[$cityStateCount];
@@ -670,91 +670,19 @@ class Sierra {
 						  array_pop($cityState);
 						  $patronCity = implode(' ', $cityState);
 					  } else {
-					  	// well, that should'a matched something
+						  // well, that should'a matched something
+						  // todo: what do to?
 					  }
 				  } else {
-				  	// couldn't find a zip -- not much to do
-
+					  // couldn't find a zip -- not much to do
+					  // todo: what do to?
 				  }
-				}
+			  }
 			}
 		}
 		$patron->city  = $patronCity;
 		$patron->state = $patronState;
 		$patron->zip   = $patronZip;
-		/*
-		if(method_exists($this, 'processPatronAddress')) {
-			// Hook for processing addresses
-			$patron = $this->processPatronAddress($pInfo->addresses, $patron);
-		} else {
-			if(isset($pInfo->addresses) && is_array($pInfo->addresses)){
-				foreach ($pInfo->addresses as $address) {
-					// a = primary address, h = alt address
-					if ($address->type == 'a') {
-						$lineCount = count($address->lines);
-						switch ($lineCount){
-							case 3:
-								// When there are three address lines, this means the first line is something like "Care of" and the rest is the stuff we want
-								$patron->address2 = $address->lines[2];
-								$patron->address1 = $address->lines[1];
-								break 2;
-							case 2:
-								// Set address2 when there are two lines, then go onto case 1 to set address1
-								$patron->address2 = $address->lines[1];
-							case 1:
-								$patron->address1 = $address->lines[0];
-								break 2;
-						}
-					}
-				}
-			}
-			if (!isset($patron->address1)) {
-				$patron->address1 = '';
-			}
-			if (!isset($patron->address2)) {
-				$patron->address2 = '';
-			}
-			// city state zip
-			if (isset($patron->address2) && $patron->address2 != '') {
-				$addressParts = explode(',', $patron->address2);
-				// some libraries may not use ','  after city so make sure we have parts
-				// can assume street as a line and city, st. zip as a line
-				// Note: There are other unusual entries for address as well:
-				// ART
-				// CAMPUS ADDRESS
-				// another:
-				// Words on Wheels Patron Wednesday 1 (Aaron)
-				// another:
-				// Salida Co, 81201 <- comma in the wrong place
-				if (count($addressParts) > 1) {
-					$city          = trim($addressParts[0]);
-					if (!empty($addressParts[1])){
-					$stateZip      = trim($addressParts[1]);
-					$stateZipParts = explode(' ', $stateZip);
-					$state         = trim($stateZipParts[0]);
-						if (!empty($stateZipParts[1])){
-					$zip           = trim($stateZipParts[1]);
-						}
-					}
-				} else {
-					$regExp = "/^([^,]+)\s([A-Z]{2})(?:\s(\d{5}))?$/";
-					preg_match($regExp, $patron->address2, $matches);
-					if ($matches) {
-						$city  = $matches[1];
-						$state = $matches[2];
-						$zip   = $matches[3];
-					}
-				}
-			}
-			$patron->city  = isset($city) ? $city : '';
-			$patron->state = isset($state) ? $state : '';
-			$patron->zip   = isset($zip) ? $zip : '';
-		}
-		$patron->city  = isset($city) ? $city : '';
-		$patron->state = isset($state) ? $state : '';
-		$patron->zip   = isset($zip) ? $zip : '';
-		*/
-
 
 		// 6.5 mobile phone
 		// this triggers sms notifications for libraries using Sierra SMS
@@ -1599,10 +1527,10 @@ EOT;
 
 		$operation = "patrons/".$patronId."/holds";
 		if((integer)$this->configArray['Catalog']['api_version'] > 4) {
-			$params=["fields" => "default,pickupByDate,frozen,priority,priorityQueueLength",
+			$params=["fields" => "default,pickupByDate,frozen,priority,priorityQueueLength,notWantedBeforeDate,notNeededAfterDate",
 			         "limit"  => 1000];
 		} else {
-			$params=["fields" => "default,frozen,priority,priorityQueueLength",
+			$params=["fields" => "default,frozen,priority,priorityQueueLength,notWantedBeforeDate,notNeededAfterDate",
 			         "limit"  => 1000];
 		}
 		$holds = $this->_doRequest($operation, $params);
