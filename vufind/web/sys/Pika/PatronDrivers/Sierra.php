@@ -410,12 +410,12 @@ class Sierra {
 		// we need to monkey with the barcodes. barcodes can change!
 		// self registered users may have something in the api response that looks like this
 		// -- before getting a physical card
-		// $pInfo->barcodes['', '201975']
+		// $pInfo->barcodes['', '201975'] (this is for some marmot online registered accounts where the 2nd barcode is the Sierra id for the barcode, sometimes)
 		// -- after getting a physical card
 		// $pInfo->barcodes['56369856985', '201975']
 		// so we need to look for both barcodes and determine if the temp barcode needs updated to the permanent one
 		$barcode = '';
-		if(count($pInfo->barcodes > 1)) {
+		if(count($pInfo->barcodes) > 1) {
 			// if the first barcode is set this should be the permanent barcode.
 			if($pInfo->barcodes[0] != '') {
 				$barcode = $pInfo->barcodes[0];
@@ -424,6 +424,13 @@ class Sierra {
 					$barcode = $pInfo->barcodes[1];
 				}
 			}
+		} elseif (count($pInfo->barcodes)) {
+			if($pInfo->barcodes[0] != '') {
+				$barcode = $pInfo->barcodes[0];
+			} else {
+				$this->logger->error("Sierra user id $patronId did not return a barcode");
+			}
+
 		}
 		// barcode isn't actually in database, but is stored in User->data['barcode']
 		$patron->barcode = $barcode;
