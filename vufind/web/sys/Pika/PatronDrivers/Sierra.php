@@ -939,7 +939,6 @@ class Sierra {
 			$params['varFields'] = [(object)['fieldTag'=>'i', 'content'=>$altUsername]];
 		}
 
-
 		$operation = 'patrons/'.$patronId;
 		$r = $this->_doRequest($operation, $params, 'PUT');
 
