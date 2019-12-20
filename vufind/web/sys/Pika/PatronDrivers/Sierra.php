@@ -1585,15 +1585,18 @@ EOT;
 			// fix up hold position
 			// #D-3420
 			if (isset($hold->priority) && isset($hold->priorityQueueLength)) {
-				if($hold->priority == 0) {
-					$holdPriority = 1;
+				// sierra api v4 priority is 0 based index so add 1
+				if ($this->configArray['Catalog']['api_version'] == 4 ) {
+					$holdPriority = (integer)$hold->priority + 1;
 				} else {
 					$holdPriority = $hold->priority;
 				}
 				$h['position'] = $holdPriority . ' of ' . $hold->priorityQueueLength;
+
 			} elseif (isset($hold->priority) && !isset($hold->priorityQueueLength)) {
-				if($hold->priority == 0) {
-					$holdPriority = 1;
+				// sierra api v4 priority is 0 based index so add 1
+				if ($this->configArray['Catalog']['api_version'] == 4 ) {
+					$holdPriority = (integer)$hold->priority + 1;
 				} else {
 					$holdPriority = $hold->priority;
 				}
