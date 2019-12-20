@@ -1587,11 +1587,15 @@ EOT;
 			if (isset($hold->priority) && isset($hold->priorityQueueLength)) {
 				if($hold->priority == 0) {
 					$holdPriority = 1;
+				} else {
+					$holdPriority = $hold->priority;
 				}
 				$h['position'] = $holdPriority . ' of ' . $hold->priorityQueueLength;
 			} elseif (isset($hold->priority) && !isset($hold->priorityQueueLength)) {
 				if($hold->priority == 0) {
 					$holdPriority = 1;
+				} else {
+					$holdPriority = $hold->priority;
 				}
 				$h['position'] = $holdPriority;
 			} else {
