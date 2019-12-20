@@ -754,7 +754,7 @@ class Sierra {
 		if($holds && isset($holds['available'])){
 			$patron->numHoldsAvailableIls = count($holds['available']);
 			$patron->numHoldsRequestedIls = count($holds['unavailable']);
-			$patron->numHoldsIls = $patron->numHoldsAvailableIls + $patron->numHoldsRequestedIls;
+			$patron->numHoldsIls          = $patron->numHoldsAvailableIls + $patron->numHoldsRequestedIls;
 		}
 
 		if($createPatron) {
@@ -1555,7 +1555,8 @@ EOT;
 		$displayName  = $patron->getNameAndLibraryLabel();
 		$pikaPatronId = $patron->id;
 		// can we change pickup location?
-		$pickupLocations = $patron->getValidPickupBranches($this->accountProfile->recordSource);
+		$pickupLocations = $patron->getValidPickupBranches($this->accountProfile->recordSource, false);
+		// Need to exclude linked accounts here to prevent infinite loop during patron login in cases where accounts are reciprocally linked
 		if(is_array($pickupLocations)) {
 			if (count($pickupLocations) > 1) {
 				$canUpdatePL = true;

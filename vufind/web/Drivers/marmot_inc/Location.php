@@ -504,7 +504,7 @@ class Location extends DB_DataObject {
 	function getPickupBranches($patronProfile, $selectedBranchId = null, $isLinkedUser = false){
 		// Note: Some calls to this function will set $patronProfile to false. (No Patron is logged in)
 		// For Example: MaterialsRequest_NewRequest
-		$homeLibaryInList       = false;
+		$homeLibraryInList      = false;
 		$alternateLibraryInList = false;
 
 		//Get the library for the patron's home branch.
@@ -568,31 +568,23 @@ class Location extends DB_DataObject {
 				if (isset($physicalLocation) && $physicalLocation->locationId == $this->locationId){
 					//If the user is in a branch, those holdings come first.
 					$locationList['1' . $this->displayName] = clone $this;
+				}elseif (!empty($patronProfile) && $this->locationId == $patronProfile->homeLocationId){
+					//Next come the user's home branch if the user is logged in or has the home_branch cookie set.
+					$locationList['21' . $this->displayName] = clone $this;
+					$homeLibraryInList                       = true;
+				}elseif (isset($patronProfile->myLocation1Id) && $this->locationId == $patronProfile->myLocation1Id){
+					//Next come nearby locations for the user
+					$locationList['3' . $this->displayName] = clone $this;
+					$alternateLibraryInList                 = true;
+				}elseif (isset($patronProfile->myLocation2Id) && $this->locationId == $patronProfile->myLocation2Id){
+					//Next come nearby locations for the user
+					$locationList['4' . $this->displayName] = clone $this;
+				}elseif (isset($homeLibrary) && $this->libraryId == $homeLibrary->libraryId){
+					//Other locations that are within the same library system
+					$locationList['5' . $this->displayName] = clone $this;
 				}else{
-					if (!empty($patronProfile) && $this->locationId == $patronProfile->homeLocationId){
-						//Next come the user's home branch if the user is logged in or has the home_branch cookie set.
-						$locationList['21' . $this->displayName] = clone $this;
-						$homeLibaryInList                        = true;
-					}else{
-						if (isset($patronProfile->myLocation1Id) && $this->locationId == $patronProfile->myLocation1Id){
-							//Next come nearby locations for the user
-							$locationList['3' . $this->displayName] = clone $this;
-							$alternateLibraryInList                 = true;
-						}else{
-							if (isset($patronProfile->myLocation2Id) && $this->locationId == $patronProfile->myLocation2Id){
-								//Next come nearby locations for the user
-								$locationList['4' . $this->displayName] = clone $this;
-							}else{
-								if (isset($homeLibrary) && $this->libraryId == $homeLibrary->libraryId){
-									//Other locations that are within the same library system
-									$locationList['5' . $this->displayName] = clone $this;
-								}else{
-									//Finally, all other locations are shown sorted alphabetically.
-									$locationList['6' . $this->displayName] = clone $this;
-								}
-							}
-						}
-					}
+					//Finally, all other locations are shown sorted alphabetically.
+					$locationList['6' . $this->displayName] = clone $this;
 				}
 			}
 		}
@@ -625,7 +617,7 @@ class Location extends DB_DataObject {
 						if (!$isLinkedUser){
 							$homeLocation->selected                         = true;
 							$locationList['1' . $homeLocation->displayName] = clone $homeLocation;
-							$homeLibaryInList                               = true;
+							$homeLibraryInList                               = true;
 						}else{
 							$locationList['22' . $homeLocation->displayName] = clone $homeLocation;
 						}
@@ -634,7 +626,7 @@ class Location extends DB_DataObject {
 			}
 		}
 
-		if (!$homeLibaryInList && !$alternateLibraryInList && !$isLinkedUser){
+		if (!$homeLibraryInList && !$alternateLibraryInList && !$isLinkedUser){
 			$locationList['0default'] = "Please Select a Location";
 		}
 
