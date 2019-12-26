@@ -11,14 +11,13 @@
 require_once 'DB/DataObject.php';
 require_once 'DB/DataObject/Cast.php';
 
-class UserRoles extends DB_DataObject
-{
+class UserRoles extends DB_DataObject {
 
 	public $__table = 'user_roles';// table name
 	public $userId; // int(11)
 	public $roleId; // int(11)
 
-	function keys() {
+	function keys(){
 		return array('userId', 'roleId');
 	}
 

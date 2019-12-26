@@ -93,15 +93,16 @@ abstract class ObjectEditor extends Admin_Admin
 	 */
 	abstract function getIdKeyColumn();
 
+//TODO: delete or use
 	function getExistingObjectByPrimaryKey($objectType, $value){
 		$primaryKeyColumn = $this->getPrimaryKeyColumn();
-		/** @var DB_DataObject $curLibrary */
-		$curLibrary = new $objectType();
-		$curLibrary->$primaryKeyColumn = $value;
-		$curLibrary->find();
-		if ($curLibrary->N == 1){
-			$curLibrary->fetch();
-			return $curLibrary;
+		/** @var DB_DataObject $dataObject */
+		$dataObject = new $objectType();
+		$dataObject->$primaryKeyColumn = $value;
+		$dataObject->find();
+		if ($dataObject->N == 1){
+			$dataObject->fetch();
+			return $dataObject;
 		}else{
 			return null;
 		}
@@ -110,13 +111,13 @@ abstract class ObjectEditor extends Admin_Admin
 	function getExistingObjectById($id){
 		$objectType = $this->getObjectType();
 		$idColumn   = $this->getIdKeyColumn();
-		/** @var DB_DataObject $curLibrary */
-		$curLibrary            = new $objectType;
-		$curLibrary->$idColumn = $id;
-		$curLibrary->find();
-		if ($curLibrary->N == 1){
-			$curLibrary->fetch();
-			return $curLibrary;
+		/** @var DB_DataObject $dataObject */
+		$dataObject            = new $objectType;
+		$dataObject->$idColumn = $id;
+		$dataObject->find();
+		if ($dataObject->N == 1){
+			$dataObject->fetch();
+			return $dataObject;
 		}else{
 			return null;
 		}

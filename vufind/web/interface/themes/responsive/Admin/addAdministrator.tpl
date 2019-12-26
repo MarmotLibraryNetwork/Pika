@@ -5,12 +5,12 @@
 	{/if}
 	<form name="addAdministrator" method="post" enctype="multipart/form-data" class="form-horizontal">
 		<fieldset>
-			<legend><h3>Setup a new administrator</h3></legend>
+			<legend><h3>Setup a New Administrator</h3></legend>
 			<input type="hidden" name="objectAction" value="processNewAdministrator">
 			<div class="row form-group">
-				<label for="login" class="col-sm-2 control-label">Barcode: </label>
+				<label for="barcode" class="col-sm-2 control-label">Barcode: </label>
 				<div class="col-sm-10">
-					<input type="text" name="login" id="login" class="form-control">
+					<input type="text" name="barcode" id="barcode" class="form-control"{if $barcode} value="{$barcode}"{/if}>
 				</div>
 			</div>
 			<div class="alert alert-info">
@@ -47,7 +47,7 @@
 			</div>
 			<div class="form-group">
 				<div class="controls">
-					<input type="submit" name="submit" value="Update User" class="btn btn-primary">  <a href='{$path}/Admin/{$toolName}?objectAction=list' class="btn btn-default">Return to List</a>
+					<input type="submit" name="submit" value="Add Administrator" class="btn btn-primary">  <a href='{$path}/Admin/{$toolName}?objectAction=list' class="btn btn-default">Return to List</a>
 				</div>
 			</div>
 		</fieldset>

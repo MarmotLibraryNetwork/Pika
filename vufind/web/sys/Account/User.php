@@ -620,37 +620,40 @@ class User extends DB_DataObject {
 	}
 
 	function getObjectStructure(){
-		//Lookup available roles in the system
 		require_once ROOT_DIR . '/sys/Administration/Role.php';
-		$roleList = Role::getLookup();
-
-		$structure = array(
-			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Administrator Id', 'description' => 'The unique id of the in the system'),
-			'firstname' => array('property' => 'firstname', 'type' => 'label', 'label' => 'First Name', 'description' => 'The first name for the user.'),
-			'lastname' => array('property' => 'lastname', 'type' => 'label', 'label' => 'Last Name', 'description' => 'The last name of the user.'),
+		global $configArray;
+		$barcodeProperty        = $configArray['Catalog']['barcodeProperty'];
+		$displayBarcode         = $barcodeProperty == 'cat_username';
+		$thisIsNotAListOfAdmins = isset($_REQUEST['objectAction']) && $_REQUEST['objectAction'] != 'list';
+		$roleList               = Role::fetchAllRoles($thisIsNotAListOfAdmins);  //Lookup available roles in the system, don't show the role description
+		$structure              = array(
+			'id'              => array('property' => 'id', 'type' => 'label', 'label' => 'Administrator Id', 'description' => 'The unique id of the in the system'),
+			'firstname'       => array('property' => 'firstname', 'type' => 'label', 'label' => 'First Name', 'description' => 'The first name for the user.'),
+			'lastname'        => array('property' => 'lastname', 'type' => 'label', 'label' => 'Last Name', 'description' => 'The last name of the user.'),
 			'homeLibraryName' => array('property' => 'homeLibraryName', 'type' => 'label', 'label' => 'Home Library', 'description' => 'The library the user belongs to.'),
-			'homeLocation' => array('property' => 'homeLocation', 'type' => 'label', 'label' => 'Home Location', 'description' => 'The branch the user belongs to.'),
+			'homeLocation'    => array('property' => 'homeLocation', 'type' => 'label', 'label' => 'Home Location', 'description' => 'The branch the user belongs to.'),
 		);
 
-		global $configArray;
-		$barcodeProperty      = $configArray['Catalog']['barcodeProperty'];
-		$structure['barcode'] = array('property' => $barcodeProperty, 'type' => 'label', 'label' => 'Barcode', 'description' => 'The barcode for the user.');
+		if ($displayBarcode || $thisIsNotAListOfAdmins){
+			//When not displaying barcode, show it for the individual admin
+			$structure['barcode'] = array('property' => $barcodeProperty, 'type' => 'label', 'label' => 'Barcode', 'description' => 'The barcode for the user.');
+		}
 
 		$structure['roles'] = array('property' => 'roles', 'type' => 'multiSelect', 'listStyle' => 'checkbox', 'values' => $roleList, 'label' => 'Roles', 'description' => 'A list of roles that the user has.');
 
 		return $structure;
 	}
 
-	function getFilters(){
+/*	function getFilters(){
 		require_once ROOT_DIR . '/sys/Administration/Role.php';
-		$roleList     = Role::getLookup();
+		$roleList     = Role::fetchAllRoles();
 		$roleList[-1] = 'Any Role';
 		return array(
 			array('filter' => 'role', 'type' => 'enum', 'values' => $roleList, 'label' => 'Role'),
 			array('filter' => 'cat_password', 'type' => 'text', 'label' => 'Login'),
 			array('filter' => 'cat_username', 'type' => 'text', 'label' => 'Name'),
 		);
-	}
+	}*/
 
 	function hasRatings(){
 		require_once ROOT_DIR . '/sys/LocalEnrichment/UserWorkReview.php';
