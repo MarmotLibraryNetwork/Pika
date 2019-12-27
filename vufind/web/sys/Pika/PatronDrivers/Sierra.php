@@ -628,10 +628,12 @@ class Sierra {
 			// found a home address
 			if($homeAddressArray) {
 				$addressLineCount = count($homeAddressArray);
-				// 3 lines - if we have three lines the first is c/o or something similar, currently don't need
+				// 3 lines - if we have three lines the first is c/o or something similar
 				if ($addressLineCount == 3) {
+					// set care of
+					$patron->careOf = $homeAddressArray[0];
 					array_shift($homeAddressArray); // shift off the first line
-					$addressLineCount = count($homeAddressArray); // reset line count
+					$addressLineCount = count($homeAddressArray); // reset line count and continue
 				}
 				// 2 lines (or previously 3) - if we have at least 2 lines we should have a full address
 			  if($addressLineCount == 2) {
