@@ -1078,6 +1078,7 @@ class CatalogConnection
 			}
 		}
 		elseif (!empty($readingHistoryDB->source) && !empty($readingHistoryDB->sourceId)){
+			require_once ROOT_DIR . '/services/SourceAndId.php';
 			$sourceAndID = new sourceAndId($readingHistoryDB->source . ':' . $readingHistoryDB->sourceId);
 			$recordDriver = RecordDriverFactory::initRecordDriverById($sourceAndID);
 			if (!empty($recordDriver) && $recordDriver->isValid()){
