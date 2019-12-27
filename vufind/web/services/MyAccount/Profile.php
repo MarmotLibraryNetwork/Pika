@@ -47,7 +47,7 @@ class MyAccount_Profile extends MyAccount
 			$linkedUsers = $user->getLinkedUsers();
 			$patronId    = isset($_REQUEST['patronId']) ? $_REQUEST['patronId'] : $user->id;
 			/** @var User $patron */
-			$patron      = $user->getUserReferredTo($patronId);
+			$patron = $user->getUserReferredTo($patronId);
 
 			// Linked Accounts Selection Form set-up
 			if (count($linkedUsers) > 0) {
@@ -60,7 +60,7 @@ class MyAccount_Profile extends MyAccount
 			global $librarySingleton;
 			// Get Library Settings from the home library of the current user-account being displayed
 			$patronHomeLibrary = $librarySingleton->getPatronHomeLibrary($patron);
-			if ($patronHomeLibrary == null){
+			if ($patronHomeLibrary == null) {
 				$canUpdateContactInfo                 = true;
 				$canUpdateAddress                     = true;
 				$showWorkPhoneInProfile               = false;
@@ -70,7 +70,7 @@ class MyAccount_Profile extends MyAccount
 				$allowPinReset                        = false;
 				$showAlternateLibraryOptionsInProfile = true;
 				$allowAccountLinking                  = true;
-			}else{
+			} else {
 				$canUpdateContactInfo                 = ($patronHomeLibrary->allowProfileUpdates == 1);
 				$canUpdateAddress                     = ($patronHomeLibrary->allowPatronAddressUpdates == 1);
 				$showWorkPhoneInProfile               = ($patronHomeLibrary->showWorkPhoneInProfile == 1);
@@ -80,7 +80,7 @@ class MyAccount_Profile extends MyAccount
 				$allowPinReset                        = ($patronHomeLibrary->allowPinReset == 1);
 				$showAlternateLibraryOptionsInProfile = ($patronHomeLibrary->showAlternateLibraryOptionsInProfile == 1);
 				$allowAccountLinking                  = ($patronHomeLibrary->allowLinkedAccounts == 1);
-				if (($user->finesVal > $patronHomeLibrary->maxFinesToAllowAccountUpdates) && ($patronHomeLibrary->maxFinesToAllowAccountUpdates > 0)){
+				if (($user->finesVal > $patronHomeLibrary->maxFinesToAllowAccountUpdates) && ($patronHomeLibrary->maxFinesToAllowAccountUpdates > 0)) {
 					$canUpdateContactInfo = false;
 					$canUpdateAddress     = false;
 				}
@@ -113,6 +113,10 @@ class MyAccount_Profile extends MyAccount
 
 			// Save/Update Actions
 			global $offlineMode;
+			// TODO: This should be dynamic
+			// if(method_exits($patron, $updateScope)) {
+			//    $patron->$updateScope
+			// }
 			if (isset($_POST['updateScope']) && !$offlineMode) {
 				$updateScope = $_REQUEST['updateScope'];
 				if ($updateScope == 'contact') {

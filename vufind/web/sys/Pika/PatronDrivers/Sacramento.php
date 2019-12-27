@@ -9,6 +9,7 @@
  */
 namespace Pika\PatronDrivers;
 
+use Curl\Curl;
 use DateInterval;
 use DateTime;
 use InvalidArgumentException;
@@ -19,6 +20,124 @@ class Sacramento extends Sierra
 	{
 		parent::__construct($accountProfile);
 		$this->logger->info('Using driver: Pika\PatronDrivers\Sacramento');
+	}
+
+	public function updateSms($patron) {
+		$patronId = $this->getPatronId($patron);
+
+		$cc = new Curl();
+		// base url for following calls
+		$vendorOpacUrl = $this->accountProfile->vendorOpacUrl;
+
+		$headers = [
+		 "Accept"         => "text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5",
+		 "Cache-Control"  => "max-age=0",
+		 "Connection"     => "keep-alive",
+		 "Accept-Charset" => "ISO-8859-1,utf-8;q=0.7,*;q=0.7",
+		 "Accept-Language"=> "en-us,en;q=0.5",
+		 "User-Agent"     => "Pika"
+		];
+		$cc->setHeaders($headers);
+
+		$cookie = tempnam("/tmp", "CURLCOOKIE");
+		$curlOpts  = [
+		 CURLOPT_CONNECTTIMEOUT    => 20,
+		 CURLOPT_TIMEOUT           => 60,
+		 CURLOPT_RETURNTRANSFER    => true,
+		 CURLOPT_FOLLOWLOCATION    => true,
+		 CURLOPT_UNRESTRICTED_AUTH => true,
+		 CURLOPT_COOKIEJAR         => $cookie,
+		 CURLOPT_COOKIESESSION     => false,
+		 CURLOPT_HEADER            => false,
+		 CURLOPT_AUTOREFERER       => true,
+		];
+		$cc->setOpts($curlOpts);
+
+		// first log patron in
+		if($this->accountProfile->loginConfiguration == "barcode_pin") {
+			$postData = [
+			 'code' => $patron->cat_username,
+			 'pin'  => $patron->cat_password
+			];
+		} else {
+			$postData = [
+			 'name' => $patron->cat_username,
+			 'code' => $patron->cat_password
+			];
+		}
+		$loginUrl = $vendorOpacUrl . '/patroninfo/';
+		$r = $cc->post($loginUrl, $postData);
+
+		if($cc->isError()) {
+			$cc->close();
+			return false;
+		}
+
+		if(!stristr($r, $patron->cat_username)) {
+			// check for cas login. do cas login if possible
+			$casUrl = '/iii/cas/login';
+			if(stristr($r, $casUrl)) {
+				$this->logger->info('Trying cas login.');
+				preg_match('|<input type="hidden" name="lt" value="(.*)"|', $r, $m);
+				if($m) {
+					$postData['lt']       = $m[1];
+					$postData['_eventId'] = 'submit';
+				} else {
+					return false;
+				}
+				$casLoginUrl = $vendorOpacUrl.$casUrl;
+				$r = $cc->post($casLoginUrl, $postData);
+				if(!stristr($r, $patron->cat_username)) {
+					$this->logger->warning('cas login failed.');
+					return false;
+				}
+				$this->logger->info('cas login success.');
+			}
+		}
+
+		// first update mobile #
+		if(isset($_POST['smsNotices']) && $_POST['smsNotices'] == 'on') {
+			$mobileNumber = trim($_POST['mobileNumber']);
+			$phones[] = ['number'=>$mobileNumber, 'type'=>'o'];
+		} else {
+			$phones[] = ['number'=>' ', 'type'=>'o']; #todo: does api accept empty for updates?
+		}
+		$apiParams = ['phones' => $phones];
+		// to note: calling _doRequest will create a new instance of Curl so we won't destroy the cookie jar
+		$operation = 'patrons/'.$patronId;
+		$res = $this->_doRequest($operation, $apiParams, 'PUT');
+		// even if this request fails we'll still try to opt out of sms messages
+		if(!$res) {
+			$this->logger->warn("Unable to update patron mobile phone.", ["message"=>$this->apiLastError]);
+		}
+
+		// remove patron object from cache
+		$this->memCache->delete('patron_'.$patron->barcode.'_patron');
+		// next update sms notification option
+		if(isset($_POST['smsNotices']) && $_POST['smsNotices'] == 'on') {
+			$params = ['optin' => 'on'];
+		} else {
+			$params = ['optin' => 'off'];
+		}
+		$scope = isset($this->configArray['OPAC']['defaultScope']) ? $this->configArray['OPAC']['defaultScope'] : '93';
+		$optUrl = $vendorOpacUrl . "/patroninfo~S". $scope. "/" . $patronId . "/modpinfo";
+
+		$cc->setUrl($optUrl);
+		$r = $cc->post($params);
+
+		if($cc->isError()) {
+			$cc->close();
+			return false;
+		}
+
+		if (stristr($r, 'Patron information updated')) {
+			$errors = false;
+		} else {
+			$errors = true;
+		}
+
+		$cc->close();
+		return $errors;
 	}
 
 	public function hasUsernameField(){
@@ -168,6 +287,25 @@ class Sacramento extends Sierra
 		$name .= trim($_POST['firstname']);
 		if(!empty($_POST['middlename'])) {
 			$name .= ' ' . trim($_POST['middlename']);
+		}
+		// for sacramento check if the name exists
+		$nameCheckParams = [
+		  'varFieldTag'     => 'n',
+		  'varFieldContent' => $name,
+		  'fields'          => 'names,birthDate'
+		];
+		$nameCheckOperation = 'patrons/find';
+		$nameCheckRes = $this->_doRequest($nameCheckOperation, $nameCheckParams, 'GET');
+		// the api returns an error if it finds more than one patron (silly!) so need to check for "duplicate"
+		// the api returns ALSO returns an error if the name isn't found so be careful here
+		// if $nameCheckRes is not false than a record was found matching the name.
+		if(!$nameCheckRes) {
+			//return false;
+			if(stristr($this->apiLastError, "duplicate")) {
+				return false;
+			}
+		} elseif($nameCheckRes) {
+			return false;
 		}
 		$params['names'][] = $name;
 
