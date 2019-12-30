@@ -48,7 +48,7 @@ class Marmot extends Sierra {
 		} elseif ($libSubDomain == 'mesa' || $libSubDomain == 'mesa2') {
 			/* MESA */
 			$extraSelfRegParams['patronCodes']['pcode3'] = 84;
-			$extraSelfRegParams['varFields'][] = ["fieldTag" => "q",
+			$extraSelfRegParams['varFields'][] = ["fieldTag" => "x",
 			                                      "content"  => "Temp Online Access Account. Verify ALL information, add ID,".
 			                                       " verify notice preference, then change p-type, pcode3, and expiration date."];
 		}
