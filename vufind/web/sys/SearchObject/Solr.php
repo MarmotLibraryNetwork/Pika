@@ -44,8 +44,8 @@ class SearchObject_Solr extends SearchObject_Base
 	public static $fields = 'auth_author2,author2-role,id,mpaaRating,title_display,title_full,title_short,title_sub,author,author_display,isbn,upc,issn,series,series_with_volume,recordtype,display_description,literary_form,literary_form_full,num_titles,record_details,item_details,publisherStr,publishDate,subject_facet,topic_facet,primary_isbn,primary_upc,accelerated_reader_point_value,accelerated_reader_reading_level,accelerated_reader_interest_level,lexile_code,lexile_score,display_description,fountas_pinnell,last_indexed';
 	private $fieldsFull = '*,score';
 	// HTTP Method
-	//    private $method = HTTP_REQUEST_METHOD_GET;
-	private $method = HTTP_REQUEST_METHOD_POST;
+	//    private $method = 'GET';
+	private $method = 'POST';
 	// Result
 	private $indexResult;
 
@@ -1997,8 +1997,8 @@ class SearchObject_Solr extends SearchObject_Base
 	 * Turn our results into an RSS feed
 	 *
 	 * @access  public
-	 * @public  array      $result      Existing result set (null to do new search)
-	 * @return  string                  XML document
+	 * @param array|null $result Existing result set (null to do new search)
+	 * @return  string           XML document
 	 */
 	public function buildRSS($result = null)
 	{
@@ -2014,22 +2014,26 @@ class SearchObject_Solr extends SearchObject_Base
 		}
 
 		$baseUrl = $configArray['Site']['url'];
-		for ($i = 0; $i < count($result['response']['docs']); $i++) {
 
+		foreach ($result['response']['docs'] as &$currentDoc){
 			//Since the base URL can be different depending on the record type, add the url to the response
-			if (strcasecmp($result['response']['docs'][$i]['recordtype'], 'grouped_work') == 0){
-				$id = $result['response']['docs'][$i]['id'];
-				$result['response']['docs'][$i]['recordUrl'] = $baseUrl . '/GroupedWork/' . $id;
-				require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
-				$groupedWorkDriver = new GroupedWorkDriver($result['response']['docs'][$i]);
-				if ($groupedWorkDriver->isValid){
-					$image = $groupedWorkDriver->getBookcoverUrl('medium');
-					$description = "<img src='$image'/> " . $groupedWorkDriver->getDescriptionFast();
-					$result['response']['docs'][$i]['rss_description'] = $description;
-				}
-			}else{
-				$id = $result['response']['docs'][$i]['id'];
-				$result['response']['docs'][$i]['recordUrl'] = $baseUrl . '/Record/' . $id;
+			$recordType = strtolower($currentDoc['recordtype']);
+			switch ($recordType){
+				case 'list' :
+					$id                      = str_replace('list', '', $currentDoc['id']);
+					$currentDoc['recordUrl'] = $baseUrl . '/MyAccount/MyList/' . $id;
+					break;
+				case 'grouped_work' :
+				default :
+					$id                      = $currentDoc['id'];
+					$currentDoc['recordUrl'] = $baseUrl . '/GroupedWork/' . $id;
+					require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+					$groupedWorkDriver = new GroupedWorkDriver($currentDoc);
+					if ($groupedWorkDriver->isValid){
+						$image                         = $groupedWorkDriver->getBookcoverUrl('medium');
+						$description                   = "<img src='$image'/> " . $groupedWorkDriver->getDescriptionFast();
+						$currentDoc['rss_description'] = $description;
+					}
 			}
 
 		}
@@ -2039,7 +2043,7 @@ class SearchObject_Solr extends SearchObject_Base
 		// On-screen display value for our search
 		if ($this->searchType == 'newitem') {
 			$lookfor = translate('New Items');
-		} else if ($this->searchType == 'reserves') {
+		} elseif ($this->searchType == 'reserves') {
 			$lookfor = translate('Course Reserves');
 		} else {
 			$lookfor = $this->displayQuery();
@@ -2053,7 +2057,7 @@ class SearchObject_Solr extends SearchObject_Base
 		// The full url to recreate this search
 		$interface->assign('searchUrl', $configArray['Site']['url']. $this->renderSearchUrl());
 		// Stub of a url for a records screen
-		$interface->assign('baseUrl',    $configArray['Site']['url']."/Record/");
+		$interface->assign('baseUrl',    $configArray['Site']['url']."/Record/");//TODO: update?
 
 		$interface->assign('result', $result);
 		return $interface->fetch('Search/rss.tpl');
@@ -2148,28 +2152,20 @@ class SearchObject_Solr extends SearchObject_Base
 	}
 
 	/**
-	 * Retrieves a document specified by the ID.
-	 *
-	 * @param   string  $id         The document to retrieve from Solr
-	 * @access  public
-	 * @throws  object              PEAR Error
-	 * @return  string              The requested resource
+	 * Retrieves Solr Document for grouped Work Id
+	 * @param string $id  The groupedWork Id of the Solr document to retrieve
+	 * @return array The Solr document of the grouped Work
 	 */
-	function getRecord($id)
-	{
+	function getRecord($id){
 		return $this->indexEngine->getRecord($id, $this->getFieldsToReturn());
 	}
 
 	/**
-	 * Retrieves a document specified by the ID.
-	 *
-	 * @param   string[]  $ids        An array of documents to retrieve from Solr
-	 * @access  public
-	 * @throws  object              PEAR Error
-	 * @return  array              The requested resources
+	 * Retrieves Solr Documents for an array of grouped Work Ids
+	 * @param string[] $ids  The groupedWork Id of the Solr document to retrieve
+	 * @return array The Solr document of the grouped Work
 	 */
-	function getRecords($ids)
-	{
+	function getRecords($ids){
 		return $this->indexEngine->getRecords($ids, $this->getFieldsToReturn());
 	}
 

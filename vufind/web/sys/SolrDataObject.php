@@ -120,9 +120,9 @@ abstract class SolrDataObject extends DB_DataObject{
 		global $logger;
 		$logger->log("Updating " . $this->solrId() . " in solr", PEAR_LOG_INFO);
 
-		$cores = $this->cores();
+		$cores           = $this->cores();
 		$objectStructure = $this->getObjectStructure();
-		$doc = array();
+		$doc             = array();
 		foreach ($objectStructure as $property){
 			if ((isset($property['storeSolr']) && $property['storeSolr']) || (isset($property['properties']) && count($property['properties']) > 0)){
 				$doc = $this->updateSolrDocumentForProperty($doc, $property);

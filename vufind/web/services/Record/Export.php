@@ -17,12 +17,10 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
- 
-require_once 'Record.php';
-require_once ROOT_DIR . '/sys/Proxy_Request.php';
 
-class Record_Export extends Record_Record
-{
+require_once 'Record.php';
+
+class Record_Export extends Record_Record {
 
 	function __construct($record_id = null){
 		parent::__construct($record_id);
@@ -35,15 +33,14 @@ class Record_Export extends Record_Record
 		}
 	}
 
-	function launch()
-    {
-        global $interface;
+	function launch(){
+		global $interface;
 
-        $tpl = $this->recordDriver->getExport($_GET['style']);
-        if (!empty($tpl)) {
-            $interface->display($tpl);
-        } else {
-            die(translate("Unsupported export format."));
-        }
-    }
+		$tpl = $this->recordDriver->getExport($_GET['style']);
+		if (!empty($tpl)){
+			$interface->display($tpl);
+		}else{
+			die(translate("Unsupported export format."));
+		}
+	}
 }

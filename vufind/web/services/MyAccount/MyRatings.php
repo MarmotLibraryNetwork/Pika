@@ -66,7 +66,7 @@ class MyRatings extends MyAccount {
 		$timer->logTime("Loaded ids of titles the user is not interested in");
 
 		/** @var SearchObject_Solr $searchObject */
-		$searchObject = SearchObjectFactory::initSearchObject();
+//		$searchObject = SearchObjectFactory::initSearchObject();
 		$records      = $searchObject->getRecords(array_keys($notInterestedIds));
 		foreach ($records as $record){
 			$groupedWorkDriver = new GroupedWorkDriver($record);

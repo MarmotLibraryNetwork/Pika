@@ -4,7 +4,7 @@
  *
  * This class handles the display of Grouped Works within VuFind.
  *
- * @category VuFind-Plus
+ * @category Pika
  * @author Mark Noble <mark@marmot.org>
  * Date: 11/26/13
  * Time: 1:51 PM
@@ -57,7 +57,7 @@ class GroupedWorkDriver extends RecordInterface {
 	/**
 	 * GroupedWorkDriver constructor.
 	 *
-	 * @param $indexFields
+	 * @param array|string $indexFields  An array of the solr document fields, or grouped work Id as a string
 	 */
 	public function __construct($indexFields){
 		if (is_string($indexFields)){
@@ -2023,9 +2023,8 @@ class GroupedWorkDriver extends RecordInterface {
 	}
 
 	public function hasCachedSeries(){
-		//Get a list of isbns from the record
-		$novelist = NovelistFactory::getNovelist();
-		return $novelist->doesGroupedWorkHaveCachedSeries($this->getPermanentId());
+		require_once ROOT_DIR . '/sys/Novelist/Novelist3.php';
+		return NovelistData::doesGroupedWorkHaveCachedSeries($this->getPermanentId());
 	}
 
 	public function getSeries($allowReload = true){
@@ -2085,15 +2084,14 @@ class GroupedWorkDriver extends RecordInterface {
 	}
 
 	public function loadEnrichment(){
-		global $memoryWatcher;
-		$isbn       = $this->getCleanISBN();
+		$isbn       = $this->getCleanISBN(); // This prefers the Novelist primary ISBN
 		$enrichment = array();
-		if ($isbn == null || strlen($isbn) == 0){
-			return $enrichment;
+		if (!empty($isbn)){
+			$novelist = NovelistFactory::getNovelist();
+			global $memoryWatcher;
+			$memoryWatcher->logMemory('Setup Novelist Connection');
+			$enrichment['novelist'] = $novelist->loadEnrichment($this->getPermanentId(), $this->getISBNs());
 		}
-		$novelist = NovelistFactory::getNovelist();
-		$memoryWatcher->logMemory('Setup Novelist Connection');
-		$enrichment['novelist'] = $novelist->loadEnrichment($this->getPermanentId(), $this->getISBNs());
 		return $enrichment;
 	}
 
@@ -2477,6 +2475,9 @@ class GroupedWorkDriver extends RecordInterface {
 			}
 		}
 		return implode('&', $parts);
+
+		//TODO: replace with simplified use of http_build_query()
+		//return http_build_query($params);
 	}
 
 	private function getPublicationDates(){

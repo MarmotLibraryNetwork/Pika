@@ -117,4 +117,8 @@ class PersonRecord extends IndexRecord
 			return $configArray['Site']['path'] . '/interface/themes/default/images/person.png';
 		}
 	}
+
+	public function getModule() {
+		return 'Person';
+	}
 }

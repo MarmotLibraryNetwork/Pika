@@ -43,8 +43,8 @@ class SearchObject_Islandora extends SearchObject_Base
 	//private $fields = '*,score';
 	private $fields = 'PID,fgs_label_s,dc.title,mods_abstract_s,mods_genre_s,RELS_EXT_hasModel_uri_s,dateCreated,score,fgs_createdDate_dt,fgs_lastModifiedDate_dt';
 	// HTTP Method
-	//    private $method = HTTP_REQUEST_METHOD_GET;
-	private $method = HTTP_REQUEST_METHOD_POST;
+	//    private $method = 'GET';
+	private $method = 'POST';
 	// Result
 	private $indexResult;
 
@@ -82,10 +82,9 @@ class SearchObject_Islandora extends SearchObject_Base
 		global $timer;
 		// Include our solr index
 		require_once ROOT_DIR . "/sys/Solr.php";
-		$this->searchType = 'islandora';
+		$this->searchType      = 'islandora';
 		$this->basicSearchType = 'islandora';
-		// Initialise the index
-		$this->indexEngine = new Solr($configArray['Islandora']['solrUrl'], isset($configArray['Islandora']['solrCore']) ? $configArray['Islandora']['solrCore'] : 'islandora');
+		$this->indexEngine     = new Solr($configArray['Islandora']['solrUrl'], isset($configArray['Islandora']['solrCore']) ? $configArray['Islandora']['solrCore'] : 'islandora');
 		$timer->logTime('Created Index Engine for Islandora');
 
 		//Make sure to turn off sharding for islandora
@@ -93,7 +92,7 @@ class SearchObject_Islandora extends SearchObject_Base
 
 		// Get default facet settings
 		$this->allFacetSettings = getExtraConfigArray('islandoraFacets');
-		$this->facetConfig = array();
+		$this->facetConfig      = array();
 		$facetLimit = $this->getFacetSetting('Results_Settings', 'facet_limit');
 		if (is_numeric($facetLimit)) {
 			$this->facetLimit = $facetLimit;
@@ -816,7 +815,7 @@ class SearchObject_Islandora extends SearchObject_Base
 	 * @param   bool   $preventQueryModification   Should we allow the search engine
 	 *                                             to modify the query or is it already
 	 *                                             a well formatted query
-	 * @return  object solr result structure (for now)
+	 * @return array
 	 */
 	public function processSearch($returnIndexErrors = false, $recommendations = false, $preventQueryModification = false)
 	{
@@ -869,11 +868,10 @@ class SearchObject_Islandora extends SearchObject_Base
 						$filterQuery[] = "$field:$value";
 					} elseif (preg_match('/\\A\\[.*?\\sTO\\s.*?]\\z/', $value)){
 						$filterQuery[] = "$field:$value";
-					} else {
-						if (!empty($value)){
+					} elseif (!empty($value)){
 							$filterQuery[] = "$field:\"$value\"";
 						}
-					}
+
 				}
 			}
 		}
@@ -916,10 +914,10 @@ class SearchObject_Islandora extends SearchObject_Base
 			// If the spellcheck query is purely numeric, skip it if
 			// the appropriate setting is turned on.
 			if ($this->spellSkipNumeric && is_numeric($spellcheck)) {
-				$spellcheck = "";
+				$spellcheck = '';
 			}
 		} else {
-			$spellcheck = "";
+			$spellcheck = '';
 		}
 
 		// Get time before the query
@@ -932,8 +930,8 @@ class SearchObject_Islandora extends SearchObject_Base
 		// The first record to retrieve:
 		//  (page - 1) * limit = start
 		$recordStart = ($this->page - 1) * $this->limit;
-		$pingResult = $this->indexEngine->pingServer(false);
-		if ($pingResult == "false" || $pingResult == false){
+		$pingResult  = $this->indexEngine->pingServer(false);
+		if (!$pingResult){
 			PEAR_Singleton::raiseError('The archive server is currently unavailable.  Please try your search again in a few minutes.');
 		}
 		$this->indexResult = $this->indexEngine->search(
@@ -1425,8 +1423,6 @@ class SearchObject_Islandora extends SearchObject_Base
 		}
 		// The full url to recreate this search
 		$interface->assign('searchUrl', $configArray['Site']['url']. $this->renderSearchUrl());
-		// Stub of a url for a records screen
-		$interface->assign('baseUrl',    $configArray['Site']['url']);
 
 		$interface->assign('result', $result);
 		return $interface->fetch('Search/rss.tpl');

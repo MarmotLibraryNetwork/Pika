@@ -21,7 +21,7 @@
 require_once ROOT_DIR . '/sys/Genealogy/Person.php';
 require_once ROOT_DIR . '/Action.php';
 
-class Reindex extends Action{
+/*class Reindex extends Action{
 	function launch(){
 		global $timer;
 
@@ -43,4 +43,4 @@ class Reindex extends Action{
 
 	}
 
-}
+}*/

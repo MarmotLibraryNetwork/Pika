@@ -35,7 +35,7 @@ class Union_Search extends Action {
 		global $action;
 		global $interface;
 		//Get the search source and determine what to show.
-		$searchSource = isset($_REQUEST['searchSource']) ? $_REQUEST['searchSource'] : 'local';
+		$searchSource = empty($_REQUEST['searchSource']) ? 'local' : $_REQUEST['searchSource'];
 		$searchSources = new SearchSources();
 		$searches = $searchSources->getSearchSources();
 		if (!isset($searches[$searchSource]) && $searchSource == 'marmot'){

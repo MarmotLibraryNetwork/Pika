@@ -138,7 +138,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 
 		//Process series data
 		$titles = array();
-		if (!isset($enrichmentData['novelist']->seriesTitles) || count($enrichmentData['novelist']->seriesTitles) == 0){
+		if (empty($enrichmentData['novelist']->seriesTitles)){
 			$enrichmentResult['seriesInfo'] = array('titles' => $titles, 'currentIndex' => 0);
 		}else{
 			foreach ($enrichmentData['novelist']->seriesTitles as $key => $record){
@@ -151,7 +151,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 		$memoryWatcher->logMemory('Loaded Series information');
 
 		//Process other data from novelist
-		if (isset($enrichmentData['novelist']) && isset($enrichmentData['novelist']->similarTitles)){
+		if (!empty($enrichmentData['novelist']->similarTitles)){
 			$interface->assign('similarTitles', $enrichmentData['novelist']->similarTitles);
 			if ($configArray['Catalog']['showExploreMoreForFullRecords']){
 				$enrichmentResult['similarTitlesNovelist'] = $interface->fetch('GroupedWork/similarTitlesNovelistSidebar.tpl');
@@ -161,7 +161,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 		}
 		$memoryWatcher->logMemory('Loaded Similar titles from Novelist');
 
-		if (isset($enrichmentData['novelist']) && isset($enrichmentData['novelist']->authors)){
+		if (!empty($enrichmentData['novelist']->authors)){
 			$interface->assign('similarAuthors', $enrichmentData['novelist']->authors);
 			if ($configArray['Catalog']['showExploreMoreForFullRecords']){
 				$enrichmentResult['similarAuthorsNovelist'] = $interface->fetch('GroupedWork/similarAuthorsNovelistSidebar.tpl');
@@ -182,7 +182,6 @@ class GroupedWork_AJAX extends AJAXHandler {
 		$memoryWatcher->logMemory('Loaded Similar series from Novelist');
 
 		//Load Similar titles (from Solr)
-		//TODO: solr factory, or main solr object
 		$class = $configArray['Index']['engine'];
 		$url   = $configArray['Index']['url'];
 		/** @var Solr $db */
@@ -192,7 +191,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 		$memoryWatcher->logMemory('Loaded More Like This data from Solr');
 		// Send the similar items to the template; if there is only one, we need
 		// to force it to be an array or things will not display correctly.
-		if (isset($similar) && count($similar['response']['docs']) > 0){
+		if (!empty($similar['response']['docs'])){
 			$similarTitles = array();
 			foreach ($similar['response']['docs'] as $key => $similarTitle){
 				$similarTitleDriver = new GroupedWorkDriver($similarTitle);

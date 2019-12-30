@@ -1,8 +1,8 @@
 <?php
 /**
- * Store records tha a user is not interested in seeing
+ * Store grouped works that a user is not interested in seeing
  *
- * @category VuFind-Plus 
+ * @category Pika
  * @author Mark Noble <mark@marmot.org>
  * Date: 5/1/13
  * Time: 9:51 AM

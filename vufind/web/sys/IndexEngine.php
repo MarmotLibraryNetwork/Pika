@@ -85,7 +85,7 @@ Interface IndexEngine {
      * @param   string  $query      The XQuery script in binary encoding.
      * @param   string  $handler    The Query Handler/Index to search on
      * @param   array   $filter     The fields and values to filter results on
-     * @param   string  $start      The record to start with
+     * @param   int     $start      The record to start with
      * @param   string  $limit      The amount of records to return
      * @param   array   $facet      An array of faceting options
      * @param   string  $spell      Phrase to spell check
@@ -98,7 +98,7 @@ Interface IndexEngine {
      */
 	function search($query, $handler = null, $filter = null, $start = 0,
 	                $limit = null, $facet = null, $spell = null, $sort = null, 
-                    $fields = null, $method = HTTP_REQUEST_METHOD_POST);
+                    $fields = null, $method = 'POST');
 
 
 }

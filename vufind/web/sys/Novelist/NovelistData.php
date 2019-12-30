@@ -2,7 +2,7 @@
 /**
  * Description goes here
  *
- * @category VuFind-Plus 
+ * @category Pika
  * @author Mark Noble <mark@marmot.org>
  * Date: 12/2/13
  * Time: 11:33 AM
@@ -26,4 +26,16 @@ class NovelistData extends DB_DataObject{
 	public $similarTitles;
 
 	public $__table = 'novelist_data';
-} 
+
+	static function doesGroupedWorkHaveCachedSeries($groupedRecordId){
+		if (!empty($groupedRecordId)){
+			$novelistData                           = new NovelistData();
+			$novelistData->groupedRecordPermanentId = $groupedRecordId;
+			if ($novelistData->count()){
+				return true;
+			}
+		}
+		return false;
+	}
+
+}

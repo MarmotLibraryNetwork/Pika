@@ -28,6 +28,7 @@ class Search_Advanced extends Search_AdvancedBase {
 
 		// Create our search object if the one initialized in index.php is not available
 		if (!$searchObject){
+			/** @var SearchObject_Solr $searchObject */
 			$searchObject = SearchObjectFactory::initSearchObject();
 		}
 		$searchObject->initAdvancedFacets();

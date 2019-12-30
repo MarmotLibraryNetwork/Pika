@@ -23,17 +23,11 @@ require_once ROOT_DIR . '/services/MyResearch/lib/FavoriteHandler.php';
 require_once ROOT_DIR . '/services/MyResearch/lib/Suggestions.php';
 
 /**
- * MyResearch Home Page
- *
- * This controller needs some cleanup and organization.
- *
- * @version  $Revision: 1.27 $
+ *  Homepage for Suggested Titles for user based on users ratings
  */
-class SuggestedTitles extends MyAccount
-{
+class SuggestedTitles extends MyAccount {
 
-	function launch()
-	{
+	function launch(){
 		global $interface;
 		global $configArray;
 		global $timer;
@@ -43,23 +37,20 @@ class SuggestedTitles extends MyAccount
 
 		// Setup Search Engine Connection
 		$class = $configArray['Index']['engine'];
-		$url = $configArray['Index']['url'];
-		/** @var SearchObject_Solr $solrDb */
+		$url   = $configArray['Index']['url'];
+		/** @var Solr $solrDb */
 		$solrDb = new $class($url);
 
 		$resourceList = array();
-		$curIndex = 0;
-		if (is_array($suggestions)) {
-			$suggestionIds = array();
-			foreach($suggestions as $suggestion) {
-				$suggestionIds[] = $suggestion['titleInfo']['id'];
-			}
-			$records = $solrDb->getRecords($suggestionIds);
-			foreach($records as $record) {
+		$curIndex     = 0;
+		if (is_array($suggestions)){
+			$suggestionIds = array_keys($suggestions);
+			$records       = $solrDb->getRecords($suggestionIds);
+			foreach ($records as $record){
 				$interface->assign('resultIndex', ++$curIndex);
 				/** @var IndexRecord $recordDriver */
-				$recordDriver = RecordDriverFactory::initRecordDriver($record);
-				$resourceEntry = $interface->fetch($recordDriver->getSearchResult());
+				$recordDriver   = RecordDriverFactory::initRecordDriver($record);
+				$resourceEntry  = $interface->fetch($recordDriver->getSearchResult());
 				$resourceList[] = $resourceEntry;
 			}
 		}

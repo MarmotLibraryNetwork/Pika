@@ -49,13 +49,13 @@ class RecordDriverFactory {
 
 		}elseif (is_array($record) && !array_key_exists('recordtype', $record)){
 			require_once ROOT_DIR . '/sys/Islandora/IslandoraObjectCache.php';
-			$islandoraObjectCache = new IslandoraObjectCache();
+			$islandoraObjectCache      = new IslandoraObjectCache();
 			$islandoraObjectCache->pid = $record['PID'];
-			$hasExistingCache = false;
-			$driver = '';
+			$hasExistingCache          = false;
+			$driver                    = '';
 			if ($islandoraObjectCache->find(true) && !isset($_REQUEST['reload'])){
-				$driver = $islandoraObjectCache->driverName;
-				$path = $islandoraObjectCache->driverPath;
+				$driver           = $islandoraObjectCache->driverName;
+				$path             = $islandoraObjectCache->driverPath;
 				$hasExistingCache = true;
 			}
 			if (empty($driver)){
@@ -290,18 +290,17 @@ class RecordDriverFactory {
 	 * @param string $record
 	 * @return PEAR_Error|RecordInterface
 	 */
-	public static function initIslandoraDriverFromPid($record)
-	{
+	public static function initIslandoraDriverFromPid($record){
 		require_once ROOT_DIR . '/sys/Islandora/IslandoraObjectCache.php';
-		$islandoraObjectCache = new IslandoraObjectCache();
+		$islandoraObjectCache      = new IslandoraObjectCache();
 		$islandoraObjectCache->pid = $record;
-		if ($islandoraObjectCache->find(true) && !isset($_REQUEST['reload'])) {
+		if ($islandoraObjectCache->find(true) && !isset($_REQUEST['reload'])){
 			$driver = $islandoraObjectCache->driverName;
-			$path = $islandoraObjectCache->driverPath;
+			$path   = $islandoraObjectCache->driverPath;
 			return self::initAndReturnDriver($record, $driver, $path);
-		} else {
+		}else{
 			require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
-			$fedoraUtils = FedoraUtils::getInstance();
+			$fedoraUtils     = FedoraUtils::getInstance();
 			$islandoraObject = $fedoraUtils->getObject($record);
 			return self::initIslandoraDriverFromObject($islandoraObject);
 		}

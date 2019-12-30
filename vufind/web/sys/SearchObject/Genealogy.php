@@ -43,8 +43,8 @@ class SearchObject_Genealogy extends SearchObject_Base
 	// Field List
 	private $fields = '*,score';
 	// HTTP Method
-	//    private $method = HTTP_REQUEST_METHOD_GET;
-	private $method = HTTP_REQUEST_METHOD_POST;
+	//    private $method = 'GET';
+	private $method = 'POST';
 	// Result
 	private $indexResult;
 
@@ -67,8 +67,7 @@ class SearchObject_Genealogy extends SearchObject_Base
 	 *
 	 * @access  public
 	 */
-	public function __construct()
-	{
+	public function __construct(){
 		// Call base class constructor
 		parent::__construct();
 
@@ -77,7 +76,7 @@ class SearchObject_Genealogy extends SearchObject_Base
 		// Include our solr index
 		$class = $configArray['Genealogy']['engine'];
 		require_once "sys/$class.php";
-		$this->searchType = 'genealogy';
+		$this->searchType      = 'genealogy';
 		$this->basicSearchType = 'genealogy';
 		// Initialise the index
 		$this->indexEngine = new $class($configArray['Genealogy']['url'], $configArray['Genealogy']['default_core']);
@@ -88,51 +87,51 @@ class SearchObject_Genealogy extends SearchObject_Base
 
 		// Get default facet settings
 		$this->allFacetSettings = getExtraConfigArray('genealogyFacets');
-		$this->facetConfig = array();
-		$facetLimit = $this->getFacetSetting('Results_Settings', 'facet_limit');
-		if (is_numeric($facetLimit)) {
+		$this->facetConfig      = array();
+		$facetLimit             = $this->getFacetSetting('Results_Settings', 'facet_limit');
+		if (is_numeric($facetLimit)){
 			$this->facetLimit = $facetLimit;
 		}
 		$translatedFacets = $this->getFacetSetting('Advanced_Settings', 'translated_facets');
-		if (is_array($translatedFacets)) {
+		if (is_array($translatedFacets)){
 			$this->translatedFacets = $translatedFacets;
 		}
 
 		// Load search preferences:
-		$searchSettings = getExtraConfigArray('genealogySearches');
+		$searchSettings     = getExtraConfigArray('genealogySearches');
 		$this->defaultIndex = 'GenealogyKeyword';
-		if (isset($searchSettings['General']['default_sort'])) {
+		if (isset($searchSettings['General']['default_sort'])){
 			$this->defaultSort = $searchSettings['General']['default_sort'];
 		}
 		if (isset($searchSettings['DefaultSortingByType']) &&
-		is_array($searchSettings['DefaultSortingByType'])) {
+			is_array($searchSettings['DefaultSortingByType'])){
 			$this->defaultSortByType = $searchSettings['DefaultSortingByType'];
 		}
-		if (isset($searchSettings['Basic_Searches'])) {
+		if (isset($searchSettings['Basic_Searches'])){
 			$this->basicTypes = $searchSettings['Basic_Searches'];
 		}
-		if (isset($searchSettings['Advanced_Searches'])) {
+		if (isset($searchSettings['Advanced_Searches'])){
 			$this->advancedTypes = $searchSettings['Advanced_Searches'];
 		}
 
 		// Load sort preferences (or defaults if none in .ini file):
-		if (isset($searchSettings['Sorting'])) {
+		if (isset($searchSettings['Sorting'])){
 			$this->sortOptions = $searchSettings['Sorting'];
-		} else {
+		}else{
 			$this->sortOptions = array('relevance' => 'sort_relevance',
-                'year' => 'sort_year', 'year asc' => 'sort_year asc',
-                'title' => 'sort_title');
+			                           'year'      => 'sort_year', 'year asc' => 'sort_year asc',
+			                           'title'     => 'sort_title');
 		}
 
 		// Load Spelling preferences
-		$this->spellcheck    = $configArray['Spelling']['enabled'];
-		$this->spellingLimit = $configArray['Spelling']['limit'];
-		$this->spellSimple   = $configArray['Spelling']['simple'];
+		$this->spellcheck       = $configArray['Spelling']['enabled'];
+		$this->spellingLimit    = $configArray['Spelling']['limit'];
+		$this->spellSimple      = $configArray['Spelling']['simple'];
 		$this->spellSkipNumeric = isset($configArray['Spelling']['skip_numeric']) ?
-		$configArray['Spelling']['skip_numeric'] : true;
+			$configArray['Spelling']['skip_numeric'] : true;
 
 		// Debugging
-		$this->indexEngine->debug = $this->debug;
+		$this->indexEngine->debug          = $this->debug;
 		$this->indexEngine->debugSolrQuery = $this->debugSolrQuery;
 
 		$this->recommendIni = 'genealogySearches';
@@ -1149,13 +1148,13 @@ class SearchObject_Genealogy extends SearchObject_Base
 
 			/** @var PersonRecord $record */
 			$record = RecordDriverFactory::initRecordDriver($current);
-			if (!PEAR_Singleton::isError($record)) {
-				$result['response']['docs'][$i]['recordUrl'] = $record->getAbsoluteUrl();
-				$result['response']['docs'][$i]['title_display'] = $record->getName();
-				$image = $record->getBookcoverUrl('medium');
-				$description = "<img src='$image'/> ";
+			if (!PEAR_Singleton::isError($record)){
+				$result['response']['docs'][$i]['recordUrl']       = $record->getAbsoluteUrl();
+				$result['response']['docs'][$i]['title_display']   = $record->getName();
+				$image                                             = $record->getBookcoverUrl('medium');
+				$description                                       = "<img src='$image'/> ";
 				$result['response']['docs'][$i]['rss_description'] = $description;
-			} else {
+			}else{
 				$html[] = "Unable to find record";
 			}
 		}
@@ -1173,8 +1172,6 @@ class SearchObject_Genealogy extends SearchObject_Base
 		}
 		// The full url to recreate this search
 		$interface->assign('searchUrl', $configArray['Site']['url']. $this->renderSearchUrl());
-		// Stub of a url for a records screen
-		$interface->assign('baseUrl',    $configArray['Site']['url']);
 
 		$interface->assign('result', $result);
 		return $interface->fetch('Search/rss.tpl');
@@ -1284,12 +1281,11 @@ class SearchObject_Genealogy extends SearchObject_Base
 	 * @access  protected
 	 * @return  array    Array of URL parameters (key=url_encoded_value format)
 	 */
-	protected function getSearchParams()
-	{
+	protected function getSearchParams(){
 		$params = parent::getSearchParams();
 
-		$params[] = 'genealogyType=' . $_REQUEST['genealogyType'];
-		$params[] = 'searchSource='  . $_REQUEST['searchSource'];
+		$params[] = 'genealogyType=' . (isset($_REQUEST['genealogyType']) ? $_REQUEST['genealogyType'] : 'GenealogyKeyword'); //TODO: can this be replaced with general $_REQUEST['type']
+		$params[] = 'searchSource=' . $_REQUEST['searchSource'];
 
 		return $params;
 	}

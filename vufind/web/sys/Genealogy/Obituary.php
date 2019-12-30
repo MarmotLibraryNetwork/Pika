@@ -44,12 +44,12 @@ class Obituary extends DB_DataObject {
 		return $structure;
 	}
 
-	function insert() {
+	function insert(){
 		$ret = parent::insert();
 		//Load the person this is for, and update solr
-		if ($this->personId) {
+		if ($this->personId){
 			require_once ROOT_DIR . '/sys/Genealogy/Person.php';
-			$person = new Person();
+			$person           = new Person();
 			$person->personId = $this->personId;
 			$person->find(true);
 			$person->saveToSolr();
@@ -57,12 +57,12 @@ class Obituary extends DB_DataObject {
 		return $ret;
 	}
 
-	function update() {
+	function update(){
 		$ret = parent::update();
 		//Load the person this is for, and update solr
-		if ($this->personId) {
+		if ($this->personId){
 			require_once ROOT_DIR . '/sys/Genealogy/Person.php';
-			$person = new Person();
+			$person           = new Person();
 			$person->personId = $this->personId;
 			$person->find(true);
 			$person->saveToSolr();
@@ -70,13 +70,13 @@ class Obituary extends DB_DataObject {
 		return $ret;
 	}
 
-	function delete() {
+	function delete(){
 		$personId = $this->personId;
-		$ret = parent::delete();
+		$ret      = parent::delete();
 		//Load the person this is for, and update solr
-		if ($personId) {
+		if ($personId){
 			require_once ROOT_DIR . '/sys/Genealogy/Person.php';
-			$person = new Person();
+			$person           = new Person();
 			$person->personId = $this->personId;
 			$person->find(true);
 			$person->saveToSolr();

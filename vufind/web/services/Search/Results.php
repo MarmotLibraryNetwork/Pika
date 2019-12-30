@@ -37,7 +37,7 @@ class Search_Results extends Action {
 		global $library;
 
 		/** @var string $searchSource */
-		$searchSource = isset($_REQUEST['searchSource']) ? $_REQUEST['searchSource'] : 'local';
+		$searchSource = empty($_REQUEST['searchSource']) ? 'local' : $_REQUEST['searchSource'];
 
 		if (isset($_REQUEST['replacementTerm'])){
 			$replacementTerm     = $_REQUEST['replacementTerm'];
@@ -373,8 +373,8 @@ class Search_Results extends Action {
 			$timer->logTime('no hits processing');
 
 		}
-		// Exactly One Result //
-		elseif ($searchObject->getResultTotal() == 1 && (strpos($searchObject->displayQuery(), 'id') === 0 || $searchObject->getSearchType() == 'id')){
+		// Exactly One Result for an id search //
+		elseif ($searchObject->getResultTotal() == 1 && (strpos($searchObject->displayQuery(), 'id:') === 0 || $searchObject->getSearchType() == 'id')){
 			//Redirect to the home page for the record
 			$recordSet = $searchObject->getResultRecordSet();
 			$record = reset($recordSet);
@@ -384,7 +384,7 @@ class Search_Results extends Action {
 				header("Location: " . $configArray['Site']['path'] . "/MyResearch/MyList/{$listId}");
 				exit();
 			}else{
-				header("Location: " . $configArray['Site']['path'] . "/Record/{$record['id']}/Home");
+				header("Location: " . $configArray['Site']['path'] . "/GroupedWork/{$record['id']}/Home");
 				exit();
 			}
 
