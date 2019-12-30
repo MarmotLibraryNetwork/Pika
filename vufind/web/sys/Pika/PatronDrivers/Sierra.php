@@ -139,24 +139,37 @@ class Sierra {
 		$patronId = $this->getPatronId($patron);
 
 		$operation = 'patrons/'.$patronId.'/checkouts';
-		$params = [
-			'fields'=>'default,barcode,callNumber'
-		];
 
-		$r = $this->_doRequest($operation,$params);
+		$offset = 0;
+		$total  = 0;
+		$count  = 0;
+		$limit  = 100;
 
-		if (!$r) {
-			$this->logger->info($this->apiLastError);
-			return [];
-		}
+		$checkoutEntries = [];
+		do {
+			$params = [
+			 'fields' => 'default,barcode,callNumber',
+			 'limit'  => $limit,
+			 'offset' => $offset
+			];
+			$rawCheckouts = $this->_doRequest($operation, $params);
+			if(!$rawCheckouts) {
+				$this->logger->info($this->apiLastError);
+				return [];
+			} elseif($rawCheckouts->total == 0) {
+				// no checkouts
+				return [];
+			}
 
-		// no checkouts
-		if($r->total == 0) {
-			return [];
-		}
+			$checkoutEntries = array_merge($rawCheckouts->entries, $checkoutEntries);
+			$offset += $limit;
+			$total   = $rawCheckouts->total;
+			$count   = count($checkoutEntries) + 1;
+		} while ($count < $total);
+
 
 		$checkouts = [];
-		foreach($r->entries as $entry) {
+		foreach($checkoutEntries as $entry) {
 			// standard stuff
 			// get checkout id
 			preg_match($this->urlIdRegExp, $entry->id, $m);
@@ -166,6 +179,7 @@ class Sierra {
 				///////////////
 				// INNREACH CHECKOUT
 				///////////////
+				// todo: need to get inn-reach item id.
 				$innReach = new InnReach();
 				$titleAndAuthor = $innReach->getCheckoutTitleAuthor($checkoutId);
 				$coverUrl = $innReach->getInnReachCover();
@@ -303,7 +317,7 @@ class Sierra {
 	 *
 	 * @param string  $username        The patron username or barcode
 	 * @param string  $password        The patron barcode or pin
-	 * @param boolean $validatedViaSSO FALSE
+	 * @param boolean $validatedViaSSO If the patron was validated outside Pika
 	 *
 	 * @return  User|null           User object or null
 	 * @access  public
@@ -316,7 +330,13 @@ class Sierra {
 		$loginMethod = $this->accountProfile->loginConfiguration;
 		// check patron credentials depending on login config.
 		// the returns from _auth methods should be either a sierra patron id or false.
-		if ($loginMethod == "barcode_pin"){
+		$username = trim($username);
+		$password = trim($password);
+
+		if($validatedViaSSO) {
+			$patronId = $this->getPatronId($password);
+			$this->patronBarcode = $password;
+		} elseif ($loginMethod == "barcode_pin") {
 			$barcode = $username;
 			$this->patronBarcode = $barcode;
 			$patronId = $this->_authBarcodePin($username, $password);
@@ -390,12 +410,12 @@ class Sierra {
 		// we need to monkey with the barcodes. barcodes can change!
 		// self registered users may have something in the api response that looks like this
 		// -- before getting a physical card
-		// $pInfo->barcodes['', '201975']
+		// $pInfo->barcodes['', '201975'] (this is for some marmot online registered accounts where the 2nd barcode is the Sierra id for the barcode, sometimes)
 		// -- after getting a physical card
 		// $pInfo->barcodes['56369856985', '201975']
 		// so we need to look for both barcodes and determine if the temp barcode needs updated to the permanent one
 		$barcode = '';
-		if(count($pInfo->barcodes > 1)) {
+		if(count($pInfo->barcodes) > 1) {
 			// if the first barcode is set this should be the permanent barcode.
 			if($pInfo->barcodes[0] != '') {
 				$barcode = $pInfo->barcodes[0];
@@ -404,6 +424,13 @@ class Sierra {
 					$barcode = $pInfo->barcodes[1];
 				}
 			}
+		} elseif (count($pInfo->barcodes)) {
+			if($pInfo->barcodes[0] != '') {
+				$barcode = $pInfo->barcodes[0];
+			} else {
+				$this->logger->error("Sierra user id $patronId did not return a barcode");
+			}
+
 		}
 		// barcode isn't actually in database, but is stored in User->data['barcode']
 		$patron->barcode = $barcode;
@@ -601,10 +628,12 @@ class Sierra {
 			// found a home address
 			if($homeAddressArray) {
 				$addressLineCount = count($homeAddressArray);
-				// 3 lines - if we have three lines the first is c/o or something similar, currently don't need
+				// 3 lines - if we have three lines the first is c/o or something similar
 				if ($addressLineCount == 3) {
+					// set care of
+					$patron->careOf = $homeAddressArray[0];
 					array_shift($homeAddressArray); // shift off the first line
-					$addressLineCount = count($homeAddressArray); // reset line count
+					$addressLineCount = count($homeAddressArray); // reset line count and continue
 				}
 				// 2 lines (or previously 3) - if we have at least 2 lines we should have a full address
 			  if($addressLineCount == 2) {
@@ -631,18 +660,18 @@ class Sierra {
 				  	// no zip, not a full address
 					  // todo: how to handle, if at all
 				  }
-				} else {
+			  } else {
 				  // 1 line - only one address line -- this could be anything so start checking
 				  $patron->address1 = $homeAddressArray[0];
-					  // does it contain a zip? It might be some like grand junction, co 81501
+				  // does it contain a zip? It might be some like grand junction, co 81501
 				  $zipTest = preg_match($zipRegExp, $homeAddressArray[0], $zipMatch);
-				  if($zipTest === 1) {
+				  if ($zipTest === 1) {
 					  // found a zip
 					  $patronZip = $zipMatch[0];
 					  // find a city and state?
 					  $cityStateTest = preg_match_all($splitRegExp, trim($homeAddressArray[0]), $cityStateMatches);
-					  if($cityStateTest) {
-						  $cityState = $cityStateMatches[1];
+					  if ($cityStateTest) {
+						  $cityState      = $cityStateMatches[1];
 						  $cityStateCount = count($cityState) - 1; // zero index
 						  // state should be last
 						  $patronState = $cityState[$cityStateCount];
@@ -650,91 +679,19 @@ class Sierra {
 						  array_pop($cityState);
 						  $patronCity = implode(' ', $cityState);
 					  } else {
-					  	// well, that should'a matched something
+						  // well, that should'a matched something
+						  // todo: what do to?
 					  }
 				  } else {
-				  	// couldn't find a zip -- not much to do
-
+					  // couldn't find a zip -- not much to do
+					  // todo: what do to?
 				  }
-				}
+			  }
 			}
 		}
 		$patron->city  = $patronCity;
 		$patron->state = $patronState;
 		$patron->zip   = $patronZip;
-		/*
-		if(method_exists($this, 'processPatronAddress')) {
-			// Hook for processing addresses
-			$patron = $this->processPatronAddress($pInfo->addresses, $patron);
-		} else {
-			if(isset($pInfo->addresses) && is_array($pInfo->addresses)){
-				foreach ($pInfo->addresses as $address) {
-					// a = primary address, h = alt address
-					if ($address->type == 'a') {
-						$lineCount = count($address->lines);
-						switch ($lineCount){
-							case 3:
-								// When there are three address lines, this means the first line is something like "Care of" and the rest is the stuff we want
-								$patron->address2 = $address->lines[2];
-								$patron->address1 = $address->lines[1];
-								break 2;
-							case 2:
-								// Set address2 when there are two lines, then go onto case 1 to set address1
-								$patron->address2 = $address->lines[1];
-							case 1:
-								$patron->address1 = $address->lines[0];
-								break 2;
-						}
-					}
-				}
-			}
-			if (!isset($patron->address1)) {
-				$patron->address1 = '';
-			}
-			if (!isset($patron->address2)) {
-				$patron->address2 = '';
-			}
-			// city state zip
-			if (isset($patron->address2) && $patron->address2 != '') {
-				$addressParts = explode(',', $patron->address2);
-				// some libraries may not use ','  after city so make sure we have parts
-				// can assume street as a line and city, st. zip as a line
-				// Note: There are other unusual entries for address as well:
-				// ART
-				// CAMPUS ADDRESS
-				// another:
-				// Words on Wheels Patron Wednesday 1 (Aaron)
-				// another:
-				// Salida Co, 81201 <- comma in the wrong place
-				if (count($addressParts) > 1) {
-					$city          = trim($addressParts[0]);
-					if (!empty($addressParts[1])){
-					$stateZip      = trim($addressParts[1]);
-					$stateZipParts = explode(' ', $stateZip);
-					$state         = trim($stateZipParts[0]);
-						if (!empty($stateZipParts[1])){
-					$zip           = trim($stateZipParts[1]);
-						}
-					}
-				} else {
-					$regExp = "/^([^,]+)\s([A-Z]{2})(?:\s(\d{5}))?$/";
-					preg_match($regExp, $patron->address2, $matches);
-					if ($matches) {
-						$city  = $matches[1];
-						$state = $matches[2];
-						$zip   = $matches[3];
-					}
-				}
-			}
-			$patron->city  = isset($city) ? $city : '';
-			$patron->state = isset($state) ? $state : '';
-			$patron->zip   = isset($zip) ? $zip : '';
-		}
-		$patron->city  = isset($city) ? $city : '';
-		$patron->state = isset($state) ? $state : '';
-		$patron->zip   = isset($zip) ? $zip : '';
-		*/
-
 
 		// 6.5 mobile phone
 		// this triggers sms notifications for libraries using Sierra SMS
@@ -775,13 +732,13 @@ class Sierra {
 				$patron->noticePreferenceLabel = 'none';
 				break;
 			case 'a':
-				$patron->noticePreferenceLabel = 'mail';
+				$patron->noticePreferenceLabel = 'Mail';
 				break;
 			case 'p':
-				$patron->noticePreferenceLabel = 'phone';
+				$patron->noticePreferenceLabel = 'Telephone';
 				break;
 			case 'z':
-				$patron->noticePreferenceLabel = 'email';
+				$patron->noticePreferenceLabel = 'E-mail';
 				break;
 			default:
 				$patron->noticePreferenceLabel = 'none';
@@ -799,7 +756,7 @@ class Sierra {
 		if($holds && isset($holds['available'])){
 			$patron->numHoldsAvailableIls = count($holds['available']);
 			$patron->numHoldsRequestedIls = count($holds['unavailable']);
-			$patron->numHoldsIls = $patron->numHoldsAvailableIls + $patron->numHoldsRequestedIls;
+			$patron->numHoldsIls          = $patron->numHoldsAvailableIls + $patron->numHoldsRequestedIls;
 		}
 
 		if($createPatron) {
@@ -869,13 +826,26 @@ class Sierra {
 	 *
 	 *
 	 * PUT patrons/{id}
-	 * @param  User  $patron
-	 * @param  bool  $canUpdateContactInfo
+	 * @param User $patron
+	 * @param bool $canUpdateContactInfo
 	 * @return array Array of errors or empty array on success
+	 * @throws ErrorException
 	 */
 	public function updatePatronInfo($patron, $canUpdateContactInfo){
 		if(!$canUpdateContactInfo) {
 			return ['You can not update your information.'];
+		}
+
+		/*
+		 * hack to shuffle off some actions
+		 * This would be better in a router class
+		 * If a method exits in a class extending this class it will be passed a User object.
+		 */
+		if(isset($_POST['profileUpdateAction'])) {
+			$profileUpdateAction = trim($_POST['profileUpdateAction']);
+			if(method_exists($this, $profileUpdateAction)) {
+				return $this->$profileUpdateAction($patron);
+			}
 		}
 
 		$patronId = $this->getPatronId($patron);
@@ -978,7 +948,6 @@ class Sierra {
 			$params['varFields'] = [(object)['fieldTag'=>'i', 'content'=>$altUsername]];
 		}
 
-
 		$operation = 'patrons/'.$patronId;
 		$r = $this->_doRequest($operation, $params, 'PUT');
 
@@ -1023,14 +992,14 @@ class Sierra {
 
 		if(!$r) {
 			$message = $this->_getPrettyError();
-			return 'Could not update PIN: '. $message;
+			return [['Could not update PIN: '. $message]];
 		}
 		$patron->cat_password = $newPin;
 		$patron->update();
 
 		$this->memCache->delete('patron_'.$patron->barcode.'_patron');
 
-		return 'Your pin number was updated successfully.';
+		return [['Your pin number was updated successfully.']];
 	}
 
 	public function resetPin($patron, $newPin, $resetToken){
@@ -1188,6 +1157,15 @@ EOT;
 					$params['addresses'][0]['lines'][0] = $val;
 					$params['addresses'][0]['type'] = 'a';
 					break;
+				case 'altaddress':
+					$val = trim($val);
+					if(!empty($val)){
+						$params['addresses'][1]['lines'][0] = $val;
+					}else{
+						$params['addresses'][1]['lines'][0] = 'none';
+					}
+					$params['addresses'][1]['type'] = 'h';
+					break;
 				case 'primaryphone':
 					$val = trim($val);
 					if(!empty($val)){
@@ -1250,6 +1228,18 @@ EOT;
 		// address line 2
 		$params['addresses'][0]['lines'][1] = $cityStateZip;
 
+		// todo: special handling for VAIL
+		// include test and production
+		$libSubDomain = strtolower($library->subdomain);
+		if($libSubDomain == 'vail' || $libSubDomain == 'vail2') {
+			$params['varFields'][] = ["fieldTag" => "u",
+		                            "content"  => "#"];
+			$params['varFields'][] = ["fieldTag" => "i",
+			                          "content"  => "#"];
+			$params['varFields'][] = ["fieldTag" => "q",
+			                          "content"  => "XXXLLFF"];
+			$params['pMessage']    = 'f';
+		}
 		// if library uses pins
 		if($this->accountProfile->loginConfiguration == "barcode_pin") {
 			$pin = trim($_POST['pin']);
@@ -1323,7 +1313,6 @@ EOT;
 		             'values'     => $homeLocations,
 		             'required'   => true];
 
-
 		// allow usernames?
 		if($this->hasUsernameField()) {
 			$fields[] = ['property'   => 'username',
@@ -1345,10 +1334,17 @@ EOT;
 
 		$fields[] = ['property'   => 'address',
 		             'type'       => 'text',
-		             'label'      => 'Address',
-		             'description'=> 'Street address or PO Box where you receive mail.',
+		             'label'      => 'Mailing Address',
+		             'description'=> 'Mailing Address.',
 		             'maxLength'  => 40,
 		             'required'   => true];
+
+		$fields[] = ['property'   => 'altaddress',
+		             'type'       => 'text',
+		             'label'      => 'Physical Address',
+		             'description'=> 'Physical Address.',
+		             'maxLength'  => 40,
+		             'required'   => false];
 
 		$fields[] = ['property'   => 'city',
 		             'type'       => 'text',
@@ -1403,6 +1399,17 @@ EOT;
 				'description' => 'Please reenter your PIN.',
 				'maxLength'   => 10,
 				'required'    => true
+			];
+		}
+		// Bemis Signature Field
+		if ($library->selfRegistrationTemplate == 'beself'){
+			$fields[] = [
+				'property' => 'signature',
+				'type' => 'text',
+				'label' => 'Signature',
+				'description' => 'Enter your name',
+				'maxLength' => 40,
+				'required' => true
 			];
 		}
 
@@ -1528,9 +1535,11 @@ EOT;
 
 		$operation = "patrons/".$patronId."/holds";
 		if((integer)$this->configArray['Catalog']['api_version'] > 4) {
-			$params=["fields"=>"default,pickupByDate,frozen"];
+			$params=["fields" => "default,pickupByDate,frozen,priority,priorityQueueLength,notWantedBeforeDate,notNeededAfterDate",
+			         "limit"  => 1000];
 		} else {
-			$params=["fields"=>"default,frozen"];
+			$params=["fields" => "default,frozen,priority,priorityQueueLength,notWantedBeforeDate,notNeededAfterDate",
+			         "limit"  => 1000];
 		}
 		$holds = $this->_doRequest($operation, $params);
 
@@ -1548,7 +1557,8 @@ EOT;
 		$displayName  = $patron->getNameAndLibraryLabel();
 		$pikaPatronId = $patron->id;
 		// can we change pickup location?
-		$pickupLocations = $patron->getValidPickupBranches($this->accountProfile->recordSource);
+		$pickupLocations = $patron->getValidPickupBranches($this->accountProfile->recordSource, false);
+		// Need to exclude linked accounts here to prevent infinite loop during patron login in cases where accounts are reciprocally linked
 		if(is_array($pickupLocations)) {
 			if (count($pickupLocations) > 1) {
 				$canUpdatePL = true;
@@ -1558,7 +1568,7 @@ EOT;
 		} else {
 			$canUpdatePL = false;
 		}
-		//
+
 		$availableHolds   = [];
 		$unavailableHolds = [];
 		foreach ($holds->entries as $hold) {
@@ -1568,12 +1578,35 @@ EOT;
 			$h['user']            = $displayName;
 
 			// get what's available from this call
-			$h['position']              = isset($hold->priority) ? $hold->priority : 1;
 			$h['frozen']                = $hold->frozen;
 			$h['create']                = strtotime($hold->placed); // date hold created
 			// innreach holds don't include notNeededAfterDate
-			$h['automaticCancellation'] = isset($hold->notNeededAfterDate) ? strtotime($hold->notNeededAfterDate) : null; // not needed after date // this isn't available in api v4
-			$h['expire']                = isset($hold->pickupByDate) ? strtotime($hold->pickupByDate) : false; // pick up by date
+			$h['automaticCancellation'] = isset($hold->notNeededAfterDate) ? strtotime($hold->notNeededAfterDate) : null; // not needed after date
+			$h['expire']                = isset($hold->pickupByDate) ? strtotime($hold->pickupByDate) : false; // pick up by date // this isn't available in api v4
+
+			// fix up hold position
+			// #D-3420
+			if (isset($hold->priority) && isset($hold->priorityQueueLength)) {
+				// sierra api v4 priority is 0 based index so add 1
+				if ($this->configArray['Catalog']['api_version'] == 4 ) {
+					$holdPriority = (integer)$hold->priority + 1;
+				} else {
+					$holdPriority = $hold->priority;
+				}
+				$h['position'] = $holdPriority . ' of ' . $hold->priorityQueueLength;
+
+			} elseif (isset($hold->priority) && !isset($hold->priorityQueueLength)) {
+				// sierra api v4 priority is 0 based index so add 1
+				if ($this->configArray['Catalog']['api_version'] == 4 ) {
+					$holdPriority = (integer)$hold->priority + 1;
+				} else {
+					$holdPriority = $hold->priority;
+				}
+				$h['position'] = $holdPriority;
+			} else {
+				$h['position'] = false;
+			}
+
 			// cancel id
 			preg_match($this->urlIdRegExp, $hold->id, $m);
 			$h['cancelId'] = $m[1];
@@ -1626,12 +1659,15 @@ EOT;
 			}
 			// for sierra, holds can't be frozen if patron is next in line
 			if(isset($hold->priorityQueueLength)) {
-				if((int)$hold->priority <= 2 && (int)$hold->priorityQueueLength >= 2) {
+				if(isset($hold->priority) && ((int)$hold->priority <= 2 && (int)$hold->priorityQueueLength >= 2)) {
 					$freezeable = false;
 				// if the patron is the only person on wait list hold can't be frozen
-				} elseif($hold->priority == 1 && (int)$hold->priorityQueueLength == 1) {
+				} elseif(isset($hold->priority) && ($hold->priority == 1 && (int)$hold->priorityQueueLength == 1)) {
 					$freezeable = false;
-				}
+				// if there is no priority set but queueLength = 1
+				} elseif(!isset($hold->priority) && $hold->priorityQueueLength == 1) {
+					$freezeable = false;
+				} 
 			}
 			$h['status']    = $status;
 			$h['freezeable']= $freezeable;
@@ -1820,7 +1856,8 @@ EOT;
 		$r = $this->_doRequest($operation, $params, "POST");
 
 		// check if error we need to do an item level hold
-		if($this->apiLastError && stristr($this->apiLastError,"Volume record selection is required to proceed")) {
+		if($this->apiLastError && stristr($this->apiLastError,"Volume record selection is required to proceed")
+		   || (stristr($this->apiLastError,"This record is not available") && (integer)$this->configArray['Catalog']['api_version'] == 4)) {
 			$items = $this->getItemVolumes($recordId);
 			$return = [
 				'message' => 'This title requires item level holds, please select an item to place a hold on.',
@@ -1843,7 +1880,6 @@ EOT;
 				}
 				return $return;
 			}
-
 		}
 		// success! weeee :)
 		$return['success'] = true;
@@ -2482,6 +2518,7 @@ EOT;
 		$patronNames = $r->names;
 		$username = trim($username);
 		// break the username into an array
+		$username = str_replace('-', ' ', $username);
 		$usernameParts = explode(' ', $username);
 		$valid = FALSE;
 		// check each part of the username for a match against $j->name
@@ -2506,14 +2543,20 @@ EOT;
 				// johndoe, jo, jo doe, john do
 				if (preg_match('~\\b' . $userNamePart . '\\b~i', $patronName, $m)) {
 					$valid = true;
-				} else {
-					$valid = false;
-					break;
 				}
+				// there's been a bit of uproar at libraries over name matches. To revert behavior to full matches
+				// uncomment the else statement below and the above description will work.
+				// cf 12-13-2019
+				// #D-3416
+				// #D-3417
+				//else {
+					//$valid = false;
+					//break;
+				//}
 			}
 			// If a match is found, break outer foreach and valid is true
 			if ($valid === true) {
-				$this->logger->debug('Logging in patron: '. $barcode);
+				$this->logger->info('Logging in patron: '. $barcode);
 				break;
 			}
 		}
@@ -2522,7 +2565,7 @@ EOT;
 		if($valid === true) {
 			$result = $r->id;
 		} else {
-			$this->logger->debug('Can not login patron: ' . $barcode . '. Name and barcode do not match.');
+			$this->logger->warning('Can not login patron: ' . $barcode . '. Name and barcode do not match.');
 			$result = false;
 		}
 		return $result;

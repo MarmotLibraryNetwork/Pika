@@ -16,6 +16,7 @@
 class SourceAndId {
 
 	static $defaultSource = 'ils'; // When an SourceAndId object is constructed with Id info without source data, fallback to this source
+	//TODO: set this to the recordSource of the first accountProfile
 
 	private $fullId;                // The full id in the form of 'source:id' or 'ExternalEcontent:ils:id'
 	private $source;                // The indexing profile that this Id is a part of

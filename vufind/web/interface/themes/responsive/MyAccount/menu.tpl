@@ -113,7 +113,7 @@
 			<span id="tagsMenu-placeholder"></span>
 
 			{* Admin Functionality if Available *}
-			{if $loggedIn && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles) || array_key_exists('contentEditor', $userRoles) || array_key_exists('libraryManager', $userRoles) || array_key_exists('locationManager', $userRoles))}
+			{if $loggedIn && $userRoles && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles) || array_key_exists('contentEditor', $userRoles) || array_key_exists('libraryManager', $userRoles) || array_key_exists('locationManager', $userRoles))}
 				{if in_array($action, array('Libraries', 'Locations', 'IPAddresses', 'ListWidgets', 'BrowseCategories', 'PTypes', 'LoanRules', 'LoanRuleDeterminers', 'AccountProfiles', 'NYTLists', 'BlockPatronAccountLinks'))}
 					{assign var="curSection" value=true}
 				{else}
@@ -171,7 +171,7 @@
 				</div>
 			{/if}
 
-			{if $loggedIn && (array_key_exists('userAdmin', $userRoles) || array_key_exists('opacAdmin', $userRoles))}
+			{if $loggedIn && $userRoles && (array_key_exists('userAdmin', $userRoles) || array_key_exists('opacAdmin', $userRoles))}
 				{if in_array($action, array('Administrators', 'DBMaintenance', 'DBMaintenanceEContent', 'PHPInfo', 'OpCacheInfo', 'Variables', 'CronLog', 'MemCacheInfo'))
 				|| ($module == 'Admin' && $action == 'Home')}
 					{assign var="curSection" value=true}
@@ -206,7 +206,7 @@
 				</div>
 			{/if}
 
-			{if $loggedIn && (array_key_exists('libraryAdmin', $userRoles) || array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles))}
+			{if $loggedIn && $userRoles && (array_key_exists('libraryAdmin', $userRoles) || array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles))}
 				{if in_array($action, array('RecordGroupingLog', 'ReindexLog', 'OverDriveExtractLog', 'HooplaExportLog', 'SierraExportLog', 'IndexingStats', 'IndexingProfiles', 'TranslationMaps'))}
 					{assign var="curSection" value=true}
 				{else}
@@ -238,7 +238,7 @@
 				</div>
 			{/if}
 
-			{if $loggedIn && $enableMaterialsRequest && array_key_exists('library_material_requests', $userRoles)}
+			{if $loggedIn && $enableMaterialsRequest && $userRoles && array_key_exists('library_material_requests', $userRoles)}
 				{if in_array($action, array('ManageRequests', 'SummaryReport', 'UserReport', 'ManageStatuses'))}
 					{assign var="curSection" value=true}
 				{else}
@@ -264,7 +264,7 @@
 				</div>
 			{/if}
 
-			{if $loggedIn && (array_key_exists('cataloging', $userRoles) || array_key_exists('opacAdmin', $userRoles))}
+			{if $loggedIn && $userRoles && (array_key_exists('cataloging', $userRoles) || array_key_exists('opacAdmin', $userRoles))}
 				{if in_array($action, array('MergedGroupedWorks', 'NonGroupedRecords', 'AuthorEnrichment', 'OverDriveAPIData'))}
 					{assign var="curSection" value=true}
 				{else}
@@ -290,7 +290,7 @@
 				</div>
 			{/if}
 
-			{if $loggedIn && (array_key_exists('archives', $userRoles) || array_key_exists('opacAdmin', $userRoles))}
+			{if $loggedIn && $userRoles && (array_key_exists('archives', $userRoles) || array_key_exists('opacAdmin', $userRoles))}
 				{if in_array($action, array('ArchiveSubjects', 'ArchivePrivateCollections', 'ArchiveRequests', 'AuthorshipClaims', 'ClearArchiveCache', 'ArchiveUsage'))}
 					{assign var="curSection" value=true}
 				{else}
@@ -319,7 +319,7 @@
 				</div>
 			{/if}
 
-			{if $loggedIn && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles) || array_key_exists('circulationReports', $userRoles))}
+			{if $loggedIn && $userRoles && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles) || array_key_exists('circulationReports', $userRoles))}
 				{if $module == 'Circa'}
 					{assign var="curSection" value=true}
 				{else}
@@ -343,7 +343,7 @@
 				</div>
 			{/if}
 
-			{if $loggedIn && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles) || array_key_exists('contentEditor', $userRoles))}
+			{if $loggedIn && $userRoles && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles) || array_key_exists('contentEditor', $userRoles))}
 				{if $module == "EditorialReview"}
 					{assign var="curSection" value=true}
 				{else}
@@ -366,7 +366,7 @@
 				</div>
 			{/if}
 
-			{if $loggedIn && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles) || array_key_exists('locationReports', $userRoles) || array_key_exists('contentEditor', $userRoles))}
+			{if $loggedIn && $userRoles && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles) || array_key_exists('locationReports', $userRoles) || array_key_exists('contentEditor', $userRoles))}
 				{if in_array($action, array('StudentReport')) || in_array($action, array('StudentBarcodes'))}
 					{assign var="curSection" value=true}
 				{else}

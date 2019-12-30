@@ -1,7 +1,7 @@
 {strip}
 	<div id="main-content" class="col-md-12">
 		<h2>Editorial Review: {$editorialReview->title}</h2>
-		{if $loggedIn && (array_key_exists('libraryAdmin', $userRoles) || array_key_exists('opacAdmin', $userRoles) || array_key_exists('contentEditor', $userRoles))}
+		{if $loggedIn && $userRoles && (array_key_exists('libraryAdmin', $userRoles) || array_key_exists('opacAdmin', $userRoles) || array_key_exists('contentEditor', $userRoles))}
 		<div class="btn-group btn-group-sm">
 			<div class='btn btn-sm btn-default'><a href='{$path}/EditorialReview/{$editorialReview->editorialReviewId}/Edit'>Edit</a></div>
 			{if array_key_exists('opacAdmin', $userRoles)}
