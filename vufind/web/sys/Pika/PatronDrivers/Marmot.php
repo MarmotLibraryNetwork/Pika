@@ -15,11 +15,10 @@ use MarcRecord;
 use User;
 use Library;
 use Location;
+use Pika\PatronDrivers\MyBooking;
 
 require_once ROOT_DIR . "/sys/Pika/PatronDrivers/Traits/PatronBookingsOperations.php";
 require_once ROOT_DIR . "/sys/Pika/PatronDrivers/MyBooking.php";
-
-use Pika\PatronDriver\MyBooking;
 
 class Marmot extends Sierra {
 
@@ -28,6 +27,32 @@ class Marmot extends Sierra {
 	public function __construct($accountProfile)
 	{
 		parent::__construct($accountProfile);
+	}
+
+	public function selfRegister($extraSelfRegParams = false)
+	{
+		
+		global $library;
+		// include test and production
+		$libSubDomain = strtolower($library->subdomain);
+		if($libSubDomain == 'vail' || $libSubDomain == 'vail2') {
+			/* VAIL */
+			$extraSelfRegParams['varFields'][] = ["fieldTag" => "u",
+			                                      "content"  => "#"];
+			$extraSelfRegParams['varFields'][] = ["fieldTag" => "i",
+			                                      "content"  => "#"];
+			$extraSelfRegParams['varFields'][] = ["fieldTag" => "q",
+			                                      "content"  => "XXXLLFF"];
+			$extraSelfRegParams['pMessage']    = 'f';
+
+		} elseif ($libSubDomain == 'mesa' || $libSubDomain == 'mesa2') {
+			/* MESA */
+			$extraSelfRegParams['patronCodes']['pcode3'] = 84;
+			$extraSelfRegParams['varFields'][] = ["fieldTag" => "x",
+			                                      "content"  => "Temp Online Access Account. Verify ALL information, add ID,".
+			                                       " verify notice preference, then change p-type, pcode3, and expiration date."];
+		}
+		return parent::selfRegister($extraSelfRegParams);
 	}
 
 	/**
