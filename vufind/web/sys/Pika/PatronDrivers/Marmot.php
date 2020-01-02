@@ -749,5 +749,43 @@ class Marmot extends Sierra {
 		}
 		return null;
 	}
+	/**
+	 * Classic OPAC scope for legacy screen scraping calls
+	 * @param bool $checkLibraryRestrictions  Whether or not to condition the use of Sierra OPAC scope by the library setting $restrictSearchByLibrary;
+	 * @return mixed|string
+	 */
+	protected function getLibraryScope($checkLibraryRestrictions = false){
+
+		//Load the holding label for the branch where the user is physically.
+		$searchLocation = Location::getSearchLocation();
+		if (!empty($searchLocation->scope)){
+			return $searchLocation->scope;
+		}
+
+		$searchLibrary = Library::getSearchLibrary();
+		if (!empty($searchLibrary->scope)){
+			if (!$checkLibraryRestrictions || $searchLibrary->restrictSearchByLibrary){
+				return $searchLibrary->scope;
+			}
+		}
+		return $this->getDefaultScope();
+	}
+
+	protected function getDefaultScope(){
+		global $configArray;
+		return isset($configArray['OPAC']['defaultScope']) ? $configArray['OPAC']['defaultScope'] : '93';
+	}
+
+	/**
+	 * Taken from the class MarcRecord method getShortId.
+	 *
+	 * @param string $longId III record Id with a trailing check digit included
+	 * @return mixed|string   the initial dot & the trailing check digit removed
+	 */
+	protected static function getShortId($longId){
+		$shortId = str_replace('.b', 'b', $longId);
+		$shortId = substr($shortId, 0, strlen($shortId) - 1);
+		return $shortId;
+	}
 
 }
