@@ -55,8 +55,8 @@ class Solr implements IndexEngine {
 	public $raw = false;
 
 	/**
-	 * The HTTP_Request object used for REST transactions
-	 * @var HTTP_Request $client
+	 * The Curl handler object used for REST transactions
+	 * @var Curl $client
 	 */
 	public $client;
 
