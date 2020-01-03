@@ -3,7 +3,7 @@
  * Table Definition for library
  */
 require_once 'DB/DataObject.php';
-require_once 'DB/DataObject/Cast.php';
+
 
 class LoanRule extends DB_DataObject {
 	public $__table = 'loan_rules';   // table name

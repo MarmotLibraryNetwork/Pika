@@ -9,7 +9,7 @@
  *
  */
 require_once 'DB/DataObject.php';
-require_once 'DB/DataObject/Cast.php';
+
 class ArchiveExploreMoreBar extends DB_DataObject
 {
 	public $__table = 'library_archive_explore_more_bar';

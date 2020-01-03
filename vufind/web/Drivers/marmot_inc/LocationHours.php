@@ -3,7 +3,7 @@
  * Table Definition for LocationHours.
  */
 require_once 'DB/DataObject.php';
-require_once 'DB/DataObject/Cast.php';
+
 
 class LocationHours extends DB_DataObject
 {

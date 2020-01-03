@@ -3,7 +3,7 @@
  * Table Definition for User Ratings
  */
 require_once 'DB/DataObject.php';
-require_once 'DB/DataObject/Cast.php';
+
 
 class UserWorkReview extends DB_DataObject
 {

@@ -3,7 +3,7 @@
  * Table Definition for user
  */
 require_once 'DB/DataObject.php';
-require_once 'DB/DataObject/Cast.php';
+//
 
 class User extends DB_DataObject {
 	###START_AUTOCODE

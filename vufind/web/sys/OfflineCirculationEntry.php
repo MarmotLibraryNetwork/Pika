@@ -8,7 +8,7 @@
  * Time: 9:49 AM
  */
 require_once 'DB/DataObject.php';
-require_once 'DB/DataObject/Cast.php';
+
 
 class OfflineCirculationEntry extends DB_DataObject{
 	public $__table = 'offline_circulation';

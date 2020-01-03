@@ -1,6 +1,6 @@
 <?php
 require_once 'DB/DataObject.php';
-require_once 'DB/DataObject/Cast.php';
+
 
 abstract class FacetSetting extends DB_DataObject {
 

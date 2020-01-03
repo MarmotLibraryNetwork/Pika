@@ -18,7 +18,6 @@
  *
  */
 
-require_once 'Smarty/Smarty.class.php';
 require_once ROOT_DIR . '/sys/mobile_device_detect.php';
 
 // Smarty Extension class
@@ -104,10 +103,8 @@ class UInterface extends Smarty
 		// TODO: The correct setting for caching is 0, 1 or 2
 		// 0 will turn caching off. Not sure what a false value will do.
 		$this->caching       = false;
-		$this->debug         = true;
-		// TODO: Smarty doesn't have a setting for debug. The class var is debugging.
 		// debug may be used for something else.
-		$this->debugging     = false;
+		$this->debugging     = true;
 		$this->compile_check = true;
 
 		unset($local);

@@ -30,6 +30,9 @@ $timer->logTime("Read Config");
 if ($configArray['System']['debug']) {
 	ini_set('display_errors', true);
 	error_reporting(E_ALL & ~E_DEPRECATED & ~E_STRICT);
+} else {
+	ini_set('display_errors', 0);
+	ini_set('html_errors', 0);
 }
 
 //Use output buffering to allow session cookies to have different values

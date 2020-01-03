@@ -3,7 +3,7 @@
  * Table Definition for Materials Request
  */
 require_once 'DB/DataObject.php';
-require_once 'DB/DataObject/Cast.php';
+
 
 class MaterialsRequestStatus extends DB_DataObject {
 	public $__table = 'materials_request_status';   // table name

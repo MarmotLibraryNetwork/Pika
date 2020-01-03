@@ -3,7 +3,7 @@
  * Table Definition for bad words
  */
 require_once 'DB/DataObject.php';
-require_once 'DB/DataObject/Cast.php';
+
 
 class SearchStat extends DB_DataObject
 {

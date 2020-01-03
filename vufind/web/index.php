@@ -17,7 +17,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
-
+//phpinfo();
+//die;
 /** CORE APPLICATION CONTROLLER **/
 require_once 'bootstrap.php';
 
@@ -1015,10 +1016,3 @@ function loadUserData(){
 	}
 }
 
-// polyfill for php 7
-function array_key_first(array $arr) {
-	foreach($arr as $key => $unused) {
-		return $key;
-	}
-	return NULL;
-}

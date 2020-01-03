@@ -9,7 +9,7 @@
  *
  */
 require_once 'DB/DataObject.php';
-require_once 'DB/DataObject/Cast.php';
+
 class MaterialsRequestFormFields extends DB_DataObject
 {
 	public $__table = 'materials_request_form_fields';

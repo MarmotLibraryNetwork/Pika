@@ -3,7 +3,7 @@
  * Table Definition for spelling words
  */
 require_once 'DB/DataObject.php';
-require_once 'DB/DataObject/Cast.php';
+
 
 class SpellingWord extends DB_DataObject
 {
