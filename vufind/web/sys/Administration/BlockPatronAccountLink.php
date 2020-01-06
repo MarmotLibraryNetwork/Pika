@@ -60,9 +60,11 @@ class BlockPatronAccountLink extends DB_DataObject
 	/**
 	 * Override the update functionality to store account ids rather than barcodes
 	 *
+	 * @param object|bool $dataObject
+	 * @return bool|int
 	 * @see DB/DB_DataObject::update()
 	 */
-	public function update(){
+	public function update($dataObject = false){
 		$this->getAccountIds();
 		if (!$this->primaryAccountId) return false;  // require a primary account id
 		if (!$this->blockedLinkAccountId && !$this->blockLinking) return false; // require at least one of these

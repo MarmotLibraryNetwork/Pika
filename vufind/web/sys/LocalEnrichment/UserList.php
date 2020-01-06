@@ -119,7 +119,7 @@ class UserList extends DB_DataObject
 		}
 		return parent::insert();
 	}
-	function update(){
+	function update($dataObject = false){
 		if ($this->created == 0){
 			$this->created = time();
 		}
@@ -130,7 +130,7 @@ class UserList extends DB_DataObject
 		}
 		return $result;
 	}
-	function delete(){
+	function delete($useWhere = false){
 		$this->deleted = 1;
 		$this->dateUpdated = time();
 		return parent::delete();

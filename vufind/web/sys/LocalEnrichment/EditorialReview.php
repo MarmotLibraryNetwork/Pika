@@ -23,14 +23,13 @@ class EditorialReview extends DB_DataObject {
 	}
 
 	function formattedPubDate() {
-
 		$publicationDate = getDate($this->pubDate);
 		$pDate = $publicationDate["mon"]."/".$publicationDate["mday"]."/".$publicationDate["year"];
 		return $pDate;
 	}
 
 	static function getObjectStructure(){
-		$structure = array(
+		return array(
 		array(
 			'property'=>'editorialReviewId',
 			'type'=>'hidden',
@@ -105,7 +104,6 @@ class EditorialReview extends DB_DataObject {
 			'storeDb' => true,
 		),
 		);
-		return $structure;
 	}
 
 	function insert(){
@@ -113,21 +111,17 @@ class EditorialReview extends DB_DataObject {
 		if (!isset($this->pubDate)){
 			$this->pubDate = time();
 		}
-
 		$ret = parent::insert();
-
 		return $ret;
 	}
 
-	function update(){
+	function update($dataObject = false){
 		$ret =  parent::update();
-
 		return $ret;
 	}
 
-	function delete(){
+	function delete($useWhere = false){
 		$ret =  parent::delete();
-
 		return $ret;
 	}
 }

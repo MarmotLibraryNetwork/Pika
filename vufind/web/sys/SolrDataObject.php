@@ -8,7 +8,7 @@ abstract class SolrDataObject extends DB_DataObject{
 	 */
 	abstract function getObjectStructure();
 
-	function update(){
+	function update($dataObject = false){
 		return $this->updateDetailed(true);
 	}
 	private $updateStarted = false;
@@ -61,7 +61,7 @@ abstract class SolrDataObject extends DB_DataObject{
 			return true;
 		}
 	}
-	function delete(){
+	function delete($useWhere = false){
 		$result = parent::delete();
 		if ($result != FALSE){
 			$this->removeFromSolr();
