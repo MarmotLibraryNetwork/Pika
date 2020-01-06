@@ -1039,7 +1039,7 @@ class MarcRecord extends IndexRecord
 	}
 
 
-	function getDescriptionFast()
+	function getDescriptionFast($useHighlighting = false)
 	{
 		/** @var File_MARC_Data_Field $descriptionField */
 		if ($this->getMarcRecord()) {
