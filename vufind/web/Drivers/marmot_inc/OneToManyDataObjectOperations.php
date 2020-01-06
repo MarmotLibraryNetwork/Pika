@@ -30,7 +30,8 @@ trait OneToManyDataObjectOperations {
 	 */
 	private function getKeyThis(){
 		if (empty($this->keyThis)){
-			$firstKey      = reset($this->keys());
+			$keys = $this->keys();
+			$firstKey      = reset($keys);
 			$this->keyThis = $firstKey;
 		}
 		return $this->keyThis;
