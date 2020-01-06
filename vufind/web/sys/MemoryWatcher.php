@@ -5,6 +5,11 @@ class MemoryWatcher{
 	private $memoryMessages;
 	private $memoryLoggingEnabled = false;
 
+
+	public function __construct() {
+		$this->MemoryWatcher();
+	}
+
 	public function MemoryWatcher(){
 		global $configArray;
 		if ($configArray){
