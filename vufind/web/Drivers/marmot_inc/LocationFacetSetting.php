@@ -5,7 +5,7 @@ class LocationFacetSetting extends FacetSetting {
 	public $__table = 'location_facet_setting';    // table name
 	public $locationId;
 
-	static function getObjectStructure(){
+	static function getObjectStructure($availableFacets = NULL){
 		$location = new Location();
 		$location->orderBy('displayName');
 		if (UserAccount::userHasRole('libraryAdmin') || UserAccount::userHasRole('libraryManager')){

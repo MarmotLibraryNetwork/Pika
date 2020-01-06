@@ -28,7 +28,7 @@ class subnet extends DB_DataObject
 		$this->calcIpRange();
 		return parent::insert();
 	}
-	function update(){
+	function update($dataObject = false){
 		$this->calcIpRange();
 		return parent::update();
 	}
