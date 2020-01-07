@@ -17,13 +17,12 @@ class Flatirons extends Sierra
 	public function getSelfRegistrationFields()
 	{
 		global $library;
-		global $library;
 		// get library code
 		$location            = new Location();
 		$location->libraryId = $library->libraryId;
 		$location->find(true);
 		if(!$location) {
-			//return ['success'=>false, 'barcode'=>''];
+			return ['success'=>false, 'barcode'=>''];
 		}
 		$homeLibraryCode = $location->code;
 
@@ -118,7 +117,7 @@ class Flatirons extends Sierra
 		return $fields;
 	}
 
-	function selfRegister()
+	function selfRegister($extraSelfRegParams = false)
 	{
 		// Capitalize Mailing address
 		$_REQUEST['address'] = strtoupper($_REQUEST['address']);
@@ -126,6 +125,10 @@ class Flatirons extends Sierra
 		$_REQUEST['state']   = strtoupper($_REQUEST['state']);
 		$_REQUEST['zip']     = strtoupper($_REQUEST['zip']);
 
-		return parent::selfRegister();
+		$extraSelfRegParams                = [];
+		$extraSelfRegParams['varFields'][] = ["fieldTag" => "x", "content"  => "Created Online"];
+		$extraSelfRegParams['pMessage']    = 'o';
+
+		return parent::selfRegister($extraSelfRegParams);
 	}
 }
