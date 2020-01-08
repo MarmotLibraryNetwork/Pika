@@ -29,6 +29,11 @@ class Marmot extends Sierra {
 		parent::__construct($accountProfile);
 	}
 
+	/**
+	 * @param bool $extraSelfRegParams
+	 * @return array
+	 * @throws \ErrorException
+	 */
 	public function selfRegister($extraSelfRegParams = false)
 	{
 		

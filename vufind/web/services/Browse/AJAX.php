@@ -402,7 +402,7 @@ class Browse_AJAX extends AJAXHandler {
 		if (!empty($this->subCategories)){
 			// passed URL variable, or first sub-category
 			if (!empty($_REQUEST['subCategoryTextId'])){
-				$test              = array_search($_REQUEST['subCategoryTextId'], $this->subCategories);
+				//$test              = array_search($_REQUEST['subCategoryTextId'], $this->subCategories);
 				$subCategoryTextId = $_REQUEST['subCategoryTextId'];
 			}else{
 				$subCategoryTextId = $this->subCategories[0]->textId;
@@ -421,7 +421,7 @@ class Browse_AJAX extends AJAXHandler {
 		$result = $this->getBrowseCategoryResults();
 
 		// Update Stats
-		$this->upBrowseCategoryCounter();
+		// $this->upBrowseCategoryCounter();
 
 		return array_merge($result, $response);
 	}

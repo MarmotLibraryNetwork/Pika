@@ -1422,9 +1422,12 @@ class Library extends DB_DataObject {
 		}
 		return $return;
 	}
+
 	/**
 	 * Override the update functionality to save related objects
 	 *
+	 * @param bool $dataObject
+	 * @return bool|int
 	 * @see DB/DB_DataObject::update()
 	 */
 	public function update($dataObject = false){

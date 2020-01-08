@@ -18,6 +18,7 @@
  *
  */
 //phpinfo();
+
 //die;
 /** CORE APPLICATION CONTROLLER **/
 require_once 'bootstrap.php';
@@ -36,10 +37,6 @@ spl_autoload_register('vufind_autoloader');
 initializeSession();
 $timer->logTime("Initialized session");
 
-//global $logger;
-//$logger->log("Opening URL " . $_SESSION['REQUEST_URI'], PEAR_LOG_DEBUG);
-
-// PHP 7 logger
 $pikaLogger = new Pika\Logger('PikaLogger', true);
 
 if (isset($_REQUEST['test_role'])){
@@ -439,6 +436,8 @@ if (isset($_REQUEST['genealogyType'])){
 }else{
 	$interface->assign('genealogySearchIndex', 'GenealogyKeyword');
 }
+
+// TODO: searchSource sin't set anywhere?
 if ($searchSource == 'genealogy') {
 	$_REQUEST['type'] = isset($_REQUEST['genealogyType']) ? $_REQUEST['genealogyType'] : 'GenealogyKeyword';
 }elseif ($searchSource == 'islandora'){
@@ -851,6 +850,8 @@ function vufind_autoloader($class) {
 		}elseif (file_exists('sys/Authentication/' . $class . '.php')){
 			$className = ROOT_DIR . '/sys/Authentication/' . $class . '.php';
 			require_once $className;
+		}elseif (file_exists('sys/' . $nameSpaceClass)){
+			require_once 'sys/' . $nameSpaceClass;
 		}else{
 			try {
 				include_once $nameSpaceClass;
@@ -979,13 +980,14 @@ function initializeSession(){
 	$session_type = $configArray['Session']['type'];
 	$session_lifetime = $configArray['Session']['lifetime'];
 	$session_rememberMeLifetime = $configArray['Session']['rememberMeLifetime'];
-	register_shutdown_function('session_write_close');
 	$sessionClass = ROOT_DIR . '/sys/' . $session_type . '.php';
 	require_once $sessionClass;
 	if (class_exists($session_type)) {
+		session_save_path('/tmp');
 		/** @var SessionInterface $session */
 		$session = new $session_type();
 		$session->init($session_lifetime, $session_rememberMeLifetime);
+		@session_register_shutdown();
 	}
 	$timer->logTime('Session initialization ' . $session_type);
 }
