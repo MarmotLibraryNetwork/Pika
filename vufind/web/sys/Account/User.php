@@ -219,7 +219,7 @@ class User extends DB_DataObject {
 			$role            = new Role();
 			$canUseTestRoles = false;
 			if ($this->id){
-				$escapedId = mysql_escape_string($this->id);
+				$escapedId = (int)$this->id; // type cast to integer to avoid badnesses.
 				$role->query("SELECT roles.* FROM roles INNER JOIN user_roles ON roles.roleId = user_roles.roleId WHERE userId = " . $escapedId . " ORDER BY name");
 				while ($role->fetch()){
 					$this->roles[$role->roleId] = $role->name;
