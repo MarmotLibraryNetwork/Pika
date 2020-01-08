@@ -618,19 +618,20 @@ class GroupedWork_AJAX extends AJAXHandler {
 	}
 
 	function getEmailForm(){
-		global $interface;
-		require_once ROOT_DIR . '/sys/Mailer.php';
-
-//		$sms = new SMSMailer();
-//		$interface->assign('carriers', $sms->getCarriers());
-		$id = $_REQUEST['id'];
-		$interface->assign('id', $id);
-
-		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
-		$recordDriver = new GroupedWorkDriver($id);
-
+		$id             = $_REQUEST['id'];
+		$recordDriver   = new GroupedWorkDriver($id);
 		$relatedRecords = $recordDriver->getRelatedRecords();
+		global $interface;
+		$interface->assign('id', $id);
 		$interface->assign('relatedRecords', $relatedRecords);
+
+		if (UserAccount::isLoggedIn()){
+			/** @var User $user */
+			$user = UserAccount::getActiveUserObj();
+			if (!empty($user->email)){
+				$interface->assign('from', $user->email);
+			}
+		}
 		$results = array(
 			'title'        => 'Share via E-mail',
 			'modalBody'    => $interface->fetch("GroupedWork/email-form-body.tpl"),
@@ -645,44 +646,31 @@ class GroupedWork_AJAX extends AJAXHandler {
 		global $interface;
 		global $configArray;
 
-		$to      = strip_tags($_REQUEST['to']);
-		$from    = strip_tags($_REQUEST['from']);
 		$message = $_REQUEST['message'];
-
-		$id = $_REQUEST['id'];
-		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
-		$recordDriver = new GroupedWorkDriver($id);
-		$interface->assign('recordDriver', $recordDriver);
-		$interface->assign('url', $recordDriver->getAbsoluteUrl());
-
-		if (isset($_REQUEST['related_record'])){
-			$relatedRecord = $_REQUEST['related_record'];
-			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
-			$recordDriver = new GroupedWorkDriver($id);
-
-			$relatedRecords = $recordDriver->getRelatedRecords();
-
-			foreach ($relatedRecords as $curRecord){
-				if ($curRecord['id'] == $relatedRecord){
-					if (isset($curRecord['callNumber'])){
-						$interface->assign('callnumber', $curRecord['callNumber']);
-					}
-					if (isset($curRecord['shelfLocation'])){
-						$interface->assign('shelfLocation', strip_tags($curRecord['shelfLocation']));
-					}
-					$interface->assign('url', $curRecord['driver']->getAbsoluteUrl());
-					break;
-				}
-			}
-		}
-
-		$subject = translate("Library Catalog Record") . ": " . $recordDriver->getTitle();
-		$interface->assign('from', $from);
-		$interface->assign('emailDetails', $recordDriver->getEmail());
-		$interface->assign('recordID', $recordDriver->getUniqueID());
 		if (strpos($message, 'http') === false && strpos($message, 'mailto') === false && $message == strip_tags($message)){
+			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+			$id           = $_REQUEST['id'];
+			$recordDriver = new GroupedWorkDriver($id);
+			$to           = strip_tags($_REQUEST['to']);
+			$from         = strip_tags($_REQUEST['from']);
+			$interface->assign('from', $from);
 			$interface->assign('message', $message);
-			$body = $interface->fetch('Emails/grouped-work-email.tpl');
+			$interface->assign('recordDriver', $recordDriver);
+			$interface->assign('url', $recordDriver->getAbsoluteUrl());
+
+			if (!empty($_REQUEST['related_record'])){
+				$relatedRecord = $recordDriver->getRelatedRecord($_REQUEST['related_record']);
+				if (!empty($relatedRecord['callNumber'])){
+					$interface->assign('callnumber', $relatedRecord['callNumber']);
+				}
+				if (!empty($relatedRecord['shelfLocation'])){
+					$interface->assign('shelfLocation', strip_tags($relatedRecord['shelfLocation']));
+				}
+				$interface->assign('url', $relatedRecord['driver']->getAbsoluteUrl());
+			}
+
+			$subject = translate("Library Catalog Record") . ": " . $recordDriver->getTitle();
+			$body    = $interface->fetch('Emails/grouped-work-email.tpl');
 
 			require_once ROOT_DIR . '/sys/Mailer.php';
 			$mail        = new VuFindMailer();
