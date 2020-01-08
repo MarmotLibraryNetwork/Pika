@@ -139,18 +139,7 @@ class VuFindMailer {
  * @access      public
  */
 class SMSMailer extends VuFindMailer {
-	// Defaults, usually overridden by contents of web/conf/sms.ini:
-	private $carriers = array(
-        'virgin' => array('name' => 'Virgin Mobile', 'domain' => 'vmobl.com'),
-        'att' => array('name' => 'AT&T', 'domain' => 'txt.att.net'),
-        'verizon' => array('name' => 'Verizon', 'domain' => 'vtext.com'),
-        'nextel' => array('name' => 'Nextel', 'domain' => 'messaging.nextel.com'),
-        'sprint' => array('name' => 'Sprint', 'domain' => 'messaging.sprintpcs.com'),
-        'tmobile' => array('name' => 'T Mobile', 'domain' => 'tmomail.net'),
-        'alltel' => array('name' => 'Alltel', 'domain' => 'message.alltel.com'),
-        'Cricket' => array('name' => 'Cricket', 'domain' => 'mms.mycricket.com')
-	);
-
+	private $carriers = [];
 	/**
 	 * Constructor
 	 *
@@ -158,18 +147,18 @@ class SMSMailer extends VuFindMailer {
 	 *
 	 * @access  public
 	 */
-	public function __construct() {
+	public function __construct(){
 		global $configArray;
 
 		// if using sms.ini, then load the carriers from it
 		// otherwise, fall back to the default list of US carriers
-		if (isset($configArray['Extra_Config']['sms'])) {
+		if (isset($configArray['Extra_Config']['sms'])){
 			$smsConfig = getExtraConfigArray('sms');
-			if (isset($smsConfig['Carriers']) && !empty($smsConfig['Carriers'])) {
+			if (!empty($smsConfig['Carriers'])){
 				$this->carriers = array();
-				foreach ($smsConfig['Carriers'] as $id=>$config) {
+				foreach ($smsConfig['Carriers'] as $id => $config){
 					list($domain, $name) = explode(':', $config, 2);
-					$this->carriers[$id] = array('name'=>$name, 'domain'=>$domain);
+					$this->carriers[$id] = array('name' => $name, 'domain' => $domain);
 				}
 			}
 		}

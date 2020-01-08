@@ -121,45 +121,20 @@ function mapValue($mapName, $value){
  * Support function -- get the contents of one of the ini files specified in the
  * [Extra_Config] section of config.ini.
  *
- * @param   string $name        The ini's name from the [Extra_Config] section of config.ini
+ * @param string $name The ini's name from the [Extra_Config] section of config.ini
  * @return  array       The retrieved configuration settings.
  */
-function getExtraConfigArray($name)
-{
+function getExtraConfigArray($name){
 	static $extraConfigs = array();
 
 	// If the requested settings aren't loaded yet, pull them in:
-	if (!isset($extraConfigs[$name])) {
+	if (!isset($extraConfigs[$name])){
 		// Try to load the .ini file; if loading fails, the file probably doesn't
 		// exist, so we can treat it as an empty array.
 		$extraConfigs[$name] = @parse_ini_file(getExtraConfigArrayFile($name), true);
-		if ($extraConfigs[$name] === false) {
+		if ($extraConfigs[$name] === false){
 			$extraConfigs[$name] = array();
 		}
-
-//		if ($name == 'facets'){
-//			//*************************
-//			//Marmot overrides for controlling facets based on library system.
-//			/** @var $librarySingleton Library */
-//			global $librarySingleton;
-//			$library = $librarySingleton->getActiveLibrary();
-//			if (isset($library)){
-//				if ($library->restrictSearchByLibrary && $library->useScope){
-//					unset($extraConfigs[$name]['Results']['owning_library']);
-//					unset($extraConfigs[$name]['Author']['owning_library']);
-//				}
-//			}
-//			global $locationSingleton;
-//			$activeLocation = $locationSingleton->getActiveLocation();
-//			if (!is_null($activeLocation)){
-//				if ($activeLocation->restrictSearchByLocation && $activeLocation->useScope){
-//					unset($extraConfigs[$name]['Results']['owning_library']);
-//					unset($extraConfigs[$name]['Results']['owning_location']);
-//					unset($extraConfigs[$name]['Author']['owning_library']);
-//					unset($extraConfigs[$name]['Author']['owning_location']);
-//				}
-//			}
-//		}
 	}
 
 	return $extraConfigs[$name];
@@ -193,55 +168,50 @@ function ini_merge($config_ini, $custom_ini)
 function readConfig(){
 	//Read default configuration file
 	$configFile = '../../sites/default/conf/config.ini';
-	$mainArray = parse_ini_file($configFile, true);
+	$mainArray  = parse_ini_file($configFile, true);
 
 	global $serverName, $instanceName;
-	$serverUrl = $_SERVER['SERVER_NAME'];
-	$server = $serverUrl;
+	$serverUrl   = $_SERVER['SERVER_NAME'];
+	$server      = $serverUrl;
 	$serverParts = explode('.', $server);
-	$serverName = 'default';
+	$serverName  = 'default';
 	while (count($serverParts) > 0){
 		$tmpServername = join('.', $serverParts);
-		$configFile = "../../sites/$tmpServername/conf/config.ini";
+		$configFile    = "../../sites/$tmpServername/conf/config.ini";
 		if (file_exists($configFile)){
 			$serverArray = parse_ini_file($configFile, true);
-			$mainArray = ini_merge($mainArray, $serverArray);
-			$serverName = $tmpServername;
+			$mainArray   = ini_merge($mainArray, $serverArray);
+			$serverName  = $tmpServername;
 
 			$passwordFile = "../../sites/$tmpServername/conf/config.pwd.ini";
 			if (file_exists($passwordFile)){
 				$serverArray = parse_ini_file($passwordFile, true);
-				$mainArray = ini_merge($mainArray, $serverArray);
+				$mainArray   = ini_merge($mainArray, $serverArray);
 			}
+			break;
 		}
 
 		array_shift($serverParts);
 	}
 
 	// Sanity checking to make sure we loaded a good file
-	// @codeCoverageIgnoreStart
 	if ($serverName == 'default'){
 		global $logger;
 		if ($logger){
 			$logger->log('Did not find servername for server ' . $_SERVER['SERVER_NAME'], PEAR_LOG_ERR);
 		}
 		PEAR_Singleton::raiseError("Invalid configuration, could not find site for " . $_SERVER['SERVER_NAME']);
+		die();
 	}
 
 	if ($mainArray == false){
-		echo("Unable to parse configuration file $configFile, please check syntax");
+		die("Unable to parse configuration file $configFile, please check syntax");
 	}
-	// @codeCoverageIgnoreEnd
 
 	// Set a instanceName so that memcache variables can be stored for a specific instance of Pika,
 	// rather than the $serverName will depend on the specific interface a user is browsing to.
 	$instanceName = parse_url($mainArray['Site']['url'], PHP_URL_HOST);
-		// Have to set the instanceName before the transformation of $mainArray['Site']['url'] below.
-
-	//If we are accessing the site via a subdomain, need to preserve the subdomain
-	//Don't try to preserve SSL since the combination of proxy and SSL does not work nicely.
-	//i.e. https://mesa.marmot.org is proxied to https://mesa.opac.marmot.org which does not have
-	//a valid SSL cert
+	// Have to set the instanceName before the transformation of $mainArray['Site']['url'] below.
 
 	//We no longer are doing proxies as described above so we can preserve SSL now.
 	if (isset($_SERVER['HTTPS'])){
@@ -261,7 +231,7 @@ function readConfig(){
  *
  * @return array the configuration options adjusted based on the scoping rules.
  */
-function updateConfigForScoping($configArray) {
+function updateConfigForScoping($configArray){
 	global $timer;
 	//Get the subdomain for the request
 	global $serverName;
@@ -272,23 +242,23 @@ function updateConfigForScoping($configArray) {
 	$timer->logTime('starting updateConfigForScoping');
 
 	$subdomainsToTest = array();
-	if(strpos($_SERVER['SERVER_NAME'], '.')){
-		$serverComponents = explode('.', $_SERVER['SERVER_NAME']);
+	if (strpos($_SERVER['SERVER_NAME'], '.')){
+		$serverComponents                = explode('.', $_SERVER['SERVER_NAME']);
 		$possibleMarmotTestSiteSubdomain = '';
 		if (count($serverComponents) >= 3){
 			//URL is probably of the form subdomain.marmot.org or subdomain.opac.marmot.org
-			if ($serverComponents[0] == 'librarycatalog') {
+			if ($serverComponents[0] == 'librarycatalog'){
 				// Special Handling for Sacramento Production URLs which don't follow the conventional URL structure, but will need to identified by the second component for some of the URLs
 				$subdomainsToTest[] = $serverComponents[1];
-			} else {
+			}else{
 				$subdomainsToTest[]              = $serverComponents[0];
 				$possibleMarmotTestSiteSubdomain = $serverComponents[0];
 			}
-		} else if (count($serverComponents) == 2){
+		}elseif (count($serverComponents) == 2){
 			//URL could be either subdomain.localhost or marmot.org. Only use the subdomain
 			//If the second component is localhost.
 			if (strcasecmp($serverComponents[1], 'localhost') == 0){
-				$subdomainsToTest[] = $serverComponents[0];
+				$subdomainsToTest[]              = $serverComponents[0];
 				$possibleMarmotTestSiteSubdomain = $serverComponents[0];
 			}
 		}
@@ -306,11 +276,11 @@ function updateConfigForScoping($configArray) {
 	global $library;
 	global $locationSingleton;
 	if (isset($_SESSION['library']) && isset($_SESSION['location'])){
-		$library = $_SESSION['library'];
+		$library           = $_SESSION['library'];
 		$locationSingleton = $_SESSION['library'];
 		$timer->logTime('got library and location from session');
-	}else {
-		for ($i = 0; $i < count($subdomainsToTest); $i++){
+	}else{
+		for ($i = 0;$i < count($subdomainsToTest);$i++){
 			$subdomain = $subdomainsToTest[$i];
 			$timer->logTime("testing subdomain $i $subdomain");
 			$Library = new Library();
@@ -319,19 +289,19 @@ function updateConfigForScoping($configArray) {
 			$Library->find();
 			$timer->logTime("searched for library by subdomain $subdomain");
 
-			if ($Library->N == 1) {
+			if ($Library->N == 1){
 				$Library->fetch();
 				//Make the library information global so we can work with it later.
 				$library = $Library;
 				$timer->logTime("found the library based on subdomain");
 				break;
-			} else {
+			}else{
 				//The subdomain can also indicate a location.
 				$Location = new Location();
 				$Location->whereAdd("code = '$subdomain'");
 				$Location->whereAdd("subdomain = '$subdomain'", 'OR');
 				$Location->find();
-				if ($Location->N == 1) {
+				if ($Location->N == 1){
 					$Location->fetch();
 					//We found a location for the subdomain, get the library.
 					/** @var Library $librarySingleton */
@@ -340,27 +310,27 @@ function updateConfigForScoping($configArray) {
 					$locationSingleton->setActiveLocation(clone $Location);
 					$timer->logTime("found the location and library based on subdomain");
 					break;
-				} else {
+				}else{
 					//Check to see if there is only one library in the system
 					$Library = new Library();
 					$Library->find();
-					if ($Library->N == 1) {
+					if ($Library->N == 1){
 						$Library->fetch();
 						$library = $Library;
 						$timer->logTime("there is only one library for this install");
 						break;
-					} else {
+					}else{
 						//If we are on the last subdomain to test, grab the default.
 						if ($i == count($subdomainsToTest) - 1){
 							//Get the default library
-							$Library = new Library();
+							$Library            = new Library();
 							$Library->isDefault = 1;
 							$Library->find();
-							if ($Library->N == 1) {
+							if ($Library->N == 1){
 								$Library->fetch();
 								$library = $Library;
 								$timer->logTime("found the library based on the default");
-							} else {
+							}else{
 								echo("Could not determine the correct library to use for this install");
 							}
 						}
@@ -381,17 +351,17 @@ function updateConfigForScoping($configArray) {
 		//Add an extra css file for the location if it exists.
 		$themes = explode(',', $library->themeName);
 		foreach ($themes as $themeName){
-			if ($location != null && file_exists('./interface/themes/' . $themeName . '/images/'. $location->code .'_logo_responsive.png')) {
-				$configArray['Site']['responsiveLogo'] = '/interface/themes/' . $themeName . '/images/'. $location->code .'_logo_responsive.png';
+			if ($location != null && file_exists('./interface/themes/' . $themeName . '/images/' . $location->code . '_logo_responsive.png')){
+				$configArray['Site']['responsiveLogo'] = '/interface/themes/' . $themeName . '/images/' . $location->code . '_logo_responsive.png';
 			}
-			if ($subdomain != null && file_exists('./interface/themes/' . $themeName . '/images/'. $subdomain .'_logo_responsive.png')) {
-				$configArray['Site']['responsiveLogo'] = '/interface/themes/' . $themeName . '/images/'. $subdomain .'_logo_responsive.png';
+			if ($subdomain != null && file_exists('./interface/themes/' . $themeName . '/images/' . $subdomain . '_logo_responsive.png')){
+				$configArray['Site']['responsiveLogo'] = '/interface/themes/' . $themeName . '/images/' . $subdomain . '_logo_responsive.png';
 			}
-			if ($location != null && file_exists('./interface/themes/' . $themeName . '/images/'. $location->code .'_logo_small.png')) {
-				$configArray['Site']['smallLogo'] = '/interface/themes/' . $themeName . '/images/'. $location->code .'_logo_small.png';
+			if ($location != null && file_exists('./interface/themes/' . $themeName . '/images/' . $location->code . '_logo_small.png')){
+				$configArray['Site']['smallLogo'] = '/interface/themes/' . $themeName . '/images/' . $location->code . '_logo_small.png';
 			}
-			if ($location != null && file_exists('./interface/themes/' . $themeName . '/images/'. $location->code .'_logo_large.png')) {
-				$configArray['Site']['largeLogo'] = '/interface/themes/' . $themeName . '/images/'. $location->code .'_logo_large.png';
+			if ($location != null && file_exists('./interface/themes/' . $themeName . '/images/' . $location->code . '_logo_large.png')){
+				$configArray['Site']['largeLogo'] = '/interface/themes/' . $themeName . '/images/' . $location->code . '_logo_large.png';
 			}
 		}
 		$timer->logTime('loaded themes');

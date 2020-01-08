@@ -2,7 +2,7 @@
 /**
  * Table Definition for loading number of holds by ils id
  *
- * @category VuFind-Plus-2014 
+ * @category Pika
  * @author Mark Noble <mark@marmot.org>
  * Date: 10/15/14
  * Time: 9:09 AM

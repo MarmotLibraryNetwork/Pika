@@ -43,7 +43,13 @@ abstract class HorizonAPI extends Horizon{
 
 	//TODO: Additional caching of sessionIds by patron
 	private static $sessionIdsForUsers = array();
-	/** login the user via web services API **/
+
+	/** login the user via web services API *
+	 * @param $username
+	 * @param $password
+	 * @param $validatedViaSSO
+	 * @return User|null
+	 */
 	public function patronLogin($username, $password, $validatedViaSSO){
 		global $timer;
 		global $configArray;

@@ -11,7 +11,7 @@
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/Admin.php';
 
-class IndexingStats extends Admin_Admin{
+class IndexingStats extends Admin_Admin {
 	function launch(){
 		global $interface;
 		global $configArray;
@@ -20,7 +20,7 @@ class IndexingStats extends Admin_Admin{
 		$baseDir = dirname($configArray['Reindex']['marcPath']);
 
 		$indexingStatFiles = array();
-		$allFilesInDir = scandir($baseDir);
+		$allFilesInDir     = scandir($baseDir);
 		foreach ($allFilesInDir as $curFile){
 			if (preg_match('/reindex_stats_([\\d-]+)\\.csv/', $curFile, $matches)){
 				$indexingStatFiles[$matches[1]] = $baseDir . '/' . $curFile;
@@ -32,7 +32,7 @@ class IndexingStats extends Admin_Admin{
 		if (count($indexingStatFiles) != 0){
 			//Get the specified file, the file for today, or the most recent file
 			$dateToRetrieve = date('Y-m-d');
-			if (isset($_REQUEST['day'])){
+			if (!empty($_REQUEST['day'])){
 				$dateToRetrieve = $_REQUEST['day'];
 			}
 			$fileToLoad = null;
@@ -44,9 +44,9 @@ class IndexingStats extends Admin_Admin{
 				$dateToRetrieve = $matches[1];
 			}
 
-			$indexingStatFhnd = fopen($fileToLoad, 'r');
+			$indexingStatFhnd   = fopen($fileToLoad, 'r');
 			$indexingStatHeader = fgetcsv($indexingStatFhnd);
-			$indexingStats = array();
+			$indexingStats      = array();
 			while ($curRow = fgetcsv($indexingStatFhnd)){
 				$indexingStats[] = $curRow;
 			}

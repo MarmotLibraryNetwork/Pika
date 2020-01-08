@@ -32,12 +32,17 @@
  */
 interface DriverInterface
 {
+	/**
+	 * DriverInterface constructor.
+	 * @param AccountProfile $accountProfile
+	 */
 	public function __construct($accountProfile);
 
 	public function patronLogin($username, $password, $validatedViaSSO);
 
 	/**
-	 * TODO: Document what this does.
+	 * Specifies Whether or not an ILS has it's own reading history functions we can use
+	 *
 	 * @param $id
 	 * @return int
 	 */
@@ -66,7 +71,7 @@ interface DriverInterface
 	/**
 	 * @return boolean true if the driver can renew all titles in a single pass
 	 */
-	public function hasFastRenewAll();
+//	public function hasFastRenewAll();
 
 	/**
 	 * Renew all titles currently checked out to the user
@@ -74,7 +79,7 @@ interface DriverInterface
 	 * @param $patron  User
 	 * @return mixed
 	 */
-	public function renewAll($patron);
+//	public function renewAll($patron);
 
 	/**
 	 * Renew a single title currently checked out to the user
