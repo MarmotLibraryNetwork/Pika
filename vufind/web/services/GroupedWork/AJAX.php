@@ -397,9 +397,6 @@ class GroupedWork_AJAX extends AJAXHandler {
 		}
 
 		if ($success){
-			global $analytics;
-			$analytics->addEvent('User Enrichment', 'Rate Title', $_REQUEST['id']);
-
 			// Reset any cached suggestion browse category for the user
 			$this->clearMySuggestionsBrowseCategoryCache();
 

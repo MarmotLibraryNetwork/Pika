@@ -342,32 +342,6 @@ if ($isLoggedIn && (!isset($_REQUEST['action']) || $_REQUEST['action'] != 'Logou
 	$masqueradeMode = false;
 }
 
-//Setup analytics
-// todo: Does anyone use Pika Analytics? Need to remove
-//require_once ROOT_DIR . '/sys/Analytics.php';
-////Define tracking to be done
-//global $analytics;
-//global $active_ip;
-//$analytics = new Analytics($active_ip, $startTime);
-//if (!$analytics->isTrackingDisabled()){
-//	$analytics->setModule($module);
-//	$analytics->setAction($action);
-//	$analytics->setObjectId(isset($_REQUEST['id']) ? $_REQUEST['id'] : null);
-//	$analytics->setMethod(isset($_REQUEST['method']) ? $_REQUEST['method'] : null);
-//	$analytics->setLanguage($interface->getLanguage());
-//	$analytics->setTheme($interface->getPrimaryTheme());
-//	$analytics->setMobile($interface->isMobile() ? 1 : 0);
-//	$analytics->setDevice(get_device_name());
-//	$analytics->setPhysicalLocation($physicalLocation);
-//	if ($isLoggedIn){
-//		$analytics->setPatronType(UserAccount::getUserPType());
-//		$analytics->setHomeLocationId(UserAccount::getUserHomeLocationId());
-//	}else{
-//		$analytics->setPatronType('logged out');
-//		$analytics->setHomeLocationId(-1);
-//	}
-//	$timer->logTime('Setup Analytics');
-//}
 
 //Find a reasonable default location to go to
 if ($module == null && $action == null){

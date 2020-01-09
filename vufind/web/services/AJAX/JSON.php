@@ -102,19 +102,6 @@ class AJAX_JSON extends AJAXHandler {
 		);
 	}
 
-//	function trackEvent(){
-//		global $analytics;
-//		if (!isset($_REQUEST['category']) || !isset($_REQUEST['eventAction'])){
-//			return 'Must provide a category and action to track an event';
-//		}
-//		$analytics->enableTracking();
-//		$category = strip_tags($_REQUEST['category']);
-//		$action   = strip_tags($_REQUEST['eventAction']);
-//		$data     = isset($_REQUEST['data']) ? strip_tags($_REQUEST['data']) : '';
-//		$analytics->addEvent($category, $action, $data);
-//		return true;
-//	}
-
 	function getHoursAndLocations(){
 		//Get a list of locations for the current library
 		global $library;

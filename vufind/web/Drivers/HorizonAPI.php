@@ -473,18 +473,9 @@ abstract class HorizonAPI extends Horizon{
 
 				$hold_result['title']  = $title;
 				$hold_result['bid']    = $recordId;
-				global $analytics;
-				if ($analytics){
-					if ($hold_result['success'] == true){
-						$analytics->addEvent('ILS Integration', 'Successful Hold', $title);
-					}else{
-						$analytics->addEvent('ILS Integration', 'Failed Hold', $hold_result['message'] . ' - ' . $title);
-					}
 				}
 				//Clear the patron profile
 				return $hold_result;
-
-			}
 
 	}
 
@@ -572,14 +563,9 @@ abstract class HorizonAPI extends Horizon{
 				$cancelHoldUrl     = $this->getWebServiceURL() . '/standard/cancelMyHold?clientID=' . $configArray['Catalog']['clientId'] . '&sessionToken=' . $sessionToken . '&holdKey=' . $holdKey;
 				$cancelHoldResponse = $this->getWebServiceResponse($cancelHoldUrl);
 
-				global $analytics;
-				if ($cancelHoldResponse){
-					//Clear the patron profile
-					$analytics->addEvent('ILS Integration', 'Hold Cancelled', $title);
-				}else{
-					$allCancelsSucceed = false;
+				if (!$cancelHoldResponse){
+					$allCancelsSucceed          = false;
 					$failure_messages[$holdKey] = "The hold for $title could not be cancelled.  Please try again later or see your librarian.";
-					$analytics->addEvent('ILS Integration', 'Hold Not Cancelled', $title);
 				}
 			}
 			if ($allCancelsSucceed){
@@ -615,13 +601,8 @@ abstract class HorizonAPI extends Horizon{
 					$changePickupLocationUrl      = $this->getWebServiceURL() . '/standard/changePickupLocation?clientID=' . $configArray['Catalog']['clientId'] . '&sessionToken=' . $sessionToken . '&holdKey=' . $holdKey . '&newLocation=' . $locationId;
 					$changePickupLocationResponse = $this->getWebServiceResponse($changePickupLocationUrl);
 
-					global $analytics;
-					if ($changePickupLocationResponse){
-						//Clear the patron profile
-						$analytics->addEvent('ILS Integration', 'Hold Suspended', $title);
-					}else{
+					if (!$changePickupLocationResponse){
 						$allLocationChangesSucceed = false;
-						$analytics->addEvent('ILS Integration', 'Hold Not Suspended', $title);
 					}
 				}
 				if ($allLocationChangesSucceed){
@@ -656,13 +637,8 @@ abstract class HorizonAPI extends Horizon{
 						$changePickupLocationUrl      = $this->getWebServiceURL() . '/standard/suspendMyHold?clientID=' . $configArray['Catalog']['clientId'] . '&sessionToken=' . $sessionToken . '&holdKey=' . $holdKey . '&suspendEndDate=' . $reactivationDate;
 						$changePickupLocationResponse = $this->getWebServiceResponse($changePickupLocationUrl);
 
-						global $analytics;
-						if ($changePickupLocationResponse){
-							//Clear the patron profile
-							$analytics->addEvent('ILS Integration', 'Hold Suspended', $title);
-						}else{
+						if (!$changePickupLocationResponse){
 							$allLocationChangesSucceed = false;
-							$analytics->addEvent('ILS Integration', 'Hold Not Suspended', $title);
 						}
 					}
 
@@ -693,13 +669,8 @@ abstract class HorizonAPI extends Horizon{
 						$changePickupLocationUrl      = $this->getWebServiceURL() . '/standard/unsuspendMyHold?clientID=' . $configArray['Catalog']['clientId'] . '&sessionToken=' . $sessionToken . '&holdKey=' . $holdKey;
 						$changePickupLocationResponse = $this->getWebServiceResponse($changePickupLocationUrl);
 
-						global $analytics;
-						if ($changePickupLocationResponse){
-							//Clear the patron profile
-							$analytics->addEvent('ILS Integration', 'Hold Suspended', $title);
-						}else{
+						if (!$changePickupLocationResponse){
 							$allUnsuspendsSucceed = false;
-							$analytics->addEvent('ILS Integration', 'Hold Not Suspended', $title);
 						}
 					}
 
@@ -830,21 +801,16 @@ abstract class HorizonAPI extends Horizon{
 		$renewItemUrl      = $this->getWebServiceURL() . '/standard/renewMyCheckout?clientID=' . $configArray['Catalog']['clientId'] . '&sessionToken=' . $sessionToken . '&itemID=' . $itemId;
 		$renewItemResponse = $this->getWebServiceResponse($renewItemUrl);
 
-		global $analytics;
 		if ($renewItemResponse && !isset($renewItemResponse->string)){
 			$success = true;
 			$message = 'Your item was successfully renewed.  The title is now due on ' . $renewItemResponse->dueDate;
 			//Clear the patron profile
-			if ($analytics){
-				$analytics->addEvent('ILS Integration', 'Renew Successful');
-			}
+
 		}else{
 			//TODO: check that title is included in the message
 			$success = false;
 			$message = $renewItemResponse->string;
-			if ($analytics){
-				$analytics->addEvent('ILS Integration', 'Renew Failed', $renewItemResponse->string);
-			}
+
 		}
 		return array(
 			'itemId'  => $itemId,

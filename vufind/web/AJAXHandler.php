@@ -24,9 +24,6 @@ abstract class AJAXHandler extends Action {
 	protected $methodsThatRespondThemselves           = array();
 
 	function launch(){
-		global $analytics;
-		$analytics->disableTracking();
-
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
 
 		if (!empty($method) && method_exists($this, $method)){

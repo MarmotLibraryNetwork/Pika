@@ -31,7 +31,6 @@ class Genealogy_Results extends Action {
 		global $configArray;
 		global $timer;
 		$user = UserAccount::getLoggedInUser();
-		global $analytics;
 
 		//Check to see if a user is logged in with admin permissions
 		if (UserAccount::isLoggedIn() && UserAccount::userHasRole('genealogyContributor')){
@@ -163,9 +162,6 @@ class Genealogy_Results extends Action {
 		$currentPage = isset($_REQUEST['page']) ? $_REQUEST['page'] : 1;
 		$interface->assign('page', $currentPage);
 
-		$allSearchSources = SearchSources::getSearchSources();
-		$translatedScope = $allSearchSources[$searchSource]['name'];
-		$analytics->addSearch($translatedScope, $searchObject->displayQuery(), $searchObject->isAdvanced(), $searchObject->getFullSearchType(), $searchObject->hasAppliedFacets(), $searchObject->getResultTotal());
 		if ($searchObject->getResultTotal() < 1) {
 			// No record found
 			$interface->assign('sitepath', $configArray['Site']['path']);

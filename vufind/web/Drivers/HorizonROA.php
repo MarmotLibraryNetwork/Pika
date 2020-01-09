@@ -957,14 +957,6 @@ abstract class HorizonROA implements DriverInterface
 		$hold_result['title'] = $title;
 		$hold_result['bid']   = $recordId; //TODO: bid or bib
 
-		global $analytics;
-		if ($analytics) {
-			if ($hold_result['success'] == true) {
-				$analytics->addEvent('ILS Integration', 'Successful Hold', $title);
-			} else {
-				$analytics->addEvent('ILS Integration', 'Failed Hold', $hold_result['message'] . ' - ' . $title);
-			}
-		}
 		return $hold_result;
 	}
 

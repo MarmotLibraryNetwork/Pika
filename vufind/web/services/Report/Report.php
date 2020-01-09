@@ -30,6 +30,7 @@ abstract class Report_Report extends Admin_Admin
 
 	function __construct()
 	{
+		//TODO: default constructor better
 		global $configArray;
 
 		if (!UserAccount::isLoggedIn()) {

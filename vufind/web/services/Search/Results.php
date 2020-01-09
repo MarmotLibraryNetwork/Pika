@@ -33,7 +33,6 @@ class Search_Results extends Action {
 		global $configArray;
 		global $timer;
 		global $memoryWatcher;
-		global $analytics;
 		global $library;
 
 		/** @var string $searchSource */
@@ -269,16 +268,6 @@ class Search_Results extends Action {
 
 		// Save the URL of this search to the session so we can return to it easily:
 		$_SESSION['lastSearchURL'] = $searchObject->renderSearchUrl();
-
-		$allSearchSources = SearchSources::getSearchSources();
-		if (!isset($allSearchSources[$searchSource]) && $searchSource == 'marmot'){
-			$searchSource = 'local';
-		}
-		$translatedSearch = $allSearchSources[$searchSource]['name'];
-
-		// Save the search for statistics
-		$analytics->addSearch($translatedSearch, $searchObject->displayQuery(), $searchObject->isAdvanced(), $searchObject->getFullSearchType(), $searchObject->hasAppliedFacets(), $searchObject->getResultTotal());
-
 
 		// No Results Actions //
 		if ($searchObject->getResultTotal() < 1) {

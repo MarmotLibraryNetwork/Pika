@@ -226,8 +226,6 @@ class Record_AJAX extends AJAXHandler {
 
 	function placeHold(){
 		global $interface;
-		global $analytics;
-		$analytics->enableTracking();
 		$recordId = $_REQUEST['id'];
 		if (strpos($recordId, ':') > 0){
 			list($source, $shortId) = explode(':', $recordId, 2);
