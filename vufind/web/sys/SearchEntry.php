@@ -6,12 +6,12 @@ require_once 'DB/DataObject.php';
 
 class SearchEntry extends DB_DataObject
 {
-	public $__table = 'search';													// table name
+	public $__table = 'search';							// table name
 	public $id;															// int(11)	not_null primary_key auto_increment
 	public $user_id;												 // int(11)	not_null multiple_key
 	public $created;												 // date(10)	not_null binary
 	public $saved;													 // int(1) not_null default 0
-	public $search_object;									 // blob
+	public $search_object;									 // blob @todo: this should be a varchar field since it's not really a binary large object
 	public $session_id;											// varchar(128)
 
 	/**

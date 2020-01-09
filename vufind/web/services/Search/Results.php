@@ -19,8 +19,6 @@
  */
 
 require_once ROOT_DIR . '/Action.php';
-require_once ROOT_DIR . '/services/MyResearch/lib/Search.php';
-
 require_once ROOT_DIR . '/sys/Pager.php';
 
 class Search_Results extends Action {
