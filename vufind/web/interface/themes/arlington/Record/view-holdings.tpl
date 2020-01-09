@@ -3,7 +3,7 @@
 		<div class="alert alert-warning">The circulation system is currently offline.  Holdings information is based on information from before the system went offline.</div>
 	{/if}
 	{* ils check & last checkin date *}
-	{if ($ils == 'Sierra' || $ils == 'Millennium')}
+	{if ($ils == 'Sierra')}
 		{assign var=showLastCheckIn value=$hasLastCheckinData}
 		{assign var=showVolume value=$hasVolume}
 	{else}

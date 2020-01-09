@@ -15,7 +15,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
- * Record Processor to handle processing records from Millennium and Sierra
+ * Record Processor to handle processing records from iii's Sierra ILS
  * Pika
  * User: Mark Noble
  * Date: 7/9/2015

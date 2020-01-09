@@ -1,6 +1,6 @@
 <?php
 /**
- * Imports Lists for a user from prior catalog (Millennium WebPAC, Encore, Etc).
+ * Imports Lists for a user from prior catalog (Sierra WebPAC, Encore, Etc).
  *
  * @category Pika
  * @author Mark Noble <mark@marmot.org>

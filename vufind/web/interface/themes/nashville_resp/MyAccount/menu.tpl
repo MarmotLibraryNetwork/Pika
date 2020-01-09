@@ -155,10 +155,10 @@
 							{* OPAC Admin Actions*}
 							{if array_key_exists('opacAdmin', $userRoles)}
 								{* Sierra/Millennium OPAC Admin Actions*}
-								{if ($ils == 'Millennium' || $ils == 'Sierra' || $ils == 'Horizon' || $ils == 'CarlX')}
+								{if ($ils == 'Sierra' || $ils == 'Horizon' || $ils == 'CarlX')}
 								<div class="adminMenuLink{if $action == "PTypes"} active{/if}"><a href="{$path}/Admin/PTypes">P-Types</a></div>
 								{/if}
-								{if ($ils == 'Millennium' || $ils == 'Sierra')}
+								{if ($ils == 'Sierra')}
 								<div class="adminMenuLink{if $action == "LoanRules"} active{/if}"><a href="{$path}/Admin/LoanRules">Loan Rules</a></div>
 								<div class="adminMenuLink{if $action == "LoanRuleDeterminers"} active{/if}"><a href="{$path}/Admin/LoanRuleDeterminers">Loan Rule Determiners</a></div>
 								{/if}
@@ -225,7 +225,7 @@
 							<div class="adminMenuLink{if $action == "IndexingStats"} active{/if}"><a href="{$path}/Admin/IndexingStats">Indexing Statistics</a></div>
 							<div class="adminMenuLink{if $action == "RecordGroupingLog"} active{/if}"><a href="{$path}/Admin/RecordGroupingLog">Record Grouping Log</a></div>
 							<div class="adminMenuLink{if $action == "ReindexLog"} active{/if}"><a href="{$path}/Admin/ReindexLog">Reindex Log</a></div>
-							{if ($ils == 'Millennium' || $ils == 'Sierra')}
+							{if ($ils == 'Sierra')}
 								<div class="adminMenuLink{if $action == "SierraExportLog"} active{/if}"><a href="{$path}/Admin/SierraExportLog">Sierra Export Log</a></div>
 							{/if}
 							{*<div class="adminMenuLink{if $module == 'Admin' && $action == "OverdriveAPIData"} active{/if}"><a href="{$path}/Admin/OverdriveAPIData">OverDrive API Information</a></div>*}

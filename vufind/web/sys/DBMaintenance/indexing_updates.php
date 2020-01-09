@@ -182,7 +182,7 @@ function getIndexingUpdates(){
 
 		'indexing_profile_specific_order_location' => array(
 			'title'       => 'Indexing Profiles - specific order location',
-			'description' => 'add field for the specific location code since Millennium/Sierra do not always export the detailed',
+			'description' => 'add field for the specific location code since Sierra do not always export the detailed',
 			'sql'         => array(
 				"ALTER TABLE indexing_profiles ADD COLUMN `orderLocationSingle` char(1) DEFAULT NULL",
 			)

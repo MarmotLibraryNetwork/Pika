@@ -1072,14 +1072,15 @@ function getLibraryLocationUpdates(){
 			),
 		),
 
-		'selfreg_template' => array(
+/*TODO: drop self registration template
+ * 		'selfreg_template' => array(
 			'title' => 'Self Registration Template',
 			'description' => 'Add self registration template for Millennium and Sierra.',
 			'continueOnError' => true,
 			'sql' => array(
 				"ALTER TABLE `library` ADD COLUMN `selfRegistrationTemplate` VARCHAR(25) default 'default';",
 			),
-		),
+		),*/
 
 		'browse_category_default_view_mode' => array(
 			'title' => 'Viewing Mode for Browse Categories',

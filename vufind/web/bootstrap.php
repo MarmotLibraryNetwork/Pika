@@ -344,28 +344,12 @@ function loadSearchInformation(){
 		$scopeType = 'Unscoped';
 	}
 
-	$searchLibrary = Library::getSearchLibrary($searchSource);
-	$searchLocation = Location::getSearchLocation($searchSource);
-
-	//TODO: this is only used in a couple places to build links to classic opac. It doesn't need to be global
-	global $millenniumScope;
-	if ($library){
-		if ($searchLibrary){
-			$millenniumScope = $searchLibrary->scope;
-		}elseif (isset($searchLocation)){
-			Millennium::$scopingLocationCode = $searchLocation->code;
-		}else{
-			$millenniumScope = isset($configArray['OPAC']['defaultScope']) ? $configArray['OPAC']['defaultScope'] : '93';
-		}
-	}else{
-		$millenniumScope = isset($configArray['OPAC']['defaultScope']) ? $configArray['OPAC']['defaultScope'] : '93';
-	}
-
 	//Load indexing profiles
 	require_once ROOT_DIR . '/sys/Indexing/IndexingProfile.php';
 	/** @var $indexingProfiles IndexingProfile[] */
 	global $indexingProfiles;
-	$indexingProfiles = $memCache->get("{$instanceName}_indexing_profiles");
+	$memCacheKey              = "{$instanceName}_indexing_profiles";
+	$indexingProfiles = $memCache->get($memCacheKey);
 	if ($indexingProfiles === false || isset($_REQUEST['reload'])){
 		$indexingProfiles = array();
 		$indexingProfile = new IndexingProfile();
@@ -376,9 +360,9 @@ function loadSearchInformation(){
 		}
 //		global $logger;
 //		$logger->log("Updating memcache variable {$instanceName}_indexing_profiles", PEAR_LOG_DEBUG);
-		if (!$memCache->set("{$instanceName}_indexing_profiles", $indexingProfiles, 0, $configArray['Caching']['indexing_profiles'])) {
+		if (!$memCache->set($memCacheKey, $indexingProfiles, 0, $configArray['Caching']['indexing_profiles'])) {
 			global $logger;
-			$logger->log("Failed to update memcache variable {$instanceName}_indexing_profiles", PEAR_LOG_ERR);
+			$logger->log("Failed to update memcache variable $memCacheKey", PEAR_LOG_ERR);
 		};
 	}
 }

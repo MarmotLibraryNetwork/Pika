@@ -102,8 +102,6 @@ class Person_Home extends Action
 		$interface->assign('lastsearch', isset($_SESSION['lastSearchURL']) ?
 		$_SESSION['lastSearchURL'] : false);
 
-		$this->cacheId = 'Person|' . $_GET['id'] . '|' . get_class($this);
-
 		// Send down text for inclusion in breadcrumbs
 		$interface->assign('breadcrumbText', $this->recordDriver->getBreadcrumb());
 

@@ -387,8 +387,6 @@ class MyAccount_AJAX extends AJAXHandler {
 			$user    = UserAccount::getLoggedInUser();
 			$catalog = CatalogFactory::getCatalogConnectionInstance();
 
-			// ids grabbed in MillenniumHolds.php in $_REQUEST['waitingholdselected'] & $_REQUEST['availableholdselected']
-			// but we will pass ids here instead.
 			$cancelId = array();
 			if (!empty($_REQUEST['holdselected'])){
 				$cancelId = $_REQUEST['holdselected'];
@@ -962,7 +960,7 @@ class MyAccount_AJAX extends AJAXHandler {
 		global $configArray;
 
 		try {
-			/** @var DriverInterface|Millennium|Nashville|Marmot|Sierra|Horizon $catalog */
+			/** @var DriverInterface|SirsiDynixROA|Sierra|Horizon $catalog */
 			$catalog = CatalogFactory::getCatalogConnectionInstance();
 
 			$barcode = $_REQUEST['barcode'];

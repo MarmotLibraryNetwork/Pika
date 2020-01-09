@@ -36,7 +36,7 @@ public class OfflineCirculation implements IProcessHandler {
 		processLog  = new CronProcessLogEntry(cronEntry.getLogEntryId(), "Offline Circulation");
 		processLog.saveToDatabase(pikaConn, logger);
 
-		ils = configIni.get("Catalog", "ils");
+//		ils = configIni.get("Catalog", "ils"); //TODO: remove; was only used to check if millennium
 
 		manager.setCookiePolicy(CookiePolicy.ACCEPT_ALL);
 		CookieHandler.setDefault(manager);
@@ -165,7 +165,7 @@ public class OfflineCirculation implements IProcessHandler {
 		try {
 			PreparedStatement circulationEntryToProcessStmt = pikaConn.prepareStatement("SELECT offline_circulation.* FROM offline_circulation WHERE status='Not Processed' ORDER BY login ASC, initials ASC, patronBarcode ASC, timeEntered ASC");
 			PreparedStatement updateCirculationEntry        = pikaConn.prepareStatement("UPDATE offline_circulation SET timeProcessed = ?, status = ?, notes = ? WHERE id = ?");
-			String baseUrl                                  = configIni.get("Catalog", "linking_url") + "/iii/airwkst";
+			String baseUrl                                  = configIni.get("Catalog", "url") + "/iii/airwkst";
 			int numProcessed = 0;
 			try (ResultSet circulationEntriesToProcessRS = circulationEntryToProcessStmt.executeQuery()) {
 				while (circulationEntriesToProcessRS.next()) {
@@ -260,9 +260,9 @@ public class OfflineCirculation implements IProcessHandler {
 				URLPostResponse initialsResponse;
 				boolean bypassInitials = true;
 				initials               = encode(initials);
-				if (ils.equalsIgnoreCase("millennium") && (lastInitials == null || lastInitials.equals(initials))){
-					bypassInitials = false;
-					lastInitials   = initials;
+//				if (ils.equalsIgnoreCase("millennium") && (lastInitials == null || lastInitials.equals(initials))){
+//					bypassInitials = false;
+//					lastInitials   = initials;
 				}
 				if (!bypassInitials){
 					//Login to airpac (initials)

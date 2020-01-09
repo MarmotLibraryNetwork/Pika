@@ -543,8 +543,7 @@ class Aspencat implements DriverInterface{
 							$user->homeLocation     = $location->displayName;
 						}
 
-						$user->expires = $userFromDb['dateexpiry']; //TODO: format is year-month-day; millennium is month-day-year; needs converting??
-
+						$user->expires = $userFromDb['dateexpiry'];
 						$user->expired     = 0; // default setting
 						$user->expireClose = 0;
 

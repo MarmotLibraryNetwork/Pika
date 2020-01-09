@@ -20,7 +20,7 @@
 				<div class="alert alert-info">
 					<p>To reload loan rules:
 					<ol>
-						<li>Open Sierra/Millennium</li>
+						<li>Open Sierra</li>
 						<li>Go to the Loan Rules configuration page (In Circulation module go to Admin &gt; Parameters &gt; Circulation &gt; Loan Rules.)</li>
 						<li>Copy the entire table by highlighting it and pressing Ctrl+C.</li>
 						<li>Paste the data in the text area below.</li>
