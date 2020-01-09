@@ -52,18 +52,22 @@ if (isset($_REQUEST['test_role'])){
 // Start Interface
 $interface = new UInterface();
 $timer->logTime('Create interface');
-// todo: these should be moved to Interface.php
+// todo: these should be moved to Interface.php, display options
 if (isset($configArray['Site']['responsiveLogo'])){
 	$interface->assign('responsiveLogo', $configArray['Site']['responsiveLogo']);
 }
-if (isset($configArray['Site']['smallLogo'])){
-	$interface->assign('smallLogo', $configArray['Site']['smallLogo']);
-}
-if (isset($configArray['Site']['largeLogo'])){
-	$interface->assign('largeLogo', $configArray['Site']['largeLogo']);
-}
+//if (isset($configArray['Site']['smallLogo'])){
+//	$interface->assign('smallLogo', $configArray['Site']['smallLogo']);
+//}
+//if (isset($configArray['Site']['largeLogo'])){
+//	$interface->assign('largeLogo', $configArray['Site']['largeLogo']);
+//}
 
-//Set footer information
+// Check system availability
+checkMaintenanceMode();
+$timer->logTime('Checked availability mode');
+
+
 /** @var Location $locationSingleton */
 global $locationSingleton;
 getGitBranch();
@@ -71,13 +75,6 @@ getGitBranch();
 $interface->loadDisplayOptions();
 $timer->logTime('Loaded display options within interface');
 
-// todo: Does anyone use Pika Analytics? Need to remove
-require_once ROOT_DIR . '/sys/Analytics.php';
-//Define tracking to be done
-global $analytics;
-global $active_ip;
-$analytics = new Analytics($active_ip, $startTime);
-$timer->logTime('Setup Analytics');
 
 // Google Analytics
 global $library;
@@ -100,14 +97,14 @@ if ($googleAnalyticsId) {
 
 global $offlineMode;
 //Set System Message
+//TODO: move to display options
 if ($configArray['System']['systemMessage']){
 	$interface->assign('systemMessage', $configArray['System']['systemMessage']);
-}else if ($offlineMode){
+	// Note Maintenance Mode depends on this
+}elseif ($offlineMode){
 	$interface->assign('systemMessage', "<p class='alert alert-warning'><strong>The circulation system is currently offline.</strong>  Access to account information and availability is limited.</p>");
-}else{
-	if ($library && strlen($library->systemMessage) > 0){
-		$interface->assign('systemMessage', $library->systemMessage);
-	}
+}elseif (!empty($library->systemMessage)){
+	$interface->assign('systemMessage', $library->systemMessage);
 }
 
 //Get the name of the active instance
@@ -158,26 +155,6 @@ $interface->assign('page_body_style', 'one_column');
 $interface->assign('showFines', $configArray['Catalog']['showFines']);
 
 $interface->assign('activeIp', Location::getActiveIp());
-
-// Check system availability
-$mode = checkAvailabilityMode();
-if ($mode['online'] === false) {
-	// Why are we offline?
-	switch ($mode['level']) {
-		// Forced Downtime
-		case "unavailable":
-			$interface->display($mode['template']);
-			break;
-
-			// Should never execute. checkAvailabilityMode() would
-			//    need to know we are offline, but not why.
-		default:
-			$interface->display($mode['template']);
-			break;
-	}
-	exit();
-}
-$timer->logTime('Checked availability mode');
 
 // Proxy server settings
 if (isset($configArray['Proxy']['host'])) {
@@ -366,25 +343,31 @@ if ($isLoggedIn && (!isset($_REQUEST['action']) || $_REQUEST['action'] != 'Logou
 }
 
 //Setup analytics
-if (!$analytics->isTrackingDisabled()){
-	$analytics->setModule($module);
-	$analytics->setAction($action);
-	$analytics->setObjectId(isset($_REQUEST['id']) ? $_REQUEST['id'] : null);
-	$analytics->setMethod(isset($_REQUEST['method']) ? $_REQUEST['method'] : null);
-	$analytics->setLanguage($interface->getLanguage());
-	$analytics->setTheme($interface->getPrimaryTheme());
-	$analytics->setMobile($interface->isMobile() ? 1 : 0);
-	$analytics->setDevice(get_device_name());
-	$analytics->setPhysicalLocation($physicalLocation);
-	if ($isLoggedIn){
-		$analytics->setPatronType(UserAccount::getUserPType());
-		$analytics->setHomeLocationId(UserAccount::getUserHomeLocationId());
-	}else{
-		$analytics->setPatronType('logged out');
-		$analytics->setHomeLocationId(-1);
-	}
-	$timer->logTime('Setup Analytics');
-}
+// todo: Does anyone use Pika Analytics? Need to remove
+//require_once ROOT_DIR . '/sys/Analytics.php';
+////Define tracking to be done
+//global $analytics;
+//global $active_ip;
+//$analytics = new Analytics($active_ip, $startTime);
+//if (!$analytics->isTrackingDisabled()){
+//	$analytics->setModule($module);
+//	$analytics->setAction($action);
+//	$analytics->setObjectId(isset($_REQUEST['id']) ? $_REQUEST['id'] : null);
+//	$analytics->setMethod(isset($_REQUEST['method']) ? $_REQUEST['method'] : null);
+//	$analytics->setLanguage($interface->getLanguage());
+//	$analytics->setTheme($interface->getPrimaryTheme());
+//	$analytics->setMobile($interface->isMobile() ? 1 : 0);
+//	$analytics->setDevice(get_device_name());
+//	$analytics->setPhysicalLocation($physicalLocation);
+//	if ($isLoggedIn){
+//		$analytics->setPatronType(UserAccount::getUserPType());
+//		$analytics->setHomeLocationId(UserAccount::getUserHomeLocationId());
+//	}else{
+//		$analytics->setPatronType('logged out');
+//		$analytics->setHomeLocationId(-1);
+//	}
+//	$timer->logTime('Setup Analytics');
+//}
 
 //Find a reasonable default location to go to
 if ($module == null && $action == null){
@@ -737,45 +720,48 @@ function processShards()
 	}
 }
 
-// Check for the various stages of functionality
-function checkAvailabilityMode() {
+
+/**
+ *  Check if the website is available for use and display Unavailable page if not.
+ *  Privileged browsers (determined by Ip) can access the site to do Maintenance work
+ */
+function checkMaintenanceMode(){
 	global $configArray;
-	$mode = array();
 
-	// If the config file 'available' flag is
-	//    set we are forcing downtime.
-	if (!$configArray['System']['available']) {
-		//Unless the user is accessing from a maintainence IP address
+	// If the config file 'available' flag is set, we are forcing downtime.
+	if (!$configArray['System']['available']){
+		global $interface;
 
-		$isMaintenance = false;
-		if (isset($configArray['System']['maintainenceIps'])){
-			$activeIp = $_SERVER['REMOTE_ADDR'];
-			$maintenanceIp =  $configArray['System']['maintainenceIps']; //TODO: system variable misspelled; change and update protected configs
+		//Unless the user is accessing from a maintenance IP address
+		$isMaintenanceUser = false;
+		if (!empty($configArray['System']['maintenanceIps'])){
+			$activeIp          = $_SERVER['REMOTE_ADDR'];
+			$maintenanceIps    = explode(',', $configArray['System']['maintenanceIps']);
+			$isMaintenanceUser = in_array($activeIp, $maintenanceIps);
+		}
 
-			$maintenanceIps = explode(",", $maintenanceIp);
-			foreach ($maintenanceIps as $curIp){
-				if ($curIp == $activeIp){
-					$isMaintenance = true;
-					break;
+		if ($isMaintenanceUser){
+			$configArray['System']['systemMessage'] = '<p class="alert alert-danger"><strong>You are currently accessing the site in maintenance mode. Remember to turn off maintenance mode when you are done.</strong></p>';
+			$interface->assign('systemMessage', $configArray['System']['systemMessage']);
+		}else{
+			// Display Unavailable page and quit
+			$interface->assign('libraryName', $configArray['Site']['title']);
+			if ($configArray['System']['systemMessage']){
+				$interface->assign('systemMessage', $configArray['System']['systemMessage']);
+			}
+			if ($configArray['Catalog']['showLinkToClassicInMaintenanceMode']){
+				$accountProfile               = new AccountProfile();
+				$accountProfile->recordSource = 'ils';
+				if ($accountProfile->find(true) && !empty($accountProfile->vendorOpacUrl)){
+					$interface->assign('showLinkToClassicInMaintenanceMode', true);
+					$interface->assign('classicCatalogUrl', $accountProfile->vendorOpacUrl);
 				}
 			}
 
-		}
-
-		if ($isMaintenance){
-			global $interface;
-			$interface->assign('systemMessage', 'You are currently accessing the site in maintenance mode. Remember to turn off maintenance when you are done.');
-		}else{
-			$mode['online']   = false;
-			$mode['level']    = 'unavailable';
-			$mode['template'] = 'unavailable.tpl';
-			return $mode;
+			$interface->display('unavailable.tpl');
+			exit();
 		}
 	}
-
-	// No problems? We are online then
-	$mode['online'] = true;
-	return $mode;
 }
 
 function getGitBranch(){

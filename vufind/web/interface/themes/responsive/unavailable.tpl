@@ -1,11 +1,10 @@
-{literal}
 <!DOCTYPE html>
 <html lang="en">
 <meta charset="utf-8">
 <head>
-<title>Maintainence in Progress</title>
+<title>Maintenance in Progress | {$libraryName}</title>
 <style>
-
+	{literal}
 
 html { overflow:hidden; }
 body { font: 60px 'SilkscreenNormal', Arial, sans-serif; letter-spacing:0; background:#25d; color:#fff; }

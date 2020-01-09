@@ -148,14 +148,8 @@ class UInterface extends Smarty
 		if (isset($configArray['Site']['libraryName'])){
 			$this->assign('consortiumName', $configArray['Site']['libraryName']);
 		}
-		$this->assign('libraryName', $configArray['Site']['title']);
 		$this->assign('ils', $configArray['Catalog']['ils']);
-		if (isset($configArray['Catalog']['url'])){
-			$this->assign('classicCatalogUrl', $configArray['Catalog']['url']);
-		}else if (isset($configArray['Catalog']['hipUrl'])){
-			$this->assign('classicCatalogUrl', $configArray['Catalog']['hipUrl']);
-		}
-		$this->assign('showLinkToClassicInMaintenanceMode', $configArray['Catalog']['showLinkToClassicInMaintenanceMode']);
+
 		$this->assign('showConvertListsFromClassic', $configArray['Catalog']['showConvertListsFromClassic']);
 
 		$this->assign('theme', $this->vufindTheme);

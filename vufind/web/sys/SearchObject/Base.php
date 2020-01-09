@@ -129,7 +129,7 @@ abstract class SearchObject_Base
 			//Verify that the ip is ok
 			global $locationSingleton;
 			$activeIp = $locationSingleton->getActiveIp();
-			$maintenanceIps = $configArray['System']['maintainenceIps'];
+			$maintenanceIps = $configArray['System']['maintenanceIps'];
 			$debug = true;
 			if (strlen($maintenanceIps) > 0){
 				$debug = false;
