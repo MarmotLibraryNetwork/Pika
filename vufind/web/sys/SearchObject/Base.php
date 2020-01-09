@@ -115,8 +115,7 @@ abstract class SearchObject_Base
 	 *
 	 * @access  public
 	 */
-	public function __construct()
-	{
+	public function __construct(){
 		global $configArray;
 		global $timer;
 
@@ -125,27 +124,22 @@ abstract class SearchObject_Base
 
 		// Set appropriate debug mode:
 		// Debugging
-		if ($configArray['System']['debugSolr']) {
+		if ($configArray['System']['debugSolr']){
 			//Verify that the ip is ok
-			global $locationSingleton;
-			$activeIp = $locationSingleton->getActiveIp();
-			$maintenanceIps = $configArray['System']['maintenanceIps'];
-			$debug = true;
-			if (strlen($maintenanceIps) > 0){
-				$debug = false;
-				$allowableIps = explode(',', $maintenanceIps);
+			$debug = false;
+			if (!empty($configArray['MaintenanceMode']['maintenanceIps'])){
+				global $locationSingleton;
+				$activeIp     = $locationSingleton->getActiveIp();
+				$allowableIps = explode(',', $configArray['MaintenanceMode']['maintenanceIps']);
 				if (in_array($activeIp, $allowableIps)){
 					$debug = true;
-					if ($configArray['System']['debugSolrQuery'] == true) {
-						$this->debugSolrQuery = true;
-					}
 				}
 			}
-			if ($debug && $configArray['System']['debugSolrQuery'] == true) {
+			if ($debug && $configArray['System']['debugSolrQuery'] == true){
 				$this->debugSolrQuery = true;
 			}
 			$this->debug = $debug;
-		} else {
+		}else{
 			$this->debug = false;
 		}
 		$timer->logTime('Setup Base Search Object');

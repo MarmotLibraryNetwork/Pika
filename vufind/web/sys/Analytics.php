@@ -43,7 +43,7 @@ class Analytics
 			return;
 		}
 		//Check to see if we are in maintenance mode
-		if (isset($configArray['System']['available']) && $configArray['System']['available'] == false){
+		if (isset($configArray['MaintenanceMode']['maintenanceMode']) && $configArray['MaintenanceMode']['maintenanceMode'] == false){
 			$this->trackingDisabled = true;
 			return;
 		}

@@ -728,28 +728,27 @@ function processShards()
 function checkMaintenanceMode(){
 	global $configArray;
 
-	// If the config file 'available' flag is set, we are forcing downtime.
-	if (!$configArray['System']['available']){
+	if ($configArray['MaintenanceMode']['maintenanceMode']){
 		global $interface;
 
-		//Unless the user is accessing from a maintenance IP address
 		$isMaintenanceUser = false;
-		if (!empty($configArray['System']['maintenanceIps'])){
+		if (!empty($configArray['MaintenanceMode']['maintenanceIps'])){
 			$activeIp          = $_SERVER['REMOTE_ADDR'];
-			$maintenanceIps    = explode(',', $configArray['System']['maintenanceIps']);
+			$maintenanceIps    = explode(',', $configArray['SystemMaintenanceMode']['maintenanceIps']);
 			$isMaintenanceUser = in_array($activeIp, $maintenanceIps);
 		}
 
 		if ($isMaintenanceUser){
+			// If this is a maintenance user, display site as normal but with a system message than maintenance mode is on
 			$configArray['System']['systemMessage'] = '<p class="alert alert-danger"><strong>You are currently accessing the site in maintenance mode. Remember to turn off maintenance mode when you are done.</strong></p>';
 			$interface->assign('systemMessage', $configArray['System']['systemMessage']);
 		}else{
 			// Display Unavailable page and quit
 			$interface->assign('libraryName', $configArray['Site']['title']);
-			if ($configArray['System']['systemMessage']){
-				$interface->assign('systemMessage', $configArray['System']['systemMessage']);
+			if ($configArray['MaintenanceMode']['maintenanceMessage']){
+				$interface->assign('maintenanceMessage', $configArray['MaintenanceMode']['maintenanceMessage']);
 			}
-			if ($configArray['Catalog']['showLinkToClassicInMaintenanceMode']){
+			if ($configArray['MaintenanceMode']['showLinkToClassicInMaintenanceMode']){
 				$accountProfile               = new AccountProfile();
 				$accountProfile->recordSource = 'ils';
 				if ($accountProfile->find(true) && !empty($accountProfile->vendorOpacUrl)){
