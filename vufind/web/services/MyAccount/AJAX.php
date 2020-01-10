@@ -381,7 +381,6 @@ class MyAccount_AJAX extends AJAXHandler {
 	}
 
 	function cancelHolds(){ // for cancelling multiple holds
-		//TODO: likely obsolete or needs refactoring to be used
 		try {
 			global $configArray;
 			$user    = UserAccount::getLoggedInUser();

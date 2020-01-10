@@ -1,0 +1,202 @@
+#!/bin/bash
+
+# full_update.sh
+# Mark Noble, Marmot Library Network
+# James Staub, Nashville Public Library
+# 20150219
+# Script handles all aspects of a full index including extracting data from other systems.
+# Should be called once per day from crontab
+# For Pika discovery partners using Millennium 2011 1.6_3
+
+# this version emails script output as a round finishes
+EMAIL=pikaservers@marmot.org
+PIKASERVER=aurora.production
+PIKADBNAME=pika
+OUTPUT_FILE="/var/log/vufind-plus/${PIKASERVER}/full_update_output.log"
+
+MINFILE1SIZE=$((271000000))
+
+# Check if full_update is already running
+PIDFILE="/var/log/vufind-plus/${PIKASERVER}/full_update.pid"
+if [ -f $PIDFILE ]
+then
+	PID=$(cat $PIDFILE)
+	ps -p $PID > /dev/null 2>&1
+	if [ $? -eq 0 ]
+	then
+		mail -s "Full Extract and Reindexing - ${PIKASERVER}" $EMAIL <<< "$0 is already running"
+		exit 1
+	else
+		## Process not found assume not running
+		echo $$ > $PIDFILE
+		if [ $? -ne 0 ]
+		then
+			mail -s "Full Extract and Reindexing - ${PIKASERVER}" $EMAIL <<< "Could not create PID file for $0"
+			exit 1
+		fi
+	fi
+else
+	echo $$ > $PIDFILE
+	if [ $? -ne 0 ]
+	then
+		mail -s "Full Extract and Reindexing - ${PIKASERVER}" $EMAIL <<< "Could not create PID file for $0"
+		exit 1
+	fi
+fi
+
+# Check for conflicting processes currently running
+source "/usr/local/vufind-plus/vufind/bash/checkConflicts.sh"
+
+#First make sure that we aren't running at a bad time.  This is really here in case we run manually.
+# since the run in cron is timed to avoid sensitive times.
+# aurora has no prohibited times (yet)
+#checkProhibitedTimes "23:50" "00:40"
+
+#Check for any conflicting processes that we shouldn't do a full index during.
+#Since we aren't running in a loop, check in the order they run.
+checkConflictingProcesses "sierra_export_api.jar ${PIKASERVER}" >> ${OUTPUT_FILE}
+checkConflictingProcesses "sierra_export.jar ${PIKASERVER}" >> ${OUTPUT_FILE}
+checkConflictingProcesses "overdrive_extract.jar ${PIKASERVER}" >> ${OUTPUT_FILE}
+checkConflictingProcesses "reindexer.jar ${PIKASERVER}" >> ${OUTPUT_FILE}
+
+# Back-up Solr Master Index
+mysqldump ${PIKADBNAME} grouped_work_primary_identifiers > /data/vufind-plus/${PIKASERVER}/grouped_work_primary_identifiers.sql
+sleep 2m
+tar -czf /data/vufind-plus/${PIKASERVER}/solr_master_backup.tar.gz /data/vufind-plus/${PIKASERVER}/solr_master/grouped/index/ /data/vufind-plus/${PIKASERVER}/grouped_work_primary_identifiers.sql >> ${OUTPUT_FILE}
+rm /data/vufind-plus/${PIKASERVER}/grouped_work_primary_identifiers.sql
+
+#truncate the output file so you don't spend a week debugging an error from a week ago!
+: > $OUTPUT_FILE;
+
+#Restart Solr
+cd /usr/local/vufind-plus/sites/${PIKASERVER}; ./${PIKASERVER}.sh restart
+
+# Colorado state gov docs
+curl --remote-time --show-error --compressed -o /data/vufind-plus/colorado_gov_docs/marc/fullexport.mrc https://cassini.marmot.org/colorado_state_docs.mrc
+
+## SIDELOADS ##
+# Kanopy
+/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} aurora/kanopy kanopy/aurora >> ${OUTPUT_FILE}
+
+#Learning Express
+/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} aurora/learning_express learning_express/aurora >> ${OUTPUT_FILE}
+
+#Lynda
+#/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} aurora/lynda lynda/aurora >> ${OUTPUT_FILE}
+
+#Rb digital books
+/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} aurora/rbdigital_books rbdigital_books/aurora >> ${OUTPUT_FILE}
+
+#Rb digital magazines
+/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} aurora/rbdigital_magazines rbdigital_magazines/aurora >> ${OUTPUT_FILE}
+
+###################
+# Other sideloads
+#Biblioboard
+#/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} aurora/Biblioboard Biblioboard/aurora >> ${OUTPUT_FILE}
+#TrueFlix
+#/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} aurora/trueflix trueflix/aurora >> ${OUTPUT_FILE}
+#Bookflix
+#/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} aurora/bookflix bookflix/aurora >> ${OUTPUT_FILE}
+#Gale eCourses
+#/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} aurora/gale_courses gale_courses/aurora >> ${OUTPUT_FILE}
+#RB Digital
+#/usr/local/vufind-plus/vufind/cron/fetch_sideload_data.sh ${PIKASERVER} aurora/RBdigital_magazines RBdigital_magazines/aurora >> ${OUTPUT_FILE}
+##################
+
+
+#Extract from Hoopla
+cd /usr/local/vufind-plus/vufind/cron;./GetHooplaFromMarmot.sh >> ${OUTPUT_FILE}
+
+#Extract Lexile Data
+cd /data/vufind-plus/; curl --remote-name --remote-time --silent --show-error --compressed --time-cond /data/vufind-plus/lexileTitles.txt https://cassini.marmot.org/lexileTitles.txt
+
+#Extract AR Data
+cd /data/vufind-plus/accelerated_reader; curl --remote-name --remote-time --silent --show-error --compressed --time-cond /data/vufind-plus/accelerated_reader/RLI-ARDataTABv2.txt https://cassini.marmot.org/RLI-ARDataTABv2.txt
+
+# aurora doesn't use Volume Records
+# Get the updated volume information
+#cd /usr/local/vufind-plus/vufind/cron;
+#nice -n -10 java -jar cron.jar ${PIKASERVER} ExportSierraData >> ${OUTPUT_FILE}
+
+
+#Do a full extract from OverDrive just once a week to catch anything that doesn't
+#get caught in the regular extract
+DAYOFWEEK=$(date +"%u")
+if [[ "${DAYOFWEEK}" -eq 7 ]]; then
+	echo $(date +"%T") "Starting Overdrive fullReload." >> ${OUTPUT_FILE}
+	cd /usr/local/vufind-plus/vufind/overdrive_api_extract/
+	nice -n -10 java -server -XX:+UseG1GC -jar overdrive_extract.jar ${PIKASERVER} fullReload >> ${OUTPUT_FILE}
+	echo $(date +"%T") "Completed Overdrive fullReload." >> ${OUTPUT_FILE}
+fi
+
+#Extract from ILS
+#Copy extracts from FTP Server
+mount 10.1.2.7:/ftp/aurora/sierra /mnt/ftp
+FILE1=$(find /mnt/ftp/ -name fullexport*.mrc -mtime -1 | sort -n | tail -1)
+
+if [ -n "$FILE1" ]
+then
+		FILE1SIZE=$(wc -c <"$FILE1")
+		if [ $FILE1SIZE -ge $MINFILE1SIZE ]; then
+
+			echo "Latest file is " $FILE1 >> ${OUTPUT_FILE}
+			DIFF=$(($FILE1SIZE - $MINFILE1SIZE))
+			PERCENTABOVE=$((100 * $DIFF / $MINFILE1SIZE))
+			echo "The export file is $PERCENTABOVE (%) larger than the minimum size check." >> ${OUTPUT_FILE}
+
+			cp $FILE1 /data/vufind-plus/${PIKASERVER}/marc/fullexport.mrc
+
+			#Delete full exports older than 3 days
+			find /mnt/ftp/ -name fullexport*.mrc -mtime +3 -delete
+			umount /mnt/ftp
+
+		#Validate the export
+		cd /usr/local/vufind-plus/vufind/cron; java -server -XX:+UseG1GC -jar cron.jar ${PIKASERVER} ValidateMarcExport >> ${OUTPUT_FILE}
+
+		#Full Regroup
+		cd /usr/local/vufind-plus/vufind/record_grouping; java -server -XX:+UseG1GC -Xmx2G -jar record_grouping.jar ${PIKASERVER} fullRegroupingNoClear >> ${OUTPUT_FILE}
+
+		#Full Reindex
+		cd /usr/local/vufind-plus/vufind/reindexer; java -server -XX:+UseG1GC -Xmx2G -jar reindexer.jar ${PIKASERVER} fullReindex >> ${OUTPUT_FILE}
+
+		# Truncate Continous Reindexing list of changed items
+		cat /dev/null >| /data/vufind-plus/${PIKASERVER}/marc/changed_items_to_process.csv
+
+		NEWLEVEL=$(($FILE1SIZE * 97 / 100))
+		echo "" >> ${OUTPUT_FILE}
+		echo "Based on today's export file, a new minimum filesize check level should be set to $NEWLEVEL" >> ${OUTPUT_FILE}
+
+		# Wait 2 minutes for solr replication to finish; then delete the inactive solr indexes folders older than 48 hours
+		# Note: Running in the full update because we know there is a freshly created index.
+		sleep 2m
+		find /data/vufind-plus/${PIKASERVER}/solr_searcher/grouped/ -name "index.*" -type d -mmin +2880 -exec rm -rf {} \; >> ${OUTPUT_FILE}
+
+		else
+			umount /mnt/ftp
+			echo $FILE1 " size " $FILE1SIZE "is less than minimum size :" $MINFILE1SIZE "; Export was not moved to data directory." >> ${OUTPUT_FILE}
+		fi
+
+else
+	umount /mnt/ftp
+	echo "Did not find a Sierra export file from the last 24 hours, Full Regrouping & Full Reindexing skipped." >> ${OUTPUT_FILE}
+fi
+
+# Clean-up Solr Logs
+find /usr/local/vufind-plus/sites/default/solr/jetty/logs -name "solr_log_*" -mtime +7 -delete
+find /usr/local/vufind-plus/sites/default/solr/jetty/logs -name "solr_gc_log_*" -mtime +7 -delete
+
+#Restart Solr
+cd /usr/local/vufind-plus/sites/${PIKASERVER}; ./${PIKASERVER}.sh restart
+
+#Email results
+FILESIZE=$(stat -c%s ${OUTPUT_FILE})
+if [[ ${FILESIZE} > 0 ]]
+then
+# send mail
+mail -s "Full Extract and Reindexing - ${PIKASERVER}" $EMAIL < ${OUTPUT_FILE}
+fi
+
+# Now that script is completed, remove the PID file
+rm $PIDFILE
+
