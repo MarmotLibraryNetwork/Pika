@@ -32,27 +32,45 @@ class UInterface extends Smarty
 	function __construct(){
 		global $configArray;
 		global $timer;
+		global $library;
 
 		$local = $configArray['Site']['local'];
 		// todo: this is set in the database
 		$this->vufindTheme = $configArray['Site']['theme'];
 
-		$this->isMobile = mobile_device_detect();
-		$this->assign('isMobile', $this->isMobile ? 'true' : 'false');
-		$this->assign('device', get_device_name());
+		// todo: these aren't used in any templates that I've found.
+		//$this->isMobile = mobile_device_detect();
+		//$this->assign('isMobile', $this->isMobile ? 'true' : 'false');
+		//$this->assign('device', get_device_name());
 
-		//Figure out google translate id
+		// Google Analytics
+		$googleAnalyticsId        = isset($configArray['Analytics']['googleAnalyticsId'])        ? $configArray['Analytics']['googleAnalyticsId'] : false;
+		$googleAnalyticsLibraryId = isset($library->gaTrackingId)                                ? $library->gaTrackingId : false;
+		$googleAnalyticsLinkingId = isset($configArray['Analytics']['googleAnalyticsLinkingId']) ? $configArray['Analytics']['googleAnalyticsLinkingId'] : false;
+		$trackTranslation         = false;
+		$trackTranslation         = isset($configArray['Analytics']['trackTranslation'])         ? $configArray['Analytics']['trackTranslation'] : false;
+		$this->assign('googleAnalyticsId', $googleAnalyticsId);
+		$this->assign('googleAnalyticsLibraryId', $googleAnalyticsLibraryId);
+		$this->assign('trackTranslation', $trackTranslation);
+		$this->assign('googleAnalyticsLinkingId', $googleAnalyticsLinkingId);
+		if ($googleAnalyticsId) {
+			$googleAnalyticsDomainName = isset($configArray['Analytics']['domainName']) ? $configArray['Analytics']['domainName'] : strstr($_SERVER['SERVER_NAME'], '.');
+			// check for a config setting, use that if found, otherwise grab domain name  but remove the first subdomain
+			$this->assign('googleAnalyticsDomainName', $googleAnalyticsDomainName);
+		}
+
+		// Google Translation
 		if (isset($configArray['Translation']['google_translate_key']) && strlen($configArray['Translation']['google_translate_key']) > 0){
 			$this->assign('google_translate_key', $configArray['Translation']['google_translate_key']);
 			$this->assign('google_included_languages', $configArray['Translation']['includedLanguages']);
 		}
 
-		//Check to see if we have a google site verification key
+		// Google Site Verification
 		if (isset($configArray['Site']['google_verification_key']) && strlen($configArray['Site']['google_verification_key']) > 0){
 			$this->assign('google_verification_key', $configArray['Site']['google_verification_key']);
 		}
 
-		//Get all images related to the event
+		// Get all images related to the event
 		if (isset($configArray['Maps']) && isset($configArray['Maps']['apiKey'])){
 			$mapsKey = $configArray['Maps']['apiKey'];
 			$this->assign('mapsKey', $mapsKey);
@@ -219,13 +237,8 @@ class UInterface extends Smarty
 			$this->assign('ie8', $ie8);
 		}
 
-		$session = new Session();
-		$session->session_id = session_id();
-		if ($session->find(true)){
-			$this->assign('session', session_id() . ', remember me ' . $session->remember_me);
-		}else{
-			$this->assign('session', session_id() . ' - not saved');
-		}
+		$rememberMe = isset($_COOKIE['rememberMe']) ? $_COOKIE['rememberMe'] : false;
+		$this->assign('session', session_id() . ', remember me ' . $rememberMe);
 
 		/** @var IndexingProfile $activeRecordIndexingProfile */
 		global $activeRecordIndexingProfile;
