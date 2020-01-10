@@ -73,10 +73,6 @@ class SearchObjectFactory {
 
 		// Figure out the engine type for the object we're about to construct:
 		switch($minSO->ty) {
-			case 'Summon':
-			case 'SummonAdvanced':
-				$type = 'Summon';
-				break;
 			case 'WorldCat':
 			case 'WorldCatAdvanced':
 				$type = 'WorldCat';
