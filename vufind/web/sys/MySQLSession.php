@@ -1,5 +1,5 @@
 <?php
-
+// TODO: Delete me
 require_once 'SessionInterface.php';
 require_once ROOT_DIR . '/services/MyResearch/lib/Session.php';
 

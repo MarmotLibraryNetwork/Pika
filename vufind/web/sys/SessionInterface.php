@@ -1,15 +1,10 @@
 <?php
-require_once ROOT_DIR . '/services/MyResearch/lib/Search.php';
-
-
+// TODO: Delete me
 class SessionInterface {
 
 	public static int $lifetime = 3600;
 	public static int $rememberMeLifetime = 1209600;
-	/**
-	 * @var Logger
-	 */
-	public Logger $logger;
+
 
 	public function init($lt, $rememberMeLifetime)
 	{
