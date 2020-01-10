@@ -1,0 +1,1161 @@
+{
+  "Author": {
+    "QueryFields": {
+      "author_exact": [
+        ["localized_callnumber", 2200]
+      ],
+      "author_left": [
+        ["localized_callnumber", 1400]
+      ],
+      "author": [
+        ["onephrase", 350],
+        ["proximal", 200]
+      ],
+      "author2": [
+        ["onephrase", 100],
+        ["proximal", 50]
+      ],
+      "author_additional": [
+        ["onephrase", 100],
+        ["proximal", 50]
+      ]
+    }
+  },
+
+  "AuthorProper": {
+    "QueryFields": {
+      "author_exact": [
+        ["exact", 2200]
+      ],
+      "author_left": [
+        ["exact", 1400]
+      ],
+      "auth_author": [
+        ["onephrase", 350]
+      ],
+      "auth_author2": [
+        ["onephrase", 100]
+      ]
+    }
+  },
+
+  "ISN": {
+    "DismaxFields": [
+      "isbn",
+      "issn",
+      "upc"
+    ],
+    "QueryFields": {
+      "issn": [
+        ["and", 100],
+        ["or", null]
+      ],
+      "isbn": [
+        ["and", 100],
+        ["or", null]
+      ],
+      "upc": [
+        ["and", 100],
+        ["or", null]
+      ]
+    }
+  },
+
+  "Subject": {
+    "DismaxFields": [
+      "subject^100",
+      "topic^100",
+      "topic_proper^100",
+      "geographic^50",
+      "genre^50",
+      "era"
+    ],
+    "QueryFields": {
+      "subject": [
+        ["onephrase", 300],
+        ["and", 100],
+        ["or", null]
+      ],
+      "topic": [
+        ["onephrase", 300],
+        ["and", 100],
+        ["or", null]
+      ],
+      "topic_proper": [
+        ["onephrase", 300],
+        ["and", 100],
+        ["or", null]
+      ],
+      "geographic": [
+        ["onephrase", 300],
+        ["and", 100],
+        ["or", null]
+      ],
+      "genre": [
+        ["onephrase", 300],
+        ["and", 100],
+        ["or", null]
+      ],
+      "era": [
+        ["and", 100],
+        ["or", null]
+      ]
+    }
+  },
+
+  "SubjectProper": {
+    "DismaxFields": [
+      "subject_proper^100",
+      "topic_proper^100",
+      "geographic_proper^50",
+      "genre_proper^50",
+      "era_proper"
+    ],
+    "QueryFields": {
+      "subject_proper": [
+        ["onephrase", 300],
+        ["and", 100],
+        ["or", null]
+      ],
+      "topic_proper": [
+        ["onephrase", 300],
+        ["and", 100],
+        ["or", null]
+      ],
+      "geographic_proper": [
+        ["onephrase", 300],
+        ["and", 100],
+        ["or", null]
+      ],
+      "genre_proper": [
+        ["onephrase", 300],
+        ["and", 100],
+        ["or", null]
+      ],
+      "era_proper": [
+        ["and", 100],
+        ["or", null]
+      ]
+    }
+  },
+
+  "JournalTitle": {
+    "DismaxFields": [
+      "title_short^500",
+      "title_full^400",
+      "title^300",
+      "title_alt^200",
+      "title_new^100",
+      "title_old",
+      "series^100",
+      "series2"
+    ],
+    "QueryFields": {
+      "title_short": [
+        ["onephrase", 500]
+      ],
+      "title_full": [
+        ["onephrase", 400]
+      ],
+      "title": [
+        ["onephrase", 300],
+        ["and", 250]
+      ],
+      "title_alt": [
+        ["and", 200]
+      ],
+      "title_new": [
+        ["and", 100]
+      ],
+      "title_old": [
+        ["and", null]
+      ],
+      "series": [
+        ["onephrase", 100],
+        ["and", 50]
+      ],
+      "series2": [
+        ["onephrase", 50],
+        ["and", null]
+      ]
+    },
+    "FilterQuery": "format:Journal"
+  },
+
+  "Title": {
+    "QueryFields": {
+      "0": {
+        "0": ["OR", 50],
+        "title_exact": [
+          ["localized_callnumber", 2400]
+        ],
+        "title_left": [
+          ["localized_callnumber", 1600]
+        ],
+        "title_proper": [
+          ["exact", 800],
+          ["onephrase", 500],
+          ["and", 200]
+        ],
+        "title": [
+          ["onephrase", 200],
+          ["and", 125]
+        ],
+        "title_alt": [
+          ["and", 100]
+        ],
+        "title_new": [
+          ["and", 50]
+        ]
+      },
+      "title_exact": [
+        ["localized_callnumber", 2400]
+      ],
+      "title_left": [
+        ["localized_callnumber", 1600]
+      ],
+      "series_proper": [
+        ["exact", 800],
+        ["onephrase", 300],
+        ["and", 50]
+      ],
+      "series": [
+        ["exact", 600],
+        ["onephrase", 200],
+        ["and", 50]
+      ],
+      "series2": [
+        ["and", 30]
+      ]
+    }
+  },
+  "TitleProper": {
+    "DismaxFields": [
+      "title_proper^850",
+      "series_proper^100"
+    ],
+    "QueryFields": {
+      "title_exact": [
+        ["localized_callnumber", 2400]
+      ],
+      "title_left": [
+        ["localized_callnumber", 1600]
+      ],
+      "title_proper": [
+        ["onephrase", 850]
+      ],
+      "series_proper": [
+        ["onephrase", 100],
+        ["and", 50]
+      ]
+    }
+  },
+  "StartOfTitle": {
+    "QueryFields": {
+      "title_left": [
+        ["localized_callnumber", 1600]
+      ]
+    }
+  },
+  "Series": {
+    "DismaxFields": [
+      "series^100",
+      "series2"
+    ],
+    "QueryFields": {
+      "series": [
+        ["onephrase", 500],
+        ["and", 200],
+        ["or", 100]
+      ],
+      "series2": [
+        ["onephrase", 50],
+        ["and", 50],
+        ["or", null]
+      ]
+    }
+  },
+  "SeriesProper": {
+    "DismaxFields": [
+      "series_proper^100"
+    ],
+    "QueryFields": {
+      "series_proper": [
+        ["onephrase", 500],
+        ["and", 200],
+        ["or", 100]
+      ]
+    }
+  },
+
+  "Keyword": {
+    "QueryFields": {
+      "0": {
+        "0": ["OR", 500],
+        "title_exact": [
+          ["localized_callnumber", 7000]
+        ],
+        "title_left": [
+          ["localized_callnumber", 3000]
+        ],
+        "title_proper": [
+          ["onephrase", 800],
+          ["and", 500],
+          ["single_word_removal", 50]
+        ],
+        "title": [
+          ["and", 125]
+        ],
+        "title_alt": [
+          ["and", 100]
+        ],
+        "title_new": [
+          ["and", 50]
+        ],
+        "title_full": [
+          ["and", 200],
+          ["single_word_removal", 50]
+        ]
+      },
+      "1": {
+        "0": ["OR", 400],
+        "author_exact": [
+          ["localized_callnumber", 2000]
+        ],
+        "author_left": [["localized_callnumber", 1000]
+        ],
+        "author": [
+          ["onephrase", 800],
+          ["proximal", 200]
+        ],
+        "author2": [
+          ["onephrase", 100],
+          ["proximal", 50]
+        ],
+        "author_additional": [
+          ["onephrase", 100],
+          ["proximal", 50]
+        ]
+      },
+      "2": {
+        "0": ["OR", 300],
+        "id": [
+          ["onephrase", null]
+        ],
+        "alternate_ids": [
+          ["onephrase", null]
+        ],
+        "barcode": [
+          ["onephrase", null]
+        ],
+        "issn": [
+          ["and", 100],
+          ["or", null]
+        ],
+        "isbn": [
+          ["and", 100],
+          ["or", null]
+        ],
+        "upc": [
+          ["and", 100],
+          ["or", null]
+        ]
+      },
+      "3": {
+        "0": ["OR", null],
+        "local_callnumber_exact": [
+          ["localized_callnumber", 400]
+        ],
+        "local_callnumber_left": [
+          ["localized_callnumber", 300]
+        ],
+        "local_callnumber": [
+          ["onephrase", null]
+        ]
+      },
+      "4": {
+        "0": ["OR", null],
+        "series": [
+          ["onephrase", 600],
+          ["and", 50]
+        ],
+        "series2": [
+          ["and", 30]
+        ]
+      },
+      "table_of_contents": [
+        ["and", 50]
+      ],
+      "topic": [
+        ["onephrase", 125]
+      ],
+      "geographic": [
+        ["onephrase", 75]
+      ],
+      "genre": [
+        ["onephrase", 75]
+      ],
+      "keywords": [
+        ["and", 10]
+      ],
+      "description": [
+        ["and", 60]
+      ],
+      "target_audience": [
+        ["onephrase", 75]
+      ],
+      "literary_form_full": [
+        ["onephrase", 75]
+      ]
+    }
+  },
+
+  "KeywordProper": {
+    "DismaxFields": [
+      "title_proper^850",
+      "series_proper^100",
+      "auth_author^300",
+      "table_of_contents_proper^10",
+      "topic_proper^500",
+      "geographic_proper^300",
+      "genre_proper^300",
+      "keywords_proper",
+      "isbn",
+      "issn",
+      "upc",
+      "oclc",
+      "callnumber-subject",
+      "local_callnumber_exact^800",
+      "local_callnumber_left^300",
+      "barcode"
+    ],
+    "QueryFields": {
+      "title_exact": [
+        ["localized_callnumber", 2400]
+      ],
+      "title_left": [
+        ["localized_callnumber", 1600]
+      ],
+      "author_exact": [
+        ["localized_callnumber", 2200]
+      ],
+      "author_left": [
+        ["localized_callnumber", 1000]
+      ],
+      "title_proper": [
+        ["onephrase", 850]
+      ],
+      "series_proper": [
+        ["and", 50]
+      ],
+      "auth_author": [
+        ["onephrase", 300]
+      ],
+      "auth_author2": [
+        ["onephrase", 300]
+      ],
+      "table_of_contents_proper": [
+        ["and", 10]
+      ],
+      "topic_proper": [
+        ["onephrase", 500]
+      ],
+      "geographic_proper": [
+        ["onephrase", 300]
+      ],
+      "genre_proper": [
+        ["onephrase", 300]
+      ],
+      "keywords_proper": [
+        ["and", null]
+      ],
+      "issn": [
+        ["and", 100],
+        ["or", null]
+      ],
+      "isbn": [
+        ["and", 100],
+        ["or", null]
+      ],
+      "upc": [
+        ["and", 100],
+        ["or", null]
+      ],
+      "oclc": [
+        ["and", 100],
+        ["or", null]
+      ],
+      "callnumber-subject": [
+        ["onephrase", null]
+      ],
+      "id": [
+        ["onephrase", null]
+      ],
+      "alternate_ids": [
+        ["onephrase", null]
+      ],
+      "local_callnumber_exact": [
+        ["localized_callnumber", 800]
+      ],
+      "local_callnumber_left": [
+        ["localized_callnumber", 300]
+      ],
+      "barcode": [
+        ["onephrase", null]
+      ]
+    }
+  },
+
+  "id": {
+    "QueryFields": {
+      "id": [
+        ["onephrase", null],
+        ["or", null]
+      ],
+      "alternate_ids": [
+        ["onephrase", null],
+        ["or", null]
+      ]
+    }
+  },
+
+  "ids": {
+    "QueryFields": {
+      "id": [
+        ["or", null]
+      ],
+      "-alternate_ids": [
+        ["onephrase", null],
+        ["or", null]
+      ]
+    }
+  },
+
+  "TopicBrowse": {
+    "QueryFields": {
+      "topic_browse": [
+        ["onephrase", null]
+      ]
+    }
+  },
+
+  "AuthorBrowse": {
+    "QueryFields": {
+      "author_browse": [
+        ["onephrase", null]
+      ]
+    }
+  },
+
+  "TitleBrowse": {
+    "QueryFields": {
+      "title_full": [
+        ["onephrase", null]
+      ]
+    }
+  },
+
+  "DeweyBrowse": {
+    "QueryFields": {
+      "dewey-raw": [
+        ["onephrase", null]
+      ]
+    }
+  },
+
+  "LccBrowse": {
+    "QueryFields": {
+      "callnumber-a": [
+        ["onephrase", null]
+      ]
+    }
+  },
+
+  "LocalCallNumber": {
+    "QueryFields": {
+      "local_callnumber_exact": [
+        ["localized_callnumber", 800]
+      ],
+      "local_callnumber_left": [
+        ["localized_callnumber", 300]
+      ],
+      "local_callnumber": [
+        ["exact", null]
+      ]
+    }
+  },
+
+  "callnumber_browse": {
+    "QueryFields": {
+      "callnumber_browse": [
+        ["onephrase", null]
+      ]
+    }
+  },
+
+  "publisher": {
+    "QueryFields": {
+      "publisher": [
+        ["and", 100]
+      ]
+    }
+  },
+
+  "year": {
+    "QueryFields": {
+      "publishDate": [
+        ["and", 100]
+      ]
+    }
+  },
+
+  "language": {
+    "QueryFields": {
+      "language": [
+      ]
+    }
+  },
+
+  "toc": {
+    "QueryFields": {
+      "table_of_contents": [
+        ["and", 100]
+      ]
+    }
+  },
+
+  "topic": {
+    "QueryFields": {
+      "topic": [
+        ["and", 50]
+      ],
+      "topic_facet": [
+        ["and", null]
+      ]
+    }
+  },
+
+  "geographic": {
+    "QueryFields": {
+      "geographic": [
+        ["and", 50]
+      ],
+      "geographic_facet": [
+        ["and", null]
+      ]
+    }
+  },
+
+  "genre": {
+    "QueryFields": {
+      "genre": [
+        ["and", 50]
+      ],
+      "genre_facet": [
+        ["and", null]
+      ]
+    }
+  },
+
+  "era": {
+    "QueryFields": {
+      "era": [
+        ["and", null]
+      ]
+    }
+  },
+
+  "econtentText": {
+    "QueryFields": {
+      "econtentText": [
+        ["onephrase", 500],
+        ["and", 100]
+      ]
+    }
+  },
+
+  "GenealogyKeyword": {
+    "DismaxFields": [
+      "keywords"
+    ],
+    "QueryFields": {
+      "keywords": [
+        ["onephrase", 100]
+      ]
+    }
+  },
+
+  "GenealogyName": {
+    "QueryFields": {
+      "0": {
+        "0": [
+          "AND",
+          100
+        ],
+        "firstName": [
+          ["and", 100]
+        ],
+        "lastName": [
+          ["and", 100]
+        ],
+        "maidenName": [
+          ["and", 75]
+        ],
+        "middleName": [
+          ["and", 50]
+        ],
+        "nickName": [
+          ["and", null]
+        ],
+        "otherName": [
+          ["and", null]
+        ]
+      },
+      "title": [
+        ["onephrase", 350],
+        ["and", 200]
+      ]
+    }
+  },
+
+  "IslandoraTitle": {
+    "QueryFields": {
+      "mods_titleInfo_title_t": [
+        ["onephrase", 1200],
+        ["proximal", 800],
+        ["and", 500]
+      ],
+      "fgs_label_t": [
+        ["onephrase", 1200]
+      ],
+      "PID": [
+        ["exact", 1000]
+      ]
+    }
+  },
+
+  "IslandoraKeyword": {
+    "QueryFields": {
+      "mods_titleInfo_title_t": [
+        ["onephrase", 1200],
+        ["and", 700]
+      ],
+      "mods_titleInfo_subTitle_t": [
+        ["onephrase", 1200],
+        ["and", 700]
+      ],
+      "fgs_label_t": [
+        ["onephrase", 1200],
+        ["and", 700]
+      ],
+      "mods_abstract_t": [
+        ["and", 200]
+      ],
+      "mods_subject_subject_mt": [
+        ["and", 300]
+      ],
+      "mods_subject_topic_mt": [
+        ["and", 300]
+      ],
+      "mods_extension_marmotLocal_hasTranscription_transcriptionText_mt": [
+        ["and", 25]
+      ],
+      "PID": [
+        ["exact", 1000]
+      ],
+      "mods_extension_marmotLocal_hasCreator_entityTitle_mt": [
+        ["and", 10]
+      ],
+      "mods_extension_marmotLocal_describedEntity_entityTitle_mt": [
+        ["and", 10
+        ]
+      ],
+      "mods_extension_marmotLocal_relatedPersonOrg_entityTitle_mt": [
+        ["and", 10]
+      ],
+      "mods_extension_marmotLocal_academicResearch_relatedPersonOrg_entityTitle_mt": [
+        ["and", 10]
+      ],
+      "mods_extension_marmotLocal_music_relatedPersonOrg_entityTitle_mt": [
+        ["and", 10]
+      ],
+      "mods_extension_marmotLocal_relatedEntity_person_entityTitle_mt": [
+        ["and", 10]
+      ],
+      "mods_extension_marmotLocal_relatedEntity_place_entityTitle_mt": [
+        ["and", 10]
+      ],
+      "mods_extension_marmotLocal_relatedEntity_organization_entityTitle_mt": [
+        ["and", 10]
+      ],
+      "mods_extension_marmotLocal_relatedEntity_event_entityTitle_mt": [
+        ["and", 10]
+      ],
+      "mods_extension_marmotLocal_hasAddress_entityTitle_mt": [
+        ["and", 10]
+      ],
+      "mods_extension_marmotLocal_relatedPlace_entityPlace_entityTitle_mt": [
+        ["and", 10]
+      ],
+      "mods_extension_marmotLocal_militaryService_militaryRecord_relatedPlace_entityPlace_entityTitle_mt": [
+        ["and", 10]
+      ],
+      "mods_extension_marmotLocal_militaryService_militaryRecord_militaryBranch_mt": [
+        ["and", 10]
+      ],
+      "mods_extension_marmotLocal_relatedEvent_entityTitle_mt": [
+        ["and", 10]
+      ],
+      "mods_extension_marmotLocal_hasTranscription_transcriber_entityTitle_mt": [
+        ["and", 10]
+      ],
+      "mods_identifier_identifier_mt": [
+        ["onephrase", 4000]
+      ],
+      "mods_extension_marmotLocal_migratedIdentifier_mt": [
+        ["onephrase", 4000]
+      ],
+      "mods_extension_marmotLocal_migratedFileName_mt": [
+        ["onephrase", 4000]
+      ],
+      "mods_extension_marmotLocal_hasCreator_entityPid_ms": [
+        ["exact", 10]
+      ],
+      "mods_extension_marmotLocal_describedEntity_entityPid_ms": [
+        ["exact", 10]
+      ],
+      "mods_extension_marmotLocal_picturedEntity_entityPid_ms": [
+        ["exact", 10]
+      ],
+      "mods_extension_marmotLocal_relatedPersonOrg_entityPid_ms": [
+        ["exact", 10]
+      ],
+      "mods_extension_marmotLocal_music_relatedPersonOrg_entityPid_ms": [
+        ["exact", 10]
+      ],
+      "mods_extension_marmotLocal_relatedEntity_person_entityPid_ms": [
+        ["exact", 10]
+      ],
+      "mods_extension_marmotLocal_relatedEntity_place_entityPid_ms": [
+        ["exact", 10]
+      ],
+      "mods_extension_marmotLocal_relatedEntity_organization_entityPid_ms": [
+        ["exact", 10]
+      ],
+      "mods_extension_marmotLocal_relatedEntity_event_entityPid_ms": [
+        ["exact", 10]
+      ],
+      "mods_extension_marmotLocal_hasAddress_entityPid_ms": [
+        ["exact", 10]
+      ],
+      "mods_extension_marmotLocal_relatedPlace_entityPlace_entityPid_ms": [
+        ["exact", 10]
+      ],
+      "mods_extension_marmotLocal_militaryService_militaryRecord_relatedPlace_entityPlace_entityPid_ms": [
+        ["exact", 10]
+      ],
+      "mods_extension_marmotLocal_militaryService_militaryRecord_militaryBranch_ms": [
+        ["exact", 10]
+      ],
+      "mods_extension_marmotLocal_militaryService_militaryRecord_militaryConflict_ms": [
+        ["exact", 10]
+      ],
+      "mods_extension_marmotLocal_relatedEvent_entityPid_ms": [
+        ["exact", 10]
+      ],
+      "mods_extension_marmotLocal_hasTranscription_transcriber_entityPid_ms": [
+        ["exact", 10]
+      ],
+      "mods_extension_marmotLocal_relatedObject_related_publication_objectPid_ms": [
+        ["exact", 10]
+      ],
+      "mods_extension_marmotLocal_relatedObject_interview_objectPid_ms": [
+        ["exact", 10]
+      ],
+      "mods_extension_marmotLocal_relatedObject_ephermera_objectPid_ms": [
+        ["exact", 10]
+      ],
+      "mods_extension_marmotLocal_relatedObject_ephemera_objectPid_ms": [
+        ["exact", 10]
+      ],
+      "mods_extension_marmotLocal_academicResearch_relatedPersonOrg_entityPid_ms": [
+        ["exact", 10]
+      ],
+      "RELS_EXT_isMemberOfCollection_uri_t": [
+        ["onephrase", null]
+      ],
+      "mods_extension_marmotLocal_art_material_aatID_ms": [
+        ["exact", 10]
+      ],
+      "mods_extension_marmotLocal_art_stylePeriodSet_aatID_ms": [
+        ["exact", 10]
+      ],
+      "mods_extension_marmotLocal_art_techniqueSet_aatID_ms": [
+        ["exact", 10]
+      ],
+      "mods_extension_marmotLocal_music_musicGenre_relatedMusicGenreLCCN_ms": [
+        ["exact", 10]
+      ],
+      "catch_all_fields_mt": [
+        ["and", null]
+      ]
+    }
+  },
+
+  "IslandoraKeywordProper": {
+    "QueryFields": {
+      "mods_titleInfo_title_t": [
+        ["onephrase", 1200],
+        ["exact", 700]
+      ],
+      "mods_titleInfo_subTitle_t": [
+        ["onephrase", 1200],
+        ["exact", 700]
+      ],
+      "fgs_label_t": [
+        ["onephrase", 1200],
+        ["exact", 700]
+      ],
+      "mods_abstract_t": [
+        ["exact", 200]
+      ],
+      "mods_subject_subject_mt": [
+        ["exact", 300]
+      ],
+      "mods_subject_topic_mt": [
+        ["exact", 300]
+      ],
+      "mods_extension_marmotLocal_hasTranscription_transcriptionText_mt": [
+        ["exact", 25]
+      ],
+      "PID": [
+        ["exact", 1000]
+      ],
+      "mods_extension_marmotLocal_hasCreator_entityTitle_ms": [
+        ["exact", 10]
+      ],
+      "mods_extension_marmotLocal_describedEntity_entityTitle_ms": [
+        ["exact", 10]
+      ],
+      "mods_extension_marmotLocal_relatedPersonOrg_entityTitle_ms": [
+        ["exact", 10]
+      ],
+      "mods_extension_marmotLocal_music_relatedPersonOrg_entityTitle_ms": [
+        ["exact", 10]
+      ],
+      "mods_extension_marmotLocal_academicResearch_relatedPersonOrg_entityTitle_ms": [
+        ["exact", 10]
+      ],
+      "mods_extension_marmotLocal_relatedEntity_person_entityTitle_ms": [
+        ["exact", 10]
+      ],
+      "mods_extension_marmotLocal_relatedEntity_place_entityTitle_ms": [
+        ["exact", 10]
+      ],
+      "mods_extension_marmotLocal_relatedEntity_organization_entityTitle_ms": [
+        ["exact", 10]
+      ],
+      "mods_extension_marmotLocal_relatedEntity_event_entityTitle_ms": [
+        ["exact", 10]
+      ],
+      "mods_extension_marmotLocal_hasAddress_entityTitle_ms": [
+        ["exact", 10]
+      ],
+      "mods_extension_marmotLocal_relatedPlace_entityPlace_entityTitle_ms": [
+        ["exact", 10]
+      ],
+      "mods_extension_marmotLocal_militaryService_militaryRecord_relatedPlace_entityPlace_entityTitle_ms": [
+        ["exact", 10]
+      ],
+      "mods_extension_marmotLocal_militaryService_militaryRecord_militaryBranch_ms": [
+        ["exact", 10]
+      ],
+      "mods_extension_marmotLocal_militaryService_militaryRecord_militaryConflict_ms": [
+        ["exact", 10]
+      ],
+      "mods_extension_marmotLocal_relatedEvent_entityTitle_ms": [
+        ["exact", 10]
+      ],
+      "mods_extension_marmotLocal_hasTranscription_transcriber_entityTitle_ms": [
+        ["exact", 10]
+      ],
+      "mods_identifier_identifier_mt": [
+        ["onephrase", 4000]
+      ],
+      "mods_extension_marmotLocal_migratedIdentifier_ms": [
+        ["exact", 4000]
+      ],
+      "mods_extension_marmotLocal_migratedFileName_ms": [
+        ["onephrase", 4000]
+      ],
+      "mods_extension_marmotLocal_hasCreator_entityPid_ms": [
+        ["exact", 10]
+      ],
+      "mods_extension_marmotLocal_describedEntity_entityPid_ms": [
+        ["exact", 10]
+      ],
+      "mods_extension_marmotLocal_picturedEntity_entityPid_ms": [
+        ["exact", 10]
+      ],
+      "mods_extension_marmotLocal_relatedPersonOrg_entityPid_ms": [
+        ["exact", 10]
+      ],
+      "mods_extension_marmotLocal_music_relatedPersonOrg_entityPid_ms": [
+        ["exact", 10]
+      ],
+      "mods_extension_marmotLocal_relatedEntity_person_entityPid_ms": [
+        ["exact", 10]
+      ],
+      "mods_extension_marmotLocal_relatedEntity_place_entityPid_ms": [
+        ["exact", 10]
+      ],
+      "mods_extension_marmotLocal_relatedEntity_organization_entityPid_ms": [
+        ["exact", 10]
+      ],
+      "mods_extension_marmotLocal_relatedEntity_event_entityPid_ms": [
+        ["exact", 10]
+      ],
+      "mods_extension_marmotLocal_hasAddress_entityPid_ms": [
+        ["exact", 10]
+      ],
+      "mods_extension_marmotLocal_relatedPlace_entityPlace_entityPid_ms": [
+        ["exact", 10]
+      ],
+      "mods_extension_marmotLocal_militaryService_militaryRecord_relatedPlace_entityPlace_entityPid_ms": [
+        ["exact", 10]
+      ],
+      "mods_extension_marmotLocal_relatedEvent_entityPid_ms": [
+        ["exact", 10]
+      ],
+      "mods_extension_marmotLocal_hasTranscription_transcriber_entityPid_ms": [
+        ["exact", 10]
+      ],
+      "mods_extension_marmotLocal_relatedObject_related_publication_objectPid_ms": [
+        ["exact", 10]
+      ],
+      "mods_extension_marmotLocal_relatedObject_interview_objectPid_ms": [
+        ["exact", 10]
+      ],
+      "mods_extension_marmotLocal_relatedObject_ephermera_objectPid_ms": [
+        ["exact", 10]
+      ],
+      "mods_extension_marmotLocal_relatedObject_ephemera_objectPid_ms": [
+        ["exact", 10]
+      ],
+      "mods_extension_marmotLocal_academicResearch_relatedPersonOrg_entityPid_ms": [
+        ["exact", 10]
+      ],
+      "RELS_EXT_isMemberOfCollection_uri_t": [
+        ["onephrase", 10]
+      ],
+      "mods_extension_marmotLocal_art_material_aatID_ms": [
+        ["exact", 10]
+      ],
+      "mods_extension_marmotLocal_art_stylePeriodSet_aatID_ms": [
+        ["exact", 10]
+      ],
+      "mods_extension_marmotLocal_art_techniqueSet_aatID_ms": [
+        ["exact", 10]
+      ],
+      "mods_extension_marmotLocal_music_musicGenre_relatedMusicGenreLCCN_ms": [
+        ["exact", 10]
+      ],
+      "catch_all_fields_mt": [
+        ["exact", null]
+      ]
+    }
+  },
+  "IslandoraSubject": {
+    "QueryFields": {
+      "mods_subject_subject_mt": [
+        ["and", 300]
+      ],
+      "mods_subject_topic_mt": [
+        ["and", 300]
+      ]
+    }
+  },
+  "IslandoraSubjectProper": {
+    "QueryFields": {
+      "mods_subject_subject_ms": [
+        ["exact", 300]
+      ],
+      "mods_subject_topic_ms": [
+        ["exact", 300]
+      ]
+    }
+  },
+  "IslandoraRelationshipsById": {
+    "QueryFields": {
+      "mods_extension_marmotLocal_hasCreator_entityPid_ms": [
+        ["exact", null]
+      ],
+      "mods_extension_marmotLocal_describedEntity_entityPid_ms": [
+        ["exact", null]
+      ],
+      "mods_extension_marmotLocal_picturedEntity_entityPid_ms": [
+        ["exact", null]
+      ],
+      "mods_extension_marmotLocal_relatedPersonOrg_entityPid_ms": [
+        ["exact", null]
+      ],
+      "mods_extension_marmotLocal_music_relatedPersonOrg_entityPid_ms": [
+        ["exact", null]
+      ],
+      "mods_extension_marmotLocal_relatedEntity_person_entityPid_ms": [
+        ["exact", null]
+      ],
+      "mods_extension_marmotLocal_relatedEntity_place_entityPid_ms": [
+        ["exact", null]
+      ],
+      "mods_extension_marmotLocal_relatedEntity_organization_entityPid_ms": [
+        ["exact", null]
+      ],
+      "mods_extension_marmotLocal_relatedEntity_event_entityPid_ms": [
+        ["exact", null]
+      ],
+      "mods_extension_marmotLocal_hasAddress_entityPid_ms": [
+        ["exact", null]
+      ],
+      "mods_extension_marmotLocal_relatedPlace_entityPlace_entityPid_ms": [
+        ["exact", null]
+      ],
+      "mods_extension_marmotLocal_militaryService_militaryRecord_relatedPlace_entityPlace_entityPid_ms": [
+        ["exact", null]
+      ],
+      "mods_extension_marmotLocal_militaryService_militaryRecord_militaryBranch_ms": [
+        ["exact", null]
+      ],
+      "mods_extension_marmotLocal_militaryService_militaryRecord_militaryConflict_ms": [
+        ["exact", null]
+      ],
+      "mods_extension_marmotLocal_relatedEvent_entityPid_ms": [
+        ["exact", null]
+      ],
+      "mods_extension_marmotLocal_hasTranscription_transcriber_entityPid_ms": [
+        ["exact", null]
+      ],
+      "mods_extension_marmotLocal_relatedObject__objectPid_ms": [
+        ["exact", null]
+      ],
+      "mods_extension_marmotLocal_relatedObject_related_publication_objectPid_ms": [
+        ["exact", null]
+      ],
+      "mods_extension_marmotLocal_relatedObject_interview_objectPid_ms": [
+        ["exact", null]
+      ],
+      "mods_extension_marmotLocal_relatedObject_ephermera_objectPid_ms": [
+        ["exact", null]
+      ],
+      "mods_extension_marmotLocal_relatedObject_ephemera_objectPid_ms": [
+        ["exact", null]
+      ],
+      "mods_extension_marmotLocal_academicResearch_relatedPersonOrg_entityPid_ms": [
+        ["exact", null]
+      ],
+      "RELS_EXT_isMemberOfCollection_uri_t": [
+        ["onephrase", null]
+      ]
+    }
+  }
+}

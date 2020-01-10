@@ -82,7 +82,7 @@ class Solr implements IndexEngine {
 	/**
 	 * The path to the YAML file specifying available search types:
 	 */
-	protected $searchSpecsFile = '../../conf/searchspecs.yaml';
+	protected $searchSpecsFile = '../../conf/searchspecs.json';
 
 	/**
 	 * An array of search specs pulled from $searchSpecsFile (above)
@@ -129,6 +129,8 @@ class Solr implements IndexEngine {
 	/** @var string  */
 	private $searchSource = null;
 
+	public \Pika\Cache $cache;
+
 	/**
 	 * Constructor
 	 *
@@ -142,7 +144,8 @@ class Solr implements IndexEngine {
 	{
 		global $configArray;
 		global $timer;
-
+		$cacheHandler = initCache();
+		$this->cache = new Pika\Cache($cacheHandler);
 		// Set a default Solr index if none is provided to the constructor:
 		if (empty($index)) {
 			global $library;
@@ -157,12 +160,12 @@ class Solr implements IndexEngine {
 
 		//Check for a more specific searchspecs file
 		global $serverName;
-		if (file_exists(ROOT_DIR . "/../../sites/$serverName/conf/searchspecs.yaml")){
+		if (file_exists(ROOT_DIR . "/../../sites/$serverName/conf/searchspecs.json")){
 			// Return the file path (note that all ini files are in the conf/ directory)
-			$this->searchSpecsFile = ROOT_DIR . "/../../sites/$serverName/conf/searchspecs.yaml";
-		}elseif(file_exists(ROOT_DIR . "/../../sites/default/conf/searchspecs.yaml")){
+			$this->searchSpecsFile = ROOT_DIR . "/../../sites/$serverName/conf/searchspecs.json";
+		}elseif(file_exists(ROOT_DIR . "/../../sites/default/conf/searchspecs.json")){
 			// Return the file path (note that all ini files are in the conf/ directory)
-			$this->searchSpecsFile = ROOT_DIR . "/../../sites/default/conf/searchspecs.yaml";
+			$this->searchSpecsFile = ROOT_DIR . "/../../sites/default/conf/searchspecs.json";
 		}
 		$timer->logTime("Load search specs");
 
@@ -321,15 +324,12 @@ class Solr implements IndexEngine {
 	 * @access private
 	 */
 	private function _loadSearchSpecs(){
-		/** @var Memcache $memCache */
-		global $memCache;
-		$results = $memCache->get('searchSpecs');
+		global $configArray;
+		$results = false; //$this->cache->get('searchSpecs');
 		if (!$results){
-			$results = Horde_Yaml::load(
-				file_get_contents($this->searchSpecsFile)
-			);
-			global $configArray;
-			$memCache->set('searchSpecs', $results, 0, $configArray['Caching']['searchSpecs']);
+			$searchSpecs = file_get_contents($this->searchSpecsFile);
+			$results = json_decode($searchSpecs, true);
+			$this->cache->set('searchSpecs', $results, $configArray['Caching']['searchSpecs']);
 		}
 		$this->_searchSpecs = $results;
 	}
