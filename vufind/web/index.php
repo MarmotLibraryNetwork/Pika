@@ -17,9 +17,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
-//phpinfo();
 
-//die;
 /** CORE APPLICATION CONTROLLER **/
 require_once 'bootstrap.php';
 
@@ -34,10 +32,17 @@ $memoryWatcher->logMemory("Loaded Module and Action Id");
 spl_autoload_register('pika_autoloader');
 spl_autoload_register('vufind_autoloader');
 
-initializeSession();
-$timer->logTime("Initialized session");
+//  Start session
+$handler = new Pika\Session\MemcachedSession();
+session_set_save_handler($handler);
+// register shutdown function needed to avoid oddities of using an object as session handler
+register_shutdown_function('session_write_close');
+session_start();
+$timer->logTime("Initialized Pika\\Session");
 
-$pikaLogger = new Pika\Logger('PikaLogger', true);
+// instantiate global logger
+$pikaLogger = new Pika\Logger('Pika', true);
+$timer->logTime("Initialized Pika\\Logger");
 
 if (isset($_REQUEST['test_role'])){
 	if ($_REQUEST['test_role'] == ''){
@@ -77,25 +82,6 @@ global $active_ip;
 $analytics = new Analytics($active_ip, $startTime);
 $timer->logTime('Setup Analytics');
 
-// Google Analytics
-global $library;
-
-$googleAnalyticsId        = isset($configArray['Analytics']['googleAnalyticsId'])        ? $configArray['Analytics']['googleAnalyticsId'] : false;
-$googleAnalyticsLibraryId = isset($library->gaTrackingId)                                ? $library->gaTrackingId : false;
-$googleAnalyticsLinkingId = isset($configArray['Analytics']['googleAnalyticsLinkingId']) ? $configArray['Analytics']['googleAnalyticsLinkingId'] : false;
-$trackTranslation         = false;
-$trackTranslation         = isset($configArray['Analytics']['trackTranslation'])         ? $configArray['Analytics']['trackTranslation'] : false;
-$interface->assign('googleAnalyticsId', $googleAnalyticsId);
-$interface->assign('googleAnalyticsLibraryId', $googleAnalyticsLibraryId);
-$interface->assign('trackTranslation', $trackTranslation);
-$interface->assign('googleAnalyticsLinkingId', $googleAnalyticsLinkingId);
-if ($googleAnalyticsId) {
-	$googleAnalyticsDomainName = isset($configArray['Analytics']['domainName']) ? $configArray['Analytics']['domainName'] : strstr($_SERVER['SERVER_NAME'], '.');
-	// check for a config setting, use that if found, otherwise grab domain name  but remove the first subdomain
-	$interface->assign('googleAnalyticsDomainName', $googleAnalyticsDomainName);
-}
-
-
 global $offlineMode;
 //Set System Message
 if ($configArray['System']['systemMessage']){
@@ -108,8 +94,8 @@ if ($configArray['System']['systemMessage']){
 	}
 }
 
-//Get the name of the active instance
-//$inLibrary, is used to pre-select autologoout on place hold forms;
+// Get the name of the active instance
+// $inLibrary, is used to pre-select autologoout on place hold forms;
 // to hide the remember me option on login pages;
 // and to show the Location in the page footer
 if ($locationSingleton->getIPLocation() != null){
@@ -742,8 +728,7 @@ function checkAvailabilityMode() {
 	global $configArray;
 	$mode = array();
 
-	// If the config file 'available' flag is
-	//    set we are forcing downtime.
+	// If the config file 'available' flag is to false set we are forcing downtime.
 	if (!$configArray['System']['available']) {
 		//Unless the user is accessing from a maintainence IP address
 
@@ -971,25 +956,6 @@ function loadModuleActionId(){
 			}
 		}
 	}
-}
-
-function initializeSession(){
-	global $configArray;
-	global $timer;
-	// Initiate Session State
-	$session_type = $configArray['Session']['type'];
-	$session_lifetime = $configArray['Session']['lifetime'];
-	$session_rememberMeLifetime = $configArray['Session']['rememberMeLifetime'];
-	$sessionClass = ROOT_DIR . '/sys/' . $session_type . '.php';
-	require_once $sessionClass;
-	if (class_exists($session_type)) {
-		session_save_path('/tmp');
-		/** @var SessionInterface $session */
-		$session = new $session_type();
-		$session->init($session_lifetime, $session_rememberMeLifetime);
-		@session_register_shutdown();
-	}
-	$timer->logTime('Session initialization ' . $session_type);
 }
 
 function loadUserData(){
