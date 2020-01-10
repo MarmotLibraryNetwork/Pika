@@ -25,12 +25,13 @@ class Circa_MigrateHolds extends Action {
 
 		foreach ($barCodes as $barCode){
 
-			/** @var Sierra $sierra */
-			require_once ROOT_DIR . '/Drivers/Sierra.php';
-			$sierra = CatalogFactory::getCatalogConnectionInstance('Sierra');
-			$patronDump = $sierra->_getPatronDump($barCode);
-			$_REQUEST['username'] = $patronDump['PATRN_NAME'];
-			$_REQUEST['password'] = $barCode;
+			//TODO: update with current driver
+//			/** @var Sierra $sierra */
+//			require_once ROOT_DIR . '/Drivers/Sierra.php';
+//			$sierra = CatalogFactory::getCatalogConnectionInstance('Sierra');
+//			$patronDump = $sierra->_getPatronDump($barCode);
+//			$_REQUEST['username'] = $patronDump['PATRN_NAME'];
+//			$_REQUEST['password'] = $barCode;
 			try {
 				$user = UserAccount::login();
 				if ($user == false){

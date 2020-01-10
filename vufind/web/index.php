@@ -498,7 +498,7 @@ if ($action == "AJAX" || $action == "JSON"){
 		$timer->logTime('Load last search for redisplay');
 	}
 
-	if (($action =="Home" && ($module=="Search" || $module=="Summon" || $module=="WorldCat")) ||
+	if (($action =="Home" && ($module=="Search" /*|| $module=="WorldCat"*/)) ||
 	$action == "AJAX" || $action == "JSON"){
 		$interface->assign('showTopSearchBox', 0);
 		$interface->assign('showBreadcrumbs', 0);
