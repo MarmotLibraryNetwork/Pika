@@ -42,27 +42,6 @@ class UInterface extends Smarty
 		$this->assign('isMobile', $this->isMobile ? 'true' : 'false');
 		$this->assign('device', get_device_name());
 
-		//Figure out google translate id
-		if (isset($configArray['Translation']['google_translate_key']) && strlen($configArray['Translation']['google_translate_key']) > 0){
-			$this->assign('google_translate_key', $configArray['Translation']['google_translate_key']);
-			$this->assign('google_included_languages', $configArray['Translation']['includedLanguages']);
-		}
-
-		//Check to see if we have a google site verification key
-		if (isset($configArray['Site']['google_verification_key']) && strlen($configArray['Site']['google_verification_key']) > 0){
-			$this->assign('google_verification_key', $configArray['Site']['google_verification_key']);
-		}
-
-		//Get all images related to the event
-		if (isset($configArray['Maps']) && isset($configArray['Maps']['apiKey'])){
-			$mapsKey = $configArray['Maps']['apiKey'];
-			$this->assign('mapsKey', $mapsKey);
-		}
-		if (isset($configArray['Maps']) && isset($configArray['Maps']['browserKey'])){
-			$mapsKey = $configArray['Maps']['browserKey'];
-			$this->assign('mapsBrowserKey', $mapsKey);
-		}
-
 		// Check to see if multiple themes were requested; if so, build an array,
 		// otherwise, store a single string.
 		$themeArray = explode(',', $this->vufindTheme);
@@ -78,6 +57,9 @@ class UInterface extends Smarty
 			$this->template_dir  = "$local/interface/themes/{$this->vufindTheme}";
 		}
 		$this->themes = $themeArray;
+		$this->assign('theme', $this->vufindTheme);
+		$this->assign('primaryTheme', reset($themeArray));
+
 		if (isset($timer)){
 			$timer->logTime('Set theme');
 		}
@@ -150,11 +132,6 @@ class UInterface extends Smarty
 		}
 		$this->assign('ils', $configArray['Catalog']['ils']);
 
-		$this->assign('showConvertListsFromClassic', $configArray['Catalog']['showConvertListsFromClassic']);
-
-		$this->assign('theme', $this->vufindTheme);
-		$this->assign('primaryTheme', reset($themeArray));
-		$this->assign('device', get_device_name());
 
 		// Determine Offline Mode
 		global $offlineMode;
@@ -216,6 +193,29 @@ class UInterface extends Smarty
 		if ($activeRecordIndexingProfile){
 			$this->assign('activeRecordProfileModule', $activeRecordIndexingProfile->recordUrlComponent);
 		}
+
+		//TODO: load in displayOptions instead
+		//Figure out google translate id
+		if (isset($configArray['Translation']['google_translate_key']) && strlen($configArray['Translation']['google_translate_key']) > 0){
+			$this->assign('google_translate_key', $configArray['Translation']['google_translate_key']);
+			$this->assign('google_included_languages', $configArray['Translation']['includedLanguages']);
+		}
+
+		//Check to see if we have a google site verification key
+		if (isset($configArray['Site']['google_verification_key']) && strlen($configArray['Site']['google_verification_key']) > 0){
+			$this->assign('google_verification_key', $configArray['Site']['google_verification_key']);
+		}
+
+		//Get all images related to the event
+		if (isset($configArray['Maps']) && isset($configArray['Maps']['apiKey'])){
+			$mapsKey = $configArray['Maps']['apiKey'];
+			$this->assign('mapsKey', $mapsKey);
+		}
+		if (isset($configArray['Maps']) && isset($configArray['Maps']['browserKey'])){
+			$mapsKey = $configArray['Maps']['browserKey'];
+			$this->assign('mapsBrowserKey', $mapsKey);
+		}
+
 	}
 
 	/**
@@ -343,29 +343,81 @@ class UInterface extends Smarty
 	}
 
 	function loadDisplayOptions(){
+		/** @var Library $library */
 		global $library;
 		global $locationSingleton;
 		global $configArray;
-		$location = $locationSingleton->getActiveLocation();
-		$showHoldButton = 1;
+		global $subdomain;
+		global $offlineMode;
+
+		$productionServer = $configArray['Site']['isProduction'];
+		$this->assign('productionServer', $productionServer);
+
+			//Set System Message
+		if ($configArray['System']['systemMessage']){
+			$this->assign('systemMessage', $configArray['System']['systemMessage']);
+			// Note Maintenance Mode depends on this
+		}elseif ($offlineMode){
+			$this->assign('systemMessage', "<p class='alert alert-warning'><strong>The circulation system is currently offline.</strong>  Access to account information and availability is limited.</p>");
+		}elseif (!empty($library->systemMessage)){
+			$this->assign('systemMessage', $library->systemMessage);
+		}
+
+		$this->assign('showConvertListsFromClassic', $configArray['Catalog']['showConvertListsFromClassic']);
+
+		/** @var Location $location */
+		$location                      = $locationSingleton->getActiveLocation();
+		$showHoldButton                = 1;
 		$showHoldButtonInSearchResults = 1;
+
+		$themes = explode(',', $library->themeName);
+		foreach ($themes as $themeName){
+			// This overrides the theme's logo image for a location if the image directory contains a image file named as:
+			if ($location != null && file_exists('./interface/themes/' . $themeName . '/images/' . $location->code . '_logo_responsive.png')){
+				$responsiveLogo = '/interface/themes/' . $themeName . '/images/' . $location->code . '_logo_responsive.png';
+				break;
+			}
+			// This overrides the theme's logo image for a library if the image directory contains a image file named as:
+			if ($subdomain != null && file_exists('./interface/themes/' . $themeName . '/images/' . $subdomain . '_logo_responsive.png')){
+				$responsiveLogo = '/interface/themes/' . $themeName . '/images/' . $subdomain . '_logo_responsive.png';
+				break;
+			}
+		}
+		if (isset($responsiveLogo)){
+			$this->assign('responsiveLogo', $responsiveLogo);
+		}
+
 		$this->assign('logoLink', $configArray['Site']['path']);
 		$this->assign('logoAlt', 'Return to Catalog Home');
 		if (isset($library) && $library->useHomeLinkForLogo){
-			if (isset($location) && strlen($location->homeLink) > 0 && $location->homeLink != 'default'){
+			if (!empty($location->homeLink) && $location->homeLink != 'default'){
 				$this->assign('logoAlt', 'Library Home Page');
 				$this->assign('logoLink', $location->homeLink);
-			}elseif (isset($library) && strlen($library->homeLink) > 0 && $library->homeLink != 'default'){
+			}elseif (!empty($library->homeLink) && $library->homeLink != 'default'){
 				$this->assign('logoAlt', 'Library Home Page');
 				$this->assign('logoLink', $library->homeLink);
 			}
 		}
 
-		if (isset($location) && strlen($location->homeLink) > 0 && $location->homeLink != 'default'){
+		if (!empty($location->homeLink) && $location->homeLink != 'default'){
 			$this->assign('homeLink', $location->homeLink);
-		}elseif (isset($library) && strlen($library->homeLink) > 0 && $library->homeLink != 'default'){
+		}elseif (!empty($library->homeLink) && $library->homeLink != 'default'){
 			$this->assign('homeLink', $library->homeLink);
 		}
+
+		//$inLibrary is used to :
+		// * pre-select autologoout on place hold forms;
+		// * to hide the remember me option on login pages;
+		// * to show the Location in the page footer
+		if ($locationSingleton->getIPLocation() != null){
+			$this->assign('inLibrary', true);
+			$physicalLocation = $locationSingleton->getIPLocation()->displayName;
+		}else{
+			$this->assign('inLibrary', false);
+			$physicalLocation = 'Home';
+		}
+		$this->assign('physicalLocation', $physicalLocation);
+
 		if (isset($library)){
 			$this->assign('facebookLink', $library->facebookLink);
 			$this->assign('twitterLink', $library->twitterLink);
@@ -484,14 +536,12 @@ class UInterface extends Smarty
 		}
 		if (!empty($library->additionalCss)){
 			$this->assign('additionalCss', $library->additionalCss);
-		}
-		if (!empty($location->additionalCss)){
+		}elseif (!empty($location->additionalCss)){
 			$this->assign('additionalCss', $location->additionalCss);
 		}
 		if (!empty($library->headerText)){
 			$this->assign('headerText', $library->headerText);
-		}
-		if (!empty($location->headerText)){
+		} elseif (!empty($location->headerText)){
 			$this->assign('headerText', $location->headerText);
 		}
 		$this->assign('showHoldButton', $showHoldButton);

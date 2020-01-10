@@ -271,41 +271,40 @@ function loadSearchInformation(){
 		if (is_array($_GET['searchSource'])){
 			$_GET['searchSource'] = reset($_GET['searchSource']);
 		}
-		$searchSource = $_GET['searchSource'];
+		$searchSource             = $_GET['searchSource'];
 		$_REQUEST['searchSource'] = $searchSource; //Update request since other check for it here
 		$_SESSION['searchSource'] = $searchSource; //Update the session so we can remember what the user was doing last.
+	}elseif (isset($_SESSION['searchSource'])){ //Didn't get a source, use what the user was doing last
+		$searchSource             = $_SESSION['searchSource'];
+		$_REQUEST['searchSource'] = $searchSource;
 	}else{
-		if ( isset($_SESSION['searchSource'])){ //Didn't get a source, use what the user was doing last
-			$searchSource = $_SESSION['searchSource'];
-			$_REQUEST['searchSource'] = $searchSource;
+		//Use a default search source
+		if ($module == 'Person'){
+			$searchSource = 'genealogy';
+		}elseif ($module == 'Archive'){
+			$searchSource = 'islandora';
+		}elseif ($module == 'EBSCO'){
+			$searchSource = 'ebsco';
 		}else{
-			//Use a default search source
-			if ($module == 'Person'){
-				$searchSource = 'genealogy';
-			}elseif ($module == 'Archive'){
-				$searchSource = 'islandora';
-			}elseif ($module == 'EBSCO'){
-				$searchSource = 'ebsco';
+			require_once ROOT_DIR . '/Drivers/marmot_inc/SearchSources.php';
+			$searchSources = new SearchSources();
+			global $locationSingleton;
+			$location = $locationSingleton->getActiveLocation();
+			list($enableCombinedResults, $showCombinedResultsFirst, $combinedResultsName) = $searchSources::getCombinedSearchSetupParameters($location, $library);
+			if ($enableCombinedResults && $showCombinedResultsFirst){
+				$searchSource = 'combinedResults';
 			}else{
-				require_once(ROOT_DIR . '/Drivers/marmot_inc/SearchSources.php');
-				$searchSources = new SearchSources();
-				global $locationSingleton;
-				$location = $locationSingleton->getActiveLocation();
-				list($enableCombinedResults, $showCombinedResultsFirst, $combinedResultsName) = $searchSources::getCombinedSearchSetupParameters($location, $library);
-				if ($enableCombinedResults && $showCombinedResultsFirst){
-					$searchSource = 'combinedResults';
-				}else{
-					$searchSource = 'local';
-				}
+				$searchSource = 'local';
 			}
-			$_REQUEST['searchSource'] = $searchSource;
 		}
+		$_REQUEST['searchSource'] = $searchSource;
 	}
 
 	/** @var Library $searchLibrary */
-	$searchLibrary = Library::getSearchLibrary($searchSource);
+	$searchLibrary  = Library::getSearchLibrary($searchSource);
 	$searchLocation = Location::getSearchLocation($searchSource);
 
+	//set searchSource for 'Repeat Search within Marmot Collection' option
 	if ($searchSource == 'marmot' || $searchSource == 'global'){
 		$searchSource = $searchLibrary->subdomain;
 	}
