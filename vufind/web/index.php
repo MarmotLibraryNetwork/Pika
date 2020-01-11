@@ -774,9 +774,10 @@ function setUpAutoLogOut($module, $action){
 }
 
 function setUpTranslator(){
-	global $interface;
-	global $configArray;
+	global $translator;
 	global $language;
+
+	global $configArray;
 	global $serverName;
 
 	if (isset($_REQUEST['mylang'])){
@@ -800,8 +801,8 @@ function setUpTranslator(){
 		$memCache->set($memCacheKey, $translator, 0, $configArray['Caching']['translator']);
 //		$timer->logTime('Translator setup');
 	}
+	global $interface;
 	$interface->setLanguage($language);
-
 }
 
 function killSpammySearches(){
