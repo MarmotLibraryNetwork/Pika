@@ -659,7 +659,7 @@ function loadUserData(){
 
 		$homeLibrary = Library::getLibraryForLocation(UserAccount::getUserHomeLocationId());
 		if (!empty($homeLibrary->displayName)){
-			$interface->assign('homeLibrary', $homeLibrary);
+			$interface->assign('homeLibrary', $homeLibrary->displayName);
 		}
 
 		// Set up any masquerading
