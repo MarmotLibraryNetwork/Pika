@@ -21,7 +21,6 @@
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 require_once ROOT_DIR . '/Drivers/marmot_inc/subnet.php';
-require_once 'XML/Unserializer.php';
 
 class IPAddresses extends ObjectEditor
 {
@@ -46,16 +45,8 @@ class IPAddresses extends ObjectEditor
 	}
 	function getObjectStructure(){
 		//Look lookup information for display in the user interface
-		$location = new Location();
-		$location->orderBy('displayName');
-		$location->find();
-		$locationList = array();
-		$locationLookupList = array();
-		$locationLookupList[-1] = '<No Nearby Location>';
-		while ($location->fetch()){
-			$locationLookupList[$location->locationId] = $location->displayName;
-			$locationList[$location->locationId] = clone $location;
-		}
+		$locationLookupList = Location::getLocationLookupList();
+
 		$structure = array(
           'ip' => array('property'=>'ip', 'type'=>'text', 'label'=>'IP Address', 'description'=>'The IP Address to map to a location formatted as xxx.xxx.xxx.xxx/mask'),
           'location' => array('property'=>'location', 'type'=>'text', 'label'=>'Display Name', 'description'=>'Descriptive information for the IP Address for internal use'),
