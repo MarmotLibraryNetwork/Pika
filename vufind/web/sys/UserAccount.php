@@ -102,6 +102,16 @@ class UserAccount {
 		return array_key_exists($roleName, $userRoles);
 	}
 
+	public static function userHasRoleFromList(array $roleNames) {
+		$userRoles = UserAccount::getActiveRoles();
+		foreach ($roleNames as $roleName){
+			if (array_key_exists($roleName, $userRoles)){
+				return true;
+			}
+		}
+		return false;
+	}
+
 	public static function getActiveRoles(){
 		if (UserAccount::$userRoles == null){
 			if (UserAccount::isLoggedIn()){
@@ -119,6 +129,7 @@ class UserAccount {
 					}
 				}
 
+				if ($canUseTestRoles){
 				//Test roles if we are doing overrides
 				$testRole = '';
 				if (isset($_REQUEST['test_role'])){
@@ -126,14 +137,11 @@ class UserAccount {
 				}elseif (isset($_COOKIE['test_role'])){
 					$testRole = $_COOKIE['test_role'];
 				}
-				if ($canUseTestRoles && $testRole != ''){
-					if (is_array($testRole)){
-						$testRoles = $testRole;
-					}else{
-						$testRoles = array($testRole);
-					}
+					if ($testRole != ''){
 					//Ignore the standard roles for the user
 					UserAccount::$userRoles = array();
+
+						$testRoles = is_array($testRole) ? $testRole : array($testRole);
 					foreach ($testRoles as $tmpRole){
 						$role = new Role();
 						if (is_numeric($tmpRole)){
@@ -141,11 +149,11 @@ class UserAccount {
 						}else{
 							$role->name = $tmpRole;
 						}
-						$found = $role->find(true);
-						if ($found == true){
+							if ($role->find(true)){
 							UserAccount::$userRoles[$role->name] = $role->name;
 						}
 					}
+				}
 				}
 
 				//TODO: Figure out roles for masquerade mode see User.php line 251
@@ -185,7 +193,7 @@ class UserAccount {
 			if (strlen(UserAccount::$primaryUserObjectFromDB->displayName)){
 				return UserAccount::$primaryUserObjectFromDB->displayName;
 			}else{
-				return UserAccount::$primaryUserObjectFromDB->firstname . ' ' . UserAccount::$primaryUserObjectFromDB->lastname;;
+				return UserAccount::$primaryUserObjectFromDB->firstname . ' ' . UserAccount::$primaryUserObjectFromDB->lastname;
 			}
 
 		}
@@ -582,7 +590,7 @@ class UserAccount {
 			//Load a list of authentication methods to test and see which (if any) result in a valid login.
 			require_once ROOT_DIR . '/sys/Account/AccountProfile.php';
 			$accountProfile = new AccountProfile();
-			$accountProfile->orderBy('weight', 'name');
+			$accountProfile->orderBy('weight, name');
 			$accountProfile->find();
 			while ($accountProfile->fetch()) {
 				$additionalInfo = array(
@@ -593,33 +601,28 @@ class UserAccount {
 				$accountProfiles[$accountProfile->name] = $additionalInfo;
 			}
 			if (count($accountProfiles) == 0) {
-				global $configArray;
 				//Create default information for historic login.  This will eventually be obsolete
 				$accountProfile = new AccountProfile();
-				$accountProfile->orderBy('weight', 'name');
+				$accountProfile->recordSource         = 'ils';
+				$accountProfile->name                 = 'ils';
+				$accountProfile->authenticationMethod = 'ils';
 				$accountProfile->driver = $configArray['Catalog']['driver'];
+				$accountProfile->loginConfiguration   = ($configArray['Catalog']['barcodeProperty'] == 'cat_password') ? 'name_barcode' : 'barcode_pin';
 				if (isset($configArray['Catalog']['url'])){
 					$accountProfile->vendorOpacUrl = $configArray['Catalog']['url'];
-				}
-				$accountProfile->authenticationMethod = 'ils';
-				if ($configArray['Catalog']['barcodeProperty'] == 'cat_password'){
-					$accountProfile->loginConfiguration = 'username_barcode';
-				}else{
-					$accountProfile->loginConfiguration = 'barcode_pin';
 				}
 				if (isset($configArray['OPAC']['patron_host'])){
 					$accountProfile->patronApiUrl = $configArray['OPAC']['patron_host'];
 				}
-				$accountProfile->recordSource = 'ils';
-				$accountProfile->name = 'ils';
 
 				$additionalInfo = array(
 					'driver' => $configArray['Catalog']['driver'],
-					'authenticationMethod' => $configArray['Authentication']['method'],
+					'authenticationMethod' => 'ILS',
 					'accountProfile' => $accountProfile
 				);
-				$accountProfiles['ils'] = $additionalInfo;
+				$accountProfiles[$accountProfile->name] = $additionalInfo;
 			}
+
 			$memCache->set('account_profiles_' . $instanceName, $accountProfiles, 0, $configArray['Caching']['account_profiles']);
 			global $timer;
 			$timer->logTime("Loaded Account Profiles");

@@ -35,8 +35,6 @@ abstract class MyAccount extends Action
 		global $interface;
 		global $configArray;
 
-		$interface->assign('page_body_style', 'sidebar_left');
-
 		if ($this->requireLogin && !UserAccount::isLoggedIn()) {
 			require_once ROOT_DIR . '/services/MyAccount/Login.php';
 			$myAccountAction = new MyAccount_Login();
@@ -45,8 +43,8 @@ abstract class MyAccount extends Action
 		}
 
 		// Setup Search Engine Connection
-		$class = $configArray['Index']['engine'];
-		$this->db = new $class($configArray['Index']['url']);
+//		$class = $configArray['Index']['engine'];
+//		$this->db = new $class($configArray['Index']['url']);
 
 		// Connect to Database
 		//$user = UserAccount::getLoggedInUser();

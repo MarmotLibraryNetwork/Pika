@@ -42,10 +42,9 @@ class MyAccount_Login extends Action
 			die();
 		}
 
-		$returnUrl = isset($_REQUEST['return']) ? $_REQUEST['return'] : '';
-		if ($returnUrl != ''){
-			header('Location: ' . $returnUrl);
-			exit;
+		if (!empty($_REQUEST['return'])){
+			header('Location: ' . $_REQUEST['return']);
+			die();
 		}
 
 		// Assign the followup task to come back to after they login -- note that

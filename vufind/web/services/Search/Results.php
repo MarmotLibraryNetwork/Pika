@@ -246,7 +246,6 @@ class Search_Results extends Action {
 		//Enable and disable functionality based on library settings
 		//This must be done before we process each result
 		$interface->assign('showNotInterested', false);
-		$interface->assign('page_body_style', 'sidebar_left');
 		$interface->assign('overDriveVersion', isset($configArray['OverDrive']['interfaceVersion']) ? $configArray['OverDrive']['interfaceVersion'] : 1);
 
 		$showRatings = 1;

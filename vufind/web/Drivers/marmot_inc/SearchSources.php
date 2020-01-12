@@ -258,21 +258,22 @@ class SearchSources{
 	 * @param $library
 	 * @return array
 	 */
-	static function getCombinedSearchSetupParameters($location, $library)
-	{
-		$enableCombinedResults = false;
+	static function getCombinedSearchSetupParameters($location, $library){
+		$enableCombinedResults    = false;
 		$showCombinedResultsFirst = false;
-		$combinedResultsName = 'Combined Results';
-		if ($location && !$location->useLibraryCombinedResultsSettings) {
-			$enableCombinedResults = $location->enableCombinedResults;
+		$combinedResultsName      = 'Combined Results';
+		if ($location && !$location->useLibraryCombinedResultsSettings){
+			$enableCombinedResults    = $location->enableCombinedResults;
 			$showCombinedResultsFirst = $location->defaultToCombinedResults;
-			$combinedResultsName = $location->combinedResultsLabel;
+			$combinedResultsName      = $location->combinedResultsLabel;
 			return array($enableCombinedResults, $showCombinedResultsFirst, $combinedResultsName);
-		} else if ($library) {
-			$enableCombinedResults = $library->enableCombinedResults;
-			$showCombinedResultsFirst = $library->defaultToCombinedResults;
-			$combinedResultsName = $library->combinedResultsLabel;
-			return array($enableCombinedResults, $showCombinedResultsFirst, $combinedResultsName);
+		}else{
+			if ($library){
+				$enableCombinedResults    = $library->enableCombinedResults;
+				$showCombinedResultsFirst = $library->defaultToCombinedResults;
+				$combinedResultsName      = $library->combinedResultsLabel;
+				return array($enableCombinedResults, $showCombinedResultsFirst, $combinedResultsName);
+			}
 		}
 		return array($enableCombinedResults, $showCombinedResultsFirst, $combinedResultsName);
 	}
@@ -354,13 +355,13 @@ class SearchSources{
 			$innReachEncoreHostUrl = $configArray['InterLibraryLoan']['innReachEncoreHostUrl'];
 
 			return $innReachEncoreHostUrl . '/iii/encore/search/C|S' . $lookFor . '|Orightresult|U1?lang=eng&amp;suite=def';
-		}else if ($searchSource == 'amazon'){
+		}elseif ($searchSource == 'amazon'){
 			return "http://www.amazon.com/s/ref=nb_sb_noss?url=search-alias%3Daps&field-keywords=" . urlencode($lookFor);
-		}else if ($searchSource == 'course-reserves-course-name'){
-			$linkingUrl = $configArray['Catalog']['linking_url'];
+		}elseif ($searchSource == 'course-reserves-course-name'){
+			$linkingUrl = $configArray['Catalog']['linking_url']; //TODO replace with account profile opacUrl
 			return "$linkingUrl/search~S{$library->scope}/r?SEARCH=" . urlencode($lookFor);
-		}else if ($searchSource == 'course-reserves-instructor'){
-			$linkingUrl = $configArray['Catalog']['linking_url'];
+		}elseif ($searchSource == 'course-reserves-instructor'){
+			$linkingUrl = $configArray['Catalog']['linking_url'];//TODO replace with account profile opacUrl
 			return "$linkingUrl/search~S{$library->scope}/p?SEARCH=" . urlencode($lookFor);
 		}else{
 			return "";

@@ -340,7 +340,8 @@ function updateConfigForScoping($configArray){
 		}
 	}
 	$timer->logTime('found library and location');
-	if (isset($library) && $library != null){
+	if (!empty($library)){
+		//TODO move to interface, displayoptions method
 		//Update the title
 		$configArray['Site']['theme'] = $library->themeName . ',' . $configArray['Site']['theme'] . ',default';
 		$configArray['Site']['title'] = $library->displayName;
@@ -348,23 +349,7 @@ function updateConfigForScoping($configArray){
 		$location = $locationSingleton->getActiveLocation();
 		$timer->logTime('found active location');
 
-		//Add an extra css file for the location if it exists.
-		$themes = explode(',', $library->themeName);
-		foreach ($themes as $themeName){
-			if ($location != null && file_exists('./interface/themes/' . $themeName . '/images/' . $location->code . '_logo_responsive.png')){
-				$configArray['Site']['responsiveLogo'] = '/interface/themes/' . $themeName . '/images/' . $location->code . '_logo_responsive.png';
-			}
-			if ($subdomain != null && file_exists('./interface/themes/' . $themeName . '/images/' . $subdomain . '_logo_responsive.png')){
-				$configArray['Site']['responsiveLogo'] = '/interface/themes/' . $themeName . '/images/' . $subdomain . '_logo_responsive.png';
-			}
-			if ($location != null && file_exists('./interface/themes/' . $themeName . '/images/' . $location->code . '_logo_small.png')){
-				$configArray['Site']['smallLogo'] = '/interface/themes/' . $themeName . '/images/' . $location->code . '_logo_small.png';
-			}
-			if ($location != null && file_exists('./interface/themes/' . $themeName . '/images/' . $location->code . '_logo_large.png')){
-				$configArray['Site']['largeLogo'] = '/interface/themes/' . $themeName . '/images/' . $location->code . '_logo_large.png';
-			}
-		}
-		$timer->logTime('loaded themes');
+
 	}
 	$timer->logTime('finished update config for scoping');
 

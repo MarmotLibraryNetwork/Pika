@@ -229,34 +229,33 @@ class User extends DB_DataObject {
 				}
 			}
 
-			//Setup masquerading as different users
-			$testRole = '';
-			if (isset($_REQUEST['test_role'])){
-				$testRole = $_REQUEST['test_role'];
-			}elseif (isset($_COOKIE['test_role'])){
-				$testRole = $_COOKIE['test_role'];
-			}
-			if ($canUseTestRoles && $testRole != ''){
-				if (is_array($testRole)){
-					$testRoles = $testRole;
-				}else{
-					$testRoles = array($testRole);
+			if ($canUseTestRoles){
+				$testRole = '';
+				if (isset($_REQUEST['test_role'])){
+					$testRole = $_REQUEST['test_role'];
+				}elseif (isset($_COOKIE['test_role'])){
+					$testRole = $_COOKIE['test_role'];
 				}
-				foreach ($testRoles as $tmpRole){
-					$role = new Role();
-					if (is_numeric($tmpRole)){
-						$role->roleId = $tmpRole;
-					}else{
-						$role->name = $tmpRole;
-					}
-					$found = $role->find(true);
-					if ($found == true){
-						$this->roles[$role->roleId] = $role->name;
+				if ($testRole != ''){
+					$testRoles = is_array($testRole) ? $testRole : array($testRole);
+					foreach ($testRoles as $tmpRole){
+						$role = new Role();
+						if (is_numeric($tmpRole)){
+							$role->roleId = $tmpRole;
+						}else{
+							$role->name = $tmpRole;
+						}
+						if ($role->find(true)){
+							$this->roles[$role->roleId] = $role->name;
+						}
 					}
 				}
 			}
+
+
 		}
 
+		//Setup masquerading as different users
 		$masqueradeMode = UserAccount::isUserMasquerading();
 		if ($masqueradeMode && !$isGuidingUser){
 			if (is_null($this->masqueradingRoles)){
