@@ -79,7 +79,7 @@ class MyAccount_Edit extends Action
 			if ($userList->find(true)) {
 				$interface->assign('list', $userList);
 
-				$id = $_GET['id'];
+				$id = $_GET['titleIdForListEntry'];
 				if (!empty($id)) {
 					// Item ID
 					$interface->assign('recordId', $id);

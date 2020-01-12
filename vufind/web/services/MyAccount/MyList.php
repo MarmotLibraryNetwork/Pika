@@ -59,7 +59,8 @@ class MyAccount_MyList extends MyAccount {
 		// Ensure user has privileges to view the list
 		if (!isset($list) || (!$list->public && !UserAccount::isLoggedIn())){
 			require_once ROOT_DIR . '/services/MyAccount/Login.php';
-			MyAccount_Login::launch();
+			$myAccountAction = new MyAccount_Login();
+			$myAccountAction->launch();
 			exit();
 		}
 		if (!$list->public && $list->user_id != UserAccount::getActiveUserId()){
