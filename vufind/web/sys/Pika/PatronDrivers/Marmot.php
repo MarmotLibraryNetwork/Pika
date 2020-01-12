@@ -407,7 +407,6 @@ class Marmot extends Sierra {
 		}
 	}
 
-//TODO:  refactor and recombine with _curlOptInOptOut
 	private function _curlLegacy($patron, $pageToCall, $postParams = array(), $patronAction = true){
 
 		$c = new Curl();

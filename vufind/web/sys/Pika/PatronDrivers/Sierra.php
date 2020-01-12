@@ -102,9 +102,9 @@ class Sierra {
 		$this->memCache = new Cache($cache);
 		// build the api url
 		// JIC strip any trailing slash and spaces.
-		$baseApiUrl = trim($accountProfile->patronApiUrl,'/ ');
-		$apiUrl = $baseApiUrl . '/iii/sierra-api/v'.$configArray['Catalog']['api_version'] . '/';
-		$tokenUrl = $baseApiUrl . '/iii/sierra-api/token';
+		$baseApiUrl     = trim($accountProfile->patronApiUrl, '/ ');
+		$apiUrl         = $baseApiUrl . '/iii/sierra-api/v' . $configArray['Catalog']['api_version'] . '/';
+		$tokenUrl       = $baseApiUrl . '/iii/sierra-api/token';
 		$this->apiUrl   = $apiUrl;
 		$this->tokenUrl = $tokenUrl;
 
@@ -2635,14 +2635,16 @@ EOT;
 	 * @throws ErrorException
 	 */
 	protected function _oAuthToken() {
-		// check memcache for valid token and set $this
-		$this->logger->info('Checking for oAuth token in memcache');
-		if ($token = $this->memCache->get("sierra_oauth_token")) {
-			$this->logger->info('Found oAuth token in memcache');
-			$this->oAuthToken = $token;
-			return TRUE;
+		if (!isset($_REQUEST['reload'])){
+			// check memcache for valid token and set $this
+			$this->logger->info('Checking for oAuth token in memcache');
+			if ($token = $this->memCache->get("sierra_oauth_token")){
+				$this->logger->info('Found oAuth token in memcache');
+				$this->oAuthToken = $token;
+				return true;
+			}
+			$this->logger->info('No oAuth token in memcache. Requesting new token.');
 		}
-		$this->logger->info('No oAuth token in memcache. Requesting new token.');
 		// setup url
 		$url = $this->tokenUrl;
 		// $this->logger->info('oAuth URL '.$url);

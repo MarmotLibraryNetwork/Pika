@@ -1012,7 +1012,7 @@ class MyAccount_AJAX extends AJAXHandler {
 			$list->id = $listId;
 			if ($list->find(true)){
 				// Build Favorites List
-				$listEntries = $list->getListTitles();
+				$listEntries = $list->getListTitles(true);
 				$interface->assign('listEntries', $listEntries);
 
 				// Load the User object for the owner of the list (if necessary):

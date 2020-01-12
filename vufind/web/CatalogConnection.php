@@ -1156,7 +1156,8 @@ class CatalogConnection
 		}else{
 			return array(
 					'success' => false,
-					'errors' => array('Importing Lists has not been implemented for this ILS.'));
+					'errors' => array('Importing Lists has not been implemented for this ILS.')
+			);
 		}
 	}
 

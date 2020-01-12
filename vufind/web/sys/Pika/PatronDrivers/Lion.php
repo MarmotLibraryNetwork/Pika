@@ -14,9 +14,14 @@ namespace Pika\PatronDrivers;
 
 
 use Location;
+use Pika\SierraPatronListOperations;
 
-class Lion extends Sierra
-{
+require_once ROOT_DIR . "/sys/Pika/PatronDrivers/Traits/SierraPatronListOperations.php";
+
+class Lion extends Sierra {
+
+	use SierraPatronListOperations;
+
 	public function __construct($accountProfile)
 	{
 		parent::__construct($accountProfile);
