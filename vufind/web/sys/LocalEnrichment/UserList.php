@@ -179,75 +179,82 @@ class UserList extends DB_DataObject
 	}
 
 	/**
+	 * @param bool $cleanListOfBadWords
 	 * @return UserListEntry[]|null
 	 */
-	function getListTitles()
-	{
-		if (isset($this->listTitles[$this->id])){
+	function getListTitles($cleanListOfBadWords = false){
+		if (!$cleanListOfBadWords && isset($this->listTitles[$this->id])){
 			return $this->listTitles[$this->id];
 		}
 		$listTitles = array();
 
 		require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
-		$listEntry = new UserListEntry();
+		$listEntry         = new UserListEntry();
 		$listEntry->listId = $this->id;
 		$listEntry->find();
 
 		while ($listEntry->fetch()){
-			$cleanedEntry = $this->cleanListEntry(clone($listEntry));
-			if ($cleanedEntry != false){
-				$listTitles[] = $cleanedEntry;
+			if ($cleanListOfBadWords){
+				$cleanedEntry = $this->cleanListEntry(clone($listEntry));
+				if ($cleanedEntry != false){
+					$listTitles[] = $cleanedEntry;
+				}
+			} else {
+				$listTitles[] = clone($listEntry);
 			}
 		}
 
-		$this->listTitles[$this->id] = $listTitles;
-		return $this->listTitles[$this->id];
+		if (!$cleanListOfBadWords){
+			$this->listTitles[$this->id] = $listTitles;
+		}
+		return $cleanListOfBadWords? $listTitles : $this->listTitles[$this->id];
 	}
 
 	var $catalog;
 
 	/**
+	 * Remove bad words from a list's title or descriptions, and the list entry's notes;
+	 * OR hide the entry completely for libraries with hideCommentsWithBadWords on
+	 *
 	 * @param UserListEntry $listEntry - The resource to be cleaned
 	 * @return UserListEntry|bool
 	 */
 	function cleanListEntry($listEntry){
-		// Connect to Database
-		$this->catalog = CatalogFactory::getCatalogConnectionInstance();
-
-		//Filter list information for bad words as needed.
 		if (!UserAccount::isLoggedIn() || $this->user_id != UserAccount::getActiveUserId()){
-			//Load all bad words.
-			global $library;
+			// Only Filter list for bad words when it isn't the users list. (The user gets to see their own list uncensored)
+
+			// Load all bad words.
 			require_once ROOT_DIR . '/Drivers/marmot_inc/BadWord.php';
 			$badWords = new BadWord();
-//			$badWordsList = $badWords->getBadWordExpressions();
 
-			//Determine if we should censor bad words or hide the comment completely.
-			$censorWords = true;
-			if (isset($library)) $censorWords = $library->hideCommentsWithBadWords == 0 ? true : false;
-			if ($censorWords){
+			// Determine if we should censor bad words only or hide the comment completely.
+			global $library;
+			$hideListEntriesWithBadWordsCompletely = !empty($library->hideCommentsWithBadWords);
+			if ($hideListEntriesWithBadWordsCompletely){
+				// Check for bad words in the list's title or description, or the list entry's notes
+				$text = $this->title;
+				if (!empty($this->description)){
+					$text .= ' ' . $this->description;
+				}
+				if (!empty($listEntry->notes)){
+					$text .= ' ' . $listEntry->notes;
+				}
+
+				if ($badWords->hasBadWords($text)){
+					return false;
+				}
+			}else{
 				//Filter Title
-				$titleText = $badWords->censorBadWords($this->title);
+				$titleText   = $badWords->censorBadWords($this->title);
 				$this->title = $titleText;
 
 				//Filter description
-				$descriptionText = $badWords->censorBadWords($this->description);
+				$descriptionText   = $badWords->censorBadWords($this->description);
 				$this->description = $descriptionText;
 
 				//Filter notes
-				// TODO: possible problem: $notesText overwrites the above description?
-				$notesText = $badWords->censorBadWords($listEntry->notes);
+				$notesText        = $badWords->censorBadWords($listEntry->notes);
 				$listEntry->notes = $notesText;
-			}else{
-				//Check for bad words in the title or description
-				$titleText = $this->title;
-				if (isset($listEntry->description)){
-					$titleText .= ' ' . $listEntry->description;
-				}
-				//Filter notes
-				$titleText .= ' ' . $listEntry->notes;
-
-				if ($badWords->hasBadWords($titleText)) return false;
 			}
 		}
 		return $listEntry;
@@ -256,16 +263,15 @@ class UserList extends DB_DataObject
 	/**
 	 * @param String $workToRemove
 	 */
-	function removeListEntry($workToRemove)
-	{
+	function removeListEntry($workToRemove){
 		// Remove the Saved List Entry
 		if ($workToRemove instanceof UserListEntry){
 			$workToRemove->delete();
 		}else{
 			require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
-			$listEntry = new UserListEntry();
+			$listEntry                         = new UserListEntry();
 			$listEntry->groupedWorkPermanentId = $workToRemove;
-			$listEntry->listId = $this->id;
+			$listEntry->listId                 = $this->id;
 			$listEntry->delete();
 		}
 

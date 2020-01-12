@@ -30,7 +30,7 @@ class ImportListsFromClassic extends MyAccount {
 		$listList = $user->getLists();
 		$interface->assign('listList', $listList);
 
-		$this->display('listImportResults.tpl', 'Import List');
+		$this->display('listImportResults.tpl', 'Import Lists');
 	}
 
 }
