@@ -21,9 +21,6 @@ require_once ROOT_DIR . '/sys/IndexEngine.php';
 require_once ROOT_DIR . '/sys/ConfigArray.php';
 require_once ROOT_DIR . '/sys/SolrUtils.php';
 
-require_once 'XML/Unserializer.php';
-require_once 'XML/Serializer.php';
-
 use Curl\Curl;
 
 /**

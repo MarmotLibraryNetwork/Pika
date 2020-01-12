@@ -18,9 +18,6 @@
  *
  */
 
-require_once 'XML/Unserializer.php';
-require_once 'XML/Serializer.php';
-
 require_once ROOT_DIR . '/sys/Authentication/AuthenticationFactory.php';
 
 class UserAccount {
