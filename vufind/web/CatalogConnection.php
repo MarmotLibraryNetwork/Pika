@@ -846,17 +846,17 @@ class CatalogConnection
 		return $errors = $this->driver->updatePatronInfo($user, $canUpdateContactInfo);
 	}
 
-	// TODO Millennium only at this time, set other drivers to return false.
+	// TODO Sierra only at this time, set other drivers to return false.
 	function bookMaterial(User $patron, SourceAndId $recordId, $startDate, $startTime = null, $endDate = null, $endTime = null){
 		return $this->driver->bookMaterial($patron, $recordId, $startDate, $startTime, $endDate, $endTime);
 	}
 
-	// TODO Millennium only at this time, set other drivers to return false.
+	// TODO Sierra only at this time, set other drivers to return false.
 	function cancelBookedMaterial($patron, $cancelIds){
 		return $this->driver->cancelBookedMaterial($patron, $cancelIds);
 	}
 
-	// TODO Millennium only at this time, set other drivers to return false.
+	// TODO Sierra only at this time, set other drivers to return false.
 	function cancelAllBookedMaterial($patron){
 		return $this->driver->cancelAllBookedMaterial($patron);
 	}
