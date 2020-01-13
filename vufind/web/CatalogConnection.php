@@ -64,6 +64,9 @@ class CatalogConnection
 	 */
 	public $driver;
 
+	private Pika\Cache $cache;
+	private Pika\Logger $logger;
+
 	/**
 	 * Constructor
 	 *
@@ -76,6 +79,8 @@ class CatalogConnection
 	 * @access public
 	 */
 	public function __construct($driver, $accountProfile){
+		$this->cache  = new Pika\Cache();
+		$this->logger = new Pika\Logger("CatalogConnection");
 		if ($driver != 'DriverInterface'){
 			$path = ROOT_DIR . "/Drivers/{$driver}.php";
 			if (is_readable($path)){
@@ -85,11 +90,12 @@ class CatalogConnection
 				try {
 					$this->driver = new $driver($accountProfile);
 				} catch (Exception $e){
-					global $logger;
-					$logger->log("Unable to create driver $driver for account profile {$accountProfile->name}", PEAR_LOG_ERR);
+					$this->logger->error(
+					 "Unable to create driver $driver for account profile {$accountProfile->name}",
+					 ["stack_tracke" => $e->getTraceAsString()]
+					);
 					throw $e;
 				}
-
 				$this->accountProfile = $accountProfile;
 				$this->status         = true;
 		}
@@ -167,12 +173,10 @@ class CatalogConnection
 	 */
 	public function patronLogin($username, $password, $parentAccount = null, $validatedViaSSO = false) {
 		global $timer;
-		global $logger;
 		global $offlineMode;
 
 		//Get the barcode property
 		$barcode = $this->accountProfile->loginConfiguration == 'barcode_pin' ? $username : $password;
-//		$barcode = preg_replace('/[\s]/', '', $barcode); // remove all space characters
 		//TODO: some libraries may have barcodes that the space character is valid. So far Aspencat appears to be one. pascal 9/27/2018
 		$barcode = trim($barcode);
 
@@ -192,16 +196,14 @@ class CatalogConnection
 					//We still load based on barcode, make sure the username is similar
 					$userValid = $this->areNamesSimilar($username, $user->cat_username);
 				}
-				if ($userValid){
-					//We have a good user account for additional processing
-				} else {
+				if (!$userValid){
 					$timer->logTime("offline patron login failed due to invalid name");
-					$logger->log("offline patron login failed due to invalid name", PEAR_LOG_INFO);
+					$this->logger->info("offline patron login failed due to invalid name", PEAR_LOG_INFO);
 					return null;
 				}
 			} else {
 				$timer->logTime("offline patron login failed because we haven't seen this user before");
-				$logger->log("offline patron login failed because we haven't seen this user before", PEAR_LOG_INFO);
+				$this->logger->info("offline patron login failed because we haven't seen this user before");
 				return null;
 			}
 		}else {
@@ -646,8 +648,7 @@ class CatalogConnection
 				$result = $this->driver->deleteAllReadingHistory($patron);
 				if (!$result){
 					$success = false;
-					global $logger;
-					$logger->log('Failed to delete all reading history in ILS for an opt out for user ' . $patron->id, PEAR_LOG_WARNING);
+					$this->logger->warn('Failed to delete all reading history in ILS for an opt out for user ' . $patron->id);
 				}
 			}elseif (method_exists($this->driver, 'doReadingHistoryAction')){
 				//Deprecated process
@@ -659,8 +660,7 @@ class CatalogConnection
 				$result = $this->driver->optOutReadingHistory($patron);
 				if (!$result){
 					$success = false;
-					global $logger;
-					$logger->log('Failed to opt out of reading history in ILS for user ' . $patron->id, PEAR_LOG_WARNING);
+					$this->logger->warn('Failed to opt out of reading history in ILS for user ' . $patron->id);
 				}
 			} elseif (method_exists($this->driver, 'doReadingHistoryAction')){
 				//Deprecated process
@@ -674,8 +674,7 @@ class CatalogConnection
 			$result                   = $readingHistoryDB->delete();
 			if ($result !== false){  // The delete can return 0 for no rows affected
 				$success = false;
-				global $logger;
-				$logger->log('Failed to delete all reading history entries in Pika for user ' . $patron->id, PEAR_LOG_WARNING);
+				$this->logger->warn('Failed to delete all reading history entries in Pika for user ' . $patron->id);
 			}
 
 			//Opt out within Pika since the ILS does not seem to implement this functionality
@@ -707,8 +706,7 @@ class CatalogConnection
 				if ($success){
 					// Set to false if any updates fail; stop checking after the first failure
 					if (!$success = $result != false){
-						global $logger;
-						$logger->log('Failed to delete all reading history entries for user id ' . $patron->id . ', starting with history entry ' . $readingHistoryDB->id, PEAR_LOG_WARNING);
+						$this->logger->warn('Failed to delete all reading history entries for user id ' . $patron->id . ', starting with history entry ' . $readingHistoryDB->id);
 					}
 				}
 			}
@@ -752,8 +750,7 @@ class CatalogConnection
 							if ($success){
 								// Set to false if any updates fail; stop checking after the first failure
 								$success = $result != false;
-								global $logger;
-								$logger->log('Failed to delete selected reading history entry for user id ' . $patron->id, PEAR_LOG_WARNING);
+								$this->logger->warn('Failed to delete selected reading history entry for user id ' . $patron->id);
 							}
 						}
 					}
@@ -768,8 +765,7 @@ class CatalogConnection
 						if ($success){
 							// Set to false if any updates fail; stop checking after the first failure
 							$success = $result != false;
-							global $logger;
-							$logger->log('Failed to delete selected reading history entry for user id ' . $patron->id, PEAR_LOG_WARNING);
+							$this->logger->warn('Failed to delete selected reading history entry for user id ' . $patron->id);
 						}
 					}
 				}
@@ -820,8 +816,7 @@ class CatalogConnection
 	 * @access  public
 	 */
 	function placeHold($patron, $recordId, $pickupBranch, $cancelDate = null) {
-		$result =  $this->driver->placeHold($patron, $recordId, $pickupBranch, $cancelDate);
-		return $result;
+		return $this->driver->placeHold($patron, $recordId, $pickupBranch, $cancelDate);
 	}
 
 	/**
@@ -843,7 +838,12 @@ class CatalogConnection
 	}
 
 	function updatePatronInfo($user, $canUpdateContactInfo){
-		return $errors = $this->driver->updatePatronInfo($user, $canUpdateContactInfo);
+		try {
+			$errors = $this->driver->updatePatronInfo($user, $canUpdateContactInfo);
+		} catch (ErrorException $e) {
+			$this->logger->error($e->getMessage(), ['stack_trace' => $e->getTraceAsString()]);
+		}
+		return $errors;
 	}
 
 	// TODO Millennium only at this time, set other drivers to return false.
@@ -1033,8 +1033,7 @@ class CatalogConnection
 				}
 				$historyEntryDB->checkOutDate = time();
 				if (!$historyEntryDB->insert()){
-					global $logger;
-					$logger->log("Could not insert new reading history entry", PEAR_LOG_ERR);
+					$this->logger->warn("Could not insert new reading history entry");
 				}
 			}
 		}
@@ -1051,9 +1050,7 @@ class CatalogConnection
 					$historyEntryDB->checkInDate = time();
 					$numUpdates                  = $historyEntryDB->update();
 					if ($numUpdates != 1){
-						global $logger;
-//						$key = $historyEntry['source'] . ':' . $historyEntry['recordId'];
-						$logger->log("Could not update reading history entry $key", PEAR_LOG_ERR);
+						$this->logger->warn("Could not update reading history entry $key");
 					}
 				}
 			}
@@ -1061,14 +1058,12 @@ class CatalogConnection
 	}
 
 	public function getNumHolds($id) {
-		/** @var Memcache $memCache */
-		global $memCache;
+		global $configArray;
 		$key = 'num_holds_' . $id ;
-		$cachedValue = $memCache->get($key);
+		$cachedValue = $this->cache->get($key);
 		if ($cachedValue == false || isset($_REQUEST['reload'])){
 			$cachedValue = $this->driver->getNumHolds($id);
-			global $configArray;
-			$memCache->add($key, $cachedValue, 0, $configArray['Caching']['item_data']);
+			$this->cache->set($key, $cachedValue, $configArray['Caching']['item_data']);
 		}
 
 		return $cachedValue;

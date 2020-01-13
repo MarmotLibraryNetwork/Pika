@@ -18,6 +18,7 @@
  */
 namespace Pika\Session;
 
+use SearchEntry;
 use SessionHandlerInterface;
 use SessionHandler;
 
@@ -139,7 +140,7 @@ class MemcachedSession extends SessionHandler implements SessionHandlerInterface
 	 */
 	public function read($session_id)
 	{
-		return parent::read($session_id);
+		return @parent::read($session_id);
 	}
 
 	/**

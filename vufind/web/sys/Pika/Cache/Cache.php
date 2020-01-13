@@ -16,6 +16,7 @@ use Pika\Cache\Exception as CacheException;
 use Memcached;
 use DateInterval;
 use DateTime;
+use InvalidArgumentException;
 
 class Cache implements CacheInterface
 {
@@ -30,10 +31,15 @@ class Cache implements CacheInterface
 	 * Cache constructor.
 	 * @param Memcached $handler Memcached handler object
 	 */
-	public function __construct(Memcached $handler)
+	public function __construct(Memcached $handler = null)
 	{
 		global $configArray;
-		$this->handler = $handler;
+		if($handler) {
+			$this->handler = $handler;
+		} else {
+			$handler = initCache();
+			$this->handler = $handler;
+		}
 		if((bool)$configArray['System']['debug']) {
 			$this->logger = new Logger('PikaCache');
 		}
