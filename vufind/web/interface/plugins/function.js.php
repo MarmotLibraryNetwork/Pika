@@ -39,7 +39,7 @@
  * -------------------------------------------------------------
  *
  * @param array  $params  Incoming parameter array
- * @param object &$smarty Smarty object
+ * @param Smarty|UInterface|object &$smarty Smarty object
  *
  * @return string        <script> tag for including Javascript
  */ // @codingStandardsIgnoreStart
@@ -79,6 +79,6 @@ function smarty_function_js($params, &$smarty){
 	}
 
 	// We found the file -- build the script tag:
-	global $interface;
-	return "<script type=\"text/javascript\" src=\"{$js}?v=" . urlencode($interface->getVariable('gitBranch')) . "\"></script>";
+//	global $interface;
+	return "<script type=\"text/javascript\" src=\"{$js}?v=" . urlencode($smarty->getVariable('gitBranch')) . "\"></script>";
 }

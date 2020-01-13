@@ -22,43 +22,39 @@ require_once 'Smarty/Smarty.class.php';
 require_once ROOT_DIR . '/sys/mobile_device_detect.php';
 
 // Smarty Extension class
-class UInterface extends Smarty
-{
-	public  $lang;
-	private $vufindTheme;   // which theme(s) are active?
-	private $themes; // The themes that are active
-	private $isMobile = false;
+class UInterface extends Smarty {
+	public $lang;
+	private $pikaTheme; // which theme(s) are active?
+	private $themes;    // The themes that are active
+	private $isMobile;  // Leave unset till isMobile() is called
 	private $url;
 
 	function __construct(){
 		global $configArray;
 		global $timer;
 
-		$local = $configArray['Site']['local'];
-		// todo: this is set in the database
-		$this->vufindTheme = $configArray['Site']['theme'];
-
-		$this->isMobile = mobile_device_detect();
-		$this->assign('isMobile', $this->isMobile ? 'true' : 'false');
-		$this->assign('device', get_device_name());
+		global $library;
+		if (!empty($library)){
+			$this->pikaTheme = $library->themeName;
+		}
+		$this->pikaTheme .= ',' . $configArray['Site']['theme']
+			. ',responsive,default'; //Make sure we always fall back to the default theme so a template does not have to be overridden.
 
 		// Check to see if multiple themes were requested; if so, build an array,
 		// otherwise, store a single string.
-		$themeArray = explode(',', $this->vufindTheme);
-		//Make sure we always fall back to the default theme so a template does not have to be overridden.
-		$themeArray[] = 'default';
-		if (count($themeArray) > 1) {
+		$themeArray = array_unique(explode(',', $this->pikaTheme));
+		$local      = $configArray['Site']['local'];
+		if (count($themeArray) > 1){
 			$this->template_dir = array();
-			foreach ($themeArray as $currentTheme) {
-				$currentTheme = trim($currentTheme);
+			foreach ($themeArray as $currentTheme){
+				$currentTheme         = trim($currentTheme);
 				$this->template_dir[] = "$local/interface/themes/$currentTheme";
 			}
-		} else {
-			$this->template_dir  = "$local/interface/themes/{$this->vufindTheme}";
+		}else{
+			$this->template_dir = "$local/interface/themes/{$this->pikaTheme}";
 		}
 		$this->themes = $themeArray;
-		$this->assign('theme', $this->vufindTheme);
-		$this->assign('primaryTheme', reset($themeArray));
+		$this->pikaTheme = implode(',', $themeArray);
 
 		if (isset($timer)){
 			$timer->logTime('Set theme');
@@ -67,28 +63,23 @@ class UInterface extends Smarty
 		// Create an MD5 hash of the theme name -- this will ensure that it's a
 		// writeable directory name (since some config.ini settings may include
 		// problem characters like commas or whitespace).
-		$md5 = md5($this->vufindTheme);
-		$this->compile_dir   = "$local/interface/compile/$md5";
-		if (!is_dir($this->compile_dir)) {
+		$md5               = md5($this->pikaTheme);
+		$this->compile_dir = "$local/interface/compile/$md5";
+		if (!is_dir($this->compile_dir)){
 			if (!mkdir($this->compile_dir)){
-				echo("Could not create compile directory {$this->compile_dir}");
-				die();
+				die("Could not create compile directory {$this->compile_dir}");
 			}
 		}
-		$this->cache_dir     = "$local/interface/cache/$md5";
-		if (!is_dir($this->cache_dir)) {
+		$this->cache_dir = "$local/interface/cache/$md5";
+		if (!is_dir($this->cache_dir)){
 			if (!mkdir($this->cache_dir)){
-				echo("Could not create cache directory {$this->cache_dir}");
-				die();
+				die("Could not create cache directory {$this->cache_dir}");
 			}
 		}
-		$this->plugins_dir   = array('plugins', "$local/interface/plugins", 'Smarty/plugins');
+		$this->plugins_dir = array('plugins', "$local/interface/plugins", 'Smarty/plugins');
 		// TODO: The correct setting for caching is 0, 1 or 2
 		// 0 will turn caching off. Not sure what a false value will do.
 		$this->caching       = false;
-		$this->debug         = true;
-		// TODO: Smarty doesn't have a setting for debug. The class var is debugging.
-		// debug may be used for something else.
 		$this->debugging     = false;
 		$this->compile_check = true;
 
@@ -100,35 +91,27 @@ class UInterface extends Smarty
 		$this->register_function('translate', 'translate');
 		$this->register_function('char', 'char');
 
-		$this->assign('site', $configArray['Site']);
-		$this->assign('path', $configArray['Site']['path']);
-		$defaultConfig = $configArray['Site']['path'];
-		$url = $_SERVER['SERVER_NAME'];
-		if (isset($_SERVER['HTTPS'])){
-			$url = "https://" . $url;
-		}else{
-			$url = "http://" . $url;
-		}
-		if (strlen($configArray['Site']['path']) > 0){
+		$this->assign('fullPath', str_replace('&', '&amp;', $_SERVER['REQUEST_URI']));
+		$url = isset($_SERVER['HTTPS']) ? 'https://' : 'http://';
+		$url .= $_SERVER['SERVER_NAME'];
+		if (!empty($configArray['Site']['path'])){
 			$url .= '/' . $configArray['Site']['path'];
+			$this->assign('path', $configArray['Site']['path']);
 		}
 		$this->url = $url;
-		$this->assign('template_dir',$this->template_dir);
 		$this->assign('url', $url);
-		$this->assign('coverUrl', $configArray['Site']['coverUrl']);
 
-		if (isset($configArray['Islandora']['repositoryUrl'])) {
+		if (isset($configArray['Islandora']['repositoryUrl'])){
 			$this->assign('repositoryUrl', $configArray['Islandora']['repositoryUrl']);
 			$this->assign('encodedRepositoryUrl', str_replace('/', '\/', $configArray['Islandora']['repositoryUrl']));
-
 		}
 
-		$this->assign('fullPath', str_replace('&', '&amp;', $_SERVER['REQUEST_URI']));
-		if (isset($configArray['Site']['email'])) {
-			$this->assign('supportEmail', $configArray['Site']['email']);
-		}
+		$this->assign('siteTitle', $configArray['Site']['title']);
 		if (isset($configArray['Site']['libraryName'])){
 			$this->assign('consortiumName', $configArray['Site']['libraryName']);
+		}
+		if (isset($configArray['Site']['email'])){
+			$this->assign('supportEmail', $configArray['Site']['email']);
 		}
 		$this->assign('ils', $configArray['Catalog']['ils']);
 
@@ -143,49 +126,21 @@ class UInterface extends Smarty
 			}else{
 				$this->assign('enableLoginWhileOffline', false);
 			}
-		}else{
-			if (!empty($configArray['Catalog']['enableLoginWhileOffline'])) {
-				// unless offline login is enabled, don't check the offline mode system variable
-				$offlineModeSystemVariable = new Variable();
-				$offlineModeSystemVariable->get('name', 'offline_mode_when_offline_login_allowed');
-				if ($offlineModeSystemVariable && (strtolower(trim($offlineModeSystemVariable->value)) == 'true' || trim($offlineModeSystemVariable->value) == '1')) {
-					$this->assign('enableLoginWhileOffline', true);
-					$offlineMode = true;
-				}
+		}elseif (!empty($configArray['Catalog']['enableLoginWhileOffline'])){
+			// unless offline login is enabled, don't check the offline mode system variable
+			$offlineModeSystemVariable = new Variable();
+			$offlineModeSystemVariable->get('name', 'offline_mode_when_offline_login_allowed');
+			if ($offlineModeSystemVariable && (strtolower(trim($offlineModeSystemVariable->value)) == 'true' || trim($offlineModeSystemVariable->value) == '1')){
+				$this->assign('enableLoginWhileOffline', true);
+				$offlineMode = true;
 			}
 		}
 		$this->assign('offline', $offlineMode);
 
-		$timer->logTime('Basic configuration');
-
-		$displaySidebarMenu = false;
-		if (isset($configArray['Site']['sidebarMenu'])) {
-			$displaySidebarMenu = (bool) $configArray['Site']['sidebarMenu'];
-		}
-		$this->assign('displaySidebarMenu', $displaySidebarMenu);
-
-		if ($configArray['System']['debug']){
-			$this->assign('debug', true);
-		}
-		if ($configArray['System']['debugJs']){
-			$this->assign('debugJs', true);
-		}
-		if (isset($configArray['System']['debugCss']) && $configArray['System']['debugCss']){
-			$this->assign('debugCss', true);
-		}
-
 		// Detect Internet Explorer 8 to include respond.js for responsive css support
-		if (isset($_SERVER['HTTP_USER_AGENT'])) {
+		if (isset($_SERVER['HTTP_USER_AGENT'])){
 			$ie8 = stristr($_SERVER['HTTP_USER_AGENT'], 'msie 8') || stristr($_SERVER['HTTP_USER_AGENT'], 'trident/5'); //trident/5 should catch ie9 compability modes
 			$this->assign('ie8', $ie8);
-		}
-
-		$session = new Session();
-		$session->session_id = session_id();
-		if ($session->find(true)){
-			$this->assign('session', session_id() . ', remember me ' . $session->remember_me);
-		}else{
-			$this->assign('session', session_id() . ' - not saved');
 		}
 
 		/** @var IndexingProfile $activeRecordIndexingProfile */
@@ -194,59 +149,37 @@ class UInterface extends Smarty
 			$this->assign('activeRecordProfileModule', $activeRecordIndexingProfile->recordUrlComponent);
 		}
 
-		//TODO: load in displayOptions instead
-		//Figure out google translate id
-		if (isset($configArray['Translation']['google_translate_key']) && strlen($configArray['Translation']['google_translate_key']) > 0){
-			$this->assign('google_translate_key', $configArray['Translation']['google_translate_key']);
-			$this->assign('google_included_languages', $configArray['Translation']['includedLanguages']);
-		}
-
-		//Check to see if we have a google site verification key
-		if (isset($configArray['Site']['google_verification_key']) && strlen($configArray['Site']['google_verification_key']) > 0){
-			$this->assign('google_verification_key', $configArray['Site']['google_verification_key']);
-		}
-
-		//Get all images related to the event
-		if (isset($configArray['Maps']) && isset($configArray['Maps']['apiKey'])){
-			$mapsKey = $configArray['Maps']['apiKey'];
-			$this->assign('mapsKey', $mapsKey);
-		}
-		if (isset($configArray['Maps']) && isset($configArray['Maps']['browserKey'])){
-			$mapsKey = $configArray['Maps']['browserKey'];
-			$this->assign('mapsBrowserKey', $mapsKey);
-		}
-
+		$timer->logTime('Interface basic configuration');
 	}
 
 	/**
 	 *  Set template variables used in the My Account sidebar section dealing with fines.
 	 */
-	function setFinesRelatedTemplateVariables() {
-
+	function setFinesRelatedTemplateVariables(){
 		if (UserAccount::isLoggedIn()){
 			$user = UserAccount::getLoggedInUser();
 			//Figure out if we should show a link to pay fines.
-			$homeLibrary = Library::getLibraryForLocation($user->homeLocationId);
-			$showECommerceLink     = isset($homeLibrary) && $homeLibrary->showEcommerceLink == 1;
+			$homeLibrary       = Library::getLibraryForLocation($user->homeLocationId);
+			$showECommerceLink = isset($homeLibrary) && $homeLibrary->showEcommerceLink == 1;
 
-			if ($showECommerceLink) {
+			if ($showECommerceLink){
 				$this->assign('minimumFineAmount', $homeLibrary->minimumFineAmount);
 				$this->assign('payFinesLinkText', $homeLibrary->payFinesLinkText);
 				$this->assign('showRefreshAccountButton', $homeLibrary->showRefreshAccountButton);
 
 				// Determine E-commerce Link
 				$eCommerceLink = null;
-				if ($homeLibrary->payFinesLink == 'default') {
+				if ($homeLibrary->payFinesLink == 'default'){
 					global $configArray;
 					$defaultEcommerceLink = $configArray['Site']['ecommerceLink'];
-					if (!empty($defaultEcommerceLink)) {
+					if (!empty($defaultEcommerceLink)){
 						$eCommerceLink = $defaultEcommerceLink;
-					} else {
+					}else{
 						$showECommerceLink = false;
 					}
-				} elseif (!empty($homeLibrary->payFinesLink)) {
-						$eCommerceLink = $homeLibrary->payFinesLink;
-				} else {
+				}elseif (!empty($homeLibrary->payFinesLink)){
+					$eCommerceLink = $homeLibrary->payFinesLink;
+				}else{
 					$showECommerceLink = false;
 				}
 				$this->assign('ecommerceLink', $eCommerceLink);
@@ -265,9 +198,8 @@ class UInterface extends Smarty
 	 * @access  public
 	 * @return  string
 	 */
-	public function getVuFindTheme()
-	{
-		return $this->vufindTheme;
+	public function getVuFindTheme(){
+		return $this->pikaTheme;
 	}
 
 	/*
@@ -279,39 +211,36 @@ class UInterface extends Smarty
 		return $this->themes;
 	}
 
-	function setTemplate($tpl)
-	{
+	function setTemplate($tpl){
 		$this->assign('pageTemplate', $tpl);
 	}
 
-	function setPageTitle($title)
-	{
+	function setPageTitle($title){
 		//Marmot override, add the name of the site to the title unless we are using the mobile interface.
 		$this->assign('pageTitleShort', translate($title));
-		if ($this->isMobile){
+		if ($this->isMobile()){
 			$this->assign('pageTitle', translate($title));
 		}else{
 			$this->assign('pageTitle', translate($title) . ' | ' . $this->get_template_vars('librarySystemName'));
 		}
 	}
 
-	function  getShortPageTitle(){
+	function getShortPageTitle(){
 		return $this->get_template_vars('shortPageTitle');
 	}
 
-	function getLanguage()
-	{
+	function getLanguage(){
 		return $this->lang;
 	}
 
-	function setLanguage($lang)
-	{
+	function setLanguage($lang){
 		global $configArray;
 
 		$this->lang = $lang;
 		$this->assign('userLang', $lang);
 		$this->assign('allLangs', $configArray['Languages']);
 	}
+
 	/**
 	 * executes & returns or displays the template results
 	 *
@@ -322,8 +251,7 @@ class UInterface extends Smarty
 	 *
 	 * @return string
 	 */
-	function fetch($resource_name, $cache_id = null, $compile_id = null, $display = false)
-	{
+	function fetch($resource_name, $cache_id = null, $compile_id = null, $display = false){
 		global $timer;
 		$resource = parent::fetch($resource_name, $cache_id, $compile_id, $display);
 		$timer->logTime("Finished fetching $resource_name");
@@ -331,15 +259,10 @@ class UInterface extends Smarty
 	}
 
 	public function isMobile(){
-		return $this->isMobile;
-	}
-
-	public function getPrimaryTheme(){
-		if (is_array($this->themes)){
-			return reset($this->themes);
-		}else{
-			return $this->themes;
+		if (!isset($this->isMobile)){
+			$this->isMobile = mobile_device_detect();
 		}
+		return $this->isMobile;
 	}
 
 	function loadDisplayOptions(){
@@ -353,7 +276,15 @@ class UInterface extends Smarty
 		$productionServer = $configArray['Site']['isProduction'];
 		$this->assign('productionServer', $productionServer);
 
-			//Set System Message
+		// Debugging for web pages
+		if (!empty($configArray['System']['debugJs'])){
+			$this->assign('debugJs', true);
+		}
+		if (!empty($configArray['System']['debugCss'])){
+			$this->assign('debugCss', true);
+		}
+
+		//Set System Message
 		if ($configArray['System']['systemMessage']){
 			$this->assign('systemMessage', $configArray['System']['systemMessage']);
 			// Note Maintenance Mode depends on this
@@ -363,13 +294,65 @@ class UInterface extends Smarty
 			$this->assign('systemMessage', $library->systemMessage);
 		}
 
+		// Global Sidebar settings
+		$displaySidebarMenu = false;
+		if (isset($configArray['Site']['sidebarMenu'])){
+			// config.ini setting can disable for entire site, or the library setting can turn off for its view.
+			$displaySidebarMenu = ((bool)$configArray['Site']['sidebarMenu']) && $library->showSidebarMenu;
+		}
+		$this->assign('displaySidebarMenu', $displaySidebarMenu);
+
 		$this->assign('showConvertListsFromClassic', $configArray['Catalog']['showConvertListsFromClassic']);
 
-		/** @var Location $location */
-		$location                      = $locationSingleton->getActiveLocation();
-		$showHoldButton                = 1;
-		$showHoldButtonInSearchResults = 1;
 
+		// Global google settings
+		//Figure out google translate id
+		if (!empty($configArray['Translation']['google_translate_key'])){
+			$this->assign('google_translate_key', $configArray['Translation']['google_translate_key']);
+			$this->assign('google_included_languages', $configArray['Translation']['includedLanguages']);
+		}
+
+		//Check to see if we have a google site verification key
+		if (!empty($configArray['Site']['google_verification_key'])){
+			$this->assign('google_verification_key', $configArray['Site']['google_verification_key']);
+		}
+
+		//Set up google maps integrations
+		if (!empty($configArray['Maps']['apiKey'])){
+			$mapsKey = $configArray['Maps']['apiKey'];
+			$this->assign('mapsKey', $mapsKey);
+		}
+		if (!empty($configArray['Maps']['browserKey'])){
+			$mapsKey = $configArray['Maps']['browserKey'];
+			$this->assign('mapsBrowserKey', $mapsKey);
+		}
+
+		// Google Analytics
+		$googleAnalyticsId        = !empty($configArray['Analytics']['googleAnalyticsId']) ? $configArray['Analytics']['googleAnalyticsId'] : false;
+		$googleAnalyticsLibraryId = !empty($library->gaTrackingId) ? $library->gaTrackingId : false;
+		$googleAnalyticsLinkingId = !empty($configArray['Analytics']['googleAnalyticsLinkingId']) ? $configArray['Analytics']['googleAnalyticsLinkingId'] : false;
+		$trackTranslation         = !empty($configArray['Analytics']['trackTranslation']) ? $configArray['Analytics']['trackTranslation'] : false;
+		$this->assign('googleAnalyticsId', $googleAnalyticsId);
+		$this->assign('googleAnalyticsLibraryId', $googleAnalyticsLibraryId);
+		$this->assign('trackTranslation', $trackTranslation);
+		$this->assign('googleAnalyticsLinkingId', $googleAnalyticsLinkingId);
+		if ($googleAnalyticsId){
+			$googleAnalyticsDomainName = isset($configArray['Analytics']['domainName']) ? $configArray['Analytics']['domainName'] : strstr($_SERVER['SERVER_NAME'], '.');
+			// check for a config setting, use that if found, otherwise grab domain name  but remove the first subdomain
+			$this->assign('googleAnalyticsDomainName', $googleAnalyticsDomainName);
+		}
+
+		/** @var Location $location */
+		$location = $locationSingleton->getActiveLocation();
+
+		// Header Info
+		$homeLink = !empty($location->homeLink) && $location->homeLink != 'default' ? $location->homeLink :
+			(!empty($library->homeLink) && $library->homeLink != 'default' ? $library->homeLink : false);
+		$this->assign('homeLink', $homeLink);
+		$this->assign('logoLink', empty($library->useHomeLinkForLogo) ? $configArray['Site']['path'] : $homeLink);
+		$this->assign('logoAlt', empty($library->useHomeLinkForLogo) ? 'Return to Catalog Home' : 'Library Home Page');
+
+		// Check for overriding images of the theme's main logo
 		$themes = explode(',', $library->themeName);
 		foreach ($themes as $themeName){
 			// This overrides the theme's logo image for a location if the image directory contains a image file named as:
@@ -387,26 +370,17 @@ class UInterface extends Smarty
 			$this->assign('responsiveLogo', $responsiveLogo);
 		}
 
-		$this->assign('logoLink', $configArray['Site']['path']);
-		$this->assign('logoAlt', 'Return to Catalog Home');
-		if (isset($library) && $library->useHomeLinkForLogo){
-			if (!empty($location->homeLink) && $location->homeLink != 'default'){
-				$this->assign('logoAlt', 'Library Home Page');
-				$this->assign('logoLink', $location->homeLink);
-			}elseif (!empty($library->homeLink) && $library->homeLink != 'default'){
-				$this->assign('logoAlt', 'Library Home Page');
-				$this->assign('logoLink', $library->homeLink);
-			}
+		// Footer Info
+		$sessionId = session_id();
+		if ($sessionId){
+			$session    = new Session();
+			$sessionStr = $sessionId . ($session->get('session_id', $sessionId) ? ', remember me ' . $session->remember_me : ' - not saved');
+			$this->assign('session', $sessionStr);
 		}
-
-		if (!empty($location->homeLink) && $location->homeLink != 'default'){
-			$this->assign('homeLink', $location->homeLink);
-		}elseif (!empty($library->homeLink) && $library->homeLink != 'default'){
-			$this->assign('homeLink', $library->homeLink);
-		}
+		$this->assign('deviceName', get_device_name()); // footer & econtent support email
 
 		//$inLibrary is used to :
-		// * pre-select autologoout on place hold forms;
+		// * pre-select auto-logout on place hold forms;
 		// * to hide the remember me option on login pages;
 		// * to show the Location in the page footer
 		if ($locationSingleton->getIPLocation() != null){
@@ -418,7 +392,12 @@ class UInterface extends Smarty
 		}
 		$this->assign('physicalLocation', $physicalLocation);
 
+		// Library-level settings
 		if (isset($library)){
+			$showHoldButton                = $library->showHoldButton;
+			$showHoldButtonInSearchResults = $library->showHoldButtonInSearchResults;
+			$this->assign('librarySystemName', $library->displayName);
+			$this->assign('showDisplayNameInHeader', $library->showDisplayNameInHeader);
 			$this->assign('facebookLink', $library->facebookLink);
 			$this->assign('twitterLink', $library->twitterLink);
 			$this->assign('youtubeLink', $library->youtubeLink);
@@ -449,17 +428,48 @@ class UInterface extends Smarty
 			$this->assign('allowReadingHistoryDisplayInMasqueradeMode', $library->allowReadingHistoryDisplayInMasqueradeMode);
 			$this->assign('interLibraryLoanName', $library->interLibraryLoanName);
 			$this->assign('interLibraryLoanUrl', $library->interLibraryLoanUrl);
-
-			if ($this->getVariable('displaySidebarMenu') && !$library->showSidebarMenu){
-				$this->assign('displaySidebarMenu', false);
-			}
 			$this->assign('sidebarMenuButtonText', $library->sidebarMenuButtonText);
 			$this->assign('showGroupedHoldCopiesCount', $library->showGroupedHoldCopiesCount);
 			$this->assign('showOnOrderCounts', $library->showOnOrderCounts);
+			$this->assign('allowPinReset', $library->allowPinReset);
+			$this->assign('externalMaterialsRequestUrl', $library->externalMaterialsRequestUrl);
+
+			$this->assign('showFavorites', $library->showFavorites);
+			$this->assign('showComments', $library->showComments);
+//			$this->assign('showTextThis', $library->showTextThis);
+			$this->assign('showEmailThis', $library->showEmailThis);
+			$this->assign('showShareOnExternalSites', $library->showShareOnExternalSites);
+			$this->assign('showStaffView', $library->showStaffView);
+			$this->assign('showQRCode', $library->showQRCode);
+			$this->assign('showStaffView', $library->showStaffView);
+			$this->assign('showGoodReadsReviews', $library->showGoodReadsReviews);
+			$this->assign('showStandardReviews', $library->showStandardReviews);
+			$this->assign('showSimilarTitles', $library->showSimilarTitles);
+			$this->assign('showSimilarAuthors', $library->showSimilarAuthors);
+
+			if ($library->showLibraryHoursAndLocationsLink){
+				$this->assign('showLibraryHoursAndLocationsLink', true);
+				//Check to see if we should just call it library location
+				$numLocations = $library->getNumLocationsForLibrary();
+				$this->assign('numLocations', $numLocations);
+				if ($numLocations == 1){
+					$locationForLibrary            = new Location();
+					$locationForLibrary->libraryId = $library->libraryId;
+					$locationForLibrary->find(true);
+					$numHours = $locationForLibrary->getNumHours();
+					$this->assign('numHours', $numHours);
+				}
+			}
+			$this->setUpLibraryLinks($library); // Load library links
 		}else{
+			// Defaults for when a library isn't set
+			$showHoldButton                = 1;
+			$showHoldButtonInSearchResults = 1;
+			$this->assign('librarySystemName', $configArray['Site']['libraryName']);
+			$this->assign('showDisplayNameInHeader', 0);
 			$this->assign('showLoginButton', 1);
 			$this->assign('showAdvancedSearchbox', 1);
-			$this->assign('enableProspectorIntegration', isset($configArray['Content']['Prospector']) && $configArray['Content']['Prospector'] == true ? 1 : 0);
+			$this->assign('enableProspectorIntegration', !empty($configArray['Content']['Prospector']));
 			$this->assign('showTagging', 1);
 			$this->assign('showRatings', 1);
 			$this->assign('show856LinksAsTab', 1);
@@ -479,48 +489,9 @@ class UInterface extends Smarty
 			$this->assign('allowReadingHistoryDisplayInMasqueradeMode', 0);
 			$this->assign('showGroupedHoldCopiesCount', 1);
 			$this->assign('showOnOrderCounts', true);
-		}
-		if (isset($library) && $location != null){ // library and location
-			$this->assign('showFavorites', $location->showFavorites && $library->showFavorites);
-			$this->assign('showComments', $location->showComments && $library->showComments);
-//			$this->assign('showTextThis', $location->showTextThis && $library->showTextThis);
-			$this->assign('showEmailThis', $location->showEmailThis && $library->showEmailThis);
-			$this->assign('showStaffView', $location->showStaffView && $library->showStaffView);
-			$this->assign('showShareOnExternalSites', $location->showShareOnExternalSites && $library->showShareOnExternalSites);
-			$this->assign('showQRCode', $location->showQRCode && $library->showQRCode);
-			$this->assign('showStaffView', $location->showStaffView && $library->showStaffView);
-			$this->assign('showGoodReadsReviews', $location->showGoodReadsReviews && $library->showGoodReadsReviews);
-			$showHoldButton = (($location->showHoldButton == 1) && ($library->showHoldButton == 1)) ? 1 : 0;
-			$showHoldButtonInSearchResults = (($location->showHoldButton == 1) && ($library->showHoldButtonInSearchResults == 1)) ? 1 : 0;
-			$this->assign('showSimilarTitles', $library->showSimilarTitles);
-			$this->assign('showSimilarAuthors', $library->showSimilarAuthors);
-			$this->assign('showStandardReviews', (($location->showStandardReviews == 1) && ($library->showStandardReviews == 1)) ? 1 : 0);
-		}elseif ($location != null){ // location only
-			$this->assign('showFavorites', $location->showFavorites);
-			$this->assign('showComments', $location->showComments);
-//			$this->assign('showTextThis', $location->showTextThis);
-			$this->assign('showEmailThis', $location->showEmailThis);
-			$this->assign('showShareOnExternalSites', $location->showShareOnExternalSites);
-			$this->assign('showStaffView', $location->showStaffView);
-			$this->assign('showQRCode', $location->showQRCode);
-			$this->assign('showStaffView', $location->showStaffView);
-			$this->assign('showGoodReadsReviews', $location->showGoodReadsReviews);
-			$this->assign('showStandardReviews', $location->showStandardReviews);
-			$showHoldButton = $location->showHoldButton;
-		}elseif (isset($library)){ // library only
-			$this->assign('showFavorites', $library->showFavorites);
-			$showHoldButton = $library->showHoldButton;
-			$showHoldButtonInSearchResults = $library->showHoldButtonInSearchResults;
-			$this->assign('showComments', $library->showComments);
-//			$this->assign('showTextThis', $library->showTextThis);
-			$this->assign('showEmailThis', $library->showEmailThis);
-			$this->assign('showShareOnExternalSites', $library->showShareOnExternalSites);
-			$this->assign('showStaffView', $library->showStaffView);
-			$this->assign('showQRCode', $library->showQRCode);
-			$this->assign('showStaffView', $library->showStaffView);
-			$this->assign('showGoodReadsReviews', $library->showGoodReadsReviews);
-			$this->assign('showStandardReviews', $library->showStandardReviews);
-		}else{ // neither library nor location
+			$this->assign('allowPinReset', 0);
+			$this->assign('showLibraryHoursAndLocationsLink', 1);
+
 			$this->assign('showFavorites', 1);
 			$this->assign('showComments', 1);
 //			$this->assign('showTextThis', 1);
@@ -531,9 +502,50 @@ class UInterface extends Smarty
 			$this->assign('showGoodReadsReviews', 1);
 			$this->assign('showStandardReviews', 1);
 		}
+
+		// Location-level settings
+		if (isset($location)){
+			if (isset($library)){
+				// Settings that must be on both at the location and library levels to be enabled
+				$showHoldButton                = (($location->showHoldButton == 1) && ($library->showHoldButton == 1)) ? 1 : 0;
+				$showHoldButtonInSearchResults = (($location->showHoldButton == 1) && ($library->showHoldButtonInSearchResults == 1)) ? 1 : 0;
+				$this->assign('showFavorites', $location->showFavorites && $library->showFavorites);
+				$this->assign('showComments', $location->showComments && $library->showComments);
+				//			$this->assign('showTextThis', $location->showTextThis && $library->showTextThis);
+				$this->assign('showEmailThis', $location->showEmailThis && $library->showEmailThis);
+				$this->assign('showShareOnExternalSites', $location->showShareOnExternalSites && $library->showShareOnExternalSites);
+				$this->assign('showStaffView', $location->showStaffView && $library->showStaffView);
+				$this->assign('showQRCode', $location->showQRCode && $library->showQRCode);
+				$this->assign('showStaffView', $location->showStaffView && $library->showStaffView);
+				$this->assign('showGoodReadsReviews', $location->showGoodReadsReviews && $library->showGoodReadsReviews);
+				$this->assign('showStandardReviews', (($location->showStandardReviews == 1) && ($library->showStandardReviews == 1)) ? 1 : 0);
+			}else{
+				// location only (no library set); location settings that should override the defaults
+				$showHoldButton = $location->showHoldButton;
+				$this->assign('showFavorites', $location->showFavorites);
+				$this->assign('showComments', $location->showComments);
+				//			$this->assign('showTextThis', $location->showTextThis);
+				$this->assign('showEmailThis', $location->showEmailThis);
+				$this->assign('showShareOnExternalSites', $location->showShareOnExternalSites);
+				$this->assign('showStaffView', $location->showStaffView);
+				$this->assign('showQRCode', $location->showQRCode);
+				$this->assign('showStaffView', $location->showStaffView);
+				$this->assign('showGoodReadsReviews', $location->showGoodReadsReviews);
+				$this->assign('showStandardReviews', $location->showStandardReviews);
+			}
+
+			// Location settings that should override both library and default settings
+			$this->assign('showDisplayNameInHeader', $location->showDisplayNameInHeader);
+			$this->assign('librarySystemName', $location->displayName);
+		}
+
 		if ($showHoldButton == 0){
 			$showHoldButtonInSearchResults = 0;
 		}
+		$this->assign('showHoldButton', $showHoldButton);
+		$this->assign('showHoldButtonInSearchResults', $showHoldButtonInSearchResults);
+		$this->assign('showNotInterested', true);
+
 		if (!empty($library->additionalCss)){
 			$this->assign('additionalCss', $library->additionalCss);
 		}elseif (!empty($location->additionalCss)){
@@ -541,93 +553,24 @@ class UInterface extends Smarty
 		}
 		if (!empty($library->headerText)){
 			$this->assign('headerText', $library->headerText);
-		} elseif (!empty($location->headerText)){
+		}elseif (!empty($location->headerText)){
 			$this->assign('headerText', $location->headerText);
-		}
-		$this->assign('showHoldButton', $showHoldButton);
-		$this->assign('showHoldButtonInSearchResults', $showHoldButtonInSearchResults);
-		$this->assign('showNotInterested', true);
-		$this->assign('librarySystemName', 'Marmot'); //TODO: need better default
-		if (isset($library)){
-			$this->assign('showRatings', $library->showRatings);
-			$this->assign('allowPinReset', $library->allowPinReset);
-			$this->assign('librarySystemName', $library->displayName);
-			$this->assign('showLibraryHoursAndLocationsLink', $library->showLibraryHoursAndLocationsLink);
-			//Check to see if we should just call it library location
-			$numLocations = $library->getNumLocationsForLibrary();
-			$this->assign('numLocations', $numLocations);
-			if ($numLocations == 1){
-				$locationForLibrary = new Location();
-				$locationForLibrary->libraryId = $library->libraryId;
-				$locationForLibrary->find(true);
-				$numHours = $locationForLibrary->getNumHours();
-				$this->assign('numHours', $numHours);
-			}
-			$this->assign('showDisplayNameInHeader', $library->showDisplayNameInHeader);
-			$this->assign('externalMaterialsRequestUrl', $library->externalMaterialsRequestUrl);
-		}else{
-			$this->assign('showLibraryHoursAndLocationsLink', 1);
-			$this->assign('showRatings', 1);
-			$this->assign('allowPinReset', 0);
-			$this->assign('showDisplayNameInHeader', 0);
-		}
-		if ($location != null){
-			$this->assign('showDisplayNameInHeader', $location->showDisplayNameInHeader);
-			$this->assign('librarySystemName', $location->displayName);
 		}
 
 		//Determine whether or not materials request functionality should be enabled
 		require_once ROOT_DIR . '/sys/MaterialsRequest.php';
 		$this->assign('enableMaterialsRequest', MaterialsRequest::enableMaterialsRequest());
-
-		//Load library links
-		if (isset($library)){
-			$links                  = $library->libraryLinks;
-			$libraryHelpLinks       = array();
-			$libraryAccountLinks    = array();
-			$expandedLinkCategories = array();
-			/** @var LibraryLink $libraryLink */
-			foreach ($links as $libraryLink){
-				if ($libraryLink->showInHelp || (!$libraryLink->showInHelp && !$libraryLink->showInAccount)){
-					if (empty($libraryLink->category)){
-						// Links without categories should be displayed in the order they are listed
-						$libraryHelpLinks[][$libraryLink->linkText] = $libraryLink;
-					}else{
-						if (!array_key_exists($libraryLink->category, $libraryHelpLinks)){
-							$libraryHelpLinks[$libraryLink->category] = array();
-						}
-						$libraryHelpLinks[$libraryLink->category][$libraryLink->linkText] = $libraryLink;
-					}
-				}
-				if ($libraryLink->showInAccount){
-					if (empty($libraryLink->category)){
-						// Links without categories should be displayed in the order they are listed
-						$libraryHelpLinks[][$libraryLink->linkText] = $libraryLink;
-					}else{
-						if (!array_key_exists($libraryLink->category, $libraryAccountLinks)){
-							$libraryAccountLinks[$libraryLink->category] = array();
-						}
-						$libraryAccountLinks[$libraryLink->category][$libraryLink->linkText] = $libraryLink;
-					}
-				}
-				if ($libraryLink->showExpanded){
-					$expandedLinkCategories[$libraryLink->category] = 1;
-				}
-			}
-			$this->assign('libraryAccountLinks', $libraryAccountLinks);
-			$this->assign('libraryHelpLinks', $libraryHelpLinks);
-			$this->assign('expandedLinkCategories', $expandedLinkCategories);
-
-			$topLinks = $library->libraryTopLinks;
-			$this->assign('topLinks', $topLinks);
-		}
 	}
 
-	public function getVariable($variableName) {
+	/**
+	 * @param string $variableName
+	 * @return string|array|object
+	 */
+	public function getVariable($variableName){
 		return $this->get_template_vars($variableName);
 	}
 
-	public function assignAppendToExisting($variableName, $newValue) {
+	public function assignAppendToExisting($variableName, $newValue){
 		$originalValue = $this->get_template_vars($variableName);
 		if ($originalValue == null){
 			$this->assign($variableName, $newValue);
@@ -635,7 +578,7 @@ class UInterface extends Smarty
 			if (is_array($originalValue)){
 				$valueToAssign = array_merge($originalValue, $newValue);
 			}else{
-				$valueToAssign = array();
+				$valueToAssign   = array();
 				$valueToAssign[] = $originalValue;
 				$valueToAssign[] = $newValue;
 			}
@@ -643,21 +586,21 @@ class UInterface extends Smarty
 		}
 	}
 
-	public function assignAppendUniqueToExisting($variableName, $newValue) {
+	public function assignAppendUniqueToExisting($variableName, $newValue){
 		$originalValue = $this->get_template_vars($variableName);
 		if ($originalValue == null){
 			$this->assign($variableName, $newValue);
 		}else{
 			if (is_array($originalValue)){
 				$valueToAssign = $originalValue;
-				foreach($newValue as $tmpValue){
+				foreach ($newValue as $tmpValue){
 					if (!in_array($tmpValue, $valueToAssign)){
 						$valueToAssign[] = $tmpValue;
 					}
 				}
 			}else{
 				if ($newValue != $originalValue){
-					$valueToAssign = array();
+					$valueToAssign   = array();
 					$valueToAssign[] = $originalValue;
 					$valueToAssign[] = $newValue;
 				}else{
@@ -667,23 +610,68 @@ class UInterface extends Smarty
 			$this->assign($variableName, $valueToAssign);
 		}
 	}
+
+	/**
+	 * Set up custom url links of the library to be displayed in the sidebar and below the header
+	 * @param Library $library
+	 */
+	private function setUpLibraryLinks(Library $library){
+		$links                  = $library->libraryLinks;
+		$libraryHelpLinks       = array();
+		$libraryAccountLinks    = array();
+		$expandedLinkCategories = array();
+		/** @var LibraryLink $libraryLink */
+		foreach ($links as $libraryLink){
+			if ($libraryLink->showInHelp || (!$libraryLink->showInHelp && !$libraryLink->showInAccount)){
+				if (empty($libraryLink->category)){
+					// Links without categories should be displayed in the order they are listed
+					$libraryHelpLinks[][$libraryLink->linkText] = $libraryLink;
+				}else{
+					if (!array_key_exists($libraryLink->category, $libraryHelpLinks)){
+						$libraryHelpLinks[$libraryLink->category] = array();
+					}
+					$libraryHelpLinks[$libraryLink->category][$libraryLink->linkText] = $libraryLink;
+				}
+			}
+			if ($libraryLink->showInAccount){
+				if (empty($libraryLink->category)){
+					// Links without categories should be displayed in the order they are listed
+					$libraryHelpLinks[][$libraryLink->linkText] = $libraryLink;
+				}else{
+					if (!array_key_exists($libraryLink->category, $libraryAccountLinks)){
+						$libraryAccountLinks[$libraryLink->category] = array();
+					}
+					$libraryAccountLinks[$libraryLink->category][$libraryLink->linkText] = $libraryLink;
+				}
+			}
+			if ($libraryLink->showExpanded){
+				$expandedLinkCategories[$libraryLink->category] = 1;
+			}
+		}
+		$this->assign('libraryAccountLinks', $libraryAccountLinks);
+		$this->assign('libraryHelpLinks', $libraryHelpLinks);
+		$this->assign('expandedLinkCategories', $expandedLinkCategories);
+
+		$topLinks = $library->libraryTopLinks;
+		$this->assign('topLinks', $topLinks);
+	}
 }
 
-function translate($params) {
+function translate($params){
 	global $translator;
 
 	// If no translator exists yet, create one -- this may be necessary if we
 	// encounter a failure before we are able to load the global translator
 	// object.
-	if (!is_object($translator)) {
+	if (!is_object($translator)){
 		global $configArray;
 
 		$translator = new I18N_Translator('lang', $configArray['Site']['language'],
-		$configArray['System']['missingTranslations']);
+			$configArray['System']['missingTranslations']);
 	}
-	if (is_array($params)) {
+	if (is_array($params)){
 		return $translator->translate($params['text']);
-	} else {
+	}else{
 		return $translator->translate($params);
 	}
 }
@@ -691,16 +679,16 @@ function translate($params) {
 function display_if_inconsistent($params, $content, &$smarty, &$repeat){
 	//This function is called twice, once for the opening tag and once for the
 	//closing tag.  Content is only set if
-	if (isset($content)) {
+	if (isset($content)){
 		$array = $params['array'];
-		$key = $params['key'];
+		$key   = $params['key'];
 
-		if (count($array) === 1) {
+		if (count($array) === 1){
 			// If we have only one row of items, display that row
 			return empty($array[0][$key]) ? '' : $content;
 		}
-		$consistent = true;
-		$firstValue = null;
+		$consistent      = true;
+		$firstValue      = null;
 		$iterationNumber = 0;
 		foreach ($array as $arrayValue){
 			if ($iterationNumber == 0){
@@ -762,11 +750,11 @@ function display_if_inconsistent($params, $content, &$smarty, &$repeat){
 function display_if_set($params, $content, &$smarty, &$repeat){
 	//This function is called twice, once for the opening tag and once for the
 	//closing tag.  Content is only set if
-	if (isset($content)) {
-		$hasData = false;
+	if (isset($content)){
+		$hasData    = false;
 		$firstValue = null;
-		$array = $params['array'];
-		$key = $params['key'];
+		$array      = $params['array'];
+		$key        = $params['key'];
 		foreach ($array as $arrayValue){
 			if (isset($arrayValue[$key]) && !empty($arrayValue[$key])){
 				$hasData = true;

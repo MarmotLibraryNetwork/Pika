@@ -2,7 +2,7 @@ From: {$name}
 Email: {$email}
 
 Book Title/Author: {$bookAuthor}
-Device: {$device}
+Device: {$deviceName}
 Format: {$format}
 Operating System: {$operatingSystem}
 

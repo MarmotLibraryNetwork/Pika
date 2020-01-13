@@ -67,23 +67,7 @@ $interface->loadDisplayOptions();
 $timer->logTime('Loaded display options within interface');
 
 
-// Google Analytics
 global $library;
-
-$googleAnalyticsId        = isset($configArray['Analytics']['googleAnalyticsId'])        ? $configArray['Analytics']['googleAnalyticsId'] : false;
-$googleAnalyticsLibraryId = isset($library->gaTrackingId)                                ? $library->gaTrackingId : false;
-$googleAnalyticsLinkingId = isset($configArray['Analytics']['googleAnalyticsLinkingId']) ? $configArray['Analytics']['googleAnalyticsLinkingId'] : false;
-$trackTranslation         = false;
-$trackTranslation         = isset($configArray['Analytics']['trackTranslation'])         ? $configArray['Analytics']['trackTranslation'] : false;
-$interface->assign('googleAnalyticsId', $googleAnalyticsId);
-$interface->assign('googleAnalyticsLibraryId', $googleAnalyticsLibraryId);
-$interface->assign('trackTranslation', $trackTranslation);
-$interface->assign('googleAnalyticsLinkingId', $googleAnalyticsLinkingId);
-if ($googleAnalyticsId) {
-	$googleAnalyticsDomainName = isset($configArray['Analytics']['domainName']) ? $configArray['Analytics']['domainName'] : strstr($_SERVER['SERVER_NAME'], '.');
-	// check for a config setting, use that if found, otherwise grab domain name  but remove the first subdomain
-	$interface->assign('googleAnalyticsDomainName', $googleAnalyticsDomainName);
-}
 
 //TODO: set this in bootstrap??
 // (I suspect this is how $location is finally set up for global use)
@@ -422,7 +406,9 @@ function checkMaintenanceMode(){
 			$interface->assign('systemMessage', $configArray['System']['systemMessage']);
 		}else{
 			// Display Unavailable page and quit
-			$interface->assign('libraryName', $configArray['Site']['title']);
+			global $library;
+			$libraryName = !empty($library->displayName) ? $library->displayName : $configArray['Site']['title'];
+			$interface->assign('libraryName', $libraryName);
 			if ($configArray['MaintenanceMode']['maintenanceMessage']){
 				$interface->assign('maintenanceMessage', $configArray['MaintenanceMode']['maintenanceMessage']);
 			}

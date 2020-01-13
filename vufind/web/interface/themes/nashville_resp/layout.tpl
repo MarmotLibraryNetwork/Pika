@@ -16,7 +16,7 @@
 			<meta name="google-site-verification" content="{$google_verification_key}">
 		{/if}
 		{if $addHeader}{$addHeader}{/if}
-			<meta property="og:site_name" content="{$site.title|removeTrailingPunctuation|escape:html}" />
+			<meta property="og:site_name" content="{$siteTitle|removeTrailingPunctuation|escape:html}" />
 		{if $og_title}
 			<meta property="og:title" content="{$og_title|removeTrailingPunctuation|escape:html}" />
 		{/if}
@@ -34,7 +34,7 @@
 			{include file=$metadataTemplate}
 		{/if}
 		<link type="image/x-icon" href="{img filename=favicon.png}" rel="shortcut icon">
-		<link rel="search" type="application/opensearchdescription+xml" title="{$site.title} Catalog Search" href="{$path}/Search/OpenSearch?method=describe">
+		<link rel="search" type="application/opensearchdescription+xml" title="{$siteTitle} Catalog Search" href="{$path}/Search/OpenSearch?method=describe">
 
 		{include file="cssAndJsIncludes.tpl"}
 		{/strip}

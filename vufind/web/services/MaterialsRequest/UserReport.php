@@ -119,21 +119,21 @@ class MaterialsRequest_UserReport extends Admin_Admin {
 
 		//Check to see if we are exporting to Excel
 		if (isset($_REQUEST['exportToExcel'])){
-			$this->exportToExcel($userData, $statuses);
+			$libraryName = !empty($userHomeLibrary->displayName) ? $userHomeLibrary->displayName : $configArray['Site']['title'];
+			$this->exportToExcel($userData, $statuses, $libraryName);
 		}
 
 		$this->display('userReport.tpl', 'Materials Request User Report');
 	}
 
-	function exportToExcel($userData, $statuses){
-		global $configArray;
+	function exportToExcel($userData, $statuses, $creator){
 		//PHPEXCEL
 		// Create new PHPExcel object
 		$objPHPExcel = new PHPExcel();
 
 		// Set properties
-		$objPHPExcel->getProperties()->setCreator($configArray['Site']['title'])
-		->setLastModifiedBy($configArray['Site']['title'])
+		$objPHPExcel->getProperties()->setCreator($creator)
+			->setLastModifiedBy($creator)
 		->setTitle("Office 2007 XLSX Document")
 		->setSubject("Office 2007 XLSX Document")
 		->setDescription("Office 2007 XLSX, generated using PHP.")

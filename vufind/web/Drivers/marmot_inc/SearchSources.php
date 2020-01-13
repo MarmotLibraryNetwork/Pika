@@ -173,7 +173,6 @@ class SearchSources{
 		}
 
 		//Genealogy Search
-//		if ($searchGenealogy && !$interface->isMobile()){ //allow in mobile views. plb 11-17-2014
 		if ($searchGenealogy){
 			$searchOptions['genealogy'] = array(
         'name' => 'Genealogy Records',
@@ -191,7 +190,6 @@ class SearchSources{
 		}
 
 		//Overdrive
-//		if ($repeatInOverdrive && !$interface->isMobile()){ //allow in mobile views. plb 11-17-2014
 		if ($repeatInOverdrive){
 			$searchOptions['overdrive'] = array(
         'name' => 'OverDrive Digital Catalog',
@@ -228,7 +226,6 @@ class SearchSources{
 			);
 		}
 
-//		if ($repeatInWorldCat && !$interface->isMobile()){ //allow in mobile views. plb 11-17-2014
 		if ($repeatInWorldCat){
 			$searchOptions['worldcat'] = array(
         'name' => 'WorldCat',
@@ -239,7 +236,6 @@ class SearchSources{
 		}
 
 		//Check to see if Gold Rush is a valid option
-//		if (isset($library) && strlen($library->goldRushCode) > 0 && !$interface->isMobile()){ //allow in mobile views. plb 11-17-2014
 		if (isset($library) && strlen($library->goldRushCode) > 0){
 			$searchOptions['goldrush'] = array(
 			//'link' => "http://goldrush.coalliance.org/index.cfm?fuseaction=Search&amp;inst_code={$library->goldRushCode}&amp;search_type={$worldCatSearchType}&amp;search_term=".urlencode($lookfor),

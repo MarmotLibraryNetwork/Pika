@@ -177,7 +177,9 @@ class MaterialsRequest_SummaryReport extends Admin_Admin {
 
 		//Check to see if we are exporting to Excel
 		if (isset($_REQUEST['exportToExcel'])){
-			$this->exportToExcel($periodData, $statuses);
+			global $configArray;
+			$libraryName = !empty($userHomeLibrary->displayName) ? $userHomeLibrary->displayName : $configArray['Site']['title'];
+			$this->exportToExcel($periodData, $statuses, $libraryName);
 		}else{
 			//Generate the graph
 			$this->generateGraph($periodData, $statuses);
@@ -186,14 +188,13 @@ class MaterialsRequest_SummaryReport extends Admin_Admin {
 		$this->display('summaryReport.tpl','Materials Request Summary Report');
 	}
 
-	function exportToExcel($periodData, $statuses){
-		global $configArray;
+	function exportToExcel($periodData, $statuses, $creator){
 		// Create new PHPExcel object
 		$objPHPExcel = new PHPExcel();
 
 		// Set properties
-		$objPHPExcel->getProperties()->setCreator($configArray['Site']['title'])
-				->setLastModifiedBy($configArray['Site']['title'])
+		$objPHPExcel->getProperties()->setCreator($creator)
+				->setLastModifiedBy($creator)
 				->setTitle("Materials Request Summary Report")
 				->setSubject("Materials Request")
 				->setCategory("Materials Request Summary Report");

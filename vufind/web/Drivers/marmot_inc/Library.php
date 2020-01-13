@@ -1234,8 +1234,10 @@ class Library extends DB_DataObject {
 	static function getLibraryForLocation($locationId){
 		if (isset($locationId)){
 			$libLookup = new Library();
-			require_once(ROOT_DIR . '/Drivers/marmot_inc/Location.php');
-			$libLookup->whereAdd('libraryId = (SELECT libraryId FROM location WHERE locationId = ' . $libLookup->escape($locationId) . ')');
+//			require_once(ROOT_DIR . '/Drivers/marmot_inc/Location.php');
+//			$libLookup->whereAdd('libraryId = (SELECT libraryId FROM location WHERE locationId = ' . $libLookup->escape($locationId) . ')');
+			$libLookup->joinAdd(['libraryId', 'location:libraryId']);
+			$libLookup->whereAdd('locationId = '. $libLookup->escape($locationId));
 			$libLookup->find();
 			if ($libLookup->N > 0){
 				$libLookup->fetch();
