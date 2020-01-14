@@ -13,15 +13,16 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+use Curl\Curl;
+use Pika\Cache;
+use Pika\Logger;
+
 require_once ROOT_DIR . '/sys/IndexEngine.php';
 require_once ROOT_DIR . '/sys/ConfigArray.php';
 require_once ROOT_DIR . '/sys/SolrUtils.php';
 
 require_once 'XML/Unserializer.php';
 require_once 'XML/Serializer.php';
-
-use Curl\Curl;
-use Pika\Cache;
 
 /**
  * Solr HTTP Interface
@@ -128,7 +129,7 @@ class Solr implements IndexEngine {
 
 	private static $serversPinged = array();
 
-	public Cache $cache;
+	public Pika\Cache $cache;
 	public Pika\Logger $logger;
 
 	/**
@@ -144,7 +145,8 @@ class Solr implements IndexEngine {
 	{
 		global $configArray;
 		global $timer;
-		$this->cache = new Pika\Cache();
+		$this->cache = new Cache();
+		$this->logger = new Logger("Solr");
 		// Set a default Solr index if none is provided to the constructor:
 		if (empty($index)) {
 			global $library;
