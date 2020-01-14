@@ -41,7 +41,9 @@ public class SymphonyExportMain {
 		} else {
 			System.out.println("Could not find log4j configuration " + log4jFile.toString());
 		}
-		logger.info(startTime.toString() + ": Starting Symphony Extract");
+		if (logger.isInfoEnabled()) {
+			logger.info(startTime.toString() + ": Starting Symphony Extract");
+		}
 
 		PikaConfigIni.loadConfigFile("config.ini", serverName, logger);
 
@@ -154,9 +156,9 @@ public class SymphonyExportMain {
 								Matcher isbnMatcher      = isbnPattern.matcher(isbnString);
 								if (isbnMatcher.matches()) {
 									isbn = isbnMatcher.group(1);
-									if (logger.isDebugEnabled()) {
-										logger.debug("Got " + isbn + " from raw string " + isbnString);
-									}
+//									if (logger.isDebugEnabled()) {
+//										logger.debug("Got " + isbn + " from raw string " + isbnString);
+//									}
 								}
 								line             = line.substring(0, lastPipePosition);
 								lastPipePosition = line.lastIndexOf('|');
@@ -232,8 +234,9 @@ public class SymphonyExportMain {
 			} else {
 				writeHolds = true;
 				String lastCatalogIdRead = "";
-				try {
+				try (
 					BufferedReader reader = new BufferedReader(new FileReader(holdFile));
+				){
 					String         line   = reader.readLine();
 					while (line != null) {
 						int firstComma = line.indexOf(',');
@@ -256,7 +259,9 @@ public class SymphonyExportMain {
 					logger.error("Error reading holds file ", e);
 					hadErrors = true;
 				}
-				logger.info("Read " + holdsByBib.size() + " bibs with holds, lastCatalogIdRead = " + lastCatalogIdRead);
+				if (logger.isInfoEnabled()) {
+					logger.info("Read " + holdsByBib.size() + " bibs with holds, lastCatalogIdRead = " + lastCatalogIdRead);
+				}
 			}
 		} else {
 			logger.warn("No holds file found at " + indexingProfile.marcPath + "/Pika_Holds.csv");
@@ -271,8 +276,9 @@ public class SymphonyExportMain {
 				logger.warn("Periodicals Holds File was last written more than 2 days ago");
 			} else {
 				writeHolds = true;
-				try {
+				try (
 					BufferedReader reader            = new BufferedReader(new FileReader(periodicalsHoldFile));
+				){
 					String         line              = reader.readLine();
 					String         lastCatalogIdRead = "";
 					while (line != null) {
@@ -292,7 +298,9 @@ public class SymphonyExportMain {
 						}
 						line = reader.readLine();
 					}
-					logger.info(holdsByBib.size() + " bibs with holds (including periodicals) lastCatalogIdRead for periodicals = " + lastCatalogIdRead);
+					if (logger.isInfoEnabled()) {
+						logger.info(holdsByBib.size() + " bibs with holds (including periodicals) lastCatalogIdRead for periodicals = " + lastCatalogIdRead);
+					}
 				} catch (Exception e) {
 					logger.error("Error reading periodicals holds file ", e);
 					hadErrors = true;
@@ -308,7 +316,9 @@ public class SymphonyExportMain {
 			try {
 				pikaConn.setAutoCommit(false);
 				pikaConn.prepareCall("TRUNCATE ils_hold_summary").executeUpdate();  // Truncate so that id value doesn't grow beyond column size
-				logger.info("Removed existing holds");
+				if (logger.isInfoEnabled()) {
+					logger.info("Removed existing holds");
+				}
 				PreparedStatement updateHoldsStmt = pikaConn.prepareStatement("INSERT INTO ils_hold_summary (ilsId, numHolds) VALUES (?, ?)");
 				for (String ilsId : holdsByBib.keySet()) {
 					if (ilsId.length() < 20) {
@@ -316,7 +326,7 @@ public class SymphonyExportMain {
 						updateHoldsStmt.setInt(2, holdsByBib.get(ilsId));
 						int numUpdates = updateHoldsStmt.executeUpdate();
 						if (numUpdates != 1) {
-							logger.info("Hold was not inserted " + "a" + ilsId + " " + holdsByBib.get(ilsId));
+							logger.warn("Hold was not inserted " + "a" + ilsId + " " + holdsByBib.get(ilsId));
 						}
 					} else {
 						logger.warn("ILS id for hold summary longer that database column varchar(20) : a" + ilsId);
@@ -324,7 +334,9 @@ public class SymphonyExportMain {
 				}
 				pikaConn.commit();
 				pikaConn.setAutoCommit(true);
-				logger.info("Finished adding new holds to the database");
+				if (logger.isInfoEnabled()) {
+					logger.info("Finished adding new holds to the database");
+				}
 			} catch (Exception e) {
 				logger.error("Error updating holds database", e);
 				hadErrors = true;
@@ -364,22 +376,29 @@ public class SymphonyExportMain {
 			return;
 		}
 		if (updatesFile.lastModified() < lastExportTime) {
-			logger.info("Not processing updates file because it hasn't changed since the last run of the export process.");
+			// The extract may get called multiple times for the same marc file from Symphony
+			if (logger.isInfoEnabled()) {
+				logger.info("Not processing updates file because it hasn't changed since the last run of the export process.");
+			}
 			return;
 		}
 
 		//If we got this far we have a good updates file to process.
-		try {
+		try (
 			PreparedStatement getChecksumStmt       = pikaConn.prepareStatement("SELECT checksum FROM ils_marc_checksums where source = ? AND ilsId = ?");
 			PreparedStatement updateChecksumStmt    = pikaConn.prepareStatement("UPDATE ils_marc_checksums set checksum = ? where source = ? AND ilsId = ?");
 			PreparedStatement getGroupedWorkIdStmt  = pikaConn.prepareStatement("SELECT grouped_work_id from grouped_work_primary_identifiers WHERE type = ? AND identifier = ?");
 			PreparedStatement updateGroupedWorkStmt = pikaConn.prepareStatement("UPDATE grouped_work set date_updated = ? where id = ?");
+		){
 
 			MarcReader updatedMarcReader = new MarcStreamReader(new FileInputStream(updatesFile));
 			while (updatedMarcReader.hasNext()) {
 				Record marcRecord = updatedMarcReader.next();
 				//Get the id of the record
 				String recordNumber = getPrimaryIdentifierFromMarcRecord(marcRecord);
+				if (logger.isInfoEnabled()){
+					logger.info("Marc update file has a record for " + recordNumber);
+				}
 				//Check to see if the checksum has changed
 				getChecksumStmt.setString(1, indexingProfile.name);
 				getChecksumStmt.setString(2, recordNumber);
@@ -401,6 +420,9 @@ public class SymphonyExportMain {
 							writer2.setAllowOversizeEntry(true);
 							writer2.write(marcRecord);
 							writer2.close();
+							if (logger.isInfoEnabled()){
+								logger.info("Updated individual marc record for " + recordNumber);
+							}
 
 							//Mark the work as changed
 							updateGroupedWorkStmt.setLong(1, new Date().getTime() / 1000);
@@ -415,11 +437,14 @@ public class SymphonyExportMain {
 						} else {
 							logger.warn("Could not find grouped work for MARC " + recordNumber);
 						}
-					} else {
-						logger.debug("Skipping MARC " + recordNumber + " because it hasn't changed");
+					} else if (logger.isInfoEnabled()) {
+						logger.info("Skipping MARC " + recordNumber + " because it hasn't changed");
+						if (logger.isDebugEnabled()) {
+							logger.debug("old checksum: " + oldChecksum + ", new checksum: " + newChecksum);
+						}
 					}
-				} else {
-					logger.debug("MARC Record " + recordNumber + " is new since the last full export");
+				} else if (logger.isInfoEnabled()){
+					logger.info("MARC Record " + recordNumber + " is new since the last full export");
 				}
 
 			}
