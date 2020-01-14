@@ -58,58 +58,31 @@ $timer->logTime('Create interface');
 checkMaintenanceMode();
 $timer->logTime('Checked availability mode');
 
+// Setup Translator
+setUpTranslator();
 
 /** @var Location $locationSingleton */
 global $locationSingleton;
-getGitBranch();
+global $library;
+
+$location = $locationSingleton->getActiveLocation();
+//TODO: set this in bootstrap??
+// (I suspect this is how $location is finally set up for global use)
+
 
 $interface->loadDisplayOptions();
 $timer->logTime('Loaded display options within interface');
 
 
-global $library;
-
-//TODO: set this in bootstrap??
-// (I suspect this is how $location is finally set up for global use)
-$location = $locationSingleton->getActiveLocation();
-
 // Determine Module and Action
 $module = (isset($_GET['module'])) ? $_GET['module'] : null;
-$module = preg_replace('/[^\w]/', '', $module);
 $action = (isset($_GET['action'])) ? $_GET['action'] : null;
-$action = preg_replace('/[^\w]/', '', $action);
 
-//Redirect some common spam components so they go to a valid place, and redirect old actions to new
-if ($action == 'trackback'){
-	$action = null;
-}
-if ($action == 'SimilarTitles'){
-	$action = 'Home';
-}
 //Set these initially in case user login fails, we will need the module to be set.
 $interface->assign('module', $module);
 $interface->assign('action', $action);
 
-$interface->assign('showFines', $configArray['Catalog']['showFines']);
-
-$interface->assign('activeIp', Location::getActiveIp());
-
-// Proxy server settings
-if (isset($configArray['Proxy']['host'])) {
-	if (isset($configArray['Proxy']['port'])) {
-		$proxy_server = $configArray['Proxy']['host'].":".$configArray['Proxy']['port'];
-	} else {
-		$proxy_server = $configArray['Proxy']['host'];
-	}
-	$proxy = array('http' => array('proxy' => "tcp://$proxy_server", 'request_fulluri' => true));
-	stream_context_get_default($proxy);
-}
-$timer->logTime('Proxy server checks');
-
-// Setup Translator
-setUpTranslator();
-
-killSpammySearches();
+killSpammySearchPhrases();
 
 
 $timer->logTime('Check if user is logged in');
@@ -217,25 +190,22 @@ if ($isLoggedIn && (!isset($_REQUEST['action']) || $_REQUEST['action'] != 'Logou
 	$interface->assign('masqueradeMode', false);
 }
 
+//Determine whether or not materials request functionality should be enabled
+// (set this after user log-in checking is done)
+require_once ROOT_DIR . '/sys/MaterialsRequest.php';
+$interface->assign('enableMaterialsRequest', MaterialsRequest::enableMaterialsRequest());
 
-//Find a reasonable default location to go to
-if ($module == null && $action == null){
-	//We have no information about where to go, go to the default location from config
-	$module = $configArray['Site']['defaultModule'];
-	$action = 'Home';
-}elseif ($action == null){
-	$action = 'Home';
-}
 //Override MyAccount Home as needed
-if ($module == 'MyAccount' && $action == 'Home' && $isLoggedIn){
+if ($isLoggedIn && $module == 'MyAccount' && $action == 'Home'){
 	$user = UserAccount::getLoggedInUser();
 	if ($user->getNumCheckedOutTotal() > 0){
 		$action ='CheckedOut';
-		header('Location:/MyAccount/CheckedOut');
-		exit();
+//		header('Location:/MyAccount/CheckedOut');
+//		exit();
 	}elseif ($user->getNumHoldsTotal() > 0){
-		header('Location:/MyAccount/Holds');
-		exit();
+		$action = 'Holds';
+//		header('Location:/MyAccount/Holds');
+//		exit();
 	}
 }
 
@@ -245,7 +215,7 @@ $timer->logTime('Assign module and action');
 
 //Determine if the top search box and breadcrumbs should be shown.  Not showing these
 //Does have a slight performance advantage.
-if ($action == "AJAX" || $action == "JSON"){
+if (in_array($action, ['AJAX', 'JSON', 'OpenSearch'])){
 	$interface->assign('showBreadcrumbs', 0);
 }else{
 	setUpSearchDisplayOptions($module, $action);
@@ -394,8 +364,8 @@ function checkMaintenanceMode(){
 		global $interface;
 
 		$isMaintenanceUser = false;
+		$activeIp          = $_SERVER['REMOTE_ADDR'];
 		if (!empty($configArray['MaintenanceMode']['maintenanceIps'])){
-			$activeIp          = $_SERVER['REMOTE_ADDR'];
 			$maintenanceIps    = explode(',', $configArray['SystemMaintenanceMode']['maintenanceIps']);
 			$isMaintenanceUser = in_array($activeIp, $maintenanceIps);
 		}
@@ -420,34 +390,12 @@ function checkMaintenanceMode(){
 					$interface->assign('classicCatalogUrl', $accountProfile->vendorOpacUrl);
 				}
 			}
+			$interface->assign('activeIp', $activeIp);
 
 			$interface->display('unavailable.tpl');
 			exit();
 		}
 	}
-}
-
-function getGitBranch(){
-	global $interface;
-	global $configArray;
-
-	$gitName    = $configArray['System']['gitVersionFile'];
-	$branchName = 'Unknown';
-	if ($gitName == 'HEAD'){
-		$stringFromFile = file('../../.git/HEAD', FILE_USE_INCLUDE_PATH);
-		$stringFromFile = $stringFromFile[0]; //get the string from the array
-		$explodedString = explode("/", $stringFromFile); // separate out by the "/" in the string
-		$branchName     = $explodedString[2]; //get the one that is always the branch name
-	}else{
-		$stringFromFile = file('../../.git/FETCH_HEAD', FILE_USE_INCLUDE_PATH);
-		if (!empty($stringFromFile)) {
-			$stringFromFile = $stringFromFile[0];//get the string from the array
-			if (preg_match('/(.*?)\s+branch\s+\'(.*?)\'.*/', $stringFromFile, $matches)) {
-				$branchName = $matches[2] . ' (' . $matches[1] . ')'; //get the branch name
-			}
-		}
-	}
-	$interface->assign('gitBranch', $branchName);
 }
 
 // Pika drivers autoloader PSR-4 style
@@ -520,89 +468,82 @@ function loadModuleActionId(){
 	/** @var IndexingProfile[] $indexingProfiles*/
 	global $indexingProfiles;
 
-	//Deal with old path based urls by removing the leading path.
+	$module     = null;
+	$action     = null;
+	$id         = isset($_REQUEST['id']) ? $_REQUEST['id'] : null;
 	$requestURI = $_SERVER['REQUEST_URI'];
-//	$requestURI = preg_replace("/^\/?vufind\//", "", $requestURI);
-	$allRecordModules = "OverDrive|GroupedWork|Record|ExternalEContent|Person|EditorialReview|Library";
+	$allRecordModules = 'OverDrive|GroupedWork|Record|ExternalEContent|Person|EditorialReview|Library';
 	foreach ($indexingProfiles as $profile){
 		$allRecordModules .= '|' . $profile->recordUrlComponent;
 	}
 	if (preg_match("/(MyAccount)\/([^\/?]+)\/([^\/?]+)(\?.+)?/", $requestURI, $matches)){
-		$_GET['module']     = $matches[1];
-		$_GET['id']         = $matches[3];
-		$_GET['action']     = $matches[2];
-		$_REQUEST['module'] = $matches[1];
-		$_REQUEST['id']     = $matches[3];
-		$_REQUEST['action'] = $matches[2];
+		$module     = $matches[1];
+		$id         = $matches[3];
+		$action     = $matches[2];
 	}elseif (preg_match("/(MyAccount)\/([^\/?]+)(\?.+)?/", $requestURI, $matches)){
-		$_GET['module']     = $matches[1];
-		$_GET['action']     = $matches[2];
-		$_GET['id']         = '';
-		$_REQUEST['module'] = $matches[1];
-		$_REQUEST['action'] = $matches[2];
-		$_REQUEST['id']     = '';
+		// things /MyAccount/AJAX
+		$module     = $matches[1];
+		$action     = $matches[2];
+		$id         = '';
 	}elseif (preg_match("/(MyAccount)\/?/", $requestURI, $matches)){
-		$_GET['module']     = $matches[1];
-		$_GET['action']     = 'Home';
-		$_REQUEST['id']     = '';
-		$_REQUEST['module'] = $matches[1];
-		$_REQUEST['action'] = 'Home';
-		$_REQUEST['id']     = '';
+		$module     = $matches[1];
+		$action     = 'Home';
+		$id     = '';
 	}elseif (preg_match('/\/(Archive)\/((?:[\\w\\d:]|%3A)+)\/([^\/?]+)/', $requestURI, $matches)){
-		$_GET['module']     = $matches[1];
-		$_GET['id']         = urldecode($matches[2]); // Decodes colons % codes back into colons.
-		$_GET['action']     = $matches[3];
-		$_REQUEST['module'] = $matches[1];
-		$_REQUEST['id']     = urldecode($matches[2]);  // Decodes colons % codes back into colons.
-		$_REQUEST['action'] = $matches[3];
+		$module     = $matches[1];
+		$id         = urldecode($matches[2]); // Decodes colons % codes back into colons.
+		$action     = $matches[3];
 		//Redirect things /GroupedWork/AJAX to the proper action
 	}elseif (preg_match("/($allRecordModules)\/([a-zA-Z]+)(?:\?|\/?$)/", $requestURI, $matches)){
-		$_GET['module']     = $matches[1];
-		$_GET['action']     = $matches[2];
-		$_REQUEST['module'] = $matches[1];
-		$_REQUEST['action'] = $matches[2];
+		$module     = $matches[1];
+		$action     = $matches[2];
 		//Redirect things /Record/.b3246786/Home to the proper action
 		//Also things like /OverDrive/84876507-043b-b3ce-2930-91af93d2a4f0/Home
 	}elseif (preg_match("/($allRecordModules)\/([^\/?]+?)\/([^\/?]+)/", $requestURI, $matches)){
-		$_GET['module']     = $matches[1];
-		$_GET['id']         = $matches[2];
-		$_GET['action']     = $matches[3];
-		$_REQUEST['module'] = $matches[1];
-		$_REQUEST['id']     = $matches[2];
-		$_REQUEST['action'] = $matches[3];
+		$module     = $matches[1];
+		$id         = $matches[2];
+		$action     = $matches[3];
 		//Redirect things /Record/.b3246786 to the proper action
 	}elseif (preg_match("/($allRecordModules)\/([^\/?]+?)(?:\?|\/?$)/", $requestURI, $matches)){
-		$_GET['module']     = $matches[1];
-		$_GET['id']         = $matches[2];
-		$_GET['action']     = 'Home';
-		$_REQUEST['module'] = $matches[1];
-		$_REQUEST['id']     = $matches[2];
-		$_REQUEST['action'] = 'Home';
+		$module     = $matches[1];
+		$id         = $matches[2];
+		$action     = 'Home';
 	}elseif (preg_match("/([^\/?]+)\/([^\/?]+)/", $requestURI, $matches)){
-		$_GET['module']     = $matches[1];
-		$_GET['action']     = $matches[2];
-		$_REQUEST['module'] = $matches[1];
-		$_REQUEST['action'] = $matches[2];
+		// things Browse/AJAX, Search/AJAX, Union/Search
+		$module     = $matches[1];
+		$action     = $matches[2];
 	}
 
-	global $activeRecordIndexingProfile;
 	//Check to see if the module is an indexing profile and adjust the record id number
-	if (!empty($_REQUEST['id'] )&& isset($_REQUEST['module'])){
+	if (!empty($id) && isset($module) && $module != 'GroupedWork'){
+		global $activeRecordIndexingProfile;
 		foreach ($indexingProfiles as $profile){
 			if ($profile->recordUrlComponent == $_REQUEST['module']){
-				$newId          = $profile->name . ':' . $_REQUEST['id'];
-				$_GET['id']     = $newId;
-				$_REQUEST['id'] = $newId;
+				$id          = $profile->name . ':' . $_REQUEST['id'];
 				if (!file_exists(ROOT_DIR . '/services/' . $_REQUEST['module'])){
 					// When a record view, doesn't have an explicitly made driver, fallback to the standard Record Driver
-					$_GET['module']     = 'Record';
-					$_REQUEST['module'] = 'Record';
+					$module     = 'Record';
 				}
 				$activeRecordIndexingProfile = $profile;
 				break;
 			}
 		}
 	}
+
+	//Find a reasonable default location to go to
+	if ($module == null && $action == null){
+		//We have no information about where to go, go to the default location from config
+		global $configArray;
+		$module = $configArray['Site']['defaultModule'];
+		$action = 'Home';
+	}elseif ($action == null){
+		$action = 'Home';
+	}
+
+	$_REQUEST['module'] = $_GET['module'] = preg_replace('/[^\w]/', '', $module);
+	$_REQUEST['action'] = $_GET['action'] = preg_replace('/[^\w]/', '', $action);
+	$_REQUEST['id']     = $_GET['id']     = $id;
+
 }
 
 function initializeSession(){
@@ -642,15 +583,11 @@ function loadUserData(){
 		$interface->assign('disableCoverArt', $disableCoverArt);
 		$interface->assign('hasLinkedUsers', $hasLinkedUsers);
 		$interface->assign('pType', UserAccount::getUserPType());
-
-		$homeLibrary = Library::getLibraryForLocation(UserAccount::getUserHomeLocationId());
-		if (!empty($homeLibrary->displayName)){
-			$interface->assign('homeLibrary', $homeLibrary->displayName);
-		}
+		$interface->assign('homeLibrary', $user->getHomeLibrarySystemName());
 
 		// Set up any masquerading
 		$interface->assign('canMasquerade', UserAccount::getActiveUserObj()->canMasquerade());
-		$masqueradeMode  = UserAccount::isUserMasquerading();
+		$masqueradeMode = UserAccount::isUserMasquerading();
 		$interface->assign('masqueradeMode', $masqueradeMode);
 		if ($masqueradeMode){
 			$guidingUser = UserAccount::getGuidingUserObject();
@@ -791,9 +728,9 @@ function setUpTranslator(){
 	$interface->setLanguage($language);
 }
 
-function killSpammySearches(){
+function killSpammySearchPhrases(){
 	//Look for spammy searches and kill them
-	if (isset($_REQUEST['lookfor'])) {
+	if (!empty($_REQUEST['lookfor'])) {
 		// Advanced Search with only the default search group (multiple search groups are named lookfor0, lookfor1, ... )
 		// TODO: Actually the lookfor is inconsistent; reloading from results in an array : lookfor[]
 		if (is_array($_REQUEST['lookfor'])) {

@@ -218,36 +218,34 @@ function loadLibraryAndLocation(){
 
 	global $active_ip;
 	$active_ip = $locationSingleton->getActiveIp();
-	if (!isset($_COOKIE['test_ip']) || $active_ip != $_COOKIE['test_ip']){
-		if ($active_ip == ''){
-			setcookie('test_ip', $active_ip, time() - 1000, '/');
-		}else{
-			setcookie('test_ip', $active_ip, 0, '/');
-		}
-	}
+	handleCookie('test_ip', $active_ip);
 	$timer->logTime('Got active ip address');
 
 	$branch = $locationSingleton->getBranchLocationCode();
-	if (!isset($_COOKIE['branch']) || $branch != $_COOKIE['branch']){
-		if ($branch == ''){
-			setcookie('branch', $branch, time() - 1000, '/');
-		}else{
-			setcookie('branch', $branch, 0, '/');
-		}
-	}
+	handleCookie('branch', $branch);
 	$timer->logTime('Got branch');
 
 	$sublocation = $locationSingleton->getSublocationCode();
-	if (!isset($_COOKIE['sublocation']) || $sublocation != $_COOKIE['sublocation']) {
-		if (empty($sublocation)) {
-			setcookie('sublocation', $sublocation, time() - 1000, '/');
-		} else {
-			setcookie('sublocation', $sublocation, 0, '/');
-		}
-	}
+	handleCookie('sublocation', $sublocation);
 	$timer->logTime('Got sublocation');
 
 	getLibraryObject();
+}
+
+/**
+ *  Set or unset a cookie based on the value
+ *
+ * @param $cookieName
+ * @param $cookieValue
+ */
+function handleCookie($cookieName, $cookieValue){
+	if (!isset($_COOKIE[$cookieName]) || $cookieValue != $_COOKIE[$cookieName]){
+		if ($cookieValue == ''){
+			setcookie($cookieName, $cookieValue, time() - 1000, '/');
+		}else{
+			setcookie($cookieName, $cookieValue, 0, '/');
+		}
+	}
 }
 
 function getLibraryObject(){
@@ -360,7 +358,6 @@ function loadSearchInformation(){
 	global $configArray;
 
 	$module = (isset($_GET['module'])) ? $_GET['module'] : null;
-	$module = preg_replace('/[^\w]/', '', $module);
 
 	$searchSource = 'global';
 	if (isset($_GET['searchSource'])){
@@ -442,13 +439,7 @@ function loadSearchInformation(){
 	$memCacheKey              = "{$instanceName}_indexing_profiles";
 	$indexingProfiles = $memCache->get($memCacheKey);
 	if ($indexingProfiles === false || isset($_REQUEST['reload'])){
-		$indexingProfiles = array();
-		$indexingProfile = new IndexingProfile();
-		$indexingProfile->orderBy('name');
-		$indexingProfile->find();
-		while ($indexingProfile->fetch()){
-			$indexingProfiles[$indexingProfile->name] = clone($indexingProfile);
-		}
+		$indexingProfiles = IndexingProfile::getAllIndexingProfiles();
 //		global $logger;
 //		$logger->log("Updating memcache variable {$instanceName}_indexing_profiles", PEAR_LOG_DEBUG);
 		if (!$memCache->set($memCacheKey, $indexingProfiles, 0, $configArray['Caching']['indexing_profiles'])) {

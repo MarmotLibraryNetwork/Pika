@@ -124,6 +124,8 @@ class IndexingProfile extends DB_DataObject{
 					'recordDriver'  => array('property' => 'recordDriver', 'type' => 'text', 'label' => 'Record Driver', 'maxLength' => 50, 'description' => 'The record driver to use while displaying information in Pika', 'required' => true, 'default' => 'MarcRecord'),
 					'catalogDriver' => array('property' => 'catalogDriver', 'type' => 'text', 'label' => 'Catalog Driver', 'maxLength' => 50, 'description' => 'The catalog driver to use for ILS integration', 'required' => true, 'default' => 'DriverInterface'),
 				)),
+			//TODO: refactor catalogDriver to circulationSystemDriver
+			//TODO: this would be the hook in to tie a indexing profile to eContent driver
 
 			'formatDeterminationSection' => array('property'=>'formatDeterminationSection', 'type' => 'section', 'label' =>'Format Determination Settings', 'hideInLists' => true,
 			                            'helpLink' => '', 'properties' => array(
@@ -542,5 +544,16 @@ class IndexingProfile extends DB_DataObject{
 //		}
 //		return $result;
 //	}
+
+	static public function getAllIndexingProfiles(){
+		$indexingProfiles = array();
+		$indexingProfile  = new IndexingProfile();
+		$indexingProfile->orderBy('name');
+		$indexingProfile->find();
+		while ($indexingProfile->fetch()){
+			$indexingProfiles[$indexingProfile->name] = clone($indexingProfile);
+		}
+		return $indexingProfiles;
+	}
 
 }

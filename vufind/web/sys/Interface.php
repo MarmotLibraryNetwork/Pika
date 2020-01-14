@@ -159,7 +159,8 @@ class UInterface extends Smarty {
 		if (UserAccount::isLoggedIn()){
 			$user = UserAccount::getLoggedInUser();
 			//Figure out if we should show a link to pay fines.
-			$homeLibrary       = Library::getLibraryForLocation($user->homeLocationId);
+//			$homeLibrary       = Library::getLibraryForLocation($user->homeLocationId);
+			$homeLibrary       = $user->getHomeLibrary();
 			$showECommerceLink = isset($homeLibrary) && $homeLibrary->showEcommerceLink == 1;
 
 			if ($showECommerceLink){
@@ -302,6 +303,7 @@ class UInterface extends Smarty {
 		}
 		$this->assign('displaySidebarMenu', $displaySidebarMenu);
 
+		$this->assign('showFines', $configArray['Catalog']['showFines']);
 		$this->assign('showConvertListsFromClassic', $configArray['Catalog']['showConvertListsFromClassic']);
 
 
@@ -378,6 +380,9 @@ class UInterface extends Smarty {
 			$this->assign('session', $sessionStr);
 		}
 		$this->assign('deviceName', get_device_name()); // footer & econtent support email
+		$this->assign('activeIp', Location::getActiveIp());
+
+		$this->getGitBranch();
 
 		//$inLibrary is used to :
 		// * pre-select auto-logout on place hold forms;
@@ -556,10 +561,29 @@ class UInterface extends Smarty {
 		}elseif (!empty($location->headerText)){
 			$this->assign('headerText', $location->headerText);
 		}
+	}
 
-		//Determine whether or not materials request functionality should be enabled
-		require_once ROOT_DIR . '/sys/MaterialsRequest.php';
-		$this->assign('enableMaterialsRequest', MaterialsRequest::enableMaterialsRequest());
+	private function getGitBranch(){
+		global $interface;
+		global $configArray;
+
+		$gitName    = $configArray['System']['gitVersionFile'];
+		$branchName = 'Unknown';
+		if ($gitName == 'HEAD'){
+			$stringFromFile = file('../../.git/HEAD', FILE_USE_INCLUDE_PATH);
+			$stringFromFile = $stringFromFile[0]; //get the string from the array
+			$explodedString = explode("/", $stringFromFile); // separate out by the "/" in the string
+			$branchName     = $explodedString[2]; //get the one that is always the branch name
+		}else{
+			$stringFromFile = file('../../.git/FETCH_HEAD', FILE_USE_INCLUDE_PATH);
+			if (!empty($stringFromFile)) {
+				$stringFromFile = $stringFromFile[0];//get the string from the array
+				if (preg_match('/(.*?)\s+branch\s+\'(.*?)\'.*/', $stringFromFile, $matches)) {
+					$branchName = $matches[2] . ' (' . $matches[1] . ')'; //get the branch name
+				}
+			}
+		}
+		$interface->assign('gitBranch', $branchName);
 	}
 
 	/**
