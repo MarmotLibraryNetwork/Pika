@@ -2,8 +2,11 @@
 define ('ROOT_DIR', __DIR__);
 set_include_path(get_include_path() . PATH_SEPARATOR . "/usr/share/composer");
 
+// autoloader stack
 // Composer autoloader
 require_once "vendor/autoload.php";
+spl_autoload_register('pika_autoloader');
+spl_autoload_register('vufind_autoloader');
 
 global $errorHandlingEnabled;
 $errorHandlingEnabled = true;
@@ -392,4 +395,51 @@ function enableErrorHandler(){
 
 function array_remove_by_value($array, $value){
 	return array_values(array_diff($array, array($value)));
+}
+
+// todo: this needs a total rewrite. it doesn't account for autoloader stacks and throws a fatal error.
+function vufind_autoloader($class) {
+	if (substr($class, 0, 4) == 'CAS_') {
+		return CAS_autoload($class);
+	}
+	if (strpos($class, '.php') > 0){
+		$class = substr($class, 0, strpos($class, '.php'));
+	}
+	$nameSpaceClass = str_replace('_', '/', $class) . '.php';
+	try{
+		if (file_exists('sys/' . $class . '.php')){
+			$className = ROOT_DIR . '/sys/' . $class . '.php';
+			require_once $className;
+		}elseif (file_exists('Drivers/' . $class . '.php')){
+			$className = ROOT_DIR . '/Drivers/' . $class . '.php';
+			require_once $className;
+		}elseif (file_exists('Drivers/marmot_inc/' . $class . '.php')){
+			$className = ROOT_DIR . '/Drivers/marmot_inc/' . $class . '.php';
+			require_once $className;
+		} elseif (file_exists('RecordDrivers/' . $class . '.php')){
+			$className = ROOT_DIR . '/RecordDrivers/' . $class . '.php';
+			require_once $className;
+		}elseif (file_exists('services/MyAccount/lib/' . $class . '.php')){
+			$className = ROOT_DIR . '/services/MyAccount/lib/' . $class . '.php';
+			require_once $className;
+		}elseif (file_exists('services/' . $class . '.php')){
+			$className = ROOT_DIR . '/services/' . $class . '.php';
+			require_once $className;
+		}elseif (file_exists('sys/Authentication/' . $class . '.php')){
+			$className = ROOT_DIR . '/sys/Authentication/' . $class . '.php';
+			require_once $className;
+		}elseif (file_exists('sys/' . $nameSpaceClass)){
+			require_once 'sys/' . $nameSpaceClass;
+		}else{
+			try {
+				include_once $nameSpaceClass;
+			} catch (Exception $e) {
+				// todo: This should fail over to next instead of throwing fatal error.
+				// PEAR_Singleton::raiseError("Error loading class $class");
+			}
+		}
+	}catch (Exception $e){
+		// PEAR_Singleton::raiseError("Error loading class $class");
+		// todo: This should fail over to next instead of throwing fatal error.
+	}
 }

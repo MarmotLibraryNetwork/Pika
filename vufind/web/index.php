@@ -28,9 +28,7 @@ global $memoryWatcher;
 loadModuleActionId();
 $timer->logTime("Loaded Module and Action Id");
 $memoryWatcher->logMemory("Loaded Module and Action Id");
-// autoloader stack
-spl_autoload_register('pika_autoloader');
-spl_autoload_register('vufind_autoloader');
+
 
 //  Start session
 $handler = new Pika\Session\MemcachedSession();
@@ -42,7 +40,7 @@ $timer->logTime("Initialized Pika\\Session");
 
 // instantiate global logger
 $pikaLogger = new Pika\Logger('Pika', true);
-$timer->logTime("Initialized Pika\\Logger");
+$timer->logTime("Initialized Pika\Logger");
 
 if (isset($_REQUEST['test_role'])){
 	if ($_REQUEST['test_role'] == ''){
@@ -803,53 +801,6 @@ function pika_autoloader($class) {
     }
 }
 
-// Set up autoloader (needed for YAML)
-// todo: this needs a total rewrite. it doesn't account for autoloader stacks and throws a fatal error.
-function vufind_autoloader($class) {
-	if (substr($class, 0, 4) == 'CAS_') {
-		return CAS_autoload($class);
-	}
-	if (strpos($class, '.php') > 0){
-		$class = substr($class, 0, strpos($class, '.php'));
-	}
-	$nameSpaceClass = str_replace('_', '/', $class) . '.php';
-	try{
-		if (file_exists('sys/' . $class . '.php')){
-			$className = ROOT_DIR . '/sys/' . $class . '.php';
-			require_once $className;
-		}elseif (file_exists('Drivers/' . $class . '.php')){
-			$className = ROOT_DIR . '/Drivers/' . $class . '.php';
-			require_once $className;
-		}elseif (file_exists('Drivers/marmot_inc/' . $class . '.php')){
-			$className = ROOT_DIR . '/Drivers/marmot_inc/' . $class . '.php';
-			require_once $className;
-		} elseif (file_exists('RecordDrivers/' . $class . '.php')){
-			$className = ROOT_DIR . '/RecordDrivers/' . $class . '.php';
-			require_once $className;
-		}elseif (file_exists('services/MyAccount/lib/' . $class . '.php')){
-			$className = ROOT_DIR . '/services/MyAccount/lib/' . $class . '.php';
-			require_once $className;
-		}elseif (file_exists('services/' . $class . '.php')){
-			$className = ROOT_DIR . '/services/' . $class . '.php';
-			require_once $className;
-		}elseif (file_exists('sys/Authentication/' . $class . '.php')){
-			$className = ROOT_DIR . '/sys/Authentication/' . $class . '.php';
-			require_once $className;
-		}elseif (file_exists('sys/' . $nameSpaceClass)){
-			require_once 'sys/' . $nameSpaceClass;
-		}else{
-			try {
-				include_once $nameSpaceClass;
-			} catch (Exception $e) {
-				// todo: This should fail over to next instead of throwing fatal error.
-				// PEAR_Singleton::raiseError("Error loading class $class");
-			}
-		}
-	}catch (Exception $e){
-		// PEAR_Singleton::raiseError("Error loading class $class");
-		// todo: This should fail over to next instead of throwing fatal error.
-	}
-}
 
 function loadModuleActionId(){
 	//Cleanup method information so module, action, and id are set properly.
