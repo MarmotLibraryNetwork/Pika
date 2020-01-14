@@ -397,6 +397,23 @@ function array_remove_by_value($array, $value){
 	return array_values(array_diff($array, array($value)));
 }
 
+// Pika drivers autoloader PSR-4 style
+function pika_autoloader($class) {
+	$sourcePath = __DIR__ . DIRECTORY_SEPARATOR . 'sys' . DIRECTORY_SEPARATOR;
+
+	$filePath       = str_replace('\\', DIRECTORY_SEPARATOR, $class);
+	$pathParts      = explode("\\", $class);
+	$directoryIndex = count($pathParts) - 1;
+	$directory      = $pathParts[$directoryIndex];
+	$fullFilePath   = $sourcePath.$filePath.'.php';
+	$fullFolderPath = $sourcePath.$filePath.DIRECTORY_SEPARATOR.$directory.'.php';
+	if(file_exists($fullFilePath)) {
+		include_once($fullFilePath);
+	} elseif (file_exists($fullFolderPath)) {
+		include_once($fullFolderPath);
+	}
+}
+
 // todo: this needs a total rewrite. it doesn't account for autoloader stacks and throws a fatal error.
 function vufind_autoloader($class) {
 	if (substr($class, 0, 4) == 'CAS_') {

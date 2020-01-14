@@ -784,24 +784,6 @@ function getGitBranch(){
 	$interface->assign('gitBranch', $branchName);
 }
 
-// Pika drivers autoloader PSR-4 style
-function pika_autoloader($class) {
-    $sourcePath = __DIR__ . DIRECTORY_SEPARATOR . 'sys' . DIRECTORY_SEPARATOR;
-
-    $filePath       = str_replace('\\', DIRECTORY_SEPARATOR, $class);
-    $pathParts      = explode("\\", $class);
-    $directoryIndex = count($pathParts) - 1;
-    $directory      = $pathParts[$directoryIndex];
-    $fullFilePath   = $sourcePath.$filePath.'.php';
-		$fullFolderPath = $sourcePath.$filePath.DIRECTORY_SEPARATOR.$directory.'.php';
-    if(file_exists($fullFilePath)) {
-    	include_once($fullFilePath);
-    } elseif (file_exists($fullFolderPath)) {
-	    include_once($fullFolderPath);
-    }
-}
-
-
 function loadModuleActionId(){
 	//Cleanup method information so module, action, and id are set properly.
 	//This ensures that we don't have to change the http-vufind.conf file when new types are added.
