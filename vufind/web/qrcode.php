@@ -1,5 +1,5 @@
 <?php
-define('ROOT_DIR', __DIR__);
+require_once 'bootstrap.php';
 /**
  *
  * Copyright (C) Villanova University 2007.
@@ -19,44 +19,44 @@ define('ROOT_DIR', __DIR__);
  *
  */
 
-require_once ROOT_DIR . '/sys/PEAR_Singleton.php';
-PEAR_Singleton::init();
-require_once ROOT_DIR . '/sys/Timer.php';
-require_once ROOT_DIR . '/sys/Logger.php';
-//Bootstrap the process
-if (!function_exists('vufind_autoloader')){
-	// Set up autoloader (needed for YAML)
-	function vufind_autoloader($class){
-		$fullClassName = str_replace('_', '/', $class) . '.php';
-		require $fullClassName;
-	}
-
-	spl_autoload_register('vufind_autoloader');
-}
-global $timer;
-if (empty($timer)){
-	$timer = new Timer(microtime(false));
-}
-
-// Retrieve values from configuration file
-require_once ROOT_DIR . '/sys/ConfigArray.php';
-$configArray = readConfig();
-$timer->logTime("Read config");
-if (isset($configArray['System']['timings'])){
-	$timer->enableTimings($configArray['System']['timings']);
-}
-
-//Start a logger
-$logger = new Logger();
-
-//Update error handling
-if ($configArray['System']['debug']){
-	ini_set('display_errors', true);
-	error_reporting(E_ALL & ~E_DEPRECATED);
-}
-
-date_default_timezone_set($configArray['Site']['timezone']);
-$timer->logTime("bootstrap");
+//require_once ROOT_DIR . '/sys/PEAR_Singleton.php';
+//PEAR_Singleton::init();
+//require_once ROOT_DIR . '/sys/Timer.php';
+//require_once ROOT_DIR . '/sys/Logger.php';
+////Bootstrap the process
+//if (!function_exists('vufind_autoloader')){
+//	// Set up autoloader (needed for YAML)
+//	function vufind_autoloader($class){
+//		$fullClassName = str_replace('_', '/', $class) . '.php';
+//		require $fullClassName;
+//	}
+//
+//	spl_autoload_register('vufind_autoloader');
+//}
+//global $timer;
+//if (empty($timer)){
+//	$timer = new Timer(microtime(false));
+//}
+//
+//// Retrieve values from configuration file
+//require_once ROOT_DIR . '/sys/ConfigArray.php';
+//$configArray = readConfig();
+//$timer->logTime("Read config");
+//if (isset($configArray['System']['timings'])){
+//	$timer->enableTimings($configArray['System']['timings']);
+//}
+//
+////Start a logger
+//$logger = new Logger();
+//
+////Update error handling
+//if ($configArray['System']['debug']){
+//	ini_set('display_errors', true);
+//	error_reporting(E_ALL & ~E_DEPRECATED);
+//}
+//
+//date_default_timezone_set($configArray['Site']['timezone']);
+//$timer->logTime("bootstrap");
 
 //Create the QR Code if it doesn't exit
 $type     = $_REQUEST['type'];
