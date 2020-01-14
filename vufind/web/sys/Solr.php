@@ -14,8 +14,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 use Curl\Curl;
-use Pika\Cache;
-use Pika\Logger;
+use \Pika\Cache;
+use \Pika\Logger;
 
 require_once ROOT_DIR . '/sys/IndexEngine.php';
 require_once ROOT_DIR . '/sys/ConfigArray.php';
