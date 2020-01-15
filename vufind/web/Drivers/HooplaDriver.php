@@ -453,4 +453,13 @@ class HooplaDriver
 			);
 		}
 	}
+
+	public function getLibraryHooplaTotalCheckOuts($libraryId, $startTime, $endTime){
+		$url = $this->hooplaAPIBaseURL . '/api/v1/libraries/' . $libraryId
+			. '/checkouts/total?startTime=' . $startTime . '&endTime=' . $endTime;
+
+		$result = $this->getAPIResponse($url);
+		return $result;
+
+	}
 }

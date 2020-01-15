@@ -11,11 +11,31 @@
 						<div class="form-horizontal">
 							<div class="form-group">
 								<label for="startDate" class="control-label col-sm-2">Start Date</label>
-								<input type="text" name="startDate" id="startDate" size="10" value="{$startDate|date_format:'%m/%d/%Y'}" class="form-control col-sm-3" style="width: auto;">
+								<div class="input-group input-append date controls col-sm-3" id="startDatePicker">
+									<input type="text" name="startDate" id="startDate" size="10" value="{$startDate|date_format:'%m/%d/%Y'}"
+									       data-provide="datepicker" data-date-format="mm/dd/yyyy" data-date-end-date="0d"
+									       class="form-control" >
+									<span class="input-group-addon">
+								<span class="glyphicon glyphicon-calendar"
+								      onclick="$('#startDate').focus().datepicker('show')"
+								      aria-hidden="true">
+								</span>
+							</span>
+								</div>
 							</div>
 							<div class="form-group">
 								<label for="endDate" class="control-label col-sm-2">End Date</label>
-								<input type="text" name="endDate" id="endDate" size="10" value="{$endDate|date_format:'%m/%d/%Y'}" class="form-control col-sm-3" style="width: auto;">
+								<div class="input-group input-append date controls col-sm-3" id="endDatePicker">
+									<input type="text" name="endDate" id="endDate" size="10" value="{$endDate|date_format:'%m/%d/%Y'}"
+									       data-provide="datepicker" data-date-format="mm/dd/yyyy" data-date-end-date="0d"
+									       class="form-control">
+									<span class="input-group-addon">
+							<span class="glyphicon glyphicon-calendar"
+							      onclick="$('#endDate').focus().datepicker('show')"
+							      aria-hidden="true">
+								</span>
+							</span>
+								</div>
 							</div>
 							{*
 							<div>
@@ -88,8 +108,6 @@
 	<script	type="text/javascript">
 		{literal}
 		$(function() {
-			$( "#startDate" ).datepicker({ showOn: "button", buttonImage: "{/literal}{$path}{literal}/images/silk/calendar.png", numberOfMonths: 2,	buttonImageOnly: true});
-			$( "#endDate" ).datepicker({ showOn: "button", buttonImage: "{/literal}{$path}{literal}/images/silk/calendar.png", numberOfMonths: 2,	buttonImageOnly: true});
 			$("#offlineCirculationReport").tablesorter({cssAsc: 'sortAscHeader', cssDesc: 'sortDescHeader', cssHeader: 'unsortedHeader', widgets:['zebra', 'filter'] });
 		});
 		{/literal}

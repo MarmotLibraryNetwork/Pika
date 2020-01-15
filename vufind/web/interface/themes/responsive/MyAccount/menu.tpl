@@ -207,7 +207,7 @@
 			{/if}
 
 			{if $loggedIn && $userRoles && (array_key_exists('libraryAdmin', $userRoles) || array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles))}
-				{if in_array($action, array('RecordGroupingLog', 'ReindexLog', 'OverDriveExtractLog', 'HooplaExportLog', 'SierraExportLog', 'IndexingStats', 'IndexingProfiles', 'TranslationMaps'))}
+				{if in_array($action, array('RecordGroupingLog', 'ReindexLog', 'SierraExportLog', 'IndexingStats', 'IndexingProfiles', 'TranslationMaps'))}
 					{assign var="curSection" value=true}
 				{else}
 					{assign var="curSection" value=false}
@@ -228,9 +228,6 @@
 							{if ($ils == 'Sierra')}
 								<div class="adminMenuLink{if $action == "SierraExportLog"} active{/if}"><a href="{$path}/Admin/SierraExportLog">Sierra Export Log</a></div>
 							{/if}
-							{*<div class="adminMenuLink{if $module == 'Admin' && $action == "OverdriveAPIData"} active{/if}"><a href="{$path}/Admin/OverdriveAPIData">OverDrive API Information</a></div>*}
-							<div class="adminMenuLink{if $action == "OverDriveExtractLog"} active{/if}"><a href="{$path}/Admin/OverDriveExtractLog">OverDrive Extract Log</a></div>
-							<div class="adminMenuLink{if $action == "HooplaExportLog"} active{/if}"><a href="{$path}/Admin/HooplaExportLog">Hoopla Export Log</a></div>
 							<div class="adminMenuLink{if $action == "IndexingProfiles"} active{/if}"><a href="{$path}/Admin/IndexingProfiles">Indexing Profiles</a></div>
 							<div class="adminMenuLink{if $action == "TranslationMaps"} active{/if}"><a href="{$path}/Admin/TranslationMaps">Translation Maps</a></div>
 						</div>
@@ -282,9 +279,33 @@
 						<div class="panel-body">
 							<div class="adminMenuLink{if $action == "MergedGroupedWorks"} active{/if}"><a href="{$path}/Admin/MergedGroupedWorks">Grouped Work Merging</a></div>
 							<div class="adminMenuLink{if $action == "NonGroupedRecords"} active{/if}"><a href="{$path}/Admin/NonGroupedRecords">Records To Not Merge</a></div>
-							<div class="adminMenuLink{if $action == "OverDriveAPIData"} active{/if}"><a href="{$path}/Admin/OverDriveAPIData">OverDrive API Information</a></div>
 							<div class="adminMenuLink{if $action == "AuthorEnrichment"} active{/if}"><a href="{$path}/Admin/AuthorEnrichment">Author Enrichment</a></div>
 
+						</div>
+					</div>
+				</div>
+			{/if}
+
+			{if $loggedIn && $userRoles && (array_key_exists('cataloging', $userRoles) || array_key_exists('opacAdmin', $userRoles))}
+				{if in_array($action, array('OverDriveExtractLog', 'HooplaExportLog', 'HooplaInfo', 'OverDriveAPIData'))}
+					{assign var="curSection" value=true}
+				{else}
+					{assign var="curSection" value=false}
+				{/if}
+				<div class="panel{if $curSection} active{/if}">
+					<a href="#catalogingRequestMenu" data-toggle="collapse" data-parent="#adminMenuAccordion">
+						<div class="panel-heading">
+							<div class="panel-title">
+								eContent Info
+							</div>
+						</div>
+					</a>
+					<div id="catalogingRequestMenu" class="panel-collapse collapse {if $curSection}in{/if}">
+						<div class="panel-body">
+							<div class="adminMenuLink{if $action == "OverDriveAPIData"} active{/if}"><a href="{$path}/Admin/OverDriveAPIData">OverDrive API Information</a></div>
+							<div class="adminMenuLink{if $action == "OverDriveExtractLog"} active{/if}"><a href="{$path}/Admin/OverDriveExtractLog">OverDrive Extract Log</a></div>
+							<div class="adminMenuLink{if $action == "HooplaInfo"} active{/if}"><a href="{$path}/Admin/HooplaInfo">Hoopla API Information</a></div>
+							<div class="adminMenuLink{if $action == "HooplaExportLog"} active{/if}"><a href="{$path}/Admin/HooplaExportLog">Hoopla Export Log</a></div>
 						</div>
 					</div>
 				</div>
