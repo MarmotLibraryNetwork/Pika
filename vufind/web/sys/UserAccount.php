@@ -646,6 +646,7 @@ class UserAccount {
 	 * Look up in ILS for a user that has never logged into Pika before, based on the patron's barcode.
 	 *
 	 * @param $patronBarcode
+	 * @return bool|User
 	 */
 	public static function findNewUser($patronBarcode){
 		$driversToTest = self::loadAccountProfiles();

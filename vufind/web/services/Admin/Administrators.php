@@ -34,41 +34,34 @@ class Admin_Administrators extends ObjectEditor {
 	}
 
 	function getAllObjects(){
-		/** @var User $admin */
 		$admin = new User();
-		$admin->query('SELECT * FROM user INNER JOIN user_roles on user.id = user_roles.userId ORDER BY cat_password');
+		$admin->query('SELECT DISTINCT user.* FROM user INNER JOIN user_roles ON user.id = user_roles.userId ORDER BY cat_password');
 		$adminList = array();
 		while ($admin->fetch()){
-
-			$homeLibraryName            = $admin->getHomeLibrarySystemName();
-			$admin->homeLibraryName = empty($homeLibraryName) ? 'Unknown' : $homeLibraryName;
-
-			$location             = new Location();
-			$location->locationId = $admin->homeLocationId;
-			$admin->homeLocation  = $location->find(true) ? $location->displayName : 'Unknown';
-
-			$adminList[$admin->id] = clone $admin;
+			$homeLibrary            = Library::getLibraryForLocation($admin->homeLocationId);
+			$admin->homeLibraryName = empty($homeLibrary->displayName) ? 'Unknown' : $homeLibrary->displayName;
+			$location               = new Location();
+			$admin->homeLocation    = $location->get($admin->homeLocationId) ? $location->displayName : 'Unknown';
+			$adminList[$admin->id]  = clone $admin;
 		}
 		return $adminList;
 	}
 
 	function getExistingObjectById($id){
-		$allAdmins = $this->getAllObjects(); // need to populate the library and location display names
-		return $allAdmins[$id];
-//		/** @var User $user */
-//		$user = parent::getExistingObjectById($id);
-//		$user->getHomeLibrary();
-//		$user->homeLibraryName = $user->homeLibrary->displayName;
-//		return $user;
+		/** @var User $user */
+		$user                  = parent::getExistingObjectById($id);
+		$user->homeLibraryName = $user->getHomeLibrarySystemName();
+		$location              = new Location();
+		$user->homeLocation    = $location->get($user->homeLocationId) ? $location->displayName : 'Unknown';
+		return $user;
 	}
 
 	function getObjectStructure(){
-		return User::getObjectStructure();
+		return (new User)->getObjectStructure();
 	}
 
 	function getPrimaryKeyColumn(){
-		global $configArray;
-		return $configArray['Catalog']['barcodeProperty'];
+		return 'id';
 	}
 
 	function getIdKeyColumn(){
@@ -97,15 +90,22 @@ class Admin_Administrators extends ObjectEditor {
 
 	function processNewAdministrator(){
 		global $interface;
-		global $configArray;
-		$barcodeProperty = $configArray['Catalog']['barcodeProperty'];
+		$user = UserAccount::getActiveUserObj();
+
+		$barcodeProperty = $user->getAccountProfile()->loginConfiguration == 'name_barcode' ? 'cat_password' : 'cat_username';
 		$barcode         = trim($_REQUEST['barcode']);
 		$interface->assign('barcode', $barcode);
 
 		if (!empty($_REQUEST['roles'])){
-			$newAdmin        = new User();
+			$newAdmin = new User();
 			$newAdmin->get($barcodeProperty, $barcode);
-			if ($newAdmin->N == 1){
+			$success = ($newAdmin->N == 1); // Call success if we found exactly one user (multiple users is an error also)
+			if ($newAdmin->N == 0){
+				//Try searching ILS for user if no user was found
+				$newAdmin = UserAccount::findNewUser($barcode);
+				$success  = $newAdmin === false;
+			}
+			if ($success){
 				require_once ROOT_DIR . '/sys/Administration/UserRoles.php';
 				$existingRoles         = new UserRoles();
 				$existingRoles->userId = $newAdmin->id;

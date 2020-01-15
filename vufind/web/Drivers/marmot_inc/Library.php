@@ -1232,10 +1232,10 @@ class Library extends DB_DataObject {
 	}
 
 	static function getLibraryForLocation($locationId){
-		if (isset($locationId)){
+		if (!empty($locationId)){
 			$libLookup = new Library();
-			$libLookup->joinAdd(['libraryId', 'location:libraryId']);
-			$libLookup->whereAdd('locationId = '. $libLookup->escape($locationId));
+			$libLookup->whereAdd('libraryId = (SELECT libraryId FROM location WHERE locationId = ' . $libLookup->escape($locationId) . ')');
+			// Typical Join operation will overwrite library values with location ones when the column name is the same. eg displayName
 			$libLookup->find();
 			if ($libLookup->N > 0){
 				$libLookup->fetch();
@@ -1392,7 +1392,7 @@ class Library extends DB_DataObject {
 	public function fetch(){
 		$return = parent::fetch();
 		if ($return){
-			if (isset($this->showInMainDetails) && is_string($this->showInMainDetails) && !empty($this->showInMainDetails)){
+			if (!empty($this->showInMainDetails) && is_string($this->showInMainDetails)){
 				// convert to array retrieving from database
 				try {
 					$this->showInMainDetails = unserialize($this->showInMainDetails);

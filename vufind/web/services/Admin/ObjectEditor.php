@@ -20,8 +20,7 @@
 
 require_once ROOT_DIR . '/services/Admin/Admin.php';
 
-abstract class ObjectEditor extends Admin_Admin
-{
+abstract class ObjectEditor extends Admin_Admin {
 	function launch(){
 		global $interface;
 
