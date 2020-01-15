@@ -821,6 +821,11 @@ class Sierra {
 	}
 
 
+	public function findNewUser($barcode){
+		$sierraUserId = $this->getPatronId($barcode);
+		return $this->getPatron($sierraUserId);
+	}
+
 	/**
 	 * Update a patrons profile information
 	 *
@@ -2535,7 +2540,7 @@ EOT;
 				// john doe, john, doe, john Doe, doe John
 				// The following will fail:
 				// johndoe, jo, jo doe, john do
-				if (preg_match('~\\b' . $userNamePart . '\\b~i', $patronName, $m)) {
+				if (preg_match('~\\b' . preg_quote($userNamePart) . '\\b~i', $patronName, $m)) {
 					$valid = true;
 				}
 				// there's been a bit of uproar at libraries over name matches. To revert behavior to full matches
