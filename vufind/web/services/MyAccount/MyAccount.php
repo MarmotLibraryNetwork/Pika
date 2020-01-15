@@ -20,15 +20,15 @@
 
 require_once ROOT_DIR . '/Action.php';
 
-require_once ROOT_DIR . '/CatalogConnection.php';
-require_once ROOT_DIR . '/CatalogFactory.php';
+//require_once ROOT_DIR . '/CatalogConnection.php';
+//require_once ROOT_DIR . '/CatalogFactory.php';
 
 abstract class MyAccount extends Action
 {
 	/** @var  SearchObject_Solr|SearchObject_Base */
-	protected $db;
+//	protected $db;
 	/** @var  CatalogConnection $catalog */
-	protected $catalog;
+//	protected $catalog;
 	protected $requireLogin = true;
 
 	function __construct() {

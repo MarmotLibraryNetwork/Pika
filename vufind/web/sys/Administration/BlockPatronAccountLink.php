@@ -10,7 +10,7 @@
  */
 
 require_once 'DB/DataObject.php';
-require_once 'DB/DataObject/Cast.php';
+//require_once 'DB/DataObject/Cast.php';
 
 class BlockPatronAccountLink extends DB_DataObject
 {
@@ -42,15 +42,14 @@ class BlockPatronAccountLink extends DB_DataObject
 			$this->blockedAccountBarCode = null;
 			$this->primaryAccountBarCode = null;
 
-			$barcode = $this->getBarcode();
 			$user = new User();
 			if($user->get($this->primaryAccountId)) {
-				$this->primaryAccountBarCode = $user->$barcode;
+				$this->primaryAccountBarCode = $user->getBarcode();
 			}
 			if ($this->blockedLinkAccountId) {
 				$user = new User();
 				if ($user->get($this->blockedLinkAccountId)) {
-					$this->blockedAccountBarCode = $user->$barcode;
+					$this->blockedAccountBarCode = $user->getBarcode();
 				}
 			}
 		}

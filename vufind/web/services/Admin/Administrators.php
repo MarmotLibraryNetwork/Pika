@@ -40,8 +40,8 @@ class Admin_Administrators extends ObjectEditor {
 		$adminList = array();
 		while ($admin->fetch()){
 
-			$homeLibrary            = Library::getLibraryForLocation($admin->homeLocationId);
-			$admin->homeLibraryName = $homeLibrary != null ? $homeLibrary->displayName : 'Unknown';
+			$homeLibraryName            = $admin->getHomeLibrarySystemName();
+			$admin->homeLibraryName = empty($homeLibraryName) ? 'Unknown' : $homeLibraryName;
 
 			$location             = new Location();
 			$location->locationId = $admin->homeLocationId;

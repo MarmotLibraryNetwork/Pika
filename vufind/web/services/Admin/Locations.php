@@ -44,7 +44,8 @@ class Locations extends ObjectEditor {
 			$location->locationId = $user->homeLocationId;
 		}elseif (!UserAccount::userHasRole('opacAdmin')){
 			//Scope to just locations for the user based on home library
-			$patronLibrary       = Library::getLibraryForLocation($user->homeLocationId);
+			$patronLibrary       = $user->getHomeLibrary();
+//			$patronLibrary       = Library::getLibraryForLocation($user->homeLocationId);
 			$location->libraryId = $patronLibrary->libraryId;
 		}
 		$location->find();

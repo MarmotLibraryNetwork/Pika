@@ -1218,14 +1218,14 @@ class Library extends DB_DataObject {
 		return null;
 	}
 
-	static function getPatronHomeLibrary($tmpUser = null){
+	static function getPatronHomeLibrary(User $tmpUser = null){
 		//Finally check to see if the user has logged in and if so, use that library
 		if ($tmpUser != null){
 			return self::getLibraryForLocation($tmpUser->homeLocationId);
 		}
 		if (UserAccount::isLoggedIn()){
 			//Load the library based on the home branch for the user
-			return self::getLibraryForLocation(UserAccount::getUserHomeLocationId());
+			return UserAccount::getUserHomeLibrary();
 		}else{
 			return null;
 		}
@@ -1234,8 +1234,6 @@ class Library extends DB_DataObject {
 	static function getLibraryForLocation($locationId){
 		if (isset($locationId)){
 			$libLookup = new Library();
-//			require_once(ROOT_DIR . '/Drivers/marmot_inc/Location.php');
-//			$libLookup->whereAdd('libraryId = (SELECT libraryId FROM location WHERE locationId = ' . $libLookup->escape($locationId) . ')');
 			$libLookup->joinAdd(['libraryId', 'location:libraryId']);
 			$libLookup->whereAdd('locationId = '. $libLookup->escape($locationId));
 			$libLookup->find();

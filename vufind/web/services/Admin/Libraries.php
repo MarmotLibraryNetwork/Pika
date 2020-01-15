@@ -37,7 +37,7 @@ class Admin_Libraries extends ObjectEditor
 	function getAllObjects(){
 		$libraryList = array();
 
-		$user = UserAccount::getLoggedInUser();
+		UserAccount::getLoggedInUser();
 		if (UserAccount::userHasRole('opacAdmin')){
 			$library = new Library();
 			$library->orderBy('subdomain');
@@ -45,8 +45,8 @@ class Admin_Libraries extends ObjectEditor
 			while ($library->fetch()){
 				$libraryList[$library->libraryId] = clone $library;
 			}
-		}else if (UserAccount::userHasRole('libraryAdmin') || UserAccount::userHasRole('libraryManager')){
-			$patronLibrary = Library::getLibraryForLocation($user->homeLocationId);
+		}elseif (UserAccount::userHasRoleFromList(['libraryAdmin','libraryManager'])){
+			$patronLibrary = UserAccount::getUserHomeLibrary();
 			$libraryList[$patronLibrary->libraryId] = clone $patronLibrary;
 		}
 

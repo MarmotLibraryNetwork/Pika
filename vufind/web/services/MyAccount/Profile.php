@@ -59,7 +59,7 @@ class MyAccount_Profile extends MyAccount
 			/** @var Library $librarySingleton */
 			global $librarySingleton;
 			// Get Library Settings from the home library of the current user-account being displayed
-			$patronHomeLibrary = $librarySingleton->getPatronHomeLibrary($patron);
+			$patronHomeLibrary = $patron->getHomeLibrary();
 			if ($patronHomeLibrary == null) {
 				$canUpdateContactInfo                 = true;
 				$canUpdateAddress                     = true;

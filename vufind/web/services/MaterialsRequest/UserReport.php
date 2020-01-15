@@ -72,8 +72,9 @@ class MaterialsRequest_UserReport extends Admin_Admin {
 		$materialsRequest->selectAdd('user.id as userId, status, description, user.firstName, user.lastName, user.cat_username, user.cat_password');
 		if (UserAccount::userHasRole('library_material_requests')){
 			//Need to limit to only requests submitted for the user's home location
-			$userHomeLibrary = Library::getPatronHomeLibrary();
-			$locations = new Location();
+//			$userHomeLibrary      = Library::getPatronHomeLibrary();
+			$userHomeLibrary      = UserAccount::getUserHomeLibrary();
+			$locations            = new Location();
 			$locations->libraryId = $userHomeLibrary->libraryId;
 			$locations->find();
 			$locationsForLibrary = array();
@@ -92,15 +93,15 @@ class MaterialsRequest_UserReport extends Admin_Admin {
 		$materialsRequest->groupBy('userId, status');
 		$materialsRequest->find();
 
-		$userData = array();
-		$barcodeProperty = $configArray['Catalog']['barcodeProperty'];
+		$userData        = array();
+		$barcodeProperty = $user->getAccountProfile()->loginConfiguration;
 		while ($materialsRequest->fetch()){
 			if (!array_key_exists($materialsRequest->userId, $userData)){
-				$userData[$materialsRequest->userId] = array();
-				$userData[$materialsRequest->userId]['firstName'] = $materialsRequest->firstName;
-				$userData[$materialsRequest->userId]['lastName'] = $materialsRequest->lastName;
-				$userData[$materialsRequest->userId]['barcode'] = $materialsRequest->$barcodeProperty;
-				$userData[$materialsRequest->userId]['totalRequests'] = 0;
+				$userData[$materialsRequest->userId]                     = array();
+				$userData[$materialsRequest->userId]['firstName']        = $materialsRequest->firstName;
+				$userData[$materialsRequest->userId]['lastName']         = $materialsRequest->lastName;
+				$userData[$materialsRequest->userId]['barcode']          = $materialsRequest->$barcodeProperty;
+				$userData[$materialsRequest->userId]['totalRequests']    = 0;
 				$userData[$materialsRequest->userId]['requestsByStatus'] = array();
 			}
 			$userData[$materialsRequest->userId]['requestsByStatus'][$materialsRequest->description] = $materialsRequest->numRequests;

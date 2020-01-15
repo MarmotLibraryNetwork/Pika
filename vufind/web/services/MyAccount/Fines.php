@@ -75,7 +75,8 @@ class Fines extends MyAccount
 				$showFinePayments = $configArray['Catalog']['showFinePayments'];
 				$interface->assign('showFinePayments', $showFinePayments);
 
-				$homeLibrary      = Library::getLibraryForLocation($user->homeLocationId);
+//				$homeLibrary      = Library::getLibraryForLocation($user->homeLocationId);
+				$homeLibrary      = $user->getHomeLibrary();
 				$showEcommerceLink = isset($homeLibrary) && $homeLibrary->showEcommerceLink == 1;
 
 				if ($showEcommerceLink) {

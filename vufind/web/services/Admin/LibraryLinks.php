@@ -37,12 +37,12 @@ class Admin_LibraryLinks extends ObjectEditor
 		//Look lookup information for display in the user interface
 		$user = UserAccount::getLoggedInUser();
 
-		$object = new LibraryLink();
+		$object   = new LibraryLink();
 		$location = new Location();
 		$location->orderBy('displayName');
 		if (!UserAccount::userHasRole('opacAdmin')){
 			//Scope to just locations for the user based on home library
-			$patronLibrary = Library::getLibraryForLocation($user->homeLocationId);
+			$patronLibrary     = $user->getHomeLibrary();
 			$object->libraryId = $patronLibrary->libraryId;
 		}
 

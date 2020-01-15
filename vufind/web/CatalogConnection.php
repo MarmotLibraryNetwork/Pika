@@ -305,7 +305,8 @@ class CatalogConnection
 
 		$materialsRequest            = new MaterialsRequest();
 		$materialsRequest->createdBy = $user->id;
-		$homeLibrary                 = Library::getLibraryForLocation($user->homeLocationId);
+//		$homeLibrary                 = Library::getLibraryForLocation($user->homeLocationId);
+		$homeLibrary                 = $user->getHomeLibrary();
 		if ($homeLibrary && $homeLibrary->enableMaterialsRequest){
 			$statusQuery            = new MaterialsRequestStatus();
 			$statusQuery->isOpen    = 1;

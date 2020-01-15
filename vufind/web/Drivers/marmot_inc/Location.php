@@ -511,7 +511,8 @@ class Location extends DB_DataObject {
 		/** @var Library $librarySingleton */
 		global $librarySingleton;
 		if ($patronProfile){
-			$homeLibrary = $librarySingleton->getLibraryForLocation($patronProfile->homeLocationId);
+//			$homeLibrary = $librarySingleton->getLibraryForLocation($patronProfile->homeLocationId);
+			$homeLibrary = $patronProfile->getHomeLibrary();
 		}
 
 		if (isset($homeLibrary) && $homeLibrary->inSystemPickupsOnly == 1){
@@ -718,7 +719,7 @@ class Location extends DB_DataObject {
 	function setActiveLocation($location){
 		Location::$activeLocation = $location;
 	}
-
+	/** var Location $userHomeLocation */
 	private static $userHomeLocation = 'unset';
 
 	/**
@@ -926,9 +927,9 @@ class Location extends DB_DataObject {
 				$ip = $_SERVER["HTTP_FORWARDED_FOR"];
 			}elseif (isset($_SERVER["HTTP_FORWARDED"])){
 				$ip = $_SERVER["HTTP_FORWARDED"];
-			}elseif (isset($_SERVER['REMOTE_HOST']) && strlen($_SERVER['REMOTE_HOST']) > 0){
+			}elseif (!empty($_SERVER['REMOTE_HOST'])){
 				$ip = $_SERVER['REMOTE_HOST'];
-			}elseif (isset($_SERVER['REMOTE_ADDR']) && strlen($_SERVER['REMOTE_ADDR']) > 0){
+			}elseif (!empty($_SERVER['REMOTE_ADDR'])){
 				$ip = $_SERVER['REMOTE_ADDR'];
 			}else{
 				$ip = '';

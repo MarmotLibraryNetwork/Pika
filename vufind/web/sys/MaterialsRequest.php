@@ -129,29 +129,27 @@ class MaterialsRequest extends DB_DataObject
 		global $library;
 
 		//First make sure we are enabled in the config file
-		if (isset($configArray['MaterialsRequest']) && isset($configArray['MaterialsRequest']['enabled'])){
+		if (!empty($configArray['MaterialsRequest']['enabled'])){
 			$enableMaterialsRequest = $configArray['MaterialsRequest']['enabled'];
 			//Now check if the library allows material requests
 			if ($enableMaterialsRequest){
 				if (isset($library) && $library->enableMaterialsRequest == 0){
 					$enableMaterialsRequest = false;
-				}else if (UserAccount::isLoggedIn()){
-					$homeLibrary = Library::getPatronHomeLibrary();
+				}elseif (UserAccount::isLoggedIn()){
+//					$homeLibrary = Library::getPatronHomeLibrary();
+					$homeLibrary = UserAccount::getUserHomeLibrary();
 					if (is_null($homeLibrary)){
 						$enableMaterialsRequest = false;
-					}else if ($homeLibrary->enableMaterialsRequest == 0){
+					}elseif ($homeLibrary->enableMaterialsRequest == 0){
 						$enableMaterialsRequest = false;
-					}else if (isset($library) && $homeLibrary->libraryId != $library->libraryId){
+					}elseif (isset($library) && $homeLibrary->libraryId != $library->libraryId){
 						$enableMaterialsRequest = false;
-					}else if (isset($configArray['MaterialsRequest']['allowablePatronTypes'])){
+					}elseif (!empty($configArray['MaterialsRequest']['allowablePatronTypes'])){
 						//Check to see if we need to do additional restrictions by patron type
 						$allowablePatronTypes = $configArray['MaterialsRequest']['allowablePatronTypes'];
-						if (strlen($allowablePatronTypes) > 0){
-							$user = UserAccount::getLoggedInUser();
-							if (!preg_match("/^$allowablePatronTypes$/i", $user->patronType)){
+							if (!preg_match("/^$allowablePatronTypes$/i", UserAccount::getUserPType())){
 								$enableMaterialsRequest = false;
 							}
-						}
 					}
 				}
 			}
