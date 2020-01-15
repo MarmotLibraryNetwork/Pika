@@ -86,7 +86,7 @@ class MaterialsRequest_UserReport extends Admin_Admin {
 		$materialsRequest->find();
 
 		$userData        = array();
-		$barcodeProperty = $user->getAccountProfile()->loginConfiguration;
+		$barcodeProperty = $user->getAccountProfile()->loginConfiguration == 'name_barcode' ? 'cat_password' : 'cat_username';
 		while ($materialsRequest->fetch()){
 			if (!array_key_exists($materialsRequest->userId, $userData)){
 				$userData[$materialsRequest->userId]                     = array();

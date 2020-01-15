@@ -214,12 +214,12 @@ class User extends DB_DataObject {
 	function getRoles($isGuidingUser = false){
 		if (is_null($this->roles)){
 			$this->roles = array();
-			//Load roles for the user from the user
-			require_once ROOT_DIR . '/sys/Administration/Role.php';
-			$role            = new Role();
-			$canUseTestRoles = false;
 			if ($this->id){
-				$escapedId = mysql_escape_string($this->id);
+				//Load roles for the user from the user
+				$canUseTestRoles = false;
+				require_once ROOT_DIR . '/sys/Administration/Role.php';
+				$role      = new Role();
+				$escapedId = $role->escape($this->id);
 				$role->query("SELECT roles.* FROM roles INNER JOIN user_roles ON roles.roleId = user_roles.roleId WHERE userId = " . $escapedId . " ORDER BY name");
 				while ($role->fetch()){
 					$this->roles[$role->roleId] = $role->name;
@@ -227,31 +227,30 @@ class User extends DB_DataObject {
 						$canUseTestRoles = true;
 					}
 				}
-			}
 
-			if ($canUseTestRoles){
-				$testRole = '';
-				if (isset($_REQUEST['test_role'])){
-					$testRole = $_REQUEST['test_role'];
-				}elseif (isset($_COOKIE['test_role'])){
-					$testRole = $_COOKIE['test_role'];
-				}
-				if ($testRole != ''){
-					$testRoles = is_array($testRole) ? $testRole : array($testRole);
-					foreach ($testRoles as $tmpRole){
-						$role = new Role();
-						if (is_numeric($tmpRole)){
-							$role->roleId = $tmpRole;
-						}else{
-							$role->name = $tmpRole;
-						}
-						if ($role->find(true)){
-							$this->roles[$role->roleId] = $role->name;
+				if ($canUseTestRoles){
+					$testRole = '';
+					if (isset($_REQUEST['test_role'])){
+						$testRole = $_REQUEST['test_role'];
+					}elseif (isset($_COOKIE['test_role'])){
+						$testRole = $_COOKIE['test_role'];
+					}
+					if ($testRole != ''){
+						$testRoles = is_array($testRole) ? $testRole : array($testRole);
+						foreach ($testRoles as $tmpRole){
+							$role = new Role();
+							if (is_numeric($tmpRole)){
+								$role->roleId = $tmpRole;
+							}else{
+								$role->name = $tmpRole;
+							}
+							if ($role->find(true)){
+								$this->roles[$role->roleId] = $role->name;
+							}
 						}
 					}
 				}
 			}
-
 
 		}
 
@@ -652,8 +651,8 @@ class User extends DB_DataObject {
 
 	function getObjectStructure(){
 		require_once ROOT_DIR . '/sys/Administration/Role.php';
-		global $configArray;
-		$barcodeProperty        = $configArray['Catalog']['barcodeProperty'];
+		$user                   = UserAccount::getActiveUserObj();
+		$barcodeProperty        = $user->getAccountProfile()->loginConfiguration == 'name_barcode' ? 'cat_password' : 'cat_username';
 		$displayBarcode         = $barcodeProperty == 'cat_username';
 		$thisIsNotAListOfAdmins = isset($_REQUEST['objectAction']) && $_REQUEST['objectAction'] != 'list';
 		$roleList               = Role::fetchAllRoles($thisIsNotAListOfAdmins);  //Lookup available roles in the system, don't show the role description
@@ -833,6 +832,9 @@ class User extends DB_DataObject {
 	 * @return Library|null
 	 */
 	function getHomeLibrary(){
+		// Note: Use this for one persistent User.
+		// If fetching multiple Users in a fetch loop use Library::getPatronHomeLibrary($user) instead
+
 		if ($this->homeLibrary == null){
 			$this->homeLibrary = Library::getPatronHomeLibrary($this);
 		}

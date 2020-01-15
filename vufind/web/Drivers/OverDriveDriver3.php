@@ -149,9 +149,10 @@ class OverDriveDriver3 {
 				curl_setopt($ch, CURLOPT_USERPWD, $configArray['OverDrive']['clientKey'] . ":" . $configArray['OverDrive']['clientSecret']);
 
 				if ($this->getRequirePin($user)){
-					global $configArray;
-					$barcodeProperty = $configArray['Catalog']['barcodeProperty']; //TODO: this should use the account profile property instead
-					$patronPin       = ($barcodeProperty == 'cat_username') ? $user->cat_password : $user->cat_username; // determine which column is the pin by using the opposing field to the barcode. (between pin & username)
+					//TODO: the login config is probably always barcode_pin when we get here
+					$pinProperty = $user->getAccountProfile()->loginConfiguration == 'barcode_pin' ? 'cat_password' : 'cat_username';
+					$patronPin       = $user->$pinProperty; // determine which column is the pin by using the opposing field to the barcode. (between pin & username)
+
 					$postFields      = "grant_type=password&username={$patronBarcode}&password={$patronPin}&password_required=true&scope=websiteId:{$websiteId}+ilsname:{$ILSName}";
 				}else{
 					$postFields      = "grant_type=password&username={$patronBarcode}&password=ignore&password_required=false&scope=websiteId:{$websiteId}+ilsname:{$ILSName}";
@@ -206,11 +207,15 @@ class OverDriveDriver3 {
 		return null;
 	}
 
+	/**
+	 * @param User $user
+	 * @return mixed
+	 */
 	private function getILSName($user){
 		if (!isset($this->ILSName)) {
 			// use library setting if it has a value. if no library setting, use the configuration setting.
 			global $library, $configArray;
-			$patronHomeLibrary = Library::getPatronHomeLibrary($user);
+			$patronHomeLibrary = $user->getHomeLibrary();
 			if (!empty($patronHomeLibrary->overdriveAuthenticationILSName)) {
 				$this->ILSName = $patronHomeLibrary->overdriveAuthenticationILSName;
 			}elseif (!empty($library->overdriveAuthenticationILSName)) {
@@ -230,7 +235,7 @@ class OverDriveDriver3 {
 		if (!isset($this->requirePin)) {
 			// use library setting if it has a value. if no library setting, use the configuration setting.
 			global $library, $configArray;
-			$patronHomeLibrary = Library::getLibraryForLocation($user->homeLocationId);
+			$patronHomeLibrary = $user->getHomeLibrary();
 			if (!empty($patronHomeLibrary->overdriveRequirePin)) {
 				$this->requirePin = $patronHomeLibrary->overdriveRequirePin;
 			}elseif (isset($library->overdriveRequirePin)) {
@@ -251,7 +256,7 @@ class OverDriveDriver3 {
 	 * @return bool|mixed
 	 */
 	public function _callPatronUrl($user, $url, $postParams = null){
-		global $configArray;
+//		global $configArray;
 
 		$tokenData = $this->_connectToPatronAPI($user);
 		if ($tokenData){
@@ -1012,7 +1017,7 @@ class OverDriveDriver3 {
 		$searchLocation = Location::getSearchLocation();
 		$activeLibrary = Library::getActiveLibrary();
 		$activeLocation = Location::getActiveLocation();
-		$homeLibrary = Library::getPatronHomeLibrary();
+		$homeLibrary = UserAccount::getUserHomeLibrary();
 
 		//Load the holding label for the branch where the user is physically.
 		if (!is_null($homeLibrary)){
