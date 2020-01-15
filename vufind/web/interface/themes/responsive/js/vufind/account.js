@@ -338,7 +338,7 @@ VuFind.Account = (function(){
 		},
 
 		ajaxLightbox: function (urlToDisplay, requireLogin) {
-			if (requireLogin == undefined) {
+			if (requireLogin === undefined) {
 				requireLogin = false;
 			}
 			if (requireLogin && !Globals.loggedIn) {
@@ -360,7 +360,7 @@ VuFind.Account = (function(){
 		confirmCancelHold: function(patronId, recordId, holdIdToCancel) {
 			VuFind.loadingMessage();
 			$.getJSON(Globals.path + "/MyAccount/AJAX?method=confirmCancelHold&patronId=" + patronId + "&recordId=" + recordId + "&cancelId="+holdIdToCancel, function(data){
-				VuFind.showMessageWithButtons(data.title, data.body, data.buttons); // autoclose when successful
+				VuFind.showMessageWithButtons(data.title, data.body, data.buttons);
 			}).fail(VuFind.ajaxFail);
 
 			return false
