@@ -48,7 +48,7 @@ class Admin_ListWidgets extends ObjectEditor {
 		$user = UserAccount::getLoggedInUser();
 		$widget = new ListWidget();
 		if (UserAccount::userHasRoleFromList(['libraryAdmin', 'contentEditor', 'libraryManager', 'locationManager'])){
-			$patronLibrary = Library::getPatronHomeLibrary();
+			$patronLibrary     = UserAccount::getUserHomeLibrary();
 			$widget->libraryId = $patronLibrary->libraryId;
 		}
 		$widget->orderBy('name');
@@ -103,7 +103,7 @@ class Admin_ListWidgets extends ObjectEditor {
 		$availableWidgets = array();
 		$listWidget = new ListWidget();
 		if (UserAccount::userHasRoleFromList(['libraryAdmin', 'contentEditor', 'libraryManager', 'locationManager'])){
-			$homeLibrary = Library::getPatronHomeLibrary();
+			$homeLibrary = UserAccount::getUserHomeLibrary();
 			$listWidget->libraryId = $homeLibrary->libraryId;
 		}
 		$listWidget->orderBy('name ASC');

@@ -39,8 +39,7 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 		//Load status information
 		$materialsRequestStatus = new MaterialsRequestStatus();
 		$materialsRequestStatus->orderBy('isDefault DESC, isOpen DESC, description ASC');
-		$user = UserAccount::getLoggedInUser();
-//		$homeLibrary = Library::getPatronHomeLibrary();
+		$user        = UserAccount::getLoggedInUser();
 		$homeLibrary = $user->getHomeLibrary();
 		if (UserAccount::userHasRole('library_material_requests')){
 			$materialsRequestStatus->libraryId = $homeLibrary->libraryId;
@@ -192,9 +191,8 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 			$materialsRequests->selectAdd('materials_request.*, description as statusLabel, location.displayName as location, user.firstname, user.lastname, user.' . $barCodeProperty . ' as barcode, assignee.displayName as assignedTo');
 			if (UserAccount::userHasRole('library_material_requests')){
 				//Need to limit to only requests submitted for the user's home location
-//			$userHomeLibrary      = Library::getPatronHomeLibrary();
-				$userHomeLibrary      = UserAccount::getUserHomeLibrary();
-				$locations = new Location();
+				$userHomeLibrary = UserAccount::getUserHomeLibrary();
+				$locations       = new Location();
 				$locations->libraryId = $userHomeLibrary->libraryId;
 				$locations->find();
 				$locationsForLibrary = array();

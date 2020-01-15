@@ -120,7 +120,7 @@ class Location extends DB_DataObject {
 		$library = new Library();
 		$library->orderBy('displayName');
 		if (!UserAccount::userHasRole('opacAdmin') && UserAccount::userHasRoleFromList(['libraryAdmin', 'libraryManager', 'locationManager'])){
-			$homeLibrary        = Library::getPatronHomeLibrary();
+			$homeLibrary        = UserAccount::getUserHomeLibrary();
 			$library->libraryId = $homeLibrary->libraryId;
 		}
 		$library->find();

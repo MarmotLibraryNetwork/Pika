@@ -42,7 +42,7 @@ class MaterialsRequest_UserReport extends Admin_Admin {
 		$materialsRequestStatus = new MaterialsRequestStatus();
 		$materialsRequestStatus->orderBy('isDefault DESC, isOpen DESC, description ASC');
 		if (UserAccount::userHasRole('library_material_requests')){
-			$homeLibrary = Library::getPatronHomeLibrary();
+			$homeLibrary = UserAccount::getUserHomeLibrary();
 			$materialsRequestStatus->libraryId = $homeLibrary->libraryId;
 		}
 		$materialsRequestStatus->find();
@@ -72,7 +72,6 @@ class MaterialsRequest_UserReport extends Admin_Admin {
 		$materialsRequest->selectAdd('user.id as userId, status, description, user.firstName, user.lastName, user.cat_username, user.cat_password');
 		if (UserAccount::userHasRole('library_material_requests')){
 			//Need to limit to only requests submitted for the user's home location
-//			$userHomeLibrary      = Library::getPatronHomeLibrary();
 			$userHomeLibrary      = UserAccount::getUserHomeLibrary();
 			$locations            = new Location();
 			$locations->libraryId = $userHomeLibrary->libraryId;

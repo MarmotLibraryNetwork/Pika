@@ -39,7 +39,7 @@ class ManageStatuses extends ObjectEditor
 
 		$status = new MaterialsRequestStatus();
 		if (UserAccount::userHasRole('library_material_requests')){
-			$homeLibrary = Library::getPatronHomeLibrary();
+			$homeLibrary = UserAccount::getUserHomeLibrary();
 			$status->libraryId = $homeLibrary->libraryId;
 		}
 		$status->orderBy('isDefault DESC');
@@ -81,7 +81,7 @@ class ManageStatuses extends ObjectEditor
 	function resetToDefault(){
 		$user = UserAccount::getLoggedInUser();
 		if (UserAccount::userHasRole('library_material_requests')){
-			$homeLibrary = Library::getPatronHomeLibrary();
+			$homeLibrary = UserAccount::getUserHomeLibrary();
 			$materialRequestStatus = new MaterialsRequestStatus();
 			$materialRequestStatus->libraryId = $homeLibrary->libraryId;
 			$materialRequestStatus->delete();

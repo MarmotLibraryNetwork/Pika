@@ -21,7 +21,7 @@ class LocationBrowseCategory extends DB_DataObject{
 		$location->orderBy('displayName');
 		$user = UserAccount::getLoggedInUser();
 		if (UserAccount::userHasRole('libraryAdmin')){
-			$homeLibrary = Library::getPatronHomeLibrary();
+			$homeLibrary = UserAccount::getUserHomeLibrary();
 			$location->libraryId = $homeLibrary->libraryId;
 		}
 		$location->find();

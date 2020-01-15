@@ -50,7 +50,7 @@ class MaterialsRequest_AJAX extends AJAXHandler {
 			$materialsRequest->createdBy = UserAccount::getActiveUserId();
 			if ($materialsRequest->find(true)){
 				//get the correct status to set based on the user's home library
-				$homeLibrary                     = Library::getPatronHomeLibrary();
+				$homeLibrary                     = UserAccount::getUserHomeLibrary();
 				$cancelledStatus                 = new MaterialsRequestStatus();
 				$cancelledStatus->isPatronCancel = 1;
 				$cancelledStatus->libraryId      = $homeLibrary->libraryId;

@@ -58,7 +58,7 @@ class ListWidget extends DB_DataObject
 				$libraryList[$library->libraryId] = $library->displayName;
 			}
 		}elseif (UserAccount::userHasRoleFromList(['libraryAdmin', 'libraryManager','locationManager','contentEditor'])){
-			$homeLibrary = Library::getPatronHomeLibrary();
+			$homeLibrary = UserAccount::getUserHomeLibrary();
 			$libraryList[$homeLibrary->libraryId] = $homeLibrary->displayName;
 		}
 

@@ -102,11 +102,11 @@ class MaterialsRequest_SummaryReport extends Admin_Admin {
 		$user = UserAccount::getLoggedInUser();
 		if (UserAccount::userHasRole('library_material_requests')){
 			//Need to limit to only requests submitted for the user's home location
-			$userHomeLibrary = Library::getPatronHomeLibrary();
-			$locations = new Location();
+			$userHomeLibrary      = UserAccount::getUserHomeLibrary();
+			$locations            = new Location();
 			$locations->libraryId = $userHomeLibrary->libraryId;
+			$locationsForLibrary  = array();
 			$locations->find();
-			$locationsForLibrary = array();
 			while ($locations->fetch()){
 				$locationsForLibrary[] = $locations->locationId;
 			}
@@ -145,11 +145,11 @@ class MaterialsRequest_SummaryReport extends Admin_Admin {
 			$materialsRequest->whereAdd('dateUpdated >= ' . $periodStart->getTimestamp() . ' AND dateUpdated < ' . $periodEnd->getTimestamp());
 			if (UserAccount::userHasRole('library_material_requests')){
 				//Need to limit to only requests submitted for the user's home location
-				$userHomeLibrary = Library::getPatronHomeLibrary();
-				$locations = new Location();
+				$userHomeLibrary      = UserAccount::getUserHomeLibrary();
+				$locations            = new Location();
 				$locations->libraryId = $userHomeLibrary->libraryId;
+				$locationsForLibrary  = array();
 				$locations->find();
-				$locationsForLibrary = array();
 				while ($locations->fetch()){
 					$locationsForLibrary[] = $locations->locationId;
 				}

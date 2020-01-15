@@ -44,7 +44,7 @@ class MaterialsRequest_MyRequests extends MyAccount
 		$interface->assign('showOpen', $showOpen);
 
 //		global $library;
-		$homeLibrary = Library::getPatronHomeLibrary();
+		$homeLibrary = UserAccount::getUserHomeLibrary();
 
 		$maxActiveRequests  = isset($homeLibrary) ? $homeLibrary->maxOpenRequests : 5;
 		$maxRequestsPerYear = isset($homeLibrary) ? $homeLibrary->maxRequestsPerYear : 60;

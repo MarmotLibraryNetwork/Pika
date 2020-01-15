@@ -22,7 +22,7 @@ class Report_StudentReport extends Report_Report {
 		if (UserAccount::userHasRole('opacAdmin')){
 			$allowableLocationCodes = '.*';
 		}elseif (UserAccount::userHasRole('libraryAdmin')){
-			$homeLibrary = Library::getPatronHomeLibrary();
+			$homeLibrary = UserAccount::getUserHomeLibrary();
 			$allowableLocationCodes = trim($homeLibrary->ilsCode) . '.*';
 		}elseif (UserAccount::userHasRole('locationReports')){
 			$homeLocation = Location::getUserHomeLocation();

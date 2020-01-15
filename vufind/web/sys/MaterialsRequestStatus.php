@@ -26,7 +26,7 @@ class MaterialsRequestStatus extends DB_DataObject {
 		$library->orderBy('displayName');
 		$user = UserAccount::getLoggedInUser();
 		if (UserAccount::userHasRole('library_material_requests')){
-			$homeLibrary = Library::getPatronHomeLibrary();
+			$homeLibrary = UserAccount::getUserHomeLibrary();
 			$library->libraryId = $homeLibrary->libraryId;
 		}else{
 			$libraryList[-1] = 'Default';

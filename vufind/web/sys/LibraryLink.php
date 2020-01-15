@@ -28,7 +28,7 @@ class LibraryLink extends DB_DataObject {
 		$library->orderBy('displayName');
 		$user = UserAccount::getLoggedInUser();
 		if (UserAccount::userHasRole('libraryAdmin')){
-			$homeLibrary        = Library::getPatronHomeLibrary();
+			$homeLibrary        = UserAccount::getUserHomeLibrary();
 			$library->libraryId = $homeLibrary->libraryId;
 		}
 		$library->find();

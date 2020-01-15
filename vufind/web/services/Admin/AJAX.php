@@ -210,7 +210,7 @@ class Admin_AJAX extends AJAXHandler {
 		$listWidget      = new ListWidget();
 		if (UserAccount::userHasRoleFromList(['libraryAdmin', 'contentEditor', 'libraryManager', 'locationManager'])){
 			//Get all widgets for the library
-			$userLibrary           = Library::getPatronHomeLibrary();
+			$userLibrary           = UserAccount::getUserHomeLibrary();
 			$listWidget->libraryId = $userLibrary->libraryId;
 		}
 		$listWidget->orderBy('name');
