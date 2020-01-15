@@ -7,9 +7,9 @@
  * Date: 5/19/14
  * Time: 2:28 PM
  */
+require_once ROOT_DIR . '/services/Report/Report.php';
 
-require_once(ROOT_DIR . '/services/Admin/Admin.php');
-class Report_StudentReport extends Admin_Admin {
+class Report_StudentReport extends Report_Report {
 	function launch(){
 		global $interface;
 		global $configArray;

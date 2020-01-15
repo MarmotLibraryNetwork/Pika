@@ -19,25 +19,9 @@
  */
 
 require_once ROOT_DIR . '/Action.php';
-require_once(ROOT_DIR . '/services/Admin/Admin.php');
-require_once ROOT_DIR . '/CatalogConnection.php';
+require_once ROOT_DIR . '/services/Admin/Admin.php';
 
-
-abstract class Report_Report extends Admin_Admin
-{
-	protected $db;
-	protected $catalog;
-
-	function __construct()
-	{
-		//TODO: default constructor better
-		global $configArray;
-
-		if (!UserAccount::isLoggedIn()) {
-			header("Location: " . $configArray['Site']['path'] . "/MyResearch/Home");
-		}
-
-	}
+abstract class Report_Report extends Admin_Admin {
 
 	function getAllowableRoles(){
 		return array('opacAdmin', 'libraryAdmin');

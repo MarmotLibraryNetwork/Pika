@@ -8,8 +8,9 @@
  * Date: 7/16/2018
  */
 
-require_once(ROOT_DIR . '/services/Admin/Admin.php');
-class Report_StudentBarcodes extends Admin_Admin {
+require_once ROOT_DIR . '/services/Report/Report.php';
+
+class Report_StudentBarcodes extends Report_Report {
 	function launch(){
 		global $interface;
 		global $configArray;
