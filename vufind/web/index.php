@@ -595,7 +595,7 @@ function loadUserData(){
 		}
 
 		//Privileged User settings
-		if ($userRoles && (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('libraryAdmin') || UserAccount::userHasRole('cataloging') || UserAccount::userHasRole('libraryManager') || UserAccount::userHasRole('locationManager'))){
+		if ($userRoles && UserAccount::userHasRoleFromList(['opacAdmin', 'libraryAdmin', 'cataloging', 'libraryManager', 'locationManager'])){
 			$variable       = new Variable();
 			$variable->name = 'lastFullReindexFinish';
 			if ($variable->find(true)){

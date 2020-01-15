@@ -119,7 +119,7 @@ class Location extends DB_DataObject {
 		//Load Libraries for lookup values
 		$library = new Library();
 		$library->orderBy('displayName');
-		if (UserAccount::userHasRole('libraryAdmin') && !UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('libraryManager') || UserAccount::userHasRole('locationManager')){
+		if (!UserAccount::userHasRole('opacAdmin') && UserAccount::userHasRoleFromList(['libraryAdmin', 'libraryManager', 'locationManager'])){
 			$homeLibrary        = Library::getPatronHomeLibrary();
 			$library->libraryId = $homeLibrary->libraryId;
 		}
@@ -457,7 +457,7 @@ class Location extends DB_DataObject {
 			'includeLibraryRecordsToInclude' => array('property' => 'includeLibraryRecordsToInclude', 'type' => 'checkbox', 'label' => 'Include Library Records To Include', 'description' => 'Whether or not the records to include from the parent library should be included for this location', 'hideInLists' => true, 'default' => true),
 		);
 
-		if (UserAccount::userHasRole('locationManager') || UserAccount::userHasRole('libraryManager')){
+		if (UserAccount::userHasRoleFromList(['locationManager', 'libraryManager'])){
 			unset($structure['code']);
 			unset($structure['subLocation']);
 			$structure['displayName']['type'] = 'label';

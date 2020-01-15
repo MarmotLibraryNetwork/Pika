@@ -47,7 +47,7 @@ class Admin_ListWidgets extends ObjectEditor {
 
 		$user = UserAccount::getLoggedInUser();
 		$widget = new ListWidget();
-		if (UserAccount::userHasRole('libraryAdmin') || UserAccount::userHasRole('contentEditor') || UserAccount::userHasRole('libraryManager') || UserAccount::userHasRole('locationManager')){
+		if (UserAccount::userHasRoleFromList(['libraryAdmin', 'contentEditor', 'libraryManager', 'locationManager'])){
 			$patronLibrary = Library::getPatronHomeLibrary();
 			$widget->libraryId = $patronLibrary->libraryId;
 		}
@@ -73,11 +73,11 @@ class Admin_ListWidgets extends ObjectEditor {
 	}
 	function canAddNew(){
 		$user = UserAccount::getLoggedInUser();
-		return UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('libraryAdmin') || UserAccount::userHasRole('contentEditor') || UserAccount::userHasRole('libraryManager') || UserAccount::userHasRole('locationManager');
+		return UserAccount::userHasRoleFromList(['opacAdmin', 'libraryAdmin', 'contentEditor', 'libraryManager', 'locationManager']);
 	}
 	function canDelete(){
 		$user = UserAccount::getLoggedInUser();
-		return UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('libraryAdmin');
+		return UserAccount::userHasRoleFromList(['opacAdmin', 'libraryAdmin']);
 	}
 	function launch() {
 		global $interface;
@@ -102,7 +102,7 @@ class Admin_ListWidgets extends ObjectEditor {
 		//Get all available widgets
 		$availableWidgets = array();
 		$listWidget = new ListWidget();
-		if (UserAccount::userHasRole('libraryAdmin') || UserAccount::userHasRole('contentEditor') || UserAccount::userHasRole('libraryManager') || UserAccount::userHasRole('locationManager')){
+		if (UserAccount::userHasRoleFromList(['libraryAdmin', 'contentEditor', 'libraryManager', 'locationManager'])){
 			$homeLibrary = Library::getPatronHomeLibrary();
 			$listWidget->libraryId = $homeLibrary->libraryId;
 		}

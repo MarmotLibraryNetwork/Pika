@@ -19,7 +19,7 @@ class LibraryBrowseCategory extends DB_DataObject{
 		//Load Libraries for lookup values
 		$library = new Library();
 		$library->orderBy('displayName');
-//		if (!UserAccount::userHasRole('opacAdmin') && (UserAccount::userHasRole('libraryAdmin') || UserAccount::userHasRole('libraryManager'))){
+//		if (!UserAccount::userHasRole('opacAdmin') && (UserAccount::userHasRoleFromList(['libraryAdmin', 'libraryManager']))){
 //		May need above to replace below.
 		$user = UserAccount::getLoggedInUser();
 		if (UserAccount::userHasRole('libraryAdmin')){

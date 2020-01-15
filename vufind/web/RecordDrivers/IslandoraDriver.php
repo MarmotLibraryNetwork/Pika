@@ -223,17 +223,6 @@ abstract class IslandoraDriver extends RecordInterface {
 	}
 
 	/**
-	 * Get the text to represent this record in the body of an email.
-	 *
-	 * @access  public
-	 * @return  string              Text for inclusion in email.
-	 */
-	public function getEmail() {
-		// TODO: Implement getEmail() method.
-	}
-
-
-	/**
 	 * Assign necessary Smarty variables and return a template name to
 	 * load in order to export the record in the requested format.  For
 	 * legal values, see getExportFormats().  Returns null if format is
@@ -802,7 +791,7 @@ abstract class IslandoraDriver extends RecordInterface {
 		$repositoryLink = $configArray['Islandora']['repositoryUrl'] . '/islandora/object/' . $this->getUniqueID();
 		$interface->assign('repositoryLink', $repositoryLink);
 		$user = UserAccount::getLoggedInUser();
-		if($user && (UserAccount::userHasRole('archives') || UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('libraryAdmin'))) {
+		if($user && UserAccount::userHasRoleFromList(['archives', 'opacAdmin', 'libraryAdmin'])) {
 			$moreDetailsOptions['staffView'] = array(
 				'label' => 'Staff View',
 				'body' => $interface->fetch('Archive/staffViewSection.tpl'),

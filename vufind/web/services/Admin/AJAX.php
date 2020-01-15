@@ -208,7 +208,7 @@ class Admin_AJAX extends AJAXHandler {
 		$interface->assign('source', strip_tags($_REQUEST['source']));
 		$existingWidgets = array();
 		$listWidget      = new ListWidget();
-		if (UserAccount::userHasRole('libraryAdmin') || UserAccount::userHasRole('contentEditor') || UserAccount::userHasRole('libraryManager') || UserAccount::userHasRole('locationManager')){
+		if (UserAccount::userHasRoleFromList(['libraryAdmin', 'contentEditor', 'libraryManager', 'locationManager'])){
 			//Get all widgets for the library
 			$userLibrary           = Library::getPatronHomeLibrary();
 			$listWidget->libraryId = $userLibrary->libraryId;
@@ -231,7 +231,7 @@ class Admin_AJAX extends AJAXHandler {
 		);
 
 		$user    = UserAccount::getLoggedInUser();
-		if (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('libraryAdmin')){
+		if (UserAccount::userHasRoleFromList(['opacAdmin', 'libraryAdmin'])){
 			$locationId = trim($_REQUEST['id']);
 			if (ctype_digit($locationId)){
 				$location = new Location();
@@ -255,7 +255,7 @@ class Admin_AJAX extends AJAXHandler {
 		);
 
 		$user    = UserAccount::getLoggedInUser();
-		if (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('libraryAdmin')){
+		if (UserAccount::userHasRoleFromList(['opacAdmin', 'libraryAdmin'])){
 			$locationId = trim($_REQUEST['id']);
 			if (ctype_digit($locationId)){
 				$location = new Location();
@@ -279,7 +279,7 @@ class Admin_AJAX extends AJAXHandler {
 		);
 
 		$user    = UserAccount::getLoggedInUser();
-		if (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('libraryAdmin')){
+		if (UserAccount::userHasRoleFromList(['opacAdmin', 'libraryAdmin'])){
 			$libraryId = trim($_REQUEST['id']);
 			if (ctype_digit($libraryId)){
 				$library = new Library();
