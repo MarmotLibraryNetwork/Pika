@@ -42,11 +42,11 @@ class MaterialsRequest_UserReport extends Admin_Admin {
 		$materialsRequestStatus = new MaterialsRequestStatus();
 		$materialsRequestStatus->orderBy('isDefault DESC, isOpen DESC, description ASC');
 		if (UserAccount::userHasRole('library_material_requests')){
-			$homeLibrary = UserAccount::getUserHomeLibrary();
+			$homeLibrary                       = UserAccount::getUserHomeLibrary();
 			$materialsRequestStatus->libraryId = $homeLibrary->libraryId;
 		}
 		$materialsRequestStatus->find();
-		$availableStatuses = array();
+		$availableStatuses     = array();
 		$defaultStatusesToShow = array();
 		while ($materialsRequestStatus->fetch()){
 			$availableStatuses[$materialsRequestStatus->id] = $materialsRequestStatus->description;
@@ -73,14 +73,7 @@ class MaterialsRequest_UserReport extends Admin_Admin {
 		if (UserAccount::userHasRole('library_material_requests')){
 			//Need to limit to only requests submitted for the user's home location
 			$userHomeLibrary      = UserAccount::getUserHomeLibrary();
-			$locations            = new Location();
-			$locations->libraryId = $userHomeLibrary->libraryId;
-			$locations->find();
-			$locationsForLibrary = array();
-			while ($locations->fetch()){
-				$locationsForLibrary[] = $locations->locationId;
-			}
-
+			$locationsForLibrary = $userHomeLibrary->getLocationIdsForLibrary();
 			$materialsRequest->whereAdd('user.homeLocationId IN (' . implode(', ', $locationsForLibrary) . ')');
 		}
 		$statusSql = "";

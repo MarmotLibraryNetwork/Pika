@@ -191,15 +191,8 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 			$materialsRequests->selectAdd('materials_request.*, description as statusLabel, location.displayName as location, user.firstname, user.lastname, user.' . $barCodeProperty . ' as barcode, assignee.displayName as assignedTo');
 			if (UserAccount::userHasRole('library_material_requests')){
 				//Need to limit to only requests submitted for the user's home location
-				$userHomeLibrary = UserAccount::getUserHomeLibrary();
-				$locations       = new Location();
-				$locations->libraryId = $userHomeLibrary->libraryId;
-				$locations->find();
-				$locationsForLibrary = array();
-				while ($locations->fetch()){
-					$locationsForLibrary[] = $locations->locationId;
-				}
-
+				$userHomeLibrary     = UserAccount::getUserHomeLibrary();
+				$locationsForLibrary = $userHomeLibrary->getLocationIdsForLibrary();
 				$materialsRequests->whereAdd('user.homeLocationId IN (' . implode(', ', $locationsForLibrary) . ')');
 			}
 

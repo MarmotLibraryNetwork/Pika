@@ -1895,10 +1895,24 @@ class Library extends DB_DataObject {
 		return $defaultFacets;
 	}
 
+	/**
+	 * Return the number of locations that belong to the library
+	 * @return int
+	 */
 	public function getNumLocationsForLibrary(){
 		$location            = new Location;
 		$location->libraryId = $this->libraryId;
 		return $location->count();
+	}
+
+	/**
+	 * get the LocationIds for each location belonging to the library
+	 * @return string[]
+	 */
+	public function getLocationIdsForLibrary(){
+		$location            = new Location;
+		$location->libraryId = $this->libraryId;
+		return $location->fetchAll('locationId');
 	}
 
 	public function getArchiveRequestFormStructure(){
