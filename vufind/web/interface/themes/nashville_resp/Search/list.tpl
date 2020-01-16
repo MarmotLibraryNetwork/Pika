@@ -110,20 +110,20 @@
 	<div class="searchtools well small">
 		<strong>{translate text='Search Tools'}:</strong>
 		{if $showSearchTools}
-			<a href="{$rssLink|escape}"><span class="silk feed">&nbsp;</span>{translate text='Get RSS Feed'}</a>
-			<a href="#" onclick="return VuFind.Account.ajaxLightbox('{$path}/Search/AJAX?method=getEmailForm', true);"><span class="silk email">&nbsp;</span>{translate text='Email this Search'}</a>
+			<a href="{$rssLink|escape}"><span class="glyphicon glyphicon-inbox" aria-hidden="true"></span>&nbsp;{translate text='Get RSS Feed'}</a>
+			<a href="#" onclick="return VuFind.Account.ajaxLightbox('{$path}/Search/AJAX?method=getEmailForm', true);"><span class="glyphicon glyphicon-envelope" aria-hidden="true"></span>&nbsp;{translate text='Email this Search'}</a>
 			{if $savedSearch}
-				<a href="#" onclick="return VuFind.Account.saveSearch('{$searchId}')"><span class="silk delete">&nbsp;</span>{translate text='save_search_remove'}</a>
+				<a href="#" onclick="return VuFind.Account.saveSearch('{$searchId}')"><span class="glyphicon glyphicon-trash" aria-hidden="true"></span>&nbsp;{translate text='save_search_remove'}</a>
 			{else}
-				<a href="#" onclick="return VuFind.Account.saveSearch('{$searchId}')"><span class="silk add">&nbsp;</span>{translate text='save_search'}</a>
+				<a href="#" onclick="return VuFind.Account.saveSearch('{$searchId}')"><span class="glyphicon glyphicon-floppy-disk" aria-hidden="true"></span>&nbsp;{translate text='save_search'}</a>
 			{/if}
-			<a href="{$excelLink|escape}"><span class="silk table_go">&nbsp;</span>{translate text='Export To Excel'}</a>
+			<a href="{$excelLink|escape}"><span class="glyphicon glyphicon-th" aria-hidden="true"></span>&nbsp;{translate text='Export To Excel'}</a>
 		{/if}
 		{if $loggedIn && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles) || array_key_exists('contentEditor', $userRoles) || array_key_exists('libraryManager', $userRoles) || array_key_exists('locationManager', $userRoles))}
-			<a href="#" onclick="return VuFind.ListWidgets.createWidgetFromSearch('{$searchId}')"><span class="silk cog_go">&nbsp;</span>{translate text='Create Widget'}</a>
+			<a href="#" onclick="return VuFind.ListWidgets.createWidgetFromSearch('{$searchId}')"><span class="glyphicon glyphicon-list-alt" aria-hidden="true"></span>&nbsp;{translate text='Create Widget'}</a>
 		{/if}
 		{if $loggedIn && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles) || array_key_exists('contentEditor', $userRoles) || array_key_exists('libraryManager', $userRoles) || array_key_exists('locationManager', $userRoles))}
-			<a href="#" onclick="return VuFind.Browse.addToHomePage('{$searchId}')"><span class="silk cog_go">&nbsp;</span>{translate text='Add To Home Page as Browse Category'}</a>
+			<a href="#" onclick="return VuFind.Browse.addToHomePage('{$searchId}')"><span class="glyphicon glyphicon-home" aria-hidden="true"></span>&nbsp;{translate text='Add To Home Page as Browse Category'}</a>
 		{/if}
 	</div>
 	{/if}

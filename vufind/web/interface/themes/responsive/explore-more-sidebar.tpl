@@ -103,7 +103,7 @@
 						{$value.label}
 					</a>
 					{if $value.linkingReason}
-						&nbsp;<img src="/images/silk/help.png" title="{$value.linkingReason|escape}">
+						&nbsp;
 					{/if}
 				</li>
 			{/foreach}
@@ -111,7 +111,7 @@
 
 		{else} {* list *}
 			{* Simple display with one thumbnail per item *}
-			{foreach from=$section.values item=value}
+			{foreach from=$section.values item=value}<span class="glyphicon glyphicon-question-sign" title="{$value.linkingReason|escape}" aria-hidden="true" style="color: blue;"></span>
 				<div class="section">
 					<a href="{$value.link}">
 						{if $value.image}
@@ -128,7 +128,7 @@
 						{/if}
 					</a>
 					{if $value.linkingReason}
-						&nbsp;<img src="/images/silk/help.png" title="{$value.linkingReason|escape}">
+						&nbsp;<span class="glyphicon glyphicon-question-sign" title="{$value.linkingReason|escape}" aria-hidden="true" style="color: blue;"></span>
 					{/if}
 				</div>
 			{/foreach}

@@ -67,9 +67,9 @@
 
 	{if $showSearchTools}
 		<div class="well small">
-			<strong>{translate text='Search Tools'}:</strong>
-			<a href="{$rssLink|escape}"><span class="silk feed">&nbsp;</span>{translate text='Get RSS Feed'}</a>
-			<a href="#" onclick="return VuFind.Account.ajaxLightbox('{$path}/Search/AJAX?method=getEmailForm', true);"><span class="silk email">&nbsp;</span>{translate text='Email this Search'}</a>
+			<strong>{translate text='Search Tools'}:</strong><br><br>
+			&nbsp;&nbsp;<a href="{$rssLink|escape}"><span class="glyphicon glyphicon-inbox" aria-hidden="true"></span>&nbsp;{translate text='Get RSS Feed'}</a>
+			&nbsp;&nbsp;<a href="#" onclick="return VuFind.Account.ajaxLightbox('{$path}/Search/AJAX?method=getEmailForm', true);"><span class="glyphicon glyphicon-envelope" aria-hidden="true"></span>&nbsp;{translate text='Email this Search'}</a>
 		</div>
 	{/if}
 </div>

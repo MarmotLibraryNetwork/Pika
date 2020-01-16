@@ -2,7 +2,7 @@
 	<form action="{$path}/MyAccount/MyList/{$favList->id}" id="myListFormHead">
 		<div>
 			<input type="hidden" name="myListActionHead" id="myListActionHead" class="form">
-			<h3 id="listTitle">{*<span class="silk list">&nbsp;</span>*}{$favList->title|escape:"html"}</h3>
+			<h3 id="listTitle">{$favList->title|escape:"html"}</h3>
 			{if $notes}
 				<div id="listNotes" class="alert alert-info">
 				{foreach from=$notes item="note"}

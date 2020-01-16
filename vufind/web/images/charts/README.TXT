@@ -1,1 +1,0 @@
-This directory includes dynamically generated graphs

@@ -1,4 +1,4 @@
-<h3 id='listTitle'><a href="{$path}/MyAccount/MyList/{$favList->id}"><span class="silk list">&nbsp;</span>{$favList->title|escape:"html"}</a></h3>
+<h3 id="listTitle"><a href="{$path}/MyAccount/MyList/{$favList->id}">{$favList->title|escape:"html"}</a></h3>
 
 {if $favList->description}
 	<div class="listDescription alignleft" id="listDescription">{$favList->description|escape}</div>
