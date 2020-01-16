@@ -745,13 +745,7 @@ class Sierra {
 		}
 
 		// 6.8 number of checkouts from ils
-		$checkoutOperation = 'patrons/'.$patronId.'/checkouts?limit=1';
-		$checkoutRes = $this->_doRequest($checkoutOperation);
-		if($checkoutRes) {
-			$patron->numCheckedOutIls = $checkoutRes->total;
-		} else {
-			$patron->numCheckedOutIls = 0;
-		}
+		$patron->numCheckedOutIls  = $this->getNumCheckedOutsILS($patronId);
 		//TODO: Go back to the below if iii fixes bug. See: D-3447
 		//$patron->numCheckedOutIls = $pInfo->fixedFields->{'50'}->value;
 
@@ -784,6 +778,21 @@ class Sierra {
 		$this->logger->info("Saving patron to memcache:".$patronObjectCacheKey);
 		$this->memCache->set($patronObjectCacheKey, $patron, $this->configArray['Caching']['user']);
 		return $patron;
+	}
+
+	public function getNumCheckedOutsILS($patronId) {
+		$checkoutOperation = 'patrons/'.$patronId.'/checkouts?limit=1';
+		try {
+			$checkoutRes = $this->_doRequest($checkoutOperation);
+		} catch (\Exception $e) {
+			$numCheckouts = 0;
+		}
+		if($checkoutRes && isset($checkoutRes->total)) {
+			$numCheckouts = $checkoutRes->total;
+		} else {
+			$numCheckouts = 0;
+		}
+		return $numCheckouts;
 	}
 
 	/**
