@@ -71,14 +71,6 @@ abstract class RecordInterface {
 	public abstract function getCitationFormats();
 
 	/**
-	 * Get the text to represent this record in the body of an email.
-	 *
-	 * @access  public
-	 * @return  string              Text for inclusion in email.
-	 */
-	public abstract function getEmail();
-
-	/**
 	 * Assign necessary Smarty variables and return a template name to
 	 * load in order to export the record in the requested format.  For
 	 * legal values, see getExportFormats().  Returns null if format is
