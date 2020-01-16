@@ -1077,7 +1077,8 @@ class Sierra {
 			// might be a new user
 			if($patronId = $this->getPatronId($barcode)) {
 				// load them in the database.
-				$this->getPatron($patronId);
+				unset($patron);
+				$patron = $this->getPatron($patronId);
 			} else {
 				return ['error' => 'Unable to find an account associated with barcode: '.$barcode ];
 			}
