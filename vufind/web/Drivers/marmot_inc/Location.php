@@ -804,24 +804,20 @@ class Location extends DB_DataObject {
 			$scopingSetting = $searchSource;
 			if ($searchSource == null){
 				Location::$searchLocation[$searchSource] = null;
+			}elseif ($scopingSetting == 'local' || $scopingSetting == 'econtent' || $scopingSetting == 'location'){
+				global $locationSingleton;
+				Location::$searchLocation[$searchSource] = $locationSingleton->getActiveLocation();
+			}elseif ($scopingSetting == 'marmot' || $scopingSetting == 'unscoped'){
+				Location::$searchLocation[$searchSource] = null;
 			}else{
-				if ($scopingSetting == 'local' || $scopingSetting == 'econtent' || $scopingSetting == 'location'){
-					global $locationSingleton;
-					Location::$searchLocation[$searchSource] = $locationSingleton->getActiveLocation();
+				$location       = new Location();
+				$location->code = $scopingSetting;
+				$location->find();
+				if ($location->N > 0){
+					$location->fetch();
+					Location::$searchLocation[$searchSource] = clone($location);
 				}else{
-					if ($scopingSetting == 'marmot' || $scopingSetting == 'unscoped'){
-						Location::$searchLocation[$searchSource] = null;
-					}else{
-						$location       = new Location();
-						$location->code = $scopingSetting;
-						$location->find();
-						if ($location->N > 0){
-							$location->fetch();
-							Location::$searchLocation[$searchSource] = clone($location);
-						}else{
-							Location::$searchLocation[$searchSource] = null;
-						}
-					}
+					Location::$searchLocation[$searchSource] = null;
 				}
 			}
 		}

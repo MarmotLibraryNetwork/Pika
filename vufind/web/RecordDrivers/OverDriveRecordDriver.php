@@ -184,19 +184,8 @@ class OverDriveRecordDriver extends RecordInterface {
 	 * @access  public
 	 * @return  array               Strings representing citation formats.
 	 */
-	public function getCitationFormats()
-	{
-		return array('AMA', 'APA', 'ChicagoHumanities', 'ChicagoAuthDate', 'MLA');
-	}
-
-	/**
-	 * Get the text to represent this record in the body of an email.
-	 *
-	 * @access  public
-	 * @return  string              Text for inclusion in email.
-	 */
-	public function getEmail() {
-		// TODO: Implement getEmail() method.
+	public function getCitationFormats(){
+		return ['AMA', 'APA', 'ChicagoHumanities', 'ChicagoAuthDate', 'MLA'];
 	}
 
 	/**
@@ -447,24 +436,24 @@ class OverDriveRecordDriver extends RecordInterface {
 	public function getLibraryScopingId(){
 		//For econtent, we need to be more specific when restricting copies
 		//since patrons can't use copies that are only available to other libraries.
-		$searchLibrary = Library::getSearchLibrary();
+		$searchLibrary  = Library::getSearchLibrary();
 		$searchLocation = Location::getSearchLocation();
-		$activeLibrary = Library::getActiveLibrary();
+		$activeLibrary  = Library::getActiveLibrary();
 		$activeLocation = Location::getActiveLocation();
-		$homeLibrary = Library::getPatronHomeLibrary();
+		$homeLibrary    = UserAccount::getUserHomeLibrary();
 
 		//Load the holding label for the branch where the user is physically.
-		if (!is_null($homeLibrary)){
+		if (!empty($homeLibrary)){
 			return $homeLibrary->includeOutOfSystemExternalLinks ? -1 : $homeLibrary->libraryId;
-		}else if (!is_null($activeLocation)){
+		}elseif (!empty($activeLocation)){
 			$activeLibrary = Library::getLibraryForLocation($activeLocation->locationId);
 			return $activeLibrary->includeOutOfSystemExternalLinks ? -1 : $activeLibrary->libraryId;
-		}else if (isset($activeLibrary)) {
+		}elseif (!empty($activeLibrary)) {
 			return $activeLibrary->includeOutOfSystemExternalLinks ? -1 : $activeLibrary->libraryId;
-		}else if (!is_null($searchLocation)){
+		}elseif (!empty($searchLocation)){
 			$searchLibrary = Library::getLibraryForLocation($searchLibrary->locationId);
 			return $searchLibrary->includeOutOfSystemExternalLinks ? -1 : $searchLocation->libraryId;
-		}else if (isset($searchLibrary)) {
+		}elseif (!empty($searchLibrary)) {
 			return $searchLibrary->includeOutOfSystemExternalLinks ? -1 : $searchLibrary->libraryId;
 		}else{
 			return -1;
@@ -787,7 +776,7 @@ class OverDriveRecordDriver extends RecordInterface {
 		foreach ($holdings as $item){
 			if (in_array($item->textId, array('ebook-epub-adobe', 'ebook-pdf-adobe'))){
 				$showAdobeDigitalEditions = true;
-			}else if (in_array($item->textId, array('video-wmv', 'music-wma', 'music-wma', 'audiobook-wma', 'audiobook-mp3'))){
+			}elseif (in_array($item->textId, array('video-wmv', 'music-wma', 'music-wma', 'audiobook-wma', 'audiobook-mp3'))){
 				$showOverDriveConsole = true;
 			}
 		}
@@ -974,7 +963,7 @@ class OverDriveRecordDriver extends RecordInterface {
 		// If we have multiple formats, Book and Journal are most important...
 		if (in_array('Book', $formats)) {
 			$format = 'Book';
-		} else if (in_array('Journal', $formats)) {
+		} elseif (in_array('Journal', $formats)) {
 			$format = 'Journal';
 		} else {
 			$format = $formats[0];

@@ -1749,17 +1749,17 @@ class SearchObject_Solr extends SearchObject_Base
 
 		global $locationSingleton;
 		/** @var Library $currentLibrary */
-		$currentLibrary = Library::getActiveLibrary();
+		$currentLibrary      = Library::getActiveLibrary();
 		$activeLocationFacet = null;
-		$activeLocation = $locationSingleton->getActiveLocation();
-		if (!is_null($activeLocation)){
+		$activeLocation      = $locationSingleton->getActiveLocation();
+		if (!empty($activeLocation)){
 			$activeLocationFacet = $activeLocation->facetLabel;
 		}
-		$relatedLocationFacets = null;
-		$relatedHomeLocationFacets = null;
+		$relatedLocationFacets          = null;
+		$relatedHomeLocationFacets      = null;
 		$additionalAvailableAtLocations = null;
-		if (!is_null($currentLibrary)){
-			if ($currentLibrary->facetLabel == ''){
+		if (!empty($currentLibrary)){
+			if (!empty($currentLibrary->facetLabel)){
 				$currentLibrary->facetLabel = $currentLibrary->displayName;
 			}
 			$relatedLocationFacets = $locationSingleton->getLocationsFacetsForLibrary($currentLibrary->libraryId);
@@ -1774,8 +1774,8 @@ class SearchObject_Solr extends SearchObject_Base
 				}
 			}
 		}
-		$homeLibrary = Library::getPatronHomeLibrary();
-		if (!is_null($homeLibrary)){
+		$homeLibrary = UserAccount::getUserHomeLibrary();
+		if (!empty($homeLibrary)){
 			$relatedHomeLocationFacets = $locationSingleton->getLocationsFacetsForLibrary($homeLibrary->libraryId);
 		}
 
@@ -1803,14 +1803,14 @@ class SearchObject_Solr extends SearchObject_Base
 			// Add the on-screen label
 			$list[$field]['label'] = $filter[$field];
 			// Build our array of values for this field
-			$list[$field]['list']  = array();
-			$foundInstitution = false;
+			$list[$field]['list']    = array();
+			$foundInstitution        = false;
 			$doInstitutionProcessing = false;
-			$foundBranch = false;
-			$doBranchProcessing = false;
+			$foundBranch             = false;
+			$doBranchProcessing      = false;
 
 			//Marmot specific processing to do custom resorting of facets.
-			if (strpos($field, 'owning_library') === 0 && isset($currentLibrary) && !is_null($currentLibrary)){
+			if (strpos($field, 'owning_library') === 0 && !empty($currentLibrary)){
 				$doInstitutionProcessing = true;
 			}
 			if (strpos($field, 'owning_location') === 0 && (!is_null($relatedLocationFacets) || !is_null($activeLocationFacet))){
@@ -1819,18 +1819,18 @@ class SearchObject_Solr extends SearchObject_Base
 				$doBranchProcessing = true;
 			}
 			// Should we translate values for the current facet?
-			$translate = in_array($field, $this->translatedFacets);
+			$translate                = in_array($field, $this->translatedFacets);
 			$numValidRelatedLocations = 0;
-			$numValidLibraries = 0;
+			$numValidLibraries        = 0;
 			// Loop through values:
 			foreach ($data as $facet) {
 				// Initialize the array of data about the current facet:
-				$currentSettings = array();
-				$currentSettings['value'] = $facet[0];
-				$currentSettings['display'] = $translate ? translate($facet[0]) : $facet[0];
-				$currentSettings['count'] = $facet[1];
+				$currentSettings              = array();
+				$currentSettings['value']     = $facet[0];
+				$currentSettings['display']   = $translate ? translate($facet[0]) : $facet[0];
+				$currentSettings['count']     = $facet[1];
 				$currentSettings['isApplied'] = false;
-				$currentSettings['url'] = $this->renderLinkWithFilter("$field:".$facet[0]);
+				$currentSettings['url']       = $this->renderLinkWithFilter("$field:" . $facet[0]);
 				// If we want to have expanding links (all values matching the facet)
 				// in addition to limiting links (filter current search with facet),
 				// do some extra work:
@@ -1841,39 +1841,39 @@ class SearchObject_Solr extends SearchObject_Base
 				if (in_array($field, array_keys($this->filterList))) {
 					// and is this value a selected filter?
 					if (in_array($facet[0], $this->filterList[$field])) {
-						$currentSettings['isApplied'] = true;
-						$currentSettings['removalUrl'] =  $this->renderLinkWithoutFilter("$field:{$facet[0]}");
+						$currentSettings['isApplied']  = true;
+						$currentSettings['removalUrl'] = $this->renderLinkWithoutFilter("$field:{$facet[0]}");
 					}
 				}
 
 				//Setup the key to allow sorting alphabetically if needed.
 				$valueKey = $facet[0];
-				$okToAdd = true;
+				$okToAdd  = true;
 				if ($doInstitutionProcessing){
 					//Special processing for Marmot digital library
 					if ($facet[0] == $currentLibrary->facetLabel){
-						$valueKey = '1' . $valueKey;
-						$numValidLibraries++;
+						$valueKey         = '1' . $valueKey;
 						$foundInstitution = true;
+						$numValidLibraries++;
 					}elseif ($facet[0] == $currentLibrary->facetLabel . ' Online'){
-						$valueKey = '1' . $valueKey;
+						$valueKey         = '1' . $valueKey;
 						$foundInstitution = true;
 						$numValidLibraries++;
 					}elseif ($facet[0] == $currentLibrary->facetLabel . ' On Order' || $facet[0] == $currentLibrary->facetLabel . ' Under Consideration'){
-						$valueKey = '1' . $valueKey;
+						$valueKey         = '1' . $valueKey;
 						$foundInstitution = true;
 						$numValidLibraries++;
 					}elseif ($facet[0] == 'Digital Collection' || $facet[0] == 'Marmot Digital Library'){
-						$valueKey = '2' . $valueKey;
+						$valueKey         = '2' . $valueKey;
 						$foundInstitution = true;
 						$numValidLibraries++;
 					}else if (!is_null($currentLibrary) && $currentLibrary->restrictOwningBranchesAndSystems == 1){
 						//$okToAdd = false;
 					}
-				}else if ($doBranchProcessing){
+				}elseif ($doBranchProcessing){
 					if (strlen($facet[0]) > 0){
 						if ($activeLocationFacet != null && $facet[0] == $activeLocationFacet){
-							$valueKey = '1' . $valueKey;
+							$valueKey    = '1' . $valueKey;
 							$foundBranch = true;
 							$numValidRelatedLocations++;
 						}elseif (isset($currentLibrary) && $facet[0] == $currentLibrary->facetLabel . ' Online'){
@@ -1882,25 +1882,25 @@ class SearchObject_Solr extends SearchObject_Base
 						}elseif (isset($currentLibrary) && ($facet[0] == $currentLibrary->facetLabel . ' On Order' || $facet[0] == $currentLibrary->facetLabel . ' Under Consideration')){
 							$valueKey = '1' . $valueKey;
 							$numValidRelatedLocations++;
-						}else if (!is_null($relatedLocationFacets) && in_array($facet[0], $relatedLocationFacets)){
+						}elseif (!is_null($relatedLocationFacets) && in_array($facet[0], $relatedLocationFacets)){
 							$valueKey = '2' . $valueKey;
 							$numValidRelatedLocations++;
-						}else if (!is_null($relatedLocationFacets) && in_array($facet[0], $relatedLocationFacets)){
+						}elseif (!is_null($relatedLocationFacets) && in_array($facet[0], $relatedLocationFacets)){
 							$valueKey = '2' . $valueKey;
 							$numValidRelatedLocations++;
-						}else if (!is_null($relatedHomeLocationFacets) && in_array($facet[0], $relatedHomeLocationFacets)){
+						}elseif (!is_null($relatedHomeLocationFacets) && in_array($facet[0], $relatedHomeLocationFacets)){
 							$valueKey = '2' . $valueKey;
 							$numValidRelatedLocations++;
 						}elseif (!is_null($currentLibrary) && $facet[0] == $currentLibrary->facetLabel . ' Online'){
 							$valueKey = '3' . $valueKey;
 							$numValidRelatedLocations++;
-						}else if ($field == 'available_at' && !is_null($additionalAvailableAtLocations) && in_array($facet[0], $additionalAvailableAtLocations)){
+						}elseif ($field == 'available_at' && !is_null($additionalAvailableAtLocations) && in_array($facet[0], $additionalAvailableAtLocations)){
 							$valueKey = '4' . $valueKey;
 							$numValidRelatedLocations++;
 						}elseif ($facet[0] == 'Marmot Digital Library' || $facet[0] == 'Digital Collection' || $facet[0] == 'OverDrive' || $facet[0] == 'Online'){
 							$valueKey = '5' . $valueKey;
 							$numValidRelatedLocations++;
-						}else if (!is_null($currentLibrary) && $currentLibrary->restrictOwningBranchesAndSystems == 1){
+						}elseif (!is_null($currentLibrary) && $currentLibrary->restrictOwningBranchesAndSystems == 1){
 							//$okToAdd = false;
 						}
 					}
@@ -1914,26 +1914,26 @@ class SearchObject_Solr extends SearchObject_Base
 			}
 
 			if (!$foundInstitution && $doInstitutionProcessing){
-				$list[$field]['list']['1'.$currentLibrary->facetLabel] =
-				array(
-                        'value' => $currentLibrary->facetLabel,
-                        'display' => $currentLibrary->facetLabel,
-                        'count' => 0,
-                        'isApplied' => false,
-                        'url' => null,
-                        'expandUrl' => null,
-				);
+				$list[$field]['list']['1' . $currentLibrary->facetLabel] =
+					array(
+						'value'     => $currentLibrary->facetLabel,
+						'display'   => $currentLibrary->facetLabel,
+						'count'     => 0,
+						'isApplied' => false,
+						'url'       => null,
+						'expandUrl' => null,
+					);
 			}
 			if (!$foundBranch && $doBranchProcessing && !is_null($activeLocationFacet)){
-				$list[$field]['list']['1'.$activeLocationFacet] =
-				array(
-                        'value' => $activeLocationFacet,
-                        'display' => $activeLocationFacet,
-                        'count' => 0,
-                        'isApplied' => false,
-                        'url' => null,
-                        'expandUrl' => null,
-				);
+				$list[$field]['list']['1' . $activeLocationFacet] =
+					array(
+						'value'     => $activeLocationFacet,
+						'display'   => $activeLocationFacet,
+						'count'     => 0,
+						'isApplied' => false,
+						'url'       => null,
+						'expandUrl' => null,
+					);
 				$numValidRelatedLocations++;
 			}
 
@@ -1941,9 +1941,9 @@ class SearchObject_Solr extends SearchObject_Base
 			//Only show one system unless we are in the global scope
 			if ($field == 'owning_library_' . $solrScope && isset($currentLibrary)){
 				$list[$field]['valuesToShow'] = $numValidLibraries;
-			}else if ($field == 'owning_location_' . $solrScope && isset($relatedLocationFacets) && $numValidRelatedLocations > 0){
+			}elseif ($field == 'owning_location_' . $solrScope && isset($relatedLocationFacets) && $numValidRelatedLocations > 0){
 				$list[$field]['valuesToShow'] = $numValidRelatedLocations;
-			}else if ($field == 'available_at_' . $solrScope){
+			}elseif ($field == 'available_at_' . $solrScope){
 				$list[$field]['valuesToShow'] = count($list[$field]['list']);
 			}else{
 				$list[$field]['valuesToShow'] = 5;
@@ -2025,13 +2025,15 @@ class SearchObject_Solr extends SearchObject_Base
 				case 'grouped_work' :
 				default :
 					$id                      = $currentDoc['id'];
-					$currentDoc['recordUrl'] = $baseUrl . '/GroupedWork/' . $id;
 					require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 					$groupedWorkDriver = new GroupedWorkDriver($currentDoc);
 					if ($groupedWorkDriver->isValid){
 						$image                         = $groupedWorkDriver->getBookcoverUrl('medium');
 						$description                   = "<img src='$image'/> " . $groupedWorkDriver->getDescriptionFast();
 						$currentDoc['rss_description'] = $description;
+						$currentDoc['recordUrl']       = $groupedWorkDriver->getAbsoluteUrl();
+					} else{
+						$currentDoc['recordUrl'] = $baseUrl . '/GroupedWork/' . $id;
 					}
 			}
 
