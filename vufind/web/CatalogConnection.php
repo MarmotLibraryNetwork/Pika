@@ -1061,6 +1061,8 @@ class CatalogConnection
 	}
 
 	public function getNumHolds($id) {
+		// todo: this should be in User.php. These methods are all over the place, ie, getNumCheckedOutTotal count is in User.php, but hold count is here????
+		// these all need to live with the owning object.
 		/** @var Memcache $memCache */
 		global $memCache;
 		$key = 'num_holds_' . $id ;

@@ -745,7 +745,15 @@ class Sierra {
 		}
 
 		// 6.8 number of checkouts from ils
-		$patron->numCheckedOutIls = $pInfo->fixedFields->{'50'}->value;
+		$checkoutOperation = 'patrons/'.$patronId.'/checkouts?limit=1';
+		$checkoutRes = $this->_doRequest($checkoutOperation);
+		if($checkoutRes) {
+			$patron->numCheckedOutIls = $checkoutRes->total;
+		} else {
+			$patron->numCheckedOutIls = 0;
+		}
+		//TODO: Go back to the below if iii fixes bug. See: D-3447
+		//$patron->numCheckedOutIls = $pInfo->fixedFields->{'50'}->value;
 
 		// 6.9 fines
 		$patron->fines = number_format($pInfo->moneyOwed, 2, '.', '');
@@ -1057,7 +1065,13 @@ class Sierra {
 
 		$patron->find(true);
 		if(! $patron->N || $patron->N == 0) {
-			return ['error' => 'Unable to find an account associated with barcode: '.$barcode ];
+			// might be a new user
+			if($patronId = $this->getPatronId($barcode)) {
+				// load them in the database.
+				$this->getPatron($patronId);
+			} else {
+				return ['error' => 'Unable to find an account associated with barcode: '.$barcode ];
+			}
 		}
 		if(!isset($patron->email) || $patron->email == '') {
 			return ['error' => 'You do not have an email address on your account. Please visit your library to reset your pin.'];
