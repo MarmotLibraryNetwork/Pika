@@ -1057,7 +1057,13 @@ class Sierra {
 
 		$patron->find(true);
 		if(! $patron->N || $patron->N == 0) {
-			return ['error' => 'Unable to find an account associated with barcode: '.$barcode ];
+			// might be a new user
+			if($patronId = $this->getPatronId($barcode)) {
+				// load them in the database.
+				$this->getPatron($patronId);
+			} else {
+				return ['error' => 'Unable to find an account associated with barcode: '.$barcode ];
+			}
 		}
 		if(!isset($patron->email) || $patron->email == '') {
 			return ['error' => 'You do not have an email address on your account. Please visit your library to reset your pin.'];
