@@ -119,9 +119,9 @@
 
 	{if $showSearchTools || ($loggedIn && $userRoles && (in_array('opacAdmin', $userRoles) || in_array('libraryAdmin', $userRoles) || in_array('contentEditor', $userRoles) || in_array('libraryManager', $userRoles) || in_array('locationManager', $userRoles)))}
 	<div class="searchtools well small">
-		<strong>{translate text='Search Tools'}:</strong><br><br>
+		<strong>{translate text='Search Tools'}:</strong>
 		{if $showSearchTools}
-			<a href="{$rssLink|escape}"><span class="glyphicon glyphicon-inbox" aria-hidden="true"></span>&nbsp;{translate text='Get RSS Feed'}</a>
+			&nbsp;&nbsp;<a href="{$rssLink|escape}"><span class="glyphicon glyphicon-inbox" aria-hidden="true"></span>&nbsp;{translate text='Get RSS Feed'}</a>
 			&nbsp;&nbsp;<a href="#" onclick="return VuFind.Account.ajaxLightbox('{$path}/Search/AJAX?method=getEmailForm', true);"><span class="glyphicon glyphicon-envelope" aria-hidden="true"></span>&nbsp;{translate text='Email this Search'}</a>
 			{if $savedSearch}
 				&nbsp;&nbsp;<a href="#" onclick="return VuFind.Account.saveSearch('{$searchId}')"><span class="glyphicon glyphicon-trash" aria-hidden="true"></span>&nbsp;{translate text='save_search_remove'}</a>
@@ -131,9 +131,9 @@
 			&nbsp;&nbsp;<a href="{$excelLink|escape}"><span class="glyphicon glyphicon-th" aria-hidden="true"></span>&nbsp;{translate text='Export To Excel'}</a>
 		{/if}
 		{if $loggedIn && $userRoles && (in_array('opacAdmin', $userRoles) || in_array('libraryAdmin', $userRoles) || in_array('contentEditor', $userRoles) || in_array('libraryManager', $userRoles) || in_array('locationManager', $userRoles))}
+				<br>
+			<strong>Admin {translate text='Search Tools'}:</strong>
 			&nbsp;&nbsp;<a href="#" onclick="return VuFind.ListWidgets.createWidgetFromSearch('{$searchId}')"><span class="glyphicon glyphicon-list-alt" aria-hidden="true"></span>&nbsp;{translate text='Create Widget'}</a>
-		{/if}
-		{if $loggedIn && $userRoles && (in_array('opacAdmin', $userRoles) || in_array('libraryAdmin', $userRoles) || in_array('contentEditor', $userRoles) || in_array('libraryManager', $userRoles) || in_array('locationManager', $userRoles))}
 			&nbsp;&nbsp;<a href="#" onclick="return VuFind.Browse.addToHomePage('{$searchId}')"><span class="glyphicon glyphicon-home" aria-hidden="true"></span>&nbsp;{translate text='Add To Home Page as Browse Category'}</a>
 		{/if}
 	</div>

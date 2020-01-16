@@ -1502,7 +1502,7 @@ abstract class SearchObject_Base
 		$dupSaved  = false;
 		foreach ($searchHistory as $oldSearch) {
 			// Deminify the old search
-			$minSO = unserialize($oldSearch->search_object);
+			$minSO     = unserialize($oldSearch->search_object);
 			$dupSearch = SearchObjectFactory::deminify($minSO);
 			// See if the classes and urls match
 			if (get_class($dupSearch) && get_class($this) &&
@@ -1523,10 +1523,10 @@ abstract class SearchObject_Base
 
 		// Save this search unless we found a 'saved' duplicate
 		if (!$dupSaved) {
-			$search = new SearchEntry();
-			$search->session_id = session_id();
-			$search->created = date('Y-m-d');
-			$search->searchSource = $this->searchSource;
+			$search                = new SearchEntry();
+			$search->session_id    = session_id();
+			$search->created       = date('Y-m-d');
+			$search->searchSource  = $this->searchSource;
 			$search->search_object = serialize($this->minify());
 
 			$search->insert();

@@ -1,4 +1,4 @@
-
+{strip}
 	<div class="page">
 		{if $user->web_note}
 			<div class="row">
@@ -68,7 +68,7 @@
 						</tr>
 					{/foreach}
 				</table>
-				<br><a class="btn btn-warning" role="button" href="{$path}/Search/History?purge=true"><span class="silk delete">&nbsp;</span>{translate text="history_purge"}</a>
+				<br><a class="btn btn-warning" role="button" href="{$path}/Search/History?deleteUnsavedSearches=true"><span class="glyphicon glyphicon-trash" aria-hidden="true"></span>&nbsp;{translate text="history_purge"}</a>
 			{/if}
 
 		{else}
@@ -76,4 +76,4 @@
 			{translate text="history_no_searches"}
 		{/if}
 	</div>
-
+{/strip}

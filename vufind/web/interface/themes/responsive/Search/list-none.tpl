@@ -136,7 +136,7 @@
 
 	{if $showSearchTools || ($loggedIn && $userRoles && (in_array('opacAdmin', $userRoles) || in_array('libraryAdmin', $userRoles) || in_array('contentEditor', $userRoles)))}
 		<div class="searchtools well small">
-			<strong>{translate text='Search Tools'}:</strong><br><br>
+			<strong>{translate text='Search Tools'}:</strong>
 			{if $showSearchTools}
 				&nbsp;&nbsp;<a href="{$rssLink|escape}"><span class="glyphicon glyphicon-inbox" aria-hidden="true"></span>&nbsp;{translate text='Get RSS Feed'}</a>
 				&nbsp;&nbsp;<a href="#" onclick="return VuFind.Account.ajaxLightbox('{$path}/Search/AJAX?method=getEmailForm', true);"><span class="glyphicon glyphicon-envelope" aria-hidden="true"></span>&nbsp;{translate text='Email this Search'}</a>

@@ -1127,35 +1127,32 @@ class SearchObject_Genealogy extends SearchObject_Base
 	 * Turn our results into an RSS feed
 	 *
 	 * @access  public
-	 * @public  array      $result      Existing result set (null to do new search)
-	 * @return  string                  XML document
+	 * @param null|array $result      Existing result set (null to do new search)
+	 * @return  string                XML document
 	 */
-	public function buildRSS($result = null)
-	{
+	public function buildRSS($result = null){
 		global $configArray;
 		// XML HTTP header
 		header('Content-type: text/xml', true);
 
 		// First, get the search results if none were provided
 		// (we'll go for 50 at a time)
-		if (is_null($result)) {
+		if (is_null($result)){
 			$this->limit = 50;
-			$result = $this->processSearch(false, false);
+			$result      = $this->processSearch(false, false);
 		}
 
-		for ($i = 0; $i < count($result['response']['docs']); $i++) {
-			$current = & $this->indexResult['response']['docs'][$i];
+		foreach ($result['response']['docs'] as $i => &$currentDoc){
+			$current = &$this->indexResult['response']['docs'][$i];
 
 			/** @var PersonRecord $record */
 			$record = RecordDriverFactory::initRecordDriver($current);
 			if (!PEAR_Singleton::isError($record)){
-				$result['response']['docs'][$i]['recordUrl']       = $record->getAbsoluteUrl();
-				$result['response']['docs'][$i]['title_display']   = $record->getName();
-				$image                                             = $record->getBookcoverUrl('medium');
-				$description                                       = "<img src='$image'/> ";
-				$result['response']['docs'][$i]['rss_description'] = $description;
-			}else{
-				$html[] = "Unable to find record";
+				$currentDoc['recordUrl']       = $record->getAbsoluteUrl();
+				$currentDoc['title_display']   = $record->getName();
+				$image                         = $record->getBookcoverUrl('medium');
+				$description                   = "<img src='$image'/> ";
+				$currentDoc['rss_description'] = $description;
 			}
 		}
 
@@ -1164,14 +1161,14 @@ class SearchObject_Genealogy extends SearchObject_Base
 		// On-screen display value for our search
 		$lookfor = $this->displayQuery();
 
-		if (count($this->filterList) > 0) {
+		if (count($this->filterList) > 0){
 			// TODO : better display of filters
 			$interface->assign('lookfor', $lookfor . " (" . translate('with filters') . ")");
-		} else {
+		}else{
 			$interface->assign('lookfor', $lookfor);
 		}
 		// The full url to recreate this search
-		$interface->assign('searchUrl', $configArray['Site']['url']. $this->renderSearchUrl());
+		$interface->assign('searchUrl', $configArray['Site']['url'] . $this->renderSearchUrl());
 
 		$interface->assign('result', $result);
 		return $interface->fetch('Search/rss.tpl');

@@ -444,6 +444,11 @@ class Solr implements IndexEngine {
 		}
 	}
 
+	/**
+	 * @param string[] $ISBNs
+	 * @param string|null $fieldsToReturn
+	 * @return array|null
+	 */
 	function getRecordByIsbn($ISBNs, $fieldsToReturn = null){
 		// Query String Parameters
 		if ($fieldsToReturn == null){

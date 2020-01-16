@@ -21,52 +21,9 @@
 require_once ROOT_DIR . '/Action.php';
 
 class OpenSearch extends Action {
-
-	function launch()
-	{
-		header('Content-type: text/xml');
-
-		if (isset($_GET['method'])) {
-			$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
-			if (method_exists($this, $method)) {
-				$this->$method();
-			} else {
-				//echo '<Error>Invalid Method. Use either "describe" or "search"</Error>';
-				echo '<Error>Invalid Method. Only "describe" is supported</Error>';
-			}
-		} else {
-			$this->describe();
-		}
-	}
-
-	function describe()
-	{
+	function launch(){
 		global $interface;
-		global $configArray;
-
-		$interface->assign('site', $configArray['Site']);
-
+		header('Content-type: text/xml');
 		$interface->display('Search/opensearch-describe.tpl');
 	}
-
-	/* Unused, incomplete method -- commented out 10/9/09 to prevent confusion:
-	 function search()
-	 {
-	 global $configArray;
-
-	 // Setup Search Engine Connection
-	 $class = $configArray['Index']['engine'];
-	 $db = new $class($configArray['Index']['url']);
-
-	 $search = array();
-	 $search[] = array('lookfor' => $_GET['lookfor'],
-	 'type' => $_GET['type']);
-	 $query = $db->buildQuery($search);
-	 $results = $db->search($query['query']);
-	 $interface->assign('results', $results);
-
-	 $interface->display('Search/opensearch-search.tpl');
-	 }
-	 */
 }
-?>

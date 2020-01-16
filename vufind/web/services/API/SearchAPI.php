@@ -513,8 +513,8 @@ class SearchAPI extends AJAXHandler {
 		$jsonResults['page']        = $currentPage;
 
 
-		if ($configArray['Statistics']['enabled'] && isset($_GET['lookfor'])){
-			require_once(ROOT_DIR . '/Drivers/marmot_inc/SearchStatNew.php');
+		if ($configArray['Statistics']['enabled'] && isset($_GET['lookfor']) && !is_array($_GET['lookfor'])){
+			require_once ROOT_DIR . '/Drivers/marmot_inc/SearchStatNew.php';
 			$searchStat = new SearchStatNew();
 			$type       = isset($_GET['type']) ? strip_tags($_GET['type']) : 'Keyword';
 			$searchStat->saveSearch(strip_tags($_GET['lookfor']), $type, $searchObject->getResultTotal());

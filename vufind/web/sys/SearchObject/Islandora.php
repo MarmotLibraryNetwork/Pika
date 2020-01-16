@@ -1393,7 +1393,7 @@ class SearchObject_Islandora extends SearchObject_Base
 		// (we'll go for 50 at a time)
 		if (is_null($result)) {
 			$this->limit = 50;
-			$result = $this->processSearch(false, false);
+			$result      = $this->processSearch(false, false);
 		}
 
 		for ($i = 0; $i < count($result['response']['docs']); $i++) {
@@ -1401,10 +1401,10 @@ class SearchObject_Islandora extends SearchObject_Base
 
 			$record = RecordDriverFactory::initRecordDriver($current);
 			if (!PEAR_Singleton::isError($record)) {
-				$result['response']['docs'][$i]['recordUrl'] = $record->getLinkUrl();
-				$result['response']['docs'][$i]['title_display'] = $record->getTitle();
-				$image = $record->getBookcoverUrl('medium');
-				$description = "<img src='$image'/> " . $record->getDescription();
+				$result['response']['docs'][$i]['recordUrl']       = $record->getLinkUrl();
+				$result['response']['docs'][$i]['title_display']   = $record->getTitle();
+				$image                                             = $record->getBookcoverUrl('medium');
+				$description                                       = "<img src='$image'/> " . $record->getDescription();
 				$result['response']['docs'][$i]['rss_description'] = $description;
 			} else {
 				$html[] = "Unable to find record";

@@ -1,9 +1,6 @@
 <?php
-/**
- * Table Definition for bad words
- */
+
 require_once 'DB/DataObject.php';
-require_once 'DB/DataObject/Cast.php';
 
 class SearchStatNew extends DB_DataObject
 {

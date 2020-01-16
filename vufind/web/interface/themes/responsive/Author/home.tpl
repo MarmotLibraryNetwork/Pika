@@ -67,7 +67,7 @@
 
 	{if $showSearchTools}
 		<div class="well small">
-			<strong>{translate text='Search Tools'}:</strong><br><br>
+			<strong>{translate text='Search Tools'}:</strong>
 			&nbsp;&nbsp;<a href="{$rssLink|escape}"><span class="glyphicon glyphicon-inbox" aria-hidden="true"></span>&nbsp;{translate text='Get RSS Feed'}</a>
 			&nbsp;&nbsp;<a href="#" onclick="return VuFind.Account.ajaxLightbox('{$path}/Search/AJAX?method=getEmailForm', true);"><span class="glyphicon glyphicon-envelope" aria-hidden="true"></span>&nbsp;{translate text='Email this Search'}</a>
 		</div>
