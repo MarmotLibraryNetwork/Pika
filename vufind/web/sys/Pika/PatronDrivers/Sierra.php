@@ -784,7 +784,7 @@ class Sierra {
 	 * @param  User|string $patronOrBarcode  Either a barcode as a string or a User object.
 	 * @return int|false   returns the patron ID or false
 	 */
-	public function getPatronId($patronOrBarcode)
+	public function getPatronId($patronOrBarcode, $searchSacramentoStudentIdField = false)
 	{
 		// if a patron object was passed
 		if(is_object($patronOrBarcode)) {
@@ -803,7 +803,7 @@ class Sierra {
 		}
 
 		$params = [
-			'varFieldTag'     => 'b',
+			'varFieldTag'     => $searchSacramentoStudentIdField ? 'i' : 'b',
 			'varFieldContent' => $barcode,
 			'fields'          => 'id',
 		];
