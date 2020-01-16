@@ -82,14 +82,14 @@ class BlockPatronAccountLink extends DB_DataObject
 
 	private function getAccountIds(){
 		// Get Account Ids for the barcodes
-		$barcode = $this->getBarcode();
-		if ($this->primaryAccountBarCode) {
+		$barcode = $this->getBarcodeColumn();
+		if ($this->primaryAccountBarCode && $barcode) {
 			$user = new User();
 			if ($user->get($barcode, $this->primaryAccountBarCode)) {
 				$this->primaryAccountId = $user->id;
 			}
 		}
-		if ($this->blockedAccountBarCode) {
+		if ($this->blockedAccountBarCode && $barcode) {
 			$user = new User();
 			if ($user->get($barcode, $this->blockedAccountBarCode)) {
 				$this->blockedLinkAccountId = $user->id;
@@ -97,10 +97,11 @@ class BlockPatronAccountLink extends DB_DataObject
 		}
 	}
 
-	private function getBarcode(){
-	global $configArray;
-	return ($configArray['Catalog']['barcodeProperty'] == 'cat_username') ? 'cat_username' : 'cat_password';
-}
+	private function getBarcodeColumn(){
+		if (UserAccount::isLoggedIn()){
+			return UserAccount::getActiveUserObj()->getAccountProfile()->loginConfiguration  == 'name_barcode' ? 'cat_password' : 'cat_username';
+		}
+	}
 
 	static function getObjectStructure()
 	{
