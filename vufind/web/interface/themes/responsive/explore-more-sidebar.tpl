@@ -111,7 +111,7 @@
 
 		{else} {* list *}
 			{* Simple display with one thumbnail per item *}
-			{foreach from=$section.values item=value}<span class="glyphicon glyphicon-question-sign" title="{$value.linkingReason|escape}" aria-hidden="true" style="color: blue;"></span>
+			{foreach from=$section.values item=value}
 				<div class="section">
 					<a href="{$value.link}">
 						{if $value.image}
