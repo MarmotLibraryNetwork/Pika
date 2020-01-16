@@ -113,7 +113,7 @@
 			<span id="tagsMenu-placeholder"></span>
 
 			{* Admin Functionality if Available *}
-			{if $loggedIn && $userRoles && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles) || array_key_exists('contentEditor', $userRoles) || array_key_exists('libraryManager', $userRoles) || array_key_exists('locationManager', $userRoles))}
+			{if $loggedIn && $userRoles && (in_array('opacAdmin', $userRoles) || in_array('libraryAdmin', $userRoles) || in_array('contentEditor', $userRoles) || in_array('libraryManager', $userRoles) || in_array('locationManager', $userRoles))}
 				{if in_array($action, array('Libraries', 'Locations', 'IPAddresses', 'ListWidgets', 'BrowseCategories', 'PTypes', 'LoanRules', 'LoanRuleDeterminers', 'AccountProfiles', 'NYTLists', 'BlockPatronAccountLinks'))}
 					{assign var="curSection" value=true}
 				{else}
@@ -130,30 +130,30 @@
 					<div id="vufindMenuGroup" class="panel-collapse collapse {if $curSection}in{/if}">
 						<div class="panel-body">
 							{* Library Admin Actions *}
-							{if (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles) || array_key_exists('libraryManager', $userRoles))}
+							{if (in_array('opacAdmin', $userRoles) || in_array('libraryAdmin', $userRoles) || in_array('libraryManager', $userRoles))}
 								<div class="adminMenuLink{if $action == "Libraries"} active{/if}"><a href="{$path}/Admin/Libraries">Library Systems</a></div>
 							{/if}
-							{if (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles) || array_key_exists('libraryManager', $userRoles) || array_key_exists('locationManager', $userRoles))}
+							{if (in_array('opacAdmin', $userRoles) || in_array('libraryAdmin', $userRoles) || in_array('libraryManager', $userRoles) || in_array('locationManager', $userRoles))}
 								<div class="adminMenuLink{if $action == "Locations"} active{/if}"><a href="{$path}/Admin/Locations">Locations</a></div>
 							{/if}
-							{if (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles) || array_key_exists('libraryManager', $userRoles) || array_key_exists('locationManager', $userRoles))}
+							{if (in_array('opacAdmin', $userRoles) || in_array('libraryAdmin', $userRoles) || in_array('libraryManager', $userRoles) || in_array('locationManager', $userRoles))}
 								<div class="adminMenuLink{if $action == "BlockPatronAccountLinks"} active{/if}"><a href="{$path}/Admin/BlockPatronAccountLinks">Block Patron Account Linking</a></div>
 							{/if}
 
 							{* OPAC Admin Actions*}
-							{if array_key_exists('opacAdmin', $userRoles)}
+							{if in_array('opacAdmin', $userRoles)}
 								<div class="adminMenuLink{if $action == "IPAddresses"} active{/if}"><a href="{$path}/Admin/IPAddresses">IP Addresses</a></div>
 							{/if}
 
 							{* Content Editor Actions *}
 							<div class="adminMenuLink{if $action == "ListWidgets"} active{/if}"><a href="{$path}/Admin/ListWidgets">List Widgets</a></div>
 							<div class="adminMenuLink{if $action == "BrowseCategories"} active{/if}"><a href="{$path}/Admin/BrowseCategories">Browse Categories</a></div>
-							{if (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles) || array_key_exists('libraryManager', $userRoles) || array_key_exists('contentEditor', $userRoles))}
+							{if (in_array('opacAdmin', $userRoles) || in_array('libraryAdmin', $userRoles) || in_array('libraryManager', $userRoles) || in_array('contentEditor', $userRoles))}
 								<div class="adminMenuLink{if $action == "NYTLists"} active{/if}"><a href="{$path}/Admin/NYTLists">NY Times Lists</a></div>
 							{/if}
 
 							{* OPAC Admin Actions*}
-							{if array_key_exists('opacAdmin', $userRoles)}
+							{if in_array('opacAdmin', $userRoles)}
 								{* OPAC Admin Actions*}
 								{if ($ils == 'Sierra' || $ils == 'Horizon' || $ils == 'CarlX')}
 								<div class="adminMenuLink{if $action == "PTypes"} active{/if}"><a href="{$path}/Admin/PTypes">P-Types</a></div>
@@ -171,7 +171,7 @@
 				</div>
 			{/if}
 
-			{if $loggedIn && $userRoles && (array_key_exists('userAdmin', $userRoles) || array_key_exists('opacAdmin', $userRoles))}
+			{if $loggedIn && $userRoles && (in_array('userAdmin', $userRoles) || in_array('opacAdmin', $userRoles))}
 				{if in_array($action, array('Administrators', 'DBMaintenance', 'DBMaintenanceEContent', 'PHPInfo', 'OpCacheInfo', 'Variables', 'CronLog', 'MemCacheInfo'))
 				|| ($module == 'Admin' && $action == 'Home')}
 					{assign var="curSection" value=true}
@@ -188,10 +188,10 @@
 					</a>
 					<div id="adminMenuGroup" class="panel-collapse collapse {if $curSection}in{/if}">
 						<div class="panel-body">
-							{if array_key_exists('userAdmin', $userRoles)}
+							{if in_array('userAdmin', $userRoles)}
 								<div class="adminMenuLink {if $action == "Administrators"} active{/if}"><a href="{$path}/Admin/Administrators">Administrators</a></div>
 							{/if}
-							{if array_key_exists('opacAdmin', $userRoles)}
+							{if in_array('opacAdmin', $userRoles)}
 								<div class="adminMenuLink{if $action == "DBMaintenance"} active{/if}"><a href="{$path}/Admin/DBMaintenance">DB Maintenance - Pika</a></div>
 								<div class="adminMenuLink{if $action == "DBMaintenanceEContent"} active{/if}"><a href="{$path}/Admin/DBMaintenanceEContent">DB Maintenance - EContent</a></div>
 								<div class="adminMenuLink{if $module == 'Admin' && $action == "Home"} active{/if}"><a href="{$path}/Admin/Home">Solr Information</a></div>
@@ -206,7 +206,7 @@
 				</div>
 			{/if}
 
-			{if $loggedIn && $userRoles && (array_key_exists('libraryAdmin', $userRoles) || array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles))}
+			{if $loggedIn && $userRoles && (in_array('libraryAdmin', $userRoles) || in_array('opacAdmin', $userRoles) || in_array('cataloging', $userRoles))}
 				{if in_array($action, array('RecordGroupingLog', 'ReindexLog', 'SierraExportLog', 'IndexingStats', 'IndexingProfiles', 'TranslationMaps'))}
 					{assign var="curSection" value=true}
 				{else}
@@ -235,7 +235,7 @@
 				</div>
 			{/if}
 
-			{if $loggedIn && $enableMaterialsRequest && $userRoles && array_key_exists('library_material_requests', $userRoles)}
+			{if $loggedIn && $enableMaterialsRequest && $userRoles && in_array('library_material_requests', $userRoles)}
 				{if in_array($action, array('ManageRequests', 'SummaryReport', 'UserReport', 'ManageStatuses'))}
 					{assign var="curSection" value=true}
 				{else}
@@ -261,7 +261,7 @@
 				</div>
 			{/if}
 
-			{if $loggedIn && $userRoles && (array_key_exists('cataloging', $userRoles) || array_key_exists('opacAdmin', $userRoles))}
+			{if $loggedIn && $userRoles && (in_array('cataloging', $userRoles) || in_array('opacAdmin', $userRoles))}
 				{if in_array($action, array('MergedGroupedWorks', 'NonGroupedRecords', 'AuthorEnrichment', 'OverDriveAPIData'))}
 					{assign var="curSection" value=true}
 				{else}
@@ -286,7 +286,7 @@
 				</div>
 			{/if}
 
-			{if $loggedIn && $userRoles && (array_key_exists('cataloging', $userRoles) || array_key_exists('opacAdmin', $userRoles))}
+			{if $loggedIn && $userRoles && (in_array('cataloging', $userRoles) || in_array('opacAdmin', $userRoles))}
 				{if in_array($action, array('OverDriveExtractLog', 'HooplaExportLog', 'HooplaInfo', 'OverDriveAPIData'))}
 					{assign var="curSection" value=true}
 				{else}
@@ -311,7 +311,7 @@
 				</div>
 			{/if}
 
-			{if $loggedIn && $userRoles && (array_key_exists('archives', $userRoles) || array_key_exists('opacAdmin', $userRoles))}
+			{if $loggedIn && $userRoles && (in_array('archives', $userRoles) || in_array('opacAdmin', $userRoles))}
 				{if in_array($action, array('ArchiveSubjects', 'ArchivePrivateCollections', 'ArchiveRequests', 'AuthorshipClaims', 'ClearArchiveCache', 'ArchiveUsage'))}
 					{assign var="curSection" value=true}
 				{else}
@@ -331,7 +331,7 @@
 							<div class="adminMenuLink{if $action == "AuthorshipClaims"} active{/if}"><a href="{$path}/Admin/AuthorshipClaims">Archive Authorship Claims</a></div>
 							<div class="adminMenuLink{if $action == "ArchiveUsage"} active{/if}"><a href="{$path}/Admin/ArchiveUsage">Archive Usage</a></div>
 							<div class="adminMenuLink{if $action == "ArchiveSubjects"} active{/if}"><a href="{$path}/Admin/ArchiveSubjects">Archive Subject Control</a></div>
-							{if array_key_exists('opacAdmin', $userRoles)}
+							{if in_array('opacAdmin', $userRoles)}
 								<div class="adminMenuLink{if $action == "ArchivePrivateCollections"} active{/if}"><a href="{$path}/Admin/ArchivePrivateCollections">Archive Private Collections</a></div>
 								<div class="adminMenuLink{if $action == "ClearArchiveCache"} active{/if}"><a href="{$path}/Admin/ClearArchiveCache">Clear Cache</a></div>
 							{/if}
@@ -340,7 +340,7 @@
 				</div>
 			{/if}
 
-			{if $loggedIn && $userRoles && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles) || array_key_exists('circulationReports', $userRoles))}
+			{if $loggedIn && $userRoles && (in_array('opacAdmin', $userRoles) || in_array('libraryAdmin', $userRoles) || in_array('circulationReports', $userRoles))}
 				{if $module == 'Circa'}
 					{assign var="curSection" value=true}
 				{else}
@@ -364,7 +364,7 @@
 				</div>
 			{/if}
 
-			{if $loggedIn && $userRoles && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles) || array_key_exists('contentEditor', $userRoles))}
+			{if $loggedIn && $userRoles && (in_array('opacAdmin', $userRoles) || in_array('libraryAdmin', $userRoles) || in_array('contentEditor', $userRoles))}
 				{if $module == "EditorialReview"}
 					{assign var="curSection" value=true}
 				{else}
@@ -387,7 +387,7 @@
 				</div>
 			{/if}
 
-			{if $loggedIn && $userRoles && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles) || array_key_exists('locationReports', $userRoles) || array_key_exists('contentEditor', $userRoles))}
+			{if $loggedIn && $userRoles && (in_array('opacAdmin', $userRoles) || in_array('libraryAdmin', $userRoles) || in_array('locationReports', $userRoles) || in_array('contentEditor', $userRoles))}
 				{if in_array($action, array('StudentReport')) || in_array($action, array('StudentBarcodes'))}
 					{assign var="curSection" value=true}
 				{else}
@@ -403,10 +403,10 @@
 					</a>
 					<div id="reportsMenu" class="panel-collapse collapse {if $curSection}in{/if}">
 						<div class="panel-body">
-							{if ($ils == 'CarlX' || $ils == 'Sierra') && $loggedIn && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles) || array_key_exists('locationReports', $userRoles))}
+							{if ($ils == 'CarlX' || $ils == 'Sierra') && $loggedIn && $userRoles && (in_array('opacAdmin', $userRoles) || in_array('libraryAdmin', $userRoles) || in_array('locationReports', $userRoles))}
 								<div class="adminMenuLink{if $action == "StudentReport"} active{/if}"><a href="{$path}/Report/StudentReport">Student Reports</a></div>
 							{/if}
-							{if ($ils == 'CarlX') && $loggedIn && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles) || array_key_exists('locationReports', $userRoles))}
+							{if ($ils == 'CarlX') && $loggedIn && $userRoles && (in_array('opacAdmin', $userRoles) || in_array('libraryAdmin', $userRoles) || in_array('locationReports', $userRoles))}
 								<div class="adminMenuLink{if $action == "StudentBarcodes"} active{/if}"><a href="{$path}/Report/StudentBarcodes">Student Barcodes</a></div>
 							{/if}
 						</div>

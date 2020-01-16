@@ -88,6 +88,23 @@ class Admin_Administrators extends ObjectEditor {
 		$interface->setTemplate('addAdministrator.tpl');
 	}
 
+	function editObject($objectAction, $structure){
+		$roleNotAllowedToOverlap = ['opacAdmin', 'libraryAdmin', 'libraryManager', 'locationManager'];
+		$roles                   = new Role();
+		$roles->whereAdd('roleId in ("' . implode('","', $_REQUEST['roles']) . '")');
+		$roleNames       = $roles->fetchAll('name');
+		$moreThanOneRole = array_intersect($roleNames, $roleNotAllowedToOverlap);
+		if (count($moreThanOneRole) > 1){
+			global $configArray;
+			$_SESSION['lastError'] = 'This administrator may only have one of the these roles at a time : <strong>' . implode(', ', $moreThanOneRole) . '</strong>';
+			header("Location: {$configArray['Site']['path']}{$_SERVER['REQUEST_URI']}");
+			die();
+		}
+
+		parent::editObject($objectAction, $structure);
+	}
+
+
 	function processNewAdministrator(){
 		global $interface;
 		$user = UserAccount::getActiveUserObj();

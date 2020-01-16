@@ -16,7 +16,7 @@
 			        class="btn btn-sm btn-default">Reload Enrichment
 			</button>
         {if $loggedIn}
-            {if (array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles))}
+            {if $userRoles && (in_array('opacAdmin', $userRoles) || in_array('cataloging', $userRoles))}
 							<button onclick="return VuFind.GroupedWork.forceReindex('{$recordDriver->getGroupedWorkId()}')"
 							        class="btn btn-sm btn-default">Force Reindex
 							</button>
@@ -30,7 +30,7 @@
 							   target="_blank" class="btn btn-sm btn-default">UnMerge from Work
 							</a>
             {/if}
-            {if (array_key_exists('opacAdmin', $userRoles) || array_key_exists('archives', $userRoles))}
+            {if $userRoles && (in_array('opacAdmin', $userRoles) || in_array('archives', $userRoles))}
 							<button onclick="return VuFind.GroupedWork.reloadIslandora('{$recordDriver->getGroupedWorkId()}')"
 							        class="btn btn-sm btn-default">Clear Islandora Cache
 							</button>

@@ -1115,7 +1115,8 @@ class Library extends DB_DataObject {
 			),
 		);
 
-		if (UserAccount::userHasRole('libraryManager')){
+		if (UserAccount::userHasRole('libraryManager') && !UserAccount::userHasRoleFromList(['opacAdmin', 'libraryAdmin'])){
+			// restrict permissions for library managers, unless they also have higher permissions of library or opac admin
 			$structure['subdomain']['type']   = 'label';
 			$structure['displayName']['type'] = 'label';
 			unset($structure['showDisplayNameInHeader']);

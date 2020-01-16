@@ -457,7 +457,8 @@ class Location extends DB_DataObject {
 			'includeLibraryRecordsToInclude' => array('property' => 'includeLibraryRecordsToInclude', 'type' => 'checkbox', 'label' => 'Include Library Records To Include', 'description' => 'Whether or not the records to include from the parent library should be included for this location', 'hideInLists' => true, 'default' => true),
 		);
 
-		if (UserAccount::userHasRoleFromList(['locationManager', 'libraryManager'])){
+		if (UserAccount::userHasRoleFromList(['locationManager', 'libraryManager']) && !UserAccount::userHasRoleFromList(['opacAdmin', 'libraryAdmin'])){
+			// restrict permissions for location and library managers, unless they also have higher permissions of library or opac admin
 			unset($structure['code']);
 			unset($structure['subLocation']);
 			$structure['displayName']['type'] = 'label';

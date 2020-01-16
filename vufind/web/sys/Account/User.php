@@ -216,26 +216,18 @@ class User extends DB_DataObject {
 			$this->roles = array();
 			if ($this->id){
 				//Load roles for the user from the user
-				$canUseTestRoles = false;
 				require_once ROOT_DIR . '/sys/Administration/Role.php';
-				$role      = new Role();
-				$escapedId = $role->escape($this->id);
-				$role->query("SELECT roles.* FROM roles INNER JOIN user_roles ON roles.roleId = user_roles.roleId WHERE userId = " . $escapedId . " ORDER BY name");
-				while ($role->fetch()){
-					$this->roles[$role->roleId] = $role->name;
-					if ($role->name == 'userAdmin'){
-						$canUseTestRoles = true;
-					}
-				}
+				$role = new Role();
+				$role->selectAs();
+				$role->joinAdd(['roleId', 'user_roles:roleId']);
+				$role->whereAdd('userId = ' . $this->id);
+				$role->orderBy('name');
+				$this->roles     = $role->fetchAll('roleId', 'name');
+				$canUseTestRoles = in_array('userAdmin', $this->roles);
 
 				if ($canUseTestRoles){
-					$testRole = '';
-					if (isset($_REQUEST['test_role'])){
-						$testRole = $_REQUEST['test_role'];
-					}elseif (isset($_COOKIE['test_role'])){
-						$testRole = $_COOKIE['test_role'];
-					}
-					if ($testRole != ''){
+					$testRole = isset($_REQUEST['test_role']) ? $_REQUEST['test_role'] : (isset($_COOKIE['test_role']) ? $_COOKIE['test_role'] : false);
+					if ($testRole){
 						$testRoles = is_array($testRole) ? $testRole : array($testRole);
 						foreach ($testRoles as $tmpRole){
 							$role = new Role();
@@ -655,7 +647,7 @@ class User extends DB_DataObject {
 		$barcodeProperty        = $user->getAccountProfile()->loginConfiguration == 'name_barcode' ? 'cat_password' : 'cat_username';
 		$displayBarcode         = $barcodeProperty == 'cat_username';
 		$thisIsNotAListOfAdmins = isset($_REQUEST['objectAction']) && $_REQUEST['objectAction'] != 'list';
-		$roleList               = Role::fetchAllRoles($thisIsNotAListOfAdmins);  //Lookup available roles in the system, don't show the role description
+		$roleList               = Role::fetchAllRoles($thisIsNotAListOfAdmins);  // Lookup available roles in the system, don't show the role description is lists of admins
 		$structure              = array(
 			'id'              => array('property' => 'id', 'type' => 'label', 'label' => 'Administrator Id', 'description' => 'The unique id of the in the system'),
 			'firstname'       => array('property' => 'firstname', 'type' => 'label', 'label' => 'First Name', 'description' => 'The first name for the user.'),
@@ -674,17 +666,6 @@ class User extends DB_DataObject {
 		return $structure;
 	}
 
-/*	function getFilters(){
-		require_once ROOT_DIR . '/sys/Administration/Role.php';
-		$roleList     = Role::fetchAllRoles();
-		$roleList[-1] = 'Any Role';
-		return array(
-			array('filter' => 'role', 'type' => 'enum', 'values' => $roleList, 'label' => 'Role'),
-			array('filter' => 'cat_password', 'type' => 'text', 'label' => 'Login'),
-			array('filter' => 'cat_username', 'type' => 'text', 'label' => 'Name'),
-		);
-	}*/
-
 	function hasRatings(){
 		require_once ROOT_DIR . '/sys/LocalEnrichment/UserWorkReview.php';
 
@@ -693,11 +674,7 @@ class User extends DB_DataObject {
 		$rating->whereAdd("`userId` = {$this->id}");
 		$rating->whereAdd('`rating` > 0'); // Some entries are just reviews (and therefore have a default rating of -1)
 		$rating->find();
-		if ($rating->N > 0){
-			return true;
-		}else{
-			return false;
-		}
+		return $rating->N > 0 ? true : false;
 	}
 
 	private $runtimeInfoUpdated = false;
@@ -1566,7 +1543,7 @@ class User extends DB_DataObject {
 		global $configArray;
 		if (count($this->getRoles()) > 0){
 			return true;
-		}elseif (isset($configArray['Staff P-Types'])){
+		}elseif (!empty($configArray['Staff P-Types'])){
 			$staffPTypes = $configArray['Staff P-Types'];
 			$pType       = $this->patronType;
 			if ($pType && array_key_exists($pType, $staffPTypes)){

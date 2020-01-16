@@ -12,11 +12,8 @@ class ILSAuthentication implements Authentication {
 
 	public function __construct($additionalInfo) {
 		if (array_key_exists('driver', $additionalInfo)){
-			$this->driverName = $additionalInfo['driver'];
+			$this->driverName     = $additionalInfo['driver'];
 			$this->accountProfile = $additionalInfo['accountProfile'];
-		}else{
-			global $configArray;
-			$this->driverName = $configArray['Catalog']['driver'];
 		}
 		$this->catalogConnection = CatalogFactory::getCatalogConnectionInstance($this->driverName, $this->accountProfile);
 	}

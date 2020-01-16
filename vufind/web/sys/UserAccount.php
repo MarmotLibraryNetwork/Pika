@@ -100,13 +100,13 @@ class UserAccount {
 
 	public static function userHasRole($roleName){
 		$userRoles = UserAccount::getActiveRoles();
-		return array_key_exists($roleName, $userRoles);
+		return in_array($roleName, $userRoles);
 	}
 
 	public static function userHasRoleFromList(array $roleNames){
 		$userRoles = UserAccount::getActiveRoles();
 		foreach ($roleNames as $roleName){
-			if (array_key_exists($roleName, $userRoles)){
+			if (in_array($roleName, $userRoles)){
 				return true;
 			}
 		}
@@ -115,29 +115,21 @@ class UserAccount {
 
 	public static function getActiveRoles(){
 		if (UserAccount::$userRoles == null){
+			UserAccount::$userRoles = array();
 			if (UserAccount::isLoggedIn()){
-				UserAccount::$userRoles = array();
 
 				//Roles for the user
 				require_once ROOT_DIR . '/sys/Administration/Role.php';
-				$role            = new Role();
-				$canUseTestRoles = false;
-				$role->query("SELECT roles.name FROM roles INNER JOIN user_roles ON roles.roleId = user_roles.roleId WHERE userId = " . UserAccount::getActiveUserId() . " ORDER BY name");
-				while ($role->fetch()){
-					UserAccount::$userRoles[$role->name] = $role->name;
-					if ($role->name == 'userAdmin'){
-						$canUseTestRoles = true;
-					}
-				}
+				$role = new Role();
+				$role->joinAdd(['roleId', 'user_roles:roleId']);
+				$role->whereAdd('userId = ' . UserAccount::getActiveUserId());
+				$role->orderBy('name');
+				UserAccount::$userRoles = $role->fetchAll('name');
+				$canUseTestRoles        = in_array('userAdmin', UserAccount::$userRoles);
 
 				if ($canUseTestRoles){
 					//Test roles if we are doing overrides
-					$testRole = '';
-					if (isset($_REQUEST['test_role'])){
-						$testRole = $_REQUEST['test_role'];
-					}elseif (isset($_COOKIE['test_role'])){
-						$testRole = $_COOKIE['test_role'];
-					}
+					$testRole = isset($_REQUEST['test_role']) ? $_REQUEST['test_role'] : (isset($_COOKIE['test_role']) ? $_COOKIE['test_role'] : '');
 					if ($testRole != ''){
 						//Ignore the standard roles for the user
 						UserAccount::$userRoles = array();
@@ -159,8 +151,6 @@ class UserAccount {
 
 				//TODO: Figure out roles for masquerade mode see User.php line 251
 
-			}else{
-				UserAccount::$userRoles = array();
 			}
 		}
 		return UserAccount::$userRoles;
@@ -181,6 +171,9 @@ class UserAccount {
 		}
 	}
 
+	/**
+	 * @return false|User
+	 */
 	public static function getActiveUserObj(){
 		UserAccount::loadUserObjectFromDatabase();
 		return UserAccount::$primaryUserObjectFromDB;

@@ -39,7 +39,7 @@
 		{/foreach}
 	</div>
 
-	{if $repositoryLink && $loggedIn && (array_key_exists('archives', $userRoles) || array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles))}
+	{if $repositoryLink && $loggedIn && $userRoles && (in_array('archives', $userRoles) || in_array('opacAdmin', $userRoles) || in_array('libraryAdmin', $userRoles))}
 		<div class="row">
 			<div id="more-details-accordion" class="panel-group">
 				<div class="panel {*active*}{*toggle on for open*}" id="staffViewPanel">

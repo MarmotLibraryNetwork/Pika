@@ -53,7 +53,7 @@
 									        class="btn btn-sm btn-default">Force Extract from {$ils}</button>
                 {/if}
 
-                {if (array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles))}
+                {if $userRoles && (in_array('opacAdmin', $userRoles) || in_array('cataloging', $userRoles))}
 									<a href="/Admin/NonGroupedRecords?objectAction=addNew&recordId={$recordDriver->getId()}&source={$recordDriver->getRecordType()}&notes={$recordDriver->getShortTitle()|removeTrailingPunctuation|escape}%0A{$userDisplayName}, {$homeLibrary}, {$smarty.now|date_format}%0A"
 									   target="_blank" class="btn btn-sm btn-default">UnMerge from Work
 									</a>
@@ -62,7 +62,7 @@
                 {*							</div>*}
 						</div>
 					</div>
-            {if $enableArchive && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('archives', $userRoles))}
+            {if $enableArchive && $userRoles && (in_array('opacAdmin', $userRoles) || in_array('archives', $userRoles))}
 							<div class="row">
 								<div class="col-xs-12">
                     {*									<div class="btn-group" role="group" aria-label="...">*}
