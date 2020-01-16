@@ -91,7 +91,7 @@ class Admin_Administrators extends ObjectEditor {
 	function editObject($objectAction, $structure){
 		$roleNotAllowedToOverlap = ['opacAdmin', 'libraryAdmin', 'libraryManager', 'locationManager'];
 		$roles                   = new Role();
-		$roles->whereAdd('roleId in ("' . implode('","', $_REQUEST['roles']) . '")');
+		$roles->whereAddIn('roleId', $_REQUEST['roles'], 'string');
 		$roleNames       = $roles->fetchAll('name');
 		$moreThanOneRole = array_intersect($roleNames, $roleNotAllowedToOverlap);
 		if (count($moreThanOneRole) > 1){
