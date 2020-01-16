@@ -745,7 +745,15 @@ class Sierra {
 		}
 
 		// 6.8 number of checkouts from ils
-		$patron->numCheckedOutIls = $pInfo->fixedFields->{'50'}->value;
+		$checkoutOperation = 'patrons/'.$patronId.'/checkouts?limit=1';
+		$checkoutRes = $this->_doRequest($checkoutOperation);
+		if($checkoutRes) {
+			$patron->numCheckedOutIls = $checkoutRes->total;
+		} else {
+			$patron->numCheckedOutIls = 0;
+		}
+		//TODO: Go back to the below if iii fixes bug. See: D-3447
+		//$patron->numCheckedOutIls = $pInfo->fixedFields->{'50'}->value;
 
 		// 6.9 fines
 		$patron->fines = number_format($pInfo->moneyOwed, 2, '.', '');
