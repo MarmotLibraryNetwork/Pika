@@ -8,7 +8,6 @@
  * Time: 9:49 AM
  */
 require_once 'DB/DataObject.php';
-require_once 'DB/DataObject/Cast.php';
 
 class OfflineHold extends DB_DataObject{
 	public $__table = 'offline_hold';

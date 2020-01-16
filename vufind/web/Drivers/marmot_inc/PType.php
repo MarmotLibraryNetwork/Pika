@@ -3,7 +3,6 @@
  * Table Definition for library
  */
 require_once 'DB/DataObject.php';
-require_once 'DB/DataObject/Cast.php';
 
 class PType extends DB_DataObject
 {

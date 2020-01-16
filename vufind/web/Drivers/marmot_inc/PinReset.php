@@ -4,7 +4,6 @@
  * @see D-3218
  */
 require_once 'DB/DataObject.php';
-require_once 'DB/DataObject/Cast.php';
 
 class PinReset extends DB_DataObject
 {

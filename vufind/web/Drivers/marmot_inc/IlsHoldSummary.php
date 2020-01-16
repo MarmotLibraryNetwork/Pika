@@ -8,7 +8,6 @@
  * Time: 9:09 AM
  */
 require_once 'DB/DataObject.php';
-require_once 'DB/DataObject/Cast.php';
 class IlsHoldSummary extends DB_DataObject{
 	public $__table = 'ils_hold_summary';    // table name
 	public $id;

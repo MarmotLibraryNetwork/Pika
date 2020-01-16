@@ -3,7 +3,6 @@
  * Table Definition for Obituary
  */
 require_once 'DB/DataObject.php';
-require_once 'DB/DataObject/Cast.php';
 
 class Obituary extends DB_DataObject {
 	public $__table = 'obituary'; // table name

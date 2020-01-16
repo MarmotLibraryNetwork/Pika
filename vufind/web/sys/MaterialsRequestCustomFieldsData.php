@@ -9,7 +9,6 @@
  *
  */
 require_once 'DB/DataObject.php';
-require_once 'DB/DataObject/Cast.php';
 class MaterialsRequestCustomFieldsData extends DB_DataObject
 {
 	public $__table = 'materials_request_custom_fields_data';

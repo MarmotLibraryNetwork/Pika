@@ -9,7 +9,6 @@
  */
 
 require_once 'DB/DataObject.php';
-require_once 'DB/DataObject/Cast.php';
 class RecordToInclude extends DB_DataObject{
 	public $id;
 	public $indexingProfileId;

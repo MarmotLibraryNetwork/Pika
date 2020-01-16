@@ -3,7 +3,6 @@
  * Table Definition for location
  */
 require_once 'DB/DataObject.php';
-require_once 'DB/DataObject/Cast.php';
 require_once ROOT_DIR . '/Drivers/marmot_inc/OneToManyDataObjectOperations.php';
 
 require_once ROOT_DIR . '/Drivers/marmot_inc/LocationHours.php';

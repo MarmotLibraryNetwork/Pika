@@ -3,7 +3,6 @@
  * Table Definition for an artifact (physical document, picture, man-made object, etc)
  */
 require_once 'DB/DataObject.php';
-require_once 'DB/DataObject/Cast.php';
 
 class Artifact extends DB_DataObject
 {

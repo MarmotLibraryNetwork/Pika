@@ -3,7 +3,6 @@
  * Table Definition for Materials Request
  */
 require_once 'DB/DataObject.php';
-require_once 'DB/DataObject/Cast.php';
 
 class MaterialsRequest extends DB_DataObject
 {
