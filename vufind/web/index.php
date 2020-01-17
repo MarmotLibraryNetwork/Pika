@@ -345,7 +345,7 @@ if ($isLoggedIn && (!isset($_REQUEST['action']) || $_REQUEST['action'] != 'Logou
 	$hasLinkedUsers = UserAccount::hasLinkedUsers();
 	$interface->assign('hasLinkedUsers', $hasLinkedUsers);
 	$interface->assign('pType', UserAccount::getUserPType());
-	$interface->assign('canMasquerade', UserAccount::getActiveUserObj()->canMasquerade());
+	$interface->assign('canMasquerade', UserAccount::getActiveUserObj() && UserAccount::getActiveUserObj()->canMasquerade());
 	$masqueradeMode = UserAccount::isUserMasquerading();
 	$interface->assign('masqueradeMode', $masqueradeMode);
 	if ($masqueradeMode){

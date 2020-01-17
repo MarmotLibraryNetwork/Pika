@@ -31,9 +31,10 @@ class Sacramento extends Sierra
 	 * @return \User|false|
 	 * @throws \ErrorException
 	 */
-	protected function _authBarcodePin($barcode, $pin) {
-		$result = parent::_authBarcodePin($barcode, $pin); // Do regular pin testing for regular patrons
-		if ($result == false){ // now try classic process in case the user is a student
+
+	protected function _authBarcodePin($barcode, $pin){
+		$patronId = parent::_authBarcodePin($barcode, $pin); // Do regular pin testing for regular patrons
+		if ($patronId == false){ // now try classic process in case the user is a student
 			global $configArray;
 			if (!empty($configArray['OPAC']['patron_host'])){ // get the legacy sierra patron dump url (this is usually port 4500 or 54620
 				$c                 = new Curl();
@@ -67,16 +68,16 @@ class Sacramento extends Sierra
 				if (strpos($r, 'RETCOD=0')){
 					//Successful pin test against classic Url
 
-					if(!$patronId = $this->getPatronId($barcode, true)){
+					if (!$patronId = $this->getPatronId($barcode, true)){
 						return false;
 					}
 
 					// check that pin matches database
-					$patron = new User();
+					$patron           = new User();
 					$patron->username = $patronId;
 					$patron->find(true);
 					// if we don't find a patron then new user create it. Will be populated
-					if($patron->N == 0) {
+					if ($patron->N == 0){
 						$patron->created      = date('Y-m-d');
 						$patron->username     = $patronId;
 						$patron->cat_username = $barcode;
@@ -84,17 +85,16 @@ class Sacramento extends Sierra
 					}
 
 					// Update the stored pin if it has changed
-					if($patron->cat_password != $pin) {
+
+					if ($patron->cat_password != $pin){
 						$patron->cat_password = $pin;
 						$patron->update();
 					}
 
-					return $patronId;
 				}
-
 			}
 		}
-		return false;
+		return $patronId;
 	}
 
 	private function _curlLegacy($patron, $pageToCall, $postParams = array(), $patronAction = true){
