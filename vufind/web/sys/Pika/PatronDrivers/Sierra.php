@@ -745,13 +745,7 @@ class Sierra {
 		}
 
 		// 6.8 number of checkouts from ils
-		$checkoutOperation = 'patrons/'.$patronId.'/checkouts?limit=1';
-		$checkoutRes = $this->_doRequest($checkoutOperation);
-		if($checkoutRes) {
-			$patron->numCheckedOutIls = $checkoutRes->total;
-		} else {
-			$patron->numCheckedOutIls = 0;
-		}
+		$patron->numCheckedOutIls  = $this->getNumCheckedOutsILS($patronId);
 		//TODO: Go back to the below if iii fixes bug. See: D-3447
 		//$patron->numCheckedOutIls = $pInfo->fixedFields->{'50'}->value;
 
@@ -786,22 +780,39 @@ class Sierra {
 		return $patron;
 	}
 
+	public function getNumCheckedOutsILS($patronId) {
+		$checkoutOperation = 'patrons/'.$patronId.'/checkouts?limit=1';
+		try {
+			$checkoutRes = $this->_doRequest($checkoutOperation);
+		} catch (\Exception $e) {
+			$numCheckouts = 0;
+		}
+		if($checkoutRes && isset($checkoutRes->total)) {
+			$numCheckouts = $checkoutRes->total;
+		} else {
+			$numCheckouts = 0;
+		}
+		return $numCheckouts;
+	}
+
 	/**
 	 * Get the unique Sierra patron ID by searching for barcode.
 	 *
-	 * @param  User|string $patronOrBarcode  Either a barcode as a string or a User object.
+	 * @param User|string $patronOrBarcode Either a barcode as a string or a User object.
+	 * @param bool $searchSacramentoStudentIdField Overrides the var field tag to search to find sierra Id for
+	 *                                             Sacramento's students
 	 * @return int|false   returns the patron ID or false
+	 * @throws ErrorException
 	 */
-	public function getPatronId($patronOrBarcode)
-	{
+	public function getPatronId($patronOrBarcode, $searchSacramentoStudentIdField = false){
 		// if a patron object was passed
-		if(is_object($patronOrBarcode)) {
-			if ($this->accountProfile->loginConfiguration == "barcode_pin") {
-				$barcode = $patronOrBarcode->cat_username ;
-			} else {
+		if (is_object($patronOrBarcode)){
+			if ($this->accountProfile->loginConfiguration == "barcode_pin"){
+				$barcode = $patronOrBarcode->cat_username;
+			}else{
 				$barcode = $patronOrBarcode->cat_password;
 			}
-		} elseif (is_string($patronOrBarcode)) {
+		}elseif (is_string($patronOrBarcode)){
 			$barcode = $patronOrBarcode;
 		}
 
@@ -811,7 +822,7 @@ class Sierra {
 		}
 
 		$params = [
-			'varFieldTag'     => 'b',
+			'varFieldTag'     => $searchSacramentoStudentIdField ? 'i' : 'b',
 			'varFieldContent' => $barcode,
 			'fields'          => 'id',
 		];
@@ -1068,7 +1079,8 @@ class Sierra {
 			// might be a new user
 			if($patronId = $this->getPatronId($barcode)) {
 				// load them in the database.
-				$this->getPatron($patronId);
+				unset($patron);
+				$patron = $this->getPatron($patronId);
 			} else {
 				return ['error' => 'Unable to find an account associated with barcode: '.$barcode ];
 			}
@@ -2601,7 +2613,7 @@ EOT;
 
 			$operation = 'patrons/find';
 			$r = $this->_doRequest($operation, $params);
-			if($r) {
+			if(!empty($r->barcodes)) {
 				$barcode = $r->barcodes[0];
 				$this->patronBarcode = $barcode;
 			}
@@ -2630,6 +2642,7 @@ EOT;
 			$patron->username     = $patronId;
 			$patron->cat_username = $barcode;
 			$patron->insert();
+			//TODO: chris, will a first time log in pass the pin check below?
 		}
 
 		if($patron->cat_password != $pin) {
