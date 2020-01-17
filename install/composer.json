@@ -1,6 +1,6 @@
 {
     "config": {
-        "vendor-dir": "/usr/share/composer"
+        "vendor-dir": "/usr/share/composer/vendor"
     },
     "require": {
         "php-curl-class/php-curl-class": "^8.6",
