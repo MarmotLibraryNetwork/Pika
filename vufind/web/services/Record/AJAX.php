@@ -147,12 +147,12 @@ class Record_AJAX extends AJAXHandler {
 
 			$holdDisclaimers = array();
 			$patronLibrary   = $user->getHomeLibrary();
-			if (strlen($patronLibrary->holdDisclaimer) > 0){
+			if (!empty($patronLibrary->holdDisclaimer)){
 				$holdDisclaimers[$patronLibrary->displayName] = $patronLibrary->holdDisclaimer;
 			}
 			foreach ($linkedUsers as $linkedUser){
 				$linkedLibrary = $linkedUser->getHomeLibrary();
-				if (strlen($linkedLibrary->holdDisclaimer) > 0){
+				if (!empty($linkedLibrary->holdDisclaimer)){
 					$holdDisclaimers[$linkedLibrary->displayName] = $linkedLibrary->holdDisclaimer;
 				}
 			}
