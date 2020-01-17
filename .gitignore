@@ -4,6 +4,7 @@
 #  - they can change at runtime                        #
 ########################################################
 sites/*/backup
+sites/*
 !sites/default/backup
 sites/default/solr/docs/*
 sites/default/solr/example/*
