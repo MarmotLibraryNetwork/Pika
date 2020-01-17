@@ -514,7 +514,7 @@ class Sierra {
 
 		// 5.5 check locations
 		// 5.5.1 home locations
-		if ($patron->updateUserHomeLocations($pInfo->homeLibraryCode)){
+		if ($patron->setUserHomeLocations($pInfo->homeLibraryCode)){
 			$updatePatron = true;
 		}
 

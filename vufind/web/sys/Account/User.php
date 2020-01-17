@@ -1294,7 +1294,7 @@ class User extends DB_DataObject {
 	 * @param string $homeBranchCode The ILS location code for a library branch (matching column code in location table)
 	 * @return bool   Whether or not the user needs to be updated in the database.
 	 */
-	function updateUserHomeLocations($homeBranchCode){
+	function setUserHomeLocations($homeBranchCode){
 		$updateUserNeeded = false;
 		$homeBranchCode = strtolower($homeBranchCode);
 		$location       = new Location();
@@ -1303,11 +1303,12 @@ class User extends DB_DataObject {
 			unset($location);
 		}
 
-		if (empty($this->homeLocationId) || (isset($location) && $this->homeLocationId != $location->locationId)){
+		$userHomeLocationNotSet = empty($this->homeLocationId) || $this->homeLocationId == -1;
+		if ($userHomeLocationNotSet || (isset($location) && $this->homeLocationId != $location->locationId)){
 			$updateUserNeeded = true;
 
 			// When homeLocation isn't set or has changed
-			if (empty($this->homeLocationId) && !isset($location)){
+			if (($userHomeLocationNotSet) && !isset($location)){
 				// homeBranch Code not found in location table and the user doesn't have an assigned home location,
 				// try to find the main branch to assign to user
 				// or the first location for the library

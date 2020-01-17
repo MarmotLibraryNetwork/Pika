@@ -83,64 +83,7 @@ class CarlX extends SIP2Driver{
 					$user->comingDueNotice     = $result->Patron->SendComingDueFlag;
 					$user->phoneType           = $result->Patron->PhoneType;
 
-					$homeBranchCode = strtolower($result->Patron->DefaultBranch);
-					$location = new Location();
-					$location->code = $homeBranchCode;
-					if (!$location->find(1)){
-						unset($location);
-						$user->homeLocationId = 0;
-						// Logging for Diagnosing PK-1846
-						global $logger;
-						$logger->log('CarlX Driver: No Location found, user\'s homeLocationId being set to 0. User : '.$user->id, PEAR_LOG_WARNING);
-					}
-
-					if ((empty($user->homeLocationId) || $user->homeLocationId == -1) || (isset($location) && $user->homeLocationId != $location->locationId)) { // When homeLocation isn't set or has changed
-						if ((empty($user->homeLocationId) || $user->homeLocationId == -1) && !isset($location)) {
-							// homeBranch Code not found in location table and the user doesn't have an assigned homelocation,
-							// try to find the main branch to assign to user
-							// or the first location for the library
-							global $library;
-
-							$location            = new Location();
-							$location->libraryId = $library->libraryId;
-							$location->orderBy('isMainBranch desc'); // gets the main branch first or the first location
-							if (!$location->find(true)) {
-								// Seriously no locations even?
-								global $logger;
-								$logger->log('Failed to find any location to assign to user as home location', PEAR_LOG_ERR);
-								unset($location);
-							}
-						}
-						if (isset($location)) {
-							$user->homeLocationId = $location->locationId;
-							if (empty($user->myLocation1Id)) {
-								$user->myLocation1Id  = ($location->nearbyLocation1 > 0) ? $location->nearbyLocation1 : $location->locationId;
-								/** @var /Location $location */
-								//Get display name for preferred location 1
-								$myLocation1             = new Location();
-								$myLocation1->locationId = $user->myLocation1Id;
-								if ($myLocation1->find(true)) {
-									$user->myLocation1 = $myLocation1->displayName;
-								}
-							}
-
-							if (empty($user->myLocation2Id)){
-								$user->myLocation2Id  = ($location->nearbyLocation2 > 0) ? $location->nearbyLocation2 : $location->locationId;
-								//Get display name for preferred location 2
-								$myLocation2             = new Location();
-								$myLocation2->locationId = $user->myLocation2Id;
-								if ($myLocation2->find(true)) {
-									$user->myLocation2 = $myLocation2->displayName;
-								}
-							}
-						}
-					}
-
-					if (isset($location)){
-						//Get display names that aren't stored
-						$user->homeLocationCode = $location->code;
-						$user->homeLocation     = $location->displayName;
-					}
+					$user->setUserHomeLocations($result->Patron->DefaultBranch);
 
 					if (isset($result->Patron->Addresses)){
 						//Find the primary address
