@@ -431,7 +431,11 @@ class Sierra {
 				$this->logger->error("Sierra user id $patronId did not return a barcode");
 			}
 
+		} elseif (!empty($this->patronBarcode)) {
+			// Since Sacramento's student Id's aren't treated as barcodes, we have to ignore the barcodes array from the API
+			$barcode = $this->patronBarcode;
 		}
+
 		// barcode isn't actually in database, but is stored in User->data['barcode']
 		$patron->barcode = $barcode;
 
@@ -510,36 +514,8 @@ class Sierra {
 
 		// 5.5 check locations
 		// 5.5.1 home locations
-		$location       = new Location();
-		$location->code = $pInfo->homeLibraryCode;
-		$location->find(true);
-		$homeLocationId = $location->locationId;
-		if($homeLocationId != $patron->homeLocationId) {
+		if ($patron->updateUserHomeLocations($pInfo->homeLibraryCode)){
 			$updatePatron = true;
-			$patron->homeLocationId = $homeLocationId;
-		}
-		$patron->homeLocation = $location->displayName;
-
-		// 5.5.2 location1
-		if(empty($patron->myLocation1Id)) {
-			$updatePatron = true;
-			$patron->myLocation1Id     = ($location->nearbyLocation1 > 0) ? $location->nearbyLocation1 : $location->locationId;
-			$myLocation1             = new Location();
-			$myLocation1->locationId = $patron->myLocation1Id;
-			if ($myLocation1->find(true)) {
-				$patron->myLocation1 = $myLocation1->displayName;
-			}
-		}
-
-		// 5.5.3 location2
-		if(empty($patron->myLocation2Id)) {
-			$updatePatron = true;
-			$patron->myLocation2Id     = ($location->nearbyLocation2 > 0) ? $location->nearbyLocation2 : $location->locationId;
-			$myLocation2             = new Location();
-			$myLocation2->locationId = $patron->myLocation2Id;
-			if ($myLocation2->find(true)) {
-				$patron->myLocation2 = $myLocation2->displayName;
-			}
 		}
 
 		// 6. things not stored in database so don't need to check for updates but do need to add to object.
@@ -2642,9 +2618,9 @@ EOT;
 			$patron->username     = $patronId;
 			$patron->cat_username = $barcode;
 			$patron->insert();
-			//TODO: chris, will a first time log in pass the pin check below?
 		}
 
+		// Update the stored pin if it has changed
 		if($patron->cat_password != $pin) {
 			$patron->cat_password = $pin;
 			$patron->update();
