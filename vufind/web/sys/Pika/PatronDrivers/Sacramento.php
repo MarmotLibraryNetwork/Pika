@@ -10,6 +10,7 @@
 namespace Pika\PatronDrivers;
 
 use Curl\Curl;
+use User;
 use DateInterval;
 use DateTime;
 use InvalidArgumentException;
@@ -21,6 +22,184 @@ class Sacramento extends Sierra
 		parent::__construct($accountProfile);
 		$this->logger->info('Using driver: Pika\PatronDrivers\Sacramento');
 	}
+
+	/**
+	 *  pin test override for Sacramento Student IDs since the API doesn't currently validate them properly (see D-3458)
+	 *
+	 * @param string $barcode
+	 * @param string $pin
+	 * @return \User|false|
+	 * @throws \ErrorException
+	 */
+
+	protected function _authBarcodePin($barcode, $pin){
+		$patronId = parent::_authBarcodePin($barcode, $pin); // Do regular pin testing for regular patrons
+		if ($patronId == false){ // now try classic process in case the user is a student
+			global $configArray;
+			if (!empty($configArray['OPAC']['patron_host'])){ // get the legacy sierra patron dump url (this is usually port 4500 or 54620
+				$c                 = new Curl();
+				$classicPinTestUrl = $configArray['OPAC']['patron_host'] . "/PATRONAPI/$barcode/$pin/pintest";
+				$headers           = [
+					"Accept"          => "text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5",
+					"Cache-Control"   => "max-age=0",
+					"Connection"      => "keep-alive",
+					"Accept-Charset"  => "ISO-8859-1,utf-8;q=0.7,*;q=0.7",
+					"Accept-Language" => "en-us,en;q=0.5",
+					"User-Agent"      => "Pika"
+				];
+				$cookie            = tempnam("/tmp", "CURLCOOKIE");
+				$curlOpts          = [
+					CURLOPT_CONNECTTIMEOUT    => 20,
+					CURLOPT_TIMEOUT           => 60,
+					CURLOPT_RETURNTRANSFER    => true,
+					CURLOPT_FOLLOWLOCATION    => true,
+					CURLOPT_UNRESTRICTED_AUTH => true,
+					CURLOPT_COOKIEJAR         => $cookie,
+					CURLOPT_COOKIESESSION     => false,
+					CURLOPT_HEADER            => false,
+					CURLOPT_AUTOREFERER       => true,
+				];
+				$c->setHeaders($headers);
+				$c->setOpts($curlOpts);
+				$r = $c->get($classicPinTestUrl);
+				if ($c->isError()){
+					return false;
+				}
+				if (strpos($r, 'RETCOD=0')){
+					//Successful pin test against classic Url
+
+					if (!$patronId = $this->getPatronId($barcode, true)){
+						return false;
+					}
+
+					// check that pin matches database
+					$patron           = new User();
+					$patron->username = $patronId;
+					$patron->find(true);
+					// if we don't find a patron then new user create it. Will be populated
+					if ($patron->N == 0){
+						$patron->created      = date('Y-m-d');
+						$patron->username     = $patronId;
+						$patron->cat_username = $barcode;
+						$patron->insert();
+					}
+
+					// Update the stored pin if it has changed
+
+					if ($patron->cat_password != $pin){
+						$patron->cat_password = $pin;
+						$patron->update();
+					}
+
+				}
+			}
+		}
+		return $patronId;
+	}
+
+	private function _curlLegacy($patron, $pageToCall, $postParams = array(), $patronAction = true){
+
+		$c = new Curl();
+
+		// base url for following calls
+		$vendorOpacUrl = $this->accountProfile->vendorOpacUrl;
+
+		$headers = [
+			"Accept"          => "text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5",
+			"Cache-Control"   => "max-age=0",
+			"Connection"      => "keep-alive",
+			"Accept-Charset"  => "ISO-8859-1,utf-8;q=0.7,*;q=0.7",
+			"Accept-Language" => "en-us,en;q=0.5",
+			"User-Agent"      => "Pika"
+		];
+		$c->setHeaders($headers);
+
+		$cookie   = tempnam("/tmp", "CURLCOOKIE");
+		$curlOpts = [
+			CURLOPT_CONNECTTIMEOUT    => 20,
+			CURLOPT_TIMEOUT           => 60,
+			CURLOPT_RETURNTRANSFER    => true,
+			CURLOPT_FOLLOWLOCATION    => true,
+			CURLOPT_UNRESTRICTED_AUTH => true,
+			CURLOPT_COOKIEJAR         => $cookie,
+			CURLOPT_COOKIESESSION     => false,
+			CURLOPT_HEADER            => false,
+			CURLOPT_AUTOREFERER       => true,
+		];
+		$c->setOpts($curlOpts);
+
+		// first log patron in
+		if ($this->accountProfile->loginConfiguration == 'name_barcode'){
+			$postData = [
+				'name' => $patron->cat_username,
+				'code' => $patron->cat_password
+			];
+		}else{
+			$postData = [
+				'code' => $patron->cat_username,
+				'pin'  => $patron->cat_password
+			];
+
+		}
+
+		$loginUrl = $vendorOpacUrl . '/patroninfo/';
+		$r        = $c->post($loginUrl, $postData);
+
+		if ($c->isError()){
+			$c->close();
+			return false;
+		}
+
+		$sierraPatronId = $this->getPatronId($patron->barcode); //when logging in with pin, this is what we will find
+
+		if(!strpos($r, (string) $sierraPatronId) && !stripos($r, (string) $patron->cat_username)) {
+			// check for cas login. do cas login if possible
+			$casUrl = '/iii/cas/login';
+			if(stristr($r, $casUrl)) {
+				$this->logger->info('Trying cas login.');
+				preg_match('|<input type="hidden" name="lt" value="(.*)"|', $r, $m);
+				if($m) {
+					$postData['lt']       = $m[1];
+					$postData['_eventId'] = 'submit';
+				} else {
+					return false;
+				}
+				$casLoginUrl = $vendorOpacUrl.$casUrl;
+				$r = $c->post($casLoginUrl, $postData);
+				if(!stristr($r, $patron->cat_username)) {
+					$this->logger->warning('cas login failed.');
+					return false;
+				}
+				$this->logger->info('cas login success.');
+			} else {
+				$this->logger->warning('login failed.');
+				return false;
+			}
+		}
+
+		$scope    = $this->getLibraryScope(); // IMPORTANT: Scope is needed for Bookings Actions to work
+		$optUrl   = $patronAction ? $vendorOpacUrl . '/patroninfo~S' . $scope . '/' . $sierraPatronId . '/' . $pageToCall
+			: $vendorOpacUrl . '/' . $pageToCall;
+		// Most curl calls are patron interactions, getting the bookings calendar isn't
+
+		$c->setUrl($optUrl);
+		if (!empty($postParams)){
+			$r = $c->post($postParams);
+		}else{
+			$r = $c->get($optUrl);
+		}
+
+		if ($c->isError()){
+			return false;
+		}
+
+		if (stripos($pageToCall, 'webbook?/') !== false){
+			// Hack to complete booking a record
+			return $c;
+		}
+		return $r;
+	}
+
 
 	public function updateSms($patron) {
 		$patronId = $this->getPatronId($patron);

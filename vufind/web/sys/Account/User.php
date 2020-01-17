@@ -1303,6 +1303,125 @@ class User extends DB_DataObject {
 		return $result;
 	}
 
+
+	/**
+	 * Sets the user's expiration date settings given any string parsable by the standard
+	 * at https://www.php.net/manual/en/datetime.formats.php
+	 * If the date string isn't valid, it set the user's setting to the standard defaults;
+	 *
+	 * NOTE: this does NOT update the database.
+	 *
+	 * @param $dateString
+	 */
+	function setUserExpirationSettings($dateString){
+		$this->expires     = '00-00-0000';
+		$this->expireClose = 0;
+		$this->expired     = 0;
+
+		try {
+			$expiresDate   = new DateTime($dateString);
+			$this->expires = $expiresDate->format('m-d-Y');
+			$nowDate       = new DateTime('now');
+			$dateDiff      = $nowDate->diff($expiresDate);
+			if ($dateDiff->days <= 30){
+				$this->expireClose = 1;
+			}
+			if ($dateDiff->days <= 0){
+				$this->expired = 1;
+			}
+		} catch (\Exception $e){
+		}
+	}
+
+	/**
+	 * This sets the User's home locations and nearby locations.
+	 * If there isn't a match to the code, there is a fall-back
+	 * to using the main branch or first location of the current library.
+	 * After which, there is a fall-back to main branch or first location
+	 * of the site's default library.
+	 *
+	 * NOTE: this does NOT update the database.
+	 *
+	 * @param string $homeBranchCode The ILS location code for a library branch (matching column code in location table)
+	 * @return bool   Whether or not the user needs to be updated in the database.
+	 */
+	function setUserHomeLocations($homeBranchCode){
+		$updateUserNeeded = false;
+		$homeBranchCode = strtolower($homeBranchCode);
+		$location       = new Location();
+		$location->code = $homeBranchCode;
+		if (!$location->find(true)){
+			unset($location);
+		}
+
+		$userHomeLocationNotSet = empty($this->homeLocationId) || $this->homeLocationId == -1;
+		if ($userHomeLocationNotSet || (isset($location) && $this->homeLocationId != $location->locationId)){
+			$updateUserNeeded = true;
+
+			// When homeLocation isn't set or has changed
+			if (($userHomeLocationNotSet) && !isset($location)){
+				// homeBranch Code not found in location table and the user doesn't have an assigned home location,
+				// try to find the main branch to assign to user
+				// or the first location for the library
+
+				global $library;
+				if (!empty($library->libraryId)){
+					$location            = new Location();
+					$location->libraryId = $library->libraryId;
+					$location->orderBy('isMainBranch desc');// gets the main branch first or the first location
+					if (!$location->find(true)){
+						$defaultLibrary            = new Library();
+						$defaultLibrary->isDefault = true;
+						if ($defaultLibrary->find(true)){
+							$location            = new Location();
+							$location->libraryId = $defaultLibrary->libraryId;
+							$location->orderBy('isMainBranch desc'); // gets the main branch first or the first location
+							if (!$location->find(true)){
+								global $logger;
+								$logger->log('Failed to find any location to assign to user as home location', PEAR_LOG_ERR);
+								return false;
+							}
+						} else {
+							global $logger;
+							$logger->log('Failed to find the site default library', PEAR_LOG_ERR);
+							return false;
+						}
+					}
+				}
+			}
+		}
+
+		if (isset($location)){
+			$this->homeLocationId = $location->locationId;
+			if (empty($this->myLocation1Id)){
+				$this->myLocation1Id = ($location->nearbyLocation1 > 0) ? $location->nearbyLocation1 : $location->locationId;
+				/** @var /Location $location */
+				//Get display name for preferred location 1
+				$myLocation1             = new Location();
+				$myLocation1->locationId = $this->myLocation1Id;
+				if ($myLocation1->find(true)){
+					$this->myLocation1 = $myLocation1->displayName;
+				}
+			}
+
+			if (empty($this->myLocation2Id)){
+				$this->myLocation2Id = ($location->nearbyLocation2 > 0) ? $location->nearbyLocation2 : $location->locationId;
+				//Get display name for preferred location 2
+				$myLocation2             = new Location();
+				$myLocation2->locationId = $this->myLocation2Id;
+				if ($myLocation2->find(true)){
+					$this->myLocation2 = $myLocation2->displayName;
+				}
+			}
+
+			//Get display names that aren't stored
+			$this->homeLocationCode = $location->code;
+			$this->homeLocation     = $location->displayName;
+		}
+		return $updateUserNeeded;
+
+	}
+
 	function updateAltLocationForHold($pickupBranch){
 		if ($this->homeLocationCode != $pickupBranch){
 			global $logger;

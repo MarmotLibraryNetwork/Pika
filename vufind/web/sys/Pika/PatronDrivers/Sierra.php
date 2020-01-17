@@ -431,7 +431,11 @@ class Sierra {
 				$this->logger->error("Sierra user id $patronId did not return a barcode");
 			}
 
+		} elseif (!empty($this->patronBarcode)) {
+			// Since Sacramento's student Id's aren't treated as barcodes, we have to ignore the barcodes array from the API
+			$barcode = $this->patronBarcode;
 		}
+
 		// barcode isn't actually in database, but is stored in User->data['barcode']
 		$patron->barcode = $barcode;
 
@@ -510,36 +514,8 @@ class Sierra {
 
 		// 5.5 check locations
 		// 5.5.1 home locations
-		$location       = new Location();
-		$location->code = $pInfo->homeLibraryCode;
-		$location->find(true);
-		$homeLocationId = $location->locationId;
-		if($homeLocationId != $patron->homeLocationId) {
+		if ($patron->setUserHomeLocations($pInfo->homeLibraryCode)){
 			$updatePatron = true;
-			$patron->homeLocationId = $homeLocationId;
-		}
-		$patron->homeLocation = $location->displayName;
-
-		// 5.5.2 location1
-		if(empty($patron->myLocation1Id)) {
-			$updatePatron = true;
-			$patron->myLocation1Id     = ($location->nearbyLocation1 > 0) ? $location->nearbyLocation1 : $location->locationId;
-			$myLocation1             = new Location();
-			$myLocation1->locationId = $patron->myLocation1Id;
-			if ($myLocation1->find(true)) {
-				$patron->myLocation1 = $myLocation1->displayName;
-			}
-		}
-
-		// 5.5.3 location2
-		if(empty($patron->myLocation2Id)) {
-			$updatePatron = true;
-			$patron->myLocation2Id     = ($location->nearbyLocation2 > 0) ? $location->nearbyLocation2 : $location->locationId;
-			$myLocation2             = new Location();
-			$myLocation2->locationId = $patron->myLocation2Id;
-			if ($myLocation2->find(true)) {
-				$patron->myLocation2 = $myLocation2->displayName;
-			}
 		}
 
 		// 6. things not stored in database so don't need to check for updates but do need to add to object.
@@ -702,28 +678,7 @@ class Sierra {
 		}
 
 		// 6.6 account expiration
-		if (!empty($pInfo->expirationDate)){
-		try {
-			$expiresDate = new DateTime($pInfo->expirationDate);
-			$patron->expires = $expiresDate->format('m-d-Y');
-			$nowDate     = new DateTime('now');
-			$dateDiff    = $nowDate->diff($expiresDate);
-			if($dateDiff->days <= 30) {
-				$patron->expireClose = 1;
-			} else {
-				$patron->expireClose = 0;
-			}
-			if($dateDiff->days <= 0) {
-				$patron->expired = 1;
-			} else {
-				$patron->expired = 0;
-			}
-		} catch (\Exception $e) {
-			$patron->expires = '00-00-0000';
-		}
-		}else{
-			$patron->expires = '00-00-0000';
-		}
+			$patron->setUserExpirationSettings(empty($pInfo->expirationDate) ? '' : empty($pInfo->expirationDate));
 
 		// 6.7 notices
 		$patron->notices = $pInfo->fixedFields->{'268'}->value;
@@ -745,7 +700,9 @@ class Sierra {
 		}
 
 		// 6.8 number of checkouts from ils
-		$patron->numCheckedOutIls = $pInfo->fixedFields->{'50'}->value;
+		$patron->numCheckedOutIls  = $this->getNumCheckedOutsILS($patronId);
+		//TODO: Go back to the below if iii fixes bug. See: D-3447
+		//$patron->numCheckedOutIls = $pInfo->fixedFields->{'50'}->value;
 
 		// 6.9 fines
 		$patron->fines = number_format($pInfo->moneyOwed, 2, '.', '');
@@ -778,22 +735,39 @@ class Sierra {
 		return $patron;
 	}
 
+	public function getNumCheckedOutsILS($patronId) {
+		$checkoutOperation = 'patrons/'.$patronId.'/checkouts?limit=1';
+		try {
+			$checkoutRes = $this->_doRequest($checkoutOperation);
+		} catch (\Exception $e) {
+			$numCheckouts = 0;
+		}
+		if($checkoutRes && isset($checkoutRes->total)) {
+			$numCheckouts = $checkoutRes->total;
+		} else {
+			$numCheckouts = 0;
+		}
+		return $numCheckouts;
+	}
+
 	/**
 	 * Get the unique Sierra patron ID by searching for barcode.
 	 *
-	 * @param  User|string $patronOrBarcode  Either a barcode as a string or a User object.
+	 * @param User|string $patronOrBarcode Either a barcode as a string or a User object.
+	 * @param bool $searchSacramentoStudentIdField Overrides the var field tag to search to find sierra Id for
+	 *                                             Sacramento's students
 	 * @return int|false   returns the patron ID or false
+	 * @throws ErrorException
 	 */
-	public function getPatronId($patronOrBarcode)
-	{
+	public function getPatronId($patronOrBarcode, $searchSacramentoStudentIdField = false){
 		// if a patron object was passed
-		if(is_object($patronOrBarcode)) {
-			if ($this->accountProfile->loginConfiguration == "barcode_pin") {
-				$barcode = $patronOrBarcode->cat_username ;
-			} else {
+		if (is_object($patronOrBarcode)){
+			if ($this->accountProfile->loginConfiguration == "barcode_pin"){
+				$barcode = $patronOrBarcode->cat_username;
+			}else{
 				$barcode = $patronOrBarcode->cat_password;
 			}
-		} elseif (is_string($patronOrBarcode)) {
+		}elseif (is_string($patronOrBarcode)){
 			$barcode = $patronOrBarcode;
 		}
 
@@ -803,7 +777,7 @@ class Sierra {
 		}
 
 		$params = [
-			'varFieldTag'     => 'b',
+			'varFieldTag'     => $searchSacramentoStudentIdField ? 'i' : 'b',
 			'varFieldContent' => $barcode,
 			'fields'          => 'id',
 		];
@@ -1062,7 +1036,14 @@ class Sierra {
 
 		$patron->find(true);
 		if(! $patron->N || $patron->N == 0) {
-			return ['error' => 'Unable to find an account associated with barcode: '.$barcode ];
+			// might be a new user
+			if($patronId = $this->getPatronId($barcode)) {
+				// load them in the database.
+				unset($patron);
+				$patron = $this->getPatron($patronId);
+			} else {
+				return ['error' => 'Unable to find an account associated with barcode: '.$barcode ];
+			}
 		}
 		if(!isset($patron->email) || $patron->email == '') {
 			return ['error' => 'You do not have an email address on your account. Please visit your library to reset your pin.'];
@@ -2592,7 +2573,7 @@ EOT;
 
 			$operation = 'patrons/find';
 			$r = $this->_doRequest($operation, $params);
-			if($r) {
+			if(!empty($r->barcodes)) {
 				$barcode = $r->barcodes[0];
 				$this->patronBarcode = $barcode;
 			}
@@ -2623,6 +2604,7 @@ EOT;
 			$patron->insert();
 		}
 
+		// Update the stored pin if it has changed
 		if($patron->cat_password != $pin) {
 			$patron->cat_password = $pin;
 			$patron->update();
