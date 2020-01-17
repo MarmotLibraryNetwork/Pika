@@ -2613,7 +2613,7 @@ EOT;
 
 			$operation = 'patrons/find';
 			$r = $this->_doRequest($operation, $params);
-			if($r) {
+			if(!empty($r->barcodes)) {
 				$barcode = $r->barcodes[0];
 				$this->patronBarcode = $barcode;
 			}
