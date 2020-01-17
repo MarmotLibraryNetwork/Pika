@@ -32,8 +32,8 @@ class Sacramento extends Sierra
 	 * @throws \ErrorException
 	 */
 	protected function _authBarcodePin($barcode, $pin) {
-		$result = parent::_authBarcodePin($barcode, $pin); // DO regular pin testing for regular patrons
-		if ($result == false){ // now try classic process in case user is a student
+		$result = parent::_authBarcodePin($barcode, $pin); // Do regular pin testing for regular patrons
+		if ($result == false){ // now try classic process in case the user is a student
 			global $configArray;
 			if (!empty($configArray['OPAC']['patron_host'])){ // get the legacy sierra patron dump url (this is usually port 4500 or 54620
 				$c                 = new Curl();
@@ -83,6 +83,7 @@ class Sacramento extends Sierra
 						$patron->insert();
 					}
 
+					// Update the stored pin if it has changed
 					if($patron->cat_password != $pin) {
 						$patron->cat_password = $pin;
 						$patron->update();
