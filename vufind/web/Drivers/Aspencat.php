@@ -486,23 +486,12 @@ class Aspencat implements DriverInterface{
 
 						$user->setUserHomeLocations($userFromDb['branchcode']);
 
-						$user->expires = $userFromDb['dateexpiry']; //TODO: format is year-month-day; millennium is month-day-year; needs converting??
-
-						$user->expired     = 0; // default setting
-						$user->expireClose = 0;
-
-						if (!empty($userFromDb['dateexpiry'])) { // TODO: probably need a better check of this field
-							list ($yearExp, $monthExp, $dayExp) = explode('-', $userFromDb['dateexpiry']);
-							$timeExpire   = strtotime($monthExp . "/" . $dayExp . "/" . $yearExp);
-							$timeNow      = time();
-							$timeToExpire = $timeExpire - $timeNow;
-							if ($timeToExpire <= 30 * 24 * 60 * 60) {
-								if ($timeToExpire <= 0) {
-									$user->expired = 1;
-								}
-								$user->expireClose = 1;
-							}
+						$dateString = $userFromDb['dateexpiry'];
+						if (!empty($dateString)) {
+							list ($yearExp, $monthExp, $dayExp) = explode('-', $dateString);
+							$dateString = $monthExp . '/' . $dayExp . '/' . $yearExp;
 						}
+						$user->setUserExpirationSettings($dateString);
 
 						$user->noticePreferenceLabel = 'Unknown';
 

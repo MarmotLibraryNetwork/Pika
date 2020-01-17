@@ -91,20 +91,9 @@ class LibrarySolution extends ScreenScrapingDriver {
 					// The code below will attempt to find a location for the library anyway if the homeLocation is already set
 				}
 
-				$user->expires = $accountSummary->patron->cardExpirationDate;
-				list ($yearExp, $monthExp, $dayExp) = explode("-", $user->expires);
-				$timeExpire    = strtotime($monthExp . "/" . $dayExp . "/" . $yearExp);
-				$timeNow       = time();
-				$timeToExpire  = $timeExpire - $timeNow;
-				$user->expired = 0;
-				if ($timeToExpire <= 30 * 24 * 60 * 60) {
-					if ($timeToExpire <= 0) {
-						$user->expired = 1;
-					}
-					$user->expireClose = 1;
-				} else {
-					$user->expireClose = 0;
-				}
+				list ($yearExp, $monthExp, $dayExp) = explode("-", $accountSummary->patron->cardExpirationDate);
+				$timeExpire    = $monthExp . "/" . $dayExp . "/" . $yearExp;
+				$user->setUserExpirationSettings($timeExpire);
 
 				$user->address1 = $accountSummary->patron->address1;
 				$user->city     = $accountSummary->patron->city;

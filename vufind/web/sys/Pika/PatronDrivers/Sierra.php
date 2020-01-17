@@ -678,28 +678,7 @@ class Sierra {
 		}
 
 		// 6.6 account expiration
-		if (!empty($pInfo->expirationDate)){
-		try {
-			$expiresDate = new DateTime($pInfo->expirationDate);
-			$patron->expires = $expiresDate->format('m-d-Y');
-			$nowDate     = new DateTime('now');
-			$dateDiff    = $nowDate->diff($expiresDate);
-			if($dateDiff->days <= 30) {
-				$patron->expireClose = 1;
-			} else {
-				$patron->expireClose = 0;
-			}
-			if($dateDiff->days <= 0) {
-				$patron->expired = 1;
-			} else {
-				$patron->expired = 0;
-			}
-		} catch (\Exception $e) {
-			$patron->expires = '00-00-0000';
-		}
-		}else{
-			$patron->expires = '00-00-0000';
-		}
+			$patron->setUserExpirationSettings(empty($pInfo->expirationDate) ? '' : empty($pInfo->expirationDate));
 
 		// 6.7 notices
 		$patron->notices = $pInfo->fixedFields->{'268'}->value;

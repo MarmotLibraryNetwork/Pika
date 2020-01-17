@@ -205,23 +205,14 @@ abstract class SirsiDynixROA extends HorizonAPI //TODO: This class doesn't need 
 					// The code below will attempt to find a location for the library anyway if the homeLocation is already set
 				}
 
+				$dateString = '';
 				if (isset($lookupMyAccountInfoResponse->fields->privilegeExpiresDate)) {
-					$user->expires = $lookupMyAccountInfoResponse->fields->privilegeExpiresDate;
-					list ($yearExp, $monthExp, $dayExp) = explode("-", $user->expires);
-					$timeExpire   = strtotime($monthExp . "/" . $dayExp . "/" . $yearExp);
-					$timeNow      = time();
-					$timeToExpire = $timeExpire - $timeNow;
-					if ($timeToExpire <= 30 * 24 * 60 * 60) {
-						//TODO: the ils also has an expire soon flag in the patronStatusInfo
-						if ($timeToExpire <= 0) {
-							$user->expired = 1;
-						}
-						$user->expireClose = 1;
-					}
+					list ($yearExp, $monthExp, $dayExp) = explode('-', $lookupMyAccountInfoResponse->fields->privilegeExpiresDate);
+					$dateString = $monthExp . '/' . $dayExp . '/' . $yearExp;
 				}
+				$user->setUserExpirationSettings($dateString);
 
 				//Get additional information about fines, etc
-
 				$finesVal = 0;
 				if (isset($lookupMyAccountInfoResponse->fields->blockList)) {
 					foreach ($lookupMyAccountInfoResponse->fields->blockList as $block) {
@@ -414,20 +405,12 @@ abstract class SirsiDynixROA extends HorizonAPI //TODO: This class doesn't need 
 					// The code below will attempt to find a location for the library anyway if the homeLocation is already set
 				}
 
+				$dateString = '';
 				if (isset($lookupMyAccountInfoResponse->fields->privilegeExpiresDate)) {
-					$user->expires = $lookupMyAccountInfoResponse->fields->privilegeExpiresDate;
-					list ($yearExp, $monthExp, $dayExp) = explode("-", $user->expires);
-					$timeExpire   = strtotime($monthExp . "/" . $dayExp . "/" . $yearExp);
-					$timeNow      = time();
-					$timeToExpire = $timeExpire - $timeNow;
-					if ($timeToExpire <= 30 * 24 * 60 * 60) {
-						//TODO: the ils also has an expire soon flag in the patronStatusInfo
-						if ($timeToExpire <= 0) {
-							$user->expired = 1;
-						}
-						$user->expireClose = 1;
-					}
+					list ($yearExp, $monthExp, $dayExp) = explode('-', $lookupMyAccountInfoResponse->fields->privilegeExpiresDate);
+					$dateString = $monthExp . '/' . $dayExp . '/' . $yearExp;
 				}
+				$user->setUserExpirationSettings($dateString);
 
 				//Get additional information about fines, etc
 

@@ -125,9 +125,6 @@ abstract class HorizonAPI extends Horizon{
 					$logger->log('HorizonAPI Driver: No Home Library Location or Hold location found in account look-up. User : '.$user->id, PEAR_LOG_ERR);
 				}
 
-				//TODO: See if we can get information about card expiration date
-				$expireClose = 0;
-
 				$finesVal = 0;
 				if (isset($lookupMyAccountInfoResponse->BlockInfo)){
 					foreach ($lookupMyAccountInfoResponse->BlockInfo as $block){
@@ -158,7 +155,7 @@ abstract class HorizonAPI extends Horizon{
 				$user->fines                 = sprintf('$%01.2f', $finesVal);
 				$user->finesVal              = $finesVal;
 				$user->expires               = ''; //TODO: Determine if we can get this
-				$user->expireClose           = $expireClose;
+				$user->expireClose           = 0;
 				$user->numCheckedOutIls      = isset($lookupMyAccountInfoResponse->ItemsOutInfo) ? count($lookupMyAccountInfoResponse->ItemsOutInfo) : 0;
 				$user->numHoldsIls           = $numHoldsAvailable + $numHoldsRequested;
 				$user->numHoldsAvailableIls  = $numHoldsAvailable;

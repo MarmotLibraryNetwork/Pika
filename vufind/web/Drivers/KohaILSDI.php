@@ -431,21 +431,13 @@ abstract class KohaILSDI extends ScreenScrapingDriver {
 
 			$patron->setUserHomeLocations((string)$patronInfoResponse->branchcode);
 
-			$patron->expired     = 0; // default setting
-			$patron->expireClose = 0;
-			$patron->expires     = (string)$patronInfoResponse->dateexpiry;
+			$dateString     = (string)$patronInfoResponse->dateexpiry;
 			if (!empty($patron->expires)){
 				list ($yearExp, $monthExp, $dayExp) = explode('-', $patron->expires);
-				$timeExpire   = strtotime($monthExp . "/" . $dayExp . "/" . $yearExp);
-				$timeNow      = time();
-				$timeToExpire = $timeExpire - $timeNow;
-				if ($timeToExpire <= 30 * 24 * 60 * 60){
-					if ($timeToExpire <= 0){
-						$patron->expired = 1;
-					}
-					$patron->expireClose = 1;
-				}
+				$dateString = $monthExp . '/' . $dayExp . '/' . $yearExp;
 			}
+			$patron->setUserExpirationSettings($dateString);
+
 			if ($userExistsInDB){
 				$patron->update();
 			}else{

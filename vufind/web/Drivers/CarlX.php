@@ -110,19 +110,8 @@ class CarlX extends SIP2Driver{
 					$user->patronType  = $result->Patron->PatronType; // Example: "ADULT"
 					$user->web_note    = '';
 					$user->phone       = $result->Patron->Phone1;
-					$user->expires     = $this->extractDateFromCarlXDateField($result->Patron->ExpirationDate);
-					$user->expired     = 0; // default setting
-					$user->expireClose = 0;
 
-					$timeExpire   = strtotime($user->expires);
-					$timeNow      = time();
-					$timeToExpire = $timeExpire - $timeNow;
-					if ($timeToExpire <= 30 * 24 * 60 * 60) {
-						if ($timeToExpire <= 0) {
-							$user->expired = 1;
-						}
-						$user->expireClose = 1;
-					}
+					$user->setUserExpirationSettings($this->extractDateFromCarlXDateField($result->Patron->ExpirationDate);
 
 					//Load summary information for number of holds, checkouts, etc
 					$patronSummaryRequest = new stdClass();
@@ -868,58 +857,57 @@ class CarlX extends SIP2Driver{
 				}
 
 				// CREATE PATRON REQUEST
-				$request                                         = new stdClass();
-				$request->Modifiers                              = '';
-				//$request->PatronFlags->PatronFlag                = 'DUPCHECK_ALTID'; // Duplicate check for alt id
-				$request->PatronFlags->PatronFlag[0]                = 'DUPCHECK_NAME_DOB'; // Duplicate check for name/date of birth
-				$request->PatronFlags->PatronFlag[1]                = 'VALIDATE_ZIPCODE'; // Validate ZIP against Carl.X Admin legal ZIPs
-				$request->Patron				= new stdClass();
-				$request->Patron->PatronID                       = $tempPatronID;
-				$request->Patron->Email                          = $email;
-				$request->Patron->FirstName                      = $firstName;
-				$request->Patron->MiddleName                     = $middleName;
-				$request->Patron->LastName                       = $lastName;
-				$request->Patron->Addresses			= new stdClass();
-				$request->Patron->Addresses->Address		= new stdClass();
-				$request->Patron->Addresses->Address->Type       = 'Primary';
-				$request->Patron->Addresses->Address->Street     = $address;
-				$request->Patron->Addresses->Address->City       = $city;
-				$request->Patron->Addresses->Address->State      = $state;
-				$request->Patron->Addresses->Address->PostalCode = $zip;
-				$request->Patron->PreferredAddress		= 'Primary';
-//				$request->Patron->PatronPIN			= $pin;
-				$request->Patron->Phone1			= $phone;
-				$request->Patron->RegistrationDate		= date('c'); // Registration Date, format ISO 8601
-				$request->Patron->LastActionDate		= date('c'); // Registration Date, format ISO 8601
-				$request->Patron->LastEditDate			= date('c'); // Registration Date, format ISO 8601
-				$request->Patron->CollectionStatus		= 'not sent';
+			$request                                         = new stdClass();
+			$request->Modifiers                              = '';
+//			$request->PatronFlags->PatronFlag                = 'DUPCHECK_ALTID'; // Duplicate check for alt id
+			$request->PatronFlags->PatronFlag[0]             = 'DUPCHECK_NAME_DOB'; // Duplicate check for name/date of birth
+			$request->PatronFlags->PatronFlag[1]             = 'VALIDATE_ZIPCODE'; // Validate ZIP against Carl.X Admin legal ZIPs
+			$request->Patron                                 = new stdClass();
+			$request->Patron->PatronID                       = $tempPatronID;
+			$request->Patron->Email                          = $email;
+			$request->Patron->FirstName                      = $firstName;
+			$request->Patron->MiddleName                     = $middleName;
+			$request->Patron->LastName                       = $lastName;
+			$request->Patron->Addresses                      = new stdClass();
+			$request->Patron->Addresses->Address             = new stdClass();
+			$request->Patron->Addresses->Address->Type       = 'Primary';
+			$request->Patron->Addresses->Address->Street     = $address;
+			$request->Patron->Addresses->Address->City       = $city;
+			$request->Patron->Addresses->Address->State      = $state;
+			$request->Patron->Addresses->Address->PostalCode = $zip;
+			$request->Patron->PreferredAddress               = 'Primary';
+			$request->Patron->Phone1                         = $phone;
+			$request->Patron->RegistrationDate               = date('c'); // Registration Date, format ISO 8601
+			$request->Patron->LastActionDate                 = date('c'); // Registration Date, format ISO 8601
+			$request->Patron->LastEditDate                   = date('c'); // Registration Date, format ISO 8601
+			$request->Patron->CollectionStatus               = 'not sent';
+			$request->Patron->EmailNotices                   = $configArray['Catalog']['selfRegEmailNotices'];
+			$request->Patron->DefaultBranch                  = $configArray['Catalog']['selfRegDefaultBranch'];
+			$request->Patron->PatronExpirationDate           = $configArray['Catalog']['selfRegPatronExpirationDate'];
+			$request->Patron->PatronStatusCode               = $configArray['Catalog']['selfRegPatronStatusCode'];
+			$request->Patron->PatronType                     = $configArray['Catalog']['selfRegPatronType'];
+			$request->Patron->RegBranch                      = $configArray['Catalog']['selfRegRegBranch'];
+			$request->Patron->RegisteredBy                   = $configArray['Catalog']['selfRegRegisteredBy'];
+//			$request->Patron->PatronPIN                      = $pin;
 
-				$request->Patron->EmailNotices			= $configArray['Catalog']['selfRegEmailNotices'];
-				$request->Patron->DefaultBranch			= $configArray['Catalog']['selfRegDefaultBranch'];
-				$request->Patron->PatronExpirationDate		= $configArray['Catalog']['selfRegPatronExpirationDate'];
-				$request->Patron->PatronStatusCode		= $configArray['Catalog']['selfRegPatronStatusCode'];
-				$request->Patron->PatronType			= $configArray['Catalog']['selfRegPatronType'];
-				$request->Patron->RegBranch			= $configArray['Catalog']['selfRegRegBranch'];
-				$request->Patron->RegisteredBy			= $configArray['Catalog']['selfRegRegisteredBy'];
-
-				// VALIDATE BIRTH DATE.
-				// DENY REGISTRATION IF REGISTRANT IS NOT 13 - 113 YEARS OLD
-				if ($library && $library->promptForBirthDateInSelfReg) {
-					$birthDate			= trim($_REQUEST['birthDate']);
-					$date				= strtotime(str_replace('-','/',$birthDate));
-					$birthDateMin			= strtotime('-113 years');
-					$birthDateMax			= strtotime('-13 years');
-					if ($date >= $birthDateMin && $date <= $birthDateMax) {
-						$request->Patron->BirthDate = date('Y-m-d', $date);
-					} else {
-						global $logger;
-						$logger->log('Online Registrant is too young : birth date : ' . date('Y-m-d', $date), PEAR_LOG_WARNING);
-						return array(
-							'success' => false,
-							'message' => 'You must be 13 years old to register.'
-						);
-					}
+			// VALIDATE BIRTH DATE.
+			// DENY REGISTRATION IF REGISTRANT IS NOT 13 - 113 YEARS OLD
+			if ($library && $library->promptForBirthDateInSelfReg){
+				$birthDate    = trim($_REQUEST['birthDate']);
+				$date         = strtotime(str_replace('-', '/', $birthDate));
+				$birthDateMin = strtotime('-113 years');
+				$birthDateMax = strtotime('-13 years');
+				if ($date >= $birthDateMin && $date <= $birthDateMax){
+					$request->Patron->BirthDate = date('Y-m-d', $date);
+				}else{
+					global $logger;
+					$logger->log('Online Registrant is too young : birth date : ' . date('Y-m-d', $date), PEAR_LOG_WARNING);
+					return array(
+						'success' => false,
+						'message' => 'You must be 13 years old to register.'
+					);
 				}
+			}
 
 				$result = $this->doSoapRequest('createPatron', $request, $this->patronWsdl, $this->genericResponseSOAPCallOptions);
 				if (is_null($result) && $this->soapClient) {

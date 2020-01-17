@@ -301,21 +301,12 @@ abstract class HorizonROA implements DriverInterface
 					// The code below will attempt to find a location for the library anyway if the homeLocation is already set
 				}
 
+				$dateString = '';
 				if (isset($lookupMyAccountInfoResponse->fields->privilegeExpiresDate)) {
-					$user->expires = $lookupMyAccountInfoResponse->fields->privilegeExpiresDate;
-					list ($yearExp, $monthExp, $dayExp) = explode("-", $user->expires);
-					$timeExpire   = strtotime($monthExp . "/" . $dayExp . "/" . $yearExp);
-					if ($timeExpire) {
-						$timeNow      = time();
-						$timeToExpire = $timeExpire - $timeNow;
-						if ($timeToExpire <= 30 * 24 * 60 * 60) {
-							if ($timeToExpire <= 0) {
-								$user->expired = 1;
-							}
-							$user->expireClose = 1;
-						}
-					}
+					list ($yearExp, $monthExp, $dayExp) = explode('-', $lookupMyAccountInfoResponse->fields->privilegeExpiresDate);
+					$dateString = $monthExp . '/' . $dayExp . '/' . $yearExp;
 				}
+				$user->setUserExpirationSettings($dateString);
 
 				//Get additional information about fines, etc
 				$finesVal = 0;

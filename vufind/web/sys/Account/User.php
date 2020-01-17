@@ -1286,10 +1286,44 @@ class User extends DB_DataObject {
 		return $result;
 	}
 
+
+	/**
+	 * Sets the user's expiration date settings given any string parsable by the standard
+	 * at https://www.php.net/manual/en/datetime.formats.php
+	 * If the date string isn't valid, it set the user's setting to the standard defaults;
+	 *
+	 * NOTE: this does NOT update the database.
+	 *
+	 * @param $dateString
+	 */
+	function setUserExpirationSettings($dateString){
+		$this->expires     = '00-00-0000';
+		$this->expireClose = 0;
+		$this->expired     = 0;
+
+		try {
+			$expiresDate   = new DateTime($dateString);
+			$this->expires = $expiresDate->format('m-d-Y');
+			$nowDate       = new DateTime('now');
+			$dateDiff      = $nowDate->diff($expiresDate);
+			if ($dateDiff->days <= 30){
+				$this->expireClose = 1;
+			}
+			if ($dateDiff->days <= 0){
+				$this->expired = 1;
+			}
+		} catch (\Exception $e){
+		}
+	}
+
 	/**
 	 * This sets the User's home locations and nearby locations.
 	 * If there isn't a match to the code, there is a fall-back
 	 * to using the main branch or first location of the current library.
+	 * After which, there is a fall-back to main branch or first location
+	 * of the site's default library.
+	 *
+	 * NOTE: this does NOT update the database.
 	 *
 	 * @param string $homeBranchCode The ILS location code for a library branch (matching column code in location table)
 	 * @return bool   Whether or not the user needs to be updated in the database.
