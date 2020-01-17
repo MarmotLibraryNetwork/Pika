@@ -38,6 +38,13 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 
 	IIIRecordProcessor(GroupedWorkIndexer indexer, Connection pikaConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 		super(indexer, pikaConn, indexingProfileRS, logger, fullReindex);
+
+		String orderStatusesToExport = PikaConfigIni.getIniValue("Reindex", "orderStatusesToExport");
+		if (orderStatusesToExport != null && !orderStatusesToExport.isEmpty())  {
+			// In the configuration file, statuses are delimited by the pipe character
+			validOnOrderRecordStatus = orderStatusesToExport.replaceAll("\\|", "");
+		}
+
 		try {
 			exportPath = indexingProfileRS.getString("marcPath");
 		}catch (Exception e){
