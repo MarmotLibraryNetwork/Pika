@@ -745,7 +745,9 @@ class Sierra {
 		}
 
 		// 6.8 number of checkouts from ils
-		$patron->numCheckedOutIls = $pInfo->fixedFields->{'50'}->value;
+		$patron->numCheckedOutIls  = $this->getNumCheckedOutsILS($patronId);
+		//TODO: Go back to the below if iii fixes bug. See: D-3447
+		//$patron->numCheckedOutIls = $pInfo->fixedFields->{'50'}->value;
 
 		// 6.9 fines
 		$patron->fines = number_format($pInfo->moneyOwed, 2, '.', '');
@@ -776,6 +778,21 @@ class Sierra {
 		$this->logger->info("Saving patron to memcache:".$patronObjectCacheKey);
 		$this->memCache->set($patronObjectCacheKey, $patron, $this->configArray['Caching']['user']);
 		return $patron;
+	}
+
+	public function getNumCheckedOutsILS($patronId) {
+		$checkoutOperation = 'patrons/'.$patronId.'/checkouts?limit=1';
+		try {
+			$checkoutRes = $this->_doRequest($checkoutOperation);
+		} catch (\Exception $e) {
+			$numCheckouts = 0;
+		}
+		if($checkoutRes && isset($checkoutRes->total)) {
+			$numCheckouts = $checkoutRes->total;
+		} else {
+			$numCheckouts = 0;
+		}
+		return $numCheckouts;
 	}
 
 	/**
@@ -1057,7 +1074,14 @@ class Sierra {
 
 		$patron->find(true);
 		if(! $patron->N || $patron->N == 0) {
-			return ['error' => 'Unable to find an account associated with barcode: '.$barcode ];
+			// might be a new user
+			if($patronId = $this->getPatronId($barcode)) {
+				// load them in the database.
+				unset($patron);
+				$patron = $this->getPatron($patronId);
+			} else {
+				return ['error' => 'Unable to find an account associated with barcode: '.$barcode ];
+			}
 		}
 		if(!isset($patron->email) || $patron->email == '') {
 			return ['error' => 'You do not have an email address on your account. Please visit your library to reset your pin.'];
