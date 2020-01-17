@@ -35,10 +35,10 @@ class Sacramento extends Sierra
 		$result = parent::_authBarcodePin($barcode, $pin); // DO regular pin testing for regular patrons
 		if ($result == false){ // now try classic process in case user is a student
 			global $configArray;
-			if (!empty($configArray['OPAC']['patron_host'])){
-				$c = new Curl();
+			if (!empty($configArray['OPAC']['patron_host'])){ // get the legacy sierra patron dump url (this is usually port 4500 or 54620
+				$c                 = new Curl();
 				$classicPinTestUrl = $configArray['OPAC']['patron_host'] . "/PATRONAPI/$barcode/$pin/pintest";
-				$headers = [
+				$headers           = [
 					"Accept"          => "text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5",
 					"Cache-Control"   => "max-age=0",
 					"Connection"      => "keep-alive",
@@ -46,8 +46,8 @@ class Sacramento extends Sierra
 					"Accept-Language" => "en-us,en;q=0.5",
 					"User-Agent"      => "Pika"
 				];
-				$cookie   = tempnam("/tmp", "CURLCOOKIE");
-				$curlOpts = [
+				$cookie            = tempnam("/tmp", "CURLCOOKIE");
+				$curlOpts          = [
 					CURLOPT_CONNECTTIMEOUT    => 20,
 					CURLOPT_TIMEOUT           => 60,
 					CURLOPT_RETURNTRANSFER    => true,
@@ -65,7 +65,7 @@ class Sacramento extends Sierra
 					return false;
 				}
 				if (strpos($r, 'RETCOD=0')){
-					//Successful pin test again classic Url
+					//Successful pin test against classic Url
 
 					if(!$patronId = $this->getPatronId($barcode, true)){
 						return false;

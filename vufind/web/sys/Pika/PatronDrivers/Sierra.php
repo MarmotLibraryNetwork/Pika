@@ -798,19 +798,21 @@ class Sierra {
 	/**
 	 * Get the unique Sierra patron ID by searching for barcode.
 	 *
-	 * @param  User|string $patronOrBarcode  Either a barcode as a string or a User object.
+	 * @param User|string $patronOrBarcode Either a barcode as a string or a User object.
+	 * @param bool $searchSacramentoStudentIdField Overrides the var field tag to search to find sierra Id for
+	 *                                             Sacramento's students
 	 * @return int|false   returns the patron ID or false
+	 * @throws ErrorException
 	 */
-	public function getPatronId($patronOrBarcode, $searchSacramentoStudentIdField = false)
-	{
+	public function getPatronId($patronOrBarcode, $searchSacramentoStudentIdField = false){
 		// if a patron object was passed
-		if(is_object($patronOrBarcode)) {
-			if ($this->accountProfile->loginConfiguration == "barcode_pin") {
-				$barcode = $patronOrBarcode->cat_username ;
-			} else {
+		if (is_object($patronOrBarcode)){
+			if ($this->accountProfile->loginConfiguration == "barcode_pin"){
+				$barcode = $patronOrBarcode->cat_username;
+			}else{
 				$barcode = $patronOrBarcode->cat_password;
 			}
-		} elseif (is_string($patronOrBarcode)) {
+		}elseif (is_string($patronOrBarcode)){
 			$barcode = $patronOrBarcode;
 		}
 
@@ -2640,6 +2642,7 @@ EOT;
 			$patron->username     = $patronId;
 			$patron->cat_username = $barcode;
 			$patron->insert();
+			//TODO: chris, will a first time log in pass the pin check below?
 		}
 
 		if($patron->cat_password != $pin) {
