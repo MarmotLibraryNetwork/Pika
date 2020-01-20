@@ -44,7 +44,7 @@ VuFind.Hoopla = (function(){
 
 		returnHooplaTitle: function (patronId, hooplaId) {
 			if (Globals.loggedIn) {
-				if (confirm('Are you sure you want to return this title?')) {
+				VuFind.confirm('Are you sure you want to return this title?', function () {
 					VuFind.showMessage("Returning Title", "Returning your title in Hoopla.");
 					var url = Globals.path + "/Hoopla/" + hooplaId + "/AJAX",
 							params = {
@@ -54,7 +54,7 @@ VuFind.Hoopla = (function(){
 					$.getJSON(url, params, function (data) {
 						VuFind.showMessage(data.success ? 'Success' : 'Error', data.message, data.success, data.success);
 					}).fail(VuFind.ajaxFail);
-				}
+				});
 			} else {
 				VuFind.Account.ajaxLogin(null, function () {
 					VuFind.Hoopla.returnHooplaTitle(patronId, hooplaId);

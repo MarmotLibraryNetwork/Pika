@@ -33,7 +33,7 @@ VuFind.GroupedWork = (function(){
 		},
 
 		deleteReview: function(id, reviewId){
-			if (confirm("Are you sure you want to delete this review?")){
+			VuFind.confirm("Are you sure you want to delete this review?", function(){
 				var url = Globals.path + '/GroupedWork/' + id + '/AJAX?method=deleteUserReview';
 				$.getJSON(url, function(data){
 					if (data.result == true){
@@ -43,7 +43,7 @@ VuFind.GroupedWork = (function(){
 						VuFind.showMessage('Sorry', data.message);
 					}
 				});
-			}
+			});
 			return false;
 		},
 
@@ -239,11 +239,10 @@ VuFind.GroupedWork = (function(){
 
 
 		removeTag:function(id, tag){
-			if (confirm("Are you sure you want to remove the tag \"" + tag + "\" from this title?")){
-				var url = Globals.path + '/GroupedWork/' + id + '/AJAX?method=removeTag';
-				url += "&tag=" + encodeURIComponent(tag);
-				$.getJSON(
-						url, function(data){
+			VuFind.confirm("Are you sure you want to remove the tag \"" + tag + "\" from this title?", function(){
+				var url = Globals.path + '/GroupedWork/' + id + '/AJAX',
+						params = {method:'removeTag', tag: tag};
+				$.getJSON(url, params, function(data){
 							if (data.result == true){
 								VuFind.showMessage('Success', data.message);
 							}else{
@@ -252,7 +251,7 @@ VuFind.GroupedWork = (function(){
 						}
 				);
 				return false;
-			}
+			});
 			return false;
 		},
 

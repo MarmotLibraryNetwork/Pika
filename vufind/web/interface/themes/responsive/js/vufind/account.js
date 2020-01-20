@@ -233,7 +233,7 @@ VuFind.Account = (function(){
 
 
 		removeLinkedUser: function(idToRemove){
-			if (confirm("Are you sure you want to stop managing this account?")){
+			VuFind.confirm("Are you sure you want to stop managing this account?", function () {
 				var url = Globals.path + "/MyAccount/AJAX?method=removeAccountLink&idToRemove=" + idToRemove;
 				$.getJSON(url, function(data){
 					if (data.result == true){
@@ -243,12 +243,12 @@ VuFind.Account = (function(){
 						VuFind.showMessage('Unable to Remove Account Link', data.message);
 					}
 				});
-			}
+			});
 			return false;
 		},
 
 		removeTag: function(tag){
-			if (confirm("Are you sure you want to remove the tag \"" + tag + "\" from all titles?")){
+			VuFind.confirm("Are you sure you want to remove the tag \"" + tag + "\" from all titles?",function () {
 				var url = Globals.path + "/MyAccount/AJAX",
 						params = {method:'removeTag', tag: tag};
 				$.getJSON(url, params, function(data){
@@ -258,7 +258,7 @@ VuFind.Account = (function(){
 						VuFind.showMessage('Tag Not Deleted', data.message);
 					}
 				});
-			}
+			});
 			return false;
 		},
 
@@ -278,7 +278,7 @@ VuFind.Account = (function(){
 
 		renewAll: function() {
 			if (Globals.loggedIn) {
-				if (confirm('Renew All Items?')) {
+				VuFind.confirm('Renew All Items?', function () {
 					VuFind.loadingMessage();
 					$.getJSON(Globals.path + "/MyAccount/AJAX?method=renewAll", function (data) {
 						VuFind.showMessage(data.title, data.modalBody, data.success);
@@ -290,7 +290,7 @@ VuFind.Account = (function(){
 							});
 						}
 					}).fail(VuFind.ajaxFail);
-				}
+				})
 			} else {
 				this.ajaxLogin(null, this.renewAll, true);
 				//auto close so that if user opts out of renew, the login window closes; if the users continues, follow-up operations will reopen modal
@@ -302,13 +302,13 @@ VuFind.Account = (function(){
 			if (Globals.loggedIn) {
 				var selectedTitles = VuFind.getSelectedTitles();
 				if (selectedTitles) {
-					if (confirm('Renew selected Items?')) {
+					VuFind.confirm('Renew selected Items?', function(){
 						VuFind.loadingMessage();
 						$.getJSON(Globals.path + "/MyAccount/AJAX?method=renewSelectedItems&" + selectedTitles, function (data) {
 							var reload = data.success || data.renewed > 0;
 							VuFind.showMessage(data.title, data.modalBody, data.success, reload);
 						}).fail(VuFind.ajaxFail);
-					}
+					})
 				}
 			} else {
 				this.ajaxLogin(null, this.renewSelectedTitles, true);
@@ -422,7 +422,7 @@ VuFind.Account = (function(){
 */
 
 		cancelBooking: function(patronId, cancelId){
-			if (confirm("Are you sure you want to cancel this scheduled item?")){
+			VuFind.confirm("Are you sure you want to cancel this scheduled item?", function(){
 				if (Globals.loggedIn) {
 					VuFind.loadingMessage();
 					var c = {};
@@ -441,7 +441,7 @@ VuFind.Account = (function(){
 						VuFind.Account.cancelBooking(cancelId)
 					}, false);
 				}
-			}
+			});
 
 			return false
 		},
@@ -479,7 +479,7 @@ VuFind.Account = (function(){
 
 		cancelAllBookings: function(){
 			if (Globals.loggedIn) {
-				if (confirm('Cancel all of your scheduled items?')) {
+				VuFind.confirm('Cancel all of your scheduled items?',function () {
 					VuFind.loadingMessage();
 					$.getJSON(Globals.path + "/MyAccount/AJAX?method=cancelBooking&cancelAll=1", function(data){
 						VuFind.showMessage(data.title, data.modalBody, data.success); // autoclose when successful
@@ -497,7 +497,7 @@ VuFind.Account = (function(){
 							});
 						}
 					}).fail(VuFind.ajaxFail);
-				}
+				});
 			} else {
 				this.ajaxLogin(null, VuFind.Account.cancelAllBookings, false);
 			}

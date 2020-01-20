@@ -13,6 +13,8 @@ class OverDrive_AJAX extends AJAXHandler {
 		'GetDownloadLink',
 		'GetOverDriveCheckoutPrompts',
 		'forceUpdateFromAPI',
+		'getSupportForm',
+		'submitSupportForm',
 	);
 
 	function forceUpdateFromAPI(){
@@ -59,6 +61,9 @@ class OverDrive_AJAX extends AJAXHandler {
 				require_once ROOT_DIR . '/Drivers/OverDriveDriverFactory.php';
 				$driver      = OverDriveDriverFactory::getDriver();
 				$holdMessage = $driver->placeOverDriveHold($overDriveId, $patron);
+				if ($holdMessage['success']){
+					$holdMessage['buttons'] = '<a class="btn btn-primary" href="/MyAccount/Holds" role="button">View My Holds</a>';
+				}
 				return $holdMessage;
 			}else{
 				return array('result' => false, 'message' => 'Sorry, it looks like you don\'t have permissions to place holds for that user.');
@@ -249,4 +254,86 @@ class OverDrive_AJAX extends AJAXHandler {
 			return array('result' => false, 'message' => 'You must be logged in to cancel holds.');
 		}
 	}
+
+	function getSupportForm(){
+		global $interface;
+		$user = UserAccount::getActiveUserObj();
+
+		// Presets for the form to be filled out with
+		$interface->assign('lightbox', true);
+		if ($user){
+			$name = $user->firstname . ' ' . $user->lastname;
+			$interface->assign('name', $name);
+			$interface->assign('email', $user->email);
+		}
+
+		$results = array(
+			'title'        => 'eContent Support Request',
+			'modalBody'    => $interface->fetch('OverDrive\eContentSupport.tpl'),
+			'modalButtons' => '<span class="tool btn btn-primary" onclick="return $(\'#eContentSupport\').submit()">Submit</span>', // .submit() triggers form validation
+		);
+		return $results;
+	}
+
+	function submitSupportForm(){
+		global $interface;
+		global $configArray;
+
+		if (isset($_REQUEST['submit'])){
+			//E-mail the library with details of the support request
+			require_once ROOT_DIR . '/sys/Mailer.php';
+			$mail        = new VuFindMailer();
+			$userLibrary = UserAccount::getUserHomeLibrary();
+			if (!empty($userLibrary->eContentSupportAddress)){
+				$to = $userLibrary->eContentSupportAddress;
+			}elseif (!empty($configArray['Site']['email'])){
+				$to = $configArray['Site']['email'];
+			}else{
+				return array(
+					'title'   => "Support Request Not Sent",
+					'message' => "<p>We're sorry, but your request could not be submitted because we do not have a support email address on file.</p><p>Please contact your local library.</p>"
+				);
+			}
+			$multipleEmailAddresses = preg_split('/[;,]/', $to, null, PREG_SPLIT_NO_EMPTY);
+			if (!empty($multipleEmailAddresses)){
+				$sendingAddress = $multipleEmailAddresses[0];
+			}else{
+				$sendingAddress = $to;
+			}
+
+			$name        = $_REQUEST['name'];
+			$subject     = 'eContent Support Request from ' . $name;
+			$patronEmail = $_REQUEST['email'];
+			$interface->assign('bookAuthor', $_REQUEST['bookAuthor']);
+			$interface->assign('device', $_REQUEST['device']);
+			$interface->assign('format', $_REQUEST['format']);
+			$interface->assign('operatingSystem', $_REQUEST['operatingSystem']);
+			$interface->assign('problem', $_REQUEST['problem']);
+			$interface->assign('name', $name);
+			$interface->assign('email', $patronEmail);
+
+			$body        = $interface->fetch('Help/eContentSupportEmail.tpl');
+			$emailResult = $mail->send($to, $sendingAddress, $subject, $body, $patronEmail);
+			if (PEAR::isError($emailResult)){
+				return array(
+					'title'   => "Support Request Not Sent",
+					'message' => "<p>We're sorry, an error occurred while submitting your request.</p>" . $emailResult->getMessage()
+				);
+			}elseif ($emailResult){
+				return array(
+					'title'   => "Support Request Sent",
+					'message' => "<p>Your request was sent to our support team.  We will respond to your request as quickly as possible.</p><p>Thank you for using the catalog.</p>"
+				);
+			}else{
+				return array(
+					'title'   => "Support Request Not Sent",
+					'message' => "<p>We're sorry, but your request could not be submitted to our support team at this time.</p><p>Please try again later.</p>"
+				);
+			}
+		}else{
+			return  $this->getSupportForm();
+		}
+	}
+
+
 }

@@ -38,6 +38,7 @@
 		<script src="{$path}/interface/themes/responsive/js/lib/jcarousel.js?v={$gitBranch|urlencode}"></script>
 		<script src="{$path}/interface/themes/responsive/js/lib/bootstrap-datepicker.js?v={$gitBranch|urlencode}"></script>
 		<script src="{$path}/interface/themes/responsive/js/lib/jquery-ui-1.10.4.custom.min.js?v={$gitBranch|urlencode}"></script>
+	{* autocomplete still uses jquery=-ui*}
 		<script src="{$path}/interface/themes/responsive/js/lib/bootstrap-switch.min.js?v={$gitBranch|urlencode}"></script>
 		<script src="{$path}/interface/themes/responsive/js/lib/jquery.touchwipe.min.js?v={$gitBranch|urlencode}"></script>
 		<script src="{$path}/interface/themes/responsive/js/lib/lightbox.js?v={$gitBranch|urlencode}"></script>
@@ -51,7 +52,6 @@
 		<script src="{$path}/interface/themes/responsive/js/vufind/archive.js?v={$gitBranch|urlencode}"></script>
 		<script src="{$path}/interface/themes/responsive/js/vufind/browse.js?v={$gitBranch|urlencode}"></script>
 		<script src="{$path}/interface/themes/responsive/js/vufind/dpla.js?v={$gitBranch|urlencode}"></script>
-		<script src="{$path}/interface/themes/responsive/js/vufind/econtent-record.js?v={$gitBranch|urlencode}"></script>
 		<script src="{$path}/interface/themes/responsive/js/vufind/grouped-work.js?v={$gitBranch|urlencode}"></script>
 		<script src="{$path}/interface/themes/responsive/js/vufind/lists.js?v={$gitBranch|urlencode}"></script>
 		<script src="{$path}/interface/themes/responsive/js/vufind/lists-widgets.js?v={$gitBranch|urlencode}"></script>

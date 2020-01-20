@@ -30,25 +30,21 @@ VuFind.MaterialsRequest = (function(){
 		},
 
 		cancelMaterialsRequest: function(id){
-			if (confirm("Are you sure you want to cancel this request?")){
+			VuFind.confirm("Are you sure you want to cancel this request?", function(){
 				var url = Globals.path + "/MaterialsRequest/AJAX",
 						params = {
 							'method': 'CancelRequest',
 							id: id
 						};
-				$.getJSON(
-						url,
-						params,
-						function(data){
+				$.getJSON(url, params, function(data){
 							if (data.success){
-								alert("Your request was cancelled successfully.");
-								window.location.reload();
+								VuFind.showMessage('Cancel Material Request', 'Your request was cancelled successfully.', data.success, data.success);
 							}else{
-								alert(data.error);
+								VuFind.showMessage('Cancel Material Request', data.error, data.success, data.success);
 							}
 						}
 				);
-			}
+			});
 			return false;
 		},
 

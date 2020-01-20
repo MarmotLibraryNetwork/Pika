@@ -311,6 +311,22 @@ var VuFind = (function(){
 			}
 		},
 
+		confirm: function(message, confirmFunction){
+			var button = $('<button>', {
+				id: 'confirm-button',
+				class: 'btn btn-primary',
+				text : 'Okay',
+				click: function (){
+					VuFind.loadingMessage(); // prevent multiple time button clicking
+					confirmFunction();
+				}
+			});
+			$("#modalDialog").on('shown.bs.modal', function(event) {
+				$("#confirm-button").focus().select();
+			});
+			this.showMessageWithButtons('Confirm?', message, button);
+		},
+
 		showMessageWithButtons: function(title, body, buttons){
 			$("#myModalLabel").html(title);
 			$(".modal-body").html(body);

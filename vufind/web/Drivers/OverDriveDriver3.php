@@ -730,24 +730,23 @@ class OverDriveDriver3 {
 		/** @var Memcache $memCache */
 		global $memCache;
 
-		$url = $configArray['OverDrive']['patronApiUrl'] . '/v1/patrons/me/holds/' . $overDriveId;
-		$params = array(
+		$url      = $configArray['OverDrive']['patronApiUrl'] . '/v1/patrons/me/holds/' . $overDriveId;
+		$params   = array(
 			'reserveId'    => $overDriveId,
 			'emailAddress' => trim($user->overdriveEmail)
 		);
 		$response = $this->_callPatronUrl($user, $url, $params);
 
-		$holdResult            = array();
-		$holdResult['success'] = false;
-		$holdResult['message'] = '';
-
-		//print_r($response);
+		$holdResult = array();
 		if (isset($response->holdListPosition)){
 			$holdResult['success'] = true;
 			$holdResult['message'] = 'Your hold was placed successfully.  You are number ' . $response->holdListPosition . ' on the wait list.';
 		}else{
+			$holdResult['success'] = false;
 			$holdResult['message'] = 'Sorry, but we could not place a hold for you on this title.';
-			if (isset($response->message)) $holdResult['message'] .= "  {$response->message}";
+			if (isset($response->message)){
+				$holdResult['message'] .= "  {$response->message}";
+			}
 		}
 		$user->clearCache();
 		$memCache->delete('overdrive_summary_' . $user->id);
@@ -925,31 +924,34 @@ class OverDriveDriver3 {
 	public function getDownloadLink($overDriveId, $format, $user){
 		global $configArray;
 
-		$url = $configArray['OverDrive']['patronApiUrl'] . "/v1/patrons/me/checkouts/{$overDriveId}/formats/{$format}/downloadlink";
-		$url .= '?errorpageurl=' . urlencode($configArray['Site']['url'] . '/Help/OverDriveError');
-		if ($format == 'ebook-overdrive' || $format == 'ebook-mediado'){
-			$url .= '&odreadauthurl=' . urlencode($configArray['Site']['url'] . '/Help/OverDriveError');
-		}elseif ($format == 'audiobook-overdrive'){
-			$url .= '&odreadauthurl=' . urlencode($configArray['Site']['url'] . '/Help/OverDriveError');
-		}elseif ($format == 'video-streaming'){
-			$url .= '&errorurl=' . urlencode($configArray['Site']['url'] . '/Help/OverDriveError');
-			$url .= '&streamingauthurl=' . urlencode($configArray['Site']['url'] . '/Help/streamingvideoauth');
+		$errorUrl = urlencode($configArray['Site']['url'] . '/OverDrive/eContentSupport');
+		$url      = $configArray['OverDrive']['patronApiUrl'] . "/v1/patrons/me/checkouts/{$overDriveId}/formats/{$format}/downloadlink";
+		$url      .= '?errorpageurl=' . $errorUrl;
+		switch ($format){
+			case 'ebook-overdrive':
+			case 'audiobook-overdrive':
+			case 'ebook-mediado':
+				$url .= '&odreadauthurl=' . $errorUrl;
+				break;
+			case 'video-streaming':
+				$url .= '&errorurl=' . $errorUrl;
+				$url .= '&streamingauthurl=' . urlencode($configArray['Site']['url'] . '/Help/streamingvideoauth');
+				break;
 		}
 
 		$response = $this->_callPatronUrl($user, $url);
-		//print_r($response);
 
 		$result = array();
-		$result['success'] = false;
-		$result['message'] = '';
-
 		if (isset($response->links->contentlink)){
-			$result['success'] = true;
-			$result['message'] = 'Created Download Link';
+			$result['success']     = true;
+			$result['message']     = 'Created Download Link';
 			$result['downloadUrl'] = $response->links->contentlink->href;
 		}else{
+			$result['success'] = false;
 			$result['message'] = 'Sorry, but we could not get a download link for you.';
-			if (isset($response->message)) $result['message'] .= "  {$response->message}";
+			if (isset($response->message)){
+				$result['message'] .= "  {$response->message}";
+			}
 		}
 
 		return $result;

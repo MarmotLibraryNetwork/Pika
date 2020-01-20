@@ -21,7 +21,6 @@ vufind/admin.min.js
 vufind/archive.min.js
 vufind/browse.min.js
 vufind/dpla.min.js
-vufind/econtent-record.min.js
 vufind/grouped-work.min.js
 vufind/lists.min.js
 vufind/lists-widgets.min.js
