@@ -157,13 +157,8 @@ if (!UserAccount::isLoggedIn() && ((isset($_POST['username']) && isset($_POST['p
 		$module = isset($_REQUEST['followupModule']) ? $_REQUEST['followupModule'] : $configArray['Site']['defaultModule'];
 		$action = isset($_REQUEST['followup']) ? $_REQUEST['followup'] : (isset($_REQUEST['followupAction']) ? $_REQUEST['followupAction'] : 'Home');
 
-		if (!empty($_REQUEST['id'])){
-			$id = $_REQUEST['id']; //using this to get the list id when logging in to view a user list page
-		}elseif (!empty($_REQUEST['recordId'])){
-			$id = $_REQUEST['recordId'];
-		}
-		if (isset($id)){
-			$_REQUEST['id'] = $id;
+		if (!empty($_REQUEST['recordId'])){
+			$_REQUEST['id'] = $_REQUEST['recordId'];
 		}
 
 		$_REQUEST['module'] = $module;
