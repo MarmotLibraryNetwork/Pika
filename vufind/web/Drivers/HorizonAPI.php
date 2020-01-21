@@ -664,7 +664,7 @@ abstract class HorizonAPI extends Horizon{
 				$curTitle['canrenew']        = true; //TODO: Figure out if the user can renew the title or not
 				$curTitle['renewIndicator']  = (string)$itemOut->itemBarcode;
 				$curTitle['barcode']         = (string)$itemOut->itemBarcode;
-				$curTitle['holdQueueLength'] = $this->getNumHolds($bibId);
+				$curTitle['holdQueueLength'] = $this->getNumHoldsOnRecord($bibId);
 				$curTitle['format']          = 'Unknown';
 				if ($curTitle['id'] && strlen($curTitle['id']) > 0){
 					require_once ROOT_DIR . '/RecordDrivers/MarcRecord.php';
@@ -764,7 +764,7 @@ abstract class HorizonAPI extends Horizon{
 	 * @param  string|int $bibId
 	 * @return bool|int
 	 */
-	public function getNumHolds($bibId) {
+	public function getNumHoldsOnRecord($bibId) {
 		global $offlineMode;
 		if (!$offlineMode){
 			global $configArray;

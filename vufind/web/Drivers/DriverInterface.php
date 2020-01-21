@@ -53,7 +53,7 @@ interface DriverInterface
 	 * @param $id
 	 * @return int
 	 */
-	public function getNumHolds($id);
+	public function getNumHoldsOnRecord($id);
 
 	/**
 	 * Get Patron Transactions

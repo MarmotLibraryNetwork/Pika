@@ -156,8 +156,8 @@ class CarlX extends SIP2Driver{
 		return true;
 	}
 
-	public function getNumHolds($id) {
-		// TODO: Implement getNumHolds() method.
+	public function getNumHoldsOnRecord($id) {
+		// TODO: Implement getNumHoldsOnRecord() method.
 	}
 
 	/**

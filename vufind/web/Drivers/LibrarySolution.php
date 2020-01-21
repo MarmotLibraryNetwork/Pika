@@ -202,8 +202,8 @@ class LibrarySolution extends ScreenScrapingDriver {
 		return array('historyActive'=>true, 'titles'=>$readingHistory, 'numTitles'=> count($readingHistory));
 	}
 
-	public function getNumHolds($id) {
-		// TODO: Implement getNumHolds() method.
+	public function getNumHoldsOnRecord($id) {
+		// TODO: Implement getNumHoldsOnRecord() method.
 	}
 
 	protected function getCustomHeaders() {

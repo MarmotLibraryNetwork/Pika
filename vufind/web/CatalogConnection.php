@@ -139,18 +139,18 @@ class CatalogConnection
 	 * number, barcode; on failure, a PEAR_Error.
 	 * @access public
 	 */
-	public function getHolding($recordId, $patron = false)
-	{
-		$holding = $this->driver->getHolding($recordId, $patron);
-
-		// Validate return from driver's getHolding method -- should be an array or
-		// an error.  Anything else is unexpected and should become an error.
-		if (!is_array($holding) && !PEAR_Singleton::isError($holding)) {
-			return new PEAR_Error('Unexpected return from getHolding: ' . $holding);
-		}
-
-		return $holding;
-	}
+//	public function getHolding($recordId, $patron = false)
+//	{
+//		$holding = $this->driver->getHolding($recordId, $patron);
+//
+//		// Validate return from driver's getHolding method -- should be an array or
+//		// an error.  Anything else is unexpected and should become an error.
+//		if (!is_array($holding) && !PEAR_Singleton::isError($holding)) {
+//			return new PEAR_Error('Unexpected return from getHolding: ' . $holding);
+//		}
+//
+//		return $holding;
+//	}
 
 	/**
 	 * Patron Login
@@ -1061,15 +1061,19 @@ class CatalogConnection
 		}
 	}
 
+	/**
+	 * Return the number of holds that are on a record
+	 * @param $id
+	 * @return int
+	 */
 	public function getNumHolds($id) {
-		// todo: this should be in User.php. These methods are all over the place, ie, getNumCheckedOutTotal count is in User.php, but hold count is here????
 		// these all need to live with the owning object.
 		/** @var Memcache $memCache */
 		global $memCache;
 		$key = 'num_holds_' . $id ;
 		$cachedValue = $memCache->get($key);
 		if ($cachedValue == false || isset($_REQUEST['reload'])){
-			$cachedValue = $this->driver->getNumHolds($id);
+			$cachedValue = $this->driver->getNumHoldsOnRecord($id);
 			global $configArray;
 			$memCache->add($key, $cachedValue, 0, $configArray['Caching']['item_data']);
 		}

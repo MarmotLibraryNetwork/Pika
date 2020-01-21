@@ -1603,7 +1603,7 @@ class Aspencat implements DriverInterface{
 	private $holdsByBib = array();
 	/** @var mysqli_stmt  */
 	private $getNumHoldsStmt = null;
-	public function getNumHolds($id) {
+	public function getNumHoldsOnRecord($id) {
 		if (isset($this->holdsByBib[$id])){
 			return $this->holdsByBib[$id];
 		}

@@ -76,7 +76,7 @@ abstract class ByWaterKoha extends KohaILSDI {
 	 * @param int $id biblionumber of title
 	 * @return int
 	 */
-	public function getNumHolds($id) {
+	public function getNumHoldsOnRecord($id) {
 
 	}
 

@@ -396,7 +396,7 @@ abstract class HorizonROA implements DriverInterface
 	 * @param  string|int $bibId
 	 * @return bool|int
 	 */
-	public function getNumHolds($bibId) {
+	public function getNumHoldsOnRecord($bibId) {
 		//This uses the standard / REST method to retrieve this information from the ILS.
 		// It isn't an ROA call.
 		global $offlineMode;
@@ -481,7 +481,7 @@ abstract class HorizonROA implements DriverInterface
 						$curTitle['format']         = 'Unknown'; //TODO: I think this makes sorting working better
 						$curTitle['overdue']        = $checkout->overdue; // (optional) CatalogConnection method will calculate this based on due date
 						$curTitle['fine']           = $fine;
-						$curTitle['holdQueueLength'] = $this->getNumHolds($bibId);
+						$curTitle['holdQueueLength'] = $this->getNumHoldsOnRecord($bibId);
 
 						$recordDriver = new MarcRecord($bibId);
 						if ($recordDriver->isValid()) {
