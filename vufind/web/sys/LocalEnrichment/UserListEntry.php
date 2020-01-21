@@ -11,7 +11,7 @@ require_once 'DB/DataObject.php';
 class UserListEntry extends DB_DataObject{
 	public $__table = 'user_list_entry';     // table name
 	public $id;                              // int(11)  not_null primary_key auto_increment
-	public $groupedWorkPermanentId;          // int(11)  not_null multiple_key
+	public $groupedWorkPermanentId;          // NOTE: this isn't *only* groupedWork ids anymore. This can be archive ids too.
 	public $listId;                          // int(11)  multiple_key
 	public $notes;                           // blob(65535)  blob
 	public $dateAdded;                       // timestamp(19)  not_null unsigned zerofill binary timestamp

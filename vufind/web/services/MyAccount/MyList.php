@@ -73,7 +73,7 @@ class MyAccount_MyList extends MyAccount {
 			}
 		}
 
-		if (isset($_SESSION['listNotes'])){
+		if (isset($_SESSION['listNotes'])){ // can contain results from bulk add titles action
 			$interface->assign('notes', $_SESSION['listNotes']);
 			unset($_SESSION['listNotes']);
 		}
@@ -179,8 +179,9 @@ class MyAccount_MyList extends MyAccount {
 			$titleSearch = trim($titleSearch);
 			if (!empty($titleSearch)){
 				$_REQUEST['lookfor'] = $titleSearch;
-				$_REQUEST['type']    = 'Keyword';// Initialise from the current search globals
-				$searchObject        = SearchObjectFactory::initSearchObject();
+				$isArchiveId         = strpos($titleSearch, ':') !== false;
+				$_REQUEST['type']    = $isArchiveId ? 'IslandoraKeyword' : 'Keyword';// Initialise from the current search globals
+				$searchObject        = SearchObjectFactory::initSearchObject($isArchiveId ? 'Islandora' : null);
 				$searchObject->setLimit(1);
 				$searchObject->init();
 				$searchObject->clearFacets();
@@ -188,7 +189,7 @@ class MyAccount_MyList extends MyAccount {
 				if ($results['response'] && $results['response']['numFound'] >= 1){
 					$firstDoc = $results['response']['docs'][0];
 					//Get the id of the document
-					$id = $firstDoc['id'];
+					$id = $isArchiveId ? $firstDoc['PID'] : $firstDoc['id'];
 					$numAdded++;
 					$userListEntry                         = new UserListEntry();
 					$userListEntry->listId                 = $list->id;
