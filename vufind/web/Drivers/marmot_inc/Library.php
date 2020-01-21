@@ -62,7 +62,6 @@ class Library extends DB_DataObject {
 	public $showTagging;
 	public $showRatings; // User Ratings
 	public $showFavorites;
-	public $showTableOfContentsTab;
 	public $inSystemPickupsOnly;
 	public $validPickupSystems;
 	public $pTypes;
@@ -127,7 +126,6 @@ class Library extends DB_DataObject {
 	public $holdDisclaimer;
 	public $enableMaterialsRequest;
 	public $externalMaterialsRequestUrl;
-	public $eContentLinkRules;
 	public $includeNovelistEnrichment;
 	public $applyNumberOfHoldingsBoost;
 	public $allowAutomaticSearchReplacements;

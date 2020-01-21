@@ -10,14 +10,6 @@
 
 function getLibraryLocationUpdates(){
 	return array(
-		'library_1' => array(
-			'title' => 'Library 1',
-			'description' => 'Update Library table to include showSeriesAsTab column',
-			'sql' => array(
-				"ALTER TABLE library ADD COLUMN showSeriesAsTab TINYINT NOT NULL DEFAULT '0';",
-				"UPDATE library SET showSeriesAsTab = '1' WHERE subdomain IN ('adams') ",
-			),
-		),
 
 		'library_2' => array(
 			'title' => 'Library 2',
@@ -42,14 +34,6 @@ function getLibraryLocationUpdates(){
 			'description' => 'Update Library table to include enableAlphaBrowse column',
 			'sql' => array(
 				"ALTER TABLE library ADD COLUMN enableAlphaBrowse TINYINT DEFAULT '1';",
-			),
-		),
-
-		'library_5' => array(
-			'title' => 'Library 5',
-			'description' => 'Set up a link to boopsie in mobile',
-			'sql' => array(
-				"ALTER TABLE `library` ADD `boopsieLink` VARCHAR(150) CHARACTER SET latin1 COLLATE latin1_swedish_ci NOT NULL;",
 			),
 		),
 
@@ -81,30 +65,11 @@ function getLibraryLocationUpdates(){
 			),
 		),
 
-		'library_8' => array(
-			'title' => 'Library 8',
-			'description' => 'Add eContenLinkRules to determine how to load library specific link urls',
-			'sql' => array(
-				"ALTER TABLE `library` ADD `eContentLinkRules` VARCHAR(512) DEFAULT '';",
-			),
-		),
-
-		'library_9' => array(
-			'title' => 'Library 9',
-			'description' => 'Add showOtherEditionsPopup to determine whether or not the Other Editions and Languages Popup is shown',
-			'sql' => array(
-				"ALTER TABLE `library` ADD `showOtherEditionsPopup` TINYINT DEFAULT '1';",
-				"ALTER TABLE `library` ADD `showTableOfContentsTab` TINYINT DEFAULT '1';",
-				"ALTER TABLE `library` ADD `notesTabName` VARCHAR(50) DEFAULT 'Notes';",
-			),
-		),
-
 		'library_10' => array(
 			'title' => 'Library 10',
 			'description' => 'Add fields for showing copies in holdings summary, and hold button in results list',
 			'sql' => array(
 				"ALTER TABLE `library` ADD `showHoldButtonInSearchResults` TINYINT DEFAULT '1';",
-				"ALTER TABLE `library` ADD `showCopiesLineInHoldingsSummary` TINYINT DEFAULT '1';",
 			),
 		),
 
@@ -114,11 +79,10 @@ function getLibraryLocationUpdates(){
 			'sql' => array(
 				"ALTER TABLE `library` ADD `showSimilarAuthors` TINYINT DEFAULT '1';",
 				"ALTER TABLE `library` ADD `showSimilarTitles` TINYINT DEFAULT '1';",
-				"ALTER TABLE `library` ADD `showProspectorTitlesAsTab` TINYINT DEFAULT '1';",
 				"ALTER TABLE `library` ADD `show856LinksAsTab` TINYINT DEFAULT '0';",
 				"ALTER TABLE `library` ADD `applyNumberOfHoldingsBoost` TINYINT DEFAULT '1';",
 				"ALTER TABLE `library` ADD `worldCatUrl` VARCHAR(100) DEFAULT '';",
-				"ALTER TABLE `library` ADD `worldCatQt` VARCHAR(20) DEFAULT '';",
+				"ALTER TABLE `library` ADD `worldCatQt` VARCHAR(40) DEFAULT '';",
 				"ALTER TABLE `library` ADD `preferSyndeticsSummary` TINYINT DEFAULT '1';",
 			),
 		),
@@ -129,14 +93,6 @@ function getLibraryLocationUpdates(){
 			'sql' => array(
 				"ALTER TABLE `library` ADD `abbreviatedDisplayName` VARCHAR(20) DEFAULT '';",
 				"UPDATE `library` SET `abbreviatedDisplayName` = LEFT(`displayName`, 20);",
-			),
-		),
-
-		'library_13' => array(
-			'title' => 'Library 13',
-			'description' => 'Updates to World Cat integration for local libraries',
-			'sql' => array(
-				"ALTER TABLE `library` CHANGE `worldCatQt` `worldCatQt` VARCHAR(40) DEFAULT '';",
 			),
 		),
 
@@ -168,11 +124,10 @@ function getLibraryLocationUpdates(){
 
 		'library_17' => array(
 			'title' => 'Library 17',
-			'description' => 'Add defaultNotNeededAfterDays and homePageWidgetId. ',
+			'description' => 'Add defaultNotNeededAfterDays. ',
 			'continueOnError' => true,
 			'sql' => array(
 				"ALTER TABLE `library` ADD `defaultNotNeededAfterDays` INT DEFAULT '0';",
-				"ALTER TABLE `library` ADD `homePageWidgetId` INT(11) DEFAULT '0';",
 			),
 		),
 
@@ -194,15 +149,6 @@ function getLibraryLocationUpdates(){
 			),
 		),
 
-		'library_20' => array(
-			'title' => 'Library 20',
-			'description' => 'Add the show or hide marmot search results in scoped searches. ',
-			'continueOnError' => true,
-			'sql' => array(
-				"ALTER TABLE `library` ADD `showMarmotResultsAtEndOfSearch` INT(11) DEFAULT 1;",
-			),
-		),
-
 		'library_21' => array(
 			'title' => 'Library 21',
 			'description' => 'Add the home link text so the breadcrumbs can be customized. ',
@@ -217,7 +163,7 @@ function getLibraryLocationUpdates(){
 			'description' => 'Add the ability to disable wikipedia and the Other format icon by library. ',
 			'continueOnError' => true,
 			'sql' => array(
-				"ALTER TABLE `library` ADD `showOtherFormatCategory` TINYINT(1) DEFAULT '1';",
+//				"ALTER TABLE `library` ADD `showOtherFormatCategory` TINYINT(1) DEFAULT '1';",
 				"ALTER TABLE `library` ADD `showWikipediaContent` TINYINT(1) DEFAULT '1';",
 			),
 		),
@@ -245,7 +191,7 @@ function getLibraryLocationUpdates(){
 			'description' => 'Add a support e-mail address for eContent problems.',
 			'continueOnError' => true,
 			'sql' => array(
-				"ALTER TABLE `library` ADD `eContentSupportAddress` VARCHAR(256) DEFAULT 'askmarmot@marmot.org';",
+				"ALTER TABLE `library` ADD `eContentSupportAddress` VARCHAR(256) DEFAULT 'pika@marmot.org';",
 			),
 		),
 
@@ -273,7 +219,6 @@ function getLibraryLocationUpdates(){
 			'sql' => array(
 				"ALTER TABLE library ADD restrictSearchByLibrary TINYINT(1) DEFAULT '0'",
 				"ALTER TABLE library ADD includeDigitalCollection TINYINT(1) DEFAULT '1'",
-				"UPDATE library SET restrictSearchByLibrary = 1 WHERE defaultLibraryFacet <> ''"
 			),
 		),
 
@@ -301,22 +246,12 @@ function getLibraryLocationUpdates(){
 			),
 		),
 
-		'library_34' => array(
-			'title' => 'Library 34',
-			'description' => 'Remove Facet File',
-			'sql' => array(
-				"ALTER TABLE library DROP COLUMN facetFile",
-				"ALTER TABLE library DROP COLUMN defaultLibraryFacet",
-			),
-		),
-
 		'library_35_marmot' => array(
 			'title' => 'Library 35 (Marmot)',
 			'description' => 'Add Accounting Unit',
 			'continueOnError' => true,
 			'sql' => array(
 				"ALTER TABLE library ADD accountingUnit INT(11) DEFAULT 10",
-				"ALTER TABLE library ADD makeOrderRecordsAvailableToOtherLibraries TINYINT(1) DEFAULT 0",
 			),
 		),
 
@@ -329,15 +264,6 @@ function getLibraryLocationUpdates(){
 				"ALTER TABLE library ADD showWorkPhoneInProfile TINYINT(1) DEFAULT '0'",
 				"ALTER TABLE library ADD showNoticeTypeInProfile TINYINT(1) DEFAULT '0'",
 				"ALTER TABLE library ADD showPickupLocationInProfile TINYINT(1) DEFAULT '0'"
-			),
-		),
-
-		'library_36_nashville' => array(
-			'title' => 'Library 36 (Nashville branch)',
-			'description' => 'Allow multiple widgets on the home page',
-			'continueOnError' => true,
-			'sql' => array(
-				"ALTER TABLE `library` CHANGE `homePageWidgetId` `homePageWidgetId` VARCHAR( 50 ) NULL DEFAULT ''",
 			),
 		),
 
@@ -486,16 +412,6 @@ function getLibraryLocationUpdates(){
 			'description' => 'Determines whether or not the expiration warning should be shown to patrons who are set to expire soon.',
 			'sql' => array(
 				"ALTER TABLE library ADD showExpirationWarnings TINYINT(1) DEFAULT 1",
-			),
-		),
-
-		'library_order_information' => array(
-			'title' => 'Library Order Information',
-			'description' => 'Add Properties to handle integration of order records within VuFind',
-			'continueOnError' => true,
-			'sql' => array(
-				"ALTER TABLE library ADD orderAccountingUnit INT(11) DEFAULT Null",
-				"ALTER TABLE library ADD makeOrderRecordsAvailableToOtherLibraries TINYINT(1) DEFAULT 0",
 			),
 		),
 
@@ -741,14 +657,6 @@ function getLibraryLocationUpdates(){
 			),
 		),
 
-		'location_3' => array(
-			'title' => 'Location 3',
-			'description' => 'Add the ability to set home page widget by location',
-			'sql' => array(
-				"ALTER TABLE `location` ADD `homePageWidgetId` INT(11) DEFAULT '0';",
-			),
-		),
-
 		'location_4' => array(
 			'title' => 'Location 4',
 			'description' => 'Add the ability to specify a list of records to blacklist. ',
@@ -778,7 +686,7 @@ function getLibraryLocationUpdates(){
 			'title' => 'Location 7',
 			'description' => 'Add extraLocationCodesToInclude field for indexing of juvenile collections and other special collections, and add bettter controls for restricting what is searched',
 			'sql' => array(
-				"ALTER TABLE location ADD extraLocationCodesToInclude VARCHAR(255) DEFAULT ''",
+//				"ALTER TABLE location ADD extraLocationCodesToInclude VARCHAR(255) DEFAULT ''",
 				"ALTER TABLE location ADD restrictSearchByLocation TINYINT(1) DEFAULT '0'",
 				"ALTER TABLE location ADD includeDigitalCollection TINYINT(1) DEFAULT '1'",
 				"UPDATE location SET restrictSearchByLocation = 1 WHERE defaultLocationFacet <> ''"
@@ -798,15 +706,6 @@ function getLibraryLocationUpdates(){
 			'description' => 'Allow suppressing all items from a location',
 			'sql' => array(
 				"ALTER TABLE location ADD suppressHoldings TINYINT(1) DEFAULT '0'",
-			),
-		),
-
-		'location_10' => array(
-			'title' => 'Location 10',
-			'description' => 'Allow multiple widgets on the home page',
-			'continueOnError' => true,
-			'sql' => array(
-				"ALTER TABLE `location` CHANGE `homePageWidgetId` `homePageWidgetId` VARCHAR( 50 ) NULL DEFAULT ''",
 			),
 		),
 
@@ -1270,41 +1169,21 @@ function getLibraryLocationUpdates(){
 					),
 			),
 
-			'remove_order_options' => array(
-					'title' => 'Remove Order Options',
-					'description' => 'Remove Unused Order Record Options from libraries table',
-					'sql' => array(
-							'ALTER TABLE library DROP COLUMN orderAccountingUnit',
-							'ALTER TABLE library DROP COLUMN makeOrderRecordsAvailableToOtherLibraries',
-					)
-			),
-
-			'remove_consortial_results_in_search' => array(
-					'title' => 'Remove Consortial Results in Search',
-					'description' => 'Remove Unused Consortial Results in at the end of search results from libraries table',
-					'sql' => array(
-							'ALTER TABLE library DROP COLUMN showMarmotResultsAtEndOfSearch',
-					)
-			),
-
 			'remove_unused_enrichment_and_full_record_options' => array(
 					'title' => 'Remove Unused Options in Enrichment and Full Record sections',
 					'description' => 'Remove Show other editions option libraries table',
 					'sql' => array(
-							'ALTER TABLE library DROP COLUMN showOtherEditionsPopup',
-							'ALTER TABLE library DROP COLUMN showTableOfContentsTab',
-							'ALTER TABLE library DROP COLUMN showProspectorTitlesAsTab',
 							'ALTER TABLE library DROP COLUMN showCopiesLineInHoldingsSummary',
 					)
 			),
 
-			'remove_unused_location_options_2015_14_0' => array(
-					'title' => 'Remove Unused Location Options',
-					'description' => 'Remove Show other editions option libraries table',
-					'sql' => array(
-							'ALTER TABLE location DROP COLUMN extraLocationCodesToInclude',
-					)
-			),
+//			'remove_unused_location_options_2015_14_0' => array(
+//					'title' => 'Remove Unused Location Options',
+//					'description' => 'Remove Show other editions option libraries table',
+//					'sql' => array(
+//							'ALTER TABLE location DROP COLUMN extraLocationCodesToInclude',
+//					)
+//			),
 
 			'show_library_hours_notice_on_account_pages' => array(
 				'title' => 'Show Library Hours Notice On Account Pages',

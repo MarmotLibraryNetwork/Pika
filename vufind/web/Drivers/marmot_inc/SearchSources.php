@@ -315,52 +315,54 @@ class SearchSources{
 	}
 
 	public function getExternalLink($searchSource, $type, $lookFor){
-		global $library;
+		global /** @var Library $library */
+		$library;
 		global $configArray;
-		if ($searchSource =='goldrush'){
-			$goldRushType = $this->getGoldRushSearchType($type);
-			return "http://goldrush.coalliance.org/index.cfm?fuseaction=Search&inst_code={$library->goldRushCode}&search_type={$goldRushType}&search_term=".urlencode($lookFor);
-		}else if ($searchSource == 'worldcat'){
-			$worldCatSearchType = $this->getWorldCatSearchType($type);
-			$worldCatLink = "http://www.worldcat.org/search?q={$worldCatSearchType}%3A".urlencode($lookFor);
-			if (isset($library) && strlen($library->worldCatUrl) > 0){
-				$worldCatLink = $library->worldCatUrl;
-				if (strpos($worldCatLink, '?') == false){
-					$worldCatLink .= "?";
+		switch ($searchSource){
+			case 'goldrush':
+				$goldRushType = $this->getGoldRushSearchType($type);
+				return "http://goldrush.coalliance.org/index.cfm?fuseaction=Search&inst_code={$library->goldRushCode}&search_type={$goldRushType}&search_term=" . urlencode($lookFor);
+			case 'worldcat':
+				$worldCatSearchType = $this->getWorldCatSearchType($type);
+				$worldCatLink       = "http://www.worldcat.org/search?q={$worldCatSearchType}%3A" . urlencode($lookFor);
+				if (!empty($library->worldCatUrl)){
+					$worldCatLink = $library->worldCatUrl;
+					if (strpos($worldCatLink, '?') == false){
+						$worldCatLink .= "?";
+					}
+					$worldCatLink .= "q={$worldCatSearchType}:" . urlencode($lookFor);
+					//Repeat the search term with a parameter of queryString since some interfaces use that parameter instead of q
+					$worldCatLink .= "&queryString={$worldCatSearchType}:" . urlencode($lookFor);
+					if (strlen($library->worldCatQt) > 0){
+						$worldCatLink .= "&qt=" . $library->worldCatQt;
+					}
 				}
-				$worldCatLink .= "q={$worldCatSearchType}:".urlencode($lookFor);
-				//Repeat the search term with a parameter of queryString since some interfaces use that parameter instead of q
-				$worldCatLink .= "&queryString={$worldCatSearchType}:".urlencode($lookFor);
-				if (strlen($library->worldCatQt) > 0){
-					$worldCatLink .= "&qt=" . $library->worldCatQt;
-				}
-			}
-			return $worldCatLink;
-		}else if ($searchSource == 'overdrive'){
-			$overDriveUrl = $configArray['OverDrive']['url'];
+				return $worldCatLink;
+			case 'overdrive':
+				$overDriveUrl = $configArray['OverDrive']['url'];
 //			return "$overDriveUrl/BangSearch.dll?Type=FullText&FullTextField=All&FullTextCriteria=" . urlencode($lookFor);
-			return "$overDriveUrl/search?query=" . urlencode($lookFor);
-		}else if ($searchSource == 'prospector'){
-			$prospectorSearchType = $this->getProspectorSearchType($type);
-			$lookFor = str_replace('+', '%20', rawurlencode($lookFor));
-			// Handle special exception: ? character in the search must be encoded specially
-			$lookFor  = str_replace('%3F', 'Pw%3D%3D',$lookFor);
-			if ($prospectorSearchType != ' '){
-				$lookFor = "$prospectorSearchType:(" . $lookFor . ")";
-			}
-			$innReachEncoreHostUrl = $configArray['InterLibraryLoan']['innReachEncoreHostUrl'];
+				return "$overDriveUrl/search?query=" . urlencode($lookFor);
+			case 'prospector':
+				$prospectorSearchType = $this->getProspectorSearchType($type);
+				$lookFor              = str_replace('+', '%20', rawurlencode($lookFor));
+				// Handle special exception: ? character in the search must be encoded specially
+				$lookFor = str_replace('%3F', 'Pw%3D%3D', $lookFor);
+				if ($prospectorSearchType != ' '){
+					$lookFor = "$prospectorSearchType:(" . $lookFor . ")";
+				}
+				$innReachEncoreHostUrl = $configArray['InterLibraryLoan']['innReachEncoreHostUrl'];
 
-			return $innReachEncoreHostUrl . '/iii/encore/search/C|S' . $lookFor . '|Orightresult|U1?lang=eng&amp;suite=def';
-		}elseif ($searchSource == 'amazon'){
-			return "http://www.amazon.com/s/ref=nb_sb_noss?url=search-alias%3Daps&field-keywords=" . urlencode($lookFor);
-		}elseif ($searchSource == 'course-reserves-course-name'){
-			$linkingUrl = $configArray['Catalog']['linking_url']; //TODO replace with account profile opacUrl
-			return "$linkingUrl/search~S{$library->scope}/r?SEARCH=" . urlencode($lookFor);
-		}elseif ($searchSource == 'course-reserves-instructor'){
-			$linkingUrl = $configArray['Catalog']['linking_url'];//TODO replace with account profile opacUrl
-			return "$linkingUrl/search~S{$library->scope}/p?SEARCH=" . urlencode($lookFor);
-		}else{
-			return "";
+				return $innReachEncoreHostUrl . '/iii/encore/search/C|S' . $lookFor . '|Orightresult|U1?lang=eng&amp;suite=def';
+			case 'amazon':
+				return "http://www.amazon.com/s/ref=nb_sb_noss?url=search-alias%3Daps&field-keywords=" . urlencode($lookFor);
+			case 'course-reserves-course-name':
+				$linkingUrl = $configArray['Catalog']['linking_url']; //TODO replace with account profile opacUrl
+				return "$linkingUrl/search~S{$library->scope}/r?SEARCH=" . urlencode($lookFor);
+			case 'course-reserves-instructor':
+				$linkingUrl = $configArray['Catalog']['linking_url'];//TODO replace with account profile opacUrl
+				return "$linkingUrl/search~S{$library->scope}/p?SEARCH=" . urlencode($lookFor);
+			default:
+				return "";
 		}
 	}
 
