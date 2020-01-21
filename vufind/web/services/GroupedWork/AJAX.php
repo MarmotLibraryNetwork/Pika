@@ -632,8 +632,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 		$results = array(
 			'title'        => 'Share via E-mail',
 			'modalBody'    => $interface->fetch("GroupedWork/email-form-body.tpl"),
-			'modalButtons' => "<button class='tool btn btn-primary' onclick='VuFind.GroupedWork.sendEmail(\"{$id}\"); return false;'>Send E-mail</button>"
-			//		'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#emailForm\").submit()'>Send E-mail</button>"
+			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#emailForm\").submit()'>Send E-mail</button>"
 			// triggering submit action to trigger form validation
 		);
 		return $results;

@@ -27,7 +27,6 @@ class AJAX extends AJAXHandler {
 		'GetAutoSuggestList',
 		'getProspectorResults',
 		'SysListTitles',
-		'getEmailForm',
 	);
 
 	protected $methodsThatRespondWithJSONUnstructured = array(
@@ -35,6 +34,7 @@ class AJAX extends AJAXHandler {
 		'GetListTitles',
 		'loadExploreMoreBar',
 		'getDplaResults',
+		'getEmailForm',
 	);
 
 	protected $methodsThatRespondWithXML = array(

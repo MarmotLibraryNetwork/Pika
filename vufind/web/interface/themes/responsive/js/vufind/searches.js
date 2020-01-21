@@ -176,6 +176,7 @@ VuFind.Searches = (function(){
 			return false;
 		},
 */
+/* TODO: obsolete; using grouped works send mail
 		sendEmail: function(){
 			if (Globals.loggedIn){
 				var from = $('#from').val(),
@@ -204,6 +205,7 @@ VuFind.Searches = (function(){
 			}
 			return false;
 		},
+*/
 
 		enableSearchTypes: function(){
 			var searchTypeElement = $("#searchSource");
