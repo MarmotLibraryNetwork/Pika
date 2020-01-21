@@ -55,55 +55,24 @@ VuFind.Admin = (function(){
 			return this.basicAjaxHandler('clearLibraryHooplaSettings', id);
 		},
 
+		// markProfileForReindexing: function (id){
+		// 	return this.basicAjaxHandler('markProfileForReindexing', id);
+		// },
+		//
+		// markProfileForRegrouping: function (id){
+		// 	return this.basicAjaxHandler('markProfileForRegrouping', id);
+		// },
+
 		basicAjaxHandler: function (ajaxMethod, id) {
-			if (Globals.loggedIn) {
+			VuFind.Account.ajaxLogin(function (){
 				VuFind.loadingMessage();
 				var url = Globals.path + "/Admin/AJAX?method=" + ajaxMethod + "&id=" + id;
 				$.getJSON(url, function (data) {
 					VuFind.showMessage(data.title, data.body, 1, 1);
 				}).fail(VuFind.ajaxFail);
-			} else {
-				VuFind.Account.ajaxLogin(null, function () {
-					VuFind.Admin.basicAjaxHandler(ajaxMethod, id);
-				}, false);
-			}
+			});
 			return false;
 		},
 
-		// markProfileForReindexing: function (id){
-		// 	if (Globals.loggedIn) {
-		// 		VuFind.loadingMessage();
-		// 		var url = Globals.path + "/Admin/AJAX",
-		// 				params = { 'method' : 'markProfileForReindexing', id: id};
-		// 		$.getJSON(url, params, function (data) {
-		// 			if (data.success) {
-		// 				VuFind.showMessage("Success", data.message, true);
-		// 			} else {
-		// 				VuFind.showMessage("Error", data.message);
-		// 			}
-		// 		}).fail(VuFind.ajaxFail);
-		// 	} else {
-		// 		this.ajaxLogin(null, this.markProfileForReindexing, true);
-		// 	}
-		// 	return false;
-		// },
-		//
-		// markProfileForRegrouping: function (id){
-		// 	if (Globals.loggedIn) {
-		// 		VuFind.loadingMessage();
-		// 		var url = Globals.path + "/Admin/AJAX",
-		// 				params = { 'method' : 'markProfileForRegrouping', id: id};
-		// 		$.getJSON(url, params, function (data) {
-		// 			if (data.success) {
-		// 				VuFind.showMessage("Success", data.message, true);
-		// 			} else {
-		// 				VuFind.showMessage("Error", data.message);
-		// 			}
-		// 		}).fail(VuFind.ajaxFail);
-		// 	} else {
-		// 		this.ajaxLogin(null, this.markProfileForRegrouping, true);
-		// 	}
-		// 	return false;
-		// },
 	};
 }(VuFind.Admin || {}));

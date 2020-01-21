@@ -18,39 +18,20 @@ VuFind.OverDrive = (function(){
 			return false;
 		},
 
-		getOverDriveCheckoutPrompts: function(overDriveId){
-			var url = Globals.path + "/OverDrive/" + overDriveId + "/AJAX?method=GetOverDriveCheckoutPrompts",
-					result = true;
-			$.ajax({
-				url: url,
-				cache: false,
-				dataType: 'json',
-				async: false,
-				success: function(data){
-					result = data;
+		checkOutOverDriveTitle: function(overDriveId){
+			VuFind.Account.ajaxLogin(function(){
+				//Get any prompts needed for placing holds (e-mail and format depending on the interface.
+				var url = Globals.path + "/OverDrive/" + overDriveId + "/AJAX?method=GetOverDriveCheckoutPrompts";
+				$.getJSON(url, function(data){
 					if (data.promptNeeded){
 						VuFind.showMessageWithButtons(data.promptTitle, data.prompts, data.buttons);
+					} else {
+						VuFind.OverDrive.doOverDriveCheckout(data.patronId, overDriveId);
 					}
-				},
-				error: function(){
+				}).fail(function(){
 					VuFind.showMessage("Error Checking Out Title", "An error occurred processing your request in OverDrive.  Please try again in a few minutes.");
-				}
-			});
-			return result;
-		},
-
-		checkOutOverDriveTitle: function(overDriveId){
-			if (Globals.loggedIn){
-				//Get any prompts needed for placing holds (e-mail and format depending on the interface.
-				var promptInfo = VuFind.OverDrive.getOverDriveCheckoutPrompts(overDriveId);
-				if (!promptInfo.promptNeeded){
-					VuFind.OverDrive.doOverDriveCheckout(promptInfo.patronId, overDriveId);
-				}
-			}else{
-				VuFind.Account.ajaxLogin(null, function(){
-					VuFind.OverDrive.checkOutOverDriveTitle(overDriveId);
 				});
-			}
+			});
 			return false;
 		},
 
@@ -62,13 +43,13 @@ VuFind.OverDrive = (function(){
 		},
 
 		doOverDriveCheckout: function(patronId, overdriveId){
-			if (Globals.loggedIn){
+			VuFind.Account.ajaxLogin(function(){
 				var ajaxUrl = Globals.path + "/OverDrive/AJAX?method=CheckoutOverDriveItem&patronId=" + patronId + "&overDriveId=" + overdriveId;
 				$.getJSON(ajaxUrl, function(data){
 					if (data.success) {
 						VuFind.showMessageWithButtons("Title Checked Out Successfully", data.message, data.buttons);
 					} else if (data.noCopies) {
-						VuFind.confirm(data.message, function () {
+						VuFind.confirm(data.message, function(){
 							VuFind.OverDrive.placeOverDriveHold(overdriveId, null);
 						});
 					} else {
@@ -77,11 +58,7 @@ VuFind.OverDrive = (function(){
 				}).fail(function(){
 					VuFind.showMessage("Error Checking Out Title", "An error occurred processing your request in OverDrive.  Please try again in a few minutes.");
 				});
-			}else{
-				VuFind.Account.ajaxLogin(null, function(){
-					VuFind.OverDrive.checkOutOverDriveTitle(overdriveId);
-				}, false);
-			}
+			});
 			return false;
 		},
 
@@ -130,39 +107,20 @@ VuFind.OverDrive = (function(){
 			return false;
 		},
 
-		getOverDriveHoldPrompts: function(overDriveId){
-			var url = Globals.path + "/OverDrive/" + overDriveId + "/AJAX?method=GetOverDriveHoldPrompts",
-					result = true;
-			$.ajax({
-				url: url,
-				cache: false,
-				dataType: 'json',
-				async: false,
-				success: function(data){
-					result = data;
+		placeOverDriveHold: function(overDriveId){
+			VuFind.Account.ajaxLogin(function(){
+				//Get any prompts needed for placing holds (e-mail and format depending on the interface.
+				var url = Globals.path + "/OverDrive/" + overDriveId + "/AJAX?method=GetOverDriveHoldPrompts";
+				$.getJSON(url, function (data) {
 					if (data.promptNeeded){
 						VuFind.showMessageWithButtons(data.promptTitle, data.prompts, data.buttons);
+					} else {
+						VuFind.OverDrive.doOverDriveHold(data.patronId, overDriveId, data.overdriveEmail, data.promptForOverdriveEmail);
 					}
-				},
-				error: function(){
+				}).fail(function(){
 					VuFind.showMessage("Error Placing Hold", "An error occurred processing your request in OverDrive.  Please try again in a few minutes.");
-				}
-			});
-			return result;
-		},
-
-		placeOverDriveHold: function(overDriveId){
-			if (Globals.loggedIn){
-				//Get any prompts needed for placing holds (e-mail and format depending on the interface.
-				var promptInfo = VuFind.OverDrive.getOverDriveHoldPrompts(overDriveId);
-				if (!promptInfo.promptNeeded){
-					VuFind.OverDrive.doOverDriveHold(promptInfo.patronId, overDriveId, promptInfo.overdriveEmail, promptInfo.promptForOverdriveEmail);
-				}
-			}else{
-				VuFind.Account.ajaxLogin(null, function(){
-					VuFind.OverDrive.placeOverDriveHold(overDriveId);
 				});
-			}
+			});
 			return false;
 		},
 

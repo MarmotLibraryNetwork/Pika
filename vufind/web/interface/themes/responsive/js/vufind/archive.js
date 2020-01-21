@@ -632,17 +632,13 @@ VuFind.Archive = (function(){
 		},
 
 		showSaveToListForm: function (trigger, id){
-			if (Globals.loggedIn){
+			VuFind.Account.ajaxLogin(function (){
 				VuFind.loadingMessage();
 				var url = Globals.path + "/Archive/" + id + "/AJAX?method=getSaveToListForm";
 				$.getJSON(url, function(data){
 					VuFind.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
 				}).fail(VuFind.ajaxFail);
-			}else{
-				VuFind.Account.ajaxLogin($(trigger), function (){
-					VuFind.Archive.showSaveToListForm(trigger, id);
-				});
-			}
+				}, $(trigger));
 			return false;
 		},
 

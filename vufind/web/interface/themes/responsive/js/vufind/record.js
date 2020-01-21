@@ -1,9 +1,9 @@
 VuFind.Record = (function(){
 	return {
 		showPlaceHold: function(module, id){
-			if (Globals.loggedIn){
-				var source;
-				var volume = null;
+			VuFind.Account.ajaxLogin(function (){
+				var source,
+						volume = null;
 				if (id.indexOf(":") > 0){
 					var idParts = id.split(":");
 					source = idParts[0];
@@ -22,11 +22,7 @@ VuFind.Record = (function(){
 				$.getJSON(url, function(data){
 					VuFind.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
 				}).fail(VuFind.ajaxFail);
-			}else{
-				VuFind.Account.ajaxLogin(null, function(){
-					VuFind.Record.showPlaceHold(module, id);
-				}, false);
-			}
+			});
 			return false;
 		},
 
@@ -67,17 +63,17 @@ VuFind.Record = (function(){
 		// 			VuFind.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
 		// 		}).fail(VuFind.ajaxFail);
 		// 	}else{
-		// 		VuFind.Account.ajaxLogin(null, function(){
+		// 		VuFind.Account.ajaxLogin(function(){
 		// 			VuFind.Record.showPlaceHold(module, id);
-		// 		}, false);
+		// 		});
 		// 	}
 		// 	return false;
 		// },
 		//
-	showPlaceHoldEditions: function (module, id) {
-			if (Globals.loggedIn){
-				var source;
-				var volume = null;
+		showPlaceHoldEditions: function (module, id) {
+			VuFind.Account.ajaxLogin(function (){
+				var source,
+						volume = null;
 				if (id.indexOf(":") > 0){
 					var idParts = id.split(":");
 					source = idParts[0];
@@ -96,17 +92,12 @@ VuFind.Record = (function(){
 				$.getJSON(url, function(data){
 					VuFind.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
 				}).fail(VuFind.ajaxFail);
-			}else{
-				VuFind.Account.ajaxLogin(null, function(){
-					VuFind.Record.showPlaceHoldEditions(module, id);
-				}, false);
-			}
+			});
 			return false;
-
 		},
 
 		showBookMaterial: function(module, id){
-			if (Globals.loggedIn){
+			VuFind.Account.ajaxLogin(function (){
 				VuFind.loadingMessage();
 				//var source; // source not used for booking at this time
 				if (id.indexOf(":") > 0){
@@ -117,11 +108,7 @@ VuFind.Record = (function(){
 				$.getJSON(Globals.path + "/" + module + "/" + id + "/AJAX?method=getBookMaterialForm", function(data){
 					VuFind.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
 				}).fail(VuFind.ajaxFail)
-			}else{
-				VuFind.Account.ajaxLogin(null, function(){
-					VuFind.Record.showBookMaterial(id);
-				}, false)
-			}
+			});
 			return false;
 		},
 

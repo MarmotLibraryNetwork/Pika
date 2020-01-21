@@ -257,12 +257,6 @@ var VuFind = (function(){
 				.click(function() {
 					$(this).toggleClass("expanded collapsed")
 					.siblings().slideToggle();
-				//$(this).siblings().hide();
-				//$(this).addClass("collapsed");
-				//$(this).click(function() {
-				//	$(this).toggleClass("expanded");
-				//	$(this).toggleClass("collapsed");
-				//	$(this).siblings().slideToggle();
 					return false;
 				});
 			});
@@ -287,10 +281,10 @@ var VuFind = (function(){
 			// if autoclose is set as number greater than 1 autoClose will be the custom timeout interval in milliseconds, otherwise
 			//     autoclose is treated as an on/off switch. Default timeout interval of 3 seconds.
 			// if refreshAfterClose is set but not autoClose, the page will reload when the box is closed by the user.
-			if (autoClose == undefined){
+			if (autoClose === undefined){
 				autoClose = false;
 			}
-			if (refreshAfterClose == undefined){
+			if (refreshAfterClose === undefined){
 				refreshAfterClose = false;
 			}
 			$("#myModalLabel").html(title);

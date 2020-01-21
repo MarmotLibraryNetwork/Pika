@@ -1,7 +1,7 @@
 VuFind.Hoopla = (function(){
 	return {
 		checkOutHooplaTitle: function (hooplaId, patronId) {
-			if (Globals.loggedIn) {
+			VuFind.Account.ajaxLogin(function (){
 				if (typeof patronId === 'undefined') {
 					patronId = $('#patronId', '#pickupLocationOptions').val(); // Lookup selected user from the options form
 				}
@@ -20,31 +20,23 @@ VuFind.Hoopla = (function(){
 						VuFind.showMessage("Checking Out Title", data.message);
 					}
 				}).fail(VuFind.ajaxFail)
-			}else{
-				VuFind.Account.ajaxLogin(null, function(){
-					VuFind.Hoopla.checkOutHooplaTitle(hooplaId, patronId);
-				}, false);
-			}
+			});
 			return false;
 		},
 
 		getHooplaCheckOutPrompt: function (hooplaId) {
-			if (Globals.loggedIn) {
+			VuFind.Account.ajaxLogin(function (){
 				var url = Globals.path + "/Hoopla/" + hooplaId + "/AJAX?method=getHooplaCheckOutPrompt";
 				$.getJSON(url, function (data) {
 					VuFind.showMessageWithButtons(data.title, data.body, data.buttons);
 				}).fail(VuFind.ajaxFail);
-			} else {
-				VuFind.Account.ajaxLogin(null, function () {
-					VuFind.Hoopla.getHooplaCheckOutPrompt(hooplaId);
-				}, false);
-			}
+			});
 			return false;
 		},
 
 		returnHooplaTitle: function (patronId, hooplaId) {
-			if (Globals.loggedIn) {
-				VuFind.confirm('Are you sure you want to return this title?', function () {
+			VuFind.confirm('Are you sure you want to return this title?', function () {
+				VuFind.Account.ajaxLogin(function (){
 					VuFind.showMessage("Returning Title", "Returning your title in Hoopla.");
 					var url = Globals.path + "/Hoopla/" + hooplaId + "/AJAX",
 							params = {
@@ -55,11 +47,7 @@ VuFind.Hoopla = (function(){
 						VuFind.showMessage(data.success ? 'Success' : 'Error', data.message, data.success, data.success);
 					}).fail(VuFind.ajaxFail);
 				});
-			} else {
-				VuFind.Account.ajaxLogin(null, function () {
-					VuFind.Hoopla.returnHooplaTitle(patronId, hooplaId);
-				}, false);
-			}
+			});
 			return false;
 		}
 

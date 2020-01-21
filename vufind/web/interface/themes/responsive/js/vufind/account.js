@@ -53,9 +53,9 @@ VuFind.Account = (function(){
 		 * @param closeModalOnAjaxSuccess
 		 * @returns {boolean}
 		 */
-		ajaxLogin: function (trigger, ajaxCallback, closeModalOnAjaxSuccess) {
+		ajaxLogin: function (ajaxCallback, trigger, closeModalOnAjaxSuccess) {
 			if (Globals.loggedIn) {
-				if (ajaxCallback != undefined && typeof(ajaxCallback) === "function") {
+				if (ajaxCallback !== undefined && typeof(ajaxCallback) === "function") {
 					ajaxCallback();
 				} else if (VuFind.Account.ajaxCallback != null && typeof(VuFind.Account.ajaxCallback) === "function") {
 					VuFind.Account.ajaxCallback();
@@ -64,12 +64,12 @@ VuFind.Account = (function(){
 			} else {
 				var multistep = false,
 						loginLink = false;
-				if (ajaxCallback != undefined && typeof(ajaxCallback) === "function") {
+				if (ajaxCallback !== undefined && typeof(ajaxCallback) === "function") {
 					multistep = true;
 				}
 				VuFind.Account.ajaxCallback = ajaxCallback;
 				VuFind.Account.closeModalOnAjaxSuccess = closeModalOnAjaxSuccess;
-				if (trigger != undefined && trigger != null) {
+				if (trigger !== undefined && trigger != null) {
 					var dialogTitle = trigger.attr("title") ? trigger.attr("title") : trigger.data("title");
 					loginLink = trigger.data('login');
 					/*
@@ -92,16 +92,16 @@ VuFind.Account = (function(){
 		},
 
 		followLinkIfLoggedIn: function (trigger, linkDestination) {
-			if (trigger == undefined) {
+			if (trigger === undefined) {
 				alert("You must provide the trigger to follow a link after logging in.");
 			}
 			var jqTrigger = $(trigger);
-			if (linkDestination == undefined) {
+			if (linkDestination === undefined) {
 				linkDestination = jqTrigger.attr("href");
 			}
-			this.ajaxLogin(jqTrigger, function () {
+			this.ajaxLogin( function () {
 				document.location = linkDestination;
-			}, true);
+			}, jqTrigger, true);
 			return false;
 		},
 
@@ -185,9 +185,9 @@ VuFind.Account = (function(){
 								}
 
 								Globals.loggedIn = true;
-								if (ajaxCallback != undefined && typeof(ajaxCallback) === "function") {
+								if (ajaxCallback !== undefined && typeof(ajaxCallback) === "function") {
 									ajaxCallback();
-								} else if (VuFind.Account.ajaxCallback != undefined && typeof(VuFind.Account.ajaxCallback) === "function") {
+								} else if (VuFind.Account.ajaxCallback !== undefined && typeof(VuFind.Account.ajaxCallback) === "function") {
 									VuFind.Account.ajaxCallback();
 									VuFind.Account.ajaxCallback = null;
 								}
@@ -203,29 +203,21 @@ VuFind.Account = (function(){
 		},
 
 		processAddLinkedUser: function (){
-			if(this.preProcessLogin()) {
+			if (this.preProcessLogin()){
 				var username = $("#username").val(),
 						password = $("#password").val(),
 						loginErrorElem = $('#loginError'),
 						url = Globals.path + "/MyAccount/AJAX?method=addAccountLink";
 				loginErrorElem.hide();
-				$.ajax({
-					url: url,
-					data: {username: username, password: password},
-					success: function (response) {
-						if (response.result == true) {
-							VuFind.showMessage("Account to Manage", response.message ? response.message : "Successfully linked the account.", true, true);
-						} else {
-							loginErrorElem.text(response.message);
-							loginErrorElem.show();
-						}
-					},
-					error: function () {
-						loginErrorElem.text("There was an error processing the account, please try again.")
-								.show();
-					},
-					dataType: 'json',
-					type: 'post'
+				$.post(url, {username: username, password: password}, function (response){
+					if (response.result == true){
+						VuFind.showMessage("Account to Manage", response.message ? response.message : "Successfully linked the account.", true, true);
+					}else{
+						loginErrorElem.text(response.message).show();
+					}
+				}, 'json'
+				).fail(function(){
+					loginErrorElem.text("There was an error processing the account, please try again.").show();
 				});
 			}
 			return false;
@@ -238,7 +230,6 @@ VuFind.Account = (function(){
 				$.getJSON(url, function(data){
 					if (data.result == true){
 						VuFind.showMessage('Linked Account Removed', data.message, true, true);
-						//setTimeout(function(){window.location.reload()}, 3000);
 					}else{
 						VuFind.showMessage('Unable to Remove Account Link', data.message);
 					}
@@ -263,21 +254,17 @@ VuFind.Account = (function(){
 		},
 
 		renewTitle: function(patronId, recordId, renewIndicator) {
-			if (Globals.loggedIn) {
+			VuFind.Account.ajaxLogin(function (){
 				VuFind.loadingMessage();
 				$.getJSON(Globals.path + "/MyAccount/AJAX?method=renewItem&patronId=" + patronId + "&recordId=" + recordId + "&renewIndicator="+renewIndicator, function(data){
 					VuFind.showMessage(data.title, data.modalBody, data.success, data.success); // autoclose when successful
 				}).fail(VuFind.ajaxFail)
-			} else {
-				this.ajaxLogin(null, function () {
-					this.renewTitle(renewIndicator);
-				}, false)
-			}
+			});
 			return false;
 		},
 
 		renewAll: function() {
-			if (Globals.loggedIn) {
+			VuFind.Account.ajaxLogin(function (){
 				VuFind.confirm('Renew All Items?', function () {
 					VuFind.loadingMessage();
 					$.getJSON(Globals.path + "/MyAccount/AJAX?method=renewAll", function (data) {
@@ -291,15 +278,13 @@ VuFind.Account = (function(){
 						}
 					}).fail(VuFind.ajaxFail);
 				})
-			} else {
-				this.ajaxLogin(null, this.renewAll, true);
+			}, null, true);
 				//auto close so that if user opts out of renew, the login window closes; if the users continues, follow-up operations will reopen modal
-			}
 			return false;
 		},
 
 		renewSelectedTitles: function () {
-			if (Globals.loggedIn) {
+			VuFind.Account.ajaxLogin(function (){
 				var selectedTitles = VuFind.getSelectedTitles();
 				if (selectedTitles) {
 					VuFind.confirm('Renew selected Items?', function(){
@@ -310,10 +295,8 @@ VuFind.Account = (function(){
 						}).fail(VuFind.ajaxFail);
 					})
 				}
-			} else {
-				this.ajaxLogin(null, this.renewSelectedTitles, true);
+			}, null, true);
 				 //auto close so that if user opts out of renew, the login window closes; if the users continues, follow-up operations will reopen modal
-			}
 			return false
 		},
 
@@ -342,9 +325,9 @@ VuFind.Account = (function(){
 				requireLogin = false;
 			}
 			if (requireLogin && !Globals.loggedIn) {
-				VuFind.Account.ajaxLogin(null, function () {
+				VuFind.Account.ajaxLogin(function (){
 					VuFind.Account.ajaxLightbox(urlToDisplay, requireLogin);
-				}, false);
+				});
 			} else {
 				VuFind.loadingMessage();
 				$.getJSON(urlToDisplay, function(data){
@@ -367,17 +350,12 @@ VuFind.Account = (function(){
 		},
 
 		cancelHold: function(patronId, recordId, holdIdToCancel){
-			if (Globals.loggedIn) {
+			VuFind.Account.ajaxLogin(function (){
 				VuFind.loadingMessage();
 				$.getJSON(Globals.path + "/MyAccount/AJAX?method=cancelHold&patronId=" + patronId + "&recordId=" + recordId + "&cancelId="+holdIdToCancel, function(data){
 					VuFind.showMessage(data.title, data.body, data.success, data.success); // autoclose when successful
 				}).fail(VuFind.ajaxFail)
-			} else {
-				this.ajaxLogin(null, function () {
-					VuFind.Account.cancelHold(patronId, recordId, holdIdToCancel)
-				}, false);
-			}
-
+			});
 			return false
 		},
 
@@ -423,7 +401,7 @@ VuFind.Account = (function(){
 
 		cancelBooking: function(patronId, cancelId){
 			VuFind.confirm("Are you sure you want to cancel this scheduled item?", function(){
-				if (Globals.loggedIn) {
+				VuFind.Account.ajaxLogin(function (){
 					VuFind.loadingMessage();
 					var c = {};
 					c[patronId] = cancelId;
@@ -436,18 +414,14 @@ VuFind.Account = (function(){
 							$('div.result').has('#selected'+escapedId).remove();
 						}
 					}).fail(VuFind.ajaxFail)
-				} else {
-					this.ajaxLogin(null, function () {
-						VuFind.Account.cancelBooking(cancelId)
-					}, false);
-				}
+				});
 			});
 
 			return false
 		},
 
 		cancelSelectedBookings: function(){
-			if (Globals.loggedIn) {
+			VuFind.Account.ajaxLogin(function (){
 				var selectedTitles = this.getSelectedTitles(),
 						numBookings = $("input.titleSelect:checked").length;
 				// if numBookings equals 0, quit because user has canceled in getSelectedTitles()
@@ -470,16 +444,14 @@ VuFind.Account = (function(){
 						}
 					}).fail(VuFind.ajaxFail);
 				}
-			} else {
-				this.ajaxLogin(null, VuFind.Account.cancelSelectedBookings, false);
-			}
+			});
 			return false;
 
 		},
 
 		cancelAllBookings: function(){
-			if (Globals.loggedIn) {
-				VuFind.confirm('Cancel all of your scheduled items?',function () {
+			VuFind.confirm('Cancel all of your scheduled items?',function () {
+				VuFind.Account.ajaxLogin(function (){
 					VuFind.loadingMessage();
 					$.getJSON(Globals.path + "/MyAccount/AJAX?method=cancelBooking&cancelAll=1", function(data){
 						VuFind.showMessage(data.title, data.modalBody, data.success); // autoclose when successful
@@ -498,9 +470,7 @@ VuFind.Account = (function(){
 						}
 					}).fail(VuFind.ajaxFail);
 				});
-			} else {
-				this.ajaxLogin(null, VuFind.Account.cancelAllBookings, false);
-			}
+			});
 			return false;
 		},
 
@@ -513,25 +483,17 @@ VuFind.Account = (function(){
 		},
 
 		changeHoldPickupLocation: function (patronId, recordId, holdId){
-			if (Globals.loggedIn){
+			VuFind.Account.ajaxLogin(function (){
 				VuFind.loadingMessage();
 				$.getJSON(Globals.path + "/MyAccount/AJAX?method=getChangeHoldLocationForm&patronId=" + patronId + "&recordId=" + recordId + "&holdId=" + holdId, function(data){
 					VuFind.showMessageWithButtons(data.title, data.modalBody, data.modalButtons)
 				});
-			}else{
-				VuFind.Account.ajaxLogin(null, function(){
-					return VuFind.Account.changeHoldPickupLocation(patronId, recordId, holdId);
-				}, false);
-			}
+			});
 			return false;
 		},
 
 		deleteSearch: function(searchId){
-			if (!Globals.loggedIn){
-				VuFind.Account.ajaxLogin(null, function () {
-					VuFind.Searches.saveSearch(searchId);
-				}, false);
-			}else{
+			VuFind.Account.ajaxLogin(function (){
 				var url = Globals.path + "/MyAccount/AJAX";
 				var params = "method=deleteSearch&searchId=" + encodeURIComponent(searchId);
 				$.getJSON(url + '?' + params,
@@ -543,7 +505,7 @@ VuFind.Account = (function(){
 							}
 						}
 				);
-			}
+			});
 			return false;
 		},
 
@@ -669,11 +631,7 @@ VuFind.Account = (function(){
 		},
 
 		saveSearch: function(searchId){
-			if (!Globals.loggedIn){
-				VuFind.Account.ajaxLogin(null, function(){
-					VuFind.Account.saveSearch(searchId);
-				}, false);
-			}else{
+			VuFind.Account.ajaxLogin(function (){
 				var url = Globals.path + "/MyAccount/AJAX",
 						params = {method :'saveSearch', searchId :searchId};
 				$.getJSON(url, params,
@@ -685,12 +643,12 @@ VuFind.Account = (function(){
 							}
 						}
 				).fail(VuFind.ajaxFail);
-			}
+			});
 			return false;
 		},
 
 		showCreateListForm: function(id){
-			if (Globals.loggedIn){
+			VuFind.Account.ajaxLogin(function (){
 				var url = Globals.path + "/MyAccount/AJAX",
 						params = {method:"getCreateListForm"};
 				if (id !== undefined){
@@ -699,11 +657,7 @@ VuFind.Account = (function(){
 				$.getJSON(url, params, function(data){
 					VuFind.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
 				}).fail(VuFind.ajaxFail);
-			}else{
-				VuFind.Account.ajaxLogin($trigger, function(){
-					return VuFind.GroupedWork.showEmailForm(trigger, id);
-				}, false);
-			}
+			});
 			return false;
 		},
 
