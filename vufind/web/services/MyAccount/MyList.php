@@ -78,48 +78,66 @@ class MyAccount_MyList extends MyAccount {
 			unset($_SESSION['listNotes']);
 		}
 
-		//Perform an action on the list, but verify that the user has permission to do so.
+		// Perform an action on the list, but verify that the user has permission to do so.
+		// and load the User object for the owner of the list (if necessary):
 		$userCanEdit = false;
-		$userObj     = UserAccount::getActiveUserObj();
-		if ($userObj != false){
-			$userCanEdit = $userObj->canEditList($list);
+		if (UserAccount::isLoggedIn() && (UserAccount::getActiveUserId() == $list->user_id)){
+			$listUser    = UserAccount::getActiveUserObj();
+			$userCanEdit = $listUser->canEditList($list);
+		}elseif ($list->user_id != 0){
+			$listUser     = new User();
+			$listUser->id = $list->user_id;
+			if (!$listUser->find(true)){
+				$listUser = false;
+			}
+		}else{
+			$listUser = false;
 		}
 
-		if ($userCanEdit && (isset($_REQUEST['myListActionHead']) || isset($_REQUEST['myListActionItem']) || isset($_GET['delete']))){
-			if (isset($_REQUEST['myListActionHead']) && strlen($_REQUEST['myListActionHead']) > 0){
-				$actionToPerform = $_REQUEST['myListActionHead'];
-				if ($actionToPerform == 'makePublic'){
-					$list->public = 1;
-					$list->update();
-				}elseif ($actionToPerform == 'makePrivate'){
-					$list->public = 0;
-					$list->update();
-				}elseif ($actionToPerform == 'saveList'){
-					$list->title       = $_REQUEST['newTitle'];
-					$list->description = strip_tags($_REQUEST['newDescription']);
-					$list->defaultSort = $_REQUEST['defaultSort'];
-					$list->update();
-				}elseif ($actionToPerform == 'deleteList'){
-					$list->delete();
-					header("Location: {$configArray['Site']['path']}/MyAccount/Home");
-					die();
-				}elseif ($actionToPerform == 'bulkAddTitles'){
-					$notes                 = $this->bulkAddTitles($list);
-					$_SESSION['listNotes'] = $notes;
-					session_commit();
-				}
-			}elseif (isset($_REQUEST['myListActionItem']) && strlen($_REQUEST['myListActionItem']) > 0){
-				$actionToPerform = $_REQUEST['myListActionItem'];
 
-				if ($actionToPerform == 'deleteMarked'){
-					//get a list of all titles that were selected
-					$itemsToRemove = $_REQUEST['selected'];
-					foreach ($itemsToRemove as $id => $selected){
-						//add back the leading . to get the full bib record
-						$list->removeListEntry($id);
-					}
-				}elseif ($actionToPerform == 'deleteAll'){
-					$list->removeAllListEntries();
+		if ($userCanEdit && (isset($_REQUEST['myListActionHead']) || isset($_REQUEST['myListActionItem']) || isset($_REQUEST['delete']))){
+			if (!empty($_REQUEST['myListActionHead'])){
+				$actionToPerform = $_REQUEST['myListActionHead'];
+				switch ($actionToPerform){
+					case 'makePublic':
+						$list->public = 1;
+						$list->update();
+						break;
+					case 'makePrivate':
+						$list->public = 0;
+						$list->update();
+						break;
+					case 'saveList':
+						$list->title       = $_REQUEST['newTitle'];
+						$list->description = strip_tags($_REQUEST['newDescription']);
+						$list->defaultSort = $_REQUEST['defaultSort'];
+						$list->update();
+						break;
+					case 'deleteList':
+						$list->delete();
+						header("Location: {$configArray['Site']['path']}/MyAccount/Home");
+						die();
+						break;
+					case 'bulkAddTitles':
+						$notes                 = $this->bulkAddTitles($list);
+						$_SESSION['listNotes'] = $notes;
+						session_commit();
+						break;
+				}
+			}elseif (!empty($_REQUEST['myListActionItem'])){
+				$actionToPerform = $_REQUEST['myListActionItem'];
+				switch ($actionToPerform){
+					case 'deleteMarked':
+						//get a list of all titles that were selected
+						$itemsToRemove = $_REQUEST['selected'];
+						foreach ($itemsToRemove as $id => $selected){
+							//add back the leading . to get the full bib record
+							$list->removeListEntry($id);
+						}
+						break;
+					case 'deleteAll':
+						$list->removeAllListEntries();
+						break;
 				}
 				$list->update();
 			}elseif (isset($_REQUEST['delete'])){
@@ -137,28 +155,14 @@ class MyAccount_MyList extends MyAccount {
 		$interface->assign('favList', $list);
 		$interface->assign('listSelected', $list->id);
 
-		// Load the User object for the owner of the list (if necessary):
-		if (UserAccount::isLoggedIn() && (UserAccount::getActiveUserId() == $list->user_id)){
-			$listUser = UserAccount::getActiveUserObj();
-		}elseif ($list->user_id != 0){
-			$listUser     = new User();
-			$listUser->id = $list->user_id;
-			if (!$listUser->find(true)){
-				$listUser = false;
-			}
-		}else{
-			$listUser = false;
-		}
-
 		// Create a handler for displaying favorites and use it to assign
 		// appropriate template variables:
 		$interface->assign('allowEdit', $userCanEdit);
 		$favList = new FavoriteHandler($list, $listUser, $userCanEdit);
 		$favList->buildListForDisplay();
 
-//		$this->display('list.tpl', isset($list->title) ? $list->title : 'My List');
 		$this->display('../MyAccount/list.tpl', isset($list->title) ? $list->title : 'My List');
-		// this template path is used when an Archive object is in the list; TODO: Need to verify this works when the list is only catalog items
+		// this relative template path is used when an Archive object is in the list;
 	}
 
 	/**

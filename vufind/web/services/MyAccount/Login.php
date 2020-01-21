@@ -42,6 +42,7 @@ class MyAccount_Login extends Action
 			die();
 		}
 
+		//TODO: explain when this comes into effect
 		if (!empty($_REQUEST['return'])){
 			header('Location: ' . $_REQUEST['return']);
 			die();
@@ -51,37 +52,29 @@ class MyAccount_Login extends Action
 		//     we need to check for a pre-existing followup task in case we've
 		//     looped back here due to an error (bad username/password, etc.).
 		$followup = isset($_REQUEST['followup']) ?  strip_tags($_REQUEST['followup']) : $action;
+		//TODO: obsolete followup for the follow module and action variables; or use return or returnUrl variable
 
 		// Don't go to the trouble if we're just logging in to the Home action
 		if ($followup != 'Home' || (isset($_REQUEST['followupModule']) && isset($_REQUEST['followupAction']))) {
 			$interface->assign('followup', $followup);
 			$interface->assign('followupModule', isset($_REQUEST['followupModule']) ? strip_tags($_REQUEST['followupModule']) : $module);
+			$interface->assign('followupAction', isset($_REQUEST['followupAction']) ? $_REQUEST['followupAction'] : $action);
 
 			// Special case -- if user is trying to view a private list, we need to
 			// attach the list ID to the action:
-			$finalAction = $action;
-			if ($finalAction == 'MyList') {
+			if ($action == 'MyList') {
 				if (isset($_GET['id'])){
-					$finalAction .= '/' . $_GET['id'];
+					$interface->assign('id', $_GET['id']);
 				}
 			}
-			$interface->assign('followupAction', isset($_REQUEST['followupAction']) ? $_REQUEST['followupAction'] : $finalAction);
 
 			// If we have a save or delete action, create the appropriate recordId
 			//     parameter.  If we've looped back due to user error and already have
 			//     a recordId parameter, remember it for future reference.
 			if (isset($_REQUEST['delete'])) {
 				$interface->assign('returnUrl', $_SERVER['REQUEST_URI']);
-				/*$mode = !isset($_REQUEST['mode']) ?
-                    '' : '&mode=' . urlencode($_REQUEST['mode']);
-				$interface->assign('recordId', 'delete=' .
-				urlencode($_REQUEST['delete']) . $mode);*/
 			} elseif (isset($_REQUEST['save'])) {
 				$interface->assign('returnUrl', $_SERVER['REQUEST_URI']);
-				/*$mode = !isset($_REQUEST['mode']) ?
-                    '' : '&mode=' . urlencode($_REQUEST['mode']);
-				$interface->assign('recordId', 'save=' .
-				urlencode($_REQUEST['save']) . $mode);*/
 			} elseif (isset($_REQUEST['recordId'])) {
 				$interface->assign('returnUrl', $_REQUEST['recordId']);
 			}

@@ -65,8 +65,10 @@
 							{if $followupModule}<input type="hidden" name="followupModule" value="{$followupModule}">{/if}
 							{if $followupAction}<input type="hidden" name="followupAction" value="{$followupAction}">{/if}
 							{if $recordId}<input type="hidden" name="recordId" value="{$recordId|escape:"html"}">{/if}
+							{*TODO: figure out how & why $recordId is set *}
+							{if $id}<input type="hidden" name="id" value="{$id|escape:"html"}">{/if}{* For storing at least the list id when logging in to view a private list *}
 							{if $comment}<input type="hidden" id="comment" name="comment" value="{$comment|escape:"html"}">{/if}
-							{if $cardNumber}<input type="hidden" name="cardNumber" value="{$cardNumber|escape:"html"}">{/if}
+							{if $cardNumber}<input type="hidden" name="cardNumber" value="{$cardNumber|escape:"html"}">{/if}{* for masquerading *}
 							{if $returnUrl}<input type="hidden" name="returnUrl" value="{$returnUrl}">{/if}
 						</div>
 					</div>

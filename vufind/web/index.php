@@ -133,13 +133,8 @@ if (!UserAccount::isLoggedIn() && ((isset($_POST['username']) && isset($_POST['p
 		$_REQUEST['module'] = $module;
 		$_REQUEST['action'] = $action;
 
-		if (!empty($_REQUEST['id'])){
-			$id = $_REQUEST['id'];
-		}elseif (!empty($_REQUEST['recordId'])){
-			$id = $_REQUEST['recordId'];
-		}
-		if (isset($id)){
-			$_REQUEST['id'] = $id;
+		if (!empty($_REQUEST['recordId'])){
+			$_REQUEST['id'] = $_REQUEST['recordId'];
 		}
 
 		//THE above is to replace this below. We shouldn't need to do a page reload. pascal 1/10/2020
@@ -163,7 +158,7 @@ if (!UserAccount::isLoggedIn() && ((isset($_POST['username']) && isset($_POST['p
 		$action = isset($_REQUEST['followup']) ? $_REQUEST['followup'] : (isset($_REQUEST['followupAction']) ? $_REQUEST['followupAction'] : 'Home');
 
 		if (!empty($_REQUEST['id'])){
-			$id = $_REQUEST['id'];
+			$id = $_REQUEST['id']; //using this to get the list id when logging in to view a user list page
 		}elseif (!empty($_REQUEST['recordId'])){
 			$id = $_REQUEST['recordId'];
 		}
@@ -477,14 +472,15 @@ function loadModuleActionId(){
 		$allRecordModules .= '|' . $profile->recordUrlComponent;
 	}
 	if (preg_match("/(MyAccount)\/([^\/?]+)\/([^\/?]+)(\?.+)?/", $requestURI, $matches)){
+		// things like /MyAccount/MyList/19141
 		$module     = $matches[1];
 		$id         = $matches[3];
 		$action     = $matches[2];
 	}elseif (preg_match("/(MyAccount)\/([^\/?]+)(\?.+)?/", $requestURI, $matches)){
-		// things /MyAccount/AJAX
+		// things /MyAccount/AJAX, /MyAccount/Home, /MyAccount/CiteList
 		$module     = $matches[1];
 		$action     = $matches[2];
-		$id         = '';
+//		$id         = ''; //todo: when should this clear out the id when it has been set?  (it is useful for logging in while going to a private user list)
 	}elseif (preg_match("/(MyAccount)\/?/", $requestURI, $matches)){
 		$module     = $matches[1];
 		$action     = 'Home';
@@ -515,7 +511,8 @@ function loadModuleActionId(){
 	}
 
 	//Check to see if the module is an indexing profile and adjust the record id number
-	if (!empty($id) && isset($module) && $module != 'GroupedWork'){
+	if (!empty($id) && isset($module) && $module != 'GroupedWork' && $action != 'MyList'){
+		// Grouped work and User list ids don't need a profile
 		global $activeRecordIndexingProfile;
 		foreach ($indexingProfiles as $profile){
 			if ($profile->recordUrlComponent == $_REQUEST['module']){
