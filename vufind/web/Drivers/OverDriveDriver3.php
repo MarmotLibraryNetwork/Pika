@@ -555,7 +555,7 @@ class OverDriveDriver3 {
 						$formats                     = $overDriveRecord->getFormats();
 						$bookshelfItem['format']     = reset($formats);
 						$bookshelfItem['coverUrl']   = $overDriveRecord->getCoverUrl('medium');
-						$bookshelfItem['recordUrl']  =  . '/OverDrive/' . $overDriveRecord->getUniqueID() . '/Home';
+						$bookshelfItem['recordUrl']  =  '/OverDrive/' . $overDriveRecord->getUniqueID() . '/Home';
 						$bookshelfItem['title']      = $overDriveRecord->getTitle();
 						$bookshelfItem['author']     = $overDriveRecord->getAuthor();
 						$bookshelfItem['linkUrl']    = $overDriveRecord->getLinkUrl(false);
@@ -638,7 +638,7 @@ class OverDriveDriver3 {
 					$overDriveRecord    = new OverDriveRecordDriver($hold['overDriveId']);
 					$hold['recordId']   = $overDriveRecord->getUniqueID();
 					$hold['coverUrl']   = $overDriveRecord->getCoverUrl('medium');
-					$hold['recordUrl']  =  . '/OverDrive/' . $overDriveRecord->getUniqueID() . '/Home';
+					$hold['recordUrl']  = '/OverDrive/' . $overDriveRecord->getUniqueID() . '/Home';
 					$hold['title']      = $overDriveRecord->getTitle();
 					$hold['sortTitle']  = $overDriveRecord->getTitle();
 					$hold['author']     = $overDriveRecord->getAuthor();
