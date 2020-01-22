@@ -244,7 +244,7 @@
 													<strong>To opt-out from SMS Alerts, U.S.-based patrons can send a text message with the word STOP, STOP ALL, END, QUIT, CANCEL, or
 														 UNSUBSCRIBE to 82453 or 35143 from the mobile phone number specified during the opt-in process.</strong>
 													<br><br>
-													<a href="{if $smsTermsLink}{$smsTermsLink}{else}{$path}/Help/Home?topic=smsTerms{/if}" data-title="SMS Notice Terms" class="modalDialogTrigger">View Terms and Conditions</a>
+													<a href="{if $smsTermsLink}{$smsTermsLink}{else}/Help/Home?topic=smsTerms{/if}" data-title="SMS Notice Terms" class="modalDialogTrigger">View Terms and Conditions</a>
 												</p>
 											{/if}
 										</div>
@@ -642,7 +642,7 @@
 		{/if}
 		{else}
 			<div class="page">
-				You must login to view this information. Click <a href="{$path}/MyResearch/Login">here</a> to login.
+				You must login to view this information. Click <a href="/MyAccount/Login">here</a> to login.
 			</div>
 		{/if}
 	</div>

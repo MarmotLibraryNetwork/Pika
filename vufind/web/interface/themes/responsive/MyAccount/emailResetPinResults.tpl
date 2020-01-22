@@ -6,7 +6,7 @@
 				{if $emailResult.error}
 					<p class="alert alert-danger">{$emailResult.error}</p>
 					<div>
-						<a class="btn btn-primary" role="button" href="{$path}/MyAccount/EmailResetPin">Try Again</a>
+						<a class="btn btn-primary" role="button" href="/MyAccount/EmailResetPin">Try Again</a>
 					</div>
 				{else}
 					<p class="alert alert-success">
@@ -17,7 +17,7 @@
 						&nbsp;have.   If you do not receive an email, please contact your library to have them reset your pin.
 					</p>
 					<p>
-						<a class="btn btn-primary" role="button" href="{$path}/MyAccount/Login">{translate text='Login'}</a>
+						<a class="btn btn-primary" role="button" href="/MyAccount/Login">{translate text='Login'}</a>
 					</p>
 				{/if}
 			</div>

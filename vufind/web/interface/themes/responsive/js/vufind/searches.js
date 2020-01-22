@@ -38,7 +38,7 @@ VuFind.Searches = (function(){
 		},
 
 		getCombinedResults: function(fullId, shortId, source, searchTerm, searchType, numberOfResults){
-			var url = Globals.path + '/Union/AJAX',
+			var url = '/Union/AJAX',
 					params = {
 						'method'        : 'getCombinedResults',
 						source          : source,
@@ -100,7 +100,7 @@ VuFind.Searches = (function(){
 		},
 
 		getMoreResults: function(){
-			var url = Globals.path + '/Search/AJAX',
+			var url = '/Search/AJAX',
 					params = VuFind.replaceQueryParam('page', this.curPage+1)+'&method=getMoreSearchResults',
 					divClass = this.displayModeClasses[this.displayMode];
 			params = VuFind.replaceQueryParam('view', this.displayMode, params); // set the view url parameter just in case.
@@ -185,7 +185,7 @@ VuFind.Searches = (function(){
 						related_record = $('#related_record').val(),
 						sourceUrl = window.location.href;
 
-				var url = Globals.path + "/Search/AJAX";
+				var url = "/Search/AJAX";
 				$.getJSON(url,
 						{ // pass parameters as data
 							method     : 'sendEmail'
@@ -238,7 +238,7 @@ VuFind.Searches = (function(){
 				VuFind.Searches.lastSpellingTimer = undefined;
 			}
 
-			var url = Globals.path + "/Search/AJAX?method=GetAutoSuggestList&searchTerm=" + query;
+			var url = "/Search/AJAX?method=GetAutoSuggestList&searchTerm=" + query;
 			//Get the search source
 			if (isAdvanced){
 				//Add the search type
@@ -382,7 +382,7 @@ VuFind.Searches = (function(){
 		},
 
 		loadExploreMoreBar: function(section, searchTerm){
-			var url = Globals.path + "/Search/AJAX";
+			var url = "/Search/AJAX";
 			var params = "method=loadExploreMoreBar&section=" + encodeURIComponent(section);
 			params += "&searchTerm=" + encodeURIComponent(searchTerm);
 			var fullUrl = url + "?" + params;

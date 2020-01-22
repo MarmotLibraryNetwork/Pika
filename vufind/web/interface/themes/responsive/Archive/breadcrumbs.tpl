@@ -3,7 +3,7 @@
 {if $lastsearch}
 	<a href="{$lastsearch|escape}#record{$id|escape:"url"}">{if $lookfor}Archive Search "{$lookfor|truncate:30:"..."|escape}"{else}{translate text="Archive Search Results"}{/if}</a> <span class="divider">&raquo;</span>
 {else}
-	<a href="{$path}/Archive/Home">Local Digital Archive</a> <span class="divider">&raquo;</span>
+	<a href="/Archive/Home">Local Digital Archive</a> <span class="divider">&raquo;</span>
 {/if}
 {if $breadcrumbText}
 	{if $isFromExhibit && $parentExhibitUrl}
@@ -22,7 +22,7 @@
 	{if $lastsearch}
 		<a href="{$lastsearch|escape}#record{$id|escape:"url"}">{translate text="Archive Search Results"}</a> <span class="divider">&raquo;</span>
 	{else}
-		<a href="{$path}/Archive/Home">Local Digital Archive</a> <span class="divider">&raquo;</span>
+		<a href="/Archive/Home">Local Digital Archive</a> <span class="divider">&raquo;</span>
 	{/if}
 	{if $breadcrumbText}
 		<em>{$breadcrumbText|truncate:30:"..."|escape}</em> <span class="divider">&raquo;</span>

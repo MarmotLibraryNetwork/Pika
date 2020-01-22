@@ -10,7 +10,7 @@ VuFind.MaterialsRequest = (function(){
 			if (title == '' && author == ''){
 				alert("Please enter a title and author before checking for an ISBN and OCLC Number");
 			}else{
-				var requestUrl = Globals.path + "/MaterialsRequest/AJAX",
+				var requestUrl = "/MaterialsRequest/AJAX",
 						params = {
 							'method': 'GetWorldCatIdentifiers',
 							title: title,
@@ -31,7 +31,7 @@ VuFind.MaterialsRequest = (function(){
 
 		cancelMaterialsRequest: function(id){
 			VuFind.confirm("Are you sure you want to cancel this request?", function(){
-				var url = Globals.path + "/MaterialsRequest/AJAX",
+				var url = "/MaterialsRequest/AJAX",
 						params = {
 							'method': 'CancelRequest',
 							id: id
@@ -49,11 +49,11 @@ VuFind.MaterialsRequest = (function(){
 		},
 
 		showMaterialsRequestDetails: function(id, staffView){
-			return VuFind.Account.ajaxLightbox(Globals.path + "/MaterialsRequest/AJAX?method=MaterialsRequestDetails&id=" +id + "&staffView=" +staffView, true);
+			return VuFind.Account.ajaxLightbox("/MaterialsRequest/AJAX?method=MaterialsRequestDetails&id=" +id + "&staffView=" +staffView, true);
 		},
 
 		updateMaterialsRequest: function(id){
-			return VuFind.Account.ajaxLightbox(Globals.path + "/MaterialsRequest/AJAX?method=UpdateMaterialsRequest&id=" +id, true);
+			return VuFind.Account.ajaxLightbox("/MaterialsRequest/AJAX?method=UpdateMaterialsRequest&id=" +id, true);
 		},
 
 		exportSelectedRequests: function(){

@@ -1,4 +1,4 @@
-<script type="text/javascript" src="{$path}/services/MaterialsRequest/ajax.js"></script>
+<script type="text/javascript" src="/services/MaterialsRequest/ajax.js"></script>
 
 	<div id="main-content" class="col-md-12">
 		<h3>Materials Request Requests by User Report</h3>
@@ -8,7 +8,7 @@
 			<div id="materialsRequestFilters">
 				<legend>Filters</legend>
 
-				<form action="{$path}/MaterialsRequest/UserReport" method="get">
+				<form action="/MaterialsRequest/UserReport" method="get">
 					<fieldset class="fieldset-collapsible">
 						<legend>Statuses to Show:</legend>
 						<div class="form-group checkbox">

@@ -10,7 +10,7 @@ VuFind.Browse = (function(){
 		},
 
 		addToHomePage: function(searchId){
-			VuFind.Account.ajaxLightbox(Globals.path + '/Browse/AJAX?method=getAddBrowseCategoryForm&searchId=' + searchId, true);
+			VuFind.Account.ajaxLightbox('/Browse/AJAX?method=getAddBrowseCategoryForm&searchId=' + searchId, true);
 			return false;
 		},
 
@@ -87,7 +87,7 @@ VuFind.Browse = (function(){
 		},
 
 		changeBrowseCategory: function(categoryTextId){
-			var url = Globals.path + '/Browse/AJAX',
+			var url = '/Browse/AJAX',
 					params = {
 						method : 'getBrowseCategoryInfo'
 						,textId : categoryTextId || VuFind.Browse.curCategory
@@ -158,7 +158,7 @@ VuFind.Browse = (function(){
 
 		changeBrowseSubCategory: function (subCategoryTextId) {
 			//console.log('change Browse Sub Category');
-			var url = Globals.path + '/Browse/AJAX',
+			var url = '/Browse/AJAX',
 					params = {
 						method : 'getBrowseSubCategoryInfo'
 						,textId : VuFind.Browse.curCategory
@@ -204,7 +204,7 @@ VuFind.Browse = (function(){
 		},
 
 		createBrowseCategory: function(){
-			var url = Globals.path + "/Browse/AJAX",
+			var url = "/Browse/AJAX",
 					params = {
 							method:'createBrowseCategory'
 							,categoryName:$('#categoryName').val()
@@ -231,7 +231,7 @@ VuFind.Browse = (function(){
 		getMoreResults: function(){
 			//Increment the current page in case the button is clicked rapidly
 			this.curPage += 1;
-			var url = Globals.path + '/Browse/AJAX',
+			var url = '/Browse/AJAX',
 					params = {
 						method : 'getMoreBrowseResults'
 						,textId :  this.curSubCategory || this.curCategory

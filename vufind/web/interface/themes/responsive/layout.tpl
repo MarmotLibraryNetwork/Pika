@@ -31,7 +31,7 @@
 			<meta property="og:url" content="{$og_url|escape:html}" />
 		{/if}
 		<link rel="shortcut icon" type="image/x-icon" href="{img filename=favicon.png}">
-		<link rel="search" type="application/opensearchdescription+xml" title="{$librarySystemName} Catalog Search" href="{$path}/Search/OpenSearch">
+		<link rel="search" type="application/opensearchdescription+xml" title="{$librarySystemName} Catalog Search" href="/Search/OpenSearch">
 
 		{include file="cssAndJsIncludes.tpl"}
 		{/strip}

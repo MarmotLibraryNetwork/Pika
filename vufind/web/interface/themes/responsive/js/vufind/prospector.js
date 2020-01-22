@@ -1,7 +1,7 @@
 VuFind.Prospector = (function(){
 	return {
 		getProspectorResults: function(prospectorNumTitlesToLoad, prospectorSavedSearchId){
-			var url = Globals.path + "/Search/AJAX",
+			var url = "/Search/AJAX",
 					params = {
 						'method': 'getProspectorResults',
 						prospectorNumTitlesToLoad: prospectorNumTitlesToLoad,
@@ -13,7 +13,7 @@ VuFind.Prospector = (function(){
 		},
 
 		loadRelatedProspectorTitles: function (id) {
-			var url = Globals.path + "/GroupedWork/" + encodeURIComponent(id) + "/AJAX",
+			var url = "/GroupedWork/" + encodeURIComponent(id) + "/AJAX",
 					params = {'method': 'getProspectorInfo'};
 			$.getJSON(url, params, function (data) {
 				if (data.numTitles === 0) {

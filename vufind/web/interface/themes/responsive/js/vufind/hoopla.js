@@ -5,7 +5,7 @@ VuFind.Hoopla = (function(){
 				if (typeof patronId === 'undefined') {
 					patronId = $('#patronId', '#pickupLocationOptions').val(); // Lookup selected user from the options form
 				}
-				var url = Globals.path + '/Hoopla/'+ hooplaId + '/AJAX',
+				var url = '/Hoopla/'+ hooplaId + '/AJAX',
 						params = {
 							'method' : 'checkOutHooplaTitle',
 							patronId : patronId
@@ -26,7 +26,7 @@ VuFind.Hoopla = (function(){
 
 		getHooplaCheckOutPrompt: function (hooplaId) {
 			VuFind.Account.ajaxLogin(function (){
-				var url = Globals.path + "/Hoopla/" + hooplaId + "/AJAX?method=getHooplaCheckOutPrompt";
+				var url = "/Hoopla/" + hooplaId + "/AJAX?method=getHooplaCheckOutPrompt";
 				$.getJSON(url, function (data) {
 					VuFind.showMessageWithButtons(data.title, data.body, data.buttons);
 				}).fail(VuFind.ajaxFail);
@@ -38,7 +38,7 @@ VuFind.Hoopla = (function(){
 			VuFind.confirm('Are you sure you want to return this title?', function () {
 				VuFind.Account.ajaxLogin(function (){
 					VuFind.showMessage("Returning Title", "Returning your title in Hoopla.");
-					var url = Globals.path + "/Hoopla/" + hooplaId + "/AJAX",
+					var url = "/Hoopla/" + hooplaId + "/AJAX",
 							params = {
 								'method': 'returnHooplaTitle'
 								,patronId: patronId

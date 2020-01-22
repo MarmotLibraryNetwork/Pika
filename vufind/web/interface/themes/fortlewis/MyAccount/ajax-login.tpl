@@ -19,12 +19,12 @@
 			</p>
 		</div>
 	{else}
-		<form method="post" action="{$path}/MyAccount/Home" id="loginForm" class="form-horizontal" role="form" onsubmit="return VuFind.Account.processAjaxLogin()">
+		<form method="post" action="/MyAccount/Home" id="loginForm" class="form-horizontal" role="form" onsubmit="return VuFind.Account.processAjaxLogin()">
 			<div class="row">
 
 				<div class="col-sm-6">
 					<p><strong>Students, Faculty, and staff</strong>, login with your Fort Lewis College Network Account.</p>
-					<a href="{$path}/MyAccount/Home?casLogin" class="btn btn-primary">Student/Faculty/Staff Login</a>
+					<a href="/MyAccount/Home?casLogin" class="btn btn-primary">Student/Faculty/Staff Login</a>
 				</div>
 
 				<div class="col-sm-6">
@@ -42,12 +42,12 @@
 							<input type="password" name="password" id="password" size="28" onkeypress="return VuFind.submitOnEnter(event, '#loginForm');" class="form-control">
 							{if $showForgotPinLink}
 								<p class="text-muted help-block">
-									<strong>Forgot PIN?</strong> <a href="{$path}/MyAccount/EmailPin">E-mail PIN</a>
+									<strong>Forgot PIN?</strong> <a href="/MyAccount/EmailPin">E-mail PIN</a>
 								</p>
 							{/if}
 							{if $enableSelfRegistration == 1}
 								<p class="help-block">
-									Don't have a library card?  <a href="{$path}/MyAccount/SelfReg">Register for a new Library Card</a>.
+									Don't have a library card?  <a href="/MyAccount/SelfReg">Register for a new Library Card</a>.
 								</p>
 							{/if}
 						</div>

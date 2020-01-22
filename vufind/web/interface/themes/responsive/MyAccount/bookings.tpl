@@ -79,7 +79,7 @@
 	{else} {* Check to see if user is logged in *}
       {* This should never get displayed. Users should automatically be redirected to login page*}
 		<div class="alert alert-warning">
-		You must login to view this information. Click <a href="{$path}/MyAccount/Login">here</a> to login.
+		You must login to view this information. Click <a href="/MyAccount/Login">here</a> to login.
 		</div>
 	{/if}
 {/strip}

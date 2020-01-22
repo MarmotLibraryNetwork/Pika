@@ -27,7 +27,7 @@
 	<div class="logoutOptions"{if !$loggedIn} style="display: none;"{/if}>
 		{*<div class="hidden-xs col-sm-2 col-sm-offset-2 col-md-2 col-md-offset-3 col-lg-2 col-lg-offset-4">*}
 		<div class="hidden-xs col-sm-2 col-sm-offset-5 col-md-2 col-md-offset-0 col-lg-2 col-lg-offset-0">
-			<a id="myAccountNameLink" href="{$path}/MyAccount/Home">
+			<a id="myAccountNameLink" href="/MyAccount/Home">
 				<div class="header-button header-primary">
 					{if $userDisplayName}{$userDisplayName|capitalize}'s Account{else}My Account{/if}
 				</div>
@@ -36,7 +36,7 @@
 
 		{*<div class="hidden-xs col-xs-3 col-sm-2 col-md-2 col-lg-2">*}
 		<div class="hidden-xs col-sm-2 col-md-2 col-lg-2">
-			<a href="{$path}/MyAccount/Logout"{if $masqueradeMode} onclick="return confirm('This will end both Masquerade Mode and your session as well. Continue to log out?')"{/if}  id="logoutLink">
+			<a href="/MyAccount/Logout"{if $masqueradeMode} onclick="return confirm('This will end both Masquerade Mode and your session as well. Continue to log out?')"{/if}  id="logoutLink">
 				<div class="header-button header-logout">
 					{translate text="Log Out"}
 				</div>
@@ -46,7 +46,7 @@
 
 	<div class="loginOptions col-sm-2 col-sm-offset-7 col-md-2 col-md-offset-2 col-lg-offset-2 col-lg-2"{if $loggedIn} style="display: none;"{/if}>
 		{if $showLoginButton == 1}
-			<a id="headerLoginLink" href="{$path}/MyAccount/Home" class="loginLink" data-login="true" title="Login">
+			<a id="headerLoginLink" href="/MyAccount/Home" class="loginLink" data-login="true" title="Login">
 				<div class="hidden-xs header-button header-primary">
 					{translate text="LOGIN"}
 				</div>

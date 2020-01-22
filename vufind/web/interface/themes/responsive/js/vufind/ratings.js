@@ -13,20 +13,20 @@ VuFind.Ratings = (function(){
 							rating: parseFloat(userRating > 0 ? userRating : ratingElement.data("average_rating")),
 							//url: Globals.path +"AJAX" // only works for grouped works
 							//url: location.protocol+'\\'+location.host+ "/GroupedWork/AJAX" // full path
-							//url: Globals.path + "/GroupedWork/AJAX" // full path // works on our servers but not locally. plb 12-29-2015
-							url: Globals.path + "/GroupedWork/"+ encodeURIComponent( id ) + "/AJAX" // full path
+							//url: "/GroupedWork/AJAX" // full path // works on our servers but not locally. plb 12-29-2015
+							url: "/GroupedWork/"+ encodeURIComponent( id ) + "/AJAX" // full path
 						};
 				ratingElement.rater(options);
 			});
 		},
 
 		doRatingReview: function (id){
-			$.getJSON(Globals.path + "/GroupedWork/"+id+"/AJAX?method=getPromptforReviewForm", function(data){
+			$.getJSON("/GroupedWork/"+id+"/AJAX?method=getPromptforReviewForm", function(data){
 				if (data.prompt) VuFind.showMessageWithButtons(data.title, data.modalBody, data.modalButtons); // only ask if user hasn't set the setting already
 				if (data.error)  VuFind.showMessage('Error', data.message);
 			}).fail(VuFind.ajaxFail)
 			// Version 3
-			//VuFind.Account.ajaxLightbox(Globals.path + "/GroupedWork/"+id+"/AJAX?method=getPromptforReviewForm", true);
+			//VuFind.Account.ajaxLightbox("/GroupedWork/"+id+"/AJAX?method=getPromptforReviewForm", true);
 			// Version 2
 			//VuFind.showMessageWithButtons('Add a Review',
 			//		'Would you like to add a review explaining your rating to help other users?',
@@ -39,7 +39,7 @@ VuFind.Ratings = (function(){
 		},
 
 		doNoRatingReviews : function (){
-			$.getJSON(Globals.path + "/GroupedWork/AJAX?method=setNoMoreReviews", function(data){
+			$.getJSON("/GroupedWork/AJAX?method=setNoMoreReviews", function(data){
 				if (data.success) VuFind.showMessage('Success', 'You will no longer be asked to give a review.', true)
 				else VuFind.showMessage('Error', 'Failed to save your setting.')
 			}).fail(VuFind.ajaxFail);

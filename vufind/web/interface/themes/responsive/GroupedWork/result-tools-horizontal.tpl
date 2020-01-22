@@ -27,7 +27,7 @@
 			{if is_array($exportFormats) && count($exportFormats) > 0}
 				{foreach from=$exportFormats item=exportFormat}
 					<div class="btn-group btn-group-sm">
-					<a {if $exportFormat=="RefWorks"}target="{$exportFormat}Main" {/if}href="{$path}/Record/{$id|escape:"url"}/Export?style={$exportFormat|escape:"url"}">
+					<a {if $exportFormat=="RefWorks"}target="{$exportFormat}Main" {/if}href="/Record/{$id|escape:"url"}/Export?style={$exportFormat|escape:"url"}">
 						<button class="btn btn-sm ">{$exportFormat|escape}</button>
 					</a>
 					</div>

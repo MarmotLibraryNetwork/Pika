@@ -189,10 +189,10 @@
 										<div class="result-value col-tn-9">
 											{if is_array($record.author)}
 												{foreach from=$summAuthor item=author}
-													<a href='{$path}/Author/Home?author="{$author|escape:"url"}"'>{$author|highlight}</a>
+													<a href='/Author/Home?author="{$author|escape:"url"}"'>{$author|highlight}</a>
 												{/foreach}
 											{else}
-												<a href='{$path}/Author/Home?author="{$record.author|escape:"url"}"'>{$record.author|highlight}</a>
+												<a href='/Author/Home?author="{$record.author|escape:"url"}"'>{$record.author|highlight}</a>
 											{/if}
 										</div>
 									</div>
@@ -278,7 +278,7 @@
 {else}
 		{* This should never get displayed. Users should automatically be redirected to login page*}
 	<div class="alert alert-info">
-		You must login to view this information. Click <a href="{$path}/MyAccount/Login">here</a> to login.
+		You must login to view this information. Click <a href="/MyAccount/Login">here</a> to login.
 	</div>
 {/if}
 </div>

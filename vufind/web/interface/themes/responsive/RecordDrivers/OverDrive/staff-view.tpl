@@ -7,7 +7,7 @@
 	</div>
 	<div class="row">
 		<div class="col-xs-12">
-			<a href="{$path}/GroupedWork/{$recordDriver->getPermanentId()}" class="btn btn-sm btn-default">Go To Grouped
+			<a href="/GroupedWork/{$recordDriver->getPermanentId()}" class="btn btn-sm btn-default">Go To Grouped
 				Work</a>
 			<button onclick="return VuFind.Record.reloadCover('{$recordDriver->getModule()}', '{$id}')"
 			        class="btn btn-sm btn-default">Reload Cover

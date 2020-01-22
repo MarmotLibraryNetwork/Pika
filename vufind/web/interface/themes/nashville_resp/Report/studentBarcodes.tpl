@@ -140,7 +140,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
 			{/if}
 		{else}
 			</div>
-			You must login to view this information. Click <a href="{$path}/MyAccount/Login">here</a> to login.
+			You must login to view this information. Click <a href="/MyAccount/Login">here</a> to login.
 		{/if}
 	</div>
 {/strip}

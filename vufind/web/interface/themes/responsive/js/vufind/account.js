@@ -9,7 +9,7 @@ VuFind.Account = (function(){
 		showCovers: null,
 
 		addAccountLink: function(){
-			var url = Globals.path + "/MyAccount/AJAX?method=getAddAccountLinkForm";
+			var url = "/MyAccount/AJAX?method=getAddAccountLinkForm";
 			VuFind.Account.ajaxLightbox(url, true);
 		},
 
@@ -25,7 +25,7 @@ VuFind.Account = (function(){
 					groupedWorkId = form.find("input[name=groupedWorkId]").val(),
 					title = form.find("input[name=title]").val(),
 					desc = $("#listDesc").val(),
-					url = Globals.path + "/MyAccount/AJAX",
+					url = "/MyAccount/AJAX",
 					params = {
 						'method': 'AddList',
 						title: title,
@@ -78,7 +78,7 @@ VuFind.Account = (function(){
 
 					 */
 				}
-				var dialogDestination = Globals.path + '/MyAccount/AJAX?method=LoginForm';
+				var dialogDestination = '/MyAccount/AJAX?method=LoginForm';
 				if (multistep && !loginLink){
 					dialogDestination += "&multistep=true";
 				}
@@ -106,7 +106,7 @@ VuFind.Account = (function(){
 		},
 
 		loadMenuData: function (){
-			var url = Globals.path + "/MyAccount/AJAX?method=getMenuData&activeModule=" + Globals.activeModule + '&activeAction=' + Globals.activeAction;
+			var url = "/MyAccount/AJAX?method=getMenuData&activeModule=" + Globals.activeModule + '&activeAction=' + Globals.activeAction;
 			$.getJSON(url, function(data){
 				$("#lists-placeholder").html(data.lists);
 				$(".checkouts-placeholder").html(data.checkouts);
@@ -156,7 +156,7 @@ VuFind.Account = (function(){
 						rememberMe = $("#rememberMe").prop('checked'),
 						loginErrorElem = $('#loginError'),
 						loadingElem = $('#loading'),
-						url = Globals.path + "/AJAX/JSON?method=loginUser",
+						url = "/AJAX/JSON?method=loginUser",
 						params = {username: username, password: password, rememberMe: rememberMe};
 				if (!Globals.opac && VuFind.hasLocalStorage()){
 					var showCovers = window.localStorage.getItem('showCovers') || false;
@@ -207,7 +207,7 @@ VuFind.Account = (function(){
 				var username = $("#username").val(),
 						password = $("#password").val(),
 						loginErrorElem = $('#loginError'),
-						url = Globals.path + "/MyAccount/AJAX?method=addAccountLink";
+						url = "/MyAccount/AJAX?method=addAccountLink";
 				loginErrorElem.hide();
 				$.post(url, {username: username, password: password}, function (response){
 					if (response.result == true){
@@ -226,7 +226,7 @@ VuFind.Account = (function(){
 
 		removeLinkedUser: function(idToRemove){
 			VuFind.confirm("Are you sure you want to stop managing this account?", function () {
-				var url = Globals.path + "/MyAccount/AJAX?method=removeAccountLink&idToRemove=" + idToRemove;
+				var url = "/MyAccount/AJAX?method=removeAccountLink&idToRemove=" + idToRemove;
 				$.getJSON(url, function(data){
 					if (data.result == true){
 						VuFind.showMessage('Linked Account Removed', data.message, true, true);
@@ -240,7 +240,7 @@ VuFind.Account = (function(){
 
 		removeTag: function(tag){
 			VuFind.confirm("Are you sure you want to remove the tag \"" + tag + "\" from all titles?",function () {
-				var url = Globals.path + "/MyAccount/AJAX",
+				var url = "/MyAccount/AJAX",
 						params = {method:'removeTag', tag: tag};
 				$.getJSON(url, params, function(data){
 					if (data.result == true){
@@ -256,7 +256,7 @@ VuFind.Account = (function(){
 		renewTitle: function(patronId, recordId, renewIndicator) {
 			VuFind.Account.ajaxLogin(function (){
 				VuFind.loadingMessage();
-				$.getJSON(Globals.path + "/MyAccount/AJAX?method=renewItem&patronId=" + patronId + "&recordId=" + recordId + "&renewIndicator="+renewIndicator, function(data){
+				$.getJSON("/MyAccount/AJAX?method=renewItem&patronId=" + patronId + "&recordId=" + recordId + "&renewIndicator="+renewIndicator, function(data){
 					VuFind.showMessage(data.title, data.modalBody, data.success, data.success); // autoclose when successful
 				}).fail(VuFind.ajaxFail)
 			});
@@ -267,7 +267,7 @@ VuFind.Account = (function(){
 			VuFind.Account.ajaxLogin(function (){
 				VuFind.confirm('Renew All Items?', function () {
 					VuFind.loadingMessage();
-					$.getJSON(Globals.path + "/MyAccount/AJAX?method=renewAll", function (data) {
+					$.getJSON("/MyAccount/AJAX?method=renewAll", function (data) {
 						VuFind.showMessage(data.title, data.modalBody, data.success);
 						// autoclose when all successful
 						if (data.success || data.renewed > 0) {
@@ -289,7 +289,7 @@ VuFind.Account = (function(){
 				if (selectedTitles) {
 					VuFind.confirm('Renew selected Items?', function(){
 						VuFind.loadingMessage();
-						$.getJSON(Globals.path + "/MyAccount/AJAX?method=renewSelectedItems&" + selectedTitles, function (data) {
+						$.getJSON("/MyAccount/AJAX?method=renewSelectedItems&" + selectedTitles, function (data) {
 							var reload = data.success || data.renewed > 0;
 							VuFind.showMessage(data.title, data.modalBody, data.success, reload);
 						}).fail(VuFind.ajaxFail);
@@ -342,7 +342,7 @@ VuFind.Account = (function(){
 
 		confirmCancelHold: function(patronId, recordId, holdIdToCancel) {
 			VuFind.loadingMessage();
-			$.getJSON(Globals.path + "/MyAccount/AJAX?method=confirmCancelHold&patronId=" + patronId + "&recordId=" + recordId + "&cancelId="+holdIdToCancel, function(data){
+			$.getJSON("/MyAccount/AJAX?method=confirmCancelHold&patronId=" + patronId + "&recordId=" + recordId + "&cancelId="+holdIdToCancel, function(data){
 				VuFind.showMessageWithButtons(data.title, data.body, data.buttons);
 			}).fail(VuFind.ajaxFail);
 
@@ -352,7 +352,7 @@ VuFind.Account = (function(){
 		cancelHold: function(patronId, recordId, holdIdToCancel){
 			VuFind.Account.ajaxLogin(function (){
 				VuFind.loadingMessage();
-				$.getJSON(Globals.path + "/MyAccount/AJAX?method=cancelHold&patronId=" + patronId + "&recordId=" + recordId + "&cancelId="+holdIdToCancel, function(data){
+				$.getJSON("/MyAccount/AJAX?method=cancelHold&patronId=" + patronId + "&recordId=" + recordId + "&cancelId="+holdIdToCancel, function(data){
 					VuFind.showMessage(data.title, data.body, data.success, data.success); // autoclose when successful
 				}).fail(VuFind.ajaxFail)
 			});
@@ -371,7 +371,7 @@ VuFind.Account = (function(){
 				// if numHolds equals 0, quit because user has canceled in getSelectedTitles()
 				if (numHolds > 0 && confirm('Cancel ' + numHolds + ' selected hold' + (numHolds > 1 ? 's' : '') + '?')) {
 					VuFind.loadingMessage();
-					$.getJSON(Globals.path + "/MyAccount/AJAX?method=cancelHolds&"+selectedTitles, function(data){
+					$.getJSON("/MyAccount/AJAX?method=cancelHolds&"+selectedTitles, function(data){
 						VuFind.showMessage(data.title, data.modalBody, data.success); // autoclose when successful
 						if (data.success) {
 							// remove canceled items from page
@@ -405,7 +405,7 @@ VuFind.Account = (function(){
 					VuFind.loadingMessage();
 					var c = {};
 					c[patronId] = cancelId;
-					$.getJSON(Globals.path + "/MyAccount/AJAX", {method:"cancelBooking", cancelId:c}, function(data){
+					$.getJSON("/MyAccount/AJAX", {method:"cancelBooking", cancelId:c}, function(data){
 						VuFind.showMessage(data.title, data.modalBody, data.success); // autoclose when successful
 						if (data.success) {
 							// remove canceled item from page
@@ -427,7 +427,7 @@ VuFind.Account = (function(){
 				// if numBookings equals 0, quit because user has canceled in getSelectedTitles()
 				if (numBookings > 0 && confirm('Cancel ' + numBookings + ' selected scheduled item' + (numBookings > 1 ? 's' : '') + '?')) {
 					VuFind.loadingMessage();
-					$.getJSON(Globals.path + "/MyAccount/AJAX?method=cancelBooking&"+selectedTitles, function(data){
+					$.getJSON("/MyAccount/AJAX?method=cancelBooking&"+selectedTitles, function(data){
 						VuFind.showMessage(data.title, data.modalBody, data.success); // autoclose when successful
 						if (data.success) {
 							// remove canceled items from page
@@ -453,7 +453,7 @@ VuFind.Account = (function(){
 			VuFind.confirm('Cancel all of your scheduled items?',function () {
 				VuFind.Account.ajaxLogin(function (){
 					VuFind.loadingMessage();
-					$.getJSON(Globals.path + "/MyAccount/AJAX?method=cancelBooking&cancelAll=1", function(data){
+					$.getJSON("/MyAccount/AJAX?method=cancelBooking&cancelAll=1", function(data){
 						VuFind.showMessage(data.title, data.modalBody, data.success); // autoclose when successful
 						if (data.success) {
 							// remove canceled items from page
@@ -485,7 +485,7 @@ VuFind.Account = (function(){
 		changeHoldPickupLocation: function (patronId, recordId, holdId){
 			VuFind.Account.ajaxLogin(function (){
 				VuFind.loadingMessage();
-				$.getJSON(Globals.path + "/MyAccount/AJAX?method=getChangeHoldLocationForm&patronId=" + patronId + "&recordId=" + recordId + "&holdId=" + holdId, function(data){
+				$.getJSON("/MyAccount/AJAX?method=getChangeHoldLocationForm&patronId=" + patronId + "&recordId=" + recordId + "&holdId=" + holdId, function(data){
 					VuFind.showMessageWithButtons(data.title, data.modalBody, data.modalButtons)
 				});
 			});
@@ -494,7 +494,7 @@ VuFind.Account = (function(){
 
 		deleteSearch: function(searchId){
 			VuFind.Account.ajaxLogin(function (){
-				var url = Globals.path + "/MyAccount/AJAX";
+				var url = "/MyAccount/AJAX";
 				var params = "method=deleteSearch&searchId=" + encodeURIComponent(searchId);
 				$.getJSON(url + '?' + params,
 						function(data) {
@@ -510,7 +510,7 @@ VuFind.Account = (function(){
 		},
 
 		doChangeHoldLocation: function(){
-			var url = Globals.path + "/MyAccount/AJAX"
+			var url = "/MyAccount/AJAX"
 					,params = {
 						'method': 'changeHoldLocation'
 						,patronId : $('#patronId').val()
@@ -532,7 +532,7 @@ VuFind.Account = (function(){
 
 		freezeHold: function(patronId, recordId, holdId, promptForReactivationDate, caller){
 			VuFind.loadingMessage();
-			var url = Globals.path + '/MyAccount/AJAX',
+			var url = '/MyAccount/AJAX',
 					params = {
 						patronId : patronId
 						,recordId : recordId
@@ -569,7 +569,7 @@ VuFind.Account = (function(){
 						,holdId : $("#holdId").val()
 						,reactivationDate : $("#reactivationDate").val()
 					}
-					,url = Globals.path + '/MyAccount/AJAX';
+					,url = '/MyAccount/AJAX';
 			VuFind.showMessage(popUpBoxTitle, "Updating your hold.  This may take a minute.");
 			$.getJSON(url, params, function(data){
 				if (data.success) {
@@ -603,7 +603,7 @@ VuFind.Account = (function(){
 					return false;
 				}
 			}
-			url = Globals.path + '/MyAccount/Holds?multiAction=freezeSelected&patronId=' + patronId + '&recordId=' + recordId + '&' + selectedTitles + '&suspendDate=' + suspendDate;
+			url = '/MyAccount/Holds?multiAction=freezeSelected&patronId=' + patronId + '&recordId=' + recordId + '&' + selectedTitles + '&suspendDate=' + suspendDate;
 			queryParams = VuFind.getQuerystringParameters();
 			if ($.inArray('section', queryParams)){
 				url += '&section=' + queryParams['section'];
@@ -632,7 +632,7 @@ VuFind.Account = (function(){
 
 		saveSearch: function(searchId){
 			VuFind.Account.ajaxLogin(function (){
-				var url = Globals.path + "/MyAccount/AJAX",
+				var url = "/MyAccount/AJAX",
 						params = {method :'saveSearch', searchId :searchId};
 				$.getJSON(url, params,
 						function(data){
@@ -649,7 +649,7 @@ VuFind.Account = (function(){
 
 		showCreateListForm: function(id){
 			VuFind.Account.ajaxLogin(function (){
-				var url = Globals.path + "/MyAccount/AJAX",
+				var url = "/MyAccount/AJAX",
 						params = {method:"getCreateListForm"};
 				if (id !== undefined){
 					params.groupedWorkId = id;
@@ -664,7 +664,7 @@ VuFind.Account = (function(){
 		thawHold: function(patronId, recordId, holdId, caller){
 			var popUpBoxTitle = $(caller).text() || "Thawing Hold";  // freezing terminology can be customized, so grab text from click button: caller
 			VuFind.showMessage(popUpBoxTitle, "Updating your hold.  This may take a minute.");
-			var url = Globals.path + '/MyAccount/AJAX',
+			var url = '/MyAccount/AJAX',
 					params = {
 						'method' : 'thawHold'
 						,patronId : patronId
@@ -697,7 +697,7 @@ VuFind.Account = (function(){
 
 		getMasqueradeForm: function () {
 			VuFind.loadingMessage();
-			var url = Globals.path + "/MyAccount/AJAX",
+			var url = "/MyAccount/AJAX",
 					params = {method:"getMasqueradeAsForm"};
 			$.getJSON(url, params, function(data){
 				VuFind.showMessageWithButtons(data.title, data.modalBody, data.modalButtons)
@@ -706,7 +706,7 @@ VuFind.Account = (function(){
 		},
 
 		initiateMasquerade: function() {
-			var url = Globals.path + "/MyAccount/AJAX",
+			var url = "/MyAccount/AJAX",
 					params = {
 						method:"initiateMasquerade"
 						,cardNumber:$('#cardNumber').val()
@@ -715,7 +715,7 @@ VuFind.Account = (function(){
 			$('#masqueradeLoading').show();
 			$.getJSON(url, params, function(data){
 				if (data.success) {
-					location.href = Globals.path + '/MyAccount/Home';
+					location.href = '/MyAccount/Home';
 				} else {
 					$('#masqueradeLoading').hide();
 					$('#masqueradeAsError').html(data.error).show();
@@ -725,10 +725,10 @@ VuFind.Account = (function(){
 		},
 
 		endMasquerade: function () {
-			var url = Globals.path + "/MyAccount/AJAX",
+			var url = "/MyAccount/AJAX",
 					params = {method:"endMasquerade"};
 			$.getJSON(url, params).done(function(){
-					location.href = Globals.path + '/MyAccount/Home';
+					location.href = '/MyAccount/Home';
 			}).fail(VuFind.ajaxFail);
 			return false;
 		}

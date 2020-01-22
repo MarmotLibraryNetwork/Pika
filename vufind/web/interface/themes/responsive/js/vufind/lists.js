@@ -1,7 +1,7 @@
 VuFind.Lists = (function(){
 	return {
 		addToHomePage: function(listId){
-			VuFind.Account.ajaxLightbox(Globals.path + '/MyAccount/AJAX?method=getAddBrowseCategoryFromListForm&listId=' + listId, true);
+			VuFind.Account.ajaxLightbox('/MyAccount/AJAX?method=getAddBrowseCategoryFromListForm&listId=' + listId, true);
 			return false;
 		},
 
@@ -52,7 +52,7 @@ VuFind.Lists = (function(){
 		},
 
 		emailListAction: function (listId) {
-			var urlToDisplay = Globals.path + '/MyAccount/AJAX';
+			var urlToDisplay = '/MyAccount/AJAX';
 			VuFind.loadingMessage();
 			$.getJSON(urlToDisplay, {
 					method  : 'getEmailMyListForm'
@@ -65,7 +65,7 @@ VuFind.Lists = (function(){
 		},
 
 		SendMyListEmail: function () {
-			var url = Globals.path + "/MyAccount/AJAX";
+			var url = "/MyAccount/AJAX";
 
 			$.getJSON(url,
 				{ // form inputs passed as data
@@ -86,7 +86,7 @@ VuFind.Lists = (function(){
 		},
 
 		citeListAction: function (id) {
-			return VuFind.Account.ajaxLightbox(Globals.path + '/MyAccount/AJAX?method=getCitationFormatsForm&listId=' + id, false);
+			return VuFind.Account.ajaxLightbox('/MyAccount/AJAX?method=getCitationFormatsForm&listId=' + id, false);
 			//return false;
 			//TODO: ajax call not working
 		},
@@ -96,7 +96,7 @@ VuFind.Lists = (function(){
 		},
 
 		batchAddToListAction: function (id){
-			return VuFind.Account.ajaxLightbox(Globals.path + '/MyAccount/AJAX/?method=getBulkAddToListForm&listId=' + id);
+			return VuFind.Account.ajaxLightbox('/MyAccount/AJAX/?method=getBulkAddToListForm&listId=' + id);
 			//return false;
 		},
 
@@ -106,7 +106,7 @@ VuFind.Lists = (function(){
 
 		changeList: function (){
 			var availableLists = $("#availableLists");
-			window.location = Globals.path + "/MyAccount/MyList/" + availableLists.val();
+			window.location = "/MyAccount/MyList/" + availableLists.val();
 		},
 
 		printListAction: function (){
@@ -116,7 +116,7 @@ VuFind.Lists = (function(){
 
 		importListsFromClassic: function (){
 			if (confirm("This will import any lists you had defined in the old catalog.  This may take several minutes depending on the size of your lists. Are you sure you want to continue?")){
-				window.location = Globals.path + "/MyAccount/ImportListsFromClassic";
+				window.location = "/MyAccount/ImportListsFromClassic";
 			}
 			return false;
 		}//,

@@ -4,7 +4,7 @@
 VuFind.DPLA = (function(){
 	return {
 		getDPLAResults: function(searchTerm){
-			var url = Globals.path + "/Search/AJAX",
+			var url = "/Search/AJAX",
 					params = {
 						'method' : 'getDplaResults',
 						searchTerm : searchTerm,

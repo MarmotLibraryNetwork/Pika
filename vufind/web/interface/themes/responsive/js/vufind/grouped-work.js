@@ -6,7 +6,7 @@ VuFind.GroupedWork = (function(){
 		hasTableOfContentsInRecord: false,
 
 		clearUserRating: function (groupedWorkId){
-			var url = Globals.path + '/GroupedWork/' + groupedWorkId + '/AJAX?method=clearUserRating';
+			var url = '/GroupedWork/' + groupedWorkId + '/AJAX?method=clearUserRating';
 			$.getJSON(url, function(data){
 				if (data.result == true){
 					$('.rate' + groupedWorkId).find('.ui-rater-starsOn').width(0);
@@ -20,7 +20,7 @@ VuFind.GroupedWork = (function(){
 		},
 
 		clearNotInterested: function (notInterestedId){
-			var url = Globals.path + '/GroupedWork/' + notInterestedId + '/AJAX?method=clearNotInterested';
+			var url = '/GroupedWork/' + notInterestedId + '/AJAX?method=clearNotInterested';
 			$.getJSON(
 					url, function(data){
 						if (data.result == false){
@@ -34,7 +34,7 @@ VuFind.GroupedWork = (function(){
 
 		deleteReview: function(id, reviewId){
 			VuFind.confirm("Are you sure you want to delete this review?", function(){
-				var url = Globals.path + '/GroupedWork/' + id + '/AJAX?method=deleteUserReview';
+				var url = '/GroupedWork/' + id + '/AJAX?method=deleteUserReview';
 				$.getJSON(url, function(data){
 					if (data.result == true){
 						$('#review_' + reviewId).hide();
@@ -60,7 +60,7 @@ VuFind.GroupedWork = (function(){
 			}
 			if (placeholder.hasClass("loaded")) return;
 			placeholder.show();
-			var url = Globals.path + "/GroupedWork/" + encodeURIComponent(id) + "/AJAX",
+			var url = "/GroupedWork/" + encodeURIComponent(id) + "/AJAX",
 					params = {'method': 'GetGoDeeperData', dataType:dataType};
 			$.getJSON(url, params, function(data) {
 				placeholder.html(data.formattedData).addClass('loaded');
@@ -78,7 +78,7 @@ VuFind.GroupedWork = (function(){
 		},
 
 		loadEnrichmentInfo: function (id, forceReload) {
-			var url = Globals.path + "/GroupedWork/" + encodeURIComponent(id) + "/AJAX",
+			var url = "/GroupedWork/" + encodeURIComponent(id) + "/AJAX",
 					params = {'method':'getEnrichmentInfo'};
 			if (forceReload !== undefined){
 				params['reload'] = true;
@@ -157,7 +157,7 @@ VuFind.GroupedWork = (function(){
 		},
 
 		loadReviewInfo: function (id) {
-			var url = Globals.path + "/GroupedWork/" + encodeURIComponent(id) + "/AJAX?method=getReviewInfo";
+			var url = "/GroupedWork/" + encodeURIComponent(id) + "/AJAX?method=getReviewInfo";
 			$.getJSON(url, function(data) {
 				if (data.numSyndicatedReviews == 0){
 					$("#syndicatedReviewsPanel").hide();
@@ -189,7 +189,7 @@ VuFind.GroupedWork = (function(){
 
 		markNotInterested: function (recordId){
 			VuFind.Account.ajaxLogin(function (){
-				var url = Globals.path + '/GroupedWork/' + recordId + '/AJAX?method=markNotInterested';
+				var url = '/GroupedWork/' + recordId + '/AJAX?method=markNotInterested';
 				$.getJSON(
 						url, function(data){
 							if (data.result == true){
@@ -205,7 +205,7 @@ VuFind.GroupedWork = (function(){
 
 		removeTag:function(id, tag){
 			VuFind.confirm("Are you sure you want to remove the tag \"" + tag + "\" from this title?", function(){
-				var url = Globals.path + '/GroupedWork/' + id + '/AJAX',
+				var url = '/GroupedWork/' + id + '/AJAX',
 						params = {method:'removeTag', tag: tag};
 				$.getJSON(url, params, function(data){
 							if (data.result == true){
@@ -224,7 +224,7 @@ VuFind.GroupedWork = (function(){
 			VuFind.Account.ajaxLogin(function (){
 				var comment = $('#comment' + id).val(),
 						rating = $('#rating' + id).val(),
-						url = Globals.path + "/GroupedWork/" + encodeURIComponent(id) + "/AJAX",
+						url = "/GroupedWork/" + encodeURIComponent(id) + "/AJAX",
 						params =  {
 							method : 'saveReview'
 							,comment : comment
@@ -250,7 +250,7 @@ VuFind.GroupedWork = (function(){
 
 		saveTag: function(id){
 			var tag = $("#tags_to_apply").val(),
-					url = Globals.path + "/GroupedWork/" + id + "/AJAX",
+					url = "/GroupedWork/" + id + "/AJAX",
 					params = {
 						method : 'saveTag',
 						tag : tag
@@ -271,7 +271,7 @@ VuFind.GroupedWork = (function(){
 			VuFind.Account.ajaxLogin(function (){
 				var listId = $('#addToList-list').val(),
 						notes  = $('#addToList-notes').val(),
-						url    = Globals.path + "/GroupedWork/" + encodeURIComponent(id) + "/AJAX",
+						url    = "/GroupedWork/" + encodeURIComponent(id) + "/AJAX",
 						params = {
 							'method':'saveToList'
 							,notes:notes
@@ -296,7 +296,7 @@ VuFind.GroupedWork = (function(){
 						to = $('#to').val(),
 						message = $('#message').val(),
 						related_record = $('#related_record').val(),
-						url = Globals.path + "/GroupedWork/" + encodeURIComponent(id) + "/AJAX",
+						url = "/GroupedWork/" + encodeURIComponent(id) + "/AJAX",
 						params = {
 							'method' : 'sendEmail',
 							from : from,
@@ -322,7 +322,7 @@ VuFind.GroupedWork = (function(){
 				var phoneNumber = $('#sms_phone_number').val(),
 						provider = $('#provider').val(),
 						related_record = $('#related_record').val(),
-						url = Globals.path + "/GroupedWork/" + encodeURIComponent(id) + "/AJAX",
+						url = "/GroupedWork/" + encodeURIComponent(id) + "/AJAX",
 						params = {
 							'method' : 'sendSMS',
 							provider : provider,
@@ -343,7 +343,7 @@ VuFind.GroupedWork = (function(){
 		},
 
 		showGroupedWorkInfo: function(id, browseCategoryId){
-			var url = Globals.path + "/GroupedWork/" + encodeURIComponent(id) + "/AJAX?method=getWorkInfo";
+			var url = "/GroupedWork/" + encodeURIComponent(id) + "/AJAX?method=getWorkInfo";
 			if (browseCategoryId !== undefined){
 				url += "&browseCategoryId=" + browseCategoryId;
 			}
@@ -371,7 +371,7 @@ VuFind.GroupedWork = (function(){
 		},
 
 		basicShowMessageReloadOnSuccess: function(method, id){
-			$.getJSON(Globals.path + "/GroupedWork/" + encodeURIComponent(id) + "/AJAX?method=" + method, function (data){
+			$.getJSON("/GroupedWork/" + encodeURIComponent(id) + "/AJAX?method=" + method, function (data){
 						if (data.success) {
 							VuFind.showMessage("Success", data.message, true, true);
 						} else {
@@ -405,7 +405,7 @@ VuFind.GroupedWork = (function(){
 		basicAjaxHandler: function(method, id, trigger){
 			VuFind.Account.ajaxLogin(function (){
 				VuFind.loadingMessage();
-				$.getJSON(Globals.path + "/GroupedWork/" + encodeURIComponent(id) + "/AJAX?method=" + method, function(data){
+				$.getJSON("/GroupedWork/" + encodeURIComponent(id) + "/AJAX?method=" + method, function(data){
 					VuFind.showMessageWithButtons(data.title, data.modalBody, data.modalButtons)
 				}).fail(VuFind.ajaxFail);
 			}, $(trigger));

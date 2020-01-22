@@ -148,7 +148,7 @@ VuFind.Archive = (function(){
 		},
 
 		clearCache:function(id){
-			var url = Globals.path + "/Archive/AJAX?id=" + encodeURI(id) + "&method=clearCache";
+			var url = "/Archive/AJAX?id=" + encodeURI(id) + "&method=clearCache";
 			VuFind.loadingMessage();
 			$.getJSON(url, function(data){
 				if (data.success) {
@@ -173,7 +173,7 @@ VuFind.Archive = (function(){
 				$("#exhibit-results-loading").show();
 				this.curPage = 1;
 			}
-			var url = Globals.path + "/Archive/AJAX?method=getRelatedObjectsForExhibit&collectionId=" + exhibitPid + "&page=" + this.curPage + "&sort=" + this.sort + '&archiveCollectionView=' + this.displayMode + '&showCovers=' + VuFind.Account.showCovers;
+			var url = "/Archive/AJAX?method=getRelatedObjectsForExhibit&collectionId=" + exhibitPid + "&page=" + this.curPage + "&sort=" + this.sort + '&archiveCollectionView=' + this.displayMode + '&showCovers=' + VuFind.Account.showCovers;
 			url = url + "&reloadHeader=" + reloadHeader;
 
 			$.getJSON(url, function(data){
@@ -190,7 +190,7 @@ VuFind.Archive = (function(){
 
 		getMoreMapResults: function(exhibitPid, placePid, showTimeline){
 			this.curPage = this.curPage +1;
-			var url = Globals.path + "/Archive/AJAX?method=getRelatedObjectsForMappedCollection&collectionId=" + exhibitPid + "&placeId=" + placePid + "&page=" + this.curPage + "&sort=" + this.sort + "&showTimeline=" + showTimeline;
+			var url = "/Archive/AJAX?method=getRelatedObjectsForMappedCollection&collectionId=" + exhibitPid + "&placeId=" + placePid + "&page=" + this.curPage + "&sort=" + this.sort + "&showTimeline=" + showTimeline;
 			$("input[name=dateFilter]:checked").each(function(){
 				url = url + "&dateFilter="+$(this).val();
 			});
@@ -205,7 +205,7 @@ VuFind.Archive = (function(){
 
 		getMoreTimelineResults: function(exhibitPid){
 			this.curPage = this.curPage +1;
-			var url = Globals.path + "/Archive/AJAX?method=getRelatedObjectsForTimelineExhibit&collectionId=" + exhibitPid + "&page=" + this.curPage + "&sort=" + this.sort;
+			var url = "/Archive/AJAX?method=getRelatedObjectsForTimelineExhibit&collectionId=" + exhibitPid + "&page=" + this.curPage + "&sort=" + this.sort;
 			$("input[name=dateFilter]:checked").each(function(){
 				url = url + "&dateFilter="+$(this).val();
 			});
@@ -220,7 +220,7 @@ VuFind.Archive = (function(){
 
 		getMoreScrollerResults: function(pid){
 			this.curPage = this.curPage +1;
-			var url = Globals.path + "/Archive/AJAX?method=getRelatedObjectsForScroller&pid=" + pid + "&page=" + this.curPage + "&sort=" + this.sort;
+			var url = "/Archive/AJAX?method=getRelatedObjectsForScroller&pid=" + pid + "&page=" + this.curPage + "&sort=" + this.sort;
 
 			$.getJSON(url, function(data){
 				if (data.success){
@@ -244,7 +244,7 @@ VuFind.Archive = (function(){
 			if (showTimeline == "undefined"){
 				showTimeline = true;
 			}
-			$.getJSON(Globals.path + "/Archive/AJAX?method=getRelatedObjectsForMappedCollection&collectionId=" + exhibitPid + "&placeId=" + placePid + "&showTimeline=" + showTimeline, function(data){
+			$.getJSON("/Archive/AJAX?method=getRelatedObjectsForMappedCollection&collectionId=" + exhibitPid + "&placeId=" + placePid + "&showTimeline=" + showTimeline, function(data){
 				if (data.success){
 					$("#related-objects-for-exhibit").html(data.relatedObjects);
 					$("#exhibit-results-loading").hide();
@@ -273,7 +273,7 @@ VuFind.Archive = (function(){
 		handleTimelineClick: function(exhibitPid){
 			$("#exhibit-results-loading").show();
 
-			$.getJSON(Globals.path + "/Archive/AJAX?method=getRelatedObjectsForTimelineExhibit&collectionId=" + exhibitPid, function(data){
+			$.getJSON("/Archive/AJAX?method=getRelatedObjectsForTimelineExhibit&collectionId=" + exhibitPid, function(data){
 				if (data.success){
 					$("#related-objects-for-exhibit").html(data.relatedObjects);
 					$("#exhibit-results-loading").hide();
@@ -285,7 +285,7 @@ VuFind.Archive = (function(){
 		handleCollectionScrollerClick: function(pid){
 			$("#exhibit-results-loading").show();
 
-			$.getJSON(Globals.path + "/Archive/AJAX?method=getRelatedObjectsForScroller&pid=" + pid, function(data){
+			$.getJSON("/Archive/AJAX?method=getRelatedObjectsForScroller&pid=" + pid, function(data){
 				if (data.success){
 					$("#related-objects-for-exhibit").html(data.relatedObjects);
 					$("#exhibit-results-loading").hide();
@@ -322,7 +322,7 @@ VuFind.Archive = (function(){
 		reloadMapResults: function(exhibitPid, placePid, reloadHeader,showTimeline){
 			$("#exhibit-results-loading").show();
 			this.curPage = 1;
-			var url = Globals.path + "/Archive/AJAX?method=getRelatedObjectsForMappedCollection&collectionId=" + exhibitPid + "&placeId=" + placePid + "&page=" + this.curPage + "&sort=" + this.sort + '&archiveCollectionView=' + this.displayMode + '&showCovers=' + VuFind.Account.showCovers + '&showTimeline=' + showTimeline;
+			var url = "/Archive/AJAX?method=getRelatedObjectsForMappedCollection&collectionId=" + exhibitPid + "&placeId=" + placePid + "&page=" + this.curPage + "&sort=" + this.sort + '&archiveCollectionView=' + this.displayMode + '&showCovers=' + VuFind.Account.showCovers + '&showTimeline=' + showTimeline;
 			$("input[name=dateFilter]:checked").each(function(){
 				url = url + "&dateFilter="+$(this).val();
 			});
@@ -343,7 +343,7 @@ VuFind.Archive = (function(){
 		reloadTimelineResults: function(exhibitPid, reloadHeader){
 			$("#exhibit-results-loading").show();
 			this.curPage = 1;
-			var url = Globals.path + "/Archive/AJAX?method=getRelatedObjectsForTimelineExhibit&collectionId=" + exhibitPid + "&page=" + this.curPage + "&sort=" + this.sort + '&archiveCollectionView=' + this.displayMode + '&showCovers=' + VuFind.Account.showCovers;
+			var url = "/Archive/AJAX?method=getRelatedObjectsForTimelineExhibit&collectionId=" + exhibitPid + "&page=" + this.curPage + "&sort=" + this.sort + '&archiveCollectionView=' + this.displayMode + '&showCovers=' + VuFind.Account.showCovers;
 			$("input[name=dateFilter]:checked").each(function(){
 				url = url + "&dateFilter="+$(this).val();
 			});
@@ -364,7 +364,7 @@ VuFind.Archive = (function(){
 		reloadScrollerResults: function(pid, reloadHeader){
 			$("#exhibit-results-loading").show();
 			this.curPage = 1;
-			var url = Globals.path + "/Archive/AJAX?method=getRelatedObjectsForScroller&pid=" + pid + "&page=" + this.curPage + "&sort=" + this.sort + '&archiveCollectionView=' + this.displayMode + '&showCovers=' + VuFind.Account.showCovers;
+			var url = "/Archive/AJAX?method=getRelatedObjectsForScroller&pid=" + pid + "&page=" + this.curPage + "&sort=" + this.sort + '&archiveCollectionView=' + this.displayMode + '&showCovers=' + VuFind.Account.showCovers;
 			url = url + "&reloadHeader=" + reloadHeader;
 
 			$.getJSON(url, function(data){
@@ -380,7 +380,7 @@ VuFind.Archive = (function(){
 		},
 
 		loadExploreMore: function(pid){
-			$.getJSON(Globals.path + "/Archive/AJAX?id=" + encodeURI(pid) + "&method=getExploreMoreContent", function(data){
+			$.getJSON("/Archive/AJAX?id=" + encodeURI(pid) + "&method=getExploreMoreContent", function(data){
 				if (data.success){
 					$("#explore-more-body").html(data.exploreMore);
 					VuFind.initCarousels("#explore-more-body .panel-collapse.in .jcarousel"); // Only initialize browse categories in open accordions
@@ -389,7 +389,7 @@ VuFind.Archive = (function(){
 		},
 
 		loadMetadata: function(pid, secondaryId){
-			var url = Globals.path + "/Archive/AJAX?id=" + encodeURI(pid) + "&method=getMetadata";
+			var url = "/Archive/AJAX?id=" + encodeURI(pid) + "&method=getMetadata";
 			if (secondaryId !== undefined){
 				url += "&secondaryId=" + secondaryId;
 			}
@@ -461,7 +461,7 @@ VuFind.Archive = (function(){
 			}else if(this.activeBookViewer == 'transcription') {
 				// console.log('Transcript Viewer called');
 				var transcriptIdentifier = this.pageDetails[pid]['transcript'];
-				var url = Globals.path + "/Archive/AJAX?transcriptId=" + encodeURI(transcriptIdentifier) + "&method=getTranscript";
+				var url = "/Archive/AJAX?transcriptId=" + encodeURI(transcriptIdentifier) + "&method=getTranscript";
 				var transcriptionTarget = $('#view-transcription');
 				transcriptionTarget.html("Loading Transcript, please wait.");
 				$.getJSON(url, function(data) {
@@ -548,8 +548,8 @@ VuFind.Archive = (function(){
 				}
 
 				this.loadMetadata(this.activeBookPid, pid);
-				//$("#downloadPageAsPDF").href = Globals.path + "/Archive/" + pid + "/DownloadPDF";
-				url = Globals.path + "/Archive/AJAX?method=getAdditionalRelatedObjects&id=" + pid;
+				//$("#downloadPageAsPDF").href = "/Archive/" + pid + "/DownloadPDF";
+				url = "/Archive/AJAX?method=getAdditionalRelatedObjects&id=" + pid;
 				var additionalRelatedObjectsTarget = $("#additional-related-objects");
 				additionalRelatedObjectsTarget.html("");
 				$.getJSON(url, function(data) {
@@ -570,7 +570,7 @@ VuFind.Archive = (function(){
 		},
 
 		nextRandomObject: function(pid){
-			var url = Globals.path + "/Archive/AJAX?id=" + encodeURI(pid) + "&method=getNextRandomObject";
+			var url = "/Archive/AJAX?id=" + encodeURI(pid) + "&method=getNextRandomObject";
 			$.getJSON(url, function(data){
 				$('#randomImagePlaceholder').html(data.image);
 			}).fail(VuFind.ajaxFail);
@@ -601,7 +601,7 @@ VuFind.Archive = (function(){
 		},
 
 		showBrowseEntityFilterPopup: function(exhibitPid, facetName, title){
-			var url = Globals.path + "/Archive/AJAX?id=" + encodeURI(exhibitPid) + "&method=getEntityFacetValuesForExhibit&facetName=" + encodeURI(facetName);
+			var url = "/Archive/AJAX?id=" + encodeURI(exhibitPid) + "&method=getEntityFacetValuesForExhibit&facetName=" + encodeURI(facetName);
 			VuFind.loadingMessage();
 			$.getJSON(url, function(data){
 				VuFind.showMessage(title, data.modalBody);
@@ -610,7 +610,7 @@ VuFind.Archive = (function(){
 		},
 
 		showBrowseFilterPopup: function(exhibitPid, facetName, title){
-			var url = Globals.path + "/Archive/AJAX?id=" + encodeURI(exhibitPid) + "&method=getFacetValuesForExhibit&facetName=" + encodeURI(facetName);
+			var url = "/Archive/AJAX?id=" + encodeURI(exhibitPid) + "&method=getFacetValuesForExhibit&facetName=" + encodeURI(facetName);
 			VuFind.loadingMessage();
 			$.getJSON(url, function(data){
 				VuFind.showMessage(title, data.modalBody);
@@ -619,7 +619,7 @@ VuFind.Archive = (function(){
 		},
 
 		showObjectInPopup: function(pid, recordIndex, page){
-			var url = Globals.path + "/Archive/AJAX?id=" + encodeURI(pid) + "&method=getObjectInfo";
+			var url = "/Archive/AJAX?id=" + encodeURI(pid) + "&method=getObjectInfo";
 					// (typeof collectionSearchId == 'undefined' ? '' : '&collectionSearchId=' + encodeURI(collectionSearchId)) +
 					// (typeof recordIndex == 'undefined' ? '' : '&recordIndex=' + encodeURI(recordIndex));
 			VuFind.loadingMessage();
@@ -634,7 +634,7 @@ VuFind.Archive = (function(){
 		showSaveToListForm: function (trigger, id){
 			VuFind.Account.ajaxLogin(function (){
 				VuFind.loadingMessage();
-				var url = Globals.path + "/Archive/" + id + "/AJAX?method=getSaveToListForm";
+				var url = "/Archive/" + id + "/AJAX?method=getSaveToListForm";
 				$.getJSON(url, function(data){
 					VuFind.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
 				}).fail(VuFind.ajaxFail);
@@ -646,7 +646,7 @@ VuFind.Archive = (function(){
 			if (Globals.loggedIn){
 				var listId = $('#addToList-list').val(),
 						notes  = $('#addToList-notes').val(),
-						url    = Globals.path + "/Archive/" + encodeURIComponent(id) + "/AJAX",
+						url    = "/Archive/" + encodeURIComponent(id) + "/AJAX",
 						params = {
 							'method':'saveToList'
 							,notes:notes

@@ -98,7 +98,7 @@
 		{elseif $property.type == 'image' || $property.type == 'file'}
 			{if $propValue}
 				{if $property.type == 'image'}
-					<img src='{$path}/files/thumbnail/{$propValue}'>{$propValue}
+					<img src='/files/thumbnail/{$propValue}'>{$propValue}
 					<input type="checkbox" name='remove{$propName}' id='remove{$propName}'> Remove image.
 					<br>
 				{else}

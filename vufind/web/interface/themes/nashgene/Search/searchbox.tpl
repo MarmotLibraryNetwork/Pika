@@ -2,11 +2,11 @@
 	{if $searchType == 'advanced'}
 		{translate text="Your search"} : "<b>{$lookfor|escape:"html"}</b>"
 		<br />
-		<a href="{$path}/Search/Advanced?edit={$searchId}" class="small">{translate text="Edit this Advanced Search"}</a> |
-		<a href="{$path}/Search/Advanced" class="small">{translate text="Start a new Advanced Search"}</a> |
-		<a href="{$path}" class="small">{translate text="Start a new Basic Search"}</a>
+		<a href="/Search/Advanced?edit={$searchId}" class="small">{translate text="Edit this Advanced Search"}</a> |
+		<a href="/Search/Advanced" class="small">{translate text="Start a new Advanced Search"}</a> |
+		<a href="" class="small">{translate text="Start a new Basic Search"}</a>
 	{else}
-		<form method="get" action="{$path}/Union/Search" id="searchForm" class="search">
+		<form method="get" action="/Union/Search" id="searchForm" class="search">
 			<div>
 			Search
 			<select name="searchSource" id="searchSource" title="Select what to search.	Items marked with a * will redirect you to one of our partner sites." onchange='enableSearchTypes();'>
@@ -30,11 +30,11 @@
 			
 		  <input type="submit" name="submit" id='searchBarFind' value="{translate text="Find"}" />
 			{if $showAdvancedSearchbox == 1}
-				&nbsp;<a href="{$path}/Search/Advanced" class="small">{translate text="Advanced"}</a>
+				&nbsp;<a href="/Search/Advanced" class="small">{translate text="Advanced"}</a>
 			{/if}
 			{* Link to Search Tips Help *}
 			&nbsp;
-			<a href="{$path}/Help/Home?topic=search" title="{translate text='Search Tips'}" onclick="window.open('{$path}/Help/Home?topic=search', 'Help', 'width=625, height=510'); return false;">
+			<a href="/Help/Home?topic=search" title="{translate text='Search Tips'}" onclick="window.open('/Help/Home?topic=search', 'Help', 'width=625, height=510'); return false;">
 				<span class="silk help">&nbsp;</span>
 			</a>
 			

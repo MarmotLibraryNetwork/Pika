@@ -7,7 +7,7 @@
 				SEARCH
 			</div>
 		</div> 
-		<form method="get" action="{$path}/Union/Search" id="searchForm" class="form-inline" onsubmit="VuFind.Searches.processSearchForm();">
+		<form method="get" action="/Union/Search" id="searchForm" class="form-inline" onsubmit="VuFind.Searches.processSearchForm();">
 			<div class="row">
 				{*<!--<div class="{if $displaySidebarMenu}col-sm-12{else}col-sm-10 col-md-10 col-sm-push-1 col-md-push-1{/if}">-->*}
 					{if $searchIndex == 'Keyword' || $searchIndex == '' || $searchIndex == 'GenealogyKeyword'}
@@ -62,15 +62,15 @@
 									{/if}
 
 									<li class="catalogType">
-										{*<a id="advancedSearch" title="{translate text='Advanced Search'}" onclick="VuFind.Account.ajaxLightbox('{$path}/Search/AdvancedPopup', false)">*}
-										<a id="advancedSearch" title="{translate text='Advanced Search'}" href="{$path}/Search/Advanced">
+										{*<a id="advancedSearch" title="{translate text='Advanced Search'}" onclick="VuFind.Account.ajaxLightbox('/Search/AdvancedPopup', false)">*}
+										<a id="advancedSearch" title="{translate text='Advanced Search'}" href="/Search/Advanced">
 											{*<i class="icon-plus-sign"></i>*} {translate text="Advanced"}
 										</a>
 									</li>
 
 									{* Link to Search Tips Help *}
 									<li>
-										<a href="{$path}/Help/Home?topic=search" title="{translate text='Search Tips'}" id="searchTips" class="modalDialogTrigger">
+										<a href="/Help/Home?topic=search" title="{translate text='Search Tips'}" id="searchTips" class="modalDialogTrigger">
 											{*<i class="icon-question-sign"></i> //Doesn't display *} {translate text='Search Tips'}
 										</a>
 									</li>
@@ -124,7 +124,7 @@
 			{* Return to Advanced Search Link *}
 			{if $searchType == 'advanced'}
 				<div class="row text-center">
-					<a href="{$path}/Search/Advanced">Edit This Advanced Search</a>
+					<a href="/Search/Advanced">Edit This Advanced Search</a>
 				</div>
 			{/if}
 

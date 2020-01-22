@@ -43,7 +43,7 @@
 				{/if}
 
 				{if $showCheckInGrid && $issueSummary.checkInGridId}
-					<button onclick="VuFind.Account.ajaxLightbox('{$path}/{$activeRecordProfileModule}/{$id}/AJAX?method=getCheckInGrid&checkInGridId={$issueSummary.checkInGridId}');" class="btn btn-xs btn-info">Show Check-in Grid</button>
+					<button onclick="VuFind.Account.ajaxLightbox('/{$activeRecordProfileModule}/{$id}/AJAX?method=getCheckInGrid&checkInGridId={$issueSummary.checkInGridId}');" class="btn btn-xs btn-info">Show Check-in Grid</button>
 				{/if}
 			</div>
 

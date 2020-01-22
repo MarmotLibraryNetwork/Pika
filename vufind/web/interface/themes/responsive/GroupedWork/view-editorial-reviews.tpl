@@ -14,7 +14,7 @@
 
 	{if $loggedIn && $userRoles && (in_array('opacAdmin', $userRoles) || in_array('libraryAdmin', $userRoles) || in_array('contentEditor', $userRoles))}
 		<div>
-			<a class="btn btn-sm" href='{$path}/EditorialReview/Edit?recordId={$id}'>Add Editorial Review</a>
+			<a class="btn btn-sm" href='/EditorialReview/Edit?recordId={$id}'>Add Editorial Review</a>
 		</div>
 	{/if}
 {/strip}

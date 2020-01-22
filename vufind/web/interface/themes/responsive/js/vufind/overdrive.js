@@ -2,7 +2,7 @@ VuFind.OverDrive = (function(){
 	return {
 		cancelOverDriveHold: function(patronId, overdriveId){
 			VuFind.confirm("Are you sure you want to cancel this hold?", function () {
-				var ajaxUrl = Globals.path + "/OverDrive/AJAX?method=CancelOverDriveHold&patronId=" + patronId + "&overDriveId=" + overdriveId;
+				var ajaxUrl = "/OverDrive/AJAX?method=CancelOverDriveHold&patronId=" + patronId + "&overDriveId=" + overdriveId;
 				$.getJSON(ajaxUrl, function (data) {
 					if (data.success) {
 						VuFind.showMessage("Hold Cancelled", data.message, true);
@@ -21,7 +21,7 @@ VuFind.OverDrive = (function(){
 		checkOutOverDriveTitle: function(overDriveId){
 			VuFind.Account.ajaxLogin(function(){
 				//Get any prompts needed for placing holds (e-mail and format depending on the interface.
-				var url = Globals.path + "/OverDrive/" + overDriveId + "/AJAX?method=GetOverDriveCheckoutPrompts";
+				var url = "/OverDrive/" + overDriveId + "/AJAX?method=GetOverDriveCheckoutPrompts";
 				$.getJSON(url, function(data){
 					if (data.promptNeeded){
 						VuFind.showMessageWithButtons(data.promptTitle, data.prompts, data.buttons);
@@ -44,7 +44,7 @@ VuFind.OverDrive = (function(){
 
 		doOverDriveCheckout: function(patronId, overdriveId){
 			VuFind.Account.ajaxLogin(function(){
-				var ajaxUrl = Globals.path + "/OverDrive/AJAX?method=CheckoutOverDriveItem&patronId=" + patronId + "&overDriveId=" + overdriveId;
+				var ajaxUrl = "/OverDrive/AJAX?method=CheckoutOverDriveItem&patronId=" + patronId + "&overDriveId=" + overdriveId;
 				$.getJSON(ajaxUrl, function(data){
 					if (data.success) {
 						VuFind.showMessageWithButtons("Title Checked Out Successfully", data.message, data.buttons);
@@ -63,7 +63,7 @@ VuFind.OverDrive = (function(){
 		},
 
 		doOverDriveHold: function(patronId, overDriveId, overdriveEmail, promptForOverdriveEmail){
-			var url = Globals.path + "/OverDrive/AJAX",
+			var url = "/OverDrive/AJAX",
 					params = {
 						'method': 'PlaceOverDriveHold',
 						patronId: patronId,
@@ -83,7 +83,7 @@ VuFind.OverDrive = (function(){
 		},
 
 		followOverDriveDownloadLink: function(patronId, overDriveId, formatId){
-			var ajaxUrl = Globals.path + "/OverDrive/AJAX?method=GetDownloadLink&patronId=" + patronId + "&overDriveId=" + overDriveId + "&formatId=" + formatId;
+			var ajaxUrl = "/OverDrive/AJAX?method=GetDownloadLink&patronId=" + patronId + "&overDriveId=" + overDriveId + "&formatId=" + formatId;
 			$.getJSON(ajaxUrl, function(data){
 					if (data.success){
 						//Reload the page
@@ -99,7 +99,7 @@ VuFind.OverDrive = (function(){
 		},
 
 		forceUpdateFromAPI:function(overDriveId){
-			var url = Globals.path + '/OverDrive/' + overDriveId + '/AJAX?method=forceUpdateFromAPI';
+			var url = '/OverDrive/' + overDriveId + '/AJAX?method=forceUpdateFromAPI';
 			$.getJSON(url, function (data){
 					VuFind.showMessage("Success", data.message, true, true);
 				}
@@ -110,7 +110,7 @@ VuFind.OverDrive = (function(){
 		placeOverDriveHold: function(overDriveId){
 			VuFind.Account.ajaxLogin(function(){
 				//Get any prompts needed for placing holds (e-mail and format depending on the interface.
-				var url = Globals.path + "/OverDrive/" + overDriveId + "/AJAX?method=GetOverDriveHoldPrompts";
+				var url = "/OverDrive/" + overDriveId + "/AJAX?method=GetOverDriveHoldPrompts";
 				$.getJSON(url, function (data) {
 					if (data.promptNeeded){
 						VuFind.showMessageWithButtons(data.promptTitle, data.prompts, data.buttons);
@@ -141,7 +141,7 @@ VuFind.OverDrive = (function(){
 		returnOverDriveTitle: function (patronId, overDriveId, transactionId){
 			VuFind.confirm('Are you sure you want to return this title?', function () {
 				VuFind.showMessage("Returning Title", "Returning your title in OverDrive.  This may take a minute.");
-				var ajaxUrl = Globals.path + "/OverDrive/AJAX?method=ReturnOverDriveItem&patronId=" + patronId + "&overDriveId=" + overDriveId + "&transactionId=" + transactionId;
+				var ajaxUrl = "/OverDrive/AJAX?method=ReturnOverDriveItem&patronId=" + patronId + "&overDriveId=" + overDriveId + "&transactionId=" + transactionId;
 				$.getJSON(ajaxUrl, function(data){
 					VuFind.showMessage("Title Returned", data.message, data.success, data.success);
 				}).fail(function(){
@@ -159,7 +159,7 @@ VuFind.OverDrive = (function(){
 				alert("Please select a format to download.");
 			}else{
 				VuFind.confirm("Are you sure you want to download the " + selectedFormatText + " format? You cannot change format after downloading.", function () {
-					var ajaxUrl = Globals.path + "/OverDrive/AJAX?method=SelectOverDriveDownloadFormat&patronId=" + patronId + "&overDriveId=" + overDriveId + "&formatId=" + selectedFormatId;
+					var ajaxUrl = "/OverDrive/AJAX?method=SelectOverDriveDownloadFormat&patronId=" + patronId + "&overDriveId=" + overDriveId + "&formatId=" + selectedFormatId;
 					$.getJSON(ajaxUrl, function(data){
 							if (data.success){
 								//Reload the page
@@ -176,7 +176,7 @@ VuFind.OverDrive = (function(){
 		},
 
 		submitHelpForm: function(){
-			$.post(Globals.path + '/OverDrive/AJAX?method=submitSupportForm', $("#eContentSupport").serialize(),
+			$.post('/OverDrive/AJAX?method=submitSupportForm', $("#eContentSupport").serialize(),
 					function(data){
 						VuFind.showMessage(data.title, data.message);
 					},

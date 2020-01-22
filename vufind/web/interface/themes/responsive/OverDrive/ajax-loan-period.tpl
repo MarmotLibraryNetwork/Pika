@@ -4,7 +4,7 @@ checkoutOverDriveItemStep2() function no longer exists
 
 <div id="popupboxHeader" class="header">
 	{translate text="Loan Period"}
-	<a href="#" onclick='hideLightbox();return false;' class="closeIcon">Close <img src="{$path}/images/silk/cancel.png" alt="close" /></a>
+	<a href="#" onclick='hideLightbox();return false;' class="closeIcon">Close <img src="/images/silk/cancel.png" alt="close" /></a>
 </div>
 <div id="popupboxContent" class="content">
 	<form method="post" action=""> 

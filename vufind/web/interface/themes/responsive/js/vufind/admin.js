@@ -66,7 +66,7 @@ VuFind.Admin = (function(){
 		basicAjaxHandler: function (ajaxMethod, id) {
 			VuFind.Account.ajaxLogin(function (){
 				VuFind.loadingMessage();
-				var url = Globals.path + "/Admin/AJAX?method=" + ajaxMethod + "&id=" + id;
+				var url = "/Admin/AJAX?method=" + ajaxMethod + "&id=" + id;
 				$.getJSON(url, function (data) {
 					VuFind.showMessage(data.title, data.body, 1, 1);
 				}).fail(VuFind.ajaxFail);

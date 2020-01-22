@@ -7,7 +7,7 @@
 
 <legend>Filters</legend>
 
-						<form action="{$path}/MaterialsRequest/SummaryReport" method="get" class="form-inline">
+						<form action="/MaterialsRequest/SummaryReport" method="get" class="form-inline">
 							<div class="form-group">
 								<label for="period" class="control-label">Period</label>
 								<select name="period" id="period" onchange="$('#startDate').val('');$('#endDate').val('');">
@@ -77,10 +77,10 @@
 			</table>
 		{/if}
 
-		<form action="{$path}/MaterialsRequest/SummaryReport" method="get">
-			<input type="hidden" name="period" value="{$period}"/>
-			<input type="hidden" name="startDate" value="{$startDate}"/>
-			<input type="hidden" name="endDate" value="{$endDate}"/>
+		<form action="/MaterialsRequest/SummaryReport" method="get">
+			<input type="hidden" name="period" value="{$period}">
+			<input type="hidden" name="startDate" value="{$startDate}">
+			<input type="hidden" name="endDate" value="{$endDate}">
 			<input type="submit" id="exportToExcel" name="exportToExcel" value="Export to Excel"  class="btn btn-default">
 		</form>
 

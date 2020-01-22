@@ -3,7 +3,7 @@
 	{$searchTerms|@print_r}
 {/if}
 <div>
-	<form id="advancedPopup" class="modal-form form-horizontal form-mod" method="get" action="{$path}/Union/Search">
+	<form id="advancedPopup" class="modal-form form-horizontal form-mod" method="get" action="/Union/Search">
 		<fieldset>
 			<div id="advancedSearchRows">
 				<div class="form-group advancedRow" id="group1" data-row_number="1">
