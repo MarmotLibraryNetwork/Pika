@@ -10,14 +10,6 @@
 
 function getUserUpdates(){
 	return array(
-//		'roles_1' => array(
-//			'title' => 'Roles 1',
-//			'description' => 'Add new role for epubAdmin',
-//			'sql' => array(
-//				"INSERT INTO roles (name, description) VALUES ('epubAdmin', 'Allows administration of eContent.')",
-//			),
-//		),
-
 		'roles_2' => array(
 			'title' => 'Roles 2',
 			'description' => 'Add new role for locationReports',
@@ -163,6 +155,25 @@ function getUserUpdates(){
 					'sql' => array(
 							"ALTER TABLE `user` ADD COLUMN `hooplaCheckOutConfirmation` TINYINT(1) UNSIGNED NOT NULL DEFAULT 1;"
 					),
+			),
+
+			'user_table_cleanup' => array(
+				'title'           => 'Clean up user table',
+				'description'     => 'Remove obsolete columns',
+				'continueOnError' => true,
+				'sql'             => array(
+					'ALTER TABLE `user` CHANGE COLUMN `created` `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ;',
+					// The above is needed to be compatible with the mariadb, so that the changes below can happen.
+					'ALTER TABLE `user` DROP COLUMN `major`, DROP COLUMN `college`, DROP COLUMN `password`, '
+					. 'ADD COLUMN `ilsUserId` VARCHAR(30) NULL AFTER `username`, '
+					. 'CHANGE COLUMN `displayName` `displayName` VARCHAR(30) NOT NULL DEFAULT \'\' AFTER `ilsUserId`, '
+					. 'CHANGE COLUMN `source` `source` VARCHAR(50) NULL DEFAULT \'ils\' AFTER `username`, '
+					. 'ADD COLUMN `homeLibraryId` INT NULL AFTER `created`;',
+
+//					'DELETE FROM `roles` WHERE `name`="epubAdmin";',
+					'UPDATE `user` SET `ilsUserId` = username;',
+					'UPDATE `user`, `location` SET `homeLibraryId` = location.libraryId WHERE user.homeLocationId = location.locationId'
+				),
 			),
 
 	);

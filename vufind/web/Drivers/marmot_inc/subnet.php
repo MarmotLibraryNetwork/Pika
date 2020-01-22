@@ -1,6 +1,6 @@
 <?php
 /**
- * Table Definition for library
+ * Table Definition for IP subnet
  */
 require_once 'DB/DataObject.php';
 

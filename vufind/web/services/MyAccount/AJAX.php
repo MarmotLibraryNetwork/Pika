@@ -392,7 +392,8 @@ class MyAccount_AJAX extends AJAXHandler {
 				$cancelId = $_REQUEST['holdselected'];
 			}
 //			$locationId = isset($_REQUEST['location']) ? $_REQUEST['location'] : null; //not passed via ajax. don't think it's needed
-			$result = $catalog->driver->updateHoldDetailed($user->password, 'cancel', $cancelId, null);
+			$result = $catalog->driver->updateHoldDetailed($user, 'cancel', $cancelId, null);
+			//TODO: need to obsolete updateHoldDetailed()
 
 		} catch (PDOException $e){
 			// What should we do with this error?

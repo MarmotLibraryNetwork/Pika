@@ -17,12 +17,12 @@ class DatabaseAuthentication implements Authentication {
 	}
 
 	private function login($username, $password){
-		if (($username == '') || ($password == '')) {
+		if (empty($username) || empty($password)) {
 			$user = new PEAR_Error('authentication_error_blank');
 		} else {
-			$user = new User();
-			$user->username = $username;
-			$user->password = $password;
+			$user               = new User();
+			$user->cat_username = $username;
+			$user->cat_password = $password;
 			if (!$user->find(true)) {
 				$user = new PEAR_Error('authentication_error_invalid');
 			}

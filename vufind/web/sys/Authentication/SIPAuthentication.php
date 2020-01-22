@@ -53,9 +53,9 @@ class SIPAuthentication implements Authentication {
 
 							if (($result['variable']['BL'][0] == 'Y') and ($result['variable']['CQ'][0] == 'Y')) {
 								//Get patron info as well
-								$in = $mysip->msgPatronInformation('fine');
+								$in         = $mysip->msgPatronInformation('fine');
 								$msg_result = $mysip->get_message($in);
-				
+
 								// Make sure the response is 24 as expected
 								$patronInfoResponse = null;
 								if (preg_match("/^64/", $msg_result)) {
@@ -66,7 +66,7 @@ class SIPAuthentication implements Authentication {
 								$user = $this->processSIP2User($result, $username, $password, $patronInfoResponse);
 
 								// Set login cookie for 1 hour
-								$user->password = $password; // Need this for Metalib
+								$user->cat_password = $password; // Need this for Metalib
 							}
 						}
 					}
@@ -159,7 +159,7 @@ class SIPAuthentication implements Authentication {
 								$user = $this->processSIP2User($result, $username, $password, $patronInfoResponse);
 
 								// Set login cookie for 1 hour
-								$user->password = $password; // Need this for Metalib
+								$user->cat_password = $password; // Need this for Metalib
 							} else {
 								$user = new PEAR_Error('authentication_error_invalid');
 							}

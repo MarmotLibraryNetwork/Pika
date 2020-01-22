@@ -56,8 +56,6 @@ class LibrarySolution extends ScreenScrapingDriver {
 					$userExistsInDB = true;
 				}
 
-				$user->password = $accountSummary->patron->pin;
-
 				$forceDisplayNameUpdate = false;
 				$firstName              = $accountSummary->patron->firstName;
 				if ($user->firstname != $firstName) {

@@ -27,7 +27,7 @@ require_once ROOT_DIR . '/services/Admin/Admin.php';
  *
  */
 class DBMaintenance extends Admin_Admin {
-	function launch() {
+	function launch(){
 		global $configArray;
 		global $interface;
 		mysql_select_db($configArray['Database']['database_vufind_dbname']);
@@ -37,26 +37,26 @@ class DBMaintenance extends Admin_Admin {
 
 		$availableUpdates = $this->getSQLUpdates();
 
-		if (isset($_REQUEST['submit'])) {
+		if (isset($_REQUEST['submit'])){
 			$interface->assign('showStatus', true);
 
 			//Process the updates
-			foreach ($availableUpdates as $key => $update) {
-				if (isset($_REQUEST["selected"][$key])) {
+			foreach ($availableUpdates as $key => $update){
+				if (isset($_REQUEST["selected"][$key])){
 					$sqlStatements = $update['sql'];
-					$updateOk = true;
-					foreach ($sqlStatements as $sql) {
+					$updateOk      = true;
+					foreach ($sqlStatements as $sql){
 						//Give enough time for long queries to run
 
-						if (method_exists($this, $sql)) {
+						if (method_exists($this, $sql)){
 							$this->$sql($update);
-						} else {
-							if (!$this->runSQLStatement($update, $sql)) {
+						}else{
+							if (!$this->runSQLStatement($update, $sql)){
 								break;
 							}
 						}
 					}
-					if ($updateOk) {
+					if ($updateOk){
 						$this->markUpdateAsRun($key);
 					}
 					$availableUpdates[$key] = $update;
@@ -968,12 +968,12 @@ class DBMaintenance extends Admin_Admin {
 					),
 				),
 
-				'addTablelistWidgetListsLinks' => array(
-					'title' => 'Widget Lists',
-					'description' => 'Add a new table: list_widget_lists_links',
-					'sql' => array('addTableListWidgetListsLinks'),
-				),
-
+//				'addTablelistWidgetListsLinks' => array(
+//					'title' => 'Widget Lists',
+//					'description' => 'Add a new table: list_widget_lists_links',
+//					'sql' => array('addTableListWidgetListsLinks'),
+//				),
+//
 
 				'loan_rule_determiners_1' => array(
 					'title' => 'Loan Rule Determiners',
@@ -1562,26 +1562,13 @@ ADD COLUMN selfRegistrationAgencyCode INT(10) NULL;",
 		);
 	}
 
-	public function addTableListWidgetListsLinks() {
-		set_time_limit(120);
-		$sql = 'CREATE TABLE IF NOT EXISTS `list_widget_lists_links`( ' .
-			'`id` int(11) NOT NULL AUTO_INCREMENT, ' .
-			'`listWidgetListsId` int(11) NOT NULL, ' .
-			'`name` varchar(50) NOT NULL, ' .
-			'`link` text NOT NULL, ' .
-			'`weight` int(3) NOT NULL DEFAULT \'0\',' .
-			'PRIMARY KEY (`id`) ' .
-			') ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;';
-		mysql_query($sql);
-	}
 
-
-	private function checkWhichUpdatesHaveRun($availableUpdates) {
-		foreach ($availableUpdates as $key => $update) {
+	private function checkWhichUpdatesHaveRun($availableUpdates){
+		foreach ($availableUpdates as $key => $update){
 			$update['alreadyRun'] = false;
-			$result = mysql_query("SELECT * from db_update where update_key = '" . mysql_escape_string($key) . "'");
-			$numRows = mysql_num_rows($result);
-			if ($numRows != false) {
+			$result               = mysql_query("SELECT * from db_update where update_key = '" . mysql_escape_string($key) . "'");
+			$numRows              = mysql_num_rows($result);
+			if ($numRows != false){
 				$update['alreadyRun'] = true;
 			}
 			$availableUpdates[$key] = $update;
@@ -1589,18 +1576,40 @@ ADD COLUMN selfRegistrationAgencyCode INT(10) NULL;",
 		return $availableUpdates;
 	}
 
-	private function markUpdateAsRun($update_key) {
+	private function markUpdateAsRun($update_key){
 		$result = mysql_query("SELECT * from db_update where update_key = '" . mysql_escape_string($update_key) . "'");
-		if (mysql_num_rows($result) != false) {
+		if (mysql_num_rows($result) != false){
 			//Update the existing value
 			mysql_query("UPDATE db_update SET date_run = CURRENT_TIMESTAMP WHERE update_key = '" . mysql_escape_string($update_key) . "'");
-		} else {
+		}else{
 			mysql_query("INSERT INTO db_update (update_key) VALUES ('" . mysql_escape_string($update_key) . "')");
 		}
 	}
 
 	function getAllowableRoles() {
 		return array('userAdmin', 'opacAdmin');
+	}
+
+	private function runSQLStatement(&$update, $sql){
+		set_time_limit(500);
+		$result   = mysql_query($sql);
+		$updateOk = true;
+		if (empty($result)){ // got an error
+			if (!empty($update['continueOnError'])){
+				if (!isset($update['status'])){
+					$update['status'] = '';
+				}
+				$update['status'] .= 'Warning: ' . mysql_error() . "<br>";
+			}else{
+				$update['status'] = 'Update failed ' . mysql_error();
+				$updateOk         = false;
+			}
+		}else{
+			if (!isset($update['status'])){
+				$update['status'] = 'Update succeeded';
+			}
+		}
+		return $updateOk;
 	}
 
 	private function createUpdatesTable() {
@@ -1624,27 +1633,6 @@ ADD COLUMN selfRegistrationAgencyCode INT(10) NULL;",
 		}
 	}
 
-	function runSQLStatement(&$update, $sql) {
-		set_time_limit(500);
-		$result = mysql_query($sql);
-		$updateOk = true;
-		if ($result == 0 || $result == false) {
-			if (isset($update['continueOnError']) && $update['continueOnError']) {
-				if (!isset($update['status'])) {
-					$update['status'] = '';
-				}
-				$update['status'] .= 'Warning: ' . mysql_error() . "<br/>";
-			} else {
-				$update['status'] = 'Update failed ' . mysql_error();
-				$updateOk = false;
-			}
-		} else {
-			if (!isset($update['status'])) {
-				$update['status'] = 'Update succeeded';
-			}
-		}
-		return $updateOk;
-	}
 
 	function createDefaultIpRanges() {
 		require_once ROOT_DIR . '/Drivers/marmot_inc/ipcalc.php';
@@ -1667,4 +1655,18 @@ ADD COLUMN selfRegistrationAgencyCode INT(10) NULL;",
 			}
 		}
 	}
+
+//	public function addTableListWidgetListsLinks() {
+//		set_time_limit(120);
+//		$sql = 'CREATE TABLE IF NOT EXISTS `list_widget_lists_links`( ' .
+//			'`id` int(11) NOT NULL AUTO_INCREMENT, ' .
+//			'`listWidgetListsId` int(11) NOT NULL, ' .
+//			'`name` varchar(50) NOT NULL, ' .
+//			'`link` text NOT NULL, ' .
+//			'`weight` int(3) NOT NULL DEFAULT \'0\',' .
+//			'PRIMARY KEY (`id`) ' .
+//			') ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;';
+//		mysql_query($sql);
+//	}
+
 }
