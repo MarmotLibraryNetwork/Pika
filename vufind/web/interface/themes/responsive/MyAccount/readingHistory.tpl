@@ -230,8 +230,9 @@
 								{/if}
 							</div>
 
-							{* Checkout Date Column *}
+							{* Last Read Date Column *}
 							<div class="col-tn-12 {if $showCovers}col-tn-offset-3{else}col-tn-offset-1{/if} col-sm-2 col-sm-offset-0">
+								<div class="row">
 								{* on xs viewports, the offset lines up the date with the title details *}
 								{if is_numeric($record.checkout)}
 									{$record.checkout|date_format}
@@ -242,6 +243,14 @@
 								{* Do not show checkin date since historical data from initial import is not correct.
 								{if $record.checkin} to {$record.checkin|date_format}{/if}
 								*}
+								</div>
+								{if $record.permanentId}
+								<div class="row">
+									<div class="col-tn-12 result-tools-horizontal{*to get the brown gradient to apply to button*}">
+										<button onclick="return VuFind.GroupedWork.showSaveToListForm(this, '{$record.permanentId|escape:"url"}');" class="btn btn-small">Add To List</button>
+									</div>
+								</div>
+                {/if}
 							</div>
 						</div>
 					{/foreach}
