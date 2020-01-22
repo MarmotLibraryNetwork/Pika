@@ -792,7 +792,7 @@ abstract class SirsiDynixROA extends HorizonAPI //TODO: This class doesn't need 
 	}
 
 
-	protected function loginViaWebService($username, $password)
+	protected function loginViaWebService($username, $password = '')
 	{
 		/** @var Memcache $memCache */
 		global $memCache;
