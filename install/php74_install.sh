@@ -76,4 +76,5 @@ echo
 echo Next steps:
 echo - Modify config.pwd.ini and replace \"mysql\" in PHP database connection
 echo   string with \"mysqli\"
+echo - Restart continuous indexing
 
