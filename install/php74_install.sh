@@ -1,10 +1,18 @@
 #!/usr/bin/env bash
 
-echo Installing yum-utils...
+echo Stoping contiouns indexing...
+kill $(ps aux | grep [c]ontinuous_reindex | awk '{print $2}')
 
+echo Installing yum-utils...
 yum install yum-utils \
 || { printf "%b" "Failed to install yum-utils. Exiting.\n" ; exit 1 ; }
 
+echo Stoping Apache...
+apachectl stop \
+|| { printf "%b" "Failed to stop Apache. Please restart Apache after script exits.\nContinuing... \n" ; }
+
+echo Moving PHP 5.x Apache conf file...
+mv /etc/httpd/conf.modules.d/10-php55-php.conf /etc/httpd/conf.modules.d/10-php55-php.NOconf
 
 echo Enabling Remi PHP 7.4 repo...
 yum-config-manager --enable remi-php74 \
@@ -36,6 +44,8 @@ case "$YN" in
 	[nN] ) eval "vi /etc/profile.d/path.sh ; source /etc/profile.d/path.sh"
 		;;
 esac
+echo
+
 echo Installing Composer packages...
 cd /usr/local/vufind-plus/install \
 && composer update \
@@ -45,7 +55,8 @@ echo Copying DataObject to vendor directory
 cp -r /usr/local/vufind-plus/install/PEAR/DB/* /usr/share/composer/vendor/pear/db/DB \
 || { printf "%b" "Failed to copy DataObject. Please check that directory exists.\nExiting.\n" ; exit 1 ; }
 cd /usr/share/composer/vendor/pear/db/DB
-chmod -R 644 DataObject
+chmod -R 655 DataObject
 chmod 644 DataObject.php
+
 
 echo PHP 7 upgrade complete!
