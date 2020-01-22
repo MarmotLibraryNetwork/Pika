@@ -1633,7 +1633,7 @@ abstract class HorizonROA implements DriverInterface
 	 *
 	 * @return bool
 	 */
-	public function canRenew()
+	public function canRenew($itemType = null)
 	{
 		return true;
 	}
