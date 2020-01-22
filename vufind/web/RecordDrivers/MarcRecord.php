@@ -1264,10 +1264,8 @@ class MarcRecord extends IndexRecord
 	}
 
 	function getRecordUrl(){
-		global $configArray;
 		$recordId = $this->getUniqueID();
-
-		return $configArray['Site']['path'] . "/{$this->indexingProfile->recordUrlComponent}/$recordId";
+		return "/{$this->indexingProfile->recordUrlComponent}/$recordId";
 	}
 
 	function getAbsoluteUrl(){

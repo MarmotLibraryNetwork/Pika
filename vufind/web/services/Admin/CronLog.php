@@ -18,24 +18,20 @@
  *
  */
 
-require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/Admin.php';
 require_once ROOT_DIR . '/sys/Pager.php';
-require_once(ROOT_DIR . "/PHPExcel.php");
 
-class CronLog extends Admin_Admin
-{
-	function launch()
-	{
-		global $interface,
-		       $configArray;
+class CronLog extends Admin_Admin{
 
-		$logEntries = array();
+	function launch(){
+		global $interface;
+
+		$logEntries   = array();
 		$cronLogEntry = new CronLogEntry();
-		$total = $cronLogEntry->count();
+		$total        = $cronLogEntry->count();
+		$page         = isset($_REQUEST['page']) ? $_REQUEST['page'] : 1;
 		$cronLogEntry = new CronLogEntry();
 		$cronLogEntry->orderBy('startTime DESC');
-		$page = isset($_REQUEST['page']) ? $_REQUEST['page'] : 1;
 		$interface->assign('page', $page);
 		$cronLogEntry->limit(($page - 1) * 30, 30);
 		$cronLogEntry->find();
@@ -44,11 +40,12 @@ class CronLog extends Admin_Admin
 		}
 		$interface->assign('logEntries', $logEntries);
 
-		$options = array('totalItems' => $total,
-		                 'fileName'   => $configArray['Site']['path'].'/Admin/CronLog?page=%d',
-		                 'perPage'    => 30,
-		);
-		$pager = new VuFindPager($options);
+		$options = [
+			'totalItems' => $total,
+			'fileName'   => '/Admin/CronLog?page=%d',
+			'perPage'    => 30,
+		];
+		$pager   = new VuFindPager($options);
 		$interface->assign('pageLinks', $pager->getLinks());
 
 		$this->display('cronLog.tpl', 'Cron Log');

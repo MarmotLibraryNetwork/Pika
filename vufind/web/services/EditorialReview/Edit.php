@@ -25,33 +25,26 @@ require_once ROOT_DIR . '/sys/DataObjectUtil.php';
 
 class EditorialReview_Edit extends Admin_Admin {
 
-	function launch()
-	{
+	function launch(){
 		global $interface;
-		global $configArray;
 
 		$isNew = true;
-		if (isset($_REQUEST['id']) && strlen($_REQUEST['id']) > 0 ){
-			$editorialReview = new EditorialReview();
+		if (!empty($_REQUEST['id'])){
+			$editorialReview                    = new EditorialReview();
 			$editorialReview->editorialReviewId = $_REQUEST['id'];
-			$editorialReview->find();
-			if ($editorialReview->N > 0){
-				$editorialReview->fetch();
+			if ($editorialReview->find(true)){
 				$interface->assign('object', $editorialReview);
-				$interface->setPageTitle('Edit Editorial Review');
 				$isNew = false;
 			}
 		}
 		$structure = EditorialReview::getObjectStructure();
-		if ($isNew){
-			if (isset($_REQUEST['recordId'])){
-				$structure['recordId']['default'] = strip_tags($_REQUEST['recordId']);
-			}
+		if ($isNew && isset($_REQUEST['recordId'])){
+			$structure['recordId']['default'] = strip_tags($_REQUEST['recordId']);
 		}
 
 		if (isset($_REQUEST['submit']) || isset($_REQUEST['submitStay']) || isset($_REQUEST['submitReturnToList']) || isset($_REQUEST['submitAddAnother'])){
 			//Save the object
-			$results = DataObjectUtil::saveObject($structure, 'EditorialReview');
+			$results         = DataObjectUtil::saveObject($structure, 'EditorialReview');
 			$editorialReview = $results['object'];
 			//redirect to the view of the competency if we saved ok.
 			if (!$results['validatedOk'] || !$results['saveOk']){
@@ -60,26 +53,19 @@ class EditorialReview_Edit extends Admin_Admin {
 				$interface->assign('object', $editorialReview);
 
 				$_REQUEST['id'] = $editorialReview->editorialReviewId;
-			}else{
+			}elseif (isset($_REQUEST['submitReturnToList'])){
 				//Show the new review
-				if (isset($_REQUEST['submitReturnToList'])){
-					header('Location:' . $configArray['Site']['path'] . "/GroupedWork/{$editorialReview->recordId}/Home");
-				}elseif (isset($_REQUEST['submitAddAnother'])){
-					header('Location:' . $configArray['Site']['path'] . "/EditorialReview/Edit?recordId={$editorialReview->recordId}");
-				}else{
-					header('Location:' . $configArray['Site']['path'] . "/EditorialReview/{$editorialReview->editorialReviewId}/View");
-					exit();
-				}
+				header("Location:/GroupedWork/{$editorialReview->recordId}/Home");
+			}elseif (isset($_REQUEST['submitAddAnother'])){
+				header("Location:/EditorialReview/Edit?recordId={$editorialReview->recordId}");
+			}else{
+				header("Location:/EditorialReview/{$editorialReview->editorialReviewId}/View");
+				exit();
 			}
 		}
 
-		//Manipulate the structure as needed
-		if ($isNew){
-		}else{
-		}
-
 		$interface->assign('isNew', $isNew);
-		$interface->assign('submitUrl', $configArray['Site']['path'] . '/EditorialReview/Edit');
+		$interface->assign('submitUrl', '/EditorialReview/Edit');
 		$interface->assign('editForm', DataObjectUtil::getEditForm($structure));
 
 		$this->display('edit.tpl', 'Editorial Review');

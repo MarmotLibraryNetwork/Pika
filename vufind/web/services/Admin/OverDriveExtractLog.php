@@ -57,7 +57,7 @@ class OverDriveExtractLog extends Admin_Admin {
 
 		$options = array(
 			'totalItems' => $total,
-			'fileName' => $configArray['Site']['path'] . '/Admin/OverDriveExtractLog?page=%d' . (empty($_REQUEST['productsLimit']) ? '' : '&productsLimit=' . $_REQUEST['productsLimit']) . (empty($_REQUEST['pagesize']) ? '' : '&pagesize=' . $_REQUEST['pagesize']),
+			'fileName' => '/Admin/OverDriveExtractLog?page=%d' . (empty($_REQUEST['productsLimit']) ? '' : '&productsLimit=' . $_REQUEST['productsLimit']) . (empty($_REQUEST['pagesize']) ? '' : '&pagesize=' . $_REQUEST['pagesize']),
 			'perPage' => 30,
 		);
 		$pager   = new VuFindPager($options);

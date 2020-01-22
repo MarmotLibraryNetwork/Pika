@@ -49,7 +49,7 @@ class ReindexLog extends Admin_Admin {
 
 		$options = array(
 			'totalItems' => $total,
-			'fileName' => $configArray['Site']['path'] . '/Admin/ReindexLog?page=%d' . (empty($_REQUEST['worksLimit']) ? '' : '&worksLimit=' . $_REQUEST['worksLimit']) . (empty($_REQUEST['pagesize']) ? '' : '&pagesize=' . $_REQUEST['pagesize']),
+			'fileName' => '/Admin/ReindexLog?page=%d' . (empty($_REQUEST['worksLimit']) ? '' : '&worksLimit=' . $_REQUEST['worksLimit']) . (empty($_REQUEST['pagesize']) ? '' : '&pagesize=' . $_REQUEST['pagesize']),
 			'perPage' => $pageSize,
 		);
 		$pager   = new VuFindPager($options);

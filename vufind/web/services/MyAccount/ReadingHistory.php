@@ -77,7 +77,7 @@ class ReadingHistory extends MyAccount
 					}
 
 					//redirect back to the current location without the action.
-					$newLocation = "{$configArray['Site']['path']}/MyAccount/ReadingHistory";
+					$newLocation = "/MyAccount/ReadingHistory";
 					if (isset($_REQUEST['page']) && $readingHistoryAction != 'deleteAll' && $readingHistoryAction != 'optOut'){
 						$params[] = 'page=' . $_REQUEST['page'];
 					}

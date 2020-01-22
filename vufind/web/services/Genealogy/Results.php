@@ -85,7 +85,7 @@ class Genealogy_Results extends Action {
 					$queryParamStrings[] = "&filter[]=$dateFilter:[$yearFrom+TO+$yearTo]";
 				}
 				$queryParamString = join('&', $queryParamStrings);
-				header("Location: {$configArray['Site']['path']}/Genealogy/Results?$queryParamString");
+				header("Location: /Genealogy/Results?$queryParamString");
 				exit;
 			}
 		}
@@ -164,7 +164,6 @@ class Genealogy_Results extends Action {
 
 		if ($searchObject->getResultTotal() < 1) {
 			// No record found
-			$interface->assign('sitepath', $configArray['Site']['path']);
 			$interface->assign('subpage', 'Genealogy/list-none.tpl');
 			$interface->setTemplate('Genealogy/list.tpl');
 			$interface->assign('recordCount', 0);
@@ -252,7 +251,6 @@ class Genealogy_Results extends Action {
 			$timer->logTime('load result records');
 
 			// Setup Display
-			$interface->assign('sitepath', $configArray['Site']['path']);
 			$interface->assign('subpage', 'Genealogy/list-list.tpl');
 			$interface->setTemplate('Genealogy/list.tpl');
 

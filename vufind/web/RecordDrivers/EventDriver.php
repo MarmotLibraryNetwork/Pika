@@ -17,8 +17,7 @@ class EventDriver extends IslandoraDriver {
 	}
 
 	protected function getPlaceholderImage() {
-		global $configArray;
-		return $configArray['Site']['path'] . '/interface/themes/responsive/images/events.png';
+		return '/interface/themes/responsive/images/events.png';
 	}
 
 	public function isEntity(){

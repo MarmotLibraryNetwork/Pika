@@ -435,7 +435,7 @@ class ExploreMore {
 									'label' => $archiveObject->label,
 									'description' => $archiveObject->label,
 									'image' => $fedoraUtils->getObjectImageUrl($archiveObject, 'medium'),
-									'link' => $configArray['Site']['path'] . "/Archive/{$archiveObject->id}/Exhibit",
+									'link' => "/Archive/{$archiveObject->id}/Exhibit",
 									'usageCount' => $collectionInfo[1]
 								);
 							}
@@ -512,7 +512,7 @@ class ExploreMore {
 			$exploreMoreOptions[] = array(
 					'label' => "",
 					'description' => "Explore the archive",
-					'image' => $configArray['Site']['path'] . '/images/archive_banner_1.png',
+					'image' => '/images/archive_banner_1.png',
 					'link' => '/Archive/Results',
 					'placeholder' => true,
 			);
@@ -606,7 +606,7 @@ class ExploreMore {
 							$exploreMoreOptions[] = array(
 									'label' => "Catalog Results ($numCatalogResults)",
 									'description' => "Catalog Results ($numCatalogResults)",
-									'image' => $configArray['Site']['path'] . '/interface/themes/responsive/images/library_symbol.png',
+									'image' => '/interface/themes/responsive/images/library_symbol.png',
 									'link' => $searchObjectSolr->renderSearchUrl(),
 									'usageCount' => 1
 							);
@@ -660,7 +660,7 @@ class ExploreMore {
 										$exploreMoreOptions[] = array(
 												'label' => "$facetValueStr ({$numFacetMatches})",
 												'description' => "{$facetValueStr} in EBSCO related to {$searchTerm}",
-												'image' => $configArray['Site']['path'] . "/interface/themes/responsive/images/{$iconName}.png",
+												'image' => "/interface/themes/responsive/images/{$iconName}.png",
 												'link' => '/EBSCO/Results?lookfor=' . urlencode($searchTerm) . '&filter[]=' . $facetInfo->Id . ':' . $facetValueStr,
 										);
 									}
@@ -672,7 +672,7 @@ class ExploreMore {
 						$exploreMoreOptions[] = array(
 								'label' => "All EBSCO Results ({$numMatches})",
 								'description' => "All Results in EBSCO related to {$searchTerm}",
-								'image' => $configArray['Site']['path'] . '/interface/themes/responsive/images/ebsco_eds.png',
+								'image' => '/interface/themes/responsive/images/ebsco_eds.png',
 								'link' => '/EBSCO/Results?lookfor=' . urlencode($searchTerm)
 						);
 					}

@@ -97,7 +97,7 @@ class Admin_Administrators extends ObjectEditor {
 		if (count($moreThanOneRole) > 1){
 			global $configArray;
 			$_SESSION['lastError'] = 'This administrator may only have one of the these roles at a time : <strong>' . implode(', ', $moreThanOneRole) . '</strong>';
-			header("Location: {$configArray['Site']['path']}{$_SERVER['REQUEST_URI']}");
+			header("Location: {$_SERVER['REQUEST_URI']}");
 			die();
 		}
 
@@ -130,7 +130,7 @@ class Admin_Administrators extends ObjectEditor {
 					$newAdmin->roles = $_REQUEST['roles'];
 					$newAdmin->update();
 					global $configArray;
-					header("Location: {$configArray['Site']['path']}/Admin/{$this->getToolName()}");
+					header("Location: /Admin/{$this->getToolName()}");
 					die;
 				}else{
 					$interface->assign('error', $barcode . ' is already an administrator.');

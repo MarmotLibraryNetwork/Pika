@@ -49,7 +49,7 @@ class SierraExportLog extends Admin_Admin {
 
 		$options = array(
 			'totalItems' => $total,
-			'fileName' => $configArray['Site']['path'] . '/Admin/SierraExportLog?page=%d' . (empty($_REQUEST['productsLimit']) ? '' : '&productsLimit=' . $_REQUEST['productsLimit']) . (empty($_REQUEST['pagesize']) ? '' : '&pagesize=' . $_REQUEST['pagesize']),
+			'fileName' => '/Admin/SierraExportLog?page=%d' . (empty($_REQUEST['productsLimit']) ? '' : '&productsLimit=' . $_REQUEST['productsLimit']) . (empty($_REQUEST['pagesize']) ? '' : '&pagesize=' . $_REQUEST['pagesize']),
 			'perPage' => $pageSize,
 		);
 		$pager   = new VuFindPager($options);

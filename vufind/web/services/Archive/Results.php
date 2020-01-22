@@ -111,7 +111,6 @@ class Archive_Results extends Action {
 
 		if ($searchObject->getResultTotal() < 1) {
 			// No record found
-			$interface->assign('sitepath', $configArray['Site']['path']);
 			$interface->assign('subpage', 'Archive/list-none.tpl');
 			$interface->setTemplate('list.tpl');
 			$interface->assign('recordCount', 0);
@@ -157,7 +156,6 @@ class Archive_Results extends Action {
 			$timer->logTime('load result records');
 
 			// Setup Display
-			$interface->assign('sitepath', $configArray['Site']['path']);
 			if ($displayMode == 'covers') {
 				$displayTemplate = 'Archive/covers-list.tpl'; // structure for bookcover tiles
 			}else{

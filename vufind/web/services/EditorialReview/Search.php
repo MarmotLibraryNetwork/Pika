@@ -27,19 +27,18 @@ class EditorialReview_Search extends Admin_Admin {
 
 	function launch(){
 		global $interface;
-		global $configArray;
 
 		$results        = array();
 		$currentPage    = isset($_REQUEST['page']) ? $_REQUEST['page'] : 1;
 		$recordsPerPage = 20;
-		$searchUrl      = $configArray['Site']['path'] . '/EditorialReview/Search';
+		$searchUrl      = '/EditorialReview/Search';
 		$searchParams   = array();
 		foreach ($_REQUEST as $key => $value){
 			if (!in_array($key, array('module', 'action', 'page'))){
 				$searchParams[] = "$key=$value";
 			}
 		}
-		$searchUrl = $searchUrl . '?page=%d&' . implode('&', $searchParams);
+		$searchUrl .= '?page=%d&' . implode('&', $searchParams);
 		$interface->assign('page', $currentPage);
 
 		$editorialReview = new EditorialReview();
@@ -57,9 +56,10 @@ class EditorialReview_Search extends Admin_Admin {
 		}
 		$interface->assign('results', $results);
 
-		$options = array('totalItems' => $numTotalFiles,
-		                 'fileName'   => $searchUrl,
-		                 'perPage'    => $recordsPerPage);
+		$options = array(
+			'totalItems' => $numTotalFiles,
+			'fileName'   => $searchUrl,
+			'perPage'    => $recordsPerPage);
 		$pager   = new VuFindPager($options);
 		$interface->assign('pageLinks', $pager->getLinks());
 

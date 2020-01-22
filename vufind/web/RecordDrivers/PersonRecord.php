@@ -94,11 +94,8 @@ class PersonRecord extends IndexRecord
 	}
 
 	function getRecordUrl(){
-		global $configArray;
 		$recordId = $this->getPermanentId();
-
-		//TODO: This should have the correct module set
-		return $configArray['Site']['path'] . '/' . $this->getModule() . '/' . $recordId;
+		return '/' . $this->getModule() . '/' . $recordId;
 	}
 
 	function getAbsoluteUrl(){
@@ -112,9 +109,9 @@ class PersonRecord extends IndexRecord
 		global $configArray;
 		$person = $this->getPerson();
 		if ($person->picture){
-			return $configArray['Site']['path'] . '/files/thumbnail/' . $this->person->picture;
+			return '/files/thumbnail/' . $this->person->picture;
 		}else{
-			return $configArray['Site']['path'] . '/interface/themes/default/images/person.png';
+			return '/interface/themes/default/images/person.png';
 		}
 	}
 

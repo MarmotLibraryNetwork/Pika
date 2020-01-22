@@ -117,7 +117,7 @@ class Search_Results extends Action {
 					$queryParamStrings[] = "&filter[]=$dateFilter:[$yearFrom+TO+$yearTo]";
 				}
 				$queryParamString = join('&', $queryParamStrings);
-				header("Location: {$configArray['Site']['path']}/Search/Results?$queryParamString");
+				header("Location: /Search/Results?$queryParamString");
 				exit;
 			}
 		}
@@ -156,7 +156,7 @@ class Search_Results extends Action {
 					$queryParamStrings[] = "&filter[]=$filter:[$from+TO+$to]";
 				}
 				$queryParamString = join('&', $queryParamStrings);
-				header("Location: {$configArray['Site']['path']}/Search/Results?$queryParamString");
+				header("Location: /Search/Results?$queryParamString");
 				exit;
 			}
 		}
@@ -369,10 +369,10 @@ class Search_Results extends Action {
 			$_SESSION['searchId'] = $searchObject->getSearchId();
 			if ($record['recordtype'] == 'list'){
 				$listId = substr($record['id'], 4);
-				header("Location: " . $configArray['Site']['path'] . "/MyResearch/MyList/{$listId}");
+				header("Location: " . "/MyResearch/MyList/{$listId}");
 				exit();
 			}else{
-				header("Location: " . $configArray['Site']['path'] . "/GroupedWork/{$record['id']}/Home");
+				header("Location: " . "/GroupedWork/{$record['id']}/Home");
 				exit();
 			}
 

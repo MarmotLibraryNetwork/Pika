@@ -113,7 +113,7 @@ class Archive_ClaimAuthorship extends Action{
 
 		unset($archiveRequestFields['dateRequested']);
 
-		$interface->assign('submitUrl', $configArray['Site']['path'] . '/Archive/ClaimAuthorship');
+		$interface->assign('submitUrl', '/Archive/ClaimAuthorship');
 		$interface->assign('structure', $archiveRequestFields);
 		$interface->assign('saveButtonText', 'Submit Request');
 		$interface->assign('claimAuthorshipHeader', $owningLibrary->claimAuthorshipHeader);

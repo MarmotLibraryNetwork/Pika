@@ -4,7 +4,7 @@
 		<div class="row">
 			<div class="result-label col-sm-4">Author: </div>
 			<div class="col-sm-8 result-value">
-				<a href='{$path}/Author/Home?author="{$recordDriver->getAuthor()|escape:"url"}"'>{$recordDriver->getAuthor()|highlight}</a>
+				<a href='/Author/Home?author="{$recordDriver->getAuthor()|escape:"url"}"'>{$recordDriver->getAuthor()|highlight}</a>
 			</div>
 		</div>
 	{/if}
@@ -15,9 +15,9 @@
 			<div class="result-label col-sm-4">Series: </div>
 			<div class="col-sm-8 result-value">
 				{if $summSeries->fromNovelist}
-					<a href="{$path}/GroupedWork/{$recordDriver->getPermanentId()}/Series">{$summSeries.seriesTitle|removeTrailingPunctuation|escape}</a>{if $summSeries.volume} volume {$summSeries.volume}{/if}
+					<a href="/GroupedWork/{$recordDriver->getPermanentId()}/Series">{$summSeries.seriesTitle|removeTrailingPunctuation|escape}</a>{if $summSeries.volume} volume {$summSeries.volume}{/if}
 				{else}
-					<a href="{$path}/Search/Results?lookfor={$summSeries.seriesTitle}">{$summSeries.seriesTitle|removeTrailingPunctuation|escape}</a>{if $summSeries.volume} volume {$summSeries.volume}{/if}
+					<a href="/Search/Results?lookfor={$summSeries.seriesTitle}">{$summSeries.seriesTitle|removeTrailingPunctuation|escape}</a>{if $summSeries.volume} volume {$summSeries.volume}{/if}
 				{/if}
 			</div>
 		</div>
@@ -106,8 +106,10 @@
 	{* Detailed status information *}
 	<div class="row">
 		<div class="result-label col-sm-4">{translate text='Status'}:</div>
-		<div class="col-sm-8 result-value result-value-bold statusValue here" id="statusValue">
-			Available Online
+		<div class="col-sm-8 result-value">
+			{include file='GroupedWork/statusIndicator.tpl' statusInformation=$statusSummary viewingIndividualRecord=1}
+			{*		<div class="col-sm-8 result-value result-value-bold statusValue here" id="statusValue">*}
+{*			Available Online*}
 		</div>
 	</div>
 

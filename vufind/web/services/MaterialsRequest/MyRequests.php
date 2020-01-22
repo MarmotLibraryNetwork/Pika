@@ -29,21 +29,17 @@ require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
 /**
  * MaterialsRequest MyRequests Page, displays materials request information for the active user.
  */
-class MaterialsRequest_MyRequests extends MyAccount
-{
+class MaterialsRequest_MyRequests extends MyAccount {
 
-	function launch()
-	{
-		global $configArray;
+	function launch(){
 		global $interface;
 
 		$showOpen = true;
 		if (isset($_REQUEST['requestsToShow']) && $_REQUEST['requestsToShow'] == 'allRequests'){
-			$showOpen  = false;
+			$showOpen = false;
 		}
 		$interface->assign('showOpen', $showOpen);
 
-//		global $library;
 		$homeLibrary = UserAccount::getUserHomeLibrary();
 
 		$maxActiveRequests  = isset($homeLibrary) ? $homeLibrary->maxOpenRequests : 5;
@@ -51,7 +47,7 @@ class MaterialsRequest_MyRequests extends MyAccount
 		$interface->assign('maxActiveRequests', $maxActiveRequests);
 		$interface->assign('maxRequestsPerYear', $maxRequestsPerYear);
 
-		$defaultStatus = new MaterialsRequestStatus();
+		$defaultStatus            = new MaterialsRequestStatus();
 		$defaultStatus->isDefault = 1;
 		$defaultStatus->libraryId = $homeLibrary->libraryId;
 		$defaultStatus->find(true);
@@ -60,23 +56,23 @@ class MaterialsRequest_MyRequests extends MyAccount
 		//Get a list of all materials requests for the user
 		$allRequests = array();
 		if (UserAccount::isLoggedIn()){
-			$materialsRequests = new MaterialsRequest();
+			$materialsRequests            = new MaterialsRequest();
 			$materialsRequests->createdBy = UserAccount::getActiveUserId();
 			$materialsRequests->whereAdd('dateCreated >= unix_timestamp(now() - interval 1 year)');
 
-			$statusQueryNotCancelled = new MaterialsRequestStatus();
-			$statusQueryNotCancelled->libraryId = $homeLibrary->libraryId;
+			$statusQueryNotCancelled                 = new MaterialsRequestStatus();
+			$statusQueryNotCancelled->libraryId      = $homeLibrary->libraryId;
 			$statusQueryNotCancelled->isPatronCancel = 0;
 			$materialsRequests->joinAdd($statusQueryNotCancelled);
 
 			$requestsThisYear = $materialsRequests->count();
 			$interface->assign('requestsThisYear', $requestsThisYear);
 
-			$statusQuery = new MaterialsRequestStatus();
+			$statusQuery            = new MaterialsRequestStatus();
 			$statusQuery->libraryId = $homeLibrary->libraryId;
-			$statusQuery->isOpen = 1;
+			$statusQuery->isOpen    = 1;
 
-			$materialsRequests = new MaterialsRequest();
+			$materialsRequests            = new MaterialsRequest();
 			$materialsRequests->createdBy = UserAccount::getActiveUserId();
 			$materialsRequests->joinAdd($statusQuery);
 			$openRequests = $materialsRequests->count();
@@ -84,16 +80,16 @@ class MaterialsRequest_MyRequests extends MyAccount
 
 			$formats = MaterialsRequest::getFormats();
 
-			$materialsRequests = new MaterialsRequest();
+			$materialsRequests            = new MaterialsRequest();
 			$materialsRequests->createdBy = UserAccount::getActiveUserId();
 			$materialsRequests->orderBy('title, dateCreated');
 
 			$statusQuery = new MaterialsRequestStatus();
 			if ($showOpen){
-				$user = UserAccount::getActiveUserObj();
-				$homeLibrary = $user->getHomeLibrary();
+				$user                   = UserAccount::getActiveUserObj();
+				$homeLibrary            = $user->getHomeLibrary();
 				$statusQuery->libraryId = $homeLibrary->libraryId;
-				$statusQuery->isOpen = 1;
+				$statusQuery->isOpen    = 1;
 			}
 			$materialsRequests->joinAdd($statusQuery);
 			$materialsRequests->selectAdd();
@@ -106,13 +102,13 @@ class MaterialsRequest_MyRequests extends MyAccount
 				$allRequests[] = clone $materialsRequests;
 			}
 		}else{
-			header('Location: ' . $configArray['Site']['path'] . '/MyAccount/Home?followupModule=MaterialsRequest&followupAction=MyRequests');
+			header('Location:/MyAccount/Home?followupModule=MaterialsRequest&followupAction=MyRequests');
 			exit;
 		}
 		$interface->assign('allRequests', $allRequests);
-		$interface->assign('shortPageTitle', 'My ' . translate('Materials_Request_alt'). 's' );
+		$interface->assign('shortPageTitle', 'My ' . translate('Materials_Request_alt') . 's');
 
-		$title = 'My '. translate('Materials_Request_alt') .'s';
+		$title = 'My ' . translate('Materials_Request_alt') . 's';
 		$this->display('myMaterialRequests.tpl', $title);
 	}
 }

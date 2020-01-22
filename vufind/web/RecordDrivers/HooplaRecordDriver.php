@@ -177,10 +177,8 @@ class HooplaRecordDriver extends SideLoadedRecord {
 	}
 
 	function getRecordUrl(){
-		global $configArray;
 		$recordId = $this->getUniqueID();
-
-		return $configArray['Site']['path'] . '/Hoopla/' . $recordId;
+		return '/Hoopla/' . $recordId;
 	}
 
 	/**

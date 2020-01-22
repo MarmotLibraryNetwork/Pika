@@ -569,7 +569,7 @@ class ListAPI extends AJAXHandler {
 				'cacheType'    => 'general',
 				'cacheName'    => 'list_general_list:' . $listId,
 				'cacheLength'  => $configArray['Caching']['list_general'],
-				'fullListLink' => $configArray['Site']['path'] . '/MyResearch/MyList/' . $listId, // TODO: switch to /MyAccount/MyList/
+				'fullListLink' => '/MyAccount/MyList/' . $listId,
 			);
 
 		}elseif (preg_match('/review:(.*)/', $listId, $reviewInfo)){
@@ -614,7 +614,7 @@ class ListAPI extends AJAXHandler {
 					'cacheType'    => 'general',
 					'cacheName'    => 'list_general_search_' . $searchId,
 					'cacheLength'  => $configArray['Caching']['list_general'],
-					'fullListLink' => $configArray['Site']['path'] . '/Search/Results?saved=' . $searchId,
+					'fullListLink' => '/Search/Results?saved=' . $searchId,
 				);
 			}else{
 				$requestUri = $_SERVER['REQUEST_URI'];
@@ -679,8 +679,8 @@ class ListAPI extends AJAXHandler {
 		/** @var Memcache $memCache */
 		global $memCache;
 		global $configArray;
-		$cacheId    = 'saved_search_titles_' . $searchId;
-		$listTitles = $memCache->get($cacheId);
+		$memCacheKey    = 'saved_search_titles_' . $searchId;
+		$listTitles = $memCache->get($memCacheKey);
 		if ($listTitles == false || isset($_REQUEST['reload'])){
 			//return a random selection of 30 titles from the list.
 			/** @var SearchObject_Solr|SearchObject_Base $searchObj */
@@ -696,7 +696,7 @@ class ListAPI extends AJAXHandler {
 				$searchObj->processSearch(false, false);
 				$listTitles = $searchObj->getListWidgetTitles();
 
-				$memCache->set($cacheId, $listTitles, 0, $configArray['Caching']['list_saved_search']);
+				$memCache->set($memCacheKey, $listTitles, 0, $configArray['Caching']['list_saved_search']);
 			}
 		}
 

@@ -1413,11 +1413,10 @@ class IndexRecord extends RecordInterface
 	}
 
 	function getRecordUrl(){
-		global $configArray;
 		$recordId = $this->getUniqueID();
 
 		//TODO: This should have the correct module set
-		return $configArray['Site']['path'] . '/' . $this->getModule() . '/' . $recordId;
+		return '/' . $this->getModule() . '/' . $recordId;
 	}
 
 	function getAbsoluteUrl(){

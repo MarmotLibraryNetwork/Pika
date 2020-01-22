@@ -27,30 +27,28 @@ require_once ROOT_DIR . "/sys/MaterialsRequest.php";
 /**
  * MaterialsRequest Home Page, displays an existing Materials Request.
  */
-class MaterialsRequest_NewRequest extends Action
-{
+class MaterialsRequest_NewRequest extends Action {
 
-	function launch()
-	{
+	function launch(){
 		global /** @var Location $locationSingleton */
 		$configArray,
 		$interface,
 		$library,
 		$locationSingleton;
 
-		if (!UserAccount::isLoggedIn()) {
-			header('Location: ' . $configArray['Site']['path'] . '/MyAccount/Home?followupModule=MaterialsRequest&followupAction=NewRequest');
+		if (!UserAccount::isLoggedIn()){
+			header('Location: /MyAccount/Home?followupModule=MaterialsRequest&followupAction=NewRequest');
 			exit;
-		} else {
+		}else{
 			// Hold Pick-up Locations
 			$locations = $locationSingleton->getPickupBranches(UserAccount::getActiveUserObj(), UserAccount::getUserHomeLocationId());
 
 			$pickupLocations = array();
-			foreach ($locations as $curLocation) {
+			foreach ($locations as $curLocation){
 				$pickupLocations[] = array(
-					'id' => $curLocation->locationId,
+					'id'          => $curLocation->locationId,
 					'displayName' => $curLocation->displayName,
-					'selected' => $curLocation->selected,
+					'selected'    => $curLocation->selected,
 				);
 			}
 			$interface->assign('pickupLocations', $pickupLocations);
@@ -66,21 +64,23 @@ class MaterialsRequest_NewRequest extends Action
 			$request->illItem                = true; // set the place hold option on by default
 
 			// Nashville special request
-			if ($library->displayName == "Nashville Public Library") { $request->illItem = false; }
+			if ($library->displayName == "Nashville Public Library"){
+				$request->illItem = false;
+			}
 
-			if (isset($_REQUEST['lookfor']) && strlen($_REQUEST['lookfor']) > 0) {
+			if (!empty($_REQUEST['lookfor'])){
 				$searchType = isset($_REQUEST['basicType']) ? $_REQUEST['basicType'] : (isset($_REQUEST['type']) ? $_REQUEST['type'] : 'Keyword');
-				if (strcasecmp($searchType, 'author') == 0) {
+				if (strcasecmp($searchType, 'author') == 0){
 					$request->author = $_REQUEST['lookfor'];
-				} else {
+				}else{
 					$request->title = $_REQUEST['lookfor'];
 				}
 			}
 
 			$user = UserAccount::getActiveUserObj();
-			if ($user) {
+			if ($user){
 				$request->phone = str_replace(array('### TEXT ONLY ', '### TEXT ONLY'), '', $user->phone);
-				if ($user->email != 'notice@salidalibrary.org') {
+				if ($user->email != 'notice@salidalibrary.org'){
 					$request->email = $user->email;
 				}
 			}
@@ -91,26 +91,24 @@ class MaterialsRequest_NewRequest extends Action
 //			$interface->assign('showEaudioFormatField', $configArray['MaterialsRequest']['showEaudioFormatField']);
 			$interface->assign('requireAboutField', $configArray['MaterialsRequest']['requireAboutField']);
 
-			$useWorldCat = false;
-			if (isset($configArray['WorldCat']) && isset($configArray['WorldCat']['apiKey'])) {
-				$useWorldCat = strlen($configArray['WorldCat']['apiKey']) > 0;
-			}
+
+			$useWorldCat = !empty($configArray['WorldCat']['apiKey']);
 			$interface->assign('useWorldCat', $useWorldCat);
 
-			if (isset($library)) {
+			if (isset($library)){
 				// Get the Fields to Display for the form
 				$requestFormFields = $request->getRequestFormFields($library->libraryId);
 				$interface->assign('requestFormFields', $requestFormFields);
 
 				// Add bookmobile Stop to the pickup locations if that form field is being used.
-				foreach ($requestFormFields as $catagory) {
+				foreach ($requestFormFields as $catagory){
 					/** @var MaterialsRequestFormFields $formField */
-					foreach ($catagory as $formField) {
-						if ($formField->fieldType == 'bookmobileStop') {
+					foreach ($catagory as $formField){
+						if ($formField->fieldType == 'bookmobileStop'){
 							$pickupLocations[] = array(
-								'id' => 'bookmobile',
+								'id'          => 'bookmobile',
 								'displayName' => $formField->fieldLabel,
-								'selected' => false,
+								'selected'    => false,
 							);
 							$interface->assign('pickupLocations', $pickupLocations);
 							break 2;
@@ -126,13 +124,13 @@ class MaterialsRequest_NewRequest extends Action
 			}
 
 			// Set up for User Log in
-			if (isset($library)) {
+			if (isset($library)){
 				$interface->assign('newMaterialsRequestSummary', $library->newMaterialsRequestSummary);
 
 				$interface->assign('enableSelfRegistration', $library->enableSelfRegistration);
 				$interface->assign('usernameLabel', $library->loginFormUsernameLabel ? $library->loginFormUsernameLabel : 'Your Name');
 				$interface->assign('passwordLabel', $library->loginFormPasswordLabel ? $library->loginFormPasswordLabel : 'Library Card Number');
-			} else {
+			}else{
 				$interface->assign('enableSelfRegistration', 0);
 				$interface->assign('usernameLabel', 'Your Name');
 				$interface->assign('passwordLabel', 'Library Card Number');

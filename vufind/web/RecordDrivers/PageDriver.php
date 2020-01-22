@@ -27,12 +27,10 @@ class PageDriver extends IslandoraDriver {
 		$parentDriver = RecordDriverFactory::initIslandoraDriverFromObject($parentObject);
 		if ($parentDriver != null && $parentDriver instanceof BookDriver){
 			return $parentDriver->getRecordUrl($absolutePath) . '?pagePid=' . urlencode($recordId);
+		}elseif ($absolutePath){
+			return $configArray['Site']['url'] . '/Archive/' . urlencode($recordId) . '/' . $this->getViewAction();
 		}else{
-			if ($absolutePath){
-				return $configArray['Site']['url'] . '/Archive/' . urlencode($recordId) . '/' . $this->getViewAction();
-			}else{
-				return $configArray['Site']['path'] . '/Archive/' . urlencode($recordId) . '/' . $this->getViewAction();
-			}
+			return '/Archive/' . urlencode($recordId) . '/' . $this->getViewAction();
 		}
 	}
 }

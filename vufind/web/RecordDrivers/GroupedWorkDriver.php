@@ -1123,7 +1123,7 @@ class GroupedWorkDriver extends RecordInterface {
 		if ($absolutePath){
 			$bookCoverUrl = empty($configArray['Site']['coverUrl']) ? $configArray['Site']['url'] : $configArray['Site']['coverUrl'];
 		}else{
-			$bookCoverUrl = $configArray['Site']['path'];
+			$bookCoverUrl = '';
 		}
 		$bookCoverUrl .= "/bookcover.php?id={$this->getUniqueID()}&size={$size}&type=grouped_work";
 
@@ -3092,10 +3092,8 @@ class GroupedWorkDriver extends RecordInterface {
 	}
 
 	public function getRecordUrl(){
-		global $configArray;
 		$recordId = $this->getUniqueID();
-
-		return $configArray['Site']['path'] . '/' . $this->getModule() . '/' . urlencode($recordId) . '/Home';
+		return '/' . $this->getModule() . '/' . urlencode($recordId) . '/Home';
 	}
 
 	public function getAbsoluteUrl(){

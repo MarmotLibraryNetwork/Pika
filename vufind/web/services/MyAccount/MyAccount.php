@@ -20,15 +20,7 @@
 
 require_once ROOT_DIR . '/Action.php';
 
-//require_once ROOT_DIR . '/CatalogConnection.php';
-//require_once ROOT_DIR . '/CatalogFactory.php';
-
-abstract class MyAccount extends Action
-{
-	/** @var  SearchObject_Solr|SearchObject_Base */
-//	protected $db;
-	/** @var  CatalogConnection $catalog */
-//	protected $catalog;
+abstract class MyAccount extends Action {
 	protected $requireLogin = true;
 
 	function __construct() {
@@ -39,15 +31,6 @@ abstract class MyAccount extends Action
 			$myAccountAction->launch();
 			exit();
 		}
-
-		// Setup Search Engine Connection
-//		$class = $configArray['Index']['engine'];
-//		$this->db = new $class($configArray['Index']['url']);
-
-		// Connect to Database
-		//$user = UserAccount::getLoggedInUser();
-		//$this->catalog = CatalogFactory::getCatalogConnectionInstance($user ? $user->source : null);
-			// When loading MyList.php and the list is public, user does not need to be logged in to see list
 
 		// Hide Covers when the user has set that setting on an Account Page
 		$this->setShowCovers();

@@ -115,7 +115,7 @@ class MyAccount_MyList extends MyAccount {
 						break;
 					case 'deleteList':
 						$list->delete();
-						header("Location: {$configArray['Site']['path']}/MyAccount/Home");
+						header("Location: /MyAccount/Home");
 						die();
 						break;
 					case 'bulkAddTitles':
@@ -146,7 +146,7 @@ class MyAccount_MyList extends MyAccount {
 				$list->update();
 			}
 			//Redirect back to avoid having the parameters stay in the URL.
-			header("Location: {$configArray['Site']['path']}/MyAccount/MyList/{$list->id}");
+			header("Location: /MyAccount/MyList/{$list->id}");
 			die();
 
 		}

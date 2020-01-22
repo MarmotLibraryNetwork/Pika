@@ -713,7 +713,7 @@ class MyAccount_AJAX extends AJAXHandler {
 
 		foreach ($titles as $key => $rawData){
 			$formattedTitle            = "<div id=\"scrollerTitleSuggestion{$key}\" class=\"scrollerTitle\">" .
-				'<a href="' . $configArray['Site']['path'] . "/Record/" . $rawData['id'] . '" id="descriptionTrigger' . $rawData['id'] . '">' .
+				'<a href="' . "/Record/" . $rawData['id'] . '" id="descriptionTrigger' . $rawData['id'] . '">' .
 				"<img src=\"{$rawData['image']}\" class=\"scrollerTitleCover\" alt=\"{$rawData['title']} Cover\"/>" .
 				"</a></div>" .
 				"<div id='descriptionPlaceholder{$rawData['id']}' style='display:none'></div>";
@@ -769,7 +769,7 @@ class MyAccount_AJAX extends AJAXHandler {
 						$formattedTitle            = "<div id=\"scrollerTitle{$scrollerName}{$key}\" class=\"scrollerTitle\">";
 						$shortId                   = $rawData['id'];
 						$shortId                   = str_replace('.b', 'b', $shortId);
-						$formattedTitle            .= '<a href="' . $configArray['Site']['path'] . "/Record/" . $rawData['id'] . ($addStrandsTracking ? "?strandsReqId={$strandsInfo['reqId']}&strandsTpl={$strandsInfo['tpl']}" : '') . '" id="descriptionTrigger' . $shortId . '">';
+						$formattedTitle            .= '<a href="' . "/Record/" . $rawData['id'] . ($addStrandsTracking ? "?strandsReqId={$strandsInfo['reqId']}&strandsTpl={$strandsInfo['tpl']}" : '') . '" id="descriptionTrigger' . $shortId . '">';
 						$formattedTitle            .= "<img src=\"{$rawData['image']}\" class=\"scrollerTitleCover\" alt=\"{$rawData['title']} Cover\"/>" .
 							"</a></div>" .
 							"<div id='descriptionPlaceholder{$shortId}' style='display:none' class='loaded'>" .

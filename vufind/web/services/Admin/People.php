@@ -56,11 +56,10 @@ class People extends ObjectEditor
 		return array('genealogyContributor');
 	}
 	function getRedirectLocation($objectAction, $curObject){
-		global $configArray;
 		if ($objectAction == 'delete'){
-			return $configArray['Site']['path'] . '/Union/Search?searchSource=genealogy&lookfor=&genealogyType=GenealogyName&submit=Find';
+			return '/Union/Search?searchSource=genealogy&lookfor=&genealogyType=GenealogyName&submit=Find';
 		}else{
-			return $configArray['Site']['path'] . '/Person/' . $curObject->personId;
+			return '/Person/' . $curObject->personId;
 		}
 	}
 	function showReturnToList(){

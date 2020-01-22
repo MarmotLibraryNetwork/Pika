@@ -94,10 +94,6 @@ class UInterface extends Smarty {
 		$this->assign('fullPath', str_replace('&', '&amp;', $_SERVER['REQUEST_URI']));
 		$url = isset($_SERVER['HTTPS']) ? 'https://' : 'http://';
 		$url .= $_SERVER['SERVER_NAME'];
-		if (!empty($configArray['Site']['path'])){
-			$url .= '/' . $configArray['Site']['path'];
-			$this->assign('path', $configArray['Site']['path']);
-		}
 		$this->url = $url;
 		$this->assign('url', $url);
 
@@ -351,7 +347,7 @@ class UInterface extends Smarty {
 		$homeLink = !empty($location->homeLink) && $location->homeLink != 'default' ? $location->homeLink :
 			(!empty($library->homeLink) && $library->homeLink != 'default' ? $library->homeLink : false);
 		$this->assign('homeLink', $homeLink);
-		$this->assign('logoLink', empty($library->useHomeLinkForLogo) ? $configArray['Site']['path'] : $homeLink);
+		$this->assign('logoLink', empty($library->useHomeLinkForLogo) ? '' : $homeLink);
 		$this->assign('logoAlt', empty($library->useHomeLinkForLogo) ? 'Return to Catalog Home' : 'Library Home Page');
 
 		// Check for overriding images of the theme's main logo

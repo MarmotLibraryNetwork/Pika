@@ -62,8 +62,7 @@ class Marriages extends ObjectEditor {
 	}
 
 	function getRedirectLocation($objectAction, $curObject){
-		global $configArray;
-		return $configArray['Site']['path'] . '/Person/' . $curObject->personId;
+		return '/Person/' . $curObject->personId;
 	}
 
 	function showReturnToList(){

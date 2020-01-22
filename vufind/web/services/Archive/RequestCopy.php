@@ -34,13 +34,13 @@ class Archive_RequestCopy extends Action{
 		if (!$owningLibrary->find(true) || $owningLibrary->N != 1){
 			PEAR_Singleton::raiseError('Could not determine which library owns this object, cannot request a copy.');
 		}
-		$archiveRequestFields = $owningLibrary->getArchiveRequestFormStructure();
+		$archiveRequestFields                   = $owningLibrary->getArchiveRequestFormStructure();
 		$archiveRequestFields['pid']['default'] = $pid; // add pid to the form
 
 		if (isset($_REQUEST['submit'])) {
 			if (isset($configArray['ReCaptcha']['privateKey'])){
-				$privatekey = $configArray['ReCaptcha']['privateKey'];
-				$resp = recaptcha_check_answer ($privatekey,
+				$privatekey     = $configArray['ReCaptcha']['privateKey'];
+				$resp           = recaptcha_check_answer($privatekey,
 					$_SERVER["REMOTE_ADDR"],
 					$_POST["g-recaptcha-response"]);
 				$recaptchaValid = $resp->is_valid;
@@ -112,7 +112,7 @@ class Archive_RequestCopy extends Action{
 
 		unset($archiveRequestFields['dateRequested']);
 
-		$interface->assign('submitUrl', $configArray['Site']['path'] . '/Archive/RequestCopy');
+		$interface->assign('submitUrl', '/Archive/RequestCopy');
 		$interface->assign('structure', $archiveRequestFields);
 		$interface->assign('saveButtonText', 'Submit Request');
 		$interface->assign('archiveRequestMaterialsHeader', $owningLibrary->archiveRequestMaterialsHeader);

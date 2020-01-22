@@ -139,7 +139,7 @@ if (!UserAccount::isLoggedIn() && ((isset($_POST['username']) && isset($_POST['p
 
 		//THE above is to replace this below. We shouldn't need to do a page reload. pascal 1/10/2020
 //		echo("Redirecting to followup location");
-//		$followupUrl = $configArray['Site']['path'] . '/' . strip_tags($_REQUEST['followupModule']);
+//		$followupUrl = '/' . strip_tags($_REQUEST['followupModule']);
 //		if (!empty($_REQUEST['recordId'])){
 //			$followupUrl .= '/' . strip_tags($_REQUEST['recordId']);
 //		}elseif (!empty($_REQUEST['id'])){
@@ -278,7 +278,7 @@ function processFollowup(){
 
 	switch($_REQUEST['followup']) {
 		case 'SaveSearch':
-			header("Location: {$configArray['Site']['path']}/".$_REQUEST['followupModule']."/".$_REQUEST['followupAction']."?".$_REQUEST['recordId']);
+			header("Location: /".$_REQUEST['followupModule']."/".$_REQUEST['followupAction']."?".$_REQUEST['recordId']);
 			die();
 			break;
 	}

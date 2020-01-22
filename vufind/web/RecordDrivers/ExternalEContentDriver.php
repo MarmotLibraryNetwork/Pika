@@ -154,10 +154,8 @@ class ExternalEContentDriver extends BaseEContentDriver{
 	}
 
 	function getRecordUrl(){
-		global $configArray;
 		$recordId = $this->getUniqueID();
-
-		return $configArray['Site']['path'] . '/' . $this->getModule() . '/' . $recordId;
+		return '/' . $this->getModule() . '/' . $recordId;
 	}
 
 	function getAbsoluteUrl(){

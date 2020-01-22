@@ -120,7 +120,7 @@ abstract class SearchObject_Base
 		global $timer;
 
 		// Get the start of the server URL and store
-		$this->serverUrl = $configArray['Site']['path'];
+		$this->serverUrl = '';
 
 		// Set appropriate debug mode:
 		// Debugging
