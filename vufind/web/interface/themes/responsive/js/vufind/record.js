@@ -157,7 +157,8 @@ VuFind.Record = (function(){
 					if (data.needsItemLevelHold){
 						$('.modal-body').html(data.message);
 					}else{
-						VuFind.showMessage('Hold Placed Successfully', data.message, false, autoLogOut);
+						// VuFind.showMessage('Hold Placed Successfully', data.message, false, autoLogOut);
+						VuFind.showMessageWithButtons('Hold Placed Successfully', data.message, data.buttons);
 					}
 				}else{
 					VuFind.showMessage('Hold Failed', data.message, false, autoLogOut);

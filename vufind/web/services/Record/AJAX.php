@@ -340,19 +340,6 @@ class Record_AJAX extends AJAXHandler {
 						$interface->assign('message', $return['message']);
 						$interface->assign('success', $return['success']);
 
-						//Get library based on patron home library since that is what controls their notifications rather than the active interface.
-						//$library = Library::getPatronHomeLibrary();
-
-//						global $library;
-//						$canUpdateContactInfo = $library->allowProfileUpdates == 1;
-//						// set update permission based on active library's settings. Or allow by default.
-//						$canChangeNoticePreference = $library->showNoticeTypeInProfile == 1;
-//						// when user preference isn't set, they will be shown a link to account profile. this link isn't needed if the user can not change notification preference.
-//						$interface->assign('canUpdate', $canUpdateContactInfo);
-//						$interface->assign('canChangeNoticePreference', $canChangeNoticePreference);
-//						$interface->assign('showDetailedHoldNoticeInformation', $library->showDetailedHoldNoticeInformation);
-//						$interface->assign('treatPrintNoticesAsPhoneNotices', $library->treatPrintNoticesAsPhoneNotices);
-
 						$canUpdateContactInfo = $homeLibrary->allowProfileUpdates == 1;
 						// set update permission based on active library's settings. Or allow by default.
 						$canChangeNoticePreference = $homeLibrary->showNoticeTypeInProfile == 1;
@@ -363,11 +350,12 @@ class Record_AJAX extends AJAXHandler {
 						$interface->assign('treatPrintNoticesAsPhoneNotices', $homeLibrary->treatPrintNoticesAsPhoneNotices);
 						$interface->assign('profile', $patron); // Use the account the hold was placed with for the success message.
 
-						$results = array(
+						$results = [
 							'success' => $return['success'],
 							'message' => $interface->fetch('Record/hold-success-popup.tpl'),
-							'title'   => isset($return['title']) ? $return['title'] : '',
-						);
+//							'title'   => isset($return['title']) ? $return['title'] : '',
+							'buttons' => '<a class="btn btn-primary" href="/MyAccount/Holds" role="button">View My Holds</a>',
+						];
 						if (isset($_REQUEST['autologout'])){
 							$masqueradeMode = UserAccount::isUserMasquerading();
 							if ($masqueradeMode){
