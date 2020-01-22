@@ -1351,76 +1351,90 @@ class User extends DB_DataObject {
 		$location       = new Location();
 		$location->code = $homeBranchCode;
 		if (!$location->find(true)){
-			unset($location);
+			if (!empty($this->homeLocationId)){
+				$location = new Location();
+				if (!$location->get($this->homeLocationId)){
+					unset($location);
+				}
+			}else {
+				unset($location);
+			}
 		}
 
 		$userHomeLocationNotSet = empty($this->homeLocationId) || $this->homeLocationId == -1;
-		if ($userHomeLocationNotSet || (isset($location) && $this->homeLocationId != $location->locationId)){
+		$homeLocationHasChanged = isset($location) && $this->homeLocationId != $location->locationId;
+		if ($homeLocationHasChanged){
+			$updateUserNeeded = true;
+		}
+		if ($userHomeLocationNotSet){
 			$updateUserNeeded = true;
 
-			// When homeLocation isn't set or has changed
-			if (($userHomeLocationNotSet) && !isset($location)){
-				// homeBranch Code not found in location table and the user doesn't have an assigned home location,
-				// try to find the main branch to assign to user
-				// or the first location for the library
+			// homeBranch Code not found in location table and the user doesn't have an assigned home location,
+			// try to find the main branch to assign to user
+			// or the first location for the library
 
-				global $library;
-				if (!empty($library->libraryId)){
-					$location            = new Location();
-					$location->libraryId = $library->libraryId;
-					$location->orderBy('isMainBranch desc');// gets the main branch first or the first location
-					if (!$location->find(true)){
-						$defaultLibrary            = new Library();
-						$defaultLibrary->isDefault = true;
-						if ($defaultLibrary->find(true)){
-							$location            = new Location();
-							$location->libraryId = $defaultLibrary->libraryId;
-							$location->orderBy('isMainBranch desc'); // gets the main branch first or the first location
-							if (!$location->find(true)){
-								global $logger;
-								$logger->log('Failed to find any location to assign to user as home location', PEAR_LOG_ERR);
-								return false;
-							}
-						} else {
+			global $library;
+			if (!empty($library->libraryId)){
+				$location            = new Location();
+				$location->libraryId = $library->libraryId;
+				$location->orderBy('isMainBranch desc');// gets the main branch first or the first location
+				if (!$location->find(true)){
+					$defaultLibrary            = new Library();
+					$defaultLibrary->isDefault = true;
+					if ($defaultLibrary->find(true)){
+						$location            = new Location();
+						$location->libraryId = $defaultLibrary->libraryId;
+						$location->orderBy('isMainBranch desc'); // gets the main branch first or the first location
+						if (!$location->find(true)){
 							global $logger;
-							$logger->log('Failed to find the site default library', PEAR_LOG_ERR);
+							$logger->log('Failed to find any location to assign to user as home location', PEAR_LOG_ERR);
 							return false;
 						}
+					}else{
+						global $logger;
+						$logger->log('Failed to find the site default library', PEAR_LOG_ERR);
+						return false;
 					}
 				}
+			}else{
+				return false;
 			}
+
 		}
 
 		if (isset($location)){
 			$this->homeLocationId = $location->locationId;
-			if (empty($this->myLocation1Id)){
-				$this->myLocation1Id = ($location->nearbyLocation1 > 0) ? $location->nearbyLocation1 : $location->locationId;
-				/** @var /Location $location */
-				//Get display name for preferred location 1
-				$myLocation1             = new Location();
-				$myLocation1->locationId = $this->myLocation1Id;
-				if ($myLocation1->find(true)){
-					$this->myLocation1 = $myLocation1->displayName;
-				}
-			}
-
-			if (empty($this->myLocation2Id)){
-				$this->myLocation2Id = ($location->nearbyLocation2 > 0) ? $location->nearbyLocation2 : $location->locationId;
-				//Get display name for preferred location 2
-				$myLocation2             = new Location();
-				$myLocation2->locationId = $this->myLocation2Id;
-				if ($myLocation2->find(true)){
-					$this->myLocation2 = $myLocation2->displayName;
-				}
-			}
 
 			//Get display names that aren't stored
 			$this->homeLocationCode = $location->code;
 			$this->homeLocation     = $location->displayName;
-		}
-		return $updateUserNeeded;
 
+			// Get Alternate Locations
+			if (empty($this->myLocation1Id)){
+				$this->myLocation1Id = ($location->nearbyLocation1 > 0) ? $location->nearbyLocation1 : $location->locationId;
+			}
+			/** @var /Location $location */
+			//Get display name for preferred location 1
+			$myLocation1             = new Location();
+			$myLocation1->locationId = $this->myLocation1Id;
+			if ($myLocation1->find(true)){
+				$this->myLocation1 = $myLocation1->displayName;
+			}
+
+			if (empty($this->myLocation2Id)){
+				$this->myLocation2Id = ($location->nearbyLocation2 > 0) ? $location->nearbyLocation2 : $location->locationId;
+			}
+			//Get display name for preferred location 2
+			$myLocation2             = new Location();
+			$myLocation2->locationId = $this->myLocation2Id;
+			if ($myLocation2->find(true)){
+				$this->myLocation2 = $myLocation2->displayName;
+			}
+		}
+
+		return $updateUserNeeded;
 	}
+
 
 	function updateAltLocationForHold($pickupBranch){
 		if ($this->homeLocationCode != $pickupBranch){
