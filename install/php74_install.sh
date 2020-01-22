@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
 
-echo Enabling Remi PHP 7.4 repo
+echo Installing yum-utils...
+
+yum install yum-utils \
+|| { printf "%b" "Failed to install yum-utils. Exiting.\n" ; exit 1 ; }
+
+
+echo Enabling Remi PHP 7.4 repo...
 yum-config-manager --enable remi-php74 \
 || { printf "%b" "Failed to enable Remi PHP 7.4 repo. Exiting.\n" ; exit 1 ; }
 
