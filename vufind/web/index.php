@@ -787,11 +787,3 @@ function setUpSearchDisplayOptions($module, $action){
 		}
 	}
 }
-
-// polyfill for php 7
-function array_key_first(array $arr) {
-	foreach($arr as $key => $unused) {
-		return $key;
-	}
-	return NULL;
-}
