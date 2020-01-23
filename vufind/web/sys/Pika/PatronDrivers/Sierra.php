@@ -678,7 +678,7 @@ class Sierra {
 		}
 
 		// 6.6 account expiration
-			$patron->setUserExpirationSettings(empty($pInfo->expirationDate) ? '' : empty($pInfo->expirationDate));
+			$patron->setUserExpirationSettings(empty($pInfo->expirationDate) ? '' : $pInfo->expirationDate);
 
 		// 6.7 notices
 		$patron->notices = $pInfo->fixedFields->{'268'}->value;
