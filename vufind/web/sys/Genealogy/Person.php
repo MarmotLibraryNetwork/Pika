@@ -315,7 +315,7 @@ class Person extends SolrDataObject
 		}
 	}
 
-	function delete(){
+	function delete($useWhere = false){
 		$this->deleteMarriages();
 		$this->deleteObituaries();
 		parent::delete();
@@ -362,7 +362,7 @@ class Person extends SolrDataObject
 		return $ret;
 	}
 
-	function update(){
+	function update($dataObject = false){
 		$this->modifiedBy   = UserAccount::getActiveUserId();
 		$this->lastModified = time();
 		$ret                = parent::update();

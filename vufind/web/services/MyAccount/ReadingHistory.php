@@ -48,8 +48,10 @@ class ReadingHistory extends MyAccount
 				$patron = $user->getUserReferredTo($patronId);
 				if (count($linkedUsers) > 0) {
 					array_unshift($linkedUsers, $user);
-					$interface->assign('linkedUsers', $linkedUsers);
+
 				}
+				// make sure linkedUsers makes to template even if empty so we don't get warnings
+				$interface->assign('linkedUsers', $linkedUsers);
 				$interface->assign('selectedUser', $patronId); // needs to be set even when there is only one user so that the patronId hidden input gets a value in the reading history form.
 
 				//Check to see if there is an action to perform.

@@ -18,7 +18,6 @@
  *
  */
 
-require_once 'Smarty/Smarty.class.php';
 require_once ROOT_DIR . '/sys/mobile_device_detect.php';
 
 // Smarty Extension class
@@ -76,14 +75,28 @@ class UInterface extends Smarty {
 				die("Could not create cache directory {$this->cache_dir}");
 			}
 		}
+
 		$this->plugins_dir = array('plugins', "$local/interface/plugins", 'Smarty/plugins');
 		// TODO: The correct setting for caching is 0, 1 or 2
 		// 0 will turn caching off. Not sure what a false value will do.
 		$this->caching       = false;
 		$this->debugging     = false;
 		$this->compile_check = true;
+		// debugging
+		if(isset($configArray['System']['debug']) && (bool)$configArray['System']['debug'] === true) {
+			if(isset($configArray['System']['debugTemplates'])) {
+				$this->debugging = (bool)$configArray['System']['debugTemplates'];
+			} else {
+				$this->debugging = false;
+			}
+		} else {
+			$this->debugging = false;
+		}
 
-		unset($local);
+		// todo: this only needs to happen in local and test
+		if((bool)$configArray['Site']['isProduction'] === false) {
+			$this->compile_check = true;
+		}
 
 		$this->register_block('display_if_inconsistent', 'display_if_inconsistent');
 //		$this->register_block('display_if_inconsistent_in_any_manifestation', 'display_if_inconsistent_in_any_manifestation');
@@ -138,6 +151,10 @@ class UInterface extends Smarty {
 			$ie8 = stristr($_SERVER['HTTP_USER_AGENT'], 'msie 8') || stristr($_SERVER['HTTP_USER_AGENT'], 'trident/5'); //trident/5 should catch ie9 compability modes
 			$this->assign('ie8', $ie8);
 		}
+
+
+		$rememberMe = isset($_COOKIE['rememberMe']) ? $_COOKIE['rememberMe'] : false;
+		$this->assign('session', session_id() . ', remember me ' . $rememberMe);
 
 		/** @var IndexingProfile $activeRecordIndexingProfile */
 		global $activeRecordIndexingProfile;

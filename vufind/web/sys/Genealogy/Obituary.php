@@ -56,7 +56,7 @@ class Obituary extends DB_DataObject {
 		return $ret;
 	}
 
-	function update(){
+	function update($dataObject = false){
 		$ret = parent::update();
 		//Load the person this is for, and update solr
 		if ($this->personId){
@@ -69,7 +69,7 @@ class Obituary extends DB_DataObject {
 		return $ret;
 	}
 
-	function delete(){
+	function delete($useWhere = false){
 		$personId = $this->personId;
 		$ret      = parent::delete();
 		//Load the person this is for, and update solr

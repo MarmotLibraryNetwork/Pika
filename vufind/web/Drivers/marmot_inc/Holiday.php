@@ -1,6 +1,6 @@
 <?php
 /**
- * Table Definition for LocationHours.
+ * Table Definition for Location Hours.
  */
 require_once 'DB/DataObject.php';
 

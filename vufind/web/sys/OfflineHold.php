@@ -2,14 +2,14 @@
 /**
  * Stores information related to a hold that has been placed when the system is offline.
  *
- * @category VuFind-Plus 
+ * @category Pika
  * @author Mark Noble <mark@marmot.org>
  * Date: 7/29/13
  * Time: 9:49 AM
  */
 require_once 'DB/DataObject.php';
 
-class OfflineHold extends DB_DataObject{
+class OfflineHold extends DB_DataObject {
 	public $__table = 'offline_hold';
 	public $id;
 	public $timeEntered;

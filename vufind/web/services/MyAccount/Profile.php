@@ -52,10 +52,10 @@ class MyAccount_Profile extends MyAccount
 			// Linked Accounts Selection Form set-up
 			if (count($linkedUsers) > 0) {
 				array_unshift($linkedUsers, $user); // Adds primary account to list for display in account selector
-				$interface->assign('linkedUsers', $linkedUsers);
-				$interface->assign('selectedUser', $patronId);
 			}
-
+			// these need to get to template even if linkedusers is empty array so we don't get a bunch of warnings.
+			$interface->assign('linkedUsers', $linkedUsers);
+			$interface->assign('selectedUser', $patronId);
 			/** @var Library $librarySingleton */
 			global $librarySingleton;
 			// Get Library Settings from the home library of the current user-account being displayed
@@ -121,7 +121,10 @@ class MyAccount_Profile extends MyAccount
 				$updateScope = $_REQUEST['updateScope'];
 				if ($updateScope == 'contact') {
 					$errors = $patron->updatePatronInfo($canUpdateContactInfo);
-					session_start(); // any writes to the session storage also closes session. Happens in updatePatronInfo (for Horizon). plb 4-21-2015
+					// session start is generating this warning:
+					// PHP Notice: session_start(): A session had already been started - ignoring
+					// since session is already started no need to do so here.
+					// session_start(); // any writes to the session storage also closes session. Happens in updatePatronInfo (for Horizon). plb 4-21-2015
 					$_SESSION['profileUpdateErrors'] = $errors;
 
 				}  elseif ($updateScope == 'userPreference') {
@@ -138,23 +141,17 @@ class MyAccount_Profile extends MyAccount
 					}
 						$patron->setStaffSettings();
 				} elseif ($updateScope == 'overdrive') {
-					// overdrive setting keep changing
-					/*	require_once ROOT_DIR . '/Drivers/OverDriveDriverFactory.php';
-						$overDriveDriver = OverDriveDriverFactory::getDriver();
-						$result = $overDriveDriver->updateLendingOptions();
-		*/
 					$patron->updateOverDriveOptions();
 				} elseif ($updateScope == 'hoopla') {
 					$patron->updateHooplaOptions();
 				} elseif ($updateScope == 'pin') {
 					$errors = $patron->updatePin();
-					session_start(); // any writes to the session storage also closes session. possibly happens in updatePin. plb 4-21-2015
+					session_start();
 					$_SESSION['profileUpdateErrors'] = $errors;
-					// Template checks for update Pin success message and presents as success even though stored in this errors variable
 				}
 
-				session_write_close();
-				$actionUrl = '/MyAccount/Profile' . ( $patronId == $user->id ? '' : '?patronId='.$patronId ); // redirect after form submit completion
+				$res = session_write_close();
+				$actionUrl = $configArray['Site']['path'] . '/MyAccount/Profile' . ( $patronId == $user->id ? '' : '?patronId='.$patronId ); // redirect after form submit completion
 				header("Location: " . $actionUrl);
 				exit();
 			} elseif (!$offlineMode) {
@@ -162,14 +159,6 @@ class MyAccount_Profile extends MyAccount
 			} else {
 				$interface->assign('edit', false);
 			}
-
-
-			/*require_once ROOT_DIR . '/Drivers/OverDriveDriverFactory.php';
-			$overDriveDriver = OverDriveDriverFactory::getDriver();
-			if ($overDriveDriver->version >= 2){
-				$lendingPeriods = $overDriveDriver->getLendingPeriods($user);
-				$interface->assign('overDriveLendingOptions', $lendingPeriods);
-			}*/
 
 //			$interface->assign('overDriveUrl', $configArray['OverDrive']['url']);
 			/** @var I18N_Translator $translator */

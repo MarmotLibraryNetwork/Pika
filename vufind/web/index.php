@@ -29,18 +29,17 @@ loadModuleActionId();
 $timer->logTime("Loaded Module and Action Id");
 $memoryWatcher->logMemory("Loaded Module and Action Id");
 
-// autoloader stack
-spl_autoload_register('pika_autoloader');
-spl_autoload_register('vufind_autoloader');
+//  Start session
+$handler = new Pika\Session\MemcachedSession();
+session_set_save_handler($handler);
+// register shutdown function needed to avoid oddities of using an object as session handler
+register_shutdown_function('session_write_close');
+session_start();
+$timer->logTime("Initialized Pika\\Session");
 
-initializeSession();
-$timer->logTime("Initialized session");
-
-//global $logger;
-//$logger->log("Opening URL " . $_SESSION['REQUEST_URI'], PEAR_LOG_DEBUG);
-
-// PHP 7 logger
-$pikaLogger = new Pika\Logger('PikaLogger', true);
+// instantiate global logger
+$pikaLogger = new Pika\Logger('Pika', true);
+$timer->logTime("Initialized Pika\Logger");
 
 if (isset($_REQUEST['test_role'])){
 	if ($_REQUEST['test_role'] == ''){
@@ -72,7 +71,6 @@ $location = $locationSingleton->getActiveLocation();
 
 $interface->loadDisplayOptions();
 $timer->logTime('Loaded display options within interface');
-
 
 // Determine Module and Action
 $module = (isset($_GET['module'])) ? $_GET['module'] : null;
@@ -388,69 +386,6 @@ function checkMaintenanceMode(){
 	}
 }
 
-// Pika drivers autoloader PSR-4 style
-function pika_autoloader($class) {
-    $sourcePath = __DIR__ . DIRECTORY_SEPARATOR . 'sys' . DIRECTORY_SEPARATOR;
-
-    $filePath       = str_replace('\\', DIRECTORY_SEPARATOR, $class);
-    $pathParts      = explode("\\", $class);
-    $directoryIndex = count($pathParts) - 1;
-    $directory      = $pathParts[$directoryIndex];
-    $fullFilePath   = $sourcePath.$filePath.'.php';
-		$fullFolderPath = $sourcePath.$filePath.DIRECTORY_SEPARATOR.$directory.'.php';
-    if(file_exists($fullFilePath)) {
-    	include_once($fullFilePath);
-    } elseif (file_exists($fullFolderPath)) {
-	    include_once($fullFolderPath);
-    }
-}
-
-// Set up autoloader (needed for YAML)
-// todo: this needs a total rewrite. it doesn't account for autoloader stacks and throws a fatal error.
-function vufind_autoloader($class) {
-	if (substr($class, 0, 4) == 'CAS_') {
-		return CAS_autoload($class);
-	}
-	if (strpos($class, '.php') > 0){
-		$class = substr($class, 0, strpos($class, '.php'));
-	}
-	$nameSpaceClass = str_replace('_', '/', $class) . '.php';
-	try{
-		if (file_exists('sys/' . $class . '.php')){
-			$className = ROOT_DIR . '/sys/' . $class . '.php';
-			require_once $className;
-		}elseif (file_exists('Drivers/' . $class . '.php')){
-			$className = ROOT_DIR . '/Drivers/' . $class . '.php';
-			require_once $className;
-		}elseif (file_exists('Drivers/marmot_inc/' . $class . '.php')){
-			$className = ROOT_DIR . '/Drivers/marmot_inc/' . $class . '.php';
-			require_once $className;
-		} elseif (file_exists('RecordDrivers/' . $class . '.php')){
-			$className = ROOT_DIR . '/RecordDrivers/' . $class . '.php';
-			require_once $className;
-		}elseif (file_exists('services/MyAccount/lib/' . $class . '.php')){
-			$className = ROOT_DIR . '/services/MyAccount/lib/' . $class . '.php';
-			require_once $className;
-		}elseif (file_exists('services/' . $class . '.php')){
-			$className = ROOT_DIR . '/services/' . $class . '.php';
-			require_once $className;
-		}elseif (file_exists('sys/Authentication/' . $class . '.php')){
-			$className = ROOT_DIR . '/sys/Authentication/' . $class . '.php';
-			require_once $className;
-		}else{
-			try {
-				include_once $nameSpaceClass;
-			} catch (Exception $e) {
-				// todo: This should fail over to next instead of throwing fatal error.
-				// PEAR_Singleton::raiseError("Error loading class $class");
-			}
-		}
-	}catch (Exception $e){
-		// PEAR_Singleton::raiseError("Error loading class $class");
-		// todo: This should fail over to next instead of throwing fatal error.
-	}
-}
-
 function loadModuleActionId(){
 	//Cleanup method information so module, action, and id are set properly.
 	//This ensures that we don't have to change the http-vufind.conf file when new types are added.
@@ -536,24 +471,6 @@ function loadModuleActionId(){
 	$_REQUEST['action'] = $_GET['action'] = preg_replace('/[^\w]/', '', $action);
 	$_REQUEST['id']     = $_GET['id']     = $id;
 
-}
-
-function initializeSession(){
-	global $configArray;
-	global $timer;
-	// Initiate Session State
-	$session_type = $configArray['Session']['type'];
-	$session_lifetime = $configArray['Session']['lifetime'];
-	$session_rememberMeLifetime = $configArray['Session']['rememberMeLifetime'];
-	register_shutdown_function('session_write_close');
-	$sessionClass = ROOT_DIR . '/sys/' . $session_type . '.php';
-	require_once $sessionClass;
-	if (class_exists($session_type)) {
-		/** @var SessionInterface $session */
-		$session = new $session_type();
-		$session->init($session_lifetime, $session_rememberMeLifetime);
-	}
-	$timer->logTime('Session initialization ' . $session_type);
 }
 
 function loadUserData(){

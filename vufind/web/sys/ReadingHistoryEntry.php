@@ -1,11 +1,10 @@
 <?php
 /**
- * Table Definition for library
+ * Table Definition for ReadingHistoryEntry
  */
 require_once 'DB/DataObject.php';
 
-class ReadingHistoryEntry extends DB_DataObject 
-{
+class ReadingHistoryEntry extends DB_DataObject {
 	public $__table = 'user_reading_history_work';   // table name
 	public $id;
 	public $userId;
@@ -20,7 +19,7 @@ class ReadingHistoryEntry extends DB_DataObject
 	public $checkInDate;
 	public $deleted;
 
-	function keys() {
+	function keys(){
 		return array('id');
- 	}
+	}
 }

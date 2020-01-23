@@ -2,8 +2,11 @@
 define ('ROOT_DIR', __DIR__);
 set_include_path(get_include_path() . PATH_SEPARATOR . "/usr/share/composer");
 
+// autoloader stack
 // Composer autoloader
 require_once "vendor/autoload.php";
+spl_autoload_register('pika_autoloader');
+spl_autoload_register('vufind_autoloader');
 
 global $errorHandlingEnabled;
 $errorHandlingEnabled = true;
@@ -30,6 +33,9 @@ $timer->logTime("Read Config");
 if ($configArray['System']['debug']) {
 	ini_set('display_errors', true);
 	error_reporting(E_ALL & ~E_DEPRECATED & ~E_STRICT);
+} else {
+	ini_set('display_errors', 0);
+	ini_set('html_errors', 0);
 }
 
 //Use output buffering to allow session cookies to have different values
@@ -78,14 +84,9 @@ function initCache(){
 	$host = isset($configArray['Caching']['memcache_host']) ? $configArray['Caching']['memcache_host'] : 'localhost';
 	$port = isset($configArray['Caching']['memcache_port']) ? $configArray['Caching']['memcache_port'] : 11211;
 	$timeout = isset($configArray['Caching']['memcache_connection_timeout']) ? $configArray['Caching']['memcache_connection_timeout'] : 1;
-	// Connect to Memcache:
-	$memCache = new Memcache();
-	if (!@$memCache->pconnect($host, $port, $timeout)) {
-		//Try again with a non-persistent connection
-		if (!$memCache->connect($host, $port, $timeout)) {
-			PEAR_Singleton::raiseError(new PEAR_Error("Could not connect to Memcache (host = {$host}, port = {$port})."));
-		}
-	}
+	// Connect to Memcached with persistent
+	$memCache = new Memcached('pika');
+	$memCache->addServer($host, $port);
 	return $memCache;
 }
 
@@ -460,4 +461,68 @@ function enableErrorHandler(){
 
 function array_remove_by_value($array, $value){
 	return array_values(array_diff($array, array($value)));
+}
+
+// Pika drivers autoloader PSR-4 style
+function pika_autoloader($class) {
+	$sourcePath = __DIR__ . DIRECTORY_SEPARATOR . 'sys' . DIRECTORY_SEPARATOR;
+
+	$filePath       = str_replace('\\', DIRECTORY_SEPARATOR, $class);
+	$pathParts      = explode("\\", $class);
+	$directoryIndex = count($pathParts) - 1;
+	$directory      = $pathParts[$directoryIndex];
+	$fullFilePath   = $sourcePath.$filePath.'.php';
+	$fullFolderPath = $sourcePath.$filePath.DIRECTORY_SEPARATOR.$directory.'.php';
+	if(file_exists($fullFilePath)) {
+		include_once($fullFilePath);
+	} elseif (file_exists($fullFolderPath)) {
+		include_once($fullFolderPath);
+	}
+}
+
+// todo: this needs a total rewrite. it doesn't account for autoloader stacks and throws a fatal error.
+function vufind_autoloader($class) {
+	if (substr($class, 0, 4) == 'CAS_') {
+		return CAS_autoload($class);
+	}
+	if (strpos($class, '.php') > 0){
+		$class = substr($class, 0, strpos($class, '.php'));
+	}
+	$nameSpaceClass = str_replace('_', '/', $class) . '.php';
+	try{
+		if (file_exists('sys/' . $class . '.php')){
+			$className = ROOT_DIR . '/sys/' . $class . '.php';
+			require_once $className;
+		}elseif (file_exists('Drivers/' . $class . '.php')){
+			$className = ROOT_DIR . '/Drivers/' . $class . '.php';
+			require_once $className;
+		}elseif (file_exists('Drivers/marmot_inc/' . $class . '.php')){
+			$className = ROOT_DIR . '/Drivers/marmot_inc/' . $class . '.php';
+			require_once $className;
+		} elseif (file_exists('RecordDrivers/' . $class . '.php')){
+			$className = ROOT_DIR . '/RecordDrivers/' . $class . '.php';
+			require_once $className;
+		}elseif (file_exists('services/MyAccount/lib/' . $class . '.php')){
+			$className = ROOT_DIR . '/services/MyAccount/lib/' . $class . '.php';
+			require_once $className;
+		}elseif (file_exists('services/' . $class . '.php')){
+			$className = ROOT_DIR . '/services/' . $class . '.php';
+			require_once $className;
+		}elseif (file_exists('sys/Authentication/' . $class . '.php')){
+			$className = ROOT_DIR . '/sys/Authentication/' . $class . '.php';
+			require_once $className;
+		}elseif (file_exists('sys/' . $nameSpaceClass)){
+			require_once 'sys/' . $nameSpaceClass;
+		}else{
+			try {
+				include_once $nameSpaceClass;
+			} catch (Exception $e) {
+				// todo: This should fail over to next instead of throwing fatal error.
+				// PEAR_Singleton::raiseError("Error loading class $class");
+			}
+		}
+	}catch (Exception $e){
+		// PEAR_Singleton::raiseError("Error loading class $class");
+		// todo: This should fail over to next instead of throwing fatal error.
+	}
 }

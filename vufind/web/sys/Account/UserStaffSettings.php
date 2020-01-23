@@ -9,6 +9,7 @@
  *
  */
 require_once 'DB/DataObject.php';
+
 class UserStaffSettings extends DB_DataObject
 {
 

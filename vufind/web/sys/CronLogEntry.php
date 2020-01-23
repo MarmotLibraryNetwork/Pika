@@ -4,8 +4,7 @@
  */
 require_once 'DB/DataObject.php';
 
-class CronLogEntry extends DB_DataObject
-{
+class CronLogEntry extends DB_DataObject {
 	public $__table = 'cron_log';   // table name
 	public $id;
 	public $startTime;
@@ -14,14 +13,14 @@ class CronLogEntry extends DB_DataObject
 	public $notes;
 	private $_processes = null;
 
-	function keys() {
+	function keys(){
 		return array('id');
 	}
 
 	function processes(){
 		if (is_null($this->_processes)){
-			$this->_processes = array();
-			$reindexProcess = new CronProcessLogEntry();
+			$this->_processes       = array();
+			$reindexProcess         = new CronProcessLogEntry();
 			$reindexProcess->cronId = $this->id;
 			$reindexProcess->orderBy('processName');
 			$reindexProcess->find();
@@ -53,9 +52,9 @@ class CronLogEntry extends DB_DataObject
 			if ($elapsedTimeMin < 60){
 				return $elapsedTimeMin . " min";
 			}else{
-				$hours = floor($elapsedTimeMin / 60);
+				$hours   = floor($elapsedTimeMin / 60);
 				$minutes = $elapsedTimeMin - (60 * $hours);
-				return "$hours hours, $minutes min" ;
+				return "$hours hours, $minutes min";
 			}
 		}
 	}

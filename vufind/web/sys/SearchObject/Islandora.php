@@ -162,7 +162,7 @@ class SearchObject_Islandora extends SearchObject_Base
 	 * @access  public
 	 * @return  boolean
 	 */
-	public function init()
+	public function init($searchSource = NULL)
 	{
 		// Call the standard initialization routine in the parent:
 		parent::init('islandora');
@@ -187,9 +187,7 @@ class SearchObject_Islandora extends SearchObject_Base
 
 		//********************
 		// Basic Search logic
-		if ($this->initBasicSearch()) {
-			// If we found a basic search, we don't need to do anything further.
-		} else {
+		if(!$this->initBasicSearch()) {
 			$this->initAdvancedSearch();
 		}
 

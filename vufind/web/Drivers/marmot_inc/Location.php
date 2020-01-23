@@ -3,6 +3,7 @@
  * Table Definition for location
  */
 require_once 'DB/DataObject.php';
+
 require_once ROOT_DIR . '/Drivers/marmot_inc/OneToManyDataObjectOperations.php';
 
 require_once ROOT_DIR . '/Drivers/marmot_inc/LocationHours.php';
@@ -1057,7 +1058,7 @@ class Location extends DB_DataObject {
 	 *
 	 * @see DB/DB_DataObject::update()
 	 */
-	public function update(){
+	public function update($dataObject = false){
 		$ret = parent::update();
 		if ($ret !== false){
 			$this->saveHours();

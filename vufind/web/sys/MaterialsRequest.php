@@ -4,8 +4,7 @@
  */
 require_once 'DB/DataObject.php';
 
-class MaterialsRequest extends DB_DataObject
-{
+class MaterialsRequest extends DB_DataObject {
 	public $__table = 'materials_request';   // table name
 
 	// Note: if table column names are changed, data for class MaterialsRequestFieldsToDisplay will need updated.

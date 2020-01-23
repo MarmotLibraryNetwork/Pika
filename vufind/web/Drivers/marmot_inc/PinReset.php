@@ -5,8 +5,7 @@
  */
 require_once 'DB/DataObject.php';
 
-class PinReset extends DB_DataObject
-{
+class PinReset extends DB_DataObject {
 	public $__table = 'pin_reset';
 	public $id;
 	public $userId;
@@ -14,11 +13,11 @@ class PinReset extends DB_DataObject
 	public $token;
 	public $expires;
 
-	public function __construct() {
+	public function __construct(){
 		$hello = 'hello';
 	}
 
-	public function keys() {
+	public function keys(){
 		return array('id');
 	}
 

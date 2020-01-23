@@ -147,7 +147,7 @@ class SearchObject_Genealogy extends SearchObject_Base
 	 * @access  public
 	 * @return  boolean
 	 */
-	public function init()
+	public function init($searchSource = null)
 	{
 		// Call the standard initialization routine in the parent:
 		parent::init('genealogy');
@@ -159,7 +159,7 @@ class SearchObject_Genealogy extends SearchObject_Base
 		$restored = $this->restoreSavedSearch();
 		if ($restored === true) {
 			return true;
-		} else if (PEAR_Singleton::isError($restored)) {
+		} elseif (PEAR_Singleton::isError($restored)) {
 			return false;
 		}
 
@@ -172,9 +172,7 @@ class SearchObject_Genealogy extends SearchObject_Base
 
 		//********************
 		// Basic Search logic
-		if ($this->initBasicSearch()) {
-			// If we found a basic search, we don't need to do anything further.
-		} else {
+		if (!$this->initBasicSearch()) {
 			$this->initAdvancedSearch();
 		}
 

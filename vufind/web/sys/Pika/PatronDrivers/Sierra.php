@@ -51,7 +51,6 @@ use \Pika\Logger;
 use \Pika\Cache;
 use Location;
 use MarcRecord;
-use \Pika\PatronDrivers\MyBooking as MyBooking;
 use RecordDriverFactory;
 use User;
 use ReadingHistoryEntry;
@@ -1110,7 +1109,7 @@ EOT;
 	 * Send a Self Registration request to the ILS.
 	 *
 	 * PUT patrons
-	 * @param  bool|array   $extraSelfRegParams Extra self reg parameters
+	 * @param  bool|array   $extraSelfRegParams Extra self reg parameters. This will be array merged with other params
 	 * @return array        [success = bool, barcode = null or barcode]
 	 * @throws ErrorException
 	 */
@@ -2222,7 +2221,13 @@ EOT;
 			$history   = $this->_doRequest($operation, $params);
 
 			if (!$history){
-				return false;
+				// Check api error for not opted in. Not in api docs but error is 146
+				if(stristr($this->apiLastError, '146')) {
+					return ['historyActive' => false, 'numTitles' => 0, 'titles' => []];
+				} else {
+					$this->logger->warn('Could not get reading history for ' . $patron->barcode, ['API error' => $this->apiLastError]);
+					return ['historyActive' => false, 'numTitles' => 0, 'titles' => []];
+				}
 			}
 
 			if ($history->total == 0){
@@ -2514,21 +2519,22 @@ EOT;
 			// iterate over each of usernameParts looking for a match in $patronName
 			foreach ($usernameParts as $userNamePart) {
 				// This will match a COMPLETE (case insensitive) $usernamePart on word boundary.
-				// If any $usernamePart fails to match $valid will be false and iteration breaks. Iteration will continue
-				// over next $patronName.
-				// Assuming $patronName = Doe, John
-				// The following will pass:
-				// john doe, john, doe, john Doe, doe John
-				// The following will fail:
-				// johndoe, jo, jo doe, john do
+				// -If any $usernamePart fails to match $valid will be false and iteration breaks. Iteration will continue
+				// -over next $patronName.
+				// -Assuming $patronName = Doe, John
+				// -The following will pass:
+				// -john doe, john, doe, john Doe, doe John
+				// -The following will fail:
+				// -johndoe, jo, jo doe, john do
+				// above does not currently apply
+				// match any part of the name
+				// see:
+				// #D-3416
+				// #D-3417
 				if (preg_match('~\\b' . preg_quote($userNamePart) . '\\b~i', $patronName, $m)) {
 					$valid = true;
 				}
-				// there's been a bit of uproar at libraries over name matches. To revert behavior to full matches
-				// uncomment the else statement below and the above description will work.
-				// cf 12-13-2019
-				// #D-3416
-				// #D-3417
+
 				//else {
 					//$valid = false;
 					//break;

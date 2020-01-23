@@ -13,9 +13,10 @@ namespace Pika;
 
 use Psr\SimpleCache\CacheInterface;
 use Pika\Cache\Exception as CacheException;
-use Memcache;
+use Memcached;
 use DateInterval;
 use DateTime;
+use InvalidArgumentException;
 
 class Cache implements CacheInterface
 {
@@ -28,12 +29,17 @@ class Cache implements CacheInterface
 
 	/**
 	 * Cache constructor.
-	 * @param Memcache $handler Memcache handler object
+	 * @param Memcached $handler Memcached handler object
 	 */
-	public function __construct(Memcache $handler)
+	public function __construct(Memcached $handler = null)
 	{
 		global $configArray;
-		$this->handler = $handler;
+		if($handler) {
+			$this->handler = $handler;
+		} else {
+			$handler = initCache();
+			$this->handler = $handler;
+		}
 		if((bool)$configArray['System']['debug']) {
 			$this->logger = new Logger('PikaCache');
 		}
@@ -76,7 +82,7 @@ class Cache implements CacheInterface
 		if ($ttl instanceof DateInterval) {
 			$ttl = (new DateTime('now'))->add($ttl)->getTimeStamp() - time();
 		}
-		$return = (bool)$this->handler->set($key, $value, 0, (int)$ttl);
+		$return = (bool)$this->handler->set($key, $value, (int)$ttl);
 		$this->_log('Set', $key, $return);
 		return $return;
 	}
@@ -125,12 +131,10 @@ class Cache implements CacheInterface
 	 */
 	public function getMultiple($keys, $default = null)
 	{
-		$defaults = array_fill(0, count($keys), $default);
-		$return   = [];
-		foreach ($keys as $key) {
-			$return[$key] = $this->handler->get($key) ? $this->handler->get($key) : $default;
+		if(!is_array($keys)) {
+			throw new \InvalidArgumentException('Cache::get() expects first argument to be array.');
 		}
-		return $return;
+		return $this->handler->getMulti($keys);
 	}
 
 	/**
@@ -155,7 +159,7 @@ class Cache implements CacheInterface
 		}
 
 		foreach ($values as $key => $value) {
-			if (!$this->handler->set($key, $value, 0, (int)$ttl)) {
+			if (!$this->handler->set($key, $value, (int)$ttl)) {
 				return false;
 			}
 			return true;

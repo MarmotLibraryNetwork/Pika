@@ -16,7 +16,7 @@ class MaterialsRequestStatus extends DB_DataObject {
 	public $isPatronCancel;
 	public $libraryId;
 
-	function keys() {
+	function keys(){
 		return array('id');
 	}
 
@@ -25,7 +25,7 @@ class MaterialsRequestStatus extends DB_DataObject {
 		$library->orderBy('displayName');
 		$user = UserAccount::getLoggedInUser();
 		if (UserAccount::userHasRole('library_material_requests')){
-			$homeLibrary = UserAccount::getUserHomeLibrary();
+			$homeLibrary        = UserAccount::getUserHomeLibrary();
 			$library->libraryId = $homeLibrary->libraryId;
 		}else{
 			$libraryList[-1] = 'Default';
@@ -36,14 +36,14 @@ class MaterialsRequestStatus extends DB_DataObject {
 		}
 
 		$structure = array(
-          'id' => array('property'=>'id', 'type'=>'label', 'label'=>'Id', 'description'=>'The unique id of the libary within the database'),
-          'description' => array('property'=>'description', 'type'=>'text', 'size' => 80, 'label'=>'Description', 'description'=>'A unique name for the Status'),
-          'isDefault' => array('property'=>'isDefault', 'type'=>'checkbox', 'label'=>'Default Status?', 'description'=>'Whether or not this status is the default status to apply to new requests'),
-					'isPatronCancel' => array('property'=>'isPatronCancel', 'type'=>'checkbox', 'label'=>'Set When Patron Cancels?', 'description'=>'Whether or not this status should be set when the patron cancels their request'),
-					'isOpen' => array('property'=>'isOpen', 'type'=>'checkbox', 'label'=>'Open Status?', 'description'=>'Whether or not this status needs further processing'),
-          'sendEmailToPatron' => array('property'=>'sendEmailToPatron', 'type'=>'checkbox', 'label'=>'Send Email To Patron?', 'description'=>'Whether or not an email should be sent to the patron when this status is set'),
-          'emailTemplate' => array('property'=>'emailTemplate', 'type'=>'textarea', 'rows' => 6, 'cols' => 60, 'label'=>'Email Template', 'description'=>'The template to use when sending emails to the user', 'hideInLists' => true),
-					'libraryId' => array('property'=>'libraryId', 'type'=>'enum', 'values'=>$libraryList, 'label'=>'Library', 'description'=>'The id of a library'),
+			'id'                => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id of the libary within the database'),
+			'description'       => array('property' => 'description', 'type' => 'text', 'size' => 80, 'label' => 'Description', 'description' => 'A unique name for the Status'),
+			'isDefault'         => array('property' => 'isDefault', 'type' => 'checkbox', 'label' => 'Default Status?', 'description' => 'Whether or not this status is the default status to apply to new requests'),
+			'isPatronCancel'    => array('property' => 'isPatronCancel', 'type' => 'checkbox', 'label' => 'Set When Patron Cancels?', 'description' => 'Whether or not this status should be set when the patron cancels their request'),
+			'isOpen'            => array('property' => 'isOpen', 'type' => 'checkbox', 'label' => 'Open Status?', 'description' => 'Whether or not this status needs further processing'),
+			'sendEmailToPatron' => array('property' => 'sendEmailToPatron', 'type' => 'checkbox', 'label' => 'Send Email To Patron?', 'description' => 'Whether or not an email should be sent to the patron when this status is set'),
+			'emailTemplate'     => array('property' => 'emailTemplate', 'type' => 'textarea', 'rows' => 6, 'cols' => 60, 'label' => 'Email Template', 'description' => 'The template to use when sending emails to the user', 'hideInLists' => true),
+			'libraryId'         => array('property' => 'libraryId', 'type' => 'enum', 'values' => $libraryList, 'label' => 'Library', 'description' => 'The id of a library'),
 		);
 		return $structure;
 	}

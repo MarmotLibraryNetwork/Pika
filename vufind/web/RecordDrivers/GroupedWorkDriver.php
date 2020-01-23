@@ -875,7 +875,7 @@ class GroupedWorkDriver extends RecordInterface {
 		foreach ($this->getRelatedRecords() as $record){
 			if ($record['driver']){
 				$recordTOC = $record['driver']->getTOC();
-				if (count($recordTOC) > 0){
+				if (is_array($recordTOC) && count($recordTOC) > 0){
 					$editionDescription = "{$record['format']}";
 					if ($record['edition']){
 						$editionDescription .= " - {$record['edition']}";

@@ -5,9 +5,6 @@
 require_once 'DB/DataObject.php';
 
 class User extends DB_DataObject {
-	###START_AUTOCODE
-	/* the code below is auto generated do not remove the above tag */
-
 	public $__table = 'user';                            // table name
 	public $id;                              // int(11)  not_null primary_key auto_increment
 	public $source;
@@ -605,7 +602,7 @@ class User extends DB_DataObject {
 	}
 
 
-	function update(){
+	function update($dataObject = false){
 		$result = parent::update();
 		$this->clearCache(); // Every update to object requires clearing the Memcached version of the object
 		return $result;

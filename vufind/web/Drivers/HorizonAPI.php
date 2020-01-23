@@ -215,7 +215,7 @@ abstract class HorizonAPI extends Horizon{
 	 * @param User $patron
 	 * @return array
 	 */
-	protected function loginViaWebService($patron){
+	protected function loginViaWebService($patron, $password = ''){
 		$userID = $patron->username;
 		if (isset(HorizonAPI::$sessionIdsForUsers[$userID])) {
 			$sessionToken = HorizonAPI::$sessionIdsForUsers[$userID];
@@ -781,7 +781,7 @@ abstract class HorizonAPI extends Horizon{
 		return false;
 	}
 
-	function resetPin($user) {
+	function resetPin($user, $newPin, $resetToken = null) {
 
 	}
 

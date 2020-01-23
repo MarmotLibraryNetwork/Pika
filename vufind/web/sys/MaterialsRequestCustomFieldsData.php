@@ -9,8 +9,8 @@
  *
  */
 require_once 'DB/DataObject.php';
-class MaterialsRequestCustomFieldsData extends DB_DataObject
-{
+
+class MaterialsRequestCustomFieldsData extends DB_DataObject {
 	public $__table = 'materials_request_custom_fields_data';
 	public $id;
 	public $formFieldsId;

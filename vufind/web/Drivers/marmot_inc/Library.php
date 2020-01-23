@@ -3,6 +3,7 @@
  * Table Definition for library
  */
 require_once 'DB/DataObject.php';
+//
 require_once ROOT_DIR . '/Drivers/marmot_inc/OneToManyDataObjectOperations.php';
 
 require_once ROOT_DIR . '/Drivers/marmot_inc/Holiday.php';
@@ -1420,12 +1421,15 @@ class Library extends DB_DataObject {
 		}
 		return $return;
 	}
+
 	/**
 	 * Override the update functionality to save related objects
 	 *
+	 * @param bool $dataObject
+	 * @return bool|int
 	 * @see DB/DB_DataObject::update()
 	 */
-	public function update(){
+	public function update($dataObject = false){
 		if (isset($this->showInMainDetails) && is_array($this->showInMainDetails)){
 			// convert array to string before storing in database
 			$this->showInMainDetails = serialize($this->showInMainDetails);

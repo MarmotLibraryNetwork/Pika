@@ -1,11 +1,10 @@
 <?php
 /**
- * Table Definition for library
+ * Table Definition for Cron Procss Log Entries
  */
 require_once 'DB/DataObject.php';
 
-class CronProcessLogEntry extends DB_DataObject
-{
+class CronProcessLogEntry extends DB_DataObject {
 	public $__table = 'cron_process_log';   // table name
 	public $id;
 	public $cronId;
@@ -17,10 +16,10 @@ class CronProcessLogEntry extends DB_DataObject
 	public $numUpdated;
 	public $notes;
 
-	function keys() {
+	function keys(){
 		return array('id');
 	}
-	
+
 	function getElapsedTime(){
 		if (!isset($this->endTime) || is_null($this->endTime)){
 			return "";
@@ -29,9 +28,9 @@ class CronProcessLogEntry extends DB_DataObject
 			if ($elapsedTimeMin < 60){
 				return $elapsedTimeMin . " min";
 			}else{
-				$hours = floor($elapsedTimeMin / 60);
+				$hours   = floor($elapsedTimeMin / 60);
 				$minutes = $elapsedTimeMin - (60 * $hours);
-				return "$hours hours, $minutes min" ;
+				return "$hours hours, $minutes min";
 			}
 		}
 	}

@@ -1,13 +1,14 @@
 <?php
 require_once ROOT_DIR . '/sys/Solr.php';
 require_once 'DB/DataObject.php';
+
 abstract class SolrDataObject extends DB_DataObject{
 	/**
 	 * Return an array describing the structure of the object fields, etc.
 	 */
 	abstract function getObjectStructure();
 
-	function update(){
+	function update($dataObject = false){
 		return $this->updateDetailed(true);
 	}
 	private $updateStarted = false;
@@ -60,7 +61,7 @@ abstract class SolrDataObject extends DB_DataObject{
 			return true;
 		}
 	}
-	function delete(){
+	function delete($useWhere = false){
 		$result = parent::delete();
 		if ($result != FALSE){
 			$this->removeFromSolr();

@@ -1,11 +1,10 @@
 <?php
 /**
- * Table Definition for library
+ * Table Definition for SierraExportLogEntry
  */
 require_once 'DB/DataObject.php';
 
-class SierraExportLogEntry extends DB_DataObject
-{
+class SierraExportLogEntry extends DB_DataObject {
 	public $__table = 'sierra_api_export_log';   // table name
 	public $id;
 	public $startTime;
@@ -17,7 +16,7 @@ class SierraExportLogEntry extends DB_DataObject
 	public $numRemainingRecords;
 	public $notes;
 
-	function keys() {
+	function keys(){
 		return array('id');
 	}
 
@@ -29,9 +28,9 @@ class SierraExportLogEntry extends DB_DataObject
 			if ($elapsedTimeMin < 60){
 				return $elapsedTimeMin . " min";
 			}else{
-				$hours = floor($elapsedTimeMin / 60);
+				$hours   = floor($elapsedTimeMin / 60);
 				$minutes = $elapsedTimeMin - (60 * $hours);
-				return "$hours hours, $minutes min" ;
+				return "$hours hours, $minutes min";
 			}
 		}
 	}

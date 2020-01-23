@@ -4,8 +4,7 @@
  */
 require_once 'DB/DataObject.php';
 
-class HooplaExportLogEntry extends DB_DataObject
-{
+class HooplaExportLogEntry extends DB_DataObject {
 	public $__table = 'hoopla_export_log';   // table name
 	public $id;
 	public $startTime;
@@ -13,7 +12,7 @@ class HooplaExportLogEntry extends DB_DataObject
 	public $endTime;
 	public $notes;
 
-	function keys() {
+	function keys(){
 		return array('id');
 	}
 
@@ -25,9 +24,9 @@ class HooplaExportLogEntry extends DB_DataObject
 			if ($elapsedTimeMin < 60){
 				return $elapsedTimeMin . " min";
 			}else{
-				$hours = floor($elapsedTimeMin / 60);
+				$hours   = floor($elapsedTimeMin / 60);
 				$minutes = $elapsedTimeMin - (60 * $hours);
-				return "$hours hours, $minutes min" ;
+				return "$hours hours, $minutes min";
 			}
 		}
 	}

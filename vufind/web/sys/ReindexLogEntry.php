@@ -1,11 +1,10 @@
 <?php
 /**
- * Table Definition for library
+ * Table Definition for ReindexLogEntry
  */
 require_once 'DB/DataObject.php';
 
-class ReindexLogEntry extends DB_DataObject
-{
+class ReindexLogEntry extends DB_DataObject {
 	public $__table = 'reindex_log';   // table name
 	public $id;
 	public $startTime;
@@ -15,7 +14,7 @@ class ReindexLogEntry extends DB_DataObject
 	public $numWorksProcessed;
 	public $numListsProcessed;
 
-	function keys() {
+	function keys(){
 		return array('id');
 	}
 
@@ -27,9 +26,9 @@ class ReindexLogEntry extends DB_DataObject
 			if ($elapsedTimeMin < 60){
 				return $elapsedTimeMin . " min";
 			}else{
-				$hours = floor($elapsedTimeMin / 60);
+				$hours   = floor($elapsedTimeMin / 60);
 				$minutes = $elapsedTimeMin - (60 * $hours);
-				return "$hours hours, $minutes min" ;
+				return "$hours hours, $minutes min";
 			}
 		}
 	}

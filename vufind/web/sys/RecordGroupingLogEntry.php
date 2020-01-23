@@ -1,11 +1,10 @@
 <?php
 /**
- * Table Definition for library
+ * Table Definition for RecordGroupingLogEntry
  */
 require_once 'DB/DataObject.php';
 
-class RecordGroupingLogEntry extends DB_DataObject
-{
+class RecordGroupingLogEntry extends DB_DataObject {
 	public $__table = 'record_grouping_log';   // table name
 	public $id;
 	public $startTime;
@@ -13,7 +12,7 @@ class RecordGroupingLogEntry extends DB_DataObject
 	public $endTime;
 	public $notes;
 
-	function keys() {
+	function keys(){
 		return array('id');
 	}
 
@@ -25,9 +24,9 @@ class RecordGroupingLogEntry extends DB_DataObject
 			if ($elapsedTimeMin < 60){
 				return $elapsedTimeMin . " min";
 			}else{
-				$hours = floor($elapsedTimeMin / 60);
+				$hours   = floor($elapsedTimeMin / 60);
 				$minutes = $elapsedTimeMin - (60 * $hours);
-				return "$hours hours, $minutes min" ;
+				return "$hours hours, $minutes min";
 			}
 		}
 	}
