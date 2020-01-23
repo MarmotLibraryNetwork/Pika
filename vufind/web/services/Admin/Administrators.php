@@ -84,7 +84,6 @@ class Admin_Administrators extends ObjectEditor {
 
 	function addAdministrator(){
 		global $interface;
-		//Basic List
 		$interface->setTemplate('addAdministrator.tpl');
 	}
 
@@ -95,7 +94,6 @@ class Admin_Administrators extends ObjectEditor {
 		$roleNames       = $roles->fetchAll('name');
 		$moreThanOneRole = array_intersect($roleNames, $roleNotAllowedToOverlap);
 		if (count($moreThanOneRole) > 1){
-			global $configArray;
 			$_SESSION['lastError'] = 'This administrator may only have one of the these roles at a time : <strong>' . implode(', ', $moreThanOneRole) . '</strong>';
 			header("Location: {$_SERVER['REQUEST_URI']}");
 			die();

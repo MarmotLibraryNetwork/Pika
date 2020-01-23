@@ -17,8 +17,7 @@ class IndexingStats extends Admin_Admin {
 		global $configArray;
 
 		//Load the latest indexing stats
-		$baseDir = dirname($configArray['Reindex']['marcPath']);
-
+		$baseDir           = dirname($configArray['Reindex']['marcPath']);
 		$indexingStatFiles = array();
 		$allFilesInDir     = scandir($baseDir);
 		foreach ($allFilesInDir as $curFile){
