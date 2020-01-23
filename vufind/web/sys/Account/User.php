@@ -13,7 +13,6 @@ class User extends DB_DataObject {
 	public $source;
 	public $username;                        // string(30)  not_null unique_key
 	public $displayName;                     // string(30)
-	public $password;                        // string(32)  not_null
 	public $firstname;                       // string(50)  not_null
 	public $lastname;                        // string(50)  not_null
 	public $email;                           // string(250)  not_null
@@ -48,7 +47,7 @@ class User extends DB_DataObject {
 	private $viewers;
 
 	//Data that we load, but don't store in the User table
-	public $fullname;
+	public $fullname; //TODO: remove, I think this only get set by the catalog drivers, and is never used anywhere else
 	public $address1;
 	public $address2;
 	public $city;
@@ -313,8 +312,8 @@ class User extends DB_DataObject {
 
 	function saveRoles(){
 		if (isset($this->id) && isset($this->roles) && is_array($this->roles)){
-			require_once ROOT_DIR . '/sys/Administration/Role.php';
-			$role      = new Role();
+			require_once ROOT_DIR . '/sys/Administration/UserRoles.php';
+			$role      = new UserRoles();
 			$escapedId = $this->escape($this->id, false);
 			$role->query("DELETE FROM user_roles WHERE userId = " . $escapedId);
 			//Now add the new values.
@@ -608,7 +607,6 @@ class User extends DB_DataObject {
 
 	function update(){
 		$result = parent::update();
-		$this->saveRoles();
 		$this->clearCache(); // Every update to object requires clearing the Memcached version of the object
 		return $result;
 	}
@@ -631,7 +629,7 @@ class User extends DB_DataObject {
 		}
 
 		parent::insert();
-		$this->saveRoles();
+//		$this->saveRoles(); // this should happen in the __set() method
 		$this->clearCache();
 	}
 
@@ -949,12 +947,12 @@ class User extends DB_DataObject {
 
 		//Get checked out titles from RBDigital
 		//Do not load RBDigital titles if the parent barcode (if any) is the same as the current barcode
-		if ($this->isValidForRBDigital()){
-			require_once ROOT_DIR . '/Drivers/RBdigitalDriver.php';
-			$RBDigitalDriver          = new RBdigitalDriver();
-			$RBDigitalCheckedOutItems = $RBDigitalDriver->getCheckouts($this);
-			$allCheckedOut            = array_merge($allCheckedOut, $RBDigitalCheckedOutItems);
-		}
+//		if ($this->isValidForRBDigital()){
+//			require_once ROOT_DIR . '/Drivers/RBdigitalDriver.php';
+//			$RBDigitalDriver          = new RBdigitalDriver();
+//			$RBDigitalCheckedOutItems = $RBDigitalDriver->getCheckouts($this);
+//			$allCheckedOut            = array_merge($allCheckedOut, $RBDigitalCheckedOutItems);
+//		}
 
 		if ($includeLinkedUsers){
 			if ($this->getLinkedUsers() != null){
