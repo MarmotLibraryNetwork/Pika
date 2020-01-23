@@ -11,8 +11,9 @@
 
 namespace Pika;
 
-use Psr\SimpleCache\CacheInterface;
+use Pika\Cache\Exception;
 use Pika\Cache\Exception as CacheException;
+use Psr\SimpleCache\CacheInterface;
 use Memcached;
 use DateInterval;
 use DateTime;
@@ -22,6 +23,8 @@ class Cache implements CacheInterface
 {
 
 	private $PSR16_RESERVED_CHARACTERS = ['{','}','(',')','/','@',':'];
+
+	private $keyTypes = ['patron', 'holds', 'checkouts', 'history'];
 
 	public  $handler;
 
@@ -205,17 +208,44 @@ class Cache implements CacheInterface
 		return $this->handler->get($key) ? true : false;
 	}
 
+	/**
+	 * @param $type
+	 * @param $uid
+	 * @return string
+	 */
+	public function makeKey($type, $uid)
+	{
+		if(!in_array($type, $this->keyTypes)) {
+			$types = implode(', ', $this->keyTypes);
+			$message = sprintf('type %s is not a valid key type. Valid key types are %s', $type, $types);
+			throw new CacheException($message);
+		}
+		if(!$hostname = gethostname()){
+			$hostname = $_SERVER['SERVER_NAME'];
+		}
+		$key = $hostname.$type.$uid;
+		$this->checkReservedCharacters($key);
+
+		return $key;
+		}
+
+	/**
+	 * @param  $key
+	 * @throws Exception
+	 */
 	private function checkReservedCharacters($key)
 	{
 		if (!is_string($key)) {
 			$message = sprintf('key %s is not a string.', $key);
 			throw new CacheException($message);
 		}
-		foreach ($this->PSR16_RESERVED_CHARACTERS as $needle) {
-			if (strpos($key, $needle) !== false) {
-				$message = sprintf('%s string is not a legal value.', $key);
-				throw new CacheException($message);
-			}
+		if (preg_match('/[' . preg_quote('{}()/\@:', '/') . ']/', $key)) {
+			$message = sprintf('%s string is not a legal value.', $key);
+			throw new CacheException($message);
+		}
+		if ('' === $key) {
+			$message = sprintf('%s string is not a legal value.', $key);
+			throw new CacheException($message);
 		}
 	}
 

@@ -323,7 +323,7 @@ class Sacramento extends Sierra
 		return true;
 	}
 	
-	public function selfRegister() {
+	public function selfRegister($extraSelfRegParams = false) {
 		global $library;
 		// sacramento test and production, woodlands test and production
 		if ($library->subdomain == 'catalog' || $library->subdomain == 'spl' || $library->subdomain == 'woodland' || $library->subdomain == 'cityofwoodland') {

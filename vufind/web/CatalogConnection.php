@@ -361,11 +361,13 @@ class CatalogConnection
 	 * This is responsible for retrieving all transactions (i.e. checked out items)
 	 * by a specific patron.
 	 *
-	 * @param User $user    The user to load transactions for
-	 * @param bool $linkedAccount  When using linked accounts for Sierra Encore, the curl connection for linked accounts has to be reset
+	 * @param User $user          The user to load transactions for
+	 * @param bool $linkedAccount When using linked accounts for Sierra Encore, the curl connection for linked accounts
+	 *                            has to be reset
 	 * @return mixed        Array of the patron's transactions on success,
-	 * PEAR_Error otherwise.
+	 *                            PEAR_Error otherwise.
 	 * @access public
+	 * @throws ErrorException
 	 */
 	public function getMyCheckouts($user, $linkedAccount = false){
 		$transactions = $this->driver->getMyCheckouts($user, $linkedAccount);
@@ -396,9 +398,9 @@ class CatalogConnection
 	 *
 	 * @param array $patron            The patron array from patronLogin
 	 * @param bool  $includeMessages
-	 * @param bool  $linkedAccount    When using linked accounts for Sierra Encore, the curl connection for linked accounts has to be reset
-	 * @return mixed        Array of the patron's fines on success, PEAR_Error
-	 * otherwise.
+	 * @param bool $linkedAccount When using linked accounts for Sierra Encore, the curl connection for
+	 *                            linked accounts has to be reset
+	 * @return mixed        Array of the patron's fines on success, PEAR_Error otherwise.
 	 * @access public
 	 */
 	public function getMyFines($patron, $includeMessages = false, $linkedAccount = false)
