@@ -140,7 +140,7 @@ abstract class ObjectEditor extends Admin_Admin {
 				@session_start();
 				$_SESSION['lastError'] = "An error occurred inserting {$this->getObjectType()} <br/>{$errorDescription}";
 
-				$logger->log(mysql_error(), PEAR_LOG_DEBUG);
+				$logger->log(mysqli_error(), PEAR_LOG_DEBUG);
 				return false;
 			}
 		} else {

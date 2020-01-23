@@ -33,7 +33,7 @@ class DBMaintenanceEContent extends Admin_Admin {
 		global $configArray;
 		global $interface;
 
-		mysql_select_db($configArray['Database']['database_econtent_dbname']);
+		mysqli_select_db($configArray['Database']['database_econtent_dbname']);
 
 		//Create updates table if one doesn't exist already
 		$this->createUpdatesTable();
@@ -54,13 +54,13 @@ class DBMaintenanceEContent extends Admin_Admin {
 						if (method_exists($this, $sql)){
 							$update['status'] = $this->$sql();
 						}else{
-							$result = mysql_query($sql);
+							$result = mysqli_query($sql);
 							if ($result == 0 || $result == false){
 								if (isset($update['continueOnError']) && $update['continueOnError']){
 									if (!isset($update['status'])) $update['status'] = '';
-									$update['status'] .= 'Warning: ' . mysql_error() . "<br/>";
+									$update['status'] .= 'Warning: ' . mysqli_error() . "<br/>";
 								}else{
-									$update['status'] = 'Update failed ' . mysql_error();
+									$update['status'] = 'Update failed ' . mysqli_error();
 									$updateOk = false;
 									break;
 								}
@@ -284,10 +284,10 @@ class DBMaintenanceEContent extends Admin_Admin {
 	}
 
 	private function checkWhichUpdatesHaveRun($availableUpdates){
-		foreach ($availableUpdates as $key=>$update){
+		foreach ($availableUpdates as $key => $update){
 			$update['alreadyRun'] = false;
-			$result = mysql_query("SELECT * from db_update where update_key = '" . mysql_escape_string($key) . "'");
-			$numRows = mysql_num_rows($result);
+			$result               = mysqli_query("SELECT * from db_update where update_key = '" . mysqli_escape_string($key) . "'");
+			$numRows              = mysqli_num_rows($result);
 			if ($numRows != false){
 				$update['alreadyRun'] = true;
 			}
@@ -297,12 +297,12 @@ class DBMaintenanceEContent extends Admin_Admin {
 	}
 
 	private function markUpdateAsRun($update_key){
-		$result = mysql_query("SELECT * from db_update where update_key = '" . mysql_escape_string($update_key) . "'");
-		if (mysql_num_rows($result) != false){
+		$result = mysqli_query("SELECT * from db_update where update_key = '" . mysqli_escape_string($update_key) . "'");
+		if (mysqli_num_rows($result) != false){
 			//Update the existing value
-			mysql_query("UPDATE db_update SET date_run = CURRENT_TIMESTAMP WHERE update_key = '" . mysql_escape_string($update_key) . "'");
+			mysqli_query("UPDATE db_update SET date_run = CURRENT_TIMESTAMP WHERE update_key = '" . mysqli_escape_string($update_key) . "'");
 		}else{
-			mysql_query("INSERT INTO db_update (update_key) VALUES ('" . mysql_escape_string($update_key) . "')");
+			mysqli_query("INSERT INTO db_update (update_key) VALUES ('" . mysqli_escape_string($update_key) . "')");
 		}
 	}
 
@@ -312,10 +312,10 @@ class DBMaintenanceEContent extends Admin_Admin {
 
 	private function createUpdatesTable(){
 		//Check to see if the updates table exists
-		$result = mysql_query("SHOW TABLES");
+		$result = mysqli_query("SHOW TABLES");
 		$tableFound = false;
 		if ($result){
-			while ($row = mysql_fetch_array($result, MYSQL_NUM)){
+			while ($row = mysqli_fetch_array($result, MYSQLI_NUM)){
 				if ($row[0] == 'db_update'){
 					$tableFound = true;
 					break;
@@ -324,7 +324,7 @@ class DBMaintenanceEContent extends Admin_Admin {
 		}
 		if (!$tableFound){
 			//Create the table to mark which updates have been run.
-			mysql_query("CREATE TABLE db_update (" .
+			mysqli_query("CREATE TABLE db_update (" .
 										"update_key VARCHAR( 100 ) NOT NULL PRIMARY KEY ," .
 										"date_run TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP" .
 										") ENGINE = InnoDB");

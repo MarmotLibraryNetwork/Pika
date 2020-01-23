@@ -73,8 +73,8 @@ class ListAPI extends AJAXHandler {
 		if ($list->N > 0){
 			while ($list->fetch()){
 				$query           = "SELECT count(groupedWorkPermanentId) as numTitles FROM user_list_entry where listId = " . $list->id;
-				$numTitleResults = mysql_query($query);
-				$numTitles       = ($numTitleResults) ? mysql_fetch_assoc($numTitleResults) : array('numTitles', -1);
+				$numTitleResults = mysqli_query($query);
+				$numTitles       = ($numTitleResults) ? mysqli_fetch_assoc($numTitleResults) : array('numTitles', -1);
 
 				$results[] = array(
 					'id'          => $list->id,
@@ -470,18 +470,18 @@ class ListAPI extends AJAXHandler {
 			if ($listId == 'highestRated'){
 				// user_rating is no longer used
 //				$query  = "SELECT record_id, AVG(rating) FROM `user_rating` inner join resource on resourceid = resource.id GROUP BY resourceId order by AVG(rating) DESC LIMIT $numTitlesToShow";
-//				$result = mysql_query($query);
+//				$result = mysqli_query($query);
 //				$ids    = array();
-//				while ($epubInfo = mysql_fetch_assoc($result)){
+//				while ($epubInfo = mysqli_fetch_assoc($result)){
 //					$ids[] = $epubInfo['record_id'];
 //				}
 //				$titles = $this->loadTitleInformationForIds($ids, $numTitlesToShow);
 //				return array('success' => true, 'listTitle' => $systemList['title'], 'listDescription' => $systemList['description'], 'titles' => $titles, 'cacheLength' => 1);
 			}elseif ($listId == 'recentlyReviewed'){
 				$query  = "SELECT record_id, MAX(created) FROM `comments` inner join resource on resource_id = resource.id group by resource_id order by max(created) DESC LIMIT $numTitlesToShow";
-				$result = mysql_query($query);
+				$result = mysqli_query($query);
 				$ids    = array();
-				while ($epubInfo = mysql_fetch_assoc($result)){
+				while ($epubInfo = mysqli_fetch_assoc($result)){
 					$ids[] = $epubInfo['record_id'];
 				}
 				$titles = $this->loadTitleInformationForIds($ids, $numTitlesToShow);
@@ -489,9 +489,9 @@ class ListAPI extends AJAXHandler {
 //			}elseif ($listId == 'mostPopular'){
 //				//TODO: the tables in this query are gone now
 //				$query  = "SELECT record_id, count(userId) from user_reading_history inner join resource on resourceId = resource.id GROUP BY resourceId order by count(userId) DESC LIMIT $numTitlesToShow";
-//				$result = mysql_query($query);
+//				$result = mysqli_query($query);
 //				$ids    = array();
-//				while ($epubInfo = mysql_fetch_assoc($result)){
+//				while ($epubInfo = mysqli_fetch_assoc($result)){
 //					$ids[] = $epubInfo['record_id'];
 //				}
 //				$titles = $this->loadTitleInformationForIds($ids, $numTitlesToShow);
