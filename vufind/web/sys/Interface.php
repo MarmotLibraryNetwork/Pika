@@ -29,6 +29,8 @@ class UInterface extends Smarty {
 	private $url;
 
 	function __construct(){
+		parent::__construct();
+
 		global $configArray;
 		global $timer;
 
@@ -52,7 +54,7 @@ class UInterface extends Smarty {
 		}else{
 			$this->template_dir = "$local/interface/themes/{$this->pikaTheme}";
 		}
-		$this->themes = $themeArray;
+		$this->themes    = $themeArray;
 		$this->pikaTheme = implode(',', $themeArray);
 
 		if (isset($timer)){
@@ -83,86 +85,79 @@ class UInterface extends Smarty {
 		$this->debugging     = false;
 		$this->compile_check = true;
 		// debugging
-		if(isset($configArray['System']['debug']) && (bool)$configArray['System']['debug'] === true) {
-			if(isset($configArray['System']['debugTemplates'])) {
+		if (!empty($configArray['System']['debug'])){
+			if (isset($configArray['System']['debugTemplates'])){
 				$this->debugging = (bool)$configArray['System']['debugTemplates'];
-			} else {
-				$this->debugging = false;
 			}
-		} else {
-			$this->debugging = false;
-		}
 
-		// todo: this only needs to happen in local and test
-		if((bool)$configArray['Site']['isProduction'] === false) {
-			$this->compile_check = true;
-		}
+			// todo: this only needs to happen in local and test
+			if ((bool)$configArray['Site']['isProduction'] === false){
+				$this->compile_check = true;
+			}
 
-		$this->register_block('display_if_inconsistent', 'display_if_inconsistent');
+			$this->register_block('display_if_inconsistent', 'display_if_inconsistent');
 //		$this->register_block('display_if_inconsistent_in_any_manifestation', 'display_if_inconsistent_in_any_manifestation');
-		$this->register_block('display_if_set', 'display_if_set');
-		$this->register_function('translate', 'translate');
-		$this->register_function('char', 'char');
+			$this->register_block('display_if_set', 'display_if_set');
+			$this->register_function('translate', 'translate');
+			$this->register_function('char', 'char');
 
-		$this->assign('fullPath', str_replace('&', '&amp;', $_SERVER['REQUEST_URI']));
-		$url = isset($_SERVER['HTTPS']) ? 'https://' : 'http://';
-		$url .= $_SERVER['SERVER_NAME'];
-		$this->url = $url;
-		$this->assign('url', $url);
+			$this->assign('fullPath', str_replace('&', '&amp;', $_SERVER['REQUEST_URI']));
+			$url       = isset($_SERVER['HTTPS']) ? 'https://' : 'http://';
+			$url       .= $_SERVER['SERVER_NAME'];
+			$this->url = $url;
+			$this->assign('url', $url);
 
-		if (isset($configArray['Islandora']['repositoryUrl'])){
-			$this->assign('repositoryUrl', $configArray['Islandora']['repositoryUrl']);
-			$this->assign('encodedRepositoryUrl', str_replace('/', '\/', $configArray['Islandora']['repositoryUrl']));
-		}
-
-		$this->assign('siteTitle', $configArray['Site']['title']);
-		if (isset($configArray['Site']['libraryName'])){
-			$this->assign('consortiumName', $configArray['Site']['libraryName']);
-		}
-		if (isset($configArray['Site']['email'])){
-			$this->assign('supportEmail', $configArray['Site']['email']);
-		}
-		$this->assign('ils', $configArray['Catalog']['ils']);
-
-
-		// Determine Offline Mode
-		global $offlineMode;
-		$offlineMode = false;
-		if ($configArray['Catalog']['offline']){
-			$offlineMode = true;
-			if (isset($configArray['Catalog']['enableLoginWhileOffline'])){
-				$this->assign('enableLoginWhileOffline', $configArray['Catalog']['enableLoginWhileOffline']);
-			}else{
-				$this->assign('enableLoginWhileOffline', false);
+			if (isset($configArray['Islandora']['repositoryUrl'])){
+				$this->assign('repositoryUrl', $configArray['Islandora']['repositoryUrl']);
+				$this->assign('encodedRepositoryUrl', str_replace('/', '\/', $configArray['Islandora']['repositoryUrl']));
 			}
-		}elseif (!empty($configArray['Catalog']['enableLoginWhileOffline'])){
-			// unless offline login is enabled, don't check the offline mode system variable
-			$offlineModeSystemVariable = new Variable();
-			$offlineModeSystemVariable->get('name', 'offline_mode_when_offline_login_allowed');
-			if ($offlineModeSystemVariable && (strtolower(trim($offlineModeSystemVariable->value)) == 'true' || trim($offlineModeSystemVariable->value) == '1')){
-				$this->assign('enableLoginWhileOffline', true);
+
+			$this->assign('siteTitle', $configArray['Site']['title']);
+			if (isset($configArray['Site']['libraryName'])){
+				$this->assign('consortiumName', $configArray['Site']['libraryName']);
+			}
+			if (isset($configArray['Site']['email'])){
+				$this->assign('supportEmail', $configArray['Site']['email']);
+			}
+			$this->assign('ils', $configArray['Catalog']['ils']);
+
+
+			// Determine Offline Mode
+			global $offlineMode;
+			$offlineMode = false;
+			if ($configArray['Catalog']['offline']){
 				$offlineMode = true;
+				if (isset($configArray['Catalog']['enableLoginWhileOffline'])){
+					$this->assign('enableLoginWhileOffline', $configArray['Catalog']['enableLoginWhileOffline']);
+				}else{
+					$this->assign('enableLoginWhileOffline', false);
+				}
+			}elseif (!empty($configArray['Catalog']['enableLoginWhileOffline'])){
+				// unless offline login is enabled, don't check the offline mode system variable
+				$offlineModeSystemVariable = new Variable();
+				$offlineModeSystemVariable->get('name', 'offline_mode_when_offline_login_allowed');
+				if ($offlineModeSystemVariable && (strtolower(trim($offlineModeSystemVariable->value)) == 'true' || trim($offlineModeSystemVariable->value) == '1')){
+					$this->assign('enableLoginWhileOffline', true);
+					$offlineMode = true;
+				}
 			}
+			$this->assign('offline', $offlineMode);
+
+			// Detect Internet Explorer 8 to include respond.js for responsive css support
+			if (isset($_SERVER['HTTP_USER_AGENT'])){
+				$ie8 = stristr($_SERVER['HTTP_USER_AGENT'], 'msie 8') || stristr($_SERVER['HTTP_USER_AGENT'], 'trident/5'); //trident/5 should catch ie9 compability modes
+				$this->assign('ie8', $ie8);
+			}
+
+
+			/** @var IndexingProfile $activeRecordIndexingProfile */
+			global $activeRecordIndexingProfile;
+			if ($activeRecordIndexingProfile){
+				$this->assign('activeRecordProfileModule', $activeRecordIndexingProfile->recordUrlComponent);
+			}
+
+			$timer->logTime('Interface basic configuration');
 		}
-		$this->assign('offline', $offlineMode);
-
-		// Detect Internet Explorer 8 to include respond.js for responsive css support
-		if (isset($_SERVER['HTTP_USER_AGENT'])){
-			$ie8 = stristr($_SERVER['HTTP_USER_AGENT'], 'msie 8') || stristr($_SERVER['HTTP_USER_AGENT'], 'trident/5'); //trident/5 should catch ie9 compability modes
-			$this->assign('ie8', $ie8);
-		}
-
-
-		$rememberMe = isset($_COOKIE['rememberMe']) ? $_COOKIE['rememberMe'] : false;
-		$this->assign('session', session_id() . ', remember me ' . $rememberMe);
-
-		/** @var IndexingProfile $activeRecordIndexingProfile */
-		global $activeRecordIndexingProfile;
-		if ($activeRecordIndexingProfile){
-			$this->assign('activeRecordProfileModule', $activeRecordIndexingProfile->recordUrlComponent);
-		}
-
-		$timer->logTime('Interface basic configuration');
 	}
 
 	/**
@@ -388,11 +383,13 @@ class UInterface extends Smarty {
 		// Footer Info
 		$sessionId = session_id();
 		if ($sessionId){
-			$session    = new Session();
-			$sessionStr = $sessionId . ($session->get('session_id', $sessionId) ? ', remember me ' . $session->remember_me : ' - not saved');
-			$this->assign('session', $sessionStr);
+			$rememberMe = isset($_COOKIE['rememberMe']) ? $_COOKIE['rememberMe'] : false;
+			$sessionStr = $sessionId . ', remember me ' . $rememberMe;
+		} else {
+			$sessionStr = ' - not saved';
 		}
-		$this->assign('deviceName', get_device_name()); // footer & econtent support email
+		$this->assign('session', $sessionStr);
+		$this->assign('deviceName', get_device_name()); // footer & eContent support email
 		$this->assign('activeIp', Location::getActiveIp());
 
 		$this->getGitBranch();

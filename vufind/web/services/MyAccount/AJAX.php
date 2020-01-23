@@ -1285,7 +1285,8 @@ class MyAccount_AJAX extends AJAXHandler {
 
 	function getMenuData(){
 		global $timer;
-		global $interface;
+		global /** @var UInterface $interface */
+		$interface;
 		global $configArray;
 		/** @var Memcache $memCache */
 		global $memCache;
