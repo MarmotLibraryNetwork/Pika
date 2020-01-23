@@ -29,7 +29,7 @@
 				{if !$productionServer}
 					<small class='location_info'>{$physicalLocation}{if $debug} ({$activeIp}){/if} - {$deviceName}</small>
 				{/if}
-				<small class='version_info'>{if !$productionServer} / {/if}v. {$gitBranch}</small>
+				<small class='version_info'>{if !$productionServer} / {/if}v. {$gitBranch}{if $loggedIn && $userRoles && (in_array('opacAdmin', $userRoles))} ({$gitCommit}){/if}</small>
 				{if $debug}
 					<small class='session_info'> / session. {$session}</small>
 				{/if}

@@ -575,7 +575,11 @@ class UInterface extends Smarty {
 			if (!empty($stringFromFile)) {
 				$stringFromFile = $stringFromFile[0];//get the string from the array
 				if (preg_match('/(.*?)\s+branch\s+\'(.*?)\'.*/', $stringFromFile, $matches)) {
-					$branchName = $matches[2] . ' (' . $matches[1] . ')'; //get the branch name
+					$branchName = $matches[2];  //get the branch name
+					if (!empty($matches[1])){
+						$commit = $matches[1];
+						$interface->assign('gitCommit', $commit);
+					}
 				}
 			}
 		}
