@@ -127,23 +127,22 @@ abstract class ObjectEditor extends Admin_Admin {
 		$newObject = new $objectType;
 		//Check to see if we are getting default values from the
 		$validationResults = $this->updateFromUI($newObject, $structure);
-		if ($validationResults['validatedOk']) {
+		if ($validationResults['validatedOk']){
 			$ret = $newObject->insert();
-			if (!$ret) {
+			if (!$ret){
 				global $logger;
-				if ($newObject->_lastError) {
+				if ($newObject->_lastError){
 					$errorDescription = $newObject->_lastError->getUserInfo();
-				} else {
+				}else{
 					$errorDescription = 'Unknown error';
 				}
 				$logger->log('Could not insert new object ' . $ret . ' ' . $errorDescription, PEAR_LOG_DEBUG);
 				@session_start();
 				$_SESSION['lastError'] = "An error occurred inserting {$this->getObjectType()} <br/>{$errorDescription}";
 
-				$logger->log(mysqli_error(), PEAR_LOG_DEBUG);
 				return false;
 			}
-		} else {
+		}else{
 			global $logger;
 			$errorDescription = implode(', ', $validationResults['errors']);
 			$logger->log('Could not validate new object ' . $objectType . ' ' . $errorDescription, PEAR_LOG_DEBUG);

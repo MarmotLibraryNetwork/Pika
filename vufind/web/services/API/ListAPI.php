@@ -72,9 +72,9 @@ class ListAPI extends AJAXHandler {
 		$results = array();
 		if ($list->N > 0){
 			while ($list->fetch()){
-				$query           = "SELECT count(groupedWorkPermanentId) as numTitles FROM user_list_entry where listId = " . $list->id;
-				$numTitleResults = mysqli_query($query);
-				$numTitles       = ($numTitleResults) ? mysqli_fetch_assoc($numTitleResults) : array('numTitles', -1);
+				$userListEntries         = new UserListEntry();
+				$userListEntries->listId = $list->id;
+				$numTitles               = $userListEntries->count();
 
 				$results[] = array(
 					'id'          => $list->id,
@@ -467,71 +467,47 @@ class ListAPI extends AJAXHandler {
 				}
 			}
 			//The list is a system generated list
-			if ($listId == 'highestRated'){
-				// user_rating is no longer used
-//				$query  = "SELECT record_id, AVG(rating) FROM `user_rating` inner join resource on resourceid = resource.id GROUP BY resourceId order by AVG(rating) DESC LIMIT $numTitlesToShow";
-//				$result = mysqli_query($query);
-//				$ids    = array();
-//				while ($epubInfo = mysqli_fetch_assoc($result)){
-//					$ids[] = $epubInfo['record_id'];
-//				}
-//				$titles = $this->loadTitleInformationForIds($ids, $numTitlesToShow);
-//				return array('success' => true, 'listTitle' => $systemList['title'], 'listDescription' => $systemList['description'], 'titles' => $titles, 'cacheLength' => 1);
-			}elseif ($listId == 'recentlyReviewed'){
-				$query  = "SELECT record_id, MAX(created) FROM `comments` inner join resource on resource_id = resource.id group by resource_id order by max(created) DESC LIMIT $numTitlesToShow";
-				$result = mysqli_query($query);
-				$ids    = array();
-				while ($epubInfo = mysqli_fetch_assoc($result)){
-					$ids[] = $epubInfo['record_id'];
-				}
-				$titles = $this->loadTitleInformationForIds($ids, $numTitlesToShow);
-				return array('success' => true, 'listTitle' => $systemList['title'], 'listDescription' => $systemList['description'], 'titles' => $titles, 'cacheLength' => 1);
-//			}elseif ($listId == 'mostPopular'){
-//				//TODO: the tables in this query are gone now
-//				$query  = "SELECT record_id, count(userId) from user_reading_history inner join resource on resourceId = resource.id GROUP BY resourceId order by count(userId) DESC LIMIT $numTitlesToShow";
-//				$result = mysqli_query($query);
-//				$ids    = array();
-//				while ($epubInfo = mysqli_fetch_assoc($result)){
-//					$ids[] = $epubInfo['record_id'];
-//				}
-//				$titles = $this->loadTitleInformationForIds($ids, $numTitlesToShow);
-//				return array('success' => true, 'listTitle' => $systemList['title'], 'listDescription' => $systemList['description'], 'titles' => $titles, 'cacheLength' => 1);
-			}elseif ($listId == 'recommendations'){
-				if (!$user){
-					return array('success' => false, 'message' => 'A valid user must be provided to load recommendations.');
-				}else{
-					$userId = $user->id;
-					require_once(ROOT_DIR . '/services/MyResearch/lib/Suggestions.php');
-					$suggestions = Suggestions::getSuggestions($userId);
-					$titles      = array();
-					foreach ($suggestions as $id => $suggestion){
-						$imageUrl = $configArray['Site']['coverUrl'] . "/bookcover.php?id=" . $id;
-						if (isset($suggestion['titleInfo']['issn'])){
-							$imageUrl .= "&issn=" . $suggestion['titleInfo']['issn'];
+			switch ($listId){
+				case 'recommendations':
+					if (!$user){
+						return array('success' => false, 'message' => 'A valid user must be provided to load recommendations.');
+					}else{
+						$userId = $user->id;
+						require_once(ROOT_DIR . '/services/MyResearch/lib/Suggestions.php');
+						$suggestions = Suggestions::getSuggestions($userId);
+						$titles      = array();
+						foreach ($suggestions as $id => $suggestion){
+							$imageUrl = $configArray['Site']['coverUrl'] . "/bookcover.php?id=" . $id;
+							if (isset($suggestion['titleInfo']['issn'])){
+								$imageUrl .= "&issn=" . $suggestion['titleInfo']['issn'];
+							}
+							if (isset($suggestion['titleInfo']['isbn10'])){
+								$imageUrl .= "&isn=" . $suggestion['titleInfo']['isbn10'];
+							}
+							if (isset($suggestion['titleInfo']['upc'])){
+								$imageUrl .= "&upc=" . $suggestion['titleInfo']['upc'];
+							}
+							if (isset($suggestion['titleInfo']['format_category'])){
+								$imageUrl .= "&category=" . $suggestion['titleInfo']['format_category'];
+							}
+							$smallImageUrl = $imageUrl . "&size=small";
+							$imageUrl      .= "&size=medium";
+							$titles[]      = array(
+								'id'          => $id,
+								'image'       => $imageUrl,
+								'small_image' => $smallImageUrl,
+								'title'       => $suggestion['titleInfo']['title'],
+								'author'      => $suggestion['titleInfo']['author'],
+							);
 						}
-						if (isset($suggestion['titleInfo']['isbn10'])){
-							$imageUrl .= "&isn=" . $suggestion['titleInfo']['isbn10'];
-						}
-						if (isset($suggestion['titleInfo']['upc'])){
-							$imageUrl .= "&upc=" . $suggestion['titleInfo']['upc'];
-						}
-						if (isset($suggestion['titleInfo']['format_category'])){
-							$imageUrl .= "&category=" . $suggestion['titleInfo']['format_category'];
-						}
-						$smallImageUrl = $imageUrl . "&size=small";
-						$imageUrl      .= "&size=medium";
-						$titles[]      = array(
-							'id'          => $id,
-							'image'       => $imageUrl,
-							'small_image' => $smallImageUrl,
-							'title'       => $suggestion['titleInfo']['title'],
-							'author'      => $suggestion['titleInfo']['author'],
-						);
+						return array('success' => true, 'listTitle' => $systemList['title'], 'listDescription' => $systemList['description'], 'titles' => $titles, 'cacheLength' => 0);
 					}
-					return array('success' => true, 'listTitle' => $systemList['title'], 'listDescription' => $systemList['description'], 'titles' => $titles, 'cacheLength' => 0);
-				}
-			}else{
-				return array('success' => false, 'message' => 'The specified list could not be found.');
+				case 'highestRated':
+				case 'recentlyReviewed':
+				case 'mostPopular':
+				default :
+						return array('success' => false, 'message' => 'The specified list could not be found.');
+
 			}
 		}
 	}

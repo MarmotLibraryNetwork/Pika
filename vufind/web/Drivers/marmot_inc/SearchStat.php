@@ -59,7 +59,7 @@
 //		$splitPhrase = explode(' ', $phrase);
 //		$rebuiltPhrase = implode(' %', $splitPhrase);
 //		if ($rebuiltPhrase)
-//		$searchStat->whereAdd("(phrase like '" . mysqli_escape_string($rebuiltPhrase) ."%' or phrase sounds like '" . mysqli_escape_string($phrase) ."')");
+//		$searchStat->whereAdd("(phrase like '" . DB_common::escapeSimple($rebuiltPhrase) ."%' or phrase sounds like '" .DB_common::escapeSimple($phrase) ."')");
 //		//$searchStat->groupBy('phrase');
 //		$searchStat->orderBy("numSearches DESC");
 //		$searchStat->limit(0, 20);

@@ -451,7 +451,7 @@ abstract class Horizon extends ScreenScrapingDriver{
 	function emailPin($barcode){
 		global $configArray;
 		if ($this->useDb){
-			$sql = "SELECT name, borrower.borrower#, bbarcode, pin#, email_name, email_address from borrower inner join borrower_barcode on borrower.borrower# = borrower_barcode.borrower# inner join borrower_address on borrower.borrower# = borrower_address.borrower#  where bbarcode= '" . mysqli_escape_string($barcode) . "'";
+			$sql = "SELECT name, borrower.borrower#, bbarcode, pin#, email_name, email_address from borrower inner join borrower_barcode on borrower.borrower# = borrower_barcode.borrower# inner join borrower_address on borrower.borrower# = borrower_address.borrower#  where bbarcode= '" . DB_common::escapeSimple($barcode) . "'";
 
 			try {
 				$sqlStmt = $this->_query($sql);

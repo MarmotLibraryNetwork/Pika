@@ -10,45 +10,37 @@
 
 function getUserUpdates(){
 	return array(
-		'roles_2' => array(
-			'title' => 'Roles 2',
-			'description' => 'Add new role for locationReports',
-			'sql' => array(
-				"INSERT INTO roles (name, description) VALUES ('locationReports', 'Allows the user to view reports for their location.')",
-			),
-		),
-
 		'user_display_name' => array(
-			'title' => 'User display name',
+			'title'       => 'User display name',
 			'description' => 'Add displayName field to User table to allow users to have aliases',
-			'sql' => array(
+			'sql'         => array(
 				"ALTER TABLE user ADD displayName VARCHAR( 30 ) NOT NULL DEFAULT ''",
-			),
-		),
-
-		'user_phone' => array(
-			'title' => 'User phone',
-			'description' => 'Add phone field to User table to allow phone numbers to be displayed for Materials Requests',
-			'continueOnError' => true,
-			'sql' => array(
 				"ALTER TABLE user ADD phone VARCHAR( 30 ) NOT NULL DEFAULT ''",
-			),
-		),
-
-		'user_ilsType' => array(
-			'title' => 'User Type',
-			'description' => 'Add patronType field to User table to allow for functionality to be controlled based on the type of patron within the ils',
-			'continueOnError' => true,
-			'sql' => array(
 				"ALTER TABLE user ADD patronType VARCHAR( 30 ) NOT NULL DEFAULT ''",
 			),
 		),
 
+		'recommendations_optOut' => array(
+			'title'       => 'Recommendations Opt Out',
+			'description' => 'Add tracking for whether the user wants to opt out of recommendations',
+			'sql'         => array(
+				"ALTER TABLE `user` ADD `disableRecommendations` TINYINT NOT NULL DEFAULT '0'",
+			),
+		),
+
+		'coverArt_suppress' => array(
+			'title'       => 'Cover Art Suppress',
+			'description' => 'Add tracking for whether the user wants to suppress cover art',
+			'sql'         => array(
+				"ALTER TABLE `user` ADD `disableCoverArt` TINYINT NOT NULL DEFAULT '0'",
+			),
+		),
+
 		'user_overdrive_email' => array(
-			'title' => 'User OverDrive Email',
-			'description' => 'Add overdriveEmail field to User table to allow for patrons to use a different email fo notifications when their books are ready',
+			'title'           => 'User OverDrive Email',
+			'description'     => 'Add overdriveEmail field to User table to allow for patrons to use a different email fo notifications when their books are ready',
 			'continueOnError' => true,
-			'sql' => array(
+			'sql'             => array(
 				"ALTER TABLE user ADD overdriveEmail VARCHAR( 250 ) NOT NULL DEFAULT ''",
 				"ALTER TABLE user ADD promptForOverdriveEmail TINYINT DEFAULT 1",
 				"UPDATE user SET overdriveEmail = email"
@@ -56,37 +48,37 @@ function getUserUpdates(){
 		),
 
 		'user_preferred_library_interface' => array(
-			'title' => 'User Preferred Library Interface',
-			'description' => 'Add preferred library interface to ',
+			'title'           => 'User Preferred Library Interface',
+			'description'     => 'Add preferred library interface to ',
 			'continueOnError' => true,
-			'sql' => array(
+			'sql'             => array(
 				"ALTER TABLE user ADD preferredLibraryInterface INT(11) DEFAULT NULL",
 			),
 		),
 
 		'user_track_reading_history' => array(
-			'title' => 'User Track Reading History',
-			'description' => 'Add Track Reading History ',
+			'title'           => 'User Track Reading History',
+			'description'     => 'Add Track Reading History ',
 			'continueOnError' => true,
-			'sql' => array(
+			'sql'             => array(
 				"ALTER TABLE user ADD trackReadingHistory TINYINT DEFAULT 0",
 				"ALTER TABLE user ADD initialReadingHistoryLoaded TINYINT DEFAULT 0",
 			),
 		),
 
 		'user_preference_review_prompt' => array(
-			'title' => 'User Preference Prompt for Reviews',
-			'description' => 'Users may opt out of doing a review after giving a rating permanently',
+			'title'           => 'User Preference Prompt for Reviews',
+			'description'     => 'Users may opt out of doing a review after giving a rating permanently',
 			'continueOnError' => true,
-			'sql' => array(
+			'sql'             => array(
 				"ALTER TABLE `user` ADD `noPromptForUserReviews` TINYINT(1) DEFAULT 0",
 			),
 		),
 
 		'user_account' => array(
-			'title' => 'User Account Source',
+			'title'       => 'User Account Source',
 			'description' => 'Store the source of a user account so we can accommodate multiple ilses',
-			'sql' => array(
+			'sql'         => array(
 				"ALTER TABLE `user` ADD `source` VARCHAR(50) DEFAULT 'ils'",
 				"ALTER TABLE `user` DROP INDEX `username`",
 				"ALTER TABLE `user` ADD UNIQUE username(`source`, `username`)",
@@ -94,9 +86,9 @@ function getUserUpdates(){
 		),
 
 		'user_linking' => array(
-			'title' => 'Setup linking of user accounts',
+			'title'       => 'Setup linking of user accounts',
 			'description' => 'Setup linking of user accounts.  This is a one way link.',
-			'sql' => array(
+			'sql'         => array(
 				"CREATE TABLE IF NOT EXISTS `user_link` (
 					`id` int(11) NOT NULL AUTO_INCREMENT,
 					`primaryAccountId` int(11),
@@ -104,13 +96,6 @@ function getUserUpdates(){
 					PRIMARY KEY (`id`),
 					UNIQUE KEY `user_link` (`primaryAccountId`, `linkedAccountId`)
 				) ENGINE=InnoDB  DEFAULT CHARSET=utf8",
-			),
-		),
-
-		'user_linking_1' => array(
-			'title' => 'Fix User Linking Table Settings',
-			'description' => 'Set Id columns to require a value (can not be null).',
-			'sql' => array(
 				"ALTER TABLE `user_link` 
 				CHANGE COLUMN `primaryAccountId` `primaryAccountId` INT(11) NOT NULL,
 				CHANGE COLUMN `linkedAccountId` `linkedAccountId` INT(11) NOT NULL;",
@@ -118,9 +103,9 @@ function getUserUpdates(){
 		),
 
 		'user_link_blocking' => array(
-			'title' => 'Setup blocking controls for the linking of user accounts',
+			'title'       => 'Setup blocking controls for the linking of user accounts',
 			'description' => 'Setup for the blocking of linking user accounts. Either an account can not link to any account, or a specific account can link to a specific account.',
-			'sql' => array(
+			'sql'         => array(
 				"CREATE TABLE `user_link_blocks` (
 					`id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
 					`primaryAccountId` INT UNSIGNED NOT NULL,
@@ -132,49 +117,49 @@ function getUserUpdates(){
 			),
 		),
 
-			'user_reading_history_index_source_id' => array(
-					'title' => 'Index source Id in user reading history',
-					'description' => 'Index source Id in user reading history',
-					'sql' => array(
-							"ALTER TABLE user_reading_history_work ADD INDEX sourceId(sourceId)"
-					),
+		'user_reading_history_index_source_id' => array(
+			'title'       => 'Index source Id in user reading history',
+			'description' => 'Index source Id in user reading history',
+			'sql'         => array(
+				"ALTER TABLE user_reading_history_work ADD INDEX sourceId(sourceId)"
 			),
+		),
 
-// NOT Added: See D-3389 & D-3348
-//			'user_reading_history_ils_reading_history_id' => array(
-//				'title'       => 'The history entry Id in the ILS',
-//				'description' => 'The history entry Id in the ILS which may be needed to get more information from the ILS',
-//				'sql'         => array(
-//					"ALTER TABLE `user_reading_history_work` ADD COLUMN `ilsReadingHistoryId` VARCHAR(50) NULL AFTER `sourceId`;"
-//				),
-//			),
+		// NOT Added: See D-3389 & D-3348
+		//			'user_reading_history_ils_reading_history_id' => array(
+		//				'title'       => 'The history entry Id in the ILS',
+		//				'description' => 'The history entry Id in the ILS which may be needed to get more information from the ILS',
+		//				'sql'         => array(
+		//					"ALTER TABLE `user_reading_history_work` ADD COLUMN `ilsReadingHistoryId` VARCHAR(50) NULL AFTER `sourceId`;"
+		//				),
+		//			),
 
-			'user_hoopla_confirmation_checkout' => array(
-					'title' => 'Hoopla Checkout Confirmation Prompt',
-					'description' => 'Stores user preference whether or not to prompt for confirmation before checking out a title from Hoopla',
-					'sql' => array(
-							"ALTER TABLE `user` ADD COLUMN `hooplaCheckOutConfirmation` TINYINT(1) UNSIGNED NOT NULL DEFAULT 1;"
-					),
+		'user_hoopla_confirmation_checkout' => array(
+			'title'       => 'Hoopla Checkout Confirmation Prompt',
+			'description' => 'Stores user preference whether or not to prompt for confirmation before checking out a title from Hoopla',
+			'sql'         => array(
+				"ALTER TABLE `user` ADD COLUMN `hooplaCheckOutConfirmation` TINYINT(1) UNSIGNED NOT NULL DEFAULT 1;"
 			),
+		),
 
-			'user_table_cleanup' => array(
-				'title'           => 'Clean up user table',
-				'description'     => 'Remove obsolete columns',
-				'continueOnError' => true,
-				'sql'             => array(
-					'ALTER TABLE `user` CHANGE COLUMN `created` `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ;',
-					// The above is needed to be compatible with the mariadb, so that the changes below can happen.
-					'ALTER TABLE `user` DROP COLUMN `major`, DROP COLUMN `college`, DROP COLUMN `password`, '
-					. 'ADD COLUMN `ilsUserId` VARCHAR(30) NULL AFTER `username`, '
-					. 'CHANGE COLUMN `displayName` `displayName` VARCHAR(30) NOT NULL DEFAULT \'\' AFTER `ilsUserId`, '
-					. 'CHANGE COLUMN `source` `source` VARCHAR(50) NULL DEFAULT \'ils\' AFTER `username`, '
-					. 'ADD COLUMN `homeLibraryId` INT NULL AFTER `created`;',
+		'user_table_cleanup' => array(
+			'title'           => 'Clean up user table',
+			'description'     => 'Remove obsolete columns',
+			'continueOnError' => true,
+			'sql'             => array(
+				'ALTER TABLE `user` CHANGE COLUMN `created` `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ;',
+				// The above is needed to be compatible with the mariadb, so that the changes below can happen.
+				'ALTER TABLE `user` DROP COLUMN `major`, DROP COLUMN `college`, DROP COLUMN `password`, '
+				. 'ADD COLUMN `ilsUserId` VARCHAR(30) NULL AFTER `username`, '
+				. 'CHANGE COLUMN `displayName` `displayName` VARCHAR(30) NOT NULL DEFAULT \'\' AFTER `ilsUserId`, '
+				. 'CHANGE COLUMN `source` `source` VARCHAR(50) NULL DEFAULT \'ils\' AFTER `username`, '
+				. 'ADD COLUMN `homeLibraryId` INT NULL AFTER `created`;',
 
-//					'DELETE FROM `roles` WHERE `name`="epubAdmin";',
-					'UPDATE `user` SET `ilsUserId` = username;',
-					'UPDATE `user`, `location` SET `homeLibraryId` = location.libraryId WHERE user.homeLocationId = location.locationId'
-				),
+				'DELETE FROM `roles` WHERE `name`="epubAdmin";',
+				'UPDATE `user` SET `ilsUserId` = username;',
+				'UPDATE `user`, `location` SET `homeLibraryId` = location.libraryId WHERE user.homeLocationId = location.locationId'
 			),
+		),
 
 	);
 }

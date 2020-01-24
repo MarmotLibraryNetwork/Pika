@@ -9,93 +9,41 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA	02111-1307	USA
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
 
-require_once ROOT_DIR . '/Action.php';
-require_once ROOT_DIR . '/services/Admin/Admin.php';
+require_once ROOT_DIR . '/services/Admin/DBMaintenance.php';
 
 /**
- * Provides a method of running SQL updates to the database.
- * Shows a list of updates that are available with a description of the
- *
- * @author Mark Noble
- *
+ * Provides a method of running SQL updates to the eContent database.
+ * Shows a list of updates that are available with a description of the updates
  */
-class DBMaintenanceEContent extends Admin_Admin {
-	function launch() 	{
-		global $configArray;
-		global $interface;
+class DBMaintenanceEContent extends DBMaintenance {
+	const TITLE = 'Database Maintenance - EContent';
 
-		mysqli_select_db($configArray['Database']['database_econtent_dbname']);
-
-		//Create updates table if one doesn't exist already
-		$this->createUpdatesTable();
-
-		$availableUpdates = $this->getSQLUpdates();
-
-		if (isset($_REQUEST['submit'])){
-			$interface->assign('showStatus', true);
-
-			//Process the updates
-			foreach ($availableUpdates as $key => $update){
-				if (isset($_REQUEST["selected"][$key])){
-					$sqlStatements = $update['sql'];
-					$updateOk = true;
-					foreach ($sqlStatements as $sql){
-						//Give enough time for long queries to run
-						set_time_limit(120);
-						if (method_exists($this, $sql)){
-							$update['status'] = $this->$sql();
-						}else{
-							$result = mysqli_query($sql);
-							if ($result == 0 || $result == false){
-								if (isset($update['continueOnError']) && $update['continueOnError']){
-									if (!isset($update['status'])) $update['status'] = '';
-									$update['status'] .= 'Warning: ' . mysqli_error() . "<br/>";
-								}else{
-									$update['status'] = 'Update failed ' . mysqli_error();
-									$updateOk = false;
-									break;
-								}
-							}else{
-								if (!isset($update['status'])){
-									$update['status'] = 'Update succeeded';
-								}
-							}
-
-						}
-					}
-					if ($updateOk){
-						$this->markUpdateAsRun($key);
-					}
-					$availableUpdates[$key] = $update;
-				}
-			}
+	public function __construct(){
+		parent::__construct();
+		require_once ROOT_DIR . '/sys/OverDrive/OverDriveAPIProduct.php';
+		$overDriveProduct = new OverDriveAPIProduct();
+		$this->db =& $overDriveProduct->getDatabaseConnection();
+		if (PEAR::isError($this->db)){
+			die($this->db->getMessage());
 		}
-
-		//Check to see which updates have already been performed.
-		$availableUpdates = $this->checkWhichUpdatesHaveRun($availableUpdates);
-
-		$interface->assign('sqlUpdates', $availableUpdates);
-
-		$this->display('dbMaintenance.tpl', 'Database Maintenance - EContent');
-
 	}
 
-	private function getSQLUpdates() {
+	protected function getSQLUpdates(){
 		global $configArray;
 		return array(
 			'overdrive_api_data' => array(
-				'title' => 'OverDrive API Data',
-				'description' => 'Build tables to store data loaded fromthe OverDrive API so the reindex process can use cached data and so we can add additional logic for lastupdate time, etc.',
-				'sql' => array(
+				'title'       => 'OverDrive API Data',
+				'description' => 'Build tables to store data loaded from the OverDrive API so the reindex process can use cached data and so we can add additional logic for lastupdate time, etc.',
+				'sql'         => array(
 					"CREATE TABLE IF NOT EXISTS overdrive_api_products (
 						`id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 						overdriveId VARCHAR(36) NOT NULL,
@@ -118,7 +66,7 @@ class DBMaintenanceEContent extends Admin_Admin {
 						INDEX(lastMetadataCheck),
 						INDEX(lastAvailabilityCheck),
 	                    INDEX(deleted)
-					)" ,
+					)",
 					"CREATE TABLE IF NOT EXISTS overdrive_api_product_formats (
 						`id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 						productId INT,
@@ -220,9 +168,9 @@ class DBMaintenanceEContent extends Admin_Admin {
 			),
 
 			'overdrive_api_data_update_1' => array(
-				'title' => 'OverDrive API Data Update 1',
+				'title'       => 'OverDrive API Data Update 1',
 				'description' => 'Update MetaData tables to store thumbnail, cover, and raw metadata.  Also update product to store raw metadata',
-				'sql' => array(
+				'sql'         => array(
 					"ALTER TABLE overdrive_api_products ADD COLUMN rawData MEDIUMTEXT",
 					"ALTER TABLE overdrive_api_product_metadata ADD COLUMN rawData MEDIUMTEXT",
 					"ALTER TABLE overdrive_api_product_metadata ADD COLUMN thumbnail VARCHAR(255)",
@@ -231,50 +179,50 @@ class DBMaintenanceEContent extends Admin_Admin {
 			),
 
 			'overdrive_api_data_update_2' => array(
-				'title' => 'OverDrive API Data Update 2',
+				'title'       => 'OverDrive API Data Update 2',
 				'description' => 'Update Product table to add subtitle',
-				'sql' => array(
+				'sql'         => array(
 					"ALTER TABLE overdrive_api_products ADD COLUMN subtitle VARCHAR(255)",
 				),
 			),
 
-				'overdrive_api_data_availability_type' => array(
-						'title' => 'Add availability type to OverDrive API',
-						'description' => 'Update Availability table to add availability type',
-						'sql' => array(
-								"ALTER TABLE overdrive_api_product_availability ADD COLUMN availabilityType VARCHAR(35) DEFAULT 'Normal'",
-						),
+			'overdrive_api_data_availability_type' => array(
+				'title'       => 'Add availability type to OverDrive API',
+				'description' => 'Update Availability table to add availability type',
+				'sql'         => array(
+					"ALTER TABLE overdrive_api_product_availability ADD COLUMN availabilityType VARCHAR(35) DEFAULT 'Normal'",
 				),
-
-				'overdrive_api_data_metadata_isOwnedByCollections' => array(
-						'title' => 'Add isOwnedByCollections to OverDrive Metadata API',
-						'description' => 'Update isOwnedByCollections table to add metadata table',
-						'sql' => array(
-								"ALTER TABLE overdrive_api_product_metadata ADD COLUMN isOwnedByCollections TINYINT(1) DEFAULT '1'",
-						),
-				),
-
-			'overdrive_api_data_needsUpdate' => array(
-					'title' => 'Add needsUpdate to OverDrive Product API',
-					'description' => 'Update overdrive_api_product table to add needsUpdate to determine if the record should be reloaded from the API',
-					'sql' => array(
-							"ALTER TABLE overdrive_api_products ADD COLUMN needsUpdate TINYINT(1) DEFAULT '0'",
-					),
 			),
 
-				'overdrive_api_data_crossRefId' => array(
-						'title' => 'Add crossRefId to OverDrive Product API',
-						'description' => 'Update overdrive_api_product table to add crossRefId to allow quering of product data ',
-						'sql' => array(
-								"ALTER TABLE overdrive_api_products ADD COLUMN crossRefId INT(11) DEFAULT '0'",
-						),
+			'overdrive_api_data_metadata_isOwnedByCollections' => array(
+				'title'       => 'Add isOwnedByCollections to OverDrive Metadata API',
+				'description' => 'Update isOwnedByCollections table to add metadata table',
+				'sql'         => array(
+					"ALTER TABLE overdrive_api_product_metadata ADD COLUMN isOwnedByCollections TINYINT(1) DEFAULT '1'",
 				),
+			),
+
+			'overdrive_api_data_needsUpdate' => array(
+				'title'       => 'Add needsUpdate to OverDrive Product API',
+				'description' => 'Update overdrive_api_product table to add needsUpdate to determine if the record should be reloaded from the API',
+				'sql'         => array(
+					"ALTER TABLE overdrive_api_products ADD COLUMN needsUpdate TINYINT(1) DEFAULT '0'",
+				),
+			),
+
+			'overdrive_api_data_crossRefId' => array(
+				'title'       => 'Add crossRefId to OverDrive Product API',
+				'description' => 'Update overdrive_api_product table to add crossRefId to allow quering of product data ',
+				'sql'         => array(
+					"ALTER TABLE overdrive_api_products ADD COLUMN crossRefId INT(11) DEFAULT '0'",
+				),
+			),
 
 			'utf8_update' => array(
-				'title' => 'Update to UTF-8',
-				'description' => 'Update database to use UTF-8 encoding',
+				'title'        => 'Update to UTF-8',
+				'description'  => 'Update database to use UTF-8 encoding',
 				'dependencies' => array(),
-				'sql' => array(
+				'sql'          => array(
 					"ALTER DATABASE " . $configArray['Database']['database_econtent_dbname'] . " DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;",
 					"ALTER TABLE db_update CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
 				),
@@ -283,51 +231,4 @@ class DBMaintenanceEContent extends Admin_Admin {
 		);
 	}
 
-	private function checkWhichUpdatesHaveRun($availableUpdates){
-		foreach ($availableUpdates as $key => $update){
-			$update['alreadyRun'] = false;
-			$result               = mysqli_query("SELECT * from db_update where update_key = '" . mysqli_escape_string($key) . "'");
-			$numRows              = mysqli_num_rows($result);
-			if ($numRows != false){
-				$update['alreadyRun'] = true;
-			}
-			$availableUpdates[$key] = $update;
-		}
-		return $availableUpdates;
-	}
-
-	private function markUpdateAsRun($update_key){
-		$result = mysqli_query("SELECT * from db_update where update_key = '" . mysqli_escape_string($update_key) . "'");
-		if (mysqli_num_rows($result) != false){
-			//Update the existing value
-			mysqli_query("UPDATE db_update SET date_run = CURRENT_TIMESTAMP WHERE update_key = '" . mysqli_escape_string($update_key) . "'");
-		}else{
-			mysqli_query("INSERT INTO db_update (update_key) VALUES ('" . mysqli_escape_string($update_key) . "')");
-		}
-	}
-
-	function getAllowableRoles(){
-		return array('userAdmin', 'opacAdmin');
-	}
-
-	private function createUpdatesTable(){
-		//Check to see if the updates table exists
-		$result = mysqli_query("SHOW TABLES");
-		$tableFound = false;
-		if ($result){
-			while ($row = mysqli_fetch_array($result, MYSQLI_NUM)){
-				if ($row[0] == 'db_update'){
-					$tableFound = true;
-					break;
-				}
-			}
-		}
-		if (!$tableFound){
-			//Create the table to mark which updates have been run.
-			mysqli_query("CREATE TABLE db_update (" .
-										"update_key VARCHAR( 100 ) NOT NULL PRIMARY KEY ," .
-										"date_run TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP" .
-										") ENGINE = InnoDB");
-		}
-	}
 }
