@@ -1058,6 +1058,8 @@ class Sierra {
 		}
 		// Create tokens
 		// todo: PHP7 use random_int or random_bytes
+		// $selector = bin2hex(random_bytes(8));
+		// $token = random_int(1000000000000000, 9999999999999999);
 		$selector = bin2hex(mt_rand(10000000, 900000000));
 		$token = mt_rand(1000000000000000, 9999999999999999);
 		$now = new DateTime('NOW');
