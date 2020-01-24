@@ -268,14 +268,14 @@
 					{assign var="curSection" value=false}
 				{/if}
 				<div class="panel{if $curSection} active{/if}">
-					<a href="#catalogingRequestMenu" data-toggle="collapse" data-parent="#adminMenuAccordion">
+					<a href="#catalogingMenu" data-toggle="collapse" data-parent="#adminMenuAccordion">
 						<div class="panel-heading">
 							<div class="panel-title">
 								Cataloging
 							</div>
 						</div>
 					</a>
-					<div id="catalogingRequestMenu" class="panel-collapse collapse {if $curSection}in{/if}">
+					<div id="catalogingMenu" class="panel-collapse collapse {if $curSection}in{/if}">
 						<div class="panel-body">
 							<div class="adminMenuLink{if $action == "MergedGroupedWorks"} active{/if}"><a href="/Admin/MergedGroupedWorks">Grouped Work Merging</a></div>
 							<div class="adminMenuLink{if $action == "NonGroupedRecords"} active{/if}"><a href="/Admin/NonGroupedRecords">Records To Not Merge</a></div>
@@ -300,7 +300,7 @@
 							</div>
 						</div>
 					</a>
-					<div id="eContentInfoRequestMenu" class="panel-collapse collapse {if $curSection}in{/if}">
+					<div id="eContentInfoMenu" class="panel-collapse collapse {if $curSection}in{/if}">
 						<div class="panel-body">
 							<div class="adminMenuLink{if $action == "OverDriveAPIData"} active{/if}"><a href="/Admin/OverDriveAPIData">OverDrive API Information</a></div>
 							<div class="adminMenuLink{if $action == "OverDriveExtractLog"} active{/if}"><a href="/Admin/OverDriveExtractLog">OverDrive Extract Log</a></div>
