@@ -24,7 +24,7 @@ class Cache implements CacheInterface
 
 	private $PSR16_RESERVED_CHARACTERS = ['{','}','(',')','/','@',':'];
 
-	private $keyTypes = ['patron', 'holds', 'checkouts', 'history'];
+	private $keyTypes = ['patron', 'holds', 'checkouts', 'history', 'fines'];
 
 	public  $handler;
 
@@ -165,8 +165,8 @@ class Cache implements CacheInterface
 			if (!$this->handler->set($key, $value, (int)$ttl)) {
 				return false;
 			}
-			return true;
 		}
+		return true;
 	}
 
 	/**
@@ -209,11 +209,15 @@ class Cache implements CacheInterface
 	}
 
 	/**
+	 * Create a key for caching objects that may be cached in other places
+	 *
+	 *
+	 *
 	 * @param $type
-	 * @param $uid
+	 * @param $patronUid Pika database User ID
 	 * @return string
 	 */
-	public function makeKey($type, $uid)
+	public function makePatronKey($type, $patronUid)
 	{
 		if(!in_array($type, $this->keyTypes)) {
 			$types = implode(', ', $this->keyTypes);
@@ -223,7 +227,7 @@ class Cache implements CacheInterface
 		if(!$hostname = gethostname()){
 			$hostname = $_SERVER['SERVER_NAME'];
 		}
-		$key = $hostname.$type.$uid;
+		$key = $hostname.'-'.$type.'-'.$patronUid;
 		$this->checkReservedCharacters($key);
 
 		return $key;

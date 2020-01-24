@@ -68,7 +68,7 @@ class Sierra {
 //	use \PatronSelfRegistrationOperations;
 
 	// @var Pika/Memcache instance
-	public  $memCache;
+	public  $cache;
 	// @var $logger Pika/Logger instance
 	protected $logger;
 
@@ -97,8 +97,8 @@ class Sierra {
 		$this->accountProfile = $accountProfile;
 		$this->logger = new Logger('SierraPatronAPI');
 
-		$cache = initCache();
-		$this->memCache = new Cache($cache);
+		$cache       = initCache();
+		$this->cache = new Cache($cache);
 		// build the api url
 		// JIC strip any trailing slash and spaces.
 		$baseApiUrl     = trim($accountProfile->patronApiUrl, '/ ');
@@ -128,9 +128,9 @@ class Sierra {
 	 */
 	public function getMyCheckouts($patron, $linkedAccount = false){
 
-		$patronCheckoutsCacheKey = "patron_".$patron->barcode."_checkouts";
+		$patronCheckoutsCacheKey = $this->cache->makePatronKey('checkouts', $patron->id);
 		if(!$linkedAccount) {
-			if($patronCheckouts = $this->memCache->get($patronCheckoutsCacheKey)) {
+			if($patronCheckouts = $this->cache->get($patronCheckoutsCacheKey)) {
 				$this->logger->info("Found checkouts in memcache:".$patronCheckoutsCacheKey);
 				return $patronCheckouts;
 			}
@@ -247,7 +247,7 @@ class Sierra {
 		}
 
 		if(!$linkedAccount) {
-			$this->memCache->set($patronCheckoutsCacheKey, $checkouts, $this->configArray['Caching']['user']);
+			$this->cache->set($patronCheckoutsCacheKey, $checkouts, $this->configArray['Caching']['user']);
 			$this->logger->info("Saving checkouts in memcache:".$patronCheckoutsCacheKey);
 		}
 		return $checkouts;
@@ -274,9 +274,8 @@ class Sierra {
 	 */
 	public function renewItem($patron, $bibId, $checkoutId, $itemIndex = NULL){
 		// unset cache
-		$patronCheckoutsCacheKey = "patron_".$patron->barcode."_checkouts";
-		$this->logger->info("Removing checkouts from memcache:".$patronCheckoutsCacheKey);
-		$this->memCache->delete($patronCheckoutsCacheKey);
+		$patronCheckoutsCacheKey = $this->cache->makePatronKey('checkouts', $patron->id);
+		$this->cache->delete($patronCheckoutsCacheKey);
 
 		$operation = 'patrons/checkouts/'.$checkoutId.'/renewal';
 
@@ -354,6 +353,7 @@ class Sierra {
 			$this->logger->warn($msg, ['barcode'=>$this->patronBarcode]);
 			return null;
 		}
+
 		return $this->getPatron($patronId);
 
 	}
@@ -372,18 +372,24 @@ class Sierra {
 	 * @throws InvalidArgumentException
 	 * @throws ErrorException
 	 */
-	public function getPatron($patronId) {
+	public function getPatron($patronId)
+	{
 
 		$createPatron = false;
 		$updatePatron = false;
 
+		// find user pika id-- needed for cache key
+		// the username db field stores the sierra patron id. we'll use that to determine if the user exists.
 		// 1. check for a cached user object
-		$patronObjectCacheKey = 'patron_'.$this->patronBarcode.'_patron';
-		if ($pObj = $this->memCache->get($patronObjectCacheKey)) {
-			$this->logger->info("Found patron in memcache:".$patronObjectCacheKey);
-			return $pObj;
-		}
-
+		$patron           = new User();
+		$patron->username = $patronId;
+		if ($patron->find(true) && $patron->N != 0) {
+			$patronObjectCacheKey = $this->cache->makePatronKey('patron', $patron->id);
+			if ($pObj = $this->cache->get($patronObjectCacheKey)) {
+				$this->logger->info("Found patron in memcache:" . $patronObjectCacheKey);
+				return $pObj;
+			}
+	}
 		// 2. grab everything from the patron record the api can provide.
 		$params = [
 			'fields' => 'names,addresses,phones,emails,expirationDate,homeLibraryCode,moneyOwed,patronType,barcodes,patronCodes,createdDate,blockInfo,message,pMessage,langPref,fixedFields,varFields,updatedDate,createdDate'
@@ -395,13 +401,10 @@ class Sierra {
 		}
 
 		// 3. Check to see if the user exists in the database
-		// the username db field stores the sierra patron id. we'll use that to determine if the user exists.
 		// todo: store the sierra id in another database column.
-		$patron = new User();
-		$patron->username = $patronId;
 		// does the user exist in database?
-		if(!$patron->find(true)) {
-			$this->logger->info('Patron does not exits in Pika database.', ['barcode'=>$this->patronBarcode]);
+		if(!$patron || $patron->N == 0) {
+			$this->logger->debug('Patron does not exits in Pika database.', ['barcode'=>$this->patronBarcode]);
 			$createPatron = true;
 		}
 
@@ -723,14 +726,17 @@ class Sierra {
 				                                                                 'backtrace'=>$patron->_lastError->backtrace]);
 				throw new ErrorException('Error saving patron to Pika database');
 			} else {
-				$this->logger->info('Saved patron to Pika database.', ['barcode'=>$this->patronBarcode]);
+				$this->logger->debug('Created patron in Pika database.', ['barcode'=>$this->patronBarcode]);
 			}
 		} elseif ($updatePatron && !$createPatron) {
 			$patron->update();
 		}
-
-		$this->logger->info("Saving patron to memcache:".$patronObjectCacheKey);
-		$this->memCache->set($patronObjectCacheKey, $patron, $this->configArray['Caching']['user']);
+		// if this is a new user we won't cache -- will happen on next getPatron call
+		if(isset($patron->id)) {
+			$patronObjectCacheKey = $this->cache->makePatronKey('patron', $patron->id);
+			$this->logger->debug("Saving patron to memcache:" . $patronObjectCacheKey);
+			$this->cache->set($patronObjectCacheKey, $patron, $this->configArray['Caching']['user']);
+		}
 		return $patron;
 	}
 
@@ -771,7 +777,7 @@ class Sierra {
 		}
 
 		$patronIdCacheKey = "patron_".$barcode."_sierraid";
-		if($patronId = $this->memCache->get($patronIdCacheKey)) {
+		if($patronId = $this->cache->get($patronIdCacheKey)) {
 			return $patronId;
 		}
 
@@ -788,7 +794,7 @@ class Sierra {
 			return false;
 		}
 
-		$this->memCache->set($patronIdCacheKey, $r->id, $this->configArray['Caching']['koha_patron_id']);
+		$this->cache->set($patronIdCacheKey, $r->id, $this->configArray['Caching']['koha_patron_id']);
 
 		return $r->id;
 	}
@@ -813,6 +819,10 @@ class Sierra {
 		if(!$canUpdateContactInfo) {
 			return ['You can not update your information.'];
 		}
+
+		// remove patron object from cache
+		$patronCacheKey = $this->cache->makePatronKey('patron', $patron->id);
+		$this->cache->delete($patronCacheKey);
 
 		/*
 		 * hack to shuffle off some actions
@@ -934,9 +944,6 @@ class Sierra {
 			$errors[] = "An error occurred. Please try in again later.";
 		}
 
-		// remove patron object from cache
-		$this->memCache->delete('patron_'.$patron->barcode.'_patron');
-
 		return $errors;
 	}
 
@@ -975,7 +982,8 @@ class Sierra {
 		$patron->cat_password = $newPin;
 		$patron->update();
 
-		$this->memCache->delete('patron_'.$patron->barcode.'_patron');
+		$patronCacheKey = $this->cache->makePatronKey('patron', $patron->id);
+		$this->cache->delete($patronCacheKey);
 
 		return [['Your pin number was updated successfully.']];
 	}
@@ -1010,15 +1018,16 @@ class Sierra {
 			$message = $this->_getPrettyError();
 			return ['error' => 'Could not update PIN: '. $message];
 		}
-
+		$patronCacheKey = $this->cache->makePatronKey('patron', $patron->id);
 		$patron->cat_password = $newPin;
 		if(!$patron->update()) {
 			// this shouldn't matter since we hit the api first when logging in a patron, but ....
-			$this->memCache->delete('patron_'.$patron->barcode.'_patron');
+			$this->cache->delete($patronCacheKey);
 			return ['error' => 'Please try logging in with you new PIN. If you are unable to login please contact your library.'];
 		}
 		$pinReset->delete();
-		$this->memCache->delete('patron_'.$patron->barcode.'_patron');
+
+		$this->cache->delete($patronCacheKey);
 
 		return true;
 	}
@@ -1411,9 +1420,9 @@ EOT;
 			return false;
 		}
 		// check memCache
-		$patronFinesCacheKey = 'patron_'.$patron->barcode.'_fines';
-		if($this->memCache->get($patronFinesCacheKey)) {
-			return $this->memCache->get($patronFinesCacheKey);
+		$patronFinesCacheKey = $this->cache->makePatronKey('fines', $patron->id);
+		if($this->cache->get($patronFinesCacheKey)) {
+			return $this->cache->get($patronFinesCacheKey);
 		}
 		// make the call
 		$params = [
@@ -1488,7 +1497,7 @@ EOT;
 				'details' => $details
 			];
 		}
-		$this->memCache->set($patronFinesCacheKey, $r, $this->configArray['Caching']['user']);
+		$this->cache->set($patronFinesCacheKey, $r, 90);
 		return $r;
 	}
 
@@ -1502,8 +1511,8 @@ EOT;
 	 */
 	public function getMyHolds($patron, $linkedAccount = false) {
 
-		$patronHoldsCacheKey = "patron_".$patron->barcode."_holds";
-		if ($patronHolds = $this->memCache->get($patronHoldsCacheKey)) {
+		$patronHoldsCacheKey = $this->cache->makePatronKey('holds', $patron->id);
+		if ($patronHolds = $this->cache->get($patronHoldsCacheKey)) {
 			$this->logger->info("Found holds in memcache:" . $patronHoldsCacheKey);
 			return $patronHolds;
 		}
@@ -1769,8 +1778,7 @@ EOT;
 		unset($availableHolds, $unavailableHolds);
 
 		if(!$linkedAccount){
-			$this->memCache->set($patronHoldsCacheKey, $return, $this->configArray['Caching']['user']);
-			$this->logger->info("Saving holds in memcache:".$patronHoldsCacheKey);
+			$this->cache->set($patronHoldsCacheKey, $return, $this->configArray['Caching']['user']);
 		}
 
 		return $return;
@@ -1800,20 +1808,14 @@ EOT;
 		$patronId       = $this->getPatronId($patron);
 
 		// delete memcache holds
-		$patronHoldsCacheKey = "patron_".$patron->barcode."_holds";
-
-		if($this->memCache->delete($patronHoldsCacheKey)) {
-			$this->logger->info("Removed holds from memcache: ".$patronHoldsCacheKey);
-		} else {
+		$patronHoldsCacheKey = $this->cache->makePatronKey('holds', $patron->id);
+		if(!$this->cache->delete($patronHoldsCacheKey)) {
 			$this->logger->warn("Failed to remove holds from memcache: ".$patronHoldsCacheKey);
 		}
 
 		// because the patron object has holds information we need to clear that cache too.
-		$patronObjectCacheKey = 'patron_'.$patron->barcode.'_patron';
-
-		if($this->memCache->delete($patronObjectCacheKey)) {
-			$this->logger->info("Removed patron from memcache: ".$patronObjectCacheKey);
-		} else {
+		$patronObjectCacheKey = $this->cache->makePatronKey('holds', $patron->id);
+		if(!$this->cache->delete($patronObjectCacheKey)) {
 			$this->logger->warn("Failed to remove patron from memcache: ".$patronObjectCacheKey);
 		}
 
@@ -1887,8 +1889,8 @@ EOT;
 		$params = ["pickupLocation"=>$newPickupLocation];
 
 		// delete holds cache
-		$patronHoldsCacheKey = "patron_".$patron->barcode."_holds";
-		$this->memCache->delete($patronHoldsCacheKey);
+		$patronHoldsCacheKey = $this->cache->makePatronKey('holds', $patron->id);
+		$this->cache->delete($patronHoldsCacheKey);
 
 		$r = $this->_doRequest($operation,$params, "PUT");
 
@@ -1922,18 +1924,14 @@ EOT;
 		$operation = "patrons/holds/".$holdId;
 
 		// delete holds cache
-		$patronHoldsCacheKey = "patron_".$patron->barcode."_holds";
-		if($this->memCache->delete($patronHoldsCacheKey)) {
-			$this->logger->info("Removed patron from memcache: ".$patronHoldsCacheKey);
-		} else {
+		$patronHoldsCacheKey = $this->cache->makePatronKey('holds', $patron->id);
+		if(!$this->cache->delete($patronHoldsCacheKey)) {
 			$this->logger->warn("Failed to remove from memcache: ".$patronHoldsCacheKey);
 		}
 
 		// because the patron object has holds information we need to clear that cache too.
-		$patronObjectCacheKey = 'patron_'.$patron->barcode.'_patron';
-		if($this->memCache->delete($patronObjectCacheKey)) {
-			$this->logger->info("Removed patron from memcache: ".$patronObjectCacheKey);
-		} else {
+		$patronObjectCacheKey = $this->cache->makePatronKey('patron', $patron->id);
+		if(!$this->cache->delete($patronObjectCacheKey)) {
 			$this->logger->warn("Failed to remove patron from memcache: ".$patronObjectCacheKey);
 		}
 
@@ -1972,9 +1970,10 @@ EOT;
 		$params = ["freeze"=>true];
 
 		// delete holds cache
-		$patronHoldsCacheKey = "patron_".$patron->barcode."_holds";
-		$this->logger->info("Removing holds from memcache:".$patronHoldsCacheKey);
-		$this->memCache->delete($patronHoldsCacheKey);
+		$patronHoldsCacheKey = $this->cache->makePatronKey('holds', $patron->id);
+		if(!$this->cache->delete($patronHoldsCacheKey)) {
+			$this->logger->warn('Failed to delete patron holds from cache:'.$patronHoldsCacheKey);
+		}
 
 		$r = $this->_doRequest($operation,$params, "PUT");
 
@@ -2011,9 +2010,10 @@ EOT;
 		$params = ["freeze"=>false];
 
 		// delete holds cache
-		$patronHoldsCacheKey = "patron_".$patron->barcode."_holds";
-		$this->logger->info("Removing holds from memcache:".$patronHoldsCacheKey);
-		$this->memCache->delete($patronHoldsCacheKey);
+		$patronHoldsCacheKey = $this->cache->makePatronKey('holds', $patron->id);
+		if(!$this->cache->delete($patronHoldsCacheKey)) {
+			$this->logger->warn('Failed to delete patron holds cache: '.$patronHoldsCacheKey);
+		}
 
 		$r = $this->_doRequest($operation,$params, "PUT");
 
@@ -2080,8 +2080,8 @@ EOT;
 	 * @return bool $success  Whether or not the opt-in action was successful
 	 */
 	public function optInReadingHistory($patron) {
-		$patronObjectCacheKey = 'patron_'.$patron->barcode.'_patron';
-		$this->memCache->delete($patronObjectCacheKey);
+		$patronObjectCacheKey = $this->cache->makePatronKey('patron', $patron->id);
+		$this->cache->delete($patronObjectCacheKey);
 
 		$success = $this->_curlOptInOptOut($patron, 'OptIn');
 		if(!$success) {
@@ -2100,8 +2100,8 @@ EOT;
 	 * @return bool Whether or not the opt-out action was successful
 	 */
 	public function optOutReadingHistory($patron) {
-		$patronObjectCacheKey = 'patron_'.$patron->barcode.'_patron';
-		$this->memCache->delete($patronObjectCacheKey);
+		$patronObjectCacheKey = $this->cache->makePatronKey('patron', $patron->id);
+		$this->cache->delete($patronObjectCacheKey);
 
 		$success = $this->_curlOptInOptOut($patron, 'OptOut');
 		if(!$success) {
@@ -2123,11 +2123,13 @@ EOT;
 	 */
 	public function deleteAllReadingHistory($patron) {
 		$patronId = $this->getPatronId($patron->barcode);
+
 		if(!$patronId) {
 			return false;
 		}
 
-		$patronReadingHistoryCacheKey = "patron_".$patron->barcode."_history";
+		$patronReadingHistoryCacheKey = $this->cache->makePatronKey('history', $patron->id);
+		$this->cache->delete($patronReadingHistoryCacheKey);
 
 		$operation = 'patrons/'.$patronId.'/checkouts/history';
 		$r = $this->_doRequest($operation, [], 'DELETE');
@@ -2135,8 +2137,6 @@ EOT;
 		if(!$r) {
 			return false;
 		}
-
-		$this->memCache->delete($patronReadingHistoryCacheKey);
 
 		return true;
 	}
@@ -2210,8 +2210,8 @@ EOT;
 
 		$patronSierraId = $this->getPatronId($patron->barcode);
 
-		$patronReadingHistoryCacheKey = "patron_" . $patron->barcode . "_history";
-		$patronCachedReadingHistory         = $this->memCache->get($patronReadingHistoryCacheKey);
+		$patronReadingHistoryCacheKey = $this->cache->makePatronKey('history', $patron->id);
+		$patronCachedReadingHistory   = $this->cache->get($patronReadingHistoryCacheKey);
 		if (!$patronCachedReadingHistory || isset($_REQUEST['reload'])){
 			//TODO: loop to fetch histories with more than a 2000 entries
 			$operation = "patrons/" . $patronSierraId . "/checkouts/history";
@@ -2305,7 +2305,7 @@ EOT;
 
 			if ($recordsPerPage == -1){
 				// Only cache if fetching all of the reading history
-				$this->memCache->set($patronReadingHistoryCacheKey, $history, 21600);
+				$this->cache->set($patronReadingHistoryCacheKey, $history, 21600);
 				$this->logger->info("Saving reading history in memcache:" . $patronReadingHistoryCacheKey);
 			}
 
@@ -2630,13 +2630,10 @@ EOT;
 	protected function _oAuthToken() {
 		if (!isset($_REQUEST['reload'])){
 			// check memcache for valid token and set $this
-			$this->logger->info('Checking for oAuth token in memcache');
-			if ($token = $this->memCache->get("sierra_oauth_token")){
-				$this->logger->info('Found oAuth token in memcache');
+			if ($token = $this->cache->get("sierra_oauth_token")){
 				$this->oAuthToken = $token;
 				return true;
 			}
-			$this->logger->info('No oAuth token in memcache. Requesting new token.');
 		}
 		// setup url
 		$url = $this->tokenUrl;
@@ -2691,7 +2688,7 @@ EOT;
 		$expires = $c->response->expires_in;
 		$c->close();
 		$this->oAuthToken = $token;
-		$this->memCache->set("sierra_oauth_token", $token, $expires);
+		$this->cache->set("sierra_oauth_token", $token, $expires);
 		$this->logger->info('Got new oAuth token.');
 		return true;
 	}

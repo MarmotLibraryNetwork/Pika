@@ -290,8 +290,8 @@ class Sacramento extends Sierra
 			$this->logger->warn("Unable to update patron mobile phone.", ["message"=>$this->apiLastError]);
 		}
 
-		// remove patron object from cache
-		$this->memCache->delete('patron_'.$patron->barcode.'_patron');
+		$patronCacheKey = $this->cache->makePatronKey('patron', $patron->id);
+		$this->cache->delete($patronCacheKey);
 		// next update sms notification option
 		if(isset($_POST['smsNotices']) && $_POST['smsNotices'] == 'on') {
 			$params = ['optin' => 'on'];

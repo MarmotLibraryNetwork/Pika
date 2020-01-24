@@ -49,12 +49,10 @@ class MemcachedSession extends SessionHandler implements SessionHandlerInterface
 
 	/**
 	 * Close the session
-	 * @link https://php.net/manual/en/sessionhandlerinterface.close.php
-	 * @return bool <p>
-	 * The return value (usually TRUE on success, FALSE on failure).
-	 * Note this value is returned internally to PHP for processing.
-	 * </p>
 	 *
+	 * @link https://php.net/manual/en/sessionhandlerinterface.close.php
+	 * @return bool true on success false otherwise
+	 * Note this value is returned internally to PHP for processing.
 	 */
 	public function close()
 	{
@@ -64,14 +62,12 @@ class MemcachedSession extends SessionHandler implements SessionHandlerInterface
 	/**
 	 * Destroy a session
 	 *
-	 * Clean out unsaved searches.
+	 * Clean out unsaved patron searches.
 	 *
 	 * @link https://php.net/manual/en/sessionhandlerinterface.destroy.php
 	 * @param string $session_id The session ID being destroyed.
-	 * @return bool <p>
-	 * The return value (usually TRUE on success, FALSE on failure).
+	 * @return bool true on success false otherwise
 	 * Note this value is returned internally to PHP for processing.
-	 * </p>
 	 */
 	public function destroy($session_id)
 	{
@@ -96,14 +92,8 @@ class MemcachedSession extends SessionHandler implements SessionHandlerInterface
 	 * Memcached session interface handles this nicely.
 	 *
 	 * @link https://php.net/manual/en/sessionhandlerinterface.gc.php
-	 * @param int $maxlifetime <p>
-	 * Sessions that have not updated for
-	 * the last maxlifetime seconds will be removed.
-	 * </p>
-	 * @return bool <p>
-	 * The return value (usually TRUE on success, FALSE on failure).
-	 * Note this value is returned internally to PHP for processing.
-	 * </p>
+	 * @param int $maxlifetime Sessions that have not updated for the last maxlifetime seconds will be removed.
+	 * @return bool true on success false otherwise
 	 *
 	 */
 	public function gc($maxlifetime)
@@ -113,14 +103,12 @@ class MemcachedSession extends SessionHandler implements SessionHandlerInterface
 
 	/**
 	 * Initialize session
+	 *
 	 * @link https://php.net/manual/en/sessionhandlerinterface.open.php
 	 * @param string $save_path The path where to store/retrieve the session.
 	 * @param string $name The session name.
-	 * @return bool <p>
-	 * The return value (usually TRUE on success, FALSE on failure).
+	 * @return bool true on success false otherwise
 	 * Note this value is returned internally to PHP for processing.
-	 * </p>
-	 *
 	 */
 	public function open($save_path, $name)
 	{
@@ -129,14 +117,12 @@ class MemcachedSession extends SessionHandler implements SessionHandlerInterface
 
 	/**
 	 * Read session data
+	 *
 	 * @link https://php.net/manual/en/sessionhandlerinterface.read.php
 	 * @param string $session_id The session id to read data for.
-	 * @return string <p>
-	 * Returns an encoded string of the read data.
+	 * @return string Returns an encoded string of the read data.
 	 * If nothing was read, it must return an empty string.
 	 * Note this value is returned internally to PHP for processing.
-	 * </p>
-	 *
 	 */
 	public function read($session_id)
 	{
@@ -145,6 +131,7 @@ class MemcachedSession extends SessionHandler implements SessionHandlerInterface
 
 	/**
 	 * Write session data
+	 *
 	 * @link https://php.net/manual/en/sessionhandlerinterface.write.php
 	 * @param string $session_id The session id.
 	 * @param string $session_data <p>
@@ -154,11 +141,8 @@ class MemcachedSession extends SessionHandler implements SessionHandlerInterface
 	 * string and passing it as this parameter.
 	 * Please note sessions use an alternative serialization method.
 	 * </p>
-	 * @return bool <p>
-	 * The return value (usually TRUE on success, FALSE on failure).
+	 * @return bool true on success false otherwise
 	 * Note this value is returned internally to PHP for processing.
-	 * </p>
-	 *
 	 */
 	public function write($session_id, $session_data)
 	{
