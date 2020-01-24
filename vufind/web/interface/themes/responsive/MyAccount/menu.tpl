@@ -293,14 +293,14 @@
 					{assign var="curSection" value=false}
 				{/if}
 				<div class="panel{if $curSection} active{/if}">
-					<a href="#catalogingRequestMenu" data-toggle="collapse" data-parent="#adminMenuAccordion">
+					<a href="#eContentInfoMenu" data-toggle="collapse" data-parent="#adminMenuAccordion">
 						<div class="panel-heading">
 							<div class="panel-title">
 								eContent Info
 							</div>
 						</div>
 					</a>
-					<div id="catalogingRequestMenu" class="panel-collapse collapse {if $curSection}in{/if}">
+					<div id="eContentInfoRequestMenu" class="panel-collapse collapse {if $curSection}in{/if}">
 						<div class="panel-body">
 							<div class="adminMenuLink{if $action == "OverDriveAPIData"} active{/if}"><a href="/Admin/OverDriveAPIData">OverDrive API Information</a></div>
 							<div class="adminMenuLink{if $action == "OverDriveExtractLog"} active{/if}"><a href="/Admin/OverDriveExtractLog">OverDrive Extract Log</a></div>
