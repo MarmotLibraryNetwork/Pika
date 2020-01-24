@@ -18,45 +18,14 @@
  *
  */
 
-require_once ROOT_DIR . '/Action.php';
-require_once ROOT_DIR . '/services/Admin/Admin.php';
-require_once ROOT_DIR . '/sys/Pager.php';
+require_once ROOT_DIR . '/services/Admin/LogAdmin.php';
 
-class ReindexLog extends Admin_Admin {
-	function launch(){
-		global $interface,
-		       $configArray;
+class ReindexLog extends Log_Admin {
 
-		$logEntry = new ReindexLogEntry();
-		if (!empty($_REQUEST['worksLimit']) && ctype_digit($_REQUEST['worksLimit'])){
-			// limits total count correctly
-			$logEntry->whereAdd('numWorksProcessed >= ' . $_REQUEST['worksLimit']);
-		}
-		$total = $logEntry->count();
+	public $pageTitle = 'Reindex Log';
+	public $logTemplate = 'reindexLog.tpl';
+	public $columnToFilterBy = 'numWorksProcessed';
 
-		$logEntry = new ReindexLogEntry();
-		$page     = isset($_REQUEST['page']) ? $_REQUEST['page'] : 1;
-		$pageSize = isset($_REQUEST['pagesize']) ? $_REQUEST['pagesize'] : 30; // to adjust number of items listed on a page
-		$interface->assign('recordsPerPage', $pageSize);
-		$interface->assign('page', $page);
-		if (!empty($_REQUEST['worksLimit']) && ctype_digit($_REQUEST['worksLimit'])){
-			$logEntry->whereAdd('numWorksProcessed > ' . $_REQUEST['worksLimit']);
-		}
-		$logEntry->orderBy('startTime DESC');
-		$logEntry->limit(($page - 1) * $pageSize, $pageSize);
-		$logEntries = $logEntry->fetchAll();
-		$interface->assign('logEntries', $logEntries);
-
-		$options = array(
-			'totalItems' => $total,
-			'fileName' => '/Admin/ReindexLog?page=%d' . (empty($_REQUEST['worksLimit']) ? '' : '&worksLimit=' . $_REQUEST['worksLimit']) . (empty($_REQUEST['pagesize']) ? '' : '&pagesize=' . $_REQUEST['pagesize']),
-			'perPage' => $pageSize,
-		);
-		$pager   = new VuFindPager($options);
-		$interface->assign('pageLinks', $pager->getLinks());
-
-		$this->display('reindexLog.tpl', 'Reindex Log');
-	}
 
 	function getAllowableRoles(){
 		return array('opacAdmin', 'libraryAdmin', 'cataloging');

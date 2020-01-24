@@ -7,8 +7,8 @@
 
 		<form class="navbar form-inline row">
 			<div class="form-group col-xs-7">
-				<label for="recordsLimit" class="control-label">Min Works Processed: </label>
-				<input style="width: 125px;" id="recordsLimit" name="recordsLimit" type="number" min="0" class="form-control" {if !empty($smarty.request.recordsLimit)} value="{$smarty.request.recordsLimit}"{/if}>
+				<label for="filterCount" class="control-label">Min Works Processed: </label>
+				<input style="width: 125px;" id="filterCount" name="filterCount" type="number" min="0" class="form-control" {if !empty($smarty.request.filterCount)} value="{$smarty.request.filterCount}"{/if}>
 				<button class="btn btn-primary" type="submit">Go</button>
 			</div>
 			<div class="form-group col-xs-5">
