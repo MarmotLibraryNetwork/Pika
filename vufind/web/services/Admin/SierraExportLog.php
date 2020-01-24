@@ -18,45 +18,13 @@
  *
  */
 
-require_once ROOT_DIR . '/Action.php';
-require_once ROOT_DIR . '/services/Admin/Admin.php';
-require_once ROOT_DIR . '/sys/Pager.php';
+require_once ROOT_DIR . '/services/Admin/LogAdmin.php';
 
-class SierraExportLog extends Admin_Admin {
-	function launch(){
-		global $interface;
-		global $configArray;
+class SierraExportLog extends Log_Admin {
 
-		$logEntry = new SierraExportLogEntry();
-		if (!empty($_REQUEST['recordsLimit']) && ctype_digit($_REQUEST['recordsLimit'])){
-			// limits total count correctly
-			$logEntry->whereAdd('numRecordsToProcess >= ' . $_REQUEST['recordsLimit']);
-		}
-		$total = $logEntry->count();
-
-		$logEntry = new SierraExportLogEntry();
-		$page     = isset($_REQUEST['page']) ? $_REQUEST['page'] : 1;
-		$pageSize = isset($_REQUEST['pagesize']) ? $_REQUEST['pagesize'] : 30; // to adjust number of items listed on a page
-		$interface->assign('recordsPerPage', $pageSize);
-		$interface->assign('page', $page);
-		if (!empty($_REQUEST['recordsLimit']) && ctype_digit($_REQUEST['recordsLimit'])){
-			$logEntry->whereAdd('numRecordsToProcess > ' . $_REQUEST['recordsLimit']);
-		}
-		$logEntry->orderBy('startTime DESC');
-		$logEntry->limit(($page - 1) * $pageSize, $pageSize);
-		$logEntries = $logEntry->fetchAll();
-		$interface->assign('logEntries', $logEntries);
-
-		$options = array(
-			'totalItems' => $total,
-			'fileName' => '/Admin/SierraExportLog?page=%d' . (empty($_REQUEST['productsLimit']) ? '' : '&productsLimit=' . $_REQUEST['productsLimit']) . (empty($_REQUEST['pagesize']) ? '' : '&pagesize=' . $_REQUEST['pagesize']),
-			'perPage' => $pageSize,
-		);
-		$pager   = new VuFindPager($options);
-		$interface->assign('pageLinks', $pager->getLinks());
-
-		$this->display('sierraExportLog.tpl', 'Sierra Export Log');
-	}
+	public $pageTitle = 'Sierra Export Log';
+	public $logTemplate = 'sierraExportLog.tpl';
+	public $columnToFilterBy = 'numRecordsToProcess';
 
 	function getAllowableRoles(){
 		return array('opacAdmin', 'libraryAdmin', 'cataloging');

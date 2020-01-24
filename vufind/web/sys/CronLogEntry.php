@@ -1,31 +1,27 @@
 <?php
-/**
- * Table Definition for library
- */
-require_once 'DB/DataObject.php';
 
-class CronLogEntry extends DB_DataObject {
-	public $__table = 'cron_log';   // table name
-	public $id;
-	public $startTime;
-	public $lastUpdate;
-	public $endTime;
+
+class CronLogEntry extends LogEntry {
+	public $__table = 'cron_log';
 	public $notes;
-	private $_processes = null;
 
-	function keys(){
-		return array('id');
-	}
+	private $_processes = null;
+	private $_hadErrors;
 
 	function processes(){
 		if (is_null($this->_processes)){
-			$this->_processes       = array();
-			$reindexProcess         = new CronProcessLogEntry();
-			$reindexProcess->cronId = $this->id;
-			$reindexProcess->orderBy('processName');
-			$reindexProcess->find();
-			while ($reindexProcess->fetch()){
-				$this->_processes[] = clone $reindexProcess;
+			$this->_processes            = array();
+			$cronProcessLogEntry         = new CronProcessLogEntry();
+			$cronProcessLogEntry->cronId = $this->id;
+			$cronProcessLogEntry->orderBy('processName');
+			if ($cronProcessLogEntry->find()){
+				$this->_hadErrors = false;
+				while ($cronProcessLogEntry->fetch()){
+					$this->_processes[] = clone $cronProcessLogEntry;
+					if ($cronProcessLogEntry->numErrors > 0){
+						$this->_hadErrors = true;
+					}
+				}
 			}
 		}
 		return $this->_processes;
@@ -36,27 +32,8 @@ class CronLogEntry extends DB_DataObject {
 	}
 
 	function getHadErrors(){
-		foreach ($this->processes() as $process){
-			if ($process->numErrors > 0){
-				return true;
-			}
-		}
-		return false;
-	}
-
-	function getElapsedTime(){
-		if (!isset($this->endTime) || is_null($this->endTime)){
-			return "";
-		}else{
-			$elapsedTimeMin = ceil(($this->endTime - $this->startTime) / 60);
-			if ($elapsedTimeMin < 60){
-				return $elapsedTimeMin . " min";
-			}else{
-				$hours   = floor($elapsedTimeMin / 60);
-				$minutes = $elapsedTimeMin - (60 * $hours);
-				return "$hours hours, $minutes min";
-			}
-		}
+		$this->processes();
+		return $this->_hadErrors;
 	}
 
 }

@@ -136,7 +136,7 @@ class Admin_AJAX extends AJAXHandler {
 		$results         = array(
 			'title'        => '',
 			'modalBody'    => '',
-			'modalButtons' => "",
+			'modalButtons' => '',
 		);
 		if ($cronProcess->find(true)){
 			$results['title'] = "{$cronProcess->processName} Notes";
@@ -160,7 +160,7 @@ class Admin_AJAX extends AJAXHandler {
 		$results = array(
 			'title'        => '',
 			'modalBody'    => '',
-			'modalButtons' => "",
+			'modalButtons' => '',
 		);
 		if ($cronLog->find(true)){
 			$results['title'] = "Cron Process {$cronLog->id} Notes";

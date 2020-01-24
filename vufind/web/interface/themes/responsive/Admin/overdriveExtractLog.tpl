@@ -9,8 +9,8 @@
 		{/if}
 	<form class="navbar form-inline row">
 		<div class="form-group col-xs-7">
-			<label for="productsLimit" class="control-label">Min Products Processed: </label>
-			<input style="width: 125px;" id="productsLimit" name="productsLimit" type="number" min="0" class="form-control" {if !empty($smarty.request.productsLimit)} value="{$smarty.request.productsLimit}"{/if}>
+			<label for="filterCount" class="control-label">Min Products Processed: </label>
+			<input style="width: 125px;" id="filterCount" name="filterCount" type="number" min="0" class="form-control" {if !empty($smarty.request.filterCount)} value="{$smarty.request.filterCount}"{/if}>
 			<button class="btn btn-primary" type="submit">Go</button>
 		</div>
 		<div class="form-group col-xs-5">

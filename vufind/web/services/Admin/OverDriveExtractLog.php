@@ -18,15 +18,18 @@
  *
  */
 
-require_once ROOT_DIR . '/Action.php';
-require_once ROOT_DIR . '/services/Admin/Admin.php';
-require_once ROOT_DIR . '/sys/Pager.php';
+require_once ROOT_DIR . '/services/Admin/LogAdmin.php';
 require_once ROOT_DIR . '/sys/OverDrive/OverDriveAPIProduct.php';
 
-class OverDriveExtractLog extends Admin_Admin {
+class OverDriveExtractLog extends Log_Admin {
+
+	public $pageTitle = 'OverDrive Export Log';
+	public $logTemplate = 'overdriveExtractLog.tpl';
+	public $columnToFilterBy = 'numProducts';
+
+
 	function launch(){
-		global $interface,
-		       $configArray;
+		global $interface;
 
 		//Get the number of changes that are outstanding
 		$overdriveProduct              = new OverDriveAPIProduct();
@@ -35,35 +38,7 @@ class OverDriveExtractLog extends Admin_Admin {
 		$numOutstandingChanges         = $overdriveProduct->count();
 		$interface->assign('numOutstandingChanges', $numOutstandingChanges);
 
-		$logEntry = new OverDriveExtractLogEntry();
-		if (!empty($_REQUEST['productsLimit']) && ctype_digit($_REQUEST['productsLimit'])){
-			// limits total count correctly
-			$logEntry->whereAdd('numProducts > ' . $_REQUEST['productsLimit']);
-		}
-		$total = $logEntry->count();
-
-		$logEntry = new OverDriveExtractLogEntry();
-		$page     = isset($_REQUEST['page']) ? $_REQUEST['page'] : 1;
-		$pageSize = isset($_REQUEST['pagesize']) ? $_REQUEST['pagesize'] : 30; // to adjust number of items listed on a page
-		$interface->assign('recordsPerPage', $pageSize);
-		$interface->assign('page', $page);
-		if (!empty($_REQUEST['productsLimit']) && ctype_digit($_REQUEST['productsLimit'])){
-			$logEntry->whereAdd('numProducts > ' . $_REQUEST['productsLimit']);
-		}
-		$logEntry->orderBy('startTime DESC');
-		$logEntry->limit(($page - 1) * $pageSize, $pageSize);
-		$logEntries = $logEntry->fetchAll();
-		$interface->assign('logEntries', $logEntries);
-
-		$options = array(
-			'totalItems' => $total,
-			'fileName' => '/Admin/OverDriveExtractLog?page=%d' . (empty($_REQUEST['productsLimit']) ? '' : '&productsLimit=' . $_REQUEST['productsLimit']) . (empty($_REQUEST['pagesize']) ? '' : '&pagesize=' . $_REQUEST['pagesize']),
-			'perPage' => 30,
-		);
-		$pager   = new VuFindPager($options);
-		$interface->assign('pageLinks', $pager->getLinks());
-
-		$this->display('overdriveExtractLog.tpl', 'OverDrive Extract Log');
+		parent::launch();
 	}
 
 	function getAllowableRoles(){
