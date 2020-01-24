@@ -1,15 +1,30 @@
 <?php
 /**
+ * Pika Discovery Layer
+ * Copyright (C) 2020  Marmot Library Network
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+/**
  * Driver to handle Hoopla API user actions.
  *
  * @category Pika
  * @author: Pascal Brammeier
  * Date: 1/8/2018
- *
- *
- *
  */
-
+use Pika\Cache;
+use Pika\Logger;
 require_once ROOT_DIR . '/services/SourceAndId.php';
 
 class HooplaDriver
@@ -18,7 +33,8 @@ class HooplaDriver
 	public $hooplaAPIBaseURL = 'https://hoopla-erc.hoopladigital.com';
 	private $accessToken;
 	private $hooplaEnabled = false;
-
+	private $cache;
+	private $logger;
 
 
 	public function __construct()
@@ -31,6 +47,8 @@ class HooplaDriver
 				$this->getAccessToken();
 			}
 		}
+		$this->cache  = new Cache();
+		$this->logger = new Logger();
 	}
 
 	/**
@@ -49,8 +67,7 @@ class HooplaDriver
 	// $customRequest is for curl, can be 'PUT', 'DELETE', 'POST'
 	private function getAPIResponse($url, $params = null, $customRequest = null, $additionalHeaders = null)
 	{
-		global $logger;
-		$logger->log('Hoopla API URL :' .$url, PEAR_LOG_INFO);
+		$this->logger->info('Hoopla API URL :' .$url);
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_URL, $url);
 		$headers  = array(
@@ -194,9 +211,8 @@ class HooplaDriver
 						$this->hooplaPatronStatuses[$user->id] = $hooplaPatronStatusResponse;
 						return $hooplaPatronStatusResponse;
 					} else {
-						global $logger;
 						$hooplaErrorMessage = empty($hooplaPatronStatusResponse->message) ? '' : ' Hoopla Message :' . $hooplaPatronStatusResponse->message;
-						$logger->log('Error retrieving patron status from Hoopla. User ID : ' . $user->id . $hooplaErrorMessage, PEAR_LOG_INFO);
+						$this->logger->warn('Error retrieving patron status from Hoopla. User ID : ' . $user->id, ['hoopla_error_message' => $hooplaErrorMessage]);
 						$this->hooplaPatronStatuses[$user->id] = false; // Don't do status call again for this user
 					}
 				}
@@ -259,8 +275,7 @@ class HooplaDriver
 						$checkedOutItems[$key] = $currentTitle;
 					}
 				} else {
-					global $logger;
-					$logger->log('Error retrieving checkouts from Hoopla.', PEAR_LOG_ERR);
+					$this->logger->warn('Error retrieving checkouts from Hoopla.');
 				}
 			}
 		}
@@ -273,9 +288,7 @@ class HooplaDriver
 	private function getAccessToken()
 	{
 		if (empty($this->accessToken)) {
-			/** @var Memcache $memCache */
-			global $memCache;
-			$accessToken = $memCache->get(self::memCacheKey);
+			$accessToken = $this->cache->get(self::memCacheKey);
 			if (empty($accessToken)) {
 				$this->renewAccessToken();
 			} else {
@@ -320,23 +333,17 @@ class HooplaDriver
 				$json = json_decode($response);
 				if (!empty($json->access_token)) {
 					$this->accessToken = $json->access_token;
-
-					/** @var Memcache $memCache */
-					global $memCache;
-					$memCache->set(self::memCacheKey, $this->accessToken, null, $configArray['Caching']['hoopla_api_access_token']);
+					$this->cache->set(self::memCacheKey, $this->accessToken, $configArray['Caching']['hoopla_api_access_token']);
 					return true;
 
 				} else {
-					global $logger;
-					$logger->log('Hoopla API retrieve access token call did not contain an access token', PEAR_LOG_ERR);
+					$this->logger->error('Hoopla API retrieve access token call did not contain an access token');
 				}
 			} else {
-				global $logger;
-				$logger->log('Curl Error in Hoopla API call to retrieve access token', PEAR_LOG_ERR);
+				$this->logger->error('Curl Error in Hoopla API call to retrieve access token');
 			}
 		} else {
-			global $logger;
-			$logger->log('Hoopla API user and/or password not set. Can not retrieve access token', PEAR_LOG_ERR);
+			$this->logger->error('Hoopla API user and/or password not set. Can not retrieve access token');
 		}
 		return false;
 	}
