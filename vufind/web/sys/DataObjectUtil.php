@@ -138,7 +138,8 @@ class DataObjectUtil {
 			}
 			//Check to see if there is a custom validation routine
 			if (isset($property['serverValidation'])){
-				$propValidation = $object->$property['serverValidation']();
+				$serverValidation = $property['serverValidation'];
+				$propValidation   = $object->$serverValidation();
 				if ($propValidation['validatedOk'] == false){
 					$validationResults['errors'] = array_merge($validationResults['errors'], $propValidation['errors']);
 				}
