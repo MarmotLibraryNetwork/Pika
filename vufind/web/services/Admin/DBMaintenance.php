@@ -35,7 +35,7 @@ class DBMaintenance extends Admin_Admin {
 	public function __construct(){
 		parent::__construct();
 		$temp = new DatabaseUpdates();
-		$this->db =& $temp->getDatabaseConnection();
+		$this->db = $temp->getDatabaseConnection();
 		if (PEAR::isError($this->db)){
 			die($this->db->getMessage());
 		}
