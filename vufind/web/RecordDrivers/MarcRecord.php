@@ -1994,6 +1994,7 @@ class MarcRecord extends IndexRecord
 				'525' => 'Supplement',
 				'526' => 'Study Program Information',
 				'530' => 'Additional Physical Form',
+				'532' => 'Accessibility Information',
 				'533' => 'Reproduction',
 				'534' => 'Original Version',
 				'535' => 'Location of Originals/Duplicates',
