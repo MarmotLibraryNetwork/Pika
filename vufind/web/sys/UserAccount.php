@@ -1,11 +1,12 @@
 <?php
 /**
+ * Pika Discovery Layer
+ * Copyright (C) 2020  Marmot Library Network
  *
- * Copyright (C) Villanova University 2007.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2,
- * as published by the Free Software Foundation.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -13,10 +14,10 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+use Pika\Cache;
+use Pika\Logger;
 
 require_once ROOT_DIR . '/sys/Authentication/AuthenticationFactory.php';
 
@@ -28,6 +29,16 @@ class UserAccount {
 	/** @var User|false $guidingUserObjectFromDB */
 	private static $guidingUserObjectFromDB = null;
 	private static $userRoles = null;
+	private static $validatedAccounts = array();
+
+	private $cache;
+	private $logger;
+
+	public function __construct()
+	{
+		$this->cache  = new Cache();
+		$this->logger = new Logger('UserAccount');
+	}
 
 	/**
 	 * Checks whether the user is logged in.
@@ -38,6 +49,10 @@ class UserAccount {
 	 * @return bool|User
 	 */
 	public static function isLoggedIn(){
+		$logger = new Logger('UserAccount');
+		global $library;
+		global $action;
+		global $module;
 		if (UserAccount::$isLoggedIn == null){
 			if (isset($_SESSION['activeUserId'])){
 				UserAccount::$isLoggedIn = true;
@@ -46,7 +61,7 @@ class UserAccount {
 				//Need to check cas just in case the user logged in from another site
 				//if ($action != 'AJAX' && $action != 'DjatokaResolver' && $action != 'Logout' && $module != 'MyAccount' && $module != 'API' && !isset($_REQUEST['username'])){
 				//If the library uses CAS/SSO we may already be logged in even though they never logged in within Pika
-				global $library;
+
 				if (strlen($library->casHost) > 0){
 					$checkCAS = false;
 					$curTime  = time();
@@ -55,22 +70,21 @@ class UserAccount {
 					}elseif ($curTime - $_SESSION['lastCASCheck'] > 10){
 						$checkCAS = true;
 					}
-					global $action;
-					global $module;
+
 					if ($checkCAS && $action != 'AJAX' && $action != 'DjatokaResolver' && $action != 'Logout' && $module != 'MyAccount' && $module != 'API' && !isset($_REQUEST['username'])){
 						//Check CAS first
 						require_once ROOT_DIR . '/sys/Authentication/CASAuthentication.php';
-						global $logger;
+
 						$casAuthentication        = new CASAuthentication(null);
 						$casUsername              = $casAuthentication->validateAccount(null, null, null, false);
 						$_SESSION['lastCASCheck'] = time();
-						$logger->log("Checked CAS Authentication from UserAccount::isLoggedIn result was $casUsername", PEAR_LOG_DEBUG);
+						$logger->debug("Checked CAS Authentication from UserAccount::isLoggedIn result was $casUsername");
 						if ($casUsername == false || PEAR_Singleton::isError($casUsername)){
 							//The user could not be authenticated in CAS
 							UserAccount::$isLoggedIn = false;
 
 						}else{
-							$logger->log("We got a valid user from CAS, getting the user from the database", PEAR_LOG_DEBUG);
+							$logger->debug("We got a valid user from CAS, getting the user from the database");
 							//We have a valid user via CAS, need to do a login to Pika
 							$_REQUEST['casLogin']    = true;
 							UserAccount::$isLoggedIn = true;
@@ -266,7 +280,14 @@ class UserAccount {
 	/**
 	 * @return bool|null|User
 	 */
-	public static function getLoggedInUser(){
+
+	public static function getLoggedInUser() {
+		global $action;
+		global $module;
+		global $library;
+		global $interface;
+		$logger = new Pika\Logger('UserAccount');
+		$cache  = new Pika\Cache();
 		if (UserAccount::$isLoggedIn != null){
 			if (UserAccount::$isLoggedIn){
 				if (!is_null(UserAccount::$primaryUserData)){
@@ -276,47 +297,35 @@ class UserAccount {
 				return false;
 			}
 		}
-		global $action;
-		global $module;
-		global $logger;
-
 		$userData = false;
 		if (isset($_SESSION['activeUserId'])){
 			$activeUserId = $_SESSION['activeUserId'];
-			/** @var Memcache $memCache */
-			global $memCache;
-			global $serverName;
-
-			/** @var User $userData */
-			$userData = $memCache->get("user_{$serverName}_{$activeUserId}");
-			//$userData = false;
-			if ($userData === false || isset($_REQUEST['reload'])){
-
+			$patronCacheKey = $cache->makePatronKey('patron', $activeUserId);
+			$userData = $cache->get($patronCacheKey);
+			if ($userData === false || isset($_REQUEST['reload'])) {
 				//Load the user from the database
 				$userData = new User();
-
 				$userData->id = $activeUserId;
 				$userData->find(true);
 				if ($userData->N != 0 && $userData->N != false){
-					$logger->log("Loading user {$userData->cat_username}, {$userData->cat_password} because we didn't have data in memcache", PEAR_LOG_DEBUG);
+					$logger->debug("Loading user {$userData->cat_username}, {$userData->cat_password} because we didn't have data in memcache");
 					$userData = UserAccount::validateAccount($userData->cat_username, $userData->cat_password, $userData->source);
 					self::updateSession($userData);
 				}
-			}else{
-				$logger->log("Found cached user {$userData->id}", PEAR_LOG_DEBUG);
 			}
 			UserAccount::$isLoggedIn = true;
 
 			$masqueradeMode = UserAccount::isUserMasquerading();
 			if ($masqueradeMode){
 				global $guidingUser;
-				$guidingUser = $memCache->get("user_{$serverName}_{$_SESSION['guidingUserId']}"); //TODO: check if this ever works
+				// todo: This is never saved to memcache
+				// $guidingUser = $cache->get("user_{$serverName}_{$_SESSION['guidingUserId']}"); //TODO: check if this ever works
+				$guidingUser = false;
 				if ($guidingUser === false || isset($_REQUEST['reload'])){
 					$guidingUser = new User();
 					$guidingUser->get($_SESSION['guidingUserId']);
 					if (!$guidingUser){
-						global $logger;
-						$logger->log('Invalid Guiding User ID in session variable: ' . $_SESSION['guidingUserId'], PEAR_LOG_ERR);
+						$logger->warn('Invalid Guiding User ID in session variable: ' . $_SESSION['guidingUserId']);
 						$masqueradeMode = false;
 						unset($_SESSION['guidingUserId']); // session_start(); session_commit(); probably needed for this to take effect, but might have other side effects
 					}
@@ -326,13 +335,11 @@ class UserAccount {
 			//Check to see if the patron is already logged in within CAS as long as we aren't on a page that is likely to be a login page
 		}elseif ($action != 'AJAX' && $action != 'DjatokaResolver' && $action != 'Logout' && $module != 'MyAccount' && $module != 'API' && !isset($_REQUEST['username'])){
 			//If the library uses CAS/SSO we may already be logged in even though they never logged in within Pika
-			global $library;
 			if (strlen($library->casHost) > 0){
 				//Check CAS first
 				require_once ROOT_DIR . '/sys/Authentication/CASAuthentication.php';
 				$casAuthentication = new CASAuthentication(null);
-				global $logger;
-				$logger->log("Checking CAS Authentication from UserAccount::getLoggedInUser", PEAR_LOG_DEBUG);
+				$logger->debug("Checking CAS Authentication from UserAccount::getLoggedInUser");
 				$casUsername = $casAuthentication->validateAccount(null, null, null, false);
 				if ($casUsername == false || PEAR_Singleton::isError($casUsername)){
 					//The user could not be authenticated in CAS
@@ -348,7 +355,6 @@ class UserAccount {
 		}
 		if (UserAccount::$isLoggedIn){
 			UserAccount::$primaryUserData = $userData;
-			global $interface;
 			if ($interface){
 				$interface->assign('user', $userData);
 			}
@@ -388,23 +394,25 @@ class UserAccount {
 	 * @throws UnknownAuthenticationMethodException
 	 */
 	public static function login(){
-		global $logger;
+		$logger = new Pika\Logger('UserAccount');
+		$cache  = new Pika\Cache();
+		global $configArray;
 
 		$validUsers = array();
 
 		$validatedViaSSO = false;
 		if (isset($_REQUEST['casLogin'])){
-			$logger->log("Logging the user in via CAS", PEAR_LOG_INFO);
+			$logger->info("Logging the user in via CAS");
 			//Check CAS first
 			require_once ROOT_DIR . '/sys/Authentication/CASAuthentication.php';
 			$casAuthentication = new CASAuthentication(null);
 			$casUsername       = $casAuthentication->authenticate(false);
 			if ($casUsername == false || PEAR_Singleton::isError($casUsername)){
 				//The user could not be authenticated in CAS
-				$logger->log("The user could not be logged in", PEAR_LOG_INFO);
+				$logger->info("The user could not be logged in");
 				return new PEAR_Error('Could not authenticate in sign on service');
 			}else{
-				$logger->log("User logged in OK CAS Username $casUsername", PEAR_LOG_INFO);
+				$logger->info("User logged in OK CAS Username $casUsername");
 				//Set both username and password since authentication methods could use either.
 				//Each authentication method will need to deal with the possibility that it gets a barcode for both user and password
 				$_REQUEST['username'] = $casUsername;
@@ -437,12 +445,8 @@ class UserAccount {
 					return $cardExpired;
 				}
 
-				/** @var Memcache $memCache */
-				global $memCache;
-				global $serverName;
-				global $configArray;
-				$memCache->set("user_{$serverName}_{$tempUser->id}", $tempUser, 0, $configArray['Caching']['user']);
-				$logger->log("Cached user {$tempUser->id}", PEAR_LOG_DEBUG);
+				$patronCacheKey = $cache->makePatronKey('patron', $tempUser->id);
+				$cache->set($patronCacheKey, $tempUser, $configArray['Caching']['user']);
 
 				$validUsers[] = $tempUser;
 				if ($primaryUser == null){
@@ -454,9 +458,8 @@ class UserAccount {
 				}
 			}else{
 				$username = isset($_REQUEST['username']) ? $_REQUEST['username'] : 'No username provided';
-				$logger->log("Error authenticating patron $username for driver {$driverName}\r\n", PEAR_LOG_ERR);
-				$lastError = $tempUser;
-				$logger->log($lastError->toString(), PEAR_LOG_ERR);
+				$logger->error("Error authenticating patron $username for driver {$driverName}",
+				 ['last_error' => $tempUser->toString()]);
 			}
 		}
 
@@ -466,11 +469,9 @@ class UserAccount {
 			UserAccount::$primaryUserData = $primaryUser;
 			return $primaryUser;
 		}else{
-			return $lastError;
+			return $tempUser;
 		}
 	}
-
-	private static $validatedAccounts = array();
 
 	/**
 	 * Validate the account information (username and password are correct).
@@ -484,6 +485,11 @@ class UserAccount {
 	 * @return User|false
 	 */
 	public static function validateAccount($username, $password, $accountSource = null, $parentAccount = null){
+		global $library;
+		global $configArray;
+		$logger = new Pika\Logger('UserAccount');
+		$cache  = new Pika\Cache();
+
 		if (array_key_exists($username . $password, UserAccount::$validatedAccounts)){
 			return UserAccount::$validatedAccounts[$username . $password];
 		}
@@ -491,22 +497,20 @@ class UserAccount {
 		//Test all valid authentication methods and see which (if any) result in a valid login.
 		$driversToTest = self::loadAccountProfiles();
 
-		global $library;
-		global $logger;
 		$validatedViaSSO = false;
 		if (strlen($library->casHost) > 0 && $username == null && $password == null){
 			//Check CAS first
 			require_once ROOT_DIR . '/sys/Authentication/CASAuthentication.php';
 			$casAuthentication = new CASAuthentication(null);
-			$logger->log("Checking CAS Authentication from UserAccount::validateAccount", PEAR_LOG_DEBUG);
+			$logger->debug("Checking CAS Authentication from UserAccount::validateAccount");
 			$casUsername = $casAuthentication->validateAccount(null, null, $parentAccount, false);
 			if ($casUsername == false || PEAR_Singleton::isError($casUsername)){
 				//The user could not be authenticated in CAS
-				$logger->log("User could not be authenticated in CAS", PEAR_LOG_DEBUG);
+				$logger->debug("User could not be authenticated in CAS");
 				UserAccount::$validatedAccounts[$username . $password] = false;
 				return false;
 			}else{
-				$logger->log("User was authenticated in CAS", PEAR_LOG_DEBUG);
+				$logger->debug("User was authenticated in CAS");
 				//Set both username and password since authentication methods could use either.
 				//Each authentication method will need to deal with the possibility that it gets a barcode for both user and password
 				$username        = $casUsername;
@@ -520,12 +524,9 @@ class UserAccount {
 				$authN         = AuthenticationFactory::initAuthentication($additionalInfo['authenticationMethod'], $additionalInfo);
 				$validatedUser = $authN->validateAccount($username, $password, $parentAccount, $validatedViaSSO);
 				if ($validatedUser && !PEAR_Singleton::isError($validatedUser)){
-					/** @var Memcache $memCache */
-					global $memCache;
-					global $serverName;
-					global $configArray;
-					$memCache->set("user_{$serverName}_{$validatedUser->id}", $validatedUser, 0, $configArray['Caching']['user']);
-					$logger->log("Cached user {$validatedUser->id}", PEAR_LOG_DEBUG);
+					$patronCacheKey = $cache->makePatronKey('patron', $validatedUser->id);
+					$cache->set($patronCacheKey, $validatedUser, $configArray['Caching']['user']);
+					$logger->debug("Cached user {$validatedUser->id}");
 					if ($validatedViaSSO){
 						$_SESSION['loggedInViaCAS'] = true;
 					}
@@ -534,7 +535,6 @@ class UserAccount {
 				}
 			}
 		}
-
 		UserAccount::$validatedAccounts[$username . $password] = false;
 		return false;
 	}
@@ -543,11 +543,8 @@ class UserAccount {
 	 * Completely logout the user annihilating their entire session.
 	 */
 	public static function logout(){
-		//global $logger;
-		//$logger->log("Logging user out", PEAR_LOG_DEBUG);
 		UserAccount::softLogout();
 		session_regenerate_id(true);
-		//$logger->log("New session id is $newId", PEAR_LOG_DEBUG);
 	}
 
 	/**
@@ -556,8 +553,6 @@ class UserAccount {
 	 */
 	public static function softLogout(){
 		if (isset($_SESSION['activeUserId'])){
-			//global $logger;
-			//$logger->log("Logging user {$_SESSION['activeUserId']} out", PEAR_LOG_DEBUG);
 			if (isset($_SESSION['guidingUserId'])){
 				// Shouldn't end up here while in Masquerade Mode, but if does happen end masquerading as well
 				unset($_SESSION['guidingUserId']);
@@ -582,11 +577,10 @@ class UserAccount {
 	 * @return array
 	 */
 	protected static function loadAccountProfiles(){
-		/** @var Memcache $memCache */
-		global $memCache;
+		$cache = new Cache();
 		global $instanceName;
 		global $configArray;
-		$accountProfiles = $memCache->get('account_profiles_' . $instanceName);
+		$accountProfiles = $cache->get('account_profiles_' . $instanceName);
 
 		if ($accountProfiles == false || isset($_REQUEST['reload'])){
 			$accountProfiles = array();
@@ -627,7 +621,7 @@ class UserAccount {
 				$accountProfiles[$accountProfile->name] = $additionalInfo;
 			}
 
-			$memCache->set('account_profiles_' . $instanceName, $accountProfiles, 0, $configArray['Caching']['account_profiles']);
+			$cache->set('account_profiles_' . $instanceName, $accountProfiles, $configArray['Caching']['account_profiles']);
 			global $timer;
 			$timer->logTime("Loaded Account Profiles");
 		}
