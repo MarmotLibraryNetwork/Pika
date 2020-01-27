@@ -16,6 +16,8 @@ use User;
 use Library;
 use Location;
 use Pika\PatronDrivers\MyBooking;
+use Pika\Cache;
+use Pika\Logger;
 
 require_once ROOT_DIR . "/sys/Pika/PatronDrivers/Traits/PatronBookingsOperations.php";
 require_once ROOT_DIR . "/sys/Pika/PatronDrivers/MyBooking.php";
@@ -198,8 +200,8 @@ class Marmot extends Sierra {
 		}
 		$curlResponse = $c->post($bookingUrl, $post);
 		if ($c->error){
-			global $logger;
-			$logger->log('Curl error during booking, code: ' . $c->getErrorMessage(), PEAR_LOG_WARNING);
+
+			$this->logger->warn('Curl error during booking, code: ' . $c->getErrorMessage());
 			return array(
 				'success' => false,
 				'message' => 'There was an error communicating with the circulation system.'
@@ -240,8 +242,7 @@ class Marmot extends Sierra {
 		}
 
 		// Catch all Failure
-		global $logger;
-		$logger->log('Unkown error during booking', PEAR_LOG_ERR);
+		$this->logger->error('Unkown error during booking');
 		return array(
 			'success' => false,
 			'message' => 'There was an unexpected result while scheduling your item'
