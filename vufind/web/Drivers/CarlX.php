@@ -111,7 +111,7 @@ class CarlX extends SIP2Driver{
 					$user->web_note    = '';
 					$user->phone       = $result->Patron->Phone1;
 
-					$user->setUserExpirationSettings($this->extractDateFromCarlXDateField($result->Patron->ExpirationDate);
+					$user->setUserExpirationSettings($this->extractDateFromCarlXDateField($result->Patron->ExpirationDate));
 
 					//Load summary information for number of holds, checkouts, etc
 					$patronSummaryRequest = new stdClass();
