@@ -13,12 +13,19 @@ class PinReset extends DB_DataObject {
 	public $token;
 	public $expires;
 
-	public function __construct(){
-		$hello = 'hello';
-	}
-
 	public function keys(){
 		return array('id');
+	}
+
+	public function insert() {
+		$now = new DateTime('NOW');
+		$now->add(new DateInterval('PT01H'));
+
+		$this->expires  = $now->format('U');
+		$this->selector = bin2hex(random_bytes(8));
+		$this->token    = random_int(1000000000000000, 9999999999999999);
+
+		parent::insert();
 	}
 
 }
