@@ -26,9 +26,8 @@ class Cache implements CacheInterface
 
 	private $keyTypes = ['patron', 'holds', 'checkouts', 'history', 'fines'];
 
-	public  $handler;
-
-	private $logger = false;
+	public  $handler = false;
+	private $logger  = false;
 
 	/**
 	 * Cache constructor.
@@ -37,7 +36,7 @@ class Cache implements CacheInterface
 	public function __construct(Memcached $handler = null)
 	{
 		global $configArray;
-		if($handler) {
+		if(is_a($handler, 'Memcached')) {
 			$this->handler = $handler;
 		} else {
 			$handler = initCache();
@@ -59,7 +58,7 @@ class Cache implements CacheInterface
 	 * @throws InvalidArgumentException
 	 *   MUST be thrown if the $key string is not a legal value.
 	 */
-	public function get($key, $default = null)
+	public function get($key, $default = false)
 	{
 		$return = $this->handler->get($key) ? $this->handler->get($key) : $default;
 		$this->_log('Get', $key, $return);
