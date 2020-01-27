@@ -445,10 +445,10 @@ function loadModuleActionId(){
 		// Grouped work and User list ids don't need a profile
 		global $activeRecordIndexingProfile;
 		foreach ($indexingProfiles as $profile){
-			if ($profile->recordUrlComponent == $_REQUEST['module']){
-				$id          = $profile->name . ':' . $_REQUEST['id'];
-				if (!file_exists(ROOT_DIR . '/services/' . $_REQUEST['module'])){
-					// When a record view, doesn't have an explicitly made driver, fallback to the standard Record Driver
+			if ($profile->recordUrlComponent == $module){
+				$id          = $profile->name . ':' . $id;
+				if (!file_exists(ROOT_DIR . '/services/' . $module)){
+					// When a record view doesn't have an explicitly made driver, fallback to the standard full record View
 					$module     = 'Record';
 				}
 				$activeRecordIndexingProfile = $profile;
