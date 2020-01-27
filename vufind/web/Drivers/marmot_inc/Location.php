@@ -1,11 +1,30 @@
 <?php
 /**
+ * Pika Discovery Layer
+ * Copyright (C) 2020  Marmot Library Network
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+/**
  * Table Definition for location
  */
+
+use Pika\Cache;
+use Pika\Logger;
+
 require_once 'DB/DataObject.php';
-
 require_once ROOT_DIR . '/Drivers/marmot_inc/OneToManyDataObjectOperations.php';
-
 require_once ROOT_DIR . '/Drivers/marmot_inc/LocationHours.php';
 require_once ROOT_DIR . '/Drivers/marmot_inc/LocationFacetSetting.php';
 require_once ROOT_DIR . '/Drivers/marmot_inc/LocationCombinedResultSection.php';
@@ -17,14 +36,6 @@ require_once ROOT_DIR . '/sys/Hoopla/LocationHooplaSettings.php';
 class Location extends DB_DataObject {
 
 	use OneToManyDataObjectOperations;
-
-	/**
-	 * Needed override for OneToManyDataObjectOperations
-	 * @return string
-	 */
-	function getKeyOther(){
-		return 'locationId';
-	}
 
 	const DEFAULT_AUTOLOGOUT_TIME            = 90;
 	const DEFAULT_AUTOLOGOUT_TIME_LOGGED_OUT = 450;
@@ -108,11 +119,27 @@ class Location extends DB_DataObject {
 	/** @var  array $data */
 	protected $data;
 
+	private $logger;
+	private $cache;
+
 //	public $hours;
 // Don't explicitly declare this property.  Calls to it trigger its look up when it isn't set
 
+	public function __construct(){
+		$this->cache  = new Pika\Cache();
+		$this->logger = new Pika\Logger('Location');
+	}
+
 	function keys(){
 		return array('locationId', 'code');
+	}
+
+	/**
+	 * Needed override for OneToManyDataObjectOperations
+	 * @return string
+	 */
+	function getKeyOther(){
+		return 'locationId';
 	}
 
 	function getObjectStructure(){
@@ -837,15 +864,11 @@ class Location extends DB_DataObject {
 			return $this->ipLocation;
 		}
 		global $timer;
-		/** @var Memcache $memCache */
-		global $memCache;
 		global $configArray;
-		global $logger;
 		//Check the current IP address to see if we are in a branch
 		$activeIp = $this->getActiveIp();
-		//$logger->log("Active IP is $activeIp", PEAR_LOG_DEBUG);
-		$this->ipLocation = $memCache->get('location_for_ip_' . $activeIp);
-		$this->ipId       = $memCache->get('ipId_for_ip_' . $activeIp);
+		$this->ipLocation = $this->cache->get('location_for_ip_' . $activeIp);
+		$this->ipId       = $this->cache->get('ipId_for_ip_' . $activeIp);
 		if ($this->ipId == -1){
 			$this->ipLocation = false;
 		}
@@ -865,25 +888,23 @@ class Location extends DB_DataObject {
 				$subnet->whereAdd('endIpVal >= ' . $ipVal);
 				$subnet->orderBy('(endIpVal - startIpVal)');
 				if ($subnet->find(true)){
-					//$logger->log("Found {$subnet->N} matching IP addresses {$subnet->location}", PEAR_LOG_DEBUG);
 					$matchedLocation             = new Location();
 					$matchedLocation->locationId = $subnet->locationid;
 					if ($matchedLocation->find(true)){
 						//Only use the physical location regardless of where we are
-						//$logger->log("Active location is {$matchedLocation->displayName}", PEAR_LOG_DEBUG);
 						$this->ipLocation = clone($matchedLocation);
 						$this->ipLocation->setOpacStatus((boolean)$subnet->isOpac);
 
 						$this->ipId = $subnet->id;
 					}else{
-						$logger->log("Did not find location for ip location id {$subnet->locationid}", PEAR_LOG_WARNING);
+						$this->logger->warn("Did not find location for ip location id {$subnet->locationid}");
 					}
 				}
 				enableErrorHandler();
 			}
 
-			$memCache->set('ipId_for_ip_' . $activeIp, $this->ipId, 0, $configArray['Caching']['ipId_for_ip']);
-			$memCache->set('location_for_ip_' . $activeIp, $this->ipLocation, 0, $configArray['Caching']['location_for_ip']);
+			$this->cache->set('ipId_for_ip_' . $activeIp, $this->ipId, $configArray['Caching']['ipId_for_ip']);
+			$this->cache->set('location_for_ip_' . $activeIp, $this->ipLocation, $configArray['Caching']['location_for_ip']);
 			$timer->logTime('Finished getIPLocation');
 		}
 
