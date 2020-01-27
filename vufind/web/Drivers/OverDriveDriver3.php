@@ -22,12 +22,14 @@
  * @author Mark Noble <mnoble@turningleaftech.com>
  * @copyright Copyright (C) Douglas County Libraries 2011.
  */
+use Pika\Cache;
+use Pika\Logger;
+
 class OverDriveDriver3 {
 	public $version = 3;
 
 	protected $requirePin,
 		$ILSName;
-
 
 	protected $format_map = array(
 		'ebook-epub-adobe'    => 'Adobe EPUB eBook',
@@ -51,6 +53,12 @@ class OverDriveDriver3 {
 		'magazine-overdrive'  => 'OverDrive Magazine',
 	);
 
+	private $logger;
+	private $cache;
+	public function __construct(){
+		$this->logger = new Logger('OverDriveDriver3');
+		$this->cache  = new Cache();
+	}
 	private function setCurlDefaults($curlConnection, $headers = array()){
 		$userAgent            = empty($configArray['Catalog']['catalogUserAgent']) ? 'Pika' : $configArray['Catalog']['catalogUserAgent'];
 		$default_curl_options = array(
@@ -72,10 +80,8 @@ class OverDriveDriver3 {
 	}
 
 	private function _connectToAPI($forceNewConnection = false){
-		/** @var Memcache $memCache */
-		global $memCache;
 		global $serverName;
-		$tokenData = $memCache->get('overdrive_token' . $serverName);
+		$tokenData = $this->cache->get('overdrive_token' . $serverName);
 		if ($forceNewConnection || $tokenData == false){
 			global $configArray;
 			if (!empty($configArray['OverDrive']['clientKey'])  && !empty($configArray['OverDrive']['clientSecret'])){
@@ -87,12 +93,9 @@ class OverDriveDriver3 {
 				$return = curl_exec($ch);
 //				$curlInfo = curl_getinfo($ch);
 				curl_close($ch);
-				global $logger;
-				$logger->log("connecting to the overdrive API, return Value : " . $return, PEAR_LOG_DEBUG);
-//				$logger->log("curlinfo : " .var_export($curlInfo, true), PEAR_LOG_DEBUG);
 				$tokenData = json_decode($return);
 				if ($tokenData){
-					$memCache->set('overdrive_token' . $serverName, $tokenData, 0, $tokenData->expires_in - 10);
+					$this->cache->set('overdrive_token' . $serverName, $tokenData, $tokenData->expires_in - 10);
 				}
 			}else{
 				//OverDrive is not configured
@@ -108,11 +111,9 @@ class OverDriveDriver3 {
 	 * @return array|bool|mixed|string
 	 */
 	private function _connectToPatronAPI($user, $forceNewConnection = false){
-		/** @var Memcache $memCache */
-		global $memCache;
 		global $timer;
 		$patronBarcode    = $user->getBarcode();
-		$patronTokenData = $memCache->get('overdrive_patron_token_' . $patronBarcode);
+		$patronTokenData = $this->cache->get('overdrive_patron_token_' . $patronBarcode);
 		if ($forceNewConnection || $patronTokenData == false){
 			$tokenData = $this->_connectToAPI($forceNewConnection);
 			$timer->logTime("Connected to OverDrive API");
@@ -174,11 +175,10 @@ class OverDriveDriver3 {
 							// patrons with too high a fine amount will get this result.
 							return false;
 						}elseif ($configArray['System']['debug']){
-							global $logger;
-							$logger->log('Error connecting to overdrive apis ' . $patronTokenData->error, PEAR_LOG_ERR);
+							$this->logger->warn('Error connecting to overdrive apis' . ['overdirve_error' => $patronTokenData->error]);
 						}
 					}elseif (property_exists($patronTokenData, 'expires_in')){
-						$memCache->set('overdrive_patron_token_' . $patronBarcode, $patronTokenData, 0, $patronTokenData->expires_in - 10);
+						$this->cache->set('overdrive_patron_token_' . $patronBarcode, $patronTokenData, $patronTokenData->expires_in - 10);
 					}
 				}
 			}else{
@@ -194,8 +194,6 @@ class OverDriveDriver3 {
 			$ch = curl_init($url);
 			$this->setCurlDefaults($ch, array("Authorization: {$tokenData->token_type} {$tokenData->access_token}"));
 			$return = curl_exec($ch);
-			global $logger;
-			$logger->log("Return Value : " . $return, PEAR_LOG_DEBUG);
 			curl_close($ch);
 			$returnVal = json_decode($return);
 			if ($returnVal != null){
@@ -671,8 +669,6 @@ class OverDriveDriver3 {
 	 * @return array
 	 */
 	public function getOverDriveSummary($user){
-		/** @var Memcache $memCache */
-		global $memCache;
 		global $configArray;
 		global $timer;
 
@@ -686,7 +682,7 @@ class OverDriveDriver3 {
 			);
 		}
 
-		$summary = $memCache->get('overdrive_summary_' . $user->id);
+		$summary = $this->cache->get('overdrive_summary_' . $user->id);
 		if ($summary == false || isset($_REQUEST['reload'])){
 
 			//Get account information from api
@@ -704,7 +700,7 @@ class OverDriveDriver3 {
 			$summary['holds']      = $holds;
 
 			$timer->logTime("Finished loading titles from overdrive summary");
-			$memCache->set('overdrive_summary_' . $user->id, $summary, 0, $configArray['Caching']['overdrive_summary']);
+			$this->cache->set('overdrive_summary_' . $user->id, $summary, $configArray['Caching']['overdrive_summary']);
 		}
 
 		return $summary;
@@ -727,8 +723,6 @@ class OverDriveDriver3 {
 	 */
 	public function placeOverDriveHold($overDriveId, $user){
 		global $configArray;
-		/** @var Memcache $memCache */
-		global $memCache;
 
 		$url      = $configArray['OverDrive']['patronApiUrl'] . '/v1/patrons/me/holds/' . $overDriveId;
 		$params   = array(
@@ -749,7 +743,7 @@ class OverDriveDriver3 {
 			}
 		}
 		$user->clearCache();
-		$memCache->delete('overdrive_summary_' . $user->id);
+		$this->cache->delete('overdrive_summary_' . $user->id);
 
 		return $holdResult;
 	}
@@ -761,8 +755,6 @@ class OverDriveDriver3 {
 	 */
 	public function cancelOverDriveHold($overDriveId, $user){
 		global $configArray;
-		/** @var Memcache $memCache */
-		global $memCache;
 
 		$url      = $configArray['OverDrive']['patronApiUrl'] . '/v1/patrons/me/holds/' . $overDriveId;
 		$response = $this->_callPatronDeleteUrl($user, $url);
@@ -777,7 +769,7 @@ class OverDriveDriver3 {
 			$cancelHoldResult['message'] = 'There was an error cancelling your hold.';
 			if (isset($response->message)) $cancelHoldResult['message'] .= "  {$response->message}";
 		}
-		$memCache->delete('overdrive_summary_' . $user->id);
+		$this->cache->delete('overdrive_summary_' . $user->id);
 		$user->clearCache();
 		return $cancelHoldResult;
 	}
@@ -793,7 +785,6 @@ class OverDriveDriver3 {
 	 */
 	public function checkoutOverDriveItem($overDriveId, $user){
 		global $configArray;
-		global $memCache;
 
 		$url = $configArray['OverDrive']['patronApiUrl'] . '/v1/patrons/me/checkouts';
 		$params = array(
@@ -828,7 +819,7 @@ class OverDriveDriver3 {
 
 		}
 
-		$memCache->delete('overdrive_summary_' . $user->id);
+		$this->cache->delete('overdrive_summary_' . $user->id);
 		$user->clearCache();
 		return $result;
 	}
@@ -850,8 +841,6 @@ class OverDriveDriver3 {
 	 */
 	public function returnOverDriveItem($overDriveId, $transactionId, $user){
 		global $configArray;
-		global /** @var Memcache $memCache */
-		$memCache;
 
 		$url      = $configArray['OverDrive']['patronApiUrl'] . '/v1/patrons/me/checkouts/' . $overDriveId;
 		$response = $this->_callPatronDeleteUrl($user, $url);
@@ -867,15 +856,13 @@ class OverDriveDriver3 {
 			if (isset($response->message)) $cancelCheckOutResult['message'] .= "  {$response->message}";
 		}
 
-		$memCache->delete('overdrive_summary_' . $user->id);
+		$this->cache->delete('overdrive_summary_' . $user->id);
 		$user->clearCache();
 		return $cancelCheckOutResult;
 	}
 
 	public function selectOverDriveDownloadFormat($overDriveId, $formatId, $user){
 		global $configArray;
-		/** @var Memcache $memCache */
-		global $memCache;
 
 		$url      = $configArray['OverDrive']['patronApiUrl'] . '/v1/patrons/me/checkouts/' . $overDriveId . '/formats';
 		$params   = array(
@@ -898,7 +885,7 @@ class OverDriveDriver3 {
 			$result['message'] = 'Sorry, but we could not select a format for you.';
 			if (isset($response->message)) $result['message'] .= "  {$response->message}";
 		}
-		$memCache->delete('overdrive_summary_' . $user->id);
+		$this->cache->delete('overdrive_summary_' . $user->id);
 
 		return $result;
 	}
