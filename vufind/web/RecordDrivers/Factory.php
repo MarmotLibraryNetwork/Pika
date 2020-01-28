@@ -314,7 +314,7 @@ class RecordDriverFactory {
 	{
 		global $timer;
 		global $memoryWatcher;
-		$logger = new Logger();
+		$logger = new Logger('Factory');
 		// Build the object:
 		if ($path) {
 			require_once $path;
