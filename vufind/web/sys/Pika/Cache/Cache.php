@@ -58,7 +58,7 @@ class Cache implements CacheInterface
 	 * @throws InvalidArgumentException
 	 *   MUST be thrown if the $key string is not a legal value.
 	 */
-	public function get($key, $default = false)
+	public function get($key, $default = null)
 	{
 		$return = $this->handler->get($key) ? $this->handler->get($key) : $default;
 		$this->_log('Get', $key, $return);

@@ -301,7 +301,7 @@ class UserAccount {
 		if (isset($_SESSION['activeUserId'])){
 			$activeUserId = $_SESSION['activeUserId'];
 			$patronCacheKey = $cache->makePatronKey('patron', $activeUserId);
-			$userData = $cache->get($patronCacheKey);
+			$userData = $cache->get($patronCacheKey, false);
 			if ($userData === false || isset($_REQUEST['reload'])) {
 				//Load the user from the database
 				$userData = new User();
