@@ -17,12 +17,19 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
-
+use Pika\Logger;
 require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
 require_once ROOT_DIR . '/sys/Pager.php';
 
 class ReadingHistory extends MyAccount
 {
+	private $logger;
+
+	public function __construct()
+	{
+		$this->logger = new Logger('ReadingHistory');
+	}
+
 	function launch()
 	{
 		global $configArray;
@@ -74,8 +81,7 @@ class ReadingHistory extends MyAccount
 							break;
 						default:
 							// Deprecated action; should be replaced with above action-specific calls
-							global $logger;
-							$logger->log('Call to undefined reading history action : ' . $readingHistoryAction, PEAR_LOG_WARNING);
+							$this->logger->warn('Call to undefined reading history action : ' . $readingHistoryAction);
 					}
 
 					//redirect back to the current location without the action.
