@@ -1056,27 +1056,15 @@ class Sierra {
 		if(!isset($patron->email) || $patron->email == '') {
 			return ['error' => 'You do not have an email address on your account. Please visit your library to reset your pin.'];
 		}
-		// Create tokens
-		// todo: PHP7 use random_int or random_bytes
-		// $selector = bin2hex(random_bytes(8));
-		// $token = random_int(1000000000000000, 9999999999999999);
-		$selector = bin2hex(mt_rand(10000000, 900000000));
-		$token = mt_rand(1000000000000000, 9999999999999999);
-		$now = new DateTime('NOW');
-		$now->add(new DateInterval('PT01H')); // 1 hour
-		$expires = $now->format('U');
-		$resetToken = $selector.$token;
+
 		// make sure there's no old token.
 		$pinReset = new PinReset();
 		$pinReset->userId = $patron->id;
 		$pinReset->delete();
+		// to be safe after delete is called ...
+		$pinReset->userId = $patron->id;
 
-		// insert pin reset request
-		$pinReset->expires = $expires;
-		$pinReset->token = $token;
-		$pinReset->selector = $selector;
-		$pinReset->insert();
-
+		$resetToken = $pinReset->insertReset();
 		// build reset url
 		$resetUrl = $this->configArray['Site']['url'] . "/MyAccount/ResetPin?uid=".$patron->id.'&resetToken='.$resetToken;
 
