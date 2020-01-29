@@ -11,7 +11,6 @@
 
 namespace Pika;
 
-use Pika\Cache\Exception;
 use Pika\Cache\Exception as CacheException;
 use Psr\SimpleCache\CacheInterface;
 use Memcached;
@@ -39,8 +38,7 @@ class Cache implements CacheInterface
 		if(is_a($handler, 'Memcached')) {
 			$this->handler = $handler;
 		} else {
-			$handler = initCache();
-			$this->handler = $handler;
+			$this->handler = initCache();
 		}
 		if((bool)$configArray['System']['debug']) {
 			$this->logger = new Logger("Pika\Cache");
@@ -101,7 +99,10 @@ class Cache implements CacheInterface
 	 */
 	public function delete($key)
 	{
-		$return = (bool)$this->handler->delete($key);
+		if(!is_a($this->handler, 'Memcached')) {
+			$this->handler = initCache();
+		}
+		$return = $this->handler->delete($key);
 		$this->_log('Delete', $key, $return);
 		return $return;
 	}

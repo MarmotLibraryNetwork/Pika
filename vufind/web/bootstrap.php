@@ -30,6 +30,9 @@ global $logger;
 $logger = new Logger();
 $timer->logTime("Read Config");
 
+//global $app;
+//$app = new \Pika\App();
+
 if ($configArray['System']['debug']) {
 	ini_set('display_errors', true);
 	error_reporting(E_ALL & ~E_DEPRECATED & ~E_STRICT);
@@ -86,7 +89,10 @@ function initCache(){
 	$timeout = isset($configArray['Caching']['memcache_connection_timeout']) ? $configArray['Caching']['memcache_connection_timeout'] : 1;
 	// Connect to Memcached with persistent
 	$memCached = new Memcached('pika');
-	$memCached->addServer($host, $port);
+	// Caution! Since this is a persistent connection adding server adds on every page load
+	if (!count($memCached->getServerList())) {
+		$memCached->addServer($host, $port);
+	}
 	return $memCached;
 }
 

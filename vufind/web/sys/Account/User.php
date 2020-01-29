@@ -120,7 +120,7 @@ class User extends DB_DataObject {
 	public $phoneType;
 
 	private $logger;
-	private Cache $cache;
+	private $cache;
 
 	public function __construct(){
 		$this->logger = new Pika\Logger('User');
@@ -779,9 +779,9 @@ class User extends DB_DataObject {
 	/**
 	 * Clear out the cached version of the patron profile.
 	 */
-	function clearCache(){
+	public function clearCache(){
 		$patronCacheKey = $this->cache->makePatronKey('patron', $this->id);
-		$this->cache->delete($patronCacheKey);
+		@$this->cache->delete($patronCacheKey);
 	}
 
 	/**
