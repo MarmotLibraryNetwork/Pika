@@ -75,14 +75,14 @@ class DBMaintenance extends Admin_Admin {
 		}
 
 		//Check to see which updates have already been performed.
-		$availableUpdates = $this->checkWhichUpdatesHaveRun($availableUpdates);
+		$this->checkWhichUpdatesHaveRun($availableUpdates);
 		$interface->assign('sqlUpdates', $availableUpdates);
 
 		$this->display('dbMaintenance.tpl', self::TITLE);
 	}
 
 
-	protected function checkWhichUpdatesHaveRun($availableUpdates){
+	protected function checkWhichUpdatesHaveRun(&$availableUpdates){
 		foreach ($availableUpdates as $key => &$update){
 			$update['alreadyRun'] = false;
 			$dbUpdate             = new DatabaseUpdates();
@@ -90,9 +90,7 @@ class DBMaintenance extends Admin_Admin {
 			if ($dbUpdate->find()){
 				$update['alreadyRun'] = true;
 			}
-//			$availableUpdates[$key] = $update;
 		}
-//		return $availableUpdates;
 	}
 
 	protected function markUpdateAsRun($update_key){
@@ -101,7 +99,8 @@ class DBMaintenance extends Admin_Admin {
 			$dbUpdate->date_run = time();
 			$dbUpdate->update();
 		}else{
-//			$dbUpdate->date_run = time();
+			$dbUpdate->update_key = $update_key;
+//			$dbUpdate->date_run = time(); // table should auto-set this column
 			$dbUpdate->insert();
 		}
 	}
