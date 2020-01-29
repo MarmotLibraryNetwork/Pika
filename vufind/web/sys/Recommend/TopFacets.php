@@ -58,8 +58,8 @@ class TopFacets implements RecommendationInterface
 			$searchLibrary = Library::getActiveLibrary();
 			global $locationSingleton;
 			$searchLocation = $locationSingleton->getActiveLocation();
-			$hasSearchLibraryFacets = ($searchLibrary != null && (count($searchLibrary->facets) > 0));
-			$hasSearchLocationFacets = ($searchLocation != null && (count($searchLocation->facets) > 0));
+			$hasSearchLibraryFacets = (!empty($searchLibrary->facets));
+			$hasSearchLocationFacets = (!empty($searchLocation->facets));
 			if ($hasSearchLocationFacets){
 				$facets = $searchLocation->facets;
 			}elseif ($hasSearchLibraryFacets){

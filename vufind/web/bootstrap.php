@@ -332,8 +332,12 @@ function getLibraryObject(){
 					//Check to see if there is only one library in the system
 					$Library = new Library();
 					if ($Library->count() == 1){
-						$Library->fetch();
-						$library = $Library;
+						if ($Library->find(true)){
+							$library = $Library;
+						}else {
+							die('Could not determine the correct library to use for this install');
+						}
+
 						$timer->logTime("there is only one library for this install");
 						break;
 					}elseif ($i == count($subdomainsToTest) - 1){
@@ -345,7 +349,7 @@ function getLibraryObject(){
 							$library = $Library;
 							$timer->logTime("found the library based on the default");
 						}else{
-							echo("Could not determine the correct library to use for this install");
+							die('Could not determine the correct library to use for this install');
 						}
 					}
 				}

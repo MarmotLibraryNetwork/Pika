@@ -1146,6 +1146,10 @@ class Library extends DB_DataObject {
 
 	static $searchLibrary  = array();
 
+	/**
+	 * @param null $searchSource
+	 * @return Library|null
+	 */
 	static function getSearchLibrary($searchSource = null){
 		if ($searchSource == null){
 			global $searchSource;

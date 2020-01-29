@@ -1070,7 +1070,7 @@ class CatalogConnection
 		$key = 'num_holds_' . $id ;
 		$cachedValue = $this->cache->get($key);
 		if ($cachedValue == false || isset($_REQUEST['reload'])){
-			$cachedValue = $this->driver-getNumHoldsOnRecord($id);
+			$cachedValue = $this->driver->getNumHoldsOnRecord($id);
 			$this->cache->set($key, $cachedValue, $configArray['Caching']['item_data']);
 		}
 
