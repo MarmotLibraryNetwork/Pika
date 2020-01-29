@@ -108,18 +108,18 @@ class HooplaDriver
 //		$headerRequest = curl_getinfo($ch, CURLINFO_HEADER_OUT);
 //		}
 		if (!$json && curl_getinfo($ch, CURLINFO_HTTP_CODE) == 401) {
-			$this->logger->log('401 Response in getAPIResponse. Attempting to renew access token', PEAR_LOG_WARNING);
+			$this->logger->warn('401 Response in getAPIResponse. Attempting to renew access token');
 			$this->renewAccessToken();
 			return false;
 		}
 
-		$this->logger->log("Hoopla API response\r\n$json", PEAR_LOG_DEBUG);
+		$this->logger->debug("Hoopla API response\r\n$json");
 		curl_close($ch);
 
 		if ($json !== false && $json !== 'false') {
 			return json_decode($json);
 		} else {
-			$this->logger->log('Curl problem in getAPIResponse', PEAR_LOG_WARNING);
+			$this->logger->warn('Curl problem in getAPIResponse');
 			return false;
 		}
 	}
