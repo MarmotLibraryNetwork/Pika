@@ -34,7 +34,7 @@ $handler = new Pika\Session\MemcachedSession();
 session_set_save_handler($handler);
 // register shutdown function needed to avoid oddities of using an object as session handler
 register_shutdown_function('session_write_close');
-session_start();
+@session_start();
 $timer->logTime("Initialized Pika\\Session");
 
 // instantiate global logger

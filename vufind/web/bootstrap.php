@@ -38,7 +38,7 @@ if ($configArray['System']['debug']) {
 	ini_set('html_errors', 0);
 }
 
-//Use output buffering to allow session cookies to have different values
+// Use output buffering to allow session cookies to have different values
 // this can't be determined before session_start is called
 ob_start();
 
@@ -81,13 +81,13 @@ function initMemcache(){
 function initCache(){
 	global $configArray;
 	// Set defaults if nothing set in config file.
-	$host = isset($configArray['Caching']['memcache_host']) ? $configArray['Caching']['memcache_host'] : 'localhost';
+	$host = isset($configArray['Caching']['memcache_host']) ? $configArray['Caching']['memcache_host'] : '127.0.0.1';
 	$port = isset($configArray['Caching']['memcache_port']) ? $configArray['Caching']['memcache_port'] : 11211;
 	$timeout = isset($configArray['Caching']['memcache_connection_timeout']) ? $configArray['Caching']['memcache_connection_timeout'] : 1;
 	// Connect to Memcached with persistent
-	$memCache = new Memcached('pika');
-	$memCache->addServer($host, $port);
-	return $memCache;
+	$memCached = new Memcached('pika');
+	$memCached->addServer($host, $port);
+	return $memCached;
 }
 
 function initDatabase(){

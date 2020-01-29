@@ -43,7 +43,7 @@ class Cache implements CacheInterface
 			$this->handler = $handler;
 		}
 		if((bool)$configArray['System']['debug']) {
-			$this->logger = new Logger('PikaCache');
+			$this->logger = new Logger("Pika\Cache");
 		}
 	}
 
