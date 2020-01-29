@@ -1137,6 +1137,9 @@ class Library extends DB_DataObject {
 			unset($structure['recordsOwned']);
 			unset($structure['recordsToInclude']);
 			unset($structure['hooplaSection']);
+			unset($structure['casSection']);
+			unset($structure['interLibraryLoanSection']);
+			unset($structure['googleAnalyticsSection']);
 		}
 		return $structure;
 	}

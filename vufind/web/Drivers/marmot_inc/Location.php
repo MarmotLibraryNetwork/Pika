@@ -500,6 +500,7 @@ class Location extends DB_DataObject {
 			unset($structure['recordsOwned']);
 			unset($structure['recordsToInclude']);
 			unset($structure['hooplaSection']);
+			unset($structure['includeLibraryRecordsToInclude']);
 
 			// Further Restrict location Manager settings
 			if (UserAccount::userHasRole('locationManager')){
