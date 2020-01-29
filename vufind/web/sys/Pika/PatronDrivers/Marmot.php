@@ -58,6 +58,8 @@ class Marmot extends Sierra {
 			$extraSelfRegParams['varFields'][] = ["fieldTag" => "m",
 			                                      "content"  => "Temp Online Access Account. Verify ALL information, add ID,".
 			                                       " verify notice preference, then change p-type, pcode3, and expiration date."];
+			$extraSelfRegParams['varFields'][] = ["fieldTag" => "q",
+			                                      "content"  => "dig access"];
 		}
 		return parent::selfRegister($extraSelfRegParams);
 	}
