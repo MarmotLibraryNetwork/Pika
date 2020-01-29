@@ -115,7 +115,7 @@
 	{/if}
 
 	{* Display Repeat this search links *}
-	{if strlen($lookfor) > 0 && count($repeatSearchOptions) > 0}
+	{if strlen($lookfor) > 0 && !empty($repeatSearchOptions)}
 		<div class='repeatSearchHead'><h4>Try another catalog</h4></div>
 			<div class='repeatSearchList'>
 			{foreach from=$repeatSearchOptions item=repeatSearchOption}
