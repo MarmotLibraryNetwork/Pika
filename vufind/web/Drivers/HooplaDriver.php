@@ -25,6 +25,7 @@
  */
 use Pika\Cache;
 use Pika\Logger;
+
 require_once ROOT_DIR . '/services/SourceAndId.php';
 
 class HooplaDriver
@@ -37,18 +38,17 @@ class HooplaDriver
 	private $logger;
 
 
-	public function __construct()
-	{
+	public function __construct(){
+		$this->cache  = new Cache();
+		$this->logger = new Logger(get_class($this));
 		global $configArray;
-		if (!empty($configArray['Hoopla']['HooplaAPIUser']) && !empty($configArray['Hoopla']['HooplaAPIpassword'])) {
+		if (!empty($configArray['Hoopla']['HooplaAPIUser']) && !empty($configArray['Hoopla']['HooplaAPIpassword'])){
 			$this->hooplaEnabled = true;
-			if (!empty($configArray['Hoopla']['APIBaseURL'])) {
+			if (!empty($configArray['Hoopla']['APIBaseURL'])){
 				$this->hooplaAPIBaseURL = $configArray['Hoopla']['APIBaseURL'];
 				$this->getAccessToken();
 			}
 		}
-		$this->cache  = new Cache();
-		$this->logger = new Logger();
 	}
 
 	/**
@@ -108,18 +108,18 @@ class HooplaDriver
 //		$headerRequest = curl_getinfo($ch, CURLINFO_HEADER_OUT);
 //		}
 		if (!$json && curl_getinfo($ch, CURLINFO_HTTP_CODE) == 401) {
-			$logger->log('401 Response in getAPIResponse. Attempting to renew access token', PEAR_LOG_WARNING);
+			$this->logger->log('401 Response in getAPIResponse. Attempting to renew access token', PEAR_LOG_WARNING);
 			$this->renewAccessToken();
 			return false;
 		}
 
-		$logger->log("Hoopla API response\r\n$json", PEAR_LOG_DEBUG);
+		$this->logger->log("Hoopla API response\r\n$json", PEAR_LOG_DEBUG);
 		curl_close($ch);
 
 		if ($json !== false && $json !== 'false') {
 			return json_decode($json);
 		} else {
-			$logger->log('Curl problem in getAPIResponse', PEAR_LOG_WARNING);
+			$this->logger->log('Curl problem in getAPIResponse', PEAR_LOG_WARNING);
 			return false;
 		}
 	}
