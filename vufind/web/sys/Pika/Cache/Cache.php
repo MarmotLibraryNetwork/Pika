@@ -69,9 +69,9 @@ class Cache implements CacheInterface
 		}
 		if((bool)$configArray['System']['debug']) {
 			$this->logger = new Logger("Pika\Cache");
-			$servers = $this->handler->getServerList();
-			$stats   = $this->handler->getStats();
-			$this->logger->debug('Memcached debug', ['servers'=>$servers,'stats'=>$stats]);
+			//$servers = $this->handler->getServerList();
+			//$stats   = $this->handler->getStats();
+			//$this->logger->debug('Memcached debug', ['servers'=>$servers,'stats'=>$stats]);
 		}
 	}
 

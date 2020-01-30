@@ -780,7 +780,16 @@ class User extends DB_DataObject {
 	 */
 	function clearCache(){
 		global $memCache;
-		$memCache->delete($_SERVER['SERVER_NAME'] . "-patron-" . $this->id); // now stored by User object id column
+		global $logger;
+		$hostname = gethostname();
+		$cacheKey = $hostname . "-patron-" . $this->id;
+		$r = $memCache->delete($cacheKey); // now stored by User object id column
+		$rString = "false";
+		if($r) {
+			$rString = "true";
+		}
+
+		$logger->log("Delete patron from memcache:".$cacheKey. ":".$rString, PEAR_LOG_DEBUG);
 	}
 
 	/**
