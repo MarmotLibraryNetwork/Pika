@@ -1,5 +1,22 @@
 <?php
 /**
+ * Pika Discovery Layer
+ * Copyright (C) 2020  Marmot Library Network
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+/**
  * A PSR-16 memcache implementation for Pika
  *
  * @category Pika
@@ -8,7 +25,6 @@
  * Date      8/5/19
  *
  */
-
 namespace Pika;
 
 use Pika\Cache\Exception as CacheException;
@@ -38,10 +54,24 @@ class Cache implements CacheInterface
 		if($handler instanceof Memcached) {
 			$this->handler = $handler;
 		} else {
-			$this->handler = initCache();
+			// no handler passed -- fire up an instance of memcached
+			$host = isset($configArray['Caching']['memcache_host']) ? $configArray['Caching']['memcache_host'] : '127.0.0.1';
+			$port = isset($configArray['Caching']['memcache_port']) ? $configArray['Caching']['memcache_port'] : 11211;
+			$memCached = new Memcached('pika');
+			// Caution! Since this is a persistent connection adding server adds on every page load
+			// and will max out number of server.
+			if (!count($memCached->getServerList()) || count($memCached->getServerList()) == 0) {
+				$memCached->setOption(Memcached::OPT_NO_BLOCK, true);
+				$memCached->setOption(Memcached::OPT_TCP_NODELAY, true);
+				$memCached->addServer($host, $port);
+			}
+			$this->handler = $memCached;
 		}
 		if((bool)$configArray['System']['debug']) {
 			$this->logger = new Logger("Pika\Cache");
+			$servers = $this->handler->getServerList();
+			$stats   = $this->handler->getStats();
+			$this->logger->debug('Memcached debug', ['servers'=>$servers,'stats'=>$stats]);
 		}
 	}
 
