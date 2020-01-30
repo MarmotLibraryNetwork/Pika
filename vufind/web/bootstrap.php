@@ -92,6 +92,8 @@ function initCache(){
 	$memCached = new Memcached('pika');
 	// Caution! Since this is a persistent connection adding server adds on every page load
 	if (!count($memCached->getServerList())) {
+		$memCached->setOption(Memcached::OPT_NO_BLOCK, true);
+		$memCached->setOption(Memcached::OPT_TCP_NODELAY, true);
 		$memCached->addServer($host, $port);
 	}
 	return $memCached;
