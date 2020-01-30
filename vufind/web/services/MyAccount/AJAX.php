@@ -36,6 +36,14 @@ class MyAccount_AJAX extends AJAXHandler {
 		'getPinUpdateForm',
 	);
 
+	private $cache;
+
+	public function __construct($error_class = null)
+	{
+		parent::__construct($error_class);
+		$this->cache = new Pika\Cache();
+	}
+
 	function getAddBrowseCategoryFromListForm(){
 		global $interface;
 
@@ -78,10 +86,10 @@ class MyAccount_AJAX extends AJAXHandler {
 						'message' => 'Successfully linked accounts.',
 					);
 					// todo: since this doesn't call a patron driver have to remove cache here for Pika/PatronDrivers/Sierra
-					global $memCache;
-					$patronCacheKey = "patron_".$user->barcode."_patron";
-					if($memCache->get($patronCacheKey)) {
-						$memCache->delete($patronCacheKey);
+
+					$patronCacheKey = $this->cache->makePatronKey('patron', $user->id);
+					if($this->cache->has($patronCacheKey)) {
+						$this->cache->delete($patronCacheKey);
 					}
 				}else{ // insert failure or user is blocked from linking account or account & account to link are the same account
 					$result = array(
@@ -115,10 +123,9 @@ class MyAccount_AJAX extends AJAXHandler {
 				);
 				// todo: since this doesn't call a patron driver have to remove cache here for Pika/PatronDrivers/Sierra
 				// this is pretty sloppy need a better way to control caching on objects -- setters would be best.
-				global $memCache;
-				$patronCacheKey = "patron_".$user->barcode."_patron";
-				if($memCache->get($patronCacheKey)) {
-					$memCache->delete($patronCacheKey);
+				$patronCacheKey = $this->cache->makePatronKey('patron', $user->id);
+				if($this->cache->get($patronCacheKey)) {
+					$this->cache->delete($patronCacheKey);
 				}
 			}else{
 				$result = array(
@@ -727,8 +734,6 @@ class MyAccount_AJAX extends AJAXHandler {
 	}
 
 	function GetListTitles(){
-		/** @var MemCache $memCache */
-		global $memCache;
 		global $configArray;
 		global $timer;
 
@@ -742,7 +747,7 @@ class MyAccount_AJAX extends AJAXHandler {
 		$listAPI   = new ListAPI();
 		$cacheInfo = $listAPI->getCacheInfoForList();
 
-		$listData = $memCache->get($cacheInfo['cacheName']);
+		$listData = $this->cache->get($cacheInfo['cacheName']);
 
 		$return = false; // default response
 		if (!$listData || isset($_REQUEST['reload']) || (isset($listData['titles']) && count($listData['titles']) == 0)){
@@ -789,8 +794,7 @@ class MyAccount_AJAX extends AJAXHandler {
 				$listData = json_encode($return);
 			}
 
-			$memCache->set($cacheInfo['cacheName'], $listData, 0, $cacheInfo['cacheLength']);
-
+			$this->cache->set($cacheInfo['cacheName'], $listData, $cacheInfo['cacheLength']);
 		}
 
 		return $return;
@@ -1288,15 +1292,13 @@ class MyAccount_AJAX extends AJAXHandler {
 		global /** @var UInterface $interface */
 		$interface;
 		global $configArray;
-		/** @var Memcache $memCache */
-		global $memCache;
 		$result = array();
 		if (UserAccount::isLoggedIn()){
 			$user = UserAccount::getLoggedInUser();
 			$interface->assign('user', $user);
 
 			//Load a list of lists
-			$userListData = $memCache->get('user_list_data_' . UserAccount::getActiveUserId());
+			$userListData = $this->cache->get('user_list_data_' . UserAccount::getActiveUserId());
 			if ($userListData == null || isset($_REQUEST['reload'])){
 				$lists = array();
 				require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
@@ -1315,7 +1317,7 @@ class MyAccount_AJAX extends AJAXHandler {
 						);
 					}
 				}
-				$memCache->set('user_list_data_' . UserAccount::getActiveUserId(), $lists, 0, $configArray['Caching']['user']);
+				$this->cache->set('user_list_data_' . UserAccount::getActiveUserId(), $lists, $configArray['Caching']['user']);
 				$timer->logTime("Load Lists");
 			}else{
 				$lists = $userListData;

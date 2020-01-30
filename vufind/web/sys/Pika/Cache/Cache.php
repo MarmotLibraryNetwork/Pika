@@ -25,8 +25,8 @@ class Cache implements CacheInterface
 
 	private $keyTypes = ['patron', 'holds', 'checkouts', 'history', 'fines'];
 
-	public  $handler = false;
-	private $logger  = false;
+	protected $handler = false;
+	private   $logger  = false;
 
 	/**
 	 * Cache constructor.
@@ -35,7 +35,7 @@ class Cache implements CacheInterface
 	public function __construct(Memcached $handler = null)
 	{
 		global $configArray;
-		if(is_a($handler, 'Memcached')) {
+		if($handler instanceof Memcached) {
 			$this->handler = $handler;
 		} else {
 			$this->handler = initCache();
@@ -99,10 +99,16 @@ class Cache implements CacheInterface
 	 */
 	public function delete($key)
 	{
-		if(!is_a($this->handler, 'Memcached')) {
+		if(!($this->handler instanceof  Memcached)) {
 			$this->handler = initCache();
 		}
 		$return = $this->handler->delete($key);
+		if($return === false && $this->handler->getResultCode() == Memcached::RES_NOTFOUND) {
+			$return = true;
+		} elseif($return === null ) {
+			$this->logger->error('Memcached error: Object is null');
+			$return = false;
+		}
 		$this->_log('Delete', $key, $return);
 		return $return;
 	}

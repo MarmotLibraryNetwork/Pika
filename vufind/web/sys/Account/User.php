@@ -120,11 +120,11 @@ class User extends DB_DataObject {
 	public $phoneType;
 
 	private $logger;
-	private $cache;
+	public $memCache;
 
 	public function __construct(){
-		$this->logger = new Pika\Logger('User');
-		$this->cache  = new Pika\Cache();
+		$this->logger   = new Pika\Logger('User');
+		$this->memCache = new Pika\Cache();
 	}
 
 	function getTags(){
@@ -369,8 +369,8 @@ class User extends DB_DataObject {
 						$linkedUser     = new User();
 						$linkedUser->id = $userLink->linkedAccountId;
 						if ($linkedUser->find(true)){
-							$cacheKey = $this->cache->makePatronKey("patron", $linkedUser->id);
-							$userData = $this->cache->get($cacheKey);
+							$cacheKey = $this->memCache->makePatronKey("patron", $linkedUser->id);
+							$userData = $this->memCache->get($cacheKey);
 							if ($userData === false || isset($_REQUEST['reload'])){
 								//Load full information from the catalog
 								$linkedUser = UserAccount::validateAccount($linkedUser->cat_username, $linkedUser->cat_password, $linkedUser->source, $this);
@@ -780,8 +780,8 @@ class User extends DB_DataObject {
 	 * Clear out the cached version of the patron profile.
 	 */
 	public function clearCache(){
-		$patronCacheKey = $this->cache->makePatronKey('patron', $this->id);
-		@$this->cache->delete($patronCacheKey);
+		$patronCacheKey = $this->memCache->makePatronKey('patron', $this->id);
+		$this->memCache->delete($patronCacheKey);
 	}
 
 	/**
