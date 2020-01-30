@@ -1378,6 +1378,7 @@ class MyAccount_AJAX extends AJAXHandler {
 			$result['tagsMenu'] = $interface->fetch('MyAccount/tagsMenu.tpl');
 		}//User is not logged in
 
-		return $result;
+//		return $result;
+		return 'junk';
 	}
 }

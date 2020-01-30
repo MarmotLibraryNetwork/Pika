@@ -28,7 +28,7 @@ abstract class Archive_Object extends Action {
 	 * @param string $mainContentTemplate Name of the SMARTY template file for the main content of the Full Record View Pages
 	 * @param string $pageTitle What to display is the html title tag
 	 */
-	function display($mainContentTemplate, $pageTitle = null) {
+	function display($mainContentTemplate, $pageTitle = null, $sidebarTemplate = 'Search/home-sidebar.tpl') {
 		global $interface;
 		global $logger;
 
@@ -137,7 +137,7 @@ abstract class Archive_Object extends Action {
 
 //		$this->updateCookieForExhibitContextData();
 
-		parent::display($mainContentTemplate, $pageTitle);
+		parent::display($mainContentTemplate, $pageTitle, $sidebarTemplate);
 	}
 
 	//TODO: This should eventually move onto a Record Driver
