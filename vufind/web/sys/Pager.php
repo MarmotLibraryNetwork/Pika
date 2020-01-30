@@ -40,28 +40,30 @@ class VuFindPager {
 	 * @param   array $options        The Pager options to override.
 	 * @access  public
 	 */
-	public function __construct($options = array()) {
+	public function __construct($options = array()){
 		// Set default Pager options:
-		$finalOptions = array(
-			'mode' => 'sliding',
-			'path' => "",
-			'delta' => 2,
-			'perPage' => 20,
-			'nextImg' => translate('Next') . ' &raquo;',
-			'prevImg' => '&laquo; ' . translate('Prev'),
-			'separator' => '',
+		$finalOptions = [
+			'mode'                  => 'sliding',
+			'path'                  => '',
+			'delta'                 => 2,
+			'perPage'               => 20,
+			'nextImg'               => translate('Next') . ' <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>',
+			'prevImg'               => '<span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span> ' . translate('Prev'),
+			'separator'             => '',
 			'spacesBeforeSeparator' => 0,
-			'spacesAfterSeparator' => 0,
-			'append' => false,
-			'clearIfVoid' => true,
-			'urlVar' => 'page',
-			'curPageSpanPre' => '<li><span>',
-			'curPageSpanPost' => '</span></li>',
-			'curPageClaas' => 'active'
-		);
+			'spacesAfterSeparator'  => 0,
+			'append'                => false,
+			'clearIfVoid'           => true,
+			'urlVar'                => 'page',
+			'curTag'                => 'li',
+			'linkContainer'         => 'li',
+			'curPageSpanPre'        => '<span>',
+			'curPageSpanPost'       => '</span>',
+			'curPageLinkClassName'  => 'active',
+		];
 
 		// Override defaults with user-provided values:
-		foreach ($options as $optionName => $optionValue) {
+		foreach ($options as $optionName => $optionValue){
 			$finalOptions[$optionName] = $optionValue;
 		}
 
@@ -75,30 +77,23 @@ class VuFindPager {
 	 * @access  public
 	 * @return  array
 	 */
-	public function getLinks() {
-		$links = $this->pager->getLinks();
-		$allLinks = $links['all'];
-		$allLinks = str_replace('<a', '<li><a', $allLinks);
-		$allLinks = str_replace('</a>', '</li></a>', $allLinks);
-		if (strlen($allLinks) > 0){
-			$links['all'] = '<ul class="pagination">' . $allLinks . '</ul>';
-		}else{
-			$links['all'] = null;
-		}
-
+	public function getLinks(){
+		$links        = $this->pager->getLinks();
+		$allLinks     = $links['all'];
+		$links['all'] = (strlen($allLinks)) ? '<ul class="pagination">' . $allLinks . '</ul>' : null;
 		return $links;
 	}
 
-	public function isLastPage() {
+	public function isLastPage(){
 		$currentPage = $this->pager->_currentPage;
-		$totalPages = $this->pager->_totalPages;
+		$totalPages  = $this->pager->_totalPages;
 		return $currentPage == $totalPages;
 	}
 
-	public function getNumRecordsOnPage() {
-		if (!$this->isLastPage()) {
-			return $this->pager->_perPage;
-		}
-		return $this->pager->_totalItems - ($this->pager->_perPage * ($this->pager->_currentPage - 1));
-	}
+//	public function getNumRecordsOnPage() {
+//		if (!$this->isLastPage()) {
+//			return $this->pager->_perPage;
+//		}
+//		return $this->pager->_totalItems - ($this->pager->_perPage * ($this->pager->_currentPage - 1));
+//	}
 }

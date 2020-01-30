@@ -411,19 +411,21 @@ class Search_Results extends Action {
 		// What Mode will search results be Displayed In //
 		if ($displayMode == 'covers'){
 			$displayTemplate = 'Search/covers-list.tpl'; // structure for bookcover tiles
-		} else { // default
+		} else{ // default
 			$displayTemplate = 'Search/list-list.tpl'; // structure for regular results
-			$displayMode = 'list'; // In case the view is not explicitly set, do so now for display & clients-side functions
+			$displayMode     = 'list'; // In case the view is not explicitly set, do so now for display & clients-side functions
 
 			// Process Paging (only in list mode)
-			if ($searchObject->getResultTotal() > 1) {
+			if ($searchObject->getResultTotal() > 1){
 				$link    = $searchObject->renderLinkPageTemplate();
-				$options = array('totalItems' => $summary['resultTotal'],
-				                 'fileName' => $link,
-				                 'perPage' => $summary['perPage']);
+				$options = [
+					'totalItems' => $summary['resultTotal'],
+					'fileName'   => $link,
+					'perPage'    => $summary['perPage']
+				];
 				$pager   = new VuFindPager($options);
 				$interface->assign('pageLinks', $pager->getLinks());
-				if ($pager->isLastPage()) {
+				if ($pager->isLastPage()){
 					$numUnscopedTitlesToLoad = 5;
 				}
 			}
