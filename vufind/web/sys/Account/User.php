@@ -352,6 +352,8 @@ class User extends DB_DataObject {
 	}
 
 	/**
+	 * Fetches additional User objects that have been linked to this User object.
+	 *
 	 * @return User[]
 	 */
 	function getLinkedUsers(){
@@ -363,23 +365,24 @@ class User extends DB_DataObject {
 				require_once ROOT_DIR . '/sys/Account/UserLink.php';
 				$userLink                   = new UserLink();
 				$userLink->primaryAccountId = $this->id;
-				$userLink->find();
-				while ($userLink->fetch()){
-					if (!$this->isBlockedAccount($userLink->linkedAccountId)){
-						$linkedUser     = new User();
-						$linkedUser->id = $userLink->linkedAccountId;
-						if ($linkedUser->find(true)){
-							$cacheKey = $this->memCache->makePatronKey("patron", $linkedUser->id);
-							$userData = $this->memCache->get($cacheKey);
-							if ($userData === false || isset($_REQUEST['reload'])){
-								//Load full information from the catalog
-								$linkedUser = UserAccount::validateAccount($linkedUser->cat_username, $linkedUser->cat_password, $linkedUser->source, $this);
-							}else{
-								$this->logger->debug("Found cached linked user {$userData->id}");
-								$linkedUser = $userData;
-							}
-							if ($linkedUser && !PEAR_Singleton::isError($linkedUser)){
-								$this->linkedUsers[] = clone($linkedUser);
+				if ($userLink->find()){
+					while ($userLink->fetch()){
+						if (!$this->isBlockedAccount($userLink->linkedAccountId)){
+							$linkedUser     = new User();
+							$linkedUser->id = $userLink->linkedAccountId;
+							if ($linkedUser->find(true)){
+								$cacheKey = $this->memCache->makePatronKey("patron", $linkedUser->id);
+								$userData = $this->memCache->get($cacheKey);
+								if (empty($userData) || isset($_REQUEST['reload'])){
+									//Load full information from the catalog
+									$linkedUser = UserAccount::validateAccount($linkedUser->cat_username, $linkedUser->cat_password, $linkedUser->source, $this);
+								}else{
+									$this->logger->debug("Found cached linked user {$userData->id}");
+									$linkedUser = $userData;
+								}
+								if ($linkedUser && !PEAR_Singleton::isError($linkedUser)){
+									$this->linkedUsers[] = clone($linkedUser);
+								}
 							}
 						}
 					}

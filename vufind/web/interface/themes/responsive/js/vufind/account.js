@@ -176,8 +176,7 @@ VuFind.Account = (function(){
 
 								// Show user name on page in case page doesn't reload
 								var name = $.trim(response.result.name);
-								//name = 'Logged In As ' + name.slice(0, name.lastIndexOf(' ') + 2) + '.';
-								name = 'Logged In As ' + name.slice(0, 1) + '. ' + name.slice(name.lastIndexOf(' ') + 1, name.length) + '.';
+								name = 'Logged In As ' + name + '.';
 								$('#side-bar #myAccountNameLink').html(name);
 
 								if (VuFind.Account.closeModalOnAjaxSuccess) {

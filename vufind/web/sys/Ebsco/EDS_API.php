@@ -1,13 +1,16 @@
 <?php
 
 /**
- * Description goes here
+ * EBSCO Discovery Service API driver
  *
- * @category VuFind-Plus-2014
+ * @category Pika
  * @author Mark Noble <mark@marmot.org>
  * Date: 2/14/2016
  * Time: 5:42 PM
  */
+
+use Pika\Logger;
+
 require_once ROOT_DIR . '/sys/Pager.php';
 
 class EDS_API {
@@ -49,54 +52,55 @@ class EDS_API {
 	}
 
 	public function authenticate(){
+		$logger = new Logger(get_class($this));
 		/*if (isset($this->sessionId)){
 			return true;
 		}*/
+
 		global $library;
 		if ($library->edsApiProfile){
 			$this->curl_connection = curl_init("https://eds-api.ebscohost.com/authservice/rest/uidauth");
-			$params =<<<BODY
+			$params                = <<<BODY
 <UIDAuthRequestMessage xmlns="http://www.ebscohost.com/services/public/AuthService/Response/2012/06/01" xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
     <UserId>{$library->edsApiUsername}</UserId>
     <Password>{$library->edsApiPassword}</Password>
     <InterfaceId>{$library->edsApiProfile}</InterfaceId>
 </UIDAuthRequestMessage>
 BODY;
-			$headers = array(
+			$headers               = array(
 				'Content-Type: application/xml',
 				'Content-Length: ' . strlen($params)
 			);
 
 			curl_setopt($this->curl_connection, CURLOPT_CONNECTTIMEOUT, 15);
-			curl_setopt($this->curl_connection, CURLOPT_USERAGENT,"Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)");
+			curl_setopt($this->curl_connection, CURLOPT_USERAGENT, "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)");
 			curl_setopt($this->curl_connection, CURLOPT_RETURNTRANSFER, true);
-			curl_setopt($this->curl_connection, CURLOPT_SSL_VERIFYPEER, false);
+//			curl_setopt($this->curl_connection, CURLOPT_SSL_VERIFYPEER, false);
 			curl_setopt($this->curl_connection, CURLOPT_FOLLOWLOCATION, 1);
 			curl_setopt($this->curl_connection, CURLOPT_TIMEOUT, 30);
-			curl_setopt($this->curl_connection, CURLOPT_RETURNTRANSFER, TRUE);
+			curl_setopt($this->curl_connection, CURLOPT_RETURNTRANSFER, true);
 			curl_setopt($this->curl_connection, CURLOPT_POST, true);
 			curl_setopt($this->curl_connection, CURLOPT_HTTPHEADER, $headers);
 			curl_setopt($this->curl_connection, CURLOPT_POSTFIELDS, $params);
 
-			$return = curl_exec($this->curl_connection);
+			$return                 = curl_exec($this->curl_connection);
 			$authenticationResponse = new SimpleXMLElement($return);
 			if ($authenticationResponse && isset($authenticationResponse->AuthToken)){
 				$this->authenticationToken = (string)$authenticationResponse->AuthToken;
 
 				curl_setopt($this->curl_connection, CURLOPT_HTTPHEADER, $headers);
 
-				$params =<<<BODY
+				$params = <<<BODY
 <CreateSessionRequestMessage xmlns="http://epnet.com/webservices/EbscoApi/Contracts" xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
   <Profile>{$library->edsApiProfile}</Profile>
   <Guest>n</Guest>
   <Org>{$library->displayName}</Org>
 </CreateSessionRequestMessage>
-BODY;
-;
+BODY;;
 				$headers = array(
-						'Content-Type: application/xml',
-						'Content-Length: ' . strlen($params),
-						'x-authenticationToken: ' . $this->authenticationToken
+					'Content-Type: application/xml',
+					'Content-Length: ' . strlen($params),
+					'x-authenticationToken: ' . $this->authenticationToken
 				);
 				curl_setopt($this->curl_connection, CURLOPT_POST, true);
 				curl_setopt($this->curl_connection, CURLOPT_HTTPHEADER, $headers);
@@ -104,21 +108,21 @@ BODY;
 				curl_setopt($this->curl_connection, CURLOPT_POSTFIELDS, $params);
 				$result = curl_exec($this->curl_connection);
 				if ($result == false){
-					echo("Error getting session token");
-					echo(curl_error($this->curl_connection));
-				}else {
+					$logger->error("Error getting session token");
+					$logger->error(curl_error($this->curl_connection));
+				}else{
 					$createSessionResponse = new SimpleXMLElement($result);
-					if ($createSessionResponse->SessionToken) {
+					if ($createSessionResponse->SessionToken){
 						$this->sessionId = (string)$createSessionResponse->SessionToken;
-						//echo("Authenticated in EDS!");
+						$logger->debug("Authenticated in EDS!");
 						return true;
-					} elseif ($createSessionResponse->ErrorDescription) {
-						echo("create session failed, " . print_r($createSessionResponse));
+					}elseif ($createSessionResponse->ErrorDescription){
+						$logger->error("create session failed, " . print_r($createSessionResponse));
 						return false;
 					}
 				}
 			}else{
-				echo("Authentication failed!, $return");
+				$logger->error("Authentication failed!, $return");
 				return false;
 			}
 		}else{
@@ -137,25 +141,23 @@ BODY;
 			$searchUrl = $this->edsBaseApi . '/search?';
 			$termIndex = 1;
 			foreach ($searchTerms as $term){
-				if ($termIndex > 1) $searchUrl .= '&';
-				$term = str_replace(',', '', $term);
+				if ($termIndex > 1){
+					$searchUrl .= '&';
+				}
+				$term      = str_replace(',', '', $term);
 				$searchUrl .= "query-{$termIndex}=OR," . urlencode($term);
 				$termIndex++;
 			}
 		}else{
 			$searchTerms = str_replace(',', '', $searchTerms);
-			$searchUrl = $this->edsBaseApi . '/search?query-1=AND,' . urlencode($searchTerms);
+			$searchUrl   = $this->edsBaseApi . '/search?query-1=AND,' . urlencode($searchTerms);
 		}
 
-		if (isset($sort)) {
-			$this->sort = $sort;
-		}else {
-			$this->sort = $this->defaultSort;
-		}
+		$this->sort = isset($sort) ? $sort : $this->defaultSort;
 		$searchUrl .= '&sort=' . $this->sort;
 
 		$facetIndex = 1;
-		foreach ($filters as $filter) {
+		foreach ($filters as $filter){
 			$searchUrl .= "&facetfilter=$facetIndex," . urlencode($filter);
 			$facetIndex++;
 		}
@@ -171,15 +173,15 @@ BODY;
 			$searchData = new SimpleXMLElement($result);
 			$this->stopQueryTimer();
 			if ($searchData && !$searchData->ErrorNumber){
-				$this->resultsTotal = $searchData->SearchResult->Statistics->TotalHits;
+				$this->resultsTotal      = $searchData->SearchResult->Statistics->TotalHits;
 				$this->lastSearchResults = $searchData->SearchResult;
 				return $searchData->SearchResult;
 			}else{
-				$curlInfo = curl_getinfo($this->curl_connection);
+				$curlInfo                = curl_getinfo($this->curl_connection);
 				$this->lastSearchResults = null;
 				return null;
 			}
-		}catch (Exception $e){
+		} catch (Exception $e){
 			global $logger;
 			$logger->log("Error loading data from EBSCO $e", PEAR_LOG_ERR);
 		}

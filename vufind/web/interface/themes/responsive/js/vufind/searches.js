@@ -47,14 +47,19 @@ VuFind.Searches = (function(){
 						searchTerm      : searchTerm,
 						searchType      : searchType,
 						showCovers      : $('#hideCovers').is(':checked') ? 'on' : 'off',
-					};
+					},
+					section = $('#combined-results-section-results-' + shortId);
 			$.getJSON(url, params, function(data){
-				if (data.success == false){
-					VuFind.showMessage("Error loading results", data.error);
+				if (data.success === false){
+					section.html('<div class="clearfix"></div>Error loading results.<br>' + data.error);
 				}else{
-					$('#combined-results-section-results-' + shortId).html(data.results);
+					section.html(data.results);
 				}
-			}).fail(VuFind.ajaxFail);
+			}).fail(function (){
+				section.html('<div class="clearfix"></div>Failed to fetch results.');
+					}
+
+			);
 			return false;
 		},
 

@@ -37,19 +37,22 @@ class Union_AJAX extends AJAXHandler {
 		$sectionId       = $_REQUEST['id'];
 		list($className, $id) = explode(':', $sectionId);
 		$sectionObject = null;
-		if ($className == 'LibraryCombinedResultSection'){
-			$sectionObject     = new LibraryCombinedResultSection();
-			$sectionObject->id = $id;
-			$sectionObject->find(true);
-		}elseif ($className == 'LocationCombinedResultSection'){
-			$sectionObject     = new LocationCombinedResultSection();
-			$sectionObject->id = $id;
-			$sectionObject->find(true);
-		}else{
-			return array(
-				'success' => false,
-				'error'   => 'Invalid section id pased in',
-			);
+		switch ($className){
+			case 'LibraryCombinedResultSection':
+				$sectionObject     = new LibraryCombinedResultSection();
+				$sectionObject->id = $id;
+				$sectionObject->find(true);
+				break;
+			case 'LocationCombinedResultSection':
+				$sectionObject     = new LocationCombinedResultSection();
+				$sectionObject->id = $id;
+				$sectionObject->find(true);
+				break;
+			default:
+				return array(
+					'success' => false,
+					'error'   => 'Invalid section id passed in',
+				);
 		}
 		$searchTerm = $_REQUEST['searchTerm'];
 		$searchType = $_REQUEST['searchType'];
@@ -57,19 +60,25 @@ class Union_AJAX extends AJAXHandler {
 		$this->setShowCovers();
 
 		$fullResultsLink = $sectionObject->getResultsLink($searchTerm, $searchType);
-		if ($source == 'eds'){
-			$results = $this->getResultsFromEDS($searchTerm, $numberOfResults, $fullResultsLink);
-		}elseif ($source == 'pika'){
-			$results = $this->getResultsFromPika($searchTerm, $numberOfResults, $searchType, $fullResultsLink);
-		}elseif ($source == 'archive'){
-			$results = $this->getResultsFromArchive($numberOfResults, $searchType, $searchTerm, $fullResultsLink);
-
-		}elseif ($source == 'dpla'){
-			$results = $this->getResultsFromDPLA($searchTerm, $numberOfResults, $fullResultsLink);
-		}elseif ($source == 'prospector'){
-			$results = $this->getResultsFromProspector($searchType, $searchTerm, $numberOfResults, $fullResultsLink);
-		}else{
-			$results = "<div>Showing $numberOfResults for $source.  Show covers? $showCovers</div>";
+		switch ($source){
+			case 'eds':
+				$results = $this->getResultsFromEDS($searchTerm, $numberOfResults, $fullResultsLink);
+				break;
+			case 'pika':
+				$results = $this->getResultsFromPika($searchTerm, $numberOfResults, $searchType, $fullResultsLink);
+				break;
+			case 'archive':
+				$results = $this->getResultsFromArchive($numberOfResults, $searchType, $searchTerm, $fullResultsLink);
+				break;
+			case 'dpla':
+				$results = $this->getResultsFromDPLA($searchTerm, $numberOfResults, $fullResultsLink);
+				break;
+			case 'prospector':
+				$results = $this->getResultsFromProspector($searchType, $searchTerm, $numberOfResults, $fullResultsLink);
+				break;
+			default:
+				$results = "<div>Showing $numberOfResults for $source.  Show covers? $showCovers</div>";
+				break;
 		}
 		$results .= "<div><a href='" . $fullResultsLink . "' target='_blank'>Full Results from {$sectionObject->displayName}</a></div>";
 
