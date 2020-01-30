@@ -19,11 +19,10 @@
 /**
  * Table Definition for user
  */
-use \Pika\Logger;
-use \Pika\Cache;
 require_once 'DB/DataObject.php';
 
 class User extends DB_DataObject {
+
 	public $__table = 'user';                            // table name
 	public $id;                              // int(11)  not_null primary_key auto_increment
 	public $source;
@@ -50,7 +49,7 @@ class User extends DB_DataObject {
 	public $promptForOverdriveEmail;
 	public $hooplaCheckOutConfirmation;
 	public $preferredLibraryInterface;
-	public $noPromptForUserReviews;          //tinyint(1)
+	public $noPromptForUserReviews; //tinyint(1)
 
 	private $roles;
 	private $masqueradingRoles;
@@ -119,13 +118,6 @@ class User extends DB_DataObject {
 	public $comingDueNotice;
 	public $phoneType;
 
-	private $logger;
-	public $memCache;
-
-	public function __construct(){
-		$this->logger   = new Pika\Logger('User');
-		$this->memCache = new Pika\Cache();
-	}
 
 	function getTags(){
 		require_once ROOT_DIR . '/sys/LocalEnrichment/UserTag.php';
@@ -357,10 +349,14 @@ class User extends DB_DataObject {
 	 * @return User[]
 	 */
 	function getLinkedUsers(){
-		global $library;
 		if (is_null($this->linkedUsers)){
 			$this->linkedUsers = array();
-
+			/* var Library $library */
+			global $library;
+			/** @var Memcache $memCache */
+			global $memCache;
+			global $serverName;
+			global $logger;
 			if ($this->id && $library->allowLinkedAccounts){
 				require_once ROOT_DIR . '/sys/Account/UserLink.php';
 				$userLink                   = new UserLink();
@@ -371,13 +367,12 @@ class User extends DB_DataObject {
 							$linkedUser     = new User();
 							$linkedUser->id = $userLink->linkedAccountId;
 							if ($linkedUser->find(true)){
-								$cacheKey = $this->memCache->makePatronKey("patron", $linkedUser->id);
-								$userData = $this->memCache->get($cacheKey);
+								$cacheKey = $_SERVER['SERVER_NAME']."-patron-".$linkedUser->id;
+								$userData = $memCache->get($cacheKey);
 								if (empty($userData) || isset($_REQUEST['reload'])){
 									//Load full information from the catalog
 									$linkedUser = UserAccount::validateAccount($linkedUser->cat_username, $linkedUser->cat_password, $linkedUser->source, $this);
 								}else{
-									$this->logger->debug("Found cached linked user {$userData->id}");
 									$linkedUser = $userData;
 								}
 								if ($linkedUser && !PEAR_Singleton::isError($linkedUser)){
@@ -629,7 +624,7 @@ class User extends DB_DataObject {
 
 	function update($dataObject = false){
 		$result = parent::update();
-		$this->clearCache();
+		$this->clearCache(); // Every update to object requires clearing the Memcached version of the object
 		return $result;
 	}
 
@@ -637,7 +632,8 @@ class User extends DB_DataObject {
 		//set default values as needed
 		if (!isset($this->homeLocationId)){
 			$this->homeLocationId = 0;
-			$this->logger->warn('No Home Location ID was set for newly created user.', PEAR_LOG_WARNING);
+			global $logger;
+			$logger->log('No Home Location ID was set for newly created user.', PEAR_LOG_WARNING);
 		}
 		if (!isset($this->myLocation1Id)){
 			$this->myLocation1Id = 0;
@@ -782,9 +778,9 @@ class User extends DB_DataObject {
 	/**
 	 * Clear out the cached version of the patron profile.
 	 */
-	public function clearCache(){
-		$patronCacheKey = $this->memCache->makePatronKey('patron', $this->id);
-		$this->memCache->delete($patronCacheKey);
+	function clearCache(){
+		global $memCache;
+		$memCache->delete($_SERVER['SERVER_NAME'] . "-patron-" . $this->id); // now stored by User object id column
 	}
 
 	/**
@@ -1403,12 +1399,13 @@ class User extends DB_DataObject {
 						$location->libraryId = $defaultLibrary->libraryId;
 						$location->orderBy('isMainBranch desc'); // gets the main branch first or the first location
 						if (!$location->find(true)){
-							;
-							$this->logger->warn('Failed to find any location to assign to user as home location');
+							global $logger;
+							$logger->log('Failed to find any location to assign to user as home location', PEAR_LOG_ERR);
 							return false;
 						}
 					}else{
-						$this->logger->warn('Failed to find the site default library');
+						global $logger;
+						$logger->log('Failed to find the site default library', PEAR_LOG_ERR);
 						return false;
 					}
 				}
@@ -1454,24 +1451,25 @@ class User extends DB_DataObject {
 
 	function updateAltLocationForHold($pickupBranch){
 		if ($this->homeLocationCode != $pickupBranch){
-			$this->logger->info("Pickup branch is not the user's home location, checking for alternate branch");
+			global $logger;
+			$logger->log("The selected pickup branch is not the user's home location, checking to see if we need to set an alternate branch", PEAR_LOG_INFO);
 			$location       = new Location();
 			$location->code = $pickupBranch;
 			if ($location->find(true)){
-				$this->logger->info("Found the location for the pickup branch $pickupBranch {$location->locationId}");
+				$logger->log("Found the location for the pickup branch $pickupBranch {$location->locationId}", PEAR_LOG_INFO);
 				if ($this->myLocation1Id == 0){
-					$this->logger->info("Alternate location 1 is blank updating that");
+					$logger->log("Alternate location 1 is blank updating that", PEAR_LOG_INFO);
 					$this->myLocation1Id = $location->locationId;
 					$this->update();
 				}else{
 					if ($this->myLocation2Id == 0 && $location->locationId != $this->myLocation1Id){
-						$this->logger->info("Alternate location 2 is blank updating");
+						$logger->log("Alternate location 2 is blank updating that", PEAR_LOG_INFO);
 						$this->myLocation2Id = $location->locationId;
 						$this->update();
 					}
 				}
 			}else{
-				$this->logger->log("Could not find location for $pickupBranch", PEAR_LOG_ERR);
+				$logger->log("Could not find location for $pickupBranch", PEAR_LOG_ERR);
 			}
 		}
 	}
