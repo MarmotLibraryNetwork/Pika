@@ -37,12 +37,16 @@ class MemcachedSession extends SessionHandler implements SessionHandlerInterface
 
 	public function __construct()
 	{
+		ini_set('session.save_handler', 'memcached');
+		ini_set('session.save_path', '127.0.0.1:11211');
 		global $configArray;
 		if (isset($configArray['Session']['lifetime'])) {
 			$gc_lifetime = (int)$configArray['Session']['lifetime'];
 			if ($gc_lifetime > 1) {
 				ini_set('session.gc_maxlifetime', $gc_lifetime);
 			}
+		} else {
+			ini_set('session.gc_maxlifetime', 1440); // php default
 		}
 		return true;
 	}

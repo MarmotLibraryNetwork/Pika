@@ -81,6 +81,7 @@ function initMemcache(){
 	$timer->logTime("Initialize Memcache");
 }
 
+// todo: this can all be handled in Pika\Cache
 function initCache(){
 	global $configArray;
 	// Set defaults if nothing set in config file.
