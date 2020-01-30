@@ -93,12 +93,10 @@ class AJAX_JSON extends AJAXHandler {
 
 		return array(
 			'success'                => true,
-			'name'                   => ucwords($user->firstname . ' ' . $user->lastname),
-//			'phone'                  => $user->phone,
-//			'email'                  => $user->email,
-			'homeLocation'           => isset($patronHomeBranch) ? $patronHomeBranch->code : '',
-			'homeLocationId'         => isset($patronHomeBranch) ? $patronHomeBranch->locationId : '',
-			'enableMaterialsRequest' => MaterialsRequest::enableMaterialsRequest(true),
+			'name'                   => $user->displayName,
+//			'homeLocation'           => isset($patronHomeBranch) ? $patronHomeBranch->code : '',
+//			'homeLocationId'         => isset($patronHomeBranch) ? $patronHomeBranch->locationId : '',
+//			'enableMaterialsRequest' => MaterialsRequest::enableMaterialsRequest(true),
 		);
 	}
 
