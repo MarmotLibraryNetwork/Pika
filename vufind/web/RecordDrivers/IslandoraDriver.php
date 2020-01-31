@@ -760,30 +760,30 @@ abstract class IslandoraDriver extends RecordInterface {
 			$interface->assign('creators', $temp);
 
 			$interface->assign('unlinkedEntities', $this->unlinkedEntities);
-			if ((count($interface->getVariable('creators')) > 0)
+			if ((!empty($interface->getVariable('creators')))
 					|| $this->hasDetails
-					|| (count($interface->getVariable('marriages')) > 0)
-					|| (count($interface->getVariable('physicalExtents')) > 0)
-					|| (count($this->unlinkedEntities) > 0)){
+					|| (!empty($interface->getVariable('marriages')))
+					|| (!empty($interface->getVariable('physicalExtents')))
+					|| (!empty($this->unlinkedEntities))){
 				$moreDetailsOptions['details'] = array(
-						'label' => 'Details',
-						'body' => $interface->fetch('Archive/detailsSection.tpl'),
-						'hideByDefault' => false
+					'label'         => 'Details',
+					'body'          => $interface->fetch('Archive/detailsSection.tpl'),
+					'hideByDefault' => false
 				);
 			}
 
 			$moreDetailsOptions['moreDetails'] = array(
-					'label' => 'More Details',
-					'body' => $interface->fetch('Archive/moreDetailsSection.tpl'),
-					'hideByDefault' => false
+				'label'         => 'More Details',
+				'body'          => $interface->fetch('Archive/moreDetailsSection.tpl'),
+				'hideByDefault' => false
 			);
 		}
 
 		$this->loadRightsStatements();
-		if (count($interface->getVariable('rightsStatements'))) {
+		if (count($interface->getVariable('rightsStatements'))){
 			$moreDetailsOptions['rightsStatements'] = array(
-				'label' => 'Rights Statements',
-				'body' => $interface->fetch('Archive/rightsStatementsSection.tpl'),
+				'label'         => 'Rights Statements',
+				'body'          => $interface->fetch('Archive/rightsStatementsSection.tpl'),
 				'hideByDefault' => false
 			);
 		}
@@ -791,10 +791,10 @@ abstract class IslandoraDriver extends RecordInterface {
 		$repositoryLink = $configArray['Islandora']['repositoryUrl'] . '/islandora/object/' . $this->getUniqueID();
 		$interface->assign('repositoryLink', $repositoryLink);
 		$user = UserAccount::getLoggedInUser();
-		if($user && UserAccount::userHasRoleFromList(['archives', 'opacAdmin', 'libraryAdmin'])) {
+		if ($user && UserAccount::userHasRoleFromList(['archives', 'opacAdmin', 'libraryAdmin'])){
 			$moreDetailsOptions['staffView'] = array(
-				'label' => 'Staff View',
-				'body' => $interface->fetch('Archive/staffViewSection.tpl'),
+				'label'         => 'Staff View',
+				'body'          => $interface->fetch('Archive/staffViewSection.tpl'),
 				'hideByDefault' => false
 			);
 		}

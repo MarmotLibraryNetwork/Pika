@@ -59,19 +59,19 @@ class OrganizationDriver extends IslandoraDriver {
 		$interface->assign('linkedAddresses', $linkedAddresses);
 		if (count($linkedAddresses) || count($unlinkedAddresses)) {
 			$moreDetailsOptions['addresses'] = array(
-					'label' => 'Addresses',
-					'body' => $interface->fetch('Archive/addressSection.tpl'),
-					'hideByDefault' => false,
+				'label'         => 'Addresses',
+				'body'          => $interface->fetch('Archive/addressSection.tpl'),
+				'hideByDefault' => false,
 			);
 		}
-		if ((count($interface->getVariable('creators')) > 0)
+		if ((!empty($interface->getVariable('creators')))
 				|| $this->hasDetails
-				|| (count($interface->getVariable('marriages')) > 0)
-				|| (count($this->unlinkedEntities) > 0)){
+				|| (!empty($interface->getVariable('marriages')))
+				|| (!empty($this->unlinkedEntities))){
 			$moreDetailsOptions['details'] = array(
-					'label' => 'Details',
-					'body' => $interface->fetch('Archive/detailsSection.tpl'),
-					'hideByDefault' => false
+				'label'         => 'Details',
+				'body'          => $interface->fetch('Archive/detailsSection.tpl'),
+				'hideByDefault' => false
 			);
 		}else{
 			unset($moreDetailsOptions['details']);

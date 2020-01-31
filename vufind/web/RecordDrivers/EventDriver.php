@@ -28,19 +28,19 @@ class EventDriver extends IslandoraDriver {
 		return 'Event';
 	}
 
-	public function getMoreDetailsOptions() {
+	public function getMoreDetailsOptions(){
 		//Load more details options
 		global $interface;
 		$moreDetailsOptions = $this->getBaseMoreDetailsOptions();
 
-		$relatedPlaces = $this->getRelatedPlaces();
-		$unlinkedEntities = $this->unlinkedEntities;
-		$linkedAddresses = array();
+		$relatedPlaces     = $this->getRelatedPlaces();
+		$unlinkedEntities  = $this->unlinkedEntities;
+		$linkedAddresses   = array();
 		$unlinkedAddresses = array();
 		foreach ($unlinkedEntities as $key => $tmpEntity){
 			if ($tmpEntity['type'] == 'place'){
 				if (strcasecmp($tmpEntity['role'], 'address') === 0 || $tmpEntity['role'] == ''){
-					$tmpEntity['role'] = 'Address';
+					$tmpEntity['role']   = 'Address';
 					$unlinkedAddresses[] = $tmpEntity;
 					unset($this->unlinkedEntities[$key]);
 					$interface->assign('unlinkedEntities', $this->unlinkedEntities);
@@ -58,24 +58,24 @@ class EventDriver extends IslandoraDriver {
 		}
 		$interface->assign('unlinkedAddresses', $unlinkedAddresses);
 		$interface->assign('linkedAddresses', $linkedAddresses);
-		if (count($linkedAddresses) || count($unlinkedAddresses)) {
+		if (count($linkedAddresses) || count($unlinkedAddresses)){
 			$moreDetailsOptions['addresses'] = array(
-					'label' => 'Addresses',
-					'body' => $interface->fetch('Archive/addressSection.tpl'),
-					'hideByDefault' => false,
+				'label'         => 'Addresses',
+				'body'          => $interface->fetch('Archive/addressSection.tpl'),
+				'hideByDefault' => false,
 			);
 		}
 		if (count($this->relatedPlaces) == 0){
 			unset($moreDetailsOptions['relatedPlaces']);
 		}
-		if ((count($interface->getVariable('creators')) > 0)
-				|| $this->hasDetails
-				|| (count($interface->getVariable('marriages')) > 0)
-				|| (count($this->unlinkedEntities) > 0)){
+		if (!empty($interface->getVariable('creators'))
+			|| $this->hasDetails
+			|| !empty($interface->getVariable('marriages'))
+			|| !empty($this->unlinkedEntities)){
 			$moreDetailsOptions['details'] = array(
-					'label' => 'Details',
-					'body' => $interface->fetch('Archive/detailsSection.tpl'),
-					'hideByDefault' => false
+				'label'         => 'Details',
+				'body'          => $interface->fetch('Archive/detailsSection.tpl'),
+				'hideByDefault' => false
 			);
 		}else{
 			unset($moreDetailsOptions['details']);
