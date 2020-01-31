@@ -194,9 +194,13 @@ class MyAccount_CheckedOut extends MyAccount{
 		$a=4;
 		//Loop Through The Report Data
 		foreach ($checkedOutItems as $row) {
-			$titleCell = preg_replace("/(\/|:)$/", "", $row['title']);
-			if (isset ($row['title2'])){
-				$titleCell .= preg_replace("/(\/|:)$/", "", $row['title2']);
+			if (!empty($row['title'])){
+				$titleCell = preg_replace("/(\/|:)$/", "", $row['title']);
+				if (isset ($row['title2'])){
+					$titleCell .= preg_replace("/(\/|:)$/", "", $row['title2']);
+				}
+			}else{
+				$titleCell = 'Title not available';
 			}
 
 			if (isset ($row['author'])){
