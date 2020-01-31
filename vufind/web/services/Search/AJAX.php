@@ -23,13 +23,13 @@ require_once ROOT_DIR . '/Action.php';
 class AJAX extends AJAXHandler {
 
 	protected $methodsThatRespondWithHTML = array(
-		'sendEmail',
 		'GetAutoSuggestList',
 		'getProspectorResults',
 		'SysListTitles',
 	);
 
 	protected $methodsThatRespondWithJSONUnstructured = array(
+		'sendEmail',
 		'getMoreSearchResults',
 		'GetListTitles',
 		'loadExploreMoreBar',
@@ -250,6 +250,14 @@ class AJAX extends AJAXHandler {
 
 	function getEmailForm(){
 		global $interface;
+		if (UserAccount::isLoggedIn()){
+			/** @var User $user */
+			$user = UserAccount::getActiveUserObj();
+			if (!empty($user->email)){
+				$interface->assign('from', $user->email);
+			}
+		}
+
 		$results = array(
 			'title'        => 'E-Mail Search',
 			'modalBody'    => $interface->fetch('Search/email.tpl'),
