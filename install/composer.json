@@ -15,6 +15,7 @@
         "pear/file_marc": "^1.4",
         "pear/validate_ispn": "dev-master",
         "pear/pager": "^2.5",
-        "pear/mail": "^1.4"
+        "pear/mail": "^1.4",
+        "pear/net_smtp": "^1.9"
     }
 }
