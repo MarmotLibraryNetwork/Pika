@@ -16,14 +16,14 @@ class Hoopla_AJAX extends AJAXHandler {
 
 	use MARC_AJAX_Basic;
 
-	protected $methodsThatRespondWithJSONUnstructured = array(
+	protected array $methodsThatRespondWithJSONUnstructured = array(
 		'reloadCover',
 		'getHooplaCheckOutPrompt',
 		'checkOutHooplaTitle',
 		'returnHooplaTitle',
 	);
 
-	protected $methodsThatRespondThemselves = array(
+	protected array $methodsThatRespondThemselves = array(
 		'downloadMarc',
 	);
 
@@ -72,7 +72,8 @@ class Hoopla_AJAX extends AJAXHandler {
 					if (!$checkOutStatus){
 						require_once ROOT_DIR . '/RecordDrivers/HooplaRecordDriver.php';
 						$hooplaRecord          = new HooplaRecordDriver($fullId);
-						$accessLink            = reset($hooplaRecord->getAccessLink()); // Base Hoopla Title View Url
+						$linksArray            = $hooplaRecord->getAccessLink();
+						$accessLink            = reset($linksArray); // Base Hoopla Title View Url
 						$hooplaRegistrationUrl = $accessLink['url'];
 						$hooplaRegistrationUrl .= (parse_url($hooplaRegistrationUrl, PHP_URL_QUERY) ? '&' : '?') . 'showRegistration=true'; // Add Registration URL parameter
 

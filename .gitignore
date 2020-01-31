@@ -112,11 +112,6 @@ documentation/~*.tmp
 # Word Tempory File
 .vagrant/
 
-# Dreamweaver Files #
-#####################
-[_]notes/
-*.LCK
-
 # File-watcher mishaps #
 ########################
 *.min.min.js
@@ -129,10 +124,6 @@ dplaFeed.json
 #########################
 sites/*.marmot.org
 
-# Aspencat Symbolic Links #
-###########################
-sites/*catalog.aspencat.info
-
 # Flatirons Symbolic Links #
 ############################
 sites/*.flatironslibrary.org
@@ -142,13 +133,6 @@ sites/*.flatironsconsortium.org
 # Lion Symbolic Links #
 #######################
 sites/*.lionlibraries.org
-
-# Nashville Symbolic Links #
-############################
-sites/170.190.30.108
-sites/170.190.30.180
-sites/170.190.30.38
-sites/*.library.nashville.org
 
 # Sacramento Symbolic Links #
 #############################
@@ -162,18 +146,11 @@ sites/librarycatalog.folsom.ca.us
 sites/librarycatalog.folsom.localhost/*
 sites/librarycatalog.sutter.localhost/*
 
-# Nashville CarlX Tools #
-########################
-vufind/web/services/CarlXTools
-vufind/web/interface/themes/nashville_resp/CarlXTools
-
 # Other stuff #
 ###############
 sites/marmot.localhost/sql_backup/marmot_econtent.sql
 sites/marmot.localhost/sql_backup/marmot_vufind.sql
-sites/arlington.localhost/sql_backup/arlington_econtent.sql
 *.sql
-vufind/web/interface/themes/pitkin_resp/images/Winter.JPG
 main.tmpcss
 
 # Chris' VM   #
