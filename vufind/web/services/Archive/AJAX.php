@@ -467,7 +467,7 @@ class Archive_AJAX extends AJAXHandler {
 			$searchObject->addHiddenFilter('!RELS_EXT_isViewableByRole_literal_ms', "administrator");
 			$searchObject->addHiddenFilter('!RELS_EXT_isConstituentOf_uri_ms', "*");
 			$searchObject->clearFilters();
-			if (isset($additionalCollections) && count($additionalCollections > 0)){
+			if (isset($additionalCollections) && !empty($additionalCollections)){
 				$filter = "RELS_EXT_isMemberOfCollection_uri_ms:\"info:fedora/{$pid}\"";
 				foreach ($additionalCollections as $collection){
 					$filter .= " OR RELS_EXT_isMemberOfCollection_uri_ms:\"info:fedora/" . trim($collection) . "\"";
@@ -718,7 +718,7 @@ class Archive_AJAX extends AJAXHandler {
 
 		$relatedSubjects = $recordDriver->getAllSubjectHeadings(true, 5);
 		$ebscoMatches    = $exploreMore->loadEbscoOptions('archive', array(), implode($relatedSubjects, " or "));
-		if (count($ebscoMatches) > 0){
+		if (!empty($ebscoMatches)){
 			$interface->assign('relatedArticles', $ebscoMatches);
 		}
 		$timer->logTime("Loaded Ebsco options");
@@ -1087,7 +1087,7 @@ class Archive_AJAX extends AJAXHandler {
 	 * @param $interface
 	 */
 	public function processTimelineData($response, $interface){
-		if (isset($response['facet_counts']) && count($response['facet_counts']['facet_ranges']) > 0){
+		if (!empty($response['facet_counts']['facet_ranges'])){
 			$dateFacetInfo = array();
 			if (isset($response['facet_counts']['facet_ranges']['dateCreated'])){
 				$dateCreatedInfo = $response['facet_counts']['facet_ranges']['dateCreated'];
