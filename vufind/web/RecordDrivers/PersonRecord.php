@@ -26,10 +26,7 @@ class PersonRecord extends IndexRecord
 	private function getPerson(){
 		if (!isset($this->person)){
 			$person = new Person();
-			$person->personId = $this->shortId;
-			$person->find();
-			if ($person->N > 0){
-				$person->fetch();
+			if ($person->get($this->shortId)){
 				$this->person = $person;
 			}
 		}
@@ -52,15 +49,17 @@ class PersonRecord extends IndexRecord
 		$interface->assign('summShortId', $this->shortId); //Trim the person prefix for the short id
 
 		$person = $this->getPerson();
-		$interface->assign('summPicture', $person->picture);
+		if (!empty($person)){
+			$interface->assign('summPicture', $person->picture);
+			$interface->assign('birthDate', $person->formatPartialDate($person->birthDateDay, $person->birthDateMonth, $person->birthDateYear));
+			$interface->assign('deathDate', $person->formatPartialDate($person->deathDateDay, $person->deathDateMonth, $person->deathDateYear));
+			$interface->assign('lastUpdate', $person->lastModified);
+			$interface->assign('dateAdded', $person->dateAdded);
+			$interface->assign('numObits', count($person->obituaries));
+		}
 
 		$name = $this->getName();
 		$interface->assign('summTitle', trim($name));
-		$interface->assign('birthDate', $person->formatPartialDate($person->birthDateDay, $person->birthDateMonth, $person->birthDateYear));
-		$interface->assign('deathDate', $person->formatPartialDate($person->deathDateDay, $person->deathDateMonth, $person->deathDateYear));
-		$interface->assign('lastUpdate', $person->lastModified);
-		$interface->assign('dateAdded', $person->dateAdded);
-		$interface->assign('numObits', count($person->obituaries));
 
 		return 'RecordDrivers/Person/result.tpl';
 	}
