@@ -13,7 +13,7 @@
 		</div>
 	{/foreach}
 
-	{if count($marriages) > 0}
+	{if !empty($marriages)}
 		{foreach from=$marriages item=marriage}
 			<div class="row">
 				<div class="result-label col-sm-4">

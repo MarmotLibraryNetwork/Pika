@@ -109,7 +109,7 @@
 			{/if}
 
 		</div>
-		{if count($unmappedPlaces) > 0}
+		{if !empty($unmappedPlaces)}
 			<div class="col-sm-4">
 				<button class="btn btn-info btn-xs" onclick="VuFind.showElementInPopup('Unmapped Locations', '#unmappedLocations');">Show Unmapped Locations</button>
 			</div>
