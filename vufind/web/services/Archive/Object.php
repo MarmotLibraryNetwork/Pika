@@ -329,24 +329,24 @@ abstract class Archive_Object extends Action {
 		$interface->assign('repositoryLink', $repositoryLink);
 
 		//Check for display restrictions
-		if ($this->recordDriver instanceof BasicImageDriver || $this->recordDriver instanceof LargeImageDriver || $this->recordDriver instanceof BookDriver || $this->recordDriver instanceof PageDriver || $this->recordDriver instanceof AudioDriver || $this->recordDriver instanceof VideoDriver) {
+		if ($this->recordDriver instanceof BasicImageDriver || $this->recordDriver instanceof LargeImageDriver || $this->recordDriver instanceof BookDriver || $this->recordDriver instanceof PageDriver || $this->recordDriver instanceof AudioDriver || $this->recordDriver instanceof VideoDriver){
 			/** @var CollectionDriver $collection */
 			$anonymousMasterDownload = true;
-			$verifiedMasterDownload = true;
-			$anonymousLcDownload = true;
-			$verifiedLcDownload = true;
-			foreach ($this->recordDriver->getRelatedCollections() as $collection) {
+			$verifiedMasterDownload  = true;
+			$anonymousLcDownload     = true;
+			$verifiedLcDownload      = true;
+			foreach ($this->recordDriver->getRelatedCollections() as $collection){
 				$collectionDriver = RecordDriverFactory::initRecordDriver($collection['object']);
-				if (!$collectionDriver->canAnonymousDownloadMaster()) {
+				if (!$collectionDriver->canAnonymousDownloadMaster()){
 					$anonymousMasterDownload = false;
 				}
-				if (!$collectionDriver->canVerifiedDownloadMaster()) {
+				if (!$collectionDriver->canVerifiedDownloadMaster()){
 					$verifiedMasterDownload = false;
 				}
-				if (!$collectionDriver->canAnonymousDownloadLC()) {
+				if (!$collectionDriver->canAnonymousDownloadLC()){
 					$anonymousLcDownload = false;
 				}
-				if (!$collectionDriver->canVerifiedDownloadLC()) {
+				if (!$collectionDriver->canVerifiedDownloadLC()){
 					$verifiedLcDownload = false;
 				}
 			}

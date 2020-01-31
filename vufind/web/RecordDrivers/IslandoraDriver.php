@@ -594,10 +594,10 @@ abstract class IslandoraDriver extends RecordInterface {
 		}
 
 		$this->loadLinkedData();
-		if (count($interface->getVariable('obituaries'))) {
+		if (!empty($interface->getVariable('obituaries'))){
 			$moreDetailsOptions['obituaries'] = array(
-				'label' => 'Obituaries',
-				'body' => $interface->fetch('Archive/obituariesSection.tpl'),
+				'label'         => 'Obituaries',
+				'body'          => $interface->fetch('Archive/obituariesSection.tpl'),
 				'hideByDefault' => false
 			);
 		}
@@ -609,7 +609,7 @@ abstract class IslandoraDriver extends RecordInterface {
 			);
 		}
 		//See if we need another section for wikipedia content.
-		if (count($interface->getVariable('wikipediaData'))){
+		if (!empty($interface->getVariable('wikipediaData'))){
 			if (strlen($description) > 0) {
 				$moreDetailsOptions['wikipedia'] = array(
 						'label' => 'From Wikipedia',
@@ -1093,16 +1093,18 @@ abstract class IslandoraDriver extends RecordInterface {
 				foreach ($collectionsRaw as $collectionInfo) {
 					if (!$fedoraUtils->isPidValidForPika($collectionInfo['object']['value'])){
 						$parentObject = $fedoraUtils->getObject($collectionInfo['object']['value']);
-						/** @var IslandoraDriver $parentDriver */
-						$parentDriver = RecordDriverFactory::initRecordDriver($parentObject);
-						if ($parentDriver && $parentDriver instanceof IslandoraDriver){
-							$this->relatedCollections = $parentDriver->getRelatedCollections();
-							if (count($this->relatedCollections) != 0){
-								break;
+						if (!empty($parentObject)){
+							/** @var IslandoraDriver $parentDriver */
+							$parentDriver = RecordDriverFactory::initRecordDriver($parentObject);
+							if ($parentDriver && $parentDriver instanceof IslandoraDriver){
+								$this->relatedCollections = $parentDriver->getRelatedCollections();
+								if (count($this->relatedCollections) != 0){
+									break;
+								}
+							}else{
+								global $logger;
+								$logger->log("Incorrect driver type for " . $collectionInfo['object']['value'], PEAR_LOG_DEBUG);
 							}
-						}else{
-							global $logger;
-							$logger->log("Incorrect driver type for " . $collectionInfo['object']['value'], PEAR_LOG_DEBUG);
 						}
 					}
 				}
@@ -1396,19 +1398,17 @@ abstract class IslandoraDriver extends RecordInterface {
 	public function getLinks(){
 		if ($this->links == null){
 			global $timer;
-			$this->links = array();
+			$this->links     = array();
 			$marmotExtension = $this->getMarmotExtension();
 			if (strlen($marmotExtension) > 0){
 				$linkData = $this->getModsValues('externalLink', 'marmot', $marmotExtension, true);
-				foreach ($linkData as $linkInfo) {
+				foreach ($linkData as $linkInfo){
 					$linkType = $this->getModsAttribute('type', $linkInfo);
-					$link = $this->getModsValue('link', 'marmot', $linkInfo);
+					$link     = $this->getModsValue('link', 'marmot', $linkInfo);
 					$linkText = $this->getModsValue('linkText', 'marmot', $linkInfo);
-					if (strlen($linkText) == 0) {
-						if (strlen($linkType) == 0) {
-							$linkText = $link;
-						} else {
-							switch (strtolower($linkType)) {
+					if (strlen($link) > 0){
+						if (strlen($linkText) == 0){
+							switch (strtolower($linkType)){
 								case 'relatedpika':
 									$linkText = 'Related title from the catalog';
 									break;
@@ -1420,33 +1420,31 @@ abstract class IslandoraDriver extends RecordInterface {
 									break;
 								case 'fortlewisgeoplaces':
 									//Skip this one
-									continue;
+									break;
 								case 'geonames':
 									$linkText = 'Geographic information from GeoNames.org';
-									continue;
+									break;
 								case 'samepika':
 									$linkText = 'This record within the catalog';
-									continue;
+									break;
 								case 'whosonfirst':
 									$linkText = 'Geographic information from Who\'s on First';
-									continue;
+									break;
 								case 'wikipedia':
 									$linkText = 'Information from Wikipedia';
-									continue;
+									break;
+								case '':
+									$linkText = $link;
+									break;
 								default:
 									$linkText = $linkType;
 							}
 						}
-					}
-					if (strlen($link) > 0) {
-						$isHidden = false;
-						if ($linkType == 'wikipedia' || $linkType == 'geoNames' || $linkType == 'whosOnFirst' || $linkType == 'relatedPika') {
-							$isHidden = true;
-						}
+						$isHidden      = in_array($linkType, ['wikipedia', 'geoNames', 'whosOnFirst', 'relatedPika']);
 						$this->links[] = array(
-								'type' => $linkType,
-								'link' => $link,
-								'text' => $linkText,
+							'type'   => $linkType,
+							'link'   => $link,
+							'text'   => $linkText,
 							'hidden' => $isHidden,
 						);
 					}
