@@ -183,7 +183,7 @@ abstract class HorizonROA implements DriverInterface
 	public function patronLogin($username, $password, $validatedViaSSO)
 	{
 
-		//TODO: check wihich login style in use. Right now assuming barcode_pin
+		//TODO: check which login style in use. Right now assuming barcode_pin
 		$username = preg_replace('/[\s]/', '', $username); // remove all space characters
 		$password = trim($password);
 
