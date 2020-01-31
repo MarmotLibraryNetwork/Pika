@@ -7,17 +7,6 @@ VuFind.ResultsList = (function(){
 			this.seriesList[this.seriesList.length] = isbn;
 		},
 
-		addIdToStatusList: function(id, type, useUnscopedHoldingsSummary) {
-			if (type == undefined){
-				type = 'VuFind';
-			}
-			var idVal = [];
-			idVal['id'] = id;
-			idVal['useUnscopedHoldingsSummary'] = useUnscopedHoldingsSummary;
-			idVal['type'] = type;
-			this.statusList[this.statusList.length] = idVal;
-		},
-
 		initializeDescriptions: function(){
 			$(".descriptionTrigger").each(function(){
 				var descElement = $(this),

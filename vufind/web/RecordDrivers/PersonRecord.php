@@ -42,10 +42,10 @@ class PersonRecord extends IndexRecord
 	 * search results.
 	 *
 	 * @access  public
+	 * @param string $view          The view style for this search entry. (Only the 'list' view is applicable for genealogy searching)
 	 * @return  string              Name of Smarty template file to display.
 	 */
-	public function getSearchResult()
-	{
+	public function getSearchResult($view = 'list'){
 		global $interface;
 
 		$interface->assign('summId', $this->id);
