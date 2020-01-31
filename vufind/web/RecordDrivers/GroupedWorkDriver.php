@@ -472,11 +472,10 @@ class GroupedWorkDriver extends RecordInterface {
 	 *
 	 * @access  public
 	 * @param string $view The current view.
-	 * @param boolean $useUnscopedHoldingsSummary Whether or not the result should show an unscoped holdings summary.
 	 *
 	 * @return  string              Name of Smarty template file to display.
 	 */
-	public function getSearchResult($view = 'list', $useUnscopedHoldingsSummary = false){
+	public function getSearchResult($view = 'list'){
 		if ($view == 'covers'){ // Displaying Results as bookcover tiles
 			return $this->getBrowseResult();
 		}
@@ -488,7 +487,6 @@ class GroupedWorkDriver extends RecordInterface {
 		global $memoryWatcher;
 
 		$interface->assign('displayingSearchResults', true);
-		$interface->assign('useUnscopedHoldingsSummary', $useUnscopedHoldingsSummary);
 
 		$id = $this->getUniqueID();
 		$timer->logTime("Starting to load search result for grouped work $id");
@@ -514,11 +512,7 @@ class GroupedWorkDriver extends RecordInterface {
 			$linkUrl     .= '?searchId=' . $interface->get_template_vars('searchId') . '&amp;recordIndex=' . $interface->get_template_vars('recordIndex') . '&amp;page=' . $interface->get_template_vars('page');
 		}else{
 			$linkUrl = '/GroupedWork/' . $id . '/Home?searchId=' . $interface->get_template_vars('searchId') . '&amp;recordIndex=' . $interface->get_template_vars('recordIndex') . '&amp;page=' . $interface->get_template_vars('page');
-			if ($useUnscopedHoldingsSummary){
-				$linkUrl .= '&amp;searchSource=marmot';
-			}else{
-				$linkUrl .= '&amp;searchSource=' . $interface->get_template_vars('searchSource');
-			}
+			$linkUrl .= '&amp;searchSource=' . $interface->get_template_vars('searchSource');
 		}
 
 		$interface->assign('summUrl', $linkUrl);
@@ -629,11 +623,10 @@ class GroupedWorkDriver extends RecordInterface {
 	 *
 	 * @access  public
 	 * @param string $view The current view.
-	 * @param boolean $useUnscopedHoldingsSummary Whether or not the result should show an unscoped holdings summary.
 	 *
 	 * @return  string              Name of Smarty template file to display.
 	 */
-	public function getCombinedResult($view = 'list', $useUnscopedHoldingsSummary = false){
+	public function getCombinedResult($view = 'list'){
 		if ($view == 'covers'){ // Displaying Results as bookcover tiles
 			return $this->getBrowseResult();
 		}
@@ -645,7 +638,6 @@ class GroupedWorkDriver extends RecordInterface {
 		global $memoryWatcher;
 
 		$interface->assign('displayingSearchResults', true);
-		$interface->assign('useUnscopedHoldingsSummary', $useUnscopedHoldingsSummary);
 
 		$id = $this->getUniqueID();
 		$timer->logTime("Starting to load search result for grouped work $id");
@@ -671,11 +663,7 @@ class GroupedWorkDriver extends RecordInterface {
 			$linkUrl     .= '?searchId=' . $interface->get_template_vars('searchId') . '&amp;recordIndex=' . $interface->get_template_vars('recordIndex') . '&amp;page=' . $interface->get_template_vars('page');
 		}else{
 			$linkUrl = '/GroupedWork/' . $id . '/Home?searchId=' . $interface->get_template_vars('searchId') . '&amp;recordIndex=' . $interface->get_template_vars('recordIndex') . '&amp;page=' . $interface->get_template_vars('page');
-			if ($useUnscopedHoldingsSummary){
-				$linkUrl .= '&amp;searchSource=marmot';
-			}else{
-				$linkUrl .= '&amp;searchSource=' . $interface->get_template_vars('searchSource');
-			}
+			$linkUrl .= '&amp;searchSource=' . $interface->get_template_vars('searchSource');
 		}
 
 		$interface->assign('summUrl', $linkUrl);
@@ -3106,10 +3094,9 @@ class GroupedWorkDriver extends RecordInterface {
 	 * A relative URL that is a link to the Full Record View AND additional search parameters
 	 * to the recent search the user has navigated from
 	 *
-	 * @param bool $useUnscopedHoldingsSummary //TODO: this parameter is obsolete
 	 * @return string
 	 */
-	public function getLinkUrl($useUnscopedHoldingsSummary = false) {
+	public function getLinkUrl() {
 		return parent::getLinkUrl();
 	}
 

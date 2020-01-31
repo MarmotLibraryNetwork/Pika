@@ -137,7 +137,6 @@
 	</div>
 
 	<script type="text/javascript">
-		VuFind.ResultsList.addIdToStatusList('{$summId|escape}', 'VuFind', '{$useUnscopedHoldingsSummary}');
 		{if $summISBN}
 		VuFind.ResultsList.addIdToSeriesList('{$summISBN}');
 		{/if}

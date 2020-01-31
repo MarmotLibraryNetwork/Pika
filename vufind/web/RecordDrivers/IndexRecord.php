@@ -364,15 +364,13 @@ class IndexRecord extends RecordInterface
 	 * @access  public
 
 	 * @param string $view The current view.
-	 * @param boolean $useUnscopedHoldingsSummary Whether or not the result should show an unscoped holdings summary.
 	 *
 	 * @return  string              Name of Smarty template file to display.
 	 */
-	public function getSearchResult($view = 'list', $useUnscopedHoldingsSummary = false) {
+	public function getSearchResult($view = 'list') {
 		global $configArray;
 		global $interface;
 
-		$interface->assign('useUnscopedHoldingsSummary', $useUnscopedHoldingsSummary);
 
 		$id = $this->getUniqueID();
 		$interface->assign('summId', $id);
@@ -383,7 +381,7 @@ class IndexRecord extends RecordInterface
 		}
 		$interface->assign('module', $this->getModule());
 
-		$interface->assign('summUrl', $this->getLinkUrl($useUnscopedHoldingsSummary));
+		$interface->assign('summUrl', $this->getLinkUrl());
 		$formats = $this->getFormats();
 		$interface->assign('summFormats', $formats);
 		$formatCategories = $this->getFormatCategory();

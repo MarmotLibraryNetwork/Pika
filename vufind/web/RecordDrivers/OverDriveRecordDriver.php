@@ -265,10 +265,11 @@ class OverDriveRecordDriver extends RecordInterface {
 	 * search results.
 	 *
 	 * @access  public
+	 * @param string $view          The view style for this search entry.
 	 * @return  string              Name of Smarty template file to display.
 	 */
-	public function getSearchResult() {
-		// TODO: Implement getSearchResult() method.
+	public function getSearchResult($view = 'list') {
+		// TODO: probably not needed.
 	}
 
 	public function getSeries(){
@@ -277,7 +278,7 @@ class OverDriveRecordDriver extends RecordInterface {
 			$seriesName = isset($this->getOverDriveMetaData()->getDecodedRawData()->series) ? $this->getOverDriveMetaData()->getDecodedRawData()->series : null;
 			if ($seriesName != null){
 				$seriesData = array(
-					'seriesTitle' => $seriesName,
+					'seriesTitle'  => $seriesName,
 					'fromNovelist' => false,
 				);
 			}
@@ -842,10 +843,9 @@ class OverDriveRecordDriver extends RecordInterface {
 	 * A relative URL that is a link to the Full Record View AND additional search parameters
 	 * to the recent search the user has navigated from
 	 *
-	 * @param bool $useUnscopedHoldingsSummary //TODO: this parameter is obsolete
 	 * @return string
 	 */
-	public function getLinkUrl($useUnscopedHoldingsSummary = false) {
+	public function getLinkUrl() {
 		return parent::getLinkUrl();
 	}
 

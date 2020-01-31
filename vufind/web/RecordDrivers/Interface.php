@@ -110,10 +110,9 @@ abstract class RecordInterface {
 	 * A relative URL that is a link to the Full Record View AND additional search parameters
 	 * to the recent search the user has navigated from
 	 *
-	 * @param bool $useUnscopedHoldingsSummary //TODO: this parameter is obsolete
 	 * @return string
 	 */
-	public function getLinkUrl($useUnscopedHoldingsSummary = false) {
+	public function getLinkUrl() {
 		global $interface;
 		$linkUrl = $this->getRecordUrl();
 		$extraParams = array();
@@ -121,11 +120,7 @@ abstract class RecordInterface {
 			$extraParams[] = 'searchId=' . $interface->get_template_vars('searchId');
 			$extraParams[] = 'recordIndex=' . $interface->get_template_vars('recordIndex');
 			$extraParams[] = 'page='  . $interface->get_template_vars('page');
-			if ($useUnscopedHoldingsSummary){
-				$extraParams[] = 'searchSource=marmot';
-			}else{
-				$extraParams[] = 'searchSource=' . $interface->get_template_vars('searchSource');
-			}
+			$extraParams[] = 'searchSource=' . $interface->get_template_vars('searchSource');
 		}
 
 		if (count($extraParams) > 0){
