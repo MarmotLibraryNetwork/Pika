@@ -1090,8 +1090,15 @@ class MyAccount_AJAX extends AJAXHandler {
 		if (isset($_REQUEST['listId']) && ctype_digit($_REQUEST['listId'])){
 			$listId = $_REQUEST['listId'];
 		}
-
 		$interface->assign('listId', $listId);
+		if (UserAccount::isLoggedIn()){
+			/** @var User $user */
+			$user = UserAccount::getActiveUserObj();
+			if (!empty($user->email)){
+				$interface->assign('from', $user->email);
+			}
+		}
+
 		$formDefinition = array(
 			'title'        => 'Email a list',
 			'modalBody'    => $interface->fetch('MyAccount/emailListPopup.tpl'),
