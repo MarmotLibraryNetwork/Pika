@@ -147,7 +147,7 @@ abstract class ObjectEditor extends Admin_Admin {
 			$errorDescription = implode(', ', $validationResults['errors']);
 			$logger->log('Could not validate new object ' . $objectType . ' ' . $errorDescription, PEAR_LOG_DEBUG);
 			@session_start();
-			$_SESSION['lastError'] = "The information entered was not valid. <br/>" . implode('<br/>', $validationResults['errors']);
+			$_SESSION['lastError'] = "The information entered was not valid. <br>" . implode('<br>', $validationResults['errors']);
 
 			return false;
 		}
@@ -239,12 +239,12 @@ abstract class ObjectEditor extends Admin_Admin {
 							} else {
 								$errorDescription = 'Unknown error';
 							}
-							$_SESSION['lastError'] = "An error occurred updating {$this->getObjectType()} with id of $id <br/>{$errorDescription}";
+							$_SESSION['lastError'] = "An error occurred updating {$this->getObjectType()} with id of $id <br>{$errorDescription}";
 							$errorOccurred         = true;
 						}
 					} else {
 						$errorDescription = implode(', ', $validationResults['errors']);
-						$_SESSION['lastError'] = "An error occurred validating {$this->getObjectType()} with id of $id <br/>{$errorDescription}";
+						$_SESSION['lastError'] = "An error occurred validating {$this->getObjectType()} with id of $id <br>{$errorDescription}";
 						$errorOccurred         = true;
 					}
 				}elseif ($objectAction =='delete'){
