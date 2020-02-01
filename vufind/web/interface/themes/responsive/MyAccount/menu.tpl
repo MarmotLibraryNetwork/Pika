@@ -364,8 +364,8 @@
 				</div>
 			{/if}
 
-			{if $loggedIn && $userRoles && (in_array('opacAdmin', $userRoles) || in_array('libraryAdmin', $userRoles) || in_array('contentEditor', $userRoles))}
-				{if $module == "EditorialReview"}
+			{if $loggedIn && $userRoles && (in_array('opacAdmin', $userRoles) || in_array('libraryAdmin', $userRoles) || in_array('libraryManager', $userRoles) || in_array('locationManager', $userRoles) || in_array('contentEditor', $userRoles))}
+				{if $module == "EditorialReview" || $action == "EditorialReviews"}
 					{assign var="curSection" value=true}
 				{else}
 					{assign var="curSection" value=false}
@@ -380,8 +380,8 @@
 					</a>
 					<div id="editorialReviewMenu" class="panel-collapse collapse {if $curSection}in{/if}">
 						<div class="panel-body">
-							<div class="adminMenuLink{if $action == "Edit" && $module == "EditorialReview"} active{/if}"><a href="/EditorialReview/Edit">New Review</a></div>
-							<div class="adminMenuLink{if $action == "Search" && $module == "EditorialReview"} active{/if}"><a href="/EditorialReview/Search">Search Existing Reviews</a></div>
+							<div class="adminMenuLink{if $action == "EditorialReviews"} active{/if}"><a href="/Admin/EditorialReviews">Editorial Reviews</a></div>
+							<div class="adminMenuLink"><a href="/Admin/EditorialReviews?objectAction=addNew">New Review</a></div>
 						</div>
 					</div>
 				</div>

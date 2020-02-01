@@ -438,7 +438,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 		//Load editorial reviews
 		require_once ROOT_DIR . '/sys/LocalEnrichment/EditorialReview.php';
 		$editorialReviews           = new EditorialReview();
-		$editorialReviews->recordId = $id;
+		$editorialReviews->groupedWorkPermanentId = $id;
 		$editorialReviews->find();
 		$allEditorialReviews = array();
 		while ($editorialReviews->fetch()){
