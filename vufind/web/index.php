@@ -435,9 +435,14 @@ function loadModuleActionId(){
 		$id         = $matches[2];
 		$action     = 'Home';
 	}elseif (preg_match("/([^\/?]+)\/([^\/?]+)/", $requestURI, $matches)){
-		// things Browse/AJAX, Search/AJAX, Union/Search
+		// things Browse/AJAX, Search/AJAX, Union/Search, Admin/ListWidgets
 		$module     = $matches[1];
 		$action     = $matches[2];
+//		$id         = '';
+	}
+	if (!empty($action) && !empty($id) && $action == $id){
+		// When the action is originally incorrectly set at the Id, clear out the id
+		$id = '';
 	}
 
 	//Check to see if the module is an indexing profile and adjust the record id number
