@@ -955,7 +955,7 @@ class ListAPI extends AJAXHandler {
 			'message' => 'Unknown error',
 		);
 
-		if (!isset($configArray['NYT_API']) || !isset($configArray['NYT_API']['books_API_key']) || strlen($configArray['NYT_API']['books_API_key']) == 0){
+		if (empty($configArray['NYT_API']['books_API_key'])){
 			return array(
 				'success' => false,
 				'message' => 'API Key missing',
@@ -988,13 +988,15 @@ class ListAPI extends AJAXHandler {
 		$availableLists = json_decode($availableListsRaw);
 
 		//Get the human readable title for our selected list
-		$selectedListTitle      = null;
-		$selectedListTitleShort = null;
+		$selectedListTitle       = null;
+		$selectedListTitleShort  = null;
+		$selectedListDescription = null;
 		//Get the title and description for the selected list
 		foreach ($availableLists->results as $listInformation){
 			if ($listInformation->list_name_encoded == $selectedList){
-				$selectedListTitle      = 'NYT - ' . $listInformation->display_name;
-				$selectedListTitleShort = $listInformation->display_name;
+				$selectedListTitle       = 'NYT - ' . $listInformation->display_name;
+				$selectedListTitleShort  = $listInformation->display_name;
+				$selectedListDescription = "New York Times - " . $selectedListTitleShort . " - Published on " . $listInformation->newest_published_date;
 				break;
 			}
 		}
@@ -1004,12 +1006,6 @@ class ListAPI extends AJAXHandler {
 				'message' => "We did not find list '{$selectedList}' in The New York Times API",
 			);
 		}
-
-		//Get a list of titles from NYT API
-		$availableListsRaw = $nyt_api->get_list($selectedList);
-		$availableLists    = json_decode($availableListsRaw);
-		//TODO: error handling for this call
-
 
 		// Look for selected List
 		require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
@@ -1022,7 +1018,7 @@ class ListAPI extends AJAXHandler {
 		if (!$listExistsInPika){
 			$nytList              = new UserList();
 			$nytList->title       = $selectedListTitle;
-			$nytList->description = "New York Times - " . $selectedListTitleShort; //TODO: Add update date to list description
+			$nytList->description = $selectedListDescription;
 			$nytList->public      = 1;
 			$nytList->defaultSort = 'custom';
 			$nytList->user_id     = $pikaUser->id;
@@ -1062,7 +1058,10 @@ class ListAPI extends AJAXHandler {
 		// Include UserListEntry Class
 		require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
 
-		$numTitlesAdded = 0;
+		//Get a list of titles from NYT API
+		$availableListsRaw = $nyt_api->get_list($selectedList);
+		$availableLists    = json_decode($availableListsRaw);
+		$numTitlesAdded    = 0;
 		foreach ($availableLists->results as $titleResult){
 			$pikaID = null;
 			// go through each list item
@@ -1082,7 +1081,12 @@ class ListAPI extends AJAXHandler {
 			}
 			if (!empty($isbnsArray)){
 				foreach ($isbnsArray as $isbns){
-					$isbn = empty($isbns->isbn13) ? $isbns->isbn10 : $isbns->isbn13;
+					if (empty($isbns->isbn13)){
+						$isbnObj = new ISBN($isbns->isbn10);
+						$isbn    = $isbnObj->get13();
+					}else{
+						$isbn = $isbns->isbn13;
+					}
 					if ($isbn){
 						//look the title up in Pika by ISBN
 						$searchDocument = $searchObject->getRecordByIsbn(array($isbn));
@@ -1128,7 +1132,7 @@ class ListAPI extends AJAXHandler {
 		}
 
 		if ($results['success']){
-			$results['message'] .= "<br/> Added $numTitlesAdded Titles to the list";
+			$results['message'] .= "<br> Added $numTitlesAdded Titles to the list";
 			if ($listExistsInPika){
 				$nytList->update(); // set a new update time on the main list when it already exists
 			}
