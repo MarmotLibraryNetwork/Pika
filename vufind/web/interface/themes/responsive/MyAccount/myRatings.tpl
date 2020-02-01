@@ -60,7 +60,7 @@
 						</tbody>
 					</table>
 				{else}
-					You have not rated any titles yet.
+					<div class="alert alert-info">You have not rated any titles yet.</div>
 				{/if}
 
 			{if $notInterested}

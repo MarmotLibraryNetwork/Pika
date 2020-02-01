@@ -72,7 +72,7 @@ class History extends Action {
 
 					$newItem = array(
 						'id'          => $search->id,
-						'time'        => date("g:ia, jS M y", $searchObject->getStartTime()),
+						'time'        => date("g:ia, jS M Y", $searchObject->getStartTime()),
 						'url'         => $searchObject->renderSearchUrl(),
 						'searchId'    => $searchObject->getSearchId(),
 						'description' => $searchObject->displayQuery(),
