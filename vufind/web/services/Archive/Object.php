@@ -25,8 +25,9 @@ abstract class Archive_Object extends Action {
 	protected $links;
 
 	/**
-	 * @param string $mainContentTemplate Name of the SMARTY template file for the main content of the Full Record View Pages
+	 * @param string $mainContentTemplate Name of the SMARTY template file for the main content of the full pages
 	 * @param string $pageTitle What to display is the html title tag
+	 * @param bool|string $sidebarTemplate Sets the sidebar template, set to false or empty string for no sidebar
 	 */
 	function display($mainContentTemplate, $pageTitle = null, $sidebarTemplate = 'Search/home-sidebar.tpl') {
 		global $interface;

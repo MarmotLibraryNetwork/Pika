@@ -37,10 +37,10 @@ abstract class ObjectEditor extends Admin_Admin {
 		$interface->assign('toolName', $this->getToolName());
 
 		//Define the structure of the object.
-		$structure = $this->getObjectStructure();
-		$interface->assign('structure', $structure);
+		$structure         = $this->getObjectStructure();
 		$objectAction      = isset($_REQUEST['objectAction']) ? $_REQUEST['objectAction'] : null;
 		$customListActions = $this->customListActions();
+		$interface->assign('structure', $structure);
 		$interface->assign('customListActions', $customListActions);
 		if (is_null($objectAction) || $objectAction == 'list'){
 			$interface->assign('instructions', $this->getListInstructions());
@@ -56,36 +56,40 @@ abstract class ObjectEditor extends Admin_Admin {
 				$this->viewIndividualObject($structure);
 			}
 		}
-		$interface->assign('sidebar', 'Search/home-sidebar.tpl');
-		$interface->setPageTitle($this->getPageTitle());
-		$interface->display('layout.tpl');
-
+		$this->display();
 	}
+
 	/**
 	 * The class name of the object which is being edited
 	 */
 	abstract function getObjectType();
+
 	/**
 	 * The page name of the tool (typically the plural of the object)
 	 */
 	abstract function getToolName();
+
 	/**
 	 * The title of the page to be displayed
 	 */
 	abstract function getPageTitle();
+
 	/**
 	 * Load all objects into an array keyed by the primary key
 	 */
 	abstract function getAllObjects();
+
 	/**
 	 * Define the properties which are editable for the object
 	 * as well as how they should be treated while editing, and a description for the property
 	 */
 	abstract function getObjectStructure();
+
 	/**
 	 * The name of the column which defines this as unique
 	 */
 	abstract function getPrimaryKeyColumn();
+
 	/**
 	 * The id of the column which serves to join other columns
 	 */
@@ -95,7 +99,7 @@ abstract class ObjectEditor extends Admin_Admin {
 	function getExistingObjectByPrimaryKey($objectType, $value){
 		$primaryKeyColumn = $this->getPrimaryKeyColumn();
 		/** @var DB_DataObject $dataObject */
-		$dataObject = new $objectType();
+		$dataObject                    = new $objectType();
 		$dataObject->$primaryKeyColumn = $value;
 		$dataObject->find();
 		if ($dataObject->N == 1){
@@ -162,6 +166,7 @@ abstract class ObjectEditor extends Admin_Admin {
 			}
 		}
 	}
+
 	function updateFromUI($object, $structure){
 		require_once ROOT_DIR . '/sys/DataObjectUtil.php';
 		DataObjectUtil::updateFromUI($object, $structure);
@@ -184,8 +189,8 @@ abstract class ObjectEditor extends Admin_Admin {
 		}else{
 			unset($_SESSION['redirect_location']);
 		}
-		if (isset($_REQUEST['id'])){
-			$id = $_REQUEST['id'];
+		if (!empty($_REQUEST['id'])){
+			$id             = $_REQUEST['id'];
 			$existingObject = $this->getExistingObjectById($id);
 			$interface->assign('id', $id);
 			if (method_exists($existingObject, 'label')){
@@ -195,7 +200,7 @@ abstract class ObjectEditor extends Admin_Admin {
 			$existingObject = null;
 		}
 		if (!isset($_REQUEST['id']) || $existingObject == null){
-			$objectType = $this->getObjectType();
+			$objectType     = $this->getObjectType();
 			$existingObject = new $objectType;
 			$this->setDefaultValues($existingObject, $structure);
 		}
@@ -231,34 +236,34 @@ abstract class ObjectEditor extends Admin_Admin {
 				if ($objectAction == 'save'){
 					//Update the object
 					$validationResults = $this->updateFromUI($curObject, $structure);
-					if ($validationResults['validatedOk']) {
+					if ($validationResults['validatedOk']){
 						$ret = $curObject->update();
-						if ($ret === false) {
-							if ($curObject->_lastError) {
+						if ($ret === false){
+							if ($curObject->_lastError){
 								$errorDescription = $curObject->_lastError->getUserInfo();
-							} else {
+							}else{
 								$errorDescription = 'Unknown error';
 							}
 							$_SESSION['lastError'] = "An error occurred updating {$this->getObjectType()} with id of $id <br>{$errorDescription}";
 							$errorOccurred         = true;
 						}
-					} else {
-						$errorDescription = implode(', ', $validationResults['errors']);
+					}else{
+						$errorDescription      = implode(', ', $validationResults['errors']);
 						$_SESSION['lastError'] = "An error occurred validating {$this->getObjectType()} with id of $id <br>{$errorDescription}";
 						$errorOccurred         = true;
 					}
-				}elseif ($objectAction =='delete'){
+				}elseif ($objectAction == 'delete'){
 					//Delete the record
 					$ret = $curObject->delete();
 					if ($ret === false){
 						$_SESSION['lastError'] = "Unable to delete {$this->getObjectType()} with id of $id";
-						$errorOccurred = true;
+						$errorOccurred         = true;
 					}
 				}
 			}else{
 				//Couldn't find the record.  Something went haywire.
 				$_SESSION['lastError'] = "An error occurred, could not find {$this->getObjectType()} with id of $id";
-				$errorOccurred = true;
+				$errorOccurred         = true;
 			}
 		}
 		global $configArray;
@@ -284,6 +289,7 @@ abstract class ObjectEditor extends Admin_Admin {
 	function getRedirectLocation($objectAction, $curObject){
 		return null;
 	}
+
 	function showReturnToList(){
 		return true;
 	}
@@ -291,6 +297,7 @@ abstract class ObjectEditor extends Admin_Admin {
 	function getFilters(){
 		return array();
 	}
+
 	function getModule(){
 		return 'Admin';
 	}
@@ -326,7 +333,25 @@ abstract class ObjectEditor extends Admin_Admin {
 	function getInstructions(){
 		return '';
 	}
+
 	function getListInstructions(){
 		return '';
 	}
+
+	/**
+	 * @param string $mainContentTemplate Name of the SMARTY template file for the main content of the full pages
+	 * @param string $pageTitle What to display is the html title tag
+	 * @param bool|string $sidebarTemplate Sets the sidebar template, set to false or empty string for no sidebar
+	 */
+	function display($mainContentTemplate = null, $pageTitle = null, $sidebarTemplate = 'Search/home-sidebar.tpl'){
+		if (empty($mainContentTemplate)){
+			global $interface;
+			$mainContentTemplate = $interface->getVariable('pageTemplate'); // The main template may get set in other places in Object Editor
+		}
+		if (empty($pageTitle)){
+			$pageTitle = $this->getPageTitle();
+		}
+		parent::display($mainContentTemplate, $pageTitle, $sidebarTemplate);
+	}
+
 }
