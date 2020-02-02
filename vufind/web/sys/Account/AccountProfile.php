@@ -36,6 +36,12 @@ class AccountProfile extends DB_DataObject {
 		return $structure;
 	}
 
+	function label(){
+		if (!empty($this->name)){
+			return $this->name;
+		}
+	}
+
 	function insert(){
 		$this->clearAccountProfilesFromMemCache();
 		return parent::insert();

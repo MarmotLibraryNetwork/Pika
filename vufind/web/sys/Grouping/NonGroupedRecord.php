@@ -148,4 +148,17 @@ class NonGroupedRecord extends CommonGroupingAlterationOperations {
 		$this->markForForcedRegrouping();
 		}
 
+	/**
+	 * Adds a header for this object in the edit form pages
+	 * @return string|null
+	 */
+	function label(){
+		require_once ROOT_DIR . '/services/SourceAndId.php';
+		$sourceAndId  = new SourceAndId($this->source . ':' . $this->id);
+		$recordDriver = new MarcRecord($sourceAndId);
+		if ($recordDriver->isValid()){
+			return $recordDriver->getShortTitle();
+		}
+	}
+
 }

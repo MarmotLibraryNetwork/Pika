@@ -176,4 +176,18 @@ class MergedGroupedWork extends CommonGroupingAlterationOperations {
 		$this->markForForcedRegrouping();
 	}
 
+	/**
+	 * Adds a header for this object in the edit form pages
+	 * @return string|null
+	 */
+	function label(){
+		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+		if (!empty($this->destinationGroupedWorkId)){
+			$groupedWorkDriver = new GroupedWorkDriver($this->destinationGroupedWorkId);
+			if ($groupedWorkDriver->isValid()){
+				return $groupedWorkDriver->getTitleShort();
+			}
+		}
+	}
+
 }

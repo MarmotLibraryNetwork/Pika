@@ -26,7 +26,7 @@ class Admin_TranslationMaps extends ObjectEditor {
 			}
 			$interface->assign('id', $id);
 			$shortPageTitle = "Import Translation Map Data";
-			$interface->assign('shortPageTitle', $shortPageTitle);
+//			$interface->assign('shortPageTitle', $shortPageTitle);
 			$this->display('../Admin/importTranslationMapData.tpl', $shortPageTitle);
 			exit();
 		}elseif ($objectAction == 'doAppend' || $objectAction == 'doReload'){
@@ -87,6 +87,7 @@ class Admin_TranslationMaps extends ObjectEditor {
 				$interface->assign('id', $id);
 				$interface->assign('additionalObjectActions', $this->getAdditionalObjectActions($translationMap));
 				$interface->assign('translationMapValues', $translationMap->translationMapValues);
+				$interface->assign('objectName', $translationMap->label());
 				$this->display('../Admin/viewTranslationMapAsIni.tpl', 'View Translation Map Data');
 				exit();
 			}else{

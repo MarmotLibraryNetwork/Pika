@@ -106,4 +106,13 @@ class EditorialReview extends DB_DataObject {
 		return $validationResults;
 	}
 
+	/**
+	 * Adds a header for this object in the edit form pages
+	 * @return string|null
+	 */
+	function label(){
+		if (!empty($this->title)){
+			return $this->title;
+		}
+	}
 }

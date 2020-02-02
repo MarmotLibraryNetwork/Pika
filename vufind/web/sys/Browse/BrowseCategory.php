@@ -334,6 +334,16 @@ class BrowseCategory extends DB_DataObject{
 			$this->defaultSort = 'relevance';
 		}
 		return true;
-
 	}
+
+	/**
+	 * Adds a header for this object in the edit form pages
+	 * @return string|null
+	 */
+	function label(){
+		if (!empty($this->textId)){
+			return $this->textId;
+		}
+	}
+
 }

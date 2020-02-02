@@ -344,13 +344,14 @@ abstract class ObjectEditor extends Admin_Admin {
 	 * @param bool|string $sidebarTemplate Sets the sidebar template, set to false or empty string for no sidebar
 	 */
 	function display($mainContentTemplate = null, $pageTitle = null, $sidebarTemplate = 'Search/home-sidebar.tpl'){
+		global $interface;
 		if (empty($mainContentTemplate)){
-			global $interface;
 			$mainContentTemplate = $interface->getVariable('pageTemplate'); // The main template may get set in other places in Object Editor
 		}
 		if (empty($pageTitle)){
 			$pageTitle = $this->getPageTitle();
 		}
+		$interface->assign('shortPageTitle', $pageTitle);
 		parent::display($mainContentTemplate, $pageTitle, $sidebarTemplate);
 	}
 

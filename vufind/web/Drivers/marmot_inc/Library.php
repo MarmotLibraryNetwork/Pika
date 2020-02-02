@@ -1950,4 +1950,14 @@ class Library extends DB_DataObject {
 		return $defaultForm;
 	}
 
+	/**
+	 * Adds a header for this object in the edit form pages
+	 * @return string|null
+	 */
+	function label(){
+		if (!empty($this->displayName)){
+			return $this->displayName;
+		}
+	}
+
 }

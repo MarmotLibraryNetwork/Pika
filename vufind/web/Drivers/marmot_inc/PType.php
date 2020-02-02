@@ -33,4 +33,13 @@ class PType extends DB_DataObject {
 		);
 		return $structure;
 	}
+	/**
+	 * Adds a header for this object in the edit form pages
+	 * @return string|null
+	 */
+	function label(){
+		if (!empty($this->label)){
+			return $this->label;
+		}
+	}
 }
