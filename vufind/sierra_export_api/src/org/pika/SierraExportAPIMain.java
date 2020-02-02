@@ -1205,7 +1205,7 @@ public class SierraExportAPIMain {
 								return true;
 							}
 						}
-						logger.error("Received error code 107 but record is not deleted or suppressed " + id);
+						logger.error("Received error code 107 but record is not deleted or suppressed " + getfullSierraBibId(id));
 						return false;
 					} else if (code == 100){
 						if (marcResults.has("name") && marcResults.getString("name").startsWith("InvalidMARCException")){
@@ -1740,14 +1740,7 @@ public class SierraExportAPIMain {
 				"INNER JOIN sierra_view.bib_view ON sierra_view.bib_view.id = bib_record_order_record_link.bib_record_id " +
 				"INNER JOIN sierra_view.order_record_cmf ON order_record_cmf.order_record_id = order_view.id " +
 				"WHERE (" + orderStatusCodesSQL + ") AND order_view.is_suppressed = 'f' AND location_code != 'multi' AND ocode4 != 'n'";
-		if (serverName.contains("aurora")) {
-			// Work-around for aurora order records until they take advantage of sierra acquistions in a manner we can rely on
-			String auroraOrderRecordInterval = PikaConfigIni.getIniValue("Catalog", "auroraOrderRecordInterval");
-			if (auroraOrderRecordInterval == null || !auroraOrderRecordInterval.matches("\\d+")) {
-				auroraOrderRecordInterval = "90";
-			}
-			activeOrderSQL += " AND NOW() - order_date_gmt < '" + auroraOrderRecordInterval + " DAY'::INTERVAL";
-		} else {
+
 			if (suppressOrderRecordsThatAreCataloged) { // Ignore entries with a set catalog date more than a day old ( a day to allow for the transition from order item to regular item)
 //				activeOrderSQL += " AND (catalog_date_gmt IS NULL OR NOW() - catalog_date_gmt < '1 DAY'::INTERVAL) ";
 				activeOrderSQL += " AND catalog_date_gmt IS NULL";
@@ -1758,7 +1751,7 @@ public class SierraExportAPIMain {
 //				activeOrderSQL += " AND (catalog_date_gmt IS NULL or received_date_gmt IS NULL OR NOW() - catalog_date_gmt < '1 DAY'::INTERVAL) ";
 				activeOrderSQL += " AND catalog_date_gmt IS NULL or received_date_gmt IS NULL";
 			}
-		}
+
 		int numBibsToProcess     = 0;
 		int numBibsOrdersAdded   = 0;
 		int numBibsOrdersChanged = 0;
