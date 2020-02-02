@@ -55,6 +55,7 @@
 		<script src="/interface/themes/responsive/js/vufind/grouped-work.js?v={$gitBranch|urlencode}"></script>
 		<script src="/interface/themes/responsive/js/vufind/lists.js?v={$gitBranch|urlencode}"></script>
 		<script src="/interface/themes/responsive/js/vufind/lists-widgets.js?v={$gitBranch|urlencode}"></script>
+		<script src="/interface/themes/responsive/js/vufind/log.js?v={$gitBranch|urlencode}"></script>
 		<script src="/interface/themes/responsive/js/vufind/materials-request.js?v={$gitBranch|urlencode}"></script>
 		<script src="/interface/themes/responsive/js/vufind/menu.js?v={$gitBranch|urlencode}"></script>
 		<script src="/interface/themes/responsive/js/vufind/overdrive.js?v={$gitBranch|urlencode}"></script>

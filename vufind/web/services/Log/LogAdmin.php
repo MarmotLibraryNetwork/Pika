@@ -1,5 +1,22 @@
 <?php
 /**
+ * Pika Discovery Layer
+ * Copyright (C) 2020  Marmot Library Network
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+/**
  *
  *
  * @category Pika
@@ -14,8 +31,10 @@ require_once ROOT_DIR . '/sys/Pager.php';
 abstract class Log_Admin extends Admin_Admin {
 
 	public $pageTitle;
-	public $logTemplate;
+	public $logTemplate = 'logTable.tpl';
+	public $filterLabel = 'Min Works Processed';
 	public $columnToFilterBy;
+
 
 	function launch(){
 		global $interface;
@@ -46,18 +65,25 @@ abstract class Log_Admin extends Admin_Admin {
 
 		$options = array(
 			'totalItems' => $total,
-			'fileName'   => '/Admin/' . $logClass . '?page=%d' . (empty($_REQUEST['filterCount']) ? '' : '&filterCount=' . $_REQUEST['filterCount']) . (empty($_REQUEST['pagesize']) ? '' : '&pagesize=' . $_REQUEST['pagesize']),
+			'fileName'   => '/Log/' . $logClass . '?page=%d' . (empty($_REQUEST['filterCount']) ? '' : '&filterCount=' . $_REQUEST['filterCount']) . (empty($_REQUEST['pagesize']) ? '' : '&pagesize=' . $_REQUEST['pagesize']),
 			'perPage'    => $pageSize,
 		);
 		$pager   = new VuFindPager($options);
 
 
+		$interface->assign('filterLabel', $this->filterLabel);
 		$interface->assign('recordsPerPage', $pageSize);
 		$interface->assign('page', $page);
 		$interface->assign('logEntries', $logEntries);
 		$interface->assign('pageLinks', $pager->getLinks());
+		$interface->assign('logTable', 'Log\\' . $this->logTemplate);
+		$interface->assign('logType', str_replace('Log', '', $logClass));
 
-		$this->display($this->logTemplate, $this->pageTitle);
+		$this->display('log.tpl', $this->pageTitle);
+	}
+
+	function getAllowableRoles(){
+		return array('opacAdmin');
 	}
 
 }

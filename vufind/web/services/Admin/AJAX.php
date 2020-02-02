@@ -1,11 +1,12 @@
 <?php
 /**
+ * Pika Discovery Layer
+ * Copyright (C) 2020  Marmot Library Network
  *
- * Copyright (C) Villanova University 2007.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2,
- * as published by the Free Software Foundation.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -13,9 +14,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 require_once ROOT_DIR . '/AJAXHandler.php';
@@ -23,182 +22,13 @@ require_once ROOT_DIR . '/AJAXHandler.php';
 class Admin_AJAX extends AJAXHandler {
 
 	protected $methodsThatRespondWithJSONUnstructured = array(
-		'getReindexNotes',
-		'getReindexProcessNotes',
-		'getCronNotes',
-		'getCronProcessNotes',
 		'getAddToWidgetForm',
-		'getRecordGroupingNotes',
-		'getHooplaExportNotes',
-		'getSierraExportNotes',
 		'markProfileForRegrouping',
 		'markProfileForReindexing',
-		'getOverDriveExtractNotes',
+		'copyHooplaSettingsFromLibrary',
+		'clearLocationHooplaSettings',
+		'clearLibraryHooplaSettings',
 	);
-
-	function getReindexNotes(){
-		$id                 = $_REQUEST['id'];
-		$reindexProcess     = new ReindexLogEntry();
-		$reindexProcess->id = $id;
-		$results            = array(
-			'title'        => '',
-			'modalBody'    => '',
-			'modalButtons' => '',
-		);
-		if ($reindexProcess->find(true)){
-			$results['title'] = "Reindex Notes";
-			if (strlen(trim($reindexProcess->notes)) == 0){
-				$results['modalBody'] = "No notes have been entered yet";
-			}else{
-				$results['modalBody'] = "<div class='helpText'>{$reindexProcess->notes}</div>";
-			}
-		}else{
-			$results['title']     = "Error";
-			$results['modalBody'] = "We could not find a reindex entry with that id.  No notes available.";
-		}
-		return $results;
-	}
-
-	function getRecordGroupingNotes(){
-		$id                        = $_REQUEST['id'];
-		$recordGroupingProcess     = new RecordGroupingLogEntry();
-		$recordGroupingProcess->id = $id;
-		$results                   = array(
-			'title'        => '',
-			'modalBody'    => '',
-			'modalButtons' => '',
-		);
-		if ($recordGroupingProcess->find(true)){
-			$results['title'] = "Record Grouping Notes";
-			if (strlen(trim($recordGroupingProcess->notes)) == 0){
-				$results['modalBody'] = "No notes have been entered yet";
-			}else{
-				$results['modalBody'] = "<div class='helpText'>{$recordGroupingProcess->notes}</div>";
-			}
-		}else{
-			$results['title']     = "Error";
-			$results['modalBody'] = "We could not find a record grouping log entry with that id.  No notes available.";
-		}
-		return $results;
-	}
-
-	function getHooplaExportNotes(){
-		$id                      = $_REQUEST['id'];
-		$hooplaExportProcess     = new HooplaExportLogEntry();
-		$hooplaExportProcess->id = $id;
-		$results                 = array(
-			'title'        => '',
-			'modalBody'    => '',
-			'modalButtons' => '',
-		);
-		if ($hooplaExportProcess->find(true)){
-			$results['title'] = "Hoopla Export Notes";
-			if (strlen(trim($hooplaExportProcess->notes)) == 0){
-				$results['modalBody'] = "No notes have been entered yet";
-			}else{
-				$results['modalBody'] = "<div class='helpText'>{$hooplaExportProcess->notes}</div>";
-			}
-		}else{
-			$results['title']     = "Error";
-			$results['modalBody'] = "We could not find a hoopla extract log entry with that id.  No notes available.";
-		}
-		return $results;
-	}
-
-	function getSierraExportNotes(){
-		$id                      = $_REQUEST['id'];
-		$sierraExportProcess     = new SierraExportLogEntry();
-		$sierraExportProcess->id = $id;
-		$results                 = array(
-			'title'        => '',
-			'modalBody'    => '',
-			'modalButtons' => '',
-		);
-		if ($sierraExportProcess->find(true)){
-			$results['title'] = "Sierra Export Notes";
-			if (strlen(trim($sierraExportProcess->notes)) == 0){
-				$results['modalBody'] = "No notes have been entered yet";
-			}else{
-				$results['modalBody'] = "<div class='helpText'>{$sierraExportProcess->notes}</div>";
-			}
-		}else{
-			$results['title']     = "Error";
-			$results['modalBody'] = "We could not find a sierra extract log entry with that id.  No notes available.";
-		}
-		return $results;
-	}
-
-
-	function getCronProcessNotes(){
-		$id              = $_REQUEST['id'];
-		$cronProcess     = new CronProcessLogEntry();
-		$cronProcess->id = $id;
-		$results         = array(
-			'title'        => '',
-			'modalBody'    => '',
-			'modalButtons' => '',
-		);
-		if ($cronProcess->find(true)){
-			$results['title'] = "{$cronProcess->processName} Notes";
-			if (strlen($cronProcess->notes) == 0){
-				$results['modalBody'] = "No notes have been entered for this process";
-			}else{
-				$results['modalBody'] = "<div class='helpText'>{$cronProcess->notes}</div>";
-			}
-		}else{
-			$results['title']     = "Error";
-			$results['modalBody'] = "We could not find a process with that id.  No notes available.";
-		}
-		return $results;
-	}
-
-	function getCronNotes(){
-		$id          = $_REQUEST['id'];
-		$cronLog     = new CronLogEntry();
-		$cronLog->id = $id;
-
-		$results = array(
-			'title'        => '',
-			'modalBody'    => '',
-			'modalButtons' => '',
-		);
-		if ($cronLog->find(true)){
-			$results['title'] = "Cron Process {$cronLog->id} Notes";
-			if (strlen($cronLog->notes) == 0){
-				$results['modalBody'] = "No notes have been entered for this cron run";
-			}else{
-				$results['modalBody'] = "<div class='helpText'>{$cronLog->notes}</div>";
-			}
-		}else{
-			$results['title']     = "Error";
-			$results['modalBody'] = "We could not find a cron entry with that id.  No notes available.";
-		}
-		return $results;
-	}
-
-	function getOverDriveExtractNotes(){
-		global $interface;
-		$id                      = $_REQUEST['id'];
-		$overdriveExtractLog     = new OverDriveExtractLogEntry();
-		$overdriveExtractLog->id = $id;
-		$results                 = array(
-			'title'        => '',
-			'modalBody'    => '',
-			'modalButtons' => "",
-		);
-		if ($overdriveExtractLog->find(true)){
-			$results['title'] = "OverDrive Extract {$overdriveExtractLog->id} Notes";
-			if (strlen($overdriveExtractLog->notes) == 0){
-				$results['modalBody'] = "No notes have been entered for this OverDrive Extract run";
-			}else{
-				$results['modalBody'] = "<div class='helpText'>{$overdriveExtractLog->notes}</div>";
-			}
-		}else{
-			$results['title']     = "Error";
-			$results['modalBody'] = "We could not find a OverDrive Extract entry with that id.  No notes available.";
-		}
-		return $results;
-	}
 
 	function getAddToWidgetForm(){
 		global $interface;

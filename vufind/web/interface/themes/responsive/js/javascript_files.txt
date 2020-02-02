@@ -24,6 +24,7 @@ vufind/dpla.min.js
 vufind/grouped-work.min.js
 vufind/lists.min.js
 vufind/lists-widgets.min.js
+vufind/log.min.js
 vufind/materials-request.min.js
 vufind/menu.min.js
 vufind/hoopla.min.js
