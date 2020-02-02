@@ -18,14 +18,13 @@
  *
  */
 
-require_once ROOT_DIR . '/services/Admin/LogAdmin.php';
+require_once ROOT_DIR . '/services/Log/LogAdmin.php';
 
-class ReindexLog extends Log_Admin {
+class HooplaExportLog extends Log_Admin {
 
-	public $pageTitle = 'Reindex Log';
-	public $logTemplate = 'reindexLog.tpl';
-	public $columnToFilterBy = 'numWorksProcessed';
-
+	public $pageTitle = 'Hoopla Export Log';
+	public $logTemplate = 'hooplaExportLog.tpl';
+//	public $columnToFilterBy = 'numRecordsToProcess';
 
 	function getAllowableRoles(){
 		return array('opacAdmin', 'libraryAdmin', 'cataloging');

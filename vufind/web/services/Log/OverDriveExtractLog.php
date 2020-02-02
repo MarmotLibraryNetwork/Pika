@@ -18,15 +18,30 @@
  *
  */
 
-require_once ROOT_DIR . '/services/Admin/LogAdmin.php';
+require_once ROOT_DIR . '/services/Log/LogAdmin.php';
+require_once ROOT_DIR . '/sys/OverDrive/OverDriveAPIProduct.php';
 
-class HooplaExportLog extends Log_Admin {
+class OverDriveExtractLog extends Log_Admin {
 
-	public $pageTitle = 'Hoopla Export Log';
-	public $logTemplate = 'hooplaExportLog.tpl';
-//	public $columnToFilterBy = 'numRecordsToProcess';
+	public $pageTitle = 'OverDrive Export Log';
+	public $logTemplate = 'overdriveExtractLog.tpl';
+	public $columnToFilterBy = 'numProducts';
+
+
+	function launch(){
+		global $interface;
+
+		//Get the number of changes that are outstanding
+		$overdriveProduct              = new OverDriveAPIProduct();
+		$overdriveProduct->needsUpdate = 1;
+		$overdriveProduct->deleted     = 0;
+		$numOutstandingChanges         = $overdriveProduct->count();
+		$interface->assign('numOutstandingChanges', $numOutstandingChanges);
+
+		parent::launch();
+	}
 
 	function getAllowableRoles(){
-		return array('opacAdmin', 'libraryAdmin', 'cataloging');
+		return array('opacAdmin');
 	}
 }

@@ -1,5 +1,6 @@
 <?php
 
+require_once ROOT_DIR . '/sys/Log/LogEntry.php';
 
 class CronLogEntry extends LogEntry {
 	public $__table = 'cron_log';

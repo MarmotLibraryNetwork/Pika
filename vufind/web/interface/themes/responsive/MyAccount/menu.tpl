@@ -172,7 +172,7 @@
 			{/if}
 
 			{if $loggedIn && $userRoles && (in_array('userAdmin', $userRoles) || in_array('opacAdmin', $userRoles))}
-				{if in_array($action, array('Administrators', 'DBMaintenance', 'DBMaintenanceEContent', 'PHPInfo', 'OpCacheInfo', 'Variables', 'CronLog', 'MemCacheInfo'))
+				{if in_array($action, array('Administrators', 'DBMaintenance', 'DBMaintenanceEContent', 'PHPInfo', 'OpCacheInfo', 'Variables', 'MemCacheInfo'))
 				|| ($module == 'Admin' && $action == 'Home')}
 					{assign var="curSection" value=true}
 				{else}
@@ -199,7 +199,6 @@
 								<div class="adminMenuLink{if $action == "MemCacheInfo"} active{/if}"><a href="/Admin/MemCacheInfo">MemCache Information</a></div>
 								<div class="adminMenuLink{if $action == "OpCacheInfo"} active{/if}"><a href="/Admin/OpCacheInfo">OpCache Information</a></div>
 								<div class="adminMenuLink{if $action == "Variables"} active{/if}"><a href="/Admin/Variables">System Variables</a></div>
-								<div class="adminMenuLink{if $action == "CronLog"} active{/if}"><a href="/Admin/CronLog">Cron Log</a></div>
 							{/if}
 						</div>
 					</div>
@@ -207,7 +206,7 @@
 			{/if}
 
 			{if $loggedIn && $userRoles && (in_array('libraryAdmin', $userRoles) || in_array('opacAdmin', $userRoles) || in_array('cataloging', $userRoles))}
-				{if in_array($action, array('RecordGroupingLog', 'ReindexLog', 'SierraExportLog', 'IndexingStats', 'IndexingProfiles', 'TranslationMaps'))}
+				{if in_array($action, array('IndexingStats', 'IndexingProfiles', 'TranslationMaps'))}
 					{assign var="curSection" value=true}
 				{else}
 					{assign var="curSection" value=false}
@@ -223,11 +222,6 @@
 					<div id="indexingMenuGroup" class="panel-collapse collapse {if $curSection}in{/if}">
 						<div class="panel-body">
 							<div class="adminMenuLink{if $action == "IndexingStats"} active{/if}"><a href="/Admin/IndexingStats">Indexing Statistics</a></div>
-							<div class="adminMenuLink{if $action == "RecordGroupingLog"} active{/if}"><a href="/Admin/RecordGroupingLog">Record Grouping Log</a></div>
-							<div class="adminMenuLink{if $action == "ReindexLog"} active{/if}"><a href="/Admin/ReindexLog">Reindex Log</a></div>
-							{if ($ils == 'Sierra')}
-								<div class="adminMenuLink{if $action == "SierraExportLog"} active{/if}"><a href="/Admin/SierraExportLog">Sierra Export Log</a></div>
-							{/if}
 							<div class="adminMenuLink{if $action == "IndexingProfiles"} active{/if}"><a href="/Admin/IndexingProfiles">Indexing Profiles</a></div>
 							<div class="adminMenuLink{if $action == "TranslationMaps"} active{/if}"><a href="/Admin/TranslationMaps">Translation Maps</a></div>
 						</div>
@@ -287,7 +281,7 @@
 			{/if}
 
 			{if $loggedIn && $userRoles && (in_array('cataloging', $userRoles) || in_array('opacAdmin', $userRoles))}
-				{if in_array($action, array('OverDriveExtractLog', 'HooplaExportLog', 'HooplaInfo', 'OverDriveAPIData'))}
+				{if in_array($action, array('HooplaInfo', 'OverDriveAPIData'))}
 					{assign var="curSection" value=true}
 				{else}
 					{assign var="curSection" value=false}
@@ -303,9 +297,36 @@
 					<div id="eContentInfoMenu" class="panel-collapse collapse {if $curSection}in{/if}">
 						<div class="panel-body">
 							<div class="adminMenuLink{if $action == "OverDriveAPIData"} active{/if}"><a href="/Admin/OverDriveAPIData">OverDrive API Information</a></div>
-							<div class="adminMenuLink{if $action == "OverDriveExtractLog"} active{/if}"><a href="/Admin/OverDriveExtractLog">OverDrive Extract Log</a></div>
 							<div class="adminMenuLink{if $action == "HooplaInfo"} active{/if}"><a href="/Admin/HooplaInfo">Hoopla API Information</a></div>
-							<div class="adminMenuLink{if $action == "HooplaExportLog"} active{/if}"><a href="/Admin/HooplaExportLog">Hoopla Export Log</a></div>
+						</div>
+					</div>
+				</div>
+			{/if}
+
+			{if $loggedIn && $userRoles && (in_array('opacAdmin', $userRoles))}
+				{if in_array($action, array('RecordGroupingLog', 'ReindexLog', 'SierraExportLog', 'OverDriveExtractLog', 'HooplaExportLog', 'CronLog'))}
+					{assign var="curSection" value=true}
+				{else}
+					{assign var="curSection" value=false}
+				{/if}
+				<div class="panel{if $curSection} active{/if}">
+					<a href="#LogMenu" data-toggle="collapse" data-parent="#adminMenuAccordion">
+						<div class="panel-heading">
+							<div class="panel-title">
+								Logs
+							</div>
+						</div>
+					</a>
+					<div id="LogMenu" class="panel-collapse collapse {if $curSection}in{/if}">
+						<div class="panel-body">
+							<div class="adminMenuLink{if $action == "CronLog"} active{/if}"><a href="/Log/CronLog">Cron Log</a></div>
+							<div class="adminMenuLink{if $action == "RecordGroupingLog"} active{/if}"><a href="/Log/RecordGroupingLog">Record Grouping Log</a></div>
+							<div class="adminMenuLink{if $action == "ReindexLog"} active{/if}"><a href="/Log/ReindexLog">Reindex Log</a></div>
+                {if ($ils == 'Sierra')}
+									<div class="adminMenuLink{if $action == "SierraExportLog"} active{/if}"><a href="/Log/SierraExportLog">Sierra Export Log</a></div>
+                {/if}
+							<div class="adminMenuLink{if $action == "OverDriveExtractLog"} active{/if}"><a href="/Log/OverDriveExtractLog">OverDrive Extract Log</a></div>
+							<div class="adminMenuLink{if $action == "HooplaExportLog"} active{/if}"><a href="/Log/HooplaExportLog">Hoopla Export Log</a></div>
 						</div>
 					</div>
 				</div>

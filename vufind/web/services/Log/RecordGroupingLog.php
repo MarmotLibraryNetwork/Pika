@@ -1,5 +1,5 @@
 <?php
-require_once ROOT_DIR . '/services/Admin/LogAdmin.php';
+require_once ROOT_DIR . '/services/Log/LogAdmin.php';
 
 class RecordGroupingLog extends Log_Admin {
 

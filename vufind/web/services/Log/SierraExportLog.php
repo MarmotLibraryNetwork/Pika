@@ -18,7 +18,7 @@
  *
  */
 
-require_once ROOT_DIR . '/services/Admin/LogAdmin.php';
+require_once ROOT_DIR . '/services/Log/LogAdmin.php';
 
 class SierraExportLog extends Log_Admin {
 

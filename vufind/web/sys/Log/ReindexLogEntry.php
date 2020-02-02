@@ -1,7 +1,8 @@
 <?php
 
-class ReindexLogEntry extends LogEntry
-{
+require_once ROOT_DIR . '/sys/Log/LogEntry.php';
+
+class ReindexLogEntry extends LogEntry {
 	public $__table = 'reindex_log';   // table name
 	public $id;
 	public $startTime;

@@ -1,5 +1,7 @@
 <?php
 
+require_once ROOT_DIR . '/sys/Log/LogEntry.php';
+
 class OverDriveExtractLogEntry extends LogEntry {
 	public $__table = 'overdrive_extract_log';
 	public $notes;

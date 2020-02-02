@@ -18,30 +18,16 @@
  *
  */
 
-require_once ROOT_DIR . '/services/Admin/LogAdmin.php';
-require_once ROOT_DIR . '/sys/OverDrive/OverDriveAPIProduct.php';
+require_once ROOT_DIR . '/services/Log/LogAdmin.php';
 
-class OverDriveExtractLog extends Log_Admin {
+class ReindexLog extends Log_Admin {
 
-	public $pageTitle = 'OverDrive Export Log';
-	public $logTemplate = 'overdriveExtractLog.tpl';
-	public $columnToFilterBy = 'numProducts';
+	public $pageTitle = 'Reindex Log';
+	public $logTemplate = 'reindexLog.tpl';
+	public $columnToFilterBy = 'numWorksProcessed';
 
-
-	function launch(){
-		global $interface;
-
-		//Get the number of changes that are outstanding
-		$overdriveProduct              = new OverDriveAPIProduct();
-		$overdriveProduct->needsUpdate = 1;
-		$overdriveProduct->deleted     = 0;
-		$numOutstandingChanges         = $overdriveProduct->count();
-		$interface->assign('numOutstandingChanges', $numOutstandingChanges);
-
-		parent::launch();
-	}
 
 	function getAllowableRoles(){
-		return array('opacAdmin');
+		return array('opacAdmin', 'libraryAdmin', 'cataloging');
 	}
 }
