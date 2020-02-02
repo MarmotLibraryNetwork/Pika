@@ -9,7 +9,7 @@
  * Time: 7:05 PM
  */
 require_once ROOT_DIR . '/services/Admin/Admin.php';
-require_once ROOT_DIR . '/sys/ArchiveSubject.php';
+require_once ROOT_DIR . '/sys/Archive/ArchiveSubject.php';
 
 class Admin_ArchiveSubjects extends Admin_Admin {
 

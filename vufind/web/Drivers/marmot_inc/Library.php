@@ -363,6 +363,7 @@ class Library extends DB_DataObject {
 		unset($materialsRequestFormatsStructure['libraryId']); //needed?
 		unset($materialsRequestFormatsStructure['weight']);
 
+		require_once ROOT_DIR . '/sys/Archive/ArchiveExploreMoreBar.php';
 		$archiveExploreMoreBarStructure = ArchiveExploreMoreBar::getObjectStructure();
 		unset($materialsRequestFormatsStructure['libraryId']); //needed?
 		unset($materialsRequestFormatsStructure['weight']);

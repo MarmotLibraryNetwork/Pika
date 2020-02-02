@@ -1583,7 +1583,7 @@ class SearchObject_Islandora extends SearchObject_Base
 			}
 			$filters[] = $filter;
 		}
-		require_once ROOT_DIR . '/sys/ArchivePrivateCollection.php';
+		require_once ROOT_DIR . '/sys/Archive/ArchivePrivateCollection.php';
 		$privateCollectionsObj = new ArchivePrivateCollection();
 		if ($privateCollectionsObj->find(true)){
 			$filter = '';

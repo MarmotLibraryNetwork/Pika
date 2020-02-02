@@ -692,7 +692,7 @@ class ExploreMore {
 
 	function loadExploreMoreContent(){
 		global $timer;
-		require_once ROOT_DIR . '/sys/ArchiveSubject.php';
+		require_once ROOT_DIR . '/sys/Archive/ArchiveSubject.php';
 		$archiveSubjects = new ArchiveSubject();
 		$subjectsToIgnore = array();
 		$subjectsToRestrict = array();
