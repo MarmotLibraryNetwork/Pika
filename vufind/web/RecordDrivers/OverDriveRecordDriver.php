@@ -924,6 +924,7 @@ class OverDriveRecordDriver extends RecordInterface {
 		}
 		return $this->groupedWorkDriver;
 	}
+
 	public function getTags(){
 		return $this->getGroupedWorkDriver()->getTags();
 	}

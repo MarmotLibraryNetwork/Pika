@@ -1,4 +1,3 @@
-
 <a href="/MyAccount/Home">{translate text='Your Account'}</a> <span class="divider">&raquo;</span>
 {if $pageTitle}
 <em>{$pageTitle}</em>
