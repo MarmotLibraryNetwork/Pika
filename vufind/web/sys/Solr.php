@@ -311,11 +311,10 @@ class Solr implements IndexEngine {
 	 * @return void
 	 * @access private
 	 */
-	private function _loadSearchSpecs()
-	{
+	private function _loadSearchSpecs(){
 		global $configArray;
-		$results = false; //$this->cache->get('searchSpecs');
-		if (!$results) {
+		$results = $this->cache->get('searchSpecs');
+		if (empty($results)){
 			$searchSpecs = file_get_contents($this->searchSpecsFile);
 			$results     = json_decode($searchSpecs, true);
 			$this->cache->set('searchSpecs', $results, $configArray['Caching']['searchSpecs']);
@@ -918,8 +917,7 @@ class Solr implements IndexEngine {
 	 * @param Location $searchLocation
 	 * @return array
 	 */
-	public function getBoostFactors($searchLibrary, $searchLocation)
-	{
+	public function getBoostFactors($searchLibrary, $searchLocation){
 		$boostFactors = array();
 
 		global $solrScope;
@@ -930,54 +928,29 @@ class Solr implements IndexEngine {
 			$boostFactors[] = "language_boost_{$solrScope}";
 		}
 
-		$applyHoldingsBoost = true;
-		if (isset($searchLibrary) && !is_null($searchLibrary)) {
-			$applyHoldingsBoost = $searchLibrary->applyNumberOfHoldingsBoost;
-		}
-		if ($applyHoldingsBoost) {
-			//$boostFactors[] = 'product(num_holdings,15,div(format_boost,50))';
-			$boostFactors[] = 'product(sum(popularity,1),format_boost)';
-		} else {
-			$boostFactors[] = 'format_boost';
-		}
-		//Add rating as part of the ranking, normalize so ratings of less that 2.5 are below unrated entries.
+		$boostFactors[] = (!empty($searchLibrary->applyNumberOfHoldingsBoost)) ? 'product(sum(popularity,1),format_boost)' : 'format_boost';
+
+		// Add rating as part of the ranking, normalize so ratings of less that 2.5 are below unrated entries.
 		$boostFactors[] = 'sum(rating,1)';
 
-		if (isset($searchLibrary) && !is_null($searchLibrary) && $searchLibrary->boostByLibrary == 1) {
-			if ($searchLibrary->additionalLocalBoostFactor > 1) {
-				$boostFactors[] = "sum(product(lib_boost_{$solrScope},{$searchLibrary->additionalLocalBoostFactor}),1)";
-			} else {
-				$boostFactors[] = "sum(lib_boost_{$solrScope},1)";
-			}
+		if (!empty($searchLibrary->boostByLibrary)) {
+			$boostFactors[] = ($searchLibrary->additionalLocalBoostFactor > 1) ? "sum(product(lib_boost_{$solrScope},{$searchLibrary->additionalLocalBoostFactor}),1)" : "sum(lib_boost_{$solrScope},1)";
 		} else {
-			//Handle boosting even if we are in a global scope
+			// Handle boosting even if we are in a global scope
 			global $library;
-			if ($library && $library->boostByLibrary == 1) {
-				if ($library->additionalLocalBoostFactor > 1) {
-					$boostFactors[] = "sum(product(lib_boost_{$solrScope},{$library->additionalLocalBoostFactor}),1)";
-				} else {
-					$boostFactors[] = "sum(lib_boost_{$solrScope},1)";
-				}
+			if (!empty($library->boostByLibrary)) {
+				$boostFactors[] = ($library->additionalLocalBoostFactor > 1) ? "sum(product(lib_boost_{$solrScope},{$library->additionalLocalBoostFactor}),1)" : "sum(lib_boost_{$solrScope},1)";
 			}
 		}
 
-		if (isset($searchLocation) && !is_null($searchLocation) && $searchLocation->boostByLocation == 1) {
-			if ($searchLocation->boostByLocation > 1) {
-				$boostFactors[] = "sum(product(lib_boost_{$solrScope},{$searchLocation->additionalLocalBoostFactor}),1)";
-			} else {
-				$boostFactors[] = "sum(lib_boost_{$solrScope},1)";
-			}
-
+		if (!empty($searchLocation->boostByLocation)) {
+			$boostFactors[] = ($searchLocation->boostByLocation > 1) ? "sum(product(lib_boost_{$solrScope},{$searchLocation->additionalLocalBoostFactor}),1)" : "sum(lib_boost_{$solrScope},1)";
 		} else {
-			//Handle boosting even if we are in a global scope
+			// Handle boosting even if we are in a global scope
 			global $locationSingleton;
 			$physicalLocation = $locationSingleton->getActiveLocation();
-			if ($physicalLocation != null && $physicalLocation->boostByLocation == 1) {
-				if ($physicalLocation->additionalLocalBoostFactor > 1) {
-					$boostFactors[] = "sum(product(lib_boost_{$solrScope},{$physicalLocation->additionalLocalBoostFactor}),1)";
-				} else {
-					$boostFactors[] = "sum(lib_boost_{$solrScope},1)";
-				}
+			if (!empty($physicalLocation->boostByLocation)) {
+				$boostFactors[] = ($physicalLocation->additionalLocalBoostFactor > 1) ? "sum(product(lib_boost_{$solrScope},{$physicalLocation->additionalLocalBoostFactor}),1)" : "sum(lib_boost_{$solrScope},1)";
 			}
 		}
 		return $boostFactors;
