@@ -27,8 +27,7 @@ require_once ROOT_DIR . '/RecordDrivers/Factory.php';
  * This is the default implementation of the SearchObjectBase class, providing the
  * Solr-driven functionality used by VuFind's standard Search module.
  */
-class SearchObject_Islandora extends SearchObject_Base
-{
+class SearchObject_Islandora extends SearchObject_Base {
 	// Publicly viewable version
 	private $publicQuery = null;
 	// Facets
@@ -73,8 +72,7 @@ class SearchObject_Islandora extends SearchObject_Base
 	 *
 	 * @access  public
 	 */
-	public function __construct()
-	{
+	public function __construct(){
 		// Call base class constructor
 		parent::__construct();
 
@@ -93,64 +91,64 @@ class SearchObject_Islandora extends SearchObject_Base
 		// Get default facet settings
 		$this->allFacetSettings = getExtraConfigArray('islandoraFacets');
 		$this->facetConfig      = array();
-		$facetLimit = $this->getFacetSetting('Results_Settings', 'facet_limit');
-		if (is_numeric($facetLimit)) {
+		$facetLimit             = $this->getFacetSetting('Results_Settings', 'facet_limit');
+		if (is_numeric($facetLimit)){
 			$this->facetLimit = $facetLimit;
 		}
 		$translatedFacets = $this->getFacetSetting('Advanced_Settings', 'translated_facets');
-		if (is_array($translatedFacets)) {
+		if (is_array($translatedFacets)){
 			$this->translatedFacets = $translatedFacets;
 		}
 		$pidFacets = $this->getFacetSetting('Advanced_Settings', 'pid_facets');
-		if (is_array($pidFacets)) {
+		if (is_array($pidFacets)){
 			$this->pidFacets = $pidFacets;
 		}
 
 		// Load search preferences:
-		$searchSettings = getExtraConfigArray('islandoraSearches');
+		$searchSettings     = getExtraConfigArray('islandoraSearches');
 		$this->defaultIndex = 'IslandoraKeyword';
-		if (isset($searchSettings['General']['default_sort'])) {
+		if (isset($searchSettings['General']['default_sort'])){
 			$this->defaultSort = $searchSettings['General']['default_sort'];
 		}
 		if (isset($searchSettings['DefaultSortingByType']) &&
-		is_array($searchSettings['DefaultSortingByType'])) {
+			is_array($searchSettings['DefaultSortingByType'])){
 			$this->defaultSortByType = $searchSettings['DefaultSortingByType'];
 		}
-		if (isset($searchSettings['Basic_Searches'])) {
+		if (isset($searchSettings['Basic_Searches'])){
 			$this->basicTypes = $searchSettings['Basic_Searches'];
 		}
-		if (isset($searchSettings['Advanced_Searches'])) {
+		if (isset($searchSettings['Advanced_Searches'])){
 			$this->advancedTypes = $searchSettings['Advanced_Searches'];
 		}
 
 		// Load sort preferences (or defaults if none in .ini file):
-		if (isset($searchSettings['Sorting'])) {
+		if (isset($searchSettings['Sorting'])){
 			$this->sortOptions = $searchSettings['Sorting'];
-		} else {
+		}else{
 			$this->sortOptions = array('relevance' => 'sort_relevance',
-                'year' => 'sort_year', 'year asc' => 'sort_year asc',
-                'title' => 'sort_title');
+			                           'year'      => 'sort_year', 'year asc' => 'sort_year asc',
+			                           'title'     => 'sort_title');
 		}
 
 		// Load Spelling preferences
-		$this->spellcheck    = $configArray['Spelling']['enabled'];
-		$this->spellingLimit = $configArray['Spelling']['limit'];
-		$this->spellSimple   = $configArray['Spelling']['simple'];
+		$this->spellcheck       = $configArray['Spelling']['enabled'];
+		$this->spellingLimit    = $configArray['Spelling']['limit'];
+		$this->spellSimple      = $configArray['Spelling']['simple'];
 		$this->spellSkipNumeric = isset($configArray['Spelling']['skip_numeric']) ?
-		$configArray['Spelling']['skip_numeric'] : true;
+			$configArray['Spelling']['skip_numeric'] : true;
 
 		// Debugging
 		$this->indexEngine->debug = $this->debug;
 
 		$this->recommendIni = 'islandoraSearches';
 
-		$this->indexEngine->debug = $this->debug;
-		$this->indexEngine->debugSolrQuery = $this->debugSolrQuery;
+		$this->indexEngine->debug           = $this->debug;
+		$this->indexEngine->debugSolrQuery  = $this->debugSolrQuery;
 		$this->indexEngine->isPrimarySearch = $this->isPrimarySearch;
 
 		$this->resultsModule = 'Archive';
 		$this->resultsAction = 'Results';
-		$this->searchSource = 'islandora';
+		$this->searchSource  = 'islandora';
 
 		$timer->logTime('Setup Solr Search Object');
 	}
@@ -162,8 +160,7 @@ class SearchObject_Islandora extends SearchObject_Base
 	 * @access  public
 	 * @return  boolean
 	 */
-	public function init($searchSource = NULL)
-	{
+	public function init($searchSource = NULL){
 		// Call the standard initialization routine in the parent:
 		parent::init('islandora');
 
@@ -172,10 +169,12 @@ class SearchObject_Islandora extends SearchObject_Base
 		// our work here is done; if there is an error, we should report failure;
 		// if restoreSavedSearch returns false, we should proceed as normal.
 		$restored = $this->restoreSavedSearch();
-		if ($restored === true) {
+		if ($restored === true){
 			return true;
-		} else if (PEAR_Singleton::isError($restored)) {
-			return false;
+		}else{
+			if (PEAR_Singleton::isError($restored)){
+				return false;
+			}
 		}
 
 		//********************
@@ -187,17 +186,17 @@ class SearchObject_Islandora extends SearchObject_Base
 
 		//********************
 		// Basic Search logic
-		if(!$this->initBasicSearch()) {
+		if (!$this->initBasicSearch()){
 			$this->initAdvancedSearch();
 		}
 
 		// If a query override has been specified, log it here
-		if (isset($_REQUEST['q'])) {
+		if (isset($_REQUEST['q'])){
 			$this->query = $_REQUEST['q'];
 		}
 
 		global $module, $action;
-		if ($module == 'MyAccount') {
+		if ($module == 'MyAccount'){
 			// Users Lists
 //			$this->spellcheck = false;
 			$this->searchType = ($action == 'Home') ? 'favorites' : 'list';
@@ -215,16 +214,15 @@ class SearchObject_Islandora extends SearchObject_Base
 	 * @access  public
 	 * @return  boolean
 	 */
-	public function initAdvancedFacets()
-	{
+	public function initAdvancedFacets(){
 		// Call the standard initialization routine in the parent:
 		parent::init();
 
 		//********************
 		// Adjust facet options to use advanced settings
-		$this->facetConfig = isset($this->allFacetSettings['Advanced']) ? $this->allFacetSettings['Advanced'] : array();
-		$facetLimit = $this->getFacetSetting('Advanced_Settings', 'facet_limit');
-		if (is_numeric($facetLimit)) {
+		$this->facetConfig = $this->allFacetSettings['Advanced'] ?? [];
+		$facetLimit        = $this->getFacetSetting('Advanced_Settings', 'facet_limit');
+		if (is_numeric($facetLimit)){
 			$this->facetLimit = $facetLimit;
 		}
 
@@ -233,12 +231,12 @@ class SearchObject_Islandora extends SearchObject_Base
 
 		//********************
 		// Basic Search logic
-		$this->searchTerms[] = array(
-            'index'   => $this->defaultIndex,
-            'lookfor' => ""
-            );
+		$this->searchTerms[] = [
+			'index'   => $this->defaultIndex,
+			'lookfor' => ''
+		];
 
-            return true;
+		return true;
 	}
 
 	/**
@@ -249,14 +247,12 @@ class SearchObject_Islandora extends SearchObject_Base
 	 * @param   string $setting   The setting within the specified file to return.
 	 * @return  string    The value of the setting (blank if none).
 	 */
-	public function getFacetSetting($section, $setting)
-	{
-		return isset($this->allFacetSettings[$section][$setting]) ?
-		$this->allFacetSettings[$section][$setting] : '';
+	public function getFacetSetting($section, $setting){
+		return $this->allFacetSettings[$section][$setting] ?? '';
 	}
 
-	public function getFullSearchUrl() {
-		return isset($this->indexEngine->fullSearchUrl) ? $this->indexEngine->fullSearchUrl : 'Unknown';
+	public function getFullSearchUrl(){
+		return $this->indexEngine->fullSearchUrl ?? 'Unknown';
 	}
 
 	/**
@@ -265,14 +261,13 @@ class SearchObject_Islandora extends SearchObject_Base
 	 *
 	 * @access  private
 	 */
-	protected function purge()
-	{
+	protected function purge(){
 		// Call standard purge:
 		parent::purge();
 
 		// Make some Solr-specific adjustments:
-		$this->query        = null;
-		$this->publicQuery  = null;
+		$this->query       = null;
+		$this->publicQuery = null;
 	}
 
 	/**
@@ -293,12 +288,11 @@ class SearchObject_Islandora extends SearchObject_Base
 	 * @access  public
 	 * @return  string   The searched index
 	 */
-	public function getSearchIndex()
-	{
+	public function getSearchIndex(){
 		// Use normal parent method for non-advanced searches.
-		if ($this->searchType == $this->basicSearchType) {
+		if ($this->searchType == $this->basicSearchType){
 			return parent::getSearchIndex();
-		} else {
+		}else{
 			return null;
 		}
 	}
@@ -316,8 +310,7 @@ class SearchObject_Islandora extends SearchObject_Base
 	 * @param   bool $isMixedUserList Used to correctly number items in a list of mixed content (eg catalog & archive content)
 	 * @return array Array of HTML chunks for individual records.
 	 */
-	public function getResultListHTML($user, $listId = null, $allowEdit = true, $IDList = null, $isMixedUserList = false)
-	{
+	public function getResultListHTML($user, $listId = null, $allowEdit = true, $IDList = null, $isMixedUserList = false){
 		global $interface;
 		$html = array();
 
@@ -328,19 +321,19 @@ class SearchObject_Islandora extends SearchObject_Base
 			foreach ($IDList as $listPosition => $currentId){
 				// use $IDList as the order guide for the html
 				$current = null; // empty out in case we don't find the matching record
-				foreach ($this->indexResult['response']['docs'] as $index => $doc) {
-					if ($doc['PID'] == $currentId) {
-						$current = & $this->indexResult['response']['docs'][$index];
+				foreach ($this->indexResult['response']['docs'] as $index => $doc){
+					if ($doc['PID'] == $currentId){
+						$current = &$this->indexResult['response']['docs'][$index];
 						break;
 					}
 				}
-				if (empty($current)) {
+				if (empty($current)){
 					continue; // In the case the record wasn't found, move on to the next record
-				}else {
-					if ($isMixedUserList) {
+				}else{
+					if ($isMixedUserList){
 						$interface->assign('recordIndex', $listPosition + 1);
 						$interface->assign('resultIndex', $listPosition + 1 + (($this->page - 1) * $this->limit));
-					} else {
+					}else{
 						$interface->assign('recordIndex', $x + 1);
 						$interface->assign('resultIndex', $x + 1 + (($this->page - 1) * $this->limit));
 					}
@@ -350,23 +343,23 @@ class SearchObject_Islandora extends SearchObject_Base
 					}
 					/** @var IslandoraDriver $record */
 					$record = RecordDriverFactory::initRecordDriver($current);
-					if ($isMixedUserList) {
+					if ($isMixedUserList){
 						$html[$listPosition] = $interface->fetch($record->getListEntry($user, $listId, $allowEdit));
-					} else {
+					}else{
 						$html[] = $interface->fetch($record->getListEntry($user, $listId, $allowEdit));
 						$x++;
 					}
 				}
 			}
 		}else{
-		for ($x = 0; $x < count($this->indexResult['response']['docs']); $x++) {
-			$interface->assign('recordIndex', $x + 1);
-			$interface->assign('resultIndex', $x + 1 + (($this->page - 1) * $this->limit));
-			$current = &$this->indexResult['response']['docs'][$x];
-			$record  = RecordDriverFactory::initRecordDriver($current);
-			$html[]  = $interface->fetch($record->getListEntry($user, $listId, $allowEdit));
+			for ($x = 0;$x < count($this->indexResult['response']['docs']);$x++){
+				$interface->assign('recordIndex', $x + 1);
+				$interface->assign('resultIndex', $x + 1 + (($this->page - 1) * $this->limit));
+				$current = &$this->indexResult['response']['docs'][$x];
+				$record  = RecordDriverFactory::initRecordDriver($current);
+				$html[]  = $interface->fetch($record->getListEntry($user, $listId, $allowEdit));
+			}
 		}
-	}
 		return $html;
 	}
 
@@ -376,12 +369,11 @@ class SearchObject_Islandora extends SearchObject_Base
 	 * @access  public
 	 * @return  array   recordSet
 	 */
-	public function getResultRecordSet()
-	{
+	public function getResultRecordSet(){
 		$recordSet = $this->indexResult['response']['docs'];
 		foreach ($recordSet as $key => $record){
 			// Additional Information for Emailing a list of Archive Objects
-			$recordDriver = RecordDriverFactory::initRecordDriver($record);
+			$recordDriver     = RecordDriverFactory::initRecordDriver($record);
 			$record['url']    = $recordDriver->getLinkUrl();
 			$record['format'] = $recordDriver->getFormat();
 
@@ -396,17 +388,17 @@ class SearchObject_Islandora extends SearchObject_Base
 	 */
 	public function getListWidgetTitles($orderedListOfIDs = array()){
 		$widgetTitles = array();
-		for ($x = 0; $x < count($this->indexResult['response']['docs']); $x++) {
-			$current = & $this->indexResult['response']['docs'][$x];
-			$record = RecordDriverFactory::initRecordDriver($current);
+		for ($x = 0;$x < count($this->indexResult['response']['docs']);$x++){
+			$current = &$this->indexResult['response']['docs'][$x];
+			$record  = RecordDriverFactory::initRecordDriver($current);
 			if (!PEAR_Singleton::isError($record)){
 				if (method_exists($record, 'getListWidgetTitle')){
-					if (!empty($orderedListOfIDs)) {
+					if (!empty($orderedListOfIDs)){
 						$position = array_search($current['PID'], $orderedListOfIDs);
-						if ($position !== false) {
+						if ($position !== false){
 							$widgetTitles[$position] = $record->getListWidgetTitle();
 						}
-					} else {
+					}else{
 						$widgetTitles[] = $record->getListWidgetTitle();
 					}
 				}else{
@@ -427,21 +419,20 @@ class SearchObject_Islandora extends SearchObject_Base
 	 * @access  public
 	 * @return  array   Array of HTML chunks for individual records.
 	 */
-	public function getResultRecordHTML()
-	{
+	public function getResultRecordHTML(){
 		global $interface;
 
 		$html = array();
-		for ($x = 0; $x < count($this->indexResult['response']['docs']); $x++) {
-			$current = & $this->indexResult['response']['docs'][$x];
+		for ($x = 0;$x < count($this->indexResult['response']['docs']);$x++){
+			$current = &$this->indexResult['response']['docs'][$x];
 
 			$interface->assign('recordIndex', $x + 1);
 			$interface->assign('resultIndex', $x + 1 + (($this->page - 1) * $this->limit));
 			$record = RecordDriverFactory::initRecordDriver($current);
-			if (!PEAR_Singleton::isError($record)) {
+			if (!PEAR_Singleton::isError($record)){
 				$interface->assign('recordDriver', $record);
 				$html[] = $interface->fetch($record->getSearchResult($this->view));
-			} else {
+			}else{
 				$html[] = "Unable to find record";
 			}
 		}
@@ -455,22 +446,21 @@ class SearchObject_Islandora extends SearchObject_Base
 	 * @access  public
 	 * @return  array   Array of HTML chunks for individual records.
 	 */
-	public function getCombinedResultHTML()
-	{
+	public function getCombinedResultHTML(){
 		global $interface;
 
 		$html = array();
-		for ($x = 0; $x < count($this->indexResult['response']['docs']); $x++) {
-			$current = & $this->indexResult['response']['docs'][$x];
+		for ($x = 0;$x < count($this->indexResult['response']['docs']);$x++){
+			$current = &$this->indexResult['response']['docs'][$x];
 
 			$interface->assign('recordIndex', $x + 1);
 			$interface->assign('resultIndex', $x + 1 + (($this->page - 1) * $this->limit));
 			/** @var IslandoraDriver $record */
 			$record = RecordDriverFactory::initRecordDriver($current);
-			if (!PEAR_Singleton::isError($record)) {
+			if (!PEAR_Singleton::isError($record)){
 				$interface->assign('recordDriver', $record);
 				$html[] = $interface->fetch($record->getCombinedResult($this->view));
-			} else {
+			}else{
 				$html[] = "Unable to find record";
 			}
 		}
@@ -483,12 +473,11 @@ class SearchObject_Islandora extends SearchObject_Base
 	 * @access  public
 	 * @param   array   $ids        archive PIDs to load
 	 */
-	public function setQueryIDs($ids)
-	{
-		$quoteIDs = function ($id) {
+	public function setQueryIDs($ids){
+		$quoteIDs    = function ($id){
 			return "\"$id\"";
 		};
-		$ids = array_map($quoteIDs, $ids);
+		$ids         = array_map($quoteIDs, $ids);
 		$this->query = 'PID:(' . implode(' OR ', $ids) . ')';
 	}
 
@@ -498,8 +487,7 @@ class SearchObject_Islandora extends SearchObject_Base
 	 * @access  public
 	 * @param   string  $newQuery   Query string
 	 */
-	public function setQueryString($newQuery)
-	{
+	public function setQueryString($newQuery){
 		$this->query = $newQuery;
 	}
 
@@ -509,13 +497,14 @@ class SearchObject_Islandora extends SearchObject_Base
 	 * @access  public
 	 * @param   string  $newSort   Sort string
 	 */
-	public function setFacetSortOrder($newSort)
-	{
+	public function setFacetSortOrder($newSort){
 		// As of Solr 1.4 valid values are:
 		// 'count' = relevancy ranked
 		// 'index' = index order, most likely alphabetical
 		// more info : http://wiki.apache.org/solr/SimpleFacetParameters#facet.sort
-		if ($newSort == 'count' || $newSort == 'index') $this->facetSort = $newSort;
+		if ($newSort == 'count' || $newSort == 'index'){
+			$this->facetSort = $newSort;
+		}
 	}
 
 	/**
@@ -524,8 +513,7 @@ class SearchObject_Islandora extends SearchObject_Base
 	 * @access  public
 	 * @param   int $newLimit   Number of facet values to return
 	 */
-	public function setFacetLimit($newLimit)
-	{
+	public function setFacetLimit($newLimit){
 		$this->facetLimit = $newLimit;
 	}
 
@@ -535,8 +523,7 @@ class SearchObject_Islandora extends SearchObject_Base
 	 * @access  public
 	 * @param   int $newOffset  Offset to return
 	 */
-	public function setFacetOffset($newOffset)
-	{
+	public function setFacetOffset($newOffset){
 		$this->facetLimit = $newOffset;
 	}
 
@@ -549,8 +536,7 @@ class SearchObject_Islandora extends SearchObject_Base
 	 * @access  public
 	 * @param   string  $prefix   Data for prefix
 	 */
-	public function addFacetPrefix($prefix)
-	{
+	public function addFacetPrefix($prefix){
 		$this->facetPrefix = $prefix;
 	}
 
@@ -561,152 +547,38 @@ class SearchObject_Islandora extends SearchObject_Base
 	 * @access  public
 	 * @return  array     Spelling suggestion data arrays
 	 */
-	public function getSpellingSuggestions()
-	{
-		global $configArray;
-
+	public function getSpellingSuggestions(){
 		$returnArray = array();
-		if (count($this->suggestions) == 0) return $returnArray;
+		if (count($this->suggestions) == 0){
+			return $returnArray;
+		}
 		$tokens = $this->spellingTokens($this->buildSpellingQuery());
 
-		foreach ($this->suggestions as $term => $details) {
+		foreach ($this->suggestions as $term => $details){
 			// Find out if our suggestion is part of a token
-			$inToken = false;
+			$inToken    = false;
 			$targetTerm = "";
-			foreach ($tokens as $token) {
+			foreach ($tokens as $token){
 				// TODO - Do we need stricter matching here?
 				//   Similar to that in replaceSearchTerm()?
-				if (stripos($token, $term) !== false) {
+				if (stripos($token, $term) !== false){
 					$inToken = true;
 					// We need to replace the whole token
 					$targetTerm = $token;
 					// Go and replace this token
 					$returnArray = $this->doSpellingReplace($term,
-					$targetTerm, $inToken, $details, $returnArray);
+						$targetTerm, $inToken, $details, $returnArray);
 				}
 			}
 			// If no tokens we found, just look
 			//    for the suggestion 'as is'
-			if ($targetTerm == "") {
-				$targetTerm = $term;
+			if ($targetTerm == ""){
+				$targetTerm  = $term;
 				$returnArray = $this->doSpellingReplace($term,
-				$targetTerm, $inToken, $details, $returnArray);
+					$targetTerm, $inToken, $details, $returnArray);
 			}
 		}
 		return $returnArray;
-	}
-
-	/**
-	 * Process one instance of a spelling replacement and modify the return
-	 *   data structure with the details of what was done.
-	 *
-	 * @access  public
-	 * @param   string   $term        The actually term we're replacing
-	 * @param   string   $targetTerm  The term above, or the token it is inside
-	 * @param   boolean  $inToken     Flag for whether the token or term is used
-	 * @param   array    $details     The spelling suggestions
-	 * @param   array    $returnArray Return data structure so far
-	 * @return  array    $returnArray modified
-	 */
-	private function doSpellingReplace($term, $targetTerm, $inToken, $details, $returnArray)
-	{
-		global $configArray;
-
-		$returnArray[$targetTerm]['freq'] = $details['freq'];
-		foreach ($details['suggestions'] as $word => $freq) {
-			// If the suggested word is part of a token
-			if ($inToken) {
-				// We need to make sure we replace the whole token
-				$replacement = str_replace($term, $word, $targetTerm);
-			} else {
-				$replacement = $word;
-			}
-			//  Do we need to show the whole, modified query?
-			if ($configArray['Spelling']['phrase']) {
-				$label = $this->getDisplayQueryWithReplacedTerm($targetTerm, $replacement);
-			} else {
-				$label = $replacement;
-			}
-			// Basic spelling suggestion data
-			$returnArray[$targetTerm]['suggestions'][$label] = array(
-                'freq'        => $freq,
-                'replace_url' => $this->renderLinkWithReplacedTerm($targetTerm, $replacement)
-			);
-			// Only generate expansions if enabled in config
-			if ($configArray['Spelling']['expand']) {
-				// Parentheses differ for shingles
-				if (strstr($targetTerm, " ") !== false) {
-					$replacement = "(($targetTerm) OR ($replacement))";
-				} else {
-					$replacement = "($targetTerm OR $replacement)";
-				}
-				$returnArray[$targetTerm]['suggestions'][$label]['expand_url'] =
-				$this->renderLinkWithReplacedTerm($targetTerm, $replacement);
-			}
-		}
-
-		return $returnArray;
-	}
-
-	/**
-	 * Return a list of valid sort options -- overrides the base class with
-	 * custom behavior for Author/Search screen.
-	 *
-	 * @access  public
-	 * @return  array    Sort value => description array.
-	 */
-	protected function getSortOptions()
-	{
-		// Everywhere else -- use normal default behavior
-		return parent::getSortOptions();
-	}
-
-	/**
-	 * Return a url of the current search as an RSS feed.
-	 *
-	 * @access  public
-	 * @return  string    URL
-	 */
-	public function getRSSUrl()
-	{
-		// Stash our old data for a minute
-		$oldView = $this->view;
-		$oldPage = $this->page;
-		// Add the new view
-		$this->view = 'rss';
-		// Remove page number
-		$this->page = 1;
-		// Get the new url
-		$url = $this->renderSearchUrl();
-		// Restore the old data
-		$this->view = $oldView;
-		$this->page = $oldPage;
-		// Return the URL
-		return $url;
-	}
-
-	/**
-	 * Return a url of the current search as an RSS feed.
-	 *
-	 * @access  public
-	 * @return  string    URL
-	 */
-	public function getExcelUrl()
-	{
-		// Stash our old data for a minute
-		$oldView = $this->view;
-		$oldPage = $this->page;
-		// Add the new view
-		$this->view = 'excel';
-		// Remove page number
-		$this->page = 1;
-		// Get the new url
-		$url = $this->renderSearchUrl();
-		// Restore the old data
-		$this->view = $oldView;
-		$this->page = $oldPage;
-		// Return the URL
-		return $url;
 	}
 
 	/**
@@ -716,33 +588,32 @@ class SearchObject_Islandora extends SearchObject_Base
 	 * @access  public
 	 * @return  string   user friendly version of 'query'
 	 */
-	public function displayQuery()
-	{
+	public function displayQuery(){
 		// Maybe this is a restored object...
-		if ($this->query == null) {
+		if ($this->query == null){
 			$this->query = $this->indexEngine->buildQuery($this->searchTerms);
 		}
 
 		// Do we need the complex answer? Advanced searches
-		if ($this->searchType == $this->advancedSearchType) {
+		if ($this->searchType == $this->advancedSearchType){
 			$output = $this->buildAdvancedDisplayQuery();
 			// If there is a hardcoded public query (like tags) return that
-		} else if ($this->publicQuery != null) {
+		}elseif ($this->publicQuery != null){
 			$output = $this->publicQuery;
 			// If we don't already have a public query, and this is a basic search
 			// with case-insensitive booleans, we need to do some extra work to ensure
 			// that we display the user's query back to them unmodified (i.e. without
 			// capitalized Boolean operators)!
-		} else if (!$this->indexEngine->hasCaseSensitiveBooleans()) {
+		}elseif (!$this->indexEngine->hasCaseSensitiveBooleans()){
 			$output = $this->publicQuery =
-			$this->indexEngine->buildQuery($this->searchTerms, true);
+				$this->indexEngine->buildQuery($this->searchTerms, true);
 			// Simple answer
-		} else {
+		}else{
 			$output = $this->query;
 		}
 
 		// Empty searches will look odd to users
-		if ($output == '*:*') {
+		if ($output == '*:*'){
 			$output = "";
 		}
 
@@ -755,13 +626,10 @@ class SearchObject_Islandora extends SearchObject_Base
 	 * @access  protected
 	 * @return  string   Base URL
 	 */
-	protected function getBaseUrl()
-	{
-		if ($this->searchType == 'list') {
-			return $this->serverUrl . '/MyAccount/MyList/' .
-			urlencode($_GET['id']) . '?';
+	protected function getBaseUrl(){
+		if ($this->searchType == 'list'){
+			return $this->serverUrl . '/MyAccount/MyList/' . urlencode($_GET['id']) . '?';
 		}
-		// Base URL is different for author searches:
 		return $this->serverUrl . '/Archive/Results?';
 	}
 
@@ -772,32 +640,8 @@ class SearchObject_Islandora extends SearchObject_Base
 	 * @access  public
 	 * @return  mixed       false if no error, error string otherwise.
 	 */
-	public function getIndexError()
-	{
-		return isset($this->indexResult['error']) ?
-		$this->indexResult['error'] : false;
-	}
-
-	/**
-	 * Load all recommendation settings from the relevant ini file.  Returns an
-	 * associative array where the key is the location of the recommendations (top
-	 * or side) and the value is the settings found in the file (which may be either
-	 * a single string or an array of strings).
-	 *
-	 * @access  protected
-	 * @return  array           associative: location (top/side) => search settings
-	 */
-	protected function getRecommendationSettings()
-	{
-		// Special hard-coded case for author module.  We should make this more
-		// flexible in the future!
-		// Marmot hard-coded case and use searches.ini and facets.ini instead.
-		/*if ($this->searchType == 'author') {
-		 return array('side' => array('SideFacets:Author'));
-		 }*/
-
-		// Use default case from parent class the rest of the time:
-		return parent::getRecommendationSettings();
+	public function getIndexError(){
+		return $this->indexResult['error'] ?? false;
 	}
 
 	/**
