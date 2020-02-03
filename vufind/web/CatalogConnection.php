@@ -1,17 +1,12 @@
 <?php
 /**
- * Catalog Connection Class
+ * Pika Discovery Layer
+ * Copyright (C) 2020  Marmot Library Network
  *
- * This wrapper works with a driver class to pass information from the ILS to
- * VuFind.
- *
- * PHP version 5
- *
- * Copyright (C) Villanova University 2007.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2,
- * as published by the Free Software Foundation.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -19,15 +14,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
- * @category VuFind
- * @package  ILS_Drivers
- * @author   Andrew S. Nagy <vufind-tech@lists.sourceforge.net>
- * @author   Demian Katz <demian.katz@villanova.edu>
- * @license  http://opensource.org/licenses/gpl-2.0.php GNU General Public License
- * @link     http://vufind.org/wiki/building_an_ils_driver Wiki
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 /**

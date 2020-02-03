@@ -28,25 +28,21 @@
  */
 namespace Pika;
 
-use Pika\Logger;
-use Pika\Cache;
-
 class App {
 
-	public $cache;
-	public $logger;
+	public Cache $cache;
+	public Logger $logger;
+	public $configArray;
 
-
-	public function __construct($loggerName = false) {
+	public function __construct($memCachedPersistentId = false, $loggerName = false) {
 		global $configArray;
+		$this->configArray = $configArray;
 
 		if(!$loggerName | !is_string($loggerName)) {
 			$this->logger = new Logger('Pika');
 		} else {
 			$this->logger = new Logger($loggerName);
 		}
-		$cacheHandler = initCache();
-		$this->cache = new Cache($cacheHandler);
-
+		$this->cache = new Cache();
 	}
 }
