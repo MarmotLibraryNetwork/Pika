@@ -282,6 +282,9 @@ class Sierra {
 		$r = $this->_doRequest($operation, [], 'POST');
 		if(!$r) {
 			$message = $this->_getPrettyError();
+			if(stristr($message, '500 internal')) {
+				$message = "An error occured.";
+			}
 			$return = [
 				'success' => false,
 				'message' => "Unable to renew your checkout: ".$message
