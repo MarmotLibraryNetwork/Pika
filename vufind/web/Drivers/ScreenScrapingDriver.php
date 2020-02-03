@@ -45,7 +45,7 @@ abstract class ScreenScrapingDriver implements DriverInterface {
 	}
 
 	public function setCookieJar(){
-		$cookieJar       = tempnam("/tmp", "CURLCOOKIE");
+		$cookieJar       = @tempnam("/tmp", "CURLCOOKIE");
 		$this->cookieJar = $cookieJar;
 	}
 
