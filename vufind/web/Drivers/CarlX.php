@@ -21,7 +21,7 @@
  * Implements
  *
  * @category Pika
- * @author Mark Noble <mark@marmot.org>
+ * @author Mark Noble <pika@marmot.org>
  * Date: 6/10/2016
  * Time: 1:53 PM
  */

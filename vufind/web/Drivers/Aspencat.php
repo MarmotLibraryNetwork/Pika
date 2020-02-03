@@ -20,8 +20,8 @@
 /**
  * Catalog Driver for Aspencat libraries based on Koha
  *
- * @category VuFind-Plus-2014
- * @author Mark Noble <mark@marmot.org>
+ * @category Pika
+ * @author Mark Noble <pika@marmot.org>
  * Date: 10/3/14
  * Time: 5:51 PM
  */

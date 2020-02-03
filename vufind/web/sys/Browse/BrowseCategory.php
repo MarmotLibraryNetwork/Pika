@@ -20,8 +20,8 @@
 /**
  * A Customizable section of the catalog that can be browsed within
  *
- * @category VuFind-Plus
- * @author Mark Noble <mark@marmot.org>
+ * @category Pika
+ * @author Mark Noble <pika@marmot.org>
  * Date: 1/25/14
  * Time: 10:04 AM
  */

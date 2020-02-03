@@ -21,7 +21,7 @@
  * Table Definition for loading number of holds by ils id
  *
  * @category Pika
- * @author Mark Noble <mark@marmot.org>
+ * @author Mark Noble <pika@marmot.org>
  * Date: 10/15/14
  * Time: 9:09 AM
  */

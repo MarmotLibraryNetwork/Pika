@@ -21,7 +21,7 @@
  * Nashville online fines and fees payment processing
  *
  * @category Pika
- * @author Mark Noble <mark@marmot.org>
+ * @author Mark Noble <pika@marmot.org>
  * @author Niles Ingalls <ningalls@ena.com>
  * @author James Staub <james.staub@nashville.gov>
  * Date: 4/4/2016

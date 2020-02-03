@@ -22,7 +22,7 @@
  * Data should be stored in the ils_volume_info table
  *
  * @category Pika
- * @author Mark Noble <mark@marmot.org>
+ * @author Mark Noble <pika@marmot.org>
  * Date: 11/27/2015
  * Time: 9:31 PM
  */

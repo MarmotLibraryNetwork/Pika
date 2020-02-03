@@ -20,8 +20,8 @@
 /**
  * Allows staff to return titles and checkout titles while the ILS is offline
  *
- * @category VuFind-Plus 
- * @author Mark Noble <mark@marmot.org>
+ * @category Pika
+ * @author Mark Noble <pika@marmot.org>
  * Date: 7/26/13
  * Time: 10:27 AM
  */

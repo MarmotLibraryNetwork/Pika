@@ -21,7 +21,7 @@
  * Admin interface for creating indexing profiles
  *
  * @category Pika
- * @author Mark Noble <mark@marmot.org>
+ * @author Mark Noble <pika@marmot.org>
  * Date: 6/30/2015
  * Time: 1:23 PM
  */

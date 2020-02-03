@@ -20,8 +20,8 @@
 /**
  * Handles searching DPLA and returning results
  *
- * @category VuFind-Plus-2014
- * @author Mark Noble <mark@marmot.org>
+ * @category Pika
+ * @author Mark Noble <pika@marmot.org>
  * Date: 2/9/15
  * Time: 3:09 PM
  */

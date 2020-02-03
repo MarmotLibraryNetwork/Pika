@@ -20,8 +20,8 @@
 /**
  * An entry within the User Id
  *
- * @category VuFind-Plus 
- * @author Mark Noble <mark@marmot.org>
+ * @category Pika
+ * @author Mark Noble <pika@marmot.org>
  * Date: 3/10/14
  * Time: 3:50 PM
  */

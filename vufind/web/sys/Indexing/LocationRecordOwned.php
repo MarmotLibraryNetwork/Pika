@@ -20,8 +20,8 @@
 /**
  * Information about what records a location owns
  *
- * @category VuFind-Plus-2014
- * @author Mark Noble <mark@marmot.org>
+ * @category Pika
+ * @author Mark Noble <pika@marmot.org>
  * Date: 7/18/2015
  * Time: 10:30 AM
  */

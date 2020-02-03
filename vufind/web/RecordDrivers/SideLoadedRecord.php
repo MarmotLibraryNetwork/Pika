@@ -22,7 +22,7 @@
  * Each side loaded collection is specified by an indexing profile stored in the database.
  *
  * @category Pika
- * @author Mark Noble <mark@marmot.org>
+ * @author Mark Noble <pika@marmot.org>
  * Date: 12/18/14
  * Time: 10:50 AM
  */

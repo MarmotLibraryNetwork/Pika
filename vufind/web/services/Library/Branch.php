@@ -22,7 +22,7 @@
  * Library in Schema.org terminology
  *
  * @category Pika
- * @author Mark Noble <mark@marmot.org>
+ * @author Mark Noble <pika@marmot.org>
  * Date: 2/27/2016
  * Time: 2:30 PM
  */

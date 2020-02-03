@@ -20,8 +20,8 @@
 /**
  * Loads author data from Wikipedia and cleans it for display in the user interface
  *
- * @category VuFind-Plus
- * @author Mark Noble <mark@marmot.org>
+ * @category Pika
+ * @author Mark Noble <pika@marmot.org>
  * Date: 7/23/13
  * Time: 8:51 AM
  */

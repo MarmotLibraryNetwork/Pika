@@ -21,7 +21,7 @@
  * Store grouped works that a user is not interested in seeing
  *
  * @category Pika
- * @author Mark Noble <mark@marmot.org>
+ * @author Mark Noble <pika@marmot.org>
  * Date: 5/1/13
  * Time: 9:51 AM
  */

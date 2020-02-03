@@ -20,8 +20,8 @@
 /**
  * Dynamic implementation of robots.txt to prevent indexing of non-production sites
  *
- * @category VuFind-Plus-2014
- * @author Mark Noble <mark@marmot.org>
+ * @category Pika
+ * @author Mark Noble <pika@marmot.org>
  * Date: 5/9/14
  * Time: 11:19 AM
  */

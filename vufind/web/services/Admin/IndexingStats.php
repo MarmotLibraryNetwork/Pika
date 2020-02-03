@@ -21,7 +21,7 @@
  * Displays indexing statistics for the system
  *
  * @category Pika
- * @author Mark Noble <mark@marmot.org>
+ * @author Mark Noble <pika@marmot.org>
  * Date: 3/16/15
  * Time: 8:41 PM
  */

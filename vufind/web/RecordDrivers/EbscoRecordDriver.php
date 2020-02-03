@@ -21,7 +21,7 @@
  * Record Driver for EBSCO titles
  *
  * @category Pika
- * @author Mark Noble <mark@marmot.org>
+ * @author Mark Noble <pika@marmot.org>
  * Date: 2/16/2016
  * Time: 8:31 PM
  */

@@ -21,7 +21,7 @@
  * Links to show in the header for individual libraries
  *
  * @category Pika
- * @author   Mark Noble <mark@marmot.org>
+ * @author   Mark Noble <pika@marmot.org>
  * Date: 2/12/14
  * Time: 8:34 AM
  */

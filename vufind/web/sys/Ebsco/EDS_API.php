@@ -21,7 +21,7 @@
  * EBSCO Discovery Service API driver
  *
  * @category Pika
- * @author Mark Noble <mark@marmot.org>
+ * @author Mark Noble <pika@marmot.org>
  * Date: 2/14/2016
  * Time: 5:42 PM
  */

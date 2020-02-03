@@ -21,7 +21,7 @@
  * Displays Student Barcodes Created by cron
  *
  * @category Pika
- * @author Mark Noble <mark@marmot.org>
+ * @author Mark Noble <pika@marmot.org>
  * @author James Staub <james.staub@nashville.gov>
  * Date: 7/16/2018
  */

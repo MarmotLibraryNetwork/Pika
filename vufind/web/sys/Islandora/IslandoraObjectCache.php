@@ -21,7 +21,7 @@
  * Stores information about Islandora objects for improved response times
  *
  * @category Pika
- * @author Mark Noble <mark@marmot.org>
+ * @author Mark Noble <pika@marmot.org>
  * Date: 5/18/2016
  * Time: 10:48 AM
  */

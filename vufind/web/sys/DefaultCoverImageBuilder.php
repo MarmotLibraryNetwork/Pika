@@ -23,7 +23,7 @@
  * Based on work done by Juan Gimenez at Douglas County Libraries
  *
  * @category Pika
- * @author   Mark Noble <mark@marmot.org>
+ * @author   Mark Noble <pika@marmot.org>
  * Date: 10/30/13
  * Time: 5:17 PM
  */

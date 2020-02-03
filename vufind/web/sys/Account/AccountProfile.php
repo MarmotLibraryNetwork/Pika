@@ -21,7 +21,7 @@
  * Authentication Profile information to configure how users should be authenticated
  *
  * @category Pika
- * @author Mark Noble <mark@marmot.org>
+ * @author Mark Noble <pika@marmot.org>
  * Date: 7/20/2015
  * Time: 4:48 PM
  */

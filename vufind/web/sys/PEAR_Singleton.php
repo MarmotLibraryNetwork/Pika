@@ -21,8 +21,8 @@ require_once 'PEAR.php';
 /**
  * A singleton wrapper for PEAR to more easily update incorrect code references
  *
- * @category VuFind-Plus 
- * @author Mark Noble <mark@marmot.org>
+ * @category Pika
+ * @author Mark Noble <pika@marmot.org>
  * Date: 4/25/13
  * Time: 4:22 PM
  */

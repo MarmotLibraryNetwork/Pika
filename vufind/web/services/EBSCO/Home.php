@@ -21,7 +21,7 @@
  * Displays full record information
  *
  * @category Pika
- * @author Mark Noble <mark@marmot.org>
+ * @author Mark Noble <pika@marmot.org>
  * Date: 3/2/2016
  * Time: 10:31 AM
  */

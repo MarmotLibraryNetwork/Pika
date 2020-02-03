@@ -20,8 +20,8 @@
 /**
  * Description goes here
  *
- * @category VuFind-Plus-2014
- * @author Mark Noble <mark@marmot.org>
+ * @category Pika
+ * @author Mark Noble <pika@marmot.org>
  * Date: 1/28/2016
  * Time: 7:17 PM
  */

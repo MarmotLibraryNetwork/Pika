@@ -20,8 +20,8 @@
 /**
  * Updates related to list widgets
  *
- * @category VuFind-Plus-2014 
- * @author Mark Noble <mark@marmot.org>
+ * @category Pika
+ * @author Mark Noble <pika@marmot.org>
  * Date: 7/29/14
  * Time: 2:45 PM
  */

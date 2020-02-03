@@ -20,7 +20,7 @@
 /**
  * Display a report of usage based on namespace for each library connected to the archive
  * @category Pika
- * @author Mark Noble <mark@marmot.org>
+ * @author Mark Noble <pika@marmot.org>
  * Date: 5/4/2017
  * Time: 8:19 AM
  */

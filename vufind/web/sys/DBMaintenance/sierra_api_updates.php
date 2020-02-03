@@ -21,7 +21,7 @@
  * Updates related to sierra api implementation for cleanliness
  *
  * @category Pika
- * @author Mark Noble <mark@marmot.org>
+ * @author Mark Noble <pika@marmot.org>
  * Date: 7/29/14
  * Time: 2:25 PM
  */

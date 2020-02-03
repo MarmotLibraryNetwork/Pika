@@ -21,7 +21,7 @@
  * API functionality related to Grouped Works
  *
  * @category Pika
- * @author   Mark Noble <mark@marmot.org>
+ * @author   Mark Noble <pika@marmot.org>
  * Date: 2/4/14
  * Time: 9:21 AM
  */

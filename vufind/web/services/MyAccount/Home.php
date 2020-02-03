@@ -20,8 +20,8 @@
 /**
  * Home Page for Account Functionality
  *
- * @category VuFind-Plus
- * @author Mark Noble <mark@marmot.org>
+ * @category Pika
+ * @author Mark Noble <pika@marmot.org>
  * Date: 10/10/13
  * Time: 1:11 PM
  */

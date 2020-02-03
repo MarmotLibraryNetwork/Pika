@@ -21,7 +21,7 @@
  * Displays Information about Digital Repository (Islandora) Person
  *
  * @category Pika
- * @author Mark Noble <mark@marmot.org>
+ * @author Mark Noble <pika@marmot.org>
  * Date: 8/7/2015
  * Time: 7:55 AM
  */

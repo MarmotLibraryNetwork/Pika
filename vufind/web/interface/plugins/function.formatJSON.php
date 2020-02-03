@@ -26,8 +26,8 @@
 /**
  * Smarty formatJSON plugin
  *
- * @category VuFind-Plus
- * @author Mark Noble <mark@marmot.org>
+ * @category Pika
+ * @author Mark Noble <pika@marmot.org>
  * @var mixed[] $params
  * @var UInterface &$smarty
  * @return null|string

@@ -21,7 +21,7 @@
  * Record Driver to handle loading data for Hoopla Records
  *
  * @category Pika
- * @author   Mark Noble <mark@marmot.org>
+ * @author   Mark Noble <pika@marmot.org>
  * Date: 12/18/14
  * Time: 10:50 AM
  */

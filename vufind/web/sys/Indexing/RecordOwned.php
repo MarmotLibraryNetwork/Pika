@@ -21,7 +21,7 @@
  * Indexing information for what records to are owned by a particular scope
  *
  * @category Pika
- * @author Mark Noble <mark@marmot.org>
+ * @author Mark Noble <pika@marmot.org>
  * Date: 7/18/2015
  * Time: 10:31 AM
  */

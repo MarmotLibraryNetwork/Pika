@@ -21,7 +21,7 @@
  * A Grouped Work that has been manually merged
  *
  * @category Pika
- * @author Mark Noble <mark@marmot.org>
+ * @author Mark Noble <pika@marmot.org>
  * Date: 7/29/14
  * Time: 3:14 PM
  */

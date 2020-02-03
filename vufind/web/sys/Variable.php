@@ -21,7 +21,7 @@
  * A persistent variable defined within the system
  *
  * @category Pika
- * @author Mark Noble <mark@marmot.org>
+ * @author Mark Noble <pika@marmot.org>
  * Date: 4/27/14
  * Time: 2:23 PM
  */

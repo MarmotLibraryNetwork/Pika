@@ -20,8 +20,8 @@
 /**
  * A report of check ins and check outs that have been placed offline with their status.
  *
- * @category VuFind-Plus 
- * @author Mark Noble <mark@marmot.org>
+ * @category Pika
+ * @author Mark Noble <pika@marmot.org>
  * Date: 7/26/13
  * Time: 10:39 AM
  */

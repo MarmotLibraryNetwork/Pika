@@ -20,8 +20,8 @@
 /**
  * A Browse Category designed specifically for a library
  *
- * @category VuFind-Plus
- * @author Mark Noble <mark@marmot.org>
+ * @category Pika
+ * @author Mark Noble <pika@marmot.org>
  * Date: 3/4/14
  * Time: 9:25 PM
  */

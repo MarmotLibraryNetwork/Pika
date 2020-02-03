@@ -21,7 +21,7 @@
  * The primary identifier for a particular record in the database.
  *
  * @category Pika
- * @author Mark Noble <mark@marmot.org>
+ * @author Mark Noble <pika@marmot.org>
  * Date: 12/6/13
  * Time: 9:51 AM
  */

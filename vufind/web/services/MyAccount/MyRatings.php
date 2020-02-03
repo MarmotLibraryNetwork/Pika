@@ -21,7 +21,7 @@
  * A page to display any ratings that the user has done
  *
  * @category Pika
- * @author Mark Noble <mark@marmot.org>
+ * @author Mark Noble <pika@marmot.org>
  * Date: 5/1/13
  * Time: 9:58 AM
  */

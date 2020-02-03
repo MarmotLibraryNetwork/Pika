@@ -21,7 +21,7 @@
  * Allows downloading the large image for an Object after checking permissions
  *
  * @category Pika
- * @author Mark Noble <mark@marmot.org>
+ * @author Mark Noble <pika@marmot.org>
  * Date: 5/16/2016
  * Time: 10:47 AM
  */

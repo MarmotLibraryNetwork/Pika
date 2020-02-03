@@ -21,7 +21,7 @@
  * Allows display of Audio files
  *
  * @category Pika
- * @author Mark Noble <mark@marmot.org>
+ * @author Mark Noble <pika@marmot.org>
  * Date: 2/17/2016
  * Time: 9:52 AM
  */

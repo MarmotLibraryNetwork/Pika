@@ -20,8 +20,8 @@
 /**
  * Displays Information about Digital Repository (Islandora) Entity
  *
- * @category VuFind-Plus-2014
- * @author Mark Noble <mark@marmot.org>
+ * @category Pika
+ * @author Mark Noble <pika@marmot.org>
  * Date: 3/22/2016
  * Time: 11:15 AM
  */

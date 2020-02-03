@@ -22,7 +22,7 @@
  * content type
  *
  * @category Pika
- * @author Mark Noble <mark@marmot.org>
+ * @author Mark Noble <pika@marmot.org>
  * Date: 5/27/2016
  * Time: 8:26 AM
  */

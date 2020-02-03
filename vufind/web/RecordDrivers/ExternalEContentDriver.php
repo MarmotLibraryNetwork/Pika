@@ -21,7 +21,7 @@
  * Record Driver to Handle the display of eContent that is stored in the ILS, but accessed
  *
  * @category Pika
- * @author Mark Noble <mark@marmot.org>
+ * @author Mark Noble <pika@marmot.org>
  * Date: 2/7/14
  * Time: 9:48 AM
  */

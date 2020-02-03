@@ -20,8 +20,8 @@
 /**
  * Service to show an Advanced Popup form to streamline the advanced search.
  *
- * @category VuFind-Plus 
- * @author Mark Noble <mark@marmot.org>
+ * @category Pika
+ * @author Mark Noble <pika@marmot.org>
  * Date: 6/26/13
  * Time: 9:50 AM
  */

@@ -21,7 +21,7 @@
  * An abstract base class so screen scraping functionality can be stored in a single location
  *
  * @category Pka
- * @author Mark Noble <mark@marmot.org>
+ * @author Mark Noble <pika@marmot.org>
  * Date: 7/23/2015
  * Time: 2:32 PM
  */

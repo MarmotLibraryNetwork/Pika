@@ -21,7 +21,7 @@
  * Contains information about the Checksum of records loaded from the ils
  *
  * @category Pika
- * @author Mark Noble <mark@marmot.org>
+ * @author Mark Noble <pika@marmot.org>
  * Date: 2/8/2016
  * Time: 2:45 PM
  */

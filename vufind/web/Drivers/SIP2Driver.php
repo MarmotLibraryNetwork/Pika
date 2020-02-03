@@ -21,7 +21,7 @@
  * Description goes here
  *
  * @category Pika
- * @author Mark Noble <mark@marmot.org>
+ * @author Mark Noble <pika@marmot.org>
  * Date: 7/20/2015
  * Time: 10:09 PM
  */

@@ -20,8 +20,8 @@
 /**
  * Record Driver for display of LargeImages from Islandora
  *
- * @category VuFind-Plus-2014
- * @author Mark Noble <mark@marmot.org>
+ * @category Pika
+ * @author Mark Noble <pika@marmot.org>
  * Date: 12/9/2015
  * Time: 1:47 PM
  */

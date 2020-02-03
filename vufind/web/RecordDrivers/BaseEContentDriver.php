@@ -22,7 +22,7 @@
  * Use for eContent collections that are based on MARC data
  *
  * @category Pika
- * @author Mark Noble <mark@marmot.org>
+ * @author Mark Noble <pika@marmot.org>
  * Date: 2/9/14
  * Time: 9:50 PM
  */

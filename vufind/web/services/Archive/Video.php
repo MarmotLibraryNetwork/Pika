@@ -21,7 +21,7 @@
  * Allows display of a Video from Islandora
  *
  * @category Pika
- * @author Mark Noble <mark@marmot.org>
+ * @author Mark Noble <pika@marmot.org>
  * Date: 9/8/2015
  * Time: 8:44 PM
  */

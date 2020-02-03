@@ -20,8 +20,8 @@
 /**
  * A superclass for Digital Archive Objects
  *
- * @category VuFind-Plus-2014
- * @author Mark Noble <mark@marmot.org>
+ * @category Pika
+ * @author Mark Noble <pika@marmot.org>
  * Date: 9/9/2015
  * Time: 4:13 PM
  */

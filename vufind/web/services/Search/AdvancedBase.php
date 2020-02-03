@@ -20,8 +20,8 @@
 /**
  * Base class for Advanced Searches
  *
- * @category VuFind-Plus
- * @author Mark Noble <mark@marmot.org>
+ * @category Pika
+ * @author Mark Noble <pika@marmot.org>
  * Date: 6/27/13
  * Time: 10:10 AM
  */

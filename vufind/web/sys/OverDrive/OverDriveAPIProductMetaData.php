@@ -20,8 +20,8 @@
 /**
  * Stores MetaData for a product that has been loaded from OverDrive
  *
- * @category VuFind-Plus 
- * @author Mark Noble <mark@marmot.org>
+ * @category Pika
+ * @author Mark Noble <pika@marmot.org>
  * Date: 10/8/13
  * Time: 9:28 AM
  */

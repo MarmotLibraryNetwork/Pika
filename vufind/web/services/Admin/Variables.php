@@ -21,7 +21,7 @@
  * Display a list of internal variables that have been defined in the database table 'variables'.
  *
  * @category Pika
- * @author Mark Noble <mark@marmot.org>
+ * @author Mark Noble <pika@marmot.org>
  * Date: 4/27/14
  * Time: 2:21 PM
  */

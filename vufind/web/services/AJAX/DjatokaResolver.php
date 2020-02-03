@@ -21,7 +21,7 @@
  * Resove
  *
  * @category Pika
- * @author Mark Noble <mark@marmot.org>
+ * @author Mark Noble <pika@marmot.org>
  * Date: 8/26/2016
  * Time: 2:15 PM
  */

@@ -21,7 +21,7 @@
  * Responsible for instantiating Catalog Connections to minimize making multiple concurrent connections
  *
  * @category Pika
- * @author Mark Noble <mark@marmot.org>
+ * @author Mark Noble <pika@marmot.org>
  * Date: 2/26/15
  * Time: 8:38 PM
  */

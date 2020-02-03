@@ -21,7 +21,7 @@
  * Records that should not contribute to their normally determined Grouped Work
  *
  * @category Pika
- * @author Mark Noble <mark@marmot.org>
+ * @author Mark Noble <pika@marmot.org>
  * Date: 3/29/2016
  * Time: 12:05 PM
  */

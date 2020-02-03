@@ -21,7 +21,7 @@
  * A class that allows generation of Lists from the New York Times API
  *
  * @category Pika
- * @author   Mark Noble <mark@marmot.org>
+ * @author   Mark Noble <pika@marmot.org>
  * Date: 8/29/2016
  * Time: 12:07 PM
  */

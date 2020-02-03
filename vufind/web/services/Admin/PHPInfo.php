@@ -20,8 +20,8 @@
 /**
  * Returns information about PHP
  *
- * @category VuFind-Plus-2014 
- * @author Mark Noble <mark@marmot.org>
+ * @category Pika
+ * @author Mark Noble <pika@marmot.org>
  * Date: 4/21/14
  * Time: 11:18 AM
  *

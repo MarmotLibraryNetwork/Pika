@@ -23,7 +23,7 @@
  * This class handles the display of Grouped Works within VuFind.
  *
  * @category Pika
- * @author Mark Noble <mark@marmot.org>
+ * @author Mark Noble <pika@marmot.org>
  * Date: 11/26/13
  * Time: 1:51 PM
  */

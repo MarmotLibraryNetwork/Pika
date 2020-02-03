@@ -21,7 +21,7 @@
  * Integration with Library.Solution for Schools
  *
  * @category Pika
- * @author Mark Noble <mark@marmot.org>
+ * @author Mark Noble <pika@marmot.org>
  * Date: 7/20/2015
  * Time: 2:17 PM
  */

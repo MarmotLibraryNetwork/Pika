@@ -21,7 +21,7 @@
  * Stores information related to a hold that has been placed when the system is offline.
  *
  * @category Pika
- * @author Mark Noble <mark@marmot.org>
+ * @author Mark Noble <pika@marmot.org>
  * Date: 7/29/13
  * Time: 9:49 AM
  */

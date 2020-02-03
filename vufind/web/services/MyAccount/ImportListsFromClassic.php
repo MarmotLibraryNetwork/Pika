@@ -21,7 +21,7 @@
  * Imports Lists for a user from prior catalog (Sierra WebPAC, Encore, Etc).
  *
  * @category Pika
- * @author Mark Noble <mark@marmot.org>
+ * @author Mark Noble <pika@marmot.org>
  * Date: 2/26/14
  * Time: 10:35 PM
  */

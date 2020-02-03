@@ -21,7 +21,7 @@
  * Record Driver for display of LargeImages from Islandora
  *
  * @category Pika
- * @author Mark Noble <mark@marmot.org>
+ * @author Mark Noble <pika@marmot.org>
  * Date: 12/9/2015
  * Time: 1:47 PM
  */

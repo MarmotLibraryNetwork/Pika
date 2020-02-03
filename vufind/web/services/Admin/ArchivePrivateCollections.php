@@ -21,7 +21,7 @@
  * Control how subjects are handled when linking to the catalog.
  *
  * @category Pika
- * @author Mark Noble <mark@marmot.org>
+ * @author Mark Noble <pika@marmot.org>
  * Date: 2/22/2016
  * Time: 7:05 PM
  */

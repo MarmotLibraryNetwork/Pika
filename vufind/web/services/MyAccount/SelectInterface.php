@@ -21,7 +21,7 @@
  * Allow the user to select an interface to use to access the site.
  *
  * @category Pika
- * @author Mark Noble <mark@marmot.org>
+ * @author Mark Noble <pika@marmot.org>
  * Date: 5/8/13
  * Time: 2:32 PM
  */

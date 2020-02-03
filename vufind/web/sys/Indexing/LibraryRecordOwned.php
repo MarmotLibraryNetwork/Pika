@@ -21,7 +21,7 @@
  * Contains information about which locations and sub locations are owned by a library system
  *
  * @category Pika
- * @author Mark Noble <mark@marmot.org>
+ * @author Mark Noble <pika@marmot.org>
  * Date: 7/18/2015
  * Time: 10:30 AM
  */
