@@ -15,87 +15,26 @@ use DateInterval;
 use DateTime;
 use InvalidArgumentException;
 
-class Sacramento extends Sierra
-{
-	public function __construct($accountProfile)
-	{
+class Sacramento extends Sierra {
+
+	public function __construct($accountProfile){
 		parent::__construct($accountProfile);
 		$this->logger->info('Using driver: Pika\PatronDrivers\Sacramento');
 	}
 
 	/**
-	 *  pin test override for Sacramento Student IDs since the API doesn't currently validate them properly (see D-3458)
+	 * Override the default Id fetching to look in the 'i' varfield for Sacramento Patrons, which will include their
+	 *student ids as well (which we use as barcodes).
 	 *
-	 * @param string $barcode
-	 * @param string $pin
-	 * @return \User|false|
+	 * @param string|User $patronOrBarcode
+	 * @param bool $searchSacramentoStudentIdField
+	 * @return false|int
 	 * @throws \ErrorException
 	 */
-
-	protected function _authBarcodePin($barcode, $pin){
-		$patronId = parent::_authBarcodePin($barcode, $pin); // Do regular pin testing for regular patrons
-		if ($patronId == false){ // now try classic process in case the user is a student
-			global $configArray;
-			if (!empty($configArray['OPAC']['patron_host'])){ // get the legacy sierra patron dump url (this is usually port 4500 or 54620
-				$c                 = new Curl();
-				$classicPinTestUrl = $configArray['OPAC']['patron_host'] . "/PATRONAPI/$barcode/$pin/pintest";
-				$headers           = [
-					"Accept"          => "text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5",
-					"Cache-Control"   => "max-age=0",
-					"Connection"      => "keep-alive",
-					"Accept-Charset"  => "ISO-8859-1,utf-8;q=0.7,*;q=0.7",
-					"Accept-Language" => "en-us,en;q=0.5",
-					"User-Agent"      => "Pika"
-				];
-				$cookie            = tempnam("/tmp", "CURLCOOKIE");
-				$curlOpts          = [
-					CURLOPT_CONNECTTIMEOUT    => 20,
-					CURLOPT_TIMEOUT           => 60,
-					CURLOPT_RETURNTRANSFER    => true,
-					CURLOPT_FOLLOWLOCATION    => true,
-					CURLOPT_UNRESTRICTED_AUTH => true,
-					CURLOPT_COOKIEJAR         => $cookie,
-					CURLOPT_COOKIESESSION     => false,
-					CURLOPT_HEADER            => false,
-					CURLOPT_AUTOREFERER       => true,
-				];
-				$c->setHeaders($headers);
-				$c->setOpts($curlOpts);
-				$r = $c->get($classicPinTestUrl);
-				if ($c->isError()){
-					return false;
-				}
-				if (strpos($r, 'RETCOD=0')){
-					//Successful pin test against classic Url
-
-					if (!$patronId = $this->getPatronId($barcode, true)){
-						return false;
-					}
-
-					// check that pin matches database
-					$patron           = new User();
-					$patron->username = $patronId;
-					$patron->find(true);
-					// if we don't find a patron then new user create it. Will be populated
-					if ($patron->N == 0){
-						$patron->created      = date('Y-m-d');
-						$patron->username     = $patronId;
-						$patron->cat_username = $barcode;
-						$patron->insert();
-					}
-
-					// Update the stored pin if it has changed
-
-					if ($patron->cat_password != $pin){
-						$patron->cat_password = $pin;
-						$patron->update();
-					}
-
-				}
-			}
-		}
-		return $patronId;
+	public function getPatronId($patronOrBarcode, $searchSacramentoStudentIdField = true){
+		return parent::getPatronId($patronOrBarcode, true);
 	}
+
 
 	private function _curlLegacy($patron, $pageToCall, $postParams = array(), $patronAction = true){
 
@@ -534,136 +473,135 @@ class Sacramento extends Sierra
 	}
 
 
-	public function getSelfRegistrationFields()
-	{
+	public function getSelfRegistrationFields(){
 		global $library;
 		$fields = array();
-		if ($library && $library->promptForBirthDateInSelfReg) {
+		if ($library && $library->promptForBirthDateInSelfReg){
 			$fields[] = array(
-				'property' => 'birthdate',
-				'type' => 'date',
-				'label' => 'Date of Birth (MM-DD-YYYY)',
+				'property'    => 'birthdate',
+				'type'        => 'date',
+				'label'       => 'Date of Birth (MM-DD-YYYY)',
 				'description' => 'Date of birth',
-				'maxLength' => 10,
-				'required' => true
+				'maxLength'   => 10,
+				'required'    => true
 			);
 		}
 		$fields[] = array(
-			'property' => 'firstname',
-			'type' => 'text',
-			'label' => 'First Name',
+			'property'    => 'firstname',
+			'type'        => 'text',
+			'label'       => 'First Name',
 			'description' => 'Your first name',
-			'maxLength' => 40,
-			'required' => true
+			'maxLength'   => 40,
+			'required'    => true
 		);
 		$fields[] = array(
-			'property' => 'middlename',
-			'type' => 'text',
-			'label' => 'Middle Initial',
+			'property'    => 'middlename',
+			'type'        => 'text',
+			'label'       => 'Middle Initial',
 			'description' => 'Your middle initial',
-			'maxLength' => 40,
-			'required' => false
+			'maxLength'   => 40,
+			'required'    => false
 		);
 
 		$fields[] = array(
-			'property' => 'lastname',
-			'type' => 'text',
-			'label' => 'Last Name',
+			'property'    => 'lastname',
+			'type'        => 'text',
+			'label'       => 'Last Name',
 			'description' => 'Your last name',
-			'maxLength' => 40,
-			'required' => true
+			'maxLength'   => 40,
+			'required'    => true
 		);
 		$fields[] = array(
-			'property' => 'address',
-			'type' => 'text',
-			'label' => 'Mailing Address',
+			'property'    => 'address',
+			'type'        => 'text',
+			'label'       => 'Mailing Address',
 			'description' => 'Mailing Address',
-			'maxLength' => 128,
-			'required' => true
+			'maxLength'   => 128,
+			'required'    => true
 		);
 		$fields[] = array(
-			'property' => 'apartmentnumber',
-			'type' => 'text',
-			'label' => 'Apartment Number',
+			'property'    => 'apartmentnumber',
+			'type'        => 'text',
+			'label'       => 'Apartment Number',
 			'description' => 'Apartment Number',
-			'maxLength' => 10,
-			'required' => false
+			'maxLength'   => 10,
+			'required'    => false
 		);
 		$fields[] = array(
-			'property' => 'city',
-			'type' => 'text',
-			'label' => 'City',
+			'property'    => 'city',
+			'type'        => 'text',
+			'label'       => 'City',
 			'description' => 'City',
-			'maxLength' => 48,
-			'required' => true
+			'maxLength'   => 48,
+			'required'    => true
 		);
 		$fields[] = array(
-			'property' => 'state',
-			'type' => 'text',
-			'label' => 'State',
+			'property'    => 'state',
+			'type'        => 'text',
+			'label'       => 'State',
 			'description' => 'State',
-			'maxLength' => 2,
-			'required' => true,
-			'default' => 'CA'
+			'maxLength'   => 2,
+			'required'    => true,
+			'default'     => 'CA'
 		);
 		$fields[] = array(
-			'property' => 'zip',
-			'type' => 'text',
-			'label' => 'Zip Code',
+			'property'    => 'zip',
+			'type'        => 'text',
+			'label'       => 'Zip Code',
 			'description' => 'Zip Code',
-			'maxLength' => 32,
-			'required' => true
+			'maxLength'   => 32,
+			'required'    => true
 		);
 		$fields[] = array(
-			'property' => 'primaryphone',
-			'type' => 'text',
-			'label' => 'Phone (xxx-xxx-xxxx)',
+			'property'    => 'primaryphone',
+			'type'        => 'text',
+			'label'       => 'Phone (xxx-xxx-xxxx)',
 			'description' => 'Phone',
-			'maxLength' => 128,
-			'required' => false
+			'maxLength'   => 128,
+			'required'    => false
 		);
 		$fields[] = array(
-			'property' => 'email',
-			'type' => 'email',
-			'label' => 'E-Mail',
+			'property'    => 'email',
+			'type'        => 'email',
+			'label'       => 'E-Mail',
 			'description' => 'E-Mail',
-			'maxLength' => 128,
-			'required' => false
+			'maxLength'   => 128,
+			'required'    => false
 		);
 
 		$fields[] = array(
-			'property' => 'guardianFirstName',
-			'type' => 'text',
-			'label' => 'Parent/Guardian First Name',
+			'property'    => 'guardianFirstName',
+			'type'        => 'text',
+			'label'       => 'Parent/Guardian First Name',
 			'description' => 'Your parent\'s or guardian\'s first name',
-			'maxLength' => 40,
-			'required' => false
+			'maxLength'   => 40,
+			'required'    => false
 		);
 		$fields[] = array(
-			'property' => 'guardianLastName',
-			'type' => 'text',
-			'label' => 'Parent/Guardian Last Name',
+			'property'    => 'guardianLastName',
+			'type'        => 'text',
+			'label'       => 'Parent/Guardian Last Name',
 			'description' => 'Your parent\'s or guardian\'s last name',
-			'maxLength' => 40,
-			'required' => false
+			'maxLength'   => 40,
+			'required'    => false
 		);
 		//These two fields will be made required by javascript in the template
 
 		$fields[] = array(
-			'property' => 'pin',
-			'type' => 'pin',
-			'label' => 'Pin',
+			'property'    => 'pin',
+			'type'        => 'pin',
+			'label'       => 'Pin',
 			'description' => 'Your desired pin',
 			/*'maxLength' => 4, 'size' => 4,*/
-			'required' => true
+			'required'    => true
 		);
 		$fields[] = array(
-			'property' => 'pinconfirm',
-			'type' => 'pin',
-			'label' => 'Confirm Pin',
+			'property'    => 'pinconfirm',
+			'type'        => 'pin',
+			'label'       => 'Confirm Pin',
 			'description' => 'Re-type your desired pin',
 			/*'maxLength' => 4, 'size' => 4,*/
-			'required' => true
+			'required'    => true
 		);
 
 		return $fields;

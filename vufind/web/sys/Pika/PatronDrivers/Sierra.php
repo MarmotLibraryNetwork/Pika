@@ -2567,24 +2567,34 @@ EOT;
 			'fields'          => 'barcodes',
 			];
 
+			$provisionSierraUserId = null;
 			$operation = 'patrons/find';
 			$r = $this->_doRequest($operation, $params);
 			if(!empty($r->barcodes)) {
-				$barcode = $r->barcodes[0];
+				// Note: for sacramento student ids, this call doesn't not return any barcodes
+				$barcode             = $r->barcodes[0];
 				$this->patronBarcode = $barcode;
+				//TODO: this call also returns the sierra id; keep it so we can skip an extra call after pin validation
+			}
+			if (!empty($r->id)){
+				// The call above can return an Id even if it doesn't return a barcode, eg for sacramento students
+				$provisionSierraUserId = $r->id;
 			}
 		}
 
 		$params = [
-			"barcode" => $barcode,
-			"pin"     => $pin
+			"barcode"         => $barcode,
+			"pin"             => $pin,
+			"caseSensitivity" => false,
 		];
 
 		if (!$this->_doRequest("patrons/validate", $params, "POST")) {
 			return false;
 		}
 
-		if(!$patronId = $this->getPatronId($barcode)){
+		if (!empty($provisionSierraUserId)){
+			$patronId = $provisionSierraUserId; // now that the user passed validation, set the patron id from the barcode lookup above.
+		} elseif(!$patronId = $this->getPatronId($barcode)){
 			return false;
 		}
 
