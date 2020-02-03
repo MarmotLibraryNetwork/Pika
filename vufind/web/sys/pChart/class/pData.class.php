@@ -65,10 +65,16 @@
                         "6"=>array("R"=>92,"G"=>224,"B"=>46,"Alpha"=>100),
                         "7"=>array("R"=>224,"G"=>176,"B"=>46,"Alpha"=>100));
 
-   /* Class creator */
+
+   public function __construct()
+   {
+   	$this->pData();
+   }
+
+	 /* Class creator */
    function pData()
     {
-     $this->Data = "";
+     $this->Data = [];
      $this->Data["XAxisDisplay"]	= AXIS_FORMAT_DEFAULT;
      $this->Data["XAxisFormat"]		= NULL;
      $this->Data["XAxisName"]		= NULL;
