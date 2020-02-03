@@ -23,7 +23,7 @@
  * This interface class is the definition of the required methods for
  * generating autocomplete suggestions.
  *
- * @category VuFind
+ * @category Pika
  * @package  Autocomplete
  * @author   Demian Katz <demian.katz@villanova.edu>
  * @license  http://opensource.org/licenses/gpl-2.0.php GNU General Public License

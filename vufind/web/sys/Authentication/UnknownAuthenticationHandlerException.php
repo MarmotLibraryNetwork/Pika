@@ -20,7 +20,7 @@
 /**
  * Exception class used for unrecognized authentication handler.
  *
- * @category VuFind
+ * @category Pika
  * @package  Authentication
  * @author   Franck Borel <franck.borel@gbv.de>
  * @license  http://opensource.org/licenses/gpl-2.0.php GNU General Public License

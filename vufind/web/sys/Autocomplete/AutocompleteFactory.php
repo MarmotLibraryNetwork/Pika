@@ -22,7 +22,7 @@
  *
  * This is a factory class to build autocomplete modules for use in searches.
  *
- * @category VuFind
+ * @category Pika
  * @package  Autocomplete
  * @author   Demian Katz <demian.katz@villanova.edu>
  * @license  http://opensource.org/licenses/gpl-2.0.php GNU General Public License

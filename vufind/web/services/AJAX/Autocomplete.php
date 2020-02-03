@@ -22,7 +22,7 @@ require_once ROOT_DIR . '/Action.php';
 /**
  * Autocomplete AJAX controller
  *
- * @category VuFind
+ * @category Pika
  * @package  Controller_AJAX
  * @author   Andrew S. Nagy <vufind-tech@lists.sourceforge.net>
  * @author   Demian Katz <demian.katz@villanova.edu>

@@ -23,7 +23,7 @@
  * This wrapper works with a driver class to pass information from the ILS to
  * VuFind.
  *
- * @category VuFind
+ * @category Pika
  * @package  ILS_Drivers
  * @author   Andrew S. Nagy <vufind-tech@lists.sourceforge.net>
  * @author   Demian Katz <demian.katz@villanova.edu>

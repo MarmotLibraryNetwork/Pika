@@ -24,7 +24,7 @@ require_once ROOT_DIR . '/Action.php';
  * If Javascript is unavailable, the user has to submit the sort URL to this page,
  * which will do a server-side redirect to achieve the same effect.
  *
- * @category VuFind
+ * @category Pika
  * @package  Controller_Search
  * @author   Andrew S. Nagy <vufind-tech@lists.sourceforge.net>
  * @author   Demian Katz <demian.katz@villanova.edu>

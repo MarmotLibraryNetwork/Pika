@@ -23,7 +23,7 @@ require_once 'JSON.php';
 /**
  * AJAX action for the Autocomplete module.
  *
- * @category VuFind
+ * @category Pika
  * @package  Controller_AJAX
  * @author   Andrew S. Nagy <vufind-tech@lists.sourceforge.net>
  * @author   Demian Katz <demian.katz@villanova.edu>

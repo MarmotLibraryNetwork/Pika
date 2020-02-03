@@ -23,7 +23,7 @@ require_once ROOT_DIR . '/sys/Autocomplete/SolrAutocomplete.php';
  *
  * This class provides suggestions by using the local Solr authority index.
  *
- * @category VuFind
+ * @category Pika
  * @package  Autocomplete
  * @author   Demian Katz <demian.katz@villanova.edu>
  * @license  http://opensource.org/licenses/gpl-2.0.php GNU General Public License

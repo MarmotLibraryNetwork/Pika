@@ -22,7 +22,7 @@
  *
  * Class for accessing helpful Open Library APIs.
  *
- * @category VuFind
+ * @category Pika
  * @package  Support_Classes
  * @author   Eoghan � Carrag�in <eoghan.ocarragain@gmail.com>
  * @license  http://opensource.org/licenses/gpl-2.0.php GNU General Public License

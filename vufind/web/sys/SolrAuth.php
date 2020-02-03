@@ -23,7 +23,7 @@ require_once 'Solr.php';
  *
  * Offers functionality for reading authority data from Solr.
  *
- * @category VuFind
+ * @category Pika
  * @package  Support_Classes
  * @author   Andrew S. Nagy <vufind-tech@lists.sourceforge.net>
  * @author   Demian Katz <demian.katz@villanova.edu>
