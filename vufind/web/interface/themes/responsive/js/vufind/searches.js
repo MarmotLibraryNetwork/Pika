@@ -181,9 +181,8 @@ VuFind.Searches = (function(){
 			return false;
 		},
 */
-/* TODO: obsolete; using grouped works send mail
 		sendEmail: function(){
-			if (Globals.loggedIn){
+			VuFind.Account.ajaxLogin(function (){
 				var from = $('#from').val(),
 						to = $('#to').val(),
 						message = $('#message').val(),
@@ -207,10 +206,10 @@ VuFind.Searches = (function(){
 							}
 						}
 				);
-			}
+			});
 			return false;
 		},
-*/
+
 
 		enableSearchTypes: function(){
 			var searchTypeElement = $("#searchSource");

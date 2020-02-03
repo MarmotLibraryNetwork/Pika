@@ -151,21 +151,22 @@ class Admin_ListWidgets extends ObjectEditor {
 			}else{
 				// Set some default sizes for the iframe we embed on the view page
 				switch ($widget->style){
+					default :
 					case 'horizontal':
-						$width = 650;
+						$width  = 650;
 						$height = ($widget->coverSize == 'medium') ? 325 : 275;
 						break;
 					case 'vertical' :
-						$width = ($widget->coverSize == 'medium') ? 275 : 175;
+						$width  = ($widget->coverSize == 'medium') ? 275 : 175;
 						$height = ($widget->coverSize == 'medium') ? 700 : 400;
 						break;
 					case 'text-list' :
-						$width = 500;
+						$width  = 500;
 						$height = 200;
 						break;
 					case 'single' :
 					case 'single-with-next' :
-						$width = ($widget->coverSize == 'medium') ? 300 : 225;
+						$width  = ($widget->coverSize == 'medium') ? 300 : 225;
 						$height = ($widget->coverSize == 'medium') ? 350 : 275;
 						break;
 				}

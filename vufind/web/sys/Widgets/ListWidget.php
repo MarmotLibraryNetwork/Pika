@@ -28,7 +28,7 @@ class ListWidget extends DB_DataObject {
 	public $numTitlesToShow;
 
 	// List Widget Styles and their labels
-	public $styles = [
+	static public $styles = [
 		'horizontal'       => 'Horizontal',
 		'vertical'         => 'Vertical',
 		'single'           => 'Single Title',
@@ -37,7 +37,7 @@ class ListWidget extends DB_DataObject {
 	];
 
 	// List Widget Display Types and their labels
-	public $displayTypes = [
+	static public $displayTypes = [
 		'tabs'     => 'Tabbed Display',
 		'dropdown' => 'Drop Down List'
 	];
@@ -49,7 +49,7 @@ class ListWidget extends DB_DataObject {
 		return array('id');
 	}
 
-	function getObjectStructure(){
+	static function getObjectStructure(){
 		//Load Libraries for lookup values
 		$libraryList = array();
 		$user        = UserAccount::getLoggedInUser();
@@ -148,7 +148,7 @@ class ListWidget extends DB_DataObject {
 				'property'    => 'style',
 				'type'        => 'enum',
 				'label'       => 'The style to use when displaying the list widget',
-				'values'      => $this->styles,
+				'values'      => self::$styles,
 				'storeDb'     => true,
 				'default'     => 'horizontal',
 				'hideInLists' => true,
@@ -191,7 +191,7 @@ class ListWidget extends DB_DataObject {
 			'listDisplayType' => array(
 				'property'    => 'listDisplayType',
 				'type'        => 'enum',
-				'values'      => $this->displayTypes,
+				'values'      => self::$displayTypes,
 				'label'       => 'Display lists as',
 				'description' => 'The method used to show the user the multiple lists associated with the widget.',
 				'storeDb'     => true,

@@ -2202,7 +2202,7 @@ class SearchObject_Solr extends SearchObject_Base
 	 * @param   string[]  $isbn     An array of isbns to check
 	 * @access  public
 	 * @throws  object              PEAR Error
-	 * @return  string              The requested resource
+	 * @return  array|null              The requested resource
 	 */
 	function getRecordByIsbn($isbn){
 		return $this->indexEngine->getRecordByIsbn($isbn, $this->getFieldsToReturn());

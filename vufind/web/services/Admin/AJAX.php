@@ -206,7 +206,7 @@ class Admin_AJAX extends AJAXHandler {
 		// Display Page
 		$interface->assign('id', strip_tags($_REQUEST['id']));
 		$interface->assign('source', strip_tags($_REQUEST['source']));
-		$existingWidgets = array();
+		require_once ROOT_DIR . '/sys/Widgets/ListWidget.php';
 		$listWidget      = new ListWidget();
 		if (UserAccount::userHasRoleFromList(['libraryAdmin', 'contentEditor', 'libraryManager', 'locationManager'])){
 			//Get all widgets for the library
