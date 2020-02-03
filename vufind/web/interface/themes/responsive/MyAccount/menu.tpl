@@ -53,7 +53,7 @@
 						</div>
 
 						{if $showFines}
-							<div class="myAccountLink{if $action=="Fines"} active{/if}" title="Fines and account messages"><a href="/MyAccount/Fines">{translate text='Fines and Messages'}</a></div>
+							<div class="myAccountLink{if $action=="Fines"} active{/if}" title="{translate text='Fines and Messages'}"><a href="/MyAccount/Fines">{translate text='Fines and Messages'}</a></div>
 						{/if}
 						{if $enableMaterialsRequest}
 							<div class="myAccountLink{if $pageTemplate=="myMaterialRequests.tpl"} active{/if}" title="{translate text='Materials_Request_alt'}s">

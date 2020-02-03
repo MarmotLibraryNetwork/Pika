@@ -666,7 +666,7 @@ abstract class HorizonAPI extends Horizon{
 				$curTitle['barcode']         = (string)$itemOut->itemBarcode;
 				$curTitle['holdQueueLength'] = $this->getNumHoldsOnRecord($bibId);
 				$curTitle['format']          = 'Unknown';
-				if ($curTitle['id'] && strlen($curTitle['id']) > 0){
+				if (!empty($curTitle['id'])){
 					require_once ROOT_DIR . '/RecordDrivers/MarcRecord.php';
 					$recordDriver = new MarcRecord($curTitle['id']);
 					if ($recordDriver->isValid()){
