@@ -43,7 +43,6 @@ hcl_solr_bib_export.properties
 horizon_export.properties
 *.pid
 *.port
-install/composer.lock
 
 
 # Compiled source #                                                                                   
