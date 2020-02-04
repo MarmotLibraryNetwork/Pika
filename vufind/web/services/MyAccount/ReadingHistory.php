@@ -27,6 +27,7 @@ class ReadingHistory extends MyAccount
 	public function __construct()
 	{
 		$this->logger = new Logger('ReadingHistory');
+		parent::__construct();
 	}
 
 	function launch()
