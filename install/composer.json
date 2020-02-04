@@ -1,0 +1,21 @@
+{
+    "config": {
+        "vendor-dir": "/usr/share/composer/vendor"
+    },
+    "require": {
+        "php-curl-class/php-curl-class": "^8.6",
+        "monolog/monolog": "^1.24",
+        "php-console/php-console": "^3.1",
+        "psr/simple-cache": "^1.0",
+        "smarty/smarty": "2.6.31",
+        "phpmailer/phpmailer": "^6.1",
+        "pear/log": "^1.13",
+        "pear/xml_serializer": "^0.22.0",
+        "pear/db": "^1.9",
+        "pear/file_marc": "^1.4",
+        "pear/validate_ispn": "dev-master",
+        "pear/pager": "^2.5",
+        "pear/mail": "^1.4",
+        "pear/net_smtp": "^1.9"
+    }
+}

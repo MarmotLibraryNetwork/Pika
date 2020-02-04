@@ -1,10 +1,33 @@
 <?php
+/**
+ * Pika Discovery Layer
+ * Copyright (C) 2020  Marmot Library Network
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 class Timer{
 	private $lastTime = 0;
 	private $firstTime = 0;
 	private $timingMessages;
 	private $timingsEnabled = false;
 	private $minTimeToLog = 0;
+
+	public function __construct($startTime = null){
+		$this->Timer($startTime = null);
+
+	}
 
 	public function Timer($startTime = null){
 		global $configArray;
@@ -19,8 +42,11 @@ class Timer{
 			$this->timingsEnabled = true;
 		}
 
-		if (!$startTime) $startTime = microtime(true);
-		$this->lastTime = $startTime;
+		if (!$startTime) {
+			$startTime = microtime(true);
+		}
+
+		$this->lastTime  = $startTime;
 		$this->firstTime = $startTime;
 		$this->timingMessages = array();
 	}

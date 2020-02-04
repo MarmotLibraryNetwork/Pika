@@ -12,7 +12,7 @@
 			<div class="applied-filters"{if $displaySidebarMenu} style="display: none"{/if}>
 			{foreach from=$filterList item=filters key=field }
 				{foreach from=$filters item=filter}
-					<div class="facetValue">{translate text=$field}: {$filter.display|translate|escape} <a href="{$filter.removalUrl|escape}" onclick="trackEvent('Remove Facet', '{$field}', '{$filter.display|escape}');"><img src="{$path}/images/silk/delete.png" alt="Delete"/></a></div>
+					<div class="facetValue">{translate text=$field}: {$filter.display|translate|escape} <a href="{$filter.removalUrl|escape}" onclick="trackEvent('Remove Facet', '{$field}', '{$filter.display|escape}');"><span class="glyphicon glyphicon-remove-circle" title="Delete" aria-hidden="true" style="color: red;"></span></a></div>
 				{/foreach}
 			{/foreach}
 			</div>

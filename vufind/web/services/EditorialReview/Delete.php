@@ -1,11 +1,12 @@
 <?php
 /**
+ * Pika Discovery Layer
+ * Copyright (C) 2020  Marmot Library Network
  *
- * Copyright (C) Villanova University 2007.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2,
- * as published by the Free Software Foundation.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -13,31 +14,25 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-require_once(ROOT_DIR . '/services/Admin/Admin.php');
-require_once(ROOT_DIR . '/sys/LocalEnrichment/EditorialReview.php');
+require_once ROOT_DIR . '/services/Admin/Admin.php';
+require_once ROOT_DIR . '/sys/LocalEnrichment/EditorialReview.php';
 require_once ROOT_DIR . '/sys/DataObjectUtil.php';
 
 class EditorialReview_Delete extends Admin_Admin {
 
-	function launch()
-	{
-		global $configArray;
-
-		$editorialReview = new EditorialReview();
+	function launch(){
+		$editorialReview                    = new EditorialReview();
 		$editorialReview->editorialReviewId = $_REQUEST['id'];
-		$editorialReview->find();
-		if ($editorialReview->N > 0){
+		if ($editorialReview->find()){
 			$editorialReview->fetch();
 			$editorialReview->delete();
 		}
 
 		//Redirect back to the PMDA home page
-		header('Location:' . $configArray['Site']['path'] . "/EditorialReview/Search");
+		header('Location:/EditorialReview/Search');
 		exit();
 	}
 

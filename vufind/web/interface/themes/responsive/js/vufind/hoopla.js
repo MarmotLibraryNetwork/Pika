@@ -1,11 +1,11 @@
 VuFind.Hoopla = (function(){
 	return {
 		checkOutHooplaTitle: function (hooplaId, patronId) {
-			if (Globals.loggedIn) {
+			VuFind.Account.ajaxLogin(function (){
 				if (typeof patronId === 'undefined') {
 					patronId = $('#patronId', '#pickupLocationOptions').val(); // Lookup selected user from the options form
 				}
-				var url = Globals.path + '/Hoopla/'+ hooplaId + '/AJAX',
+				var url = '/Hoopla/'+ hooplaId + '/AJAX',
 						params = {
 							'method' : 'checkOutHooplaTitle',
 							patronId : patronId
@@ -20,33 +20,25 @@ VuFind.Hoopla = (function(){
 						VuFind.showMessage("Checking Out Title", data.message);
 					}
 				}).fail(VuFind.ajaxFail)
-			}else{
-				VuFind.Account.ajaxLogin(null, function(){
-					VuFind.Hoopla.checkOutHooplaTitle(hooplaId, patronId);
-				}, false);
-			}
+			});
 			return false;
 		},
 
 		getHooplaCheckOutPrompt: function (hooplaId) {
-			if (Globals.loggedIn) {
-				var url = Globals.path + "/Hoopla/" + hooplaId + "/AJAX?method=getHooplaCheckOutPrompt";
+			VuFind.Account.ajaxLogin(function (){
+				var url = "/Hoopla/" + hooplaId + "/AJAX?method=getHooplaCheckOutPrompt";
 				$.getJSON(url, function (data) {
 					VuFind.showMessageWithButtons(data.title, data.body, data.buttons);
 				}).fail(VuFind.ajaxFail);
-			} else {
-				VuFind.Account.ajaxLogin(null, function () {
-					VuFind.Hoopla.getHooplaCheckOutPrompt(hooplaId);
-				}, false);
-			}
+			});
 			return false;
 		},
 
 		returnHooplaTitle: function (patronId, hooplaId) {
-			if (Globals.loggedIn) {
-				if (confirm('Are you sure you want to return this title?')) {
+			VuFind.confirm('Are you sure you want to return this title?', function () {
+				VuFind.Account.ajaxLogin(function (){
 					VuFind.showMessage("Returning Title", "Returning your title in Hoopla.");
-					var url = Globals.path + "/Hoopla/" + hooplaId + "/AJAX",
+					var url = "/Hoopla/" + hooplaId + "/AJAX",
 							params = {
 								'method': 'returnHooplaTitle'
 								,patronId: patronId
@@ -54,12 +46,8 @@ VuFind.Hoopla = (function(){
 					$.getJSON(url, params, function (data) {
 						VuFind.showMessage(data.success ? 'Success' : 'Error', data.message, data.success, data.success);
 					}).fail(VuFind.ajaxFail);
-				}
-			} else {
-				VuFind.Account.ajaxLogin(null, function () {
-					VuFind.Hoopla.returnHooplaTitle(patronId, hooplaId);
-				}, false);
-			}
+				});
+			});
 			return false;
 		}
 

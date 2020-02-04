@@ -1,10 +1,27 @@
 <?php
+/**
+ * Pika Discovery Layer
+ * Copyright (C) 2020  Marmot Library Network
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
 
 /**
  * Description goes here
  *
  * @category Pika
- * @author Mark Noble <mark@marmot.org>
+ * @author Mark Noble <pika@marmot.org>
  * Date: 7/21/2016
  * Time: 4:04 PM
  */
@@ -113,7 +130,7 @@ class Archive_ClaimAuthorship extends Action{
 
 		unset($archiveRequestFields['dateRequested']);
 
-		$interface->assign('submitUrl', $configArray['Site']['path'] . '/Archive/ClaimAuthorship');
+		$interface->assign('submitUrl', '/Archive/ClaimAuthorship');
 		$interface->assign('structure', $archiveRequestFields);
 		$interface->assign('saveButtonText', 'Submit Request');
 		$interface->assign('claimAuthorshipHeader', $owningLibrary->claimAuthorshipHeader);
@@ -149,15 +166,14 @@ class Archive_ClaimAuthorship extends Action{
 					$errorDescription = 'Unknown error';
 				}
 				$logger->log('Could not insert new object ' . $ret . ' ' . $errorDescription, PEAR_LOG_DEBUG);
-				$_SESSION['lastError'] = "An error occurred inserting {$this->getObjectType()} <br/>{$errorDescription}";
-				$logger->log(mysql_error(), PEAR_LOG_DEBUG);
+				$_SESSION['lastError'] = "An error occurred inserting {$this->getObjectType()} <br>{$errorDescription}";
 				return false;
 			}
 		} else {
 			global $logger;
 			$errorDescription = implode(', ', $validationResults['errors']);
 			$logger->log('Could not validate new object Claim Authorship Request ' . $errorDescription, PEAR_LOG_DEBUG);
-			$_SESSION['lastError'] = "The information entered was not valid. <br/>" . implode('<br/>', $validationResults['errors']);
+			$_SESSION['lastError'] = "The information entered was not valid. <br>" . implode('<br>', $validationResults['errors']);
 			return false;
 		}
 		return $newObject;

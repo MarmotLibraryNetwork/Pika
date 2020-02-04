@@ -1,9 +1,27 @@
 <?php
 /**
+ * Pika Discovery Layer
+ * Copyright (C) 2020  Marmot Library Network
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+/**
  * Record Driver to handle loading data for OverDrive Records
  *
  * @category Pika
- * @author Mark Noble <mark@marmot.org>
+ * @author Mark Noble <pika@marmot.org>
  * Date: 12/2/13
  * Time: 8:37 AM
  */
@@ -117,10 +135,10 @@ class OverDriveRecordDriver extends RecordInterface {
 	 * breadcrumbs.
 	 *
 	 * @access  public
-	 * @return  string              Breadcrumb text to represent this record.
+	 * @return  string              Breadcrumb text to represent this title.
 	 */
 	public function getBreadcrumb() {
-		// TODO: Implement getBreadcrumb() method.
+		return $this->getTitle();
 	}
 
 	/**
@@ -184,30 +202,8 @@ class OverDriveRecordDriver extends RecordInterface {
 	 * @access  public
 	 * @return  array               Strings representing citation formats.
 	 */
-	public function getCitationFormats()
-	{
-		return array('AMA', 'APA', 'ChicagoHumanities', 'ChicagoAuthDate', 'MLA');
-	}
-
-	/**
-	 * Get the text to represent this record in the body of an email.
-	 *
-	 * @access  public
-	 * @return  string              Text for inclusion in email.
-	 */
-	public function getEmail() {
-		// TODO: Implement getEmail() method.
-	}
-
-	/**
-	 * Get any excerpts associated with this record.  For details of
-	 * the return format, see sys/Excerpts.php.
-	 *
-	 * @access  public
-	 * @return  array               Excerpt information.
-	 */
-	public function getExcerpts() {
-		// TODO: Implement getExcerpts() method.
+	public function getCitationFormats(){
+		return ['AMA', 'APA', 'ChicagoHumanities', 'ChicagoAuthDate', 'MLA'];
 	}
 
 	/**
@@ -234,19 +230,6 @@ class OverDriveRecordDriver extends RecordInterface {
 	 */
 	public function getExportFormats() {
 		// TODO: Implement getExportFormats() method.
-	}
-
-	/**
-	 * Assign necessary Smarty variables and return a template name to
-	 * load in order to display extended metadata (more details beyond
-	 * what is found in getCoreMetadata() -- used as the contents of the
-	 * Description tab of the record view).
-	 *
-	 * @access  public
-	 * @return  string              Name of Smarty template file to display.
-	 */
-	public function getExtendedMetadata() {
-		// TODO: Implement getExtendedMetadata() method.
 	}
 
 	/**
@@ -295,26 +278,16 @@ class OverDriveRecordDriver extends RecordInterface {
 	}
 
 	/**
-	 * Get any reviews associated with this record.  For details of
-	 * the return format, see sys/Reviews.php.
-	 *
-	 * @access  public
-	 * @return  array               Review information.
-	 */
-	public function getReviews() {
-		// TODO: Implement getReviews() method.
-	}
-
-	/**
 	 * Assign necessary Smarty variables and return a template name to
 	 * load in order to display a summary of the item suitable for use in
 	 * search results.
 	 *
 	 * @access  public
+	 * @param string $view          The view style for this search entry.
 	 * @return  string              Name of Smarty template file to display.
 	 */
-	public function getSearchResult() {
-		// TODO: Implement getSearchResult() method.
+	public function getSearchResult($view = 'list') {
+		// TODO: probably not needed.
 	}
 
 	public function getSeries(){
@@ -323,7 +296,7 @@ class OverDriveRecordDriver extends RecordInterface {
 			$seriesName = isset($this->getOverDriveMetaData()->getDecodedRawData()->series) ? $this->getOverDriveMetaData()->getDecodedRawData()->series : null;
 			if ($seriesName != null){
 				$seriesData = array(
-					'seriesTitle' => $seriesName,
+					'seriesTitle'  => $seriesName,
 					'fromNovelist' => false,
 				);
 			}
@@ -370,15 +343,14 @@ class OverDriveRecordDriver extends RecordInterface {
 	}
 
 	/**
-	 * Assign necessary Smarty variables and return a template name to
-	 * load in order to display the Table of Contents extracted from the
-	 * record.  Returns null if no Table of Contents is available.
+	 * load in order to display the Table of Contents for the title.
+	 *  Returns null if no Table of Contents is available.
 	 *
 	 * @access  public
-	 * @return  string              Name of Smarty template file to display.
+	 * @return  string[]|null              contents to display.
 	 */
 	public function getTOC() {
-		return array();
+		return null;
 	}
 
 	/**
@@ -402,26 +374,6 @@ class OverDriveRecordDriver extends RecordInterface {
 	}
 
 	/**
-	 * Does this record have audio content available?
-	 *
-	 * @access  public
-	 * @return  bool
-	 */
-	public function hasAudio() {
-		// TODO: Implement hasAudio() method.
-	}
-
-	/**
-	 * Does this record have an excerpt available?
-	 *
-	 * @access  public
-	 * @return  bool
-	 */
-	public function hasExcerpt() {
-		// TODO: Implement hasExcerpt() method.
-	}
-
-	/**
 	 * Does this record have searchable full text in the index?
 	 *
 	 * Note: As of this writing, searchable full text is not a VuFind feature,
@@ -434,15 +386,6 @@ class OverDriveRecordDriver extends RecordInterface {
 		// TODO: Implement hasFullText() method.
 	}
 
-	/**
-	 * Does this record have image content available?
-	 *
-	 * @access  public
-	 * @return  bool
-	 */
-	public function hasImages() {
-		// TODO: Implement hasImages() method.
-	}
 
 	/**
 	 * Does this record support an RDF representation?
@@ -452,36 +395,6 @@ class OverDriveRecordDriver extends RecordInterface {
 	 */
 	public function hasRDF() {
 		// TODO: Implement hasRDF() method.
-	}
-
-	/**
-	 * Does this record have reviews available?
-	 *
-	 * @access  public
-	 * @return  bool
-	 */
-	public function hasReviews() {
-		// TODO: Implement hasReviews() method.
-	}
-
-	/**
-	 * Does this record have a Table of Contents available?
-	 *
-	 * @access  public
-	 * @return  bool
-	 */
-	public function hasTOC() {
-		// TODO: Implement hasTOC() method.
-	}
-
-	/**
-	 * Does this record have video content available?
-	 *
-	 * @access  public
-	 * @return  bool
-	 */
-	public function hasVideo() {
-		// TODO: Implement hasVideo() method.
 	}
 
 	function getLanguage(){
@@ -542,24 +455,24 @@ class OverDriveRecordDriver extends RecordInterface {
 	public function getLibraryScopingId(){
 		//For econtent, we need to be more specific when restricting copies
 		//since patrons can't use copies that are only available to other libraries.
-		$searchLibrary = Library::getSearchLibrary();
+		$searchLibrary  = Library::getSearchLibrary();
 		$searchLocation = Location::getSearchLocation();
-		$activeLibrary = Library::getActiveLibrary();
+		$activeLibrary  = Library::getActiveLibrary();
 		$activeLocation = Location::getActiveLocation();
-		$homeLibrary = Library::getPatronHomeLibrary();
+		$homeLibrary    = UserAccount::getUserHomeLibrary();
 
 		//Load the holding label for the branch where the user is physically.
-		if (!is_null($homeLibrary)){
+		if (!empty($homeLibrary)){
 			return $homeLibrary->includeOutOfSystemExternalLinks ? -1 : $homeLibrary->libraryId;
-		}else if (!is_null($activeLocation)){
+		}elseif (!empty($activeLocation)){
 			$activeLibrary = Library::getLibraryForLocation($activeLocation->locationId);
 			return $activeLibrary->includeOutOfSystemExternalLinks ? -1 : $activeLibrary->libraryId;
-		}else if (isset($activeLibrary)) {
+		}elseif (!empty($activeLibrary)) {
 			return $activeLibrary->includeOutOfSystemExternalLinks ? -1 : $activeLibrary->libraryId;
-		}else if (!is_null($searchLocation)){
+		}elseif (!empty($searchLocation)){
 			$searchLibrary = Library::getLibraryForLocation($searchLibrary->locationId);
 			return $searchLibrary->includeOutOfSystemExternalLinks ? -1 : $searchLocation->libraryId;
-		}else if (isset($searchLibrary)) {
+		}elseif (!empty($searchLibrary)) {
 			return $searchLibrary->includeOutOfSystemExternalLinks ? -1 : $searchLibrary->libraryId;
 		}else{
 			return -1;
@@ -818,7 +731,7 @@ class OverDriveRecordDriver extends RecordInterface {
 		if ($absolutePath){
 			$bookCoverUrl = $configArray['Site']['url'];
 		}else{
-			$bookCoverUrl = $configArray['Site']['path'];
+			$bookCoverUrl = '';
 		}
 		$bookCoverUrl .= '/bookcover.php?size=' . $size;
 		$bookCoverUrl .= '&id=' . $this->id;
@@ -882,7 +795,7 @@ class OverDriveRecordDriver extends RecordInterface {
 		foreach ($holdings as $item){
 			if (in_array($item->textId, array('ebook-epub-adobe', 'ebook-pdf-adobe'))){
 				$showAdobeDigitalEditions = true;
-			}else if (in_array($item->textId, array('video-wmv', 'music-wma', 'music-wma', 'audiobook-wma', 'audiobook-mp3'))){
+			}elseif (in_array($item->textId, array('video-wmv', 'music-wma', 'music-wma', 'audiobook-wma', 'audiobook-mp3'))){
 				$showOverDriveConsole = true;
 			}
 		}
@@ -944,16 +857,14 @@ class OverDriveRecordDriver extends RecordInterface {
 		return $configArray['Site']['url'] . '/' . $this->getModule() . '/' . $recordId;
 	}
 
-	public function getLinkUrl($useUnscopedHoldingsSummary = false) {
-		global $interface;
-		$id = $this->getUniqueID();
-		$linkUrl = '/OverDrive/' . $id . '/Home?searchId=' . $interface->get_template_vars('searchId') . '&amp;recordIndex=' . $interface->get_template_vars('recordIndex') . '&amp;page='  . $interface->get_template_vars('page');
-		if ($useUnscopedHoldingsSummary){
-			$linkUrl .= '&amp;searchSource=marmot';
-		}else{
-			$linkUrl .= '&amp;searchSource=' . $interface->get_template_vars('searchSource');
-		}
-		return $linkUrl;
+	/**
+	 * A relative URL that is a link to the Full Record View AND additional search parameters
+	 * to the recent search the user has navigated from
+	 *
+	 * @return string
+	 */
+	public function getLinkUrl() {
+		return parent::getLinkUrl();
 	}
 
 	function getQRCodeUrl(){
@@ -1070,7 +981,7 @@ class OverDriveRecordDriver extends RecordInterface {
 		// If we have multiple formats, Book and Journal are most important...
 		if (in_array('Book', $formats)) {
 			$format = 'Book';
-		} else if (in_array('Journal', $formats)) {
+		} elseif (in_array('Journal', $formats)) {
 			$format = 'Journal';
 		} else {
 			$format = $formats[0];
@@ -1215,4 +1126,12 @@ class OverDriveRecordDriver extends RecordInterface {
 		return $this->getGroupedWorkDriver()->getRelatedRecord($id);
 	}
 
+	/**
+	 * This is for retrieving Volume Records, which are a collection of item records of a Bib. (eg Part 1 of a DVD set would
+	 * be a volume record, part 2 another volume record ) This is different from the volume on an item record.
+	 * @return IlsVolumeInfo[]  An array of VolumeInfoObjects
+	 */
+	function getVolumeInfoForRecord(){
+		return [];
+	}
 }

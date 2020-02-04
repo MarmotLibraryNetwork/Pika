@@ -8,6 +8,7 @@ import org.apache.log4j.Logger;
 import org.ini4j.Ini;
 import org.ini4j.Profile.Section;
 
+//TODO: obsolete, delete
 public class ReindexLists implements IProcessHandler {
 	private Logger logger;
 	private CronProcessLogEntry processLog;

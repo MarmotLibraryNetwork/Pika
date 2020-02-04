@@ -6,7 +6,7 @@
 		<div><em>{$limitationsNotes}</em></div>
 	{/if}
 
-	{if count($rightsHolders) > 0}
+	{if !empty($rightsHolders)}
 		<div>
 			<em>Rights held by&nbsp;
 				{foreach from=$rightsHolders item="rightsHolder" name="rightsHolders"}

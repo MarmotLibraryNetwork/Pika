@@ -1,11 +1,12 @@
 <?php
 /**
+ * Pika Discovery Layer
+ * Copyright (C) 2020  Marmot Library Network
  *
- * Copyright (C) Villanova University 2007.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2,
- * as published by the Free Software Foundation.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -13,16 +14,12 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 require_once ROOT_DIR . '/services/Admin/Admin.php';
-require_once 'XML/Unserializer.php';
 
-abstract class ObjectEditor extends Admin_Admin
-{
+abstract class ObjectEditor extends Admin_Admin {
 	function launch(){
 		global $interface;
 
@@ -93,15 +90,16 @@ abstract class ObjectEditor extends Admin_Admin
 	 */
 	abstract function getIdKeyColumn();
 
+//TODO: delete or use
 	function getExistingObjectByPrimaryKey($objectType, $value){
 		$primaryKeyColumn = $this->getPrimaryKeyColumn();
-		/** @var DB_DataObject $curLibrary */
-		$curLibrary = new $objectType();
-		$curLibrary->$primaryKeyColumn = $value;
-		$curLibrary->find();
-		if ($curLibrary->N == 1){
-			$curLibrary->fetch();
-			return $curLibrary;
+		/** @var DB_DataObject $dataObject */
+		$dataObject = new $objectType();
+		$dataObject->$primaryKeyColumn = $value;
+		$dataObject->find();
+		if ($dataObject->N == 1){
+			$dataObject->fetch();
+			return $dataObject;
 		}else{
 			return null;
 		}
@@ -110,13 +108,13 @@ abstract class ObjectEditor extends Admin_Admin
 	function getExistingObjectById($id){
 		$objectType = $this->getObjectType();
 		$idColumn   = $this->getIdKeyColumn();
-		/** @var DB_DataObject $curLibrary */
-		$curLibrary            = new $objectType;
-		$curLibrary->$idColumn = $id;
-		$curLibrary->find();
-		if ($curLibrary->N == 1){
-			$curLibrary->fetch();
-			return $curLibrary;
+		/** @var DB_DataObject $dataObject */
+		$dataObject            = new $objectType;
+		$dataObject->$idColumn = $id;
+		$dataObject->find();
+		if ($dataObject->N == 1){
+			$dataObject->fetch();
+			return $dataObject;
 		}else{
 			return null;
 		}
@@ -128,28 +126,27 @@ abstract class ObjectEditor extends Admin_Admin
 		$newObject = new $objectType;
 		//Check to see if we are getting default values from the
 		$validationResults = $this->updateFromUI($newObject, $structure);
-		if ($validationResults['validatedOk']) {
+		if ($validationResults['validatedOk']){
 			$ret = $newObject->insert();
-			if (!$ret) {
+			if (!$ret){
 				global $logger;
-				if ($newObject->_lastError) {
+				if ($newObject->_lastError){
 					$errorDescription = $newObject->_lastError->getUserInfo();
-				} else {
+				}else{
 					$errorDescription = 'Unknown error';
 				}
 				$logger->log('Could not insert new object ' . $ret . ' ' . $errorDescription, PEAR_LOG_DEBUG);
 				@session_start();
 				$_SESSION['lastError'] = "An error occurred inserting {$this->getObjectType()} <br/>{$errorDescription}";
 
-				$logger->log(mysql_error(), PEAR_LOG_DEBUG);
 				return false;
 			}
-		} else {
+		}else{
 			global $logger;
 			$errorDescription = implode(', ', $validationResults['errors']);
 			$logger->log('Could not validate new object ' . $objectType . ' ' . $errorDescription, PEAR_LOG_DEBUG);
 			@session_start();
-			$_SESSION['lastError'] = "The information entered was not valid. <br/>" . implode('<br/>', $validationResults['errors']);
+			$_SESSION['lastError'] = "The information entered was not valid. <br>" . implode('<br>', $validationResults['errors']);
 
 			return false;
 		}
@@ -241,12 +238,12 @@ abstract class ObjectEditor extends Admin_Admin
 							} else {
 								$errorDescription = 'Unknown error';
 							}
-							$_SESSION['lastError'] = "An error occurred updating {$this->getObjectType()} with id of $id <br/>{$errorDescription}";
+							$_SESSION['lastError'] = "An error occurred updating {$this->getObjectType()} with id of $id <br>{$errorDescription}";
 							$errorOccurred         = true;
 						}
 					} else {
 						$errorDescription = implode(', ', $validationResults['errors']);
-						$_SESSION['lastError'] = "An error occurred validating {$this->getObjectType()} with id of $id <br/>{$errorDescription}";
+						$_SESSION['lastError'] = "An error occurred validating {$this->getObjectType()} with id of $id <br>{$errorDescription}";
 						$errorOccurred         = true;
 					}
 				}elseif ($objectAction =='delete'){
@@ -265,16 +262,16 @@ abstract class ObjectEditor extends Admin_Admin
 		}
 		global $configArray;
 		if (isset($_REQUEST['submitStay']) || $errorOccurred){
-			header("Location: {$configArray['Site']['path']}/{$this->getModule()}/{$this->getToolName()}?objectAction=edit&id=$id");
+			header("Location: /{$this->getModule()}/{$this->getToolName()}?objectAction=edit&id=$id");
 		}elseif (isset($_REQUEST['submitAddAnother'])){
-			header("Location: {$configArray['Site']['path']}/{$this->getModule()}/{$this->getToolName()}?objectAction=addNew");
+			header("Location: /{$this->getModule()}/{$this->getToolName()}?objectAction=addNew");
 		}else{
 			$redirectLocation = $this->getRedirectLocation($objectAction, $curObject);
 			if (is_null($redirectLocation)){
 				if (isset($_SESSION['redirect_location']) && $objectAction != 'delete'){
 					header("Location: " . $_SESSION['redirect_location']);
 				}else{
-					header("Location: {$configArray['Site']['path']}/{$this->getModule()}/{$this->getToolName()}");
+					header("Location: /{$this->getModule()}/{$this->getToolName()}");
 				}
 			}else{
 				header("Location: {$redirectLocation}");

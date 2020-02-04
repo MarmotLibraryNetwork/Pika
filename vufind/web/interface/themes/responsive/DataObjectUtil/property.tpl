@@ -14,7 +14,7 @@
 				<label for='{$propName}'{if $property.description} title="{$property.description}"{/if}>{$property.label}</label>
 			</div>
 			<div class="col-xs-1">
-				<a href="{$property.helpLink}" target="_blank"><img src="{$path}/interface/themes/responsive/images/help.png" alt="Help"></a>
+				<a href="{$property.helpLink}" target="_blank"><span class="glyphicon glyphicon-question-sign" title="Help" aria-hidden="true" style="color: blue;"></span></a>
 			</div>
 			</div>
 		{elseif $property.type != 'section' && $property.type != 'checkbox'}
@@ -32,7 +32,7 @@
 						</h4>
 						{if $property.helpLink}
 							<div class="col-xs-1">
-								<a href="{$property.helpLink}" target="_blank"><img src="{$path}/interface/themes/responsive/images/help.png" alt="Help"></a>
+								<a href="{$property.helpLink}" target="_blank"><span class="glyphicon glyphicon-question-sign" title="Help" aria-hidden="true" style="color: blue;"></span></a>
 							</div>
 						{/if}
 					</div>
@@ -98,7 +98,7 @@
 		{elseif $property.type == 'image' || $property.type == 'file'}
 			{if $propValue}
 				{if $property.type == 'image'}
-					<img src='{$path}/files/thumbnail/{$propValue}'>{$propValue}
+					<img src='/files/thumbnail/{$propValue}'>{$propValue}
 					<input type="checkbox" name='remove{$propName}' id='remove{$propName}'> Remove image.
 					<br>
 				{else}

@@ -7,7 +7,7 @@
 				</div>
 			</div>
 		{else}
-			{if count($relatedProjectsLibrary) > 0}
+			{if !empty($relatedProjectsLibrary)}
 				<div class="row">
 					<div class="col-xs-12">
 						<h3><a href="{$libraryProjectsUrl}">Collections from {$archiveName}</a></h3>
@@ -34,7 +34,7 @@
 				</div>
 			{/if}
 
-			{if count($relatedProjectsOther) > 0}
+			{if !empty($relatedProjectsOther)}
 				<div class="row">
 					<div class="col-xs-12">
 						<h3><a href="{$otherProjectsUrl}">{if count($relatedProjectsLibrary) > 0}More collections{else}Collections{/if} from the archive</a></h3>

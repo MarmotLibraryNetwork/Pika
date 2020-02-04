@@ -1,36 +1,35 @@
 <?php
 /**
+ * Pika Discovery Layer
+ * Copyright (C) 2020  Marmot Library Network
  *
- * Copyright (C) Villanova University 2007.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2,
- * as published by the Free Software Foundation.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA	02111-1307	USA
- *
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+use Curl\Curl;
+use \Pika\Cache;
+use \Pika\Logger;
+
 require_once ROOT_DIR . '/sys/IndexEngine.php';
-require_once ROOT_DIR . '/sys/Proxy_Request.php';
 require_once ROOT_DIR . '/sys/ConfigArray.php';
 require_once ROOT_DIR . '/sys/SolrUtils.php';
-
-require_once 'XML/Unserializer.php';
-require_once 'XML/Serializer.php';
 
 /**
  * Solr HTTP Interface
  *
- * @version		 $Revision: 1.13 $
- * @author			Andrew S. Nagy <andrew.nagy@villanova.edu>
- * @access			public
+ * @version     $Revision: 1.13 $
+ * @author      Andrew S. Nagy <andrew.nagy@villanova.edu>
+ * @access      public
  */
 class Solr implements IndexEngine {
 	/**
@@ -54,10 +53,10 @@ class Solr implements IndexEngine {
 	public $raw = false;
 
 	/**
-	 * The HTTP_Request object used for REST transactions
-	 * @var HTTP_Request $client
+	 * The Curl handler object used for REST transactions
+	 * @var Curl $client
 	 */
-	public $client;
+	public Curl $client;
 
 	/**
 	 * The host to connect to
@@ -81,7 +80,7 @@ class Solr implements IndexEngine {
 	/**
 	 * The path to the YAML file specifying available search types:
 	 */
-	protected $searchSpecsFile = '../../conf/searchspecs.yaml';
+	protected $searchSpecsFile = '../../conf/searchspecs.json';
 
 	/**
 	 * An array of search specs pulled from $searchSpecsFile (above)
@@ -98,10 +97,10 @@ class Solr implements IndexEngine {
 
 	/**
 	 * Should range operators (i.e. [a TO b]) in the search string be treated as
-	 * case-insensitive (false), or must they be ALL UPPERCASE (true)?	Note that
+	 * case-insensitive (false), or must they be ALL UPPERCASE (true)?  Note that
 	 * making this setting case insensitive not only changes the word "TO" to
 	 * uppercase but also inserts OR clauses to check for case insensitive matches
-	 * against the edges of the range...	i.e. ([a TO b] OR [A TO B]).
+	 * against the edges of the range...  i.e. ([a TO b] OR [A TO B]).
 	 */
 	private $_caseSensitiveRanges = true;
 
@@ -125,29 +124,35 @@ class Solr implements IndexEngine {
 	 */
 	private $scopingDisabled = false;
 
-	/** @var string  */
+	/** @var string */
 	private $searchSource = null;
+
+	private static $serversPinged = array();
+
+	public Pika\Cache $cache;
+	public Pika\Logger $logger;
 
 	/**
 	 * Constructor
 	 *
 	 * Sets up the SOAP Client
 	 *
-	 * @param	  string	$host			 The URL for the local Solr Server
-	 * @param   string  $index      The name of the index
-	 * @access	public
+	 * @param string $host  The URL for the local Solr Server
+	 * @param string $index The name of the index
+	 * @access  public
 	 */
 	function __construct($host, $index = '')
 	{
 		global $configArray;
 		global $timer;
-
+		$this->cache = new Cache();
+		$this->logger = new Logger("Solr");
 		// Set a default Solr index if none is provided to the constructor:
 		if (empty($index)) {
 			global $library;
-			if ($library){
+			if ($library) {
 				$index = 'grouped';
-			}else{
+			} else {
 				$index = isset($configArray['Index']['default_core']) ? $configArray['Index']['default_core'] : "grouped";
 			}
 
@@ -156,19 +161,19 @@ class Solr implements IndexEngine {
 
 		//Check for a more specific searchspecs file
 		global $serverName;
-		if (file_exists(ROOT_DIR . "/../../sites/$serverName/conf/searchspecs.yaml")){
+		if (file_exists(ROOT_DIR . "/../../sites/$serverName/conf/searchspecs.json")) {
 			// Return the file path (note that all ini files are in the conf/ directory)
-			$this->searchSpecsFile = ROOT_DIR . "/../../sites/$serverName/conf/searchspecs.yaml";
-		}elseif(file_exists(ROOT_DIR . "/../../sites/default/conf/searchspecs.yaml")){
+			$this->searchSpecsFile = ROOT_DIR . "/../../sites/$serverName/conf/searchspecs.json";
+		} elseif (file_exists(ROOT_DIR . "/../../sites/default/conf/searchspecs.json")) {
 			// Return the file path (note that all ini files are in the conf/ directory)
-			$this->searchSpecsFile = ROOT_DIR . "/../../sites/default/conf/searchspecs.yaml";
+			$this->searchSpecsFile = ROOT_DIR . "/../../sites/default/conf/searchspecs.json";
 		}
 		$timer->logTime("Load search specs");
 
 		$this->host = $host . '/' . $index;
 
 		// If we're still processing then solr is online
-		$this->client = new Proxy_Request(null, array('useBrackets' => false));
+		$this->client = new Curl($this->host);
 
 		// Read in preferred boolean behavior:
 		$searchSettings = getExtraConfigArray('searches');
@@ -182,7 +187,7 @@ class Solr implements IndexEngine {
 		// Turn on highlighting if the user has requested highlighting or snippet
 		// functionality:
 		$highlight = $configArray['Index']['enableHighlighting'];
-		$snippet = $configArray['Index']['enableSnippets'];
+		$snippet   = $configArray['Index']['enableSnippets'];
 		if ($highlight || $snippet) {
 			$this->_highlight = true;
 		}
@@ -197,7 +202,7 @@ class Solr implements IndexEngine {
 			$this->_specCache = $searchSettings['Cache']['type'];
 		}
 
-		if (isset($_SESSION['shards'])){
+		if (isset($_SESSION['shards'])) {
 			$this->_loadShards($_SESSION['shards']);
 		}
 
@@ -206,87 +211,70 @@ class Solr implements IndexEngine {
 
 	public function __destruct()
 	{
-		$this->client->disconnect();
-		$this->client = null;
+		//$this->client = null;
 	}
 
-	private static $serversPinged = array();
-	public function pingServer($failOnError = true){
-		/** @var Memcache $memCache */
-		global $memCache;
-		global $timer;
+	public function pingServer($failOnError = true)
+	{
 		global $configArray;
-		global $logger;
-		$hostEscaped = preg_replace('[\W]', '_', $this->host);
-		if (array_key_exists($this->host, Solr::$serversPinged)){
-			//$logger->log("Pinging solr has already been done this page load", PEAR_LOG_DEBUG);
+		if (array_key_exists($this->host, Solr::$serversPinged)) {
 			return Solr::$serversPinged[$this->host];
 		}
-		if ($memCache){
 
-			$pingDone = $memCache->get('solr_ping_' . $hostEscaped);
-			if ($pingDone != null){
-				//$logger->log("Not pinging solr {$this->host} because we have a cached ping $pingDone", PEAR_LOG_DEBUG);
-				Solr::$serversPinged[$this->host] = $pingDone;
-				return Solr::$serversPinged[$this->host];
-			}else{
-				$pingDone = false;
-			}
-		}else{
-			$pingDone = false;
-			//$logger->log("Pinging solr because memcache has not been initialized", PEAR_LOG_DEBUG);
+		$hostEscaped      = preg_replace('[\W]', '_', $this->host);
+		$memCacheKey      = 'solr_ping_' . $hostEscaped;
+		$cachedPingResult = $this->cache->get($memCacheKey);
+		if ($cachedPingResult != null) {
+			Solr::$serversPinged[$this->host] = $cachedPingResult == 'true';
+			return Solr::$serversPinged[$this->host];
 		}
 
-		if ($pingDone == false){
-
-			//$logger->log("Pinging solr server {$this->host} $hostEscaped", PEAR_LOG_DEBUG);
+		if ($cachedPingResult == false) {
 			// Test to see solr is online
-			$test_url = $this->host . "/admin/ping";
-			$test_client = new Proxy_Request('', array('timeout' => 2, 'read_timeout' => 1));
-			$test_client->setMethod(HTTP_REQUEST_METHOD_GET);
-			$test_client->setURL($test_url);
-			$result = $test_client->sendRequest();
-			if (!PEAR_Singleton::isError($result)) {
-				// Even if we get a response, make sure it's a 'good' one.
-				if ($test_client->getResponseCode() != 200) {
-					$pingResult = 'false';
-					Solr::$serversPinged[$this->host] = false;
-					if ($failOnError){
-						PEAR_Singleton::raiseError('Solr index is offline.');
-					}else{
-						$logger->log("Ping of {$this->host} failed", PEAR_LOG_DEBUG);
-						return false;
-					}
-				}else{
-					$pingResult = 'true';
-				}
-			} else {
-				$pingResult = 'false';
+			$curl = new Curl();
+			$curl->setTimeout(2);
+			$pingUrl = $this->host . "/admin/ping";
+			$result  = $curl->get($pingUrl);
+			if ($curl->isError()) {
+				$pingResult                       = 'false';
 				Solr::$serversPinged[$this->host] = false;
-				if ($failOnError){
-					PEAR_Singleton::raiseError($result);
-				}else{
-					$logger->log("Ping of {$this->host} failed", PEAR_LOG_DEBUG);
+				if ($failOnError) {
+					PEAR_Singleton::raiseError($curl->getErrorMessage(), $curl->getErrorCode());
+				} else {
+					$this->logger->debug("Ping of {$this->host} failed");
 					return false;
 				}
+			} elseif ($curl->getHttpStatusCode() != 200) {
+				// Even if we get a response, make sure it's a 'good' one.
+				$pingResult                       = 'false';
+				Solr::$serversPinged[$this->host] = false;
+				if ($failOnError) {
+					PEAR_Singleton::raiseError('Solr index is offline.');
+				} else {
+					$this->logger->debug("Ping of {$this->host} failed");
+					return false;
+				}
+			} else {
+				$pingResult = 'true';
 			}
-			if ($memCache){
-				$memCache->set('solr_ping_' . $hostEscaped, $pingResult, 0, $configArray['Caching']['solr_ping']);
-			}
-			Solr::$serversPinged[$this->host] = $pingResult;
+
+			$this->cache->set($memCacheKey, $pingResult, $configArray['Caching']['solr_ping']);
+
+			Solr::$serversPinged[$this->host] = $pingResult == 'true';
+			global $timer;
 			$timer->logTime('Ping Solr instance ' . $this->host);
-		}else{
-			Solr::$serversPinged[$this->host] = true;
 		}
 		return Solr::$serversPinged[$this->host];
 	}
 
-	public function setDebugging($enableDebug, $enableSolrQueryDebugging) {
-		$this->debug = $enableDebug;
+	public function setDebugging($enableDebug, $enableSolrQueryDebugging)
+	{
+		$this->debug          = $enableDebug;
 		$this->debugSolrQuery = $enableDebug && $enableSolrQueryDebugging;
 	}
 
-	private function _loadShards($newShards){
+	private function _loadShards($newShards)
+	{
 		// Deal with session-based shard settings:
 		$shards = array();
 		global $configArray;
@@ -301,8 +289,8 @@ class Solr implements IndexEngine {
 	/**
 	 * Is this object configured with case-sensitive boolean operators?
 	 *
-	 * @access	public
-	 * @return	boolean
+	 * @access  public
+	 * @return  boolean
 	 */
 	public function hasCaseSensitiveBooleans()
 	{
@@ -327,15 +315,12 @@ class Solr implements IndexEngine {
 	 * @access private
 	 */
 	private function _loadSearchSpecs(){
-		/** @var Memcache $memCache */
-		global $memCache;
-		$results = $memCache->get('searchSpecs');
-		if (!$results){
-			$results = Horde_Yaml::load(
-				file_get_contents($this->searchSpecsFile)
-			);
-			global $configArray;
-			$memCache->set('searchSpecs', $results, 0, $configArray['Caching']['searchSpecs']);
+		global $configArray;
+		$results = $this->cache->get('searchSpecs');
+		if (empty($results)){
+			$searchSpecs = file_get_contents($this->searchSpecsFile);
+			$results     = json_decode($searchSpecs, true);
+			$this->cache->set('searchSpecs', $results, $configArray['Caching']['searchSpecs']);
 		}
 		$this->_searchSpecs = $results;
 	}
@@ -344,11 +329,11 @@ class Solr implements IndexEngine {
 	 * Get the search specifications loaded from the specified YAML file.
 	 *
 	 * @param string $handler The named search to provide information about (set
-	 * to null to get all search specifications)
+	 *                        to null to get all search specifications)
 	 *
 	 * @return mixed Search specifications array if available, false if an invalid
 	 * search is specified.
-	 * @access	private
+	 * @access  private
 	 */
 	private function _getSearchSpecs($handler = null)
 	{
@@ -381,192 +366,185 @@ class Solr implements IndexEngine {
 	}
 
 	/**
-	 * Retrieves a document specified by the ID.
-	 *
-	 * @param	 string	$id				 The document to retrieve from Solr
-	 * @param string $fieldsToReturn An optional list of fields to return separated by commas
-	 * @access	public
-	 * @throws	object							PEAR Error
-	 * @return	string							The requested resource
+	 * Retrieves Solr Document for grouped Work Id
+	 * @param string     $id             The groupedWork Id of the Solr document to retrieve
+	 * @param null|array $fieldsToReturn An optional list of fields to return separated by commas
+	 * @return array The Solr document of the grouped Work
 	 */
 	function getRecord($id, $fieldsToReturn = null)
 	{
-		/*if ($this->debugSolrQuery) {
-			echo "<pre>Get Record: $id</pre>\n";
-		}*/
 		/** @var Memcache $memCache */
 		global $memCache;
-		global $configArray;
 		global $solrScope;
-		if (!$fieldsToReturn){
-			$validFields = $this->_loadValidFields();
+		if (!$fieldsToReturn) {
+			$validFields    = $this->_loadValidFields();
 			$fieldsToReturn = implode(',', $validFields);
 		}
-		$record = $memCache->get("solr_record_{$id}_{$solrScope}_{$fieldsToReturn}");
+		$memCacheKey  = "solr_record_{$id}_{$solrScope}_{$fieldsToReturn}";
+		$solrDocArray = $memCache->get($memCacheKey);
 
-		if ($record == false || isset($_REQUEST['reload'])){
+		if ($solrDocArray == false || isset($_REQUEST['reload'])) {
 			$this->pingServer();
 			// Query String Parameters
-			$options       = array('ids' => "$id");
-			$options['fl'] = $fieldsToReturn;
-			$this->client->setMethod('GET');
-			$this->client->setURL($this->host . "/get");
-			$this->client->addRawQueryString(http_build_query($options));
+			$options = [
+			 'ids' => "$id",
+			 'fl' => $fieldsToReturn,
+			];
 
 			global $timer;
 			$timer->logTime("Prepare to send get (ids) request to solr returning fields $fieldsToReturn");
-			$result = $this->client->sendRequest();
-			//$this->client->clearPostData();
-			$timer->logTime("Send data to solr during getRecord $id $fieldsToReturn");
 
-			if (PEAR_Singleton::isError($result)) {
-				PEAR_Singleton::raiseError($result);
-			}else{
-				$result = $this->_process($this->client->getResponseBody());
-				if (!empty($result['response']['docs'][0])){
-					$record = $result['response']['docs'][0];
-					$memCache->set("solr_record_{$id}_{$solrScope}_{$fieldsToReturn}", $record, 0, $configArray['Caching']['solr_record']);
-				}else{
-					//global $logger;
-					//$logger->log("Unable to find record $id in Solr", PEAR_LOG_ERR);
-					PEAR_Singleton::raiseError("Record not found $id");
-				}
+			$this->client->setDefaultJsonDecoder(true); // return an associative array instead of a json object
+			$result = $this->client->get($this->host . '/get', $options);
+
+			if ($this->client->isError()) {
+				PEAR_Singleton::raiseError($this->client->getErrorMessage());
+			} elseif (!empty($result['response']['docs'][0])) {
+				$solrDocArray = $result['response']['docs'][0];
+				global $configArray;
+				$memCache->set($memCacheKey, $solrDocArray, 0, $configArray['Caching']['solr_record']);
+			} else {
+				PEAR_Singleton::raiseError("Record not found $id");
 			}
 
 		}
-		return $record;
+		return $solrDocArray;
 	}
 
-	function getRecordByBarcode($barcode, $fieldsToReturn = null){
+	function getRecordByBarcode($barcode, $fieldsToReturn = null)
+	{
 		if ($this->debug) {
-			global $logger;
-			$logger->log("Get Record by Barcode: $barcode", PEAR_LOG_DEBUG);
-//			echo "<pre>Get Record by Barcode: $barcode</pre>\n";
+			$this->logger->debug("Get Record by Barcode: $barcode");
 		}
-		if ($fieldsToReturn == null){
+		if ($fieldsToReturn == null) {
 			$fieldsToReturn = SearchObject_Solr::$fields;
 		}
 
-
 		// Query String Parameters
-		$options = array('q' => "barcode:\"$barcode\"", 'fl' => $fieldsToReturn);
-		$result = $this->_select('GET', $options);
+		$options = [
+		 'q' => "barcode:\"$barcode\"",
+		 'fl' => $fieldsToReturn
+		];
+		$result  = $this->_select('GET', $options);
 		if (PEAR_Singleton::isError($result)) {
 			PEAR_Singleton::raiseError($result);
 		}
 
-		if (isset($result['response']['docs'][0])){
+		if (isset($result['response']['docs'][0])) {
 			return $result['response']['docs'][0];
-		}else{
-			return null;
-		}
-	}
-
-	function getRecordByIsbn($isbns, $fieldsToReturn = null){
-		// Query String Parameters
-		if ($fieldsToReturn == null){
-			$fieldsToReturn = SearchObject_Solr::$fields;
-		}
-		$options = array('q' => 'isbn:' . implode(' OR ', $isbns), 'fl' => $fieldsToReturn);
-		$result = $this->_select('GET', $options);
-		if (PEAR_Singleton::isError($result)) {
-			PEAR_Singleton::raiseError($result);
-		}
-
-		if (isset($result['response']['docs'][0])){
-			return $result['response']['docs'][0];
-		}else{
+		} else {
 			return null;
 		}
 	}
 
 	/**
-	 * Retrieves a document specified by the ID.
-	 *
-	 * @param	 array	$ids				 A list of document to retrieve from Solr
-	 * @param string $fieldsToReturn An optional list of fields to return separated by commas
-	 * @access	public
-	 * @throws	object							PEAR Error
-	 * @return	array							The requested resources
+	 * @param string[] $ISBNs
+	 * @param string|null $fieldsToReturn
+	 * @return array|null
+	 */
+	function getRecordByIsbn($ISBNs, $fieldsToReturn = null){
+
+		// Query String Parameters
+		if ($fieldsToReturn == null) {
+			$fieldsToReturn = SearchObject_Solr::$fields;
+		}
+		$options = [
+		 'q' => 'isbn:' . implode(' OR ', $ISBNs),
+		 'fl' => $fieldsToReturn
+		];
+		$result  = $this->_select('GET', $options);
+		if (PEAR_Singleton::isError($result)) {
+			PEAR_Singleton::raiseError($result);
+		}
+
+		if (isset($result['response']['docs'][0])) {
+			return $result['response']['docs'][0];
+		} else {
+			return null;
+		}
+	}
+
+	/**
+	 * Retrieves Solr Documents for an array of grouped Work Ids
+	 * @param string[]   $ids            The groupedWork Id of the Solr document to retrieve
+	 * @param null|array $fieldsToReturn An optional list of fields to return separated by commas
+	 * @return array The Solr document of the grouped Work
 	 */
 	function getRecords($ids, $fieldsToReturn = null)
 	{
-		if (count($ids) == 0){
-			return array();
-		}
-		//Solr does not seem to be able to return more than 50 records at a time,
-		//If we have more than 50 ids, we will ned to make multiple calls and
-		//concatenate the results.
-		$records = array();
-		$startIndex = 0;
-		$batchSize = 40;
+		$solrDocArray = array();
+		if (count($ids)) {
+			//Solr does not seem to be able to return more than 50 records at a time,
+			//If we have more than 50 ids, we will ned to make multiple calls and
+			//concatenate the results.
+			$startIndex = 0;
+			$batchSize  = 40;
 
-		$this->pingServer();
-
-		$lastBatch = false;
-		while (true){
-			$endIndex = $startIndex + $batchSize;
-			if ($endIndex >= count($ids)){
-				$lastBatch = true;
-				$endIndex = count($ids);
-				$batchSize = count($ids) - $startIndex;
+			if (!$fieldsToReturn) {
+				$validFields    = $this->_loadValidFields();
+				$fieldsToReturn = implode(',', $validFields);
 			}
-			$tmpIds = array_slice($ids, $startIndex, $batchSize);
 
-			// Query String Parameters
-			$idString = '';
-			foreach ($tmpIds as $id){
-				if (strlen($idString) > 0){
-					$idString .= ',';
+			$this->pingServer();
+			$this->client->setDefaultJsonDecoder(true); // return an associative array instead of a json object
+
+			$lastBatch = false;
+			do {
+				$endIndex = $startIndex + $batchSize;
+				if ($endIndex >= count($ids)) {
+					$lastBatch = true;
+					$endIndex  = count($ids);
+					$batchSize = count($ids) - $startIndex;
 				}
-				$idString .= $id;
-			}
-			$options = array('ids' => "$idString");
-			$options['fl'] = $fieldsToReturn;
+				$tmpIds = array_slice($ids, $startIndex, $batchSize);
 
-			$this->client->setMethod('GET');
-			$this->client->setURL($this->host . "/get");
-			$this->client->addRawQueryString(http_build_query($options));
+				// Query String Parameters
+				$idString = implode(',', $tmpIds);
+				$options  = [
+				 'ids' => "$idString",
+				 'fl' => $fieldsToReturn,
+				];
 
-			// Send Request
-			global $timer;
-			$timer->logTime("Prepare to send get (ids)  request to solr");
-			$result = $this->client->sendRequest();
-			//$this->client->clearPostData();
-			$timer->logTime("Send data to solr for getRecords");
+				global $timer;
+				$timer->logTime("Prepare to send get (ids) request to solr");
 
-			if (PEAR_Singleton::isError($result)) {
-				PEAR_Singleton::raiseError($result);
-			}else{
-				$result = $this->_process($this->client->getResponseBody());
-			}
-			foreach ($result['response']['docs'] as $record){
-				$records[$record['id']] = $record;
-			}
-			if ($lastBatch){
-				break;
-			} else{
-				$startIndex = $endIndex;
-			}
+				// Send Request
+				$result = $this->client->get($this->host . '/get', $options);
+
+				$timer->logTime("Send data to solr for getRecords");
+
+				if ($this->client->isError()) {
+					PEAR_Singleton::raiseError($this->client->getErrorMessage());
+				} else {
+					$result = $this->_process($result);
+					foreach ($result['response']['docs'] as $solrDoc) {
+						$solrDocArray[$solrDoc['id']] = $solrDoc;
+					}
+				}
+
+				if (!$lastBatch) {
+					$startIndex = $endIndex;
+				}
+			} while (!$lastBatch);
 		}
-		//echo("Found " . count($records) . " records.	Should have found " . count($ids) . "\r\n<br/>");
-		return $records;
+		return $solrDocArray;
 	}
 
-	function searchForRecordIds($ids){
-		if (count($ids) == 0){
+	function searchForRecordIds($ids)
+	{
+		if (count($ids) == 0) {
 			return array();
 		}
 		// Query String Parameters
 		$idString = '';
-		foreach ($ids as $id){
-			if (strlen($idString) > 0){
+		foreach ($ids as $id) {
+			if (strlen($idString) > 0) {
 				$idString .= ' OR ';
 			}
 			$idString .= "id:\"$id\"";
 		}
 		$options = array('q' => $idString, 'rows' => count($ids), 'fl' => SearchObject_Solr::$fields);
-		$result = $this->_select('GET', $options);
+		$result  = $this->_select('GET', $options);
 		if (PEAR_Singleton::isError($result)) {
 			PEAR_Singleton::raiseError($result);
 		}
@@ -579,17 +557,21 @@ class Solr implements IndexEngine {
 	 *
 	 * Uses SOLR MLT Query Handler
 	 *
-	 * @access	public
-	 * @var     string  $id       The id to retrieve similar titles for
-	 * @throws	object						PEAR Error
-	 * @return	array							An array of query results
+	 * @access  public
+	 * @return  array              An array of query results
 	 *
+	 * @throws  object            PEAR Error
+	 * @var     string $id The id to retrieve similar titles for
 	 */
 	function getMoreLikeThis($id)
 	{
 		// Query String Parameters
-		$options = array('q' => "id:$id", 'qt' => 'morelikethis', 'fl' => SearchObject_Solr::$fields);
-		$result = $this->_select('GET', $options);
+		$options = [
+		 'q' => "id:$id",
+		 'qt' => 'morelikethis',
+		 'fl' => SearchObject_Solr::$fields
+		];
+		$result  = $this->_select('GET', $options);
 		if (PEAR_Singleton::isError($result)) {
 			PEAR_Singleton::raiseError($result);
 		}
@@ -603,105 +585,106 @@ class Solr implements IndexEngine {
 	 *
 	 * Uses SOLR MLT Query Handler
 	 *
-	 * @access	public
-	 * @var     string  $id             The id to retrieve similar titles for
-	 * @var     array   $originalResult The original record we are getting similar titles for.
-	 * @throws	object						PEAR Error
-	 * @return	array							An array of query results
+	 * @access  public
+	 * @return  array              An array of query results
 	 *
+	 * @throws  object            PEAR Error
+	 * @var     string $id The id to retrieve similar titles for
 	 */
-	function getMoreLikeThis2($id, $originalResult = null)
+	function getMoreLikeThis2($id)
 	{
 		global $configArray;
 		global $solrScope;
-		if ($originalResult == null){
-			$originalResult = $this->getRecord($id, 'target_audience_full,target_audience_full,literary_form,isbn,upc,language_'.$solrScope);
-		}
+		$originalResult = $this->getRecord($id,
+		 'target_audience_full,target_audience_full,literary_form,isbn,upc,language_' . $solrScope);
+
 		// Query String Parameters
-		$options = array('q' => "id:$id", 'qt' => 'morelikethis2', 'mlt.interestingTerms' => 'details', 'rows' => 25, 'fl' => SearchObject_Solr::$fields);
-		if ($originalResult){
+		$options = array(
+		 'q' => "id:$id",
+		 'qt' => 'morelikethis2',
+		 'mlt.interestingTerms' => 'details',
+		 'rows' => 25,
+		 'fl' => SearchObject_Solr::$fields
+		);
+		if ($originalResult) {
 			$options['fq'] = array();
-			if (isset($originalResult['target_audience_full'])){
-				if (is_array($originalResult['target_audience_full'])){
+			if (isset($originalResult['target_audience_full'])) {
+				if (is_array($originalResult['target_audience_full'])) {
 					$filter = '';
-					foreach ($originalResult['target_audience_full'] as $targetAudience){
-						if ($targetAudience != 'Unknown'){
-							if (strlen($filter) > 0){
+					foreach ($originalResult['target_audience_full'] as $targetAudience) {
+						if ($targetAudience != 'Unknown') {
+							if (strlen($filter) > 0) {
 								$filter .= ' OR ';
 							}
 							$filter .= 'target_audience_full:"' . $targetAudience . '"';
 						}
 					}
-					if (strlen($filter) > 0){
+					if (strlen($filter) > 0) {
 						$options['fq'][] = "($filter)";
 					}
-				}else{
+				} else {
 					$options['fq'][] = 'target_audience_full:"' . $originalResult['target_audience_full'] . '"';
 				}
 			}
-			if (isset($originalResult['literary_form'])){
-				if (is_array($originalResult['literary_form'])){
+			if (isset($originalResult['literary_form'])) {
+				if (is_array($originalResult['literary_form'])) {
 					$filter = '';
-					foreach ($originalResult['literary_form'] as $literaryForm){
-						if ($literaryForm != 'Not Coded'){
-							if (strlen($filter) > 0){
+					foreach ($originalResult['literary_form'] as $literaryForm) {
+						if ($literaryForm != 'Not Coded') {
+							if (strlen($filter) > 0) {
 								$filter .= ' OR ';
 							}
 							$filter .= 'literary_form:"' . $literaryForm . '"';
 						}
 					}
-					if (strlen($filter) > 0){
+					if (strlen($filter) > 0) {
 						$options['fq'][] = "($filter)";
 					}
-				}else{
+				} else {
 					$options['fq'][] = 'literary_form:"' . $originalResult['literary_form'] . '"';
 				}
 			}
-			if (isset($originalResult['language_'.$solrScope])){
+			if (isset($originalResult['language_' . $solrScope])) {
 				$options['fq'][] = "language_$solrScope:\"" . $originalResult["language_$solrScope"][0] . '"';
 			}
 			//Don't want to get other editions of the same work (that's a different query)
-			if ($this->index != 'grouped'){
-				if (isset($originalResult['isbn'])){
-					if (is_array($originalResult['isbn'])){
-						foreach($originalResult['isbn'] as $isbn){
+			if ($this->index != 'grouped') {
+				if (isset($originalResult['isbn'])) {
+					if (is_array($originalResult['isbn'])) {
+						foreach ($originalResult['isbn'] as $isbn) {
 							$options['fq'][] = '-isbn:' . ISBN::normalizeISBN($isbn);
 						}
-					}else{
+					} else {
 						$options['fq'][] = '-isbn:' . ISBN::normalizeISBN($originalResult['isbn']);
 					}
 				}
-				if (isset($originalResult['upc'])){
-					if (is_array($originalResult['upc'])){
-						foreach($originalResult['upc'] as $upc){
+				if (isset($originalResult['upc'])) {
+					if (is_array($originalResult['upc'])) {
+						foreach ($originalResult['upc'] as $upc) {
 							$options['fq'][] = '-upc:' . ISBN::normalizeISBN($upc);
 						}
-					}else{
+					} else {
 						$options['fq'][] = '-upc:' . ISBN::normalizeISBN($originalResult['upc']);
 					}
 				}
 			}
 		}
 
-		$searchLibrary = Library::getSearchLibrary();
+		$searchLibrary  = Library::getSearchLibrary();
 		$searchLocation = Location::getSearchLocation();
-		if ($searchLibrary && $searchLocation){
-			if ($searchLibrary->ilsCode == $searchLocation->code){
+		if ($searchLibrary && $searchLocation) {
+			if ($searchLibrary->ilsCode == $searchLocation->code) {
 				$searchLocation = null;
 			}
 		}
 
 		$scopingFilters = $this->getScopingFilters($searchLibrary, $searchLocation);
-		foreach ($scopingFilters as $filter){
+		foreach ($scopingFilters as $filter) {
 			$options['fq'][] = $filter;
 		}
 		$boostFactors = $this->getBoostFactors($searchLibrary, $searchLocation);
-		if ($configArray['Index']['enableBoosting']){
+		if ($configArray['Index']['enableBoosting']) {
 			$options['bf'] = $boostFactors;
-		}
-
-		if (!empty($this->_solrShards) && is_array($this->_solrShards)) {
-			$options['shards'] = implode(',',$this->_solrShards);
 		}
 
 		$result = $this->_select('GET', $options);
@@ -718,49 +701,50 @@ class Solr implements IndexEngine {
 	 *
 	 * Uses SOLR MLT Query Handler
 	 *
-	 * @access	public
-	 * @var     string[]  $ids     A list of ids to return data for
-	 * @var     string[]  $notInterestedIds     A list of ids the user is not interested in
-	 * @throws	object						PEAR Error
-	 * @return	array							An array of query results
-	 *
+	 * @access  public
+	 * @return  array                      An array of query results
+	 * @throws  object                     PEAR Error
+	 * @var     string[] $ids              A list of ids to return data for
+	 * @var     string[] $notInterestedIds A list of ids the user is not interested in
 	 */
 	function getMoreLikeThese($ids, $notInterestedIds)
 	{
 		global $configArray;
 		// Query String Parameters
 		$idString = implode(' OR ', $ids);
-		$options = array('q' => "id:($idString)", 'qt' => 'morelikethese', 'mlt.interestingTerms' => 'details', 'rows' => 25);
+		$options  = array(
+		 'q' => "id:($idString)",
+		 'qt' => 'morelikethese',
+		 'mlt.interestingTerms' => 'details',
+		 'rows' => 25
+		);
 
-		$searchLibrary = Library::getSearchLibrary();
+		$searchLibrary  = Library::getSearchLibrary();
 		$searchLocation = Location::getSearchLocation();
 		$scopingFilters = $this->getScopingFilters($searchLibrary, $searchLocation);
 
 		$notInterestedString = implode(' OR ', $notInterestedIds);
-		if (strlen($notInterestedString) > 0){
+		if (strlen($notInterestedString) > 0) {
 			$idString .= ' OR ' . $notInterestedString;
 		}
 		$options['fq'][] = "-id:($idString)";
-		foreach ($scopingFilters as $filter){
+		foreach ($scopingFilters as $filter) {
 			$options['fq'][] = $filter;
 		}
-		$boostFactors = $this->getBoostFactors($searchLibrary, $searchLocation);
-		if ($configArray['Index']['enableBoosting']){
+		if ($configArray['Index']['enableBoosting']) {
+			$boostFactors  = $this->getBoostFactors($searchLibrary, $searchLocation);
 			$options['bf'] = $boostFactors;
-		}
-		if (!empty($this->_solrShards) && is_array($this->_solrShards)) {
-			$options['shards'] = implode(',',$this->_solrShards);
 		}
 
 		$options['rows'] = 30;
 
 		// TODO: Limit Fields
-		if ($this->debug && isset($fields)) {
-			$options['fl'] = $fields;
-		} else {
-			// This should be an explicit list
-			$options['fl'] = '*,score';
-		}
+//		if ($this->debug && isset($fields)) {
+//			$options['fl'] = $fields;
+//		} else {
+		// This should be an explicit list
+		$options['fl'] = '*,score';
+//		}
 		$result = $this->_select('GET', $options);
 		if (PEAR_Singleton::isError($result)) {
 			PEAR_Singleton::raiseError($result);
@@ -773,11 +757,11 @@ class Solr implements IndexEngine {
 	 * Get record data based on the provided field and phrase.
 	 * Used for AJAX suggestions.
 	 *
-	 * @access	public
-	 * @param	 string	$phrase		 The input phrase
-	 * @param	 string	$field			The field to search on
-	 * @param	 int		 $limit			The number of results to return
-	 * @return	array	 An array of query results
+	 * @access  public
+	 * @param string $phrase The input phrase
+	 * @param string $field  The field to search on
+	 * @param int    $limit  The number of results to return
+	 * @return  array   An array of query results
 	 */
 	function getSuggestion($phrase, $field, $limit)
 	{
@@ -789,7 +773,7 @@ class Solr implements IndexEngine {
 		$phrase = str_replace($this->illegal, '', $phrase);
 
 		// Process Search
-		$query = "$field:($phrase*)";
+		$query  = "$field:($phrase*)";
 		$result = $this->search($query, null, null, 0, $limit, array('field' => $field, 'limit' => $limit));
 		return $result['facet_counts']['facet_fields'][$field];
 	}
@@ -797,9 +781,9 @@ class Solr implements IndexEngine {
 	/**
 	 * Get spelling suggestions based on input phrase.
 	 *
-	 * @access	public
-	 * @param	 string	$phrase		 The input phrase
-	 * @return	array	 An array of spelling suggestions
+	 * @access  public
+	 * @param string $phrase The input phrase
+	 * @return  array   An array of spelling suggestions
 	 */
 	function checkSpelling($phrase)
 	{
@@ -808,32 +792,33 @@ class Solr implements IndexEngine {
 		}
 
 		// Query String Parameters
-		$options = array(
-			'q'					=> $phrase,
-			'rows'			 => 0,
-			'start'			=> 1,
-			'indent'		 => 'yes',
-			'spellcheck' => 'true'
-			);
+		$options = [
+		 'q' => $phrase,
+		 'rows' => 0,
+		 'start' => 1,
+		 'indent' => 'yes',
+		 'spellcheck' => 'true'
+		];
 
-			$result = $this->_select(HTTP_REQUEST_METHOD_GET, $options);
-			if (PEAR_Singleton::isError($result)) {
-				PEAR_Singleton::raiseError($result);
-			}
+		$result = $this->_select('GET', $options);
+		if (PEAR_Singleton::isError($result)) {
+			PEAR_Singleton::raiseError($result);
+		}
 
-			return $result;
+		return $result;
 	}
 
 	/**
 	 * applySearchSpecs -- internal method to build query string from search parameters
 	 *
-	 * @access	private
-	 * @param	 array $structure					 the SearchSpecs-derived structure or substructure defining the search, derived from the yaml file
-	 * @param	 array $values							the various values in an array with keys 'onephrase', 'and', 'or' (and perhaps others)
-	 * @param  string $joiner
-	 * @throws	object							PEAR Error
+	 * @access  private
+	 * @param array  $structure the SearchSpecs-derived structure or substructure defining the search, derived from the
+	 *                          yaml file
+	 * @param array  $values    the various values in an array with keys 'onephrase', 'and', 'or' (and perhaps others)
+	 * @param string $joiner
+	 * @return  string              A search string suitable for adding to a query URL
+	 * @throws  object              PEAR Error
 	 * @static
-	 * @return	string							A search string suitable for adding to a query URL
 	 */
 	private function _applySearchSpecs($structure, $values, $joiner = "OR")
 	{
@@ -842,20 +827,20 @@ class Solr implements IndexEngine {
 		foreach ($structure as $field => $clauseArray) {
 			if (is_numeric($field)) {
 				// shift off the join string and weight
-				$sw = array_shift($clauseArray);
+				$sw           = array_shift($clauseArray);
 				$internalJoin = ' ' . $sw[0] . ' ';
 				// Build it up recursively
-				$searchString = '(' .	$this->_applySearchSpecs($clauseArray, $values, $internalJoin) . ')';
+				$searchString = '(' . $this->_applySearchSpecs($clauseArray, $values, $internalJoin) . ')';
 				// ...and add a weight if we have one
 				$weight = $sw[1];
-				if(!is_null($weight) && $weight && $weight > 0) {
+				if (!is_null($weight) && $weight && $weight > 0) {
 					$searchString .= '^' . $weight;
 				}
 				// push it onto the stack of clauses
 				$clauses[] = $searchString;
 			} else {
-				if ($solrScope){
-					if ($field == 'local_callnumber' || $field == 'local_callnumber_left' || $field == 'local_callnumber_exact'){
+				if ($solrScope) {
+					if ($field == 'local_callnumber' || $field == 'local_callnumber_left' || $field == 'local_callnumber_exact') {
 						$field .= '_' . $solrScope;
 					}
 				}
@@ -864,34 +849,36 @@ class Solr implements IndexEngine {
 				foreach ($clauseArray as $spec) {
 					$fieldValue = $values[$spec[0]];
 
-					if ($field == 'isbn'){
-						if (!preg_match('/^((?:\sOR\s)?["(]?\d{9,13}X?[\s")]*)+$/', $fieldValue)){
+					if ($field == 'isbn') {
+						if (!preg_match('/^((?:\sOR\s)?["(]?\d{9,13}X?[\s")]*)+$/', $fieldValue)) {
 							continue;
-						}else{
+						} else {
 							require_once(ROOT_DIR . '/sys/ISBN.php');
 							$isbn = new ISBN($fieldValue);
-							if ($isbn->isValid()){
+							if ($isbn->isValid()) {
 								$isbn10 = $isbn->get10();
 								$isbn13 = $isbn->get13();
-								if ($isbn10 && $isbn13){
+								if ($isbn10 && $isbn13) {
 									$fieldValue = '(' . $isbn->get10() . ' OR ' . $isbn->get13() . ')';
 								}
 							}
 						}
-					}elseif($field == 'id'){
-						if (!preg_match('/^"?(\d+|.[boi]\d+x?|[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12})"?$/i', $fieldValue)){
+					} elseif ($field == 'id') {
+						if (!preg_match('/^"?(\d+|.[boi]\d+x?|[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12})"?$/i',
+						 $fieldValue)) {
 							continue;
 						}
-					}elseif($field == 'alternate_ids'){
-						if (!preg_match('/^"?(\d+|.?[boi]\d+x?|[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}|MWT\d+|CARL\d+)"?$/i', $fieldValue)){
+					} elseif ($field == 'alternate_ids') {
+						if (!preg_match('/^"?(\d+|.?[boi]\d+x?|[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}|MWT\d+|CARL\d+)"?$/i',
+						 $fieldValue)) {
 							continue;
 						}
-					}elseif($field == 'issn'){
-						if (!preg_match('/^"?[\dXx-]+"?$/', $fieldValue)){
+					} elseif ($field == 'issn') {
+						if (!preg_match('/^"?[\dXx-]+"?$/', $fieldValue)) {
 							continue;
 						}
-					}elseif($field == 'upc'){
-						if (!preg_match('/^"?\d+"?$/', $fieldValue)){
+					} elseif ($field == 'upc') {
+						if (!preg_match('/^"?\d+"?$/', $fieldValue)) {
 							continue;
 						}
 					}
@@ -900,17 +887,19 @@ class Solr implements IndexEngine {
 					$searchString = $field . ':(' . $fieldValue . ')';
 					//Check to make sure we don't already have this clause.  We will get the same clause if we have a single word and are doing different munges
 					$okToAdd = true;
-					foreach ($clauses as $clause){
-						if (strpos($clause, $searchString) === 0){
+					foreach ($clauses as $clause) {
+						if (strpos($clause, $searchString) === 0) {
 							$okToAdd = false;
 							break;
 						}
 					}
-					if (!$okToAdd) continue;
+					if (!$okToAdd) {
+						continue;
+					}
 
 					// Add the weight it we have one. Yes, I know, it's redundant code.
 					$weight = $spec[1];
-					if(!is_null($weight) && $weight && $weight > 0) {
+					if (!is_null($weight) && $weight && $weight > 0) {
 						$searchString .= '^' . $weight;
 					}
 
@@ -927,7 +916,7 @@ class Solr implements IndexEngine {
 	/**
 	 * Load Boost factors for a query
 	 *
-	 * @param Library $searchLibrary
+	 * @param Library  $searchLibrary
 	 * @param Location $searchLocation
 	 * @return array
 	 */
@@ -936,60 +925,35 @@ class Solr implements IndexEngine {
 
 		global $solrScope;
 		global $language;
-		if ($language == 'es'){
+		if ($language == 'es') {
 			$boostFactors[] = "language_boost_es_{$solrScope}";
-		}else{
+		} else {
 			$boostFactors[] = "language_boost_{$solrScope}";
 		}
 
-		$applyHoldingsBoost = true;
-		if (isset($searchLibrary) && !is_null($searchLibrary)){
-			$applyHoldingsBoost = $searchLibrary->applyNumberOfHoldingsBoost;
-		}
-		if ($applyHoldingsBoost){
-			//$boostFactors[] = 'product(num_holdings,15,div(format_boost,50))';
-			$boostFactors[] = 'product(sum(popularity,1),format_boost)';
-		}else{
-			$boostFactors[] = 'format_boost';
-		}
-		//Add rating as part of the ranking, normalize so ratings of less that 2.5 are below unrated entries.
+		$boostFactors[] = (!empty($searchLibrary->applyNumberOfHoldingsBoost)) ? 'product(sum(popularity,1),format_boost)' : 'format_boost';
+
+		// Add rating as part of the ranking, normalize so ratings of less that 2.5 are below unrated entries.
 		$boostFactors[] = 'sum(rating,1)';
 
-		if (isset($searchLibrary) && !is_null($searchLibrary) && $searchLibrary->boostByLibrary == 1){
-			if ($searchLibrary->additionalLocalBoostFactor > 1){
-				$boostFactors[] = "sum(product(lib_boost_{$solrScope},{$searchLibrary->additionalLocalBoostFactor}),1)";
-			}else{
-				$boostFactors[] = "sum(lib_boost_{$solrScope},1)";
-			}
-		}else{
-			//Handle boosting even if we are in a global scope
+		if (!empty($searchLibrary->boostByLibrary)) {
+			$boostFactors[] = ($searchLibrary->additionalLocalBoostFactor > 1) ? "sum(product(lib_boost_{$solrScope},{$searchLibrary->additionalLocalBoostFactor}),1)" : "sum(lib_boost_{$solrScope},1)";
+		} else {
+			// Handle boosting even if we are in a global scope
 			global $library;
-			if ($library && $library->boostByLibrary == 1){
-				if ($library->additionalLocalBoostFactor > 1){
-					$boostFactors[] = "sum(product(lib_boost_{$solrScope},{$library->additionalLocalBoostFactor}),1)";
-				}else{
-					$boostFactors[] = "sum(lib_boost_{$solrScope},1)";
-				}
+			if (!empty($library->boostByLibrary)) {
+				$boostFactors[] = ($library->additionalLocalBoostFactor > 1) ? "sum(product(lib_boost_{$solrScope},{$library->additionalLocalBoostFactor}),1)" : "sum(lib_boost_{$solrScope},1)";
 			}
 		}
 
-		if (isset($searchLocation) && !is_null($searchLocation) && $searchLocation->boostByLocation == 1){
-			if ($searchLocation->boostByLocation > 1){
-				$boostFactors[] = "sum(product(lib_boost_{$solrScope},{$searchLocation->additionalLocalBoostFactor}),1)";
-			}else{
-				$boostFactors[] = "sum(lib_boost_{$solrScope},1)";
-			}
-
-		}else{
-			//Handle boosting even if we are in a global scope
+		if (!empty($searchLocation->boostByLocation)) {
+			$boostFactors[] = ($searchLocation->boostByLocation > 1) ? "sum(product(lib_boost_{$solrScope},{$searchLocation->additionalLocalBoostFactor}),1)" : "sum(lib_boost_{$solrScope},1)";
+		} else {
+			// Handle boosting even if we are in a global scope
 			global $locationSingleton;
 			$physicalLocation = $locationSingleton->getActiveLocation();
-			if ($physicalLocation != null && $physicalLocation->boostByLocation == 1){
-				if ($physicalLocation->additionalLocalBoostFactor > 1){
-					$boostFactors[] = "sum(product(lib_boost_{$solrScope},{$physicalLocation->additionalLocalBoostFactor}),1)";
-				}else{
-					$boostFactors[] = "sum(lib_boost_{$solrScope},1)";
-				}
+			if (!empty($physicalLocation->boostByLocation)) {
+				$boostFactors[] = ($physicalLocation->additionalLocalBoostFactor > 1) ? "sum(product(lib_boost_{$solrScope},{$physicalLocation->additionalLocalBoostFactor}),1)" : "sum(lib_boost_{$solrScope},1)";
 			}
 		}
 		return $boostFactors;
@@ -999,11 +963,11 @@ class Solr implements IndexEngine {
 	 * Given a field name and search string, return an array containing munged
 	 * versions of the search string for use in _applySearchSpecs().
 	 *
-	 * @access	private
-	 * @param	 string	$lookfor		The string to search for in the field
-	 * @param	 array	$custom		 Custom munge settings from YAML search specs
-	 * @param  bool	  $basic	 Is $lookfor a basic (true) or advanced (false) query?
-	 * @return	array							 Array for use as _applySearchSpecs() values param
+	 * @access  private
+	 * @param string $lookfor The string to search for in the field
+	 * @param array  $custom  Custom munge settings from YAML search specs
+	 * @param bool   $basic   Is $lookfor a basic (true) or advanced (false) query?
+	 * @return  array               Array for use as _applySearchSpecs() values param
 	 */
 	private function _buildMungeValues($lookfor, $custom = null, $basic = true)
 	{
@@ -1015,36 +979,36 @@ class Solr implements IndexEngine {
 
 			// Create AND'd and OR'd queries
 			$andQuery = implode(' AND ', $tokenized);
-			$orQuery = implode(' OR ', $tokenized);
+			$orQuery  = implode(' OR ', $tokenized);
 
 			// Build possible inputs for searching:
-			$values = array();
+			$values              = array();
 			$values['onephrase'] = '"' . str_replace('"', '', implode(' ', $tokenized)) . '"';
-			if (count($tokenized) > 1){
+			if (count($tokenized) > 1) {
 				$values['proximal'] = $values['onephrase'] . '~10';
-			}elseif (!array_key_exists(0, $tokenized)){
+			} elseif (!array_key_exists(0, $tokenized)) {
 				$values['proximal'] = '';
-			}else{
+			} else {
 				$values['proximal'] = $tokenized[0];
 			}
 
-			$values['exact'] = str_replace(':', '\\:', $lookfor);
+			$values['exact']        = str_replace(':', '\\:', $lookfor);
 			$values['exact_quoted'] = '"' . $lookfor . '"';
-			$values['and'] = $andQuery;
-			$values['or'] = $orQuery;
-			$singleWordRemoval = "";
-			if (count($tokenized) <= 4){
+			$values['and']          = $andQuery;
+			$values['or']           = $orQuery;
+			$singleWordRemoval      = "";
+			if (count($tokenized) <= 4) {
 				$singleWordRemoval = '"' . str_replace('"', '', implode(' ', $tokenized)) . '"';
-			}else{
-				for ($i = 0; $i < count($tokenized); $i++){
+			} else {
+				for ($i = 0; $i < count($tokenized); $i++) {
 					$newTerm = '"';
-					for ($j = 0; $j < count($tokenized); $j++){
-						if ($j != $i){
+					for ($j = 0; $j < count($tokenized); $j++) {
+						if ($j != $i) {
 							$newTerm .= $tokenized[$j] . ' ';
 						}
 					}
 					$newTerm = trim($newTerm) . '"';
-					if (strlen($singleWordRemoval) > 0){
+					if (strlen($singleWordRemoval) > 0) {
 						$singleWordRemoval .= ' OR ';
 					}
 					$singleWordRemoval .= $newTerm;
@@ -1057,32 +1021,32 @@ class Solr implements IndexEngine {
 			// tokenization).	We'll just set all possible values to the same thing,
 			// except that we'll try to do the "one phrase" in quotes if possible.
 			$onephrase = strstr($lookfor, '"') ? $lookfor : '"' . $lookfor . '"';
-			$values = array(
-					'exact' => $onephrase,
-					'onephrase' => $onephrase,
-					'and' => $lookfor,
-					'or' => $lookfor,
-					'proximal' => $lookfor,
-					'single_word_removal' => $onephrase,
-					'exact_quoted' => '"' . $lookfor . '"',
+			$values    = array(
+			 'exact' => $onephrase,
+			 'onephrase' => $onephrase,
+			 'and' => $lookfor,
+			 'or' => $lookfor,
+			 'proximal' => $lookfor,
+			 'single_word_removal' => $onephrase,
+			 'exact_quoted' => '"' . $lookfor . '"',
 			);
 		}
 
 		//Create localized call number
 		$noWildCardLookFor = str_replace('*', '', $lookfor);
-		if (strpos($lookfor, '*') !== false){
+		if (strpos($lookfor, '*') !== false) {
 			$noWildCardLookFor = str_replace('*', '', $lookfor);
 		}
 		$values['localized_callnumber'] = '"' . str_replace(array('"', ':', '/'), ' ', $noWildCardLookFor) . '"';
 
 		// Apply custom munge operations if necessary
 		if (is_array($custom) && $basic) {
-			foreach($custom as $mungeName => $mungeOps) {
-				$values[$mungeName] =  $lookfor;
+			foreach ($custom as $mungeName => $mungeOps) {
+				$values[$mungeName] = $lookfor;
 
 				// Skip munging if tokenization is disabled.
-				foreach($mungeOps as $operation) {
-					switch($operation[0]) {
+				foreach ($mungeOps as $operation) {
+					switch ($operation[0]) {
 						case 'exact':
 							$values[$mungeName] = '"' . $values[$mungeName] . '"';
 							break;
@@ -1094,7 +1058,7 @@ class Solr implements IndexEngine {
 							break;
 						case 'preg_replace':
 							$values[$mungeName] = preg_replace($operation[1],
-							$operation[2], $values[$mungeName]);
+							 $operation[2], $values[$mungeName]);
 							break;
 						case 'uppercase':
 							$values[$mungeName] = strtoupper($values[$mungeName]);
@@ -1110,18 +1074,18 @@ class Solr implements IndexEngine {
 	 * Given a field name and search string, expand this into the necessary Lucene
 	 * query to perform the specified search on the specified field(s).
 	 *
-	 * @access	public            Has to be public since it can be called as part of a preg replace statement
-	 * @param	 string	$field			The YAML search spec field name to search
-	 * @param	 string	$lookfor		The string to search for in the field
-	 * @param	 bool		$tokenize	  Should we tokenize $lookfor or pass it through?
-	 * @return	string							The query
+	 * @access  public            Has to be public since it can be called as part of a preg replace statement
+	 * @param string $field    The YAML search spec field name to search
+	 * @param string $lookfor  The string to search for in the field
+	 * @param bool   $tokenize Should we tokenize $lookfor or pass it through?
+	 * @return  string              The query
 	 */
 	public function _buildQueryComponent($field, $lookfor, $tokenize = true)
 	{
 		// Load the YAML search specifications:
 		$ss = $this->_getSearchSpecs($field);
 
-		if ($field == 'AllFields'){
+		if ($field == 'AllFields') {
 			$field = 'Keyword';
 		}
 
@@ -1129,13 +1093,13 @@ class Solr implements IndexEngine {
 		// let's try simply passing it along to Solr.
 		if ($ss === false) {
 			$allFields = $this->_loadValidFields();
-			if (in_array($field, $allFields)){
+			if (in_array($field, $allFields)) {
 				return $field . ':(' . $lookfor . ')';
 			}
 			$dynamicFields = $this->_loadDynamicFields();
 			global $solrScope;
-			foreach ($dynamicFields as $dynamicField){
-				if ($dynamicField . $solrScope == $field){
+			foreach ($dynamicFields as $dynamicField) {
+				if ($dynamicField . $solrScope == $field) {
 					return $field . ':(' . $lookfor . ')';
 				}
 			}
@@ -1145,7 +1109,7 @@ class Solr implements IndexEngine {
 
 		// Munge the user query in a few different ways:
 		$customMunge = isset($ss['CustomMunge']) ? $ss['CustomMunge'] : null;
-		$values = $this->_buildMungeValues($lookfor, $customMunge, $tokenize);
+		$values      = $this->_buildMungeValues($lookfor, $customMunge, $tokenize);
 
 		// Apply the $searchSpecs property to the data:
 		$baseQuery = $this->_applySearchSpecs($ss['QueryFields'], $values);
@@ -1163,10 +1127,10 @@ class Solr implements IndexEngine {
 	 * (as identified by isAdvanced()), expand this into the necessary Lucene
 	 * query to perform the specified search on the specified field(s).
 	 *
-	 * @access	private
-	 * @param	 string	$handler			The handler for the search
-	 * @param	 string	$query		    The string to search for in the field
-	 * @return	string							The query
+	 * @access  private
+	 * @param string $handler The handler for the search
+	 * @param string $query   The string to search for in the field
+	 * @return  string              The query
 	 */
 	private function _buildAdvancedQuery($handler, $query)
 	{
@@ -1217,42 +1181,42 @@ class Solr implements IndexEngine {
 	 */
 	function buildQuery($search, $forDisplay = false)
 	{
-		$groups	 = array();
+		$groups   = array();
 		$excludes = array();
-		$query = '';
+		$query    = '';
 		if (is_array($search)) {
 
 			foreach ($search as $params) {
 				//Check to see if need to break up a basic search into an advanced search
 				$modifiedQuery = false;
-				$that = $this;
-				if (isset($params['lookfor']) && !$forDisplay){
-					$lookfor = preg_replace_callback(
-						'/([\\w-]+):([\\w\\d\\s"-]+?)\\s?(?<=\b)(AND|OR|AND NOT|OR NOT|\\)|$)(?=\b)/',
-						function ($matches) use($that){
-							$field    = $matches[1];
-							$lookfor  = $matches[2];
-							$newQuery = $that->_buildQueryComponent($field, $lookfor);
-							return $newQuery . $matches[3];
-						},
-						$params['lookfor']
+				$that          = $this;
+				if (isset($params['lookfor']) && !$forDisplay) {
+					$lookfor       = preg_replace_callback(
+					 '/([\\w-]+):([\\w\\d\\s"-]+?)\\s?(?<=\b)(AND|OR|AND NOT|OR NOT|\\)|$)(?=\b)/',
+					 function ($matches) use ($that) {
+						 $field    = $matches[1];
+						 $lookfor  = $matches[2];
+						 $newQuery = $that->_buildQueryComponent($field, $lookfor);
+						 return $newQuery . $matches[3];
+					 },
+					 $params['lookfor']
 					);
 					$modifiedQuery = $lookfor != $params['lookfor'];
 				}
-				if ($modifiedQuery){
+				if ($modifiedQuery) {
 					//This is an advanced search
 					$query = $lookfor;
-				}else{
+				} else {
 					// Advanced Search
 					if (isset($params['group'])) {
 						$thisGroup = array();
 						// Process each search group
 						foreach ($params['group'] as $group) {
 							// Build this group individually as a basic search
-							if (strpos($group['lookfor'], ' ') > 0){
+							if (strpos($group['lookfor'], ' ') > 0) {
 								$group['lookfor'] = '(' . $group['lookfor'] . ')';
 							}
-							if ($group['field'] == 'AllFields'){
+							if ($group['field'] == 'AllFields') {
 								$group['field'] = 'Keyword';
 							}
 							$thisGroup[] = $this->buildQuery(array($group));
@@ -1261,7 +1225,7 @@ class Solr implements IndexEngine {
 						if ($params['group'][0]['bool'] == 'NOT') {
 							$excludes[] = join(" OR ", $thisGroup);
 						} else {
-							$groups[] = join(" ".$params['group'][0]['bool']." ", $thisGroup);
+							$groups[] = join(" " . $params['group'][0]['bool'] . " ", $thisGroup);
 						}
 					}
 
@@ -1290,7 +1254,7 @@ class Solr implements IndexEngine {
 
 								$query = $params['index'] . ':' . $lookfor;
 							} else {*/
-								$query .= $lookfor;
+							$query .= $lookfor;
 							//}
 						}
 					}
@@ -1308,7 +1272,7 @@ class Solr implements IndexEngine {
 		}
 
 		// Ensure we have a valid query to this point
-		if (!isset($query) || $query	== '') {
+		if (!isset($query) || $query == '') {
 			$query = '*:*';
 		}
 
@@ -1320,7 +1284,7 @@ class Solr implements IndexEngine {
 	 *
 	 * @param string $sort The sort option.
 	 *
-	 * @return string			The normalized sort value.
+	 * @return string      The normalized sort value.
 	 * @access private
 	 */
 	private function _normalizeSort($sort)
@@ -1337,7 +1301,7 @@ class Solr implements IndexEngine {
 		switch ($sortField) {
 			case 'year':
 			case 'publishDate':
-				$sortField = 'publishDateSort';
+				$sortField            = 'publishDateSort';
 				$defaultSortDirection = 'desc';
 				break;
 			case 'author':
@@ -1348,7 +1312,7 @@ class Solr implements IndexEngine {
 				break;
 			case 'callnumber_sort':
 				$searchLibrary = Library::getSearchLibrary($this->searchSource);
-				if ($searchLibrary != null){
+				if ($searchLibrary != null) {
 					$sortField = 'callnumber_sort_' . $searchLibrary->subdomain;
 				}
 
@@ -1364,49 +1328,54 @@ class Solr implements IndexEngine {
 		return $sortField . ' ' . $sortDirection;
 	}
 
-	function disableScoping(){
+	function disableScoping()
+	{
 		$this->scopingDisabled = true;
 		global $configArray;
-		if (isset($configArray['ShardPreferences']['defaultChecked']) && !empty($configArray['ShardPreferences']['defaultChecked']) ) {
+		if (isset($configArray['ShardPreferences']['defaultChecked']) && !empty($configArray['ShardPreferences']['defaultChecked'])) {
 			$checkedShards = $configArray['ShardPreferences']['defaultChecked'];
-			$shards = is_array($checkedShards) ? $checkedShards : array($checkedShards);
+			$shards        = is_array($checkedShards) ? $checkedShards : array($checkedShards);
 		} else {
 			// If no default is configured, use all shards...
-			if (isset($configArray['IndexShards'])){
+			if (isset($configArray['IndexShards'])) {
 				$shards = array_keys($configArray['IndexShards']);
 			}
 		}
-		if (isset($shards)){
+		if (isset($shards)) {
 			$this->_loadShards($shards);
 		}
 	}
 
-	function enableScoping(){
+	function enableScoping()
+	{
 		$this->scopingDisabled = false;
 		global $configArray;
-		if (isset($configArray['ShardPreferences']['defaultChecked']) && !empty($configArray['ShardPreferences']['defaultChecked']) ) {
+		if (isset($configArray['ShardPreferences']['defaultChecked']) && !empty($configArray['ShardPreferences']['defaultChecked'])) {
 			$checkedShards = $configArray['ShardPreferences']['defaultChecked'];
-			$shards = is_array($checkedShards) ? $checkedShards : array($checkedShards);
+			$shards        = is_array($checkedShards) ? $checkedShards : array($checkedShards);
 		} else {
 			// If no default is configured, use all shards...
-			if (isset($configArray['IndexShards'])){
+			if (isset($configArray['IndexShards'])) {
 				$shards = array_keys($configArray['IndexShards']);
 			}
 		}
-		if (isset($shards)){
+		if (isset($shards)) {
 			$this->_loadShards($shards);
 		}
 	}
 
-	function isScopingEnabled(){
+	function isScopingEnabled()
+	{
 		$scopingEnabled = false;
-		if (!$this->scopingDisabled){
-			$searchLibrary = Library::getSearchLibrary();
+		if (!$this->scopingDisabled) {
+			$searchLibrary  = Library::getSearchLibrary();
 			$searchLocation = Location::getSearchLocation();
-			if (isset($searchLocation) && $searchLocation->useScope){
+			if (isset($searchLocation) && $searchLocation->useScope) {
 				$scopingEnabled = true;
-			}else if (isset($searchLibrary) && $searchLibrary->useScope){
-				$scopingEnabled = true;
+			} else {
+				if (isset($searchLibrary) && $searchLibrary->useScope) {
+					$scopingEnabled = true;
+				}
 			}
 		}
 
@@ -1416,30 +1385,39 @@ class Solr implements IndexEngine {
 	/**
 	 * Execute a search.
 	 *
-	 * @param	 string	$query			The XQuery script in binary encoding.
-	 * @param	 string	$handler		The Query Handler to use (null for default)
-	 * @param	 array	$filter		 The fields and values to filter results on
-	 * @param	 int	  $start			The record to start with
-	 * @param	 int	  $limit			The amount of records to return
-	 * @param	 array	$facet			An array of faceting options
-	 * @param	 string	$spell			Phrase to spell check
-	 * @param	 string	$dictionary Spell check dictionary to use
-	 * @param	 string	$sort			 Field name to use for sorting
-	 * @param	 string	$fields		 A list of fields to be returned
-	 * @param	 string	$method		 Method to use for sending request (GET/POST)
-	 * @param	 bool		$returnSolrError		If Solr reports a syntax error,
-	 *																			should we fail outright (false) or
-	 *																			treat it as an empty result set with
-	 *																			an error key set (true)?
-	 * @access	public
-	 * @throws	object							PEAR Error
-	 * @return	array							 An array of query results
+	 * @param string $query                 The XQuery script in binary encoding.
+	 * @param string $handler               The Query Handler to use (null for default)
+	 * @param array  $filter                The fields and values to filter results on
+	 * @param int    $start                 The record to start with
+	 * @param int    $limit                 The amount of records to return
+	 * @param array  $facet                 An array of faceting options
+	 * @param string $spell                 Phrase to spell check
+	 * @param string $dictionary            Spell check dictionary to use
+	 * @param string $sort                  Field name to use for sorting
+	 * @param string $fields                A list of fields to be returned
+	 * @param string $method                Method to use for sending request (GET/POST)
+	 * @param bool   $returnSolrError       If Solr reports a syntax error,
+	 *                                      should we fail outright (false) or
+	 *                                      treat it as an empty result set with
+	 *                                      an error key set (true)?
+	 * @access  public
+	 * @return  array               An array of query results
+	 * @throws  object              PEAR Error
 	 */
-	function search($query, $handler = null, $filter = null, $start = 0,
-	$limit = 20, $facet = null, $spell = '', $dictionary = null,
-	$sort = null, $fields = null,
-	$method = HTTP_REQUEST_METHOD_POST, $returnSolrError = false)
-	{
+	function search(
+	 $query,
+	 $handler = null,
+	 $filter = null,
+	 $start = 0,
+	 $limit = 20,
+	 $facet = null,
+	 $spell = '',
+	 $dictionary = null,
+	 $sort = null,
+	 $fields = null,
+	 $method = 'POST',
+	 $returnSolrError = false
+	) {
 		global $timer;
 		global $configArray;
 		// Query String Parameters
@@ -1457,32 +1435,46 @@ class Solr implements IndexEngine {
 		}
 
 		//Convert from old AllFields Search to Keyword search
-		if ($handler == 'AllFields'){
+		if ($handler == 'AllFields') {
 			$handler = 'Keyword';
 		}
 
 		//Check to see if we need to automatically convert to a proper case only (no stemming search)
 		//We will do this whenever all or part of a string is surrounded by quotes.
-		if (is_array($query)){
+		if (is_array($query)) {
 			echo("Invalid query " . print_r($query, true));
 		}
-		if (preg_match('/\\".+?\\"/',$query)){
-			if ($handler == 'Keyword'){
+		if (preg_match('/\\".+?\\"/', $query)) {
+			if ($handler == 'Keyword') {
 				$handler = 'KeywordProper';
-			}else if ($handler == 'Author'){
-				$handler = 'AuthorProper';
-			}else if ($handler == 'Subject'){
-				$handler = 'SubjectProper';
-			}else if ($handler == 'AllFields'){
-				$handler = 'KeywordProper';
-			}else if ($handler == 'Title'){
-				$handler = 'TitleProper';
-			}else if ($handler == 'Title'){
-				$handler = 'TitleProper';
-			}else if ($handler == 'IslandoraKeyword'){
-				$handler = 'IslandoraKeywordProper';
-			}else if ($handler == 'IslandoraSubject'){
-				$handler = 'IslandoraSubjectProper';
+			} else {
+				if ($handler == 'Author') {
+					$handler = 'AuthorProper';
+				} else {
+					if ($handler == 'Subject') {
+						$handler = 'SubjectProper';
+					} else {
+						if ($handler == 'AllFields') {
+							$handler = 'KeywordProper';
+						} else {
+							if ($handler == 'Title') {
+								$handler = 'TitleProper';
+							} else {
+								if ($handler == 'Title') {
+									$handler = 'TitleProper';
+								} else {
+									if ($handler == 'IslandoraKeyword') {
+										$handler = 'IslandoraKeywordProper';
+									} else {
+										if ($handler == 'IslandoraSubject') {
+											$handler = 'IslandoraSubjectProper';
+										}
+									}
+								}
+							}
+						}
+					}
+				}
 			}
 		}
 
@@ -1501,8 +1493,8 @@ class Solr implements IndexEngine {
 
 				// Load any custom Dismax parameters from the YAML search spec file:
 				if (isset($ss['DismaxParams']) &&
-				is_array($ss['DismaxParams'])) {
-					foreach($ss['DismaxParams'] as $current) {
+				 is_array($ss['DismaxParams'])) {
+					foreach ($ss['DismaxParams'] as $current) {
 						$options[$current[0]] = $current[1];
 					}
 				}
@@ -1521,8 +1513,10 @@ class Solr implements IndexEngine {
 				// at this point, it indicates that we found YAML details.
 				if (is_array($ss)) {
 					$options['q'] = $this->_buildQueryComponent($handler, $query);
-				} else if (!empty($handler)) {
-					$options['q'] = "({$handler}:{$query})";
+				} else {
+					if (!empty($handler)) {
+						$options['q'] = "({$handler}:{$query})";
+					}
 				}
 			}
 		} else {
@@ -1547,19 +1541,19 @@ class Solr implements IndexEngine {
 			// This should be an explicit list
 			$options['fl'] = '*,score';
 		}
-		if ($this->debug){
+		if ($this->debug) {
 			$options['fl'] = $options['fl'] . ',explain';
 		}
 
-		if (is_object($this->searchSource)){
+		if (is_object($this->searchSource)) {
 			$defaultFilters = preg_split('/\r\n/', $this->searchSource->defaultFilter);
-			foreach ($defaultFilters as $tmpFilter){
+			foreach ($defaultFilters as $tmpFilter) {
 				$filter[] = $tmpFilter;
 			}
 		}
 
 		//Apply automatic boosting (only to biblio and econtent queries)
-		if (preg_match('/.*(grouped).*/i', $this->host)){
+		if (preg_match('/.*(grouped).*/i', $this->host)) {
 			//unset($options['qt']); //Force the query to never use dismax handling
 			$searchLibrary = Library::getSearchLibrary($this->searchSource);
 			//Boost items owned at our location
@@ -1567,23 +1561,23 @@ class Solr implements IndexEngine {
 
 			$boostFactors = $this->getBoostFactors($searchLibrary, $searchLocation);
 
-			if (isset($options['qt']) && $options['qt'] == 'dismax'){
+			if (isset($options['qt']) && $options['qt'] == 'dismax') {
 				//Boost by number of holdings
-				if (count($boostFactors) > 0 && $configArray['Index']['enableBoosting']){
+				if (count($boostFactors) > 0 && $configArray['Index']['enableBoosting']) {
 					$options['bf'] = "sum(" . implode(',', $boostFactors) . ")";
 				}
 				//print ($options['bq']);
-			}else{
+			} else {
 				$baseQuery = $options['q'];
 				//Boost items in our system
-				if (count($boostFactors) > 0){
+				if (count($boostFactors) > 0) {
 					$boost = "sum(" . implode(',', $boostFactors) . ")";
-				}else{
+				} else {
 					$boost = '';
 				}
-				if (empty($boost) || !$configArray['Index']['enableBoosting']){
+				if (empty($boost) || !$configArray['Index']['enableBoosting']) {
 					$options['q'] = $baseQuery;
-				}else{
+				} else {
 					$options['q'] = "{!boost b=$boost} $baseQuery";
 				}
 				//echo ("Advanced Query " . $options['q']);
@@ -1594,94 +1588,93 @@ class Solr implements IndexEngine {
 			$scopingFilters = $this->getScopingFilters($searchLibrary, $searchLocation);
 
 			$timer->logTime("apply filters based on location");
-		}else{
+		} else {
 			//Non book search (genealogy)
 			$scopingFilters = array();
 		}
-		if ($filter != null && $scopingFilters != null){
-			if (!is_array($filter)){
+		if ($filter != null && $scopingFilters != null) {
+			if (!is_array($filter)) {
 				$filter = array($filter);
 			}
 			//Check the filters to make sure they are for the correct scope
 			$validFields = $this->_loadValidFields();
 			global $solrScope;
 			$validFilters = array();
-			foreach ($filter as $id => $filterTerm){
+			foreach ($filter as $id => $filterTerm) {
 				list($fieldName, $term) = explode(":", $filterTerm, 2);
-				if (!in_array($fieldName, $validFields)){
+				if (!in_array($fieldName, $validFields)) {
 					//Special handling for availability_by_format
 					if (preg_match("/^availability_by_format_([^_]+)_[\\w_]+$/", $fieldName)) {
 						//This is a valid field
 						$validFilters[$id] = $filterTerm;
-					}elseif (preg_match("/^available_at_by_format_([^_]+)_[\\w_]+$/", $fieldName)){
+					} elseif (preg_match("/^available_at_by_format_([^_]+)_[\\w_]+$/", $fieldName)) {
 						//This is a valid field
 						$validFilters[$id] = $filterTerm;
-					}else{
+					} else {
 						//Field doesn't exist, check to see if it is a dynamic field
 						//Where we can replace the scope with the current scope
-						if (!isset($dynamicField)){
+						if (!isset($dynamicField)) {
 							$dynamicFields = $this->_loadDynamicFields();
 						}
-						foreach ($dynamicFields as $dynamicField){
-							if (preg_match("/^{$dynamicField}[^_]+$/", $fieldName)){
+						foreach ($dynamicFields as $dynamicField) {
+							if (preg_match("/^{$dynamicField}[^_]+$/", $fieldName)) {
 								//This is a dynamic field with the wrong scope
 								$validFilters[$id] = $dynamicField . $solrScope . ":" . $term;
 								break;
-							} elseif ($fieldName == rtrim($dynamicField, '_')){
+							} elseif ($fieldName == rtrim($dynamicField, '_')) {
 								//This is a regular field that is now a dynamic field so needs the scope applied
 								$validFilters[$id] = $dynamicField . $solrScope . ":" . $term;
 								break;
 							}
 						}
 					}
-				}else{
+				} else {
 					$validFilters[$id] = $filterTerm;
 				}
 			}
 			$filters = array_merge($validFilters, $scopingFilters);
-		}elseif ($filter == null){
+		} elseif ($filter == null) {
 			$filters = $scopingFilters;
-		}else{
+		} else {
 			$filters = $filter;
 		}
 
 
-
 		// Build Facet Options
-		if ($facet && !empty($facet['field']) && $configArray['Index']['enableFacets']) {
-			$options['facet'] = 'true';
+		if (!empty($facet['field']) && $configArray['Index']['enableFacets']) {
+			$options['facet']          = 'true';
 			$options['facet.mincount'] = 1;
-			$options['facet.method'] = 'fcs';
-			$options['facet.threads'] = 25;
-			$options['facet.limit'] = (isset($facet['limit'])) ? $facet['limit'] : null;
+			$options['facet.method']   = 'fcs';
+			$options['facet.threads']  = 25;
+			$options['facet.limit']    = (isset($facet['limit'])) ? $facet['limit'] : null;
 
 			//Determine which fields should be treated as enums
 			global $solrScope;
 			if (preg_match('/.*(grouped).*/i', $this->host)) {
-				$options["f.target_audience_full.facet.method"] = 'enum';
-				$options["f.target_audience.facet.method"] = 'enum';
-				$options["f.literary_form_full.facet.method"] = 'enum';
-				$options["f.literary_form.facet.method"] = 'enum';
-				$options["f.literary_form.econtent_device"] = 'enum';
-				$options["f.literary_form.lexile_code"] = 'enum';
-				$options["f.literary_form.mpaa_rating"] = 'enum';
-				$options["f.literary_form.rating_facet"] = 'enum';
-				$options["f.format_category_{$solrScope}.rating_facet"] = 'enum';
-				$options["f.format_{$solrScope}.rating_facet"] = 'enum';
-				$options["f.availability_toggle_{$solrScope}.rating_facet"] = 'enum';
+				$options["f.target_audience_full.facet.method"]                = 'enum';
+				$options["f.target_audience.facet.method"]                     = 'enum';
+				$options["f.literary_form_full.facet.method"]                  = 'enum';
+				$options["f.literary_form.facet.method"]                       = 'enum';
+				$options["f.literary_form.econtent_device"]                    = 'enum';
+				$options["f.literary_form.lexile_code"]                        = 'enum';
+				$options["f.literary_form.mpaa_rating"]                        = 'enum';
+				$options["f.literary_form.rating_facet"]                       = 'enum';
+				$options["f.format_category_{$solrScope}.rating_facet"]        = 'enum';
+				$options["f.format_{$solrScope}.rating_facet"]                 = 'enum';
+				$options["f.availability_toggle_{$solrScope}.rating_facet"]    = 'enum';
 				$options["f.local_time_since_added_{$solrScope}.rating_facet"] = 'enum';
-				$options["f.owning_library_{$solrScope}.rating_facet"] = 'enum';
-				$options["f.owning_location_{$solrScope}.rating_facet"] = 'enum';
+				$options["f.owning_library_{$solrScope}.rating_facet"]         = 'enum';
+				$options["f.owning_location_{$solrScope}.rating_facet"]        = 'enum';
 			}
 
 			unset($facet['limit']);
-			if (isset($facet['field']) && is_array($facet['field']) && in_array('date_added', $facet['field'])){
+			if (isset($facet['field']) && is_array($facet['field']) && in_array('date_added', $facet['field'])) {
 				$options['facet.date']       = 'date_added';
 				$options['facet.date.end']   = 'NOW';
 				$options['facet.date.start'] = 'NOW-1YEAR';
 				$options['facet.date.gap']   = '+1WEEK';
-				foreach ($facet['field'] as $key => $value){
-					if ($value == 'date_added'){
+				foreach ($facet['field'] as $key => $value) {
+					if ($value == 'date_added') {
 						unset($facet['field'][$key]);
 						break;
 					}
@@ -1689,19 +1682,18 @@ class Solr implements IndexEngine {
 			}
 
 
-
-			if (isset($facet['field'])){
+			if (isset($facet['field'])) {
 				$options['facet.field'] = $facet['field'];
-				if ($options['facet.field'] && is_array($options['facet.field'])){
-					foreach($options['facet.field'] as $key => $facetName){
-						if (strpos($facetName, 'availability_toggle') === 0 || strpos($facetName, 'availability_by_format') === 0){
-							$options['facet.field'][$key] = '{!ex=avail}' . $facetName;
+				if ($options['facet.field'] && is_array($options['facet.field'])) {
+					foreach ($options['facet.field'] as $key => $facetName) {
+						if (strpos($facetName, 'availability_toggle') === 0 || strpos($facetName, 'availability_by_format') === 0) {
+							$options['facet.field'][$key]            = '{!ex=avail}' . $facetName;
 							$options["f.{$facetName}.facet.missing"] = 'true';
 						}
 						//Update facets for grouped core
 					}
 				}
-			}else{
+			} else {
 				$options['facet.field'] = null;
 			}
 
@@ -1724,23 +1716,23 @@ class Solr implements IndexEngine {
 				}
 			}
 
-			foreach($facet as $param => $value) {
-				if ($param != 'additionalOptions'){
+			foreach ($facet as $param => $value) {
+				if ($param != 'additionalOptions') {
 					$options[$param] = $value;
 				}
 			}
 		}
 
-		if (isset($facet['additionalOptions'])){
+		if (isset($facet['additionalOptions'])) {
 			$options = array_merge($options, $facet['additionalOptions']);
 		}
 
 		$timer->logTime("build facet options");
 
 		//Check to see if there are filters we want to show all values for
-		if (isset($filters) && is_array($filters)){
-			foreach ($filters as $key => $value){
-				if (strpos($value, 'availability_toggle') === 0 || strpos($value, 'availability_by_format') === 0){
+		if (isset($filters) && is_array($filters)) {
+			foreach ($filters as $key => $value) {
+				if (strpos($value, 'availability_toggle') === 0 || strpos($value, 'availability_by_format') === 0) {
 					$filters[$key] = '{!tag=avail}' . $value;
 				}
 			}
@@ -1753,7 +1745,7 @@ class Solr implements IndexEngine {
 
 		// Enable Spell Checking
 		if ($spell != '') {
-			$options['spellcheck'] = 'true';
+			$options['spellcheck']   = 'true';
 			$options['spellcheck.q'] = $spell;
 			if ($dictionary != null) {
 				$options['spellcheck.dictionary'] = $dictionary;
@@ -1768,13 +1760,14 @@ class Solr implements IndexEngine {
 			$highlightFields = str_replace(",related_items_$solrScope", '', $highlightFields);
 			$highlightFields = str_replace(",format_$solrScope", '', $highlightFields);
 			$highlightFields = str_replace(",format_category_$solrScope", '', $highlightFields);
-			$options['hl'] = 'true';
-			$options['hl.fl'] = $highlightFields;
-			$options['hl.simple.pre'] = '{{{{START_HILITE}}}}';
-			$options['hl.simple.post'] = '{{{{END_HILITE}}}}';
+
+			$options['hl']                                = 'true';
+			$options['hl.fl']                             = $highlightFields;
+			$options['hl.simple.pre']                     = '{{{{START_HILITE}}}}';
+			$options['hl.simple.post']                    = '{{{{END_HILITE}}}}';
 			$options['f.display_description.hl.fragsize'] = 50000;
-			$options['f.title_display.hl.fragsize'] = 1000;
-			$options['f.title_full.hl.fragsize'] = 1000;
+			$options['f.title_display.hl.fragsize']       = 1000;
+			$options['f.title_full.hl.fragsize']          = 1000;
 		}
 
 		if ($this->debugSolrQuery) {
@@ -1791,12 +1784,12 @@ class Solr implements IndexEngine {
 				$solrSearchDebug .= "\nSort: " . $options['sort'];
 			}
 
-			if ($this->isPrimarySearch){
+			if ($this->isPrimarySearch) {
 				global $interface;
 				$interface->assign('solrSearchDebug', $solrSearchDebug);
 			}
 		}
-		if ($this->debugSolrQuery || $this->debug){
+		if ($this->debugSolrQuery || $this->debug) {
 			$options['debugQuery'] = 'on';
 		}
 
@@ -1813,177 +1806,53 @@ class Solr implements IndexEngine {
 
 	/**
 	 * Get filters based on scoping for the search
-	 * @param Library $searchLibrary
+	 * @param Library  $searchLibrary
 	 * @param Location $searchLocation
 	 * @return array
 	 */
-	public function getScopingFilters($searchLibrary, $searchLocation){
+	public function getScopingFilters($searchLibrary, $searchLocation)
+	{
 		global $solrScope;
 
 		$filter = array();
 
 		//Simplify detecting which works are relevant to our scope
-		if (!$solrScope){
-			if (isset($searchLocation)){
+		if (!$solrScope) {
+			if (isset($searchLocation)) {
 				$filter[] = "scope_has_related_records:{$searchLocation->code}";
-			}elseif(isset($searchLibrary)){
+			} elseif (isset($searchLibrary)) {
 				$filter[] = "scope_has_related_records:{$searchLibrary->subdomain}";
 			}
-		}else{
+		} else {
 			$filter[] = "scope_has_related_records:$solrScope";
 		}
 
-		//*************************
-		//Marmot overrides for filtering based on library system and location
-		//Only include titles that the user has access to based on pType
-		/*$pType = 0;
-		$owningSystem = '';
-		$owningLibrary = '';
-		$canUseDefaultPType = !$this->scopingDisabled;
-
-		if ($user){
-			$pType = $user->patronType;
-		}elseif (isset($searchLocation) && $searchLocation->defaultPType > 0 && $canUseDefaultPType){
-			$pType = $searchLocation->defaultPType;
-		}
-		if ($pType == 0 && isset($searchLibrary)){
-			//We always want to restrict by pType even if we aren't scoping to just the library
-			//holdings since patron's don't want to see things they can't see.
-			if (strlen($searchLibrary->pTypes) > 0){
-				$pType = str_replace(',', ' OR ', $searchLibrary->pTypes);
-			}else if ($searchLibrary->defaultPType > 0){
-				$pType = $searchLibrary->defaultPType;
-			}
-		}
-
-		if (isset($searchLocation)){
-			if (strlen($searchLocation->facetLabel) == 0){
-				$owningLibrary = $searchLocation->displayName;
-			}else{
-				$owningLibrary = $searchLocation->facetLabel;
-			}
-		}
-		if (isset($searchLibrary)){
-			if (strlen($searchLibrary->facetLabel) == 0){
-				$owningSystem = $searchLibrary->displayName;
-			}else{
-				$owningSystem = $searchLibrary->facetLabel;
-			}
-		}
-		$buildingFacetName = 'owning_location';
-		$institutionFacetName = 'owning_library';*/
-
-		//This block makes sure that titles are usable by the current user.  It is always run if we have a reasonable idea
-		//who is using the catalog. This enables "super scope" even if the user is doing a repeat search.
-		/*if ($pType > 0 && $configArray['Index']['enableUsableByFilter'] == true){
-			//First check usability.
-			//It is usable if the title is usable by the ptypes in question OR it is owned by the current branch/ system
-			$usableFilter = 'usable_by:('.$pType . ' OR all)';
-			$owningBranchFilter = "";
-			$usableEContentFilter = "";
-			$onOrderFilter = "";
-			if (strlen($owningLibrary) > 0){
-				$owningBranchFilter .= " $buildingFacetName:\"$owningLibrary\"";
-				$usableEContentFilter .= "$buildingFacetName:\"$owningLibrary Online\"";
-				$onOrderFilter .= "$buildingFacetName:\"$owningLibrary On Order\"";
-			}
-			if (strlen($owningSystem) > 0){
-				if (strlen($owningBranchFilter) > 0) $owningBranchFilter .= " OR ";
-				if (strlen($usableEContentFilter) > 0) $usableEContentFilter .= " OR ";
-				if (strlen($onOrderFilter) > 0) $onOrderFilter .= " OR ";
-				$owningBranchFilter .= "$institutionFacetName:\"$owningSystem\"";
-				$usableEContentFilter .= "$institutionFacetName:\"$owningSystem Online\"";
-				$onOrderFilter .= "$institutionFacetName:\"$owningSystem On Order\"";
-			}
-			$homeLibrary = Library::getPatronHomeLibrary();
-			if ($homeLibrary && $homeLibrary != $searchLibrary){
-				if (strlen($owningBranchFilter) > 0) $owningBranchFilter .= " OR ";
-				if (strlen($usableEContentFilter) > 0) $usableEContentFilter .= " OR ";
-				if (strlen($onOrderFilter) > 0) $onOrderFilter .= " OR ";
-				$homeLibraryFacet = $homeLibrary->facetLabel;
-				$owningBranchFilter .= "$buildingFacetName:\"$homeLibraryFacet\"";
-				$usableEContentFilter .= "$buildingFacetName:\"$homeLibraryFacet Online\"";
-				$onOrderFilter .= "$buildingFacetName:\"$homeLibraryFacet On Order\"";
-			}
-			if (isset($searchLibrary) && $searchLibrary->enableOverdriveCollection){
-				if (strlen($usableEContentFilter) > 0) $usableEContentFilter .= " OR ";
-				$usableEContentFilter .= " $institutionFacetName:\"Shared Digital Collection\"";
-			}
-			if (strlen($owningBranchFilter)){
-				$fullFilter = "($usableFilter OR $owningBranchFilter)";
-			}else{
-				$fullFilter = "($usableFilter)";
-			}
-			if (strlen($usableEContentFilter)){
-				$fullFilter .= " OR $usableEContentFilter";
-			}
-			if (strlen($onOrderFilter)){
-				$fullFilter .= " OR $onOrderFilter";
-			}
-			$filter[] = $fullFilter;
-		}*/
-
-		//This block checks whether or not the title is owned by
-		if ($this->scopingDisabled == false){
-			/*if (isset($searchLibrary)){
-				if ($searchLibrary->restrictSearchByLibrary && $searchLibrary->enableOverdriveCollection){
-					$filter[] = "($institutionFacetName:\"{$owningSystem}\"
-							OR $institutionFacetName:\"Shared Digital Collection\"
-							OR $institutionFacetName:\"Digital Collection\"
-							OR $institutionFacetName:\"{$owningSystem} Online\"
-							OR $institutionFacetName:\"{$owningSystem} On Order\"
-							)";
-				}else if ($searchLibrary->restrictSearchByLibrary){
-					$filter[] = "$institutionFacetName:\"{$owningSystem}\"";
-				}else if (!$searchLibrary->enableOverdriveCollection){
-					//This doesn't work because it effectively removes anything with both OverDrive and Print titles
-					//$filter[] = "!($institutionFacetName:\"Digital Collection\" OR $institutionFacetName:\"{$searchLibrary->facetLabel} Online\")";
-				}
-			}
-
-			if ($searchLocation != null){
-				if ($searchLocation->restrictSearchByLocation && $searchLocation->enableOverdriveCollection){
-					$filter[] = "($buildingFacetName:\"{$owningLibrary}\"
-							OR $buildingFacetName:\"Shared Digital Collection\"
-							OR $buildingFacetName:\"Digital Collection\"
-							OR $buildingFacetName:\"{$owningLibrary} Online\"
-							OR $buildingFacetName:\"{$owningLibrary} On Order\"
-							)";
-				}else if ($searchLocation->restrictSearchByLocation){
-					$filter[] = "($buildingFacetName:\"{$owningLibrary}\")";
-				}else if (!$searchLocation->enableOverdriveCollection){
-					//This doesn't work because it effectively removes anything with both OverDrive and Print titles
-					//$filter[] = "!($buildingFacetName:\"Shared Digital Collection\" OR $buildingFacetName:\"Digital Collection\" OR $buildingFacetName:\"{$searchLibrary->facetLabel} Online\")";
-				}
-			}*/
-		}
-
 		$blacklistRecords = null;
-		if (isset($searchLocation) && strlen($searchLocation->recordsToBlackList) > 0){
+		if (!empty($searchLocation->recordsToBlackList)) {
 			$blacklistRecords = $searchLocation->recordsToBlackList;
 		}
-		if (isset($searchLibrary) && strlen($searchLibrary->recordsToBlackList) > 0){
-			if (is_null($blacklistRecords)){
+		if (!empty($searchLibrary->recordsToBlackList)) {
+			if (is_null($blacklistRecords)) {
 				$blacklistRecords = $searchLibrary->recordsToBlackList;
-			}else{
+			} else {
 				$blacklistRecords .= "\n" . $searchLibrary->recordsToBlackList;
 			}
 		}
-		if (!is_null($blacklistRecords)){
+		if (!is_null($blacklistRecords)) {
 			$recordsToBlacklist = preg_split('/\s|\r\n|\r|\n/s', $blacklistRecords);
-			$blacklist = "NOT (";
-			$numRecords = 0;
-			foreach ($recordsToBlacklist as $curRecord){
-				if (strlen($curRecord) > 0){
+			$blacklist          = "NOT (";
+			$numRecords         = 0;
+			foreach ($recordsToBlacklist as $curRecord) {
+				if (strlen($curRecord) > 0) {
 					$numRecords++;
-					if ($numRecords > 1){
+					if ($numRecords > 1) {
 						$blacklist .= " OR ";
 					}
 					$blacklist .= "id:" . $curRecord;
 				}
 			}
 			$blacklist .= ")";
-			$filter[] = $blacklist;
+			$filter[]  = $blacklist;
 		}
 
 		//Process anything that the user is not interested in.
@@ -2013,15 +1882,14 @@ class Solr implements IndexEngine {
 	/**
 	 * Convert an array of fields into XML for saving to Solr.
 	 *
-	 * @param	  array	  $fields		      Array of fields to save
-	 * @param   boolean $waitFlush      Whether or not to pass the waitFlush flag to the Solr add call
-	 * @param   boolean $delayedCommit  Whether or not the commit should be delayed
-	 * @return	string							XML document ready for posting to Solr.
-	 * @access	public
+	 * @param array   $fields        Array of fields to save
+	 * @param boolean $waitFlush     Whether or not to pass the waitFlush flag to the Solr add call
+	 * @param boolean $delayedCommit Whether or not the commit should be delayed
+	 * @return  string              XML document ready for posting to Solr.
+	 * @access  public
 	 */
 	public function getSaveXML($fields, $waitFlush = true, $delayedCommit = false)
 	{
-		global $logger;
 		// Create XML Document
 		$doc = new DOMDocument('1.0', 'UTF-8');
 
@@ -2029,18 +1897,18 @@ class Solr implements IndexEngine {
 		$node = $doc->createElement('add');
 		/** @var DOMElement $addNode */
 		$addNode = $doc->appendChild($node);
-		if (!$waitFlush){
+		if (!$waitFlush) {
 			$addNode->setAttribute('waitFlush', 'false');
 		}
-		if ($delayedCommit){
+		if ($delayedCommit) {
 			//Make sure the update is committed within 60 seconds
 			$addNode->setAttribute('commitWithin', 60000);
-		}else{
+		} else {
 			$addNode->setAttribute('commitWithin', 100);
 		}
 
 		// Create doc node
-		$node = $doc->createElement('doc');
+		$node    = $doc->createElement('doc');
 		$docNode = $addNode->appendChild($node);
 
 		// Add fields to XML document
@@ -2050,10 +1918,9 @@ class Solr implements IndexEngine {
 				$value = array($value);
 			}
 			// Add all non-empty values of the current field to the XML:
-			foreach($value as $current) {
+			foreach ($value as $current) {
 				if ($current != '') {
-					$logger->log("Adding field $field", PEAR_LOG_DEBUG);
-					$logger->log("  value " . $current, PEAR_LOG_DEBUG);
+					$this->logger->debug("Adding field {$field}  value {$current}");
 					$node = $doc->createElement('field');
 					$node->setAttribute('name', $field);
 					$node->appendChild(new DOMText($current));
@@ -2068,14 +1935,14 @@ class Solr implements IndexEngine {
 	/**
 	 * Save Record to Database
 	 *
-	 * @param	 string	$xml				XML document to post to Solr
-	 * @return	mixed							 Boolean true on success or PEAR_Error
-	 * @access	public
+	 * @param string $xml XML document to post to Solr
+	 * @return  bool|PEAR_Error  Boolean true on success or PEAR_Error
+	 * @access  public
 	 */
 	function saveRecord($xml)
 	{
 		if ($this->debugSolrQuery) {
-			echo "<pre>Add Record</pre>\n";
+			$this->logger->debug('Adding Record to Solr');
 		}
 
 		$result = $this->_update($xml);
@@ -2089,14 +1956,14 @@ class Solr implements IndexEngine {
 	/**
 	 * Delete Record from Database
 	 *
-	 * @param	 string	$id				 ID for record to delete
-	 * @return	boolean
-	 * @access	public
+	 * @param string $id ID for record to delete
+	 * @return  bool|PEAR_Error  Boolean true on success or PEAR_Error
+	 * @access  public
 	 */
 	function deleteRecord($id)
 	{
 		if ($this->debugSolrQuery) {
-			echo "<pre>Delete Record: $id</pre>\n";
+			$this->logger->debug('Deleting Record from Solr');
 		}
 
 		$body = "<delete><id>$id</id></delete>";
@@ -2112,14 +1979,14 @@ class Solr implements IndexEngine {
 	/**
 	 * Delete Record from Database
 	 *
-	 * @param	 string[]	$idList		 Array of IDs for record to delete
-	 * @return	boolean
-	 * @access	public
+	 * @param string[] $idList Array of IDs for record to delete
+	 * @return  bool|PEAR_Error  Boolean true on success or PEAR_Error
+	 * @access  public
 	 */
 	function deleteRecords($idList)
 	{
 		if ($this->debugSolrQuery) {
-			echo "<pre>Delete Record List</pre>\n";
+			$this->logger->debug("Deleting Record list {$idList} from Solr", PEAR_LOG_DEBUG);
 		}
 
 		// Delete XML
@@ -2138,15 +2005,15 @@ class Solr implements IndexEngine {
 	}
 
 	/**
-	 * Commit
+	 * Tell Solr to Commit any received updates
 	 *
-	 * @return	string
-	 * @access	public
+	 * @return  bool|PEAR_Error  Boolean true on success or PEAR_Error
+	 * @access  public
 	 */
 	function commit()
 	{
 		if ($this->debugSolrQuery) {
-			echo "<pre>Commit</pre>\n";
+			$this->logger->debug('Sending commit command to Solr');
 		}
 
 		$body = '<commit softCommit="true" waitSearcher = "false"/>';
@@ -2162,13 +2029,13 @@ class Solr implements IndexEngine {
 	/**
 	 * Optimize
 	 *
-	 * @return	string
-	 * @access	public
+	 * @return  bool|PEAR_Error  Boolean true on success or PEAR_Error
+	 * @access  public
 	 */
 	function optimize()
 	{
 		if ($this->debugSolrQuery) {
-			echo "<pre>Optimize</pre>\n";
+			$this->logger->debug('Sending optimize command to Solr');
 		}
 
 		$body = '<optimize/>';
@@ -2200,74 +2067,72 @@ class Solr implements IndexEngine {
 	 *
 	 * @param string $xml The command to execute
 	 *
-	 * @return mixed			Boolean true on success or PEAR_Error
+	 * @return  bool|PEAR_Error  Boolean true on success or PEAR_Error
 	 * @access protected
 	 */
-	protected function update($xml)
-	{
-		return $this->_update($xml);
-	}
+//	protected function update($xml){
+//		return $this->_update($xml);
+//	}
 
 	/**
 	 * Strip facet settings that are illegal due to shard settings.
 	 *
 	 * @param array $value Current facet.field setting
-	 *
-	 * @return array			 Filtered facet.field setting
+	 * @return array       Filtered facet.field setting
 	 * @access private
 	 */
 	private function _stripUnwantedFacets($value)
 	{
-		// Load the configuration of facets to strip and build a list of the ones
-		// that currently apply:
-		$facetConfig = getExtraConfigArray('facets');
-		$badFacets = array();
-		if (!empty($this->_solrShards) && is_array($this->_solrShards)
-		&& isset($facetConfig['StripFacets'])
-		&& is_array($facetConfig['StripFacets'])
-		) {
-			$shardNames = array_keys($this->_solrShards);
-			foreach ($facetConfig['StripFacets'] as $indexName => $facets) {
-				if (in_array($indexName, $shardNames) === true) {
-					$badFacets = array_merge($badFacets, explode(",", $facets));
+		if (!empty($this->_solrShards) && is_array($this->_solrShards)) {
+			// Load the configuration of facets to strip and build a list of the ones that currently apply
+			$facetConfig = getExtraConfigArray('facets');
+			if (isset($facetConfig['StripFacets']) && is_array($facetConfig['StripFacets'])) {
+				$shardNames = array_keys($this->_solrShards);
+				$badFacets  = array();
+				foreach ($facetConfig['StripFacets'] as $indexName => $facets) {
+					if (in_array($indexName, $shardNames) === true) {
+						$badFacets = array_merge($badFacets, explode(",", $facets));
+					}
 				}
-			}
-		}
 
-		// No bad facets means no filtering necessary:
-		if (empty($badFacets)) {
+				// No bad facets means no filtering necessary:
+				if (empty($badFacets)) {
+					return $value;
+				}
+
+				// Ensure that $value is an array:
+				if (!is_array($value)) {
+					$value = array($value);
+				}
+
+				// Rebuild the $value array, excluding all unwanted facets:
+				$newValue = array();
+				foreach ($value as $current) {
+					if (!in_array($current, $badFacets)) {
+						$newValue[] = $current;
+					}
+				}
+
+				return $newValue;
+			}
+		} else {
 			return $value;
 		}
-
-		// Ensure that $value is an array:
-		if (!is_array($value)) {
-			$value = array($value);
-		}
-
-		// Rebuild the $value array, excluding all unwanted facets:
-		$newValue = array();
-		foreach ($value as $current) {
-			if (!in_array($current, $badFacets)) {
-				$newValue[] = $current;
-			}
-		}
-
-		return $newValue;
 	}
 
 	/**
 	 * Submit REST Request to read data
 	 *
-	 * @param	 string			$method						 HTTP Method to use: GET, POST,
-	 * @param	 array			 $params						 Array of parameters for the request
-	 * @param	 bool				$returnSolrError		If Solr reports a syntax error,
-	 *																					should we fail outright (false) or
-	 *																					treat it as an empty result set with
-	 *																					an error key set (true)?
-	 * @return	array|PEAR_Error													 The Solr response (or a PEAR error)
-	 * @access	private
+	 * @param string $method          HTTP Method to use: GET, POST,
+	 * @param array  $params          Array of parameters for the request
+	 * @param bool   $returnSolrError If Solr reports a syntax error,
+	 *                                should we fail outright (false) or
+	 *                                treat it as an empty result set with
+	 *                                an error key set (true)?
+	 * @return  array|PEAR_Error    The Solr response (or a PEAR error)
+	 * @access  private
 	 */
-	private function _select($method = HTTP_REQUEST_METHOD_GET, $params = array(), $returnSolrError = false)
+	private function _select($method = 'GET', $params = array(), $returnSolrError = false)
 	{
 		global $timer;
 		global $memoryWatcher;
@@ -2276,13 +2141,10 @@ class Solr implements IndexEngine {
 
 		$this->pingServer();
 
-		$this->client->setMethod($method);
-		$this->client->setURL($this->host . "/select/");
-
-		$params['wt'] = 'json';
+		$params['wt']      = 'json';
 		$params['json.nl'] = 'arrarr';
 
-		// Build query string for use with GET or POST:
+		// Build query string for use with GET or POST, with special handling for repeated parameters
 		$query = array();
 		if ($params) {
 			foreach ($params as $function => $value) {
@@ -2296,109 +2158,91 @@ class Solr implements IndexEngine {
 							continue;
 						}
 					}
-					if(is_array($value)) {
+					if (is_array($value)) {
 						foreach ($value as $additional) {
+							//Islandora Solr takes repeated url parameters with out the typical array style. eg. &fq=firstOne&fq=secondOne
 							$additional = urlencode($additional);
-							$query[] = "$function=$additional";
+							$query[]    = "$function=$additional";
 						}
 					} else {
-						$value = urlencode($value);
+						$value   = urlencode($value);
 						$query[] = "$function=$value";
 					}
 				}
 			}
 		}
+
 		// pass the shard parameter along to Solr if necessary:
 		if (!empty($this->_solrShards) && is_array($this->_solrShards)) {
 			$query[] = 'shards=' . urlencode(implode(',', $this->_solrShards));
 		}
 		$queryString = implode('&', $query);
 
-
-		// Save to file for Jmeter
-//		$fullSearchUrl = print_r($this->host . "/select/?" . $queryString, true);
-		//$write_result = file_put_contents(ROOT_DIR . '\solrQueries.csv', $fullSearchUrl."\n", FILE_APPEND);
-
-		$this->fullSearchUrl = $this->host . "/select/?" . $queryString;
-		if ($this->debug || $this->debugSolrQuery) {
-			$solrQueryDebug = "";
-			if ($this->debugSolrQuery) {
-				$solrQueryDebug .= "$method: ";
+		$url                 = $this->host . '/select/';
+		$this->fullSearchUrl = $url . '?' . $queryString;
+		if ($this->debug && $this->debugSolrQuery && $this->isPrimarySearch) {
+			global $interface;
+			if ($interface) {
+				//Add debug parameter so we can see the explain section at the bottom.
+				$debugSearchUrl = $this->host . "/select/?debugQuery=on&" . $queryString;
+				$solrQueryDebug = "$method: <a href='" . $debugSearchUrl . "' target='_blank'>$this->fullSearchUrl</a>";
+				$interface->assign('solrLinkDebug', $solrQueryDebug);
 			}
-			//Add debug parameter so we can see the explain section at the bottom.
-			$this->debugSearchUrl = $this->host . "/select/?debugQuery=on&" . $queryString;
-
-			if ($this->debugSolrQuery) {
-				$solrQueryDebug .=  "<a href='" . $this->debugSearchUrl . "' target='_blank'>$this->fullSearchUrl</a>";
-			}
-
-			if ($this->isPrimarySearch) {
-				global $interface;
-				if ($interface) {
-					$interface->assign('solrLinkDebug', $solrQueryDebug);
-				}
-			}
-		}
-
-		if ($method == 'GET') {
-			$this->client->addRawQueryString($queryString);
-		} elseif ($method == 'POST') {
-			$this->client->setBody($queryString);
 		}
 
 		// Send Request
 		$timer->logTime("Prepare to send request to solr");
 		$memoryWatcher->logMemory('Prepare to send request to solr');
-		$result = $this->client->sendRequest();
-		//$this->client->clearPostData();
+		$this->client->setDefaultJsonDecoder(true); // return an associative array instead of a json object
+		switch ($method) {
+			case 'POST':
+				$result = $this->client->post($url, $queryString);
+				break;
+			case 'GET':
+			default :
+				$result = $this->client->get($url, $queryString);
+		}
+
 		$timer->logTime("Send data to solr for select $queryString");
 		$memoryWatcher->logMemory("Send data to solr for select $queryString");
 
-		if (!PEAR_Singleton::isError($result)) {
-			return $this->_process($this->client->getResponseBody(), $returnSolrError, $queryString);
+		if ($this->client->isError()) {
+			//TODO: additional handling for curl errors
+			return $this->_process($result, $returnSolrError, $queryString);
 		} else {
-			return $result;
+			return $this->_process($result, $returnSolrError, $queryString);
 		}
 	}
 
 	/**
 	 * Submit REST Request to write data
 	 *
-	 * @param	 string			$xml				The command to execute
-	 * @return	mixed									 Boolean true on success or PEAR_Error
-	 * @access	private
+	 * @param string $xml The command to execute
+	 * @return  bool|PEAR_Error    Boolean true on success or PEAR_Error
+	 * @access  private
 	 */
 	private function _update($xml)
 	{
-		global $configArray;
 		global $timer;
 
 		$this->pingServer();
 
-		$this->client->setMethod('POST');
-		$this->client->setURL($this->host . "/update/");
+		$url = $this->host . '/update/';
 
 		if ($this->debugSolrQuery) {
-			echo "<pre>POST: ";
-			print_r($this->host . "/update/");
-			echo "XML:\n";
-			print_r($xml);
-			echo "</pre>\n";
+			$this->logger->debug("Solr->update: " . $url, ["xml"=>$xml]);
 		}
 
 		// Set up XML
-		$this->client->addHeader('Content-Type', 'text/xml; charset=utf-8');
-		$this->client->addHeader('Content-Length', strlen($xml));
-		$this->client->setBody($xml);
+		$this->client->setHeader('Content-Type', 'text/xml; charset=utf-8');
 
 		// Send Request
-		$result = $this->client->sendRequest();
-		$responseCode = $this->client->getResponseCode();
-		//$this->client->clearPostData();
+		$result       = $this->client->post($url, $xml);
+		$responseCode = $this->client->getHttpStatusCode();
 
 		if ($responseCode == 500 || $responseCode == 400) {
-			$detail = $this->client->getResponseBody();
-			$timer->logTime("Send the update request");
+			$detail = $this->client->getRawResponse();
+			$timer->logTime('Send the update request');
 
 			// Attempt to extract the most useful error message from the response:
 			if (preg_match("/<title>(.*)<\/title>/msi", $detail, $matches)) {
@@ -2406,76 +2250,68 @@ class Solr implements IndexEngine {
 			} else {
 				$errorMsg = $detail;
 			}
-			global $logger;
-			$logger->log("Error updating document\r\n$xml", PEAR_LOG_DEBUG);
-			return new PEAR_Error("Unexpected response -- " . $errorMsg);
-		}elseif ($configArray['System']['debugSolr'] == true){
-			$this->client->getResponseBody();
-			$timer->logTime("Get response body");
-			// Attempt to extract the most useful error message from the response:
-			//print_r("Update Response:");
-			//print_r($detail);
+			$this->logger->error("Error updating document", ["xml" => $xml]);
+			return new PEAR_Error('Unexpected response -- ' . $errorMsg);
 		}
 
-		if (!PEAR_Singleton::isError($result)) {
-			return true;
+		if ($this->client->isError()) {
+			return $result; //TODO: new error process
 		} else {
-			return $result;
+			return true;
 		}
 	}
 
 	/**
 	 * Perform normalization and analysis of Solr return value.
 	 *
-	 * @param	 array			 $result						 The raw response from Solr
-	 * @param	 bool				$returnSolrError		If Solr reports a syntax error,
-	 *																					should we fail outright (false) or
-	 *																					treat it as an empty result set with
-	 *																					an error key set (true)?
-	 * @param string      $queryString        The raw query that was sent
-	 * @return	array													 The processed response from Solr
-	 * @access	private
+	 * @param array  $result                    The raw response from Solr
+	 * @param bool   $returnSolrError           If Solr reports a syntax error,
+	 *                                          should we fail outright (false) or
+	 *                                          treat it as an empty result set with
+	 *                                          an error key set (true)?
+	 * @param string $queryString               The raw query that was sent
+	 * @return  array                           The processed response from Solr
+	 * @access  private
 	 */
 	private function _process($result, $returnSolrError = false, $queryString = null)
 	{
-		global $timer;
-		global $memoryWatcher;
-		// Catch errors from SOLR
-		if (substr(trim($result), 0, 2) == '<h') {
-			$errorMsg = substr($result, strpos($result, '<pre>'));
-			$errorMsg = substr($errorMsg, strlen('<pre>'), strpos($result, "</pre>"));
-			if ($returnSolrError) {
-				return array('response' => array('numfound' => 0, 'docs' => array()),
-										'error' => $errorMsg);
-			} else {
-				if ($this->debug){
-					$errorMessage = 'Unable to process query ' . urldecode($queryString);
-				}else{
-					$errorMessage = 'Unable to process query ';
+		//TODO: below parsing for error probably obsolete
+		if (is_string($result)) {
+			// Catch errors from SOLR
+			if (substr(trim($result), 0, 2) == '<h') {
+				$errorMsg = substr($result, strpos($result, '<pre>'));
+				$errorMsg = substr($errorMsg, strlen('<pre>'), strpos($result, "</pre>"));
+				if ($returnSolrError) {
+					return array('response' => array('numfound' => 0, 'docs' => array()), 'error' => $errorMsg);
+				} else {
+					$errorMessage = 'Unable to process query ' . ($this->debug ? urldecode($queryString) : '');
+					PEAR_Singleton::raiseError(new PEAR_Error($errorMessage . '<br>' .
+					 'Solr Returned: ' . $errorMsg));
 				}
-				PEAR_Singleton::raiseError(new PEAR_Error($errorMessage. '<br />' .
-						'Solr Returned: ' . $errorMsg));
-
+			} else {
+				$result = json_decode($result, true);
+				// Curl will give us good array of json data only when response headers indicate that it is json.
+				// Curl default decode
 			}
 		}
-		$memoryWatcher->logMemory('receive result from solr result is ' . strlen($result) . ' bytes long');
-		$result = json_decode($result, true);
-		$timer->logTime("receive result from solr and load from json data");
-		$memoryWatcher->logMemory('load json for solr result');
+
+		global $timer;
+		global $memoryWatcher;
+		$memoryWatcher->logMemory('received result from solr ');
+		$timer->logTime("received result from solr");
 
 		// Inject highlighting details into results if necessary:
-		if (isset($result['highlighting'])) {
+		if (!empty($result['highlighting'])) {
 			foreach ($result['response']['docs'] as $key => $current) {
 				if (isset($result['highlighting'][$current['id']])) {
-					$result['response']['docs'][$key]['_highlighting']
-					= $result['highlighting'][$current['id']];
+					$result['response']['docs'][$key]['_highlighting'] = $result['highlighting'][$current['id']];
 				}
 			}
 			// Remove highlighting section now that we have copied its contents:
 			unset($result['highlighting']);
+			$timer->logTime("process highlighting");
+			$memoryWatcher->logMemory('process highlighting');
 		}
-		$timer->logTime("process highlighting");
-		$memoryWatcher->logMemory('process highlighting');
 
 		return $result;
 	}
@@ -2483,12 +2319,12 @@ class Solr implements IndexEngine {
 	/**
 	 * Input Tokenizer
 	 *
-	 * Tokenizes the user input based on spaces and quotes.	Then joins phrases
+	 * Tokenizes the user input based on spaces and quotes.  Then joins phrases
 	 * together that have an AND, OR, NOT present.
 	 *
-	 * @param	 string	$input			User's input string
-	 * @return	array							 Tokenized array
-	 * @access	public
+	 * @param string $input User's input string
+	 * @return  array               Tokenized array
+	 * @access  public
 	 */
 	public function tokenizeInput($input)
 	{
@@ -2499,16 +2335,16 @@ class Solr implements IndexEngine {
 
 		// Join words with AND, OR, NOT
 		$newWords = array();
-		for ($i=0; $i<count($words); $i++) {
+		for ($i = 0; $i < count($words); $i++) {
 			if (($words[$i] == 'OR') || ($words[$i] == 'AND') || ($words[$i] == 'NOT')) {
 				if (count($newWords)) {
-					$newWords[count($newWords)-1] .= ' ' . trim($words[$i]) . ' ' . trim($words[$i+1]);
-					$i = $i+1;
+					$newWords[count($newWords) - 1] .= ' ' . trim($words[$i]) . ' ' . trim($words[$i + 1]);
+					$i                              = $i + 1;
 				}
 			} else {
 				//If we are tokenizing, remove any punctuation
 				$tmpWord = preg_replace('/[^\s\-\w.\'aàáâãåäæeèéêëiìíîïoòóôõöøuùúûü&]/', '', $words[$i]);
-				if (strlen($tmpWord) > 0){
+				if (strlen($tmpWord) > 0) {
 					$newWords[] = trim($tmpWord);
 				}
 			}
@@ -2522,9 +2358,9 @@ class Solr implements IndexEngine {
 	 *
 	 * Cleans the input based on the Lucene Syntax rules.
 	 *
-	 * @param	 string	$input			User's input string
-	 * @return	bool								Fixed input
-	 * @access	public
+	 * @param string $input User's input string
+	 * @return  bool                Fixed input
+	 * @access  public
 	 */
 	public function validateInput($input)
 	{
@@ -2533,24 +2369,24 @@ class Solr implements IndexEngine {
 
 		// Normalize fancy quotes:
 		$quotes = array(
-						"\xC2\xAB"		 => '"', // Â« (U+00AB) in UTF-8
-						"\xC2\xBB"		 => '"', // Â» (U+00BB) in UTF-8
-						"\xE2\x80\x98" => "'", // â€˜ (U+2018) in UTF-8
-						"\xE2\x80\x99" => "'", // â€™ (U+2019) in UTF-8
-						"\xE2\x80\x9A" => "'", // â€š (U+201A) in UTF-8
-						"\xE2\x80\x9B" => "'", // â€› (U+201B) in UTF-8
-						"\xE2\x80\x9C" => '"', // â€œ (U+201C) in UTF-8
-						"\xE2\x80\x9D" => '"', // â€ (U+201D) in UTF-8
-						"\xE2\x80\x9E" => '"', // â€ž (U+201E) in UTF-8
-						"\xE2\x80\x9F" => '"', // â€Ÿ (U+201F) in UTF-8
-						"\xE2\x80\xB9" => "'", // â€¹ (U+2039) in UTF-8
-						"\xE2\x80\xBA" => "'", // â€º (U+203A) in UTF-8
+		 "\xC2\xAB" => '"', // Â« (U+00AB) in UTF-8
+		 "\xC2\xBB" => '"', // Â» (U+00BB) in UTF-8
+		 "\xE2\x80\x98" => "'", // â€˜ (U+2018) in UTF-8
+		 "\xE2\x80\x99" => "'", // â€™ (U+2019) in UTF-8
+		 "\xE2\x80\x9A" => "'", // â€š (U+201A) in UTF-8
+		 "\xE2\x80\x9B" => "'", // â€› (U+201B) in UTF-8
+		 "\xE2\x80\x9C" => '"', // â€œ (U+201C) in UTF-8
+		 "\xE2\x80\x9D" => '"', // â€ (U+201D) in UTF-8
+		 "\xE2\x80\x9E" => '"', // â€ž (U+201E) in UTF-8
+		 "\xE2\x80\x9F" => '"', // â€Ÿ (U+201F) in UTF-8
+		 "\xE2\x80\xB9" => "'", // â€¹ (U+2039) in UTF-8
+		 "\xE2\x80\xBA" => "'", // â€º (U+203A) in UTF-8
 		);
-		$input = strtr($input, $quotes);
+		$input  = strtr($input, $quotes);
 
 		// If the user has entered a lone BOOLEAN operator, convert it to lowercase
 		// so it is treated as a word (otherwise it will trigger a fatal error):
-		switch(trim($input)) {
+		switch (trim($input)) {
 			case 'OR':
 				return 'or';
 			case 'AND':
@@ -2573,26 +2409,26 @@ class Solr implements IndexEngine {
 
 		// Ensure wildcards are not at beginning of input
 		if ((substr($input, 0, 1) == '*') ||
-		(substr($input, 0, 1) == '?')) {
+		 (substr($input, 0, 1) == '?')) {
 			$input = substr($input, 1);
 		}
 
 		// Ensure all parens match
 		$start = preg_match_all('/\(/', $input, $tmp);
-		$end = preg_match_all('/\)/', $input, $tmp);
+		$end   = preg_match_all('/\)/', $input, $tmp);
 		if ($start != $end) {
 			$input = str_replace(array('(', ')'), '', $input);
 		}
 
 		// Check to make sure we have an even number of quotes
 		$numQuotes = preg_match_all('/"/', $input, $tmp);
-		if ($numQuotes % 2 != 0){
+		if ($numQuotes % 2 != 0) {
 			//We have an uneven number of quotes, delete the last one
 			$input = substr_replace($input, '', strrpos($input, '"'), 1);
 		}
 
 		// Ensure ^ is used properly
-		$cnt = preg_match_all('/\^/', $input, $tmp);
+		$cnt     = preg_match_all('/\^/', $input, $tmp);
 		$matches = preg_match_all('/.+\^[0-9]/', $input, $tmp);
 
 		if (($cnt) && ($cnt !== $matches)) {
@@ -2607,22 +2443,30 @@ class Solr implements IndexEngine {
 		// Obviously, the order of the patterns/merges array is critically
 		// important to get this right!!
 		$patterns = array(
-		// STEP 1 -- escape valid brackets/braces
-						'/\[([^\[\]\s]+\s+TO\s+[^\[\]\s]+)\]/',
-						'/\{([^\{\}\s]+\s+TO\s+[^\{\}\s]+)\}/',
-		// STEP 2 -- destroy remaining brackets/braces
-						'/[\[\]\{\}]/',
-		// STEP 3 -- unescape valid brackets/braces
-						'/\^\^lbrack\^\^/', '/\^\^rbrack\^\^/',
-						'/\^\^lbrace\^\^/', '/\^\^rbrace\^\^/');
-		$matches = array(
-		// STEP 1 -- escape valid brackets/braces
-						'^^lbrack^^$1^^rbrack^^', '^^lbrace^^$1^^rbrace^^',
-		// STEP 2 -- destroy remaining brackets/braces
-						'',
-		// STEP 3 -- unescape valid brackets/braces
-						'[', ']', '{', '}');
-		$input = preg_replace($patterns, $matches, $input);
+			// STEP 1 -- escape valid brackets/braces
+			'/\[([^\[\]\s]+\s+TO\s+[^\[\]\s]+)\]/',
+			'/\{([^\{\}\s]+\s+TO\s+[^\{\}\s]+)\}/',
+			// STEP 2 -- destroy remaining brackets/braces
+			'/[\[\]\{\}]/',
+			// STEP 3 -- unescape valid brackets/braces
+			'/\^\^lbrack\^\^/',
+			'/\^\^rbrack\^\^/',
+			'/\^\^lbrace\^\^/',
+			'/\^\^rbrace\^\^/'
+		);
+		$matches  = array(
+			// STEP 1 -- escape valid brackets/braces
+			'^^lbrack^^$1^^rbrack^^',
+			'^^lbrace^^$1^^rbrace^^',
+			// STEP 2 -- destroy remaining brackets/braces
+			'',
+			// STEP 3 -- unescape valid brackets/braces
+			'[',
+			']',
+			'{',
+			'}'
+		);
+		$input    = preg_replace($patterns, $matches, $input);
 
 		//Remove any exclamation marks that Solr will handle incorrectly.
 		$input = str_replace('!', ' ', $input);
@@ -2658,8 +2502,8 @@ class Solr implements IndexEngine {
 		if (preg_match("/([^\(\s\:]+)\s?\:[^\s]/", $query, $matches)) {
 			//Make sure the field is actually one of our fields
 			$fieldName = $matches[1];
-			$fields = $this->_loadValidFields();
-			if (in_array($fieldName, $fields)){
+			$fields    = $this->_loadValidFields();
+			if (in_array($fieldName, $fields)) {
 				return true;
 			}
 			/*$searchSpecs = $this->_getSearchSpecs();
@@ -2700,42 +2544,40 @@ class Solr implements IndexEngine {
 		return false;
 	}
 
-
 	/**
 	 * Obtain information from an alphabetic browse index.
 	 *
-	 * @param string $source					Name of index to search
-	 * @param string $from						Starting point for browse results
-	 * @param int		$page						Result page to return (starts at 0)
-	 * @param int		$page_size			 Number of results to return on each page
-	 * @param bool	 $returnSolrError Should we fail outright on syntax error
-	 * (false) or treat it as an empty result set with an error key set (true)?
+	 * @param string $source          Name of index to search
+	 * @param string $from            Starting point for browse results
+	 * @param int    $page            Result page to return (starts at 0)
+	 * @param int    $page_size       Number of results to return on each page
+	 * @param bool   $returnSolrError Should we fail outright on syntax error
+	 *                                (false) or treat it as an empty result set with an error key set (true)?
 	 *
 	 * @return array
 	 * @access public
 	 */
-	public function alphabeticBrowse($source, $from, $page, $page_size = 20, $returnSolrError = false) {
+	public function alphabeticBrowse($source, $from, $page, $page_size = 20, $returnSolrError = false)
+	{
 		$this->pingServer();
 
-		$this->client->setMethod('GET');
-		$this->client->setURL($this->host . "/browse");
+		$url        = $this->host . "/browse";
+		$offset     = $page * $page_size;
+		$parameters = [
+		 'from' => $from,
+		 'json.nl' => 'arrarr',
+		 'offset' => $offset,
+		 'rows' => $page_size,
+		 'source' => $source,
+		 'wt' => 'json',
+		];
 
-		$offset = $page * $page_size;
+		$result = $this->client->get($url, $parameters);
 
-		$this->client->addQueryString('from', $from);
-		$this->client->addQueryString('json.nl', 'arrarr');
-		$this->client->addQueryString('offset', $offset);
-		$this->client->addQueryString('rows', $page_size);
-		$this->client->addQueryString('source', $source);
-		$this->client->addQueryString('wt', 'json');
-
-		$result = $this->client->sendRequest();
-
-		if (!PEAR_Singleton::isError($result)) {
-			return $this->_process(
-			$this->client->getResponseBody(), $returnSolrError);
-		} else {
+		if ($this->client->isError()) {
 			return $result;
+		} else {
+			return $this->_process($result, $returnSolrError);
 		}
 	}
 
@@ -2745,7 +2587,7 @@ class Solr implements IndexEngine {
 	 *
 	 * @param array $in Input array
 	 *
-	 * @return array		Processed array
+	 * @return array    Processed array
 	 * @access private
 	 */
 	private function _processTerms($in)
@@ -2771,21 +2613,21 @@ class Solr implements IndexEngine {
 
 		// Use setting from config.ini if present, otherwise assume 1024:
 		return isset($configArray['Index']['maxBooleanClauses'])
-		? $configArray['Index']['maxBooleanClauses'] : 1024;
+		 ? $configArray['Index']['maxBooleanClauses'] : 1024;
 	}
 
 	/**
 	 * Extract terms from the Solr index.
 	 *
-	 * @param string $field					 Field to extract terms from
-	 * @param string $start					 Starting term to extract (blank for beginning
-	 * of list)
-	 * @param int		$limit					 Maximum number of terms to return (-1 for no
-	 * limit)
-	 * @param bool	 $returnSolrError Should we fail outright on syntax error
-	 * (false) or treat it as an empty result set with an error key set (true)?
+	 * @param string $field           Field to extract terms from
+	 * @param string $start           Starting term to extract (blank for beginning
+	 *                                of list)
+	 * @param int    $limit           Maximum number of terms to return (-1 for no
+	 *                                limit)
+	 * @param bool   $returnSolrError Should we fail outright on syntax error
+	 *                                (false) or treat it as an empty result set with an error key set (true)?
 	 *
-	 * @return array									Associative array parsed from Solr JSON
+	 * @return array                  Associative array parsed from Solr JSON
 	 * response; meat of the response is in the ['terms'] element, which contains
 	 * an index named for the requested term, which in turn contains an associative
 	 * array of term => count in index.
@@ -2794,83 +2636,83 @@ class Solr implements IndexEngine {
 	public function getTerms($field, $start, $limit, $returnSolrError = false)
 	{
 		$this->pingServer();
-		$this->client->setMethod('GET');
-		$this->client->setURL($this->host . '/term');
+		$url = $this->host . '/term';
 
-		$this->client->addQueryString('terms', 'true');
-		$this->client->addQueryString('terms.fl', $field);
-		$this->client->addQueryString('terms.lower.incl', 'false');
-		$this->client->addQueryString('terms.lower', $start);
-		$this->client->addQueryString('terms.limit', $limit);
-		$this->client->addQueryString('terms.sort', 'index');
-		$this->client->addQueryString('wt', 'json');
+		$parameters = [
+		 'terms' => 'true',
+		 'terms.fl' => $field,
+		 'terms.lower.incl' => 'false',
+		 'terms.lower' => $start,
+		 'terms.limit' => $limit,
+		 'terms.sort' => 'index',
+		 'wt' => 'json'
+		];
 
-		$result = $this->client->sendRequest();
+		$result = $this->client->get($url, $parameters);
 
-		if (!PEAR_Singleton::isError($result)) {
+		if ($this->client->isError()) {
+			return $result;
+		} else {
 			// Process the JSON response:
-			$data = $this->_process(
-			$this->client->getResponseBody(), $returnSolrError
-			);
+			$data = $this->_process($result, $returnSolrError);
 
 			// Tidy the data into a more usable format:
 			if (isset($data['terms'])) {
 				$data['terms'] = array(
-				$data['terms'][0] => $this->_processTerms($data['terms'][1])
+				 $data['terms'][0] => $this->_processTerms($data['terms'][1])
 				);
 			}
 			return $data;
-		} else {
-			return $result;
 		}
 	}
 
-	public function setSearchSource($searchSource){
+	public function setSearchSource($searchSource)
+	{
 		$this->searchSource = $searchSource;
 	}
 
-	private function _loadDynamicFields(){
-		/** @var Memcache $memCache */
-		global $memCache;
+	private function _loadDynamicFields()
+	{
+
 		global $solrScope;
-		$fields = $memCache->get("schema_dynamic_fields_$solrScope");
-		if (!$fields || isset($_REQUEST['reload'])){
+		$fields = $this->cache->get("schema_dynamic_fields_$solrScope");
+		if (!$fields || isset($_REQUEST['reload'])) {
 			global $configArray;
 			$schemaUrl = $configArray['Index']['url'] . '/grouped/admin/file?file=schema.xml&contentType=text/xml;charset=utf-8';
-			$schema = simplexml_load_file($schemaUrl);
-			$fields = array();
+			$schema    = simplexml_load_file($schemaUrl);
+			$fields    = array();
 			/** @var SimpleXMLElement $field */
-			foreach ($schema->fields->dynamicField as $field){
+			foreach ($schema->fields->dynamicField as $field) {
 				$fields[] = substr((string)$field['name'], 0, -1);
 			}
-			$memCache->set("schema_dynamic_fields_$solrScope", $fields, 0, 24 * 60 * 60);
+			$this->cache->set("schema_dynamic_fields_$solrScope", $fields, 86400);
 		}
 		return $fields;
 	}
-	private function _loadValidFields(){
-		/** @var Memcache $memCache */
-		global $memCache;
+
+	private function _loadValidFields()
+	{
 		global $solrScope;
-		if (isset($_REQUEST['allFields'])){
+		if (isset($_REQUEST['allFields'])) {
 			return array('*');
 		}
-		$fields = $memCache->get("schema_fields_$solrScope");
-		if (!$fields || isset($_REQUEST['reload'])){
+		$fields = $this->cache->get("schema_fields_$solrScope");
+		if (!$fields || isset($_REQUEST['reload'])) {
 			global $configArray;
 			$schemaUrl = $configArray['Index']['url'] . '/grouped/admin/file?file=schema.xml&contentType=text/xml;charset=utf-8';
-			$schema = simplexml_load_file($schemaUrl);
-			$fields = array();
+			$schema    = simplexml_load_file($schemaUrl);
+			$fields    = array();
 			/** @var SimpleXMLElement $field */
-			foreach ($schema->fields->field as $field){
+			foreach ($schema->fields->field as $field) {
 				//print_r($field);
 				$fields[] = (string)$field['name'];
 			}
-			if ($solrScope){
-				foreach ($schema->fields->dynamicField as $field){
-					$fields[] = substr((string)$field['name'], 0, -1) . $solrScope ;
+			if ($solrScope) {
+				foreach ($schema->fields->dynamicField as $field) {
+					$fields[] = substr((string)$field['name'], 0, -1) . $solrScope;
 				}
 			}
-			$memCache->set("schema_fields_$solrScope", $fields, 0, 24 * 60 * 60);
+			$this->cache->set("schema_fields_$solrScope", $fields, 86400);
 		}
 		return $fields;
 	}

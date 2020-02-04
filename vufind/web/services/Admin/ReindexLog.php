@@ -1,11 +1,12 @@
 <?php
 /**
+ * Pika Discovery Layer
+ * Copyright (C) 2020  Marmot Library Network
  *
- * Copyright (C) Villanova University 2010.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2,
- * as published by the Free Software Foundation.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -13,50 +14,17 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-require_once ROOT_DIR . '/Action.php';
-require_once ROOT_DIR . '/services/Admin/Admin.php';
-require_once ROOT_DIR . '/sys/Pager.php';
+require_once ROOT_DIR . '/services/Admin/LogAdmin.php';
 
-class ReindexLog extends Admin_Admin {
-	function launch(){
-		global $interface,
-		       $configArray;
+class ReindexLog extends Log_Admin {
 
-		$logEntry = new ReindexLogEntry();
-		if (!empty($_REQUEST['worksLimit']) && ctype_digit($_REQUEST['worksLimit'])){
-			// limits total count correctly
-			$logEntry->whereAdd('numWorksProcessed >= ' . $_REQUEST['worksLimit']);
-		}
-		$total = $logEntry->count();
+	public $pageTitle = 'Reindex Log';
+	public $logTemplate = 'reindexLog.tpl';
+	public $columnToFilterBy = 'numWorksProcessed';
 
-		$logEntry = new ReindexLogEntry();
-		$page     = isset($_REQUEST['page']) ? $_REQUEST['page'] : 1;
-		$pageSize = isset($_REQUEST['pagesize']) ? $_REQUEST['pagesize'] : 30; // to adjust number of items listed on a page
-		$interface->assign('recordsPerPage', $pageSize);
-		$interface->assign('page', $page);
-		if (!empty($_REQUEST['worksLimit']) && ctype_digit($_REQUEST['worksLimit'])){
-			$logEntry->whereAdd('numWorksProcessed > ' . $_REQUEST['worksLimit']);
-		}
-		$logEntry->orderBy('startTime DESC');
-		$logEntry->limit(($page - 1) * $pageSize, $pageSize);
-		$logEntries = $logEntry->fetchAll();
-		$interface->assign('logEntries', $logEntries);
-
-		$options = array(
-			'totalItems' => $total,
-			'fileName' => $configArray['Site']['path'] . '/Admin/ReindexLog?page=%d' . (empty($_REQUEST['worksLimit']) ? '' : '&worksLimit=' . $_REQUEST['worksLimit']) . (empty($_REQUEST['pagesize']) ? '' : '&pagesize=' . $_REQUEST['pagesize']),
-			'perPage' => $pageSize,
-		);
-		$pager   = new VuFindPager($options);
-		$interface->assign('pageLinks', $pager->getLinks());
-
-		$this->display('reindexLog.tpl', 'Reindex Log');
-	}
 
 	function getAllowableRoles(){
 		return array('opacAdmin', 'libraryAdmin', 'cataloging');

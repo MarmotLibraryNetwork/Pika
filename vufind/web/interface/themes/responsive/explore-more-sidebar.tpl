@@ -103,7 +103,7 @@
 						{$value.label}
 					</a>
 					{if $value.linkingReason}
-						&nbsp;<img src="/images/silk/help.png" title="{$value.linkingReason|escape}">
+						&nbsp;
 					{/if}
 				</li>
 			{/foreach}
@@ -128,7 +128,7 @@
 						{/if}
 					</a>
 					{if $value.linkingReason}
-						&nbsp;<img src="/images/silk/help.png" title="{$value.linkingReason|escape}">
+						&nbsp;<span class="glyphicon glyphicon-question-sign" title="{$value.linkingReason|escape}" aria-hidden="true" style="color: blue;"></span>
 					{/if}
 				</div>
 			{/foreach}

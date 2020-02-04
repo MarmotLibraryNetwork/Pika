@@ -12,9 +12,9 @@
 		<p>No reviews currently exist.</p>
 	{/foreach}
 
-	{if $loggedIn && $userRoles && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles) || array_key_exists('contentEditor', $userRoles))}
+	{if $loggedIn && $userRoles && (in_array('opacAdmin', $userRoles) || in_array('libraryAdmin', $userRoles) || in_array('contentEditor', $userRoles))}
 		<div>
-			<a class="btn btn-sm" href='{$path}/EditorialReview/Edit?recordId={$id}'>Add Editorial Review</a>
+			<a class="btn btn-sm" href='/EditorialReview/Edit?recordId={$id}'>Add Editorial Review</a>
 		</div>
 	{/if}
 {/strip}

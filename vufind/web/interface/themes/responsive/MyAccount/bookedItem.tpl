@@ -42,10 +42,10 @@
 						<div class="col-xs-9 result-value">
 							{if is_array($myBooking->author)}
 								{foreach from=$myBooking->author item=author}
-									<a href='{$path}/Author/Home?author="{$author|escape:"url"}"'>{$author|highlight}</a>
+									<a href='/Author/Home?author="{$author|escape:"url"}"'>{$author|highlight}</a>
 								{/foreach}
 							{else}
-								<a href='{$path}/Author/Home?author="{$myBooking->author|escape:"url"}"'>{$myBooking->author|highlight}</a>
+								<a href='/Author/Home?author="{$myBooking->author|escape:"url"}"'>{$myBooking->author|highlight}</a>
 							{/if}
 						</div>
 					</div>

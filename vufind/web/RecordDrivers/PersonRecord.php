@@ -1,4 +1,22 @@
 <?php
+/**
+ * Pika Discovery Layer
+ * Copyright (C) 2020  Marmot Library Network
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 require_once ROOT_DIR . '/RecordDrivers/IndexRecord.php';
 require_once ROOT_DIR . '/sys/Genealogy/Person.php';
 
@@ -26,10 +44,7 @@ class PersonRecord extends IndexRecord
 	private function getPerson(){
 		if (!isset($this->person)){
 			$person = new Person();
-			$person->personId = $this->shortId;
-			$person->find();
-			if ($person->N > 0){
-				$person->fetch();
+			if ($person->get($this->shortId)){
 				$this->person = $person;
 			}
 		}
@@ -42,25 +57,27 @@ class PersonRecord extends IndexRecord
 	 * search results.
 	 *
 	 * @access  public
+	 * @param string $view          The view style for this search entry. (Only the 'list' view is applicable for genealogy searching)
 	 * @return  string              Name of Smarty template file to display.
 	 */
-	public function getSearchResult()
-	{
+	public function getSearchResult($view = 'list'){
 		global $interface;
 
 		$interface->assign('summId', $this->id);
 		$interface->assign('summShortId', $this->shortId); //Trim the person prefix for the short id
 
 		$person = $this->getPerson();
-		$interface->assign('summPicture', $person->picture);
+		if (!empty($person)){
+			$interface->assign('summPicture', $person->picture);
+			$interface->assign('birthDate', $person->formatPartialDate($person->birthDateDay, $person->birthDateMonth, $person->birthDateYear));
+			$interface->assign('deathDate', $person->formatPartialDate($person->deathDateDay, $person->deathDateMonth, $person->deathDateYear));
+			$interface->assign('lastUpdate', $person->lastModified);
+			$interface->assign('dateAdded', $person->dateAdded);
+			$interface->assign('numObits', count($person->obituaries));
+		}
 
 		$name = $this->getName();
 		$interface->assign('summTitle', trim($name));
-		$interface->assign('birthDate', $person->formatPartialDate($person->birthDateDay, $person->birthDateMonth, $person->birthDateYear));
-		$interface->assign('deathDate', $person->formatPartialDate($person->deathDateDay, $person->deathDateMonth, $person->deathDateYear));
-		$interface->assign('lastUpdate', $person->lastModified);
-		$interface->assign('dateAdded', $person->dateAdded);
-		$interface->assign('numObits', count($person->obituaries));
 
 		return 'RecordDrivers/Person/result.tpl';
 	}
@@ -94,11 +111,8 @@ class PersonRecord extends IndexRecord
 	}
 
 	function getRecordUrl(){
-		global $configArray;
 		$recordId = $this->getPermanentId();
-
-		//TODO: This should have the correct module set
-		return $configArray['Site']['path'] . '/' . $this->getModule() . '/' . $recordId;
+		return '/' . $this->getModule() . '/' . $recordId;
 	}
 
 	function getAbsoluteUrl(){
@@ -112,9 +126,13 @@ class PersonRecord extends IndexRecord
 		global $configArray;
 		$person = $this->getPerson();
 		if ($person->picture){
-			return $configArray['Site']['path'] . '/files/thumbnail/' . $this->person->picture;
+			return '/files/thumbnail/' . $this->person->picture;
 		}else{
-			return $configArray['Site']['path'] . '/interface/themes/default/images/person.png';
+			return '/interface/themes/default/images/person.png';
 		}
+	}
+
+	public function getModule() {
+		return 'Person';
 	}
 }

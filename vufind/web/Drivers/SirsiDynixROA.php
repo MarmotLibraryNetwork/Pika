@@ -1,5 +1,23 @@
 <?php
 /**
+ * Pika Discovery Layer
+ * Copyright (C) 2020  Marmot Library Network
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+/**
  * Created by PhpStorm.
  * User: mnoble
  * Date: 4/10/2017
@@ -198,86 +216,21 @@ abstract class SirsiDynixROA extends HorizonAPI //TODO: This class doesn't need 
 
 				//Get additional information about the patron's home branch for display.
 				if (isset($lookupMyAccountInfoResponse->fields->library->key)) {
-					$homeBranchCode = strtolower(trim($lookupMyAccountInfoResponse->fields->library->key));
-					//Translate home branch to plain text
-					/** @var \Location $location */
-					$location       = new Location();
-					$location->code = $homeBranchCode;
-					if (!$location->find(true)) {
-						unset($location);
-					}
+					$user->setUserHomeLocations($lookupMyAccountInfoResponse->fields->library->key);
 				} else {
 					global $logger;
 					$logger->log('SirsiDynixROA Driver: No Home Library Location or Hold location found in account look-up. User : ' . $user->id, PEAR_LOG_ERR);
 					// The code below will attempt to find a location for the library anyway if the homeLocation is already set
 				}
 
-				if (empty($user->homeLocationId) || (isset($location) && $user->homeLocationId != $location->locationId)) { // When homeLocation isn't set or has changed
-					if (empty($user->homeLocationId) && !isset($location)) {
-						// homeBranch Code not found in location table and the user doesn't have an assigned homelocation,
-						// try to find the main branch to assign to user
-						// or the first location for the library
-						global $library;
-
-						/** @var \Location $location */
-						$location            = new Location();
-						$location->libraryId = $library->libraryId;
-						$location->orderBy('isMainBranch desc'); // gets the main branch first or the first location
-						if (!$location->find(true)) {
-							// Seriously no locations even?
-							global $logger;
-							$logger->log('Failed to find any location to assign to user as home location', PEAR_LOG_ERR);
-							unset($location);
-						}
-					}
-					if (isset($location)) {
-						$user->homeLocationId = $location->locationId;
-						if (empty($user->myLocation1Id)) {
-							$user->myLocation1Id  = ($location->nearbyLocation1 > 0) ? $location->nearbyLocation1 : $location->locationId;
-							/** @var /Location $location */
-							//Get display name for preferred location 1
-							$myLocation1             = new Location();
-							$myLocation1->locationId = $user->myLocation1Id;
-							if ($myLocation1->find(true)) {
-								$user->myLocation1 = $myLocation1->displayName;
-							}
-						}
-
-						if (empty($user->myLocation2Id)){
-							$user->myLocation2Id  = ($location->nearbyLocation2 > 0) ? $location->nearbyLocation2 : $location->locationId;
-							//Get display name for preferred location 2
-							$myLocation2             = new Location();
-							$myLocation2->locationId = $user->myLocation2Id;
-							if ($myLocation2->find(true)) {
-								$user->myLocation2 = $myLocation2->displayName;
-							}
-						}
-					}
-				}
-
-				if (isset($location)) {
-					//Get display names that aren't stored
-					$user->homeLocationCode = $location->code;
-					$user->homeLocation     = $location->displayName;
-				}
-
+				$dateString = '';
 				if (isset($lookupMyAccountInfoResponse->fields->privilegeExpiresDate)) {
-					$user->expires = $lookupMyAccountInfoResponse->fields->privilegeExpiresDate;
-					list ($yearExp, $monthExp, $dayExp) = explode("-", $user->expires);
-					$timeExpire   = strtotime($monthExp . "/" . $dayExp . "/" . $yearExp);
-					$timeNow      = time();
-					$timeToExpire = $timeExpire - $timeNow;
-					if ($timeToExpire <= 30 * 24 * 60 * 60) {
-						//TODO: the ils also has an expire soon flag in the patronStatusInfo
-						if ($timeToExpire <= 0) {
-							$user->expired = 1;
-						}
-						$user->expireClose = 1;
-					}
+					list ($yearExp, $monthExp, $dayExp) = explode('-', $lookupMyAccountInfoResponse->fields->privilegeExpiresDate);
+					$dateString = $monthExp . '/' . $dayExp . '/' . $yearExp;
 				}
+				$user->setUserExpirationSettings($dateString);
 
 				//Get additional information about fines, etc
-
 				$finesVal = 0;
 				if (isset($lookupMyAccountInfoResponse->fields->blockList)) {
 					foreach ($lookupMyAccountInfoResponse->fields->blockList as $block) {
@@ -463,83 +416,19 @@ abstract class SirsiDynixROA extends HorizonAPI //TODO: This class doesn't need 
 
 				//Get additional information about the patron's home branch for display.
 				if (isset($lookupMyAccountInfoResponse->fields->library->key)) {
-					$homeBranchCode = strtolower(trim($lookupMyAccountInfoResponse->fields->library->key));
-					//Translate home branch to plain text
-					/** @var \Location $location */
-					$location       = new Location();
-					$location->code = $homeBranchCode;
-					if (!$location->find(true)) {
-						unset($location);
-					}
+					$user->setUserHomeLocations(trim($lookupMyAccountInfoResponse->fields->library->key));
 				} else {
 					global $logger;
 					$logger->log('SirsiDynixROA Driver: No Home Library Location or Hold location found in account look-up. User : ' . $user->id, PEAR_LOG_ERR);
 					// The code below will attempt to find a location for the library anyway if the homeLocation is already set
 				}
 
-				if (empty($user->homeLocationId) || (isset($location) && $user->homeLocationId != $location->locationId)) { // When homeLocation isn't set or has changed
-					if (empty($user->homeLocationId) && !isset($location)) {
-						// homeBranch Code not found in location table and the user doesn't have an assigned homelocation,
-						// try to find the main branch to assign to user
-						// or the first location for the library
-						global $library;
-
-						/** @var \Location $location */
-						$location            = new Location();
-						$location->libraryId = $library->libraryId;
-						$location->orderBy('isMainBranch desc'); // gets the main branch first or the first location
-						if (!$location->find(true)) {
-							// Seriously no locations even?
-							global $logger;
-							$logger->log('Failed to find any location to assign to user as home location', PEAR_LOG_ERR);
-							unset($location);
-						}
-					}
-					if (isset($location)) {
-						$user->homeLocationId = $location->locationId;
-						if (empty($user->myLocation1Id)) {
-							$user->myLocation1Id  = ($location->nearbyLocation1 > 0) ? $location->nearbyLocation1 : $location->locationId;
-							/** @var /Location $location */
-							//Get display name for preferred location 1
-							$myLocation1             = new Location();
-							$myLocation1->locationId = $user->myLocation1Id;
-							if ($myLocation1->find(true)) {
-								$user->myLocation1 = $myLocation1->displayName;
-							}
-						}
-
-						if (empty($user->myLocation2Id)){
-							$user->myLocation2Id  = ($location->nearbyLocation2 > 0) ? $location->nearbyLocation2 : $location->locationId;
-							//Get display name for preferred location 2
-							$myLocation2             = new Location();
-							$myLocation2->locationId = $user->myLocation2Id;
-							if ($myLocation2->find(true)) {
-								$user->myLocation2 = $myLocation2->displayName;
-							}
-						}
-					}
-				}
-
-				if (isset($location)) {
-					//Get display names that aren't stored
-					$user->homeLocationCode = $location->code;
-					$user->homeLocation     = $location->displayName;
-				}
-
+				$dateString = '';
 				if (isset($lookupMyAccountInfoResponse->fields->privilegeExpiresDate)) {
-					$user->expires = $lookupMyAccountInfoResponse->fields->privilegeExpiresDate;
-					list ($yearExp, $monthExp, $dayExp) = explode("-", $user->expires);
-					$timeExpire   = strtotime($monthExp . "/" . $dayExp . "/" . $yearExp);
-					$timeNow      = time();
-					$timeToExpire = $timeExpire - $timeNow;
-					if ($timeToExpire <= 30 * 24 * 60 * 60) {
-						//TODO: the ils also has an expire soon flag in the patronStatusInfo
-						if ($timeToExpire <= 0) {
-							$user->expired = 1;
-						}
-						$user->expireClose = 1;
-					}
+					list ($yearExp, $monthExp, $dayExp) = explode('-', $lookupMyAccountInfoResponse->fields->privilegeExpiresDate);
+					$dateString = $monthExp . '/' . $dayExp . '/' . $yearExp;
 				}
+				$user->setUserExpirationSettings($dateString);
 
 				//Get additional information about fines, etc
 
@@ -792,7 +681,7 @@ abstract class SirsiDynixROA extends HorizonAPI //TODO: This class doesn't need 
 	}
 
 
-	protected function loginViaWebService($username, $password)
+	protected function loginViaWebService($username, $password = '')
 	{
 		/** @var Memcache $memCache */
 		global $memCache;
@@ -902,14 +791,13 @@ abstract class SirsiDynixROA extends HorizonAPI //TODO: This class doesn't need 
 
 			foreach ($patronCheckouts->fields->circRecordList as $checkout) {
 				if (empty($checkout->fields->claimsReturnedDate) && $checkout->fields->status != 'INACTIVE') { // Titles with a claims return date will not be displayed in check outs.
-					$curTitle = array();
-					$curTitle['checkoutSource'] = 'ils';
-
 					list($bibId) = explode(':', $checkout->key);
+					$sourceAndId                = new SourceAndId($this->accountProfile->recordSource . ':a' . $bibId);
+					$curTitle = array();
+					$curTitle['checkoutSource'] = $this->accountProfile->recordSource;
 					$curTitle['recordId'] = $bibId;
 					$curTitle['shortId']  = $bibId;
 					$curTitle['id']       = $bibId;
-
 					$curTitle['dueDate']      = strtotime($checkout->fields->dueDate);
 					$curTitle['checkoutdate'] = strtotime($checkout->fields->checkOutDate);
 					// Note: there is an overdue flag
@@ -918,7 +806,7 @@ abstract class SirsiDynixROA extends HorizonAPI //TODO: This class doesn't need 
 					$curTitle['renewIndicator'] = $checkout->fields->item->key;
 
 					$curTitle['format'] = 'Unknown';
-					$recordDriver       = new MarcRecord('a' . $bibId);
+					$recordDriver       = new MarcRecord($sourceAndId);
 					if ($recordDriver->isValid()) {
 						$curTitle['coverUrl']      = $recordDriver->getBookcoverUrl('medium');
 						$curTitle['groupedWorkId'] = $recordDriver->getGroupedWorkId();
@@ -972,6 +860,7 @@ abstract class SirsiDynixROA extends HorizonAPI //TODO: This class doesn't need 
 		}
 		return $checkedOutTitles;
 	}
+
 	/**
 	 * Get Patron Holds
 	 *
@@ -1265,14 +1154,7 @@ abstract class SirsiDynixROA extends HorizonAPI //TODO: This class doesn't need 
 
 				$hold_result['title'] = $title;
 				$hold_result['bid']   = $recordId;
-				global $analytics;
-				if ($analytics) {
-					if ($hold_result['success'] == true) {
-						$analytics->addEvent('ILS Integration', 'Successful Hold', $title);
-					} else {
-						$analytics->addEvent('ILS Integration', 'Failed Hold', $hold_result['message'] . ' - ' . $title);
-					}
-				}
+
 				//Clear the patron profile
 				return $hold_result;
 

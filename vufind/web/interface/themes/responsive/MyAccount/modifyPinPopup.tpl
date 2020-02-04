@@ -1,6 +1,6 @@
 {* Deprecated. THis should be deleted and the main resetPin template should be used instead. pascal 10-18-2018
 <div>
-	<form method="post" name="modifyPinNumber" action="{$path}/MyAccount/Profile">
+	<form method="post" name="modifyPinNumber" action="/MyAccount/Profile">
 		<div>
 			<input type="hidden" name="updatePin" value="true"/>
 			<div>

@@ -1,11 +1,12 @@
 <?php
 /**
+ * Pika Discovery Layer
+ * Copyright (C) 2020  Marmot Library Network
  *
- * Copyright (C) Villanova University 2007.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2,
- * as published by the Free Software Foundation.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -13,13 +14,10 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
-require_once ROOT_DIR . '/services/MyResearch/lib/Search.php';
 
 class SaveSearch extends MyAccount
 {
@@ -52,12 +50,12 @@ class SaveSearch extends MyAccount
 
 		// If we are in "edit history" mode, stay in Search History:
 		if (isset($_REQUEST['mode']) && $_REQUEST['mode'] == 'history') {
-			header("Location: ".$configArray['Site']['path']."/Search/History");
+			header("Location: /Search/History");
 		} else {
 			// If the ID wasn't found, or some other error occurred, nothing will
 			//   have processed be now, let the error handling on the display
 			//   screen take care of it.
-			header("Location: ".$configArray['Site']['path']."/Search/Results?saved=$searchId");
+			header("Location: /Search/Results?saved=$searchId");
 		}
 	}
 

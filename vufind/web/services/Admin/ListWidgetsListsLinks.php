@@ -1,11 +1,12 @@
 <?php
 /**
+ * Pika Discovery Layer
+ * Copyright (C) 2020  Marmot Library Network
  *
- * Copyright (C) Douglas County Libraries 2012
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2,
- * as published by the Free Software Foundation.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -13,17 +14,12 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
- * @author Juan Gimenez <jgimenez@dclibraries.org>
- *
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 require_once ROOT_DIR . '/services/Admin/Admin.php';
-require_once ROOT_DIR . '/sys/ListWidget.php';
-require_once ROOT_DIR . '/sys/ListWidgetList.php';
-require_once ROOT_DIR . '/sys/DataObjectUtil.php';
+require_once ROOT_DIR . '/sys/Widgets/ListWidget.php';
+require_once ROOT_DIR . '/sys/Widgets/ListWidgetList.php';
 
 /**
  * Provides a method of running SQL updates to the database.
@@ -47,11 +43,11 @@ class ListWidgetsListsLinks extends Admin_Admin {
 			case 'save':
 				$this->launchSave();//Yes, there is not a break after this case.
 			case 'edit':
+			default :
 				$this->launchEdit($_REQUEST['widgetId'], $_REQUEST['widgetListId']);
 				break;
 		}
-		$interface->assign('sidebar', 'Search/home-sidebar.tpl');
-		$interface->display('layout.tpl');
+		$this->display('listWidgetListLinks.tpl', 'List Widgets');
 	}
 
 
@@ -90,34 +86,30 @@ class ListWidgetsListsLinks extends Admin_Admin {
 
 	private function launchEdit($widgetId, $widgetListId){
 		global $interface;
-		$interface->setPageTitle('List Widgets');
 
 		//Get Info about the Widget
 		$widget = new ListWidget();
-		$widget->whereAdd('id = ' . $widgetId);
-		$widget->find();
-		$widget->fetch();
+		$widget->get($widgetId);
 		$interface->assign('widgetName', $widget->name);
 		$interface->assign('widgetId', $widget->id);
 
 		//Get Info about the current TAB
-		$widgetList = new ListWidgetList();
-		$widgetList->whereAdd('id = ' . $widgetListId);
-		$widgetList->find();
-		$widgetList->fetch();
+		$widgetList     = new ListWidgetList();
+		$widgetList->id = $widgetListId;
+		$widgetList->find(true);
 		$interface->assign('widgetListName', $widgetList->name);
 
 		//Get all available links
-		$availableLinks  = array();
-		$listWidgetLinks = new ListWidgetListsLinks();
-		$listWidgetLinks->whereAdd('listWidgetListsId = ' . $widgetListId);
+		$availableLinks                     = array();
+		$listWidgetLinks                    = new ListWidgetListsLinks();
+		$listWidgetLinks->listWidgetListsId = $widgetListId;
 		$listWidgetLinks->orderBy('weight ASC');
-		$listWidgetLinks->find();
-		while ($listWidgetLinks->fetch()){
-			$availableLinks[$listWidgetLinks->id] = clone($listWidgetLinks);
+		if ($listWidgetLinks->find()){
+			while ($listWidgetLinks->fetch()){
+				$availableLinks[$listWidgetLinks->id] = clone($listWidgetLinks);
+			}
 		}
 		$interface->assign('availableLinks', $availableLinks);
-		$interface->setTemplate('listWidgetListLinks.tpl');
 	}
 
 	private function setRequestValues($id, $name, $listWidgetListsId, $link, $weight){

@@ -1,11 +1,12 @@
 <?php
 /**
+ * Pika Discovery Layer
+ * Copyright (C) 2020  Marmot Library Network
  *
- * Copyright (C) Villanova University 2007.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2,
- * as published by the Free Software Foundation.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -13,16 +14,14 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/Admin.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
-require_once ROOT_DIR . '/sys/ListWidget.php';
-require_once ROOT_DIR . '/sys/ListWidgetList.php';
+require_once ROOT_DIR . '/sys/Widgets/ListWidget.php';
+require_once ROOT_DIR . '/sys/Widgets/ListWidgetList.php';
 require_once ROOT_DIR . '/sys/DataObjectUtil.php';
 
 /**
@@ -47,8 +46,8 @@ class Admin_ListWidgets extends ObjectEditor {
 
 		$user = UserAccount::getLoggedInUser();
 		$widget = new ListWidget();
-		if (UserAccount::userHasRole('libraryAdmin') || UserAccount::userHasRole('contentEditor') || UserAccount::userHasRole('libraryManager') || UserAccount::userHasRole('locationManager')){
-			$patronLibrary = Library::getPatronHomeLibrary();
+		if (UserAccount::userHasRoleFromList(['libraryAdmin', 'contentEditor', 'libraryManager', 'locationManager'])){
+			$patronLibrary     = UserAccount::getUserHomeLibrary();
 			$widget->libraryId = $patronLibrary->libraryId;
 		}
 		$widget->orderBy('name');
@@ -73,11 +72,11 @@ class Admin_ListWidgets extends ObjectEditor {
 	}
 	function canAddNew(){
 		$user = UserAccount::getLoggedInUser();
-		return UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('libraryAdmin') || UserAccount::userHasRole('contentEditor') || UserAccount::userHasRole('libraryManager') || UserAccount::userHasRole('locationManager');
+		return UserAccount::userHasRoleFromList(['opacAdmin', 'libraryAdmin', 'contentEditor', 'libraryManager', 'locationManager']);
 	}
 	function canDelete(){
 		$user = UserAccount::getLoggedInUser();
-		return UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('libraryAdmin');
+		return UserAccount::userHasRoleFromList(['opacAdmin', 'libraryAdmin']);
 	}
 	function launch() {
 		global $interface;
@@ -102,8 +101,8 @@ class Admin_ListWidgets extends ObjectEditor {
 		//Get all available widgets
 		$availableWidgets = array();
 		$listWidget = new ListWidget();
-		if (UserAccount::userHasRole('libraryAdmin') || UserAccount::userHasRole('contentEditor') || UserAccount::userHasRole('libraryManager') || UserAccount::userHasRole('locationManager')){
-			$homeLibrary = Library::getPatronHomeLibrary();
+		if (UserAccount::userHasRoleFromList(['libraryAdmin', 'contentEditor', 'libraryManager', 'locationManager'])){
+			$homeLibrary = UserAccount::getUserHomeLibrary();
 			$listWidget->libraryId = $homeLibrary->libraryId;
 		}
 		$listWidget->orderBy('name ASC');
@@ -151,21 +150,22 @@ class Admin_ListWidgets extends ObjectEditor {
 			}else{
 				// Set some default sizes for the iframe we embed on the view page
 				switch ($widget->style){
+					default :
 					case 'horizontal':
-						$width = 650;
+						$width  = 650;
 						$height = ($widget->coverSize == 'medium') ? 325 : 275;
 						break;
 					case 'vertical' :
-						$width = ($widget->coverSize == 'medium') ? 275 : 175;
+						$width  = ($widget->coverSize == 'medium') ? 275 : 175;
 						$height = ($widget->coverSize == 'medium') ? 700 : 400;
 						break;
 					case 'text-list' :
-						$width = 500;
+						$width  = 500;
 						$height = 200;
 						break;
 					case 'single' :
 					case 'single-with-next' :
-						$width = ($widget->coverSize == 'medium') ? 300 : 225;
+						$width  = ($widget->coverSize == 'medium') ? 300 : 225;
 						$height = ($widget->coverSize == 'medium') ? 350 : 275;
 						break;
 				}

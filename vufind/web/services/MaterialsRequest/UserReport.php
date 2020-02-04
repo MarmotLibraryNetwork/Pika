@@ -1,11 +1,12 @@
 <?php
 /**
+ * Pika Discovery Layer
+ * Copyright (C) 2020  Marmot Library Network
  *
- * Copyright (C) Anythink Libraries 2012.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2,
- * as published by the Free Software Foundation.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -13,12 +14,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
- * @author Mark Noble <mnoble@turningleaftech.com>
- * @copyright Copyright (C) Anythink Libraries 2012.
- *
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 require_once ROOT_DIR . '/Action.php';
@@ -42,11 +38,11 @@ class MaterialsRequest_UserReport extends Admin_Admin {
 		$materialsRequestStatus = new MaterialsRequestStatus();
 		$materialsRequestStatus->orderBy('isDefault DESC, isOpen DESC, description ASC');
 		if (UserAccount::userHasRole('library_material_requests')){
-			$homeLibrary = Library::getPatronHomeLibrary();
+			$homeLibrary                       = UserAccount::getUserHomeLibrary();
 			$materialsRequestStatus->libraryId = $homeLibrary->libraryId;
 		}
 		$materialsRequestStatus->find();
-		$availableStatuses = array();
+		$availableStatuses     = array();
 		$defaultStatusesToShow = array();
 		while ($materialsRequestStatus->fetch()){
 			$availableStatuses[$materialsRequestStatus->id] = $materialsRequestStatus->description;
@@ -72,15 +68,8 @@ class MaterialsRequest_UserReport extends Admin_Admin {
 		$materialsRequest->selectAdd('user.id as userId, status, description, user.firstName, user.lastName, user.cat_username, user.cat_password');
 		if (UserAccount::userHasRole('library_material_requests')){
 			//Need to limit to only requests submitted for the user's home location
-			$userHomeLibrary = Library::getPatronHomeLibrary();
-			$locations = new Location();
-			$locations->libraryId = $userHomeLibrary->libraryId;
-			$locations->find();
-			$locationsForLibrary = array();
-			while ($locations->fetch()){
-				$locationsForLibrary[] = $locations->locationId;
-			}
-
+			$userHomeLibrary      = UserAccount::getUserHomeLibrary();
+			$locationsForLibrary = $userHomeLibrary->getLocationIdsForLibrary();
 			$materialsRequest->whereAdd('user.homeLocationId IN (' . implode(', ', $locationsForLibrary) . ')');
 		}
 		$statusSql = "";
@@ -92,15 +81,15 @@ class MaterialsRequest_UserReport extends Admin_Admin {
 		$materialsRequest->groupBy('userId, status');
 		$materialsRequest->find();
 
-		$userData = array();
-		$barcodeProperty = $configArray['Catalog']['barcodeProperty'];
+		$userData        = array();
+		$barcodeProperty = $user->getAccountProfile()->loginConfiguration == 'name_barcode' ? 'cat_password' : 'cat_username';
 		while ($materialsRequest->fetch()){
 			if (!array_key_exists($materialsRequest->userId, $userData)){
-				$userData[$materialsRequest->userId] = array();
-				$userData[$materialsRequest->userId]['firstName'] = $materialsRequest->firstName;
-				$userData[$materialsRequest->userId]['lastName'] = $materialsRequest->lastName;
-				$userData[$materialsRequest->userId]['barcode'] = $materialsRequest->$barcodeProperty;
-				$userData[$materialsRequest->userId]['totalRequests'] = 0;
+				$userData[$materialsRequest->userId]                     = array();
+				$userData[$materialsRequest->userId]['firstName']        = $materialsRequest->firstName;
+				$userData[$materialsRequest->userId]['lastName']         = $materialsRequest->lastName;
+				$userData[$materialsRequest->userId]['barcode']          = $materialsRequest->$barcodeProperty;
+				$userData[$materialsRequest->userId]['totalRequests']    = 0;
 				$userData[$materialsRequest->userId]['requestsByStatus'] = array();
 			}
 			$userData[$materialsRequest->userId]['requestsByStatus'][$materialsRequest->description] = $materialsRequest->numRequests;
@@ -119,21 +108,21 @@ class MaterialsRequest_UserReport extends Admin_Admin {
 
 		//Check to see if we are exporting to Excel
 		if (isset($_REQUEST['exportToExcel'])){
-			$this->exportToExcel($userData, $statuses);
+			$libraryName = !empty($userHomeLibrary->displayName) ? $userHomeLibrary->displayName : $configArray['Site']['title'];
+			$this->exportToExcel($userData, $statuses, $libraryName);
 		}
 
 		$this->display('userReport.tpl', 'Materials Request User Report');
 	}
 
-	function exportToExcel($userData, $statuses){
-		global $configArray;
+	function exportToExcel($userData, $statuses, $creator){
 		//PHPEXCEL
 		// Create new PHPExcel object
 		$objPHPExcel = new PHPExcel();
 
 		// Set properties
-		$objPHPExcel->getProperties()->setCreator($configArray['Site']['title'])
-		->setLastModifiedBy($configArray['Site']['title'])
+		$objPHPExcel->getProperties()->setCreator($creator)
+			->setLastModifiedBy($creator)
 		->setTitle("Office 2007 XLSX Document")
 		->setSubject("Office 2007 XLSX Document")
 		->setDescription("Office 2007 XLSX, generated using PHP.")

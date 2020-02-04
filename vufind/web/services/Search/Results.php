@@ -1,11 +1,12 @@
 <?php
 /**
+ * Pika Discovery Layer
+ * Copyright (C) 2020  Marmot Library Network
  *
- * Copyright (C) Andrew Nagy 2009
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2,
- * as published by the Free Software Foundation.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -13,14 +14,10 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 require_once ROOT_DIR . '/Action.php';
-require_once ROOT_DIR . '/services/MyResearch/lib/Search.php';
-
 require_once ROOT_DIR . '/sys/Pager.php';
 
 class Search_Results extends Action {
@@ -33,11 +30,10 @@ class Search_Results extends Action {
 		global $configArray;
 		global $timer;
 		global $memoryWatcher;
-		global $analytics;
 		global $library;
 
 		/** @var string $searchSource */
-		$searchSource = isset($_REQUEST['searchSource']) ? $_REQUEST['searchSource'] : 'local';
+		$searchSource = empty($_REQUEST['searchSource']) ? 'local' : $_REQUEST['searchSource'];
 
 		if (isset($_REQUEST['replacementTerm'])){
 			$replacementTerm     = $_REQUEST['replacementTerm'];
@@ -118,7 +114,7 @@ class Search_Results extends Action {
 					$queryParamStrings[] = "&filter[]=$dateFilter:[$yearFrom+TO+$yearTo]";
 				}
 				$queryParamString = join('&', $queryParamStrings);
-				header("Location: {$configArray['Site']['path']}/Search/Results?$queryParamString");
+				header("Location: /Search/Results?$queryParamString");
 				exit;
 			}
 		}
@@ -157,7 +153,7 @@ class Search_Results extends Action {
 					$queryParamStrings[] = "&filter[]=$filter:[$from+TO+$to]";
 				}
 				$queryParamString = join('&', $queryParamStrings);
-				header("Location: {$configArray['Site']['path']}/Search/Results?$queryParamString");
+				header("Location: /Search/Results?$queryParamString");
 				exit;
 			}
 		}
@@ -247,7 +243,6 @@ class Search_Results extends Action {
 		//Enable and disable functionality based on library settings
 		//This must be done before we process each result
 		$interface->assign('showNotInterested', false);
-		$interface->assign('page_body_style', 'sidebar_left');
 		$interface->assign('overDriveVersion', isset($configArray['OverDrive']['interfaceVersion']) ? $configArray['OverDrive']['interfaceVersion'] : 1);
 
 		$showRatings = 1;
@@ -269,16 +264,6 @@ class Search_Results extends Action {
 
 		// Save the URL of this search to the session so we can return to it easily:
 		$_SESSION['lastSearchURL'] = $searchObject->renderSearchUrl();
-
-		$allSearchSources = SearchSources::getSearchSources();
-		if (!isset($allSearchSources[$searchSource]) && $searchSource == 'marmot'){
-			$searchSource = 'local';
-		}
-		$translatedSearch = $allSearchSources[$searchSource]['name'];
-
-		// Save the search for statistics
-		$analytics->addSearch($translatedSearch, $searchObject->displayQuery(), $searchObject->isAdvanced(), $searchObject->getFullSearchType(), $searchObject->hasAppliedFacets(), $searchObject->getResultTotal());
-
 
 		// No Results Actions //
 		if ($searchObject->getResultTotal() < 1) {
@@ -373,18 +358,18 @@ class Search_Results extends Action {
 			$timer->logTime('no hits processing');
 
 		}
-		// Exactly One Result //
-		elseif ($searchObject->getResultTotal() == 1 && (strpos($searchObject->displayQuery(), 'id') === 0 || $searchObject->getSearchType() == 'id')){
+		// Exactly One Result for an id search //
+		elseif ($searchObject->getResultTotal() == 1 && (strpos($searchObject->displayQuery(), 'id:') === 0 || $searchObject->getSearchType() == 'id')){
 			//Redirect to the home page for the record
 			$recordSet = $searchObject->getResultRecordSet();
 			$record = reset($recordSet);
 			$_SESSION['searchId'] = $searchObject->getSearchId();
 			if ($record['recordtype'] == 'list'){
 				$listId = substr($record['id'], 4);
-				header("Location: " . $configArray['Site']['path'] . "/MyResearch/MyList/{$listId}");
+				header("Location: " . "/MyResearch/MyList/{$listId}");
 				exit();
 			}else{
-				header("Location: " . $configArray['Site']['path'] . "/Record/{$record['id']}/Home");
+				header("Location: " . "/GroupedWork/{$record['id']}/Home");
 				exit();
 			}
 
@@ -425,19 +410,21 @@ class Search_Results extends Action {
 		// What Mode will search results be Displayed In //
 		if ($displayMode == 'covers'){
 			$displayTemplate = 'Search/covers-list.tpl'; // structure for bookcover tiles
-		} else { // default
+		} else{ // default
 			$displayTemplate = 'Search/list-list.tpl'; // structure for regular results
-			$displayMode = 'list'; // In case the view is not explicitly set, do so now for display & clients-side functions
+			$displayMode     = 'list'; // In case the view is not explicitly set, do so now for display & clients-side functions
 
 			// Process Paging (only in list mode)
-			if ($searchObject->getResultTotal() > 1) {
+			if ($searchObject->getResultTotal() > 1){
 				$link    = $searchObject->renderLinkPageTemplate();
-				$options = array('totalItems' => $summary['resultTotal'],
-				                 'fileName' => $link,
-				                 'perPage' => $summary['perPage']);
+				$options = [
+					'totalItems' => $summary['resultTotal'],
+					'fileName'   => $link,
+					'perPage'    => $summary['perPage']
+				];
 				$pager   = new VuFindPager($options);
 				$interface->assign('pageLinks', $pager->getLinks());
-				if ($pager->isLastPage()) {
+				if ($pager->isLastPage()){
 					$numUnscopedTitlesToLoad = 5;
 				}
 			}

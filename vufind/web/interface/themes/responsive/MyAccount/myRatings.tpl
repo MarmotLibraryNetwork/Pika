@@ -60,7 +60,7 @@
 						</tbody>
 					</table>
 				{else}
-					You have not rated any titles yet.
+					<div class="alert alert-info">You have not rated any titles yet.</div>
 				{/if}
 
 			{if $notInterested}
@@ -103,6 +103,6 @@
 	</div>
 {else}
 	<div class="page">
-		You must login to view this information. Click <a href="{$path}/MyAccount/Login">here</a> to login.
+		You must login to view this information. Click <a href="/MyAccount/Login">here</a> to login.
 	</div>
 {/if}

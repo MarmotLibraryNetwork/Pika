@@ -1,11 +1,12 @@
 <?php
 /**
+ * Pika Discovery Layer
+ * Copyright (C) 2020  Marmot Library Network
  *
- * Copyright (C) Villanova University 2007.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2,
- * as published by the Free Software Foundation.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -13,9 +14,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 require_once ROOT_DIR . "/Action.php";
@@ -42,47 +41,39 @@ class MyAccount_Login extends Action
 			die();
 		}
 
-		$returnUrl = isset($_REQUEST['return']) ? $_REQUEST['return'] : '';
-		if ($returnUrl != ''){
-			header('Location: ' . $returnUrl);
-			exit;
+		//TODO: explain when this comes into effect
+		if (!empty($_REQUEST['return'])){
+			header('Location: ' . $_REQUEST['return']);
+			die();
 		}
 
 		// Assign the followup task to come back to after they login -- note that
 		//     we need to check for a pre-existing followup task in case we've
 		//     looped back here due to an error (bad username/password, etc.).
 		$followup = isset($_REQUEST['followup']) ?  strip_tags($_REQUEST['followup']) : $action;
+		//TODO: obsolete followup for the follow module and action variables; or use return or returnUrl variable
 
 		// Don't go to the trouble if we're just logging in to the Home action
 		if ($followup != 'Home' || (isset($_REQUEST['followupModule']) && isset($_REQUEST['followupAction']))) {
 			$interface->assign('followup', $followup);
 			$interface->assign('followupModule', isset($_REQUEST['followupModule']) ? strip_tags($_REQUEST['followupModule']) : $module);
+			$interface->assign('followupAction', isset($_REQUEST['followupAction']) ? $_REQUEST['followupAction'] : $action);
 
 			// Special case -- if user is trying to view a private list, we need to
 			// attach the list ID to the action:
-			$finalAction = $action;
-			if ($finalAction == 'MyList') {
+			if ($action == 'MyList') {
 				if (isset($_GET['id'])){
-					$finalAction .= '/' . $_GET['id'];
+					$interface->assign('id', $_GET['id']);
 				}
 			}
-			$interface->assign('followupAction', isset($_REQUEST['followupAction']) ? $_REQUEST['followupAction'] : $finalAction);
 
 			// If we have a save or delete action, create the appropriate recordId
 			//     parameter.  If we've looped back due to user error and already have
 			//     a recordId parameter, remember it for future reference.
 			if (isset($_REQUEST['delete'])) {
 				$interface->assign('returnUrl', $_SERVER['REQUEST_URI']);
-				/*$mode = !isset($_REQUEST['mode']) ?
-                    '' : '&mode=' . urlencode($_REQUEST['mode']);
-				$interface->assign('recordId', 'delete=' .
-				urlencode($_REQUEST['delete']) . $mode);*/
 			} elseif (isset($_REQUEST['save'])) {
 				$interface->assign('returnUrl', $_SERVER['REQUEST_URI']);
-				/*$mode = !isset($_REQUEST['mode']) ?
-                    '' : '&mode=' . urlencode($_REQUEST['mode']);
-				$interface->assign('recordId', 'save=' .
-				urlencode($_REQUEST['save']) . $mode);*/
 			} elseif (isset($_REQUEST['recordId'])) {
 				$interface->assign('returnUrl', $_REQUEST['recordId']);
 			}

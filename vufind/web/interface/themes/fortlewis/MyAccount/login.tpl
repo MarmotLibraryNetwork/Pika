@@ -21,12 +21,12 @@
 				</p>
 			</div>
 		{else}
-			<form method="post" action="{$path}/MyAccount/Home" id="loginForm" class="form-horizontal">
+			<form method="post" action="/MyAccount/Home" id="loginForm" class="form-horizontal">
 				<div class="row">
 
 					<div class="col-sm-6">
 						<p><strong>Students, Faculty, and staff</strong>, login with your Fort Lewis College Network Account.</p>
-						<a href="{$path}/MyAccount/Home?casLogin" class="btn btn-primary">Student/Faculty/Staff Login</a>
+						<a href="/MyAccount/Home?casLogin" class="btn btn-primary">Student/Faculty/Staff Login</a>
 					</div>
 
 					<div class="col-sm-6">
@@ -45,13 +45,13 @@
 									<input type="password" name="password" id="password" size="28" onkeypress="return VuFind.submitOnEnter(event, '#loginForm');" class="form-control">
 									{if $showForgotPinLink}
 										<p class="help-block">
-											<strong>Forgot PIN?</strong> <a href="{$path}/MyResearch/EmailPin">E-mail my PIN</a>
+											<strong>Forgot PIN?</strong> <a href="/MyResearch/EmailPin">E-mail my PIN</a>
 										</p>
 									{/if}
 
 									{if $enableSelfRegistration == 1}
 										<p class="help-block">
-											Don't have a library card?  <a href="{$path}/MyAccount/SelfReg">Register for a new Library Card</a>.
+											Don't have a library card?  <a href="/MyAccount/SelfReg">Register for a new Library Card</a>.
 										</p>
 									{/if}
 								</div>
@@ -80,8 +80,10 @@
 									{if $followupModule}<input type="hidden" name="followupModule" value="{$followupModule}">{/if}
 									{if $followupAction}<input type="hidden" name="followupAction" value="{$followupAction}">{/if}
 									{if $recordId}<input type="hidden" name="recordId" value="{$recordId|escape:"html"}">{/if}
+									{*TODO: figure out how & why $recordId is set *}
+									{if $id}<input type="hidden" name="id" value="{$id|escape:"html"}">{/if}{* For storing at least the list id when logging in to view a private list *}
 									{if $comment}<input type="hidden" id="comment" name="comment" value="{$comment|escape:"html"}">{/if}
-									{if $cardNumber}<input type="hidden" name="cardNumber" value="{$cardNumber|escape:"html"}">{/if}
+									{if $cardNumber}<input type="hidden" name="cardNumber" value="{$cardNumber|escape:"html"}">{/if}{* for masquerading *}
 									{if $returnUrl}<input type="hidden" name="returnUrl" value="{$returnUrl}">{/if}
 								</div>
 							</div>

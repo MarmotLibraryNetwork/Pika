@@ -1,11 +1,12 @@
 <?php
 /**
+ * Pika Discovery Layer
+ * Copyright (C) 2020  Marmot Library Network
  *
- * Copyright (C) Villanova University 2010.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2,
- * as published by the Free Software Foundation.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -13,9 +14,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 /**
@@ -33,7 +32,7 @@ abstract class RecordInterface {
 	 * we will already have this data available, so we might as well
 	 * just pass it into the constructor.
 	 *
-	 * @param array|File_MARC_Record||string   $recordData     Data to construct the driver from
+	 * @param SourceAndId|array|File_MARC_Record|string   $recordData     Data to construct the driver from
 	 * @access                       public
 	 */
 	public abstract function __construct($recordData);
@@ -41,11 +40,11 @@ abstract class RecordInterface {
 	public abstract function getBookcoverUrl($size = 'small');
 
 	/**
-	 * Get text that can be displayed to represent this record in
+	 * Get text that can be displayed to represent this title in
 	 * breadcrumbs.
 	 *
 	 * @access  public
-	 * @return  string              Breadcrumb text to represent this record.
+	 * @return  string              Breadcrumb text to represent this title.
 	 */
 	public abstract function getBreadcrumb();
 
@@ -71,23 +70,6 @@ abstract class RecordInterface {
 	public abstract function getCitationFormats();
 
 	/**
-	 * Get the text to represent this record in the body of an email.
-	 *
-	 * @access  public
-	 * @return  string              Text for inclusion in email.
-	 */
-	public abstract function getEmail();
-
-	/**
-	 * Get any excerpts associated with this record.  For details of
-	 * the return format, see sys/Excerpts.php.
-	 *
-	 * @access  public
-	 * @return  array               Excerpt information.
-	 */
-	public abstract function getExcerpts();
-
-	/**
 	 * Assign necessary Smarty variables and return a template name to
 	 * load in order to export the record in the requested format.  For
 	 * legal values, see getExportFormats().  Returns null if format is
@@ -111,17 +93,6 @@ abstract class RecordInterface {
 
 	/**
 	 * Assign necessary Smarty variables and return a template name to
-	 * load in order to display extended metadata (more details beyond
-	 * what is found in getCoreMetadata() -- used as the contents of the
-	 * Description tab of the record view).
-	 *
-	 * @access  public
-	 * @return  string              Name of Smarty template file to display.
-	 */
-	public abstract function getExtendedMetadata();
-
-	/**
-	 * Assign necessary Smarty variables and return a template name to
 	 * load in order to display a summary of the item suitable for use in
 	 * user's favorites list.
 	 *
@@ -135,16 +106,30 @@ abstract class RecordInterface {
 	public abstract function getListEntry($user, $listId = null, $allowEdit = true);
 
 	/**
-	 * A relative URL that is a link to the Full Record View and additional search parameters
+	 * A relative URL that is a link to the Full Record View AND additional search parameters
 	 * to the recent search the user has navigated from
 	 *
-	 * @param bool $unscoped
-	 * @return mixed
+	 * @return string
 	 */
-	public abstract function getLinkUrl($unscoped = false);
+	public function getLinkUrl() {
+		global $interface;
+		$linkUrl = $this->getRecordUrl();
+		$extraParams = array();
+		if (!empty($interface->get_template_vars('searchId'))){
+			$extraParams[] = 'searchId=' . $interface->get_template_vars('searchId');
+			$extraParams[] = 'recordIndex=' . $interface->get_template_vars('recordIndex');
+			$extraParams[] = 'page='  . $interface->get_template_vars('page');
+			$extraParams[] = 'searchSource=' . $interface->get_template_vars('searchSource');
+		}
+
+		if (count($extraParams) > 0){
+			$linkUrl .= '?' . implode('&', $extraParams);
+		}
+		return $linkUrl;
+	}
 
 	/**
-	 * A relative URL that is a link to the Full Record View
+	 * A relative URL that is a link to the Full Record View only; no search parameters
 	 *
 	 * @return string
 	 */
@@ -168,13 +153,14 @@ abstract class RecordInterface {
 	public abstract function getRDFXML();
 
 	/**
-	 * Get any reviews associated with this record.  For details of
-	 * the return format, see sys/Reviews.php.
-	 *
-	 * @access  public
-	 * @return  array               Review information.
+	 * Get Reviews for this title using an ISBN associated with this record
+	 * @return string[]
 	 */
-	public abstract function getReviews();
+//	public function getReviews(){
+//		require_once ROOT_DIR . '/sys/Reviews.php';
+//		$rev = new ExternalReviews($this->getCleanISBN());
+//		return $rev->fetch();
+//	}
 
 	/**
 	 * Get structured linked data related to the record.
@@ -214,12 +200,11 @@ abstract class RecordInterface {
 	public abstract function getTitle();
 
 	/**
-	 * Assign necessary Smarty variables and return a template name to
-	 * load in order to display the Table of Contents extracted from the
-	 * record.  Returns null if no Table of Contents is available.
+	 * load in order to display the Table of Contents for the title.
+	 *  Returns null if no Table of Contents is available.
 	 *
 	 * @access  public
-	 * @return  string              Name of Smarty template file to display.
+	 * @return  string[]|null              contents to display.
 	 */
 	public abstract function getTOC();
 
@@ -233,21 +218,8 @@ abstract class RecordInterface {
 	 */
 	public abstract function getUniqueID();
 
-	/**
-	 * Does this record have audio content available?
-	 *
-	 * @access  public
-	 * @return  bool
-	 */
-	public abstract function hasAudio();
-
-	/**
-	 * Does this record have an excerpt available?
-	 *
-	 * @access  public
-	 * @return  bool
-	 */
-	public abstract function hasExcerpt();
+	//TODO: getId() & getUniqueID seem to be equivalent; I think I like getRecordId() best; got to make this work with class SourceAndId
+	//public abstract function getId();
 
 	/**
 	 * Does this record have searchable full text in the index?
@@ -261,44 +233,12 @@ abstract class RecordInterface {
 	public abstract function hasFullText();
 
 	/**
-	 * Does this record have image content available?
-	 *
-	 * @access  public
-	 * @return  bool
-	 */
-	public abstract function hasImages();
-
-	/**
 	 * Does this record support an RDF representation?
 	 *
 	 * @access  public
 	 * @return  bool
 	 */
 	public abstract function hasRDF();
-
-	/**
-	 * Does this record have reviews available?
-	 *
-	 * @access  public
-	 * @return  bool
-	 */
-	public abstract function hasReviews();
-
-	/**
-	 * Does this record have a Table of Contents available?
-	 *
-	 * @access  public
-	 * @return  bool
-	 */
-	public abstract function hasTOC();
-
-	/**
-	 * Does this record have video content available?
-	 *
-	 * @access  public
-	 * @return  bool
-	 */
-	public abstract function hasVideo();
 
 	public abstract function getDescription();
 

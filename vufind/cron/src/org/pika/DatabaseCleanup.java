@@ -259,9 +259,9 @@ public class DatabaseCleanup implements IProcessHandler {
 
 	private void removeSpammySearches(Connection pikaConn, Logger logger, CronProcessLogEntry processLog) {
 		//Remove spammy searches
-		try {
-			PreparedStatement removeSearchStmt = pikaConn.prepareStatement("DELETE from search_stats_new where phrase like '%http:%' or phrase like '%https:%' or phrase like '%mailto:%'");
-
+		try (
+			PreparedStatement removeSearchStmt = pikaConn.prepareStatement("DELETE FROM search_stats_new WHERE phrase LIKE '%http:%' OR phrase LIKE '%https:%' OR phrase LIKE '%mailto:%'");
+		){
 			int rowsRemoved = removeSearchStmt.executeUpdate();
 
 			processLog.addNote("Removed " + rowsRemoved + " spammy searches");
@@ -269,14 +269,6 @@ public class DatabaseCleanup implements IProcessHandler {
 
 			processLog.saveToDatabase(pikaConn, logger);
 
-			PreparedStatement removeSearchStmt2 = pikaConn.prepareStatement("DELETE from analytics_search where lookfor like '%http:%' or lookfor like '%https:%' or lookfor like '%mailto:%' or length(lookfor) > 256");
-
-			int rowsRemoved2 = removeSearchStmt2.executeUpdate();
-
-			processLog.addNote("Removed " + rowsRemoved2 + " spammy searches");
-			processLog.incUpdated();
-
-			processLog.saveToDatabase(pikaConn, logger);
 		} catch (SQLException e) {
 			processLog.incErrors();
 			processLog.addNote("Unable to delete spammy searches. " + e.toString());

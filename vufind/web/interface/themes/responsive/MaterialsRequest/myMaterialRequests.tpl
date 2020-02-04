@@ -1,4 +1,4 @@
-<script type="text/javascript" src="{$path}/MaterialsRequest/ajax.js"></script>
+<script type="text/javascript" src="/MaterialsRequest/ajax.js"></script>
 <div id="main-content">
 	{if $profile->web_note}
 		<div class="row">
@@ -17,7 +17,7 @@
 		</div>
 		<div id="materialsRequestFilters">
 			<legend>Filters:</legend>
-			<form action="{$path}/MaterialsRequest/MyRequests" method="get" class="form-inline">
+			<form action="/MaterialsRequest/MyRequests" method="get" class="form-inline">
 				<div>
 					<div class="form-group">
 						<label class="control-label">Show:</label>
@@ -69,7 +69,7 @@
 		{else}
 			<div class="alert alert-warning">There are no {translate text='materials request'}s that meet your criteria.</div>
 		{/if}
-		<div id="createNewMaterialsRequest"><a href="{$path}/MaterialsRequest/NewRequest" class="btn btn-primary btn-sm">Submit a New {translate text='Materials_Request_alt'}</a></div>
+		<div id="createNewMaterialsRequest"><a href="/MaterialsRequest/NewRequest" class="btn btn-primary btn-sm">Submit a New {translate text='Materials_Request_alt'}</a></div>
 	{/if}
 </div>
 <script type="text/javascript">

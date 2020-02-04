@@ -1,11 +1,12 @@
 <?php
 /**
+ * Pika Discovery Layer
+ * Copyright (C) 2020  Marmot Library Network
  *
- * Copyright (C) Villanova University 2007.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2,
- * as published by the Free Software Foundation.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -13,9 +14,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 require_once ROOT_DIR  . '/Action.php';
@@ -37,14 +36,14 @@ abstract class Record_Record extends Action
 	/*var File_MARC_Record $marcRecord */
 	public $marcRecord;
 
-	public $record;
+//	public $record;
 //	public $similarTitles;
 
 	public $isbn;
 //	public $issn;
 //	public $upc;
 
-	public $cacheId;
+//	public $cacheId;
 
 	function __construct($record_id = null){
 		global $interface;
@@ -71,17 +70,6 @@ abstract class Record_Record extends Action
 
 		$this->setClassicViewLinks();
 
-		// Define External Content Provider
-		//TODO: These template switches don't look to be used any more.
-		if (!empty($this->recordDriver->hasReviews())){
-			if (isset($configArray['Content']['reviews'])){
-				$interface->assign('hasReviews', true);
-			}
-			if (isset($configArray['Content']['excerpts'])){
-				$interface->assign('hasExcerpt', true);
-			}
-		}
-
 		//Do actions needed if this is the main action.
 
 		//$interface->caching = 1;
@@ -92,7 +80,7 @@ abstract class Record_Record extends Action
 		}
 
 		//TODO: This RDF link doesn't seem to work
-		$interface->assign('addHeader', '<link rel="alternate" type="application/rdf+xml" title="RDF Representation" href="' . $configArray['Site']['path']  . '/Record/' . urlencode($this->sourceAndId->getRecordId()) . '/RDF" />');
+		$interface->assign('addHeader', '<link rel="alternate" type="application/rdf+xml" title="RDF Representation" href="/Record/' . urlencode($this->sourceAndId->getRecordId()) . '/RDF" />');
 
 		// Retrieve User Search History
 		$interface->assign('lastsearch', isset($_SESSION['lastSearchURL']) ? $_SESSION['lastSearchURL'] : false);

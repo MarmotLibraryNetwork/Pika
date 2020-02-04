@@ -1,12 +1,20 @@
 <?php
-
 /**
- * Contains functionality to load content related to a search or to another object
+ * Pika Discovery Layer
+ * Copyright (C) 2020  Marmot Library Network
  *
- * @category Pika
- * @author Mark Noble <mark@marmot.org>
- * Date: 2/20/2016
- * Time: 8:06 PM
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 class ExploreMore {
 	private $relatedCollections;
@@ -435,7 +443,7 @@ class ExploreMore {
 									'label' => $archiveObject->label,
 									'description' => $archiveObject->label,
 									'image' => $fedoraUtils->getObjectImageUrl($archiveObject, 'medium'),
-									'link' => $configArray['Site']['path'] . "/Archive/{$archiveObject->id}/Exhibit",
+									'link' => "/Archive/{$archiveObject->id}/Exhibit",
 									'usageCount' => $collectionInfo[1]
 								);
 							}
@@ -512,7 +520,7 @@ class ExploreMore {
 			$exploreMoreOptions[] = array(
 					'label' => "",
 					'description' => "Explore the archive",
-					'image' => $configArray['Site']['path'] . '/images/archive_banner_1.png',
+					'image' => '/images/archive_banner_1.png',
 					'link' => '/Archive/Results',
 					'placeholder' => true,
 			);
@@ -606,7 +614,7 @@ class ExploreMore {
 							$exploreMoreOptions[] = array(
 									'label' => "Catalog Results ($numCatalogResults)",
 									'description' => "Catalog Results ($numCatalogResults)",
-									'image' => $configArray['Site']['path'] . '/interface/themes/responsive/images/library_symbol.png',
+									'image' => '/interface/themes/responsive/images/library_symbol.png',
 									'link' => $searchObjectSolr->renderSearchUrl(),
 									'usageCount' => 1
 							);
@@ -660,7 +668,7 @@ class ExploreMore {
 										$exploreMoreOptions[] = array(
 												'label' => "$facetValueStr ({$numFacetMatches})",
 												'description' => "{$facetValueStr} in EBSCO related to {$searchTerm}",
-												'image' => $configArray['Site']['path'] . "/interface/themes/responsive/images/{$iconName}.png",
+												'image' => "/interface/themes/responsive/images/{$iconName}.png",
 												'link' => '/EBSCO/Results?lookfor=' . urlencode($searchTerm) . '&filter[]=' . $facetInfo->Id . ':' . $facetValueStr,
 										);
 									}
@@ -672,7 +680,7 @@ class ExploreMore {
 						$exploreMoreOptions[] = array(
 								'label' => "All EBSCO Results ({$numMatches})",
 								'description' => "All Results in EBSCO related to {$searchTerm}",
-								'image' => $configArray['Site']['path'] . '/interface/themes/responsive/images/ebsco_eds.png',
+								'image' => '/interface/themes/responsive/images/ebsco_eds.png',
 								'link' => '/EBSCO/Results?lookfor=' . urlencode($searchTerm)
 						);
 					}

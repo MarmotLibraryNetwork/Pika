@@ -18,15 +18,19 @@
 			<label for="hideCovers" class="control-label checkbox pull-right"> Hide Covers <input id="hideCovers" type="checkbox" onclick="VuFind.Account.toggleShowCovers(!$(this).is(':checked'))" {if $showCovers == false}checked="checked"{/if}></label>
 		</div>
 
-		<div class="striped">
-			{foreach from=$resourceList item=suggestion name=recordLoop}
-				{*<div class="result {if ($smarty.foreach.recordLoop.iteration % 2) == 0}alt{/if} record{$smarty.foreach.recordLoop.iteration}">*}
-				<div class="result record{$smarty.foreach.recordLoop.iteration}">
-					{$suggestion}
+      {if !empty($resourceList)}
+				<div class="striped">
+            {foreach from=$resourceList item=suggestion name=recordLoop}
+                {*<div class="result {if ($smarty.foreach.recordLoop.iteration % 2) == 0}alt{/if} record{$smarty.foreach.recordLoop.iteration}">*}
+							<div class="result record{$smarty.foreach.recordLoop.iteration}">
+                  {$suggestion}
+							</div>
+            {/foreach}
 				</div>
-				{foreachelse}
-				<div class="alert alert-info">You have not rated any titles.  Please rate some titles so we can display suggestions for you. </div>
-			{/foreach}
-		</div>
+      {else}
+				<div class="alert alert-info">You have not rated any titles. Please rate some titles so we can display
+					suggestions for you.
+				</div>
+      {/if}
 	</div>
 {/strip}

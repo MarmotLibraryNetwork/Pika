@@ -1,11 +1,12 @@
 <?php
 /**
+ * Pika Discovery Layer
+ * Copyright (C) 2020  Marmot Library Network
  *
- * Copyright (C) Villanova University 2007.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2,
- * as published by the Free Software Foundation.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -13,9 +14,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 require_once ROOT_DIR . '/Action.php';
@@ -23,18 +22,18 @@ require_once ROOT_DIR . '/Action.php';
 class AJAX extends AJAXHandler {
 
 	protected $methodsThatRespondWithHTML = array(
-		'sendEmail',
 		'GetAutoSuggestList',
 		'getProspectorResults',
 		'SysListTitles',
-		'getEmailForm',
 	);
 
 	protected $methodsThatRespondWithJSONUnstructured = array(
+		'sendEmail',
 		'getMoreSearchResults',
 		'GetListTitles',
 		'loadExploreMoreBar',
 		'getDplaResults',
+		'getEmailForm',
 	);
 
 	protected $methodsThatRespondWithXML = array(
@@ -131,25 +130,22 @@ class AJAX extends AJAXHandler {
 			$searchObject->init();
 			$searchObject = $searchObject->restoreSavedSearch($prospectorSavedSearchId, false);
 
-			//Load results from Prospector
-			$ILLDriver = $configArray['InterLibraryLoan']['ILLDriver'];
-//			$prospector = new Prospector();
-			/** @var Prospector|AutoGraphicsShareIt $ILLDriver */
-			require_once ROOT_DIR . '/InterLibraryLoanDrivers/' . $ILLDriver . '.php';
-			$prospector = new $ILLDriver();
-
-			// Only show prospector results within search results if enabled
-			if ($library && $library->enableProspectorIntegration && $library->showProspectorResultsAtEndOfSearch){
-				$prospectorResults = $prospector->getTopSearchResults($searchObject->getSearchTerms(), 5);
-				$interface->assign('prospectorResults', $prospectorResults['records']);
+			if (is_a($searchObject, 'SearchObject_Solr')){ //Load results from Prospector
+				$ILLDriver = $configArray['InterLibraryLoan']['ILLDriver'];//			$prospector = new Prospector();
+				/** @var Prospector|AutoGraphicsShareIt $ILLDriver */
+				require_once ROOT_DIR . '/InterLibraryLoanDrivers/' . $ILLDriver . '.php';
+				$prospector = new $ILLDriver();// Only show prospector results within search results if enabled
+				if ($library && $library->enableProspectorIntegration && $library->showProspectorResultsAtEndOfSearch){
+					$prospectorResults = $prospector->getTopSearchResults($searchObject->getSearchTerms(), 5);
+					$interface->assign('prospectorResults', $prospectorResults['records']);
+				}
+				$innReachEncoreName = $configArray['InterLibraryLoan']['innReachEncoreName'];
+				$interface->assign('innReachEncoreName', $innReachEncoreName);
+				$prospectorLink = $prospector->getSearchLink($searchObject->getSearchTerms());
+				$interface->assign('prospectorLink', $prospectorLink);
+				$timer->logTime('load Prospector titles');
+				return $interface->fetch('Search/ajax-prospector.tpl');
 			}
-
-			$innReachEncoreName = $configArray['InterLibraryLoan']['innReachEncoreName'];
-			$interface->assign('innReachEncoreName', $innReachEncoreName);
-			$prospectorLink = $prospector->getSearchLink($searchObject->getSearchTerms());
-			$interface->assign('prospectorLink', $prospectorLink);
-			$timer->logTime('load Prospector titles');
-			return $interface->fetch('Search/ajax-prospector.tpl');
 		}
 	}
 
@@ -250,6 +246,14 @@ class AJAX extends AJAXHandler {
 
 	function getEmailForm(){
 		global $interface;
+		if (UserAccount::isLoggedIn()){
+			/** @var User $user */
+			$user = UserAccount::getActiveUserObj();
+			if (!empty($user->email)){
+				$interface->assign('from', $user->email);
+			}
+		}
+
 		$results = array(
 			'title'        => 'E-Mail Search',
 			'modalBody'    => $interface->fetch('Search/email.tpl'),

@@ -10,7 +10,7 @@
           {if $work.cover_id}
             <img src="http://covers.openlibrary.org/b/{$work.cover_id_type|escape}/{$work.cover_id|escape}-S.jpg" class="olSubjectImage" alt="{$work.title|escape}" />
           {else}
-            <img src="{$path}/images/noCover2.gif" class="olSubjectImage" alt="{$work.title|escape}" />
+            <img src="/images/noCover2.png" class="olSubjectImage" alt="{$work.title|escape}" />
           {/if}
           </span>
           <span>{$work.title|truncate:50}</span>

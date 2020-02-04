@@ -1,14 +1,14 @@
 <form action="#" method="post" class="form form-horizontal" id="emailSearchForm">
 	<div class="form-group">
-		<label for="to" class="col-sm-3">{translate text='To'}:</label>
+		<label for="to" class="col-sm-3">{translate text='To'}: <span class="requiredIndicator">*</span></label>
 		<div class="col-sm-9">
-			<input type="email" name="to" id="to" size="40" class="input-xxlarge required email form-control">
+			<input type="email" name="to" id="to" size="40" class="required email form-control">
 		</div>
 	</div>
 	<div class="form-group">
-		<label for="from" class="col-sm-3">{translate text='From'}:</label>
+		<label for="from" class="col-sm-3">{translate text='From'}: <span class="requiredIndicator">*</span></label>
 		<div class="col-sm-9">
-			<input type="email" name="from" id="from" size="40" class="required email form-control">
+			<input type="email" name="from" id="from" size="40" class="required email form-control"{if $from} value="{$from}"{/if}>
 		</div>
 	</div>
 	<div class="form-group">

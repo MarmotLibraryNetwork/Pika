@@ -1,9 +1,26 @@
 <?php
 /**
+ * Pika Discovery Layer
+ * Copyright (C) 2020  Marmot Library Network
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+/**
  * Table Definition for Obituary
  */
 require_once 'DB/DataObject.php';
-require_once 'DB/DataObject/Cast.php';
 
 class Obituary extends DB_DataObject {
 	public $__table = 'obituary'; // table name
@@ -44,12 +61,12 @@ class Obituary extends DB_DataObject {
 		return $structure;
 	}
 
-	function insert() {
+	function insert(){
 		$ret = parent::insert();
 		//Load the person this is for, and update solr
-		if ($this->personId) {
+		if ($this->personId){
 			require_once ROOT_DIR . '/sys/Genealogy/Person.php';
-			$person = new Person();
+			$person           = new Person();
 			$person->personId = $this->personId;
 			$person->find(true);
 			$person->saveToSolr();
@@ -57,12 +74,12 @@ class Obituary extends DB_DataObject {
 		return $ret;
 	}
 
-	function update() {
+	function update($dataObject = false){
 		$ret = parent::update();
 		//Load the person this is for, and update solr
-		if ($this->personId) {
+		if ($this->personId){
 			require_once ROOT_DIR . '/sys/Genealogy/Person.php';
-			$person = new Person();
+			$person           = new Person();
 			$person->personId = $this->personId;
 			$person->find(true);
 			$person->saveToSolr();
@@ -70,13 +87,13 @@ class Obituary extends DB_DataObject {
 		return $ret;
 	}
 
-	function delete() {
+	function delete($useWhere = false){
 		$personId = $this->personId;
-		$ret = parent::delete();
+		$ret      = parent::delete();
 		//Load the person this is for, and update solr
-		if ($personId) {
+		if ($personId){
 			require_once ROOT_DIR . '/sys/Genealogy/Person.php';
-			$person = new Person();
+			$person           = new Person();
 			$person->personId = $this->personId;
 			$person->find(true);
 			$person->saveToSolr();

@@ -10,7 +10,7 @@ VuFind.MaterialsRequest = (function(){
 			if (title == '' && author == ''){
 				alert("Please enter a title and author before checking for an ISBN and OCLC Number");
 			}else{
-				var requestUrl = Globals.path + "/MaterialsRequest/AJAX",
+				var requestUrl = "/MaterialsRequest/AJAX",
 						params = {
 							'method': 'GetWorldCatIdentifiers',
 							title: title,
@@ -30,34 +30,30 @@ VuFind.MaterialsRequest = (function(){
 		},
 
 		cancelMaterialsRequest: function(id){
-			if (confirm("Are you sure you want to cancel this request?")){
-				var url = Globals.path + "/MaterialsRequest/AJAX",
+			VuFind.confirm("Are you sure you want to cancel this request?", function(){
+				var url = "/MaterialsRequest/AJAX",
 						params = {
 							'method': 'CancelRequest',
 							id: id
 						};
-				$.getJSON(
-						url,
-						params,
-						function(data){
+				$.getJSON(url, params, function(data){
 							if (data.success){
-								alert("Your request was cancelled successfully.");
-								window.location.reload();
+								VuFind.showMessage('Cancel Material Request', 'Your request was cancelled successfully.', data.success, data.success);
 							}else{
-								alert(data.error);
+								VuFind.showMessage('Cancel Material Request', data.error, data.success, data.success);
 							}
 						}
 				);
-			}
+			});
 			return false;
 		},
 
 		showMaterialsRequestDetails: function(id, staffView){
-			return VuFind.Account.ajaxLightbox(Globals.path + "/MaterialsRequest/AJAX?method=MaterialsRequestDetails&id=" +id + "&staffView=" +staffView, true);
+			return VuFind.Account.ajaxLightbox("/MaterialsRequest/AJAX?method=MaterialsRequestDetails&id=" +id + "&staffView=" +staffView, true);
 		},
 
 		updateMaterialsRequest: function(id){
-			return VuFind.Account.ajaxLightbox(Globals.path + "/MaterialsRequest/AJAX?method=UpdateMaterialsRequest&id=" +id, true);
+			return VuFind.Account.ajaxLightbox("/MaterialsRequest/AJAX?method=UpdateMaterialsRequest&id=" +id, true);
 		},
 
 		exportSelectedRequests: function(){

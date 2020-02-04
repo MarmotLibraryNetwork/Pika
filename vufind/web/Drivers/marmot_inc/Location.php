@@ -1,11 +1,30 @@
 <?php
 /**
+ * Pika Discovery Layer
+ * Copyright (C) 2020  Marmot Library Network
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+/**
  * Table Definition for location
  */
-require_once 'DB/DataObject.php';
-require_once 'DB/DataObject/Cast.php';
-require_once ROOT_DIR . '/Drivers/marmot_inc/OneToManyDataObjectOperations.php';
 
+use Pika\Cache;
+use Pika\Logger;
+
+require_once 'DB/DataObject.php';
+require_once ROOT_DIR . '/Drivers/marmot_inc/OneToManyDataObjectOperations.php';
 require_once ROOT_DIR . '/Drivers/marmot_inc/LocationHours.php';
 require_once ROOT_DIR . '/Drivers/marmot_inc/LocationFacetSetting.php';
 require_once ROOT_DIR . '/Drivers/marmot_inc/LocationCombinedResultSection.php';
@@ -17,14 +36,6 @@ require_once ROOT_DIR . '/sys/Hoopla/LocationHooplaSettings.php';
 class Location extends DB_DataObject {
 
 	use OneToManyDataObjectOperations;
-
-	/**
-	 * Needed override for OneToManyDataObjectOperations
-	 * @return string
-	 */
-	function getKeyOther(){
-		return 'locationId';
-	}
 
 	const DEFAULT_AUTOLOGOUT_TIME            = 90;
 	const DEFAULT_AUTOLOGOUT_TIME_LOGGED_OUT = 450;
@@ -108,19 +119,35 @@ class Location extends DB_DataObject {
 	/** @var  array $data */
 	protected $data;
 
+	private $logger;
+	private $cache;
+
 //	public $hours;
 // Don't explicitly declare this property.  Calls to it trigger its look up when it isn't set
 
+	public function __construct(){
+		$this->cache  = new Pika\Cache();
+		$this->logger = new Pika\Logger('Location');
+	}
+
 	function keys(){
 		return array('locationId', 'code');
+	}
+
+	/**
+	 * Needed override for OneToManyDataObjectOperations
+	 * @return string
+	 */
+	function getKeyOther(){
+		return 'locationId';
 	}
 
 	function getObjectStructure(){
 		//Load Libraries for lookup values
 		$library = new Library();
 		$library->orderBy('displayName');
-		if (UserAccount::userHasRole('libraryAdmin') && !UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('libraryManager') || UserAccount::userHasRole('locationManager')){
-			$homeLibrary        = Library::getPatronHomeLibrary();
+		if (!UserAccount::userHasRole('opacAdmin') && UserAccount::userHasRoleFromList(['libraryAdmin', 'libraryManager', 'locationManager'])){
+			$homeLibrary        = UserAccount::getUserHomeLibrary();
 			$library->libraryId = $homeLibrary->libraryId;
 		}
 		$library->find();
@@ -205,8 +232,8 @@ class Location extends DB_DataObject {
 			'ilsSection' => array(
 				'property' => 'ilsSection', 'type' => 'section', 'label' => 'ILS/Account Integration', 'hideInLists' => true,
 				'properties' => array(
-					array('property' => 'holdingBranchLabel', 'type' => 'text', 'label' => 'Holding Branch Label', 'description' => 'The label used within the holdings table in Millennium'),
-					array('property' => 'scope', 'type' => 'text', 'label' => 'Scope', 'description' => 'The scope for the system in Millennium to refine holdings to the branch.  If there is no scope defined for the branch, this can be set to 0.'),
+					array('property' => 'holdingBranchLabel', 'type' => 'text', 'label' => 'Holding Branch Label', 'description' => 'The label used within in the ILS'),
+					array('property' => 'scope', 'type' => 'text', 'label' => 'Scope', 'description' => 'The scope for the system in Sierra to refine holdings to the branch.  If there is no scope defined for the branch, this can be set to 0.'),
 					array('property' => 'useScope', 'type' => 'checkbox', 'label' => 'Use Scope?', 'description' => 'Whether or not the scope should be used when displaying holdings.', 'hideInLists' => true),
 					array('property' => 'defaultPType', 'type' => 'text', 'label' => 'Default P-Type', 'description' => 'The P-Type to use when accessing a subdomain if the patron is not logged in.  Use -1 to use the library default PType.', 'default' => -1),
 					array('property' => 'validHoldPickupBranch', 'type' => 'enum', 'values' => array('1' => 'Valid for all patrons', '0' => 'Valid for patrons of this branch only', '2' => 'Not Valid'), 'label' => 'Valid Hold Pickup Branch?', 'description' => 'Determines if the location can be used as a pickup location if it is not the patrons home location or the location they are in.', 'hideInLists' => true, 'default' => 1),
@@ -457,7 +484,8 @@ class Location extends DB_DataObject {
 			'includeLibraryRecordsToInclude' => array('property' => 'includeLibraryRecordsToInclude', 'type' => 'checkbox', 'label' => 'Include Library Records To Include', 'description' => 'Whether or not the records to include from the parent library should be included for this location', 'hideInLists' => true, 'default' => true),
 		);
 
-		if (UserAccount::userHasRole('locationManager') || UserAccount::userHasRole('libraryManager')){
+		if (UserAccount::userHasRoleFromList(['locationManager', 'libraryManager']) && !UserAccount::userHasRoleFromList(['opacAdmin', 'libraryAdmin'])){
+			// restrict permissions for location and library managers, unless they also have higher permissions of library or opac admin
 			unset($structure['code']);
 			unset($structure['subLocation']);
 			$structure['displayName']['type'] = 'label';
@@ -472,6 +500,7 @@ class Location extends DB_DataObject {
 			unset($structure['recordsOwned']);
 			unset($structure['recordsToInclude']);
 			unset($structure['hooplaSection']);
+			unset($structure['includeLibraryRecordsToInclude']);
 
 			// Further Restrict location Manager settings
 			if (UserAccount::userHasRole('locationManager')){
@@ -511,7 +540,8 @@ class Location extends DB_DataObject {
 		/** @var Library $librarySingleton */
 		global $librarySingleton;
 		if ($patronProfile){
-			$homeLibrary = $librarySingleton->getLibraryForLocation($patronProfile->homeLocationId);
+//			$homeLibrary = $librarySingleton->getLibraryForLocation($patronProfile->homeLocationId);
+			$homeLibrary = $patronProfile->getHomeLibrary();
 		}
 
 		if (isset($homeLibrary) && $homeLibrary->inSystemPickupsOnly == 1){
@@ -718,7 +748,7 @@ class Location extends DB_DataObject {
 	function setActiveLocation($location){
 		Location::$activeLocation = $location;
 	}
-
+	/** var Location $userHomeLocation */
 	private static $userHomeLocation = 'unset';
 
 	/**
@@ -802,24 +832,20 @@ class Location extends DB_DataObject {
 			$scopingSetting = $searchSource;
 			if ($searchSource == null){
 				Location::$searchLocation[$searchSource] = null;
+			}elseif ($scopingSetting == 'local' || $scopingSetting == 'econtent' || $scopingSetting == 'location'){
+				global $locationSingleton;
+				Location::$searchLocation[$searchSource] = $locationSingleton->getActiveLocation();
+			}elseif ($scopingSetting == 'marmot' || $scopingSetting == 'unscoped'){
+				Location::$searchLocation[$searchSource] = null;
 			}else{
-				if ($scopingSetting == 'local' || $scopingSetting == 'econtent' || $scopingSetting == 'location'){
-					global $locationSingleton;
-					Location::$searchLocation[$searchSource] = $locationSingleton->getActiveLocation();
+				$location       = new Location();
+				$location->code = $scopingSetting;
+				$location->find();
+				if ($location->N > 0){
+					$location->fetch();
+					Location::$searchLocation[$searchSource] = clone($location);
 				}else{
-					if ($scopingSetting == 'marmot' || $scopingSetting == 'unscoped'){
-						Location::$searchLocation[$searchSource] = null;
-					}else{
-						$location       = new Location();
-						$location->code = $scopingSetting;
-						$location->find();
-						if ($location->N > 0){
-							$location->fetch();
-							Location::$searchLocation[$searchSource] = clone($location);
-						}else{
-							Location::$searchLocation[$searchSource] = null;
-						}
-					}
+					Location::$searchLocation[$searchSource] = null;
 				}
 			}
 		}
@@ -839,15 +865,11 @@ class Location extends DB_DataObject {
 			return $this->ipLocation;
 		}
 		global $timer;
-		/** @var Memcache $memCache */
-		global $memCache;
 		global $configArray;
-		global $logger;
 		//Check the current IP address to see if we are in a branch
 		$activeIp = $this->getActiveIp();
-		//$logger->log("Active IP is $activeIp", PEAR_LOG_DEBUG);
-		$this->ipLocation = $memCache->get('location_for_ip_' . $activeIp);
-		$this->ipId       = $memCache->get('ipId_for_ip_' . $activeIp);
+		$this->ipLocation = $this->cache->get('location_for_ip_' . $activeIp);
+		$this->ipId       = $this->cache->get('ipId_for_ip_' . $activeIp);
 		if ($this->ipId == -1){
 			$this->ipLocation = false;
 		}
@@ -867,25 +889,23 @@ class Location extends DB_DataObject {
 				$subnet->whereAdd('endIpVal >= ' . $ipVal);
 				$subnet->orderBy('(endIpVal - startIpVal)');
 				if ($subnet->find(true)){
-					//$logger->log("Found {$subnet->N} matching IP addresses {$subnet->location}", PEAR_LOG_DEBUG);
 					$matchedLocation             = new Location();
 					$matchedLocation->locationId = $subnet->locationid;
 					if ($matchedLocation->find(true)){
 						//Only use the physical location regardless of where we are
-						//$logger->log("Active location is {$matchedLocation->displayName}", PEAR_LOG_DEBUG);
 						$this->ipLocation = clone($matchedLocation);
 						$this->ipLocation->setOpacStatus((boolean)$subnet->isOpac);
 
 						$this->ipId = $subnet->id;
 					}else{
-						$logger->log("Did not find location for ip location id {$subnet->locationid}", PEAR_LOG_WARNING);
+						$this->logger->warn("Did not find location for ip location id {$subnet->locationid}");
 					}
 				}
 				enableErrorHandler();
 			}
 
-			$memCache->set('ipId_for_ip_' . $activeIp, $this->ipId, 0, $configArray['Caching']['ipId_for_ip']);
-			$memCache->set('location_for_ip_' . $activeIp, $this->ipLocation, 0, $configArray['Caching']['location_for_ip']);
+			$this->cache->set('ipId_for_ip_' . $activeIp, $this->ipId, $configArray['Caching']['ipId_for_ip']);
+			$this->cache->set('location_for_ip_' . $activeIp, $this->ipLocation, $configArray['Caching']['location_for_ip']);
 			$timer->logTime('Finished getIPLocation');
 		}
 
@@ -926,9 +946,9 @@ class Location extends DB_DataObject {
 				$ip = $_SERVER["HTTP_FORWARDED_FOR"];
 			}elseif (isset($_SERVER["HTTP_FORWARDED"])){
 				$ip = $_SERVER["HTTP_FORWARDED"];
-			}elseif (isset($_SERVER['REMOTE_HOST']) && strlen($_SERVER['REMOTE_HOST']) > 0){
+			}elseif (!empty($_SERVER['REMOTE_HOST'])){
 				$ip = $_SERVER['REMOTE_HOST'];
-			}elseif (isset($_SERVER['REMOTE_ADDR']) && strlen($_SERVER['REMOTE_ADDR']) > 0){
+			}elseif (!empty($_SERVER['REMOTE_ADDR'])){
 				$ip = $_SERVER['REMOTE_ADDR'];
 			}else{
 				$ip = '';
@@ -1060,7 +1080,7 @@ class Location extends DB_DataObject {
 	 *
 	 * @see DB/DB_DataObject::update()
 	 */
-	public function update(){
+	public function update($dataObject = false){
 		$ret = parent::update();
 		if ($ret !== false){
 			$this->saveHours();

@@ -1,11 +1,12 @@
 <?php
 /**
+ * Pika Discovery Layer
+ * Copyright (C) 2020  Marmot Library Network
  *
- * Copyright (C) Andrew Nagy 2008.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2,
- * as published by the Free Software Foundation.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -13,9 +14,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 /**
@@ -85,7 +84,7 @@ Interface IndexEngine {
      * @param   string  $query      The XQuery script in binary encoding.
      * @param   string  $handler    The Query Handler/Index to search on
      * @param   array   $filter     The fields and values to filter results on
-     * @param   string  $start      The record to start with
+     * @param   int     $start      The record to start with
      * @param   string  $limit      The amount of records to return
      * @param   array   $facet      An array of faceting options
      * @param   string  $spell      Phrase to spell check
@@ -98,7 +97,7 @@ Interface IndexEngine {
      */
 	function search($query, $handler = null, $filter = null, $start = 0,
 	                $limit = null, $facet = null, $spell = null, $sort = null, 
-                    $fields = null, $method = HTTP_REQUEST_METHOD_POST);
+                    $fields = null, $method = 'POST');
 
 
 }

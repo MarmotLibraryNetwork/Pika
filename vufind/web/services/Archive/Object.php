@@ -1,9 +1,27 @@
 <?php
 /**
+ * Pika Discovery Layer
+ * Copyright (C) 2020  Marmot Library Network
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+/**
  * A superclass for Digital Archive Objects
  *
- * @category VuFind-Plus-2014
- * @author Mark Noble <mark@marmot.org>
+ * @category Pika
+ * @author Mark Noble <pika@marmot.org>
  * Date: 9/9/2015
  * Time: 4:13 PM
  */
@@ -28,7 +46,7 @@ abstract class Archive_Object extends Action {
 	 * @param string $mainContentTemplate Name of the SMARTY template file for the main content of the Full Record View Pages
 	 * @param string $pageTitle What to display is the html title tag
 	 */
-	function display($mainContentTemplate, $pageTitle = null) {
+	function display($mainContentTemplate, $pageTitle = null, $sidebarTemplate = 'Search/home-sidebar.tpl') {
 		global $interface;
 		global $logger;
 
@@ -137,7 +155,7 @@ abstract class Archive_Object extends Action {
 
 //		$this->updateCookieForExhibitContextData();
 
-		parent::display($mainContentTemplate, $pageTitle);
+		parent::display($mainContentTemplate, $pageTitle, $sidebarTemplate);
 	}
 
 	//TODO: This should eventually move onto a Record Driver
@@ -329,24 +347,24 @@ abstract class Archive_Object extends Action {
 		$interface->assign('repositoryLink', $repositoryLink);
 
 		//Check for display restrictions
-		if ($this->recordDriver instanceof BasicImageDriver || $this->recordDriver instanceof LargeImageDriver || $this->recordDriver instanceof BookDriver || $this->recordDriver instanceof PageDriver || $this->recordDriver instanceof AudioDriver || $this->recordDriver instanceof VideoDriver) {
+		if ($this->recordDriver instanceof BasicImageDriver || $this->recordDriver instanceof LargeImageDriver || $this->recordDriver instanceof BookDriver || $this->recordDriver instanceof PageDriver || $this->recordDriver instanceof AudioDriver || $this->recordDriver instanceof VideoDriver){
 			/** @var CollectionDriver $collection */
 			$anonymousMasterDownload = true;
-			$verifiedMasterDownload = true;
-			$anonymousLcDownload = true;
-			$verifiedLcDownload = true;
-			foreach ($this->recordDriver->getRelatedCollections() as $collection) {
+			$verifiedMasterDownload  = true;
+			$anonymousLcDownload     = true;
+			$verifiedLcDownload      = true;
+			foreach ($this->recordDriver->getRelatedCollections() as $collection){
 				$collectionDriver = RecordDriverFactory::initRecordDriver($collection['object']);
-				if (!$collectionDriver->canAnonymousDownloadMaster()) {
+				if (!$collectionDriver->canAnonymousDownloadMaster()){
 					$anonymousMasterDownload = false;
 				}
-				if (!$collectionDriver->canVerifiedDownloadMaster()) {
+				if (!$collectionDriver->canVerifiedDownloadMaster()){
 					$verifiedMasterDownload = false;
 				}
-				if (!$collectionDriver->canAnonymousDownloadLC()) {
+				if (!$collectionDriver->canAnonymousDownloadLC()){
 					$anonymousLcDownload = false;
 				}
-				if (!$collectionDriver->canVerifiedDownloadLC()) {
+				if (!$collectionDriver->canVerifiedDownloadLC()){
 					$verifiedLcDownload = false;
 				}
 			}

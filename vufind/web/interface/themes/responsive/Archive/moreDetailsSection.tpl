@@ -1,7 +1,7 @@
 {strip}
 
 	{* Local Identifier *}
-	{if count($identifier) > 0}
+	{if !empty($identifier)}
 		<div class="row">
 			<div class="result-label col-sm-4">Local Identifier{if count($identifier) > 1}s{/if}: </div>
 			<div class="result-value col-sm-8">

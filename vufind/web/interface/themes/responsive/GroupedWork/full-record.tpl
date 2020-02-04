@@ -37,7 +37,7 @@
 					<div class="row">
 						<div class="result-label col-tn-3">Author: </div>
 						<div class="col-tn-9 result-value notranslate">
-							<a href='{$path}/Author/Home?author="{$recordDriver->getPrimaryAuthor()|escape:"url"}"'>{$recordDriver->getPrimaryAuthor()|highlight}</a>
+							<a href='/Author/Home?author="{$recordDriver->getPrimaryAuthor()|escape:"url"}"'>{$recordDriver->getPrimaryAuthor()|highlight}</a>
 						</div>
 					</div>
 				{/if}
@@ -49,7 +49,7 @@
 						<div class="result-label col-tn-3">{translate text='Series'}:</div>
 						<div class="col-tn-9 result-value">
 							{if $series}
-								<a href="{$path}/GroupedWork/{$recordDriver->getPermanentId()}/Series">{$series.seriesTitle}</a>{if $series.volume} volume {$series.volume}{/if}<br/>
+								<a href="/GroupedWork/{$recordDriver->getPermanentId()}/Series">{$series.seriesTitle}</a>{if $series.volume} volume {$series.volume}{/if}<br/>
 							{/if}
 							{if $indexedSeries}
 								{if count($indexedSeries) >= 5}
@@ -57,7 +57,7 @@
 								{/if}
 								{foreach from=$indexedSeries item=seriesItem name=loop}
 									{if !isset($series.seriesTitle) || ((strpos(strtolower($seriesItem.seriesTitle), strtolower($series.seriesTitle)) === false) && (strpos(strtolower($series.seriesTitle), strtolower($seriesItem.seriesTitle)) === false))}
-										<a href="{$path}/Search/Results?basicType=Series&lookfor=%22{$seriesItem.seriesTitle|removeTrailingPunctuation|escape:"url"}%22">{$seriesItem.seriesTitle|removeTrailingPunctuation|escape}</a>{if $seriesItem.volume} volume {$seriesItem.volume}{/if}<br/>
+										<a href="/Search/Results?basicType=Series&lookfor=%22{$seriesItem.seriesTitle|removeTrailingPunctuation|escape:"url"}%22">{$seriesItem.seriesTitle|removeTrailingPunctuation|escape}</a>{if $seriesItem.volume} volume {$seriesItem.volume}{/if}<br/>
 										{if $showMoreSeries && $smarty.foreach.loop.iteration == 3}
 											<a onclick="$('#moreSeries_{$recordDriver->getPermanentId()}').show();$('#moreSeriesLink_{$recordDriver->getPermanentId()}').hide();" id="moreSeriesLink_{$summId}">More Series...</a>
 											<div id="moreSeries_{$recordDriver->getPermanentId()}" style="display:none">

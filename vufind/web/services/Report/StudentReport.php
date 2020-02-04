@@ -1,15 +1,33 @@
 <?php
 /**
+ * Pika Discovery Layer
+ * Copyright (C) 2020  Marmot Library Network
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+/**
  * Displays Student Reports Created by cron
  *
- * @category VuFind-Plus-2014
- * @author Mark Noble <mark@marmot.org>
+ * @category Pika
+ * @author Mark Noble <pika@marmot.org>
  * Date: 5/19/14
  * Time: 2:28 PM
  */
+require_once ROOT_DIR . '/services/Report/Report.php';
 
-require_once(ROOT_DIR . '/services/Admin/Admin.php');
-class Report_StudentReport extends Admin_Admin {
+class Report_StudentReport extends Report_Report {
 	function launch(){
 		global $interface;
 		global $configArray;
@@ -22,7 +40,7 @@ class Report_StudentReport extends Admin_Admin {
 		if (UserAccount::userHasRole('opacAdmin')){
 			$allowableLocationCodes = '.*';
 		}elseif (UserAccount::userHasRole('libraryAdmin')){
-			$homeLibrary = Library::getPatronHomeLibrary();
+			$homeLibrary = UserAccount::getUserHomeLibrary();
 			$allowableLocationCodes = trim($homeLibrary->ilsCode) . '.*';
 		}elseif (UserAccount::userHasRole('locationReports')){
 			$homeLocation = Location::getUserHomeLocation();

@@ -1,11 +1,12 @@
 <?php
 /**
+ * Pika Discovery Layer
+ * Copyright (C) 2020  Marmot Library Network
  *
- * Copyright (C) Villanova University 2010.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2,
- * as published by the Free Software Foundation.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -13,9 +14,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 require_once ROOT_DIR . '/sys/Solr.php';
 require_once ROOT_DIR . '/sys/SearchObject/Base.php';
@@ -43,8 +42,8 @@ class SearchObject_Islandora extends SearchObject_Base
 	//private $fields = '*,score';
 	private $fields = 'PID,fgs_label_s,dc.title,mods_abstract_s,mods_genre_s,RELS_EXT_hasModel_uri_s,dateCreated,score,fgs_createdDate_dt,fgs_lastModifiedDate_dt';
 	// HTTP Method
-	//    private $method = HTTP_REQUEST_METHOD_GET;
-	private $method = HTTP_REQUEST_METHOD_POST;
+	//    private $method = 'GET';
+	private $method = 'POST';
 	// Result
 	private $indexResult;
 
@@ -82,10 +81,9 @@ class SearchObject_Islandora extends SearchObject_Base
 		global $timer;
 		// Include our solr index
 		require_once ROOT_DIR . "/sys/Solr.php";
-		$this->searchType = 'islandora';
+		$this->searchType      = 'islandora';
 		$this->basicSearchType = 'islandora';
-		// Initialise the index
-		$this->indexEngine = new Solr($configArray['Islandora']['solrUrl'], isset($configArray['Islandora']['solrCore']) ? $configArray['Islandora']['solrCore'] : 'islandora');
+		$this->indexEngine     = new Solr($configArray['Islandora']['solrUrl'], isset($configArray['Islandora']['solrCore']) ? $configArray['Islandora']['solrCore'] : 'islandora');
 		$timer->logTime('Created Index Engine for Islandora');
 
 		//Make sure to turn off sharding for islandora
@@ -93,7 +91,7 @@ class SearchObject_Islandora extends SearchObject_Base
 
 		// Get default facet settings
 		$this->allFacetSettings = getExtraConfigArray('islandoraFacets');
-		$this->facetConfig = array();
+		$this->facetConfig      = array();
 		$facetLimit = $this->getFacetSetting('Results_Settings', 'facet_limit');
 		if (is_numeric($facetLimit)) {
 			$this->facetLimit = $facetLimit;
@@ -163,7 +161,7 @@ class SearchObject_Islandora extends SearchObject_Base
 	 * @access  public
 	 * @return  boolean
 	 */
-	public function init()
+	public function init($searchSource = NULL)
 	{
 		// Call the standard initialization routine in the parent:
 		parent::init('islandora');
@@ -188,9 +186,7 @@ class SearchObject_Islandora extends SearchObject_Base
 
 		//********************
 		// Basic Search logic
-		if ($this->initBasicSearch()) {
-			// If we found a basic search, we don't need to do anything further.
-		} else {
+		if(!$this->initBasicSearch()) {
 			$this->initAdvancedSearch();
 		}
 
@@ -816,7 +812,7 @@ class SearchObject_Islandora extends SearchObject_Base
 	 * @param   bool   $preventQueryModification   Should we allow the search engine
 	 *                                             to modify the query or is it already
 	 *                                             a well formatted query
-	 * @return  object solr result structure (for now)
+	 * @return array
 	 */
 	public function processSearch($returnIndexErrors = false, $recommendations = false, $preventQueryModification = false)
 	{
@@ -869,11 +865,10 @@ class SearchObject_Islandora extends SearchObject_Base
 						$filterQuery[] = "$field:$value";
 					} elseif (preg_match('/\\A\\[.*?\\sTO\\s.*?]\\z/', $value)){
 						$filterQuery[] = "$field:$value";
-					} else {
-						if (!empty($value)){
+					} elseif (!empty($value)){
 							$filterQuery[] = "$field:\"$value\"";
 						}
-					}
+
 				}
 			}
 		}
@@ -916,10 +911,10 @@ class SearchObject_Islandora extends SearchObject_Base
 			// If the spellcheck query is purely numeric, skip it if
 			// the appropriate setting is turned on.
 			if ($this->spellSkipNumeric && is_numeric($spellcheck)) {
-				$spellcheck = "";
+				$spellcheck = '';
 			}
 		} else {
-			$spellcheck = "";
+			$spellcheck = '';
 		}
 
 		// Get time before the query
@@ -932,8 +927,8 @@ class SearchObject_Islandora extends SearchObject_Base
 		// The first record to retrieve:
 		//  (page - 1) * limit = start
 		$recordStart = ($this->page - 1) * $this->limit;
-		$pingResult = $this->indexEngine->pingServer(false);
-		if ($pingResult == "false" || $pingResult == false){
+		$pingResult  = $this->indexEngine->pingServer(false);
+		if (!$pingResult){
 			PEAR_Singleton::raiseError('The archive server is currently unavailable.  Please try your search again in a few minutes.');
 		}
 		$this->indexResult = $this->indexEngine->search(
@@ -1395,7 +1390,7 @@ class SearchObject_Islandora extends SearchObject_Base
 		// (we'll go for 50 at a time)
 		if (is_null($result)) {
 			$this->limit = 50;
-			$result = $this->processSearch(false, false);
+			$result      = $this->processSearch(false, false);
 		}
 
 		for ($i = 0; $i < count($result['response']['docs']); $i++) {
@@ -1403,10 +1398,10 @@ class SearchObject_Islandora extends SearchObject_Base
 
 			$record = RecordDriverFactory::initRecordDriver($current);
 			if (!PEAR_Singleton::isError($record)) {
-				$result['response']['docs'][$i]['recordUrl'] = $record->getLinkUrl();
-				$result['response']['docs'][$i]['title_display'] = $record->getTitle();
-				$image = $record->getBookcoverUrl('medium');
-				$description = "<img src='$image'/> " . $record->getDescription();
+				$result['response']['docs'][$i]['recordUrl']       = $record->getLinkUrl();
+				$result['response']['docs'][$i]['title_display']   = $record->getTitle();
+				$image                                             = $record->getBookcoverUrl('medium');
+				$description                                       = "<img src='$image'/> " . $record->getDescription();
 				$result['response']['docs'][$i]['rss_description'] = $description;
 			} else {
 				$html[] = "Unable to find record";
@@ -1425,8 +1420,6 @@ class SearchObject_Islandora extends SearchObject_Base
 		}
 		// The full url to recreate this search
 		$interface->assign('searchUrl', $configArray['Site']['url']. $this->renderSearchUrl());
-		// Stub of a url for a records screen
-		$interface->assign('baseUrl',    $configArray['Site']['url']);
 
 		$interface->assign('result', $result);
 		return $interface->fetch('Search/rss.tpl');

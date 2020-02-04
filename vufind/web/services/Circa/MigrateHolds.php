@@ -1,6 +1,25 @@
 <?php
 /**
+ * Pika Discovery Layer
+ * Copyright (C) 2020  Marmot Library Network
  *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+/**
+ * Quick template of functions to aid in the migration of holds for onboarding new libraries into Marmot's circulation
+ * system.
  *
  * @category Pika
  * @author: Pascal Brammeier
@@ -24,12 +43,13 @@ class Circa_MigrateHolds extends Action {
 
 		foreach ($barCodes as $barCode){
 
-			/** @var Sierra $sierra */
-			require_once ROOT_DIR . '/Drivers/Sierra.php';
-			$sierra = CatalogFactory::getCatalogConnectionInstance('Sierra');
-			$patronDump = $sierra->_getPatronDump($barCode);
-			$_REQUEST['username'] = $patronDump['PATRN_NAME'];
-			$_REQUEST['password'] = $barCode;
+			//TODO: update with current driver
+//			/** @var Sierra $sierra */
+//			require_once ROOT_DIR . '/Drivers/Sierra.php';
+//			$sierra = CatalogFactory::getCatalogConnectionInstance('Sierra');
+//			$patronDump = $sierra->_getPatronDump($barCode);
+//			$_REQUEST['username'] = $patronDump['PATRN_NAME'];
+//			$_REQUEST['password'] = $barCode;
 			try {
 				$user = UserAccount::login();
 				if ($user == false){

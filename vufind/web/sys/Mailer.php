@@ -1,11 +1,12 @@
 <?php
 /**
+ * Pika Discovery Layer
+ * Copyright (C) 2020  Marmot Library Network
  *
- * Copyright (C) Villanova University 2009.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2,
- * as published by the Free Software Foundation.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -13,9 +14,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 require_once 'Mail.php';
 require_once 'Mail/RFC822.php';
@@ -105,7 +104,7 @@ class VuFindMailer {
 		// Get mail object
 		if ($this->settings['host'] != false){
 			$mailFactory = new Mail();
-			$mail =& $mailFactory->factory('smtp', $this->settings);
+			$mail = $mailFactory->factory('smtp', $this->settings);
 			if (PEAR_Singleton::isError($mail)) {
 				return $mail;
 			}
@@ -139,18 +138,7 @@ class VuFindMailer {
  * @access      public
  */
 class SMSMailer extends VuFindMailer {
-	// Defaults, usually overridden by contents of web/conf/sms.ini:
-	private $carriers = array(
-        'virgin' => array('name' => 'Virgin Mobile', 'domain' => 'vmobl.com'),
-        'att' => array('name' => 'AT&T', 'domain' => 'txt.att.net'),
-        'verizon' => array('name' => 'Verizon', 'domain' => 'vtext.com'),
-        'nextel' => array('name' => 'Nextel', 'domain' => 'messaging.nextel.com'),
-        'sprint' => array('name' => 'Sprint', 'domain' => 'messaging.sprintpcs.com'),
-        'tmobile' => array('name' => 'T Mobile', 'domain' => 'tmomail.net'),
-        'alltel' => array('name' => 'Alltel', 'domain' => 'message.alltel.com'),
-        'Cricket' => array('name' => 'Cricket', 'domain' => 'mms.mycricket.com')
-	);
-
+	private $carriers = [];
 	/**
 	 * Constructor
 	 *
@@ -158,18 +146,18 @@ class SMSMailer extends VuFindMailer {
 	 *
 	 * @access  public
 	 */
-	public function __construct() {
+	public function __construct(){
 		global $configArray;
 
 		// if using sms.ini, then load the carriers from it
 		// otherwise, fall back to the default list of US carriers
-		if (isset($configArray['Extra_Config']['sms'])) {
+		if (isset($configArray['Extra_Config']['sms'])){
 			$smsConfig = getExtraConfigArray('sms');
-			if (isset($smsConfig['Carriers']) && !empty($smsConfig['Carriers'])) {
+			if (!empty($smsConfig['Carriers'])){
 				$this->carriers = array();
-				foreach ($smsConfig['Carriers'] as $id=>$config) {
+				foreach ($smsConfig['Carriers'] as $id => $config){
 					list($domain, $name) = explode(':', $config, 2);
-					$this->carriers[$id] = array('name'=>$name, 'domain'=>$domain);
+					$this->carriers[$id] = array('name' => $name, 'domain' => $domain);
 				}
 			}
 		}

@@ -1,9 +1,27 @@
 <?php
 /**
+ * Pika Discovery Layer
+ * Copyright (C) 2020  Marmot Library Network
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+/**
  * Displays indexing statistics for the system
  *
  * @category Pika
- * @author Mark Noble <mark@marmot.org>
+ * @author Mark Noble <pika@marmot.org>
  * Date: 3/16/15
  * Time: 8:41 PM
  */
@@ -11,16 +29,15 @@
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/Admin.php';
 
-class IndexingStats extends Admin_Admin{
+class IndexingStats extends Admin_Admin {
 	function launch(){
 		global $interface;
 		global $configArray;
 
 		//Load the latest indexing stats
-		$baseDir = dirname($configArray['Reindex']['marcPath']);
-
+		$baseDir           = dirname($configArray['Reindex']['marcPath']);
 		$indexingStatFiles = array();
-		$allFilesInDir = scandir($baseDir);
+		$allFilesInDir     = scandir($baseDir);
 		foreach ($allFilesInDir as $curFile){
 			if (preg_match('/reindex_stats_([\\d-]+)\\.csv/', $curFile, $matches)){
 				$indexingStatFiles[$matches[1]] = $baseDir . '/' . $curFile;
@@ -32,7 +49,7 @@ class IndexingStats extends Admin_Admin{
 		if (count($indexingStatFiles) != 0){
 			//Get the specified file, the file for today, or the most recent file
 			$dateToRetrieve = date('Y-m-d');
-			if (isset($_REQUEST['day'])){
+			if (!empty($_REQUEST['day'])){
 				$dateToRetrieve = $_REQUEST['day'];
 			}
 			$fileToLoad = null;
@@ -44,9 +61,9 @@ class IndexingStats extends Admin_Admin{
 				$dateToRetrieve = $matches[1];
 			}
 
-			$indexingStatFhnd = fopen($fileToLoad, 'r');
+			$indexingStatFhnd   = fopen($fileToLoad, 'r');
 			$indexingStatHeader = fgetcsv($indexingStatFhnd);
-			$indexingStats = array();
+			$indexingStats      = array();
 			while ($curRow = fgetcsv($indexingStatFhnd)){
 				$indexingStats[] = $curRow;
 			}

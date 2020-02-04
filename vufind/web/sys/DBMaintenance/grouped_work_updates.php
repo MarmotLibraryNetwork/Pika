@@ -1,9 +1,27 @@
 <?php
 /**
+ * Pika Discovery Layer
+ * Copyright (C) 2020  Marmot Library Network
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+/**
  * Updates related to record grouping for cleanliness
  *
- * @category VuFind-Plus-2014
- * @author Mark Noble <mark@marmot.org>
+ * @category Pika
+ * @author Mark Noble <pika@marmot.org>
  * Date: 7/29/14
  * Time: 2:25 PM
  */
@@ -156,22 +174,6 @@ function getGroupedWorkUpdates(){
 			'sql'         => array(
 				"ALTER TABLE `grouped_work` ADD INDEX(`date_updated`)",
 			)
-		),
-
-		'grouped_work_evoke' => array(
-			'title'       => 'Grouped Work eVoke',
-			'description' => 'Allow eVoke as a valid identifier type ',
-			'sql'         => array(
-				"ALTER TABLE grouped_work_primary_identifiers CHANGE `type` `type` ENUM('ils', 'external', 'drm', 'free', 'overdrive', 'evoke' ) NOT NULL",
-			)
-		),
-
-		'grouped_work_primary_identifiers_hoopla' => array(
-			'title'       => 'Grouped Work Updates to support Hoopla',
-			'description' => 'Allow hoopla as a valid identifier type',
-			'sql'         => array(
-				"ALTER TABLE grouped_work_primary_identifiers CHANGE `type` `type` ENUM('ils', 'external', 'drm', 'free', 'overdrive', 'evoke', 'hoopla' ) NOT NULL",
-			),
 		),
 
 		'grouped_work_index_cleanup' => array(

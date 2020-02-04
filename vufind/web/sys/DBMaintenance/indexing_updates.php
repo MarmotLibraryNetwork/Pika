@@ -1,9 +1,27 @@
 <?php
 /**
+ * Pika Discovery Layer
+ * Copyright (C) 2020  Marmot Library Network
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+/**
  * Updates related to indexing for cleanliness
  *
  * @category Pika
- * @author Mark Noble <mark@marmot.org>
+ * @author Mark Noble <pika@marmot.org>
  * Date: 7/29/14
  * Time: 2:25 PM
  */
@@ -134,168 +152,40 @@ function getIndexingUpdates(){
 							  PRIMARY KEY (`id`),
 							  KEY `locationId` (`locationId`,`indexingProfileId`)
 							) ENGINE=InnoDB  DEFAULT CHARSET=utf8",
-			)
-		),
-
-		'indexing_profile_collection' => array(
-			'title'       => 'Indexing profile collections',
-			'description' => 'Add handling of collections to indexing profile table',
-			'sql'         => array(
-				"ALTER TABLE indexing_profiles ADD COLUMN `collection` char(1) DEFAULT NULL"
-			)
-		),
-
-		'indexing_profile_catalog_driver' => array(
-			'title'       => 'Indexing profile catalog driver',
-			'description' => 'Add handling catalog driver to indexing profile table',
-			'sql'         => array(
-				"ALTER TABLE indexing_profiles ADD COLUMN `catalogDriver` varchar(50) DEFAULT NULL"
-			)
-		),
-
-		'indexing_profile_holdability' => array(
-			'title'       => 'Setup additional holdability filters',
-			'description' => 'Setup additional filters for determining if something is holdable',
-			'sql'         => array(
+				"ALTER TABLE indexing_profiles ADD COLUMN `collection` char(1) DEFAULT NULL",
+				"ALTER TABLE indexing_profiles ADD COLUMN `catalogDriver` varchar(50) DEFAULT NULL",
 				"ALTER TABLE indexing_profiles ADD COLUMN `nonHoldableITypes` varchar(255) DEFAULT NULL",
 				"ALTER TABLE indexing_profiles ADD COLUMN `nonHoldableStatuses` varchar(255) DEFAULT NULL",
 				"ALTER TABLE indexing_profiles ADD COLUMN `nonHoldableLocations` varchar(512) DEFAULT NULL",
-			)
-		),
-
-		'indexing_profile_marc_encoding' => array(
-			'title'       => 'Indexing Profiles - marc encoding',
-			'description' => 'Correct UTF8 setting for marc encoding',
-			'sql'         => array(
-				"ALTER TABLE indexing_profiles CHANGE marcEncoding `marcEncoding` enum('MARC8','UTF8','UNIMARC','ISO8859_1','BESTGUESS') NOT NULL DEFAULT 'MARC8'"
-			)
-		),
-
-		'indexing_profile_last_checkin_date' => array(
-			'title'       => 'Indexing Profiles - last checkin date',
-			'description' => 'add field for last check in date',
-			'sql'         => array(
+				"ALTER TABLE indexing_profiles CHANGE marcEncoding `marcEncoding` enum('MARC8','UTF8','UNIMARC','ISO8859_1','BESTGUESS') NOT NULL DEFAULT 'MARC8'",
 				"ALTER TABLE indexing_profiles ADD COLUMN `lastCheckinFormat` varchar(20) DEFAULT NULL",
 				"ALTER TABLE indexing_profiles ADD COLUMN `lastCheckinDate` char(1) DEFAULT NULL",
-			)
-		),
-
-		'indexing_profile_specific_order_location' => array(
-			'title'       => 'Indexing Profiles - specific order location',
-			'description' => 'add field for the specific location code since Millennium/Sierra do not always export the detailed',
-			'sql'         => array(
 				"ALTER TABLE indexing_profiles ADD COLUMN `orderLocationSingle` char(1) DEFAULT NULL",
-			)
-		),
-
-		'indexing_profile_speicified_formats' => array(
-			'title'       => 'Indexing Profiles - specified format',
-			'description' => 'Allow specified formats for use with side loaded eContent',
-			'sql'         => array(
 				"ALTER TABLE indexing_profiles CHANGE formatSource `formatSource` enum('bib','item', 'specified') NOT NULL DEFAULT 'bib'",
 				"ALTER TABLE indexing_profiles ADD COLUMN `specifiedFormat` varchar(50) DEFAULT NULL",
 				"ALTER TABLE indexing_profiles ADD COLUMN `specifiedFormatCategory` varchar(50) DEFAULT NULL",
 				"ALTER TABLE indexing_profiles ADD COLUMN `specifiedFormatBoost` int DEFAULT NULL",
-			)
-		),
-
-		'indexing_profile_filenames_to_include' => array(
-			'title'       => 'Indexing Profiles - filenames to include',
-			'description' => 'Allow additional control over which files are included in an indexing profile',
-			'sql'         => array(
 				"ALTER TABLE indexing_profiles ADD COLUMN `filenamesToInclude` varchar(250) DEFAULT '.*\\\\.ma?rc'",
-			)
-		),
-
-		'indexing_profile_collectionsToSuppress' => array(
-			'title'       => 'Indexing Profiles - collections to suppress',
-			'description' => 'Allow specific collection codes to be suppressed',
-			'sql'         => array(
 				"ALTER TABLE indexing_profiles ADD COLUMN `collectionsToSuppress` varchar(100) DEFAULT ''",
-			)
-		),
-
-		'indexing_profile_additional_fields_ToSuppress' => array(
-			'title'       => 'Indexing Profiles - ITypes, ICode2s & BCode3s to suppress',
-			'description' => 'Allow specific Itype, ICode2 & BCode3 codes to be suppressed',
-			'sql'         => array(
 				"ALTER TABLE indexing_profiles ADD COLUMN `iTypesToSuppress`  varchar(100) DEFAULT null ",
 				"ALTER TABLE indexing_profiles ADD COLUMN `iCode2sToSuppress` varchar(100) DEFAULT null ",
 				"ALTER TABLE indexing_profiles ADD COLUMN `bCode3sToSuppress` varchar(100) DEFAULT null ",
-			)
-		),
-
-		'indexing_profile_additional_fields_bcode3' => array(
-			'title'       => 'Indexing Profiles - BCode3s settings',
-			'description' => 'Allow specific collection codes to be suppressed',
-			'sql'         => array(
 				"ALTER TABLE indexing_profiles ADD COLUMN `sierraRecordFixedFieldsTag` char(3) DEFAULT null ",
 				"ALTER TABLE indexing_profiles ADD COLUMN `bCode3` char(1) DEFAULT NULL ",
-			)
-		),
-
-		'indexing_profile_folderCreation' => array(
-			'title'       => 'Indexing Profiles - Individual Folder Creation',
-			'description' => 'Determine how marc record folders should be created',
-			'sql'         => array(
 				"ALTER TABLE indexing_profiles ADD COLUMN `numCharsToCreateFolderFrom` int(11) DEFAULT 4",
 				"ALTER TABLE indexing_profiles ADD COLUMN `createFolderFromLeadingCharacters` tinyint(1) DEFAULT 1",
 				"UPDATE indexing_profiles SET `numCharsToCreateFolderFrom` = 7 WHERE name = 'hoopla'",
-			)
-		),
-
-		'indexing_profile_dueDateFormat' => array(
-			'title'           => 'Indexing Profiles - Due Date Format',
-			'description'     => 'Set the Due Date Format for an indexing profile',
-			'continueOnError' => true,
-			'sql'             => array(
 				"ALTER TABLE indexing_profiles ADD COLUMN `dueDateFormat` varchar(20) DEFAULT 'yyMMdd'",
 				"updateDueDateFormat",
-			)
-		),
-
-		'indexing_profile_extendLocationsToSuppress' => array(
-			'title'           => 'Indexing Profiles - Extend Locations To Suppress Size',
-			'description'     => 'Extend Locations To Suppress Size for an indexing profile',
-			'continueOnError' => true,
-			'sql'             => array(
 				"ALTER TABLE indexing_profiles CHANGE `locationsToSuppress` `locationsToSuppress` varchar(255)",
-			)
-		),
-
-		'indexing_profile_doAutomaticEcontentSuppression' => array(
-			'title'           => 'Indexing Profiles - Do Automatic EContent Suppression',
-			'description'     => 'Allow logic for whether or not automatic econtent suppression is enabled or disabled in an indexing profile',
-			'continueOnError' => true,
-			'sql'             => array(
 				"ALTER TABLE indexing_profiles ADD COLUMN `doAutomaticEcontentSuppression` tinyint(1) DEFAULT 1",
-			)
-		),
-
-		'indexing_profile_groupUnchangedFiles' => array(
-			'title'           => 'Indexing Profiles - Group Unchanged Files',
-			'description'     => 'Allow logic for whether or not files that haven\'t changed since the last grouping are regrouped',
-			'continueOnError' => true,
-			'sql'             => array(
 				"ALTER TABLE indexing_profiles ADD COLUMN `groupUnchangedFiles` tinyint(1) DEFAULT 0",
-			)
-		),
-
-		'indexing_profile_record_number_subfield' => array(
-			'title'       => 'Indexing Profiles - recordNumberField setting',
-			'description' => 'Allow the record number sub-field to be specified.',
-			'sql'         => array(
 				"ALTER TABLE indexing_profiles ADD COLUMN `recordNumberField` char(1) DEFAULT 'a' ",
-			)
-		),
-
-		'indexing_profile_format_determination_setting' => array(
-			'title'       => 'Indexing Profiles - Format determination setting, & MatTypes to ignore settings',
-			'description' => 'When format source is bib, setting to choose type of format determination',
-			'sql'         => array(
 				"ALTER TABLE `indexing_profiles` ADD COLUMN `formatDeterminationMethod` varchar(20) DEFAULT 'bib' ",
 				"ALTER TABLE `indexing_profiles` ADD COLUMN `materialTypesToIgnore` varchar(50) ",
-			)
+				"ALTER TABLE indexing_profiles ADD COLUMN materialTypeField VARCHAR(3)",
+				"UPDATE indexing_profiles  SET `recordDriver`='HooplaRecordDriver' WHERE name = 'hoopla'",
+			),
 		),
 
 		'translation_map_regex' => array(
@@ -370,39 +260,10 @@ function getIndexingUpdates(){
 				"ALTER TABLE location_records_to_include ADD COLUMN includeExcludeMatches TINYINT default 1",
 				"ALTER TABLE location_records_to_include ADD COLUMN urlToMatch VARCHAR(100)",
 				"ALTER TABLE location_records_to_include ADD COLUMN urlReplacement VARCHAR(100)",
-			)
-		),
 
-		'records_to_include_2018-03' => array(
-			'title'       => 'Increase Records To Include URL Replacement Column',
-			'description' => 'Increase Records To Include URL Replacement Column to 255 characters.',
-			'sql'         => array(
 				"ALTER TABLE `library_records_to_include` CHANGE COLUMN `urlReplacement` `urlReplacement` VARCHAR(255) NULL DEFAULT NULL",
 				"ALTER TABLE `location_records_to_include` CHANGE COLUMN `urlReplacement` `urlReplacement` VARCHAR(255) NULL DEFAULT NULL",
 			)
-		),
-
-		'indexing_profile_material_type_field' => array(
-			'title'       => 'Indexing Profiles - material type setting',
-			'description' => 'Material type field setting',
-			'sql'         => array(
-				"ALTER TABLE indexing_profiles ADD COLUMN materialTypeField VARCHAR(3)",
-			)
-		),
-		/* 2019.04.0 */
-		'ptype_label'                          => array(
-			'title'       => 'P-type label field',
-			'description' => 'Add P-type label field.',
-			'sql'         => array(
-				"ALTER TABLE ptype ADD COLUMN label VARCHAR(60) NULL",
-			)
-		),
-		'refactor_hoopla_record_driver'        => array(
-			'title'       => 'Change Hoopla Record Driver Name',
-			'description' => 'Change the name of the Hoopla Record Driver in the Hoopla indexing profile',
-			'sql'         => array(
-				"UPDATE indexing_profiles  SET `recordDriver`='HooplaRecordDriver' WHERE name = 'hoopla'",
-			),
 		),
 
 		//2019.07.0

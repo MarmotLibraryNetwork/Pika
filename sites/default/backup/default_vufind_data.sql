@@ -47,7 +47,6 @@ INSERT INTO `db_update` (`update_key`, `date_run`) VALUES
 ('epub_files_update_3', '2011-09-26 17:12:16'),
 ('epub_history_update_1', '2011-09-20 11:25:30'),
 ('epub_transactions', '2011-05-27 22:44:32'),
-('externalLinkTracking', '2012-01-06 08:25:54'),
 ('genealogy', '2012-04-20 21:07:16'),
 ('genealogy_1', '2012-04-20 21:06:18'),
 ('indexLog', '2012-03-30 22:05:31'),
@@ -77,15 +76,13 @@ INSERT INTO `db_update` (`update_key`, `date_run`) VALUES
 ('materialsRequest_update3', '2012-03-08 16:51:39'),
 ('materialsRequest_update4', '2012-03-19 16:10:45'),
 ('materialsRequest_update5', '2012-04-02 13:59:55'),
-('purchase_link_tracking', '2011-10-12 09:07:49'),
+
 ('readingHistory', '2012-03-19 16:10:44'),
 ('readingHistoryUpdate1', '2012-03-19 16:10:44'),
 ('recommendations_optOut', '2011-09-06 14:13:38'),
 ('reindexLog', '2012-04-19 15:15:02'),
 ('remove_old_tables', '2012-03-15 10:00:16'),
 ('rename_tables', '2012-04-20 18:36:00'),
-('resource_callnumber', '2012-03-30 21:40:15'),
-('resource_subject', '2012-03-30 23:15:24'),
 ('resource_update3', '2012-03-03 11:18:56'),
 ('resource_update4', '2012-04-20 21:10:53'),
 ('resource_update5', '2012-04-10 16:15:12'),
@@ -97,7 +94,6 @@ INSERT INTO `db_update` (`update_key`, `date_run`) VALUES
 ('sip2_item_cache', '2011-07-18 10:32:28'),
 ('sip2_item_cache_1', '2012-03-03 11:00:09'),
 ('spelling_optimization', '2012-04-02 00:21:47'),
-('usage_tracking', '2011-10-25 13:03:16'),
 ('user_display_name', '2011-07-06 15:58:22'),
 ('user_epub_history_1', '2011-08-17 16:29:55'),
 ('user_ilsType', '2012-03-15 10:00:16'),
@@ -124,8 +120,7 @@ CREATE TABLE IF NOT EXISTS `roles` (
 INSERT INTO `roles` (`roleId`, `name`, `description`) VALUES
 (1, 'userAdmin', 'Allows administration of users.'),
 (2, 'opacAdmin', 'Allows administration of the opac display (libraries, locations, etc).'),
-(4, 'cataloging', 'Allows user to perform cataloging activities.'),
-(5, 'epubAdmin', 'Allows administration of eContent.');
+(4, 'cataloging', 'Allows user to perform cataloging activities.');
 
 -- --------------------------------------------------------
 

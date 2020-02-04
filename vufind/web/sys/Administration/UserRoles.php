@@ -1,4 +1,21 @@
 <?php
+/**
+ * Pika Discovery Layer
+ * Copyright (C) 2020  Marmot Library Network
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
 
 /**
  *
@@ -9,16 +26,14 @@
  *
  */
 require_once 'DB/DataObject.php';
-require_once 'DB/DataObject/Cast.php';
 
-class UserRoles extends DB_DataObject
-{
+class UserRoles extends DB_DataObject {
 
 	public $__table = 'user_roles';// table name
 	public $userId; // int(11)
 	public $roleId; // int(11)
 
-	function keys() {
+	function keys(){
 		return array('userId', 'roleId');
 	}
 

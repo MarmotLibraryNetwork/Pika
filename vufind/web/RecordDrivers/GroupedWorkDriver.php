@@ -1,11 +1,29 @@
 <?php
 /**
+ * Pika Discovery Layer
+ * Copyright (C) 2020  Marmot Library Network
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+/**
  * GroupedWorkDriver Class
  *
  * This class handles the display of Grouped Works within VuFind.
  *
- * @category VuFind-Plus
- * @author Mark Noble <mark@marmot.org>
+ * @category Pika
+ * @author Mark Noble <pika@marmot.org>
  * Date: 11/26/13
  * Time: 1:51 PM
  */
@@ -57,7 +75,7 @@ class GroupedWorkDriver extends RecordInterface {
 	/**
 	 * GroupedWorkDriver constructor.
 	 *
-	 * @param $indexFields
+	 * @param array|string $indexFields  An array of the solr document fields, or grouped work Id as a string
 	 */
 	public function __construct($indexFields){
 		if (is_string($indexFields)){
@@ -267,17 +285,6 @@ class GroupedWorkDriver extends RecordInterface {
 	}
 
 	/**
-	 * Get any excerpts associated with this record.  For details of
-	 * the return format, see sys/Excerpts.php.
-	 *
-	 * @access  public
-	 * @return  array               Excerpt information.
-	 */
-	public function getExcerpts(){
-		// TODO: Implement getExcerpts() method.
-	}
-
-	/**
 	 * Assign necessary Smarty variables and return a template name to
 	 * load in order to export the record in the requested format.  For
 	 * legal values, see getExportFormats().  Returns null if format is
@@ -301,19 +308,6 @@ class GroupedWorkDriver extends RecordInterface {
 	 */
 	public function getExportFormats(){
 		// TODO: Implement getExportFormats() method.
-	}
-
-	/**
-	 * Assign necessary Smarty variables and return a template name to
-	 * load in order to display extended metadata (more details beyond
-	 * what is found in getCoreMetadata() -- used as the contents of the
-	 * Description tab of the record view).
-	 *
-	 * @access  public
-	 * @return  string              Name of Smarty template file to display.
-	 */
-	public function getExtendedMetadata(){
-		// TODO: Implement getExtendedMetadata() method.
 	}
 
 	/**
@@ -490,28 +484,16 @@ class GroupedWorkDriver extends RecordInterface {
 	}
 
 	/**
-	 * Get any reviews associated with this record.  For details of
-	 * the return format, see sys/Reviews.php.
-	 *
-	 * @access  public
-	 * @return  array               Review information.
-	 */
-	public function getReviews(){
-		// TODO: Implement getReviews() method.
-	}
-
-	/**
 	 * Assign necessary Smarty variables and return a template name to
 	 * load in order to display a summary of the item suitable for use in
 	 * search results.
 	 *
 	 * @access  public
 	 * @param string $view The current view.
-	 * @param boolean $useUnscopedHoldingsSummary Whether or not the result should show an unscoped holdings summary.
 	 *
 	 * @return  string              Name of Smarty template file to display.
 	 */
-	public function getSearchResult($view = 'list', $useUnscopedHoldingsSummary = false){
+	public function getSearchResult($view = 'list'){
 		if ($view == 'covers'){ // Displaying Results as bookcover tiles
 			return $this->getBrowseResult();
 		}
@@ -523,7 +505,6 @@ class GroupedWorkDriver extends RecordInterface {
 		global $memoryWatcher;
 
 		$interface->assign('displayingSearchResults', true);
-		$interface->assign('useUnscopedHoldingsSummary', $useUnscopedHoldingsSummary);
 
 		$id = $this->getUniqueID();
 		$timer->logTime("Starting to load search result for grouped work $id");
@@ -549,11 +530,7 @@ class GroupedWorkDriver extends RecordInterface {
 			$linkUrl     .= '?searchId=' . $interface->get_template_vars('searchId') . '&amp;recordIndex=' . $interface->get_template_vars('recordIndex') . '&amp;page=' . $interface->get_template_vars('page');
 		}else{
 			$linkUrl = '/GroupedWork/' . $id . '/Home?searchId=' . $interface->get_template_vars('searchId') . '&amp;recordIndex=' . $interface->get_template_vars('recordIndex') . '&amp;page=' . $interface->get_template_vars('page');
-			if ($useUnscopedHoldingsSummary){
-				$linkUrl .= '&amp;searchSource=marmot';
-			}else{
-				$linkUrl .= '&amp;searchSource=' . $interface->get_template_vars('searchSource');
-			}
+			$linkUrl .= '&amp;searchSource=' . $interface->get_template_vars('searchSource');
 		}
 
 		$interface->assign('summUrl', $linkUrl);
@@ -664,11 +641,10 @@ class GroupedWorkDriver extends RecordInterface {
 	 *
 	 * @access  public
 	 * @param string $view The current view.
-	 * @param boolean $useUnscopedHoldingsSummary Whether or not the result should show an unscoped holdings summary.
 	 *
 	 * @return  string              Name of Smarty template file to display.
 	 */
-	public function getCombinedResult($view = 'list', $useUnscopedHoldingsSummary = false){
+	public function getCombinedResult($view = 'list'){
 		if ($view == 'covers'){ // Displaying Results as bookcover tiles
 			return $this->getBrowseResult();
 		}
@@ -680,7 +656,6 @@ class GroupedWorkDriver extends RecordInterface {
 		global $memoryWatcher;
 
 		$interface->assign('displayingSearchResults', true);
-		$interface->assign('useUnscopedHoldingsSummary', $useUnscopedHoldingsSummary);
 
 		$id = $this->getUniqueID();
 		$timer->logTime("Starting to load search result for grouped work $id");
@@ -706,11 +681,7 @@ class GroupedWorkDriver extends RecordInterface {
 			$linkUrl     .= '?searchId=' . $interface->get_template_vars('searchId') . '&amp;recordIndex=' . $interface->get_template_vars('recordIndex') . '&amp;page=' . $interface->get_template_vars('page');
 		}else{
 			$linkUrl = '/GroupedWork/' . $id . '/Home?searchId=' . $interface->get_template_vars('searchId') . '&amp;recordIndex=' . $interface->get_template_vars('recordIndex') . '&amp;page=' . $interface->get_template_vars('page');
-			if ($useUnscopedHoldingsSummary){
-				$linkUrl .= '&amp;searchSource=marmot';
-			}else{
-				$linkUrl .= '&amp;searchSource=' . $interface->get_template_vars('searchSource');
-			}
+			$linkUrl .= '&amp;searchSource=' . $interface->get_template_vars('searchSource');
 		}
 
 		$interface->assign('summUrl', $linkUrl);
@@ -899,19 +870,18 @@ class GroupedWorkDriver extends RecordInterface {
 	}
 
 	/**
-	 * Assign necessary Smarty variables and return a template name to
-	 * load in order to display the Table of Contents extracted from the
-	 * record.  Returns null if no Table of Contents is available.
+	 * load in order to display the Table of Contents for the title.
+	 *  Returns null if no Table of Contents is available.
 	 *
 	 * @access  public
-	 * @return  string              Name of Smarty template file to display.
+	 * @return  string[]|null              contents to display.
 	 */
 	public function getTOC(){
 		$tableOfContents = array();
 		foreach ($this->getRelatedRecords() as $record){
 			if ($record['driver']){
 				$recordTOC = $record['driver']->getTOC();
-				if (count($recordTOC) > 0){
+				if (is_array($recordTOC) && count($recordTOC) > 0){
 					$editionDescription = "{$record['format']}";
 					if ($record['edition']){
 						$editionDescription .= " - {$record['edition']}";
@@ -936,26 +906,6 @@ class GroupedWorkDriver extends RecordInterface {
 	}
 
 	/**
-	 * Does this record have audio content available?
-	 *
-	 * @access  public
-	 * @return  bool
-	 */
-	public function hasAudio(){
-		// TODO: Implement hasAudio() method.
-	}
-
-	/**
-	 * Does this record have an excerpt available?
-	 *
-	 * @access  public
-	 * @return  bool
-	 */
-	public function hasExcerpt(){
-		// TODO: Implement hasExcerpt() method.
-	}
-
-	/**
 	 * Does this record have searchable full text in the index?
 	 *
 	 * Note: As of this writing, searchable full text is not a VuFind feature,
@@ -969,16 +919,6 @@ class GroupedWorkDriver extends RecordInterface {
 	}
 
 	/**
-	 * Does this record have image content available?
-	 *
-	 * @access  public
-	 * @return  bool
-	 */
-	public function hasImages(){
-		// TODO: Implement hasImages() method.
-	}
-
-	/**
 	 * Does this record support an RDF representation?
 	 *
 	 * @access  public
@@ -986,36 +926,6 @@ class GroupedWorkDriver extends RecordInterface {
 	 */
 	public function hasRDF(){
 		// TODO: Implement hasRDF() method.
-	}
-
-	/**
-	 * Does this record have reviews available?
-	 *
-	 * @access  public
-	 * @return  bool
-	 */
-	public function hasReviews(){
-		// TODO: Implement hasReviews() method.
-	}
-
-	/**
-	 * Does this record have a Table of Contents available?
-	 *
-	 * @access  public
-	 * @return  bool
-	 */
-	public function hasTOC(){
-		// TODO: Implement hasTOC() method.
-	}
-
-	/**
-	 * Does this record have video content available?
-	 *
-	 * @access  public
-	 * @return  bool
-	 */
-	public function hasVideo(){
-		// TODO: Implement hasVideo() method.
 	}
 
 	/**
@@ -1219,7 +1129,7 @@ class GroupedWorkDriver extends RecordInterface {
 		if ($absolutePath){
 			$bookCoverUrl = empty($configArray['Site']['coverUrl']) ? $configArray['Site']['url'] : $configArray['Site']['coverUrl'];
 		}else{
-			$bookCoverUrl = $configArray['Site']['path'];
+			$bookCoverUrl = '';
 		}
 		$bookCoverUrl .= "/bookcover.php?id={$this->getUniqueID()}&size={$size}&type=grouped_work";
 
@@ -2119,9 +2029,8 @@ class GroupedWorkDriver extends RecordInterface {
 	}
 
 	public function hasCachedSeries(){
-		//Get a list of isbns from the record
-		$novelist = NovelistFactory::getNovelist();
-		return $novelist->doesGroupedWorkHaveCachedSeries($this->getPermanentId());
+		require_once ROOT_DIR . '/sys/Novelist/Novelist3.php';
+		return NovelistData::doesGroupedWorkHaveCachedSeries($this->getPermanentId());
 	}
 
 	public function getSeries($allowReload = true){
@@ -2181,15 +2090,14 @@ class GroupedWorkDriver extends RecordInterface {
 	}
 
 	public function loadEnrichment(){
-		global $memoryWatcher;
-		$isbn       = $this->getCleanISBN();
+		$isbn       = $this->getCleanISBN(); // This prefers the Novelist primary ISBN
 		$enrichment = array();
-		if ($isbn == null || strlen($isbn) == 0){
-			return $enrichment;
+		if (!empty($isbn)){
+			$novelist = NovelistFactory::getNovelist();
+			global $memoryWatcher;
+			$memoryWatcher->logMemory('Setup Novelist Connection');
+			$enrichment['novelist'] = $novelist->loadEnrichment($this->getPermanentId(), $this->getISBNs());
 		}
-		$novelist = NovelistFactory::getNovelist();
-		$memoryWatcher->logMemory('Setup Novelist Connection');
-		$enrichment['novelist'] = $novelist->loadEnrichment($this->getPermanentId(), $this->getISBNs());
 		return $enrichment;
 	}
 
@@ -2573,6 +2481,9 @@ class GroupedWorkDriver extends RecordInterface {
 			}
 		}
 		return implode('&', $parts);
+
+		//TODO: replace with simplified use of http_build_query()
+		//return http_build_query($params);
 	}
 
 	private function getPublicationDates(){
@@ -2844,7 +2755,6 @@ class GroupedWorkDriver extends RecordInterface {
 	protected function setupRelatedRecordDetails($recordDetails, $groupedWork, $timer, $scopingInfo, $activePTypes, $searchLocation, $library, $forCovers = false){
 		//Check to see if we have any volume data for the record
 		global $memoryWatcher;
-		$volumeData = $this->getVolumeInfoForRecord($recordDetails[0]);
 
 		//		list($source) = explode(':', $recordDetails[0], 1); // this does not work for 'overdrive:27770ba9-9e68-410c-902b-de2de8e2b7fe', returns 'overdrive:27770ba9-9e68-410c-902b-de2de8e2b7fe'
 		// when loading book covers.
@@ -2853,6 +2763,8 @@ class GroupedWorkDriver extends RecordInterface {
 		$recordDriver = RecordDriverFactory::initRecordDriverById($recordDetails[0], $groupedWork);
 		$timer->logTime("Loaded Record Driver for $recordDetails[0]");
 		$memoryWatcher->logMemory("Loaded Record Driver for $recordDetails[0]");
+
+//		$volumeData = $recordDriver->getVolumeInfoForRecord();
 
 		//Setup the base record
 		$relatedRecord = array(
@@ -2880,7 +2792,7 @@ class GroupedWorkDriver extends RecordInterface {
 			'localAvailableCopies'   => 0,
 			'localCopies'            => 0,
 			'numHolds'               => !$forCovers && $recordDriver != null ? $recordDriver->getNumHolds() : 0,
-			'volumeHolds'            => !$forCovers && $recordDriver != null ? $recordDriver->getVolumeHolds($volumeData) : null,
+//			'volumeHolds'            => !$forCovers && $recordDriver != null ? $recordDriver->getVolumeHolds($volumeData) : null,
 			'hasLocalItem'           => false,
 			'holdRatio'              => 0,
 			'locationLabel'          => '',
@@ -3036,28 +2948,28 @@ class GroupedWorkDriver extends RecordInterface {
 			$relatedRecord['groupedStatus']      = GroupedWorkDriver::keepBestGroupedStatus($relatedRecord['groupedStatus'], $groupedStatus);
 			$relatedRecord['isAvailableToOrder'] = $relatedRecord['groupedStatus'] == 'Available to Order';
 
-			$volume   = null;
-			$volumeId = null;
-			if (count($volumeData)){
-				/** @var IlsVolumeInfo $volumeDataPoint */
-				foreach ($volumeData as $volumeDataPoint){
-					if ((strlen($volumeDataPoint->relatedItems) == 0) || (strpos($volumeDataPoint->relatedItems, $curItem[1]) !== false)){
-						if ($holdable){
-							$volumeDataPoint->holdable = true;
-						}
-						if (strlen($volumeDataPoint->relatedItems) > 0){
-							$volume   = $volumeDataPoint->displayLabel;
-							$volumeId = $volumeDataPoint->volumeId;
-							break;
-						}
-					}
-				}
-			}
-			if ($volume){
-				$description = $shelfLocation . ':' . $volume . $callNumber;
-			}else{
+//			$volumeRecordLabel = null;
+//			$volumeId          = null;
+//			if (count($volumeData)){
+//				/** @var IlsVolumeInfo $volumeDataPoint */
+//				foreach ($volumeData as $volumeDataPoint){
+//					if ((strlen($volumeDataPoint->relatedItems) == 0) || (strpos($volumeDataPoint->relatedItems, $curItem[1]) !== false)){
+//						if ($holdable){
+//							$volumeDataPoint->holdable = true;
+//						}
+//						if (strlen($volumeDataPoint->relatedItems) > 0){
+//							$volumeRecordLabel   = $volumeDataPoint->displayLabel;
+//							$volumeId = $volumeDataPoint->volumeId;
+//							break;
+//						}
+//					}
+//				}
+//			}
+//			if ($volumeRecordLabel){
+//				$description = $shelfLocation . ':' . $volumeRecordLabel . $callNumber;
+//			}else{
 				$description = $shelfLocation . ':' . $callNumber;
-			}
+//			}
 
 			$section = 'Other Locations';
 			if ($locallyOwned){
@@ -3103,9 +3015,9 @@ class GroupedWorkDriver extends RecordInterface {
 				$sectionId = 6;
 			}
 
-			if ((strlen($volume) > 0) && !substr($callNumber, -strlen($volume)) == $volume){
-				$callNumber = trim($callNumber . ' ' . $volume);
-			}
+//			if ((strlen($volumeRecordLabel) > 0) && !substr($callNumber, -strlen($volumeRecordLabel)) == $volumeRecordLabel){
+//				$callNumber = trim($callNumber . ' ' . $volumeRecordLabel);
+//			}
 			//Add the item to the item summary
 			$itemSummaryInfo = array(
 				'description'        => $description,
@@ -3129,8 +3041,8 @@ class GroupedWorkDriver extends RecordInterface {
 				'section'            => $section,
 				'relatedUrls'        => $relatedUrls,
 				'lastCheckinDate'    => isset($curItem[14]) ? $curItem[14] : '',
-				'volume'             => $volume,
-				'volumeId'           => $volumeId,
+//				'volume'             => $volumeRecordLabel,
+//				'volumeId'           => $volumeId,
 				'isEContent'         => $isEcontent,
 				'locationCode'       => $locationCode,
 				'subLocation'        => $subLocation,
@@ -3176,7 +3088,7 @@ class GroupedWorkDriver extends RecordInterface {
 		$memoryWatcher->logMemory("Setup record items");
 
 		if (!$forCovers){
-			$relatedRecord['actions'] = $recordDriver != null ? $recordDriver->getRecordActions($relatedRecord['availableLocally'] || $relatedRecord['availableOnline'], $recordHoldable, $recordBookable, $relatedUrls, $volumeData) : array();
+			$relatedRecord['actions'] = $recordDriver != null ? $recordDriver->getRecordActions($relatedRecord['availableLocally'] || $relatedRecord['availableOnline'], $recordHoldable, $recordBookable, $relatedUrls/*, $volumeData*/) : array();
 			$timer->logTime("Loaded actions");
 			$memoryWatcher->logMemory("Loaded actions");
 		}
@@ -3186,10 +3098,8 @@ class GroupedWorkDriver extends RecordInterface {
 	}
 
 	public function getRecordUrl(){
-		global $configArray;
 		$recordId = $this->getUniqueID();
-
-		return $configArray['Site']['path'] . '/' . $this->getModule() . '/' . urlencode($recordId) . '/Home';
+		return '/' . $this->getModule() . '/' . urlencode($recordId) . '/Home';
 	}
 
 	public function getAbsoluteUrl(){
@@ -3198,9 +3108,14 @@ class GroupedWorkDriver extends RecordInterface {
 		return $configArray['Site']['url'] . '/' . $this->getModule() . '/' . urlencode($recordId) . '/Home';
 	}
 
-	public function getLinkUrl($unscoped = false){
-		//TODO: Need to add search navigation parameters to the URL; and need to determine which existing calls should really use getRecordUrl() instead
-		return $this->getRecordUrl();
+	/**
+	 * A relative URL that is a link to the Full Record View AND additional search parameters
+	 * to the recent search the user has navigated from
+	 *
+	 * @return string
+	 */
+	public function getLinkUrl() {
+		return parent::getLinkUrl();
 	}
 
 	public function getModule(){
@@ -3431,24 +3346,4 @@ class GroupedWorkDriver extends RecordInterface {
 		return $url;
 	}
 
-	/**
-	 * @param string $recordID
-	 * @return array
-	 */
-	private function getVolumeInfoForRecord($recordID){
-		require_once ROOT_DIR . '/Drivers/marmot_inc/IlsVolumeInfo.php';
-		$volumeData             = array();
-		$volumeDataDB           = new IlsVolumeInfo();
-		$volumeDataDB->recordId = $recordID;
-		//D-81 show volume information even if there aren't related items
-		//$volumeDataDB->whereAdd('length(relatedItems) > 0');
-		if ($volumeDataDB->find()){
-			while ($volumeDataDB->fetch()){
-				$volumeData[] = clone($volumeDataDB);
-			}
-		}
-		$volumeDataDB = null;
-		unset($volumeDataDB);
-		return $volumeData;
-	}
 }

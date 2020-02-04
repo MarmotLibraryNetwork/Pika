@@ -1,11 +1,12 @@
 <?php
 /**
+ * Pika Discovery Layer
+ * Copyright (C) 2020  Marmot Library Network
  *
- * Copyright (C) Villanova University 2007.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2,
- * as published by the Free Software Foundation.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -13,9 +14,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 require_once ROOT_DIR . '/AJAXHandler.php';
@@ -37,19 +36,22 @@ class Union_AJAX extends AJAXHandler {
 		$sectionId       = $_REQUEST['id'];
 		list($className, $id) = explode(':', $sectionId);
 		$sectionObject = null;
-		if ($className == 'LibraryCombinedResultSection'){
-			$sectionObject     = new LibraryCombinedResultSection();
-			$sectionObject->id = $id;
-			$sectionObject->find(true);
-		}elseif ($className == 'LocationCombinedResultSection'){
-			$sectionObject     = new LocationCombinedResultSection();
-			$sectionObject->id = $id;
-			$sectionObject->find(true);
-		}else{
-			return array(
-				'success' => false,
-				'error'   => 'Invalid section id pased in',
-			);
+		switch ($className){
+			case 'LibraryCombinedResultSection':
+				$sectionObject     = new LibraryCombinedResultSection();
+				$sectionObject->id = $id;
+				$sectionObject->find(true);
+				break;
+			case 'LocationCombinedResultSection':
+				$sectionObject     = new LocationCombinedResultSection();
+				$sectionObject->id = $id;
+				$sectionObject->find(true);
+				break;
+			default:
+				return array(
+					'success' => false,
+					'error'   => 'Invalid section id passed in',
+				);
 		}
 		$searchTerm = $_REQUEST['searchTerm'];
 		$searchType = $_REQUEST['searchType'];
@@ -57,19 +59,25 @@ class Union_AJAX extends AJAXHandler {
 		$this->setShowCovers();
 
 		$fullResultsLink = $sectionObject->getResultsLink($searchTerm, $searchType);
-		if ($source == 'eds'){
-			$results = $this->getResultsFromEDS($searchTerm, $numberOfResults, $fullResultsLink);
-		}elseif ($source == 'pika'){
-			$results = $this->getResultsFromPika($searchTerm, $numberOfResults, $searchType, $fullResultsLink);
-		}elseif ($source == 'archive'){
-			$results = $this->getResultsFromArchive($numberOfResults, $searchType, $searchTerm, $fullResultsLink);
-
-		}elseif ($source == 'dpla'){
-			$results = $this->getResultsFromDPLA($searchTerm, $numberOfResults, $fullResultsLink);
-		}elseif ($source == 'prospector'){
-			$results = $this->getResultsFromProspector($searchType, $searchTerm, $numberOfResults, $fullResultsLink);
-		}else{
-			$results = "<div>Showing $numberOfResults for $source.  Show covers? $showCovers</div>";
+		switch ($source){
+			case 'eds':
+				$results = $this->getResultsFromEDS($searchTerm, $numberOfResults, $fullResultsLink);
+				break;
+			case 'pika':
+				$results = $this->getResultsFromPika($searchTerm, $numberOfResults, $searchType, $fullResultsLink);
+				break;
+			case 'archive':
+				$results = $this->getResultsFromArchive($numberOfResults, $searchType, $searchTerm, $fullResultsLink);
+				break;
+			case 'dpla':
+				$results = $this->getResultsFromDPLA($searchTerm, $numberOfResults, $fullResultsLink);
+				break;
+			case 'prospector':
+				$results = $this->getResultsFromProspector($searchType, $searchTerm, $numberOfResults, $fullResultsLink);
+				break;
+			default:
+				$results = "<div>Showing $numberOfResults for $source.  Show covers? $showCovers</div>";
+				break;
 		}
 		$results .= "<div><a href='" . $fullResultsLink . "' target='_blank'>Full Results from {$sectionObject->displayName}</a></div>";
 

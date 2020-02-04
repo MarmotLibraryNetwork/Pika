@@ -1,11 +1,12 @@
 <?php
 /**
+ * Pika Discovery Layer
+ * Copyright (C) 2020  Marmot Library Network
  *
- * Copyright (C) Villanova University 2007.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2,
- * as published by the Free Software Foundation.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -13,25 +14,16 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-require_once ROOT_DIR . "/Action.php";
+require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
 
-require_once 'Home.php';
+class MyAccount_Edit extends MyAccount {
 
-class MyAccount_Edit extends Action
-{
-	function __construct()
-	{
-	}
-
-	private function saveChanges($user)
-	{
+	private function saveChanges(){
 		require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
-		$userListEntry = new UserListEntry();
+		$userListEntry     = new UserListEntry();
 		$userListEntry->id = $_REQUEST['listEntry'];
 		if ($userListEntry->find(true)){
 			$userListEntry->notes = strip_tags($_REQUEST['notes']);
@@ -39,59 +31,49 @@ class MyAccount_Edit extends Action
 		}
 	}
 
-	function launch($msg = null)
-	{
+	function launch($msg = null){
 		global $interface;
-		global $configArray;
-
-		if (!UserAccount::isLoggedIn()) {
-			require_once ROOT_DIR . '/services/MyAccount/Login.php';
-			MyAccount_Login::launch();
-			exit();
-		}else{
-			$user = UserAccount::getLoggedInUser();
-		}
 
 		// Save Data
 		$listId = isset($_REQUEST['list_id']) ? $_REQUEST['list_id'] : null;
 		if (is_array($listId)){
 			$listId = array_pop($listId);
 		}
-		if (!empty($listId) && ctype_digit($listId)) {
-			if (isset($_POST['submit'])) {
-				$this->saveChanges($user);
+		if (!empty($listId) && ctype_digit($listId)){
+			if (isset($_POST['submit'])){
+				$this->saveChanges();
 
 				// After changes are saved, send the user back to an appropriate page;
 				// either the list they were viewing when they started editing, or the
 				// overall favorites list.
-				if (isset($listId)) {
+				if (isset($listId)){
 					$nextAction = 'MyList/' . $listId;
-				} else {
+				}else{
 					$nextAction = 'Home';
 				}
-				header('Location: ' . $configArray['Site']['path'] . '/MyAccount/' . $nextAction);
+				header('Location: ' . '/MyAccount/' . $nextAction);
 				exit();
 			}
 
 			require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
 			$userList     = new UserList();
 			$userList->id = $listId;
-			if ($userList->find(true)) {
+			if ($userList->find(true)){
 				$interface->assign('list', $userList);
 
-				$id = $_GET['id'];
-				if (!empty($id)) {
+				$id = $_GET['titleIdForListEntry'];
+				if (!empty($id)){
 					// Item ID
 					$interface->assign('recordId', $id);
 
-					if (strpos($id, ':') === false) {
+					if (strpos($id, ':') === false){
 						// Grouped Works (Catalog Items)
 						require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 						$groupedWorkDriver = new GroupedWorkDriver($id);
-						if ($groupedWorkDriver->isValid) {
+						if ($groupedWorkDriver->isValid){
 							$interface->assign('recordDriver', $groupedWorkDriver);
 						}
-					} else {
+					}else{
 						// Archive Objects
 						require_once ROOT_DIR . './sys/Utils/FedoraUtils.php';
 						$fedoraUtils         = FedoraUtils::getInstance();
@@ -105,18 +87,18 @@ class MyAccount_Edit extends Action
 					$userListEntry                         = new UserListEntry();
 					$userListEntry->groupedWorkPermanentId = $id;
 					$userListEntry->listId                 = $listId;
-					if ($userListEntry->find(true)) {
+					if ($userListEntry->find(true)){
 						$interface->assign('listEntry', $userListEntry);
-					} else {
+					}else{
 						$interface->assign('error', 'The item you selected is not part of the selected list.');
 					}
-				} else {
+				}else{
 					$interface->assign('error', 'No ID for the list item.');
 				}
-			} else {
+			}else{
 				$interface->assign('error', "List {$listId} was not found.");
 			}
-		} else {
+		}else{
 			$interface->assign('error', 'Invalid List ID.');
 		}
 		$this->display('editListTitle.tpl', 'Edit List Entry');

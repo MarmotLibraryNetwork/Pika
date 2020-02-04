@@ -1,11 +1,12 @@
 <?php
 /**
+ * Pika Discovery Layer
+ * Copyright (C) 2020  Marmot Library Network
  *
- * Copyright (C) Villanova University 2007.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2,
- * as published by the Free Software Foundation.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -13,16 +14,21 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
+use Pika\Logger;
 require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
 require_once ROOT_DIR . '/sys/Pager.php';
 
 class ReadingHistory extends MyAccount
 {
+	private $logger;
+
+	public function __construct()
+	{
+		$this->logger = new Logger('ReadingHistory');
+	}
+
 	function launch()
 	{
 		global $configArray;
@@ -48,8 +54,10 @@ class ReadingHistory extends MyAccount
 				$patron = $user->getUserReferredTo($patronId);
 				if (count($linkedUsers) > 0) {
 					array_unshift($linkedUsers, $user);
-					$interface->assign('linkedUsers', $linkedUsers);
+
 				}
+				// make sure linkedUsers makes to template even if empty so we don't get warnings
+				$interface->assign('linkedUsers', $linkedUsers);
 				$interface->assign('selectedUser', $patronId); // needs to be set even when there is only one user so that the patronId hidden input gets a value in the reading history form.
 
 				//Check to see if there is an action to perform.
@@ -72,12 +80,11 @@ class ReadingHistory extends MyAccount
 							break;
 						default:
 							// Deprecated action; should be replaced with above action-specific calls
-							global $logger;
-							$logger->log('Call to undefined reading history action : ' . $readingHistoryAction, PEAR_LOG_WARNING);
+							$this->logger->warn('Call to undefined reading history action : ' . $readingHistoryAction);
 					}
 
 					//redirect back to the current location without the action.
-					$newLocation = "{$configArray['Site']['path']}/MyAccount/ReadingHistory";
+					$newLocation = "/MyAccount/ReadingHistory";
 					if (isset($_REQUEST['page']) && $readingHistoryAction != 'deleteAll' && $readingHistoryAction != 'optOut'){
 						$params[] = 'page=' . $_REQUEST['page'];
 					}

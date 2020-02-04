@@ -19,7 +19,7 @@
 			</p>
 		</div>
 	{else}
-		<form method="post" action="{$path}/MyAccount/Home" id="loginForm" class="form-horizontal" role="form" onsubmit="return VuFind.Account.processAjaxLogin()">
+		<form method="post" action="/MyAccount/Home" id="loginForm" class="form-horizontal" role="form" onsubmit="return VuFind.Account.processAjaxLogin()">
 			<div id="missingLoginPrompt" style="display: none">Please enter both {$usernameLabel} and {$passwordLabel}.</div>
 			<div id="loginUsernameRow" class="form-group">
 				<label for="username" class="control-label col-xs-12 col-sm-4">{$usernameLabel}:</label>
@@ -35,15 +35,15 @@
 						<p class="text-muted help-block">
 							<strong>Forgot PIN?</strong>&nbsp;
 							{if $useEmailResetPin}
-								<a href="{$path}/MyAccount/EmailResetPin">Reset My PIN</a>
+								<a href="/MyAccount/EmailResetPin">Reset My PIN</a>
 							{else}
-								<a href="{$path}/MyAccount/EmailPin">E-mail my PIN</a>
+								<a href="/MyAccount/EmailPin">E-mail my PIN</a>
 							{/if}
 						</p>
 					{/if}
 					{if $enableSelfRegistration == 1}
 						<p class="help-block">
-							Don't have a library card?  <a href="{$path}/MyAccount/SelfReg">Register for a new Library Card</a>.
+							Don't have a library card?  <a href="/MyAccount/SelfReg">Register for a new Library Card</a>.
 						</p>
 					{/if}
 				</div>

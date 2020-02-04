@@ -5,7 +5,7 @@
 		<h1>Database Maintenance</h1>
 	{/if}
 	<div id="maintenanceOptions"></div>
-	<form id="dbMaintenance" action="{$path}/Admin/{$action}">
+	<form id="dbMaintenance" action="/Admin/{$action}">
 		<div>
 			<table class="table">
 				<thead>

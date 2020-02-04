@@ -1,20 +1,33 @@
 <?php
 /**
+ * Pika Discovery Layer
+ * Copyright (C) 2020  Marmot Library Network
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+/**
  * Table Definition for user
  */
 require_once 'DB/DataObject.php';
-require_once 'DB/DataObject/Cast.php';
 
 class User extends DB_DataObject {
-	###START_AUTOCODE
-	/* the code below is auto generated do not remove the above tag */
 
 	public $__table = 'user';                            // table name
 	public $id;                              // int(11)  not_null primary_key auto_increment
 	public $source;
 	public $username;                        // string(30)  not_null unique_key
 	public $displayName;                     // string(30)
-	public $password;                        // string(32)  not_null
 	public $firstname;                       // string(50)  not_null
 	public $lastname;                        // string(50)  not_null
 	public $email;                           // string(250)  not_null
@@ -49,7 +62,7 @@ class User extends DB_DataObject {
 	private $viewers;
 
 	//Data that we load, but don't store in the User table
-	public $fullname;
+	public $fullname; //TODO: remove, I think this only get set by the catalog drivers, and is never used anywhere else
 	public $address1;
 	public $address2;
 	public $city;
@@ -214,49 +227,39 @@ class User extends DB_DataObject {
 	function getRoles($isGuidingUser = false){
 		if (is_null($this->roles)){
 			$this->roles = array();
-			//Load roles for the user from the user
-			require_once ROOT_DIR . '/sys/Administration/Role.php';
-			$role            = new Role();
-			$canUseTestRoles = false;
 			if ($this->id){
-				$escapedId = mysql_escape_string($this->id);
-				$role->query("SELECT roles.* FROM roles INNER JOIN user_roles ON roles.roleId = user_roles.roleId WHERE userId = " . $escapedId . " ORDER BY name");
-				while ($role->fetch()){
-					$this->roles[$role->roleId] = $role->name;
-					if ($role->name == 'userAdmin'){
-						$canUseTestRoles = true;
+				//Load roles for the user from the user
+				require_once ROOT_DIR . '/sys/Administration/Role.php';
+				$role = new Role();
+				$role->selectAs();
+				$role->joinAdd(['roleId', 'user_roles:roleId']);
+				$role->whereAdd('userId = ' . $this->id);
+				$role->orderBy('name');
+				$this->roles     = $role->fetchAll('roleId', 'name');
+				$canUseTestRoles = in_array('userAdmin', $this->roles);
+
+				if ($canUseTestRoles){
+					$testRole = isset($_REQUEST['test_role']) ? $_REQUEST['test_role'] : (isset($_COOKIE['test_role']) ? $_COOKIE['test_role'] : false);
+					if ($testRole){
+						$testRoles = is_array($testRole) ? $testRole : array($testRole);
+						foreach ($testRoles as $tmpRole){
+							$role = new Role();
+							if (is_numeric($tmpRole)){
+								$role->roleId = $tmpRole;
+							}else{
+								$role->name = $tmpRole;
+							}
+							if ($role->find(true)){
+								$this->roles[$role->roleId] = $role->name;
+							}
+						}
 					}
 				}
 			}
 
-			//Setup masquerading as different users
-			$testRole = '';
-			if (isset($_REQUEST['test_role'])){
-				$testRole = $_REQUEST['test_role'];
-			}elseif (isset($_COOKIE['test_role'])){
-				$testRole = $_COOKIE['test_role'];
-			}
-			if ($canUseTestRoles && $testRole != ''){
-				if (is_array($testRole)){
-					$testRoles = $testRole;
-				}else{
-					$testRoles = array($testRole);
-				}
-				foreach ($testRoles as $tmpRole){
-					$role = new Role();
-					if (is_numeric($tmpRole)){
-						$role->roleId = $tmpRole;
-					}else{
-						$role->name = $tmpRole;
-					}
-					$found = $role->find(true);
-					if ($found == true){
-						$this->roles[$role->roleId] = $role->name;
-					}
-				}
-			}
 		}
 
+		//Setup masquerading as different users
 		$masqueradeMode = UserAccount::isUserMasquerading();
 		if ($masqueradeMode && !$isGuidingUser){
 			if (is_null($this->masqueradingRoles)){
@@ -310,22 +313,22 @@ class User extends DB_DataObject {
 					return $this->barcode;
 				}
 			}
-			global $configArray;
-			if ($configArray['Catalog']['barcodeProperty'] == 'cat_username'){
-				$this->barcode = trim($this->cat_username);
-				return $this->barcode;
-			}else{
-				$this->barcode = trim($this->cat_password);
-				return $this->barcode;
-			}
+//			global $configArray;
+//			if ($configArray['Catalog']['barcodeProperty'] == 'cat_username'){
+//				$this->barcode = trim($this->cat_username);
+//				return $this->barcode;
+//			}else{
+//				$this->barcode = trim($this->cat_password);
+//				return $this->barcode;
+//			}
 		}
 	}
 
 
 	function saveRoles(){
 		if (isset($this->id) && isset($this->roles) && is_array($this->roles)){
-			require_once ROOT_DIR . '/sys/Administration/Role.php';
-			$role      = new Role();
+			require_once ROOT_DIR . '/sys/Administration/UserRoles.php';
+			$role      = new UserRoles();
 			$escapedId = $this->escape($this->id, false);
 			$role->query("DELETE FROM user_roles WHERE userId = " . $escapedId);
 			//Now add the new values.
@@ -341,6 +344,8 @@ class User extends DB_DataObject {
 	}
 
 	/**
+	 * Fetches additional User objects that have been linked to this User object.
+	 *
 	 * @return User[]
 	 */
 	function getLinkedUsers(){
@@ -356,23 +361,23 @@ class User extends DB_DataObject {
 				require_once ROOT_DIR . '/sys/Account/UserLink.php';
 				$userLink                   = new UserLink();
 				$userLink->primaryAccountId = $this->id;
-				$userLink->find();
-				while ($userLink->fetch()){
-					if (!$this->isBlockedAccount($userLink->linkedAccountId)){
-						$linkedUser     = new User();
-						$linkedUser->id = $userLink->linkedAccountId;
-						if ($linkedUser->find(true)){
-							/** @var User $userData */
-							$userData = $memCache->get("user_{$serverName}_{$linkedUser->id}");
-							if ($userData === false || isset($_REQUEST['reload'])){
-								//Load full information from the catalog
-								$linkedUser = UserAccount::validateAccount($linkedUser->cat_username, $linkedUser->cat_password, $linkedUser->source, $this);
-							}else{
-								$logger->log("Found cached linked user {$userData->id}", PEAR_LOG_DEBUG);
-								$linkedUser = $userData;
-							}
-							if ($linkedUser && !PEAR_Singleton::isError($linkedUser)){
-								$this->linkedUsers[] = clone($linkedUser);
+				if ($userLink->find()){
+					while ($userLink->fetch()){
+						if (!$this->isBlockedAccount($userLink->linkedAccountId)){
+							$linkedUser     = new User();
+							$linkedUser->id = $userLink->linkedAccountId;
+							if ($linkedUser->find(true)){
+								$cacheKey = $_SERVER['SERVER_NAME']."-patron-".$linkedUser->id;
+								$userData = $memCache->get($cacheKey);
+								if (empty($userData) || isset($_REQUEST['reload'])){
+									//Load full information from the catalog
+									$linkedUser = UserAccount::validateAccount($linkedUser->cat_username, $linkedUser->cat_password, $linkedUser->source, $this);
+								}else{
+									$linkedUser = $userData;
+								}
+								if ($linkedUser && !PEAR_Singleton::isError($linkedUser)){
+									$this->linkedUsers[] = clone($linkedUser);
+								}
 							}
 						}
 					}
@@ -462,7 +467,7 @@ class User extends DB_DataObject {
 
 	function isValidForOverDrive(){
 		if ($this->parentUser == null || ($this->getBarcode() != $this->parentUser->getBarcode())){
-			$userHomeLibrary = Library::getPatronHomeLibrary($this);
+			$userHomeLibrary = $this->getHomeLibrary();
 			if ($userHomeLibrary && $userHomeLibrary->enableOverdriveCollection){
 				return true;
 			}
@@ -472,7 +477,7 @@ class User extends DB_DataObject {
 
 	function isValidForHoopla(){
 		if ($this->parentUser == null || ($this->getBarcode() != $this->parentUser->getBarcode())){
-			$userHomeLibrary = Library::getPatronHomeLibrary($this);
+			$userHomeLibrary = $this->getHomeLibrary();
 			if ($userHomeLibrary && $userHomeLibrary->hooplaLibraryID > 0){
 				return true;
 			}
@@ -494,6 +499,35 @@ class User extends DB_DataObject {
 		}
 
 		return $hooplaUsers;
+	}
+
+	function isValidForRBDigital(){
+		if ($this->parentUser == null || ($this->getBarcode() != $this->parentUser->getBarcode())){
+//			return false;
+			return true;
+			//TODO: implement
+//			$userHomeLibrary = $this->getHomeLibrary();
+//			if ($userHomeLibrary && $userHomeLibrary->RBDigitalLibraryID > 0){
+//				return true;
+//			}
+		}
+		return false;
+	}
+
+	function getRelatedRBDigitalUsers(){
+		$RBDigitalUsers = array();
+		if ($this->isValidForRBDigital()){
+			$RBDigitalUsers[$this->cat_username . ':' . $this->cat_password] = $this;
+		}
+		foreach ($this->getLinkedUsers() as $linkedUser){
+			if ($linkedUser->isValidForRBDigital()){
+				if (!array_key_exists($linkedUser->cat_username . ':' . $linkedUser->cat_password, $RBDigitalUsers)){
+					$RBDigitalUsers[$linkedUser->cat_username . ':' . $linkedUser->cat_password] = $linkedUser;
+				}
+			}
+		}
+
+		return $RBDigitalUsers;
 	}
 
 	/**
@@ -588,9 +622,8 @@ class User extends DB_DataObject {
 	}
 
 
-	function update(){
+	function update($dataObject = false){
 		$result = parent::update();
-		$this->saveRoles();
 		$this->clearCache(); // Every update to object requires clearing the Memcached version of the object
 		return $result;
 	}
@@ -613,7 +646,7 @@ class User extends DB_DataObject {
 		}
 
 		parent::insert();
-		$this->saveRoles();
+//		$this->saveRoles(); // this should happen in the __set() method
 		$this->clearCache();
 	}
 
@@ -623,36 +656,28 @@ class User extends DB_DataObject {
 	}
 
 	function getObjectStructure(){
-		//Lookup available roles in the system
 		require_once ROOT_DIR . '/sys/Administration/Role.php';
-		$roleList = Role::getLookup();
-
-		$structure = array(
-			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Administrator Id', 'description' => 'The unique id of the in the system'),
-			'firstname' => array('property' => 'firstname', 'type' => 'label', 'label' => 'First Name', 'description' => 'The first name for the user.'),
-			'lastname' => array('property' => 'lastname', 'type' => 'label', 'label' => 'Last Name', 'description' => 'The last name of the user.'),
+		$user                   = UserAccount::getActiveUserObj();
+		$barcodeProperty        = $user->getAccountProfile()->loginConfiguration == 'name_barcode' ? 'cat_password' : 'cat_username';
+		$displayBarcode         = $barcodeProperty == 'cat_username';
+		$thisIsNotAListOfAdmins = isset($_REQUEST['objectAction']) && $_REQUEST['objectAction'] != 'list';
+		$roleList               = Role::fetchAllRoles($thisIsNotAListOfAdmins);  // Lookup available roles in the system, don't show the role description is lists of admins
+		$structure              = array(
+			'id'              => array('property' => 'id', 'type' => 'label', 'label' => 'Administrator Id', 'description' => 'The unique id of the in the system'),
+			'firstname'       => array('property' => 'firstname', 'type' => 'label', 'label' => 'First Name', 'description' => 'The first name for the user.'),
+			'lastname'        => array('property' => 'lastname', 'type' => 'label', 'label' => 'Last Name', 'description' => 'The last name of the user.'),
 			'homeLibraryName' => array('property' => 'homeLibraryName', 'type' => 'label', 'label' => 'Home Library', 'description' => 'The library the user belongs to.'),
-			'homeLocation' => array('property' => 'homeLocation', 'type' => 'label', 'label' => 'Home Location', 'description' => 'The branch the user belongs to.'),
+			'homeLocation'    => array('property' => 'homeLocation', 'type' => 'label', 'label' => 'Home Location', 'description' => 'The branch the user belongs to.'),
 		);
 
-		global $configArray;
-		$barcodeProperty      = $configArray['Catalog']['barcodeProperty'];
-		$structure['barcode'] = array('property' => $barcodeProperty, 'type' => 'label', 'label' => 'Barcode', 'description' => 'The barcode for the user.');
+		if ($displayBarcode || $thisIsNotAListOfAdmins){
+			//When not displaying barcode, show it for the individual admin
+			$structure['barcode'] = array('property' => $barcodeProperty, 'type' => 'label', 'label' => 'Barcode', 'description' => 'The barcode for the user.');
+		}
 
 		$structure['roles'] = array('property' => 'roles', 'type' => 'multiSelect', 'listStyle' => 'checkbox', 'values' => $roleList, 'label' => 'Roles', 'description' => 'A list of roles that the user has.');
 
 		return $structure;
-	}
-
-	function getFilters(){
-		require_once ROOT_DIR . '/sys/Administration/Role.php';
-		$roleList     = Role::getLookup();
-		$roleList[-1] = 'Any Role';
-		return array(
-			array('filter' => 'role', 'type' => 'enum', 'values' => $roleList, 'label' => 'Role'),
-			array('filter' => 'cat_password', 'type' => 'text', 'label' => 'Login'),
-			array('filter' => 'cat_username', 'type' => 'text', 'label' => 'Name'),
-		);
 	}
 
 	function hasRatings(){
@@ -663,11 +688,7 @@ class User extends DB_DataObject {
 		$rating->whereAdd("`userId` = {$this->id}");
 		$rating->whereAdd('`rating` > 0'); // Some entries are just reviews (and therefore have a default rating of -1)
 		$rating->find();
-		if ($rating->N > 0){
-			return true;
-		}else{
-			return false;
-		}
+		return $rating->N > 0 ? true : false;
 	}
 
 	private $runtimeInfoUpdated = false;
@@ -758,10 +779,17 @@ class User extends DB_DataObject {
 	 * Clear out the cached version of the patron profile.
 	 */
 	function clearCache(){
-		/** @var Memcache $memCache */
-		global $memCache, $serverName;
-		$memCache->delete("user_{$serverName}_" . $this->id); // now stored by User object id column
-		$memCache->delete("patron_" . $this->getBarcode() . '_patron'); // and variations
+		global $memCache;
+		global $logger;
+		$hostname = gethostname();
+		$cacheKey = $hostname . "-patron-" . $this->id;
+		$r = $memCache->delete($cacheKey); // now stored by User object id column
+		$rString = "false";
+		if($r) {
+			$rString = "true";
+		}
+
+		$logger->log("Delete patron from memcache:".$cacheKey. ":".$rString, PEAR_LOG_DEBUG);
 	}
 
 	/**
@@ -777,8 +805,10 @@ class User extends DB_DataObject {
 			$listUser     = new User();
 			$listUser->id = $list->user_id;
 			$listUser->find(true);
-			$listLibrary = Library::getLibraryForLocation($listUser->homeLocationId);
-			$userLibrary = Library::getLibraryForLocation($this->homeLocationId);
+			$listLibrary = $listUser->getHomeLibrary();
+			$userLibrary = $this->getHomeLibrary();
+//			$listLibrary = Library::getLibraryForLocation($listUser->homeLocationId);
+//			$userLibrary = Library::getLibraryForLocation($this->homeLocationId);
 			if ($userLibrary->libraryId == $listLibrary->libraryId){
 				return true;
 			}elseif (strpos($list->title, 'NYT - ') === 0 && ($this->hasRole('libraryAdmin') || $this->hasRole('contentEditor'))){
@@ -800,6 +830,9 @@ class User extends DB_DataObject {
 	 * @return Library|null
 	 */
 	function getHomeLibrary(){
+		// Note: Use this for one persistent User.
+		// If fetching multiple Users in a fetch loop use Library::getPatronHomeLibrary($user) instead
+
 		if ($this->homeLibrary == null){
 			$this->homeLibrary = Library::getPatronHomeLibrary($this);
 		}
@@ -935,6 +968,15 @@ class User extends DB_DataObject {
 			$hooplaCheckedOutItems = $hooplaDriver->getHooplaCheckedOutItems($this);
 			$allCheckedOut         = array_merge($allCheckedOut, $hooplaCheckedOutItems);
 		}
+
+		//Get checked out titles from RBDigital
+		//Do not load RBDigital titles if the parent barcode (if any) is the same as the current barcode
+//		if ($this->isValidForRBDigital()){
+//			require_once ROOT_DIR . '/Drivers/RBdigitalDriver.php';
+//			$RBDigitalDriver          = new RBdigitalDriver();
+//			$RBDigitalCheckedOutItems = $RBDigitalDriver->getCheckouts($this);
+//			$allCheckedOut            = array_merge($allCheckedOut, $RBDigitalCheckedOutItems);
+//		}
 
 		if ($includeLinkedUsers){
 			if ($this->getLinkedUsers() != null){
@@ -1283,6 +1325,139 @@ class User extends DB_DataObject {
 		return $result;
 	}
 
+
+	/**
+	 * Sets the user's expiration date settings given any string parsable by the standard
+	 * at https://www.php.net/manual/en/datetime.formats.php
+	 * If the date string isn't valid, it set the user's setting to the standard defaults;
+	 *
+	 * NOTE: this does NOT update the database.
+	 *
+	 * @param $dateString
+	 */
+	function setUserExpirationSettings($dateString){
+		$this->expires     = '00-00-0000';
+		$this->expireClose = 0;
+		$this->expired     = 0;
+
+		try {
+			$expiresDate   = new DateTime($dateString);
+			$this->expires = $expiresDate->format('m-d-Y');
+			$nowDate       = new DateTime('now');
+			$dateDiff      = $nowDate->diff($expiresDate);
+			if ($dateDiff->days <= 30){
+				$this->expireClose = 1;
+			}
+			if ($dateDiff->days <= 0){
+				$this->expired = 1;
+			}
+		} catch (\Exception $e){
+		}
+	}
+
+	/**
+	 * This sets the User's home locations and nearby locations.
+	 * If there isn't a match to the code, there is a fall-back
+	 * to using the main branch or first location of the current library.
+	 * After which, there is a fall-back to main branch or first location
+	 * of the site's default library.
+	 *
+	 * NOTE: this does NOT update the database.
+	 *
+	 * @param string $homeBranchCode The ILS location code for a library branch (matching column code in location table)
+	 * @return bool   Whether or not the user needs to be updated in the database.
+	 */
+	function setUserHomeLocations($homeBranchCode){
+		$updateUserNeeded = false;
+		$homeBranchCode = strtolower($homeBranchCode);
+		$location       = new Location();
+		$location->code = $homeBranchCode;
+		if (!$location->find(true)){
+			if (!empty($this->homeLocationId)){
+				$location = new Location();
+				if (!$location->get($this->homeLocationId)){
+					unset($location);
+				}
+			}else {
+				unset($location);
+			}
+		}
+
+		$userHomeLocationNotSet = empty($this->homeLocationId) || $this->homeLocationId == -1;
+		$homeLocationHasChanged = isset($location) && $this->homeLocationId != $location->locationId;
+		if ($homeLocationHasChanged){
+			$updateUserNeeded = true;
+		}
+		if ($userHomeLocationNotSet){
+			$updateUserNeeded = true;
+
+			// homeBranch Code not found in location table and the user doesn't have an assigned home location,
+			// try to find the main branch to assign to user
+			// or the first location for the library
+
+			global $library;
+			if (!empty($library->libraryId)){
+				$location            = new Location();
+				$location->libraryId = $library->libraryId;
+				$location->orderBy('isMainBranch desc');// gets the main branch first or the first location
+				if (!$location->find(true)){
+					$defaultLibrary            = new Library();
+					$defaultLibrary->isDefault = true;
+					if ($defaultLibrary->find(true)){
+						$location            = new Location();
+						$location->libraryId = $defaultLibrary->libraryId;
+						$location->orderBy('isMainBranch desc'); // gets the main branch first or the first location
+						if (!$location->find(true)){
+							global $logger;
+							$logger->log('Failed to find any location to assign to user as home location', PEAR_LOG_ERR);
+							return false;
+						}
+					}else{
+						global $logger;
+						$logger->log('Failed to find the site default library', PEAR_LOG_ERR);
+						return false;
+					}
+				}
+			}else{
+				return false;
+			}
+
+		}
+
+		if (isset($location)){
+			$this->homeLocationId = $location->locationId;
+
+			//Get display names that aren't stored
+			$this->homeLocationCode = $location->code;
+			$this->homeLocation     = $location->displayName;
+
+			// Get Alternate Locations
+			if (empty($this->myLocation1Id)){
+				$this->myLocation1Id = ($location->nearbyLocation1 > 0) ? $location->nearbyLocation1 : $location->locationId;
+			}
+			/** @var /Location $location */
+			//Get display name for preferred location 1
+			$myLocation1             = new Location();
+			$myLocation1->locationId = $this->myLocation1Id;
+			if ($myLocation1->find(true)){
+				$this->myLocation1 = $myLocation1->displayName;
+			}
+
+			if (empty($this->myLocation2Id)){
+				$this->myLocation2Id = ($location->nearbyLocation2 > 0) ? $location->nearbyLocation2 : $location->locationId;
+			}
+			//Get display name for preferred location 2
+			$myLocation2             = new Location();
+			$myLocation2->locationId = $this->myLocation2Id;
+			if ($myLocation2->find(true)){
+				$this->myLocation2 = $myLocation2->displayName;
+			}
+		}
+
+		return $updateUserNeeded;
+	}
+
+
 	function updateAltLocationForHold($pickupBranch){
 		if ($this->homeLocationCode != $pickupBranch){
 			global $logger;
@@ -1522,7 +1697,7 @@ class User extends DB_DataObject {
 		global $configArray;
 		if (count($this->getRoles()) > 0){
 			return true;
-		}elseif (isset($configArray['Staff P-Types'])){
+		}elseif (!empty($configArray['Staff P-Types'])){
 			$staffPTypes = $configArray['Staff P-Types'];
 			$pType       = $this->patronType;
 			if ($pType && array_key_exists($pType, $staffPTypes)){

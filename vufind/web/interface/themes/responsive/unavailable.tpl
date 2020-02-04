@@ -1,11 +1,10 @@
-{literal}
 <!DOCTYPE html>
 <html lang="en">
 <meta charset="utf-8">
 <head>
-<title>Maintainence in Progress</title>
+<title>Maintenance in Progress | {$libraryName}</title>
 <style>
-
+	{literal}
 
 html { overflow:hidden; }
 body { font: 60px 'SilkscreenNormal', Arial, sans-serif; letter-spacing:0; background:#25d; color:#fff; }
@@ -143,8 +142,8 @@ window.onload = start
 			
 			<h1>The {$libraryName} Catalog is Down</h1>
 			<h2>for scheduled maintenance</h2>
-			{if $systemMessage}
-				<h2>{$systemMessage}</h2>
+			{if $maintenanceMessage}
+				<h3>{$maintenanceMessage}</h3>
 			{/if}
 			{if $showLinkToClassicInMaintenanceMode}
 			<h4> Please search our <a href="{$classicCatalogUrl}">Classic Catalog</a></h4>

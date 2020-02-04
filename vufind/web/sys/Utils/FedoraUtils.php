@@ -1,13 +1,23 @@
 <?php
-
 /**
- * Description goes here
+ * Pika Discovery Layer
+ * Copyright (C) 2020  Marmot Library Network
  *
- * @category VuFind-Plus-2014
- * @author Mark Noble <mark@marmot.org>
- * Date: 1/31/2016
- * Time: 7:58 PM
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+use Pika\Cache;
+use Pika\Logger;
 //Include code we need to use Tuque without Drupal
 require_once(ROOT_DIR . '/sys/tuque/Cache.php');
 require_once(ROOT_DIR . '/sys/tuque/FedoraApi.php');
@@ -24,6 +34,28 @@ class FedoraUtils {
 	/** @var  FedoraUtils */
 	private static $singleton;
 
+	private Pika\Logger $logger;
+	private Pika\Cache $cache;
+
+	private function __construct(){
+		global $configArray;
+		$this->logger = new Pika\Logger("FedoraUtils");
+		$this->cache  = new Pika\Cache();
+		try {
+			$serializer             = new FedoraApiSerializer();
+			$cache                  = new SimpleCache();
+			$fedoraUrl              = $configArray['Islandora']['fedoraUrl'];
+			$fedoraPassword         = $configArray['Islandora']['fedoraPassword'];
+			$fedoraUser             = $configArray['Islandora']['fedoraUsername'];
+			$connection             = new RepositoryConnection($fedoraUrl, $fedoraUser, $fedoraPassword);
+			$connection->verifyPeer = false;
+			$this->api              = new FedoraApi($connection, $serializer);
+			$this->repository       = new FedoraRepository($this->api, $cache);
+		} catch (Exception $e){
+			$this->logger->error("Error connecting to repository", ['stack_trace' => $e->getTraceAsString()]);
+		}
+	}
+
 	/**
 	 * @return FedoraUtils
 	 */
@@ -34,24 +66,6 @@ class FedoraUtils {
 			$timer->logTime('Setup Fedora Utils');
 		}
 		return FedoraUtils::$singleton;
-	}
-
-	private function __construct(){
-		global $configArray;
-		try {
-			$serializer = new FedoraApiSerializer();
-			$cache = new SimpleCache();
-			$fedoraUrl = $configArray['Islandora']['fedoraUrl'];
-			$fedoraPassword = $configArray['Islandora']['fedoraPassword'];
-			$fedoraUser = $configArray['Islandora']['fedoraUsername'];
-			$connection = new RepositoryConnection($fedoraUrl, $fedoraUser, $fedoraPassword);
-			$connection->verifyPeer = false;
-			$this->api = new FedoraApi($connection, $serializer);
-			$this->repository = new FedoraRepository($this->api, $cache);
-		}catch (Exception $e){
-			global $logger;
-			$logger->log("Error connecting to repository $e", PEAR_LOG_ERR);
-		}
 	}
 
 	/** AbstractObject */
@@ -110,7 +124,7 @@ class FedoraUtils {
 		}elseif ($size == 'small'){
 			if ($archiveObject && $archiveObject->getDatastream('SC') != null){
 				return $objectUrl . '/' . $archiveObject->id . '/datastream/SC/view';
-			}else if ($archiveObject && $archiveObject->getDatastream('TN') != null){
+			}elseif ($archiveObject && $archiveObject->getDatastream('TN') != null){
 				return $objectUrl . '/' . $archiveObject->id . '/datastream/TN/view';
 			}else{
 				//return a placeholder
@@ -119,11 +133,11 @@ class FedoraUtils {
 		}elseif ($size == 'medium'){
 			if ($archiveObject && $archiveObject->getDatastream('MC') != null) {
 				return $objectUrl . '/' . $archiveObject->id . '/datastream/MC/view';
-			}else if ($archiveObject && $archiveObject->getDatastream('MEDIUM_SIZE') != null) {
+			}elseif ($archiveObject && $archiveObject->getDatastream('MEDIUM_SIZE') != null) {
 				return $objectUrl . '/' . $archiveObject->id . '/datastream/MEDIUM_SIZE/view';
-			}else if ($archiveObject && $archiveObject->getDatastream('PREVIEW') != null) {
+			}elseif ($archiveObject && $archiveObject->getDatastream('PREVIEW') != null) {
 				return $objectUrl . '/' . $archiveObject->id . '/datastream/PREVIEW/view';
-			}else if ($archiveObject && $archiveObject->getDatastream('TN') != null) {
+			}elseif ($archiveObject && $archiveObject->getDatastream('TN') != null) {
 				return $objectUrl . '/' . $archiveObject->id . '/datastream/TN/view';
 			}else{
 				return $this->getObjectImageUrl($archiveObject, 'small', $defaultType);
@@ -144,13 +158,13 @@ class FedoraUtils {
 	public function getPlaceholderImage($defaultType) {
 		global $configArray;
 		if ($defaultType == 'personCModel' || $defaultType == 'person') {
-			return $configArray['Site']['path'] . '/interface/themes/responsive/images/people.png';
+			return '/interface/themes/responsive/images/people.png';
 		}elseif ($defaultType == 'placeCModel' || $defaultType == 'place'){
-			return $configArray['Site']['path'] . '/interface/themes/responsive/images/places.png';
+			return '/interface/themes/responsive/images/places.png';
 		}elseif ($defaultType == 'eventCModel' || $defaultType == 'event'){
-			return $configArray['Site']['path'] . '/interface/themes/responsive/images/events.png';
+			return '/interface/themes/responsive/images/events.png';
 		}else{
-			return $configArray['Site']['path'] . '/interface/themes/responsive/images/History.png';
+			return '/interface/themes/responsive/images/History.png';
 		}
 	}
 
@@ -174,11 +188,6 @@ class FedoraUtils {
 				}catch (Exception $e){
 					echo("Unable to load MODS data for " . $archiveObject->id);
 				}
-
-				/*if (strlen($modsStream->content) > 0){
-					$modsData = simplexml_load_file($modsStream->content, 'SimpleXmlElement', 0, 'http://www.loc.gov/mods/v3', false);
-					$timer->logTime('Parsed as xml with simple xml');
-				}*/
 				$timer->logTime('Retrieved mods stream content from fedora ' . $archiveObject->id);
 				$this->modsCache[$archiveObject->id] = $modsData;
 			}else{
@@ -200,10 +209,9 @@ class FedoraUtils {
 	 * @return bool
 	 */
 	public function isObjectValidForPika($archiveObject){
-		/** @var Memcache $memCache */
-		global $memCache;
 		global $timer;
-		$isValid = $memCache->get('islandora_object_valid_in_pika_' . $archiveObject->id);
+		global $configArray;
+		$isValid = $this->cache->get('islandora_object_valid_in_pika_' . $archiveObject->id);
 		if ($isValid !== FALSE && !isset($_REQUEST['reload'])){
 			return $isValid == 1;
 		}else{
@@ -211,7 +219,7 @@ class FedoraUtils {
 			if (strlen($mods) > 0) {
 				$includeInPika = $this->getModsValue('includeInPika', 'marmot', $mods);
 				$okToAdd = $includeInPika != 'no';
-				global $configArray;
+
 				if ($configArray['Site']['isProduction']) {
 					$okToAdd = ($includeInPika != 'no' && $includeInPika != 'testOnly');
 				}else{
@@ -223,7 +231,7 @@ class FedoraUtils {
 			}
 			$timer->logTime("Checked if {$archiveObject->id} is valid to include");
 			global $configArray;
-			$memCache->set('islandora_object_valid_in_pika_' . $archiveObject->id, $okToAdd ? 1 : 0, 0, $configArray['Caching']['islandora_object_valid']);
+			$this->cache->set('islandora_object_valid_in_pika_' . $archiveObject->id, $okToAdd ? 1 : 0, $configArray['Caching']['islandora_object_valid']);
 			return $okToAdd;
 		}
 	}
@@ -233,9 +241,8 @@ class FedoraUtils {
 	 * @return bool
 	 */
 	public function isPidValidForPika($pid){
-		/** @var Memcache $memCache */
-		global $memCache;
-		$isValid = $memCache->get('islandora_object_valid_in_pika_' . $pid);
+
+		$isValid = $this->cache->get('islandora_object_valid_in_pika_' . $pid);
 		if ($isValid !== FALSE && !isset($_REQUEST['reload'])){
 			return $isValid == 1;
 		}else{
@@ -244,7 +251,7 @@ class FedoraUtils {
 				return $this->isObjectValidForPika($archiveObject);
 			}else{
 				global $configArray;
-				$memCache->set('islandora_object_valid_in_pika_' . $pid, 0, 0, $configArray['Caching']['islandora_object_valid']);
+				$this->cache->set('islandora_object_valid_in_pika_' . $pid, 0, $configArray['Caching']['islandora_object_valid']);
 				return false;
 			}
 

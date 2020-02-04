@@ -1,33 +1,43 @@
 <?php
 /**
- * Table Definition for library
+ * Pika Discovery Layer
+ * Copyright (C) 2020  Marmot Library Network
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-require_once 'DB/DataObject.php';
-require_once 'DB/DataObject/Cast.php';
 
-class CronLogEntry extends DB_DataObject
-{
-	public $__table = 'cron_log';   // table name
-	public $id;
-	public $startTime;
-	public $lastUpdate;
-	public $endTime;
+class CronLogEntry extends LogEntry {
+	public $__table = 'cron_log';
 	public $notes;
-	private $_processes = null;
 
-	function keys() {
-		return array('id');
-	}
+	private $_processes = null;
+	private $_hadErrors;
 
 	function processes(){
 		if (is_null($this->_processes)){
-			$this->_processes = array();
-			$reindexProcess = new CronProcessLogEntry();
-			$reindexProcess->cronId = $this->id;
-			$reindexProcess->orderBy('processName');
-			$reindexProcess->find();
-			while ($reindexProcess->fetch()){
-				$this->_processes[] = clone $reindexProcess;
+			$this->_processes            = array();
+			$cronProcessLogEntry         = new CronProcessLogEntry();
+			$cronProcessLogEntry->cronId = $this->id;
+			$cronProcessLogEntry->orderBy('processName');
+			if ($cronProcessLogEntry->find()){
+				$this->_hadErrors = false;
+				while ($cronProcessLogEntry->fetch()){
+					$this->_processes[] = clone $cronProcessLogEntry;
+					if ($cronProcessLogEntry->numErrors > 0){
+						$this->_hadErrors = true;
+					}
+				}
 			}
 		}
 		return $this->_processes;
@@ -38,27 +48,8 @@ class CronLogEntry extends DB_DataObject
 	}
 
 	function getHadErrors(){
-		foreach ($this->processes() as $process){
-			if ($process->numErrors > 0){
-				return true;
-			}
-		}
-		return false;
-	}
-
-	function getElapsedTime(){
-		if (!isset($this->endTime) || is_null($this->endTime)){
-			return "";
-		}else{
-			$elapsedTimeMin = ceil(($this->endTime - $this->startTime) / 60);
-			if ($elapsedTimeMin < 60){
-				return $elapsedTimeMin . " min";
-			}else{
-				$hours = floor($elapsedTimeMin / 60);
-				$minutes = $elapsedTimeMin - (60 * $hours);
-				return "$hours hours, $minutes min" ;
-			}
-		}
+		$this->processes();
+		return $this->_hadErrors;
 	}
 
 }

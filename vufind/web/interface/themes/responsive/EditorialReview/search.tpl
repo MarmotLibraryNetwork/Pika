@@ -2,7 +2,7 @@
   <div id="main-content" class="col-md-12">
     <h2>Search Editorial Reviews</h2>
     <div id='searchOptions'>
-      <form id='editorialReviewSearchOptions' action='{$path}/EditorialReview/Search'>
+      <form id='editorialReviewSearchOptions' action='/EditorialReview/Search'>
         <div id='sortOptions'><label for='sortOptions'>Sort by:</label>
           <select name='sortOptions' id='sortOptions'>
 	          <option value="editorialReviewId" {if $sort=='editorialReviewId'}selected="selected"{/if}>Id</option>
@@ -23,8 +23,8 @@
 				{foreach from=$results item=result}
 					<tr>
 						<td>{$result->editorialReviewId}</td>
-						<td><a href='{$path}/EditorialReview/{$result->editorialReviewId}/View'>{$result->source}</a></td>
-						<td><a href='{$path}/EditorialReview/{$result->editorialReviewId}/View'>{$result->title}</a> ({$result->recordId})</td>
+						<td><a href='/EditorialReview/{$result->editorialReviewId}/View'>{$result->source}</a></td>
+						<td><a href='/EditorialReview/{$result->editorialReviewId}/View'>{$result->title}</a> ({$result->recordId})</td>
 						<td>{$result->formattedPubDate()}</td>
 					</tr>
 				{/foreach}

@@ -1,11 +1,12 @@
 <?php
 /**
+ * Pika Discovery Layer
+ * Copyright (C) 2020  Marmot Library Network
  *
- * Copyright (C) Anythink Libraries 2012.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2,
- * as published by the Free Software Foundation.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -13,12 +14,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
- * @author Mark Noble <mnoble@turningleaftech.com>
- * @copyright Copyright (C) Anythink Libraries 2012.
- *
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 require_once ROOT_DIR . '/Action.php';
@@ -39,8 +35,8 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 		//Load status information
 		$materialsRequestStatus = new MaterialsRequestStatus();
 		$materialsRequestStatus->orderBy('isDefault DESC, isOpen DESC, description ASC');
-		$homeLibrary = Library::getPatronHomeLibrary();
-		$user = UserAccount::getLoggedInUser();
+		$user        = UserAccount::getLoggedInUser();
+		$homeLibrary = $user->getHomeLibrary();
 		if (UserAccount::userHasRole('library_material_requests')){
 			$materialsRequestStatus->libraryId = $homeLibrary->libraryId;
 		}else{
@@ -48,12 +44,12 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 		}
 		$materialsRequestStatus->find();
 
-		$allStatuses = array();
-		$availableStatuses = array();
+		$allStatuses           = array();
+		$availableStatuses     = array();
 		$defaultStatusesToShow = array();
 		while ($materialsRequestStatus->fetch()){
 			$availableStatuses[$materialsRequestStatus->id] = $materialsRequestStatus->description;
-			$allStatuses[$materialsRequestStatus->id] = clone $materialsRequestStatus;
+			$allStatuses[$materialsRequestStatus->id]       = clone $materialsRequestStatus;
 			if ($materialsRequestStatus->isOpen == 1 || $materialsRequestStatus->isDefault == 1){
 				$defaultStatusesToShow[] = $materialsRequestStatus->id;
 			}
@@ -85,14 +81,14 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 		if (isset($_REQUEST['newStatus']) && isset($_REQUEST['select']) && $_REQUEST['newStatus'] != 'unselected'){
 			//Look for which titles should be modified
 			$selectedRequests = $_REQUEST['select'];
-			$statusToSet = $_REQUEST['newStatus'];
+			$statusToSet      = $_REQUEST['newStatus'];
 			require_once ROOT_DIR . '/sys/Mailer.php';
 			$mail = new VuFindMailer();
 			foreach ($selectedRequests as $requestId => $selected){
-				$materialRequest = new MaterialsRequest();
+				$materialRequest     = new MaterialsRequest();
 				$materialRequest->id = $requestId;
 				if ($materialRequest->find(true)){
-					$materialRequest->status = $statusToSet;
+					$materialRequest->status      = $statusToSet;
 					$materialRequest->dateUpdated = time();
 					$materialRequest->update();
 
@@ -118,7 +114,7 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 						}
 
 						//Replace tags with appropriate values
-						$materialsRequestUser = new User();
+						$materialsRequestUser     = new User();
 						$materialsRequestUser->id = $materialRequest->createdBy;
 						$materialsRequestUser->find(true);
 						foreach ($materialsRequestUser as $fieldName => $fieldValue){
@@ -145,13 +141,13 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 		if (isset($_REQUEST['newAssignee']) && isset($_REQUEST['select']) && $_REQUEST['newAssignee'] != 'unselected'){
 			//Look for which material requests should be modified
 			$selectedRequests = $_REQUEST['select'];
-			$assignee = $_REQUEST['newAssignee'];
+			$assignee         = $_REQUEST['newAssignee'];
 			if (ctype_digit($assignee) || $assignee == 'unassign') {
 				foreach ($selectedRequests as $requestId => $selected){
-					$materialRequest = new MaterialsRequest();
+					$materialRequest     = new MaterialsRequest();
 					$materialRequest->id = $requestId;
 					if ($materialRequest->find(true)){
-						$materialRequest->assignedTo = $assignee == 'unassign' ? 'null' : $assignee;
+						$materialRequest->assignedTo  = $assignee == 'unassign' ? 'null' : $assignee;
 						$materialRequest->dateUpdated = time();
 						$materialRequest->update();
 
@@ -164,11 +160,11 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 			}
 		}
 
-		$availableFormats = MaterialsRequest::getFormats();
-		$interface->assign('availableFormats', $availableFormats);
+		$availableFormats     = MaterialsRequest::getFormats();
 		$defaultFormatsToShow = array_keys($availableFormats);
+		$interface->assign('availableFormats', $availableFormats);
 		if (isset($_REQUEST['formatFilter'])){
-			$formatsToShow = $_REQUEST['formatFilter'];
+			$formatsToShow                            = $_REQUEST['formatFilter'];
 			$_SESSION['materialsRequestFormatFilter'] = $formatsToShow;
 		}elseif (isset($_SESSION['materialsRequestFormatFilter'])){
 			$formatsToShow = $_SESSION['materialsRequestFormatFilter'];
@@ -180,6 +176,7 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 		//Get a list of all materials requests for the user
 		$allRequests = array();
 		if ($user){
+			$barCodeProperty = $user->getAccountProfile()->loginConfiguration == 'name_barcode' ? 'cat_password' : 'cat_username';
 
 			$materialsRequests = new MaterialsRequest();
 			$materialsRequests->joinAdd(new Location(), "LEFT");
@@ -187,18 +184,11 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 			$materialsRequests->joinAdd(new User(), 'INNER', 'user', 'createdBy');
 			$materialsRequests->joinAdd(new User(), 'LEFT', 'assignee', 'assignedTo');
 			$materialsRequests->selectAdd();
-			$materialsRequests->selectAdd('materials_request.*, description as statusLabel, location.displayName as location, user.firstname, user.lastname, user.' . $configArray['Catalog']['barcodeProperty'] . ' as barcode, assignee.displayName as assignedTo');
+			$materialsRequests->selectAdd('materials_request.*, description as statusLabel, location.displayName as location, user.firstname, user.lastname, user.' . $barCodeProperty . ' as barcode, assignee.displayName as assignedTo');
 			if (UserAccount::userHasRole('library_material_requests')){
 				//Need to limit to only requests submitted for the user's home location
-				$userHomeLibrary = Library::getPatronHomeLibrary();
-				$locations = new Location();
-				$locations->libraryId = $userHomeLibrary->libraryId;
-				$locations->find();
-				$locationsForLibrary = array();
-				while ($locations->fetch()){
-					$locationsForLibrary[] = $locations->locationId;
-				}
-
+				$userHomeLibrary     = UserAccount::getUserHomeLibrary();
+				$locationsForLibrary = $userHomeLibrary->getLocationIdsForLibrary();
 				$materialsRequests->whereAdd('user.homeLocationId IN (' . implode(', ', $locationsForLibrary) . ')');
 			}
 
@@ -451,7 +441,7 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 				$requestUser = new User();
 				$requestUser->get($request->createdBy);
 				$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $requestUser->lastname . ', ' . $requestUser->firstname);
-				$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $requestUser->$configArray['Catalog']['barcodeProperty']);
+				$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $requestUser->getAccountProfile()->loginConfiguration);
 				$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $requestUser->email);
 				if ($configArray['MaterialsRequest']['showPlaceHoldField']){
 					if ($request->placeHoldWhenAvailable == 1){

@@ -10,7 +10,7 @@
 
 	<span class='availableHoldsNoticePlaceHolder'></span>
 
-	<h2>{translate text='Fines'}</h2>
+	<h2>{translate text='Fines_page_title'}</h2>
 {if $offline}
 	<div class="alert alert-warning"><strong>The library system is currently offline.</strong> We are unable to retrieve information about your {translate text='Fines'|lower} at this time.</div>
 {else}
@@ -100,7 +100,7 @@
 		{else}
 			{* Pay Fines Button *}
 			{if $showEcommerceLink && $user->finesVal > $minimumFineAmount}
-				<a href="{$ecommerceLink}" target="_blank"{if $showRefreshAccountButton} onclick="VuFind.Account.ajaxLightbox('{$path}/AJAX/JSON?method=getPayFinesAfterAction')"{/if}>
+				<a href="{$ecommerceLink}" target="_blank"{if $showRefreshAccountButton} onclick="VuFind.Account.ajaxLightbox('/AJAX/JSON?method=getPayFinesAfterAction')"{/if}>
 					<div class="btn btn-sm btn-primary">{if $payFinesLinkText}{$payFinesLinkText}{else}Click to Pay Fines Online{/if}</div>
 				</a>
 			{/if}
@@ -111,5 +111,5 @@
 	{/if}
 {/if}
 {else}
-	You must login to view this information. Click <a href="{$path}/MyAccount/Login">here</a> to login.
+	You must login to view this information. Click <a href="/MyAccount/Login">here</a> to login.
 {/if}

@@ -10,27 +10,32 @@
 						<div  class="form-horizontal">
 							<div class="form-group">
 								<label for="startDate" class="control-label col-sm-2">Start Date</label>
-								<input type="text" name="startDate" id="startDate" size="10" value="{$startDate|date_format:'%m/%d/%Y'}" class="form-control col-sm-3" style="width: auto;"/>
+								<div class="input-group input-append date controls col-sm-3" id="startDatePicker">
+									<input type="text" name="startDate" id="startDate" size="10" value="{$startDate|date_format:'%m/%d/%Y'}"
+									       data-provide="datepicker" data-date-format="mm/dd/yyyy" data-date-end-date="0d"
+									       class="form-control" >
+									<span class="input-group-addon">
+								<span class="glyphicon glyphicon-calendar"
+								      onclick="$('#startDate').focus().datepicker('show')"
+								      aria-hidden="true">
+								</span>
+							</span>
+								</div>
 							</div>
 							<div class="form-group">
 								<label for="endDate" class="control-label col-sm-2">End Date</label>
-								<input type="text" name="endDate" id="endDate" size="10" value="{$endDate|date_format:'%m/%d/%Y'}" class="form-control col-sm-3" style="width: auto;"/>
-							</div>
-							<div class="form-group">
-								<label class="control-label col-sm-2">Status</label>
-								<div class="col-sm-6">
-									<div class="checkbox">
-										<label for="hideNotProcessed"><input type="checkbox" name="hideNotProcessed" id="hideNotProcessed" {if $hideNotProcessed}checked="checked"{/if}/> Hide Not Processed</label>
-									</div>
-									<div class="checkbox">
-										<label for="hideFailed"><input type="checkbox" name="hideFailed" id="hideFailed" {if $hideFailed}checked="checked"{/if}/> Hide Failed</label>
-									</div>
-									<div class="checkbox">
-										<label for="hideSuccess"><input type="checkbox" name="hideSuccess" id="hideSuccess" {if $hideSuccess}checked="checked"{/if}/> Hide Successful</label>
-									</div>
+								<div class="input-group input-append date controls col-sm-3" id="endDatePicker">
+									<input type="text" name="endDate" id="endDate" size="10" value="{$endDate|date_format:'%m/%d/%Y'}"
+									       data-provide="datepicker" data-date-format="mm/dd/yyyy" data-date-end-date="0d"
+									       class="form-control">
+									<span class="input-group-addon">
+							<span class="glyphicon glyphicon-calendar"
+							      onclick="$('#endDate').focus().datepicker('show')"
+							      aria-hidden="true">
+								</span>
+							</span>
 								</div>
-							</div>
-							<br>
+							</div>							<br>
 							<div class="form-group">
 								<input type="submit" name="updateFilters" value="Update Filters" class="btn btn-primary"/>
 							</div>
@@ -51,7 +56,7 @@
 					<tbody>
 						{foreach from=$offlineHolds item=offlineHold}
 							{* TODO Update this to work with multi-ils installations*}
-							<tr><td>{$offlineHold.patronBarcode}</td><td>{$offlineHold.bibId}</td><td><a href="{$path}/Record/{$offlineHold.bibId}">{$offlineHold.title}</a></td><td>{$offlineHold.timeEntered|date_format}</td><td>{$offlineHold.status}</td><td>{$offlineHold.notes}</td></tr>
+							<tr><td>{$offlineHold.patronBarcode}</td><td>{$offlineHold.bibId}</td><td><a href="/Record/{$offlineHold.bibId}">{$offlineHold.title}</a></td><td>{$offlineHold.timeEntered|date_format}</td><td>{$offlineHold.status}</td><td>{$offlineHold.notes}</td></tr>
 						{/foreach}
 					</tbody>
 				</table>
@@ -63,8 +68,6 @@
 	<script	type="text/javascript">
 		{literal}
 		$(function() {
-			$( "#startDate" ).datepicker({ showOn: "button", buttonImage: "{/literal}{$path}{literal}/images/silk/calendar.png", numberOfMonths: 2,	buttonImageOnly: true});
-			$( "#endDate" ).datepicker({ showOn: "button", buttonImage: "{/literal}{$path}{literal}/images/silk/calendar.png", numberOfMonths: 2,	buttonImageOnly: true});
 			$("#offlineHoldsReport").tablesorter({cssAsc: 'sortAscHeader', cssDesc: 'sortDescHeader', cssHeader: 'unsortedHeader', widgets:['zebra', 'filter'] });
 		});
 		{/literal}

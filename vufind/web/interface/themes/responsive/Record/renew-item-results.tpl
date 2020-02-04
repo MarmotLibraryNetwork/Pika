@@ -2,7 +2,7 @@
 <div id='renew_results'>
 	<div class='hold_result_title header'>
 		Renewal Results
-		<a href="#" onclick='hideLightbox();return false;' class="closeIcon">Close <img src="{$path}/images/silk/cancel.png" alt="close" /></a>
+		<a href="#" onclick='hideLightbox();return false;' class="closeIcon">Close <img src="/images/silk/cancel.png" alt="close" /></a>
 </div>
 	<div class = "content">
 		<ol>

@@ -1,11 +1,12 @@
 <?php
 /**
+ * Pika Discovery Layer
+ * Copyright (C) 2020  Marmot Library Network
  *
- * Copyright (C) Villanova University 2007.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2,
- * as published by the Free Software Foundation.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -13,14 +14,11 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
-require_once 'XML/Unserializer.php';
 require_once ROOT_DIR . '/sys/MaterialsRequestStatus.php';
 
 class ManageStatuses extends ObjectEditor
@@ -40,7 +38,7 @@ class ManageStatuses extends ObjectEditor
 
 		$status = new MaterialsRequestStatus();
 		if (UserAccount::userHasRole('library_material_requests')){
-			$homeLibrary = Library::getPatronHomeLibrary();
+			$homeLibrary = UserAccount::getUserHomeLibrary();
 			$status->libraryId = $homeLibrary->libraryId;
 		}
 		$status->orderBy('isDefault DESC');
@@ -82,7 +80,7 @@ class ManageStatuses extends ObjectEditor
 	function resetToDefault(){
 		$user = UserAccount::getLoggedInUser();
 		if (UserAccount::userHasRole('library_material_requests')){
-			$homeLibrary = Library::getPatronHomeLibrary();
+			$homeLibrary = UserAccount::getUserHomeLibrary();
 			$materialRequestStatus = new MaterialsRequestStatus();
 			$materialRequestStatus->libraryId = $homeLibrary->libraryId;
 			$materialRequestStatus->delete();

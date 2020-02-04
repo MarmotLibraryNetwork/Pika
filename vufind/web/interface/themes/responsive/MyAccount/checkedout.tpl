@@ -22,7 +22,7 @@
 		{else}
 
 			{if $transList}
-				<form id="renewForm" action="{$path}/MyAccount/RenewMultiple">
+				<form id="renewForm" action="/MyAccount/RenewMultiple">
 					<div id="pager" class="navbar form-inline">
 						<label for="accountSort" class="control-label">{translate text='Sort by'}:&nbsp;</label>
 						<select name="accountSort" id="accountSort" class="form-control" onchange="VuFind.Account.changeAccountSort($(this).val());">
@@ -39,7 +39,7 @@
 							<a href="#" onclick="VuFind.Account.renewSelectedTitles()" class="btn btn-sm btn-default">Renew Selected Items</a>
 							<a href="#" onclick="VuFind.Account.renewAll()" class="btn btn-sm btn-default">Renew All</a>
 						{/if}
-						<a href="{$path}/MyAccount/CheckedOut?exportToExcel{if isset($defaultSortOption)}&accountSort={$defaultSortOption}{/if}" class="btn btn-sm btn-default" id="exportToExcelTop">Export to Excel</a>
+						<a href="/MyAccount/CheckedOut?exportToExcel{if isset($defaultSortOption)}&accountSort={$defaultSortOption}{/if}" class="btn btn-sm btn-default" id="exportToExcelTop">Export to Excel</a>
 					</div>
 
 					<br><br>
@@ -72,7 +72,7 @@
 							<a href="#" onclick="VuFind.Account.renewSelectedTitles()" class="btn btn-sm btn-default">Renew Selected Items</a>
 							<a href="#" onclick="VuFind.Account.renewAll()" class="btn btn-sm btn-default">Renew All</a>
 						{/if}
-						<a href="{$path}/MyAccount/CheckedOut?exportToExcel{if isset($defaultSortOption)}&accountSort={$defaultSortOption}{/if}" class="btn btn-sm btn-default" id="exportToExcelTop">Export to Excel</a>
+						<a href="/MyAccount/CheckedOut?exportToExcel{if isset($defaultSortOption)}&accountSort={$defaultSortOption}{/if}" class="btn btn-sm btn-default" id="exportToExcelTop">Export to Excel</a>
 					</div>
 				</form>
 
@@ -83,7 +83,7 @@
 	{else}
       {* This should never get displayed. Users should automatically be redirected to login page*}
 		<div class="alert alert-warning">
-		You must login to view this information. Click <a href="{$path}/MyAccount/Login">here</a> to login.
+		You must login to view this information. Click <a href="/MyAccount/Login">here</a> to login.
 		</div>
 	{/if}
 {/strip}

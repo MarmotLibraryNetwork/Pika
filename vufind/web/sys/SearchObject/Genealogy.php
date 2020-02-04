@@ -1,11 +1,12 @@
 <?php
 /**
+ * Pika Discovery Layer
+ * Copyright (C) 2020  Marmot Library Network
  *
- * Copyright (C) Villanova University 2010.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2,
- * as published by the Free Software Foundation.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -13,9 +14,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 require_once ROOT_DIR . '/sys/Solr.php';
 require_once ROOT_DIR . '/sys/SearchObject/Base.php';
@@ -43,8 +42,8 @@ class SearchObject_Genealogy extends SearchObject_Base
 	// Field List
 	private $fields = '*,score';
 	// HTTP Method
-	//    private $method = HTTP_REQUEST_METHOD_GET;
-	private $method = HTTP_REQUEST_METHOD_POST;
+	//    private $method = 'GET';
+	private $method = 'POST';
 	// Result
 	private $indexResult;
 
@@ -67,8 +66,7 @@ class SearchObject_Genealogy extends SearchObject_Base
 	 *
 	 * @access  public
 	 */
-	public function __construct()
-	{
+	public function __construct(){
 		// Call base class constructor
 		parent::__construct();
 
@@ -77,7 +75,7 @@ class SearchObject_Genealogy extends SearchObject_Base
 		// Include our solr index
 		$class = $configArray['Genealogy']['engine'];
 		require_once "sys/$class.php";
-		$this->searchType = 'genealogy';
+		$this->searchType      = 'genealogy';
 		$this->basicSearchType = 'genealogy';
 		// Initialise the index
 		$this->indexEngine = new $class($configArray['Genealogy']['url'], $configArray['Genealogy']['default_core']);
@@ -88,51 +86,51 @@ class SearchObject_Genealogy extends SearchObject_Base
 
 		// Get default facet settings
 		$this->allFacetSettings = getExtraConfigArray('genealogyFacets');
-		$this->facetConfig = array();
-		$facetLimit = $this->getFacetSetting('Results_Settings', 'facet_limit');
-		if (is_numeric($facetLimit)) {
+		$this->facetConfig      = array();
+		$facetLimit             = $this->getFacetSetting('Results_Settings', 'facet_limit');
+		if (is_numeric($facetLimit)){
 			$this->facetLimit = $facetLimit;
 		}
 		$translatedFacets = $this->getFacetSetting('Advanced_Settings', 'translated_facets');
-		if (is_array($translatedFacets)) {
+		if (is_array($translatedFacets)){
 			$this->translatedFacets = $translatedFacets;
 		}
 
 		// Load search preferences:
-		$searchSettings = getExtraConfigArray('genealogySearches');
+		$searchSettings     = getExtraConfigArray('genealogySearches');
 		$this->defaultIndex = 'GenealogyKeyword';
-		if (isset($searchSettings['General']['default_sort'])) {
+		if (isset($searchSettings['General']['default_sort'])){
 			$this->defaultSort = $searchSettings['General']['default_sort'];
 		}
 		if (isset($searchSettings['DefaultSortingByType']) &&
-		is_array($searchSettings['DefaultSortingByType'])) {
+			is_array($searchSettings['DefaultSortingByType'])){
 			$this->defaultSortByType = $searchSettings['DefaultSortingByType'];
 		}
-		if (isset($searchSettings['Basic_Searches'])) {
+		if (isset($searchSettings['Basic_Searches'])){
 			$this->basicTypes = $searchSettings['Basic_Searches'];
 		}
-		if (isset($searchSettings['Advanced_Searches'])) {
+		if (isset($searchSettings['Advanced_Searches'])){
 			$this->advancedTypes = $searchSettings['Advanced_Searches'];
 		}
 
 		// Load sort preferences (or defaults if none in .ini file):
-		if (isset($searchSettings['Sorting'])) {
+		if (isset($searchSettings['Sorting'])){
 			$this->sortOptions = $searchSettings['Sorting'];
-		} else {
+		}else{
 			$this->sortOptions = array('relevance' => 'sort_relevance',
-                'year' => 'sort_year', 'year asc' => 'sort_year asc',
-                'title' => 'sort_title');
+			                           'year'      => 'sort_year', 'year asc' => 'sort_year asc',
+			                           'title'     => 'sort_title');
 		}
 
 		// Load Spelling preferences
-		$this->spellcheck    = $configArray['Spelling']['enabled'];
-		$this->spellingLimit = $configArray['Spelling']['limit'];
-		$this->spellSimple   = $configArray['Spelling']['simple'];
+		$this->spellcheck       = $configArray['Spelling']['enabled'];
+		$this->spellingLimit    = $configArray['Spelling']['limit'];
+		$this->spellSimple      = $configArray['Spelling']['simple'];
 		$this->spellSkipNumeric = isset($configArray['Spelling']['skip_numeric']) ?
-		$configArray['Spelling']['skip_numeric'] : true;
+			$configArray['Spelling']['skip_numeric'] : true;
 
 		// Debugging
-		$this->indexEngine->debug = $this->debug;
+		$this->indexEngine->debug          = $this->debug;
 		$this->indexEngine->debugSolrQuery = $this->debugSolrQuery;
 
 		$this->recommendIni = 'genealogySearches';
@@ -148,7 +146,7 @@ class SearchObject_Genealogy extends SearchObject_Base
 	 * @access  public
 	 * @return  boolean
 	 */
-	public function init()
+	public function init($searchSource = null)
 	{
 		// Call the standard initialization routine in the parent:
 		parent::init('genealogy');
@@ -160,7 +158,7 @@ class SearchObject_Genealogy extends SearchObject_Base
 		$restored = $this->restoreSavedSearch();
 		if ($restored === true) {
 			return true;
-		} else if (PEAR_Singleton::isError($restored)) {
+		} elseif (PEAR_Singleton::isError($restored)) {
 			return false;
 		}
 
@@ -173,9 +171,7 @@ class SearchObject_Genealogy extends SearchObject_Base
 
 		//********************
 		// Basic Search logic
-		if ($this->initBasicSearch()) {
-			// If we found a basic search, we don't need to do anything further.
-		} else {
+		if (!$this->initBasicSearch()) {
 			$this->initAdvancedSearch();
 		}
 
@@ -1128,35 +1124,32 @@ class SearchObject_Genealogy extends SearchObject_Base
 	 * Turn our results into an RSS feed
 	 *
 	 * @access  public
-	 * @public  array      $result      Existing result set (null to do new search)
-	 * @return  string                  XML document
+	 * @param null|array $result      Existing result set (null to do new search)
+	 * @return  string                XML document
 	 */
-	public function buildRSS($result = null)
-	{
+	public function buildRSS($result = null){
 		global $configArray;
 		// XML HTTP header
 		header('Content-type: text/xml', true);
 
 		// First, get the search results if none were provided
 		// (we'll go for 50 at a time)
-		if (is_null($result)) {
+		if (is_null($result)){
 			$this->limit = 50;
-			$result = $this->processSearch(false, false);
+			$result      = $this->processSearch(false, false);
 		}
 
-		for ($i = 0; $i < count($result['response']['docs']); $i++) {
-			$current = & $this->indexResult['response']['docs'][$i];
+		foreach ($result['response']['docs'] as $i => &$currentDoc){
+			$current = &$this->indexResult['response']['docs'][$i];
 
 			/** @var PersonRecord $record */
 			$record = RecordDriverFactory::initRecordDriver($current);
-			if (!PEAR_Singleton::isError($record)) {
-				$result['response']['docs'][$i]['recordUrl'] = $record->getAbsoluteUrl();
-				$result['response']['docs'][$i]['title_display'] = $record->getName();
-				$image = $record->getBookcoverUrl('medium');
-				$description = "<img src='$image'/> ";
-				$result['response']['docs'][$i]['rss_description'] = $description;
-			} else {
-				$html[] = "Unable to find record";
+			if (!PEAR_Singleton::isError($record)){
+				$currentDoc['recordUrl']       = $record->getAbsoluteUrl();
+				$currentDoc['title_display']   = $record->getName();
+				$image                         = $record->getBookcoverUrl('medium');
+				$description                   = "<img src='$image'/> ";
+				$currentDoc['rss_description'] = $description;
 			}
 		}
 
@@ -1165,16 +1158,14 @@ class SearchObject_Genealogy extends SearchObject_Base
 		// On-screen display value for our search
 		$lookfor = $this->displayQuery();
 
-		if (count($this->filterList) > 0) {
+		if (count($this->filterList) > 0){
 			// TODO : better display of filters
 			$interface->assign('lookfor', $lookfor . " (" . translate('with filters') . ")");
-		} else {
+		}else{
 			$interface->assign('lookfor', $lookfor);
 		}
 		// The full url to recreate this search
-		$interface->assign('searchUrl', $configArray['Site']['url']. $this->renderSearchUrl());
-		// Stub of a url for a records screen
-		$interface->assign('baseUrl',    $configArray['Site']['url']);
+		$interface->assign('searchUrl', $configArray['Site']['url'] . $this->renderSearchUrl());
 
 		$interface->assign('result', $result);
 		return $interface->fetch('Search/rss.tpl');
@@ -1284,12 +1275,11 @@ class SearchObject_Genealogy extends SearchObject_Base
 	 * @access  protected
 	 * @return  array    Array of URL parameters (key=url_encoded_value format)
 	 */
-	protected function getSearchParams()
-	{
+	protected function getSearchParams(){
 		$params = parent::getSearchParams();
 
-		$params[] = 'genealogyType=' . $_REQUEST['genealogyType'];
-		$params[] = 'searchSource='  . $_REQUEST['searchSource'];
+		$params[] = 'genealogyType=' . (isset($_REQUEST['genealogyType']) ? $_REQUEST['genealogyType'] : 'GenealogyKeyword'); //TODO: can this be replaced with general $_REQUEST['type']
+		$params[] = 'searchSource=' . $_REQUEST['searchSource'];
 
 		return $params;
 	}

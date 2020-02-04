@@ -55,7 +55,7 @@ $.fn.rater.defaults = {
 };
 
 $.fn.rater.rate = function($this, opts, rating) {
-	if (Globals.loggedIn){
+	VuFind.Account.ajaxLogin(function (){
 		var $on = $this.find('.ui-rater-starsOn'),
 				$off = $this.find('.ui-rater-starsOff');
 		$off.fadeTo(600, 0.4, function() {
@@ -81,9 +81,5 @@ $.fn.rater.rate = function($this, opts, rating) {
 					}).fail(VuFind.ajaxFail);
 
 		});
-	}else{
-		VuFind.Account.ajaxLogin(null, function(){
-			$.fn.rater.rate($this, opts, rating);
-		});
-	}
+	});
 };

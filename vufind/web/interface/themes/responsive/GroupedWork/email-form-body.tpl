@@ -1,13 +1,15 @@
 {strip}
-<form method="post" action="{$path}" name="popupForm" class="form-horizontal" id="emailForm">
+<form {*method="post" action=""*} name="popupForm" class="form-horizontal" id="emailForm">
 	<div class="alert alert-info">
 		<p>
 			Sharing via e-mail message will send the title (with a link back to the title) to you so you can easily find it in
 			the future.
 		</p>
+{*
 		<p>
 			If you would like a call number and location included, please select an edition below.
 		</p>
+*}
 	</div>
 	<div class="form-group">
 		<label for="related_record" class="col-sm-3">{translate text="Edition"}: </label>
@@ -21,15 +23,15 @@
 		</div>
 	</div>
 	<div class="form-group">
-		<label for="to" class="col-sm-3">{translate text='To'}:</label>
+		<label for="to" class="col-sm-3">{translate text='To'}: <span class="requiredIndicator">*</span></label>
 		<div class="col-sm-9">
 			<input type="email" name="to" id="to" size="40" class="required email form-control">
 		</div>
 	</div>
 	<div class="form-group">
-		<label for="from" class="col-sm-3">{translate text='From'}:</label>
+		<label for="from" class="col-sm-3">{translate text='From'}: <span class="requiredIndicator">*</span></label>
 		<div class="col-sm-9">
-			<input type="email" name="from" id="from" size="40" class="email form-control">
+			<input type="email" name="from" id="from" size="40" class="required email form-control"{if $from} value="{$from}"{/if}>
 		</div>
 	</div>
 	<div class="form-group">

@@ -1,5 +1,23 @@
 <?php
 /**
+ * Pika Discovery Layer
+ * Copyright (C) 2020  Marmot Library Network
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+/**
  *
  *
  * @category Pika
@@ -16,6 +34,8 @@ use User;
 use Library;
 use Location;
 use Pika\PatronDrivers\MyBooking;
+use Pika\Cache;
+use Pika\Logger;
 
 require_once ROOT_DIR . "/sys/Pika/PatronDrivers/Traits/PatronBookingsOperations.php";
 require_once ROOT_DIR . "/sys/Pika/PatronDrivers/MyBooking.php";
@@ -29,6 +49,11 @@ class Marmot extends Sierra {
 		parent::__construct($accountProfile);
 	}
 
+	/**
+	 * @param bool $extraSelfRegParams
+	 * @return array
+	 * @throws \ErrorException
+	 */
 	public function selfRegister($extraSelfRegParams = false)
 	{
 		
@@ -51,6 +76,8 @@ class Marmot extends Sierra {
 			$extraSelfRegParams['varFields'][] = ["fieldTag" => "m",
 			                                      "content"  => "Temp Online Access Account. Verify ALL information, add ID,".
 			                                       " verify notice preference, then change p-type, pcode3, and expiration date."];
+			$extraSelfRegParams['varFields'][] = ["fieldTag" => "q",
+			                                      "content"  => "dig access"];
 		}
 		return parent::selfRegister($extraSelfRegParams);
 	}
@@ -193,8 +220,8 @@ class Marmot extends Sierra {
 		}
 		$curlResponse = $c->post($bookingUrl, $post);
 		if ($c->error){
-			global $logger;
-			$logger->log('Curl error during booking, code: ' . $c->getErrorMessage(), PEAR_LOG_WARNING);
+
+			$this->logger->warn('Curl error during booking, code: ' . $c->getErrorMessage());
 			return array(
 				'success' => false,
 				'message' => 'There was an error communicating with the circulation system.'
@@ -235,8 +262,7 @@ class Marmot extends Sierra {
 		}
 
 		// Catch all Failure
-		global $logger;
-		$logger->log('Unkown error during booking', PEAR_LOG_ERR);
+		$this->logger->error('Unkown error during booking');
 		return array(
 			'success' => false,
 			'message' => 'There was an unexpected result while scheduling your item'
@@ -407,7 +433,6 @@ class Marmot extends Sierra {
 		}
 	}
 
-//TODO:  refactor and recombine with _curlOptInOptOut
 	private function _curlLegacy($patron, $pageToCall, $postParams = array(), $patronAction = true){
 
 		$c = new Curl();

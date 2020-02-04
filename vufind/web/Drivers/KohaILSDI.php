@@ -1,5 +1,23 @@
 <?php
 /**
+ * Pika Discovery Layer
+ * Copyright (C) 2020  Marmot Library Network
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+/**
  *   Implementa Patron Interactions that would go through Koha's ILS-DI (ILS Discovery Interface) interface
  *
  * @category Pika
@@ -429,80 +447,15 @@ abstract class KohaILSDI extends ScreenScrapingDriver {
 			$patron->numCheckedOutIls = $this->getNumOfCheckoutsFromDB($kohaUserId);
 
 
-			$homeBranchCode = strtolower((string)$patronInfoResponse->branchcode);
-			$location       = new Location();
-			$location->code = $homeBranchCode;
-			if (!$location->find(1)){
-				unset($location);
-				$patron->homeLocationId = 0;
-				// Logging for Diagnosing PK-1846
-				global $logger;
-				$logger->log('Aspencat Driver: No Location found, patron\'s homeLocationId being set to 0. User : ' . $patron->id, PEAR_LOG_WARNING);
-			}
+			$patron->setUserHomeLocations((string)$patronInfoResponse->branchcode);
 
-			if ((empty($patron->homeLocationId) || $patron->homeLocationId == -1) || (isset($location) && $patron->homeLocationId != $location->locationId)){ // When homeLocation isn't set or has changed
-				if ((empty($patron->homeLocationId) || $patron->homeLocationId == -1) && !isset($location)){
-					// homeBranch Code not found in location table and the patron doesn't have an assigned home location,
-					// try to find the main branch to assign to patron
-					// or the first location for the library
-					global $library;
-
-					$location            = new Location();
-					$location->libraryId = $library->libraryId;
-					$location->orderBy('isMainBranch desc'); // gets the main branch first or the first location
-					if (!$location->find(true)){
-						// Seriously no locations even?
-						global $logger;
-						$logger->log('Failed to find any location to assign to patron as home location', PEAR_LOG_ERR);
-						unset($location);
-					}
-				}
-				if (isset($location)){
-					$patron->homeLocationId = $location->locationId;
-					if (empty($patron->myLocation1Id)){
-						$patron->myLocation1Id = ($location->nearbyLocation1 > 0) ? $location->nearbyLocation1 : $location->locationId;
-						/** @var /Location $location */
-						//Get display name for preferred location 1
-						$myLocation1             = new Location();
-						$myLocation1->locationId = $patron->myLocation1Id;
-						if ($myLocation1->find(true)){
-							$patron->myLocation1 = $myLocation1->displayName;
-						}
-					}
-
-					if (empty($patron->myLocation2Id)){
-						$patron->myLocation2Id = ($location->nearbyLocation2 > 0) ? $location->nearbyLocation2 : $location->locationId;
-						//Get display name for preferred location 2
-						$myLocation2             = new Location();
-						$myLocation2->locationId = $patron->myLocation2Id;
-						if ($myLocation2->find(true)){
-							$patron->myLocation2 = $myLocation2->displayName;
-						}
-					}
-				}
-			}
-
-			if (isset($location)){
-				//Get display names that aren't stored
-				$patron->homeLocationCode = $location->code;
-				$patron->homeLocation     = $location->displayName;
-			}
-
-			$patron->expired     = 0; // default setting
-			$patron->expireClose = 0;
-			$patron->expires     = (string)$patronInfoResponse->dateexpiry;
+			$dateString     = (string)$patronInfoResponse->dateexpiry;
 			if (!empty($patron->expires)){
 				list ($yearExp, $monthExp, $dayExp) = explode('-', $patron->expires);
-				$timeExpire   = strtotime($monthExp . "/" . $dayExp . "/" . $yearExp);
-				$timeNow      = time();
-				$timeToExpire = $timeExpire - $timeNow;
-				if ($timeToExpire <= 30 * 24 * 60 * 60){
-					if ($timeToExpire <= 0){
-						$patron->expired = 1;
-					}
-					$patron->expireClose = 1;
-				}
+				$dateString = $monthExp . '/' . $dayExp . '/' . $yearExp;
 			}
+			$patron->setUserExpirationSettings($dateString);
+
 			if ($userExistsInDB){
 				$patron->update();
 			}else{

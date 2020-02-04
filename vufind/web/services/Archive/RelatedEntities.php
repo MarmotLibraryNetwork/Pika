@@ -1,17 +1,33 @@
 <?php
+/**
+ * Pika Discovery Layer
+ * Copyright (C) 2020  Marmot Library Network
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
 
 /**
  * Finde Entities related to a search term
  *
- * @category VuFind-Plus-2014
- * @author Mark Noble <mark@marmot.org>
+ * @category Pika
+ * @author Mark Noble <pika@marmot.org>
  * Date: 2/17/2016
  * Time: 3:48 PM
  */
 class Archive_RelatedEntities extends Action {
 	function launch(){
 		global $interface;
-		global $configArray;
 		global $timer;
 
 		// Include Search Engine Class
@@ -80,7 +96,7 @@ class Archive_RelatedEntities extends Action {
 						'title' => $archiveObject->label,
 						'description' => $archiveObject->label,
 						'image' => $fedoraUtils->getObjectImageUrl($archiveObject, 'small', $entityType),
-						'link' => $configArray['Site']['path'] . "/Archive/{$archiveObject->id}/$urlAction",
+						'link' => "/Archive/{$archiveObject->id}/$urlAction",
 					);
 				}
 

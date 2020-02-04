@@ -1,9 +1,27 @@
 <?php
 /**
+ * Pika Discovery Layer
+ * Copyright (C) 2020  Marmot Library Network
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+/**
  * Handles loading asynchronous
  *
  * @category Pika
- * @author   Mark Noble <mark@marmot.org>
+ * @author   Mark Noble <pika@marmot.org>
  * Date: 12/2/13
  * Time: 3:52 PM
  */
@@ -138,7 +156,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 
 		//Process series data
 		$titles = array();
-		if (!isset($enrichmentData['novelist']->seriesTitles) || count($enrichmentData['novelist']->seriesTitles) == 0){
+		if (empty($enrichmentData['novelist']->seriesTitles)){
 			$enrichmentResult['seriesInfo'] = array('titles' => $titles, 'currentIndex' => 0);
 		}else{
 			foreach ($enrichmentData['novelist']->seriesTitles as $key => $record){
@@ -151,7 +169,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 		$memoryWatcher->logMemory('Loaded Series information');
 
 		//Process other data from novelist
-		if (isset($enrichmentData['novelist']) && isset($enrichmentData['novelist']->similarTitles)){
+		if (!empty($enrichmentData['novelist']->similarTitles)){
 			$interface->assign('similarTitles', $enrichmentData['novelist']->similarTitles);
 			if ($configArray['Catalog']['showExploreMoreForFullRecords']){
 				$enrichmentResult['similarTitlesNovelist'] = $interface->fetch('GroupedWork/similarTitlesNovelistSidebar.tpl');
@@ -161,7 +179,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 		}
 		$memoryWatcher->logMemory('Loaded Similar titles from Novelist');
 
-		if (isset($enrichmentData['novelist']) && isset($enrichmentData['novelist']->authors)){
+		if (!empty($enrichmentData['novelist']->authors)){
 			$interface->assign('similarAuthors', $enrichmentData['novelist']->authors);
 			if ($configArray['Catalog']['showExploreMoreForFullRecords']){
 				$enrichmentResult['similarAuthorsNovelist'] = $interface->fetch('GroupedWork/similarAuthorsNovelistSidebar.tpl');
@@ -191,7 +209,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 		$memoryWatcher->logMemory('Loaded More Like This data from Solr');
 		// Send the similar items to the template; if there is only one, we need
 		// to force it to be an array or things will not display correctly.
-		if (isset($similar) && count($similar['response']['docs']) > 0){
+		if (!empty($similar['response']['docs'])){
 			$similarTitles = array();
 			foreach ($similar['response']['docs'] as $key => $similarTitle){
 				$similarTitleDriver = new GroupedWorkDriver($similarTitle);
@@ -397,9 +415,6 @@ class GroupedWork_AJAX extends AJAXHandler {
 		}
 
 		if ($success){
-			global $analytics;
-			$analytics->addEvent('User Enrichment', 'Rate Title', $_REQUEST['id']);
-
 			// Reset any cached suggestion browse category for the user
 			$this->clearMySuggestionsBrowseCategoryCache();
 
@@ -618,24 +633,24 @@ class GroupedWork_AJAX extends AJAXHandler {
 	}
 
 	function getEmailForm(){
-		global $interface;
-		require_once ROOT_DIR . '/sys/Mailer.php';
-
-//		$sms = new SMSMailer();
-//		$interface->assign('carriers', $sms->getCarriers());
-		$id = $_REQUEST['id'];
-		$interface->assign('id', $id);
-
-		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
-		$recordDriver = new GroupedWorkDriver($id);
-
+		$id             = $_REQUEST['id'];
+		$recordDriver   = new GroupedWorkDriver($id);
 		$relatedRecords = $recordDriver->getRelatedRecords();
+		global $interface;
+		$interface->assign('id', $id);
 		$interface->assign('relatedRecords', $relatedRecords);
+
+		if (UserAccount::isLoggedIn()){
+			/** @var User $user */
+			$user = UserAccount::getActiveUserObj();
+			if (!empty($user->email)){
+				$interface->assign('from', $user->email);
+			}
+		}
 		$results = array(
 			'title'        => 'Share via E-mail',
 			'modalBody'    => $interface->fetch("GroupedWork/email-form-body.tpl"),
-			'modalButtons' => "<button class='tool btn btn-primary' onclick='VuFind.GroupedWork.sendEmail(\"{$id}\"); return false;'>Send E-mail</button>"
-			//		'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#emailForm\").submit()'>Send E-mail</button>"
+			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#emailForm\").submit()'>Send E-mail</button>"
 			// triggering submit action to trigger form validation
 		);
 		return $results;
@@ -645,44 +660,31 @@ class GroupedWork_AJAX extends AJAXHandler {
 		global $interface;
 		global $configArray;
 
-		$to      = strip_tags($_REQUEST['to']);
-		$from    = strip_tags($_REQUEST['from']);
 		$message = $_REQUEST['message'];
-
-		$id = $_REQUEST['id'];
-		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
-		$recordDriver = new GroupedWorkDriver($id);
-		$interface->assign('recordDriver', $recordDriver);
-		$interface->assign('url', $recordDriver->getAbsoluteUrl());
-
-		if (isset($_REQUEST['related_record'])){
-			$relatedRecord = $_REQUEST['related_record'];
-			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
-			$recordDriver = new GroupedWorkDriver($id);
-
-			$relatedRecords = $recordDriver->getRelatedRecords();
-
-			foreach ($relatedRecords as $curRecord){
-				if ($curRecord['id'] == $relatedRecord){
-					if (isset($curRecord['callNumber'])){
-						$interface->assign('callnumber', $curRecord['callNumber']);
-					}
-					if (isset($curRecord['shelfLocation'])){
-						$interface->assign('shelfLocation', strip_tags($curRecord['shelfLocation']));
-					}
-					$interface->assign('url', $curRecord['driver']->getAbsoluteUrl());
-					break;
-				}
-			}
-		}
-
-		$subject = translate("Library Catalog Record") . ": " . $recordDriver->getTitle();
-		$interface->assign('from', $from);
-		$interface->assign('emailDetails', $recordDriver->getEmail());
-		$interface->assign('recordID', $recordDriver->getUniqueID());
 		if (strpos($message, 'http') === false && strpos($message, 'mailto') === false && $message == strip_tags($message)){
+			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+			$id           = $_REQUEST['id'];
+			$recordDriver = new GroupedWorkDriver($id);
+			$to           = strip_tags($_REQUEST['to']);
+			$from         = strip_tags($_REQUEST['from']);
+			$interface->assign('from', $from);
 			$interface->assign('message', $message);
-			$body = $interface->fetch('Emails/grouped-work-email.tpl');
+			$interface->assign('recordDriver', $recordDriver);
+			$interface->assign('url', $recordDriver->getAbsoluteUrl());
+
+			if (!empty($_REQUEST['related_record'])){
+				$relatedRecord = $recordDriver->getRelatedRecord($_REQUEST['related_record']);
+				if (!empty($relatedRecord['callNumber'])){
+					$interface->assign('callnumber', $relatedRecord['callNumber']);
+				}
+				if (!empty($relatedRecord['shelfLocation'])){
+					$interface->assign('shelfLocation', strip_tags($relatedRecord['shelfLocation']));
+				}
+				$interface->assign('url', $relatedRecord['driver']->getAbsoluteUrl());
+			}
+
+			$subject = translate("Library Catalog Record") . ": " . $recordDriver->getTitle();
+			$body    = $interface->fetch('Emails/grouped-work-email.tpl');
 
 			require_once ROOT_DIR . '/sys/Mailer.php';
 			$mail        = new VuFindMailer();
@@ -748,7 +750,8 @@ class GroupedWork_AJAX extends AJAXHandler {
 			if ($listOk){
 				$userListEntry         = new UserListEntry();
 				$userListEntry->listId = $userList->id;
-				if (!preg_match("/^[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}|[A-Z0-9_-]+:[A-Z0-9_-]+$/i", $id)){
+				require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+				if (!GroupedWork::validGroupedWorkId($id)){
 					$result['success'] = false;
 					$result['message'] = 'Sorry, that is not a valid entry for the list.';
 				}else{
@@ -767,6 +770,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 					}
 					$result['success'] = true;
 					$result['message'] = 'This title was saved to your list successfully.';
+					$result['buttons'] = '<a class="btn btn-primary" href="/MyAccount/MyList/'. $userList->id . '" role="button">View My list</a>';
 				}
 			}
 
@@ -817,7 +821,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 		$results = array(
 			'title'        => 'Add To List',
 			'modalBody'    => $interface->fetch("GroupedWork/save.tpl"),
-			'modalButtons' => "<button class='tool btn btn-primary' onclick='VuFind.GroupedWork.saveToList(\"{$id}\"); return false;'>Save To List</button>",
+			'modalButtons' => "<button class='tool btn btn-primary' onclick='VuFind.GroupedWork.saveToList(\"{$id}\");'>Save To List</button>",
 		);
 		return $results;
 	}
@@ -1016,7 +1020,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 
 		//Load results from Prospector
 		$ILLDriver = $configArray['InterLibraryLoan']['ILLDriver'];
-		/** @var Prospector|AutoGraphicsShareIt $ILLDriver */
+		/** @var Prospector|AutoGraphicsShareIt $prospector */
 		require_once ROOT_DIR . '/InterLibraryLoanDrivers/' . $ILLDriver . '.php';
 		$prospector = new $ILLDriver();
 

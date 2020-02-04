@@ -1,11 +1,12 @@
 <?php
 /**
+ * Pika Discovery Layer
+ * Copyright (C) 2020  Marmot Library Network
  *
- * Copyright (C) Villanova University 2007.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2,
- * as published by the Free Software Foundation.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -13,9 +14,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 require_once ROOT_DIR . '/AJAXHandler.php';
@@ -136,7 +135,7 @@ class Admin_AJAX extends AJAXHandler {
 		$results         = array(
 			'title'        => '',
 			'modalBody'    => '',
-			'modalButtons' => "",
+			'modalButtons' => '',
 		);
 		if ($cronProcess->find(true)){
 			$results['title'] = "{$cronProcess->processName} Notes";
@@ -160,7 +159,7 @@ class Admin_AJAX extends AJAXHandler {
 		$results = array(
 			'title'        => '',
 			'modalBody'    => '',
-			'modalButtons' => "",
+			'modalButtons' => '',
 		);
 		if ($cronLog->find(true)){
 			$results['title'] = "Cron Process {$cronLog->id} Notes";
@@ -206,11 +205,11 @@ class Admin_AJAX extends AJAXHandler {
 		// Display Page
 		$interface->assign('id', strip_tags($_REQUEST['id']));
 		$interface->assign('source', strip_tags($_REQUEST['source']));
-		$existingWidgets = array();
+		require_once ROOT_DIR . '/sys/Widgets/ListWidget.php';
 		$listWidget      = new ListWidget();
-		if (UserAccount::userHasRole('libraryAdmin') || UserAccount::userHasRole('contentEditor') || UserAccount::userHasRole('libraryManager') || UserAccount::userHasRole('locationManager')){
+		if (UserAccount::userHasRoleFromList(['libraryAdmin', 'contentEditor', 'libraryManager', 'locationManager'])){
 			//Get all widgets for the library
-			$userLibrary           = Library::getPatronHomeLibrary();
+			$userLibrary           = UserAccount::getUserHomeLibrary();
 			$listWidget->libraryId = $userLibrary->libraryId;
 		}
 		$listWidget->orderBy('name');
@@ -231,7 +230,7 @@ class Admin_AJAX extends AJAXHandler {
 		);
 
 		$user    = UserAccount::getLoggedInUser();
-		if (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('libraryAdmin')){
+		if (UserAccount::userHasRoleFromList(['opacAdmin', 'libraryAdmin'])){
 			$locationId = trim($_REQUEST['id']);
 			if (ctype_digit($locationId)){
 				$location = new Location();
@@ -255,7 +254,7 @@ class Admin_AJAX extends AJAXHandler {
 		);
 
 		$user    = UserAccount::getLoggedInUser();
-		if (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('libraryAdmin')){
+		if (UserAccount::userHasRoleFromList(['opacAdmin', 'libraryAdmin'])){
 			$locationId = trim($_REQUEST['id']);
 			if (ctype_digit($locationId)){
 				$location = new Location();
@@ -279,7 +278,7 @@ class Admin_AJAX extends AJAXHandler {
 		);
 
 		$user    = UserAccount::getLoggedInUser();
-		if (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('libraryAdmin')){
+		if (UserAccount::userHasRoleFromList(['opacAdmin', 'libraryAdmin'])){
 			$libraryId = trim($_REQUEST['id']);
 			if (ctype_digit($libraryId)){
 				$library = new Library();

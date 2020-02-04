@@ -1,11 +1,12 @@
 <?php
 /**
+ * Pika Discovery Layer
+ * Copyright (C) 2020  Marmot Library Network
  *
- * Copyright (C) Villanova University 2007.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2,
- * as published by the Free Software Foundation.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -13,9 +14,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- *
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 //require_once ROOT_DIR . '/sys/SIP2.php'; // not used at this time. plb 6-17-2016
@@ -82,7 +81,7 @@ abstract class Horizon extends ScreenScrapingDriver{
 		$header[] = "Connection: keep-alive";
 		$header[] = "Accept-Charset: ISO-8859-1,utf-8;q=0.7,*;q=0.7";
 		$header[] = "Accept-Language: en-us,en;q=0.5";
-		$cookie = tempnam ("/tmp", "CURLCOOKIE");
+		$cookie = @tempnam("/tmp", "CURLCOOKIE");
 
 		//Go to items out page
 		$curl_url = $this->hipUrl . "/ipac20/ipac.jsp?profile={$configArray['Catalog']['hipProfile']}&menu=account&submenu=blocks";
@@ -451,7 +450,7 @@ abstract class Horizon extends ScreenScrapingDriver{
 	function emailPin($barcode){
 		global $configArray;
 		if ($this->useDb){
-			$sql = "SELECT name, borrower.borrower#, bbarcode, pin#, email_name, email_address from borrower inner join borrower_barcode on borrower.borrower# = borrower_barcode.borrower# inner join borrower_address on borrower.borrower# = borrower_address.borrower#  where bbarcode= '" . mysql_escape_string($barcode) . "'";
+			$sql = "SELECT name, borrower.borrower#, bbarcode, pin#, email_name, email_address from borrower inner join borrower_barcode on borrower.borrower# = borrower_barcode.borrower# inner join borrower_address on borrower.borrower# = borrower_address.borrower#  where bbarcode= '" . DB_common::escapeSimple($barcode) . "'";
 
 			try {
 				$sqlStmt = $this->_query($sql);

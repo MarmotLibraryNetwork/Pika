@@ -1,11 +1,12 @@
 <?php
 /**
+ * Pika Discovery Layer
+ * Copyright (C) 2020  Marmot Library Network
  *
- * Copyright (C) Villanova University 2007.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2,
- * as published by the Free Software Foundation.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -13,9 +14,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 require_once ROOT_DIR . '/AJAXHandler.php';
@@ -109,10 +108,10 @@ class Record_AJAX extends AJAXHandler {
 			require_once ROOT_DIR . '/Drivers/marmot_inc/PType.php';
 			$maxHolds = -1;
 			//Determine if we should show a warning
-			$ptype        = new PType();
-			$ptype->pType = UserAccount::getUserPType();
-			if ($ptype->find(true)){
-				$maxHolds = $ptype->maxHolds;
+			$pType        = new PType();
+			$pType->pType = UserAccount::getUserPType();
+			if ($pType->find(true)){
+				$maxHolds = $pType->maxHolds;
 			}
 			$currentHolds = $user->numHoldsIls;
 			//TODO: this check will need to account for linked accounts now
@@ -147,12 +146,12 @@ class Record_AJAX extends AJAXHandler {
 
 			$holdDisclaimers = array();
 			$patronLibrary   = $user->getHomeLibrary();
-			if (strlen($patronLibrary->holdDisclaimer) > 0){
+			if (!empty($patronLibrary->holdDisclaimer)){
 				$holdDisclaimers[$patronLibrary->displayName] = $patronLibrary->holdDisclaimer;
 			}
 			foreach ($linkedUsers as $linkedUser){
 				$linkedLibrary = $linkedUser->getHomeLibrary();
-				if (strlen($linkedLibrary->holdDisclaimer) > 0){
+				if (!empty($linkedLibrary->holdDisclaimer)){
 					$holdDisclaimers[$linkedLibrary->displayName] = $linkedLibrary->holdDisclaimer;
 				}
 			}
@@ -173,8 +172,12 @@ class Record_AJAX extends AJAXHandler {
 				$results = array(
 					'title'        => empty($title) ? 'Place Hold' : 'Place Hold on ' . $title,
 					'modalBody'    => $interface->fetch("Record/hold-popup.tpl"),
-					'modalButtons' => "<input type='submit' name='submit' id='requestTitleButton' value='Submit Hold Request' class='btn btn-primary' onclick=\"trackHoldTitleClick('{$sourceAndId}'); return VuFind.Record.submitHoldForm();\">",
+					'modalButtons' => "<input type='submit' name='submit' id='requestTitleButton' value='Submit Hold Request' class='btn btn-primary' onclick=\"return VuFind.Record.submitHoldForm();\">",
 				);
+			}
+			if (!empty($interface->getVariable('googleAnalyticsId'))){ // this template variable gets set in the bootstap
+				$results['modalButtons'] = "<input type='submit' name='submit' id='requestTitleButton' value='Submit Hold Request' class='btn btn-primary' onclick=\"trackHoldTitleClick('{$sourceAndId}'); return VuFind.Record.submitHoldForm();\">";
+
 			}
 
 		}else{
@@ -222,8 +225,6 @@ class Record_AJAX extends AJAXHandler {
 
 	function placeHold(){
 		global $interface;
-		global $analytics;
-		$analytics->enableTracking();
 		$recordId = $_REQUEST['id'];
 		if (strpos($recordId, ':') > 0){
 			list($source, $shortId) = explode(':', $recordId, 2);
@@ -338,19 +339,6 @@ class Record_AJAX extends AJAXHandler {
 						$interface->assign('message', $return['message']);
 						$interface->assign('success', $return['success']);
 
-						//Get library based on patron home library since that is what controls their notifications rather than the active interface.
-						//$library = Library::getPatronHomeLibrary();
-
-//						global $library;
-//						$canUpdateContactInfo = $library->allowProfileUpdates == 1;
-//						// set update permission based on active library's settings. Or allow by default.
-//						$canChangeNoticePreference = $library->showNoticeTypeInProfile == 1;
-//						// when user preference isn't set, they will be shown a link to account profile. this link isn't needed if the user can not change notification preference.
-//						$interface->assign('canUpdate', $canUpdateContactInfo);
-//						$interface->assign('canChangeNoticePreference', $canChangeNoticePreference);
-//						$interface->assign('showDetailedHoldNoticeInformation', $library->showDetailedHoldNoticeInformation);
-//						$interface->assign('treatPrintNoticesAsPhoneNotices', $library->treatPrintNoticesAsPhoneNotices);
-
 						$canUpdateContactInfo = $homeLibrary->allowProfileUpdates == 1;
 						// set update permission based on active library's settings. Or allow by default.
 						$canChangeNoticePreference = $homeLibrary->showNoticeTypeInProfile == 1;
@@ -361,11 +349,12 @@ class Record_AJAX extends AJAXHandler {
 						$interface->assign('treatPrintNoticesAsPhoneNotices', $homeLibrary->treatPrintNoticesAsPhoneNotices);
 						$interface->assign('profile', $patron); // Use the account the hold was placed with for the success message.
 
-						$results = array(
+						$results = [
 							'success' => $return['success'],
 							'message' => $interface->fetch('Record/hold-success-popup.tpl'),
-							'title'   => isset($return['title']) ? $return['title'] : '',
-						);
+//							'title'   => isset($return['title']) ? $return['title'] : '',
+							'buttons' => '<a class="btn btn-primary" href="/MyAccount/Holds" role="button">View My Holds</a>',
+						];
 						if (isset($_REQUEST['autologout'])){
 							$masqueradeMode = UserAccount::isUserMasquerading();
 							if ($masqueradeMode){

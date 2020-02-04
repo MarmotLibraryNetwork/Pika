@@ -1,9 +1,27 @@
 <?php
 /**
+ * Pika Discovery Layer
+ * Copyright (C) 2020  Marmot Library Network
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+/**
  * Shows all titles that are checked out to a user (combines all sources)
  *
- * @category VuFind-Plus
- * @author Mark Noble <mark@marmot.org>
+ * @category Pika
+ * @author Mark Noble <pika@marmot.org>
  * Date: 10/10/13
  * Time: 1:10 PM
  */
@@ -25,7 +43,7 @@ class MyAccount_CheckedOut extends MyAccount{
 			//Determine which columns to show
 			$ils = $configArray['Catalog']['ils'];
 			$showOut = ($ils == 'Horizon');
-			$showRenewed = ($ils == 'Horizon' || $ils == 'Millennium'  || $ils == 'Sierra' || $ils == 'Koha' || $ils == 'Symphony' || $ils == 'CarlX');
+			$showRenewed = ($ils == 'Horizon' || $ils == 'Sierra' || $ils == 'Koha' || $ils == 'Symphony' || $ils == 'CarlX');
 			$showWaitList = $ils == 'Horizon';
 			//TODO: Add symphony?
 
@@ -194,9 +212,13 @@ class MyAccount_CheckedOut extends MyAccount{
 		$a=4;
 		//Loop Through The Report Data
 		foreach ($checkedOutItems as $row) {
-			$titleCell = preg_replace("/(\/|:)$/", "", $row['title']);
-			if (isset ($row['title2'])){
-				$titleCell .= preg_replace("/(\/|:)$/", "", $row['title2']);
+			if (!empty($row['title'])){
+				$titleCell = preg_replace("/(\/|:)$/", "", $row['title']);
+				if (isset ($row['title2'])){
+					$titleCell .= preg_replace("/(\/|:)$/", "", $row['title2']);
+				}
+			}else{
+				$titleCell = 'Title not available';
 			}
 
 			if (isset ($row['author'])){

@@ -1,5 +1,23 @@
 <?php
 /**
+ * Pika Discovery Layer
+ * Copyright (C) 2020  Marmot Library Network
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+/**
  * Horizon ROA web services driver.
  *
  * @category Pika
@@ -183,7 +201,7 @@ abstract class HorizonROA implements DriverInterface
 	public function patronLogin($username, $password, $validatedViaSSO)
 	{
 
-		//TODO: check wihich login style in use. Right now assuming barcode_pin
+		//TODO: check which login style in use. Right now assuming barcode_pin
 		$username = preg_replace('/[\s]/', '', $username); // remove all space characters
 		$password = trim($password);
 
@@ -294,85 +312,19 @@ abstract class HorizonROA implements DriverInterface
 
 				//Get additional information about the patron's home branch for display.
 				if (isset($lookupMyAccountInfoResponse->fields->library->key)) {
-					$homeBranchCode = strtolower(trim($lookupMyAccountInfoResponse->fields->library->key));
-					//Translate home branch to plain text
-					/** @var Location $location */
-					$location       = new Location();
-					$location->code = $homeBranchCode;
-					if (!$location->find(true)) {
-						unset($location);
-					}
+					$user->setUserHomeLocations($lookupMyAccountInfoResponse->fields->library->key);
 				} else {
 					global $logger;
 					$logger->log('HorizonROA Driver: No Home Library Location or Hold location found in account look-up. User : ' . $user->id, PEAR_LOG_ERR);
 					// The code below will attempt to find a location for the library anyway if the homeLocation is already set
 				}
 
-				if (empty($user->homeLocationId) || (isset($location) && $user->homeLocationId != $location->locationId)) { // When homeLocation isn't set or has changed
-					if (empty($user->homeLocationId) && !isset($location)) {
-						// homeBranch Code not found in location table and the user doesn't have an assigned homelocation,
-						// try to find the main branch to assign to user
-						// or the first location for the library
-						global $library;
-
-						/** @var Location $location */
-						$location            = new Location();
-						$location->libraryId = $library->libraryId;
-						$location->orderBy('isMainBranch desc'); // gets the main branch first or the first location
-						if (!$location->find(true)) {
-							// Seriously no locations even?
-							global $logger;
-							$logger->log('Failed to find any location to assign to user as home location', PEAR_LOG_ERR);
-							unset($location);
-						}
-					}
-					if (isset($location)) {
-						$user->homeLocationId = $location->locationId;
-						if (empty($user->myLocation1Id)) {
-							$user->myLocation1Id  = ($location->nearbyLocation1 > 0) ? $location->nearbyLocation1 : $location->locationId;
-							/** @var Location $myLocation1 */
-							//Get display name for preferred location 1
-							$myLocation1             = new Location();
-							$myLocation1->locationId = $user->myLocation1Id;
-							if ($myLocation1->find(true)) {
-								$user->myLocation1 = $myLocation1->displayName;
-							}
-						}
-
-						if (empty($user->myLocation2Id)){
-							$user->myLocation2Id  = ($location->nearbyLocation2 > 0) ? $location->nearbyLocation2 : $location->locationId;
-							//Get display name for preferred location 2
-							/** @var Location $myLocation2 */
-							$myLocation2             = new Location();
-							$myLocation2->locationId = $user->myLocation2Id;
-							if ($myLocation2->find(true)) {
-								$user->myLocation2 = $myLocation2->displayName;
-							}
-						}
-					}
-				}
-
-				if (isset($location)) {
-					//Get display names that aren't stored
-					$user->homeLocationCode = $location->code;
-					$user->homeLocation     = $location->displayName;
-				}
-
+				$dateString = '';
 				if (isset($lookupMyAccountInfoResponse->fields->privilegeExpiresDate)) {
-					$user->expires = $lookupMyAccountInfoResponse->fields->privilegeExpiresDate;
-					list ($yearExp, $monthExp, $dayExp) = explode("-", $user->expires);
-					$timeExpire   = strtotime($monthExp . "/" . $dayExp . "/" . $yearExp);
-					if ($timeExpire) {
-						$timeNow      = time();
-						$timeToExpire = $timeExpire - $timeNow;
-						if ($timeToExpire <= 30 * 24 * 60 * 60) {
-							if ($timeToExpire <= 0) {
-								$user->expired = 1;
-							}
-							$user->expireClose = 1;
-						}
-					}
+					list ($yearExp, $monthExp, $dayExp) = explode('-', $lookupMyAccountInfoResponse->fields->privilegeExpiresDate);
+					$dateString = $monthExp . '/' . $dayExp . '/' . $yearExp;
 				}
+				$user->setUserExpirationSettings($dateString);
 
 				//Get additional information about fines, etc
 				$finesVal = 0;
@@ -462,7 +414,7 @@ abstract class HorizonROA implements DriverInterface
 	 * @param  string|int $bibId
 	 * @return bool|int
 	 */
-	public function getNumHolds($bibId) {
+	public function getNumHoldsOnRecord($bibId) {
 		//This uses the standard / REST method to retrieve this information from the ILS.
 		// It isn't an ROA call.
 		global $offlineMode;
@@ -547,7 +499,7 @@ abstract class HorizonROA implements DriverInterface
 						$curTitle['format']         = 'Unknown'; //TODO: I think this makes sorting working better
 						$curTitle['overdue']        = $checkout->overdue; // (optional) CatalogConnection method will calculate this based on due date
 						$curTitle['fine']           = $fine;
-						$curTitle['holdQueueLength'] = $this->getNumHolds($bibId);
+						$curTitle['holdQueueLength'] = $this->getNumHoldsOnRecord($bibId);
 
 						$recordDriver = new MarcRecord($bibId);
 						if ($recordDriver->isValid()) {
@@ -957,14 +909,6 @@ abstract class HorizonROA implements DriverInterface
 		$hold_result['title'] = $title;
 		$hold_result['bid']   = $recordId; //TODO: bid or bib
 
-		global $analytics;
-		if ($analytics) {
-			if ($hold_result['success'] == true) {
-				$analytics->addEvent('ILS Integration', 'Successful Hold', $title);
-			} else {
-				$analytics->addEvent('ILS Integration', 'Failed Hold', $hold_result['message'] . ' - ' . $title);
-			}
-		}
 		return $hold_result;
 	}
 
@@ -1633,7 +1577,7 @@ abstract class HorizonROA implements DriverInterface
 	 *
 	 * @return bool
 	 */
-	public function canRenew()
+	public function canRenew($itemType = null)
 	{
 		return true;
 	}

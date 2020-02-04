@@ -1,4 +1,21 @@
 <?php
+/**
+ * Pika Discovery Layer
+ * Copyright (C) 2020  Marmot Library Network
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
 
 /**
  * Table Definition for Blocking of Patron Account Linking
@@ -10,10 +27,8 @@
  */
 
 require_once 'DB/DataObject.php';
-require_once 'DB/DataObject/Cast.php';
 
-class BlockPatronAccountLink extends DB_DataObject
-{
+class BlockPatronAccountLink extends DB_DataObject {
 
 	public $__table = 'user_link_blocks';
 	public $id;
@@ -42,15 +57,14 @@ class BlockPatronAccountLink extends DB_DataObject
 			$this->blockedAccountBarCode = null;
 			$this->primaryAccountBarCode = null;
 
-			$barcode = $this->getBarcode();
 			$user = new User();
 			if($user->get($this->primaryAccountId)) {
-				$this->primaryAccountBarCode = $user->$barcode;
+				$this->primaryAccountBarCode = $user->getBarcode();
 			}
 			if ($this->blockedLinkAccountId) {
 				$user = new User();
 				if ($user->get($this->blockedLinkAccountId)) {
-					$this->blockedAccountBarCode = $user->$barcode;
+					$this->blockedAccountBarCode = $user->getBarcode();
 				}
 			}
 		}
@@ -60,9 +74,11 @@ class BlockPatronAccountLink extends DB_DataObject
 	/**
 	 * Override the update functionality to store account ids rather than barcodes
 	 *
+	 * @param object|bool $dataObject
+	 * @return bool|int
 	 * @see DB/DB_DataObject::update()
 	 */
-	public function update(){
+	public function update($dataObject = false){
 		$this->getAccountIds();
 		if (!$this->primaryAccountId) return false;  // require a primary account id
 		if (!$this->blockedLinkAccountId && !$this->blockLinking) return false; // require at least one of these
@@ -83,14 +99,14 @@ class BlockPatronAccountLink extends DB_DataObject
 
 	private function getAccountIds(){
 		// Get Account Ids for the barcodes
-		$barcode = $this->getBarcode();
-		if ($this->primaryAccountBarCode) {
+		$barcode = $this->getBarcodeColumn();
+		if ($this->primaryAccountBarCode && $barcode) {
 			$user = new User();
 			if ($user->get($barcode, $this->primaryAccountBarCode)) {
 				$this->primaryAccountId = $user->id;
 			}
 		}
-		if ($this->blockedAccountBarCode) {
+		if ($this->blockedAccountBarCode && $barcode) {
 			$user = new User();
 			if ($user->get($barcode, $this->blockedAccountBarCode)) {
 				$this->blockedLinkAccountId = $user->id;
@@ -98,10 +114,11 @@ class BlockPatronAccountLink extends DB_DataObject
 		}
 	}
 
-	private function getBarcode(){
-	global $configArray;
-	return ($configArray['Catalog']['barcodeProperty'] == 'cat_username') ? 'cat_username' : 'cat_password';
-}
+	private function getBarcodeColumn(){
+		if (UserAccount::isLoggedIn()){
+			return UserAccount::getActiveUserObj()->getAccountProfile()->loginConfiguration  == 'name_barcode' ? 'cat_password' : 'cat_username';
+		}
+	}
 
 	static function getObjectStructure()
 	{

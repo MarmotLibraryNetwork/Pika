@@ -85,12 +85,12 @@
 				&nbsp;<span class="caret"></span>
 			</button>
 			<ul class="dropdown-menu" aria-labelledby="SearchTips">
-				<li><a href="{$path}/Help/Home?topic=advsearch" class="modalDialogTrigger" {*data-target="#modalDialog"*} data-title="{translate text="Help with Advanced Search"}">{translate text="Help with Advanced Search"}</a></li>
-				<li><a href="{$path}/Help/Home?topic=search" class="modalDialogTrigger" {*data-target="#modalDialog"*} data-title="{translate text="Help with Search Operators"}">{translate text="Help with Search Operators"}</a></li>
+				<li><a href="/Help/Home?topic=advsearch" class="modalDialogTrigger" {*data-target="#modalDialog"*} data-title="{translate text="Help with Advanced Search"}">{translate text="Help with Advanced Search"}</a></li>
+				<li><a href="/Help/Home?topic=search" class="modalDialogTrigger" {*data-target="#modalDialog"*} data-title="{translate text="Help with Search Operators"}">{translate text="Help with Search Operators"}</a></li>
 			</ul>
 		</div>
 
-		<form method="get" action="{$path}/Search/Results" id="advSearchForm" class="search">
+		<form method="get" action="/Search/Results" id="advSearchForm" class="search">
 			<div>
 				<div class="advSearchContent">
 
@@ -116,7 +116,7 @@
 					<div id="searchHolder"></div>
 
 					<button class="btn btn-default" onclick="addGroup();return false;"><span class="glyphicon glyphicon-plus"></span>&nbsp;{translate text="add_search_group"}</button>
-					<button class="btn btn-default" onclick="resetSearch();return false;"><span class="glyphicon glyphicon-remove-sign"></span>&nbsp;{translate text="Clear Search"}</button>
+					<button class="btn btn-default" onclick="resetSearch();return false;"><span class="glyphicon glyphicon-remove-circle"></span>&nbsp;{translate text="Clear Search"}</button>
 					{* addGroup() returns the variable nextGroupNumber so the return false is necessary *}
 					<input type="submit" name="submit" value="{translate text="Find"}" class="btn btn-primary pull-right">
 					<br><br>
@@ -255,9 +255,9 @@
 </div>
 {/strip}
 {if $debugJs}
-<script type="text/javascript" src="{$path}/services/Search/advanced.js"></script>
+<script type="text/javascript" src="/services/Search/advanced.js"></script>
 {else}
-<script type="text/javascript" src="{$path}/services/Search/advanced.min.js"></script>
+<script type="text/javascript" src="/services/Search/advanced.min.js"></script>
 {/if}
 <script type="text/javascript">
 	{* Define our search arrays so they are usuable in the javascript *}

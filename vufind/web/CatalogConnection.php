@@ -1,17 +1,12 @@
 <?php
 /**
- * Catalog Connection Class
+ * Pika Discovery Layer
+ * Copyright (C) 2020  Marmot Library Network
  *
- * This wrapper works with a driver class to pass information from the ILS to
- * VuFind.
- *
- * PHP version 5
- *
- * Copyright (C) Villanova University 2007.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2,
- * as published by the Free Software Foundation.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -19,15 +14,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
- * @category VuFind
- * @package  ILS_Drivers
- * @author   Andrew S. Nagy <vufind-tech@lists.sourceforge.net>
- * @author   Demian Katz <demian.katz@villanova.edu>
- * @license  http://opensource.org/licenses/gpl-2.0.php GNU General Public License
- * @link     http://vufind.org/wiki/building_an_ils_driver Wiki
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 /**
@@ -36,7 +23,7 @@
  * This wrapper works with a driver class to pass information from the ILS to
  * VuFind.
  *
- * @category VuFind
+ * @category Pika
  * @package  ILS_Drivers
  * @author   Andrew S. Nagy <vufind-tech@lists.sourceforge.net>
  * @author   Demian Katz <demian.katz@villanova.edu>
@@ -64,6 +51,9 @@ class CatalogConnection
 	 */
 	public $driver;
 
+	private Pika\Cache $cache;
+	private Pika\Logger $logger;
+
 	/**
 	 * Constructor
 	 *
@@ -76,6 +66,8 @@ class CatalogConnection
 	 * @access public
 	 */
 	public function __construct($driver, $accountProfile){
+		$this->cache  = new Pika\Cache();
+		$this->logger = new Pika\Logger("CatalogConnection");
 		if ($driver != 'DriverInterface'){
 			$path = ROOT_DIR . "/Drivers/{$driver}.php";
 			if (is_readable($path)){
@@ -85,11 +77,12 @@ class CatalogConnection
 				try {
 					$this->driver = new $driver($accountProfile);
 				} catch (Exception $e){
-					global $logger;
-					$logger->log("Unable to create driver $driver for account profile {$accountProfile->name}", PEAR_LOG_ERR);
+					$this->logger->error(
+					 "Unable to create driver $driver for account profile {$accountProfile->name}",
+					 ["stack_tracke" => $e->getTraceAsString()]
+					);
 					throw $e;
 				}
-
 				$this->accountProfile = $accountProfile;
 				$this->status         = true;
 		}
@@ -139,18 +132,18 @@ class CatalogConnection
 	 * number, barcode; on failure, a PEAR_Error.
 	 * @access public
 	 */
-	public function getHolding($recordId, $patron = false)
-	{
-		$holding = $this->driver->getHolding($recordId, $patron);
-
-		// Validate return from driver's getHolding method -- should be an array or
-		// an error.  Anything else is unexpected and should become an error.
-		if (!is_array($holding) && !PEAR_Singleton::isError($holding)) {
-			return new PEAR_Error('Unexpected return from getHolding: ' . $holding);
-		}
-
-		return $holding;
-	}
+//	public function getHolding($recordId, $patron = false)
+//	{
+//		$holding = $this->driver->getHolding($recordId, $patron);
+//
+//		// Validate return from driver's getHolding method -- should be an array or
+//		// an error.  Anything else is unexpected and should become an error.
+//		if (!is_array($holding) && !PEAR_Singleton::isError($holding)) {
+//			return new PEAR_Error('Unexpected return from getHolding: ' . $holding);
+//		}
+//
+//		return $holding;
+//	}
 
 	/**
 	 * Patron Login
@@ -167,12 +160,10 @@ class CatalogConnection
 	 */
 	public function patronLogin($username, $password, $parentAccount = null, $validatedViaSSO = false) {
 		global $timer;
-		global $logger;
 		global $offlineMode;
 
 		//Get the barcode property
 		$barcode = $this->accountProfile->loginConfiguration == 'barcode_pin' ? $username : $password;
-//		$barcode = preg_replace('/[\s]/', '', $barcode); // remove all space characters
 		//TODO: some libraries may have barcodes that the space character is valid. So far Aspencat appears to be one. pascal 9/27/2018
 		$barcode = trim($barcode);
 
@@ -192,16 +183,14 @@ class CatalogConnection
 					//We still load based on barcode, make sure the username is similar
 					$userValid = $this->areNamesSimilar($username, $user->cat_username);
 				}
-				if ($userValid){
-					//We have a good user account for additional processing
-				} else {
+				if (!$userValid){
 					$timer->logTime("offline patron login failed due to invalid name");
-					$logger->log("offline patron login failed due to invalid name", PEAR_LOG_INFO);
+					$this->logger->info("offline patron login failed due to invalid name", PEAR_LOG_INFO);
 					return null;
 				}
 			} else {
 				$timer->logTime("offline patron login failed because we haven't seen this user before");
-				$logger->log("offline patron login failed because we haven't seen this user before", PEAR_LOG_INFO);
+				$this->logger->info("offline patron login failed because we haven't seen this user before");
 				return null;
 			}
 		}else {
@@ -305,7 +294,8 @@ class CatalogConnection
 
 		$materialsRequest            = new MaterialsRequest();
 		$materialsRequest->createdBy = $user->id;
-		$homeLibrary                 = Library::getLibraryForLocation($user->homeLocationId);
+//		$homeLibrary                 = Library::getLibraryForLocation($user->homeLocationId);
+		$homeLibrary                 = $user->getHomeLibrary();
 		if ($homeLibrary && $homeLibrary->enableMaterialsRequest){
 			$statusQuery            = new MaterialsRequestStatus();
 			$statusQuery->isOpen    = 1;
@@ -358,11 +348,13 @@ class CatalogConnection
 	 * This is responsible for retrieving all transactions (i.e. checked out items)
 	 * by a specific patron.
 	 *
-	 * @param User $user    The user to load transactions for
-	 * @param bool $linkedAccount  When using linked accounts for Sierra Encore, the curl connection for linked accounts has to be reset
+	 * @param User $user          The user to load transactions for
+	 * @param bool $linkedAccount When using linked accounts for Sierra Encore, the curl connection for linked accounts
+	 *                            has to be reset
 	 * @return mixed        Array of the patron's transactions on success,
-	 * PEAR_Error otherwise.
+	 *                            PEAR_Error otherwise.
 	 * @access public
+	 * @throws ErrorException
 	 */
 	public function getMyCheckouts($user, $linkedAccount = false){
 		$transactions = $this->driver->getMyCheckouts($user, $linkedAccount);
@@ -393,9 +385,9 @@ class CatalogConnection
 	 *
 	 * @param array $patron            The patron array from patronLogin
 	 * @param bool  $includeMessages
-	 * @param bool  $linkedAccount    When using linked accounts for Sierra Encore, the curl connection for linked accounts has to be reset
-	 * @return mixed        Array of the patron's fines on success, PEAR_Error
-	 * otherwise.
+	 * @param bool $linkedAccount When using linked accounts for Sierra Encore, the curl connection for
+	 *                            linked accounts has to be reset
+	 * @return mixed        Array of the patron's fines on success, PEAR_Error otherwise.
 	 * @access public
 	 */
 	public function getMyFines($patron, $includeMessages = false, $linkedAccount = false)
@@ -646,8 +638,7 @@ class CatalogConnection
 				$result = $this->driver->deleteAllReadingHistory($patron);
 				if (!$result){
 					$success = false;
-					global $logger;
-					$logger->log('Failed to delete all reading history in ILS for an opt out for user ' . $patron->id, PEAR_LOG_WARNING);
+					$this->logger->warn('Failed to delete all reading history in ILS for an opt out for user ' . $patron->id);
 				}
 			}elseif (method_exists($this->driver, 'doReadingHistoryAction')){
 				//Deprecated process
@@ -659,8 +650,7 @@ class CatalogConnection
 				$result = $this->driver->optOutReadingHistory($patron);
 				if (!$result){
 					$success = false;
-					global $logger;
-					$logger->log('Failed to opt out of reading history in ILS for user ' . $patron->id, PEAR_LOG_WARNING);
+					$this->logger->warn('Failed to opt out of reading history in ILS for user ' . $patron->id);
 				}
 			} elseif (method_exists($this->driver, 'doReadingHistoryAction')){
 				//Deprecated process
@@ -674,8 +664,7 @@ class CatalogConnection
 			$result                   = $readingHistoryDB->delete();
 			if ($result !== false){  // The delete can return 0 for no rows affected
 				$success = false;
-				global $logger;
-				$logger->log('Failed to delete all reading history entries in Pika for user ' . $patron->id, PEAR_LOG_WARNING);
+				$this->logger->warn('Failed to delete all reading history entries in Pika for user ' . $patron->id);
 			}
 
 			//Opt out within Pika since the ILS does not seem to implement this functionality
@@ -707,8 +696,7 @@ class CatalogConnection
 				if ($success){
 					// Set to false if any updates fail; stop checking after the first failure
 					if (!$success = $result != false){
-						global $logger;
-						$logger->log('Failed to delete all reading history entries for user id ' . $patron->id . ', starting with history entry ' . $readingHistoryDB->id, PEAR_LOG_WARNING);
+						$this->logger->warn('Failed to delete all reading history entries for user id ' . $patron->id . ', starting with history entry ' . $readingHistoryDB->id);
 					}
 				}
 			}
@@ -752,8 +740,7 @@ class CatalogConnection
 							if ($success){
 								// Set to false if any updates fail; stop checking after the first failure
 								$success = $result != false;
-								global $logger;
-								$logger->log('Failed to delete selected reading history entry for user id ' . $patron->id, PEAR_LOG_WARNING);
+								$this->logger->warn('Failed to delete selected reading history entry for user id ' . $patron->id);
 							}
 						}
 					}
@@ -768,8 +755,7 @@ class CatalogConnection
 						if ($success){
 							// Set to false if any updates fail; stop checking after the first failure
 							$success = $result != false;
-							global $logger;
-							$logger->log('Failed to delete selected reading history entry for user id ' . $patron->id, PEAR_LOG_WARNING);
+							$this->logger->warn('Failed to delete selected reading history entry for user id ' . $patron->id);
 						}
 					}
 				}
@@ -820,8 +806,7 @@ class CatalogConnection
 	 * @access  public
 	 */
 	function placeHold($patron, $recordId, $pickupBranch, $cancelDate = null) {
-		$result =  $this->driver->placeHold($patron, $recordId, $pickupBranch, $cancelDate);
-		return $result;
+		return $this->driver->placeHold($patron, $recordId, $pickupBranch, $cancelDate);
 	}
 
 	/**
@@ -842,37 +827,26 @@ class CatalogConnection
 		return $this->driver->placeItemHold($patron, $recordId, $itemId, $pickupBranch, $cancelDate);
 	}
 
-	/**
-	 * Get Hold Link
-	 *
-	 * The goal for this method is to return a URL to a "place hold" web page on
-	 * the ILS OPAC. This is used for ILSs that do not support an API or method
-	 * to place Holds.
-	 *
-	 * @param   string  $recordId   The id of the bib record
-	 * @return  mixed               True if successful, otherwise return a PEAR_Error
-	 * @access  public
-	 */
-//	function getHoldLink($recordId)
-//	{
-//		return $this->driver->getHoldLink($recordId);
-//	}
-
 	function updatePatronInfo($user, $canUpdateContactInfo){
-		return $errors = $this->driver->updatePatronInfo($user, $canUpdateContactInfo);
+		try {
+			$errors = $this->driver->updatePatronInfo($user, $canUpdateContactInfo);
+		} catch (ErrorException $e) {
+			$this->logger->error($e->getMessage(), ['stack_trace' => $e->getTraceAsString()]);
+		}
+		return $errors;
 	}
 
-	// TODO Millennium only at this time, set other drivers to return false.
+	// TODO Sierra only at this time, set other drivers to return false.
 	function bookMaterial(User $patron, SourceAndId $recordId, $startDate, $startTime = null, $endDate = null, $endTime = null){
 		return $this->driver->bookMaterial($patron, $recordId, $startDate, $startTime, $endDate, $endTime);
 	}
 
-	// TODO Millennium only at this time, set other drivers to return false.
+	// TODO Sierra only at this time, set other drivers to return false.
 	function cancelBookedMaterial($patron, $cancelIds){
 		return $this->driver->cancelBookedMaterial($patron, $cancelIds);
 	}
 
-	// TODO Millennium only at this time, set other drivers to return false.
+	// TODO Sierra only at this time, set other drivers to return false.
 	function cancelAllBookedMaterial($patron){
 		return $this->driver->cancelAllBookedMaterial($patron);
 	}
@@ -889,135 +863,6 @@ class CatalogConnection
 	function selfRegister(){
 		return $this->driver->selfRegister();
 	}
-
-	/**
-	 * Get New Items
-	 *
-	 * Retrieve the IDs of items recently added to the catalog.
-	 *
-	 * @param int $page    Page number of results to retrieve (counting starts at 1)
-	 * @param int $limit   The size of each page of results to retrieve
-	 * @param int $daysOld The maximum age of records to retrieve in days (max. 30)
-	 * @param int $fundId  optional fund ID to use for limiting results (use a value
-	 * returned by getFunds, or exclude for no limit); note that "fund" may be a
-	 * misnomer - if funds are not an appropriate way to limit your new item
-	 * results, you can return a different set of values from getFunds. The
-	 * important thing is that this parameter supports an ID returned by getFunds,
-	 * whatever that may mean.
-	 *
-	 * @return array       Associative array with 'count' and 'results' keys
-	 * @access public
-	 */
-//	public function getNewItems($page = 1, $limit = 20, $daysOld = 30,
-//	$fundId = null
-//	) {
-//		return $this->driver->getNewItems($page, $limit, $daysOld, $fundId);
-//	}
-
-	/**
-	 * Get Funds
-	 *
-	 * Return a list of funds which may be used to limit the getNewItems list.
-	 *
-	 * @return array An associative array with key = fund ID, value = fund name.
-	 * @access public
-	 */
-//	public function getFunds()
-//	{
-//		// Graceful degradation -- return empty fund list if no method supported.
-//		return method_exists($this->driver, 'getFunds') ?
-//		$this->driver->getFunds() : array();
-//	}
-
-	/**
-	 * Get Departments
-	 *
-	 * Obtain a list of departments for use in limiting the reserves list.
-	 *
-	 * @return array An associative array with key = dept. ID, value = dept. name.
-	 * @access public
-	 */
-//	public function getDepartments()
-//	{
-//		// Graceful degradation -- return empty list if no method supported.
-//		return method_exists($this->driver, 'getDepartments') ?
-//		$this->driver->getDepartments() : array();
-//	}
-
-	/**
-	 * Get Instructors
-	 *
-	 * Obtain a list of instructors for use in limiting the reserves list.
-	 *
-	 * @return array An associative array with key = ID, value = name.
-	 * @access public
-	 */
-//	public function getInstructors()
-//	{
-//		// Graceful degradation -- return empty list if no method supported.
-//		return method_exists($this->driver, 'getInstructors') ?
-//		$this->driver->getInstructors() : array();
-//	}
-
-	/**
-	 * Get Courses
-	 *
-	 * Obtain a list of courses for use in limiting the reserves list.
-	 *
-	 * @return array An associative array with key = ID, value = name.
-	 * @access public
-	 */
-//	public function getCourses()
-//	{
-//		// Graceful degradation -- return empty list if no method supported.
-//		return method_exists($this->driver, 'getCourses') ?
-//		$this->driver->getCourses() : array();
-//	}
-
-	/**
-	 * Find Reserves
-	 *
-	 * Obtain information on course reserves.
-	 *
-	 * @param string $course ID from getCourses (empty string to match all)
-	 * @param string $inst   ID from getInstructors (empty string to match all)
-	 * @param string $dept   ID from getDepartments (empty string to match all)
-	 *
-	 * @return mixed An array of associative arrays representing reserve items (or a
-	 * PEAR_Error object if there is a problem)
-	 * @access public
-	 */
-//	public function findReserves($course, $inst, $dept)
-//	{
-//		return $this->driver->findReserves($course, $inst, $dept);
-//	}
-
-	/**
-	 * Process inventory for a particular item in the catalog
-	 *
-	 * @param string $login     Login for the user doing the inventory
-	 * @param string $password1 Password for the user doing the inventory
-	 * @param string $initials
-	 * @param string $password2
-	 * @param string[] $barcodes
-	 * @param boolean $updateIncorrectStatuses
-	 *
-	 * @return array
-	 */
-	function doInventory($login, $password1, $initials, $password2, $barcodes, $updateIncorrectStatuses){
-		return $this->driver->doInventory($login, $password1, $initials, $password2, $barcodes, $updateIncorrectStatuses);
-	}
-
-	/**
-	 * Get suppressed records.
-	 *
-	 * @return array ID numbers of suppressed records in the system.
-	 * @access public
-	 */
-//	public function getSuppressedRecords()
-//	{
-//		return $this->driver->getSuppressedRecords();
-//	}
 
 	/**
 	 * Default method -- pass along calls to the driver if available; return
@@ -1148,6 +993,7 @@ class CatalogConnection
 			}
 
 			$key = $source . ':' . $sourceId;
+
 			//TODO: case where $key is ':' or 'ils:' for ILL checkouts (At this point more than one ILL checkout will end up as one entry)
 			if (array_key_exists($key, $activeHistoryTitles)){
 				$activeHistoryTitles[$key]['stillActiveCheckout'] = true;
@@ -1155,6 +1001,7 @@ class CatalogConnection
 				// checked out (eg 2 copies of a title), and we don't want to duplicate entries in reading history when only
 				// bib-level data is recorded
 			}else{
+				// A new checkout that *isn't* is the users reading history yet; so we will add it to the reading history
 				$historyEntryDB         = new ReadingHistoryEntry();
 				$historyEntryDB->userId = $patron->id;
 				if (isset($checkout['groupedWorkId'])){
@@ -1176,8 +1023,7 @@ class CatalogConnection
 				}
 				$historyEntryDB->checkOutDate = time();
 				if (!$historyEntryDB->insert()){
-					global $logger;
-					$logger->log("Could not insert new reading history entry", PEAR_LOG_ERR);
+					$this->logger->warn("Could not insert new reading history entry");
 				}
 			}
 		}
@@ -1194,26 +1040,25 @@ class CatalogConnection
 					$historyEntryDB->checkInDate = time();
 					$numUpdates                  = $historyEntryDB->update();
 					if ($numUpdates != 1){
-						global $logger;
-//						$key = $historyEntry['source'] . ':' . $historyEntry['recordId'];
-						$logger->log("Could not update reading history entry $key", PEAR_LOG_ERR);
+						$this->logger->warn("Could not update reading history entry $key");
 					}
 				}
 			}
 		}
 	}
 
+	/**
+	 * Return the number of holds that are on a record
+	 * @param $id
+	 * @return int
+	 */
 	public function getNumHolds($id) {
-		// todo: this should be in User.php. These methods are all over the place, ie, getNumCheckedOutTotal count is in User.php, but hold count is here????
-		// these all need to live with the owning object.
-		/** @var Memcache $memCache */
-		global $memCache;
+		global $configArray;
 		$key = 'num_holds_' . $id ;
-		$cachedValue = $memCache->get($key);
+		$cachedValue = $this->cache->get($key);
 		if ($cachedValue == false || isset($_REQUEST['reload'])){
-			$cachedValue = $this->driver->getNumHolds($id);
-			global $configArray;
-			$memCache->add($key, $cachedValue, 0, $configArray['Caching']['item_data']);
+			$cachedValue = $this->driver->getNumHoldsOnRecord($id);
+			$this->cache->set($key, $cachedValue, $configArray['Caching']['item_data']);
 		}
 
 		return $cachedValue;
@@ -1301,7 +1146,8 @@ class CatalogConnection
 		}else{
 			return array(
 					'success' => false,
-					'errors' => array('Importing Lists has not been implemented for this ILS.'));
+					'errors' => array('Importing Lists has not been implemented for this ILS.')
+			);
 		}
 	}
 

@@ -1,36 +1,24 @@
 <?php
 /**
- * Table Definition for library
+ * Pika Discovery Layer
+ * Copyright (C) 2020  Marmot Library Network
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-require_once 'DB/DataObject.php';
-require_once 'DB/DataObject/Cast.php';
 
-class RecordGroupingLogEntry extends DB_DataObject
-{
+class RecordGroupingLogEntry extends LogEntry {
 	public $__table = 'record_grouping_log';   // table name
-	public $id;
-	public $startTime;
-	public $lastUpdate;
-	public $endTime;
 	public $notes;
-
-	function keys() {
-		return array('id');
-	}
-
-	function getElapsedTime(){
-		if (!isset($this->endTime) || is_null($this->endTime)){
-			return "";
-		}else{
-			$elapsedTimeMin = ceil(($this->endTime - $this->startTime) / 60);
-			if ($elapsedTimeMin < 60){
-				return $elapsedTimeMin . " min";
-			}else{
-				$hours = floor($elapsedTimeMin / 60);
-				$minutes = $elapsedTimeMin - (60 * $hours);
-				return "$hours hours, $minutes min" ;
-			}
-		}
-	}
 
 }

@@ -1,9 +1,27 @@
 <?php
 /**
+ * Pika Discovery Layer
+ * Copyright (C) 2020  Marmot Library Network
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+/**
  * Catalog Driver for Aspencat libraries based on Koha
  *
- * @category VuFind-Plus-2014
- * @author Mark Noble <mark@marmot.org>
+ * @category Pika
+ * @author Mark Noble <pika@marmot.org>
  * Date: 10/3/14
  * Time: 5:51 PM
  */
@@ -484,82 +502,14 @@ class Aspencat implements DriverInterface{
 						$user->numHoldsRequestedIls = $numWaitingHolds;
 						$user->numHoldsIls = $user->numHoldsAvailableIls + $user->numHoldsRequestedIls;
 
-						$homeBranchCode = strtolower($userFromDb['branchcode']);
-						$location = new Location();
-						$location->code = $homeBranchCode;
-						if (!$location->find(true)){
-							unset($location);
-							$user->homeLocationId = 0;
-							// Logging for Diagnosing PK-1846
-							global $logger;
-							$logger->log('Aspencat Driver: No Location found, user\'s homeLocationId being set to 0. User : ' . $user->id, PEAR_LOG_WARNING);
+						$user->setUserHomeLocations($userFromDb['branchcode']);
+
+						$dateString = $userFromDb['dateexpiry'];
+						if (!empty($dateString)) {
+							list ($yearExp, $monthExp, $dayExp) = explode('-', $dateString);
+							$dateString = $monthExp . '/' . $dayExp . '/' . $yearExp;
 						}
-
-						if ((empty($user->homeLocationId) || $user->homeLocationId == -1) || (isset($location) && $user->homeLocationId != $location->locationId)){ // When homeLocation isn't set or has changed
-							if ((empty($user->homeLocationId) || $user->homeLocationId == -1) && !isset($location)){
-								// homeBranch Code not found in location table and the user doesn't have an assigned homelocation,
-								// try to find the main branch to assign to user
-								// or the first location for the library
-								global $library;
-
-								$location            = new Location();
-								$location->libraryId = $library->libraryId;
-								$location->orderBy('isMainBranch desc'); // gets the main branch first or the first location
-								if (!$location->find(true)){
-									// Seriously no locations even?
-									global $logger;
-									$logger->log('Failed to find any location to assign to user as home location', PEAR_LOG_ERR);
-									unset($location);
-								}
-							}
-							if (isset($location)){
-								$user->homeLocationId = $location->locationId;
-								if (empty($user->myLocation1Id)){
-									$user->myLocation1Id = ($location->nearbyLocation1 > 0) ? $location->nearbyLocation1 : $location->locationId;
-									/** @var /Location $location */
-									//Get display name for preferred location 1
-									$myLocation1             = new Location();
-									$myLocation1->locationId = $user->myLocation1Id;
-									if ($myLocation1->find(true)){
-										$user->myLocation1 = $myLocation1->displayName;
-									}
-								}
-
-								if (empty($user->myLocation2Id)){
-									$user->myLocation2Id = ($location->nearbyLocation2 > 0) ? $location->nearbyLocation2 : $location->locationId;
-									//Get display name for preferred location 2
-									$myLocation2             = new Location();
-									$myLocation2->locationId = $user->myLocation2Id;
-									if ($myLocation2->find(true)){
-										$user->myLocation2 = $myLocation2->displayName;
-									}
-								}
-							}
-						}
-
-						if (isset($location)){
-							//Get display names that aren't stored
-							$user->homeLocationCode = $location->code;
-							$user->homeLocation     = $location->displayName;
-						}
-
-						$user->expires = $userFromDb['dateexpiry']; //TODO: format is year-month-day; millennium is month-day-year; needs converting??
-
-						$user->expired     = 0; // default setting
-						$user->expireClose = 0;
-
-						if (!empty($userFromDb['dateexpiry'])) { // TODO: probably need a better check of this field
-							list ($yearExp, $monthExp, $dayExp) = explode('-', $userFromDb['dateexpiry']);
-							$timeExpire   = strtotime($monthExp . "/" . $dayExp . "/" . $yearExp);
-							$timeNow      = time();
-							$timeToExpire = $timeExpire - $timeNow;
-							if ($timeToExpire <= 30 * 24 * 60 * 60) {
-								if ($timeToExpire <= 0) {
-									$user->expired = 1;
-								}
-								$user->expireClose = 1;
-							}
-						}
+						$user->setUserExpirationSettings($dateString);
 
 						$user->noticePreferenceLabel = 'Unknown';
 
@@ -1544,13 +1494,11 @@ class Aspencat implements DriverInterface{
 	}
 
 	public function renewItem($patron, $recordId, $itemId, $itemIndex){
-		global $analytics;
 		global $configArray;
 
 		//Get the session token for the user
 		$loginResult = $this->loginToKoha($patron);
 		if ($loginResult['success']){
-			global $analytics;
 			$postParams = array(
 				'from' => 'opac_user',
 				'item' => $itemId,
@@ -1567,22 +1515,16 @@ class Aspencat implements DriverInterface{
 				$success = true;
 				$message = 'Your item was successfully renewed.';
 				//Clear the patron profile
-				if ($analytics){
-					$analytics->addEvent('ILS Integration', 'Renew Successful');
-				}
+
 			}else{
 				$success = false;
 				$message = 'Invalid Response from SIP 2';
-				if ($analytics){
-					$analytics->addEvent('ILS Integration', 'Renew Failed', $message);
-				}
+
 			}
 		}else{
 			$success = false;
 			$message = 'Unable to login2';
-			if ($analytics){
-				$analytics->addEvent('ILS Integration', 'Renew Failed', $message);
-			}
+
 		}
 
 		return array(
@@ -1647,20 +1589,15 @@ class Aspencat implements DriverInterface{
 	function doReadingHistoryAction($patron, $action, /** @noinspection PhpUnusedParameterInspection */
 	                                $selectedTitles){
 		global $configArray;
-		global $analytics;
 		if (!$this->loginToKoha($patron)){
 			return;
 		}else{
 			if ($action == 'deleteMarked'){
 
-				if ($analytics){
-					$analytics->addEvent('ILS Integration', 'Delete Marked Reading History Titles');
-				}
+
 			}elseif ($action == 'deleteAll'){
 
-				if ($analytics){
-					$analytics->addEvent('ILS Integration', 'Delete All Reading History Titles');
-				}
+
 			}elseif ($action == 'exportList'){
 				//Leave this unimplemented for now.
 			}elseif ($action == 'optOut'){
@@ -1669,18 +1606,14 @@ class Aspencat implements DriverInterface{
 					'disable_reading_history' => 1
 				);
 				$this->postToKohaPage($kohaUrl, $postParams);
-				if ($analytics){
-					$analytics->addEvent('ILS Integration', 'Opt Out of Reading History');
-				}
+
 			}elseif ($action == 'optIn'){
 				$kohaUrl = $configArray['Catalog']['url'] . '/cgi-bin/koha/opac-update_reading_history.pl';
 				$postParams = array(
 					'disable_reading_history' => 0
 				);
 				$this->postToKohaPage($kohaUrl, $postParams);
-				if ($analytics){
-					$analytics->addEvent('ILS Integration', 'Opt in to Reading History');
-				}
+
 			}
 		}
 	}
@@ -1688,7 +1621,7 @@ class Aspencat implements DriverInterface{
 	private $holdsByBib = array();
 	/** @var mysqli_stmt  */
 	private $getNumHoldsStmt = null;
-	public function getNumHolds($id) {
+	public function getNumHoldsOnRecord($id) {
 		if (isset($this->holdsByBib[$id])){
 			return $this->holdsByBib[$id];
 		}

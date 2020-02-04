@@ -1,11 +1,12 @@
 <?php
 /**
+ * Pika Discovery Layer
+ * Copyright (C) 2020  Marmot Library Network
  *
- * Copyright (C) Villanova University 2010.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2,
- * as published by the Free Software Foundation.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -13,11 +14,8 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-require_once ROOT_DIR . '/services/MyResearch/lib/Search.php';
 require_once ROOT_DIR . '/sys/Recommend/RecommendationFactory.php';
 
 /**
@@ -115,37 +113,31 @@ abstract class SearchObject_Base
 	 *
 	 * @access  public
 	 */
-	public function __construct()
-	{
+	public function __construct(){
 		global $configArray;
 		global $timer;
 
 		// Get the start of the server URL and store
-		$this->serverUrl = $configArray['Site']['path'];
+		$this->serverUrl = '';
 
 		// Set appropriate debug mode:
 		// Debugging
-		if ($configArray['System']['debugSolr']) {
+		if ($configArray['System']['debugSolr']){
 			//Verify that the ip is ok
-			global $locationSingleton;
-			$activeIp = $locationSingleton->getActiveIp();
-			$maintenanceIps = $configArray['System']['maintainenceIps'];
-			$debug = true;
-			if (strlen($maintenanceIps) > 0){
-				$debug = false;
-				$allowableIps = explode(',', $maintenanceIps);
+			$debug = false;
+			if (!empty($configArray['MaintenanceMode']['maintenanceIps'])){
+				global $locationSingleton;
+				$activeIp     = $locationSingleton->getActiveIp();
+				$allowableIps = explode(',', $configArray['MaintenanceMode']['maintenanceIps']);
 				if (in_array($activeIp, $allowableIps)){
 					$debug = true;
-					if ($configArray['System']['debugSolrQuery'] == true) {
-						$this->debugSolrQuery = true;
-					}
 				}
 			}
-			if ($debug && $configArray['System']['debugSolrQuery'] == true) {
+			if ($debug && $configArray['System']['debugSolrQuery'] == true){
 				$this->debugSolrQuery = true;
 			}
 			$this->debug = $debug;
-		} else {
+		}else{
 			$this->debug = false;
 		}
 		$timer->logTime('Setup Base Search Object');
@@ -1508,7 +1500,7 @@ abstract class SearchObject_Base
 		$dupSaved  = false;
 		foreach ($searchHistory as $oldSearch) {
 			// Deminify the old search
-			$minSO = unserialize($oldSearch->search_object);
+			$minSO     = unserialize($oldSearch->search_object);
 			$dupSearch = SearchObjectFactory::deminify($minSO);
 			// See if the classes and urls match
 			if (get_class($dupSearch) && get_class($this) &&
@@ -1529,10 +1521,10 @@ abstract class SearchObject_Base
 
 		// Save this search unless we found a 'saved' duplicate
 		if (!$dupSaved) {
-			$search = new SearchEntry();
-			$search->session_id = session_id();
-			$search->created = date('Y-m-d');
-			$search->searchSource = $this->searchSource;
+			$search                = new SearchEntry();
+			$search->session_id    = session_id();
+			$search->created       = date('Y-m-d');
+			$search->searchSource  = $this->searchSource;
 			$search->search_object = serialize($this->minify());
 
 			$search->insert();

@@ -1,5 +1,23 @@
 <?php
 /**
+ * Pika Discovery Layer
+ * Copyright (C) 2020  Marmot Library Network
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+/**
  * Table Definition for Person
  */
 require_once ROOT_DIR . '/sys/SolrDataObject.php';
@@ -239,60 +257,65 @@ class Person extends SolrDataObject
 
 	function __get($name){
 		global $timer;
-		if ($name == 'displayName'){
-			return $this->firstName . ' ' . $this->lastName;
-		}else if ($name == 'marriages') {
-			if (is_null($this->marriages)){
-				$this->marriages = array();
-				if ($this->personId > 0){
-					//Load roles for the user from the user
-					$marriage = new Marriage();
-					$marriage->personId = $this->personId;
-					$marriage->orderBy('marriageDateYear ASC');
-					$marriage->find();
-					while ($marriage->fetch()){
-						$this->marriages[$marriage->marriageId] = clone($marriage);
+		switch ($name){
+			case 'displayName':
+				return $this->firstName . ' ' . $this->lastName;
+			case 'marriages':
+				if (is_null($this->marriages)){
+					$this->marriages = array();
+					if ($this->personId > 0){
+						//Load roles for the user from the user
+						$marriage           = new Marriage();
+						$marriage->personId = $this->personId;
+						$marriage->orderBy('marriageDateYear ASC');
+						$marriage->find();
+						while ($marriage->fetch()){
+							$this->marriages[$marriage->marriageId] = clone($marriage);
+						}
 					}
+					$timer->logTime("Loaded marriages");
+					return $this->marriages;
+				}else{
+					return $this->marriages;
 				}
-				$timer->logTime("Loaded marriages");
-				return $this->marriages;
-			}else{
-				return $this->marriages;
-			}
-		}else if ($name == 'obituaries') {
-			if (is_null($this->obituaries)){
-				$this->obituaries = array();
-				if ($this->personId > 0){
-					//Load roles for the user from the user
-					$obit = new Obituary();
-					$obit->personId = $this->personId;
-					$obit->orderBy('source ASC');
-					$obit->find();
-					while ($obit->fetch()){
-						$this->obituaries[$obit->obituaryId] = clone($obit);
+			case 'obituaries':
+				if (is_null($this->obituaries)){
+					$this->obituaries = array();
+					if ($this->personId > 0){
+						//Load roles for the user from the user
+						$obit           = new Obituary();
+						$obit->personId = $this->personId;
+						$obit->orderBy('source ASC');
+						$obit->find();
+						while ($obit->fetch()){
+							$this->obituaries[$obit->obituaryId] = clone($obit);
+						}
 					}
+					$timer->logTime("Loaded obituaries");
+					return $this->obituaries;
+				}else{
+					return $this->obituaries;
 				}
-				$timer->logTime("Loaded obituaries");
-				return $this->obituaries;
-			}else{
-				return $this->obituaries;
-			}
-		}else{
-			return $this->data[$name];
+			default:
+				return $this->data[$name];
 		}
 	}
 
 	function __set($name, $value){
-		if ($name == 'marriages'){
-			$this->marriages = $value;
-			//Update the database, first remove existing values
-			$this->saveMarriages();
-		}elseif ($name == 'obituaries'){
-			$this->obituaries = $value;
-			//Update the database, first remove existing values
-			$this->saveObituaries();
-		}else{
-			$this->data[$name] = $value;
+		switch ($name){
+			case 'marriages':
+				$this->marriages = $value;
+				//Update the database, first remove existing values
+				$this->saveMarriages();
+				break;
+			case 'obituaries':
+				$this->obituaries = $value;
+				//Update the database, first remove existing values
+				$this->saveObituaries();
+				break;
+			default:
+				$this->data[$name] = $value;
+				break;
 		}
 	}
 
@@ -310,7 +333,7 @@ class Person extends SolrDataObject
 		}
 	}
 
-	function delete(){
+	function delete($useWhere = false){
 		$this->deleteMarriages();
 		$this->deleteObituaries();
 		parent::delete();
@@ -344,9 +367,9 @@ class Person extends SolrDataObject
 
 	function insert(){
 		//Set the dateAdded and who added the record
-		$this->dateAdded = time();
-		$this->addedBy = UserAccount::getActiveUserId();
-		$this->modifiedBy = UserAccount::getActiveUserId();
+		$this->dateAdded    = time();
+		$this->addedBy      = UserAccount::getActiveUserId();
+		$this->modifiedBy   = UserAccount::getActiveUserId();
 		$this->lastModified = time();
 		$ret = parent::insert();
 		if ($ret){
@@ -357,10 +380,10 @@ class Person extends SolrDataObject
 		return $ret;
 	}
 
-	function update(){
-		$this->modifiedBy = UserAccount::getActiveUserId();
+	function update($dataObject = false){
+		$this->modifiedBy   = UserAccount::getActiveUserId();
 		$this->lastModified = time();
-		$ret = parent::update();
+		$ret                = parent::update();
 		if ($ret){
 			$this->saveMarriages();
 			$this->saveObituaries();
@@ -368,31 +391,35 @@ class Person extends SolrDataObject
 	}
 
 	function formatPartialDate($day, $month, $year){
-		$months = array(
-		1=>'January',
-		2=>'February',
-		3=>'March',
-		4=>'April',
-		5=>'May',
-		6=>'June',
-		7=>'July',
-		8=>'August',
-		9=>'September',
-		10=>'October',
-		11=>'November',
-		12=>'December'
+		$months        = array(
+			1  => 'January',
+			2  => 'February',
+			3  => 'March',
+			4  => 'April',
+			5  => 'May',
+			6  => 'June',
+			7  => 'July',
+			8  => 'August',
+			9  => 'September',
+			10 => 'October',
+			11 => 'November',
+			12 => 'December'
 		);
 		$formattedDate = '';
 		if ($month > 0){
 			$formattedDate = $months[$month];
 		}
 		if ($day > 0){
-			if (strlen($formattedDate) > 0) $formattedDate .= ' ';
+			if (strlen($formattedDate) > 0){
+				$formattedDate .= ' ';
+			}
 			$formattedDate .= $day;
 
 		}
 		if ($year > 0){
-			if (strlen($formattedDate) > 0 && $day > 0) $formattedDate .= ', ';
+			if (strlen($formattedDate) > 0 && $day > 0){
+				$formattedDate .= ', ';
+			}
 			$formattedDate .= ' ' . $year;
 		}
 		return $formattedDate;

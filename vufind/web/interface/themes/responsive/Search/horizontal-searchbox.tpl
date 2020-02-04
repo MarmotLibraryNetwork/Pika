@@ -1,6 +1,6 @@
 {strip}
 <div id="horizontal-search-box" class="row">
-	<form method="get" action="{$path}/Union/Search" id="searchForm" class="form-inline" onsubmit="VuFind.Searches.processSearchForm();">
+	<form method="get" action="/Union/Search" id="searchForm" class="form-inline" onsubmit="VuFind.Searches.processSearchForm();">
 
 		{* Hidden Inputs *}
 		{if $searchIndex == 'Keyword' || $searchIndex == '' || $searchIndex == 'GenealogyKeyword'}
@@ -109,14 +109,14 @@
 					{if $searchType == 'advanced'}
 						<div>
 							&nbsp;
-							<a id="advancedSearchLink" href="{$path}/Search/Advanced">{translate text='Edit This Advanced Search'}</a>
+							<a id="advancedSearchLink" href="/Search/Advanced">{translate text='Edit This Advanced Search'}</a>
 						</div>
 
 						{* Show Advanced Search Link *}
 						{elseif $showAdvancedSearchbox}
 						<div>
 							&nbsp;
-							<a id="advancedSearchLink" href="{$path}/Search/Advanced">{translate text='Advanced Search'}</a>
+							<a id="advancedSearchLink" href="/Search/Advanced">{translate text='Advanced Search'}</a>
 						</div>
 					{/if}
 				</div>

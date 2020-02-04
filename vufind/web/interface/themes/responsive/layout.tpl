@@ -17,7 +17,7 @@
 		{if $metadataTemplate}
 			{include file=$metadataTemplate}
 		{/if}
-			<meta property="og:site_name" content="{$site.title|removeTrailingPunctuation|escape:html}" />
+			<meta property="og:site_name" content="{$librarySystemName|removeTrailingPunctuation|escape:html}" />
 		{if $og_title}
 			<meta property="og:title" content="{$og_title|removeTrailingPunctuation|escape:html}" />
 		{/if}
@@ -30,8 +30,8 @@
 		{if $og_url}
 			<meta property="og:url" content="{$og_url|escape:html}" />
 		{/if}
-		<link type="image/x-icon" href="{img filename=favicon.png}" rel="shortcut icon">
-		<link rel="search" type="application/opensearchdescription+xml" title="{$site.title} Catalog Search" href="{$path}/Search/OpenSearch?method=describe">
+		<link rel="shortcut icon" type="image/x-icon" href="{img filename=favicon.png}">
+		<link rel="search" type="application/opensearchdescription+xml" title="{$librarySystemName} Catalog Search" href="/Search/OpenSearch">
 
 		{include file="cssAndJsIncludes.tpl"}
 		{/strip}

@@ -15,6 +15,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.channels.FileChannel;
+import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.List;
 
@@ -28,24 +29,21 @@ public class Util {
 		 */
 		if (is != null) {
 			Writer writer = new StringWriter();
-			
 
 			char[] buffer = new char[1024];
-			try {
-				Reader reader = new BufferedReader(new InputStreamReader(is, "UTF-8"));
+
+			try (Reader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
 				int n;
 				while ((n = reader.read(buffer)) != -1) {
 					writer.write(buffer, 0, n);
 				}
-			} finally {
-				is.close();
 			}
 			return writer.toString();
 		} else {
 			return "";
 		}
 	}
-	
+
 	public static boolean doSolrUpdate(String baseIndexUrl, String body){
 		try {
 			HttpURLConnection conn = null;

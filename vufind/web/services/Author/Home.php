@@ -1,11 +1,12 @@
 <?php
 /**
+ * Pika Discovery Layer
+ * Copyright (C) 2020  Marmot Library Network
  *
- * Copyright (C) Villanova University 2007.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2,
- * as published by the Free Software Foundation.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -13,14 +14,10 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 require_once ROOT_DIR . '/Action.php';
-
-require_once ROOT_DIR . '/sys/Proxy_Request.php';
 require_once ROOT_DIR . '/sys/Pager.php';
 require_once ROOT_DIR . '/sys/NovelistFactory.php';
 
@@ -82,7 +79,7 @@ class Author_Home extends Action
 					$queryParamStrings[] = "&filter[]=$dateFilter:[$yearFrom+TO+$yearTo]";
 				}
 				$queryParamString = join('&', $queryParamStrings);
-				header("Location: {$configArray['Site']['path']}/Author/Home?$queryParamString");
+				header("Location: /Author/Home?$queryParamString");
 				exit;
 			}
 		}
@@ -121,7 +118,7 @@ class Author_Home extends Action
 					$queryParamStrings[] = "&filter[]=$filter:[$from+TO+$to]";
 				}
 				$queryParamString = join('&', $queryParamStrings);
-				header("Location: {$configArray['Site']['path']}/Author/Home?$queryParamString");
+				header("Location: /Author/Home?$queryParamString");
 				exit;
 			}
 		}
@@ -315,9 +312,6 @@ class Author_Home extends Action
 				$interface->assign('enrichment', $enrichment);
 			}
 		}
-
-		// Setup Display
-		$interface->assign('sitepath', $configArray['Site']['path']);
 
 		// Process Paging
 		$link = $searchObject->renderLinkPageTemplate();

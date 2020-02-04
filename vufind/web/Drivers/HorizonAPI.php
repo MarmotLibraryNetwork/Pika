@@ -1,11 +1,12 @@
 <?php
 /**
+ * Pika Discovery Layer
+ * Copyright (C) 2020  Marmot Library Network
  *
- * Copyright (C) Villanova University 2007.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2,
- * as published by the Free Software Foundation.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -13,9 +14,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- *
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 require_once 'DriverInterface.php';
@@ -43,7 +42,13 @@ abstract class HorizonAPI extends Horizon{
 
 	//TODO: Additional caching of sessionIds by patron
 	private static $sessionIdsForUsers = array();
-	/** login the user via web services API **/
+
+	/** login the user via web services API *
+	 * @param $username
+	 * @param $password
+	 * @param $validatedViaSSO
+	 * @return User|null
+	 */
 	public function patronLogin($username, $password, $validatedViaSSO){
 		global $timer;
 		global $configArray;
@@ -119,71 +124,11 @@ abstract class HorizonAPI extends Horizon{
 
 				//Get additional information about the patron's home branch for display.
 				if (isset($lookupMyAccountInfoResponse->locationID)){
-					$homeBranchCode = strtolower(trim((string)$lookupMyAccountInfoResponse->locationID));
-					//Translate home branch to plain text
-					$location = new Location();
-					$location->code = $homeBranchCode;
-//					$location->find(1);
-					if (!$location->find(true)){
-						unset($location);
-					}
+					$user->setUserHomeLocations(trim((string)$lookupMyAccountInfoResponse->locationID));
 				} else {
 					global $logger;
 					$logger->log('HorizonAPI Driver: No Home Library Location or Hold location found in account look-up. User : '.$user->id, PEAR_LOG_ERR);
-					// The code below will attempt to find a location for the library anyway if the homeLocation is already set
 				}
-
-				if (empty($user->homeLocationId) || (isset($location) && $user->homeLocationId != $location->locationId)) { // When homeLocation isn't set or has changed
-					if (empty($user->homeLocationId) && !isset($location)) {
-						// homeBranch Code not found in location table and the user doesn't have an assigned homelocation,
-						// try to find the main branch to assign to user
-						// or the first location for the library
-						global $library;
-
-						$location            = new Location();
-						$location->libraryId = $library->libraryId;
-						$location->orderBy('isMainBranch desc'); // gets the main branch first or the first location
-						if (!$location->find(true)) {
-							// Seriously no locations even?
-							global $logger;
-							$logger->log('Failed to find any location to assign to user as home location', PEAR_LOG_ERR);
-							unset($location);
-						}
-					}
-					if (isset($location)) {
-						$user->homeLocationId = $location->locationId;
-						if (empty($user->myLocation1Id)) {
-							$user->myLocation1Id  = ($location->nearbyLocation1 > 0) ? $location->nearbyLocation1 : $location->locationId;
-							/** @var /Location $location */
-							//Get display name for preferred location 1
-							$myLocation1             = new Location();
-							$myLocation1->locationId = $user->myLocation1Id;
-							if ($myLocation1->find(true)) {
-								$user->myLocation1 = $myLocation1->displayName;
-							}
-						}
-
-						if (empty($user->myLocation2Id)){
-							$user->myLocation2Id  = ($location->nearbyLocation2 > 0) ? $location->nearbyLocation2 : $location->locationId;
-							//Get display name for preferred location 2
-							$myLocation2             = new Location();
-							$myLocation2->locationId = $user->myLocation2Id;
-							if ($myLocation2->find(true)) {
-								$user->myLocation2 = $myLocation2->displayName;
-							}
-						}
-					}
-				}
-
-				if (isset($location)){
-					//Get display names that aren't stored
-					$user->homeLocationCode = $location->code;
-					$user->homeLocation     = $location->displayName;
-				}
-
-
-				//TODO: See if we can get information about card expiration date
-				$expireClose = 0;
 
 				$finesVal = 0;
 				if (isset($lookupMyAccountInfoResponse->BlockInfo)){
@@ -215,7 +160,7 @@ abstract class HorizonAPI extends Horizon{
 				$user->fines                 = sprintf('$%01.2f', $finesVal);
 				$user->finesVal              = $finesVal;
 				$user->expires               = ''; //TODO: Determine if we can get this
-				$user->expireClose           = $expireClose;
+				$user->expireClose           = 0;
 				$user->numCheckedOutIls      = isset($lookupMyAccountInfoResponse->ItemsOutInfo) ? count($lookupMyAccountInfoResponse->ItemsOutInfo) : 0;
 				$user->numHoldsIls           = $numHoldsAvailable + $numHoldsRequested;
 				$user->numHoldsAvailableIls  = $numHoldsAvailable;
@@ -269,7 +214,7 @@ abstract class HorizonAPI extends Horizon{
 	 * @param User $patron
 	 * @return array
 	 */
-	protected function loginViaWebService($patron){
+	protected function loginViaWebService($patron, $password = ''){
 		$userID = $patron->username;
 		if (isset(HorizonAPI::$sessionIdsForUsers[$userID])) {
 			$sessionToken = HorizonAPI::$sessionIdsForUsers[$userID];
@@ -467,18 +412,9 @@ abstract class HorizonAPI extends Horizon{
 
 				$hold_result['title']  = $title;
 				$hold_result['bid']    = $recordId;
-				global $analytics;
-				if ($analytics){
-					if ($hold_result['success'] == true){
-						$analytics->addEvent('ILS Integration', 'Successful Hold', $title);
-					}else{
-						$analytics->addEvent('ILS Integration', 'Failed Hold', $hold_result['message'] . ' - ' . $title);
-					}
 				}
 				//Clear the patron profile
 				return $hold_result;
-
-			}
 
 	}
 
@@ -566,14 +502,9 @@ abstract class HorizonAPI extends Horizon{
 				$cancelHoldUrl     = $this->getWebServiceURL() . '/standard/cancelMyHold?clientID=' . $configArray['Catalog']['clientId'] . '&sessionToken=' . $sessionToken . '&holdKey=' . $holdKey;
 				$cancelHoldResponse = $this->getWebServiceResponse($cancelHoldUrl);
 
-				global $analytics;
-				if ($cancelHoldResponse){
-					//Clear the patron profile
-					$analytics->addEvent('ILS Integration', 'Hold Cancelled', $title);
-				}else{
-					$allCancelsSucceed = false;
+				if (!$cancelHoldResponse){
+					$allCancelsSucceed          = false;
 					$failure_messages[$holdKey] = "The hold for $title could not be cancelled.  Please try again later or see your librarian.";
-					$analytics->addEvent('ILS Integration', 'Hold Not Cancelled', $title);
 				}
 			}
 			if ($allCancelsSucceed){
@@ -609,13 +540,8 @@ abstract class HorizonAPI extends Horizon{
 					$changePickupLocationUrl      = $this->getWebServiceURL() . '/standard/changePickupLocation?clientID=' . $configArray['Catalog']['clientId'] . '&sessionToken=' . $sessionToken . '&holdKey=' . $holdKey . '&newLocation=' . $locationId;
 					$changePickupLocationResponse = $this->getWebServiceResponse($changePickupLocationUrl);
 
-					global $analytics;
-					if ($changePickupLocationResponse){
-						//Clear the patron profile
-						$analytics->addEvent('ILS Integration', 'Hold Suspended', $title);
-					}else{
+					if (!$changePickupLocationResponse){
 						$allLocationChangesSucceed = false;
-						$analytics->addEvent('ILS Integration', 'Hold Not Suspended', $title);
 					}
 				}
 				if ($allLocationChangesSucceed){
@@ -650,13 +576,8 @@ abstract class HorizonAPI extends Horizon{
 						$changePickupLocationUrl      = $this->getWebServiceURL() . '/standard/suspendMyHold?clientID=' . $configArray['Catalog']['clientId'] . '&sessionToken=' . $sessionToken . '&holdKey=' . $holdKey . '&suspendEndDate=' . $reactivationDate;
 						$changePickupLocationResponse = $this->getWebServiceResponse($changePickupLocationUrl);
 
-						global $analytics;
-						if ($changePickupLocationResponse){
-							//Clear the patron profile
-							$analytics->addEvent('ILS Integration', 'Hold Suspended', $title);
-						}else{
+						if (!$changePickupLocationResponse){
 							$allLocationChangesSucceed = false;
-							$analytics->addEvent('ILS Integration', 'Hold Not Suspended', $title);
 						}
 					}
 
@@ -687,13 +608,8 @@ abstract class HorizonAPI extends Horizon{
 						$changePickupLocationUrl      = $this->getWebServiceURL() . '/standard/unsuspendMyHold?clientID=' . $configArray['Catalog']['clientId'] . '&sessionToken=' . $sessionToken . '&holdKey=' . $holdKey;
 						$changePickupLocationResponse = $this->getWebServiceResponse($changePickupLocationUrl);
 
-						global $analytics;
-						if ($changePickupLocationResponse){
-							//Clear the patron profile
-							$analytics->addEvent('ILS Integration', 'Hold Suspended', $title);
-						}else{
+						if (!$changePickupLocationResponse){
 							$allUnsuspendsSucceed = false;
-							$analytics->addEvent('ILS Integration', 'Hold Not Suspended', $title);
 						}
 					}
 
@@ -747,9 +663,9 @@ abstract class HorizonAPI extends Horizon{
 				$curTitle['canrenew']        = true; //TODO: Figure out if the user can renew the title or not
 				$curTitle['renewIndicator']  = (string)$itemOut->itemBarcode;
 				$curTitle['barcode']         = (string)$itemOut->itemBarcode;
-				$curTitle['holdQueueLength'] = $this->getNumHolds($bibId);
+				$curTitle['holdQueueLength'] = $this->getNumHoldsOnRecord($bibId);
 				$curTitle['format']          = 'Unknown';
-				if ($curTitle['id'] && strlen($curTitle['id']) > 0){
+				if (!empty($curTitle['id'])){
 					require_once ROOT_DIR . '/RecordDrivers/MarcRecord.php';
 					$recordDriver = new MarcRecord($curTitle['id']);
 					if ($recordDriver->isValid()){
@@ -824,21 +740,16 @@ abstract class HorizonAPI extends Horizon{
 		$renewItemUrl      = $this->getWebServiceURL() . '/standard/renewMyCheckout?clientID=' . $configArray['Catalog']['clientId'] . '&sessionToken=' . $sessionToken . '&itemID=' . $itemId;
 		$renewItemResponse = $this->getWebServiceResponse($renewItemUrl);
 
-		global $analytics;
 		if ($renewItemResponse && !isset($renewItemResponse->string)){
 			$success = true;
 			$message = 'Your item was successfully renewed.  The title is now due on ' . $renewItemResponse->dueDate;
 			//Clear the patron profile
-			if ($analytics){
-				$analytics->addEvent('ILS Integration', 'Renew Successful');
-			}
+
 		}else{
 			//TODO: check that title is included in the message
 			$success = false;
 			$message = $renewItemResponse->string;
-			if ($analytics){
-				$analytics->addEvent('ILS Integration', 'Renew Failed', $renewItemResponse->string);
-			}
+
 		}
 		return array(
 			'itemId'  => $itemId,
@@ -852,7 +763,7 @@ abstract class HorizonAPI extends Horizon{
 	 * @param  string|int $bibId
 	 * @return bool|int
 	 */
-	public function getNumHolds($bibId) {
+	public function getNumHoldsOnRecord($bibId) {
 		global $offlineMode;
 		if (!$offlineMode){
 			global $configArray;
@@ -869,7 +780,7 @@ abstract class HorizonAPI extends Horizon{
 		return false;
 	}
 
-	function resetPin($user) {
+	function resetPin($user, $newPin, $resetToken = null) {
 
 	}
 

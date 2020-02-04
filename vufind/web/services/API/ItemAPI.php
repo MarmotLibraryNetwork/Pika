@@ -1,11 +1,12 @@
 <?php
 /**
+ * Pika Discovery Layer
+ * Copyright (C) 2020  Marmot Library Network
  *
- * Copyright (C) Villanova University 2007.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2,
- * as published by the Free Software Foundation.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -13,9 +14,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 require_once ROOT_DIR . '/AJAXHandler.php';
@@ -23,31 +22,9 @@ require_once ROOT_DIR . '/sys/Pager.php';
 require_once ROOT_DIR . '/sys/ISBN.php';
 require_once ROOT_DIR . '/CatalogConnection.php';
 
-/**
- * API methods related to getting information about specific items.
- *
- * Copyright (C) Douglas County Libraries 2011.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2,
- * as published by the Free Software Foundation.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
- * @version   1.0
- * @author    Mark Noble <mnoble@turningleaftech.com>
- * @copyright Copyright (C) Douglas County Libraries 2011.
- */
 class ItemAPI extends AJAXHandler {
 
-	/** @var  Millennium|DriverInterface */
+	/** @var  Sierra|DriverInterface */
 	protected $catalog;
 
 	public $id;
@@ -64,8 +41,6 @@ class ItemAPI extends AJAXHandler {
 	public $isbn;
 	public $issn;
 	public $upc;
-
-	public $cacheId;
 
 	/** @var  Solr $db */
 	public $db;
@@ -406,52 +381,6 @@ class ItemAPI extends AJAXHandler {
 			}
 			$itemData['holdings'] = $holdings;
 		}
-
-		//Update to use same method of loading that we do within AJAX
-		/*try {
-			$catalog = CatalogFactory::getCatalogConnectionInstance();;
-			$timer->logTime("Connected to catalog");
-		} catch (PDOException $e) {
-			// What should we do with this error?
-			if ($configArray['System']['debug']) {
-				echo '<pre>';
-				echo 'DEBUG: ' . $e->getMessage();
-				echo '</pre>';
-			}
-			return null;
-		}
-
-		if ($catalog->status) {
-			$result = $catalog->getHolding($fullId);
-			$timer->logTime("Loaded Holding Data from catalog");
-			if (PEAR_Singleton::isError($result)) {
-				PEAR_Singleton::raiseError($result);
-			}
-			if (count($result)) {
-				$holdings = array();
-				$issueSummaries = array();
-				foreach ($result as $copy) {
-					if (isset($copy['type']) && $copy['type'] == 'issueSummary') {
-						$issueSummaries = $result;
-						break;
-					} else {
-						$hasLastCheckinData = (isset($copy['lastCheckinDate']) && $copy['lastCheckinDate'] != null) || $hasLastCheckinData; // if $hasLastCheckinData was true keep that value even when first check is false.
-						// flag for at least 1 lastCheckinDate
-
-						$key = $copy['location'];
-						$key = preg_replace('~\W~', '_', $key);
-						$holdings[$key][] = $copy;
-					}
-				}
-				if (isset($issueSummaries) && count($issueSummaries) > 0) {
-					$itemData['holdings'] = $issueSummaries;
-				} else {
-					$itemData['holdings'] = $holdings;
-				}
-			} else {
-				$itemData['holdings'] = array();
-			}
-		}*/
 
 		return $itemData;
 	}

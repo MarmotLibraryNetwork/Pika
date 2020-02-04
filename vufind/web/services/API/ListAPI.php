@@ -1,11 +1,12 @@
 <?php
 /**
+ * Pika Discovery Layer
+ * Copyright (C) 2020  Marmot Library Network
  *
- * Copyright (C) Villanova University 2007.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2,
- * as published by the Free Software Foundation.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -13,16 +14,12 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 require_once ROOT_DIR . '/AJAXHandler.php';
 require_once ROOT_DIR . '/sys/Pager.php';
 require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
-require_once ROOT_DIR . '/sys/Utils/SwitchDatabase.php';
-require_once ROOT_DIR . '/sys/Utils/Pagination.php';
 
 class ListAPI extends AJAXHandler {
 
@@ -74,9 +71,9 @@ class ListAPI extends AJAXHandler {
 		$results = array();
 		if ($list->N > 0){
 			while ($list->fetch()){
-				$query           = "SELECT count(groupedWorkPermanentId) as numTitles FROM user_list_entry where listId = " . $list->id;
-				$numTitleResults = mysql_query($query);
-				$numTitles       = ($numTitleResults) ? mysql_fetch_assoc($numTitleResults) : array('numTitles', -1);
+				$userListEntries         = new UserListEntry();
+				$userListEntries->listId = $list->id;
+				$numTitles               = $userListEntries->count();
 
 				$results[] = array(
 					'id'          => $list->id,
@@ -469,70 +466,47 @@ class ListAPI extends AJAXHandler {
 				}
 			}
 			//The list is a system generated list
-			if ($listId == 'highestRated'){
-				// user_rating is no longer used
-//				$query  = "SELECT record_id, AVG(rating) FROM `user_rating` inner join resource on resourceid = resource.id GROUP BY resourceId order by AVG(rating) DESC LIMIT $numTitlesToShow";
-//				$result = mysql_query($query);
-//				$ids    = array();
-//				while ($epubInfo = mysql_fetch_assoc($result)){
-//					$ids[] = $epubInfo['record_id'];
-//				}
-//				$titles = $this->loadTitleInformationForIds($ids, $numTitlesToShow);
-//				return array('success' => true, 'listTitle' => $systemList['title'], 'listDescription' => $systemList['description'], 'titles' => $titles, 'cacheLength' => 1);
-			}elseif ($listId == 'recentlyReviewed'){
-				$query  = "SELECT record_id, MAX(created) FROM `comments` inner join resource on resource_id = resource.id group by resource_id order by max(created) DESC LIMIT $numTitlesToShow";
-				$result = mysql_query($query);
-				$ids    = array();
-				while ($epubInfo = mysql_fetch_assoc($result)){
-					$ids[] = $epubInfo['record_id'];
-				}
-				$titles = $this->loadTitleInformationForIds($ids, $numTitlesToShow);
-				return array('success' => true, 'listTitle' => $systemList['title'], 'listDescription' => $systemList['description'], 'titles' => $titles, 'cacheLength' => 1);
-			}elseif ($listId == 'mostPopular'){
-				$query  = "SELECT record_id, count(userId) from user_reading_history inner join resource on resourceId = resource.id GROUP BY resourceId order by count(userId) DESC LIMIT $numTitlesToShow";
-				$result = mysql_query($query);
-				$ids    = array();
-				while ($epubInfo = mysql_fetch_assoc($result)){
-					$ids[] = $epubInfo['record_id'];
-				}
-				$titles = $this->loadTitleInformationForIds($ids, $numTitlesToShow);
-				return array('success' => true, 'listTitle' => $systemList['title'], 'listDescription' => $systemList['description'], 'titles' => $titles, 'cacheLength' => 1);
-			}elseif ($listId == 'recommendations'){
-				if (!$user){
-					return array('success' => false, 'message' => 'A valid user must be provided to load recommendations.');
-				}else{
-					$userId = $user->id;
-					require_once(ROOT_DIR . '/services/MyResearch/lib/Suggestions.php');
-					$suggestions = Suggestions::getSuggestions($userId);
-					$titles      = array();
-					foreach ($suggestions as $id => $suggestion){
-						$imageUrl = $configArray['Site']['coverUrl'] . "/bookcover.php?id=" . $id;
-						if (isset($suggestion['titleInfo']['issn'])){
-							$imageUrl .= "&issn=" . $suggestion['titleInfo']['issn'];
+			switch ($listId){
+				case 'recommendations':
+					if (!$user){
+						return array('success' => false, 'message' => 'A valid user must be provided to load recommendations.');
+					}else{
+						$userId = $user->id;
+						require_once(ROOT_DIR . '/services/MyResearch/lib/Suggestions.php');
+						$suggestions = Suggestions::getSuggestions($userId);
+						$titles      = array();
+						foreach ($suggestions as $id => $suggestion){
+							$imageUrl = $configArray['Site']['coverUrl'] . "/bookcover.php?id=" . $id;
+							if (isset($suggestion['titleInfo']['issn'])){
+								$imageUrl .= "&issn=" . $suggestion['titleInfo']['issn'];
+							}
+							if (isset($suggestion['titleInfo']['isbn10'])){
+								$imageUrl .= "&isn=" . $suggestion['titleInfo']['isbn10'];
+							}
+							if (isset($suggestion['titleInfo']['upc'])){
+								$imageUrl .= "&upc=" . $suggestion['titleInfo']['upc'];
+							}
+							if (isset($suggestion['titleInfo']['format_category'])){
+								$imageUrl .= "&category=" . $suggestion['titleInfo']['format_category'];
+							}
+							$smallImageUrl = $imageUrl . "&size=small";
+							$imageUrl      .= "&size=medium";
+							$titles[]      = array(
+								'id'          => $id,
+								'image'       => $imageUrl,
+								'small_image' => $smallImageUrl,
+								'title'       => $suggestion['titleInfo']['title'],
+								'author'      => $suggestion['titleInfo']['author'],
+							);
 						}
-						if (isset($suggestion['titleInfo']['isbn10'])){
-							$imageUrl .= "&isn=" . $suggestion['titleInfo']['isbn10'];
-						}
-						if (isset($suggestion['titleInfo']['upc'])){
-							$imageUrl .= "&upc=" . $suggestion['titleInfo']['upc'];
-						}
-						if (isset($suggestion['titleInfo']['format_category'])){
-							$imageUrl .= "&category=" . $suggestion['titleInfo']['format_category'];
-						}
-						$smallImageUrl = $imageUrl . "&size=small";
-						$imageUrl      .= "&size=medium";
-						$titles[]      = array(
-							'id'          => $id,
-							'image'       => $imageUrl,
-							'small_image' => $smallImageUrl,
-							'title'       => $suggestion['titleInfo']['title'],
-							'author'      => $suggestion['titleInfo']['author'],
-						);
+						return array('success' => true, 'listTitle' => $systemList['title'], 'listDescription' => $systemList['description'], 'titles' => $titles, 'cacheLength' => 0);
 					}
-					return array('success' => true, 'listTitle' => $systemList['title'], 'listDescription' => $systemList['description'], 'titles' => $titles, 'cacheLength' => 0);
-				}
-			}else{
-				return array('success' => false, 'message' => 'The specified list could not be found.');
+				case 'highestRated':
+				case 'recentlyReviewed':
+				case 'mostPopular':
+				default :
+						return array('success' => false, 'message' => 'The specified list could not be found.');
+
 			}
 		}
 	}
@@ -570,7 +544,7 @@ class ListAPI extends AJAXHandler {
 				'cacheType'    => 'general',
 				'cacheName'    => 'list_general_list:' . $listId,
 				'cacheLength'  => $configArray['Caching']['list_general'],
-				'fullListLink' => $configArray['Site']['path'] . '/MyResearch/MyList/' . $listId, // TODO: switch to /MyAccount/MyList/
+				'fullListLink' => '/MyAccount/MyList/' . $listId,
 			);
 
 		}elseif (preg_match('/review:(.*)/', $listId, $reviewInfo)){
@@ -615,7 +589,7 @@ class ListAPI extends AJAXHandler {
 					'cacheType'    => 'general',
 					'cacheName'    => 'list_general_search_' . $searchId,
 					'cacheLength'  => $configArray['Caching']['list_general'],
-					'fullListLink' => $configArray['Site']['path'] . '/Search/Results?saved=' . $searchId,
+					'fullListLink' => '/Search/Results?saved=' . $searchId,
 				);
 			}else{
 				$requestUri = $_SERVER['REQUEST_URI'];
@@ -680,8 +654,8 @@ class ListAPI extends AJAXHandler {
 		/** @var Memcache $memCache */
 		global $memCache;
 		global $configArray;
-		$cacheId    = 'saved_search_titles_' . $searchId;
-		$listTitles = $memCache->get($cacheId);
+		$memCacheKey    = 'saved_search_titles_' . $searchId;
+		$listTitles = $memCache->get($memCacheKey);
 		if ($listTitles == false || isset($_REQUEST['reload'])){
 			//return a random selection of 30 titles from the list.
 			/** @var SearchObject_Solr|SearchObject_Base $searchObj */
@@ -697,7 +671,7 @@ class ListAPI extends AJAXHandler {
 				$searchObj->processSearch(false, false);
 				$listTitles = $searchObj->getListWidgetTitles();
 
-				$memCache->set($cacheId, $listTitles, 0, $configArray['Caching']['list_saved_search']);
+				$memCache->set($memCacheKey, $listTitles, 0, $configArray['Caching']['list_saved_search']);
 			}
 		}
 
@@ -980,7 +954,7 @@ class ListAPI extends AJAXHandler {
 			'message' => 'Unknown error',
 		);
 
-		if (!isset($configArray['NYT_API']) || !isset($configArray['NYT_API']['books_API_key']) || strlen($configArray['NYT_API']['books_API_key']) == 0){
+		if (empty($configArray['NYT_API']['books_API_key'])){
 			return array(
 				'success' => false,
 				'message' => 'API Key missing',
@@ -1013,13 +987,15 @@ class ListAPI extends AJAXHandler {
 		$availableLists = json_decode($availableListsRaw);
 
 		//Get the human readable title for our selected list
-		$selectedListTitle      = null;
-		$selectedListTitleShort = null;
+		$selectedListTitle       = null;
+		$selectedListTitleShort  = null;
+		$selectedListDescription = null;
 		//Get the title and description for the selected list
 		foreach ($availableLists->results as $listInformation){
 			if ($listInformation->list_name_encoded == $selectedList){
-				$selectedListTitle      = 'NYT - ' . $listInformation->display_name;
-				$selectedListTitleShort = $listInformation->display_name;
+				$selectedListTitle       = 'NYT - ' . $listInformation->display_name;
+				$selectedListTitleShort  = $listInformation->display_name;
+				$selectedListDescription = "New York Times - " . $selectedListTitleShort . " - Published on " . $listInformation->newest_published_date;
 				break;
 			}
 		}
@@ -1029,12 +1005,6 @@ class ListAPI extends AJAXHandler {
 				'message' => "We did not find list '{$selectedList}' in The New York Times API",
 			);
 		}
-
-		//Get a list of titles from NYT API
-		$availableListsRaw = $nyt_api->get_list($selectedList);
-		$availableLists    = json_decode($availableListsRaw);
-		//TODO: error handling for this call
-
 
 		// Look for selected List
 		require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
@@ -1047,7 +1017,7 @@ class ListAPI extends AJAXHandler {
 		if (!$listExistsInPika){
 			$nytList              = new UserList();
 			$nytList->title       = $selectedListTitle;
-			$nytList->description = "New York Times - " . $selectedListTitleShort; //TODO: Add update date to list description
+			$nytList->description = $selectedListDescription;
 			$nytList->public      = 1;
 			$nytList->defaultSort = 'custom';
 			$nytList->user_id     = $pikaUser->id;
@@ -1087,7 +1057,10 @@ class ListAPI extends AJAXHandler {
 		// Include UserListEntry Class
 		require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
 
-		$numTitlesAdded = 0;
+		//Get a list of titles from NYT API
+		$availableListsRaw = $nyt_api->get_list($selectedList);
+		$availableLists    = json_decode($availableListsRaw);
+		$numTitlesAdded    = 0;
 		foreach ($availableLists->results as $titleResult){
 			$pikaID = null;
 			// go through each list item
@@ -1107,7 +1080,12 @@ class ListAPI extends AJAXHandler {
 			}
 			if (!empty($isbnsArray)){
 				foreach ($isbnsArray as $isbns){
-					$isbn = empty($isbns->isbn13) ? $isbns->isbn10 : $isbns->isbn13;
+					if (empty($isbns->isbn13)){
+						$isbnObj = new ISBN($isbns->isbn10);
+						$isbn    = $isbnObj->get13();
+					}else{
+						$isbn = $isbns->isbn13;
+					}
 					if ($isbn){
 						//look the title up in Pika by ISBN
 						$searchDocument = $searchObject->getRecordByIsbn(array($isbn));
@@ -1153,7 +1131,7 @@ class ListAPI extends AJAXHandler {
 		}
 
 		if ($results['success']){
-			$results['message'] .= "<br/> Added $numTitlesAdded Titles to the list";
+			$results['message'] .= "<br> Added $numTitlesAdded Titles to the list";
 			if ($listExistsInPika){
 				$nytList->update(); // set a new update time on the main list when it already exists
 			}

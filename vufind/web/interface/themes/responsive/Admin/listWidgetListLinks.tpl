@@ -83,7 +83,7 @@
 						</td>
 						<td>
 							<a href="#" onclick='deleteLink({$link->id});'>
-								<img src="{$path}/images/silk/delete.png" alt="Delete Link" title="Delete Link"/>
+								span class="glyphicon glyphicon-remove-circle" title="Delete Link" aria-hidden="true" style="color: red;"></span>
 							</a>
 						</td>
 					</tr>

@@ -1,14 +1,32 @@
 <?php
+/**
+ * Pika Discovery Layer
+ * Copyright (C) 2020  Marmot Library Network
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 require_once ROOT_DIR . '/sys/Solr.php';
 require_once 'DB/DataObject.php';
-require_once 'DB/DataObject/Cast.php';
+
 abstract class SolrDataObject extends DB_DataObject{
 	/**
 	 * Return an array describing the structure of the object fields, etc.
 	 */
 	abstract function getObjectStructure();
 
-	function update(){
+	function update($dataObject = false){
 		return $this->updateDetailed(true);
 	}
 	private $updateStarted = false;
@@ -61,7 +79,7 @@ abstract class SolrDataObject extends DB_DataObject{
 			return true;
 		}
 	}
-	function delete(){
+	function delete($useWhere = false){
 		$result = parent::delete();
 		if ($result != FALSE){
 			$this->removeFromSolr();
@@ -120,9 +138,9 @@ abstract class SolrDataObject extends DB_DataObject{
 		global $logger;
 		$logger->log("Updating " . $this->solrId() . " in solr", PEAR_LOG_INFO);
 
-		$cores = $this->cores();
+		$cores           = $this->cores();
 		$objectStructure = $this->getObjectStructure();
-		$doc = array();
+		$doc             = array();
 		foreach ($objectStructure as $property){
 			if ((isset($property['storeSolr']) && $property['storeSolr']) || (isset($property['properties']) && count($property['properties']) > 0)){
 				$doc = $this->updateSolrDocumentForProperty($doc, $property);

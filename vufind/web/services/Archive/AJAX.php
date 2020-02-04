@@ -1,11 +1,12 @@
 <?php
 /**
+ * Pika Discovery Layer
+ * Copyright (C) 2020  Marmot Library Network
  *
- * Copyright (C) Villanova University 2007.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2,
- * as published by the Free Software Foundation.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -13,9 +14,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 require_once ROOT_DIR . '/AJAXHandler.php';
@@ -467,7 +466,7 @@ class Archive_AJAX extends AJAXHandler {
 			$searchObject->addHiddenFilter('!RELS_EXT_isViewableByRole_literal_ms', "administrator");
 			$searchObject->addHiddenFilter('!RELS_EXT_isConstituentOf_uri_ms', "*");
 			$searchObject->clearFilters();
-			if (isset($additionalCollections) && count($additionalCollections > 0)){
+			if (isset($additionalCollections) && !empty($additionalCollections)){
 				$filter = "RELS_EXT_isMemberOfCollection_uri_ms:\"info:fedora/{$pid}\"";
 				foreach ($additionalCollections as $collection){
 					$filter .= " OR RELS_EXT_isMemberOfCollection_uri_ms:\"info:fedora/" . trim($collection) . "\"";
@@ -718,7 +717,7 @@ class Archive_AJAX extends AJAXHandler {
 
 		$relatedSubjects = $recordDriver->getAllSubjectHeadings(true, 5);
 		$ebscoMatches    = $exploreMore->loadEbscoOptions('archive', array(), implode($relatedSubjects, " or "));
-		if (count($ebscoMatches) > 0){
+		if (!empty($ebscoMatches)){
 			$interface->assign('relatedArticles', $ebscoMatches);
 		}
 		$timer->logTime("Loaded Ebsco options");
@@ -1087,7 +1086,7 @@ class Archive_AJAX extends AJAXHandler {
 	 * @param $interface
 	 */
 	public function processTimelineData($response, $interface){
-		if (isset($response['facet_counts']) && count($response['facet_counts']['facet_ranges']) > 0){
+		if (!empty($response['facet_counts']['facet_ranges'])){
 			$dateFacetInfo = array();
 			if (isset($response['facet_counts']['facet_ranges']['dateCreated'])){
 				$dateCreatedInfo = $response['facet_counts']['facet_ranges']['dateCreated'];

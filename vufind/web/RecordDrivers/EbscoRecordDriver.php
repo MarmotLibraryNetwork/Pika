@@ -1,10 +1,27 @@
 <?php
+/**
+ * Pika Discovery Layer
+ * Copyright (C) 2020  Marmot Library Network
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
 
 /**
  * Record Driver for EBSCO titles
  *
  * @category Pika
- * @author Mark Noble <mark@marmot.org>
+ * @author Mark Noble <pika@marmot.org>
  * Date: 2/16/2016
  * Time: 8:31 PM
  */
@@ -94,17 +111,6 @@ class EbscoRecordDriver extends RecordInterface {
 	}
 
 	/**
-	 * Get any excerpts associated with this record.  For details of
-	 * the return format, see sys/Excerpts.php.
-	 *
-	 * @access  public
-	 * @return  array               Excerpt information.
-	 */
-	public function getExcerpts() {
-		// TODO: Implement getExcerpts() method.
-	}
-
-	/**
 	 * Assign necessary Smarty variables and return a template name to
 	 * load in order to export the record in the requested format.  For
 	 * legal values, see getExportFormats().  Returns null if format is
@@ -128,19 +134,6 @@ class EbscoRecordDriver extends RecordInterface {
 	 */
 	public function getExportFormats() {
 		// TODO: Implement getExportFormats() method.
-	}
-
-	/**
-	 * Assign necessary Smarty variables and return a template name to
-	 * load in order to display extended metadata (more details beyond
-	 * what is found in getCoreMetadata() -- used as the contents of the
-	 * Description tab of the record view).
-	 *
-	 * @access  public
-	 * @return  string              Name of Smarty template file to display.
-	 */
-	public function getExtendedMetadata() {
-		// TODO: Implement getExtendedMetadata() method.
 	}
 
 	/**
@@ -169,8 +162,7 @@ class EbscoRecordDriver extends RecordInterface {
 
 	public function getRecordUrl() {
 		//TODO: Switch back to an internal link once we do a full EBSCO implementation
-		//global $configArray;
-		//return $configArray['Site']['path'] . '/EBSCO/Home?id=' . urlencode($this->getUniqueID());
+		//return  '/EBSCO/Home?id=' . urlencode($this->getUniqueID());
 		return $this->getEbscoUrl();
 	}
 
@@ -198,25 +190,15 @@ class EbscoRecordDriver extends RecordInterface {
 	}
 
 	/**
-	 * Get any reviews associated with this record.  For details of
-	 * the return format, see sys/Reviews.php.
-	 *
-	 * @access  public
-	 * @return  array               Review information.
-	 */
-	public function getReviews() {
-		// TODO: Implement getReviews() method.
-	}
-
-	/**
 	 * Assign necessary Smarty variables and return a template name to
 	 * load in order to display a summary of the item suitable for use in
 	 * search results.
 	 *
 	 * @access  public
+	 * @param string $view          The view style for this search entry. (Only the 'list' view is applicable for EBSCO searching)
 	 * @return  string              Name of Smarty template file to display.
 	 */
-	public function getSearchResult() {
+	public function getSearchResult($view = 'list') {
 		global $interface;
 
 		$id = $this->getUniqueID();
@@ -300,12 +282,11 @@ class EbscoRecordDriver extends RecordInterface {
 	}
 
 	/**
-	 * Assign necessary Smarty variables and return a template name to
-	 * load in order to display the Table of Contents extracted from the
-	 * record.  Returns null if no Table of Contents is available.
+	 * load in order to display the Table of Contents for the title.
+	 *  Returns null if no Table of Contents is available.
 	 *
 	 * @access  public
-	 * @return  string              Name of Smarty template file to display.
+	 * @return  string[]|null              contents to display.
 	 */
 	public function getTOC() {
 		return null;
@@ -321,26 +302,6 @@ class EbscoRecordDriver extends RecordInterface {
 	 */
 	public function getUniqueID() {
 		return  (string)$this->recordData->Header->DbId . ':'. (string)$this->recordData->Header->An;
-	}
-
-	/**
-	 * Does this record have audio content available?
-	 *
-	 * @access  public
-	 * @return  bool
-	 */
-	public function hasAudio() {
-		return false;
-	}
-
-	/**
-	 * Does this record have an excerpt available?
-	 *
-	 * @access  public
-	 * @return  bool
-	 */
-	public function hasExcerpt() {
-		return false;
 	}
 
 	/**
@@ -364,52 +325,12 @@ class EbscoRecordDriver extends RecordInterface {
 	}
 
 	/**
-	 * Does this record have image content available?
-	 *
-	 * @access  public
-	 * @return  bool
-	 */
-	public function hasImages() {
-		return false;
-	}
-
-	/**
 	 * Does this record support an RDF representation?
 	 *
 	 * @access  public
 	 * @return  bool
 	 */
 	public function hasRDF() {
-		return false;
-	}
-
-	/**
-	 * Does this record have reviews available?
-	 *
-	 * @access  public
-	 * @return  bool
-	 */
-	public function hasReviews() {
-		return false;
-	}
-
-	/**
-	 * Does this record have a Table of Contents available?
-	 *
-	 * @access  public
-	 * @return  bool
-	 */
-	public function hasTOC() {
-		return false;
-	}
-
-	/**
-	 * Does this record have video content available?
-	 *
-	 * @access  public
-	 * @return  bool
-	 */
-	public function hasVideo() {
 		return false;
 	}
 

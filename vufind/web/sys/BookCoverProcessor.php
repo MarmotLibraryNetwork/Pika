@@ -1,4 +1,22 @@
 <?php
+/**
+ * Pika Discovery Layer
+ * Copyright (C) 2020  Marmot Library Network
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 require_once ROOT_DIR . '/services/SourceAndId.php';
 
 class BookCoverProcessor {
@@ -1200,55 +1218,6 @@ class BookCoverProcessor {
 //		// if the ISBN is not supported.
 //		$url = "http://covers.openlibrary.org/b/isbn/{$this->isn}-{$size}.jpg?default=false";
 //		return $this->processImageURL($url);
-//	}
-
-	// Stopped using amazon as a source a long time ago. Retaining just in case
-//	function amazon($id){
-//		if (is_null($this->isn)){
-//			return false;
-//		}
-//		require_once ROOT_DIR . '/sys/Amazon.php';
-//		require_once 'XML/Unserializer.php';
-//
-//		$params  = array('ResponseGroup' => 'Images', 'ItemId' => $this->isn);
-//		$request = new AWS_Request($id, 'ItemLookup', $params);
-//		$result  = $request->sendRequest();
-//		if (!PEAR_Singleton::isError($result)){
-//			$unxml = new XML_Unserializer();
-//			$unxml->unserialize($result);
-//			$data = $unxml->getUnserializedData();
-//			if (PEAR_Singleton::isError($data)){
-//				return false;
-//			}
-//			if (isset($data['Items']['Item']) && !$data['Items']['Item']['ASIN']){
-//				$data['Items']['Item'] = $data['Items']['Item'][0];
-//			}
-//			if (isset($data['Items']['Item'])){
-//				// Where in the XML can we find the URL we need?
-//				switch ($this->size){
-//					case 'small':
-//						$imageIndex = 'SmallImage';
-//						break;
-//					case 'medium':
-//						$imageIndex = 'MediumImage';
-//						break;
-//					case 'large':
-//						$imageIndex = 'LargeImage';
-//						break;
-//					default:
-//						$imageIndex = false;
-//						break;
-//				}
-//
-//				// Does a URL exist?
-//				if ($imageIndex && isset($data['Items']['Item'][$imageIndex]['URL'])){
-//					$imageUrl = $data['Items']['Item'][$imageIndex]['URL'];
-//					return $this->processImageURL($imageUrl, false);
-//				}
-//			}
-//		}
-//
-//		return false;
 //	}
 
 // Not used at all. Keeping in case it becomes handy in the future

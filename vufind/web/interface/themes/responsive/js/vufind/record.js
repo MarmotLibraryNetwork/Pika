@@ -1,9 +1,9 @@
 VuFind.Record = (function(){
 	return {
 		showPlaceHold: function(module, id){
-			if (Globals.loggedIn){
-				var source;
-				var volume = null;
+			VuFind.Account.ajaxLogin(function (){
+				var source,
+						volume = null;
 				if (id.indexOf(":") > 0){
 					var idParts = id.split(":");
 					source = idParts[0];
@@ -14,7 +14,7 @@ VuFind.Record = (function(){
 				}else{
 					source = 'ils';
 				}
-				var url = Globals.path + "/" + module + "/" + id + "/AJAX?method=getPlaceHoldForm&recordSource=" + source;
+				var url = "/" + module + "/" + id + "/AJAX?method=getPlaceHoldForm&recordSource=" + source;
 				if (volume != null){
 					url += "&volume=" + volume;
 				}
@@ -22,11 +22,7 @@ VuFind.Record = (function(){
 				$.getJSON(url, function(data){
 					VuFind.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
 				}).fail(VuFind.ajaxFail);
-			}else{
-				VuFind.Account.ajaxLogin(null, function(){
-					VuFind.Record.showPlaceHold(module, id);
-				}, false);
-			}
+			});
 			return false;
 		},
 
@@ -58,7 +54,7 @@ VuFind.Record = (function(){
 		// 			return false;
 		// 		}
 		//
-		// 		var url = Globals.path + "/" + module + "/" + id + "/AJAX?method=getPlaceHoldForm&recordSource=" + source;
+		// 		var url = "/" + module + "/" + id + "/AJAX?method=getPlaceHoldForm&recordSource=" + source;
 		// 		if (volume != null){
 		// 			url += "&volume=" + volume;
 		// 		}
@@ -67,17 +63,17 @@ VuFind.Record = (function(){
 		// 			VuFind.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
 		// 		}).fail(VuFind.ajaxFail);
 		// 	}else{
-		// 		VuFind.Account.ajaxLogin(null, function(){
+		// 		VuFind.Account.ajaxLogin(function(){
 		// 			VuFind.Record.showPlaceHold(module, id);
-		// 		}, false);
+		// 		});
 		// 	}
 		// 	return false;
 		// },
 		//
-	showPlaceHoldEditions: function (module, id) {
-			if (Globals.loggedIn){
-				var source;
-				var volume = null;
+		showPlaceHoldEditions: function (module, id) {
+			VuFind.Account.ajaxLogin(function (){
+				var source,
+						volume = null;
 				if (id.indexOf(":") > 0){
 					var idParts = id.split(":");
 					source = idParts[0];
@@ -89,24 +85,19 @@ VuFind.Record = (function(){
 					source = 'ils';
 				}
 
-				var url = Globals.path + "/" + module + "/" + id + "/AJAX?method=getPlaceHoldEditionsForm&recordSource=" + source;
+				var url = "/" + module + "/" + id + "/AJAX?method=getPlaceHoldEditionsForm&recordSource=" + source;
 				if (volume != null){
 					url += "&volume=" + volume;
 				}
 				$.getJSON(url, function(data){
 					VuFind.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
 				}).fail(VuFind.ajaxFail);
-			}else{
-				VuFind.Account.ajaxLogin(null, function(){
-					VuFind.Record.showPlaceHoldEditions(module, id);
-				}, false);
-			}
+			});
 			return false;
-
 		},
 
 		showBookMaterial: function(module, id){
-			if (Globals.loggedIn){
+			VuFind.Account.ajaxLogin(function (){
 				VuFind.loadingMessage();
 				//var source; // source not used for booking at this time
 				if (id.indexOf(":") > 0){
@@ -114,14 +105,10 @@ VuFind.Record = (function(){
 					//source = idParts[0];
 					id = idParts[1];
 				}
-				$.getJSON(Globals.path + "/" + module + "/" + id + "/AJAX?method=getBookMaterialForm", function(data){
+				$.getJSON("/" + module + "/" + id + "/AJAX?method=getBookMaterialForm", function(data){
 					VuFind.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
 				}).fail(VuFind.ajaxFail)
-			}else{
-				VuFind.Account.ajaxLogin(null, function(){
-					VuFind.Record.showBookMaterial(id);
-				}, false)
-			}
+			});
 			return false;
 		},
 
@@ -129,7 +116,7 @@ VuFind.Record = (function(){
 			var params = $('#bookMaterialForm').serialize() + '&method=bookMaterial',
 					module = $('#module').val();
 			VuFind.showMessage('Scheduling', 'Processing, please wait.');
-			$.getJSON(Globals.path + "/" + module + "/AJAX", params, function (data) {
+			$.getJSON("/" + module + "/AJAX", params, function (data) {
 				if (data.modalBody) VuFind.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
 				// For errors that can be fixed by the user, the form will be re-displayed
 				if (data.success) VuFind.showMessageWithButtons('Success', data.message, data.buttons);
@@ -165,12 +152,13 @@ VuFind.Record = (function(){
 				return false;
 			}
 			VuFind.showMessageWithButtons($("#myModalLabel").html(), 'Loading, please wait.', $('.modal-buttons').html()); // Can't use standard VuFind.loadingMessage() bcs the buttons need to stay for follow-up Item-level hold prompts
-			$.getJSON(Globals.path + "/" + module +  "/" + id + "/AJAX", params, function(data){
+			$.getJSON("/" + module +  "/" + id + "/AJAX", params, function(data){
 				if (data.success){
 					if (data.needsItemLevelHold){
 						$('.modal-body').html(data.message);
 					}else{
-						VuFind.showMessage('Hold Placed Successfully', data.message, false, autoLogOut);
+						// VuFind.showMessage('Hold Placed Successfully', data.message, false, autoLogOut);
+						VuFind.showMessageWithButtons('Hold Placed Successfully', data.message, data.buttons);
 					}
 				}else{
 					VuFind.showMessage('Hold Failed', data.message, false, autoLogOut);
@@ -179,7 +167,7 @@ VuFind.Record = (function(){
 		},
 
 		reloadCover: function(module, id){
-			var url = Globals.path + '/' +module + '/' + id + '/AJAX?method=reloadCover';
+			var url = '/' +module + '/' + id + '/AJAX?method=reloadCover';
 			$.getJSON(url, function (data){
 						VuFind.showMessage("Success", data.message, true, true);
 					}
@@ -188,7 +176,7 @@ VuFind.Record = (function(){
 		},
 
 		forceReExtract: function (module, id) {
-			var url = Globals.path + '/' + module + '/' + id + '/AJAX?method=forceReExtract';
+			var url = '/' + module + '/' + id + '/AJAX?method=forceReExtract';
 			$.getJSON(url, function (data) {
 				VuFind.showMessage(data.success ? "Success" : "Error", data.message, data.success, data.success);
 					}

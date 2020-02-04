@@ -1,5 +1,23 @@
 <?php
 /**
+ * Pika Discovery Layer
+ * Copyright (C) 2020  Marmot Library Network
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+/**
  *
  *
  * @category Pika
@@ -16,14 +34,14 @@ class Hoopla_AJAX extends AJAXHandler {
 
 	use MARC_AJAX_Basic;
 
-	protected $methodsThatRespondWithJSONUnstructured = array(
+	protected array $methodsThatRespondWithJSONUnstructured = array(
 		'reloadCover',
 		'getHooplaCheckOutPrompt',
 		'checkOutHooplaTitle',
 		'returnHooplaTitle',
 	);
 
-	protected $methodsThatRespondThemselves = array(
+	protected array $methodsThatRespondThemselves = array(
 		'downloadMarc',
 	);
 
@@ -72,7 +90,8 @@ class Hoopla_AJAX extends AJAXHandler {
 					if (!$checkOutStatus){
 						require_once ROOT_DIR . '/RecordDrivers/HooplaRecordDriver.php';
 						$hooplaRecord          = new HooplaRecordDriver($fullId);
-						$accessLink            = reset($hooplaRecord->getAccessLink()); // Base Hoopla Title View Url
+						$linksArray            = $hooplaRecord->getAccessLink();
+						$accessLink            = reset($linksArray); // Base Hoopla Title View Url
 						$hooplaRegistrationUrl = $accessLink['url'];
 						$hooplaRegistrationUrl .= (parse_url($hooplaRegistrationUrl, PHP_URL_QUERY) ? '&' : '?') . 'showRegistration=true'; // Add Registration URL parameter
 

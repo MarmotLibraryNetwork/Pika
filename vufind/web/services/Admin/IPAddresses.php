@@ -1,11 +1,12 @@
 <?php
 /**
+ * Pika Discovery Layer
+ * Copyright (C) 2020  Marmot Library Network
  *
- * Copyright (C) Villanova University 2007.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2,
- * as published by the Free Software Foundation.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -13,15 +14,12 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 require_once ROOT_DIR . '/Drivers/marmot_inc/subnet.php';
-require_once 'XML/Unserializer.php';
 
 class IPAddresses extends ObjectEditor
 {
@@ -46,16 +44,8 @@ class IPAddresses extends ObjectEditor
 	}
 	function getObjectStructure(){
 		//Look lookup information for display in the user interface
-		$location = new Location();
-		$location->orderBy('displayName');
-		$location->find();
-		$locationList = array();
-		$locationLookupList = array();
-		$locationLookupList[-1] = '<No Nearby Location>';
-		while ($location->fetch()){
-			$locationLookupList[$location->locationId] = $location->displayName;
-			$locationList[$location->locationId] = clone $location;
-		}
+		$locationLookupList = Location::getLocationLookupList();
+
 		$structure = array(
           'ip' => array('property'=>'ip', 'type'=>'text', 'label'=>'IP Address', 'description'=>'The IP Address to map to a location formatted as xxx.xxx.xxx.xxx/mask'),
           'location' => array('property'=>'location', 'type'=>'text', 'label'=>'Display Name', 'description'=>'Descriptive information for the IP Address for internal use'),

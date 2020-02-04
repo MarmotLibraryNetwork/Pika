@@ -1,11 +1,12 @@
 <?php
 /**
+ * Pika Discovery Layer
+ * Copyright (C) 2020  Marmot Library Network
  *
- * Copyright (C) Villanova University 2010.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2,
- * as published by the Free Software Foundation.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -13,9 +14,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 require_once 'File/MARC.php';
 require_once ROOT_DIR . '/RecordDrivers/IndexRecord.php';
@@ -275,24 +274,23 @@ class MarcRecord extends IndexRecord
 	}
 
 	/**
+	 * TODO: probably obsolete
 	 * Assign necessary Smarty variables and return a template name for the current
 	 * view to load in order to display a summary of the item suitable for use in
 	 * search results.
 	 *
 	 * @param string $view The current view.
-	 * @param boolean $useUnscopedHoldingsSummary Whether or not the $result should show an unscoped holdings summary.
 	 *
 	 * @return string      Name of Smarty template file to display.
 	 * @access public
 	 */
-	public function getSearchResult($view = 'list', $useUnscopedHoldingsSummary = false)
-	{
+	public function getSearchResult($view = 'list'){
 		global $interface;
 
 		// MARC results work just like index results, except that we want to
 		// enable the AJAX status display since we assume that MARC records
 		// come from the ILS:
-		$template = parent::getSearchResult($view, $useUnscopedHoldingsSummary);
+		$template = parent::getSearchResult($view);
 		$interface->assign('summAjaxStatus', true);
 		return $template;
 	}
@@ -355,12 +353,11 @@ class MarcRecord extends IndexRecord
 	}
 
 	/**
-	 * Assign necessary Smarty variables and return a template name to
-	 * load in order to display the Table of Contents extracted from the
-	 * record.  Returns null if no Table of Contents is available.
+	 * load in order to display the Table of Contents for the title.
+	 *  Returns null if no Table of Contents is available.
 	 *
 	 * @access  public
-	 * @return  string              Name of Smarty template file to display.
+	 * @return  string[]|null              contents to display.
 	 */
 	public function getTOC()
 	{
@@ -376,20 +373,6 @@ class MarcRecord extends IndexRecord
 		return $tableOfContents;
 	}
 
-	/**
-	 * Does this record have a Table of Contents available?
-	 *
-	 * @access  public
-	 * @return  bool
-	 */
-	public function hasTOC()
-	{
-		// Is there a table of contents in the MARC record?
-		if ($this->getMarcRecord()->getFields('505')) {
-			return true;
-		}
-		return false;
-	}
 
 	/**
 	 * Does this record support an RDF representation?
@@ -1054,7 +1037,7 @@ class MarcRecord extends IndexRecord
 	}
 
 
-	function getDescriptionFast()
+	function getDescriptionFast($useHighlighting = false)
 	{
 		/** @var File_MARC_Data_Field $descriptionField */
 		if ($this->getMarcRecord()) {
@@ -1279,10 +1262,8 @@ class MarcRecord extends IndexRecord
 	}
 
 	function getRecordUrl(){
-		global $configArray;
 		$recordId = $this->getUniqueID();
-
-		return $configArray['Site']['path'] . "/{$this->indexingProfile->recordUrlComponent}/$recordId";
+		return "/{$this->indexingProfile->recordUrlComponent}/$recordId";
 	}
 
 	function getAbsoluteUrl(){
@@ -1324,15 +1305,15 @@ class MarcRecord extends IndexRecord
 		}
 
 		if ($isHoldable && $showHoldButton){
-			if (!is_null($volumeData) && count($volumeData) > 0){
+			if (!empty($volumeData)){
 				foreach ($volumeData as $volumeInfo){
 					if (isset($volumeInfo->holdable) && $volumeInfo->holdable) {
-						$id = $this->getIdWithSource();
-						$id .= ':' . $volumeInfo->volumeId;
+						$bibIdWithVolumeId = $this->getIdWithSource();
+						$bibIdWithVolumeId .= ':' . $volumeInfo->volumeId;
 						$actions[] = array(
 							'title'        => 'Hold ' . $volumeInfo->displayLabel,
 							'url'          => '',
-							'onclick'      => "return VuFind.Record.showPlaceHold('{$this->getModule()}', '$id');",
+							'onclick'      => "return VuFind.Record.showPlaceHold('{$this->getModule()}', '$bibIdWithVolumeId');",
 							'requireLogin' => false,
 						);
 					}
@@ -1905,33 +1886,32 @@ class MarcRecord extends IndexRecord
 
 	private $numHolds = -1;
 
-	function getNumHolds()
-	{
-		if ($this->numHolds != -1) {
+	function getNumHolds(){
+		if ($this->numHolds != -1){
 			return $this->numHolds;
 		}
 		global $configArray;
 		global $timer;
-		if ($configArray['Catalog']['ils'] == 'Horizon') {
+		if ($configArray['Catalog']['ils'] == 'Horizon'){
 			require_once ROOT_DIR . '/CatalogFactory.php';
 			global $logger;
 			$logger->log('fetching num of Holds from MarcRecord', PEAR_LOG_DEBUG);
 
 			$catalog = CatalogFactory::getCatalogConnectionInstance();
 //			$logger->log('$catalog :'.var_export($catalog, true), PEAR_LOG_DEBUG);
-			if (isset($catalog->status) && $catalog->status) {
+			if (isset($catalog->status) && $catalog->status){
 				$this->numHolds = $catalog->getNumHolds($this->getUniqueID());
-			} else {
+			}else{
 				$this->numHolds = 0;
 			}
-		} else {
+		}else{
 
 			require_once ROOT_DIR . '/Drivers/marmot_inc/IlsHoldSummary.php';
-			$holdSummary = new IlsHoldSummary();
+			$holdSummary        = new IlsHoldSummary();
 			$holdSummary->ilsId = $this->getUniqueID();
-			if ($holdSummary->find(true)) {
+			if ($holdSummary->find(true)){
 				$this->numHolds = $holdSummary->numHolds;
-			} else {
+			}else{
 				$this->numHolds = 0;
 			}
 		}
@@ -1944,23 +1924,44 @@ class MarcRecord extends IndexRecord
 	 * @param IlsVolumeInfo[] $volumeData
 	 * @return array
 	 */
-	function getVolumeHolds($volumeData)
-	{
+	function getVolumeHolds($volumeData){
 		$holdInfo = null;
-		if (count($volumeData) > 0) {
+		if (count($volumeData) > 0){
 			$holdInfo = array();
-			foreach ($volumeData as $volumeInfo) {
-				$ilsHoldInfo = new IlsHoldSummary();
+			foreach ($volumeData as $volumeInfo){
+				$ilsHoldInfo        = new IlsHoldSummary();
 				$ilsHoldInfo->ilsId = $volumeInfo->volumeId;
-				if ($ilsHoldInfo->find(true)) {
+				if ($ilsHoldInfo->find(true)){
 					$holdInfo[] = array(
-						'label' => $volumeInfo->displayLabel,
+						'label'    => $volumeInfo->displayLabel,
 						'numHolds' => $ilsHoldInfo->numHolds
 					);
 				}
 			}
 		}
 		return $holdInfo;
+	}
+
+	/**
+	 * This is for retrieving Volume Records, which are a collection of item records of a Bib. (eg Part 1 of a DVD set would
+	 * be a volume record, part 2 another volume record ) This is different from the volume on an item record.
+	 * @return IlsVolumeInfo[]  An array of VolumeInfoObjects
+	 */
+	function getVolumeInfoForRecord(){
+		require_once ROOT_DIR . '/Drivers/marmot_inc/IlsVolumeInfo.php';
+		$volumeData             = array();
+		$volumeDataDB           = new IlsVolumeInfo();
+		$volumeDataDB->recordId = $this->sourceAndId->getSourceAndId();
+		//D-81 show volume information even if there aren't related items
+		//$volumeDataDB->whereAdd('length(relatedItems) > 0');
+		if ($volumeDataDB->find()){
+			while ($volumeDataDB->fetch()){
+				$volumeData[] = clone($volumeDataDB);
+			}
+		}
+		$volumeDataDB = null;
+		unset($volumeDataDB);
+		return $volumeData;
 	}
 
 	function getNotes(){
@@ -1991,6 +1992,7 @@ class MarcRecord extends IndexRecord
 				'525' => 'Supplement',
 				'526' => 'Study Program Information',
 				'530' => 'Additional Physical Form',
+				'532' => 'Accessibility Information',
 				'533' => 'Reproduction',
 				'534' => 'Original Version',
 				'535' => 'Location of Originals/Duplicates',
@@ -2088,17 +2090,18 @@ class MarcRecord extends IndexRecord
 	public function assignCopiesInformation(){
 		$this->loadCopies();
 		$hasLastCheckinData = false;
-		$hasVolume          = false;
+//		$hasVolume          = false;
 		foreach ($this->holdings as $holding){
 			if ($holding['lastCheckinDate']){
 				$hasLastCheckinData = true;
-			}
-			if ($holding['volume']){
-				$hasVolume = true;
-			}
-			if ($hasLastCheckinData && $hasVolume){
 				break;
 			}
+//			if ($holding['volume']){
+//				$hasVolume = true;
+//			}
+//			if ($hasLastCheckinData && $hasVolume){
+//				break;
+//			}
 		}
 		// Consolidate ON Order Copies Data for display
 		foreach ($this->holdingSections as $holdingSection){
@@ -2133,7 +2136,7 @@ class MarcRecord extends IndexRecord
 		}
 		global $interface;
 		$interface->assign('hasLastCheckinData', $hasLastCheckinData);
-		$interface->assign('hasVolume', $hasVolume);
+//		$interface->assign('hasVolume', $hasVolume);
 		$interface->assign('holdings', $this->holdings);
 		$interface->assign('sections', $this->holdingSections);
 

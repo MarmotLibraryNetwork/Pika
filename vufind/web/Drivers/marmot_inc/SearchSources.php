@@ -1,4 +1,22 @@
 <?php
+/**
+ * Pika Discovery Layer
+ * Copyright (C) 2020  Marmot Library Network
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 class SearchSources{
 	static function getSearchSources(){
 		$searchSources = SearchSources::getSearchSourcesDefault();
@@ -173,7 +191,6 @@ class SearchSources{
 		}
 
 		//Genealogy Search
-//		if ($searchGenealogy && !$interface->isMobile()){ //allow in mobile views. plb 11-17-2014
 		if ($searchGenealogy){
 			$searchOptions['genealogy'] = array(
         'name' => 'Genealogy Records',
@@ -191,7 +208,6 @@ class SearchSources{
 		}
 
 		//Overdrive
-//		if ($repeatInOverdrive && !$interface->isMobile()){ //allow in mobile views. plb 11-17-2014
 		if ($repeatInOverdrive){
 			$searchOptions['overdrive'] = array(
         'name' => 'OverDrive Digital Catalog',
@@ -228,7 +244,6 @@ class SearchSources{
 			);
 		}
 
-//		if ($repeatInWorldCat && !$interface->isMobile()){ //allow in mobile views. plb 11-17-2014
 		if ($repeatInWorldCat){
 			$searchOptions['worldcat'] = array(
         'name' => 'WorldCat',
@@ -239,7 +254,6 @@ class SearchSources{
 		}
 
 		//Check to see if Gold Rush is a valid option
-//		if (isset($library) && strlen($library->goldRushCode) > 0 && !$interface->isMobile()){ //allow in mobile views. plb 11-17-2014
 		if (isset($library) && strlen($library->goldRushCode) > 0){
 			$searchOptions['goldrush'] = array(
 			//'link' => "http://goldrush.coalliance.org/index.cfm?fuseaction=Search&amp;inst_code={$library->goldRushCode}&amp;search_type={$worldCatSearchType}&amp;search_term=".urlencode($lookfor),
@@ -258,21 +272,22 @@ class SearchSources{
 	 * @param $library
 	 * @return array
 	 */
-	static function getCombinedSearchSetupParameters($location, $library)
-	{
-		$enableCombinedResults = false;
+	static function getCombinedSearchSetupParameters($location, $library){
+		$enableCombinedResults    = false;
 		$showCombinedResultsFirst = false;
-		$combinedResultsName = 'Combined Results';
-		if ($location && !$location->useLibraryCombinedResultsSettings) {
-			$enableCombinedResults = $location->enableCombinedResults;
+		$combinedResultsName      = 'Combined Results';
+		if ($location && !$location->useLibraryCombinedResultsSettings){
+			$enableCombinedResults    = $location->enableCombinedResults;
 			$showCombinedResultsFirst = $location->defaultToCombinedResults;
-			$combinedResultsName = $location->combinedResultsLabel;
+			$combinedResultsName      = $location->combinedResultsLabel;
 			return array($enableCombinedResults, $showCombinedResultsFirst, $combinedResultsName);
-		} else if ($library) {
-			$enableCombinedResults = $library->enableCombinedResults;
-			$showCombinedResultsFirst = $library->defaultToCombinedResults;
-			$combinedResultsName = $library->combinedResultsLabel;
-			return array($enableCombinedResults, $showCombinedResultsFirst, $combinedResultsName);
+		}else{
+			if ($library){
+				$enableCombinedResults    = $library->enableCombinedResults;
+				$showCombinedResultsFirst = $library->defaultToCombinedResults;
+				$combinedResultsName      = $library->combinedResultsLabel;
+				return array($enableCombinedResults, $showCombinedResultsFirst, $combinedResultsName);
+			}
 		}
 		return array($enableCombinedResults, $showCombinedResultsFirst, $combinedResultsName);
 	}
@@ -318,52 +333,54 @@ class SearchSources{
 	}
 
 	public function getExternalLink($searchSource, $type, $lookFor){
-		global $library;
+		global /** @var Library $library */
+		$library;
 		global $configArray;
-		if ($searchSource =='goldrush'){
-			$goldRushType = $this->getGoldRushSearchType($type);
-			return "http://goldrush.coalliance.org/index.cfm?fuseaction=Search&inst_code={$library->goldRushCode}&search_type={$goldRushType}&search_term=".urlencode($lookFor);
-		}else if ($searchSource == 'worldcat'){
-			$worldCatSearchType = $this->getWorldCatSearchType($type);
-			$worldCatLink = "http://www.worldcat.org/search?q={$worldCatSearchType}%3A".urlencode($lookFor);
-			if (isset($library) && strlen($library->worldCatUrl) > 0){
-				$worldCatLink = $library->worldCatUrl;
-				if (strpos($worldCatLink, '?') == false){
-					$worldCatLink .= "?";
+		switch ($searchSource){
+			case 'goldrush':
+				$goldRushType = $this->getGoldRushSearchType($type);
+				return "http://goldrush.coalliance.org/index.cfm?fuseaction=Search&inst_code={$library->goldRushCode}&search_type={$goldRushType}&search_term=" . urlencode($lookFor);
+			case 'worldcat':
+				$worldCatSearchType = $this->getWorldCatSearchType($type);
+				$worldCatLink       = "http://www.worldcat.org/search?q={$worldCatSearchType}%3A" . urlencode($lookFor);
+				if (!empty($library->worldCatUrl)){
+					$worldCatLink = $library->worldCatUrl;
+					if (strpos($worldCatLink, '?') == false){
+						$worldCatLink .= "?";
+					}
+					$worldCatLink .= "q={$worldCatSearchType}:" . urlencode($lookFor);
+					//Repeat the search term with a parameter of queryString since some interfaces use that parameter instead of q
+					$worldCatLink .= "&queryString={$worldCatSearchType}:" . urlencode($lookFor);
+					if (strlen($library->worldCatQt) > 0){
+						$worldCatLink .= "&qt=" . $library->worldCatQt;
+					}
 				}
-				$worldCatLink .= "q={$worldCatSearchType}:".urlencode($lookFor);
-				//Repeat the search term with a parameter of queryString since some interfaces use that parameter instead of q
-				$worldCatLink .= "&queryString={$worldCatSearchType}:".urlencode($lookFor);
-				if (strlen($library->worldCatQt) > 0){
-					$worldCatLink .= "&qt=" . $library->worldCatQt;
-				}
-			}
-			return $worldCatLink;
-		}else if ($searchSource == 'overdrive'){
-			$overDriveUrl = $configArray['OverDrive']['url'];
+				return $worldCatLink;
+			case 'overdrive':
+				$overDriveUrl = $configArray['OverDrive']['url'];
 //			return "$overDriveUrl/BangSearch.dll?Type=FullText&FullTextField=All&FullTextCriteria=" . urlencode($lookFor);
-			return "$overDriveUrl/search?query=" . urlencode($lookFor);
-		}else if ($searchSource == 'prospector'){
-			$prospectorSearchType = $this->getProspectorSearchType($type);
-			$lookFor = str_replace('+', '%20', rawurlencode($lookFor));
-			// Handle special exception: ? character in the search must be encoded specially
-			$lookFor  = str_replace('%3F', 'Pw%3D%3D',$lookFor);
-			if ($prospectorSearchType != ' '){
-				$lookFor = "$prospectorSearchType:(" . $lookFor . ")";
-			}
-			$innReachEncoreHostUrl = $configArray['InterLibraryLoan']['innReachEncoreHostUrl'];
+				return "$overDriveUrl/search?query=" . urlencode($lookFor);
+			case 'prospector':
+				$prospectorSearchType = $this->getProspectorSearchType($type);
+				$lookFor              = str_replace('+', '%20', rawurlencode($lookFor));
+				// Handle special exception: ? character in the search must be encoded specially
+				$lookFor = str_replace('%3F', 'Pw%3D%3D', $lookFor);
+				if ($prospectorSearchType != ' '){
+					$lookFor = "$prospectorSearchType:(" . $lookFor . ")";
+				}
+				$innReachEncoreHostUrl = $configArray['InterLibraryLoan']['innReachEncoreHostUrl'];
 
-			return $innReachEncoreHostUrl . '/iii/encore/search/C|S' . $lookFor . '|Orightresult|U1?lang=eng&amp;suite=def';
-		}else if ($searchSource == 'amazon'){
-			return "http://www.amazon.com/s/ref=nb_sb_noss?url=search-alias%3Daps&field-keywords=" . urlencode($lookFor);
-		}else if ($searchSource == 'course-reserves-course-name'){
-			$linkingUrl = $configArray['Catalog']['linking_url'];
-			return "$linkingUrl/search~S{$library->scope}/r?SEARCH=" . urlencode($lookFor);
-		}else if ($searchSource == 'course-reserves-instructor'){
-			$linkingUrl = $configArray['Catalog']['linking_url'];
-			return "$linkingUrl/search~S{$library->scope}/p?SEARCH=" . urlencode($lookFor);
-		}else{
-			return "";
+				return $innReachEncoreHostUrl . '/iii/encore/search/C|S' . $lookFor . '|Orightresult|U1?lang=eng&amp;suite=def';
+			case 'amazon':
+				return "http://www.amazon.com/s/ref=nb_sb_noss?url=search-alias%3Daps&field-keywords=" . urlencode($lookFor);
+			case 'course-reserves-course-name':
+				$linkingUrl = $configArray['Catalog']['linking_url']; //TODO replace with account profile opacUrl
+				return "$linkingUrl/search~S{$library->scope}/r?SEARCH=" . urlencode($lookFor);
+			case 'course-reserves-instructor':
+				$linkingUrl = $configArray['Catalog']['linking_url'];//TODO replace with account profile opacUrl
+				return "$linkingUrl/search~S{$library->scope}/p?SEARCH=" . urlencode($lookFor);
+			default:
+				return "";
 		}
 	}
 

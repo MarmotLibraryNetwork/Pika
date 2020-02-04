@@ -1,10 +1,27 @@
 <?php
+/**
+ * Pika Discovery Layer
+ * Copyright (C) 2020  Marmot Library Network
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
 
 /**
  * Description goes here
  *
- * @category VuFind-Plus-2014
- * @author Mark Noble <mark@marmot.org>
+ * @category Pika
+ * @author Mark Noble <pika@marmot.org>
  * Date: 2/23/2016
  * Time: 10:25 PM
  */
@@ -194,9 +211,9 @@ class WikipediaParser {
 
 		// Convert wikipedia links
 		$pattern[] = '/(\x5b\x5b)([^\x5d|]*)(\x5d\x5d)/Us';
-		$replacement[] = '<a href="' . $configArray['Site']['path'] . '/Search/Results?lookfor=%22$2%22&amp;type=Keyword">$2</a>';
+		$replacement[] = '<a href="' . '/Search/Results?lookfor=%22$2%22&amp;type=Keyword">$2</a>';
 		$pattern[] = '/(\x5b\x5b)([^\x5d]*)\x7c([^\x5d]*)(\x5d\x5d)/Us';
-		$replacement[] = '<a href="' . $configArray['Site']['path'] . '/Search/Results?lookfor=%22$2%22&amp;type=Keyword">$3</a>';
+		$replacement[] = '<a href="/Search/Results?lookfor=%22$2%22&amp;type=Keyword">$3</a>';
 
 		// Fix pronunciation guides
 		$pattern[] = '/({{)pron-en\|([^}]*)(}})/Us';

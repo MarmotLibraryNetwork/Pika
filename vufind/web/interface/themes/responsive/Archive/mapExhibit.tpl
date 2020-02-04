@@ -109,7 +109,7 @@
 			{/if}
 
 		</div>
-		{if count($unmappedPlaces) > 0}
+		{if !empty($unmappedPlaces)}
 			<div class="col-sm-4">
 				<button class="btn btn-info btn-xs" onclick="VuFind.showElementInPopup('Unmapped Locations', '#unmappedLocations');">Show Unmapped Locations</button>
 			</div>
@@ -136,7 +136,7 @@
 		</div>
 	</div>
 
-	{if $repositoryLink && $loggedIn && (array_key_exists('archives', $userRoles) || array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles))}
+	{if $repositoryLink && $loggedIn && $userRoles && (in_array('archives', $userRoles) || in_array('opacAdmin', $userRoles) || in_array('libraryAdmin', $userRoles))}
 		<div id="more-details-accordion" class="panel-group">
 			<div class="panel {*active*}{*toggle on for open*}" id="staffViewPanel">
 				<a href="#staffViewPanelBody" data-toggle="collapse">

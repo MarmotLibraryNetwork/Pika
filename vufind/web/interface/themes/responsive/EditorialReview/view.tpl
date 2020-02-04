@@ -1,11 +1,11 @@
 {strip}
 	<div id="main-content" class="col-md-12">
 		<h2>Editorial Review: {$editorialReview->title}</h2>
-		{if $loggedIn && $userRoles && (array_key_exists('libraryAdmin', $userRoles) || array_key_exists('opacAdmin', $userRoles) || array_key_exists('contentEditor', $userRoles))}
+		{if $loggedIn && $userRoles && (in_array('libraryAdmin', $userRoles) || in_array('opacAdmin', $userRoles) || in_array('contentEditor', $userRoles))}
 		<div class="btn-group btn-group-sm">
-			<div class='btn btn-sm btn-default'><a href='{$path}/EditorialReview/{$editorialReview->editorialReviewId}/Edit'>Edit</a></div>
-			{if array_key_exists('opacAdmin', $userRoles)}
-			<div class='btn btn-sm btn-danger'><a href='{$path}/EditorialReview/{$editorialReview->editorialReviewId}/Delete' onclick="return confirm('Are you sure you want to delete this Editorial Review?');">Delete</a></div>
+			<div class='btn btn-sm btn-default'><a href='/EditorialReview/{$editorialReview->editorialReviewId}/Edit'>Edit</a></div>
+			{if in_array('opacAdmin', $userRoles)}
+			<div class='btn btn-sm btn-danger'><a href='/EditorialReview/{$editorialReview->editorialReviewId}/Delete' onclick="return confirm('Are you sure you want to delete this Editorial Review?');">Delete</a></div>
 			{/if}
 		</div>
 		{/if}

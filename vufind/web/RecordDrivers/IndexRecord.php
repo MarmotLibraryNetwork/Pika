@@ -1,11 +1,12 @@
 <?php
 /**
+ * Pika Discovery Layer
+ * Copyright (C) 2020  Marmot Library Network
  *
- * Copyright (C) Villanova University 2010.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2,
- * as published by the Free Software Foundation.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -13,9 +14,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 require_once ROOT_DIR . '/RecordDrivers/Interface.php';
 
@@ -254,21 +253,6 @@ class IndexRecord extends RecordInterface
 	}
 
 	/**
-	 * Get any excerpts associated with this record.  For details of
-	 * the return format, see sys/Excerpts.php.
-	 *
-	 * @access  public
-	 * @return  array               Excerpt information.
-	 */
-	public function getExcerpts()
-	{
-		require_once ROOT_DIR . '/sys/Excerpts.php';
-
-		$ed = new ExternalExcerpts($this->getCleanISBN());
-		return $ed->fetch();
-	}
-
-	/**
 	 * Assign necessary Smarty variables and return a template name to
 	 * load in order to export the record in the requested format.  For
 	 * legal values, see getExportFormats().  Returns null if format is
@@ -296,42 +280,6 @@ class IndexRecord extends RecordInterface
 	{
 		// No export formats currently supported for index-based records:
 		return array();
-	}
-
-	/**
-	 * Assign necessary Smarty variables and return a template name to
-	 * load in order to display extended metadata (more details beyond
-	 * what is found in getCoreMetadata() -- used as the contents of the
-	 * Description tab of the record view).
-	 *
-	 * @access  public
-	 * @return  string              Name of Smarty template file to display.
-	 */
-	public function getExtendedMetadata()
-	{
-		global $interface;
-
-		// Assign various values for display by the template; we'll prefix
-		// everything with "extended" to avoid clashes with values assigned
-		// elsewhere.
-		$interface->assign('extendedSummary', $this->getSummary());
-		$interface->assign('extendedAccess', $this->getAccessRestrictions());
-		$interface->assign('extendedRelated', $this->getRelationshipNotes());
-		$interface->assign('extendedNotes', $this->getGeneralNotes());
-		$interface->assign('extendedDateSpan', $this->getDateSpan());
-		$interface->assign('extendedISBNs', $this->getISBNs());
-		$interface->assign('extendedISSNs', $this->getISSNs());
-		$interface->assign('extendedPhysical', $this->getPhysicalDescriptions());
-		$interface->assign('extendedFrequency', $this->getPublicationFrequency());
-		$interface->assign('extendedPlayTime', $this->getPlayingTimes());
-		$interface->assign('extendedSystem', $this->getSystemDetails());
-		$interface->assign('extendedAudience', $this->getTargetAudienceNotes());
-		$interface->assign('extendedAwards', $this->getAwards());
-		$interface->assign('extendedCredits', $this->getProductionCredits());
-		$interface->assign('extendedBibliography', $this->getBibliographyNotes());
-		$interface->assign('extendedFindingAids', $this->getFindingAids());
-
-		return 'RecordDrivers/Index/extended.tpl';
 	}
 
 	/**
@@ -405,22 +353,9 @@ class IndexRecord extends RecordInterface
 		return [];
 	}
 
-	/**
-	 * Get any reviews associated with this record.  For details of
-	 * the return format, see sys/Reviews.php.
-	 *
-	 * @access  public
-	 * @return  array               Review information.
-	 */
-	public function getReviews()
-	{
-		require_once ROOT_DIR . '/sys/Reviews.php';
-
-		$rev = new ExternalReviews($this->getCleanISBN());
-		return $rev->fetch();
-	}
 
 	/**
+	 * TODO: probably obsolete
 	 * Assign necessary Smarty variables and return a template name to
 	 * load in order to display a summary of the item suitable for use in
 	 * search results.
@@ -428,15 +363,13 @@ class IndexRecord extends RecordInterface
 	 * @access  public
 
 	 * @param string $view The current view.
-	 * @param boolean $useUnscopedHoldingsSummary Whether or not the result should show an unscoped holdings summary.
 	 *
 	 * @return  string              Name of Smarty template file to display.
 	 */
-	public function getSearchResult($view = 'list', $useUnscopedHoldingsSummary = false) {
+	public function getSearchResult($view = 'list') {
 		global $configArray;
 		global $interface;
 
-		$interface->assign('useUnscopedHoldingsSummary', $useUnscopedHoldingsSummary);
 
 		$id = $this->getUniqueID();
 		$interface->assign('summId', $id);
@@ -447,7 +380,7 @@ class IndexRecord extends RecordInterface
 		}
 		$interface->assign('module', $this->getModule());
 
-		$interface->assign('summUrl', $this->getLinkUrl($useUnscopedHoldingsSummary));
+		$interface->assign('summUrl', $this->getLinkUrl());
 		$formats = $this->getFormats();
 		$interface->assign('summFormats', $formats);
 		$formatCategories = $this->getFormatCategory();
@@ -500,93 +433,26 @@ class IndexRecord extends RecordInterface
 		return 'RecordDrivers/Index/result.tpl';
 	}
 
+	/**
+	 * @return string  A description of the title
+	 */
 	function getDescription(){
-		/** @var Memcache $memCache */
-		global $memCache;
-		global $configArray;
-		global $interface;
-		global $timer;
-		$id = $this->getUniqueID();
-		//Bypass loading solr, etc if we already have loaded the descriptive info before
-		$descriptionArray = $memCache->get("record_description_{$id}");
-		if (!$descriptionArray){
-			require_once ROOT_DIR . '/services/Record/Description.php';
-			$searchObject = SearchObjectFactory::initSearchObject();
-			$searchObject->init();
-
-			$description = new Record_Description(true, $id);
-			$descriptionArray = $description->loadData();
-			$memCache->set("record_description_{$id}", $descriptionArray, 0, $configArray['Caching']['record_description']);
-			$timer->logTime("Retrieved description for index record");
-		}
-		$interface->assign('description', $descriptionArray['description']);
-		$interface->assign('length', isset($descriptionArray['length']) ? $descriptionArray['length'] : '');
-		$interface->assign('publisher', isset($descriptionArray['publisher']) ? $descriptionArray['publisher'] : '');
-
-		return $interface->fetch('Record/ajax-description-popup.tpl');
+		return empty($this->fields['display_description']) ? '' : $this->fields['display_description'];
 	}
 
-//	public function getSupplementalSearchResult(){
-//		global $configArray;
-//		global $interface;
-//
-//		$id = $this->getUniqueID();
-//		$interface->assign('summId', $id);
-//		if (substr($id, 0, 1) == '.'){
-//			$interface->assign('summShortId', substr($id, 1));
-//		}else{
-//			$interface->assign('summShortId', $id);
-//		}
-//		$interface->assign('module', $this->getModule());
-//
-//		$formats = $this->getFormats();
-//		$interface->assign('summFormats', $formats);
-//		$formatCategories = $this->getFormatCategory();
-//		$interface->assign('summFormatCategory', $formatCategories);
-//		$interface->assign('summTitle', $this->getTitle());
-//		$interface->assign('summSubTitle', $this->getSubtitle());
-//		$interface->assign('summTitleStatement', $this->getTitleSection());
-//		$interface->assign('summAuthor', $this->getPrimaryAuthor());
-//		$publishers = $this->getPublishers();
-//		$pubDates = $this->getPublicationDates();
-//		$pubPlaces = $this->getPlacesOfPublication();
-//		$interface->assign('summPublicationDates', $pubDates);
-//		$interface->assign('summPublishers', $publishers);
-//		$interface->assign('summPublicationPlaces',$pubPlaces);
-//		$interface->assign('summDate', $this->getPublicationDates());
-//		$interface->assign('summISBN', $this->getCleanISBN());
-//		$issn = $this->getCleanISSN();
-//		$interface->assign('summISSN', $issn);
-//		$upc = $this->getCleanUPC();
-//		$interface->assign('summUPC', $upc);
-//		if ($configArray['System']['debugSolr'] == 1){
-//			$interface->assign('summScore', $this->getScore());
-//			$interface->assign('summExplain', $this->getExplain());
-//		}
-//		$interface->assign('summPhysical', $this->getPhysicalDescriptions());
-//		$interface->assign('summEditions', $this->getEdition());
-//
-//		// Obtain and assign snippet information:
-//		$snippet = $this->getHighlightedSnippet();
-//		$interface->assign('summSnippetCaption', $snippet ? $snippet['caption'] : false);
-//		$interface->assign('summSnippet', $snippet ? $snippet['snippet'] : false);
-//
-//		//Get Rating
-//		$interface->assign('summRating', $this->getRatingData());
-//
-//		//Determine the cover to use
-//		$interface->assign('bookCoverUrl', $this->getBookcoverUrl('small'));
-//		$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
-//
-//		$interface->assign('summUrl', $this->getRecordUrl());
-//
-//		// By default, do not display AJAX status; we won't assume that all
-//		// records exist in the ILS.  Child classes can override this setting
-//		// to turn on AJAX as needed:
-//		$interface->assign('summAjaxStatus', false);
-//
-//		return 'RecordDrivers/Index/supplementalResult.tpl';
-//	}
+	/**
+	 * Some description fetching takes a while. This method is for getting an
+	 * adequate description quickly.
+	 *
+	 * If the class hasn't made an explicit implementation of this method, this
+	 * will fall back to the regular description fetching
+	 *
+	 * @param bool $useHighlighting Whether or not to use highlighting of searched phrases
+	 * @return string  A description of the title
+	 */
+	function getDescriptionFast($useHighlighting = false){
+		return $this->getDescription();
+	}
 
 	function getBookcoverUrl($size = 'small'){
 		$id             = $this->getIdWithSource();
@@ -639,23 +505,14 @@ class IndexRecord extends RecordInterface
 	}
 
 	/**
-	 * Assign necessary Smarty variables and return a template name to
-	 * load in order to display the Table of Contents extracted from the
-	 * record.  Returns null if no Table of Contents is available.
+	 * load in order to display the Table of Contents for the title.
+	 *  Returns null if no Table of Contents is available.
 	 *
 	 * @access  public
-	 * @return  string              Name of Smarty template file to display.
+	 * @return  string              contents to display.
 	 */
-	public function getTOC()
-	{
-		global $interface;
-
-		if (!$this->hasTOC()) {
-			return null;
-		}
-
-		$interface->assign('toc', $this->fields['contents']);
-		return 'RecordDrivers/Index/toc.tpl';
+	public function getTOC(){
+		return null;
 	}
 
 	/**
@@ -669,32 +526,6 @@ class IndexRecord extends RecordInterface
 	public function getUniqueID()
 	{
 		return $this->fields['id'];
-	}
-
-	/**
-	 * Does this record have audio content available?
-	 *
-	 * @access  public
-	 * @return  bool
-	 */
-	public function hasAudio()
-	{
-		/* Audio is not supported yet.
-		 */
-		return false;
-	}
-
-	/**
-	 * Does this record have an excerpt available?
-	 *
-	 * @access  public
-	 * @return  bool
-	 */
-	public function hasExcerpt()
-	{
-		// If we have ISBN(s), we might have reviews:
-		$isbns = $this->getISBNs();
-		return !empty($isbns);
 	}
 
 	/**
@@ -714,18 +545,6 @@ class IndexRecord extends RecordInterface
 	}
 
 	/**
-	 * Does this record have image content available?
-	 *
-	 * @access  public
-	 * @return  bool
-	 */
-	public function hasImages()
-	{
-		// Images are not supported yet.
-		return false;
-	}
-
-	/**
 	 * Does this record support an RDF representation?
 	 *
 	 * @access  public
@@ -734,45 +553,6 @@ class IndexRecord extends RecordInterface
 	public function hasRDF()
 	{
 		// No RDF for Solr-based entries yet.
-		return false;
-	}
-
-	/**
-	 * Does this record have reviews available?
-	 *
-	 * @access  public
-	 * @return  bool
-	 */
-	public function hasReviews()
-	{
-		// If we have ISBN(s), we might have reviews:
-		$isbns = $this->getISBNs();
-		return !empty($isbns);
-	}
-
-	/**
-	 * Does this record have a Table of Contents available?
-	 *
-	 * @access  public
-	 * @return  bool
-	 */
-	public function hasTOC()
-	{
-		// Do we have a table of contents stored in the index?
-		return (isset($this->fields['contents']) &&
-		count($this->fields['contents']) > 0);
-	}
-
-	/**
-	 * Does this record have video content available?
-	 *
-	 * @access  public
-	 * @return  bool
-	 */
-	public function hasVideo()
-	{
-		/* Video is not supported yet.
-		 */
 		return false;
 	}
 
@@ -1284,11 +1064,11 @@ class IndexRecord extends RecordInterface
 	 * @access  protected
 	 * @return  array
 	 */
-	protected function getPhysicalDescriptions()
-	{
-		return isset($this->fields['physical']) ?
-		$this->fields['physical'] : array();
-	}
+//	protected function getPhysicalDescriptions()
+//	{
+//		return isset($this->fields['physical']) ?
+//		$this->fields['physical'] : array();
+//	}
 
 	/**
 	 * Get the item's place of publication.
@@ -1296,11 +1076,11 @@ class IndexRecord extends RecordInterface
 	 * @access  protected
 	 * @return  array
 	 */
-	protected function getPlacesOfPublication()
-	{
-		// Not currently stored in the Solr index
-		return array();
-	}
+//	protected function getPlacesOfPublication()
+//	{
+//		// Not currently stored in the Solr index
+//		return array();
+//	}
 
 	/**
 	 * Get an array of playing times for the record (if applicable).
@@ -1308,11 +1088,11 @@ class IndexRecord extends RecordInterface
 	 * @access  protected
 	 * @return  array
 	 */
-	protected function getPlayingTimes()
-	{
-		// Not currently stored in the Solr index
-		return array();
-	}
+//	protected function getPlayingTimes()
+//	{
+//		// Not currently stored in the Solr index
+//		return array();
+//	}
 
 	/**
 	 * Get an array of previous titles for the record.
@@ -1343,11 +1123,11 @@ class IndexRecord extends RecordInterface
 	 * @access  protected
 	 * @return  array
 	 */
-	protected function getProductionCredits()
-	{
-		// Not currently stored in the Solr index
-		return array();
-	}
+//	protected function getProductionCredits()
+//	{
+//		// Not currently stored in the Solr index
+//		return array();
+//	}
 
 	/**
 	 * Get the publication dates of the record.  See also getDateSpan().
@@ -1397,11 +1177,11 @@ class IndexRecord extends RecordInterface
 	 * @access  protected
 	 * @return  array
 	 */
-	protected function getPublicationFrequency()
-	{
-		// Not currently stored in the Solr index
-		return array();
-	}
+//	protected function getPublicationFrequency()
+//	{
+//		// Not currently stored in the Solr index
+//		return array();
+//	}
 
 	/**
  * Get the publishers of the record.
@@ -1421,11 +1201,11 @@ class IndexRecord extends RecordInterface
 	 * @access  protected
 	 * @return  array
 	 */
-	protected function getRelationshipNotes()
-	{
-		// Not currently stored in the Solr index
-		return array();
-	}
+//	protected function getRelationshipNotes()
+//	{
+//		// Not currently stored in the Solr index
+//		return array();
+//	}
 
 	/**
 	 * Get an array of all secondary authors (complementing getPrimaryAuthor()).
@@ -1487,11 +1267,11 @@ class IndexRecord extends RecordInterface
 	 * @access  protected
 	 * @return  array
 	 */
-	protected function getSystemDetails()
-	{
-		// Not currently stored in the Solr index
-		return array();
-	}
+//	protected function getSystemDetails()
+//	{
+//		// Not currently stored in the Solr index
+//		return array();
+//	}
 
 	/**
 	 * Get an array of summary strings for the record.
@@ -1630,11 +1410,10 @@ class IndexRecord extends RecordInterface
 	}
 
 	function getRecordUrl(){
-		global $configArray;
 		$recordId = $this->getUniqueID();
 
 		//TODO: This should have the correct module set
-		return $configArray['Site']['path'] . '/' . $this->getModule() . '/' . $recordId;
+		return '/' . $this->getModule() . '/' . $recordId;
 	}
 
 	function getAbsoluteUrl(){
@@ -1642,28 +1421,6 @@ class IndexRecord extends RecordInterface
 		$recordId = $this->getUniqueID();
 
 		return $configArray['Site']['url'] . '/' . $this->getModule() . '/' . $recordId;
-	}
-
-	public function getLinkUrl($useUnscopedHoldingsSummary = false) {
-		global $interface;
-		$linkUrl = $this->getRecordUrl();
-		$extraParams = array();
-		if (!empty($interface->get_template_vars('searchId'))){
-			$extraParams[] = 'searchId=' . $interface->get_template_vars('searchId');
-			$extraParams[] = 'recordIndex=' . $interface->get_template_vars('recordIndex');
-			$extraParams[] = 'page='  . $interface->get_template_vars('page');
-
-		}
-
-		if ($useUnscopedHoldingsSummary){
-			$extraParams[] = 'searchSource=marmot';
-		}else{
-			$extraParams[] = 'searchSource=' . $interface->get_template_vars('searchSource');
-		}
-		if (count($extraParams) > 0){
-			$linkUrl .= '?' . implode('&', $extraParams);
-		}
-		return $linkUrl;
 	}
 
 	function getQRCodeUrl(){

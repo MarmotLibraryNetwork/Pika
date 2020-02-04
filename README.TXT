@@ -13,7 +13,7 @@ https://opac.marmot.org.
 Directory structure: 
 conf       - contains configuration information for each server at each library.  
              Library specific customizations should not be checked in to Git. 
-             Default subfolder conains configuration showing all options that can be copied for 
+             Default subfolder contains configuration showing all options that can be copied for
              setup of new libraries. Configuration files in the base folder can be overridden by 
              adding a copy to the local library configuration folder. 
 covers     - contains cached covers for each library.  Data should not be checked in to git. 

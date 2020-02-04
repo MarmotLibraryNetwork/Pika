@@ -1,10 +1,27 @@
 <?php
+/**
+ * Pika Discovery Layer
+ * Copyright (C) 2020  Marmot Library Network
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
 
 /**
  * Record Driver for display of LargeImages from Islandora
  *
  * @category Pika
- * @author Mark Noble <mark@marmot.org>
+ * @author Mark Noble <pika@marmot.org>
  * Date: 12/9/2015
  * Time: 1:47 PM
  */
@@ -223,27 +240,6 @@ abstract class IslandoraDriver extends RecordInterface {
 	}
 
 	/**
-	 * Get the text to represent this record in the body of an email.
-	 *
-	 * @access  public
-	 * @return  string              Text for inclusion in email.
-	 */
-	public function getEmail() {
-		// TODO: Implement getEmail() method.
-	}
-
-	/**
-	 * Get any excerpts associated with this record.  For details of
-	 * the return format, see sys/Excerpts.php.
-	 *
-	 * @access  public
-	 * @return  array               Excerpt information.
-	 */
-	public function getExcerpts() {
-		// TODO: Implement getExcerpts() method.
-	}
-
-	/**
 	 * Assign necessary Smarty variables and return a template name to
 	 * load in order to export the record in the requested format.  For
 	 * legal values, see getExportFormats().  Returns null if format is
@@ -267,19 +263,6 @@ abstract class IslandoraDriver extends RecordInterface {
 	 */
 	public function getExportFormats() {
 		// TODO: Implement getExportFormats() method.
-	}
-
-	/**
-	 * Assign necessary Smarty variables and return a template name to
-	 * load in order to display extended metadata (more details beyond
-	 * what is found in getCoreMetadata() -- used as the contents of the
-	 * Description tab of the record view).
-	 *
-	 * @access  public
-	 * @return  string              Name of Smarty template file to display.
-	 */
-	public function getExtendedMetadata() {
-		// TODO: Implement getExtendedMetadata() method.
 	}
 
 	/**
@@ -374,17 +357,6 @@ abstract class IslandoraDriver extends RecordInterface {
 	 */
 	public function getRDFXML() {
 		// TODO: Implement getRDFXML() method.
-	}
-
-	/**
-	 * Get any reviews associated with this record.  For details of
-	 * the return format, see sys/Reviews.php.
-	 *
-	 * @access  public
-	 * @return  array               Review information.
-	 */
-	public function getReviews() {
-		// TODO: Implement getReviews() method.
 	}
 
 	/**
@@ -504,15 +476,14 @@ abstract class IslandoraDriver extends RecordInterface {
 	}
 
 	/**
-	 * Assign necessary Smarty variables and return a template name to
-	 * load in order to display the Table of Contents extracted from the
-	 * record.  Returns null if no Table of Contents is available.
+	 * load in order to display the Table of Contents for the title.
+	 *  Returns null if no Table of Contents is available.
 	 *
 	 * @access  public
-	 * @return  string              Name of Smarty template file to display.
+	 * @return  string[]|null              contents to display.
 	 */
-	public function getTOC() {
-		// TODO: Implement getTOC() method.
+	public function getTOC(){
+		return null;
 	}
 
 	/**
@@ -534,26 +505,6 @@ abstract class IslandoraDriver extends RecordInterface {
 	}
 
 	/**
-	 * Does this record have audio content available?
-	 *
-	 * @access  public
-	 * @return  bool
-	 */
-	public function hasAudio() {
-		return false;
-	}
-
-	/**
-	 * Does this record have an excerpt available?
-	 *
-	 * @access  public
-	 * @return  bool
-	 */
-	public function hasExcerpt() {
-		return false;
-	}
-
-	/**
 	 * Does this record have searchable full text in the index?
 	 *
 	 * Note: As of this writing, searchable full text is not a VuFind feature,
@@ -567,16 +518,6 @@ abstract class IslandoraDriver extends RecordInterface {
 	}
 
 	/**
-	 * Does this record have image content available?
-	 *
-	 * @access  public
-	 * @return  bool
-	 */
-	public function hasImages() {
-		return true;
-	}
-
-	/**
 	 * Does this record support an RDF representation?
 	 *
 	 * @access  public
@@ -584,36 +525,6 @@ abstract class IslandoraDriver extends RecordInterface {
 	 */
 	public function hasRDF() {
 		// TODO: Implement hasRDF() method.
-	}
-
-	/**
-	 * Does this record have reviews available?
-	 *
-	 * @access  public
-	 * @return  bool
-	 */
-	public function hasReviews() {
-		return false;
-	}
-
-	/**
-	 * Does this record have a Table of Contents available?
-	 *
-	 * @access  public
-	 * @return  bool
-	 */
-	public function hasTOC() {
-		return false;
-	}
-
-	/**
-	 * Does this record have video content available?
-	 *
-	 * @access  public
-	 * @return  bool
-	 */
-	public function hasVideo() {
-		return false;
 	}
 
 	public function getDescription() {
@@ -700,10 +611,10 @@ abstract class IslandoraDriver extends RecordInterface {
 		}
 
 		$this->loadLinkedData();
-		if (count($interface->getVariable('obituaries'))) {
+		if (!empty($interface->getVariable('obituaries'))){
 			$moreDetailsOptions['obituaries'] = array(
-				'label' => 'Obituaries',
-				'body' => $interface->fetch('Archive/obituariesSection.tpl'),
+				'label'         => 'Obituaries',
+				'body'          => $interface->fetch('Archive/obituariesSection.tpl'),
 				'hideByDefault' => false
 			);
 		}
@@ -715,7 +626,7 @@ abstract class IslandoraDriver extends RecordInterface {
 			);
 		}
 		//See if we need another section for wikipedia content.
-		if (count($interface->getVariable('wikipediaData'))){
+		if (!empty($interface->getVariable('wikipediaData'))){
 			if (strlen($description) > 0) {
 				$moreDetailsOptions['wikipedia'] = array(
 						'label' => 'From Wikipedia',
@@ -866,30 +777,30 @@ abstract class IslandoraDriver extends RecordInterface {
 			$interface->assign('creators', $temp);
 
 			$interface->assign('unlinkedEntities', $this->unlinkedEntities);
-			if ((count($interface->getVariable('creators')) > 0)
+			if ((!empty($interface->getVariable('creators')))
 					|| $this->hasDetails
-					|| (count($interface->getVariable('marriages')) > 0)
-					|| (count($interface->getVariable('physicalExtents')) > 0)
-					|| (count($this->unlinkedEntities) > 0)){
+					|| (!empty($interface->getVariable('marriages')))
+					|| (!empty($interface->getVariable('physicalExtents')))
+					|| (!empty($this->unlinkedEntities))){
 				$moreDetailsOptions['details'] = array(
-						'label' => 'Details',
-						'body' => $interface->fetch('Archive/detailsSection.tpl'),
-						'hideByDefault' => false
+					'label'         => 'Details',
+					'body'          => $interface->fetch('Archive/detailsSection.tpl'),
+					'hideByDefault' => false
 				);
 			}
 
 			$moreDetailsOptions['moreDetails'] = array(
-					'label' => 'More Details',
-					'body' => $interface->fetch('Archive/moreDetailsSection.tpl'),
-					'hideByDefault' => false
+				'label'         => 'More Details',
+				'body'          => $interface->fetch('Archive/moreDetailsSection.tpl'),
+				'hideByDefault' => false
 			);
 		}
 
 		$this->loadRightsStatements();
-		if (count($interface->getVariable('rightsStatements'))) {
+		if (count($interface->getVariable('rightsStatements'))){
 			$moreDetailsOptions['rightsStatements'] = array(
-				'label' => 'Rights Statements',
-				'body' => $interface->fetch('Archive/rightsStatementsSection.tpl'),
+				'label'         => 'Rights Statements',
+				'body'          => $interface->fetch('Archive/rightsStatementsSection.tpl'),
 				'hideByDefault' => false
 			);
 		}
@@ -897,10 +808,10 @@ abstract class IslandoraDriver extends RecordInterface {
 		$repositoryLink = $configArray['Islandora']['repositoryUrl'] . '/islandora/object/' . $this->getUniqueID();
 		$interface->assign('repositoryLink', $repositoryLink);
 		$user = UserAccount::getLoggedInUser();
-		if($user && (UserAccount::userHasRole('archives') || UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('libraryAdmin'))) {
+		if ($user && UserAccount::userHasRoleFromList(['archives', 'opacAdmin', 'libraryAdmin'])){
 			$moreDetailsOptions['staffView'] = array(
-				'label' => 'Staff View',
-				'body' => $interface->fetch('Archive/staffViewSection.tpl'),
+				'label'         => 'Staff View',
+				'body'          => $interface->fetch('Archive/staffViewSection.tpl'),
 				'hideByDefault' => false
 			);
 		}
@@ -960,15 +871,22 @@ abstract class IslandoraDriver extends RecordInterface {
 		return array();
 	}
 
+	/**
+	 * A relative URL that is a link to the Full Record View AND additional search parameters
+	 * to the recent search the user has navigated from
+	 *
+	 * @param bool $unscoped
+	 * @return string
+	 */
 	public function getLinkUrl($unscoped = false) {
+		//TODO: Need to add search navigation parameters to the URL; and need to determine which existing calls should really use getRecordUrl() instead
 		$linkUrl = $this->getRecordUrl();
 		return $linkUrl;
 	}
 
 	function getRecordUrl(){
-		global $configArray;
 		$recordId = $this->getUniqueID();
-		return $configArray['Site']['path'] . '/Archive/' . urlencode($recordId) . '/' . $this->getViewAction();
+		return '/Archive/' . urlencode($recordId) . '/' . $this->getViewAction();
 	}
 
 	function getAbsoluteUrl(){
@@ -980,8 +898,7 @@ abstract class IslandoraDriver extends RecordInterface {
 	public abstract function getViewAction();
 
 	protected function getPlaceholderImage() {
-		global $configArray;
-		return $configArray['Site']['path'] . '/interface/themes/responsive/images/History.png';
+		return '/interface/themes/responsive/images/History.png';
 	}
 
 	private $subjectHeadings = null;
@@ -1053,14 +970,13 @@ abstract class IslandoraDriver extends RecordInterface {
 	private $subjectsWithLinks = null;
 
 	public function getAllSubjectsWithLinks(){
-		global $configArray;
 		if ($this->subjectsWithLinks == null){
 			//Extract Subjects
 			$this->subjectsWithLinks = array();
 			$matches                 = $this->getModsValues('topic', 'mods');
 			foreach ($matches as $subjectPart){
 				$subjectPart = trim($subjectPart);
-				$subjectLink = $configArray['Site']['path'] . '/Archive/Results?lookfor=';
+				$subjectLink = '/Archive/Results?lookfor=';
 				if (!empty($subjectPart)){
 					$subjectLink               .= '&filter[]=mods_subject_topic_ms%3A' . urlencode('"' . (string)$subjectPart . '"');
 					$this->subjectsWithLinks[] = array(
@@ -1194,16 +1110,18 @@ abstract class IslandoraDriver extends RecordInterface {
 				foreach ($collectionsRaw as $collectionInfo) {
 					if (!$fedoraUtils->isPidValidForPika($collectionInfo['object']['value'])){
 						$parentObject = $fedoraUtils->getObject($collectionInfo['object']['value']);
-						/** @var IslandoraDriver $parentDriver */
-						$parentDriver = RecordDriverFactory::initRecordDriver($parentObject);
-						if ($parentDriver && $parentDriver instanceof IslandoraDriver){
-							$this->relatedCollections = $parentDriver->getRelatedCollections();
-							if (count($this->relatedCollections) != 0){
-								break;
+						if (!empty($parentObject)){
+							/** @var IslandoraDriver $parentDriver */
+							$parentDriver = RecordDriverFactory::initRecordDriver($parentObject);
+							if ($parentDriver && $parentDriver instanceof IslandoraDriver){
+								$this->relatedCollections = $parentDriver->getRelatedCollections();
+								if (count($this->relatedCollections) != 0){
+									break;
+								}
+							}else{
+								global $logger;
+								$logger->log("Incorrect driver type for " . $collectionInfo['object']['value'], PEAR_LOG_DEBUG);
 							}
-						}else{
-							global $logger;
-							$logger->log("Incorrect driver type for " . $collectionInfo['object']['value'], PEAR_LOG_DEBUG);
 						}
 					}
 				}
@@ -1497,19 +1415,17 @@ abstract class IslandoraDriver extends RecordInterface {
 	public function getLinks(){
 		if ($this->links == null){
 			global $timer;
-			$this->links = array();
+			$this->links     = array();
 			$marmotExtension = $this->getMarmotExtension();
 			if (strlen($marmotExtension) > 0){
 				$linkData = $this->getModsValues('externalLink', 'marmot', $marmotExtension, true);
-				foreach ($linkData as $linkInfo) {
+				foreach ($linkData as $linkInfo){
 					$linkType = $this->getModsAttribute('type', $linkInfo);
-					$link = $this->getModsValue('link', 'marmot', $linkInfo);
+					$link     = $this->getModsValue('link', 'marmot', $linkInfo);
 					$linkText = $this->getModsValue('linkText', 'marmot', $linkInfo);
-					if (strlen($linkText) == 0) {
-						if (strlen($linkType) == 0) {
-							$linkText = $link;
-						} else {
-							switch (strtolower($linkType)) {
+					if (strlen($link) > 0){
+						if (strlen($linkText) == 0){
+							switch (strtolower($linkType)){
 								case 'relatedpika':
 									$linkText = 'Related title from the catalog';
 									break;
@@ -1521,33 +1437,31 @@ abstract class IslandoraDriver extends RecordInterface {
 									break;
 								case 'fortlewisgeoplaces':
 									//Skip this one
-									continue;
+									break;
 								case 'geonames':
 									$linkText = 'Geographic information from GeoNames.org';
-									continue;
+									break;
 								case 'samepika':
 									$linkText = 'This record within the catalog';
-									continue;
+									break;
 								case 'whosonfirst':
 									$linkText = 'Geographic information from Who\'s on First';
-									continue;
+									break;
 								case 'wikipedia':
 									$linkText = 'Information from Wikipedia';
-									continue;
+									break;
+								case '':
+									$linkText = $link;
+									break;
 								default:
 									$linkText = $linkType;
 							}
 						}
-					}
-					if (strlen($link) > 0) {
-						$isHidden = false;
-						if ($linkType == 'wikipedia' || $linkType == 'geoNames' || $linkType == 'whosOnFirst' || $linkType == 'relatedPika') {
-							$isHidden = true;
-						}
+						$isHidden      = in_array($linkType, ['wikipedia', 'geoNames', 'whosOnFirst', 'relatedPika']);
 						$this->links[] = array(
-								'type' => $linkType,
-								'link' => $link,
-								'text' => $linkText,
+							'type'   => $linkType,
+							'link'   => $link,
+							'text'   => $linkText,
 							'hidden' => $isHidden,
 						);
 					}

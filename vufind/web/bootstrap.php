@@ -1,9 +1,30 @@
 <?php
+/**
+ * Pika Discovery Layer
+ * Copyright (C) 2020  Marmot Library Network
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 define ('ROOT_DIR', __DIR__);
 set_include_path(get_include_path() . PATH_SEPARATOR . "/usr/share/composer");
 
+// autoloader stack
 // Composer autoloader
 require_once "vendor/autoload.php";
+spl_autoload_register('pika_autoloader');
+spl_autoload_register('vufind_autoloader');
 
 global $errorHandlingEnabled;
 $errorHandlingEnabled = true;
@@ -14,7 +35,6 @@ require_once ROOT_DIR . '/sys/PEAR_Singleton.php';
 PEAR_Singleton::init();
 
 require_once ROOT_DIR . '/sys/ConfigArray.php';
-require_once ROOT_DIR . '/sys/Utils/SwitchDatabase.php';
 global $configArray;
 $configArray = readConfig();
 require_once ROOT_DIR . '/sys/Timer.php';
@@ -28,12 +48,18 @@ global $logger;
 $logger = new Logger();
 $timer->logTime("Read Config");
 
+//global $app;
+//$app = new \Pika\App();
+
 if ($configArray['System']['debug']) {
 	ini_set('display_errors', true);
 	error_reporting(E_ALL & ~E_DEPRECATED & ~E_STRICT);
+} else {
+	ini_set('display_errors', 0);
+	ini_set('html_errors', 0);
 }
 
-//Use output buffering to allow session cookies to have different values
+// Use output buffering to allow session cookies to have different values
 // this can't be determined before session_start is called
 ob_start();
 
@@ -58,7 +84,7 @@ function initMemcache(){
 	global $timer;
 	global $configArray;
 	// Set defaults if nothing set in config file.
-	$host = isset($configArray['Caching']['memcache_host']) ? $configArray['Caching']['memcache_host'] : 'localhost';
+	$host = isset($configArray['Caching']['memcache_host']) ? $configArray['Caching']['memcache_host'] : '127.0.0.1';
 	$port = isset($configArray['Caching']['memcache_port']) ? $configArray['Caching']['memcache_port'] : 11211;
 	$timeout = isset($configArray['Caching']['memcache_connection_timeout']) ? $configArray['Caching']['memcache_connection_timeout'] : 1;
 
@@ -73,21 +99,22 @@ function initMemcache(){
 	$timer->logTime("Initialize Memcache");
 }
 
+// todo: this can all be handled in Pika\Cache
 function initCache(){
 	global $configArray;
 	// Set defaults if nothing set in config file.
-	$host = isset($configArray['Caching']['memcache_host']) ? $configArray['Caching']['memcache_host'] : 'localhost';
+	$host = isset($configArray['Caching']['memcache_host']) ? $configArray['Caching']['memcache_host'] : '127.0.0.1';
 	$port = isset($configArray['Caching']['memcache_port']) ? $configArray['Caching']['memcache_port'] : 11211;
 	$timeout = isset($configArray['Caching']['memcache_connection_timeout']) ? $configArray['Caching']['memcache_connection_timeout'] : 1;
-	// Connect to Memcache:
-	$memCache = new Memcache();
-	if (!@$memCache->pconnect($host, $port, $timeout)) {
-		//Try again with a non-persistent connection
-		if (!$memCache->connect($host, $port, $timeout)) {
-			PEAR_Singleton::raiseError(new PEAR_Error("Could not connect to Memcache (host = {$host}, port = {$port})."));
-		}
+	// Connect to Memcached with persistent
+	$memCached = new Memcached('pika');
+	// Caution! Since this is a persistent connection adding server adds on every page load
+	if (!count($memCached->getServerList())) {
+		$memCached->setOption(Memcached::OPT_NO_BLOCK, true);
+		$memCached->setOption(Memcached::OPT_TCP_NODELAY, true);
+		$memCached->addServer($host, $port);
 	}
-	return $memCache;
+	return $memCached;
 }
 
 function initDatabase(){
@@ -162,10 +189,6 @@ function handlePEARError($error, $method = null){
 	if (!isset($interface) || $interface == false){
 		$interface = new UInterface();
 	}
-	global $analytics;
-	if ($analytics){
-		$analytics->addEvent('Unexpected Error', 'Unexpected Error', $error, $method);
-	}
 
 	$interface->assign('error', $error);
 	$interface->assign('debug', $configArray['System']['debug']);
@@ -215,48 +238,146 @@ function loadLibraryAndLocation(){
 	global $timer;
 	global $librarySingleton;
 	global $locationSingleton;
-	global $configArray;
 	//Create global singleton instances for Library and Location
 	$librarySingleton = new Library();
-	$timer->logTime('Created library');
+	$timer->logTime('Created library singleton');
 	$locationSingleton = new Location();
-	$timer->logTime('Created Location');
+	$timer->logTime('Created Location singleton');
 
 	global $active_ip;
 	$active_ip = $locationSingleton->getActiveIp();
-	if (!isset($_COOKIE['test_ip']) || $active_ip != $_COOKIE['test_ip']){
-		if ($active_ip == ''){
-			setcookie('test_ip', $active_ip, time() - 1000, '/');
-		}else{
-			setcookie('test_ip', $active_ip, 0, '/');
-		}
-	}
+	handleCookie('test_ip', $active_ip);
 	$timer->logTime('Got active ip address');
 
 	$branch = $locationSingleton->getBranchLocationCode();
-	if (!isset($_COOKIE['branch']) || $branch != $_COOKIE['branch']){
-		if ($branch == ''){
-			setcookie('branch', $branch, time() - 1000, '/');
-		}else{
-			setcookie('branch', $branch, 0, '/');
-		}
-	}
+	handleCookie('branch', $branch);
 	$timer->logTime('Got branch');
 
 	$sublocation = $locationSingleton->getSublocationCode();
-	if (!isset($_COOKIE['sublocation']) || $sublocation != $_COOKIE['sublocation']) {
-		if (empty($sublocation)) {
-			setcookie('sublocation', $sublocation, time() - 1000, '/');
-		} else {
-			setcookie('sublocation', $sublocation, 0, '/');
-		}
-	}
+	handleCookie('sublocation', $sublocation);
 	$timer->logTime('Got sublocation');
 
-	//Update configuration information for scoping now that the database is setup.
-	$configArray = updateConfigForScoping($configArray);
-	$timer->logTime('Updated config for scoping');
+	getLibraryObject();
+}
 
+/**
+ *  Set or unset a cookie based on the value
+ *
+ * @param $cookieName
+ * @param $cookieValue
+ */
+function handleCookie($cookieName, $cookieValue){
+	if (!isset($_COOKIE[$cookieName]) || $cookieValue != $_COOKIE[$cookieName]){
+		if ($cookieValue == ''){
+			setcookie($cookieName, $cookieValue, time() - 1000, '/');
+		}else{
+			setcookie($cookieName, $cookieValue, 0, '/');
+		}
+	}
+}
+
+function getLibraryObject(){
+	global $timer;
+
+	// Make the library information global so we can work with it later.
+	global $library;
+
+	//Get the subdomain for the request
+	global $subdomain; // THis is setting the global $subdomain variable; TODO: check where this is getting used
+	$timer->logTime('starting looking for library object.');
+
+//	/** @var Memcache $memCache */
+//	global $memCache;
+//	$memCacheKey      = 'subdomainToUseFor_' . $_SERVER['SERVER_NAME'];
+//	$subdomainsToTest = $memCache->get($memCacheKey);
+//	if ($subdomainsToTest == false || isset($_REQUEST['reload'])){
+		$subdomainsToTest = array();
+		// split the servername based on
+		if (strpos($_SERVER['SERVER_NAME'], '.')){
+			$serverComponents                = explode('.', $_SERVER['SERVER_NAME']);
+			$possibleMarmotTestSiteSubdomain = '';
+			if (count($serverComponents) >= 3){
+				//URL is probably of the form subdomain.marmot.org or subdomain.opac.marmot.org
+				if ($serverComponents[0] == 'librarycatalog'){
+					// Special Handling for Sacramento Production URLs which don't follow the conventional URL structure, but will need to identified by the second component for some of the URLs
+					$subdomainsToTest[] = $serverComponents[1];
+				}else{
+					$subdomainsToTest[]              = $serverComponents[0];
+					$possibleMarmotTestSiteSubdomain = $serverComponents[0];
+				}
+			}elseif (count($serverComponents) == 2){
+				//URL could be either subdomain.localhost or marmot.org. Only use the subdomain
+				//If the second component is localhost.
+				if (strcasecmp($serverComponents[1], 'localhost') == 0){
+					$subdomainsToTest[]              = $serverComponents[0];
+					$possibleMarmotTestSiteSubdomain = $serverComponents[0];
+				}
+			}
+			//Trim off test indicator when doing lookups for library/location. eg opac2, opac3, opact, etc
+			$lastChar = substr($possibleMarmotTestSiteSubdomain, -1);
+			if ($lastChar == '2' || $lastChar == '3' || $lastChar == 't' || $lastChar == 'd' || $lastChar == 'x'){
+				$subdomainsToTest[] = substr($possibleMarmotTestSiteSubdomain, 0, -1);
+			}
+		}
+		$timer->logTime('found ' . count($subdomainsToTest) . ' subdomains to test');
+//	}
+
+		// Load the library system information
+		foreach ($subdomainsToTest as $i => $subdomain){
+			$timer->logTime("testing subdomain $i $subdomain");
+			$Library            = new Library();
+			$Library->subdomain = $subdomain;
+//			$timer->logTime("searched for library by subdomain $subdomain");
+			if ($Library->find() == 1){
+				$Library->fetch();
+				$library = $Library;
+				$timer->logTime("found the library based on subdomain");
+				break;
+			}else{
+				//The subdomain can also indicate a location.
+				$Location = new Location();
+				$Location->whereAdd("code = '$subdomain'");
+				$Location->whereAdd("subdomain = '$subdomain'", 'OR');
+				if ($Location->find() == 1){
+					$Location->fetch();
+
+					// We found a location for the subdomain, get the library.
+					/** @var Library $librarySingleton */
+					global $librarySingleton;
+					global $locationSingleton;
+					$library = $librarySingleton->getLibraryForLocation($Location->locationId);
+					$locationSingleton->setActiveLocation(clone $Location);
+					$timer->logTime("found the library based on location subdomain or code.");
+					break;
+				}else{
+					//Check to see if there is only one library in the system
+					$Library = new Library();
+					if ($Library->count() == 1){
+						if ($Library->find(true)){
+							$library = $Library;
+						}else {
+							die('Could not determine the correct library to use for this install');
+						}
+
+						$timer->logTime("there is only one library for this install");
+						break;
+					}elseif ($i == count($subdomainsToTest) - 1){
+						//If we are on the last subdomain to test, get the default library
+						$Library            = new Library();
+						$Library->isDefault = 1;
+						if ($Library->find() == 1){
+							$Library->fetch();
+							$library = $Library;
+							$timer->logTime("found the library based on the default");
+						}else{
+							die('Could not determine the correct library to use for this install');
+						}
+					}
+				}
+			}
+		}
+//		$memCache->set($memCacheKey, [$subdomain], null, 36000);
+	$timer->logTime('Fetched library and location objects');
 }
 
 function loadSearchInformation(){
@@ -269,48 +390,46 @@ function loadSearchInformation(){
 	global $configArray;
 
 	$module = (isset($_GET['module'])) ? $_GET['module'] : null;
-	$module = preg_replace('/[^\w]/', '', $module);
 
 	$searchSource = 'global';
 	if (isset($_GET['searchSource'])){
 		if (is_array($_GET['searchSource'])){
 			$_GET['searchSource'] = reset($_GET['searchSource']);
 		}
-		$searchSource = $_GET['searchSource'];
+		$searchSource             = $_GET['searchSource'];
 		$_REQUEST['searchSource'] = $searchSource; //Update request since other check for it here
 		$_SESSION['searchSource'] = $searchSource; //Update the session so we can remember what the user was doing last.
+	}elseif (isset($_SESSION['searchSource'])){ //Didn't get a source, use what the user was doing last
+		$searchSource             = $_SESSION['searchSource'];
+		$_REQUEST['searchSource'] = $searchSource;
 	}else{
-		if ( isset($_SESSION['searchSource'])){ //Didn't get a source, use what the user was doing last
-			$searchSource = $_SESSION['searchSource'];
-			$_REQUEST['searchSource'] = $searchSource;
+		//Use a default search source
+		if ($module == 'Person'){
+			$searchSource = 'genealogy';
+		}elseif ($module == 'Archive'){
+			$searchSource = 'islandora';
+		}elseif ($module == 'EBSCO'){
+			$searchSource = 'ebsco';
 		}else{
-			//Use a default search source
-			if ($module == 'Person'){
-				$searchSource = 'genealogy';
-			}elseif ($module == 'Archive'){
-				$searchSource = 'islandora';
-			}elseif ($module == 'EBSCO'){
-				$searchSource = 'ebsco';
+			require_once ROOT_DIR . '/Drivers/marmot_inc/SearchSources.php';
+			$searchSources = new SearchSources();
+			global $locationSingleton;
+			$location = $locationSingleton->getActiveLocation();
+			list($enableCombinedResults, $showCombinedResultsFirst, $combinedResultsName) = $searchSources::getCombinedSearchSetupParameters($location, $library);
+			if ($enableCombinedResults && $showCombinedResultsFirst){
+				$searchSource = 'combinedResults';
 			}else{
-				require_once(ROOT_DIR . '/Drivers/marmot_inc/SearchSources.php');
-				$searchSources = new SearchSources();
-				global $locationSingleton;
-				$location = $locationSingleton->getActiveLocation();
-				list($enableCombinedResults, $showCombinedResultsFirst, $combinedResultsName) = $searchSources::getCombinedSearchSetupParameters($location, $library);
-				if ($enableCombinedResults && $showCombinedResultsFirst){
-					$searchSource = 'combinedResults';
-				}else{
-					$searchSource = 'local';
-				}
+				$searchSource = 'local';
 			}
-			$_REQUEST['searchSource'] = $searchSource;
 		}
+		$_REQUEST['searchSource'] = $searchSource;
 	}
 
 	/** @var Library $searchLibrary */
-	$searchLibrary = Library::getSearchLibrary($searchSource);
+	$searchLibrary  = Library::getSearchLibrary($searchSource);
 	$searchLocation = Location::getSearchLocation($searchSource);
 
+	//set searchSource for 'Repeat Search within Marmot Collection' option
 	if ($searchSource == 'marmot' || $searchSource == 'global'){
 		$searchSource = $searchLibrary->subdomain;
 	}
@@ -345,41 +464,19 @@ function loadSearchInformation(){
 		$scopeType = 'Unscoped';
 	}
 
-	$searchLibrary = Library::getSearchLibrary($searchSource);
-	$searchLocation = Location::getSearchLocation($searchSource);
-
-	//TODO: this is only used in a couple places to build links to classic opac. It doesn't need to be global
-	global $millenniumScope;
-	if ($library){
-		if ($searchLibrary){
-			$millenniumScope = $searchLibrary->scope;
-		}elseif (isset($searchLocation)){
-			Millennium::$scopingLocationCode = $searchLocation->code;
-		}else{
-			$millenniumScope = isset($configArray['OPAC']['defaultScope']) ? $configArray['OPAC']['defaultScope'] : '93';
-		}
-	}else{
-		$millenniumScope = isset($configArray['OPAC']['defaultScope']) ? $configArray['OPAC']['defaultScope'] : '93';
-	}
-
 	//Load indexing profiles
 	require_once ROOT_DIR . '/sys/Indexing/IndexingProfile.php';
 	/** @var $indexingProfiles IndexingProfile[] */
 	global $indexingProfiles;
-	$indexingProfiles = $memCache->get("{$instanceName}_indexing_profiles");
+	$memCacheKey              = "{$instanceName}_indexing_profiles";
+	$indexingProfiles = $memCache->get($memCacheKey);
 	if ($indexingProfiles === false || isset($_REQUEST['reload'])){
-		$indexingProfiles = array();
-		$indexingProfile = new IndexingProfile();
-		$indexingProfile->orderBy('name');
-		$indexingProfile->find();
-		while ($indexingProfile->fetch()){
-			$indexingProfiles[$indexingProfile->name] = clone($indexingProfile);
-		}
+		$indexingProfiles = IndexingProfile::getAllIndexingProfiles();
 //		global $logger;
 //		$logger->log("Updating memcache variable {$instanceName}_indexing_profiles", PEAR_LOG_DEBUG);
-		if (!$memCache->set("{$instanceName}_indexing_profiles", $indexingProfiles, 0, $configArray['Caching']['indexing_profiles'])) {
+		if (!$memCache->set($memCacheKey, $indexingProfiles, 0, $configArray['Caching']['indexing_profiles'])) {
 			global $logger;
-			$logger->log("Failed to update memcache variable {$instanceName}_indexing_profiles", PEAR_LOG_ERR);
+			$logger->log("Failed to update memcache variable $memCacheKey", PEAR_LOG_ERR);
 		};
 	}
 }
@@ -395,4 +492,68 @@ function enableErrorHandler(){
 
 function array_remove_by_value($array, $value){
 	return array_values(array_diff($array, array($value)));
+}
+
+// Pika drivers autoloader PSR-4 style
+function pika_autoloader($class) {
+	$sourcePath = __DIR__ . DIRECTORY_SEPARATOR . 'sys' . DIRECTORY_SEPARATOR;
+
+	$filePath       = str_replace('\\', DIRECTORY_SEPARATOR, $class);
+	$pathParts      = explode("\\", $class);
+	$directoryIndex = count($pathParts) - 1;
+	$directory      = $pathParts[$directoryIndex];
+	$fullFilePath   = $sourcePath.$filePath.'.php';
+	$fullFolderPath = $sourcePath.$filePath.DIRECTORY_SEPARATOR.$directory.'.php';
+	if(file_exists($fullFilePath)) {
+		include_once($fullFilePath);
+	} elseif (file_exists($fullFolderPath)) {
+		include_once($fullFolderPath);
+	}
+}
+
+// todo: this needs a total rewrite. it doesn't account for autoloader stacks and throws a fatal error.
+function vufind_autoloader($class) {
+	if (substr($class, 0, 4) == 'CAS_') {
+		return CAS_autoload($class);
+	}
+	if (strpos($class, '.php') > 0){
+		$class = substr($class, 0, strpos($class, '.php'));
+	}
+	$nameSpaceClass = str_replace('_', '/', $class) . '.php';
+	try{
+		if (file_exists('sys/' . $class . '.php')){
+			$className = ROOT_DIR . '/sys/' . $class . '.php';
+			require_once $className;
+		}elseif (file_exists('Drivers/' . $class . '.php')){
+			$className = ROOT_DIR . '/Drivers/' . $class . '.php';
+			require_once $className;
+		}elseif (file_exists('Drivers/marmot_inc/' . $class . '.php')){
+			$className = ROOT_DIR . '/Drivers/marmot_inc/' . $class . '.php';
+			require_once $className;
+		} elseif (file_exists('RecordDrivers/' . $class . '.php')){
+			$className = ROOT_DIR . '/RecordDrivers/' . $class . '.php';
+			require_once $className;
+		}elseif (file_exists('services/MyAccount/lib/' . $class . '.php')){
+			$className = ROOT_DIR . '/services/MyAccount/lib/' . $class . '.php';
+			require_once $className;
+		}elseif (file_exists('services/' . $class . '.php')){
+			$className = ROOT_DIR . '/services/' . $class . '.php';
+			require_once $className;
+		}elseif (file_exists('sys/Authentication/' . $class . '.php')){
+			$className = ROOT_DIR . '/sys/Authentication/' . $class . '.php';
+			require_once $className;
+		}elseif (file_exists('sys/' . $nameSpaceClass)){
+			require_once 'sys/' . $nameSpaceClass;
+		}else{
+			try {
+				include_once $nameSpaceClass;
+			} catch (Exception $e) {
+				// todo: This should fail over to next instead of throwing fatal error.
+				// PEAR_Singleton::raiseError("Error loading class $class");
+			}
+		}
+	}catch (Exception $e){
+		// PEAR_Singleton::raiseError("Error loading class $class");
+		// todo: This should fail over to next instead of throwing fatal error.
+	}
 }

@@ -237,13 +237,13 @@ $(document).ready(function(){
 
 var autoLogoutTimer;
 function showLogoutMessage(){
-	var url = Globals.path + '/AJAX/JSON?method=getAutoLogoutPrompt';
+	var url = '/AJAX/JSON?method=getAutoLogoutPrompt';
 	VuFind.Account.ajaxLightbox(url, false);
 	autoLogoutTimer = setTimeout("endSession()", 10000);
 }
 
 function showRedirectToHomeMessage(){
-	var url = Globals.path + '/AJAX/JSON?method=getReturnToHomePrompt';
+	var url = '/AJAX/JSON?method=getReturnToHomePrompt';
 	VuFind.Account.ajaxLightbox(url, false);
 	autoLogoutTimer = setTimeout("endSession()", 10000);
 }
@@ -281,7 +281,7 @@ function endSession(){
 		VuFind.Account.endMasquerade()
 	} else {
 		//Redirect to logout page
-		window.location = Globals.path + "/MyAccount/Logout";
+		window.location = "/MyAccount/Logout";
 	}
 }
 

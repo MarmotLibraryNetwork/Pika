@@ -1,11 +1,12 @@
 <?php
 /**
+ * Pika Discovery Layer
+ * Copyright (C) 2020  Marmot Library Network
  *
- * Copyright (C) Villanova University 2010.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2,
- * as published by the Free Software Foundation.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -13,12 +14,11 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-require_once ROOT_DIR . '/sys/Amazon.php';
-require_once ROOT_DIR . '/sys/Proxy_Request.php';
+
+use Curl\Curl;
+use \Pika\Logger;
 
 /**
  * ExternalReviews Class
@@ -29,10 +29,11 @@ require_once ROOT_DIR . '/sys/Proxy_Request.php';
  * @author      Demian Katz <demian.katz@villanova.edu>
  * @access      public
  */
-class ExternalReviews
-{
+class ExternalReviews {
 	private $isbn;
 	private $results;
+	// @var $logger Pika/Logger instance
+	private $logger;
 
 	/**
 	 * Constructor
@@ -40,41 +41,51 @@ class ExternalReviews
 	 * Do the actual work of loading the reviews.
 	 *
 	 * @access  public
-	 * @param   string      $isbn           ISBN of book to find reviews for
+	 * @param   string      $isbn           ISBN of title to find reviews for
 	 */
-	public function __construct($isbn)
-	{
-		global $configArray;
-
-		$this->isbn = $isbn;
+	public function __construct($isbn){
+		$this->isbn    = $isbn;
 		$this->results = array();
+		$this->logger  = new Logger(__CLASS__);
+
 
 		// We can't proceed without an ISBN:
-		if (empty($this->isbn)) {
+		if (empty($this->isbn)){
 			return;
 		}
 
-		// Fetch from provider
-		if (isset($configArray['Content']['reviews'])) {
-			$providers = explode(',', $configArray['Content']['reviews']);
-			foreach ($providers as $provider) {
-				$provider = explode(':', trim($provider));
-				$func = strtolower($provider[0]);
-				$key = $provider[1];
-				$this->results[$func] = method_exists($this, $func) ? $this->$func($key) : false;
+		/** @var Memcache $memCache */
+		global $memCache;
 
-				// If the current provider had no valid reviews, store nothing:
-				if (empty($this->results[$func]) || PEAR_Singleton::isError($this->results[$func])) {
-					unset($this->results[$func]);
-				}else{
-					if (is_array($this->results[$func])){
-						foreach ($this->results[$func] as $key => $reviewData){
-							$this->results[$func][$key] = self::cleanupReview($this->results[$func][$key]);
-						}
+		$memCacheKey = "reviews_{$isbn}";
+		$reviews     = $memCache->get($memCacheKey);
+		if ($reviews && !isset($_REQUEST['reload'])){
+			$this->results = $reviews;
+		}else{
+			// Fetch from provider
+			global $configArray;
+			if (isset($configArray['Content']['reviews'])){
+				$providers = explode(',', $configArray['Content']['reviews']);
+				foreach ($providers as $provider){
+					$provider             = explode(':', trim($provider));
+					$func                 = strtolower($provider[0]);
+					$key                  = $provider[1];
+					$this->results[$func] = method_exists($this, $func) ? $this->$func($key) : false;
+
+					// If the current provider had no valid reviews, store nothing:
+					if (empty($this->results[$func]) || PEAR_Singleton::isError($this->results[$func])){
+						unset($this->results[$func]);
 					}else{
-						$this->results[$func] = self::cleanupReview($this->results[$func]);
+						if (is_array($this->results[$func])){
+							foreach ($this->results[$func] as $key => $reviewData){
+								$this->results[$func][$key] = self::cleanupReview($this->results[$func][$key]);
+							}
+						}else{
+							$this->results[$func] = self::cleanupReview($this->results[$func]);
+						}
 					}
 				}
+				$memCache->set($memCacheKey, $this->results, 0, $configArray['Caching']['purchased_reviews']);
 			}
 		}
 	}
@@ -119,7 +130,6 @@ class ExternalReviews
 		global $locationSingleton;
 		global $configArray;
 		global $timer;
-		global $logger;
 
 		$review = array();
 		$location = $locationSingleton->getActiveLocation();
@@ -142,7 +152,8 @@ class ExternalReviews
 				$sourceList[$key] = array('title' => $label, 'file' => "$key.XML");
 			}
 		}else{
-			$sourceList = array(/*'CHREVIEW' => array('title' => 'Choice Review',
+			$sourceList = array(
+				/*'CHREVIEW' => array('title' => 'Choice Review',
 			'file' => 'CHREVIEW.XML'),*/
 	                            'BLREVIEW' => array('title' => 'Booklist Review',
 	                                                'file' => 'BLREVIEW.XML'),
@@ -157,7 +168,8 @@ class ExternalReviews
 			 'KIREVIEW' => array('title' => 'Kirkus Book Review',
 			 'file' => 'KIREVIEW.XML'),
 			 'CRITICASEREVIEW' => array('title' => 'Criti Case Review',
-			 'file' => 'CRITICASEREVIEW.XML')*/);
+			 'file' => 'CRITICASEREVIEW.XML')*/
+			);
 		}
 		$timer->logTime("Got list of syndetic reviews to show");
 
@@ -168,85 +180,72 @@ class ExternalReviews
                'index.xml&client=' . $id . '&type=rw12,hw7';
 
 		//find out if there are any reviews
-		$client = new Proxy_Request();
-		$client->setMethod(HTTP_REQUEST_METHOD_GET);
-		$client->setURL($url);
-		if (PEAR_Singleton::isError($http = $client->sendRequest())) {
-			// @codeCoverageIgnoreStart
-			$logger->log("Error connecting to $url", PEAR_LOG_ERR);
-			$logger->log("$http", PEAR_LOG_ERR);
-			return $http;
-			// @codeCoverageIgnoreEnd
+		try {
+			$curl     = new Curl();
+			$curl->setXmlDecoder('DOMDocument::loadXML');
+			/** @var DOMDocument $xmlDoc */
+			$xmlDoc = $curl->get($url);
+		} catch (Exception $e){
+			$this->logger->error($e->getMessage(), ['stacktrace'=>$e->getTraceAsString()]);
+			return [];
+		}
+		if ($curl->isCurlError()) {
+			$message = 'curl Error: '.$curl->getCurlErrorCode().': '.$curl->getCurlErrorMessage();
+			$this->logger->warning($message);
+			return [];
 		}
 
-		// Test XML Response
-		if (!($xmldoc = @DOMDocument::loadXML($client->getResponseBody()))) {
-			// @codeCoverageIgnoreStart
-			$logger->log("Did not receive XML from $url", PEAR_LOG_ERR);
-			return new PEAR_Error('Invalid XML');
-			// @codeCoverageIgnoreEnd
-		}
+
 
 		$review = array();
 		$i = 0;
-		foreach ($sourceList as $source => $sourceInfo) {
-			$nodes = $xmldoc->getElementsByTagName($source);
-			if ($nodes->length) {
+		foreach ($sourceList as $source => $sourceInfo){
+			$nodes = $xmlDoc->getElementsByTagName($source);
+			if ($nodes->length){
 				// Load reviews
 				$url = $baseUrl . '/index.aspx?isbn=' . $this->isbn . '/' .
-				$sourceInfo['file'] . '&client=' . $id . '&type=rw12,hw7';
-				$client->setURL($url);
-				if (PEAR_Singleton::isError($http = $client->sendRequest())) {
-					// @codeCoverageIgnoreStart
-					$logger->log("Error connecting to $url", PEAR_LOG_ERR);
-					$logger->log("$http", PEAR_LOG_ERR);
+					$sourceInfo['file'] . '&client=' . $id . '&type=rw12,hw7';
+
+				/** @var DOMDocument $xmlDoc2 */
+				$xmlDoc2 = $curl->get($url);
+				if ($curl->isCurlError()){
+					$message = 'curl Error: ' . $curl->getCurlErrorCode() . ': ' . $curl->getCurlErrorMessage();
+					$this->logger->error($message);
+					$this->logger->error($xmlDoc2);
 					continue;
-					// @codeCoverageIgnoreEnd
 				}
 
 				// Test XML Response
-				$responseBody = $client->getResponseBody();
-				if (!($xmldoc2 = @DOMDocument::loadXML($responseBody))) {
-					// @codeCoverageIgnoreStart
-					return new PEAR_Error('Invalid XML');
-					// @codeCoverageIgnoreEnd
+				if ($xmlDoc2 === false){
+					$this->logger->error('Invalid XML from ' . $url);
+					continue;
 				}
 
 				// Get the marc field for reviews (520)
-				$nodes = $xmldoc2->GetElementsbyTagName("Fld520");
-				if (!$nodes->length) {
-					// @codeCoverageIgnoreStart
+				$nodes = $xmlDoc2->GetElementsbyTagName("Fld520");
+				if (!$nodes->length){
 					// Skip reviews with missing text
 					continue;
-					// @codeCoverageIgnoreEnd
 				}
-				$review[$i]['Content'] = html_entity_decode($xmldoc2->saveXML($nodes->item(0)));
-				$review[$i]['Content'] = str_replace("<a>","<p>",$review[$i]['Content']);
-				$review[$i]['Content'] = str_replace("</a>","</p>",$review[$i]['Content']);
+				$review[$i]['Content'] = html_entity_decode($xmlDoc2->saveXML($nodes->item(0)));
+				$review[$i]['Content'] = str_ireplace("<a>", "<p>", $review[$i]['Content']);
+				$review[$i]['Content'] = str_ireplace("</a>", "</p>", $review[$i]['Content']);
 
 				// Get the marc field for copyright (997)
-				$nodes = $xmldoc2->GetElementsbyTagName("Fld997");
-				if ($nodes->length) {
-					$review[$i]['Copyright'] = html_entity_decode($xmldoc2->saveXML($nodes->item(0)));
-				} else {
-					// @codeCoverageIgnoreStart
-					$review[$i]['Copyright'] = null;
-					// @codeCoverageIgnoreEnd
-				}
+				$nodes = $xmlDoc2->GetElementsbyTagName("Fld997");
+				$review[$i]['Copyright'] = ($nodes->length) ? null : html_entity_decode($xmlDoc2->saveXML($nodes->item(0)));
 
 				//Check to see if the copyright is contained in the main body of the review and if so, remove it.
 				//Does not happen often.
-				if ($review[$i]['Copyright']) {  //stop duplicate copyrights
+				if ($review[$i]['Copyright']){  //stop duplicate copyrights
 					$location = strripos($review[0]['Content'], $review[0]['Copyright']);
-					// @codeCoverageIgnoreStart
-					if ($location > 0) {
+					if ($location > 0){
 						$review[$i]['Content'] = substr($review[0]['Content'], 0, $location);
 					}
-					// @codeCoverageIgnoreEnd
 				}
 
-				$review[$i]['Source'] = $sourceInfo['title'];  //changes the xml to actual title
-				$review[$i]['ISBN'] = $this->isbn; //show more link
+				$review[$i]['Source']   = $sourceInfo['title'];  //changes the xml to actual title
+				$review[$i]['ISBN']     = $this->isbn; //show more link
 				$review[$i]['username'] = isset($configArray['BookReviews']) ? $configArray['BookReviews']['id'] : '';
 
 				$i++;

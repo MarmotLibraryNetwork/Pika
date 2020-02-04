@@ -6,7 +6,7 @@ VuFind.GroupedWork = (function(){
 		hasTableOfContentsInRecord: false,
 
 		clearUserRating: function (groupedWorkId){
-			var url = Globals.path + '/GroupedWork/' + groupedWorkId + '/AJAX?method=clearUserRating';
+			var url = '/GroupedWork/' + groupedWorkId + '/AJAX?method=clearUserRating';
 			$.getJSON(url, function(data){
 				if (data.result == true){
 					$('.rate' + groupedWorkId).find('.ui-rater-starsOn').width(0);
@@ -20,7 +20,7 @@ VuFind.GroupedWork = (function(){
 		},
 
 		clearNotInterested: function (notInterestedId){
-			var url = Globals.path + '/GroupedWork/' + notInterestedId + '/AJAX?method=clearNotInterested';
+			var url = '/GroupedWork/' + notInterestedId + '/AJAX?method=clearNotInterested';
 			$.getJSON(
 					url, function(data){
 						if (data.result == false){
@@ -33,8 +33,8 @@ VuFind.GroupedWork = (function(){
 		},
 
 		deleteReview: function(id, reviewId){
-			if (confirm("Are you sure you want to delete this review?")){
-				var url = Globals.path + '/GroupedWork/' + id + '/AJAX?method=deleteUserReview';
+			VuFind.confirm("Are you sure you want to delete this review?", function(){
+				var url = '/GroupedWork/' + id + '/AJAX?method=deleteUserReview';
 				$.getJSON(url, function(data){
 					if (data.result == true){
 						$('#review_' + reviewId).hide();
@@ -43,39 +43,7 @@ VuFind.GroupedWork = (function(){
 						VuFind.showMessage('Sorry', data.message);
 					}
 				});
-			}
-			return false;
-		},
-
-		forceRegrouping: function (id){
-			var url = Globals.path + '/GroupedWork/' + id + '/AJAX?method=forceRegrouping';
-			return this.basicShowMessageReloadOnSuccess(url);
-		},
-
-		forceReindex: function (id){
-			var url = Globals.path + '/GroupedWork/' + id + '/AJAX?method=forceReindex';
-			return this.basicShowMessageReloadOnSuccess(url);
-		},
-
-		reloadCover: function (id){
-			var url = Globals.path + '/GroupedWork/' + id + '/AJAX?method=reloadCover';
-			return this.basicShowMessageReloadOnSuccess(url);
-		},
-
-		reloadIslandora: function(id){
-			var url = Globals.path + '/GroupedWork/' + id + '/AJAX?method=reloadIslandora';
-			return this.basicShowMessageReloadOnSuccess(url);
-		},
-
-		basicShowMessageReloadOnSuccess: function(url){
-			$.getJSON(url, function (data){
-						if (data.success) {
-							VuFind.showMessage("Success", data.message, true, true);
-						} else {
-							VuFind.showMessage("Error", data.message);
-						}
-					}
-			);
+			});
 			return false;
 		},
 
@@ -92,7 +60,7 @@ VuFind.GroupedWork = (function(){
 			}
 			if (placeholder.hasClass("loaded")) return;
 			placeholder.show();
-			var url = Globals.path + "/GroupedWork/" + encodeURIComponent(id) + "/AJAX",
+			var url = "/GroupedWork/" + encodeURIComponent(id) + "/AJAX",
 					params = {'method': 'GetGoDeeperData', dataType:dataType};
 			$.getJSON(url, params, function(data) {
 				placeholder.html(data.formattedData).addClass('loaded');
@@ -105,10 +73,14 @@ VuFind.GroupedWork = (function(){
 			);
 		},
 
+		reloadEnrichment: function (id){
+			VuFind.GroupedWork.loadEnrichmentInfo(id, true);
+		},
+
 		loadEnrichmentInfo: function (id, forceReload) {
-			var url = Globals.path + "/GroupedWork/" + encodeURIComponent(id) + "/AJAX",
+			var url = "/GroupedWork/" + encodeURIComponent(id) + "/AJAX",
 					params = {'method':'getEnrichmentInfo'};
-			if (forceReload != undefined){
+			if (forceReload !== undefined){
 				params['reload'] = true;
 			}
 			$.getJSON(url, params, function(data) {
@@ -185,7 +157,7 @@ VuFind.GroupedWork = (function(){
 		},
 
 		loadReviewInfo: function (id) {
-			var url = Globals.path + "/GroupedWork/" + encodeURIComponent(id) + "/AJAX?method=getReviewInfo";
+			var url = "/GroupedWork/" + encodeURIComponent(id) + "/AJAX?method=getReviewInfo";
 			$.getJSON(url, function(data) {
 				if (data.numSyndicatedReviews == 0){
 					$("#syndicatedReviewsPanel").hide();
@@ -216,8 +188,8 @@ VuFind.GroupedWork = (function(){
 		},
 
 		markNotInterested: function (recordId){
-			if (Globals.loggedIn){
-				var url = Globals.path + '/GroupedWork/' + recordId + '/AJAX?method=markNotInterested';
+			VuFind.Account.ajaxLogin(function (){
+				var url = '/GroupedWork/' + recordId + '/AJAX?method=markNotInterested';
 				$.getJSON(
 						url, function(data){
 							if (data.result == true){
@@ -228,22 +200,14 @@ VuFind.GroupedWork = (function(){
 						}
 				);
 				return false;
-			}else{
-				return VuFind.Account.ajaxLogin(null, function(){markNotInterested(source, recordId)}, false);
-			}
+			});
 		},
-
-		reloadEnrichment: function (id){
-			VuFind.GroupedWork.loadEnrichmentInfo(id, true);
-		},
-
 
 		removeTag:function(id, tag){
-			if (confirm("Are you sure you want to remove the tag \"" + tag + "\" from this title?")){
-				var url = Globals.path + '/GroupedWork/' + id + '/AJAX?method=removeTag';
-				url += "&tag=" + encodeURIComponent(tag);
-				$.getJSON(
-						url, function(data){
+			VuFind.confirm("Are you sure you want to remove the tag \"" + tag + "\" from this title?", function(){
+				var url = '/GroupedWork/' + id + '/AJAX',
+						params = {method:'removeTag', tag: tag};
+				$.getJSON(url, params, function(data){
 							if (data.result == true){
 								VuFind.showMessage('Success', data.message);
 							}else{
@@ -252,19 +216,15 @@ VuFind.GroupedWork = (function(){
 						}
 				);
 				return false;
-			}
+			});
 			return false;
 		},
 
 		saveReview: function(id){
-			if (!Globals.loggedIn){
-				VuFind.Account.ajaxLogin(null, function(){
-					this.saveReview(id)
-				})
-			} else {
+			VuFind.Account.ajaxLogin(function (){
 				var comment = $('#comment' + id).val(),
 						rating = $('#rating' + id).val(),
-						url = Globals.path + "/GroupedWork/" + encodeURIComponent(id) + "/AJAX",
+						url = "/GroupedWork/" + encodeURIComponent(id) + "/AJAX",
 						params =  {
 							method : 'saveReview'
 							,comment : comment
@@ -284,13 +244,13 @@ VuFind.GroupedWork = (function(){
 						}
 					}
 				).fail(VuFind.ajaxFail);
-			}
+			});
 			return false;
 		},
 
 		saveTag: function(id){
 			var tag = $("#tags_to_apply").val(),
-					url = Globals.path + "/GroupedWork/" + id + "/AJAX",
+					url = "/GroupedWork/" + id + "/AJAX",
 					params = {
 						method : 'saveTag',
 						tag : tag
@@ -308,10 +268,10 @@ VuFind.GroupedWork = (function(){
 		},
 
 		saveToList: function(id){
-			if (Globals.loggedIn){
+			VuFind.Account.ajaxLogin(function (){
 				var listId = $('#addToList-list').val(),
 						notes  = $('#addToList-notes').val(),
-						url    = Globals.path + "/GroupedWork/" + encodeURIComponent(id) + "/AJAX",
+						url    = "/GroupedWork/" + encodeURIComponent(id) + "/AJAX",
 						params = {
 							'method':'saveToList'
 							,notes:notes
@@ -320,23 +280,23 @@ VuFind.GroupedWork = (function(){
 				$.getJSON(url, params,
 						function(data) {
 							if (data.success) {
-								VuFind.showMessage("Added Successfully", data.message, 2000); // auto-close after 2 seconds.
+								VuFind.showMessageWithButtons("Added Successfully", data.message, data.buttons);
 							} else {
 								VuFind.showMessage("Error", data.message);
 							}
 						}
 				)
-			}
+			});
 			return false;
 		},
 
 		sendEmail: function(id){
-			if (Globals.loggedIn){
+			VuFind.Account.ajaxLogin(function (){
 				var from = $('#from').val(),
 						to = $('#to').val(),
 						message = $('#message').val(),
 						related_record = $('#related_record').val(),
-						url = Globals.path + "/GroupedWork/" + encodeURIComponent(id) + "/AJAX",
+						url = "/GroupedWork/" + encodeURIComponent(id) + "/AJAX",
 						params = {
 							'method' : 'sendEmail',
 							from : from,
@@ -353,16 +313,16 @@ VuFind.GroupedWork = (function(){
 							}
 						}
 				).fail(VuFind.ajaxFail);
-			}
+			});
 			return false;
 		},
 
 		sendSMS: function(id){
-			if (Globals.loggedIn){
+			VuFind.Account.ajaxLogin(function (){
 				var phoneNumber = $('#sms_phone_number').val(),
 						provider = $('#provider').val(),
 						related_record = $('#related_record').val(),
-						url = Globals.path + "/GroupedWork/" + encodeURIComponent(id) + "/AJAX",
+						url = "/GroupedWork/" + encodeURIComponent(id) + "/AJAX",
 						params = {
 							'method' : 'sendSMS',
 							provider : provider,
@@ -378,29 +338,13 @@ VuFind.GroupedWork = (function(){
 							}
 						}
 				).fail(VuFind.ajaxFail);
-			}
+			});
 			return false;
 		},
 
-		showEmailForm: function(trigger, id){
-			if (Globals.loggedIn){
-				VuFind.loadingMessage();
-				$.getJSON(Globals.path + "/GroupedWork/" + id + "/AJAX?method=getEmailForm", function(data){
-					VuFind.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
-				}).fail(VuFind.ajaxFail);
-			}else{
-				VuFind.Account.ajaxLogin($(trigger), function (){
-					return VuFind.GroupedWork.showEmailForm(trigger, id);
-				}, false);
-			}
-			return false;
-		},
-
-
-		showGroupedWorkInfo:function(id, browseCategoryId){
-			//var url = Globals.path + "/GroupedWork" + encodeURIComponent(id) + "/AJAX?method=getWorkInfo&id=" + id;
-			var url = Globals.path + "/GroupedWork/" + encodeURIComponent(id) + "/AJAX?method=getWorkInfo";
-			if (browseCategoryId != undefined){
+		showGroupedWorkInfo: function(id, browseCategoryId){
+			var url = "/GroupedWork/" + encodeURIComponent(id) + "/AJAX?method=getWorkInfo";
+			if (browseCategoryId !== undefined){
 				url += "&browseCategoryId=" + browseCategoryId;
 			}
 			VuFind.loadingMessage();
@@ -410,59 +354,61 @@ VuFind.GroupedWork = (function(){
 			return false;
 		},
 
-		showReviewForm: function(trigger, id){
-			if (Globals.loggedIn){
-				VuFind.loadingMessage();
-				$.getJSON(Globals.path + "/GroupedWork/" + encodeURIComponent(id) + "/AJAX?method=getReviewForm", function(data){
-					VuFind.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
-				}).fail(VuFind.ajaxFail);
-			}else{
-				VuFind.Account.ajaxLogin($(trigger), function (){
-					return VuFind.GroupedWork.showReviewForm(trigger, id);
-				}, false);
-			}
+		forceRegrouping: function (id){
+			return this.basicShowMessageReloadOnSuccess('forceRegrouping', id);
+		},
+
+		forceReindex: function (id){
+			return this.basicShowMessageReloadOnSuccess('forceReindex', id);
+		},
+
+		reloadCover: function (id){
+			return this.basicShowMessageReloadOnSuccess('reloadCover', id);
+		},
+
+		reloadIslandora: function(id){
+			return this.basicShowMessageReloadOnSuccess('reloadIslandora', id);
+		},
+
+		basicShowMessageReloadOnSuccess: function(method, id){
+			$.getJSON("/GroupedWork/" + encodeURIComponent(id) + "/AJAX?method=" + method, function (data){
+						if (data.success) {
+							VuFind.showMessage("Success", data.message, true, true);
+						} else {
+							VuFind.showMessage("Error", data.message);
+						}
+					}
+			);
 			return false;
+		},
+
+		showEmailForm: function(trigger, id){
+			return this.basicAjaxHandler('getEmailForm', id, trigger);
+		},
+
+		showReviewForm: function(trigger, id){
+			return this.basicAjaxHandler('getReviewForm', id, trigger);
 		},
 
 		showSaveToListForm: function (trigger, id){
-			if (Globals.loggedIn){
-				VuFind.loadingMessage();
-				var url = Globals.path + "/GroupedWork/" + id + "/AJAX?method=getSaveToListForm";
-				$.getJSON(url, function(data){
-					VuFind.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
-				}).fail(VuFind.ajaxFail);
-			}else{
-				VuFind.Account.ajaxLogin($(trigger), function (){
-					VuFind.GroupedWork.showSaveToListForm(trigger, id);
-				});
-			}
-			return false;
+			return this.basicAjaxHandler('getSaveToListForm', id, trigger);
 		},
 
 		showSmsForm: function(trigger, id){
-			if (Globals.loggedIn){
-				VuFind.loadingMessage();
-				$.getJSON(Globals.path + "/GroupedWork/" + id + "/AJAX?method=getSMSForm", function(data){
-					VuFind.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
-				}).fail(VuFind.ajaxFail);
-			}else{
-				VuFind.Account.ajaxLogin($(trigger), function (){
-					return VuFind.GroupedWork.showSmsForm(trigger, id);
-				}, false);
-			}
-			return false;
+			return this.basicAjaxHandler('getSMSForm', id, trigger);
 		},
 
-		showTagForm: function(trigger, id, source){
-			if (Globals.loggedIn){
-				$.getJSON(Globals.path + "/GroupedWork/" + id + "/AJAX?method=getAddTagForm", function(data){
+		showTagForm: function(trigger, id){
+			return this.basicAjaxHandler('getAddTagForm', id, trigger);
+		},
+
+		basicAjaxHandler: function(method, id, trigger){
+			VuFind.Account.ajaxLogin(function (){
+				VuFind.loadingMessage();
+				$.getJSON("/GroupedWork/" + encodeURIComponent(id) + "/AJAX?method=" + method, function(data){
 					VuFind.showMessageWithButtons(data.title, data.modalBody, data.modalButtons)
-				});
-			}else{
-				VuFind.Account.ajaxLogin($(trigger), function (){
-					VuFind.GroupedWork.showTagForm(trigger, id, source);
-				}, false);
-			}
+				}).fail(VuFind.ajaxFail);
+			}, $(trigger));
 			return false;
 		}
 	};

@@ -1,10 +1,27 @@
 <?php
+/**
+ * Pika Discovery Layer
+ * Copyright (C) 2020  Marmot Library Network
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
 
 /**
  * Implements
  *
  * @category Pika
- * @author Mark Noble <mark@marmot.org>
+ * @author Mark Noble <pika@marmot.org>
  * Date: 6/10/2016
  * Time: 1:53 PM
  */
@@ -83,64 +100,7 @@ class CarlX extends SIP2Driver{
 					$user->comingDueNotice     = $result->Patron->SendComingDueFlag;
 					$user->phoneType           = $result->Patron->PhoneType;
 
-					$homeBranchCode = strtolower($result->Patron->DefaultBranch);
-					$location = new Location();
-					$location->code = $homeBranchCode;
-					if (!$location->find(1)){
-						unset($location);
-						$user->homeLocationId = 0;
-						// Logging for Diagnosing PK-1846
-						global $logger;
-						$logger->log('CarlX Driver: No Location found, user\'s homeLocationId being set to 0. User : '.$user->id, PEAR_LOG_WARNING);
-					}
-
-					if ((empty($user->homeLocationId) || $user->homeLocationId == -1) || (isset($location) && $user->homeLocationId != $location->locationId)) { // When homeLocation isn't set or has changed
-						if ((empty($user->homeLocationId) || $user->homeLocationId == -1) && !isset($location)) {
-							// homeBranch Code not found in location table and the user doesn't have an assigned homelocation,
-							// try to find the main branch to assign to user
-							// or the first location for the library
-							global $library;
-
-							$location            = new Location();
-							$location->libraryId = $library->libraryId;
-							$location->orderBy('isMainBranch desc'); // gets the main branch first or the first location
-							if (!$location->find(true)) {
-								// Seriously no locations even?
-								global $logger;
-								$logger->log('Failed to find any location to assign to user as home location', PEAR_LOG_ERR);
-								unset($location);
-							}
-						}
-						if (isset($location)) {
-							$user->homeLocationId = $location->locationId;
-							if (empty($user->myLocation1Id)) {
-								$user->myLocation1Id  = ($location->nearbyLocation1 > 0) ? $location->nearbyLocation1 : $location->locationId;
-								/** @var /Location $location */
-								//Get display name for preferred location 1
-								$myLocation1             = new Location();
-								$myLocation1->locationId = $user->myLocation1Id;
-								if ($myLocation1->find(true)) {
-									$user->myLocation1 = $myLocation1->displayName;
-								}
-							}
-
-							if (empty($user->myLocation2Id)){
-								$user->myLocation2Id  = ($location->nearbyLocation2 > 0) ? $location->nearbyLocation2 : $location->locationId;
-								//Get display name for preferred location 2
-								$myLocation2             = new Location();
-								$myLocation2->locationId = $user->myLocation2Id;
-								if ($myLocation2->find(true)) {
-									$user->myLocation2 = $myLocation2->displayName;
-								}
-							}
-						}
-					}
-
-					if (isset($location)){
-						//Get display names that aren't stored
-						$user->homeLocationCode = $location->code;
-						$user->homeLocation     = $location->displayName;
-					}
+					$user->setUserHomeLocations($result->Patron->DefaultBranch);
 
 					if (isset($result->Patron->Addresses)){
 						//Find the primary address
@@ -167,19 +127,8 @@ class CarlX extends SIP2Driver{
 					$user->patronType  = $result->Patron->PatronType; // Example: "ADULT"
 					$user->web_note    = '';
 					$user->phone       = $result->Patron->Phone1;
-					$user->expires     = $this->extractDateFromCarlXDateField($result->Patron->ExpirationDate);
-					$user->expired     = 0; // default setting
-					$user->expireClose = 0;
 
-					$timeExpire   = strtotime($user->expires);
-					$timeNow      = time();
-					$timeToExpire = $timeExpire - $timeNow;
-					if ($timeToExpire <= 30 * 24 * 60 * 60) {
-						if ($timeToExpire <= 0) {
-							$user->expired = 1;
-						}
-						$user->expireClose = 1;
-					}
+					$user->setUserExpirationSettings($this->extractDateFromCarlXDateField($result->Patron->ExpirationDate));
 
 					//Load summary information for number of holds, checkouts, etc
 					$patronSummaryRequest = new stdClass();
@@ -224,8 +173,8 @@ class CarlX extends SIP2Driver{
 		return true;
 	}
 
-	public function getNumHolds($id) {
-		// TODO: Implement getNumHolds() method.
+	public function getNumHoldsOnRecord($id) {
+		// TODO: Implement getNumHoldsOnRecord() method.
 	}
 
 	/**
@@ -925,58 +874,57 @@ class CarlX extends SIP2Driver{
 				}
 
 				// CREATE PATRON REQUEST
-				$request                                         = new stdClass();
-				$request->Modifiers                              = '';
-				//$request->PatronFlags->PatronFlag                = 'DUPCHECK_ALTID'; // Duplicate check for alt id
-				$request->PatronFlags->PatronFlag[0]                = 'DUPCHECK_NAME_DOB'; // Duplicate check for name/date of birth
-				$request->PatronFlags->PatronFlag[1]                = 'VALIDATE_ZIPCODE'; // Validate ZIP against Carl.X Admin legal ZIPs
-				$request->Patron				= new stdClass();
-				$request->Patron->PatronID                       = $tempPatronID;
-				$request->Patron->Email                          = $email;
-				$request->Patron->FirstName                      = $firstName;
-				$request->Patron->MiddleName                     = $middleName;
-				$request->Patron->LastName                       = $lastName;
-				$request->Patron->Addresses			= new stdClass();
-				$request->Patron->Addresses->Address		= new stdClass();
-				$request->Patron->Addresses->Address->Type       = 'Primary';
-				$request->Patron->Addresses->Address->Street     = $address;
-				$request->Patron->Addresses->Address->City       = $city;
-				$request->Patron->Addresses->Address->State      = $state;
-				$request->Patron->Addresses->Address->PostalCode = $zip;
-				$request->Patron->PreferredAddress		= 'Primary';
-//				$request->Patron->PatronPIN			= $pin;
-				$request->Patron->Phone1			= $phone;
-				$request->Patron->RegistrationDate		= date('c'); // Registration Date, format ISO 8601
-				$request->Patron->LastActionDate		= date('c'); // Registration Date, format ISO 8601
-				$request->Patron->LastEditDate			= date('c'); // Registration Date, format ISO 8601
-				$request->Patron->CollectionStatus		= 'not sent';
+			$request                                         = new stdClass();
+			$request->Modifiers                              = '';
+//			$request->PatronFlags->PatronFlag                = 'DUPCHECK_ALTID'; // Duplicate check for alt id
+			$request->PatronFlags->PatronFlag[0]             = 'DUPCHECK_NAME_DOB'; // Duplicate check for name/date of birth
+			$request->PatronFlags->PatronFlag[1]             = 'VALIDATE_ZIPCODE'; // Validate ZIP against Carl.X Admin legal ZIPs
+			$request->Patron                                 = new stdClass();
+			$request->Patron->PatronID                       = $tempPatronID;
+			$request->Patron->Email                          = $email;
+			$request->Patron->FirstName                      = $firstName;
+			$request->Patron->MiddleName                     = $middleName;
+			$request->Patron->LastName                       = $lastName;
+			$request->Patron->Addresses                      = new stdClass();
+			$request->Patron->Addresses->Address             = new stdClass();
+			$request->Patron->Addresses->Address->Type       = 'Primary';
+			$request->Patron->Addresses->Address->Street     = $address;
+			$request->Patron->Addresses->Address->City       = $city;
+			$request->Patron->Addresses->Address->State      = $state;
+			$request->Patron->Addresses->Address->PostalCode = $zip;
+			$request->Patron->PreferredAddress               = 'Primary';
+			$request->Patron->Phone1                         = $phone;
+			$request->Patron->RegistrationDate               = date('c'); // Registration Date, format ISO 8601
+			$request->Patron->LastActionDate                 = date('c'); // Registration Date, format ISO 8601
+			$request->Patron->LastEditDate                   = date('c'); // Registration Date, format ISO 8601
+			$request->Patron->CollectionStatus               = 'not sent';
+			$request->Patron->EmailNotices                   = $configArray['Catalog']['selfRegEmailNotices'];
+			$request->Patron->DefaultBranch                  = $configArray['Catalog']['selfRegDefaultBranch'];
+			$request->Patron->PatronExpirationDate           = $configArray['Catalog']['selfRegPatronExpirationDate'];
+			$request->Patron->PatronStatusCode               = $configArray['Catalog']['selfRegPatronStatusCode'];
+			$request->Patron->PatronType                     = $configArray['Catalog']['selfRegPatronType'];
+			$request->Patron->RegBranch                      = $configArray['Catalog']['selfRegRegBranch'];
+			$request->Patron->RegisteredBy                   = $configArray['Catalog']['selfRegRegisteredBy'];
+//			$request->Patron->PatronPIN                      = $pin;
 
-				$request->Patron->EmailNotices			= $configArray['Catalog']['selfRegEmailNotices'];
-				$request->Patron->DefaultBranch			= $configArray['Catalog']['selfRegDefaultBranch'];
-				$request->Patron->PatronExpirationDate		= $configArray['Catalog']['selfRegPatronExpirationDate'];
-				$request->Patron->PatronStatusCode		= $configArray['Catalog']['selfRegPatronStatusCode'];
-				$request->Patron->PatronType			= $configArray['Catalog']['selfRegPatronType'];
-				$request->Patron->RegBranch			= $configArray['Catalog']['selfRegRegBranch'];
-				$request->Patron->RegisteredBy			= $configArray['Catalog']['selfRegRegisteredBy'];
-
-				// VALIDATE BIRTH DATE.
-				// DENY REGISTRATION IF REGISTRANT IS NOT 13 - 113 YEARS OLD
-				if ($library && $library->promptForBirthDateInSelfReg) {
-					$birthDate			= trim($_REQUEST['birthDate']);
-					$date				= strtotime(str_replace('-','/',$birthDate));
-					$birthDateMin			= strtotime('-113 years');
-					$birthDateMax			= strtotime('-13 years');
-					if ($date >= $birthDateMin && $date <= $birthDateMax) {
-						$request->Patron->BirthDate = date('Y-m-d', $date);
-					} else {
-						global $logger;
-						$logger->log('Online Registrant is too young : birth date : ' . date('Y-m-d', $date), PEAR_LOG_WARNING);
-						return array(
-							'success' => false,
-							'message' => 'You must be 13 years old to register.'
-						);
-					}
+			// VALIDATE BIRTH DATE.
+			// DENY REGISTRATION IF REGISTRANT IS NOT 13 - 113 YEARS OLD
+			if ($library && $library->promptForBirthDateInSelfReg){
+				$birthDate    = trim($_REQUEST['birthDate']);
+				$date         = strtotime(str_replace('-', '/', $birthDate));
+				$birthDateMin = strtotime('-113 years');
+				$birthDateMax = strtotime('-13 years');
+				if ($date >= $birthDateMin && $date <= $birthDateMax){
+					$request->Patron->BirthDate = date('Y-m-d', $date);
+				}else{
+					global $logger;
+					$logger->log('Online Registrant is too young : birth date : ' . date('Y-m-d', $date), PEAR_LOG_WARNING);
+					return array(
+						'success' => false,
+						'message' => 'You must be 13 years old to register.'
+					);
 				}
+			}
 
 				$result = $this->doSoapRequest('createPatron', $request, $this->patronWsdl, $this->genericResponseSOAPCallOptions);
 				if (is_null($result) && $this->soapClient) {

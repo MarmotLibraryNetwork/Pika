@@ -78,38 +78,6 @@ CREATE TABLE IF NOT EXISTS `callnumber_browse` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `circulation_status`
---
-
-CREATE TABLE IF NOT EXISTS `circulation_status` (
-  `circulationStatusId` int(11) NOT NULL AUTO_INCREMENT COMMENT 'A unique Id for the status',
-  `millenniumName` varchar(25) NOT NULL COMMENT 'The name of the status as it displays in the Millennium holdings list',
-  `displayName` varchar(40) NOT NULL COMMENT 'A name to translate the status into for display in vufind.  Leave plank to use the Millennium name.',
-  `holdable` tinyint(4) NOT NULL COMMENT 'Whether or not patrons can place holds on items with this status',
-  `available` tinyint(4) NOT NULL COMMENT 'Whether or not the item is available for immediate usage (if the patron is at that branch)',
-  PRIMARY KEY (`circulationStatusId`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COMMENT='Stores informattion about the circulation statuses in millen' AUTO_INCREMENT=14 ;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `comments`
---
-
-CREATE TABLE IF NOT EXISTS `comments` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `user_id` int(11) NOT NULL DEFAULT '0',
-  `resource_id` int(11) NOT NULL DEFAULT '0',
-  `comment` mediumtext NOT NULL,
-  `created` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
-  PRIMARY KEY (`id`),
-  KEY `user_id` (`user_id`),
-  KEY `resource_id` (`resource_id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=83 ;
-
--- --------------------------------------------------------
-
---
 -- Table structure for table `db_update`
 --
 
@@ -135,22 +103,6 @@ CREATE TABLE IF NOT EXISTS `editorial_reviews` (
   PRIMARY KEY (`editorialReviewId`),
   KEY `RecordId` (`recordId`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=5 ;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `external_link_tracking`
---
-
-CREATE TABLE IF NOT EXISTS `external_link_tracking` (
-  `externalLinkId` int(11) NOT NULL AUTO_INCREMENT,
-  `ipAddress` varchar(30) DEFAULT NULL,
-  `recordId` varchar(50) NOT NULL,
-  `linkUrl` varchar(400) NOT NULL,
-  `linkHost` varchar(200) NOT NULL,
-  `trackingDate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`externalLinkId`)
-) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1989 ;
 
 -- --------------------------------------------------------
 
@@ -184,7 +136,7 @@ CREATE TABLE IF NOT EXISTS `library` (
   `allowInBranchHolds` tinyint(4) NOT NULL DEFAULT '1' COMMENT 'Whether or not the user can place holds for their branch.  If this isn''t shown, they won''t be able to place holds for books at the location they are in.  If set to false, they won''t be able to place any holds. ',
   `allowInLibraryHolds` tinyint(4) NOT NULL DEFAULT '1' COMMENT 'Whether or not the user can place holds for books at other locations in their library system',
   `allowConsortiumHolds` tinyint(4) NOT NULL DEFAULT '0' COMMENT 'Whether or not the user can place holds for any book anywhere in the consortium.  ',
-  `scope` smallint(6) NOT NULL COMMENT 'The scope for the system in Millennium to refine holdings for the user.',
+  `scope` smallint(6) NOT NULL COMMENT 'The scope for the system in Sierra to refine holdings for the user.',
   `useScope` tinyint(4) NOT NULL COMMENT 'Whether or not the scope should be used when displaying holdings.  ',
   `hideCommentsWithBadWords` tinyint(4) NOT NULL COMMENT 'If set to true (1), any comments with bad words are completely removed from the user interface for everyone except the original poster.',
   `showAmazonReviews` tinyint(4) NOT NULL COMMENT 'Whether or not reviews from Amazon are displayed on the full record page.',
@@ -215,7 +167,6 @@ CREATE TABLE IF NOT EXISTS `library` (
   `repeatInOverdrive` tinyint(4) NOT NULL DEFAULT '0',
   `homeLink` varchar(255) NOT NULL DEFAULT 'default',
   `showAdvancedSearchbox` tinyint(4) NOT NULL DEFAULT '1',
-  `enableBookCart` tinyint(4) NOT NULL DEFAULT '0',
   `validPickupSystems` varchar(255) NOT NULL,
   `allowProfileUpdates` tinyint(4) NOT NULL DEFAULT '1',
   `allowRenewals` tinyint(4) NOT NULL DEFAULT '1',
@@ -284,14 +235,14 @@ CREATE TABLE IF NOT EXISTS `list_widget_lists` (
 
 CREATE TABLE IF NOT EXISTS `location` (
   `locationId` int(11) NOT NULL AUTO_INCREMENT COMMENT 'A unique Id for the branch or location within vuFind',
-  `code` varchar(10) NOT NULL COMMENT 'The code for use when communicating with Millennium',
+  `code` varchar(10) NOT NULL COMMENT 'The code for use when communicating with the ILS',
   `displayName` varchar(60) NOT NULL COMMENT 'The full name of the location for display to the user',
   `libraryId` int(11) NOT NULL COMMENT 'A link to the library which the location belongs to',
   `validHoldPickupBranch` tinyint(4) NOT NULL DEFAULT '1' COMMENT 'Determines if the location can be used as a pickup location if it is not the patrons home location or the location they are in.',
   `nearbyLocation1` int(11) DEFAULT NULL COMMENT 'A secondary location which is nearby and could be used for pickup of materials.',
   `nearbyLocation2` int(11) DEFAULT NULL COMMENT 'A tertiary location which is nearby and could be used for pickup of materials.',
   `holdingBranchLabel` varchar(40) NOT NULL COMMENT 'The label used within the Holdings table in Millenium.',
-  `scope` smallint(6) NOT NULL COMMENT 'The scope for the system in Millennium to refine holdings to the branch.  If there is no scope defined for the branch, this can be set to 0.',
+  `scope` smallint(6) NOT NULL COMMENT 'The scope for the system in Sierra to refine holdings to the branch.  If there is no scope defined for the branch, this can be set to 0.',
   `useScope` tinyint(4) NOT NULL COMMENT 'Whether or not the scope should be used when displaying holdings.  ',
   `defaultLocationFacet` varchar(40) NOT NULL COMMENT 'A facet to apply during initial searches.  If left blank, no additional refinement will be done.',
   `facetFile` varchar(15) NOT NULL DEFAULT 'default' COMMENT 'The name of the facet file which should be used while searching use default to not override the file',
@@ -309,18 +260,6 @@ CREATE TABLE IF NOT EXISTS `location` (
   UNIQUE KEY `code` (`code`),
   KEY `ValidHoldPickupBranch` (`validHoldPickupBranch`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COMMENT='Stores information about the various locations that are part' AUTO_INCREMENT=8 ;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `marc_import`
---
-
-CREATE TABLE IF NOT EXISTS `marc_import` (
-  `id` varchar(50) NOT NULL DEFAULT '' COMMENT 'The id of the marc record in the ils',
-  `checksum` int(11) NOT NULL COMMENT 'The timestamp when the reindex started',
-  PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
 
@@ -411,35 +350,6 @@ CREATE TABLE IF NOT EXISTS `materials_request_status` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `millennium_cache`
---
-
-CREATE TABLE IF NOT EXISTS `millennium_cache` (
-  `recordId` varchar(20) NOT NULL COMMENT 'The recordId being checked',
-  `scope` int(16) NOT NULL COMMENT 'The scope that was loaded',
-  `holdingsInfo` longtext NOT NULL COMMENT 'Raw HTML returned from Millennium for holdings',
-  `framesetInfo` longtext NOT NULL COMMENT 'Raw HTML returned from Millennium on the frameset page',
-  `cacheDate` int(16) NOT NULL COMMENT 'When the entry was recorded in the cache',
-  PRIMARY KEY (`recordId`,`scope`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='Caches information from Millennium so we do not have to cont';
-
--- --------------------------------------------------------
-
---
--- Table structure for table `non_holdable_locations`
---
-
-CREATE TABLE IF NOT EXISTS `non_holdable_locations` (
-  `locationId` int(11) NOT NULL AUTO_INCREMENT COMMENT 'A unique id for the non holdable location',
-  `millenniumCode` varchar(5) NOT NULL COMMENT 'The internal 5 letter code within Millennium',
-  `holdingDisplay` varchar(30) NOT NULL COMMENT 'The text displayed in the holdings list within Millennium',
-  `availableAtCircDesk` tinyint(4) NOT NULL COMMENT 'The item is available if the patron visits the circulation desk.',
-  PRIMARY KEY (`locationId`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
-
--- --------------------------------------------------------
-
---
 -- Table structure for table `obituary`
 --
 
@@ -478,52 +388,6 @@ CREATE TABLE IF NOT EXISTS `person` (
   `picture` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`personId`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='Stores information about a particular person for use in genealogy' AUTO_INCREMENT=1 ;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `ptype_restricted_locations`
---
-
-CREATE TABLE IF NOT EXISTS `ptype_restricted_locations` (
-  `locationId` int(11) NOT NULL AUTO_INCREMENT COMMENT 'A unique id for the non holdable location',
-  `millenniumCode` varchar(5) NOT NULL COMMENT 'The internal 5 letter code within Millennium',
-  `holdingDisplay` varchar(30) NOT NULL COMMENT 'The text displayed in the holdings list within Millennium can use regular expression syntax to match multiple locations',
-  `allowablePtypes` varchar(50) NOT NULL COMMENT 'A list of PTypes that are allowed to place holds on items with this location separated with pipes (|).',
-  PRIMARY KEY (`locationId`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `purchaselinktracking_old`
---
-
-CREATE TABLE IF NOT EXISTS `purchaselinktracking_old` (
-  `purchaseLinkId` int(11) NOT NULL AUTO_INCREMENT,
-  `ipAddress` varchar(30) DEFAULT NULL,
-  `recordId` varchar(50) NOT NULL,
-  `store` varchar(255) NOT NULL,
-  `trackingDate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`purchaseLinkId`),
-  KEY `purchaseLinkId` (`purchaseLinkId`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=36 ;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `purchase_link_tracking`
---
-
-CREATE TABLE IF NOT EXISTS `purchase_link_tracking` (
-  `purchaseLinkId` int(11) NOT NULL AUTO_INCREMENT,
-  `ipAddress` varchar(30) DEFAULT NULL,
-  `recordId` varchar(50) NOT NULL,
-  `store` varchar(255) NOT NULL,
-  `trackingDate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`purchaseLinkId`),
-  KEY `purchaseLinkId` (`purchaseLinkId`)
-) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=45861 ;
 
 -- --------------------------------------------------------
 
@@ -590,58 +454,6 @@ CREATE TABLE IF NOT EXISTS `resource` (
   KEY `shortId` (`shortId`),
   KEY `deleted` (`deleted`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=270503 ;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `resource_callnumber`
---
-
-CREATE TABLE IF NOT EXISTS `resource_callnumber` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `resourceId` int(11) NOT NULL,
-  `locationId` int(11) NOT NULL,
-  `callnumber` varchar(50) NOT NULL DEFAULT '',
-  PRIMARY KEY (`id`),
-  KEY `callnumber` (`callnumber`),
-  KEY `resourceId` (`resourceId`),
-  KEY `locationId` (`locationId`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1771536 ;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `resource_subject`
---
-
-CREATE TABLE IF NOT EXISTS `resource_subject` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `resourceId` int(11) NOT NULL,
-  `subjectId` int(11) NOT NULL,
-  PRIMARY KEY (`id`),
-  KEY `resourceId` (`resourceId`),
-  KEY `subjectId` (`subjectId`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=2468093 ;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `resource_tags`
---
-
-CREATE TABLE IF NOT EXISTS `resource_tags` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `resource_id` int(11) NOT NULL DEFAULT '0',
-  `tag_id` int(11) NOT NULL DEFAULT '0',
-  `list_id` int(11) DEFAULT NULL,
-  `user_id` int(11) DEFAULT NULL,
-  `posted` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  KEY `user_id` (`user_id`),
-  KEY `resource_id` (`resource_id`),
-  KEY `tag_id` (`tag_id`),
-  KEY `list_id` (`list_id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=37 ;
 
 -- --------------------------------------------------------
 
@@ -784,25 +596,6 @@ CREATE TABLE IF NOT EXISTS `title_browse` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `usage_tracking`
---
-
-CREATE TABLE IF NOT EXISTS `usage_tracking` (
-  `usageId` int(11) NOT NULL AUTO_INCREMENT,
-  `ipId` int(11) NOT NULL,
-  `locationId` int(11) NOT NULL,
-  `numPageViews` int(11) NOT NULL DEFAULT '0',
-  `numHolds` int(11) NOT NULL DEFAULT '0',
-  `numRenewals` int(11) NOT NULL DEFAULT '0',
-  `trackingDate` bigint(20) NOT NULL,
-  PRIMARY KEY (`usageId`),
-  KEY `usageId` (`usageId`),
-  KEY `IP_DATE` (`ipId`,`trackingDate`)
-) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=423165 ;
-
--- --------------------------------------------------------
-
---
 -- Table structure for table `user`
 --
 
@@ -818,7 +611,7 @@ CREATE TABLE IF NOT EXISTS `user` (
   `college` varchar(100) NOT NULL DEFAULT '',
   `major` varchar(100) NOT NULL DEFAULT '',
   `created` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
-  `homeLocationId` int(11) NOT NULL COMMENT 'A link to the locations table for the users home location (branch) defined in millennium',
+  `homeLocationId` int(11) NOT NULL COMMENT 'A link to the locations table for the users home location (branch) defined in the ILS',
   `myLocation1Id` int(11) NOT NULL COMMENT 'A link to the locations table representing an alternate branch the users frequents or that is close by',
   `myLocation2Id` int(11) NOT NULL COMMENT 'A link to the locations table representing an alternate branch the users frequents or that is close by',
   `trackReadingHistory` tinyint(4) NOT NULL DEFAULT '0' COMMENT 'Whether or not Reading History should be tracked within VuFind.',

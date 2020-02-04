@@ -1,9 +1,27 @@
 <?php
 /**
+ * Pika Discovery Layer
+ * Copyright (C) 2020  Marmot Library Network
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+/**
  * Table Definition for library
  */
 require_once 'DB/DataObject.php';
-require_once 'DB/DataObject/Cast.php';
+//
 require_once ROOT_DIR . '/Drivers/marmot_inc/OneToManyDataObjectOperations.php';
 
 require_once ROOT_DIR . '/Drivers/marmot_inc/Holiday.php';
@@ -49,8 +67,8 @@ class Library extends DB_DataObject {
 	public $includeOutOfSystemExternalLinks;
 	public $allowProfileUpdates;   //tinyint(4)
 	public $allowFreezeHolds;   //tinyint(4)
-	public $scope; 					//smallint(6)
-	public $useScope;		 		//tinyint(4)
+	public $scope; 					//smallint(6) // The Sierra OPAC scope
+	public $useScope;		 		//tinyint(4) //TODO: this is ambiguous with Sierra OPAC scope, probably best to replace occurrences with the $restrictSearchByLibrary setting
 	public $hideCommentsWithBadWords; //tinyint(4)
 	public $showStandardReviews;
 	public $showHoldButton;
@@ -63,7 +81,6 @@ class Library extends DB_DataObject {
 	public $showTagging;
 	public $showRatings; // User Ratings
 	public $showFavorites;
-	public $showTableOfContentsTab;
 	public $inSystemPickupsOnly;
 	public $validPickupSystems;
 	public $pTypes;
@@ -128,7 +145,6 @@ class Library extends DB_DataObject {
 	public $holdDisclaimer;
 	public $enableMaterialsRequest;
 	public $externalMaterialsRequestUrl;
-	public $eContentLinkRules;
 	public $includeNovelistEnrichment;
 	public $applyNumberOfHoldingsBoost;
 	public $allowAutomaticSearchReplacements;
@@ -379,22 +395,6 @@ class Library extends DB_DataObject {
 
 		$hooplaSettingsStructure = LibraryHooplaSettings::getObjectStructure();
 		unset($hooplaSettingsStructure['libraryId']);
-
-		require_once ROOT_DIR . '/sys/ListWidget.php';
-		$widget = new ListWidget();
-		if ((UserAccount::userHasRole('libraryAdmin') || UserAccount::userHasRole('contentEditor')) && !UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('libraryManager') || UserAccount::userHasRole('locationManager')){
-			$patronLibrary = Library::getPatronHomeLibrary();
-			if ($patronLibrary){
-				$widget->libraryId = $patronLibrary->libraryId;
-			}
-		}
-		$availableWidgets = array();
-		$widget->orderBy('name');
-		$widget->find();
-		$availableWidgets[0] = 'No Widget';
-		while ($widget->fetch()){
-			$availableWidgets[$widget->id] = $widget->name;
-		}
 
 		$sharedOverdriveCollectionChoices = array();
 		global $configArray;
@@ -1131,7 +1131,8 @@ class Library extends DB_DataObject {
 			),
 		);
 
-		if (UserAccount::userHasRole('libraryManager')){
+		if (UserAccount::userHasRole('libraryManager') && !UserAccount::userHasRoleFromList(['opacAdmin', 'libraryAdmin'])){
+			// restrict permissions for library managers, unless they also have higher permissions of library or opac admin
 			$structure['subdomain']['type']   = 'label';
 			$structure['displayName']['type'] = 'label';
 			unset($structure['showDisplayNameInHeader']);
@@ -1154,12 +1155,19 @@ class Library extends DB_DataObject {
 			unset($structure['recordsOwned']);
 			unset($structure['recordsToInclude']);
 			unset($structure['hooplaSection']);
+			unset($structure['casSection']);
+			unset($structure['interLibraryLoanSection']);
+			unset($structure['googleAnalyticsSection']);
 		}
 		return $structure;
 	}
 
 	static $searchLibrary  = array();
 
+	/**
+	 * @param null $searchSource
+	 * @return Library|null
+	 */
 	static function getSearchLibrary($searchSource = null){
 		if ($searchSource == null){
 			global $searchSource;
@@ -1234,24 +1242,24 @@ class Library extends DB_DataObject {
 		return null;
 	}
 
-	static function getPatronHomeLibrary($tmpUser = null){
+	static function getPatronHomeLibrary(User $tmpUser = null){
 		//Finally check to see if the user has logged in and if so, use that library
 		if ($tmpUser != null){
 			return self::getLibraryForLocation($tmpUser->homeLocationId);
 		}
 		if (UserAccount::isLoggedIn()){
 			//Load the library based on the home branch for the user
-			return self::getLibraryForLocation(UserAccount::getUserHomeLocationId());
+			return UserAccount::getUserHomeLibrary();
 		}else{
 			return null;
 		}
 	}
 
 	static function getLibraryForLocation($locationId){
-		if (isset($locationId)){
+		if (!empty($locationId)){
 			$libLookup = new Library();
-			require_once(ROOT_DIR . '/Drivers/marmot_inc/Location.php');
 			$libLookup->whereAdd('libraryId = (SELECT libraryId FROM location WHERE locationId = ' . $libLookup->escape($locationId) . ')');
+			// Typical Join operation will overwrite library values with location ones when the column name is the same. eg displayName
 			$libLookup->find();
 			if ($libLookup->N > 0){
 				$libLookup->fetch();
@@ -1408,7 +1416,7 @@ class Library extends DB_DataObject {
 	public function fetch(){
 		$return = parent::fetch();
 		if ($return){
-			if (isset($this->showInMainDetails) && is_string($this->showInMainDetails) && !empty($this->showInMainDetails)){
+			if (!empty($this->showInMainDetails) && is_string($this->showInMainDetails)){
 				// convert to array retrieving from database
 				try {
 					$this->showInMainDetails = unserialize($this->showInMainDetails);
@@ -1438,12 +1446,15 @@ class Library extends DB_DataObject {
 		}
 		return $return;
 	}
+
 	/**
 	 * Override the update functionality to save related objects
 	 *
+	 * @param bool $dataObject
+	 * @return bool|int
 	 * @see DB/DB_DataObject::update()
 	 */
-	public function update(){
+	public function update($dataObject = false){
 		if (isset($this->showInMainDetails) && is_array($this->showInMainDetails)){
 			// convert array to string before storing in database
 			$this->showInMainDetails = serialize($this->showInMainDetails);
@@ -1911,10 +1922,24 @@ class Library extends DB_DataObject {
 		return $defaultFacets;
 	}
 
+	/**
+	 * Return the number of locations that belong to the library
+	 * @return int
+	 */
 	public function getNumLocationsForLibrary(){
 		$location            = new Location;
 		$location->libraryId = $this->libraryId;
 		return $location->count();
+	}
+
+	/**
+	 * get the LocationIds for each location belonging to the library
+	 * @return string[]
+	 */
+	public function getLocationIdsForLibrary(){
+		$location            = new Location;
+		$location->libraryId = $this->libraryId;
+		return $location->fetchAll('locationId');
 	}
 
 	public function getArchiveRequestFormStructure(){

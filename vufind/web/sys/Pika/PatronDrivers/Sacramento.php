@@ -1,5 +1,23 @@
 <?php
 /**
+ * Pika Discovery Layer
+ * Copyright (C) 2020  Marmot Library Network
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+/**
  * Sierra API functions specific to Sacramento Public Library.
  *
  * @category Pika
@@ -10,17 +28,135 @@
 namespace Pika\PatronDrivers;
 
 use Curl\Curl;
+use User;
 use DateInterval;
 use DateTime;
 use InvalidArgumentException;
 
-class Sacramento extends Sierra
-{
-	public function __construct($accountProfile)
-	{
+class Sacramento extends Sierra {
+
+	public function __construct($accountProfile){
 		parent::__construct($accountProfile);
 		$this->logger->info('Using driver: Pika\PatronDrivers\Sacramento');
 	}
+
+	/**
+	 * Override the default Id fetching to look in the 'i' varfield for Sacramento Patrons, which will include their
+	 *student ids as well (which we use as barcodes).
+	 *
+	 * @param string|User $patronOrBarcode
+	 * @param bool $searchSacramentoStudentIdField
+	 * @return false|int
+	 * @throws \ErrorException
+	 */
+	public function getPatronId($patronOrBarcode, $searchSacramentoStudentIdField = true){
+		return parent::getPatronId($patronOrBarcode, true);
+	}
+
+
+	private function _curlLegacy($patron, $pageToCall, $postParams = array(), $patronAction = true){
+
+		$c = new Curl();
+
+		// base url for following calls
+		$vendorOpacUrl = $this->accountProfile->vendorOpacUrl;
+
+		$headers = [
+			"Accept"          => "text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5",
+			"Cache-Control"   => "max-age=0",
+			"Connection"      => "keep-alive",
+			"Accept-Charset"  => "ISO-8859-1,utf-8;q=0.7,*;q=0.7",
+			"Accept-Language" => "en-us,en;q=0.5",
+			"User-Agent"      => "Pika"
+		];
+		$c->setHeaders($headers);
+
+		$cookie   = tempnam("/tmp", "CURLCOOKIE");
+		$curlOpts = [
+			CURLOPT_CONNECTTIMEOUT    => 20,
+			CURLOPT_TIMEOUT           => 60,
+			CURLOPT_RETURNTRANSFER    => true,
+			CURLOPT_FOLLOWLOCATION    => true,
+			CURLOPT_UNRESTRICTED_AUTH => true,
+			CURLOPT_COOKIEJAR         => $cookie,
+			CURLOPT_COOKIESESSION     => false,
+			CURLOPT_HEADER            => false,
+			CURLOPT_AUTOREFERER       => true,
+		];
+		$c->setOpts($curlOpts);
+
+		// first log patron in
+		if ($this->accountProfile->loginConfiguration == 'name_barcode'){
+			$postData = [
+				'name' => $patron->cat_username,
+				'code' => $patron->cat_password
+			];
+		}else{
+			$postData = [
+				'code' => $patron->cat_username,
+				'pin'  => $patron->cat_password
+			];
+
+		}
+
+		$loginUrl = $vendorOpacUrl . '/patroninfo/';
+		$r        = $c->post($loginUrl, $postData);
+
+		if ($c->isError()){
+			$c->close();
+			return false;
+		}
+
+		$sierraPatronId = $this->getPatronId($patron->barcode); //when logging in with pin, this is what we will find
+
+		if(!strpos($r, (string) $sierraPatronId) && !stripos($r, (string) $patron->cat_username)) {
+			// check for cas login. do cas login if possible
+			$casUrl = '/iii/cas/login';
+			if(stristr($r, $casUrl)) {
+				$this->logger->info('Trying cas login.');
+				preg_match('|<input type="hidden" name="lt" value="(.*)"|', $r, $m);
+				if($m) {
+					$postData['lt']       = $m[1];
+					$postData['_eventId'] = 'submit';
+				} else {
+					return false;
+				}
+				$casLoginUrl = $vendorOpacUrl.$casUrl;
+				$r = $c->post($casLoginUrl, $postData);
+				if(!stristr($r, $patron->cat_username)) {
+					$this->logger->warning('cas login failed.');
+					return false;
+				}
+				$this->logger->info('cas login success.');
+			} else {
+				$this->logger->warning('login failed.');
+				return false;
+			}
+		}
+
+		$scope    = $this->getLibraryScope(); // IMPORTANT: Scope is needed for Bookings Actions to work
+		$optUrl   = $patronAction ? $vendorOpacUrl . '/patroninfo~S' . $scope . '/' . $sierraPatronId . '/' . $pageToCall
+			: $vendorOpacUrl . '/' . $pageToCall;
+		// Most curl calls are patron interactions, getting the bookings calendar isn't
+
+		$c->setUrl($optUrl);
+		if (!empty($postParams)){
+			$r = $c->post($postParams);
+		}else{
+			$r = $c->get($optUrl);
+		}
+
+		if ($c->isError()){
+			return false;
+		}
+
+		if (stripos($pageToCall, 'webbook?/') !== false){
+			// Hack to complete booking a record
+			return $c;
+		}
+		return $r;
+	}
+
 
 	public function updateSms($patron) {
 		$patronId = $this->getPatronId($patron);
@@ -111,8 +247,8 @@ class Sacramento extends Sierra
 			$this->logger->warn("Unable to update patron mobile phone.", ["message"=>$this->apiLastError]);
 		}
 
-		// remove patron object from cache
-		$this->memCache->delete('patron_'.$patron->barcode.'_patron');
+		$patronCacheKey = $this->cache->makePatronKey('patron', $patron->id);
+		$this->cache->delete($patronCacheKey);
 		// next update sms notification option
 		if(isset($_POST['smsNotices']) && $_POST['smsNotices'] == 'on') {
 			$params = ['optin' => 'on'];
@@ -144,7 +280,7 @@ class Sacramento extends Sierra
 		return true;
 	}
 	
-	public function selfRegister() {
+	public function selfRegister($extraSelfRegParams = false) {
 		global $library;
 		// sacramento test and production, woodlands test and production
 		if ($library->subdomain == 'catalog' || $library->subdomain == 'spl' || $library->subdomain == 'woodland' || $library->subdomain == 'cityofwoodland') {
@@ -355,136 +491,135 @@ class Sacramento extends Sierra
 	}
 
 
-	public function getSelfRegistrationFields()
-	{
+	public function getSelfRegistrationFields(){
 		global $library;
 		$fields = array();
-		if ($library && $library->promptForBirthDateInSelfReg) {
+		if ($library && $library->promptForBirthDateInSelfReg){
 			$fields[] = array(
-				'property' => 'birthdate',
-				'type' => 'date',
-				'label' => 'Date of Birth (MM-DD-YYYY)',
+				'property'    => 'birthdate',
+				'type'        => 'date',
+				'label'       => 'Date of Birth (MM-DD-YYYY)',
 				'description' => 'Date of birth',
-				'maxLength' => 10,
-				'required' => true
+				'maxLength'   => 10,
+				'required'    => true
 			);
 		}
 		$fields[] = array(
-			'property' => 'firstname',
-			'type' => 'text',
-			'label' => 'First Name',
+			'property'    => 'firstname',
+			'type'        => 'text',
+			'label'       => 'First Name',
 			'description' => 'Your first name',
-			'maxLength' => 40,
-			'required' => true
+			'maxLength'   => 40,
+			'required'    => true
 		);
 		$fields[] = array(
-			'property' => 'middlename',
-			'type' => 'text',
-			'label' => 'Middle Initial',
+			'property'    => 'middlename',
+			'type'        => 'text',
+			'label'       => 'Middle Initial',
 			'description' => 'Your middle initial',
-			'maxLength' => 40,
-			'required' => false
+			'maxLength'   => 40,
+			'required'    => false
 		);
 
 		$fields[] = array(
-			'property' => 'lastname',
-			'type' => 'text',
-			'label' => 'Last Name',
+			'property'    => 'lastname',
+			'type'        => 'text',
+			'label'       => 'Last Name',
 			'description' => 'Your last name',
-			'maxLength' => 40,
-			'required' => true
+			'maxLength'   => 40,
+			'required'    => true
 		);
 		$fields[] = array(
-			'property' => 'address',
-			'type' => 'text',
-			'label' => 'Mailing Address',
+			'property'    => 'address',
+			'type'        => 'text',
+			'label'       => 'Mailing Address',
 			'description' => 'Mailing Address',
-			'maxLength' => 128,
-			'required' => true
+			'maxLength'   => 128,
+			'required'    => true
 		);
 		$fields[] = array(
-			'property' => 'apartmentnumber',
-			'type' => 'text',
-			'label' => 'Apartment Number',
+			'property'    => 'apartmentnumber',
+			'type'        => 'text',
+			'label'       => 'Apartment Number',
 			'description' => 'Apartment Number',
-			'maxLength' => 10,
-			'required' => false
+			'maxLength'   => 10,
+			'required'    => false
 		);
 		$fields[] = array(
-			'property' => 'city',
-			'type' => 'text',
-			'label' => 'City',
+			'property'    => 'city',
+			'type'        => 'text',
+			'label'       => 'City',
 			'description' => 'City',
-			'maxLength' => 48,
-			'required' => true
+			'maxLength'   => 48,
+			'required'    => true
 		);
 		$fields[] = array(
-			'property' => 'state',
-			'type' => 'text',
-			'label' => 'State',
+			'property'    => 'state',
+			'type'        => 'text',
+			'label'       => 'State',
 			'description' => 'State',
-			'maxLength' => 2,
-			'required' => true,
-			'default' => 'CA'
+			'maxLength'   => 2,
+			'required'    => true,
+			'default'     => 'CA'
 		);
 		$fields[] = array(
-			'property' => 'zip',
-			'type' => 'text',
-			'label' => 'Zip Code',
+			'property'    => 'zip',
+			'type'        => 'text',
+			'label'       => 'Zip Code',
 			'description' => 'Zip Code',
-			'maxLength' => 32,
-			'required' => true
+			'maxLength'   => 32,
+			'required'    => true
 		);
 		$fields[] = array(
-			'property' => 'primaryphone',
-			'type' => 'text',
-			'label' => 'Phone (xxx-xxx-xxxx)',
+			'property'    => 'primaryphone',
+			'type'        => 'text',
+			'label'       => 'Phone (xxx-xxx-xxxx)',
 			'description' => 'Phone',
-			'maxLength' => 128,
-			'required' => false
+			'maxLength'   => 128,
+			'required'    => false
 		);
 		$fields[] = array(
-			'property' => 'email',
-			'type' => 'email',
-			'label' => 'E-Mail',
+			'property'    => 'email',
+			'type'        => 'email',
+			'label'       => 'E-Mail',
 			'description' => 'E-Mail',
-			'maxLength' => 128,
-			'required' => false
+			'maxLength'   => 128,
+			'required'    => false
 		);
 
 		$fields[] = array(
-			'property' => 'guardianFirstName',
-			'type' => 'text',
-			'label' => 'Parent/Guardian First Name',
+			'property'    => 'guardianFirstName',
+			'type'        => 'text',
+			'label'       => 'Parent/Guardian First Name',
 			'description' => 'Your parent\'s or guardian\'s first name',
-			'maxLength' => 40,
-			'required' => false
+			'maxLength'   => 40,
+			'required'    => false
 		);
 		$fields[] = array(
-			'property' => 'guardianLastName',
-			'type' => 'text',
-			'label' => 'Parent/Guardian Last Name',
+			'property'    => 'guardianLastName',
+			'type'        => 'text',
+			'label'       => 'Parent/Guardian Last Name',
 			'description' => 'Your parent\'s or guardian\'s last name',
-			'maxLength' => 40,
-			'required' => false
+			'maxLength'   => 40,
+			'required'    => false
 		);
 		//These two fields will be made required by javascript in the template
 
 		$fields[] = array(
-			'property' => 'pin',
-			'type' => 'pin',
-			'label' => 'Pin',
+			'property'    => 'pin',
+			'type'        => 'pin',
+			'label'       => 'Pin',
 			'description' => 'Your desired pin',
 			/*'maxLength' => 4, 'size' => 4,*/
-			'required' => true
+			'required'    => true
 		);
 		$fields[] = array(
-			'property' => 'pinconfirm',
-			'type' => 'pin',
-			'label' => 'Confirm Pin',
+			'property'    => 'pinconfirm',
+			'type'        => 'pin',
+			'label'       => 'Confirm Pin',
 			'description' => 'Re-type your desired pin',
 			/*'maxLength' => 4, 'size' => 4,*/
-			'required' => true
+			'required'    => true
 		);
 
 		return $fields;

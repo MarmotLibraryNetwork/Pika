@@ -1,9 +1,27 @@
 <?php
 /**
+ * Pika Discovery Layer
+ * Copyright (C) 2020  Marmot Library Network
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+/**
  * Asynchronous functionality for MyAccount module
  *
  * @category Pika
- * @author   Mark Noble <mark@marmot.org>
+ * @author   Mark Noble <pika@marmot.org>
  * Date: 3/25/14
  * Time: 4:26 PM
  */
@@ -35,6 +53,14 @@ class MyAccount_AJAX extends AJAXHandler {
 		'getBulkAddToListForm',
 		'getPinUpdateForm',
 	);
+
+	private $cache;
+
+	public function __construct($error_class = null)
+	{
+		parent::__construct($error_class);
+		$this->cache = new Pika\Cache();
+	}
 
 	function getAddBrowseCategoryFromListForm(){
 		global $interface;
@@ -78,10 +104,10 @@ class MyAccount_AJAX extends AJAXHandler {
 						'message' => 'Successfully linked accounts.',
 					);
 					// todo: since this doesn't call a patron driver have to remove cache here for Pika/PatronDrivers/Sierra
-					global $memCache;
-					$patronCacheKey = "patron_".$user->barcode."_patron";
-					if($memCache->get($patronCacheKey)) {
-						$memCache->delete($patronCacheKey);
+
+					$patronCacheKey = $this->cache->makePatronKey('patron', $user->id);
+					if($this->cache->has($patronCacheKey)) {
+						$this->cache->delete($patronCacheKey);
 					}
 				}else{ // insert failure or user is blocked from linking account or account & account to link are the same account
 					$result = array(
@@ -115,10 +141,9 @@ class MyAccount_AJAX extends AJAXHandler {
 				);
 				// todo: since this doesn't call a patron driver have to remove cache here for Pika/PatronDrivers/Sierra
 				// this is pretty sloppy need a better way to control caching on objects -- setters would be best.
-				global $memCache;
-				$patronCacheKey = "patron_".$user->barcode."_patron";
-				if($memCache->get($patronCacheKey)) {
-					$memCache->delete($patronCacheKey);
+				$patronCacheKey = $this->cache->makePatronKey('patron', $user->id);
+				if($this->cache->get($patronCacheKey)) {
+					$this->cache->delete($patronCacheKey);
 				}
 			}else{
 				$result = array(
@@ -381,19 +406,19 @@ class MyAccount_AJAX extends AJAXHandler {
 	}
 
 	function cancelHolds(){ // for cancelling multiple holds
+		//TODO: likely obsolete or needs refactoring to be used
 		try {
 			global $configArray;
 			$user    = UserAccount::getLoggedInUser();
 			$catalog = CatalogFactory::getCatalogConnectionInstance();
 
-			// ids grabbed in MillenniumHolds.php in $_REQUEST['waitingholdselected'] & $_REQUEST['availableholdselected']
-			// but we will pass ids here instead.
 			$cancelId = array();
 			if (!empty($_REQUEST['holdselected'])){
 				$cancelId = $_REQUEST['holdselected'];
 			}
 //			$locationId = isset($_REQUEST['location']) ? $_REQUEST['location'] : null; //not passed via ajax. don't think it's needed
-			$result = $catalog->driver->updateHoldDetailed($user->password, 'cancel', $cancelId, null);
+			$result = $catalog->driver->updateHoldDetailed($user, 'cancel', $cancelId, null);
+			//TODO: need to obsolete updateHoldDetailed()
 
 		} catch (PDOException $e){
 			// What should we do with this error?
@@ -513,10 +538,12 @@ class MyAccount_AJAX extends AJAXHandler {
 		return $result;
 	}
 
-	//TODO: Review these methods to see what can be deleted
-	// Create new list
+/**
+ * Used for creating a new User list
+ * */
 	function AddList(){
-		$return = array();
+		$recordToAdd = false;
+		$return      = array();
 		if (UserAccount::isLoggedIn()){
 			$user = UserAccount::getLoggedInUser();
 			require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
@@ -526,9 +553,9 @@ class MyAccount_AJAX extends AJAXHandler {
 				$return['message'] = "You must provide a title for the list";
 			}else{
 				//If the record is not valid, skip the whole thing since the title could be bad too
-				if (!empty($_REQUEST['recordId']) && !is_array($_REQUEST['recordId'])){
-					$recordToAdd = urldecode($_REQUEST['recordId']);
-					if (!preg_match("/^[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}|[A-Z0-9_-]+:[A-Z0-9_-]+$/i", $recordToAdd)){
+				if (!empty($_REQUEST['groupedWorkId']) && !is_array($_REQUEST['groupedWorkId'])){
+					$recordToAdd = urldecode($_REQUEST['groupedWorkId']);
+					if (!GroupedWork::validGroupedWorkId($recordToAdd)){
 						$return['success'] = false;
 						$return['message'] = 'The item to add to the list is not valid';
 						return $return;
@@ -543,16 +570,15 @@ class MyAccount_AJAX extends AJAXHandler {
 				if ($list->find(true)){
 					$existingList = true;
 				}
+				$description = '';
 				if (isset($_REQUEST['desc'])){
-					$desc = $_REQUEST['desc'];
-					if (is_array($desc)){
-						$desc = reset($desc);
+					$description = $_REQUEST['desc'];
+					if (is_array($description)){
+						$description = reset($description);
 					}
-				}else{
-					$desc = "";
 				}
 
-				$list->description = strip_tags(urldecode($desc));
+				$list->description = strip_tags(urldecode($description));
 				$list->public      = isset($_REQUEST['public']) && $_REQUEST['public'] == 'true';
 				if ($existingList){
 					$list->update();
@@ -560,8 +586,7 @@ class MyAccount_AJAX extends AJAXHandler {
 					$list->insert();
 				}
 
-				if (!empty($_REQUEST['recordId']) && !is_array($_REQUEST['recordId'])){
-					$recordToAdd = urldecode($_REQUEST['recordId']);
+				if ($recordToAdd){
 					require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
 					//Check to see if the user has already added the title to the list.
 					$userListEntry                         = new UserListEntry();
@@ -592,19 +617,18 @@ class MyAccount_AJAX extends AJAXHandler {
 	function getCreateListForm(){
 		global $interface;
 
-		if (isset($_REQUEST['recordId'])){
-			$id = $_REQUEST['recordId'];
-			$interface->assign('recordId', $id);
+		if (isset($_REQUEST['groupedWorkId'])){
+			$id = $_REQUEST['groupedWorkId'];
+			$interface->assign('groupedWorkId', $id);
 		}else{
 			$id = '';
 		}
 
-		$results = array(
+		return array(
 			'title'        => 'Create new List',
-			'modalBody'    => $interface->fetch("MyResearch/list-form.tpl"),
-			'modalButtons' => "<span class='tool btn btn-primary' onclick='VuFind.Account.addList(\"{$id}\"); return false;'>Create List</span>",
+			'modalBody'    => $interface->fetch("MyAccount/list-form.tpl"),
+			'modalButtons' => "<span class='tool btn btn-primary' onclick='return VuFind.Account.addList(\"{$id}\");'>Create List</span>",
 		);
-		return $results;
 	}
 
 	/**
@@ -715,7 +739,7 @@ class MyAccount_AJAX extends AJAXHandler {
 
 		foreach ($titles as $key => $rawData){
 			$formattedTitle            = "<div id=\"scrollerTitleSuggestion{$key}\" class=\"scrollerTitle\">" .
-				'<a href="' . $configArray['Site']['path'] . "/Record/" . $rawData['id'] . '" id="descriptionTrigger' . $rawData['id'] . '">' .
+				'<a href="' . "/Record/" . $rawData['id'] . '" id="descriptionTrigger' . $rawData['id'] . '">' .
 				"<img src=\"{$rawData['image']}\" class=\"scrollerTitleCover\" alt=\"{$rawData['title']} Cover\"/>" .
 				"</a></div>" .
 				"<div id='descriptionPlaceholder{$rawData['id']}' style='display:none'></div>";
@@ -728,8 +752,6 @@ class MyAccount_AJAX extends AJAXHandler {
 	}
 
 	function GetListTitles(){
-		/** @var MemCache $memCache */
-		global $memCache;
 		global $configArray;
 		global $timer;
 
@@ -743,7 +765,7 @@ class MyAccount_AJAX extends AJAXHandler {
 		$listAPI   = new ListAPI();
 		$cacheInfo = $listAPI->getCacheInfoForList();
 
-		$listData = $memCache->get($cacheInfo['cacheName']);
+		$listData = $this->cache->get($cacheInfo['cacheName']);
 
 		$return = false; // default response
 		if (!$listData || isset($_REQUEST['reload']) || (isset($listData['titles']) && count($listData['titles']) == 0)){
@@ -771,7 +793,7 @@ class MyAccount_AJAX extends AJAXHandler {
 						$formattedTitle            = "<div id=\"scrollerTitle{$scrollerName}{$key}\" class=\"scrollerTitle\">";
 						$shortId                   = $rawData['id'];
 						$shortId                   = str_replace('.b', 'b', $shortId);
-						$formattedTitle            .= '<a href="' . $configArray['Site']['path'] . "/Record/" . $rawData['id'] . ($addStrandsTracking ? "?strandsReqId={$strandsInfo['reqId']}&strandsTpl={$strandsInfo['tpl']}" : '') . '" id="descriptionTrigger' . $shortId . '">';
+						$formattedTitle            .= '<a href="' . "/Record/" . $rawData['id'] . ($addStrandsTracking ? "?strandsReqId={$strandsInfo['reqId']}&strandsTpl={$strandsInfo['tpl']}" : '') . '" id="descriptionTrigger' . $shortId . '">';
 						$formattedTitle            .= "<img src=\"{$rawData['image']}\" class=\"scrollerTitleCover\" alt=\"{$rawData['title']} Cover\"/>" .
 							"</a></div>" .
 							"<div id='descriptionPlaceholder{$shortId}' style='display:none' class='loaded'>" .
@@ -790,8 +812,7 @@ class MyAccount_AJAX extends AJAXHandler {
 				$listData = json_encode($return);
 			}
 
-			$memCache->set($cacheInfo['cacheName'], $listData, 0, $cacheInfo['cacheLength']);
-
+			$this->cache->set($cacheInfo['cacheName'], $listData, $cacheInfo['cacheLength']);
 		}
 
 		return $return;
@@ -962,7 +983,7 @@ class MyAccount_AJAX extends AJAXHandler {
 		global $configArray;
 
 		try {
-			/** @var DriverInterface|Millennium|Nashville|Marmot|Sierra|Horizon $catalog */
+			/** @var DriverInterface|SirsiDynixROA|Sierra|Horizon $catalog */
 			$catalog = CatalogFactory::getCatalogConnectionInstance();
 
 			$barcode = $_REQUEST['barcode'];
@@ -1012,7 +1033,7 @@ class MyAccount_AJAX extends AJAXHandler {
 			$list->id = $listId;
 			if ($list->find(true)){
 				// Build Favorites List
-				$listEntries = $list->getListTitles();
+				$listEntries = $list->getListTitles(true);
 				$interface->assign('listEntries', $listEntries);
 
 				// Load the User object for the owner of the list (if necessary):
@@ -1087,8 +1108,15 @@ class MyAccount_AJAX extends AJAXHandler {
 		if (isset($_REQUEST['listId']) && ctype_digit($_REQUEST['listId'])){
 			$listId = $_REQUEST['listId'];
 		}
-
 		$interface->assign('listId', $listId);
+		if (UserAccount::isLoggedIn()){
+			/** @var User $user */
+			$user = UserAccount::getActiveUserObj();
+			if (!empty($user->email)){
+				$interface->assign('from', $user->email);
+			}
+		}
+
 		$formDefinition = array(
 			'title'        => 'Email a list',
 			'modalBody'    => $interface->fetch('MyAccount/emailListPopup.tpl'),
@@ -1286,17 +1314,16 @@ class MyAccount_AJAX extends AJAXHandler {
 
 	function getMenuData(){
 		global $timer;
-		global $interface;
+		global /** @var UInterface $interface */
+		$interface;
 		global $configArray;
-		/** @var Memcache $memCache */
-		global $memCache;
 		$result = array();
 		if (UserAccount::isLoggedIn()){
 			$user = UserAccount::getLoggedInUser();
 			$interface->assign('user', $user);
 
 			//Load a list of lists
-			$userListData = $memCache->get('user_list_data_' . UserAccount::getActiveUserId());
+			$userListData = $this->cache->get('user_list_data_' . UserAccount::getActiveUserId());
 			if ($userListData == null || isset($_REQUEST['reload'])){
 				$lists = array();
 				require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
@@ -1315,7 +1342,7 @@ class MyAccount_AJAX extends AJAXHandler {
 						);
 					}
 				}
-				$memCache->set('user_list_data_' . UserAccount::getActiveUserId(), $lists, 0, $configArray['Caching']['user']);
+				$this->cache->set('user_list_data_' . UserAccount::getActiveUserId(), $lists, $configArray['Caching']['user']);
 				$timer->logTime("Load Lists");
 			}else{
 				$lists = $userListData;

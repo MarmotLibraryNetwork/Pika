@@ -38,7 +38,7 @@ VuFind.Searches = (function(){
 		},
 
 		getCombinedResults: function(fullId, shortId, source, searchTerm, searchType, numberOfResults){
-			var url = Globals.path + '/Union/AJAX',
+			var url = '/Union/AJAX',
 					params = {
 						'method'        : 'getCombinedResults',
 						source          : source,
@@ -47,14 +47,19 @@ VuFind.Searches = (function(){
 						searchTerm      : searchTerm,
 						searchType      : searchType,
 						showCovers      : $('#hideCovers').is(':checked') ? 'on' : 'off',
-					};
+					},
+					section = $('#combined-results-section-results-' + shortId);
 			$.getJSON(url, params, function(data){
-				if (data.success == false){
-					VuFind.showMessage("Error loading results", data.error);
+				if (data.success === false){
+					section.html('<div class="clearfix"></div>Error loading results.<br>' + data.error);
 				}else{
-					$('#combined-results-section-results-' + shortId).html(data.results);
+					section.html(data.results);
 				}
-			}).fail(VuFind.ajaxFail);
+			}).fail(function (){
+				section.html('<div class="clearfix"></div>Failed to fetch results.');
+					}
+
+			);
 			return false;
 		},
 
@@ -100,7 +105,7 @@ VuFind.Searches = (function(){
 		},
 
 		getMoreResults: function(){
-			var url = Globals.path + '/Search/AJAX',
+			var url = '/Search/AJAX',
 					params = VuFind.replaceQueryParam('page', this.curPage+1)+'&method=getMoreSearchResults',
 					divClass = this.displayModeClasses[this.displayMode];
 			params = VuFind.replaceQueryParam('view', this.displayMode, params); // set the view url parameter just in case.
@@ -177,17 +182,14 @@ VuFind.Searches = (function(){
 		},
 */
 		sendEmail: function(){
-			if (Globals.loggedIn){
-				var from = $('#from').val();
-				var to = $('#to').val();
-				var message = $('#message').val();
-				var related_record = $('#related_record').val();
-				//var sourceUrl = encodeURIComponent(window.location.href);
-				var sourceUrl = window.location.href;
+			VuFind.Account.ajaxLogin(function (){
+				var from = $('#from').val(),
+						to = $('#to').val(),
+						message = $('#message').val(),
+						related_record = $('#related_record').val(),
+						sourceUrl = window.location.href;
 
-				var url = Globals.path + "/Search/AJAX";
-				//var params = "method=sendEmail&from=" + encodeURIComponent(from) + "&to=" + encodeURIComponent(to) + "&message=" + encodeURIComponent(message) + "&url=" + sourceUrl;
-				//passing through getJSON() data array instead
+				var url = "/Search/AJAX";
 				$.getJSON(url,
 						{ // pass parameters as data
 							method     : 'sendEmail'
@@ -204,9 +206,10 @@ VuFind.Searches = (function(){
 							}
 						}
 				);
-			}
+			});
 			return false;
 		},
+
 
 		enableSearchTypes: function(){
 			var searchTypeElement = $("#searchSource");
@@ -239,7 +242,7 @@ VuFind.Searches = (function(){
 				VuFind.Searches.lastSpellingTimer = undefined;
 			}
 
-			var url = Globals.path + "/Search/AJAX?method=GetAutoSuggestList&searchTerm=" + query;
+			var url = "/Search/AJAX?method=GetAutoSuggestList&searchTerm=" + query;
 			//Get the search source
 			if (isAdvanced){
 				//Add the search type
@@ -383,7 +386,7 @@ VuFind.Searches = (function(){
 		},
 
 		loadExploreMoreBar: function(section, searchTerm){
-			var url = Globals.path + "/Search/AJAX";
+			var url = "/Search/AJAX";
 			var params = "method=loadExploreMoreBar&section=" + encodeURIComponent(section);
 			params += "&searchTerm=" + encodeURIComponent(searchTerm);
 			var fullUrl = url + "?" + params;

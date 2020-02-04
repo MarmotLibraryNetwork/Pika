@@ -1,9 +1,27 @@
 <?php
 /**
+ * Pika Discovery Layer
+ * Copyright (C) 2020  Marmot Library Network
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+/**
  * Includes information for how to index MARC Records.  Allows for the ability to handle multiple data sources.
  *
  * @category Pika
- * @author Mark Noble <mark@marmot.org>
+ * @author Mark Noble <pika@marmot.org>
  * Date: 6/30/2015
  * Time: 1:44 PM
  */
@@ -124,6 +142,8 @@ class IndexingProfile extends DB_DataObject{
 					'recordDriver'  => array('property' => 'recordDriver', 'type' => 'text', 'label' => 'Record Driver', 'maxLength' => 50, 'description' => 'The record driver to use while displaying information in Pika', 'required' => true, 'default' => 'MarcRecord'),
 					'catalogDriver' => array('property' => 'catalogDriver', 'type' => 'text', 'label' => 'Catalog Driver', 'maxLength' => 50, 'description' => 'The catalog driver to use for ILS integration', 'required' => true, 'default' => 'DriverInterface'),
 				)),
+			//TODO: refactor catalogDriver to circulationSystemDriver
+			//TODO: this would be the hook in to tie a indexing profile to eContent driver
 
 			'formatDeterminationSection' => array('property'=>'formatDeterminationSection', 'type' => 'section', 'label' =>'Format Determination Settings', 'hideInLists' => true,
 			                            'helpLink' => '', 'properties' => array(
@@ -344,7 +364,7 @@ class IndexingProfile extends DB_DataObject{
 	 *
 	 * @see DB/DB_DataObject::update()
 	 */
-	public function update(){
+	public function update($dataObject = false){
 		$ret = parent::update();
 		if ($ret === FALSE ){
 			global $logger;
@@ -542,5 +562,16 @@ class IndexingProfile extends DB_DataObject{
 //		}
 //		return $result;
 //	}
+
+	static public function getAllIndexingProfiles(){
+		$indexingProfiles = array();
+		$indexingProfile  = new IndexingProfile();
+		$indexingProfile->orderBy('name');
+		$indexingProfile->find();
+		while ($indexingProfile->fetch()){
+			$indexingProfiles[$indexingProfile->name] = clone($indexingProfile);
+		}
+		return $indexingProfiles;
+	}
 
 }

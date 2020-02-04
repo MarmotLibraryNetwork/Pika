@@ -1,10 +1,27 @@
 <?php
+/**
+ * Pika Discovery Layer
+ * Copyright (C) 2020  Marmot Library Network
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
 
 /**
  * Description goes here
  *
  * @category Pika
- * @author Mark Noble <mark@marmot.org>
+ * @author Mark Noble <pika@marmot.org>
  * Date: 7/21/2016
  * Time: 4:04 PM
  */
@@ -34,13 +51,13 @@ class Archive_RequestCopy extends Action{
 		if (!$owningLibrary->find(true) || $owningLibrary->N != 1){
 			PEAR_Singleton::raiseError('Could not determine which library owns this object, cannot request a copy.');
 		}
-		$archiveRequestFields = $owningLibrary->getArchiveRequestFormStructure();
+		$archiveRequestFields                   = $owningLibrary->getArchiveRequestFormStructure();
 		$archiveRequestFields['pid']['default'] = $pid; // add pid to the form
 
 		if (isset($_REQUEST['submit'])) {
 			if (isset($configArray['ReCaptcha']['privateKey'])){
-				$privatekey = $configArray['ReCaptcha']['privateKey'];
-				$resp = recaptcha_check_answer ($privatekey,
+				$privatekey     = $configArray['ReCaptcha']['privateKey'];
+				$resp           = recaptcha_check_answer($privatekey,
 					$_SERVER["REMOTE_ADDR"],
 					$_POST["g-recaptcha-response"]);
 				$recaptchaValid = $resp->is_valid;
@@ -112,7 +129,7 @@ class Archive_RequestCopy extends Action{
 
 		unset($archiveRequestFields['dateRequested']);
 
-		$interface->assign('submitUrl', $configArray['Site']['path'] . '/Archive/RequestCopy');
+		$interface->assign('submitUrl', '/Archive/RequestCopy');
 		$interface->assign('structure', $archiveRequestFields);
 		$interface->assign('saveButtonText', 'Submit Request');
 		$interface->assign('archiveRequestMaterialsHeader', $owningLibrary->archiveRequestMaterialsHeader);
@@ -148,15 +165,15 @@ class Archive_RequestCopy extends Action{
 					$errorDescription = 'Unknown error';
 				}
 				$logger->log('Could not insert new object ' . $ret . ' ' . $errorDescription, PEAR_LOG_DEBUG);
-				$_SESSION['lastError'] = "An error occurred inserting {$this->getObjectType()} <br/>{$errorDescription}";
-				$logger->log(mysql_error(), PEAR_LOG_DEBUG);
+				$_SESSION['lastError'] = "An error occurred inserting {$this->getObjectType()} <br>{$errorDescription}";
+
 				return false;
 			}
 		} else {
 			global $logger;
 			$errorDescription = implode(', ', $validationResults['errors']);
 			$logger->log('Could not validate new object Archive Request ' . $errorDescription, PEAR_LOG_DEBUG);
-			$_SESSION['lastError'] = "The information entered was not valid. <br/>" . implode('<br/>', $validationResults['errors']);
+			$_SESSION['lastError'] = "The information entered was not valid. <br>" . implode('<br>', $validationResults['errors']);
 			return false;
 		}
 		return $newObject;

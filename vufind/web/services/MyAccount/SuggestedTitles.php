@@ -1,11 +1,12 @@
 <?php
 /**
+ * Pika Discovery Layer
+ * Copyright (C) 2020  Marmot Library Network
  *
- * Copyright (C) Villanova University 2007.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2,
- * as published by the Free Software Foundation.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -13,9 +14,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
@@ -23,17 +22,11 @@ require_once ROOT_DIR . '/services/MyResearch/lib/FavoriteHandler.php';
 require_once ROOT_DIR . '/services/MyResearch/lib/Suggestions.php';
 
 /**
- * MyResearch Home Page
- *
- * This controller needs some cleanup and organization.
- *
- * @version  $Revision: 1.27 $
+ *  Homepage for Suggested Titles for user based on users ratings
  */
-class SuggestedTitles extends MyAccount
-{
+class SuggestedTitles extends MyAccount {
 
-	function launch()
-	{
+	function launch(){
 		global $interface;
 		global $configArray;
 		global $timer;
@@ -43,23 +36,20 @@ class SuggestedTitles extends MyAccount
 
 		// Setup Search Engine Connection
 		$class = $configArray['Index']['engine'];
-		$url = $configArray['Index']['url'];
-		/** @var SearchObject_Solr $solrDb */
+		$url   = $configArray['Index']['url'];
+		/** @var Solr $solrDb */
 		$solrDb = new $class($url);
 
 		$resourceList = array();
-		$curIndex = 0;
-		if (is_array($suggestions)) {
-			$suggestionIds = array();
-			foreach($suggestions as $suggestion) {
-				$suggestionIds[] = $suggestion['titleInfo']['id'];
-			}
-			$records = $solrDb->getRecords($suggestionIds);
-			foreach($records as $record) {
+		$curIndex     = 0;
+		if (is_array($suggestions)){
+			$suggestionIds = array_keys($suggestions);
+			$records       = $solrDb->getRecords($suggestionIds);
+			foreach ($records as $record){
 				$interface->assign('resultIndex', ++$curIndex);
 				/** @var IndexRecord $recordDriver */
-				$recordDriver = RecordDriverFactory::initRecordDriver($record);
-				$resourceEntry = $interface->fetch($recordDriver->getSearchResult());
+				$recordDriver   = RecordDriverFactory::initRecordDriver($record);
+				$resourceEntry  = $interface->fetch($recordDriver->getSearchResult());
 				$resourceList[] = $resourceEntry;
 			}
 		}

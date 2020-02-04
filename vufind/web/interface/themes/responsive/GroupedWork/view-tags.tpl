@@ -5,7 +5,7 @@
 		<div class="result-value col-md-10">
 			{if $recordDriver->getTags()}
 				{foreach from=$recordDriver->getTags() item=tag name=tagLoop}
-					<a href="{$path}/Search/Results?tag={$tag->tag|escape:"url"}">{$tag->tag|escape:"html"}</a> <span class="badge btn-info">{$tag->cnt}</span>
+					<a href="/Search/Results?tag={$tag->tag|escape:"url"}">{$tag->tag|escape:"html"}</a> <span class="badge btn-info">{$tag->cnt}</span>
 					{if $tag->userAddedThis}
 						&nbsp;<a onclick="return VuFind.GroupedWork.removeTag('{$recordDriver->getPermanentId()|escape}', '{$tag->tag}');" class="btn btn-xs btn-danger">
 							Delete

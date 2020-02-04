@@ -1,11 +1,12 @@
 <?php
 /**
+ * Pika Discovery Layer
+ * Copyright (C) 2020  Marmot Library Network
  *
- * Copyright (C) Anythink Libraries 2012.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2,
- * as published by the Free Software Foundation.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -13,12 +14,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
- * @author Mark Noble <mnoble@turningleaftech.com>
- * @copyright Copyright (C) Anythink Libraries 2012.
- *
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 require_once(ROOT_DIR . '/services/Admin/Admin.php');
@@ -102,16 +98,9 @@ class MaterialsRequest_SummaryReport extends Admin_Admin {
 		$user = UserAccount::getLoggedInUser();
 		if (UserAccount::userHasRole('library_material_requests')){
 			//Need to limit to only requests submitted for the user's home location
-			$userHomeLibrary = Library::getPatronHomeLibrary();
-			$locations = new Location();
-			$locations->libraryId = $userHomeLibrary->libraryId;
-			$locations->find();
-			$locationsForLibrary = array();
-			while ($locations->fetch()){
-				$locationsForLibrary[] = $locations->locationId;
-			}
+			$userHomeLibrary       = UserAccount::getUserHomeLibrary();
+			$locationsForLibrary   = $userHomeLibrary->getLocationIdsForLibrary();
 			$locationsToRestrictTo = implode(', ', $locationsForLibrary);
-
 		}
 
 		for ($i = 0; $i < count($periods) - 1; $i++){
@@ -145,15 +134,8 @@ class MaterialsRequest_SummaryReport extends Admin_Admin {
 			$materialsRequest->whereAdd('dateUpdated >= ' . $periodStart->getTimestamp() . ' AND dateUpdated < ' . $periodEnd->getTimestamp());
 			if (UserAccount::userHasRole('library_material_requests')){
 				//Need to limit to only requests submitted for the user's home location
-				$userHomeLibrary = Library::getPatronHomeLibrary();
-				$locations = new Location();
-				$locations->libraryId = $userHomeLibrary->libraryId;
-				$locations->find();
-				$locationsForLibrary = array();
-				while ($locations->fetch()){
-					$locationsForLibrary[] = $locations->locationId;
-				}
-
+				$userHomeLibrary      = UserAccount::getUserHomeLibrary();
+				$locationsForLibrary  = $userHomeLibrary->getLocationIdsForLibrary();
 				$materialsRequest->whereAdd('user.homeLocationId IN (' . implode(', ', $locationsForLibrary) . ')');
 			}
 			$materialsRequest->groupBy('status');
@@ -177,7 +159,9 @@ class MaterialsRequest_SummaryReport extends Admin_Admin {
 
 		//Check to see if we are exporting to Excel
 		if (isset($_REQUEST['exportToExcel'])){
-			$this->exportToExcel($periodData, $statuses);
+			global $configArray;
+			$libraryName = !empty($userHomeLibrary->displayName) ? $userHomeLibrary->displayName : $configArray['Site']['title'];
+			$this->exportToExcel($periodData, $statuses, $libraryName);
 		}else{
 			//Generate the graph
 			$this->generateGraph($periodData, $statuses);
@@ -186,14 +170,13 @@ class MaterialsRequest_SummaryReport extends Admin_Admin {
 		$this->display('summaryReport.tpl','Materials Request Summary Report');
 	}
 
-	function exportToExcel($periodData, $statuses){
-		global $configArray;
+	function exportToExcel($periodData, $statuses, $creator){
 		// Create new PHPExcel object
 		$objPHPExcel = new PHPExcel();
 
 		// Set properties
-		$objPHPExcel->getProperties()->setCreator($configArray['Site']['title'])
-				->setLastModifiedBy($configArray['Site']['title'])
+		$objPHPExcel->getProperties()->setCreator($creator)
+				->setLastModifiedBy($creator)
 				->setTitle("Materials Request Summary Report")
 				->setSubject("Materials Request")
 				->setCategory("Materials Request Summary Report");

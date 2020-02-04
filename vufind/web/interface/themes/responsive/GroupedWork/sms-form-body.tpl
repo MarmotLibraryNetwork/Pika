@@ -1,4 +1,4 @@
-<form method="post" action="{$path}" name="popupForm" class="form-horizontal" id="smsForm">
+<form method="post" action="" name="popupForm" class="form-horizontal" id="smsForm">
 	<div class="alert alert-info">
 		<p>
 			Sharing via SMS text message will send the title (with a link back to the title) to you so you can easily find it in the future.

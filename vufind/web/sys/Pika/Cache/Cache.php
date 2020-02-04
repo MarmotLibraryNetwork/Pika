@@ -1,5 +1,22 @@
 <?php
 /**
+ * Pika Discovery Layer
+ * Copyright (C) 2020  Marmot Library Network
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+/**
  * A PSR-16 memcache implementation for Pika
  *
  * @category Pika
@@ -8,34 +25,50 @@
  * Date      8/5/19
  *
  */
-
 namespace Pika;
 
-use Psr\SimpleCache\CacheInterface;
 use Pika\Cache\Exception as CacheException;
-use Memcache;
+use Psr\SimpleCache\CacheInterface;
+use Memcached;
 use DateInterval;
 use DateTime;
+use InvalidArgumentException;
 
 class Cache implements CacheInterface
 {
 
 	private $PSR16_RESERVED_CHARACTERS = ['{','}','(',')','/','@',':'];
 
-	public  $handler;
+	private $keyTypes = ['patron', 'holds', 'checkouts', 'history', 'fines'];
 
-	private $logger = false;
+	protected $handler = false;
+	private   $logger  = false;
 
 	/**
 	 * Cache constructor.
-	 * @param Memcache $handler Memcache handler object
+	 * @param Memcached $handler Memcached handler object
 	 */
-	public function __construct(Memcache $handler)
+	public function __construct(Memcached $handler = null)
 	{
 		global $configArray;
-		$this->handler = $handler;
+		if($handler instanceof Memcached) {
+			$this->handler = $handler;
+		} else {
+			// no handler passed -- fire up an instance of memcached
+			$host = isset($configArray['Caching']['memcache_host']) ? $configArray['Caching']['memcache_host'] : '127.0.0.1';
+			$port = isset($configArray['Caching']['memcache_port']) ? $configArray['Caching']['memcache_port'] : 11211;
+			$memCached = new Memcached('pika');
+			// Caution! Since this is a persistent connection adding server adds on every page load
+			// and will max out number of server.
+			if (!count($memCached->getServerList()) || count($memCached->getServerList()) == 0) {
+				$memCached->setOption(Memcached::OPT_NO_BLOCK, true);
+				$memCached->setOption(Memcached::OPT_TCP_NODELAY, true);
+				$memCached->addServer($host, $port);
+			}
+			$this->handler = $memCached;
+		}
 		if((bool)$configArray['System']['debug']) {
-			$this->logger = new Logger('PikaCache');
+			$this->logger = new Logger("Pika\Cache");
 		}
 	}
 
@@ -76,7 +109,7 @@ class Cache implements CacheInterface
 		if ($ttl instanceof DateInterval) {
 			$ttl = (new DateTime('now'))->add($ttl)->getTimeStamp() - time();
 		}
-		$return = (bool)$this->handler->set($key, $value, 0, (int)$ttl);
+		$return = (bool)$this->handler->set($key, $value, (int)$ttl);
 		$this->_log('Set', $key, $return);
 		return $return;
 	}
@@ -93,7 +126,16 @@ class Cache implements CacheInterface
 	 */
 	public function delete($key)
 	{
-		$return = (bool)$this->handler->delete($key);
+		if(!($this->handler instanceof  Memcached)) {
+			$this->handler = initCache();
+		}
+		$return = $this->handler->delete($key);
+		if($return === false && $this->handler->getResultCode() == Memcached::RES_NOTFOUND) {
+			$return = true;
+		} elseif($return === null ) {
+			$this->logger->error('Memcached error: Object is null');
+			$return = false;
+		}
 		$this->_log('Delete', $key, $return);
 		return $return;
 	}
@@ -125,12 +167,10 @@ class Cache implements CacheInterface
 	 */
 	public function getMultiple($keys, $default = null)
 	{
-		$defaults = array_fill(0, count($keys), $default);
-		$return   = [];
-		foreach ($keys as $key) {
-			$return[$key] = $this->handler->get($key) ? $this->handler->get($key) : $default;
+		if(!is_array($keys)) {
+			throw new \InvalidArgumentException('Cache::get() expects first argument to be array.');
 		}
-		return $return;
+		return $this->handler->getMulti($keys);
 	}
 
 	/**
@@ -155,11 +195,11 @@ class Cache implements CacheInterface
 		}
 
 		foreach ($values as $key => $value) {
-			if (!$this->handler->set($key, $value, 0, (int)$ttl)) {
+			if (!$this->handler->set($key, $value, (int)$ttl)) {
 				return false;
 			}
-			return true;
 		}
+		return true;
 	}
 
 	/**
@@ -201,17 +241,48 @@ class Cache implements CacheInterface
 		return $this->handler->get($key) ? true : false;
 	}
 
+	/**
+	 * Create a key for caching objects that may be cached in other places
+	 *
+	 *
+	 *
+	 * @param $type
+	 * @param $patronUid Pika database User ID
+	 * @return string
+	 */
+	public function makePatronKey($type, $patronUid)
+	{
+		if(!in_array($type, $this->keyTypes)) {
+			$types = implode(', ', $this->keyTypes);
+			$message = sprintf('type %s is not a valid key type. Valid key types are %s', $type, $types);
+			throw new CacheException($message);
+		}
+		if(!$hostname = gethostname()){
+			$hostname = $_SERVER['SERVER_NAME'];
+		}
+		$key = $hostname.'-'.$type.'-'.$patronUid;
+		$this->checkReservedCharacters($key);
+
+		return $key;
+		}
+
+	/**
+	 * @param  $key
+	 * @throws Exception
+	 */
 	private function checkReservedCharacters($key)
 	{
 		if (!is_string($key)) {
 			$message = sprintf('key %s is not a string.', $key);
 			throw new CacheException($message);
 		}
-		foreach ($this->PSR16_RESERVED_CHARACTERS as $needle) {
-			if (strpos($key, $needle) !== false) {
-				$message = sprintf('%s string is not a legal value.', $key);
-				throw new CacheException($message);
-			}
+		if (preg_match('/[' . preg_quote('{}()/\@:', '/') . ']/', $key)) {
+			$message = sprintf('%s string is not a legal value.', $key);
+			throw new CacheException($message);
+		}
+		if ('' === $key) {
+			$message = sprintf('%s string is not a legal value.', $key);
+			throw new CacheException($message);
 		}
 	}
 

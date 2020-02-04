@@ -1,10 +1,10 @@
 {*{strip}*}
-	<form action="{$path}/MyAccount/MyList/{$favList->id}" id="myListFormHead">
+	<form action="/MyAccount/MyList/{$favList->id}" id="myListFormHead">
 		<div>
 			<input type="hidden" name="myListActionHead" id="myListActionHead" class="form">
-			<h3 id="listTitle">{*<span class="silk list">&nbsp;</span>*}{$favList->title|escape:"html"}</h3>
+			<h3 id="listTitle">{$favList->title|escape:"html"}</h3>
 			{if $notes}
-				<div id="listNotes">
+				<div id="listNotes" class="alert alert-info">
 				{foreach from=$notes item="note"}
 					<div class="listNote">{$note}</div>
 				{/foreach}
@@ -54,10 +54,10 @@
 								<button value="makePublic" id="FavPublic" class="btn btn-sm btn-default" onclick='return VuFind.Lists.makeListPublicAction()'>Make Public</button>
 							{else}
 								<button value="makePrivate" id="FavPrivate" class="btn btn-sm btn-default" onclick='return VuFind.Lists.makeListPrivateAction()'>Make Private</button>
-								{if $loggedIn && $userRoles && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles) || array_key_exists('libraryManager', $userRoles) || array_key_exists('contentEditor', $userRoles))}
+								{if $loggedIn && $userRoles && (in_array('opacAdmin', $userRoles) || in_array('libraryAdmin', $userRoles) || in_array('libraryManager', $userRoles) || in_array('contentEditor', $userRoles))}
 									&nbsp;&nbsp;<a href="#" class="button btn btn-sm btn-default" id="FavCreateWidget" onclick="return VuFind.ListWidgets.createWidgetFromList('{$favList->id}')">Create Widget</a>
 								{/if}
-								{if $loggedIn && $userRoles && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles) || array_key_exists('contentEditor', $userRoles) || array_key_exists('libraryManager', $userRoles) || array_key_exists('locationManager', $userRoles))}
+								{if $loggedIn && $userRoles && (in_array('opacAdmin', $userRoles) || in_array('libraryAdmin', $userRoles) || in_array('contentEditor', $userRoles) || in_array('libraryManager', $userRoles) || in_array('locationManager', $userRoles))}
 									<a href="#" id="FavHome" class="btn btn-sm btn-default" onclick="return VuFind.Lists.addToHomePage('{$favList->id}')">{translate text='Add To Home Page'}</a>
 								{/if}
 							{/if}
@@ -156,7 +156,7 @@
 													newOrder = originalOrder+change;
 									if (change != 0) updates.push({'id':id, 'newOrder':newOrder});
 								});
-								$.getJSON(Globals.path + '/MyAccount/AJAX',
+								$.getJSON('/MyAccount/AJAX',
 												{
 													method:'setListEntryPositions'
 													,updates:updates
@@ -186,7 +186,9 @@
 
 			{if strlen($pageLinks.all) > 0}<div class="text-center">{$pageLinks.all}</div>{/if}
 		{else}
-			{translate text='You do not have any saved resources'}
+				<div class="alert alert-warning">
+						{translate text='You do not have any saved resources'}
+				</div>
 		{/if}
 	{/if}
 {*{/strip}*}
