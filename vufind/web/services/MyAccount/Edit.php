@@ -75,7 +75,7 @@ class MyAccount_Edit extends MyAccount {
 						}
 					}else{
 						// Archive Objects
-						require_once ROOT_DIR . './sys/Utils/FedoraUtils.php';
+						require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
 						$fedoraUtils         = FedoraUtils::getInstance();
 						$archiveObject       = $fedoraUtils->getObject($id);
 						$archiveRecordDriver = RecordDriverFactory::initRecordDriver($archiveObject);
