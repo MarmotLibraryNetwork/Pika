@@ -2907,8 +2907,8 @@ EOT;
 		$patronId = $this->getPatronId($patron->barcode);
 		$optUrl = $vendorOpacUrl . "/patroninfo~S". $scope. "/" . $patronId . "/readinghistory/" . $optInOptOut;
 
-		$c->setUrl($optUrl);
-		$r = $c->get();
+		//$c->setUrl();
+		$r = $c->get($optUrl);
 
 		if($c->isError()) {
 			$c->close();
