@@ -179,5 +179,14 @@ function getUserUpdates(){
 			),
 		),
 
+		'remove_obsolete_rating_table_2020.01' => array(
+			'title'           => 'Remove obsolete  user rating table',
+			'description'     => 'Remove obsolete  user rating table',
+			'continueOnError' => true,
+			'sql'             => array(
+				'DROP TABLE IF EXISTS `user_rating`;'
+			),
+		),
+
 	);
 }
