@@ -1945,12 +1945,15 @@ EOT;
 			$this->logger->warn("Failed to remove patron from memcache: ".$patronObjectCacheKey);
 		}
 
+		$this->logger->debug("Canceling hold id ". $holdId . " for patron ". $patron->barcode);
+
 		$r = $this->_doRequest($operation, [], "DELETE");
 
 		// something went wrong
 		if(!$r) {
 			$return = ['success' => false];
 			if($this->apiLastError) {
+				$this->logger->error("Failed to cancel hold id " . $holdId . " for patron ". $patron->barcode, ["api_error" => $this->apiLastError]);
 				$message = $this->_getPrettyError();
 				$return['message'] = $message;
 			} else {
@@ -1958,6 +1961,8 @@ EOT;
 			}
 			return $return;
 		}
+
+		$this->logger->debug("Successfully canceled hold id ". $holdId . " for patron ". $patron->barcode);
 
 		$return = [
 			'success' => true,
@@ -2902,8 +2907,8 @@ EOT;
 		$patronId = $this->getPatronId($patron->barcode);
 		$optUrl = $vendorOpacUrl . "/patroninfo~S". $scope. "/" . $patronId . "/readinghistory/" . $optInOptOut;
 
-		$c->setUrl($optUrl);
-		$r = $c->get();
+		//$c->setUrl();
+		$r = $c->get($optUrl);
 
 		if($c->isError()) {
 			$c->close();

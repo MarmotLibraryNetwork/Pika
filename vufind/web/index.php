@@ -353,7 +353,7 @@ function checkMaintenanceMode(){
 		$isMaintenanceUser = false;
 		$activeIp          = $_SERVER['REMOTE_ADDR'];
 		if (!empty($configArray['MaintenanceMode']['maintenanceIps'])){
-			$maintenanceIps    = explode(',', $configArray['SystemMaintenanceMode']['maintenanceIps']);
+			$maintenanceIps    = explode(',', $configArray['MaintenanceMode']['maintenanceIps']);
 			$isMaintenanceUser = in_array($activeIp, $maintenanceIps);
 		}
 
