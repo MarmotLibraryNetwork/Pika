@@ -88,75 +88,76 @@ class UInterface extends Smarty {
 			if (isset($configArray['System']['debugTemplates'])){
 				$this->debugging = (bool)$configArray['System']['debugTemplates'];
 			}
-
-			// todo: this only needs to happen in local and test
-			//if ((bool)$configArray['Site']['isProduction'] === false){
-				$this->compile_check = true;
-			//}
-
-			$this->register_block('display_if_inconsistent', 'display_if_inconsistent');
-//		$this->register_block('display_if_inconsistent_in_any_manifestation', 'display_if_inconsistent_in_any_manifestation');
-			$this->register_block('display_if_set', 'display_if_set');
-			$this->register_function('translate', 'translate');
-			$this->register_function('char', 'char');
-
-			$this->assign('fullPath', str_replace('&', '&amp;', $_SERVER['REQUEST_URI']));
-			$url       = isset($_SERVER['HTTPS']) ? 'https://' : 'http://';
-			$url       .= $_SERVER['SERVER_NAME'];
-			$this->url = $url;
-			$this->assign('url', $url);
-
-			if (isset($configArray['Islandora']['repositoryUrl'])){
-				$this->assign('repositoryUrl', $configArray['Islandora']['repositoryUrl']);
-				$this->assign('encodedRepositoryUrl', str_replace('/', '\/', $configArray['Islandora']['repositoryUrl']));
-			}
-
-			$this->assign('siteTitle', $configArray['Site']['title']);
-			if (isset($configArray['Site']['libraryName'])){
-				$this->assign('consortiumName', $configArray['Site']['libraryName']);
-			}
-			if (isset($configArray['Site']['email'])){
-				$this->assign('supportEmail', $configArray['Site']['email']);
-			}
-			$this->assign('ils', $configArray['Catalog']['ils']);
-
-
-			// Determine Offline Mode
-			global $offlineMode;
-			$offlineMode = false;
-			if ($configArray['Catalog']['offline']){
-				$offlineMode = true;
-				if (isset($configArray['Catalog']['enableLoginWhileOffline'])){
-					$this->assign('enableLoginWhileOffline', $configArray['Catalog']['enableLoginWhileOffline']);
-				}else{
-					$this->assign('enableLoginWhileOffline', false);
-				}
-			}elseif (!empty($configArray['Catalog']['enableLoginWhileOffline'])){
-				// unless offline login is enabled, don't check the offline mode system variable
-				$offlineModeSystemVariable = new Variable();
-				$offlineModeSystemVariable->get('name', 'offline_mode_when_offline_login_allowed');
-				if ($offlineModeSystemVariable && (strtolower(trim($offlineModeSystemVariable->value)) == 'true' || trim($offlineModeSystemVariable->value) == '1')){
-					$this->assign('enableLoginWhileOffline', true);
-					$offlineMode = true;
-				}
-			}
-			$this->assign('offline', $offlineMode);
-
-			// Detect Internet Explorer 8 to include respond.js for responsive css support
-			if (isset($_SERVER['HTTP_USER_AGENT'])){
-				$ie8 = stristr($_SERVER['HTTP_USER_AGENT'], 'msie 8') || stristr($_SERVER['HTTP_USER_AGENT'], 'trident/5'); //trident/5 should catch ie9 compability modes
-				$this->assign('ie8', $ie8);
-			}
-
-
-			/** @var IndexingProfile $activeRecordIndexingProfile */
-			global $activeRecordIndexingProfile;
-			if ($activeRecordIndexingProfile){
-				$this->assign('activeRecordProfileModule', $activeRecordIndexingProfile->recordUrlComponent);
-			}
-
-			$timer->logTime('Interface basic configuration');
 		}
+
+		// todo: this only needs to happen in local and test
+		if ((bool)$configArray['Site']['isProduction'] === false){
+		$this->compile_check = true;
+		}
+
+		$this->register_block('display_if_inconsistent', 'display_if_inconsistent');
+//		$this->register_block('display_if_inconsistent_in_any_manifestation', 'display_if_inconsistent_in_any_manifestation');
+		$this->register_block('display_if_set', 'display_if_set');
+		$this->register_function('translate', 'translate');
+//		$this->register_function('char', 'char');
+
+		$this->assign('fullPath', str_replace('&', '&amp;', $_SERVER['REQUEST_URI']));
+		$url       = isset($_SERVER['HTTPS']) ? 'https://' : 'http://';
+		$url       .= $_SERVER['SERVER_NAME'];
+		$this->url = $url;
+		$this->assign('url', $url);
+
+		if (isset($configArray['Islandora']['repositoryUrl'])){
+			$this->assign('repositoryUrl', $configArray['Islandora']['repositoryUrl']);
+			$this->assign('encodedRepositoryUrl', str_replace('/', '\/', $configArray['Islandora']['repositoryUrl']));
+		}
+
+		$this->assign('siteTitle', $configArray['Site']['title']);
+		if (isset($configArray['Site']['libraryName'])){
+			$this->assign('consortiumName', $configArray['Site']['libraryName']);
+		}
+		if (isset($configArray['Site']['email'])){
+			$this->assign('supportEmail', $configArray['Site']['email']);
+		}
+		$this->assign('ils', $configArray['Catalog']['ils']);
+
+
+		// Determine Offline Mode
+		global $offlineMode;
+		$offlineMode = false;
+		if ($configArray['Catalog']['offline']){
+			$offlineMode = true;
+			if (isset($configArray['Catalog']['enableLoginWhileOffline'])){
+				$this->assign('enableLoginWhileOffline', $configArray['Catalog']['enableLoginWhileOffline']);
+			}else{
+				$this->assign('enableLoginWhileOffline', false);
+			}
+		}elseif (!empty($configArray['Catalog']['enableLoginWhileOffline'])){
+			// unless offline login is enabled, don't check the offline mode system variable
+			$offlineModeSystemVariable = new Variable();
+			$offlineModeSystemVariable->get('name', 'offline_mode_when_offline_login_allowed');
+			if ($offlineModeSystemVariable && (strtolower(trim($offlineModeSystemVariable->value)) == 'true' || trim($offlineModeSystemVariable->value) == '1')){
+				$this->assign('enableLoginWhileOffline', true);
+				$offlineMode = true;
+			}
+		}
+		$this->assign('offline', $offlineMode);
+
+		// Detect Internet Explorer 8 to include respond.js for responsive css support
+		if (isset($_SERVER['HTTP_USER_AGENT'])){
+			$ie8 = stristr($_SERVER['HTTP_USER_AGENT'], 'msie 8') || stristr($_SERVER['HTTP_USER_AGENT'], 'trident/5'); //trident/5 should catch ie9 compability modes
+			$this->assign('ie8', $ie8);
+		}
+
+
+		/** @var IndexingProfile $activeRecordIndexingProfile */
+		global $activeRecordIndexingProfile;
+		if ($activeRecordIndexingProfile){
+			$this->assign('activeRecordProfileModule', $activeRecordIndexingProfile->recordUrlComponent);
+		}
+
+		$timer->logTime('Interface basic configuration');
+
 	}
 
 	/**
