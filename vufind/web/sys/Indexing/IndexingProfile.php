@@ -574,4 +574,15 @@ class IndexingProfile extends DB_DataObject{
 		return $indexingProfiles;
 	}
 
+
+	/**
+	 * Adds a header for this object in the edit form pages
+	 * @return string|null
+	 */
+	function label(){
+		if (!empty($this->name)){
+			return $this->name;
+		}
+	}
+
 }

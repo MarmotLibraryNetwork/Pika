@@ -77,9 +77,9 @@ class MarcRecord extends IndexRecord
 			if (!isset($this->id) && $this->valid){
 				/** @var File_MARC_Data_Field $idField */
 				global $configArray;
-				$idField = $this->marcRecord->getField($configArray['Reindex']['recordNumberTag']);
+				$idField = $this->marcRecord->getField($configArray['Reindex']['recordNumberTag']); //todo: use indexing profile
 				if ($idField){
-					$this->id = $idField->getSubfield('a')->getData();
+					$this->id = $idField->getSubfield('a')->getData();//todo: use indexing profile
 				}
 			}
 		}

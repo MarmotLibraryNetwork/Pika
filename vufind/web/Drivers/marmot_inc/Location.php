@@ -1643,4 +1643,14 @@ class Location extends DB_DataObject {
 		$this->opacStatus = $opacStatus;
 	}
 
+	/**
+	 * Adds a header for this object in the edit form pages
+	 * @return string|null
+	 */
+	function label(){
+		if (!empty($this->displayName)){
+			return $this->displayName;
+		}
+	}
+
 }

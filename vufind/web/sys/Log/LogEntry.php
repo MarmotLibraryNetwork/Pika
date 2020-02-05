@@ -16,16 +16,44 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+/**
+ *
+ *
+ * @category Pika
+ * @author: Pascal Brammeier
+ * Date: 1/24/2020
+ *
+ */
 
-require_once ROOT_DIR . '/services/Admin/LogAdmin.php';
+require_once 'DB/DataObject.php';
 
-class RecordGroupingLog extends Log_Admin {
+abstract class LogEntry extends DB_DataObject {
 
-	public $pageTitle = 'Record Grouping Log';
-	public $logTemplate = 'recordGroupingLog.tpl';
-//	public $columnToFilterBy = 'numWorksProcessed';
+	public $__table;
 
-	function getAllowableRoles(){
-		return array('opacAdmin', 'libraryAdmin', 'cataloging');
+	public $id;
+	public $startTime;
+	public $lastUpdate;
+	public $endTime;
+	public $notes;
+
+	function keys(){
+		return array('id');
 	}
+
+	function getElapsedTime(){
+		if (empty($this->endTime)){
+			return '';
+		}else{
+			$elapsedTimeMin = ceil(($this->endTime - $this->startTime) / 60);
+			if ($elapsedTimeMin < 60){
+				return $elapsedTimeMin . " min";
+			}else{
+				$hours   = floor($elapsedTimeMin / 60);
+				$minutes = $elapsedTimeMin - (60 * $hours);
+				return "$hours hours, $minutes min";
+			}
+		}
+	}
+
 }

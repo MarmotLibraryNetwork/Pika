@@ -228,8 +228,8 @@ class Admin_Libraries extends ObjectEditor
 	}
 
 	function resetMoreDetailsToDefault(){
-		$library = new Library();
-		$libraryId = $_REQUEST['id'];
+		$library            = new Library();
+		$libraryId          = $_REQUEST['id'];
 		$library->libraryId = $libraryId;
 		if ($library->find(true)){
 			$library->clearMoreDetailsOptions();
@@ -237,14 +237,14 @@ class Admin_Libraries extends ObjectEditor
 			$defaultOptions = array();
 			require_once ROOT_DIR . '/RecordDrivers/Interface.php';
 			$defaultMoreDetailsOptions = RecordInterface::getDefaultMoreDetailsOptions();
-			$i = 0;
+			$i                         = 0;
 			foreach ($defaultMoreDetailsOptions as $source => $defaultState){
-				$optionObj = new LibraryMoreDetails();
-				$optionObj->libraryId = $libraryId;
+				$optionObj                    = new LibraryMoreDetails();
+				$optionObj->libraryId         = $libraryId;
 				$optionObj->collapseByDefault = $defaultState == 'closed';
-				$optionObj->source = $source;
-				$optionObj->weight = $i++;
-				$defaultOptions[] = $optionObj;
+				$optionObj->source            = $source;
+				$optionObj->weight            = $i++;
+				$defaultOptions[]             = $optionObj;
 			}
 
 			$library->moreDetailsOptions = $defaultOptions;
@@ -312,6 +312,7 @@ class Admin_Libraries extends ObjectEditor
 		$library->libraryId = $libraryId;
 		if ($library->find(true)){
 			$library->clearExploreMoreBar();
+			require_once ROOT_DIR . '/sys/Archive/ArchiveExploreMoreBar.php';
 			$library->exploreMoreBar = ArchiveExploreMoreBar::getDefaultArchiveExploreMoreOptions($libraryId);
 			$library->update();
 		}

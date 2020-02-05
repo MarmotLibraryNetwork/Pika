@@ -17,14 +17,16 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+require_once ROOT_DIR . '/sys/Log/LogEntry.php';
+
 class CronLogEntry extends LogEntry {
 	public $__table = 'cron_log';
-	public $notes;
 
 	private $_processes = null;
 	private $_hadErrors;
 
 	function processes(){
+		require_once ROOT_DIR . '/sys/Log/CronProcessLogEntry.php';
 		if (is_null($this->_processes)){
 			$this->_processes            = array();
 			$cronProcessLogEntry         = new CronProcessLogEntry();

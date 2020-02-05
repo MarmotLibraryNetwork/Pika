@@ -915,7 +915,7 @@ abstract class IslandoraDriver extends RecordInterface {
 	 */
 	public function getAllSubjectHeadings($includeTitleAsSubject = true, $limit = 0){
 		if ($this->subjectHeadings == null){
-			require_once ROOT_DIR . '/sys/ArchiveSubject.php';
+			require_once ROOT_DIR . '/sys/Archive/ArchiveSubject.php';
 			$archiveSubjects    = new ArchiveSubject();
 			$subjectsToIgnore   = array();
 			$subjectsToRestrict = array();

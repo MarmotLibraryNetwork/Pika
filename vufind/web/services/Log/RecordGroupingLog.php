@@ -17,15 +17,14 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-class ReindexLogEntry extends LogEntry
-{
-	public $__table = 'reindex_log';   // table name
-	public $id;
-	public $startTime;
-	public $lastUpdate;
-	public $endTime;
-	public $notes;
-	public $numWorksProcessed;
-	public $numListsProcessed;
+require_once ROOT_DIR . '/services/Log/LogAdmin.php';
 
+class RecordGroupingLog extends Log_Admin {
+
+	public $pageTitle = 'Record Grouping Log';
+	public $filterLabel = null;
+
+	function getAllowableRoles(){
+		return array('opacAdmin', 'libraryAdmin', 'cataloging');
+	}
 }

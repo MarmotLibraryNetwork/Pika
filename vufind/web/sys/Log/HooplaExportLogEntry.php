@@ -17,15 +17,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-require_once ROOT_DIR . '/services/Admin/LogAdmin.php';
+require_once ROOT_DIR . '/sys/Log/LogEntry.php';
 
-class SierraExportLog extends Log_Admin {
-
-	public $pageTitle = 'Sierra Export Log';
-	public $logTemplate = 'sierraExportLog.tpl';
-	public $columnToFilterBy = 'numRecordsToProcess';
-
-	function getAllowableRoles(){
-		return array('opacAdmin', 'libraryAdmin', 'cataloging');
-	}
+class HooplaExportLogEntry extends LogEntry {
+	public $__table = 'hoopla_export_log';
 }

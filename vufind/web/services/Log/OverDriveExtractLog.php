@@ -17,7 +17,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-require_once ROOT_DIR . '/services/Admin/LogAdmin.php';
+require_once ROOT_DIR . '/services/Log/LogAdmin.php';
 require_once ROOT_DIR . '/sys/OverDrive/OverDriveAPIProduct.php';
 
 class OverDriveExtractLog extends Log_Admin {
@@ -25,6 +25,7 @@ class OverDriveExtractLog extends Log_Admin {
 	public $pageTitle = 'OverDrive Export Log';
 	public $logTemplate = 'overdriveExtractLog.tpl';
 	public $columnToFilterBy = 'numProducts';
+	public $filterLabel = 'Min Products Processed';
 
 
 	function launch(){
@@ -35,12 +36,14 @@ class OverDriveExtractLog extends Log_Admin {
 		$overdriveProduct->needsUpdate = 1;
 		$overdriveProduct->deleted     = 0;
 		$numOutstandingChanges         = $overdriveProduct->count();
-		$interface->assign('numOutstandingChanges', $numOutstandingChanges);
+		if (!empty($numOutstandingChanges)) {
+			$note       = "There are {$numOutstandingChanges} changes to be processed from the OverDrive API.";
+			$alertLevel = $numOutstandingChanges > 500 ? 'alert-danger' : 'alert-warning';
+			$alert      = "<div class='alert $alertLevel'>$note</div>";
+			$interface->assign('alert', $alert);
+		}
 
 		parent::launch();
 	}
 
-	function getAllowableRoles(){
-		return array('opacAdmin');
-	}
 }

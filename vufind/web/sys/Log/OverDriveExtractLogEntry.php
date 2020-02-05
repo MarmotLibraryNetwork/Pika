@@ -17,26 +17,18 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-require_once ROOT_DIR . '/services/Admin/Admin.php';
-require_once ROOT_DIR . '/sys/LocalEnrichment/EditorialReview.php';
-require_once ROOT_DIR . '/sys/DataObjectUtil.php';
+require_once ROOT_DIR . '/sys/Log/LogEntry.php';
 
-class EditorialReview_Delete extends Admin_Admin {
+class OverDriveExtractLogEntry extends LogEntry {
+	public $__table = 'overdrive_extract_log';
+	public $numProducts;
+	public $numErrors;
+	public $numAdded;
+	public $numDeleted;
+	public $numUpdated;
+	public $numSkipped;
+	public $numAvailabilityChanges;
+	public $numMetadataChanges;
 
-	function launch(){
-		$editorialReview                    = new EditorialReview();
-		$editorialReview->editorialReviewId = $_REQUEST['id'];
-		if ($editorialReview->find()){
-			$editorialReview->fetch();
-			$editorialReview->delete();
-		}
 
-		//Redirect back to the PMDA home page
-		header('Location:/EditorialReview/Search');
-		exit();
-	}
-
-	function getAllowableRoles(){
-		return array('opacAdmin');
-	}
 }

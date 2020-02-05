@@ -17,8 +17,11 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-class HooplaExportLogEntry extends LogEntry {
-	public $__table = 'hoopla_export_log';
-	public $notes;
+require_once ROOT_DIR . '/sys/Log/LogEntry.php';
+
+class ReindexLogEntry extends LogEntry {
+	public $__table = 'reindex_log';   // table name
+	public $numWorksProcessed;
+	public $numListsProcessed;
 
 }

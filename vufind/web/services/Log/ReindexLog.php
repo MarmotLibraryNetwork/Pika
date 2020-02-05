@@ -17,14 +17,16 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-require_once ROOT_DIR . '/services/Admin/LogAdmin.php';
+require_once ROOT_DIR . '/services/Log/LogAdmin.php';
 
-class CronLog extends Log_Admin{
+class ReindexLog extends Log_Admin {
 
-	public $pageTitle ='Cron Log';
-	public $logTemplate ='cronLog.tpl';
+	public $pageTitle = 'Reindex Log';
+	public $logTemplate = 'reindexLog.tpl';
+	public $columnToFilterBy = 'numWorksProcessed';
+
 
 	function getAllowableRoles(){
-		return array('opacAdmin');
+		return array('opacAdmin', 'libraryAdmin', 'cataloging');
 	}
 }

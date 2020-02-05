@@ -45,24 +45,24 @@ class TranslationMap extends DB_DataObject{
 			$indexingProfiles[$indexingProfile->id] = $indexingProfile->name;
 		}
 		$structure = array(
-			'id' => array('property'=>'id', 'type'=>'label', 'label'=>'Id', 'description'=>'The unique id within the database'),
-			'indexingProfileId' => array('property' => 'indexingProfileId', 'type' => 'enum', 'values' => $indexingProfiles, 'label' => 'Indexing Profile Id', 'description' => 'The Indexing Profile this map is associated with'),
-			'name' => array('property'=>'name', 'type'=>'text', 'label'=>'Name', 'description'=>'The name of the translation map', 'maxLength' => '50', 'required' => true),
-			'usesRegularExpressions' => array('property'=>'usesRegularExpressions', 'type'=>'checkbox', 'label'=>'Use Regular Expressions', 'description'=>'When on, values will be treated as regular expressions', 'hideInLists' => false, 'default'=>false),
+			'id'                     => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id within the database'),
+			'indexingProfileId'      => array('property' => 'indexingProfileId', 'type' => 'enum', 'values' => $indexingProfiles, 'label' => 'Indexing Profile Id', 'description' => 'The Indexing Profile this map is associated with'),
+			'name'                   => array('property' => 'name', 'type' => 'text', 'label' => 'Name', 'description' => 'The name of the translation map', 'maxLength' => '50', 'required' => true),
+			'usesRegularExpressions' => array('property' => 'usesRegularExpressions', 'type' => 'checkbox', 'label' => 'Use Regular Expressions', 'description' => 'When on, values will be treated as regular expressions', 'hideInLists' => false, 'default' => false),
 
 			'translationMapValues' => array(
-				'property' => 'translationMapValues',
-				'type'=> 'oneToMany',
-				'label' => 'Values',
-				'description' => 'The values for the translation map.',
-				'keyThis' => 'id',
-				'keyOther' => 'translationMapId',
+				'property'      => 'translationMapValues',
+				'type'          => 'oneToMany',
+				'label'         => 'Values',
+				'description'   => 'The values for the translation map.',
+				'keyThis'       => 'id',
+				'keyOther'      => 'translationMapId',
 				'subObjectType' => 'TranslationMapValue',
-				'structure' => TranslationMapValue::getObjectStructure(),
-				'sortable' => false,
-				'storeDb' => true,
-				'allowEdit' => false,
-				'canEdit' => false,
+				'structure'     => TranslationMapValue::getObjectStructure(),
+				'sortable'      => false,
+				'storeDb'       => true,
+				'allowEdit'     => false,
+				'canEdit'       => false,
 			),
 		);
 		return $structure;
@@ -169,4 +169,15 @@ class TranslationMap extends DB_DataObject{
 			return $default;
 		}
 	}
+
+	/**
+	 * Adds a header for this object in the edit form pages
+	 * @return string|null
+	 */
+	function label(){
+		if (!empty($this->name)){
+			return $this->name;
+		}
+	}
+
 }

@@ -32,14 +32,17 @@ require_once ROOT_DIR . '/sys/Pager.php';
 abstract class Log_Admin extends Admin_Admin {
 
 	public $pageTitle;
-	public $logTemplate;
+	public $logTemplate = 'logTable.tpl';
+	public $filterLabel = 'Min Works Processed';
 	public $columnToFilterBy;
+
 
 	function launch(){
 		global $interface;
 
 		$logClass         = get_class($this);
 		$logEntryClassName = $logClass . 'Entry';
+		require_once ROOT_DIR . '/sys/Log/'. $logEntryClassName . '.php';
 		$page              = isset($_REQUEST['page']) ? $_REQUEST['page'] : 1;
 		$pageSize          = isset($_REQUEST['pagesize']) ? $_REQUEST['pagesize'] : 30; // to adjust number of items listed on a page
 		$filter            = (!empty($this->columnToFilterBy) && !empty($_REQUEST['filterCount']) && ctype_digit($_REQUEST['filterCount']))
@@ -63,18 +66,25 @@ abstract class Log_Admin extends Admin_Admin {
 
 		$options = array(
 			'totalItems' => $total,
-			'fileName'   => '/Admin/' . $logClass . '?page=%d' . (empty($_REQUEST['filterCount']) ? '' : '&filterCount=' . $_REQUEST['filterCount']) . (empty($_REQUEST['pagesize']) ? '' : '&pagesize=' . $_REQUEST['pagesize']),
+			'fileName'   => '/Log/' . $logClass . '?page=%d' . (empty($_REQUEST['filterCount']) ? '' : '&filterCount=' . $_REQUEST['filterCount']) . (empty($_REQUEST['pagesize']) ? '' : '&pagesize=' . $_REQUEST['pagesize']),
 			'perPage'    => $pageSize,
 		);
 		$pager   = new VuFindPager($options);
 
 
+		$interface->assign('filterLabel', $this->filterLabel);
 		$interface->assign('recordsPerPage', $pageSize);
 		$interface->assign('page', $page);
 		$interface->assign('logEntries', $logEntries);
 		$interface->assign('pageLinks', $pager->getLinks());
+		$interface->assign('logTable', 'Log\\' . $this->logTemplate);
+		$interface->assign('logType', str_replace('Log', '', $logClass));
 
-		$this->display($this->logTemplate, $this->pageTitle);
+		$this->display('log.tpl', $this->pageTitle);
+	}
+
+	function getAllowableRoles(){
+		return array('opacAdmin');
 	}
 
 }

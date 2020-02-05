@@ -17,13 +17,26 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-require_once ROOT_DIR . '/services/Admin/LogAdmin.php';
+require_once ROOT_DIR . '/services/Log/LogAdmin.php';
 
-class ReindexLog extends Log_Admin {
+class SierraExportLog extends Log_Admin {
 
-	public $pageTitle = 'Reindex Log';
-	public $logTemplate = 'reindexLog.tpl';
-	public $columnToFilterBy = 'numWorksProcessed';
+	public $pageTitle = 'Sierra Export Log';
+	public $logTemplate = 'sierraExportLog.tpl';
+	public $columnToFilterBy = 'numRecordsToProcess';
+
+	function launch(){
+		$remainingSierraRecords = new Variable('remaining_sierra_records');
+		if (!empty($remainingSierraRecords->value)){
+			global $interface;
+			$note       = "There are {$remainingSierraRecords->value} changes to be processed from the Sierra API.";
+			$alertLevel = $remainingSierraRecords->value > 500 ? 'alert-danger' : 'alert-warning';
+			$alert      = "<div class='alert $alertLevel'>$note</div>";
+			$interface->assign('alert', $alert);
+		}
+
+		parent::launch();
+	}
 
 
 	function getAllowableRoles(){

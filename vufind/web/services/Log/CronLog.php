@@ -17,12 +17,11 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-class CronProcessLogEntry extends LogEntry {
-	public $__table = 'cron_process_log';
-	public $cronId;
-	public $processName;
-	public $numErrors;
-	public $numUpdated;
-	public $notes;
+require_once ROOT_DIR . '/services/Log/LogAdmin.php';
+
+class CronLog extends Log_Admin{
+
+	public $pageTitle ='Cron Log';
+	public $logTemplate ='cronLog.tpl';
 
 }

@@ -18,7 +18,6 @@
  */
 
 require_once ROOT_DIR . '/AJAXHandler.php';
-require_once ROOT_DIR . '/sys/Pager.php';
 
 class SearchAPI extends AJAXHandler {
 
@@ -44,8 +43,8 @@ class SearchAPI extends AJAXHandler {
 	const FULL_INDEX_INTERVAL_CRITICAL        = 129600; // 36 Hours (in seconds)
 	const PARTIAL_INDEX_INTERVAL_WARN         = 1500;   // 25 Minutes (in seconds)
 	const PARTIAL_INDEX_INTERVAL_CRITICAL     = 3600;   // 1 Hour (in seconds)
-	const SIERRA_EXTRACT_INTERVAL_WARN = 900;    // 15 Minutes (in seconds)
-	const SIERRA_EXTRACT_INTERVAL_CRITICAL = 3600;   // 1 Hour (in seconds)
+	const SIERRA_EXTRACT_INTERVAL_WARN        = 900;    // 15 Minutes (in seconds)
+	const SIERRA_EXTRACT_INTERVAL_CRITICAL    = 3600;   // 1 Hour (in seconds)
 	const OVERDRIVE_EXTRACT_INTERVAL_WARN     = 14400;  // 4 Hours (in seconds)
 	const OVERDRIVE_EXTRACT_INTERVAL_CRITICAL = 18000;  // 5 Hours (in seconds)
 	const SOLR_RESTART_INTERVAL_WARN          = 86400;  // 24 Hours (in seconds)

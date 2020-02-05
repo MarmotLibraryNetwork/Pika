@@ -343,17 +343,17 @@ class ExternalReviews {
 		return $review;
 	}
 
-	function cleanupReview($reviewData){
+	static function cleanupReview($reviewData){
 		//Cleanup the review data
-		$fullReview = strip_tags($reviewData['Content'], '<p><a><b><em><ul><ol><em><li><strong><i><br><iframe><div>');
-		$reviewData['Content'] = $fullReview;
+		$fullReview              = strip_tags($reviewData['Content'], '<p><a><b><em><ul><ol><em><li><strong><i><br><iframe><div>');
+		$reviewData['Content']   = $fullReview;
 		$reviewData['Copyright'] = strip_tags($reviewData['Copyright'], '<a><p><b><em>');
 		//Trim the review to the first paragraph or 240 characters whichever comes first.
 		//Make sure we get at least 140 characters
 		//Get rid of all tags for the teaser so we don't risk broken HTML
 		$fullReview = strip_tags($fullReview, '<p>');
 		if (strlen($fullReview) > 280){
-			$matches = array();
+			$matches    = array();
 			$numMatches = preg_match_all('/<\/p>|\\r|\\n|[.,:;]/', substr($fullReview, 180, 60), $matches, PREG_OFFSET_CAPTURE);
 			if ($numMatches > 0){
 				$teaserBreakPoint = $matches[0][$numMatches - 1][1] + 181;
@@ -361,7 +361,7 @@ class ExternalReviews {
 				//Did not find a match at a paragraph or sentence boundary, just trim to the closest word.
 				$teaserBreakPoint = strrpos(substr($fullReview, 0, 240), ' ');
 			}
-			$teaser = substr($fullReview, 0, $teaserBreakPoint);
+			$teaser               = substr($fullReview, 0, $teaserBreakPoint);
 			$reviewData['Teaser'] = strip_tags($teaser);
 		}
 		return $reviewData;

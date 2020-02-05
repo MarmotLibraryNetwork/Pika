@@ -30,8 +30,7 @@ require_once 'Solr.php';
  * @license  http://opensource.org/licenses/gpl-2.0.php GNU General Public License
  * @link     http://vufind.org/wiki/system_classes#index_interface Wiki
  */
-class SolrAuth extends Solr
-{
+class SolrAuth extends Solr {
 	/**
 	 * Constructor
 	 *
@@ -39,9 +38,8 @@ class SolrAuth extends Solr
 	 *
 	 * @access public
 	 */
-	public function __construct($host)
-	{
+	public function __construct($host){
 		parent::__construct($host, 'authority');
-		$this->searchSpecsFile = 'conf/authsearchspecs.yaml';
+		$this->searchSpecsFile = 'conf/authsearchspecs.json';
 	}
 }

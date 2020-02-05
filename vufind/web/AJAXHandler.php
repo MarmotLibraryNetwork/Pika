@@ -21,6 +21,7 @@
  * @author   : Pascal Brammeier
  * Date: 4/26/2019
  */
+
 use Pika\Cache;
 use Pika\Logger;
 
@@ -42,8 +43,7 @@ abstract class AJAXHandler extends Action {
 	//private $cache;
 	private $logger;
 
-	public function __construct($error_class = null)
-	{
+	public function __construct($error_class = null){
 		parent::__construct($error_class);
 
 		$this->logger = new Logger('AjaxHandler');

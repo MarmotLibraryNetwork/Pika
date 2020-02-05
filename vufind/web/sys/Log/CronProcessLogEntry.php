@@ -17,15 +17,12 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-require_once ROOT_DIR . '/services/Admin/LogAdmin.php';
+require_once ROOT_DIR . '/sys/Log/LogEntry.php';
 
-class HooplaExportLog extends Log_Admin {
-
-	public $pageTitle = 'Hoopla Export Log';
-	public $logTemplate = 'hooplaExportLog.tpl';
-//	public $columnToFilterBy = 'numRecordsToProcess';
-
-	function getAllowableRoles(){
-		return array('opacAdmin', 'libraryAdmin', 'cataloging');
-	}
+class CronProcessLogEntry extends LogEntry {
+	public $__table = 'cron_process_log';
+	public $cronId;
+	public $processName;
+	public $numErrors;
+	public $numUpdated;
 }
