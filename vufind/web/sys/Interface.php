@@ -90,9 +90,9 @@ class UInterface extends Smarty {
 			}
 
 			// todo: this only needs to happen in local and test
-			if ((bool)$configArray['Site']['isProduction'] === false){
+			//if ((bool)$configArray['Site']['isProduction'] === false){
 				$this->compile_check = true;
-			}
+			//}
 
 			$this->register_block('display_if_inconsistent', 'display_if_inconsistent');
 //		$this->register_block('display_if_inconsistent_in_any_manifestation', 'display_if_inconsistent_in_any_manifestation');
