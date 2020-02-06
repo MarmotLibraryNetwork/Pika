@@ -26,8 +26,11 @@
  * Time: 4:26 PM
  */
 require_once ROOT_DIR . '/AJAXHandler.php';
+require_once ROOT_DIR . '/services/AJAX/Captcha_AJAX.php';
 
 class MyAccount_AJAX extends AJAXHandler {
+
+	use Captcha_AJAX;
 
 	protected $methodsThatRespondWithJSONUnstructured = array(
 		'GetSuggestions', // not checked
@@ -56,8 +59,7 @@ class MyAccount_AJAX extends AJAXHandler {
 
 	private $cache;
 
-	public function __construct($error_class = null)
-	{
+	public function __construct($error_class = null){
 		parent::__construct($error_class);
 		$this->cache = new Pika\Cache();
 	}
@@ -538,9 +540,9 @@ class MyAccount_AJAX extends AJAXHandler {
 		return $result;
 	}
 
-/**
- * Used for creating a new User list
- * */
+	/**
+	 * Used for creating a new User list
+	 * */
 	function AddList(){
 		$recordToAdd = false;
 		$return      = array();
@@ -601,9 +603,12 @@ class MyAccount_AJAX extends AJAXHandler {
 				$return['success'] = 'true';
 				$return['newId']   = $list->id;
 				if ($existingList){
-					$return['message'] = "Updated list {$title} successfully";
+					$return['message'] = "Updated list <em>{$title}</em> successfully";
 				}else{
-					$return['message'] = "Created list {$title} successfully";
+					$return['message'] = "Created list <em>{$title}</em> successfully";
+				}
+				if (!empty($list->id)){
+					$return['modalButtons'] = '<a class="btn btn-primary" href="/MyAccount/MyList/'. $list->id .'" role="button">View My List</a>';
 				}
 			}
 		}else{
@@ -1022,76 +1027,86 @@ class MyAccount_AJAX extends AJAXHandler {
 
 		// Get data from AJAX request
 		if (isset($_REQUEST['listId']) && ctype_digit($_REQUEST['listId'])){ // validly formatted List Id
-			$listId  = $_REQUEST['listId'];
-			$to      = $_REQUEST['to'];
-			$from    = $_REQUEST['from'];
-			$message = $_REQUEST['message'];
+			$recaptchaValid = $this->isRecaptchaValid();
 
-			//Load the list
-			require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
-			$list     = new UserList();
-			$list->id = $listId;
-			if ($list->find(true)){
-				// Build Favorites List
-				$listEntries = $list->getListTitles(true);
-				$interface->assign('listEntries', $listEntries);
+			if (UserAccount::isLoggedIn() || $recaptchaValid){
+				$listId = $_REQUEST['listId'];
 
-				// Load the User object for the owner of the list (if necessary):
-				if ($list->public == true || (UserAccount::isLoggedIn() && UserAccount::getActiveUserId() == $list->user_id)){
-					//The user can access the list
-					require_once ROOT_DIR . '/services/MyResearch/lib/FavoriteHandler.php';
-					$favoriteHandler = new FavoriteHandler($list, UserAccount::getActiveUserObj(), false);
-					$titleDetails    = $favoriteHandler->getTitles(count($listEntries));
-					// get all titles for email list, not just a page's worth
-					$interface->assign('titles', $titleDetails);
-					$interface->assign('list', $list);
+				$to      = $_REQUEST['to'];
+				$from    = $_REQUEST['from'];
+				$message = $_REQUEST['message'];
 
-					if (strpos($message, 'http') === false && strpos($message, 'mailto') === false && $message == strip_tags($message)){
-						$interface->assign('message', $message);
-						$body = $interface->fetch('Emails/my-list.tpl');
+				//Load the list
+				require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+				$list     = new UserList();
+				$list->id = $listId;
+				if ($list->find(true)){
+					// Build Favorites List
+					$listEntries = $list->getListTitles(true);
+					$interface->assign('listEntries', $listEntries);
 
-						require_once ROOT_DIR . '/sys/Mailer.php';
-						$mail        = new VuFindMailer();
-						$subject     = $list->title;
-						$emailResult = $mail->send($to, $from, $subject, $body);
+					// Load the User object for the owner of the list (if necessary):
+					if ($list->public == true || (UserAccount::isLoggedIn() && UserAccount::getActiveUserId() == $list->user_id)){
+						//The user can access the list
+						require_once ROOT_DIR . '/services/MyResearch/lib/FavoriteHandler.php';
+						$favoriteHandler = new FavoriteHandler($list, UserAccount::getActiveUserObj(), false);
+						$titleDetails    = $favoriteHandler->getTitles(count($listEntries));
+						// get all titles for email list, not just a page's worth
+						$interface->assign('titles', $titleDetails);
+						$interface->assign('list', $list);
 
-						if ($emailResult === true){
-							$result = array(
-								'result'  => true,
-								'message' => 'Your e-mail was sent successfully.',
-							);
-						}elseif (PEAR_Singleton::isError($emailResult)){
-							$result = array(
+						if (strpos($message, 'http') === false && strpos($message, 'mailto') === false && $message == strip_tags($message)){
+							$interface->assign('message', $message);
+							$body = $interface->fetch('Emails/my-list.tpl');
+
+							require_once ROOT_DIR . '/sys/Mailer.php';
+							$mail        = new VuFindMailer();
+							$subject     = $list->title;
+							$emailResult = $mail->send($to, $from, $subject, $body);
+
+							if ($emailResult === true){
+								$result = [
+									'result'  => true,
+									'message' => 'Your e-mail was sent successfully.',
+								];
+							}elseif (PEAR_Singleton::isError($emailResult)){
+								$result = [
+									'result'  => false,
+									'message' => "Your e-mail message could not be sent: {$emailResult->message}.",
+								];
+							}else{
+								$result = [
+									'result'  => false,
+									'message' => 'Your e-mail message could not be sent due to an unknown error.',
+								];
+								global $logger;
+								$logger->log("Mail List Failure (unknown reason), parameters: $to, $from, $subject, $body", PEAR_LOG_ERR);
+							}
+						}else{ //spammy email message
+							$result = [
 								'result'  => false,
-								'message' => "Your e-mail message could not be sent: {$emailResult->message}.",
-							);
-						}else{
-							$result = array(
-								'result'  => false,
-								'message' => 'Your e-mail message could not be sent due to an unknown error.',
-							);
-							global $logger;
-							$logger->log("Mail List Failure (unknown reason), parameters: $to, $from, $subject, $body", PEAR_LOG_ERR);
+								'message' => 'Sorry, we can&apos;t send e-mails with html or other data in it.',
+							];
 						}
-					}else{
-						$result = array(
+
+					}else{ // private list
+						$result = [
 							'result'  => false,
-							'message' => 'Sorry, we can&apos;t send e-mails with html or other data in it.',
-						);
+							'message' => 'You do not have access to this list.',
+						];
+
 					}
-
-				}else{
-					$result = array(
+				}else{ // list not found
+					$result = [
 						'result'  => false,
-						'message' => 'You do not have access to this list.',
-					);
-
+						'message' => 'Unable to read list.',
+					];
 				}
-			}else{
-				$result = array(
+			} else { // logged in check, or captcha check
+				$result = [
 					'result'  => false,
-					'message' => 'Unable to read list.',
-				);
+					'message' => 'Not logged in or invalid captcha response',
+				];
 			}
 		}else{ // Invalid listId
 			$result = array(
@@ -1104,26 +1119,27 @@ class MyAccount_AJAX extends AJAXHandler {
 	}
 
 	function getEmailMyListForm(){
-		global $interface;
 		if (isset($_REQUEST['listId']) && ctype_digit($_REQUEST['listId'])){
+			global $interface;
 			$listId = $_REQUEST['listId'];
-		}
-		$interface->assign('listId', $listId);
-		if (UserAccount::isLoggedIn()){
-			/** @var User $user */
-			$user = UserAccount::getActiveUserObj();
-			if (!empty($user->email)){
-				$interface->assign('from', $user->email);
+			$interface->assign('listId', $listId);
+			if (UserAccount::isLoggedIn()){
+				/** @var User $user */
+				$user = UserAccount::getActiveUserObj();
+				if (!empty($user->email)){
+					$interface->assign('from', $user->email);
+				}
+			}else{
+				$this->setUpCaptchaForTemplate();
 			}
-		}
 
-		$formDefinition = array(
-			'title'        => 'Email a list',
-			'modalBody'    => $interface->fetch('MyAccount/emailListPopup.tpl'),
-			//			'modalButtons' => '<input type="submit" name="submit" value="Send" class="btn btn-primary" onclick="$(\'#emailListForm\').submit();" />'
-			'modalButtons' => '<span class="tool btn btn-primary" onclick="$(\'#emailListForm\').submit();">Send E-Mail</span>',
-		);
-		return $formDefinition;
+			return [
+				'title'        => 'Email a list',
+				'modalBody'    => $interface->fetch('MyAccount/emailListPopup.tpl'),
+				//			'modalButtons' => '<input type="submit" name="submit" value="Send" class="btn btn-primary" onclick="$(\'#emailListForm\').submit();" />'
+				'modalButtons' => '<span class="tool btn btn-primary" onclick="$(\'#emailListForm\').submit();">Send E-Mail</span>',
+			];
+		}
 	}
 
 	function renewItem(){

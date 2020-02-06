@@ -40,6 +40,14 @@
 			<textarea name="message" id="message" rows="3" cols="40" class="form-control"></textarea>
 		</div>
 	</div>
+    {* Show Recaptcha spam control if set. *}
+    {if $captcha}
+			<div class="form-group">
+				<div class="col-sm-9 col-sm-offset-3">
+            {$captcha}
+				</div>
+			</div>
+    {/if}
 </form>
 <script type="text/javascript">
 	{literal}

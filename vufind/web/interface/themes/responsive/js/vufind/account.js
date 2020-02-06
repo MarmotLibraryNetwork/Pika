@@ -35,7 +35,11 @@ VuFind.Account = (function(){
 					};
 			$.getJSON(url, params,function (data) {
 					if (data.success) {
-						VuFind.showMessage("Added Successfully", data.message, true, true);
+						if (typeof data.modalButtons !== "undefined"){
+							VuFind.showMessageWithButtons("Added Successfully", data.message, data.modalButtons);
+						} else{
+							VuFind.showMessage("Added Successfully", data.message, true, true);
+						}
 					} else {
 						VuFind.showMessage("Error", data.message);
 					}
@@ -321,14 +325,14 @@ VuFind.Account = (function(){
 			return false;
 		},
 
-		ajaxLightbox: function (urlToDisplay, requireLogin) {
+		ajaxLightbox: function (urlToDisplay, requireLogin, trigger) {
 			if (requireLogin === undefined) {
 				requireLogin = false;
 			}
 			if (requireLogin && !Globals.loggedIn) {
 				VuFind.Account.ajaxLogin(function (){
-					VuFind.Account.ajaxLightbox(urlToDisplay, requireLogin);
-				});
+					VuFind.Account.ajaxLightbox(urlToDisplay, requireLogin, trigger);
+				}, trigger);
 			} else {
 				VuFind.loadingMessage();
 				$.getJSON(urlToDisplay, function(data){

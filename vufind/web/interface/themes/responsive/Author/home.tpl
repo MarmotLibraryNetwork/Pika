@@ -65,13 +65,7 @@
 		{if $pageLinks.all}<div class="text-center">{$pageLinks.all}</div>{/if}
 	{/if}
 
-	{if $showSearchTools}
-		<div class="well small">
-			<strong>{translate text='Search Tools'}:</strong>
-			&nbsp;&nbsp;<a href="{$rssLink|escape}"><span class="glyphicon glyphicon-inbox" aria-hidden="true"></span>&nbsp;{translate text='Get RSS Feed'}</a>
-			&nbsp;&nbsp;<a href="#" onclick="return VuFind.Account.ajaxLightbox('/Search/AJAX?method=getEmailForm', true);"><span class="glyphicon glyphicon-envelope" aria-hidden="true"></span>&nbsp;{translate text='Email this Search'}</a>
-		</div>
-	{/if}
+    {include file="Search/searchTools.tpl" showAdminTools=true}
 </div>
 {/strip}
 
