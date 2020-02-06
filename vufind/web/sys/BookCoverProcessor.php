@@ -326,7 +326,7 @@ class BookCoverProcessor {
 			if (is_array($_GET['issn'])){
 				$_GET['issn'] = current($_GET['issn']);
 			}
-			$this->issn = preg_replace('/[^0-9xX]/', '', $_GET['issn']);
+			$this->issn = preg_replace('/[^0-9xX-]/', '', $_GET['issn']);
 		}
 
 		if (isset($_GET['id'])){
@@ -980,13 +980,17 @@ class BookCoverProcessor {
 	private function getCoverFromProviderUsingRecordDriverData($driver){
 		//TODO: Would like to use the Grouped Work driver her also but get ISBN & UPC methods are named slightly differently, and may have different purposes than expected
 
+		// Attempt with any data already provided in the url
+		if ($this->getCoverFromProvider()){
+			return true;
+		}
 		// Wipe Out existing values so we can try only the new ones below
 		$this->isn  = null;
 		$this->upc  = null;
 		$this->issn = null;
 
 		$ISBNs = $driver->getCleanISBNs();
-		if ($ISBNs){
+		if (!empty($ISBNs)){
 			foreach ($ISBNs as $isbn){
 				$this->isn = $isbn;
 				if ($this->getCoverFromProvider()){
@@ -996,7 +1000,7 @@ class BookCoverProcessor {
 			$this->isn = null; // Wipe out the ISBN field so we can focus on only the UPCs below
 		}
 		$UPCs = $driver->getCleanUPCs();
-		if ($UPCs){
+		if (!empty($UPCs)){
 			foreach ($UPCs as $upc){
 				$this->upc = ltrim($upc, '0');
 				if ($this->getCoverFromProvider()){
@@ -1008,6 +1012,15 @@ class BookCoverProcessor {
 					if ($this->getCoverFromProvider()){
 						return true;
 					}
+				}
+			}
+		}
+		$ISSNs = $driver->getISSNs();
+		if (!empty($ISSNs)){
+			foreach ($ISSNs as $issn){
+				$this->issn = $issn;
+				if ($this->getCoverFromProvider()){
+					return true;
 				}
 			}
 		}
