@@ -19,7 +19,6 @@
 
 require_once 'DB/DataObject.php';
 
-
 abstract class FacetSetting extends DB_DataObject {
 
 	public $id;                      //int(25)
@@ -80,14 +79,8 @@ abstract class FacetSetting extends DB_DataObject {
 
 		//Add additional facets by library
 		global $configArray;
-		if ($configArray['Catalog']['driver'] == 'Marmot'){
-			/*$availableFacets["collection_adams"] = "Collection (ASU)";
-			$availableFacets["collection_msc"] = "Collection (CMU)";
-			$availableFacets["collection_western"] = "Collection (Western)";*/
-		}else{
-			if ($configArray['Catalog']['driver'] == 'WCPL'){
-				$availableFacets["system_list"] = "System List";
-			}
+		if ($configArray['Catalog']['driver'] == 'WCPL'){
+			$availableFacets["system_list"] = "System List";
 		}
 
 
@@ -96,7 +89,6 @@ abstract class FacetSetting extends DB_DataObject {
 	}
 
 	static function getObjectStructure($availableFacets = null){
-
 		$structure = array(
 			'id'                        => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id of this association'),
 			'weight'                    => array('property' => 'weight', 'type' => 'integer', 'label' => 'Weight', 'description' => 'The sort order of the book store', 'default' => 0),
@@ -120,10 +112,11 @@ abstract class FacetSetting extends DB_DataObject {
 		$this->displayName               = $displayName;
 		$this->showAsDropDown            = false;
 		$this->sortMode                  = 'num_results';
-		$this->showAboveResults          = true;
 		$this->showInResults             = true;
 		$this->showInAuthorResults       = true;
 		$this->showInAdvancedSearch      = true;
+
+		$this->showAboveResults          = true;
 		$this->numEntriesToShowByDefault = 0;
 	}
 
@@ -132,10 +125,11 @@ abstract class FacetSetting extends DB_DataObject {
 		$this->displayName          = $displayName;
 		$this->showAsDropDown       = false;
 		$this->sortMode             = 'num_results';
-		$this->showAboveResults     = false;
 		$this->showInResults        = true;
 		$this->showInAuthorResults  = true;
 		$this->showInAdvancedSearch = true;
+
+		$this->showAboveResults     = false;
 		$this->collapseByDefault    = $collapseByDefault;
 		$this->useMoreFacetPopup    = true;
 	}

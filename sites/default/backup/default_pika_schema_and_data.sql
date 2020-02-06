@@ -330,8 +330,6 @@ CREATE TABLE `editorial_reviews` (
   `pubDate` bigint(20) NOT NULL,
   `review` text,
   `source` varchar(50) NOT NULL,
-  `tabName` varchar(25) DEFAULT 'Reviews',
-  `teaser` varchar(512) DEFAULT NULL,
   PRIMARY KEY (`editorialReviewId`),
   KEY `RecordId` (`recordId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -784,8 +782,6 @@ CREATE TABLE `library` (
   `enableSelfRegistration` tinyint(4) NOT NULL DEFAULT '0',
   `useHomeLinkInBreadcrumbs` tinyint(4) NOT NULL DEFAULT '0',
   `enableMaterialsRequest` tinyint(4) DEFAULT '1',
-  `eContentLinkRules` varchar(512) DEFAULT '',
-  `notesTabName` varchar(50) DEFAULT 'Notes',
   `showHoldButtonInSearchResults` tinyint(4) DEFAULT '1',
   `showSimilarAuthors` tinyint(4) DEFAULT '1',
   `showSimilarTitles` tinyint(4) DEFAULT '1',
@@ -803,7 +799,7 @@ CREATE TABLE `library` (
   `showCheckInGrid` int(11) DEFAULT '1',
   `recordsToBlackList` mediumtext,
   `homeLinkText` varchar(50) DEFAULT 'Home',
-  `showOtherFormatCategory` tinyint(1) DEFAULT '1',
+#   `showOtherFormatCategory` tinyint(1) DEFAULT '1',
   `showWikipediaContent` tinyint(1) DEFAULT '1',
   `payFinesLink` varchar(512) DEFAULT 'default',
   `payFinesLinkText` varchar(512) DEFAULT 'Click to Pay Fines Online',
@@ -1297,7 +1293,7 @@ CREATE TABLE `location` (
   `holdingBranchLabel` varchar(40) NOT NULL COMMENT 'The label used within the Holdings table in Millenium.',
   `scope` smallint(6) NOT NULL COMMENT 'The scope for the system in Sierra to refine holdings to the branch.  If there is no scope defined for the branch, this can be set to 0.',
   `useScope` tinyint(4) NOT NULL COMMENT 'Whether or not the scope should be used when displaying holdings.  ',
-  `facetFile` varchar(15) NOT NULL DEFAULT 'default' COMMENT 'The name of the facet file which should be used while searching use default to not override the file',
+#   `facetFile` varchar(15) NOT NULL DEFAULT 'default' COMMENT 'The name of the facet file which should be used while searching use default to not override the file',
   `showHoldButton` tinyint(4) NOT NULL COMMENT 'Whether or not the hold button is displayed so patrons can place holds on items',
   `isMainBranch` tinyint(1) DEFAULT '0',
   `showStandardReviews` tinyint(4) NOT NULL COMMENT 'Whether or not reviews from Content Cafe/Syndetics are displayed on the full record page.',
@@ -2496,35 +2492,6 @@ CREATE TABLE `user_not_interested` (
 LOCK TABLES `user_not_interested` WRITE;
 /*!40000 ALTER TABLE `user_not_interested` DISABLE KEYS */;
 /*!40000 ALTER TABLE `user_not_interested` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `user_rating`
---
-
-DROP TABLE IF EXISTS `user_rating`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `user_rating` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `userid` int(11) NOT NULL,
-  `resourceid` int(11) NOT NULL,
-  `rating` int(1) NOT NULL,
-  `dateRated` int(11) DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `uniqueness` (`userid`,`resourceid`),
-  KEY `Resourceid` (`resourceid`),
-  KEY `UserId` (`userid`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `user_rating`
---
-
-LOCK TABLES `user_rating` WRITE;
-/*!40000 ALTER TABLE `user_rating` DISABLE KEYS */;
-/*!40000 ALTER TABLE `user_rating` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --

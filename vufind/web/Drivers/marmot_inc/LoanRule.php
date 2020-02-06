@@ -22,7 +22,6 @@
  */
 require_once 'DB/DataObject.php';
 
-
 class LoanRule extends DB_DataObject {
 	public $__table = 'loan_rules';   // table name
 	public $id;
@@ -56,18 +55,18 @@ class LoanRule extends DB_DataObject {
 
 	function insert(){
 		parent::insert();
-		/** @var Memcache $memCache */
-		global $memCache;
-		global $instanceName;
-		$memCache->delete($instanceName . '_loan_rules');
+//		/** @var Memcache $memCache */
+//		global $memCache;
+//		global $instanceName;
+//		$memCache->delete($instanceName . '_loan_rules');
 	}
 
 	function update($dataObject = false){
 		parent::update($dataObject);
-		/** @var Memcache $memCache */
-		global $memCache;
-		global $instanceName;
-		$memCache->delete($instanceName . '_loan_rules');
+//		/** @var Memcache $memCache */
+//		global $memCache;
+//		global $instanceName;
+//		$memCache->delete($instanceName . '_loan_rules');
 	}
 
 	/**
