@@ -17,7 +17,7 @@ echo Moving PHP 5.x Apache conf file...
 find /etc/httpd/conf.modules.d/ -name "*php55*" -exec mv {} php55.noconf \;
 
 echo Enabling Remi PHP 7.4 repo...
-yum-config-manager --enable remi-php74 \
+yum-config-manager --disable remi-php55; yum-config-manager --enable remi-php74 \
 || { printf "%b" "Failed to enable Remi PHP 7.4 repo. Exiting.\n" ; exit 1 ; }
 echo
 
