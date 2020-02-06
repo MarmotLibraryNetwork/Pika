@@ -194,43 +194,49 @@ class MergeMarcUpdatesAndDeletes {
 					numDeletions = 0;
 					numAdditions = 0;
 					numUpdates = 0;
+					int numRecords = 0;
+					String lastRecordId = "";
 					try {
-						FileInputStream marcFileStream = new FileInputStream(mainFile);
-						MarcReader mainReader = new MarcPermissiveStreamReader(marcFileStream, true, true, marcEncoding);
-						Record curBib;
-						FileOutputStream marcOutputStream = new FileOutputStream(mergedFile);
-						MarcStreamWriter mainWriter = new MarcStreamWriter(marcOutputStream);
-						while (mainReader.hasNext()) {
+						try (FileInputStream marcFileStream = new FileInputStream(mainFile)) {
+							MarcReader       mainReader = new MarcPermissiveStreamReader(marcFileStream, true, true, marcEncoding);
+							Record           curBib;
+							MarcStreamWriter mainWriter;
+							try (FileOutputStream marcOutputStream = new FileOutputStream(mergedFile)) {
+								mainWriter = new MarcStreamWriter(marcOutputStream);
 
-							curBib = mainReader.next();
-							String recordId = getRecordIdFromMarcRecord(curBib);
-							if (recordId == null)
-								continue;
+								while (mainReader.hasNext()) {
 
-							if (recordsToUpdate.containsKey(recordId)) {
-								//Write the updated record
-								mainWriter.write(recordsToUpdate.get(recordId));
-								recordsToUpdate.remove(recordId);
-								numUpdates++;
-								logger.info("Updating... " + recordId);
-							} else if (recordsToDelete.contains(recordId)) {
-								numDeletions++;
-								logger.info("Deleting..." + recordId);
-							} else if (!recordsToDelete.contains(recordId)) {
-								//Unless the record is marked for deletion, write it
-								mainWriter.write(curBib);
+									curBib = mainReader.next();
+									numRecords++;
+									String recordId = getRecordIdFromMarcRecord(curBib);
+									if (recordId == null)
+										continue;
+
+									if (recordsToUpdate.containsKey(recordId)) {
+										//Write the updated record
+										mainWriter.write(recordsToUpdate.get(recordId));
+										recordsToUpdate.remove(recordId);
+										numUpdates++;
+										logger.info("Updating... " + recordId);
+									} else if (recordsToDelete.contains(recordId)) {
+										numDeletions++;
+										logger.info("Deleting..." + recordId);
+									} else if (!recordsToDelete.contains(recordId)) {
+										//Unless the record is marked for deletion, write it
+										mainWriter.write(curBib);
+									}
+									lastRecordId = recordId;
+								}
+
+								//Anything left in the updates file is new and should be added
+								for (Record newMarc : recordsToUpdate.values()) {
+									mainWriter.write(newMarc);
+									logger.info("Adding...." + getRecordIdFromMarcRecord(newMarc));
+									numAdditions++;
+								}
+								mainWriter.close();
 							}
-
 						}
-
-						//Anything left in the updates file is new and should be added
-						for (Record newMarc : recordsToUpdate.values()) {
-							mainWriter.write(newMarc);
-							logger.info("Adding...." + getRecordIdFromMarcRecord(newMarc));
-							numAdditions++;
-						}
-						mainWriter.close();
-						marcFileStream.close();
 
 						logger.info("Additions: " + numAdditions);
 						logger.info("Deletions: " + numDeletions);
@@ -238,8 +244,7 @@ class MergeMarcUpdatesAndDeletes {
 
 						logger.info("Update SUCCESSFUL");
 					} catch (Exception e) {
-
-						logger.error("Error processing main file", e);
+						logger.error("Error processing main file " + mainFile + " Last record processed was the " + numRecords + "-th record in the file. The last recordId processed was " + lastRecordId, e);
 						errorOccurred = true;
 					}
 
