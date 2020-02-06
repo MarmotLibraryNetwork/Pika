@@ -101,7 +101,7 @@ class GroupedWorkDriver extends RecordInterface {
 				enableErrorHandler();
 			}
 
-		}else{
+		}elseif (is_array($indexFields)){
 			$this->fields = $indexFields;
 			// Load highlighting/snippet preferences:
 			global $configArray;
@@ -109,6 +109,8 @@ class GroupedWorkDriver extends RecordInterface {
 			$this->highlight       = $configArray['Index']['enableHighlighting'];
 			$this->snippet         = $configArray['Index']['enableSnippets'];
 			$this->snippetCaptions = isset($searchSettings['Snippet_Captions']) && is_array($searchSettings['Snippet_Captions']) ? $searchSettings['Snippet_Captions'] : array();
+		} else {
+			$this->isValid = false;
 		}
 	}
 
@@ -258,7 +260,7 @@ class GroupedWorkDriver extends RecordInterface {
 	 * @return  array               Strings representing citation formats.
 	 */
 	public function getCitationFormats(){
-		return array('AMA', 'APA', 'ChicagoHumanities', 'ChicagoAuthDate', 'MLA');
+		return ['AMA', 'APA', 'ChicagoHumanities', 'ChicagoAuthDate', 'MLA'];
 	}
 
 	/**
@@ -270,19 +272,9 @@ class GroupedWorkDriver extends RecordInterface {
 	 * @return  mixed               Editions in index engine result format.
 	 *                              (or null if no hits, or PEAR_Error object).
 	 */
-	public function getEditions(){
-		// TODO: Implement getEditions() method.
-	}
-
-	/**
-	 * Get the text to represent this record in the body of an email.
-	 *
-	 * @access  public
-	 * @return  string              Text for inclusion in email.
-	 */
-	public function getEmail(){
-		// TODO: Remove getEmail() method.
-	}
+//	public function getEditions(){
+//		// TODO: Implement getEditions() method.
+//	}
 
 	/**
 	 * Assign necessary Smarty variables and return a template name to
@@ -1883,13 +1875,7 @@ class GroupedWorkDriver extends RecordInterface {
 	}
 
 	static function compareHoldability($a, $b){
-		if ($a['holdable'] == $b['holdable']){
-			return 0;
-		}elseif ($a['holdable']){
-			return -1;
-		}else{
-			return 1;
-		}
+		return $a['holdable'] <=> $b['holdable'];
 	}
 
 	static function compareLanguagesForRecords($a, $b){

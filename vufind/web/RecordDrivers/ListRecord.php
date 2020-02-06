@@ -25,12 +25,11 @@ require_once ROOT_DIR . '/RecordDrivers/IndexRecord.php';
  * This class is designed to handle List records.  Much of its functionality
  * is inherited from the default index-based driver.
  */
-class ListRecord extends IndexRecord
-{
-	public function __construct($record)
-	{
+class ListRecord extends IndexRecord{
+
+	public function __construct($record){
 		// Call the parent's constructor...
-		parent::__construct($record);
+		parent::__construct($record, -1);  // -1 to prevent uselessly trying to fetch a grouped work for a person record
 	}
 
 	/**
@@ -78,14 +77,11 @@ class ListRecord extends IndexRecord
 	// initally taken From GroupedWorkDriver.php getBrowseResult();
 	public function getBrowseResult(){
 		global $interface;
-		$id = $this->getUniqueID();
-		$interface->assign('summId', $id);
+		$id      = $this->getUniqueID();
 		$shortId = substr($id, 4);  // Trim the list prefix for the short id
-//		$interface->assign('summShortId', $shortId);
-
 		$url ='/MyAccount/MyList/'.$shortId;
-//		$test = $this->getURLs();
-
+		$interface->assign('summId', $id);
+//		$interface->assign('summShortId', $shortId);
 		$interface->assign('summUrl', $url);
 		$interface->assign('summTitle', $this->getTitle());
 //		$interface->assign('summSubTitle', $this->getSubtitle());
@@ -99,7 +95,6 @@ class ListRecord extends IndexRecord
 
 
 		return 'RecordDrivers/List/cover_result.tpl';
-//		return 'RecordDrivers/GroupedWork/browse_result.tpl';
 	}
 
 	function getFormat() {
@@ -117,23 +112,21 @@ class ListRecord extends IndexRecord
 		if ($this->highlight && $useHighlighting) {
 			if (isset($this->fields['_highlighting']['title_display'][0])){
 				return $this->fields['_highlighting']['title_display'][0];
-			}else if (isset($this->fields['_highlighting']['title_full'][0])){
+			}elseif (isset($this->fields['_highlighting']['title_full'][0])){
 				return $this->fields['_highlighting']['title_full'][0];
 			}
 		}
 
 		if (isset($this->fields['title_display'])){
 			return $this->fields['title_display'];
-		}else{
-			if (isset($this->fields['title_full'])){
-				if (is_array($this->fields['title_full'])){
-					return reset($this->fields['title_full']);
-				}else{
-					return $this->fields['title_full'];
-				}
+		}elseif (isset($this->fields['title_full'])){
+			if (is_array($this->fields['title_full'])){
+				return reset($this->fields['title_full']);
 			}else{
-				return '';
+				return $this->fields['title_full'];
 			}
+		}else{
+			return '';
 		}
 	}
 

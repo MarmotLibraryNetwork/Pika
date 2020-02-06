@@ -21,7 +21,7 @@ require_once ROOT_DIR . '/RecordDrivers/IndexRecord.php';
 require_once ROOT_DIR . '/sys/Genealogy/Person.php';
 
 /**
- * List Record Driver
+ * Person Record Driver
  *
  * This class is designed to handle List records.  Much of its functionality
  * is inherited from the default index-based driver.
@@ -32,12 +32,11 @@ class PersonRecord extends IndexRecord
 	private $person;
 	private $id;
 	private $shortId;
-	public function __construct($record)
-	{
+	public function __construct($record){
 		// Call the parent's constructor...
-		parent::__construct($record);
+		parent::__construct($record, -1); // -1 to prevent uselessly trying to fetch a grouped work for a person record
 
-		$this->id = $this->getUniqueID();
+		$this->id      = $this->getUniqueID();
 		$this->shortId = substr($this->id, 6);
 	}
 
@@ -63,9 +62,6 @@ class PersonRecord extends IndexRecord
 	public function getSearchResult($view = 'list'){
 		global $interface;
 
-		$interface->assign('summId', $this->id);
-		$interface->assign('summShortId', $this->shortId); //Trim the person prefix for the short id
-
 		$person = $this->getPerson();
 		if (!empty($person)){
 			$interface->assign('summPicture', $person->picture);
@@ -76,8 +72,8 @@ class PersonRecord extends IndexRecord
 			$interface->assign('numObits', count($person->obituaries));
 		}
 
-		$name = $this->getName();
-		$interface->assign('summTitle', trim($name));
+		$name   = trim($this->getName());
+		$interface->assign('summTitle', $name);
 
 		return 'RecordDrivers/Person/result.tpl';
 	}
@@ -94,13 +90,13 @@ class PersonRecord extends IndexRecord
 		if (isset($this->fields['middleName'])){
 			$name .= ' ' . $this->fields['middleName'];
 		}
-		if (isset($this->fields['nickName']) && strlen($this->fields['nickName']) > 0){
+		if (!empty($this->fields['nickName'])){
 			$name .= ' "' . $this->fields['nickName'] . '"';
 		}
-		if (isset($this->fields['maidenName']) && strlen($this->fields['maidenName']) > 0){
+		if (!empty($this->fields['maidenName'])){
 			$name .= ' (' . $this->fields['maidenName'] . ')';
 		}
-		if (isset($this->fields['lastName']) && strlen($this->fields['lastName']) > 0) {
+		if (!empty($this->fields['lastName'])) {
 			$name .= ' ' . $this->fields['lastName'];
 		}
 		return $name;

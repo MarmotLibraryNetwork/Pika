@@ -101,16 +101,6 @@ class EbscoRecordDriver extends RecordInterface {
 	}
 
 	/**
-	 * Get the text to represent this record in the body of an email.
-	 *
-	 * @access  public
-	 * @return  string              Text for inclusion in email.
-	 */
-	public function getEmail() {
-		// TODO: Implement getEmail() method.
-	}
-
-	/**
 	 * Assign necessary Smarty variables and return a template name to
 	 * load in order to export the record in the requested format.  For
 	 * legal values, see getExportFormats().  Returns null if format is
