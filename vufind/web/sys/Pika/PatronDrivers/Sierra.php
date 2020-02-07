@@ -74,6 +74,8 @@ use ReadingHistoryEntry;
 use PinReset;
 use PHPMailer\PHPMailer\PHPMailer;
 
+require_once ROOT_DIR . '/sys/Account/ReadingHistoryEntry.php';
+
 class Sierra {
 	// let's swing back around to this later.
 //	use \PatronCheckOutsOperations;

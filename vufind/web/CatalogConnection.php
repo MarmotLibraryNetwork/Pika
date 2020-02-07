@@ -233,7 +233,7 @@ class CatalogConnection
 	 * @return ReadingHistoryEntry
 	 */
 	private function getReadingHistoryDBObject($patron){
-	require_once ROOT_DIR . '/sys/ReadingHistoryEntry.php';
+	require_once ROOT_DIR . '/sys/Account/ReadingHistoryEntry.php';
 	// Reading History entries with groupedWorkIds
 
 	$readingHistoryDB          = new ReadingHistoryEntry();
@@ -948,7 +948,7 @@ class CatalogConnection
 	 * @param User $patron
 	 */
 	private function updateReadingHistoryBasedOnCurrentCheckouts($patron) {
-		require_once ROOT_DIR . '/sys/ReadingHistoryEntry.php';
+		require_once ROOT_DIR . '/sys/Account/ReadingHistoryEntry.php';
 		//Note, include deleted titles here so they are not added multiple times.
 		$readingHistoryDB         = new ReadingHistoryEntry();
 		$readingHistoryDB->userId = $patron->id;
