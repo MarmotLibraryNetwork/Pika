@@ -146,7 +146,7 @@ class AJAX extends AJAXHandler {
 			if (is_a($searchObject, 'SearchObject_Solr')){ //Load results from Prospector
 				$ILLDriver = $configArray['InterLibraryLoan']['ILLDriver'];//			$prospector = new Prospector();
 				/** @var Prospector|AutoGraphicsShareIt $ILLDriver */
-				require_once ROOT_DIR . 'sys/InterLibraryLoanDrivers/' . $ILLDriver . '.php';
+				require_once ROOT_DIR . '/sys/InterLibraryLoanDrivers/' . $ILLDriver . '.php';
 				$prospector = new $ILLDriver();// Only show prospector results within search results if enabled
 				if ($library && $library->enableProspectorIntegration && $library->showProspectorResultsAtEndOfSearch){
 					$prospectorResults = $prospector->getTopSearchResults($searchObject->getSearchTerms(), 5);

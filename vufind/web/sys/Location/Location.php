@@ -873,7 +873,7 @@ class Location extends DB_DataObject {
 		if ($this->ipLocation == false || $this->ipId == false){
 			$timer->logTime('Starting getIPLocation');
 			//echo("Active IP is $activeIp");
-			require_once ROOT_DIR . '/Drivers/marmot_inc/subnet.php';
+			require_once ROOT_DIR . '/sys/Network/subnet.php';
 			$subnet = new subnet();
 			$ipVal  = ip2long($activeIp);
 
