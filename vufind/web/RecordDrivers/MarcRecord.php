@@ -1115,7 +1115,7 @@ class MarcRecord extends IndexRecord
 		$upc = $this->getCleanUPC();
 		if ($isbn || $upc) {
 			if (!$library || ($library && $library->preferSyndeticsSummary == 1)) {
-				require_once ROOT_DIR . '/Drivers/marmot_inc/GoDeeperData.php';
+				require_once ROOT_DIR . '/sys/ExternalEnrichment/GoDeeperData.php';
 				$summaryInfo = GoDeeperData::getSummary($isbn, $upc);
 				if (isset($summaryInfo['summary'])) {
 					$summary = $summaryInfo['summary'];
@@ -1145,7 +1145,7 @@ class MarcRecord extends IndexRecord
 				$interface->assign('summary', $summary);
 				$interface->assign('summaryTeaser', strip_tags($summary));
 			} elseif ($library && $library->preferSyndeticsSummary == 0) {
-				require_once ROOT_DIR . '/Drivers/marmot_inc/GoDeeperData.php';
+				require_once ROOT_DIR . '/sys/ExternalEnrichment/GoDeeperData.php';
 				$summaryInfo = GoDeeperData::getSummary($isbn, $upc);
 				if (isset($summaryInfo['summary'])) {
 					$summary = $summaryInfo['summary'];
@@ -1227,7 +1227,7 @@ class MarcRecord extends IndexRecord
 			$useMarcSummary = true;
 			if ($allowExternalDescription) {
 				if (!is_null($isbn) || !is_null($upc)) {
-					require_once ROOT_DIR . '/Drivers/marmot_inc/GoDeeperData.php';
+					require_once ROOT_DIR . '/sys/ExternalEnrichment/GoDeeperData.php';
 					$summaryInfo = GoDeeperData::getSummary($isbn, $upc);
 					if (isset($summaryInfo['summary'])) {
 						$descriptionArray['description'] = $this->trimDescription($summaryInfo['summary']);

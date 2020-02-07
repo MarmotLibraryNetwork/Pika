@@ -17,7 +17,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-require_once(ROOT_DIR . '/Drivers/marmot_inc/ISBNConverter.php') ;
+require_once ROOT_DIR . '/Drivers/marmot_inc/ISBNConverter.php';
 
 class GoDeeperData{
 	static function getGoDeeperOptions($isbn, $upc, $getDefaultData = false){

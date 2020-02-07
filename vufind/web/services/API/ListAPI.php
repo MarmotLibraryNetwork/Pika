@@ -930,7 +930,7 @@ class ListAPI extends AJAXHandler {
 		}
 
 		// Get the raw response from the API with a list of all the names
-		require_once ROOT_DIR . '/sys/NYTApi.php';
+		require_once ROOT_DIR . '/sys/ExternalEnrichment/NYTApi.php';
 		$nyt_api = new NYTApi($api_key);
 		$results = $nyt_api->get_list($listName);
 		return json_decode($results);
@@ -980,7 +980,7 @@ class ListAPI extends AJAXHandler {
 		}
 
 		//Get the raw response from the API with a list of all the names
-		require_once ROOT_DIR . '/sys/NYTApi.php';
+		require_once ROOT_DIR . '/sys/ExternalEnrichment/NYTApi.php';
 		$nyt_api           = new NYTApi($api_key);
 		$availableListsRaw = $nyt_api->get_list('names');
 		//Convert into an object that can be processed

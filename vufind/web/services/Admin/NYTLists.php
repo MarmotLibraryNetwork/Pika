@@ -41,7 +41,7 @@ class NYTLists extends Admin_Admin {
 			$api_key = $configArray['NYT_API']['books_API_key'];
 
 			// instantiate class with api key
-			require_once ROOT_DIR . '/sys/NYTApi.php';
+			require_once ROOT_DIR . '/sys/ExternalEnrichment/NYTApi.php';
 			$nyt_api = new NYTApi($api_key);
 
 			//Get the raw response from the API with a list of all the names

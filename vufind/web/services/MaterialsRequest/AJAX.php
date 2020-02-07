@@ -427,7 +427,7 @@ class MaterialsRequest_AJAX extends AJAXHandler {
 
 					if (strlen($curTitle['description']) == 0 && isset($curTitle["ISBN"]) && is_array($curTitle["ISBN"]) && count($curTitle["ISBN"]) > 0){
 						//Get the description from syndetics
-						require_once ROOT_DIR . '/Drivers/marmot_inc/GoDeeperData.php';
+						require_once ROOT_DIR . '/sys/ExternalEnrichment/GoDeeperData.php';
 						$summaryInfo = GoDeeperData::getSummary($curTitle["ISBN"][0], null);
 						if (isset($summaryInfo['summary'])){
 							$curTitle['description'] = $summaryInfo['summary'];

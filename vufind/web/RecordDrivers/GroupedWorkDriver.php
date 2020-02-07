@@ -1100,7 +1100,7 @@ class GroupedWorkDriver extends RecordInterface {
 		$description = null;
 		$cleanIsbn   = $this->getCleanISBN();
 		if ($cleanIsbn != null && strlen($cleanIsbn) > 0){
-			require_once ROOT_DIR . '/Drivers/marmot_inc/GoDeeperData.php';
+			require_once ROOT_DIR . '/sys/ExternalEnrichment/GoDeeperData.php';
 			$summaryInfo = GoDeeperData::getSummary($cleanIsbn, $this->getCleanUPC());
 			if (isset($summaryInfo['summary'])){
 				$description = $summaryInfo['summary'];
