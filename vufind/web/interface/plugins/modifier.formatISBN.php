@@ -17,7 +17,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-require_once ROOT_DIR . '/sys/ISBN.php';
+require_once ROOT_DIR . '/sys/ISBN/ISBN.php';
 
 /*
  * Smarty plugin

@@ -1345,7 +1345,7 @@ class GroupedWorkDriver extends RecordInterface {
 	 * @return  mixed
 	 */
 	public function getCleanISBN(){
-		require_once ROOT_DIR . '/sys/ISBN.php';
+		require_once ROOT_DIR . '/sys/ISBN/ISBN.php';
 
 		//Check to see if we already have NovelistData loaded with a primary ISBN
 		require_once ROOT_DIR . '/sys/Novelist/NovelistData.php';

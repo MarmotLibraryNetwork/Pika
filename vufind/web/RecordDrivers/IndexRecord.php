@@ -555,28 +555,27 @@ class IndexRecord extends RecordInterface
 	 *
 	 * @return  mixed
 	 */
-	public function getCleanISBN()
-	{
-		require_once ROOT_DIR . '/sys/ISBN.php';
+	public function getCleanISBN(){
+		require_once ROOT_DIR . '/sys/ISBN/ISBN.php';
 
 		// Get all the ISBNs and initialize the return value:
-		$isbns = $this->getISBNs();
+		$isbns  = $this->getISBNs();
 		$isbn13 = false;
 
 		// Loop through the ISBNs:
-		foreach($isbns as $isbn) {
+		foreach ($isbns as $isbn){
 			// Strip off any unwanted notes:
-			if ($pos = strpos($isbn, ' ')) {
+			if ($pos = strpos($isbn, ' ')){
 				$isbn = substr($isbn, 0, $pos);
 			}
 
 			// If we find an ISBN-10, return it immediately; otherwise, if we find
 			// an ISBN-13, save it if it is the first one encountered.
 			$isbnObj = new ISBN($isbn);
-			if ($isbn10 = $isbnObj->get10()) {
+			if ($isbn10 = $isbnObj->get10()){
 				return $isbn10;
 			}
-			if (!$isbn13) {
+			if (!$isbn13){
 				$isbn13 = $isbnObj->get13();
 			}
 		}
@@ -584,29 +583,29 @@ class IndexRecord extends RecordInterface
 	}
 
 	public function getCleanISBNs(){
-		require_once ROOT_DIR . '/sys/ISBN.php';
+		require_once ROOT_DIR . '/sys/ISBN/ISBN.php';
 
 		$cleanIsbns = array();
 		// Get all the ISBNs and initialize the return value:
 		$isbns = $this->getISBNs();
 
 		// Loop through the ISBNs:
-		foreach($isbns as $isbn) {
+		foreach ($isbns as $isbn){
 			// Strip off any unwanted notes:
-			if ($pos = strpos($isbn, ' ')) {
+			if ($pos = strpos($isbn, ' ')){
 				$isbn = substr($isbn, 0, $pos);
 			}
 
 			// If we find an ISBN-10, return it immediately; otherwise, if we find
 			// an ISBN-13, save it if it is the first one encountered.
 			$isbnObj = new ISBN($isbn);
-			if ($isbn10 = $isbnObj->get10()) {
+			if ($isbn10 = $isbnObj->get10()){
 				if (!array_key_exists($isbn10, $cleanIsbns)){
 					$cleanIsbns[$isbn10] = $isbn10;
 				}
 			}
-			if ($isbn13 = $isbnObj->get13()) {
-				if (!array_key_exists($isbn13, $cleanIsbns)) {
+			if ($isbn13 = $isbnObj->get13()){
+				if (!array_key_exists($isbn13, $cleanIsbns)){
 					$cleanIsbns[$isbn13] = $isbn13;
 				}
 			}

@@ -554,6 +554,7 @@ class Solr implements IndexEngine {
 	 * @var     string $id The id to retrieve similar titles for
 	 */
 	function getMoreLikeThis2($id){
+		require_once ROOT_DIR . '/sys/ISBN/ISBN.php';
 		global $configArray;
 		global $solrScope;
 		$originalResult = $this->getRecord($id,
@@ -806,7 +807,7 @@ class Solr implements IndexEngine {
 							if (!preg_match('/^((?:\sOR\s)?["(]?\d{9,13}X?[\s")]*)+$/', $fieldValue)){
 								continue 2;
 							}else{
-								require_once(ROOT_DIR . '/sys/ISBN.php');
+								require_once ROOT_DIR . '/sys/ISBN/ISBN.php';
 								$isbn = new ISBN($fieldValue);
 								if ($isbn->isValid()){
 									$isbn10 = $isbn->get10();

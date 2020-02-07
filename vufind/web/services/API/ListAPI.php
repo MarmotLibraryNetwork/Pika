@@ -1081,6 +1081,7 @@ class ListAPI extends AJAXHandler {
 			if (!empty($isbnsArray)){
 				foreach ($isbnsArray as $isbns){
 					if (empty($isbns->isbn13)){
+						require_once ROOT_DIR . '/sys/ISBN/ISBN.php';
 						$isbnObj = new ISBN($isbns->isbn10);
 						$isbn    = $isbnObj->get13();
 					}else{
