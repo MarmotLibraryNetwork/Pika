@@ -17,7 +17,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-require_once ROOT_DIR . '/sys/mobile_device_detect.php';
+require_once ROOT_DIR . '/sys/mobileesp/mobile_device_detect.php';
 
 // Smarty Extension class
 class UInterface extends Smarty {
