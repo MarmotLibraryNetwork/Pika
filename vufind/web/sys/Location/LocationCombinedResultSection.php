@@ -20,7 +20,7 @@
  * Time: 4:01 PM
  */
 
-require_once ROOT_DIR . '/Drivers/marmot_inc/CombinedResultSection.php';
+require_once ROOT_DIR . '/sys/Search/CombinedResultSection.php';
 class LocationCombinedResultSection extends CombinedResultSection{
 	public $__table = 'location_combined_results_section';    // table name
 	public $locationId;
