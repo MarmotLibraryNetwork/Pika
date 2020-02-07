@@ -1272,7 +1272,7 @@ class User extends DB_DataObject {
 	 */
 	function placeOfflineHold($recordId, $itemId = null){
 
-		require_once ROOT_DIR . '/sys/OfflineHold.php';
+		require_once ROOT_DIR . '/sys/Circa/OfflineHold.php';
 		$offlineHold                = new OfflineHold();
 		$offlineHold->bibId         = $recordId;
 		$offlineHold->itemId        = $itemId;
