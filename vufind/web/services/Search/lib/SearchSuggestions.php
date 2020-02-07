@@ -44,6 +44,7 @@ class SearchSuggestions{
 			return array();
 		}
 
+		require_once ROOT_DIR . '/sys/Language/SpellingWord.php';
 		$spellingWord = new SpellingWord();
 		$words = explode(" ", $searchTerm);
 		$suggestions = array();

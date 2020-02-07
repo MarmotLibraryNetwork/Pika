@@ -2096,7 +2096,7 @@ class GroupedWorkDriver extends RecordInterface {
 		if (isset($library)){
 			$censorWords = !$library->hideCommentsWithBadWords;
 		} // censor if not hiding
-		require_once(ROOT_DIR . '/Drivers/marmot_inc/BadWord.php');
+		require_once ROOT_DIR . '/sys/Language/BadWord.php';
 		$badWords = new BadWord();
 
 		// Get the Reviews

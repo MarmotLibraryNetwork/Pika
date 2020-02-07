@@ -1,18 +1,14 @@
 <?php
 /**
- * Pika Discovery Layer
  * Copyright (C) 2020  Marmot Library Network
- *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
@@ -22,14 +18,13 @@
  */
 require_once 'DB/DataObject.php';
 
-class BadWord extends DB_DataObject
-{
+class BadWord extends DB_DataObject {
 	public $__table = 'bad_words';    // table name
 	public $id;                      //int(11)
 	public $word;                    //varchar(50)
 	public $replacement;             //varchar(50)
-	 
-	function keys() {
+
+	function keys(){
 		return array('id', 'word');
 	}
 
@@ -54,16 +49,18 @@ class BadWord extends DB_DataObject
 		return $badWordsList;
 	}
 
-	function censorBadWords($search, $replacement = '***') {
+	function censorBadWords($search, $replacement = '***'){
 		$badWordsList = $this->getBadWordExpressions();
-		$result = preg_replace($badWordsList, $replacement, $search);
+		$result       = preg_replace($badWordsList, $replacement, $search);
 		return $result;
 	}
 
 	function hasBadWords($search){
 		$badWordsList = $this->getBadWordExpressions();
-		foreach ($badWordsList as $badWord) {
-			if (preg_match($badWord, $search)) return true;
+		foreach ($badWordsList as $badWord){
+			if (preg_match($badWord, $search)){
+				return true;
+			}
 		}
 		return false;
 	}
