@@ -722,6 +722,7 @@ class MyAccount_AJAX extends AJAXHandler {
 		$searchObject->init();
 
 		//Get suggestions for the user
+		require_once ROOT_DIR . '/sys/LocalEnrichment/Suggestions.php';
 		$suggestions = Suggestions::getSuggestions();
 		$interface->assign('suggestions', $suggestions);
 		if (isset($library)){
@@ -1048,7 +1049,7 @@ class MyAccount_AJAX extends AJAXHandler {
 					// Load the User object for the owner of the list (if necessary):
 					if ($list->public == true || (UserAccount::isLoggedIn() && UserAccount::getActiveUserId() == $list->user_id)){
 						//The user can access the list
-						require_once ROOT_DIR . '/services/MyResearch/lib/FavoriteHandler.php';
+						require_once ROOT_DIR . '/sys/LocalEnrichment/FavoriteHandler.php';
 						$favoriteHandler = new FavoriteHandler($list, UserAccount::getActiveUserObj(), false);
 						$titleDetails    = $favoriteHandler->getTitles(count($listEntries));
 						// get all titles for email list, not just a page's worth

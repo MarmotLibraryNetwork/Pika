@@ -119,7 +119,7 @@ class ListAPI extends AJAXHandler {
 				);
 			}
 		}
-		require_once(ROOT_DIR . '/services/MyResearch/lib/Suggestions.php');
+		require_once ROOT_DIR . '/sys/LocalEnrichment/Suggestions.php';
 		$suggestions = Suggestions::getSuggestions($userId);
 		if (count($suggestions) > 0){
 			$results[] = array(
@@ -371,7 +371,7 @@ class ListAPI extends AJAXHandler {
 				}
 			}
 
-			require_once ROOT_DIR . '/services/MyResearch/lib/FavoriteHandler.php';
+			require_once ROOT_DIR . '/sys/LocalEnrichment/FavoriteHandler.php';
 			$user               = UserAccount::getLoggedInUser();
 			$favoriteHandler    = new FavoriteHandler($list, $user, false);
 			$isMixedContentList = $favoriteHandler->isMixedUserList();
@@ -472,7 +472,7 @@ class ListAPI extends AJAXHandler {
 						return array('success' => false, 'message' => 'A valid user must be provided to load recommendations.');
 					}else{
 						$userId = $user->id;
-						require_once(ROOT_DIR . '/services/MyResearch/lib/Suggestions.php');
+						require_once ROOT_DIR . '/sys/LocalEnrichment/Suggestions.php';
 						$suggestions = Suggestions::getSuggestions($userId);
 						$titles      = array();
 						foreach ($suggestions as $id => $suggestion){
