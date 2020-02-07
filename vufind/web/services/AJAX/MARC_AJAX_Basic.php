@@ -29,20 +29,29 @@
 require_once ROOT_DIR . '/AJAXHandler.php';
 
 trait MARC_AJAX_Basic {
+	/*protected array $methodsThatRespondWithJSONUnstructured;
+	protected array $methodsThatRespondWithJSONResultWrapper;
+	protected array $methodsThatRespondWithXML;
+	protected array $methodsThatRespondWithHTML;
+	protected array $methodsThatRespondThemselves;*/
 
 	function __construct(){
 
 		// Add allowed AJAX method calls to the ones already set
-		$this->methodsThatRespondWithJSONUnstructured  = array_merge($this->methodsThatRespondWithJSONUnstructured, array(
-			'reloadCover',
-		));
-		$this->methodsThatRespondWithJSONResultWrapper = array_merge($this->methodsThatRespondWithJSONResultWrapper, array());
+		if(!is_null($this->methodsThatRespondWithJSONUnstructured)){
+		$this->methodsThatRespondWithJSONUnstructured  = array_merge($this->methodsThatRespondWithJSONUnstructured,
+		                                                             array('reloadCover'));
+		} else {
+			$this->methodsThatRespondWithJSONUnstructured = array('reloadCover');
+		}
+		/*$this->methodsThatRespondWithJSONResultWrapper = array_merge($this->methodsThatRespondWithJSONResultWrapper, array());
 		$this->methodsThatRespondWithHTML             = array_merge($this->methodsThatRespondWithHTML, array());
-		$this->methodsThatRespondWithXML              = array_merge($this->methodsThatRespondWithXML, array());
-		$this->methodsThatRespondThemselves           = array_merge($this->methodsThatRespondThemselves, array(
-			'downloadMarc',
-		));
-
+		$this->methodsThatRespondWithXML              = array_merge($this->methodsThatRespondWithXML, array());*/
+		if(!is_null($this->methodsThatRespondThemselves)) {
+			$this->methodsThatRespondThemselves = array_merge($this->methodsThatRespondThemselves, array('downloadMarc'));
+		} else {
+			$this->methodsThatRespondThemselves = array('downloadMarc');
+		}
 	}
 
 	function downloadMarc(){
