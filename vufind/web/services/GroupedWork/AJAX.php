@@ -1036,7 +1036,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 		//Load results from Prospector
 		$ILLDriver = $configArray['InterLibraryLoan']['ILLDriver'];
 		/** @var Prospector|AutoGraphicsShareIt $prospector */
-		require_once ROOT_DIR . '/InterLibraryLoanDrivers/' . $ILLDriver . '.php';
+		require_once ROOT_DIR . 'sys/InterLibraryLoanDrivers/' . $ILLDriver . '.php';
 		$prospector = new $ILLDriver();
 
 		$searchTerms = array(
