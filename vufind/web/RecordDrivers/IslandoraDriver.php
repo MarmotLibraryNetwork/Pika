@@ -1047,7 +1047,7 @@ abstract class IslandoraDriver extends RecordInterface {
 		if ($this->subCollections == null){
 			$this->subCollections = array();
 			// Include Search Engine Class
-			require_once ROOT_DIR . '/sys/Solr.php';
+			require_once ROOT_DIR . '/sys/Search/Solr.php';
 
 			// Initialise from the current search globals
 			/** @var SearchObject_Islandora $searchObject */
@@ -1594,7 +1594,7 @@ abstract class IslandoraDriver extends RecordInterface {
 				unset($searchObject);
 			}
 			// Include Search Engine Class
-			require_once ROOT_DIR . '/sys/Solr.php';
+			require_once ROOT_DIR . '/sys/Search/Solr.php';
 
 			// Initialise from the current search globals
 			/** @var SearchObject_Islandora $searchObject */
@@ -2917,7 +2917,7 @@ abstract class IslandoraDriver extends RecordInterface {
 			$this->pidsOfChildContainers = array();
 
 			// Include Search Engine Class
-			require_once ROOT_DIR . '/sys/Solr.php';
+			require_once ROOT_DIR . '/sys/Search/Solr.php';
 
 			// Initialise from the current search globals
 			/** @var SearchObject_Islandora $searchObject */
@@ -2961,7 +2961,7 @@ abstract class IslandoraDriver extends RecordInterface {
 		if ($this->childObjects == null){
 			$this->childObjects = array();
 			// Include Search Engine Class
-			require_once ROOT_DIR . '/sys/Solr.php';
+			require_once ROOT_DIR . '/sys/Search/Solr.php';
 
 			// Initialise from the current search globals
 			/** @var SearchObject_Islandora $searchObject */
@@ -3015,7 +3015,7 @@ abstract class IslandoraDriver extends RecordInterface {
 
 	public function getRandomObject() {
 		// Include Search Engine Class
-		require_once ROOT_DIR . '/sys/Solr.php';
+		require_once ROOT_DIR . '/sys/Search/Solr.php';
 
 		// Initialise from the current search globals
 		/** @var SearchObject_Islandora $searchObject */

@@ -31,7 +31,7 @@ class Archive_Results extends Action {
 		global $timer;
 
 		// Include Search Engine Class
-		require_once ROOT_DIR . '/sys/Solr.php';
+		require_once ROOT_DIR . '/sys/Search/Solr.php';
 		$timer->logTime('Include search engine');
 
 		// Initialise from the current search globals

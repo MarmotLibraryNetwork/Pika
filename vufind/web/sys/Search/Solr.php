@@ -1,18 +1,14 @@
 <?php
 /**
- * Pika Discovery Layer
  * Copyright (C) 2020  Marmot Library Network
- *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
@@ -20,9 +16,8 @@ use Curl\Curl;
 use \Pika\Cache;
 use \Pika\Logger;
 
-require_once ROOT_DIR . '/sys/IndexEngine.php';
+require_once ROOT_DIR . '/sys/Search/IndexEngine.php';
 require_once ROOT_DIR . '/sys/ConfigArray.php';
-require_once ROOT_DIR . '/sys/SolrUtils.php';
 
 /**
  * Solr HTTP Interface
@@ -1191,7 +1186,7 @@ class Solr implements IndexEngine {
 						// Force boolean operators to uppercase if we are in a case-insensitive
 						// mode:
 						if (!$this->caseSensitiveBooleans) {
-							$lookfor = SolrUtils::capitalizeBooleans($lookfor);
+							$lookfor = self::capitalizeBooleans($lookfor);
 						}
 
 						if (isset($params['field']) && ($params['field'] != '')) {
@@ -1477,7 +1472,7 @@ class Solr implements IndexEngine {
 			// Force boolean operators to uppercase if we are in a case-insensitive
 			// mode:
 			if (!$this->caseSensitiveBooleans) {
-				$query = SolrUtils::capitalizeBooleans($query);
+				$query = self::capitalizeBooleans($query);
 			}
 
 			// Process advanced search -- if a handler was specified, let's see
@@ -2661,5 +2656,29 @@ class Solr implements IndexEngine {
 		}
 		return $fields;
 	}
+
+	/**
+	 * Capitalize boolean operators in a query string to allow case-insensitivity.
+	 *
+	 * @access  public
+	 * @param string $query The query to capitalize.
+	 * @return  string                  The capitalized query.
+	 */
+	private static function capitalizeBooleans($query){
+		// This lookAhead detects whether or not we are inside quotes; it
+		// is used to prevent switching case of Boolean reserved words
+		// inside quotes, since that can cause problems in case-sensitive
+		// fields when the reserved words are actually used as search terms.
+		$lookAhead = '(?=(?:[^\"]*+\"[^\"]*+\")*+[^\"]*+$)';
+		$regs      = [
+			"/\\s+AND\\s+{$lookAhead}/i",
+			"/\\s+OR\\s+{$lookAhead}/i",
+			"/(\\s+NOT\\s+|^NOT\\s+){$lookAhead}/i",
+			"/\\(NOT\\s+{$lookAhead}/i"];
+		$replace   = [' AND ', ' OR ', ' NOT ', '(NOT '];
+		return trim(preg_replace($regs, $replace, $query));
+	}
+
 }
+
 

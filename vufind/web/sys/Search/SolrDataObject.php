@@ -17,7 +17,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-require_once ROOT_DIR . '/sys/Solr.php';
+require_once ROOT_DIR . '/sys/Search/Solr.php';
 require_once 'DB/DataObject.php';
 
 abstract class SolrDataObject extends DB_DataObject{
@@ -104,7 +104,7 @@ abstract class SolrDataObject extends DB_DataObject{
 	abstract function solrId();
 
 	function removeFromSolr(){
-		require_once ROOT_DIR . '/sys/Solr.php';
+		require_once ROOT_DIR . '/sys/Search/Solr.php';
 		global $configArray;
 		$host = $configArray[$this->getConfigSection()]['url'];
 
@@ -205,7 +205,7 @@ abstract class SolrDataObject extends DB_DataObject{
 	}
 
 	function optimize(){
-		require_once ROOT_DIR . '/sys/Solr.php';
+		require_once ROOT_DIR . '/sys/Search/Solr.php';
 		global $configArray;
 		$host = $configArray[$this->getConfigSection()]['url'];
 

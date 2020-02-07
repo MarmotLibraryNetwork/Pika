@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-require_once ROOT_DIR . '/sys/Solr.php';
+require_once ROOT_DIR . '/sys/Search/Solr.php';
 require_once ROOT_DIR . '/sys/SearchObject/Base.php';
 require_once ROOT_DIR . '/RecordDrivers/Factory.php';
 
@@ -78,7 +78,6 @@ class SearchObject_Islandora extends SearchObject_Base {
 		global $configArray;
 		global $timer;
 		// Include our solr index
-		require_once ROOT_DIR . "/sys/Solr.php";
 		$this->searchType      = 'islandora';
 		$this->basicSearchType = 'islandora';
 		$this->indexEngine     = new Solr($configArray['Islandora']['solrUrl'], isset($configArray['Islandora']['solrCore']) ? $configArray['Islandora']['solrCore'] : 'islandora');

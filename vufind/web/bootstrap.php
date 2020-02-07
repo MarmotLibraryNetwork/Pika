@@ -133,6 +133,7 @@ function requireSystemLibraries(){
 	require_once ROOT_DIR . '/sys/Account/User.php';
 	require_once ROOT_DIR . '/sys/Account/AccountProfile.php';
 	require_once ROOT_DIR . '/sys/Language/Translator.php';
+	require_once ROOT_DIR . '/sys/Search/Solr.php';
 	require_once ROOT_DIR . '/sys/SearchObject/Factory.php';
 	require_once ROOT_DIR . '/sys/Library/Library.php';
 	require_once ROOT_DIR . '/sys/Location/Location.php';

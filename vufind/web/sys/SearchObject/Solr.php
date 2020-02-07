@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-require_once ROOT_DIR . '/sys/Solr.php';
+require_once ROOT_DIR . '/sys/Search/Solr.php';
 require_once ROOT_DIR . '/sys/SearchObject/Base.php';
 require_once ROOT_DIR . '/RecordDrivers/Factory.php';
 
@@ -82,7 +82,7 @@ class SearchObject_Solr extends SearchObject_Base
 		// Include our solr index
 		$class              = $configArray['Index']['engine'];
 		$classWithExtension = $class . '.php';
-		require_once ROOT_DIR . "/sys/" . $classWithExtension;
+//		require_once ROOT_DIR . "/sys/" . $classWithExtension;
 		// Initialise the index
 		$this->indexEngine = new $class($configArray['Index']['url']);
 		$timer->logTime('Created Index Engine');

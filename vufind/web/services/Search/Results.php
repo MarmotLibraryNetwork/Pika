@@ -63,7 +63,7 @@ class Search_Results extends Action {
 
 
 		// Include Search Engine Class
-		require_once ROOT_DIR . '/sys/Solr.php';
+		require_once ROOT_DIR . '/sys/Search/Solr.php';
 		$timer->logTime('Include search engine');
 		$memoryWatcher->logMemory('Include search engine');
 

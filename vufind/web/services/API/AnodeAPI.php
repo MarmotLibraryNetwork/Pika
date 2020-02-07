@@ -38,7 +38,7 @@ require_once ROOT_DIR . '/AJAXHandler.php';
 require_once ROOT_DIR . '/services/API/ItemAPI.php';
 require_once ROOT_DIR . '/services/API/ListAPI.php';
 require_once ROOT_DIR . '/services/API/SearchAPI.php';
-require_once ROOT_DIR . '/sys/Solr.php';
+require_once ROOT_DIR . '/sys/Search/Solr.php';
 
 class AnodeAPI extends AJAXHandler {
 

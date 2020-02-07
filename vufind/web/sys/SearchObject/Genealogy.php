@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-require_once ROOT_DIR . '/sys/Solr.php';
+require_once ROOT_DIR . '/sys/Search/Solr.php';
 require_once ROOT_DIR . '/sys/SearchObject/Base.php';
 require_once ROOT_DIR . '/RecordDrivers/Factory.php';
 require_once ROOT_DIR . '/sys/Location/Location.php';
