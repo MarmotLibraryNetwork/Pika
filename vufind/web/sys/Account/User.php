@@ -1340,18 +1340,20 @@ class User extends DB_DataObject {
 		$this->expireClose = 0;
 		$this->expired     = 0;
 
-		try {
-			$expiresDate   = new DateTime($dateString);
-			$this->expires = $expiresDate->format('m-d-Y');
-			$nowDate       = new DateTime('now');
-			$dateDiff      = $nowDate->diff($expiresDate);
-			if ($dateDiff->days <= 30){
-				$this->expireClose = 1;
+		if (!empty($dateString)){
+			try {
+				$expiresDate   = new DateTime($dateString);
+				$this->expires = $expiresDate->format('m-d-Y');
+				$nowDate       = new DateTime('now');
+				$dateDiff      = $nowDate->diff($expiresDate);
+				if ($dateDiff->days <= 30){
+					$this->expireClose = 1;
+				}
+				if ($dateDiff->days <= 0){
+					$this->expired = 1;
+				}
+			} catch (\Exception $e){
 			}
-			if ($dateDiff->days <= 0){
-				$this->expired = 1;
-			}
-		} catch (\Exception $e){
 		}
 	}
 
