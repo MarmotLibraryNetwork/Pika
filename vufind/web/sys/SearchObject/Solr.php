@@ -337,16 +337,13 @@ class SearchObject_Solr extends SearchObject_Base
 	 */
 	public function initAdvancedFacets()
 	{
-		global $locationSingleton;
 		// Call the standard initialization routine in the parent:
 		parent::init();
 
-		$searchLibrary = Library::getActiveLibrary();
-
-		$searchLocation = $locationSingleton->getActiveLocation();
-		/** @var Location $userLocation */
-//		$userLocation = Location::getUserHomeLocation();
-		$hasSearchLibraryFacets = ($searchLibrary != null && (count($searchLibrary->facets) > 0));
+		global $locationSingleton;
+		$searchLibrary           = Library::getActiveLibrary();
+		$searchLocation          = $locationSingleton->getActiveLocation();
+		$hasSearchLibraryFacets  = ($searchLibrary != null && (count($searchLibrary->facets) > 0));
 		$hasSearchLocationFacets = ($searchLocation != null && (count($searchLocation->facets) > 0));
 		if ($hasSearchLocationFacets){
 			$facets = $searchLocation->facets;
