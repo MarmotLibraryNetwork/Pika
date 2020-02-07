@@ -1961,7 +1961,7 @@ class MarcRecord extends IndexRecord
 			}
 		}else{
 
-			require_once ROOT_DIR . '/Drivers/marmot_inc/IlsHoldSummary.php';
+			require_once ROOT_DIR . '/sys/Extracting/IlsHoldSummary.php';
 			$holdSummary        = new IlsHoldSummary();
 			$holdSummary->ilsId = $this->getUniqueID();
 			if ($holdSummary->find(true)){
@@ -1982,6 +1982,7 @@ class MarcRecord extends IndexRecord
 	function getVolumeHolds($volumeData){
 		$holdInfo = null;
 		if (count($volumeData) > 0){
+			require_once ROOT_DIR . '/sys/Extracting/IlsHoldSummary.php';
 			$holdInfo = array();
 			foreach ($volumeData as $volumeInfo){
 				$ilsHoldInfo        = new IlsHoldSummary();
@@ -2003,7 +2004,7 @@ class MarcRecord extends IndexRecord
 	 * @return IlsVolumeInfo[]  An array of VolumeInfoObjects
 	 */
 	function getVolumeInfoForRecord(){
-		require_once ROOT_DIR . '/Drivers/marmot_inc/IlsVolumeInfo.php';
+		require_once ROOT_DIR . '/sys/Extracting/IlsVolumeInfo.php';
 		$volumeData             = array();
 		$volumeDataDB           = new IlsVolumeInfo();
 		$volumeDataDB->recordId = $this->sourceAndId->getSourceAndId();
