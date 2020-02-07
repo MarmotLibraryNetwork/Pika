@@ -21,21 +21,23 @@
  * Date: 2/10/2017
  *
  */
+require_once ROOT_DIR . '/sys/Search/FacetSetting.php';
+
 class LibraryArchiveSearchFacetSetting extends FacetSetting {
 	public $__table = 'library_archive_search_facet_setting';    // table name
 	public $libraryId;
 
-	static $defaultFacetList = array (
-		'mods_subject_topic_ms' => 'Subject',
-		'mods_genre_s' => 'Type',
-		'RELS_EXT_isMemberOfCollection_uri_ms' => 'Archive Collection',
+	static $defaultFacetList = array(
+		'mods_subject_topic_ms'                                          => 'Subject',
+		'mods_genre_s'                                                   => 'Type',
+		'RELS_EXT_isMemberOfCollection_uri_ms'                           => 'Archive Collection',
 		'mods_extension_marmotLocal_relatedEntity_person_entityTitle_ms' => 'Related People',
-		'mods_extension_marmotLocal_relatedEntity_place_entityTitle_ms' => 'Related Places',
-		'mods_extension_marmotLocal_relatedEntity_event_entityTitle_ms' => 'Related Events',
-		'mods_extension_marmotLocal_describedEntity_entityTitle_ms' => 'Described Entity',
-		'mods_extension_marmotLocal_picturedEntity_entityTitle_ms' => 'Pictured Entity',
-		'namespace_s' => 'Contributing Library',
-		//'ancestors_ms' => "Included In"
+		'mods_extension_marmotLocal_relatedEntity_place_entityTitle_ms'  => 'Related Places',
+		'mods_extension_marmotLocal_relatedEntity_event_entityTitle_ms'  => 'Related Events',
+		'mods_extension_marmotLocal_describedEntity_entityTitle_ms'      => 'Described Entity',
+		'mods_extension_marmotLocal_picturedEntity_entityTitle_ms'       => 'Pictured Entity',
+		'namespace_s'                                                    => 'Contributing Library',
+//		'ancestors_ms'                                                   => "Included In"
 	);
 
 	static function getObjectStructure($availableFacets = NULL){

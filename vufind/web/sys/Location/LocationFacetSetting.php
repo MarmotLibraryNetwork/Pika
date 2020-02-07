@@ -13,7 +13,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-require_once ROOT_DIR . '/Drivers/marmot_inc/FacetSetting.php';
+require_once ROOT_DIR . '/sys/Search/FacetSetting.php';
 
 class LocationFacetSetting extends FacetSetting {
 	public $__table = 'location_facet_setting';    // table name
