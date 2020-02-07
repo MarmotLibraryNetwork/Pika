@@ -2219,7 +2219,7 @@ abstract class IslandoraDriver extends RecordInterface {
 			if ($link['type'] == 'wikipedia'){
 				global $library;
 
-				require_once ROOT_DIR . '/sys/WikipediaParser.php';
+				require_once ROOT_DIR . '/sys/ExternalEnrichment/WikipediaParser.php';
 				$wikipediaParser = new WikipediaParser('en');
 
 				//Transform from a regular wikipedia link to an api link
