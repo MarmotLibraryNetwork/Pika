@@ -17,10 +17,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-require_once ROOT_DIR . "/Action.php";
-require_once ROOT_DIR . '/sys/MaterialsRequest.php';
-require_once ROOT_DIR . '/sys/MaterialsRequestStatus.php';
 require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
+require_once ROOT_DIR . '/sys/MaterialsRequest/MaterialsRequest.php';
+require_once ROOT_DIR . '/sys/MaterialsRequest/MaterialsRequestStatus.php';
 
 /**
  * MaterialsRequest MyRequests Page, displays materials request information for the active user.
