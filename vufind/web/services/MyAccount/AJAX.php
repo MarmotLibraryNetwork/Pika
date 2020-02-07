@@ -642,7 +642,7 @@ class MyAccount_AJAX extends AJAXHandler {
 	 * @return string XML representing the pickup branches.
 	 */
 //	function GetPreferredBranches(){
-//		require_once ROOT_DIR . '/Drivers/marmot_inc/Location.php';
+//		require_once ROOT_DIR . '/sys/Location/Location.php';
 //		global $configArray;
 //
 //		try {

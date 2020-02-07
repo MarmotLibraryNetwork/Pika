@@ -134,8 +134,8 @@ function requireSystemLibraries(){
 	require_once ROOT_DIR . '/sys/Account/AccountProfile.php';
 	require_once ROOT_DIR . '/sys/Translator.php';
 	require_once ROOT_DIR . '/sys/SearchObject/Factory.php';
-	require_once ROOT_DIR . '/Drivers/marmot_inc/Library.php';
-	require_once ROOT_DIR . '/Drivers/marmot_inc/Location.php';
+	require_once ROOT_DIR . '/sys/Library/Library.php';
+	require_once ROOT_DIR . '/sys/Location/Location.php';
 	require_once ROOT_DIR . '/Drivers/DriverInterface.php';
 	require_once ROOT_DIR . '/RecordDrivers/Factory.php';
 
@@ -529,6 +529,12 @@ function vufind_autoloader($class) {
 			require_once $className;
 		}elseif (file_exists('Drivers/marmot_inc/' . $class . '.php')){
 			$className = ROOT_DIR . '/Drivers/marmot_inc/' . $class . '.php';
+			require_once $className;
+		}elseif (file_exists('sys/Library/' . $class . '.php')){
+			$className = ROOT_DIR . '/sys/Library/' . $class . '.php';
+			require_once $className;
+		}elseif (file_exists('sys/Location/' . $class . '.php')){
+			$className = ROOT_DIR . '/sys/Location/' . $class . '.php';
 			require_once $className;
 		} elseif (file_exists('RecordDrivers/' . $class . '.php')){
 			$className = ROOT_DIR . '/RecordDrivers/' . $class . '.php';

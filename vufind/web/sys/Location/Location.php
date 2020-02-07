@@ -1,18 +1,14 @@
 <?php
 /**
- * Pika Discovery Layer
  * Copyright (C) 2020  Marmot Library Network
- *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
@@ -25,9 +21,9 @@ use Pika\Logger;
 
 require_once 'DB/DataObject.php';
 require_once ROOT_DIR . '/Drivers/marmot_inc/OneToManyDataObjectOperations.php';
-require_once ROOT_DIR . '/Drivers/marmot_inc/LocationHours.php';
-require_once ROOT_DIR . '/Drivers/marmot_inc/LocationFacetSetting.php';
-require_once ROOT_DIR . '/Drivers/marmot_inc/LocationCombinedResultSection.php';
+require_once ROOT_DIR . '/sys/Location/LocationHours.php';
+require_once ROOT_DIR . '/sys/Location/LocationFacetSetting.php';
+require_once ROOT_DIR . '/sys/Location/LocationCombinedResultSection.php';
 require_once ROOT_DIR . '/sys/Browse/LocationBrowseCategory.php';
 require_once ROOT_DIR . '/sys/Indexing/LocationRecordOwned.php';
 require_once ROOT_DIR . '/sys/Indexing/LocationRecordToInclude.php';
@@ -936,23 +932,9 @@ class Location extends DB_DataObject {
 		}elseif (!empty($_COOKIE['test_ip']) && $_COOKIE['test_ip'] != '127.0.0.1'){
 			$ip = $_COOKIE['test_ip'];
 		}else{
-			if (isset($_SERVER["HTTP_CLIENT_IP"])){
-				$ip = $_SERVER["HTTP_CLIENT_IP"];
-			}elseif (isset($_SERVER["HTTP_X_FORWARDED_FOR"])){
-				$ip = $_SERVER["HTTP_X_FORWARDED_FOR"];
-			}elseif (isset($_SERVER["HTTP_X_FORWARDED"])){
-				$ip = $_SERVER["HTTP_X_FORWARDED"];
-			}elseif (isset($_SERVER["HTTP_FORWARDED_FOR"])){
-				$ip = $_SERVER["HTTP_FORWARDED_FOR"];
-			}elseif (isset($_SERVER["HTTP_FORWARDED"])){
-				$ip = $_SERVER["HTTP_FORWARDED"];
-			}elseif (!empty($_SERVER['REMOTE_HOST'])){
-				$ip = $_SERVER['REMOTE_HOST'];
-			}elseif (!empty($_SERVER['REMOTE_ADDR'])){
-				$ip = $_SERVER['REMOTE_ADDR'];
-			}else{
-				$ip = '';
-			}
+			$ip = $_SERVER["HTTP_CLIENT_IP"] ?? $_SERVER["HTTP_X_FORWARDED_FOR"] ?? $_SERVER["HTTP_X_FORWARDED"] ??
+				$_SERVER["HTTP_FORWARDED_FOR"] ?? $_SERVER["HTTP_FORWARDED"] ?? $_SERVER["HTTP_FORWARDED"] ??
+				$_SERVER['REMOTE_HOST'] ?? $_SERVER['REMOTE_ADDR'] ?? '';
 		}
 		Location::$activeIp = $ip;
 		$timer->logTime("getActiveIp");
@@ -1237,7 +1219,7 @@ class Location extends DB_DataObject {
 			$dayOfWeekToday = strftime('%w', $timeToCheck);
 
 			// find library hours for the above day of the week
-			require_once ROOT_DIR . '/Drivers/marmot_inc/LocationHours.php';
+			require_once ROOT_DIR . '/sys/Location/LocationHours.php';
 			$hours             = new LocationHours();
 			$hours->locationId = $locationId;
 			$hours->day        = $dayOfWeekToday;

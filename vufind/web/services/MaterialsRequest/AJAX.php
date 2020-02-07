@@ -18,8 +18,8 @@
  */
 
 require_once ROOT_DIR . '/AJAXHandler.php';
-require_once ROOT_DIR . '/sys/MaterialsRequest.php';
-require_once ROOT_DIR . '/sys/MaterialsRequestStatus.php';
+require_once ROOT_DIR . '/sys/MaterialsRequest/MaterialsRequest.php';
+require_once ROOT_DIR . '/sys/MaterialsRequest/MaterialsRequestStatus.php';
 
 /**
  * MaterialsRequest AJAX Page, handles returning asynchronous information about Materials Requests.

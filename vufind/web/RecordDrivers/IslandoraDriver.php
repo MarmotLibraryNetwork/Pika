@@ -843,6 +843,7 @@ abstract class IslandoraDriver extends RecordInterface {
 		}
 
 		if ($useDefault){
+			require_once ROOT_DIR . '/sys/Library/LibraryArchiveMoreDetails.php';
 			/** @var LibraryArchiveMoreDetails[] $defaultDetailsFilters */
 			$defaultDetailsFilters = LibraryArchiveMoreDetails::getDefaultOptions($library->libraryId);
 //			$moreDetailsFilters = RecordInterface::getDefaultMoreDetailsOptions();

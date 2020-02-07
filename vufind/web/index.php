@@ -179,7 +179,7 @@ if ($isLoggedIn && (!isset($_REQUEST['action']) || $_REQUEST['action'] != 'Logou
 
 //Determine whether or not materials request functionality should be enabled
 // (set this after user log-in checking is done)
-require_once ROOT_DIR . '/sys/MaterialsRequest.php';
+require_once ROOT_DIR . '/sys/MaterialsRequest/MaterialsRequest.php';
 $interface->assign('enableMaterialsRequest', MaterialsRequest::enableMaterialsRequest());
 
 //Override MyAccount Home as needed

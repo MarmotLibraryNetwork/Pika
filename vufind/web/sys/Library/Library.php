@@ -1,18 +1,14 @@
 <?php
 /**
- * Pika Discovery Layer
  * Copyright (C) 2020  Marmot Library Network
- *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
@@ -25,20 +21,20 @@ require_once 'DB/DataObject.php';
 require_once ROOT_DIR . '/Drivers/marmot_inc/OneToManyDataObjectOperations.php';
 
 require_once ROOT_DIR . '/Drivers/marmot_inc/Holiday.php';
-require_once ROOT_DIR . '/Drivers/marmot_inc/LibraryFacetSetting.php';
-require_once ROOT_DIR . '/Drivers/marmot_inc/LibraryArchiveSearchFacetSetting.php';
-require_once ROOT_DIR . '/Drivers/marmot_inc/LibraryCombinedResultSection.php';
+require_once ROOT_DIR . '/sys/Library/LibraryFacetSetting.php';
+require_once ROOT_DIR . '/sys/Library/LibraryArchiveSearchFacetSetting.php';
+require_once ROOT_DIR . '/sys/Library/LibraryCombinedResultSection.php';
+require_once ROOT_DIR . '/sys/Library/LibraryMoreDetails.php';
+require_once ROOT_DIR . '/sys/Library/LibraryArchiveMoreDetails.php';
+require_once ROOT_DIR . '/sys/Library/LibraryLink.php';
+require_once ROOT_DIR . '/sys/Library/LibraryTopLinks.php';
 require_once ROOT_DIR . '/sys/Indexing/LibraryRecordOwned.php';
 require_once ROOT_DIR . '/sys/Indexing/LibraryRecordToInclude.php';
 require_once ROOT_DIR . '/sys/Hoopla/LibraryHooplaSettings.php';
 require_once ROOT_DIR . '/sys/Browse/LibraryBrowseCategory.php';
-require_once ROOT_DIR . '/sys/LibraryMoreDetails.php';
-require_once ROOT_DIR . '/sys/LibraryArchiveMoreDetails.php';
-require_once ROOT_DIR . '/sys/LibraryLink.php';
-require_once ROOT_DIR . '/sys/LibraryTopLinks.php';
-require_once ROOT_DIR . '/sys/MaterialsRequestFieldsToDisplay.php';
-require_once ROOT_DIR . '/sys/MaterialsRequestFormats.php';
-require_once ROOT_DIR . '/sys/MaterialsRequestFormFields.php';
+require_once ROOT_DIR . '/sys/MaterialsRequest/MaterialsRequestFieldsToDisplay.php';
+require_once ROOT_DIR . '/sys/MaterialsRequest/MaterialsRequestFormats.php';
+require_once ROOT_DIR . '/sys/MaterialsRequest/MaterialsRequestFormFields.php';
 
 class Library extends DB_DataObject {
 
@@ -346,18 +342,22 @@ class Library extends DB_DataObject {
 		unset($archiveSearchfacetSettingStructure['showInAuthorResults']);
 		//unset($archiveSearchfacetSettingStructure['sortMode']);
 
+		require_once ROOT_DIR . '/sys/Library/LibraryMoreDetails.php';
 		$libraryMoreDetailsStructure = LibraryMoreDetails::getObjectStructure();
 		unset($libraryMoreDetailsStructure['weight']);
 		unset($libraryMoreDetailsStructure['libraryId']);
 
+		require_once ROOT_DIR . '/sys/Library/LibraryArchiveMoreDetails.php';
 		$libraryArchiveMoreDetailsStructure = LibraryArchiveMoreDetails::getObjectStructure();
 		unset($libraryArchiveMoreDetailsStructure['weight']);
 		unset($libraryArchiveMoreDetailsStructure['libraryId']);
 
+		require_once ROOT_DIR . '/sys/Library/LibraryLink.php';
 		$libraryLinksStructure = LibraryLink::getObjectStructure();
 		unset($libraryLinksStructure['weight']);
 		unset($libraryLinksStructure['libraryId']);
 
+		require_once ROOT_DIR . '/sys/Library/LibraryTopLinks.php';
 		$libraryTopLinksStructure = LibraryTopLinks::getObjectStructure();
 		unset($libraryTopLinksStructure['weight']);
 		unset($libraryTopLinksStructure['libraryId']);

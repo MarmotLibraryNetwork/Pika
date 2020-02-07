@@ -19,7 +19,7 @@
 require_once ROOT_DIR . '/sys/Solr.php';
 require_once ROOT_DIR . '/sys/SearchObject/Base.php';
 require_once ROOT_DIR . '/RecordDrivers/Factory.php';
-require_once ROOT_DIR . '/Drivers/marmot_inc/Location.php';
+require_once ROOT_DIR . '/sys/Location/Location.php';
 
 /**
  * Search Object class
@@ -27,8 +27,7 @@ require_once ROOT_DIR . '/Drivers/marmot_inc/Location.php';
  * This is the default implementation of the SearchObjectBase class, providing the
  * Solr-driven functionality used by VuFind's standard Search module.
  */
-class SearchObject_Genealogy extends SearchObject_Base
-{
+class SearchObject_Genealogy extends SearchObject_Base {
 	// Publicly viewable version
 	private $publicQuery = null;
 	// Facets
