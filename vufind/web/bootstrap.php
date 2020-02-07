@@ -129,7 +129,7 @@ function requireSystemLibraries(){
 	global $timer;
 	// Require System Libraries
 	require_once ROOT_DIR . '/sys/Interface.php';
-	require_once ROOT_DIR . '/sys/UserAccount.php';
+	require_once ROOT_DIR . '/sys/Account/UserAccount.php';
 	require_once ROOT_DIR . '/sys/Account/User.php';
 	require_once ROOT_DIR . '/sys/Account/AccountProfile.php';
 	require_once ROOT_DIR . '/sys/Language/Translator.php';
