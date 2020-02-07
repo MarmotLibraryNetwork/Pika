@@ -87,6 +87,7 @@ class UInterface extends Smarty {
 		if (!empty($configArray['System']['debug'])){
 			if (isset($configArray['System']['debugTemplates'])){
 				$this->debugging = (bool)$configArray['System']['debugTemplates'];
+				$this->assign('deviceName', get_device_name()); // footer, only displayed when debug is on
 			}
 		}
 
