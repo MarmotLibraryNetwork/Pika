@@ -20,7 +20,7 @@ use Pika\Cache;
 use Pika\Logger;
 
 require_once 'DB/DataObject.php';
-require_once ROOT_DIR . '/Drivers/marmot_inc/OneToManyDataObjectOperations.php';
+require_once ROOT_DIR . '/sys/OneToManyDataObjectOperations.php';
 require_once ROOT_DIR . '/sys/Location/LocationHours.php';
 require_once ROOT_DIR . '/sys/Location/LocationFacetSetting.php';
 require_once ROOT_DIR . '/sys/Location/LocationCombinedResultSection.php';
