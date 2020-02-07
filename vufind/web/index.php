@@ -738,7 +738,7 @@ function setUpSearchDisplayOptions($module, $action){
 	if ($searchObject->getView()) $interface->assign('displayMode', $searchObject->getView());
 
 	//Load repeat search options
-	require_once ROOT_DIR . '/Drivers/marmot_inc/SearchSources.php';
+	require_once ROOT_DIR . '/sys/Search/SearchSources.php';
 	$searchSources = new SearchSources();
 	$interface->assign('searchSources', $searchSources->getSearchSources());
 

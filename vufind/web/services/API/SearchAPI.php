@@ -514,7 +514,7 @@ class SearchAPI extends AJAXHandler {
 
 
 		if ($configArray['Statistics']['enabled'] && isset($_GET['lookfor']) && !is_array($_GET['lookfor'])){
-			require_once ROOT_DIR . '/Drivers/marmot_inc/SearchStatNew.php';
+			require_once ROOT_DIR . '/sys/Search/SearchStatNew.php';
 			$searchStat = new SearchStatNew();
 			$type       = isset($_GET['type']) ? strip_tags($_GET['type']) : 'Keyword';
 			$searchStat->saveSearch(strip_tags($_GET['lookfor']), $type, $searchObject->getResultTotal());
@@ -577,7 +577,7 @@ class SearchAPI extends AJAXHandler {
 	 * Enter description here ...
 	 */
 	function getTopSearches(){
-		require_once(ROOT_DIR . '/Drivers/marmot_inc/SearchStatNew.php');
+		require_once ROOT_DIR . '/sys/Search/SearchStatNew.php';
 		$numSearchesToReturn = isset($_REQUEST['numResults']) ? $_REQUEST['numResults'] : 20;
 		$searchStats         = new SearchStatNew();
 		$searchStats->query("SELECT phrase, numSearches AS numTotalSearches FROM `search_stats_new` WHERE phrase != '' ORDER BY numTotalSearches DESC LIMIT " . $numSearchesToReturn);

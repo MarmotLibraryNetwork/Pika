@@ -18,6 +18,7 @@
  */
 
 require_once ROOT_DIR . '/Action.php';
+require_once ROOT_DIR . '/sys/Search/SearchEntry.php';
 
 class History extends Action {
 	private static $searchSourceLabels = array(

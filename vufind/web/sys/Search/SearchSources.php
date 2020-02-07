@@ -1,50 +1,47 @@
 <?php
 /**
- * Pika Discovery Layer
  * Copyright (C) 2020  Marmot Library Network
- *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-class SearchSources{
+class SearchSources {
 	static function getSearchSources(){
-		$searchSources = SearchSources::getSearchSourcesDefault();
+		$searchSources = self::getSearchSourcesDefault();
 		return $searchSources;
 	}
+
 	private static function getSearchSourcesDefault(){
 		$searchOptions = array();
 		//Check to see if marmot catalog is a valid option
 		global $library;
 		global $configArray;
-		$repeatSearchSetting = '';
-		$repeatInWorldCat = false;
-		$repeatInProspector = true;
-		$repeatInOverdrive = false;
-		$systemsToRepeatIn = array();
-		$searchGenealogy = true;
+		$repeatSearchSetting  = '';
+		$repeatInWorldCat     = false;
+		$repeatInProspector   = true;
+		$repeatInOverdrive    = false;
+		$systemsToRepeatIn    = array();
+		$searchGenealogy      = true;
 		$repeatCourseReserves = false;
-		$searchArchive = false;
-		$searchEbsco = false;
+		$searchArchive        = false;
+		$searchEbsco          = false;
 
 		/** @var $locationSingleton Location */
 		global $locationSingleton;
 		$location = $locationSingleton->getActiveLocation();
 		if ($location != null && $location->useScope && $location->restrictSearchByLocation){
 			$repeatSearchSetting = $location->repeatSearchOption;
-			$repeatInWorldCat = $location->repeatInWorldCat == 1;
-			$repeatInProspector = $location->repeatInProspector == 1;
-			$repeatInOverdrive = $location->repeatInOverdrive == 1;
+			$repeatInWorldCat    = $location->repeatInWorldCat == 1;
+			$repeatInProspector  = $location->repeatInProspector == 1;
+			$repeatInOverdrive   = $location->repeatInOverdrive == 1;
 			if (strlen($location->systemsToRepeatIn) > 0){
 				$systemsToRepeatIn = explode('|', $location->systemsToRepeatIn);
 			}else{
@@ -52,15 +49,15 @@ class SearchSources{
 			}
 		}elseif (isset($library)){
 			$repeatSearchSetting = $library->repeatSearchOption;
-			$repeatInWorldCat = $library->repeatInWorldCat == 1;
-			$repeatInProspector = $library->repeatInProspector == 1;
-			$repeatInOverdrive = $library->repeatInOverdrive == 1;
-			$systemsToRepeatIn = explode('|', $library->systemsToRepeatIn);
+			$repeatInWorldCat    = $library->repeatInWorldCat == 1;
+			$repeatInProspector  = $library->repeatInProspector == 1;
+			$repeatInOverdrive   = $library->repeatInOverdrive == 1;
+			$systemsToRepeatIn   = explode('|', $library->systemsToRepeatIn);
 		}
 		if (isset($library)){
-			$searchGenealogy = $library->enableGenealogy;
+			$searchGenealogy      = $library->enableGenealogy;
 			$repeatCourseReserves = $library->enableCourseReserves == 1;
-			$searchArchive = $library->enableArchive == 1;
+			$searchArchive        = $library->enableArchive == 1;
 			//TODO: Reenable once we do full EDS integration
 			//$searchEbsco = $library->edsApiProfile != '';
 		}
@@ -70,42 +67,42 @@ class SearchSources{
 		$marmotAdded = false;
 		if ($enableCombinedResults && $showCombinedResultsFirst){
 			$searchOptions['combinedResults'] = array(
-					'name' => $combinedResultsName,
-					'description' => "Combined results from multiple sources.",
-					'catalogType' => 'combined'
+				'name'        => $combinedResultsName,
+				'description' => "Combined results from multiple sources.",
+				'catalogType' => 'combined'
 			);
 		}
 
 		//Local search
 		if (!empty($location) && $location->useScope && $location->restrictSearchByLocation){
 			$searchOptions['local'] = array(
-              'name' => $location->displayName,
-              'description' => "The {$location->displayName} catalog.",
-							'catalogType' => 'catalog'
+				'name'        => $location->displayName,
+				'description' => "The {$location->displayName} catalog.",
+				'catalogType' => 'catalog'
 			);
 		}elseif (isset($library)){
 			$searchOptions['local'] = array(
-              'name' => strlen($library->abbreviatedDisplayName) > 0 ? $library->abbreviatedDisplayName :  $library->displayName,
-              'description' => "The {$library->displayName} catalog.",
-							'catalogType' => 'catalog'
+				'name'        => strlen($library->abbreviatedDisplayName) > 0 ? $library->abbreviatedDisplayName : $library->displayName,
+				'description' => "The {$library->displayName} catalog.",
+				'catalogType' => 'catalog'
 			);
 		}else{
-			$marmotAdded = true;
-			$consortiumName = $configArray['Site']['libraryName'];
+			$marmotAdded            = true;
+			$consortiumName         = $configArray['Site']['libraryName'];
 			$searchOptions['local'] = array(
-              'name' => "Entire $consortiumName Catalog",
-              'description' => "The entire $consortiumName catalog.",
-							'catalogType' => 'catalog'
+				'name'        => "Entire $consortiumName Catalog",
+				'description' => "The entire $consortiumName catalog.",
+				'catalogType' => 'catalog'
 			);
 		}
 
 		if (($location != null) &&
-		($repeatSearchSetting == 'marmot' || $repeatSearchSetting == 'librarySystem') &&
-		($location->useScope && $location->restrictSearchByLocation)
+			($repeatSearchSetting == 'marmot' || $repeatSearchSetting == 'librarySystem') &&
+			($location->useScope && $location->restrictSearchByLocation)
 		){
 			$searchOptions[$library->subdomain] = array(
-        'name' => $library->displayName,
-        'description' => "The entire {$library->displayName} catalog not limited to a particular branch.",
+				'name'        => $library->displayName,
+				'description' => "The entire {$library->displayName} catalog not limited to a particular branch.",
 				'catalogType' => 'catalog'
 			);
 		}
@@ -114,28 +111,28 @@ class SearchSources{
 		if (count($systemsToRepeatIn) > 0){
 			foreach ($systemsToRepeatIn as $system){
 				if (strlen($system) > 0){
-					$repeatInLibrary = new Library();
+					$repeatInLibrary            = new Library();
 					$repeatInLibrary->subdomain = $system;
 					$repeatInLibrary->find();
 					if ($repeatInLibrary->N == 1){
 						$repeatInLibrary->fetch();
 
 						$searchOptions[$repeatInLibrary->subdomain] = array(
-              'name' => $repeatInLibrary->displayName,
-              'description' => '',
+							'name'        => $repeatInLibrary->displayName,
+							'description' => '',
 							'catalogType' => 'catalog'
 						);
 					}else{
 						//See if this is a repeat within a location
-						$repeatInLocation = new Location();
+						$repeatInLocation       = new Location();
 						$repeatInLocation->code = $system;
 						$repeatInLocation->find();
 						if ($repeatInLocation->N == 1){
 							$repeatInLocation->fetch();
 
 							$searchOptions[$repeatInLocation->code] = array(
-                'name' => $repeatInLocation->displayName,
-                'description' => '',
+								'name'        => $repeatInLocation->displayName,
+								'description' => '',
 								'catalogType' => 'catalog'
 							);
 						}
@@ -145,84 +142,84 @@ class SearchSources{
 		}
 
 		$includeOnlineOption = true;
-		if ($location != null && $location->repeatInOnlineCollection == 0) {
+		if ($location != null && $location->repeatInOnlineCollection == 0){
 			$includeOnlineOption = false;
-		}elseif ($library != null && $library->repeatInOnlineCollection == 0) {
+		}elseif ($library != null && $library->repeatInOnlineCollection == 0){
 			$includeOnlineOption = false;
 		}
 
 		if ($includeOnlineOption){
 			//eContent Search
 			$searchOptions['econtent'] = array(
-					'name' => 'Online Collection',
-					'description' => 'Digital Media available for use online and with portable devices',
-					'catalogType' => 'catalog'
+				'name'        => 'Online Collection',
+				'description' => 'Digital Media available for use online and with portable devices',
+				'catalogType' => 'catalog'
 			);
 		}
 
 		//Marmot Global search
 		if (isset($library) &&
-		($repeatSearchSetting == 'marmot') &&
-		$library->restrictSearchByLibrary
-		&& $marmotAdded == false
+			($repeatSearchSetting == 'marmot') &&
+			$library->restrictSearchByLibrary
+			&& $marmotAdded == false
 		){
-			$consortiumName = $configArray['Site']['libraryName'];
+			$consortiumName          = $configArray['Site']['libraryName'];
 			$searchOptions['marmot'] = array(
-				'name' => "$consortiumName Catalog",
-        'description' => 'A consortium of libraries who share resources with your library.',
+				'name'        => "$consortiumName Catalog",
+				'description' => 'A consortium of libraries who share resources with your library.',
 				'catalogType' => 'catalog'
 			);
 		}
 
 		if ($searchEbsco){
 			$searchOptions['ebsco'] = array(
-					'name' => 'EBSCO',
-					'description' => 'EBSCO',
-					'catalogType' => 'ebsco'
+				'name'        => 'EBSCO',
+				'description' => 'EBSCO',
+				'catalogType' => 'ebsco'
 			);
 		}
 
 		if ($searchArchive){
 			$searchOptions['islandora'] = array(
-					'name' => 'Local Digital Archive',
-					'description' => 'Local Digital Archive in Colorado',
-					'catalogType' => 'islandora'
+				'name'        => 'Local Digital Archive',
+				'description' => 'Local Digital Archive in Colorado',
+				'catalogType' => 'islandora'
 			);
 		}
 
 		//Genealogy Search
 		if ($searchGenealogy){
 			$searchOptions['genealogy'] = array(
-        'name' => 'Genealogy Records',
-        'description' => 'Genealogy Records from Colorado',
+				'name'        => 'Genealogy Records',
+				'description' => 'Genealogy Records from Colorado',
 				'catalogType' => 'genealogy'
 			);
 		}
 
 		if ($enableCombinedResults && !$showCombinedResultsFirst){
 			$searchOptions['combinedResults'] = array(
-					'name' => $combinedResultsName,
-					'description' => "Combined results from multiple sources.",
-					'catalogType' => 'combined'
+				'name'        => $combinedResultsName,
+				'description' => "Combined results from multiple sources.",
+				'catalogType' => 'combined'
 			);
 		}
 
 		//Overdrive
 		if ($repeatInOverdrive){
 			$searchOptions['overdrive'] = array(
-        'name' => 'OverDrive Digital Catalog',
-        'description' => 'Downloadable Books, Videos, Music, and eBooks with free use for library card holders.',
-        'external' => true,
+				'name'        => 'OverDrive Digital Catalog',
+				'description' => 'Downloadable Books, Videos, Music, and eBooks with free use for library card holders.',
+				'external'    => true,
 				'catalogType' => 'catalog'
 			);
 		}
 
 		if ($repeatInProspector){
-			$innReachEncoreName = $configArray['InterLibraryLoan']['innReachEncoreName'];
+			$innReachEncoreName          = $configArray['InterLibraryLoan']['innReachEncoreName'];
 			$searchOptions['prospector'] = array(
-        'name'        => $innReachEncoreName . ' Catalog',
-        'description' => $innReachEncoreName == 'Prospector' ? 'A shared catalog of academic, public, and special libraries all over Colorado.' : 'A shared catalog for inter-library loaning.',
-        'external'    => true,
+				'name'        => $innReachEncoreName . ' Catalog',
+				'description' => $innReachEncoreName == 'Prospector' ? 'A shared catalog of academic, public, and special libraries all over Colorado.' : 'A shared catalog for inter-library loaning.',
+				'external'    => true,
 				'catalogType' => 'catalog'
 			);
 		}
@@ -231,24 +228,24 @@ class SearchSources{
 		if ($repeatCourseReserves){
 			//Mesa State
 			$searchOptions['course-reserves-course-name'] = array(
-        'name' => 'Course Reserves by Name or Number',
-        'description' => 'Search course reserves by course name or number',
-        'external' => true,
+				'name'        => 'Course Reserves by Name or Number',
+				'description' => 'Search course reserves by course name or number',
+				'external'    => true,
 				'catalogType' => 'courseReserves'
 			);
-			$searchOptions['course-reserves-instructor'] = array(
-        'name' => 'Course Reserves by Instructor',
-        'description' => 'Search course reserves by professor, lecturer, or instructor name',
-        'external' => true,
+			$searchOptions['course-reserves-instructor']  = array(
+				'name'        => 'Course Reserves by Instructor',
+				'description' => 'Search course reserves by professor, lecturer, or instructor name',
+				'external'    => true,
 				'catalogType' => 'courseReserves'
 			);
 		}
 
 		if ($repeatInWorldCat){
 			$searchOptions['worldcat'] = array(
-        'name' => 'WorldCat',
-        'description' => 'A shared catalog of libraries all over the world.',
-        'external' => true,
+				'name'        => 'WorldCat',
+				'description' => 'A shared catalog of libraries all over the world.',
+				'external'    => true,
 				'catalogType' => 'catalog'
 			);
 		}
@@ -256,10 +253,10 @@ class SearchSources{
 		//Check to see if Gold Rush is a valid option
 		if (isset($library) && strlen($library->goldRushCode) > 0){
 			$searchOptions['goldrush'] = array(
-			//'link' => "http://goldrush.coalliance.org/index.cfm?fuseaction=Search&amp;inst_code={$library->goldRushCode}&amp;search_type={$worldCatSearchType}&amp;search_term=".urlencode($lookfor),
-        'name' => 'Gold Rush Magazine Finder',
-        'description' => 'A catalog of online journals and full text articles.',
-        'external' => true,
+				//'link' => "http://goldrush.coalliance.org/index.cfm?fuseaction=Search&amp;inst_code={$library->goldRushCode}&amp;search_type={$worldCatSearchType}&amp;search_term=".urlencode($lookfor),
+				'name'        => 'Gold Rush Magazine Finder',
+				'description' => 'A catalog of online journals and full text articles.',
+				'external'    => true,
 				'catalogType' => 'catalog'
 			);
 		}

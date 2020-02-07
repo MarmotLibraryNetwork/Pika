@@ -17,7 +17,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 require_once ROOT_DIR . '/Drivers/marmot_inc/SpellingWord.php';
-require_once(ROOT_DIR . '/Drivers/marmot_inc/SearchStatNew.php');
+require_once ROOT_DIR . '/sys/Search/SearchStatNew.php';
 
 class SearchSuggestions{
 	function getCommonSearchesMySql($searchTerm, $searchType){

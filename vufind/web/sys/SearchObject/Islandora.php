@@ -1624,6 +1624,7 @@ class SearchObject_Islandora extends SearchObject_Base {
 			}
 			$interface->assign('page', $page);
 
+			require_once ROOT_DIR . '/sys/Search/SearchEntry.php';
 			$s = new SearchEntry();
 			if ($s->get($searchId)){
 				$minSO        = unserialize($s->search_object);

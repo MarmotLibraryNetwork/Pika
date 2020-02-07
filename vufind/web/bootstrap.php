@@ -411,7 +411,7 @@ function loadSearchInformation(){
 		}elseif ($module == 'EBSCO'){
 			$searchSource = 'ebsco';
 		}else{
-			require_once ROOT_DIR . '/Drivers/marmot_inc/SearchSources.php';
+			require_once ROOT_DIR . '/sys/Search/SearchSources.php';
 			$searchSources = new SearchSources();
 			global $locationSingleton;
 			$location = $locationSingleton->getActiveLocation();

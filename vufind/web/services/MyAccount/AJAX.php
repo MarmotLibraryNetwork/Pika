@@ -230,6 +230,7 @@ class MyAccount_AJAX extends AJAXHandler {
 	}
 
 	function saveSearch(){
+		require_once ROOT_DIR . '/sys/Search/SearchEntry.php';
 		$searchId   = $_REQUEST['searchId'];
 		$search     = new SearchEntry();
 		$search->id = $searchId;
@@ -260,6 +261,7 @@ class MyAccount_AJAX extends AJAXHandler {
 	}
 
 	function deleteSavedSearch(){
+		require_once ROOT_DIR . '/sys/Search/SearchEntry.php';
 		$searchId   = $_REQUEST['searchId'];
 		$search     = new SearchEntry();
 		$search->id = $searchId;
