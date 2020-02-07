@@ -153,7 +153,7 @@ class OverDriveRecordDriver extends RecordInterface {
 	 */
 	public function getCitation($format)
 	{
-		require_once ROOT_DIR . '/sys/CitationBuilder.php';
+		require_once ROOT_DIR . '/sys/LocalEnrichment/CitationBuilder.php';
 
 		// Build author list:
 		$authors = array();

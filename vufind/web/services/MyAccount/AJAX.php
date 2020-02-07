@@ -1011,6 +1011,7 @@ class MyAccount_AJAX extends AJAXHandler {
 	}
 
 	function getCitationFormatsForm(){
+		require_once ROOT_DIR . '/sys/LocalEnrichment/CitationBuilder.php';
 		global $interface;
 		$interface->assign('popupTitle', 'Please select a citation format');
 		$interface->assign('listId', $_REQUEST['listId']);

@@ -210,7 +210,7 @@ class GroupedWorkDriver extends RecordInterface {
 	 * @return  string              Name of Smarty template file to display.
 	 */
 	public function getCitation($format){
-		require_once ROOT_DIR . '/sys/CitationBuilder.php';
+		require_once ROOT_DIR . '/sys/LocalEnrichment/CitationBuilder.php';
 
 		// Build author list:
 		$authors = array();
