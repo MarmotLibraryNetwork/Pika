@@ -40,13 +40,13 @@ class TopFacets implements RecommendationInterface
 	 * @param   object  $searchObject   The SearchObject requesting recommendations.
 	 * @param   string  $params         Additional settings from the searches.ini.
 	 */
-	public function __construct($searchObject, $params) {
+	public function __construct($searchObject, $params){
 		// Save the basic parameters:
 		/** @var SearchObject_Solr|SearchObject_Base searchObject */
 		$this->searchObject = $searchObject;
 
 		// Parse the additional parameters:
-		$params = explode(':', $params);
+		$params  = explode(':', $params);
 		$iniFile = isset($params[1]) ? $params[1] : 'facets';
 
 		// Load the desired facet information:
@@ -54,11 +54,11 @@ class TopFacets implements RecommendationInterface
 		if ($this->searchObject->getSearchType() == 'genealogy' || $this->searchObject->getSearchType() == 'islandora'){
 			$this->mainFacets = array();
 		}else{
-			$searchLibrary = Library::getActiveLibrary();
 			global $locationSingleton;
-			$searchLocation = $locationSingleton->getActiveLocation();
-			$hasSearchLibraryFacets = (!empty($searchLibrary->facets));
-			$hasSearchLocationFacets = (!empty($searchLocation->facets));
+			$searchLibrary           = Library::getActiveLibrary();
+			$searchLocation          = $locationSingleton->getActiveLocation();
+			$hasSearchLibraryFacets  = ($searchLibrary != null && (count($searchLibrary->facets) > 0));
+			$hasSearchLocationFacets = ($searchLocation != null && (count($searchLocation->facets) > 0));
 			if ($hasSearchLocationFacets){
 				$facets = $searchLocation->facets;
 			}elseif ($hasSearchLibraryFacets){
@@ -73,13 +73,13 @@ class TopFacets implements RecommendationInterface
 					if ($solrScope){
 						if ($facet->facetName == 'availability_toggle'){
 							$facetName = 'availability_toggle_' . $solrScope;
-						}else if ($facet->facetName == 'format_category'){
+						}elseif ($facet->facetName == 'format_category'){
 							$facetName = 'format_category_' . $solrScope;
-						}else if ($facet->facetName == 'format'){
+						}elseif ($facet->facetName == 'format'){
 							$facetName = 'format_' . $solrScope;
 						}
 					}
-					$this->facets[$facetName] = $facet->displayName;
+					$this->facets[$facetName]        = $facet->displayName;
 					$this->facetSettings[$facetName] = $facet;
 				}
 			}
@@ -88,8 +88,8 @@ class TopFacets implements RecommendationInterface
 		// Load other relevant settings:
 		//TODO: use responsive design and remove this setting
 		$this->baseSettings = array(
-            'rows' => $config['Results_Settings']['top_rows'],
-            'cols' => $config['Results_Settings']['top_cols']
+			'rows' => $config['Results_Settings']['top_rows'],
+			'cols' => $config['Results_Settings']['top_cols']
 		);
 	}
 
