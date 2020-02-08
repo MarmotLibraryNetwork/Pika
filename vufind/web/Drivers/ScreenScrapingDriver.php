@@ -134,7 +134,7 @@ abstract class ScreenScrapingDriver implements DriverInterface {
 			curl_close($this->curl_connection);
 			unset($this->curl_connection);
 		}
-		if ($this->cookieJar && file_exists($this->cookieJar)) {
+		if (!empty($this->cookieJar) && file_exists($this->cookieJar)) {
 			unlink($this->cookieJar);
 			unset($this->cookieJar);
 		}

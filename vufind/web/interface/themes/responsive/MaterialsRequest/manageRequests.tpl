@@ -215,7 +215,7 @@
 						{/foreach}
 					</tbody>
 				</table>
-				{if array_key_exists('library_material_requests', $userRoles)}
+          {if in_array('library_material_requests', $userRoles)}
 					<div id="materialsRequestActions">
 						<div class="row form-group">
 							<div class="col-sm-4">

@@ -997,24 +997,24 @@ class OverDriveDriver3 {
 	public function getLibraryScopingId(){
 		//For econtent, we need to be more specific when restricting copies
 		//since patrons can't use copies that are only available to other libraries.
-		$searchLibrary = Library::getSearchLibrary();
+		$searchLibrary  = Library::getSearchLibrary();
 		$searchLocation = Location::getSearchLocation();
-		$activeLibrary = Library::getActiveLibrary();
+		$activeLibrary  = Library::getActiveLibrary();
 		$activeLocation = Location::getActiveLocation();
-		$homeLibrary = UserAccount::getUserHomeLibrary();
+		$homeLibrary    = UserAccount::getUserHomeLibrary();
 
 		//Load the holding label for the branch where the user is physically.
-		if (!is_null($homeLibrary)){
+		if (!empty($homeLibrary)){
 			return $homeLibrary->includeOutOfSystemExternalLinks ? -1 : $homeLibrary->libraryId;
-		}else if (!is_null($activeLocation)){
+		}elseif (!empty($activeLocation)){
 			$activeLibrary = Library::getLibraryForLocation($activeLocation->locationId);
 			return $activeLibrary->includeOutOfSystemExternalLinks ? -1 : $activeLibrary->libraryId;
-		}else if (isset($activeLibrary)) {
+		}elseif (!empty($activeLibrary)) {
 			return $activeLibrary->includeOutOfSystemExternalLinks ? -1 : $activeLibrary->libraryId;
-		}else if (!is_null($searchLocation)){
+		}elseif (!empty($searchLocation)){
 			$searchLibrary = Library::getLibraryForLocation($searchLibrary->locationId);
 			return $searchLibrary->includeOutOfSystemExternalLinks ? -1 : $searchLocation->libraryId;
-		}else if (isset($searchLibrary)) {
+		}elseif (!empty($searchLibrary)) {
 			return $searchLibrary->includeOutOfSystemExternalLinks ? -1 : $searchLibrary->libraryId;
 		}else{
 			return -1;

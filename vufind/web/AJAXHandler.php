@@ -33,11 +33,11 @@ abstract class AJAXHandler extends Action {
 	 * The array that an AJAX call method is a part of determines how the output is handled.
 	 */
 
-	protected $methodsThatRespondWithJSONUnstructured  = array();
-	protected $methodsThatRespondWithJSONResultWrapper = array();
-	protected $methodsThatRespondWithXML              = array();
-	protected $methodsThatRespondWithHTML             = array();
-	protected $methodsThatRespondThemselves           = array();
+	/*protected $methodsThatRespondWithJSONUnstructured;
+	protected $methodsThatRespondWithJSONResultWrapper;
+	protected $methodsThatRespondWithXML;
+	protected $methodsThatRespondWithHTML;
+	protected $methodsThatRespondThemselves;*/
 
 	//private $cache;
 	private $logger;

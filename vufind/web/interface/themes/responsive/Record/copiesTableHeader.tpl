@@ -11,13 +11,13 @@
 				<strong><u>Volume</u></strong>
 			</div>
 		{/if}
-		<div class="col-tn-{if $showLastCheckIn && showVolume}3{elseif $showLastCheckIn || $showVolume}4{else}5{/if} ">
+		<div class="col-tn-{if $showLastCheckIn && $showVolume}3{elseif $showLastCheckIn || $showVolume}4{else}5{/if} ">
 			<strong><u>Location</u></strong>
 		</div>
 		<div class="holdingsCallNumber col-tn-{if $showLastCheckIn || $showVolume}3{else}4{/if}">
 			<strong><u>Call Number</u></strong>
 		</div>
-		<div class="col-tn-{if $showLastCheckIn && showVolume}2{elseif $showLastCheckIn || $showVolume}3{else}3{/if}">
+		<div class="col-tn-{if $showLastCheckIn && $showVolume}2{elseif $showLastCheckIn || $showVolume}3{else}3{/if}">
 			<strong><u>Status</u></strong>
 		</div>
 		{if $showLastCheckIn}

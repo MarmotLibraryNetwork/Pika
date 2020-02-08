@@ -2839,7 +2839,7 @@ class GroupedWorkDriver extends RecordInterface {
 
 			$scopeKey     = $curItem[0] . ':' . $itemId;
 			$callNumber   = $curItem[3];
-			$numCopies    = $curItem[6];
+			$numCopies    = (int) $curItem[6];
 			$isOrderItem  = $curItem[7] == 'true';
 			$isEcontent   = $curItem[8] == 'true';
 			$locationCode = isset($curItem[15]) ? $curItem[15] : '';

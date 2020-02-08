@@ -1,7 +1,7 @@
 <div>
 	<div id="addToListComments" class="alert alert-info">
 		<ul>
-			<li>Enter one or more <strong>titles, ISBNs, Archive PIDs, Grouped Work Ids, or Bib Ids</strong>.</li>
+			<li>Enter one or more <strong>titles, ISBNs, barcodes, Archive PIDs, Grouped Work Ids, or Bib Ids</strong>.</li>
 			<li>Each entry should be on its own line.</li>
 			<li>We will search the catalog or archive for each entry and add the first match for each line to your list.</li>
 		</ul>
