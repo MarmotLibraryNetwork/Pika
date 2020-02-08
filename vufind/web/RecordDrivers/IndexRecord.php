@@ -237,7 +237,7 @@ class IndexRecord extends RecordInterface
 	 * user's favorites list.
 	 *
 	 * @access  public
-	 * @param   object  $user       User object owning tag/note metadata.
+	 * @param   User  $user       User object owning tag/note metadata.
 	 * @param   int     $listId     ID of list containing desired tags/notes (or
 	 *                              null to show tags/notes from all user's lists).
 	 * @param   bool    $allowEdit  Should we display edit controls?
@@ -1282,7 +1282,7 @@ class IndexRecord extends RecordInterface
 		$pubDate = $this->getPublicationDates();
 		if (count($pubDate) == 1){
 			$params['rft.date'] = $pubDate[0];
-		}elseif (count($pubDate > 1)){
+		}elseif (count($pubDate) > 1){
 			$params['rft.date'] = $pubDate;
 		}
 
