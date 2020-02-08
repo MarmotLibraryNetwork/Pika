@@ -42,11 +42,11 @@ class CatalogFactory {
 
 			/** @var IndexingProfile $activeRecordIndexingProfile */
 			global $activeRecordIndexingProfile;
-			if (!empty($activeRecordIndexingProfile->catalogDriver)){
+			if (!empty($activeRecordIndexingProfile->patronDriver)){
 				// The is for when we are in a record view and we need additional bibliographic-related information from the circulation system
 				// eg. periodical issue summaries, periodical checkin grids, current hold queue size
 
-				$driver = $activeRecordIndexingProfile->catalogDriver;
+				$driver = $activeRecordIndexingProfile->patronDriver;
 
 				// Load the account profile based on the indexing profile name.  The AccountProfile is where we determine which
 				// external system is associated with a record source
