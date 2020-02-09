@@ -378,7 +378,7 @@ class SearchAPI extends AJAXHandler {
 		global $timer;
 
 		// Include Search Engine Class
-		require_once ROOT_DIR . '/sys/' . $configArray['Index']['engine'] . '.php';
+		require_once ROOT_DIR . '/sys/Search/' . $configArray['Index']['engine'] . '.php';
 		$timer->logTime('Include search engine');
 
 		//setup the results array.
@@ -598,7 +598,7 @@ class SearchAPI extends AJAXHandler {
 		global $timer;
 
 		// Include Search Engine Class
-		require_once ROOT_DIR . '/sys/' . $configArray['Index']['engine'] . '.php';
+		require_once ROOT_DIR . '/sys/Search/' . $configArray['Index']['engine'] . '.php';
 		$timer->logTime('Include search engine');
 
 		// Initialise from the current search globals
@@ -641,7 +641,7 @@ class SearchAPI extends AJAXHandler {
 		global $timer;
 
 		// Include Search Engine Class
-		require_once ROOT_DIR . '/sys/' . $configArray['Index']['engine'] . '.php';
+		require_once ROOT_DIR . '/sys/Search/' . $configArray['Index']['engine'] . '.php';
 		$timer->logTime('Include search engine');
 
 		// Initialise from the current search globals
@@ -684,7 +684,7 @@ class SearchAPI extends AJAXHandler {
 		global $timer;
 
 		// Include Search Engine Class
-		require_once ROOT_DIR . '/sys/' . $configArray['Index']['engine'] . '.php';
+		require_once ROOT_DIR . '/sys/Search/' . $configArray['Index']['engine'] . '.php';
 		$timer->logTime('Include search engine');
 
 		//setup the results array.

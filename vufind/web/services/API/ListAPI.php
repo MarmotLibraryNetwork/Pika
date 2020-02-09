@@ -1050,7 +1050,7 @@ class ListAPI extends AJAXHandler {
 		// We need to add titles to the list //
 
 		// Include Search Engine Class
-		require_once ROOT_DIR . '/sys/' . $configArray['Index']['engine'] . '.php';
+		require_once ROOT_DIR . '/sys/Search/' . $configArray['Index']['engine'] . '.php';
 		/** @var SearchObject_Solr $searchObject */
 		$searchObject = SearchObjectFactory::initSearchObject();
 

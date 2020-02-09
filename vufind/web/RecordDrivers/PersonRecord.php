@@ -62,6 +62,9 @@ class PersonRecord extends IndexRecord
 	public function getSearchResult($view = 'list'){
 		global $interface;
 
+		$interface->assign('summId', $this->id);
+		$interface->assign('summShortId', $this->shortId); //Trim the person prefix for the short id
+
 		$person = $this->getPerson();
 		if (!empty($person)){
 			$interface->assign('summPicture', $person->picture);

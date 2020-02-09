@@ -23,6 +23,12 @@ require_once ROOT_DIR . '/sys/Search/SearchEntry.php';
 require_once ROOT_DIR . '/sys/Genealogy/Person.php';
 
 class Person_Home extends Action {
+
+	private $id;
+	private $db;
+	private $recordDriver;
+
+
 	function __construct($record_id = null){
 		global $interface;
 		global $configArray;
@@ -47,7 +53,7 @@ class Person_Home extends Action {
 
 		// Setup Search Engine Connection
 		// Include Search Engine Class
-		require_once ROOT_DIR . '/sys/' . $configArray['Genealogy']['engine'] . '.php';
+		require_once ROOT_DIR . '/sys/Search/' . $configArray['Genealogy']['engine'] . '.php';
 		$timer->logTime('Include search engine');
 
 		// Initialise from the current search globals
@@ -148,7 +154,7 @@ class Person_Home extends Action {
 				}
 
 				if (PEAR_Singleton::isError($result)){
-					//If we get an error excuting the search, just eat it for now.
+					//If we get an error executing the search, just eat it for now.
 				}else{
 					if ($searchObject->getResultTotal() < 1){
 						//No results found

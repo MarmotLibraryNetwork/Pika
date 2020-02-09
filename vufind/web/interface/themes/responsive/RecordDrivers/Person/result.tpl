@@ -3,7 +3,7 @@
 	<div class="imageColumn col-md-3">
 		<div class="selectTitle hidden-phone col-md-4">
 			<label for="selected{if $summShortId}{$summShortId}{else}{$summId|escape}{/if}" class="resultIndex checkbox"><strong>{$resultIndex}</strong>
-				<input type="checkbox" name="selected[{$summShortId|escape:"url"}]" id="selected{$summShortId|escape:"url"}" style="display:none" />&nbsp;
+				<input type="checkbox" name="selected[{$summShortId|escape:"url"}]" id="selected{$summShortId|escape:"url"}" style="display:none">&nbsp;
 			</label>
 		</div>
 

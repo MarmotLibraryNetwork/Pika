@@ -26,7 +26,7 @@
  * Time: 1:11 PM
  */
 require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
-require_once ROOT_DIR . '/services/MyResearch/lib/Suggestions.php';
+require_once ROOT_DIR . '/sys/LocalEnrichment/Suggestions.php';
 class MyAccount_Home extends MyAccount{
 	function launch(){
 		global $interface;

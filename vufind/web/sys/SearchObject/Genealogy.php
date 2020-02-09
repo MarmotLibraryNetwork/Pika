@@ -73,7 +73,7 @@ class SearchObject_Genealogy extends SearchObject_Base {
 		global $timer;
 		// Include our solr index
 		$class = $configArray['Genealogy']['engine'];
-		require_once "sys/$class.php";
+		require_once ROOT_DIR . "/sys/Search/$class.php";
 		$this->searchType      = 'genealogy';
 		$this->basicSearchType = 'genealogy';
 		// Initialise the index
