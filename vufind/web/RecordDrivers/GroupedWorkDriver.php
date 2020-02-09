@@ -119,7 +119,7 @@ class GroupedWorkDriver extends RecordInterface {
 	}
 
 	public function getSolrField($fieldName){
-		return isset($this->fields[$fieldName]) ? $this->fields[$fieldName] : null;
+		return $this->fields[$fieldName] ?? null;
 	}
 
 	private static function normalizeEdition($edition){
@@ -937,16 +937,10 @@ class GroupedWorkDriver extends RecordInterface {
 
 		if (isset($this->fields['title_display'])){
 			return $this->fields['title_display'];
+		}elseif (isset($this->fields['title_full'])){
+			return is_array($this->fields['title_full']) ? reset($this->fields['title_full']) : $this->fields['title_full'];
 		}else{
-			if (isset($this->fields['title_full'])){
-				if (is_array($this->fields['title_full'])){
-					return reset($this->fields['title_full']);
-				}else{
-					return $this->fields['title_full'];
-				}
-			}else{
-				return '';
-			}
+			return '';
 		}
 	}
 
@@ -961,21 +955,11 @@ class GroupedWorkDriver extends RecordInterface {
 		}
 
 		if (isset($this->fields['title_short'])){
-			if (is_array($this->fields['title_short'])){
-				return reset($this->fields['title_short']);
-			}else{
-				return $this->fields['title_short'];
-			}
+			return is_array($this->fields['title_short']) ? reset($this->fields['title_short']) : $this->fields['title_short'];
+		}elseif (isset($this->fields['title'])){
+			return is_array($this->fields['title']) ? reset($this->fields['title']) : $this->fields['title'];
 		}else{
-			if (isset($this->fields['title'])){
-				if (is_array($this->fields['title'])){
-					return reset($this->fields['title']);
-				}else{
-					return $this->fields['title'];
-				}
-			}else{
-				return '';
-			}
+			return '';
 		}
 	}
 
@@ -992,8 +976,7 @@ class GroupedWorkDriver extends RecordInterface {
 				return $this->fields['_highlighting']['title_sub'][0];
 			}
 		}
-		return isset($this->fields['title_sub']) ?
-			$this->fields['title_sub'] : '';
+		return $this->fields['title_sub'] ?? '';
 	}
 
 	/**
@@ -1003,7 +986,7 @@ class GroupedWorkDriver extends RecordInterface {
 	 * @return  string
 	 */
 	public function getAuthors(){
-		return isset($this->fields['author']) ? $this->fields['author'] : null;
+		return $this->fields['author'] ?? null;
 	}
 
 
@@ -1025,18 +1008,11 @@ class GroupedWorkDriver extends RecordInterface {
 				return $this->fields['_highlighting']['author_display'][0];
 			}
 		}
-		if (isset($this->fields['author'])){
-			return $this->fields['author'];
-		}else{
-			return isset($this->fields['author_display']) ? $this->fields['author_display'] : '';
-		}
+		return $this->fields['author'] ?? $this->fields['author_display'] ?? '';
 	}
 
 	public function getScore(){
-		if (isset($this->fields['score'])){
-			return $this->fields['score'];
-		}
-		return null;
+			return $this->fields['score'] ?? null;
 	}
 
 	public function getExplain(){
@@ -1126,11 +1102,7 @@ class GroupedWorkDriver extends RecordInterface {
 		$bookCoverUrl .= "/bookcover.php?id={$this->getUniqueID()}&size={$size}&type=grouped_work";
 
 		if (isset($this->fields['format_category'])){
-			if (is_array($this->fields['format_category'])){
-				$bookCoverUrl .= "&category=" . reset($this->fields['format_category']);
-			}else{
-				$bookCoverUrl .= "&category=" . $this->fields['format_category'];
-			}
+			$bookCoverUrl = $bookCoverUrl . '&category=' . is_array($this->fields['format_category']) ? reset($this->fields['format_category']) : $this->fields['format_category'];
 		}
 
 		return $bookCoverUrl;
@@ -1311,31 +1283,19 @@ class GroupedWorkDriver extends RecordInterface {
 	public function getISBNs(){
 		// If ISBN is in the index, it should automatically be an array... but if
 		// it's not set at all, we should normalize the value to an empty array.
-		$isbns       = array();
+		$isbns       = [];
 		$primaryIsbn = $this->getPrimaryIsbn();
 		if ($primaryIsbn != null){
 			$isbns[] = $primaryIsbn;
 		}
-		if (isset($this->fields['isbn'])){
-			if (is_array($this->fields['isbn'])){
-				$additionalIsbns = $this->fields['isbn'];
-			}else{
-				$additionalIsbns = array($this->fields['isbn']);
-			}
-		}else{
-			$additionalIsbns = array();
-		}
+		$additionalIsbns = isset($this->fields['isbn']) ? (is_array($this->fields['isbn']) ? $this->fields['isbn'] : [$this->fields['isbn']]) : [];
 		$additionalIsbns = array_remove_by_value($additionalIsbns, $primaryIsbn);
 		$isbns           = array_merge($isbns, $additionalIsbns);
 		return $isbns;
 	}
 
 	public function getPrimaryIsbn(){
-		if (isset($this->fields['primary_isbn'])){
-			return $this->fields['primary_isbn'];
-		}else{
-			return null;
-		}
+		return $this->fields['primary_isbn'] ?? null;
 	}
 
 	/**
@@ -1385,15 +1345,7 @@ class GroupedWorkDriver extends RecordInterface {
 	public function getISSNs(){
 		// If ISBN is in the index, it should automatically be an array... but if
 		// it's not set at all, we should normalize the value to an empty array.
-		if (isset($this->fields['issn'])){
-			if (is_array($this->fields['issn'])){
-				return $this->fields['issn'];
-			}else{
-				return array($this->fields['issn']);
-			}
-		}else{
-			return array();
-		}
+		return isset($this->fields['issn']) ? (is_array($this->fields['issn']) ? $this->fields['issn'] : array($this->fields['issn'])) : [];
 	}
 
 	/**
@@ -1404,15 +1356,7 @@ class GroupedWorkDriver extends RecordInterface {
 	public function getUPCs(){
 		// If UPCs is in the index, it should automatically be an array... but if
 		// it's not set at all, we should normalize the value to an empty array.
-		if (isset($this->fields['upc'])){
-			if (is_array($this->fields['upc'])){
-				return $this->fields['upc'];
-			}else{
-				return array($this->fields['upc']);
-			}
-		}else{
-			return array();
-		}
+		return isset($this->fields['upc']) ? (is_array($this->fields['upc']) ? $this->fields['upc'] : array($this->fields['upc'])) : [];
 	}
 
 	public function getCleanUPC(){
@@ -1799,11 +1743,7 @@ class GroupedWorkDriver extends RecordInterface {
 		//Get literary form to determine if we should compare editions
 		$literaryForm = '';
 		if (isset($this->fields['literary_form'])){
-			if (is_array($this->fields['literary_form'])){
-				$literaryForm = reset($this->fields['literary_form']);
-			}else{
-				$literaryForm = $this->fields['literary_form'];
-			}
+			$literaryForm = is_array($this->fields['literary_form']) ? reset($this->fields['literary_form']) : $this->fields['literary_form'];
 		}
 		//First sort by format
 		$format1          = $a['format'];
@@ -2063,16 +2003,13 @@ class GroupedWorkDriver extends RecordInterface {
 		}
 	}
 
+	/**
+	 * @return string
+	 */
 	public function getFormatCategory(){
 		global $solrScope;
-		if (isset($this->fields['format_category_' . $solrScope])){
-			if (is_array($this->fields['format_category_' . $solrScope])){
-				return reset($this->fields['format_category_' . $solrScope]);
-			}else{
-				return $this->fields['format_category_' . $solrScope];
-			}
-		}
-		return "";
+		$scopedFieldName = 'format_category_' . $solrScope;
+		return isset($this->fields[$scopedFieldName]) ? (is_array($this->fields[$scopedFieldName]) ? reset($this->fields[$scopedFieldName]) : $this->fields[$scopedFieldName]) : '';
 	}
 
 	public function loadEnrichment(){
@@ -2250,11 +2187,11 @@ class GroupedWorkDriver extends RecordInterface {
 	}
 
 	public function getFountasPinnellLevel(){
-		return isset($this->fields['fountas_pinnell']) ? $this->fields['fountas_pinnell'] : null;
+		return $this->fields['fountas_pinnell'] ?? null;
 	}
 
 	public function getLexileCode(){
-		return isset($this->fields['lexile_code']) ? $this->fields['lexile_code'] : null;
+		return $this->fields['lexile_code'] ?? null;
 	}
 
 	public function getLexileScore(){
@@ -2473,7 +2410,7 @@ class GroupedWorkDriver extends RecordInterface {
 	}
 
 	private function getPublicationDates(){
-		return isset($this->fields['publishDate']) ? $this->fields['publishDate'] : array();
+		return $this->fields['publishDate'] ?? [];
 	}
 
 	/**
@@ -2483,8 +2420,7 @@ class GroupedWorkDriver extends RecordInterface {
 	 * @return  array
 	 */
 	protected function getPublishers(){
-		return isset($this->fields['publisher']) ?
-			$this->fields['publisher'] : array();
+		return $this->fields['publisherStr'] ?? [];
 	}
 
 	/**
@@ -2494,8 +2430,7 @@ class GroupedWorkDriver extends RecordInterface {
 	 * @return  string
 	 */
 	protected function getEdition(){
-		return isset($this->fields['edition']) ?
-			$this->fields['edition'] : '';
+		return $this->fields['edition'] ?? '';
 	}
 
 	/**
@@ -2505,8 +2440,7 @@ class GroupedWorkDriver extends RecordInterface {
 	 * @return  array
 	 */
 	public function getLanguages(){
-		return isset($this->fields['language']) ?
-			$this->fields['language'] : array();
+		return $this->fields['language'] ?? [];
 	}
 
 	private static $statusRankings = array(
