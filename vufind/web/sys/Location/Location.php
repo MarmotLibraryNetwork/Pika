@@ -1244,6 +1244,9 @@ class Location extends DB_DataObject {
 		$today              = time();
 		$todaysLibraryHours = Location::getLibraryHours($locationId, $today);
 		if (isset($todaysLibraryHours) && is_array($todaysLibraryHours)){
+			$location = new Location();
+			$location->get($locationId);
+			$locationName = '<strong>' . $location->displayName . '</strong>';
 			if (isset($todaysLibraryHours['closed']) && ($todaysLibraryHours['closed'] == true || $todaysLibraryHours['closed'] == 1)){
 				if (isset($todaysLibraryHours['closureReason'])){
 					$closureReason = $todaysLibraryHours['closureReason'];
@@ -1261,15 +1264,15 @@ class Location extends DB_DataObject {
 				$nextDayOfWeek = strftime('%a', $nextDay);
 				if (isset($nextDayHours['closed']) && $nextDayHours['closed'] == true){
 					if (isset($closureReason)){
-						$libraryHoursMessage = "The library is closed today for $closureReason.";
+						$libraryHoursMessage = "$locationName is closed today for $closureReason.";
 					}else{
-						$libraryHoursMessage = "The library is closed today.";
+						$libraryHoursMessage = "$locationName is closed today.";
 					}
 				}else{
 					if (isset($closureReason)){
-						$libraryHoursMessage = "The library is closed today for $closureReason. It will reopen on $nextDayOfWeek from {$nextDayHours['openFormatted']} to {$nextDayHours['closeFormatted']}";
+						$libraryHoursMessage = "$locationName is closed today for $closureReason. It will reopen on $nextDayOfWeek from {$nextDayHours['openFormatted']} to {$nextDayHours['closeFormatted']}";
 					}else{
-						$libraryHoursMessage = "The library is closed today. It will reopen on $nextDayOfWeek from {$nextDayHours['openFormatted']} to {$nextDayHours['closeFormatted']}";
+						$libraryHoursMessage = "$locationName is closed today. It will reopen on $nextDayOfWeek from {$nextDayHours['openFormatted']} to {$nextDayHours['closeFormatted']}";
 					}
 				}
 			}else{
@@ -1281,22 +1284,22 @@ class Location extends DB_DataObject {
 					$closeHour = 24;
 				}
 				if ($currentHour < $openHour){
-					$libraryHoursMessage = "The library will be open today from " . $todaysLibraryHours['openFormatted'] . " to " . $todaysLibraryHours['closeFormatted'] . ".";
+					$libraryHoursMessage = "$locationName will be open today from " . $todaysLibraryHours['openFormatted'] . " to " . $todaysLibraryHours['closeFormatted'] . ".";
 				}else{
 					if ($currentHour > $closeHour){
 						$tomorrowsLibraryHours = Location::getLibraryHours($locationId, time() + (24 * 60 * 60));
 						if (isset($tomorrowsLibraryHours['closed']) && ($tomorrowsLibraryHours['closed'] == true || $tomorrowsLibraryHours['closed'] == 1)){
 							if (isset($tomorrowsLibraryHours['closureReason'])){
-								$libraryHoursMessage = "The library will be closed tomorrow for {$tomorrowsLibraryHours['closureReason']}.";
+								$libraryHoursMessage = "$locationName will be closed tomorrow for {$tomorrowsLibraryHours['closureReason']}.";
 							}else{
-								$libraryHoursMessage = "The library will be closed tomorrow";
+								$libraryHoursMessage = "$locationName will be closed tomorrow";
 							}
 
 						}else{
-							$libraryHoursMessage = "The library will be open tomorrow from " . $tomorrowsLibraryHours['openFormatted'] . " to " . $tomorrowsLibraryHours['closeFormatted'] . ".";
+							$libraryHoursMessage = "$locationName will be open tomorrow from " . $tomorrowsLibraryHours['openFormatted'] . " to " . $tomorrowsLibraryHours['closeFormatted'] . ".";
 						}
 					}else{
-						$libraryHoursMessage = "The library is open today from " . $todaysLibraryHours['openFormatted'] . " to " . $todaysLibraryHours['closeFormatted'] . ".";
+						$libraryHoursMessage = "$locationName is open today from " . $todaysLibraryHours['openFormatted'] . " to " . $todaysLibraryHours['closeFormatted'] . ".";
 					}
 				}
 			}

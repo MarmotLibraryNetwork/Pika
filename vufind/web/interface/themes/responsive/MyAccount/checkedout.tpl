@@ -13,9 +13,7 @@
 
 		<h2>{translate text='Checked Out Titles'}</h2>
 
-		{if $libraryHoursMessage}
-			<div class="libraryHours alert alert-success">{$libraryHoursMessage}</div>
-		{/if}
+    {include file="MyAccount/libraryHoursMessage.tpl"}
 
 		{if $offline}
 			<div class="alert alert-warning"><strong>The library system is currently offline.</strong> We are unable to retrieve information about your {translate text='Checked Out Titles'|lower} at this time.</div>
