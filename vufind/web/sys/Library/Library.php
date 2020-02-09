@@ -20,7 +20,6 @@ require_once 'DB/DataObject.php';
 //
 require_once ROOT_DIR . '/sys/OneToManyDataObjectOperations.php';
 
-require_once ROOT_DIR . '/Drivers/marmot_inc/Holiday.php';
 require_once ROOT_DIR . '/sys/Library/LibraryFacetSetting.php';
 require_once ROOT_DIR . '/sys/Library/LibraryArchiveSearchFacetSetting.php';
 require_once ROOT_DIR . '/sys/Library/LibraryCombinedResultSection.php';
@@ -319,6 +318,7 @@ class Library extends DB_DataObject {
 
 	static function getObjectStructure(){
 		// get the structure for the library system's holidays
+		require_once ROOT_DIR . '/sys/Library/Holiday.php';
 		$holidaysStructure = Holiday::getObjectStructure();
 
 		// we don't want to make the libraryId property editable

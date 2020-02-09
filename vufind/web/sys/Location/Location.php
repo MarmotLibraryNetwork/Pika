@@ -1204,7 +1204,7 @@ class Location extends DB_DataObject {
 			$todayFormatted = date('Y-m-d', $timeToCheck);
 
 			// check to see if today is a holiday
-			require_once ROOT_DIR . '/Drivers/marmot_inc/Holiday.php';
+			require_once ROOT_DIR . '/sys/Library/Holiday.php';
 			$holiday            = new Holiday();
 			$holiday->date      = $todayFormatted;
 			$holiday->libraryId = $location->libraryId;
