@@ -1,0 +1,1 @@
+Location where resized images for the genealogy images will be stored
