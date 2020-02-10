@@ -57,6 +57,8 @@ class MyAccount_AJAX extends AJAXHandler {
 		'getPinUpdateForm',
 	);
 
+	protected $methodsThatRespondWithJSONResultWrapper = [];
+
 	private $cache;
 
 	public function __construct($error_class = null){
