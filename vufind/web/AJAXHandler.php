@@ -55,20 +55,19 @@ abstract class AJAXHandler extends Action {
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
 
 		if (!empty($method) && method_exists($this, $method)){
-			if (in_array($method, $this->methodsThatRespondWithJSONUnstructured)){
+			if (property_exists($this, 'methodsThatRespondWithJSONUnstructured') && in_array($method, $this->methodsThatRespondWithJSONUnstructured)){
 				$result = $this->$method();
 				$this->sendHTTPHeaders('application/json');
 				echo $this->jsonUTF8EncodeResponse($result);
-			}elseif (in_array($method, $this->methodsThatRespondWithJSONResultWrapper)){
+			}elseif (property_exists($this, 'methodsThatRespondWithJSONResultWrapper') && in_array($method, $this->methodsThatRespondWithJSONResultWrapper)){
 				$result = array('result' => $this->$method());
 				$this->sendHTTPHeaders('application/json');
 				echo $this->jsonUTF8EncodeResponse($result);
-			}elseif (in_array($method, $this->methodsThatRespondWithHTML)){
+			}elseif (property_exists($this, 'methodsThatRespondWithHTML') && in_array($method, $this->methodsThatRespondWithHTML)){
 				$result = $this->$method();
-
 				$this->sendHTTPHeaders('text/html');
 				echo $result;
-			}elseif (in_array($method, $this->methodsThatRespondWithXML)){
+			}elseif (property_exists($this, 'methodsThatRespondWithHTML') && in_array($method, $this->methodsThatRespondWithXML)){
 				$result = $this->$method();
 				$this->sendHTTPHeaders('text/xml');
 
