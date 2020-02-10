@@ -1269,9 +1269,9 @@ class MarcRecord extends IndexRecord
 		if ($field008 != null && strlen($field008->getData() >= 37)) {
 			$languageCode = substr($field008->getData(), 35, 3);
 			if ($languageCode == 'eng') {
-				$languageCode = "English";
+				$languageCode = 'English';
 			} elseif ($languageCode == 'spa') {
-				$languageCode = "Spanish";
+				$languageCode = 'Spanish';
 			}
 			return $languageCode;
 		} else {

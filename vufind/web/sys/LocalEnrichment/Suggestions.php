@@ -211,7 +211,7 @@ class Suggestions {
 					}else{
 						$isbn = $ownedRecord['isbn'][0];
 					}
-					require_once ROOT_DIR . 'sys/ISBN/ISBNConverter.php';
+					require_once ROOT_DIR . '/sys/ISBN/ISBNConverter.php';
 					//TODO: replace with ISBN class
 					$isbn13 = strlen($isbn) == 13 ? $isbn : ISBNConverter::convertISBN10to13($isbn);
 					$isbn10 = strlen($isbn) == 10 ? $isbn : ISBNConverter::convertISBN13to10($isbn);
