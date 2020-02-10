@@ -1054,10 +1054,10 @@ abstract class IslandoraDriver extends RecordInterface {
 			$searchObject = SearchObjectFactory::initSearchObject('Islandora');
 			$searchObject->init();
 			$searchObject->setLimit(100);
-			$searchObject->setSearchTerms(array(
+			$searchObject->setSearchTerms([
 				'lookfor' => 'RELS_EXT_isMemberOfCollection_uri_mt:"info:fedora/' . $this->getUniqueID() . '" AND RELS_EXT_hasModel_uri_mt:"info:fedora/islandora:collectionCModel"',
-				'index' => 'IslandoraKeyword'
-			));
+				'index'   => 'IslandoraKeyword'
+			]);
 
 			$searchObject->clearHiddenFilters();
 			$searchObject->addHiddenFilter('!RELS_EXT_isViewableByRole_literal_ms', "administrator");
@@ -3126,7 +3126,7 @@ abstract class IslandoraDriver extends RecordInterface {
 			$accessLimits = $this->getModsValue('pikaAccessLimits', 'marmot');
 			if ($accessLimits == 'all') {
 				//No restrictions needed, don't check the parent collections
-			}else if ($accessLimits == 'default' || $accessLimits == null) {
+			}elseif ($accessLimits == 'default' || $accessLimits == null) {
 				$parentCollections = $this->getRelatedCollections();
 				foreach ($parentCollections as $collection) {
 					$collectionDriver = $collection['driver'];

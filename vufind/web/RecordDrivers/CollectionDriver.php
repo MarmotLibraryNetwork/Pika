@@ -36,6 +36,7 @@ class CollectionDriver extends IslandoraDriver {
 	private $verifiedMasterDownload = null;
 	private $anonymousLcDownload = null;
 	private $verifiedLcDownload = null;
+
 	public function canAnonymousDownloadMaster() {
 		$this->loadDownloadRestrictions();
 		return $this->anonymousMasterDownload;
@@ -55,7 +56,7 @@ class CollectionDriver extends IslandoraDriver {
 	}
 
 	public function loadDownloadRestrictions(){
-		if ($this->anonymousMasterDownload != null){
+		if (!is_null($this->anonymousMasterDownload)){
 			return;
 		}
 		$this->anonymousMasterDownload = $this->getModsValue('anonymousMasterDownload', 'marmot') != 'no';
