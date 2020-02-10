@@ -179,7 +179,7 @@ if ($isLoggedIn && (!isset($_REQUEST['action']) || $_REQUEST['action'] != 'Logou
 
 //Determine whether or not materials request functionality should be enabled
 // (set this after user log-in checking is done)
-require_once ROOT_DIR . '/sys/MaterialsRequest.php';
+require_once ROOT_DIR . '/sys/MaterialsRequest/MaterialsRequest.php';
 $interface->assign('enableMaterialsRequest', MaterialsRequest::enableMaterialsRequest());
 
 //Override MyAccount Home as needed
@@ -531,7 +531,8 @@ function loadUserData(){
 function setUpAutoLogOut($module, $action){
 	global $interface;
 	global $locationSingleton;
-	global $library;
+	global /** @var Library $library */
+	$library;
 	global $offlineMode;
 
 	$location = $locationSingleton->getActiveLocation();
@@ -586,19 +587,15 @@ function setUpAutoLogOut($module, $action){
 				$automaticTimeoutLengthLoggedOut = $location->automaticTimeoutLengthLoggedOut;
 			} // If we know the branch by iplocation, use the settings based on that location
 			elseif ($ipLocation) {
-				//TODO: ensure we are checking that URL is consistent with location, if not turn off
-				// eg: browsing at fort lewis library from garfield county library
 				$automaticTimeoutLength          = $ipLocation->automaticTimeoutLength;
 				$automaticTimeoutLengthLoggedOut = $ipLocation->automaticTimeoutLengthLoggedOut;
 			} // Otherwise, use the main branch's settings or the first location's settings
 			elseif ($library) {
-				$firstLocation            = new Location();
-				$firstLocation->libraryId = $library->libraryId;
-				$firstLocation->orderBy('isMainBranch DESC');
-				if ($firstLocation->find(true)) {
+				$defaultLocationForLibrary = Location::getDefaultLocationForLibrary($library->libraryId);
+				if ($defaultLocationForLibrary) {
 					// This finds either the main branch, or if there isn't one a location
-					$automaticTimeoutLength          = $firstLocation->automaticTimeoutLength;
-					$automaticTimeoutLengthLoggedOut = $firstLocation->automaticTimeoutLengthLoggedOut;
+					$automaticTimeoutLength          = $defaultLocationForLibrary->automaticTimeoutLength;
+					$automaticTimeoutLengthLoggedOut = $defaultLocationForLibrary->automaticTimeoutLengthLoggedOut;
 				}
 			}
 		}
@@ -738,7 +735,7 @@ function setUpSearchDisplayOptions($module, $action){
 	if ($searchObject->getView()) $interface->assign('displayMode', $searchObject->getView());
 
 	//Load repeat search options
-	require_once ROOT_DIR . '/Drivers/marmot_inc/SearchSources.php';
+	require_once ROOT_DIR . '/sys/Search/SearchSources.php';
 	$searchSources = new SearchSources();
 	$interface->assign('searchSources', $searchSources->getSearchSources());
 

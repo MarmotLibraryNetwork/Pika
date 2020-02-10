@@ -51,7 +51,7 @@ class Flatirons extends Sierra
 			'default'  => $homeLibraryCode
 		];
 		$fields[] = array(
-			'property' => 'firstName',
+			'property' => 'firstname',
 			'type' => 'text',
 			'label' => 'First Name',
 			'description' => 'Your first name',

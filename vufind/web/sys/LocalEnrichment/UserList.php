@@ -242,7 +242,7 @@ class UserList extends DB_DataObject
 			// Only Filter list for bad words when it isn't the users list. (The user gets to see their own list uncensored)
 
 			// Load all bad words.
-			require_once ROOT_DIR . '/Drivers/marmot_inc/BadWord.php';
+			require_once ROOT_DIR . '/sys/Language/BadWord.php';
 			$badWords = new BadWord();
 
 			// Determine if we should censor bad words only or hide the comment completely.

@@ -16,10 +16,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-require_once ROOT_DIR . '/sys/Solr.php';
+require_once ROOT_DIR . '/sys/Search/Solr.php';
 require_once ROOT_DIR . '/sys/SearchObject/Base.php';
 require_once ROOT_DIR . '/RecordDrivers/Factory.php';
-require_once ROOT_DIR . '/Drivers/marmot_inc/Location.php';
 
 /**
  * Search Object class
@@ -83,7 +82,7 @@ class SearchObject_Solr extends SearchObject_Base
 		// Include our solr index
 		$class              = $configArray['Index']['engine'];
 		$classWithExtension = $class . '.php';
-		require_once ROOT_DIR . "/sys/" . $classWithExtension;
+//		require_once ROOT_DIR . "/sys/" . $classWithExtension;
 		// Initialise the index
 		$this->indexEngine = new $class($configArray['Index']['url']);
 		$timer->logTime('Created Index Engine');
@@ -431,16 +430,13 @@ class SearchObject_Solr extends SearchObject_Base
 	 */
 	public function initAdvancedFacets()
 	{
-		global $locationSingleton;
 		// Call the standard initialization routine in the parent:
 		parent::init();
 
-		$searchLibrary = Library::getActiveLibrary();
-
-		$searchLocation = $locationSingleton->getActiveLocation();
-		/** @var Location $userLocation */
-//		$userLocation = Location::getUserHomeLocation();
-		$hasSearchLibraryFacets = ($searchLibrary != null && (count($searchLibrary->facets) > 0));
+		global $locationSingleton;
+		$searchLibrary           = Library::getActiveLibrary();
+		$searchLocation          = $locationSingleton->getActiveLocation();
+		$hasSearchLibraryFacets  = ($searchLibrary != null && (count($searchLibrary->facets) > 0));
 		$hasSearchLocationFacets = ($searchLocation != null && (count($searchLocation->facets) > 0));
 		if ($hasSearchLocationFacets){
 			$facets = $searchLocation->facets;

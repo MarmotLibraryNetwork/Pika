@@ -35,14 +35,8 @@ class RecordOwned extends DB_DataObject {
 	public $subLocation;
 
 	static function getObjectStructure(){
-		$indexingProfiles = array();
 		require_once ROOT_DIR . '/sys/Indexing/IndexingProfile.php';
-		$indexingProfile = new IndexingProfile();
-		$indexingProfile->orderBy('name');
-		$indexingProfile->find();
-		while ($indexingProfile->fetch()){
-			$indexingProfiles[$indexingProfile->id] = $indexingProfile->name;
-		}
+		$indexingProfiles = IndexingProfile::getAllIndexingProfileNames();
 		$structure = array(
 			'id'                => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id of this association'),
 			'indexingProfileId' => array('property' => 'indexingProfileId', 'type' => 'enum', 'values' => $indexingProfiles, 'label' => 'Indexing Profile Id', 'description' => 'The Indexing Profile this map is associated with'),

@@ -89,7 +89,7 @@ class Genealogy_Results extends Action {
 		}
 
 		// Include Search Engine Class
-		require_once ROOT_DIR . '/sys/' . $configArray['Genealogy']['engine'] . '.php';
+		require_once ROOT_DIR . '/sys/Search/' . $configArray['Genealogy']['engine'] . '.php';
 		$timer->logTime('Include search engine');
 
 		// Initialise from the current search globals

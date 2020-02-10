@@ -17,8 +17,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-require_once ROOT_DIR . '/Action.php';
-require_once ROOT_DIR . '/services/MyResearch/lib/FavoriteHandler.php';
+require_once ROOT_DIR . '/sys/LocalEnrichment/FavoriteHandler.php';
 require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
 
 /**
@@ -180,32 +179,34 @@ class MyAccount_MyList extends MyAccount {
 				$_REQUEST['lookfor'] = $titleSearch;
 				$isArchiveId         = strpos($titleSearch, ':') !== false;
 				$_REQUEST['type']    = $isArchiveId ? 'IslandoraKeyword' : 'Keyword';// Initialise from the current search globals
-				$searchObject        = SearchObjectFactory::initSearchObject($isArchiveId ? 'Islandora' : null);
-				$searchObject->setLimit(1);
-				$searchObject->init();
-				$searchObject->clearFacets();
-				$results = $searchObject->processSearch(false, false);
-				if ($results['response'] && $results['response']['numFound'] >= 1){
-					$firstDoc = $results['response']['docs'][0];
-					//Get the id of the document
-					$id = $isArchiveId ? $firstDoc['PID'] : $firstDoc['id'];
-					$numAdded++;
-					$userListEntry                         = new UserListEntry();
-					$userListEntry->listId                 = $list->id;
-					$userListEntry->groupedWorkPermanentId = $id;
-					$existingEntry                         = false;
-					if ($userListEntry->find(true)){
-						$existingEntry = true;
-					}
-					$userListEntry->notes     = '';
-					$userListEntry->dateAdded = time();
-					if ($existingEntry){
-						$userListEntry->update();
+				$searchObject        = SearchObjectFactory::initSearchObject($isArchiveId ? 'Islandora' : 'Solr');
+				if (!empty($searchObject)){
+					$searchObject->setLimit(1);
+					$searchObject->init();
+					$searchObject->clearFacets();
+					$results = $searchObject->processSearch(false, false);
+					if ($results['response'] && $results['response']['numFound'] >= 1){
+						$firstDoc = $results['response']['docs'][0];
+						//Get the id of the document
+						$id = $isArchiveId ? $firstDoc['PID'] : $firstDoc['id'];
+						$numAdded++;
+						$userListEntry                         = new UserListEntry();
+						$userListEntry->listId                 = $list->id;
+						$userListEntry->groupedWorkPermanentId = $id;
+						$existingEntry                         = false;
+						if ($userListEntry->find(true)){
+							$existingEntry = true;
+						}
+						$userListEntry->notes     = '';
+						$userListEntry->dateAdded = time();
+						if ($existingEntry){
+							$userListEntry->update();
+						}else{
+							$userListEntry->insert();
+						}
 					}else{
-						$userListEntry->insert();
+						$notes[] = "Could not find a title matching " . $titleSearch;
 					}
-				}else{
-					$notes[] = "Could not find a title matching " . $titleSearch;
 				}
 			}
 		}

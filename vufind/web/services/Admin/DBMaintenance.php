@@ -1327,8 +1327,8 @@ class DBMaintenance extends Admin_Admin {
 	}
 
 	private function createDefaultIpRanges(){
-		require_once ROOT_DIR . '/Drivers/marmot_inc/ipcalc.php';
-		require_once ROOT_DIR . '/Drivers/marmot_inc/subnet.php';
+		require_once ROOT_DIR . '/sys/Network/ipcalc.php';
+		require_once ROOT_DIR . '/sys/Network/subnet.php';
 		$subnet = new subnet();
 		$subnet->find();
 		while ($subnet->fetch()){

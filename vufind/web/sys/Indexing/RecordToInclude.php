@@ -50,14 +50,8 @@ class RecordToInclude extends DB_DataObject {
 	public $weight;
 
 	static function getObjectStructure(){
-		$indexingProfiles = array();
 		require_once ROOT_DIR . '/sys/Indexing/IndexingProfile.php';
-		$indexingProfile = new IndexingProfile();
-		$indexingProfile->orderBy('name');
-		$indexingProfile->find();
-		while ($indexingProfile->fetch()){
-			$indexingProfiles[$indexingProfile->id] = $indexingProfile->name;
-		}
+		$indexingProfiles = IndexingProfile::getAllIndexingProfileNames();
 		$structure = array(
 			'id'                    => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id of this association'),
 			'weight'                => array('property' => 'weight', 'type' => 'integer', 'label' => 'Weight', 'description' => 'The sort order of rule', 'default' => 0),

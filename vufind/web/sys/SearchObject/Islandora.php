@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-require_once ROOT_DIR . '/sys/Solr.php';
+require_once ROOT_DIR . '/sys/Search/Solr.php';
 require_once ROOT_DIR . '/sys/SearchObject/Base.php';
 require_once ROOT_DIR . '/RecordDrivers/Factory.php';
 
@@ -78,7 +78,6 @@ class SearchObject_Islandora extends SearchObject_Base {
 		global $configArray;
 		global $timer;
 		// Include our solr index
-		require_once ROOT_DIR . "/sys/Solr.php";
 		$this->searchType      = 'islandora';
 		$this->basicSearchType = 'islandora';
 		$this->indexEngine     = new Solr($configArray['Islandora']['solrUrl'], isset($configArray['Islandora']['solrCore']) ? $configArray['Islandora']['solrCore'] : 'islandora');
@@ -320,9 +319,9 @@ class SearchObject_Islandora extends SearchObject_Base {
 			foreach ($IDList as $listPosition => $currentId){
 				// use $IDList as the order guide for the html
 				$current = null; // empty out in case we don't find the matching record
-				foreach ($this->indexResult['response']['docs'] as $index => $doc){
-					if ($doc['PID'] == $currentId){
-						$current = &$this->indexResult['response']['docs'][$index];
+				foreach ($this->indexResult['response']['docs'] as $index => $doc) {
+					if (!is_null($doc['PID']) && $doc['PID'] == $currentId) {
+						$current = & $this->indexResult['response']['docs'][$index];
 						break;
 					}
 				}
@@ -1624,6 +1623,7 @@ class SearchObject_Islandora extends SearchObject_Base {
 			}
 			$interface->assign('page', $page);
 
+			require_once ROOT_DIR . '/sys/Search/SearchEntry.php';
 			$s = new SearchEntry();
 			if ($s->get($searchId)){
 				$minSO        = unserialize($s->search_object);

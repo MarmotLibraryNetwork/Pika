@@ -16,8 +16,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-require_once ROOT_DIR . '/Drivers/marmot_inc/SpellingWord.php';
-require_once(ROOT_DIR . '/Drivers/marmot_inc/SearchStatNew.php');
+require_once ROOT_DIR . '/sys/Language/SpellingWord.php';
+require_once ROOT_DIR . '/sys/Search/SearchStatNew.php';
 
 class SearchSuggestions{
 	function getCommonSearchesMySql($searchTerm, $searchType){
@@ -44,6 +44,7 @@ class SearchSuggestions{
 			return array();
 		}
 
+		require_once ROOT_DIR . '/sys/Language/SpellingWord.php';
 		$spellingWord = new SpellingWord();
 		$words = explode(" ", $searchTerm);
 		$suggestions = array();

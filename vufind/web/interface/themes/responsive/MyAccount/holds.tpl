@@ -12,10 +12,9 @@
 		<span class='availableHoldsNoticePlaceHolder'></span>
 
 		{* Check to see if there is data for the section *}
+		{include file="MyAccount/libraryHoursMessage.tpl"}
+
 		<p class="holdSectionBody">
-			{if $libraryHoursMessage}
-				<div class="libraryHours alert alert-success">{$libraryHoursMessage}</div>
-			{/if}
 	{if $offline}
 		<div class="alert alert-warning"><strong>The library system is currently offline.</strong> We are unable to retrieve information about your holds at this time.</div>
 	{else}

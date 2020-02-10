@@ -224,7 +224,7 @@ class Union_AJAX extends AJAXHandler {
 	private function getResultsFromProspector($searchType, $searchTerm, $numberOfResults, $fullResultsLink){
 		global $interface;
 		$interface->assign('viewingCombinedResults', true);
-		require_once ROOT_DIR . '/InterLibraryLoanDrivers/Prospector.php';
+		require_once ROOT_DIR . 'sys/InterLibraryLoanDrivers/Prospector.php';
 		if ($searchTerm == ''){
 			$results = '<div class="clearfix"></div><div>Enter search terms to see results.</div>';
 		}else{

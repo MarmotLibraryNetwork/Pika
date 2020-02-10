@@ -35,15 +35,9 @@ class TranslationMap extends DB_DataObject{
 	public $name;
 	public $usesRegularExpressions;
 
-	function getObjectStructure(){
-		$indexingProfiles = array();
+	static function getObjectStructure(){
 		require_once ROOT_DIR . '/sys/Indexing/IndexingProfile.php';
-		$indexingProfile = new IndexingProfile();
-		$indexingProfile->orderBy('name');
-		$indexingProfile->find();
-		while ($indexingProfile->fetch()){
-			$indexingProfiles[$indexingProfile->id] = $indexingProfile->name;
-		}
+		$indexingProfiles = IndexingProfile::getAllIndexingProfileNames();
 		$structure = array(
 			'id'                     => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id within the database'),
 			'indexingProfileId'      => array('property' => 'indexingProfileId', 'type' => 'enum', 'values' => $indexingProfiles, 'label' => 'Indexing Profile Id', 'description' => 'The Indexing Profile this map is associated with'),

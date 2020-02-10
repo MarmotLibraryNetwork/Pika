@@ -112,6 +112,7 @@ class RecordDriverFactory {
 			}
 			$timer->logTime("Found Driver for archive object from solr doc {$record['PID']} " . $driver);
 		}else{
+			// for example, Load Person records (at least from buildRSS)
 			$driver = ucwords($record['recordtype']) . 'Record';
 			$path   = "{$configArray['Site']['local']}/RecordDrivers/{$driver}.php";
 			// If we can't load the driver, fall back to the default, index-based one:

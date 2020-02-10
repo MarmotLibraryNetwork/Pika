@@ -88,7 +88,7 @@ class AJAX_JSON extends AJAXHandler {
 
 		$patronHomeBranch = Location::getUserHomeLocation();
 		//Check to see if materials request should be activated
-		require_once ROOT_DIR . '/sys/MaterialsRequest.php';
+		require_once ROOT_DIR . '/sys/MaterialsRequest/MaterialsRequest.php';
 
 		return array(
 			'success'                => true,

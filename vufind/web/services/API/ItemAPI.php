@@ -19,7 +19,7 @@
 
 require_once ROOT_DIR . '/AJAXHandler.php';
 require_once ROOT_DIR . '/sys/Pager.php';
-require_once ROOT_DIR . '/sys/ISBN.php';
+require_once ROOT_DIR . '/sys/ISBN/ISBN.php';
 require_once ROOT_DIR . '/CatalogConnection.php';
 
 class ItemAPI extends AJAXHandler {

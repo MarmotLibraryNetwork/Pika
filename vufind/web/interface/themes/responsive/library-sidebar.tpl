@@ -3,7 +3,7 @@
 		{if $showLibraryHoursAndLocationsLink}
 			<a href="/AJAX/JSON?method=getHoursAndLocations" data-title="Library Hours and Locations" class="modalDialogTrigger">
 				<div id="home-page-hours-locations" class="sidebar-button">
-					{if !isset($numHours) || $numHours > 0}Library Hours &amp; {/if}Location{if $numLocations != 1}s{/if}
+            {if !isset($numHours) || $numHours > 0}Library Hours{/if}{if (!isset($numHours) || $numHours > 0) && $numLocations != 1} &amp; {/if}{if $numLocations != 1}Locations{/if}
 				</div>
 			</a>
 		{/if}

@@ -17,10 +17,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-require_once ROOT_DIR . '/Action.php';
-require_once(ROOT_DIR . '/services/Admin/Admin.php');
-require_once(ROOT_DIR . '/sys/MaterialsRequest.php');
-require_once(ROOT_DIR . '/sys/MaterialsRequestStatus.php');
+require_once ROOT_DIR . '/services/Admin/Admin.php';
+require_once ROOT_DIR . '/sys/MaterialsRequest/MaterialsRequest.php';
+require_once ROOT_DIR . '/sys/MaterialsRequest/MaterialsRequestStatus.php';
 
 class MaterialsRequest_ManageRequests extends Admin_Admin {
 

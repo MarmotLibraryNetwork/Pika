@@ -18,7 +18,7 @@
  */
 
 require_once 'bootstrap.php';
-require_once ROOT_DIR . '/sys/BookCoverProcessor.php';
+require_once ROOT_DIR . '/sys/Covers/BookCoverProcessor.php';
 
 //Create class to handle processing of covers
 $processor = new BookCoverProcessor();

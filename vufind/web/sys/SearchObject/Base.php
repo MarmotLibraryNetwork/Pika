@@ -1364,9 +1364,9 @@ abstract class SearchObject_Base {
 	 *
 	 * @access  protected
 	 */
-	protected function addToHistory()
-	{
+	protected function addToHistory(){
 		// Get the list of all old searches for this session and/or user
+		require_once ROOT_DIR . '/sys/Search/SearchEntry.php';
 		$s = new SearchEntry();
 		/** @var SearchEntry[] $searchHistory */
 		$searchHistory = $s->getSearches(session_id(), UserAccount::isLoggedIn() ? UserAccount::getActiveUserId() : null);
@@ -1458,6 +1458,7 @@ abstract class SearchObject_Base {
 		// Is this is a saved search?
 		if (isset($_REQUEST['saved']) || $searchId != null) {
 			// Yes, retrieve it
+			require_once ROOT_DIR . '/sys/Search/SearchEntry.php';
 			$search = new SearchEntry();
 			$search->id = strip_tags(isset($_REQUEST['saved']) ? $_REQUEST['saved'] : $searchId);
 			if ($search->find(true)) {

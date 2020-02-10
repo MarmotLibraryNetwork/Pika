@@ -20,7 +20,7 @@
 /**
  * Table Definition for Person
  */
-require_once ROOT_DIR . '/sys/SolrDataObject.php';
+require_once ROOT_DIR . '/sys/Search/SolrDataObject.php';
 require_once ROOT_DIR . '/sys/Genealogy/Marriage.php';
 require_once ROOT_DIR . '/sys/Genealogy/Obituary.php';
 
@@ -196,6 +196,8 @@ class Person extends SolrDataObject
 	}
 
 	function getObjectStructure(){
+		global $configArray;
+		$storagePath = $configArray['Genealogy']['imagePath'];
 		$structure = array(
 			array('property'=>'id', 'type'=>'method', 'methodName'=>'solrId', 'storeDb' => false, 'storeSolr' => true, 'hideInLists'=>true),
 			array('property'=>'recordtype', 'type'=>'method', 'methodName'=>'recordtype', 'storeDb' => false, 'storeSolr' => true, 'hideInLists'=>true),
@@ -231,7 +233,18 @@ class Person extends SolrDataObject
 				array('property'=>'ledgerEntry', 'type'=>'text', 'maxLength'=>20, 'size'=>20, 'label'=>'Ledger Entry', 'description'=>'The line within the ledger year where the entry is stored.', 'storeDb' => true, 'storeSolr' => false),
 			)),
 			array('property'=>'comments', 'type'=>'textarea', 'rows'=>2, 'cols'=>80, 'label'=>'Comments', 'description'=>'Comments for the user.  Will be displayed on the record and can be searched.', 'storeDb' => true, 'storeSolr' => true, 'hideInLists'=>true),
-			array('property'=>'picture', 'type'=>'image', 'thumbWidth' => 65, 'mediumWidth'=>190, 'label'=>'Picture', 'description'=>'A picture of the person.', 'storeDb' => true, 'storeSolr' => false, 'hideInLists'=>true),
+			array(
+				'property'    => 'picture',
+				'type'        => 'image',
+				'storagePath' => $storagePath,
+				'thumbWidth'  => 65,
+				'mediumWidth' => 190,
+				'label'       => 'Picture',
+				'description' => 'A picture of the person.',
+				'storeDb'     => true,
+				'storeSolr'   => false,
+				'hideInLists' => true
+			),
 			array('property'=>'privateComments', 'type'=>'textarea', 'rows'=>2, 'cols'=>80, 'label'=>'Private Comments', 'description'=>'Internal Comments for a person that is not displayed in the record and is not searchable.', 'storeDb' => true, 'storeSolr' => false, 'hideInLists'=>true),
 
 			/* Properties related to data entry of the person */

@@ -17,7 +17,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-require_once ROOT_DIR . '/Drivers/marmot_inc/ISBNConverter.php';
+require_once ROOT_DIR . '/sys/ISBN/ISBNConverter.php';
 require_once ROOT_DIR . '/sys/Novelist/NovelistData.php';
 
 use Curl\Curl;
@@ -806,6 +806,7 @@ class Novelist3{
 
 					unset($titlesFromCatalog[$titleIndex]);
 				}else{
+					//TODO: replace with ISBN class
 					$isbn     = reset($item->isbns);
 					$isbn13   = strlen($isbn) == 13 ? $isbn : ISBNConverter::convertISBN10to13($isbn);
 					$isbn10   = strlen($isbn) == 10 ? $isbn : ISBNConverter::convertISBN13to10($isbn);

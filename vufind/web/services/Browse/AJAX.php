@@ -198,7 +198,7 @@ class Browse_AJAX extends AJAXHandler {
 		$result['label']     = translate('Recommended for you');
 		$result['searchUrl'] = '/MyAccount/SuggestedTitles';
 
-		require_once ROOT_DIR . '/services/MyResearch/lib/Suggestions.php';
+		require_once ROOT_DIR . '/sys/LocalEnrichment/Suggestions.php';
 		$suggestions = Suggestions::getSuggestions(-1, self::ITEMS_PER_PAGE);
 		$records     = array();
 		foreach ($suggestions as $suggestedItemId => $suggestionData){

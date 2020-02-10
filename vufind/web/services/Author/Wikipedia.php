@@ -26,7 +26,7 @@
  * Time: 8:51 AM
  */
 
-require_once ROOT_DIR . '/sys/WikipediaParser.php';
+require_once ROOT_DIR . '/sys/ExternalEnrichment/WikipediaParser.php';
 class Author_Wikipedia {
 
 

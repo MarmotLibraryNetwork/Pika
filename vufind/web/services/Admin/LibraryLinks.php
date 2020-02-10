@@ -18,20 +18,22 @@
  */
 
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
-require_once ROOT_DIR . '/sys/LibraryLink.php';
+require_once ROOT_DIR . '/sys/Library/LibraryLink.php';
 
-class Admin_LibraryLinks extends ObjectEditor
-{
+class Admin_LibraryLinks extends ObjectEditor {
 
 	function getObjectType(){
 		return 'LibraryLink';
 	}
+
 	function getToolName(){
 		return 'LibraryLinks';
 	}
+
 	function getPageTitle(){
 		return 'Library Links';
 	}
+
 	function getAllObjects(){
 		//Look lookup information for display in the user interface
 		$user = UserAccount::getLoggedInUser();
@@ -53,15 +55,19 @@ class Admin_LibraryLinks extends ObjectEditor
 		}
 		return $list;
 	}
+
 	function getObjectStructure(){
 		return LibraryLink::getObjectStructure();
 	}
+
 	function getPrimaryKeyColumn(){
 		return 'id';
 	}
+
 	function getIdKeyColumn(){
 		return 'id';
 	}
+
 	function getAllowableRoles(){
 		return array('opacAdmin', 'libraryAdmin');
 	}

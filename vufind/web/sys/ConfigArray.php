@@ -21,11 +21,10 @@
  * Support function -- get the file path to one of the ini files specified in the
  * [Extra_Config] section of config.ini.
  *
- * @param   string $name        The ini's name from the [Extra_Config] section of config.ini
+ * @param string $name The ini's name from the [Extra_Config] section of config.ini
  * @return  string      The file path
  */
-function getExtraConfigArrayFile($name)
-{
+function getExtraConfigArrayFile($name){
 	global $configArray;
 
 	// Load the filename from config.ini, and use the key name as a default
@@ -40,7 +39,7 @@ function getExtraConfigArrayFile($name)
 	}elseif (file_exists("../../sites/default/conf/$filename")){
 		// Return the file path (note that all ini files are in the conf/ directory)
 		return "../../sites/default/conf/$filename";
-	} else{
+	}else{
 		// Return the file path (note that all ini files are in the conf/ directory)
 		return '../../sites/' . $filename;
 	}
@@ -50,17 +49,17 @@ function getExtraConfigArrayFile($name)
 /**
  * Load a translation map from the translation_maps directory
  *
- * @param   string $name        The name of the translation map should not include _map.properties
- * @return  string      The file path
+ * @param string $name The name of the translation map should not include _map.properties
+ * @return  string[]   An array of the translation map
  */
-function getTranslationMap($name)
-{
+function getTranslationMap($name){
 	//Check to see if there is a domain name based subfolder for he configuration
 	global $serverName;
-	/** @var Memcache $memCache */
 	global $memCache;
-	$mapValues = $memCache->get('translation_map_'. $serverName.'_'. $name);
-	if ($mapValues != false && $mapValues != null && !isset($_REQUEST['reload'])){
+	/** @var Memcache $memCache */
+	$memCacheKey       = 'translation_map_' . $serverName . '_' . $name;
+	$mapValues = $memCache->get($memCacheKey);
+	if (!empty($mapValues) && !isset($_REQUEST['reload'])){
 		return $mapValues;
 	}
 
@@ -72,7 +71,7 @@ function getTranslationMap($name)
 	}elseif (file_exists("../../sites/default/translation_maps/$mapNameFull")){
 		// Return the file path (note that all ini files are in the conf/ directory)
 		$mapFilename = "../../sites/default/translation_maps/$mapNameFull";
-	} else{
+	}else{
 		// Return the file path (note that all ini files are in the conf/ directory)
 		$mapFilename = '../../sites/' . $mapNameFull;
 	}
@@ -81,7 +80,7 @@ function getTranslationMap($name)
 	// Try to load the .ini file; if loading fails, the file probably doesn't
 	// exist, so we can treat it as an empty array.
 	$mapValues = array();
-	$fHnd = fopen($mapFilename, 'r');
+	$fHnd      = fopen($mapFilename, 'r');
 	while (($line = fgets($fHnd)) !== false){
 		if (substr($line, 0, 1) == '#'){
 			//skip the line, it's a comment
@@ -95,13 +94,13 @@ function getTranslationMap($name)
 	fclose($fHnd);
 
 	global $configArray;
-	$memCache->set('translation_map_'. $serverName.'_' . $name, $mapValues, 0, $configArray['Caching']['translation_map']);
+	$memCache->set($memCacheKey, $mapValues, 0, $configArray['Caching']['translation_map']);
 	return $mapValues;
 }
 
 function mapValue($mapName, $value){
 	$map = getTranslationMap($mapName);
-	if ($map == null || $map == false){
+	if (empty($map)){
 		return $value;
 	}
 	$value = str_replace(' ', '_', $value);
@@ -110,7 +109,7 @@ function mapValue($mapName, $value){
 	}elseif (isset($map[strtolower($value)])){
 		return $map[strtolower($value)];
 	}elseif (isset($map['*'])){
-		return ($map['*'] == 'nomap') ?  $value : $map['*'];
+		return ($map['*'] == 'nomap') ? $value : $map['*'];
 	}else{
 		return '';
 	}
@@ -142,16 +141,15 @@ function getExtraConfigArray($name){
 /**
  * Support function -- merge the contents of two arrays parsed from ini files.
  *
- * @param   array $config_ini  The base config array.
- * @param   array $custom_ini  Overrides to apply on top of the base array.
+ * @param array $config_ini The base config array.
+ * @param array $custom_ini Overrides to apply on top of the base array.
  * @return  array       The merged results.
  */
-function ini_merge($config_ini, $custom_ini)
-{
-	foreach ($custom_ini as $k => $v) {
-		if (is_array($v)) {
+function ini_merge($config_ini, $custom_ini){
+	foreach ($custom_ini as $k => $v){
+		if (is_array($v)){
 			$config_ini[$k] = ini_merge(isset($config_ini[$k]) ? $config_ini[$k] : array(), $custom_ini[$k]);
-		} else {
+		}else{
 			$config_ini[$k] = $v;
 		}
 	}

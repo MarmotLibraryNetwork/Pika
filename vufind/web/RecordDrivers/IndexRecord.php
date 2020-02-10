@@ -97,9 +97,9 @@ class IndexRecord extends RecordInterface
 
 		global $configArray;
 		// Load highlighting/snippet preferences:
-		$searchSettings = getExtraConfigArray('searches');
-		$this->highlight = $configArray['Index']['enableHighlighting'];
-		$this->snippet = $configArray['Index']['enableSnippets'];
+		$searchSettings        = getExtraConfigArray('searches');
+		$this->highlight       = $configArray['Index']['enableHighlighting'];
+		$this->snippet         = $configArray['Index']['enableSnippets'];
 		$this->snippetCaptions = isset($searchSettings['Snippet_Captions']) && is_array($searchSettings['Snippet_Captions']) ? $searchSettings['Snippet_Captions'] : array();
 
 		if ($groupedWork == null){
@@ -131,47 +131,7 @@ class IndexRecord extends RecordInterface
 	 * @access  public
 	 * @return  string              Name of Smarty template file to display.
 	 */
-	public function getCitation($format)
-	{
-		require_once ROOT_DIR . '/sys/CitationBuilder.php';
-
-		// Build author list:
-		$authors = array();
-		$primary = $this->getPrimaryAuthor();
-		if (!empty($primary)) {
-			$authors[] = $primary;
-		}
-		$authors = array_unique(array_merge($authors, $this->getSecondaryAuthors()));
-
-		// Collect all details for citation builder:
-		$publishers = $this->getPublishers();
-		$pubDates = $this->getPublicationDates();
-		$pubPlaces = $this->getPlacesOfPublication();
-		$details = array(
-            'authors' => $authors,
-            'title' => $this->getShortTitle(),
-            'subtitle' => $this->getSubtitle(),
-            'pubPlace' => count($pubPlaces) > 0 ? $pubPlaces[0] : null,
-            'pubName' => count($publishers) > 0 ? $publishers[0] : null,
-            'pubDate' => count($pubDates) > 0 ? $pubDates[0] : null,
-            'edition' => $this->getEdition(),
-		        'format' => $this->getFormats()
-		);
-
-		// Build the citation:
-		$citation = new CitationBuilder($details);
-		switch($format) {
-			case 'APA':
-				return $citation->getAPA();
-			case 'AMA':
-				return $citation->getAMA();
-			case 'ChicagoAuthDate':
-				return $citation->getChicagoAuthDate();
-			case 'ChicagoHumanities':
-				return $citation->getChicagoHumanities();
-			case 'MLA':
-				return $citation->getMLA();
-		}
+	public function getCitation($format){
 		return '';
 	}
 
@@ -182,9 +142,8 @@ class IndexRecord extends RecordInterface
 	 * @access  public
 	 * @return  array               Strings representing citation formats.
 	 */
-	public function getCitationFormats()
-	{
-		return array('AMA', 'APA', 'ChicagoHumanities', 'ChicagoAuthDate', 'MLA');
+	public function getCitationFormats(){
+		return [];
 	}
 
 	/**
@@ -196,61 +155,51 @@ class IndexRecord extends RecordInterface
 	 * @return  mixed               Editions in index engine result format.
 	 *                              (or null if no hits, or PEAR_Error object).
 	 */
-	public function getEditions()
-	{
-		require_once ROOT_DIR . '/sys/WorldCatUtils.php';
-		$wc = new WorldCatUtils();
+//	public function getEditions()
+//	{
+//		require_once ROOT_DIR . '/sys/WorldCatUtils.php';
+//		$wc = new WorldCatUtils();
+//
+//		// Try to build an array of ISBN or ISSN-based sub-queries:
+//		$parts = array();
+//		$isbn = $this->getCleanISBN();
+//		if (!empty($isbn)) {
+//			$isbnList = $wc->getXISBN($isbn);
+//			foreach($isbnList as $current) {
+//				$parts[] = 'isbn:' . $current;
+//			}
+//		} else {
+//			$issn = $this->getCleanISSN();
+//			if (!empty($issn)) {
+//				$issnList = $wc->getXISSN($issn);
+//				foreach($issnList as $current) {
+//					$parts[] = 'issn:' . $current;
+//				}
+//			}
+//		}
+//
+//		// If we have query parts, we should try to find related records:
+//		if (!empty($parts)) {
+//			// Assemble the query parts and filter out current record:
+//			$query = '(' . implode(' OR ', $parts) . ') NOT id:' .
+//			$this->getUniqueID();
+//
+//			// Perform the search and return either results or an error:
+//			$index = $this->getIndexEngine();
+//			$result = $index->search($query, null, null, 0, 5);
+//			if (PEAR_Singleton::isError($result)) {
+//				return $result;
+//			}
+//			if (isset($result['response']['docs']) &&
+//			!empty($result['response']['docs'])) {
+//				return $result['response']['docs'];
+//			}
+//		}
+//
+//		// If we got this far, we were unable to find any results:
+//		return null;
+//	}
 
-		// Try to build an array of ISBN or ISSN-based sub-queries:
-		$parts = array();
-		$isbn = $this->getCleanISBN();
-		if (!empty($isbn)) {
-			$isbnList = $wc->getXISBN($isbn);
-			foreach($isbnList as $current) {
-				$parts[] = 'isbn:' . $current;
-			}
-		} else {
-			$issn = $this->getCleanISSN();
-			if (!empty($issn)) {
-				$issnList = $wc->getXISSN($issn);
-				foreach($issnList as $current) {
-					$parts[] = 'issn:' . $current;
-				}
-			}
-		}
-
-		// If we have query parts, we should try to find related records:
-		if (!empty($parts)) {
-			// Assemble the query parts and filter out current record:
-			$query = '(' . implode(' OR ', $parts) . ') NOT id:' .
-			$this->getUniqueID();
-
-			// Perform the search and return either results or an error:
-			$index = $this->getIndexEngine();
-			$result = $index->search($query, null, null, 0, 5);
-			if (PEAR_Singleton::isError($result)) {
-				return $result;
-			}
-			if (isset($result['response']['docs']) &&
-			!empty($result['response']['docs'])) {
-				return $result['response']['docs'];
-			}
-		}
-
-		// If we got this far, we were unable to find any results:
-		return null;
-	}
-
-	/**
-	 * Get the text to represent this record in the body of an email.
-	 *
-	 * @access  public
-	 * @return  string              Text for inclusion in email.
-	 */
-	public function getEmail()
-	{
-		return "  " . $this->getTitle() . "\n";
-	}
 
 	/**
 	 * Assign necessary Smarty variables and return a template name to
@@ -288,7 +237,7 @@ class IndexRecord extends RecordInterface
 	 * user's favorites list.
 	 *
 	 * @access  public
-	 * @param   object  $user       User object owning tag/note metadata.
+	 * @param   User  $user       User object owning tag/note metadata.
 	 * @param   int     $listId     ID of list containing desired tags/notes (or
 	 *                              null to show tags/notes from all user's lists).
 	 * @param   bool    $allowEdit  Should we display edit controls?
@@ -601,57 +550,32 @@ class IndexRecord extends RecordInterface
 	}
 
 	/**
-	 * Get award notes for the record.
-	 *
-	 * @access  protected
-	 * @return  array
-	 */
-	protected function getAwards()
-	{
-		// Not currently stored in the Solr index
-		return array();
-	}
-
-	/**
-	 * Get notes on bibliography content.
-	 *
-	 * @access  protected
-	 * @return  array
-	 */
-	protected function getBibliographyNotes()
-	{
-		// Not currently stored in the Solr index
-		return array();
-	}
-
-	/**
 	 * Return the first valid ISBN found in the record (favoring ISBN-10 over
 	 * ISBN-13 when possible).
 	 *
 	 * @return  mixed
 	 */
-	public function getCleanISBN()
-	{
-		require_once ROOT_DIR . '/sys/ISBN.php';
+	public function getCleanISBN(){
+		require_once ROOT_DIR . '/sys/ISBN/ISBN.php';
 
 		// Get all the ISBNs and initialize the return value:
-		$isbns = $this->getISBNs();
+		$isbns  = $this->getISBNs();
 		$isbn13 = false;
 
 		// Loop through the ISBNs:
-		foreach($isbns as $isbn) {
+		foreach ($isbns as $isbn){
 			// Strip off any unwanted notes:
-			if ($pos = strpos($isbn, ' ')) {
+			if ($pos = strpos($isbn, ' ')){
 				$isbn = substr($isbn, 0, $pos);
 			}
 
 			// If we find an ISBN-10, return it immediately; otherwise, if we find
 			// an ISBN-13, save it if it is the first one encountered.
 			$isbnObj = new ISBN($isbn);
-			if ($isbn10 = $isbnObj->get10()) {
+			if ($isbn10 = $isbnObj->get10()){
 				return $isbn10;
 			}
-			if (!$isbn13) {
+			if (!$isbn13){
 				$isbn13 = $isbnObj->get13();
 			}
 		}
@@ -659,29 +583,29 @@ class IndexRecord extends RecordInterface
 	}
 
 	public function getCleanISBNs(){
-		require_once ROOT_DIR . '/sys/ISBN.php';
+		require_once ROOT_DIR . '/sys/ISBN/ISBN.php';
 
 		$cleanIsbns = array();
 		// Get all the ISBNs and initialize the return value:
 		$isbns = $this->getISBNs();
 
 		// Loop through the ISBNs:
-		foreach($isbns as $isbn) {
+		foreach ($isbns as $isbn){
 			// Strip off any unwanted notes:
-			if ($pos = strpos($isbn, ' ')) {
+			if ($pos = strpos($isbn, ' ')){
 				$isbn = substr($isbn, 0, $pos);
 			}
 
 			// If we find an ISBN-10, return it immediately; otherwise, if we find
 			// an ISBN-13, save it if it is the first one encountered.
 			$isbnObj = new ISBN($isbn);
-			if ($isbn10 = $isbnObj->get10()) {
+			if ($isbn10 = $isbnObj->get10()){
 				if (!array_key_exists($isbn10, $cleanIsbns)){
 					$cleanIsbns[$isbn10] = $isbn10;
 				}
 			}
-			if ($isbn13 = $isbnObj->get13()) {
-				if (!array_key_exists($isbn13, $cleanIsbns)) {
+			if ($isbn13 = $isbnObj->get13()){
+				if (!array_key_exists($isbn13, $cleanIsbns)){
 					$cleanIsbns[$isbn13] = $isbn13;
 				}
 			}
@@ -695,14 +619,13 @@ class IndexRecord extends RecordInterface
 	 * @access  protected
 	 * @return  mixed
 	 */
-	protected function getCleanISSN()
-	{
+	protected function getCleanISSN(){
 		$issns = $this->getISSNs();
-		if (empty($issns)) {
+		if (empty($issns)){
 			return false;
 		}
 		$issn = $issns[0];
-		if ($pos = strpos($issn, ' ')) {
+		if ($pos = strpos($issn, ' ')){
 			$issn = substr($issn, 0, $pos);
 		}
 		return $issn;
@@ -739,18 +662,6 @@ class IndexRecord extends RecordInterface
 	}
 
 	/**
-	 * Get the main corporate author (if any) for the record.
-	 *
-	 * @access  protected
-	 * @return  string
-	 */
-	protected function getCorporateAuthor()
-	{
-		// Not currently stored in the Solr index
-		return null;
-	}
-
-	/**
 	 * Get the date coverage for a record which spans a period of time (i.e. a
 	 * journal).  Use getPublicationDates for publication dates of particular
 	 * monographic items.
@@ -777,18 +688,6 @@ class IndexRecord extends RecordInterface
 	}
 
 	/**
-	 * Get notes on finding aids related to the record.
-	 *
-	 * @access  protected
-	 * @return  array
-	 */
-	protected function getFindingAids()
-	{
-		// Not currently stored in the Solr index
-		return array();
-	}
-
-	/**
 	 * Get an array of all the formats associated with the record.
 	 *
 	 * @access  public
@@ -809,23 +708,9 @@ class IndexRecord extends RecordInterface
 	 *
 	 * @return  array
 	 */
-	public function getFormatCategory()
-	{
-		return isset($this->fields['format_category']) ? $this->fields['format_category'] : '';
+	public function getFormatCategory(){
+		return isset($this->fields['format_category']) ? $this->fields['format_category'] : [];
 	}
-	/**
-	 * Get general notes on the record.
-	 *
-	 * @access  protected
-	 * @return  array
-	 */
-	protected function getGeneralNotes()
-	{
-		// Not currently stored in the Solr index
-		return array();
-	}
-
-	static $groupedWorks = array();
 
 	/**
 	 * Load the grouped work that this record is connected to.
@@ -846,7 +731,9 @@ class IndexRecord extends RecordInterface
 				}
 			}
 
-			$timer->logTime("Loaded Grouped Work for record");
+			if ($timer){
+				$timer->logTime("Loaded Grouped Work for record");
+			}
 		}
 	}
 
@@ -959,14 +846,11 @@ class IndexRecord extends RecordInterface
 	 * @access  protected
 	 * @return  object
 	 */
-	protected function getIndexEngine()
-	{
-		global $configArray;
-
+	protected function getIndexEngine(){
 		// Build the index engine if we don't already have one:
-		if (!$this->index) {
+		if (!$this->index){
 			$searchObject = SearchObjectFactory::initSearchObject();
-			$this->index = new $searchObject;
+			$this->index  = new $searchObject;
 		}
 
 		return $this->index;
@@ -998,16 +882,11 @@ class IndexRecord extends RecordInterface
 	 *
 	 * @return  array
 	 */
-	public function getUPCs()
-	{
+	public function getUPCs(){
 		// If UPCs is in the index, it should automatically be an array... but if
 		// it's not set at all, we should normalize the value to an empty array.
 		if (isset($this->fields['upc'])){
-			if (is_array($this->fields['upc'])){
-				return $this->fields['upc'];
-			}else{
-				return array($this->fields['upc']);
-			}
+			return is_array($this->fields['upc']) ? $this->fields['upc'] : array($this->fields['upc']);
 		}else{
 			return array();
 		}
@@ -1059,40 +938,16 @@ class IndexRecord extends RecordInterface
 	}
 
 	/**
-	 * Get an array of physical descriptions of the item.
-	 *
-	 * @access  protected
-	 * @return  array
-	 */
-//	protected function getPhysicalDescriptions()
-//	{
-//		return isset($this->fields['physical']) ?
-//		$this->fields['physical'] : array();
-//	}
-
-	/**
 	 * Get the item's place of publication.
 	 *
 	 * @access  protected
 	 * @return  array
 	 */
-//	protected function getPlacesOfPublication()
-//	{
-//		// Not currently stored in the Solr index
-//		return array();
-//	}
-
-	/**
-	 * Get an array of playing times for the record (if applicable).
-	 *
-	 * @access  protected
-	 * @return  array
-	 */
-//	protected function getPlayingTimes()
-//	{
-//		// Not currently stored in the Solr index
-//		return array();
-//	}
+	protected function getPlacesOfPublication()
+	{
+		// Not currently stored in the Solr index
+		return array();
+	}
 
 	/**
 	 * Get an array of previous titles for the record.
@@ -1118,18 +973,6 @@ class IndexRecord extends RecordInterface
 	}
 
 	/**
-	 * Get credits of people involved in production of the item.
-	 *
-	 * @access  protected
-	 * @return  array
-	 */
-//	protected function getProductionCredits()
-//	{
-//		// Not currently stored in the Solr index
-//		return array();
-//	}
-
-	/**
 	 * Get the publication dates of the record.  See also getDateSpan().
 	 *
 	 * @access  public
@@ -1147,41 +990,28 @@ class IndexRecord extends RecordInterface
 	 * @access  public
 	 * @return  array
 	 */
-	function getPublicationDetails()
-	{
+	function getPublicationDetails(){
 		$places = $this->getPlacesOfPublication();
-		$names = $this->getPublishers();
-		$dates = $this->getPublicationDates();
+		$names  = $this->getPublishers();
+		$dates  = $this->getPublicationDates();
 
-		$i = 0;
+		$i         = 0;
 		$returnVal = array();
-		while (isset($places[$i]) || isset($names[$i]) || isset($dates[$i])) {
+		while (isset($places[$i]) || isset($names[$i]) || isset($dates[$i])){
 			// Put all the pieces together, and do a little processing to clean up
 			// unwanted whitespace.
 			$publicationInfo = (isset($places[$i]) ? $places[$i] . ' ' : '') .
-					(isset($names[$i]) ? $names[$i] . ' ' : '') .
-					(isset($dates[$i]) ? (', ' . $dates[$i] . '.') : '');
+				(isset($names[$i]) ? $names[$i] . ' ' : '') .
+				(isset($dates[$i]) ? (', ' . $dates[$i] . '.') : '');
 			$publicationInfo = trim(str_replace('  ', ' ', $publicationInfo));
 			$publicationInfo = str_replace(' ,', ',', $publicationInfo);
 			$publicationInfo = htmlentities($publicationInfo);
-			$returnVal[] = $publicationInfo;
+			$returnVal[]     = $publicationInfo;
 			$i++;
 		}
 
 		return $returnVal;
 	}
-
-	/**
-	 * Get an array of publication frequency information.
-	 *
-	 * @access  protected
-	 * @return  array
-	 */
-//	protected function getPublicationFrequency()
-//	{
-//		// Not currently stored in the Solr index
-//		return array();
-//	}
 
 	/**
  * Get the publishers of the record.
@@ -1194,18 +1024,6 @@ class IndexRecord extends RecordInterface
 		return isset($this->fields['publisher']) ?
 			$this->fields['publisher'] : array();
 	}
-
-	/**
-	 * Get an array of strings describing relationships to other items.
-	 *
-	 * @access  protected
-	 * @return  array
-	 */
-//	protected function getRelationshipNotes()
-//	{
-//		// Not currently stored in the Solr index
-//		return array();
-//	}
 
 	/**
 	 * Get an array of all secondary authors (complementing getPrimaryAuthor()).
@@ -1262,36 +1080,12 @@ class IndexRecord extends RecordInterface
 	}
 
 	/**
-	 * Get an array of technical details on the item represented by the record.
-	 *
-	 * @access  protected
-	 * @return  array
-	 */
-//	protected function getSystemDetails()
-//	{
-//		// Not currently stored in the Solr index
-//		return array();
-//	}
-
-	/**
 	 * Get an array of summary strings for the record.
 	 *
 	 * @access  protected
 	 * @return  array
 	 */
 	protected function getSummary()
-	{
-		// Not currently stored in the Solr index
-		return array();
-	}
-
-	/**
-	 * Get an array of note about the record's target audience.
-	 *
-	 * @access  protected
-	 * @return  array
-	 */
-	protected function getTargetAudienceNotes()
 	{
 		// Not currently stored in the Solr index
 		return array();
@@ -1314,18 +1108,6 @@ class IndexRecord extends RecordInterface
 	 * @return  string
 	 */
 	protected function getTitleSection()
-	{
-		// Not currently stored in the Solr index
-		return null;
-	}
-
-	/**
-	 * Get the statement of responsibility that goes with the title (i.e. "by John Smith").
-	 *
-	 * @access  protected
-	 * @return  string
-	 */
-	public function getTitleStatement()
 	{
 		// Not currently stored in the Solr index
 		return null;
@@ -1500,7 +1282,7 @@ class IndexRecord extends RecordInterface
 		$pubDate = $this->getPublicationDates();
 		if (count($pubDate) == 1){
 			$params['rft.date'] = $pubDate[0];
-		}elseif (count($pubDate > 1)){
+		}elseif (count($pubDate) > 1){
 			$params['rft.date'] = $pubDate;
 		}
 

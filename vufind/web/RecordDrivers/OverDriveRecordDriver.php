@@ -153,7 +153,7 @@ class OverDriveRecordDriver extends RecordInterface {
 	 */
 	public function getCitation($format)
 	{
-		require_once ROOT_DIR . '/sys/CitationBuilder.php';
+		require_once ROOT_DIR . '/sys/LocalEnrichment/CitationBuilder.php';
 
 		// Build author list:
 		$authors = array();
@@ -497,7 +497,7 @@ class OverDriveRecordDriver extends RecordInterface {
 	 */
 	public function getCleanISBN()
 	{
-		require_once ROOT_DIR . '/sys/ISBN.php';
+		require_once ROOT_DIR . '/sys/ISBN/ISBN.php';
 
 		// Get all the ISBNs and initialize the return value:
 		$isbns = $this->getISBNs();
@@ -526,7 +526,7 @@ class OverDriveRecordDriver extends RecordInterface {
 	// TODO: document
 	public function getCleanISBNs()
 	{
-		require_once ROOT_DIR . '/sys/ISBN.php';
+		require_once ROOT_DIR . '/sys/ISBN/ISBN.php';
 
 		// Get all the ISBNs and initialize the return value:
 		$isbns     = $this->getISBNs();

@@ -17,7 +17,7 @@
 			<div id="filterPanel" class="panel-collapse collapse">
 				<div class="panel-body">
 
-					<form action="{$path}/MaterialsRequest/ManageRequests" method="get">
+					<form action="/MaterialsRequest/ManageRequests" method="get">
 						<fieldset class="fieldset-collapsible">
 							<legend>Statuses to Show:</legend>
 							<div class="form-group checkbox">
@@ -38,10 +38,38 @@
 						</fieldset>
 						<fieldset class="form-group fieldset-collapsible">
 							<legend>Date:</legend>
-							<div class="form-group">
+{*
 								<label for="startDate">From</label> <input type="text" id="startDate" name="startDate" value="{$startDate}" size="8">
 								<label for="endDate">To</label> <input type="text" id="endDate" name="endDate" value="{$endDate}" size="8">
-							</div>
+*}
+								<div class="form-group">
+									<label for="startDate" class="control-label col-sm-2">Start Date</label>
+									<div class="input-group input-append date controls col-sm-3" id="startDatePicker">
+										<input type="text" name="startDate" id="startDate" size="10" value="{$startDate|date_format:'%m/%d/%Y'}"
+										       data-provide="datepicker" data-date-format="mm/dd/yyyy" data-date-end-date="0d"
+										       class="form-control" >
+										<span class="input-group-addon">
+								<span class="glyphicon glyphicon-calendar"
+								      onclick="$('#startDate').focus().datepicker('show')"
+								      aria-hidden="true">
+								</span>
+							</span>
+									</div>
+								</div>
+								<div class="form-group">
+									<label for="endDate" class="control-label col-sm-2">End Date</label>
+									<div class="input-group input-append date controls col-sm-3" id="endDatePicker">
+										<input type="text" name="endDate" id="endDate" size="10" value="{$endDate|date_format:'%m/%d/%Y'}"
+										       data-provide="datepicker" data-date-format="mm/dd/yyyy" data-date-end-date="0d"
+										       class="form-control">
+										<span class="input-group-addon">
+							<span class="glyphicon glyphicon-calendar"
+							      onclick="$('#endDate').focus().datepicker('show')"
+							      aria-hidden="true">
+								</span>
+							</span>
+									</div>
+								</div>
 						</fieldset>
 						<fieldset class="form-group fieldset-collapsible">
 							<legend>Request IDs to Show (separated by commas):</legend>
@@ -98,7 +126,7 @@
 			</div>
 		</div>
 		{if count($allRequests) > 0}
-			<form id="updateRequests" method="post" action="{$path}/MaterialsRequest/ManageRequests" class="form form-horizontal">
+			<form id="updateRequests" method="post" action="/MaterialsRequest/ManageRequests" class="form form-horizontal">
 				<table id="requestedMaterials" class="table tablesorter table-striped table-hover">
 					<thead>
 						<tr>
@@ -215,7 +243,7 @@
 						{/foreach}
 					</tbody>
 				</table>
-				{if array_key_exists('library_material_requests', $userRoles)}
+				{if in_array('library_material_requests', $userRoles)}
 					<div id="materialsRequestActions">
 						<div class="row form-group">
 							<div class="col-sm-4">
@@ -273,8 +301,6 @@
 
 <script type="text/javascript">
 $(function () {ldelim}
-	$("#startDate").datepicker();
-	$("#endDate").datepicker();
 	$("#requestedMaterials").tablesorter({ldelim}
 		cssAsc: 'sortAscHeader',
 		cssDesc: 'sortDescHeader',

@@ -228,7 +228,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 		if (isset($library) && $library->showGoDeeper == 0){
 			$enrichmentResult['showGoDeeper'] = false;
 		}else{
-			require_once(ROOT_DIR . '/Drivers/marmot_inc/GoDeeperData.php');
+			require_once ROOT_DIR . '/sys/ExternalEnrichment/GoDeeperData.php';
 			$goDeeperOptions = GoDeeperData::getGoDeeperOptions($recordDriver->getCleanISBN(), $recordDriver->getCleanUPC());
 			if (count($goDeeperOptions['options']) == 0){
 				$enrichmentResult['showGoDeeper'] = false;
@@ -315,7 +315,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 	}
 
 	function getGoDeeperData(){
-		require_once(ROOT_DIR . '/Drivers/marmot_inc/GoDeeperData.php');
+		require_once ROOT_DIR . '/sys/ExternalEnrichment/GoDeeperData.php';
 		$dataType = strip_tags($_REQUEST['dataType']);
 
 		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
@@ -445,7 +445,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 		$isbn         = $recordDriver->getCleanISBN();
 
 		//Load external (syndicated reviews)
-		require_once ROOT_DIR . '/sys/Reviews.php';
+		require_once ROOT_DIR . '/sys/ExternalEnrichment/Reviews.php';
 		$externalReviews = new ExternalReviews($isbn);
 		$reviews         = $externalReviews->fetch();
 		global $interface;
@@ -1036,7 +1036,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 		//Load results from Prospector
 		$ILLDriver = $configArray['InterLibraryLoan']['ILLDriver'];
 		/** @var Prospector|AutoGraphicsShareIt $prospector */
-		require_once ROOT_DIR . '/InterLibraryLoanDrivers/' . $ILLDriver . '.php';
+		require_once ROOT_DIR . '/sys/InterLibraryLoanDrivers/' . $ILLDriver . '.php';
 		$prospector = new $ILLDriver();
 
 		$searchTerms = array(

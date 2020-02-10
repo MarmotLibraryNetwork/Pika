@@ -44,18 +44,18 @@ class PersonDriver extends IslandoraDriver {
 		return 'Person';
 	}
 
-	public function getMoreDetailsOptions() {
+	public function getMoreDetailsOptions(){
 		//Load more details options
 		global $interface;
 		$moreDetailsOptions = $this->getBaseMoreDetailsOptions();
 		unset($moreDetailsOptions['relatedPlaces']);
 
-		$relatedPlaces = $this->getRelatedPlaces();
-		$unlinkedEntities = $this->unlinkedEntities;
-		$linkedAddresses = array();
-		$unlinkedAddresses = array();
-		$linkedMilitaryAddresses = array();
-		$unlinkedMilitaryAddresses = array();
+		$relatedPlaces             = $this->getRelatedPlaces();
+		$unlinkedEntities          = $this->unlinkedEntities;
+		$linkedAddresses           = [];
+		$unlinkedAddresses         = [];
+		$linkedMilitaryAddresses   = [];
+		$unlinkedMilitaryAddresses = [];
 		foreach ($unlinkedEntities as $key => $tmpEntity){
 			if ($tmpEntity['type'] == 'place'){
 				if (strcasecmp($tmpEntity['role'], 'ServedInMilitary') === 0){
@@ -78,32 +78,32 @@ class PersonDriver extends IslandoraDriver {
 		}
 		$interface->assign('unlinkedAddresses', $unlinkedAddresses);
 		$interface->assign('linkedAddresses', $linkedAddresses);
-		if (count($linkedAddresses) || count($unlinkedAddresses)) {
-			$moreDetailsOptions['addresses'] = array(
+		if (count($linkedAddresses) || count($unlinkedAddresses)){
+			$moreDetailsOptions['addresses'] = [
 				'label'         => 'Addresses',
 				'body'          => $interface->fetch('Archive/addressSection.tpl'),
 				'hideByDefault' => false,
-			);
+			];
 		}
 		if (!empty($interface->getVariable('creators'))
-				|| $this->hasDetails
-				|| (!empty($interface->getVariable('marriages')))
-				|| (!empty($this->unlinkedEntities))){
-			$moreDetailsOptions['details'] = array(
+			|| $this->hasDetails
+			|| (!empty($interface->getVariable('marriages')))
+			|| (!empty($this->unlinkedEntities))){
+			$moreDetailsOptions['details'] = [
 				'label'         => 'Details',
 				'body'          => $interface->fetch('Archive/detailsSection.tpl'),
 				'hideByDefault' => false
-			);
+			];
 		}else{
 			unset($moreDetailsOptions['details']);
 		}
 
 		$relatedPeople = $this->getRelatedPeople();
-		if (count($relatedPeople)) {
+		if (count($relatedPeople)){
 			$moreDetailsOptions['familyDetails'] = array(
-					'label' => 'Family Details',
-					'body' => $interface->fetch('Archive/relatedPeopleSection.tpl'),
-					'hideByDefault' => false,
+				'label'         => 'Family Details',
+				'body'          => $interface->fetch('Archive/relatedPeopleSection.tpl'),
+				'hideByDefault' => false,
 			);
 			unset($moreDetailsOptions['relatedPeople']);
 		}

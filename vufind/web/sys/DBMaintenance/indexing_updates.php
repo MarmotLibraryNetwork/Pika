@@ -283,7 +283,19 @@ function getIndexingUpdates(){
 					ENGINE = InnoDB
 					DEFAULT CHARACTER SET = utf8;',
 			),
-		)
+		),
+
+		'indexing_profile_2020.01' => array(
+			'title'       => 'Indexing Profiles - eContent Adjustments',
+			'description' => 'Better integrate for eContent.',
+			'sql'         => array(
+				'ALTER TABLE `indexing_profiles` CHANGE COLUMN `catalogDriver` `patronDriver` VARCHAR(50) NULL DEFAULT NULL AFTER `recordDriver`, '
+					. 'CHANGE COLUMN `marcEncoding` `marcEncoding` ENUM(\'MARC8\', \'UTF8\', \'UNIMARC\', \'ISO8859_1\', \'BESTGUESS\') NOT NULL DEFAULT \'UTF8\' , '
+					. 'ADD COLUMN `sourceName` VARCHAR(45) NULL AFTER `name`, '
+					. 'ADD UNIQUE INDEX `sourceName_UNIQUE` (`sourceName` ASC); ',
+			)
+		),
+
 	);
 }
 
@@ -301,7 +313,7 @@ function setupIndexingProfiles($update){
 	$ilsIndexingProfile->individualMarcPath      = $configArray['Reindex']['individualMarcPath'];
 	$ilsIndexingProfile->groupingClass           = 'MarcRecordGrouper';
 	$ilsIndexingProfile->indexingClass           = 'IlsRecordProcessor';
-	$ilsIndexingProfile->catalogDriver           = $configArray['Catalog']['driver'];
+	$ilsIndexingProfile->patronDriver            = $configArray['Catalog']['driver'];
 	$ilsIndexingProfile->recordDriver            = 'MarcRecord';
 	$ilsIndexingProfile->recordUrlComponent      = 'Record';
 	$ilsIndexingProfile->formatSource            = $configArray['Reindex']['useItemBasedCallNumbers'] == true ? 'item' : 'bib';

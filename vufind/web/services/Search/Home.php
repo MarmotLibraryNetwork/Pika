@@ -29,7 +29,7 @@ class Search_Home extends Action {
 		global $timer;
 
 		// Include Search Engine Class
-		require_once ROOT_DIR . '/sys/' . $configArray['Index']['engine'] . '.php';
+		require_once ROOT_DIR . '/sys/Search/' . $configArray['Index']['engine'] . '.php';
 		$timer->logTime('Include search engine');
 
 		$interface->assign('showBreadcrumbs', 0);

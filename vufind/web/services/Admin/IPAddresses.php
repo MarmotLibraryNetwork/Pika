@@ -19,7 +19,7 @@
 
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
-require_once ROOT_DIR . '/Drivers/marmot_inc/subnet.php';
+require_once ROOT_DIR . '/sys/Network/subnet.php';
 
 class IPAddresses extends ObjectEditor
 {
