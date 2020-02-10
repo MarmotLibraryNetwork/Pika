@@ -1788,7 +1788,7 @@ EOT;
 		unset($availableHolds, $unavailableHolds);
 
 		if(!$linkedAccount){
-			$this->cache->set($patronHoldsCacheKey, $return, $this->configArray['Caching']['user']);
+			$this->cache->set($patronHoldsCacheKey, $return, $this->configArray['Caching']['user_holds']);
 		}
 
 		return $return;
