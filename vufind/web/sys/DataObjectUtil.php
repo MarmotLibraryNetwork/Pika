@@ -17,7 +17,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/Admin.php';
 
 class DataObjectUtil {
@@ -49,8 +48,9 @@ class DataObjectUtil {
 	 * Save the object to the database (and optionally solr) based on the structure of the object
 	 * Takes care of determining whether or not the object is new or not.
 	 *
-	 * @param $dataObject
-	 * @param $form
+	 * @param array $structure
+	 * @param string $dataType class name of the object represented by $structure
+	 * @return array
 	 */
 	static function saveObject($structure, $dataType){
 		global $logger;
@@ -60,7 +60,7 @@ class DataObjectUtil {
 		$primaryKeySet = false;
 		foreach ($structure as $property){
 			if (isset($property['primaryKey']) && $property['primaryKey'] == true){
-				if (isset($object->$property['property']) && !is_null($object->$property['property']) && strlen($object->$property['property']) > 0){
+				if (isset($object->$property['property']) && !empty($object->$property['property'])){
 					$object                        = new $dataType();
 					$object->$property['property'] = $object->$property['property'];
 					if ($object->find(true)){
@@ -73,6 +73,22 @@ class DataObjectUtil {
 					DataObjectUtil::updateFromUI($object, $structure);
 					$primaryKeySet = true;
 					break;
+					//TODO: above is broken, below should be work
+//					/** @var DB_DataObject $dataType */
+//					$existingObject                        = new $dataType();
+//					$existingObject->$property['property'] = $object->$property['property'];
+//					if ($existingObject->find(true)){
+//						$logger->log("Loaded existing object from database", PEAR_LOG_DEBUG);
+//					}else{
+//						$logger->log("Could not find existing object in database", PEAR_LOG_ERR);
+//					}
+//
+//					//Reload from UI
+//					DataObjectUtil::updateFromUI($existingObject, $structure);
+//					$object = $existingObject;
+//					$primaryKeySet = true;
+//					break;
+
 				}
 			}
 		}
@@ -84,7 +100,6 @@ class DataObjectUtil {
 			//We can tell which to do based on whether or not the primary key is set
 
 			if ($primaryKeySet){
-
 				$result                      = $object->update();
 				$validationResults['saveOk'] = ($result == 1);
 			}else{
@@ -244,58 +259,53 @@ class DataObjectUtil {
 					//Copy the full image to the files directory
 					//Filename is the name of the object + the original filename
 					global $configArray;
-					if (isset($property['storagePath'])){
-						$destFileName = $_FILES[$propertyName]["name"];
-						$destFolder   = $property['storagePath'];
-						$destFullPath = $destFolder . '/' . $destFileName;
-						$copyResult   = copy($_FILES[$propertyName]["tmp_name"], $destFullPath);
-						$logger->log("Copied file to $destFullPath", PEAR_LOG_DEBUG);
-					}else{
-						$logger->log("Creating thumbnails for $propertyName", PEAR_LOG_DEBUG);
-						$destFileName = $propertyName . $_FILES[$propertyName]["name"];
-						$destFolder   = $configArray['Site']['local'] . '/files/original';
-						$pathToThumbs = $configArray['Site']['local'] . '/files/thumbnail';
-						$pathToMedium = $configArray['Site']['local'] . '/files/medium';
-						$destFullPath = $destFolder . '/' . $destFileName;
-						$copyResult   = copy($_FILES[$propertyName]["tmp_name"], $destFullPath);
+					$destFileName = $propertyName . $_FILES[$propertyName]['name'];
+					$destFolder   = $property['storagePath'] ?? $configArray['Site']['local'] . '/files';
+					$destFullPath = $destFolder . '/original/' . $destFileName;
+					$pathToThumbs = $destFolder . '/thumbnail';
+					$pathToMedium = $destFolder . '/medium';
+					$copyResult = copy($_FILES[$propertyName]["tmp_name"], $destFullPath);
+					$logger->log("Copied file to $destFullPath", PEAR_LOG_DEBUG);
 
-						if ($copyResult){
-							$img    = imagecreatefromstring(file_get_contents($destFullPath));
-							$width  = imagesx($img);
-							$height = imagesy($img);
+					if ($copyResult){
+						$img    = imagecreatefromstring(file_get_contents($destFullPath));
+						$width  = imagesx($img);
+						$height = imagesy($img);
 
-							if (isset($property['thumbWidth'])){
-								//Create a thumbnail if needed
-								$thumbWidth = $property['thumbWidth'];
-								$new_width  = $thumbWidth;
-								$new_height = floor($height * ($thumbWidth / $width));
+						if (isset($property['thumbWidth'])){
+							$logger->log("Creating thumbnails for $propertyName", PEAR_LOG_DEBUG);
+							//Create a thumbnail if needed
+							$thumbWidth = $property['thumbWidth'];
+							$new_width  = $thumbWidth;
+							$new_height = floor($height * ($thumbWidth / $width));
 
-								// create a new temporary image
-								$tmp_img = imagecreatetruecolor($new_width, $new_height);
+							// create a new temporary image
+							$tmp_img = imagecreatetruecolor($new_width, $new_height);
 
-								// copy and resize old image into new image
-								imagecopyresized($tmp_img, $img, 0, 0, 0, 0, $new_width, $new_height, $width, $height);
+							// copy and resize old image into new image
+							imagecopyresized($tmp_img, $img, 0, 0, 0, 0, $new_width, $new_height, $width, $height);
 
-								// save thumbnail into a file
-								imagejpeg($tmp_img, "{$pathToThumbs}/{$destFileName}");
-							}
-							if (isset($property['mediumWidth'])){
-								//Create a thumbnail if needed
-								$thumbWidth = $property['mediumWidth'];
-								$new_width  = $thumbWidth;
-								$new_height = floor($height * ($thumbWidth / $width));
+							// save thumbnail into a file
+							imagejpeg($tmp_img, "{$pathToThumbs}/{$destFileName}");
+						}
+						if (isset($property['mediumWidth'])){
+							$logger->log("Creating medium sized image for $propertyName", PEAR_LOG_DEBUG);
+							//Create a medium size if needed
+							$thumbWidth = $property['mediumWidth'];
+							$new_width  = $thumbWidth;
+							$new_height = floor($height * ($thumbWidth / $width));
 
-								// create a new temporary image
-								$tmp_img = imagecreatetruecolor($new_width, $new_height);
+							// create a new temporary image
+							$tmp_img = imagecreatetruecolor($new_width, $new_height);
 
-								// copy and resize old image into new image
-								imagecopyresized($tmp_img, $img, 0, 0, 0, 0, $new_width, $new_height, $width, $height);
+							// copy and resize old image into new image
+							imagecopyresized($tmp_img, $img, 0, 0, 0, 0, $new_width, $new_height, $width, $height);
 
-								// save thumbnail into a file
-								imagejpeg($tmp_img, "{$pathToMedium}/{$destFileName}");
-							}
+							// save thumbnail into a file
+							imagejpeg($tmp_img, "{$pathToMedium}/{$destFileName}");
 						}
 					}
+
 					//store the actual filename
 					$object->$propertyName = $destFileName;
 					$logger->log("Set $propertyName to $destFileName", PEAR_LOG_DEBUG);
