@@ -34,18 +34,20 @@ class Hoopla_AJAX extends AJAXHandler {
 
 	use MARC_AJAX_Basic;
 
-	protected array $methodsThatRespondWithJSONUnstructured = array(
+	protected $methodsThatRespondWithJSONUnstructured = array(
 		'reloadCover',
 		'getHooplaCheckOutPrompt',
 		'checkOutHooplaTitle',
 		'returnHooplaTitle',
 	);
 
-	protected array $methodsThatRespondThemselves = array(
+	protected $methodsThatRespondThemselves = array(
 		'downloadMarc',
 	);
 
-
+	protected $methodsThatRespondWithJSONResultWrapper;
+	protected $methodsThatRespondWithXML;
+	protected $methodsThatRespondWithHTML;
 	/**
 	 * @return array
 	 */

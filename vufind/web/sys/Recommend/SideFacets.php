@@ -40,21 +40,21 @@ class SideFacets implements RecommendationInterface
 	 * @param   object  $searchObject   The SearchObject requesting recommendations.
 	 * @param   string  $params         Additional settings from the searches.ini.
 	 */
-	public function __construct($searchObject, $params) {
+	public function __construct($searchObject, $params){
 		// Save the passed-in SearchObject:
 		$this->searchObject = $searchObject;
 
 		// Parse the additional settings:
-		$params = explode(':', $params);
-		$mainSection = empty($params[0]) ? 'Results' : $params[0];
+		$params          = explode(':', $params);
+		$mainSection     = empty($params[0]) ? 'Results' : $params[0];
 		$checkboxSection = isset($params[1]) ? $params[1] : false;
-		$iniName = isset($params[2]) ? $params[2] : 'facets';
+		$iniName         = isset($params[2]) ? $params[2] : 'facets';
 
-		if ($searchObject->getSearchType() == 'genealogy') {
+		if ($searchObject->getSearchType() == 'genealogy'){
 			$config           = getExtraConfigArray($iniName);
 			$this->mainFacets = isset($config[$mainSection]) ? $config[$mainSection] : array();
-		} elseif ($searchObject->getSearchType() == 'islandora'){
-			$searchLibrary = Library::getActiveLibrary();
+		}elseif ($searchObject->getSearchType() == 'islandora'){
+			$searchLibrary                 = Library::getActiveLibrary();
 			$hasArchiveSearchLibraryFacets = ($searchLibrary != null && (count($searchLibrary->archiveSearchFacets) > 0));
 			if ($hasArchiveSearchLibraryFacets){
 				$facets = $searchLibrary->archiveSearchFacets;
@@ -63,7 +63,7 @@ class SideFacets implements RecommendationInterface
 			}
 
 			$this->facetSettings = array();
-			$this->mainFacets = array();
+			$this->mainFacets    = array();
 
 			foreach ($facets as $facet){
 				$facetName = $facet->facetName;
@@ -72,7 +72,7 @@ class SideFacets implements RecommendationInterface
 				if ($mainSection == 'Results'){
 					if ($facet->showInResults == 1 && $facet->showAboveResults == 0){
 						$this->facetSettings[$facetName] = $facet;
-						$this->mainFacets[$facetName] = $facet->displayName;
+						$this->mainFacets[$facetName]    = $facet->displayName;
 					}elseif ($facet->showInAdvancedSearch == 1 && $facet->showAboveResults == 0){
 						$this->facetSettings[$facetName] = $facet->displayName;
 					}
@@ -81,11 +81,11 @@ class SideFacets implements RecommendationInterface
 
 
 		}else{
-			$searchLibrary = Library::getActiveLibrary();
 			global $locationSingleton;
+			$searchLibrary           = Library::getActiveLibrary();
 			$searchLocation          = $locationSingleton->getActiveLocation();
-			$hasSearchLibraryFacets  = !empty($searchLibrary->facets);
-			$hasSearchLocationFacets = !empty($searchLocation->facets);
+			$hasSearchLibraryFacets  = ($searchLibrary != null && (count($searchLibrary->facets) > 0));
+			$hasSearchLocationFacets = ($searchLocation != null && (count($searchLocation->facets) > 0));
 			if ($hasSearchLocationFacets){
 				$facets = $searchLocation->facets;
 			}elseif ($hasSearchLibraryFacets){
@@ -143,14 +143,14 @@ class SideFacets implements RecommendationInterface
 				if ($mainSection == 'Results'){
 					if ($facet->showInResults == 1 && $facet->showAboveResults == 0){
 						$this->facetSettings[$facetName] = $facet;
-						$this->mainFacets[$facetName] = $facet->displayName;
+						$this->mainFacets[$facetName]    = $facet->displayName;
 					}elseif ($facet->showInAdvancedSearch == 1 && $facet->showAboveResults == 0){
 						$this->facetSettings[$facetName] = $facet->displayName;
 					}
 				}elseif ($mainSection == 'Author'){
 					if ($facet->showInAuthorResults == 1 && $facet->showAboveResults == 0){
 						$this->facetSettings[$facetName] = $facet;
-						$this->mainFacets[$facetName] = $facet->displayName;
+						$this->mainFacets[$facetName]    = $facet->displayName;
 					}
 				}
 			}

@@ -987,6 +987,27 @@ class Location extends DB_DataObject {
 		return $facets;
 	}
 
+	/**
+	 * Return a default location for a library.
+	 *
+	 * For a single branch library the only location will be returned.
+	 * For a multi-branch library, return the main branch, or if that isn't set the first branch in the table.
+	 * For a library with no locations, return false.
+	 *
+	 * @param $libraryId
+	 * @return false|Location
+	 */
+	static function getDefaultLocationForLibrary($libraryId){
+		if (!empty($libraryId)){
+			$tempLocation            = new Location();
+			$tempLocation->libraryId = $libraryId;
+			$tempLocation->orderBy('isMainBranch desc');
+			if ($tempLocation->find(true)){
+				return $tempLocation;
+			}
+		}
+		return false;
+	}
 
 	public function __get($name){
 		if ($name == "hours"){

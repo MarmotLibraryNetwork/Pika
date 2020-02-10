@@ -319,9 +319,9 @@ class SearchObject_Islandora extends SearchObject_Base {
 			foreach ($IDList as $listPosition => $currentId){
 				// use $IDList as the order guide for the html
 				$current = null; // empty out in case we don't find the matching record
-				foreach ($this->indexResult['response']['docs'] as $index => $doc){
-					if ($doc['PID'] == $currentId){
-						$current = &$this->indexResult['response']['docs'][$index];
+				foreach ($this->indexResult['response']['docs'] as $index => $doc) {
+					if (!is_null($doc['PID']) && $doc['PID'] == $currentId) {
+						$current = & $this->indexResult['response']['docs'][$index];
 						break;
 					}
 				}

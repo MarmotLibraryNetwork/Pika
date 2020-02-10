@@ -24,28 +24,28 @@ class Record_AJAX extends AJAXHandler {
 
 	use MARC_AJAX_Basic;
 
-	protected $methodsThatRespondWithJSONUnstructured = array(
-		'getPlaceHoldForm',
-		'getPlaceHoldEditionsForm',
-		'getBookMaterialForm',
-		'placeHold',
-		'bookMaterial',
-		'reloadCover',
-		'forceReExtract',
-		'getCheckInGrid',
+	protected array $methodsThatRespondWithJSONUnstructured = array(
+	 'getPlaceHoldForm',
+	 'getPlaceHoldEditionsForm',
+	 'getBookMaterialForm',
+	 'placeHold',
+	 'bookMaterial',
+	 'reloadCover',
+	 'forceReExtract',
+	 'getCheckInGrid',
 	);
 
-	protected $methodsThatRespondWithHTML = array(
-		'getBookingCalendar',
-		'GetProspectorInfo', // Appears deprecated. pascal 4/26/2019
+	protected array $methodsThatRespondWithHTML = array(
+	 'getBookingCalendar',
+	 'GetProspectorInfo', // Appears deprecated. pascal 4/26/2019
 	);
 
-	protected $methodsThatRespondWithXML = array(
-		'IsLoggedIn',
+	protected array $methodsThatRespondWithXML = array(
+	 'IsLoggedIn',
 	);
 
-	protected $methodsThatRespondThemselves = array(
-		'downloadMarc',
+	protected array $methodsThatRespondThemselves = array(
+	 'downloadMarc',
 	);
 
 	function IsLoggedIn(){
