@@ -2,40 +2,168 @@ package org.pika;
 
 import org.apache.log4j.Logger;
 
+import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.text.Normalizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Work Grouping with updated algorithm with the following changes from the original:
- * 1) Normalize diacritics using NFKC to all diacritics are handled consistently regardless of input
- * 2) Add trimming of "with illustrations" to title normalization
- * 3) Add trimming dates and parenthetical information to authors
- * 4) Group title and sub title at the same time
+ * Pika
  *
- * RecordGrouping
- * User: Mark Noble
- * Date: 11/15/13
- * Time: 9:02 AM
+ * @author pbrammeier
+ * 		Date:   2/10/2020
  */
-class GroupedWork4 extends GroupedWorkBase implements Cloneable {
-	private static Pattern initialsFix = Pattern.compile("(?<=[A-Z])\\.(?=(\\s|[A-Z]|$))");
-	private static Pattern apostropheStrip = Pattern.compile("'s");
-	private static Pattern specialCharacterStrip = Pattern.compile("[^\\p{L}\\d\\s]");
-	private static Pattern consecutiveSpaceStrip = Pattern.compile("\\s{2,}");
-	private static Pattern bracketedCharacterStrip = Pattern.compile("\\[(.*?)\\]");
+public class GroupedWork5 extends GroupedWorkBase implements Cloneable {
+
+	String groupingLanguage = "";
 
 	static Logger logger = Logger.getLogger(GroupedWork4.class);
 
-	GroupedWork4() {
-		version = 4;
+	private static Pattern validCategories               = Pattern.compile("^(book|music|movie|comic)$");
+
+	GroupedWork5() {
+		version = 5;
 	}
+
+	@Override
+	String getTitle() {
+		return fullTitle;
+	}
+
+	@Override
+	void setTitle(String title, int numNonFilingCharacters, String subtitle) {
+		if (subtitle != null && subtitle.length() > 0){
+			title = normalizePassedInSubtitle(title, subtitle);
+		}else{
+			//Check for a subtitle within the main title
+			title = normalizeSubtitleWithinMainTitle(title);
+		}
+		title = normalizeTitle(title, numNonFilingCharacters);
+		this.fullTitle = title;
+
+	}
+
+	@Override
+	String getAuthor() {
+		return author;
+	}
+
+	@Override
+	void setAuthor(String author) {
+		originalAuthorName = author;
+		this.author = normalizeAuthor(author);
+	}
+
+	@Override
+	void overridePermanentId(String groupedWorkPermanentId) {
+		this.permanentId = groupedWorkPermanentId;
+	}
+
+	@Override
+	public void setGroupingCategory(String groupingCategory) {
+		groupingCategory = groupingCategory.toLowerCase();
+		if (!validCategories.matcher(groupingCategory).matches()) {
+			logger.error("Invalid grouping category " + groupingCategory);
+		}else {
+			this.groupingCategory = groupingCategory;
+		}
+	}
+
+	@Override
+	String getGroupingCategory() {
+		return groupingCategory;
+	}
+
+	String getGroupingLanguage() {
+		return groupingLanguage;
+	}
+
+	/**
+	 * @param languageCode The ISO 639-2 (Bibliographic) language code See http://id.loc.gov/vocabulary/iso639-2.html
+	 */
+	void setGroupingLanguage(String languageCode){
+		this.groupingLanguage = languageCode;
+	}
+
+	String getPermanentId() {
+		if (this.permanentId == null) {
+			StringBuilder permanentId;
+			try {
+				MessageDigest idGenerator = MessageDigest.getInstance("MD5");
+				String        fullTitle   = getAuthoritativeTitle();
+				if (fullTitle.equals("")) {
+					idGenerator.update("--null--".getBytes());
+				} else {
+					idGenerator.update(fullTitle.getBytes());
+				}
+
+				String author = getAuthoritativeAuthor();
+				if (author.equals("")) {
+					idGenerator.update("--null--".getBytes());
+				} else {
+					idGenerator.update(author.getBytes());
+				}
+				if (groupingCategory.equals("")) {
+					idGenerator.update("--null--".getBytes());
+				} else {
+					idGenerator.update(groupingCategory.getBytes());
+				}
+				if (groupingLanguage.equals("")) {
+					idGenerator.update("--null--".getBytes());
+				} else {
+					idGenerator.update(groupingLanguage.getBytes());
+				}
+
+				if (uniqueIdentifier != null) {
+					idGenerator.update(uniqueIdentifier.getBytes());
+				}
+				permanentId = new StringBuilder(new BigInteger(1, idGenerator.digest()).toString(16));
+				while (permanentId.length() < 32) {
+					permanentId.insert(0, "0");
+				}
+				//Insert -'s for formatting
+				this.permanentId = permanentId.substring(0, 8) + "-" + permanentId.substring(8, 12) + "-" + permanentId.substring(12, 16) + "-" + permanentId.substring(16, 20) + "-" + permanentId.substring(20);
+			} catch (NoSuchAlgorithmException e) {
+				System.out.println("Error generating permanent id" + e.toString());
+			}
+		}
+		//System.out.println("Permanent Id is " + this.permanentId);
+		return this.permanentId;
+	}
+
+
+	/*
+	* Normalizing functions and patterns
+	*
+	* */
+
+	private static Pattern initialsFix                   = Pattern.compile("(?<=[A-Z])\\.(?=(\\s|[A-Z]|$))");
+	private static Pattern apostropheStrip               = Pattern.compile("'s");
+	private static Pattern specialCharacterStrip         = Pattern.compile("[^\\p{L}\\d\\s]");
+	private static Pattern consecutiveSpaceStrip         = Pattern.compile("\\s{2,}");
+	private static Pattern bracketedCharacterStrip       = Pattern.compile("\\[(.*?)\\]");
+	private static Pattern sortTrimmingPattern           = Pattern.compile("(?i)^(?:(?:a|an|the|el|la|\"|')\\s)(.*)$");
+	private static Pattern commonSubtitlesSimplePattern  = Pattern.compile("(by\\s\\w+\\s\\w+|a novel of .*|stories|an autobiography|a biography|a memoir in books|poems|the movie|large print|graphic novel|magazine|audio cd|book club kit|with illustrations|book \\d+|the original classic edition|classic edition|a novel)$");
+	private static Pattern commonSubtitlesComplexPattern = Pattern.compile("((a|una)\\s(.*)novel(a|la)?|a(.*)memoir|a(.*)mystery|a(.*)thriller|by\\s\\w+\\s\\w+|an? .* story|a .*\\s?book|[\\w\\s]+series book \\d+|the[\\w\\s]+chronicles book \\d+|[\\w\\s]+trilogy book \\d+)$");
+	private static Pattern editionRemovalPattern         = Pattern.compile("(first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth|revised|\\d+\\S*)\\s+(edition|ed|ed\\.|update)");
+	private static Pattern firstPattern                  = Pattern.compile("1st");
+	private static Pattern secondPattern                 = Pattern.compile("2nd");
+	private static Pattern thirdPattern                  = Pattern.compile("3rd");
+	private static Pattern fourthPattern                 = Pattern.compile("4th");
+	private static Pattern fifthPattern                  = Pattern.compile("5th");
+	private static Pattern sixthPattern                  = Pattern.compile("6th");
+	private static Pattern seventhPattern                = Pattern.compile("7th");
+	private static Pattern eighthPattern                 = Pattern.compile("8th");
+	private static Pattern ninthPattern                  = Pattern.compile("9th");
+	private static Pattern tenthPattern                  = Pattern.compile("10th");
+	private static Pattern dashPattern                   = Pattern.compile("&#8211");
+	private static Pattern ampersandPattern              = Pattern.compile("&");
 
 	private String normalizeAuthor(String author) {
 		return AuthorNormalizer.getNormalizedName(author);
 	}
-
-	private static Pattern editionRemovalPattern = Pattern.compile("(first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth|revised|\\d+\\S*)\\s+(edition|ed|ed\\.|update)");
 
 	private String normalizeTitle(String fullTitle, int numNonFilingCharacters) {
 		String groupingTitle;
@@ -73,8 +201,6 @@ class GroupedWork4 extends GroupedWorkBase implements Cloneable {
 		return groupingTitle;
 	}
 
-	private static Pattern dashPattern = Pattern.compile("&#8211");
-	private static Pattern ampersandPattern = Pattern.compile("&");
 	private String cleanTitleCharacters(String groupingTitle) {
 		//Fix abbreviations
 		groupingTitle = initialsFix.matcher(groupingTitle).replaceAll(" ");
@@ -95,16 +221,6 @@ class GroupedWork4 extends GroupedWorkBase implements Cloneable {
 		return groupingTitle;
 	}
 
-	private static Pattern firstPattern = Pattern.compile("1st");
-	private static Pattern secondPattern = Pattern.compile("2nd");
-	private static Pattern thirdPattern = Pattern.compile("3rd");
-	private static Pattern fourthPattern = Pattern.compile("4th");
-	private static Pattern fifthPattern = Pattern.compile("5th");
-	private static Pattern sixthPattern = Pattern.compile("6th");
-	private static Pattern seventhPattern = Pattern.compile("7th");
-	private static Pattern eighthPattern = Pattern.compile("8th");
-	private static Pattern ninthPattern = Pattern.compile("9th");
-	private static Pattern tenthPattern = Pattern.compile("10th");
 	private String normalizeNumericTitleText(String groupingTitle) {
 		//Normalize numeric titles
 		groupingTitle = firstPattern.matcher(groupingTitle).replaceAll("first");
@@ -120,8 +236,6 @@ class GroupedWork4 extends GroupedWorkBase implements Cloneable {
 		return groupingTitle;
 	}
 
-	private static Pattern commonSubtitlesSimplePattern = Pattern.compile("(by\\s\\w+\\s\\w+|a novel of .*|stories|an autobiography|a biography|a memoir in books|poems|the movie|large print|graphic novel|magazine|audio cd|book club kit|with illustrations|book \\d+|the original classic edition|classic edition|a novel)$");
-	private static Pattern commonSubtitlesComplexPattern = Pattern.compile("((a|una)\\s(.*)novel(a|la)?|a(.*)memoir|a(.*)mystery|a(.*)thriller|by\\s\\w+\\s\\w+|an? .* story|a .*\\s?book|[\\w\\s]+series book \\d+|the[\\w\\s]+chronicles book \\d+|[\\w\\s]+trilogy book \\d+)$");
 	private String removeCommonSubtitles(String groupingTitle) {
 		boolean changeMade = true;
 		while (changeMade){
@@ -144,8 +258,8 @@ class GroupedWork4 extends GroupedWorkBase implements Cloneable {
 			tmpTitle = specialCharacterStrip.matcher(tmpTitle).replaceAll(" ").toLowerCase().trim();
 			if (tmpTitle.length() > 0) {
 				groupingTitle = tmpTitle;
-			//}else{
-			//	logger.warn("Just saved us from trimming " + groupingTitle + " to nothing");
+				//}else{
+				//	logger.warn("Just saved us from trimming " + groupingTitle + " to nothing");
 			}
 		}else{
 			//The entire title is in brackets, just remove the brackets
@@ -158,34 +272,6 @@ class GroupedWork4 extends GroupedWorkBase implements Cloneable {
 		return Normalizer.normalize(textToNormalize, Normalizer.Form.NFKC);
 	}
 
-	public GroupedWorkBase clone() throws CloneNotSupportedException {
-		try {
-			return (GroupedWorkBase)super.clone();
-		} catch (CloneNotSupportedException e) {
-			e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-			return null;
-		}
-	}
-
-	@Override
-	public String getTitle() {
-		return fullTitle;
-	}
-
-	@Override
-	public void setTitle(String title, int numNonFilingCharacters, String subtitle) {
-		//this.fullTitle = title;
-		//if (subtitle != null) title += " " + subtitle;
-		if (subtitle != null && subtitle.length() > 0){
-			title = normalizePassedInSubtitle(title, subtitle);
-		}else{
-			//Check for a subtitle within the main title
-			title = normalizeSubtitleWithinMainTitle(title);
-		}
-		title = normalizeTitle(title, numNonFilingCharacters);
-		this.fullTitle = title.trim(); //TODO: title is already trimmed in normalizeTitle
-	}
-
 	private String normalizePassedInSubtitle(String title, String subtitle) {
 		if (!title.endsWith(subtitle)){ //TODO: remove overdrive series statements in subtitle
 			//Remove any complex subtitles since we know the beginning of the string
@@ -194,8 +280,8 @@ class GroupedWork4 extends GroupedWorkBase implements Cloneable {
 				newSubtitle = removeComplexSubtitles(newSubtitle);
 				if (newSubtitle.length() > 0) {
 					title += " " + newSubtitle;
-				//} else {
-				//	logger.debug("Removed subtitle " + subtitle);
+					//} else {
+					//	logger.debug("Removed subtitle " + subtitle);
 				}
 			}
 		}else{
@@ -221,25 +307,13 @@ class GroupedWork4 extends GroupedWorkBase implements Cloneable {
 			newSubtitle = removeComplexSubtitles(newSubtitle);
 			if (newSubtitle.length() > 0) {
 				title =  mainTitle + " " + newSubtitle;
-			//} else{
-			//	logger.debug("Removed subtitle " + subtitleFromTitle);
+				//} else{
+				//	logger.debug("Removed subtitle " + subtitleFromTitle);
 			}
 		}
 		return title;
 	}
 
-	@Override
-	public String getAuthor() {
-		return author;
-	}
-
-	@Override
-	public void setAuthor(String author) {
-		originalAuthorName = author;
-		this.author = normalizeAuthor(author);
-	}
-
-	private static Pattern sortTrimmingPattern = Pattern.compile("(?i)^(?:(?:a|an|the|el|la|\"|')\\s)(.*)$");
 	private static String makeValueSortable(String curTitle) {
 		if (curTitle == null) return "";
 		String sortTitle = curTitle.toLowerCase();
@@ -251,24 +325,5 @@ class GroupedWork4 extends GroupedWorkBase implements Cloneable {
 		return sortTitle;
 	}
 
-	@Override
-	public void overridePermanentId(String groupedWorkPermanentId) {
-		this.permanentId = groupedWorkPermanentId;
-	}
-
-	private static Pattern validCategories = Pattern.compile("^(book|music|movie)$");
-	@Override
-	public void setGroupingCategory(String groupingCategory) {
-		groupingCategory = groupingCategory.toLowerCase();
-		if (!validCategories.matcher(groupingCategory).matches()) {
-			logger.error("Invalid grouping category " + groupingCategory);
-		}else {
-			this.groupingCategory = groupingCategory;
-		}
-	}
-
-	public String getGroupingCategory(){
-		return groupingCategory;
-	}
 
 }

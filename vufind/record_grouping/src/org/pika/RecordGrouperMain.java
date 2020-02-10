@@ -677,7 +677,7 @@ public class RecordGrouperMain {
 
 			String fetchIndexingProfileSQL = "SELECT * FROM indexing_profiles";
 			if (indexingProfileToRun != null && !indexingProfileToRun.isEmpty()) {
-				fetchIndexingProfileSQL += " where name like '" + indexingProfileToRun + "'";
+				fetchIndexingProfileSQL += " WHERE name LIKE '" + indexingProfileToRun + "'";
 			}
 			try (
 					PreparedStatement getIndexingProfilesStmt = pikaConn.prepareStatement(fetchIndexingProfileSQL);
@@ -1032,9 +1032,9 @@ public class RecordGrouperMain {
 			boolean autoCommit = pikaConn.getAutoCommit();
 			pikaConn.setAutoCommit(false);
 			try (
-					PreparedStatement deleteWorkStmt = pikaConn.prepareStatement("DELETE from grouped_work WHERE id = ?");
-					PreparedStatement deleteRelatedIdentifiersStmt = pikaConn.prepareStatement("DELETE from grouped_work_identifiers_ref WHERE grouped_work_id = ?");
-					PreparedStatement groupedWorksWithoutIdentifiersStmt = pikaConn.prepareStatement("SELECT grouped_work.id from grouped_work where id NOT IN (SELECT DISTINCT grouped_work_id from grouped_work_primary_identifiers)", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+					PreparedStatement deleteWorkStmt = pikaConn.prepareStatement("DELETE FROM grouped_work WHERE id = ?");
+					PreparedStatement deleteRelatedIdentifiersStmt = pikaConn.prepareStatement("DELETE FROM grouped_work_identifiers_ref WHERE grouped_work_id = ?");
+					PreparedStatement groupedWorksWithoutIdentifiersStmt = pikaConn.prepareStatement("SELECT grouped_work.id FROM grouped_work WHERE id NOT IN (SELECT DISTINCT grouped_work_id FROM grouped_work_primary_identifiers)", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 					ResultSet groupedWorksWithoutIdentifiersRS = groupedWorksWithoutIdentifiersStmt.executeQuery()
 			) {
 				int numWorksNotLinkedToPrimaryIdentifier = 0;
@@ -1350,14 +1350,15 @@ public class RecordGrouperMain {
 
 		int numRecordsProcessed = 0;
 		try {
+			String OverdriveRecordSQL = "SELECT overdrive_api_products.id, overdriveId, mediaType, title, subtitle, primaryCreatorRole, primaryCreatorName, code FROM overdrive_api_products INNER JOIN overdrive_api_product_metadata ON overdrive_api_product_metadata.productId = overdrive_api_products.id INNER JOIN overdrive_api_product_languages_ref ON overdrive_api_product_languages_ref.productId = overdrive_api_products.id INNER JOIN overdrive_api_product_languages ON overdrive_api_product_languages_ref.languageId = overdrive_api_product_languages.id WHERE deleted = 0 and isOwnedByCollections = 1";
 			PreparedStatement overDriveRecordsStmt;
 			if (lastGroupingTime != null && !fullRegrouping && !fullRegroupingNoClear) {
-				overDriveRecordsStmt = econtentConnection.prepareStatement("SELECT overdrive_api_products.id, overdriveId, mediaType, title, subtitle, primaryCreatorRole, primaryCreatorName FROM overdrive_api_products INNER JOIN overdrive_api_product_metadata ON overdrive_api_product_metadata.productId = overdrive_api_products.id WHERE deleted = 0 and isOwnedByCollections = 1 and (dateUpdated >= ? OR lastMetadataChange >= ? OR lastAvailabilityChange >= ?)", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+				overDriveRecordsStmt = econtentConnection.prepareStatement(OverdriveRecordSQL + " AND (dateUpdated >= ? OR lastMetadataChange >= ? OR lastAvailabilityChange >= ?)", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 				overDriveRecordsStmt.setLong(1, lastGroupingTime);
 				overDriveRecordsStmt.setLong(2, lastGroupingTime);
 				overDriveRecordsStmt.setLong(3, lastGroupingTime);
 			} else {
-				overDriveRecordsStmt = econtentConnection.prepareStatement("SELECT overdrive_api_products.id, overdriveId, mediaType, title, subtitle, primaryCreatorRole, primaryCreatorName FROM overdrive_api_products INNER JOIN overdrive_api_product_metadata ON overdrive_api_product_metadata.productId = overdrive_api_products.id WHERE deleted = 0 and isOwnedByCollections = 1", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+				overDriveRecordsStmt = econtentConnection.prepareStatement(OverdriveRecordSQL, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			}
 			TreeSet<String> recordNumbersInExport = new TreeSet<>();
 			try (
@@ -1367,13 +1368,14 @@ public class RecordGrouperMain {
 			) {
 
 				while (overDriveRecordRS.next()) {
-					Long   id                 = overDriveRecordRS.getLong("id");
-					String overdriveId        = overDriveRecordRS.getString("overdriveId");
-					String mediaType          = overDriveRecordRS.getString("mediaType");
-					String title              = overDriveRecordRS.getString("title");
-					String subtitle           = overDriveRecordRS.getString("subtitle");
-					String primaryCreatorRole = overDriveRecordRS.getString("primaryCreatorRole");
-					String author             = overDriveRecordRS.getString("primaryCreatorName");
+					Long   id                  = overDriveRecordRS.getLong("id");
+					String overdriveId         = overDriveRecordRS.getString("overdriveId");
+					String mediaType           = overDriveRecordRS.getString("mediaType");
+					String title               = overDriveRecordRS.getString("title");
+					String subtitle            = overDriveRecordRS.getString("subtitle");
+					String primaryCreatorRole  = overDriveRecordRS.getString("primaryCreatorRole");
+					String author              = overDriveRecordRS.getString("primaryCreatorName");
+					String productLanguageCode = overDriveRecordRS.getString("code");
 					recordNumbersInExport.add(overdriveId);
 					//primary creator in overdrive is always first name, last name.  Therefore, we need to look in the creators table
 					if (author != null) {
@@ -1407,11 +1409,14 @@ public class RecordGrouperMain {
 						creatorInfoRS.close();
 					}
 
+					// Set Grouping Language (use ISO 639-2 Bibliographic code)
+					String groupingLanguage =  new Locale(productLanguageCode).getISO3Language();
+
 					overDriveIdentifiersStmt.setLong(1, id);
 					RecordIdentifier primaryIdentifier = new RecordIdentifier();
 					primaryIdentifier.setValue("overdrive", overdriveId);
 
-					recordGroupingProcessor.processRecord(primaryIdentifier, title, subtitle, author, mediaType, true);
+					recordGroupingProcessor.processRecord(primaryIdentifier, title, subtitle, author, mediaType, groupingLanguage, true);
 					primaryIdentifiersInDatabase.remove(primaryIdentifier.toString().toLowerCase());
 					numRecordsProcessed++;
 				}

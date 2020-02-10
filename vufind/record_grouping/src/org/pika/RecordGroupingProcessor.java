@@ -84,13 +84,13 @@ class RecordGroupingProcessor {
 
 	void setupDatabaseStatements(Connection dbConnection) {
 		try {
-			insertGroupedWorkStmt                     = dbConnection.prepareStatement("INSERT INTO " + RecordGrouperMain.groupedWorkTableName + " (full_title, author, grouping_category, permanent_id, date_updated) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE date_updated = VALUES(date_updated), id=LAST_INSERT_ID(id) ", Statement.RETURN_GENERATED_KEYS);
-			insertHistoricalGroupedWorkStmt           = dbConnection.prepareStatement("INSERT INTO grouped_work_historical (permanent_id, grouping_title, grouping_author, grouping_category, grouping_version) VALUES (?, ?, ?, ?, ?) ");
+			insertGroupedWorkStmt                     = dbConnection.prepareStatement("INSERT INTO " + RecordGrouperMain.groupedWorkTableName + " (full_title, author, grouping_category, grouping_language, permanent_id, date_updated) VALUES (?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE date_updated = VALUES(date_updated), id=LAST_INSERT_ID(id) ", Statement.RETURN_GENERATED_KEYS);
+			insertHistoricalGroupedWorkStmt           = dbConnection.prepareStatement("INSERT INTO grouped_work_historical (permanent_id, grouping_title, grouping_author, grouping_category, grouping_language, grouping_version) VALUES (?, ?, ?, ?, ?, ?) ");
 			checkHistoricalGroupedWorkStmt            = dbConnection.prepareStatement("SELECT COUNT(*) FROM grouped_work_historical WHERE permanent_id = ? AND grouping_title = ? AND grouping_author = ? AND grouping_category = ? AND grouping_version = ?", ResultSet.CONCUR_READ_ONLY);
-			updateDateUpdatedForGroupedWorkStmt       = dbConnection.prepareStatement("UPDATE grouped_work SET date_updated = ? where id = ?");
+			updateDateUpdatedForGroupedWorkStmt       = dbConnection.prepareStatement("UPDATE grouped_work SET date_updated = ? WHERE id = ?");
 			addPrimaryIdentifierForWorkStmt           = dbConnection.prepareStatement("INSERT INTO grouped_work_primary_identifiers (grouped_work_id, type, identifier) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE id=LAST_INSERT_ID(id), grouped_work_id = VALUES(grouped_work_id)", Statement.RETURN_GENERATED_KEYS);
-			removePrimaryIdentifiersForMergedWorkStmt = dbConnection.prepareStatement("DELETE FROM grouped_work_primary_identifiers where grouped_work_id = ?");
-			groupedWorkForIdentifierStmt              = dbConnection.prepareStatement("SELECT grouped_work.id, grouped_work.permanent_id FROM grouped_work inner join grouped_work_primary_identifiers on grouped_work_primary_identifiers.grouped_work_id = grouped_work.id where type = ? and identifier = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			removePrimaryIdentifiersForMergedWorkStmt = dbConnection.prepareStatement("DELETE FROM grouped_work_primary_identifiers WHERE grouped_work_id = ?");
+			groupedWorkForIdentifierStmt              = dbConnection.prepareStatement("SELECT grouped_work.id, grouped_work.permanent_id FROM grouped_work INNER JOIN grouped_work_primary_identifiers ON grouped_work_primary_identifiers.grouped_work_id = grouped_work.id where type = ? AND identifier = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 
 			if (!fullRegrouping) {
 				try (
@@ -234,13 +234,18 @@ class RecordGroupingProcessor {
 	GroupedWorkBase setupBasicWorkForIlsRecord(Record marcRecord, String loadFormatFrom, char formatSubfield, String specifiedFormatCategory) {
 		GroupedWorkBase workForTitle = GroupedWorkFactory.getInstance(-1);
 
-		//Title
+		// Title
 		DataField field245       = setWorkTitleBasedOnMarcRecord(marcRecord, workForTitle);
 		String    groupingFormat = setGroupingCategoryForWork(marcRecord, loadFormatFrom, formatSubfield, specifiedFormatCategory, workForTitle);
 
-
-		//Author
+		// Author
 		setWorkAuthorBasedOnMarcRecord(marcRecord, workForTitle, field245, groupingFormat);
+
+		// Language
+		if (workForTitle.getGroupedWorkVersion() >= 5) {
+			setGroupingLanguageBasedOnMarc(marcRecord, (GroupedWork5) workForTitle);
+		}
+
 		return workForTitle;
 	}
 
@@ -304,6 +309,14 @@ class RecordGroupingProcessor {
 		}
 	}
 
+	private void setGroupingLanguageBasedOnMarc(Record marcRecord, GroupedWork5 workForTitle){
+		ControlField fixedField     = (ControlField) marcRecord.getVariableField("008");
+//		String       languageFields = "008[35-37]";
+		String       languageCode   = fixedField.getData().substring(35, 38).toLowerCase();
+		workForTitle.setGroupingLanguage(languageCode);
+
+	}
+
 	private DataField setWorkTitleBasedOnMarcRecord(Record marcRecord, GroupedWorkBase workForTitle) {
 		DataField field245 = marcRecord.getDataField("245");
 		if (field245 != null && field245.getSubfield('a') != null) {
@@ -362,7 +375,8 @@ class RecordGroupingProcessor {
 			insertHistoricalGroupedWorkStmt.setString( 2, groupedWork.fullTitle);
 			insertHistoricalGroupedWorkStmt.setString( 3, groupedWork.author);
 			insertHistoricalGroupedWorkStmt.setString( 4, groupedWork.groupingCategory);
-			insertHistoricalGroupedWorkStmt.setInt( 5, groupedWork.getGroupedWorkVersion());
+			insertHistoricalGroupedWorkStmt.setString( 5, ((GroupedWork5)groupedWork).groupingLanguage);
+			insertHistoricalGroupedWorkStmt.setInt( 6, groupedWork.getGroupedWorkVersion());
 
 			int success = insertHistoricalGroupedWorkStmt.executeUpdate();
 			if (success != 1){
@@ -382,12 +396,13 @@ class RecordGroupingProcessor {
 	 * @param groupedWork       Information about the work itself
 	 */
 	void addGroupedWorkToDatabase(RecordIdentifier primaryIdentifier, GroupedWorkBase groupedWork, boolean primaryDataChanged) {
-		if (workNotInHistoricalTable(groupedWork)){
-			// Add grouping factors to historical table in order to track permanent Ids across grouping versions
-			// Do this before unmerging or merging because we want to track the original factors and id
-
-			addToHistoricalTable(groupedWork);
-		}
+//		if (workNotInHistoricalTable(groupedWork)){
+//			// Add grouping factors to historical table in order to track permanent Ids across grouping versions
+//			// Do this before unmerging or merging because we want to track the original factors and id
+//
+//			addToHistoricalTable(groupedWork);
+//		}
+		//TODO: undo above
 
 		//Check to see if we need to ungroup this
 		if (recordsToNotGroup.contains(primaryIdentifier.toString().toLowerCase())) {
@@ -439,8 +454,15 @@ class RecordGroupingProcessor {
 				insertGroupedWorkStmt.setString(1, groupedWork.getTitle());
 				insertGroupedWorkStmt.setString(2, groupedWork.getAuthor());
 				insertGroupedWorkStmt.setString(3, groupedWork.getGroupingCategory());
-				insertGroupedWorkStmt.setString(4, groupedWorkPermanentId);
-				insertGroupedWorkStmt.setLong(5, updateTime);
+				if (groupedWork.getGroupedWorkVersion() >= 5) {
+					insertGroupedWorkStmt.setString(4, ((GroupedWork5)groupedWork).getGroupingLanguage());
+					insertGroupedWorkStmt.setString(5, groupedWorkPermanentId);
+					insertGroupedWorkStmt.setLong(6, updateTime);
+				} else {
+					//TODO: meh??
+					insertGroupedWorkStmt.setString(5, groupedWorkPermanentId);
+					insertGroupedWorkStmt.setLong(6, updateTime);
+				}
 
 				insertGroupedWorkStmt.executeUpdate();
 				try (ResultSet generatedKeysRS = insertGroupedWorkStmt.getGeneratedKeys()) {
@@ -526,7 +548,8 @@ class RecordGroupingProcessor {
 		}
 	}
 
-	void processRecord(RecordIdentifier primaryIdentifier, String title, String subtitle, String author, String format, boolean primaryDataChanged) {
+	// Overdrive processor and Sierra API extract
+	void processRecord(RecordIdentifier primaryIdentifier, String title, String subtitle, String author, String format, String language, boolean primaryDataChanged) {
 		GroupedWorkBase groupedWork = GroupedWorkFactory.getInstance(-1);
 
 		//Replace & with and for better matching
@@ -544,6 +567,10 @@ class RecordGroupingProcessor {
 			groupedWork.setGroupingCategory("music");
 		} else if (format.equalsIgnoreCase("video")) {
 			groupedWork.setGroupingCategory("movie");
+		}
+		// Language
+		if (groupedWork.getGroupedWorkVersion() >= 5) {
+			((GroupedWork5) groupedWork).setGroupingLanguage(language);
 		}
 
 		addGroupedWorkToDatabase(primaryIdentifier, groupedWork, primaryDataChanged);

@@ -1,29 +1,26 @@
 package org.pika;
 
 /**
- * Description goes here
- * VuFind-Plus
+ * Basic Grouped Work Object factory
+ * Pika
  * User: Mark Noble
  * Date: 1/26/2015
  * Time: 8:57 AM
  */
 class GroupedWorkFactory {
-	private static int defaultVersion = 4;
 	static GroupedWorkBase getInstance(int version){
-		if (version == -1){
-			version = defaultVersion;
-		}
-		if (version == 1){
-			return new GroupedWork1();
-		}else if (version == 2){
-			return new GroupedWork2();
-		}else if (version == 3){
-			return new GroupedWork3();
-		}else if (version == 4){
-			return new GroupedWork4();
-		}else{
-			//Get the default Grouped Work
-			return new GroupedWork4();
+		switch (version){
+			case 1:
+				return new GroupedWork1();
+			case 2:
+				return new GroupedWork2();
+			case 3:
+				return new GroupedWork3();
+			case 4:
+				return new GroupedWork4();
+			case 5:
+			default:
+				return new GroupedWork5();
 		}
 	}
 }

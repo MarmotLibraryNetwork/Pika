@@ -82,15 +82,6 @@ function getGroupedWorkUpdates(){
 			),
 		),
 
-		'grouped_works_remove_split_titles' => array(
-			'title'       => 'Grouped Work Remove Split Titles',
-			'description' => 'Updates grouped works to add a full title field.',
-			'sql'         => array(
-				"ALTER TABLE `grouped_work` DROP COLUMN `title`",
-				"ALTER TABLE `grouped_work` DROP COLUMN `subtitle`",
-			),
-		),
-
 		'grouped_works_primary_identifiers' => array(
 			'title'       => 'Grouped Work Primary Identifiers',
 			'description' => 'Add primary identifiers table for works.',
@@ -237,10 +228,18 @@ function getGroupedWorkUpdates(){
 				  UNIQUE INDEX `index1` (`permanent_id` ASC, `grouping_title` ASC, `grouping_author` ASC, `grouping_category` ASC, `grouping_version` ASC))
 				ENGINE = InnoDB
 				DEFAULT CHARACTER SET = utf8
-				COMMENT = 'Table to track grouping factors that lead to the unique permanent id among grouping versions. Do not remove entries even if there are no longer contributing records in the catalog. ';
-",
+				COMMENT = 'Table to track grouping factors that lead to the unique permanent id among grouping versions. Do not remove entries even if there are no longer contributing records in the catalog. ';",
 			),
+		),
 
+		'add_language_to_grouping_table-2020.02' => array(
+			'title'           => 'Add Grouping Language',
+			'description'     => 'Add language to the grouped work table',
+			'continueOnError' => false,
+			'sql'             => array(
+				"ALTER TABLE `grouped_work` ADD COLUMN `grouping_language` CHAR(3) NULL AFTER `full_title`;",
+				"ALTER TABLE `grouped_work_historical` ADD COLUMN `grouping_language` CHAR(3) NULL AFTER `grouping_category`;",
+			),
 		),
 
 
