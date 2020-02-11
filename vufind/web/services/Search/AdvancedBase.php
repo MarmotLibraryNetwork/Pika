@@ -43,6 +43,7 @@ abstract class Search_AdvancedBase extends Action{
 		// Are we editing an existing search?
 		if (isset($_REQUEST['edit']) || isset($_SESSION['lastSearchId'])) {
 			// Go find it
+			require_once ROOT_DIR . '/sys/Search/SearchEntry.php';
 			$search = new SearchEntry();
 			$search->id = isset($_REQUEST['edit']) ? $_REQUEST['edit'] : $_SESSION['lastSearchId'];
 			if ($search->find(true)) {

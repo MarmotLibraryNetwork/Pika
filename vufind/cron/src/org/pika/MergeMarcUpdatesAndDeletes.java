@@ -41,7 +41,7 @@ public class MergeMarcUpdatesAndDeletes implements IProcessHandler{
 		String exportPath = configIni.get("Reindex", "marcPath");
 		String backupPath = configIni.get("Reindex", "marcBackupPath");
 		String marcEncoding = configIni.get("Reindex", "marcEncoding");
-		recordNumberTag = configIni.get("Reindex", "recordNumberTag");
+//		recordNumberTag = configIni.get("Reindex", "recordNumberTag");
 		recordNumberPrefix = configIni.get("Reindex", "recordNumberPrefix");
 		File mainFile = null;
 

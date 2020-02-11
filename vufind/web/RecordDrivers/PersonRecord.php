@@ -21,23 +21,22 @@ require_once ROOT_DIR . '/RecordDrivers/IndexRecord.php';
 require_once ROOT_DIR . '/sys/Genealogy/Person.php';
 
 /**
- * List Record Driver
+ * Person Record Driver
  *
  * This class is designed to handle List records.  Much of its functionality
  * is inherited from the default index-based driver.
  */
-class PersonRecord extends IndexRecord
-{
+class PersonRecord extends IndexRecord {
 	/** @var Person $person */
 	private $person;
 	private $id;
 	private $shortId;
-	public function __construct($record)
-	{
-		// Call the parent's constructor...
-		parent::__construct($record);
 
-		$this->id = $this->getUniqueID();
+	public function __construct($record){
+		// Call the parent's constructor...
+		parent::__construct($record, -1); // -1 to prevent uselessly trying to fetch a grouped work for a person record
+
+		$this->id      = $this->getUniqueID();
 		$this->shortId = substr($this->id, 6);
 	}
 
@@ -57,7 +56,7 @@ class PersonRecord extends IndexRecord
 	 * search results.
 	 *
 	 * @access  public
-	 * @param string $view          The view style for this search entry. (Only the 'list' view is applicable for genealogy searching)
+	 * @param string $view The view style for this search entry. (Only the 'list' view is applicable for genealogy searching)
 	 * @return  string              Name of Smarty template file to display.
 	 */
 	public function getSearchResult($view = 'list'){
@@ -68,7 +67,7 @@ class PersonRecord extends IndexRecord
 
 		$person = $this->getPerson();
 		if (!empty($person)){
-			$interface->assign('summPicture', $person->picture);
+			$interface->assign('summPicture', $this->getBookcoverUrl('small'));
 			$interface->assign('birthDate', $person->formatPartialDate($person->birthDateDay, $person->birthDateMonth, $person->birthDateYear));
 			$interface->assign('deathDate', $person->formatPartialDate($person->deathDateDay, $person->deathDateMonth, $person->deathDateYear));
 			$interface->assign('lastUpdate', $person->lastModified);
@@ -76,8 +75,8 @@ class PersonRecord extends IndexRecord
 			$interface->assign('numObits', count($person->obituaries));
 		}
 
-		$name = $this->getName();
-		$interface->assign('summTitle', trim($name));
+		$name = trim($this->getName());
+		$interface->assign('summTitle', $name);
 
 		return 'RecordDrivers/Person/result.tpl';
 	}
@@ -94,19 +93,19 @@ class PersonRecord extends IndexRecord
 		if (isset($this->fields['middleName'])){
 			$name .= ' ' . $this->fields['middleName'];
 		}
-		if (isset($this->fields['nickName']) && strlen($this->fields['nickName']) > 0){
+		if (!empty($this->fields['nickName'])){
 			$name .= ' "' . $this->fields['nickName'] . '"';
 		}
-		if (isset($this->fields['maidenName']) && strlen($this->fields['maidenName']) > 0){
+		if (!empty($this->fields['maidenName'])){
 			$name .= ' (' . $this->fields['maidenName'] . ')';
 		}
-		if (isset($this->fields['lastName']) && strlen($this->fields['lastName']) > 0) {
+		if (!empty($this->fields['lastName'])){
 			$name .= ' ' . $this->fields['lastName'];
 		}
 		return $name;
 	}
 
-	function getPermanentId() {
+	function getPermanentId(){
 		return $this->shortId;
 	}
 
@@ -123,16 +122,11 @@ class PersonRecord extends IndexRecord
 	}
 
 	function getBookcoverUrl($size = 'small'){
-		global $configArray;
 		$person = $this->getPerson();
-		if ($person->picture){
-			return '/files/thumbnail/' . $this->person->picture;
-		}else{
-			return '/interface/themes/default/images/person.png';
-		}
+		return $person->picture ? '/genealogyImage.php?image=' . $person->picture . '&size=' . $size : '/interface/themes/default/images/person.png';
 	}
 
-	public function getModule() {
+	public function getModule(){
 		return 'Person';
 	}
 }

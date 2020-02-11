@@ -233,7 +233,7 @@ class CatalogConnection
 	 * @return ReadingHistoryEntry
 	 */
 	private function getReadingHistoryDBObject($patron){
-	require_once ROOT_DIR . '/sys/ReadingHistoryEntry.php';
+	require_once ROOT_DIR . '/sys/Account/ReadingHistoryEntry.php';
 	// Reading History entries with groupedWorkIds
 
 	$readingHistoryDB          = new ReadingHistoryEntry();
@@ -274,7 +274,7 @@ class CatalogConnection
 	 */
 	public function updateUserWithAdditionalRuntimeInformation($user){
 		global $timer;
-		require_once(ROOT_DIR . '/Drivers/OverDriveDriverFactory.php');
+		require_once ROOT_DIR . '/Drivers/OverDriveDriverFactory.php';
 		$overDriveDriver = OverDriveDriverFactory::getDriver();
 		if ($user->isValidForOverDrive() && $overDriveDriver->isUserValidForOverDrive($user)){
 			$overDriveSummary = $overDriveDriver->getOverDriveSummary($user);
@@ -292,11 +292,13 @@ class CatalogConnection
 			$user->setNumCheckedOutHoopla($hooplaCheckOuts);
 		}
 
+		require_once ROOT_DIR . '/sys/MaterialsRequest/MaterialsRequest.php';
 		$materialsRequest            = new MaterialsRequest();
 		$materialsRequest->createdBy = $user->id;
 //		$homeLibrary                 = Library::getLibraryForLocation($user->homeLocationId);
 		$homeLibrary                 = $user->getHomeLibrary();
 		if ($homeLibrary && $homeLibrary->enableMaterialsRequest){
+			require_once ROOT_DIR . '/sys/MaterialsRequest/MaterialsRequestStatus.php';
 			$statusQuery            = new MaterialsRequestStatus();
 			$statusQuery->isOpen    = 1;
 			$statusQuery->libraryId = $homeLibrary->libraryId;
@@ -946,7 +948,7 @@ class CatalogConnection
 	 * @param User $patron
 	 */
 	private function updateReadingHistoryBasedOnCurrentCheckouts($patron) {
-		require_once ROOT_DIR . '/sys/ReadingHistoryEntry.php';
+		require_once ROOT_DIR . '/sys/Account/ReadingHistoryEntry.php';
 		//Note, include deleted titles here so they are not added multiple times.
 		$readingHistoryDB         = new ReadingHistoryEntry();
 		$readingHistoryDB->userId = $patron->id;
@@ -1052,8 +1054,10 @@ class CatalogConnection
 	 * @param $id
 	 * @return int
 	 */
-	public function getNumHolds($id) {
-		global $configArray;
+	public function getNumHoldsFromRecord($id) {
+		// these all need to live with the owning object.
+		/** @var Memcache $memCache */
+		global $memCache, $configArray;
 		$key = 'num_holds_' . $id ;
 		$cachedValue = $this->cache->get($key);
 		if ($cachedValue == false || isset($_REQUEST['reload'])){

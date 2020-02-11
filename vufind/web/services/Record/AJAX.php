@@ -72,7 +72,7 @@ class Record_AJAX extends AJAXHandler {
 			PEAR_Singleton::raiseError(new PEAR_Error('Record Does Not Exist'));
 		}
 
-		require_once ROOT_DIR . '/InterLibraryLoanDrivers/Prospector.php';
+		require_once ROOT_DIR . '/sys/InterLibraryLoanDrivers/Prospector.php';
 		$prospector = new Prospector();
 
 		$searchTerms = array(
@@ -105,7 +105,7 @@ class Record_AJAX extends AJAXHandler {
 			}
 
 			//Get information to show a warning if the user does not have sufficient holds
-			require_once ROOT_DIR . '/Drivers/marmot_inc/PType.php';
+			require_once ROOT_DIR . '/sys/Account/PType.php';
 			$maxHolds = -1;
 			//Determine if we should show a warning
 			$pType        = new PType();

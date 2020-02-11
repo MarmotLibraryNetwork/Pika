@@ -383,7 +383,8 @@ VuFind.GroupedWork = (function(){
 		},
 
 		showEmailForm: function(trigger, id){
-			return this.basicAjaxHandler('getEmailForm', id, trigger);
+			return VuFind.Account.ajaxLightbox("/GroupedWork/" + encodeURIComponent(id) + "/AJAX?method=getEmailForm", false, trigger);
+			// return this.basicAjaxHandler('getEmailForm', id, trigger);
 		},
 
 		showReviewForm: function(trigger, id){

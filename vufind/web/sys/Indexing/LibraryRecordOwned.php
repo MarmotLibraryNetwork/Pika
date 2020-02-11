@@ -27,7 +27,8 @@
  */
 
 require_once ROOT_DIR . '/sys/Indexing/RecordOwned.php';
-class LibraryRecordOwned extends RecordOwned{
+
+class LibraryRecordOwned extends RecordOwned {
 	public $__table = 'library_records_owned';    // table name
 	public $libraryId;
 
@@ -36,7 +37,7 @@ class LibraryRecordOwned extends RecordOwned{
 		$library->orderBy('displayName');
 		$user = UserAccount::getLoggedInUser();
 		if (UserAccount::userHasRole('libraryAdmin')){
-			$homeLibrary = UserAccount::getUserHomeLibrary();
+			$homeLibrary        = UserAccount::getUserHomeLibrary();
 			$library->libraryId = $homeLibrary->libraryId;
 		}
 		$library->find();
@@ -45,8 +46,8 @@ class LibraryRecordOwned extends RecordOwned{
 			$libraryList[$library->libraryId] = $library->displayName;
 		}
 
-		$structure = parent::getObjectStructure();
-		$structure['libraryId'] = array('property'=>'libraryId', 'type'=>'enum', 'values'=>$libraryList, 'label'=>'Library', 'description'=>'The id of a library');
+		$structure              = parent::getObjectStructure();
+		$structure['libraryId'] = array('property' => 'libraryId', 'type' => 'enum', 'values' => $libraryList, 'label' => 'Library', 'description' => 'The id of a library');
 
 		return $structure;
 	}

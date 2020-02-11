@@ -119,7 +119,7 @@ class ListAPI extends AJAXHandler {
 				);
 			}
 		}
-		require_once(ROOT_DIR . '/services/MyResearch/lib/Suggestions.php');
+		require_once ROOT_DIR . '/sys/LocalEnrichment/Suggestions.php';
 		$suggestions = Suggestions::getSuggestions($userId);
 		if (count($suggestions) > 0){
 			$results[] = array(
@@ -371,7 +371,7 @@ class ListAPI extends AJAXHandler {
 				}
 			}
 
-			require_once ROOT_DIR . '/services/MyResearch/lib/FavoriteHandler.php';
+			require_once ROOT_DIR . '/sys/LocalEnrichment/FavoriteHandler.php';
 			$user               = UserAccount::getLoggedInUser();
 			$favoriteHandler    = new FavoriteHandler($list, $user, false);
 			$isMixedContentList = $favoriteHandler->isMixedUserList();
@@ -472,7 +472,7 @@ class ListAPI extends AJAXHandler {
 						return array('success' => false, 'message' => 'A valid user must be provided to load recommendations.');
 					}else{
 						$userId = $user->id;
-						require_once(ROOT_DIR . '/services/MyResearch/lib/Suggestions.php');
+						require_once ROOT_DIR . '/sys/LocalEnrichment/Suggestions.php';
 						$suggestions = Suggestions::getSuggestions($userId);
 						$titles      = array();
 						foreach ($suggestions as $id => $suggestion){
@@ -930,7 +930,7 @@ class ListAPI extends AJAXHandler {
 		}
 
 		// Get the raw response from the API with a list of all the names
-		require_once ROOT_DIR . '/sys/NYTApi.php';
+		require_once ROOT_DIR . '/sys/ExternalEnrichment/NYTApi.php';
 		$nyt_api = new NYTApi($api_key);
 		$results = $nyt_api->get_list($listName);
 		return json_decode($results);
@@ -980,7 +980,7 @@ class ListAPI extends AJAXHandler {
 		}
 
 		//Get the raw response from the API with a list of all the names
-		require_once ROOT_DIR . '/sys/NYTApi.php';
+		require_once ROOT_DIR . '/sys/ExternalEnrichment/NYTApi.php';
 		$nyt_api           = new NYTApi($api_key);
 		$availableListsRaw = $nyt_api->get_list('names');
 		//Convert into an object that can be processed
@@ -1050,7 +1050,7 @@ class ListAPI extends AJAXHandler {
 		// We need to add titles to the list //
 
 		// Include Search Engine Class
-		require_once ROOT_DIR . '/sys/' . $configArray['Index']['engine'] . '.php';
+		require_once ROOT_DIR . '/sys/Search/' . $configArray['Index']['engine'] . '.php';
 		/** @var SearchObject_Solr $searchObject */
 		$searchObject = SearchObjectFactory::initSearchObject();
 
@@ -1081,6 +1081,7 @@ class ListAPI extends AJAXHandler {
 			if (!empty($isbnsArray)){
 				foreach ($isbnsArray as $isbns){
 					if (empty($isbns->isbn13)){
+						require_once ROOT_DIR . '/sys/ISBN/ISBN.php';
 						$isbnObj = new ISBN($isbns->isbn10);
 						$isbn    = $isbnObj->get13();
 					}else{

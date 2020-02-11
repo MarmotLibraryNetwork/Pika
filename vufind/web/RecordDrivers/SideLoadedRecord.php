@@ -56,6 +56,12 @@ class SideLoadedRecord extends BaseEContentDriver {
 			'openByDefault' => true,
 		);
 
+		//TODO: verify this works
+		$notes = $this->getNotes();
+		if (!empty($notes)){
+			$interface->assign('notes', $notes);
+		}
+
 		$moreDetailsOptions['moreDetails'] = array(
 				'label' => 'More Details',
 				'body' => $interface->fetch('ExternalEContent/view-more-details.tpl'),

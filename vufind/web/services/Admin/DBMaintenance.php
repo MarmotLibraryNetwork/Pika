@@ -305,8 +305,17 @@ class DBMaintenance extends Admin_Admin {
 						"review TEXT, " .
 						"source VARCHAR(50) NOT NULL" .
 						")",
-						"ALTER TABLE editorial_reviews ADD tabName VARCHAR(25) DEFAULT 'Reviews';",
-						"ALTER TABLE editorial_reviews ADD teaser VARCHAR(512);",
+					),
+				),
+				'editorial_review_update_2020_01' => array(
+					'title'       => 'Update Editorial Review table',
+					'description' => 'use grouped workIds and use timestamp column',
+					'sql'         => array(
+						"ALTER TABLE editorial_reviews CHANGE COLUMN `recordId` `groupedWorkPermanentId` CHAR(36) NOT NULL ;",
+						"ALTER TABLE editorial_reviews DROP COLUMN `tabName` ;",
+						"ALTER TABLE editorial_reviews DROP COLUMN `teaser` ;",
+						"ALTER TABLE editorial_reviews DROP COLUMN `pubDate` ;",
+						"ALTER TABLE editorial_reviews ADD COLUMN  `pubDate` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ;",
 					),
 				),
 
@@ -1318,8 +1327,8 @@ class DBMaintenance extends Admin_Admin {
 	}
 
 	private function createDefaultIpRanges(){
-		require_once ROOT_DIR . '/Drivers/marmot_inc/ipcalc.php';
-		require_once ROOT_DIR . '/Drivers/marmot_inc/subnet.php';
+		require_once ROOT_DIR . '/sys/Network/ipcalc.php';
+		require_once ROOT_DIR . '/sys/Network/subnet.php';
 		$subnet = new subnet();
 		$subnet->find();
 		while ($subnet->fetch()){

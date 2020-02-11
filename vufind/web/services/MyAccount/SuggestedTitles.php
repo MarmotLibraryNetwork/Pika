@@ -18,8 +18,7 @@
  */
 
 require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
-require_once ROOT_DIR . '/services/MyResearch/lib/FavoriteHandler.php';
-require_once ROOT_DIR . '/services/MyResearch/lib/Suggestions.php';
+require_once ROOT_DIR . '/sys/LocalEnrichment/Suggestions.php';
 
 /**
  *  Homepage for Suggested Titles for user based on users ratings

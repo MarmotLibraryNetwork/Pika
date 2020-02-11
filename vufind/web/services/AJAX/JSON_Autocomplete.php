@@ -18,7 +18,7 @@
  */
 
 require_once ROOT_DIR . '/sys/Autocomplete/AutocompleteFactory.php';
-require_once 'JSON.php';
+require_once ROOT_DIR .'/service/AJAX/JSON.php';
 
 /**
  * AJAX action for the Autocomplete module.

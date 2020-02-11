@@ -26,6 +26,8 @@
  * Time: 10:27 AM
  */
 
+require_once ROOT_DIR . '/sys/Circa/OfflineCirculationEntry.php';
+
 class Circa_OfflineCirculation extends Action{
 	function launch()
 	{
@@ -33,7 +35,6 @@ class Circa_OfflineCirculation extends Action{
 		$error = '';
 
 		if (isset($_POST['submit'])){
-			require_once ROOT_DIR . '/sys/OfflineCirculationEntry.php';
 			//Store information into the database
 			$login = $_REQUEST['login'];
 			$interface->assign('lastLogin', $login);

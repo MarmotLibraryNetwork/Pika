@@ -16,10 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-require_once ROOT_DIR . '/sys/Solr.php';
+require_once ROOT_DIR . '/sys/Search/Solr.php';
 require_once ROOT_DIR . '/sys/SearchObject/Base.php';
 require_once ROOT_DIR . '/RecordDrivers/Factory.php';
-require_once ROOT_DIR . '/Drivers/marmot_inc/Location.php';
+require_once ROOT_DIR . '/sys/Location/Location.php';
 
 /**
  * Search Object class
@@ -27,8 +27,7 @@ require_once ROOT_DIR . '/Drivers/marmot_inc/Location.php';
  * This is the default implementation of the SearchObjectBase class, providing the
  * Solr-driven functionality used by VuFind's standard Search module.
  */
-class SearchObject_Genealogy extends SearchObject_Base
-{
+class SearchObject_Genealogy extends SearchObject_Base {
 	// Publicly viewable version
 	private $publicQuery = null;
 	// Facets
@@ -74,7 +73,7 @@ class SearchObject_Genealogy extends SearchObject_Base
 		global $timer;
 		// Include our solr index
 		$class = $configArray['Genealogy']['engine'];
-		require_once "sys/$class.php";
+		require_once ROOT_DIR . "/sys/Search/$class.php";
 		$this->searchType      = 'genealogy';
 		$this->basicSearchType = 'genealogy';
 		// Initialise the index
@@ -429,153 +428,39 @@ class SearchObject_Genealogy extends SearchObject_Base
 	}
 
 	/**
-	 * Process one instance of a spelling replacement and modify the return
-	 *   data structure with the details of what was done.
-	 *
-	 * @access  public
-	 * @param   string   $term        The actually term we're replacing
-	 * @param   string   $targetTerm  The term above, or the token it is inside
-	 * @param   boolean  $inToken     Flag for whether the token or term is used
-	 * @param   array    $details     The spelling suggestions
-	 * @param   array    $returnArray Return data structure so far
-	 * @return  array    $returnArray modified
-	 */
-	private function doSpellingReplace($term, $targetTerm, $inToken, $details, $returnArray)
-	{
-		global $configArray;
-
-		$returnArray[$targetTerm]['freq'] = $details['freq'];
-		foreach ($details['suggestions'] as $word => $freq) {
-			// If the suggested word is part of a token
-			if ($inToken) {
-				// We need to make sure we replace the whole token
-				$replacement = str_replace($term, $word, $targetTerm);
-			} else {
-				$replacement = $word;
-			}
-			//  Do we need to show the whole, modified query?
-			if ($configArray['Spelling']['phrase']) {
-				$label = $this->getDisplayQueryWithReplacedTerm($targetTerm, $replacement);
-			} else {
-				$label = $replacement;
-			}
-			// Basic spelling suggestion data
-			$returnArray[$targetTerm]['suggestions'][$label] = array(
-                'freq'        => $freq,
-                'replace_url' => $this->renderLinkWithReplacedTerm($targetTerm, $replacement)
-			);
-			// Only generate expansions if enabled in config
-			if ($configArray['Spelling']['expand']) {
-				// Parentheses differ for shingles
-				if (strstr($targetTerm, " ") !== false) {
-					$replacement = "(($targetTerm) OR ($replacement))";
-				} else {
-					$replacement = "($targetTerm OR $replacement)";
-				}
-				$returnArray[$targetTerm]['suggestions'][$label]['expand_url'] =
-				$this->renderLinkWithReplacedTerm($targetTerm, $replacement);
-			}
-		}
-
-		return $returnArray;
-	}
-
-	/**
-	 * Return a list of valid sort options -- overrides the base class with
-	 * custom behavior for Author/Search screen.
-	 *
-	 * @access  public
-	 * @return  array    Sort value => description array.
-	 */
-	protected function getSortOptions()
-	{
-		// Everywhere else -- use normal default behavior
-		return parent::getSortOptions();
-	}
-
-	/**
-	 * Return a url of the current search as an RSS feed.
-	 *
-	 * @access  public
-	 * @return  string    URL
-	 */
-	public function getRSSUrl()
-	{
-		// Stash our old data for a minute
-		$oldView = $this->view;
-		$oldPage = $this->page;
-		// Add the new view
-		$this->view = 'rss';
-		// Remove page number
-		$this->page = 1;
-		// Get the new url
-		$url = $this->renderSearchUrl();
-		// Restore the old data
-		$this->view = $oldView;
-		$this->page = $oldPage;
-		// Return the URL
-		return $url;
-	}
-
-	/**
-	 * Return a url of the current search as an RSS feed.
-	 *
-	 * @access  public
-	 * @return  string    URL
-	 */
-	public function getExcelUrl()
-	{
-		// Stash our old data for a minute
-		$oldView = $this->view;
-		$oldPage = $this->page;
-		// Add the new view
-		$this->view = 'excel';
-		// Remove page number
-		$this->page = 1;
-		// Get the new url
-		$url = $this->renderSearchUrl();
-		// Restore the old data
-		$this->view = $oldView;
-		$this->page = $oldPage;
-		// Return the URL
-		return $url;
-	}
-
-	/**
 	 * Build a string for onscreen display showing the
 	 *   query used in the search (not the filters).
 	 *
 	 * @access  public
 	 * @return  string   user friendly version of 'query'
 	 */
-	public function displayQuery()
-	{
+	public function displayQuery(){
 		// Maybe this is a restored object...
-		if ($this->query == null) {
+		if ($this->query == null){
 			$this->query = $this->indexEngine->buildQuery($this->searchTerms);
 		}
 
 		// Do we need the complex answer? Advanced searches
-		if ($this->searchType == $this->advancedSearchType) {
+		if ($this->searchType == $this->advancedSearchType){
 			$output = $this->buildAdvancedDisplayQuery();
 			// If there is a hardcoded public query (like tags) return that
-		} else if ($this->publicQuery != null) {
+		}elseif ($this->publicQuery != null){
 			$output = $this->publicQuery;
 			// If we don't already have a public query, and this is a basic search
 			// with case-insensitive booleans, we need to do some extra work to ensure
 			// that we display the user's query back to them unmodified (i.e. without
 			// capitalized Boolean operators)!
-		} else if (!$this->indexEngine->hasCaseSensitiveBooleans()) {
+		}elseif (!$this->indexEngine->hasCaseSensitiveBooleans()){
 			$output = $this->publicQuery =
-			$this->indexEngine->buildQuery($this->searchTerms, true);
+				$this->indexEngine->buildQuery($this->searchTerms, true);
 			// Simple answer
-		} else {
+		}else{
 			$output = $this->query;
 		}
 
 		// Empty searches will look odd to users
-		if ($output == '*:*') {
-			$output = "";
+		if ($output == '*:*'){
+			$output = '';
 		}
 
 		return $output;
@@ -587,8 +472,7 @@ class SearchObject_Genealogy extends SearchObject_Base
 	 * @access  protected
 	 * @return  string   Base URL
 	 */
-	protected function getBaseUrl()
-	{
+	protected function getBaseUrl(){
 		// Base URL is different for author searches:
 //		return $this->serverUrl . '/Genealogy/Results?';
 		return $this->serverUrl . '/Union/Search?';
@@ -601,32 +485,8 @@ class SearchObject_Genealogy extends SearchObject_Base
 	 * @access  public
 	 * @return  mixed       false if no error, error string otherwise.
 	 */
-	public function getIndexError()
-	{
-		return isset($this->indexResult['error']) ?
-		$this->indexResult['error'] : false;
-	}
-
-	/**
-	 * Load all recommendation settings from the relevant ini file.  Returns an
-	 * associative array where the key is the location of the recommendations (top
-	 * or side) and the value is the settings found in the file (which may be either
-	 * a single string or an array of strings).
-	 *
-	 * @access  protected
-	 * @return  array           associative: location (top/side) => search settings
-	 */
-	protected function getRecommendationSettings()
-	{
-		// Special hard-coded case for author module.  We should make this more
-		// flexible in the future!
-		// Marmot hard-coded case and use searches.ini and facets.ini instead.
-		/*if ($this->searchType == 'author') {
-		 return array('side' => array('SideFacets:Author'));
-		 }*/
-
-		// Use default case from parent class the rest of the time:
-		return parent::getRecommendationSettings();
+	public function getIndexError(){
+		return $this->indexResult['error'] ?? false;
 	}
 
 	/**
@@ -644,8 +504,7 @@ class SearchObject_Genealogy extends SearchObject_Base
 	 *                                             a well formatted query
 	 * @return  object solr result structure (for now)
 	 */
-	public function processSearch($returnIndexErrors = false, $recommendations = false, $preventQueryModification = false)
-	{
+	public function processSearch($returnIndexErrors = false, $recommendations = false, $preventQueryModification = false){
 		// Our search has already been processed in init()
 		$search = $this->searchTerms;
 
@@ -655,11 +514,7 @@ class SearchObject_Genealogy extends SearchObject_Base
 		}
 
 		// Build Query
-		if ($preventQueryModification){
-			$query = $search;
-		}else{
-			$query = $this->indexEngine->buildQuery($search, false);
-		}
+		$query = $preventQueryModification ? $search : $this->indexEngine->buildQuery($search, false);
 		if (PEAR_Singleton::isError($query)) {
 			return $query;
 		}
@@ -671,22 +526,19 @@ class SearchObject_Genealogy extends SearchObject_Base
 
 		// Define Filter Query
 		$filterQuery = $this->hiddenFilters;
-		//Remove any empty filters if we get them
-		//(typically happens when a subdomain has a function disabled that is enabled in the main scope)
 		foreach ($this->filterList as $field => $filter) {
-			if (empty ($field)){
+			if (empty($field)){
+				//Remove any empty filters if we get them
+				//(typically happens when a subdomain has a function disabled that is enabled in the main scope)
 				unset($this->filterList[$field]);
-			}
-		}
-		foreach ($this->filterList as $field => $filter) {
-			foreach ($filter as $value) {
-				// Special case -- allow trailing wildcards:
-				if (substr($value, -1) == '*') {
-					$filterQuery[] = "$field:$value";
-				} elseif (preg_match('/\\A\\[.*?\\sTO\\s.*?]\\z/', $value)){
-					$filterQuery[] = "$field:$value";
-				} else {
-					if (!empty($value)){
+			} else{
+				foreach ($filter as $value){
+					// Special case -- allow trailing wildcards:
+					if (substr($value, -1) == '*'){
+						$filterQuery[] = "$field:$value";
+					}elseif (preg_match('/\\A\\[.*?\\sTO\\s.*?]\\z/', $value)){
+						$filterQuery[] = "$field:$value";
+					}elseif (!empty($value)){
 						$filterQuery[] = "$field:\"$value\"";
 					}
 				}
@@ -731,10 +583,10 @@ class SearchObject_Genealogy extends SearchObject_Base
 			// If the spellcheck query is purely numeric, skip it if
 			// the appropriate setting is turned on.
 			if ($this->spellSkipNumeric && is_numeric($spellcheck)) {
-				$spellcheck = "";
+				$spellcheck = '';
 			}
 		} else {
-			$spellcheck = "";
+			$spellcheck = '';
 		}
 
 		// Get time before the query
@@ -813,13 +665,12 @@ class SearchObject_Genealogy extends SearchObject_Base
 	 * @access  private
 	 * @return  string    Spelling query
 	 */
-	private function buildSpellingQuery()
-	{
-		$this->spellQuery = array();
+	private function buildSpellingQuery(){
+		$this->spellQuery = [];
+
 		// Basic search
 		if ($this->searchType == $this->basicSearchType) {
-			// Just the search query is fine
-			return $this->query;
+			return $this->query; // Just the search query is fine
 
 			// Advanced search
 		} else {
@@ -830,7 +681,7 @@ class SearchObject_Genealogy extends SearchObject_Base
 				}
 			}
 			// Return the list put together as a string
-			return join(" ", $this->spellQuery);
+			return join(' ', $this->spellQuery);
 		}
 	}
 
@@ -839,8 +690,7 @@ class SearchObject_Genealogy extends SearchObject_Base
 	 *
 	 * @access  private
 	 */
-	private function processSpelling()
-	{
+	private function processSpelling(){
 		global $configArray;
 
 		// Do nothing if spelling is disabled
@@ -849,9 +699,8 @@ class SearchObject_Genealogy extends SearchObject_Base
 		}
 
 		// Do nothing if there are no suggestions
-		$suggestions = isset($this->indexResult['spellcheck']['suggestions']) ?
-		$this->indexResult['spellcheck']['suggestions'] : array();
-		if (count($suggestions) == 0) {
+		$suggestions = $this->indexResult['spellcheck']['suggestions'] ?? [];
+		if (empty($suggestions)) {
 			return;
 		}
 
@@ -914,8 +763,8 @@ class SearchObject_Genealogy extends SearchObject_Base
 	 * @return  array    Filtered list
 	 */
 	private function filterSpellingTerms($termList) {
-		$newList = array();
-		if (count($termList) == 0) return $newList;
+		$newList = [];
+		if (empty($termList)) return $newList;
 
 		foreach ($termList as $term) {
 			if (!$this->findSearchTerm($term['word'])) {
@@ -934,14 +783,12 @@ class SearchObject_Genealogy extends SearchObject_Base
 	 * @access  private
 	 * @return  array     Suggestions array
 	 */
-	private function basicSpelling()
-	{
-		// TODO: There might be a way to run the
-		//   search against both dictionaries from
-		//   inside solr. Investigate. Currently
-		//   submitting a second search for this.
+	private function basicSpelling(){
+		// TODO: There might be a way to run the search against both dictionaries from
+		//   inside solr. Investigate. Currently submitting a second search for this.
 
 		// Create a new search object
+		/** @var SearchObject_Genealogy $newSearch */
 		$newSearch = SearchObjectFactory::initSearchObject('Genealogy');
 		$newSearch->deminify($this->minify());
 
@@ -967,9 +814,7 @@ class SearchObject_Genealogy extends SearchObject_Base
 				// Check the old suggestions
 				$found = false;
 				foreach ($this->suggestions as $k => $v) {
-					// Make sure it wasn't part of a shingle
-					//   which has been suggested at a higher
-					//   level.
+					// Make sure it wasn't part of a shingle which has been suggested at a higher level.
 					$found = preg_match("/\b$word\b/", $k) ? true : $found;
 				}
 				if (!$found) {
@@ -1003,9 +848,7 @@ class SearchObject_Genealogy extends SearchObject_Base
 		$list = array();
 
 		// If we have no facets to process, give up now
-		if (!isset($this->indexResult['facet_counts'])){
-			return $list;
-		}elseif (!is_array($this->indexResult['facet_counts']['facet_fields']) && !is_array($this->indexResult['facet_counts']['facet_dates'])) {
+		if (!isset($this->indexResult['facet_counts']) || (!is_array($this->indexResult['facet_counts']['facet_fields']) && !is_array($this->indexResult['facet_counts']['facet_dates']))){
 			return $list;
 		}
 
@@ -1020,11 +863,9 @@ class SearchObject_Genealogy extends SearchObject_Base
 			}
 
 			// Initialize the settings for the current field
-			$list[$field] = array();
-			// Add the on-screen label
-			$list[$field]['label'] = $filter[$field];
-			// Build our array of values for this field
-			$list[$field]['list']  = array();
+			$list[$field]          = [];
+			$list[$field]['label'] = $filter[$field]; // Add the on-screen label
+			$list[$field]['list']  = []; // Build our array of values for this field
 
 			// Should we translate values for the current facet?
 			$translate = in_array($field, $this->translatedFacets);
@@ -1032,12 +873,12 @@ class SearchObject_Genealogy extends SearchObject_Base
 			// Loop through values:
 			foreach ($data as $facet) {
 				// Initialize the array of data about the current facet:
-				$currentSettings = array();
-				$currentSettings['value'] = $facet[0];
-				$currentSettings['display'] = $translate ? translate($facet[0]) : $facet[0];
-				$currentSettings['count'] = $facet[1];
+				$currentSettings              = array();
+				$currentSettings['value']     = $facet[0];
+				$currentSettings['display']   = $translate ? translate($facet[0]) : $facet[0];
+				$currentSettings['count']     = $facet[1];
 				$currentSettings['isApplied'] = false;
-				$currentSettings['url'] = $this->renderLinkWithFilter("$field:".$facet[0]);
+				$currentSettings['url']       = $this->renderLinkWithFilter("$field:" . $facet[0]);
 				// If we want to have expanding links (all values matching the facet)
 				// in addition to limiting links (filter current search with facet),
 				// do some extra work:
@@ -1049,8 +890,8 @@ class SearchObject_Genealogy extends SearchObject_Base
 				if (in_array($field, array_keys($this->filterList))) {
 					// and is this value a selected filter?
 					if (in_array($facet[0], $this->filterList[$field])) {
-						$currentSettings['isApplied'] = true;
-						$currentSettings['removalUrl'] =  $this->renderLinkWithoutFilter("$field:{$facet[0]}");
+						$currentSettings['isApplied']  = true;
+						$currentSettings['removalUrl'] = $this->renderLinkWithoutFilter("$field:{$facet[0]}");
 					}
 				}
 
@@ -1063,19 +904,19 @@ class SearchObject_Genealogy extends SearchObject_Base
 
 			if ($field == 'veteranOf'){
 				//Add a field for Any war
-				$currentSettings = array();
-				$currentSettings['value'] = '[* TO *]';
-				$currentSettings['display'] = $translate ? translate('Any War') : 'Any War';
-				$currentSettings['count'] = '';
+				$currentSettings              = array();
+				$currentSettings['value']     = '[* TO *]';
+				$currentSettings['display']   = $translate ? translate('Any War') : 'Any War';
+				$currentSettings['count']     = '';
 				$currentSettings['isApplied'] = false;
 				if (in_array($field, array_keys($this->filterList))) {
 					// and is this value a selected filter?
 					if (in_array($currentSettings['value'], $this->filterList[$field])) {
-						$currentSettings['isApplied'] = true;
-						$currentSettings['removalUrl'] =  $this->renderLinkWithoutFilter("$field:{$facet[0]}");
+						$currentSettings['isApplied']  = true;
+						$currentSettings['removalUrl'] = $this->renderLinkWithoutFilter("$field:{$facet[0]}");
 					}
 				}
-				$currentSettings['url'] = $this->renderLinkWithFilter("veteranOf:" . $currentSettings['value']);
+				$currentSettings['url']          = $this->renderLinkWithFilter("veteranOf:" . $currentSettings['value']);
 				$list[$field]['list']['Any War'] = $currentSettings;
 			}
 
@@ -1104,16 +945,14 @@ class SearchObject_Genealogy extends SearchObject_Base
 	 *                                              section's description will be
 	 *                                              favored.
 	 */
-	public function activateAllFacets($preferredSection = false)
-	{
+	public function activateAllFacets($preferredSection = false){
 		foreach($this->allFacetSettings as $section => $values) {
 			foreach($values as $key => $value) {
 				$this->addFacet($key, $value);
 			}
 		}
 
-		if ($preferredSection &&
-		is_array($this->allFacetSettings[$preferredSection])) {
+		if ($preferredSection && is_array($this->allFacetSettings[$preferredSection])) {
 			foreach($this->allFacetSettings[$preferredSection] as $key => $value) {
 				$this->addFacet($key, $value);
 			}

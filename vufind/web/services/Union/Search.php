@@ -18,6 +18,7 @@
  */
 
 require_once ROOT_DIR . '/Action.php';
+require_once ROOT_DIR . '/sys/Search/SearchSources.php';
 
 /**
  * Union Results

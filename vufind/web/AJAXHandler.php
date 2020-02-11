@@ -21,6 +21,7 @@
  * @author   : Pascal Brammeier
  * Date: 4/26/2019
  */
+
 use Pika\Cache;
 use Pika\Logger;
 
@@ -42,8 +43,7 @@ abstract class AJAXHandler extends Action {
 	//private $cache;
 	private $logger;
 
-	public function __construct($error_class = null)
-	{
+	public function __construct($error_class = null){
 		parent::__construct($error_class);
 
 		$this->logger = new Logger('AjaxHandler');
@@ -55,20 +55,19 @@ abstract class AJAXHandler extends Action {
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
 
 		if (!empty($method) && method_exists($this, $method)){
-			if (in_array($method, $this->methodsThatRespondWithJSONUnstructured)){
+			if (property_exists($this, 'methodsThatRespondWithJSONUnstructured') && in_array($method, $this->methodsThatRespondWithJSONUnstructured)){
 				$result = $this->$method();
 				$this->sendHTTPHeaders('application/json');
 				echo $this->jsonUTF8EncodeResponse($result);
-			}elseif (in_array($method, $this->methodsThatRespondWithJSONResultWrapper)){
+			}elseif (property_exists($this, 'methodsThatRespondWithJSONResultWrapper') && in_array($method, $this->methodsThatRespondWithJSONResultWrapper)){
 				$result = array('result' => $this->$method());
 				$this->sendHTTPHeaders('application/json');
 				echo $this->jsonUTF8EncodeResponse($result);
-			}elseif (in_array($method, $this->methodsThatRespondWithHTML)){
+			}elseif (property_exists($this, 'methodsThatRespondWithHTML') && in_array($method, $this->methodsThatRespondWithHTML)){
 				$result = $this->$method();
-
 				$this->sendHTTPHeaders('text/html');
 				echo $result;
-			}elseif (in_array($method, $this->methodsThatRespondWithXML)){
+			}elseif (property_exists($this, 'methodsThatRespondWithHTML') && in_array($method, $this->methodsThatRespondWithXML)){
 				$result = $this->$method();
 				$this->sendHTTPHeaders('text/xml');
 

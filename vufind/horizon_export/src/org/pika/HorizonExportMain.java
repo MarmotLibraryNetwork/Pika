@@ -13,11 +13,9 @@ import org.marc4j.marc.Record;
 import org.marc4j.marc.Subfield;
 
 import java.io.*;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.*;
+import java.util.Date;
 
 
 /**
@@ -330,4 +328,34 @@ public class HorizonExportMain {
 		}
 		return value;
 	}
+
+//	private static PreparedStatement updateExtractInfoStatement;
+//
+//	private static void markRecordForReExtraction(Long bibToUpdate) {
+//		updateLastExtractTimeForRecord(getfullSierraBibId(bibToUpdate), null);
+//	}
+//
+//	private static boolean updateLastExtractTimeForRecord(String identifier) {
+//		return updateLastExtractTimeForRecord(identifier, startTime.getTime() / 1000);
+//	}
+//
+//	private static boolean updateLastExtractTimeForRecord(String identifier, Long lastExtractTime) {
+//		if (identifier != null && !identifier.isEmpty()) {
+//			try {
+//				updateExtractInfoStatement.setLong(1, indexingProfile.id);
+//				updateExtractInfoStatement.setString(2, identifier);
+//				if (lastExtractTime == null) {
+//					updateExtractInfoStatement.setNull(3, Types.INTEGER);
+//				} else {
+//					updateExtractInfoStatement.setLong(3, lastExtractTime);
+//				}
+//				int result = updateExtractInfoStatement.executeUpdate();
+//				return result == 1 || result == 2;
+//			} catch (SQLException e) {
+//				logger.error("Unable to update ils_extract_info table for " + identifier, e);
+//			}
+//		}
+//		return false;
+//	}
+
 }

@@ -55,7 +55,7 @@ class MarcRecord extends IndexRecord
 		if ($recordData instanceof File_MARC_Record){ //TODO: find when this happens
 			$this->marcRecord = $recordData;
 		}elseif (is_string($recordData) || $recordData instanceof SourceAndId){
-			require_once ROOT_DIR . '/sys/MarcLoader.php';
+//			require_once ROOT_DIR . '/sys/MarcLoader.php';
 			if (is_string($recordData)){ //TODO: make use of string for id's obsolete
 				$recordData = new SourceAndId($recordData);
 			}
@@ -75,11 +75,12 @@ class MarcRecord extends IndexRecord
 				$this->valid = false;
 			}
 			if (!isset($this->id) && $this->valid){
+				//TODO: set indexing profile
 				/** @var File_MARC_Data_Field $idField */
 				global $configArray;
-				$idField = $this->marcRecord->getField($configArray['Reindex']['recordNumberTag']);
+				$idField = $this->marcRecord->getField($configArray['Reindex']['recordNumberTag']); //todo: use indexing profile
 				if ($idField){
-					$this->id = $idField->getSubfield('a')->getData();
+					$this->id = $idField->getSubfield('a')->getData();//todo: use indexing profile
 				}
 			}
 		}
@@ -155,6 +156,60 @@ class MarcRecord extends IndexRecord
 			}
 		}
 		return $shortId;
+	}
+
+	public function getCitation($format){
+		require_once ROOT_DIR . '/sys/LocalEnrichment/CitationBuilder.php';
+
+		// Build author list:
+		$authors = array();
+		$primary = $this->getPrimaryAuthor();
+		if (!empty($primary)){
+			$authors[] = $primary;
+		}
+		$authors = array_unique(array_merge($authors, $this->getSecondaryAuthors()));
+
+		// Collect all details for citation builder:
+		$publishers = $this->getPublishers();
+		$pubDates   = $this->getPublicationDates();
+		$pubPlaces  = $this->getPlacesOfPublication();
+		$details    = array(
+			'authors'  => $authors,
+			'title'    => $this->getShortTitle(),
+			'subtitle' => $this->getSubtitle(),
+			'pubPlace' => count($pubPlaces) > 0 ? $pubPlaces[0] : null,
+			'pubName'  => count($publishers) > 0 ? $publishers[0] : null,
+			'pubDate'  => count($pubDates) > 0 ? $pubDates[0] : null,
+			'edition'  => $this->getEdition(),
+			'format'   => $this->getFormats()
+		);
+
+		// Build the citation:
+		$citation = new CitationBuilder($details);
+		switch ($format){
+			case 'APA':
+				return $citation->getAPA();
+			case 'AMA':
+				return $citation->getAMA();
+			case 'ChicagoAuthDate':
+				return $citation->getChicagoAuthDate();
+			case 'ChicagoHumanities':
+				return $citation->getChicagoHumanities();
+			case 'MLA':
+				return $citation->getMLA();
+		}
+		return '';
+	}
+
+	/**
+	 * Get an array of strings representing citation formats supported
+	 * by this record's data (empty if none).  Legal values: "APA", "MLA".
+	 *
+	 * @access  public
+	 * @return  array               Strings representing citation formats.
+	 */
+	public function getCitationFormats(){
+		return ['AMA', 'APA', 'ChicagoHumanities', 'ChicagoAuthDate', 'MLA'];
 	}
 
 	/**
@@ -478,10 +533,10 @@ class MarcRecord extends IndexRecord
 	 * @access  protected
 	 * @return  string
 	 */
-	protected function getCorporateAuthor()
-	{
-		return $this->getFirstFieldValue('110', array('a', 'b'));
-	}
+//	protected function getCorporateAuthor()
+//	{
+//		return $this->getFirstFieldValue('110', array('a', 'b'));
+//	}
 
 	/**
 	 * Return an array of all values extracted from the specified field/subfield
@@ -1060,7 +1115,7 @@ class MarcRecord extends IndexRecord
 		$upc = $this->getCleanUPC();
 		if ($isbn || $upc) {
 			if (!$library || ($library && $library->preferSyndeticsSummary == 1)) {
-				require_once ROOT_DIR . '/Drivers/marmot_inc/GoDeeperData.php';
+				require_once ROOT_DIR . '/sys/ExternalEnrichment/GoDeeperData.php';
 				$summaryInfo = GoDeeperData::getSummary($isbn, $upc);
 				if (isset($summaryInfo['summary'])) {
 					$summary = $summaryInfo['summary'];
@@ -1090,7 +1145,7 @@ class MarcRecord extends IndexRecord
 				$interface->assign('summary', $summary);
 				$interface->assign('summaryTeaser', strip_tags($summary));
 			} elseif ($library && $library->preferSyndeticsSummary == 0) {
-				require_once ROOT_DIR . '/Drivers/marmot_inc/GoDeeperData.php';
+				require_once ROOT_DIR . '/sys/ExternalEnrichment/GoDeeperData.php';
 				$summaryInfo = GoDeeperData::getSummary($isbn, $upc);
 				if (isset($summaryInfo['summary'])) {
 					$summary = $summaryInfo['summary'];
@@ -1172,7 +1227,7 @@ class MarcRecord extends IndexRecord
 			$useMarcSummary = true;
 			if ($allowExternalDescription) {
 				if (!is_null($isbn) || !is_null($upc)) {
-					require_once ROOT_DIR . '/Drivers/marmot_inc/GoDeeperData.php';
+					require_once ROOT_DIR . '/sys/ExternalEnrichment/GoDeeperData.php';
 					$summaryInfo = GoDeeperData::getSummary($isbn, $upc);
 					if (isset($summaryInfo['summary'])) {
 						$descriptionArray['description'] = $this->trimDescription($summaryInfo['summary']);
@@ -1214,9 +1269,9 @@ class MarcRecord extends IndexRecord
 		if ($field008 != null && strlen($field008->getData() >= 37)) {
 			$languageCode = substr($field008->getData(), 35, 3);
 			if ($languageCode == 'eng') {
-				$languageCode = "English";
+				$languageCode = 'English';
 			} elseif ($languageCode == 'spa') {
-				$languageCode = "Spanish";
+				$languageCode = 'Spanish';
 			}
 			return $languageCode;
 		} else {
@@ -1363,7 +1418,7 @@ class MarcRecord extends IndexRecord
 	static $catalogDriver = null;
 
 	/**
-	 * @return Millennium|Sierra|Marmot|DriverInterface|HorizonAPI
+	 * @return Sierra|DriverInterface|HorizonAPI
 	 */
 	protected static function getCatalogDriver()
 	{
@@ -1900,13 +1955,13 @@ class MarcRecord extends IndexRecord
 			$catalog = CatalogFactory::getCatalogConnectionInstance();
 //			$logger->log('$catalog :'.var_export($catalog, true), PEAR_LOG_DEBUG);
 			if (isset($catalog->status) && $catalog->status){
-				$this->numHolds = $catalog->getNumHolds($this->getUniqueID());
+				$this->numHolds = $catalog->getNumHoldsFromRecord($this->getUniqueID());
 			}else{
 				$this->numHolds = 0;
 			}
 		}else{
 
-			require_once ROOT_DIR . '/Drivers/marmot_inc/IlsHoldSummary.php';
+			require_once ROOT_DIR . '/sys/Extracting/IlsHoldSummary.php';
 			$holdSummary        = new IlsHoldSummary();
 			$holdSummary->ilsId = $this->getUniqueID();
 			if ($holdSummary->find(true)){
@@ -1927,6 +1982,7 @@ class MarcRecord extends IndexRecord
 	function getVolumeHolds($volumeData){
 		$holdInfo = null;
 		if (count($volumeData) > 0){
+			require_once ROOT_DIR . '/sys/Extracting/IlsHoldSummary.php';
 			$holdInfo = array();
 			foreach ($volumeData as $volumeInfo){
 				$ilsHoldInfo        = new IlsHoldSummary();
@@ -1948,7 +2004,7 @@ class MarcRecord extends IndexRecord
 	 * @return IlsVolumeInfo[]  An array of VolumeInfoObjects
 	 */
 	function getVolumeInfoForRecord(){
-		require_once ROOT_DIR . '/Drivers/marmot_inc/IlsVolumeInfo.php';
+		require_once ROOT_DIR . '/sys/Extracting/IlsVolumeInfo.php';
 		$volumeData             = array();
 		$volumeDataDB           = new IlsVolumeInfo();
 		$volumeDataDB->recordId = $this->sourceAndId->getSourceAndId();

@@ -18,7 +18,6 @@
  */
 
 require_once ROOT_DIR . '/AJAXHandler.php';
-require_once ROOT_DIR . '/sys/Pager.php';
 
 class SearchAPI extends AJAXHandler {
 
@@ -44,8 +43,8 @@ class SearchAPI extends AJAXHandler {
 	const FULL_INDEX_INTERVAL_CRITICAL        = 129600; // 36 Hours (in seconds)
 	const PARTIAL_INDEX_INTERVAL_WARN         = 1500;   // 25 Minutes (in seconds)
 	const PARTIAL_INDEX_INTERVAL_CRITICAL     = 3600;   // 1 Hour (in seconds)
-	const SIERRA_EXTRACT_INTERVAL_WARN = 900;    // 15 Minutes (in seconds)
-	const SIERRA_EXTRACT_INTERVAL_CRITICAL = 3600;   // 1 Hour (in seconds)
+	const SIERRA_EXTRACT_INTERVAL_WARN        = 900;    // 15 Minutes (in seconds)
+	const SIERRA_EXTRACT_INTERVAL_CRITICAL    = 3600;   // 1 Hour (in seconds)
 	const OVERDRIVE_EXTRACT_INTERVAL_WARN     = 14400;  // 4 Hours (in seconds)
 	const OVERDRIVE_EXTRACT_INTERVAL_CRITICAL = 18000;  // 5 Hours (in seconds)
 	const SOLR_RESTART_INTERVAL_WARN          = 86400;  // 24 Hours (in seconds)
@@ -310,6 +309,7 @@ class SearchAPI extends AJAXHandler {
 		}
 
 		// Unprocessed Offline Circs //
+		require_once ROOT_DIR . '/sys/Circa/OfflineCirculationEntry.php';
 		$offlineCirculationEntry         = new OfflineCirculationEntry();
 		$offlineCirculationEntry->status = 'Not Processed';
 		$offlineCircs                    = $offlineCirculationEntry->count('id');
@@ -319,6 +319,7 @@ class SearchAPI extends AJAXHandler {
 		}
 
 		// Unprocessed Offline Holds //
+		require_once ROOT_DIR . '/sys/Circa/OfflineHold.php';
 		$offlineHoldEntry         = new OfflineHold();
 		$offlineHoldEntry->status = 'Not Processed';
 		$offlineHolds             = $offlineHoldEntry->count('id');
@@ -377,7 +378,7 @@ class SearchAPI extends AJAXHandler {
 		global $timer;
 
 		// Include Search Engine Class
-		require_once ROOT_DIR . '/sys/' . $configArray['Index']['engine'] . '.php';
+		require_once ROOT_DIR . '/sys/Search/' . $configArray['Index']['engine'] . '.php';
 		$timer->logTime('Include search engine');
 
 		//setup the results array.
@@ -513,7 +514,7 @@ class SearchAPI extends AJAXHandler {
 
 
 		if ($configArray['Statistics']['enabled'] && isset($_GET['lookfor']) && !is_array($_GET['lookfor'])){
-			require_once ROOT_DIR . '/Drivers/marmot_inc/SearchStatNew.php';
+			require_once ROOT_DIR . '/sys/Search/SearchStatNew.php';
 			$searchStat = new SearchStatNew();
 			$type       = isset($_GET['type']) ? strip_tags($_GET['type']) : 'Keyword';
 			$searchStat->saveSearch(strip_tags($_GET['lookfor']), $type, $searchObject->getResultTotal());
@@ -576,7 +577,7 @@ class SearchAPI extends AJAXHandler {
 	 * Enter description here ...
 	 */
 	function getTopSearches(){
-		require_once(ROOT_DIR . '/Drivers/marmot_inc/SearchStatNew.php');
+		require_once ROOT_DIR . '/sys/Search/SearchStatNew.php';
 		$numSearchesToReturn = isset($_REQUEST['numResults']) ? $_REQUEST['numResults'] : 20;
 		$searchStats         = new SearchStatNew();
 		$searchStats->query("SELECT phrase, numSearches AS numTotalSearches FROM `search_stats_new` WHERE phrase != '' ORDER BY numTotalSearches DESC LIMIT " . $numSearchesToReturn);
@@ -597,7 +598,7 @@ class SearchAPI extends AJAXHandler {
 		global $timer;
 
 		// Include Search Engine Class
-		require_once ROOT_DIR . '/sys/' . $configArray['Index']['engine'] . '.php';
+		require_once ROOT_DIR . '/sys/Search/' . $configArray['Index']['engine'] . '.php';
 		$timer->logTime('Include search engine');
 
 		// Initialise from the current search globals
@@ -640,7 +641,7 @@ class SearchAPI extends AJAXHandler {
 		global $timer;
 
 		// Include Search Engine Class
-		require_once ROOT_DIR . '/sys/' . $configArray['Index']['engine'] . '.php';
+		require_once ROOT_DIR . '/sys/Search/' . $configArray['Index']['engine'] . '.php';
 		$timer->logTime('Include search engine');
 
 		// Initialise from the current search globals
@@ -683,7 +684,7 @@ class SearchAPI extends AJAXHandler {
 		global $timer;
 
 		// Include Search Engine Class
-		require_once ROOT_DIR . '/sys/' . $configArray['Index']['engine'] . '.php';
+		require_once ROOT_DIR . '/sys/Search/' . $configArray['Index']['engine'] . '.php';
 		$timer->logTime('Include search engine');
 
 		//setup the results array.

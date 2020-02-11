@@ -27,8 +27,9 @@
  */
 require_once ROOT_DIR . '/services/Admin/Admin.php';
 require_once ROOT_DIR . '/services/SourceAndId.php';
+require_once ROOT_DIR . '/sys/Circa/OfflineHold.php';
 
-class Circa_OfflineHoldsReport extends Admin_Admin{
+class Circa_OfflineHoldsReport extends Admin_Admin {
 	public function launch(){
 		global $interface;
 
@@ -43,10 +44,10 @@ class Circa_OfflineHoldsReport extends Admin_Admin{
 		}else{
 			$endDate = new DateTime();
 		}
-		$endDate->setTime(23,59,59); //second before midnight
+		$endDate->setTime(23, 59, 59); //second before midnight
 		$hideNotProcessed = isset($_REQUEST['hideNotProcessed']);
-		$hideFailed = isset($_REQUEST['hideFailed']);
-		$hideSuccess = isset($_REQUEST['hideSuccess']);
+		$hideFailed       = isset($_REQUEST['hideFailed']);
+		$hideSuccess      = isset($_REQUEST['hideSuccess']);
 
 		$interface->assign('startDate', $startDate->getTimestamp());
 		$interface->assign('endDate', $endDate->getTimestamp());
@@ -55,7 +56,7 @@ class Circa_OfflineHoldsReport extends Admin_Admin{
 		$interface->assign('hideSuccess', $hideSuccess);
 
 
-		$offlineHolds = array();
+		$offlineHolds    = array();
 		$offlineHoldsObj = new OfflineHold();
 		$offlineHoldsObj->whereAdd("timeEntered >= " . $startDate->getTimestamp() . " AND timeEntered <= " . $endDate->getTimestamp());
 		if ($hideFailed){
@@ -78,18 +79,18 @@ class Circa_OfflineHoldsReport extends Admin_Admin{
 				$offlineHold['title'] = $recordDriver->getTitle();
 			}
 			$offlineHold['patronBarcode'] = $offlineHoldsObj->patronBarcode;
-			$offlineHold['bibId'] = $offlineHoldsObj->bibId;
-			$offlineHold['timeEntered'] = $offlineHoldsObj->timeEntered;
-			$offlineHold['status'] = $offlineHoldsObj->status;
-			$offlineHold['notes'] = $offlineHoldsObj->notes;
-			$offlineHolds[] = $offlineHold;
+			$offlineHold['bibId']         = $offlineHoldsObj->bibId;
+			$offlineHold['timeEntered']   = $offlineHoldsObj->timeEntered;
+			$offlineHold['status']        = $offlineHoldsObj->status;
+			$offlineHold['notes']         = $offlineHoldsObj->notes;
+			$offlineHolds[]               = $offlineHold;
 		}
 
 		$interface->assign('offlineHolds', $offlineHolds);
-		$this->display('offlineHoldsReport.tpl','Offline Holds Report');
+		$this->display('offlineHoldsReport.tpl', 'Offline Holds Report');
 	}
 
-	function getAllowableRoles() {
+	function getAllowableRoles(){
 		return array('opacAdmin', 'libraryAdmin', 'circulationReports');
 	}
 }

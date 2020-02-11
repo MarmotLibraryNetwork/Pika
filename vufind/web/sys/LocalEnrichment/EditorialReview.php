@@ -25,24 +25,14 @@ require_once 'DB/DataObject.php';
 class EditorialReview extends DB_DataObject {
 	public $__table = 'editorial_reviews';    // table name
 	public $editorialReviewId;
-	public $recordId;
+	public $groupedWorkPermanentId;
 	public $title;
-
 	public $review;
-	public $teaser;
 	public $source;
 	public $pubDate;
 
-	public $tabName;
-
 	function keys(){
-		return array('editorialReviewId', 'source');
-	}
-
-	function formattedPubDate(){
-		$publicationDate = getDate($this->pubDate);
-		$pDate           = $publicationDate["mon"] . "/" . $publicationDate["mday"] . "/" . $publicationDate["year"];
-		return $pDate;
+		return array('editorialReviewId');
 	}
 
 	static function getObjectStructure(){
@@ -60,20 +50,21 @@ class EditorialReview extends DB_DataObject {
 				'type'        => 'text',
 				'size'        => 100,
 				'maxLength'   => 100,
-				'label'       => 'Title',
+				'label'       => 'Review Title',
 				'description' => 'The title of the review is required.',
 				'storeDb'     => true,
 				'required'    => true,
 			),
-			array(
-				'property'    => 'teaser',
-				'type'        => 'textarea',
-				'rows'        => 3,
-				'cols'        => 80,
-				'size'        => 512,
-				'label'       => 'Teaser (can be omitted to use the first part of the review)',
-				'description' => 'Teaser for the review.',
-				'storeDb'     => true,
+			'groupedWorkPermanentId' => array(
+				'property'         => 'groupedWorkPermanentId',
+				'type'             => 'text',
+				'size'             => 36,
+				'maxLength'        => 36,
+				'label'            => 'Grouped Work Id of the Title',
+				'description'      => 'Grouped work id of the title the review is about.',
+				'serverValidation' => 'validateGroupedWork',
+				'storeDb'          => true,
+				'required'         => true,
 			),
 			array(
 				'property'      => 'review',
@@ -81,64 +72,65 @@ class EditorialReview extends DB_DataObject {
 				'allowableTags' => '<p><a><b><em><ul><ol><em><li><strong><i><br><iframe><div>',
 				'rows'          => 6,
 				'cols'          => 80,
-				'label'         => 'Review',
-				'description'   => 'Review.',
+				'label'         => 'Review Text',
+				'description'   => 'Review text. (HTML and embedded iframes allowed)',
 				'storeDb'       => true,
+				'hideInLists'   => true,
+				'required'      => true,
 			),
 			array(
 				'property'    => 'source',
 				'type'        => 'text',
 				'size'        => 25,
 				'maxLength'   => 25,
-				'label'       => 'Source',
-				'description' => 'Source.',
+				'label'       => 'Review Source',
+				'description' => 'Source of this Review.',
 				'storeDb'     => true,
 			),
 			array(
-				'property'    => 'tabName',
-				'type'        => 'text',
-				'size'        => 25,
-				'maxLength'   => 25,
-				'label'       => 'Tab Name',
-				'description' => 'The Tab to display the review on',
-				'default'     => 'Reviews',
-				'storeDb'     => true,
-			),
-			'recordId' => array(
-				'property'    => 'recordId',
-				'type'        => 'text',
-				'size'        => 36,
-				'maxLength'   => 36,
-				'label'       => 'Record Id',
-				'description' => 'Record Id.',
-				'storeDb'     => true,
-			),
-			'pubDate'  => array(
 				'property'    => 'pubDate',
 				'type'        => 'hidden',
-				'label'       => 'pubDate',
-				'description' => 'pubDate',
+				'label'       => 'Review Publication Date',
+				'description' => 'Review Publication Date',
 				'storeDb'     => true,
 			),
 		);
 	}
 
-	function insert(){
-		//Update publication date if it hasn't been set already.
-		if (!isset($this->pubDate)){
-			$this->pubDate = time();
+	function validateGroupedWork(){
+		//Setup validation return array
+		$validationResults = array(
+			'validatedOk' => true,
+			'errors'      => [],
+		);
+
+		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+		$this->groupedWorkPermanentId = trim($this->groupedWorkPermanentId);
+		if (!GroupedWork::validGroupedWorkId($this->groupedWorkPermanentId)){
+			$validationResults = [
+				'validatedOk' => false,
+				'errors'      => ["The format of the grouped word id {$this->groupedWorkPermanentId} is not a valid work id"],
+			];
+		}else{
+			$groupedWork               = new GroupedWork();
+			$groupedWork->permanent_id = $this->groupedWorkPermanentId;
+			if (!$groupedWork->find()){
+				$validationResults = [
+					'validatedOk' => false,
+					'errors'      => ["The grouped work id {$this->groupedWorkPermanentId} was not found."],
+				];
+			}
 		}
-		$ret = parent::insert();
-		return $ret;
+		return $validationResults;
 	}
 
-	function update($dataObject = false){
-		$ret = parent::update();
-		return $ret;
-	}
-
-	function delete($useWhere = false){
-		$ret = parent::delete();
-		return $ret;
+	/**
+	 * Adds a header for this object in the edit form pages
+	 * @return string|null
+	 */
+	function label(){
+		if (!empty($this->title)){
+			return $this->title;
+		}
 	}
 }

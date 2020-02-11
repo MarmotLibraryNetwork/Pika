@@ -1,0 +1,1 @@
+Location where original uploaded images for the genealogy database will be stored

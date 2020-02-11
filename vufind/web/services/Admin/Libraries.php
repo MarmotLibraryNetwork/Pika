@@ -17,22 +17,24 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
+
 //require_once 'XML/Unserializer.php';
 
-class Admin_Libraries extends ObjectEditor
-{
+class Admin_Libraries extends ObjectEditor {
 
 	function getObjectType(){
 		return 'Library';
 	}
+
 	function getToolName(){
 		return 'Libraries';
 	}
+
 	function getPageTitle(){
 		return 'Library Systems';
 	}
+
 	function getAllObjects(){
 		$libraryList = array();
 
@@ -44,38 +46,45 @@ class Admin_Libraries extends ObjectEditor
 			while ($library->fetch()){
 				$libraryList[$library->libraryId] = clone $library;
 			}
-		}elseif (UserAccount::userHasRoleFromList(['libraryAdmin','libraryManager'])){
-			$patronLibrary = UserAccount::getUserHomeLibrary();
+		}elseif (UserAccount::userHasRoleFromList(['libraryAdmin', 'libraryManager'])){
+			$patronLibrary                          = UserAccount::getUserHomeLibrary();
 			$libraryList[$patronLibrary->libraryId] = clone $patronLibrary;
 		}
 
 		return $libraryList;
 	}
+
 	function getObjectStructure(){
 		$objectStructure = Library::getObjectStructure();
-		$user = UserAccount::getLoggedInUser();
+		$user            = UserAccount::getLoggedInUser();
 		if (!UserAccount::userHasRole('opacAdmin')){
 			unset($objectStructure['isDefault']);
 		}
 		return $objectStructure;
 	}
+
 	function getPrimaryKeyColumn(){
 		return 'subdomain';
 	}
+
 	function getIdKeyColumn(){
 		return 'libraryId';
 	}
+
 	function getAllowableRoles(){
 		return array('opacAdmin', 'libraryAdmin', 'libraryManager');
 	}
+
 	function canAddNew(){
 		$user = UserAccount::getLoggedInUser();
 		return UserAccount::userHasRole('opacAdmin');
 	}
+
 	function canDelete(){
 		$user = UserAccount::getLoggedInUser();
 		return UserAccount::userHasRole('opacAdmin');
 	}
+
 	function getAdditionalObjectActions($existingObject){
 		$objectActions = array();
 		if ($existingObject != null){
@@ -112,20 +121,20 @@ class Admin_Libraries extends ObjectEditor
 	function copyFacetsFromLibrary(){
 		$libraryId = $_REQUEST['id'];
 		if (isset($_REQUEST['submit'])){
-			$library = new Library();
+			$library            = new Library();
 			$library->libraryId = $libraryId;
 			$library->find(true);
 			$library->clearFacets();
 
-			$libraryToCopyFromId = $_REQUEST['libraryToCopyFrom'];
-			$libraryToCopyFrom = new Library();
+			$libraryToCopyFromId          = $_REQUEST['libraryToCopyFrom'];
+			$libraryToCopyFrom            = new Library();
 			$libraryToCopyFrom->libraryId = $libraryToCopyFromId;
 			$library->find(true);
 
 			$facetsToCopy = $libraryToCopyFrom->facets;
 			foreach ($facetsToCopy as $facetKey => $facet){
-				$facet->libraryId = $libraryId;
-				$facet->id = null;
+				$facet->libraryId        = $libraryId;
+				$facet->id               = null;
 				$facetsToCopy[$facetKey] = $facet;
 			}
 			$library->facets = $facetsToCopy;
@@ -153,20 +162,20 @@ class Admin_Libraries extends ObjectEditor
 	function copyArchiveSearchFacetsFromLibrary(){
 		$libraryId = $_REQUEST['id'];
 		if (isset($_REQUEST['submit'])){
-			$library = new Library();
+			$library            = new Library();
 			$library->libraryId = $libraryId;
 			$library->find(true);
 			$library->clearArchiveSearchFacets();
 
-			$libraryToCopyFromId = $_REQUEST['libraryToCopyFrom'];
-			$libraryToCopyFrom = new Library();
+			$libraryToCopyFromId          = $_REQUEST['libraryToCopyFrom'];
+			$libraryToCopyFrom            = new Library();
 			$libraryToCopyFrom->libraryId = $libraryToCopyFromId;
 			$library->find(true);
 
 			$facetsToCopy = $libraryToCopyFrom->archiveSearchFacets;
 			foreach ($facetsToCopy as $facetKey => $facet){
-				$facet->libraryId = $libraryId;
-				$facet->id = null;
+				$facet->libraryId        = $libraryId;
+				$facet->id               = null;
 				$facetsToCopy[$facetKey] = $facet;
 			}
 			$library->facets = $facetsToCopy;
@@ -192,8 +201,8 @@ class Admin_Libraries extends ObjectEditor
 	}
 
 	function resetFacetsToDefault(){
-		$library = new Library();
-		$libraryId = $_REQUEST['id'];
+		$library            = new Library();
+		$libraryId          = $_REQUEST['id'];
 		$library->libraryId = $libraryId;
 		if ($library->find(true)){
 			$library->clearFacets();
@@ -210,8 +219,8 @@ class Admin_Libraries extends ObjectEditor
 	}
 
 	function resetArchiveSearchFacetsToDefault(){
-		$library = new Library();
-		$libraryId = $_REQUEST['id'];
+		$library            = new Library();
+		$libraryId          = $_REQUEST['id'];
 		$library->libraryId = $libraryId;
 		if ($library->find(true)){
 			$library->clearArchiveSearchFacets();
@@ -228,23 +237,24 @@ class Admin_Libraries extends ObjectEditor
 	}
 
 	function resetMoreDetailsToDefault(){
-		$library = new Library();
-		$libraryId = $_REQUEST['id'];
+		$library            = new Library();
+		$libraryId          = $_REQUEST['id'];
 		$library->libraryId = $libraryId;
 		if ($library->find(true)){
 			$library->clearMoreDetailsOptions();
 
-			$defaultOptions = array();
 			require_once ROOT_DIR . '/RecordDrivers/Interface.php';
+			require_once ROOT_DIR . '/sys/Library/LibraryMoreDetails.php';
+			$defaultOptions            = array();
 			$defaultMoreDetailsOptions = RecordInterface::getDefaultMoreDetailsOptions();
-			$i = 0;
+			$i                         = 0;
 			foreach ($defaultMoreDetailsOptions as $source => $defaultState){
-				$optionObj = new LibraryMoreDetails();
-				$optionObj->libraryId = $libraryId;
+				$optionObj                    = new LibraryMoreDetails();
+				$optionObj->libraryId         = $libraryId;
 				$optionObj->collapseByDefault = $defaultState == 'closed';
-				$optionObj->source = $source;
-				$optionObj->weight = $i++;
-				$defaultOptions[] = $optionObj;
+				$optionObj->source            = $source;
+				$optionObj->weight            = $i++;
+				$defaultOptions[]             = $optionObj;
 			}
 
 			$library->moreDetailsOptions = $defaultOptions;
@@ -257,13 +267,13 @@ class Admin_Libraries extends ObjectEditor
 	}
 
 	function resetArchiveMoreDetailsToDefault(){
-		$library = new Library();
-		$libraryId = $_REQUEST['id'];
+		$library            = new Library();
+		$libraryId          = $_REQUEST['id'];
 		$library->libraryId = $libraryId;
 		if ($library->find(true)){
 			$library->clearArchiveMoreDetailsOptions();
 
-			require_once ROOT_DIR . '/sys/LibraryArchiveMoreDetails.php';
+			require_once ROOT_DIR . '/sys/Library/LibraryArchiveMoreDetails.php';
 			$defaultArchiveMoreDetailsOptions = LibraryArchiveMoreDetails::getDefaultOptions($libraryId);
 
 			$library->archiveMoreDetailsOptions = $defaultArchiveMoreDetailsOptions;
@@ -276,13 +286,13 @@ class Admin_Libraries extends ObjectEditor
 	}
 
 	function defaultMaterialsRequestForm(){
-		$library = new Library();
-		$libraryId = $_REQUEST['id'];
+		$library            = new Library();
+		$libraryId          = $_REQUEST['id'];
 		$library->libraryId = $libraryId;
 		if ($library->find(true)){
 			$library->clearMaterialsRequestFormFields();
 
-			$defaultFieldsToDisplay = MaterialsRequestFormFields::getDefaultFormFields($libraryId);
+			$defaultFieldsToDisplay              = MaterialsRequestFormFields::getDefaultFormFields($libraryId);
 			$library->materialsRequestFormFields = $defaultFieldsToDisplay;
 			$library->update();
 		}
@@ -292,13 +302,13 @@ class Admin_Libraries extends ObjectEditor
 	}
 
 	function defaultMaterialsRequestFormats(){
-		$library = new Library();
-		$libraryId = $_REQUEST['id'];
+		$library            = new Library();
+		$libraryId          = $_REQUEST['id'];
 		$library->libraryId = $libraryId;
 		if ($library->find(true)){
 			$library->clearMaterialsRequestFormats();
 
-			$defaultMaterialsRequestFormats = MaterialsRequestFormats::getDefaultMaterialRequestFormats($libraryId);
+			$defaultMaterialsRequestFormats   = MaterialsRequestFormats::getDefaultMaterialRequestFormats($libraryId);
 			$library->materialsRequestFormats = $defaultMaterialsRequestFormats;
 			$library->update();
 		}
@@ -307,11 +317,12 @@ class Admin_Libraries extends ObjectEditor
 	}
 
 	function defaultArchiveExploreMoreOptions(){
-		$library = new Library();
-		$libraryId = $_REQUEST['id'];
+		$library            = new Library();
+		$libraryId          = $_REQUEST['id'];
 		$library->libraryId = $libraryId;
 		if ($library->find(true)){
 			$library->clearExploreMoreBar();
+			require_once ROOT_DIR . '/sys/Archive/ArchiveExploreMoreBar.php';
 			$library->exploreMoreBar = ArchiveExploreMoreBar::getDefaultArchiveExploreMoreOptions($libraryId);
 			$library->update();
 		}

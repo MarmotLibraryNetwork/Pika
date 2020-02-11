@@ -18,8 +18,11 @@
  */
 
 require_once ROOT_DIR . '/Action.php';
+require_once ROOT_DIR . '/services/AJAX/Captcha_AJAX.php';
 
 class AJAX extends AJAXHandler {
+
+	use Captcha_AJAX;
 
 	protected $methodsThatRespondWithHTML = array(
 		'GetAutoSuggestList',
@@ -47,43 +50,53 @@ class AJAX extends AJAXHandler {
 	// Email Search Results
 	function sendEmail(){
 		global $interface;
+		$recaptchaValid = $this->isRecaptchaValid();
+		if (UserAccount::isLoggedIn() || $recaptchaValid){
 
-		$subject = translate('Library Catalog Search Result');
-		$url     = $_REQUEST['sourceUrl'];
-		$to      = $_REQUEST['to'];
-		$from    = $_REQUEST['from'];
-		$message = $_REQUEST['message'];
-		$interface->assign('from', $from);
-		if (strpos($message, 'http') === false && strpos($message, 'mailto') === false && $message == strip_tags($message)){
-			$interface->assign('message', $message);
-			$interface->assign('msgUrl', $url);
-			$body = $interface->fetch('Emails/share-link.tpl');
+			$subject = translate('Library Catalog Search Result');
+			$url     = $_REQUEST['sourceUrl'];
+			$to      = $_REQUEST['to'];
+			$from    = $_REQUEST['from'];
+			$message = $_REQUEST['message'];
+			$interface->assign('from', $from);
+			if (strpos($message, 'http') === false && strpos($message, 'mailto') === false && $message == strip_tags($message)){
+				$interface->assign('message', $message);
+				$interface->assign('msgUrl', $url);
+				$body = $interface->fetch('Emails/share-link.tpl');
 
-			require_once ROOT_DIR . '/sys/Mailer.php';
-			$mail        = new VuFindMailer();
-			$emailResult = $mail->send($to, $from, $subject, $body);
+				require_once ROOT_DIR . '/sys/Mailer.php';
+				$mail        = new VuFindMailer();
+				$emailResult = $mail->send($to, $from, $subject, $body);
 
-			if ($emailResult === true){
-				$result = array(
-					'result'  => true,
-					'message' => 'Your e-mail was sent successfully.',
-				);
-			}elseif (PEAR_Singleton::isError($emailResult)){
-				$result = array(
-					'result'  => false,
-					'message' => "Your e-mail message could not be sent: {$emailResult->message}.",
-				);
+				if ($emailResult === true){
+					$result = [
+						'result'  => true,
+						'message' => 'Your e-mail was sent successfully.',
+					];
+				}elseif (PEAR_Singleton::isError($emailResult)){
+					$result = [
+						'result'  => false,
+						'message' => "Your e-mail message could not be sent: {$emailResult->message}.",
+					];
+				}else{
+					$result = [
+						'result'  => false,
+						'message' => 'Your e-mail message could not be sent due to an unknown error.',
+					];
+					global $logger;
+					$logger->log("Mail List Failure (unknown reason), parameters: $to, $from, $subject, $body", PEAR_LOG_ERR);
+				}
 			}else{
-				$result = array(
+				$result = [
 					'result'  => false,
-					'message' => 'Your e-mail message could not be sent due to an unknown error.',
-				);
+					'message' => 'Sorry, we can&apos;t send e-mails with html or other data in it.',
+				];
 			}
-		}else{
-			$result = array(
+		}else{ // logged in check, or captcha check
+			$result = [
 				'result'  => false,
-				'message' => 'Sorry, we can&apos;t send e-mails with html or other data in it.',
-			);
+				'message' => 'Not logged in or invalid captcha response',
+			];
 		}
 
 		return $result;
@@ -133,7 +146,7 @@ class AJAX extends AJAXHandler {
 			if (is_a($searchObject, 'SearchObject_Solr')){ //Load results from Prospector
 				$ILLDriver = $configArray['InterLibraryLoan']['ILLDriver'];//			$prospector = new Prospector();
 				/** @var Prospector|AutoGraphicsShareIt $ILLDriver */
-				require_once ROOT_DIR . '/InterLibraryLoanDrivers/' . $ILLDriver . '.php';
+				require_once ROOT_DIR . '/sys/InterLibraryLoanDrivers/' . $ILLDriver . '.php';
 				$prospector = new $ILLDriver();// Only show prospector results within search results if enabled
 				if ($library && $library->enableProspectorIntegration && $library->showProspectorResultsAtEndOfSearch){
 					$prospectorResults = $prospector->getTopSearchResults($searchObject->getSearchTerms(), 5);
@@ -246,6 +259,9 @@ class AJAX extends AJAXHandler {
 
 	function getEmailForm(){
 		global $interface;
+		if (!UserAccount::isLoggedIn()){
+			$this->setUpCaptchaForTemplate();
+		}
 		if (UserAccount::isLoggedIn()){
 			/** @var User $user */
 			$user = UserAccount::getActiveUserObj();
@@ -254,12 +270,11 @@ class AJAX extends AJAXHandler {
 			}
 		}
 
-		$results = array(
+		return [
 			'title'        => 'E-Mail Search',
 			'modalBody'    => $interface->fetch('Search/email.tpl'),
 			'modalButtons' => "<span class='tool btn btn-primary' onclick='$(\"#emailSearchForm\").submit();'>Send E-Mail</span>",
-		);
-		return $results;
+		];
 	}
 
 	function getDplaResults(){

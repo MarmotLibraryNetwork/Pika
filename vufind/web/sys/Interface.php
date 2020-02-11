@@ -17,7 +17,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-require_once ROOT_DIR . '/sys/mobile_device_detect.php';
+require_once ROOT_DIR . '/sys/mobileesp/mobile_device_detect.php';
 
 // Smarty Extension class
 class UInterface extends Smarty {
@@ -87,6 +87,7 @@ class UInterface extends Smarty {
 		if (!empty($configArray['System']['debug'])){
 			if (isset($configArray['System']['debugTemplates'])){
 				$this->debugging = (bool)$configArray['System']['debugTemplates'];
+				$this->assign('deviceName', get_device_name()); // footer, only displayed when debug is on
 			}
 		}
 
@@ -226,7 +227,7 @@ class UInterface extends Smarty {
 
 	function setPageTitle($title){
 		//Marmot override, add the name of the site to the title unless we are using the mobile interface.
-		$this->assign('pageTitleShort', translate($title));
+		$this->assign('pageTitleShort', translate($title)); //todo: combine pageTitleShort & shortPageTitle
 		if ($this->isMobile()){
 			$this->assign('pageTitle', translate($title));
 		}else{

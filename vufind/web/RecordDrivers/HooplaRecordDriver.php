@@ -37,22 +37,24 @@ class HooplaRecordDriver extends SideLoadedRecord {
 	public function getAccessLink($actions = null){
 		$title      = translate('hoopla_url_action');
 		$marcRecord = $this->getMarcRecord();
-		/** @var File_MARC_Data_Field[] $linkFields */
-		$linkFields = $marcRecord->getFields('856');
-		$fileOrUrl  = null;
-		foreach ($linkFields as $linkField){
-			if ($linkField->getIndicator(1) == 4 && $linkField->getIndicator(2) == 0){
-				$linkSubfield = $linkField->getSubfield('u');
-				$fileOrUrl    = $linkSubfield->getData();
-				break;
+		if (!empty($marcRecord)){
+			/** @var File_MARC_Data_Field[] $linkFields */
+			$linkFields = $marcRecord->getFields('856');
+			$fileOrUrl  = null;
+			foreach ($linkFields as $linkField){
+				if ($linkField->getIndicator(1) == 4 && $linkField->getIndicator(2) == 0){
+					$linkSubfield = $linkField->getSubfield('u');
+					$fileOrUrl    = $linkSubfield->getData();
+					break;
+				}
 			}
-		}
-		if ($fileOrUrl != null){
-			$actions[] = array(
-				'url'          => $fileOrUrl,
-				'title'        => $title,
-				'requireLogin' => false,
-			);
+			if ($fileOrUrl != null){
+				$actions[] = array(
+					'url'          => $fileOrUrl,
+					'title'        => $title,
+					'requireLogin' => false,
+				);
+			}
 		}
 		return $actions;
 	}
@@ -71,22 +73,7 @@ class HooplaRecordDriver extends SideLoadedRecord {
 	}
 
 	function getRecordActions($recordAvailable = null, $recordHoldable = null, $recordBookable = null, $relatedUrls = null, $volumeData = null){
-		$actions = array();
-
-		if ($this->isHooplaIntegrationEnabled()){
-			$actions[] = $this->getHooplaIntegrationActions();
-		}else{
-			$title = translate('hoopla_url_action');
-			foreach ($relatedUrls as $url){
-				$actions[] = array(
-					'url'          => $url['url'],
-					'title'        => $title,
-					'requireLogin' => false,
-				);
-			}
-		}
-
-		return $actions;
+		return $this->getActions();
 	}
 
 	public function getRecordActionsFromIndex(){
@@ -147,6 +134,15 @@ class HooplaRecordDriver extends SideLoadedRecord {
 				'hideByDefault' => false,
 			);
 		}
+
+		//Get copies for the record
+		$this->assignCopiesInformation();
+
+//		$moreDetailsOptions['copies'] = array(
+//			'label'         => 'Copies',
+//			'body'          => $interface->fetch('ExternalEContent/view-items.tpl'),
+//			'openByDefault' => true,
+//		);
 
 		$notes = $this->getNotes();
 		if (count($notes) > 0){

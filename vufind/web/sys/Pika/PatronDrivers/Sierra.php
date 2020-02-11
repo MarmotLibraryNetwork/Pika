@@ -74,6 +74,9 @@ use ReadingHistoryEntry;
 use PinReset;
 use PHPMailer\PHPMailer\PHPMailer;
 
+require_once ROOT_DIR . '/sys/Account/ReadingHistoryEntry.php';
+require_once ROOT_DIR . '/sys/Account/PinReset.php';
+
 class Sierra {
 	// let's swing back around to this later.
 //	use \PatronCheckOutsOperations;
@@ -2580,6 +2583,7 @@ EOT;
 	 * @param string $barcode
 	 * @param string $pin
 	 * @return string|false Returns patron id on success false on fail.
+	 * @throws ErrorException
 	 */
 	protected function _authBarcodePin($barcode, $pin) {
 
@@ -2610,7 +2614,7 @@ EOT;
 		$params = [
 			"barcode"         => $barcode,
 			"pin"             => $pin,
-			"caseSensitivity" => false,
+			"caseSensitivity" => false,  //This setting is required for Sacramento student Ids to get a good pin validation response.  I suspect that there is an ILS setting that overrides this any way (pascal 2/6/2020)
 		];
 
 		if (!$this->_doRequest("patrons/validate", $params, "POST")) {

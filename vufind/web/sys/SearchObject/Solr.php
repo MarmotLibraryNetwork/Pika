@@ -16,10 +16,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-require_once ROOT_DIR . '/sys/Solr.php';
+require_once ROOT_DIR . '/sys/Search/Solr.php';
 require_once ROOT_DIR . '/sys/SearchObject/Base.php';
 require_once ROOT_DIR . '/RecordDrivers/Factory.php';
-require_once ROOT_DIR . '/Drivers/marmot_inc/Location.php';
 
 /**
  * Search Object class
@@ -72,8 +71,7 @@ class SearchObject_Solr extends SearchObject_Base
 	 *
 	 * @access  public
 	 */
-	public function __construct()
-	{
+	public function __construct(){
 		// Call base class constructor
 		parent::__construct();
 
@@ -82,25 +80,25 @@ class SearchObject_Solr extends SearchObject_Base
 		global $library;
 		global $solrScope;
 		// Include our solr index
-		$class = $configArray['Index']['engine'];
+		$class              = $configArray['Index']['engine'];
 		$classWithExtension = $class . '.php';
-		require_once ROOT_DIR . "/sys/" . $classWithExtension;
+//		require_once ROOT_DIR . "/sys/" . $classWithExtension;
 		// Initialise the index
 		$this->indexEngine = new $class($configArray['Index']['url']);
 		$timer->logTime('Created Index Engine');
 
 		// Get default facet settings
 		$this->allFacetSettings = getExtraConfigArray('facets');
-		$this->facetConfig = array();
-		$facetLimit = $this->getFacetSetting('Results_Settings', 'facet_limit');
-		if (is_numeric($facetLimit)) {
+		$this->facetConfig      = array();
+		$facetLimit             = $this->getFacetSetting('Results_Settings', 'facet_limit');
+		if (is_numeric($facetLimit)){
 			$this->facetLimit = $facetLimit;
 		}
 		$translatedFacets = $this->getFacetSetting('Advanced_Settings', 'translated_facets');
-		if (is_array($translatedFacets)) {
+		if (is_array($translatedFacets)){
 			$this->translatedFacets = $translatedFacets;
 			foreach ($translatedFacets as $translatedFacet){
-				$this->translatedFacets[] = $translatedFacet . '_'. $solrScope;
+				$this->translatedFacets[] = $translatedFacet . '_' . $solrScope;
 			}
 		}
 
@@ -111,51 +109,55 @@ class SearchObject_Solr extends SearchObject_Base
 				unset($searchSettings['Basic_Searches']['tag']);
 			}
 		}
-		if (isset($searchSettings['General']['default_handler'])) {
+		if (isset($searchSettings['General']['default_handler'])){
 			$this->defaultIndex = $searchSettings['General']['default_handler'];
 		}
-		if (isset($searchSettings['General']['default_sort'])) {
+		if (isset($searchSettings['General']['default_sort'])){
 			$this->defaultSort = $searchSettings['General']['default_sort'];
 		}
-		if (isset($searchSettings['General']['default_view'])) {
+		if (isset($searchSettings['General']['default_view'])){
 			$this->defaultView = $searchSettings['General']['default_view'];
 		}
-		if (isset($searchSettings['General']['default_limit'])) {
+		if (isset($searchSettings['General']['default_limit'])){
 			$this->defaultLimit = $searchSettings['General']['default_limit'];
 		}
-		if (isset($searchSettings['General']['retain_filters_by_default'])) {
+		if (isset($searchSettings['General']['retain_filters_by_default'])){
 			$this->retainFiltersByDefault
-			= $searchSettings['General']['retain_filters_by_default'];
+				= $searchSettings['General']['retain_filters_by_default'];
 		}
-		if (isset($searchSettings['DefaultSortingByType']) && is_array($searchSettings['DefaultSortingByType'])) {
+		if (isset($searchSettings['DefaultSortingByType']) && is_array($searchSettings['DefaultSortingByType'])){
 			$this->defaultSortByType = $searchSettings['DefaultSortingByType'];
 		}
-		if (isset($searchSettings['Basic_Searches'])) {
+		if (isset($searchSettings['Basic_Searches'])){
 			$this->basicTypes = $searchSettings['Basic_Searches'];
 		}
-		if (isset($searchSettings['Advanced_Searches'])) {
+		if (isset($searchSettings['Advanced_Searches'])){
 			$this->advancedTypes = $searchSettings['Advanced_Searches'];
 		}
 
 		// Load sort preferences (or defaults if none in .ini file):
-		if (isset($searchSettings['Sorting'])) {
+		if (isset($searchSettings['Sorting'])){
 			$this->sortOptions = $searchSettings['Sorting'];
-		} else {
-			$this->sortOptions = array('relevance' => 'sort_relevance',
-								'popularity' => 'sort_popularity',
-                'year' => 'sort_year', 'year asc' => 'sort_year asc',
-                'callnumber' => 'sort_callnumber', 'author' => 'sort_author',
-                'title' => 'sort_title');
+		}else{
+			$this->sortOptions = [
+				'relevance'  => 'sort_relevance',
+				'popularity' => 'sort_popularity',
+				'year'       => 'sort_year',
+				'year asc'   => 'sort_year asc',
+				'callnumber' => 'sort_callnumber',
+				'author'     => 'sort_author',
+				'title'      => 'sort_title'
+			];
 		}
 
 		// Load Spelling preferences
-		$this->spellcheck    = $configArray['Spelling']['enabled'];
-		$this->spellingLimit = $configArray['Spelling']['limit'];
-		$this->spellSimple   = $configArray['Spelling']['simple'];
+		$this->spellcheck       = $configArray['Spelling']['enabled'];
+		$this->spellingLimit    = $configArray['Spelling']['limit'];
+		$this->spellSimple      = $configArray['Spelling']['simple'];
 		$this->spellSkipNumeric = isset($configArray['Spelling']['skip_numeric']) ?
-		$configArray['Spelling']['skip_numeric'] : true;
+			$configArray['Spelling']['skip_numeric'] : true;
 
-		$this->indexEngine->debug = $this->debug;
+		$this->indexEngine->debug          = $this->debug;
 		$this->indexEngine->debugSolrQuery = $this->debugSolrQuery;
 
 		$timer->logTime('Setup Solr Search Object');
@@ -197,6 +199,97 @@ class SearchObject_Solr extends SearchObject_Base
 	}
 
 	/**
+	 * TODO: move to solr
+	 * Take a filter string and add it into the protected
+	 *   array checking for duplicates.
+	 *
+	 * @access  public
+	 * @param   string  $newFilter   A filter string from url : "field:value"
+	 */
+	public function addFilter($newFilter){
+		if (empty($newFilter)){
+			return;
+		}
+		// Extract field and value from URL string:
+		list($field, $value) = $this->parseFilter($newFilter);
+		if ($field == ''){
+			$field = count($this->filterList) + 1;
+		}
+
+		// Check for duplicates -- if it's not in the array, we can add it
+		if (!$this->hasFilter($field)) {
+			if (!is_numeric($field)){
+
+				if (strcmp($field, 'literary-form') === 0){
+					$field = 'literary_form';
+				}elseif (strcmp($field, 'literary-form-full') == 0){
+					$field = 'literary_form_full';
+				}elseif (strcmp($field, 'target-audience') == 0){
+					$field = 'target_audience';
+				}elseif (strcmp($field, 'target-audience-full') == 0){
+					$field = 'target_audience_full';
+				}
+
+				global $solrScope;
+				global $locationSingleton;
+				$searchLibrary  = Library::getActiveLibrary();
+				$searchLocation = $locationSingleton->getActiveLocation();
+				$userLocation   = Location::getUserHomeLocation();
+
+				//See if the filter should be localized
+				if (isset($searchLibrary)){
+					if (strcmp($field, 'time_since_added') === 0){
+						$field = 'local_time_since_added_' . $searchLibrary->subdomain;
+					}elseif (strcmp($field, 'itype') === 0){
+						$field = 'itype_' . $searchLibrary->subdomain;
+					}elseif (strcmp($field, 'detailed_location') === 0){
+						$field = 'detailed_location_' . $searchLibrary->subdomain;
+					}
+				}
+
+				if ($solrScope){
+					if (strcmp($field, 'availability_toggle') == 0){
+						$field = 'availability_toggle_' . $solrScope;
+					}elseif (strcmp($field, 'format') == 0){
+						$field = 'format_' . $solrScope;
+					}elseif (strcmp($field, 'format_category') == 0){
+						$field = 'format_category_' . $solrScope;
+					}elseif (strcmp($field, 'econtent_source') == 0){
+						$field = 'econtent_source_' . $solrScope;
+					}elseif (strcmp($field, 'econtent_protection_type') == 0){
+						$field = 'econtent_protection_type_' . $solrScope;
+					}elseif ((strcmp($field, 'collection') == 0) || (strcmp($field, 'collection_group') == 0)){
+						$field = 'collection_' . $solrScope;
+					}elseif ((strcmp($field, 'detailed_location') == 0) || (strcmp($field, 'detailed_location') == 0)){
+						$field = 'detailed_location_' . $solrScope;
+					}elseif ((strcmp($field, 'owning_location') == 0) || (strcmp($field, 'owning_location') == 0)){
+						$field = 'owning_location_' . $solrScope;
+					}elseif ((strcmp($field, 'owning_system') == 0) || (strcmp($field, 'owning_system') == 0)){
+						$field = 'owning_system_' . $solrScope;
+					}elseif ((strcmp($field, 'available_at') == 0) || (strcmp($field, 'available_at') == 0)){
+						$field = 'available_at_' . $solrScope;
+					}
+				}
+
+				if (isset($userLocation)){
+					if (strcmp($field, 'availability_toggle') == 0){
+						$field = 'availability_toggle_' . $userLocation->code;
+					}
+				}
+				if (isset($searchLocation)){
+					if ((strcmp($field, 'time_since_added') == 0) && $searchLocation->restrictSearchByLocation){
+						$field = 'local_time_since_added_' . $searchLocation->code;
+					}elseif (strcmp($field, 'availability_toggle') == 0){
+						$field = 'availability_toggle_' . $searchLocation->code;
+					}
+				}
+			}
+
+			$this->filterList[$field][] = $value;
+		}
+	}
+
+	/**
 	 * Initialise the object from the global
 	 *  search parameters in $_REQUEST.
 	 *
@@ -218,7 +311,7 @@ class SearchObject_Solr extends SearchObject_Base
 		$restored = $this->restoreSavedSearch(null, true, true);
 		if ($restored === true) {
 			return true;
-		} else if (PEAR_Singleton::isError($restored)) {
+		}elseif (PEAR_Singleton::isError($restored)){
 			return false;
 		}
 
@@ -845,8 +938,7 @@ class SearchObject_Solr extends SearchObject_Base
 	 * @access  public
 	 * @param   array   $ids        Record IDs to load
 	 */
-	public function setQueryIDs($ids)
-	{
+	public function setQueryIDs($ids){
 		$this->query = 'id:(' . implode(' OR ', $ids) . ')';
 	}
 
@@ -856,8 +948,7 @@ class SearchObject_Solr extends SearchObject_Base
 	 * @access  public
 	 * @param   string  $newQuery   Query string
 	 */
-	public function setQueryString($newQuery)
-	{
+	public function setQueryString($newQuery){
 		$this->query = $newQuery;
 	}
 
@@ -867,13 +958,14 @@ class SearchObject_Solr extends SearchObject_Base
 	 * @access  public
 	 * @param   string  $newSort   Sort string
 	 */
-	public function setFacetSortOrder($newSort)
-	{
+	public function setFacetSortOrder($newSort){
 		// As of Solr 1.4 valid values are:
 		// 'count' = relevancy ranked
 		// 'index' = index order, most likely alphabetical
 		// more info : http://wiki.apache.org/solr/SimpleFacetParameters#facet.sort
-		if ($newSort == 'count' || $newSort == 'index') $this->facetSort = $newSort;
+		if ($newSort == 'count' || $newSort == 'index'){
+			$this->facetSort = $newSort;
+		}
 	}
 
 	/**
@@ -885,8 +977,7 @@ class SearchObject_Solr extends SearchObject_Base
 	 * @access  public
 	 * @param   string  $prefix   Data for prefix
 	 */
-	public function addFacetPrefix($prefix)
-	{
+	public function addFacetPrefix($prefix){
 		$this->facetPrefix = $prefix;
 	}
 
@@ -897,20 +988,21 @@ class SearchObject_Solr extends SearchObject_Base
 	 * @access  public
 	 * @return  array     Spelling suggestion data arrays
 	 */
-	public function getSpellingSuggestions()
-	{
+	public function getSpellingSuggestions(){
 		$returnArray = array();
-		if (count($this->suggestions) == 0) return $returnArray;
+		if (count($this->suggestions) == 0){
+			return $returnArray;
+		}
 		$tokens = $this->spellingTokens($this->buildSpellingQuery());
 
-		foreach ($this->suggestions as $term => $details) {
+		foreach ($this->suggestions as $term => $details){
 			// Find out if our suggestion is part of a token
-			$inToken = false;
+			$inToken    = false;
 			$targetTerm = "";
-			foreach ($tokens as $token) {
+			foreach ($tokens as $token){
 				// TODO - Do we need stricter matching here?
 				//   Similar to that in replaceSearchTerm()?
-				if (stripos($token, $term) !== false) {
+				if (stripos($token, $term) !== false){
 					$inToken = true;
 					// We need to replace the whole token
 					$targetTerm = $token;
@@ -920,65 +1012,14 @@ class SearchObject_Solr extends SearchObject_Base
 			}
 			// If no tokens we found, just look
 			//    for the suggestion 'as is'
-			if ($targetTerm == "") {
-				$targetTerm = $term;
+			if ($targetTerm == ""){
+				$targetTerm  = $term;
 				$returnArray = $this->doSpellingReplace($term, $targetTerm, $inToken, $details, $returnArray);
 			}
 		}
 		return $returnArray;
 	}
 
-	/**
-	 * Process one instance of a spelling replacement and modify the return
-	 *   data structure with the details of what was done.
-	 *
-	 * @access  public
-	 * @param   string   $term        The actually term we're replacing
-	 * @param   string   $targetTerm  The term above, or the token it is inside
-	 * @param   boolean  $inToken     Flag for whether the token or term is used
-	 * @param   array    $details     The spelling suggestions
-	 * @param   array    $returnArray Return data structure so far
-	 * @return  array    $returnArray modified
-	 */
-	private function doSpellingReplace($term, $targetTerm, $inToken, $details, $returnArray)
-	{
-		global $configArray;
-
-		$returnArray[$targetTerm]['freq'] = $details['freq'];
-		foreach ($details['suggestions'] as $word => $freq) {
-			// If the suggested word is part of a token
-			if ($inToken) {
-				// We need to make sure we replace the whole token
-				$replacement = str_replace($term, $word, $targetTerm);
-			} else {
-				$replacement = $word;
-			}
-			//  Do we need to show the whole, modified query?
-			if ($configArray['Spelling']['phrase']) {
-				$label = $this->getDisplayQueryWithReplacedTerm($targetTerm, $replacement);
-			} else {
-				$label = $replacement;
-			}
-			// Basic spelling suggestion data
-			$returnArray[$targetTerm]['suggestions'][$label] = array(
-                'freq'        => $freq,
-                'replace_url' => $this->renderLinkWithReplacedTerm($targetTerm, $replacement)
-			);
-			// Only generate expansions if enabled in config
-			if ($configArray['Spelling']['expand']) {
-				// Parentheses differ for shingles
-				if (strstr($targetTerm, " ") !== false) {
-					$replacement = "(($targetTerm) OR ($replacement))";
-				} else {
-					$replacement = "($targetTerm OR $replacement)";
-				}
-				$returnArray[$targetTerm]['suggestions'][$label]['expand_url'] =
-				$this->renderLinkWithReplacedTerm($targetTerm, $replacement);
-			}
-		}
-
-		return $returnArray;
-	}
 
 	/**
 	 * Return a list of valid sort options -- overrides the base class with
@@ -1005,54 +1046,6 @@ class SearchObject_Solr extends SearchObject_Base
 			unset($sortOptions['callnumber_sort'] );
 		}
 		return $sortOptions;
-	}
-
-	/**
-	 * Return a url of the current search as an RSS feed.
-	 *
-	 * @access  public
-	 * @return  string    URL
-	 */
-	public function getRSSUrl()
-	{
-		// Stash our old data for a minute
-		$oldView = $this->view;
-		$oldPage = $this->page;
-		// Add the new view
-		$this->view = 'rss';
-		// Remove page number
-		$this->page = 1;
-		// Get the new url
-		$url = $this->renderSearchUrl();
-		// Restore the old data
-		$this->view = $oldView;
-		$this->page = $oldPage;
-		// Return the URL
-		return $url;
-	}
-
-	/**
-	 * Return a url of the current search as an Excel Spreadsheet.
-	 *
-	 * @access  public
-	 * @return  string    URL
-	 */
-	public function getExcelUrl()
-	{
-		// Stash our old data for a minute
-		$oldView = $this->view;
-		$oldPage = $this->page;
-		// Add the new view
-		$this->view = 'excel';
-		// Remove page number
-		$this->page = 1;
-		// Get the new url
-		$url = $this->renderSearchUrl();
-		// Restore the old data
-		$this->view = $oldView;
-		$this->page = $oldPage;
-		// Return the URL
-		return $url;
 	}
 
 	/**
@@ -1105,25 +1098,29 @@ class SearchObject_Solr extends SearchObject_Base
 	 * @access  protected
 	 * @return  string   Base URL
 	 */
-	protected function getBaseUrl()
-	{
-		// Base URL is different for author searches:
-		if ($this->searchType == 'author') {
-			if ($this->searchSubType == 'home')   return $this->serverUrl."/Author/Home?";
-			if ($this->searchSubType == 'search') return $this->serverUrl."/Author/Search?";
-		} else if ($this->searchType == 'newitem') {
-			return $this->serverUrl . '/Search/NewItem?';
-		} else if ($this->searchType == 'reserves') {
-			return $this->serverUrl . '/Search/Reserves?';
-		} else if ($this->searchType == 'favorites') {
-			return $this->serverUrl . '/MyAccount/Home?';
-		} else if ($this->searchType == 'list') {
-			return $this->serverUrl . '/MyAccount/MyList/' .
-			urlencode($_GET['id']) . '?';
+	protected function getBaseUrl(){
+		//todo: some of these cases are obsolete
+		switch ($this->searchType){
+			case 'newitem' :
+				return $this->serverUrl . '/Search/NewItem?';
+			case 'reserves' :
+				return $this->serverUrl . '/Search/Reserves?';
+			case 'favorites' :
+				return $this->serverUrl . '/MyAccount/Home?';
+			case 'list' :
+				return $this->serverUrl . '/MyAccount/MyList/' . urlencode($_GET['id']) . '?';
+			case 'author' :
+				// Base URL is different for author searches:
+				if ($this->searchSubType == 'home'){
+					return $this->serverUrl . "/Author/Home?";
+				}
+				if ($this->searchSubType == 'search'){
+					return $this->serverUrl . "/Author/Search?";
+				}
+			default :
+				// If none of the special cases were met, use the default from the parent:
+				return parent::getBaseUrl();
 		}
-
-		// If none of the special cases were met, use the default from the parent:
-		return parent::getBaseUrl();
 	}
 
 	protected $params;
@@ -1233,32 +1230,8 @@ class SearchObject_Solr extends SearchObject_Base
 	 * @access  public
 	 * @return  mixed       false if no error, error string otherwise.
 	 */
-	public function getIndexError()
-	{
-		return isset($this->indexResult['error']) ?
-		$this->indexResult['error'] : false;
-	}
-
-	/**
-	 * Load all recommendation settings from the relevant ini file.  Returns an
-	 * associative array where the key is the location of the recommendations (top
-	 * or side) and the value is the settings found in the file (which may be either
-	 * a single string or an array of strings).
-	 *
-	 * @access  protected
-	 * @return  array           associative: location (top/side) => search settings
-	 */
-	protected function getRecommendationSettings()
-	{
-		// Special hard-coded case for author module.  We should make this more
-		// flexible in the future!
-		// Marmot hard-coded case and use searches.ini and facets.ini instead.
-		/*if ($this->searchType == 'author') {
-		 return array('side' => array('SideFacets:Author'));
-		 }*/
-
-		// Use default case from parent class the rest of the time:
-		return parent::getRecommendationSettings();
+	public function getIndexError(){
+		return $this->indexResult['error'] ?? false;
 	}
 
 	/**
@@ -1972,17 +1945,15 @@ class SearchObject_Solr extends SearchObject_Base
 	 *                                              section's description will be
 	 *                                              favored.
 	 */
-	public function activateAllFacets($preferredSection = false)
-	{
-		foreach($this->allFacetSettings as $section => $values) {
-			foreach($values as $key => $value) {
+	public function activateAllFacets($preferredSection = false){
+		foreach ($this->allFacetSettings as $section => $values){
+			foreach ($values as $key => $value){
 				$this->addFacet($key, $value);
 			}
 		}
 
-		if ($preferredSection &&
-		is_array($this->allFacetSettings[$preferredSection])) {
-			foreach($this->allFacetSettings[$preferredSection] as $key => $value) {
+		if ($preferredSection && is_array($this->allFacetSettings[$preferredSection])){
+			foreach ($this->allFacetSettings[$preferredSection] as $key => $value){
 				$this->addFacet($key, $value);
 			}
 		}
@@ -1995,17 +1966,16 @@ class SearchObject_Solr extends SearchObject_Base
 	 * @param array|null $result Existing result set (null to do new search)
 	 * @return  string           XML document
 	 */
-	public function buildRSS($result = null)
-	{
+	public function buildRSS($result = null){
 		global $configArray;
 		// XML HTTP header
 		header('Content-type: text/xml', true);
 
 		// First, get the search results if none were provided
 		// (we'll go for 50 at a time)
-		if (is_null($result)) {
+		if (is_null($result)){
 			$this->limit = 50;
-			$result = $this->processSearch(false, false);
+			$result      = $this->processSearch(false, false);
 		}
 
 		$baseUrl = $configArray['Site']['url'];
@@ -2039,22 +2009,20 @@ class SearchObject_Solr extends SearchObject_Base
 
 		// On-screen display value for our search
 		if ($this->searchType == 'newitem') {
-			$lookfor = translate('New Items');
+			$lookFor = translate('New Items');
 		} elseif ($this->searchType == 'reserves') {
-			$lookfor = translate('Course Reserves');
+			$lookFor = translate('Course Reserves');
 		} else {
-			$lookfor = $this->displayQuery();
+			$lookFor = $this->displayQuery();
 		}
 		if (count($this->filterList) > 0) {
 			// TODO : better display of filters
-			$interface->assign('lookfor', $lookfor . " (" . translate('with filters') . ")");
+			$interface->assign('lookfor', $lookFor . " (" . translate('with filters') . ")");
 		} else {
-			$interface->assign('lookfor', $lookfor);
+			$interface->assign('lookfor', $lookFor);
 		}
 		// The full url to recreate this search
-		$interface->assign('searchUrl', $configArray['Site']['url']. $this->renderSearchUrl());
-		// Stub of a url for a records screen
-		$interface->assign('baseUrl',    $configArray['Site']['url']."/Record/");//TODO: update?
+		$interface->assign('searchUrl', $baseUrl . $this->renderSearchUrl());
 
 		$interface->assign('result', $result);
 		return $interface->fetch('Search/rss.tpl');
@@ -2064,20 +2032,19 @@ class SearchObject_Solr extends SearchObject_Base
 	 * Turn our results into an Excel document
 	 *
 	 * @access  public
-	 * @var  array      $result      Existing result set (null to do new search)
 	 * @return  string                  Excel document
+	 * @var  array $result Existing result set (null to do new search)
 	 */
-	public function buildExcel($result = null)
-	{
+	public function buildExcel($result = null){
 		// First, get the search results if none were provided
-		// (we'll go for 50 at a time)
-		if (is_null($result)) {
+		// (we'll go for 1000 at a time)
+		if (is_null($result)){
 			$this->limit = 1000;
-			$result = $this->processSearch(false, false);
+			$result      = $this->processSearch(false, false);
 		}
 
 		// Prepare the spreadsheet
-		ini_set('include_path', ini_get('include_path'.';/PHPExcel/Classes'));
+		ini_set('include_path', ini_get('include_path').';/PHPExcel/Classes');
 		include ROOT_DIR . '/PHPExcel.php';
 		include ROOT_DIR . '/PHPExcel/Writer/Excel2007.php';
 		$objPHPExcel = new PHPExcel();
@@ -2087,7 +2054,7 @@ class SearchObject_Solr extends SearchObject_Base
 		$objPHPExcel->getActiveSheet()->setTitle('Results');
 
 		//Add headers to the table
-		$sheet = $objPHPExcel->getActiveSheet();
+		$sheet  = $objPHPExcel->getActiveSheet();
 		$curRow = 1;
 		$curCol = 0;
 		$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Record #');
@@ -2099,12 +2066,11 @@ class SearchObject_Solr extends SearchObject_Base
 		$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Item Type');
 		$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Location');
 
-		$maxColumn = $curCol -1;
+		$maxColumn = $curCol - 1;
 
 		global $solrScope;
-		for ($i = 0; $i < count($result['response']['docs']); $i++) {
+		foreach ($result['response']['docs'] as $curDoc){
 			//Output the row to excel
-			$curDoc = $result['response']['docs'][$i];
 			$curRow++;
 			$curCol = 0;
 			//Output the row to excel
@@ -2130,7 +2096,7 @@ class SearchObject_Solr extends SearchObject_Base
 			$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $location);
 		}
 
-		for ($i = 0; $i < $maxColumn; $i++){
+		for ($i = 0;$i < $maxColumn;$i++){
 			$sheet->getColumnDimensionByColumn($i)->setAutoSize(true);
 		}
 
@@ -2174,8 +2140,7 @@ class SearchObject_Solr extends SearchObject_Base
 	 * @throws  object              PEAR Error
 	 * @return  string              The requested resource
 	 */
-	function searchForRecordIds($ids)
-	{
+	function searchForRecordIds($ids){
 		$this->indexResult = $this->indexEngine->searchForRecordIds($ids);
 	}
 

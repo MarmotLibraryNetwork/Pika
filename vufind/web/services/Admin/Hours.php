@@ -19,7 +19,7 @@
 
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
-require_once ROOT_DIR . '/Drivers/marmot_inc/LocationHours.php';
+require_once ROOT_DIR . '/sys/Location/LocationHours.php';
 
 class Hours extends ObjectEditor
 {

@@ -129,8 +129,6 @@ CREATE TABLE IF NOT EXISTS `library` (
   `subdomain` varchar(25) NOT NULL COMMENT 'The subdomain which can be used to access settings for the library',
   `displayName` varchar(50) NOT NULL COMMENT 'The name of the library which should be shown in titles.',
   `themeName` varchar(25) NOT NULL COMMENT 'The subdomain which can be used to access settings for the library',
-  `facetFile` varchar(15) NOT NULL COMMENT 'The name of the facet file which should be used while searching',
-  `defaultLibraryFacet` varchar(40) NOT NULL COMMENT 'A facet to apply during initial searches.  If left blank, no additional refinement will be done.',
   `showLibraryFacet` tinyint(4) NOT NULL DEFAULT '1' COMMENT 'Whether or not the user can see and use the library facet to change to another branch in their library system.',
   `showConsortiumFacet` tinyint(4) NOT NULL DEFAULT '0' COMMENT 'Whether or not the user can see and use the consortium facet to change to other library systems. ',
   `allowInBranchHolds` tinyint(4) NOT NULL DEFAULT '1' COMMENT 'Whether or not the user can place holds for their branch.  If this isn''t shown, they won''t be able to place holds for books at the location they are in.  If set to false, they won''t be able to place any holds. ',
@@ -171,10 +169,8 @@ CREATE TABLE IF NOT EXISTS `library` (
   `allowProfileUpdates` tinyint(4) NOT NULL DEFAULT '1',
   `allowRenewals` tinyint(4) NOT NULL DEFAULT '1',
   `allowFreezeHolds` tinyint(4) NOT NULL DEFAULT '0',
-  `showSeriesAsTab` tinyint(4) NOT NULL DEFAULT '0',
   `showItsHere` tinyint(4) NOT NULL DEFAULT '1',
   `holdDisclaimer` mediumtext,
-  `boopsieLink` varchar(150) NOT NULL,
   `enableAlphaBrowse` tinyint(4) DEFAULT '1',
   `showHoldCancelDate` tinyint(4) NOT NULL DEFAULT '0',
   `enableProspectorIntegration` tinyint(4) NOT NULL DEFAULT '0',
@@ -245,7 +241,7 @@ CREATE TABLE IF NOT EXISTS `location` (
   `scope` smallint(6) NOT NULL COMMENT 'The scope for the system in Sierra to refine holdings to the branch.  If there is no scope defined for the branch, this can be set to 0.',
   `useScope` tinyint(4) NOT NULL COMMENT 'Whether or not the scope should be used when displaying holdings.  ',
   `defaultLocationFacet` varchar(40) NOT NULL COMMENT 'A facet to apply during initial searches.  If left blank, no additional refinement will be done.',
-  `facetFile` varchar(15) NOT NULL DEFAULT 'default' COMMENT 'The name of the facet file which should be used while searching use default to not override the file',
+#   `facetFile` varchar(15) NOT NULL DEFAULT 'default' COMMENT 'The name of the facet file which should be used while searching use default to not override the file',
   `showHoldButton` tinyint(4) NOT NULL COMMENT 'Whether or not the hold button is displayed so patrons can place holds on items',
   `showAmazonReviews` tinyint(4) NOT NULL COMMENT 'Whether or not reviews from Amazon are displayed on the full record page.',
   `showStandardReviews` tinyint(4) NOT NULL COMMENT 'Whether or not reviews from Content Cafe/Syndetics are displayed on the full record page.',
@@ -655,42 +651,6 @@ CREATE TABLE IF NOT EXISTS `user_list` (
   PRIMARY KEY (`id`),
   KEY `user_id` (`user_id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1702 ;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `user_reading_history`
---
-
-CREATE TABLE IF NOT EXISTS `user_reading_history` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `userId` int(11) NOT NULL COMMENT 'The id of the user who checked out the item',
-  `resourceId` int(11) NOT NULL COMMENT 'The record id of the item that was checked out',
-  `lastCheckoutDate` date NOT NULL COMMENT 'The first day we detected that the item was checked out to the patron',
-  `firstCheckoutDate` date NOT NULL COMMENT 'The last day we detected the item was checked out to the patron',
-  `daysCheckedOut` int(11) NOT NULL COMMENT 'The total number of days the item was checked out even if it was checked out multiple times.',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `user_resource` (`userId`,`resourceId`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COMMENT='The reading history for patrons' AUTO_INCREMENT=3 ;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `user_resource`
---
-
-CREATE TABLE IF NOT EXISTS `user_resource` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `user_id` int(11) NOT NULL,
-  `resource_id` int(11) NOT NULL,
-  `list_id` int(11) DEFAULT NULL,
-  `notes` mediumtext,
-  `saved` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  KEY `resource_id` (`resource_id`),
-  KEY `user_id` (`user_id`),
-  KEY `list_id` (`list_id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=11481 ;
 
 -- --------------------------------------------------------
 

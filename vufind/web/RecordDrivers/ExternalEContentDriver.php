@@ -187,30 +187,6 @@ class ExternalEContentDriver extends BaseEContentDriver{
 		return 'ExternalEContent';
 	}
 
-	function getFormats(){
-		global $configArray;
-		//TODO: use indexing profile settings
-		$formats = array();
-		//Get the format based on the iType
-		$itemFields = $this->getMarcRecord()->getFields('989');
-		/** @var File_MARC_Data_Field[] $itemFields */
-		foreach ($itemFields as $itemField){
-			$locationCode = trim($itemField->getSubfield('d') != null ? $itemField->getSubfield('d')->getData() : '');
-			$eContentData = trim($itemField->getSubfield('w') != null ? $itemField->getSubfield('w')->getData() : '');
-			if ($eContentData && strpos($eContentData, ':') > 0){
-				$eContentFieldData = explode(':', $eContentData);
-				$protectionType = trim($eContentFieldData[1]);
-				if ($this->isValidProtectionType($protectionType)){
-					if ($this->isValidForUser($locationCode, $eContentFieldData)){
-						$iTypeField = $itemField->getSubfield($configArray['Reindex']['iTypeSubfield'])->getData();
-						$format = mapValue('econtent_itype_format', $iTypeField);
-						$formats[$format] = $format;
-					}
-				}
-			}
-		}
-		return $formats;
-	}
 	//TODO: doesn't get used, should it?
 	function getEContentFormat($fileOrUrl, $iType){
 		return mapValue('econtent_itype_format', $iType);

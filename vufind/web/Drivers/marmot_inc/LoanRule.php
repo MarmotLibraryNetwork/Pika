@@ -18,10 +18,9 @@
  */
 
 /**
- * Table Definition for library
+ * Table Definition for Loan Rules
  */
 require_once 'DB/DataObject.php';
-
 
 class LoanRule extends DB_DataObject {
 	public $__table = 'loan_rules';   // table name
@@ -56,17 +55,28 @@ class LoanRule extends DB_DataObject {
 
 	function insert(){
 		parent::insert();
-		/** @var Memcache $memCache */
-		global $memCache;
-		global $instanceName;
-		$memCache->delete($instanceName . '_loan_rules');
+//		/** @var Memcache $memCache */
+//		global $memCache;
+//		global $instanceName;
+//		$memCache->delete($instanceName . '_loan_rules');
 	}
 
 	function update($dataObject = false){
 		parent::update($dataObject);
-		/** @var Memcache $memCache */
-		global $memCache;
-		global $instanceName;
-		$memCache->delete($instanceName . '_loan_rules');
+//		/** @var Memcache $memCache */
+//		global $memCache;
+//		global $instanceName;
+//		$memCache->delete($instanceName . '_loan_rules');
 	}
+
+	/**
+	 * Adds a header for this object in the edit form pages
+	 * @return string|null
+	 */
+	function label(){
+		if (!empty($this->name)){
+			return $this->name;
+		}
+	}
+
 }

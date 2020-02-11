@@ -1,8 +1,7 @@
 VuFind.Lists = (function(){
 	return {
 		addToHomePage: function(listId){
-			VuFind.Account.ajaxLightbox('/MyAccount/AJAX?method=getAddBrowseCategoryFromListForm&listId=' + listId, true);
-			return false;
+			return VuFind.Account.ajaxLightbox('/MyAccount/AJAX?method=getAddBrowseCategoryFromListForm&listId=' + listId, true);
 		},
 
 		editListAction: function (){
@@ -10,14 +9,6 @@ VuFind.Lists = (function(){
 			$('#listEditControls,#FavSave').show();
 			return false;
 		},
-		//editListAction: function (){
-		//	$('#listDescription').hide();
-		//	$('#listTitle').hide();
-		//	$('#listEditControls').show();
-		//	$('#FavEdit').hide();
-		//	$('#FavSave').show();
-		//	return false;
-		//},
 
 		submitListForm: function(action){
 			$('#myListActionHead').val(action);
@@ -52,28 +43,19 @@ VuFind.Lists = (function(){
 		},
 
 		emailListAction: function (listId) {
-			var urlToDisplay = '/MyAccount/AJAX';
-			VuFind.loadingMessage();
-			$.getJSON(urlToDisplay, {
-					method  : 'getEmailMyListForm'
-					,listId : listId
-				},
-					function(data){
-						VuFind.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
-			});
-			return false;
+			return VuFind.Account.ajaxLightbox('/MyAccount/AJAX?method=getEmailMyListForm&listId=' + listId, false);
 		},
 
 		SendMyListEmail: function () {
 			var url = "/MyAccount/AJAX";
-
-			$.getJSON(url,
+					$.getJSON(url,
 				{ // form inputs passed as data
 					listId   : $('#emailListForm input[name="listId"]').val()
 					,to      : $('#emailListForm input[name="to"]').val()
 					,from    : $('#emailListForm input[name="from"]').val()
 					,message : $('#emailListForm textarea[name="message"]').val()
-					,method  : 'sendMyListEmail' // serverside method
+					,method  : 'sendMyListEmail' // server-side method
+					,'g-recaptcha-response' : (typeof grecaptcha !== 'undefined') ? grecaptcha.getResponse() : false
 				},
 				function(data) {
 					if (data.result) {
@@ -87,8 +69,6 @@ VuFind.Lists = (function(){
 
 		citeListAction: function (id) {
 			return VuFind.Account.ajaxLightbox('/MyAccount/AJAX?method=getCitationFormatsForm&listId=' + id, false);
-			//return false;
-			//TODO: ajax call not working
 		},
 
 		processCiteListForm: function(){
@@ -97,7 +77,6 @@ VuFind.Lists = (function(){
 
 		batchAddToListAction: function (id){
 			return VuFind.Account.ajaxLightbox('/MyAccount/AJAX/?method=getBulkAddToListForm&listId=' + id);
-			//return false;
 		},
 
 		processBulkAddForm: function(){

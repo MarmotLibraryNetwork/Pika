@@ -26,7 +26,7 @@
  * Time: 7:05 PM
  */
 require_once ROOT_DIR . '/services/Admin/Admin.php';
-require_once ROOT_DIR . '/sys/ArchivePrivateCollection.php';
+require_once ROOT_DIR . '/sys/Archive/ArchivePrivateCollection.php';
 class Admin_ArchivePrivateCollections extends Admin_Admin{
 
 	function launch() {

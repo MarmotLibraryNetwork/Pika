@@ -19,7 +19,8 @@
 
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
-require_once ROOT_DIR . '/services/MyResearch/lib/FavoriteHandler.php';
+require_once ROOT_DIR . '/sys/LocalEnrichment/FavoriteHandler.php';
+require_once ROOT_DIR . '/sys/LocalEnrichment/CitationBuilder.php';
 
 class CiteList extends Action {
 	function launch(){

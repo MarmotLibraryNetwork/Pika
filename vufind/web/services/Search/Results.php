@@ -63,7 +63,7 @@ class Search_Results extends Action {
 
 
 		// Include Search Engine Class
-		require_once ROOT_DIR . '/sys/Solr.php';
+		require_once ROOT_DIR . '/sys/Search/Solr.php';
 		$timer->logTime('Include search engine');
 		$memoryWatcher->logMemory('Include search engine');
 
@@ -452,7 +452,7 @@ class Search_Results extends Action {
 		$interface->assign('exploreMoreSearchTerm', $exploreMoreSearchTerm);
 
 		if ($configArray['Statistics']['enabled'] && isset( $_GET['lookfor']) && !is_array($_GET['lookfor'])) {
-			require_once(ROOT_DIR . '/Drivers/marmot_inc/SearchStatNew.php');
+			require_once ROOT_DIR . '/sys/Search/SearchStatNew.php';
 			$searchStat = new SearchStatNew();
 			$searchStat->saveSearch( strip_tags($_GET['lookfor']),  strip_tags(isset($_GET['type']) ? $_GET['type'] : (isset($_GET['basicType']) ? (is_array($_GET['basicType']) ? reset($_GET['basicType']) : $_GET['basicType']) : 'Keyword')), $searchObject->getResultTotal());
 		}

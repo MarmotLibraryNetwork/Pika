@@ -45,7 +45,7 @@ global $configArray;
 $configArray = readConfig();
 // config required for solr
 
-require_once ROOT_DIR . '/sys/Solr.php';
+require_once ROOT_DIR . '/sys/Search/Solr.php';
 $solr = new Solr('http:opac.marmot.org:8080/solr', 'grouped');
 
 

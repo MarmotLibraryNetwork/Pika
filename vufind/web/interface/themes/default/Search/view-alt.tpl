@@ -1,3 +1,4 @@
+{*TODO: confirm this is obsolete
 <div id="bd">
   <div id="yui-main" class="content">
     <div class="yui-b first contentbox">
@@ -15,4 +16,4 @@
       </div>
     </div>
   </div>
-</div>
+</div>*}

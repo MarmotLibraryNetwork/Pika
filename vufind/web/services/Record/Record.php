@@ -18,39 +18,20 @@
  */
 
 require_once ROOT_DIR  . '/Action.php';
-
-require_once ROOT_DIR  . '/sys/Language.php';
-
 require_once ROOT_DIR  . '/RecordDrivers/Factory.php';
-
 require_once ROOT_DIR . '/services/SourceAndId.php';
 
-abstract class Record_Record extends Action
-{
+abstract class Record_Record extends Action {
 	/** @var SourceAndId $sourceAndId */
 	public $sourceAndId;
 
 	/** @var MarcRecord|HooplaRecordDriver $recordDriver */
 	protected $recordDriver;
 
-	/*var File_MARC_Record $marcRecord */
-	public $marcRecord;
-
-//	public $record;
-//	public $similarTitles;
-
-	public $isbn;
-//	public $issn;
-//	public $upc;
-
-//	public $cacheId;
-
 	function __construct($record_id = null){
 		global $interface;
 		global $configArray;
 		global $timer;
-
-//		$interface->assign('page_body_style', 'sidebar_left');
 
 		//Load basic information needed in subclasses
 		$this->sourceAndId = new SourceAndId(empty($record_id) ? $_GET['id'] : $record_id);
@@ -72,7 +53,6 @@ abstract class Record_Record extends Action
 
 		//Do actions needed if this is the main action.
 
-		//$interface->caching = 1;
 		if (substr($this->sourceAndId->getRecordId(), 0, 1) == '.'){
 			$interface->assign('shortId', substr($this->sourceAndId->getRecordId(), 1));
 		}else{
@@ -86,17 +66,11 @@ abstract class Record_Record extends Action
 		$interface->assign('lastsearch', isset($_SESSION['lastSearchURL']) ? $_SESSION['lastSearchURL'] : false);
 		//TODO camel case lastsearch
 
-		$this->cacheId = 'Record|' . $_GET['id'] . '|' . get_class($this);
-
 		// Send down text for inclusion in breadcrumbs
 		$interface->assign('breadcrumbText', $this->recordDriver->getBreadcrumb());
 
 		// Send down legal export formats (if any):
 		$interface->assign('exportFormats', $this->recordDriver->getExportFormats());
-
-		// Set AddThis User
-		$interface->assign('addThis', isset($configArray['AddThis']['key']) ?
-			$configArray['AddThis']['key'] : false);
 
 		//Get Next/Previous Links
 		$searchSource = isset($_REQUEST['searchSource']) ? $_REQUEST['searchSource'] : 'local';
@@ -104,13 +78,6 @@ abstract class Record_Record extends Action
 		$searchObject->init($searchSource);
 		$searchObject->getNextPrevLinks();
 
-	}
-
-	/**
-	 * Record a record hit to the statistics index when stat tracking is enabled;
-	 * this is called by the Home action.
-	 */
-	public function recordHit(){
 	}
 
 	/**
@@ -124,22 +91,35 @@ abstract class Record_Record extends Action
 			global $interface;
 
 			$recordId = $this->sourceAndId->getRecordId();
-			if ($configArray['Catalog']['ils'] == 'Millennium' || $configArray['Catalog']['ils'] == 'Sierra'){
-				$classicId = substr($recordId, 1, strlen($recordId) - 2);
-				$interface->assign('classicId', $classicId);
-				$millenniumScope = $interface->getVariable('millenniumScope');
-				if (isset($configArray['Catalog']['linking_url'])){
-					$interface->assign('classicUrl', $configArray['Catalog']['linking_url'] . "/record=$classicId&amp;searchscope={$millenniumScope}");
-				}
+			switch ($configArray['Catalog']['ils']){
+				case 'Sierra':
+					$catalogConnection  = CatalogFactory::getCatalogConnectionInstance(); // This will use the $activeRecordIndexingProfile to get the catalog connector
+					$classicOpacBaseURL = $catalogConnection->accountProfile->vendorOpacUrl;
+					if (!empty($classicOpacBaseURL)){
+						$classicId = substr($recordId, 1, strlen($recordId) - 2);
+						$interface->assign('classicId', $classicId);
+						global $searchSource;
+						$searchLocation = Location::getSearchLocation($searchSource);
+						if (!empty($searchLocation->scope)){
+							$sierraOpacScope = $searchLocation->scope;
+						}else{
+							$searchLibrary   = Library::getSearchLibrary($searchSource);
+							$sierraOpacScope = $searchLibrary ? $searchLibrary->scope : (empty($configArray['OPAC']['defaultScope']) ? '93' : $configArray['OPAC']['defaultScope']);
+						}
+						$interface->assign('classicUrl', $classicOpacBaseURL . "/record=$classicId&amp;searchscope={$sierraOpacScope}");
+					}
 
-			}elseif ($configArray['Catalog']['ils'] == 'Koha'){
-				$interface->assign('classicId', $recordId);
-				$interface->assign('classicUrl', $configArray['Catalog']['url'] . '/cgi-bin/koha/opac-detail.pl?biblionumber=' . $recordId);
-				$interface->assign('staffClientUrl', $configArray['Catalog']['staffClientUrl'] . '/cgi-bin/koha/catalogue/detail.pl?biblionumber=' . $recordId);
-			}elseif ($configArray['Catalog']['ils'] == 'CarlX'){
-				$shortId = str_replace('CARL', '', $recordId);
-				$shortId = ltrim($shortId, '0');
-				$interface->assign('staffClientUrl', $configArray['Catalog']['staffClientUrl'] . '/Items/' . $shortId);
+					break;
+				case 'Koha':
+					$interface->assign('classicId', $recordId);
+					$interface->assign('classicUrl', $configArray['Catalog']['url'] . '/cgi-bin/koha/opac-detail.pl?biblionumber=' . $recordId);
+					$interface->assign('staffClientUrl', $configArray['Catalog']['staffClientUrl'] . '/cgi-bin/koha/catalogue/detail.pl?biblionumber=' . $recordId);
+					break;
+				case 'CarlX':
+					$shortId = str_replace('CARL', '', $recordId);
+					$shortId = ltrim($shortId, '0');
+					$interface->assign('staffClientUrl', $configArray['Catalog']['staffClientUrl'] . '/Items/' . $shortId);
+					break;
 			}
 		}
 	}

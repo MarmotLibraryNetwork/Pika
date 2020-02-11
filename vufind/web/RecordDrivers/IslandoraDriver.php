@@ -843,6 +843,7 @@ abstract class IslandoraDriver extends RecordInterface {
 		}
 
 		if ($useDefault){
+			require_once ROOT_DIR . '/sys/Library/LibraryArchiveMoreDetails.php';
 			/** @var LibraryArchiveMoreDetails[] $defaultDetailsFilters */
 			$defaultDetailsFilters = LibraryArchiveMoreDetails::getDefaultOptions($library->libraryId);
 //			$moreDetailsFilters = RecordInterface::getDefaultMoreDetailsOptions();
@@ -915,7 +916,7 @@ abstract class IslandoraDriver extends RecordInterface {
 	 */
 	public function getAllSubjectHeadings($includeTitleAsSubject = true, $limit = 0){
 		if ($this->subjectHeadings == null){
-			require_once ROOT_DIR . '/sys/ArchiveSubject.php';
+			require_once ROOT_DIR . '/sys/Archive/ArchiveSubject.php';
 			$archiveSubjects    = new ArchiveSubject();
 			$subjectsToIgnore   = array();
 			$subjectsToRestrict = array();
@@ -1046,17 +1047,17 @@ abstract class IslandoraDriver extends RecordInterface {
 		if ($this->subCollections == null){
 			$this->subCollections = array();
 			// Include Search Engine Class
-			require_once ROOT_DIR . '/sys/Solr.php';
+			require_once ROOT_DIR . '/sys/Search/Solr.php';
 
 			// Initialise from the current search globals
 			/** @var SearchObject_Islandora $searchObject */
 			$searchObject = SearchObjectFactory::initSearchObject('Islandora');
 			$searchObject->init();
 			$searchObject->setLimit(100);
-			$searchObject->setSearchTerms(array(
+			$searchObject->setSearchTerms([
 				'lookfor' => 'RELS_EXT_isMemberOfCollection_uri_mt:"info:fedora/' . $this->getUniqueID() . '" AND RELS_EXT_hasModel_uri_mt:"info:fedora/islandora:collectionCModel"',
-				'index' => 'IslandoraKeyword'
-			));
+				'index'   => 'IslandoraKeyword'
+			]);
 
 			$searchObject->clearHiddenFilters();
 			$searchObject->addHiddenFilter('!RELS_EXT_isViewableByRole_literal_ms', "administrator");
@@ -1593,7 +1594,7 @@ abstract class IslandoraDriver extends RecordInterface {
 				unset($searchObject);
 			}
 			// Include Search Engine Class
-			require_once ROOT_DIR . '/sys/Solr.php';
+			require_once ROOT_DIR . '/sys/Search/Solr.php';
 
 			// Initialise from the current search globals
 			/** @var SearchObject_Islandora $searchObject */
@@ -2218,7 +2219,7 @@ abstract class IslandoraDriver extends RecordInterface {
 			if ($link['type'] == 'wikipedia'){
 				global $library;
 
-				require_once ROOT_DIR . '/sys/WikipediaParser.php';
+				require_once ROOT_DIR . '/sys/ExternalEnrichment/WikipediaParser.php';
 				$wikipediaParser = new WikipediaParser('en');
 
 				//Transform from a regular wikipedia link to an api link
@@ -2916,7 +2917,7 @@ abstract class IslandoraDriver extends RecordInterface {
 			$this->pidsOfChildContainers = array();
 
 			// Include Search Engine Class
-			require_once ROOT_DIR . '/sys/Solr.php';
+			require_once ROOT_DIR . '/sys/Search/Solr.php';
 
 			// Initialise from the current search globals
 			/** @var SearchObject_Islandora $searchObject */
@@ -2960,7 +2961,7 @@ abstract class IslandoraDriver extends RecordInterface {
 		if ($this->childObjects == null){
 			$this->childObjects = array();
 			// Include Search Engine Class
-			require_once ROOT_DIR . '/sys/Solr.php';
+			require_once ROOT_DIR . '/sys/Search/Solr.php';
 
 			// Initialise from the current search globals
 			/** @var SearchObject_Islandora $searchObject */
@@ -3014,7 +3015,7 @@ abstract class IslandoraDriver extends RecordInterface {
 
 	public function getRandomObject() {
 		// Include Search Engine Class
-		require_once ROOT_DIR . '/sys/Solr.php';
+		require_once ROOT_DIR . '/sys/Search/Solr.php';
 
 		// Initialise from the current search globals
 		/** @var SearchObject_Islandora $searchObject */
@@ -3125,7 +3126,7 @@ abstract class IslandoraDriver extends RecordInterface {
 			$accessLimits = $this->getModsValue('pikaAccessLimits', 'marmot');
 			if ($accessLimits == 'all') {
 				//No restrictions needed, don't check the parent collections
-			}else if ($accessLimits == 'default' || $accessLimits == null) {
+			}elseif ($accessLimits == 'default' || $accessLimits == null) {
 				$parentCollections = $this->getRelatedCollections();
 				foreach ($parentCollections as $collection) {
 					$collectionDriver = $collection['driver'];

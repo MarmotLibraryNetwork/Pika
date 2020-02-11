@@ -33,7 +33,8 @@ class IndexingProfile extends DB_DataObject{
 	public $__table = 'indexing_profiles';    // table name
 
 	public $id;
-	public $name;
+	public $name; //TODO: refactor to display name; the hard part is in the java, switching those things to use the sourceName
+	public $sourceName;
 	public $marcPath;
 	public $marcEncoding;
 	public $filenamesToInclude;
@@ -43,7 +44,7 @@ class IndexingProfile extends DB_DataObject{
 	public $groupingClass;
 	public $indexingClass;
 	public $recordDriver;
-	public $catalogDriver;
+	public $patronDriver;
 	public $recordUrlComponent;
 	public $formatSource;
 	public $specifiedFormat;
@@ -106,17 +107,16 @@ class IndexingProfile extends DB_DataObject{
 	public $formatDeterminationMethod;
 	public $materialTypesToIgnore;
 
-	function getObjectStructure(){
+	static function getObjectStructure(){
+		global $configArray;
 		$translationMapStructure = TranslationMap::getObjectStructure();
 		unset($translationMapStructure['indexingProfileId']);
-
-		$sierraMappingStructure = SierraExportFieldMapping::getObjectStructure();
-		unset($sierraMappingStructure['indexingProfileId']);
 
 		//Sections that are set open by default allow the javascript form validator to check that required fields are in fact filled in.
 		$structure = array(
 			'id'                         => array('property'=>'id',                           'type'=>'label',  'label'=>'Id', 'description'=>'The unique id within the database'),
-			'name'                       => array('property' => 'name',                       'type' => 'text', 'label' => 'Name', 'maxLength' => 50, 'description' => 'A name for this indexing profile', 'required' => true),
+			'name'                       => array('property' => 'name',                       'type' => 'text', 'label' => 'Display Name', 'maxLength' => 50, 'description' => 'The display name for this indexing profile', 'required' => true),
+			'sourceName'                 => array('property' => 'sourceName',                 'type' => 'text', 'label' => 'Name', 'maxLength' => 50, 'description' => 'The source name of this indexing profile to use internally. eg. for specifying the record source', 'required' => true),
 			'recordUrlComponent'         => array('property' => 'recordUrlComponent',         'type' => 'text', 'label' => 'Record URL Component', 'maxLength' => 50, 'description' => 'The Module to use within the URL', 'required' => true, 'default' => 'Record', 'serverValidation' => 'validateRecordUrlComponent'),
 
 			'serverFileSection' => array('property'=>'serverFileSection', 'type' => 'section', 'label' =>'MARC File Settings ', 'hideInLists' => true, 'open' => true,
@@ -139,8 +139,8 @@ class IndexingProfile extends DB_DataObject{
 			                                     'helpLink' => '', 'properties' => array(
 					'groupingClass' => array('property' => 'groupingClass', 'type' => 'text', 'label' => 'Grouping Class', 'maxLength' => 50, 'description' => 'The class to use while grouping the records', 'required' => true, 'default' => 'MarcRecordGrouper'),
 					'indexingClass' => array('property' => 'indexingClass', 'type' => 'text', 'label' => 'Indexing Class', 'maxLength' => 50, 'description' => 'The class to use while indexing the records', 'required' => true, 'default' => 'IlsRecord'),
-					'recordDriver'  => array('property' => 'recordDriver', 'type' => 'text', 'label' => 'Record Driver', 'maxLength' => 50, 'description' => 'The record driver to use while displaying information in Pika', 'required' => true, 'default' => 'MarcRecord'),
-					'catalogDriver' => array('property' => 'catalogDriver', 'type' => 'text', 'label' => 'Catalog Driver', 'maxLength' => 50, 'description' => 'The catalog driver to use for ILS integration', 'required' => true, 'default' => 'DriverInterface'),
+					'recordDriver'  => array('property' => 'recordDriver',  'type' => 'text', 'label' => 'Record Driver', 'maxLength' => 50, 'description' => 'The record driver to use while displaying information in Pika', 'required' => true, 'default' => 'MarcRecord'),
+					'patronDriver'  => array('property' => 'patronDriver',  'type' => 'text', 'label' => 'Patron Driver', 'maxLength' => 50, 'description' => 'The patron driver to use for ILS or eContent integration', /*'required' => true,*/ 'default' => 'DriverInterface'),
 				)),
 			//TODO: refactor catalogDriver to circulationSystemDriver
 			//TODO: this would be the hook in to tie a indexing profile to eContent driver
@@ -282,7 +282,12 @@ class IndexingProfile extends DB_DataObject{
 				'canEdit'       => false,
 			),
 
-			'sierraFieldMappings' => array(
+		);
+
+		if ($configArray['Catalog']['ils'] == 'Sierra'){
+			$sierraMappingStructure = SierraExportFieldMapping::getObjectStructure();
+			unset($sierraMappingStructure['indexingProfileId']);
+			$structure['sierraFieldMappings'] = array(
 				'property'      => 'sierraFieldMappings',
 				'type'          => 'oneToMany',
 				'label'         => 'Sierra API Item Field Mappings (Sierra Systems only)',
@@ -295,8 +300,8 @@ class IndexingProfile extends DB_DataObject{
 				'storeDb'       => true,
 				'allowEdit'     => true,
 				'canEdit'       => false,
-			),
-		);
+			);
+		}
 		return $structure;
 	}
 
@@ -572,6 +577,27 @@ class IndexingProfile extends DB_DataObject{
 			$indexingProfiles[$indexingProfile->name] = clone($indexingProfile);
 		}
 		return $indexingProfiles;
+	}
+
+	static public function getAllIndexingProfileNames(){
+		$indexingProfiles = [];
+		$indexingProfile  = new IndexingProfile();
+		$indexingProfile->orderBy('name');
+		$indexingProfile->find();
+		while ($indexingProfile->fetch()){
+			$indexingProfiles[$indexingProfile->id] = $indexingProfile->name;
+		}
+		return $indexingProfiles;
+	}
+
+	/**
+	 * Adds a header for this object in the edit form pages
+	 * @return string|null
+	 */
+	function label(){
+		if (!empty($this->name)){
+			return $this->name;
+		}
 	}
 
 }

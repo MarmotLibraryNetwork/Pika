@@ -329,6 +329,7 @@ class OverDrive_AJAX extends AJAXHandler {
 			$interface->assign('problem', $_REQUEST['problem']);
 			$interface->assign('name', $name);
 			$interface->assign('email', $patronEmail);
+			$interface->assign('deviceName', get_device_name()); // footer & eContent support email
 
 			$body        = $interface->fetch('Help/eContentSupportEmail.tpl');
 			$emailResult = $mail->send($to, $sendingAddress, $subject, $body, $patronEmail);

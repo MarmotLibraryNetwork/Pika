@@ -722,6 +722,7 @@ class Archive_AJAX extends AJAXHandler {
 		}
 		$timer->logTime("Loaded Ebsco options");
 
+		require_once ROOT_DIR . '/sys/Archive/ArchiveExploreMoreBar.php';
 		global $library;
 		$exploreMoreSettings = $library->exploreMoreBar;
 		if (empty($exploreMoreSettings)){

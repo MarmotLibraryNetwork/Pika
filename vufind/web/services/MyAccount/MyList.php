@@ -17,8 +17,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-require_once ROOT_DIR . '/Action.php';
-require_once ROOT_DIR . '/services/MyResearch/lib/FavoriteHandler.php';
+require_once ROOT_DIR . '/sys/LocalEnrichment/FavoriteHandler.php';
 require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
 
 /**

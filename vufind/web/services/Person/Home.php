@@ -19,12 +19,17 @@
 
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/RecordDrivers/Factory.php';
+require_once ROOT_DIR . '/sys/Search/SearchEntry.php';
 require_once ROOT_DIR . '/sys/Genealogy/Person.php';
 
-class Person_Home extends Action
-{
-	function __construct($record_id = null)
-	{
+class Person_Home extends Action {
+
+	private $id;
+	private $db;
+	private $recordDriver;
+
+
+	function __construct($record_id = null){
 		global $interface;
 		global $configArray;
 		global $timer;
@@ -48,7 +53,7 @@ class Person_Home extends Action
 
 		// Setup Search Engine Connection
 		// Include Search Engine Class
-		require_once ROOT_DIR . '/sys/' . $configArray['Genealogy']['engine'] . '.php';
+		require_once ROOT_DIR . '/sys/Search/' . $configArray['Genealogy']['engine'] . '.php';
 		$timer->logTime('Include search engine');
 
 		// Initialise from the current search globals
@@ -56,7 +61,7 @@ class Person_Home extends Action
 		$this->db->init($searchSource);
 
 		// Retrieve Full Marc Record
-		if (!($record = $this->db->getRecord('person' . $this->id))) {
+		if (!($record = $this->db->getRecord('person' . $this->id))){
 			PEAR_Singleton::raiseError(new PEAR_Error('Record Does Not Exist'));
 		}
 		$this->record = $record;
@@ -73,23 +78,23 @@ class Person_Home extends Action
 		$interface->assign('recordDriver', $this->recordDriver);
 		$timer->logTime('Initialized the Record Driver');
 
-		$marriages = array();
+		$marriages       = array();
 		$personMarriages = $person->marriages;
 		if (isset($personMarriages)){
 			foreach ($personMarriages as $marriage){
-				$marriageArray = (array)$marriage;
+				$marriageArray                          = (array)$marriage;
 				$marriageArray['formattedMarriageDate'] = $person->formatPartialDate($marriage->marriageDateDay, $marriage->marriageDateMonth, $marriage->marriageDateYear);
-				$marriages[] = $marriageArray;
+				$marriages[]                            = $marriageArray;
 			}
 		}
 		$interface->assign('marriages', $marriages);
-		$obituaries = array();
-		$personObituaries =$person->obituaries;
+		$obituaries       = array();
+		$personObituaries = $person->obituaries;
 		if (isset($personObituaries)){
 			foreach ($personObituaries as $obit){
-				$obitArray = (array)$obit;
+				$obitArray                      = (array)$obit;
 				$obitArray['formattedObitDate'] = $person->formatPartialDate($obit->dateDay, $obit->dateMonth, $obit->dateYear);
-				$obituaries[] = $obitArray;
+				$obituaries[]                   = $obitArray;
 			}
 		}
 		$interface->assign('obituaries', $obituaries);
@@ -99,7 +104,7 @@ class Person_Home extends Action
 
 		// Retrieve User Search History
 		$interface->assign('lastsearch', isset($_SESSION['lastSearchURL']) ?
-		$_SESSION['lastSearchURL'] : false);
+			$_SESSION['lastSearchURL'] : false);
 
 		// Send down text for inclusion in breadcrumbs
 		$interface->assign('breadcrumbText', $this->recordDriver->getBreadcrumb());
@@ -113,16 +118,16 @@ class Person_Home extends Action
 		//Setup next and previous links based on the search results.
 		if (isset($_REQUEST['searchId'])){
 			//rerun the search
-			$s = new SearchEntry();
-			$s->id = $_REQUEST['searchId'];
-			$interface->assign('searchId', $_REQUEST['searchId']);
+			$s           = new SearchEntry();
+			$s->id       = $_REQUEST['searchId'];
 			$currentPage = isset($_REQUEST['page']) ? $_REQUEST['page'] : 1;
+			$interface->assign('searchId', $_REQUEST['searchId']);
 			$interface->assign('page', $currentPage);
 
 			$s->find();
 			if ($s->N > 0){
 				$s->fetch();
-				$minSO = unserialize($s->search_object);
+				$minSO        = unserialize($s->search_object);
 				$searchObject = SearchObjectFactory::deminify($minSO);
 				$searchObject->setPage($currentPage);
 				//Run the search
@@ -130,7 +135,7 @@ class Person_Home extends Action
 
 				//Check to see if we need to run a search for the next or previous page
 				$currentResultIndex = $_REQUEST['recordIndex'] - 1;
-				$recordsPerPage = $searchObject->getLimit();
+				$recordsPerPage     = $searchObject->getLimit();
 
 				if (($currentResultIndex) % $recordsPerPage == 0 && $currentResultIndex > 0){
 					//Need to run a search for the previous page
@@ -139,7 +144,7 @@ class Person_Home extends Action
 					$previousSearchObject->setPage($currentPage - 1);
 					$previousSearchObject->processSearch(true, false, false);
 					$previousResults = $previousSearchObject->getResultRecordSet();
-				}else if (($currentResultIndex + 1) % $recordsPerPage == 0 && ($currentResultIndex + 1) < $searchObject->getResultTotal()){
+				}elseif (($currentResultIndex + 1) % $recordsPerPage == 0 && ($currentResultIndex + 1) < $searchObject->getResultTotal()){
 					//Need to run a search for the next page
 					$nextSearchObject = clone $searchObject;
 					$interface->assign('nextPage', $currentPage + 1);
@@ -148,19 +153,19 @@ class Person_Home extends Action
 					$nextResults = $nextSearchObject->getResultRecordSet();
 				}
 
-				if (PEAR_Singleton::isError($result)) {
-					//If we get an error excuting the search, just eat it for now.
+				if (PEAR_Singleton::isError($result)){
+					//If we get an error executing the search, just eat it for now.
 				}else{
-					if ($searchObject->getResultTotal() < 1) {
+					if ($searchObject->getResultTotal() < 1){
 						//No results found
 					}else{
 						$recordSet = $searchObject->getResultRecordSet();
 						//Record set is 0 based, but we are passed a 1 based index
 						if ($currentResultIndex > 0){
 							if (isset($previousResults)){
-								$previousRecord = $previousResults[count($previousResults) -1];
+								$previousRecord = $previousResults[count($previousResults) - 1];
 							}else{
-								$previousRecord = $recordSet[$currentResultIndex - 1 - (($currentPage -1) * $recordsPerPage)];
+								$previousRecord = $recordSet[$currentResultIndex - 1 - (($currentPage - 1) * $recordsPerPage)];
 							}
 							$interface->assign('previousId', $previousRecord['id']);
 							//Convert back to 1 based index
@@ -172,7 +177,7 @@ class Person_Home extends Action
 							if (isset($nextResults)){
 								$nextRecord = $nextResults[0];
 							}else{
-								$nextRecord = $recordSet[$currentResultIndex + 1 - (($currentPage -1) * $recordsPerPage)];
+								$nextRecord = $recordSet[$currentResultIndex + 1 - (($currentPage - 1) * $recordsPerPage)];
 							}
 							$interface->assign('nextId', $nextRecord['id']);
 							//Convert back to 1 based index
@@ -187,8 +192,7 @@ class Person_Home extends Action
 		}
 	}
 
-	function launch()
-	{
+	function launch(){
 
 		$titleField = $this->recordDriver->getName(); //$this->record['firstName'] . ' ' . $this->record['lastName'];
 //		if ($titleField){

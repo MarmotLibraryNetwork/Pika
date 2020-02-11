@@ -27,8 +27,11 @@
  */
 
 require_once ROOT_DIR . '/AJAXHandler.php';
+require_once ROOT_DIR . '/services/AJAX/Captcha_AJAX.php';
 
 class GroupedWork_AJAX extends AJAXHandler {
+
+	use Captcha_AJAX;
 
 	protected $methodsThatRespondWithJSONUnstructured = array(
 		'clearUserRating',
@@ -225,7 +228,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 		if (isset($library) && $library->showGoDeeper == 0){
 			$enrichmentResult['showGoDeeper'] = false;
 		}else{
-			require_once(ROOT_DIR . '/Drivers/marmot_inc/GoDeeperData.php');
+			require_once ROOT_DIR . '/sys/ExternalEnrichment/GoDeeperData.php';
 			$goDeeperOptions = GoDeeperData::getGoDeeperOptions($recordDriver->getCleanISBN(), $recordDriver->getCleanUPC());
 			if (count($goDeeperOptions['options']) == 0){
 				$enrichmentResult['showGoDeeper'] = false;
@@ -312,7 +315,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 	}
 
 	function getGoDeeperData(){
-		require_once(ROOT_DIR . '/Drivers/marmot_inc/GoDeeperData.php');
+		require_once ROOT_DIR . '/sys/ExternalEnrichment/GoDeeperData.php';
 		$dataType = strip_tags($_REQUEST['dataType']);
 
 		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
@@ -442,7 +445,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 		$isbn         = $recordDriver->getCleanISBN();
 
 		//Load external (syndicated reviews)
-		require_once ROOT_DIR . '/sys/Reviews.php';
+		require_once ROOT_DIR . '/sys/ExternalEnrichment/Reviews.php';
 		$externalReviews = new ExternalReviews($isbn);
 		$reviews         = $externalReviews->fetch();
 		global $interface;
@@ -456,7 +459,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 		//Load editorial reviews
 		require_once ROOT_DIR . '/sys/LocalEnrichment/EditorialReview.php';
 		$editorialReviews           = new EditorialReview();
-		$editorialReviews->recordId = $id;
+		$editorialReviews->groupedWorkPermanentId = $id;
 		$editorialReviews->find();
 		$allEditorialReviews = array();
 		while ($editorialReviews->fetch()){
@@ -646,71 +649,83 @@ class GroupedWork_AJAX extends AJAXHandler {
 			if (!empty($user->email)){
 				$interface->assign('from', $user->email);
 			}
+		}else{
+			$this->setUpCaptchaForTemplate();
 		}
-		$results = array(
+		return [
 			'title'        => 'Share via E-mail',
 			'modalBody'    => $interface->fetch("GroupedWork/email-form-body.tpl"),
 			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#emailForm\").submit()'>Send E-mail</button>"
 			// triggering submit action to trigger form validation
-		);
-		return $results;
+		];
 	}
 
 	function sendEmail(){
 		global $interface;
 		global $configArray;
+		$recaptchaValid = $this->isRecaptchaValid();
+		if (UserAccount::isLoggedIn() || $recaptchaValid){
+			$message = $_REQUEST['message'];
+			if (strpos($message, 'http') === false && strpos($message, 'mailto') === false && $message == strip_tags($message)){
+				require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+				$id           = $_REQUEST['id'];
+				$recordDriver = new GroupedWorkDriver($id);
+				$to           = strip_tags($_REQUEST['to']);
+				$from         = strip_tags($_REQUEST['from']);
+				$interface->assign('from', $from);
+				$interface->assign('message', $message);
+				$interface->assign('recordDriver', $recordDriver);
+				$interface->assign('url', $recordDriver->getAbsoluteUrl());
 
-		$message = $_REQUEST['message'];
-		if (strpos($message, 'http') === false && strpos($message, 'mailto') === false && $message == strip_tags($message)){
-			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
-			$id           = $_REQUEST['id'];
-			$recordDriver = new GroupedWorkDriver($id);
-			$to           = strip_tags($_REQUEST['to']);
-			$from         = strip_tags($_REQUEST['from']);
-			$interface->assign('from', $from);
-			$interface->assign('message', $message);
-			$interface->assign('recordDriver', $recordDriver);
-			$interface->assign('url', $recordDriver->getAbsoluteUrl());
-
-			if (!empty($_REQUEST['related_record'])){
-				$relatedRecord = $recordDriver->getRelatedRecord($_REQUEST['related_record']);
-				if (!empty($relatedRecord['callNumber'])){
-					$interface->assign('callnumber', $relatedRecord['callNumber']);
+				if (!empty($_REQUEST['related_record'])){
+					$relatedRecord = $recordDriver->getRelatedRecord($_REQUEST['related_record']);
+					if (!empty($relatedRecord['callNumber'])){
+						$interface->assign('callnumber', $relatedRecord['callNumber']);
+					}
+					if (!empty($relatedRecord['shelfLocation'])){
+						$interface->assign('shelfLocation', strip_tags($relatedRecord['shelfLocation']));
+					}
+					if (!empty($relatedRecord['driver'])){
+						$interface->assign('url', $relatedRecord['driver']->getAbsoluteUrl());
+					}
 				}
-				if (!empty($relatedRecord['shelfLocation'])){
-					$interface->assign('shelfLocation', strip_tags($relatedRecord['shelfLocation']));
+
+				$subject = translate('Library Catalog Record') . ': ' . $recordDriver->getTitle();
+				$body    = $interface->fetch('Emails/grouped-work-email.tpl');
+
+				require_once ROOT_DIR . '/sys/Mailer.php';
+				$mail        = new VuFindMailer();
+				$emailResult = $mail->send($to, $configArray['Site']['email'], $subject, $body, $from);
+
+				if ($emailResult === true){
+					$result = [
+						'result'  => true,
+						'message' => 'Your e-mail was sent successfully.',
+					];
+				}elseif (PEAR_Singleton::isError($emailResult)){
+					$result = [
+						'result'  => false,
+						'message' => "Your e-mail message could not be sent: {$emailResult}.",
+					];
+				}else{
+					$result = [
+						'result'  => false,
+						'message' => 'Your e-mail message could not be sent due to an unknown error.',
+					];
+					global $logger;
+					$logger->log("Mail List Failure (unknown reason), parameters: $to, $from, $subject, $body", PEAR_LOG_ERR);
 				}
-				$interface->assign('url', $relatedRecord['driver']->getAbsoluteUrl());
-			}
-
-			$subject = translate("Library Catalog Record") . ": " . $recordDriver->getTitle();
-			$body    = $interface->fetch('Emails/grouped-work-email.tpl');
-
-			require_once ROOT_DIR . '/sys/Mailer.php';
-			$mail        = new VuFindMailer();
-			$emailResult = $mail->send($to, $configArray['Site']['email'], $subject, $body, $from);
-
-			if ($emailResult === true){
-				$result = array(
-					'result'  => true,
-					'message' => 'Your e-mail was sent successfully.',
-				);
-			}elseif (PEAR_Singleton::isError($emailResult)){
-				$result = array(
-					'result'  => false,
-					'message' => "Your e-mail message could not be sent: {$emailResult}.",
-				);
 			}else{
-				$result = array(
+				$result = [
 					'result'  => false,
-					'message' => 'Your e-mail message could not be sent due to an unknown error.',
-				);
+					'message' => 'Sorry, we can&apos;t send e-mails with html or other data in it.',
+				];
 			}
-		}else{
-			$result = array(
+		}else{ // logged in check, or captcha check
+			$result = [
 				'result'  => false,
-				'message' => 'Sorry, we can&apos;t send e-mails with html or other data in it.',
-			);
+				'message' => 'Not logged in or invalid captcha response',
+			];
 		}
 		return $result;
 	}
@@ -1021,7 +1036,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 		//Load results from Prospector
 		$ILLDriver = $configArray['InterLibraryLoan']['ILLDriver'];
 		/** @var Prospector|AutoGraphicsShareIt $prospector */
-		require_once ROOT_DIR . '/InterLibraryLoanDrivers/' . $ILLDriver . '.php';
+		require_once ROOT_DIR . '/sys/InterLibraryLoanDrivers/' . $ILLDriver . '.php';
 		$prospector = new $ILLDriver();
 
 		$searchTerms = array(
