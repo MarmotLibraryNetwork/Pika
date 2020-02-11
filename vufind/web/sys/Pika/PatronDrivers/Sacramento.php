@@ -327,7 +327,9 @@ class Sacramento extends Sierra {
 			switch ($key) {
 				case 'email':
 					$val = trim($val);
-					$params['emails'][] = $val;
+					if(!empty($val)) {
+						$params['emails'][] = $val;
+					}
 					break;
 				case 'primaryphone':
 					$val = trim($val);
