@@ -333,11 +333,13 @@ class Sacramento extends Sierra {
 					break;
 				case 'primaryphone':
 					$val = trim($val);
-					$params['phones'][] = ['number'=>$val, 'type'=>'t'];
+					if(!empty($val)) {
+						$params['phones'][] = ['number' => $val, 'type' => 't'];
+					}
 					break;
 				case 'altphone':
 					$val = trim($val);
-					$params['phones'][] = ['number'=>$val, 'type'=>'p'];
+					//$params['phones'][] = ['number'=>$val, 'type'=>'p'];
 					break;
 				case 'birthdate':
 					if(isset($val) && $val != '') {
