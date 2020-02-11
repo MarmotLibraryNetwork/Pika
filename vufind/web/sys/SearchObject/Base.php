@@ -1396,6 +1396,7 @@ abstract class SearchObject_Base {
 
 		// Save this search unless we found a 'saved' duplicate
 		if (!$dupSaved) {
+			require_once ROOT_DIR . '/sys/Search/SearchEntry.php';
 			$search                = new SearchEntry();
 			$search->session_id    = session_id();
 			$search->created       = date('Y-m-d');
@@ -1421,6 +1422,7 @@ abstract class SearchObject_Base {
 			return null;
 		}
 		// Yes, retrieve it
+		require_once ROOT_DIR . '/sys/Search/SearchEntry.php';
 		$search = new SearchEntry();
 		$search->id = $lastSearchId;
 		if ($search->find(true)) {
