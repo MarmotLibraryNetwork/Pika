@@ -844,6 +844,8 @@ class GroupedWorkDriver extends RecordInterface {
 		$interface->assign('details', $fields);
 
 		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+		require_once ROOT_DIR . '/sys/Language/Language.php';
+		$language = new Language();
 		$groupedWork               = new GroupedWork();
 		$groupedWork->permanent_id = $this->getPermanentId();
 		if ($groupedWork->find(true)){
@@ -851,6 +853,7 @@ class GroupedWorkDriver extends RecordInterface {
 			$groupedWorkDetails['Grouping Title']       = $groupedWork->full_title;
 			$groupedWorkDetails['Grouping Author']      = $groupedWork->author;
 			$groupedWorkDetails['Grouping Category']    = $groupedWork->grouping_category;
+			$groupedWorkDetails['Grouping Language']    = $language->getLanguage($groupedWork->grouping_language) . " ({$groupedWork->grouping_language})";
 			$groupedWorkDetails['Last Grouping Update'] = empty($groupedWork->date_updated) ? 'Marked for re-index' : date('Y-m-d H:i:sA', $groupedWork->date_updated);
 			if (array_key_exists('last_indexed', $fields)){
 				$groupedWorkDetails['Last Indexed'] = date('Y-m-d H:i:sA', strtotime($fields['last_indexed']));
