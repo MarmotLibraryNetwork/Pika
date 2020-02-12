@@ -100,10 +100,15 @@ EOT;
 	}
 
 	public function getInnReachCover() {
+		global $library;
 		$coverUrl = '';
 		// grab the theme for Inn reach cover
-		$themeParts = explode(',', $this->configArray['Site']['theme']);
 		// start with the base theme and work up to local theme checking for image
+		if (!empty($library)){
+			$themeParts = explode(',', $library->themeName);
+		} else {
+			$themeParts = explode(',', $this->configArray['Site']['theme']);
+		}
 		$themeParts = array_reverse($themeParts);
 		$path = $this->configArray['Site']['local'];
 		foreach ($themeParts as $themePart) {
