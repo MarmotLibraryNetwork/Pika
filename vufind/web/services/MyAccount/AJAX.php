@@ -53,7 +53,7 @@ class MyAccount_AJAX extends AJAXHandler {
 		'getBulkAddToListForm',
 		'getPinUpdateForm',
 	);
-
+	protected $methodsThatRespondWithJSONResultWrapper = [];
 	private $cache;
 
 	public function __construct($error_class = null)
