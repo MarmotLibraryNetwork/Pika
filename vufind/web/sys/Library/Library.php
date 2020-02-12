@@ -122,6 +122,9 @@ class Library extends DB_DataObject {
 	/* GOOGLE ANALYTICS */
 	public $gaTrackingId;
 
+	/* USER PROFILE */
+	public $showPatronBarcodeImage;
+
 	public $systemsToRepeatIn;
 	public $additionalLocationsToShowAvailabilityFor;
 	public $homeLink;
@@ -485,6 +488,7 @@ class Library extends DB_DataObject {
 				)),
 				'userProfileSection' => array('property' => 'userProfileSection', 'type' => 'section', 'label' => 'User Profile', 'hideInLists' => true,
 						'helpLink'=>'https://docs.google.com/document/d/1S8s8KYPaw6x7IIcxUbzkXgCnnHXR6t8W_2CwXiQyjrE', 'properties' => array(
+					'showPatronBarcodeImage'               => array('property' => 'showPatronBarcodeImage', 'type'=>'checkbox', 'label'=>'Show a barcode image in patron account profile', 'description'=>'', 'hideInLists' => true, 'default' => 0),
 					'patronNameDisplayStyle'               => array('property'=>'patronNameDisplayStyle', 'type'=>'enum', 'values'=>array('firstinitial_lastname'=>'First Initial. Last Name', 'lastinitial_firstname'=>'First Name Last Initial.'), 'label'=>'Patron Display Name Style', 'description'=>'How to generate the patron display name'),
 					'allowProfileUpdates'                  => array('property'=>'allowProfileUpdates', 'type'=>'checkbox', 'label'=>'Allow Profile Updates', 'description'=>'Whether or not the user can update their own profile.', 'hideInLists' => true, 'default' => 1),
 					'allowPatronAddressUpdates'            => array('property' => 'allowPatronAddressUpdates', 'type'=>'checkbox', 'label'=>'Allow Patrons to Update Their Address', 'description'=>'Whether or not patrons should be able to update their own address in their profile.', 'hideInLists' => true, 'default' => 1),

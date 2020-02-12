@@ -79,6 +79,7 @@ class MyAccount_Profile extends MyAccount
 				$allowPinReset                        = ($patronHomeLibrary->allowPinReset == 1);
 				$showAlternateLibraryOptionsInProfile = ($patronHomeLibrary->showAlternateLibraryOptionsInProfile == 1);
 				$allowAccountLinking                  = ($patronHomeLibrary->allowLinkedAccounts == 1);
+				$showPatronBarcodeImage               = ($patronHomeLibrary->showPatronBarcodeImage == 1);
 				if (($user->finesVal > $patronHomeLibrary->maxFinesToAllowAccountUpdates) && ($patronHomeLibrary->maxFinesToAllowAccountUpdates > 0)) {
 					$canUpdateContactInfo = false;
 					$canUpdateAddress     = false;
@@ -105,7 +106,7 @@ class MyAccount_Profile extends MyAccount
 			$interface->assign('allowPinReset', $allowPinReset);
 			$interface->assign('showAlternateLibraryOptions', $showAlternateLibraryOptionsInProfile);
 			$interface->assign('allowAccountLinking', $allowAccountLinking);
-
+			$interface->assign('showPatronBarcodeImage', $showPatronBarcodeImage);
 			// Determine Pickup Locations
 			$pickupLocations = $patron->getValidPickupBranches($patron->getAccountProfile()->recordSource, false);
 			$interface->assign('pickupLocations', $pickupLocations);

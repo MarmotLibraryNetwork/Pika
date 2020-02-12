@@ -1,6 +1,5 @@
 {strip}
 	<div id="main-content">
-		<h2>New</h2>
 		{if $loggedIn}
 			{if $profile->web_note}
 				<div class="row">

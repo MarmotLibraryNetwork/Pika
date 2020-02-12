@@ -1141,7 +1141,14 @@ ADD COLUMN selfRegistrationAgencyCode INT(10) NULL;",
 			'description' => 'Fix typo in column name in the Library settings table',
 			'sql'         => array(
 				"ALTER TABLE `library` CHANGE COLUMN `enablePospectorIntegration` `enableProspectorIntegration` TINYINT(4) NOT NULL DEFAULT '0' ;",
-			),
+			)),
+
+			'show_barcode_image_user_profile' => array(
+			 'title'       => 'Show scannable image of patrons barcode',
+			 'description' => '',
+			 'sql'         => array(
+				"ALTER TABLE `pika`.`library` ADD COLUMN `showPatronBarcodeImage` TINYINT(1) NULL DEFAULT 0",
+			 ),
 		),
 	);
 }

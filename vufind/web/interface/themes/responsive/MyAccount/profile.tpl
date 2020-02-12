@@ -32,6 +32,36 @@
 			<br>
 
 			<div class="panel-group" id="account-settings-accordion">
+          {* barcode
+          {if $showPatronBarcodeImage}
+				<div class="panel active">
+					<a data-toggle="collapse" data-parent="#account-settings-accordion" href="#barcodePanel">
+						<div class="panel-heading">
+							<div class="panel-title">
+								Barcode
+							</div>
+						</div>
+					</a>
+					<div id="barcodePanel" class="panel-collapse collapse in">
+						<div class="panel-body" style="text-align: center;">
+							<svg id="barcode" style="margin: 0 auto;"></svg>
+                {literal}
+							<script src="https://cdn.jsdelivr.net/jsbarcode/3.6.0/"></script>
+							<script>
+								JsBarcode("#barcode", "{/literal}{$profile->barcode}{literal}", {
+									format: "codabar",
+									lineColor: "#000000",
+									width: 2,
+									height: 140,
+									displayValue: false
+								});
+							</script>
+                {/literal}
+						</div>
+					</div>
+				</div>
+				{/if}*}
+
 				{* ILS Settings *}
 				<div class="panel active">
 					<a data-toggle="collapse" data-parent="#account-settings-accordion" href="#contactPanel">
