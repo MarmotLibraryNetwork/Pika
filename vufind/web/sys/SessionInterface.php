@@ -63,6 +63,7 @@ class SessionInterface {
 	static public function destroy($sess_id)
 	{
 		// Delete the searches stored for this session
+		require_once ROOT_DIR . '/sys/Search/SearchEntry.php';
 		$search     = new SearchEntry();
 		$searchList = $search->getSearches($sess_id);
 		// Make sure there are some
