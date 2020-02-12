@@ -2083,6 +2083,7 @@ public function getNextPrevLinks(){
 		//Setup next and previous links based on the search results.
 		if (isset($_REQUEST['searchId']) && isset($_REQUEST['recordIndex']) && ctype_digit($_REQUEST['searchId']) && ctype_digit($_REQUEST['recordIndex'])){
 			//rerun the search
+			require_once ROOT_DIR . '/sys/Search/SearchEntry.php';
 			$s = new SearchEntry();
 			$s->id = $_REQUEST['searchId'];
 			$interface->assign('searchId', $_REQUEST['searchId']);

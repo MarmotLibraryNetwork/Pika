@@ -38,6 +38,7 @@ class SaveSearch extends MyAccount
 			$searchId = $_REQUEST['save'];
 		}
 
+		require_once ROOT_DIR . '/sys/Search/SearchEntry.php';
 		$search = new SearchEntry();
 		$search->id = $searchId;
 		if ($search->find(true)) {

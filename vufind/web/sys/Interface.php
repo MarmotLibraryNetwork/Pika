@@ -449,6 +449,7 @@ class UInterface extends Smarty {
 			$this->assign('showOnOrderCounts', $library->showOnOrderCounts);
 			$this->assign('allowPinReset', $library->allowPinReset);
 			$this->assign('externalMaterialsRequestUrl', $library->externalMaterialsRequestUrl);
+			$this->assign('showPatronBarcodeImage', $library->showPatronBarcodeImage);
 
 			$this->assign('showFavorites', $library->showFavorites);
 			$this->assign('showComments', $library->showComments);

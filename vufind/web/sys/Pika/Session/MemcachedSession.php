@@ -76,6 +76,7 @@ class MemcachedSession extends SessionHandler implements SessionHandlerInterface
 	public function destroy($session_id)
 	{
 		// Delete the searches stored for this session
+		require_once ROOT_DIR . '/sys/Search/SearchEntry.php';
 		$search     = new SearchEntry();
 		$searchList = $search->getSearches($session_id);
 		// Make sure there are some
