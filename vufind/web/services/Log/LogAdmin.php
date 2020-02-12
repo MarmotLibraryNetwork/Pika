@@ -77,7 +77,7 @@ abstract class Log_Admin extends Admin_Admin {
 		$interface->assign('page', $page);
 		$interface->assign('logEntries', $logEntries);
 		$interface->assign('pageLinks', $pager->getLinks());
-		$interface->assign('logTable', 'Log\\' . $this->logTemplate);
+		$interface->assign('logTable', 'Log/' . $this->logTemplate);
 		$interface->assign('logType', str_replace('Log', '', $logClass));
 
 		$this->display('log.tpl', $this->pageTitle);
