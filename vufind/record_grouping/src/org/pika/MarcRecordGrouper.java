@@ -51,8 +51,8 @@ class MarcRecordGrouper extends RecordGroupingProcessor {
 
 	private void loadTranslationMaps(Connection dbConnection) {
 		try (
-				PreparedStatement loadMapsStmt = dbConnection.prepareStatement("SELECT * FROM translation_maps where indexingProfileId = ?");
-				PreparedStatement loadMapValuesStmt = dbConnection.prepareStatement("SELECT * FROM translation_map_values where translationMapId = ?")
+				PreparedStatement loadMapsStmt = dbConnection.prepareStatement("SELECT * FROM translation_maps WHERE indexingProfileId = ?");
+				PreparedStatement loadMapValuesStmt = dbConnection.prepareStatement("SELECT * FROM translation_map_values WHERE translationMapId = ?")
 		) {
 			loadMapsStmt.setLong(1, profile.id);
 			try (ResultSet translationMapsRS = loadMapsStmt.executeQuery()) {

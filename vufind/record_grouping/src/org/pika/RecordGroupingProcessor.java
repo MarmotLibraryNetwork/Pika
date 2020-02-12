@@ -567,6 +567,8 @@ class RecordGroupingProcessor {
 			groupedWork.setGroupingCategory("music");
 		} else if (format.equalsIgnoreCase("video")) {
 			groupedWork.setGroupingCategory("movie");
+		} else if (format.equalsIgnoreCase("comic")){
+			groupedWork.setGroupingCategory("comic");
 		}
 		// Language
 		if (groupedWork.getGroupedWorkVersion() >= 5) {

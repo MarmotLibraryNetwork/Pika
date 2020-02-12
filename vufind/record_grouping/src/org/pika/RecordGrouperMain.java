@@ -1364,6 +1364,7 @@ public class RecordGrouperMain {
 			try (
 					PreparedStatement overDriveIdentifiersStmt = econtentConnection.prepareStatement("SELECT * FROM overdrive_api_product_identifiers WHERE id = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 					PreparedStatement overDriveCreatorStmt = econtentConnection.prepareStatement("SELECT fileAs FROM overdrive_api_product_creators WHERE productId = ? AND role like ? ORDER BY id", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+					PreparedStatement overDriveSubjectsStmt = econtentConnection.prepareStatement("SELECT * FROM overdrive_api_product_languages INNER JOIN overdrive_api_product_languages_ref ON overdrive_api_product_languages.id = languageId WHERE productId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 					ResultSet overDriveRecordRS = overDriveRecordsStmt.executeQuery()
 			) {
 
@@ -1381,34 +1382,53 @@ public class RecordGrouperMain {
 					if (author != null) {
 						overDriveCreatorStmt.setLong(1, id);
 						overDriveCreatorStmt.setString(2, primaryCreatorRole);
-						ResultSet creatorInfoRS         = overDriveCreatorStmt.executeQuery();
-						boolean   swapFirstNameLastName = false;
-						if (creatorInfoRS.next()) {
-							String tmpAuthor = creatorInfoRS.getString("fileAs");
-							if (tmpAuthor.equals(author) && (mediaType.equalsIgnoreCase("ebook") || mediaType.equalsIgnoreCase("audiobook"))) {
-								swapFirstNameLastName = true;
-							} else {
-								author = tmpAuthor;
-							}
-						} else {
-							swapFirstNameLastName = true;
-						}
-						if (swapFirstNameLastName) {
-							logger.debug("Swap First Last Name for author '" + author + "' for an Overdrive title.");
-							// I suspect this never gets called anymore. pascal 7/26/2018
-							if (author.contains(" ")) {
-								String[]      authorParts = author.split("\\s+");
-								StringBuilder tmpAuthor   = new StringBuilder();
-								for (int i = 1; i < authorParts.length; i++) {
-									tmpAuthor.append(authorParts[i]).append(" ");
+						try (ResultSet creatorInfoRS = overDriveCreatorStmt.executeQuery()) {
+							boolean swapFirstNameLastName = false;
+							if (creatorInfoRS.next()) {
+								String tmpAuthor = creatorInfoRS.getString("fileAs");
+								if (tmpAuthor.equals(author) && (mediaType.equalsIgnoreCase("ebook") || mediaType.equalsIgnoreCase("audiobook"))) {
+									swapFirstNameLastName = true;
+								} else {
+									author = tmpAuthor;
 								}
-								tmpAuthor.append(authorParts[0]);
-								author = tmpAuthor.toString();
+							} else {
+								swapFirstNameLastName = true;
+							}
+							if (swapFirstNameLastName) {
+								logger.debug("Swap First Last Name for author '" + author + "' for an Overdrive title.");
+								// I suspect this never gets called anymore. pascal 7/26/2018
+								if (author.contains(" ")) {
+									String[]      authorParts = author.split("\\s+");
+									StringBuilder tmpAuthor   = new StringBuilder();
+									for (int i = 1; i < authorParts.length; i++) {
+										tmpAuthor.append(authorParts[i]).append(" ");
+									}
+									tmpAuthor.append(authorParts[0]);
+									author = tmpAuthor.toString();
+								}
 							}
 						}
-						creatorInfoRS.close();
 					}
 
+					String groupingFormat;
+					if (mediaType.equalsIgnoreCase("ebook")){
+						groupingFormat = "book";
+						//Overdrive Graphic Novels can be derived from having a specific subject in the metadata
+						overDriveSubjectsStmt.setLong(1, id);
+						try (ResultSet overDriveSubjectRS = overDriveSubjectsStmt.executeQuery()){
+							while (overDriveSubjectRS.next()){
+								String subject = overDriveSubjectRS.getString("name");
+								if (subject.equals("Comic and Graphic Books")){
+									groupingFormat = "comic";
+									break;
+								}
+							}
+						} catch (Exception e) {
+							logger.error("Error looking for overdrive graphic novel info", e);
+						}
+					} else {
+						groupingFormat = mediaType;
+					}
 					// Set Grouping Language (use ISO 639-2 Bibliographic code)
 					String groupingLanguage =  new Locale(productLanguageCode).getISO3Language();
 
@@ -1416,11 +1436,10 @@ public class RecordGrouperMain {
 					RecordIdentifier primaryIdentifier = new RecordIdentifier();
 					primaryIdentifier.setValue("overdrive", overdriveId);
 
-					recordGroupingProcessor.processRecord(primaryIdentifier, title, subtitle, author, mediaType, groupingLanguage, true);
+					recordGroupingProcessor.processRecord(primaryIdentifier, title, subtitle, author, groupingFormat, groupingLanguage, true);
 					primaryIdentifiersInDatabase.remove(primaryIdentifier.toString().toLowerCase());
 					numRecordsProcessed++;
 				}
-				overDriveRecordRS.close();
 			}
 
 			//This is no longer needed because we do cleanup differently now (get a list of everything in the database and then cleanup anything that isn't in the API anymore
