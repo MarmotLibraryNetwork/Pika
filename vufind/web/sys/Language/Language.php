@@ -511,7 +511,8 @@ class Language {
 		'znd' => 'Zande',
 		'zul' => 'Zulu',
 		'zun' => 'Zuni',
-		'zza' => 'Zaza'
+		'zza' => 'Zaza',
+		'zxx' => 'No Language Content',
   );
 
 	function getLanguage($code){
