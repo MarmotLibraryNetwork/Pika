@@ -1537,7 +1537,8 @@ EOT;
 		$operation = "patrons/".$patronId."/holds";
 		if((integer)$this->configArray['Catalog']['api_version'] > 4) {
 			$params=["fields" => "default,pickupByDate,frozen,priority,priorityQueueLength,notWantedBeforeDate,notNeededAfterDate",
-			         "limit"  => 1000];
+			         "limit"  => 1000,
+			         "expand" => "record"];
 		} else {
 			$params=["fields" => "default,frozen,priority,priorityQueueLength,notWantedBeforeDate,notNeededAfterDate",
 			         "limit"  => 1000];
@@ -1613,7 +1614,12 @@ EOT;
 			$h['cancelId'] = $m[1];
 
 			// status, cancelable, freezable
-			switch ($hold->status->code) {
+			if ($hold->recordType == 'i') {
+				$recordStatus = $hold->record->status->code;
+			} else {
+				$recordStatus = $hold->status->code;
+			}
+			switch ($recordStatus) {
 				case '0':
 					if($hold->frozen) {
 						$status = "Frozen";
@@ -1646,10 +1652,17 @@ EOT;
 						$updatePickup = false;
 					}
 					break;
-				case "&":
+				case "&": // inn-reach status
 					$status       = "Requested from INN-Reach";
 					$cancelable   = true;
 					$freezeable   = false;
+					$updatePickup = false;
+					break;
+				case "#": // inn-reach status
+					$hold->status->code = 'i';
+					$status             = 'Ready';
+					$freezeable         = false;
+					$cancelable         = false;
 					$updatePickup = false;
 					break;
 				default:
@@ -1703,15 +1716,15 @@ EOT;
 
 			// determine if this is an innreach hold
 			// or if it's a regular ILS hold
-			if(strstr($hold->record, "@")) {
+			if(strstr($hold->record->id, "@")) {
 				///////////////
 				// INNREACH HOLD
 				///////////////
 				// get the inn-reach item id
-				$regExp = '/.*\/(.*)$/';
+				//$regExp = '/.*\/(.*)$/';
 				// we have to query for the item status (it will be an innreach status) as hold status for
 				// inn-reach will always show 0
-				preg_match($regExp, $hold->record, $itemId);
+				/*preg_match($regExp, $hold->record, $itemId);
 				$itemParams    = ['fields'=>'status'];
 				$itemOperation = 'items/'.$itemId[1];
 				$itemRes = $this->_doRequest($itemOperation,$itemParams);
@@ -1726,8 +1739,9 @@ EOT;
 						$h['cancelable']         = false;
 						$h['locationUpdateable'] = false;
 					}
-				}
+				}*/
 				// get the hold id
+
 				preg_match($this->urlIdRegExp, $hold->id, $mIr);
 				$innReachHoldId = $mIr[1];
 
@@ -1752,9 +1766,8 @@ EOT;
 				//////////////
 				// record type and record id
 				$recordType = $hold->recordType;
-				preg_match($this->urlIdRegExp, $hold->record,$m);
 				// for item level holds we need to grab the bib id.
-				$id = $m[1];
+				$id = $hold->record->id; //$m[1];
 				if($recordType == 'i') {
 					$id = $this->_getBibIdFromItemId($id);
 				}
@@ -1791,7 +1804,7 @@ EOT;
 		unset($availableHolds, $unavailableHolds);
 
 		if(!$linkedAccount){
-			$this->cache->set($patronHoldsCacheKey, $return, $this->configArray['Caching']['user']);
+			$this->cache->set($patronHoldsCacheKey, $return, $this->configArray['Caching']['user_holds']);
 		}
 
 		return $return;
