@@ -100,7 +100,7 @@
 									JsBarcode("#barcode", "{/literal}{$user->barcode}{literal}", {
 										format: "codabar",
 										lineColor: "#000000",
-										width: 3,
+										width: 2,
 										height: 200,
 										displayValue: false
 									});
