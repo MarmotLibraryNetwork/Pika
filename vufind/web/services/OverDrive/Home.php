@@ -31,7 +31,7 @@ class OverDrive_Home extends Action{
 		if (isset($_REQUEST['searchId'])){
 			$_SESSION['searchId'] = $_REQUEST['searchId'];
 			$interface->assign('searchId', $_SESSION['searchId']);
-		}else if (isset($_SESSION['searchId'])){
+		}elseif (isset($_SESSION['searchId'])){
 			$interface->assign('searchId', $_SESSION['searchId']);
 		}
 
