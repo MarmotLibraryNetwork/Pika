@@ -26,7 +26,7 @@
  * Time: 10:27 AM
  */
 
-require_once ROOT_DIR . 'sys/Circa/OfflineCirculationEntry.php';
+require_once ROOT_DIR . '/sys/Circa/OfflineCirculationEntry.php';
 
 class Circa_OfflineCirculation extends Action{
 	function launch()

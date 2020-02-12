@@ -309,7 +309,7 @@ class SearchAPI extends AJAXHandler {
 		}
 
 		// Unprocessed Offline Circs //
-		require_once ROOT_DIR . 'sys/Circa/OfflineCirculationEntry.php';
+		require_once ROOT_DIR . '/sys/Circa/OfflineCirculationEntry.php';
 		$offlineCirculationEntry         = new OfflineCirculationEntry();
 		$offlineCirculationEntry->status = 'Not Processed';
 		$offlineCircs                    = $offlineCirculationEntry->count('id');

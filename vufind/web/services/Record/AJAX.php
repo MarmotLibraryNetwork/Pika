@@ -72,7 +72,7 @@ class Record_AJAX extends AJAXHandler {
 			PEAR_Singleton::raiseError(new PEAR_Error('Record Does Not Exist'));
 		}
 
-		require_once ROOT_DIR . 'sys/InterLibraryLoanDrivers/Prospector.php';
+		require_once ROOT_DIR . '/sys/InterLibraryLoanDrivers/Prospector.php';
 		$prospector = new Prospector();
 
 		$searchTerms = array(

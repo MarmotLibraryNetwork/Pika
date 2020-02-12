@@ -212,7 +212,7 @@ class FedoraUtils {
 		global $timer;
 		global $configArray;
 		$isValid = $this->cache->get('islandora_object_valid_in_pika_' . $archiveObject->id);
-		if ($isValid !== FALSE && !isset($_REQUEST['reload'])){
+		if (!is_null($isValid) && !isset($_REQUEST['reload'])){
 			return $isValid == 1;
 		}else{
 			$mods = FedoraUtils::getInstance()->getModsData($archiveObject);
@@ -243,7 +243,7 @@ class FedoraUtils {
 	public function isPidValidForPika($pid){
 
 		$isValid = $this->cache->get('islandora_object_valid_in_pika_' . $pid);
-		if ($isValid !== FALSE && !isset($_REQUEST['reload'])){
+		if (!is_null($isValid) && !isset($_REQUEST['reload'])){
 			return $isValid == 1;
 		}else{
 			$archiveObject = $this->getObject($pid);
