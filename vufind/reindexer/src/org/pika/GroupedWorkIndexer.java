@@ -195,9 +195,9 @@ public class GroupedWorkIndexer {
 							case "Anythink":
 								ilsRecordProcessors.put(curIdentifier, new AnythinkRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
 								break;
-							case "Aspencat":
-								ilsRecordProcessors.put(curIdentifier, new AspencatRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
-								break;
+//							case "Aspencat":
+//								ilsRecordProcessors.put(curIdentifier, new AspencatRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
+//								break;
 							case "Flatirons":
 								ilsRecordProcessors.put(curIdentifier, new FlatironsRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
 								break;
@@ -207,12 +207,12 @@ public class GroupedWorkIndexer {
 							case "Aurora":
 								ilsRecordProcessors.put(curIdentifier, new AuroraRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
 								break;
-							case "Arlington":
-								ilsRecordProcessors.put(curIdentifier, new ArlingtonRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
-								break;
-							case "CarlX": // Currently the Nashville Processor
-								ilsRecordProcessors.put(curIdentifier, new CarlXRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
-								break;
+//							case "Arlington":
+//								ilsRecordProcessors.put(curIdentifier, new ArlingtonRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
+//								break;
+//							case "CarlX": // Currently the Nashville Processor
+//								ilsRecordProcessors.put(curIdentifier, new CarlXRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
+//								break;
 							case "SantaFe":
 								ilsRecordProcessors.put(curIdentifier, new SantaFeRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
 								break;
