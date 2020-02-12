@@ -284,7 +284,7 @@ class SearchAPI extends AJAXHandler {
 		}
 
 			// Overdrive extract errors
-			require_once ROOT_DIR . '/sys/OverDriveExtractLogEntry.php';
+			require_once ROOT_DIR . '/sys/Log/OverDriveExtractLogEntry.php';
 			$logEntry = new OverDriveExtractLogEntry();
 			$logEntry->orderBy('id DESC');
 			$logEntry->limit(1);
