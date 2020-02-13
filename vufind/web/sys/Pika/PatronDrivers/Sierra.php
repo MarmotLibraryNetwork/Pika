@@ -1155,7 +1155,9 @@ EOT;
 			switch ($key) {
 				case 'email':
 					$val = trim($val);
+					$successEmail = false;
 					if(!empty($val)){
+						$successEmail = $val;
 						$params['emails'][] = $val;
 					}
 					break;
@@ -1261,6 +1263,11 @@ EOT;
 			$this->logger->warning('Failed to self register patron');
 			return ['success'=>false, 'barcode'=>''];
 		}
+
+		if($successEmail) {
+			$emailSent = $this->sendSelfRegSuccessEmail($barcode);
+		}
+
 		$this->logger->debug('Success self registering patron');
 		return ['success' => true, 'barcode' => $barcode];
 	}
@@ -1417,6 +1424,50 @@ EOT;
 		return $fields;
 	}
 
+
+	/**
+	 * Send a self registration success email
+	 *
+	 * @param  string $barcode Self registered patrons barcode
+	 * @return bool true if email sent false otherwise
+	 */
+	public function sendSelfRegSuccessEmail($barcode) {
+		global $library;
+		global $interface;
+
+		if(!$patronId = $this->getPatronId($barcode)){
+			return false;
+		}
+
+		$patron = $this->getPatron($patronId);
+		if(!$patron) {
+			return false;
+		}
+
+		$emailAddress = $patron->email;
+		$patronName   = $patron->firstname . ' ' . $patron->lastname;
+		$libraryName  = $library->displayName;
+		$catalogUrl   = $this->configArray['Site']['url'];
+
+		$interface->assign('emailAddress', $emailAddress);
+		$interface->assign('patronName', $patronName);
+		$interface->assign('libraryName', $libraryName);
+		$interface->assign('catalogUrl', $catalogUrl);
+		$interface->assign('barcode', $barcode);
+		$emailBody = $interface->fetch('Emails/self-registration.tpl');
+		try {
+			$mailer = new PHPMailer;
+			$mailer->setFrom($this->configArray['Site']['email']);
+			$mailer->addAddress($emailAddress);
+			$mailer->Subject = "Your new library card at " . $libraryName;
+			$mailer->Body    = $emailBody;
+			$mailer->send();
+		} catch (\Exception $e) {
+			$this->logger->error($mailer->ErrorInfo);
+			return false;
+		}
+		return true;
+	}
 	/**
 	 * Get fines for a patron
 	 * GET patrons/{uid}/fines
