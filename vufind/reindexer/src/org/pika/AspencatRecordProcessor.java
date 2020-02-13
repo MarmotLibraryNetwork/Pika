@@ -99,67 +99,67 @@ class AspencatRecordProcessor extends IlsRecordProcessor {
 		return itemInfo.getStatusCode().equals(ItemStatus.LIBRARYUSEONLY.toString());
 	}
 
-	@Override
-	public void loadPrintFormatInformation(RecordInfo recordInfo, Record record) {
-		HashMap<String, Integer> itemCountsByItype = new HashMap<>();
-		HashMap<String, String>  itemTypeToFormat  = new HashMap<>();
-		int                      mostUsedCount     = 0;
-		String                   mostPopularIType  = "";  //Get a list of all the formats based on the items
-		String                   recordIdentifier  = recordInfo.getRecordIdentifier();
-		List<DataField> items = MarcUtil.getDataFields(record, itemTag);
-		for(DataField item : items){
-			if (!isItemSuppressed(item, recordIdentifier)) {
-				Subfield iTypeSubField = item.getSubfield(iTypeSubfield);
-				if (iTypeSubField != null) {
-					String iType = iTypeSubField.getData().toLowerCase();
-					if (itemCountsByItype.containsKey(iType)) {
-						itemCountsByItype.put(iType, itemCountsByItype.get(iType) + 1);
-					} else {
-						itemCountsByItype.put(iType, 1);
-						//Translate the iType to see what formats we get.  Some item types do not have a format by default and use the default translation
-						//We still will want to record those counts.
-						String translatedFormat = translateValue("format", iType, recordIdentifier);
-						//If the format is book, ignore it for now.  We will use the default method later.
-						if (translatedFormat == null || translatedFormat.equalsIgnoreCase("book")) {
-							translatedFormat = "";
-						}
-						itemTypeToFormat.put(iType, translatedFormat);
-					}
-
-					if (itemCountsByItype.get(iType) > mostUsedCount) {
-						mostPopularIType = iType;
-						mostUsedCount = itemCountsByItype.get(iType);
-					}
-				}
-			}
-		}
-
-		if (itemTypeToFormat.size() == 0 || itemTypeToFormat.get(mostPopularIType) == null || itemTypeToFormat.get(mostPopularIType).length() == 0){
-			//We didn't get any formats from the collections, get formats from the base method (007, 008, etc).
-			//logger.debug("All formats are books or there were no formats found, loading format information from the bib");
-			super.loadPrintFormatFromBib(recordInfo, record);
-		} else{
-			//logger.debug("Using default method of loading formats from iType");
-			recordInfo.addFormat(itemTypeToFormat.get(mostPopularIType));
-			String translatedFormatCategory = translateValue("format_category", mostPopularIType, recordIdentifier);
-			if (translatedFormatCategory == null){
-				translatedFormatCategory = translateValue("format_category", itemTypeToFormat.get(mostPopularIType), recordIdentifier);
-				if (translatedFormatCategory == null){
-					translatedFormatCategory = mostPopularIType;
-				}
-			}
-			recordInfo.addFormatCategory(translatedFormatCategory);
-			Long formatBoost = 1L;
-			String formatBoostStr = translateValue("format_boost", mostPopularIType, recordIdentifier);
-			if (formatBoostStr == null){
-				formatBoostStr = translateValue("format_boost", itemTypeToFormat.get(mostPopularIType), recordIdentifier);
-			}
-			if (Util.isNumeric(formatBoostStr)) {
-				formatBoost = Long.parseLong(formatBoostStr);
-			}
-			recordInfo.setFormatBoost(formatBoost);
-		}
-	}
+//	@Override
+//	public void loadPrintFormatInformation(RecordInfo recordInfo, Record record) {
+//		HashMap<String, Integer> itemCountsByItype = new HashMap<>();
+//		HashMap<String, String>  itemTypeToFormat  = new HashMap<>();
+//		int                      mostUsedCount     = 0;
+//		String                   mostPopularIType  = "";  //Get a list of all the formats based on the items
+//		String                   recordIdentifier  = recordInfo.getRecordIdentifier();
+//		List<DataField> items = MarcUtil.getDataFields(record, itemTag);
+//		for(DataField item : items){
+//			if (!isItemSuppressed(item, recordIdentifier)) {
+//				Subfield iTypeSubField = item.getSubfield(iTypeSubfield);
+//				if (iTypeSubField != null) {
+//					String iType = iTypeSubField.getData().toLowerCase();
+//					if (itemCountsByItype.containsKey(iType)) {
+//						itemCountsByItype.put(iType, itemCountsByItype.get(iType) + 1);
+//					} else {
+//						itemCountsByItype.put(iType, 1);
+//						//Translate the iType to see what formats we get.  Some item types do not have a format by default and use the default translation
+//						//We still will want to record those counts.
+//						String translatedFormat = translateValue("format", iType, recordIdentifier);
+//						//If the format is book, ignore it for now.  We will use the default method later.
+//						if (translatedFormat == null || translatedFormat.equalsIgnoreCase("book")) {
+//							translatedFormat = "";
+//						}
+//						itemTypeToFormat.put(iType, translatedFormat);
+//					}
+//
+//					if (itemCountsByItype.get(iType) > mostUsedCount) {
+//						mostPopularIType = iType;
+//						mostUsedCount = itemCountsByItype.get(iType);
+//					}
+//				}
+//			}
+//		}
+//
+//		if (itemTypeToFormat.size() == 0 || itemTypeToFormat.get(mostPopularIType) == null || itemTypeToFormat.get(mostPopularIType).length() == 0){
+//			//We didn't get any formats from the collections, get formats from the base method (007, 008, etc).
+//			//logger.debug("All formats are books or there were no formats found, loading format information from the bib");
+//			super.loadPrintFormatFromBib(recordInfo, record);
+//		} else{
+//			//logger.debug("Using default method of loading formats from iType");
+//			recordInfo.addFormat(itemTypeToFormat.get(mostPopularIType));
+//			String translatedFormatCategory = translateValue("format_category", mostPopularIType, recordIdentifier);
+//			if (translatedFormatCategory == null){
+//				translatedFormatCategory = translateValue("format_category", itemTypeToFormat.get(mostPopularIType), recordIdentifier);
+//				if (translatedFormatCategory == null){
+//					translatedFormatCategory = mostPopularIType;
+//				}
+//			}
+//			recordInfo.addFormatCategory(translatedFormatCategory);
+//			Long formatBoost = 1L;
+//			String formatBoostStr = translateValue("format_boost", mostPopularIType, recordIdentifier);
+//			if (formatBoostStr == null){
+//				formatBoostStr = translateValue("format_boost", itemTypeToFormat.get(mostPopularIType), recordIdentifier);
+//			}
+//			if (Util.isNumeric(formatBoostStr)) {
+//				formatBoost = Long.parseLong(formatBoostStr);
+//			}
+//			recordInfo.setFormatBoost(formatBoost);
+//		}
+//	}
 
 	private HashSet<String> additionalStatuses = new HashSet<>();
 	protected String getItemStatus(DataField itemField, String recordIdentifier){

@@ -799,7 +799,7 @@ abstract class MarcRecordProcessor {
 			}
 			String languageBoostEs = indexer.translateSystemValue("language_boost_es", language, identifier);
 			if (languageBoostEs != null) {
-				Long languageBoostVal = Long.parseLong(languageBoostEs);
+				long languageBoostVal = Long.parseLong(languageBoostEs);
 				if (languageBoostVal > languageBoostSpanish){
 					languageBoostSpanish = languageBoostVal;
 				}
