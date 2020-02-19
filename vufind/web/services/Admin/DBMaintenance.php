@@ -1323,7 +1323,7 @@ class DBMaintenance extends Admin_Admin {
 
 				'rename_editorial_reviews-2020.02' => array(
 					'title'           => 'Refactor Editorial Reviews name',
-					'description'     => 'Refactor Editorial Reviews name',
+					'description'     => 'Rename Editorial Reviews to Librarian Reviews',
 					'continueOnError' => false,
 					'sql'             => array(
 						"UPDATE `roles` SET `description`='Allows entering of librarian reviews and creation of widgets.' WHERE `name`='contentEditor';",
