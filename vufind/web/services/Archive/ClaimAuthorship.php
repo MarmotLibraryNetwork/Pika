@@ -16,18 +16,16 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 /**
- * Description goes here
- *
  * @category Pika
- * @author Mark Noble <pika@marmot.org>
- * Date: 7/21/2016
- * Time: 4:04 PM
+ * @author   Marmot Library Networks
  */
+require_once ROOT_DIR . '/sys/Pika/Functions.php';
 require_once ROOT_DIR . '/sys/Archive/ClaimAuthorshipRequest.php';
-require_once ROOT_DIR . '/recaptcha/recaptchalib.php';
+use function Pika\Functions\{recaptchaGetQuestion, recaptchaCheckAnswer};
+
 class Archive_ClaimAuthorship extends Action{
+
 	function launch(){
 		global $configArray;
 		global $interface;
@@ -57,11 +55,11 @@ class Archive_ClaimAuthorship extends Action{
 
 		if (isset($_REQUEST['submit'])) {
 			if (isset($configArray['ReCaptcha']['privateKey'])){
-				$privatekey = $configArray['ReCaptcha']['privateKey'];
-				$resp = recaptcha_check_answer ($privatekey,
-					$_SERVER["REMOTE_ADDR"],
-					$_POST["g-recaptcha-response"]);
-				$recaptchaValid = $resp->is_valid;
+				try {
+					$recaptchaValid = recaptchaCheckAnswer();
+				} catch (Exception $e) {
+					$recaptchaValid = false;
+				}
 			}else{
 				$recaptchaValid = true;
 			}
@@ -137,8 +135,7 @@ class Archive_ClaimAuthorship extends Action{
 
 		// Set up captcha to limit spam self registrations
 		if (isset($configArray['ReCaptcha']['publicKey'])) {
-			$recaptchaPublicKey = $configArray['ReCaptcha']['publicKey'];
-			$captchaCode        = recaptcha_get_html($recaptchaPublicKey);
+			$captchaCode        = recaptchaGetQuestion();
 			$interface->assign('captcha', $captchaCode);
 		}
 

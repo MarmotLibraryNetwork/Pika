@@ -16,21 +16,19 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 /**
  * Asynchronous functionality for MyAccount module
  *
  * @category Pika
- * @author   Mark Noble <pika@marmot.org>
- * Date: 3/25/14
- * Time: 4:26 PM
  */
 require_once ROOT_DIR . '/AJAXHandler.php';
-require_once ROOT_DIR . '/services/AJAX/Captcha_AJAX.php';
+//require_once ROOT_DIR . '/services/AJAX/Captcha_AJAX.php';
+require_once ROOT_DIR . '/sys/Pika/Functions.php';
+use function Pika\Functions\{recaptchaGetQuestion, recaptchaCheckAnswer};
 
 class MyAccount_AJAX extends AJAXHandler {
 
-	use Captcha_AJAX;
+	//use Captcha_AJAX;
 
 	protected $methodsThatRespondWithJSONUnstructured = array(
 		'GetSuggestions', // not checked
@@ -1033,7 +1031,7 @@ class MyAccount_AJAX extends AJAXHandler {
 
 		// Get data from AJAX request
 		if (isset($_REQUEST['listId']) && ctype_digit($_REQUEST['listId'])){ // validly formatted List Id
-			$recaptchaValid = $this->isRecaptchaValid();
+			$recaptchaValid = recaptchaCheckAnswer();
 
 			if (UserAccount::isLoggedIn() || $recaptchaValid){
 				$listId = $_REQUEST['listId'];
@@ -1136,7 +1134,8 @@ class MyAccount_AJAX extends AJAXHandler {
 					$interface->assign('from', $user->email);
 				}
 			}else{
-				$this->setUpCaptchaForTemplate();
+				$captchaCode = recaptchaGetQuestion();
+				$interface->assign('captcha', $captchaCode);
 			}
 
 			return [

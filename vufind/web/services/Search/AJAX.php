@@ -18,11 +18,13 @@
  */
 
 require_once ROOT_DIR . '/Action.php';
-require_once ROOT_DIR . '/services/AJAX/Captcha_AJAX.php';
+//require_once ROOT_DIR . '/services/AJAX/Captcha_AJAX.php';
+require_once ROOT_DIR . '/sys/Pika/Functions.php';
+use function Pika\Functions\{recaptchaGetQuestion, recaptchaCheckAnswer};
 
 class AJAX extends AJAXHandler {
 
-	use Captcha_AJAX;
+	//use Captcha_AJAX;
 
 	protected $methodsThatRespondWithHTML = array(
 		'GetAutoSuggestList',
@@ -50,7 +52,7 @@ class AJAX extends AJAXHandler {
 	// Email Search Results
 	function sendEmail(){
 		global $interface;
-		$recaptchaValid = $this->isRecaptchaValid();
+		$recaptchaValid = recaptchaCheckAnswer();
 		if (UserAccount::isLoggedIn() || $recaptchaValid){
 
 			$subject = translate('Library Catalog Search Result');
@@ -260,7 +262,8 @@ class AJAX extends AJAXHandler {
 	function getEmailForm(){
 		global $interface;
 		if (!UserAccount::isLoggedIn()){
-			$this->setUpCaptchaForTemplate();
+			$captchaCode = recaptchaGetQuestion();
+			$interface->assign('captcha', $captchaCode);
 		}
 		if (UserAccount::isLoggedIn()){
 			/** @var User $user */

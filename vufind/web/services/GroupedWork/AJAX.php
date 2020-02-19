@@ -21,17 +21,16 @@
  * Handles loading asynchronous
  *
  * @category Pika
- * @author   Mark Noble <pika@marmot.org>
- * Date: 12/2/13
- * Time: 3:52 PM
  */
 
 require_once ROOT_DIR . '/AJAXHandler.php';
-require_once ROOT_DIR . '/services/AJAX/Captcha_AJAX.php';
+//require_once ROOT_DIR . '/services/AJAX/Captcha_AJAX.php';
+require_once ROOT_DIR . '/sys/Pika/Functions.php';
+use function Pika\Functions\{recaptchaGetQuestion, recaptchaCheckAnswer};
 
 class GroupedWork_AJAX extends AJAXHandler {
 
-	use Captcha_AJAX;
+	//use Captcha_AJAX;
 
 	protected $methodsThatRespondWithJSONUnstructured = array(
 		'clearUserRating',
@@ -650,7 +649,8 @@ class GroupedWork_AJAX extends AJAXHandler {
 				$interface->assign('from', $user->email);
 			}
 		}else{
-			$this->setUpCaptchaForTemplate();
+			$captchaCode = recaptchaGetQuestion();
+			$interface->assign('captcha', $captchaCode);
 		}
 		return [
 			'title'        => 'Share via E-mail',
@@ -663,7 +663,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 	function sendEmail(){
 		global $interface;
 		global $configArray;
-		$recaptchaValid = $this->isRecaptchaValid();
+		$recaptchaValid = recaptchaCheckAnswer();
 		if (UserAccount::isLoggedIn() || $recaptchaValid){
 			$message = $_REQUEST['message'];
 			if (strpos($message, 'http') === false && strpos($message, 'mailto') === false && $message == strip_tags($message)){
