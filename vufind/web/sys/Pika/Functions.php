@@ -54,10 +54,10 @@ function getCheckDigit($baseId) {
 function recaptchaGetQuestion() {
 	global $configArray;
 
-	if(!isset($configArray['ReCaptcha']['privateKey']) || empty($configArray['ReCaptcha']['privateKey'])) {
+	if(!isset($configArray['ReCaptcha']['publicKey']) || empty($configArray['ReCaptcha']['publicKey'])) {
 		throw new \RuntimeException('No reCaptcha key provided');
 	}
-	$key = $configArray['ReCaptcha']['privateKey'];
+	$key = $configArray['ReCaptcha']['publicKey'];
 
 	return '<script src="https://www.google.com/recaptcha/api.js" async defer></script>' .
 	       '<div class="g-recaptcha" data-sitekey="'. $key .'">';
