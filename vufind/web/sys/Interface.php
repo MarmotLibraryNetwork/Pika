@@ -171,9 +171,7 @@ class UInterface extends Smarty {
 //			$homeLibrary       = Library::getLibraryForLocation($user->homeLocationId);
 			$homeLibrary       = $user->getHomeLibrary();
 			$showECommerceLink = isset($homeLibrary) && $homeLibrary->showEcommerceLink == 1;
-
 			if ($showECommerceLink){
-				$this->assign('minimumFineAmount', $homeLibrary->minimumFineAmount);
 				$this->assign('payFinesLinkText', $homeLibrary->payFinesLinkText);
 				$this->assign('showRefreshAccountButton', $homeLibrary->showRefreshAccountButton);
 
@@ -195,6 +193,7 @@ class UInterface extends Smarty {
 				$this->assign('ecommerceLink', $eCommerceLink);
 			}
 			$this->assign('showEcommerceLink', $showECommerceLink);
+			$this->assign('minimumFineAmount', $homeLibrary->minimumFineAmount);
 		}
 	}
 

@@ -2,10 +2,10 @@
 	{if !$offline}
 		{* No need to calculate total fines if in offline mode*}
 		{assign var="totalFines" value=$user->getTotalFines()}
-		{if ($totalFines > 0 && $showFines) || ($showExpirationWarnings && $user->expireClose)}
+		{if ($showFines && $totalFines > 0) || ($showExpirationWarnings && $user->expireClose)}
 			<div id="myAccountFines">
-				{if $totalFines > 0 && $showFines}
-					{if $showEcommerceLink && $totalFines > $minimumFineAmount}
+				{if $showFines && ($totalFines > $minimumFineAmount)}
+					{if $showEcommerceLink}
 						<div class="myAccountLink">
 							<a href="{$ecommerceLink}" target="_blank"{if $showRefreshAccountButton} onclick="VuFind.Account.ajaxLightbox('/AJAX/JSON?method=getPayFinesAfterAction')"{/if}  style="color:red; font-weight:bold;">
 								Your account{if count($user->getLinkedUsers())>0}s have{else} has{/if} ${$totalFines|number_format:2} in {translate text='Fines'}.
