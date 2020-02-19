@@ -39,16 +39,16 @@ public class OverDriveProcessor {
 		this.indexer = groupedWorkIndexer;
 		this.logger = logger;
 		try {
-			getProductInfoStmt = econtentConn.prepareStatement("SELECT * from overdrive_api_products where overdriveId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+			getProductInfoStmt = econtentConn.prepareStatement("SELECT * FROM overdrive_api_products WHERE overdriveId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			getNumCopiesStmt = econtentConn.prepareStatement("SELECT sum(copiesOwned) as totalOwned FROM overdrive_api_product_availability WHERE productId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			//TODO filter by libraries belonging to an overdrive account??
-			getProductMetadataStmt = econtentConn.prepareStatement("SELECT * from overdrive_api_product_metadata where productId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
-			getProductAvailabilityStmt = econtentConn.prepareStatement("SELECT * from overdrive_api_product_availability where productId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+			getProductMetadataStmt = econtentConn.prepareStatement("SELECT * FROM overdrive_api_product_metadata WHERE productId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+			getProductAvailabilityStmt = econtentConn.prepareStatement("SELECT * FROM overdrive_api_product_availability WHERE productId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			//getProductCreatorsStmt = econtentConn.prepareStatement("SELECT * from overdrive_api_product_creators where productId = ?");
-			getProductFormatsStmt = econtentConn.prepareStatement("SELECT * from overdrive_api_product_formats where productId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
-			getProductLanguagesStmt = econtentConn.prepareStatement("SELECT * from overdrive_api_product_languages inner join overdrive_api_product_languages_ref on overdrive_api_product_languages.id = languageId where productId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
-			getProductSubjectsStmt = econtentConn.prepareStatement("SELECT * from overdrive_api_product_subjects inner join overdrive_api_product_subjects_ref on overdrive_api_product_subjects.id = subjectId where productId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
-			getProductIdentifiersStmt = econtentConn.prepareStatement("SELECT * from overdrive_api_product_identifiers where productId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+			getProductFormatsStmt = econtentConn.prepareStatement("SELECT * FROM overdrive_api_product_formats WHERE productId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+			getProductLanguagesStmt = econtentConn.prepareStatement("SELECT * FROM overdrive_api_product_languages INNER JOIN overdrive_api_product_languages_ref ON overdrive_api_product_languages.id = languageId WHERE productId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+			getProductSubjectsStmt = econtentConn.prepareStatement("SELECT * FROM overdrive_api_product_subjects INNER JOIN overdrive_api_product_subjects_ref ON overdrive_api_product_subjects.id = subjectId WHERE productId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+			getProductIdentifiersStmt = econtentConn.prepareStatement("SELECT * FROM overdrive_api_product_identifiers WHERE productId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 		} catch (SQLException e) {
 			logger.error("Error setting up overdrive processor", e);
 		}
@@ -91,6 +91,9 @@ public class OverDriveProcessor {
 								String                  fullTitle = title;
 								String                  series    = null;
 
+								String targetAudience  = loadOverDriveSubjects(groupedWork, productId);
+								// Load the subjects first, so we can determine when an eBook is actually eComic
+
 								String mediaType = productRS.getString("mediaType");
 								switch (mediaType) {
 									case "Audiobook":
@@ -100,6 +103,16 @@ public class OverDriveProcessor {
 									case "Video":
 										formatCategory = "Movies";
 										primaryFormat = "eVideo";
+										break;
+									case "eBook":
+										HashSet<String> titleTopics = groupedWork.getTopics();
+										if (titleTopics.contains("Comic and Graphic Books")){
+											primaryFormat = "eComic";
+											formatCategory = "eBook";
+										} else {
+											formatCategory = mediaType;
+											primaryFormat = mediaType;
+										}
 										break;
 									default:
 										formatCategory = mediaType;
@@ -188,7 +201,7 @@ public class OverDriveProcessor {
 								productRS.close();
 
 								String primaryLanguage = loadOverDriveLanguages(groupedWork, overDriveRecord, productId, identifier);
-								String targetAudience  = loadOverDriveSubjects(groupedWork, productId);
+//								String targetAudience  = loadOverDriveSubjects(groupedWork, productId);
 
 								//Load the formats for the record.  For OverDrive, we will create a separate item for each format.
 								HashSet<String> validFormats    = loadOverDriveFormats(groupedWork, productId, identifier);
@@ -364,10 +377,10 @@ public class OverDriveProcessor {
 	private String loadOverDriveSubjects(GroupedWorkSolr groupedWork, Long productId) throws SQLException {
 		//Load subject data
 		getProductSubjectsStmt.setLong(1, productId);
-		ResultSet subjectsRS = getProductSubjectsStmt.executeQuery();
-		HashSet<String> topics = new HashSet<>();
-		HashSet<String> genres = new HashSet<>();
-		HashMap<String, Integer> literaryForm = new HashMap<>();
+		ResultSet                subjectsRS       = getProductSubjectsStmt.executeQuery();
+		HashSet<String>          topics           = new HashSet<>();
+		HashSet<String>          genres           = new HashSet<>();
+		HashMap<String, Integer> literaryForm     = new HashMap<>();
 		HashMap<String, Integer> literaryFormFull = new HashMap<>();
 		String targetAudience = "Adult";
 		String targetAudienceFull = "Adult";
@@ -377,7 +390,7 @@ public class OverDriveProcessor {
 				addToMapWithCount(literaryForm, "Non Fiction");
 				addToMapWithCount(literaryFormFull, "Non Fiction");
 				genres.add("Non Fiction");
-			}else	if (curSubject.contains("Fiction")){
+			}else if (curSubject.contains("Fiction")){
 				addToMapWithCount(literaryForm, "Fiction");
 				addToMapWithCount(literaryFormFull, "Fiction");
 				genres.add("Fiction");
@@ -470,32 +483,32 @@ public class OverDriveProcessor {
 	private HashSet<String> loadOverDriveFormats(GroupedWorkSolr groupedWork, Long productId, String identifier) throws SQLException {
 		//Load formats
 		getProductFormatsStmt.setLong(1, productId);
-		ResultSet formatsRS = getProductFormatsStmt.executeQuery();
-		HashSet<String> formats = new HashSet<>();
-		HashSet<String> eContentDevices = new HashSet<>();
-		Long formatBoost = 1L;
-		while (formatsRS.next()){
-			String format = formatsRS.getString("name");
-			formats.add(format);
-			String deviceString = indexer.translateSystemValue("device_compatibility", format.replace(' ', '_'), identifier);
-			String[] devices = deviceString.split("\\|");
-			for (String device : devices){
-				eContentDevices.add(device.trim());
-			}
-			String formatBoostStr = indexer.translateSystemValue("format_boost_overdrive", format.replace(' ', '_'), identifier);
-			try{
-				Long curFormatBoost = Long.parseLong(formatBoostStr);
-				if (curFormatBoost > formatBoost){
-					formatBoost = curFormatBoost;
+		HashSet<String> formats;
+		try (ResultSet formatsRS = getProductFormatsStmt.executeQuery()) {
+			formats = new HashSet<>();
+			HashSet<String> eContentDevices = new HashSet<>();
+			Long            formatBoost     = 1L;
+			while (formatsRS.next()) {
+				String format = formatsRS.getString("name");
+				formats.add(format);
+				String   deviceString = indexer.translateSystemValue("device_compatibility", format.replace(' ', '_'), identifier);
+				String[] devices      = deviceString.split("\\|");
+				for (String device : devices) {
+					eContentDevices.add(device.trim());
 				}
-			}catch (NumberFormatException e){
-				logger.warn("Could not parse format_boost " + formatBoostStr);
+				String formatBoostStr = indexer.translateSystemValue("format_boost_overdrive", format.replace(' ', '_'), identifier);
+				try {
+					Long curFormatBoost = Long.parseLong(formatBoostStr);
+					if (curFormatBoost > formatBoost) {
+						formatBoost = curFormatBoost;
+					}
+				} catch (NumberFormatException e) {
+					logger.warn("Could not parse format_boost " + formatBoostStr);
+				}
 			}
+			//By default, formats are good for all locations
+			groupedWork.addEContentDevices(eContentDevices);
 		}
-		//By default, formats are good for all locations
-		groupedWork.addEContentDevices(eContentDevices);
-
-		formatsRS.close();
 
 		return formats;
 	}
