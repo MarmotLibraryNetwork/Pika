@@ -90,19 +90,21 @@ CREATE TABLE IF NOT EXISTS `db_update` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `editorial_reviews`
+-- Table structure for table `librarian_reviews`
 --
 
-CREATE TABLE IF NOT EXISTS `editorial_reviews` (
-  `editorialReviewId` int(11) NOT NULL AUTO_INCREMENT,
-  `recordId` varchar(50) NOT NULL,
-  `title` varchar(255) NOT NULL,
-  `pubDate` bigint(20) NOT NULL,
-  `review` text,
-  `source` varchar(50) NOT NULL,
-  PRIMARY KEY (`editorialReviewId`),
-  KEY `RecordId` (`recordId`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=5 ;
+CREATE TABLE `librarian_reviews` (
+     `id` int(11) NOT NULL,
+     `groupedWorkPermanentId` char(36) NOT NULL,
+     `title` varchar(255) NOT NULL,
+     `review` mediumtext,
+     `source` varchar(50) NOT NULL,
+     `tabName` varchar(25) DEFAULT 'Reviews',
+     `teaser` varchar(512) DEFAULT NULL,
+     `pubDate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+     PRIMARY KEY (`id`),
+     KEY `RecordId` (`groupedWorkPermanentId`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
 

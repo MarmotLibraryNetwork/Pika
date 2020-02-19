@@ -7,10 +7,10 @@
  * Date: 2/1/2020
  *
  */
-require_once ROOT_DIR . '/sys/LocalEnrichment/EditorialReview.php';
+require_once ROOT_DIR . '/sys/LocalEnrichment/LibrarianReview.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 
-class EditorialReviews extends ObjectEditor {
+class LibrarianReviews extends ObjectEditor {
 
 	function getAllowableRoles(){
 		return array('opacAdmin', 'libraryAdmin', 'contentEditor', 'libraryManager', 'locationManager');
@@ -20,33 +20,33 @@ class EditorialReviews extends ObjectEditor {
 	 * @inheritDoc
 	 */
 	function getObjectType(){
-		return 'EditorialReview';
+		return 'LibrarianReview';
 	}
 
 	/**
 	 * @inheritDoc
 	 */
 	function getToolName(){
-		return 'EditorialReviews';
+		return 'LibrarianReviews';
 	}
 
 	/**
 	 * @inheritDoc
 	 */
 	function getPageTitle(){
-		return 'Editorial Reviews';
+		return 'Librarian Reviews';
 	}
 
 	/**
 	 * @inheritDoc
 	 */
 	function getAllObjects(){
-		$object = new EditorialReview();
+		$object = new LibrarianReview();
 		$object->orderBy('pubDate DESC');
 		$object->find();
 		$objectList = array();
 		while ($object->fetch()){
-			$objectList[$object->editorialReviewId] = clone $object;
+			$objectList[$object->id] = clone $object;
 		}
 		return $objectList;
 	}
@@ -55,21 +55,21 @@ class EditorialReviews extends ObjectEditor {
 	 * @inheritDoc
 	 */
 	function getObjectStructure(){
-		return EditorialReview::getObjectStructure();
+		return LibrarianReview::getObjectStructure();
 	}
 
 	/**
 	 * @inheritDoc
 	 */
 	function getPrimaryKeyColumn(){
-		return 'editorialReviewId';
+		return 'id';
 	}
 
 	/**
 	 * @inheritDoc
 	 */
 	function getIdKeyColumn(){
-		return 'editorialReviewId';
+		return 'id';
 	}
 
 }

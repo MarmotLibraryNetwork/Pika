@@ -18,27 +18,27 @@
  */
 
 /**
- * Table Definition for Editorial Reviews
+ * Table Definition for Librarian Reviews
  */
 require_once 'DB/DataObject.php';
 
-class EditorialReview extends DB_DataObject {
-	public $__table = 'editorial_reviews';    // table name
-	public $editorialReviewId;
+class LibrarianReview extends DB_DataObject {
+	public $__table = 'librarian_reviews';    // table name
+	public $id;
 	public $groupedWorkPermanentId;
 	public $title;
 	public $review;
 	public $source;
 	public $pubDate;
 
-	function keys(){
-		return array('editorialReviewId');
-	}
+//	function keys(){
+//		return array('id');
+//	}
 
 	static function getObjectStructure(){
 		return array(
 			array(
-				'property'    => 'editorialReviewId',
+				'property'    => 'id',
 				'type'        => 'hidden',
 				'label'       => 'Id',
 				'description' => 'The unique id of the editorial review in the database',

@@ -317,31 +317,33 @@ INSERT INTO `db_update` VALUES ('account_profiles_1','2015-10-12 22:07:55'),('ad
 UNLOCK TABLES;
 
 --
--- Table structure for table `editorial_reviews`
+-- Table structure for table `librarian_reviews`
 --
 
-DROP TABLE IF EXISTS `editorial_reviews`;
+DROP TABLE IF EXISTS `librarian_reviews`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `editorial_reviews` (
-  `editorialReviewId` int(11) NOT NULL AUTO_INCREMENT,
-  `recordId` varchar(50) NOT NULL,
-  `title` varchar(255) NOT NULL,
-  `pubDate` bigint(20) NOT NULL,
-  `review` text,
-  `source` varchar(50) NOT NULL,
-  PRIMARY KEY (`editorialReviewId`),
-  KEY `RecordId` (`recordId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+CREATE TABLE `librarian_reviews` (
+     `id` int(11) NOT NULL,
+     `groupedWorkPermanentId` char(36) NOT NULL,
+     `title` varchar(255) NOT NULL,
+     `review` mediumtext,
+     `source` varchar(50) NOT NULL,
+     `tabName` varchar(25) DEFAULT 'Reviews',
+     `teaser` varchar(512) DEFAULT NULL,
+     `pubDate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+     PRIMARY KEY (`id`),
+     KEY `RecordId` (`groupedWorkPermanentId`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `editorial_reviews`
+-- Dumping data for table `librarian_reviews`
 --
 
-LOCK TABLES `editorial_reviews` WRITE;
-/*!40000 ALTER TABLE `editorial_reviews` DISABLE KEYS */;
-/*!40000 ALTER TABLE `editorial_reviews` ENABLE KEYS */;
+LOCK TABLES `librarian_reviews` WRITE;
+/*!40000 ALTER TABLE `librarian_reviews` DISABLE KEYS */;
+/*!40000 ALTER TABLE `librarian_reviews` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -2023,7 +2025,7 @@ CREATE TABLE `roles` (
 
 LOCK TABLES `roles` WRITE;
 /*!40000 ALTER TABLE `roles` DISABLE KEYS */;
-INSERT INTO `roles` VALUES (1,'userAdmin','Allows administration of users.'),(2,'opacAdmin','Allows administration of the opac display (libraries, locations, etc).'),(3,'genealogyContributor','Allows Genealogy data to be entered  by the user.'),(5,'cataloging','Allows user to perform cataloging activities.'),(6,'libraryAdmin','Allows user to update library configuration for their library system only for their home location.'),(7,'contentEditor','Allows entering of editorial reviews and creation of widgets.'),(8,'library_material_requests','Allows user to manage material requests for a specific library.'),(9,'locationReports','Allows the user to view reports for their location.'),(10,'libraryManager','Allows user to do basic configuration for their library.'),(11,'locationManager','Allows user to do basic configuration for their location.'),(12,'circulationReports','Allows user to view offline circulation reports.'),(13,'listPublisher','Optionally only include lists from people with this role in search results.'),(14,'archives','Control overall archives integration.'),(15,'libraryManager','Allows user to do basic configuration for their library.'),(16,'locationManager','Allows user to do basic configuration for their location.'),(17,'circulationReports','Allows user to view offline circulation reports.'),(18,'listPublisher','Optionally only include lists from people with this role in search results.'),(19,'archives','Control overall archives integration.');
+INSERT INTO `roles` VALUES (1,'userAdmin','Allows administration of users.'),(2,'opacAdmin','Allows administration of the opac display (libraries, locations, etc).'),(3,'genealogyContributor','Allows Genealogy data to be entered  by the user.'),(5,'cataloging','Allows user to perform cataloging activities.'),(6,'libraryAdmin','Allows user to update library configuration for their library system only for their home location.'),(7,'contentEditor','Allows entering of librarian reviews and creation of widgets.'),(8,'library_material_requests','Allows user to manage material requests for a specific library.'),(9,'locationReports','Allows the user to view reports for their location.'),(10,'libraryManager','Allows user to do basic configuration for their library.'),(11,'locationManager','Allows user to do basic configuration for their location.'),(12,'circulationReports','Allows user to view offline circulation reports.'),(13,'listPublisher','Optionally only include lists from people with this role in search results.'),(14,'archives','Control overall archives integration.'),(15,'libraryManager','Allows user to do basic configuration for their library.'),(16,'locationManager','Allows user to do basic configuration for their location.'),(17,'circulationReports','Allows user to view offline circulation reports.'),(18,'listPublisher','Optionally only include lists from people with this role in search results.'),(19,'archives','Control overall archives integration.');
 /*!40000 ALTER TABLE `roles` ENABLE KEYS */;
 UNLOCK TABLES;
 
