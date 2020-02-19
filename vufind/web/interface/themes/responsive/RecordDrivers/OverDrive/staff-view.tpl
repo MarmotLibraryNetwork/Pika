@@ -16,6 +16,9 @@
 			        class="btn btn-sm btn-default">Reload Enrichment
 			</button>
         {if $loggedIn}
+            {if $userRoles && (in_array('opacAdmin', $userRoles) || in_array('libraryAdmin', $userRoles) || in_array('libraryManager', $userRoles) || in_array('locationManager', $userRoles) || in_array('contentEditor', $userRoles))}
+			        <a href="/Admin/LibrarianReviews?objectAction=addNew&groupedWorkPermanentId={$recordDriver->getPermanentId()}" target="_blank" class="btn btn-sm btn-default">Add Librarian Review</a>
+            {/if}
             {if $userRoles && (in_array('opacAdmin', $userRoles) || in_array('cataloging', $userRoles))}
 							<button onclick="return VuFind.GroupedWork.forceReindex('{$recordDriver->getGroupedWorkId()}')"
 							        class="btn btn-sm btn-default">Force Reindex

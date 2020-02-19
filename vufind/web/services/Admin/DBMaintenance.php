@@ -596,7 +596,7 @@ class DBMaintenance extends Admin_Admin {
 						"INSERT INTO `roles` (`name`, `description`) VALUES ('locationManager', 'Allows user to do basic configuration for their location.')",
 						"INSERT INTO `roles` (`name`, `description`) VALUES ('circulationReports', 'Allows user to view offline circulation reports.')",
 						"INSERT INTO `roles` (`name`, `description`) VALUES ('libraryAdmin', 'Allows user to update library configuration for their library system only for their home location.')",
-						"INSERT INTO `roles` (`name`, `description`) VALUES ('contentEditor', 'Allows entering of editorial reviews and creation of widgets.')",
+						"INSERT INTO `roles` (`name`, `description`) VALUES ('contentEditor', 'Allows entering of librarian reviews and creation of widgets.')",
 						"INSERT INTO `roles` (`name`, `description`) VALUES ('listPublisher', 'Optionally only include lists from people with this role in search results.')",
 						"INSERT INTO `roles` (`name`, `description`) VALUES ('archives', 'Control overall archives integration.')",
 						"INSERT INTO roles (name, description) VALUES ('locationReports', 'Allows the user to view reports for their location.')",
@@ -1321,6 +1321,16 @@ class DBMaintenance extends Admin_Admin {
 					)
 				),
 
+				'rename_editorial_reviews-2020.02' => array(
+					'title'           => 'Refactor Editorial Reviews name',
+					'description'     => 'Rename Editorial Reviews to Librarian Reviews',
+					'continueOnError' => false,
+					'sql'             => array(
+						"UPDATE `roles` SET `description`='Allows entering of librarian reviews and creation of widgets.' WHERE `name`='contentEditor';",
+						"ALTER TABLE `editorial_reviews` CHANGE COLUMN `editorialReviewId` `id` INT(11) NOT NULL , RENAME TO  `pika`.`librarian_reviews` ;",
+						"UPDATE `library_more_details` SET `source` = 'librarianReviews' WHERE `source` = 'editorialReviews';",
+					)
+				),
 
 			)
 		);

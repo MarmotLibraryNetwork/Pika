@@ -308,9 +308,9 @@ abstract class RecordInterface {
 				'body'  => "<div id='customerReviewPlaceholder'></div>",
 			);
 		}
-		$moreDetailsOptions['editorialReviews'] = array(
-			'label' => 'Editorial Reviews',
-			'body'  => "<div id='editorialReviewPlaceholder'></div>",
+		$moreDetailsOptions['librarianReviews'] = array(
+			'label' => 'Librarian Reviews',
+			'body'  => "<div id='librarianReviewPlaceholder'></div>",
 		);
 		if ($interface->getVariable('showTagging')){
 			$moreDetailsOptions['tags'] = array(
@@ -416,7 +416,7 @@ abstract class RecordInterface {
 			'similarTitles'     => 'Similar Titles From NoveList',
 			'similarAuthors'    => 'Similar Authors From NoveList',
 			'borrowerReviews'   => 'Borrower Reviews',
-			'editorialReviews'  => 'Editorial Reviews',
+			'librarianReviews'  => 'Librarian Reviews',
 			'syndicatedReviews' => 'Syndicated Reviews (Syndetics/ContentCafe)',
 			'goodreadsReviews'  => 'GoodReads Reviews',
 			'tags'              => 'Tags',
@@ -445,7 +445,7 @@ abstract class RecordInterface {
 			'similarTitles'     => 'closed',
 			'similarAuthors'    => 'closed',
 			'borrowerReviews'   => 'closed',
-			'editorialReviews'  => 'closed',
+			'librarianReviews'  => 'closed',
 			'syndicatedReviews' => 'closed',
 			'goodreadsReviews'  => 'closed',
 			'tags'              => 'closed',

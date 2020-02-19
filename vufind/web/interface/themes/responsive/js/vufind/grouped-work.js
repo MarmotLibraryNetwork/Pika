@@ -167,12 +167,12 @@ VuFind.GroupedWork = (function(){
 						$("#syndicatedReviewPlaceholder").html(syndicatedReviewsData);
 					}
 				}
-				if (data.numEditorialReviews == 0){
-					$("#editorialReviewsPanel").hide();
+				if (data.numLibrarianReviews == 0){
+					$("#librarianReviewsPanel").hide();
 				}else{
-					var editorialReviewsData = data.editorialReviewsHtml;
-					if (editorialReviewsData && editorialReviewsData.length > 0) {
-						$("#editorialReviewPlaceholder").html(editorialReviewsData);
+					var librarianReviewsData = data.librarianReviewsHtml;
+					if (librarianReviewsData && librarianReviewsData.length > 0) {
+						$("#librarianReviewPlaceholder").html(librarianReviewsData);
 					}
 				}
 

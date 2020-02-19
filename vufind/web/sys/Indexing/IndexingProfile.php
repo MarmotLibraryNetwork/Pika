@@ -104,6 +104,7 @@ class IndexingProfile extends DB_DataObject{
 	public $doAutomaticEcontentSuppression;
 	public $groupUnchangedFiles;
 	public $materialTypeField;
+	public $sierraLanguageFixedField;
 	public $formatDeterminationMethod;
 	public $materialTypesToIgnore;
 
@@ -172,6 +173,7 @@ class IndexingProfile extends DB_DataObject{
 					'recordNumberPrefix'         => array('property' => 'recordNumberPrefix',         'type' => 'text', 'label' => 'Record Number Prefix', 'maxLength' => 10, 'description' => 'A prefix to identify the bib record number if multiple MARC tags exist'),
 					'sierraRecordFixedFieldsTag' => array('property' => 'sierraRecordFixedFieldsTag', 'type' => 'text', 'label' => 'Sierra Record/Bib level Fixed Fields Tag (ils profile only)', 'maxLength' => 3, 'description' => 'The MARC tag where the Sierra fixed fields can be found, specifically the bcode3'),
 					'materialTypeField'          => array('property' => 'materialTypeField',          'type' => 'text', 'label' => 'Material Type Sub Field (ils profile only)', 'maxLength' => 1, 'description' => 'Bib level Subfield for Material Type (depends on setting the Sierra Record/Bib level Fixed Fields Tag)', 'hideInLists' => true),
+					'sierraLanguageFixedField'   => array('property' => 'sierraLanguageFixedField',   'type' => 'text', 'label' => 'Sierra Language Fixed Field (ils profile only)', 'maxLength' => 1, 'description' => 'Bib level Subfield for Language (depends on setting the Sierra Record/Bib level Fixed Fields Tag)', 'hideInLists' => true),
 				)),
 
 			'itemRecordSection' => array('property'=>'itemRecordSection', 'type' => 'section', 'label' =>'Item Tag Settings (ils profile only)', 'hideInLists' => true,

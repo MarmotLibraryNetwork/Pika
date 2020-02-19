@@ -62,7 +62,8 @@ public class IndexingProfile {
 
 	String sierraBibLevelFieldTag;
 	char   bcode3Subfield;
-	char materialTypeSubField;
+	char   materialTypeSubField;
+	char   sierraLanguageFixedField;
 
 	//These are used from Record Grouping and Reindexing
 	boolean doAutomaticEcontentSuppression;
@@ -182,11 +183,15 @@ public class IndexingProfile {
 		this.materialTypeSubField = getCharFromString(subfield);
 	}
 
+	public void setSierraLanguageFixedField(String subfield) {
+		this.sierraLanguageFixedField = getCharFromString(subfield);
+	}
+
 	static IndexingProfile loadIndexingProfile(Connection pikaConn, String profileToLoad, Logger logger) {
 		//Get the Indexing Profile from the database
 		IndexingProfile indexingProfile = new IndexingProfile();
 		try {
-			try (PreparedStatement getIndexingProfileStmt = pikaConn.prepareStatement("SELECT * FROM indexing_profiles where name ='" + profileToLoad + "'");
+			try (PreparedStatement getIndexingProfileStmt = pikaConn.prepareStatement("SELECT * FROM indexing_profiles WHERE name ='" + profileToLoad + "'");
 				 ResultSet indexingProfileRS = getIndexingProfileStmt.executeQuery()) {
 				if (indexingProfileRS.next()) {
 
@@ -236,6 +241,7 @@ public class IndexingProfile {
 					indexingProfile.setItemUrl(indexingProfileRS.getString("itemUrl"));
 					indexingProfile.setBcode3Subfield(indexingProfileRS.getString("bCode3"));
 					indexingProfile.setMaterialTypeSubField(indexingProfileRS.getString("materialTypeField"));
+					indexingProfile.setSierraLanguageFixedField(indexingProfileRS.getString("sierraLanguageFixedField"));
 
 
 					// Sierra API Item Field Mapping

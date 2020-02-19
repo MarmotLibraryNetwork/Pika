@@ -396,7 +396,7 @@ function loadModuleActionId(){
 	$action     = null;
 	$id         = isset($_REQUEST['id']) ? $_REQUEST['id'] : null;
 	$requestURI = $_SERVER['REQUEST_URI'];
-	$allRecordModules = 'OverDrive|GroupedWork|Record|ExternalEContent|Person|EditorialReview|Library';
+	$allRecordModules = 'OverDrive|GroupedWork|Record|ExternalEContent|Person|LibrarianReview|Library';
 	foreach ($indexingProfiles as $profile){
 		$allRecordModules .= '|' . $profile->recordUrlComponent;
 	}
