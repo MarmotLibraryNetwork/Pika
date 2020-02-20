@@ -70,7 +70,7 @@ class CatalogConnection
 		$this->logger = new Pika\Logger("CatalogConnection");
 		if ($driver != 'DriverInterface'){
 			$path = ROOT_DIR . "/Drivers/{$driver}.php";
-			if (is_readable($path)){
+			if (file_exists($path)){
 				require_once $path;
 			}
 

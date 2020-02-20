@@ -404,15 +404,18 @@ class Sierra {
 		// find user pika id-- needed for cache key
 		// the username db field stores the sierra patron id. we'll use that to determine if the user exists.
 		// 1. check for a cached user object
-		$patron           = new User();
-		$patron->username = $patronId;
+		$patron            = new User();
+		$patron->whereAdd("ilsUserId = '{$patronId}'", 'OR');
+		$patron->whereAdd("username = '{$patronId}'", 'OR');
+		//$patron->username = $patronId;
 		if ($patron->find(true) && $patron->N != 0) {
 			$patronObjectCacheKey = $this->cache->makePatronKey('patron', $patron->id);
 			if ($pObj = $this->cache->get($patronObjectCacheKey)) {
 				$this->logger->info("Found patron in memcache:" . $patronObjectCacheKey);
 				return $pObj;
 			}
-	}
+		}
+
 		// 2. grab everything from the patron record the api can provide.
 		$params = [
 			'fields' => 'names,addresses,phones,emails,expirationDate,homeLibraryCode,moneyOwed,patronType,barcodes,patronCodes,createdDate,blockInfo,message,pMessage,langPref,fixedFields,varFields,updatedDate,createdDate'
@@ -424,7 +427,7 @@ class Sierra {
 		}
 
 		// 3. Check to see if the user exists in the database
-		// todo: store the sierra id in another database column.
+
 		// does the user exist in database?
 		if(!$patron || $patron->N == 0) {
 			$this->logger->debug('Patron does not exits in Pika database.', ['barcode'=>$this->patronBarcode]);
@@ -481,10 +484,10 @@ class Sierra {
 		}
 
 		// 5. Checks; make sure patron info from sierra matches database. update if needed.
-		// 5.1 username
-		$username = $pInfo->id;
-		if($username != $patron->username) {
-			$patron->username = $username;
+		// 5.1 ilsUserId
+		$ilsUserId = $pInfo->id;
+		if($ilsUserId != $patron->ilsUserId) {
+			$patron->ilsUserId = $ilsUserId;
 			$updatePatron = true;
 		}
 

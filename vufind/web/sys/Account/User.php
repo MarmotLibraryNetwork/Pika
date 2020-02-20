@@ -106,6 +106,7 @@ class User extends DB_DataObject {
 	private $materialsRequestReplyToAddress;
 	private $materialsRequestEmailSignature;
 	private $barcode;
+	public $ilsUserId;
 	private $linkedUserObjects;
 // Account Blocks //
 	private $blockAll = null; // set to null to signal unset, boolean when set
