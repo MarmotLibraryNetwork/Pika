@@ -73,7 +73,7 @@ class UserAccount {
 
 					if ($checkCAS && $action != 'AJAX' && $action != 'DjatokaResolver' && $action != 'Logout' && $module != 'MyAccount' && $module != 'API' && !isset($_REQUEST['username'])){
 						//Check CAS first
-						require_once ROOT_DIR . '/sys/Authentication/CASAuthentication.php';
+						//require_once ROOT_DIR . '/sys/Authentication/CASAuthentication.php';
 
 						$casAuthentication        = new CASAuthentication(null);
 						$casUsername              = $casAuthentication->validateAccount(null, null, null, false);
@@ -337,7 +337,7 @@ class UserAccount {
 			//If the library uses CAS/SSO we may already be logged in even though they never logged in within Pika
 			if (strlen($library->casHost) > 0){
 				//Check CAS first
-				require_once ROOT_DIR . '/sys/Authentication/CASAuthentication.php';
+				//require_once ROOT_DIR . '/sys/Authentication/CASAuthentication.php';
 				$casAuthentication = new CASAuthentication(null);
 				$logger->debug("Checking CAS Authentication from UserAccount::getLoggedInUser");
 				$casUsername = $casAuthentication->validateAccount(null, null, null, false);
@@ -404,7 +404,7 @@ class UserAccount {
 		if (isset($_REQUEST['casLogin'])){
 			$logger->info("Logging the user in via CAS");
 			//Check CAS first
-			require_once ROOT_DIR . '/sys/Authentication/CASAuthentication.php';
+		//	require_once ROOT_DIR . '/sys/Authentication/CASAuthentication.php';
 			$casAuthentication = new CASAuthentication(null);
 			$casUsername       = $casAuthentication->authenticate(false);
 			if ($casUsername == false || PEAR_Singleton::isError($casUsername)){
@@ -500,7 +500,7 @@ class UserAccount {
 		$validatedViaSSO = false;
 		if (strlen($library->casHost) > 0 && $username == null && $password == null){
 			//Check CAS first
-			require_once ROOT_DIR . '/sys/Authentication/CASAuthentication.php';
+			//require_once ROOT_DIR . '/sys/Authentication/CASAuthentication.php';
 			$casAuthentication = new CASAuthentication(null);
 			$logger->debug("Checking CAS Authentication from UserAccount::validateAccount");
 			$casUsername = $casAuthentication->validateAccount(null, null, $parentAccount, false);
@@ -558,7 +558,7 @@ class UserAccount {
 				unset($_SESSION['guidingUserId']);
 			}
 			if (isset($_SESSION['loggedInViaCAS']) && $_SESSION['loggedInViaCAS']){
-				require_once ROOT_DIR . '/sys/Authentication/CASAuthentication.php';
+				//require_once ROOT_DIR . '/sys/Authentication/CASAuthentication.php';
 				$casAuthentication = new CASAuthentication(null);
 				$casAuthentication->logout();
 			}

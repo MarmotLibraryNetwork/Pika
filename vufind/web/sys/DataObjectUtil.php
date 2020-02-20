@@ -61,7 +61,8 @@ class DataObjectUtil {
 		$primaryKeySet = false;
 		foreach ($structure as $property){
 			if (isset($property['primaryKey']) && $property['primaryKey'] == true){
-				if (isset($object->$property['property']) && !empty($object->$property['property'])){
+				// todo: this isn't working -- getting an array to string conversion notice
+				if (isset($object->$property['property']) && !empty($object->$property['property']) && strlen($object->$property['property']) > 0){
 					$object                        = new $dataType();
 					$object->$property['property'] = $object->$property['property']; //TODO: this doesn't work
 					if ($object->find(true)){
