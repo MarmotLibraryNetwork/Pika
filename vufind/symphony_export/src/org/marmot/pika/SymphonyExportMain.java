@@ -203,8 +203,8 @@ public class SymphonyExportMain {
 				writer.close();
 				if (logger.isInfoEnabled()) {
 					logger.info("Finished writing Orders to MARC record");
-					logger.info("Wrote " + numOrderRecordsWritten);
-					logger.info("Skipped " + numOrderRecordsSkipped + " because they are in the main export");
+					logger.info("Wrote " + numOrderRecordsWritten + " order records.");
+					logger.info("Skipped " + numOrderRecordsSkipped + " order records because they are in the main export");
 				}
 			} catch (Exception e) {
 				logger.error("Error reading orders file ", e);
@@ -385,10 +385,10 @@ public class SymphonyExportMain {
 
 		//If we got this far we have a good updates file to process.
 		try (
-			PreparedStatement getChecksumStmt       = pikaConn.prepareStatement("SELECT checksum FROM ils_marc_checksums where source = ? AND ilsId = ?");
-			PreparedStatement updateChecksumStmt    = pikaConn.prepareStatement("UPDATE ils_marc_checksums set checksum = ? where source = ? AND ilsId = ?");
-			PreparedStatement getGroupedWorkIdStmt  = pikaConn.prepareStatement("SELECT grouped_work_id from grouped_work_primary_identifiers WHERE type = ? AND identifier = ?");
-			PreparedStatement updateGroupedWorkStmt = pikaConn.prepareStatement("UPDATE grouped_work set date_updated = ? where id = ?");
+			PreparedStatement getChecksumStmt       = pikaConn.prepareStatement("SELECT checksum FROM ils_marc_checksums WHERE source = ? AND ilsId = ?");
+			PreparedStatement updateChecksumStmt    = pikaConn.prepareStatement("UPDATE ils_marc_checksums SET checksum = ? WHERE source = ? AND ilsId = ?");
+			PreparedStatement getGroupedWorkIdStmt  = pikaConn.prepareStatement("SELECT grouped_work_id FROM grouped_work_primary_identifiers WHERE type = ? AND identifier = ?");
+			PreparedStatement updateGroupedWorkStmt = pikaConn.prepareStatement("UPDATE grouped_work SET date_updated = ? WHERE id = ?");
 		){
 
 			MarcReader updatedMarcReader = new MarcStreamReader(new FileInputStream(updatesFile));
