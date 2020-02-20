@@ -20,7 +20,9 @@
 require_once 'bootstrap.php';
 use chillerlan\QRCode\{QRCode, QROptions};
 //Create the QR Code if it doesn't exit
-$type     = $_REQUEST['type'];
+// todo: the $_REQUEST['id'] is always the grouped work id. If this changes use type to point to item record.
+//$type     = $_REQUEST['type'];
+$type     = 'GroupedWork';
 $id       = $_REQUEST['id'];
 $filename = $configArray['Site']['qrcodePath'] . "/{$type}_{$id}.png";
 if (!file_exists($filename)){
@@ -33,9 +35,6 @@ if (!file_exists($filename)){
 	]);
 	$data = $configArray['Site']['url'] . "/{$type}/{$id}/Home";
 	$im = (new QRCode($options))->render($data, $filename);
-	//$codeContents = $configArray['Site']['url'] . "/{$type}/{$id}/Home";
-	//QRcode::png($codeContents, $filename, QR_ECLEVEL_L, 3);
-
 }
 header('Content-type: image/png');
 readfile($filename);
