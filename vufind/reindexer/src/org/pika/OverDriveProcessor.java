@@ -91,7 +91,8 @@ public class OverDriveProcessor {
 								String                  fullTitle = title;
 								String                  series    = null;
 
-								String targetAudience  = loadOverDriveSubjects(groupedWork, productId);
+								Object[] theReturn      = loadOverDriveSubjects(groupedWork, productId);
+								String   targetAudience = (String) theReturn[0];
 								// Load the subjects first, so we can determine when an eBook is actually eComic
 
 								String mediaType = productRS.getString("mediaType");
@@ -105,8 +106,8 @@ public class OverDriveProcessor {
 										primaryFormat = "eVideo";
 										break;
 									case "eBook":
-										HashSet<String> titleTopics = groupedWork.getTopics();
-										if (titleTopics.contains("Comic and Graphic Books")){
+										boolean  isComic        = (boolean) theReturn[1];
+										if (isComic){
 											primaryFormat = "eComic";
 											formatCategory = "eBook";
 										} else {
@@ -369,75 +370,85 @@ public class OverDriveProcessor {
 	/**
 	 * Load information based on subjects for the record
 	 *
-	 * @param groupedWork
-	 * @param productId
+	 * @param groupedWork Solr Document to update
+	 * @param productId   The id of the OverDrive record
 	 * @return The target audience for use later in scoping
-	 * @throws SQLException
+	 * and isComic, which indicates whether or not this record is an eComic
 	 */
-	private String loadOverDriveSubjects(GroupedWorkSolr groupedWork, Long productId) throws SQLException {
+	private Object[] loadOverDriveSubjects(GroupedWorkSolr groupedWork, Long productId) {
 		//Load subject data
-		getProductSubjectsStmt.setLong(1, productId);
-		ResultSet                subjectsRS       = getProductSubjectsStmt.executeQuery();
-		HashSet<String>          topics           = new HashSet<>();
-		HashSet<String>          genres           = new HashSet<>();
-		HashMap<String, Integer> literaryForm     = new HashMap<>();
-		HashMap<String, Integer> literaryFormFull = new HashMap<>();
-		String targetAudience = "Adult";
-		String targetAudienceFull = "Adult";
-		while (subjectsRS.next()){
-			String curSubject = subjectsRS.getString("name");
-			if (curSubject.contains("Nonfiction")){
-				addToMapWithCount(literaryForm, "Non Fiction");
-				addToMapWithCount(literaryFormFull, "Non Fiction");
-				genres.add("Non Fiction");
-			}else if (curSubject.contains("Fiction")){
-				addToMapWithCount(literaryForm, "Fiction");
-				addToMapWithCount(literaryFormFull, "Fiction");
-				genres.add("Fiction");
+		String targetAudience = "";
+		boolean isComic = false;
+
+		try {
+			getProductSubjectsStmt.setLong(1, productId);
+			try (ResultSet subjectsRS = getProductSubjectsStmt.executeQuery()) {
+				HashSet<String>          topics             = new HashSet<>();
+				HashSet<String>          genres             = new HashSet<>();
+				HashMap<String, Integer> literaryForm       = new HashMap<>();
+				HashMap<String, Integer> literaryFormFull   = new HashMap<>();
+				String                   targetAudienceFull = "Adult";
+				targetAudience = "Adult";
+				while (subjectsRS.next()) {
+					String curSubject = subjectsRS.getString("name");
+					if (curSubject.contains("Nonfiction")) {
+						addToMapWithCount(literaryForm, "Non Fiction");
+						addToMapWithCount(literaryFormFull, "Non Fiction");
+						genres.add("Non Fiction");
+					} else if (curSubject.contains("Fiction")) {
+						addToMapWithCount(literaryForm, "Fiction");
+						addToMapWithCount(literaryFormFull, "Fiction");
+						genres.add("Fiction");
+					}
+
+					if (curSubject.contains("Poetry")) {
+						addToMapWithCount(literaryForm, "Fiction");
+						addToMapWithCount(literaryFormFull, "Poetry");
+					} else if (curSubject.contains("Essays")) {
+						addToMapWithCount(literaryForm, "Non Fiction");
+						addToMapWithCount(literaryFormFull, curSubject);
+					} else if (curSubject.contains("Short Stories") || curSubject.contains("Drama")) {
+						addToMapWithCount(literaryForm, "Fiction");
+						addToMapWithCount(literaryFormFull, curSubject);
+					}
+
+					if (curSubject.contains("Juvenile")) {
+						targetAudience     = "Juvenile";
+						targetAudienceFull = "Juvenile";
+					} else if (curSubject.contains("Young Adult")) {
+						targetAudience     = "Young Adult";
+						targetAudienceFull = "Adolescent (14-17)";
+					} else if (curSubject.contains("Picture Book")) {
+						targetAudience     = "Juvenile";
+						targetAudienceFull = "Preschool (0-5)";
+					} else if (curSubject.contains("Beginning Reader")) {
+						targetAudience     = "Juvenile";
+						targetAudienceFull = "Primary (6-8)";
+					}
+
+					if (!isComic && curSubject.equalsIgnoreCase("Comic and Graphic Books")) {
+						isComic = true;
+					}
+					topics.add(curSubject);
+				}
+				groupedWork.addTopic(topics);
+				groupedWork.addTopicFacet(topics);
+				groupedWork.addGenre(genres);
+				groupedWork.addGenreFacet(genres);
+				if (literaryForm.size() > 0) {
+					groupedWork.addLiteraryForms(literaryForm);
+				}
+				if (literaryFormFull.size() > 0) {
+					groupedWork.addLiteraryFormsFull(literaryFormFull);
+				}
+				groupedWork.addTargetAudience(targetAudience);
+				groupedWork.addTargetAudienceFull(targetAudienceFull);
 			}
-
-			if (curSubject.contains("Poetry")){
-				addToMapWithCount(literaryForm, "Fiction");
-				addToMapWithCount(literaryFormFull, "Poetry");
-			}else if (curSubject.contains("Essays")){
-				addToMapWithCount(literaryForm, "Non Fiction");
-				addToMapWithCount(literaryFormFull, curSubject);
-			}else if (curSubject.contains("Short Stories") || curSubject.contains("Drama")){
-				addToMapWithCount(literaryForm, "Fiction");
-				addToMapWithCount(literaryFormFull, curSubject);
-			}
-
-			if (curSubject.contains("Juvenile")){
-				targetAudience = "Juvenile";
-				targetAudienceFull = "Juvenile";
-			}else if (curSubject.contains("Young Adult")){
-				targetAudience = "Young Adult";
-				targetAudienceFull = "Adolescent (14-17)";
-			}else if (curSubject.contains("Picture Book")){
-				targetAudience = "Juvenile";
-				targetAudienceFull = "Preschool (0-5)";
-			}else if (curSubject.contains("Beginning Reader")){
-				targetAudience = "Juvenile";
-				targetAudienceFull = "Primary (6-8)";
-			}
-
-			topics.add(curSubject);
+		} catch (Exception e) {
+			logger.error("Error fetching Overdrive Subjects for product " + productId, e);
 		}
-		groupedWork.addTopic(topics);
-		groupedWork.addTopicFacet(topics);
-		groupedWork.addGenre(genres);
-		groupedWork.addGenreFacet(genres);
-		if (literaryForm.size() > 0){
-			groupedWork.addLiteraryForms(literaryForm);
-		}
-		if (literaryFormFull.size() > 0){
-			groupedWork.addLiteraryFormsFull(literaryFormFull);
-		}
-		groupedWork.addTargetAudience(targetAudience);
-		groupedWork.addTargetAudienceFull(targetAudienceFull);
-		subjectsRS.close();
 
-		return targetAudience;
+		return new Object[] { targetAudience, isComic };
 	}
 
 	private void addToMapWithCount(HashMap<String, Integer> map, String elementToAdd){
