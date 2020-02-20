@@ -3225,6 +3225,7 @@ class GroupedWorkDriver extends RecordInterface {
 				return 'AudiobookFormat';
 
 			case 'eBook':
+			case 'eComic':
 			case 'eMagazine':
 				return 'EBook';
 
