@@ -406,8 +406,8 @@ class Sierra {
 		// 1. check for a cached user object
 		$patron            = new User();
 		$patron->whereAdd("ilsUserId = '{$patronId}'", 'OR');
-		$patron->whereAdd("username = '{$patronId}'", 'OR');
-		//$patron->username = $patronId;
+		$patron->whereAdd("username = '{$patronId}'", 'OR'); // if ilsUserId can't be found fall back to username
+
 		if ($patron->find(true) && $patron->N != 0) {
 			$patronObjectCacheKey = $this->cache->makePatronKey('patron', $patron->id);
 			if ($pObj = $this->cache->get($patronObjectCacheKey)) {
@@ -801,7 +801,7 @@ class Sierra {
 		}elseif (is_string($patronOrBarcode)){
 			$barcode = $patronOrBarcode;
 		}
-
+		// patron ids are cached by default for 86400
 		$patronIdCacheKey = "patron_".$barcode."_sierraid";
 		if($patronId = $this->cache->get($patronIdCacheKey)) {
 			return $patronId;
