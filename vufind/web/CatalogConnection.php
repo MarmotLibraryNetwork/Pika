@@ -79,7 +79,7 @@ class CatalogConnection
 				} catch (Exception $e){
 					$this->logger->error(
 					 "Unable to create driver $driver for account profile {$accountProfile->name}",
-					 ["stack_tracke" => $e->getTraceAsString()]
+					 ["stack_trace" => $e->getTraceAsString()]
 					);
 					throw $e;
 				}
