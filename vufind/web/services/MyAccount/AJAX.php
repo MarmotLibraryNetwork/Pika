@@ -559,6 +559,7 @@ class MyAccount_AJAX extends AJAXHandler {
 				//If the record is not valid, skip the whole thing since the title could be bad too
 				if (!empty($_REQUEST['groupedWorkId']) && !is_array($_REQUEST['groupedWorkId'])){
 					$recordToAdd = urldecode($_REQUEST['groupedWorkId']);
+					require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 					if (!GroupedWork::validGroupedWorkId($recordToAdd)){
 						$return['success'] = false;
 						$return['message'] = 'The item to add to the list is not valid';
@@ -574,13 +575,11 @@ class MyAccount_AJAX extends AJAXHandler {
 				if ($list->find(true)){
 					$existingList = true;
 				}
-				$description = '';
-				if (isset($_REQUEST['desc'])){
-					$description = $_REQUEST['desc'];
-					if (is_array($description)){
-						$description = reset($description);
-					}
+				$description = $_REQUEST['desc'] ?? '';
+				if (is_array($description)){
+					$description = reset($description);
 				}
+
 
 				$list->description = strip_tags(urldecode($description));
 				$list->public      = isset($_REQUEST['public']) && $_REQUEST['public'] == 'true';

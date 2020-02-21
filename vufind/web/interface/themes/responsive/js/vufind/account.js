@@ -31,7 +31,7 @@ VuFind.Account = (function(){
 						title: title,
 						public: isPublic,
 						desc: desc,
-						groupedWorkIdId: groupedWorkId
+						groupedWorkId: groupedWorkId
 					};
 			$.getJSON(url, params,function (data) {
 					if (data.success) {
