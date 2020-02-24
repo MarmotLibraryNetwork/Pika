@@ -20,6 +20,7 @@
  * Table Definition for user
  */
 require_once 'DB/DataObject.php';
+use Pika\Cache;
 
 class User extends DB_DataObject {
 
@@ -119,7 +120,6 @@ class User extends DB_DataObject {
 	public $availableHoldNotice;
 	public $comingDueNotice;
 	public $phoneType;
-
 
 	function getTags(){
 		require_once ROOT_DIR . '/sys/LocalEnrichment/UserTag.php';
@@ -781,17 +781,9 @@ class User extends DB_DataObject {
 	 * Clear out the cached version of the patron profile.
 	 */
 	function clearCache(){
-		global $memCache;
-		global $logger;
-		$hostname = gethostname();
-		$cacheKey = $hostname . "-patron-" . $this->id;
-		$r = $memCache->delete($cacheKey); // now stored by User object id column
-		$rString = "false";
-		if($r) {
-			$rString = "true";
-		}
-
-		$logger->log("Delete patron from memcache:".$cacheKey. ":".$rString, PEAR_LOG_DEBUG);
+		$cache = new Cache();
+		$patronCacheKey = $cache->makePatronKey('patron', $this->id);
+		$cache->delete($patronCacheKey);
 	}
 
 	/**

@@ -845,6 +845,12 @@ class Sierra {
 		if(!$canUpdateContactInfo) {
 			return ['You can not update your information.'];
 		}
+		$patronId = $this->getPatronId($patron);
+		// need the patron object for sites using username fields
+		// grab it before removing cache
+		if($this->hasUsernameField()) {
+			$patron = $this->getPatron($patronId);
+		}
 
 		// remove patron object from cache
 		$patronCacheKey = $this->cache->makePatronKey('patron', $patron->id);
@@ -862,7 +868,6 @@ class Sierra {
 			}
 		}
 
-		$patronId = $this->getPatronId($patron);
 		if(!$patronId) {
 			return ['An error occurred. Please try again later.'];
 		}
@@ -926,6 +931,18 @@ class Sierra {
 					break;
 				case 'alternate_username':
 					$altUsername = $val;
+					// check to make sure user name isn't already taken
+					if(!$altUsername == $patron->alt_username) {
+						$params = [
+						 'varFieldTag'     => 'i',
+						 'varFieldContent' => $altUsername,
+						 'fields'          => 'id'
+						];
+						$r = $this->_doRequest('patrons/find', $params);
+						if($r) {
+							$errors[] = "Username is already taken. Please choose a different username.";
+						}
+					}
 					break;
 			}
 		}
