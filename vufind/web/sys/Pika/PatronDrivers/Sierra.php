@@ -869,7 +869,7 @@ class Sierra {
 		}
 
 		if(!$patronId) {
-			return ['An error occurred. Please try again later.'];
+			return [['An error occurred. Please try again later.']];
 		}
 
 		$library = $patron->getHomeLibrary();
@@ -931,8 +931,9 @@ class Sierra {
 					break;
 				case 'alternate_username':
 					$altUsername = $val;
+					$currentAltUsername = $patron->alt_username;
 					// check to make sure user name isn't already taken
-					if(!$altUsername == $patron->alt_username) {
+					if($altUsername != $currentAltUsername) {
 						$params = [
 						 'varFieldTag'     => 'i',
 						 'varFieldContent' => $altUsername,
@@ -2141,39 +2142,6 @@ EOT;
 	/****
 	 * READING HISTORY
 	 ***/
-
-	/**
-	 * Route reading history actions to the appropriate function according to the readingHistoryAction
-	 * URL parameter which will be one of:
-	 *
-	 * deleteAll    -> deleteAllReadingHistory
-	 * deleteMarked -> deleteMarkedReadingHistory
-	 * optIn        -> optInReadingHistory
-	 * optOut       -> optOutReadingHistory
-	 *
-	 * @param  User   $patron
-	 * @param  string $action One of the following; deleteAll, deleteMarked, optIn, optOut
-	 * @return mixed
-	 */
-//	public function doReadingHistoryAction($patron, $action, $selectedTitles) {
-//
-//		switch ($action) {
-//			case 'optIn':
-//				return $this->optInReadingHistory($patron);
-//				break;
-//			case 'optOut':
-//				return $this->optOutReadingHistory($patron);
-//				break;
-//			case 'deleteAll':
-//				return $this->deleteAllReadingHistory($patron);
-//				break;
-//			case 'deleteMarked':
-//				return $this->deleteMarkedReadingHistory($patron, $selectedTitles);
-//				break;
-//			default:
-//				return false;
-//		}
-//	}
 
 	/**
 	 * Opt the patron into Reading History within the ILS.
