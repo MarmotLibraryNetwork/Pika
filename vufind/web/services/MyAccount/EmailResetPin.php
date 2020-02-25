@@ -16,9 +16,12 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 /**
+ * EmailResetPin
  *
+ * Allow patrons to request an email with a pin reset link.
+ *
+ * Calls emailResetPin() in the connecting patron controller.
  *
  * @category Pika
  * @author: Pascal Brammeier

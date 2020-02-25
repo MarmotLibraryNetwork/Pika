@@ -1001,7 +1001,7 @@ class Sierra {
 	 * @param string $oldPin
 	 * @param string $newPin
 	 * @param string $confirmNewPin
-	 * @return string Error or success message.
+	 * @return Array Error or success message.
 	 * @throws ErrorException
 	 */
 	public function updatePin($patron, $oldPin, $newPin, $confirmNewPin){
@@ -1032,6 +1032,13 @@ class Sierra {
 		return [['Your pin number was updated successfully.']];
 	}
 
+	/**
+	 * @param  $patron
+	 * @param  $newPin
+	 * @param  $resetToken
+	 * @return array|bool
+	 * @throws ErrorException
+	 */
 	public function resetPin($patron, $newPin, $resetToken){
 
 		$pinReset = new PinReset();
@@ -1076,6 +1083,16 @@ class Sierra {
 		return true;
 	}
 
+	/**
+	 * emailResetPin
+	 *
+	 * Sends an email reset link to the patrons email address
+	 *
+	 * @param  string            $barcode
+	 * @return array|bool        true if email is sent, error array on fail
+	 * @throws ErrorException
+	 * @throws \PHPMailer\PHPMailer\Exception
+	 */
 	public function emailResetPin($barcode) {
 		$patron = new User();
 
