@@ -1028,11 +1028,15 @@ class Sierra {
 
 		$patronCacheKey = $this->cache->makePatronKey('patron', $patron->id);
 		$this->cache->delete($patronCacheKey);
-
+		// todo: A success message won't be displayed unless the words are EXACTLY as below.
 		return [['Your pin number was updated successfully.']];
 	}
 
 	/**
+	 * resetPin
+	 *
+	 * Handles a pin reset when requested with emailResetPin().
+	 *
 	 * @param  $patron
 	 * @param  $newPin
 	 * @param  $resetToken
