@@ -647,9 +647,10 @@ class User extends DB_DataObject {
 			$this->bypassAutoLogout = 0;
 		}
 
-		parent::insert();
+		$r = parent::insert();
 //		$this->saveRoles(); // this should happen in the __set() method
 		$this->clearCache();
+		return $r;
 	}
 
 	function hasRole($roleName){
