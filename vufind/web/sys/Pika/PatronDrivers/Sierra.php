@@ -1730,6 +1730,7 @@ EOT;
 				case 'b':
 				case 'j':
 				case 'i':
+				case '!':
 					$status       = 'Ready';
 					$cancelable   = true;
 					$freezeable   = false;
@@ -1813,28 +1814,7 @@ EOT;
 				///////////////
 				// INNREACH HOLD
 				///////////////
-				// get the inn-reach item id
-				//$regExp = '/.*\/(.*)$/';
-				// we have to query for the item status (it will be an innreach status) as hold status for
-				// inn-reach will always show 0
-				/*preg_match($regExp, $hold->record, $itemId);
-				$itemParams    = ['fields'=>'status'];
-				$itemOperation = 'items/'.$itemId[1];
-				$itemRes = $this->_doRequest($itemOperation,$itemParams);
-				if($itemRes) {
-					if($itemRes->status->code != '&') {
-						$h['cancelable']         = false;
-					}
-					if($itemRes->status->code == '#') {
-						$hold->status->code = 'i';
-						$h['status']             = 'Ready';
-						$h['freezeable']         = false;
-						$h['cancelable']         = false;
-						$h['locationUpdateable'] = false;
-					}
-				}*/
 				// get the hold id
-
 				preg_match($this->urlIdRegExp, $hold->id, $mIr);
 				$innReachHoldId = $mIr[1];
 
