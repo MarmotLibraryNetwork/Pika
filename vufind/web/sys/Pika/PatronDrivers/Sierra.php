@@ -345,7 +345,7 @@ class Sierra {
 	 * @throws ErrorException
 	 */
 	public function patronLogin($username, $password, $validatedViaSSO = FALSE){
-		$this->logger->info("patronLogin called from ".debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]['class']);
+		//$this->logger->info("patronLogin called from ".debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]['class']);
 		// get the login configuration barcode_pin or name_barcode
 		// TODO: Need to pull login from session, db, memcache, etc, so login isn't called repeatably on each request.
 		$loginMethod = $this->accountProfile->loginConfiguration;
@@ -427,8 +427,6 @@ class Sierra {
 		}
 
 		// 3. Check to see if the user exists in the database
-
-		// does the user exist in database?
 		if(!$patron || $patron->N == 0) {
 			$this->logger->debug('Patron does not exits in Pika database.', ['barcode'=>$this->patronBarcode]);
 			$createPatron = true;
@@ -746,10 +744,11 @@ class Sierra {
 
 		if($createPatron) {
 			$patron->created = date('Y-m-d');
-			if($patron->insert() === false) {
+			$r = $patron->insert();
+			if($r == false) {
 				$this->logger->error('Could not save patron to Pika database.', ['barcode'=>$this->patronBarcode,
-				                                                                 'error'=>$patron->_lastError->userinfo,
-				                                                                 'backtrace'=>$patron->_lastError->backtrace]);
+				                                                                          'error'=>$patron->_lastError->userinfo,
+				                                                                          'backtrace'=>$patron->_lastError->backtrace]);
 				throw new ErrorException('Error saving patron to Pika database');
 			} else {
 				$this->logger->debug('Created patron in Pika database.', ['barcode'=>$this->patronBarcode]);
