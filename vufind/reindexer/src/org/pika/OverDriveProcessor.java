@@ -40,7 +40,7 @@ public class OverDriveProcessor {
 		this.logger = logger;
 		try {
 			getProductInfoStmt = econtentConn.prepareStatement("SELECT * FROM overdrive_api_products WHERE overdriveId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
-			getNumCopiesStmt = econtentConn.prepareStatement("SELECT sum(copiesOwned) as totalOwned FROM overdrive_api_product_availability WHERE productId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+			getNumCopiesStmt = econtentConn.prepareStatement("SELECT sum(copiesOwned) AS totalOwned FROM overdrive_api_product_availability WHERE productId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			//TODO filter by libraries belonging to an overdrive account??
 			getProductMetadataStmt = econtentConn.prepareStatement("SELECT * FROM overdrive_api_product_metadata WHERE productId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			getProductAvailabilityStmt = econtentConn.prepareStatement("SELECT * FROM overdrive_api_product_availability WHERE productId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
@@ -114,6 +114,10 @@ public class OverDriveProcessor {
 											formatCategory = mediaType;
 											primaryFormat = mediaType;
 										}
+										break;
+									case "Magazine":
+										formatCategory = "eBook";
+										primaryFormat = "eMagazine";
 										break;
 									default:
 										formatCategory = mediaType;
