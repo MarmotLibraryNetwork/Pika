@@ -1617,6 +1617,14 @@ EOT;
 	 */
 	public function getMyHolds($patron, $linkedAccount = false) {
 
+		global $library;
+		// ILL service name
+		$illName = false;
+		if($library) {
+			if(isset($library->interLibraryLoanName) && $library->interLibraryLoanName != '') {
+				$illName = $library->interLibraryLoanName;
+			}
+		}
 		$patronHoldsCacheKey = $this->cache->makePatronKey('holds', $patron->id);
 		if ($patronHolds = $this->cache->get($patronHoldsCacheKey)) {
 			$this->logger->info("Found holds in memcache:" . $patronHoldsCacheKey);
@@ -1747,7 +1755,10 @@ EOT;
 					}
 					break;
 				case "&": // inn-reach status
-					$status       = "Requested from INN-Reach";
+					$status       = "Requested";
+					if($illName) {
+						$status .= ' from '.$illName;
+					}
 					$cancelable   = true;
 					$freezeable   = false;
 					$updatePickup = false;
