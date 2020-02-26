@@ -8,16 +8,16 @@
     "packages": [
         {
             "name": "chillerlan/php-qrcode",
-            "version": "3.2.0",
+            "version": "3.2.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/chillerlan/php-qrcode.git",
-                "reference": "df33b38b6348ba96e2bf2207d7b0ca6ce3e506f4"
+                "reference": "ef42ef6c81f085ad0292a4ae326bdcdcaceea36f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/chillerlan/php-qrcode/zipball/df33b38b6348ba96e2bf2207d7b0ca6ce3e506f4",
-                "reference": "df33b38b6348ba96e2bf2207d7b0ca6ce3e506f4",
+                "url": "https://api.github.com/repos/chillerlan/php-qrcode/zipball/ef42ef6c81f085ad0292a4ae326bdcdcaceea36f",
+                "reference": "ef42ef6c81f085ad0292a4ae326bdcdcaceea36f",
                 "shasum": ""
             },
             "require": {
@@ -28,7 +28,7 @@
                 "php": "^7.2"
             },
             "require-dev": {
-                "phpunit/phpunit": "^8.4"
+                "phpunit/phpunit": "^8.5"
             },
             "suggest": {
                 "chillerlan/php-authenticator": "Yet another Google authenticator! Also creates URIs for mobile apps."
@@ -72,7 +72,7 @@
                 "qrcode",
                 "qrcode-generator"
             ],
-            "time": "2019-12-04T21:31:05+00:00"
+            "time": "2020-02-19T16:56:36+00:00"
         },
         {
             "name": "chillerlan/php-settings-container",
