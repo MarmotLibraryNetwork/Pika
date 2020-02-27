@@ -272,13 +272,14 @@ class ListWidget extends DB_DataObject {
 
 		//Check to see if the name is unique
 		$widget       = new ListWidget();
-		$widget->name = $this->name;
+		$widget->whereAdd("name = '$this->name'", 'AND');
 		if ($this->id){
-			$widget->whereAdd("id != " . $this->id);
+			$widget->whereAdd("id != " . $this->id, 'AND');
 		}
-		$widget->libraryId = $this->libraryId;
+		$widget->whereAdd("libraryId = $this->libraryId", "AND");
 		$widget->find();
-		if ($widget->N > 0){
+
+		if ($widget->N != 0){
 			//The title is not unique
 			$validationResults['errors'][] = "This widget has already been created.  Please select another name.";
 		}
