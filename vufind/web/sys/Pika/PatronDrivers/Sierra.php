@@ -407,7 +407,7 @@ class Sierra {
 		$patron            = new User();
 //		$patron->whereAdd("ilsUserId = '{$patronId}'", 'OR');
 //		$patron->whereAdd("username = '{$patronId}'", 'OR'); // if ilsUserId can't be found fall back to username //TODO: temporary, username column is deprecated
-		$patron->ilsUserId;
+		$patron->ilsUserId = $patronId;
 
 		if ($patron->find(true) && $patron->N != 0) {
 			$patronObjectCacheKey = $this->cache->makePatronKey('patron', $patron->id);

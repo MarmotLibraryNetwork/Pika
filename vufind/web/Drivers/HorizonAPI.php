@@ -769,12 +769,8 @@ abstract class HorizonAPI extends Horizon{
 			global $configArray;
 			$lookupTitleInfoUrl      = $this->getWebServiceURL() . '/standard/lookupTitleInfo?clientID=' . $configArray['Catalog']['clientId'] . '&titleKey=' . $bibId . '&includeItemInfo=false&includeHoldCount=true' ;
 			$lookupTitleInfoResponse = $this->getWebServiceResponse($lookupTitleInfoUrl);
-			if ($lookupTitleInfoResponse->titleInfo){
-				if (is_array($lookupTitleInfoResponse->titleInfo)) {
-					return (int) $lookupTitleInfoResponse->titleInfo[0]->holdCount;
-				} else {
-					return (int) $lookupTitleInfoResponse->titleInfo->holdCount;
-				}
+			if (!empty($lookupTitleInfoResponse->titleInfo)){
+				return is_array($lookupTitleInfoResponse->titleInfo) ? (int)$lookupTitleInfoResponse->titleInfo[0]->holdCount : (int)$lookupTitleInfoResponse->titleInfo->holdCount;
 			}
 		}
 		return false;
