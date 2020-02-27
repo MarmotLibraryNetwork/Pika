@@ -107,7 +107,7 @@ abstract class HorizonAPI3_23 extends HorizonAPI
 				'error' => 'Sorry, we encountered an error while attempting to update your pin. Please contact your local library.'
 			);
 		} elseif (!empty($changeMyPinResponse['sessionToken'])){
-			if ($patron->username == $changeMyPinResponse['patronKey']) { // Check that the ILS user matches the Pika user
+			if ($patron->ilsUserId == $changeMyPinResponse['patronKey']) { // Check that the ILS user matches the Pika user
 				$patron->cat_password = $newPin;
 				$patron->update();
 			}

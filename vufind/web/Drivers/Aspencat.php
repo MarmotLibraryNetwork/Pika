@@ -269,7 +269,7 @@ class Aspencat implements DriverInterface{
 
 		$this->initDatabaseConnection();
 
-		$sql = "SELECT issues.*, items.biblionumber, title, author from issues left join items on items.itemnumber = issues.itemnumber left join biblio ON items.biblionumber = biblio.biblionumber where borrowernumber = {$patron->username}";
+		$sql = "SELECT issues.*, items.biblionumber, title, author from issues left join items on items.itemnumber = issues.itemnumber left join biblio ON items.biblionumber = biblio.biblionumber where borrowernumber = {$patron->ilsUserId}";
 		$results = mysqli_query($this->dbConnection, $sql);
 		while ($curRow = $results->fetch_assoc()){
 			$transaction = array();
@@ -428,7 +428,7 @@ class Aspencat implements DriverInterface{
 						$userExistsInDB = false;
 						$user = new User();
 						$user->source   = $this->accountProfile->name;
-						$user->username = $userFromDb['borrowernumber'];
+						$user->ilsUserId = $userFromDb['borrowernumber'];
 						if ($user->find(true)){
 							$userExistsInDB = true;
 						}
@@ -472,7 +472,7 @@ class Aspencat implements DriverInterface{
 						$user->finesVal = floatval($outstandingFines);
 
 						//Get number of items checked out
-						$checkedOutItemsRS = mysqli_query($this->dbConnection, 'SELECT count(*) as numCheckouts FROM issues WHERE borrowernumber = ' . $user->username, MYSQLI_USE_RESULT);
+						$checkedOutItemsRS = mysqli_query($this->dbConnection, 'SELECT count(*) as numCheckouts FROM issues WHERE borrowernumber = ' . $user->ilsUserId, MYSQLI_USE_RESULT);
 						$numCheckouts = 0;
 						if ($checkedOutItemsRS){
 							$checkedOutItems = $checkedOutItemsRS->fetch_assoc();
@@ -482,7 +482,7 @@ class Aspencat implements DriverInterface{
 						$user->numCheckedOutIls = $numCheckouts;
 
 						//Get number of available holds
-						$availableHoldsRS = mysqli_query($this->dbConnection, 'SELECT count(*) as numHolds FROM reserves WHERE found = "W" and borrowernumber = ' . $user->username, MYSQLI_USE_RESULT);
+						$availableHoldsRS = mysqli_query($this->dbConnection, 'SELECT count(*) as numHolds FROM reserves WHERE found = "W" and borrowernumber = ' . $user->ilsUserId, MYSQLI_USE_RESULT);
 						$numAvailableHolds = 0;
 						if ($availableHoldsRS){
 							$availableHolds = $availableHoldsRS->fetch_assoc();
@@ -492,7 +492,7 @@ class Aspencat implements DriverInterface{
 						$user->numHoldsAvailableIls = $numAvailableHolds;
 
 						//Get number of unavailable
-						$waitingHoldsRS = mysqli_query($this->dbConnection, 'SELECT count(*) as numHolds FROM reserves WHERE (found <> "W" or found is null) and borrowernumber = ' . $user->username, MYSQLI_USE_RESULT);
+						$waitingHoldsRS = mysqli_query($this->dbConnection, 'SELECT count(*) as numHolds FROM reserves WHERE (found <> "W" or found is null) and borrowernumber = ' . $user->ilsUserId, MYSQLI_USE_RESULT);
 						$numWaitingHolds = 0;
 						if ($waitingHoldsRS){
 							$waitingHolds = $waitingHoldsRS->fetch_assoc();
@@ -610,7 +610,7 @@ class Aspencat implements DriverInterface{
 
 		//Figure out if the user is opted in to reading history
 
-		$sql = "select disable_reading_history from borrowers where borrowernumber = {$patron->username}";
+		$sql = "select disable_reading_history from borrowers where borrowernumber = {$patron->ilsUserId}";
 		$historyEnabledRS = mysqli_query($this->dbConnection, $sql);
 		if ($historyEnabledRS){
 			$historyEnabledRow = $historyEnabledRS->fetch_assoc();
@@ -634,14 +634,14 @@ class Aspencat implements DriverInterface{
 					LEFT JOIN items on items.itemnumber=issues.itemnumber
 					LEFT JOIN biblio ON items.biblionumber=biblio.biblionumber
 					LEFT JOIN biblioitems ON items.biblioitemnumber=biblioitems.biblioitemnumber
-					WHERE borrowernumber={$patron->username}
+					WHERE borrowernumber={$patron->ilsUserId}
 					UNION ALL
 					SELECT *,old_issues.renewals AS renewals,items.renewals AS totalrenewals,items.timestamp AS itemstimestamp
 					FROM old_issues
 					LEFT JOIN items on items.itemnumber=old_issues.itemnumber
 					LEFT JOIN biblio ON items.biblionumber=biblio.biblionumber
 					LEFT JOIN biblioitems ON items.biblioitemnumber=biblioitems.biblioitemnumber
-					WHERE borrowernumber={$patron->username}";
+					WHERE borrowernumber={$patron->ilsUserId}";
 				$readingHistoryTitleRS = mysqli_query($this->dbConnection, $readingHistoryTitleSql);
 				if ($readingHistoryTitleRS){
 					while ($readingHistoryTitleRow = $readingHistoryTitleRS->fetch_assoc()){
@@ -1263,7 +1263,7 @@ class Aspencat implements DriverInterface{
 
 		$this->initDatabaseConnection();
 
-		$sql = "SELECT *, title, author FROM reserves inner join biblio on biblio.biblionumber = reserves.biblionumber where borrowernumber = {$patron->username}";
+		$sql = "SELECT *, title, author FROM reserves inner join biblio on biblio.biblionumber = reserves.biblionumber where borrowernumber = {$patron->ilsUserId}";
 		$results = mysqli_query($this->dbConnection, $sql);
 		while ($curRow = $results->fetch_assoc()){
 			//Each row in the table represents a hold
@@ -1499,14 +1499,14 @@ class Aspencat implements DriverInterface{
 		//Get the session token for the user
 		$loginResult = $this->loginToKoha($patron);
 		if ($loginResult['success']){
-			$postParams = array(
-				'from' => 'opac_user',
-				'item' => $itemId,
-				'borrowernumber' => $patron->username,
-			);
+			$postParams = [
+				'from'           => 'opac_user',
+				'item'           => $itemId,
+				'borrowernumber' => $patron->ilsUserId,
+			];
 			$catalogUrl = $configArray['Catalog']['url'];
-			$kohaUrl = "$catalogUrl/cgi-bin/koha/opac-renew.pl";
-			$kohaUrl .= "?" . http_build_query($postParams);
+			$kohaUrl    = "$catalogUrl/cgi-bin/koha/opac-renew.pl";
+			$kohaUrl    .= "?" . http_build_query($postParams);
 
 			$kohaResponse = $this->getKohaPage($kohaUrl);
 
@@ -1527,17 +1527,18 @@ class Aspencat implements DriverInterface{
 
 		}
 
-		return array(
-			'itemId' => $itemId,
-			'success'  => $success,
-			'message' => $message);
+		return [
+			'itemId'  => $itemId,
+			'success' => $success,
+			'message' => $message
+		];
 	}
 
 	/**
 	 * Get a list of fines for the user.
 	 * Code take from C4::Account getcharges method
 	 *
-	 * @param null $patron
+	 * @param User $patron
 	 * @param bool $includeMessages
 	 * @return array
 	 */
@@ -1547,7 +1548,7 @@ class Aspencat implements DriverInterface{
 		$this->initDatabaseConnection();
 
 		//Get a list of outstanding fees
-		$query = "SELECT * FROM fees JOIN fee_transactions AS ft on(id = fee_id) WHERE borrowernumber = {$patron->username} and accounttype in (select accounttype from accounttypes where class='fee' or class='invoice') ";
+		$query = "SELECT * FROM fees JOIN fee_transactions AS ft on(id = fee_id) WHERE borrowernumber = {$patron->ilsUserId} and accounttype in (select accounttype from accounttypes where class='fee' or class='invoice') ";
 
 		$allFeesRS = mysqli_query($this->dbConnection, $query);
 
@@ -1677,6 +1678,7 @@ class Aspencat implements DriverInterface{
 	 * Get Total Outstanding fines for a user.  Lifted from Koha:
 	 * C4::Accounts.pm gettotalowed method
 	 *
+	 * @param User $patron
 	 * @return mixed
 	 */
 	private function getOutstandingFineTotal($patron) {
@@ -1685,7 +1687,7 @@ class Aspencat implements DriverInterface{
 		//picks up any unallocated credits.
 		$amountOutstanding = 0;
 		$this->initDatabaseConnection();
-		$amountOutstandingRS = mysqli_query($this->dbConnection, "SELECT SUM(amount) FROM fees LEFT JOIN fee_transactions on(fees.id = fee_transactions.fee_id) where fees.borrowernumber = {$patron->username}");
+		$amountOutstandingRS = mysqli_query($this->dbConnection, "SELECT SUM(amount) FROM fees LEFT JOIN fee_transactions on(fees.id = fee_transactions.fee_id) where fees.borrowernumber = {$patron->ilsUserId}");
 		if ($amountOutstandingRS){
 			$amountOutstanding = $amountOutstandingRS->fetch_array();
 			$amountOutstanding = $amountOutstanding[0];

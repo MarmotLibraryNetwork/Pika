@@ -405,8 +405,9 @@ class Sierra {
 		// the username db field stores the sierra patron id. we'll use that to determine if the user exists.
 		// 1. check for a cached user object
 		$patron            = new User();
-		$patron->whereAdd("ilsUserId = '{$patronId}'", 'OR');
-		$patron->whereAdd("username = '{$patronId}'", 'OR'); // if ilsUserId can't be found fall back to username
+//		$patron->whereAdd("ilsUserId = '{$patronId}'", 'OR');
+//		$patron->whereAdd("username = '{$patronId}'", 'OR'); // if ilsUserId can't be found fall back to username //TODO: temporary, username column is deprecated
+		$patron->ilsUserId;
 
 		if ($patron->find(true) && $patron->N != 0) {
 			$patronObjectCacheKey = $this->cache->makePatronKey('patron', $patron->id);
@@ -2692,13 +2693,13 @@ EOT;
 		}
 
 		// check that pin matches database
-		$patron = new User();
-		$patron->username = $patronId;
+		$patron            = new User();
+		$patron->ilsUserId = $patronId;
 		$patron->find(true);
 		// if we don't find a patron then new user create it. Will be populated
-		if($patron->N == 0) {
+		if ($patron->N == 0){
 			$patron->created      = date('Y-m-d');
-			$patron->username     = $patronId;
+			$patron->ilsUserId    = $patronId;
 			$patron->cat_username = $barcode;
 			$patron->insert();
 		}

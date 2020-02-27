@@ -66,11 +66,11 @@ class LibrarySolution extends ScreenScrapingDriver {
 			$accountSummary = json_decode($accountSummaryRaw);
 			if (!empty($accountSummary)) {
 
-				$userExistsInDB = false;
-				$user           = new User();
-				$user->username = $accountSummary->patron->guid;
-				$user->source   = $this->accountProfile->name;
-				if ($user->find(true)) {
+				$userExistsInDB  = false;
+				$user            = new User();
+				$user->ilsUserId = $accountSummary->patron->guid;
+				$user->source    = $this->accountProfile->name;
+				if ($user->find(true)){
 					$userExistsInDB = true;
 				}
 

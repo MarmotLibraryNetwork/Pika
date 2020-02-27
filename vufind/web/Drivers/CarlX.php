@@ -60,14 +60,14 @@ class CarlX extends SIP2Driver{
 			if (isset($result->Patron)){
 				//Check to see if the pin matches
 				if ($result->Patron->PatronPIN == $password || $validatedViaSSO){
-					$fullName = $result->Patron->FullName;
+					$fullName  = $result->Patron->FullName;
 					$firstName = $result->Patron->FirstName;
-					$lastName = $result->Patron->LastName;
+					$lastName  = $result->Patron->LastName;
 
-					$userExistsInDB = false;
-					$user = new User();
-					$user->source   = $this->accountProfile->name;
-					$user->username = $result->Patron->GeneralUserID;
+					$userExistsInDB  = false;
+					$user            = new User();
+					$user->source    = $this->accountProfile->name;
+					$user->ilsUserId = $result->Patron->GeneralUserID;
 					if ($user->find(true)){
 						$userExistsInDB = true;
 					}

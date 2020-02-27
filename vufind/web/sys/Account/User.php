@@ -17,7 +17,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 /**
- * Table Definition for user
+ * User Object is the central driver to run user actions through
  */
 require_once 'DB/DataObject.php';
 use Pika\Cache;
