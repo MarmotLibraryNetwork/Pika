@@ -371,8 +371,9 @@ class ListWidget extends DB_DataObject {
 					}
 				}
 			}
-			//Clear the lists so they are reloaded the next time
-			unset($this->lists);
+			// Calling unset also calls __set magic method and the lists get deleted from the widget-- so, don't call unset
+			// XXClear the lists so they are reloaded the next timeXX
+			//unset($this->lists);
 		}
 	}
 
