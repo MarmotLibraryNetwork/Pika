@@ -404,15 +404,19 @@ class Sierra {
 		// find user pika id-- needed for cache key
 		// the username db field stores the sierra patron id. we'll use that to determine if the user exists.
 		// 1. check for a cached user object
-		$patron           = new User();
-		$patron->username = $patronId;
+		$patron            = new User();
+//		$patron->whereAdd("ilsUserId = '{$patronId}'", 'OR');
+//		$patron->whereAdd("username = '{$patronId}'", 'OR'); // if ilsUserId can't be found fall back to username //TODO: temporary, username column is deprecated
+		$patron->ilsUserId = $patronId;
+
 		if ($patron->find(true) && $patron->N != 0) {
 			$patronObjectCacheKey = $this->cache->makePatronKey('patron', $patron->id);
 			if ($pObj = $this->cache->get($patronObjectCacheKey)) {
 				$this->logger->info("Found patron in memcache:" . $patronObjectCacheKey);
 				return $pObj;
 			}
-	}
+		}
+
 		// 2. grab everything from the patron record the api can provide.
 		$params = [
 			'fields' => 'names,addresses,phones,emails,expirationDate,homeLibraryCode,moneyOwed,patronType,barcodes,patronCodes,createdDate,blockInfo,message,pMessage,langPref,fixedFields,varFields,updatedDate,createdDate'
@@ -424,7 +428,7 @@ class Sierra {
 		}
 
 		// 3. Check to see if the user exists in the database
-		// todo: store the sierra id in another database column.
+
 		// does the user exist in database?
 		if(!$patron || $patron->N == 0) {
 			$this->logger->debug('Patron does not exits in Pika database.', ['barcode'=>$this->patronBarcode]);
@@ -481,10 +485,10 @@ class Sierra {
 		}
 
 		// 5. Checks; make sure patron info from sierra matches database. update if needed.
-		// 5.1 username
-		$username = $pInfo->id;
-		if($username != $patron->username) {
-			$patron->username = $username;
+		// 5.1 ilsUserId
+		$ilsUserId = $pInfo->id;
+		if($ilsUserId != $patron->ilsUserId) {
+			$patron->ilsUserId = $ilsUserId;
 			$updatePatron = true;
 		}
 
@@ -798,7 +802,7 @@ class Sierra {
 		}elseif (is_string($patronOrBarcode)){
 			$barcode = $patronOrBarcode;
 		}
-
+		// patron ids are cached by default for 86400
 		$patronIdCacheKey = "patron_".$barcode."_sierraid";
 		if($patronId = $this->cache->get($patronIdCacheKey)) {
 			return $patronId;
@@ -842,6 +846,12 @@ class Sierra {
 		if(!$canUpdateContactInfo) {
 			return ['You can not update your information.'];
 		}
+		$patronId = $this->getPatronId($patron);
+		// need the patron object for sites using username fields
+		// grab it before removing cache
+		if($this->hasUsernameField()) {
+			$patron = $this->getPatron($patronId);
+		}
 
 		// remove patron object from cache
 		$patronCacheKey = $this->cache->makePatronKey('patron', $patron->id);
@@ -859,9 +869,8 @@ class Sierra {
 			}
 		}
 
-		$patronId = $this->getPatronId($patron);
 		if(!$patronId) {
-			return ['An error occurred. Please try again later.'];
+			return [['An error occurred. Please try again later.']];
 		}
 
 		$library = $patron->getHomeLibrary();
@@ -923,6 +932,19 @@ class Sierra {
 					break;
 				case 'alternate_username':
 					$altUsername = $val;
+					$currentAltUsername = $patron->alt_username;
+					// check to make sure user name isn't already taken
+					if($altUsername != $currentAltUsername) {
+						$params = [
+						 'varFieldTag'     => 'i',
+						 'varFieldContent' => $altUsername,
+						 'fields'          => 'id'
+						];
+						$r = $this->_doRequest('patrons/find', $params);
+						if($r) {
+							$errors[] = "Username is already taken. Please choose a different username.";
+						}
+					}
 					break;
 			}
 		}
@@ -980,7 +1002,7 @@ class Sierra {
 	 * @param string $oldPin
 	 * @param string $newPin
 	 * @param string $confirmNewPin
-	 * @return string Error or success message.
+	 * @return Array Error or success message.
 	 * @throws ErrorException
 	 */
 	public function updatePin($patron, $oldPin, $newPin, $confirmNewPin){
@@ -1007,10 +1029,21 @@ class Sierra {
 
 		$patronCacheKey = $this->cache->makePatronKey('patron', $patron->id);
 		$this->cache->delete($patronCacheKey);
-
+		// todo: A success message won't be displayed unless the words are EXACTLY as below.
 		return [['Your pin number was updated successfully.']];
 	}
 
+	/**
+	 * resetPin
+	 *
+	 * Handles a pin reset when requested with emailResetPin().
+	 *
+	 * @param  $patron
+	 * @param  $newPin
+	 * @param  $resetToken
+	 * @return array|bool
+	 * @throws ErrorException
+	 */
 	public function resetPin($patron, $newPin, $resetToken){
 
 		$pinReset = new PinReset();
@@ -1055,6 +1088,16 @@ class Sierra {
 		return true;
 	}
 
+	/**
+	 * emailResetPin
+	 *
+	 * Sends an email reset link to the patrons email address
+	 *
+	 * @param  string            $barcode
+	 * @return array|bool        true if email is sent, error array on fail
+	 * @throws ErrorException
+	 * @throws \PHPMailer\PHPMailer\Exception
+	 */
 	public function emailResetPin($barcode) {
 		$patron = new User();
 
@@ -1155,7 +1198,9 @@ EOT;
 			switch ($key) {
 				case 'email':
 					$val = trim($val);
+					$successEmail = false;
 					if(!empty($val)){
+						$successEmail = $val;
 						$params['emails'][] = $val;
 					}
 					break;
@@ -1261,6 +1306,11 @@ EOT;
 			$this->logger->warning('Failed to self register patron');
 			return ['success'=>false, 'barcode'=>''];
 		}
+
+		if($successEmail) {
+			$emailSent = $this->sendSelfRegSuccessEmail($barcode);
+		}
+
 		$this->logger->debug('Success self registering patron');
 		return ['success' => true, 'barcode' => $barcode];
 	}
@@ -1417,6 +1467,50 @@ EOT;
 		return $fields;
 	}
 
+
+	/**
+	 * Send a self registration success email
+	 *
+	 * @param  string $barcode Self registered patrons barcode
+	 * @return bool true if email sent false otherwise
+	 */
+	public function sendSelfRegSuccessEmail($barcode) {
+		global $library;
+		global $interface;
+
+		if(!$patronId = $this->getPatronId($barcode)){
+			return false;
+		}
+
+		$patron = $this->getPatron($patronId);
+		if(!$patron) {
+			return false;
+		}
+
+		$emailAddress = $patron->email;
+		$patronName   = $patron->firstname . ' ' . $patron->lastname;
+		$libraryName  = $library->displayName;
+		$catalogUrl   = $this->configArray['Site']['url'];
+
+		$interface->assign('emailAddress', $emailAddress);
+		$interface->assign('patronName', $patronName);
+		$interface->assign('libraryName', $libraryName);
+		$interface->assign('catalogUrl', $catalogUrl);
+		$interface->assign('barcode', $barcode);
+		$emailBody = $interface->fetch('Emails/self-registration.tpl');
+		try {
+			$mailer = new PHPMailer;
+			$mailer->setFrom($this->configArray['Site']['email']);
+			$mailer->addAddress($emailAddress);
+			$mailer->Subject = "Your new library card at " . $libraryName;
+			$mailer->Body    = $emailBody;
+			$mailer->send();
+		} catch (\Exception $e) {
+			$this->logger->error($mailer->ErrorInfo);
+			return false;
+		}
+		return true;
+	}
 	/**
 	 * Get fines for a patron
 	 * GET patrons/{uid}/fines
@@ -1524,6 +1618,14 @@ EOT;
 	 */
 	public function getMyHolds($patron, $linkedAccount = false) {
 
+		global $library;
+		// ILL service name
+		$illName = false;
+		if($library) {
+			if(isset($library->interLibraryLoanName) && $library->interLibraryLoanName != '') {
+				$illName = $library->interLibraryLoanName;
+			}
+		}
 		$patronHoldsCacheKey = $this->cache->makePatronKey('holds', $patron->id);
 		if ($patronHolds = $this->cache->get($patronHoldsCacheKey)) {
 			$this->logger->info("Found holds in memcache:" . $patronHoldsCacheKey);
@@ -1637,6 +1739,7 @@ EOT;
 				case 'b':
 				case 'j':
 				case 'i':
+				case '!':
 					$status       = 'Ready';
 					$cancelable   = true;
 					$freezeable   = false;
@@ -1653,7 +1756,10 @@ EOT;
 					}
 					break;
 				case "&": // inn-reach status
-					$status       = "Requested from INN-Reach";
+					$status       = "Requested";
+					if($illName) {
+						$status .= ' from '.$illName;
+					}
 					$cancelable   = true;
 					$freezeable   = false;
 					$updatePickup = false;
@@ -1720,28 +1826,7 @@ EOT;
 				///////////////
 				// INNREACH HOLD
 				///////////////
-				// get the inn-reach item id
-				//$regExp = '/.*\/(.*)$/';
-				// we have to query for the item status (it will be an innreach status) as hold status for
-				// inn-reach will always show 0
-				/*preg_match($regExp, $hold->record, $itemId);
-				$itemParams    = ['fields'=>'status'];
-				$itemOperation = 'items/'.$itemId[1];
-				$itemRes = $this->_doRequest($itemOperation,$itemParams);
-				if($itemRes) {
-					if($itemRes->status->code != '&') {
-						$h['cancelable']         = false;
-					}
-					if($itemRes->status->code == '#') {
-						$hold->status->code = 'i';
-						$h['status']             = 'Ready';
-						$h['freezeable']         = false;
-						$h['cancelable']         = false;
-						$h['locationUpdateable'] = false;
-					}
-				}*/
 				// get the hold id
-
 				preg_match($this->urlIdRegExp, $hold->id, $mIr);
 				$innReachHoldId = $mIr[1];
 
@@ -2070,39 +2155,6 @@ EOT;
 	/****
 	 * READING HISTORY
 	 ***/
-
-	/**
-	 * Route reading history actions to the appropriate function according to the readingHistoryAction
-	 * URL parameter which will be one of:
-	 *
-	 * deleteAll    -> deleteAllReadingHistory
-	 * deleteMarked -> deleteMarkedReadingHistory
-	 * optIn        -> optInReadingHistory
-	 * optOut       -> optOutReadingHistory
-	 *
-	 * @param  User   $patron
-	 * @param  string $action One of the following; deleteAll, deleteMarked, optIn, optOut
-	 * @return mixed
-	 */
-//	public function doReadingHistoryAction($patron, $action, $selectedTitles) {
-//
-//		switch ($action) {
-//			case 'optIn':
-//				return $this->optInReadingHistory($patron);
-//				break;
-//			case 'optOut':
-//				return $this->optOutReadingHistory($patron);
-//				break;
-//			case 'deleteAll':
-//				return $this->deleteAllReadingHistory($patron);
-//				break;
-//			case 'deleteMarked':
-//				return $this->deleteMarkedReadingHistory($patron, $selectedTitles);
-//				break;
-//			default:
-//				return false;
-//		}
-//	}
 
 	/**
 	 * Opt the patron into Reading History within the ILS.
@@ -2641,13 +2693,13 @@ EOT;
 		}
 
 		// check that pin matches database
-		$patron = new User();
-		$patron->username = $patronId;
+		$patron            = new User();
+		$patron->ilsUserId = $patronId;
 		$patron->find(true);
 		// if we don't find a patron then new user create it. Will be populated
-		if($patron->N == 0) {
+		if ($patron->N == 0){
 			$patron->created      = date('Y-m-d');
-			$patron->username     = $patronId;
+			$patron->ilsUserId    = $patronId;
 			$patron->cat_username = $barcode;
 			$patron->insert();
 		}

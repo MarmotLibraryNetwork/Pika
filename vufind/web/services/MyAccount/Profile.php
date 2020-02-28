@@ -121,16 +121,11 @@ class MyAccount_Profile extends MyAccount
 				$updateScope = $_REQUEST['updateScope'];
 				if ($updateScope == 'contact') {
 					$errors = $patron->updatePatronInfo($canUpdateContactInfo);
-					// session start is generating this warning:
-					// PHP Notice: session_start(): A session had already been started - ignoring
-					// since session is already started no need to do so here.
-					// session_start(); // any writes to the session storage also closes session. Happens in updatePatronInfo (for Horizon). plb 4-21-2015
+					session_start();
 					$_SESSION['profileUpdateErrors'] = $errors;
-
 				}  elseif ($updateScope == 'userPreference') {
 					$patron->updateUserPreferences();
 				}  elseif ($updateScope == 'staffSettings') {
-
 					$patron->updateUserPreferences(); // update bypass autolog out option
 
 					if (isset($_REQUEST['materialsRequestEmailSignature'])) {
@@ -150,7 +145,7 @@ class MyAccount_Profile extends MyAccount
 					$_SESSION['profileUpdateErrors'] = $errors;
 				}
 
-				$res = session_write_close();
+				session_write_close();
 				$actionUrl = $configArray['Site']['path'] . '/MyAccount/Profile' . ( $patronId == $user->id ? '' : '?patronId='.$patronId ); // redirect after form submit completion
 				header("Location: " . $actionUrl);
 				exit();

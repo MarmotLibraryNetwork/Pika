@@ -96,19 +96,20 @@ abstract class SIP2Driver implements DriverInterface{
 				$userValid = true;
 			}
 			if ($userValid){
-				$returnVal = array(
-					'id'        => $password,
-					'username'  => $user->username,
-					'firstname' => $user->firstname,
-					'lastname'  => $user->lastname,
-					'fullname'  => $user->firstname . ' ' . $user->lastname,     //Added to array for possible display later.
+				$returnVal = [
+					'id'           => $password,
+					'username'     => $user->ilsUserId,
+					'firstname'    => $user->firstname,
+					'lastname'     => $user->lastname,
+					'fullname'     => $user->firstname . ' ' . $user->lastname,     //Added to array for possible display later.
 					'cat_username' => $username, //Should this be $Fullname or $patronDump['PATRN_NAME']
 					'cat_password' => $password,
-					'email' => $user->email,
-					'major' => null,
-					'college' => null,
-					'patronType' => $user->patronType,
-					'web_note' => translate('The catalog is currently down.  You will have limited access to circulation information.'));
+					'email'        => $user->email,
+					'major'        => null,
+					'college'      => null,
+					'patronType'   => $user->patronType,
+					'web_note'     => translate('The catalog is currently down.  You will have limited access to circulation information.')
+				];
 				$timer->logTime("patron logged in successfully");
 				return $returnVal;
 			} else {

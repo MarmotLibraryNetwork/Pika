@@ -23,7 +23,7 @@
  * This class handles the display of Grouped Works within VuFind.
  *
  * @category Pika
- * @author Mark Noble <pika@marmot.org>
+ * @author <pika@marmot.org>
  * Date: 11/26/13
  * Time: 1:51 PM
  */
@@ -1818,7 +1818,13 @@ class GroupedWorkDriver extends RecordInterface {
 	}
 
 	static function compareHoldability($a, $b){
-		return $a['holdable'] <=> $b['holdable'];
+		if ($a['holdable'] == $b['holdable']){
+			return 0;
+		}elseif ($a['holdable']){
+			return -1;
+		}else{
+			return 1;
+		}
 	}
 
 	static function compareLanguagesForRecords($a, $b){
@@ -3222,6 +3228,7 @@ class GroupedWorkDriver extends RecordInterface {
 				return 'AudiobookFormat';
 
 			case 'eBook':
+			case 'eComic':
 			case 'eMagazine':
 				return 'EBook';
 

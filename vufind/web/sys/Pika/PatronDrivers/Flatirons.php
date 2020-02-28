@@ -137,13 +137,22 @@ class Flatirons extends Sierra
 
 	function selfRegister($extraSelfRegParams = false)
 	{
+		global $library;
+		$libSubDomain = strtolower($library->subdomain);
+		$extraSelfRegParams = [];
+		// set boulder home location code
+		if($libSubDomain == "boulder") {
+			$extraSelfRegParams['homeLibraryCode'] = 'bm';
+			if(isset($_REQUEST['homelibrarycode'])) {
+				unset($_REQUEST['homelibrarycode']);
+			}
+		}
 		// Capitalize Mailing address
 		$_REQUEST['address'] = strtoupper($_REQUEST['address']);
 		$_REQUEST['city']    = strtoupper($_REQUEST['city']);
 		$_REQUEST['state']   = strtoupper($_REQUEST['state']);
 		$_REQUEST['zip']     = strtoupper($_REQUEST['zip']);
 
-		$extraSelfRegParams                = [];
 		$extraSelfRegParams['varFields'][] = ["fieldTag" => "x", "content"  => "Created Online"];
 		$extraSelfRegParams['pMessage']    = 'o';
 

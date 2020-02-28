@@ -1219,9 +1219,10 @@ public class GroupedWorkSolr implements Cloneable {
 	void addTopic(Set<String> fieldList) {
 		this.topics.addAll(Util.trimTrailingPunctuation(fieldList));
 	}
-	HashSet<String> getTopics(){
-		return this.topics;
-	}
+
+//	HashSet<String> getTopics(){
+//		return this.topics;
+//	}
 
 	void addTopic(String fieldValue) {
 		this.topics.add(Util.trimTrailingPunctuation(fieldValue));

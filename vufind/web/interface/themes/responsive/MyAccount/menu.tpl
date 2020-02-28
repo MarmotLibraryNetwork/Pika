@@ -80,36 +80,7 @@
 					</div>
 				</div>
 			</div>
-        {** barcode image **}
-        {if $loggedIn && $showPatronBarcodeImage}
-					<div class="panel hidden-md hidden-lg">
-						<a data-toggle="collapse" data-parent="#account-link-accordion" href="#myLibraryCard">
-							<div class="panel-heading">
-								<div class="panel-title">
-									My Library Card
-								</div>
-							</div>
-						</a>
-						<div id="myLibraryCard" class="panel-collapse collapse">
-							<div class="panel-body" style="text-align: center; min-height: 200px;">
-								<br />
-								<svg id="barcode" style="margin: 0 auto;"></svg>
-                  {literal}
-								<script src="https://cdn.jsdelivr.net/jsbarcode/3.6.0/"></script>
-								<script>
-									JsBarcode("#barcode", "{/literal}{$user->barcode}{literal}", {
-										format: "codabar",
-										lineColor: "#000000",
-										width: 2,
-										height: 200,
-										displayValue: false
-									});
-								</script>
-                  {/literal}
-							</div>
-						</div>
-					</div>
-        {/if}
+
 			{* My Lists*}
 			{if $action == 'MyList'}
 				{assign var="curSection" value=true}
@@ -250,7 +221,9 @@
 					<div id="indexingMenuGroup" class="panel-collapse collapse {if $curSection}in{/if}">
 						<div class="panel-body">
 							<div class="adminMenuLink{if $action == "IndexingStats"} active{/if}"><a href="/Admin/IndexingStats">Indexing Statistics</a></div>
+                {if $loggedIn && $userRoles && (in_array('opacAdmin', $userRoles))}
 							<div class="adminMenuLink{if $action == "IndexingProfiles"} active{/if}"><a href="/Admin/IndexingProfiles">Indexing Profiles</a></div>
+                {/if}
 							<div class="adminMenuLink{if $action == "TranslationMaps"} active{/if}"><a href="/Admin/TranslationMaps">Translation Maps</a></div>
 						</div>
 					</div>
@@ -414,7 +387,7 @@
 			{/if}
 
 			{if $loggedIn && $userRoles && (in_array('opacAdmin', $userRoles) || in_array('libraryAdmin', $userRoles) || in_array('libraryManager', $userRoles) || in_array('locationManager', $userRoles) || in_array('contentEditor', $userRoles))}
-				{if $module == "EditorialReview" || $action == "EditorialReviews"}
+				{if $module == "LibrarianReview" || $action == "LibrarianReviews"}
 					{assign var="curSection" value=true}
 				{else}
 					{assign var="curSection" value=false}
@@ -423,14 +396,14 @@
 					<a href="#editorialReviewMenu" data-toggle="collapse" data-parent="#adminMenuAccordion">
 						<div class="panel-heading">
 							<div class="panel-title">
-								Editorial Reviews
+								Librarian Reviews
 							</div>
 						</div>
 					</a>
 					<div id="editorialReviewMenu" class="panel-collapse collapse {if $curSection}in{/if}">
 						<div class="panel-body">
-							<div class="adminMenuLink{if $action == "EditorialReviews"} active{/if}"><a href="/Admin/EditorialReviews">Editorial Reviews</a></div>
-							<div class="adminMenuLink"><a href="/Admin/EditorialReviews?objectAction=addNew">New Review</a></div>
+							<div class="adminMenuLink{if $action == "LibrarianReviews"} active{/if}"><a href="/Admin/LibrarianReviews">Librarian Reviews</a></div>
+							<div class="adminMenuLink"><a href="/Admin/LibrarianReviews?objectAction=addNew">New Review</a></div>
 						</div>
 					</div>
 				</div>

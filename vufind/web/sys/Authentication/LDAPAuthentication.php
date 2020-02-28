@@ -27,26 +27,26 @@ class LDAPAuthentication implements Authentication {
 	private $password;
 	private $ldapConfigurationParameter;
 
-	public function __construct($additionalInfo) {
+	public function __construct($additionalInfo){
 		$this->ldapConfigurationParameter = new LDAPConfigurationParameter();
 	}
 
-	public function authenticate($validatedViaSSO) {
+	public function authenticate($validatedViaSSO){
 		$this->username = $_POST['username'];
 		$this->password = $_POST['password'];
-		if ($this->username == '' || $this->password == '') {
+		if ($this->username == '' || $this->password == ''){
 			return new PEAR_Error('authentication_error_blank');
 		}
 		$this->trimCredentials();
 		return $this->bindUser();
 	}
 
-	private function trimCredentials() {
+	private function trimCredentials(){
 		$this->username = trim($this->username);
 		$this->password = trim($this->password);
 	}
 
-	private function bindUser() {
+	private function bindUser(){
 		$ldapConnectionParameter = $this->ldapConfigurationParameter->getParameter();
 
 		// Try to connect to LDAP and die if we can't; note that some LDAP setups
@@ -55,14 +55,14 @@ class LDAPAuthentication implements Authentication {
 		// time!
 		$ldapConnection = @ldap_connect($ldapConnectionParameter['host'],
 			$ldapConnectionParameter['port']);
-		if (!$ldapConnection) {
+		if (!$ldapConnection){
 			return new PEAR_ERROR('authentication_error_technical');
 		}
 
 		// Set LDAP options -- use protocol version 3 and then initiate TLS so we
 		// can have a secure connection over the standard LDAP port.
 		@ldap_set_option($ldapConnection, LDAP_OPT_PROTOCOL_VERSION, 3);
-		if (!@ldap_start_tls($ldapConnection)) {
+		if (!@ldap_start_tls($ldapConnection)){
 			return new PEAR_ERROR('authentication_error_technical');
 		}
 
@@ -71,10 +71,10 @@ class LDAPAuthentication implements Authentication {
 		// settings can be excluded in order to skip this step.
 		if (isset($ldapConnectionParameter['bind_username']) &&
 			isset($ldapConnectionParameter['bind_password'])
-		) {
+		){
 			$ldapBind = @ldap_bind($ldapConnection, $ldapConnectionParameter['bind_username'],
 				$ldapConnectionParameter['bind_password']);
-			if (!$ldapBind) {
+			if (!$ldapBind){
 				return new PEAR_ERROR('authentication_error_technical');
 			}
 		}
@@ -83,19 +83,19 @@ class LDAPAuthentication implements Authentication {
 		$ldapFilter = $ldapConnectionParameter['username'] . '=' . $this->username;
 		$ldapSearch = @ldap_search($ldapConnection, $ldapConnectionParameter['basedn'],
 			$ldapFilter);
-		if (!$ldapSearch) {
+		if (!$ldapSearch){
 			return new PEAR_ERROR('authentication_error_technical');
 		}
 
 		$info = ldap_get_entries($ldapConnection, $ldapSearch);
-		if ($info['count']) {
+		if ($info['count']){
 			// Validate the user credentials by attempting to bind to LDAP:
 			$ldapBind = @ldap_bind($ldapConnection, $info[0]['dn'], $this->password);
-			if ($ldapBind) {
+			if ($ldapBind){
 				// If the bind was successful, we can look up the full user info:
 				$ldapSearch = ldap_search($ldapConnection, $ldapConnectionParameter['basedn'],
 					$ldapFilter);
-				$data = ldap_get_entries($ldapConnection, $ldapSearch);
+				$data       = ldap_get_entries($ldapConnection, $ldapSearch);
 				return $this->processLDAPUser($data, $ldapConnectionParameter);
 			}
 		}
@@ -103,70 +103,66 @@ class LDAPAuthentication implements Authentication {
 		return new PEAR_ERROR('authentication_error_invalid');
 	}
 
-	private function processLDAPUser($data, $ldapConnectionParameter) {
-		$user = new User();
-		$user->username = $this->username;
-		$userIsInVufindDatabase = $this->isUserInVufindDatabase($user);
-		for ($i = 0; $i < $data["count"]; $i++) {
-			for ($j = 0; $j < $data[$i]["count"]; $j++) {
+	private function processLDAPUser($data, $ldapConnectionParameter){
+		$user             = new User();
+		$user->ilsUserId  = $this->username;
+		$isUserInDatabase = $this->isInUserTable($user);
+		for ($i = 0;$i < $data["count"];$i++){
+			for ($j = 0;$j < $data[$i]["count"];$j++){
 
 				if (($data[$i][$j] == $ldapConnectionParameter['firstname']) &&
 					($ldapConnectionParameter['firstname'] != "")
-				) {
+				){
 					$user->firstname = $data[$i][$data[$i][$j]][0];
 				}
 
 				if ($data[$i][$j] == $ldapConnectionParameter['lastname'] &&
 					($ldapConnectionParameter['lastname'] != "")
-				) {
+				){
 					$user->lastname = $data[$i][$data[$i][$j]][0];
 				}
 
 				if ($data[$i][$j] == $ldapConnectionParameter['email'] &&
 					($ldapConnectionParameter['email'] != "")
-				) {
+				){
 					$user->email = $data[$i][$data[$i][$j]][0];
 				}
 
 				if ($data[$i][$j] == $ldapConnectionParameter['cat_username'] &&
 					($ldapConnectionParameter['cat_username'] != "")
-				) {
+				){
 					$user->cat_username = $data[$i][$data[$i][$j]][0];
 				}
 
 				if ($data[$i][$j] == $ldapConnectionParameter['cat_password'] &&
 					($ldapConnectionParameter['cat_password'] != "")
-				) {
+				){
 					$user->cat_password = $data[$i][$data[$i][$j]][0];
 				}
 
-				if ($data[$i][$j] == $ldapConnectionParameter['college'] &&
-					($ldapConnectionParameter['college'] != "")
-				) {
-					$user->college = $data[$i][$data[$i][$j]][0];
-				}
-
-				if ($data[$i][$j] == $ldapConnectionParameter['major'] &&
-					($ldapConnectionParameter['major'] != "")
-				) {
-					$user->major = $data[$i][$data[$i][$j]][0];
-				}
 			}
 		}
-		$this->synchronizeVufindDatabaseWithLDAPEntries($userIsInVufindDatabase, $user);
+		$this->synchronizeUserTableWithLDAPEntries($isUserInDatabase, $user);
 		return $user;
 	}
 
-	private function isUserInVufindDatabase($user) {
+	private function isInUserTable(User $user){
 		return $user->find(true);
 	}
 
-	private function synchronizeVufindDatabaseWithLDAPEntries($userIsInVufindDatabase, $user) {
-		if ($userIsInVufindDatabase) {
+	private function synchronizeUserTableWithLDAPEntries($userIsInVufindDatabase, $user){
+		if ($userIsInVufindDatabase){
 			$user->update();
-		} else {
+		}else{
 			$user->created = date('Y-m-d');
 			$user->insert();
 		}
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	public function validateAccount($username, $password, $parentAccount, $validatedViaSSO){
+		// TODO: Implement validateAccount() method.
 	}
 }

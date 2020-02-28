@@ -167,12 +167,12 @@ VuFind.GroupedWork = (function(){
 						$("#syndicatedReviewPlaceholder").html(syndicatedReviewsData);
 					}
 				}
-				if (data.numEditorialReviews == 0){
-					$("#editorialReviewsPanel").hide();
+				if (data.numLibrarianReviews == 0){
+					$("#librarianReviewsPanel").hide();
 				}else{
-					var editorialReviewsData = data.editorialReviewsHtml;
-					if (editorialReviewsData && editorialReviewsData.length > 0) {
-						$("#editorialReviewPlaceholder").html(editorialReviewsData);
+					var librarianReviewsData = data.librarianReviewsHtml;
+					if (librarianReviewsData && librarianReviewsData.length > 0) {
+						$("#librarianReviewPlaceholder").html(librarianReviewsData);
 					}
 				}
 
@@ -290,55 +290,46 @@ VuFind.GroupedWork = (function(){
 			return false;
 		},
 
-		sendEmail: function(id){
-			VuFind.Account.ajaxLogin(function (){
-				var from = $('#from').val(),
-						to = $('#to').val(),
-						message = $('#message').val(),
-						related_record = $('#related_record').val(),
-						url = "/GroupedWork/" + encodeURIComponent(id) + "/AJAX",
-						params = {
-							'method' : 'sendEmail',
-							from : from,
-							to : to,
-							message : message,
-							related_record : related_record
-						};
-				$.getJSON(url, params,
-						function(data) {
-							if (data.result) {
-								VuFind.showMessage("Success", data.message);
-							} else {
-								VuFind.showMessage("Error", data.message);
-							}
+		sendEmail: function (id){
+			var url = "/GroupedWork/" + encodeURIComponent(id) + "/AJAX",
+					params = {
+						'method': 'sendEmail'
+						, from: $('#from').val()
+						, to: $('#to').val()
+						, message: $('#message').val()
+						, related_record: $('#related_record').val()
+						, 'g-recaptcha-response': (typeof grecaptcha !== 'undefined') ? grecaptcha.getResponse() : false
+					};
+			$.getJSON(url, params,
+					function (data){
+						if (data.result){
+							VuFind.showMessage("Success", data.message);
+						}else{
+							VuFind.showMessage("Error", data.message);
 						}
-				).fail(VuFind.ajaxFail);
-			});
+					}
+			).fail(VuFind.ajaxFail);
 			return false;
 		},
 
-		sendSMS: function(id){
-			VuFind.Account.ajaxLogin(function (){
-				var phoneNumber = $('#sms_phone_number').val(),
-						provider = $('#provider').val(),
-						related_record = $('#related_record').val(),
-						url = "/GroupedWork/" + encodeURIComponent(id) + "/AJAX",
-						params = {
-							'method' : 'sendSMS',
-							provider : provider,
-							sms_phone_number : phoneNumber,
-							related_record : related_record
-						};
-				$.getJSON(url, params,
-						function(data) {
-							if (data.result) {
-								VuFind.showMessage("Success", data.message);
-							} else {
-								VuFind.showMessage("Error", data.message);
-							}
+		sendSMS: function (id){
+			var url = "/GroupedWork/" + encodeURIComponent(id) + "/AJAX",
+					params = {
+						'method': 'sendSMS'
+						, provider: $('#provider').val()
+						, sms_phone_number: $('#sms_phone_number').val()
+						, related_record: $('#related_record').val()
+						, 'g-recaptcha-response': (typeof grecaptcha !== 'undefined') ? grecaptcha.getResponse() : false
+					};
+			$.getJSON(url, params,
+					function (data){
+						if (data.result){
+							VuFind.showMessage("Success", data.message);
+						}else{
+							VuFind.showMessage("Error", data.message);
 						}
-				).fail(VuFind.ajaxFail);
-			});
+					}
+			).fail(VuFind.ajaxFail);
 			return false;
 		},
 

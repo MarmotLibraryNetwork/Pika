@@ -16,21 +16,19 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 /**
  * Asynchronous functionality for MyAccount module
  *
  * @category Pika
- * @author   Mark Noble <pika@marmot.org>
- * Date: 3/25/14
- * Time: 4:26 PM
  */
 require_once ROOT_DIR . '/AJAXHandler.php';
-require_once ROOT_DIR . '/services/AJAX/Captcha_AJAX.php';
+//require_once ROOT_DIR . '/services/AJAX/Captcha_AJAX.php';
+require_once ROOT_DIR . '/sys/Pika/Functions.php';
+use function Pika\Functions\{recaptchaGetQuestion, recaptchaCheckAnswer};
 
 class MyAccount_AJAX extends AJAXHandler {
 
-	use Captcha_AJAX;
+	//use Captcha_AJAX;
 
 	protected $methodsThatRespondWithJSONUnstructured = array(
 		'GetSuggestions', // not checked
@@ -561,6 +559,7 @@ class MyAccount_AJAX extends AJAXHandler {
 				//If the record is not valid, skip the whole thing since the title could be bad too
 				if (!empty($_REQUEST['groupedWorkId']) && !is_array($_REQUEST['groupedWorkId'])){
 					$recordToAdd = urldecode($_REQUEST['groupedWorkId']);
+					require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 					if (!GroupedWork::validGroupedWorkId($recordToAdd)){
 						$return['success'] = false;
 						$return['message'] = 'The item to add to the list is not valid';
@@ -576,13 +575,11 @@ class MyAccount_AJAX extends AJAXHandler {
 				if ($list->find(true)){
 					$existingList = true;
 				}
-				$description = '';
-				if (isset($_REQUEST['desc'])){
-					$description = $_REQUEST['desc'];
-					if (is_array($description)){
-						$description = reset($description);
-					}
+				$description = $_REQUEST['desc'] ?? '';
+				if (is_array($description)){
+					$description = reset($description);
 				}
+
 
 				$list->description = strip_tags(urldecode($description));
 				$list->public      = isset($_REQUEST['public']) && $_REQUEST['public'] == 'true';
@@ -1033,7 +1030,7 @@ class MyAccount_AJAX extends AJAXHandler {
 
 		// Get data from AJAX request
 		if (isset($_REQUEST['listId']) && ctype_digit($_REQUEST['listId'])){ // validly formatted List Id
-			$recaptchaValid = $this->isRecaptchaValid();
+			$recaptchaValid = recaptchaCheckAnswer();
 
 			if (UserAccount::isLoggedIn() || $recaptchaValid){
 				$listId = $_REQUEST['listId'];
@@ -1136,7 +1133,8 @@ class MyAccount_AJAX extends AJAXHandler {
 					$interface->assign('from', $user->email);
 				}
 			}else{
-				$this->setUpCaptchaForTemplate();
+				$captchaCode = recaptchaGetQuestion();
+				$interface->assign('captcha', $captchaCode);
 			}
 
 			return [

@@ -37,6 +37,9 @@
 								<a href="/{$recordDriver->getModule()}/{$id|escape:"url"}/AJAX?method=downloadMarc"
 									 class="btn btn-sm btn-default">{translate text="Download Marc"}</a>
                 {*							</div>*}
+                {if $userRoles && (in_array('opacAdmin', $userRoles) || in_array('libraryAdmin', $userRoles) || in_array('libraryManager', $userRoles) || in_array('locationManager', $userRoles) || in_array('contentEditor', $userRoles))}
+									<a href="/Admin/LibrarianReviews?objectAction=addNew&groupedWorkPermanentId={$recordDriver->getPermanentId()}" target="_blank" class="btn btn-sm btn-default">Add Librarian Review</a>
+                {/if}
 						</div>
 					</div>
 					<div class="row">

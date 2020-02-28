@@ -220,13 +220,9 @@ class SIPAuthentication implements Authentication {
 	 */
 	private function processSIP2User($info, $username, $password, $patronInfoResponse){
 		global $timer;
-		$user           = new User();
-		$user->username = $info['variable']['AA'][0];
-		if ($user->find(true)) {
-			$insert = false;
-		} else {
-			$insert = true;
-		}
+		$user            = new User();
+		$user->ilsUserId = $info['variable']['AA'][0];
+		$insert          = $user->find(true) ? false : true;
 		
 		// This could potentially be different depending on the ILS.  Name could be Bob Wicksall or Wicksall, Bob.
 		// This is currently assuming Wicksall, Bob

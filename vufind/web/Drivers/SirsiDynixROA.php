@@ -137,10 +137,10 @@ abstract class SirsiDynixROA extends HorizonAPI //TODO: This class doesn't need 
 
 				$userExistsInDB = false;
 				/** @var User $user */
-				$user = new User();
-				$user->source = $this->accountProfile->name;
-				$user->username = $userID;
-				if ($user->find(true)) {
+				$user            = new User();
+				$user->source    = $this->accountProfile->name;
+				$user->ilsUserId = $userID;
+				if ($user->find(true)){
 					$userExistsInDB = true;
 				}
 
@@ -334,10 +334,10 @@ abstract class SirsiDynixROA extends HorizonAPI //TODO: This class doesn't need 
 
 				$userExistsInDB = false;
 				/** @var User $user */
-				$user = new User();
-				$user->source = $this->accountProfile->name;
-				$user->username = $sirsiRoaUserID;
-				if ($user->find(true)) {
+				$user            = new User();
+				$user->source    = $this->accountProfile->name;
+				$user->ilsUserId = $sirsiRoaUserID;
+				if ($user->find(true)){
 					$userExistsInDB = true;
 				}
 
@@ -782,8 +782,8 @@ abstract class SirsiDynixROA extends HorizonAPI //TODO: This class doesn't need 
 		//Now that we have the session token, get holds information
 		$webServiceURL = $this->getWebServiceURL();
 		//Get a list of checkouts for the user
-//		$patronCheckouts = $this->getWebServiceResponse($webServiceURL . '/v1/user/patron/key/' . $patron->username . '?includeFields=circRecordList{*,item{itemType,call{dispCallNumber}}}', null, $sessionToken);
-		$patronCheckouts = $this->getWebServiceResponse($webServiceURL . '/v1/user/patron/key/' . $patron->username . '?includeFields=circRecordList{*,item{call{dispCallNumber}}}', null, $sessionToken);
+//		$patronCheckouts = $this->getWebServiceResponse($webServiceURL . '/v1/user/patron/key/' . $patron->ilsUserId . '?includeFields=circRecordList{*,item{itemType,call{dispCallNumber}}}', null, $sessionToken);
+		$patronCheckouts = $this->getWebServiceResponse($webServiceURL . '/v1/user/patron/key/' . $patron->ilsUserId . '?includeFields=circRecordList{*,item{call{dispCallNumber}}}', null, $sessionToken);
 
 		if (!empty($patronCheckouts->fields->circRecordList)) {
 			$sCount = 0;
@@ -896,7 +896,7 @@ abstract class SirsiDynixROA extends HorizonAPI //TODO: This class doesn't need 
 
 		//Get a list of holds for the user
 		// (Call now includes Item information for when the hold is an item level hold.)
-		$patronHolds = $this->getWebServiceResponse($webServiceURL . '/v1/user/patron/key/' . $patron->username . '?includeFields=holdRecordList{*,item{itemType,barcode,call{callNumber}}}', null, $sessionToken);
+		$patronHolds = $this->getWebServiceResponse($webServiceURL . '/v1/user/patron/key/' . $patron->ilsUserId . '?includeFields=holdRecordList{*,item{itemType,barcode,call{callNumber}}}', null, $sessionToken);
 		if ($patronHolds && isset($patronHolds->fields)) {
 			require_once ROOT_DIR . '/RecordDrivers/MarcRecord.php';
 			foreach ($patronHolds->fields->holdRecordList as $hold) {
@@ -1163,19 +1163,24 @@ abstract class SirsiDynixROA extends HorizonAPI //TODO: This class doesn't need 
 	}
 
 
- private function getSessionToken($patron)
- {
-	 $sirsiRoaUserId = $patron->username;
+	private function getSessionToken(User $patron){
+		$sirsiRoaUserId = $patron->ilsUserId;
 
-	 //Get the session token for the user
-	 if (isset(SirsiDynixROA::$sessionIdsForUsers[$sirsiRoaUserId])) {
-		 return SirsiDynixROA::$sessionIdsForUsers[$sirsiRoaUserId];
-	 } else {
-		 list(, $sessionToken) = $this->loginViaWebService($patron->cat_username, $patron->cat_password);
-		 return $sessionToken;
-	 }
- }
+		//Get the session token for the user
+		if (isset(SirsiDynixROA::$sessionIdsForUsers[$sirsiRoaUserId])){
+			return SirsiDynixROA::$sessionIdsForUsers[$sirsiRoaUserId];
+		}else{
+			list(, $sessionToken) = $this->loginViaWebService($patron->cat_username, $patron->cat_password);
+			return $sessionToken;
+		}
+	}
 
+	/**
+	 * @param User $patron
+	 * @param string $recordId
+	 * @param string $cancelId
+	 * @return array
+	 */
 	function cancelHold($patron, $recordId, $cancelId)
 	{
 //		$sessionToken = $this->getStaffSessionToken();
@@ -1211,6 +1216,13 @@ abstract class SirsiDynixROA extends HorizonAPI //TODO: This class doesn't need 
 
 	}
 
+	/**
+	 * @param User $patron
+	 * @param $recordId
+	 * @param $holdId
+	 * @param $newPickupLocation
+	 * @return array
+	 */
 	function changeHoldPickupLocation($patron, $recordId, $holdId, $newPickupLocation)
 	{
 		$sessionToken = $this->staffOrPatronSessionTokenSwitch() ? $this->getStaffSessionToken() : $this->getSessionToken($patron);
@@ -1258,6 +1270,13 @@ abstract class SirsiDynixROA extends HorizonAPI //TODO: This class doesn't need 
 		}
 	}
 
+	/**
+	 * @param User $patron
+	 * @param $recordId
+	 * @param $holdToFreezeId
+	 * @param $dateToReactivate
+	 * @return array
+	 */
 	function freezeHold($patron, $recordId, $holdToFreezeId, $dateToReactivate)
 	{
 		$sessionToken = $this->getStaffSessionToken();
@@ -1310,6 +1329,12 @@ abstract class SirsiDynixROA extends HorizonAPI //TODO: This class doesn't need 
 		}
 	}
 
+	/**
+	 * @param User $patron
+	 * @param $recordId
+	 * @param $holdToThawId
+	 * @return array
+	 */
 	function thawHold($patron, $recordId, $holdToThawId)
 	{
 		$sessionToken = $this->getStaffSessionToken();
@@ -1323,11 +1348,11 @@ abstract class SirsiDynixROA extends HorizonAPI //TODO: This class doesn't need 
 		$webServiceURL = $this->getWebServiceURL();
 
 		$params = array(
-			'key' => $holdToThawId,
+			'key'      => $holdToThawId,
 			'resource' => '/circulation/holdRecord',
-			'fields' => array(
+			'fields'   => array(
 				'suspendBeginDate' => null,
-				'suspendEndDate' => null
+				'suspendEndDate'   => null
 			)
 		);
 
@@ -1417,7 +1442,7 @@ abstract class SirsiDynixROA extends HorizonAPI //TODO: This class doesn't need 
 	}
 
 	/**
-	 * @param $patron
+	 * @param User $patron
 	 * @param $includeMessages
 	 * @return array|PEAR_Error
 	 */
@@ -1430,8 +1455,8 @@ abstract class SirsiDynixROA extends HorizonAPI //TODO: This class doesn't need 
 			//create the hold using the web service
 			$webServiceURL = $this->getWebServiceURL();
 
-//			$blockList = $this->getWebServiceResponse($webServiceURL . '/v1/user/patron/key/' . $patron->username . '?includeFields=blockList{*}', null, $sessionToken);
-			$blockList = $this->getWebServiceResponse($webServiceURL . '/v1/user/patron/key/' . $patron->username . '?includeFields=blockList{*,item{bib{title,author}}}', null, $sessionToken);
+//			$blockList = $this->getWebServiceResponse($webServiceURL . '/v1/user/patron/key/' . $patron->ilsUserId . '?includeFields=blockList{*}', null, $sessionToken);
+			$blockList = $this->getWebServiceResponse($webServiceURL . '/v1/user/patron/key/' . $patron->ilsUserId . '?includeFields=blockList{*,item{bib{title,author}}}', null, $sessionToken);
 			// Include Title data if available
 
 			if (!empty($blockList->fields->blockList)) {
@@ -1491,7 +1516,7 @@ abstract class SirsiDynixROA extends HorizonAPI //TODO: This class doesn't need 
 
 
 		$updatePinResponse = $this->getWebServiceResponse($webServiceURL . "/v1/user/patron/changeMyPin", $params, $sessionToken, 'POST');
-		if (!empty($updatePinResponse->patronKey) && $updatePinResponse->patronKey ==  $patron->username) {
+		if (!empty($updatePinResponse->patronKey) && $updatePinResponse->patronKey ==  $patron->ilsUserId) {
 			$patron->cat_password = $newPin;
 			$patron->update();
 			return "Your pin number was updated successfully.";
@@ -1513,7 +1538,13 @@ abstract class SirsiDynixROA extends HorizonAPI //TODO: This class doesn't need 
 		}
 	}
 
-	function resetPin($user, $newPin, $resetToken=null){
+	/**
+	 * @param User $patron
+	 * @param $newPin
+	 * @param null $resetToken
+	 * @return array|void
+	 */
+	function resetPin($patron, $newPin, $resetToken=null){
 		if (empty($resetToken)) {
 			global $logger;
 			$logger->log('No Reset Token passed to resetPin function', PEAR_LOG_ERR);
@@ -1539,9 +1570,9 @@ abstract class SirsiDynixROA extends HorizonAPI //TODO: This class doesn't need 
 				'error' => 'Sorry, we encountered an error while attempting to update your pin. Please contact your local library.'
 			);
 		} elseif (!empty($changeMyPinResponse->sessionToken)){
-			if ($user->username == $changeMyPinResponse->patronKey) { // Check that the ILS user matches the Pika user
-				$user->cat_password = $newPin;
-				$user->update();
+			if ($patron->ilsUserId == $changeMyPinResponse->patronKey) { // Check that the ILS user matches the Pika user
+				$patron->cat_password = $newPin;
+				$patron->update();
 			}
 			return array(
 				'success' => true,
@@ -1640,22 +1671,21 @@ abstract class SirsiDynixROA extends HorizonAPI //TODO: This class doesn't need 
 	 * @param bool $canUpdateContactInfo
 	 * @return array
 	 */
-	function updatePatronInfo($user, $canUpdateContactInfo)
-	{
+	function updatePatronInfo($user, $canUpdateContactInfo){
 		$updateErrors = array();
-		if ($canUpdateContactInfo) {
+		if ($canUpdateContactInfo){
 			$sessionToken = $this->getSessionToken($user);
-			if ($sessionToken) {
+			if ($sessionToken){
 				$webServiceURL = $this->getWebServiceURL();
-				if ($userID = $user->username) {
+				if ($userID = $user->ilsUserId){
 					$updatePatronInfoParameters = array(
-						'fields' => array(),
-					  'key' => $userID,
-					  'resource' => '/user/patron',
+						'fields'   => array(),
+						'key'      => $userID,
+						'resource' => '/user/patron',
 					);
-					if (!empty(self::$userPreferredAddresses[$userID])) {
+					if (!empty(self::$userPreferredAddresses[$userID])){
 						$preferredAddress = self::$userPreferredAddresses[$userID];
-					} else {
+					}else{
 						// TODO: Also set the preferred address in the $updatePatronInfoParameters
 						$preferredAddress = 1;
 					}
@@ -1664,76 +1694,76 @@ abstract class SirsiDynixROA extends HorizonAPI //TODO: This class doesn't need 
 					$index = 0;
 
 					// Closure to handle the data structure of the address parameters to pass onto the ILS
-					$setField = function ($key, $value) use (&$updatePatronInfoParameters, $preferredAddress, &$index) {
+					$setField = function ($key, $value) use (&$updatePatronInfoParameters, $preferredAddress, &$index){
 						static $parameterIndex = array();
 
-						$addressField = 'address' . $preferredAddress;
+						$addressField                = 'address' . $preferredAddress;
 						$patronAddressPolicyResource = '/policy/patron' . ucfirst($addressField);
 
-						$l = array_key_exists($key, $parameterIndex) ? $parameterIndex[$key] : $index++;
+						$l                                                       = array_key_exists($key, $parameterIndex) ? $parameterIndex[$key] : $index++;
 						$updatePatronInfoParameters['fields'][$addressField][$l] = array(
-							'resource' => '/user/patron/'. $addressField,
-							'fields' => array(
+							'resource' => '/user/patron/' . $addressField,
+							'fields'   => array(
 								'code' => array(
-									'key' => $key,
+									'key'      => $key,
 									'resource' => $patronAddressPolicyResource
 								),
 								'data' => $value
 							)
 						);
-						$parameterIndex[$key] = $l;
+						$parameterIndex[$key]                                    = $l;
 
 					};
 
-					if (!empty($user->email)) {
+					if (!empty($user->email)){
 						$setField('EMAIL', $user->email);
 					}
 
-					if (!empty($user->address1)) {
+					if (!empty($user->address1)){
 						$setField('STREET', $user->address1);
 					}
 
-					if (!empty($user->zip)) {
+					if (!empty($user->zip)){
 						$setField('ZIP', $user->zip);
 					}
 
-					if (!empty($user->phone)) {
+					if (!empty($user->phone)){
 						$setField('PHONE', $user->phone);
 					}
 
-					if (!empty($user->city) && !empty($user->city)) {
-						$setField('CITY/STATE', $user->city .' '. $user->state);
+					if (!empty($user->city) && !empty($user->city)){
+						$setField('CITY/STATE', $user->city . ' ' . $user->state);
 					}
 
 
 					// Update Address Field with new data supplied by the user
-					if (isset($_REQUEST['email'])) {
+					if (isset($_REQUEST['email'])){
 						$setField('EMAIL', $_REQUEST['email']);
 					}
 
-					if (isset($_REQUEST['phone'])) {
-						$setField('PHONE',$_REQUEST['phone']);
+					if (isset($_REQUEST['phone'])){
+						$setField('PHONE', $_REQUEST['phone']);
 					}
 
-					if (isset($_REQUEST['address1'])) {
-						$setField('STREET',$_REQUEST['address1']);
+					if (isset($_REQUEST['address1'])){
+						$setField('STREET', $_REQUEST['address1']);
 					}
 
-					if (isset($_REQUEST['city']) && isset($_REQUEST['state'])) {
-						$setField('CITY/STATE',$_REQUEST['city'] . ' ' . $_REQUEST['state']);
+					if (isset($_REQUEST['city']) && isset($_REQUEST['state'])){
+						$setField('CITY/STATE', $_REQUEST['city'] . ' ' . $_REQUEST['state']);
 					}
 
-					if (isset($_REQUEST['zip'])) {
-						$setField('ZIP',$_REQUEST['zip']);
+					if (isset($_REQUEST['zip'])){
+						$setField('ZIP', $_REQUEST['zip']);
 					}
 
 					// Update Home Location
-					if (!empty($_REQUEST['pickupLocation'])) {
+					if (!empty($_REQUEST['pickupLocation'])){
 						$homeLibraryLocation = new Location();
-						if ($homeLibraryLocation->get('code', $_REQUEST['pickupLocation'])) {
-							$homeBranchCode = strtoupper($homeLibraryLocation->code);
+						if ($homeLibraryLocation->get('code', $_REQUEST['pickupLocation'])){
+							$homeBranchCode                                  = strtoupper($homeLibraryLocation->code);
 							$updatePatronInfoParameters['fields']['library'] = array(
-								'key' => $homeBranchCode,
+								'key'      => $homeBranchCode,
 								'resource' => '/policy/library'
 							);
 						}
@@ -1741,22 +1771,22 @@ abstract class SirsiDynixROA extends HorizonAPI //TODO: This class doesn't need 
 
 					$updateAccountInfoResponse = $this->getWebServiceResponse($webServiceURL . '/v1/user/patron/key/' . $userID, $updatePatronInfoParameters, $sessionToken, 'PUT');
 
-						if (isset($updateAccountInfoResponse->messageList)) {
-							foreach ($updateAccountInfoResponse->messageList as $message) {
-								$updateErrors[] = $message->message;
-							}
-							global $logger;
-							$logger->log('Symphony Driver - Patron Info Update Error - Error from ILS : '.implode(';', $updateErrors), PEAR_LOG_ERR);
+					if (isset($updateAccountInfoResponse->messageList)){
+						foreach ($updateAccountInfoResponse->messageList as $message){
+							$updateErrors[] = $message->message;
 						}
-				} else {
+						global $logger;
+						$logger->log('Symphony Driver - Patron Info Update Error - Error from ILS : ' . implode(';', $updateErrors), PEAR_LOG_ERR);
+					}
+				}else{
 					global $logger;
 					$logger->log('Symphony Driver - Patron Info Update Error: Catalog does not have the circulation system User Id', PEAR_LOG_ERR);
 					$updateErrors[] = 'Catalog does not have the circulation system User Id';
 				}
-			} else {
+			}else{
 				$updateErrors[] = 'Sorry, it does not look like you are logged in currently.  Please login and try again';
 			}
-		} else {
+		}else{
 			$updateErrors[] = 'You do not have permission to update profile information.';
 		}
 		return $updateErrors;

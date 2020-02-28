@@ -16,9 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
-require_once 'Authentication.php';
+use jasig\phpcas\CAS;
+//require_once 'Authentication.php';
 require_once ROOT_DIR . '/CatalogConnection.php';
+//require_once 'CAS.php';
 
 class CASAuthentication implements Authentication {
 	static $clientInitialized = false;
@@ -103,7 +104,6 @@ class CASAuthentication implements Authentication {
 
 	protected function initializeCASClient() {
 		if (!CASAuthentication::$clientInitialized) {
-			require_once ROOT_DIR . '/CAS-1.3.4/CAS.php';
 
 			global $library;
 			global $configArray;

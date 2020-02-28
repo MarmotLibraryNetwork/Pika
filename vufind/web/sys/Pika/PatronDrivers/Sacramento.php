@@ -23,7 +23,6 @@
  * @category Pika
  * @package  PatronDrivers
  * @author   Chris Froese
- * Date: 5/13/2019
  */
 namespace Pika\PatronDrivers;
 

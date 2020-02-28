@@ -72,7 +72,7 @@ class MaterialsRequest extends DB_DataObject {
 	}
 
 	static function getFormats(){
-		require_once ROOT_DIR . '/sys/MaterialsRequestFormats.php';
+		require_once ROOT_DIR . '/sys/MaterialsRequest/MaterialsRequestFormats.php';
 		$availableFormats = array();
 		$customFormats = new MaterialsRequestFormats();
 		global $library;

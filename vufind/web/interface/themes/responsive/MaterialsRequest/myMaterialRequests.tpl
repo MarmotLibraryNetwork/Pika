@@ -13,7 +13,7 @@
 		<div class="alert alert-danger">{$error}</div>
 	{else}
 		<div id="materialsRequestSummary" class="alert alert-info">
-			You have used <strong>{$requestsThisYear}</strong> of your {$maxRequestsPerYear} yearly {translate text='materials request'}s.  We also limit patrons to {$maxActiveRequests} active {translate text='materials_request_short'}s at a time.  You currently have <strong>{$openRequests}</strong> active {translate text='materials_request_short'}s.
+			You have used <strong>{$requestsThisYear}</strong> of your {$maxRequestsPerYear} yearly {translate text='materials request'}s. Requests are counted on a rolling year basis from the date a request was made. Customers are limited to {$maxActiveRequests} active {translate text='materials_request_short'}s at a time. You currently have <strong>{$openRequests}</strong> active {translate text='materials_request_short'}s.
 		</div>
 		<div id="materialsRequestFilters">
 			<legend>Filters:</legend>

@@ -17,9 +17,10 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 /**
- * Table Definition for user
+ * User Object is the central driver to run user actions through
  */
 require_once 'DB/DataObject.php';
+use Pika\Cache;
 
 class User extends DB_DataObject {
 
@@ -106,6 +107,7 @@ class User extends DB_DataObject {
 	private $materialsRequestReplyToAddress;
 	private $materialsRequestEmailSignature;
 	private $barcode;
+	public $ilsUserId;
 	private $linkedUserObjects;
 // Account Blocks //
 	private $blockAll = null; // set to null to signal unset, boolean when set
@@ -118,7 +120,6 @@ class User extends DB_DataObject {
 	public $availableHoldNotice;
 	public $comingDueNotice;
 	public $phoneType;
-
 
 	function getTags(){
 		require_once ROOT_DIR . '/sys/LocalEnrichment/UserTag.php';
@@ -646,9 +647,10 @@ class User extends DB_DataObject {
 			$this->bypassAutoLogout = 0;
 		}
 
-		parent::insert();
+		$r = parent::insert();
 //		$this->saveRoles(); // this should happen in the __set() method
 		$this->clearCache();
+		return $r;
 	}
 
 	function hasRole($roleName){
@@ -780,17 +782,9 @@ class User extends DB_DataObject {
 	 * Clear out the cached version of the patron profile.
 	 */
 	function clearCache(){
-		global $memCache;
-		global $logger;
-		$hostname = gethostname();
-		$cacheKey = $hostname . "-patron-" . $this->id;
-		$r = $memCache->delete($cacheKey); // now stored by User object id column
-		$rString = "false";
-		if($r) {
-			$rString = "true";
-		}
-
-		$logger->log("Delete patron from memcache:".$cacheKey. ":".$rString, PEAR_LOG_DEBUG);
+		$cache = new Cache();
+		$patronCacheKey = $cache->makePatronKey('patron', $this->id);
+		$cache->delete($patronCacheKey);
 	}
 
 	/**

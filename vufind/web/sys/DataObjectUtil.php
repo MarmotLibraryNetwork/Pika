@@ -61,13 +61,15 @@ class DataObjectUtil {
 		$primaryKeySet = false;
 		foreach ($structure as $property){
 			if (isset($property['primaryKey']) && $property['primaryKey'] == true){
-				if (isset($object->$property['property']) && !empty($object->$property['property'])){
-					$object                        = new $dataType();
-					$object->$property['property'] = $object->$property['property']; //TODO: this doesn't work
-					if ($object->find(true)){
-						$logger->log("Loaded existing object from database", PEAR_LOG_DEBUG);
-					}else{
-						$logger->log("Could not find existing object in database", PEAR_LOG_ERR);
+				if(!is_array($property)) {
+					if (isset($object->$property['property'])) {
+						$object                        = new $dataType();
+						$object->$property['property'] = $object->$property['property']; //TODO: this doesn't work
+						if ($object->find(true)){
+							$logger->log("Loaded existing object from database", PEAR_LOG_DEBUG);
+						}else{
+							$logger->log("Could not find existing object in database", PEAR_LOG_ERR);
+						}
 					}
 
 					//Reload from UI

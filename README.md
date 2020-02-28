@@ -17,16 +17,16 @@
     <img src="https://marmot.org/sites/default/files/pika_logo.png" alt=" Pika Logo">
   </a>
 
-  #Pika Discovery Layer
+  <h2>Pika Discovery Layer</h2>
 
- ###By Marmot Library Network
+ <h3>By Marmot Library Network</h3>
 
   <a href="https://marmot.org/">
     <img src="https://marmot.org/sites/default/files/Marmot_logo_transparent_4.png" alt=" Marmot Logo">
   </a>
+</p>
 
-
-  <p align="center">
+ <p align="center">
 <br>
     An intuitive discovery layer for libraries.
 <br>
@@ -36,8 +36,8 @@
     <a href="https://marmot.myjetbrains.com/youtrack/newIssue">Request Feature</a>
     ·
     <a href="https://marmot.myjetbrains.com/youtrack/newIssue">Report Bug</a>
-  </p>
-</p>
+ </p>
+
 
 
 <!-- ABOUT THE PROJECT -->

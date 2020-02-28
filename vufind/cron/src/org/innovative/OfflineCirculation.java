@@ -263,7 +263,7 @@ public class OfflineCirculation implements IProcessHandler {
 //				if (ils.equalsIgnoreCase("millennium") && (lastInitials == null || lastInitials.equals(initials))){
 //					bypassInitials = false;
 //					lastInitials   = initials;
-				}
+//				}
 				if (!bypassInitials){
 					//Login to airpac (initials)
 					initialsPassword             = encode(initialsPassword);

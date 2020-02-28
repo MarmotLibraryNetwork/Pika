@@ -421,7 +421,7 @@ abstract class KohaILSDI extends ScreenScrapingDriver {
 				$patron->displayName = '';
 			}
 			$patron->fullname     = $firstName . ' ' . $lastName;
-			$patron->username     = $kohaUserId;
+			$patron->ilsUserId    = $kohaUserId;
 			$patron->cat_username = (string)$patronInfoResponse->cardnumber;
 			if (!empty($password)) {
 				$patron->cat_password = $password;

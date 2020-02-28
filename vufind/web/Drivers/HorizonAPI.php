@@ -77,10 +77,10 @@ abstract class HorizonAPI extends Horizon{
 					}
 				}
 
-				$userExistsInDB = false;
-				$user = new User();
-//				$user->source = $this->accountProfile->name;
-				$user->username = $userID;
+				$userExistsInDB  = false;
+				$user            = new User();
+//				$user->source    = $this->accountProfile->name;
+				$user->ilsUserId = $userID;
 				if ($user->find(true)){
 					$userExistsInDB = true;
 				}
@@ -215,11 +215,11 @@ abstract class HorizonAPI extends Horizon{
 	 * @return array
 	 */
 	protected function loginViaWebService($patron, $password = ''){
-		$userID = $patron->username;
-		if (isset(HorizonAPI::$sessionIdsForUsers[$userID])) {
+		$userID = $patron->ilsUserId;
+		if (isset(HorizonAPI::$sessionIdsForUsers[$userID])){
 			$sessionToken = HorizonAPI::$sessionIdsForUsers[$userID];
 			return array(true, $sessionToken, $userID);
-		} else {
+		}else{
 			$username = $patron->cat_username;
 			$password = $patron->cat_password;
 			return $this->initialLoginViaWebService($username, $password);
@@ -769,12 +769,8 @@ abstract class HorizonAPI extends Horizon{
 			global $configArray;
 			$lookupTitleInfoUrl      = $this->getWebServiceURL() . '/standard/lookupTitleInfo?clientID=' . $configArray['Catalog']['clientId'] . '&titleKey=' . $bibId . '&includeItemInfo=false&includeHoldCount=true' ;
 			$lookupTitleInfoResponse = $this->getWebServiceResponse($lookupTitleInfoUrl);
-			if ($lookupTitleInfoResponse->titleInfo){
-				if (is_array($lookupTitleInfoResponse->titleInfo)) {
-					return (int) $lookupTitleInfoResponse->titleInfo[0]->holdCount;
-				} else {
-					return (int) $lookupTitleInfoResponse->titleInfo->holdCount;
-				}
+			if (!empty($lookupTitleInfoResponse->titleInfo)){
+				return is_array($lookupTitleInfoResponse->titleInfo) ? (int)$lookupTitleInfoResponse->titleInfo[0]->holdCount : (int)$lookupTitleInfoResponse->titleInfo->holdCount;
 			}
 		}
 		return false;

@@ -178,14 +178,13 @@ abstract class HorizonROA implements DriverInterface
 		return $session;
 	}
 
-	private function getSessionToken($patron)
-	{
-		$horizonRoaUserId = $patron->username;
+	private function getSessionToken(User $patron){
+		$horizonRoaUserId = $patron->ilsUserId;
 
 		//Get the session token for the user
-		if (isset(self::$sessionIdsForUsers[$horizonRoaUserId])) {
+		if (isset(self::$sessionIdsForUsers[$horizonRoaUserId])){
 			return self::$sessionIdsForUsers[$horizonRoaUserId];
-		} else {
+		}else{
 			list(, $sessionToken) = $this->loginViaWebService($patron->cat_username, $patron->cat_password);
 			return $sessionToken;
 		}
@@ -244,9 +243,9 @@ abstract class HorizonROA implements DriverInterface
 
 				$userExistsInDB = false;
 				/** @var User $user */
-				$user           = new User();
-				$user->source   = $this->accountProfile->name;
-				$user->username = $horizonRoaUserID;
+				$user            = new User();
+				$user->source    = $this->accountProfile->name;
+				$user->ilsUserId = $horizonRoaUserID;
 				if ($user->find(true)) {
 					$userExistsInDB = true;
 				}
@@ -459,7 +458,7 @@ abstract class HorizonROA implements DriverInterface
 		$webServiceURL = $this->getWebServiceURL();
 
 		//Get a list of checkouts for the user
-		$patronCheckouts = $this->getWebServiceResponse($webServiceURL . '/v1/user/patron/key/' . $patron->username . '?includeFields=circRecordList', null, $sessionToken);
+		$patronCheckouts = $this->getWebServiceResponse($webServiceURL . '/v1/user/patron/key/' . $patron->ilsUserId . '?includeFields=circRecordList', null, $sessionToken);
 
 		if (!empty($patronCheckouts->fields->circRecordList)) {
 //			$sCount = 0;
@@ -644,8 +643,8 @@ abstract class HorizonROA implements DriverInterface
 
 		//Get a list of holds for the user
 		// (Call now includes Item information for when the hold is an item level hold.)
-//		$patronHolds = $this->getWebServiceResponse($webServiceURL . '/v1/user/patron/key/' . $patron->username . '?includeFields=holdRecordList{*,item{itemType,barcode,call{callNumber}}}', null, $sessionToken);
-		$patronHolds = $this->getWebServiceResponse($webServiceURL . '/v1/user/patron/key/' . $patron->username . '?includeFields=holdRecordList', null, $sessionToken);
+//		$patronHolds = $this->getWebServiceResponse($webServiceURL . '/v1/user/patron/key/' . $patron->ilsUserId . '?includeFields=holdRecordList{*,item{itemType,barcode,call{callNumber}}}', null, $sessionToken);
+		$patronHolds = $this->getWebServiceResponse($webServiceURL . '/v1/user/patron/key/' . $patron->ilsUserId . '?includeFields=holdRecordList', null, $sessionToken);
 		if ($patronHolds && isset($patronHolds->fields)) {
 			require_once ROOT_DIR . '/RecordDrivers/MarcRecord.php';
 			foreach ($patronHolds->fields->holdRecordList as $holdRecord) {
@@ -1179,7 +1178,12 @@ abstract class HorizonROA implements DriverInterface
 	}
 
 
-	public function getMyFines($patron, $includeMessages)
+	/**
+	 * @param User $patron
+	 * @param $includeMessages
+	 * @return array
+	 */
+	public function getMyFines(User $patron, $includeMessages)
 	{
 		$fines = array();
 		//Get the session token for the user
@@ -1194,7 +1198,7 @@ abstract class HorizonROA implements DriverInterface
 //		$blockListDescribe  = $this->getWebServiceResponse($webServiceURL . "/v1/circulation/block/describe", null, $sessionToken);
 
 		//Get a list of fines for the user
-		$patronFines = $this->getWebServiceResponse($webServiceURL . '/v1/user/patron/key/' . $patron->username . '?includeFields=blockList', null, $sessionToken);
+		$patronFines = $this->getWebServiceResponse($webServiceURL . '/v1/user/patron/key/' . $patron->ilsUserId . '?includeFields=blockList', null, $sessionToken);
 		if (!empty($patronFines->fields->blockList)) {
 			require_once ROOT_DIR . '/RecordDrivers/MarcRecord.php';
 			foreach ($patronFines->fields->blockList as $blockList) {
@@ -1378,7 +1382,13 @@ abstract class HorizonROA implements DriverInterface
 		}
 	}
 
-	public function resetPin($user, $newPin, $resetToken){
+	/**
+	 * @param User $patron
+	 * @param $newPin
+	 * @param $resetToken
+	 * @return array
+	 */
+	public function resetPin(User $patron, $newPin, $resetToken){
 		//TODO: the reset PIN call looks to need a staff priviledged account to complete
 		if (empty($resetToken)) {
 			global $logger;
@@ -1388,7 +1398,7 @@ abstract class HorizonROA implements DriverInterface
 			);
 		}
 
-		$changeMyPinResponse = $this->changeMyPin($user, $newPin, null, $resetToken);
+		$changeMyPinResponse = $this->changeMyPin($patron, $newPin, null, $resetToken);
 		if (isset($changeMyPinResponse->messageList)) {
 			$errors = '';
 			foreach ($changeMyPinResponse->messageList as $errorMessage) {
@@ -1400,10 +1410,10 @@ abstract class HorizonROA implements DriverInterface
 				'error' => 'Sorry, we encountered an error while attempting to update your pin. Please contact your local library.'
 			);
 		} elseif (!empty($changeMyPinResponse->sessionToken)){
-			if ($user->username == $changeMyPinResponse->patronKey) { // Check that the ILS user matches the Pika user
+			if ($patron->ilsUserId == $changeMyPinResponse->patronKey) { // Check that the ILS user matches the Pika user
 				//TODO: check that this still applies
-				$user->cat_password = $newPin;
-				$user->update();
+				$patron->cat_password = $newPin;
+				$patron->update();
 			}
 			return array(
 				'success' => true,
@@ -1442,7 +1452,7 @@ abstract class HorizonROA implements DriverInterface
 		if ($canUpdateContactInfo) {
 			$sessionToken = $this->getSessionToken($patron);
 			if ($sessionToken) {
-				$horizonRoaUserId = $patron->username;
+				$horizonRoaUserId = $patron->ilsUserId;
 
 				$updatePatronInfoParameters = array(
 					'fields' => array(),

@@ -20,6 +20,7 @@
 require_once ROOT_DIR . '/AJAXHandler.php';
 require_once ROOT_DIR . '/sys/Pager.php';
 require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
 
 class ListAPI extends AJAXHandler {
 
@@ -79,7 +80,7 @@ class ListAPI extends AJAXHandler {
 					'id'          => $list->id,
 					'title'       => $list->title,
 					'description' => $list->description,
-					'numTitles'   => $numTitles['numTitles'],
+					'numTitles'   => $numTitles,
 				);
 			}
 		}

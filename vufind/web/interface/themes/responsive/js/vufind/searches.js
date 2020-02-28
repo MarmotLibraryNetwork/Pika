@@ -181,32 +181,25 @@ VuFind.Searches = (function(){
 			return false;
 		},
 */
-		sendEmail: function(){
-			VuFind.Account.ajaxLogin(function (){
-				var from = $('#from').val(),
-						to = $('#to').val(),
-						message = $('#message').val(),
-						related_record = $('#related_record').val(),
-						sourceUrl = window.location.href;
-
-				var url = "/Search/AJAX";
-				$.getJSON(url,
-						{ // pass parameters as data
-							method     : 'sendEmail'
-							,from      : from
-							,to        : to
-							,message   : message
-							,sourceUrl : sourceUrl
-						},
-						function(data) {
-							if (data.result) {
-								VuFind.showMessage("Success", data.message);
-							} else {
-								VuFind.showMessage("Error", data.message);
-							}
+		sendEmail: function (){
+			var url = "/Search/AJAX";
+			$.getJSON(url,
+					{ // pass parameters as data
+						method: 'sendEmail'
+						, from: $('#from').val()
+						, to: $('#to').val()
+						, message: $('#message').val()
+						, sourceUrl: window.location.href
+						,'g-recaptcha-response' : (typeof grecaptcha !== 'undefined') ? grecaptcha.getResponse() : false
+					},
+					function (data){
+						if (data.result){
+							VuFind.showMessage("Success", data.message);
+						}else{
+							VuFind.showMessage("Error", data.message);
 						}
-				);
-			});
+					}
+			);
 			return false;
 		},
 

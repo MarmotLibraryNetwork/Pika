@@ -21,17 +21,16 @@
  * Handles loading asynchronous
  *
  * @category Pika
- * @author   Mark Noble <pika@marmot.org>
- * Date: 12/2/13
- * Time: 3:52 PM
  */
 
 require_once ROOT_DIR . '/AJAXHandler.php';
-require_once ROOT_DIR . '/services/AJAX/Captcha_AJAX.php';
+//require_once ROOT_DIR . '/services/AJAX/Captcha_AJAX.php';
+require_once ROOT_DIR . '/sys/Pika/Functions.php';
+use function Pika\Functions\{recaptchaGetQuestion, recaptchaCheckAnswer};
 
 class GroupedWork_AJAX extends AJAXHandler {
 
-	use Captcha_AJAX;
+	//use Captcha_AJAX;
 
 	protected $methodsThatRespondWithJSONUnstructured = array(
 		'clearUserRating',
@@ -456,16 +455,16 @@ class GroupedWork_AJAX extends AJAXHandler {
 		}
 		$interface->assign('syndicatedReviews', $reviews);
 
-		//Load editorial reviews
-		require_once ROOT_DIR . '/sys/LocalEnrichment/EditorialReview.php';
-		$editorialReviews           = new EditorialReview();
-		$editorialReviews->groupedWorkPermanentId = $id;
-		$editorialReviews->find();
-		$allEditorialReviews = array();
-		while ($editorialReviews->fetch()){
-			$allEditorialReviews[] = clone($editorialReviews);
+		//Load librarian reviews
+		require_once ROOT_DIR . '/sys/LocalEnrichment/LibrarianReview.php';
+		$librarianReviews           = new LibrarianReview();
+		$librarianReviews->groupedWorkPermanentId = $id;
+		$librarianReviews->find();
+		$allLibrarianReviews = array();
+		while ($librarianReviews->fetch()){
+			$allLibrarianReviews[] = clone($librarianReviews);
 		}
-		$interface->assign('editorialReviews', $allEditorialReviews);
+		$interface->assign('librarianReviews', $allLibrarianReviews);
 
 		$userReviews = $recordDriver->getUserReviews();
 		$interface->assign('userReviews', $userReviews);
@@ -473,8 +472,8 @@ class GroupedWork_AJAX extends AJAXHandler {
 		$results = array(
 			'numSyndicatedReviews'  => $numSyndicatedReviews,
 			'syndicatedReviewsHtml' => $interface->fetch('GroupedWork/view-syndicated-reviews.tpl'),
-			'numEditorialReviews'   => count($allEditorialReviews),
-			'editorialReviewsHtml'  => $interface->fetch('GroupedWork/view-editorial-reviews.tpl'),
+			'numLibrarianReviews'   => count($allLibrarianReviews),
+			'librarianReviewsHtml'  => $interface->fetch('GroupedWork/view-librarian-reviews.tpl'),
 			'numCustomerReviews'    => count($userReviews),
 			'customerReviewsHtml'   => $interface->fetch('GroupedWork/view-user-reviews.tpl'),
 		);
@@ -650,7 +649,8 @@ class GroupedWork_AJAX extends AJAXHandler {
 				$interface->assign('from', $user->email);
 			}
 		}else{
-			$this->setUpCaptchaForTemplate();
+			$captchaCode = recaptchaGetQuestion();
+			$interface->assign('captcha', $captchaCode);
 		}
 		return [
 			'title'        => 'Share via E-mail',
@@ -663,7 +663,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 	function sendEmail(){
 		global $interface;
 		global $configArray;
-		$recaptchaValid = $this->isRecaptchaValid();
+		$recaptchaValid = recaptchaCheckAnswer();
 		if (UserAccount::isLoggedIn() || $recaptchaValid){
 			$message = $_REQUEST['message'];
 			if (strpos($message, 'http') === false && strpos($message, 'mailto') === false && $message == strip_tags($message)){
