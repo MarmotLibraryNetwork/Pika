@@ -66,12 +66,13 @@ class DataObjectUtil {
 					$existingObject                        = new $dataType();
 					$existingObject->$property['property'] = $object->$property['property'];
 					$existingObject->find(true);
-				}
+
 
 				//Reload from UI
 				DataObjectUtil::updateFromUI($object, $structure);
 				$primaryKeySet = true;
 				break;
+				}
 					//TODO: above is broken, below should be work
 //					/** @var DB_DataObject $dataType */
 //					$existingObject                        = new $dataType();
