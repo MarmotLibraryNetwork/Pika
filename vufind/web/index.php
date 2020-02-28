@@ -739,6 +739,7 @@ function setUpSearchDisplayOptions($module, $action){
 	$searchSources = new SearchSources();
 	$interface->assign('searchSources', $searchSources->getSearchSources());
 
+	global $configArray;
 	if (isset($configArray['Genealogy']) && $library->enableGenealogy){
 		$genealogySearchObject = SearchObjectFactory::initSearchObject('Genealogy');
 		$interface->assign('genealogySearchTypes', is_object($genealogySearchObject) ? $genealogySearchObject->getBasicTypes() : array());
