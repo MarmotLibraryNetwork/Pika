@@ -503,6 +503,7 @@ function loadUserData(){
 		$masqueradeMode = UserAccount::isUserMasquerading();
 		$interface->assign('masqueradeMode', $masqueradeMode);
 		if ($masqueradeMode){
+			global $guidingUser; // Make the guiding user global so that the transition to log out
 			$guidingUser = UserAccount::getGuidingUserObject();
 			$interface->assign('guidingUser', $guidingUser);
 		}
