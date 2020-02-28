@@ -27,7 +27,7 @@ class User extends DB_DataObject {
 	public $__table = 'user';                            // table name
 	public $id;                              // int(11)  not_null primary_key auto_increment
 	public $source;
-	public $username;                        // string(30)  not_null unique_key
+//	public $username;                        // string(30)  not_null unique_key
 	public $displayName;                     // string(30)
 	public $firstname;                       // string(50)  not_null
 	public $lastname;                        // string(50)  not_null
