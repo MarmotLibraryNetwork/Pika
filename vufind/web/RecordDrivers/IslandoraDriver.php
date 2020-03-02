@@ -2271,16 +2271,7 @@ abstract class IslandoraDriver extends RecordInterface {
 							}
 						}
 						$interface->assign('marriages', $marriages);
-						$obituaries = array();
-						$personObituaries =$person->obituaries;
-						if (isset($personObituaries)){
-							foreach ($personObituaries as $obit){
-								$obitArray = (array)$obit;
-								$obitArray['formattedObitDate'] = $person->formatPartialDate($obit->dateDay, $obit->dateMonth, $obit->dateYear);
-								$obituaries[] = $obitArray;
-							}
-						}
-						$interface->assign('obituaries', $obituaries);
+						$interface->assign('obituaries', $person->obituaries);
 					}
 				}
 			}

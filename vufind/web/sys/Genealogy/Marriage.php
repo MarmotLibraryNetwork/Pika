@@ -30,6 +30,9 @@ class Marriage extends DB_DataObject {
 	public $spouseName;
 	public $spouseId;
 	public $marriageDate;
+	public $marriageDateDay;
+	public $marriageDateMonth;
+	public $marriageDateYear;
 	public $comments;
 
 	function keys(){

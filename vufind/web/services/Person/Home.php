@@ -88,16 +88,7 @@ class Person_Home extends Action {
 			}
 		}
 		$interface->assign('marriages', $marriages);
-		$obituaries       = array();
-		$personObituaries = $person->obituaries;
-		if (isset($personObituaries)){
-			foreach ($personObituaries as $obit){
-				$obitArray                      = (array)$obit;
-				$obitArray['formattedObitDate'] = $person->formatPartialDate($obit->dateDay, $obit->dateMonth, $obit->dateYear);
-				$obituaries[]                   = $obitArray;
-			}
-		}
-		$interface->assign('obituaries', $obituaries);
+		$interface->assign('obituaries', $person->obituaries);
 
 		//Do actions needed if this is the main action.
 		$interface->assign('id', $this->id);

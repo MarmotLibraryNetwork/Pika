@@ -18,11 +18,15 @@
  */
 
 /**
- * Table Definition for Obituary
+ * Genealogy Obituary Object
  */
 require_once 'DB/DataObject.php';
+require_once ROOT_DIR . '/sys/Genealogy/GenealogyTrait.php';
 
 class Obituary extends DB_DataObject {
+
+	use GenealogyTrait;
+
 	public $__table = 'obituary'; // table name
 	public $obituaryId;
 	public $personId;
@@ -113,8 +117,7 @@ class Obituary extends DB_DataObject {
 		return $ret;
 	}
 
-	function getImageUrl($size = 'small'){
-		return $this->picture ? '/genealogyImage.php?image=' . $this->picture . '&size=' . $size : '/interface/themes/default/images/person.png';
+	function formattedObitDate(){
+		return $this->formatPartialDate($this->dateDay, $this->dateMonth, $this->dateYear);
 	}
-
 }
