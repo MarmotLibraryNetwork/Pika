@@ -55,7 +55,7 @@ class DataObjectUtil {
 	static function saveObject($structure, $dataType){
 		global $logger;
 		//Check to see if we have a new object or an exiting object to update
-		/** @var DB_DataObject $dataType */
+		/** @var DB_DataObject $object */
 		$object = new $dataType();
 		DataObjectUtil::updateFromUI($object, $structure);
 		// if primaryKeySet is true
