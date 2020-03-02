@@ -58,36 +58,15 @@ class DataObjectUtil {
 		/** @var DB_DataObject $dataType */
 		$object = new $dataType();
 		DataObjectUtil::updateFromUI($object, $structure);
-		//
+		// if primaryKeySet is true
 		$primaryKeySet = false;
 		foreach ($structure as $property){
 			if(isset($property['primaryKey']) && $property['primaryKey'] == true){
-				if(isset($object->$property['property']) && !empty($object->$property['property'])){
-					$existingObject                        = new $dataType();
-					$existingObject->$property['property'] = $object->$property['property'];
-					$existingObject->find(true);
-
-
-				//Reload from UI
-				DataObjectUtil::updateFromUI($object, $structure);
-				$primaryKeySet = true;
-				break;
+				$primaryKeyField = $property['property'];
+				if(!empty($object->$primaryKeyField)){
+					$primaryKeySet = true;
+					break;
 				}
-					//TODO: above is broken, below should be work
-//					/** @var DB_DataObject $dataType */
-//					$existingObject                        = new $dataType();
-//					$existingObject->$property['property'] = $object->$property['property'];
-//					if ($existingObject->find(true)){
-//						$logger->log("Loaded existing object from database", PEAR_LOG_DEBUG);
-//					}else{
-//						$logger->log("Could not find existing object in database", PEAR_LOG_ERR);
-//					}
-//
-//					//Reload from UI
-//					DataObjectUtil::updateFromUI($existingObject, $structure);
-//					$object = $existingObject;
-//					$primaryKeySet = true;
-//					break;
 			}
 		}
 		$validationResults           = DataObjectUtil::validateObject($structure, $object);
