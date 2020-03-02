@@ -257,21 +257,16 @@ class UserAccount {
 
 	public static function getGuidingUserObject(){
 		if (UserAccount::$guidingUserObjectFromDB == null){
+			UserAccount::$guidingUserObjectFromDB = false; // default value
 			if (UserAccount::isUserMasquerading()){
 				$activeUserId = $_SESSION['guidingUserId'];
-				if ($activeUserId){
+				if (!empty($activeUserId)){
 					$user     = new User();
 					$user->id = $activeUserId;
 					if ($user->find(true)){
 						UserAccount::$guidingUserObjectFromDB = $user;
-					}else{
-						UserAccount::$guidingUserObjectFromDB = false;
 					}
-				}else{
-					UserAccount::$guidingUserObjectFromDB = false;
 				}
-			}else{
-				UserAccount::$guidingUserObjectFromDB = false;
 			}
 		}
 		return UserAccount::$guidingUserObjectFromDB;
