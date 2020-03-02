@@ -113,7 +113,7 @@ class MyAccount_Login extends Action
 			$catalog = CatalogFactory::getCatalogConnectionInstance();
 			if (!empty($catalog->accountProfile->loginConfiguration) && $catalog->accountProfile->loginConfiguration == 'barcode_pin') {
 				$interface->assign('showForgotPinLink', true);
-				$useEmailResetPin = method_exists($catalog, 'emailResetPin');
+				$useEmailResetPin = method_exists($catalog->driver, 'emailResetPin');
 				$interface->assign('useEmailResetPin', $useEmailResetPin);
 			}
 		}
