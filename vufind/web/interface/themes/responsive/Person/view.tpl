@@ -32,14 +32,15 @@
 			</a>
 		</div>
 	{/if}
-	{* Display Book Cover *}
+	{* Display Person Image *}
 	<div class="row">
 		<div class="col-xs-4 col-sm-5 col-md-4 col-lg-3 text-center">
 			{if $disableCoverArt != 1}
 				<div id="recordcover" class="text-center">
 					{*<a href="/Person/{$id}">*}
 						{if $person->picture}
-							<a target='_blank' href='/files/original/{$person->picture|escape}'><img src="/files/medium/{$person->picture|escape}" class="alignleft listResultImage" alt="{translate text='Picture'}"></a><br>
+							<a target='_blank' href='{$person->getImageUrl('large')}'><img src="{$person->getImageUrl('medium')}" class="alignleft listResultImage" alt="{translate text='Picture'}"></a><br>
+{*							<a target='_blank' href='/files/original/{$person->picture|escape}'><img src="/files/medium/{$person->picture|escape}" class="alignleft listResultImage" alt="{translate text='Picture'}"></a><br>*}
 						{else}
 							<img src="/interface/themes/default/images/person.png" class="alignleft listResultImage" alt="{translate text='No Cover Image'}"><br>
 						{/if}
@@ -141,13 +142,13 @@
 			{/if}
 			</div>
 			{if $obituary.contents && $obituary.picture}
-				<div class="obituaryText">{if $obituary.picture|escape}<a href='/files/original/{$obituary.picture|escape}'><img class='obitPicture' src='/files/medium/{$obituary.picture|escape}'></a>{/if}{$obituary.contents|escape}</div>
+				<div class="obituaryText">{if $obituary.picture|escape}<a href="{$obituary->getImageUrl('large')}"><img class="obitPicture" src="{$obituary->getImageUrl('medium')}"></a>{/if}{$obituary.contents|escape}</div>
 				<div class="clearer"></div>
 			{elseif $obituary.contents}
 				<div class="obituaryText">{$obituary.contents|escape|replace:"\r":"<br>"}</div>
 				<div class="clearer"></div>
 			{elseif $obituary.picture}
-				<div class="obituaryPicture">{if $obituary.picture|escape}<a href='/files/original/{$obituary.picture|escape}'><img class='obitPicture' src='/files/medium/{$obituary.picture|escape}'></a>{/if}</div>
+				<div class="obituaryPicture">{if $obituary.picture|escape}<a href="{$obituary->getImageUrl('large')}"><img class="obitPicture" src="{$obituary->getImageUrl('medium')}"></a>{/if}</div>
 				<div class="clearer"></div>
 			{/if}
 

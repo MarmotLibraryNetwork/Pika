@@ -454,4 +454,9 @@ class Person extends SolrDataObject
 		}
 		return $formattedDate;
 	}
+
+	function getImageUrl($size = 'small'){
+		return $this->picture ? '/genealogyImage.php?image=' . $this->picture . '&size=' . $size : '/interface/themes/default/images/person.png';
+	}
+
 }
