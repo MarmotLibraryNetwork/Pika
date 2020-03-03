@@ -1620,7 +1620,7 @@ EOT;
 
 		global $library;
 		// ILL service name
-		$illName = false;
+		$illName = $this->configArray['InterLibraryLoan']['innReachEncoreName'];
 		if($library) {
 			if(isset($library->interLibraryLoanName) && $library->interLibraryLoanName != '') {
 				$illName = $library->interLibraryLoanName;
