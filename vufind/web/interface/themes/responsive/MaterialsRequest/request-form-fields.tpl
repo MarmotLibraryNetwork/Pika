@@ -228,7 +228,7 @@ necassary *}
 						{if $isAdminUser}
 							<select name="{$materialRequestTableColumnName}" id="{$materialRequestTableColumnName}" class="form-control">
 								{foreach from=$availableStatuses item=statusLabel key=status}
-									<option value="{$status}"{if $materialsRequest->status == status} selected="selected"{/if}>{$statusLabel}</option>
+									<option value="{$status}"{if $materialsRequest->status == $status} selected="selected"{/if}>{$statusLabel}</option>
 								{/foreach}
 							</select>
 						{else}
@@ -315,7 +315,7 @@ necassary *}
 								<input type="radio" name="{$materialRequestTableColumnName}" value="0" id="{$materialRequestTableColumnName}No"{if $materialsRequest->$materialRequestTableColumnName == 0} checked="checked"{/if} onchange="VuFind.MaterialsRequest.updateHoldOptions()">No
 							</label>
 
-						</div>
+						</div
 					</div>
 				{/if}
 
