@@ -612,33 +612,33 @@ abstract class IslandoraDriver extends RecordInterface {
 
 		$this->loadLinkedData();
 		if (!empty($interface->getVariable('obituaries'))){
-			$moreDetailsOptions['obituaries'] = array(
+			$moreDetailsOptions['obituaries'] = [
 				'label'         => 'Obituaries',
-				'body'          => $interface->fetch('Archive/obituariesSection.tpl'),
+				'body'          => $interface->fetch('Person/obituariesSection.tpl'),
 				'hideByDefault' => false
-			);
+			];
 		}
-		if ($this->showBurialData) { //TODO: May need a more extensive check
-			$moreDetailsOptions['burialDetails'] = array(
-				'label' => 'Burial Details',
-				'body' => $interface->fetch('Archive/burialDetailsSection.tpl'),
+		if ($this->showBurialData){ //TODO: May need a more extensive check
+			$moreDetailsOptions['burialDetails'] = [
+				'label'         => 'Burial Details',
+				'body'          => $interface->fetch('Archive/burialDetailsSection.tpl'),
 				'hideByDefault' => false
-			);
+			];
 		}
 		//See if we need another section for wikipedia content.
 		if (!empty($interface->getVariable('wikipediaData'))){
-			if (strlen($description) > 0) {
-				$moreDetailsOptions['wikipedia'] = array(
-						'label' => 'From Wikipedia',
-						'body' => $interface->fetch('Archive/wikipediaSection.tpl'),
-						'hideByDefault' => false
-				);
+			if (strlen($description) > 0){
+				$moreDetailsOptions['wikipedia'] = [
+					'label'         => 'From Wikipedia',
+					'body'          => $interface->fetch('Archive/wikipediaSection.tpl'),
+					'hideByDefault' => false
+				];
 			}else{
-				$moreDetailsOptions['description'] = array(
-						'label' => 'Description',
-						'body' => $interface->fetch('Archive/wikipediaSection.tpl'),
-						'hideByDefault' => false,
-				);
+				$moreDetailsOptions['description'] = [
+					'label'         => 'Description',
+					'body'          => $interface->fetch('Archive/wikipediaSection.tpl'),
+					'hideByDefault' => false,
+				];
 			}
 		}
 
@@ -2271,16 +2271,7 @@ abstract class IslandoraDriver extends RecordInterface {
 							}
 						}
 						$interface->assign('marriages', $marriages);
-						$obituaries = array();
-						$personObituaries =$person->obituaries;
-						if (isset($personObituaries)){
-							foreach ($personObituaries as $obit){
-								$obitArray = (array)$obit;
-								$obitArray['formattedObitDate'] = $person->formatPartialDate($obit->dateDay, $obit->dateMonth, $obit->dateYear);
-								$obituaries[] = $obitArray;
-							}
-						}
-						$interface->assign('obituaries', $obituaries);
+						$interface->assign('obituaries', $person->obituaries);
 					}
 				}
 			}

@@ -18,11 +18,15 @@
  */
 
 /**
- * Table Definition for Obituary
+ * Genealogy Obituary Object
  */
 require_once 'DB/DataObject.php';
+require_once ROOT_DIR . '/sys/Genealogy/GenealogyTrait.php';
 
 class Obituary extends DB_DataObject {
+
+	use GenealogyTrait;
+
 	public $__table = 'obituary'; // table name
 	public $obituaryId;
 	public $personId;
@@ -111,5 +115,9 @@ class Obituary extends DB_DataObject {
 			$person->saveToSolr();
 		}
 		return $ret;
+	}
+
+	function formattedObitDate(){
+		return $this->formatPartialDate($this->dateDay, $this->dateMonth, $this->dateYear);
 	}
 }

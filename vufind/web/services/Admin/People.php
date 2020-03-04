@@ -63,7 +63,7 @@ class People extends ObjectEditor {
 
 	function getRedirectLocation($objectAction, $curObject){
 		if ($objectAction == 'delete'){
-			return '/Union/Search?searchSource=genealogy&lookfor=&genealogyType=GenealogyName&submit=Find';
+			return '/Union/Search?searchSource=genealogy&lookfor=&genealogyType=GenealogyName';
 		}else{
 			return '/Person/' . $curObject->personId;
 		}

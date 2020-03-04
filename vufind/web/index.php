@@ -503,6 +503,7 @@ function loadUserData(){
 		$masqueradeMode = UserAccount::isUserMasquerading();
 		$interface->assign('masqueradeMode', $masqueradeMode);
 		if ($masqueradeMode){
+			global $guidingUser; // Make the guiding user global so that the transition to log out
 			$guidingUser = UserAccount::getGuidingUserObject();
 			$interface->assign('guidingUser', $guidingUser);
 		}
@@ -739,6 +740,7 @@ function setUpSearchDisplayOptions($module, $action){
 	$searchSources = new SearchSources();
 	$interface->assign('searchSources', $searchSources->getSearchSources());
 
+	global $configArray;
 	if (isset($configArray['Genealogy']) && $library->enableGenealogy){
 		$genealogySearchObject = SearchObjectFactory::initSearchObject('Genealogy');
 		$interface->assign('genealogySearchTypes', is_object($genealogySearchObject) ? $genealogySearchObject->getBasicTypes() : array());

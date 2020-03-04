@@ -188,5 +188,15 @@ function getUserUpdates(){
 			),
 		),
 
+		'use_ilsUserId_2020.02' => array(
+			'title'           => 'Implement ilsUserId column',
+			'description'     => 'Implement ilsUserId column',
+			'continueOnError' => true,
+			'sql'             => array(
+				'UPDATE `user` SET `ilsUserId` = username;',
+				'ALTER TABLE `user` DROP INDEX `username`, DROP COLUMN `username`',
+			),
+		),
+
 	);
 }

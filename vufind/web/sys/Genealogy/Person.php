@@ -23,9 +23,12 @@
 require_once ROOT_DIR . '/sys/Search/SolrDataObject.php';
 require_once ROOT_DIR . '/sys/Genealogy/Marriage.php';
 require_once ROOT_DIR . '/sys/Genealogy/Obituary.php';
+//require_once ROOT_DIR . '/sys/Genealogy/GenealogyTrait.php';
 
-class Person extends SolrDataObject
-{
+class Person extends SolrDataObject {
+
+	use GenealogyTrait;
+
 	public $__table = 'person';    // table name
 	public $personId;
 	public $firstName;
@@ -403,40 +406,6 @@ class Person extends SolrDataObject
 		}
 	}
 
-	function formatPartialDate($day, $month, $year){
-		$months        = array(
-			1  => 'January',
-			2  => 'February',
-			3  => 'March',
-			4  => 'April',
-			5  => 'May',
-			6  => 'June',
-			7  => 'July',
-			8  => 'August',
-			9  => 'September',
-			10 => 'October',
-			11 => 'November',
-			12 => 'December'
-		);
-		$formattedDate = '';
-		if ($month > 0){
-			$formattedDate = $months[$month];
-		}
-		if ($day > 0){
-			if (strlen($formattedDate) > 0){
-				$formattedDate .= ' ';
-			}
-			$formattedDate .= $day;
-
-		}
-		if ($year > 0){
-			if (strlen($formattedDate) > 0 && $day > 0){
-				$formattedDate .= ', ';
-			}
-			$formattedDate .= ' ' . $year;
-		}
-		return $formattedDate;
-	}
 
 	function formatPartialDateForArchive($day, $month, $year){
 		$formattedDate = '';
@@ -454,4 +423,9 @@ class Person extends SolrDataObject
 		}
 		return $formattedDate;
 	}
+
+	function getImageUrl($size = 'small'){
+		return $this->picture ? '/genealogyImage.php?image=' . $this->picture . '&size=' . $size : '/interface/themes/default/images/person.png';
+	}
+
 }

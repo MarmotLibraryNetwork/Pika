@@ -123,7 +123,7 @@ class PersonRecord extends IndexRecord {
 
 	function getBookcoverUrl($size = 'small'){
 		$person = $this->getPerson();
-		return $person->picture ? '/genealogyImage.php?image=' . $person->picture . '&size=' . $size : '/interface/themes/default/images/person.png';
+		return $person->getImageUrl($size);
 	}
 
 	public function getModule(){
