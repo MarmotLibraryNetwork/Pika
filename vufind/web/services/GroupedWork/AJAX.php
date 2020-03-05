@@ -280,7 +280,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 			$formattedTitle = $interface->fetch('RecordDrivers/GroupedWork/scroller-title.tpl');
 		}else{
 			$originalId     = $_REQUEST['id'];
-			$formattedTitle = "<div id=\"scrollerTitle{$scrollerName}{$index}\" class=\"scrollerTitle\" onclick=\"return VuFind.showElementInPopup('$title', '#noResults{$index}')\">" .
+			$formattedTitle = "<div id=\"scrollerTitle{$scrollerName}{$index}\" class=\"scrollerTitle\" onclick=\"return VuFind.showElementInPopup('". addslashes($title) ."', '#noResults{$index}')\">" .
 				"<img src=\"{$cover}\" class=\"scrollerTitleCover\" alt=\"{$title} Cover\"/>" .
 				"</div>";
 			$formattedTitle .= "<div id=\"noResults{$index}\" style=\"display:none\">
