@@ -114,7 +114,7 @@ class MaterialsRequest extends DB_DataObject {
 
 	public function getFormatObject() {
 		if (!empty($this->libraryId) && !empty($this->format)) {
-			require_once ROOT_DIR . '/sys/MaterialsRequestFormats.php';
+			require_once ROOT_DIR . '/sys/MaterialsRequest/MaterialsRequestFormats.php';
 			$format = new MaterialsRequestFormats();
 			$format->format = $this->format;
 			$format->libraryId = $this->libraryId;
@@ -182,7 +182,7 @@ class MaterialsRequest extends DB_DataObject {
 	}
 
 	function getRequestFormFields($libraryId, $isStaffRequest = false) {
-		require_once ROOT_DIR . '/sys/MaterialsRequestFormFields.php';
+		require_once ROOT_DIR . '/sys/MaterialsRequest/MaterialsRequestFormFields.php';
 		$formFields            = new MaterialsRequestFormFields();
 		$formFields->libraryId = $libraryId;
 		$formFields->orderBy('weight');
@@ -216,7 +216,7 @@ class MaterialsRequest extends DB_DataObject {
 	}
 
 	function getAuthorLabelsAndSpecialFields($libraryId) {
-		require_once ROOT_DIR . '/sys/MaterialsRequestFormats.php';
+		require_once ROOT_DIR . '/sys/MaterialsRequest/MaterialsRequestFormats.php';
 		return MaterialsRequestFormats::getAuthorLabelsAndSpecialFields($libraryId);
 	}
 }
