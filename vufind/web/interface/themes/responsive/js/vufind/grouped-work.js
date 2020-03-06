@@ -5,20 +5,6 @@ VuFind.GroupedWork = (function(){
 	return {
 		hasTableOfContentsInRecord: false,
 
-		clearUserRating: function (groupedWorkId){
-			var url = '/GroupedWork/' + groupedWorkId + '/AJAX?method=clearUserRating';
-			$.getJSON(url, function(data){
-				if (data.result == true){
-					$('.rate' + groupedWorkId).find('.ui-rater-starsOn').width(0);
-					$('#myRating' + groupedWorkId).hide();
-					VuFind.showMessage('Success', data.message, true);
-				}else{
-					VuFind.showMessage('Sorry', data.message);
-				}
-			});
-			return false;
-		},
-
 		clearNotInterested: function (notInterestedId){
 			var url = '/GroupedWork/' + notInterestedId + '/AJAX?method=clearNotInterested';
 			$.getJSON(
@@ -32,11 +18,25 @@ VuFind.GroupedWork = (function(){
 			);
 		},
 
+		clearUserRating: function (groupedWorkId){
+			var url = '/GroupedWork/' + groupedWorkId + '/AJAX?method=clearUserRating';
+			$.getJSON(url, function(data){
+				if (data.result === true){
+					$('.rate' + groupedWorkId).find('.ui-rater-starsOn').width(0);
+					$('#myRating' + groupedWorkId).hide();
+					VuFind.showMessage('Success', data.message, true);
+				}else{
+					VuFind.showMessage('Sorry', data.message);
+				}
+			});
+			return false;
+		},
+
 		deleteReview: function(id, reviewId){
-			VuFind.confirm("Are you sure you want to delete this review?", function(){
-				var url = '/GroupedWork/' + id + '/AJAX?method=deleteUserReview';
+			VuFind.confirm("Are you sure you want to delete this rating & review?", function(){
+				var url = '/GroupedWork/' + id + '/AJAX?method=deleteUserReview&reviewId=' + reviewId;
 				$.getJSON(url, function(data){
-					if (data.result == true){
+					if (data.result === true){
 						$('#review_' + reviewId).hide();
 						VuFind.showMessage('Success', data.message, true);
 					}else{
