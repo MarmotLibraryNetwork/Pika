@@ -26,7 +26,7 @@
  * Time: 10:39 AM
  */
 require_once ROOT_DIR . '/services/Admin/Admin.php';
-require_once ROOT_DIR . '/sys/OfflineCirculationEntry.php';
+require_once ROOT_DIR . '/sys/Circa/OfflineCirculationEntry.php';
 class Circa_OfflineCirculationReport extends Admin_Admin{
 	public function launch(){
 		global $interface;
