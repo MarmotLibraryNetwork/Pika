@@ -1332,6 +1332,15 @@ class DBMaintenance extends Admin_Admin {
 					)
 				),
 
+				'librarian_reviews-2020.02' => array(
+					'title'           => 'Librarian Review id',
+					'description'     => 'Librarian Review id needs auto increment',
+					'continueOnError' => false,
+					'sql'             => [
+						"ALTER TABLE `librarian_reviews` CHANGE COLUMN `id` `id` INT(11) NOT NULL AUTO_INCREMENT ;",
+					]
+				),
+
 			)
 		);
 	}

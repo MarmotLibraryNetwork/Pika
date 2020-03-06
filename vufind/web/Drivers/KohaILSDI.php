@@ -315,7 +315,7 @@ abstract class KohaILSDI extends ScreenScrapingDriver {
 		self::$kohaPatronIdsForUsers[$patron->id] = $kohaPatronId;
 		// cool. let's load up memcache. we still have $memcacheKey and global $memCache from above. no need to do work twice.
 		global $configArray;
-		$memCache->set($memcacheKey, $kohaPatronId, 0, $configArray['Caching']['koha_patron_id']);
+		$memCache->set($memcacheKey, $kohaPatronId, 0, $configArray['Caching']['patron_id']);
 		// ok, memcache set. lets give back the koha id
 		return $kohaPatronId;
 		// and ... done!

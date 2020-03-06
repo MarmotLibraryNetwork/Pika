@@ -2051,6 +2051,8 @@ class GroupedWorkDriver extends RecordInterface {
 		$userReview->groupedRecordPermanentId = $this->getUniqueID();
 		$joinUser                             = new User();
 		$userReview->joinAdd($joinUser);
+		$userReview->selectAdd();
+		$userReview->selectAdd('user_work_review.*, user.displayName, user.firstname, user.lastname'); //the review id gets overwritten by the user id, which we need to delete the review
 		$userReview->find();
 		while ($userReview->fetch()){
 			// Set the display Name for the review
