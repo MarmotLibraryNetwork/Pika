@@ -1723,6 +1723,7 @@ EOT;
 			}
 			switch ($recordStatus) {
 				case '0':
+				case '-':
 					if($hold->frozen) {
 						$status = "Frozen";
 					} else {
