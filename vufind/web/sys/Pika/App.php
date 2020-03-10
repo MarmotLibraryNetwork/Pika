@@ -32,11 +32,11 @@ class App {
 
 	public Cache $cache;
 	public Logger $logger;
-	public $configArray;
+	public array $config;
 
 	public function __construct($memCachedPersistentId = false, $loggerName = false) {
 		global $configArray;
-		$this->configArray = $configArray;
+		$this->config = $configArray;
 
 		if(!$loggerName | !is_string($loggerName)) {
 			$this->logger = new Logger('Pika');

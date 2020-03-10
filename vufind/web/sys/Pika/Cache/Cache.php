@@ -39,7 +39,7 @@ class Cache implements CacheInterface
 
 	private $PSR16_RESERVED_CHARACTERS = ['{','}','(',')','/','@',':'];
 
-	private $keyTypes = ['patron', 'holds', 'checkouts', 'history', 'fines'];
+	private $keyTypes = ['patron', 'holds', 'checkouts', 'history', 'fines', 'id'];
 
 	protected $handler = false;
 	private   $logger  = false;
@@ -246,11 +246,12 @@ class Cache implements CacheInterface
 	 *
 	 *
 	 *
-	 * @param $type
-	 * @param $patronUid Pika database User ID
+	 * @param string $type      type of data being cached
+	 * @param int    $patronUid Pika database User ID
+	 * @param string $typePrefix Appended to type-- use for things like rbdigital patron id
 	 * @return string
 	 */
-	public function makePatronKey($type, $patronUid)
+	public function makePatronKey($type, $patronUid, $typePrefix = false)
 	{
 		if(!in_array($type, $this->keyTypes)) {
 			$types = implode(', ', $this->keyTypes);
@@ -259,6 +260,9 @@ class Cache implements CacheInterface
 		}
 		if(!$hostname = gethostname()){
 			$hostname = $_SERVER['SERVER_NAME'];
+		}
+		if($typePrefix) {
+			$type = $typePrefix . '-' . $type;
 		}
 		$key = $hostname.'-'.$type.'-'.$patronUid;
 		$this->checkReservedCharacters($key);
