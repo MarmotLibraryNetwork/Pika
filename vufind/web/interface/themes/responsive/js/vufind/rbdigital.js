@@ -17,6 +17,7 @@
  */
 VuFind.RBdigital = (function() {
 	return {
+
 		returnRBdigitalMagazine: function(userId, issueId) {
 			VuFind.confirm('Are you sure you want to return this title?', function () {
 				VuFind.Account.ajaxLogin(function (){
@@ -33,8 +34,26 @@ VuFind.RBdigital = (function() {
 				});
 			});
 			return false;
+		},
+
+		readMagazineOnline: function(issueId, userId) {
+			VuFind.Account.ajaxLogin(function (){
+				//VuFind.showMessage("Redirecting", "Redirecting to RBdigital magazines.");
+				var url = "/RBdigital/AJAX",
+						params = {
+							method: 'readMagazineOnline',
+							issueId:issueId,
+							userId: userId
+						};
+				$.getJSON(url, params, function (data) {
+					//VuFind.showMessage(data.success ? 'Success' : 'Error', data.message, data.success, data.success);
+				})//.fail(VuFind.ajaxFail);
+			});
 		}
+
+
+
 		// end returnRBdigitalMagazine
 	}
 }
-)
+(VuFind.RBdigital || {}));

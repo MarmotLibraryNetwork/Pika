@@ -67,14 +67,17 @@ class RBdigital {
 	 * Get the user's rbdigital id or return false if the user is not registered.
 	 *
 	 * @param  User $patron
-	 * @return int|false
+	 * @param  boolean $userId  If true will return the RBdigital user id like 9998a354-cbf9-4f6b-b87f-0169eef57ff2
+	 * @return int|string|false
 	 */
-	public function getPatronId(User $patron)
+	public function getPatronId(User $patron, $userId = false)
 	{
 		// check for a cached user id
-		$patronIdCacheKey = $this->app->cache->makePatronKey('id', $patron->id, 'rbdigital');
-		if($rbId = $this->app->cache->get($patronIdCacheKey, false)) {
-			return $rbId;
+		if(!$userId) {
+			$patronIdCacheKey = $this->app->cache->makePatronKey('id', $patron->id, 'rbdigital');
+			if($rbId = $this->app->cache->get($patronIdCacheKey, false)) {
+				return $rbId;
+			}
 		}
 		$url = $this->tokenBaseUrl . urlencode($patron->barcode);
 		$r = $this->curl->get($url);
@@ -82,9 +85,11 @@ class RBdigital {
 		if ($this->curl->getHttpStatusCode() == 404) {
 			return false;
 		}
-
+		if($userId) {
+			return $r->userId;
+		}
 		$rbId = $r->patronId;
-		$this->app->cache->set($patronIdCacheKey, $rbId, 3600);
+		$this->app->cache->set($patronIdCacheKey, $rbId, 36000);
 
 		return $rbId;
 	}
@@ -150,7 +155,7 @@ class RBdigital {
 					$checkout['title']           = $recordDriver->getTitle();
 					$curTitle['title_sort']      = $recordDriver->getSortableTitle();
 					$checkout['linkUrl']         = $recordDriver->getLinkUrl();
-					$checkout['accessOnlineUrl'] = "https://www.rbdigital.com/reader.php#/reader/readsvg/".$patronMagazineDetails->issueId;
+					$checkout['accessOnlineUrl'] = "#";
 
 				} else {
 					$checkout['coverUrl']      = $patronMagazineDetails;
@@ -194,13 +199,13 @@ class RBdigital {
 			require_once ROOT_DIR . '/RecordDrivers/RBdigitalRecordDriver.php';
 			$actionUrl = $this->webServiceBaseUrl . '/v1/libraries/' . $this->libraryId . '/patrons/' . $rbdigitalId . '/checkouts/' . $recordId;
 
-			$response = $this->curlWrapper->post($actionUrl);
+			$response = $this->curl->post($actionUrl);
 			if ($response == false) {
 				$result['message'] = "Invalid information returned from API, please retry your checkout after a few minutes.";
 				global $logger;
 				$logger->log("Invalid information from rbdigital api\r\n$actionUrl\r\n$rawResponse", PEAR_LOG_ERR);
-				$logger->log(print_r($this->curlWrapper->getResponseHeaders(), true), PEAR_LOG_ERR);
-				$curl_info = $this->curlWrapper->getInfo();
+				$logger->log(print_r($this->curl->getResponseHeaders(), true), PEAR_LOG_ERR);
+				$curl_info = $this->curl->getInfo();
 				$logger->log(print_r($curl_info, true), PEAR_LOG_ERR);
 			} else {
 				if (!empty($response->output) && $response->output == 'SUCCESS') {
@@ -236,8 +241,8 @@ class RBdigital {
 	public function checkoutMagazine($patron, $recordId)
 	{
 		$result      = ['success' => false, 'message' => 'Unknown error'];
-		$rbdigitalId = $this->getPatronId($patron);
-		if ($rbdigitalId == false) {
+		$rbId = $this->getPatronId($patron);
+		if ($rbId == false) {
 			$result['message'] = 'Sorry, you are not registered with RBdigital.  You will need to create an account there before continuing.';
 		} else {
 			//Get the current issue for the magazine
@@ -246,11 +251,11 @@ class RBdigital {
 			$product->magazineId = $recordId;
 			if ($product->find(true)) {
 				require_once ROOT_DIR . '/RecordDrivers/RBdigitalRecordDriver.php';
-				$actionUrl = $this->webServiceBaseUrl . '/v1/libraries/' . $this->libraryId . '/patrons/' . $rbdigitalId . '/patron-magazines/' . $product->issueId;
+				$actionUrl = $this->webServiceBaseUrl . '/v1/libraries/' . $this->libraryId . '/patrons/' . $rbId . '/patron-magazines/' . $product->issueId;
 				// /v{version}/libraries/{libraryId}/patrons/{patronId}/patron-magazines/{issueId}
 
 				//RBdigital does not return a status so we assume that it checked out ok
-				$this->curlWrapper->post($actionUrl);
+				$this->curl->post($actionUrl);
 
 				$this->trackUserUsageOfRBdigital($patron);
 				$this->trackMagazineCheckout($recordId);
@@ -288,7 +293,7 @@ class RBdigital {
 
 		$actionUrl = $this->webServiceBaseUrl . '/v1/libraries/' . $this->libraryId . '/patrons/';
 
-		$response = $this->curlWrapper->post($actionUrl, json_encode($registrationData));
+		$response = $this->curl->post($actionUrl, json_encode($registrationData));
 //		$response    = json_decode($rawResponse);
 		if ($response == false) {
 			$result['message'] = "Invalid information returned from API, please retry your action after a few minutes.";
@@ -333,7 +338,7 @@ class RBdigital {
 		} else {
 			$actionUrl = $this->webServiceBaseUrl . '/v1/libraries/' . $this->libraryId . '/patrons/' . $rbdigitalId . '/checkouts/' . $recordId;
 
-			$response = $this->curlWrapper->put($actionUrl);
+			$response = $this->curl->put($actionUrl);
 //			$response    = json_decode($rawResponse);
 			if ($response == false) {
 				$result['message'] = "Invalid information returned from API, please retry your action after a few minutes.";
@@ -368,7 +373,7 @@ class RBdigital {
 		} else {
 			$actionUrl = $this->webServiceBaseUrl . '/v1/libraries/' . $this->libraryId . '/patrons/' . $rbdigitalId . '/checkouts/' . $recordId;
 
-			$rawResponse = $this->curlWrapper->delete($actionUrl);
+			$rawResponse = $this->curl->delete($actionUrl);
 			$response    = json_decode($rawResponse);
 			if ($response == false) {
 				$result['message'] = "Invalid information returned from API, please retry your action after a few minutes.";
@@ -403,15 +408,17 @@ class RBdigital {
 
 		$rbId = $this->getPatronId($patron);
 		if ($rbId == false) {
-			$result['message'] = 'Sorry, you are not registered with RBdigital.  You will need to create an account there before continuing.';
+			$result['message'] = 'You are not registered with RBdigital.  You will need to create an account there before continuing.';
 			return $result;
 		}
 
 		$returnMagazineUrl = $this->webServiceBaseUrl . 'patrons/' . $rbId . '/patron-magazines/' . $issueId;
 		$res = $this->curl->delete($returnMagazineUrl);
 
-		$result['success'] = true;
-		$result['message'] = "The magazine was returned successfully.";
+		if($this->curl->getHttpStatusCode() == 200){
+			$result['success'] = true;
+			$result['message'] = "The magazine was returned successfully.";
+		}
 
 		return $result;
 	}
@@ -500,13 +507,13 @@ class RBdigital {
 		} else {
 			$actionUrl = $this->webServiceBaseUrl . '/v1/libraries/' . $this->libraryId . '/patrons/' . $rbdigitalId . '/holds/' . $recordId;
 
-			$response = $this->curlWrapper->post($actionUrl);
+			$response = $this->curl->post($actionUrl);
 			if ($response == false) {
 				$result['message'] = "Invalid information returned from API, please retry your hold after a few minutes.";
 				global $logger;
 				$logger->log("Invalid information from rbdigital api\r\n$actionUrl\r\n$rawResponse", PEAR_LOG_ERR);
-				$logger->log(print_r($this->curlWrapper->getResponseHeaders(), true), PEAR_LOG_ERR);
-				$curl_info = $this->curlWrapper->getInfo();
+				$logger->log(print_r($this->curl->getResponseHeaders(), true), PEAR_LOG_ERR);
+				$curl_info = $this->curl->getInfo();
 				$logger->log(print_r($curl_info, true), PEAR_LOG_ERR);
 			} else {
 				if (is_numeric($response)) {
@@ -542,7 +549,7 @@ class RBdigital {
 		} else {
 			$actionUrl = $this->webServiceBaseUrl . '/v1/libraries/' . $this->libraryId . '/patrons/' . $rbdigitalId . '/holds/' . $recordId;
 
-			$rawResponse = $this->curlWrapper->delete($actionUrl);
+			$rawResponse = $this->curl->delete($actionUrl);
 			$response    = json_decode($rawResponse);
 			if ($response == false) {
 				$result['message'] = "Invalid information returned from API, please retry your action after a few minutes.";
@@ -591,7 +598,7 @@ class RBdigital {
 			//Get account information from api
 			$patronSummaryUrl = $this->webServiceBaseUrl . '/v1/tenants/' . $this->libraryId . '/patrons/' . $rbdigitalId . '/patron-config';
 
-			$response = $this->curlWrapper->get($patronSummaryUrl);
+			$response = $this->curl->get($patronSummaryUrl);
 
 			$summary                  = array();
 			$summary['numCheckedOut'] = empty($response->audioBooks->checkouts) ? 0 : count($response->audioBooks->checkouts);
@@ -610,9 +617,19 @@ class RBdigital {
 
 
 
-	public function redirectToRBdigitalMagazine(User $patron, RBdigitalMagazineDriver $recordDriver) {
-		$this->addBearerTokenHeader($patron);
-		header('Location:' . $recordDriver->getRBdigitalLinkUrl());
+	public function redirectToRBdigitalMagazine(User $patron, $issueId) {
+		// get the rbdigital USER id
+		$rbUserId = $this->getPatronId($patron, true);
+		// get the bearer token
+		$this->curl->setHeader('Content-Type', 'application/json');
+		$url = $this->webServiceBaseUrl . 'tokens';
+		$params = ["userId" => $rbUserId];
+		$res = $this->curl->post($url, $params);
+		//$res = json_decode($res);
+		if($res->bearer) {
+			header('Authorization: bearer '. $res->bearer);
+		}
+		header('Location: https://www.rbdigital.com/reader.php#/reader/readsvg/'.$issueId);
 		die();
 	}
 
@@ -647,6 +664,38 @@ class RBdigital {
 	}
 
 	/**
+	 * @param User $patron
+	 * @return void
+	 */
+	private function addBearerTokenHeader(User $patron)
+	{
+		if (!empty($patron->rbdigitalUsername) && !empty($patron->rbdigitalPassword)) {
+			$tokenUrl = $this->webServiceBaseUrl . '/v1/tokens/';
+			$userData = [
+			 'libraryId' => $this->libraryId,
+			 'UserName' => $patron->rbdigitalUsername,
+			 'Password' => $patron->rbdigitalPassword,
+			];
+			$response = $this->curl->post($tokenUrl, $userData);
+
+			if ($response == false) {
+				$result['message'] = "Invalid information returned from API, please retry your hold after a few minutes.";
+				global $logger;
+				$logger->log("Invalid information from rbdigital api\r\n$tokenUrl\r\n$rawResponse", PEAR_LOG_ERR);
+				$logger->log(print_r($this->curl->getResponseHeaders(), true), PEAR_LOG_ERR);
+				$curl_info = $this->curl->getInfo();
+				$logger->log(print_r($curl_info, true), PEAR_LOG_ERR);
+			} else {
+				//We should get back a bearer token
+				if ($response->result == true) {
+					$bearerToken = $response->bearer;
+					header('Authorization: bearer ' . $bearerToken);
+				}
+			}
+		}
+	}
+
+	/**
 	 * @return boolean true if the driver can renew all titles in a single pass
 	 */
 	public function hasFastRenewAll()
@@ -665,43 +714,11 @@ class RBdigital {
 		return false;
 	}
 
-	/**
-	 * @param User $patron
-	 * @return void
-	 */
-	private function addBearerTokenHeader(User $patron)
-	{
-		if (!empty($patron->rbdigitalUsername) && !empty($patron->rbdigitalPassword)) {
-			$tokenUrl = $this->webServiceBaseUrl . '/v1/tokens/';
-			$userData = [
-			 'libraryId' => $this->libraryId,
-			 'UserName' => $patron->rbdigitalUsername,
-			 'Password' => $patron->rbdigitalPassword,
-			];
-			$response = $this->curlWrapper->post($tokenUrl, $userData);
-
-			if ($response == false) {
-				$result['message'] = "Invalid information returned from API, please retry your hold after a few minutes.";
-				global $logger;
-				$logger->log("Invalid information from rbdigital api\r\n$tokenUrl\r\n$rawResponse", PEAR_LOG_ERR);
-				$logger->log(print_r($this->curlWrapper->getResponseHeaders(), true), PEAR_LOG_ERR);
-				$curl_info = $this->curlWrapper->getInfo();
-				$logger->log(print_r($curl_info, true), PEAR_LOG_ERR);
-			} else {
-				//We should get back a bearer token
-				if ($response->result == true) {
-					$bearerToken = $response->bearer;
-					header('Authorization: bearer ' . $bearerToken);
-				}
-			}
-		}
-	}
-
 	// end RbDigital.php
 }
-////			$this->curlWrapper->setHeaders($this->curlHeaders);
+////			$this->curl->setHeaders($this->curlHeaders);
 //			$patronCheckoutUrl = $this->webServiceURL . '/v1/libraries/' . $this->libraryId . '/patrons/' . $rbdigitalId . '/checkouts';
-//			$patronCheckouts   = $this->curlWrapper->get($patronCheckoutUrl);
+//			$patronCheckouts   = $this->curl->get($patronCheckoutUrl);
 //			if (isset($patronCheckouts->message)){
 //				//Error in RBdigital APIS
 //				global $logger;

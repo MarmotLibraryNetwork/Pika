@@ -118,9 +118,9 @@
 			{* Actions for Title *}
 			<div class="col-xs-9 col-sm-8 col-md-4 col-lg-3">
 				<div class="btn-group btn-group-vertical btn-block">
-					{if $record.accessOnlineUrl}
-						<a href="{$record.accessOnlineUrl}" class="btn btn-sm btn-primary">Read&nbsp;Online</a>
-					{/if}
+
+						<a href="#" onclick="return VuFind.RBdigital.readMagazineOnline('{$record.userId}', '{$record.id}')" class="btn btn-sm btn-primary">Read&nbsp;Online</a>
+
 					{if $record.overdriveRead}
 						<a href="#" onclick="return VuFind.OverDrive.followOverDriveDownloadLink('{$record.userId}', '{$record.overDriveId}', 'ebook-overdrive')" class="btn btn-sm btn-primary">Read&nbsp;Online</a>
 					{/if}

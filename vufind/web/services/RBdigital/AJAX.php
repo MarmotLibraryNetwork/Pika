@@ -29,7 +29,7 @@ require_once ROOT_DIR . '/AJAXHandler.php';
 require_once ROOT_DIR . '/services/AJAX/MARC_AJAX_Basic.php';
 require_once ROOT_DIR . '/services/SourceAndId.php';
 
-class RBdigital_AJAX {
+class RBdigital_AJAX  extends AJAXHandler {
 
 	use MARC_AJAX_Basic;
 
@@ -37,20 +37,43 @@ class RBdigital_AJAX {
 	 'returnRBdigitalMagazine',
 	];
 
+	protected array $methodsThatRespondThemselves = [
+	 'readMagazineOnline',
+	];
+	protected array $methodsThatRespondWithJSONResultWrapper = [];
+	protected array $methodsThatRespondWithXML = [];
+	protected array $methodsThatRespondWithHTML = [];
+
 	public function returnRBdigitalMagazine(){
-		$patron = UserAccount::getLoggedInUser();
 		$issueId = $_REQUEST['issueId'];
 		$userId  = $_REQUEST['userId'];
 		$user = UserAccount::getLoggedInUser();
-		if(! $user){
+		if(! $user) {
 			return ['success' => false, 'message' => 'An error occurred.'];
 		}
 		$patron = $user->getUserReferredTo($userId);
-		if(! $patron) {
+		if(!$patron) {
 			return ['success' => false, 'message' => "You don\'t have permissions to return titles for that user."];
 		}
 		$rbd = new RBdigital();
 
+		return $rbd->returnMagazine($patron, $issueId);
+	}
 
+	public function readMagazineOnline() {
+		$user = UserAccount::getLoggedInUser();
+		$issueId = $_REQUEST['issueId'];
+		$userId  = $_REQUEST['userId'];
+
+		if(! $user) {
+			return ['success' => false, 'message' => 'An error occurred.'];
+		}
+		$patron = $user->getUserReferredTo($userId);
+		if(!$patron) {
+			//return ['success' => false, 'message' => "You don\'t have permissions to read titles checked out to that user."];
+		}
+		$rbd = new RBdigital();
+		$rbd->redirectToRBdigitalMagazine($user, $issueId);
+		return true;
 	}
 }
