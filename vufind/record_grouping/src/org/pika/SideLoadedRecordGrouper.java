@@ -1,6 +1,7 @@
 package org.pika;
 
 import org.apache.log4j.Logger;
+import org.marc4j.marc.Record;
 
 import java.sql.Connection;
 
@@ -24,6 +25,16 @@ class SideLoadedRecordGrouper extends MarcRecordGrouper {
 	 */
 	SideLoadedRecordGrouper(Connection dbConnection, IndexingProfile profile, Logger logger, boolean fullRegrouping) {
 		super(dbConnection, profile, logger, fullRegrouping);
+	}
+
+	protected String setGroupingCategoryForWork(RecordIdentifier identifier, Record marcRecord, IndexingProfile profile, GroupedWorkBase workForTitle) {
+		FormatDetermination formatDetermination = new FormatDetermination(profile, translationMaps, logger);
+		formatDetermination.loadEContentFormatInformation(identifier, marcRecord);
+		String groupingFormat = formatDetermination.rawFormats.iterator().next(); //First Format
+//		groupingFormat = categoryMap.get(formatsToGroupingCategory.get(groupingFormat));
+
+		workForTitle.setGroupingCategory(groupingFormat);
+		return groupingFormat;
 	}
 
 

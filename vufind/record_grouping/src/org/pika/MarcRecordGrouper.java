@@ -1,12 +1,16 @@
 package org.pika;
 
 import org.apache.log4j.Logger;
+import org.marc4j.marc.ControlField;
+import org.marc4j.marc.DataField;
 import org.marc4j.marc.Record;
+import org.marc4j.marc.Subfield;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * A base class for setting title, author, and format for a MARC record
@@ -25,13 +29,13 @@ class MarcRecordGrouper extends RecordGroupingProcessor {
 	/**
 	 * Creates a record grouping processor that saves results to the database.
 	 *
-	 * @param dbConnection   - The Connection to the Pika database
+	 * @param pikaConn   - The Connection to the Pika database
 	 * @param profile        - The profile that we are grouping records for
 	 * @param logger         - A logger to store debug and error messages to.
 	 * @param fullRegrouping - Whether or not we are doing full regrouping or if we are only grouping changes.
 	 *                       Determines if old works are loaded at the beginning.
 	 */
-	MarcRecordGrouper(Connection dbConnection, IndexingProfile profile, Logger logger, boolean fullRegrouping) {
+	MarcRecordGrouper(Connection pikaConn, IndexingProfile profile, Logger logger, boolean fullRegrouping) {
 		super(logger, fullRegrouping);
 		this.profile = profile;
 
@@ -43,31 +47,31 @@ class MarcRecordGrouper extends RecordGroupingProcessor {
 		useEContentSubfield = profile.eContentDescriptor != ' ';
 
 
-		super.setupDatabaseStatements(dbConnection);
+		super.setupDatabaseStatements(pikaConn);
 
-		loadTranslationMaps(dbConnection);
+		loadTranslationMaps(pikaConn);
 
 	}
 
-	private void loadTranslationMaps(Connection dbConnection) {
+	private void loadTranslationMaps(Connection pikaConn) {
+		//TODO: only load maps needed for grouping?
 		try (
-				PreparedStatement loadMapsStmt = dbConnection.prepareStatement("SELECT * FROM translation_maps WHERE indexingProfileId = ?");
-				PreparedStatement loadMapValuesStmt = dbConnection.prepareStatement("SELECT * FROM translation_map_values WHERE translationMapId = ?")
+				PreparedStatement loadTranslationMapsStmt = pikaConn.prepareStatement("SELECT * FROM translation_maps WHERE indexingProfileId = ?");
+				PreparedStatement loadTranslationMapValuesStmt = pikaConn.prepareStatement("SELECT * FROM translation_map_values WHERE translationMapId = ?")
 		) {
-			loadMapsStmt.setLong(1, profile.id);
-			try (ResultSet translationMapsRS = loadMapsStmt.executeQuery()) {
+			loadTranslationMapsStmt.setLong(1, profile.id);
+			try (ResultSet translationMapsRS = loadTranslationMapsStmt.executeQuery()) {
 				while (translationMapsRS.next()) {
-					HashMap<String, String> translationMap   = new HashMap<>();
-					String                  mapName          = translationMapsRS.getString("name");
-					Long                    translationMapId = translationMapsRS.getLong("id");
+					String         mapName          = translationMapsRS.getString("name");
+					TranslationMap translationMap   = new TranslationMap(profile.sourceName, mapName, false, translationMapsRS.getBoolean("usesRegularExpressions"), logger);
+					long           translationMapId = translationMapsRS.getLong("id");
+					loadTranslationMapValuesStmt.setLong(1, translationMapId);
+					try (ResultSet translationMapValuesRS = loadTranslationMapValuesStmt.executeQuery()) {
+						while (translationMapValuesRS.next()) {
+							String value       = translationMapValuesRS.getString("value");
+							String translation = translationMapValuesRS.getString("translation");
 
-					loadMapValuesStmt.setLong(1, translationMapId);
-					try (ResultSet mapValuesRS = loadMapValuesStmt.executeQuery()) {
-						while (mapValuesRS.next()) {
-							String value       = mapValuesRS.getString("value");
-							String translation = mapValuesRS.getString("translation");
-
-							translationMap.put(value, translation);
+							translationMap.addValue(value, translation);
 						}
 						translationMaps.put(mapName, translationMap);
 					} catch (Exception e) {
@@ -81,11 +85,11 @@ class MarcRecordGrouper extends RecordGroupingProcessor {
 	}
 
 	boolean processMarcRecord(Record marcRecord, boolean primaryDataChanged) {
-		RecordIdentifier primaryIdentifier = getPrimaryIdentifierFromMarcRecord(marcRecord, profile.name, profile.doAutomaticEcontentSuppression);
+		RecordIdentifier primaryIdentifier = getPrimaryIdentifierFromMarcRecord(marcRecord, profile.sourceName, profile.doAutomaticEcontentSuppression);
 
 		if (primaryIdentifier != null) {
 			//Get data for the grouped record
-			GroupedWorkBase workForTitle = setupBasicWorkForIlsRecord(marcRecord, profile.formatSource, profile.format, profile.specifiedFormatCategory);
+			GroupedWorkBase workForTitle = setupBasicWorkForIlsRecord(primaryIdentifier, marcRecord, profile);
 
 			addGroupedWorkToDatabase(primaryIdentifier, workForTitle, primaryDataChanged);
 			return true;
@@ -93,5 +97,40 @@ class MarcRecordGrouper extends RecordGroupingProcessor {
 			//The record is suppressed
 			return false;
 		}
+	}
+
+	@Override
+	protected void setGroupingLanguageBasedOnMarc(Record marcRecord, GroupedWork5 workForTitle) {
+		ControlField fixedField = (ControlField) marcRecord.getVariableField("008");
+//		String       languageFields = "008[35-37]";
+		String       languageCode   = fixedField.getData();
+		if (languageCode.length() > 37) {
+			languageCode = languageCode.substring(35, 38).toLowerCase();
+		} else if (profile.sierraRecordFixedFieldsTag != null && !profile.sierraRecordFixedFieldsTag.isEmpty() && profile.sierraLanguageFixedField != ' ') {
+			// Use the Sierra Fixed Field Language code if it is available
+			List<DataField> dataFields = getDataFields(marcRecord, profile.sierraRecordFixedFieldsTag);
+			for (DataField dataField : dataFields) {
+				Subfield subfield = dataField.getSubfield(profile.sierraLanguageFixedField);
+				if (subfield != null) {
+					languageCode = subfield.getData().toLowerCase();
+					if (!languageCode.isEmpty()) {
+						break;
+					}
+				}
+			}
+		} else {
+			// If we still don't have a language, try using the first 041a if present
+			DataField languageField = marcRecord.getDataField("041");
+			if (languageField != null){
+				Subfield langaugeSubField = languageField.getSubfield('a');
+				if (langaugeSubField != null){
+					String language = langaugeSubField.getData().trim().toLowerCase();
+					if (language.length() == 3){
+						languageCode = language;
+					}
+				}
+			}
+		}
+		workForTitle.setGroupingLanguage(languageCode);
 	}
 }

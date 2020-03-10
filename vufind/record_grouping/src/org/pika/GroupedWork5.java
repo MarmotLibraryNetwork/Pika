@@ -63,7 +63,6 @@ public class GroupedWork5 extends GroupedWorkBase implements Cloneable {
 
 	@Override
 	public void setGroupingCategory(String groupingCategory) {
-		groupingCategory = groupingCategory.toLowerCase();
 		if (!validCategories.matcher(groupingCategory).matches()) {
 			logger.error("Invalid grouping category " + groupingCategory);
 		}else {

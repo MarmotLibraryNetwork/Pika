@@ -33,21 +33,23 @@ class HooplaRecordGrouper extends MarcRecordGrouper {
 		List<DataField> fields099 = getDataFields(marcRecord, "099");
 		String groupingFormat = "";
 		for (DataField cur099 : fields099){
-			String format = cur099.getSubfield('a').getData();
-			if (format.equalsIgnoreCase("eAudiobook hoopla") || format.equalsIgnoreCase("eBook hoopla")){
-				groupingFormat = "book";
-				break;
-			}else if (format.equalsIgnoreCase("eVideo hoopla")){
-				groupingFormat = "movie";
-				break;
-			}else if (format.equalsIgnoreCase("eMusic hoopla")){
-				groupingFormat = "music";
-				break;
-			}else if (format.equalsIgnoreCase("eComic hoopla")){
-				groupingFormat = "comic";
-				break;
-			}else{
-				logger.warn("Unknown Hoopla format " + format);
+			String format = cur099.getSubfield('a').getData().toLowerCase();
+			switch (format) {
+				case "eaudiobook hoopla":
+				case "ebook hoopla":
+					groupingFormat = "book";
+					break;
+				case "evideo hoopla":
+					groupingFormat = "movie";
+					break;
+				case"emusic hoopla":
+					groupingFormat = "music";
+					break;
+				case "ecomic hoopla":
+					groupingFormat = "comic";
+					break;
+				default:
+					logger.error("Unknown Hoopla format " + format);
 			}
 		}
 		workForTitle.setGroupingCategory(groupingFormat);

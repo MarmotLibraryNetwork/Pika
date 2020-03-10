@@ -4,7 +4,6 @@ import au.com.bytecode.opencsv.CSVReader;
 import au.com.bytecode.opencsv.CSVWriter;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
-import org.ini4j.Ini;
 import org.json.JSONObject;
 import org.marc4j.MarcException;
 import org.marc4j.MarcPermissiveStreamReader;
@@ -21,7 +20,6 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.Date;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import java.util.zip.CRC32;
 
 /**
@@ -45,10 +43,9 @@ public class RecordGrouperMain {
 	private static PreparedStatement     removePrimaryIdentifier;
 
 	private static Long    lastGroupingTime;
-	private static Long    lastGroupingTimeVariableId;
-	private static boolean fullRegrouping            = false; //todo: refactor name so that it is clear that this option clears out the database tables for grouped works
-	private static boolean fullRegroupingNoClear     = false;
-	private static boolean validateChecksumsFromDisk = false;
+	private static boolean fullRegroupingClearGroupingTables = false;
+	private static boolean fullRegroupingNoClear             = false;
+	private static boolean validateChecksumsFromDisk         = false;
 
 	//Reporting information
 	private static long              groupingLogId;
@@ -173,7 +170,8 @@ public class RecordGrouperMain {
 
 	private static void generateAuthorAuthorities(String[] args) {
 		serverName = args[1];
-		long processStartTime = new Date().getTime();
+		String indexingProfileToRun = args[2];
+		long   processStartTime     = new Date().getTime();
 
 		CSVWriter authoritiesWriter;
 		try {
@@ -214,10 +212,14 @@ public class RecordGrouperMain {
 			System.exit(1);
 		}
 
+		ArrayList<IndexingProfile> indexingProfiles = loadIndexingProfiles(pikaConn, indexingProfileToRun);
 		RecordGroupingProcessor recordGroupingProcessor = new RecordGroupingProcessor(pikaConn, serverName, logger, true);
-		generateAuthorAuthoritiesForIlsRecords(currentAuthorities, manualAuthorities, authoritiesWriter, recordGroupingProcessor);
-		generateAuthorAuthoritiesForOverDriveRecords(econtentConnection, currentAuthorities, manualAuthorities, authoritiesWriter);
-
+		for (IndexingProfile curProfile : indexingProfiles) {
+			generateAuthorAuthoritiesForIlsRecords(currentAuthorities, manualAuthorities, authoritiesWriter, recordGroupingProcessor, curProfile);
+		}
+		if (indexingProfileToRun == null || indexingProfileToRun.equalsIgnoreCase("overdrive")) {
+			generateAuthorAuthoritiesForOverDriveRecords(econtentConnection, currentAuthorities, manualAuthorities, authoritiesWriter);
+		}
 		try {
 			authoritiesWriter.flush();
 			authoritiesWriter.close();
@@ -334,33 +336,26 @@ public class RecordGrouperMain {
 		}
 	}
 
-	private static void generateAuthorAuthoritiesForIlsRecords(HashMap<String, String> currentAuthorities, HashMap<String, String> manualAuthorities, CSVWriter authoritiesWriter, RecordGroupingProcessor recordGroupingProcessor) {
-		logger.debug("Generating authorities for ILS Records");
-		int numRecordsRead = 0;
-		//TODO: these config.ini settings are obsolete and should be refactored if this code gets used
-		String marcPath       = PikaConfigIni.getIniValue("Reindex", "marcPath");
-		String marcEncoding   = PikaConfigIni.getIniValue("Reindex", "marcEncoding");
-		String loadFormatFrom = PikaConfigIni.getIniValue("Reindex", "loadFormatFrom");
-		char   formatSubfield = ' ';
-		if (loadFormatFrom.equals("item")) {
-			formatSubfield = PikaConfigIni.getCharIniValue("Reindex", "formatSubfield");
+	private static void generateAuthorAuthoritiesForIlsRecords(HashMap<String, String> currentAuthorities, HashMap<String, String> manualAuthorities, CSVWriter authoritiesWriter, RecordGroupingProcessor recordGroupingProcessor, IndexingProfile profile) {
+		if (logger.isDebugEnabled()) {
+			logger.debug("Generating authorities for " + profile.sourceName + " records");
 		}
-		//TODO: Use Format determination in indexing profile?
-
+		int    numRecordsRead  = 0;
+		String marcPath        = profile.marcPath;
+		String marcEncoding    = profile.marcEncoding;
 		File[] catalogBibFiles = new File(marcPath).listFiles();
 		if (catalogBibFiles != null) {
 			for (File curBibFile : catalogBibFiles) {
 				if (curBibFile.getName().toLowerCase().endsWith(".mrc") || curBibFile.getName().toLowerCase().endsWith(".marc")) {
-					try {
-						FileInputStream marcFileStream = new FileInputStream(curBibFile);
-						MarcReader      catalogReader  = new MarcPermissiveStreamReader(marcFileStream, true, true, marcEncoding);
+					try (FileInputStream marcFileStream = new FileInputStream(curBibFile)) {
+						MarcReader catalogReader = new MarcPermissiveStreamReader(marcFileStream, true, true, marcEncoding);
 						while (catalogReader.hasNext()) {
-							Record          curBib = catalogReader.next();
-							GroupedWorkBase work   = recordGroupingProcessor.setupBasicWorkForIlsRecord(curBib, loadFormatFrom, formatSubfield, "");
+							Record           curBib            = catalogReader.next();
+							RecordIdentifier primaryIdentifier = recordGroupingProcessor.getPrimaryIdentifierFromMarcRecord(curBib, profile.sourceName, profile.doAutomaticEcontentSuppression);
+							GroupedWorkBase  work              = recordGroupingProcessor.setupBasicWorkForIlsRecord(primaryIdentifier, curBib, profile);
 							addAlternateAuthoritiesForWorkToAuthoritiesFile(currentAuthorities, manualAuthorities, authoritiesWriter, work);
 							numRecordsRead++;
 						}
-						marcFileStream.close();
 					} catch (Exception e) {
 						logger.error("Error loading catalog bibs on record " + numRecordsRead, e);
 					}
@@ -555,6 +550,44 @@ public class RecordGrouperMain {
 		}
 	}
 
+	private static ArrayList<IndexingProfile> loadIndexingProfiles(Connection pikaConn, String indexingProfileToRun) {
+		ArrayList<IndexingProfile> indexingProfiles = new ArrayList<>();
+
+		String fetchIndexingProfileSQL = "SELECT * FROM indexing_profiles";
+		if (indexingProfileToRun != null && !indexingProfileToRun.isEmpty()) {
+			fetchIndexingProfileSQL += " WHERE sourceName LIKE '" + indexingProfileToRun + "'";
+		}
+		try (
+				PreparedStatement getIndexingProfilesStmt = pikaConn.prepareStatement(fetchIndexingProfileSQL);
+				ResultSet indexingProfilesRS = getIndexingProfilesStmt.executeQuery()
+		) {
+			while (indexingProfilesRS.next()) {
+				IndexingProfile profile = new IndexingProfile(indexingProfilesRS);
+
+				// Does this profile use the Sierra API Extract
+				try (
+						PreparedStatement getSierraFieldMappingsStmt = pikaConn.prepareStatement("SELECT * FROM sierra_export_field_mapping WHERE indexingProfileId =" + profile.id);
+						ResultSet getSierraFieldMappingsRS = getSierraFieldMappingsStmt.executeQuery()
+				) {
+					// If there is a sierra field mapping entry for the profile, then it does use the Sierra API Extract
+					if (getSierraFieldMappingsRS.next()) {
+						profile.usingSierraAPIExtract = true;
+					}
+				} catch (Exception e) {
+					logger.warn("Error determining whether or not an indexing profile uses the Siera API Extract");
+					// log the error but otherwise continue as normal
+				}
+
+				indexingProfiles.add(profile);
+			}
+
+		} catch (Exception e) {
+			logger.error("Error loading indexing profiles", e);
+			System.exit(1);
+		}
+		return indexingProfiles;
+	}
+
 	private static void doStandardRecordGrouping(String[] args) {
 		long processStartTime = new Date().getTime();
 
@@ -633,7 +666,6 @@ public class RecordGrouperMain {
 
 		//Get the last grouping time
 		lastGroupingTime           = systemVariables.getLongValuedVariable("last_grouping_time");
-		lastGroupingTimeVariableId = systemVariables.getVariableId("last_grouping_time");
 
 		//Check to see if we need to clear the database
 		boolean clearDatabasePriorToGrouping = false;
@@ -646,23 +678,22 @@ public class RecordGrouperMain {
 		} else if (args.length >= 2 && args[1].equalsIgnoreCase("fullRegroupingNoClear")) {
 			fullRegroupingNoClear = true;
 		} else if (args.length >= 2 && args[1].equalsIgnoreCase("fullRegrouping")) {
-			clearDatabasePriorToGrouping = true;
-			fullRegrouping               = true;
+			clearDatabasePriorToGrouping      = true;
+			fullRegroupingClearGroupingTables = true;
 		} else if (args.length >= 2 && args[1].equalsIgnoreCase("runPostGroupingCleanup")) {
-			clearDatabasePriorToGrouping = false;
-			fullRegrouping               = false;
-			onlyDoCleanup                = true;
+			clearDatabasePriorToGrouping      = false;
+			fullRegroupingClearGroupingTables = false;
+			onlyDoCleanup                     = true;
 		} else if (args.length >= 2) {
 			//The last argument is the indexing profile to run
-			indexingProfileToRun = args[1];
-			fullRegrouping       = false;
+			indexingProfileToRun              = args[1];
+			fullRegroupingClearGroupingTables = false;
 		} else {
-			fullRegrouping = false;
+			fullRegroupingClearGroupingTables = false;
 		}
 
 		RecordGroupingProcessor recordGroupingProcessor = null;
 		if (!onlyDoCleanup) {
-			recordGroupingProcessor = new RecordGroupingProcessor(pikaConn, serverName, logger, fullRegrouping);
 
 			if (!explodeMarcsOnly) {
 				markRecordGroupingRunning(true);
@@ -673,63 +704,12 @@ public class RecordGrouperMain {
 			//Determine if we want to validateChecksumsFromDisk
 			validateChecksumsFromDisk = systemVariables.getBooleanValuedVariable("validateChecksumsFromDisk");
 
-			ArrayList<IndexingProfile> indexingProfiles = new ArrayList<>();
-
-			String fetchIndexingProfileSQL = "SELECT * FROM indexing_profiles";
-			if (indexingProfileToRun != null && !indexingProfileToRun.isEmpty()) {
-				fetchIndexingProfileSQL += " WHERE name LIKE '" + indexingProfileToRun + "'";
-			}
-			try (
-					PreparedStatement getIndexingProfilesStmt = pikaConn.prepareStatement(fetchIndexingProfileSQL);
-					ResultSet indexingProfilesRS = getIndexingProfilesStmt.executeQuery()
-			) {
-				while (indexingProfilesRS.next()) {
-					IndexingProfile profile = new IndexingProfile();
-					profile.id                                = indexingProfilesRS.getLong(1);
-					profile.name                              = indexingProfilesRS.getString("name");
-					profile.marcPath                          = indexingProfilesRS.getString("marcPath");
-					profile.filenamesToInclude                = indexingProfilesRS.getString("filenamesToInclude");
-					profile.individualMarcPath                = indexingProfilesRS.getString("individualMarcPath");
-					profile.numCharsToCreateFolderFrom        = indexingProfilesRS.getInt("numCharsToCreateFolderFrom");
-					profile.createFolderFromLeadingCharacters = indexingProfilesRS.getBoolean("createFolderFromLeadingCharacters");
-					profile.groupingClass                     = indexingProfilesRS.getString("groupingClass");
-					profile.recordNumberTag                   = indexingProfilesRS.getString("recordNumberTag");
-					profile.recordNumberField                 = getCharFromRecordSet(indexingProfilesRS, "recordNumberField");
-					profile.recordNumberPrefix                = indexingProfilesRS.getString("recordNumberPrefix");
-					profile.marcEncoding                      = indexingProfilesRS.getString("marcEncoding");
-					profile.formatSource                      = indexingProfilesRS.getString("formatSource");
-					profile.specifiedFormatCategory           = indexingProfilesRS.getString("specifiedFormatCategory");
-					profile.format                            = getCharFromRecordSet(indexingProfilesRS, "format");
-					profile.itemTag                           = indexingProfilesRS.getString("itemTag");
-					profile.eContentDescriptor                = getCharFromRecordSet(indexingProfilesRS, "eContentDescriptor");
-					profile.doAutomaticEcontentSuppression    = indexingProfilesRS.getBoolean("doAutomaticEcontentSuppression");
-					profile.groupUnchangedFiles               = indexingProfilesRS.getBoolean("groupUnchangedFiles");
-
-					// Does this profile use the Sierra API Extract
-					try (
-							PreparedStatement getSierraFieldMappingsStmt = pikaConn.prepareStatement("SELECT * FROM sierra_export_field_mapping where indexingProfileId =" + profile.id);
-							ResultSet getSierraFieldMappingsRS = getSierraFieldMappingsStmt.executeQuery()
-					){
-						// If there is a sierra field mapping entry for the profile, then it does use the Sierra API Extract
-						if (getSierraFieldMappingsRS.next()){
-							profile.usingSierraAPIExtract = true;
-						}
-					} catch (Exception e){
-						logger.warn("Error determining whether or not an indexing profile uses the Siera API Extract");
-						// logger the error but otherwise continue as normal
-					}
-
-					indexingProfiles.add(profile);
-				}
-
-			} catch (Exception e) {
-				logger.error("Error loading indexing profiles", e);
-				System.exit(1);
-			}
+			ArrayList<IndexingProfile> indexingProfiles = loadIndexingProfiles(pikaConn, indexingProfileToRun);
 
 			// Main Record Grouping Processing
 			if (indexingProfileToRun == null || indexingProfileToRun.equalsIgnoreCase("overdrive")) {
-				groupOverDriveRecords(pikaConn, econtentConnection, recordGroupingProcessor, explodeMarcsOnly);
+				recordGroupingProcessor = new OverDriveRecordGrouper(pikaConn, serverName, logger, fullRegroupingClearGroupingTables);
+				groupOverDriveRecords(pikaConn, econtentConnection, (OverDriveRecordGrouper) recordGroupingProcessor, explodeMarcsOnly);
 			}
 			if (indexingProfiles.size() > 0) {
 				groupIlsRecords(pikaConn, indexingProfiles, explodeMarcsOnly);
@@ -763,6 +743,7 @@ public class RecordGrouperMain {
 
 		if (recordGroupingProcessor != null) {
 			recordGroupingProcessor.dumpStats();
+			//TODO: each profile should run this??
 		}
 
 		logger.info("Finished grouping records " + new Date().toString());
@@ -788,9 +769,8 @@ public class RecordGrouperMain {
 		}
 	}
 
-	private static void removeDeletedRecords(String curProfile) {
+	private static void removeDeletedRecords(String curProfile, String dataDirPath) {
 		if (marcRecordIdsInDatabase.size() > 0) {
-			logger.info("Deleting " + marcRecordIdsInDatabase.size() + " record ids for profile " + curProfile + " from the database since they are no longer in the export.");
 			addNoteToGroupingLog("Deleting " + marcRecordIdsInDatabase.size() + " record ids for profile " + curProfile + " from the database since they are no longer in the export.");
 			for (String recordNumber : marcRecordIdsInDatabase.keySet()) {
 				//Remove the record from the ils_marc_checksums table
@@ -829,7 +809,7 @@ public class RecordGrouperMain {
 				}
 			}
 			TreeSet<String> theList = new TreeSet<String>(primaryIdentifiersInDatabase.keySet());
-			writeExistingRecordsFile(theList, "remaining_primary_identifiers_to_be_deleted");
+			writeExistingRecordsFile(theList, "remaining_primary_identifiers_to_be_deleted", dataDirPath);
 			primaryIdentifiersInDatabase.clear();
 		}
 	}
@@ -849,9 +829,10 @@ public class RecordGrouperMain {
 
 	private static SimpleDateFormat dayFormatter = new SimpleDateFormat("yyyy-MM-dd");
 
-	private static void writeExistingRecordsFile(TreeSet<String> recordNumbersInExport, String filePrefix) {
+	private static void writeExistingRecordsFile(TreeSet<String> recordNumbersInExport, String filePrefix, String dataDirPath) {
 		try {
-			File dataDir = new File(PikaConfigIni.getIniValue("Reindex", "marcPath"));
+//			File dataDir = new File(PikaConfigIni.getIniValue("Reindex", "marcPath"));
+			File dataDir = new File(dataDirPath);
 			dataDir = dataDir.getParentFile();
 			//write the records in CSV format to the data directory
 			Date   curDate          = new Date();
@@ -1102,20 +1083,20 @@ public class RecordGrouperMain {
 		}
 	}
 
-	private static void loadExistingPrimaryIdentifiers(Connection pikaConn, String indexingProfileToRun) {
+	private static void loadExistingPrimaryIdentifiers(Connection pikaConn, String source) {
 		//Load Existing Primary Identifiers so we can clean up
 		try {
 			if (removePrimaryIdentifier == null) {
 				removePrimaryIdentifier = pikaConn.prepareStatement("DELETE FROM grouped_work_primary_identifiers WHERE id = ?");
 			}
 
-			String primaryIdentifiersSQL = "SELECT * from grouped_work_primary_identifiers";
-			if (indexingProfileToRun != null) {
-				primaryIdentifiersSQL += " where type like ?";
+			String primaryIdentifiersSQL = "SELECT * FROM grouped_work_primary_identifiers";
+			if (source != null) {
+				primaryIdentifiersSQL += " WHERE type LIKE ?";
 			}
 			try (PreparedStatement loadPrimaryIdentifiers = pikaConn.prepareStatement(primaryIdentifiersSQL, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY)) {
-				if (indexingProfileToRun != null) {
-					loadPrimaryIdentifiers.setString(1, indexingProfileToRun);
+				if (source != null) {
+					loadPrimaryIdentifiers.setString(1, source);
 				}
 
 				try (ResultSet primaryIdentifiersRS = loadPrimaryIdentifiers.executeQuery()) {
@@ -1158,7 +1139,7 @@ public class RecordGrouperMain {
 	private static void groupIlsRecords(Connection pikaConn, ArrayList<IndexingProfile> indexingProfiles, boolean explodeMarcsOnly) {
 		//Get indexing profiles
 		for (IndexingProfile curProfile : indexingProfiles) {
-			addNoteToGroupingLog("Processing profile " + curProfile.name);
+			addNoteToGroupingLog("Processing profile " + curProfile.sourceName);
 
 			String marcPath = curProfile.marcPath;
 
@@ -1183,29 +1164,29 @@ public class RecordGrouperMain {
 				processProfile = true;
 			}
 			if (!processProfile) {
-				logger.debug("Checking if " + curProfile.name + " has had any records marked for regrouping.");
-				if (!curProfile.usingSierraAPIExtract && checkForForcedRegrouping(pikaConn, curProfile.name)) {
+				logger.debug("Checking if " + curProfile.sourceName + " has had any records marked for regrouping.");
+				if (!curProfile.usingSierraAPIExtract && checkForForcedRegrouping(pikaConn, curProfile.sourceName)) {
 					processProfile = true;
-					addNoteToGroupingLog(curProfile.name + " has no file changes but will be processed because records have been marked for forced regrouping.");
+					addNoteToGroupingLog(curProfile.sourceName + " has no file changes but will be processed because records have been marked for forced regrouping.");
 				}
 			}
 
 			if (!processProfile) {
-				addNoteToGroupingLog("Skipping processing profile " + curProfile.name + " because nothing has changed");
+				addNoteToGroupingLog("Skipping processing profile " + curProfile.sourceName + " because nothing has changed");
 			} else {
-				loadIlsChecksums(pikaConn, curProfile.name);
-				loadExistingPrimaryIdentifiers(pikaConn, curProfile.name);
+				loadIlsChecksums(pikaConn, curProfile.sourceName);
+				loadExistingPrimaryIdentifiers(pikaConn, curProfile.sourceName);
 
 				MarcRecordGrouper recordGroupingProcessor;
 				switch (curProfile.groupingClass) {
 					case "MarcRecordGrouper":
-						recordGroupingProcessor = new MarcRecordGrouper(pikaConn, curProfile, logger, fullRegrouping);
+						recordGroupingProcessor = new MarcRecordGrouper(pikaConn, curProfile, logger, fullRegroupingClearGroupingTables);
 						break;
 					case "SideLoadedRecordGrouper":
-						recordGroupingProcessor = new SideLoadedRecordGrouper(pikaConn, curProfile, logger, fullRegrouping);
+						recordGroupingProcessor = new SideLoadedRecordGrouper(pikaConn, curProfile, logger, fullRegroupingClearGroupingTables);
 						break;
 					case "HooplaRecordGrouper":
-						recordGroupingProcessor = new HooplaRecordGrouper(pikaConn, curProfile, logger, fullRegrouping);
+						recordGroupingProcessor = new HooplaRecordGrouper(pikaConn, curProfile, logger, fullRegroupingClearGroupingTables);
 						break;
 					default:
 						logger.error("Unknown class for record grouping " + curProfile.groupingClass);
@@ -1231,7 +1212,7 @@ public class RecordGrouperMain {
 							recordId = ""; // reset the record Id in case of exceptions
 							try {
 								Record           curBib           = catalogReader.next();
-								RecordIdentifier recordIdentifier = recordGroupingProcessor.getPrimaryIdentifierFromMarcRecord(curBib, curProfile.name, curProfile.doAutomaticEcontentSuppression);
+								RecordIdentifier recordIdentifier = recordGroupingProcessor.getPrimaryIdentifierFromMarcRecord(curBib, curProfile.sourceName, curProfile.doAutomaticEcontentSuppression);
 								if (recordIdentifier == null) {
 									//logger.debug("Record with control number " + curBib.getControlNumber() + " was suppressed or is eContent");
 									String controlNumber = curBib.getControlNumber();
@@ -1250,7 +1231,8 @@ public class RecordGrouperMain {
 									boolean marcUpToDate = writeIndividualMarc(curProfile, curBib, recordId, marcRecordsWritten, marcRecordsOverwritten);
 									recordNumbersInExport.add(recordIdentifier.toString());
 									if (!explodeMarcsOnly) {
-										if (!marcUpToDate || fullRegroupingNoClear) {
+//										if (true || /*TODO: temp only*/ !marcUpToDate || fullRegroupingNoClear) {
+										if ( !marcUpToDate || fullRegroupingNoClear) {
 											if (recordGroupingProcessor.processMarcRecord(curBib, !marcUpToDate)) {
 												recordNumbersToIndex.add(recordIdentifier.toString());
 											} else {
@@ -1259,8 +1241,7 @@ public class RecordGrouperMain {
 											numRecordsProcessed++;
 										}
 										//Mark that the record was processed
-										String fullId = curProfile.name + ":" + recordId;
-										fullId = fullId.toLowerCase().trim();
+										String fullId = recordIdentifier.toString().toLowerCase().trim();
 										marcRecordIdsInDatabase.remove(fullId);
 										primaryIdentifiersInDatabase.remove(fullId);
 									}
@@ -1285,12 +1266,12 @@ public class RecordGrouperMain {
 						}
 					} catch (Exception e) {
 						if (!recordId.isEmpty()) {
-							logger.error("Error loading  bibs on record " + numRecordsRead + " in profile " + curProfile.name + " on the record  " + recordId, e);
+							logger.error("Error loading  bibs on record " + numRecordsRead + " in profile " + curProfile.sourceName + " on the record  " + recordId, e);
 						} else {
-							logger.error("Error loading  bibs on record " + numRecordsRead + " in profile " + curProfile.name + " the last record processed was " + lastRecordProcessed, e);
+							logger.error("Error loading  bibs on record " + numRecordsRead + " in profile " + curProfile.sourceName + " the last record processed was " + lastRecordProcessed, e);
 						}
 					}
-					logger.info("Finished grouping " + numRecordsRead + " records with " + numRecordsProcessed + " actual changes from the marc file " + curBibFile.getName() + " in profile " + curProfile.name);
+					logger.info("Finished grouping " + numRecordsRead + " records with " + numRecordsProcessed + " actual changes from the marc file " + curBibFile.getName() + " in profile " + curProfile.sourceName);
 					addNoteToGroupingLog("&nbsp;&nbsp; - Finished grouping " + numRecordsRead + " records from the marc file " + curBibFile.getName());
 				}
 
@@ -1299,24 +1280,24 @@ public class RecordGrouperMain {
 				addNoteToGroupingLog("&nbsp;&nbsp; - Records Written: " + marcRecordsWritten.size());
 				addNoteToGroupingLog("&nbsp;&nbsp; - Records Overwritten: " + marcRecordsOverwritten.size());
 
-				removeDeletedRecords(curProfile.name);
+				removeDeletedRecords(curProfile.sourceName, marcPath);
 
-				String profileName = curProfile.name.replaceAll(" ", "_");
-				writeExistingRecordsFile(recordNumbersInExport, "record_grouping_" + profileName + "_bibs_in_export");
+				String profileName = curProfile.sourceName.replaceAll(" ", "_");
+				writeExistingRecordsFile(recordNumbersInExport, "record_grouping_" + profileName + "_bibs_in_export", marcPath);
 				if (suppressedRecordNumbersInExport.size() > 0) {
-					writeExistingRecordsFile(suppressedRecordNumbersInExport, "record_grouping_" + profileName + "_bibs_to_ignore");
+					writeExistingRecordsFile(suppressedRecordNumbersInExport, "record_grouping_" + profileName + "_bibs_to_ignore", marcPath);
 				}
 				if (suppressedControlNumbersInExport.size() > 0) {
-					writeExistingRecordsFile(suppressedControlNumbersInExport, "record_grouping_" + profileName + "_control_numbers_to_ignore");
+					writeExistingRecordsFile(suppressedControlNumbersInExport, "record_grouping_" + profileName + "_control_numbers_to_ignore", marcPath);
 				}
 				if (recordNumbersToIndex.size() > 0) {
-					writeExistingRecordsFile(recordNumbersToIndex, "record_grouping_" + profileName + "_bibs_to_index");
+					writeExistingRecordsFile(recordNumbersToIndex, "record_grouping_" + profileName + "_bibs_to_index", marcPath);
 				}
 				if (marcRecordsWritten.size() > 0) {
-					writeExistingRecordsFile(marcRecordsWritten, "record_grouping_" + profileName + "_new_bibs_written");
+					writeExistingRecordsFile(marcRecordsWritten, "record_grouping_" + profileName + "_new_bibs_written", marcPath);
 				}
 				if (marcRecordsOverwritten.size() > 0) {
-					writeExistingRecordsFile(marcRecordsOverwritten, "record_grouping_" + profileName + "_changed_bibs_written");
+					writeExistingRecordsFile(marcRecordsOverwritten, "record_grouping_" + profileName + "_changed_bibs_written", marcPath);
 				}
 			}
 
@@ -1339,7 +1320,7 @@ public class RecordGrouperMain {
 		}
 	}*/
 
-	private static void groupOverDriveRecords(Connection pikaConn, Connection econtentConnection, RecordGroupingProcessor recordGroupingProcessor, boolean explodeMarcsOnly) {
+	private static void groupOverDriveRecords(Connection pikaConn, Connection econtentConnection, OverDriveRecordGrouper recordGroupingProcessor, boolean explodeMarcsOnly) {
 		if (explodeMarcsOnly) {
 			//Nothing to do since we don't have marc records to process
 			return;
@@ -1352,7 +1333,7 @@ public class RecordGrouperMain {
 		try {
 			String OverdriveRecordSQL = "SELECT overdrive_api_products.id, overdriveId, mediaType, title, subtitle, primaryCreatorRole, primaryCreatorName, code FROM overdrive_api_products INNER JOIN overdrive_api_product_metadata ON overdrive_api_product_metadata.productId = overdrive_api_products.id INNER JOIN overdrive_api_product_languages_ref ON overdrive_api_product_languages_ref.productId = overdrive_api_products.id INNER JOIN overdrive_api_product_languages ON overdrive_api_product_languages_ref.languageId = overdrive_api_product_languages.id WHERE deleted = 0 and isOwnedByCollections = 1";
 			PreparedStatement overDriveRecordsStmt;
-			if (lastGroupingTime != null && !fullRegrouping && !fullRegroupingNoClear) {
+			if (lastGroupingTime != null && !fullRegroupingClearGroupingTables && !fullRegroupingNoClear) {
 				overDriveRecordsStmt = econtentConnection.prepareStatement(OverdriveRecordSQL + " AND (dateUpdated >= ? OR lastMetadataChange >= ? OR lastAvailabilityChange >= ?)", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 				overDriveRecordsStmt.setLong(1, lastGroupingTime);
 				overDriveRecordsStmt.setLong(2, lastGroupingTime);
@@ -1436,17 +1417,18 @@ public class RecordGrouperMain {
 					RecordIdentifier primaryIdentifier = new RecordIdentifier();
 					primaryIdentifier.setValue("overdrive", overdriveId);
 
-					recordGroupingProcessor.processRecord(primaryIdentifier, title, subtitle, author, groupingFormat, groupingLanguage, true);
+					recordGroupingProcessor.processOverDriveRecord(primaryIdentifier, title, subtitle, author, groupingFormat, groupingLanguage, true);
 					primaryIdentifiersInDatabase.remove(primaryIdentifier.toString().toLowerCase());
 					numRecordsProcessed++;
 				}
 			}
 
 			//This is no longer needed because we do cleanup differently now (get a list of everything in the database and then cleanup anything that isn't in the API anymore
-			if (fullRegrouping) {
-				writeExistingRecordsFile(recordNumbersInExport, "record_grouping_overdrive_records_in_export");
+			String dataDirPath = PikaConfigIni.getIniValue("Reindex", "marcPath");
+			if (fullRegroupingClearGroupingTables) {
+				writeExistingRecordsFile(recordNumbersInExport, "record_grouping_overdrive_records_in_export", dataDirPath);
 			}
-			removeDeletedRecords("overdrive");
+//			removeDeletedRecords("overdrive", dataDirPath);
 			addNoteToGroupingLog("Finished grouping " + numRecordsProcessed + " records from overdrive ");
 		} catch (Exception e) {
 			System.out.println("Error loading OverDrive records: " + e.toString());
@@ -1461,14 +1443,14 @@ public class RecordGrouperMain {
 		boolean marcRecordUpToDate = false;
 		//Copy the record to the individual marc path
 		if (recordNumber != null) {
-			String recordNumberWithSource = indexingProfile.name + ":" + recordNumber;
+			String recordNumberWithSource = indexingProfile.sourceName + ":" + recordNumber;
 			Long   checksum               = getChecksum(marcRecord);
 			Long   existingChecksum       = getExistingChecksum(recordNumberWithSource);
 			File   individualFile         = indexingProfile.getFileForIlsRecord(recordNumber);
 
 			//If we are doing partial regrouping or full regrouping without clearing the previous results,
 			//Check to see if the record needs to be written before writing it.
-			if (!fullRegrouping) {
+			if (!fullRegroupingClearGroupingTables) {
 				boolean checksumUpToDate = existingChecksum != null && existingChecksum.equals(checksum);
 				boolean fileExists       = individualFile.exists();
 				marcRecordUpToDate = fileExists && checksumUpToDate;
@@ -1501,20 +1483,20 @@ public class RecordGrouperMain {
 				try {
 					outputMarcRecord(marcRecord, individualFile);
 					getDateAddedForRecord(marcRecord, recordNumberWithSource, individualFile);
-					updateMarcRecordChecksum(recordNumber, indexingProfile.name, checksum);
+					updateMarcRecordChecksum(recordNumber, indexingProfile.sourceName, checksum);
 					//logger.debug("checksum changed for " + recordNumber + " was " + existingChecksum + " now its " + checksum);
 				} catch (IOException e) {
-					logger.error("Error writing marc", e);
+					logger.error("Error writing marc for record " + recordNumberWithSource, e);
 				}
 			} else {
 				//Update date first detected if needed
 				if (marcRecordFirstDetectionDates.containsKey(recordNumberWithSource) && marcRecordFirstDetectionDates.get(recordNumberWithSource) == null) {
 					getDateAddedForRecord(marcRecord, recordNumberWithSource, individualFile);
-					updateMarcRecordChecksum(recordNumber, indexingProfile.name, checksum);
+					updateMarcRecordChecksum(recordNumber, indexingProfile.sourceName, checksum);
 				}
 			}
 		} else {
-			logger.error("Error did not find record number for MARC record");
+			logger.error("Record number for MARC record was not supplied");
 			marcRecordUpToDate = true;
 		}
 		return marcRecordUpToDate;
@@ -1586,7 +1568,7 @@ public class RecordGrouperMain {
 			insertMarcRecordChecksum.setLong(4, dateFirstDetected);
 			insertMarcRecordChecksum.executeUpdate();
 		} catch (SQLException e) {
-			logger.error("Unable to update checksum for ils marc record", e);
+			logger.error("Unable to update checksum for marc record : " + recordNumberWithSource, e);
 		}
 	}
 
@@ -1625,7 +1607,9 @@ public class RecordGrouperMain {
 			addNoteToGroupingLogStmt.setLong(2, new Date().getTime() / 1000);
 			addNoteToGroupingLogStmt.setLong(3, groupingLogId);
 			addNoteToGroupingLogStmt.executeUpdate();
-			logger.info(note);
+			if (logger.isInfoEnabled()) {
+				logger.info(note);
+			}
 		} catch (SQLException e) {
 			logger.error("Error adding note to Record Grouping Log", e);
 		}
