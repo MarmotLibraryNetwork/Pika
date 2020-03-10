@@ -188,14 +188,10 @@ public class FormatDetermination {
 
 	void loadPrintFormatFromBib(RecordIdentifier identifier, Record record) {
 		LinkedHashSet<String> printFormats = getFormatsFromBib(record, identifier);
-
-		HashSet<String> translatedFormats          = translateCollection("format", printFormats, identifier.toString());
-		HashSet<String> translatedFormatCategories = translateCollection("format_category", printFormats, identifier.toString());
-		if (translatedFormats.size() == 0){
+		if (printFormats.size() == 0){
 			logger.warn("Did not find a format for " + identifier + " using standard format method " + printFormats.toString());
 		}
-		rawFormats.addAll(translatedFormats);
-		rawFormatCategories.addAll(translatedFormatCategories);
+		rawFormats.addAll(printFormats);
 	}
 
 	private void loadPrintFormatFromMatType(RecordIdentifier identifier, Record record) {

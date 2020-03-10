@@ -31,6 +31,7 @@ class RecordGroupingProcessor {
 	private PreparedStatement updateDateUpdatedForGroupedWorkStmt;
 	private PreparedStatement addPrimaryIdentifierForWorkStmt;
 	private PreparedStatement removePrimaryIdentifiersForMergedWorkStmt;
+	private PreparedStatement loadExistingGroupedWorksStmt;
 
 	private int numRecordsProcessed  = 0;
 	private int numGroupedWorksAdded = 0;
@@ -79,19 +80,20 @@ class RecordGroupingProcessor {
 		loadTranslationMaps(serverName);
 	}
 
-	void setupDatabaseStatements(Connection dbConnection) {
+	void setupDatabaseStatements(Connection pikaConn) {
 		try {
-			insertGroupedWorkStmt                     = dbConnection.prepareStatement("INSERT INTO " + RecordGrouperMain.groupedWorkTableName + " (full_title, author, grouping_category, grouping_language, permanent_id, date_updated) VALUES (?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE date_updated = VALUES(date_updated), id=LAST_INSERT_ID(id) ", Statement.RETURN_GENERATED_KEYS);
-			insertHistoricalGroupedWorkStmt           = dbConnection.prepareStatement("INSERT INTO grouped_work_historical (permanent_id, grouping_title, grouping_author, grouping_category, grouping_language, grouping_version) VALUES (?, ?, ?, ?, ?, ?) ");
-			checkHistoricalGroupedWorkStmt            = dbConnection.prepareStatement("SELECT COUNT(*) FROM grouped_work_historical WHERE permanent_id = ? AND grouping_title = ? AND grouping_author = ? AND grouping_category = ? AND grouping_version = ?", ResultSet.CONCUR_READ_ONLY);
-			updateDateUpdatedForGroupedWorkStmt       = dbConnection.prepareStatement("UPDATE grouped_work SET date_updated = ? WHERE id = ?");
-			addPrimaryIdentifierForWorkStmt           = dbConnection.prepareStatement("INSERT INTO grouped_work_primary_identifiers (grouped_work_id, type, identifier) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE id=LAST_INSERT_ID(id), grouped_work_id = VALUES(grouped_work_id)", Statement.RETURN_GENERATED_KEYS);
-			removePrimaryIdentifiersForMergedWorkStmt = dbConnection.prepareStatement("DELETE FROM grouped_work_primary_identifiers WHERE grouped_work_id = ?");
-			groupedWorkForIdentifierStmt              = dbConnection.prepareStatement("SELECT grouped_work.id, grouped_work.permanent_id FROM grouped_work INNER JOIN grouped_work_primary_identifiers ON grouped_work_primary_identifiers.grouped_work_id = grouped_work.id where type = ? AND identifier = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			insertGroupedWorkStmt                     = pikaConn.prepareStatement("INSERT INTO " + RecordGrouperMain.groupedWorkTableName + " (full_title, author, grouping_category, grouping_language, permanent_id, date_updated) VALUES (?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE date_updated = VALUES(date_updated), id=LAST_INSERT_ID(id) ", Statement.RETURN_GENERATED_KEYS);
+			insertHistoricalGroupedWorkStmt           = pikaConn.prepareStatement("INSERT INTO grouped_work_historical (permanent_id, grouping_title, grouping_author, grouping_category, grouping_language, grouping_version) VALUES (?, ?, ?, ?, ?, ?) ");
+			checkHistoricalGroupedWorkStmt            = pikaConn.prepareStatement("SELECT COUNT(*) FROM grouped_work_historical WHERE permanent_id = ? AND grouping_title = ? AND grouping_author = ? AND grouping_category = ? AND grouping_version = ?", ResultSet.CONCUR_READ_ONLY);
+			updateDateUpdatedForGroupedWorkStmt       = pikaConn.prepareStatement("UPDATE grouped_work SET date_updated = ? WHERE id = ?");
+			addPrimaryIdentifierForWorkStmt           = pikaConn.prepareStatement("INSERT INTO grouped_work_primary_identifiers (grouped_work_id, type, identifier) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE id=LAST_INSERT_ID(id), grouped_work_id = VALUES(grouped_work_id)", Statement.RETURN_GENERATED_KEYS);
+			removePrimaryIdentifiersForMergedWorkStmt = pikaConn.prepareStatement("DELETE FROM grouped_work_primary_identifiers WHERE grouped_work_id = ?");
+			groupedWorkForIdentifierStmt              = pikaConn.prepareStatement("SELECT grouped_work.id, grouped_work.permanent_id FROM grouped_work INNER JOIN grouped_work_primary_identifiers ON grouped_work_primary_identifiers.grouped_work_id = grouped_work.id where type = ? AND identifier = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			loadExistingGroupedWorksStmt              = pikaConn.prepareStatement("SELECT id FROM grouped_work WHERE permanent_id = ?");
 
 			if (!fullRegrouping) {
 				try (
-						PreparedStatement loadExistingGroupedWorksStmt = dbConnection.prepareStatement("SELECT id, permanent_id FROM grouped_work");
+						PreparedStatement loadExistingGroupedWorksStmt = pikaConn.prepareStatement("SELECT id, permanent_id FROM grouped_work");
 						ResultSet loadExistingGroupedWorksRS = loadExistingGroupedWorksStmt.executeQuery()
 				) {
 					while (loadExistingGroupedWorksRS.next()) {
@@ -103,7 +105,7 @@ class RecordGroupingProcessor {
 			}
 
 			try (
-					PreparedStatement loadMergedWorksStmt = dbConnection.prepareStatement("SELECT * FROM merged_grouped_works");
+					PreparedStatement loadMergedWorksStmt = pikaConn.prepareStatement("SELECT * FROM merged_grouped_works");
 					ResultSet mergedWorksRS = loadMergedWorksStmt.executeQuery()
 			) {
 				while (mergedWorksRS.next()) {
@@ -114,7 +116,7 @@ class RecordGroupingProcessor {
 			}
 
 			try (
-					PreparedStatement recordsToNotGroupStmt = dbConnection.prepareStatement("SELECT * FROM nongrouped_records");
+					PreparedStatement recordsToNotGroupStmt = pikaConn.prepareStatement("SELECT * FROM nongrouped_records");
 					ResultSet nonGroupedRecordsRS = recordsToNotGroupStmt.executeQuery()
 			) {
 				while (nonGroupedRecordsRS.next()) {
@@ -364,6 +366,20 @@ class RecordGroupingProcessor {
 		return field245;
 	}
 
+	private long getExistingWork(String permanentId){
+		try {
+			loadExistingGroupedWorksStmt.setString(1, permanentId);
+			ResultSet loadExistingGroupedWorksRS = loadExistingGroupedWorksStmt.executeQuery();
+			loadExistingGroupedWorksRS.next();
+			long groupedWorkId = loadExistingGroupedWorksRS.getLong(1);
+			return groupedWorkId;
+
+		} catch (SQLException e) {
+			logger.warn("Error looking up work id from permanent id: " + permanentId, e);
+		}
+		return 0L;
+	}
+
 	private boolean workNotInHistoricalTable(GroupedWorkBase groupedWork){
 		try {
 			checkHistoricalGroupedWorkStmt.setString( 1, groupedWork.getPermanentId());
@@ -410,12 +426,12 @@ class RecordGroupingProcessor {
 	 * @param groupedWork       Information about the work itself
 	 */
 	void addGroupedWorkToDatabase(RecordIdentifier primaryIdentifier, GroupedWorkBase groupedWork, boolean primaryDataChanged) {
-//		if (workNotInHistoricalTable(groupedWork)){
-//			// Add grouping factors to historical table in order to track permanent Ids across grouping versions
-//			// Do this before unmerging or merging because we want to track the original factors and id
-//
-//			addToHistoricalTable(groupedWork);
-//		}
+		if (workNotInHistoricalTable(groupedWork)){
+			// Add grouping factors to historical table in order to track permanent Ids across grouping versions
+			// Do this before unmerging or merging because we want to track the original factors and id
+
+			addToHistoricalTable(groupedWork);
+		}
 		//TODO: undo above
 
 		//Check to see if we need to ungroup this
