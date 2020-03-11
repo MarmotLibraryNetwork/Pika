@@ -454,6 +454,7 @@ public class FormatDetermination {
 				if (printFormats.size() > 1){
 					if (logger.isInfoEnabled()) {
 						logger.info("Found more than 1 format for " + recordInfo.getFullIdentifier() + " looking at just the leader: " +  Util.getCsvSeparatedString(printFormats));
+						// TODO: add getCsvSeparatedString to this class
 					}
 				}
 			} else if (printFormats.size() > 1){

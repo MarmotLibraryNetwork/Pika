@@ -23,11 +23,10 @@ import java.util.*;
  */
 abstract class IIIRecordProcessor extends IlsRecordProcessor{
 	private HashMap<String, ArrayList<OrderInfo>> orderInfoFromExport = new HashMap<>();
-//	private HashMap<String, DueDateInfo> dueDateInfoFromExport = new HashMap<>();
-	private boolean loanRuleDataLoaded = false;
-	private HashMap<Long, LoanRule> loanRules = new HashMap<>();
-	private ArrayList<LoanRuleDeterminer> loanRuleDeterminers = new ArrayList<>();
-	private String exportPath;
+	private boolean                               loanRuleDataLoaded  = false;
+	private HashMap<Long, LoanRule>               loanRules           = new HashMap<>();
+	private ArrayList<LoanRuleDeterminer>         loanRuleDeterminers = new ArrayList<>();
+	private String                                exportPath;
 
 	// A list of status codes that are eligible to show items as checked out.
 	//TODO: These should be added to indexing profile
@@ -454,4 +453,66 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 			recordInfo.addItem(itemInfo);
 		}
 	}
+
+	void loadLanguageDetails(GroupedWorkSolr groupedWork, Record record, HashSet<RecordInfo> ilsRecords, String identifier) {
+		// Note: ilsRecords are alternate manifestations for the same record, like for an order record or ILS econtent items
+
+		String          languageFields       = "008[35-37]";
+		Set<String>     languages            = MarcUtil.getFieldList(record, languageFields);
+		HashSet<String> translatedLanguages  = new HashSet<>();
+		boolean         isFirstLanguage      = true;
+		String          primaryLanguage      = null;
+		long            languageBoost        = 1L;
+		long            languageBoostSpanish = 1L;
+		if (languages.size() == 0 && sierraRecordFixedFieldsTag != null && !sierraRecordFixedFieldsTag.isEmpty() && sierraFixedFieldLanguageSubField != ' '){
+			languages = MarcUtil.getFieldList(record, sierraRecordFixedFieldsTag + sierraFixedFieldLanguageSubField);
+		}
+		for (String language : languages) {
+			String translatedLanguage = indexer.translateSystemValue("language", language, identifier);
+			translatedLanguages.add(translatedLanguage);
+			if (isFirstLanguage) {
+				primaryLanguage = translatedLanguage;
+			}
+			isFirstLanguage = false;
+
+			String languageBoostStr = indexer.translateSystemValue("language_boost", language, identifier);
+			if (languageBoostStr != null) {
+				long languageBoostVal = Long.parseLong(languageBoostStr);
+				if (languageBoostVal > languageBoost){
+					languageBoost = languageBoostVal;
+				}
+			}
+			String languageBoostEs = indexer.translateSystemValue("language_boost_es", language, identifier);
+			if (languageBoostEs != null) {
+				long languageBoostVal = Long.parseLong(languageBoostEs);
+				if (languageBoostVal > languageBoostSpanish){
+					languageBoostSpanish = languageBoostVal;
+				}
+			}
+		}
+
+		String      translationFields = "041b:041d:041h:041j";
+		Set<String> translations      = MarcUtil.getFieldList(record, translationFields);
+		HashSet<String> translatedTranslations = new HashSet<>();
+		for (String translation : translations) {
+			String translatedLanguage = indexer.translateSystemValue("language", translation, identifier);
+			translatedTranslations.add(translatedLanguage);
+		}
+
+		//Check to see if we have Unknown plus a valid value
+		if (translatedLanguages.size() > 1 && translatedLanguages.contains("Unknown")){
+			languages.remove("Unknown");
+		}
+
+		for (RecordInfo ilsRecord : ilsRecords) {
+			if (primaryLanguage != null) {
+				ilsRecord.setPrimaryLanguage(primaryLanguage);
+			}
+			ilsRecord.setLanguages(translatedLanguages);
+			ilsRecord.setLanguageBoost(languageBoost);
+			ilsRecord.setLanguageBoostSpanish(languageBoostSpanish);
+			ilsRecord.setTranslations(translatedTranslations);
+		}
+	}
+
 }

@@ -745,7 +745,7 @@ abstract class MarcRecordProcessor {
 			publicationDates.addAll(MarcUtil.getFieldList(record, "260c"));
 		}
 		//Try to get from 008, but only need to do if we don't have anything else
-		if (publicationDates.size() == 0) {
+		if (/**/publicationDates.size() == 0) {
 			publicationDates.add(MarcUtil.getFirstFieldVal(record, "008[7-10]"));
 		}
 
@@ -775,13 +775,13 @@ abstract class MarcRecordProcessor {
 	void loadLanguageDetails(GroupedWorkSolr groupedWork, Record record, HashSet<RecordInfo> ilsRecords, String identifier) {
 		// Note: ilsRecords are alternate manifestations for the same record, like for an order record or ILS econtent items
 
-		String languageFields = "008[35-37]";
-		Set<String>     languages           = MarcUtil.getFieldList(record, languageFields);
-		HashSet<String> translatedLanguages = new HashSet<>();
-		boolean         isFirstLanguage     = true;
-		String primaryLanguage = null;
-		Long            languageBoost        = 1L;
-		Long            languageBoostSpanish = 1L;
+		String          languageFields       = "008[35-37]";
+		Set<String>     languages            = MarcUtil.getFieldList(record, languageFields);
+		HashSet<String> translatedLanguages  = new HashSet<>();
+		boolean         isFirstLanguage      = true;
+		String          primaryLanguage      = null;
+		long            languageBoost        = 1L;
+		long            languageBoostSpanish = 1L;
 		for (String language : languages) {
 			String translatedLanguage = indexer.translateSystemValue("language", language, identifier);
 			translatedLanguages.add(translatedLanguage);
@@ -792,7 +792,7 @@ abstract class MarcRecordProcessor {
 
 			String languageBoostStr = indexer.translateSystemValue("language_boost", language, identifier);
 			if (languageBoostStr != null) {
-				Long languageBoostVal = Long.parseLong(languageBoostStr);
+				long languageBoostVal = Long.parseLong(languageBoostStr);
 				if (languageBoostVal > languageBoost){
 					languageBoost = languageBoostVal;
 				}

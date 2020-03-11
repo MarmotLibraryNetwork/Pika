@@ -75,12 +75,6 @@ public class GroupedWorkIndexer {
 		this.logger                           = logger;
 		this.pikaConn                         = pikaConn;
 		this.fullReindex                      = fullReindex;
-//		solrPort                              = PikaConfigIni.getIniValue("Reindex", "solrPort");
-//		availableAtLocationBoostValue         = PikaConfigIni.getIntIniValue("Reindex", "availableAtLocationBoostValue");
-//		ownedByLocationBoostValue             = PikaConfigIni.getIntIniValue("Reindex", "ownedByLocationBoostValue");
-//		giveOnOrderItemsTheirOwnShelfLocation = PikaConfigIni.getBooleanIniValue("Reindex", "giveOnOrderItemsTheirOwnShelfLocation");
-//		baseLogPath                           = PikaConfigIni.getIniValue("Site", "baseLogPath");
-//		maxWorksToProcess                     = PikaConfigIni.getIntIniValue("Reindex", "maxWorksToProcess");
 		if (availableAtLocationBoostValue == null){
 			availableAtLocationBoostValue = 1; // No boost
 		}
@@ -170,78 +164,78 @@ public class GroupedWorkIndexer {
 		//Initialize processors based on our indexing profiles and the primary identifiers for the records.
 		try (
 			PreparedStatement uniqueIdentifiersStmt = pikaConn.prepareStatement("SELECT DISTINCT type FROM grouped_work_primary_identifiers");
-			PreparedStatement getIndexingProfile    = pikaConn.prepareStatement("SELECT * FROM indexing_profiles WHERE name = ?");
+			PreparedStatement getIndexingProfile    = pikaConn.prepareStatement("SELECT * FROM indexing_profiles WHERE sourceName = ?");
 			ResultSet uniqueIdentifiersRS           = uniqueIdentifiersStmt.executeQuery();
 		){
 			while (uniqueIdentifiersRS.next()){
-				String curIdentifier = uniqueIdentifiersRS.getString("type");
-				getIndexingProfile.setString(1, curIdentifier);
+				String sourceName = uniqueIdentifiersRS.getString("type");
+				getIndexingProfile.setString(1, sourceName);
 				try (ResultSet indexingProfileRS = getIndexingProfile.executeQuery()) {
 					if (indexingProfileRS.next()) {
 						String ilsIndexingClassString = indexingProfileRS.getString("indexingClass");
 						switch (ilsIndexingClassString) {
 							case "Marmot":
-								ilsRecordProcessors.put(curIdentifier, new MarmotRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
+								ilsRecordProcessors.put(sourceName, new MarmotRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
 								break;
 	//						case "Nashville":
-	//							ilsRecordProcessors.put(curIdentifier, new NashvilleRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
+	//							ilsRecordProcessors.put(sourceName, new NashvilleRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
 	//							break;
 	//						case "NashvilleSchools":
-	//							ilsRecordProcessors.put(curIdentifier, new NashvilleSchoolsRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
+	//							ilsRecordProcessors.put(sourceName, new NashvilleSchoolsRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
 	//							break;
 							case "WCPL":
-								ilsRecordProcessors.put(curIdentifier, new WCPLRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
+								ilsRecordProcessors.put(sourceName, new WCPLRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
 								break;
 							case "Anythink":
-								ilsRecordProcessors.put(curIdentifier, new AnythinkRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
+								ilsRecordProcessors.put(sourceName, new AnythinkRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
 								break;
 //							case "Aspencat":
-//								ilsRecordProcessors.put(curIdentifier, new AspencatRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
+//								ilsRecordProcessors.put(sourceName, new AspencatRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
 //								break;
 							case "Flatirons":
-								ilsRecordProcessors.put(curIdentifier, new FlatironsRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
+								ilsRecordProcessors.put(sourceName, new FlatironsRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
 								break;
 							case "Addison":
-								ilsRecordProcessors.put(curIdentifier, new AddisonRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
+								ilsRecordProcessors.put(sourceName, new AddisonRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
 								break;
 							case "Aurora":
-								ilsRecordProcessors.put(curIdentifier, new AuroraRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
+								ilsRecordProcessors.put(sourceName, new AuroraRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
 								break;
 //							case "Arlington":
-//								ilsRecordProcessors.put(curIdentifier, new ArlingtonRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
+//								ilsRecordProcessors.put(sourceName, new ArlingtonRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
 //								break;
 //							case "CarlX": // Currently the Nashville Processor
-//								ilsRecordProcessors.put(curIdentifier, new CarlXRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
+//								ilsRecordProcessors.put(sourceName, new CarlXRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
 //								break;
 							case "SantaFe":
-								ilsRecordProcessors.put(curIdentifier, new SantaFeRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
+								ilsRecordProcessors.put(sourceName, new SantaFeRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
 								break;
 							case "Sacramento":
-								ilsRecordProcessors.put(curIdentifier, new SacramentoRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
+								ilsRecordProcessors.put(sourceName, new SacramentoRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
 								break;
 							case "AACPL":
-								ilsRecordProcessors.put(curIdentifier, new AACPLRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
+								ilsRecordProcessors.put(sourceName, new AACPLRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
 								break;
 							case "Lion":
-								ilsRecordProcessors.put(curIdentifier, new LionRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
+								ilsRecordProcessors.put(sourceName, new LionRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
 								break;
 							case "SideLoadedEContent":
-								ilsRecordProcessors.put(curIdentifier, new SideLoadedEContentProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
+								ilsRecordProcessors.put(sourceName, new SideLoadedEContentProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
 								break;
 							case "Hoopla":
-								ilsRecordProcessors.put(curIdentifier, new HooplaProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
+								ilsRecordProcessors.put(sourceName, new HooplaProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
 								break;
 							default:
 								logger.error("Unknown indexing class " + ilsIndexingClassString);
 								okToIndex = false;
 								return;
 						}
-					} else if (curIdentifier.equalsIgnoreCase("overdrive")) {
+					} else if (sourceName.equalsIgnoreCase("overdrive")) {
 						//Overdrive doesn't have an indexing profile.
 						//Only load processor if there are overdrive titles
 						overDriveProcessor = new OverDriveProcessor(this, econtentConn, logger, fullReindex);
 					} else if (fullReindex){
-						logger.error("Could not find indexing profile for type " + curIdentifier);
+						logger.error("Could not find indexing profile for type " + sourceName);
 					}
 				}
 			}
@@ -263,8 +257,9 @@ public class GroupedWorkIndexer {
 			logger.error("Could not prepare statements to load local enrichment", e);
 		}
 
-		loadLexileData();
-		loadAcceleratedReaderData();
+//		loadLexileData();
+//		loadAcceleratedReaderData();
+		//TODO: temp, don't commit!
 
 		if (fullReindex){
 			clearIndex();
@@ -893,7 +888,7 @@ public class GroupedWorkIndexer {
 	}
 
 	Long processGroupedWorks(HashMap<Scope, ArrayList<SiteMapEntry>> siteMapsByScope, HashSet<Long> uniqueGroupedWorks) {
-		Long numWorksProcessed = 0L;
+		long numWorksProcessed = 0L;
 		try {
 			PreparedStatement getAllGroupedWorks;
 			PreparedStatement getNumWorksToIndex;
@@ -912,12 +907,12 @@ public class GroupedWorkIndexer {
 			//Get the number of works we will be processing
 			ResultSet numWorksToIndexRS = getNumWorksToIndex.executeQuery();
 			numWorksToIndexRS.next();
-			Long numWorksToIndex = numWorksToIndexRS.getLong(1);
+			long numWorksToIndex = numWorksToIndexRS.getLong(1);
 			GroupedReindexMain.addNoteToReindexLog("Starting to process " + numWorksToIndex + " grouped works");
 
 			ResultSet groupedWorks = getAllGroupedWorks.executeQuery();
 			while (groupedWorks.next()) {
-				Long   id                = groupedWorks.getLong("id");
+				long   id                = groupedWorks.getLong("id");
 				String permanentId       = groupedWorks.getString("permanent_id");
 				String grouping_category = groupedWorks.getString("grouping_category");
 				Long   lastUpdated       = groupedWorks.getLong("date_updated");
@@ -959,6 +954,73 @@ public class GroupedWorkIndexer {
 		return numWorksProcessed;
 	}
 
+	Long processGroupedWorks(String indexingProfileToProcess) {
+		long numWorksProcessed = 0L;
+		try {
+			PreparedStatement getAllGroupedWorks;
+			PreparedStatement getNumWorksToIndex;
+			PreparedStatement setLastUpdatedTime = pikaConn.prepareStatement("UPDATE grouped_work SET date_updated = ? WHERE id = ?");
+
+			//Load all grouped works that have records tied to indexing profile
+
+			getAllGroupedWorks = pikaConn.prepareStatement("SELECT * FROM grouped_work WHERE id IN (SELECT grouped_work_id FROM grouped_work_primary_identifiers WHERE type = \"" + indexingProfileToProcess.toLowerCase() + "\")", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			getNumWorksToIndex = pikaConn.prepareStatement("SELECT COUNT(*) FROM grouped_work WHERE id IN (SELECT grouped_work_id FROM grouped_work_primary_identifiers WHERE type = \"" + indexingProfileToProcess.toLowerCase() + "\")", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+
+			//Get the number of works we will be processing
+			ResultSet numWorksToIndexRS = getNumWorksToIndex.executeQuery();
+			numWorksToIndexRS.next();
+			long numWorksToIndex = numWorksToIndexRS.getLong(1);
+			GroupedReindexMain.addNoteToReindexLog("Starting to process " + numWorksToIndex + " grouped works for profile " + indexingProfileToProcess);
+
+			ResultSet groupedWorks = getAllGroupedWorks.executeQuery();
+			while (groupedWorks.next()) {
+				long   id                = groupedWorks.getLong("id");
+				String permanentId       = groupedWorks.getString("permanent_id");
+				String grouping_category = groupedWorks.getString("grouping_category");
+				Long   lastUpdated       = groupedWorks.getLong("date_updated");
+				if (groupedWorks.wasNull()){
+					lastUpdated = null;
+				}
+				processGroupedWork(id, permanentId, grouping_category);
+
+				numWorksProcessed++;
+				if ((numWorksProcessed % 5000 == 0)){
+					//Testing shows that regular commits do seem to improve performance.
+					//However, we can't do it too often or we get errors with too many searchers warming.
+					//This is happening now with the auto commit settings in solrconfig.xml
+					/*try {
+						logger.info("Doing a regular commit during full indexing");
+						updateServer.commit(false, false, true);
+					}catch (Exception e){
+						logger.warn("Error committing changes", e);
+					}*/
+					GroupedReindexMain.addNoteToReindexLog("Processed " + numWorksProcessed + " grouped works processed.");
+					GroupedReindexMain.updateNumWorksProcessed(numWorksProcessed);
+				}
+				if (lastUpdated == null){
+					setLastUpdatedTime.setLong(1, indexStartTime - 1); //Set just before the index started so we don't index multiple times
+					setLastUpdatedTime.setLong(2, id);
+					setLastUpdatedTime.executeUpdate();
+				}
+			}
+		} catch (SQLException e) {
+			logger.error("Unexpected SQL error", e);
+		}
+		if (logger.isInfoEnabled()) {
+			logger.info("Finished processing grouped works.  Processed a total of " + numWorksProcessed + " grouped works");
+		}
+		return numWorksProcessed;
+	}
+
+	/**
+	 *  Process a work during the full Reindexing process
+	 * @param id
+	 * @param permanentId
+	 * @param grouping_category
+	 * @param siteMapsByScope
+	 * @param uniqueGroupedWorks
+	 * @throws SQLException
+	 */
 	void processGroupedWork(Long id, String permanentId, String grouping_category, HashMap<Scope, ArrayList<SiteMapEntry>> siteMapsByScope, HashSet<Long> uniqueGroupedWorks) throws SQLException {
 		//Create a solr record for the grouped work
 		GroupedWorkSolr groupedWork = new GroupedWorkSolr(this, logger);
@@ -1079,6 +1141,105 @@ public class GroupedWorkIndexer {
 				uniqueGroupedWorks.add(id);
 		}
 
+	}
+
+	void processGroupedWork(Long id, String permanentId, String grouping_category) throws SQLException {
+		//Create a solr record for the grouped work
+		GroupedWorkSolr groupedWork = new GroupedWorkSolr(this, logger);
+		groupedWork.setId(permanentId);
+		groupedWork.setGroupingCategory(grouping_category);
+
+		getGroupedWorkPrimaryIdentifiers.setLong(1, id);
+		int numPrimaryIdentifiers;
+		try (ResultSet groupedWorkPrimaryIdentifiers = getGroupedWorkPrimaryIdentifiers.executeQuery()) {
+			numPrimaryIdentifiers = 0;
+			while (groupedWorkPrimaryIdentifiers.next()) {
+				String type       = groupedWorkPrimaryIdentifiers.getString("type");
+				String identifier = groupedWorkPrimaryIdentifiers.getString("identifier");
+
+				//Make a copy of the grouped work so we can revert if we don't add any records
+				GroupedWorkSolr originalWork;
+				try {
+					originalWork = groupedWork.clone();
+				} catch (CloneNotSupportedException cne) {
+					logger.error("Could not clone grouped work", cne);
+					return;
+				}
+				//Figure out how many records we had originally
+				int numRecords = groupedWork.getNumRecords();
+				if (logger.isDebugEnabled()) {
+					logger.debug("Processing " + type + ":" + identifier + " work currently has " + numRecords + " records");
+				}
+
+				//This does the bulk of the work building fields for the solr document
+				updateGroupedWorkForPrimaryIdentifier(groupedWork, type, identifier);
+
+				//If we didn't add any records to the work (because they are all suppressed) revert to the original
+				if (groupedWork.getNumRecords() == numRecords) {
+					//No change in the number of records, revert to the previous
+					if (logger.isDebugEnabled()) {
+						logger.debug("Record " + identifier + " did not contribute any records to the work, reverting to previous state " + groupedWork.getNumRecords());
+					}
+					groupedWork = originalWork;
+				} else {
+					if (logger.isDebugEnabled()) {
+						logger.debug("Record " + identifier + " added to work " + permanentId);
+					}
+					numPrimaryIdentifiers++;
+				}
+			}
+		}
+
+		if (numPrimaryIdentifiers > 0) {
+			//Add a grouped work to any scopes that are relevant
+			groupedWork.updateIndexingStats(indexingStats);
+
+			//Update the grouped record based on data for each work
+			//getGroupedWorkIdentifiers.setLong(1, id);
+			/*ResultSet groupedWorkIdentifiers = getGroupedWorkIdentifiers.executeQuery();
+			//This just adds isbns, issns, upcs, and oclc numbers to the index
+			while (groupedWorkIdentifiers.next()) {
+				String type = groupedWorkIdentifiers.getString("type");
+				String identifier = groupedWorkIdentifiers.getString("identifier");
+				updateGroupedWorkForSecondaryIdentifier(groupedWork, type, identifier);
+			}
+			groupedWorkIdentifiers.close();*/
+
+			//Load local (Pika) enrichment for the work
+			loadLocalEnrichment(groupedWork);
+			//Load lexile data for the work
+			loadLexileDataForWork(groupedWork);
+			//Load accelerated reader data for the work
+			loadAcceleratedDataForWork(groupedWork);
+			//Load Novelist data
+			loadNovelistInfo(groupedWork);
+
+			//Write the record to Solr.
+			try {
+				SolrInputDocument inputDocument = groupedWork.getSolrDocument(availableAtLocationBoostValue, ownedByLocationBoostValue);
+				if (logger.isDebugEnabled()) {
+					logger.debug("Adding solr document for work " + groupedWork.getId());
+				}
+				updateServer.add(inputDocument);
+				//logger.debug("Updated solr \r\n" + inputDocument.toString());
+
+			} catch (Exception e) {
+				logger.error("Error adding grouped work to solr " + groupedWork.getId(), e);
+			}
+		}else{
+			//Log that this record did not have primary identifiers after
+			if (logger.isDebugEnabled()) {
+				logger.debug("Grouped work " + permanentId + " did not have any primary identifiers for it, suppressing");
+			}
+			if (!fullReindex){
+				try {
+					updateServer.deleteById(permanentId);
+				}catch (Exception e){
+					logger.error("Error deleting suppressed record", e);
+				}
+			}
+
+		}
 	}
 
 	private long lexileDataMatches = 0;
