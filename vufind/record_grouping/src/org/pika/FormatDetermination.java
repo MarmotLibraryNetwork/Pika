@@ -104,8 +104,6 @@ public class FormatDetermination {
 	 * Determine Record Format(s)
 	 */
 	public void loadPrintFormatInformation(RecordIdentifier identifier, Record record) {
-		//We should already have formats based on the items
-
 		switch (formatSource) {
 			case "specified":
 				if (!specifiedFormat.isEmpty()) {
@@ -138,7 +136,8 @@ public class FormatDetermination {
 			LinkedHashSet<String> printFormats = getFormatsFromBib(record, identifier);
 			if (this.translationMaps.size() > 0){
 				String firstFormat    = printFormats.iterator().next();
-				rawFormats.add(translateValue("format", firstFormat, identifier.toString()));
+				rawFormats.add(firstFormat);
+//				rawFormats.add(translateValue("format", firstFormat, identifier.toString()));
 				rawFormatCategories.add(translateValue("format_category", firstFormat, identifier.toString()));
 			} else {
 				//Convert formats from print to eContent version

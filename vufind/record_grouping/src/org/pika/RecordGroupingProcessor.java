@@ -44,7 +44,7 @@ class RecordGroupingProcessor {
 
 	//TODO: Determine if we can avoid this by simply using the ON DUPLICATE KEY UPDATE FUNCTIONALITY
 	//Would also want to mark merged works as changed (at least once) to make sure they get reindexed.
-	private HashMap<String, Long> existingGroupedWorks = new HashMap<>();
+//	private HashMap<String, Long> existingGroupedWorks = new HashMap<>();
 
 	//A list of grouped works that have been manually merged.
 	private HashMap<String, String> mergedGroupedWorks = new HashMap<>();
@@ -91,18 +91,18 @@ class RecordGroupingProcessor {
 			groupedWorkForIdentifierStmt              = pikaConn.prepareStatement("SELECT grouped_work.id, grouped_work.permanent_id FROM grouped_work INNER JOIN grouped_work_primary_identifiers ON grouped_work_primary_identifiers.grouped_work_id = grouped_work.id where type = ? AND identifier = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			loadExistingGroupedWorksStmt              = pikaConn.prepareStatement("SELECT id FROM grouped_work WHERE permanent_id = ?");
 
-			if (!fullRegrouping) {
-				try (
-						PreparedStatement loadExistingGroupedWorksStmt = pikaConn.prepareStatement("SELECT id, permanent_id FROM grouped_work");
-						ResultSet loadExistingGroupedWorksRS = loadExistingGroupedWorksStmt.executeQuery()
-				) {
-					while (loadExistingGroupedWorksRS.next()) {
-						existingGroupedWorks.put(loadExistingGroupedWorksRS.getString("permanent_id"), loadExistingGroupedWorksRS.getLong("id"));
-					}
-				} catch (Exception e) {
-					logger.error("Error loading all existing Works", e);
-				}
-			}
+//			if (!fullRegrouping) {
+//				try (
+//						PreparedStatement loadExistingGroupedWorksStmt = pikaConn.prepareStatement("SELECT id, permanent_id FROM grouped_work");
+//						ResultSet loadExistingGroupedWorksRS = loadExistingGroupedWorksStmt.executeQuery()
+//				) {
+//					while (loadExistingGroupedWorksRS.next()) {
+//						existingGroupedWorks.put(loadExistingGroupedWorksRS.getString("permanent_id"), loadExistingGroupedWorksRS.getLong("id"));
+//					}
+//				} catch (Exception e) {
+//					logger.error("Error loading all existing Works", e);
+//				}
+//			}
 
 			try (
 					PreparedStatement loadMergedWorksStmt = pikaConn.prepareStatement("SELECT * FROM merged_grouped_works");
@@ -252,25 +252,24 @@ class RecordGroupingProcessor {
 	}
 
 	protected String setGroupingCategoryForWork(RecordIdentifier identifier, Record marcRecord, IndexingProfile profile, GroupedWorkBase workForTitle) {
-		String groupingFormat;
+		String groupingCategory;
 		FormatDetermination formatDetermination = new FormatDetermination(profile, translationMaps, logger);
 		formatDetermination.loadPrintFormatInformation(identifier, marcRecord);
 		LinkedHashSet<String> groupingFormats = translationMaps.get("formatsToGroupingCategory").translateCollection(formatDetermination.rawFormats, identifier.toString());
 		groupingFormats = translationMaps.get("category").translateCollection(groupingFormats, identifier.toString());
 		if (groupingFormats.size() > 1){
 			//TODO: check if translating collection values reduced the category down to one
-			groupingFormat = "book"; // fall back option for now
+			groupingCategory = "book"; // fall back option for now
 			logger.warn("More than one grouping category for " + identifier);
 		} else if (groupingFormats.size() == 0){
 			logger.warn("No grouping category for " + identifier);
-			groupingFormat = "book"; // fall back option for now
+			groupingCategory = "book"; // fall back option for now
 		} else {
-			groupingFormat = groupingFormats.iterator().next(); //First Format
+			groupingCategory = groupingFormats.iterator().next(); //First Format
 		}
 
-
-		workForTitle.setGroupingCategory(groupingFormat);
-		return groupingFormat;
+		workForTitle.setGroupingCategory(groupingCategory);
+		return groupingCategory;
 	}
 
 	private void setWorkAuthorBasedOnMarcRecord(Record marcRecord, GroupedWorkBase workForTitle, DataField field245, String groupingFormat) {
@@ -469,9 +468,9 @@ class RecordGroupingProcessor {
 		numRecordsProcessed++;
 		long groupedWorkId = -1;
 		try {
-			if (existingGroupedWorks.containsKey(groupedWorkPermanentId)) {
+			groupedWorkId = getExistingWork(groupedWorkPermanentId); // returns the grouped work id or 0
+			if (groupedWorkId > 0) {
 				//There is an existing grouped record
-				groupedWorkId = existingGroupedWorks.get(groupedWorkPermanentId);
 
 				//Mark that the work has been updated
 				//Only mark it as updated if the data for the primary identifier has changed
@@ -503,7 +502,7 @@ class RecordGroupingProcessor {
 				numGroupedWorksAdded++;
 
 				//Add to the existing works so we can optimize performance later
-				existingGroupedWorks.put(groupedWorkPermanentId, groupedWorkId);
+//				existingGroupedWorks.put(groupedWorkPermanentId, groupedWorkId);
 				updatedAndInsertedWorksThisRun.add(groupedWorkId);
 			}
 
@@ -524,9 +523,9 @@ class RecordGroupingProcessor {
 		logger.debug("Overriding grouped work " + sourceGroupedWorkPermanentId + " with " + targetGroupedWorkPermanentId);
 
 		//Mark that the original was updated
-		if (existingGroupedWorks.containsKey(sourceGroupedWorkPermanentId)) {
+		long originalGroupedWorkId = getExistingWork(sourceGroupedWorkPermanentId);
+		if (originalGroupedWorkId > 0) {
 			//There is an existing grouped record
-			long originalGroupedWorkId = existingGroupedWorks.get(sourceGroupedWorkPermanentId);
 
 			//Make sure we mark the original work as updated so it can be removed from the index next time around
 			markWorkUpdated(originalGroupedWorkId);
@@ -966,6 +965,7 @@ class RecordGroupingProcessor {
 		formatsToGroupingCategory.put("photo", "other");
 		formatsToGroupingCategory.put("motionpicture", "movie");
 		formatsToGroupingCategory.put("kit", "other");
+		formatsToGroupingCategory.put("bookclubkit", "other");
 		formatsToGroupingCategory.put("sensorimage", "other");
 		formatsToGroupingCategory.put("sounddisc", "audio");
 		formatsToGroupingCategory.put("soundcassette", "audio");
@@ -977,6 +977,7 @@ class RecordGroupingProcessor {
 		formatsToGroupingCategory.put("video", "movie");
 		formatsToGroupingCategory.put("musicalscore", "book");
 		formatsToGroupingCategory.put("musicrecording", "music");
+		formatsToGroupingCategory.put("musiccd", "music");
 		formatsToGroupingCategory.put("electronic", "other");
 		formatsToGroupingCategory.put("physicalobject", "other");
 		formatsToGroupingCategory.put("manuscript", "book");
@@ -989,6 +990,7 @@ class RecordGroupingProcessor {
 		formatsToGroupingCategory.put("playaway", "audio");
 		formatsToGroupingCategory.put("largeprint", "book");
 		formatsToGroupingCategory.put("blu-ray", "movie");
+		formatsToGroupingCategory.put("4kultrablu-ray", "movie");
 		formatsToGroupingCategory.put("dvd", "movie");
 		formatsToGroupingCategory.put("verticalfile", "other");
 		formatsToGroupingCategory.put("compactdisc", "audio");
@@ -1032,6 +1034,22 @@ class RecordGroupingProcessor {
 		formatsToGroupingCategory.put("econtent", "ebook");
 		formatsToGroupingCategory.put("seedpacket", "other");
 		formatsToGroupingCategory.put("graphicnovel", "comic");
+		formatsToGroupingCategory.put("thesis", "book");
+		formatsToGroupingCategory.put("wonderbook", "other");
+		formatsToGroupingCategory.put("voxbooks", "other");
+		formatsToGroupingCategory.put("playstation", "other");
+		formatsToGroupingCategory.put("playstation3", "other");
+		formatsToGroupingCategory.put("playstation4", "other");
+		formatsToGroupingCategory.put("playstationvita", "other");
+		formatsToGroupingCategory.put("nintendods", "other");
+		formatsToGroupingCategory.put("3ds", "other");
+		formatsToGroupingCategory.put("nintendoswitch", "other");
+		formatsToGroupingCategory.put("wii", "other");
+		formatsToGroupingCategory.put("wiiu", "other");
+		formatsToGroupingCategory.put("xbox360", "other");
+		formatsToGroupingCategory.put("xboxone", "other");
+		formatsToGroupingCategory.put("kinect", "other");
+		formatsToGroupingCategory.put("windowsgame", "other");
 	}
 
 	private static HashMap<String, String> categoryMap = new HashMap<>();

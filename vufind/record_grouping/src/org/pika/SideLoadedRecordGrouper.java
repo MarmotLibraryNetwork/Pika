@@ -4,6 +4,7 @@ import org.apache.log4j.Logger;
 import org.marc4j.marc.Record;
 
 import java.sql.Connection;
+import java.util.LinkedHashSet;
 
 /**
  * Groups records that are not loaded into the ILS.  These are additional records that are processed directly in Pika
@@ -28,13 +29,24 @@ class SideLoadedRecordGrouper extends MarcRecordGrouper {
 	}
 
 	protected String setGroupingCategoryForWork(RecordIdentifier identifier, Record marcRecord, IndexingProfile profile, GroupedWorkBase workForTitle) {
+		String groupingCategory;
 		FormatDetermination formatDetermination = new FormatDetermination(profile, translationMaps, logger);
 		formatDetermination.loadEContentFormatInformation(identifier, marcRecord);
-		String groupingFormat = formatDetermination.rawFormats.iterator().next(); //First Format
-//		groupingFormat = categoryMap.get(formatsToGroupingCategory.get(groupingFormat));
+		LinkedHashSet<String> groupingFormats = translationMaps.get("formatsToGroupingCategory").translateCollection(formatDetermination.rawFormats, identifier.toString());
+		groupingFormats = translationMaps.get("category").translateCollection(groupingFormats, identifier.toString());
+		if (groupingFormats.size() > 1){
+			//TODO: check if translating collection values reduced the category down to one
+			groupingCategory = "book"; // fall back option for now
+			logger.warn("More than one grouping category for " + identifier);
+		} else if (groupingFormats.size() == 0){
+			logger.warn("No grouping category for " + identifier);
+			groupingCategory = "book"; // fall back option for now
+		} else {
+			groupingCategory = groupingFormats.iterator().next(); //First Format
+		}
 
-		workForTitle.setGroupingCategory(groupingFormat);
-		return groupingFormat;
+		workForTitle.setGroupingCategory(groupingCategory);
+		return groupingCategory;
 	}
 
 
