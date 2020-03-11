@@ -1050,6 +1050,7 @@ class RecordGroupingProcessor {
 		formatsToGroupingCategory.put("xboxone", "other");
 		formatsToGroupingCategory.put("kinect", "other");
 		formatsToGroupingCategory.put("windowsgame", "other");
+		formatsToGroupingCategory.put("online materials", "other");
 	}
 
 	private static HashMap<String, String> categoryMap = new HashMap<>();

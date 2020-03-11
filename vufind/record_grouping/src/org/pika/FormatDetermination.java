@@ -49,7 +49,6 @@ public class FormatDetermination {
 
 	//For Record Grouping Category
 	HashSet<String> rawFormats = new HashSet<>();
-	HashSet<String> rawFormatCategories = new HashSet<>();
 
 	FormatDetermination(IndexingProfile indexingProfile, HashMap<String, TranslationMap> translationMaps, Logger logger){
 		this.logger = logger;
@@ -108,7 +107,6 @@ public class FormatDetermination {
 			case "specified":
 				if (!specifiedFormat.isEmpty()) {
 					rawFormats.add(specifiedFormat);
-					rawFormatCategories.add(specifiedFormatCategory);
 				} else {
 					logger.error("Specified Format is not set in indexing profile. Can not use specified format for format determination. Fall back to bib format determination.");
 					loadPrintFormatFromBib(identifier, record);
@@ -131,52 +129,39 @@ public class FormatDetermination {
 	protected void loadEContentFormatInformation(RecordIdentifier identifier, Record record) {
 		if (formatSource.equals("specified") && !specifiedFormat.isEmpty()){
 			rawFormats.add(specifiedFormat);
-			rawFormatCategories.add(specifiedFormatCategory);
 		} else {
 			LinkedHashSet<String> printFormats = getFormatsFromBib(record, identifier);
 			if (this.translationMaps.size() > 0){
+				//TODO: use translation map?
 				String firstFormat    = printFormats.iterator().next();
 				rawFormats.add(firstFormat);
-//				rawFormats.add(translateValue("format", firstFormat, identifier.toString()));
-				rawFormatCategories.add(translateValue("format_category", firstFormat, identifier.toString()));
 			} else {
 				//Convert formats from print to eContent version
 				for (String format : printFormats) {
 					if (format.equalsIgnoreCase("GraphicNovel") || format.equalsIgnoreCase("eComic")) {
 						rawFormats.add("eComic");
-						rawFormatCategories.add("eBook");
 					}else if (format.equalsIgnoreCase("eBook") || format.equalsIgnoreCase("Book") || format.equalsIgnoreCase("LargePrint") || format.equalsIgnoreCase("Manuscript")
 							|| format.equalsIgnoreCase("Thesis") || format.equalsIgnoreCase("Print") || format.equalsIgnoreCase("Microfilm") || format.equalsIgnoreCase("Kit")) {
 						rawFormats.add("eBook");
-						rawFormatCategories.add("eBook");
 					}else if (format.equalsIgnoreCase("Journal") || format.equalsIgnoreCase("Serial")) {
 						rawFormats.add("eMagazine");
-						rawFormatCategories.add("eBook");
 					} else if (format.equalsIgnoreCase("SoundRecording") || format.equalsIgnoreCase("SoundDisc") || format.equalsIgnoreCase("Playaway") || format.equalsIgnoreCase("CDROM")
 							|| format.equalsIgnoreCase("SoundCassette") || format.equalsIgnoreCase("CompactDisc") || format.equalsIgnoreCase("eAudio")) {
 						rawFormats.add("eAudiobook");
-						rawFormatCategories.add("Audio Books");
 					} else if (format.equalsIgnoreCase("MusicRecording")) {
 						rawFormats.add("eMusic");
-						rawFormatCategories.add("Music");
 					} else if (format.equalsIgnoreCase("MusicalScore")) {
 						rawFormats.add("MusicalScore");
-						rawFormatCategories.add("eBook");
 					} else if (format.equalsIgnoreCase("Movies") || format.equalsIgnoreCase("Video") || format.equalsIgnoreCase("DVD") || format.equalsIgnoreCase("VideoDisc")) {
 						rawFormats.add("eVideo");
-						rawFormatCategories.add("Movies");
 					} else if (format.equalsIgnoreCase("Electronic") || format.equalsIgnoreCase("Software")) {
 						rawFormats.add("Online Materials");
-						rawFormatCategories.add("Other");
 					} else if (format.equalsIgnoreCase("Photo")) {
 						rawFormats.add("Photo");
-						rawFormatCategories.add("Other");
 					} else if (format.equalsIgnoreCase("Map")) {
 						rawFormats.add("Map");
-						rawFormatCategories.add("Other");
 					} else if (format.equalsIgnoreCase("Newspaper")) {
 						rawFormats.add("Newspaper");
-						rawFormatCategories.add("eBook");
 					} else {
 						logger.warn("Could not find appropriate eContent format for " + format + " while side loading eContent " + identifier);
 					}
@@ -199,13 +184,10 @@ public class FormatDetermination {
 				String matType = MarcUtil.getFirstFieldVal(record, sierraRecordFixedFieldsTag + materialTypeSubField);
 				if (matType != null) {
 					if (!isMatTypeToIgnore(matType)) {
+						//TODO: use grouping translation map
 						String translatedFormat = translateValue("format", matType, identifier.toString());
 						if (translatedFormat != null && !translatedFormat.equals(matType)) {
 							rawFormats.add(translatedFormat);
-							String translatedFormatCategory = translateValue("format_category", matType, identifier.toString());
-							if (translatedFormatCategory != null && !translatedFormatCategory.equals(matType)) {
-								rawFormatCategories.add(translatedFormatCategory);
-							}
 						} else if (logger.isInfoEnabled()) {
 							logger.info("Material Type " + matType + " had no translation, falling back to default format determination.");
 						}
@@ -270,15 +252,8 @@ public class FormatDetermination {
 			loadPrintFormatFromBib(identifier, record);
 		} else{
 			//logger.debug("Using default method of loading formats from iType");
+			//TODO: translate iType to a format
 			rawFormats.add(itemTypeToFormat.get(mostPopularIType));
-			String translatedFormatCategory = translateValue("format_category", mostPopularIType, recordIdentifier);
-			if (translatedFormatCategory == null){
-				translatedFormatCategory = translateValue("format_category", itemTypeToFormat.get(mostPopularIType), recordIdentifier);
-				if (translatedFormatCategory == null){
-					translatedFormatCategory = mostPopularIType;
-				}
-			}
-			rawFormatCategories.add(translatedFormatCategory);
 		}
 	}
 
