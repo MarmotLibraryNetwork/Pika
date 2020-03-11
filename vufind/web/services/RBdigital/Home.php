@@ -16,33 +16,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-/**
- * App.php
- *
- * Controller for Pika dependencies
- *
- * @category Pika
- * @package  App
- * @author   Chris Froese
- *
- */
-namespace Pika;
 
-class App {
+require_once ROOT_DIR . '/services/Record/Home.php';
 
-	public Cache $cache;
-	public Logger $logger;
-	public array $config;
+class RBdigital_Home extends Record_Home{
 
-	public function __construct($memCachedPersistentId = false, $loggerName = false) {
-		global $configArray;
-		$this->config = $configArray;
-
-		if(!$loggerName | !is_string($loggerName)) {
-			$this->logger = new Logger('Pika');
-		} else {
-			$this->logger = new Logger($loggerName);
-		}
-		$this->cache = new Cache();
-	}
 }
