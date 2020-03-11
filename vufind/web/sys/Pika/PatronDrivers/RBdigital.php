@@ -173,14 +173,53 @@ class RBdigital {
 		return $checkouts;
 	}
 
-	public function getUserInterfaceUrl()
+	/**
+	 * Return a magazine issue
+	 *
+	 * @param $patron       User
+	 * @param $issueId   string
+	 * @return array
+	 */
+	public function returnMagazine(User $patron, $issueId)
 	{
-		return $this->userInterfaceUrl;
+		$result = ['success' => false, 'message' => 'Unknown error'];
+
+		$rbId = $this->getPatronId($patron);
+		if ($rbId == false) {
+			$result['message'] = 'You are not registered with RBdigital.  You will need to create an account there before continuing.';
+			return $result;
+		}
+
+		$returnMagazineUrl = $this->webServiceBaseUrl . 'patrons/' . $rbId . '/patron-magazines/' . $issueId;
+		$res = $this->curl->delete($returnMagazineUrl);
+
+		if($this->curl->getHttpStatusCode() == 200){
+			$result['success'] = true;
+			$result['message'] = "The magazine was returned successfully.";
+		}
+
+		return $result;
 	}
 
-	public function hasNativeReadingHistory()
-	{
-		return false;
+	/**
+	 * @param User    $patron
+	 * @param string  $issueId
+	 * @retrun void
+	 */
+	public function redirectToRBdigitalMagazine(User $patron, $issueId) {
+		// get the rbdigital USER id
+		$rbUserId = $this->getPatronId($patron, true);
+		// get the bearer token
+		$this->curl->setHeader('Content-Type', 'application/json');
+		$url = $this->webServiceBaseUrl . 'tokens';
+		$params = ["userId" => $rbUserId];
+		$res = $this->curl->post($url, $params);
+		//$res = json_decode($res);
+		if($res->bearer) {
+			header('Authorization: bearer '. $res->bearer);
+		}
+		header('Location: https://www.rbdigital.com/reader.php#/reader/readsvg/'.$issueId);
+		die();
 	}
 
 	/**
@@ -395,33 +434,7 @@ class RBdigital {
 		return $result;
 	}
 
-	/**
-	 * Return a magazine issue
-	 *
-	 * @param $patron       User
-	 * @param $issueId   string
-	 * @return array
-	 */
-	public function returnMagazine(User $patron, $issueId)
-	{
-		$result = ['success' => false, 'message' => 'Unknown error'];
 
-		$rbId = $this->getPatronId($patron);
-		if ($rbId == false) {
-			$result['message'] = 'You are not registered with RBdigital.  You will need to create an account there before continuing.';
-			return $result;
-		}
-
-		$returnMagazineUrl = $this->webServiceBaseUrl . 'patrons/' . $rbId . '/patron-magazines/' . $issueId;
-		$res = $this->curl->delete($returnMagazineUrl);
-
-		if($this->curl->getHttpStatusCode() == 200){
-			$result['success'] = true;
-			$result['message'] = "The magazine was returned successfully.";
-		}
-
-		return $result;
-	}
 
 
 
@@ -438,51 +451,51 @@ class RBdigital {
 	public function getHolds($patron)
 	{
 
-		$rbDigitalPatronId = $this->getPatronId($patron);
-
-		$patronHoldsUrl = $this->webServiceBaseUrl . '/v1/libraries/' . $this->libraryId . '/patrons/' . $rbDigitalPatronId . '/holds';
-
-		$patronHolds = $this->curl->get($patronHoldsUrl);
-
-		$holds = array(
-		 'available' => array(),
-		 'unavailable' => array()
-		);
-
-		if ($rbDigitalPatronId == false) {
-			return $holds;
-		}
-
-		if (isset($patronHolds->message)) {
-			//Error in RBdigital APIS
-			global $logger;
-			$logger->log("Error in RBdigital {$patronHolds->message}", PEAR_LOG_WARNING);
-		} else {
-			foreach ($patronHolds as $tmpHold) {
-				$hold                  = array();
-				$hold['id']            = $tmpHold->isbn;
-				$hold['transactionId'] = $tmpHold->transactionId;
-				$hold['holdSource']    = 'RBdigital';
-
-				$recordDriver = new RBdigitalRecordDriver($hold['id']);
-				if ($recordDriver->isValid()) {
-					$hold['coverUrl']   = $recordDriver->getBookcoverUrl('medium');
-					$hold['title']      = $recordDriver->getTitle();
-					$hold['sortTitle']  = $recordDriver->getTitle();
-					$hold['author']     = $recordDriver->getPrimaryAuthor();
-					$hold['linkUrl']    = $recordDriver->getLinkUrl(false);
-					$hold['format']     = $recordDriver->getFormats();
-					$hold['ratingData'] = $recordDriver->getRatingData();
-				}
-				$hold['user']   = $patron->getNameAndLibraryLabel();
-				$hold['userId'] = $patron->id;
-
-				$key                        = $hold['holdSource'] . $hold['id'] . $hold['user'];
-				$holds['unavailable'][$key] = $hold;
-			}
-		}
-
-		return $holds;
+//		$rbDigitalPatronId = $this->getPatronId($patron);
+//
+//		$patronHoldsUrl = $this->webServiceBaseUrl . '/v1/libraries/' . $this->libraryId . '/patrons/' . $rbDigitalPatronId . '/holds';
+//
+//		$patronHolds = $this->curl->get($patronHoldsUrl);
+//
+//		$holds = array(
+//		 'available' => array(),
+//		 'unavailable' => array()
+//		);
+//
+//		if ($rbDigitalPatronId == false) {
+//			return $holds;
+//		}
+//
+//		if (isset($patronHolds->message)) {
+//			//Error in RBdigital APIS
+//			global $logger;
+//			$logger->log("Error in RBdigital {$patronHolds->message}", PEAR_LOG_WARNING);
+//		} else {
+//			foreach ($patronHolds as $tmpHold) {
+//				$hold                  = array();
+//				$hold['id']            = $tmpHold->isbn;
+//				$hold['transactionId'] = $tmpHold->transactionId;
+//				$hold['holdSource']    = 'RBdigital';
+//
+//				$recordDriver = new RBdigitalRecordDriver($hold['id']);
+//				if ($recordDriver->isValid()) {
+//					$hold['coverUrl']   = $recordDriver->getBookcoverUrl('medium');
+//					$hold['title']      = $recordDriver->getTitle();
+//					$hold['sortTitle']  = $recordDriver->getTitle();
+//					$hold['author']     = $recordDriver->getPrimaryAuthor();
+//					$hold['linkUrl']    = $recordDriver->getLinkUrl(false);
+//					$hold['format']     = $recordDriver->getFormats();
+//					$hold['ratingData'] = $recordDriver->getRatingData();
+//				}
+//				$hold['user']   = $patron->getNameAndLibraryLabel();
+//				$hold['userId'] = $patron->id;
+//
+//				$key                        = $hold['holdSource'] . $hold['id'] . $hold['user'];
+//				$holds['unavailable'][$key] = $hold;
+//			}
+//		}
+//
+//		return $holds;
 	}
 
 	/**
@@ -500,37 +513,37 @@ class RBdigital {
 	 */
 	public function placeHold($patron, $recordId)
 	{
-		$result      = ['success' => false, 'message' => 'Unknown error'];
-		$rbdigitalId = $this->getPatronId($patron);
-		if ($rbdigitalId == false) {
-			$result['message'] = 'Sorry, you are not registered with RBdigital.  You will need to create an account there before continuing.';
-		} else {
-			$actionUrl = $this->webServiceBaseUrl . '/v1/libraries/' . $this->libraryId . '/patrons/' . $rbdigitalId . '/holds/' . $recordId;
-
-			$response = $this->curl->post($actionUrl);
-			if ($response == false) {
-				$result['message'] = "Invalid information returned from API, please retry your hold after a few minutes.";
-				global $logger;
-				$logger->log("Invalid information from rbdigital api\r\n$actionUrl\r\n$rawResponse", PEAR_LOG_ERR);
-				$logger->log(print_r($this->curl->getResponseHeaders(), true), PEAR_LOG_ERR);
-				$curl_info = $this->curl->getInfo();
-				$logger->log(print_r($curl_info, true), PEAR_LOG_ERR);
-			} else {
-				if (is_numeric($response)) {
-					$this->trackUserUsageOfRBdigital($patron);
-					$this->trackRecordHold($recordId);
-					$result['success'] = true;
-					$result['message'] = "Your hold was placed successfully.";
-
-					/** @var Memcache $memCache */
-					global $memCache;
-					$memCache->delete('rbdigital_summary_' . $patron->id);
-				} else {
-					$result['message'] = $response->message;
-				}
-			}
-		}
-		return $result;
+//		$result      = ['success' => false, 'message' => 'Unknown error'];
+//		$rbdigitalId = $this->getPatronId($patron);
+//		if ($rbdigitalId == false) {
+//			$result['message'] = 'Sorry, you are not registered with RBdigital.  You will need to create an account there before continuing.';
+//		} else {
+//			$actionUrl = $this->webServiceBaseUrl . '/v1/libraries/' . $this->libraryId . '/patrons/' . $rbdigitalId . '/holds/' . $recordId;
+//
+//			$response = $this->curl->post($actionUrl);
+//			if ($response == false) {
+//				$result['message'] = "Invalid information returned from API, please retry your hold after a few minutes.";
+//				global $logger;
+//				$logger->log("Invalid information from rbdigital api\r\n$actionUrl\r\n$rawResponse", PEAR_LOG_ERR);
+//				$logger->log(print_r($this->curl->getResponseHeaders(), true), PEAR_LOG_ERR);
+//				$curl_info = $this->curl->getInfo();
+//				$logger->log(print_r($curl_info, true), PEAR_LOG_ERR);
+//			} else {
+//				if (is_numeric($response)) {
+//					$this->trackUserUsageOfRBdigital($patron);
+//					$this->trackRecordHold($recordId);
+//					$result['success'] = true;
+//					$result['message'] = "Your hold was placed successfully.";
+//
+//					/** @var Memcache $memCache */
+//					global $memCache;
+//					$memCache->delete('rbdigital_summary_' . $patron->id);
+//				} else {
+//					$result['message'] = $response->message;
+//				}
+//			}
+//		}
+//		return $result;
 	}
 
 	/**
@@ -542,32 +555,32 @@ class RBdigital {
 	 */
 	function cancelHold($patron, $recordId)
 	{
-		$result      = ['success' => false, 'message' => 'Unknown error'];
-		$rbdigitalId = $this->getPatronId($patron);
-		if ($rbdigitalId == false) {
-			$result['message'] = 'Sorry, you are not registered with RBdigital.  You will need to create an account there before continuing.';
-		} else {
-			$actionUrl = $this->webServiceBaseUrl . '/v1/libraries/' . $this->libraryId . '/patrons/' . $rbdigitalId . '/holds/' . $recordId;
-
-			$rawResponse = $this->curl->delete($actionUrl);
-			$response    = json_decode($rawResponse);
-			if ($response == false) {
-				$result['message'] = "Invalid information returned from API, please retry your action after a few minutes.";
-				global $logger;
-				$logger->log("Invalid information from rbdigital api " . $rawResponse, PEAR_LOG_ERR);
-			} else {
-				if (!empty($response->message) && $response->message == 'success') {
-					$result['success'] = true;
-					$result['message'] = "Your hold was cancelled successfully.";
-					/** @var Memcache $memCache */
-					global $memCache;
-					$memCache->delete('rbdigital_summary_' . $patron->id);
-				} else {
-					$result['message'] = $response->message;
-				}
-			}
-		}
-		return $result;
+//		$result      = ['success' => false, 'message' => 'Unknown error'];
+//		$rbdigitalId = $this->getPatronId($patron);
+//		if ($rbdigitalId == false) {
+//			$result['message'] = 'Sorry, you are not registered with RBdigital.  You will need to create an account there before continuing.';
+//		} else {
+//			$actionUrl = $this->webServiceBaseUrl . '/v1/libraries/' . $this->libraryId . '/patrons/' . $rbdigitalId . '/holds/' . $recordId;
+//
+//			$rawResponse = $this->curl->delete($actionUrl);
+//			$response    = json_decode($rawResponse);
+//			if ($response == false) {
+//				$result['message'] = "Invalid information returned from API, please retry your action after a few minutes.";
+//				global $logger;
+//				$logger->log("Invalid information from rbdigital api " . $rawResponse, PEAR_LOG_ERR);
+//			} else {
+//				if (!empty($response->message) && $response->message == 'success') {
+//					$result['success'] = true;
+//					$result['message'] = "Your hold was cancelled successfully.";
+//					/** @var Memcache $memCache */
+//					global $memCache;
+//					$memCache->delete('rbdigital_summary_' . $patron->id);
+//				} else {
+//					$result['message'] = $response->message;
+//				}
+//			}
+//		}
+//		return $result;
 	}
 
 	/**
@@ -577,61 +590,45 @@ class RBdigital {
 	 */
 	public function getAccountSummary($patron)
 	{
-		/** @var Memcache $memCache */
-		global $memCache;
-		global $configArray;
-		global $timer;
-
-		if ($patron == false) {
-			return array(
-			 'numCheckedOut' => 0,
-			 'numAvailableHolds' => 0,
-			 'numUnavailableHolds' => 0,
-			);
-		}
-
-		$summary = $memCache->get('rbdigital_summary_' . $patron->id);
-		if ($summary == false || isset($_REQUEST['reload'])) {
-			//Get the rbdigital id for the patron
-			$rbdigitalId = $this->getPatronId($patron);
-
-			//Get account information from api
-			$patronSummaryUrl = $this->webServiceBaseUrl . '/v1/tenants/' . $this->libraryId . '/patrons/' . $rbdigitalId . '/patron-config';
-
-			$response = $this->curl->get($patronSummaryUrl);
-
-			$summary                  = array();
-			$summary['numCheckedOut'] = empty($response->audioBooks->checkouts) ? 0 : count($response->audioBooks->checkouts);
-			$summary['numCheckedOut'] += empty($response->magazines->checkouts) ? 0 : count($response->magazines->checkouts);
-
-			//RBdigital automatically checks holds out so nothing is available
-			$summary['numAvailableHolds']   = 0;
-			$summary['numUnavailableHolds'] = empty($response->audioBooks->holds) ? 0 : count($response->audioBooks->holds);
-
-			$timer->logTime("Finished loading titles from rbdigital summary");
-			$memCache->set('rbdigital_summary_' . $patron->id, $summary, $configArray['Caching']['account_summary']);
-		}
-
-		return $summary;
+//		/** @var Memcache $memCache */
+//		global $memCache;
+//		global $configArray;
+//		global $timer;
+//
+//		if ($patron == false) {
+//			return array(
+//			 'numCheckedOut' => 0,
+//			 'numAvailableHolds' => 0,
+//			 'numUnavailableHolds' => 0,
+//			);
+//		}
+//
+//		$summary = $memCache->get('rbdigital_summary_' . $patron->id);
+//		if ($summary == false || isset($_REQUEST['reload'])) {
+//			//Get the rbdigital id for the patron
+//			$rbdigitalId = $this->getPatronId($patron);
+//
+//			//Get account information from api
+//			$patronSummaryUrl = $this->webServiceBaseUrl . '/v1/tenants/' . $this->libraryId . '/patrons/' . $rbdigitalId . '/patron-config';
+//
+//			$response = $this->curl->get($patronSummaryUrl);
+//
+//			$summary                  = array();
+//			$summary['numCheckedOut'] = empty($response->audioBooks->checkouts) ? 0 : count($response->audioBooks->checkouts);
+//			$summary['numCheckedOut'] += empty($response->magazines->checkouts) ? 0 : count($response->magazines->checkouts);
+//
+//			//RBdigital automatically checks holds out so nothing is available
+//			$summary['numAvailableHolds']   = 0;
+//			$summary['numUnavailableHolds'] = empty($response->audioBooks->holds) ? 0 : count($response->audioBooks->holds);
+//
+//			$timer->logTime("Finished loading titles from rbdigital summary");
+//			$memCache->set('rbdigital_summary_' . $patron->id, $summary, $configArray['Caching']['account_summary']);
+//		}
+//
+//		return $summary;
 	}
 
 
-
-	public function redirectToRBdigitalMagazine(User $patron, $issueId) {
-		// get the rbdigital USER id
-		$rbUserId = $this->getPatronId($patron, true);
-		// get the bearer token
-		$this->curl->setHeader('Content-Type', 'application/json');
-		$url = $this->webServiceBaseUrl . 'tokens';
-		$params = ["userId" => $rbUserId];
-		$res = $this->curl->post($url, $params);
-		//$res = json_decode($res);
-		if($res->bearer) {
-			header('Authorization: bearer '. $res->bearer);
-		}
-		header('Location: https://www.rbdigital.com/reader.php#/reader/readsvg/'.$issueId);
-		die();
-	}
 
 	public function redirectToRBdigital(User $patron, RBdigitalRecordDriver $recordDriver)
 	{
@@ -714,6 +711,15 @@ class RBdigital {
 		return false;
 	}
 
+	public function getUserInterfaceUrl()
+	{
+		return $this->userInterfaceUrl;
+	}
+
+	public function hasNativeReadingHistory()
+	{
+		return false;
+	}
 	// end RbDigital.php
 }
 ////			$this->curl->setHeaders($this->curlHeaders);
