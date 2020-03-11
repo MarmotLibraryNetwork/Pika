@@ -1716,11 +1716,16 @@ EOT;
 			$h['cancelId'] = $m[1];
 
 			// status, cancelable, freezable
+			$recordStatus = $hold->status->code;
 			if ($hold->recordType == 'i') {
-				$recordStatus = $hold->record->status->code;
-			} else {
-				$recordStatus = $hold->status->code;
+				$recordItemStatus = $hold->record->status->code;
+				// item records can show "on hold shelf" (!) if they are on hold by another patron
+				// if the item status is "on hold shelf" (!) but the hold record status is "on hold" (0) use "on hold" status
+				if($recordItemStatus != "!" && $recordStatus != '0') {
+					$recordStatus = $recordItemStatus;
+				}
 			}
+
 			switch ($recordStatus) {
 				case '0':
 				case '-':
