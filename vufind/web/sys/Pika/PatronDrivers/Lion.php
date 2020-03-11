@@ -131,5 +131,5 @@ class Lion extends Sierra {
 	function allowFreezingPendingHolds(){
 		return true;
 	}
-	
+
 }
