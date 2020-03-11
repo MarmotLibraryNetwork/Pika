@@ -802,7 +802,7 @@ class Sierra {
 			return false;
 		}
 
-		$this->cache->set($patronIdCacheKey, $r->id, $this->configArray['Caching']['patron_id']);
+		$this->cache->set($patronIdCacheKey, $r->id, $this->configArray['Caching']['koha_patron_id']);
 
 		return $r->id;
 	}

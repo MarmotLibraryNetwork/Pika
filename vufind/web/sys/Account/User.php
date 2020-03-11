@@ -21,7 +21,6 @@
  */
 require_once 'DB/DataObject.php';
 use Pika\Cache;
-use Pika\PatronDrivers\RBdigital;
 
 class User extends DB_DataObject {
 
@@ -967,11 +966,12 @@ class User extends DB_DataObject {
 
 		//Get checked out titles from RBDigital
 		//Do not load RBDigital titles if the parent barcode (if any) is the same as the current barcode
-		if ($this->isValidForRBDigital()){
-			$RBDigitalDriver          = new RBdigital();
-			$RBDigitalCheckedOutItems = $RBDigitalDriver->getCheckouts($this);
-			$allCheckedOut            = array_merge($allCheckedOut, $RBDigitalCheckedOutItems);
-		}
+//		if ($this->isValidForRBDigital()){
+//			require_once ROOT_DIR . '/Drivers/RBdigitalDriver.php';
+//			$RBDigitalDriver          = new RBdigitalDriver();
+//			$RBDigitalCheckedOutItems = $RBDigitalDriver->getCheckouts($this);
+//			$allCheckedOut            = array_merge($allCheckedOut, $RBDigitalCheckedOutItems);
+//		}
 
 		if ($includeLinkedUsers){
 			if ($this->getLinkedUsers() != null){
