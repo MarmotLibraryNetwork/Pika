@@ -369,10 +369,10 @@ class RecordGroupingProcessor {
 		try {
 			loadExistingGroupedWorksStmt.setString(1, permanentId);
 			ResultSet loadExistingGroupedWorksRS = loadExistingGroupedWorksStmt.executeQuery();
-			loadExistingGroupedWorksRS.next();
-			long groupedWorkId = loadExistingGroupedWorksRS.getLong(1);
-			return groupedWorkId;
-
+			if (loadExistingGroupedWorksRS.next()){
+				long groupedWorkId = loadExistingGroupedWorksRS.getLong(1);
+				return groupedWorkId;
+			}
 		} catch (SQLException e) {
 			logger.warn("Error looking up work id from permanent id: " + permanentId, e);
 		}
