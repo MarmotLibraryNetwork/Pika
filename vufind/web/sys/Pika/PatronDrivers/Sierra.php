@@ -1716,11 +1716,17 @@ EOT;
 			$h['cancelId'] = $m[1];
 
 			// status, cancelable, freezable
+			$recordItemStatus = false;
 			if ($hold->recordType == 'i') {
-				$recordStatus = $hold->record->status->code;
-			} else {
-				$recordStatus = $hold->status->code;
+				$recordItemStatus = $hold->record->status->code;
 			}
+
+			$recordStatus = $hold->status->code;
+
+			if($recordItemStatus != "!" && $recordStatus != '0' ) {
+				$recordStatus = $recordItemStatus;
+			}
+
 			switch ($recordStatus) {
 				case '0':
 				case '-':
