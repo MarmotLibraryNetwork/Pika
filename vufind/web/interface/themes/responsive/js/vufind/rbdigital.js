@@ -36,19 +36,19 @@ VuFind.RBdigital = (function() {
 			return false;
 		},
 
-		readMagazineOnline: function(issueId, userId) {
-			VuFind.Account.ajaxLogin(function (){
-				var url = "/RBdigital/AJAX",
-						params = {
-							method: 'readMagazineOnline',
-							issueId:issueId,
-							userId: userId
-						};
-				$.getJSON(url, params, function (data) {
-
-				})
-			});
-		}
+		// readMagazineOnline: function(issueId, userId) {
+		// 	VuFind.Account.ajaxLogin(function (){
+		// 		var url = "/RBdigital/AJAX",
+		// 				params = {
+		// 					method: 'readMagazineOnline',
+		// 					issueId:issueId,
+		// 					userId: userId
+		// 				};
+		// 		$.getJSON(url, params, function (data) {
+		// 				// console log
+		// 		})
+		// 	});
+		// }
 
 
 

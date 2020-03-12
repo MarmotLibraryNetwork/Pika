@@ -25,9 +25,41 @@
  * @author   Chris Froese
  *
  */
+
+use Curl\Curl;
+use Pika\PatronDrivers\RBdigital;
+use User;
+use Pika\App;
+
 class Redirect extends Action {
 
+	private $request_method = false;
+	private $app;
+
+	public function __construct($error_class = null)
+	{
+		$this->app = new App();
+		$this->request_method = $_SERVER['REQUEST_METHOD'];
+
+		parent::__construct(null);
+
+	}
+
 	public function launch() {
+		$service = $_REQUEST['service'];
+
+		switch ($service) {
+			case "redirectToRBditalMagazine":
+
+
+		}
+
+
+		if(isset($_REQUEST['userId'])) {
+			$patron = new User();
+			$patron->id = $_REQUEST['userId'];
+
+		}
 
 	}
 
