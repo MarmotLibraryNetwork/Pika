@@ -21,7 +21,7 @@
  * Catalog Connection Class
  *
  * This wrapper works with a driver class to pass information from the ILS to
- * VuFind.
+ * Pika.
  *
  * @category Pika
  * @package  ILS_Drivers
@@ -661,6 +661,7 @@ class CatalogConnection
 		}
 
 			//Delete the reading history (permanently this time since we are opting out)
+			require_once ROOT_DIR . '/sys/Account/ReadingHistoryEntry.php';
 			$readingHistoryDB         = new ReadingHistoryEntry();
 			$readingHistoryDB->userId = $patron->id;
 			$result                   = $readingHistoryDB->delete();
@@ -686,6 +687,7 @@ class CatalogConnection
 	 */
 	public function deleteAllReadingHistory($patron){
 		if (is_a($patron, 'User') && !empty($patron->id)){
+			require_once ROOT_DIR . '/sys/Account/ReadingHistoryEntry.php';
 			//Remove all titles from database
 			$success                  = true;
 			$readingHistoryDB         = new ReadingHistoryEntry();
@@ -727,6 +729,7 @@ class CatalogConnection
 	public function deleteMarkedReadingHistory($patron, $selectedTitles){
 	//Remove titles from database (do not remove from ILS)
 		if (is_a($patron, 'User') && !empty($patron->id)){
+			require_once ROOT_DIR . '/sys/Account/ReadingHistoryEntry.php';
 			$success = true;
 			foreach ($selectedTitles as $groupedWorkId => $titleId){
 				if (!empty($groupedWorkId)){
