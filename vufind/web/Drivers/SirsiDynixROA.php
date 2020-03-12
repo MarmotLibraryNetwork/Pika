@@ -803,7 +803,7 @@ abstract class SirsiDynixROA extends HorizonAPI //TODO: This class doesn't need 
 					// Note: there is an overdue flag
 					$curTitle['renewCount']     = $checkout->fields->renewalCount;
 					$curTitle['canrenew']       = $checkout->fields->seenRenewalsRemaining > 0;
-					$curTitle['renewIndicator'] = $checkout->fields->item->key;
+					$curTitle['renewIndicator'] = empty($checkout->fields->item->key ) ? null : $checkout->fields->item->key;
 
 					$curTitle['format'] = 'Unknown';
 					$recordDriver       = new MarcRecord($sourceAndId);

@@ -50,7 +50,7 @@ class ReadingHistory extends MyAccount
 			// Get My Transactions
 			if ($user) {
 				$linkedUsers = $user->getLinkedUsers();
-				$patronId = empty($_REQUEST['patronId']) ?  $user->id : $_REQUEST['patronId'];
+				$patronId    = empty($_REQUEST['patronId']) ? $user->id : $_REQUEST['patronId'];
 
 				$patron = $user->getUserReferredTo($patronId);
 				if (count($linkedUsers) > 0) {
