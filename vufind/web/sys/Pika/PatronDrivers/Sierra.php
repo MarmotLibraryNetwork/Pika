@@ -1721,7 +1721,11 @@ EOT;
 				$recordItemStatus = $hold->record->status->code;
 				// item records can show "on hold shelf" (!) if they are on hold by another patron
 				// if the item status is "on hold shelf" (!) but the hold record status is "on hold" (0) use "on hold" status
-				if($recordItemStatus != "!" && $recordStatus != '0') {
+				if(! strstr($hold->record->id, "@")) {
+					if($recordItemStatus != "!" && $recordStatus != '0') {
+						$recordStatus = $recordItemStatus;
+					}
+				} else {
 					$recordStatus = $recordItemStatus;
 				}
 			}
