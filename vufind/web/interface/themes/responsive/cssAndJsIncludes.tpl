@@ -69,6 +69,7 @@
 		<script src="/interface/themes/responsive/js/vufind/searches.js?v={$gitBranch|urlencode}"></script>
 		<script src="/interface/themes/responsive/js/vufind/title-scroller.js?v={$gitBranch|urlencode}"></script>
 		<script src="/interface/themes/responsive/js/vufind/wikipedia.js?v={$gitBranch|urlencode}"></script>
+		<script src="/interface/themes/responsive/js/vufind/rbdigital.js?v={$gitBranch|urlencode}"></script>
 	{else}
 		{* This is all merged using the merge_javascript.php file called automatically with a File Watcher*}
 		{* Code is minified using uglify.js *}

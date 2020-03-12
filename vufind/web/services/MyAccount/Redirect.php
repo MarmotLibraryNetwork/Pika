@@ -16,33 +16,51 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 /**
- * App.php
- *
- * Controller for Pika dependencies
+ * Redirect.php
  *
  * @category Pika
- * @package  App
+ * @package
  * @author   Chris Froese
  *
  */
-namespace Pika;
 
-class App {
+use Curl\Curl;
+use Pika\PatronDrivers\RBdigital;
+use User;
+use Pika\App;
 
-	public Cache $cache;
-	public Logger $logger;
-	public array $config;
+class Redirect extends Action {
 
-	public function __construct($memCachedPersistentId = false, $loggerName = false) {
-		global $configArray;
-		$this->config = $configArray;
+	private $request_method = false;
+	private $app;
 
-		if(!$loggerName | !is_string($loggerName)) {
-			$this->logger = new Logger('Pika');
-		} else {
-			$this->logger = new Logger($loggerName);
-		}
-		$this->cache = new Cache();
+	public function __construct($error_class = null)
+	{
+		$this->app = new App();
+		$this->request_method = $_SERVER['REQUEST_METHOD'];
+
+		parent::__construct(null);
+
 	}
+
+	public function launch() {
+		$service = $_REQUEST['service'];
+
+		switch ($service) {
+			case "redirectToRBditalMagazine":
+
+
+		}
+
+
+		if(isset($_REQUEST['userId'])) {
+			$patron = new User();
+			$patron->id = $_REQUEST['userId'];
+
+		}
+
+	}
+
 }

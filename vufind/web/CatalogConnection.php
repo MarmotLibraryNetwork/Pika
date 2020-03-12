@@ -21,7 +21,7 @@
  * Catalog Connection Class
  *
  * This wrapper works with a driver class to pass information from the ILS to
- * VuFind.
+ * Pika.
  *
  * @category Pika
  * @package  ILS_Drivers
@@ -30,6 +30,8 @@
  * @license  http://opensource.org/licenses/gpl-2.0.php GNU General Public License
  * @link     http://vufind.org/wiki/building_an_ils_driver Wiki
  */
+use Pika\PatronDrivers\RBdigital;
+
 class CatalogConnection
 {
 	/**
@@ -290,6 +292,12 @@ class CatalogConnection
 			$hooplaSummary   = $driver->getHooplaPatronStatus($user);
 			$hooplaCheckOuts = isset($hooplaSummary->currentlyBorrowed) ? $hooplaSummary->currentlyBorrowed : 0;
 			$user->setNumCheckedOutHoopla($hooplaCheckOuts);
+		}
+
+		if($user->isValidForRBDigital()) {
+			$rbDigital = new RBdigital();
+			$count = $rbDigital->getCheckoutCount($user);
+			$user->setNumCheckedOutRBdigital($count);
 		}
 
 		require_once ROOT_DIR . '/sys/MaterialsRequest/MaterialsRequest.php';
@@ -661,6 +669,7 @@ class CatalogConnection
 		}
 
 			//Delete the reading history (permanently this time since we are opting out)
+			require_once ROOT_DIR . '/sys/Account/ReadingHistoryEntry.php';
 			$readingHistoryDB         = new ReadingHistoryEntry();
 			$readingHistoryDB->userId = $patron->id;
 			$result                   = $readingHistoryDB->delete();
@@ -686,6 +695,7 @@ class CatalogConnection
 	 */
 	public function deleteAllReadingHistory($patron){
 		if (is_a($patron, 'User') && !empty($patron->id)){
+			require_once ROOT_DIR . '/sys/Account/ReadingHistoryEntry.php';
 			//Remove all titles from database
 			$success                  = true;
 			$readingHistoryDB         = new ReadingHistoryEntry();
@@ -727,6 +737,7 @@ class CatalogConnection
 	public function deleteMarkedReadingHistory($patron, $selectedTitles){
 	//Remove titles from database (do not remove from ILS)
 		if (is_a($patron, 'User') && !empty($patron->id)){
+			require_once ROOT_DIR . '/sys/Account/ReadingHistoryEntry.php';
 			$success = true;
 			foreach ($selectedTitles as $groupedWorkId => $titleId){
 				if (!empty($groupedWorkId)){

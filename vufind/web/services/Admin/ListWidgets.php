@@ -17,8 +17,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-require_once ROOT_DIR . '/Action.php';
-require_once ROOT_DIR . '/services/Admin/Admin.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 require_once ROOT_DIR . '/sys/Widgets/ListWidget.php';
 require_once ROOT_DIR . '/sys/Widgets/ListWidgetList.php';
@@ -35,16 +33,18 @@ class Admin_ListWidgets extends ObjectEditor {
 	function getObjectType(){
 		return 'ListWidget';
 	}
+
 	function getToolName(){
 		return 'ListWidgets';
 	}
+
 	function getPageTitle(){
 		return 'List Widgets';
 	}
-	function getAllObjects(){
-		$list = array();
 
-		$user = UserAccount::getLoggedInUser();
+	function getAllObjects(){
+		$list   = [];
+		$user   = UserAccount::getLoggedInUser();
 		$widget = new ListWidget();
 		if (UserAccount::userHasRoleFromList(['libraryAdmin', 'contentEditor', 'libraryManager', 'locationManager'])){
 			$patronLibrary     = UserAccount::getUserHomeLibrary();
@@ -58,126 +58,89 @@ class Admin_ListWidgets extends ObjectEditor {
 
 		return $list;
 	}
+
 	function getObjectStructure(){
 		return ListWidget::getObjectStructure();
 	}
+
 	function getAllowableRoles(){
-		return array('opacAdmin', 'libraryAdmin', 'contentEditor', 'libraryManager', 'locationManager');
+		return ['opacAdmin', 'libraryAdmin', 'contentEditor', 'libraryManager', 'locationManager'];
 	}
+
 	function getPrimaryKeyColumn(){
 		return 'id';
 	}
+
 	function getIdKeyColumn(){
 		return 'id';
 	}
+
 	function canAddNew(){
 		$user = UserAccount::getLoggedInUser();
 		return UserAccount::userHasRoleFromList(['opacAdmin', 'libraryAdmin', 'contentEditor', 'libraryManager', 'locationManager']);
 	}
+
 	function canDelete(){
 		$user = UserAccount::getLoggedInUser();
 		return UserAccount::userHasRoleFromList(['opacAdmin', 'libraryAdmin']);
 	}
-	function launch() {
-		global $interface;
-		$user = UserAccount::getLoggedInUser();
 
-		$interface->assign('canAddNew', $this->canAddNew());
-		$interface->assign('canDelete', $this->canDelete());
-		$interface->assign('showReturnToList', $this->showReturnToList());
-
-		//Figure out what mode we are in
-		if (isset($_REQUEST['objectAction'])){
-			$objectAction = $_REQUEST['objectAction'];
-		}else{
-			$objectAction = 'list';
+	function getAdditionalObjectActions($existingObject){
+		$objectActions = [];
+		if ($existingObject != null){
+			$objectActions[] = [
+				'text' => 'Preview Widget as Page',
+				'url'  => '/API/SearchAPI?method=getListWidget&id=' . $existingObject->id,
+			];
 		}
-
-		if ($objectAction == 'delete' && isset($_REQUEST['id'])){
-			parent::launch();
-			exit();
-		}
-
-		//Get all available widgets
-		$availableWidgets = array();
-		$listWidget = new ListWidget();
-		if (UserAccount::userHasRoleFromList(['libraryAdmin', 'contentEditor', 'libraryManager', 'locationManager'])){
-			$homeLibrary = UserAccount::getUserHomeLibrary();
-			$listWidget->libraryId = $homeLibrary->libraryId;
-		}
-		$listWidget->orderBy('name ASC');
-		$listWidget->find();
-		while ($listWidget->fetch()){
-			$availableWidgets[$listWidget->id] = clone($listWidget);
-		}
-		$interface->assign('availableWidgets', $availableWidgets);
-
-		//Get the selected widget
-		if (isset($_REQUEST['id']) && is_numeric($_REQUEST['id'])){
-			$widget = $availableWidgets[$_REQUEST['id']];
-			$interface->assign('object', $widget);
-		}
-
-		//Do actions that require pre-processing
-		if ($objectAction == 'save'){
-			if (!isset($widget)){
-				$widget = new ListWidget();
-			}
-			DataObjectUtil::updateFromUI($widget, $listWidget->getObjectStructure());
-			$validationResults = DataObjectUtil::saveObject($listWidget->getObjectStructure(), "ListWidget");
-			if (!$validationResults['validatedOk']){
-				$interface->assign('object', $widget);
-				$interface->assign('errors', $validationResults['errors']);
-				$objectAction = 'edit';
-			}else{
-				$interface->assign('object', $validationResults['object']);
-				$objectAction = 'view';
-			}
-
-		}
-
-		if ($objectAction == 'list'){
-			$interface->setTemplate('listWidgets.tpl');
-		}else{
-			if ($objectAction == 'edit' || $objectAction == 'add'){
-				if (isset($_REQUEST['id'])){
-					$interface->assign('widgetid',$_REQUEST['id']);
-					$interface->assign('id',$_REQUEST['id']);
-				}
-				$editForm = DataObjectUtil::getEditForm($listWidget->getObjectStructure());
-				$interface->assign('editForm', $editForm);
-				$interface->setTemplate('listWidgetEdit.tpl');
-			}else{
-				// Set some default sizes for the iframe we embed on the view page
-				switch ($widget->style){
-					default :
-					case 'horizontal':
-						$width  = 650;
-						$height = ($widget->coverSize == 'medium') ? 325 : 275;
-						break;
-					case 'vertical' :
-						$width  = ($widget->coverSize == 'medium') ? 275 : 175;
-						$height = ($widget->coverSize == 'medium') ? 700 : 400;
-						break;
-					case 'text-list' :
-						$width  = 500;
-						$height = 200;
-						break;
-					case 'single' :
-					case 'single-with-next' :
-						$width  = ($widget->coverSize == 'medium') ? 300 : 225;
-						$height = ($widget->coverSize == 'medium') ? 350 : 275;
-						break;
-				}
-				$interface->assign('width', $width);
-				$interface->assign('height', $height);
-				$interface->setTemplate('listWidget.tpl');
-			}
-		}
-
-		$interface->assign('sidebar', 'Search/home-sidebar.tpl');
-		$interface->setPageTitle('List Widgets');
-		$interface->display('layout.tpl');
-
+		return $objectActions;
 	}
+
+	function getInstructions(){
+		return 'For more information on how to create List Widgets, please see the <a href="https://docs.google.com/document/d/1RySv7NbaYjaw_F9Gs7cP9pu3P894s_4J05o46m6z3bQ">online documentation</a>';
+	}
+
+	function getListInstructions(){
+		return $this->getInstructions();
+	}
+
+	function viewIndividualObject($structure){
+		if (!empty($_REQUEST['id'])){
+			global $interface;
+			/** @var ListWidget $existingObject */
+			$id             = $_REQUEST['id'];
+			$existingObject = $this->getExistingObjectById($id);
+			// Set some default sizes for the iframe we embed on the view page
+			switch ($existingObject->style){
+				default :
+				case 'horizontal':
+					$width  = 650;
+					$height = ($existingObject->coverSize == 'medium') ? 325 : 275;
+					break;
+				case 'vertical' :
+					$width  = ($existingObject->coverSize == 'medium') ? 275 : 175;
+					$height = ($existingObject->coverSize == 'medium') ? 700 : 400;
+					break;
+				case 'text-list' :
+					$width  = 500;
+					$height = 200;
+					break;
+				case 'single' :
+				case 'single-with-next' :
+					$width  = ($existingObject->coverSize == 'medium') ? 300 : 225;
+					$height = ($existingObject->coverSize == 'medium') ? 350 : 275;
+					break;
+			}
+			$interface->assign('width', $width);
+			$interface->assign('height', $height);
+			$interface->assign('selectedStyle', $existingObject->style);
+			$interface->assign('object', $existingObject);
+
+			$captcha = $interface->fetch('Admin/listWidget.tpl');
+			$interface->assign('captcha', $captcha); // Use the captcha block of the form to display the List Widget integration notes
+
+		}
+			parent::viewIndividualObject($structure);
+	}
+
 }
