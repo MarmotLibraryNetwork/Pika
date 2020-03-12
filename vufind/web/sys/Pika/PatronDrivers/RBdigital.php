@@ -173,6 +173,10 @@ class RBdigital {
 		return $checkouts;
 	}
 
+	public function getCheckoutCount($patron) {
+		return count($this->getCheckouts($patron));
+	}
+
 	/**
 	 * Return a magazine issue
 	 *
