@@ -17,7 +17,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-require_once ROOT_DIR . '/services/Admin/Admin.php';
+require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 require_once ROOT_DIR . '/sys/Widgets/ListWidget.php';
 require_once ROOT_DIR . '/sys/Widgets/ListWidgetList.php';
 
@@ -28,27 +28,20 @@ require_once ROOT_DIR . '/sys/Widgets/ListWidgetList.php';
  * @author Mark Noble
  *
  */
-class ListWidgetsListsLinks extends Admin_Admin {
+class ListWidgetsListsLinks extends ObjectEditor {
 
-	function launch(){
-		global $interface;
-		//Figure out what mode we are in
-		if (isset($_REQUEST['objectAction'])){
-			$objectAction = $_REQUEST['objectAction'];
-		}else{
-			$objectAction = 'edit';
-		}
-
-		switch ($objectAction){
-			case 'save':
-				$this->launchSave();//Yes, there is not a break after this case.
-			case 'edit':
-			default :
-				$this->launchEdit($_REQUEST['widgetId'], $_REQUEST['widgetListId']);
-				break;
-		}
-		$this->display('listWidgetListLinks.tpl', 'List Widgets');
-	}
+//	function launch(){
+//		$objectAction = $_REQUEST['objectAction'] ?? 'edit';
+//		switch ($objectAction){
+//			case 'save':
+//				$this->launchSave();//Yes, there is not a break after this case.
+//			case 'edit':
+//			default :
+//				$this->launchEdit($_REQUEST['widgetId'], $_REQUEST['widgetListId']);
+//				break;
+//		}
+//		$this->display('listWidgetListLinks.tpl', 'List Widgets');
+//	}
 
 
 	private function launchSave(){
@@ -100,7 +93,7 @@ class ListWidgetsListsLinks extends Admin_Admin {
 		$interface->assign('widgetListName', $widgetList->name);
 
 		//Get all available links
-		$availableLinks                     = array();
+		$availableLinks                     = [];
 		$listWidgetLinks                    = new ListWidgetListsLinks();
 		$listWidgetLinks->listWidgetListsId = $widgetListId;
 		$listWidgetLinks->orderBy('weight ASC');
@@ -127,13 +120,70 @@ class ListWidgetsListsLinks extends Admin_Admin {
 	}
 
 	private function saveElement(){
-		$listWidgetLinks = new ListWidgetListsLinks();
-		DataObjectUtil::updateFromUI($listWidgetLinks, $listWidgetLinks->getObjectStructure());
-		$validationResults = DataObjectUtil::saveObject($listWidgetLinks->getObjectStructure(), "ListWidgetListsLinks");
+		$validationResults = DataObjectUtil::saveObject(ListWidgetListsLinks::getObjectStructure(), "ListWidgetListsLinks");
 	}
 
 	public function getAllowableRoles(){
-		return array('opacAdmin');
+		return ['opacAdmin'];
 	}
 
+	/**
+	 * @inheritDoc
+	 */
+	function getObjectType(){
+		return 'ListWidgetListsLinks';
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	function getToolName(){
+		return 'ListWidgetListsLinks';
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	function getPageTitle(){
+		return 'List Widget Lists Links';
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	function getAllObjects(){
+		if (!empty($_REQUEST['widgetListId']) && ctype_digit($_REQUEST['widgetListId'])){
+			//Get all available links
+			$availableLinks                     = [];
+			$listWidgetLinks                    = new ListWidgetListsLinks();
+			$listWidgetLinks->listWidgetListsId = $_REQUEST['widgetListId'];
+			$listWidgetLinks->orderBy('weight ASC');
+			if ($listWidgetLinks->find()){
+				while ($listWidgetLinks->fetch()){
+					$availableLinks[$listWidgetLinks->id] = clone($listWidgetLinks);
+				}
+			}
+		}
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	function getObjectStructure(){
+		return ListWidgetListsLinks::getObjectStructure();
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	function getPrimaryKeyColumn(){
+		return 'id';
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	function getIdKeyColumn(){
+		return 'id';
+	}
 }
