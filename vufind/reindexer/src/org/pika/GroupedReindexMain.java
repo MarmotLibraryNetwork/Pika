@@ -63,7 +63,7 @@ public class GroupedReindexMain {
 				case "fullreindex" :
 					fullReindex = true;
 					break;
-				case "singleWork" :
+				case "singlework" :
 					//Process a specific work
 					//Prompt for the work to process
 					System.out.print("Enter the grouped work id of the work to process: ");

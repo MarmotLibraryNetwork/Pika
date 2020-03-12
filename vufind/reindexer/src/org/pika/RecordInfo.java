@@ -45,6 +45,7 @@ public class RecordInfo {
 		this.recordIdentifier = recordIdentifier;
 	}
 
+	// subSource is the indexing profile of ils eContent apparently.
 	void setSubSource(String subSource) {
 		this.subSource = subSource;
 	}
@@ -291,38 +292,40 @@ public class RecordInfo {
 
 	void updateIndexingStats(TreeMap<String, ScopedIndexingStats> indexingStats) {
 		for (ScopedIndexingStats scopedStats : indexingStats.values()) {
-			String                       recordProcessor = this.subSource == null ? this.source : this.subSource;
-			RecordProcessorIndexingStats stats           = scopedStats.recordProcessorIndexingStats.get(recordProcessor.toLowerCase());
-			HashSet<ItemInfo>            itemsForScope   = getRelatedItemsForScope(scopedStats.getScopeName());
-			if (itemsForScope.size() > 0) {
-				stats.numRecordsTotal++;
-				boolean recordLocallyOwned = false;
-				for (ItemInfo curItem : itemsForScope) {
-					//Check the type (physical, eContent, on order)
-					boolean locallyOwned = curItem.isLocallyOwned(scopedStats.getScopeName())
-							|| curItem.isLibraryOwned(scopedStats.getScopeName());
-					if (locallyOwned) {
-						recordLocallyOwned = true;
+			String                       sourceName = this.subSource == null ? this.source : this.subSource;
+			indexingRecordProcessorStats stats      = scopedStats.indexingRecordProcessorStats.get(sourceName.toLowerCase());
+			if (stats != null) {
+				HashSet<ItemInfo> itemsForScope = getRelatedItemsForScope(scopedStats.getScopeName());
+				if (itemsForScope.size() > 0) {
+					stats.numRecordsTotal++;
+					boolean recordLocallyOwned = false;
+					for (ItemInfo curItem : itemsForScope) {
+						//Check the type (physical, eContent, on order)
+						boolean locallyOwned = curItem.isLocallyOwned(scopedStats.getScopeName())
+								|| curItem.isLibraryOwned(scopedStats.getScopeName());
+						if (locallyOwned) {
+							recordLocallyOwned = true;
+						}
+						if (curItem.isEContent()) {
+							stats.numEContentTotal += curItem.getNumCopies();
+							if (locallyOwned) {
+								stats.numEContentOwned += curItem.getNumCopies();
+							}
+						} else if (curItem.isOrderItem()) {
+							stats.numOrderItemsTotal += curItem.getNumCopies();
+							if (locallyOwned) {
+								stats.numOrderItemsOwned += curItem.getNumCopies();
+							}
+						} else {
+							stats.numPhysicalItemsTotal += curItem.getNumCopies();
+							if (locallyOwned) {
+								stats.numPhysicalItemsOwned += curItem.getNumCopies();
+							}
+						}
 					}
-					if (curItem.isEContent()) {
-						stats.numEContentTotal += curItem.getNumCopies();
-						if (locallyOwned) {
-							stats.numEContentOwned += curItem.getNumCopies();
-						}
-					} else if (curItem.isOrderItem()) {
-						stats.numOrderItemsTotal += curItem.getNumCopies();
-						if (locallyOwned) {
-							stats.numOrderItemsOwned += curItem.getNumCopies();
-						}
-					} else {
-						stats.numPhysicalItemsTotal += curItem.getNumCopies();
-						if (locallyOwned) {
-							stats.numPhysicalItemsOwned += curItem.getNumCopies();
-						}
+					if (recordLocallyOwned) {
+						stats.numRecordsOwned++;
 					}
-				}
-				if (recordLocallyOwned) {
-					stats.numRecordsOwned++;
 				}
 			}
 		}

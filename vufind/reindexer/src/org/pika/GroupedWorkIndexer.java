@@ -33,7 +33,7 @@ public class GroupedWorkIndexer {
 	private final PikaSystemVariables                      systemVariables;
 	private       SolrServer                               solrServer;
 	private       ConcurrentUpdateSolrServer               updateServer;
-	private       HashMap<String, MarcRecordProcessor>     ilsRecordProcessors                   = new HashMap<>();
+	private       HashMap<String, MarcRecordProcessor>     indexingRecordProcessors              = new HashMap<>();
 	private       OverDriveProcessor                       overDriveProcessor;
 	private       HashMap<String, HashMap<String, String>> translationMaps                       = new HashMap<>();
 	private       HashMap<String, LexileTitle>             lexileInformation                     = new HashMap<>();
@@ -175,7 +175,7 @@ public class GroupedWorkIndexer {
 						String ilsIndexingClassString = indexingProfileRS.getString("indexingClass");
 						switch (ilsIndexingClassString) {
 							case "Marmot":
-								ilsRecordProcessors.put(sourceName, new MarmotRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
+								indexingRecordProcessors.put(sourceName, new MarmotRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
 								break;
 	//						case "Nashville":
 	//							ilsRecordProcessors.put(sourceName, new NashvilleRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
@@ -184,22 +184,22 @@ public class GroupedWorkIndexer {
 	//							ilsRecordProcessors.put(sourceName, new NashvilleSchoolsRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
 	//							break;
 							case "WCPL":
-								ilsRecordProcessors.put(sourceName, new WCPLRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
+								indexingRecordProcessors.put(sourceName, new WCPLRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
 								break;
 							case "Anythink":
-								ilsRecordProcessors.put(sourceName, new AnythinkRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
+								indexingRecordProcessors.put(sourceName, new AnythinkRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
 								break;
 //							case "Aspencat":
 //								ilsRecordProcessors.put(sourceName, new AspencatRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
 //								break;
 							case "Flatirons":
-								ilsRecordProcessors.put(sourceName, new FlatironsRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
+								indexingRecordProcessors.put(sourceName, new FlatironsRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
 								break;
 							case "Addison":
-								ilsRecordProcessors.put(sourceName, new AddisonRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
+								indexingRecordProcessors.put(sourceName, new AddisonRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
 								break;
 							case "Aurora":
-								ilsRecordProcessors.put(sourceName, new AuroraRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
+								indexingRecordProcessors.put(sourceName, new AuroraRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
 								break;
 //							case "Arlington":
 //								ilsRecordProcessors.put(sourceName, new ArlingtonRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
@@ -208,22 +208,22 @@ public class GroupedWorkIndexer {
 //								ilsRecordProcessors.put(sourceName, new CarlXRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
 //								break;
 							case "SantaFe":
-								ilsRecordProcessors.put(sourceName, new SantaFeRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
+								indexingRecordProcessors.put(sourceName, new SantaFeRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
 								break;
 							case "Sacramento":
-								ilsRecordProcessors.put(sourceName, new SacramentoRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
+								indexingRecordProcessors.put(sourceName, new SacramentoRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
 								break;
 							case "AACPL":
-								ilsRecordProcessors.put(sourceName, new AACPLRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
+								indexingRecordProcessors.put(sourceName, new AACPLRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
 								break;
 							case "Lion":
-								ilsRecordProcessors.put(sourceName, new LionRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
+								indexingRecordProcessors.put(sourceName, new LionRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
 								break;
 							case "SideLoadedEContent":
-								ilsRecordProcessors.put(sourceName, new SideLoadedEContentProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
+								indexingRecordProcessors.put(sourceName, new SideLoadedEContentProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
 								break;
 							case "Hoopla":
-								ilsRecordProcessors.put(sourceName, new HooplaProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
+								indexingRecordProcessors.put(sourceName, new HooplaProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
 								break;
 							default:
 								logger.error("Unknown indexing class " + ilsIndexingClassString);
@@ -240,7 +240,7 @@ public class GroupedWorkIndexer {
 				}
 			}
 
-			setupIndexingStats();
+			setupIndexingStats(); //TODO: only during fullReindex
 
 		}catch (Exception e){
 			logger.error("Error loading record processors for ILS records", e);
@@ -257,9 +257,8 @@ public class GroupedWorkIndexer {
 			logger.error("Could not prepare statements to load local enrichment", e);
 		}
 
-//		loadLexileData();
-//		loadAcceleratedReaderData();
-		//TODO: temp, don't commit!
+		loadLexileData();
+		loadAcceleratedReaderData();
 
 		if (fullReindex){
 			clearIndex();
@@ -267,11 +266,11 @@ public class GroupedWorkIndexer {
 	}
 
 	private void setupIndexingStats() {
-		ArrayList<String> recordProcessorNames = new ArrayList<>(ilsRecordProcessors.keySet());
-		recordProcessorNames.add("overdrive");
+		ArrayList<String> sourceNames = new ArrayList<>(indexingRecordProcessors.keySet());
+		sourceNames.add("overdrive");
 
 		for (Scope curScope : scopes){
-			ScopedIndexingStats scopedIndexingStats = new ScopedIndexingStats(curScope.getScopeName(), recordProcessorNames);
+			ScopedIndexingStats scopedIndexingStats = new ScopedIndexingStats(curScope.getScopeName(), sourceNames);
 			indexingStats.put(curScope.getScopeName(), scopedIndexingStats);
 		}
 	}
@@ -778,7 +777,7 @@ public class GroupedWorkIndexer {
 			headers.add("Owned works");
 			headers.add("Total works");
 			TreeSet<String> recordProcessorNames = new TreeSet<>();
-			recordProcessorNames.addAll(ilsRecordProcessors.keySet());
+			recordProcessorNames.addAll(indexingRecordProcessors.keySet());
 			recordProcessorNames.add("overdrive");
 			for (String processorName : recordProcessorNames){
 				headers.add("Owned " + processorName + " records");
@@ -1409,8 +1408,8 @@ public class GroupedWorkIndexer {
 				overDriveProcessor.processRecord(groupedWork, identifier);
 				break;
 			default:
-				if (ilsRecordProcessors.containsKey(type)) {
-					ilsRecordProcessors.get(type).processRecord(groupedWork, identifier);
+				if (indexingRecordProcessors.containsKey(type)) {
+					indexingRecordProcessors.get(type).processRecord(groupedWork, identifier);
 				}else if (logger.isDebugEnabled()){
 					logger.debug("Could not find a record processor for type " + type);
 				}

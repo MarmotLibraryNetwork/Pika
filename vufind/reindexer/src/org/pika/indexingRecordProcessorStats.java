@@ -10,7 +10,7 @@ import java.util.ArrayList;
  * Date: 7/25/2015
  * Time: 9:13 PM
  */
-public class RecordProcessorIndexingStats {
+public class indexingRecordProcessorStats {
 	public int numRecordsOwned;
 	public int numPhysicalItemsOwned;
 	public int numOrderItemsOwned;
