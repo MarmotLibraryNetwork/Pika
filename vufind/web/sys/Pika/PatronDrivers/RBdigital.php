@@ -252,8 +252,6 @@ class RBdigital {
 				$logger->log(print_r($curl_info, true), PEAR_LOG_ERR);
 			} else {
 				if (!empty($response->output) && $response->output == 'SUCCESS') {
-					$this->trackUserUsageOfRBdigital($patron);
-					$this->trackRecordCheckout($recordId);
 
 					$result['success'] = true;
 					$result['message'] = translate([
@@ -321,27 +319,26 @@ class RBdigital {
 		$result = ['success' => false, 'message' => 'Unknown error'];
 
 		$registrationData = [
-		 'username' => $_REQUEST['username'],
-		 'password' => $_REQUEST['password'],
-		 'firstName' => $_REQUEST['firstName'],
-		 'lastName' => $_REQUEST['lastName'],
-		 'email' => $_REQUEST['email'],
+		 'username'   => $_REQUEST['username'],
+		 'password'   => $_REQUEST['password'],
+		 'firstName'  => $_REQUEST['firstName'],
+		 'lastName'   => $_REQUEST['lastName'],
+		 'email'      => $_REQUEST['email'],
 		 'postalCode' => $_REQUEST['postalCode'],
-		 'libraryCard' => $_REQUEST['libraryCard'],
-		 'libraryId' => $this->libraryId,
-		 'tenantId' => $this->libraryId
+		 'libraryCard'=> $_REQUEST['libraryCard'],
+		 'libraryId'  => $this->app->config['RBdigital']['libraryId'],
+		 'tenantId'   => $this->app->config['RBdigital']['libraryId']
 		];
 
 		//TODO: add pin if the library configuration uses pins
 
-		$actionUrl = $this->webServiceBaseUrl . '/v1/libraries/' . $this->libraryId . '/patrons/';
+		$actionUrl = $this->webServiceBaseUrl . 'patrons/';
 
 		$response = $this->curl->post($actionUrl, json_encode($registrationData));
-//		$response    = json_decode($rawResponse);
 		if ($response == false) {
 			$result['message'] = "Invalid information returned from API, please retry your action after a few minutes.";
 			global $logger;
-			$logger->log("Invalid information from rbdigital api " . $rawResponse, PEAR_LOG_ERR);
+			$logger->log("Invalid information from rbdigital api " . $response, PEAR_LOG_ERR);
 		} else {
 			if (!empty($response->authStatus) && $response->authStatus == 'Success') {
 				$user->rbdigitalId = $response->patron->patronId;

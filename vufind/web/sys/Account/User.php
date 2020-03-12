@@ -512,7 +512,7 @@ class User extends DB_DataObject {
 				return true;
 			}
 		}
-		return true;
+		return false;
 	}
 
 	function getRelatedRBDigitalUsers(){
@@ -527,7 +527,6 @@ class User extends DB_DataObject {
 				}
 			}
 		}
-
 		return $RBDigitalUsers;
 	}
 
