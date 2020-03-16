@@ -138,32 +138,61 @@ public class FormatDetermination {
 			} else {
 				//Convert formats from print to eContent version
 				for (String format : printFormats) {
-					if (format.equalsIgnoreCase("GraphicNovel") || format.equalsIgnoreCase("eComic")) {
-						rawFormats.add("eComic");
-					}else if (format.equalsIgnoreCase("eBook") || format.equalsIgnoreCase("Book") || format.equalsIgnoreCase("LargePrint") || format.equalsIgnoreCase("Manuscript")
-							|| format.equalsIgnoreCase("Thesis") || format.equalsIgnoreCase("Print") || format.equalsIgnoreCase("Microfilm") || format.equalsIgnoreCase("Kit")) {
-						rawFormats.add("eBook");
-					}else if (format.equalsIgnoreCase("Journal") || format.equalsIgnoreCase("Serial")) {
-						rawFormats.add("eMagazine");
-					} else if (format.equalsIgnoreCase("SoundRecording") || format.equalsIgnoreCase("SoundDisc") || format.equalsIgnoreCase("Playaway") || format.equalsIgnoreCase("CDROM")
-							|| format.equalsIgnoreCase("SoundCassette") || format.equalsIgnoreCase("CompactDisc") || format.equalsIgnoreCase("eAudio")) {
-						rawFormats.add("eAudiobook");
-					} else if (format.equalsIgnoreCase("MusicRecording")) {
-						rawFormats.add("eMusic");
-					} else if (format.equalsIgnoreCase("MusicalScore")) {
-						rawFormats.add("MusicalScore");
-					} else if (format.equalsIgnoreCase("Movies") || format.equalsIgnoreCase("Video") || format.equalsIgnoreCase("DVD") || format.equalsIgnoreCase("VideoDisc")) {
-						rawFormats.add("eVideo");
-					} else if (format.equalsIgnoreCase("Electronic") || format.equalsIgnoreCase("Software")) {
-						rawFormats.add("Online Materials");
-					} else if (format.equalsIgnoreCase("Photo")) {
-						rawFormats.add("Photo");
-					} else if (format.equalsIgnoreCase("Map")) {
-						rawFormats.add("Map");
-					} else if (format.equalsIgnoreCase("Newspaper")) {
-						rawFormats.add("Newspaper");
-					} else {
-						logger.warn("Could not find appropriate eContent format for " + format + " while side loading eContent " + identifier);
+					switch (format.toLowerCase()) {
+						case "graphicnovel":
+						case "ecomic":
+							rawFormats.add("eComic");
+							break;
+						case "ebook":
+						case "book":
+						case "largeprint":
+						case "manuscript":
+						case "thesis":
+						case "print":
+						case "microfilm":
+						case "kit":
+							rawFormats.add("eBook");
+							break;
+						case "journal":
+						case "serial":
+							rawFormats.add("eMagazine");
+							break;
+						case "soundrecording":
+						case "sounddisc":
+						case "playaway":
+						case "cdrom":
+						case "soundcassette":
+						case "compactdisc":
+						case "eaudio":
+							rawFormats.add("eAudiobook");
+							break;
+						case "musicrecording":
+							rawFormats.add("eMusic");
+							break;
+						case "musicalscore":
+							rawFormats.add("MusicalScore");
+							break;
+						case "movies":
+						case "video":
+						case "dvd":
+						case "videodisc":
+							rawFormats.add("eVideo");
+							break;
+						case "electronic":
+						case "software":
+							rawFormats.add("Online Materials");
+							break;
+						case "photo":
+							rawFormats.add("Photo");
+							break;
+						case "map":
+							rawFormats.add("Map");
+							break;
+						case "newspaper":
+							rawFormats.add("Newspaper");
+							break;
+						default:
+							logger.warn("Could not find appropriate eContent format for " + format + " while side loading eContent " + identifier);
 					}
 				}
 			}

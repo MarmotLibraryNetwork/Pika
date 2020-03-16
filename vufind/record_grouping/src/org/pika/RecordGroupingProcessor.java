@@ -235,13 +235,13 @@ class RecordGroupingProcessor {
 		GroupedWorkBase workForTitle = GroupedWorkFactory.getInstance(-1);
 
 		// Title
-		DataField field245       = setWorkTitleBasedOnMarcRecord(marcRecord, workForTitle);
+		setWorkTitleBasedOnMarcRecord(marcRecord, workForTitle);
 
 		// Category
 		String    groupingCategory = setGroupingCategoryForWork(identifier, marcRecord, profile, workForTitle);
 
 		// Author
-		setWorkAuthorBasedOnMarcRecord(marcRecord, workForTitle, field245, groupingCategory);
+		setWorkAuthorBasedOnMarcRecord(marcRecord, workForTitle, groupingCategory);
 
 		// Language
 		if (workForTitle.getGroupedWorkVersion() >= 5) {
@@ -272,48 +272,64 @@ class RecordGroupingProcessor {
 		return groupingCategory;
 	}
 
-	private void setWorkAuthorBasedOnMarcRecord(Record marcRecord, GroupedWorkBase workForTitle, DataField field245, String groupingFormat) {
+	private void setWorkAuthorBasedOnMarcRecord(Record marcRecord, GroupedWorkBase workForTitle, String groupingFormat) {
 		String    author   = null;
 		DataField field100 = marcRecord.getDataField("100"); // Heading - Personal Name
-		DataField field110 = marcRecord.getDataField("110"); // Heading - Corporate Name
-		DataField field111 = marcRecord.getDataField("111"); // Meeting Name
-		DataField field264 = marcRecord.getDataField("264"); // Production, Publication, Distribution, Manufacture, and Copyright Notice.
-		DataField field260 = marcRecord.getDataField("260"); // Publication, Distribution, etc.
-		DataField field700 = marcRecord.getDataField("700"); //
-		DataField field710 = marcRecord.getDataField("710"); // Added Entry-Corporate Name
-		DataField field711 = marcRecord.getDataField("711"); //
-
-		//Depending on the format we will promote the use of the 245c
 		if (field100 != null && field100.getSubfield('a') != null) {
 			author = field100.getSubfield('a').getData();
-		} else if (field110 != null && field110.getSubfield('a') != null) {
-			author = field110.getSubfield('a').getData();
-			if (field110.getSubfield('b') != null) {
-				author += " " + field110.getSubfield('b').getData();
-			}
-		} else if (field111 != null && field111.getSubfield('a') != null) {
-			author = field111.getSubfield('a').getData();
-		} else if (groupingFormat.equals("book") && field245 != null && field245.getSubfield('c') != null) {
-			author = field245.getSubfield('c').getData();
-			if (author.indexOf(';') > 0) {
-				author = author.substring(0, author.indexOf(';') - 1);
-			}
-		} else if (field700 != null && field700.getSubfield('a') != null) {
-			author = field700.getSubfield('a').getData();
-		} else if (field711 != null && field711.getSubfield('a') != null) {
-			// Check the 711 before the 710
-			author = field711.getSubfield('a').getData();
-		} else if (field710 != null && field710.getSubfield('a') != null) {
-			author = field710.getSubfield('a').getData();
-		} else if (field264 != null && field264.getIndicator2() == '1' && field264.getSubfield('b') != null) {
-			author = field264.getSubfield('b').getData();
-		} else if (field260 != null  && field260.getSubfield('b') != null) {
-			author = field260.getSubfield('b').getData();
-		} else if (!groupingFormat.equals("book") && field245 != null && field245.getSubfield('c') != null) {
-			// if not a book, check 245c as final resort
-			author = field245.getSubfield('c').getData();
-			if (author.indexOf(';') > 0) {
-				author = author.substring(0, author.indexOf(';') - 1);
+		} else {
+			DataField field110 = marcRecord.getDataField("110"); // Heading - Corporate Name
+			if (field110 != null && field110.getSubfield('a') != null) {
+				author = field110.getSubfield('a').getData();
+				if (field110.getSubfield('b') != null) {
+					author += " " + field110.getSubfield('b').getData();
+				}
+			} else {
+				DataField field111 = marcRecord.getDataField("111"); // Meeting Name
+				if (field111 != null && field111.getSubfield('a') != null) {
+					author = field111.getSubfield('a').getData();
+				} else {
+					//Depending on the format we will promote the use of the 245c
+					DataField field245 = marcRecord.getDataField("245");
+					if (groupingFormat.equals("book") && field245 != null && field245.getSubfield('c') != null) {
+						author = field245.getSubfield('c').getData();
+						if (author.indexOf(';') > 0) {
+							author = author.substring(0, author.indexOf(';') - 1);
+						}
+					} else {
+						DataField field700 = marcRecord.getDataField("700"); //
+						if (field700 != null && field700.getSubfield('a') != null) {
+							author = field700.getSubfield('a').getData();
+						} else {
+							DataField field711 = marcRecord.getDataField("711"); //
+							if (field711 != null && field711.getSubfield('a') != null) {
+								// Check the 711 before the 710
+								author = field711.getSubfield('a').getData();
+							} else {
+								DataField field710 = marcRecord.getDataField("710"); // Added Entry-Corporate Name
+								if (field710 != null && field710.getSubfield('a') != null) {
+									author = field710.getSubfield('a').getData();
+								} else {
+									DataField field264 = marcRecord.getDataField("264"); // Production, Publication, Distribution, Manufacture, and Copyright Notice.
+									if (field264 != null && field264.getIndicator2() == '1' && field264.getSubfield('b') != null) {
+										author = field264.getSubfield('b').getData();
+									} else {
+										DataField field260 = marcRecord.getDataField("260"); // Publication, Distribution, etc.
+										if (field260 != null && field260.getSubfield('b') != null) {
+											author = field260.getSubfield('b').getData();
+										} else if (!groupingFormat.equals("book") && field245 != null && field245.getSubfield('c') != null) {
+											// if not a book, check 245c as final resort
+											author = field245.getSubfield('c').getData();
+											if (author.indexOf(';') > 0) {
+												author = author.substring(0, author.indexOf(';') - 1);
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
 			}
 		}
 		if (author != null) {
@@ -332,7 +348,7 @@ class RecordGroupingProcessor {
 		workForTitle.setGroupingLanguage(languageCode);
 	}
 
-	private DataField setWorkTitleBasedOnMarcRecord(Record marcRecord, GroupedWorkBase workForTitle) {
+	private void setWorkTitleBasedOnMarcRecord(Record marcRecord, GroupedWorkBase workForTitle) {
 		DataField field245 = marcRecord.getDataField("245");
 		if (field245 != null && field245.getSubfield('a') != null) {
 			String fullTitle = field245.getSubfield('a').getData();
@@ -360,9 +376,8 @@ class RecordGroupingProcessor {
 				groupingSubtitle.append(field245.getSubfield('p').getData());
 			}
 
-			workForTitle.setTitle(fullTitle, numNonFilingCharacters, groupingSubtitle.toString());
+			workForTitle.setTitle(fullTitle, groupingSubtitle.toString(), numNonFilingCharacters);
 		}
-		return field245;
 	}
 
 	private long getExistingWork(String permanentId){

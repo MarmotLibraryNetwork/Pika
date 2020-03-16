@@ -205,7 +205,7 @@ public class GroupedWork1 extends GroupedWorkBase implements Cloneable {
 		return fullTitle;
 	}
 
-	public void setTitle(String title, int numNonFilingCharacters, String subtitle) {
+	public void setTitle(String title, String subtitle, int numNonFilingCharacters) {
 		title = normalizeTitle(title, numNonFilingCharacters);
 		if (subtitle != null){
 			subtitle = normalizeSubtitle(subtitle);

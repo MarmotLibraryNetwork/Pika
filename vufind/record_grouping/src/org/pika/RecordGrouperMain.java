@@ -127,7 +127,7 @@ public class RecordGrouperMain {
 					format   = getInputFromCommandLine("Enter the format");
 				}
 				GroupedWorkBase work = GroupedWorkFactory.getInstance(-1);
-				work.setTitle(title, 0, subtitle);
+				work.setTitle(title, subtitle);
 				work.setAuthor(author);
 				work.setGroupingCategory(format);
 				JSONObject result = new JSONObject();
@@ -154,13 +154,9 @@ public class RecordGrouperMain {
 		System.out.print(prompt + ": ");
 
 		//  open up standard input
-		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-
-		//  read the work from the command-line; need to use try/catch with the
-		//  readLine() method
 		String value = null;
-		try {
-			value = br.readLine().trim();
+		try (BufferedReader br = new BufferedReader(new InputStreamReader(System.in))) {
+				value = br.readLine().trim();
 		} catch (IOException ioe) {
 			System.out.println("IO error trying to read " + prompt);
 			System.exit(1);
@@ -313,7 +309,7 @@ public class RecordGrouperMain {
 				if (author == null) continue;
 
 				GroupedWorkBase work = GroupedWorkFactory.getInstance(-1);
-				work.setTitle(title, 0, subtitle);
+				work.setTitle(title, subtitle);
 				work.setAuthor(author);
 				if (mediaType.equalsIgnoreCase("audiobook")) {
 					work.setGroupingCategory("book");
@@ -473,7 +469,7 @@ public class RecordGrouperMain {
 
 					//Get normalized the information and get the permanent id
 					GroupedWorkBase work = GroupedWorkFactory.getInstance(4);
-					work.setTitle(originalTitle, 0, "");
+					work.setTitle(originalTitle, "");
 					work.setAuthor(originalAuthor);
 					work.setGroupingCategory(groupingFormat);
 
@@ -1231,8 +1227,8 @@ public class RecordGrouperMain {
 									boolean marcUpToDate = writeIndividualMarc(curProfile, curBib, recordId, marcRecordsWritten, marcRecordsOverwritten);
 									recordNumbersInExport.add(recordIdentifier.toString());
 									if (!explodeMarcsOnly) {
-//										if (true || /*TODO: temp only*/ !marcUpToDate || fullRegroupingNoClear) {
-										if ( !marcUpToDate || fullRegroupingNoClear) {
+										if (true || /*TODO: temp only*/ !marcUpToDate || fullRegroupingNoClear) {
+//										if ( !marcUpToDate || fullRegroupingNoClear) {
 											if (recordGroupingProcessor.processMarcRecord(curBib, !marcUpToDate)) {
 												recordNumbersToIndex.add(recordIdentifier.toString());
 											} else {

@@ -96,7 +96,10 @@ public abstract class GroupedWorkBase {
 		return authoritativeTitle;
 	}
 
-	abstract void setTitle(String title, int numNonFilingCharacters, String subtitle);
+	abstract void setTitle(String title, String subtitle, int numNonFilingCharacters);
+	void setTitle(String title, String subtitle){
+		setTitle(title, subtitle, 0);
+	};
 
 	abstract String getAuthor();
 

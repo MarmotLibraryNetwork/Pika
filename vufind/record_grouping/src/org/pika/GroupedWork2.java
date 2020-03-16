@@ -226,7 +226,7 @@ public class GroupedWork2 extends GroupedWorkBase implements Cloneable {
 	}
 
 	@Override
-	public void setTitle(String title, int numNonFilingCharacters, String subtitle) {
+	public void setTitle(String title, String subtitle, int numNonFilingCharacters) {
 		//this.fullTitle = title;
 		//if (subtitle != null) title += " " + subtitle;
 		title = normalizeTitle(title, numNonFilingCharacters);

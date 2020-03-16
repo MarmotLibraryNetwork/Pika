@@ -33,7 +33,7 @@ public class GroupedWork5 extends GroupedWorkBase implements Cloneable {
 	}
 
 	@Override
-	void setTitle(String title, int numNonFilingCharacters, String subtitle) {
+	public void setTitle(String title, String subtitle, int numNonFilingCharacters) {
 		if (subtitle != null && subtitle.length() > 0){
 			title = normalizePassedInSubtitle(title, subtitle);
 		}else{
@@ -138,27 +138,28 @@ public class GroupedWork5 extends GroupedWorkBase implements Cloneable {
 	*
 	* */
 
-	private static Pattern initialsFix                   = Pattern.compile("(?<=[A-Z])\\.(?=(\\s|[A-Z]|$))");
-	private static Pattern apostropheStrip               = Pattern.compile("'s");
-	private static Pattern specialCharacterStrip         = Pattern.compile("[^\\p{L}\\d\\s]");
-	private static Pattern consecutiveSpaceStrip         = Pattern.compile("\\s{2,}");
-	private static Pattern bracketedCharacterStrip       = Pattern.compile("\\[(.*?)\\]");
-	private static Pattern sortTrimmingPattern           = Pattern.compile("(?i)^(?:(?:a|an|the|el|la|\"|')\\s)(.*)$");
-	private static Pattern commonSubtitlesSimplePattern  = Pattern.compile("(by\\s\\w+\\s\\w+|a novel of .*|stories|an autobiography|a biography|a memoir in books|poems|the movie|large print|graphic novel|magazine|audio cd|book club kit|with illustrations|book \\d+|the original classic edition|classic edition|a novel)$");
-	private static Pattern commonSubtitlesComplexPattern = Pattern.compile("((a|una)\\s(.*)novel(a|la)?|a(.*)memoir|a(.*)mystery|a(.*)thriller|by\\s\\w+\\s\\w+|an? .* story|a .*\\s?book|[\\w\\s]+series book \\d+|the[\\w\\s]+chronicles book \\d+|[\\w\\s]+trilogy book \\d+)$");
-	private static Pattern editionRemovalPattern         = Pattern.compile("(first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth|revised|\\d+\\S*)\\s+(edition|ed|ed\\.|update)");
-	private static Pattern firstPattern                  = Pattern.compile("1st");
-	private static Pattern secondPattern                 = Pattern.compile("2nd");
-	private static Pattern thirdPattern                  = Pattern.compile("3rd");
-	private static Pattern fourthPattern                 = Pattern.compile("4th");
-	private static Pattern fifthPattern                  = Pattern.compile("5th");
-	private static Pattern sixthPattern                  = Pattern.compile("6th");
-	private static Pattern seventhPattern                = Pattern.compile("7th");
-	private static Pattern eighthPattern                 = Pattern.compile("8th");
-	private static Pattern ninthPattern                  = Pattern.compile("9th");
-	private static Pattern tenthPattern                  = Pattern.compile("10th");
-	private static Pattern dashPattern                   = Pattern.compile("&#8211");
-	private static Pattern ampersandPattern              = Pattern.compile("&");
+	final private static Pattern initialsFix                   = Pattern.compile("(?<=[A-Z])\\.(?=(\\s|[A-Z]|$))");
+	final private static Pattern apostropheStrip               = Pattern.compile("'s");
+	final private static Pattern specialCharacterStrip         = Pattern.compile("[^\\p{L}\\d\\s]");
+	final private static Pattern consecutiveSpaceStrip         = Pattern.compile("\\s{2,}");
+	final private static Pattern bracketedCharacterStrip       = Pattern.compile("\\[(.*?)\\]");
+	final private static Pattern sortTrimmingPattern           = Pattern.compile("(?i)^(?:(?:a|an|the|el|la|\"|')\\s)(.*)$");
+	final private static Pattern commonSubtitlesSimplePattern  = Pattern.compile("(by\\s\\w+\\s\\w+|a novel of .*|stories|an autobiography|a biography|a memoir in books|poems|the movie|large print|graphic novel|magazine|audio cd|book club kit|with illustrations|book \\d+|the original classic edition|classic edition|a novel)$");
+	final private static Pattern commonSubtitlesComplexPattern = Pattern.compile("((a|una)\\s(.*)novel(a|la)?|a(.*)memoir|a(.*)mystery|a(.*)thriller|by\\s\\w+\\s\\w+|an? .* story|a .*\\s?book|[\\w\\s]+series book \\d+|the[\\w\\s]+chronicles book \\d+|[\\w\\s]+trilogy book \\d+)$");
+	final private static Pattern editionRemovalPattern         = Pattern.compile("(first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth|revised|\\d+\\S*)\\s+(edition|ed|ed\\.|update)");
+	final private static Pattern firstPattern                  = Pattern.compile("1st");
+	final private static Pattern secondPattern                 = Pattern.compile("2nd");
+	final private static Pattern thirdPattern                  = Pattern.compile("3rd");
+	final private static Pattern fourthPattern                 = Pattern.compile("4th");
+	final private static Pattern fifthPattern                  = Pattern.compile("5th");
+	final private static Pattern sixthPattern                  = Pattern.compile("6th");
+	final private static Pattern seventhPattern                = Pattern.compile("7th");
+	final private static Pattern eighthPattern                 = Pattern.compile("8th");
+	final private static Pattern ninthPattern                  = Pattern.compile("9th");
+	final private static Pattern tenthPattern                  = Pattern.compile("10th");
+	final private static Pattern dashPattern                   = Pattern.compile("&#8211");
+	final private static Pattern ampersandPattern              = Pattern.compile("&");
+	final private static Pattern digitPattern                  = Pattern.compile("\\p{Nd}");
 
 	private String normalizeAuthor(String author) {
 		return AuthorNormalizer.getNormalizedName(author);
@@ -174,10 +175,10 @@ public class GroupedWork5 extends GroupedWorkBase implements Cloneable {
 
 		groupingTitle = normalizeDiacritics(groupingTitle);
 		groupingTitle = makeValueSortable(groupingTitle);
-		groupingTitle = removeBracketedPartOfTitle(groupingTitle);
+		groupingTitle = cleanTitleCharacters(groupingTitle);
 
 		//Remove any bracketed parts of the title
-		groupingTitle = cleanTitleCharacters(groupingTitle);
+		groupingTitle = removeBracketedPartOfTitle(groupingTitle); // this also removes any special characters.  TODO: make that its own step
 
 		//Remove some common subtitles that are meaningless (do again here in case they were part of the title).
 		String titleBeforeRemovingSubtitles = groupingTitle.trim();
@@ -222,16 +223,18 @@ public class GroupedWork5 extends GroupedWorkBase implements Cloneable {
 
 	private String normalizeNumericTitleText(String groupingTitle) {
 		//Normalize numeric titles
-		groupingTitle = firstPattern.matcher(groupingTitle).replaceAll("first");
-		groupingTitle = secondPattern.matcher(groupingTitle).replaceAll("second");
-		groupingTitle = thirdPattern.matcher(groupingTitle).replaceAll("third");
-		groupingTitle = fourthPattern.matcher(groupingTitle).replaceAll("fourth");
-		groupingTitle = fifthPattern.matcher(groupingTitle).replaceAll("fifth");
-		groupingTitle = sixthPattern.matcher(groupingTitle).replaceAll("sixth");
-		groupingTitle = seventhPattern.matcher(groupingTitle).replaceAll("seventh");
-		groupingTitle = eighthPattern.matcher(groupingTitle).replaceAll("eighth");
-		groupingTitle = ninthPattern.matcher(groupingTitle).replaceAll("ninth");
-		groupingTitle = tenthPattern.matcher(groupingTitle).replaceAll("tenth");
+		if (digitPattern.matcher(groupingTitle).find()) {
+			groupingTitle = firstPattern.matcher(groupingTitle).replaceAll("first");
+			groupingTitle = secondPattern.matcher(groupingTitle).replaceAll("second");
+			groupingTitle = thirdPattern.matcher(groupingTitle).replaceAll("third");
+			groupingTitle = fourthPattern.matcher(groupingTitle).replaceAll("fourth");
+			groupingTitle = fifthPattern.matcher(groupingTitle).replaceAll("fifth");
+			groupingTitle = sixthPattern.matcher(groupingTitle).replaceAll("sixth");
+			groupingTitle = seventhPattern.matcher(groupingTitle).replaceAll("seventh");
+			groupingTitle = eighthPattern.matcher(groupingTitle).replaceAll("eighth");
+			groupingTitle = ninthPattern.matcher(groupingTitle).replaceAll("ninth");
+			groupingTitle = tenthPattern.matcher(groupingTitle).replaceAll("tenth");
+		}
 		return groupingTitle;
 	}
 

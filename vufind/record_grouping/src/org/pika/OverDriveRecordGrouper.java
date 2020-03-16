@@ -21,7 +21,7 @@ public class OverDriveRecordGrouper extends RecordGroupingProcessor {
 		GroupedWorkBase groupedWork = GroupedWorkFactory.getInstance(-1);
 
 		//Replace & with and for better matching
-		groupedWork.setTitle(title, 0, subtitle);
+		groupedWork.setTitle(title, subtitle);
 
 		if (author != null) {
 			groupedWork.setAuthor(author);
