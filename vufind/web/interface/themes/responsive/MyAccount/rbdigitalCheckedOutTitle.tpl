@@ -92,34 +92,14 @@
 						</div>
 					</div>
 				{/if}
-				{*
-				<div class="row econtent-download-row">
-					<div class="result-label col-md-4 col-lg-3">{translate text='Download'}</div>
-					<div class="result-value col-md-8 col-lg-9">
-						{if $record.formatSelected}
-							You downloaded the <strong>{$record.selectedFormat.name}</strong> format of this title.
-						{elseif isset($record.formats)}
-							<div class="form-inline">
-								<label for="downloadFormat_{$record.overDriveId}">Select one format to download.</label>
-								<br>
-								<select name="downloadFormat_{$record.overDriveId}" id="downloadFormat_{$record.overDriveId}" class="input-sm form-control">
-									<option value="-1">Select a Format</option>
-									{foreach from=$record.formats item=format}
-										<option value="{$format.id}">{$format.name}</option>
-									{/foreach}
-								</select>
-								<a href="#" onclick="VuFind.OverDrive.selectOverDriveDownloadFormat('{$record.userId}', '{$record.overDriveId}')" class="btn btn-sm btn-primary">Download</a>
-							</div>
-						{/if}
-					</div>
-				</div>*}
+
 			</div>
 
 			{* Actions for Title *}
 			<div class="col-xs-9 col-sm-8 col-md-4 col-lg-3">
 				<div class="btn-group btn-group-vertical btn-block">
 
-						<a href="#" onclick="return VuFind.RBdigital.readMagazineOnline('{$record.userId}', '{$record.id}')" class="btn btn-sm btn-primary">Read&nbsp;Online</a>
+						<a href="/MyAccount/Redirect?action=readRBdigitalMagazine&userId={$record.userId}&issueId={$record.id}" class="btn btn-sm btn-primary">Read&nbsp;Online</a>
 
 					{if $record.overdriveRead}
 						<a href="#" onclick="return VuFind.OverDrive.followOverDriveDownloadLink('{$record.userId}', '{$record.overDriveId}', 'ebook-overdrive')" class="btn btn-sm btn-primary">Read&nbsp;Online</a>
