@@ -1259,8 +1259,12 @@ EOT;
 		$params['barcodes'][] = $barcode;
 
 		// agency code
-		$params['fixedFields']["158"] = ["label" => "PAT AGENCY",
-		                                 "value" => $library->selfRegistrationAgencyCode];
+		if($library->selfRegistrationAgencyCode >= 1) {
+			$params['fixedFields']["158"] = [
+			 "label" => "PAT AGENCY",
+			 "value" => $library->selfRegistrationAgencyCode
+			];
+		}
 		// expiration date
 		$interval = 'P'.$library->selfRegistrationDaysUntilExpire.'D';
 		$expireDate = new DateTime();
