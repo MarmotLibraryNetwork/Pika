@@ -1,6 +1,6 @@
 {strip}
 {if $libraryHoursMessage}
-	<div class="libraryHours alert alert-success">
+	<div class="libraryHours alert {if strpos($libraryHoursMessage, 'closed')}alert-warning{else}alert-success{/if}">
     {$libraryHoursMessage}
     {if $showLibraryHoursAndLocationsLink}
 			<a href="/AJAX/JSON?method=getHoursAndLocations" data-title="Library Hours and Locations" class="modalDialogTrigger pull-right">
