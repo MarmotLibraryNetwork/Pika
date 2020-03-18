@@ -44,6 +44,17 @@ class Lion extends Sierra {
 		$this->logger->info('Using Pika\PatronDrivers\Lion.');
 	}
 
+	public function selfRegister($extraSelfRegParams = false)
+	{
+		$extraSelfRegParams = [
+		 'pMessage' => 's',
+		 'patronCodes' => [
+		  'pcode3' => 1
+		 ]
+		];
+		return parent::selfRegister($extraSelfRegParams);
+	}
+
 	public function getSelfRegistrationFields(){
 		global $library;
 		// get library code

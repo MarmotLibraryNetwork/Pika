@@ -1239,7 +1239,7 @@ EOT;
 		} while ($barcodeTest === true);
 		$params['barcodes'][] = $barcode;
 
-		// agency code
+		// agency code -- not all sierra libraries use the agency field
 		if($library->selfRegistrationAgencyCode >= 1) {
 			$params['fixedFields']["158"] = [
 			 "label" => "PAT AGENCY",
