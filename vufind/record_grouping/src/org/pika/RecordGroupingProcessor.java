@@ -290,9 +290,15 @@ class RecordGroupingProcessor {
 					author = field111.getSubfield('a').getData();
 				} else {
 					//Depending on the format we will promote the use of the 245c
+
+					// for .b40649350 the 700a would be better than the 245c of a book
+					//245	0	2	|a A darker shade of Sweden :|b original stories by Sweden's greatest crime writers /|c edited and translated by John-Henri Holmberg.
+					//700	1		|a Holmberg, John-Henri,|d 1949-|0 http://id.loc.gov/authorities/names/n80034250|e editor,|e translator.
+
 					DataField field245 = marcRecord.getDataField("245");
 					if (groupingFormat.equals("book") && field245 != null && field245.getSubfield('c') != null) {
 						author = field245.getSubfield('c').getData();
+						//TODO: reverse name display
 						if (author.indexOf(';') > 0) {
 							author = author.substring(0, author.indexOf(';') - 1);
 						}
@@ -309,6 +315,7 @@ class RecordGroupingProcessor {
 								DataField field710 = marcRecord.getDataField("710"); // Added Entry-Corporate Name
 								if (field710 != null && field710.getSubfield('a') != null) {
 									author = field710.getSubfield('a').getData();
+									// Exclude "hoopla digital."
 								} else {
 									DataField field264 = marcRecord.getDataField("264"); // Production, Publication, Distribution, Manufacture, and Copyright Notice.
 									if (field264 != null && field264.getIndicator2() == '1' && field264.getSubfield('b') != null) {
@@ -428,7 +435,7 @@ class RecordGroupingProcessor {
 			}
 
 		} catch (SQLException e){
-			logger.warn("Error adding entry to historical table", e);
+			logger.warn("Error adding entry to historical table, query: " + insertGroupedWorkStmt, e);
 		}
 
 	}
@@ -440,12 +447,12 @@ class RecordGroupingProcessor {
 	 * @param groupedWork       Information about the work itself
 	 */
 	void addGroupedWorkToDatabase(RecordIdentifier primaryIdentifier, GroupedWorkBase groupedWork, boolean primaryDataChanged) {
-		if (workNotInHistoricalTable(groupedWork)){
-			// Add grouping factors to historical table in order to track permanent Ids across grouping versions
-			// Do this before unmerging or merging because we want to track the original factors and id
-
-			addToHistoricalTable(groupedWork);
-		}
+//		if (workNotInHistoricalTable(groupedWork)){
+//			// Add grouping factors to historical table in order to track permanent Ids across grouping versions
+//			// Do this before unmerging or merging because we want to track the original factors and id
+//
+//			addToHistoricalTable(groupedWork);
+//		}
 		//TODO: undo above
 
 		//Check to see if we need to ungroup this

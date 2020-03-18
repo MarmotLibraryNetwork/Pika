@@ -101,32 +101,38 @@ class MarcRecordGrouper extends RecordGroupingProcessor {
 
 	@Override
 	protected void setGroupingLanguageBasedOnMarc(Record marcRecord, GroupedWork5 workForTitle) {
+		String languageCode = null;
 		ControlField fixedField = (ControlField) marcRecord.getVariableField("008");
-//		String       languageFields = "008[35-37]";
-		String       languageCode   = fixedField.getData();
-		if (languageCode.length() > 37) {
-			languageCode = languageCode.substring(35, 38).toLowerCase();
-		} else if (profile.sierraRecordFixedFieldsTag != null && !profile.sierraRecordFixedFieldsTag.isEmpty() && profile.sierraLanguageFixedField != ' ') {
-			// Use the Sierra Fixed Field Language code if it is available
-			List<DataField> dataFields = getDataFields(marcRecord, profile.sierraRecordFixedFieldsTag);
-			for (DataField dataField : dataFields) {
-				Subfield subfield = dataField.getSubfield(profile.sierraLanguageFixedField);
-				if (subfield != null) {
-					languageCode = subfield.getData().toLowerCase();
-					if (!languageCode.isEmpty()) {
-						break;
+		String       oo8languageCode   = fixedField.getData();
+		if (oo8languageCode.length() > 37) {
+			oo8languageCode = oo8languageCode.substring(35, 38).toLowerCase();
+			if (!oo8languageCode.equals("   ")){
+				languageCode = oo8languageCode;
+			}
+		}
+		if (languageCode == null) {
+			if (profile.sierraRecordFixedFieldsTag != null && !profile.sierraRecordFixedFieldsTag.isEmpty() && profile.sierraLanguageFixedField != ' ') {
+				// Use the Sierra Fixed Field Language code if it is available
+				List<DataField> dataFields = getDataFields(marcRecord, profile.sierraRecordFixedFieldsTag);
+				for (DataField dataField : dataFields) {
+					Subfield subfield = dataField.getSubfield(profile.sierraLanguageFixedField);
+					if (subfield != null) {
+						languageCode = subfield.getData().toLowerCase();
+						if (!languageCode.isEmpty()) {
+							break;
+						}
 					}
 				}
-			}
-		} else {
-			// If we still don't have a language, try using the first 041a if present
-			DataField languageField = marcRecord.getDataField("041");
-			if (languageField != null){
-				Subfield langaugeSubField = languageField.getSubfield('a');
-				if (langaugeSubField != null){
-					String language = langaugeSubField.getData().trim().toLowerCase();
-					if (language.length() == 3){
-						languageCode = language;
+			} else {
+				// If we still don't have a language, try using the first 041a if present
+				DataField languageField = marcRecord.getDataField("041");
+				if (languageField != null){
+					Subfield langaugeSubField = languageField.getSubfield('a');
+					if (langaugeSubField != null){
+						String language = langaugeSubField.getData().trim().toLowerCase();
+						if (language.length() == 3){
+							languageCode = language;
+						}
 					}
 				}
 			}

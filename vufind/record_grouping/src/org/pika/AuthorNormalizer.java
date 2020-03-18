@@ -13,14 +13,14 @@ import java.util.regex.Pattern;
  * Time: 9:36 AM
  */
 class AuthorNormalizer {
-	private static Pattern authorExtract1 = Pattern.compile("^(.+?)\\spresents.*$");
-	private static Pattern authorExtract2 = Pattern.compile("^(?:(?:a|an)\\s)?(.+?)\\spresentation.*$");
-	private static Pattern distributedByRemoval = Pattern.compile("^distributed (?:in.*\\s)?by\\s(.+)$");
-	private static Pattern initialsFix = Pattern.compile("(?<=[A-Z])\\.(?=(\\s|[A-Z]|$))");
-	private static Pattern apostropheStrip = Pattern.compile("'s");
+	private static Pattern authorExtract1             = Pattern.compile("^(.+?)\\spresents.*$");
+	private static Pattern authorExtract2             = Pattern.compile("^(?:(?:a|an)\\s)?(.+?)\\spresentation.*$");
+	private static Pattern distributedByRemoval       = Pattern.compile("^distributed (?:in.*\\s)?by\\s(.+)$");
+	private static Pattern initialsFix                = Pattern.compile("(?<=[A-Z])\\.(?=(\\s|[A-Z]|$))");
+	private static Pattern apostropheStrip            = Pattern.compile("'s");
 	private static Pattern specialCharacterWhitespace = Pattern.compile("'");
-	private static Pattern specialCharacterStrip = Pattern.compile("[^\\p{L}\\d\\s]");
-	private static Pattern consecutiveCharacterStrip = Pattern.compile("\\s{2,}");
+	private static Pattern specialCharacterStrip      = Pattern.compile("[^\\p{L}\\d\\s]");
+	private static Pattern consecutiveCharacterStrip  = Pattern.compile("\\s{2,}");
 
 	static String getNormalizedName(String rawName) {
 		String groupingAuthor = normalizeDiacritics(rawName);
@@ -54,7 +54,7 @@ class AuthorNormalizer {
 			groupingAuthor = distributedByRemovalMatcher.group(1);
 		}
 		//Remove md if the author ends with md
-		if (groupingAuthor.endsWith(" md")){
+		if (groupingAuthor.endsWith(" md")){ //todo: move to suffix
 			groupingAuthor = groupingAuthor.substring(0, groupingAuthor.length() - 3);
 		}
 
@@ -144,27 +144,22 @@ class AuthorNormalizer {
 		return parenRemoval.matcher(authorName).replaceAll("");
 	}
 
-	private static Pattern commonAuthorPrefixPattern = Pattern.compile("(?i)^(consultant|publisher & editor-in-chief|edited by|by the editors of|editor in chief||editor-in-chief|general editor|editors|editor|by|chosen by|translated by|prepared by|translated and edited by|completely rev by|pictures by|selected and adapted by|with a foreword by|with a new foreword by|introd by|introduction by|intro by|retold by|concept),?\\s");
+	private static Pattern commonAuthorPrefixPattern = Pattern.compile("(?i)^(consultant|publisher & editor-in-chief|edited by|by the editors of|editor in chief|edited and translated|editor-in-chief|general editor|editors|editor|by|chosen by|translated by|prepared by|translated and edited by|completely rev by|pictures by|selected and adapted by|with a foreword by|with a new foreword by|introd by|introduction by|intro by|retold by|concept),?\\s");
 	private static Pattern commonAuthorSuffixPattern = Pattern.compile("(?i),?\\s(presents|general editor|editor in chief|editor-in-chief|editors|editor|etc|inc|inc\\setc|co|corporation|llc|partners|company|home entertainment|musical group|et al|concept|consultant|\\.\\.\\.\\set al)\\.?$");
 	private static String removeCommonPrefixesAndSuffixes(String authorName) {
-		boolean changeMade = true;
-		while (changeMade){
-			changeMade = false;
+		boolean changeMade;
+		do {
 			Matcher commonAuthorPrefixMatcher = commonAuthorPrefixPattern.matcher(authorName);
-			if (commonAuthorPrefixMatcher.find()){
+			if (changeMade = commonAuthorPrefixMatcher.find()){
 				authorName = commonAuthorPrefixMatcher.replaceAll("");
-				changeMade = true;
 			}
-		}
-		changeMade = true;
-		while (changeMade){
-			changeMade = false;
+		} while (changeMade);
+		do{
 			Matcher commonAuthorSuffixMatcher = commonAuthorSuffixPattern.matcher(authorName);
-			if (commonAuthorSuffixMatcher.find()){
+			if (changeMade = commonAuthorSuffixMatcher.find()){
 				authorName = commonAuthorSuffixMatcher.replaceAll("");
-				changeMade = true;
 			}
-		}
+		} while (changeMade);
 		return authorName;
 	}
 	private static Pattern datePattern = Pattern.compile("(,\\s)?(\\d{4}\\sor\\s)?(\\d{4}\\??-?|\\d{4}\\??-\\d{4}|-\\d{4}|\\d{4} (Jan|January|Feb|February|Mar|March|Apr|April|May|Jun|June|Jul|July|Aug|August|Sep|September|Oct|October|Nov|November|Dec|December)(\\s\\d+-?))\\??(\\sor\\s)?(\\d{4})?(\\.+)?$");

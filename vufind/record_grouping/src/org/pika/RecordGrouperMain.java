@@ -668,24 +668,26 @@ public class RecordGrouperMain {
 		boolean onlyDoCleanup                = false;
 		boolean explodeMarcsOnly             = false;
 		String  indexingProfileToRun         = null;
-		if (args.length >= 2 && args[1].equalsIgnoreCase("explodeMarcs")) {
-			explodeMarcsOnly             = true;
-			clearDatabasePriorToGrouping = false;
-		} else if (args.length >= 2 && args[1].equalsIgnoreCase("fullRegroupingNoClear")) {
-			fullRegroupingNoClear = true;
-		} else if (args.length >= 2 && args[1].equalsIgnoreCase("fullRegrouping")) {
-			clearDatabasePriorToGrouping      = true;
-			fullRegroupingClearGroupingTables = true;
-		} else if (args.length >= 2 && args[1].equalsIgnoreCase("runPostGroupingCleanup")) {
-			clearDatabasePriorToGrouping      = false;
-			fullRegroupingClearGroupingTables = false;
-			onlyDoCleanup                     = true;
-		} else if (args.length >= 2) {
-			//The last argument is the indexing profile to run
-			indexingProfileToRun              = args[1];
-			fullRegroupingClearGroupingTables = false;
-		} else {
-			fullRegroupingClearGroupingTables = false;
+		if (args.length >= 2) {
+			switch (args[1].toLowerCase()) {
+				case "explodemarcs":
+					explodeMarcsOnly = true;
+					break;
+				case "fullregroupingnoclear":
+					fullRegroupingNoClear = true;
+					break;
+				case "fullregrouping":
+				case "fullregroupingclear":
+					clearDatabasePriorToGrouping = true;
+					fullRegroupingClearGroupingTables = true;
+					break;
+				case "runpostgroupingcleanup":
+					onlyDoCleanup = true;
+					break;
+				default:
+					//The last argument is the indexing profile to regroup
+					indexingProfileToRun = args[1];
+			}
 		}
 
 		RecordGroupingProcessor recordGroupingProcessor = null;
@@ -767,7 +769,7 @@ public class RecordGrouperMain {
 
 	private static void removeDeletedRecords(String curProfile, String dataDirPath) {
 		if (marcRecordIdsInDatabase.size() > 0) {
-			addNoteToGroupingLog("Deleting " + marcRecordIdsInDatabase.size() + " record ids for profile " + curProfile + " from the database since they are no longer in the export.");
+			addNoteToGroupingLog("Deleting " + marcRecordIdsInDatabase.size() + " record ids for profile " + curProfile + " from the ils_marc_checksums table since they are no longer in the export.");
 			for (String recordNumber : marcRecordIdsInDatabase.keySet()) {
 				//Remove the record from the ils_marc_checksums table
 				try {
@@ -1469,8 +1471,10 @@ public class RecordGrouperMain {
 						}
 					} catch (FileNotFoundException e) {
 						logger.debug("Individual marc record not found " + recordNumberWithSource);
+						marcRecordUpToDate = false;
 					} catch (Exception e) {
 						logger.error("Error getting checksum for file", e);
+						marcRecordUpToDate = false;
 					}
 				}
 			}
