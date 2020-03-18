@@ -48,9 +48,6 @@ class Lion extends Sierra {
 	{
 		$extraSelfRegParams = [
 		 'pMessage' => 's',
-		 'patronCodes' => [
-		  'pcode3' => 1
-		 ]
 		];
 		return parent::selfRegister($extraSelfRegParams);
 	}
