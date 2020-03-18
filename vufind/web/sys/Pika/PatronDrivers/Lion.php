@@ -61,9 +61,9 @@ class Lion extends Sierra {
 		$location            = new Location();
 		$location->libraryId = $library->libraryId;
 		$location->find(true);
-		if (!$location){
+		//if (!$location){
 			//return ['success'=>false, 'barcode'=>''];
-		}
+		//}
 		$homeLibraryCode = $location->code;
 
 		$fields   = array();
