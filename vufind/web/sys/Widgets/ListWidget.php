@@ -265,10 +265,10 @@ class ListWidget extends DB_DataObject {
 
 	function validateName(){
 		//Setup validation return array
-		$validationResults = array(
+		$validationResults = [
 			'validatedOk' => true,
-			'errors'      => array(),
-		);
+			'errors'      => [],
+		];
 
 		//Check to see if the name is unique
 		$widget       = new ListWidget();
@@ -292,9 +292,9 @@ class ListWidget extends DB_DataObject {
 
 	public function __get($name){
 		if ($name == "lists"){
-			if (!isset($this->lists)){
+			if (!isset($this->lists) && !empty($this->id)){
 				//Get the list of lists that are being displayed for the widget
-				$this->lists                  = array();
+				$this->lists                  = [];
 				$listWidgetList               = new ListWidgetList();
 				$listWidgetList->listWidgetId = $this->id;
 				$listWidgetList->orderBy('weight ASC');

@@ -222,7 +222,7 @@ class RBdigital {
 		if($res->bearer) {
 			header('Authorization: bearer '. $res->bearer);
 		}
-		header('Location: https://www.rbdigital.com/reader.php#/reader/readsvg/'.$issueId);
+		header('Location: https://www.rbdigital.com/reader.php#/reader/readsvg/'.$issueId.'/Cover');
 		die();
 	}
 
