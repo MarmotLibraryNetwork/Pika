@@ -18,7 +18,7 @@
  */
 
 /**
- * Table Definition for ListWidgetList
+ * Object for ListWidget Lists
  */
 require_once 'DB/DataObject.php';
 require_once ROOT_DIR . '/sys/Widgets/ListWidgetListsLinks.php';
@@ -33,46 +33,46 @@ class ListWidgetList extends DB_DataObject {
 	public $weight;
 
 	function keys(){
-		return array('id');
+		return ['id'];
 	}
 
 	static function getObjectStructure(){
-		$structure = array(
-			'id'           => array(
+		$structure = [
+			'id'           => [
 				'property'    => 'id',
 				'type'        => 'label',
 				'label'       => 'Id',
 				'description' => 'The unique id of the list widget file.'
-			),
-			'listWidgetId' => array(
+			],
+			'listWidgetId' => [
 				'property'    => 'listWidgetId',
 				'type'        => 'foreignKey',
 				'label'       => 'List Widget Id',
 				'description' => 'The widget this list is associated with.'
-			),
-			'name'         => array(
+			],
+			'name'         => [
 				'property'    => 'name',
 				'type'        => 'text',
 				'label'       => 'Name',
 				'description' => 'The name of the list to display in the tab.',
 				'required'    => true,
-			),
-			'displayFor'   => array(
+			],
+			'displayFor'   => [
 				'property'    => 'displayFor',
 				'type'        => 'enum',
-				'values'      => array('all' => 'Everyone', 'loggedIn' => 'Only when a user is logged in', 'notLoggedIn' => 'Only when no one is logged in'),
+				'values'      => ['all' => 'Everyone', 'loggedIn' => 'Only when a user is logged in', 'notLoggedIn' => 'Only when no one is logged in'],
 				'label'       => 'Display For',
 				'description' => 'Who this list should be displayed for.'
-			),
-			'source'       => array(
+			],
+			'source'       => [
 				'property'         => 'source',
 				'type'             => 'text',
 				'label'            => 'Source',
 				'description'      => 'The source of the list.',
 				'serverValidation' => 'validateSource',
 				'required'         => true
-			),
-			'links'        => array(
+			],
+			'links'        => [
 				'property'      => 'links',
 				'type'          => 'oneToMany',
 				'keyThis'       => 'id',
@@ -83,7 +83,7 @@ class ListWidgetList extends DB_DataObject {
 				'description'   => 'The links to be displayed within the widget.',
 				'sortable'      => true,
 				'storeDb'       => true
-			),
+			],
 //			'weight' => array(
 //				'property' => 'weight',
 //				'type'     => 'integer',
@@ -92,12 +92,12 @@ class ListWidgetList extends DB_DataObject {
 //				'required' => true
 //			),
 
-		);
+		];
 		return $structure;
 	}
 
 	public function __get($name){
-		if ($name == "links"){
+		if ($name == 'links'){
 			if (!isset($this->links)){
 				//Get the list of lists that are being displayed for the widget
 				$this->links                            = array();
@@ -127,23 +127,6 @@ class ListWidgetList extends DB_DataObject {
 			}
 		}
 		return $cacheInfo['fullListLink'];
-	}
-
-
-	function validateName(){
-		//Setup validation return array
-		$validationResults = array(
-			'validatedOk' => true,
-			'errors'      => array(),
-		);
-
-		//TODO: Check to see if the name is unique
-
-		//Make sure there aren't errors
-		if (count($validationResults['errors']) > 0){
-			$validationResults['validatedOk'] = false;
-		}
-		return $validationResults;
 	}
 
 	function __toString(){
