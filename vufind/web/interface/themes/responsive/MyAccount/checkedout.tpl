@@ -49,9 +49,7 @@
 							{elseif $checkedOutTitle.checkoutSource == 'OverDrive'}
 								{include file="MyAccount/overdriveCheckedOutTitle.tpl" record=$checkedOutTitle resultIndex=$smarty.foreach.checkedOutTitleLoop.iteration}
 							{elseif $checkedOutTitle.checkoutSource == 'Hoopla'}
-								{include file="MyAccount/" record=$checkedOutTitle resultIndex=$smarty.foreach.checkedOutTitleLoop.iteration}
-              {elseif $checkedOutTitle.checkoutSource == 'RBdigital'}
-                  {include file="MyAccount/rbdigitalCheckedOutTitle.tpl" record=$checkedOutTitle resultIndex=$smarty.foreach.checkedOutTitleLoop.iteration}
+								{include file="MyAccount/hooplaCheckedOutTitle.tpl" record=$checkedOutTitle resultIndex=$smarty.foreach.checkedOutTitleLoop.iteration}
 							{else}
 								<div class="row">
 									Unknown record source {$checkedOutTitle.checkoutSource}
