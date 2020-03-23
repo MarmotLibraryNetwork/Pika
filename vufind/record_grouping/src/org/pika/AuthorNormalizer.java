@@ -67,7 +67,8 @@ class AuthorNormalizer {
 	}
 
 	private static String normalizeDiacritics(String textToNormalize){
-		return Normalizer.normalize(textToNormalize, Normalizer.Form.NFKC);
+		textToNormalize = Normalizer.normalize(textToNormalize, Normalizer.Form.NFD).replaceAll("\\p{InCombiningDiacriticalMarks}+", "");
+		return Normalizer.isNormalized(textToNormalize, Normalizer.Form.NFKC) ? textToNormalize : Normalizer.normalize(textToNormalize, Normalizer.Form.NFKC);
 	}
 
 	private static Pattern companyIdentifierPattern = Pattern.compile("(?i)[\\s,](pty ltd|llc|co|company|inc|ltd|lp)$");
