@@ -106,7 +106,7 @@ class MarcRecordGrouper extends RecordGroupingProcessor {
 		String       oo8languageCode   = fixedField.getData();
 		if (oo8languageCode.length() > 37) {
 			oo8languageCode = oo8languageCode.substring(35, 38).toLowerCase();
-			if (!oo8languageCode.equals("   ")){
+			if (!oo8languageCode.equals("   ") && !oo8languageCode.equals("|||")){
 				languageCode = oo8languageCode;
 			}
 		}

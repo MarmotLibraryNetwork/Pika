@@ -706,8 +706,7 @@ public class RecordGrouperMain {
 
 			// Main Record Grouping Processing
 			if (indexingProfileToRun == null || indexingProfileToRun.equalsIgnoreCase("overdrive")) {
-				recordGroupingProcessor = new OverDriveRecordGrouper(pikaConn, serverName, logger, fullRegroupingClearGroupingTables);
-				groupOverDriveRecords(pikaConn, econtentConnection, (OverDriveRecordGrouper) recordGroupingProcessor, explodeMarcsOnly);
+				groupOverDriveRecords(pikaConn, econtentConnection, explodeMarcsOnly);
 			}
 			if (indexingProfiles.size() > 0) {
 				groupIlsRecords(pikaConn, indexingProfiles, explodeMarcsOnly);
@@ -1256,11 +1255,12 @@ public class RecordGrouperMain {
 							if (numRecordsRead % 100000 == 0) {
 								recordGroupingProcessor.dumpStats();
 							}
-							if (numRecordsRead % 5000 == 0) {
-								updateLastUpdateTimeInLog();
-								//Let the hard drives rest a bit so other things can happen.
-								Thread.sleep(100);
-							}
+							//TODO: temp?
+//							if (numRecordsRead % 5000 == 0) {
+//								updateLastUpdateTimeInLog();
+//								//Let the hard drives rest a bit so other things can happen.
+//								Thread.sleep(100);
+//							}
 						}
 					} catch (Exception e) {
 						if (!recordId.isEmpty()) {
@@ -1318,11 +1318,12 @@ public class RecordGrouperMain {
 		}
 	}*/
 
-	private static void groupOverDriveRecords(Connection pikaConn, Connection econtentConnection, OverDriveRecordGrouper recordGroupingProcessor, boolean explodeMarcsOnly) {
+	private static void groupOverDriveRecords(Connection pikaConn, Connection econtentConnection, boolean explodeMarcsOnly) {
 		if (explodeMarcsOnly) {
 			//Nothing to do since we don't have marc records to process
 			return;
 		}
+		OverDriveRecordGrouper recordGroupingProcessor = new OverDriveRecordGrouper(pikaConn, serverName, logger, fullRegroupingClearGroupingTables);
 		addNoteToGroupingLog("Starting to group overdrive records");
 		loadIlsChecksums(pikaConn, "overdrive");
 		loadExistingPrimaryIdentifiers(pikaConn, "overdrive");

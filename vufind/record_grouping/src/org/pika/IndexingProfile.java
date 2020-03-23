@@ -72,6 +72,8 @@ public class IndexingProfile {
 		this.recordNumberPrefix                = indexingProfileRS.getString("recordNumberPrefix");
 		this.formatSource                      = indexingProfileRS.getString("formatSource");
 		this.specifiedFormatCategory           = indexingProfileRS.getString("specifiedFormatCategory");
+		this.formatDeterminationMethod         = indexingProfileRS.getString("formatDeterminationMethod");
+		this.materialTypesToIgnore             = indexingProfileRS.getString("materialTypesToIgnore");
 //		this.sierraBibLevelFieldTag            = indexingProfileRS.getString("sierraRecordFixedFieldsTag");
 		this.groupingClass                     = indexingProfileRS.getString("groupingClass");
 		this.itemTag                           = indexingProfileRS.getString("itemTag");

@@ -296,13 +296,19 @@ class RecordGroupingProcessor {
 					//700	1		|a Holmberg, John-Henri,|d 1949-|0 http://id.loc.gov/authorities/names/n80034250|e editor,|e translator.
 
 					DataField field245 = marcRecord.getDataField("245");
-					if (groupingFormat.equals("book") && field245 != null && field245.getSubfield('c') != null) {
-						author = field245.getSubfield('c').getData();
-						//TODO: reverse name display
-						if (author.indexOf(';') > 0) {
-							author = author.substring(0, author.indexOf(';') - 1);
-						}
-					} else {
+					//Trying 245c as the last resort
+					//The other option is to not re-translate grouping_category "other" back to "book"
+
+					//Also note that the use of the 245c is why the authorAuthories map is needed to translate "firstname othernames lastname" to "lastname firstname othernames" for people only
+
+//					if (groupingFormat.equals("book") && field245 != null && field245.getSubfield('c') != null) {
+//						//TODO: note, because the other grouping category gets translated back to book, this comes into play for grouping things that are really other.
+//						author = field245.getSubfield('c').getData();
+//						//TODO: reverse name display, but only of people, not organizations. eg Rising Star Games
+//						if (author.indexOf(';') > 0) {
+//							author = author.substring(0, author.indexOf(';') - 1);
+//						}
+//					} else {
 						DataField field700 = marcRecord.getDataField("700"); //
 						if (field700 != null && field700.getSubfield('a') != null) {
 							author = field700.getSubfield('a').getData();
@@ -315,7 +321,7 @@ class RecordGroupingProcessor {
 								DataField field710 = marcRecord.getDataField("710"); // Added Entry-Corporate Name
 								if (field710 != null && field710.getSubfield('a') != null) {
 									author = field710.getSubfield('a').getData();
-									// Exclude "hoopla digital."
+									//TODO: Exclude "hoopla digital."
 								} else {
 									DataField field264 = marcRecord.getDataField("264"); // Production, Publication, Distribution, Manufacture, and Copyright Notice.
 									if (field264 != null && field264.getIndicator2() == '1' && field264.getSubfield('b') != null) {
@@ -324,8 +330,9 @@ class RecordGroupingProcessor {
 										DataField field260 = marcRecord.getDataField("260"); // Publication, Distribution, etc.
 										if (field260 != null && field260.getSubfield('b') != null) {
 											author = field260.getSubfield('b').getData();
-										} else if (!groupingFormat.equals("book") && field245 != null && field245.getSubfield('c') != null) {
+//										} else if (!groupingFormat.equals("book") && field245 != null && field245.getSubfield('c') != null) {
 											// if not a book, check 245c as final resort
+										} else if (field245 != null && field245.getSubfield('c') != null) {
 											author = field245.getSubfield('c').getData();
 											if (author.indexOf(';') > 0) {
 												author = author.substring(0, author.indexOf(';') - 1);
@@ -335,7 +342,7 @@ class RecordGroupingProcessor {
 								}
 							}
 						}
-					}
+//					}
 				}
 			}
 		}
@@ -962,6 +969,7 @@ class RecordGroupingProcessor {
 	static {
 		// Keep entries in lower case
 		formatsToGroupingCategory.put("atlas", "other");
+		formatsToGroupingCategory.put("archival materials", "other");
 		formatsToGroupingCategory.put("map", "other");
 		formatsToGroupingCategory.put("tapecartridge", "other");
 		formatsToGroupingCategory.put("chipcartridge", "other");
@@ -1010,6 +1018,7 @@ class RecordGroupingProcessor {
 		formatsToGroupingCategory.put("serial", "book");
 		formatsToGroupingCategory.put("unknown", "other");
 		formatsToGroupingCategory.put("playaway", "audio");
+		formatsToGroupingCategory.put("playawayview", "movie");
 		formatsToGroupingCategory.put("largeprint", "book");
 		formatsToGroupingCategory.put("blu-ray", "movie");
 		formatsToGroupingCategory.put("4kultrablu-ray", "movie");
@@ -1081,7 +1090,7 @@ class RecordGroupingProcessor {
 		categoryMap.put("audio", "book");
 		categoryMap.put("book", "book");
 		categoryMap.put("ebook", "book");
-		categoryMap.put("other", "book");
+		categoryMap.put("other", "book"); //TODO: keep as other??
 		categoryMap.put("comic", "comic");
 		categoryMap.put("music", "music");
 		categoryMap.put("movie", "movie");
