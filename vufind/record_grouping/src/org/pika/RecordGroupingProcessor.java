@@ -10,6 +10,7 @@ import java.sql.*;
 import java.util.*;
 import java.util.Date;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * User: Mark Noble
@@ -260,7 +261,7 @@ class RecordGroupingProcessor {
 		if (groupingFormats.size() > 1){
 			//TODO: check if translating collection values reduced the category down to one
 			groupingCategory = "book"; // fall back option for now
-			logger.warn("More than one grouping category for " + identifier);
+			logger.warn("More than one grouping category for " + identifier + " : " + String.join(",", groupingFormats));
 		} else if (groupingFormats.size() == 0){
 			logger.warn("No grouping category for " + identifier);
 			groupingCategory = "book"; // fall back option for now
