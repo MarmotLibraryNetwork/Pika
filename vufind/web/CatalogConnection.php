@@ -30,8 +30,6 @@
  * @license  http://opensource.org/licenses/gpl-2.0.php GNU General Public License
  * @link     http://vufind.org/wiki/building_an_ils_driver Wiki
  */
-use Pika\PatronDrivers\RBdigital;
-
 class CatalogConnection
 {
 	/**
@@ -292,12 +290,6 @@ class CatalogConnection
 			$hooplaSummary   = $driver->getHooplaPatronStatus($user);
 			$hooplaCheckOuts = isset($hooplaSummary->currentlyBorrowed) ? $hooplaSummary->currentlyBorrowed : 0;
 			$user->setNumCheckedOutHoopla($hooplaCheckOuts);
-		}
-
-		if($user->isValidForRBDigital()) {
-			$rbDigital = new RBdigital();
-			$count = $rbDigital->getCheckoutCount($user);
-			$user->setNumCheckedOutRBdigital($count);
 		}
 
 		require_once ROOT_DIR . '/sys/MaterialsRequest/MaterialsRequest.php';
