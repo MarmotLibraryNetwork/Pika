@@ -897,7 +897,7 @@ abstract class MarcRecordProcessor {
 					}
 					subTitleValue = null; // null out so that it doesn't get added to sort or display titles
 				} else {
-					groupedWork.setSubTitle(subTitleValue);
+					groupedWork.setSubTitle(subTitleValue); //TODO: return the cleaned up value for the subtitle?
 					if (titleLowerCase.endsWith(subTitleLowerCase)) {
 						// Remove subtitle from title in order to avoid repeats of sub-title in display & title fields in index
 						if (fullReindex) {
