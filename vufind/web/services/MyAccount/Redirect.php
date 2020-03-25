@@ -27,7 +27,7 @@
  */
 
 use Curl\Curl;
-use Pika\PatronDrivers\RBdigital;
+//use Pika\PatronDrivers\RBdigital;
 use User;
 use Pika\App;
 
