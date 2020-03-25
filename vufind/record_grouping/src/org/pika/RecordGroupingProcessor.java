@@ -371,7 +371,7 @@ class RecordGroupingProcessor {
 			char nonFilingCharacters = field245.getIndicator2();
 			if (nonFilingCharacters == ' ') nonFilingCharacters = '0';
 			int numNonFilingCharacters = 0;
-			if (nonFilingCharacters >= '0' && nonFilingCharacters <= '9') {
+			if (nonFilingCharacters > '0' && nonFilingCharacters <= '9') {
 				numNonFilingCharacters = Integer.parseInt(Character.toString(nonFilingCharacters));
 			}
 

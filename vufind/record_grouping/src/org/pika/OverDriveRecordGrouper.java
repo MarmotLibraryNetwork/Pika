@@ -12,8 +12,10 @@ import java.sql.Connection;
  */
 public class OverDriveRecordGrouper extends RecordGroupingProcessor {
 
-	OverDriveRecordGrouper(Connection dbConnection, String serverName, Logger logger, boolean fullRegrouping) {
-		super(dbConnection, serverName, logger, fullRegrouping);
+	OverDriveRecordGrouper(Connection pikaConn, String serverName, Logger logger, boolean fullRegrouping) {
+//		super(pikaConn, serverName, logger, fullRegrouping);
+		super(logger, fullRegrouping);
+		super.setupDatabaseStatements(pikaConn);
 	}
 
 

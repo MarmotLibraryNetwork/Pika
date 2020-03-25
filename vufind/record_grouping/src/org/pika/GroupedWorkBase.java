@@ -110,7 +110,7 @@ public abstract class GroupedWorkBase {
 			if (authorAuthorities.containsKey(author)) {
 				authoritativeAuthor = authorAuthorities.get(author);
 				if (logger.isInfoEnabled()){
-					logger.info("Using '" + authoritativeAuthor + "' for normalized author '" + author + "'");
+					logger.info("Using authoritative author '" + authoritativeAuthor + "' for normalized author '" + author + "'");
 				}
 			} else {
 				authoritativeAuthor = author;

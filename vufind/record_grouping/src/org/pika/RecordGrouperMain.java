@@ -189,7 +189,9 @@ public class RecordGrouperMain {
 			System.out.println("Could not find log4j configuration " + log4jFile.getAbsolutePath());
 			System.exit(1);
 		}
-		logger.info("Starting grouping of records " + new Date().toString());
+		if (logger.isInfoEnabled()) {
+			logger.info("Starting grouping of records " + new Date().toString());
+		}
 
 		// Parse the configuration file
 		PikaConfigIni.loadConfigFile("config.ini", serverName, logger);
@@ -234,13 +236,17 @@ public class RecordGrouperMain {
 		}
 
 		for (String curManualTitle : authoritiesWithSpecialHandling.keySet()) {
-			logger.debug("Manually handle \"" + curManualTitle + "\",\"" + currentAuthorities.get(curManualTitle) + "\", (" + authoritiesWithSpecialHandling.get(curManualTitle) + ")");
+			if (logger.isDebugEnabled()) {
+				logger.debug("Manually handle \"" + curManualTitle + "\",\"" + currentAuthorities.get(curManualTitle) + "\", (" + authoritiesWithSpecialHandling.get(curManualTitle) + ")");
+			}
 		}
 
-		logger.info("Finished generating author authorities " + new Date().toString());
-		long endTime     = new Date().getTime();
-		long elapsedTime = endTime - processStartTime;
-		logger.info("Elapsed Minutes " + (elapsedTime / 60000));
+		if (logger.isInfoEnabled()) {
+			logger.info("Finished generating author authorities " + new Date().toString());
+			long endTime     = new Date().getTime();
+			long elapsedTime = endTime - processStartTime;
+			logger.info("Elapsed Minutes " + (elapsedTime / 60000));
+		}
 	}
 
 	private static HashMap<String, String> loadManualAuthorities() {
@@ -263,13 +269,13 @@ public class RecordGrouperMain {
 
 	private static void generateAuthorAuthoritiesForOverDriveRecords(Connection econtentConnection, HashMap<String, String> currentAuthorities, HashMap<String, String> manualAuthorities, CSVWriter authoritiesWriter) {
 		int numRecordsProcessed = 0;
-		try {
-			PreparedStatement overDriveRecordsStmt;
-			overDriveRecordsStmt = econtentConnection.prepareStatement("SELECT id, overdriveId, mediaType, title, subtitle, primaryCreatorRole, primaryCreatorName FROM overdrive_api_products WHERE deleted = 0", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+		try (
+			PreparedStatement overDriveRecordsStmt = econtentConnection.prepareStatement("SELECT id, overdriveId, mediaType, title, subtitle, primaryCreatorRole, primaryCreatorName FROM overdrive_api_products WHERE deleted = 0", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			PreparedStatement overDriveCreatorStmt = econtentConnection.prepareStatement("SELECT fileAs FROM overdrive_api_product_creators WHERE productId = ? AND role like ? ORDER BY id", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-			ResultSet         overDriveRecordRS    = overDriveRecordsStmt.executeQuery();
+			ResultSet         overDriveRecordRS    = overDriveRecordsStmt.executeQuery()
+		){
 			while (overDriveRecordRS.next()) {
-				Long id = overDriveRecordRS.getLong("id");
+				long id = overDriveRecordRS.getLong("id");
 
 				String mediaType          = overDriveRecordRS.getString("mediaType");
 				String title              = overDriveRecordRS.getString("title");
@@ -280,30 +286,30 @@ public class RecordGrouperMain {
 				if (author != null) {
 					overDriveCreatorStmt.setLong(1, id);
 					overDriveCreatorStmt.setString(2, primaryCreatorRole);
-					ResultSet creatorInfoRS         = overDriveCreatorStmt.executeQuery();
-					boolean   swapFirstNameLastName = false;
-					if (creatorInfoRS.next()) {
-						String tmpAuthor = creatorInfoRS.getString("fileAs");
-						if (tmpAuthor.equals(author) && (mediaType.equals("ebook") || mediaType.equals("audiobook"))) {
-							swapFirstNameLastName = true;
-						} else {
-							author = tmpAuthor;
-						}
-					} else {
-						swapFirstNameLastName = true;
-					}
-					if (swapFirstNameLastName) {
-						if (author.contains(" ")) {
-							String[]      authorParts = author.split("\\s+");
-							StringBuilder tmpAuthor   = new StringBuilder();
-							for (int i = 1; i < authorParts.length; i++) {
-								tmpAuthor.append(authorParts[i]).append(" ");
+					try (ResultSet creatorInfoRS = overDriveCreatorStmt.executeQuery()) {
+						boolean swapFirstNameLastName = false;
+						if (creatorInfoRS.next()) {
+							String tmpAuthor = creatorInfoRS.getString("fileAs");
+							if (tmpAuthor.equals(author) && (mediaType.equals("ebook") || mediaType.equals("audiobook"))) {
+								swapFirstNameLastName = true;
+							} else {
+								author = tmpAuthor;
 							}
-							tmpAuthor.append(authorParts[0]);
-							author = tmpAuthor.toString();
+						} else {
+							swapFirstNameLastName = true;
+						}
+						if (swapFirstNameLastName) {
+							if (author.contains(" ")) {
+								String[]      authorParts = author.split("\\s+");
+								StringBuilder tmpAuthor   = new StringBuilder();
+								for (int i = 1; i < authorParts.length; i++) {
+									tmpAuthor.append(authorParts[i]).append(" ");
+								}
+								tmpAuthor.append(authorParts[0]);
+								author = tmpAuthor.toString();
+							}
 						}
 					}
-					creatorInfoRS.close();
 				}
 
 				if (author == null) continue;
@@ -323,9 +329,10 @@ public class RecordGrouperMain {
 				addAlternateAuthoritiesForWorkToAuthoritiesFile(currentAuthorities, manualAuthorities, authoritiesWriter, work);
 				numRecordsProcessed++;
 			}
-			overDriveRecordRS.close();
 
-			logger.info("Finished loading authorities, read " + numRecordsProcessed + " records from overdrive ");
+			if (logger.isInfoEnabled()) {
+				logger.info("Finished loading authorities, read " + numRecordsProcessed + " records from overdrive ");
+			}
 		} catch (Exception e) {
 			System.out.println("Error loading OverDrive records: " + e.toString());
 			e.printStackTrace();
@@ -355,7 +362,9 @@ public class RecordGrouperMain {
 					} catch (Exception e) {
 						logger.error("Error loading catalog bibs on record " + numRecordsRead, e);
 					}
-					logger.info("Finished grouping " + numRecordsRead + " records from the ils file " + curBibFile.getName());
+					if (logger.isInfoEnabled()) {
+						logger.info("Finished grouping " + numRecordsRead + " records from the ils file " + curBibFile.getName());
+					}
 				}
 			}
 		}
@@ -424,7 +433,9 @@ public class RecordGrouperMain {
 			System.out.println("Could not find log4j configuration " + log4jFile.getAbsolutePath());
 			System.exit(1);
 		}
-		logger.info("Starting record grouping benchmark " + new Date().toString());
+		if (logger.isInfoEnabled()) {
+			logger.info("Starting record grouping benchmark " + new Date().toString());
+		}
 
 		try {
 			//Load the input file to test
@@ -521,15 +532,19 @@ public class RecordGrouperMain {
 				}
 			}
 			resultsWriter.flush();
-			logger.debug("Ran " + numTestsRun + " tests.");
-			logger.debug("Found " + numErrors + " errors.");
+			if (logger.isDebugEnabled()) {
+				logger.debug("Ran " + numTestsRun + " tests.");
+				logger.debug("Found " + numErrors + " errors.");
+			}
 			benchmarkInputReader.close();
 			validationReader.close();
 
 			long endTime     = new Date().getTime();
 			long elapsedTime = endTime - processStartTime;
-			logger.info("Total Run Time " + (elapsedTime / 1000) + " seconds, " + (elapsedTime / 60000) + " minutes.");
-			logger.info("Processed " + Double.toString((double) numTestsRun / (double) (elapsedTime / 1000)) + " records per second.");
+			if (logger.isInfoEnabled()) {
+				logger.info("Total Run Time " + (elapsedTime / 1000) + " seconds, " + (elapsedTime / 60000) + " minutes.");
+				logger.info("Processed " + Double.toString((double) numTestsRun / (double) (elapsedTime / 1000)) + " records per second.");
+			}
 
 			//Write results to the test file for comparison
 			resultsWriter.writeNext(new String[0]);
@@ -595,7 +610,9 @@ public class RecordGrouperMain {
 			System.out.println("Could not find log4j configuration " + log4jFile.getAbsolutePath());
 			System.exit(1);
 		}
-		logger.info("Starting grouping of records " + new Date().toString());
+		if (logger.isInfoEnabled()) {
+			logger.info("Starting grouping of records " + new Date().toString());
+		}
 
 		// Load the configuration file
 		PikaConfigIni.loadConfigFile("config.ini", serverName, logger);
@@ -618,7 +635,9 @@ public class RecordGrouperMain {
 
 		//Start a reindex log entry
 		try {
-			logger.info("Creating log entry for index");
+			if (logger.isInfoEnabled()) {
+				logger.info("Creating log entry for index");
+			}
 			ResultSet generatedKeys;
 			try (PreparedStatement createLogEntryStatement = pikaConn.prepareStatement("INSERT INTO record_grouping_log (startTime, lastUpdate, notes) VALUES (?, ?, ?)", PreparedStatement.RETURN_GENERATED_KEYS)) {
 				createLogEntryStatement.setLong(1, processStartTime / 1000);
@@ -716,7 +735,9 @@ public class RecordGrouperMain {
 
 		if (!explodeMarcsOnly) {
 			try {
-				logger.info("Doing post processing of record grouping");
+				if (logger.isInfoEnabled()) {
+					logger.info("Doing post processing of record grouping");
+				}
 				pikaConn.setAutoCommit(false);
 
 				//Cleanup the data
@@ -730,7 +751,9 @@ public class RecordGrouperMain {
 				pikaConn.commit();
 
 				pikaConn.setAutoCommit(true);
-				logger.info("Finished doing post processing of record grouping");
+				if (logger.isInfoEnabled()) {
+					logger.info("Finished doing post processing of record grouping");
+				}
 			} catch (SQLException e) {
 				logger.error("Error in grouped work post processing", e);
 			}
@@ -743,10 +766,12 @@ public class RecordGrouperMain {
 			//TODO: each profile should run this??
 		}
 
-		logger.info("Finished grouping records " + new Date().toString());
 		long endTime     = new Date().getTime();
 		long elapsedTime = endTime - processStartTime;
-		logger.info("Elapsed Minutes " + (elapsedTime / 60000));
+		if (logger.isInfoEnabled()) {
+			logger.info("Finished grouping records " + new Date().toString());
+			logger.info("Elapsed Minutes " + (elapsedTime / 60000));
+		}
 
 		try {
 			PreparedStatement finishedStatement = pikaConn.prepareStatement("UPDATE record_grouping_log SET endTime = ? WHERE id = ?");
@@ -778,7 +803,9 @@ public class RecordGrouperMain {
 						logger.warn("Could not delete " + recordNumber + " from ils_marc_checksums table");
 					} else if (curProfile.equals("ils")) {
 						//TODO: this is temporary. this is to diagnose Sierra API Extract issues
-						logger.debug("Deleted ils record " + recordNumber + " from the ils checksum table.");
+						if (logger.isDebugEnabled()) {
+							logger.debug("Deleted ils record " + recordNumber + " from the ils checksum table.");
+						}
 
 					}
 				} catch (SQLException e) {
@@ -789,7 +816,9 @@ public class RecordGrouperMain {
 		}
 
 		if (primaryIdentifiersInDatabase.size() > 0) {
-			logger.info("Deleting " + primaryIdentifiersInDatabase.size() + " primary identifiers for profile " + curProfile + " from the database since they are no longer in the export.");
+			if (logger.isInfoEnabled()) {
+				logger.info("Deleting " + primaryIdentifiersInDatabase.size() + " primary identifiers for profile " + curProfile + " from the database since they are no longer in the export.");
+			}
 			for (String recordNumber : primaryIdentifiersInDatabase.keySet()) {
 				//Remove the record from the grouped_work_primary_identifiers table
 				try {
@@ -799,7 +828,9 @@ public class RecordGrouperMain {
 						logger.warn("Could not delete " + recordNumber + " from grouped_work_primary_identifiers table");
 					} else if (curProfile.equals("ils")) {
 						//TODO: this is temporary. this is to diagnose Sierra API Extract issues
-						logger.debug("Deleting grouped work primary identifier entry for record " + recordNumber);
+						if (logger.isDebugEnabled()) {
+							logger.debug("Deleting grouped work primary identifier entry for record " + recordNumber);
+						}
 					}
 				} catch (SQLException e) {
 					logger.error("Error removing " + recordNumber + " from grouped_work_primary_identifiers table", e);
@@ -1028,7 +1059,9 @@ public class RecordGrouperMain {
 						pikaConn.commit();
 					}
 				}
-				logger.info("Removed " + numWorksNotLinkedToPrimaryIdentifier + " grouped works that were not linked to primary identifiers");
+				if (logger.isInfoEnabled()) {
+					logger.info("Removed " + numWorksNotLinkedToPrimaryIdentifier + " grouped works that were not linked to primary identifiers");
+				}
 			}
 			pikaConn.commit();
 			pikaConn.setAutoCommit(autoCommit);
@@ -1141,7 +1174,7 @@ public class RecordGrouperMain {
 			String marcPath = curProfile.marcPath;
 
 			//Check to see if we should process the profile
-			boolean         processProfile = false;
+			boolean         processProfile = curProfile.groupUnchangedFiles;
 			ArrayList<File> filesToProcess = new ArrayList<>();
 			//Check to see if we have any new files, if so we will process all of them to be sure deletes and overlays process properly
 			Pattern filesToMatchPattern = Pattern.compile(curProfile.filenamesToInclude, Pattern.CASE_INSENSITIVE);
@@ -1150,18 +1183,18 @@ public class RecordGrouperMain {
 				for (File curBibFile : catalogBibFiles) {
 					if (filesToMatchPattern.matcher(curBibFile.getName()).matches()) {
 						filesToProcess.add(curBibFile);
-						//If the file has changed since the last grouping time we should process it again
-						if (curBibFile.lastModified() > lastGroupingTime * 1000) {
+						if (!processProfile && curBibFile.lastModified() > lastGroupingTime * 1000) {
+							//If the file has changed since the last grouping time we should process it again
+							// (Normally we want to skip grouping if the records haven't changed, since the last time we have grouped them)
 							processProfile = true;
 						}
 					}
 				}
 			}
-			if (curProfile.groupUnchangedFiles) {
-				processProfile = true;
-			}
 			if (!processProfile) {
-				logger.debug("Checking if " + curProfile.sourceName + " has had any records marked for regrouping.");
+				if (logger.isDebugEnabled()){
+					logger.debug("Checking if " + curProfile.sourceName + " has had any records marked for regrouping.");
+				}
 				if (!curProfile.usingSierraAPIExtract && checkForForcedRegrouping(pikaConn, curProfile.sourceName)) {
 					processProfile = true;
 					addNoteToGroupingLog(curProfile.sourceName + " has no file changes but will be processed because records have been marked for forced regrouping.");
@@ -1211,16 +1244,22 @@ public class RecordGrouperMain {
 								Record           curBib           = catalogReader.next();
 								RecordIdentifier recordIdentifier = recordGroupingProcessor.getPrimaryIdentifierFromMarcRecord(curBib, curProfile.sourceName, curProfile.doAutomaticEcontentSuppression);
 								if (recordIdentifier == null) {
-									//logger.debug("Record with control number " + curBib.getControlNumber() + " was suppressed or is eContent");
+//									if (logger.isDebugEnabled()) {
+//										logger.debug("Record with control number " + curBib.getControlNumber() + " was suppressed or is eContent");
+//									}
 									String controlNumber = curBib.getControlNumber();
 									if (controlNumber != null) {
 										suppressedControlNumbersInExport.add(controlNumber);
 									} else {
 										logger.warn("Bib did not have control number or identifier, the " + numRecordsRead + "-th record of the file " + curBibFile.getAbsolutePath());
-										logger.info(curBib.toString());
+										if (logger.isInfoEnabled()) {
+											logger.info(curBib.toString());
+										}
 									}
 								} else if (recordIdentifier.isSuppressed()) {
-									//logger.debug("Record with control number " + curBib.getControlNumber() + " was suppressed or is eContent");
+//									if (logger.isDebugEnabled()) {
+//										logger.debug("Record with control number " + curBib.getControlNumber() + " was suppressed or is eContent");
+//									}
 									suppressedRecordNumbersInExport.add(recordIdentifier.getIdentifier());
 								} else {
 									recordId = recordIdentifier.getIdentifier();
@@ -1269,8 +1308,7 @@ public class RecordGrouperMain {
 							logger.error("Error loading  bibs on record " + numRecordsRead + " in profile " + curProfile.sourceName + " the last record processed was " + lastRecordProcessed, e);
 						}
 					}
-					logger.info("Finished grouping " + numRecordsRead + " records with " + numRecordsProcessed + " actual changes from the marc file " + curBibFile.getName() + " in profile " + curProfile.sourceName);
-					addNoteToGroupingLog("&nbsp;&nbsp; - Finished grouping " + numRecordsRead + " records from the marc file " + curBibFile.getName());
+					addNoteToGroupingLog("&nbsp;&nbsp; - Finished grouping " + numRecordsRead + " records with " + numRecordsProcessed + " actual changes from the marc file " + curBibFile.getName() + " in profile " + curProfile.sourceName);
 				}
 
 				addNoteToGroupingLog("&nbsp;&nbsp; - Records Processed: " + recordNumbersInExport.size());
@@ -1344,12 +1382,13 @@ public class RecordGrouperMain {
 			try (
 					PreparedStatement overDriveIdentifiersStmt = econtentConnection.prepareStatement("SELECT * FROM overdrive_api_product_identifiers WHERE id = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 					PreparedStatement overDriveCreatorStmt = econtentConnection.prepareStatement("SELECT fileAs FROM overdrive_api_product_creators WHERE productId = ? AND role like ? ORDER BY id", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-					PreparedStatement overDriveSubjectsStmt = econtentConnection.prepareStatement("SELECT * FROM overdrive_api_product_languages INNER JOIN overdrive_api_product_languages_ref ON overdrive_api_product_languages.id = languageId WHERE productId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+//					getProductLanguagesStmt = econtentConn.prepareStatement("SELECT * FROM overdrive_api_product_languages INNER JOIN overdrive_api_product_languages_ref ON overdrive_api_product_languages.id = languageId WHERE productId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+					PreparedStatement overDriveSubjectsStmt = econtentConnection.prepareStatement("SELECT * FROM overdrive_api_product_subjects INNER JOIN overdrive_api_product_subjects_ref ON overdrive_api_product_subjects.id = subjectId WHERE productId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 					ResultSet overDriveRecordRS = overDriveRecordsStmt.executeQuery()
 			) {
 
 				while (overDriveRecordRS.next()) {
-					Long   id                  = overDriveRecordRS.getLong("id");
+					long   id                  = overDriveRecordRS.getLong("id");
 					String overdriveId         = overDriveRecordRS.getString("overdriveId");
 					String mediaType           = overDriveRecordRS.getString("mediaType");
 					String title               = overDriveRecordRS.getString("title");
@@ -1375,7 +1414,9 @@ public class RecordGrouperMain {
 								swapFirstNameLastName = true;
 							}
 							if (swapFirstNameLastName) {
-								logger.debug("Swap First Last Name for author '" + author + "' for an Overdrive title.");
+								if (logger.isDebugEnabled()) {
+									logger.debug("Swap First Last Name for author '" + author + "' for an Overdrive title.");
+								}
 								// I suspect this never gets called anymore. pascal 7/26/2018
 								if (author.contains(" ")) {
 									String[]      authorParts = author.split("\\s+");
@@ -1471,7 +1512,9 @@ public class RecordGrouperMain {
 							marcRecordsOverwritten.add(recordNumber);
 						}
 					} catch (FileNotFoundException e) {
-						logger.debug("Individual marc record not found " + recordNumberWithSource);
+						if (logger.isDebugEnabled()) {
+							logger.debug("Individual marc record not found " + recordNumberWithSource);
+						}
 						marcRecordUpToDate = false;
 					} catch (Exception e) {
 						logger.error("Error getting checksum for file", e);
@@ -1545,7 +1588,9 @@ public class RecordGrouperMain {
 				}
 				marcRecordFirstDetectionDates.put(recordNumberWithSource, timeAdded);
 			} catch (Exception e) {
-				logger.debug("Error loading creation time for " + filePath, e);
+				if (logger.isDebugEnabled()) {
+					logger.debug("Error loading creation time for " + filePath, e);
+				}
 			}
 		}
 	}

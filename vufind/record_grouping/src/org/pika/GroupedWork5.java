@@ -42,7 +42,6 @@ public class GroupedWork5 extends GroupedWorkBase implements Cloneable {
 		}
 		title = normalizeTitle(title, numNonFilingCharacters);
 		this.fullTitle = title;
-
 	}
 
 	@Override
