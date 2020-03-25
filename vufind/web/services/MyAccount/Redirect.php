@@ -26,7 +26,10 @@
  *
  */
 
-require_once ROOT_DIR . "/sys/Account/User.php";
+use Curl\Curl;
+use Pika\PatronDrivers\RBdigital;
+use User;
+use Pika\App;
 
 class Redirect extends Action {
 
@@ -35,36 +38,29 @@ class Redirect extends Action {
 
 	public function __construct($error_class = null)
 	{
+		$this->app = new App();
 		$this->request_method = $_SERVER['REQUEST_METHOD'];
 
 		parent::__construct(null);
-		$this->launch();
+
 	}
 
 	public function launch() {
-		$service = $_REQUEST['action'];
-		if(method_exists($this, $service)) {
-			$this->$service();
+		$service = $_REQUEST['service'];
+
+		switch ($service) {
+			case "redirectToRBditalMagazine":
+
+
 		}
+
+
+		if(isset($_REQUEST['userId'])) {
+			$patron = new User();
+			$patron->id = $_REQUEST['userId'];
+
+		}
+
 	}
-
-	private function readRBdigitalMagazine() {
-		if(!isset($_REQUEST['userId']) || !isset($_REQUEST['issueId'])) {
-			// todo: return to my account and show error message.
-			die('Missing parameters.');
-		}
-		$patron = new User;
-		$patron->id = $_REQUEST['userId'];
-		$patron->find(true);
-		if($patron->N == 0) {
-			die('Patron does not exist.');
-		}
-
-		$rbdigital = new Pika\PatronDrivers\RBdigital();
-		$rbdigital->redirectToRBdigitalMagazine($patron, $_REQUEST['issueId']);
-		//https://www.rbdigital.com/reader.php#/reader/readsvg/469647/Cover
-	}
-
-
 
 }
