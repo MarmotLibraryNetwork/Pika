@@ -464,8 +464,16 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 		String          primaryLanguage      = null;
 		long            languageBoost        = 1L;
 		long            languageBoostSpanish = 1L;
+		// Remove effectively null values
+		languages.remove("   ");
+		languages.remove("|||");
 		if (languages.size() == 0 && sierraRecordFixedFieldsTag != null && !sierraRecordFixedFieldsTag.isEmpty() && sierraFixedFieldLanguageSubField != ' '){
+			// If no valid language values exist, try using the Sierra language fixed field
 			languages = MarcUtil.getFieldList(record, sierraRecordFixedFieldsTag + sierraFixedFieldLanguageSubField);
+		}
+		if (languages.size() == 0){
+			// If there are still no languages, try the first 041a, which should be the primary language
+			languages = MarcUtil.getFieldList(record, "041a");
 		}
 		for (String language : languages) {
 			String translatedLanguage = indexer.translateSystemValue("language", language, identifier);

@@ -782,6 +782,12 @@ abstract class MarcRecordProcessor {
 		String          primaryLanguage      = null;
 		long            languageBoost        = 1L;
 		long            languageBoostSpanish = 1L;
+		languages.remove("   ");
+		languages.remove("|||");
+		if (languages.size() == 0){
+			// If there are still no languages, try the first 041a, which should be the primary language
+			languages = MarcUtil.getFieldList(record, "041a");
+		}
 		for (String language : languages) {
 			String translatedLanguage = indexer.translateSystemValue("language", language, identifier);
 			translatedLanguages.add(translatedLanguage);
