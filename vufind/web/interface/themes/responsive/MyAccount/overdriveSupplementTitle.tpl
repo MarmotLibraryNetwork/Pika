@@ -21,7 +21,7 @@
 											<option value="{$format.id}">{$format.name}</option>
                     {/foreach}
 								</select>
-								<a href="#" onclick="VuFind.OverDrive.selectOverDriveDownloadFormat('{$supplementalTitle.userId}', '{$supplementalTitle.overDriveId}')" class="btn btn-sm btn-primary">Download</a>
+								<a href="#" onclick="Pika.OverDrive.selectOverDriveDownloadFormat('{$supplementalTitle.userId}', '{$supplementalTitle.overDriveId}')" class="btn btn-sm btn-primary">Download</a>
 							</div>
             {/if}
 				</div>
@@ -33,22 +33,22 @@
 			<div class="col-xs-9 col-sm-8 col-md-4 col-lg-3">
 				<div class="btn-group btn-group-vertical btn-block">
             {if $supplementalTitle.overdriveMagazine}
-							<a href="#" onclick="return VuFind.OverDrive.followOverDriveDownloadLink('{$supplementalTitle.userId}', '{$supplementalTitle.overDriveId}', 'magazine-overdrive')" class="btn btn-sm btn-primary">Read&nbsp;Online</a>
+							<a href="#" onclick="return Pika.OverDrive.followOverDriveDownloadLink('{$supplementalTitle.userId}', '{$supplementalTitle.overDriveId}', 'magazine-overdrive')" class="btn btn-sm btn-primary">Read&nbsp;Online</a>
             {/if}
             {if $supplementalTitle.overdriveRead}
-							<a href="#" onclick="return VuFind.OverDrive.followOverDriveDownloadLink('{$supplementalTitle.userId}', '{$supplementalTitle.overDriveId}', 'ebook-overdrive')" class="btn btn-sm btn-primary">Read&nbsp;Online</a>
+							<a href="#" onclick="return Pika.OverDrive.followOverDriveDownloadLink('{$supplementalTitle.userId}', '{$supplementalTitle.overDriveId}', 'ebook-overdrive')" class="btn btn-sm btn-primary">Read&nbsp;Online</a>
             {/if}
             {if $supplementalTitle.overdriveListen}
-							<a href="#" onclick="return VuFind.OverDrive.followOverDriveDownloadLink('{$supplementalTitle.userId}', '{$supplementalTitle.overDriveId}', 'audiobook-overdrive')" class="btn btn-sm btn-primary">Listen&nbsp;Online</a>
+							<a href="#" onclick="return Pika.OverDrive.followOverDriveDownloadLink('{$supplementalTitle.userId}', '{$supplementalTitle.overDriveId}', 'audiobook-overdrive')" class="btn btn-sm btn-primary">Listen&nbsp;Online</a>
             {/if}
             {if $supplementalTitle.overdriveVideo}
-							<a href="#" onclick="return VuFind.OverDrive.followOverDriveDownloadLink('{$supplementalTitle.userId}', '{$supplementalTitle.overDriveId}', 'video-streaming')" class="btn btn-sm btn-primary">Watch&nbsp;Online</a>
+							<a href="#" onclick="return Pika.OverDrive.followOverDriveDownloadLink('{$supplementalTitle.userId}', '{$supplementalTitle.overDriveId}', 'video-streaming')" class="btn btn-sm btn-primary">Watch&nbsp;Online</a>
             {/if}
             {if $supplementalTitle.formatSelected && !$supplementalTitle.overdriveVideo}
-							<a href="#" onclick="return VuFind.OverDrive.followOverDriveDownloadLink('{$supplementalTitle.userId}', '{$supplementalTitle.overDriveId}', '{$supplementalTitle.selectedFormat.format}')" class="btn btn-sm btn-primary">Download</a>
+							<a href="#" onclick="return Pika.OverDrive.followOverDriveDownloadLink('{$supplementalTitle.userId}', '{$supplementalTitle.overDriveId}', '{$supplementalTitle.selectedFormat.format}')" class="btn btn-sm btn-primary">Download</a>
             {/if}
             {if $supplementalTitle.earlyReturn}
-							<a href="#" onclick="return VuFind.OverDrive.returnOverDriveTitle('{$supplementalTitle.userId}', '{$supplementalTitle.overDriveId}', '{$supplementalTitle.transactionId}');" class="btn btn-sm btn-warning">Return&nbsp;Now</a>
+							<a href="#" onclick="return Pika.OverDrive.returnOverDriveTitle('{$supplementalTitle.userId}', '{$supplementalTitle.overDriveId}', '{$supplementalTitle.transactionId}');" class="btn btn-sm btn-warning">Return&nbsp;Now</a>
             {/if}
 				</div>
 

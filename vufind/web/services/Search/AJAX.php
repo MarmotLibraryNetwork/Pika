@@ -353,7 +353,7 @@ class AJAX extends AJAXHandler {
 
 		// when the Ajax rating is turned on, they have to be initialized with each load of the category.
 		if ($browseCategoryRatingsMode == 'stars'){
-			$recordSet[] = '<script type="text/javascript">VuFind.Ratings.initializeRaters()</script>';
+			$recordSet[] = '<script type="text/javascript">Pika.Ratings.initializeRaters()</script>';
 		}
 
 //		}

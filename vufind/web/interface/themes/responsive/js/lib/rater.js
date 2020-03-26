@@ -55,12 +55,12 @@ $.fn.rater.defaults = {
 };
 
 $.fn.rater.rate = function($this, opts, rating) {
-	VuFind.Account.ajaxLogin(function (){
+	Pika.Account.ajaxLogin(function (){
 		var $on = $this.find('.ui-rater-starsOn'),
 				$off = $this.find('.ui-rater-starsOff');
 		$off.fadeTo(600, 0.4, function() {
 			$.getJSON(opts.url, {id: opts.id, rating: rating}, function(data) {
-				if (data.error) VuFind.showMessage(data.error);
+				if (data.error) Pika.showMessage(data.error);
 				if (data.rating) { // success
 					opts.rating = data.rating;
 					$on.css('cursor', 'default');
@@ -73,12 +73,12 @@ $.fn.rater.rate = function($this, opts, rating) {
 							$off.fadeTo(500, 1);
 							$this.attr('title', 'Your rating: ' + rating.toFixed(1));
 							if ($this.data('show_review') == true){
-								//VuFind.Ratings.doRatingReview(rating, opts.module, opts.id);
-								VuFind.Ratings.doRatingReview(opts.id);
+								//Pika.Ratings.doRatingReview(rating, opts.module, opts.id);
+								Pika.Ratings.doRatingReview(opts.id);
 							}
 					});
 				}
-					}).fail(VuFind.ajaxFail);
+					}).fail(Pika.ajaxFail);
 
 		});
 	});

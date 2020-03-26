@@ -206,7 +206,7 @@ class OverDrive_AJAX extends AJAXHandler {
 				'promptNeeded' => true,
 				'promptTitle'  => $promptTitle,
 				'prompts'      => $interface->fetch('OverDrive/ajax-overdrive-hold-prompt.tpl'),
-				'buttons'      => '<input class="btn btn-primary" type="submit" name="submit" value="Place Hold" onclick="return VuFind.OverDrive.processOverDriveHoldPrompts();"/>',
+				'buttons'      => '<input class="btn btn-primary" type="submit" name="submit" value="Place Hold" onclick="return Pika.OverDrive.processOverDriveHoldPrompts();"/>',
 			);
 		}else{
 			return array(
@@ -233,7 +233,7 @@ class OverDrive_AJAX extends AJAXHandler {
 				'promptNeeded' => true,
 				'promptTitle'  => $promptTitle,
 				'prompts'      => $interface->fetch('OverDrive/ajax-overdrive-checkout-prompt.tpl'),
-				'buttons'      => '<input class="btn btn-primary" type="submit" name="submit" value="Checkout Title" onclick="return VuFind.OverDrive.processOverDriveCheckoutPrompts();">',
+				'buttons'      => '<input class="btn btn-primary" type="submit" name="submit" value="Checkout Title" onclick="return Pika.OverDrive.processOverDriveCheckoutPrompts();">',
 			);
 		}elseif (count($overDriveUsers) == 1){
 			return array(

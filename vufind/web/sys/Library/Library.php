@@ -895,7 +895,7 @@ class Library extends DB_DataObject {
 						'additionalOneToManyActions' => array(
 							array(
 								'text'    => 'Clear Hoopla Settings',
-								'onclick' => 'VuFind.Admin.clearLibraryHooplaSettings($id)',
+								'onclick' => 'Pika.Admin.clearLibraryHooplaSettings($id)',
 								'class'   => 'btn-warning',
 							),
 						),

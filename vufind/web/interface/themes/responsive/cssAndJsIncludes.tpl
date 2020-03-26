@@ -45,35 +45,35 @@
 		<script src="/interface/themes/responsive/js/lib/jquery.rwdImageMaps.min.js?v={$gitBranch|urlencode}"></script>
 
 		{* Load application specific Javascript *}
-		<script src="/interface/themes/responsive/js/vufind/globals.js?v={$gitBranch|urlencode}"></script>
-		<script src="/interface/themes/responsive/js/vufind/base.js?v={$gitBranch|urlencode}"></script>
-		<script src="/interface/themes/responsive/js/vufind/account.js?v={$gitBranch|urlencode}"></script>
-		<script src="/interface/themes/responsive/js/vufind/admin.js?v={$gitBranch|urlencode}"></script>
-		<script src="/interface/themes/responsive/js/vufind/archive.js?v={$gitBranch|urlencode}"></script>
-		<script src="/interface/themes/responsive/js/vufind/browse.js?v={$gitBranch|urlencode}"></script>
-		<script src="/interface/themes/responsive/js/vufind/dpla.js?v={$gitBranch|urlencode}"></script>
-		<script src="/interface/themes/responsive/js/vufind/grouped-work.js?v={$gitBranch|urlencode}"></script>
-		<script src="/interface/themes/responsive/js/vufind/lists.js?v={$gitBranch|urlencode}"></script>
-		<script src="/interface/themes/responsive/js/vufind/lists-widgets.js?v={$gitBranch|urlencode}"></script>
-		<script src="/interface/themes/responsive/js/vufind/log.js?v={$gitBranch|urlencode}"></script>
-		<script src="/interface/themes/responsive/js/vufind/materials-request.js?v={$gitBranch|urlencode}"></script>
-		<script src="/interface/themes/responsive/js/vufind/menu.js?v={$gitBranch|urlencode}"></script>
-		<script src="/interface/themes/responsive/js/vufind/overdrive.js?v={$gitBranch|urlencode}"></script>
-		<script src="/interface/themes/responsive/js/vufind/hoopla.js?v={$gitBranch|urlencode}"></script>
-		<script src="/interface/themes/responsive/js/vufind/prospector.js?v={$gitBranch|urlencode}"></script>
-		<script src="/interface/themes/responsive/js/vufind/ratings.js?v={$gitBranch|urlencode}"></script>
-		<script src="/interface/themes/responsive/js/vufind/reading-history.js?v={$gitBranch|urlencode}"></script>
-		<script src="/interface/themes/responsive/js/vufind/record.js?v={$gitBranch|urlencode}"></script>
-		<script src="/interface/themes/responsive/js/vufind/responsive.js?v={$gitBranch|urlencode}"></script>
-		<script src="/interface/themes/responsive/js/vufind/results-list.js?v={$gitBranch|urlencode}"></script>
-		<script src="/interface/themes/responsive/js/vufind/searches.js?v={$gitBranch|urlencode}"></script>
-		<script src="/interface/themes/responsive/js/vufind/title-scroller.js?v={$gitBranch|urlencode}"></script>
-		<script src="/interface/themes/responsive/js/vufind/wikipedia.js?v={$gitBranch|urlencode}"></script>
-		<script src="/interface/themes/responsive/js/vufind/rbdigital.js?v={$gitBranch|urlencode}"></script>
+		<script src="/interface/themes/responsive/js/pika/globals.js?v={$gitBranch|urlencode}"></script>
+		<script src="/interface/themes/responsive/js/pika/base.js?v={$gitBranch|urlencode}"></script>
+		<script src="/interface/themes/responsive/js/pika/account.js?v={$gitBranch|urlencode}"></script>
+		<script src="/interface/themes/responsive/js/pika/admin.js?v={$gitBranch|urlencode}"></script>
+		<script src="/interface/themes/responsive/js/pika/archive.js?v={$gitBranch|urlencode}"></script>
+		<script src="/interface/themes/responsive/js/pika/browse.js?v={$gitBranch|urlencode}"></script>
+		<script src="/interface/themes/responsive/js/pika/dpla.js?v={$gitBranch|urlencode}"></script>
+		<script src="/interface/themes/responsive/js/pika/grouped-work.js?v={$gitBranch|urlencode}"></script>
+		<script src="/interface/themes/responsive/js/pika/lists.js?v={$gitBranch|urlencode}"></script>
+		<script src="/interface/themes/responsive/js/pika/lists-widgets.js?v={$gitBranch|urlencode}"></script>
+		<script src="/interface/themes/responsive/js/pika/log.js?v={$gitBranch|urlencode}"></script>
+		<script src="/interface/themes/responsive/js/pika/materials-request.js?v={$gitBranch|urlencode}"></script>
+		<script src="/interface/themes/responsive/js/pika/menu.js?v={$gitBranch|urlencode}"></script>
+		<script src="/interface/themes/responsive/js/pika/overdrive.js?v={$gitBranch|urlencode}"></script>
+		<script src="/interface/themes/responsive/js/pika/hoopla.js?v={$gitBranch|urlencode}"></script>
+		<script src="/interface/themes/responsive/js/pika/prospector.js?v={$gitBranch|urlencode}"></script>
+		<script src="/interface/themes/responsive/js/pika/ratings.js?v={$gitBranch|urlencode}"></script>
+		<script src="/interface/themes/responsive/js/pika/reading-history.js?v={$gitBranch|urlencode}"></script>
+		<script src="/interface/themes/responsive/js/pika/record.js?v={$gitBranch|urlencode}"></script>
+		<script src="/interface/themes/responsive/js/pika/responsive.js?v={$gitBranch|urlencode}"></script>
+		<script src="/interface/themes/responsive/js/pika/results-list.js?v={$gitBranch|urlencode}"></script>
+		<script src="/interface/themes/responsive/js/pika/searches.js?v={$gitBranch|urlencode}"></script>
+		<script src="/interface/themes/responsive/js/pika/title-scroller.js?v={$gitBranch|urlencode}"></script>
+		<script src="/interface/themes/responsive/js/pika/wikipedia.js?v={$gitBranch|urlencode}"></script>
 	{else}
 		{* This is all merged using the merge_javascript.php file called automatically with a File Watcher*}
 		{* Code is minified using uglify.js *}
-		<script src="/interface/themes/responsive/js/vufind.min.js?v={$gitBranch|urlencode}"></script>
+		<script src="/interface/themes/responsive/js/pika.min.js?v={$gitBranch|urlencode}"></script>
+		{*<script src="/interface/themes/responsive/js/vufind.min.js?v={$gitBranch|urlencode}"></script>*}
 	{/if}
 
 	{/strip}
@@ -100,7 +100,7 @@
 			Globals.automaticTimeoutLengthLoggedOut = {$automaticTimeoutLengthLoggedOut};
 			{/if}
 			{* Set Search Result Display Mode on Searchbox *}
-			{if !$onInternalIP}VuFind.Searches.getPreferredDisplayMode();VuFind.Archive.getPreferredDisplayMode();{/if}
+			{if !$onInternalIP}Pika.Searches.getPreferredDisplayMode();Pika.Archive.getPreferredDisplayMode();{/if}
 			{literal}
 		});
 		{/literal}
@@ -108,9 +108,9 @@
 
 	{if $includeAutoLogoutCode == true}
 		{if $debugJs}
-			<script type="text/javascript" src="/interface/themes/responsive/js/vufind/autoLogout.js?v={$gitBranch|urlencode}"></script>
+			<script type="text/javascript" src="/interface/themes/responsive/js/pika/autoLogout.js?v={$gitBranch|urlencode}"></script>
 		{else}
-			<script type="text/javascript" src="/interface/themes/responsive/js/vufind/autoLogout.min.js?v={$gitBranch|urlencode}"></script>
+			<script type="text/javascript" src="/interface/themes/responsive/js/pika/autoLogout.min.js?v={$gitBranch|urlencode}"></script>
 		{/if}
 	{/if}
 {/strip}

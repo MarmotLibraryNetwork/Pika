@@ -7,7 +7,7 @@
 		{if $isFromExhibit}
 			<div id="previousRecordLink" class="previous">
 				{if isset($previousUrl)}
-					<a href="{$previousUrl}" onclick="VuFind.Archive.setForExhibitNavigation({$previousIndex}{if $previousPage},{$previousPage}{elseif $page},{$page}{/if}{if $collectionPid},'{$collectionPid}'{/if})" title="{if !$previousTitle}{translate text='Previous'}{else}{$previousTitle|truncate:180:"..."|escape:'html'}{/if}">
+					<a href="{$previousUrl}" onclick="Pika.Archive.setForExhibitNavigation({$previousIndex}{if $previousPage},{$previousPage}{elseif $page},{$page}{/if}{if $collectionPid},'{$collectionPid}'{/if})" title="{if !$previousTitle}{translate text='Previous'}{else}{$previousTitle|truncate:180:"..."|escape:'html'}{/if}">
 						<span class="glyphicon glyphicon-chevron-left"></span> Prev
 					</a>
 				{/if}
@@ -22,7 +22,7 @@
 		$(window).on('beforeunload', function(e){
 			console.log(e, 'current URL', e.currentTarget.document.URL, 'next? target:', e.target.URL);
 			if (e.target.URL == e.currentTarget.document.URL) { // page is reloading
-				VuFind.Archive.setForExhibitNavigation({/literal}{$previousIndex + 1}{if $page},{$page}{/if}{if $collectionPid},'{$collectionPid}'{/if}{literal});
+				Pika.Archive.setForExhibitNavigation({/literal}{$previousIndex + 1}{if $page},{$page}{/if}{if $collectionPid},'{$collectionPid}'{/if}{literal});
 			}
 			return 'Pause before reloading'
 		});
@@ -32,7 +32,7 @@
 			</div>
 			<div id="nextRecordLink" class="next">
 				{if isset($nextUrl)}
-					<a href="{$nextUrl}" onclick="VuFind.Archive.setForExhibitNavigation({$nextIndex}{if $nextPage},{$nextPage}{elseif $page},{$page}{/if}{if $collectionPid},'{$collectionPid}'{/if})" title="{if !$nextTitle}{translate text='Next'}{else}{$nextTitle|truncate:180:"..."|escape:'html'}{/if}">
+					<a href="{$nextUrl}" onclick="Pika.Archive.setForExhibitNavigation({$nextIndex}{if $nextPage},{$nextPage}{elseif $page},{$page}{/if}{if $collectionPid},'{$collectionPid}'{/if})" title="{if !$nextTitle}{translate text='Next'}{else}{$nextTitle|truncate:180:"..."|escape:'html'}{/if}">
 						Next <span class="glyphicon glyphicon-chevron-right"></span>
 					</a>
 				{/if}

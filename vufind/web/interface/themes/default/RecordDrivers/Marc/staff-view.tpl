@@ -12,10 +12,10 @@
 			<div class="btn-group" role="group" aria-label="...">
 				<a href="/GroupedWork/{$recordDriver->getPermanentId()}" class="btn btn-sm btn-default">Go To Grouped
 					Work</a>
-				<button onclick="return VuFind.Record.reloadCover('{$recordDriver->getModule()}', '{$id}')"
+				<button onclick="return Pika.Record.reloadCover('{$recordDriver->getModule()}', '{$id}')"
 								class="btn btn-sm btn-default">Reload Cover
 				</button>
-				<button onclick="return VuFind.GroupedWork.reloadEnrichment('{$recordDriver->getPermanentId()}')"
+				<button onclick="return Pika.GroupedWork.reloadEnrichment('{$recordDriver->getPermanentId()}')"
 								class="btn btn-sm btn-default">Reload Enrichment
 				</button>
 					{if $staffClientUrl}
@@ -45,14 +45,14 @@
 					<div class="row">
 						<div class="col-xs-12">
                 {*							<div class="btn-group" role="group" aria-label="...">*}
-							<button onclick="return VuFind.GroupedWork.forceReindex('{$recordDriver->getPermanentId()}')"
+							<button onclick="return Pika.GroupedWork.forceReindex('{$recordDriver->getPermanentId()}')"
 							        class="btn btn-sm btn-default">Force Reindex
 							</button>
-							<button onclick="return VuFind.GroupedWork.forceRegrouping('{$recordDriver->getPermanentId()}')"
+							<button onclick="return Pika.GroupedWork.forceRegrouping('{$recordDriver->getPermanentId()}')"
 							        class="btn btn-sm btn-default">Force Regrouping
 							</button>
                 {if $recordExtractable}
-									<button onclick="return VuFind.Record.forceReExtract('{$recordDriver->getModule()}', '{$id|escape}')"
+									<button onclick="return Pika.Record.forceReExtract('{$recordDriver->getModule()}', '{$id|escape}')"
 									        class="btn btn-sm btn-default">Force Extract from {$ils}</button>
                 {/if}
 
@@ -69,7 +69,7 @@
 							<div class="row">
 								<div class="col-xs-12">
                     {*									<div class="btn-group" role="group" aria-label="...">*}
-									<button onclick="return VuFind.GroupedWork.reloadIslandora('{$recordDriver->getPermanentId()}')"
+									<button onclick="return Pika.GroupedWork.reloadIslandora('{$recordDriver->getPermanentId()}')"
 									        class="btn btn-sm btn-default">Clear Islandora Cache
 									</button>
                     {*									</div>*}

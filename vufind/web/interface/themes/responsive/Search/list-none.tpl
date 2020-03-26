@@ -84,7 +84,7 @@
 		<script type="text/javascript">
 			$(document).ready(
 					function () {ldelim}
-						VuFind.Searches.loadExploreMoreBar('{$exploreMoreSection}', '{$exploreMoreSearchTerm|escape:"html"}');
+						Pika.Searches.loadExploreMoreBar('{$exploreMoreSection}', '{$exploreMoreSearchTerm|escape:"html"}');
 						{rdelim}
 			);
 		</script>
@@ -128,7 +128,7 @@
 
 	{if $enableMaterialsRequest}
 		<h2>Didn't find it?</h2>
-		<p>Can't find what you are looking for? <a href="/MaterialsRequest/NewRequest?lookfor={$lookfor}&basicType={$searchIndex}" onclick="return VuFind.Account.followLinkIfLoggedIn(this);">{translate text='Suggest a purchase'}</a>.</p>
+		<p>Can't find what you are looking for? <a href="/MaterialsRequest/NewRequest?lookfor={$lookfor}&basicType={$searchIndex}" onclick="return Pika.Account.followLinkIfLoggedIn(this);">{translate text='Suggest a purchase'}</a>.</p>
 	{elseif $externalMaterialsRequestUrl}
 		<h2>Didn't find it?</h2>
 		<p>Can't find what you are looking for? <a href="{$externalMaterialsRequestUrl}">{translate text='Suggest a purchase'}</a>.</p>
@@ -140,10 +140,10 @@
 <script type="text/javascript">
 	$(function(){ldelim}
 		{if $showProspectorLink}
-		VuFind.Prospector.getProspectorResults(5, {$prospectorSavedSearchId});
+		Pika.Prospector.getProspectorResults(5, {$prospectorSavedSearchId});
 		{/if}
 		{if $showDplaLink}
-		VuFind.DPLA.getDPLAResults('{$lookfor}');
+		Pika.DPLA.getDPLAResults('{$lookfor}');
 		{/if}
 		{rdelim});
 </script>

@@ -326,7 +326,7 @@ abstract class RecordInterface {
 			if ($interface->getVariable('showGoodReadsReviews')){
 				$moreDetailsOptions['goodreadsReviews'] = array(
 					'label'  => 'Reviews from GoodReads',
-					'onShow' => "VuFind.GroupedWork.getGoodReadsComments('$isbn');",
+					'onShow' => "Pika.GroupedWork.getGoodReadsComments('$isbn');",
 					'body'   => '<div id="goodReadsPlaceHolder">Loading GoodReads Reviews.</div>',
 				);
 			}

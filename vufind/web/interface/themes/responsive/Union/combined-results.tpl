@@ -33,23 +33,23 @@
 {/strip}
 
 <script type="text/javascript">
-	VuFind.Searches.combinedResultsDefinedOrder = [
+	Pika.Searches.combinedResultsDefinedOrder = [
 		{foreach from=$combinedResultSections item=combinedResultSection}
 		"#combined-results-section-results-{$combinedResultSection->id}",
 		{/foreach}
 	];
 function reloadCombinedResults(){ldelim}
 	{foreach from=$combinedResultSections item=combinedResultSection}
-	VuFind.Searches.getCombinedResults('{$combinedResultSection|get_class}:{$combinedResultSection->id}', '{$combinedResultSection->id}', '{$combinedResultSection->source}', '{$lookfor|escape:"quotes"}', '{$basicSearchType}', {$combinedResultSection->numberOfResultsToShow});
+	Pika.Searches.getCombinedResults('{$combinedResultSection|get_class}:{$combinedResultSection->id}', '{$combinedResultSection->id}', '{$combinedResultSection->source}', '{$lookfor|escape:"quotes"}', '{$basicSearchType}', {$combinedResultSection->numberOfResultsToShow});
 	{/foreach}
 {rdelim};
 
 $(function(){ldelim}
-		VuFind.Searches.reorderCombinedResults();
+		Pika.Searches.reorderCombinedResults();
 		reloadCombinedResults();
 
 		$(window).resize(function(){ldelim}
-			VuFind.Searches.reorderCombinedResults();
+			Pika.Searches.reorderCombinedResults();
 		{rdelim});
 
 {rdelim});

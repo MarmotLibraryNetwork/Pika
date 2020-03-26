@@ -3,22 +3,22 @@
 		<div class="hidden-xs col-sm-1 col-md-1 col-lg-1" id="vertical-menu-bar-wrapper">
 			<div id="vertical-menu-bar">
 				<div class="menu-bar-option">
-					<a href="#" onclick="VuFind.Menu.SideBar.showSearch(this)" class="menu-icon" title="Search" id="vertical-menu-search-button">
+					<a href="#" onclick="Pika.Menu.SideBar.showSearch(this)" class="menu-icon" title="Search" id="vertical-menu-search-button">
 						<img src="{img filename='/interface/themes/responsive/images/Search.png'}" alt="Search">
 						<div class="menu-bar-label rotated-text"><span class="rotated-text-inner">Search</span></div>
 					</a>
 				</div>
 				{if $loggedIn}{* Logged In *}
 					<div class="menu-bar-option">
-						<a href="#" onclick="VuFind.Menu.SideBar.showAccount(this)" class="menu-icon" title="Account">
+						<a href="#" onclick="Pika.Menu.SideBar.showAccount(this)" class="menu-icon" title="Account">
 							<img src="{img filename='/interface/themes/responsive/images/Account.png'}" alt="Account">
 							<div class="menu-bar-label rotated-text"><span class="rotated-text-inner">Account</span></div>
 						</a>
 					</div>
 				{else} {* Not Logged In *}
 					<div class="menu-bar-option">
-						<a href="/MyAccount/Home" id="loginLink" onclick="{if $isLoginPage}$('#username').focus();return false{else}return VuFind.Account.followLinkIfLoggedIn(this){/if}" data-login="true" class="menu-icon" title="{translate text='Login'}">
-							{*<a href="{$fullPath}" id="loginLink" onclick="{if $isLoginPage}$('#username').focus();return false{else}return VuFind.Account.followLinkIfLoggedIn(this){/if}" data-login="true" class="menu-icon" title="{translate text='Login'}">*}
+						<a href="/MyAccount/Home" id="loginLink" onclick="{if $isLoginPage}$('#username').focus();return false{else}return Pika.Account.followLinkIfLoggedIn(this){/if}" data-login="true" class="menu-icon" title="{translate text='Login'}">
+							{*<a href="{$fullPath}" id="loginLink" onclick="{if $isLoginPage}$('#username').focus();return false{else}return Pika.Account.followLinkIfLoggedIn(this){/if}" data-login="true" class="menu-icon" title="{translate text='Login'}">*}
 							{*<img src="{img filename='/interface/themes/responsive/images/Account.png'}" alt="{translate text='Login'}">*}
 							<img src="{img filename='/interface/themes/responsive/images/Login.png'}" alt="{translate text='Login'}">
 							{*<div class="menu-bar-label rotated-text"><span class="rotated-text-inner">Account</span></div>*}
@@ -27,14 +27,14 @@
 					</div>
 				{/if}
 				<div class="menu-bar-option">
-					<a href="#" onclick="VuFind.Menu.SideBar.showMenu(this)" class="menu-icon" title="Additional menu options including links to information about the library and other library resources">
+					<a href="#" onclick="Pika.Menu.SideBar.showMenu(this)" class="menu-icon" title="Additional menu options including links to information about the library and other library resources">
 						<img src="{img filename='/interface/themes/responsive/images/Menu.png'}" alt="Additional menu options including links to information about the library and other library resources">
 						<div class="menu-bar-label rotated-text"><span class="rotated-text-inner">{$sidebarMenuButtonText}</span></div>
 					</a>
 				</div>
 				{if $showExploreMore}
 					<div id="sidebar-menu-option-explore-more" class="menu-bar-option">
-						<a href="#" onclick="VuFind.Menu.SideBar.showExploreMore(this)" class="menu-icon" title="{translate text='Explore More'}">
+						<a href="#" onclick="Pika.Menu.SideBar.showExploreMore(this)" class="menu-icon" title="{translate text='Explore More'}">
 							<img src="{img filename='/interface/themes/responsive/images/ExploreMore.png'}" alt="{translate text='Explore More'}">
 							<div class="menu-bar-label rotated-text">
 									<span class="rotated-text-inner">

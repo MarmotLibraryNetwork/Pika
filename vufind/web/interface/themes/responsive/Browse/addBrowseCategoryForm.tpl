@@ -31,7 +31,7 @@
 	{literal}
 	$("#createBrowseCategory").validate({
 		submitHandler: function(){
-			VuFind.Browse.createBrowseCategory()
+			Pika.Browse.createBrowseCategory()
 		}
 	});
 	{/literal}

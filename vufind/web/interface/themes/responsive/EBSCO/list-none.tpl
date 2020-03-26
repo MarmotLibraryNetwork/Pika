@@ -32,7 +32,7 @@
   <script type="text/javascript">
     $(document).ready(
       function () {ldelim}
-        VuFind.Searches.loadExploreMoreBar('{$exploreMoreSection}', '{$exploreMoreSearchTerm|escape:"html"}');
+        Pika.Searches.loadExploreMoreBar('{$exploreMoreSection}', '{$exploreMoreSearchTerm|escape:"html"}');
       {rdelim}
     );
   </script>

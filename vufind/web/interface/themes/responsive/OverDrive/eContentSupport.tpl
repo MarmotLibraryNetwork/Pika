@@ -67,7 +67,7 @@ $(function(){
 	var supportForm = $("#eContentSupport");
 	supportForm.validate({
 		submitHandler: function () {
-			VuFind.OverDrive.submitHelpForm();
+			Pika.OverDrive.submitHelpForm();
 		}
 	});
 });

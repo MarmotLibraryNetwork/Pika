@@ -1068,13 +1068,13 @@ class OverDriveRecordDriver extends RecordInterface {
 		if ($isAvailable){
 			$actions[] = array(
 				'title'        => 'Check Out OverDrive',
-				'onclick'      => "return VuFind.OverDrive.checkOutOverDriveTitle('{$this->id}');",
+				'onclick'      => "return Pika.OverDrive.checkOutOverDriveTitle('{$this->id}');",
 				'requireLogin' => false,
 			);
 		}else{
 			$actions[] = array(
 				'title'        => 'Place Hold OverDrive',
-				'onclick'      => "return VuFind.OverDrive.placeOverDriveHold('{$this->id}');",
+				'onclick'      => "return Pika.OverDrive.placeOverDriveHold('{$this->id}');",
 				'requireLogin' => false,
 			);
 		}

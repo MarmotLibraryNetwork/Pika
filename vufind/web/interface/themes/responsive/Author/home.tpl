@@ -55,7 +55,7 @@
 
 	{if $displayMode == 'covers'}
 		{if $recordEnd < $recordCount}
-			<a onclick="return VuFind.Searches.getMoreResults()">
+			<a onclick="return Pika.Searches.getMoreResults()">
 				<div class="row" id="more-browse-results">
 					<img src="{img filename="browse_more_arrow.png"}" alt="Load More Search Results" title="Load More Search Results">
 				</div>
@@ -73,24 +73,24 @@
 	<script type="text/javascript">
 		$(document).ready(function (){ldelim}
 		{if $showWikipedia}
-			VuFind.Wikipedia.getWikipediaArticle('{$wikipediaAuthorName}');
+			Pika.Wikipedia.getWikipediaArticle('{$wikipediaAuthorName}');
 		{/if}
 
 			{*{include file="Search/results-displayMode-js.tpl"}*}
 			{if !$onInternalIP}
-			{*if (!Globals.opac &&VuFind.hasLocalStorage()){ldelim}*}
+			{*if (!Globals.opac &&Pika.hasLocalStorage()){ldelim}*}
 			{*var temp = window.localStorage.getItem('searchResultsDisplayMode');*}
-			{*if (VuFind.Searches.displayModeClasses.hasOwnProperty(temp)) VuFind.Searches.displayMode = temp; *}{* if stored value is empty or a bad value, fall back on default setting ("null" returned when not set) *}
-			{*else VuFind.Searches.displayMode = '{$displayMode}';*}
+			{*if (Pika.Searches.displayModeClasses.hasOwnProperty(temp)) Pika.Searches.displayMode = temp; *}{* if stored value is empty or a bad value, fall back on default setting ("null" returned when not set) *}
+			{*else Pika.Searches.displayMode = '{$displayMode}';*}
 			{*{rdelim}*}
 			{*else*}
 			{* Because content is served on the page, have to set the mode that was used, even if the user didn't chose the mode. *}
-			VuFind.Searches.displayMode = '{$displayMode}';
+			Pika.Searches.displayMode = '{$displayMode}';
 			{else}
-			VuFind.Searches.displayMode = '{$displayMode}';
+			Pika.Searches.displayMode = '{$displayMode}';
 			Globals.opac = 1; {* set to true to keep opac browsers from storing browse mode *}
 			{/if}
-			$('#'+VuFind.Searches.displayMode).parent('label').addClass('active'); {* show user which one is selected *}
+			$('#'+Pika.Searches.displayMode).parent('label').addClass('active'); {* show user which one is selected *}
 
 			{rdelim});
 	</script>
