@@ -285,6 +285,17 @@ class OverDrive_AJAX extends AJAXHandler {
 			$interface->assign('email', $user->email);
 		}
 
+		if (!empty($_REQUEST['id'])){
+			require_once ROOT_DIR . '/RecordDrivers/OverDriveRecordDriver.php';
+			$overDriveId    = $_REQUEST['id'];
+			$recordDriver   = new OverDriveRecordDriver($overDriveId, -1); // (Don't need to load grouped work)
+			if ($recordDriver->isValid()){
+				$author         = $recordDriver->getAuthor();
+				$titleAndAuthor = $recordDriver->getTitle() . (!empty($author) ? ' by ' . $author : '');
+				$interface->assign('titleAndAuthor', $titleAndAuthor);
+			}
+		}
+
 		$results = array(
 			'title'        => 'eContent Support Request',
 			'modalBody'    => $interface->fetch('OverDrive\eContentSupport.tpl'),
