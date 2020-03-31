@@ -13,7 +13,7 @@
 
 	{* Include correct all javascript *}
 	{if $ie8}
-		{* include to give responsive capability to ie8 browsers, but only on successful detection of those browsers. For that reason, don't include in vufind.min.js *}
+		{* include to give responsive capability to ie8 browsers, but only on successful detection of those browsers. For that reason, don't include in pika.min.js *}
 		<script src="/interface/themes/responsive/js/lib/respond.min.js?v={$gitBranch|urlencode}"></script>
 	{/if}
 	{if $debugJs}
@@ -31,7 +31,7 @@
 		<script src="/interface/themes/responsive/js/lib/additional-methods.min.js?v={$gitBranch|urlencode}"></script>
 
 		<script src="/interface/themes/responsive/js/lib/recaptcha_ajax.js?v={$gitBranch|urlencode}"></script>
-		{* Combined into ratings.js (part of the vufind.min.js)*}
+		{* Combined into ratings.js (part of the pika.min.js)*}
 		{*<script src="/interface/themes/responsive/js/lib/rater.min.js"></script>*}
 		{*<script src="/interface/themes/responsive/js/lib/rater.js"></script>*}
 		<script src="/interface/themes/responsive/js/lib/bootstrap.min.js?v={$gitBranch|urlencode}"></script>
@@ -73,7 +73,7 @@
 		{* This is all merged using the merge_javascript.php file called automatically with a File Watcher*}
 		{* Code is minified using uglify.js *}
 		<script src="/interface/themes/responsive/js/pika.min.js?v={$gitBranch|urlencode}"></script>
-		{*<script src="/interface/themes/responsive/js/vufind.min.js?v={$gitBranch|urlencode}"></script>*}
+		{*<script src="/interface/themes/responsive/js/pika.min.js?v={$gitBranch|urlencode}"></script>*}
 	{/if}
 
 	{/strip}

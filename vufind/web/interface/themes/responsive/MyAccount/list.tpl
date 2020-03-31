@@ -2,6 +2,7 @@
 	<form action="/MyAccount/MyList/{$favList->id}" id="myListFormHead">
 		<div>
 			<input type="hidden" name="myListActionHead" id="myListActionHead" class="form">
+
 			<h3 id="listTitle">{$favList->title|escape:"html"}</h3>
 			{if $notes}
 				<div id="listNotes" class="alert alert-info">
@@ -67,8 +68,9 @@
 						<button value="emailList" id="FavEmail" class="btn btn-sm btn-default" onclick='return Pika.Lists.emailListAction("{$favList->id}")'>Email List</button>
 						<button value="printList" id="FavPrint" class="btn btn-sm btn-default" onclick='return Pika.Lists.printListAction()'>Print List</button>
 						<button value="citeList" id="FavCite" class="btn btn-sm btn-default" onclick='return Pika.Lists.citeListAction("{$favList->id}")'>Generate Citations</button>
-
+						<button value="exportToExcel" id="" class="btn btn-sm btn-default" onclick='return Pika.Lists.exportListAction("{$favList->id}");'>Export to Excel</button>
 						<div class="btn-group" role="group">
+
 							<button type="button" class="btn btn-sm btn-default btn-info dropdown-toggle" data-toggle="dropdown" aria-expanded="false">Sort &nbsp;<span class="caret"></span></button>
 							<ul class="dropdown-menu dropdown-menu-right" role="menu">
 								{foreach from=$sortList item=sortData}
@@ -80,13 +82,16 @@
 									</li>
 								{/foreach}
 							</ul>
+
 						</div>
 
 					</div>
+
 					{if $allowEdit}
 						<div class="btn-group">
 							<button value="deleteList" id="FavDelete" class="btn btn-sm btn-danger" onclick='return Pika.Lists.deleteListAction();'>Delete List</button>
 						</div>
+
 					{/if}
 				</div>
 			{/if}

@@ -34,6 +34,7 @@ pika/ratings.min.js
 pika/reading-history.min.js
 pika/record.min.js
 pika/responsive.min.js
+pika/rbdigital.min.js
 pika/results-list.min.js
 pika/searches.min.js
 pika/title-scroller.min.js

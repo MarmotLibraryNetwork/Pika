@@ -66,7 +66,10 @@ Pika.Lists = (function(){
 				}
 			);
 		},
-
+		//Exports list to Excel
+		exportListAction: function (id){
+			return this.submitListForm('exportToExcel');
+		},
 		citeListAction: function (id) {
 			return Pika.Account.ajaxLightbox('/MyAccount/AJAX?method=getCitationFormatsForm&listId=' + id, false);
 		},

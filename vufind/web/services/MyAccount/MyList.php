@@ -121,6 +121,9 @@ class MyAccount_MyList extends MyAccount {
 						$_SESSION['listNotes'] = $notes;
 						session_commit();
 						break;
+                    case 'exportToExcel':
+                        $this->exportToExcel($list);
+                        break;
 				}
 			}elseif (!empty($_REQUEST['myListActionItem'])){
 				$actionToPerform = $_REQUEST['myListActionItem'];
@@ -222,4 +225,113 @@ class MyAccount_MyList extends MyAccount {
 
 		return $notes;
 	}
+
+    /**
+     * Exports list to Excel.
+     *
+     * @param $list : List of Books
+     *
+     * @throws Exception
+     *
+     */
+    public function exportToExcel(UserList $list){
+        global $interface;
+        $interface->assign('favList', $list);
+        $interface->assign('listSelected', $list->id);
+        $userCanEdit = false;
+        if (UserAccount::isLoggedIn() && (UserAccount::getActiveUserId() == $list->user_id)){
+            $listUser = UserAccount::getActiveUserObj();
+            $userCanEdit = $listUser->canEditList($list);
+        }elseif ($list->user_id != 0){
+            $listUser     = new User();
+            $listUser->id = $list->user_id;
+            if (!$listUser->find(true)){
+                $listUser = false;
+            }
+        }else{
+            $listUser = false;
+        }
+        $favList = new FavoriteHandler($list, $listUser, $userCanEdit);
+        $favorites = $favList->getTitles($list->id);
+
+
+        //PHPEXCEL
+        // Create new PHPExcel object
+       $objPHPExcel = new PHPExcel();
+
+        // Set properties
+        $objPHPExcel->getProperties()->setCreator("DCL")
+            ->setLastModifiedBy("DCL")
+            ->setTitle("Office 2007 XLSX Document")
+            ->setSubject("Office 2007 XLSX Document")
+            ->setDescription("Office 2007 XLSX, generated using PHP.")
+            ->setKeywords("office 2007 openxml php")
+            ->setCategory("List Items");
+        // Set Labeled Cell Values
+        $entries = $list->getListTitles();
+        $itemEntry =[];
+
+        //create subarray with notes and dateAdded
+        foreach($entries as $entry)
+        {
+            $itemEntry [$entry->groupedWorkPermanentId] = ["notes" => $entry->notes, "dateAdded" => $entry->dateAdded, "weight" => $entry->weight];
+        }
+
+        //create array including all data
+                $itemArray =[];
+                foreach($favorites as $listItem)
+                {
+                    $title = $listItem['title_display'];
+                    $author = $listItem['author'];
+                    $recordType = $listItem['recordtype'];
+                    $recordID = $listItem['id'];
+
+                    $favoriteItem = ["Title"=> $title, "Author"=>$author, "recordType"=>$recordType, "recordID"=>$recordID, "Date"=>$itemEntry[$recordID]['dateAdded'], "Notes"=>$itemEntry[$recordID]['notes'], "Weight"=>$itemEntry[$recordID]['weight']];
+                    array_push($itemArray, $favoriteItem);
+                }
+
+
+        $objPHPExcel->setActiveSheetIndex(0)
+            ->setCellValue('A1', $list->title)
+            ->setCellValue('B1', $list->description)
+            ->setCellValue('A3', 'Title')
+            ->setCellValue('B3', 'Author')
+            ->setCellValue('C3', 'Notes')
+            ->setCellValue('D3', 'Date Added');
+
+
+                $a = 4;
+                foreach ($itemArray as $listItem)
+                {
+
+
+                    $objPHPExcel->setActiveSheetIndex(0)
+                        ->setCellValue('A' . $a, $listItem['Title'])
+                        ->setCellValue('B' . $a, $listItem['Author'])
+                        ->setCellValue('C' . $a, $listItem['Notes'])
+                        ->setCellValue('D' . $a, date('m/d/Y g:i a', $listItem['Date']));
+                    $a++;
+
+                }
+
+        $objPHPExcel->getActiveSheet()->getColumnDimension('A')->setAutoSize(true);
+        $objPHPExcel->getActiveSheet()->getColumnDimension('B')->setAutoSize(true);
+        $objPHPExcel->getActiveSheet()->getColumnDimension('C')->setAutoSize(true);
+        $objPHPExcel->getActiveSheet()->getColumnDimension('D')->setAutoSize(true);
+        $objPHPExcel->getActiveSheet()->getColumnDimension('E')->setAutoSize(true);
+
+        // Rename sheet
+        $objPHPExcel->getActiveSheet()->setTitle('Favorites List -' . $list->title);
+
+        // Redirect output to a client's web browser (Excel5)
+        header('Content-Type: application/vnd.ms-excel');
+        header('Content-Disposition: attachment;filename="favorites_' . $list->title . '.xls"');
+        header('Cache-Control: max-age=0');
+
+        $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
+        $objWriter->save('php://output');
+        exit;
+
+
+    }
 }
