@@ -289,6 +289,8 @@ class MyAccount_MyList extends MyAccount {
                     $favoriteItem = ["Title"=> $title, "Author"=>$author, "recordType"=>$recordType, "recordID"=>$recordID, "Date"=>$itemEntry[$recordID]['dateAdded'], "Notes"=>$itemEntry[$recordID]['notes'], "Weight"=>$itemEntry[$recordID]['weight']];
                     array_push($itemArray, $favoriteItem);
                 }
+                $this->SortByValue($itemArray,$favList->getSort());
+
 
 
         $objPHPExcel->setActiveSheetIndex(0)
@@ -333,5 +335,47 @@ class MyAccount_MyList extends MyAccount {
         exit;
 
 
+    }
+
+    private function SortByValue(&$array, $field)
+    {
+        $key = "title";
+        switch($field)
+        {
+            case "title":
+                $key = "Title";
+                break;
+            case "author":
+                $key = "Author";
+            case "dateAdded":
+                $key ="Date";
+                break;
+            case "custom";
+                $key = "Weight";
+                break;
+            default:
+                return $array;
+                break;
+        }
+        $sorter=array();
+        $ret=array();
+        reset($array);
+        foreach ($array as $ii => $va) {
+            $sorter[$ii]=$va[$key];
+            if($key == "custom")
+            {
+                $val = $va[$key];
+                if (is_null($val))
+                  $val = 0;
+
+            }
+            else $val = $va[$key];
+
+        }
+        asort($sorter);
+        foreach ($sorter as $ii => $val) {
+            $ret[$ii]=$array[$ii];
+        }
+        $array=$ret;
     }
 }

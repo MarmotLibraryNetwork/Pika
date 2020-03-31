@@ -395,7 +395,7 @@ class FavoriteHandler
 			$searchObject->setLimit($numListEntries); // only get results for each item
 
 			$searchObject->setQueryIDs($this->catalogIds);
-            $searchObject->setSort($this->getSort());
+
 			$searchObject->processSearch();
 			$catalogRecordSet = $searchObject->getResultRecordSet();
 
@@ -410,7 +410,7 @@ class FavoriteHandler
 			$archiveSearchObject->addHiddenFilter('!RELS_EXT_isViewableByRole_literal_ms', "administrator");
 			$archiveSearchObject->addHiddenFilter('!mods_extension_marmotLocal_pikaOptions_showInSearchResults_ms', "no");
 			$archiveSearchObject->setQueryIDs($this->archiveIds);
-            $archiveSearchObject->setSort($this->getSort());
+
 			$archiveSearchObject->processSearch();
 
 			$archiveRecordSet = $archiveSearchObject->getResultRecordSet();
