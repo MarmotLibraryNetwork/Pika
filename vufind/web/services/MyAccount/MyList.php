@@ -337,7 +337,15 @@ class MyAccount_MyList extends MyAccount {
 
     }
 
-    private function SortByValue(&$array, $field)
+
+    /**
+     * Sorts array by provided string.
+     *
+     * @param array $array
+     * @param string $field
+     * @return array
+     */
+    private function SortByValue(array &$array, string $field)
     {
         $key = "title";
         switch($field)
@@ -348,6 +356,7 @@ class MyAccount_MyList extends MyAccount {
             case "author":
                 $key = "Author";
             case "dateAdded":
+            case   "recentlyAdded":
                 $key ="Date";
                 break;
             case "custom";
@@ -372,7 +381,14 @@ class MyAccount_MyList extends MyAccount {
             else $val = $va[$key];
 
         }
-        asort($sorter);
+        if($field == "recentlyAdded")
+        {
+            arsort($sorter);
+        }
+        else{
+
+            asort($sorter);
+        }
         foreach ($sorter as $ii => $val) {
             $ret[$ii]=$array[$ii];
         }
