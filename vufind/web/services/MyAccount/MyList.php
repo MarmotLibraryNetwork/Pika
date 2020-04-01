@@ -71,7 +71,7 @@ class MyAccount_MyList extends MyAccount {
 			}
 		}
 
-		if (isset($_SESSION['listNotes'])){ // can contain results from bulk add titles action
+		if (isset($_SESSION['listNotes'])){ // can contain results from bulk add titles action, and is an array of strings
 			$interface->assign('notes', $_SESSION['listNotes']);
 			unset($_SESSION['listNotes']);
 		}

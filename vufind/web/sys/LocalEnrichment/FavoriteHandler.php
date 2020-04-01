@@ -36,7 +36,7 @@ class FavoriteHandler
 	private $listId;
 	private $allowEdit;
 	private $favorites = array(),
-					$ids = array(),  //TODO: replace all uses of $this->ds with $this->favorites
+					$ids = array(),  //TODO: replace all uses of $this->ids with $this->favorites
 					$catalogIds = array(),
 					$archiveIds = array();
 	private $defaultSort = 'dateAdded'; // initial setting (Use a userlist sorting option initially)
@@ -60,8 +60,6 @@ class FavoriteHandler
 	 * @access  public
 	 * @param   UserList   $list        User List Object.
 	 * @param   User       $user        User object owning tag/note metadata.
-	 * @param   int        $listId      ID of list containing desired tags/notes (or
-	 *                                  null to show tags/notes from all user's lists).
 	 * @param   bool       $allowEdit   Should we display edit controls?
 	 */
 	public function __construct($list, $user, $allowEdit = true)
