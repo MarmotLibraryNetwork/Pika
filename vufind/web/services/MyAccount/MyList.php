@@ -281,15 +281,25 @@ class MyAccount_MyList extends MyAccount {
                 $itemArray =[];
                 foreach($favorites as $listItem)
                 {
-                    $title = $listItem['title_display'];
-                    $author = $listItem['author'];
+                    $title = "";
+                    if(!is_null($listItem['title_display'])) {
+                        $title = $listItem['title_display'];
+                    }
+                    $author = "";
+                    if(!is_null($listItem['author_display'])){
+                        $author = $listItem['author_display'];
+                    }
+                    $recordType = "";
+                    if(!is_null($listItem['recordtype'])){
                     $recordType = $listItem['recordtype'];
+                    }
                     $recordID = $listItem['id'];
 
                     $favoriteItem = ["Title"=> $title, "Author"=>$author, "recordType"=>$recordType, "recordID"=>$recordID, "Date"=>$itemEntry[$recordID]['dateAdded'], "Notes"=>$itemEntry[$recordID]['notes'], "Weight"=>$itemEntry[$recordID]['weight']];
                     array_push($itemArray, $favoriteItem);
                 }
-                $this->SortByValue($itemArray,$favList->getSort());
+
+              $this->SortByValue($itemArray,$favList->getSort());
 
 
 
@@ -305,8 +315,6 @@ class MyAccount_MyList extends MyAccount {
                 $a = 4;
                 foreach ($itemArray as $listItem)
                 {
-
-
                     $objPHPExcel->setActiveSheetIndex(0)
                         ->setCellValue('A' . $a, $listItem['Title'])
                         ->setCellValue('B' . $a, $listItem['Author'])
