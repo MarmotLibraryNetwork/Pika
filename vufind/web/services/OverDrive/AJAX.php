@@ -298,7 +298,7 @@ class OverDrive_AJAX extends AJAXHandler {
 
 		$results = array(
 			'title'        => 'eContent Support Request',
-			'modalBody'    => $interface->fetch('OverDrive\eContentSupport.tpl'),
+			'modalBody'    => $interface->fetch('OverDrive/eContentSupport.tpl'),
 			'modalButtons' => '<span class="tool btn btn-primary" onclick="return $(\'#eContentSupport\').submit()">Submit</span>', // .submit() triggers form validation
 		);
 		return $results;
