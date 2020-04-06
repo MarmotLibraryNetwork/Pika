@@ -140,6 +140,7 @@
 <script type="text/javascript">
 	$(function(){ldelim}
 		{if $showProspectorLink}
+      {* Include slight delay to give time for the search to be saved into the database for retrieval here. See D-3592 *}
 			setTimeout(function(){ldelim} Pika.Prospector.getProspectorResults(5, {$prospectorSavedSearchId}); {rdelim}, 237);
 		{/if}
 		{if $showDplaLink}
