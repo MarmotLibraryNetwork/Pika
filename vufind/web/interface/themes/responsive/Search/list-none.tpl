@@ -140,7 +140,7 @@
 <script type="text/javascript">
 	$(function(){ldelim}
 		{if $showProspectorLink}
-		Pika.Prospector.getProspectorResults(5, {$prospectorSavedSearchId});
+			setTimeout(function(){ldelim} Pika.Prospector.getProspectorResults(5, {$prospectorSavedSearchId}); {rdelim}, 237);
 		{/if}
 		{if $showDplaLink}
 		Pika.DPLA.getDPLAResults('{$lookfor}');
