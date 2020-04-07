@@ -162,6 +162,8 @@ class MyAccount_MyList extends MyAccount {
                     case 'exportToExcel':
                         $this->exportToExcel($list);
                         break;
+                    default:
+                        break;
                 }
             }
             header("Location: /MyAccount/MyList/{$list->id}");
@@ -308,22 +310,30 @@ class MyAccount_MyList extends MyAccount {
                 if (!is_null($listItem['recordtype'])) {
                     $recordType = $listItem['recordtype'];
                 }
+                    $type="";
+                if(isset($listItem['format_category_opac']))
+                {
+                    $type = $listItem['format_category_opac'][0];
+                }
+
                 $recordID = $listItem['id'];
 
-                $favoriteItem = ["Title" => $title, "Author" => $author, "recordType" => $recordType, "recordID" => $recordID, "Date" => $itemEntry[$recordID]['dateAdded'], "Notes" => $itemEntry[$recordID]['notes'], "Weight" => $itemEntry[$recordID]['weight']];
+                $favoriteItem = ["Title" => $title, "Author" => $author, "recordType" => $recordType, "Type" => $type,"recordID" => $recordID, "Date" => $itemEntry[$recordID]['dateAdded'], "Notes" => $itemEntry[$recordID]['notes'], "Weight" => $itemEntry[$recordID]['weight']];
                 array_push($itemArray, $favoriteItem);
             }
 
             $this->SortByValue($itemArray, $favList->getSort());
-
-
+//echo "<pre>";
+//print_r($favorites);
+//echo "</pre>";
             $objPHPExcel->setActiveSheetIndex(0)
                 ->setCellValue('A1', $list->title)
                 ->setCellValue('B1', $list->description)
                 ->setCellValue('A3', 'Title')
                 ->setCellValue('B3', 'Author')
                 ->setCellValue('C3', 'Notes')
-                ->setCellValue('D3', 'Date Added');
+                ->setCellValue('D3', 'Material Type')
+                ->setCellValue('E3', 'Date Added');
 
 
             $a = 4;
@@ -332,7 +342,8 @@ class MyAccount_MyList extends MyAccount {
                     ->setCellValue('A' . $a, $listItem['Title'])
                     ->setCellValue('B' . $a, $listItem['Author'])
                     ->setCellValue('C' . $a, $listItem['Notes'])
-                    ->setCellValue('D' . $a, date('m/d/Y g:i a', $listItem['Date']));
+                    ->setCellValue('D' . $a, $listItem['Type'])
+                    ->setCellValue('E' . $a, date('m/d/Y g:i a', $listItem['Date']));
                 $a++;
 
             }
@@ -369,7 +380,7 @@ class MyAccount_MyList extends MyAccount {
      */
     private function SortByValue(array &$array, string $field)
     {
-        $key = "title";
+
         switch($field)
         {
             case "title":
@@ -377,6 +388,7 @@ class MyAccount_MyList extends MyAccount {
                 break;
             case "author":
                 $key = "Author";
+                break;
             case "dateAdded":
             case   "recentlyAdded":
                 $key ="Date";
@@ -415,5 +427,6 @@ class MyAccount_MyList extends MyAccount {
             $ret[$ii]=$array[$ii];
         }
         $array=$ret;
+
     }
 }
