@@ -42,16 +42,17 @@ class Redirect extends Action {
 	}
 
 	public function launch() {
-		$service = $_REQUEST['action'];
+		$service = $_REQUEST['service'];
+
+		switch ($service) {
+			case "redirectToRBditalMagazine":
+
+		$service = $_REQUEST['method'];
 		if(method_exists($this, $service)) {
 			$this->$service();
 		}
 	}
 
-	private function readRBdigitalMagazine() {
-		if(!isset($_REQUEST['userId']) || !isset($_REQUEST['issueId'])) {
-			// todo: return to my account and show error message.
-			die('Missing parameters.');
 		}
 		$patron = new User;
 		$patron->id = $_REQUEST['userId'];

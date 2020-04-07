@@ -99,7 +99,7 @@
 			<div class="col-xs-9 col-sm-8 col-md-4 col-lg-3">
 				<div class="btn-group btn-group-vertical btn-block">
 
-						<a href="/MyAccount/Redirect?action=readRBdigitalMagazine&userId={$record.userId}&issueId={$record.id}" class="btn btn-sm btn-primary">Read&nbsp;Online</a>
+						<a href="/MyAccount/Redirect?method=readRBdigitalMagazine&userId={$record.userId}&issueId={$record.id}" class="btn btn-sm btn-primary">Read&nbsp;Online</a>
 
 					{if $record.overdriveRead}
 						<a href="#" onclick="return VuFind.OverDrive.followOverDriveDownloadLink('{$record.userId}', '{$record.overDriveId}', 'ebook-overdrive')" class="btn btn-sm btn-primary">Read&nbsp;Online</a>
