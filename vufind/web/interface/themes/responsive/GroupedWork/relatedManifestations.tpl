@@ -58,7 +58,7 @@
 	                      <a href="#" class="btn btn-sm btn-primary" onclick="return Pika.ResultsList.toggleRelatedManifestations('{if $inPopUp}popup-{/if}{$id|escapeCSS}_{$relatedManifestation.format|escapeCSS}');">Available From</a>
                       {/if}
 										{else}
-												{if $relatedManifestation.format == 'eAudiobook' || $relatedManifestation.format == 'eBook' || $relatedManifestation.format == 'eComic' || $relatedManifestation.format == 'eVideo'}
+												{if $relatedManifestation.format == 'eAudiobook' || $relatedManifestation.format == 'eBook' || $relatedManifestation.format == 'eComic' || $relatedManifestation.format == 'eVideo' || $relatedManifestation.format == 'eMusic'}
 													{if $relatedManifestation.numRelatedRecords == 1}
 														<a href="#" class="btn btn-sm btn-primary" onclick="{$curAction.onclick}" {if $curAction.alt}title="{$curAction.alt}"{/if}>{$curAction.title}</a>
 		                      {else}
