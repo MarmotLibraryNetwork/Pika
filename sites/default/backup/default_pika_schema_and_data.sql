@@ -860,7 +860,6 @@ CREATE TABLE `library` (
   `includeDplaResults` tinyint(1) DEFAULT '0',
   `selfRegistrationFormMessage` text,
   `selfRegistrationSuccessMessage` text,
-  `selfRegistrationTemplate` varchar(25) DEFAULT 'default',
   `defaultBrowseMode` varchar(25) DEFAULT NULL,
   `browseCategoryRatingsMode` varchar(25) DEFAULT NULL,
   `useHomeLinkForLogo` tinyint(1) DEFAULT '0',

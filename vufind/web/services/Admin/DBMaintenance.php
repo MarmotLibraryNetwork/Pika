@@ -1345,8 +1345,7 @@ class DBMaintenance extends Admin_Admin {
                   'description' => 'Get rid of the template option',
                   'continueOnError' => false,
                   'sql' => array(
-                      "ALTER TABLE `library` 
-                            DELETE COLUMN 'selfRegistrationTemplate';",
+                      "ALTER TABLE `library` DELETE COLUMN 'selfRegistrationTemplate';",
                   )
                 ),
 
