@@ -308,7 +308,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 			$formattedTitle = $interface->fetch('RecordDrivers/GroupedWork/scroller-title.tpl');
 		}else{
 			$originalId     = $_REQUEST['id'];
-			$formattedTitle = "<div id=\"scrollerTitle{$scrollerName}{$index}\" class=\"scrollerTitle\" onclick=\"return VuFind.showElementInPopup('". addslashes($title) ."', '#noResults{$index}')\">" .
+			$formattedTitle = "<div id=\"scrollerTitle{$scrollerName}{$index}\" class=\"scrollerTitle\" onclick=\"return Pika.showElementInPopup('$title', '#noResults{$index}')\">" .
 				"<img src=\"{$cover}\" class=\"scrollerTitleCover\" alt=\"{$title} Cover\"/>" .
 				"</div>";
 			$formattedTitle .= "<div id=\"noResults{$index}\" style=\"display:none\">
@@ -407,7 +407,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 		$results = array(
 			'title'        => "<a href='$url'>{$recordDriver->getTitle()}</a>",
 			'modalBody'    => $interface->fetch('GroupedWork/work-details.tpl'),
-			'modalButtons' => "<button onclick=\"return VuFind.GroupedWork.showSaveToListForm(this, '$escapedId');\" class=\"modal-buttons btn btn-primary\" style='float: left'>$buttonLabel</button>"
+			'modalButtons' => "<button onclick=\"return Pika.GroupedWork.showSaveToListForm(this, '$escapedId');\" class=\"modal-buttons btn btn-primary\" style='float: left'>$buttonLabel</button>"
 				. "<a href='$url'><button class='modal-buttons btn btn-primary'>More Info</button></a>",
 		);
 		return $results;
@@ -522,7 +522,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 						'prompt'       => true,
 						'title'        => 'Add a Review',
 						'modalBody'    => $interface->fetch("GroupedWork/prompt-for-review-form.tpl"),
-						'modalButtons' => "<button class='tool btn btn-primary' onclick='VuFind.GroupedWork.showReviewForm(this, \"{$id}\");'>Submit A Review</button>",
+						'modalButtons' => "<button class='tool btn btn-primary' onclick='Pika.GroupedWork.showReviewForm(this, \"{$id}\");'>Submit A Review</button>",
 					);
 				}else{
 					$results = array(
@@ -575,7 +575,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 			$results = array(
 				'title'        => $title,
 				'modalBody'    => $interface->fetch("GroupedWork/review-form-body.tpl"),
-				'modalButtons' => "<button class='tool btn btn-primary' onclick='VuFind.GroupedWork.saveReview(\"{$id}\");'>Submit $title</button>",
+				'modalButtons' => "<button class='tool btn btn-primary' onclick='Pika.GroupedWork.saveReview(\"{$id}\");'>Submit $title</button>",
 			);
 		}else{
 			$results = array(
@@ -660,7 +660,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 		$results = array(
 			'title'        => 'Share via SMS Message',
 			'modalBody'    => $interface->fetch("GroupedWork/sms-form-body.tpl"),
-			'modalButtons' => "<button class='tool btn btn-primary' onclick='VuFind.GroupedWork.sendSMS(\"{$id}\"); return false;'>Send Text</button>",
+			'modalButtons' => "<button class='tool btn btn-primary' onclick='Pika.GroupedWork.sendSMS(\"{$id}\"); return false;'>Send Text</button>",
 		);
 		return $results;
 	}
@@ -867,7 +867,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 		$results = array(
 			'title'        => 'Add To List',
 			'modalBody'    => $interface->fetch("GroupedWork/save.tpl"),
-			'modalButtons' => "<button class='tool btn btn-primary' onclick='VuFind.GroupedWork.saveToList(\"{$id}\");'>Save To List</button>",
+			'modalButtons' => "<button class='tool btn btn-primary' onclick='Pika.GroupedWork.saveToList(\"{$id}\");'>Save To List</button>",
 		);
 		return $results;
 	}
@@ -989,7 +989,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 		$results = array(
 			'title'        => 'Add Tag',
 			'modalBody'    => $interface->fetch("GroupedWork/addtag.tpl"),
-			'modalButtons' => "<button class='tool btn btn-primary' onclick='VuFind.GroupedWork.saveTag(\"{$id}\"); return false;'>Add Tags</button>",
+			'modalButtons' => "<button class='tool btn btn-primary' onclick='Pika.GroupedWork.saveTag(\"{$id}\"); return false;'>Add Tags</button>",
 		);
 		return $results;
 	}

@@ -99,7 +99,7 @@ class AdvancedPopup extends Search_AdvancedBase {
 		$results = array(
 				'title' => 'Advanced Search',
 				'modalBody' => $interface->fetch("Search/advancedPopup.tpl"),
-				'modalButtons' => "<span class='tool btn btn-primary' onclick='VuFind.Searches.submitAdvancedSearch(); return false;'>Find</span>"
+				'modalButtons' => "<span class='tool btn btn-primary' onclick='Pika.Searches.submitAdvancedSearch(); return false;'>Find</span>"
 		);
 		echo json_encode($results);
 	}

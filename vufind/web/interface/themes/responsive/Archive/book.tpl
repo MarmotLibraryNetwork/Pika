@@ -12,19 +12,19 @@
 					<div id="view-toggle" class="btn-group" role="group" data-toggle="buttons">
 						{if $anonymousMasterDownload || ($loggedIn && $verifiedMasterDownload)}
 						<label class="btn btn-group-small btn-default">
-							<input type="radio" name="pageView" id="view-toggle-pdf" autocomplete="off" onchange="return VuFind.Archive.handleBookClick('{$pid}', VuFind.Archive.activeBookPage, 'pdf');">
+							<input type="radio" name="pageView" id="view-toggle-pdf" autocomplete="off" onchange="return Pika.Archive.handleBookClick('{$pid}', Pika.Archive.activeBookPage, 'pdf');">
 							{*TODO: set bookPID*}
 
 							View As PDF
 						</label>
 						{/if}
 						<label class="btn btn-group-small btn-default">
-							<input type="radio" name="pageView" id="view-toggle-image" autocomplete="off" onchange="return VuFind.Archive.handleBookClick('{$pid}', VuFind.Archive.activeBookPage, 'image');">
+							<input type="radio" name="pageView" id="view-toggle-image" autocomplete="off" onchange="return Pika.Archive.handleBookClick('{$pid}', Pika.Archive.activeBookPage, 'image');">
 
 							View As Image
 						</label>
 						<label class="btn btn-group-small btn-default">
-							<input type="radio" name="pageView" id="view-toggle-transcription" autocomplete="off" onchange="return VuFind.Archive.handleBookClick('{$pid}', VuFind.Archive.activeBookPage, 'transcription');">
+							<input type="radio" name="pageView" id="view-toggle-transcription" autocomplete="off" onchange="return Pika.Archive.handleBookClick('{$pid}', Pika.Archive.activeBookPage, 'transcription');">
 
 							View Transcription
 						</label>
@@ -62,7 +62,7 @@
 			{if $hasPdf && ($anonymousMasterDownload || ($loggedIn && $verifiedMasterDownload))}
 				<a class="btn btn-default" href="/Archive/{$pid}/DownloadPDF">Download PDF</a>
 			{elseif ($hasPdf && !$loggedIn && $verifiedMasterDownload)}
-				<a class="btn btn-default" onclick="return VuFind.Account.followLinkIfLoggedIn(this)" href="/Archive/{$pid}/DownloadPDF">Login to Download PDF</a>
+				<a class="btn btn-default" onclick="return Pika.Account.followLinkIfLoggedIn(this)" href="/Archive/{$pid}/DownloadPDF">Login to Download PDF</a>
 			{/if}
 			{if $allowRequestsForArchiveMaterials}
 				<a class="btn btn-default" href="/Archive/RequestCopy?pid={$pid}">Request Copy</a>
@@ -71,7 +71,7 @@
 				<a class="btn btn-default" href="/Archive/ClaimAuthorship?pid={$pid}">Claim Authorship</a>
 			{/if}
 			{if $showFavorites == 1}
-				<a onclick="return VuFind.Archive.showSaveToListForm(this, '{$pid|escape}');" class="btn btn-default ">{translate text='Add to favorites'}</a>
+				<a onclick="return Pika.Archive.showSaveToListForm(this, '{$pid|escape}');" class="btn btn-default ">{translate text='Add to favorites'}</a>
 			{/if}
 		</div>
 
@@ -99,7 +99,7 @@
 									{else}
 										{foreach from=$section.pages item=page}
 											<li class="relatedTitle">
-												<a href="{$page.link}?pagePid={$page.pid}" onclick="return VuFind.Archive.handleBookClick('{$pid}', '{$page.pid}', VuFind.Archive.activeBookViewer);">
+												<a href="{$page.link}?pagePid={$page.pid}" onclick="return Pika.Archive.handleBookClick('{$pid}', '{$page.pid}', Pika.Archive.activeBookViewer);">
 													<figure class="thumbnail">
 														<img src="{$page.cover}" alt="Page {$pageCounter}">
 														<figcaption>{$pageCounter}</figcaption>
@@ -125,18 +125,18 @@
 {if $canView}
 <script type="text/javascript">
 	{if !($anonymousMasterDownload || ($loggedIn && $verifiedMasterDownload))}
-		VuFind.Archive.allowPDFView = false;
+		Pika.Archive.allowPDFView = false;
 	{/if}
 	{assign var=pageCounter value=1}
 	{foreach from=$bookContents item=section}
-		VuFind.Archive.pageDetails['{$section.pid}'] = {ldelim}
+		Pika.Archive.pageDetails['{$section.pid}'] = {ldelim}
 			pid: '{$section.pid}',
 			title: "{$section.title|escape:javascript}",
 			pdf: {if $anonymousMasterDownload || ($loggedIn && $verifiedMasterDownload)}'{$section.pdf}'{else}''{/if}
 		{rdelim};
 
 		{foreach from=$section.pages item=page}
-			VuFind.Archive.pageDetails['{$page.pid}'] = {ldelim}
+			Pika.Archive.pageDetails['{$page.pid}'] = {ldelim}
 				pid: '{$page.pid}',
 				title: 'Page {$pageCounter}',
 				pdf: {if $anonymousMasterDownload || ($loggedIn && $verifiedMasterDownload)}'{$page.pdf}'{else}''{/if},
@@ -146,7 +146,7 @@
 			{rdelim};
 			{if $page.pid == $activePage}
 				{assign var=scrollToPage value=$pageCounter}
-				VuFind.Archive.curPage = {$pageCounter};
+				Pika.Archive.curPage = {$pageCounter};
 			{/if}
 			{assign var=pageCounter value=$pageCounter+1}
 		{/foreach}
@@ -154,18 +154,18 @@
 
 	{* Greater than 2 because we increment page counter after an object is displayed *}
 	{if $pageCounter > 2}
-		VuFind.Archive.multiPage = true;
+		Pika.Archive.multiPage = true;
 	{/if}
 
 	$(function(){ldelim}
 		{* Below click events trigger indirectly the handleBookClick function, and properly sets the appropriate button. *}
-		VuFind.Archive.handleBookClick('{$pid}', '{$activePage}', '{$activeViewer}');
+		Pika.Archive.handleBookClick('{$pid}', '{$activePage}', '{$activeViewer}');
 
 	{rdelim});
 </script>
 {/if}
 <script type="text/javascript">
 	$().ready(function(){ldelim}
-		VuFind.Archive.loadExploreMore('{$pid|urlencode}');
+		Pika.Archive.loadExploreMore('{$pid|urlencode}');
 	{rdelim});
 </script>

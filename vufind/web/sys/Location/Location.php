@@ -423,11 +423,11 @@ class Location extends DB_DataObject {
 						'additionalOneToManyActions' => array(
 							array(
 								'text'    => 'Copy Library Hoopla Settings',
-								'onclick' => 'VuFind.Admin.copyLibraryHooplaSettings($id)',
+								'onclick' => 'Pika.Admin.copyLibraryHooplaSettings($id)',
 							),
 							array(
 								'text'    => 'Clear Hoopla Settings',
-								'onclick' => 'VuFind.Admin.clearLocationHooplaSettings($id)',
+								'onclick' => 'Pika.Admin.clearLocationHooplaSettings($id)',
 								'class'   => 'btn-warning',
 							),
 						),

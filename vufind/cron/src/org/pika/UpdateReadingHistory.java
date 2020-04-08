@@ -404,6 +404,9 @@ public class UpdateReadingHistory implements IProcessHandler {
 					sourceId = checkedOutItem.getString("recordId");
 					//Specifically need the record id (sometime's the 'id' provided is the checkout's ID
 					break;
+				case "RBdigital":
+					sourceId = checkedOutItem.getString("recordId");
+					break;
 				case "Hoopla":
 					sourceId = checkedOutItem.getString("hooplaId");
 					break;

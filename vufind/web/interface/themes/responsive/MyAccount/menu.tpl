@@ -74,7 +74,7 @@
 						{if $allowMasqueradeMode && !$masqueradeMode}
 							{if $canMasquerade}
 								<hr class="menu">
-								<div class="myAccountLink"><a onclick="VuFind.Account.getMasqueradeForm();" href="#">Masquerade</a></div>
+								<div class="myAccountLink"><a onclick="Pika.Account.getMasqueradeForm();" href="#">Masquerade</a></div>
 							{/if}
 						{/if}
 					</div>
@@ -104,7 +104,7 @@
 
 							<div id="lists-placeholder"><img src="/images/loading.gif" alt="loading"></div>
 
-							<a href="#" onclick="return VuFind.Account.showCreateListForm();" class="btn btn-sm btn-primary">Create a New List</a>
+							<a href="#" onclick="return Pika.Account.showCreateListForm();" class="btn btn-sm btn-primary">Create a New List</a>
 						</div>
 					</div>
 				</div>
@@ -441,6 +441,6 @@
 	</div>
 {/if}
 <script type="text/javascript">
-	VuFind.Account.loadMenuData();
+	Pika.Account.loadMenuData();
 </script>
 {/strip}

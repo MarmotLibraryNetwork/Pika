@@ -40,7 +40,7 @@
 	{literal}
 	$("#emailListForm").validate({
 		submitHandler: function(){
-			VuFind.Lists.SendMyListEmail();
+			Pika.Lists.SendMyListEmail();
 		}
 	});
 	{/literal}

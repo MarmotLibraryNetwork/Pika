@@ -31,7 +31,7 @@
 	{literal}
 	$("#emailSearchForm").validate({
 		submitHandler: function(){
-			VuFind.Searches.sendEmail();
+			Pika.Searches.sendEmail();
 		}
 	});
 	{/literal}

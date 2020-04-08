@@ -15,7 +15,7 @@
 				<td>{$logEntry->numRecordsProcessed}</td>
 				<td>{$logEntry->numErrors}</td>
 				<td>{$logEntry->numRemainingRecords}</td>
-				<td><a href="#" onclick="return VuFind.Log.showNotes('{$logType}', '{$logEntry->id}');">Show Notes</a></td>
+				<td><a href="#" onclick="return Pika.Log.showNotes('{$logType}', '{$logEntry->id}');">Show Notes</a></td>
 			</tr>
 		{/foreach}
 	</tbody>

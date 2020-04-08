@@ -970,7 +970,7 @@ class OverDriveDriver3 {
 		foreach ($items as $key => &$item){
 			$item->links = array();
 			if ($addCheckoutLink){
-				$checkoutLink = "return VuFind.OverDrive.checkOutOverDriveTitle('{$overDriveRecordDriver->getUniqueID()}');";
+				$checkoutLink = "return Pika.OverDrive.checkOutOverDriveTitle('{$overDriveRecordDriver->getUniqueID()}');";
 				$item->links[] = array(
 					'onclick' =>     $checkoutLink,
 					'text' =>        'Check Out OverDrive',
@@ -980,7 +980,7 @@ class OverDriveDriver3 {
 				);
 			}else if ($addPlaceHoldLink){
 				$item->links[] = array(
-					'onclick' =>     "return VuFind.OverDrive.placeOverDriveHold('{$overDriveRecordDriver->getUniqueID()}', '{$item->numericId}');",
+					'onclick' =>     "return Pika.OverDrive.placeOverDriveHold('{$overDriveRecordDriver->getUniqueID()}', '{$item->numericId}');",
 					//TODO: second parameter doesn't look to be needed any more
 					'text' => '      Place Hold OverDrive',
 					'overDriveId' => $overDriveRecordDriver->getUniqueID(),

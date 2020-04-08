@@ -9,7 +9,7 @@
 			</div>
 		{/foreach}
 		<script type="text/javascript">
-			VuFind.GroupedWork.hasTableOfContentsInRecord = true;
+			Pika.GroupedWork.hasTableOfContentsInRecord = true;
 		</script>
 	{else}
 		Loading Table Of Contents...

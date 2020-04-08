@@ -63,7 +63,7 @@ class OverDriveRecordDriver extends RecordInterface {
 			//The record is the identifier for the overdrive title
 			$this->id = $recordId;
 			require_once ROOT_DIR . '/sys/OverDrive/OverDriveAPIProduct.php';
-			$this->overDriveProduct = new OverDriveAPIProduct();
+			$this->overDriveProduct              = new OverDriveAPIProduct();
 			$this->overDriveProduct->overdriveId = $recordId;
 			if ($this->overDriveProduct->find(true)){
 				$this->valid = true;
@@ -655,10 +655,10 @@ class OverDriveRecordDriver extends RecordInterface {
 		if (!isset($this->title)){
 			$shortTitle = $this->overDriveProduct->title;
 			if (!empty($shortTitle)){
-				$subTitle = $this->getSubtitle();
-				if (strcasecmp($subTitle, $shortTitle) !== 0){ // If the short title and the subtitle are the same skip this check
-					$subTitleLength = strlen($subTitle);
-					if ($subTitleLength > 0 && strcasecmp(substr($shortTitle, -$subTitleLength), $subTitle) === 0){ // TODO: do these tests work with multibyte characters? Diacritic characters?
+				$subTitle       = $this->getSubtitle();
+				$subTitleLength = strlen($subTitle);
+				if ($subTitleLength > 0 && strcasecmp($subTitle, $shortTitle) !== 0){ // If the short title and the subtitle are the same skip this check
+					if (strcasecmp(substr($shortTitle, -$subTitleLength), $subTitle) === 0){ // TODO: do these tests work with multibyte characters? Diacritic characters?
 						// If the subtitle is at the end of the short title, trim out the subtitle from the short title
 						$shortTitle = trim(rtrim(trim(substr($shortTitle, 0, -$subTitleLength)), ':'));
 						// remove ending white space and colon characters
@@ -923,11 +923,11 @@ class OverDriveRecordDriver extends RecordInterface {
 	}
 
 	public function getEdition($returnFirst = false) {
-		$edition = isset($this->overDriveMetaData->getDecodedRawData()->edition) ? $this->overDriveMetaData->getDecodedRawData()->edition : null;
+		$edition = $this->overDriveMetaData->getDecodedRawData()->edition ?? null;
 		if ($returnFirst || is_null($edition)){
 			return $edition;
 		}else{
-			return array($edition);
+			return [$edition];
 		}
 	}
 
@@ -1068,13 +1068,13 @@ class OverDriveRecordDriver extends RecordInterface {
 		if ($isAvailable){
 			$actions[] = array(
 				'title'        => 'Check Out OverDrive',
-				'onclick'      => "return VuFind.OverDrive.checkOutOverDriveTitle('{$this->id}');",
+				'onclick'      => "return Pika.OverDrive.checkOutOverDriveTitle('{$this->id}');",
 				'requireLogin' => false,
 			);
 		}else{
 			$actions[] = array(
 				'title'        => 'Place Hold OverDrive',
-				'onclick'      => "return VuFind.OverDrive.placeOverDriveHold('{$this->id}');",
+				'onclick'      => "return Pika.OverDrive.placeOverDriveHold('{$this->id}');",
 				'requireLogin' => false,
 			);
 		}
