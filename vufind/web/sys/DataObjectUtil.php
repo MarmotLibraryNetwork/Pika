@@ -22,29 +22,6 @@ require_once ROOT_DIR . '/services/Admin/Admin.php';
 class DataObjectUtil {
 
 	/**
-	 * Get the edit form for a data object based on the structure of the object
-	 *
-	 * @param $objectStructure array representing the structure of the object.
-	 *
-	 * @return string and HTML Snippet representing the form for display.
-	 */
-	static function getEditForm($objectStructure){
-		global $interface;
-
-		//Define the structure of the object.
-		$interface->assign('structure', $objectStructure);
-		//Check to see if the request should be multipart/form-data
-		$contentType = null;
-		foreach ($objectStructure as $property){
-			if ($property['type'] == 'image' || $property['type'] == 'file'){
-				$contentType = 'multipart/form-data';
-			}
-		}
-		$interface->assign('contentType', $contentType);
-		return $interface->fetch('DataObjectUtil/objectEditForm.tpl');
-	}
-
-	/**
 	 * Save the object to the database (and optionally solr) based on the structure of the object
 	 * Takes care of determining whether or not the object is new or not.
 	 *
@@ -97,16 +74,6 @@ class DataObjectUtil {
 	}
 
 	/**
-	 * Delete an object from the database (and optionally solr).
-	 *
-	 * @param $dataObject
-	 * @param $form
-	 */
-	static function deleteObject($structure, $dataType){
-
-	}
-
-	/**
 	 * Validate that the inputs for the data object are correct prior to saving the object.
 	 *
 	 * @param $structure array for Object Editor's object structure
@@ -129,7 +96,7 @@ class DataObjectUtil {
 				}
 			}
 			//Check to see if there is a custom validation routine
-			if (isset($property['serverValidation'])){
+			if (!empty($property['serverValidation'])){
 				$serverValidation = $property['serverValidation'];
 				$propValidation   = $object->$serverValidation();
 				if ($propValidation['validatedOk'] == false){
@@ -396,35 +363,4 @@ class DataObjectUtil {
 		}
 	}
 
-	static function getObjectListFilters($objectStructure){
-
-	}
-
-	static function getObjectList($objectStructure, $objectsToShow){
-
-	}
-
-	static function getObjectExportFile($objectStructure, $objectsToExport, $exportFilename){
-
-	}
-
-	static function compareObjects($objectStructure, $object1, $object2){
-
-	}
-
-	static function importObjectsFromFile($objectStructure, $objectType, $importFilename){
-
-	}
-
-	static function getFileUploadMessage($errorNo, $fieldname){
-		$errorMessages = array(
-			0 => "There is no error, the file for $fieldname uploaded with success",
-			1 => "The uploaded file for $fieldname exceeds the maximum file size for the server",
-			2 => "The uploaded file for $fieldname exceeds the maximum file size for this field",
-			3 => "The uploaded file for $fieldname was only partially uploaded",
-			4 => "No file was uploaded for $fieldname",
-			6 => "Missing a temporary folder for $fieldname",
-		);
-		return $errorMessages[$errorNo];
-	}
 }

@@ -26,7 +26,7 @@
 			</div>
 			<div class="col-xs-4">
 				<label for="showPwd" class="checkbox">
-					<input type="checkbox" id="showPwd" name="showPwd" onclick="return VuFind.pwdToText('password1')">
+					<input type="checkbox" id="showPwd" name="showPwd" onclick="return Pika.pwdToText('password1')">
 					Show {$ILSname} Password
 				</label>
 			</div>

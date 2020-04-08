@@ -96,7 +96,7 @@ class Library extends DB_DataObject {
 	/* Self Registration */
 	public $selfRegistrationFormMessage;
 	public $selfRegistrationSuccessMessage;
-	public $selfRegistrationTemplate; //TODO: obsolete after PRJ-52
+
 	public $enableSelfRegistration;
 	public $promptForBirthDateInSelfReg;
 	public $selfRegistrationDefaultpType;
@@ -527,15 +527,13 @@ class Library extends DB_DataObject {
 						/* sierra patron api self reg */
 					'selfRegistrationAgencyCode'     => array('property'=>'selfRegistrationAgencyCode', 'type'=>'text', 'label'=>'Agency Code (Sierra Only)', 'description'=>'Sierra library agency code.', 'hideInLists' => true, 'default' => '', 'maxLength' => '3'),
 					'selfRegistrationDefaultpType'   => array('property'=>'selfRegistrationDefaultpType', 'type'=>'text', 'label'=>'Self Registration Patron Type (Sierra Only)', 'description'=>'The default patron type for self registered patrons.', 'hideInLists' => true, 'default' => ''),
-					'selfRegistrationBarcodeLength'  => array('property'=>'selfRegistrationBarcodeLength', 'type'=>'text', 'label'=>'Barcode length (Sierra Only)', 'description'=>'The barcode length of a self registered patron.', 'hideInLists' => true, 'default' => '6', 'maxLength' => '2'),
+					'selfRegistrationBarcodeLength'  => array('property'=>'selfRegistrationBarcodeLength', 'type'=>'text', 'label'=>'Barcode length (Sierra Only)', 'description'=>'The barcode length of a self registered patron.', 'hideInLists' => true, 'default' => '7', 'maxLength' => '2'),
 					'selfRegistrationDaysUntilExpire'=> array('property'=>'selfRegistrationDaysUntilExpire', 'type'=>'text', 'label'=>'Days Until Expiration (Sierra Only)', 'description'=>'The number of days the account will be valid.', 'hideInLists' => true, 'default' => '90', 'maxLength' => '3'),
 
 					/* sierra patron api self reg */
 					'promptForBirthDateInSelfReg'    => array('property' => 'promptForBirthDateInSelfReg', 'type' => 'checkbox', 'label' => 'Prompt For Birth Date', 'description'=>'Whether or not to prompt for birth date when self registering'),
 					'selfRegistrationFormMessage'    => array('property'=>'selfRegistrationFormMessage', 'type'=>'html', 'label'=>'Self Registration Form Message', 'description'=>'Message shown to users with the form to submit the self registration.  Leave blank to give users the default message.', 'allowableTags' => '<a><b><em><div><script><span><p><strong><sub><sup><ul><li>', 'hideInLists' => true),
 					'selfRegistrationSuccessMessage' => array('property'=>'selfRegistrationSuccessMessage', 'type'=>'html', 'label'=>'Self Registration Success Message', 'description'=>'Message shown to users when the self registration has been completed successfully.  Leave blank to give users the default message.',  'allowableTags' => '<a><b><em><div><script><span><p><strong><sub><sup><ul><li>', 'hideInLists' => true),
-					'selfRegistrationTemplate'       => array('property'=>'selfRegistrationTemplate', 'type'=>'text', 'label'=>'Self Registration Template (Sierra Only)', 'description'=>'The ILS template to use during self registration (Sierra).', 'hideInLists' => true, 'default' => 'default'),
-					//TODO: obsolete after PRJ-52
 				)),
 				'masqueradeModeSection' => array('property' => 'masqueradeModeSection', 'type' => 'section', 'label' => 'Masquerade Mode', 'hideInLists' => true,
 				                                  'properties' => array(
@@ -895,7 +893,7 @@ class Library extends DB_DataObject {
 						'additionalOneToManyActions' => array(
 							array(
 								'text'    => 'Clear Hoopla Settings',
-								'onclick' => 'VuFind.Admin.clearLibraryHooplaSettings($id)',
+								'onclick' => 'Pika.Admin.clearLibraryHooplaSettings($id)',
 								'class'   => 'btn-warning',
 							),
 						),

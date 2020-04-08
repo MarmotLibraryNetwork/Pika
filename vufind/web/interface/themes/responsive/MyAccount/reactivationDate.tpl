@@ -18,7 +18,7 @@
 		$(function(){
 			$(".form").validate({
 				submitHandler: function(){
-					VuFind.Account.doFreezeHoldWithReactivationDate('#doFreezeHoldWithReactivationDate');
+					Pika.Account.doFreezeHoldWithReactivationDate('#doFreezeHoldWithReactivationDate');
 				}
 			});
 			$( "#reactivationDate" ).datepicker({

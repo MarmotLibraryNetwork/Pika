@@ -1309,10 +1309,11 @@ EOT;
 	public function getSelfRegistrationFields(){
 		$fields = [];
 
-		global $library;
+		global /** @var Library $library */
+		$library;
 		// get the valid home/pickup locations
-		$l = new Location();
-		$l->libraryId = $library->libraryId;
+		$l                        = new Location();
+		$l->libraryId             = $library->libraryId;
 		$l->validHoldPickupBranch = '1';
 		$l->find();
 		if(!$l->N) {
@@ -1438,14 +1439,14 @@ EOT;
 			];
 		}
 		// Bemis Signature Field
-		if ($library->selfRegistrationTemplate == 'beself'){
+		if ($library && $library->subdomain == 'bemis'){
 			$fields[] = [
-				'property' => 'signature',
-				'type' => 'text',
-				'label' => 'Signature',
+				'property'    => 'signature',
+				'type'        => 'text',
+				'label'       => 'Signature',
 				'description' => 'Enter your name',
-				'maxLength' => 40,
-				'required' => true
+				'maxLength'   => 40,
+				'required'    => true
 			];
 		}
 

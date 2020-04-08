@@ -243,12 +243,14 @@ abstract class ObjectEditor extends Admin_Admin {
 							}else{
 								$errorDescription = 'Unknown error';
 							}
-							$_SESSION['lastError'] = "An error occurred updating {$this->getObjectType()} with id of $id <br>{$errorDescription}";
+							session_start();
+							$_SESSION['lastError'] = "An error occurred updating {$this->getObjectType()} with id of $id <br><br><blockquote class=\"alert-warning\">{$errorDescription}</blockquote>";
 							$errorOccurred         = true;
 						}
 					}else{
-						$errorDescription      = implode(', ', $validationResults['errors']);
-						$_SESSION['lastError'] = "An error occurred validating {$this->getObjectType()} with id of $id <br>{$errorDescription}";
+						$errorDescription      = '<blockquote class="alert-warning">' . implode('</blockquote><blockquote class="alert-warning">', $validationResults['errors']) . '</blockquote>';
+						session_start();
+						$_SESSION['lastError'] = "An error occurred validating {$this->getObjectType()} with id of $id <br><br>{$errorDescription}";
 						$errorOccurred         = true;
 					}
 				}elseif ($objectAction == 'delete'){
@@ -261,6 +263,7 @@ abstract class ObjectEditor extends Admin_Admin {
 				}
 			}else{
 				//Couldn't find the record.  Something went haywire.
+				session_start();
 				$_SESSION['lastError'] = "An error occurred, could not find {$this->getObjectType()} with id of $id";
 				$errorOccurred         = true;
 			}

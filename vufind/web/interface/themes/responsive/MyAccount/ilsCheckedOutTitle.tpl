@@ -174,8 +174,8 @@
 				<div class="col-xs-9 col-sm-8 col-md-4 col-lg-3">
 					<div class="btn-group btn-group-vertical btn-block">
 						{if !isset($record.canrenew) || $record.canrenew == true}
-							{*<a href="#" onclick="$('#selected{$record.itemid}').attr('checked', 'checked');return VuFind.Account.renewSelectedTitles();" class="btn btn-sm btn-primary">Renew</a>*}
-							<a href="#" onclick="return VuFind.Account.renewTitle('{$record.userId}', '{$record.recordId}', '{$record.renewIndicator}');" class="btn btn-sm btn-primary">{translate text='Renew'}</a>
+							{*<a href="#" onclick="$('#selected{$record.itemid}').attr('checked', 'checked');return Pika.Account.renewSelectedTitles();" class="btn btn-sm btn-primary">Renew</a>*}
+							<a href="#" onclick="return Pika.Account.renewTitle('{$record.userId}', '{$record.recordId}', '{$record.renewIndicator}');" class="btn btn-sm btn-primary">{translate text='Renew'}</a>
 						{else}
 							{if isset($record.renew_message) && $record.canrenew == false}
 								{$record.renew_message}

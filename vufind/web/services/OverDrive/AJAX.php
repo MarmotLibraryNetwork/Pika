@@ -206,7 +206,7 @@ class OverDrive_AJAX extends AJAXHandler {
 				'promptNeeded' => true,
 				'promptTitle'  => $promptTitle,
 				'prompts'      => $interface->fetch('OverDrive/ajax-overdrive-hold-prompt.tpl'),
-				'buttons'      => '<input class="btn btn-primary" type="submit" name="submit" value="Place Hold" onclick="return VuFind.OverDrive.processOverDriveHoldPrompts();"/>',
+				'buttons'      => '<input class="btn btn-primary" type="submit" name="submit" value="Place Hold" onclick="return Pika.OverDrive.processOverDriveHoldPrompts();"/>',
 			);
 		}else{
 			return array(
@@ -233,7 +233,7 @@ class OverDrive_AJAX extends AJAXHandler {
 				'promptNeeded' => true,
 				'promptTitle'  => $promptTitle,
 				'prompts'      => $interface->fetch('OverDrive/ajax-overdrive-checkout-prompt.tpl'),
-				'buttons'      => '<input class="btn btn-primary" type="submit" name="submit" value="Checkout Title" onclick="return VuFind.OverDrive.processOverDriveCheckoutPrompts();">',
+				'buttons'      => '<input class="btn btn-primary" type="submit" name="submit" value="Checkout Title" onclick="return Pika.OverDrive.processOverDriveCheckoutPrompts();">',
 			);
 		}elseif (count($overDriveUsers) == 1){
 			return array(
@@ -285,9 +285,20 @@ class OverDrive_AJAX extends AJAXHandler {
 			$interface->assign('email', $user->email);
 		}
 
+		if (!empty($_REQUEST['id'])){
+			require_once ROOT_DIR . '/RecordDrivers/OverDriveRecordDriver.php';
+			$overDriveId    = $_REQUEST['id'];
+			$recordDriver   = new OverDriveRecordDriver($overDriveId, -1); // (Don't need to load grouped work)
+			if ($recordDriver->isValid()){
+				$author         = $recordDriver->getAuthor();
+				$titleAndAuthor = $recordDriver->getTitle() . (!empty($author) ? ' by ' . $author : '');
+				$interface->assign('titleAndAuthor', $titleAndAuthor);
+			}
+		}
+
 		$results = array(
 			'title'        => 'eContent Support Request',
-			'modalBody'    => $interface->fetch('OverDrive\eContentSupport.tpl'),
+			'modalBody'    => $interface->fetch('OverDrive/eContentSupport.tpl'),
 			'modalButtons' => '<span class="tool btn btn-primary" onclick="return $(\'#eContentSupport\').submit()">Submit</span>', // .submit() triggers form validation
 		);
 		return $results;

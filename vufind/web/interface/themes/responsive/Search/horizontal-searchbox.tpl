@@ -1,6 +1,6 @@
 {strip}
 <div id="horizontal-search-box" class="row">
-	<form method="get" action="/Union/Search" id="searchForm" class="form-inline" onsubmit="VuFind.Searches.processSearchForm();">
+	<form method="get" action="/Union/Search" id="searchForm" class="form-inline" onsubmit="Pika.Searches.processSearchForm();">
 
 		{* Hidden Inputs *}
 		{if $searchIndex == 'Keyword' || $searchIndex == '' || $searchIndex == 'GenealogyKeyword'}
@@ -39,7 +39,7 @@
 							          name="lookfor"
 							          value=""
 							          title="Enter one or more terms to search for.	Surrounding a term with quotes will limit result to only those that exactly match the term."
-							          onkeyup="return VuFind.Searches.resetSearchType()"
+							          onkeyup="return Pika.Searches.resetSearchType()"
 							          onfocus="$(this).select()"
 							          autocomplete="off"
 							          rows="1"
@@ -70,7 +70,7 @@
 
 					{if !$hiddenSearchSource}
 						<div class="col-lg-3 col-md-3 col-sm-5 col-xs-7">
-							<select name="searchSource" id="searchSource" title="Select what to search.	Items marked with a * will redirect you to one of our partner sites." onchange="VuFind.Searches.enableSearchTypes();" class="searchSourceHorizontal form-control">
+							<select name="searchSource" id="searchSource" title="Select what to search.	Items marked with a * will redirect you to one of our partner sites." onchange="Pika.Searches.enableSearchTypes();" class="searchSourceHorizontal form-control">
 								{foreach from=$searchSources item=searchOption key=searchKey}
 									<option data-catalog_type="{$searchOption.catalogType}" value="{$searchKey}"
 											{if $searchKey == $searchSource && !$filterList} selected="selected"{/if}
@@ -102,7 +102,7 @@
 					{* Keep Applied Filters Checkbox *}
 					{if $filterList}
 						<label for="keepFiltersSwitch" id="keepFiltersSwitchLabel">
-							<input id="keepFiltersSwitch" type="checkbox" onclick="VuFind.Searches.filterAll(this);"> Keep Applied Filters</label>
+							<input id="keepFiltersSwitch" type="checkbox" onclick="Pika.Searches.filterAll(this);"> Keep Applied Filters</label>
 					{/if}
 
 					{* Return to Advanced Search Link *}
@@ -124,7 +124,7 @@
 				{* Show/Hide Search Facets & Sort Options *}
 				{if $recordCount || $sideRecommendations}
 					<div class="col-tn-3 col-xs-3 visible-xs">
-						<a class="btn btn-default" id="refineSearchButton" role="button" onclick="VuFind.Menu.Mobile.showSearchFacets()">{translate text="Refine Search"}</a>
+						<a class="btn btn-default" id="refineSearchButton" role="button" onclick="Pika.Menu.Mobile.showSearchFacets()">{translate text="Refine Search"}</a>
 					</div>
 				{/if}
 			</div>

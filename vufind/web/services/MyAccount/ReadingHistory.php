@@ -16,23 +16,21 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 use Pika\Logger;
+
 require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
 require_once ROOT_DIR . '/sys/Pager.php';
 
-class ReadingHistory extends MyAccount
-{
+class ReadingHistory extends MyAccount {
 	private $logger;
 
-	public function __construct()
-	{
+	public function __construct(){
 		$this->logger = new Logger('ReadingHistory');
 		parent::__construct();
 	}
 
-	function launch()
-	{
-		global $configArray;
+	function launch(){
 		global $interface;
 		$user = UserAccount::getLoggedInUser();
 
@@ -44,16 +42,16 @@ class ReadingHistory extends MyAccount
 		}
 
 		global $offlineMode;
-		if (!$offlineMode) {
+		if (!$offlineMode){
 			$interface->assign('offline', false);
 
 			// Get My Transactions
-			if ($user) {
+			if ($user){
 				$linkedUsers = $user->getLinkedUsers();
 				$patronId    = empty($_REQUEST['patronId']) ? $user->id : $_REQUEST['patronId'];
 
 				$patron = $user->getUserReferredTo($patronId);
-				if (count($linkedUsers) > 0) {
+				if (count($linkedUsers) > 0){
 					array_unshift($linkedUsers, $user);
 
 				}
@@ -64,9 +62,9 @@ class ReadingHistory extends MyAccount
 				//Check to see if there is an action to perform.
 				if (!empty($_REQUEST['readingHistoryAction']) && !is_array($_REQUEST['readingHistoryAction']) && $_REQUEST['readingHistoryAction'] != 'exportToExcel'){
 					//Perform the requested action
-					$selectedTitles = isset($_REQUEST['selected']) ? $_REQUEST['selected'] : array();
+					$selectedTitles       = isset($_REQUEST['selected']) ? $_REQUEST['selected'] : array();
 					$readingHistoryAction = trim($_REQUEST['readingHistoryAction']);
-					switch ($readingHistoryAction) {
+					switch ($readingHistoryAction){
 						case 'optIn':
 							$patron->optInReadingHistory();
 							break;
@@ -100,18 +98,19 @@ class ReadingHistory extends MyAccount
 					}
 					if (count($params) > 0){
 						$additionalParams = implode('&', $params);
-						$newLocation .= '?' . $additionalParams;
+						$newLocation      .= '?' . $additionalParams;
 					}
 					header("Location: $newLocation");
 					die();
 				}
 
 				// Define sorting options
-				$sortOptions = array('title' => 'Title',
-				                     'author' => 'Author',
-				                     'checkedOut' => 'Checkout Date',
-				                     'format' => 'Format',
-				);
+				$sortOptions = [
+					'title'      => 'Title',
+					'author'     => 'Author',
+					'checkedOut' => 'Checkout Date',
+					'format'     => 'Format',
+				];
 				$selectedSortOption = isset($_REQUEST['accountSort']) ? $_REQUEST['accountSort'] : 'checkedOut';
 				$interface->assign('sortOptions', $sortOptions);
 
@@ -123,7 +122,7 @@ class ReadingHistory extends MyAccount
 				$interface->assign('recordsPerPage', $recordsPerPage);
 				if (isset($_REQUEST['readingHistoryAction']) && $_REQUEST['readingHistoryAction'] == 'exportToExcel'){
 					$recordsPerPage = -1;
-					$page = 1;
+					$page           = 1;
 				}
 
 				if (!$patron){
@@ -134,21 +133,24 @@ class ReadingHistory extends MyAccount
 				$link = $_SERVER['REQUEST_URI'];
 				if (preg_match('/[&?]page=/', $link)){
 					$link = preg_replace("/page=\\d+/", "page=%d", $link);
-				}else if (strpos($link, "?") > 0){
-					$link .= "&page=%d";
 				}else{
-					$link .= "?page=%d";
+					if (strpos($link, "?") > 0){
+						$link .= "&page=%d";
+					}else{
+						$link .= "?page=%d";
+					}
 				}
 				if ($recordsPerPage != '-1'){
-					$options = array('totalItems' => $result['numTitles'],
-					                 'fileName'   => $link,
-					                 'perPage'    => $recordsPerPage,
-					                 'append'     => false,
-					                 );
-					$pager = new VuFindPager($options);
+					$options = [
+						'totalItems' => $result['numTitles'],
+						'fileName'   => $link,
+						'perPage'    => $recordsPerPage,
+						'append'     => false,
+					];
+					$pager   = new VuFindPager($options);
 					$interface->assign('pageLinks', $pager->getLinks());
 				}
-				if (!PEAR_Singleton::isError($result)) {
+				if (!PEAR_Singleton::isError($result)){
 					$interface->assign('historyActive', $result['historyActive']);
 					$interface->assign('transList', $result['titles']);
 					if (isset($_REQUEST['readingHistoryAction']) && $_REQUEST['readingHistoryAction'] == 'exportToExcel'){
@@ -161,40 +163,40 @@ class ReadingHistory extends MyAccount
 		$this->display('readingHistory.tpl', 'Reading History');
 	}
 
-	public function exportToExcel($readingHistory) {
+	public function exportToExcel($readingHistory){
 		//PHPEXCEL
 		// Create new PHPExcel object
 		$objPHPExcel = new PHPExcel();
 
 		// Set properties
 		$objPHPExcel->getProperties()->setCreator("DCL")
-		->setLastModifiedBy("DCL")
-		->setTitle("Office 2007 XLSX Document")
-		->setSubject("Office 2007 XLSX Document")
-		->setDescription("Office 2007 XLSX, generated using PHP.")
-		->setKeywords("office 2007 openxml php")
-		->setCategory("Checked Out Items");
+			->setLastModifiedBy("DCL")
+			->setTitle("Office 2007 XLSX Document")
+			->setSubject("Office 2007 XLSX Document")
+			->setDescription("Office 2007 XLSX, generated using PHP.")
+			->setKeywords("office 2007 openxml php")
+			->setCategory("Checked Out Items");
 
 		$objPHPExcel->setActiveSheetIndex(0)
-		->setCellValue('A1', 'Reading History')
-		->setCellValue('A3', 'Title')
-		->setCellValue('B3', 'Author')
-		->setCellValue('C3', 'Format')
-		->setCellValue('D3', 'From')
-		->setCellValue('E3', 'To');
+			->setCellValue('A1', 'Reading History')
+			->setCellValue('A3', 'Title')
+			->setCellValue('B3', 'Author')
+			->setCellValue('C3', 'Format')
+			->setCellValue('D3', 'From')
+			->setCellValue('E3', 'To');
 
-		$a=4;
+		$a = 4;
 		//Loop Through The Report Data
-		foreach ($readingHistory as $row) {
+		foreach ($readingHistory as $row){
 
-			$format = is_array($row['format']) ? implode(',', $row['format']) : $row['format'];
+			$format       = is_array($row['format']) ? implode(',', $row['format']) : $row['format'];
 			$lastCheckout = isset($row['lastCheckout']) ? date('Y-M-d', $row['lastCheckout']) : '';
 			$objPHPExcel->setActiveSheetIndex(0)
-			->setCellValue('A'.$a, $row['title'])
-			->setCellValue('B'.$a, $row['author'])
-			->setCellValue('C'.$a, $format)
-			->setCellValue('D'.$a, date('Y-M-d', $row['checkout']))
-			->setCellValue('E'.$a, $lastCheckout);
+				->setCellValue('A' . $a, $row['title'])
+				->setCellValue('B' . $a, $row['author'])
+				->setCellValue('C' . $a, $format)
+				->setCellValue('D' . $a, date('Y-M-d', $row['checkout']))
+				->setCellValue('E' . $a, $lastCheckout);
 
 			$a++;
 		}

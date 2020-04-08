@@ -61,12 +61,12 @@
 			<div id="readingListActionsTop" class="col-xs-6">
 				<div class="btn-group btn-group-sm">
 					{if $historyActive == true}
-						<button class="btn btn-sm btn-info" onclick="return VuFind.Account.ReadingHistory.exportListAction()">Export To Excel</button>
+						<button class="btn btn-sm btn-info" onclick="return Pika.Account.ReadingHistory.exportListAction()">Export To Excel</button>
 						{if $transList}
-							<button class="btn btn-sm btn-warning" onclick="return VuFind.Account.ReadingHistory.deletedMarkedAction()">Delete Marked</button>
+							<button class="btn btn-sm btn-warning" onclick="return Pika.Account.ReadingHistory.deletedMarkedAction()">Delete Marked</button>
 						{/if}
 					{else}
-						<button class="btn btn-sm btn-primary" onclick="return VuFind.Account.ReadingHistory.optInAction()">Start Recording My Reading History</button>
+						<button class="btn btn-sm btn-primary" onclick="return Pika.Account.ReadingHistory.optInAction()">Start Recording My Reading History</button>
 					{/if}
 				</div>
 			</div>
@@ -74,9 +74,9 @@
 				<div class="col-xs-6">
 					<div class="btn-group btn-group-sm pull-right">
 				{if $transList}
-					<button class="btn btn-sm btn-danger " onclick="return VuFind.Account.ReadingHistory.deleteAllAction()">Delete All</button>
+					<button class="btn btn-sm btn-danger " onclick="return Pika.Account.ReadingHistory.deleteAllAction()">Delete All</button>
 				{/if}
-				<button class="btn btn-sm btn-danger" onclick="return VuFind.Account.ReadingHistory.optOutAction()">Stop Recording My Reading History</button>
+				<button class="btn btn-sm btn-danger" onclick="return Pika.Account.ReadingHistory.optOutAction()">Stop Recording My Reading History</button>
 				</div>
 			</div>
 			{/if}
@@ -91,7 +91,7 @@
 					<div class="row">
 						<div class="form-group col-sm-5" id="recordsPerPage">
 							<label for="pagesize" class="control-label">Records Per Page&nbsp;</label>
-							<select id="pagesize" class="pagesize form-control input-sm" onchange="VuFind.changePageSize()">
+							<select id="pagesize" class="pagesize form-control input-sm" onchange="Pika.changePageSize()">
 								<option value="10"{if $recordsPerPage == 10} selected="selected"{/if}>10</option>
 								<option value="25"{if $recordsPerPage == 25} selected="selected"{/if}>25</option>
 								<option value="50"{if $recordsPerPage == 50} selected="selected"{/if}>50</option>
@@ -101,14 +101,14 @@
 						</div>
 						<div class="form-group col-sm-5" id="sortOptions">
 							<label for="sortMethod" class="control-label">Sort By&nbsp;</label>
-							<select class="sortMethod form-control" id="sortMethod" name="accountSort" onchange="VuFind.Account.changeAccountSort($(this).val())">
+							<select class="sortMethod form-control" id="sortMethod" name="accountSort" onchange="Pika.Account.changeAccountSort($(this).val())">
 								{foreach from=$sortOptions item=sortOptionLabel key=sortOption}
 									<option value="{$sortOption}" {if $sortOption == $defaultSortOption}selected="selected"{/if}>{$sortOptionLabel}</option>
 								{/foreach}
 							</select>
 						</div>
 						<div class="form-group col-sm-2" id="coverOptions">
-							<label for="hideCovers" class="control-label checkbox pull-right"> Hide Covers <input id="hideCovers" type="checkbox" onclick="VuFind.Account.toggleShowCovers(!$(this).is(':checked'))" {if $showCovers == false}checked="checked"{/if}></label>
+							<label for="hideCovers" class="control-label checkbox pull-right"> Hide Covers <input id="hideCovers" type="checkbox" onclick="Pika.Account.toggleShowCovers(!$(this).is(':checked'))" {if $showCovers == false}checked="checked"{/if}></label>
 						</div>
 					</div>
 				</div>
@@ -118,7 +118,7 @@
 				{* Header Row with Column Labels *}
 				<div class="row hidden-xs">
 					<div class="col-sm-1">
-						<input id="selectAll" type="checkbox" onclick="VuFind.toggleCheckboxes('.titleSelect', '#selectAll');" title="Select All/Deselect All">
+						<input id="selectAll" type="checkbox" onclick="Pika.toggleCheckboxes('.titleSelect', '#selectAll');" title="Select All/Deselect All">
 					</div>
 					{if $showCovers}
 					<div class="col-sm-2">
@@ -247,7 +247,7 @@
 								{if $record.permanentId}
 								<div class="row">
 									<div class="col-tn-12 result-tools-horizontal{*to get the brown gradient to apply to button*}">
-										<button onclick="return VuFind.GroupedWork.showSaveToListForm(this, '{$record.permanentId|escape:"url"}');" class="btn btn-small">Add To List</button>
+										<button onclick="return Pika.GroupedWork.showSaveToListForm(this, '{$record.permanentId|escape:"url"}');" class="btn btn-small">Add To List</button>
 									</div>
 								</div>
                 {/if}
@@ -262,12 +262,12 @@
 					<div class="col-xs-12">
 					<div id="readingListActionsBottom" class="btn-group btn-group-sm">
 							{if $historyActive == true}
-								<button class="btn btn-sm btn-info" onclick="return VuFind.Account.ReadingHistory.exportListAction()">Export To Excel</button>
+								<button class="btn btn-sm btn-info" onclick="return Pika.Account.ReadingHistory.exportListAction()">Export To Excel</button>
 								{if $transList}
-									<button class="btn btn-sm btn-warning" onclick="return VuFind.Account.ReadingHistory.deletedMarkedAction()">Delete Marked</button>
+									<button class="btn btn-sm btn-warning" onclick="return Pika.Account.ReadingHistory.deletedMarkedAction()">Delete Marked</button>
 								{/if}
 							{else}
-								<button class="btn btn-sm btn-primary" onclick="return VuFind.Account.ReadingHistory.optInAction()">Start Recording My Reading History</button>
+								<button class="btn btn-sm btn-primary" onclick="return Pika.Account.ReadingHistory.optInAction()">Start Recording My Reading History</button>
 							{/if}
 					</div>
 				</div>

@@ -528,7 +528,6 @@ class User extends DB_DataObject {
 				}
 			}
 		}
-
 		return $RBDigitalUsers;
 	}
 

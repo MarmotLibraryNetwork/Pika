@@ -117,7 +117,10 @@ class IndexingProfile extends DB_DataObject{
 		$structure = array(
 			'id'                         => array('property'=>'id',                           'type'=>'label',  'label'=>'Id', 'description'=>'The unique id within the database'),
 			'name'                       => array('property' => 'name',                       'type' => 'text', 'label' => 'Display Name', 'maxLength' => 50, 'description' => 'The display name for this indexing profile', 'required' => true),
-			'sourceName'                 => array('property' => 'sourceName',                 'type' => 'text', 'label' => 'Name', 'maxLength' => 50, 'description' => 'The source name of this indexing profile to use internally. eg. for specifying the record source', 'required' => true),
+			'sourceName'                 => array('property' => 'sourceName',                 'type' => 'text', 'label' => 'Source Name', 'maxLength' => 50, 'description' => 'The source name of this indexing profile to use internally. eg. for specifying the record source', 'required' => true
+//			                                      , 'serverValidation' => 'validateSourceName'
+			                                      //TODO: turn on once transition has been put in place
+			),
 			'recordUrlComponent'         => array('property' => 'recordUrlComponent',         'type' => 'text', 'label' => 'Record URL Component', 'maxLength' => 50, 'description' => 'The Module to use within the URL', 'required' => true, 'default' => 'Record', 'serverValidation' => 'validateRecordUrlComponent'),
 
 			'serverFileSection' => array('property'=>'serverFileSection', 'type' => 'section', 'label' =>'MARC File Settings ', 'hideInLists' => true, 'open' => true,
@@ -479,17 +482,19 @@ class IndexingProfile extends DB_DataObject{
 	}
 
 	public function translate($mapName, $value){
-		$translationMap = new TranslationMap();
-		$translationMap->name = $mapName;
+		$translationMap                    = new TranslationMap();
+		$translationMap->name              = $mapName;
 		$translationMap->indexingProfileId = $this->id;
 		if ($translationMap->find(true)){
 			/** @var TranslationMapValue $mapValue */
 			foreach ($translationMap->translationMapValues as $mapValue){
 				if ($mapValue->value == $value){
 					return $mapValue->translation;
-				}else if (substr($mapValue->value, -1) == '*'){
-					if (substr($value, 0, strlen($mapValue) - 1) == substr($mapValue->value, 0, -1)){
-						return $mapValue->translation;
+				}else{
+					if (substr($mapValue->value, -1) == '*'){
+						if (substr($value, 0, strlen($mapValue) - 1) == substr($mapValue->value, 0, -1)){
+							return $mapValue->translation;
+						}
 					}
 				}
 			}
@@ -497,22 +502,53 @@ class IndexingProfile extends DB_DataObject{
 	}
 
 	public function validateRecordUrlComponent(){
-		//Setup validation return array
-		$validationResults = array(
+		$validationResults = [
 			'validatedOk' => true,
-			'errors'      => array(),
-		);
+			'errors'      => [],
+		];
 
 		$recordURLComponent = trim($_REQUEST['recordUrlComponent']);
-		$indexingProfile    = new IndexingProfile();
-		$count              = $indexingProfile->get('recordUrlComponent', $recordURLComponent);
-		if ($count > 0 && $this->id != $indexingProfile->id){ // include exception for editing the same profile
 
-			$validationResults = array(
+		if (!ctype_alnum($recordURLComponent)){
+			$validationResults = [
 				'validatedOk' => false,
-				'errors'      => array('The Record Url Component is already in use by another indexing profile'),
-			);
+				'errors'      => ['The Record Url Component should consist of only alpha-numeric characters and no white space characters'],
+			];
+		} else{
+			$indexingProfile = new IndexingProfile();
+			$count           = $indexingProfile->get('recordUrlComponent', $recordURLComponent);
+			if ($count > 0 && $this->id != $indexingProfile->id){ // include exception for editing the same profile
+				$validationResults = [
+					'validatedOk' => false,
+					'errors'      => ['The Record Url Component is already in use by another indexing profile'],
+				];
+			}
+		}
+		return $validationResults;
+	}
 
+	public function validateSourceName(){
+		$validationResults = [
+			'validatedOk' => true,
+			'errors'      => [],
+		];
+
+		$sourceName = trim($_REQUEST['sourceName']);
+
+		if (!ctype_alnum($sourceName)){
+			$validationResults = [
+				'validatedOk' => false,
+				'errors'      => ['The Source Name should consist of only alpha-numeric characters and no white space characters'],
+			];
+		} else{
+			$indexingProfile = new IndexingProfile();
+			$count           = $indexingProfile->get('sourceName', $sourceName);
+			if ($count > 0 && $this->id != $indexingProfile->id){ // include exception for editing the same profile
+				$validationResults = [
+					'validatedOk' => false,
+					'errors'      => ['The Record Url Component is already in use by another indexing profile'],
+				];
+			}
 		}
 		return $validationResults;
 	}
@@ -571,7 +607,7 @@ class IndexingProfile extends DB_DataObject{
 //	}
 
 	static public function getAllIndexingProfiles(){
-		$indexingProfiles = array();
+		$indexingProfiles = [];
 		$indexingProfile  = new IndexingProfile();
 		$indexingProfile->orderBy('name');
 		$indexingProfile->find();

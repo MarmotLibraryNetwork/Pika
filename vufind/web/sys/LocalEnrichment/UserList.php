@@ -228,8 +228,6 @@ class UserList extends DB_DataObject
 		return $cleanListOfBadWords? $listTitles : $this->listTitles[$this->id];
 	}
 
-	var $catalog;
-
 	/**
 	 * Remove bad words from a list's title or descriptions, and the list entry's notes;
 	 * OR hide the entry completely for libraries with hideCommentsWithBadWords on

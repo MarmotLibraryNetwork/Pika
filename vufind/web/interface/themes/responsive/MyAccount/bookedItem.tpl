@@ -121,7 +121,7 @@
 			<div class="col-xs-12 col-md-3">
 				<div class="btn-group btn-group-vertical btn-block">
 					{if $myBooking->cancelValue}
-						<button onclick="return VuFind.Account.cancelBooking('{$myBooking->userId}', '{$myBooking->cancelValue}')" class="btn btn-sm btn-warning">Cancel Item</button>
+						<button onclick="return Pika.Account.cancelBooking('{$myBooking->userId}', '{$myBooking->cancelValue}')" class="btn btn-sm btn-warning">Cancel Item</button>
 					{/if}
 				</div>
 			</div>

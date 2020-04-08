@@ -17,7 +17,7 @@
 		$('#cardNumber').focus();
 		$("#masqueradeForm").validate({
 			submitHandler: function () {
-				VuFind.Account.initiateMasquerade();
+				Pika.Account.initiateMasquerade();
 			}
 		});
 		{/literal}

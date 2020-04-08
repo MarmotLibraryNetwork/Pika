@@ -104,6 +104,35 @@ class ListWidget extends DB_DataObject {
 				'serverValidation' => 'validateName',
 				'storeDb'          => true,
 			),
+			'showListWidgetTitle' => array(
+				'property'    => 'showListWidgetTitle',
+				'type'        => 'checkbox',
+				'label'       => 'Show the list widget\'s title bar',
+				'description' => 'Whether or not the widget\'s title bar is shown. (Enabling the Show More Link will force the title bar to be shown as well.)',
+				'storeDb'     => true,
+				'hideInLists' => true,
+				'default'     => true,
+			),
+			'showViewMoreLink'    => array(
+				'property'    => 'showViewMoreLink',
+				'type'        => 'checkbox',
+				'label'       => 'Show the View More link on the title bar of the widget.',
+				'storeDb'     => true,
+				'hideInLists' => true,
+				'default'     => false,
+			),
+			'viewMoreLinkMode'    => array(
+				'property'    => 'viewMoreLinkMode',
+				'type'        => 'enum',
+				'values'      => array(
+					'list'   => 'List',
+					'covers' => 'Covers'
+				),
+				'label'       => 'Display mode for search results link',
+				'description' => 'The mode to show full search results in when the View More link is clicked.',
+				'storeDb'     => true,
+				'hideInLists' => true,
+			),
 			'description' => array(
 				'property'    => 'description',
 				'type'        => 'textarea',
@@ -215,35 +244,6 @@ class ListWidget extends DB_DataObject {
 				'storeDb'     => true,
 				'hideInLists' => true,
 			),
-			'showListWidgetTitle' => array(
-				'property'    => 'showListWidgetTitle',
-				'type'        => 'checkbox',
-				'label'       => 'Show the list widget\'s title bar',
-				'description' => 'Whether or not the widget\'s title bar is shown. (Enabling the Show More Link will force the title bar to be shown as well.)',
-				'storeDb'     => true,
-				'hideInLists' => true,
-				'default'     => true,
-			),
-			'showViewMoreLink'    => array(
-				'property'    => 'showViewMoreLink',
-				'type'        => 'checkbox',
-				'label'       => 'Show the View More link on the title bar of the widget.',
-				'storeDb'     => true,
-				'hideInLists' => true,
-				'default'     => false,
-			),
-			'viewMoreLinkMode'    => array(
-				'property'    => 'viewMoreLinkMode',
-				'type'        => 'enum',
-				'values'      => array(
-					'list'   => 'List',
-					'covers' => 'Covers'
-				),
-				'label'       => 'Display mode for search results link',
-				'description' => 'The mode to show full search results in when the View More link is clicked.',
-				'storeDb'     => true,
-				'hideInLists' => true,
-			),
 			'lists'               => array(
 				'property'         => 'lists',
 				'type'             => 'oneToMany',
@@ -256,7 +256,7 @@ class ListWidget extends DB_DataObject {
 				'sortable'         => true,
 				'storeDb'          => true,
 				'serverValidation' => 'validateLists',
-				'editLink'         => 'ListWidgetsListsLinks',
+//				'editLink'         => 'ListWidgetsListsLinks',
 				'hideInLists'      => true,
 			),
 		);
@@ -265,10 +265,10 @@ class ListWidget extends DB_DataObject {
 
 	function validateName(){
 		//Setup validation return array
-		$validationResults = array(
+		$validationResults = [
 			'validatedOk' => true,
-			'errors'      => array(),
-		);
+			'errors'      => [],
+		];
 
 		//Check to see if the name is unique
 		$widget       = new ListWidget();
@@ -292,9 +292,9 @@ class ListWidget extends DB_DataObject {
 
 	public function __get($name){
 		if ($name == "lists"){
-			if (!isset($this->lists)){
+			if (!isset($this->lists) && !empty($this->id)){
 				//Get the list of lists that are being displayed for the widget
-				$this->lists                  = array();
+				$this->lists                  = [];
 				$listWidgetList               = new ListWidgetList();
 				$listWidgetList->listWidgetId = $this->id;
 				$listWidgetList->orderBy('weight ASC');
@@ -319,7 +319,7 @@ class ListWidget extends DB_DataObject {
 		if ($this->libraryId == -1){
 			return 'All libraries';
 		}else{
-			$library = new Library();
+			$library            = new Library();
 			$library->libraryId = $this->libraryId;
 			$library->find(true);
 			return $library->displayName;
@@ -424,4 +424,15 @@ class ListWidget extends DB_DataObject {
 		}
 		return $validationResults;
 	}
+
+	/**
+	 * Adds a header for this object in the edit form pages
+	 * @return string|null
+	 */
+	function label(){
+		if (!empty($this->name)){
+			return $this->name;
+		}
+	}
+
 }

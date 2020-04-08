@@ -1340,6 +1340,14 @@ class DBMaintenance extends Admin_Admin {
 						"ALTER TABLE `librarian_reviews` CHANGE COLUMN `id` `id` INT(11) NOT NULL AUTO_INCREMENT ;",
 					]
 				),
+                'remove_selfReg_template_option' => array(
+                  'title'       => 'Delete selfReg template option',
+                  'description' => 'Get rid of the template option',
+                  'continueOnError' => false,
+                  'sql' => array(
+                      "ALTER TABLE `library` DELETE COLUMN 'selfRegistrationTemplate';",
+                  )
+                ),
 
 			)
 		);

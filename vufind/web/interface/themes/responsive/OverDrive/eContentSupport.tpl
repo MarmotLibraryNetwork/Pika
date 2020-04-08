@@ -16,7 +16,7 @@
 			<label for='email' class='control-label'>E-mail: <span class="requiredIndicator">*</span></label><input type="text" name="email" id="email" class="required email form-control" maxlength="120" size="60" value="{$email}">
 		</div>
 		<div class='form-group'>
-			<label for='bookAuthor' class='control-label'>Book Title/Author:</label><input type="text" name="bookAuthor" id="bookAuthor" maxlength="120" size="60" class="form-control">
+			<label for='bookAuthor' class='control-label'>Book Title/Author:</label><input type="text" name="bookAuthor" id="bookAuthor" maxlength="120" size="60" class="form-control" value="{$titleAndAuthor}">
 		</div>
 		<div class='form-group'>
 			<label for='device' class='control-label'>Device:</label><input type="text" name="device" id="device" maxlength="120" size="60" class="form-control">
@@ -67,7 +67,7 @@ $(function(){
 	var supportForm = $("#eContentSupport");
 	supportForm.validate({
 		submitHandler: function () {
-			VuFind.OverDrive.submitHelpForm();
+			Pika.OverDrive.submitHelpForm();
 		}
 	});
 });
