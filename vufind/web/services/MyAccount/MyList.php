@@ -296,6 +296,7 @@ class MyAccount_MyList extends MyAccount {
             }
 
             //create array including all data
+            $typeString = "format_category_" . $GLOBALS['solrScope'];
             $itemArray = [];
             foreach ($favorites as $listItem) {
                 $title = "";
@@ -311,9 +312,9 @@ class MyAccount_MyList extends MyAccount {
                     $recordType = $listItem['recordtype'];
                 }
                     $type="";
-                if(isset($listItem['format_category_opac']))
+                if(isset($listItem[$typeString]))
                 {
-                    $type = $listItem['format_category_opac'][0];
+                    $type = $listItem[$typeString][0];
                 }
 
                 $recordID = $listItem['id'];
@@ -323,9 +324,7 @@ class MyAccount_MyList extends MyAccount {
             }
 
             $this->SortByValue($itemArray, $favList->getSort());
-//echo "<pre>";
-//print_r($favorites);
-//echo "</pre>";
+
             $objPHPExcel->setActiveSheetIndex(0)
                 ->setCellValue('A1', $list->title)
                 ->setCellValue('B1', $list->description)
