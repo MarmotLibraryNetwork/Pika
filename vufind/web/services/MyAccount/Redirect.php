@@ -42,6 +42,7 @@ class Redirect extends Action {
 	}
 
 	public function launch() {
+<<<<<<< Updated upstream
 		$service = $_REQUEST['service'];
 
 		switch ($service) {
