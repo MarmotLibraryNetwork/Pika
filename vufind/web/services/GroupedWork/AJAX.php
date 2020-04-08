@@ -67,67 +67,39 @@ class GroupedWork_AJAX extends AJAXHandler {
 
 
 	/**
-	 * Remove a user's review of a work. This is tied to the ratings
+	 * Alias of deleteUserReview()
 	 *
-	 * @return array
+	 * @return string
 	 */
 	function clearUserRating(){
-		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
-		$result = ['result' => false];
-		$id     = $_REQUEST['id'];
-		if (!empty($id) && GroupedWork::validGroupedWorkId($id)){
-			if (UserAccount::isLoggedIn()){
-				require_once ROOT_DIR . '/sys/LocalEnrichment/UserWorkReview.php';
-				$userWorkReview                           = new UserWorkReview();
-				$userWorkReview->groupedRecordPermanentId = $id;
-				$userWorkReview->userId                   = UserAccount::getActiveUserId();
-				if ($userWorkReview->find(true)){
-					$userWorkReview->delete();
-					$result = ['result' => true, 'message' => 'We successfully deleted the rating for you.'];
-				}else{
-					$result['message'] = 'Sorry, we could not find that review in the system.';
-				}
-			}else{
-				$result['message'] = 'You must be logged in to delete ratings.';
-			}
-		}
-		return $result;
+		return $this->deleteUserReview();
 	}
 
-	/**
-	 * Remove a rating & review from the borrower reviews section of record view.
-	 *
-	 * @return array
-	 */
 	function deleteUserReview(){
-		$result = ['result' => false];
-		if (UserAccount::isLoggedIn()){
-			$reviewId = $_REQUEST['reviewId'];
-			if (!empty($reviewId) && ctype_digit($reviewId)){
-				require_once ROOT_DIR . '/sys/LocalEnrichment/UserWorkReview.php';
-				$userWorkReview     = new UserWorkReview();
-				$userWorkReview->id = $reviewId;
-				if (!UserAccount::userHasRoleFromList(['opacAdmin'])){ // Some roles can delete other user reviews
-					$userWorkReview->userId = UserAccount::getActiveUserId();
-				}
-				if ($userWorkReview->find(true)){
-					$userWorkReview->delete();
-					$result = ['result' => true, 'message' => 'We successfully deleted the rating for you.'];
-				}else{
-					$result['message'] = 'Sorry, we could not find that review in the system.';
-				}
-			} else {
-				$result['message'] = 'Invalid review id';
-			}
-		}else{
+		$id     = $_REQUEST['id'];
+		$result = array('result' => false);
+		if (!UserAccount::isLoggedIn()){
 			$result['message'] = 'You must be logged in to delete ratings.';
+		}else{
+			require_once ROOT_DIR . '/sys/LocalEnrichment/UserWorkReview.php';
+			$userWorkReview                           = new UserWorkReview();
+			$userWorkReview->groupedRecordPermanentId = $id;
+			$userWorkReview->userId                   = UserAccount::getActiveUserId();
+			if ($userWorkReview->find(true)){
+				$userWorkReview->delete();
+				$result = array('result' => true, 'message' => 'We successfully deleted the rating for you.');
+			}else{
+				$result['message'] = 'Sorry, we could not find that review in the system.';
+			}
 		}
+
 		return $result;
 	}
 
 	function forceRegrouping(){
 		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 		$id = $_REQUEST['id'];
+
 		if (GroupedWork::validGroupedWorkId($id)){
 			$groupedWork               = new GroupedWork();
 			$groupedWork->permanent_id = $id;
@@ -414,23 +386,20 @@ class GroupedWork_AJAX extends AJAXHandler {
 	}
 
 	function RateTitle(){
-		require_once ROOT_DIR . '/sys/LocalEnrichment/UserWorkReview.php';
+		require_once(ROOT_DIR . '/sys/LocalEnrichment/UserWorkReview.php');
 		if (!UserAccount::isLoggedIn()){
-			return ['error' => 'Please login to rate this title.'];
+			return array('error' => 'Please login to rate this title.');
 		}
-		$id = $_REQUEST['id'];
-		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
-		if (empty($id) || !GroupedWork::validGroupedWorkId($id)){
-			return ['error' => 'Invalid work id.'];
+		if (empty($_REQUEST['id'])){
+			return array('error' => 'ID for the item to rate is required.');
 		}
 		if (empty($_REQUEST['rating']) || !ctype_digit($_REQUEST['rating'])){
-			return ['error' => 'Invalid value for rating.'];
+			return array('error' => 'Invalid value for rating.');
 		}
 		$rating = $_REQUEST['rating'];
-
 		//Save the rating
 		$workReview                           = new UserWorkReview();
-		$workReview->groupedRecordPermanentId = $id;
+		$workReview->groupedRecordPermanentId = $_REQUEST['id'];
 		$workReview->userId                   = UserAccount::getActiveUserId();
 		if ($workReview->find(true)){
 			if ($rating != $workReview->rating){ // update gives an error if the rating value is the same as stored.
@@ -451,9 +420,9 @@ class GroupedWork_AJAX extends AJAXHandler {
 			// Reset any cached suggestion browse category for the user
 			$this->clearMySuggestionsBrowseCategoryCache();
 
-			return ['rating' => $rating];
+			return array('rating' => $rating);
 		}else{
-			return ['error' => 'Unable to save your rating.'];
+			return array('error' => 'Unable to save your rating.');
 		}
 	}
 
@@ -461,7 +430,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 		// Reset any cached suggestion browse category for the user
 		/** @var Memcache $memCache */
 		global $memCache, $solrScope;
-		foreach (['covers', 'grid'] as $browseMode){ // (Browse modes are set in class Browse_AJAX)
+		foreach (array('covers', 'grid') as $browseMode){ // (Browse modes are set in class Browse_AJAX)
 			$key = 'browse_category_system_recommended_for_you_' . UserAccount::getActiveUserId() . '_' . $solrScope . '_' . $browseMode;
 			$memCache->delete($key);
 		}
@@ -488,7 +457,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 
 		//Load librarian reviews
 		require_once ROOT_DIR . '/sys/LocalEnrichment/LibrarianReview.php';
-		$librarianReviews                         = new LibrarianReview();
+		$librarianReviews           = new LibrarianReview();
 		$librarianReviews->groupedWorkPermanentId = $id;
 		$librarianReviews->find();
 		$allLibrarianReviews = array();

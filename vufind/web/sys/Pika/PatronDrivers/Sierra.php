@@ -20,17 +20,13 @@
  *
  * Class Sierra
  *
- * Main driver to define the main methods needed for completing patron actions in the Seirra ILS
+ * Methods needed for completing patron actions in the Seirra ILS
  *
  * This class implements the Sierra REST Patron API for patron interactions:
  *    https://sandbox.iii.com/iii/sierra-api/swagger/index.html#!/patrons
  *
- * NOTES:
- *  TODO: For Sierra patrons we will use the Sierra patron ID as a username as this must be unique although a different approach would be preferred.
  *
- *  Currently, in the database password and cat_username represent the patron barcodes. The password is now obsolete
- *  and it's preferred to not store the Sierra ID in the database (see above to do) and prefer barcode as an index for finding a patron
- *  in the database.
+ *  Currently, in the database cat_password or cat_username represent the patron barcodes.
  *
  *  For auth type barcode_pin
  *    barcode stored in cat_username field
@@ -40,13 +36,6 @@
  *    barcode is stored in cat_password field
  *    name is stored in cat_username field
  *
- * Caching
- *
- * caching keys follow this pattern
- * patron_{barcode}_{object}
- * ie; patron_123456789_checkouts, patron_123456789_holds
- * the patron object is patron_{barcode}_patron
- * when calling an action (ie; placeHold, updatePatronInfo) both the patron cache and the object cache should be unset
  *
  *
  * @category Pika
@@ -78,14 +67,6 @@ require_once ROOT_DIR . '/sys/Account/ReadingHistoryEntry.php';
 require_once ROOT_DIR . '/sys/Account/PinReset.php';
 
 class Sierra {
-	// let's swing back around to this later.
-//	use \PatronCheckOutsOperations;
-//	use \PatronHoldsOperations;
-//	use \PatronFinesOperations;
-//
-//	use \PatronReadingHistoryOperations;
-//	use \PatronPinOperations;
-//	use \PatronSelfRegistrationOperations;
 
 	// @var Pika/Memcache instance
 	public  $cache;
@@ -821,7 +802,7 @@ class Sierra {
 			return false;
 		}
 
-		$this->cache->set($patronIdCacheKey, $r->id, $this->configArray['Caching']['patron_id']);
+		$this->cache->set($patronIdCacheKey, $r->id, $this->configArray['Caching']['koha_patron_id']);
 
 		return $r->id;
 	}
@@ -1259,8 +1240,12 @@ EOT;
 		$params['barcodes'][] = $barcode;
 
 		// agency code
-		$params['fixedFields']["158"] = ["label" => "PAT AGENCY",
-		                                 "value" => $library->selfRegistrationAgencyCode];
+		if($library->selfRegistrationAgencyCode >= 1) {
+			$params['fixedFields']["158"] = [
+			 "label" => "PAT AGENCY",
+			 "value" => $library->selfRegistrationAgencyCode
+			];
+		}
 		// expiration date
 		$interval = 'P'.$library->selfRegistrationDaysUntilExpire.'D';
 		$expireDate = new DateTime();
