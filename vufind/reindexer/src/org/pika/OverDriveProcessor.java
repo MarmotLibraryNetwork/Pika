@@ -473,7 +473,7 @@ public class OverDriveProcessor {
 				String language;
 				try {
 					// Use language labels from translation map if possible
-					iso3LanguageCode = new Locale(overdriveLanguageCode).getISO3Language();
+					iso3LanguageCode = indexer.translateSystemValue("iso639-1TOiso639-2B", overdriveLanguageCode, identifier);
 					language         = indexer.translateSystemValue("language", iso3LanguageCode, identifier);
 				} catch (MissingResourceException e) {
 					logger.warn("Can not convert Overdrive language code :" + overdriveLanguageCode);
