@@ -326,6 +326,7 @@ class OverDrive_AJAX extends AJAXHandler {
 			$multipleEmailAddresses = preg_split('/[;,]/', $to, null, PREG_SPLIT_NO_EMPTY);
 			if (!empty($multipleEmailAddresses)){
 				$sendingAddress = $multipleEmailAddresses[0];
+				$to             = str_replace(';', ',', $to); //The newer mailer needs 'to' addresses to be separated by commas rather than semicolon
 			}else{
 				$sendingAddress = $to;
 			}
