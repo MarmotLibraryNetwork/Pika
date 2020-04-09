@@ -1438,23 +1438,13 @@ public class GroupedWorkIndexer {
 	 * We can also load translation maps that are specific to an indexing profile.  That is done within
 	 * the record processor itself.
 	 */
-	private void loadSystemTranslationMaps(){
+	private void loadSystemTranslationMaps() {
 		//Load all translationMaps, first from default, then from the site specific configuration
-		File defaultTranslationMapDirectory = new File("../../sites/default/translation_maps");
-		File[] defaultTranslationMapFiles = defaultTranslationMapDirectory.listFiles(new FilenameFilter() {
-			@Override
-			public boolean accept(File dir, String name) {
-				return name.endsWith("properties");
-			}
-		});
+		File   defaultTranslationMapDirectory = new File("../../sites/default/translation_maps");
+		File[] defaultTranslationMapFiles     = defaultTranslationMapDirectory.listFiles((dir, name) -> name.endsWith("properties"));
 
-		File serverTranslationMapDirectory = new File("../../sites/" + serverName + "/translation_maps");
-		File[] serverTranslationMapFiles = serverTranslationMapDirectory.listFiles(new FilenameFilter() {
-			@Override
-			public boolean accept(File dir, String name) {
-				return name.endsWith("properties");
-			}
-		});
+		File   serverTranslationMapDirectory = new File("../../sites/" + serverName + "/translation_maps");
+		File[] serverTranslationMapFiles     = serverTranslationMapDirectory.listFiles((dir, name) -> name.endsWith("properties"));
 
 		if (defaultTranslationMapFiles != null) {
 			for (File curFile : defaultTranslationMapFiles) {

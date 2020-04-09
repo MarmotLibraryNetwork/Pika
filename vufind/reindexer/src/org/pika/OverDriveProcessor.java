@@ -10,9 +10,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.*;
 import java.util.regex.Pattern;
 
 /**
@@ -176,7 +174,7 @@ public class OverDriveProcessor {
 								groupedWork.addFullTitle(fullTitle);
 								groupedWork.addSeries(series);
 								groupedWork.addSeriesWithVolume(series);
-								groupedWork.setAuthor(productRS.getString("primaryCreatorName"));
+								groupedWork.setAuthor(productRS.getString("primaryCreatorName")); //TODO: use fileAs name??, look at grouper; use a isEcontent flag for counting
 								groupedWork.setAuthAuthor(productRS.getString("primaryCreatorName"));
 								groupedWork.setAuthorDisplay(productRS.getString("primaryCreatorName"));
 
@@ -469,18 +467,28 @@ public class OverDriveProcessor {
 		try (ResultSet languagesRS = getProductLanguagesStmt.executeQuery()) {
 			HashSet<String> languages = new HashSet<>();
 			while (languagesRS.next()) {
-				String language = languagesRS.getString("name");
+				String overdriveLanguageCode = languagesRS.getString("code");
+				String iso3LanguageCode;
+				String language;
+				try {
+					// Use language labels from translation map if possible
+					iso3LanguageCode = new Locale(overdriveLanguageCode).getISO3Language();
+					language         = indexer.translateSystemValue("language", iso3LanguageCode, identifier);
+				} catch (MissingResourceException e) {
+					logger.warn("Can not convert Overdrive language code :" + overdriveLanguageCode);
+					language = languagesRS.getString("name");
+				}
 				languages.add(language);
 				if (primaryLanguage == null) {
 					primaryLanguage = language;
 				}
-				String languageCode  = languagesRS.getString("code");
-				String languageBoost = indexer.translateSystemValue("language_boost", languageCode, identifier);
+				//The boost maps contain entries for en and es
+				String languageBoost = indexer.translateSystemValue("language_boost", overdriveLanguageCode, identifier);
 				if (languageBoost != null) {
 					Long languageBoostVal = Long.parseLong(languageBoost);
 					overDriveRecord.setLanguageBoost(languageBoostVal);
 				}
-				String languageBoostEs = indexer.translateSystemValue("language_boost_es", languageCode, identifier);
+				String languageBoostEs = indexer.translateSystemValue("language_boost_es", overdriveLanguageCode, identifier);
 				if (languageBoostEs != null) {
 					Long languageBoostVal = Long.parseLong(languageBoostEs);
 					overDriveRecord.setLanguageBoostSpanish(languageBoostVal);
@@ -488,7 +496,10 @@ public class OverDriveProcessor {
 			}
 			overDriveRecord.setLanguages(languages);
 		}
-		if (primaryLanguage == null){
+		if (primaryLanguage == null) {
+			if  (logger.isInfoEnabled()){
+				logger.info("Using English, because no language found for overdrive record "+ identifier);
+			}
 			primaryLanguage = "English";
 		}
 		return primaryLanguage;
