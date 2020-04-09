@@ -318,10 +318,10 @@ class OverDrive_AJAX extends AJAXHandler {
 			}elseif (!empty($configArray['Site']['email'])){
 				$to = $configArray['Site']['email'];
 			}else{
-				return array(
+				return [
 					'title'   => "Support Request Not Sent",
 					'message' => "<p>We're sorry, but your request could not be submitted because we do not have a support email address on file.</p><p>Please contact your local library.</p>"
-				);
+				];
 			}
 			$multipleEmailAddresses = preg_split('/[;,]/', $to, null, PREG_SPLIT_NO_EMPTY);
 			if (!empty($multipleEmailAddresses)){
@@ -342,23 +342,23 @@ class OverDrive_AJAX extends AJAXHandler {
 			$interface->assign('email', $patronEmail);
 			$interface->assign('deviceName', get_device_name()); // footer & eContent support email
 
-			$body        = $interface->fetch('Help/eContentSupportEmail.tpl');
+			$body        = $interface->fetch('OverDrive/eContentSupportEmail.tpl');
 			$emailResult = $mail->send($to, $sendingAddress, $subject, $body, $patronEmail);
 			if (PEAR::isError($emailResult)){
-				return array(
+				return [
 					'title'   => "Support Request Not Sent",
 					'message' => "<p>We're sorry, an error occurred while submitting your request.</p>" . $emailResult->getMessage()
-				);
+				];
 			}elseif ($emailResult){
-				return array(
+				return [
 					'title'   => "Support Request Sent",
 					'message' => "<p>Your request was sent to our support team.  We will respond to your request as quickly as possible.</p><p>Thank you for using the catalog.</p>"
-				);
+				];
 			}else{
-				return array(
+				return [
 					'title'   => "Support Request Not Sent",
 					'message' => "<p>We're sorry, but your request could not be submitted to our support team at this time.</p><p>Please try again later.</p>"
-				);
+				];
 			}
 		}else{
 			return  $this->getSupportForm();
