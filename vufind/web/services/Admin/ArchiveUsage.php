@@ -108,6 +108,6 @@ class Admin_ArchiveUsage extends Admin_Admin{
 	}
 
 	function getAllowableRoles() {
-		return array('opacAdmin', 'archives');
+		return array('archives');
 	}
 }

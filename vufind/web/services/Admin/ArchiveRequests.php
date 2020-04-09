@@ -75,7 +75,7 @@ class Admin_ArchiveRequests extends ObjectEditor {
 		return false;
 	}
 	function canDelete(){
-		return UserAccount::userHasRole('opacAdmin');
+		return UserAccount::userHasRole('archives');
 	}
 
 }

@@ -114,6 +114,6 @@ class Report_StudentReport extends Report_Report {
 	}
 
 	function getAllowableRoles(){
-		return array('opacAdmin', 'libraryAdmin', 'locationReports');
+		return array('locationReports');
 	}
 }

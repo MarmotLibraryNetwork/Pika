@@ -115,6 +115,6 @@ class Report_StudentBarcodes extends Report_Report {
 	}
 
 	function getAllowableRoles(){
-		return array('opacAdmin', 'libraryAdmin', 'locationReports');
+		return array('locationReports');
 	}
 }
