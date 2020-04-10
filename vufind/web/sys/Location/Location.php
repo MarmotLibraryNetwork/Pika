@@ -405,7 +405,7 @@ class Location extends DB_DataObject {
 			/* HOOPLA SECTION */
 			'hooplaSection' => array(
 				'property'   => 'hooplaSection', 'type' => 'section', 'label' => 'Hoopla', 'hideInLists' => true,
-				'helpLink'   => '',
+				'helpLink'   => 'https://docs.google.com/document/d/13uA65V1LXEt7c_ZjpOga0xFoVp-q0pFXtU1a5Jfo_5A',
 				'properties' => array(
 					'hooplaSettings' => array(
 						'property'      => 'hooplaSettings',

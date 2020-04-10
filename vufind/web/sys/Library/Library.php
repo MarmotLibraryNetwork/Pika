@@ -874,7 +874,7 @@ class Library extends DB_DataObject {
 
 			'hooplaSection' => array(
 				'property'   => 'hooplaSection', 'type' => 'section', 'label' => 'Hoopla', 'hideInLists' => true,
-				'helpLink'   => '',
+				'helpLink'   => 'https://docs.google.com/document/d/13uA65V1LXEt7c_ZjpOga0xFoVp-q0pFXtU1a5Jfo_5A',
 				'properties' => array(
 					'hooplaLibraryID' => array('property' => 'hooplaLibraryID', 'type' => 'integer', 'label' => 'Hoopla Library ID', 'description' => 'The ID Number Hoopla uses for this library', 'hideInLists' => true),
 					'hooplaSettings'  => array(
