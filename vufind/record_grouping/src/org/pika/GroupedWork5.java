@@ -203,9 +203,9 @@ public class GroupedWork5 extends GroupedWorkBase implements Cloneable {
 	private String cleanTitleCharacters(String groupingTitle) {
 		//Fix abbreviations
 		groupingTitle = initialsFix.matcher(groupingTitle).replaceAll(" ");
-		//Replace & with and for better matching
 		groupingTitle = dashPattern.matcher(groupingTitle).replaceAll("-");
 		groupingTitle = ampersandPattern.matcher(groupingTitle).replaceAll("and"); // TODO: avoid encoded sequences like &#174;
+		//Replace & with and for better matching (Note: this must happen *before* the specialCharacterStrip is applied
 
 		groupingTitle = apostropheStrip.matcher(groupingTitle).replaceAll("s");
 		groupingTitle = specialCharacterStrip.matcher(groupingTitle).replaceAll(" ").toLowerCase();
@@ -271,6 +271,15 @@ public class GroupedWork5 extends GroupedWorkBase implements Cloneable {
 
 	private static String normalizeDiacritics(String textToNormalize){
 		textToNormalize = Normalizer.normalize(textToNormalize, Normalizer.Form.NFD).replaceAll("\\p{InCombiningDiacriticalMarks}+", "");
+		// Some characters that need replaced manually. (Replacing capitalized versions with lower case equivalent)
+		textToNormalize = textToNormalize
+				.replaceAll("ø", "o").replaceAll("Ø", "o")
+				.replaceAll("Æ", "ae").replaceAll("æ", "ae")
+				.replaceAll("Ð", "d").replaceAll("ð", "d")
+				.replaceAll("Œ", "oe").replaceAll("œ", "oe")
+				.replaceAll("Þ", "th")
+				.replaceAll("ß", "ss")
+				.replaceAll("ƒ", "f");
 		return Normalizer.isNormalized(textToNormalize, Normalizer.Form.NFKC) ? textToNormalize : Normalizer.normalize(textToNormalize, Normalizer.Form.NFKC);
 	}
 
@@ -287,7 +296,9 @@ public class GroupedWork5 extends GroupedWorkBase implements Cloneable {
 				}
 			}
 		}else{
-			logger.debug("Not appending subtitle '" + subtitle + "' because it was already part of the title '" + title + "'.");
+			if (logger.isDebugEnabled()) {
+				logger.debug("Not appending subtitle '" + subtitle + "' because it was already part of the title '" + title + "'.");
+			}
 		}
 		return title;
 	}

@@ -33,7 +33,7 @@ class AuthorNormalizer {
 
 		//Remove special characters that should be replaced with nothing
 		groupingAuthor = apostropheStrip.matcher(groupingAuthor).replaceAll("");
-		groupingAuthor = specialCharacterWhitespace.matcher(groupingAuthor).replaceAll("");
+		groupingAuthor = specialCharacterWhitespace.matcher(groupingAuthor).replaceAll(""); //TODO: combine with the apostropheStrip
 		groupingAuthor = specialCharacterStrip.matcher(groupingAuthor).replaceAll(" ").trim().toLowerCase();
 		groupingAuthor = consecutiveCharacterStrip.matcher(groupingAuthor).replaceAll(" ");
 		//extract common additional info (especially for movie studios)
@@ -68,7 +68,19 @@ class AuthorNormalizer {
 
 	private static String normalizeDiacritics(String textToNormalize){
 		textToNormalize = Normalizer.normalize(textToNormalize, Normalizer.Form.NFD).replaceAll("\\p{InCombiningDiacriticalMarks}+", "");
+		// Some characters that need replaced manually. (Replacing capitalized versions with lower case equivalent)
+		textToNormalize = textToNormalize
+				.replaceAll("ø", "o").replaceAll("Ø", "o")
+				.replaceAll("Æ", "ae").replaceAll("æ", "ae")
+				.replaceAll("Ð", "d").replaceAll("ð", "d")
+				.replaceAll("Œ", "oe").replaceAll("œ", "oe")
+				.replaceAll("Þ", "th")
+				.replaceAll("ß", "ss")
+				.replaceAll("ƒ", "f");
 		return Normalizer.isNormalized(textToNormalize, Normalizer.Form.NFKC) ? textToNormalize : Normalizer.normalize(textToNormalize, Normalizer.Form.NFKC);
+
+		// another possible pattern:
+//		return Normalizer.normalize(textToNormalize, Normalizer.Form.NFD).replaceAll("[^\\p{ASCII}]", "");
 	}
 
 	private static Pattern companyIdentifierPattern = Pattern.compile("(?i)[\\s,](pty ltd|llc|co|company|inc|ltd|lp)$");
