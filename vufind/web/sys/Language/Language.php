@@ -25,7 +25,7 @@
  * @author      Andrew S. Nagy <andrew.nagy@villanova.edu>
  */
 class Language {
-	private $lang = [
+	private  static $lang = [
 		'aar' => 'Afar',
 		'abk' => 'Abkhaz',
 		'ace' => 'Achinese',
@@ -513,12 +513,12 @@ class Language {
 		'zza' => 'Zaza'
 	];
 
-	function getLanguage($code){
-		return $this->lang[$code] ?? 'Unknown';
+	static function getLanguage($code){
+		return self::$lang[$code] ?? 'Unknown';
 	}
 
-	function getCode($lang){
-		$keys = array_keys($this->lang, $lang);
+	static function getCode($lang){
+		$keys = array_keys(self::$lang, $lang);
 		return $keys[0];
 	}
 }
