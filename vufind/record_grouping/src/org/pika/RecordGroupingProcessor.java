@@ -310,11 +310,11 @@ class RecordGroupingProcessor {
 //							author = author.substring(0, author.indexOf(';') - 1);
 //						}
 //					} else {
-						DataField field700 = marcRecord.getDataField("700"); //
+						DataField field700 = marcRecord.getDataField("700"); // Added Entry Personal Name
 						if (field700 != null && field700.getSubfield('a') != null) {
 							author = field700.getSubfield('a').getData();
 						} else {
-							DataField field711 = marcRecord.getDataField("711"); //
+							DataField field711 = marcRecord.getDataField("711"); // // Added Entry Corporate Name
 							if (field711 != null && field711.getSubfield('a') != null) {
 								// Check the 711 before the 710
 								author = field711.getSubfield('a').getData();
@@ -336,6 +336,8 @@ class RecordGroupingProcessor {
 										} else if (field245 != null && field245.getSubfield('c') != null) {
 											author = field245.getSubfield('c').getData();
 											if (author.indexOf(';') > 0) {
+												//For Example:
+												//245	1	0	|a Pop Corn & Ma Goodness /|c Edna Mitchell Preston ; illustrated by Robert Andrew Parker.
 												author = author.substring(0, author.indexOf(';') - 1);
 											}
 										}
@@ -366,7 +368,7 @@ class RecordGroupingProcessor {
 	private void setWorkTitleBasedOnMarcRecord(Record marcRecord, GroupedWorkBase workForTitle) {
 		DataField field245 = marcRecord.getDataField("245");
 		if (field245 != null && field245.getSubfield('a') != null) {
-			String fullTitle = field245.getSubfield('a').getData();
+			String basicTitle = field245.getSubfield('a').getData();
 
 			char nonFilingCharacters = field245.getIndicator2();
 			if (nonFilingCharacters == ' ') nonFilingCharacters = '0';
@@ -391,7 +393,7 @@ class RecordGroupingProcessor {
 				groupingSubtitle.append(field245.getSubfield('p').getData());
 			}
 
-			workForTitle.setTitle(fullTitle, groupingSubtitle.toString(), numNonFilingCharacters);
+			workForTitle.setTitle(basicTitle, groupingSubtitle.toString(), numNonFilingCharacters);
 		}
 	}
 
@@ -1134,7 +1136,7 @@ class RecordGroupingProcessor {
 		}
 	}
 
-	private TranslationMap loadTranslationMap(File translationMapFile, String mapName) {
+	protected TranslationMap loadTranslationMap(File translationMapFile, String mapName) {
 		Properties props = new Properties();
 		try {
 			props.load(new FileReader(translationMapFile));

@@ -353,7 +353,7 @@ class ExtractOverDriveInfo {
 			while (productsToUpdate.size() > 0) {
 				ArrayList<MetaAvailUpdateData> productsToUpdateBatch = new ArrayList<>();
 //				HashMap<String, SharedStats> sharedStatsHashMap = new HashMap<>();
-				int maxIndex = productsToUpdate.size() > batchSize ? batchSize : productsToUpdate.size();
+				int maxIndex = Math.min(productsToUpdate.size(), batchSize);
 				for (int i = 0; i < maxIndex; i++) {
 					productsToUpdateBatch.add(productsToUpdate.get(i));
 				}
@@ -1365,6 +1365,7 @@ class ExtractOverDriveInfo {
 						addIdentifierStmt.executeUpdate();
 					}
 				}
+				//TODO: group an individual production?
 				results.incMetadataChanges();
 			} catch (Exception e) {
 				logger.info("Error loading meta data for title ", e);
