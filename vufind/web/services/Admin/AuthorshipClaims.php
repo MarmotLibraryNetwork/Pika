@@ -45,7 +45,7 @@ class Admin_AuthorshipClaims extends ObjectEditor {
 
 		$object = new ClaimAuthorshipRequest();
 		$user = UserAccount::getLoggedInUser();
-		if (!UserAccount::userHasRole('opacAdmin')){
+		if (!UserAccount::userHasRole('archives')){
 			$homeLibrary = $user->getHomeLibrary();
 			$archiveNamespace = $homeLibrary->archiveNamespace;
 			$object->whereAdd("pid LIKE '{$archiveNamespace}:%'");
@@ -62,7 +62,7 @@ class Admin_AuthorshipClaims extends ObjectEditor {
 		return ClaimAuthorshipRequest::getObjectStructure();
 	}
 	function getAllowableRoles(){
-		return array('opacAdmin', 'archives');
+		return array('archives');
 	}
 	function getPrimaryKeyColumn(){
 		return 'id';
@@ -75,7 +75,7 @@ class Admin_AuthorshipClaims extends ObjectEditor {
 	}
 	function canDelete(){
 		$user = UserAccount::getLoggedInUser();
-		return UserAccount::userHasRole('archives');
+		return UserAccount::userHasRole('opacAdmin', 'archives');
 	}
 
 }

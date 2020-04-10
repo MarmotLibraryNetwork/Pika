@@ -37,9 +37,9 @@ class Report_StudentReport extends Report_Report {
 		$reportDir = $configArray['Site']['reportPath'];
 
 		$allowableLocationCodes = "";
-		if (UserAccount::userHasRole('opacAdmin')){
+		if (UserAccount::userHasRole('opacAdmin') && UserAccount::userHasRole('locationReports')){
 			$allowableLocationCodes = '.*';
-		}elseif (UserAccount::userHasRole('libraryAdmin')){
+		}elseif (UserAccount::userHasRole('libraryAdmin') && UserAccount::userHasRole('locationReports')){
 			$homeLibrary = UserAccount::getUserHomeLibrary();
 			$allowableLocationCodes = trim($homeLibrary->ilsCode) . '.*';
 		}elseif (UserAccount::userHasRole('locationReports')){
@@ -114,6 +114,6 @@ class Report_StudentReport extends Report_Report {
 	}
 
 	function getAllowableRoles(){
-		return array('locationReports');
+		return array('locationReports', 'opacAdmin','libraryAdmin');
 	}
 }

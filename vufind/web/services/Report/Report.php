@@ -23,6 +23,6 @@ require_once ROOT_DIR . '/services/Admin/Admin.php';
 abstract class Report_Report extends Admin_Admin {
 
 	function getAllowableRoles(){
-		return array('locationReports');
+		return array('locationReports', 'opacAdmin','libraryAdmin');
 	}
 }

@@ -25,7 +25,7 @@
  * Time: 8:19 AM
  */
 require_once ROOT_DIR . '/services/Admin/Admin.php';
-require_once ROOT_DIR . '/sys/ArchiveSubject.php';
+require_once ROOT_DIR . '/sys/Archive/ArchiveSubject.php';
 require_once ROOT_DIR . '/services/API/ArchiveAPI.php';
 class Admin_ArchiveUsage extends Admin_Admin{
 
