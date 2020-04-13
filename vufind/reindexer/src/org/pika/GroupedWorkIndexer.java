@@ -307,16 +307,16 @@ public class GroupedWorkIndexer {
 	private void loadLocationScopes() throws SQLException {
 		PreparedStatement locationInformationStmt = pikaConn.prepareStatement("SELECT library.libraryId, locationId, code, subLocation, " +
 				"library.subdomain, location.facetLabel, location.displayName, library.pTypes, library.restrictOwningBranchesAndSystems, location.publicListsToInclude, " +
-				"library.enableOverdriveCollection as enableOverdriveCollectionLibrary, " +
-				"location.enableOverdriveCollection as enableOverdriveCollectionLocation, " +
-				"library.includeOverdriveAdult as includeOverdriveAdultLibrary, location.includeOverdriveAdult as includeOverdriveAdultLocation, " +
-				"library.includeOverdriveTeen as includeOverdriveTeenLibrary, location.includeOverdriveTeen as includeOverdriveTeenLocation, " +
-				"library.includeOverdriveKids as includeOverdriveKidsLibrary, location.includeOverdriveKids as includeOverdriveKidsLocation, " +
+				"library.enableOverdriveCollection AS enableOverdriveCollectionLibrary, " +
+				"location.enableOverdriveCollection AS enableOverdriveCollectionLocation, " +
+				"library.includeOverdriveAdult AS includeOverdriveAdultLibrary, location.includeOverdriveAdult as includeOverdriveAdultLocation, " +
+				"library.includeOverdriveTeen AS includeOverdriveTeenLibrary, location.includeOverdriveTeen as includeOverdriveTeenLocation, " +
+				"library.includeOverdriveKids AS includeOverdriveKidsLibrary, location.includeOverdriveKids as includeOverdriveKidsLocation, " +
 				"library.sharedOverdriveCollection, " +
 				"location.additionalLocationsToShowAvailabilityFor, includeAllLibraryBranchesInFacets, " +
 				"location.includeAllRecordsInShelvingFacets, location.includeAllRecordsInDateAddedFacets, location.includeOnOrderRecordsInDateAddedFacetValues, location.baseAvailabilityToggleOnLocalHoldingsOnly, " +
 				"location.includeOnlineMaterialsInAvailableToggle, location.includeLibraryRecordsToInclude " +
-				"FROM location INNER JOIN library on library.libraryId = location.libraryId ORDER BY code ASC",
+				"FROM location INNER JOIN library ON library.libraryId = location.libraryId ORDER BY code ASC",
 				ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 		PreparedStatement locationOwnedRecordRulesStmt = pikaConn.prepareStatement("SELECT location_records_owned.*, indexing_profiles.name FROM location_records_owned INNER JOIN indexing_profiles ON indexingProfileId = indexing_profiles.id WHERE locationId = ?",
 				ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
