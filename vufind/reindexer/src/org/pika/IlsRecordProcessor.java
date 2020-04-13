@@ -100,33 +100,28 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	HashMap<String, TranslationMap> translationMaps = new HashMap<>();
 	private ArrayList<TimeToReshelve> timesToReshelve = new ArrayList<>();
 
-//	private ResultSet indexingProfileRS;
 	private FormatDetermination formatDetermination;
 
 	IlsRecordProcessor(GroupedWorkIndexer indexer, Connection pikaConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 		super(indexer, logger, fullReindex);
 		this.fullReindex = fullReindex;
 		try {
-//			this.indexingProfileRS = indexingProfileRS;
 
 			profileType                       = indexingProfileRS.getString("name");
 			individualMarcPath                = indexingProfileRS.getString("individualMarcPath");
 			marcPath                          = indexingProfileRS.getString("marcPath");
 			numCharsToCreateFolderFrom        = indexingProfileRS.getInt("numCharsToCreateFolderFrom");
 			createFolderFromLeadingCharacters = indexingProfileRS.getBoolean("createFolderFromLeadingCharacters");
-
-			recordNumberTag      = indexingProfileRS.getString("recordNumberTag");
-			suppressItemlessBibs = indexingProfileRS.getBoolean("suppressItemlessBibs");
-
+			recordNumberTag                   = indexingProfileRS.getString("recordNumberTag");
+			suppressItemlessBibs              = indexingProfileRS.getBoolean("suppressItemlessBibs");
 			itemTag                           = indexingProfileRS.getString("itemTag");
 			itemRecordNumberSubfieldIndicator = getSubfieldIndicatorFromConfig(indexingProfileRS, "itemRecordNumber");
-
-			callNumberPrestampSubfield  = getSubfieldIndicatorFromConfig(indexingProfileRS, "callNumberPrestamp");
-			callNumberSubfield          = getSubfieldIndicatorFromConfig(indexingProfileRS, "callNumber");
-			callNumberCutterSubfield    = getSubfieldIndicatorFromConfig(indexingProfileRS, "callNumberCutter");
-			callNumberPoststampSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "callNumberPoststamp");
-			useItemBasedCallNumbers     = indexingProfileRS.getBoolean("useItemBasedCallNumbers");
-			volumeSubfield              = getSubfieldIndicatorFromConfig(indexingProfileRS, "volume");
+			callNumberPrestampSubfield        = getSubfieldIndicatorFromConfig(indexingProfileRS, "callNumberPrestamp");
+			callNumberSubfield                = getSubfieldIndicatorFromConfig(indexingProfileRS, "callNumber");
+			callNumberCutterSubfield          = getSubfieldIndicatorFromConfig(indexingProfileRS, "callNumberCutter");
+			callNumberPoststampSubfield       = getSubfieldIndicatorFromConfig(indexingProfileRS, "callNumberPoststamp");
+			useItemBasedCallNumbers           = indexingProfileRS.getBoolean("useItemBasedCallNumbers");
+			volumeSubfield                    = getSubfieldIndicatorFromConfig(indexingProfileRS, "volume");
 
 			locationSubfieldIndicator = getSubfieldIndicatorFromConfig(indexingProfileRS, "location");
 			try {
@@ -212,24 +207,19 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				logger.error("Could not load non holdable iTypes", e);
 			}
 
-			dateCreatedSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "dateCreated");
-			dateAddedFormat     = indexingProfileRS.getString("dateCreatedFormat");
-
-			lastCheckInSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "lastCheckinDate");
-			lastCheckInFormat   = indexingProfileRS.getString("lastCheckinFormat");
-
-			iCode2Subfield       = getSubfieldIndicatorFromConfig(indexingProfileRS, "iCode2");
-			useICode2Suppression = indexingProfileRS.getBoolean("useICode2Suppression");
-
+			dateCreatedSubfield              = getSubfieldIndicatorFromConfig(indexingProfileRS, "dateCreated");
+			dateAddedFormat                  = indexingProfileRS.getString("dateCreatedFormat");
+			lastCheckInSubfield              = getSubfieldIndicatorFromConfig(indexingProfileRS, "lastCheckinDate");
+			lastCheckInFormat                = indexingProfileRS.getString("lastCheckinFormat");
+			iCode2Subfield                   = getSubfieldIndicatorFromConfig(indexingProfileRS, "iCode2");
+			useICode2Suppression             = indexingProfileRS.getBoolean("useICode2Suppression");
 			sierraRecordFixedFieldsTag       = indexingProfileRS.getString("sierraRecordFixedFieldsTag");
 			bCode3Subfield                   = getSubfieldIndicatorFromConfig(indexingProfileRS, "bCode3");
 			materialTypeSubField             = indexingProfileRS.getString("materialTypeField");
 			sierraFixedFieldLanguageSubField = getSubfieldIndicatorFromConfig(indexingProfileRS, "sierraLanguageFixedField");
-
-			eContentSubfieldIndicator = getSubfieldIndicatorFromConfig(indexingProfileRS, "eContentDescriptor");
-			useEContentSubfield       = eContentSubfieldIndicator != ' ';
-
-			doAutomaticEcontentSuppression = indexingProfileRS.getBoolean("doAutomaticEcontentSuppression");
+			eContentSubfieldIndicator        = getSubfieldIndicatorFromConfig(indexingProfileRS, "eContentDescriptor");
+			useEContentSubfield              = eContentSubfieldIndicator != ' ';
+			doAutomaticEcontentSuppression   = indexingProfileRS.getBoolean("doAutomaticEcontentSuppression");
 
 			orderTag                    = indexingProfileRS.getString("orderTag");
 			orderLocationSubfield       = getSubfieldIndicatorFromConfig(indexingProfileRS, "orderLocation");
@@ -249,7 +239,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	}
 
 	private void loadTimeToReshelve(Connection pikaConn, long id) throws SQLException{
-		PreparedStatement getTimesToReshelveStmt = pikaConn.prepareStatement("SELECT * from time_to_reshelve WHERE indexingProfileId = ? ORDER by weight");
+		PreparedStatement getTimesToReshelveStmt = pikaConn.prepareStatement("SELECT * FROM time_to_reshelve WHERE indexingProfileId = ? ORDER by weight");
 		getTimesToReshelveStmt.setLong(1, id);
 		ResultSet timesToReshelveRS = getTimesToReshelveStmt.executeQuery();
 		while (timesToReshelveRS.next()){

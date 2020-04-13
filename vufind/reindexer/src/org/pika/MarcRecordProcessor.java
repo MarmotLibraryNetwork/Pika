@@ -775,61 +775,117 @@ abstract class MarcRecordProcessor {
 	void loadLanguageDetails(GroupedWorkSolr groupedWork, Record record, HashSet<RecordInfo> ilsRecords, String identifier) {
 		// Note: ilsRecords are alternate manifestations for the same record, like for an order record or ILS econtent items
 
-		String          languageFields       = "008[35-37]";
-		Set<String>     languages            = MarcUtil.getFieldList(record, languageFields);
-		HashSet<String> translatedLanguages  = new HashSet<>();
-		boolean         isFirstLanguage      = true;
-		String          primaryLanguage      = null;
-		long            languageBoost        = 1L;
-		long            languageBoostSpanish = 1L;
-		languages.remove("   ");
-		languages.remove("|||");
-		if (languages.size() == 0){
-			// If there are still no languages, try the first 041a, which should be the primary language
-			languages = MarcUtil.getFieldList(record, "041a");
-		}
-		for (String language : languages) {
-			String translatedLanguage = indexer.translateSystemValue("language", language, identifier);
-			translatedLanguages.add(translatedLanguage);
-			if (isFirstLanguage) {
-				primaryLanguage = translatedLanguage;
-			}
-			isFirstLanguage = false;
-
-			String languageBoostStr = indexer.translateSystemValue("language_boost", language, identifier);
-			if (languageBoostStr != null) {
-				long languageBoostVal = Long.parseLong(languageBoostStr);
-				if (languageBoostVal > languageBoost){
-					languageBoost = languageBoostVal;
-				}
-			}
-			String languageBoostEs = indexer.translateSystemValue("language_boost_es", language, identifier);
-			if (languageBoostEs != null) {
-				long languageBoostVal = Long.parseLong(languageBoostEs);
-				if (languageBoostVal > languageBoostSpanish){
-					languageBoostSpanish = languageBoostVal;
-				}
-			}
-		}
-
-		String      translationFields = "041b:041d:041h:041j";
-		Set<String> translations      = MarcUtil.getFieldList(record, translationFields);
+		HashSet<String> languageNames          = new HashSet<>();
 		HashSet<String> translatedTranslations = new HashSet<>();
-		for (String translation : translations) {
-			String translatedLanguage = indexer.translateSystemValue("language", translation, identifier);
-			translatedTranslations.add(translatedLanguage);
+		String          primaryLanguage        = null;
+		long            languageBoost          = 1L;
+		long            languageBoostSpanish   = 1L;
+
+		String          languageCode           = MarcUtil.getFirstFieldVal(record, "008[35-37]");
+		if (languageCode != null && !languageCode.equals("   ") && !languageCode.equals("|||")) {
+
+			String languageName = indexer.translateSystemValue("language", languageCode, identifier);
+			if (!languageName.equals(languageCode.trim())) {
+				// The trim() is for some bad language codes that will have spaces on the ends
+				languageNames.add(languageName);
+				primaryLanguage = languageName;
+
+				String languageBoostStr = indexer.translateSystemValue("language_boost", languageCode, identifier);
+				if (languageBoostStr != null) {
+					long languageBoostVal = Long.parseLong(languageBoostStr);
+					if (languageBoostVal > languageBoost) {
+						languageBoost = languageBoostVal;
+					}
+				}
+				String languageBoostEs = indexer.translateSystemValue("language_boost_es", languageCode, identifier);
+				if (languageBoostEs != null) {
+					long languageBoostVal = Long.parseLong(languageBoostEs);
+					if (languageBoostVal > languageBoostSpanish) {
+						languageBoostSpanish = languageBoostVal;
+					}
+				}
+			}
+		}
+
+		List<DataField> languageDataFields = record.getDataFields("041");
+		for (DataField languageData : languageDataFields) {
+			if (languageData.getIndicator2() != '7') {
+				// 041 with 2nd indicator of 7 denotes language codes other that the standard iso-639-2 (B) are used.
+				// (We'll only look at standard codes)
+
+				char firstIndicator = languageData.getIndicator1();
+				if (firstIndicator == '0') {
+					// Languages in title
+					for (char subfield : Arrays.asList('a', 'b', 'd')) {
+						// 041a Language code of text/sound track or separate title
+						// 041b Language code of summary or abstract
+						// 041d Language code of sung or spoken text
+
+						for (Subfield languageSubfield : languageData.getSubfields(subfield)) {
+							languageCode = languageSubfield.getData();
+							do {
+								// multiple language codes can be smashed together in a single subfield
+								// eg. 041	0		|d latger|e engfregerlat|h gerlat
+								// eg. 041	0		|d engyidfrespaapaund|e engyidfrespaapa|g eng
+								String code         = languageCode.substring(0, 3);
+								String languageName = indexer.translateSystemValue("language", code, "041" + subfield + " " + identifier);
+								if (primaryLanguage == null && !languageName.equals(code.trim())) {
+									primaryLanguage = languageName;
+
+									String languageBoostStr = indexer.translateSystemValue("language_boost", code, identifier);
+									if (languageBoostStr != null) {
+										long languageBoostVal = Long.parseLong(languageBoostStr);
+										if (languageBoostVal > languageBoost) {
+											languageBoost = languageBoostVal;
+										}
+									}
+									String languageBoostEs = indexer.translateSystemValue("language_boost_es", code, identifier);
+									if (languageBoostEs != null) {
+										long languageBoostVal = Long.parseLong(languageBoostEs);
+										if (languageBoostVal > languageBoostSpanish) {
+											languageBoostSpanish = languageBoostVal;
+										}
+									}
+								}
+								languageNames.add(languageName);
+								languageCode = languageCode.substring(3); // truncate the subfield data for the next round
+							} while (languageCode.length() >= 3);
+						}
+					}
+				} else if (firstIndicator == '1') {
+					// Translations
+					for (char subfield : Arrays.asList('b', 'd', 'j')) {
+						// 041b Language code of summary or abstract
+						// 041d Language code of sung or spoken text
+						// 041j Language code of subtitles
+
+						for (Subfield languageSubfield : languageData.getSubfields(subfield)) {
+							languageCode = languageSubfield.getData();
+							do {
+								// multiple language codes can be smashed together in a single subfield
+								String code         = languageCode.substring(0, 3);
+								String languageName = indexer.translateSystemValue("language", code, "041" + subfield + " " + identifier);
+								if (!languageName.equals(code.trim())) {
+									translatedTranslations.add(languageName);
+								}
+								languageCode = languageCode.substring(3); // truncate the subfield data for the next round
+							} while (languageCode.length() > 3);
+						}
+					}
+				}
+			}
 		}
 
 		//Check to see if we have Unknown plus a valid value
-		if (translatedLanguages.size() > 1 && translatedLanguages.contains("Unknown")){
-			languages.remove("Unknown");
+		if (languageNames.size() > 1) {
+			languageNames.remove("Unknown");
 		}
 
 		for (RecordInfo ilsRecord : ilsRecords) {
 			if (primaryLanguage != null) {
 				ilsRecord.setPrimaryLanguage(primaryLanguage);
 			}
-			ilsRecord.setLanguages(translatedLanguages);
+			ilsRecord.setLanguages(languageNames);
 			ilsRecord.setLanguageBoost(languageBoost);
 			ilsRecord.setLanguageBoostSpanish(languageBoostSpanish);
 			ilsRecord.setTranslations(translatedTranslations);
@@ -900,8 +956,8 @@ abstract class MarcRecordProcessor {
 					groupedWork.setSubTitle(subTitleValue); //TODO: return the cleaned up value for the subtitle?
 					if (titleLowerCase.endsWith(subTitleLowerCase)) {
 						// Remove subtitle from title in order to avoid repeats of sub-title in display & title fields in index
-						if (fullReindex) {
-							logger.warn(identifier + " title (245a) '" + titleValue + "' ends with the subtitle (245bnp) : " + subTitleValue );
+						if (fullReindex && logger.isInfoEnabled()) {
+							logger.info(identifier + " title (245a) '" + titleValue + "' ends with the subtitle (245bnp) : " + subTitleValue );
 						}
 						titleValue = titleValue.substring(0, titleLowerCase.lastIndexOf(subTitleLowerCase));
 					}
