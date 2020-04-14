@@ -772,16 +772,17 @@ class Sierra {
 	 * @return int|false   returns the patron ID or false
 	 * @throws ErrorException
 	 */
-	public function getPatronId($patronOrBarcode, $searchSacramentoStudentIdField = false){
+	public function getPatronId($patronOrBarcode, $searchSacramentoStudentIdField = false) {
 		// if a patron object was passed
 		if (is_object($patronOrBarcode)){
 			if ($this->accountProfile->loginConfiguration == "barcode_pin"){
 				$barcode = $patronOrBarcode->cat_username;
-			}else{
+			} else {
 				$barcode = $patronOrBarcode->cat_password;
 			}
-		}elseif (is_string($patronOrBarcode)){
-			$barcode = $patronOrBarcode;
+		} elseif (is_string($patronOrBarcode) || is_int($patronOrBarcode)) {
+			// the api expects barcode in form of string. Just in case cast to string.
+			$barcode = (string)$patronOrBarcode;
 		}
 		// patron ids are cached by default for 86400
 		$patronIdCacheKey = "patron_".$barcode."_sierraid";
@@ -1278,7 +1279,7 @@ EOT;
 		}
 
 		// EXTRA SELF REG PARAMETERS
-		// called last in case there are any parameters set up that need to be overridden
+		// do this last in case there are any parameters set up that need to be overridden
 		if($extraSelfRegParams) {
 			$params = array_merge($params, $extraSelfRegParams);
 		}
