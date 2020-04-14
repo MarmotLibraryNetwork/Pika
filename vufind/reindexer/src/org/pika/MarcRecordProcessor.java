@@ -774,16 +774,16 @@ abstract class MarcRecordProcessor {
 
 	void loadLanguageDetails(GroupedWorkSolr groupedWork, Record record, HashSet<RecordInfo> ilsRecords, String identifier) {
 		// Note: ilsRecords are alternate manifestations for the same record, like for an order record or ILS econtent items
-		HashSet<String> languageNames          = new HashSet<>();
-		HashSet<String> translatedTranslations = new HashSet<>();
-		String          primaryLanguage        = null;
-		long            languageBoost          = 1L;
-		long            languageBoostSpanish   = 1L;
+		HashSet<String> languageNames        = new HashSet<>();
+		HashSet<String> translationsNames    = new HashSet<>();
+		String          primaryLanguage      = null;
+		long            languageBoost        = 1L;
+		long            languageBoostSpanish = 1L;
 
 		String          languageCode           = MarcUtil.getFirstFieldVal(record, "008[35-37]");
 		if (languageCode != null && !languageCode.equals("   ") && !languageCode.equals("|||")) {
 
-			String languageName = indexer.translateSystemValue("language", languageCode, identifier);
+			String languageName = indexer.translateSystemValue("language", languageCode, "008: " + identifier);
 			if (!languageName.equals(languageCode.trim())) {
 				// The trim() is for some bad language codes that will have spaces on the ends
 				languageNames.add(languageName);
@@ -865,7 +865,7 @@ abstract class MarcRecordProcessor {
 								String code         = languageCode.substring(0, 3);
 								String languageName = indexer.translateSystemValue("language", code, "041" + subfield + " " + identifier);
 								if (!languageName.equals(code.trim())) {
-									translatedTranslations.add(languageName);
+									translationsNames.add(languageName);
 								}
 								languageCode = languageCode.substring(3); // truncate the subfield data for the next round
 							} while (languageCode.length() > 3);
@@ -887,7 +887,7 @@ abstract class MarcRecordProcessor {
 			ilsRecord.setLanguages(languageNames);
 			ilsRecord.setLanguageBoost(languageBoost);
 			ilsRecord.setLanguageBoostSpanish(languageBoostSpanish);
-			ilsRecord.setTranslations(translatedTranslations);
+			ilsRecord.setTranslations(translationsNames);
 		}
 	}
 
