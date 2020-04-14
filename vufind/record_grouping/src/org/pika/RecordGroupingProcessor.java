@@ -246,7 +246,7 @@ class RecordGroupingProcessor {
 
 		// Language
 		if (workForTitle.getGroupedWorkVersion() >= 5) {
-			setGroupingLanguageBasedOnMarc(marcRecord, (GroupedWork5) workForTitle);
+			setGroupingLanguageBasedOnMarc(marcRecord, (GroupedWork5) workForTitle, identifier);
 		}
 
 		return workForTitle;
@@ -354,14 +354,31 @@ class RecordGroupingProcessor {
 		}
 	}
 
-	protected void setGroupingLanguageBasedOnMarc(Record marcRecord, GroupedWork5 workForTitle){
+	protected void setGroupingLanguageBasedOnMarc(Record marcRecord, GroupedWork5 workForTitle, RecordIdentifier identifier){
 		ControlField fixedField     = (ControlField) marcRecord.getVariableField("008");
-//		String       languageFields = "008[35-37]";
-		String       languageCode   = fixedField.getData();
-		if (languageCode.length() > 37) {
-				languageCode = languageCode.substring(35, 38).toLowerCase();
-		} else {
+		String       oo8Data         = fixedField.getData();
+		String       languageCode    = null;
+		if (oo8Data.length() > 37) {
+			String oo8languageCode = oo8Data.substring(35, 38).toLowerCase().trim(); // (trim because some bad values will have spaces)
+			if (!oo8languageCode.equals("") && !oo8languageCode.equals("|||")){
+				//"   " (trimmed to "" & "|||" are equivalent to no language value being set
+				languageCode = oo8languageCode;
+			}
 		}
+		if (languageCode == null) {
+			// If we still don't have a language, try using the first 041a if present
+			DataField languageField = marcRecord.getDataField("041");
+			if (languageField != null){
+				Subfield languageSubField = languageField.getSubfield('a');
+				if (languageSubField != null && languageField.getIndicator1() != '1' && languageField.getIndicator2() != '7'){
+					// First indicator of 1 is for translations; 2nd indicator of 2 is for other language code schemes
+					languageCode = languageSubField.getData().trim().toLowerCase().substring(0, 3);
+					//substring(0,3) because some 041 tags will have multiple language codes within a single subfield.
+					// We will just use the very first one.
+				}
+			}
+		}
+		if (languageCode == null) languageCode = "";
 		workForTitle.setGroupingLanguage(languageCode);
 	}
 

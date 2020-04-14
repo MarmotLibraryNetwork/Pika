@@ -6,6 +6,7 @@ import org.marc4j.marc.DataField;
 import org.marc4j.marc.Record;
 import org.marc4j.marc.Subfield;
 
+import java.io.File;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -26,6 +27,7 @@ class MarcRecordGrouper extends RecordGroupingProcessor {
 
 	private IndexingProfile profile;
 
+	private boolean hasSierraLanguageFixedField;
 	/**
 	 * Creates a record grouping processor that saves results to the database.
 	 *
@@ -50,6 +52,19 @@ class MarcRecordGrouper extends RecordGroupingProcessor {
 		super.setupDatabaseStatements(pikaConn);
 
 		loadTranslationMaps(pikaConn);
+
+
+		// Load language code to name Map
+		hasSierraLanguageFixedField = profile.sierraRecordFixedFieldsTag != null && !profile.sierraRecordFixedFieldsTag.isEmpty() && profile.sierraLanguageFixedField != ' ';
+		if (hasSierraLanguageFixedField) {
+			File curFile = new File("../../sites/default/translation_maps/language_map.properties");
+			if (curFile.exists()) {
+				String mapName                        = curFile.getName().replace(".properties", "").replace("_map", "");
+				translationMaps.put(mapName, loadTranslationMap(curFile, mapName));
+			} else {
+				logger.error("Language code converting map for OverDrive grouping not found");
+			}
+		}
 
 	}
 
@@ -100,18 +115,26 @@ class MarcRecordGrouper extends RecordGroupingProcessor {
 	}
 
 	@Override
-	protected void setGroupingLanguageBasedOnMarc(Record marcRecord, GroupedWork5 workForTitle) {
-		String languageCode = null;
-		ControlField fixedField = (ControlField) marcRecord.getVariableField("008");
-		String       oo8languageCode   = fixedField.getData();
-		if (oo8languageCode.length() > 37) {
-			oo8languageCode = oo8languageCode.substring(35, 38).toLowerCase();
-			if (!oo8languageCode.equals("   ") && !oo8languageCode.equals("|||")){
+	protected void setGroupingLanguageBasedOnMarc(Record marcRecord, GroupedWork5 workForTitle, RecordIdentifier identifier) {
+		ControlField fixedField      = (ControlField) marcRecord.getVariableField("008");
+		String       oo8Data         = fixedField.getData();
+		String       languageCode    = null;
+
+		if (oo8Data.length() > 37) {
+			String oo8languageCode = oo8Data.substring(35, 38).toLowerCase().trim(); // (trim because some bad values will have spaces)
+			if (hasSierraLanguageFixedField){
+				// Use the sierra language fixed field if the 008 isn't a valid language value
+				String languageName = translationMaps.get("language").translateValue(oo8languageCode, identifier.toString());
+				if (!languageName.equals("Unknown") && !languageName.equals(oo8languageCode)){
+					languageCode = oo8languageCode;
+				}
+			} else if (!oo8languageCode.equals("") && !oo8languageCode.equals("|||")){
+				//"   " (trimmed to "" & "|||" are equivalent to no language value being set
 				languageCode = oo8languageCode;
 			}
 		}
 		if (languageCode == null) {
-			if (profile.sierraRecordFixedFieldsTag != null && !profile.sierraRecordFixedFieldsTag.isEmpty() && profile.sierraLanguageFixedField != ' ') {
+			if (hasSierraLanguageFixedField) {
 				// Use the Sierra Fixed Field Language code if it is available
 				List<DataField> dataFields = getDataFields(marcRecord, profile.sierraRecordFixedFieldsTag);
 				for (DataField dataField : dataFields) {
@@ -124,19 +147,20 @@ class MarcRecordGrouper extends RecordGroupingProcessor {
 					}
 				}
 			} else {
-				// If we still don't have a language, try using the first 041a if present
+				// If we still don't have a language and not a Sierra record, try using the first 041a if present
 				DataField languageField = marcRecord.getDataField("041");
 				if (languageField != null){
-					Subfield langaugeSubField = languageField.getSubfield('a');
-					if (langaugeSubField != null){
-						String language = langaugeSubField.getData().trim().toLowerCase();
-						if (language.length() == 3){
-							languageCode = language;
-						}
+					Subfield languageSubField = languageField.getSubfield('a');
+					if (languageSubField != null && languageField.getIndicator1() != '1' && languageField.getIndicator2() != '7'){
+						// First indicator of 1 is for translations; 2nd indicator of 2 is for other language code schemes
+						languageCode = languageSubField.getData().trim().toLowerCase().substring(0, 3);
+						//substring(0,3) because some 041 tags will have multiple language codes within a single subfield.
+						// We will just use the very first one.
 					}
 				}
 			}
 		}
+		if (languageCode == null) languageCode = "";
 		workForTitle.setGroupingLanguage(languageCode);
 	}
 }
