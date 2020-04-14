@@ -467,7 +467,7 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 
 		String          languageCode           = MarcUtil.getFirstFieldVal(record, "008[35-37]");
 		String languageName = indexer.translateSystemValue("language", languageCode, "008: " + identifier);
-		if ((languageCode == null || languageName.equals(languageCode.trim()) || languageName.equals("Unknown"))
+		if ((languageCode == null || languageName == null || languageName.equals("Unknown") || languageName.equals(languageCode.trim()))
 				&& sierraRecordFixedFieldsTag != null && !sierraRecordFixedFieldsTag.isEmpty() && sierraFixedFieldLanguageSubField != ' ') {
 			// If we didn't have a translation for the 008 language field,
 			// and we have settings for the sierra language fixed field,
