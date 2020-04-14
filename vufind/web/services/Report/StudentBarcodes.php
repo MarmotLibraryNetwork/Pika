@@ -38,9 +38,9 @@ class Report_StudentBarcodes extends Report_Report {
 		$reportDir = $configArray['Site']['reportPath'];
 
 		$allowableLocationCodes = "";
-		if (UserAccount::userHasRole('opacAdmin') && UserAccount('locationReports')){
+		if (UserAccount::userHasRole('opacAdmin') && UserAccount::userHasRole('locationReports')){
 			$allowableLocationCodes = '.*';
-		}elseif (UserAccount::userHasRole('libraryAdmin') && UserAccount('locationReports')){
+		}elseif (UserAccount::userHasRole('libraryAdmin') && UserAccount::userHasRole('locationReports')){
 			$homeLibrary = UserAccount::getUserHomeLibrary();
 			$allowableLocationCodes = trim($homeLibrary->ilsCode) . '.*';
 		}elseif (UserAccount::userHasRole('locationReports')){
