@@ -2532,12 +2532,11 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		HashSet<String> translatedValues;
 		if (translationMap == null){
 			logger.error("Unable to find translation map for " + mapName + " in profile " + profileType);
-			if (values instanceof HashSet){
-				translatedValues = (HashSet<String>)values;
-			}else{
-				translatedValues = new HashSet<>();
-				translatedValues.addAll(values);
-			}
+//			if (values instanceof HashSet){
+//				translatedValues = (HashSet<String>)values;
+//			}else{
+			translatedValues = new HashSet<>(values);
+//			}
 
 		}else{
 			translatedValues = translationMap.translateCollection(values, identifier);
