@@ -356,14 +356,18 @@ class RecordGroupingProcessor {
 
 	protected void setGroupingLanguageBasedOnMarc(Record marcRecord, GroupedWork5 workForTitle, RecordIdentifier identifier){
 		ControlField fixedField     = (ControlField) marcRecord.getVariableField("008");
-		String       oo8Data         = fixedField.getData();
-		String       languageCode    = null;
-		if (oo8Data.length() > 37) {
-			String oo8languageCode = oo8Data.substring(35, 38).toLowerCase().trim(); // (trim because some bad values will have spaces)
-			if (!oo8languageCode.equals("") && !oo8languageCode.equals("|||")){
-				//"   " (trimmed to "" & "|||" are equivalent to no language value being set
-				languageCode = oo8languageCode;
+		String       languageCode = null;
+		if (fixedField != null) {
+			String       oo8Data         = fixedField.getData();
+			if (oo8Data.length() > 37) {
+				String oo8languageCode = oo8Data.substring(35, 38).toLowerCase().trim(); // (trim because some bad values will have spaces)
+				if (!oo8languageCode.equals("") && !oo8languageCode.equals("|||")){
+					//"   " (trimmed to "" & "|||" are equivalent to no language value being set
+					languageCode = oo8languageCode;
+				}
 			}
+		} else {
+				logger.warn("Missing 008 : " + identifier.toString());
 		}
 		if (languageCode == null) {
 			// If we still don't have a language, try using the first 041a if present

@@ -116,22 +116,25 @@ class MarcRecordGrouper extends RecordGroupingProcessor {
 
 	@Override
 	protected void setGroupingLanguageBasedOnMarc(Record marcRecord, GroupedWork5 workForTitle, RecordIdentifier identifier) {
-		ControlField fixedField      = (ControlField) marcRecord.getVariableField("008");
-		String       oo8Data         = fixedField.getData();
-		String       languageCode    = null;
-
-		if (oo8Data.length() > 37) {
-			String oo8languageCode = oo8Data.substring(35, 38).toLowerCase().trim(); // (trim because some bad values will have spaces)
-			if (hasSierraLanguageFixedField){
-				// Use the sierra language fixed field if the 008 isn't a valid language value
-				String languageName = translationMaps.get("language").translateValue(oo8languageCode, identifier.toString());
-				if (!languageName.equals("Unknown") && !languageName.equals(oo8languageCode)){
+		ControlField fixedField   = (ControlField) marcRecord.getVariableField("008");
+		String       languageCode = null;
+		if (fixedField != null) {
+			String oo8Data = fixedField.getData();
+			if (oo8Data.length() > 37) {
+				String oo8languageCode = oo8Data.substring(35, 38).toLowerCase().trim(); // (trim because some bad values will have spaces)
+				if (hasSierraLanguageFixedField) {
+					// Use the sierra language fixed field if the 008 isn't a valid language value
+					String languageName = translationMaps.get("language").translateValue(oo8languageCode, identifier.toString());
+					if (!languageName.equals("Unknown") && !languageName.equals(oo8languageCode)) {
+						languageCode = oo8languageCode;
+					}
+				} else if (!oo8languageCode.equals("") && !oo8languageCode.equals("|||")) {
+					//"   " (trimmed to "" & "|||" are equivalent to no language value being set
 					languageCode = oo8languageCode;
 				}
-			} else if (!oo8languageCode.equals("") && !oo8languageCode.equals("|||")){
-				//"   " (trimmed to "" & "|||" are equivalent to no language value being set
-				languageCode = oo8languageCode;
 			}
+		} else {
+			logger.warn("Missing 008 : " + identifier.toString());
 		}
 		if (languageCode == null) {
 			if (hasSierraLanguageFixedField) {
@@ -149,9 +152,9 @@ class MarcRecordGrouper extends RecordGroupingProcessor {
 			} else {
 				// If we still don't have a language and not a Sierra record, try using the first 041a if present
 				DataField languageField = marcRecord.getDataField("041");
-				if (languageField != null){
+				if (languageField != null) {
 					Subfield languageSubField = languageField.getSubfield('a');
-					if (languageSubField != null && languageField.getIndicator1() != '1' && languageField.getIndicator2() != '7'){
+					if (languageSubField != null && languageField.getIndicator1() != '1' && languageField.getIndicator2() != '7') {
 						// First indicator of 1 is for translations; 2nd indicator of 2 is for other language code schemes
 						languageCode = languageSubField.getData().trim().toLowerCase().substring(0, 3);
 						//substring(0,3) because some 041 tags will have multiple language codes within a single subfield.
