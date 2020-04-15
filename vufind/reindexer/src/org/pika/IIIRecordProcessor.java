@@ -476,7 +476,7 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 			// and we have settings for the sierra language fixed field,
 			// use that instead
 			languageCode = MarcUtil.getFirstFieldVal(record, sierraRecordFixedFieldsTag + sierraFixedFieldLanguageSubField);
-			languageName = languageCode == null ? null : indexer.translateSystemValue("language", languageCode, "008: " + identifier);
+			languageName = languageCode == null ? null : indexer.translateSystemValue("language", languageCode, sierraRecordFixedFieldsTag + sierraFixedFieldLanguageSubField + ": " + identifier);
 		}
 
 		if (languageName != null && !languageName.equals(languageCode.trim())) {
