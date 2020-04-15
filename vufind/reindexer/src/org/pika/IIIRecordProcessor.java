@@ -520,7 +520,7 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 								// multiple language codes can be smashed together in a single subfield
 								// eg. 041	0		|d latger|e engfregerlat|h gerlat
 								// eg. 041	0		|d engyidfrespaapaund|e engyidfrespaapa|g eng
-								String code         = languageCode.substring(0, 3);
+								String code = languageCode.length() > 3 ? languageCode.substring(0, 3) : languageCode;
 								languageName = indexer.translateSystemValue("language", code, "041" + subfield + " " + identifier);
 								if (primaryLanguage == null && !languageName.equals(code.trim())) {
 									primaryLanguage = languageName;
@@ -556,7 +556,7 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 							languageCode = languageSubfield.getData();
 							do {
 								// multiple language codes can be smashed together in a single subfield
-								String code         = languageCode.substring(0, 3);
+								String code = languageCode.length() > 3 ? languageCode.substring(0, 3) : languageCode;
 								languageName = indexer.translateSystemValue("language", code, "041" + subfield + " " + identifier);
 								if (!languageName.equals(code.trim())) {
 									translationsNames.add(languageName);

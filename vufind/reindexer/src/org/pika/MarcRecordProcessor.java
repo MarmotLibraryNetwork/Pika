@@ -781,7 +781,7 @@ abstract class MarcRecordProcessor {
 		long            languageBoost        = 1L;
 		long            languageBoostSpanish = 1L;
 
-		String          languageCode           = MarcUtil.getFirstFieldVal(record, "008[35-37]");
+		String languageCode = MarcUtil.getFirstFieldVal(record, "008[35-37]");
 		if (languageCode != null && !languageCode.equals("   ") && !languageCode.equals("|||")) {
 
 			String languageName = indexer.translateSystemValue("language", languageCode, "008: " + identifier);
@@ -827,7 +827,7 @@ abstract class MarcRecordProcessor {
 								// multiple language codes can be smashed together in a single subfield
 								// eg. 041	0		|d latger|e engfregerlat|h gerlat
 								// eg. 041	0		|d engyidfrespaapaund|e engyidfrespaapa|g eng
-								String code         = languageCode.substring(0, 3);
+								String code         = languageCode.length() > 3 ? languageCode.substring(0, 3) : languageCode;
 								String languageName = indexer.translateSystemValue("language", code, "041" + subfield + " " + identifier);
 								if (primaryLanguage == null && !languageName.equals(code.trim())) {
 									primaryLanguage = languageName;
@@ -863,7 +863,7 @@ abstract class MarcRecordProcessor {
 							languageCode = languageSubfield.getData();
 							do {
 								// multiple language codes can be smashed together in a single subfield
-								String code         = languageCode.substring(0, 3);
+								String code         = languageCode.length() > 3 ? languageCode.substring(0, 3) : languageCode;
 								String languageName = indexer.translateSystemValue("language", code, "041" + subfield + " " + identifier);
 								if (!languageName.equals(code.trim())) {
 									translationsNames.add(languageName);
