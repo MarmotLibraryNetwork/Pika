@@ -178,9 +178,43 @@ class RBdigital {
 	}
 
 	/**
+	 * Checkout an RBdigital title
+	 * @param  $patron
+	 * @param  $recordId
+	 * @return array
+	 */
+	public function checkoutMagazine($patron, $recordId)
+	{
+		$result      = ['success' => false, 'message' => 'Unknown error'];
+		$rbId = $this->getPatronId($patron);
+
+		if($rbId == false) {
+			$result['message'] = 'You are not registered with RBdigital. You will need to create an account there before continuing.';
+			return $result;
+		}
+
+		$checkoutUrl = $this->webServiceBaseUrl . 'patrons/' . $rbId . '/patron-magazines/' . $recordId;
+		$response = $this->curl->post($checkoutUrl);
+		if($this->curl->error) {
+			$result['message'] = "An error occurred. Please try checking out the title again.";
+			$this->app->logger->error("RBdigital API error", ['error_code' => $this->curl->errorCode, 'error_message' => $this->curl->errorMessage]);
+			return $result;
+		}
+
+		if (!empty($response->output) && $response->output == 'SUCCESS') {
+			$result['success'] = true;
+			$result['message'] = 'Your title was checked out. You can read or listen to the title from your account.';
+		} else {
+			$result['message'] = $response->output;
+		}
+
+		return $result;
+	}
+
+	/**
 	 * Return a magazine issue
 	 *
-	 * @param $patron       User
+	 * @param $patron    User
 	 * @param $issueId   string
 	 * @return array
 	 */
@@ -232,87 +266,8 @@ class RBdigital {
 	 *
 	 * @return array results (success, message)
 	 */
-	public function checkOutTitle($patron, $recordId)
-	{
-		$result      = ['success' => false, 'message' => 'Unknown error'];
-		$rbdigitalId = $this->getPatronId($patron);
-		if ($rbdigitalId == false) {
-			$result['message'] = 'Sorry, you are not registered with RBdigital.  You will need to create an account there before continuing.';
-		} else {
-			require_once ROOT_DIR . '/RecordDrivers/RBdigitalRecordDriver.php';
-			$actionUrl = $this->webServiceBaseUrl . '/v1/libraries/' . $this->libraryId . '/patrons/' . $rbdigitalId . '/checkouts/' . $recordId;
 
-			$response = $this->curl->post($actionUrl);
-			if ($response == false) {
-				$result['message'] = "Invalid information returned from API, please retry your checkout after a few minutes.";
-				global $logger;
-				$logger->log("Invalid information from rbdigital api\r\n$actionUrl\r\n$rawResponse", PEAR_LOG_ERR);
-				$logger->log(print_r($this->curl->getResponseHeaders(), true), PEAR_LOG_ERR);
-				$curl_info = $this->curl->getInfo();
-				$logger->log(print_r($curl_info, true), PEAR_LOG_ERR);
-			} else {
-				if (!empty($response->output) && $response->output == 'SUCCESS') {
-
-					$result['success'] = true;
-					$result['message'] = translate([
-					 'text' => 'rbdigital-checkout-success',
-					 'defaultText' => 'Your title was checked out successfully. You can read or listen to the title from your account.'
-					]);
-
-					/** @var Memcache $memCache */
-					global $memCache;
-					$memCache->delete('rbdigital_summary_' . $patron->id);
-				} else {
-					$result['message'] = $response->output;
-				}
-
-			}
-		}
-		return $result;
-	}
-
-	/**
-	 * Checkout an RBdigital magazine
-	 *
-	 * @param User   $patron
-	 * @param string $recordId
-	 *
-	 * @return array results (success, message)
-	 */
-	public function checkoutMagazine($patron, $recordId)
-	{
-		$result      = ['success' => false, 'message' => 'Unknown error'];
-		$rbId = $this->getPatronId($patron);
-		if ($rbId == false) {
-			$result['message'] = 'Sorry, you are not registered with RBdigital.  You will need to create an account there before continuing.';
-		} else {
-			//Get the current issue for the magazine
-			require_once ROOT_DIR . '/sys/RBdigital/RBdigitalMagazine.php';
-			$product             = new RBdigitalMagazine();
-			$product->magazineId = $recordId;
-			if ($product->find(true)) {
-				require_once ROOT_DIR . '/RecordDrivers/RBdigitalRecordDriver.php';
-				$actionUrl = $this->webServiceBaseUrl . '/v1/libraries/' . $this->libraryId . '/patrons/' . $rbId . '/patron-magazines/' . $product->issueId;
-				// /v{version}/libraries/{libraryId}/patrons/{patronId}/patron-magazines/{issueId}
-
-				//RBdigital does not return a status so we assume that it checked out ok
-				$this->curl->post($actionUrl);
-
-				$this->trackUserUsageOfRBdigital($patron);
-				$this->trackMagazineCheckout($recordId);
-
-				$result['success'] = true;
-				$result['message'] = 'The magazine was checked out successfully. You can read the magazine from the rbdigital app.';
-
-				/** @var Memcache $memCache */
-				global $memCache;
-				$memCache->delete('rbdigital_summary_' . $patron->id);
-			} else {
-				$result['message'] = "Could not find magazine to checkout";
-			}
-		}
-		return $result;
-	}
+	
 
 	public function createAccount(User $user)
 	{
