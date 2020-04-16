@@ -195,17 +195,23 @@ class RBdigital {
 
 		$checkoutUrl = $this->webServiceBaseUrl . 'patrons/' . $rbId . '/patron-magazines/' . $recordId;
 		$response = $this->curl->post($checkoutUrl);
+		$status = $this->curl->getHttpStatusCode();
+		// 200 success
+		if($status == 200){
+			$result['message'] = "Your title was checked out.";
+			$result['success'] = true;
+			return $result;
+		}
+		// If the magazine is already checked out response will be 409 -- sometimes
+		if($this->curl->errorCode == 409){
+			$result['message'] = "You already have this title checked out.";
+			return $result;
+		}
+
 		if($this->curl->error) {
 			$result['message'] = "An error occurred. Please try checking out the title again.";
 			$this->app->logger->error("RBdigital API error", ['error_code' => $this->curl->errorCode, 'error_message' => $this->curl->errorMessage]);
 			return $result;
-		}
-
-		if (!empty($response->output) && $response->output == 'SUCCESS') {
-			$result['success'] = true;
-			$result['message'] = 'Your title was checked out. You can read or listen to the title from your account.';
-		} else {
-			$result['message'] = $response->output;
 		}
 
 		return $result;
