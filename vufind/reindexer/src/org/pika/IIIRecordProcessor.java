@@ -517,32 +517,52 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 
 						for (Subfield languageSubfield : languageData.getSubfields(subfield)) {
 							languageCode = languageSubfield.getData();
+							int round = 1;
 							do {
-								// multiple language codes can be smashed together in a single subfield
+								// Multiple language codes can be smashed together in a single subfield,
+								// so we need to parse each three letter code and process it.
+								// (Note: this loop also has to handle for single entry language codes that
+								// are less than three letters.[probably incorrect codes])
+
 								// eg. 041	0		|d latger|e engfregerlat|h gerlat
 								// eg. 041	0		|d engyidfrespaapaund|e engyidfrespaapa|g eng
-								String code = languageCode.length() > 3 ? languageCode.substring(0, 3) : languageCode;
-								languageName = indexer.translateSystemValue("language", code, "041" + subfield + " " + identifier);
-								if (primaryLanguage == null && !languageName.equals(code.trim())) {
-									primaryLanguage = languageName;
 
-									String languageBoostStr = indexer.translateSystemValue("language_boost", code, identifier);
-									if (languageBoostStr != null) {
-										long languageBoostVal = Long.parseLong(languageBoostStr);
-										if (languageBoostVal > languageBoost) {
-											languageBoost = languageBoostVal;
+								final int length = languageCode.length();
+								String    code   = length > 3 ? languageCode.substring(0, 3) : languageCode;
+								languageName = indexer.translateSystemValue("language", code, "041" + subfield + " " + identifier);
+								if (!languageName.equals(code.trim())) {
+									// Don't allow untranslated language codes into the facet but do allow codes
+									// that have been translated to "Unknown",etc
+									languageNames.add(languageName);
+
+									if (primaryLanguage == null && subfield == 'a' && round == 1) {
+										// Set primary Language and language boosts if we haven't found a good value yet
+										// Only use the first 041a language code for the primary language and boosts
+										primaryLanguage = languageName;
+
+										String languageBoostStr = indexer.translateSystemValue("language_boost", code, identifier);
+										if (languageBoostStr != null) {
+											long languageBoostVal = Long.parseLong(languageBoostStr);
+											if (languageBoostVal > languageBoost) {
+												languageBoost = languageBoostVal;
+											}
 										}
-									}
-									String languageBoostEs = indexer.translateSystemValue("language_boost_es", code, identifier);
-									if (languageBoostEs != null) {
-										long languageBoostVal = Long.parseLong(languageBoostEs);
-										if (languageBoostVal > languageBoostSpanish) {
-											languageBoostSpanish = languageBoostVal;
+										String languageBoostEs = indexer.translateSystemValue("language_boost_es", code, identifier);
+										if (languageBoostEs != null) {
+											long languageBoostVal = Long.parseLong(languageBoostEs);
+											if (languageBoostVal > languageBoostSpanish) {
+												languageBoostSpanish = languageBoostVal;
+											}
 										}
 									}
 								}
-								languageNames.add(languageName);
-								languageCode = languageCode.substring(3); // truncate the subfield data for the next round
+								if (length >= 3) {
+									languageCode = languageCode.substring(3);
+									// truncate the subfield data for the next round
+									// the last round with multiple language codes will be exactly 3 long,
+									// so need to cut to 0-length to break out of loop.
+								}
+								round++;
 							} while (languageCode.length() >= 3);
 						}
 					}
@@ -556,14 +576,24 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 						for (Subfield languageSubfield : languageData.getSubfields(subfield)) {
 							languageCode = languageSubfield.getData();
 							do {
-								// multiple language codes can be smashed together in a single subfield
-								String code = languageCode.length() > 3 ? languageCode.substring(0, 3) : languageCode;
+								// Multiple language codes can be smashed together in a single subfield,
+								// so we need to parse each three letter code and process it.
+								// (Note: this loop also has to handle for single entry language codes that
+								// are less than three letters.[probably incorrect codes])
+
+								final int length = languageCode.length();
+								String    code   = length > 3 ? languageCode.substring(0, 3) : languageCode;
 								languageName = indexer.translateSystemValue("language", code, "041" + subfield + " " + identifier);
 								if (!languageName.equals(code.trim())) {
 									translationsNames.add(languageName);
 								}
-								languageCode = languageCode.substring(3); // truncate the subfield data for the next round
-							} while (languageCode.length() > 3);
+								if (length >= 3) {
+									languageCode = languageCode.substring(3);
+									// truncate the subfield data for the next round
+									// the last round with multiple language codes will be exactly 3 long,
+									// so need to cut to 0-length to break out of loop.
+								}
+							} while (languageCode.length() >= 3);
 						}
 					}
 				}
