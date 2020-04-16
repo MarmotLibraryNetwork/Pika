@@ -154,6 +154,6 @@
 {/strip}
 <script type="text/javascript">
 	$().ready(function(){ldelim}
-		VuFind.Archive.loadExploreMore('{$pid|urlencode}');
+		Pika.Archive.loadExploreMore('{$pid|urlencode}');
 	{rdelim});
 </script>

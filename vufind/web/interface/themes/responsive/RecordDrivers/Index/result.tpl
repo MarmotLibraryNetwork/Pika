@@ -138,7 +138,7 @@
 
 	<script type="text/javascript">
 		{if $summISBN}
-		VuFind.ResultsList.addIdToSeriesList('{$summISBN}');
+		Pika.ResultsList.addIdToSeriesList('{$summISBN}');
 		{/if}
 	</script>
 </div>

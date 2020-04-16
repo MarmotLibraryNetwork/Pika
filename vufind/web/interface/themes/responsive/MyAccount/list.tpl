@@ -2,6 +2,7 @@
 	<form action="/MyAccount/MyList/{$favList->id}" id="myListFormHead">
 		<div>
 			<input type="hidden" name="myListActionHead" id="myListActionHead" class="form">
+
 			<h3 id="listTitle">{$favList->title|escape:"html"}</h3>
 			{if $notes}
 				<div id="listNotes" class="alert alert-info">
@@ -43,32 +44,33 @@
 				<div id="listTopButtons" class="btn-toolbar">
 					{if $allowEdit}
 						<div class="btn-group">
-							<button value="editList" id="FavEdit" class="btn btn-sm btn-info" onclick="return VuFind.Lists.editListAction()">Edit List</button>
+							<button value="editList" id="FavEdit" class="btn btn-sm btn-info" onclick="return Pika.Lists.editListAction()">Edit List</button>
 						</div>
 						<div class="btn-group">
-							<button value="saveList" id="FavSave" class="btn btn-sm btn-primary" style="display:none" onclick='return VuFind.Lists.updateListAction()'>Save Changes</button>
+							<button value="saveList" id="FavSave" class="btn btn-sm btn-primary" style="display:none" onclick='return Pika.Lists.updateListAction()'>Save Changes</button>
 						</div>
 						<div class="btn-group">
-							<button value="batchAdd" id="FavBatchAdd" class="btn btn-sm btn-default" onclick='return VuFind.Lists.batchAddToListAction({$favList->id})'>Add Multiple Titles</button>
+							<button value="batchAdd" id="FavBatchAdd" class="btn btn-sm btn-default" onclick='return Pika.Lists.batchAddToListAction({$favList->id})'>Add Multiple Titles</button>
 							{if $favList->public == 0}
-								<button value="makePublic" id="FavPublic" class="btn btn-sm btn-default" onclick='return VuFind.Lists.makeListPublicAction()'>Make Public</button>
+								<button value="makePublic" id="FavPublic" class="btn btn-sm btn-default" onclick='return Pika.Lists.makeListPublicAction()'>Make Public</button>
 							{else}
-								<button value="makePrivate" id="FavPrivate" class="btn btn-sm btn-default" onclick='return VuFind.Lists.makeListPrivateAction()'>Make Private</button>
+								<button value="makePrivate" id="FavPrivate" class="btn btn-sm btn-default" onclick='return Pika.Lists.makeListPrivateAction()'>Make Private</button>
 								{if $loggedIn && $userRoles && (in_array('opacAdmin', $userRoles) || in_array('libraryAdmin', $userRoles) || in_array('libraryManager', $userRoles) || in_array('contentEditor', $userRoles))}
-									&nbsp;&nbsp;<a href="#" class="button btn btn-sm btn-default" id="FavCreateWidget" onclick="return VuFind.ListWidgets.createWidgetFromList('{$favList->id}')">Create Widget</a>
+									&nbsp;&nbsp;<a href="#" class="button btn btn-sm btn-default" id="FavCreateWidget" onclick="return Pika.ListWidgets.createWidgetFromList('{$favList->id}')">Create Widget</a>
 								{/if}
 								{if $loggedIn && $userRoles && (in_array('opacAdmin', $userRoles) || in_array('libraryAdmin', $userRoles) || in_array('contentEditor', $userRoles) || in_array('libraryManager', $userRoles) || in_array('locationManager', $userRoles))}
-									<a href="#" id="FavHome" class="btn btn-sm btn-default" onclick="return VuFind.Lists.addToHomePage('{$favList->id}')">{translate text='Add To Home Page'}</a>
+									<a href="#" id="FavHome" class="btn btn-sm btn-default" onclick="return Pika.Lists.addToHomePage('{$favList->id}')">{translate text='Add To Home Page'}</a>
 								{/if}
 							{/if}
 						</div>
 					{/if}
 					<div class="btn-group">
-						<button value="emailList" id="FavEmail" class="btn btn-sm btn-default" onclick='return VuFind.Lists.emailListAction("{$favList->id}")'>Email List</button>
-						<button value="printList" id="FavPrint" class="btn btn-sm btn-default" onclick='return VuFind.Lists.printListAction()'>Print List</button>
-						<button value="citeList" id="FavCite" class="btn btn-sm btn-default" onclick='return VuFind.Lists.citeListAction("{$favList->id}")'>Generate Citations</button>
-
+						<button value="emailList" id="FavEmail" class="btn btn-sm btn-default" onclick='return Pika.Lists.emailListAction("{$favList->id}")'>Email List</button>
+						<button value="printList" id="FavPrint" class="btn btn-sm btn-default" onclick='return Pika.Lists.printListAction()'>Print List</button>
+						<button value="citeList" id="FavCite" class="btn btn-sm btn-default" onclick='return Pika.Lists.citeListAction("{$favList->id}")'>Generate Citations</button>
+						<button value="exportToExcel" id="" class="btn btn-sm btn-default" onclick='return Pika.Lists.exportListAction("{$favList->id}");'>Export to Excel</button>
 						<div class="btn-group" role="group">
+
 							<button type="button" class="btn btn-sm btn-default btn-info dropdown-toggle" data-toggle="dropdown" aria-expanded="false">Sort &nbsp;<span class="caret"></span></button>
 							<ul class="dropdown-menu dropdown-menu-right" role="menu">
 								{foreach from=$sortList item=sortData}
@@ -80,13 +82,16 @@
 									</li>
 								{/foreach}
 							</ul>
+
 						</div>
 
 					</div>
+
 					{if $allowEdit}
 						<div class="btn-group">
-							<button value="deleteList" id="FavDelete" class="btn btn-sm btn-danger" onclick='return VuFind.Lists.deleteListAction();'>Delete List</button>
+							<button value="deleteList" id="FavDelete" class="btn btn-sm btn-danger" onclick='return Pika.Lists.deleteListAction();'>Delete List</button>
 						</div>
+
 					{/if}
 				</div>
 			{/if}
@@ -97,14 +102,14 @@
 		{if $resourceList}
 			<form class="navbar form-inline">
 				<label for="pagesize" class="control-label">Records Per Page</label>&nbsp;
-				<select id="pagesize" class="pagesize form-control{* input-sm*}" onchange="VuFind.changePageSize()">
+				<select id="pagesize" class="pagesize form-control{* input-sm*}" onchange="Pika.changePageSize()">
 					<option value="20"{if $recordsPerPage == 20} selected="selected"{/if}>20</option>
 					<option value="40"{if $recordsPerPage == 40} selected="selected"{/if}>40</option>
 					<option value="60"{if $recordsPerPage == 60} selected="selected"{/if}>60</option>
 					<option value="80"{if $recordsPerPage == 80} selected="selected"{/if}>80</option>
 					<option value="100"{if $recordsPerPage == 100} selected="selected"{/if}>100</option>
 				</select>
-				<label for="hideCovers" class="control-label checkbox pull-right"> Hide Covers <input id="hideCovers" type="checkbox" onclick="VuFind.Account.toggleShowCovers(!$(this).is(':checked'))" {if $showCovers == false}checked="checked"{/if}></label>
+				<label for="hideCovers" class="control-label checkbox pull-right"> Hide Covers <input id="hideCovers" type="checkbox" onclick="Pika.Account.toggleShowCovers(!$(this).is(':checked'))" {if $showCovers == false}checked="checked"{/if}></label>
 			</form>
 
 		{if $recordCount}

@@ -1368,7 +1368,7 @@ class MarcRecord extends IndexRecord
 						$actions[] = array(
 							'title'        => 'Hold ' . $volumeInfo->displayLabel,
 							'url'          => '',
-							'onclick'      => "return VuFind.Record.showPlaceHold('{$this->getModule()}', '$bibIdWithVolumeId');",
+							'onclick'      => "return Pika.Record.showPlaceHold('{$this->getModule()}', '$bibIdWithVolumeId');",
 							'requireLogin' => false,
 						);
 					}
@@ -1377,7 +1377,7 @@ class MarcRecord extends IndexRecord
 				$actions[] = array(
 					'title'        => 'Place Hold',
 					'url'          => '',
-					'onclick'      => "return VuFind.Record.showPlaceHold('{$this->getModule()}', '{$this->getIdWithSource()}');",
+					'onclick'      => "return Pika.Record.showPlaceHold('{$this->getModule()}', '{$this->getIdWithSource()}');",
 					'requireLogin' => false,
 				);
 			}
@@ -1386,7 +1386,7 @@ class MarcRecord extends IndexRecord
 			$actions[] = array(
 				'title'        => 'Schedule Item',
 				'url'          => '',
-				'onclick'      => "return VuFind.Record.showBookMaterial('{$this->getModule()}', '{$this->getId()}');",
+				'onclick'      => "return Pika.Record.showBookMaterial('{$this->getModule()}', '{$this->getId()}');",
 				'requireLogin' => false,
 			);
 		}

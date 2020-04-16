@@ -32,11 +32,11 @@
 					  {/foreach}
 				  </select>
 				  &nbsp;or&nbsp;
-				  <button class="btn btn-sm btn-default" onclick="return VuFind.Account.showCreateListForm('{$id|escape:"url"}')">{translate text="Create a New List"}</button>
+				  <button class="btn btn-sm btn-default" onclick="return Pika.Account.showCreateListForm('{$id|escape:"url"}')">{translate text="Create a New List"}</button>
 			  </div>
 			</div>
 		{else}
-		  <button class="btn btn-sm btn-default" onclick="return VuFind.Account.showCreateListForm('{$id|escape:"url"}')">{translate text="Create a New List"}</button>
+		  <button class="btn btn-sm btn-default" onclick="return Pika.Account.showCreateListForm('{$id|escape:"url"}')">{translate text="Create a New List"}</button>
 	  {/if}
 
 	  {if $showLists}

@@ -156,3 +156,4 @@ main.tmpcss
 ###############
 sites/*.vm-server.net
 
+/package-lock.json

@@ -85,7 +85,7 @@
 		$(function(){
 			$('#bookMaterialForm').validate({
 				submitHandler: function(){
-					VuFind.Record.submitBookMaterialForm();
+					Pika.Record.submitBookMaterialForm();
 				},
 				highlight: function(e){
 					$(e).closest('.form-group').addClass('has-error')

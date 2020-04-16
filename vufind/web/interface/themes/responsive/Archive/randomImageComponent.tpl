@@ -8,7 +8,7 @@
 						<figure class="" id="randomImagePlaceholder">
 							{include file="Archive/randomImage.tpl"}
 						</figure>
-						<a href="#" onclick="return VuFind.Archive.nextRandomObject('{$randomObjectPids}');"><img id="refreshRandomImage" src="/interface/themes/responsive/images/refresh.png" alt="New Random Image"></a>
+						<a href="#" onclick="return Pika.Archive.nextRandomObject('{$randomObjectPids}');"><img id="refreshRandomImage" src="/interface/themes/responsive/images/refresh.png" alt="New Random Image"></a>
 					</div>
 				</div>
 			</div>

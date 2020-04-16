@@ -9,10 +9,10 @@
 		<div class="col-xs-12">
 			<a href="/GroupedWork/{$recordDriver->getPermanentId()}" class="btn btn-sm btn-default">Go To Grouped
 				Work</a>
-			<button onclick="return VuFind.Record.reloadCover('{$recordDriver->getModule()}', '{$id}')"
+			<button onclick="return Pika.Record.reloadCover('{$recordDriver->getModule()}', '{$id}')"
 			        class="btn btn-sm btn-default">Reload Cover
 			</button>
-			<button onclick="return VuFind.GroupedWork.reloadEnrichment('{$recordDriver->getGroupedWorkId()}')"
+			<button onclick="return Pika.GroupedWork.reloadEnrichment('{$recordDriver->getGroupedWorkId()}')"
 			        class="btn btn-sm btn-default">Reload Enrichment
 			</button>
         {if $loggedIn}
@@ -20,13 +20,13 @@
 			        <a href="/Admin/LibrarianReviews?objectAction=addNew&groupedWorkPermanentId={$recordDriver->getPermanentId()}" target="_blank" class="btn btn-sm btn-default">Add Librarian Review</a>
             {/if}
             {if $userRoles && (in_array('opacAdmin', $userRoles) || in_array('cataloging', $userRoles))}
-							<button onclick="return VuFind.GroupedWork.forceReindex('{$recordDriver->getGroupedWorkId()}')"
+							<button onclick="return Pika.GroupedWork.forceReindex('{$recordDriver->getGroupedWorkId()}')"
 							        class="btn btn-sm btn-default">Force Reindex
 							</button>
-							<button onclick="return VuFind.GroupedWork.forceRegrouping('{$recordDriver->getGroupedWorkId()}')"
+							<button onclick="return Pika.GroupedWork.forceRegrouping('{$recordDriver->getGroupedWorkId()}')"
 							        class="btn btn-sm btn-default">Force Regrouping
 							</button>
-							<button onclick="return VuFind.OverDrive.forceUpdateFromAPI('{$recordDriver->getUniqueId()}')"
+							<button onclick="return Pika.OverDrive.forceUpdateFromAPI('{$recordDriver->getUniqueId()}')"
 							        class="btn btn-sm btn-default">Force Update From API
 							</button>
  							<a href="/Admin/NonGroupedRecords?objectAction=addNew&recordId={$recordDriver->getId()}&source={$recordDriver->getRecordType()}&notes={$recordDriver->getTitle()|removeTrailingPunctuation|escape}%0A{$userDisplayName}, {$homeLibrary}, {$smarty.now|date_format}%0A"
@@ -34,7 +34,7 @@
 							</a>
             {/if}
             {if $userRoles && (in_array('opacAdmin', $userRoles) || in_array('archives', $userRoles))}
-							<button onclick="return VuFind.GroupedWork.reloadIslandora('{$recordDriver->getGroupedWorkId()}')"
+							<button onclick="return Pika.GroupedWork.reloadIslandora('{$recordDriver->getGroupedWorkId()}')"
 							        class="btn btn-sm btn-default">Clear Islandora Cache
 							</button>
             {/if}

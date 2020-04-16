@@ -206,7 +206,7 @@ class OverDrive_AJAX extends AJAXHandler {
 				'promptNeeded' => true,
 				'promptTitle'  => $promptTitle,
 				'prompts'      => $interface->fetch('OverDrive/ajax-overdrive-hold-prompt.tpl'),
-				'buttons'      => '<input class="btn btn-primary" type="submit" name="submit" value="Place Hold" onclick="return VuFind.OverDrive.processOverDriveHoldPrompts();"/>',
+				'buttons'      => '<input class="btn btn-primary" type="submit" name="submit" value="Place Hold" onclick="return Pika.OverDrive.processOverDriveHoldPrompts();"/>',
 			);
 		}else{
 			return array(
@@ -233,7 +233,7 @@ class OverDrive_AJAX extends AJAXHandler {
 				'promptNeeded' => true,
 				'promptTitle'  => $promptTitle,
 				'prompts'      => $interface->fetch('OverDrive/ajax-overdrive-checkout-prompt.tpl'),
-				'buttons'      => '<input class="btn btn-primary" type="submit" name="submit" value="Checkout Title" onclick="return VuFind.OverDrive.processOverDriveCheckoutPrompts();">',
+				'buttons'      => '<input class="btn btn-primary" type="submit" name="submit" value="Checkout Title" onclick="return Pika.OverDrive.processOverDriveCheckoutPrompts();">',
 			);
 		}elseif (count($overDriveUsers) == 1){
 			return array(
@@ -285,9 +285,20 @@ class OverDrive_AJAX extends AJAXHandler {
 			$interface->assign('email', $user->email);
 		}
 
+		if (!empty($_REQUEST['id'])){
+			require_once ROOT_DIR . '/RecordDrivers/OverDriveRecordDriver.php';
+			$overDriveId    = $_REQUEST['id'];
+			$recordDriver   = new OverDriveRecordDriver($overDriveId, -1); // (Don't need to load grouped work)
+			if ($recordDriver->isValid()){
+				$author         = $recordDriver->getAuthor();
+				$titleAndAuthor = $recordDriver->getTitle() . (!empty($author) ? ' by ' . $author : '');
+				$interface->assign('titleAndAuthor', $titleAndAuthor);
+			}
+		}
+
 		$results = array(
 			'title'        => 'eContent Support Request',
-			'modalBody'    => $interface->fetch('OverDrive\eContentSupport.tpl'),
+			'modalBody'    => $interface->fetch('OverDrive/eContentSupport.tpl'),
 			'modalButtons' => '<span class="tool btn btn-primary" onclick="return $(\'#eContentSupport\').submit()">Submit</span>', // .submit() triggers form validation
 		);
 		return $results;
@@ -307,14 +318,15 @@ class OverDrive_AJAX extends AJAXHandler {
 			}elseif (!empty($configArray['Site']['email'])){
 				$to = $configArray['Site']['email'];
 			}else{
-				return array(
+				return [
 					'title'   => "Support Request Not Sent",
 					'message' => "<p>We're sorry, but your request could not be submitted because we do not have a support email address on file.</p><p>Please contact your local library.</p>"
-				);
+				];
 			}
 			$multipleEmailAddresses = preg_split('/[;,]/', $to, null, PREG_SPLIT_NO_EMPTY);
 			if (!empty($multipleEmailAddresses)){
 				$sendingAddress = $multipleEmailAddresses[0];
+				$to             = str_replace(';', ',', $to); //The newer mailer needs 'to' addresses to be separated by commas rather than semicolon
 			}else{
 				$sendingAddress = $to;
 			}
@@ -331,23 +343,23 @@ class OverDrive_AJAX extends AJAXHandler {
 			$interface->assign('email', $patronEmail);
 			$interface->assign('deviceName', get_device_name()); // footer & eContent support email
 
-			$body        = $interface->fetch('Help/eContentSupportEmail.tpl');
+			$body        = $interface->fetch('OverDrive/eContentSupportEmail.tpl');
 			$emailResult = $mail->send($to, $sendingAddress, $subject, $body, $patronEmail);
 			if (PEAR::isError($emailResult)){
-				return array(
+				return [
 					'title'   => "Support Request Not Sent",
 					'message' => "<p>We're sorry, an error occurred while submitting your request.</p>" . $emailResult->getMessage()
-				);
+				];
 			}elseif ($emailResult){
-				return array(
+				return [
 					'title'   => "Support Request Sent",
 					'message' => "<p>Your request was sent to our support team.  We will respond to your request as quickly as possible.</p><p>Thank you for using the catalog.</p>"
-				);
+				];
 			}else{
-				return array(
+				return [
 					'title'   => "Support Request Not Sent",
 					'message' => "<p>We're sorry, but your request could not be submitted to our support team at this time.</p><p>Please try again later.</p>"
-				);
+				];
 			}
 		}else{
 			return  $this->getSupportForm();

@@ -1,7 +1,7 @@
 {if $showRatings == 1}
 	<div{if $ratingClass} class="{$ratingClass} rate{$summId}"{/if}>
-		{*<div class="title-rating" onclick="return VuFind.GroupedWork.showReviewForm(this, '{$summId}');">*}
-		<div class="title-rating rater" {*onclick="return VuFind.GroupedWork.showReviewForm(this, '{$summId}');"*}
+		{*<div class="title-rating" onclick="return Pika.GroupedWork.showReviewForm(this, '{$summId}');">*}
+		<div class="title-rating rater" {*onclick="return Pika.GroupedWork.showReviewForm(this, '{$summId}');"*}
 						{* AJAX rater data fields *}
          data-user_rating="{$ratingData.user}" data-average_rating="{$ratingData.average}"
          data-id="{$id}"
@@ -17,7 +17,7 @@
 			</span>
 		</div>
 		{if $showNotInterested == true}
-			<button class="button notInterested" title="Select Not Interested if you don't want to see this title again." onclick="return VuFind.GroupedWork.markNotInterested('{$summId}');">Not&nbsp;Interested</button>
+			<button class="button notInterested" title="Select Not Interested if you don't want to see this title again." onclick="return Pika.GroupedWork.markNotInterested('{$summId}');">Not&nbsp;Interested</button>
 		{/if}
 	</div>
 {/if}

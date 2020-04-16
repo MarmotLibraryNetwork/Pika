@@ -41,9 +41,9 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	char   barcodeSubfield;
 	char   statusSubfieldIndicator;
 	private Pattern nonHoldableStatuses;
-	char shelvingLocationSubfield;
-	char collectionSubfield;
-	char dueDateSubfield;
+	char             shelvingLocationSubfield;
+	char             collectionSubfield;
+	char             dueDateSubfield;
 	SimpleDateFormat dueDateFormatter;
 	private char   lastCheckInSubfield;
 	private String lastCheckInFormat;
@@ -69,6 +69,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	boolean useICode2Suppression;
 	char    iCode2Subfield;
 	String  sierraRecordFixedFieldsTag;
+	char    sierraFixedFieldLanguageSubField = ' ';
 	String  materialTypeSubField;
 	char    bCode3Subfield;
 	private boolean useItemBasedCallNumbers;
@@ -99,14 +100,14 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	HashMap<String, TranslationMap> translationMaps = new HashMap<>();
 	private ArrayList<TimeToReshelve> timesToReshelve = new ArrayList<>();
 
-	private ResultSet indexingProfileRS;
+//	private ResultSet indexingProfileRS;
 	private FormatDetermination formatDetermination;
 
 	IlsRecordProcessor(GroupedWorkIndexer indexer, Connection pikaConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 		super(indexer, logger, fullReindex);
 		this.fullReindex = fullReindex;
 		try {
-			this.indexingProfileRS = indexingProfileRS;
+//			this.indexingProfileRS = indexingProfileRS;
 
 			profileType                       = indexingProfileRS.getString("name");
 			individualMarcPath                = indexingProfileRS.getString("individualMarcPath");
@@ -220,9 +221,10 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			iCode2Subfield       = getSubfieldIndicatorFromConfig(indexingProfileRS, "iCode2");
 			useICode2Suppression = indexingProfileRS.getBoolean("useICode2Suppression");
 
-			sierraRecordFixedFieldsTag = indexingProfileRS.getString("sierraRecordFixedFieldsTag");
-			bCode3Subfield             = getSubfieldIndicatorFromConfig(indexingProfileRS, "bCode3");
-			materialTypeSubField       = indexingProfileRS.getString("materialTypeField");
+			sierraRecordFixedFieldsTag       = indexingProfileRS.getString("sierraRecordFixedFieldsTag");
+			bCode3Subfield                   = getSubfieldIndicatorFromConfig(indexingProfileRS, "bCode3");
+			materialTypeSubField             = indexingProfileRS.getString("materialTypeField");
+			sierraFixedFieldLanguageSubField = getSubfieldIndicatorFromConfig(indexingProfileRS, "sierraLanguageFixedField");
 
 			eContentSubfieldIndicator = getSubfieldIndicatorFromConfig(indexingProfileRS, "eContentDescriptor");
 			useEContentSubfield       = eContentSubfieldIndicator != ' ';
@@ -260,22 +262,30 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		}
 	}
 
-	private void loadTranslationMapsForProfile(Connection pikaConn, long id) throws SQLException {
-		PreparedStatement getTranslationMapsStmt      = pikaConn.prepareStatement("SELECT * FROM translation_maps WHERE indexingProfileId = ?");
-		PreparedStatement getTranslationMapValuesStmt = pikaConn.prepareStatement("SELECT * FROM translation_map_values WHERE translationMapId = ?");
-		getTranslationMapsStmt.setLong(1, id);
-		try (ResultSet translationsMapRS = getTranslationMapsStmt.executeQuery()) {
-			while (translationsMapRS.next()) {
-				TranslationMap map              = new TranslationMap(profileType, translationsMapRS.getString("name"), fullReindex, translationsMapRS.getBoolean("usesRegularExpressions"), logger);
-				long           translationMapId = translationsMapRS.getLong("id");
-				getTranslationMapValuesStmt.setLong(1, translationMapId);
-				try (ResultSet translationMapValuesRS = getTranslationMapValuesStmt.executeQuery()) {
-					while (translationMapValuesRS.next()) {
-						map.addValue(translationMapValuesRS.getString("value"), translationMapValuesRS.getString("translation"));
+	private void loadTranslationMapsForProfile(Connection pikaConn, long id) {
+		try (
+				PreparedStatement loadTranslationMapsStmt = pikaConn.prepareStatement("SELECT * FROM translation_maps WHERE indexingProfileId = ?");
+				PreparedStatement loadTranslationMapValuesStmt = pikaConn.prepareStatement("SELECT * FROM translation_map_values WHERE translationMapId = ?")
+		) {
+			loadTranslationMapsStmt.setLong(1, id);
+			try (ResultSet translationMapsRS = loadTranslationMapsStmt.executeQuery()) {
+				while (translationMapsRS.next()) {
+					String         mapName          = translationMapsRS.getString("name");
+					TranslationMap translationMap   = new TranslationMap(profileType, mapName, fullReindex, translationMapsRS.getBoolean("usesRegularExpressions"), logger);
+					long           translationMapId = translationMapsRS.getLong("id");
+					loadTranslationMapValuesStmt.setLong(1, translationMapId);
+					try (ResultSet translationMapValuesRS = loadTranslationMapValuesStmt.executeQuery()) {
+						while (translationMapValuesRS.next()) {
+							translationMap.addValue(translationMapValuesRS.getString("value"), translationMapValuesRS.getString("translation"));
+						}
+					} catch (Exception e) {
+						logger.error("Error loading translation map " + mapName, e);
 					}
+					translationMaps.put(translationMap.getMapName(), translationMap);
 				}
-				translationMaps.put(map.getMapName(), map);
 			}
+		} catch (Exception e) {
+			logger.error("Error loading translation maps", e);
 		}
 	}
 

@@ -53,7 +53,7 @@
 	{literal}
 	$("#emailForm").validate({
 		submitHandler: function(){
-			VuFind.GroupedWork.sendEmail("{/literal}{$id}{literal}")
+			Pika.GroupedWork.sendEmail("{/literal}{$id}{literal}")
 		}
 	});
 	{/literal}

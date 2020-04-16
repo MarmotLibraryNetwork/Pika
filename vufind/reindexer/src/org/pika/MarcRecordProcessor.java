@@ -775,13 +775,19 @@ abstract class MarcRecordProcessor {
 	void loadLanguageDetails(GroupedWorkSolr groupedWork, Record record, HashSet<RecordInfo> ilsRecords, String identifier) {
 		// Note: ilsRecords are alternate manifestations for the same record, like for an order record or ILS econtent items
 
-		String languageFields = "008[35-37]";
-		Set<String>     languages           = MarcUtil.getFieldList(record, languageFields);
-		HashSet<String> translatedLanguages = new HashSet<>();
-		boolean         isFirstLanguage     = true;
-		String primaryLanguage = null;
-		Long            languageBoost        = 1L;
-		Long            languageBoostSpanish = 1L;
+		String          languageFields       = "008[35-37]";
+		Set<String>     languages            = MarcUtil.getFieldList(record, languageFields);
+		HashSet<String> translatedLanguages  = new HashSet<>();
+		boolean         isFirstLanguage      = true;
+		String          primaryLanguage      = null;
+		long            languageBoost        = 1L;
+		long            languageBoostSpanish = 1L;
+		languages.remove("   ");
+		languages.remove("|||");
+		if (languages.size() == 0){
+			// If there are still no languages, try the first 041a, which should be the primary language
+			languages = MarcUtil.getFieldList(record, "041a");
+		}
 		for (String language : languages) {
 			String translatedLanguage = indexer.translateSystemValue("language", language, identifier);
 			translatedLanguages.add(translatedLanguage);
@@ -891,7 +897,7 @@ abstract class MarcRecordProcessor {
 					}
 					subTitleValue = null; // null out so that it doesn't get added to sort or display titles
 				} else {
-					groupedWork.setSubTitle(subTitleValue);
+					groupedWork.setSubTitle(subTitleValue); //TODO: return the cleaned up value for the subtitle?
 					if (titleLowerCase.endsWith(subTitleLowerCase)) {
 						// Remove subtitle from title in order to avoid repeats of sub-title in display & title fields in index
 						if (fullReindex) {

@@ -10,7 +10,7 @@
 				<script type="text/javascript">
 					$(document).ready(
 						function () {ldelim}
-							VuFind.Searches.loadExploreMoreBar('catalog', '{$exploreMoreSearchTerm|escape:"html"}');
+							Pika.Searches.loadExploreMoreBar('catalog', '{$exploreMoreSearchTerm|escape:"html"}');
 						{rdelim}
 					);
 				</script>

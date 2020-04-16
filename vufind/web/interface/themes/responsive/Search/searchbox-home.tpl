@@ -6,7 +6,7 @@
 				SEARCH <span class="glyphicon glyphicon-search"></span>
 			</div>
 		</div>
-		<form method="get" action="/Union/Search" id="searchForm" class="form-inline" onsubmit="VuFind.Searches.processSearchForm();">
+		<form method="get" action="/Union/Search" id="searchForm" class="form-inline" onsubmit="Pika.Searches.processSearchForm();">
 			<div class="row">
 				<div class="{if $displaySidebarMenu}col-sm-12{else}col-sm-10 col-md-10 col-sm-push-1 col-md-push-1{/if}">
 					{if $searchIndex == 'Keyword' || $searchIndex == '' || $searchIndex == 'GenealogyKeyword'}
@@ -30,7 +30,7 @@
 							       size="30"
 							       value=""
 							       title="Enter one or more terms to search for.	Surrounding a term with quotes will limit result to only those that exactly match the term."
-							       onkeyup="return VuFind.Searches.resetSearchType()"
+							       onkeyup="return Pika.Searches.resetSearchType()"
 							       onfocus="$(this).select()"
 							       autocomplete="off"
 							       rows="1"
@@ -48,32 +48,32 @@
 									{if $searchIndex == 'Keyword' || $searchIndex == '' || $searchIndex == 'GenealogyKeyword'}
 										{foreach from=$basicSearchTypes item=searchDesc key=searchVal}
 											<li>
-												<a class="catalogType" href="#" onclick="return VuFind.Searches.updateSearchTypes('catalog', '{$searchVal}', '#searchForm');">{translate text="by"} {translate text=$searchDesc}</a>
+												<a class="catalogType" href="#" onclick="return Pika.Searches.updateSearchTypes('catalog', '{$searchVal}', '#searchForm');">{translate text="by"} {translate text=$searchDesc}</a>
 											</li>
 										{/foreach}
 										<li class="divider catalogType"></li>
 										{foreach from=$genealogySearchTypes item=searchDesc key=searchVal}
 											<li>
-												<a class="genealogyType" href="#" onclick="return VuFind.Searches.updateSearchTypes('genealogy', '{$searchVal}', '#searchForm');">{translate text="by"} {translate text=$searchDesc}</a>
+												<a class="genealogyType" href="#" onclick="return Pika.Searches.updateSearchTypes('genealogy', '{$searchVal}', '#searchForm');">{translate text="by"} {translate text=$searchDesc}</a>
 											</li>
 										{/foreach}
 										<li class="divider genealogyType"></li>
 										{foreach from=$islandoraSearchTypes item=searchDesc key=searchVal}
 											<li>
-												<a class="islandoraType" href="#" onclick="return VuFind.Searches.updateSearchTypes('islandora', '{$searchVal}', '#searchForm');">{translate text="by"} {translate text=$searchDesc}</a>
+												<a class="islandoraType" href="#" onclick="return Pika.Searches.updateSearchTypes('islandora', '{$searchVal}', '#searchForm');">{translate text="by"} {translate text=$searchDesc}</a>
 											</li>
 										{/foreach}
 										<li class="divider islandoraType"></li>
 										{foreach from=$ebscoSearchTypes item=searchDesc key=searchVal}
 											<li>
-												<a class="ebscoType" href="#" onclick="return VuFind.Searches.updateSearchTypes('ebsco', '{$searchVal}', '#searchForm');">{translate text="by"} {translate text=$searchDesc}</a>
+												<a class="ebscoType" href="#" onclick="return Pika.Searches.updateSearchTypes('ebsco', '{$searchVal}', '#searchForm');">{translate text="by"} {translate text=$searchDesc}</a>
 											</li>
 										{/foreach}
 										<li class="divider ebscoType"></li>
 									{/if}
 
 									<li class="catalogType">
-										{*<a id="advancedSearch" title="{translate text='Advanced Search'}" onclick="VuFind.Account.ajaxLightbox('/Search/AdvancedPopup', false)">*}
+										{*<a id="advancedSearch" title="{translate text='Advanced Search'}" onclick="Pika.Account.ajaxLightbox('/Search/AdvancedPopup', false)">*}
 										<a id="advancedSearch" title="{translate text='Advanced Search'}" href="/Search/Advanced">
 											{*<i class="icon-plus-sign"></i>*} {translate text="Advanced"}
 										</a>
@@ -124,7 +124,7 @@
 					{if $searchSources|@count == 1}
 						<input type="hidden" name="searchSource" value="{$searchSource}">
 					{else}
-					<select name="searchSource" id="searchSource" title="Select what to search.	Items marked with a * will redirect you to one of our partner sites." onchange="VuFind.Searches.enableSearchTypes();" class="searchSource form-control">
+					<select name="searchSource" id="searchSource" title="Select what to search.	Items marked with a * will redirect you to one of our partner sites." onchange="Pika.Searches.enableSearchTypes();" class="searchSource form-control">
 						{foreach from=$searchSources item=searchOption key=searchKey}
 							<option data-catalog_type="{$searchOption.catalogType}" value="{$searchKey}"
 								{if $searchKey == $searchSource && !$filterList} selected="selected"{/if}
@@ -147,7 +147,7 @@
 						{* Keep Filters Switch *}
 						{if $filterList}
 							<div class="row">
-								<label for="keepFiltersSwitch" id="keepFiltersSwitchLabel"><input id="keepFiltersSwitch" type="checkbox" onclick="VuFind.Searches.filterAll(this);"> Keep Applied Filters</label>
+								<label for="keepFiltersSwitch" id="keepFiltersSwitchLabel"><input id="keepFiltersSwitch" type="checkbox" onclick="Pika.Searches.filterAll(this);"> Keep Applied Filters</label>
 							</div>
 						{/if}
 
@@ -166,7 +166,7 @@
 				{* Show/Hide Search Facets & Sort Options *}
 				{if $recordCount || $sideRecommendations}
 					<div class="{if $showAdvancedSearchbox || $searchType == 'advanced'}col-tn-6{else}col-tn-12{/if} text-center visible-xs">
-						<a class="btn btn-default" id="refineSearchButton" role="button" onclick="VuFind.Menu.Mobile.showSearchFacets()">{translate text="Refine Search"}</a>
+						<a class="btn btn-default" id="refineSearchButton" role="button" onclick="Pika.Menu.Mobile.showSearchFacets()">{translate text="Refine Search"}</a>
 					</div>
 				{/if}
 
@@ -175,7 +175,7 @@
 {* Original *}<!--
 			<div class="row text-center">
 				{if $filterList}
-					<label for="keepFiltersSwitch" id="keepFiltersSwitchLabel"><input id="keepFiltersSwitch" type="checkbox" onclick="VuFind.Searches.filterAll(this);"> Keep Applied Filters</label>
+					<label for="keepFiltersSwitch" id="keepFiltersSwitchLabel"><input id="keepFiltersSwitch" type="checkbox" onclick="Pika.Searches.filterAll(this);"> Keep Applied Filters</label>
 				{/if}
 			</div>
 			{* Return to Advanced Search Link *}
@@ -192,7 +192,7 @@
 			{* Show/Hide Search Facets & Sort Options *}
 			{if $recordCount || $sideRecommendations}
 				<div class="row text-center visible-xs">
-					<a class="btn btn-default" id="refineSearchButton" role="button" onclick="VuFind.Menu.Mobile.showSearchFacets()">{translate text="Refine Search"}</a>
+					<a class="btn btn-default" id="refineSearchButton" role="button" onclick="Pika.Menu.Mobile.showSearchFacets()">{translate text="Refine Search"}</a>
 				</div>
 			{/if}-->
 

@@ -76,7 +76,7 @@
 
 	{if $displayMode == 'covers'}
 		{if $recordEnd < $recordCount}
-			<a onclick="return VuFind.Searches.getMoreResults()" role="button">
+			<a onclick="return Pika.Searches.getMoreResults()" role="button">
 				<div class="row" id="more-browse-results">
 					<span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span>
 				</div>
@@ -111,7 +111,7 @@
 
 	{if $enableMaterialsRequest}
 		<h2>Didn't find it?</h2>
-		<p>Can't find what you are looking for? <a href="/MaterialsRequest/NewRequest?lookfor={$lookfor}&basicType={$searchIndex}" onclick="return VuFind.Account.followLinkIfLoggedIn(this);">{translate text='Suggest a purchase'}</a>.</p>
+		<p>Can't find what you are looking for? <a href="/MaterialsRequest/NewRequest?lookfor={$lookfor}&basicType={$searchIndex}" onclick="return Pika.Account.followLinkIfLoggedIn(this);">{translate text='Suggest a purchase'}</a>.</p>
 	{elseif $externalMaterialsRequestUrl}
 		<h2>Didn't find it?</h2>
 		<p>Can't find what you are looking for? <a href="{$externalMaterialsRequestUrl}">{translate text='Suggest a purchase'}</a>.</p>
@@ -128,28 +128,29 @@
 		{rdelim}
 
 		{if $showProspectorLink}
-		VuFind.Prospector.getProspectorResults(5, {$prospectorSavedSearchId});
+      {* Include slight delay to give time for the search to be saved into the database for retrieval here. See D-3592 *}
+			setTimeout(function(){ldelim} Pika.Prospector.getProspectorResults(5, {$prospectorSavedSearchId}); {rdelim}, 237);
 		{/if}
 
 		{if $showDplaLink}
-		VuFind.DPLA.getDPLAResults('{$lookfor}');
+		Pika.DPLA.getDPLAResults('{$lookfor}');
 		{/if}
 
 		{*{include file="Search/results-displayMode-js.tpl"}*}
 		{if !$onInternalIP}
-		{*if (!Globals.opac &&VuFind.hasLocalStorage()){ldelim}*}
+		{*if (!Globals.opac &&Pika.hasLocalStorage()){ldelim}*}
 			{*var temp = window.localStorage.getItem('searchResultsDisplayMode');*}
-			{*if (VuFind.Searches.displayModeClasses.hasOwnProperty(temp)) VuFind.Searches.displayMode = temp; *}{* if stored value is empty or a bad value, fall back on default setting ("null" returned when not set) *}
-			{*else VuFind.Searches.displayMode = '{$displayMode}';*}
+			{*if (Pika.Searches.displayModeClasses.hasOwnProperty(temp)) Pika.Searches.displayMode = temp; *}{* if stored value is empty or a bad value, fall back on default setting ("null" returned when not set) *}
+			{*else Pika.Searches.displayMode = '{$displayMode}';*}
 			{*{rdelim}*}
 		{*else*}
 		{* Because content is served on the page, have to set the mode that was used, even if the user didn't choose the mode. *}
-			VuFind.Searches.displayMode = '{$displayMode}';
+			Pika.Searches.displayMode = '{$displayMode}';
 		{else}
-			VuFind.Searches.displayMode = '{$displayMode}';
+			Pika.Searches.displayMode = '{$displayMode}';
 			Globals.opac = 1; {* set to true to keep opac browsers from storing browse mode *}
 		{/if}
-		$('#'+VuFind.Searches.displayMode).parent('label').addClass('active'); {* show user which one is selected *}
+		$('#'+Pika.Searches.displayMode).parent('label').addClass('active'); {* show user which one is selected *}
 
 		{rdelim});
 </script>

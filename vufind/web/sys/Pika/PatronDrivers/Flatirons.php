@@ -35,6 +35,8 @@ class Flatirons extends Sierra
 	public function getSelfRegistrationFields()
 	{
 		global $library;
+
+		$libSubDomain = strtolower($library->subdomain);
 		// get library code
 		$location            = new Location();
 		$location->libraryId = $library->libraryId;
@@ -124,14 +126,25 @@ class Flatirons extends Sierra
 			'maxLength' => 16,
 			'required' => true
 		);
-		$fields[] = array(
-			'property' => 'email',
-			'type' => 'email',
-			'label' => 'E-Mail',
-			'description' => 'E-Mail',
-			'maxLength' => 128,
-			'required' => false
-		);
+		if($libSubDomain == "boulder") {
+			$fields[] = array(
+			 'property' => 'email',
+			 'type' => 'email',
+			 'label' => 'E-Mail',
+			 'description' => 'E-Mail',
+			 'maxLength' => 128,
+			 'required' => true
+			);
+		} else {
+			$fields[] = array(
+			 'property' => 'email',
+			 'type' => 'email',
+			 'label' => 'E-Mail',
+			 'description' => 'E-Mail',
+			 'maxLength' => 128,
+			 'required' => false
+			);
+		}
 		return $fields;
 	}
 

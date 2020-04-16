@@ -23,19 +23,19 @@
 				<form id="renewForm" action="/MyAccount/RenewMultiple">
 					<div id="pager" class="navbar form-inline">
 						<label for="accountSort" class="control-label">{translate text='Sort by'}:&nbsp;</label>
-						<select name="accountSort" id="accountSort" class="form-control" onchange="VuFind.Account.changeAccountSort($(this).val());">
+						<select name="accountSort" id="accountSort" class="form-control" onchange="Pika.Account.changeAccountSort($(this).val());">
 							{foreach from=$sortOptions item=sortDesc key=sortVal}
 								<option value="{$sortVal}"{if $defaultSortOption == $sortVal} selected="selected"{/if}>{translate text=$sortDesc}</option>
 							{/foreach}
 						</select>
 
-						<label for="hideCovers" class="control-label checkbox pull-right"> Hide Covers <input id="hideCovers" type="checkbox" onclick="VuFind.Account.toggleShowCovers(!$(this).is(':checked'))" {if $showCovers == false}checked="checked"{/if}></label>
+						<label for="hideCovers" class="control-label checkbox pull-right"> Hide Covers <input id="hideCovers" type="checkbox" onclick="Pika.Account.toggleShowCovers(!$(this).is(':checked'))" {if $showCovers == false}checked="checked"{/if}></label>
 					</div>
 
 					<div class="btn-group">
 						{if !$hasOnlyEContentCheckOuts}
-							<a href="#" onclick="VuFind.Account.renewSelectedTitles()" class="btn btn-sm btn-default">Renew Selected Items</a>
-							<a href="#" onclick="VuFind.Account.renewAll()" class="btn btn-sm btn-default">Renew All</a>
+							<a href="#" onclick="Pika.Account.renewSelectedTitles()" class="btn btn-sm btn-default">Renew Selected Items</a>
+							<a href="#" onclick="Pika.Account.renewAll()" class="btn btn-sm btn-default">Renew All</a>
 						{/if}
 						<a href="/MyAccount/CheckedOut?exportToExcel{if isset($defaultSortOption)}&accountSort={$defaultSortOption}{/if}" class="btn btn-sm btn-default" id="exportToExcelTop">Export to Excel</a>
 					</div>
@@ -49,9 +49,7 @@
 							{elseif $checkedOutTitle.checkoutSource == 'OverDrive'}
 								{include file="MyAccount/overdriveCheckedOutTitle.tpl" record=$checkedOutTitle resultIndex=$smarty.foreach.checkedOutTitleLoop.iteration}
 							{elseif $checkedOutTitle.checkoutSource == 'Hoopla'}
-								{include file="MyAccount/" record=$checkedOutTitle resultIndex=$smarty.foreach.checkedOutTitleLoop.iteration}
-              {elseif $checkedOutTitle.checkoutSource == 'RBdigital'}
-                  {include file="MyAccount/rbdigitalCheckedOutTitle.tpl" record=$checkedOutTitle resultIndex=$smarty.foreach.checkedOutTitleLoop.iteration}
+								{include file="MyAccount/hooplaCheckedOutTitle.tpl" record=$checkedOutTitle resultIndex=$smarty.foreach.checkedOutTitleLoop.iteration}
 							{else}
 								<div class="row">
 									Unknown record source {$checkedOutTitle.checkoutSource}
@@ -69,8 +67,8 @@
 
 					<div class="btn-group">
 						{if !$hasOnlyEContentCheckOuts}
-							<a href="#" onclick="VuFind.Account.renewSelectedTitles()" class="btn btn-sm btn-default">Renew Selected Items</a>
-							<a href="#" onclick="VuFind.Account.renewAll()" class="btn btn-sm btn-default">Renew All</a>
+							<a href="#" onclick="Pika.Account.renewSelectedTitles()" class="btn btn-sm btn-default">Renew Selected Items</a>
+							<a href="#" onclick="Pika.Account.renewAll()" class="btn btn-sm btn-default">Renew All</a>
 						{/if}
 						<a href="/MyAccount/CheckedOut?exportToExcel{if isset($defaultSortOption)}&accountSort={$defaultSortOption}{/if}" class="btn btn-sm btn-default" id="exportToExcelTop">Export to Excel</a>
 					</div>

@@ -172,11 +172,11 @@ class Record_AJAX extends AJAXHandler {
 				$results = array(
 					'title'        => empty($title) ? 'Place Hold' : 'Place Hold on ' . $title,
 					'modalBody'    => $interface->fetch("Record/hold-popup.tpl"),
-					'modalButtons' => "<input type='submit' name='submit' id='requestTitleButton' value='Submit Hold Request' class='btn btn-primary' onclick=\"return VuFind.Record.submitHoldForm();\">",
+					'modalButtons' => "<input type='submit' name='submit' id='requestTitleButton' value='Submit Hold Request' class='btn btn-primary' onclick=\"return Pika.Record.submitHoldForm();\">",
 				);
 			}
 			if (!empty($interface->getVariable('googleAnalyticsId'))){ // this template variable gets set in the bootstap
-				$results['modalButtons'] = "<input type='submit' name='submit' id='requestTitleButton' value='Submit Hold Request' class='btn btn-primary' onclick=\"trackHoldTitleClick('{$sourceAndId}'); return VuFind.Record.submitHoldForm();\">";
+				$results['modalButtons'] = "<input type='submit' name='submit' id='requestTitleButton' value='Submit Hold Request' class='btn btn-primary' onclick=\"trackHoldTitleClick('{$sourceAndId}'); return Pika.Record.submitHoldForm();\">";
 
 			}
 
@@ -211,7 +211,7 @@ class Record_AJAX extends AJAXHandler {
 			$results = array(
 				'title'        => 'Place Hold on Alternate Edition?',
 				'modalBody'    => $interface->fetch('Record/hold-select-edition-popup.tpl'),
-				'modalButtons' => '<a href="#" class="btn btn-primary" onclick="return VuFind.Record.showPlaceHold(\'Record\', \'' . $id . '\', false);">No, place a hold on this edition</a>',
+				'modalButtons' => '<a href="#" class="btn btn-primary" onclick="return Pika.Record.showPlaceHold(\'Record\', \'' . $id . '\', false);">No, place a hold on this edition</a>',
 			);
 		}else{
 			$results = array(

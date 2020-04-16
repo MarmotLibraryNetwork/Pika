@@ -108,7 +108,7 @@ class HooplaRecordDriver extends SideLoadedRecord {
 		$id        = $this->getId();
 		$title     = translate('hoopla_checkout_action');
 		return array(
-			'onclick' => "return VuFind.Hoopla.getHooplaCheckOutPrompt('$id')",
+			'onclick' => "return Pika.Hoopla.getHooplaCheckOutPrompt('$id')",
 			'title'   => $title,
 		);
 

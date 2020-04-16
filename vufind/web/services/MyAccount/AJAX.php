@@ -173,7 +173,7 @@ class MyAccount_AJAX extends AJAXHandler {
 		$formDefinition = array(
 			'title'        => 'Account to Manage',
 			'modalBody'    => $interface->fetch('MyAccount/addAccountLink.tpl'),
-			'modalButtons' => "<span class='tool btn btn-primary' onclick='VuFind.Account.processAddLinkedUser(); return false;'>Add Account</span>",
+			'modalButtons' => "<span class='tool btn btn-primary' onclick='Pika.Account.processAddLinkedUser(); return false;'>Add Account</span>",
 		);
 		return $formDefinition;
 	}
@@ -186,7 +186,7 @@ class MyAccount_AJAX extends AJAXHandler {
 		$formDefinition = array(
 			'title'        => 'Add titles to list',
 			'modalBody'    => $interface->fetch('MyAccount/bulkAddToListPopup.tpl'),
-			'modalButtons' => "<span class='tool btn btn-primary' onclick='VuFind.Lists.processBulkAddForm(); return false;'>Add To List</span>",
+			'modalButtons' => "<span class='tool btn btn-primary' onclick='Pika.Lists.processBulkAddForm(); return false;'>Add To List</span>",
 		);
 		return $formDefinition;
 	}
@@ -199,7 +199,7 @@ class MyAccount_AJAX extends AJAXHandler {
 		$formDefinition = array(
 			'title'        => 'Reset PIN',
 			'modalBody'    => $interface->fetch('MyAccount/resetPinPopup.tpl'),
-			'modalButtons' => "<span class='tool btn btn-primary' onclick='VuFind.Account.resetPinReset(); return false;'>Add To List</span>",
+			'modalButtons' => "<span class='tool btn btn-primary' onclick='Pika.Account.resetPinReset(); return false;'>Add To List</span>",
 		);
 		return $formDefinition;
 //		$pageContent = $interface->fetch('MyResearch/resetPinPopup.tpl');
@@ -298,7 +298,7 @@ class MyAccount_AJAX extends AJAXHandler {
 		return array(
 			'title'   => translate('Cancel Hold'),
 			'body'    => translate("Are you sure you want to cancel this hold?"),
-			'buttons' => "<span class='tool btn btn-primary' onclick='VuFind.Account.cancelHold(\"$patronId\", \"$recordId\", \"$cancelId\")'>$cancelButtonLabel</span>",
+			'buttons' => "<span class='tool btn btn-primary' onclick='Pika.Account.cancelHold(\"$patronId\", \"$recordId\", \"$cancelId\")'>$cancelButtonLabel</span>",
 		);
 	}
 
@@ -633,7 +633,7 @@ class MyAccount_AJAX extends AJAXHandler {
 		return array(
 			'title'        => 'Create new List',
 			'modalBody'    => $interface->fetch("MyAccount/list-form.tpl"),
-			'modalButtons' => "<span class='tool btn btn-primary' onclick='return VuFind.Account.addList(\"{$id}\");'>Create List</span>",
+			'modalButtons' => "<span class='tool btn btn-primary' onclick='return Pika.Account.addList(\"{$id}\");'>Create List</span>",
 		);
 	}
 
@@ -914,7 +914,7 @@ class MyAccount_AJAX extends AJAXHandler {
 			$results = array(
 				'title'        => 'Change Hold Location',
 				'modalBody'    => $interface->fetch("MyAccount/changeHoldLocation.tpl"),
-				'modalButtons' => '<span class="tool btn btn-primary" onclick="VuFind.Account.doChangeHoldLocation(); return false;">Change Location</span>',
+				'modalButtons' => '<span class="tool btn btn-primary" onclick="Pika.Account.doChangeHoldLocation(); return false;">Change Location</span>',
 			);
 		}else{
 			$results = array(
@@ -1020,7 +1020,7 @@ class MyAccount_AJAX extends AJAXHandler {
 		return array(
 			'title'        => 'Select Citation Format',
 			'modalBody'    => $pageContent,
-			'modalButtons' => '<input class="btn btn-primary" onclick="VuFind.Lists.processCiteListForm(); return false;" value="' . translate('Generate Citations') . '">',
+			'modalButtons' => '<input class="btn btn-primary" onclick="Pika.Lists.processCiteListForm(); return false;" value="' . translate('Generate Citations') . '">',
 		);
 	}
 

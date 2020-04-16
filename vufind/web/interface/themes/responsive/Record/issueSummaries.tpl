@@ -38,12 +38,12 @@
 				{/if}
 
 				{if count($issueSummary.holdings) > 0}
-					<button onclick="VuFind.showMessage('{$issueSummary.location}', $('#issue-summary-holdings-{$smarty.foreach.summaryLoop.iteration}').html())" class="btn btn-xs btn-info">Show Individual Issues</button>
+					<button onclick="Pika.showMessage('{$issueSummary.location}', $('#issue-summary-holdings-{$smarty.foreach.summaryLoop.iteration}').html())" class="btn btn-xs btn-info">Show Individual Issues</button>
 					&nbsp;
 				{/if}
 
 				{if $showCheckInGrid && $issueSummary.checkInGridId}
-					<button onclick="VuFind.Account.ajaxLightbox('/{$activeRecordProfileModule}/{$id}/AJAX?method=getCheckInGrid&checkInGridId={$issueSummary.checkInGridId}');" class="btn btn-xs btn-info">Show Check-in Grid</button>
+					<button onclick="Pika.Account.ajaxLightbox('/{$activeRecordProfileModule}/{$id}/AJAX?method=getCheckInGrid&checkInGridId={$issueSummary.checkInGridId}');" class="btn btn-xs btn-info">Show Check-in Grid</button>
 				{/if}
 			</div>
 

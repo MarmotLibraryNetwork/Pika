@@ -13,7 +13,7 @@ necassary *}
 					<label class="control-label col-sm-3" for="format">{$formField->fieldLabel}: <span class="requiredIndicator">*</span></label>
 					<div class="request_detail_field_value col-sm-9">
 
-						<select name="format" class="required form-control" id="format" onchange="VuFind.MaterialsRequest.setFieldVisibility();">
+						<select name="format" class="required form-control" id="format" onchange="Pika.MaterialsRequest.setFieldVisibility();">
 							{* For New Requests, set the first format as the one selected by default *}
 							{foreach from=$availableFormats item=label key=formatKey}
 								<option value="{$formatKey}"{if $materialsRequest->format==$formatKey} selected='selected'{/if}>{$label}</option>
@@ -125,7 +125,7 @@ necassary *}
 					<div class="form-group">
 						<label for="suggestIdentifiers" class="control-label col-sm-3">WorldCat Look up:</label>
 						<div class="col-sm-9">
-							<input type="button" id="suggestIdentifiers" value="Find exact match" onclick="return VuFind.MaterialsRequest.getWorldCatIdentifiers();" class="btn btn-primary">
+							<input type="button" id="suggestIdentifiers" value="Find exact match" onclick="return Pika.MaterialsRequest.getWorldCatIdentifiers();" class="btn btn-primary">
 						</div>
 					</div>
 					<div id="suggestedIdentifiers"></div>
@@ -308,11 +308,11 @@ necassary *}
 						<div class="request_detail_field_value col-sm-9">
 
 							<label for="{$materialRequestTableColumnName}Yes" class="radio-inline">
-								<input type="radio" name="{$materialRequestTableColumnName}" value="1" id="{$materialRequestTableColumnName}Yes"{if $materialsRequest->$materialRequestTableColumnName == 1} checked="checked"{/if} onchange="VuFind.MaterialsRequest.updateHoldOptions()">Yes
+								<input type="radio" name="{$materialRequestTableColumnName}" value="1" id="{$materialRequestTableColumnName}Yes"{if $materialsRequest->$materialRequestTableColumnName == 1} checked="checked"{/if} onchange="Pika.MaterialsRequest.updateHoldOptions()">Yes
 							</label>
 							&nbsp;&nbsp;
 							<label for="{$materialRequestTableColumnName}No" class="radio-inline">
-								<input type="radio" name="{$materialRequestTableColumnName}" value="0" id="{$materialRequestTableColumnName}No"{if $materialsRequest->$materialRequestTableColumnName == 0} checked="checked"{/if} onchange="VuFind.MaterialsRequest.updateHoldOptions()">No
+								<input type="radio" name="{$materialRequestTableColumnName}" value="0" id="{$materialRequestTableColumnName}No"{if $materialsRequest->$materialRequestTableColumnName == 0} checked="checked"{/if} onchange="Pika.MaterialsRequest.updateHoldOptions()">No
 							</label>
 
 						</div>
@@ -324,7 +324,7 @@ necassary *}
 					<div id="pickupLocationField" class="row form-group ebookHideField eaudioHideField" style="display: none">
 						<label for="pickupLocation" class="control-label col-sm-3">{$formField->fieldLabel}: </label>
 						<div class=" request_detail_field_value col-sm-9">
-							<select name="holdPickupLocation" id="pickupLocation" onchange="VuFind.MaterialsRequest.updateHoldOptions();" class="form-control">
+							<select name="holdPickupLocation" id="pickupLocation" onchange="Pika.MaterialsRequest.updateHoldOptions();" class="form-control">
 								{foreach from=$pickupLocations item=location}
 									<option value="{$location.id}" {if $location.selected}selected="selected"{/if}>{$location.displayName}</option>
 								{/foreach}
@@ -335,7 +335,7 @@ necassary *}
 			{elseif $formField->fieldType == 'bookmobileStop'}
 				{if $showUserInformation || $new}
 					{assign var="materialRequestTableColumnName" value=$formField->fieldType}
-					{* Book Mobile Stop Field should be hidden by default, gets shown when holdPickUpLocation is set to bookmobile (done by VuFind.MaterialsRequest.updateHoldOptions() *}
+					{* Book Mobile Stop Field should be hidden by default, gets shown when holdPickUpLocation is set to bookmobile (done by Pika.MaterialsRequest.updateHoldOptions() *}
 					<div id="bookmobileStopField" class="row form-group ebookHideField eaudioHideField" style="display: none">
 						<label for="{$materialRequestTableColumnName}" class="control-label col-sm-3">{$formField->fieldLabel}: </label>
 						<div class="col-sm-9">

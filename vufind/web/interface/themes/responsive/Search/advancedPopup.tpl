@@ -10,7 +10,7 @@
 
 					<div class="col-xs-1">
 						<input type="hidden" name="groupStart[1]" id="groupStart1Input" class="groupStartInput" title="Start Group"/>
-						<button id="groupStart1" data-toggle="button" data-hidden_element="#groupStart1Input" onclick="return VuFind.toggleHiddenElementWithButton(this);" class="btn btn-sm btn-default groupStartButton">(</button>
+						<button id="groupStart1" data-toggle="button" data-hidden_element="#groupStart1Input" onclick="return Pika.toggleHiddenElementWithButton(this);" class="btn btn-sm btn-default groupStartButton">(</button>
 					</div>
 					<div class="col-xs-3">
 						<select name="searchType[1]" class="searchType form-control">
@@ -28,11 +28,11 @@
 						</select>
 					</div>
 					<div class="col-xs-3">
-						<input type="text" name="lookfor[1]" class="lookfor form-control input-sm" title="Search For" placeholder="Search for" data-provide="typeahead" data-source='VuFind.Searches.getSpellingSuggestion();' autocomplete="off"/>
+						<input type="text" name="lookfor[1]" class="lookfor form-control input-sm" title="Search For" placeholder="Search for" data-provide="typeahead" data-source='Pika.Searches.getSpellingSuggestion();' autocomplete="off"/>
 					</div>
 					<div class="col-xs-1">
 						<input type="hidden" name="groupEnd[1]" id="groupEnd1Input" title="End Group" class="groupEndInput"/>
-						<button id="groupEnd1" data-toggle="button" data-hidden_element="#groupEnd1Input" onclick="return VuFind.toggleHiddenElementWithButton(this);" class="btn btn-sm btn-default groupEndButton">)</button>
+						<button id="groupEnd1" data-toggle="button" data-hidden_element="#groupEnd1Input" onclick="return Pika.toggleHiddenElementWithButton(this);" class="btn btn-sm btn-default groupEndButton">)</button>
 					</div>
 
 					{/strip} {strip}
@@ -45,10 +45,10 @@
 						</select>
 					</div>
 					<div class="col-xs-2">
-						<button name="addCriteria" class="btn btn-sm btn-default addCriteria" onclick="return VuFind.Searches.addAdvancedGroup(this);" title="Add Criteria">
+						<button name="addCriteria" class="btn btn-sm btn-default addCriteria" onclick="return Pika.Searches.addAdvancedGroup(this);" title="Add Criteria">
 							<span class="glyphicon glyphicon-plus-sign"></span>
 						</button>
-						<button name="deleteCriteria" class="btn btn-sm btn-default deleteCriteria" onclick="return VuFind.Searches.deleteAdvancedGroup(this);" title="Delete Criteria">
+						<button name="deleteCriteria" class="btn btn-sm btn-default deleteCriteria" onclick="return Pika.Searches.deleteAdvancedGroup(this);" title="Delete Criteria">
 							<span class="glyphicon glyphicon-minus-sign"></span>
 						</button>
 					</div>
@@ -63,7 +63,7 @@
 	$(document).ready(function(){
 		{/literal}
 		{foreach from=$searchGroups key=groupIndex item=searchGroup}
-		VuFind.Searches.searchGroups[{$groupIndex}] = {literal}{{/literal}
+		Pika.Searches.searchGroups[{$groupIndex}] = {literal}{{/literal}
 			groupStart: '{$searchGroup.groupStart}',
 			lookfor: '{$searchGroup.lookfor}',
 			searchType: '{$searchGroup.searchType}',
@@ -74,7 +74,7 @@
 		{/foreach}
 		{literal}
 
-		VuFind.Searches.loadSearchGroups();
+		Pika.Searches.loadSearchGroups();
 	});
 </script>
 {/literal}

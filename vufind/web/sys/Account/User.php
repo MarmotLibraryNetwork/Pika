@@ -21,7 +21,6 @@
  */
 require_once 'DB/DataObject.php';
 use Pika\Cache;
-use Pika\PatronDrivers\RBdigital;
 
 class User extends DB_DataObject {
 
@@ -95,7 +94,6 @@ class User extends DB_DataObject {
 	private $numHoldsAvailableOverDrive = 0;
 	private $numHoldsRequestedOverDrive = 0;
 	private $numCheckedOutHoopla = 0;
-	private $numCheckedOutRBdigital = 0;
 	public $numBookings;
 	public $notices;
 	// $noticePreferenceLabel
@@ -507,10 +505,13 @@ class User extends DB_DataObject {
 
 	function isValidForRBDigital(){
 		if ($this->parentUser == null || ($this->getBarcode() != $this->parentUser->getBarcode())){
-			global $configArray;
-			if (isset($configArray['RBdigital']['libraryId']) && (integer)$configArray['RBdigital']['libraryId'] > 0){
-				return true;
-			}
+//			return false;
+			return true;
+			//TODO: implement
+//			$userHomeLibrary = $this->getHomeLibrary();
+//			if ($userHomeLibrary && $userHomeLibrary->RBDigitalLibraryID > 0){
+//				return true;
+//			}
 		}
 		return false;
 	}
@@ -844,7 +845,7 @@ class User extends DB_DataObject {
 
 	public function getNumCheckedOutTotal($includeLinkedUsers = true){
 		$this->updateRuntimeInformation();
-		$myCheckouts = $this->numCheckedOutIls + $this->numCheckedOutOverDrive + $this->numCheckedOutHoopla + $this->numCheckedOutRBdigital;
+		$myCheckouts = $this->numCheckedOutIls + $this->numCheckedOutOverDrive + $this->numCheckedOutHoopla;
 		if ($includeLinkedUsers){
 			if ($this->getLinkedUsers() != null){
 				/** @var User $user */
@@ -963,13 +964,13 @@ class User extends DB_DataObject {
 		}
 
 		//Get checked out titles from RBDigital
-
-		if ($this->isValidForRBDigital()){
-			$RBDigitalDriver          = new RBdigital();
-			$RBDigitalCheckedOutItems = $RBDigitalDriver->getCheckouts($this);
-			$this->numCheckOutRBdigital = count($RBDigitalCheckedOutItems);
-			$allCheckedOut            = array_merge($allCheckedOut, $RBDigitalCheckedOutItems);
-		}
+		//Do not load RBDigital titles if the parent barcode (if any) is the same as the current barcode
+//		if ($this->isValidForRBDigital()){
+//			require_once ROOT_DIR . '/Drivers/RBdigitalDriver.php';
+//			$RBDigitalDriver          = new RBdigitalDriver();
+//			$RBDigitalCheckedOutItems = $RBDigitalDriver->getCheckouts($this);
+//			$allCheckedOut            = array_merge($allCheckedOut, $RBDigitalCheckedOutItems);
+//		}
 
 		if ($includeLinkedUsers){
 			if ($this->getLinkedUsers() != null){
@@ -1809,10 +1810,6 @@ class User extends DB_DataObject {
 
 	function setNumCheckedOutOverDrive($val){
 		$this->numCheckedOutOverDrive = $val;
-	}
-
-	function setNumCheckedOutRBdigital($val){
-		$this->numCheckedOutRBdigital = $val;
 	}
 
 	function setNumHoldsAvailableOverDrive($val){

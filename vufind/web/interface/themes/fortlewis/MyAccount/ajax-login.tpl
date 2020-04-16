@@ -19,7 +19,7 @@
 			</p>
 		</div>
 	{else}
-		<form method="post" action="/MyAccount/Home" id="loginForm" class="form-horizontal" role="form" onsubmit="return VuFind.Account.processAjaxLogin()">
+		<form method="post" action="/MyAccount/Home" id="loginForm" class="form-horizontal" role="form" onsubmit="return Pika.Account.processAjaxLogin()">
 			<div class="row">
 
 				<div class="col-sm-6">
@@ -39,7 +39,7 @@
 					<div id="loginPasswordRow" class="form-group">
 						<label for="password" class="control-label col-xs-12 col-sm-4">{$passwordLabel}: </label>
 						<div class="col-xs-12 col-sm-8">
-							<input type="password" name="password" id="password" size="28" onkeypress="return VuFind.submitOnEnter(event, '#loginForm');" class="form-control">
+							<input type="password" name="password" id="password" size="28" onkeypress="return Pika.submitOnEnter(event, '#loginForm');" class="form-control">
 							{if $showForgotPinLink}
 								<p class="text-muted help-block">
 									<strong>Forgot PIN?</strong> <a href="/MyAccount/EmailPin">E-mail PIN</a>
@@ -55,7 +55,7 @@
 					<div id="loginPasswordRow2" class="form-group">
 						<div class="col-xs-12 col-sm-offset-4 col-sm-8">
 							<label for="showPwd" class="checkbox">
-								<input type="checkbox" id="showPwd" name="showPwd" onclick="return VuFind.pwdToText('password')">
+								<input type="checkbox" id="showPwd" name="showPwd" onclick="return Pika.pwdToText('password')">
 								{translate text="Reveal Password"}
 							</label>
 
@@ -70,7 +70,7 @@
 					<div class="form-group">
 						<div class="col-xs-12 col-sm-offset-4 col-sm-8">
 					<span class="modal-buttons">
-						<input type="submit" name="submit" value="{if $multistep}Continue{else}Login{/if}" id="loginFormSubmit" class="btn btn-primary extraModalButton" onclick="return VuFind.Account.processAjaxLogin()">
+						<input type="submit" name="submit" value="{if $multistep}Continue{else}Login{/if}" id="loginFormSubmit" class="btn btn-primary extraModalButton" onclick="return Pika.Account.processAjaxLogin()">
 					</span>
 						</div>
 					</div>
@@ -85,8 +85,8 @@
 <script type="text/javascript">
 	$('#username').focus().select();
 	$(function(){
-		VuFind.Account.validateCookies();
-		var haslocalStorage = VuFind.hasLocalStorage() || false;
+		Pika.Account.validateCookies();
+		var haslocalStorage = Pika.hasLocalStorage() || false;
 			if (haslocalStorage) {
 				var rememberMe = (window.localStorage.getItem('rememberMe') == 'true'); // localStorage saves everything as strings
 				if (rememberMe) {
@@ -96,7 +96,7 @@
 					$("#username").val(lastUserName);
 					$("#password").val(lastPwd);
 {/literal}{*// $("#showPwd").prop("checked", showPwd  ? "checked" : '');
-//					if (showPwd) VuFind.pwdToText('password');*}{literal}
+//					if (showPwd) Pika.pwdToText('password');*}{literal}
 				}
 				$("#rememberMe").prop("checked", rememberMe ? "checked" : '');
 			} else {

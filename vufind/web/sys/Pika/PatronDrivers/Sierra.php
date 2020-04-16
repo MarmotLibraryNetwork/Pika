@@ -20,17 +20,13 @@
  *
  * Class Sierra
  *
- * Main driver to define the main methods needed for completing patron actions in the Seirra ILS
+ * Methods needed for completing patron actions in the Seirra ILS
  *
  * This class implements the Sierra REST Patron API for patron interactions:
  *    https://sandbox.iii.com/iii/sierra-api/swagger/index.html#!/patrons
  *
- * NOTES:
- *  TODO: For Sierra patrons we will use the Sierra patron ID as a username as this must be unique although a different approach would be preferred.
  *
- *  Currently, in the database password and cat_username represent the patron barcodes. The password is now obsolete
- *  and it's preferred to not store the Sierra ID in the database (see above to do) and prefer barcode as an index for finding a patron
- *  in the database.
+ *  Currently, in the database cat_password or cat_username represent the patron barcodes.
  *
  *  For auth type barcode_pin
  *    barcode stored in cat_username field
@@ -40,13 +36,6 @@
  *    barcode is stored in cat_password field
  *    name is stored in cat_username field
  *
- * Caching
- *
- * caching keys follow this pattern
- * patron_{barcode}_{object}
- * ie; patron_123456789_checkouts, patron_123456789_holds
- * the patron object is patron_{barcode}_patron
- * when calling an action (ie; placeHold, updatePatronInfo) both the patron cache and the object cache should be unset
  *
  *
  * @category Pika
@@ -78,14 +67,6 @@ require_once ROOT_DIR . '/sys/Account/ReadingHistoryEntry.php';
 require_once ROOT_DIR . '/sys/Account/PinReset.php';
 
 class Sierra {
-	// let's swing back around to this later.
-//	use \PatronCheckOutsOperations;
-//	use \PatronHoldsOperations;
-//	use \PatronFinesOperations;
-//
-//	use \PatronReadingHistoryOperations;
-//	use \PatronPinOperations;
-//	use \PatronSelfRegistrationOperations;
 
 	// @var Pika/Memcache instance
 	public  $cache;
@@ -791,16 +772,17 @@ class Sierra {
 	 * @return int|false   returns the patron ID or false
 	 * @throws ErrorException
 	 */
-	public function getPatronId($patronOrBarcode, $searchSacramentoStudentIdField = false){
+	public function getPatronId($patronOrBarcode, $searchSacramentoStudentIdField = false) {
 		// if a patron object was passed
 		if (is_object($patronOrBarcode)){
 			if ($this->accountProfile->loginConfiguration == "barcode_pin"){
 				$barcode = $patronOrBarcode->cat_username;
-			}else{
+			} else {
 				$barcode = $patronOrBarcode->cat_password;
 			}
-		}elseif (is_string($patronOrBarcode)){
-			$barcode = $patronOrBarcode;
+		} elseif (is_string($patronOrBarcode) || is_int($patronOrBarcode)) {
+			// the api expects barcode in form of string. Just in case cast to string.
+			$barcode = (string)$patronOrBarcode;
 		}
 		// patron ids are cached by default for 86400
 		$patronIdCacheKey = "patron_".$barcode."_sierraid";
@@ -821,7 +803,7 @@ class Sierra {
 			return false;
 		}
 
-		$this->cache->set($patronIdCacheKey, $r->id, $this->configArray['Caching']['patron_id']);
+		$this->cache->set($patronIdCacheKey, $r->id, $this->configArray['Caching']['koha_patron_id']);
 
 		return $r->id;
 	}
@@ -1259,8 +1241,12 @@ EOT;
 		$params['barcodes'][] = $barcode;
 
 		// agency code
-		$params['fixedFields']["158"] = ["label" => "PAT AGENCY",
-		                                 "value" => $library->selfRegistrationAgencyCode];
+		if($library->selfRegistrationAgencyCode >= 1) {
+			$params['fixedFields']["158"] = [
+			 "label" => "PAT AGENCY",
+			 "value" => $library->selfRegistrationAgencyCode
+			];
+		}
 		// expiration date
 		$interval = 'P'.$library->selfRegistrationDaysUntilExpire.'D';
 		$expireDate = new DateTime();
@@ -1293,7 +1279,7 @@ EOT;
 		}
 
 		// EXTRA SELF REG PARAMETERS
-		// called last in case there are any parameters set up that need to be overridden
+		// do this last in case there are any parameters set up that need to be overridden
 		if($extraSelfRegParams) {
 			$params = array_merge($params, $extraSelfRegParams);
 		}
@@ -1324,10 +1310,11 @@ EOT;
 	public function getSelfRegistrationFields(){
 		$fields = [];
 
-		global $library;
+		global /** @var Library $library */
+		$library;
 		// get the valid home/pickup locations
-		$l = new Location();
-		$l->libraryId = $library->libraryId;
+		$l                        = new Location();
+		$l->libraryId             = $library->libraryId;
 		$l->validHoldPickupBranch = '1';
 		$l->find();
 		if(!$l->N) {
@@ -1453,14 +1440,14 @@ EOT;
 			];
 		}
 		// Bemis Signature Field
-		if ($library->selfRegistrationTemplate == 'beself'){
+		if ($library && $library->subdomain == 'bemis'){
 			$fields[] = [
-				'property' => 'signature',
-				'type' => 'text',
-				'label' => 'Signature',
+				'property'    => 'signature',
+				'type'        => 'text',
+				'label'       => 'Signature',
 				'description' => 'Enter your name',
-				'maxLength' => 40,
-				'required' => true
+				'maxLength'   => 40,
+				'required'    => true
 			];
 		}
 
