@@ -61,7 +61,7 @@ Pika.GroupedWork = (function(){
 			if (placeholder.hasClass("loaded")) return;
 			placeholder.show();
 			var url = "/GroupedWork/" + encodeURIComponent(id) + "/AJAX",
-					params = {'method': 'GetGoDeeperData', dataType:dataType};
+					params = {'method': 'getGoDeeperData', dataType:dataType};
 			$.getJSON(url, params, function(data) {
 				placeholder.html(data.formattedData).addClass('loaded');
 			});
