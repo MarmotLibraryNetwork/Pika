@@ -49,6 +49,8 @@ public class OverDriveRecordGrouper extends RecordGroupingProcessor {
 				groupedWork.setGroupingCategory("comic");
 				break;
 			default:
+				logger.warn("Unrecognized OverDrive mediaType (using book at grouping category) : " + format);
+			case "magazine":
 			case "audiobook":
 			case "ebook":
 				groupedWork.setGroupingCategory("book");
