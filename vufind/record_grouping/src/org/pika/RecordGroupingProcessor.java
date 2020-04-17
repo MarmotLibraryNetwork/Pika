@@ -279,6 +279,8 @@ class RecordGroupingProcessor {
 		if (field100 != null && field100.getSubfield('a') != null) {
 			author = field100.getSubfield('a').getData();
 		} else {
+			//110	2		|a Mixed By Yogitunes (Musical Group)
+
 			DataField field110 = marcRecord.getDataField("110"); // Heading - Corporate Name
 			if (field110 != null && field110.getSubfield('a') != null) {
 				author = field110.getSubfield('a').getData();
@@ -322,12 +324,13 @@ class RecordGroupingProcessor {
 								DataField field710 = marcRecord.getDataField("710"); // Added Entry-Corporate Name
 								if (field710 != null && field710.getSubfield('a') != null) {
 									author = field710.getSubfield('a').getData();
-									//TODO: Exclude "hoopla digital."
 								} else {
+									// 264		1	|a Washington :|b Printed by P. Force,|c 1837.
 									DataField field264 = marcRecord.getDataField("264"); // Production, Publication, Distribution, Manufacture, and Copyright Notice.
 									if (field264 != null && field264.getIndicator2() == '1' && field264.getSubfield('b') != null) {
 										author = field264.getSubfield('b').getData();
 									} else {
+										//260			|a Addison, IL :|b compiled by the Addison Public Library,|c 2004.
 										DataField field260 = marcRecord.getDataField("260"); // Publication, Distribution, etc.
 										if (field260 != null && field260.getSubfield('b') != null) {
 											author = field260.getSubfield('b').getData();
@@ -1051,41 +1054,41 @@ class RecordGroupingProcessor {
 		formatsToGroupingCategory.put("compactdisc", "audio");
 		formatsToGroupingCategory.put("taperecording", "audio");
 		formatsToGroupingCategory.put("phonograph", "audio");
-		formatsToGroupingCategory.put("pdf", "ebook");
-		formatsToGroupingCategory.put("epub", "ebook");
-		formatsToGroupingCategory.put("jpg", "other");
-		formatsToGroupingCategory.put("gif", "other");
-		formatsToGroupingCategory.put("mp3", "audio");
+//		formatsToGroupingCategory.put("pdf", "ebook");
+//		formatsToGroupingCategory.put("epub", "ebook");
+//		formatsToGroupingCategory.put("jpg", "other");
+//		formatsToGroupingCategory.put("gif", "other");
+//		formatsToGroupingCategory.put("mp3", "audio");
 		formatsToGroupingCategory.put("plucker", "ebook");
 		formatsToGroupingCategory.put("kindle", "ebook");
-		formatsToGroupingCategory.put("externallink", "ebook");
-		formatsToGroupingCategory.put("externalmp3", "audio");
-		formatsToGroupingCategory.put("interactivebook", "ebook");
+//		formatsToGroupingCategory.put("externallink", "ebook");
+//		formatsToGroupingCategory.put("externalmp3", "audio");
+//		formatsToGroupingCategory.put("interactivebook", "ebook");
 		formatsToGroupingCategory.put("overdrive", "ebook");
-		formatsToGroupingCategory.put("external_web", "ebook"); //TODO: external_ values obsolete
-		formatsToGroupingCategory.put("external_ebook", "ebook"); //TODO: external_ values obsolete
-		formatsToGroupingCategory.put("external_eaudio", "audio"); //TODO: external_ values obsolete
-		formatsToGroupingCategory.put("external_emusic", "music"); //TODO: external_ values obsolete
-		formatsToGroupingCategory.put("external_evideo", "movie"); //TODO: external_ values obsolete
+//		formatsToGroupingCategory.put("external_web", "ebook"); //TODO: external_ values obsolete
+//		formatsToGroupingCategory.put("external_ebook", "ebook"); //TODO: external_ values obsolete
+//		formatsToGroupingCategory.put("external_eaudio", "audio"); //TODO: external_ values obsolete
+//		formatsToGroupingCategory.put("external_emusic", "music"); //TODO: external_ values obsolete
+//		formatsToGroupingCategory.put("external_evideo", "movie"); //TODO: external_ values obsolete
 		formatsToGroupingCategory.put("text", "ebook");
-		formatsToGroupingCategory.put("gifs", "other");
-		formatsToGroupingCategory.put("itunes", "audio");
-		formatsToGroupingCategory.put("adobe_epub_ebook", "ebook");
-		formatsToGroupingCategory.put("kindle_book", "ebook");
-		formatsToGroupingCategory.put("microsoft_ebook", "ebook");
-		formatsToGroupingCategory.put("overdrive_wma_audiobook", "audio");
-		formatsToGroupingCategory.put("overdrive_mp3_audiobook", "audio");
-		formatsToGroupingCategory.put("overdrive_music", "music");
-		formatsToGroupingCategory.put("overdrive_video", "movie");
-		formatsToGroupingCategory.put("overdrive_read", "ebook");
-		formatsToGroupingCategory.put("overdrive_listen", "audio");
-		formatsToGroupingCategory.put("adobe_pdf_ebook", "ebook");
-		formatsToGroupingCategory.put("palm", "ebook");
-		formatsToGroupingCategory.put("mobipocket_ebook", "ebook");
-		formatsToGroupingCategory.put("disney_online_book", "ebook");
-		formatsToGroupingCategory.put("open_pdf_ebook", "ebook");
-		formatsToGroupingCategory.put("open_epub_ebook", "ebook");
-		formatsToGroupingCategory.put("nook_periodicals", "ebook");
+//		formatsToGroupingCategory.put("gifs", "other");
+//		formatsToGroupingCategory.put("itunes", "audio");
+//		formatsToGroupingCategory.put("adobe_epub_ebook", "ebook");
+//		formatsToGroupingCategory.put("kindle_book", "ebook");
+//		formatsToGroupingCategory.put("microsoft_ebook", "ebook");
+//		formatsToGroupingCategory.put("overdrive_wma_audiobook", "audio");
+//		formatsToGroupingCategory.put("overdrive_mp3_audiobook", "audio");
+//		formatsToGroupingCategory.put("overdrive_music", "music");
+//		formatsToGroupingCategory.put("overdrive_video", "movie");
+//		formatsToGroupingCategory.put("overdrive_read", "ebook");
+//		formatsToGroupingCategory.put("overdrive_listen", "audio");
+//		formatsToGroupingCategory.put("adobe_pdf_ebook", "ebook");
+//		formatsToGroupingCategory.put("palm", "ebook");
+//		formatsToGroupingCategory.put("mobipocket_ebook", "ebook");
+//		formatsToGroupingCategory.put("disney_online_book", "ebook");
+//		formatsToGroupingCategory.put("open_pdf_ebook", "ebook");
+//		formatsToGroupingCategory.put("open_epub_ebook", "ebook");
+//		formatsToGroupingCategory.put("nook_periodicals", "ebook");
 		formatsToGroupingCategory.put("econtent", "ebook");
 		formatsToGroupingCategory.put("seedpacket", "other");
 		formatsToGroupingCategory.put("graphicnovel", "comic");
