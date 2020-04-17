@@ -115,6 +115,7 @@ class Library extends DB_DataObject {
 	public $overdriveRequirePin;
 	public $overdriveAdvantageName;
 	public $overdriveAdvantageProductsKey;
+    public $eContentSupportAddress;
 
 	/* HOOPLA */
 	public $hooplaLibraryID;
@@ -160,7 +161,7 @@ class Library extends DB_DataObject {
 	public $recordsToBlackList;
 	public $publicListsToInclude;
 	public $showWikipediaContent;
-	public $eContentSupportAddress;
+
 	public $restrictOwningBranchesAndSystems;
 	public $allowPatronAddressUpdates;
 	public $showWorkPhoneInProfile;
@@ -441,7 +442,6 @@ class Library extends DB_DataObject {
 					'useHomeLinkForLogo'               => array('property' => 'useHomeLinkForLogo', 'type' => 'checkbox', 'label' => 'Use Home Link for Logo', 'description' => 'Whether or not the home link should be used as the link for the main logo.', 'hideInLists' => true,),
 					'homeLinkText'                     => array('property' => 'homeLinkText', 'type' => 'text', 'label' => 'Home Link Text', 'description' => 'The text to show for the Home breadcrumb link', 'size' => '40', 'hideInLists' => true, 'default' => 'Home'),
 					'showLibraryHoursAndLocationsLink' => array('property' => 'showLibraryHoursAndLocationsLink', 'type' => 'checkbox', 'label' => 'Show Library Hours and Locations Link', 'description' => 'Whether or not the library hours and locations link is shown on the home page.', 'hideInLists' => true, 'default' => true),
-					'eContentSupportAddress'           => array('property' => 'eContentSupportAddress', 'type' => 'multiemail', 'label' => 'E-Content Support Address', 'description' => 'An e-mail address to receive support requests for patrons with eContent problems.', 'size' => '80', 'hideInLists' => true, 'default' => 'askmarmot@marmot.org'),
 					'enableGenealogy'                  => array('property' => 'enableGenealogy', 'type' => 'checkbox', 'label' => 'Enable Genealogy Functionality', 'description' => 'Whether or not patrons can search genealogy.', 'hideInLists' => true, 'default' => 1),
 					'enableCourseReserves'             => array('property' => 'enableCourseReserves', 'type' => 'checkbox', 'label' => 'Enable Repeat Search in Course Reserves', 'description' => 'Whether or not patrons can repeat searches within course reserves.', 'hideInLists' => true,),
 					'showPikaLogo'                     => array('property' => 'showPikaLogo', 'type' => 'checkbox', 'label' => 'Display Pika Logo', 'description' => 'Determines whether or not the Pika logo will be shown in the footer.', 'hideInLists' => true, 'default' => true),
@@ -872,6 +872,7 @@ class Library extends DB_DataObject {
 				'overdriveRequirePin'            => array('property'=>'overdriveRequirePin',        'type'=>'checkbox', 'label'=>'Is a Pin Required to log into Overdrive website?', 'description'=>'Turn on to allow repeat search in Overdrive functionality.', 'hideInLists' => true, 'default' => 0),
 				'overdriveAdvantageName'         => array('property'=>'overdriveAdvantageName',     'type'=>'text',     'label'=>'Overdrive Advantage Name', 'description'=>'The name of the OverDrive Advantage account if any.', 'size'=>'80', 'hideInLists' => true,),
 				'overdriveAdvantageProductsKey'  => array('property'=>'overdriveAdvantageProductsKey', 'type'=>'text', 'label'=>'Overdrive Advantage Products Key', 'description'=>'The products key for use when building urls to the API from the advantageAccounts call.', 'size'=>'80', 'hideInLists' => false,),
+                'eContentSupportAddress'           => array('property' => 'eContentSupportAddress', 'type' => 'multiemail', 'label' => 'E-Content Support Address', 'description' => 'An e-mail address to receive support requests for patrons with eContent problems.', 'size' => '80', 'hideInLists' => true, 'default' => 'pika@marmot.org'),
 			)),
 
 			'hooplaSection' => array(
