@@ -49,6 +49,7 @@ public class IndexingProfile {
 	String  materialTypesToIgnore;
 	String  specifiedFormat;
 	String  specifiedFormatCategory;
+	String  specifiedGroupingCategory;
 	int     specifiedFormatBoost;
 	char collectionSubfield;
 	Pattern statusesToSuppressPattern    = null;
@@ -72,6 +73,7 @@ public class IndexingProfile {
 		this.recordNumberPrefix                = indexingProfileRS.getString("recordNumberPrefix");
 		this.formatSource                      = indexingProfileRS.getString("formatSource");
 		this.specifiedFormatCategory           = indexingProfileRS.getString("specifiedFormatCategory");
+		this.specifiedGroupingCategory         = indexingProfileRS.getString("specifiedGroupingCategory");
 		this.formatDeterminationMethod         = indexingProfileRS.getString("formatDeterminationMethod");
 		this.materialTypesToIgnore             = indexingProfileRS.getString("materialTypesToIgnore");
 //		this.sierraBibLevelFieldTag            = indexingProfileRS.getString("sierraRecordFixedFieldsTag");

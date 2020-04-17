@@ -50,6 +50,7 @@ class IndexingProfile extends DB_DataObject{
 	public $specifiedFormat;
 	public $specifiedFormatCategory;
 	public $specifiedFormatBoost;
+	public $specifiedGroupingCategory;
 	public $recordNumberTag;
 	public $recordNumberField;
 	public $recordNumberPrefix;
@@ -165,7 +166,8 @@ class IndexingProfile extends DB_DataObject{
 					'specifiedFormat'           => array('property' => 'specifiedFormat',           'type' => 'text',    'label' => 'Specified Format', 'maxLength' => 50, 'description' => 'The format to set when using a defined format', 'required' => false, 'default' => ''),
 					'specifiedFormatCategory'   => array('property' => 'specifiedFormatCategory',   'type' => 'enum',    'label' => 'Specified Format Category', 'values' => array('', 'Books' => 'Books', 'eBook' => 'eBook', 'Audio Books' => 'Audio Books', 'Movies' => 'Movies', 'Music' => 'Music', 'Other' => 'Other'), 'description' => 'The format category to set when using a defined format', 'required' => false, 'default' => ''),
 					'specifiedFormatBoost'      => array('property' => 'specifiedFormatBoost',      'type' => 'integer', 'label' => 'Specified Format Boost', 'maxLength' => 50, 'description' => 'The format boost to set when using a defined format', 'required' => false, 'default' => '8'),
-						)),
+					'specifiedGroupingCategory' => array('property' => 'specifiedGroupingCategory', 'type' => 'enum',    'label' => 'Specified Grouping Category', 'values' => array('', 'book' => 'Book', 'movie' => 'Movie', 'music' => 'Music', 'comic' => 'Comic'/*,'other' => 'other'*/), 'description' => 'The grouping category to set when using a defined format'),
+				)),
 					)),
 
 

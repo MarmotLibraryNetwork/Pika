@@ -59,10 +59,10 @@ class RecordGroupingProcessor {
 		this.logger         = logger;
 		this.fullRegrouping = fullRegrouping;
 
-		String mapName = "formatsToGroupingCategory";
-		translationMaps.put(mapName, new TranslationMap("grouping", mapName, false, false, this.logger, RecordGroupingProcessor.formatsToGroupingCategory));
-		mapName = "category";
-		translationMaps.put(mapName, new TranslationMap("grouping", mapName, false, false, this.logger, categoryMap));
+//		String mapName = "formatsToGroupingCategory";
+//		translationMaps.put(mapName, new TranslationMap("grouping", mapName, false, false, this.logger, RecordGroupingProcessor.formatsToGroupingCategory));
+//		mapName = "category";
+//		translationMaps.put(mapName, new TranslationMap("grouping", mapName, false, false, this.logger, categoryMap));
 	}
 
 	/**
@@ -254,19 +254,15 @@ class RecordGroupingProcessor {
 
 	protected String setGroupingCategoryForWork(RecordIdentifier identifier, Record marcRecord, IndexingProfile profile, GroupedWorkBase workForTitle) {
 		String groupingCategory;
-		FormatDetermination formatDetermination = new FormatDetermination(profile, translationMaps, logger);
-		formatDetermination.loadPrintFormatInformation(identifier, marcRecord);
-		LinkedHashSet<String> groupingFormats = translationMaps.get("formatsToGroupingCategory").translateCollection(formatDetermination.rawFormats, identifier.toString());
-		groupingFormats = translationMaps.get("category").translateCollection(groupingFormats, identifier.toString());
-		if (groupingFormats.size() > 1){
-			//TODO: check if translating collection values reduced the category down to one
+		HashSet<String> groupingCategories = new FormatDetermination(profile, translationMaps, logger).loadPrintFormatInformation(identifier, marcRecord);
+		if (groupingCategories.size() > 1){
 			groupingCategory = "book"; // fall back option for now
-			logger.warn("More than one grouping category for " + identifier + " : " + String.join(",", groupingFormats));
-		} else if (groupingFormats.size() == 0){
+			logger.warn("More than one grouping category for " + identifier + " : " + String.join(",", groupingCategories));
+		} else if (groupingCategories.size() == 0){
 			logger.warn("No grouping category for " + identifier);
 			groupingCategory = "book"; // fall back option for now
 		} else {
-			groupingCategory = groupingFormats.iterator().next(); //First Format
+			groupingCategory = groupingCategories.iterator().next(); //First Format
 		}
 
 		workForTitle.setGroupingCategory(groupingCategory);
@@ -633,365 +629,7 @@ class RecordGroupingProcessor {
 		}
 	}
 
-//	private String getFormatFromItems(Record record, char formatSubfield) {
-//		List<DataField> itemFields = getDataFields(record, itemTag);
-//		for (DataField itemField : itemFields) {
-//			if (itemField.getSubfield(formatSubfield) != null) {
-//				String originalFormat = itemField.getSubfield(formatSubfield).getData().toLowerCase();
-//				String format         = translateValue("format_group", originalFormat);
-//				if (format != null && !format.equals(originalFormat)) {
-//					return format;
-//				}
-//			}
-//		}
-//		//We didn't get a format from the items, check the bib as backup
-//		String format = getFormatFromBib(record);
-//		format = categoryMap.get(formatsToGroupingCategory.get(format));
-//		return format;
-//	}
-
-//	private String getFormatFromBib(Record record) {
-//		//Check to see if the title is eContent based on the 989 field
-//		if (useEContentSubfield) {
-//			List<DataField> itemFields = getDataFields(record, itemTag);
-//			for (DataField itemField : itemFields) {
-//				if (itemField.getSubfield(eContentDescriptor) != null) {
-//					//The record is some type of eContent.  For this purpose, we don't care what type.
-//					return "eContent";
-//				}
-//			}
-//		}
-//
-//		String       leader     = record.getLeader().toString();
-//		char         leaderBit;
-//		ControlField fixedField = (ControlField) record.getVariableField("008");
-//		char         formatCode;
-//
-//		// check for music recordings quickly so we can figure out if it is music
-//		// for category (need to do here since checking what is on the Compact
-//		// Disc/Phonograph, etc is difficult).
-//		if (leader.length() >= 6) {
-//			leaderBit = leader.charAt(6);
-//			switch (Character.toUpperCase(leaderBit)) {
-//				case 'J':
-//					return "MusicRecording";
-//			}
-//		}
-//
-//		// check for playaway in 260|b
-//		DataField sysDetailsNote = record.getDataField("260");
-//		if (sysDetailsNote != null) {
-//			if (sysDetailsNote.getSubfield('b') != null) {
-//				String sysDetailsValue = sysDetailsNote.getSubfield('b').getData().toLowerCase();
-//				if (sysDetailsValue.contains("playaway")) {
-//					return "Playaway";
-//				}
-//			}
-//		}
-//
-//		// Check for formats in the 538 field
-//		DataField sysDetailsNote2 = record.getDataField("538");
-//		if (sysDetailsNote2 != null) {
-//			if (sysDetailsNote2.getSubfield('a') != null) {
-//				String sysDetailsValue = sysDetailsNote2.getSubfield('a').getData().toLowerCase();
-//				if (sysDetailsValue.contains("playaway")) {
-//					return "Playaway";
-//				} else if (sysDetailsValue.contains("bluray")
-//						|| sysDetailsValue.contains("blu-ray")) {
-//					return "Blu-ray";
-//				} else if (sysDetailsValue.contains("dvd")) {
-//					return "DVD";
-//				} else if (sysDetailsValue.contains("vertical file")) {
-//					return "VerticalFile";
-//				}
-//			}
-//		}
-//
-//		// Check for formats in the 500 tag
-//		DataField noteField = record.getDataField("500");
-//		if (noteField != null) {
-//			if (noteField.getSubfield('a') != null) {
-//				String noteValue = noteField.getSubfield('a').getData().toLowerCase();
-//				if (noteValue.contains("vertical file")) {
-//					return "VerticalFile";
-//				}
-//			}
-//		}
-//
-//		// Check for large print book (large format in 650, 300, or 250 fields)
-//		// Check for blu-ray in 300 fields
-//		DataField edition = record.getDataField("250");
-//		if (edition != null) {
-//			if (edition.getSubfield('a') != null) {
-//				if (edition.getSubfield('a').getData().toLowerCase().contains("large type")) {
-//					return "LargePrint";
-//				}
-//			}
-//		}
-//
-//		List<DataField> physicalDescription = getDataFields(record, "300");
-//		if (physicalDescription != null) {
-//			Iterator<DataField> fieldsIter = physicalDescription.iterator();
-//			DataField           field;
-//			while (fieldsIter.hasNext()) {
-//				field = fieldsIter.next();
-//				@SuppressWarnings("unchecked")
-//				List<Subfield> subFields = field.getSubfields();
-//				for (Subfield subfield : subFields) {
-//					final String subFieldData = subfield.getData().toLowerCase();
-//					switch (subFieldData){
-//						case "large type":
-//							return "LargePrint";
-//						case "bluray":
-//						case "blu-ray":
-//							return "Blu-ray";
-//					}
-//				}
-//			}
-//		}
-//		List<DataField> topicalTerm = getDataFields(record, "650");
-//		if (topicalTerm != null) {
-//			Iterator<DataField> fieldsIter = topicalTerm.iterator();
-//			DataField           field;
-//			while (fieldsIter.hasNext()) {
-//				field = fieldsIter.next();
-//				@SuppressWarnings("unchecked")
-//				List<Subfield> subfields = field.getSubfields();
-//				for (Subfield subfield : subfields) {
-//					if (subfield.getData().toLowerCase().contains("large type")) {
-//						return "LargePrint";
-//					}
-//				}
-//			}
-//		}
-//
-//		List<DataField> localTopicalTerm = getDataFields(record, "690");
-//		if (localTopicalTerm != null) {
-//			Iterator<DataField> fieldsIterator = localTopicalTerm.iterator();
-//			DataField           field;
-//			while (fieldsIterator.hasNext()) {
-//				field = fieldsIterator.next();
-//				Subfield subfieldA = field.getSubfield('a');
-//				if (subfieldA != null) {
-//					if (subfieldA.getData().toLowerCase().contains("seed library")) {
-//						return "SeedPacket";
-//					}
-//				}
-//			}
-//		}
-//
-//		// check the 007 - this is a repeating field
-//		List<DataField> fields = getDataFields(record, "007");
-//		if (fields != null) {
-//			Iterator<DataField> fieldsIter = fields.iterator();
-//			ControlField        formatField;
-//			while (fieldsIter.hasNext()) {
-//				formatField = (ControlField) fieldsIter.next();
-//				if (formatField.getData() == null || formatField.getData().length() < 2) {
-//					continue;
-//				}
-//				// Check for blu-ray (s in position 4)
-//				// This logic does not appear correct.
-//				/*
-//				 * if (formatField.getData() != null && formatField.getData().length()
-//				 * >= 4){ if (formatField.getData().toUpperCase().charAt(4) == 'S'){
-//				 * result.add("Blu-ray"); break; } }
-//				 */
-//				formatCode = formatField.getData().toUpperCase().charAt(0);
-//				switch (formatCode) {
-//					case 'A':
-//						switch (formatField.getData().toUpperCase().charAt(1)) {
-//							case 'D':
-//								return "Atlas";
-//							default:
-//								return "Map";
-//						}
-//					case 'C':
-//						switch (formatField.getData().toUpperCase().charAt(1)) {
-//							case 'A':
-//								return "TapeCartridge";
-//							case 'B':
-//								return "ChipCartridge";
-//							case 'C':
-//								return "DiscCartridge";
-//							case 'F':
-//								return "TapeCassette";
-//							case 'H':
-//								return "TapeReel";
-//							case 'J':
-//								return "FloppyDisk";
-//							case 'M':
-//							case 'O':
-//								return "CDROM";
-//							case 'R':
-//								// Do not return - this will cause anything with an
-//								// 856 field to be labeled as "Electronic"
-//								break;
-//							default:
-//								return "Software";
-//						}
-//						break;
-//					case 'D':
-//						return "Globe";
-//					case 'F':
-//						return "Braille";
-//					case 'G':
-//						switch (formatField.getData().toUpperCase().charAt(1)) {
-//							case 'C':
-//							case 'D':
-//								return "Filmstrip";
-//							case 'T':
-//								return "Transparency";
-//							default:
-//								return "Slide";
-//						}
-//					case 'H':
-//						return "Microfilm";
-//					case 'K':
-//						switch (formatField.getData().toUpperCase().charAt(1)) {
-//							case 'C':
-//								return "Collage";
-//							case 'D':
-//								return "Drawing";
-//							case 'E':
-//								return "Painting";
-//							case 'F':
-//								return "Print";
-//							case 'G':
-//								return "Photonegative";
-//							case 'J':
-//								return "Print";
-//							case 'L':
-//								return "Drawing";
-//							case 'O':
-//								return "FlashCard";
-//							case 'N':
-//								return "Chart";
-//							default:
-//								return "Photo";
-//						}
-//					case 'M':
-//						switch (formatField.getData().toUpperCase().charAt(1)) {
-//							case 'F':
-//								return "VideoCassette";
-//							case 'R':
-//								return "Filmstrip";
-//							default:
-//								return "MotionPicture";
-//						}
-//					case 'O':
-//						return "Kit";
-//					case 'Q':
-//						return "MusicalScore";
-//					case 'R':
-//						return "SensorImage";
-//					case 'S':
-//						switch (formatField.getData().toUpperCase().charAt(1)) {
-//							case 'D':
-//								if (formatField.getData().length() >= 4) {
-//									char speed = formatField.getData().toUpperCase().charAt(3);
-//									if (speed >= 'A' && speed <= 'E') {
-//										return "Phonograph";
-//									} else if (speed == 'F') {
-//										return "CompactDisc";
-//									} else if (speed >= 'K' && speed <= 'R') {
-//										return "TapeRecording";
-//									} else {
-//										return "SoundDisc";
-//									}
-//								} else {
-//									return "SoundDisc";
-//								}
-//							case 'S':
-//								return "SoundCassette";
-//							default:
-//								return "SoundRecording";
-//						}
-//					case 'T':
-//						switch (formatField.getData().toUpperCase().charAt(1)) {
-//							case 'A':
-//								return "Book";
-//							case 'B':
-//								return "LargePrint";
-//						}
-//					case 'V':
-//						switch (formatField.getData().toUpperCase().charAt(1)) {
-//							case 'C':
-//								return "VideoCartridge";
-//							case 'D':
-//								return "VideoDisc";
-//							case 'F':
-//								return "VideoCassette";
-//							case 'R':
-//								return "VideoReel";
-//							default:
-//								return "Video";
-//						}
-//				}
-//			}
-//		}
-//
-//		// check the Leader at position 6
-//		if (leader.length() >= 6) {
-//			leaderBit = leader.charAt(6);
-//			switch (Character.toUpperCase(leaderBit)) {
-//				case 'C':
-//				case 'D':
-//					return "MusicalScore";
-//				case 'E':
-//				case 'F':
-//					return "Map";
-//				case 'G':
-//					// We appear to have a number of items without 007 tags marked as G's.
-//					// These seem to be Videos rather than Slides.
-//					// return "Slide");
-//					return "Video";
-//				case 'I':
-//					return "SoundRecording";
-//				case 'J':
-//					return "MusicRecording";
-//				case 'K':
-//					return "Photo";
-//				case 'M':
-//					return "Electronic";
-//				case 'O':
-//				case 'P':
-//					return "Kit";
-//				case 'R':
-//					return "PhysicalObject";
-//				case 'T':
-//					return "Manuscript";
-//			}
-//		}
-//
-//		if (leader.length() >= 7) {
-//			// check the Leader at position 7
-//			leaderBit = leader.charAt(7);
-//			switch (Character.toUpperCase(leaderBit)) {
-//				// Monograph
-//				case 'M':
-//					return "Book";
-//				// Serial
-//				case 'S':
-//					// Look in 008 to determine what type of Continuing Resource
-//					if (fixedField != null && fixedField.getData().length() >= 22) {
-//						formatCode = fixedField.getData().toUpperCase().charAt(21);
-//						switch (formatCode) {
-//							case 'N':
-//								return "Newspaper";
-//							case 'P':
-//								return "Journal";
-//							default:
-//								return "Serial";
-//						}
-//					}
-//			}
-//		}
-//		// Nothing worked!
-//		return "Unknown";
-//	}
-
-	private static HashMap<String, String> formatsToGroupingCategory = new HashMap<>();
+/*	private static HashMap<String, String> formatsToGroupingCategory = new HashMap<>();
 
 	static {
 		// Keep entries in lower case
@@ -1123,7 +761,7 @@ class RecordGroupingProcessor {
 		categoryMap.put("movie", "movie");
 		categoryMap.put("movies", "movie");
 	}
-
+*/
 
 	void dumpStats() {
 		if (logger.isDebugEnabled()) {

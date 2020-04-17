@@ -24,9 +24,10 @@ public class FormatDetermination {
 
 	String profileType;
 	String formatSource;
-	String specifiedFormat;
-	String specifiedFormatCategory;
-	int    specifiedFormatBoost;
+//	String specifiedFormat;
+	String specifiedGroupingCategory;
+//	String specifiedFormatCategory;
+//	int    specifiedFormatBoost;
 	String formatDeterminationMethod;
 	char   formatSubfield;
 
@@ -48,7 +49,7 @@ public class FormatDetermination {
 	String matTypesToIgnore;
 
 	//For Record Grouping Category
-	HashSet<String> rawFormats = new HashSet<>();
+	HashSet<String> groupingCategories = new HashSet<>();
 
 	FormatDetermination(IndexingProfile indexingProfile, HashMap<String, TranslationMap> translationMaps, Logger logger){
 		this.logger = logger;
@@ -64,9 +65,10 @@ public class FormatDetermination {
 		if (matTypesToIgnore == null) {
 			matTypesToIgnore = "";
 		}
-		specifiedFormat         = indexingProfile.specifiedFormat;
-		specifiedFormatCategory = indexingProfile.specifiedFormatCategory;
-		specifiedFormatBoost    = indexingProfile.specifiedFormatBoost;
+//		specifiedFormat         = indexingProfile.specifiedFormat;
+//		specifiedFormatCategory = indexingProfile.specifiedFormatCategory;
+		specifiedGroupingCategory = indexingProfile.specifiedGroupingCategory;
+//		specifiedFormatBoost    = indexingProfile.specifiedFormatBoost;
 		formatSubfield          = indexingProfile.format;
 
 		sierraRecordFixedFieldsTag = indexingProfile.sierraRecordFixedFieldsTag;
@@ -102,11 +104,11 @@ public class FormatDetermination {
 	/**
 	 * Determine Record Format(s)
 	 */
-	public void loadPrintFormatInformation(RecordIdentifier identifier, Record record) {
+	public HashSet<String> loadPrintFormatInformation(RecordIdentifier identifier, Record record) {
 		switch (formatSource) {
 			case "specified":
-				if (!specifiedFormat.isEmpty()) {
-					rawFormats.add(specifiedFormat);
+				if (!specifiedGroupingCategory.isEmpty()) {
+					groupingCategories.add(specifiedGroupingCategory);
 				} else {
 					logger.error("Specified Format is not set in indexing profile. Can not use specified format for format determination. Fall back to bib format determination.");
 					loadPrintFormatFromBib(identifier, record);
@@ -124,24 +126,23 @@ public class FormatDetermination {
 				}
 				break;
 		}
+		return groupingCategories;
 	}
 
-	protected void loadEContentFormatInformation(RecordIdentifier identifier, Record record) {
-		if (formatSource.equals("specified") && !specifiedFormat.isEmpty()){
-			rawFormats.add(specifiedFormat);
+	public HashSet<String> loadEContentFormatInformation(RecordIdentifier identifier, Record record) {
+		if (formatSource.equals("specified") && !specifiedGroupingCategory.isEmpty()){
+			groupingCategories.add(specifiedGroupingCategory);
 		} else {
 			LinkedHashSet<String> printFormats = getFormatsFromBib(record, identifier);
-			if (this.translationMaps.size() > 0){
-				//TODO: use translation map?
-				String firstFormat    = printFormats.iterator().next();
-				rawFormats.add(firstFormat);
+			if (translationMaps.size() > 0 && translationMaps.containsKey("grouping_categories")){
+				groupingCategories.addAll(translateCollection("grouping_categories", printFormats, identifier.toString()));
 			} else {
-				//Convert formats from print to eContent version
+				//Set grouping category from default bib determinations.
 				for (String format : printFormats) {
 					switch (format.toLowerCase()) {
 						case "graphicnovel":
 						case "ecomic":
-							rawFormats.add("eComic");
+							groupingCategories.add("comic");
 							break;
 						case "ebook":
 						case "book":
@@ -151,12 +152,8 @@ public class FormatDetermination {
 						case "print":
 						case "microfilm":
 						case "kit":
-							rawFormats.add("eBook");
-							break;
 						case "journal":
 						case "serial":
-							rawFormats.add("eMagazine");
-							break;
 						case "soundrecording":
 						case "sounddisc":
 						case "playaway":
@@ -164,47 +161,39 @@ public class FormatDetermination {
 						case "soundcassette":
 						case "compactdisc":
 						case "eaudio":
-							rawFormats.add("eAudiobook");
+						case "electronic":
+						case "software":
+						case "photo":
+						case "map":
+						case "newspaper":
+							groupingCategories.add("book");
 							break;
 						case "musicrecording":
-							rawFormats.add("eMusic");
-							break;
 						case "musicalscore":
-							rawFormats.add("MusicalScore");
+							groupingCategories.add("music");
 							break;
 						case "movies":
 						case "video":
 						case "dvd":
 						case "videodisc":
-							rawFormats.add("eVideo");
-							break;
-						case "electronic":
-						case "software":
-							rawFormats.add("Online Materials");
-							break;
-						case "photo":
-							rawFormats.add("Photo");
-							break;
-						case "map":
-							rawFormats.add("Map");
-							break;
-						case "newspaper":
-							rawFormats.add("Newspaper");
+							groupingCategories.add("movie");
 							break;
 						default:
+							groupingCategories.add("book");
 							logger.warn("Could not find appropriate eContent format for " + format + " while side loading eContent " + identifier);
 					}
 				}
 			}
 		}
+		return groupingCategories;
 	}
 
-	void loadPrintFormatFromBib(RecordIdentifier identifier, Record record) {
+	private void loadPrintFormatFromBib(RecordIdentifier identifier, Record record) {
 		LinkedHashSet<String> printFormats = getFormatsFromBib(record, identifier);
 		if (printFormats.size() == 0){
 			logger.warn("Did not find a format for " + identifier + " using standard format method " + printFormats.toString());
 		}
-		rawFormats.addAll(printFormats);
+		groupingCategories.addAll(translateCollection("grouping_categories", printFormats, identifier.toString()));
 	}
 
 	private void loadPrintFormatFromMatType(RecordIdentifier identifier, Record record) {
@@ -216,7 +205,8 @@ public class FormatDetermination {
 						//TODO: use grouping translation map
 						String translatedFormat = translateValue("format", matType, identifier.toString());
 						if (translatedFormat != null && !translatedFormat.equals(matType)) {
-							rawFormats.add(translatedFormat);
+							groupingCategories.add(translateValue("grouping_categories", matType, identifier.toString()));
+							return;
 						} else if (logger.isInfoEnabled()) {
 							logger.info("Material Type " + matType + " had no translation, falling back to default format determination.");
 						}
@@ -241,7 +231,7 @@ public class FormatDetermination {
 		return matType.isEmpty() || matType.equals("-") || matType.equals(" ") || matTypesToIgnore.indexOf(matType.charAt(0)) >= 0;
 	}
 
-	public void loadPrintFormatFromITypes(RecordIdentifier identifier, Record record) {
+	private void loadPrintFormatFromITypes(RecordIdentifier identifier, Record record) {
 		HashMap<String, Integer> itemCountsByItype = new HashMap<>();
 		HashMap<String, String>  itemTypeToFormat  = new HashMap<>();
 		int                      mostUsedCount     = 0;
@@ -281,8 +271,7 @@ public class FormatDetermination {
 			loadPrintFormatFromBib(identifier, record);
 		} else{
 			//logger.debug("Using default method of loading formats from iType");
-			//TODO: translate iType to a format
-			rawFormats.add(itemTypeToFormat.get(mostPopularIType));
+			groupingCategories.add(translateValue("grouping_categories", itemTypeToFormat.get(mostPopularIType), recordIdentifier));
 		}
 	}
 
@@ -382,7 +371,8 @@ public class FormatDetermination {
 				getFormatFromLeader(printFormats, leader, fixedField);
 				if (printFormats.size() > 1){
 					if (logger.isInfoEnabled()) {
-						logger.info("Found more than 1 format for " + identifier + " looking at just the leader: " +  getCsvSeparatedString(printFormats));
+//						logger.info("Found more than 1 format for " + identifier + " looking at just the leader: " +  getCsvSeparatedString(printFormats));
+						logger.info("Found more than 1 format for " + identifier + " looking at just the leader: " + String.join(",", printFormats));
 					}
 				}
 			} else if (printFormats.size() > 1){
@@ -406,7 +396,8 @@ public class FormatDetermination {
 		filterPrintFormats(printFormats);
 
 		if (printFormats.size() > 1){
-			String formatsString = getCsvSeparatedString(printFormats);
+			String formatsString = String.join(",", printFormats);
+//			String formatsString = getCsvSeparatedString(printFormats);
 			if (!formatsToFilter.contains(formatsString)){
 				formatsToFilter.add(formatsString);
 				if (logger.isInfoEnabled()) {
@@ -1275,7 +1266,7 @@ public class FormatDetermination {
 				;
 	}
 
-	HashSet<String> translateCollection(String mapName, Set<String> values, String identifier) {
+	private HashSet<String> translateCollection(String mapName, Set<String> values, String identifier) {
 		TranslationMap translationMap = translationMaps.get(mapName);
 		HashSet<String> translatedValues;
 		if (translationMap == null){
@@ -1291,11 +1282,11 @@ public class FormatDetermination {
 		return translatedValues;
 	}
 
-	public String translateValue(String mapName, String value, String identifier){
+	private String translateValue(String mapName, String value, String identifier){
 		return translateValue(mapName, value, identifier, true);
 	}
 
-	public String translateValue(String mapName, String value, String identifier, boolean reportErrors){
+	private String translateValue(String mapName, String value, String identifier, boolean reportErrors){
 		if (value == null){
 			return null;
 		}
@@ -1310,20 +1301,20 @@ public class FormatDetermination {
 		return translatedValue;
 	}
 
-	private static String getCsvSeparatedString(Set<String> values) {
-		if (values.size() == 0){
-			return "";
-		}else if (values.size() == 1){
-			return values.iterator().next();
-		}
-		StringBuilder crSeparatedString = new StringBuilder();
-		for (String curValue : values) {
-			if (crSeparatedString.length() > 0) {
-				crSeparatedString.append(",");
-			}
-			crSeparatedString.append(curValue);
-		}
-		return crSeparatedString.toString();
-	}
+//	private static String getCsvSeparatedString(Set<String> values) {
+//		if (values.size() == 0){
+//			return "";
+//		}else if (values.size() == 1){
+//			return values.iterator().next();
+//		}
+//		StringBuilder crSeparatedString = new StringBuilder();
+//		for (String curValue : values) {
+//			if (crSeparatedString.length() > 0) {
+//				crSeparatedString.append(",");
+//			}
+//			crSeparatedString.append(curValue);
+//		}
+//		return crSeparatedString.toString();
+//	}
 
 }

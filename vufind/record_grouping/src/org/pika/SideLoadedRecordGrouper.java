@@ -4,6 +4,7 @@ import org.apache.log4j.Logger;
 import org.marc4j.marc.Record;
 
 import java.sql.Connection;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 
 /**
@@ -30,19 +31,15 @@ class SideLoadedRecordGrouper extends MarcRecordGrouper {
 
 	protected String setGroupingCategoryForWork(RecordIdentifier identifier, Record marcRecord, IndexingProfile profile, GroupedWorkBase workForTitle) {
 		String groupingCategory;
-		FormatDetermination formatDetermination = new FormatDetermination(profile, translationMaps, logger);
-		formatDetermination.loadEContentFormatInformation(identifier, marcRecord);
-		LinkedHashSet<String> groupingFormats = translationMaps.get("formatsToGroupingCategory").translateCollection(formatDetermination.rawFormats, identifier.toString());
-		groupingFormats = translationMaps.get("category").translateCollection(groupingFormats, identifier.toString());
-		if (groupingFormats.size() > 1){
-			//TODO: check if translating collection values reduced the category down to one
+		HashSet<String> groupingCategories = new FormatDetermination(profile, translationMaps, logger).loadEContentFormatInformation(identifier, marcRecord);
+		if (groupingCategories.size() > 1){
 			groupingCategory = "book"; // fall back option for now
-			logger.warn("More than one grouping category for " + identifier + " : " + String.join(",", groupingFormats));
-		} else if (groupingFormats.size() == 0){
+			logger.warn("More than one grouping category for " + identifier + " : " + String.join(",", groupingCategories));
+		} else if (groupingCategories.size() == 0){
 			logger.warn("No grouping category for " + identifier);
 			groupingCategory = "book"; // fall back option for now
 		} else {
-			groupingCategory = groupingFormats.iterator().next(); //First Format
+			groupingCategory = groupingCategories.iterator().next(); //First Format
 		}
 
 		workForTitle.setGroupingCategory(groupingCategory);
