@@ -23,9 +23,10 @@ class AuthorNormalizer {
 	private static Pattern consecutiveCharacterStrip  = Pattern.compile("\\s{2,}");
 
 	static String getNormalizedName(String rawName) {
-		String groupingAuthor = normalizeDiacritics(rawName);
-		groupingAuthor = removeParentheticalInformation(groupingAuthor);
+		String groupingAuthor = removeParentheticalInformation(rawName);
 		groupingAuthor = removeDates(groupingAuthor);
+		groupingAuthor = groupingAuthor.replace("[publisher not identified]", "").replace("[s.n.]", "");
+		// 260 & 264 tags can have these place holder phrases that we should remove
 		groupingAuthor = initialsFix.matcher(groupingAuthor).replaceAll(" ");
 		//For authors we just want to strip the brackets, not the text within them
 		groupingAuthor = groupingAuthor.replace("[", "").replace("]", "");
@@ -35,7 +36,7 @@ class AuthorNormalizer {
 		groupingAuthor = apostropheStrip.matcher(groupingAuthor).replaceAll("");
 		groupingAuthor = specialCharacterWhitespace.matcher(groupingAuthor).replaceAll(""); //TODO: combine with the apostropheStrip
 		groupingAuthor = specialCharacterStrip.matcher(groupingAuthor).replaceAll(" ").trim().toLowerCase();
-		groupingAuthor = consecutiveCharacterStrip.matcher(groupingAuthor).replaceAll(" ");
+
 		//extract common additional info (especially for movie studios)
 		Matcher authorExtract1Matcher = authorExtract1.matcher(groupingAuthor);
 		if (authorExtract1Matcher.find()){
@@ -53,10 +54,8 @@ class AuthorNormalizer {
 		if (distributedByRemovalMatcher.find()){
 			groupingAuthor = distributedByRemovalMatcher.group(1);
 		}
-		//Remove md if the author ends with md
-		if (groupingAuthor.endsWith(" md")){ //todo: move to suffix
-			groupingAuthor = groupingAuthor.substring(0, groupingAuthor.length() - 3);
-		}
+		groupingAuthor = normalizeDiacritics(groupingAuthor);
+		groupingAuthor = consecutiveCharacterStrip.matcher(groupingAuthor).replaceAll(" ");
 
 		if (groupingAuthor.length() > 50){
 			groupingAuthor = groupingAuthor.substring(0, 50);
@@ -157,8 +156,14 @@ class AuthorNormalizer {
 		return parenRemoval.matcher(authorName).replaceAll("");
 	}
 
-	private static Pattern commonAuthorPrefixPattern = Pattern.compile("(?i)^(consultant|publisher & editor-in-chief|edited by|by the editors of|editor in chief|edited and translated|editor-in-chief|general editor|editors|editor|by|chosen by|translated by|prepared by|translated and edited by|completely rev by|pictures by|selected and adapted by|with a foreword by|with a new foreword by|introd by|introduction by|intro by|retold by|concept),?\\s");
-	private static Pattern commonAuthorSuffixPattern = Pattern.compile("(?i),?\\s(presents|general editor|editor in chief|editor-in-chief|editors|editor|etc|inc|inc\\setc|co|corporation|llc|partners|company|home entertainment|musical group|et al|concept|consultant|\\.\\.\\.\\set al)\\.?$");
+	private static Pattern commonAuthorPrefixPattern = Pattern.compile("(?i)^" +
+			"(consultant|publisher & editor-in-chief|edited by|by the editors of|editor in chief|edited and translated|" +
+			"editor-in-chief|general editor|editors|editor|chosen by|translated by|published by|prepared by|" +
+			"printed for the author and sold by|printed for and sold by|printed and sold by|sold by|printed for|printed by" +
+			"translated and edited by|edited and translated by|completely rev by|pictures by|selected and adapted by|" +
+			"with a foreword by|with a new foreword by|introd by|introduction by|intro by|retold by|film by|films by|licensed by|" +
+			"compiled by|mixed by|dist by|concept|by),?\\s");
+	private static Pattern commonAuthorSuffixPattern = Pattern.compile("(?i),?\\s(presents|general editor|editor in chief|editor-in-chief|editors|editor|etc|inc|inc\\setc|co|corporation|llc|partners|company|home entertainment|musical group|et al|concept|consultant| md|\\.\\.\\.\\set al)\\.?$");
 	private static String removeCommonPrefixesAndSuffixes(String authorName) {
 		boolean changeMade;
 		do {
