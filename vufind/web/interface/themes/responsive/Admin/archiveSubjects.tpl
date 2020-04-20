@@ -4,7 +4,8 @@
 			<h3>Archive Subjects</h3>
 			<div class="form-group">
 				<label for="subjectsToIgnore">Subjects to Ignore for Explore More</label>
-				<p class="help-block">These subjects will not be used when linking from the archive to the catalog or EBSCO.  Enter one subject per line.</p>
+				<p class="alert alert-info">These subjects will not be used when linking from the archive to the catalog or EBSCO. <br>
+					<strong>Enter one subject per line.</strong></p>
 				<textarea name="subjectsToIgnore" id="subjectsToIgnore" class="form-control">
 					{$subjectsToIgnore}
 				</textarea>
@@ -12,7 +13,8 @@
 
 			<div class="form-group">
 				<label for="subjectsToRestrict">Subjects to Restrict for Explore More</label>
-				<p class="help-block">These subjects will only be used if more desirable subjects are not found when linking from the archive to the catalog or EBSCO.  Enter one subject per line.</p>
+				<p class="alert alert-info">These subjects will only be used if more desirable subjects are not found when linking from the archive to the catalog or EBSCO.  <br>
+					<strong>Enter one subject per line.</strong></p>
 				<textarea name="subjectsToRestrict" id="subjectsToRestrict" class="form-control">
 					{$subjectsToRestrict}
 				</textarea>
