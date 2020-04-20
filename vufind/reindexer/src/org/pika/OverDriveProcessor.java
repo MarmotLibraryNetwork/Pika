@@ -11,7 +11,6 @@ import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.regex.Pattern;
 
 /**
  * Description goes here
@@ -208,7 +207,7 @@ public class OverDriveProcessor {
 
 								//Load the formats for the record.  For OverDrive, we will create a separate item for each format.
 								HashSet<String> validFormats    = loadOverDriveFormats(groupedWork, productId, identifier);
-								String          detailedFormats = Util.getCsvSeparatedString(validFormats);
+								String          detailedFormats = String.join(",", validFormats);
 								//overDriveRecord.addFormats(validFormats);
 
 								loadOverDriveIdentifiers(groupedWork, productId, primaryFormat);
@@ -233,6 +232,14 @@ public class OverDriveProcessor {
 								try (ResultSet availabilityRS = getProductAvailabilityStmt.executeQuery()) {
 
 									overDriveRecord.setEdition("");
+//									if (primaryFormat.equals("eMagazine")) {
+//										String edition = metadata.get("edition");
+//										if (!edition.isEmpty()){
+//											overDriveRecord.setEdition(edition);
+//										}
+//									} else {
+//										overDriveRecord.setEdition("");
+//									}
 									overDriveRecord.setPrimaryLanguage(primaryLanguage);
 									overDriveRecord.setPublisher(metadata.get("publisher"));
 									overDriveRecord.setPublicationDate(metadata.get("publicationDate"));
@@ -559,6 +566,8 @@ public class OverDriveProcessor {
 				groupedWork.addDescription(shortDescription, format);
 				String fullDescription = metadataRS.getString("fullDescription");
 				groupedWork.addDescription(fullDescription, format);
+//				String edition = metadataRS.getString("edition");
+//				returnMetadata.put("edition", edition);
 
 				//Decode JSON data to get a little more information
 				/*try {
