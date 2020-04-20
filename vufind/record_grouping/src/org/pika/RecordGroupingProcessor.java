@@ -10,7 +10,6 @@ import java.sql.*;
 import java.util.*;
 import java.util.Date;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 /**
  * User: Mark Noble
@@ -151,8 +150,7 @@ class RecordGroupingProcessor {
 					if (recordNumberSubfield != null && (recordNumberPrefix.length() == 0 || recordNumberSubfield.getData().length() > recordNumberPrefix.length())) {
 						if (recordNumberSubfield.getData().substring(0, recordNumberPrefix.length()).equals(recordNumberPrefix)) {
 							String recordNumber = recordNumberSubfield.getData().trim();
-							identifier = new RecordIdentifier();
-							identifier.setValue(recordType, recordNumber);
+							identifier = new RecordIdentifier(recordType, recordNumber);
 							break;
 						}
 					}
@@ -161,8 +159,7 @@ class RecordGroupingProcessor {
 					logger.debug("getPrimaryIdentifierFromMarcRecord - Record number field is a control field");
 					ControlField curRecordNumberField = (ControlField) recordNumberFieldValue;
 					String       recordNumber         = curRecordNumberField.getData().trim();
-					identifier = new RecordIdentifier();
-					identifier.setValue(recordType, recordNumber);
+					identifier = new RecordIdentifier(recordType, recordNumber);
 					break;
 				}
 			}
@@ -241,8 +238,10 @@ class RecordGroupingProcessor {
 		// Category
 		String    groupingCategory = setGroupingCategoryForWork(identifier, marcRecord, profile, workForTitle);
 
+		//TODO: use grouping category to set special author for movies
+
 		// Author
-		setWorkAuthorBasedOnMarcRecord(marcRecord, workForTitle, groupingCategory);
+		setWorkAuthorBasedOnMarcRecord(marcRecord, workForTitle, identifier);
 
 		// Language
 		if (workForTitle.getGroupedWorkVersion() >= 5) {
@@ -265,11 +264,11 @@ class RecordGroupingProcessor {
 			groupingCategory = groupingCategories.iterator().next(); //First Format
 		}
 
-		workForTitle.setGroupingCategory(groupingCategory);
+		workForTitle.setGroupingCategory(groupingCategory, identifier);
 		return groupingCategory;
 	}
 
-	private void setWorkAuthorBasedOnMarcRecord(Record marcRecord, GroupedWorkBase workForTitle, String groupingFormat) {
+	private void setWorkAuthorBasedOnMarcRecord(Record marcRecord, GroupedWorkBase workForTitle, RecordIdentifier identifier) {
 		String    author   = null;
 		DataField field100 = marcRecord.getDataField("100"); // Heading - Personal Name
 		if (field100 != null && field100.getSubfield('a') != null) {
@@ -288,27 +287,8 @@ class RecordGroupingProcessor {
 				if (field111 != null && field111.getSubfield('a') != null) {
 					author = field111.getSubfield('a').getData();
 				} else {
-					//Depending on the format we will promote the use of the 245c
-
-					// for .b40649350 the 700a would be better than the 245c of a book
-					//245	0	2	|a A darker shade of Sweden :|b original stories by Sweden's greatest crime writers /|c edited and translated by John-Henri Holmberg.
-					//700	1		|a Holmberg, John-Henri,|d 1949-|0 http://id.loc.gov/authorities/names/n80034250|e editor,|e translator.
-
-					DataField field245 = marcRecord.getDataField("245");
-					//Trying 245c as the last resort
-					//The other option is to not re-translate grouping_category "other" back to "book"
-
-					//Also note that the use of the 245c is why the authorAuthories map is needed to translate "firstname othernames lastname" to "lastname firstname othernames" for people only
-
-//					if (groupingFormat.equals("book") && field245 != null && field245.getSubfield('c') != null) {
-//						//TODO: note, because the other grouping category gets translated back to book, this comes into play for grouping things that are really other.
-//						author = field245.getSubfield('c').getData();
-//						//TODO: reverse name display, but only of people, not organizations. eg Rising Star Games
-//						if (author.indexOf(';') > 0) {
-//							author = author.substring(0, author.indexOf(';') - 1);
-//						}
-//					} else {
 						DataField field700 = marcRecord.getDataField("700"); // Added Entry Personal Name
+							//TODO: combine multiple 700s ?
 						if (field700 != null && field700.getSubfield('a') != null) {
 							author = field700.getSubfield('a').getData();
 						} else {
@@ -322,6 +302,7 @@ class RecordGroupingProcessor {
 									author = field710.getSubfield('a').getData();
 								} else {
 									// 264		1	|a Washington :|b Printed by P. Force,|c 1837.
+									// 264		1	|a Alexandria, VA :|b distributed by Time Life,|c [2004, 1992]
 									DataField field264 = marcRecord.getDataField("264"); // Production, Publication, Distribution, Manufacture, and Copyright Notice.
 									if (field264 != null && field264.getIndicator2() == '1' && field264.getSubfield('b') != null) {
 										author = field264.getSubfield('b').getData();
@@ -330,16 +311,21 @@ class RecordGroupingProcessor {
 										DataField field260 = marcRecord.getDataField("260"); // Publication, Distribution, etc.
 										if (field260 != null && field260.getSubfield('b') != null) {
 											author = field260.getSubfield('b').getData();
-//										} else if (!groupingFormat.equals("book") && field245 != null && field245.getSubfield('c') != null) {
-											// if not a book, check 245c as final resort
-										} else if (field245 != null && field245.getSubfield('c') != null) {
+										} else {
+											DataField field245 = marcRecord.getDataField("245");
+											if (field245 != null && field245.getSubfield('c') != null) {
+											//TODO: if we are using this, we should do the clean up here, trimming out prefix phrases like "editor", etc
 											author = field245.getSubfield('c').getData();
 											if (author.indexOf(';') > 0) {
 												//For Example:
 												//245	1	0	|a Pop Corn & Ma Goodness /|c Edna Mitchell Preston ; illustrated by Robert Andrew Parker.
 												author = author.substring(0, author.indexOf(';') - 1);
 											}
+											if (logger.isInfoEnabled()) {
+												logger.info("Resorting to 245c for grouping author for " + identifier + " : " + author);
+											}
 										}
+									}
 									}
 								}
 							}
@@ -499,7 +485,7 @@ class RecordGroupingProcessor {
 
 		//Check to see if the record is already on an existing work.  If so, remove from the old work.
 		try {
-			groupedWorkForIdentifierStmt.setString(1, primaryIdentifier.getType());
+			groupedWorkForIdentifierStmt.setString(1, primaryIdentifier.getSource());
 			groupedWorkForIdentifierStmt.setString(2, primaryIdentifier.getIdentifier());
 
 			try (ResultSet groupedWorkForIdentifierRS = groupedWorkForIdentifierStmt.executeQuery()) {
@@ -617,7 +603,7 @@ class RecordGroupingProcessor {
 			//This statement will either add the primary key or update the work id if it already exists
 			//Note, we can not lower case this because we depend on the actual identifier later
 			addPrimaryIdentifierForWorkStmt.setLong(1, groupedWorkId);
-			addPrimaryIdentifierForWorkStmt.setString(2, primaryIdentifier.getType());
+			addPrimaryIdentifierForWorkStmt.setString(2, primaryIdentifier.getSource());
 			addPrimaryIdentifierForWorkStmt.setString(3, primaryIdentifier.getIdentifier());
 			addPrimaryIdentifierForWorkStmt.executeUpdate();
 			/*ResultSet primaryIdentifierRS = addPrimaryIdentifierForWorkStmt.getGeneratedKeys();
@@ -773,7 +759,7 @@ class RecordGroupingProcessor {
 		}
 	}
 
-	//TODO: This only gets used by the generate Author authorities, maybe the overdriver grouper
+	//TODO: This only gets used by the generate Author authorities, maybe the overdrive grouper
 	private void loadTranslationMaps(String serverName) {
 		//Load all translationMaps, first from default, then from the site specific configuration
 		File   defaultTranslationMapDirectory = new File("../../sites/default/translation_maps");

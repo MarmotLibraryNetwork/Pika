@@ -256,12 +256,13 @@ class GroupedWork4 extends GroupedWorkBase implements Cloneable {
 		this.permanentId = groupedWorkPermanentId;
 	}
 
-	private static Pattern validCategories = Pattern.compile("^(book|music|movie)$");
+	private static final Pattern validCategories = Pattern.compile("^(book|music|movie)$");
+
 	@Override
-	public void setGroupingCategory(String groupingCategory) {
+	public void setGroupingCategory(String groupingCategory, RecordIdentifier identifier) {
 		groupingCategory = groupingCategory.toLowerCase();
 		if (!validCategories.matcher(groupingCategory).matches()) {
-			logger.error("Invalid grouping category " + groupingCategory);
+			logger.error("Invalid grouping category for " + identifier + " : " + groupingCategory);
 		}else {
 			this.groupingCategory = groupingCategory;
 		}

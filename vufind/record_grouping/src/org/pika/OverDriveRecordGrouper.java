@@ -40,20 +40,21 @@ public class OverDriveRecordGrouper extends RecordGroupingProcessor {
 
 		switch (format.toLowerCase()) {
 			case "music":
-				groupedWork.setGroupingCategory("music");
+				groupedWork.setGroupingCategory("music", primaryIdentifier);
 				break;
 			case "video":
-				groupedWork.setGroupingCategory("movie");
+				groupedWork.setGroupingCategory("movie", primaryIdentifier);
 				break;
 			case "comic":
-				groupedWork.setGroupingCategory("comic");
+				groupedWork.setGroupingCategory("comic", primaryIdentifier);
 				break;
 			default:
-				logger.warn("Unrecognized OverDrive mediaType (using book at grouping category) : " + format);
+				logger.warn("Unrecognized OverDrive mediaType (using book at grouping category) for " + primaryIdentifier + " : " + format);
 			case "magazine":
 			case "audiobook":
 			case "ebook":
-				groupedWork.setGroupingCategory("book");
+			case "book":
+				groupedWork.setGroupingCategory("book", primaryIdentifier);
 		}
 
 		// Language

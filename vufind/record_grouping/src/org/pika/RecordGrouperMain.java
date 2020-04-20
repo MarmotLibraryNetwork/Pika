@@ -129,7 +129,7 @@ public class RecordGrouperMain {
 				GroupedWorkBase work = GroupedWorkFactory.getInstance(-1);
 				work.setTitle(title, subtitle);
 				work.setAuthor(author);
-				work.setGroupingCategory(format);
+				work.setGroupingCategory(format, new RecordIdentifier("n/a", "n/a"));
 				JSONObject result = new JSONObject();
 				try {
 					result.put("normalizedAuthor", work.getAuthoritativeAuthor());
@@ -272,16 +272,18 @@ public class RecordGrouperMain {
 		try (
 			PreparedStatement overDriveRecordsStmt = econtentConnection.prepareStatement("SELECT id, overdriveId, mediaType, title, subtitle, primaryCreatorRole, primaryCreatorName FROM overdrive_api_products WHERE deleted = 0", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			PreparedStatement overDriveCreatorStmt = econtentConnection.prepareStatement("SELECT fileAs FROM overdrive_api_product_creators WHERE productId = ? AND role like ? ORDER BY id", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement overDriveSubjectsStmt = econtentConnection.prepareStatement("SELECT * FROM overdrive_api_product_subjects INNER JOIN overdrive_api_product_subjects_ref ON overdrive_api_product_subjects.id = subjectId WHERE productId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			ResultSet         overDriveRecordRS    = overDriveRecordsStmt.executeQuery()
 		){
 			while (overDriveRecordRS.next()) {
-				long id = overDriveRecordRS.getLong("id");
-
-				String mediaType          = overDriveRecordRS.getString("mediaType");
-				String title              = overDriveRecordRS.getString("title");
-				String subtitle           = overDriveRecordRS.getString("subtitle");
-				String primaryCreatorRole = overDriveRecordRS.getString("primaryCreatorRole");
-				String author             = overDriveRecordRS.getString("primaryCreatorName");
+				long             id                 = overDriveRecordRS.getLong("id");
+				String           overdriveId        = overDriveRecordRS.getString("overdriveId");
+				String           mediaType          = overDriveRecordRS.getString("mediaType");
+				String           title              = overDriveRecordRS.getString("title");
+				String           subtitle           = overDriveRecordRS.getString("subtitle");
+				String           primaryCreatorRole = overDriveRecordRS.getString("primaryCreatorRole");
+				String           author             = overDriveRecordRS.getString("primaryCreatorName");
+				RecordIdentifier primaryIdentifier  = new RecordIdentifier("overdrive", overdriveId);
 				//primary creator in overdrive is always first name, last name.  Therefore, we need to look in the creators table
 				if (author != null) {
 					overDriveCreatorStmt.setLong(1, id);
@@ -317,15 +319,46 @@ public class RecordGrouperMain {
 				GroupedWorkBase work = GroupedWorkFactory.getInstance(-1);
 				work.setTitle(title, subtitle);
 				work.setAuthor(author);
-				if (mediaType.equalsIgnoreCase("audiobook")) {
-					work.setGroupingCategory("book");
-				} else if (mediaType.equalsIgnoreCase("ebook")) {
-					work.setGroupingCategory("book");
-				} else if (mediaType.equalsIgnoreCase("music")) {
-					work.setGroupingCategory("music");
-				} else if (mediaType.equalsIgnoreCase("video")) {
-					work.setGroupingCategory("movie");
+
+				String format;
+				if (mediaType.equalsIgnoreCase("ebook")){
+					format = "book";
+					//Overdrive Graphic Novels can be derived from having a specific subject in the metadata
+					overDriveSubjectsStmt.setLong(1, id);
+					try (ResultSet overDriveSubjectRS = overDriveSubjectsStmt.executeQuery()){
+						while (overDriveSubjectRS.next()){
+							String subject = overDriveSubjectRS.getString("name");
+							if (subject.equals("Comic and Graphic Books")){
+								format = "comic";
+								break;
+							}
+						}
+					} catch (Exception e) {
+						logger.error("Error looking for overdrive graphic novel info", e);
+					}
+				} else {
+					format = mediaType;
 				}
+
+				switch (format.toLowerCase()) {
+					case "music":
+						work.setGroupingCategory("music", primaryIdentifier);
+						break;
+					case "video":
+						work.setGroupingCategory("movie", primaryIdentifier);
+						break;
+					case "comic":
+						work.setGroupingCategory("comic", primaryIdentifier);
+						break;
+					default:
+//						logger.warn("Unrecognized OverDrive mediaType (using book at grouping category) for " + primaryIdentifier + " : " + format);
+					case "magazine":
+					case "audiobook":
+					case "ebook":
+					case "book":
+						work.setGroupingCategory("book", primaryIdentifier);
+				}
+
 				addAlternateAuthoritiesForWorkToAuthoritiesFile(currentAuthorities, manualAuthorities, authoritiesWriter, work);
 				numRecordsProcessed++;
 			}
@@ -482,7 +515,7 @@ public class RecordGrouperMain {
 					GroupedWorkBase work = GroupedWorkFactory.getInstance(4);
 					work.setTitle(originalTitle, "");
 					work.setAuthor(originalAuthor);
-					work.setGroupingCategory(groupingFormat);
+					work.setGroupingCategory(groupingFormat, new RecordIdentifier("n/a", "n/a"));
 
 					//Read from validation file
 					validationData = validationReader.readNext();
@@ -1150,15 +1183,16 @@ public class RecordGrouperMain {
 	private static void clearDatabase(Connection pikaConn, boolean clearDatabasePriorToGrouping) {
 		if (clearDatabasePriorToGrouping) {
 			try {
+				addNoteToGroupingLog("Clearing out grouping related tables.");
 				pikaConn.prepareStatement("TRUNCATE ils_marc_checksums").executeUpdate();
 				pikaConn.prepareStatement("TRUNCATE " + groupedWorkTableName).executeUpdate();
-				String groupedWorkIdentifiersTableName = "grouped_work_identifiers";
-				pikaConn.prepareStatement("TRUNCATE " + groupedWorkIdentifiersTableName).executeUpdate();
-				String groupedWorkIdentifiersRefTableName = "grouped_work_identifiers_ref";
-				pikaConn.prepareStatement("TRUNCATE " + groupedWorkIdentifiersRefTableName).executeUpdate();
+//				String groupedWorkIdentifiersTableName = "grouped_work_identifiers";
+//				pikaConn.prepareStatement("TRUNCATE " + groupedWorkIdentifiersTableName).executeUpdate();
+//				String groupedWorkIdentifiersRefTableName = "grouped_work_identifiers_ref";
+//				pikaConn.prepareStatement("TRUNCATE " + groupedWorkIdentifiersRefTableName).executeUpdate();
 				String groupedWorkPrimaryIdentifiersTableName = "grouped_work_primary_identifiers";
 				pikaConn.prepareStatement("TRUNCATE " + groupedWorkPrimaryIdentifiersTableName).executeUpdate();
-				pikaConn.prepareStatement("TRUNCATE grouped_work_primary_to_secondary_id_ref").executeUpdate();
+//				pikaConn.prepareStatement("TRUNCATE grouped_work_primary_to_secondary_id_ref").executeUpdate();
 			} catch (Exception e) {
 				System.out.println("Error clearing database " + e.toString());
 				System.exit(1);
@@ -1454,8 +1488,7 @@ public class RecordGrouperMain {
 					String groupingLanguage = recordGroupingProcessor.translationMaps.get("iso639-1TOiso639-2B").translateValue(productLanguageCode, overdriveId);
 
 //					overDriveIdentifiersStmt.setLong(1, id);
-					RecordIdentifier primaryIdentifier = new RecordIdentifier();
-					primaryIdentifier.setValue("overdrive", overdriveId);
+					RecordIdentifier primaryIdentifier = new RecordIdentifier("overdrive", overdriveId);
 
 					recordGroupingProcessor.processOverDriveRecord(primaryIdentifier, title, subtitle, author, groupingFormat, groupingLanguage, true);
 					primaryIdentifiersInDatabase.remove(primaryIdentifier.toString().toLowerCase());

@@ -129,7 +129,7 @@ class MarcRecordGrouper extends RecordGroupingProcessor {
 						languageCode = oo8languageCode;
 					}
 				} else if (!oo8languageCode.equals("") && !oo8languageCode.equals("|||")) {
-					//"   " (trimmed to "" & "|||" are equivalent to no language value being set
+					//"   " (trimmed to "") & "|||" are equivalent to no language value being set
 					languageCode = oo8languageCode;
 				}
 			}

@@ -1,6 +1,7 @@
 package org.pika;
 
 import org.apache.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 
 import java.math.BigInteger;
 import java.security.MessageDigest;
@@ -19,9 +20,9 @@ public class GroupedWork5 extends GroupedWorkBase implements Cloneable {
 
 	String groupingLanguage = "";
 
-	static Logger logger = Logger.getLogger(GroupedWork4.class);
+	static Logger logger = Logger.getLogger(GroupedWork5.class);
 
-	private static Pattern validCategories               = Pattern.compile("^(book|music|movie|comic)$");
+	private static final Pattern validCategories = Pattern.compile("^(book|music|movie|comic)$");
 
 	GroupedWork5() {
 		version = 5;
@@ -61,11 +62,11 @@ public class GroupedWork5 extends GroupedWorkBase implements Cloneable {
 	}
 
 	@Override
-	public void setGroupingCategory(String groupingCategory) {
-		if (!validCategories.matcher(groupingCategory).matches()) {
-			logger.error("Invalid grouping category " + groupingCategory);
-		}else {
+	public void setGroupingCategory(String groupingCategory, RecordIdentifier identifier) {
+		if (validCategories.matcher(groupingCategory).matches()) {
 			this.groupingCategory = groupingCategory;
+		} else {
+			logger.error("Invalid grouping category for " + identifier + " : " + groupingCategory);
 		}
 	}
 
@@ -85,6 +86,7 @@ public class GroupedWork5 extends GroupedWorkBase implements Cloneable {
 		this.groupingLanguage = languageCode;
 	}
 
+	@Override
 	String getPermanentId() {
 		if (this.permanentId == null) {
 			StringBuilder permanentId;
@@ -283,7 +285,7 @@ public class GroupedWork5 extends GroupedWorkBase implements Cloneable {
 		return Normalizer.isNormalized(textToNormalize, Normalizer.Form.NFKC) ? textToNormalize : Normalizer.normalize(textToNormalize, Normalizer.Form.NFKC);
 	}
 
-	private String normalizePassedInSubtitle(String title, String subtitle) {
+	private String normalizePassedInSubtitle(@NotNull String title, String subtitle) {
 		if (!title.endsWith(subtitle)){ //TODO: remove overdrive series statements in subtitle
 			//Remove any complex subtitles since we know the beginning of the string
 			String newSubtitle = cleanTitleCharacters(subtitle);

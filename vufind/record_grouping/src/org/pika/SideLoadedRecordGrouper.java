@@ -5,7 +5,6 @@ import org.marc4j.marc.Record;
 
 import java.sql.Connection;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 
 /**
  * Groups records that are not loaded into the ILS.  These are additional records that are processed directly in Pika
@@ -29,6 +28,7 @@ class SideLoadedRecordGrouper extends MarcRecordGrouper {
 		super(dbConnection, profile, logger, fullRegrouping);
 	}
 
+	@Override
 	protected String setGroupingCategoryForWork(RecordIdentifier identifier, Record marcRecord, IndexingProfile profile, GroupedWorkBase workForTitle) {
 		String groupingCategory;
 		HashSet<String> groupingCategories = new FormatDetermination(profile, translationMaps, logger).loadEContentFormatInformation(identifier, marcRecord);
@@ -42,9 +42,8 @@ class SideLoadedRecordGrouper extends MarcRecordGrouper {
 			groupingCategory = groupingCategories.iterator().next(); //First Format
 		}
 
-		workForTitle.setGroupingCategory(groupingCategory);
+		workForTitle.setGroupingCategory(groupingCategory, identifier);
 		return groupingCategory;
 	}
-
 
 }

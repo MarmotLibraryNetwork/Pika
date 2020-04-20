@@ -202,7 +202,6 @@ public class FormatDetermination {
 				String matType = MarcUtil.getFirstFieldVal(record, sierraRecordFixedFieldsTag + materialTypeSubField);
 				if (matType != null) {
 					if (!isMatTypeToIgnore(matType)) {
-						//TODO: use grouping translation map
 						String translatedFormat = translateValue("format", matType, identifier.toString());
 						if (translatedFormat != null && !translatedFormat.equals(matType)) {
 							groupingCategories.add(translateValue("grouping_categories", matType, identifier.toString()));
@@ -210,8 +209,8 @@ public class FormatDetermination {
 						} else if (logger.isInfoEnabled()) {
 							logger.info("Material Type " + matType + " had no translation, falling back to default format determination.");
 						}
-					} else if (logger.isInfoEnabled()) {
-						logger.info("Material Type for " + identifier + " has ignored value '" + matType + "', falling back to default format determination.");
+					} else if (logger.isDebugEnabled()) {
+						logger.debug("Material Type for " + identifier + " has ignored value '" + matType + "', falling back to default format determination.");
 					}
 				} else if (logger.isInfoEnabled()) {
 					logger.info(identifier + " did not have a material type, falling back to default format determination.");
@@ -370,14 +369,13 @@ public class FormatDetermination {
 			if (printFormats.size() == 0) {
 				getFormatFromLeader(printFormats, leader, fixedField);
 				if (printFormats.size() > 1){
-					if (logger.isInfoEnabled()) {
-//						logger.info("Found more than 1 format for " + identifier + " looking at just the leader: " +  getCsvSeparatedString(printFormats));
-						logger.info("Found more than 1 format for " + identifier + " looking at just the leader: " + String.join(",", printFormats));
+					if (logger.isDebugEnabled()) {
+						logger.debug("Found more than 1 format for " + identifier + " looking at just the leader: " + String.join(",", printFormats));
 					}
 				}
 			} else if (printFormats.size() > 1){
-				if (logger.isInfoEnabled()) {
-					logger.info("Found more than 1 format for " + identifier + " looking at just 007");
+				if (logger.isDebugEnabled()) {
+					logger.debug("Found more than 1 format for " + identifier + " looking at just 007");
 				}
 			}
 		}
@@ -387,21 +385,21 @@ public class FormatDetermination {
 //				logger.warn("Did not get any formats for record " + recordInfo.getFullIdentifier() + ", assuming it is a book ");
 //			}
 			printFormats.add("Book");
-		}else if (logger.isDebugEnabled()){
-			for(String format: printFormats){
-				logger.debug("    found format " + format);
-			}
 		}
+//		else if (logger.isDebugEnabled()){
+//			for(String format: printFormats){
+//				logger.debug("    found format " + format);
+//			}
+//		}
 
 		filterPrintFormats(printFormats);
 
 		if (printFormats.size() > 1){
 			String formatsString = String.join(",", printFormats);
-//			String formatsString = getCsvSeparatedString(printFormats);
 			if (!formatsToFilter.contains(formatsString)){
 				formatsToFilter.add(formatsString);
-				if (logger.isInfoEnabled()) {
-					logger.info("Found more than 1 format for " + identifier + " - " + formatsString);
+				if (logger.isDebugEnabled()) {
+					logger.debug("Found more than 1 format for " + identifier + " - " + formatsString);
 				}
 			}
 		}
@@ -1300,21 +1298,5 @@ public class FormatDetermination {
 		}
 		return translatedValue;
 	}
-
-//	private static String getCsvSeparatedString(Set<String> values) {
-//		if (values.size() == 0){
-//			return "";
-//		}else if (values.size() == 1){
-//			return values.iterator().next();
-//		}
-//		StringBuilder crSeparatedString = new StringBuilder();
-//		for (String curValue : values) {
-//			if (crSeparatedString.length() > 0) {
-//				crSeparatedString.append(",");
-//			}
-//			crSeparatedString.append(curValue);
-//		}
-//		return crSeparatedString.toString();
-//	}
 
 }

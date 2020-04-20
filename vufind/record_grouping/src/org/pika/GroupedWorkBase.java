@@ -123,7 +123,7 @@ public abstract class GroupedWorkBase {
 
 	abstract void overridePermanentId(String groupedWorkPermanentId);
 
-	abstract void setGroupingCategory(String groupingCategory);
+	abstract void setGroupingCategory(String groupingCategory, RecordIdentifier identifier);
 
 	abstract String getGroupingCategory();
 
