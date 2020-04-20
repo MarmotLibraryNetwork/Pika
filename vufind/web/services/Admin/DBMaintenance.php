@@ -1353,7 +1353,7 @@ class DBMaintenance extends Admin_Admin {
                     'description' => 'Update e-Content support Address default e-mail address to pika@marmot.org',
                     'continueOnError' => false,
                     'sql' => array(
-                        "ALTER TABLE `library` ALTER COLUMN 'selfRegistrationTemplate' SET DEFAULT 'pika@marmot.org';",
+                        "ALTER TABLE `library` ALTER COLUMN 'eContentSupportAddress' SET DEFAULT 'pika@marmot.org';",
                     )
                 ),
 
