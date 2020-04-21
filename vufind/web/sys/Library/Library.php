@@ -872,7 +872,7 @@ class Library extends DB_DataObject {
 				'overdriveRequirePin'            => array('property'=>'overdriveRequirePin',        'type'=>'checkbox', 'label'=>'Is a Pin Required to log into Overdrive website?', 'description'=>'Turn on to allow repeat search in Overdrive functionality.', 'hideInLists' => true, 'default' => 0),
 				'overdriveAdvantageName'         => array('property'=>'overdriveAdvantageName',     'type'=>'text',     'label'=>'Overdrive Advantage Name', 'description'=>'The name of the OverDrive Advantage account if any.', 'size'=>'80', 'hideInLists' => true,),
 				'overdriveAdvantageProductsKey'  => array('property'=>'overdriveAdvantageProductsKey', 'type'=>'text', 'label'=>'Overdrive Advantage Products Key', 'description'=>'The products key for use when building urls to the API from the advantageAccounts call.', 'size'=>'80', 'hideInLists' => false,),
-                'eContentSupportAddress'           => array('property' => 'eContentSupportAddress', 'type' => 'multiemail', 'label' => 'E-Content Support Address', 'description' => 'An e-mail address to receive support requests for patrons with eContent problems.', 'size' => '80', 'hideInLists' => true, 'default' => 'pika@marmot.org'),
+                'eContentSupportAddress'           => array('property' => 'eContentSupportAddress', 'type' => 'multiemail', 'label' => 'Overdrive Support Address', 'description' => 'An e-mail address to receive support requests for patrons with eContent problems.', 'size' => '80', 'hideInLists' => true, 'default' => 'pika@marmot.org'),
 			)),
 
 			'hooplaSection' => array(
