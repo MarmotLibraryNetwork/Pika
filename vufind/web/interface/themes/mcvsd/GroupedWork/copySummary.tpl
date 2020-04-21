@@ -1,5 +1,5 @@
 {strip}
-	{if count($summary) > 0}
+    {if !empty($summary)}
 		{assign var=numDefaultItems value="0"}
 		{assign var=numRowsShown value="0"}
 		{foreach from=$summary item="item"}

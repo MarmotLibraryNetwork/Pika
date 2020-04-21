@@ -167,54 +167,83 @@ public class FormatDetermination {
 			} else {
 				//Convert formats from print to eContent version
 				for (String format : printFormats) {
-					if (format.equalsIgnoreCase("GraphicNovel") || format.equalsIgnoreCase("eComic")) {
-						econtentItem.setFormat("eComic");
-						econtentItem.setFormatCategory("eBook");
-						econtentRecord.setFormatBoost(10);
-					}else if (format.equalsIgnoreCase("eBook") || format.equalsIgnoreCase("Book") || format.equalsIgnoreCase("LargePrint") || format.equalsIgnoreCase("Manuscript")
-							|| format.equalsIgnoreCase("Thesis") || format.equalsIgnoreCase("Print") || format.equalsIgnoreCase("Microfilm") || format.equalsIgnoreCase("Kit")) {
-						econtentItem.setFormat("eBook");
-						econtentItem.setFormatCategory("eBook");
-						econtentRecord.setFormatBoost(10);
-					}else if (format.equalsIgnoreCase("Journal") || format.equalsIgnoreCase("Serial")) {
-						econtentItem.setFormat("eMagazine");
-						econtentItem.setFormatCategory("eBook");
-						econtentRecord.setFormatBoost(3);
-					} else if (format.equalsIgnoreCase("SoundRecording") || format.equalsIgnoreCase("SoundDisc") || format.equalsIgnoreCase("Playaway") || format.equalsIgnoreCase("CDROM")
-							|| format.equalsIgnoreCase("SoundCassette") || format.equalsIgnoreCase("CompactDisc") || format.equalsIgnoreCase("eAudio")) {
-						econtentItem.setFormat("eAudiobook");
-						econtentItem.setFormatCategory("Audio Books");
-						econtentRecord.setFormatBoost(8);
-					} else if (format.equalsIgnoreCase("MusicRecording")) {
-						econtentItem.setFormat("eMusic");
-						econtentItem.setFormatCategory("Music");
-						econtentRecord.setFormatBoost(5);
-					} else if (format.equalsIgnoreCase("MusicalScore")) {
-						econtentItem.setFormat("MusicalScore");
-						econtentItem.setFormatCategory("eBook");
-						econtentRecord.setFormatBoost(5);
-					} else if (format.equalsIgnoreCase("Movies") || format.equalsIgnoreCase("Video") || format.equalsIgnoreCase("DVD") || format.equalsIgnoreCase("VideoDisc")) {
-						econtentItem.setFormat("eVideo");
-						econtentItem.setFormatCategory("Movies");
-						econtentRecord.setFormatBoost(10);
-					} else if (format.equalsIgnoreCase("Electronic") || format.equalsIgnoreCase("Software")) {
-						econtentItem.setFormat("Online Materials");
-						econtentItem.setFormatCategory("Other");
-						econtentRecord.setFormatBoost(2);
-					} else if (format.equalsIgnoreCase("Photo")) {
-						econtentItem.setFormat("Photo");
-						econtentItem.setFormatCategory("Other");
-						econtentRecord.setFormatBoost(2);
-					} else if (format.equalsIgnoreCase("Map")) {
-						econtentItem.setFormat("Map");
-						econtentItem.setFormatCategory("Other");
-						econtentRecord.setFormatBoost(2);
-					} else if (format.equalsIgnoreCase("Newspaper")) {
-						econtentItem.setFormat("Newspaper");
-						econtentItem.setFormatCategory("eBook");
-						econtentRecord.setFormatBoost(2);
-					} else {
-						logger.warn("Could not find appropriate eContent format for " + format + " while side loading eContent " + econtentRecord.getFullIdentifier());
+					switch (format.toLowerCase()) {
+						case "graphicnovel":
+						case "ecomic":
+							econtentItem.setFormat("eComic");
+							econtentItem.setFormatCategory("eBook");
+							econtentRecord.setFormatBoost(10);
+							break;
+						case "ebook":
+						case "book":
+						case "largeprint":
+						case "manuscript":
+						case "thesis":
+						case "print":
+						case "microfilm":
+						case "kit":
+							econtentItem.setFormat("eBook");
+							econtentItem.setFormatCategory("eBook");
+							econtentRecord.setFormatBoost(10);
+							break;
+						case "journal":
+						case "serial":
+							econtentItem.setFormat("eMagazine");
+							econtentItem.setFormatCategory("eBook");
+							econtentRecord.setFormatBoost(3);
+							break;
+						case "soundrecording":
+						case "sounddisc":
+						case "playaway":
+						case "cdrom":
+						case "soundcassette":
+						case "compactdisc":
+						case "eaudio":
+							econtentItem.setFormat("eAudiobook");
+							econtentItem.setFormatCategory("Audio Books");
+							econtentRecord.setFormatBoost(8);
+							break;
+						case "musicrecording":
+							econtentItem.setFormat("eMusic");
+							econtentItem.setFormatCategory("Music");
+							econtentRecord.setFormatBoost(5);
+							break;
+						case "musicalscore":
+							econtentItem.setFormat("MusicalScore");
+							econtentItem.setFormatCategory("eBook");
+							econtentRecord.setFormatBoost(5);
+							break;
+						case "movies":
+						case "video":
+						case "dvd":
+						case "videodisc":
+						case "playawayview":
+							econtentItem.setFormat("eVideo");
+							econtentItem.setFormatCategory("Movies");
+							econtentRecord.setFormatBoost(10);
+						case "electronic":
+						case "software":
+							econtentItem.setFormat("Online Materials");
+							econtentItem.setFormatCategory("Other");
+							econtentRecord.setFormatBoost(2);
+							break;
+						case "photo":
+							econtentItem.setFormat("Photo");
+							econtentItem.setFormatCategory("Other");
+							econtentRecord.setFormatBoost(2);
+							break;
+						case "map":
+							econtentItem.setFormat("Map");
+							econtentItem.setFormatCategory("Other");
+							econtentRecord.setFormatBoost(2);
+							break;
+						case "newspaper":
+							econtentItem.setFormat("Newspaper");
+							econtentItem.setFormatCategory("eBook");
+							econtentRecord.setFormatBoost(2);
+							break;
+						default:
+							logger.warn("Could not find appropriate eContent format for " + format + " while side loading eContent " + econtentRecord.getFullIdentifier());
 					}
 				}
 			}
@@ -453,7 +482,7 @@ public class FormatDetermination {
 				getFormatFromLeader(printFormats, leader, fixedField);
 				if (printFormats.size() > 1){
 					if (logger.isInfoEnabled()) {
-						logger.info("Found more than 1 format for " + recordInfo.getFullIdentifier() + " looking at just the leader: " +  Util.getCsvSeparatedString(printFormats));
+						logger.info("Found more than 1 format for " + recordInfo.getFullIdentifier() + " looking at just the leader: " +  String.join(",",printFormats));
 					}
 				}
 			} else if (printFormats.size() > 1){
@@ -469,15 +498,13 @@ public class FormatDetermination {
 //			}
 			printFormats.add("Book");
 		}else if (logger.isDebugEnabled()){
-			for(String format: printFormats){
-				logger.debug("    found format " + format);
-			}
+			logger.debug("Pre-filtering found formats " + String.join(",", printFormats));
 		}
 
 		filterPrintFormats(printFormats);
 
 		if (printFormats.size() > 1){
-			String formatsString = Util.getCsvSeparatedString(printFormats);
+			String formatsString = String.join(",",printFormats);
 			if (!formatsToFilter.contains(formatsString)){
 				formatsToFilter.add(formatsString);
 				if (logger.isInfoEnabled()) {
@@ -716,6 +743,8 @@ public class FormatDetermination {
 				printFormats.add("eVideo");
 			}else if (titleMedium.contains("ejournal")){
 				printFormats.add("eJournal");
+			}else if (titleMedium.contains("playaway view")){
+				printFormats.add("PlayawayView");
 			}else if (titleMedium.contains("playaway")){
 				printFormats.add("Playaway");
 			}else if (titleMedium.contains("periodical")){
@@ -759,13 +788,15 @@ public class FormatDetermination {
 	}
 
 	private void getFormatFromPublicationInfo(Record record, Set<String> result) {
-		// check for playaway in 260|b
+		// check for playaway view, playaway, go reader in 260|b
 		DataField sysDetailsNote = record.getDataField("260");
 		if (sysDetailsNote != null) {
 			if (sysDetailsNote.getSubfield('b') != null) {
 				String sysDetailsValue = sysDetailsNote.getSubfield('b').getData()
 						.toLowerCase();
-				if (sysDetailsValue.contains("playaway")) {
+				if (sysDetailsValue.contains("playaway view")) {
+					result.add("PlayawayView");
+				}else if (sysDetailsValue.contains("playaway")) {
 					result.add("Playaway");
 				}else if (sysDetailsValue.contains("go reader")) {
 					result.add("GoReader");
@@ -847,11 +878,13 @@ public class FormatDetermination {
 			if (sysDetailsNote2 != null) {
 				if (sysDetailsNote2.getSubfield('a') != null) {
 					String sysDetailsValue = sysDetailsNote2.getSubfield('a').getData().toLowerCase();
-					String gameFormat = getGameFormatFromValue(sysDetailsValue);
+					String gameFormat      = getGameFormatFromValue(sysDetailsValue);
 					if (gameFormat != null) {
 						result.add(gameFormat);
 					} else {
-						if (sysDetailsValue.contains("playaway")) {
+						if (sysDetailsValue.contains("playaway view")) {
+							result.add("PlayawayView");
+						} else if (sysDetailsValue.contains("playaway")) {
 							result.add("Playaway");
 						} else if (find4KUltraBluRayPhrases(sysDetailsValue)) {
 							result.add("4KUltraBlu-Ray");
@@ -868,16 +901,22 @@ public class FormatDetermination {
 		}
 
 		// Check for formats in the 500 tag
-		DataField noteField = record.getDataField("500");
-		if (noteField != null) {
-			if (noteField.getSubfield('a') != null) {
-				String noteValue = noteField.getSubfield('a').getData().toLowerCase();
-				if (noteValue.contains("vertical file")) {
-					result.add("VerticalFile");
-				}else if (noteValue.contains("vox book")) {
-					result.add("VoxBooks");
-				}else if (noteValue.contains("wonderbook")) {
-					result.add("WonderBook");
+		List<DataField> noteFields = record.getDataFields("500");
+		for (DataField noteField : noteFields) {
+			if (noteField != null) {
+				if (noteField.getSubfield('a') != null) {
+					String noteValue = noteField.getSubfield('a').getData().toLowerCase();
+					if (noteValue.contains("vox book")) {
+						result.add("VoxBooks");
+					} else if (noteValue.contains("wonderbook")) {
+						result.add("WonderBook");
+					}else if (noteValue.contains("playaway view")){
+						result.add("PlayawayView");
+					}else if (noteValue.contains("playaway")){
+						result.add("Playaway");
+					} else if (noteValue.contains("vertical file")) {
+						result.add("VerticalFile");
+					}
 				}
 			}
 		}
@@ -966,6 +1005,8 @@ public class FormatDetermination {
 						String subfieldData = subfield.getData().toLowerCase();
 						if (subfieldData.contains("large type") || subfieldData.contains("large print")) {
 							result.add("LargePrint");
+						}else if (subfieldData.contains("playaway view")) {
+							result.add("PlayawayView");
 						}else if (subfieldData.contains("playaway")) {
 							result.add("Playaway");
 						}else if (subfieldData.contains("graphic novel")) {
@@ -1002,6 +1043,8 @@ public class FormatDetermination {
 						String subfieldData = subfield.getData().toLowerCase();
 						if (subfieldData.contains("large type")) {
 							result.add("LargePrint");
+						}else if (subfieldData.contains("playaway view")) {
+							result.add("PlayawayView");
 						}else if (subfieldData.contains("playaway")) {
 							result.add("Playaway");
 						}else if (subfieldData.contains("graphic novel")) {

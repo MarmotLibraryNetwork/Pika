@@ -13,7 +13,7 @@
 			</a>
 		{/if}
 		{if $showShareOnExternalSites}
-			<a href="http://twitter.com/home?status={$recordDriver->getTitle()|urlencode}+{$url}/GroupedWork/{$recordDriver->getPermanentId()}/Home" target="_blank" title="Share on Twitter">
+			<a href="https://twitter.com/compose/tweet?text={$recordDriver->getTitle()|urlencode}+{$url}/GroupedWork/{$recordDriver->getPermanentId()}/Home" target="_blank" title="Share on Twitter">
 				<img src="{img filename='twitter-icon.png'}" alt="Share on Twitter">
 			</a>
 			<a href="http://www.facebook.com/sharer/sharer.php?u={$url}/{$recordDriver->getLinkUrl()|escape:'url'}" target="_blank" title="Share on Facebook">

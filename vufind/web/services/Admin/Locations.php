@@ -84,15 +84,20 @@ class Locations extends ObjectEditor {
 	function getAdditionalObjectActions($existingObject){
 		$user          = UserAccount::getLoggedInUser();
 		$objectActions = array();
+
 		if ($existingObject != null){
-			$objectActions[] = array(
-				'text' => 'Reset Facets To Default',
-				'url'  => '/Admin/Locations?objectAction=resetFacetsToDefault&amp;id=' . $existingObject->locationId,
-			);
-			$objectActions[] = array(
-				'text' => 'Reset More Details To Default',
-				'url'  => '/Admin/Locations?id=' . $existingObject->locationId . '&amp;objectAction=resetMoreDetailsToDefault',
-			);
+		    $user = UserAccount::getLoggedInUser();
+            if(UserAccount::userHasRole('opacAdmin'))
+            {
+		        $objectActions[] = array(
+				    'text' => 'Reset Facets To Default',
+				    'url'  => '/Admin/Locations?objectAction=resetFacetsToDefault&amp;id=' . $existingObject->locationId,
+			    );
+			    $objectActions[] = array(
+				    'text' => 'Reset More Details To Default',
+				    'url'  => '/Admin/Locations?id=' . $existingObject->locationId . '&amp;objectAction=resetMoreDetailsToDefault',
+			    );
+            }
 			if (!UserAccount::userHasRole('libraryManager') && !UserAccount::userHasRole('locationManager')){
 				$objectActions[] = array(
 					'text' => 'Copy Location Data',

@@ -1250,32 +1250,27 @@ class MarcRecord extends IndexRecord
 		return $descriptionArray;
 	}
 
-	private function trimDescription($description)
-	{
+	private function trimDescription($description){
 		$chars = 300;
-		if (strlen($description) > $chars) {
-			$description = $description . " ";
+		if (strlen($description) > $chars){
+			$description .= ' ';
 			$description = substr($description, 0, $chars);
 			$description = substr($description, 0, strrpos($description, ' '));
-			$description = $description . "...";
+			$description .= '...';
 		}
 		return $description;
 	}
 
-	function getLanguage()
-	{
+	function getLanguage(){
 		/** @var File_MARC_Control_Field $field008 */
 		$field008 = $this->getMarcRecord()->getField('008');
-		if ($field008 != null && strlen($field008->getData() >= 37)) {
+		if ($field008 != null && strlen($field008->getData() >= 37)){
 			$languageCode = substr($field008->getData(), 35, 3);
-			if ($languageCode == 'eng') {
-				$languageCode = 'English';
-			} elseif ($languageCode == 'spa') {
-				$languageCode = 'Spanish';
-			}
-			return $languageCode;
-		} else {
-			return 'English';
+			require_once ROOT_DIR . '/sys/Language/Language.php';
+			return Language::getLanguage($languageCode);
+		}else{
+			//TODO: look at sierra language fixed field
+			return 'Unknown';
 		}
 	}
 
