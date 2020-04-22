@@ -1175,10 +1175,10 @@ public class GroupedWorkIndexer {
 										groupSubTitle = groupSubTitle.toLowerCase();
 										int subTitleMatches = score.fuzzyScore(groupSubTitle, ARTitle);
 										if (subTitleMatches < 10) {
-											logger.warn("Possible mismatch of AR Data for grouped work " + groupWorkPermanentId + " title '" + groupTitle + "' with subtitle '" + groupSubTitle + "' and AR data for isbn " + isbn + ", ar title " + ARTitle);
+											logger.debug("Possible mismatch of AR Data for grouped work " + groupWorkPermanentId + " title '" + groupTitle + "' with subtitle '" + groupSubTitle + "' and AR data for isbn " + isbn + ", ar title " + ARTitle);
 										}
 									} else {
-										logger.warn("Possible mismatch of AR Data for grouped work " + groupWorkPermanentId + " title '" + groupTitle + "' and AR data for isbn " + isbn + ", ar title " + ARTitle);
+										logger.debug("Possible mismatch of AR Data for grouped work " + groupWorkPermanentId + " title '" + groupTitle + "' and AR data for isbn " + isbn + ", ar title " + ARTitle);
 									}
 								} else if (logger.isDebugEnabled()) {
 									logger.debug("Matched AR Data for grouped work " + groupWorkPermanentId + " title '" + groupTitle + "' on isbn " + isbn + " with AR Title : " + ARTitle);
