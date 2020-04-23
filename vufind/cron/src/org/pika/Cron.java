@@ -54,16 +54,16 @@ public class Cron {
 			return;
 		}
 
-		// Read the base INI file to get information about the server (current directory/cron/config.ini)
-		Ini ini = loadConfigFile("config.ini");
-		
+		// Read the base INI file to get information about the server (current directory/conf/config.ini)
+		PikaConfigIni.loadConfigFile("config.ini", serverName, logger);
+
 		//Connect to the database
-		String databaseConnectionInfo = Util.cleanIniValue(ini.get("Database","database_vufind_jdbc"));
-		if (databaseConnectionInfo == null || databaseConnectionInfo.length() == 0) {
+		String databaseConnectionInfo = PikaConfigIni.getIniValue("Database","database_vufind_jdbc");
+		if (databaseConnectionInfo == null || databaseConnectionInfo.isEmpty()) {
 			logger.error("Pika Database connection information not found in General Settings.  Please specify connection information in a database key.");
 			return;
 		}
-		String econtentConnectionInfo = Util.cleanIniValue(ini.get("Database","database_econtent_jdbc"));
+		String econtentConnectionInfo = PikaConfigIni.getIniValue("Database","database_econtent_jdbc");
 		if (econtentConnectionInfo == null || econtentConnectionInfo.length() == 0) {
 			logger.error("eContent Database connection information not found in General Settings.  Please specify connection information in a database key.");
 			return;
@@ -153,7 +153,7 @@ public class Cron {
 					//Mark the time the run was started rather than finished so really long running processes
 					//can go on while faster processes execute multiple times in other threads.
 					markProcessStarted(processToRun);
-					processHandlerInstance.doCronProcess(serverName, ini, processSettings, pikaConn, econtentConn, cronEntry, logger);
+					processHandlerInstance.doCronProcess(serverName, processSettings, pikaConn, econtentConn, cronEntry, logger);
 					//Log how long the process took
 					Date  endTime        = new Date();
 					long  elapsedMillis  = endTime.getTime() - currentTime.getTime();
@@ -260,10 +260,11 @@ public class Cron {
 	}
 
 	private static void loadLastRunTimeForProcess(ProcessToRun newProcess) {
-		try{
-			String processVariableId = "last_" + newProcess.getProcessName().toLowerCase().replace(' ', '_') + "_time";
-			PreparedStatement loadLastRunTimeStmt = pikaConn.prepareStatement("SELECT * from variables WHERE name = '" + processVariableId + "'");
-			ResultSet lastRunTimeRS = loadLastRunTimeStmt.executeQuery();
+		String processVariableId = "last_" + newProcess.getProcessName().toLowerCase().replace(' ', '_') + "_time";
+		try(
+			PreparedStatement loadLastRunTimeStmt = pikaConn.prepareStatement("SELECT * FROM variables WHERE name = '" + processVariableId + "'");
+			ResultSet lastRunTimeRS = loadLastRunTimeStmt.executeQuery())
+		{
 			if (lastRunTimeRS.next()){
 				newProcess.setLastRunTime(lastRunTimeRS.getLong("value"));
 				newProcess.setLastRunVariableId(lastRunTimeRS.getLong("id"));

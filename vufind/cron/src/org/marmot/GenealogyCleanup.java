@@ -25,40 +25,47 @@ import org.pika.IProcessHandler;
 import org.apache.log4j.Logger;
 
 import au.com.bytecode.opencsv.CSVReader;
+import org.pika.PikaConfigIni;
 
 public class GenealogyCleanup implements IProcessHandler {
-	private Connection vufindConn;
-	private Logger logger;
+	private Connection          pikaConn;
+	private Logger              logger;
 	private CronProcessLogEntry processLog;
 
 	@Override
-	public void doCronProcess(String servername, Ini configIni, Section processSettings, Connection vufindConn, Connection econtentConn, CronLogEntry cronEntry, Logger logger) {
-		this.vufindConn = vufindConn;
-		this.logger = logger;
-		processLog = new CronProcessLogEntry(cronEntry.getLogEntryId(), "Genealogy Cleanup");
-		processLog.saveToDatabase(vufindConn, logger);
+	public void doCronProcess(String servername,  Section processSettings, Connection pikaConn, Connection econtentConn, CronLogEntry cronEntry, Logger logger) {
+		this.pikaConn = pikaConn;
+		this.logger   = logger;
+		processLog    = new CronProcessLogEntry(cronEntry.getLogEntryId(), "Genealogy Cleanup");
+		processLog.saveToDatabase(pikaConn, logger);
+
+		String genealogyUrl = PikaConfigIni.getIniValue("Genealogy", "url");
+		if (genealogyUrl == null || genealogyUrl.length() == 0) {
+			logger.error("Unable to get url for genealogy in GenealogyCleanup section.  Please specify genealogyIndex key.");
+			processLog.addNote("Unable to get url for genealogy in GenealogyCleanup section.  Please specify genealogyIndex key.");
+			return;
+		}
+
+		deleteDuplicates(processSettings);
+		processLog.saveToDatabase(pikaConn, logger);
 		
-		deleteDuplicates(configIni, processSettings);
-		processLog.saveToDatabase(vufindConn, logger);
+		importFiles(processSettings);
+		processLog.saveToDatabase(pikaConn, logger);
 		
-		importFiles(configIni, processSettings);
-		processLog.saveToDatabase(vufindConn, logger);
+		reindexPeople(processSettings);
+		processLog.saveToDatabase(pikaConn, logger);
 		
-		reindexPeople(configIni, processSettings);
-		processLog.saveToDatabase(vufindConn, logger);
-		
-		optimizeIndex(configIni, processSettings);
+		optimizeIndex(processSettings);
 		processLog.setFinished();
-		processLog.saveToDatabase(vufindConn, logger);
+		processLog.saveToDatabase(pikaConn, logger);
 	}
 
 	/**
 	 * Optimize the Genealogy database
 	 * 
 	 * @param processSettings
-	 * @param generalSettings
 	 */
-	private void optimizeIndex(Ini configIni, Section processSettings) {
+	private void optimizeIndex(Section processSettings) {
 		processLog.addNote("Optimizing genealogy index");
 		String body = "<optimize/>";
 		if (!doSolrUpdate(processSettings, body)) {
@@ -124,20 +131,14 @@ public class GenealogyCleanup implements IProcessHandler {
 	 * reindex all people in the database
 	 * 
 	 * @param processSettings
-	 * @param generalSettings
 	 */
-	private void reindexPeople(Ini configIni, Section processSettings) {
+	private void reindexPeople(Section processSettings) {
 		String reindexSetting = processSettings.get("reindex");
 		if (reindexSetting == null || !reindexSetting.equals("true")) {
 			processLog.addNote("Skipping reindexing people becuase reindex was not true.");
 			return;
 		}
-		String genealogyUrl = configIni.get("Genealogy", "url");
-		if (genealogyUrl == null || genealogyUrl.length() == 0) {
-			processLog.addNote("Unable to get url for genealogy in GenealogyCleanup section.  Please specify genealogyIndex key.");
-			return;
-		}
-		
+
 		// Clear all existing people from the solr index
 		doSolrUpdate(processSettings, "<delete><query>*:*</query></delete>");
 		doSolrUpdate(processSettings, "<commit/>");
@@ -145,17 +146,17 @@ public class GenealogyCleanup implements IProcessHandler {
 
 		// Run through all existing people in the database and index them.
 		try {
-			Statement peopleStatement = vufindConn.createStatement();
+			Statement peopleStatement = pikaConn.createStatement();
 			ResultSet personRs = peopleStatement.executeQuery("SELECT personId from person");
 			int numPeople = 0;
 			while (personRs.next()) {
 				int personId = personRs.getInt("personId");
 				System.out.println("Reindexing person " + personId);
-				reindexPerson(processSettings, vufindConn, personId);
+				reindexPerson(processSettings, pikaConn, personId);
 				numPeople++;
 				processLog.incUpdated();
 				if (numPeople % 100 == 0){
-					processLog.saveToDatabase(vufindConn, logger);
+					processLog.saveToDatabase(pikaConn, logger);
 				}
 			}
 			personRs.close();
@@ -169,21 +170,15 @@ public class GenealogyCleanup implements IProcessHandler {
 	 * Import people from a file
 	 * 
 	 * @param processSettings
-	 * @param generalSettings
 	 */
-	private void importFiles(Ini configIni, Section processSettings) {
+	private void importFiles(Section processSettings) {
 		String importFile = processSettings.get("importFile");
 		if (importFile == null || importFile.length() == 0) {
 			processLog.addNote("Skipping importing people becuase no importFile was specified.");
 			processLog.incErrors();
 			return;
 		}
-		String genealogyUrl = configIni.get("Genealogy", "url");
-		if (genealogyUrl == null || genealogyUrl.length() == 0) {
-			processLog.addNote("Unable to get url for genealogy in GenealogyCleanup section.  Please specify genealogyIndex key.");
-			return;
-		}
-		
+
 		//Prepare statements
 		PreparedStatement st1;
 		PreparedStatement updatePersonStatement;
@@ -194,47 +189,47 @@ public class GenealogyCleanup implements IProcessHandler {
 		PreparedStatement insertObitStmt;
 		try {
 			String personExistsQuery = "SELECT personId, birthDateDay, birthDateMonth, birthDateYear, deathDateDay, deathDateMonth, deathDateYear FROM person where "
-				+ " firstName = ?"
-				+ " AND lastName = ?"
-				+ " AND maidenName = ?"
-				+ " AND birthDateDay = ?"
-				+ " AND birthDateMonth = ?"
-				+ " AND birthDateYear = ?";
-			st1 = vufindConn.prepareStatement(personExistsQuery);
+					+ " firstName = ?"
+					+ " AND lastName = ?"
+					+ " AND maidenName = ?"
+					+ " AND birthDateDay = ?"
+					+ " AND birthDateMonth = ?"
+					+ " AND birthDateYear = ?";
+			st1 = pikaConn.prepareStatement(personExistsQuery);
 			String updatePersonQuery = "UPDATE person SET firstName = ?, lastName = ?, maidenName =?, "
-				+ " birthDateDay = ?, birthDateMonth = ?, birthDateYear = ?, " + " deathDateDay = ?, deathDateMonth = ?, deathDateYear = ?, "
-				+ " ageAtDeath = ?, comments = ? WHERE personId = ?;";
-			updatePersonStatement = vufindConn.prepareStatement(updatePersonQuery);
+					+ " birthDateDay = ?, birthDateMonth = ?, birthDateYear = ?, " + " deathDateDay = ?, deathDateMonth = ?, deathDateYear = ?, "
+					+ " ageAtDeath = ?, comments = ? WHERE personId = ?;";
+			updatePersonStatement = pikaConn.prepareStatement(updatePersonQuery);
 			String insertPersonQuery = "INSERT INTO person (firstName, lastName, maidenName, " + " birthDateDay, birthDateMonth, birthDateYear, "
-				+ " deathDateDay, deathDateMonth, deathDateYear, " + " ageAtDeath, comments) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
-			insertPersonStatement = vufindConn.prepareStatement(insertPersonQuery, Statement.RETURN_GENERATED_KEYS);
-			
+					+ " deathDateDay, deathDateMonth, deathDateYear, " + " ageAtDeath, comments) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
+			insertPersonStatement = pikaConn.prepareStatement(insertPersonQuery, Statement.RETURN_GENERATED_KEYS);
+
 			// delete existing marriages and enter new
 			String deleteMarriagesQuery = "DELETE FROM marriage where personId = ?";
-			deleteMarriagesStatement = vufindConn.prepareStatement(deleteMarriagesQuery);
-			
+			deleteMarriagesStatement = pikaConn.prepareStatement(deleteMarriagesQuery);
+
 			// insert 1st marriage if available
 			String insertMarriageQuery = "INSERT INTO marriage (personId, spouseName, marriageDateDay, marriageDateMonth, marriageDateYear, comments) "
 					+ " VALUES (?, ?, ?, ?, ?, ?);";
-			insertMarriageStmt = vufindConn.prepareStatement(insertMarriageQuery);
-			
-			deleteObitsStatement = vufindConn.prepareStatement("DELETE FROM obituary where personId = ?");
-			
+			insertMarriageStmt = pikaConn.prepareStatement(insertMarriageQuery);
+
+			deleteObitsStatement = pikaConn.prepareStatement("DELETE FROM obituary where personId = ?");
+
 			String insertObitQuery = "INSERT INTO obituary (personId, source, dateDay, dateMonth, dateYear, sourcePage, contents) "
-				+ " VALUES (?, ?, ?, ?, ?, ?, ?);";
-			insertObitStmt = vufindConn.prepareStatement(insertObitQuery);
+					+ " VALUES (?, ?, ?, ?, ?, ?, ?);";
+			insertObitStmt = pikaConn.prepareStatement(insertObitQuery);
 		} catch (SQLException e1) {
 			processLog.addNote("Could not prepare statements for importing people ");
 			processLog.incErrors();
 			return;
-		}	
+		}
 
 		try {
 			// Open the file and parse it as CSV
 			try {
-				CSVReader reader = new CSVReader(new FileReader(importFile));
-				String[] nextLine;
-				String[] headers = null;
+				CSVReader reader  = new CSVReader(new FileReader(importFile));
+				String[]  nextLine;
+				String[]  headers = null;
 				while ((nextLine = reader.readNext()) != null) {
 					// headers are the first line
 					if (headers == null) {
@@ -243,32 +238,32 @@ public class GenealogyCleanup implements IProcessHandler {
 						// We expect the following headers: MCPLD export
 						// "FullName","Last Name","First Name","Maiden Name","Marriage date","Spouse 1","Spouse 2","Born","Died","Age","Obit 1 Paper","Obit 1 Date","Obit 1 Page","Obit 2 Paper","Obit 2 Date","Obit 2 Page","Obit 3 Paper","Obit 3 Date","Obit 3 Page","Comments"
 						// insert the person into the database
-						String lastName = nextLine[1];
-						String firstName = nextLine[2];
+						String lastName   = nextLine[1];
+						String firstName  = nextLine[2];
 						String maidenName = nextLine[3];
-						if (maidenName == "N/A")
+						if (maidenName.equalsIgnoreCase("N/A"))
 							maidenName = "N/A";
-						DateInfo marriageDate = new DateInfo(nextLine[4]);
-						String marriageComment = marriageDate.isNotSet() ? marriageDate.getOriginalDate() : "";
-						String spouse1 = nextLine[5];
-						String spouse2 = nextLine[6];
-						DateInfo birthDate = new DateInfo(nextLine[7]);
-						DateInfo deathDate = new DateInfo(nextLine[8]);
-						String ageAtDeath = nextLine[9];
-						String obit1Source = nextLine[10];
-						DateInfo obit1Date = new DateInfo(nextLine[11]);
-						String obit1Page = nextLine[12];
-						String obit2Source = nextLine[13];
-						DateInfo obit2Date = new DateInfo(nextLine[14]);
-						String obit2Page = nextLine[15];
-						String obit3Source = nextLine[16];
-						DateInfo obit3Date = new DateInfo(nextLine[17]);
-						String obit3Page = nextLine[18];
-						String comments = nextLine[19];
+						DateInfo marriageDate    = new DateInfo(nextLine[4]);
+						String   marriageComment = marriageDate.isNotSet() ? marriageDate.getOriginalDate() : "";
+						String   spouse1         = nextLine[5];
+						String   spouse2         = nextLine[6];
+						DateInfo birthDate       = new DateInfo(nextLine[7]);
+						DateInfo deathDate       = new DateInfo(nextLine[8]);
+						String   ageAtDeath      = nextLine[9];
+						String   obit1Source     = nextLine[10];
+						DateInfo obit1Date       = new DateInfo(nextLine[11]);
+						String   obit1Page       = nextLine[12];
+						String   obit2Source     = nextLine[13];
+						DateInfo obit2Date       = new DateInfo(nextLine[14]);
+						String   obit2Page       = nextLine[15];
+						String   obit3Source     = nextLine[16];
+						DateInfo obit3Date       = new DateInfo(nextLine[17]);
+						String   obit3Page       = nextLine[18];
+						String   comments        = nextLine[19];
 						comments += (birthDate.isNotSet() && birthDate.getOriginalDate().length() > 0 ? ", born: " + birthDate.getOriginalDate() : "");
 						comments += (deathDate.isNotSet() && deathDate.getOriginalDate().length() > 0 ? ", died: " + deathDate.getOriginalDate() : "");
 						// Check to see if the person already exists.
-						
+
 						st1.setString(1, firstName);
 						st1.setString(2, lastName);
 						st1.setString(3, maidenName);
@@ -277,13 +272,13 @@ public class GenealogyCleanup implements IProcessHandler {
 						st1.setInt(6, birthDate.getYear());
 						try {
 							ResultSet personExistsRs = st1.executeQuery();
-							boolean foundMatch = false;
-							Integer personId = null;
+							boolean   foundMatch     = false;
+							Integer   personId       = null;
 							if (personExistsRs.next()) {
 								// Check to see if we have a match of the birthdate and/or death
 								// date
 								foundMatch = true;
-								personId = personExistsRs.getInt("personId");
+								personId   = personExistsRs.getInt("personId");
 							}
 							if (foundMatch) {
 								// System.out.println("updating person " + personId);
@@ -326,7 +321,7 @@ public class GenealogyCleanup implements IProcessHandler {
 								}
 								generatedKeys.close();
 							}
-							
+
 							deleteMarriagesStatement.setInt(1, personId);
 							deleteMarriagesStatement.execute();
 							if ((spouse1 != null && spouse1.length() > 0) || !marriageDate.isNotSet() || (marriageComment != null && marriageComment.length() > 0)) {
@@ -352,7 +347,7 @@ public class GenealogyCleanup implements IProcessHandler {
 							insertMarriageStmt.close();
 
 							// delete existing obits and enter new
-							
+
 							deleteObitsStatement.setInt(1, personId);
 							deleteObitsStatement.executeUpdate();
 							if (obit1Source.length() > 0 || !obit1Date.isNotSet() || obit1Page.length() > 0) {
@@ -396,7 +391,7 @@ public class GenealogyCleanup implements IProcessHandler {
 							personExistsRs.close();
 
 							// Reindex the person in solr
-							reindexPerson(processSettings, vufindConn, personId);
+							reindexPerson(processSettings, pikaConn, personId);
 							processLog.incUpdated();
 						} catch (Exception e) {
 							processLog.addNote("Error checking if person exists " + e.toString());
@@ -430,116 +425,116 @@ public class GenealogyCleanup implements IProcessHandler {
 		try {
 			// Load the person from the database
 			Statement personStatement = conn.createStatement();
-			ResultSet personRs = personStatement.executeQuery("SELECT * from person where personId = " + personId);
+			ResultSet personRs        = personStatement.executeQuery("SELECT * FROM person WHERE personId = " + personId);
 			if (personRs.next()) {
-				Statement marriageStatement = conn.createStatement();
-				ResultSet marriageRs = marriageStatement.executeQuery("SELECT * from marriage where personId = " + personId);
-				StringBuffer marriageFields = new StringBuffer();
-				StringBuffer keywords = new StringBuffer();
+				Statement     marriageStatement = conn.createStatement();
+				ResultSet     marriageRs        = marriageStatement.executeQuery("SELECT * FROM marriage WHERE personId = " + personId);
+				StringBuilder marriageFields    = new StringBuilder();
+				StringBuilder keywords          = new StringBuilder();
 				while (marriageRs.next()) {
 					String spouseName = getFieldForSolr(marriageRs, "spouseName");
 					if (spouseName.length() > 0) {
-						marriageFields.append("<field name=\"spouseName\">" + spouseName + "</field>");
+						marriageFields.append("<field name=\"spouseName\">").append(spouseName).append("</field>");
 					}
 					DateInfo marriageDate = new DateInfo(marriageRs.getInt("marriageDateDay"), marriageRs.getInt("marriageDateMonth"),
 							marriageRs.getInt("marriageDateYear"));
 					if (!marriageDate.isNotSet()) {
-						marriageFields.append("<field name=\"marriageDate\">" + marriageDate.getSolrDate() + "</field>");
+						marriageFields.append("<field name=\"marriageDate\">").append(marriageDate.getSolrDate()).append("</field>");
 					}
 					String marriageComments = getFieldForSolr(marriageRs, "comments");
 					if (marriageComments.length() > 0) {
-						marriageFields.append("<field name=\"marriageComments\">" + marriageComments + "</field>");
+						marriageFields.append("<field name=\"marriageComments\">").append(marriageComments).append("</field>");
 					}
-					keywords.append(marriageComments + " ");
+					keywords.append(marriageComments).append(" ");
 				}
 				marriageRs.close();
 
-				Statement obitStatement = conn.createStatement();
-				ResultSet obitRs = obitStatement.executeQuery("SELECT * from obituary where personId = " + personId);
-				StringBuffer obitFields = new StringBuffer();
+				Statement     obitStatement = conn.createStatement();
+				ResultSet     obitRs        = obitStatement.executeQuery("SELECT * from obituary where personId = " + personId);
+				StringBuilder obitFields    = new StringBuilder();
 				while (obitRs.next()) {
 					String source = getFieldForSolr(obitRs, "source");
 					if (source.length() > 0) {
-						obitFields.append("<field name=\"obituarySource\">" + source + "</field>");
+						obitFields.append("<field name=\"obituarySource\">").append(source).append("</field>");
 					}
 					DateInfo obitDate = new DateInfo(obitRs.getInt("dateDay"), obitRs.getInt("dateMonth"), obitRs.getInt("dateYear"));
 					if (!obitDate.isNotSet()) {
-						obitFields.append("<field name=\"obituaryDate\">" + obitDate.getSolrDate() + "</field>");
+						obitFields.append("<field name=\"obituaryDate\">").append(obitDate.getSolrDate()).append("</field>");
 					}
 					String obituaryText = getFieldForSolr(obitRs, "contents");
 					if (obituaryText.length() > 0) {
-						obitFields.append("<field name=\"obituaryText\">" + obituaryText + "</field>");
+						obitFields.append("<field name=\"obituaryText\">").append(obituaryText).append("</field>");
 					}
-					keywords.append(obituaryText + " ");
+					keywords.append(obituaryText).append(" ");
 				}
 				obitRs.close();
 
-				StringBuffer updateBody = new StringBuffer();
+				StringBuilder updateBody = new StringBuilder();
 				updateBody.append("<add commitWithin=\"60000\" ><doc>");
-				updateBody.append("<field name=\"id\">person" + personId + "</field>");
+				updateBody.append("<field name=\"id\">person").append(personId).append("</field>");
 				updateBody.append("<field name=\"recordtype\">person</field>");
-				String firstName = getFieldForSolr(personRs, "firstName");
-				String lastName = getFieldForSolr(personRs, "lastName");
-				String middleName = getFieldForSolr(personRs, "middleName");
-				String otherName = getFieldForSolr(personRs, "otherName");
-				String maidenName = getFieldForSolr(personRs, "maidenName");
-				String nickName = getFieldForSolr(personRs, "nickName");
-				String cemeteryName = getFieldForSolr(personRs, "cemeteryName");
+				String firstName        = getFieldForSolr(personRs, "firstName");
+				String lastName         = getFieldForSolr(personRs, "lastName");
+				String middleName       = getFieldForSolr(personRs, "middleName");
+				String otherName        = getFieldForSolr(personRs, "otherName");
+				String maidenName       = getFieldForSolr(personRs, "maidenName");
+				String nickName         = getFieldForSolr(personRs, "nickName");
+				String cemeteryName     = getFieldForSolr(personRs, "cemeteryName");
 				String cemeteryLocation = getFieldForSolr(personRs, "cemeteryLocation");
-				String mortuaryName = getFieldForSolr(personRs, "mortuaryName");
-				String comments = getFieldForSolr(personRs, "comments");
-				String title = firstName + " " + lastName + " " + middleName + " " + otherName + " " + maidenName;
+				String mortuaryName     = getFieldForSolr(personRs, "mortuaryName");
+				String comments         = getFieldForSolr(personRs, "comments");
+				String title            = firstName + " " + lastName + " " + middleName + " " + otherName + " " + maidenName;
 				keywords.append(firstName + " " + lastName + " " + middleName + " " + otherName + " " + maidenName + " " + nickName + " " + cemeteryName + " "
 						+ cemeteryLocation + " " + mortuaryName + " " + comments);
 				if (title.length() > 0) {
-					updateBody.append("<field name=\"title\">" + title + "</field>");
+					updateBody.append("<field name=\"title\">").append(title).append("</field>");
 				}
 				if (comments.length() > 0) {
-					updateBody.append("<field name=\"comments\">" + comments + "</field>");
+					updateBody.append("<field name=\"comments\">").append(comments).append("</field>");
 				}
 				if (keywords.length() > 0) {
-					updateBody.append("<field name=\"keywords\">" + keywords + "</field>");
+					updateBody.append("<field name=\"keywords\">").append(keywords).append("</field>");
 				}
 				if (firstName.length() > 0) {
-					updateBody.append("<field name=\"firstName\">" + firstName + "</field>");
+					updateBody.append("<field name=\"firstName\">").append(firstName).append("</field>");
 				}
 				if (lastName.length() > 0) {
-					updateBody.append("<field name=\"lastName\">" + lastName + "</field>");
+					updateBody.append("<field name=\"lastName\">").append(lastName).append("</field>");
 				}
 				if (middleName.length() > 0) {
-					updateBody.append("<field name=\"middleName\">" + middleName + "</field>");
+					updateBody.append("<field name=\"middleName\">").append(middleName).append("</field>");
 				}
 				if (maidenName.length() > 0) {
-					updateBody.append("<field name=\"maidenName\">" + maidenName + "</field>");
+					updateBody.append("<field name=\"maidenName\">").append(maidenName).append("</field>");
 				}
 				if (otherName.length() > 0) {
-					updateBody.append("<field name=\"otherName\">" + otherName + "</field>");
+					updateBody.append("<field name=\"otherName\">").append(otherName).append("</field>");
 				}
 				if (nickName.length() > 0) {
-					updateBody.append("<field name=\"nickName\">" + nickName + "</field>");
+					updateBody.append("<field name=\"nickName\">").append(nickName).append("</field>");
 				}
 				DateInfo birthDate = new DateInfo(personRs.getInt("birthDateDay"), personRs.getInt("birthDateMonth"), personRs.getInt("birthDateYear"));
 				if (!birthDate.isNotSet()) {
-					updateBody.append("<field name=\"birthDate\">" + birthDate.getSolrDate() + "</field>");
-					updateBody.append("<field name=\"birthYear\">" + birthDate.getYear() + "</field>");
+					updateBody.append("<field name=\"birthDate\">").append(birthDate.getSolrDate()).append("</field>");
+					updateBody.append("<field name=\"birthYear\">").append(birthDate.getYear()).append("</field>");
 				}
 				DateInfo deathDate = new DateInfo(personRs.getInt("deathDateDay"), personRs.getInt("deathDateMonth"), personRs.getInt("deathDateYear"));
 				if (!deathDate.isNotSet()) {
-					updateBody.append("<field name=\"deathDate\">" + deathDate.getSolrDate() + "</field>");
-					updateBody.append("<field name=\"deathYear\">" + deathDate.getYear() + "</field>");
+					updateBody.append("<field name=\"deathDate\">").append(deathDate.getSolrDate()).append("</field>");
+					updateBody.append("<field name=\"deathYear\">").append(deathDate.getYear()).append("</field>");
 				}
 				String ageAtDeath = getFieldForSolr(personRs, "ageAtDeath");
 				if (ageAtDeath.length() > 0) {
-					updateBody.append("<field name=\"ageAtDeath\">" + ageAtDeath + "</field>");
+					updateBody.append("<field name=\"ageAtDeath\">").append(ageAtDeath).append("</field>");
 				}
 				if (cemeteryName.length() > 0) {
-					updateBody.append("<field name=\"cemeteryName\">" + cemeteryName + "</field>");
+					updateBody.append("<field name=\"cemeteryName\">").append(cemeteryName).append("</field>");
 				}
 				if (cemeteryLocation.length() > 0) {
-					updateBody.append("<field name=\"cemeteryLocation\">" + getFieldForSolr(personRs, "cemeteryLocation") + "</field>");
+					updateBody.append("<field name=\"cemeteryLocation\">").append(getFieldForSolr(personRs, "cemeteryLocation")).append("</field>");
 				}
 				if (mortuaryName.length() > 0) {
-					updateBody.append("<field name=\"mortuaryName\">" + getFieldForSolr(personRs, "mortuaryName") + "</field>");
+					updateBody.append("<field name=\"mortuaryName\">").append(getFieldForSolr(personRs, "mortuaryName")).append("</field>");
 				}
 				updateBody.append(marriageFields);
 				updateBody.append(obitFields);
@@ -592,19 +587,11 @@ public class GenealogyCleanup implements IProcessHandler {
 	 * null death date and the other has a valid death date.
 	 * 
 	 * @param processSettings
-	 * @param generalSettings
 	 */
-	private void deleteDuplicates(Ini configIni, Section processSettings) {
+	private void deleteDuplicates(Section processSettings) {
 		String deleteDuplicates = processSettings.get("deleteDuplicates");
 		if (deleteDuplicates == null || !deleteDuplicates.equalsIgnoreCase("true")) {
 			processLog.addNote("Skipping deleting duplicates, to activate set deleteDuplicates key to true.");
-			processLog.incErrors();
-			return;
-		}
-
-		String genealogyUrl = configIni.get("Genealogy", "url");
-		if (genealogyUrl == null || genealogyUrl.length() == 0) {
-			processLog.addNote("Unable to get url for genealogy in GenealogyCleanup section.  Please specify genealogyIndex key.");
 			processLog.incErrors();
 			return;
 		}
@@ -613,7 +600,7 @@ public class GenealogyCleanup implements IProcessHandler {
 		// (non-exact duplicates)
 		try {
 			// Get a list of all people where their basic information is identical
-			Statement stmt = vufindConn.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			Statement stmt = pikaConn.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			String queryStr = "SELECT MIN(personId) as minPersonId, count(personId), firstName, lastName, middleName, maidenName, otherName, nickName, birthDateDay, birthDateMonth, birthDateYear, deathDateDay, deathDateMonth, deathDateYear, ageAtDeath, cemeteryName, cemeteryLocation, mortuaryName, comments, picture "
 					+ "FROM person "
 					+ "GROUP BY firstName, lastName, middleName, maidenName, otherName, nickName, birthDateDay, birthDateMonth, birthDateYear, deathDateDay, deathDateMonth, deathDateYear, ageAtDeath, cemeteryName, cemeteryLocation, mortuaryName "
@@ -628,7 +615,7 @@ public class GenealogyCleanup implements IProcessHandler {
 				// Get a list of all records that need to be checked.
 				Person duplicatePersonInfo = new Person(recordsToCheck, false);
 				String query2 = duplicatePersonInfo.createMatchingQuery();
-				Statement stmt2 = vufindConn.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+				Statement stmt2 = pikaConn.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 				// System.out.println(query2);
 				ResultSet duplicatePeopleRs = stmt2.executeQuery(query2);
 				Person bestPerson = null;
@@ -639,11 +626,11 @@ public class GenealogyCleanup implements IProcessHandler {
 						bestPerson = new Person(duplicatePeopleRs, true);
 					} else {
 						Person nextPerson = new Person(duplicatePeopleRs, true);
-						if (bestPerson.isBetterRecord(nextPerson, vufindConn)) {
-							nextPerson.delete(vufindConn);
+						if (bestPerson.isBetterRecord(nextPerson, pikaConn)) {
+							nextPerson.delete(pikaConn);
 							processLog.incUpdated();
 						} else {
-							bestPerson.delete(vufindConn);
+							bestPerson.delete(pikaConn);
 							bestPerson = nextPerson;
 							processLog.incUpdated();
 						}

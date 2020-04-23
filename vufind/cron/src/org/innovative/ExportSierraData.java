@@ -6,11 +6,12 @@ import org.ini4j.Profile;
 import org.pika.CronLogEntry;
 import org.pika.CronProcessLogEntry;
 import org.pika.IProcessHandler;
+import org.pika.PikaConfigIni;
 
 import java.sql.*;
 
 /**
- * Export Sierra Data that needs to happen infrequently.
+ * Export Sierra Volume Records that needs to happen infrequently.
  *
  * Pika
  * User: Mark Noble
@@ -22,19 +23,19 @@ public class ExportSierraData implements IProcessHandler {
 	private Logger logger;
 	private String ils;
 	@Override
-	public void doCronProcess(String servername, Ini configIni, Profile.Section processSettings, Connection vufindConn, Connection econtentConn, CronLogEntry cronEntry, Logger logger) {
+	public void doCronProcess(String servername, Profile.Section processSettings, Connection pikaConn, Connection econtentConn, CronLogEntry cronEntry, Logger logger) {
 		this.logger = logger;
 		processLog = new CronProcessLogEntry(cronEntry.getLogEntryId(), "Export Sierra Data");
-		processLog.saveToDatabase(vufindConn, logger);
+		processLog.saveToDatabase(pikaConn, logger);
 
-		ils = configIni.get("Catalog", "ils");
+		ils = PikaConfigIni.getIniValue("Catalog", "ils");
 		if (!ils.equalsIgnoreCase("Sierra")){
 			processLog.addNote("ILS is not Sierra, quiting");
 		}else{
 			//Connect to the sierra database
-			String url              = configIni.get("Catalog", "sierra_db");
-			String sierraDBUser     = configIni.get("Catalog", "sierra_db_user");
-			String sierraDBPassword = configIni.get("Catalog", "sierra_db_password");
+			String url              = PikaConfigIni.getIniValue("Catalog", "sierra_db");
+			String sierraDBUser     = PikaConfigIni.getIniValue("Catalog", "sierra_db_user");
+			String sierraDBPassword = PikaConfigIni.getIniValue("Catalog", "sierra_db_password");
 			if (url.startsWith("\"")){
 				url = url.substring(1, url.length() - 1);
 			}
@@ -51,7 +52,7 @@ public class ExportSierraData implements IProcessHandler {
 					conn = DriverManager.getConnection(url);
 				}
 
-				exportVolumes(conn, vufindConn);
+				exportVolumes(conn, pikaConn);
 
 				conn.close();
 			}catch(Exception e){
@@ -61,30 +62,30 @@ public class ExportSierraData implements IProcessHandler {
 		}
 
 		processLog.setFinished();
-		processLog.saveToDatabase(vufindConn, logger);
+		processLog.saveToDatabase(pikaConn, logger);
 	}
 
-	private void exportVolumes(Connection conn, Connection vufindConn){
+	private void exportVolumes(Connection conn, Connection pikaConn) {
 		try {
 			logger.info("Starting export of volume information");
-			PreparedStatement getVolumeInfoStmt = conn.prepareStatement("select volume_view.id, volume_view.record_num as volume_num, sort_order from sierra_view.volume_view " +
-					"inner join sierra_view.bib_record_volume_record_link on bib_record_volume_record_link.volume_record_id = volume_view.id " +
-					"where volume_view.is_suppressed = 'f'", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-			PreparedStatement getBibForVolumeStmt = conn.prepareStatement("select record_num from sierra_view.bib_record_volume_record_link " +
-					"inner join sierra_view.bib_view on bib_record_volume_record_link.bib_record_id = bib_view.id " +
-					"where volume_record_id = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-			PreparedStatement getItemsForVolumeStmt = conn.prepareStatement("select record_num from sierra_view.item_view " +
-					"inner join sierra_view.volume_record_item_record_link on volume_record_item_record_link.item_record_id = item_view.id " +
-					"where volume_record_id = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-			PreparedStatement getVolumeNameStmt = conn.prepareStatement("SELECT * FROM sierra_view.subfield where record_id = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement getVolumeInfoStmt = conn.prepareStatement("SELECT volume_view.id, volume_view.record_num AS volume_num, sort_order FROM sierra_view.volume_view " +
+					"INNER JOIN sierra_view.bib_record_volume_record_link on bib_record_volume_record_link.volume_record_id = volume_view.id " +
+					"WHERE volume_view.is_suppressed = 'f'", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement getBibForVolumeStmt = conn.prepareStatement("SELECT record_num FROM sierra_view.bib_record_volume_record_link " +
+					"INNER JOIN sierra_view.bib_view on bib_record_volume_record_link.bib_record_id = bib_view.id " +
+					"WHERE volume_record_id = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement getItemsForVolumeStmt = conn.prepareStatement("SELECT record_num from sierra_view.item_view " +
+					"INNER JOIN sierra_view.volume_record_item_record_link ON volume_record_item_record_link.item_record_id = item_view.id " +
+					"WHERE volume_record_id = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement getVolumeNameStmt = conn.prepareStatement("SELECT * FROM sierra_view.subfield WHERE record_id = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 
-			PreparedStatement removeOldVolumes = vufindConn.prepareStatement("DELETE FROM ils_volume_info WHERE recordId LIKE 'ils%'");
-			PreparedStatement addVolumeStmt = vufindConn.prepareStatement("INSERT INTO ils_volume_info (recordId, volumeId, displayLabel, relatedItems) VALUES (?,?,?,?)");
+			PreparedStatement removeOldVolumes = pikaConn.prepareStatement("DELETE FROM ils_volume_info WHERE recordId LIKE 'ils%'");
+			PreparedStatement addVolumeStmt    = pikaConn.prepareStatement("INSERT INTO ils_volume_info (recordId, volumeId, displayLabel, relatedItems) VALUES (?,?,?,?)");
 
-			ResultSet volumeInfoRS = null;
-			boolean loadError = false;
-			boolean updateError = false;
-			Savepoint transactionStart = vufindConn.setSavepoint("load_volumes");
+			ResultSet volumeInfoRS     = null;
+			boolean   loadError        = false;
+			boolean   updateError      = false;
+			Savepoint transactionStart = pikaConn.setSavepoint("load_volumes");
 			try {
 				volumeInfoRS = getVolumeInfoStmt.executeQuery();
 			} catch (SQLException e1) {
@@ -94,7 +95,7 @@ public class ExportSierraData implements IProcessHandler {
 			if (!loadError) {
 				try {
 					removeOldVolumes.executeUpdate();
-				}catch (SQLException sqle){
+				} catch (SQLException sqle) {
 					logger.error("Error removing old volume information", sqle);
 					updateError = true;
 				}
@@ -107,27 +108,27 @@ public class ExportSierraData implements IProcessHandler {
 
 					getBibForVolumeStmt.setLong(1, recordId);
 					ResultSet bibForVolumeRS = getBibForVolumeStmt.executeQuery();
-					String bibId = "";
+					String    bibId          = "";
 					if (bibForVolumeRS.next()) {
 						bibId = bibForVolumeRS.getString("record_num");
 						bibId = ".b" + bibId + getCheckDigit(bibId);
 					}
 
 					getItemsForVolumeStmt.setLong(1, recordId);
-					ResultSet itemsForVolumeRS = getItemsForVolumeStmt.executeQuery();
-					String itemsForVolume = "";
+					ResultSet     itemsForVolumeRS = getItemsForVolumeStmt.executeQuery();
+					StringBuilder itemsForVolume   = new StringBuilder();
 					while (itemsForVolumeRS.next()) {
 						String itemId = itemsForVolumeRS.getString("record_num");
 						if (itemId != null) {
 							itemId = ".i" + itemId + getCheckDigit(itemId);
-							if (itemsForVolume.length() > 0) itemsForVolume += "|";
-							itemsForVolume += itemId;
+							if (itemsForVolume.length() > 0) itemsForVolume.append("|");
+							itemsForVolume.append(itemId);
 						}
 					}
 
 					getVolumeNameStmt.setLong(1, recordId);
 					ResultSet getVolumeNameRS = getVolumeNameStmt.executeQuery();
-					String volumeName = "Unknown";
+					String    volumeName      = "Unknown";
 					if (getVolumeNameRS.next()) {
 						volumeName = getVolumeNameRS.getString("content");
 					}
@@ -136,10 +137,10 @@ public class ExportSierraData implements IProcessHandler {
 						addVolumeStmt.setString(1, "ils:" + bibId);
 						addVolumeStmt.setString(2, volumeId);
 						addVolumeStmt.setString(3, volumeName);
-						addVolumeStmt.setString(4, itemsForVolume);
+						addVolumeStmt.setString(4, itemsForVolume.toString());
 						addVolumeStmt.executeUpdate();
 						processLog.incUpdated();
-					}catch (SQLException sqle){
+					} catch (SQLException sqle) {
 						logger.error("Error adding volume", sqle);
 						processLog.incErrors();
 						updateError = true;
@@ -147,19 +148,19 @@ public class ExportSierraData implements IProcessHandler {
 				}
 				volumeInfoRS.close();
 			}
-			if (updateError){
-				vufindConn.rollback(transactionStart);
+			if (updateError) {
+				pikaConn.rollback(transactionStart);
 			}
-			vufindConn.setAutoCommit(true);
+			pikaConn.setAutoCommit(true);
 			logger.info("Finished export of volume information");
-		}catch (Exception e){
+		} catch (Exception e) {
 			logger.error("Error exporting volume information", e);
 			processLog.incErrors();
 			processLog.addNote("Error exporting volume information " + e.toString());
 
 		}
 		processLog.setFinished();
-		processLog.saveToDatabase(vufindConn, logger);
+		processLog.saveToDatabase(pikaConn, logger);
 	}
 
 	/**

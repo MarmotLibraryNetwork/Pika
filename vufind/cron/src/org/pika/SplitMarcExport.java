@@ -23,17 +23,18 @@ import java.util.ArrayList;
 public class SplitMarcExport implements IProcessHandler {
 
 	@Override
-	public void doCronProcess(String serverName, Ini configIni, Profile.Section processSettings, Connection pikaConn, Connection eContentConn, CronLogEntry cronEntry, Logger logger) {
+	public void doCronProcess(String serverName, Profile.Section processSettings, Connection pikaConn, Connection eContentConn, CronLogEntry cronEntry, Logger logger) {
 		CronProcessLogEntry processLog = new CronProcessLogEntry(cronEntry.getLogEntryId(), "Split Marc Records");
 		processLog.saveToDatabase(pikaConn, logger);
 		try {
-			String marcPath         = Util.cleanIniValue(configIni.get("Reindex", "marcPath"));
-			String itemTag          = Util.cleanIniValue(configIni.get("Reindex", "itemTag"));
-			String marcEncoding     = configIni.get("Reindex", "marcEncoding");
-			char   locationSubfield = Util.cleanIniValue(configIni.get("Reindex", "locationSubfield")).charAt(0);
+			String marcPath         = PikaConfigIni.getIniValue("Reindex", "marcPath");
+			String itemTag          = PikaConfigIni.getIniValue("Reindex", "itemTag");
+			String marcEncoding     = PikaConfigIni.getIniValue("Reindex", "marcEncoding");
+			char   locationSubfield = PikaConfigIni.getCharIniValue("Reindex", "locationSubfield");
 			String splitMarcPath    = Util.cleanIniValue(processSettings.get("splitMarcPath"));
 			if (splitMarcPath == null) {
 				logger.error("Did not find path to store the split marc files, please add splitMarcPath to the configuration file.");
+				return;
 			}
 
 

@@ -21,16 +21,16 @@ import org.ini4j.Profile.Section;
 public class DatabaseCleanup implements IProcessHandler {
 
 	@Override
-	public void doCronProcess(String servername, Ini configIni, Section processSettings, Connection pikaConn, Connection econtentConn, CronLogEntry cronEntry, Logger logger) {
+	public void doCronProcess(String servername, Section processSettings, Connection pikaConn, Connection econtentConn, CronLogEntry cronEntry, Logger logger) {
 		CronProcessLogEntry processLog = new CronProcessLogEntry(cronEntry.getLogEntryId(), "Database Cleanup");
 		processLog.saveToDatabase(pikaConn, logger);
 
-		removeExpiredSessions(configIni, pikaConn, logger, processLog);
+		removeExpiredSessions(pikaConn, logger, processLog);
 		removeOldSearches(pikaConn, logger, processLog);
 		removeSpammySearches(pikaConn, logger, processLog);
 		removeLongSearches(pikaConn, logger, processLog);
 		cleanupReadingHistory(pikaConn, logger, processLog);
-		cleanupIndexingReports(configIni, pikaConn, logger, processLog);
+		cleanupIndexingReports(pikaConn, logger, processLog);
 		removeOldMaterialsRequests(pikaConn, logger, processLog);
 		removeUserDataForDeletedUsers(pikaConn, logger, processLog);
 
@@ -186,11 +186,11 @@ public class DatabaseCleanup implements IProcessHandler {
 		}
 	}
 
-	private void cleanupIndexingReports(Ini configIni, Connection pikaConn, Logger logger, CronProcessLogEntry processLog) {
+	private void cleanupIndexingReports(Connection pikaConn, Logger logger, CronProcessLogEntry processLog) {
 		//Remove indexing reports
 		try{
 			//Get the data directory where reports are stored
-			File dataDir = new File(configIni.get("Reindex", "marcPath"));
+			File dataDir = new File(PikaConfigIni.getIniValue("Reindex", "marcPath"));
 			dataDir = dataDir.getParentFile();
 			//Get a list of dates that should be kept
 			SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd");
@@ -210,12 +210,7 @@ public class DatabaseCleanup implements IProcessHandler {
 			}
 
 			//List all csv files in the directory
-			File[] filesToCheck = dataDir.listFiles(new FilenameFilter() {
-				@Override
-				public boolean accept(File dir, String name) {
-					return name.matches(".*\\d{4}-\\d{2}-\\d{2}\\.csv");
-				}
-			});
+			File[] filesToCheck = dataDir.listFiles((dir, name) -> name.matches(".*\\d{4}-\\d{2}-\\d{2}\\.csv"));
 
 			//Check to see if we should keep or delete the file
 			Pattern getDatePattern = Pattern.compile("(\\d{4}-\\d{2}-\\d{2})", Pattern.CANON_EQ);
@@ -310,19 +305,18 @@ public class DatabaseCleanup implements IProcessHandler {
 		}
 	}
 
-	private void removeExpiredSessions(Ini configIni, Connection pikaConn, Logger logger, CronProcessLogEntry processLog) {
+	private void removeExpiredSessions(Connection pikaConn, Logger logger, CronProcessLogEntry processLog) {
 		//Remove expired sessions
 		try{
 			//Make sure to normalize the time based to be milliseconds, not microseconds
-			long now = new Date().getTime() / 1000;
-			long defaultTimeout = Long.parseLong(Util.cleanIniValue(configIni.get("Session", "lifetime")));
-			long earliestDefaultSessionToKeep = now - defaultTimeout;
-			long numStandardSessionsDeleted = pikaConn.prepareStatement("DELETE FROM session WHERE last_used < " + earliestDefaultSessionToKeep + " and remember_me = 0").executeUpdate();
-			processLog.addNote("Deleted " + numStandardSessionsDeleted + " expired Standard Sessions");
-			processLog.saveToDatabase(pikaConn, logger);
-			long rememberMeTimeout = Long.parseLong(Util.cleanIniValue(configIni.get("Session", "rememberMeLifetime")));
+			long now                             = new Date().getTime() / 1000;
+			long defaultTimeout                  = PikaConfigIni.getLongIniValue("Session", "lifetime");
+			long earliestDefaultSessionToKeep    = now - defaultTimeout;
+			long rememberMeTimeout               = PikaConfigIni.getLongIniValue("Session", "rememberMeLifetime");
 			long earliestRememberMeSessionToKeep = now - rememberMeTimeout;
-			long numRememberMeSessionsDeleted = pikaConn.prepareStatement("DELETE FROM session WHERE last_used < " + earliestRememberMeSessionToKeep + " and remember_me = 1").executeUpdate();
+			long numStandardSessionsDeleted      = pikaConn.prepareStatement("DELETE FROM session WHERE last_used < " + earliestDefaultSessionToKeep + " and remember_me = 0").executeUpdate();
+			long numRememberMeSessionsDeleted    = pikaConn.prepareStatement("DELETE FROM session WHERE last_used < " + earliestRememberMeSessionToKeep + " and remember_me = 1").executeUpdate();
+			processLog.addNote("Deleted " + numStandardSessionsDeleted + " expired Standard Sessions");
 			processLog.addNote("Deleted " + numRememberMeSessionsDeleted + " expired Remember Me Sessions");
 			processLog.saveToDatabase(pikaConn, logger);
 		}catch (SQLException e) {

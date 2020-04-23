@@ -11,14 +11,14 @@ import org.ini4j.Profile.Section;
 public class BookcoverCleanup implements IProcessHandler {
 	private static final int DEFAULTAGE = 7;
 
-	public void doCronProcess(String serverName, Ini configIni, Section processSettings, Connection pikaConn, Connection eContentConn, CronLogEntry cronEntry, Logger logger) {
+	public void doCronProcess(String serverName, Section processSettings, Connection pikaConn, Connection eContentConn, CronLogEntry cronEntry, Logger logger) {
 		CronProcessLogEntry processLog = new CronProcessLogEntry(cronEntry.getLogEntryId(), "Bookcover Cleanup");
 		processLog.saveToDatabase(pikaConn, logger);
 
-		String   coverPath              = configIni.get("Site", "coverPath");
+		String   coverPath              = PikaConfigIni.getIniValue("Site", "coverPath");
 		String[] coverPaths             = new String[]{"/small", "/medium", "/large"};
 		long     currentTime            = new Date().getTime();
-		String   coverAgeInDaysToDelete = configIni.get("Site", "coverAgeInDaysToDelete");
+		String   coverAgeInDaysToDelete = PikaConfigIni.getIniValue("Site", "coverAgeInDaysToDelete");
 		int      coverAge               = DEFAULTAGE;
 		try {
 			if (coverAgeInDaysToDelete != null) {
