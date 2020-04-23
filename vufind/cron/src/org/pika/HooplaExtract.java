@@ -1,8 +1,7 @@
 package org.pika;
 
-import org.apache.commons.codec.binary.Base64;
 import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
+import org.ini4j.Profile;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -10,92 +9,60 @@ import org.json.JSONObject;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLSession;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.SocketTimeoutException;
 import java.net.URL;
-import java.sql.*;
-import java.text.SimpleDateFormat;
-import java.util.Arrays;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Date;
 
-public class HooplaExportMain {
-	private static Logger  logger                    = Logger.getLogger(HooplaExportMain.class);
-	private static String  serverName;
+import org.apache.commons.codec.binary.Base64;
+
+/**
+ * Pika
+ *
+ * @author pbrammeier
+ * 		Date:   4/23/2020
+ */
+public class HooplaExtract implements IProcessHandler{
+	private static Logger  logger;
+	private CronProcessLogEntry processLog;
+//	private static String  serverName;
 	private static String  hooplaAPIBaseURL;
 	private static Long    lastExportTime;
 	private static Long    startTimeStamp;
 	private static boolean updateTitlesInDBHadErrors = false;
 
 	//Reporting information
-	private static long              hooplaExportLogId;
-	private static PreparedStatement addNoteToHooplaExportLogStmt;
+//	private static long              hooplaExportLogId;
+//	private static PreparedStatement addNoteToHooplaExportLogStmt;
 
-	public static void main(String[] args) {
-		if (args.length == 0) {
-			System.out.println("Server name must be specified in the command line");
-			System.exit(1);
-		}
-		serverName = args[0];
-		String  singleRecordToProcess = null;
-		boolean doFullReload          = false;
-		if (args.length > 1) {
-			String firstArg = args[1].replaceAll("\\s", "");
-
-			//Check to see if we got a full reload parameter
-			if (firstArg.matches("^fullReload(=true|1)?$")) {
-				doFullReload = true;
-
-			} else if (firstArg.matches("^singleRecord")) {
-				if (args.length == 3) {
-					singleRecordToProcess = args[2].replaceAll("MWT", "");
-				} else {
-					//get input from user
-					//  open up standard input
-					try (BufferedReader br = new BufferedReader(new InputStreamReader(System.in))) {
-						System.out.print("Enter the Hoopla record Id to process (MWT is optional, not required) : ");
-						singleRecordToProcess = br.readLine().replaceAll("MWT", "").trim();
-					} catch (IOException e) {
-						System.out.println("Error while reading input from user." + e.toString());
-						System.exit(1);
-					}
-				}
-			}
-		}
-
-		File log4jFile = new File("../../sites/" + serverName + "/conf/log4j.hoopla_export.properties");
-		if (log4jFile.exists()) {
-			PropertyConfigurator.configure(log4jFile.getAbsolutePath());
-		} else {
-			log4jFile = new File("../../sites/default/conf/log4j.hoopla_export.properties");
-			if (log4jFile.exists()) {
-				PropertyConfigurator.configure(log4jFile.getAbsolutePath());
-			} else {
-				System.out.println("Could not find log4j configuration " + log4jFile.toString());
-			}
-		}
-
+	@Override
+	public void doCronProcess(String serverName, Profile.Section processSettings, Connection pikaConn, Connection econtentConn, CronLogEntry cronEntry, Logger logger) {
 		Date startTime = new Date();
 		logger.info(startTime.toString() + ": Starting Hoopla Export");
 		startTimeStamp = startTime.getTime() / 1000;
 
-		// Read the base INI file to get information about the server (current directory/conf/config.ini)
-		PikaConfigIni.loadConfigFile("config.ini", serverName, logger);
+		this.logger = logger;
+		processLog = new CronProcessLogEntry(cronEntry.getLogEntryId(), "Hoopla Extract");
 
-		//Connect to the pika database
-		Connection pikaConn = null;
-		try {
-			String databaseConnectionInfo = PikaConfigIni.getIniValue("Database", "database_vufind_jdbc");
-			if (databaseConnectionInfo != null) {
-				pikaConn = DriverManager.getConnection(databaseConnectionInfo);
-			} else {
-				logger.error("No Pika database connection info");
-				System.exit(2); // Exiting with a status code of 2 so that our executing bash scripts knows there has been a database communication error
+		String  singleRecordToProcess = null;
+		boolean doFullReload          = false;
+
+		String firstArg = processSettings.get("fullReload");
+		if (firstArg.matches("^(true|1)?$")) {
+			doFullReload = true;
+		} else {
+			firstArg = processSettings.get("singleRecord");
+			if (firstArg != null && !firstArg.isEmpty()){
+				singleRecordToProcess = firstArg.replaceAll("MWT", "");
 			}
-		} catch (Exception e) {
-			logger.error("Error connecting to Pika database " + e.toString());
-			System.exit(2); // Exiting with a status code of 2 so that our executing bash scripts knows there has been a database communication error
 		}
 
 		// Extract a single Record
@@ -105,27 +72,6 @@ public class HooplaExportMain {
 			} else {
 				System.out.println("Record " + singleRecordToProcess + " failed to get extracted.");
 			}
-			System.exit(0);
-		}
-
-		//Start a hoopla export log entry
-		try {
-			logger.info("Creating log entry for index");
-			ResultSet generatedKeys;
-			try (PreparedStatement createLogEntryStatement = pikaConn.prepareStatement("INSERT INTO hoopla_export_log (startTime, lastUpdate, notes) VALUES (?, ?, ?)", PreparedStatement.RETURN_GENERATED_KEYS)) {
-				createLogEntryStatement.setLong(1, startTimeStamp);
-				createLogEntryStatement.setLong(2, startTimeStamp);
-				createLogEntryStatement.setString(3, "Initialization complete");
-				createLogEntryStatement.executeUpdate();
-				generatedKeys = createLogEntryStatement.getGeneratedKeys();
-				if (generatedKeys.next()) {
-					hooplaExportLogId = generatedKeys.getLong(1);
-				}
-			}
-
-			addNoteToHooplaExportLogStmt = pikaConn.prepareStatement("UPDATE hoopla_export_log SET notes = ?, lastUpdate = ? WHERE id = ?");
-		} catch (SQLException e) {
-			logger.error("Unable to create log entry for hoopla extract process", e);
 			System.exit(0);
 		}
 
@@ -139,29 +85,10 @@ public class HooplaExportMain {
 			systemVariables.setVariable("lastHooplaExport", startTimeStamp);
 		}
 
-		addNoteToHooplaExportLog("Finished exporting hoopla data " + new Date().toString());
-		logger.info("Finished exporting hoopla data " + new Date().toString());
-		long endTime     = new Date().getTime();
-		long elapsedTime = endTime - startTime.getTime();
-		logger.info("Elapsed Minutes " + (elapsedTime / 60000));
 
-		try (PreparedStatement finishedStatement = pikaConn.prepareStatement("UPDATE hoopla_export_log SET endTime = ? WHERE id = ?")) {
-			finishedStatement.setLong(1, endTime / 1000);
-			finishedStatement.setLong(2, hooplaExportLogId);
-			finishedStatement.executeUpdate();
-		} catch (SQLException e) {
-			logger.error("Unable to update hoopla export log with completion time.", e);
-		}
-
-		try {
-			pikaConn.close();
-		} catch (Exception e) {
-			logger.error("Error closing database ", e);
-			System.exit(1);
-		}
 	}
 
-	private static boolean exportSingleHooplaRecord(Connection pikaConn, String singleRecordToExport) {
+	private boolean exportSingleHooplaRecord(Connection pikaConn, String singleRecordToExport) {
 		try {
 			//Find a library id to get data from
 			String hooplaLibraryId = getHooplaLibraryId(pikaConn);
@@ -211,7 +138,7 @@ public class HooplaExportMain {
 	 * @param doFullReload Fetch all the data in the Hoopla API
 	 * @return Return if the updating completed with out errors
 	 */
-	private static boolean exportHooplaData(Connection pikaConn, Long startTime, boolean doFullReload) {
+	private boolean exportHooplaData(Connection pikaConn, Long startTime, boolean doFullReload) {
 		try {
 			//Find a library id to get data from
 			String hooplaLibraryId = getHooplaLibraryId(pikaConn);
@@ -300,10 +227,10 @@ public class HooplaExportMain {
 		return !updateTitlesInDBHadErrors;
 	}
 
-	private static PreparedStatement updateHooplaTitleInDB              = null;
-	private static PreparedStatement markGroupedWorkForBibAsChangedStmt = null;
+	private PreparedStatement updateHooplaTitleInDB              = null;
+	private PreparedStatement markGroupedWorkForBibAsChangedStmt = null;
 
-	private static void markGroupedWorkForReindexing(Connection pikaConn, long hooplaTitleId) {
+	private void markGroupedWorkForReindexing(Connection pikaConn, long hooplaTitleId) {
 		try {
 			if (markGroupedWorkForBibAsChangedStmt == null) {
 				markGroupedWorkForBibAsChangedStmt = pikaConn.prepareStatement("UPDATE grouped_work SET date_updated = ? where id = (SELECT grouped_work_id from grouped_work_primary_identifiers WHERE type = 'hoopla' and identifier = ?)");
@@ -317,7 +244,7 @@ public class HooplaExportMain {
 		}
 	}
 
-	private static int updateTitlesInDB(Connection pikaConn, JSONArray responseTitles) {
+	private int updateTitlesInDB(Connection pikaConn, JSONArray responseTitles) {
 		int numUpdates = 0;
 		try {
 			if (updateHooplaTitleInDB == null) {
@@ -355,7 +282,7 @@ public class HooplaExportMain {
 		return numUpdates;
 	}
 
-	private static String getAccessToken() {
+	private String getAccessToken() {
 		String hooplaUsername = PikaConfigIni.getIniValue("Hoopla", "HooplaAPIUser");
 		String hooplaPassword = PikaConfigIni.getIniValue("Hoopla", "HooplaAPIpassword");
 		if (hooplaUsername == null || hooplaPassword == null) {
@@ -386,7 +313,7 @@ public class HooplaExportMain {
 		return null;
 	}
 
-	private static URLPostResponse postToTokenURL(String url, String authentication) {
+	private URLPostResponse postToTokenURL(String url, String authentication) {
 		URLPostResponse   retVal;
 		HttpURLConnection conn = null;
 		try {
@@ -463,7 +390,7 @@ public class HooplaExportMain {
 		return retVal;
 	}
 
-	private static URLPostResponse getURL(String url, String accessToken) {
+	private URLPostResponse getURL(String url, String accessToken) {
 		URLPostResponse   retVal;
 		HttpURLConnection conn = null;
 		try {
@@ -538,7 +465,7 @@ public class HooplaExportMain {
 		return retVal;
 	}
 
-	private static String getHooplaLibraryId(Connection pikaConn) {
+	private String getHooplaLibraryId(Connection pikaConn) {
 		ResultSet getLibraryIdRS;
 		try (PreparedStatement getLibraryIdStmt = pikaConn.prepareStatement("SELECT hooplaLibraryID FROM library WHERE hooplaLibraryID IS NOT NULL AND hooplaLibraryID != 0 LIMIT 1")) {
 			getLibraryIdRS = getLibraryIdStmt.executeQuery();
@@ -551,22 +478,9 @@ public class HooplaExportMain {
 		return null;
 	}
 
-
-	private static StringBuffer     notes      = new StringBuffer();
-	private static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-
-	private static void addNoteToHooplaExportLog(String note) {
-		try {
-			Date date = new Date();
-			notes.append("<br>").append(dateFormat.format(date)).append(": ").append(note);
-			addNoteToHooplaExportLogStmt.setString(1, trimTo(65535, notes.toString()));
-			addNoteToHooplaExportLogStmt.setLong(2, new Date().getTime() / 1000);
-			addNoteToHooplaExportLogStmt.setLong(3, hooplaExportLogId);
-			addNoteToHooplaExportLogStmt.executeUpdate();
+	private void addNoteToHooplaExportLog(String note) {
+			processLog.addNote(note);
 			logger.info(note);
-		} catch (SQLException e) {
-			logger.error("Error adding note to Export Log", e);
-		}
 	}
 
 	private static String trimTo(int maxCharacters, String stringToTrim) {
