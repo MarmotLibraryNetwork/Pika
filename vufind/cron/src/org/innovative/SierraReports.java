@@ -7,6 +7,7 @@ import org.ini4j.Profile;
 import org.pika.CronLogEntry;
 import org.pika.CronProcessLogEntry;
 import org.pika.IProcessHandler;
+import org.pika.PikaConfigIni;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -25,20 +26,20 @@ public class SierraReports implements IProcessHandler {
 	private Logger logger;
 	private String ils;
 	@Override
-	public void doCronProcess(String servername, Ini configIni, Profile.Section processSettings, Connection vufindConn, Connection econtentConn, CronLogEntry cronEntry, Logger logger) {
+	public void doCronProcess(String servername, Profile.Section processSettings, Connection pikaConn, Connection econtentConn, CronLogEntry cronEntry, Logger logger) {
 		this.logger = logger;
 		processLog = new CronProcessLogEntry(cronEntry.getLogEntryId(), "Sierra Reports");
-		processLog.saveToDatabase(vufindConn, logger);
-		String reportsPath = configIni.get("Site", "reportPath");
+		processLog.saveToDatabase(pikaConn, logger);
+		String reportsPath = PikaConfigIni.getIniValue("Site", "reportPath");
 
-		ils = configIni.get("Catalog", "ils");
+		ils = PikaConfigIni.getIniValue("Catalog", "ils");
 		if (!ils.equalsIgnoreCase("Sierra")){
 			processLog.addNote("ILS is not Sierra, quiting");
 		}else{
 			//Connect to the sierra database
-			String url              = configIni.get("Catalog", "sierra_db");
-			String sierraDBUser     = configIni.get("Catalog", "sierra_db_user");
-			String sierraDBPassword = configIni.get("Catalog", "sierra_db_password");
+			String url              = PikaConfigIni.getIniValue("Catalog", "sierra_db");
+			String sierraDBUser     = PikaConfigIni.getIniValue("Catalog", "sierra_db_user");
+			String sierraDBPassword = PikaConfigIni.getIniValue("Catalog", "sierra_db_password");
 			if (url.startsWith("\"")){
 				url = url.substring(1, url.length() - 1);
 			}
@@ -67,7 +68,7 @@ public class SierraReports implements IProcessHandler {
 		}
 
 		processLog.setFinished();
-		processLog.saveToDatabase(vufindConn, logger);
+		processLog.saveToDatabase(pikaConn, logger);
 	}
 
 	private void createStudentReportsByHomeroom(Connection conn, Profile.Section processSettings, String reportsPath) throws SQLException, IOException {

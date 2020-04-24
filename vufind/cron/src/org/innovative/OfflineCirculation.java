@@ -31,28 +31,27 @@ public class OfflineCirculation implements IProcessHandler {
 	private CookieManager       manager = new CookieManager();
 	private String              ils     = "Sierra";
 	@Override
-	public void doCronProcess(String servername, Ini configIni, Profile.Section processSettings, Connection pikaConn, Connection econtentConn, CronLogEntry cronEntry, Logger logger) {
+	public void doCronProcess(String servername, Profile.Section processSettings, Connection pikaConn, Connection econtentConn, CronLogEntry cronEntry, Logger logger) {
 		this.logger = logger;
 		processLog  = new CronProcessLogEntry(cronEntry.getLogEntryId(), "Offline Circulation");
 		processLog.saveToDatabase(pikaConn, logger);
 
-//		ils = configIni.get("Catalog", "ils"); //TODO: remove; was only used to check if millennium
+//		ils = PikaConfigIni.getIniValue("Catalog", "ils"); //TODO: remove; was only used to check if millennium
 
 		manager.setCookiePolicy(CookiePolicy.ACCEPT_ALL);
 		CookieHandler.setDefault(manager);
 
 		//Check to see if the system is offline
-		String offlineStr = configIni.get("Catalog", "offline");
-		if (offlineStr.toLowerCase().equals("true")) {
+		if (PikaConfigIni.getBooleanIniValue("Catalog", "offline")) {
 			logger.warn("Pika Offline Mode is currently on. Ensure the ILS is available before running OfflineCirculation.");
 //			processLog.addNote("Not processing offline circulation because the system is currently offline.");
 		}
 //		else{
 		//process checkouts and check ins (do this before holds)
-		processOfflineCirculationEntries(configIni, pikaConn);
+		processOfflineCirculationEntries(pikaConn);
 
 		//process holds
-		processOfflineHolds(configIni, pikaConn);
+		processOfflineHolds(pikaConn);
 //		}
 		processLog.setFinished();
 		processLog.saveToDatabase(pikaConn, logger);
@@ -61,10 +60,9 @@ public class OfflineCirculation implements IProcessHandler {
 	/**
 	 * Enters any holds that were entered while the catalog was offline
 	 *
-	 * @param configIni Configuration information for Pika
 	 * @param pikaConn  Connection to the database
 	 */
-	private void processOfflineHolds(Ini configIni, Connection pikaConn) {
+	private void processOfflineHolds(Connection pikaConn) {
 		processLog.addNote("Processing offline holds");
 		try {
 //			PreparedStatement holdsToProcessStmt = pikaConn.prepareStatement("SELECT offline_hold.*, cat_username, cat_password FROM offline_hold LEFT JOIN user ON user.id = offline_hold.patronId WHERE status='Not Processed' ORDER BY timeEntered ASC");
@@ -75,7 +73,7 @@ public class OfflineCirculation implements IProcessHandler {
 			// This matches by patron barcode when the barcode is saved in the cat_password field
 
 			PreparedStatement updateHold = pikaConn.prepareStatement("UPDATE offline_hold set timeProcessed = ?, status = ?, notes = ? where id = ?");
-			String            baseUrl    = configIni.get("Site", "url");
+			String            baseUrl    = PikaConfigIni.getIniValue("Site", "url");
 			try (ResultSet holdsToProcessRS = holdsToProcessStmt.executeQuery()) {
 				while (holdsToProcessRS.next()) {
 					processOfflineHold(updateHold, baseUrl, holdsToProcessRS);
@@ -157,15 +155,14 @@ public class OfflineCirculation implements IProcessHandler {
 	/**
 	 * Processes any checkouts and check-ins that were done while the system was offline.
 	 *
-	 * @param configIni   Configuration information for Pika
 	 * @param pikaConn Connection to the database
 	 */
-	private void processOfflineCirculationEntries(Ini configIni, Connection pikaConn) {
+	private void processOfflineCirculationEntries(Connection pikaConn) {
 		processLog.addNote("Processing offline checkouts and check-ins");
 		try {
 			PreparedStatement circulationEntryToProcessStmt = pikaConn.prepareStatement("SELECT offline_circulation.* FROM offline_circulation WHERE status='Not Processed' ORDER BY login ASC, initials ASC, patronBarcode ASC, timeEntered ASC");
 			PreparedStatement updateCirculationEntry        = pikaConn.prepareStatement("UPDATE offline_circulation SET timeProcessed = ?, status = ?, notes = ? WHERE id = ?");
-			String baseUrl                                  = configIni.get("Catalog", "url") + "/iii/airwkst";
+			String baseUrl                                  = PikaConfigIni.getIniValue("Catalog", "url") + "/iii/airwkst";
 			int numProcessed = 0;
 			try (ResultSet circulationEntriesToProcessRS = circulationEntryToProcessStmt.executeQuery()) {
 				while (circulationEntriesToProcessRS.next()) {

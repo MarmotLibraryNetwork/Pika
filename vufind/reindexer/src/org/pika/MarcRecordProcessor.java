@@ -974,8 +974,8 @@ abstract class MarcRecordProcessor {
 				String subTitleLowerCase = subTitleValue.toLowerCase();
 				String titleLowerCase    = titleValue.toLowerCase();
 				if (titleLowerCase.equals(subTitleLowerCase)){
-					if (fullReindex) {
-						logger.warn(identifier + " title (245a) '" + titleValue + "' is the same as the subtitle : " + subTitleValue);
+					if (fullReindex && logger.isInfoEnabled()) {
+						logger.info(identifier + " title (245a) '" + titleValue + "' is the same as the subtitle : " + subTitleValue);
 					}
 					subTitleValue = null; // null out so that it doesn't get added to sort or display titles
 				} else {
