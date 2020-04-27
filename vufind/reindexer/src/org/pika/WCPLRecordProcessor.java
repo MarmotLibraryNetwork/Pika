@@ -43,26 +43,19 @@ class WCPLRecordProcessor extends IlsRecordProcessor {
 
 	@Override
 	public void loadPrintFormatInformation(RecordInfo ilsRecord, Record record) {
-		Set<String> printFormatsRaw = MarcUtil.getFieldList(record, "949c");
-		HashSet<String> printFormats = new HashSet<>();
-		for (String curFormat : printFormatsRaw){
-			printFormats.add(curFormat.toLowerCase());
-		}
-
-		HashSet<String> translatedFormats = translateCollection("format", printFormats, ilsRecord.getRecordIdentifier());
-		HashSet<String> translatedFormatCategories = translateCollection("format_category", printFormats, ilsRecord.getRecordIdentifier());
+		Set<String>     printFormatsRaw            = MarcUtil.getFieldList(record, itemTag + shelvingLocationSubfield);
+		HashSet<String> translatedFormats          = translateCollection("format", printFormatsRaw, ilsRecord.getRecordIdentifier());
+		HashSet<String> translatedFormatCategories = translateCollection("format_category", printFormatsRaw, ilsRecord.getRecordIdentifier());
 		ilsRecord.addFormats(translatedFormats);
 		ilsRecord.addFormatCategories(translatedFormatCategories);
-		Long formatBoost = 0L;
-		HashSet<String> formatBoosts = translateCollection("format_boost", printFormats, ilsRecord.getRecordIdentifier());
-		for (String tmpFormatBoost : formatBoosts){
+		long            formatBoost  = 0L;
+		HashSet<String> formatBoosts = translateCollection("format_boost", printFormatsRaw, ilsRecord.getRecordIdentifier());
+		for (String tmpFormatBoost : formatBoosts) {
 			if (Util.isNumeric(tmpFormatBoost)) {
-				Long tmpFormatBoostLong = Long.parseLong(tmpFormatBoost);
-				if (tmpFormatBoostLong > formatBoost) {
-					formatBoost = tmpFormatBoostLong;
-				}
+				formatBoost = Math.max(formatBoost, Long.parseLong(tmpFormatBoost));
 			}
 		}
+
 		ilsRecord.setFormatBoost(formatBoost);
 	}
 
