@@ -329,33 +329,33 @@ class RBdigital {
 	 * @param $recordId   string
 	 * @return array
 	 */
-	public function renewCheckout($patron, $recordId)
-	{
-		$result = ['success' => false, 'message' => 'Unknown error'];
-
-		$rbdigitalId = $this->getPatronId($patron);
-		if ($rbdigitalId == false) {
-			$result['message'] = 'Sorry, you are not registered with RBdigital.  You will need to create an account there before continuing.';
-		} else {
-			$actionUrl = $this->webServiceBaseUrl . '/v1/libraries/' . $this->libraryId . '/patrons/' . $rbdigitalId . '/checkouts/' . $recordId;
-
-			$response = $this->curl->put($actionUrl);
-//			$response    = json_decode($rawResponse);
-			if ($response == false) {
-				$result['message'] = "Invalid information returned from API, please retry your action after a few minutes.";
-				global $logger;
-				$logger->log("Invalid information from rbdigital api " . $rawResponse, PEAR_LOG_ERR);
-			} else {
-				if (!empty($response->output) && $response->output == 'success') {
-					$result['success'] = true;
-					$result['message'] = "Your title was renewed successfully.";
-				} else {
-					$result['message'] = $response->output;
-				}
-			}
-		}
-		return $result;
-	}
+//	public function renewCheckout($patron, $recordId)
+//	{
+//		$result = ['success' => false, 'message' => 'Unknown error'];
+//
+//		$rbdigitalId = $this->getPatronId($patron);
+//		if ($rbdigitalId == false) {
+//			$result['message'] = 'Sorry, you are not registered with RBdigital.  You will need to create an account there before continuing.';
+//		} else {
+//			$actionUrl = $this->webServiceBaseUrl . '/v1/libraries/' . $this->libraryId . '/patrons/' . $rbdigitalId . '/checkouts/' . $recordId;
+//
+//			$response = $this->curl->put($actionUrl);
+////			$response    = json_decode($rawResponse);
+//			if ($response == false) {
+//				$result['message'] = "Invalid information returned from API, please retry your action after a few minutes.";
+//				global $logger;
+//				$logger->log("Invalid information from rbdigital api " . $rawResponse, PEAR_LOG_ERR);
+//			} else {
+//				if (!empty($response->output) && $response->output == 'success') {
+//					$result['success'] = true;
+//					$result['message'] = "Your title was renewed successfully.";
+//				} else {
+//					$result['message'] = $response->output;
+//				}
+//			}
+//		}
+//		return $result;
+//	}
 
 	/**
 	 * Return a title currently checked out to the user
@@ -364,37 +364,37 @@ class RBdigital {
 	 * @param $recordId   string
 	 * @return array
 	 */
-	public function returnCheckout($patron, $recordId)
-	{
-		$result = ['success' => false, 'message' => 'Unknown error'];
-
-		$rbdigitalId = $this->getPatronId($patron);
-		if ($rbdigitalId == false) {
-			$result['message'] = 'Sorry, you are not registered with RBdigital.  You will need to create an account there before continuing.';
-		} else {
-			$actionUrl = $this->webServiceBaseUrl . '/v1/libraries/' . $this->libraryId . '/patrons/' . $rbdigitalId . '/checkouts/' . $recordId;
-
-			$rawResponse = $this->curl->delete($actionUrl);
-			$response    = json_decode($rawResponse);
-			if ($response == false) {
-				$result['message'] = "Invalid information returned from API, please retry your action after a few minutes.";
-				global $logger;
-				$logger->log("Invalid information from rbdigital api " . $rawResponse, PEAR_LOG_ERR);
-			} else {
-				if (!empty($response->message) && $response->message == 'success') {
-					$result['success'] = true;
-					$result['message'] = "Your title was returned successfully.";
-
-					/** @var Memcache $memCache */
-					global $memCache;
-					$memCache->delete('rbdigital_summary_' . $patron->id);
-				} else {
-					$result['message'] = $response->message;
-				}
-			}
-		}
-		return $result;
-	}
+//	public function returnCheckout($patron, $recordId)
+//	{
+//		$result = ['success' => false, 'message' => 'Unknown error'];
+//
+//		$rbdigitalId = $this->getPatronId($patron);
+//		if ($rbdigitalId == false) {
+//			$result['message'] = 'Sorry, you are not registered with RBdigital.  You will need to create an account there before continuing.';
+//		} else {
+//			$actionUrl = $this->webServiceBaseUrl . '/v1/libraries/' . $this->libraryId . '/patrons/' . $rbdigitalId . '/checkouts/' . $recordId;
+//
+//			$rawResponse = $this->curl->delete($actionUrl);
+//			$response    = json_decode($rawResponse);
+//			if ($response == false) {
+//				$result['message'] = "Invalid information returned from API, please retry your action after a few minutes.";
+//				global $logger;
+//				$logger->log("Invalid information from rbdigital api " . $rawResponse, PEAR_LOG_ERR);
+//			} else {
+//				if (!empty($response->message) && $response->message == 'success') {
+//					$result['success'] = true;
+//					$result['message'] = "Your title was returned successfully.";
+//
+//					/** @var Memcache $memCache */
+//					global $memCache;
+//					$memCache->delete('rbdigital_summary_' . $patron->id);
+//				} else {
+//					$result['message'] = $response->message;
+//				}
+//			}
+//		}
+//		return $result;
+//	}
 
 
 
