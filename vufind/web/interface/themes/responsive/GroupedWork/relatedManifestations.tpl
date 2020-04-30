@@ -64,6 +64,12 @@
 		                      {else}
 	                          <a href="#" class="btn btn-sm btn-primary" onclick="return Pika.ResultsList.toggleRelatedManifestations('{if $inPopUp}popup-{/if}{$id|escapeCSS}_{$relatedManifestation.format|escapeCSS}');">Available From</a>
                           {/if}
+												{elseif $relatedManifestation.format == 'Physical Object'}
+														{if $relatedManifestation.numRelatedRecords == 1}
+														<a href="#" class="btn btn-sm btn-primary" onclick="{$curAction.onclick}" {if $curAction.alt}title="{$curAction.alt}"{/if}>{$curAction.title}</a>
+		                      {else}
+	                          <a href="#" class="btn btn-sm btn-primary" onclick="return Pika.ResultsList.toggleRelatedManifestations('{if $inPopUp}popup-{/if}{$id|escapeCSS}_{$relatedManifestation.format|escapeCSS}');">Show Options</a>
+                          {/if}
 												{else}
 											<a href="#" class="btn btn-sm btn-primary" onclick="{$curAction.onclick}" {if $curAction.alt}title="{$curAction.alt}"{/if}>{$curAction.title}</a>{/if}
 										{/if}
