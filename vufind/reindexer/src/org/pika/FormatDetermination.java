@@ -273,7 +273,7 @@ public class FormatDetermination {
 					formatBoost = tmpFormatBoostLong;
 				}
 			} catch (NumberFormatException e) {
-				logger.warn("Could not load format boost for format " + tmpFormatBoost + " profile " + profileType + " for " + recordInfo.getRecordIdentifier(), e);
+				logger.warn("Could not load format boost for format " + tmpFormatBoost + " profile " + profileType + " for " + recordInfo.getRecordIdentifier());
 			}
 		}
 		recordInfo.setFormatBoost(formatBoost);
