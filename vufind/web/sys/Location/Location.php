@@ -450,7 +450,7 @@ class Location extends DB_DataObject {
 						'canEdit'       => false,
 						'additionalOneToManyActions' => array(
 							array(
-								'text'    => 'Copy Library Hoopla Settings',
+								'text'    => 'Copy Hoopla Settings From Parent Library',
 								'onclick' => 'Pika.Admin.copyLibraryHooplaSettings($id)',
 							),
 							array(
