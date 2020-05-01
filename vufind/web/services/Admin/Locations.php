@@ -98,12 +98,7 @@ class Locations extends ObjectEditor {
 				    'url'  => '/Admin/Locations?id=' . $existingObject->locationId . '&amp;objectAction=resetMoreDetailsToDefault',
 			    );
             }
-			if (!UserAccount::userHasRole('libraryManager') && !UserAccount::userHasRole('locationManager')){
-				$objectActions[] = array(
-					'text' => 'Copy Location Data',
-					'url'  => '/Admin/Locations?id=' . $existingObject->locationId . '&amp;objectAction=copyDataFromLocation',
-				);
-			}
+			
 		}else{
 			echo("Existing object is null");
 		}
@@ -120,7 +115,7 @@ class Locations extends ObjectEditor {
 			$locationToCopyFromId           = $_REQUEST['locationToCopyFrom'];
 			$locationToCopyFrom             = new Location();
 			$locationToCopyFrom->locationId = $locationToCopyFromId;
-			$location->find(true);
+			$locationToCopyFrom->find(true);
 
 			if (isset($_REQUEST['copyFacets'])){
 				$location->clearFacets();
@@ -144,6 +139,7 @@ class Locations extends ObjectEditor {
 				}
 				$location->browseCategories = $browseCategoriesToCopy;
 			}
+
 			$location->update();
 			header("Location: /Admin/Locations?objectAction=edit&id=" . $locationId);
 		}else{
@@ -152,9 +148,7 @@ class Locations extends ObjectEditor {
 
 			unset($allLocations[$locationId]);
 			foreach ($allLocations as $key => $location){
-				if (count($location->facets) == 0 && count($location->browseCategories) == 0){
-					unset($allLocations[$key]);
-				}
+
 			}
 			global $interface;
 			$interface->assign('allLocations', $allLocations);

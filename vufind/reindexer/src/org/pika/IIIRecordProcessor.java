@@ -515,7 +515,8 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 						// 041d Language code of sung or spoken text
 
 						for (Subfield languageSubfield : languageData.getSubfields(subfield)) {
-							languageCode = languageSubfield.getData();
+							languageCode = languageSubfield.getData().trim();
+							// Some end of tag subfields has trailing spaces
 							int round = 1;
 							do {
 								// Multiple language codes can be smashed together in a single subfield,
@@ -529,7 +530,7 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 								final int length = languageCode.length();
 								String    code   = length > 3 ? languageCode.substring(0, 3) : languageCode;
 								languageName = indexer.translateSystemValue("language", code, "041" + subfield + " " + identifier);
-								if (!languageName.equals(code.trim())) {
+								if (languageName != null && !languageName.equals(code.trim())) {
 									// Don't allow untranslated language codes into the facet but do allow codes
 									// that have been translated to "Unknown",etc
 									languageNames.add(languageName);
@@ -573,7 +574,8 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 						// 041j Language code of subtitles
 
 						for (Subfield languageSubfield : languageData.getSubfields(subfield)) {
-							languageCode = languageSubfield.getData();
+							languageCode = languageSubfield.getData().trim();
+							// Some end of tag subfields has trailing spaces
 							do {
 								// Multiple language codes can be smashed together in a single subfield,
 								// so we need to parse each three letter code and process it.
@@ -583,7 +585,7 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 								final int length = languageCode.length();
 								String    code   = length > 3 ? languageCode.substring(0, 3) : languageCode;
 								languageName = indexer.translateSystemValue("language", code, "041" + subfield + " " + identifier);
-								if (!languageName.equals(code.trim())) {
+								if (languageName != null && !languageName.equals(code.trim())) {
 									translationsNames.add(languageName);
 								}
 								if (length >= 3) {

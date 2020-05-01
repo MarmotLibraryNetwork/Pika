@@ -287,7 +287,14 @@ class Location extends DB_DataObject {
 								'storeDb'       => true,
 								'allowEdit'     => true,
 								'canEdit'       => true,
-							),
+                                'additionalOneToManyActions' => array(
+                                    array(
+                                        'text' => 'Copy Facets Settings from Location',
+                                        'onclick' => 'Pika.Admin.copyFacetsSettings($id)',
+                                    ),
+                                ),
+                            ),
+
 						),
 					),
 					'combinedResultsSection' => array(
@@ -355,6 +362,12 @@ class Location extends DB_DataObject {
 						'storeDb'       => true,
 						'allowEdit'     => true,
 						'canEdit'       => true,
+                        'additionalOneToManyActions' => array(
+                            array(
+                                'text' => 'Copy Full Record Display from Location',
+                                'onclick' => 'Pika.Admin.copyFullRecordDisplay($id)',
+                            ),
+                        ),
 					),
 				),
 			),
@@ -395,6 +408,12 @@ class Location extends DB_DataObject {
 						'storeDb'       => true,
 						'allowEdit'     => false,
 						'canEdit'       => false,
+                        'additionalOneToManyActions' => array(
+                            array(
+                                'text' => 'Copy Browse Categories from Location',
+                                'onclick' => 'Pika.Admin.copyBrowseCategories($id)',
+                            ),
+                        ),
 					),
 				),
 			),
@@ -431,14 +450,19 @@ class Location extends DB_DataObject {
 						'canEdit'       => false,
 						'additionalOneToManyActions' => array(
 							array(
-								'text'    => 'Copy Library Hoopla Settings',
+								'text'    => 'Copy Hoopla Settings From Parent Library',
 								'onclick' => 'Pika.Admin.copyLibraryHooplaSettings($id)',
 							),
+							array(
+							    'text'     => 'Copy Hoopla Settings From Location',
+                                'onclick'   => 'Pika.Admin.copyLocationHooplaSettings($id)',
+                            ),
 							array(
 								'text'    => 'Clear Hoopla Settings',
 								'onclick' => 'Pika.Admin.clearLocationHooplaSettings($id)',
 								'class'   => 'btn-warning',
 							),
+
 						),
 					),
 				),
@@ -455,6 +479,12 @@ class Location extends DB_DataObject {
 				'description'   => 'Library Hours',
 				'sortable'      => false,
 				'storeDb'       => true,
+                'additionalOneToManyActions' => array(
+                  array(
+                    'text' => 'Copy Hours from Location',
+                    'onclick' => 'Pika.Admin.copyLocationHours($id)',
+                  ),
+                ),
 			),
 
 			'recordsOwned' => array(
@@ -485,6 +515,12 @@ class Location extends DB_DataObject {
 				'storeDb'       => true,
 				'allowEdit'     => false,
 				'canEdit'       => false,
+                'additionalOneToManyActions' => array(
+                    array(
+                        'text' => 'Copy Included Records from Location',
+                        'onclick' => 'Pika.Admin.copyLocationIncludedRecords($id)',
+                    ),
+                ),
 			),
 			'includeLibraryRecordsToInclude' => array('property' => 'includeLibraryRecordsToInclude', 'type' => 'checkbox', 'label' => 'Include Library Records To Include', 'description' => 'Whether or not the records to include from the parent library should be included for this location', 'hideInLists' => true, 'default' => true),
 		);
@@ -1175,6 +1211,8 @@ class Location extends DB_DataObject {
 		$this->facets = array();
 	}
 
+
+
 	public function saveHours(){
 		if (isset ($this->hours) && is_array($this->hours)){
 			$this->saveOneToManyOptions($this->hours);
@@ -1226,6 +1264,34 @@ class Location extends DB_DataObject {
 		return $success;
 	}
 
+    /**
+     * Copy the Hoopla settings from a specified location to the current location.
+     *
+     *
+     * @param $copyFromLocationId the location to be copied from
+     * @return bool  returns false if any insert failed.
+     */
+	public function copyLocationHooplaSettings($copyFromLocationId){
+        $success = true;
+        $copyFromHooplaSettings = new LocationHooplaSettings();
+        $copyFromHooplaSettings->locationId = $copyFromLocationId;
+        $hooplaSettings = $copyFromHooplaSettings->fetchAll();
+        foreach($hooplaSettings as $setting)
+        {
+            $copyToHooplaSetting                    = new LocationHooplaSettings();
+            $copyToHooplaSetting->locationId                = $this->locationId;
+            $copyToHooplaSetting->kind                      = $setting->kind;
+            $copyToHooplaSetting->maxPrice                  = $setting->maxPrice;
+            $copyToHooplaSetting->excludeParentalAdvisory   = $setting->excludeParentalAdvisory;
+            $copyToHooplaSetting->excludeProfanity          = $setting->excludeProfanity;
+            $copyToHooplaSetting->includeChildrenTitlesOnly = $setting->includeChildrenTitlesOnly;
+
+            if(!$copyToHooplaSetting->insert()){
+                $success = false;
+            }
+        }
+        return $success;
+    }
 	public static function getLibraryHours($locationId, $timeToCheck){
 		$location             = new Location();
 		$location->locationId = $locationId;
@@ -1390,7 +1456,13 @@ class Location extends DB_DataObject {
 		$object->delete();
 		$this->recordsToInclude = array();
 	}
+    public function clearLocationRecordsToInclude()
+    {
+        $success = $this->clearOneToManyOptions('LocationRecordToInclude');
 
+        $this->hours = array();
+        return $success;
+    }
 	static function getDefaultFacets($locationId = -1){
 		global $configArray;
 		$defaultFacets = array();
@@ -1563,6 +1635,12 @@ class Location extends DB_DataObject {
 		$hours->locationId = $this->locationId;
 		return $hours->count();
 	}
+
+	public function clearHours(){
+        $success = $this->clearOneToManyOptions('LocationHours');
+        $this->hours = array();
+	    return $success;
+    }
 
 	public function getHoursFormatted(){
 		unset($this->hours); // clear out any previous hours data that has been set

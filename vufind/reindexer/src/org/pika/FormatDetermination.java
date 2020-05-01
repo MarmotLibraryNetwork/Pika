@@ -267,13 +267,10 @@ public class FormatDetermination {
 		long            formatBoost  = 0L;
 		HashSet<String> formatBoosts = translateCollection("format_boost", printFormats, recordInfo.getRecordIdentifier());
 		for (String tmpFormatBoost : formatBoosts) {
-			try {
-				long tmpFormatBoostLong = Long.parseLong(tmpFormatBoost);
-				if (tmpFormatBoostLong > formatBoost) {
-					formatBoost = tmpFormatBoostLong;
-				}
-			} catch (NumberFormatException e) {
-				logger.warn("Could not load format boost for format " + tmpFormatBoost + " profile " + profileType + " for " + recordInfo.getRecordIdentifier());
+			if (Util.isNumeric(tmpFormatBoost)) {
+				formatBoost = Math.max(formatBoost, Long.parseLong(tmpFormatBoost));
+			} else {
+				logger.warn("Format boost invalid for format " + tmpFormatBoost + " profile " + profileType + " for " + recordInfo.getRecordIdentifier());
 			}
 		}
 		recordInfo.setFormatBoost(formatBoost);
