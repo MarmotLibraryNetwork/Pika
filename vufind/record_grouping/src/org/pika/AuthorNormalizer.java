@@ -35,6 +35,7 @@ class AuthorNormalizer {
 		//Remove special characters that should be replaced with nothing
 		groupingAuthor = apostropheStrip.matcher(groupingAuthor).replaceAll("");
 		groupingAuthor = specialCharacterWhitespace.matcher(groupingAuthor).replaceAll(""); //TODO: combine with the apostropheStrip
+		groupingAuthor = normalizeDiacritics(groupingAuthor); //This has to happen before the specialCharacterStrip
 		groupingAuthor = specialCharacterStrip.matcher(groupingAuthor).replaceAll(" ").trim().toLowerCase();
 
 		// Remove no publisher identified phrases
@@ -64,10 +65,10 @@ class AuthorNormalizer {
 		if (distributedByRemovalMatcher.find()){
 			groupingAuthor = distributedByRemovalMatcher.group(1);
 		}
-		groupingAuthor = normalizeDiacritics(groupingAuthor.trim());
 //		groupingAuthor = consecutiveWhiteSpaceStrip.matcher(groupingAuthor).replaceAll(" ");
 		//this is done once by removeCommonPrefixesAndSuffixes()
 
+		groupingAuthor = groupingAuthor.trim();
 		if (groupingAuthor.length() > 50){
 			groupingAuthor = groupingAuthor.substring(0, 50).trim();
 		}

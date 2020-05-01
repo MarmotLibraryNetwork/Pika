@@ -82,7 +82,7 @@ class RecordGroupingProcessor {
 
 	void setupDatabaseStatements(Connection pikaConn) {
 		try {
-			insertGroupedWorkStmt                     = pikaConn.prepareStatement("INSERT INTO " + RecordGrouperMain.groupedWorkTableName + " (full_title, author, grouping_category, grouping_language, permanent_id, date_updated) VALUES (?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE date_updated = VALUES(date_updated), id=LAST_INSERT_ID(id) ", Statement.RETURN_GENERATED_KEYS);
+			insertGroupedWorkStmt                     = pikaConn.prepareStatement("INSERT INTO grouped_work (full_title, author, grouping_category, grouping_language, permanent_id, date_updated) VALUES (?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE date_updated = VALUES(date_updated), id=LAST_INSERT_ID(id) ", Statement.RETURN_GENERATED_KEYS);
 			insertHistoricalGroupedWorkStmt           = pikaConn.prepareStatement("INSERT INTO grouped_work_historical (permanent_id, grouping_title, grouping_author, grouping_category, grouping_language, grouping_version) VALUES (?, ?, ?, ?, ?, ?) ");
 			checkHistoricalGroupedWorkStmt            = pikaConn.prepareStatement("SELECT COUNT(*) FROM grouped_work_historical WHERE permanent_id = ? AND grouping_title = ? AND grouping_author = ? AND grouping_category = ? AND grouping_version = ?", ResultSet.CONCUR_READ_ONLY);
 			updateDateUpdatedForGroupedWorkStmt       = pikaConn.prepareStatement("UPDATE grouped_work SET date_updated = ? WHERE id = ?");

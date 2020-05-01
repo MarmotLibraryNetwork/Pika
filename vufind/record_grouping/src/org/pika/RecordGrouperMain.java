@@ -32,8 +32,6 @@ public class RecordGrouperMain {
 	private static String              serverName;
 	private static PikaSystemVariables systemVariables;
 
-	static String groupedWorkTableName = "grouped_work";
-
 	private static HashMap<String, Long> marcRecordChecksums           = new HashMap<>();
 	private static HashMap<String, Long> marcRecordFirstDetectionDates = new HashMap<>();
 	private static HashMap<String, Long> marcRecordIdsInDatabase       = new HashMap<>();
@@ -1185,6 +1183,7 @@ public class RecordGrouperMain {
 			try {
 				addNoteToGroupingLog("Clearing out grouping related tables.");
 				pikaConn.prepareStatement("TRUNCATE ils_marc_checksums").executeUpdate();
+				String groupedWorkTableName = "grouped_work";
 				pikaConn.prepareStatement("TRUNCATE " + groupedWorkTableName).executeUpdate();
 //				String groupedWorkIdentifiersTableName = "grouped_work_identifiers";
 //				pikaConn.prepareStatement("TRUNCATE " + groupedWorkIdentifiersTableName).executeUpdate();
