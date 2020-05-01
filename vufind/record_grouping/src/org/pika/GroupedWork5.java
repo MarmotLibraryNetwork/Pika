@@ -145,9 +145,10 @@ public class GroupedWork5 extends GroupedWorkBase implements Cloneable {
 	final private static Pattern consecutiveSpaceStrip         = Pattern.compile("\\s{2,}");
 	final private static Pattern bracketedCharacterStrip       = Pattern.compile("\\[(.*?)\\]");
 	final private static Pattern sortTrimmingPattern           = Pattern.compile("(?i)^(?:(?:a|an|the|el|la|\"|')\\s)(.*)$");
-	final private static Pattern commonSubtitlesSimplePattern  = Pattern.compile("(by\\s\\w+\\s\\w+|a novel of .*|stories|an autobiography|a biography|a memoir in books|poems|the movie|large print|graphic novel|magazine|audio cd|book club kit|with illustrations|book \\d+|the original classic edition|classic edition|a novel)$");
+//	final private static Pattern commonSubtitlesSimplePattern  = Pattern.compile("(by\\s\\w+\\s\\w+|a novel of .*|stories|an autobiography|a biography|a memoir in books|poems|the movie|large print|graphic novel|magazine|audio cd|book club kit|with illustrations|book \\d+|the original classic edition|classic edition|a novel)$");
+	final private static Pattern commonSubtitlesSimplePattern  = Pattern.compile("(\\sby\\s\\w+\\s\\w+|a novel of .*|stories|an autobiography|a biography|a memoir in books|poems|the movie|large print|graphic novel|magazine|audio cd|book club kit|with illustrations|book \\d+|the original classic edition|classic edition|a novel)$");
 	final private static Pattern commonSubtitlesComplexPattern = Pattern.compile("((a|una)\\s(.*)novel(a|la)?|a(.*)memoir|a(.*)mystery|a(.*)thriller|by\\s\\w+\\s\\w+|an? .* story|a .*\\s?book|[\\w\\s]+series book \\d+|the[\\w\\s]+chronicles book \\d+|[\\w\\s]+trilogy book \\d+)$");
-	final private static Pattern editionRemovalPattern         = Pattern.compile("(first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth|revised|\\d+\\S*)\\s+(edition|ed|ed\\.|update)");
+	final private static Pattern editionRemovalPattern         = Pattern.compile("(first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth|revised|\\d+\\S*)\\s+(edition|ed|ed\\.|update|anniversary edition|comprehensive edition|anniversary commemorative edition)");
 	final private static Pattern firstPattern                  = Pattern.compile("1st");
 	final private static Pattern secondPattern                 = Pattern.compile("2nd");
 	final private static Pattern thirdPattern                  = Pattern.compile("3rd");
@@ -190,7 +191,7 @@ public class GroupedWork5 extends GroupedWorkBase implements Cloneable {
 		//Remove editions
 		groupingTitle = removeEditionInformation(groupingTitle);
 
-		int titleEnd = 100;
+		final int titleEnd = 100;
 		if (titleEnd < groupingTitle.length()) {
 			groupingTitle = groupingTitle.substring(0, titleEnd);
 		}
@@ -205,7 +206,7 @@ public class GroupedWork5 extends GroupedWorkBase implements Cloneable {
 	private String cleanTitleCharacters(String groupingTitle) {
 		//Fix abbreviations
 		groupingTitle = initialsFix.matcher(groupingTitle).replaceAll(" ");
-		groupingTitle = dashPattern.matcher(groupingTitle).replaceAll("-");
+		groupingTitle = dashPattern.matcher(groupingTitle).replaceAll("-"); // todo: combine with html entities decoding
 		groupingTitle = ampersandPattern.matcher(groupingTitle).replaceAll("and"); // TODO: avoid encoded sequences like &#174;
 		//Replace & with and for better matching (Note: this must happen *before* the specialCharacterStrip is applied
 

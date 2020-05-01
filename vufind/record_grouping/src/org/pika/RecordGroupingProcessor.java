@@ -306,6 +306,13 @@ class RecordGroupingProcessor {
 									DataField field264 = marcRecord.getDataField("264"); // Production, Publication, Distribution, Manufacture, and Copyright Notice.
 									if (field264 != null && field264.getIndicator2() == '1' && field264.getSubfield('b') != null) {
 										author = field264.getSubfield('b').getData();
+
+										//Example where the 245c would be better than the 264b
+										//245	0	0	|a Aspen Chapel with the beautiful Beatitude windows and organ /|c [design by Kenneth Endicott ; photography of the Chapel and windows by Al Pitzner ; scenes of Aspen area courtesy of Snowmass at Aspen and Robert Bishop.
+										//264		1	|a [Aspen, Colo.?] :|b [publisher not identified], [198-?]
+										// Another example
+										//245	0	0	|a Every Hero Tells a Story |h [videorecording] :|b Variety Show/|c Florissant Public Library.
+										//264		1	|a Colorado :|b publisher,|c 2015.
 									} else {
 										//260			|a Addison, IL :|b compiled by the Addison Public Library,|c 2004.
 										DataField field260 = marcRecord.getDataField("260"); // Publication, Distribution, etc.

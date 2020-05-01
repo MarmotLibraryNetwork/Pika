@@ -1303,7 +1303,7 @@ public class RecordGrouperMain {
 									if (!explodeMarcsOnly) {
 										if (true || /*TODO: temp only*/ !marcUpToDate || fullRegroupingNoClear) {
 //										if ( !marcUpToDate || fullRegroupingNoClear) {
-											if (recordGroupingProcessor.processMarcRecord(curBib, !marcUpToDate)) {
+											if (recordGroupingProcessor.processMarcRecord(curBib, !marcUpToDate, recordIdentifier)) {
 												recordNumbersToIndex.add(recordIdentifier.toString());
 											} else {
 												suppressedRecordNumbersInExport.add(recordIdentifier.toString());

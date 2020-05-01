@@ -101,7 +101,10 @@ class MarcRecordGrouper extends RecordGroupingProcessor {
 
 	boolean processMarcRecord(Record marcRecord, boolean primaryDataChanged) {
 		RecordIdentifier primaryIdentifier = getPrimaryIdentifierFromMarcRecord(marcRecord, profile.sourceName, profile.doAutomaticEcontentSuppression);
+		return processMarcRecord(marcRecord, primaryDataChanged, primaryIdentifier);
+	}
 
+	boolean processMarcRecord(Record marcRecord, boolean primaryDataChanged, RecordIdentifier primaryIdentifier) {
 		if (primaryIdentifier != null) {
 			//Get data for the grouped record
 			GroupedWorkBase workForTitle = setupBasicWorkForIlsRecord(primaryIdentifier, marcRecord, profile);
