@@ -34,6 +34,8 @@ class Admin_AJAX extends AJAXHandler {
         'copyBrowseCategoriesFromLocation',
         'copyIncludedRecordsFromLocation',
         'copyFullRecordDisplayFromLocation',
+        'resetFacetsToDefault',
+        'resetMoreDetailsToDefault',
 	);
 
 	function getAddToWidgetForm(){
@@ -89,7 +91,7 @@ class Admin_AJAX extends AJAXHandler {
 				}
 			}
 		}
-		return json_encode($results);
+		return $results;
 	}
 
     /**
@@ -143,7 +145,7 @@ class Admin_AJAX extends AJAXHandler {
 				}
 			}
 		}
-		return json_encode($results);
+		return $results;
 	}
 
 	function clearLibraryHooplaSettings(){
@@ -167,7 +169,7 @@ class Admin_AJAX extends AJAXHandler {
 				}
 			}
 		}
-		return json_encode($results);
+		return $results;
 	}
 
     /**
@@ -249,7 +251,7 @@ class Admin_AJAX extends AJAXHandler {
         $copyFromLocation = new Location();
         if(UserAccount::userHasRoleFromList(['opacAdmin','libraryAdmin']))
         {
-            if($location->get($locationId) && $copyFromLocation->get($fromLocationId));
+            if($location->get($locationId) && $copyFromLocation->get($fromLocationId))
             {
 
                 $copyFromLocation->getHours();
@@ -286,7 +288,7 @@ class Admin_AJAX extends AJAXHandler {
         $location = new Location();
         $copyFromLocation = new Location();
         if(UserAccount::userHasRoleFromList(['opacAdmin','libraryAdmin'])) {
-            if ($location->get($locationId) && $copyFromLocation->get($fromLocationId)) ;
+            if ($location->get($locationId) && $copyFromLocation->get($fromLocationId))
             {
                 $location->clearBrowseCategories();
 
@@ -322,7 +324,7 @@ class Admin_AJAX extends AJAXHandler {
         $location = new Location();
         $copyFromLocation = new Location();
         if(UserAccount::userHasRoleFromList(['opacAdmin','libraryAdmin'])) {
-            if ($location->get($locationId) && $copyFromLocation->get($fromLocationId)) ;
+            if ($location->get($locationId) && $copyFromLocation->get($fromLocationId))
             {
                 $location->clearFacets();
 
@@ -369,7 +371,7 @@ class Admin_AJAX extends AJAXHandler {
         $location = new Location();
         $copyFromLocation = new Location();
         if(UserAccount::userHasRoleFromList(['opacAdmin','libraryAdmin'])) {
-            if ($location->get($locationId) && $copyFromLocation->get($fromLocationId)) ;
+            if ($location->get($locationId) && $copyFromLocation->get($fromLocationId))
             {
 
                 $location->clearLocationRecordsToInclude();
@@ -407,7 +409,7 @@ class Admin_AJAX extends AJAXHandler {
         $location = new Location();
         $copyFromLocation = new Location();
         if(UserAccount::userHasRoleFromList(['opacAdmin','libraryAdmin'])) {
-            if ($location->get($locationId) && $copyFromLocation->get($fromLocationId)) ;
+            if ($location->get($locationId) && $copyFromLocation->get($fromLocationId))
             {
                 $location->clearMoreDetailsOptions();
                 $fullRecordDisplayToCopy = $copyFromLocation->moreDetailsOptions;
@@ -423,6 +425,65 @@ class Admin_AJAX extends AJAXHandler {
                 $location->showComments             = $copyFromLocation->showComments;
                 $location->showQRCode               = $copyFromLocation->showQRCode;
                 $location->showStaffView            = $copyFromLocation->showStaffView;
+                $location->update();
+                $results['body'] = '<div class="alert alert-success">Full Record Display successfully copied.</div>';
+            }
+        }
+
+        return $results;
+    }
+    function resetFacetsToDefault()
+    {
+        $results = array(
+            'title' => 'Reset Facets To Default',
+            'body' => '<div class="alert alert-danger">Reset was unsuccessful</div>',
+        );
+        $user = UserAccount::getLoggedInUser();
+        $locationId = trim($_REQUEST['id']);
+        $location = new Location();
+        if(UserAccount::userHasRoleFromList(['opacAdmin','libraryAdmin'])) {
+            if ($location->get($locationId))
+            {
+                $location->clearFacets();
+
+                $defaultFacets = Location::getDefaultFacets($locationId);
+
+                $location->facets = $defaultFacets;
+                $location->update();
+                $results['body'] = '<div class="alert alert-success">Facets Reset to Default.</div>';
+            }
+        }
+
+        return $results;
+    }
+    function resetMoreDetailsToDefault()
+    {
+        $results = array(
+            'title' => 'Reset Facets To Default',
+            'body' => '<div class="alert alert-danger">Reset was unsuccessful</div>',
+        );
+        $user = UserAccount::getLoggedInUser();
+        $locationId = trim($_REQUEST['id']);
+        $location = new Location();
+        if(UserAccount::userHasRoleFromList(['opacAdmin','libraryAdmin'])) {
+            if ($location->get($locationId))
+            {
+                $location->clearMoreDetailsOptions();
+
+                $defaultOptions = array();
+                require_once ROOT_DIR . '/RecordDrivers/Interface.php';
+                $defaultMoreDetailsOptions = RecordInterface::getDefaultMoreDetailsOptions();
+                $i                         = 0;
+                foreach ($defaultMoreDetailsOptions as $source => $defaultState){
+                    $optionObj                    = new LocationMoreDetails();
+                    $optionObj->locationId        = $locationId;
+                    $optionObj->collapseByDefault = $defaultState == 'closed';
+                    $optionObj->source            = $source;
+                    $optionObj->weight            = $i++;
+                    $defaultOptions[]             = $optionObj;
+                }
+
+                $location->moreDetailsOptions = $defaultOptions;
                 $location->update();
                 $results['body'] = '<div class="alert alert-success">Full Record Display successfully copied.</div>';
             }
