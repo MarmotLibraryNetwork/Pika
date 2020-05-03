@@ -485,7 +485,7 @@ class Admin_AJAX extends AJAXHandler {
 
                 $location->moreDetailsOptions = $defaultOptions;
                 $location->update();
-                $results['body'] = '<div class="alert alert-success">Full Record Display successfully copied.</div>';
+                $results['body'] = '<div class="alert alert-success">Full Record Display reset to default.</div>';
             }
         }
 
