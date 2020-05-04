@@ -36,6 +36,7 @@ class Admin_AJAX extends AJAXHandler {
         'copyFullRecordDisplayFromLocation',
         'resetFacetsToDefault',
         'resetMoreDetailsToDefault',
+        'copyFacetSettingsFromLocation',
 	);
 
 	function getAddToWidgetForm(){

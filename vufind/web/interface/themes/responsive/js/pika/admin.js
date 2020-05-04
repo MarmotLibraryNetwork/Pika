@@ -97,11 +97,11 @@ Pika.Admin = (function(){
 		},
 		resetFacetsToDefault: function(id)
 		{
-			return this.basicAjaxHandler('resetFacetsToDefault',id);
+			return this.basicAjaxHandler('resetFacetsToDefault', id);
 		},
 		resetMoreDetailsToDefault: function(id)
 		{
-			return this.basicAjaxHandler('resetMoreDetailsToDefault',id);
+			return this.basicAjaxHandler('resetMoreDetailsToDefault', id);
 		},
 	};
 }(Pika.Admin || {}));
