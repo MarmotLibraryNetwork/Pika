@@ -66,6 +66,7 @@ public class SplitMarcExport implements IProcessHandler {
 							MarcReader catalogReader = new MarcPermissiveStreamReader(marcFileStream, true, true, marcEncoding);
 							while (catalogReader.hasNext()) {
 								Record curBib = catalogReader.next();
+								numRecordsRead++;
 
 								//Check the items within the marc record to see if they should be kept or discarded
 								for (MarcSplitOption splitter : splitOptions) {
@@ -79,7 +80,7 @@ public class SplitMarcExport implements IProcessHandler {
 					}
 					processLog.saveToDatabase(pikaConn, logger);
 				}
-				processLog.addNote("Completed splitting " + catalogBibFiles.length + "source MARC files.");
+				processLog.addNote("Completed splitting " + catalogBibFiles.length + " source MARC file(s).");
 				processLog.addNote("Read " + numRecordsRead + " records.");
 			}
 		} catch (Exception e) {
