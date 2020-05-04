@@ -1,7 +1,6 @@
 package org.pika;
 
 import org.apache.log4j.Logger;
-import org.ini4j.Ini;
 import org.ini4j.Profile;
 import org.marc4j.MarcPermissiveStreamReader;
 import org.marc4j.MarcReader;
@@ -11,6 +10,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.Set;
 
 /**
  * Splits a MARC export based on location codes
@@ -27,31 +27,31 @@ public class SplitMarcExport implements IProcessHandler {
 		CronProcessLogEntry processLog = new CronProcessLogEntry(cronEntry.getLogEntryId(), "Split Marc Records");
 		processLog.saveToDatabase(pikaConn, logger);
 		try {
-			String marcPath         = PikaConfigIni.getIniValue("Reindex", "marcPath");
-			String itemTag          = PikaConfigIni.getIniValue("Reindex", "itemTag");
-			String marcEncoding     = PikaConfigIni.getIniValue("Reindex", "marcEncoding");
-			char   locationSubfield = PikaConfigIni.getCharIniValue("Reindex", "locationSubfield");
+			String marcPath         = Util.cleanIniValue(processSettings.get("marcPath"));
+			String itemTag          = Util.cleanIniValue(processSettings.get("itemTag"));
+			String marcEncoding     = Util.cleanIniValue(processSettings.get("marcEncoding"));
+			char   locationSubfield = Util.cleanIniValue(processSettings.get("locationSubfield")).charAt(0);
 			String splitMarcPath    = Util.cleanIniValue(processSettings.get("splitMarcPath"));
-			if (splitMarcPath == null) {
+			if (splitMarcPath == null || splitMarcPath.isEmpty()) {
 				logger.error("Did not find path to store the split marc files, please add splitMarcPath to the configuration file.");
 				return;
 			}
 
-
 			//Determine what splits to do
-			ArrayList<MarcSplitOption> splitOptions = new ArrayList<MarcSplitOption>();
-			int                        curSplit     = 1;
-			while (true) {
-				if (processSettings.containsKey("split_" + curSplit + "_filename")) {
-					MarcSplitOption splitOption = new MarcSplitOption();
-					splitOption.setFilename(splitMarcPath, Util.cleanIniValue(processSettings.get("split_" + curSplit + "_filename")));
-					splitOption.setLocationsToInclude(Util.cleanIniValue(processSettings.get("split_" + curSplit + "_locations")));
-					splitOption.setItemTag(itemTag);
-					splitOption.setLocationSubfield(locationSubfield);
-					splitOptions.add(splitOption);
-					curSplit++;
-				} else {
-					break;
+			ArrayList<MarcSplitOption> splitOptions = new ArrayList<>();
+			for (String key : processSettings.keySet()) {
+				if (key.startsWith("split_") && key.endsWith("_filename")) {
+					try {
+						int             curSplit    = Integer.parseInt(key.replace("split_", "").replace("_filename", ""));
+						MarcSplitOption splitOption = new MarcSplitOption();
+						splitOption.setFilename(splitMarcPath, Util.cleanIniValue(processSettings.get("split_" + curSplit + "_filename")));
+						splitOption.setLocationsToInclude(Util.cleanIniValue(processSettings.get("split_" + curSplit + "_locations")));
+						splitOption.setItemTag(itemTag);
+						splitOption.setLocationSubfield(locationSubfield);
+						splitOptions.add(splitOption);
+					} catch (NumberFormatException e) {
+						logger.error("Failed to parse split setting number for " + key);
+					}
 				}
 			}
 
