@@ -26,6 +26,7 @@ public class SplitMarcExport implements IProcessHandler {
 	public void doCronProcess(String serverName, Profile.Section processSettings, Connection pikaConn, Connection eContentConn, CronLogEntry cronEntry, Logger logger) {
 		CronProcessLogEntry processLog = new CronProcessLogEntry(cronEntry.getLogEntryId(), "Split Marc Records");
 		processLog.saveToDatabase(pikaConn, logger);
+		ArrayList<MarcSplitOption> splitOptions = new ArrayList<>();
 		try {
 			String marcPath         = Util.cleanIniValue(processSettings.get("marcPath"));
 			String itemTag          = Util.cleanIniValue(processSettings.get("itemTag"));
@@ -34,11 +35,11 @@ public class SplitMarcExport implements IProcessHandler {
 			String splitMarcPath    = Util.cleanIniValue(processSettings.get("splitMarcPath"));
 			if (splitMarcPath == null || splitMarcPath.isEmpty()) {
 				logger.error("Did not find path to store the split marc files, please add splitMarcPath to the configuration file.");
+				processLog.incErrors();
 				return;
 			}
 
 			//Determine what splits to do
-			ArrayList<MarcSplitOption> splitOptions = new ArrayList<>();
 			for (String key : processSettings.keySet()) {
 				if (key.startsWith("split_") && key.endsWith("_filename")) {
 					try {
@@ -71,19 +72,25 @@ public class SplitMarcExport implements IProcessHandler {
 									splitter.processRecord(curBib);
 								}
 							}
-							for (MarcSplitOption splitter : splitOptions) {
-								splitter.close();
-							}
 						} catch (Exception e) {
 							logger.error("Error loading catalog bibs on record " + numRecordsRead + " the last record processed was " + lastRecordProcessed, e);
+							processLog.incErrors();
 						}
 					}
+					processLog.saveToDatabase(pikaConn, logger);
 				}
+				processLog.addNote("Completed splitting " + catalogBibFiles.length + "source MARC files.");
+				processLog.addNote("Read " + numRecordsRead + " records.");
 			}
 		} catch (Exception e) {
 			logger.error("Error splitting marc records", e);
+			processLog.incErrors();
 			processLog.addNote("Error splitting marc records " + e.toString());
 		} finally {
+			for (MarcSplitOption splitter : splitOptions) {
+				processLog.incUpdated();
+				splitter.close();
+			}
 			processLog.setFinished();
 			processLog.saveToDatabase(pikaConn, logger);
 		}
