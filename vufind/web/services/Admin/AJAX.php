@@ -354,13 +354,8 @@ class Admin_AJAX extends AJAXHandler {
                     $facet->id               = null;
                     $facetsToCopy[$facetKey] = $facet;
                 }
-                $location->availabilityToggleLabelSuperScope            = $copyFromLocation->availabilityToggleLabelSuperScope;
-                $location->availabilityToggleLabelLocal                 = $copyFromLocation->availabilityToggleLabelLocal;
-                $location->availabilityToggleLabelAvailable             = $copyFromLocation->availabilityToggleLabelAvailable;
-                $location->availabilityToggleLabelAvailableOnline       = $copyFromLocation->availabilityToggleLabelAvailableOnline;
                 $location->baseAvailabilityToggleOnLocalHoldingsOnly    = $copyFromLocation->baseAvailabilityToggleOnLocalHoldingsOnly;
                 $location->includeOnlineMaterialsInAvailableToggle      = $copyFromLocation->includeOnlineMaterialsInAvailableToggle;
-                $location->facetLabel                                   = $copyFromLocation->facetLabel;
                 $location->includeAllLibraryBranchesInFacets            = $copyFromLocation->includeAllLibraryBranchesInFacets;
                 $location->additionalLocationsToShowAvailabilityFor     = $copyFromLocation->additionalLocationsToShowAvailabilityFor;
                 $location->includeAllRecordsInShelvingFacets            = $copyFromLocation->includeAllRecordsInShelvingFacets;
