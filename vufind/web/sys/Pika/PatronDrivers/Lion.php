@@ -77,6 +77,15 @@ class Lion extends Sierra {
 			'maxLength'   => 40,
 			'required'    => true
 		);
+		// if library would like a birthdate
+		if ($library && $library->promptForBirthDateInSelfReg){
+			$fields[] = ['property'   => 'birthdate',
+			             'type'       => 'date',
+			             'label'      => 'Date of Birth (MM-DD-YYYY)',
+			             'description'=> 'Date of birth',
+			             'maxLength'  => 10,
+			             'required'   => true];
+		}
 		$fields[] = array(
 			'property'    => 'email',
 			'type'        => 'email',
@@ -125,15 +134,7 @@ class Lion extends Sierra {
 			'maxLength'   => 5,
 			'required'    => true
 		);
-		// if library would like a birthdate
-		if ($library && $library->promptForBirthDateInSelfReg){
-			$fields[] = ['property'   => 'birthdate',
-			             'type'       => 'date',
-			             'label'      => 'Date of Birth (MM-DD-YYYY)',
-			             'description'=> 'Date of birth',
-			             'maxLength'  => 10,
-			             'required'   => true];
-		}
+
 		return $fields;
 	}
 
