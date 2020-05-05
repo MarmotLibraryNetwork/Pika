@@ -191,7 +191,7 @@ class Admin_AJAX extends AJAXHandler {
                 $location = new Location();
                 if($location->get($locationId)) {
 
-                    $allLocations = $this->getLocationList();
+                    $allLocations = $this->getLocationList($locationId);
 
                     unset($allLocations[$locationId]);
                     $options = " ";
@@ -200,7 +200,7 @@ class Admin_AJAX extends AJAXHandler {
                         $options .= "<option value='" . $findKey . "'>" . $findLocation->displayName . "</option>";
                     }
 
-                    $results['body'] = "<select id= 'fromId' name='fromId'>" . $options . "</select>";
+                    $results['body'] = "<select id= 'fromId' name='fromId' class='form-control'>" . $options . "</select>";
                     $results['buttons'] = "<button class='btn btn-primary' type= 'button' title='Copy' onclick='return Pika.Admin." . $command ."(" . $locationId . ", document.querySelector(\"#fromId\").value);'>Copy</button>";
                 }
             }
@@ -213,11 +213,15 @@ class Admin_AJAX extends AJAXHandler {
      *
      * @return array of available locations
      */
-    function getLocationList()
+    function getLocationList($locationId)
     {
         //Look lookup information for display in the user interface
         $user = UserAccount::getLoggedInUser();
+        $copyTo = new Location();
 
+        $copyTo->get($locationId);
+        $copyToLibrary = $copyTo->libraryId;
+        unset($copyTo);
         $location = new Location();
         $location->orderBy('displayName');
         if (UserAccount::userHasRole('locationManager')){
@@ -227,11 +231,26 @@ class Admin_AJAX extends AJAXHandler {
             $patronLibrary       = $user->getHomeLibrary();
             $location->libraryId = $patronLibrary->libraryId;
         }
+        $copyTo = new Location();
+        $copyTo->libraryId = $copyToLibrary;
+        $copyTo->find();
+
         $location->find();
+
         $locationList = array();
+
+        while ($copyTo->fetch()){
+
+            $locationList[$copyTo->locationId] = clone $copyTo;
+
+        }
         while ($location->fetch()){
+
             $locationList[$location->locationId] = clone $location;
         }
+
+
+
         return $locationList;
     }
     /**
