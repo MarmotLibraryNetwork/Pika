@@ -47,6 +47,6 @@ class Admin_ArchivePrivateCollections extends Admin_Admin{
 	}
 
 	function getAllowableRoles() {
-		return array('opacAdmin');
+		return array('archives');
 	}
 }

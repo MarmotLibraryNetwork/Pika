@@ -15,12 +15,7 @@
 							{/foreach}
 						</select>
 					</div>
-					<div class="input-group">
-						<label for="copyFacets" class="control-label"><input type="checkbox" name="copyFacets" id="copyFacets"/> Copy Facets</label>
-					</div>
-					<div class="input-group">
-						<label for="copyBrowseCategories" class="control-label"><input type="checkbox" name="copyBrowseCategories" id="copyBrowseCategories"/> Copy Browse Categories</label>
-					</div>
+
 					<div class="input-group">
 						<input type="submit" name="submit" value="Copy Data" class="btn btn-primary"/>
 					</div>

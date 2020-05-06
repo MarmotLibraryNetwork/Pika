@@ -297,7 +297,7 @@ class OverDrive_AJAX extends AJAXHandler {
 		}
 
 		$results = array(
-			'title'        => 'eContent Support Request',
+			'title'        => 'OverDrive Support Request',
 			'modalBody'    => $interface->fetch('OverDrive/eContentSupport.tpl'),
 			'modalButtons' => '<span class="tool btn btn-primary" onclick="return $(\'#eContentSupport\').submit()">Submit</span>', // .submit() triggers form validation
 		);
@@ -332,7 +332,7 @@ class OverDrive_AJAX extends AJAXHandler {
 			}
 
 			$name        = $_REQUEST['name'];
-			$subject     = 'eContent Support Request from ' . $name;
+			$subject     = 'OverDrive Support Request from ' . $name;
 			$patronEmail = $_REQUEST['email'];
 			$interface->assign('bookAuthor', $_REQUEST['bookAuthor']);
 			$interface->assign('device', $_REQUEST['device']);
@@ -342,6 +342,7 @@ class OverDrive_AJAX extends AJAXHandler {
 			$interface->assign('name', $name);
 			$interface->assign('email', $patronEmail);
 			$interface->assign('deviceName', get_device_name()); // footer & eContent support email
+            $interface->assign('homeLibrary', $userLibrary->displayName);
 
 			$body        = $interface->fetch('OverDrive/eContentSupportEmail.tpl');
 			$emailResult = $mail->send($to, $sendingAddress, $subject, $body, $patronEmail);

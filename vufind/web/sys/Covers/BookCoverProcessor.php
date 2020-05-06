@@ -112,10 +112,14 @@ class BookCoverProcessor {
 					if ($this->getEbraryCover($this->sourceAndId)){
 						return;
 					}
-				}elseif (stripos($source, 'Creative Bug') !== false){
-					if ($this->getCreativeBugCover($this->sourceAndId)){
-						return;
-					}
+				}elseif (stripos($source, 'Creative Bug') !== false) {
+                    if ($this->getCreativeBugCover($this->sourceAndId)) {
+                        return;
+                    }
+                }elseif (stripos($source, 'CreativeBug') !== false){
+				    if ($this->getCreativeBugCover($this->sourceAndId)){
+				        return;
+                    }
 				}elseif (stripos($source, 'rbdigital') !== false || stripos($source, 'zinio') !== false){
 					if ($this->getZinioCover($this->sourceAndId)){
 						return;
@@ -763,7 +767,11 @@ class BookCoverProcessor {
 							if ($this->getCreativeBugCover($sourceAndId)){
 								return true;
 							}
-						}elseif (stripos($source, 'rbdigital') !== false || stripos($source, 'zinio') !== false){
+						}elseif (stripos($source, 'CreativeBug') !== false) {
+                            if ($this->getCreativeBugCover($sourceAndId)) {
+                                return true;
+                            }
+                        }elseif (stripos($source, 'rbdigital') !== false || stripos($source, 'zinio') !== false){
 							if ($this->getZinioCover($sourceAndId)){
 								return true;
 							}

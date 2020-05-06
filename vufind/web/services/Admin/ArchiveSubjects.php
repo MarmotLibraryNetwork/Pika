@@ -50,6 +50,6 @@ class Admin_ArchiveSubjects extends Admin_Admin {
 	}
 
 	function getAllowableRoles(){
-		return array('opacAdmin', 'archives');
+		return array('archives');
 	}
 }

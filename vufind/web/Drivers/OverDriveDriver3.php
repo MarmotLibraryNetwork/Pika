@@ -781,37 +781,43 @@ class OverDriveDriver3 {
 	public function checkoutOverDriveItem($overDriveId, $user){
 		global $configArray;
 
-		$url = $configArray['OverDrive']['patronApiUrl'] . '/v1/patrons/me/checkouts';
-		$params = array(
-			'reserveId' => $overDriveId,
-		);
+		$url      = $configArray['OverDrive']['patronApiUrl'] . '/v1/patrons/me/checkouts';
+		$params   = ['reserveId' => $overDriveId];
 		$response = $this->_callPatronUrl($user, $url, $params);
+		$result   = [
+			'success' => false,
+			'message' => '',
+		];
 
-		$result = array();
-		$result['success'] = false;
-		$result['message'] = '';
-
-		//print_r($response);
-		if (isset($response->expires)) {
+		if (isset($response->expires)){
+			// Successful checkout
 			$result['success'] = true;
 			$result['message'] = 'Your title was checked out successfully. You may now view the title in your account.';
-
 		}else{
-			$result['message'] = 'Sorry, we could not checkout this title to you.';
-			if (isset($response->errorCode) && $response->errorCode == 'PatronHasExceededCheckoutLimit'){
-				$result['message'] .= "\r\n\r\nYou have reached the maximum number of OverDrive titles you can checkout one time.";
-			}else{
-				if (isset($response->message)) $result['message'] .= "  {$response->message}";
-			}
-
-			if (isset($response->errorCode) && ($response->errorCode == 'NoCopiesAvailable' || $response->errorCode == 'PatronHasExceededCheckoutLimit')) {
-				$result['noCopies'] = true;
-				$result['message'] .= "\r\n\r\nWould you like to place a hold instead?";
+			$result['message'] = 'Sorry, we could not checkout this title to you.'; // add pre-amble to error messages
+			if (!empty($response->errorCode)){
+				switch ($response->errorCode){
+					case 'PatronHasExceededCheckoutLimit' :
+						$result['message'] .= "\r\n\r\nYou have reached the maximum number of OverDrive titles you can checkout one time.";
+						break;
+					case 'NoCopiesAvailable' :
+						$result['noCopies'] = true;
+						$result['message']  .= "\r\n\r\nWould you like to place a hold instead?";
+						break;
+					default :
+						if (isset($response->message)){
+							$result['message'] .= "\r\n\r\n {$response->message}";
+						}
+				}
 			}else{
 				//Give more information about why it might gave failed, ie expired card or too much fines
-				$result['message'] = 'Sorry, we could not checkout this title to you.  Please verify that your card has not expired and that you do not have excessive fines.';
+				$this->logger->error('Unexpected response from OverDrive checkout call: ' . var_export($response, true));
+				if (isset($response->message)){
+					$result['message'] .= "\r\n\r\n  {$response->message}";
+				}else{
+					$result['message'] .= "\r\n\r\n Please verify that your card has not expired and that you do not have excessive fines.";
+				}
 			}
-
 		}
 
 		$this->cache->delete('overdrive_summary_' . $user->id);

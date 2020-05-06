@@ -45,6 +45,6 @@ class Admin_ClearArchiveCache extends Admin_Admin{
 	}
 
 	function getAllowableRoles() {
-		return array('opacAdmin');
+		return array('archives');
 	}
 }

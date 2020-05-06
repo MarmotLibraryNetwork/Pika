@@ -58,7 +58,7 @@ class MarcUtil {
 			// brackets indicate parsing for individual characters or as pattern
 			int bracket = tag1.indexOf('[');
 			if (bracket != -1) {
-				String sub[] = tag1.substring(bracket + 1).split("[\\]\\[\\-, ]+");
+				String[] sub = tag1.substring(bracket + 1).split("[\\]\\[\\-, ]+");
 				try {
 					// if bracket expression is digits, expression is treated as character
 					// positions

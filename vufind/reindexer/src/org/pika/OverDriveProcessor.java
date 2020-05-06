@@ -10,10 +10,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.regex.Pattern;
+import java.util.*;
 
 /**
  * Description goes here
@@ -176,7 +173,7 @@ public class OverDriveProcessor {
 								groupedWork.addFullTitle(fullTitle);
 								groupedWork.addSeries(series);
 								groupedWork.addSeriesWithVolume(series);
-								groupedWork.setAuthor(productRS.getString("primaryCreatorName"));
+								groupedWork.setAuthor(productRS.getString("primaryCreatorName")); //TODO: use fileAs name??, look at grouper; use a isEcontent flag for counting
 								groupedWork.setAuthAuthor(productRS.getString("primaryCreatorName"));
 								groupedWork.setAuthorDisplay(productRS.getString("primaryCreatorName"));
 
@@ -210,7 +207,7 @@ public class OverDriveProcessor {
 
 								//Load the formats for the record.  For OverDrive, we will create a separate item for each format.
 								HashSet<String> validFormats    = loadOverDriveFormats(groupedWork, productId, identifier);
-								String          detailedFormats = Util.getCsvSeparatedString(validFormats);
+								String          detailedFormats = String.join(",", validFormats);
 								//overDriveRecord.addFormats(validFormats);
 
 								loadOverDriveIdentifiers(groupedWork, productId, primaryFormat);
@@ -235,6 +232,14 @@ public class OverDriveProcessor {
 								try (ResultSet availabilityRS = getProductAvailabilityStmt.executeQuery()) {
 
 									overDriveRecord.setEdition("");
+//									if (primaryFormat.equals("eMagazine")) {
+//										String edition = metadata.get("edition");
+//										if (!edition.isEmpty()){
+//											overDriveRecord.setEdition(edition);
+//										}
+//									} else {
+//										overDriveRecord.setEdition("");
+//									}
 									overDriveRecord.setPrimaryLanguage(primaryLanguage);
 									overDriveRecord.setPublisher(metadata.get("publisher"));
 									overDriveRecord.setPublicationDate(metadata.get("publicationDate"));
@@ -470,18 +475,28 @@ public class OverDriveProcessor {
 		try (ResultSet languagesRS = getProductLanguagesStmt.executeQuery()) {
 			HashSet<String> languages = new HashSet<>();
 			while (languagesRS.next()) {
-				String language = languagesRS.getString("name");
+				String overdriveLanguageCode = languagesRS.getString("code");
+				String iso3LanguageCode;
+				String language;
+				try {
+					// Use language labels from translation map if possible
+					iso3LanguageCode = indexer.translateSystemValue("iso639-1TOiso639-2B", overdriveLanguageCode, identifier);
+					language         = indexer.translateSystemValue("language", iso3LanguageCode, identifier);
+				} catch (MissingResourceException e) {
+					logger.warn("Can not convert Overdrive language code :" + overdriveLanguageCode);
+					language = languagesRS.getString("name");
+				}
 				languages.add(language);
 				if (primaryLanguage == null) {
 					primaryLanguage = language;
 				}
-				String languageCode  = languagesRS.getString("code");
-				String languageBoost = indexer.translateSystemValue("language_boost", languageCode, identifier);
+				//The boost maps contain entries for en and es
+				String languageBoost = indexer.translateSystemValue("language_boost", overdriveLanguageCode, identifier);
 				if (languageBoost != null) {
 					Long languageBoostVal = Long.parseLong(languageBoost);
 					overDriveRecord.setLanguageBoost(languageBoostVal);
 				}
-				String languageBoostEs = indexer.translateSystemValue("language_boost_es", languageCode, identifier);
+				String languageBoostEs = indexer.translateSystemValue("language_boost_es", overdriveLanguageCode, identifier);
 				if (languageBoostEs != null) {
 					Long languageBoostVal = Long.parseLong(languageBoostEs);
 					overDriveRecord.setLanguageBoostSpanish(languageBoostVal);
@@ -489,7 +504,10 @@ public class OverDriveProcessor {
 			}
 			overDriveRecord.setLanguages(languages);
 		}
-		if (primaryLanguage == null){
+		if (primaryLanguage == null) {
+			if  (logger.isInfoEnabled()){
+				logger.info("Using English, because no language found for overdrive record "+ identifier);
+			}
 			primaryLanguage = "English";
 		}
 		return primaryLanguage;
@@ -548,6 +566,8 @@ public class OverDriveProcessor {
 				groupedWork.addDescription(shortDescription, format);
 				String fullDescription = metadataRS.getString("fullDescription");
 				groupedWork.addDescription(fullDescription, format);
+//				String edition = metadataRS.getString("edition");
+//				returnMetadata.put("edition", edition);
 
 				//Decode JSON data to get a little more information
 				/*try {
