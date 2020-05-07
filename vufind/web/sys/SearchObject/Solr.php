@@ -566,10 +566,8 @@ class SearchObject_Solr extends SearchObject_Base
 	 * @param   string $setting   The setting within the specified file to return.
 	 * @return  string    The value of the setting (blank if none).
 	 */
-	public function getFacetSetting($section, $setting)
-	{
-		return isset($this->allFacetSettings[$section][$setting]) ?
-		$this->allFacetSettings[$section][$setting] : '';
+	public function getFacetSetting($section, $setting){
+		return $this->allFacetSettings[$section][$setting] ?? '';
 	}
 
 	public function getDebugTiming() {
