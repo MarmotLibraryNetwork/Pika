@@ -28,92 +28,32 @@
 
 require_once ROOT_DIR . '/RecordDrivers/BaseEContentDriver.php';
 class ExternalEContentDriver extends BaseEContentDriver{
-	function getValidProtectionTypes(){
-		return array('external');
-	}
-
-	function isItemAvailable($itemId, $totalCopies){
-		return true;
-	}
-	function isEContentHoldable($locationCode, $eContentFieldData){
-		return false;
-	}
-	// This function is not called anywhere. pascal 7-17-2018
-//	function isLocalItem($locationCode, $eContentFieldData){
-//		return $this->isLibraryItem($locationCode, $eContentFieldData);
+//	function getValidProtectionTypes(){
+//		return array('external');
 //	}
 
-	// This function is not called anywhere. pascal 7-17-2018
-//	function isLibraryItem($locationCode, $eContentFieldData){
-//		$sharing = $this->getSharing($locationCode, $eContentFieldData);
-//		if ($sharing == 'shared'){
-//			return true;
-//		}else if ($sharing == 'library'){
-//			$searchLibrary = Library::getSearchLibrary();
-//			if ($searchLibrary == null
-//				|| $searchLibrary->econtentLocationsToInclude == 'all'
-//				|| strlen($searchLibrary->econtentLocationsToInclude) == 0
-//				|| $searchLibrary->includeOutOfSystemExternalLinks
-//				|| (strlen($searchLibrary->ilsCode) > 0 && strpos($locationCode, $searchLibrary->ilsCode) === 0)){
-//				// TODO: econtentLocationsToInclude setting no longer in use. plb 5-17-2016
-//				// TODO: I think using the ilsCode here is obsolete also pascal 7-17-2018
-//				return true;
-//			}else{
-//				return false;
-//			}
+//	function isItemAvailable($itemId, $totalCopies){
+//		return true;
+//	}
+//	function isEContentHoldable($locationCode, $eContentFieldData){
+//		return false;
+//	}
+
+//	function getSharing($locationCode, $eContentFieldData){
+//		if (strpos($locationCode, 'mdl') === 0){
+//			return 'shared';
 //		}else{
-//			$searchLibrary = Library::getSearchLibrary();
-//			$searchLocation = Location::getSearchLocation();
-//			if ($searchLibrary == null || $searchLibrary->includeOutOfSystemExternalLinks || strpos($locationCode, $searchLocation->code) === 0){
-//				return true;
-//			}else{
-//				return false;
+//			$sharing = 'library';
+//			if (count($eContentFieldData) >= 3){
+//				$sharing = trim(strtolower($eContentFieldData[2]));
 //			}
+//			return $sharing;
 //		}
 //	}
 
-	function isValidForUser($locationCode, $eContentFieldData){
-		$sharing = $this->getSharing($locationCode, $eContentFieldData);
-		if ($sharing == 'shared'){
-			$searchLibrary = Library::getSearchLibrary();
-			if ($searchLibrary == null || $searchLibrary->econtentLocationsToInclude == 'all' || strlen($searchLibrary->econtentLocationsToInclude) == 0 || (strpos($searchLibrary->econtentLocationsToInclude, $locationCode) !== FALSE)){
-				return true;
-			}else{
-				return false;
-			}
-		}else if ($sharing == 'library'){
-			$searchLibrary = Library::getSearchLibrary();
-			if ($searchLibrary == null || $searchLibrary->includeOutOfSystemExternalLinks || (strlen($searchLibrary->ilsCode) > 0 && strpos($locationCode, $searchLibrary->ilsCode) === 0)){
-				return true;
-			}else{
-				return false;
-			}
-		}else{
-			$searchLibrary = Library::getSearchLibrary();
-			$searchLocation = Location::getSearchLocation();
-			if ($searchLibrary->includeOutOfSystemExternalLinks || strpos($locationCode, $searchLocation->code) === 0){
-				return true;
-			}else{
-				return false;
-			}
-		}
-	}
-
-	function getSharing($locationCode, $eContentFieldData){
-		if (strpos($locationCode, 'mdl') === 0){
-			return 'shared';
-		}else{
-			$sharing = 'library';
-			if (count($eContentFieldData) >= 3){
-				$sharing = trim(strtolower($eContentFieldData[2]));
-			}
-			return $sharing;
-		}
-	}
-
-	protected function isValidProtectionType($protectionType) {
-		return in_array(strtolower($protectionType), $this->getValidProtectionTypes());
-	}
+//	protected function isValidProtectionType($protectionType) {
+//		return in_array(strtolower($protectionType), $this->getValidProtectionTypes());
+//	}
 
 	public function getMoreDetailsOptions(){
 		global $interface;
