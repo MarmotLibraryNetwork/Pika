@@ -59,7 +59,8 @@ class LibraryLink extends DB_DataObject {
 			'showInAccount' => array('property' => 'showInAccount', 'type' => 'checkbox', 'label' => 'Show in Account', 'description' => 'Show the link within the Account Menu.',),
 			'showInHelp'    => array('property' => 'showInHelp', 'type' => 'checkbox', 'label' => 'Show In Help', 'description' => 'Show the link within the Help Menu', 'default' => '1'),
 			'showExpanded'  => array('property' => 'showExpanded', 'type' => 'checkbox', 'label' => 'Show Expanded', 'description' => 'Expand the category by default',),
-			'weight'        => array('property' => 'weight', 'type' => 'numeric', 'label' => 'Weight', 'weight' => 'Defines how lists are sorted within the widget.  Lower weights are displayed to the left of the screen.', 'required' => true),
+//			'weight'        => array('property' => 'weight', 'type' => 'integer', 'label' => 'Weight', 'weight' => 'Defines how lists are sorted within the widget.  Lower weights are displayed to the left of the screen.', 'required' => true),
+			// Weight column never needs to be displayed in the single entry edit pages
 
 		);
 		return $structure;
