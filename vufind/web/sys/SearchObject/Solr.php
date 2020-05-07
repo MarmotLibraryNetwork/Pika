@@ -873,7 +873,6 @@ class SearchObject_Solr extends SearchObject_Base
 				$interface->assign('recordIndex', $x + 1);
 				$interface->assign('resultIndex', $x + 1 + (($this->page - 1) * $this->limit));
 				$record = RecordDriverFactory::initRecordDriver($current);
-				$record->setScopingEnabled($this->indexEngine->isScopingEnabled());
 				if (!PEAR_Singleton::isError($record)) {
 					$interface->assign('recordDriver', $record);
 					$html[] = $interface->fetch($record->getSearchResult($this->view));
@@ -914,7 +913,6 @@ class SearchObject_Solr extends SearchObject_Base
 				$interface->assign('resultIndex', $x + 1 + (($this->page - 1) * $this->limit));
 				/** @var GroupedWorkDriver|ListRecord $record */
 				$record = RecordDriverFactory::initRecordDriver($current);
-				$record->setScopingEnabled($this->indexEngine->isScopingEnabled());
 				if (!PEAR_Singleton::isError($record)) {
 					$interface->assign('recordDriver', $record);
 					$html[] = $interface->fetch($record->getCombinedResult($this->view));
