@@ -5,10 +5,7 @@ import org.ini4j.Ini;
 import org.ini4j.Profile;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.pika.CronLogEntry;
-import org.pika.CronProcessLogEntry;
-import org.pika.IProcessHandler;
-import org.pika.Util;
+import org.pika.*;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -30,7 +27,7 @@ public class DPLAFeed implements IProcessHandler {
 	private Logger              logger;
 
 	@Override
-	public void doCronProcess(String serverName, Ini configIni, Profile.Section processSettings, Connection pikaConn, Connection econtentConn, CronLogEntry cronEntry, Logger logger) {
+	public void doCronProcess(String serverName, Profile.Section processSettings, Connection pikaConn, Connection econtentConn, CronLogEntry cronEntry, Logger logger) {
 		processLog = new CronProcessLogEntry(cronEntry.getLogEntryId(), "DPLA Feed");
 		processLog.saveToDatabase(pikaConn, logger);
 
@@ -38,7 +35,7 @@ public class DPLAFeed implements IProcessHandler {
 		logger.info("Building DPLA Feed File");
 		processLog.addNote("Building DPLA Feed File");
 
-		pikaUrl = configIni.get("Site", "url");
+		pikaUrl = PikaConfigIni.getIniValue("Site", "url");
 		if (pikaUrl == null || pikaUrl.length() == 0) {
 			logger.error("Unable to get URL for Pika in ConfigIni settings.  Please add a url key to the Site section.");
 			processLog.incErrors();
@@ -46,7 +43,7 @@ public class DPLAFeed implements IProcessHandler {
 			return;
 		}
 		boolean fatal            = false;
-		String  DPLAFeedFilePath = configIni.get("Site", "local");
+		String  DPLAFeedFilePath = PikaConfigIni.getIniValue("Site", "local");
 		try (FileWriter fileWriter = new FileWriter(DPLAFeedFilePath + "/dplaFeed.json");
 			 BufferedWriter bufferedWriter = new BufferedWriter(fileWriter)) {
 			String DLPAFeedUrlString = pikaUrl + "/API/ArchiveAPI?method=getDPLAFeed";

@@ -18,30 +18,31 @@ import org.pika.IProcessHandler;
 import org.apache.log4j.Logger;
 
 import au.com.bytecode.opencsv.CSVReader;
+import org.pika.PikaConfigIni;
 
 public class ImportSteamboatGenealogy implements IProcessHandler{
 	private CronProcessLogEntry processLog;
-	private String steamboatFile;
-	private String ruralFile;
-	private String vufindUrl;
-	private PreparedStatement checkForExistingPerson;
-	private PreparedStatement addPersonStmt;
-	private PreparedStatement updatePersonStmt;
+	private String              steamboatFile;
+	private String              ruralFile;
+	private String              pikaUrl;
+	private PreparedStatement   checkForExistingPerson;
+	private PreparedStatement   addPersonStmt;
+	private PreparedStatement   updatePersonStmt;
 
 	@Override
-	public void doCronProcess(String servername, Ini configIni, Section processSettings, Connection vufindConn, Connection econtentConn, CronLogEntry cronEntry, Logger logger) {
+	public void doCronProcess(String servername, Section processSettings, Connection pikaConn, Connection econtentConn, CronLogEntry cronEntry, Logger logger) {
 		
 		processLog = new CronProcessLogEntry(cronEntry.getLogEntryId(), "Import Steamboat Genealogy");
-		if (!loadConfig(configIni, processSettings)){
+		if (!loadConfig(processSettings)){
 			processLog.addNote("Unable to load configuration");
 			processLog.incErrors();
 			return;
 		}
 				
 		try {
-			checkForExistingPerson = vufindConn.prepareStatement("SELECT personId FROM person WHERE cemeteryName = ? AND addition = ? AND block = ? and lot = ? AND grave = ? AND importedFrom = ?");
-			addPersonStmt = vufindConn.prepareStatement("INSERT INTO person (firstName, lastName, deathDateDay, deathDateMonth, deathDateYear, birthDateDay, birthDateMonth, birthDateYear, cemeteryName, cemeteryLocation, comments, veteranOf, addition, block, lot, grave, tombstoneInscription, addedBy, dateAdded, privateComments, importedFrom) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
-			updatePersonStmt = vufindConn.prepareStatement("UPDATE person SET firstName = ?, lastName = ?, deathDateDay = ?, deathDateMonth = ?, deathDateYear = ?, birthDateDay = ?, birthDateMonth = ?, birthDateYear = ?, cemeteryName = ?, cemeteryLocation = ?, comments = ?, veteranOf = ?, addition = ?, block = ?, lot = ?, grave = ?, tombstoneInscription = ?, addedBy = ?, dateAdded = ?, privateComments = ?, importedFrom =? WHERE personId = ?");
+			checkForExistingPerson = pikaConn.prepareStatement("SELECT personId FROM person WHERE cemeteryName = ? AND addition = ? AND block = ? and lot = ? AND grave = ? AND importedFrom = ?");
+			addPersonStmt = pikaConn.prepareStatement("INSERT INTO person (firstName, lastName, deathDateDay, deathDateMonth, deathDateYear, birthDateDay, birthDateMonth, birthDateYear, cemeteryName, cemeteryLocation, comments, veteranOf, addition, block, lot, grave, tombstoneInscription, addedBy, dateAdded, privateComments, importedFrom) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
+			updatePersonStmt = pikaConn.prepareStatement("UPDATE person SET firstName = ?, lastName = ?, deathDateDay = ?, deathDateMonth = ?, deathDateYear = ?, birthDateDay = ?, birthDateMonth = ?, birthDateYear = ?, cemeteryName = ?, cemeteryLocation = ?, comments = ?, veteranOf = ?, addition = ?, block = ?, lot = ?, grave = ?, tombstoneInscription = ?, addedBy = ?, dateAdded = ?, privateComments = ?, importedFrom =? WHERE personId = ?");
 			//Read Steamboat File
 			CSVReader reader = new CSVReader(new FileReader(steamboatFile));
 			List<String[]> steamboatValues = reader.readAll();
@@ -55,7 +56,7 @@ public class ImportSteamboatGenealogy implements IProcessHandler{
 					importRecord(steamboatFile, curRecord, curRow++, false, logger);
 				}
 				if (curRow % 100 == 0){
-					processLog.saveToDatabase(vufindConn, logger);
+					processLog.saveToDatabase(pikaConn, logger);
 				}
 			}
 			
@@ -72,7 +73,7 @@ public class ImportSteamboatGenealogy implements IProcessHandler{
 					importRecord(ruralFile, curRecord, curRow++, true, logger);
 				}
 				if (curRow % 100 == 0){
-					processLog.saveToDatabase(vufindConn, logger);
+					processLog.saveToDatabase(pikaConn, logger);
 				}
 			}
 			
@@ -83,7 +84,7 @@ public class ImportSteamboatGenealogy implements IProcessHandler{
 			return;
 		}
 		processLog.setFinished();
-		processLog.saveToDatabase(vufindConn, logger);
+		processLog.saveToDatabase(pikaConn, logger);
 	}
 
 	private void importRecord(String fileName, String[] curRecord, int curRow, boolean isRural, Logger logger){
@@ -204,7 +205,7 @@ public class ImportSteamboatGenealogy implements IProcessHandler{
 			
 			//Reindex the record
 			if (personId != null){
-				URL reindexUrl = new URL(vufindUrl + "/Person/" + personId + "/Reindex?quick=true");
+				URL reindexUrl = new URL(pikaUrl + "/Person/" + personId + "/Reindex?quick=true");
 				@SuppressWarnings("unused")
 				Object content = reindexUrl.getContent();
 				processLog.incUpdated();
@@ -216,8 +217,8 @@ public class ImportSteamboatGenealogy implements IProcessHandler{
 		}
 	}
 	
-	private boolean loadConfig(Ini configIni, Section processSettings) {
-		vufindUrl = configIni.get("Site", "url");
+	private boolean loadConfig(Section processSettings) {
+		pikaUrl       = PikaConfigIni.getIniValue("Site", "url");
 		steamboatFile = processSettings.get("steamboatFile");
 		if (steamboatFile == null || steamboatFile.length() == 0) {
 			processLog.addNote("Unable to get steamboat file in Process section.  Please specify steamboatFile key.");

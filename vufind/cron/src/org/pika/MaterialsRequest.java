@@ -16,25 +16,25 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class MaterialsRequest implements IProcessHandler{
-	private Connection vufindConn = null;
+	private Connection          pikaConn = null;
 	private CronProcessLogEntry processLog;
-	private String vufindUrl;
-	private Logger logger;
+	private String              pikaUrl;
+	private Logger              logger;
 
 	@Override
-	public void doCronProcess(String serverName, Ini configIni, Section processSettings, Connection vufindConn, Connection econtentConn, CronLogEntry cronEntry, Logger logger) {
+	public void doCronProcess(String serverName, Section processSettings, Connection pikaConn, Connection econtentConn, CronLogEntry cronEntry, Logger logger) {
 		processLog = new CronProcessLogEntry(cronEntry.getLogEntryId(), "Materials Request");
-		processLog.saveToDatabase(vufindConn, logger);
-		this.logger = logger;
-		this.vufindConn = vufindConn;
-		if (!loadConfig(configIni)){
+		processLog.saveToDatabase(pikaConn, logger);
+		this.logger   = logger;
+		this.pikaConn = pikaConn;
+		if (!loadConfig()){
 			return;
 		}
 		
 		generateHolds();
 		
 		processLog.setFinished();
-		processLog.saveToDatabase(vufindConn, logger);
+		processLog.saveToDatabase(pikaConn, logger);
 	}
 	
 	/**
@@ -44,8 +44,8 @@ public class MaterialsRequest implements IProcessHandler{
 		processLog.addNote("Generating holds for materials requests that have arrived");
 		//Get a list of requests to generate holds for
 		try {
-			PreparedStatement requestsToEmailStmt = vufindConn.prepareStatement("SELECT materials_request.*, cat_username, cat_password FROM materials_request inner join user on user.id = materials_request.createdBy WHERE placeHoldWhenAvailable = 1 and holdsCreated = 0");
-			PreparedStatement setHoldsCreatedStmt = vufindConn.prepareStatement("UPDATE materials_request SET holdsCreated=1 where id =?");
+			PreparedStatement requestsToEmailStmt = pikaConn.prepareStatement("SELECT materials_request.*, cat_username, cat_password FROM materials_request inner join user on user.id = materials_request.createdBy WHERE placeHoldWhenAvailable = 1 and holdsCreated = 0");
+			PreparedStatement setHoldsCreatedStmt = pikaConn.prepareStatement("UPDATE materials_request SET holdsCreated=1 where id =?");
 			ResultSet requestsToCreateHolds = requestsToEmailStmt.executeQuery();
 			//For each request, 
 			while (requestsToCreateHolds.next()){
@@ -84,9 +84,9 @@ public class MaterialsRequest implements IProcessHandler{
 		//Place a hold on the title for the user
 		URL placeHoldUrl;
 		if (recordId.matches("econtentRecord\\d+")){
-			placeHoldUrl = new URL(vufindUrl + "/API/UserAPI?method=placeEContentHold&username=" + URLEncoder.encode(cat_username, "utf8") + "&password=" + URLEncoder.encode(cat_password, "utf8") + "&recordId=" + recordId);
+			placeHoldUrl = new URL(pikaUrl + "/API/UserAPI?method=placeEContentHold&username=" + URLEncoder.encode(cat_username, "utf8") + "&password=" + URLEncoder.encode(cat_password, "utf8") + "&recordId=" + recordId);
 		}else{
-			placeHoldUrl = new URL(vufindUrl + "/API/UserAPI?method=placeHold&username=" + URLEncoder.encode(cat_username, "utf8") + "&password=" + URLEncoder.encode(cat_password, "utf8") + "&bibId=" + recordId + "&campus=" + holdPickupLocation);
+			placeHoldUrl = new URL(pikaUrl + "/API/UserAPI?method=placeHold&username=" + URLEncoder.encode(cat_username, "utf8") + "&password=" + URLEncoder.encode(cat_password, "utf8") + "&bibId=" + recordId + "&campus=" + holdPickupLocation);
 		}
 		logger.info("Place Hold URL: " + placeHoldUrl);
 		Object placeHoldDataRaw = placeHoldUrl.getContent();
@@ -126,13 +126,13 @@ public class MaterialsRequest implements IProcessHandler{
 		if ((requestIsbn != null && requestIsbn.length() > 0) || (requestIssn != null && requestIssn.length() > 0) || (requestUpc != null && requestUpc.length() > 0) || (requestOclcNumber != null && requestOclcNumber.length() > 0)){
 			URL searchUrl;
 			if (requestIsbn != null && requestIsbn.length() > 0){
-				searchUrl = new URL(vufindUrl + "/API/SearchAPI?method=search&lookfor=" + URLEncoder.encode(requestIsbn, "utf8") + "&type=isn");
+				searchUrl = new URL(pikaUrl + "/API/SearchAPI?method=search&lookfor=" + URLEncoder.encode(requestIsbn, "utf8") + "&type=isn");
 			}else if (requestIssn != null && requestIssn.length() > 0){
-				searchUrl = new URL(vufindUrl + "/API/SearchAPI?method=search&lookfor=" + URLEncoder.encode(requestIssn, "utf8") + "&type=isn");
+				searchUrl = new URL(pikaUrl + "/API/SearchAPI?method=search&lookfor=" + URLEncoder.encode(requestIssn, "utf8") + "&type=isn");
 			}else if (requestUpc != null && requestUpc.length() > 0){
-				searchUrl = new URL(vufindUrl + "/API/SearchAPI?method=search&lookfor=" + URLEncoder.encode(requestUpc, "utf8") + "&type=isn");
+				searchUrl = new URL(pikaUrl + "/API/SearchAPI?method=search&lookfor=" + URLEncoder.encode(requestUpc, "utf8") + "&type=isn");
 			}else{
-				searchUrl = new URL(vufindUrl + "/API/SearchAPI?method=search&lookfor=oclc" + URLEncoder.encode(requestOclcNumber, "utf8") + "&type=keyword");
+				searchUrl = new URL(pikaUrl + "/API/SearchAPI?method=search&lookfor=oclc" + URLEncoder.encode(requestOclcNumber, "utf8") + "&type=keyword");
 			}
 			Object searchDataRaw = searchUrl.getContent();
 			if (searchDataRaw instanceof InputStream) {
@@ -161,8 +161,8 @@ public class MaterialsRequest implements IProcessHandler{
 		return recordId;
 	}
 
-	protected boolean loadConfig(Ini ini) {
-		vufindUrl = Util.cleanIniValue(ini.get("Site", "url"));
+	protected boolean loadConfig() {
+		pikaUrl = PikaConfigIni.getIniValue("Site", "url");
 		
 		return true;
 	}

@@ -34,9 +34,9 @@ public class CarlXMigration implements IProcessHandler{
 	private HashMap<String, HashSet<String>> millenniumBarcodesByPType = new HashMap<>();
 	private boolean deleteMissingUsers;
 
-	public void doCronProcess(String servername, Ini configIni, Profile.Section processSettings, Connection vufindConn, Connection econtentConn, CronLogEntry cronEntry, Logger logger) {
+	public void doCronProcess(String servername, Profile.Section processSettings, Connection vufindConn, Connection econtentConn, CronLogEntry cronEntry, Logger logger) {
 		processLog = new CronProcessLogEntry(cronEntry.getLogEntryId(), "CarlX Migration");
-		if (!loadConfig(configIni, processSettings)){
+		if (!loadConfig(processSettings)){
 			processLog.addNote("Unable to load configuration");
 			processLog.incErrors();
 			processLog.saveToDatabase(vufindConn, logger);
@@ -589,7 +589,7 @@ public class CarlXMigration implements IProcessHandler{
 		processLog.saveToDatabase(vufindConn, logger);
 	}
 
-	private boolean loadConfig(Ini configIni, Profile.Section processSettings) {
+	private boolean loadConfig(Profile.Section processSettings) {
 		lssExportLocation = processSettings.get("lssExportLocation");
 		carlxExportLocation = processSettings.get("carlxExportLocation");
 		deleteMissingUsers = Boolean.parseBoolean(processSettings.get("deleteMissingUsers"));

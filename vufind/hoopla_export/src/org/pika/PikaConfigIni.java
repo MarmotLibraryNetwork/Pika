@@ -123,6 +123,13 @@ public class PikaConfigIni {
 		return false;
 	}
 
+	public static char getCharIniValue(String sectionName, String optionName) {
+		String charValueStr = cleanIniValue(ourInstance.get(sectionName, optionName));
+		if (charValueStr != null) {
+			return charValueStr.charAt(0);
+		}
+		return ' ';
+	}
 
 	public static Integer getIntIniValue(String sectionName, String optionName) {
 		String intValueStr = cleanIniValue(ourInstance.get(sectionName, optionName));
