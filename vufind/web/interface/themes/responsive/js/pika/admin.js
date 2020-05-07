@@ -34,6 +34,10 @@ Pika.Admin = (function(){
 		{
 			return this.buttonAjaxHandler('displayCopyFromPrompt', id, "copyFullRecord");
 		},
+		cloneLocationFromSelection: function()
+		{
+			return this.buttonAjaxHandler('displayClonePrompt',null, "cloneLocation");
+		},
 		// markProfileForReindexing: function (id){
 		// 	return this.basicAjaxHandler('markProfileForReindexing', id);
 		// },
@@ -71,6 +75,18 @@ Pika.Admin = (function(){
 			});
 			return false;
 		},
+		cloneAjaxHandler: function(ajaxMethod, from, name, code)
+		{
+			Pika.Account.ajaxLogin(function (){
+				Pika.loadingMessage();
+				var url = "/Admin/AJAX?method=" + ajaxMethod + "&from=" + from + "&name=" +name + "&code=" + code;
+
+				$.getJSON(url, function (data) {
+					Pika.showMessage(data.title, data.body, 1,1);
+				}).fail(Pika.ajaxFail);
+			});
+			return false;
+		},
 
 		copyHooplaSettings: function(id, copyFromId){
 			return this.basicAjaxHandler('copyHooplaSettingsFromLocation', id, copyFromId);
@@ -102,6 +118,11 @@ Pika.Admin = (function(){
 		resetMoreDetailsToDefault: function(id)
 		{
 			return this.basicAjaxHandler('resetMoreDetailsToDefault', id);
+		},
+		cloneLocation: function(copyFromId, name, code)
+		{
+			alert("name: " + name + ", code: " +  code + ", from: " + copyFromId);
+			return this.cloneAjaxHandler('cloneLocation', copyFromId, name, code);
 		},
 	};
 }(Pika.Admin || {}));
