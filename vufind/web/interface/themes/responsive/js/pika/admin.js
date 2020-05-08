@@ -38,6 +38,10 @@ Pika.Admin = (function(){
 		{
 			return this.buttonAjaxHandler('displayClonePrompt',null, "cloneLocation");
 		},
+		cloneLibraryFromSelection: function()
+		{
+			return this.buttonAjaxHandler('libraryClonePrompt',null,"cloneLibrary");
+		},
 		// markProfileForReindexing: function (id){
 		// 	return this.basicAjaxHandler('markProfileForReindexing', id);
 		// },
@@ -87,6 +91,18 @@ Pika.Admin = (function(){
 			});
 			return false;
 		},
+		cloneLibraryHandler: function(ajaxMethod, from, displayName,subdomain, abName)
+		{
+			Pika.Account.ajaxLogin(function (){
+				Pika.loadingMessage();
+				var url = "/Admin/AJAX?method=" + ajaxMethod + "&from=" + from + "&displayName=" +displayName + "&subdomain=" + subdomain + "&abName=" + abName;
+
+				$.getJSON(url, function (data) {
+					Pika.showMessage(data.title, data.body, 1,1);
+				}).fail(Pika.ajaxFail);
+			});
+			return false;
+		},
 
 		copyHooplaSettings: function(id, copyFromId){
 			return this.basicAjaxHandler('copyHooplaSettingsFromLocation', id, copyFromId);
@@ -121,8 +137,11 @@ Pika.Admin = (function(){
 		},
 		cloneLocation: function(copyFromId, name, code)
 		{
-			alert("name: " + name + ", code: " +  code + ", from: " + copyFromId);
 			return this.cloneAjaxHandler('cloneLocation', copyFromId, name, code);
 		},
+		cloneLibrary: function(copyFromId, displayName, subdomain, abName)
+		{
+			return this.cloneLibraryHandler('cloneLibrary', copyFromId, displayName, subdomain, abName);
+		}
 	};
 }(Pika.Admin || {}));
