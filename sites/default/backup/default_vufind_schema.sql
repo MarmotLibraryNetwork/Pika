@@ -241,7 +241,6 @@ CREATE TABLE IF NOT EXISTS `location` (
   `holdingBranchLabel` varchar(40) NOT NULL COMMENT 'The label used within the Holdings table in Millenium.',
   `scope` smallint(6) NOT NULL COMMENT 'The scope for the system in Sierra to refine holdings to the branch.  If there is no scope defined for the branch, this can be set to 0.',
   `defaultLocationFacet` varchar(40) NOT NULL COMMENT 'A facet to apply during initial searches.  If left blank, no additional refinement will be done.',
-#   `facetFile` varchar(15) NOT NULL DEFAULT 'default' COMMENT 'The name of the facet file which should be used while searching use default to not override the file',
   `showHoldButton` tinyint(4) NOT NULL COMMENT 'Whether or not the hold button is displayed so patrons can place holds on items',
   `showAmazonReviews` tinyint(4) NOT NULL COMMENT 'Whether or not reviews from Amazon are displayed on the full record page.',
   `showStandardReviews` tinyint(4) NOT NULL COMMENT 'Whether or not reviews from Content Cafe/Syndetics are displayed on the full record page.',

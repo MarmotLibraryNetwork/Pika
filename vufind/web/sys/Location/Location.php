@@ -89,7 +89,6 @@ class Location extends DB_DataObject {
 	public $showQRCode;
 	public $showStaffView;
 	public $showGoodReadsReviews;
-	public $econtentLocationsToInclude;
 	public $availabilityToggleLabelSuperScope;
 	public $availabilityToggleLabelLocal;
 	public $availabilityToggleLabelAvailable;
