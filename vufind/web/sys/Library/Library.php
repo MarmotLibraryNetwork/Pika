@@ -1294,7 +1294,7 @@ class Library extends DB_DataObject {
 			}
 			return $this->archiveMoreDetailsOptions;
 		}elseif ($name == "facets"){
-			if (!isset($this->facets) && $this->libraryId){
+			if (!isset($this->facets) ){
 				$this->facets = $this->getOneToManyOptions('LibraryFacetSetting', 'weight');
 			}
 			return $this->facets;
@@ -1483,6 +1483,7 @@ class Library extends DB_DataObject {
 			$this->saveBrowseCategories();
 			$this->saveMoreDetailsOptions();
 			$this->saveArchiveMoreDetailsOptions();
+			$this->saveMaterialsFormats();
 			$this->saveExploreMoreBar();
 			$this->saveCombinedResultSections();
 			$this->saveHooplaSettings();

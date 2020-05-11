@@ -70,7 +70,11 @@ class Admin_Libraries extends ObjectEditor {
 	function getIdKeyColumn(){
 		return 'libraryId';
 	}
-
+    function customListActions(){
+        return array(
+            array('label' => 'Clone Library', 'onclick' =>'Pika.Admin.cloneLibraryFromSelection()'),
+        );
+    }
 	function getAllowableRoles(){
 		return array('opacAdmin', 'libraryAdmin', 'libraryManager');
 	}
@@ -129,7 +133,7 @@ class Admin_Libraries extends ObjectEditor {
 			$libraryToCopyFromId          = $_REQUEST['libraryToCopyFrom'];
 			$libraryToCopyFrom            = new Library();
 			$libraryToCopyFrom->libraryId = $libraryToCopyFromId;
-			$library->find(true);
+			$libraryToCopyFrom->find(true);
 
 			$facetsToCopy = $libraryToCopyFrom->facets;
 			foreach ($facetsToCopy as $facetKey => $facet){
@@ -170,7 +174,7 @@ class Admin_Libraries extends ObjectEditor {
 			$libraryToCopyFromId          = $_REQUEST['libraryToCopyFrom'];
 			$libraryToCopyFrom            = new Library();
 			$libraryToCopyFrom->libraryId = $libraryToCopyFromId;
-			$library->find(true);
+			$libraryToCopyFrom->find(true);
 
 			$facetsToCopy = $libraryToCopyFrom->archiveSearchFacets;
 			foreach ($facetsToCopy as $facetKey => $facet){
