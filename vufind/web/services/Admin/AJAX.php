@@ -31,6 +31,7 @@ class Admin_AJAX extends AJAXHandler {
 		'clearLibraryHooplaSettings',
         'displayCopyFromPrompt',
         'displayClonePrompt',
+        'libraryClonePrompt',
         'copyHourSettingsFromLocation',
         'copyBrowseCategoriesFromLocation',
         'copyIncludedRecordsFromLocation',
@@ -39,6 +40,7 @@ class Admin_AJAX extends AJAXHandler {
         'resetMoreDetailsToDefault',
         'copyFacetSettingsFromLocation',
         'cloneLocation',
+        'cloneLibrary',
 
 	);
 
@@ -175,7 +177,9 @@ class Admin_AJAX extends AJAXHandler {
 		}
 		return $results;
 	}
-	function displayClonePrompt(){
+
+	function displayClonePrompt()
+    {
         $results = array(
             'title' => 'Clone Location',
             'body' => 'No Data available',
@@ -196,6 +200,33 @@ class Admin_AJAX extends AJAXHandler {
                 }
                 $results['body'] = "<label for='code'>New Location Code:</label> <input type='text' class='form-control' id='LocCode' name='LocCode'/><label for='name'>Display Name</label> <input type='text' class='form-control' id='name' name='name' /><label for='fromId'>Clone From</label> <select id= 'fromId' name='fromId' class='form-control'>" . $options . "</select>";
                 $results['buttons'] = "<button class='btn btn-primary' type= 'button' title='Copy' onclick='return Pika.Admin." . $command ."(document.querySelector(\"#fromId\").value, document.querySelector(\"#name\").value, document.querySelector(\"#LocCode\").value);'>Clone</button>";
+
+            }
+        }
+        return $results;
+    }
+    function libraryClonePrompt()
+    {
+        $results = array(
+            'title' => 'Clone Location',
+            'body' => 'No Data available',
+        );
+        $user = UserAccount::getLoggedInUser();
+        if(UserAccount::userHasRoleFromList(['opacAdmin'])){
+            $command = trim($_REQUEST['command']);
+            $library = new Library();
+            $libraryId = $user->getHomeLibrary()->libraryId;
+            if($library->get($libraryId))
+            {
+                $allLibraries = $this->getLibraryList($libraryId);
+                $options = " ";
+
+                foreach($allLibraries as $findKey =>$findLibrary)
+                {
+                    $options .= "<option value='" . $findKey . "'>" . $findLibrary->displayName . "</option>";
+                }
+                $results['body'] = "<label for='displayName'>Display Name:</label> <input type='text' class='form-control required' id='displayName' name='displayName'/><label for='subdomain'>Subdomain:</label> <input type='text' class='form-control required' id='subdomain' name='subdomain' /><label for='abName'>Abbreviated Name:</label> <input type='text' class='form-control' id='abName' name='abName' /><label for='fromId'>Clone From</label> <select id= 'fromId' name='fromId' class='form-control required'>" . $options . "</select>";
+                $results['buttons'] = "<button class='btn btn-primary' type= 'button' title='Copy' onclick='return Pika.Admin." . $command ."(document.querySelector(\"#fromId\").value, document.querySelector(\"#displayName\").value, document.querySelector(\"#subdomain\").value, document.querySelector(\"#abName\").value);'>Clone</button>";
 
             }
         }
@@ -282,6 +313,33 @@ class Admin_AJAX extends AJAXHandler {
 
 
         return $locationList;
+    }
+    function getLibraryList($libraryId)
+    {
+        //Look lookup information for display in the user interface
+        $user = UserAccount::getLoggedInUser();
+
+        $library = new Library();
+        $library->orderBy('displayName');
+
+        $copyTo = new Library();
+        $copyTo->libraryId = $libraryId;
+        $copyTo->find();
+
+        $library->find();
+
+        $libraryList = array();
+
+        while ($copyTo->fetch()){
+
+            $libraryList[$copyTo->libraryId] = clone $copyTo;
+
+        }
+        while ($library->fetch()){
+
+            $libraryList[$library->libraryId] = clone $library;
+        }
+        return $libraryList;
     }
     /**
      * Ajax method copies hours between library locations
@@ -677,6 +735,157 @@ class Admin_AJAX extends AJAXHandler {
              }
         }
 
+        return $results;
+    }
+
+    function cloneLibrary()
+    {
+        $results = array(
+            'title' => 'Clone Location',
+            'body' => '<div class="alert alert-danger">Clone Failed</div>',
+        );
+        $fromLocationId = trim($_REQUEST['from']);
+        $subdomain = trim($_REQUEST['subdomain']);
+        $name = trim($_REQUEST['displayName']);
+        $abName = "";
+        if($_REQUEST['abName'])
+        {
+            $abName = trim($_REQUEST['abName']);
+        }
+        $user = UserAccount::getLoggedInUser();
+        if(UserAccount::userHasRole("opacAdmin")) {
+            $library = new Library();
+            $copyFrom = new Library();
+
+            if ($copyFrom->get($fromLocationId)) {
+                $libraryId = null;
+
+                $copyFromFacets = $copyFrom->facets;
+                foreach ($copyFromFacets as $key => $facet) {
+                    $facet->id = null;
+                    $facet->libraryId = $library->libraryId;
+                    $copyFromFacets[$key] = $facet;
+                }
+                $library->facets = $copyFromFacets;
+                $copyFromCombined = $copyFrom->combinedResultSections;
+                foreach ($copyFromCombined as $key => $combined) {
+                    $combined->id = null;
+                    $combined->libraryId = $library->libraryId;
+                    $copyFromCombined[$key] = $combined;
+                }
+                $library->combinedResultSections = $copyFromCombined;
+                $copyFromMoreDetails = $copyFrom->moreDetailsOptions;
+                foreach ($copyFromMoreDetails as $key => $moreDetail) {
+                    $moreDetail->id = null;
+                    $moreDetail->libraryId = $library->libraryId;
+                    $copyFromMoreDetails[$key] = $moreDetail;
+                }
+                $library->moreDetailsOptions = $copyFromMoreDetails;
+                $copyFromBrowseCategories = $copyFrom->browseCategories;
+                foreach ($copyFromBrowseCategories as $key => $category) {
+                    $category->id = null;
+                    $category->libraryId = $library->libraryId;
+                    $copyFromBrowseCategories[$key] = $category;
+                }
+                $library->browseCategories = $copyFromBrowseCategories;
+                $copyFromMaterialRequestFields = $copyFrom->materialsRequestFieldsToDisplay;
+                foreach ($copyFromMaterialRequestFields as $key => $requestField) {
+                    $requestField->id = null;
+                    $requestField->libraryId = $library->libraryId;
+                    $copyFromMaterialRequestFields[$key] = $requestField;
+                }
+                $library->materialsRequestFieldsToDisplay = $copyFromMaterialRequestFields;
+                $copyFromMaterialRequestFormats = $copyFrom->materialsRequestFormats;
+                foreach ($copyFromMaterialRequestFormats as $key => $requestFormat) {
+                    $requestFormat->id = null;
+                    $requestFormat->libraryId = $library->libraryId;
+                    $copyFromMaterialRequestFormats[$key] = $requestFormat;
+                }
+                $library->materialRequestFormats = $copyFromMaterialRequestFormats;
+                $copyFromMaterialRequestFormFields = $copyFrom->materialsRequestFormFields;
+                foreach ($copyFromMaterialRequestFormFields as $key => $requestFormField) {
+                    $requestFormField->id = null;
+                    $requestFormField->libraryId = $library->libraryId;
+                    $copyFromMaterialRequestFormFields[$key] = $requestFormField;
+                }
+                $library->materialsRequestFormFields = $copyFromMaterialRequestFormFields;
+                $copyFromHooplaSettings = $copyFrom->hooplaSettings;
+                foreach ($copyFromHooplaSettings as $key => $hoopla) {
+                    $hoopla->id = null;
+                    $hoopla->libraryId = $library->libraryId;
+                    $copyFromHooplaSettings[$key] = $hoopla;
+                }
+                $library->hooplaSettings = $copyFromHooplaSettings;
+                $copyFromArchiveMoreDetails = $copyFrom->archiveMoreDetailsOptions;
+                foreach ($copyFromArchiveMoreDetails as $key => $archiveDetail) {
+                    $archiveDetail->id = null;
+                    $archiveDetail->libraryId = $library->libraryId;
+                    $copyFromArchiveMoreDetails[$key] = $archiveDetail;
+                }
+                $library->archiveMoreDetailsOptions = $copyFromArchiveMoreDetails;
+                //TODO: figure out why copying "exploreMoreBar" causes fatal error.
+//                $copyFromExploreMoreBar = $copyFrom->exploreMoreBar;
+//                foreach ($copyFromExploreMoreBar as $key => $explore) {
+//                    $explore->id = null;
+//                    $explore->libraryId = $library->libraryId;
+//                    $copyFromExploreMoreBar[$key] = $explore;
+//                }
+//                $library->exploreMoreBar = $copyFromExploreMoreBar;
+                $copyFromArchiveSearchFacets = $copyFrom->archiveSearchFacets;
+                foreach ($copyFromArchiveSearchFacets as $key => $archiveFacet) {
+                    $archiveFacet->id = null;
+                    $archiveFacet->libraryId = $library->libraryId;
+                    $copyFromArchiveSearchFacets[$key] = $archiveFacet;
+                }
+                $library->archiveSearchFacets = $copyFromArchiveSearchFacets;
+                $copyFromHolidays = $copyFrom->holidays;
+                foreach ($copyFromHolidays as $key => $holiday) {
+                    $holiday->id = null;
+                    $holiday->libraryId = $library->libraryId;
+                    $copyFromHolidays[$key] = $holiday;
+                }
+                $library->holidays = $copyFromHolidays;
+                $copyFromLibraryLinks = $copyFrom->libraryLinks;
+                foreach ($copyFromLibraryLinks as $key => $libraryLink) {
+                    $libraryLink->id = null;
+                    $libraryLink->libraryId = $library->libraryId;
+                    $copyFromLibraryLinks[$key] = $libraryLink;
+                }
+                $library->libraryLinks = $copyFromLibraryLinks;
+                $copyFromLibraryTopLinks = $copyFrom->libraryTopLinks;
+                foreach ($copyFromLibraryTopLinks as $key => $topLink) {
+                    $topLink->id = null;
+                    $topLink->libraryId = $library->libraryId;
+                    $copyFromLibraryTopLinks[$key] = $topLink;
+                }
+                $library->libraryTopLinks = $copyFromLibraryTopLinks;
+                $copyFromRecordsOwned = $copyFrom->recordsOwned;
+                foreach ($copyFromRecordsOwned as $key => $recordOwned) {
+                    $recordOwned->id = null;
+                    $recordOwned->libraryId = $library->libraryId;
+                    $copyFromRecordsOwned[$key] = $recordOwned;
+                }
+                $library->recordsOwned = $copyFromRecordsOwned;
+                $copyFromRecordsToInclude = $copyFrom->recordsToInclude;
+                foreach ($copyFromRecordsToInclude as $key => $includedRecord) {
+                    $includedRecord->id = null;
+                    $includedRecord->libraryId = $library->libraryId;
+                    $copyFromRecordsToInclude[$key] = $includedRecord;
+                }
+                $library->recordsToInclude = $copyFromRecordsToInclude;
+
+                $library = clone $copyFrom;
+                $library->libraryId = $libraryId;
+                $library->displayName = $name;
+                $library->subdomain = $subdomain;
+                $library->abbreviatedDisplayName = $abName;
+
+                if ($library->insert()) {
+                    $results['body'] = '<div class="alert alert-success">Library Cloned.</div>';
+                }
+
+            }
+        }
         return $results;
     }
 	//	function markProfileForRegrouping(){
