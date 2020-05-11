@@ -1150,5 +1150,34 @@ ADD COLUMN selfRegistrationAgencyCode INT(10) NULL;",
 				"ALTER TABLE `pika`.`library` ADD COLUMN `showPatronBarcodeImage` TINYINT(1) NULL DEFAULT 0",
 			 ),
 		),
+
+        'library_location_remove_UseScope' => array(
+            'title'         => 'Remove UseScope Option',
+            'description'   => 'Remove the obsolete UseScope option',
+            'sql'           => array(
+                'ALTER TABLE `pika`.`library` REMOVE COLUMN `useScope`;',
+                'ALTER TABLE `pika`.`location` REMOVE COLUMN `useScope`;',
+            ),
+        ),
+        'library_location_remove' => array(
+            'title'         => 'Remove obsolete eContent settings',
+            'description'   => 'Remove eContentLocationstoInclude, eContentLinkRules, notesTabName, and facetFile',
+            'sql'           => array(
+                'ALTER TABLE `pika`.`library` REMOVE COLUMN `econtentLocationsToInclude`;',
+                'ALTER TABLE `pika`.`location` REMOVE COLUMN `econtentLocationsToInclude`;',
+                'ALTER TABLE `pika`.`library` REMOVE COLUMN `eContentLinkRules`;',
+                'ALTER TABLE `pika`.`library` REMOVE COLUMN `notesTabName`;',
+                'ALTER TABLE `pika`.`location` REMOVE COLUMN `facetFile`;',
+            ),
+        ),
+        'goldrush_removal' => array(
+            'title'         => 'Remove Goldrush',
+            'description'   => 'Remove all goldrush settings',
+            'sql'           => array(
+                'UPDATE `pika`.`library_search_source` SET `searchWhat` = \'\' WHERE `searchWhat` IN (\'goldrush\');',
+                'ALTER TABLE `pika`.`library_search_source` CHANGE `searchWhat` `searchWhat` ENUM(\'catalog\', \'genealogy\', \'overdrive\', \'worldcat\', \'prospector\', \'title_browse\', \'author_browse\', \'subject_browse\', \'tags\');',
+                'ALTER TABLE `pika`.`library` REMOVE COLUMN `goldRushCode`;'
+            ),
+        ),
 	);
 }

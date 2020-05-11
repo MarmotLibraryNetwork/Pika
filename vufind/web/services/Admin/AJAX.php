@@ -624,7 +624,6 @@ class Admin_AJAX extends AJAXHandler {
                  $location->additionalCss = $copyFromLocation->additionalCss;
                  $location->headerText = $copyFromLocation->headerText;
                  $location->scope = $copyFromLocation->scope;
-                 $location->useScope = $copyFromLocation->useScope;
                  $location->defaultPType = $copyFromLocation->defaultPType;
                  $location->validHoldPickupBranch = $copyFromLocation->validHoldPickupBranch;
                  $location->showHoldButton = $copyFromLocation->showHoldButton;

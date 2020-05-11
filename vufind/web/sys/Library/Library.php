@@ -63,7 +63,6 @@ class Library extends DB_DataObject {
 	public $allowProfileUpdates;   //tinyint(4)
 	public $allowFreezeHolds;   //tinyint(4)
 	public $scope; 					//smallint(6) // The Sierra OPAC scope
-	public $useScope;		 		//tinyint(4) //TODO: this is ambiguous with Sierra OPAC scope, probably best to replace occurrences with the $restrictSearchByLibrary setting
 	public $hideCommentsWithBadWords; //tinyint(4)
 	public $showStandardReviews;
 	public $showHoldButton;
@@ -467,7 +466,6 @@ class Library extends DB_DataObject {
 					'helpLink'=>'https://docs.google.com/document/d/1SmCcWYIV8bnUEaGu4HYvyiF8iqOKt06ooBbJukkJdO8', 'properties' => array(
 				'ilsCode'                              => array('property'=>'ilsCode', 'type'=>'text', 'label'=>'ILS Code', 'description'=>'The location code that all items for this location start with.', 'size'=>'4', 'hideInLists' => false,),
 				'scope'                                => array('property'=>'scope', 'type'=>'text', 'label'=>'Sierra Scope', 'description'=>'The scope for the system in Sierra. Used for Bookings', 'size'=>'4', 'hideInLists' => true,),
-				'useScope'                             => array('property'=>'useScope', 'type'=>'checkbox', 'label'=>'Use Scope', 'description'=>'Whether or not the scope should be used when displaying holdings.', 'hideInLists' => true,),
 				'showExpirationWarnings'               => array('property'=>'showExpirationWarnings', 'type'=>'checkbox', 'label'=>'Show Expiration Warnings', 'description'=>'Whether or not the user should be shown expiration warnings if their card is nearly expired.', 'hideInLists' => true, 'default' => 1),
 				'expirationNearMessage'                => array('property'=>'expirationNearMessage', 'type'=>'text', 'label'=>'Expiration Near Message (use the token %date% to insert the expiration date)', 'description'=>'A message to show in the menu when the user account will expire soon', 'hideInLists' => true, 'default' => ''),
 				'expiredMessage'                       => array('property'=>'expiredMessage', 'type'=>'text', 'label'=>'Expired Message (use the token %date% to insert the expiration date)', 'description'=>'A message to show in the menu when the user account has expired', 'hideInLists' => true, 'default' => ''),
