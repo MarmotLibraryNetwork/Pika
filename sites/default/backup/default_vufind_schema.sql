@@ -158,7 +158,7 @@ CREATE TABLE IF NOT EXISTS `library` (
   `suggestAPurchase` varchar(150) NOT NULL,
   `showEcommerceLink` tinyint(4) NOT NULL,
   `tabbedDetails` tinyint(4) NOT NULL,
-  `goldRushCode` varchar(10) NOT NULL,
+
   `repeatSearchOption` enum('none','librarySystem','marmot','all') NOT NULL DEFAULT 'all' COMMENT 'Where to allow repeating search.  Valid options are: none, librarySystem, marmot, all',
   `repeatInProspector` tinyint(4) NOT NULL,
   `repeatInWorldCat` tinyint(4) NOT NULL,
