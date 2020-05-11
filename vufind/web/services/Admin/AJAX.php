@@ -667,7 +667,7 @@ class Admin_AJAX extends AJAXHandler {
                      $owned->id = null;
                      $recordsOwned[$key] = $owned;
                  }
-                 $location->recordsToInclude = $includedToCopy;
+                 $location->recordsOwned = $recordsOwned;
 
                  if ($location->insert())
                  {
