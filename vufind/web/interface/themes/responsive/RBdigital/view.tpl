@@ -41,7 +41,7 @@
 
 				<div class="row">
 					<div id="record-details-column" class="col-xs-12 col-sm-12 col-md-9">
-						{include file="Hoopla/view-title-details.tpl"}
+						{include file="RBdigital/view-title-details.tpl"}
 					</div>
 
 					<div id="recordTools" class="col-xs-12 col-sm-6 col-md-3">
@@ -64,7 +64,14 @@
 
 			</div>
 		</div>
-
+      {* issues *}
+		<div class="row">
+        {foreach from=$issues item=issue}
+					<div class="col-xs-2">
+						<img src="{$issue.image}" style="max-width: 100%" />
+					</div>
+        {/foreach}
+		</div>
 		<div class="row">
 			{include file=$moreDetailsTemplate}
 		</div>

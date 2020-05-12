@@ -28,7 +28,7 @@ require_once ROOT_DIR . '/RecordDrivers/RBdigitalMagazineRecordDriver.php';
  * Class RBdigital_Home
  */
 class RBdigital_Home extends Record_Home {
-	private $app;
+	private App $app;
 	private Curl $curl;
 	public function __construct($record_id = null)
 	{
@@ -77,7 +77,17 @@ class RBdigital_Home extends Record_Home {
 
 		//Get the actions for the record
 		$actions = $this->recordDriver->getRecordActionsFromIndex();
+		//Get the magazine id from the url
+		foreach ($actions as $action) {
+			if($action['title'] == 'Access Online') {
+				$idRegExp = "/.*\/(\d*)$/";
+				preg_match($idRegExp, $action['url'], $m);
+				$magazineId = $m[1];
+			}
+		}
 
+		$issues = $this->getIssues($magazineId);
+		$interface->assign('issues', $issues);
 		$interface->assign('actions', $actions);
 
 		$interface->assign('moreDetailsOptions', $this->recordDriver->getMoreDetailsOptions());
@@ -107,10 +117,19 @@ class RBdigital_Home extends Record_Home {
 
 	public function getIssues($magazineId) {
 		$pageIndex = 0;
-		
 		$url = $this->webServiceBaseUrl . 'magazines/' . $magazineId . '/issues?pageIndex=' . $pageIndex . '&pageSize=100';
 
-		$this->curl->get($url);
+		$res = $this->curl->get($url);
+		$issues = [];
+		foreach($res->resultSet as $result) {
+			$issue = [];
+			$issue['issueId'] = $result->item->issueId;
+			$issue['magazineId'] = $result->item->magazineId;
+			$issue['coverDate'] = $result->item->coverDate;
+			$issue['image'] = $result->item->images[0]->url;
 
+			$issues[] = $issue;
+		}
+		return $issues;
 	}
 }

@@ -21,6 +21,11 @@ require_once 'Record.php';
 
 class Record_Home extends Record_Record {
 
+	public function __construct($record_id = null)
+	{
+		parent::__construct($record_id);
+	}
+
 	function launch(){
 		global $interface;
 		global $timer;

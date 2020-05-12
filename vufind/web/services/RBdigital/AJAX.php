@@ -18,7 +18,7 @@
  */
 
 /**
- *
+ * RBdigital xhr methods
  *
  * @category Pika
  * @author   Chris Froese
@@ -33,15 +33,15 @@ class RBdigital_AJAX extends AJAXHandler {
 
 	use MARC_AJAX_Basic;
 
-	protected $methodsThatRespondWithJSONUnstructured = array(
-		'reloadCover',
-		'getHooplaCheckOutPrompt',
-		'checkOutHooplaTitle',
-		'returnHooplaTitle',
+	protected array $methodsThatRespondWithJSONUnstructured = array(
+	 'reloadCover',
+	 'getRBdigitalCheckOutPrompt',
+	 'checkOutRBdigitalMagazine',
+	 'returnHooplaTitle',
 	);
 
-	protected $methodsThatRespondThemselves = array(
-		'downloadMarc',
+	protected array $methodsThatRespondThemselves = array(
+	 'downloadMarc',
 	);
 
 	protected $methodsThatRespondWithJSONResultWrapper;
@@ -50,7 +50,7 @@ class RBdigital_AJAX extends AJAXHandler {
 	/**
 	 * @return array
 	 */
-	function getHooplaCheckOutPrompt(){
+	function getRBdigitalCheckOutPrompt(){
 		$user   = UserAccount::getLoggedInUser();
 		$fullId = new SourceAndId($_REQUEST['id']);
 		$id     = $fullId->getRecordId();
@@ -58,11 +58,10 @@ class RBdigital_AJAX extends AJAXHandler {
 			$hooplaUsers = $user->getRelatedHooplaUsers();
 
 			if ($id){
-				require_once ROOT_DIR . '/Drivers/HooplaDriver.php';
-				$driver = new HooplaDriver();
-
 				global $interface;
-				$interface->assign('hooplaId', $id);
+//				require_once ROOT_DIR . '/Drivers/HooplaDriver.php';
+//				$driver = new HooplaDriver();
+//				$interface->assign('hooplaId', $id);
 
 				//TODO: need to determine what happens to cards without a Hoopla account
 				$hooplaUserStatuses = array();
@@ -152,65 +151,6 @@ class RBdigital_AJAX extends AJAXHandler {
 				);
 		}
 
-	}
-
-	function checkOutHooplaTitle(){
-		$user = UserAccount::getLoggedInUser();
-		if ($user){
-			$patronId = $_REQUEST['patronId'];
-			$patron   = $user->getUserReferredTo($patronId);
-			if ($patron){
-				global $interface;
-				if ($patron->id != $user->id){
-					$interface->assign('hooplaUser', $patron); // Display the account name when not using the main user
-				}
-
-				$sourceAndId = new SourceAndId($_REQUEST['id']);
-				require_once ROOT_DIR . '/Drivers/HooplaDriver.php';
-				$driver = new HooplaDriver();
-				$result = $driver->checkoutHooplaItem($sourceAndId, $patron);
-				if (!empty($_REQUEST['stopHooplaConfirmation'])) {
-					$patron->hooplaCheckOutConfirmation = false;
-					$patron->update();
-				}
-				if ($result['success']){
-					$checkOutStatus = $driver->getHooplaPatronStatus($patron);
-					$interface->assign('hooplaPatronStatus', $checkOutStatus);
-					$title = empty($result['title']) ? "Title checked out successfully" : $result['title'] . " checked out successfully";
-					return array(
-						'success' => true,
-						'title'   => $title,
-						'message' => $interface->fetch('Hoopla/hoopla-checkout-success.tpl'),
-						'buttons' => '<a class="btn btn-primary" href="/MyAccount/CheckedOut" role="button">View My Check Outs</a>',
-					);
-				}else{
-					return $result;
-				}
-			}else{
-				return array('success' => false, 'message' => 'Sorry, it looks like you don\'t have permissions to checkout titles for that user.');
-			}
-		}else{
-			return array('success' => false, 'message' => 'You must be logged in to checkout an item.');
-		}
-	}
-
-	function returnHooplaTitle(){
-		$user = UserAccount::getLoggedInUser();
-		if ($user){
-			$patronId = $_REQUEST['patronId'];
-			$patron   = $user->getUserReferredTo($patronId);
-			if ($patron) {
-				$sourceAndID = new HooplaSourceAndId($_REQUEST['id']);
-				require_once ROOT_DIR . '/Drivers/HooplaDriver.php';
-				$driver = new HooplaDriver();
-				$result = $driver->returnHooplaItem($sourceAndID, $patron);
-				return $result;
-			}else{
-				return array('success' => false, 'message' => 'Sorry, it looks like you don\'t have permissions to return titles for that user.');
-			}
-		}else{
-			return array('success' => false, 'message' => 'You must be logged in to return an item.');
-		}
 	}
 
 }
