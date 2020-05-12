@@ -822,14 +822,13 @@ class Admin_AJAX extends AJAXHandler {
                     $copyFromArchiveMoreDetails[$key] = $archiveDetail;
                 }
                 $library->archiveMoreDetailsOptions = $copyFromArchiveMoreDetails;
-                //TODO: figure out why copying "exploreMoreBar" causes fatal error.
-//                $copyFromExploreMoreBar = $copyFrom->exploreMoreBar;
-//                foreach ($copyFromExploreMoreBar as $key => $explore) {
-//                    $explore->id = null;
-//                    $explore->libraryId = $library->libraryId;
-//                    $copyFromExploreMoreBar[$key] = $explore;
-//                }
-//                $library->exploreMoreBar = $copyFromExploreMoreBar;
+                $copyFromExploreMoreBar = $copyFrom->exploreMoreBar;
+                foreach ($copyFromExploreMoreBar as $key => $explore) {
+                    $explore->id = null;
+                    $explore->libraryId = $library->libraryId;
+                    $copyFromExploreMoreBar[$key] = $explore;
+                }
+                $library->exploreMoreBar = $copyFromExploreMoreBar;
                 $copyFromArchiveSearchFacets = $copyFrom->archiveSearchFacets;
                 foreach ($copyFromArchiveSearchFacets as $key => $archiveFacet) {
                     $archiveFacet->id = null;
