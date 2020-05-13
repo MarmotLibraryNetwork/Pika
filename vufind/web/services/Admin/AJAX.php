@@ -67,9 +67,6 @@ class Admin_AJAX extends AJAXHandler {
 		);
 		return $results;
 	}
-    function copyHoursFromLocation(){
-
-    }
 
     /**
      * Ajax class which calls copyLibraryHooplaSettings in order to copy the parent library's hoopla settings
@@ -265,7 +262,7 @@ class Admin_AJAX extends AJAXHandler {
                 }
             }
         }
-	    return $results;;
+	    return $results;
     }
 
     /**
