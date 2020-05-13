@@ -175,7 +175,6 @@ CREATE TABLE IF NOT EXISTS `library` (
   `enableAlphaBrowse` tinyint(4) DEFAULT '1',
   `showHoldCancelDate` tinyint(4) NOT NULL DEFAULT '0',
   `enableProspectorIntegration` tinyint(4) NOT NULL DEFAULT '0',
-  `prospectorCode` varchar(10) NOT NULL DEFAULT '',
   `showRatings` tinyint(4) NOT NULL DEFAULT '1',
   `searchesFile` varchar(15) NOT NULL DEFAULT 'default',
   `minimumFineAmount` float NOT NULL DEFAULT '0',

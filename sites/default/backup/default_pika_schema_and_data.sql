@@ -774,7 +774,6 @@ CREATE TABLE `library` (
   `holdDisclaimer` mediumtext,
   `showHoldCancelDate` tinyint(4) NOT NULL DEFAULT '0',
   `enableProspectorIntegration` tinyint(4) NOT NULL DEFAULT '0',
-#   `prospectorCode` varchar(10) NOT NULL DEFAULT '',
   `showRatings` tinyint(4) NOT NULL DEFAULT '1',
   `minimumFineAmount` float NOT NULL DEFAULT '0',
   `enableGenealogy` tinyint(4) NOT NULL DEFAULT '0',

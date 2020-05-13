@@ -39,7 +39,6 @@ function getLibraryLocationUpdates(){
 				"UPDATE library SET holdDisclaimer = 'I understand that by requesting this item, information from my library patron record, including my contact information may be made available to the lending library.' WHERE subdomain IN ('msc') ",
 				"ALTER TABLE `library` ADD `showHoldCancelDate` TINYINT(4) NOT NULL DEFAULT '0';",
 				"ALTER TABLE `library` ADD `enableProspectorIntegration` TINYINT(4) NOT NULL DEFAULT '0';",
-				"ALTER TABLE `library` ADD `prospectorCode` VARCHAR(10) NOT NULL DEFAULT '';",
 				"ALTER TABLE `library` ADD `showRatings` TINYINT(4) NOT NULL DEFAULT '1';",
 				"ALTER TABLE `library` ADD `searchesFile` VARCHAR(15) NOT NULL DEFAULT 'default';",
 				"ALTER TABLE `library` ADD `minimumFineAmount` FLOAT NOT NULL DEFAULT '0';",
@@ -1176,7 +1175,14 @@ ADD COLUMN selfRegistrationAgencyCode INT(10) NULL;",
             'sql'           => array(
                 'UPDATE `pika`.`library_search_source` SET `searchWhat` = \'\' WHERE `searchWhat` IN (\'goldrush\');',
                 'ALTER TABLE `pika`.`library_search_source` CHANGE `searchWhat` `searchWhat` ENUM(\'catalog\', \'genealogy\', \'overdrive\', \'worldcat\', \'prospector\', \'title_browse\', \'author_browse\', \'subject_browse\', \'tags\');',
-                'ALTER TABLE `pika`.`library` REMOVE COLUMN `goldRushCode`;'
+                'ALTER TABLE `pika`.`library` DROP COLUMN `goldRushCode`;'
+            ),
+        ),
+        'prospectorCode_removal' => array(
+            'title'         => 'Remove prospectorCode',
+            'description'   => 'Remove prospectorCode library setting',
+            'sql'           => array(
+                'ALTER TABLE `pika`.`library` DROP COLUMN `prospectorCode`;'
             ),
         ),
 	);
