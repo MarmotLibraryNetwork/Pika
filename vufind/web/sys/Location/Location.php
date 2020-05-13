@@ -292,6 +292,10 @@ class Location extends DB_DataObject {
                                         'text' => 'Copy Facets Settings from Location',
                                         'onclick' => 'Pika.Admin.copyFacetsSettings($id)',
                                     ),
+                                    array(
+                                      'text' => 'Reset Facets to Default',
+                                      'onclick' => 'Pika.Admin.resetFacetsToDefault($id)',
+                                    ),
                                 ),
                             ),
 
@@ -366,6 +370,10 @@ class Location extends DB_DataObject {
                             array(
                                 'text' => 'Copy Full Record Display from Location',
                                 'onclick' => 'Pika.Admin.copyFullRecordDisplay($id)',
+                            ),
+                            array(
+                              'text' => 'Reset Full Record Display to Default',
+                              'onclick' => 'Pika.Admin.resetMoreDetailsToDefault($id)',
                             ),
                         ),
 					),

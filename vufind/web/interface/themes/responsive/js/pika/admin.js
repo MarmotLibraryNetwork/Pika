@@ -93,7 +93,15 @@ Pika.Admin = (function(){
 		},
 		copyFullRecord: function(id, copyFromId)
 		{
-			return this.basicAjaxHandler('copyFullRecordDisplayFromLocation', id, copyFromId)
+			return this.basicAjaxHandler('copyFullRecordDisplayFromLocation', id, copyFromId);
+		},
+		resetFacetsToDefault: function(id)
+		{
+			return this.basicAjaxHandler('resetFacetsToDefault', id);
+		},
+		resetMoreDetailsToDefault: function(id)
+		{
+			return this.basicAjaxHandler('resetMoreDetailsToDefault', id);
 		},
 	};
 }(Pika.Admin || {}));

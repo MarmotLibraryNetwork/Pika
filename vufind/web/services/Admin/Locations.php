@@ -76,34 +76,13 @@ class Locations extends ObjectEditor {
 		return UserAccount::userHasRole('opacAdmin');
 	}
 
+
 	function canDelete(){
 		$user = UserAccount::getLoggedInUser();
 		return UserAccount::userHasRole('opacAdmin');
 	}
 
-	function getAdditionalObjectActions($existingObject){
-		$user          = UserAccount::getLoggedInUser();
-		$objectActions = array();
 
-		if ($existingObject != null){
-		    $user = UserAccount::getLoggedInUser();
-            if(UserAccount::userHasRole('opacAdmin'))
-            {
-		        $objectActions[] = array(
-				    'text' => 'Reset Facets To Default',
-				    'url'  => '/Admin/Locations?objectAction=resetFacetsToDefault&amp;id=' . $existingObject->locationId,
-			    );
-			    $objectActions[] = array(
-				    'text' => 'Reset More Details To Default',
-				    'url'  => '/Admin/Locations?id=' . $existingObject->locationId . '&amp;objectAction=resetMoreDetailsToDefault',
-			    );
-            }
-			
-		}else{
-			echo("Existing object is null");
-		}
-		return $objectActions;
-	}
 
 	function copyDataFromLocation(){
 		$locationId = $_REQUEST['id'];
@@ -156,53 +135,12 @@ class Locations extends ObjectEditor {
 			$interface->setTemplate('../Admin/copyLocationFacets.tpl');
 		}
 	}
+    function cloneLocation(){
+        global $interface;
+        $interface->setTemplate('cloneLocation.tpl');
+    }
 
-	function resetFacetsToDefault(){
-		$location             = new Location();
-		$locationId           = $_REQUEST['id'];
-		$location->locationId = $locationId;
-		if ($location->find(true)){
-			$location->clearFacets();
 
-			$defaultFacets = Location::getDefaultFacets($locationId);
-
-			$location->facets = $defaultFacets;
-			$location->update();
-
-			$_REQUEST['objectAction'] = 'edit';
-		}
-		$structure = $this->getObjectStructure();
-		header("Location: /Admin/Locations?objectAction=edit&id=" . $locationId);
-	}
-
-	function resetMoreDetailsToDefault(){
-		$location             = new Location();
-		$locationId           = $_REQUEST['id'];
-		$location->locationId = $locationId;
-		if ($location->find(true)){
-			$location->clearMoreDetailsOptions();
-
-			$defaultOptions = array();
-			require_once ROOT_DIR . '/RecordDrivers/Interface.php';
-			$defaultMoreDetailsOptions = RecordInterface::getDefaultMoreDetailsOptions();
-			$i                         = 0;
-			foreach ($defaultMoreDetailsOptions as $source => $defaultState){
-				$optionObj                    = new LocationMoreDetails();
-				$optionObj->locationId        = $locationId;
-				$optionObj->collapseByDefault = $defaultState == 'closed';
-				$optionObj->source            = $source;
-				$optionObj->weight            = $i++;
-				$defaultOptions[]             = $optionObj;
-			}
-
-			$location->moreDetailsOptions = $defaultOptions;
-			$location->update();
-
-			$_REQUEST['objectAction'] = 'edit';
-		}
-		$structure = $this->getObjectStructure();
-		header("Location: /Admin/Locations?objectAction=edit&id=" . $locationId);
-	}
 
 	function getInstructions(){
 		return 'For more information about Location Setting configuration, see the <a href="https://docs.google.com/document/d/1DO7DfrslDm2DXUYul0hKAh8u5pGmjwyQABVdmb6javM/edit?ts=5696ca39">online documentation</a>.';
