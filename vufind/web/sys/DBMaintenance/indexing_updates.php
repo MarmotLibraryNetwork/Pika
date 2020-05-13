@@ -421,7 +421,7 @@ function setupIndexingProfiles($update){
 		}
 
 		//eContent titles
-		if ($allLibraries->econtentLocationsToInclude){
+		/*if ($allLibraries->econtentLocationsToInclude){
 			$inclusionRule                      = new LibraryRecordToInclude();
 			$inclusionRule->indexingProfileId   = $ilsIndexingProfile->id;
 			$inclusionRule->libraryId           = $allLibraries->libraryId;
@@ -432,7 +432,7 @@ function setupIndexingProfiles($update){
 			$inclusionRule->includeItemsOnOrder = 0;
 			$inclusionRule->weight              = 1;
 			$inclusionRule->insert();
-		}
+		}*/
 
 		//Hoopla titles
 		/*if ($allLibraries->includeHoopla){
@@ -475,7 +475,7 @@ function setupIndexingProfiles($update){
 		}
 
 		//eContent titles
-		if ($allLocations->econtentLocationsToInclude){
+		/*if ($allLocations->econtentLocationsToInclude){
 			$inclusionRule                      = new LocationRecordToInclude();
 			$inclusionRule->indexingProfileId   = $ilsIndexingProfile->id;
 			$inclusionRule->locationId          = $allLocations->locationId;
@@ -486,7 +486,7 @@ function setupIndexingProfiles($update){
 			$inclusionRule->includeItemsOnOrder = 0;
 			$inclusionRule->weight              = 1;
 			$inclusionRule->insert();
-		}
+		}*/
 
 		//Hoopla titles
 		$relatedLibrary            = new Library();

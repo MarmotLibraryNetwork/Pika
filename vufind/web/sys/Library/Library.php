@@ -63,7 +63,6 @@ class Library extends DB_DataObject {
 	public $allowProfileUpdates;   //tinyint(4)
 	public $allowFreezeHolds;   //tinyint(4)
 	public $scope; 					//smallint(6) // The Sierra OPAC scope
-	public $useScope;		 		//tinyint(4) //TODO: this is ambiguous with Sierra OPAC scope, probably best to replace occurrences with the $restrictSearchByLibrary setting
 	public $hideCommentsWithBadWords; //tinyint(4)
 	public $showStandardReviews;
 	public $showHoldButton;
@@ -87,7 +86,6 @@ class Library extends DB_DataObject {
 	public $payFinesLinkText;
 	public $minimumFineAmount;
 	public $showRefreshAccountButton;    // specifically to refresh account after paying fines online
-	public $goldRushCode;
 	public $repeatSearchOption;
 	public $repeatInOnlineCollection;
 	public $repeatInProspector;
@@ -135,7 +133,6 @@ class Library extends DB_DataObject {
 	public $showAdvancedSearchbox;
 	public $enableProspectorIntegration;
 	public $showProspectorResultsAtEndOfSearch;
-	public $prospectorCode;
 	public $enableGenealogy;
 	public $showHoldCancelDate;
 	public $enableCourseReserves;
@@ -191,7 +188,7 @@ class Library extends DB_DataObject {
 	public $barcodePrefix;
 	public $minBarcodeLength;
 	public $maxBarcodeLength;
-	public $econtentLocationsToInclude; //TODO: No longer used. Replaced with Records To Include functionality
+
 	public $showExpirationWarnings;
 	public $availabilityToggleLabelSuperScope;
 	public $availabilityToggleLabelLocal;
@@ -468,7 +465,6 @@ class Library extends DB_DataObject {
 					'helpLink'=>'https://docs.google.com/document/d/1SmCcWYIV8bnUEaGu4HYvyiF8iqOKt06ooBbJukkJdO8', 'properties' => array(
 				'ilsCode'                              => array('property'=>'ilsCode', 'type'=>'text', 'label'=>'ILS Code', 'description'=>'The location code that all items for this location start with.', 'size'=>'4', 'hideInLists' => false,),
 				'scope'                                => array('property'=>'scope', 'type'=>'text', 'label'=>'Sierra Scope', 'description'=>'The scope for the system in Sierra. Used for Bookings', 'size'=>'4', 'hideInLists' => true,),
-				'useScope'                             => array('property'=>'useScope', 'type'=>'checkbox', 'label'=>'Use Scope', 'description'=>'Whether or not the scope should be used when displaying holdings.', 'hideInLists' => true,),
 				'showExpirationWarnings'               => array('property'=>'showExpirationWarnings', 'type'=>'checkbox', 'label'=>'Show Expiration Warnings', 'description'=>'Whether or not the user should be shown expiration warnings if their card is nearly expired.', 'hideInLists' => true, 'default' => 1),
 				'expirationNearMessage'                => array('property'=>'expirationNearMessage', 'type'=>'text', 'label'=>'Expiration Near Message (use the token %date% to insert the expiration date)', 'description'=>'A message to show in the menu when the user account will expire soon', 'hideInLists' => true, 'default' => ''),
 				'expiredMessage'                       => array('property'=>'expiredMessage', 'type'=>'text', 'label'=>'Expired Message (use the token %date% to insert the expiration date)', 'description'=>'A message to show in the menu when the user account has expired', 'hideInLists' => true, 'default' => ''),
@@ -835,10 +831,8 @@ class Library extends DB_DataObject {
 						'property' => 'prospectorSection', 'type' => 'section', 'label' => $innReachEncoreName . ' (III INN-Reach & Encore)', 'hideInLists' => true,
 						'helpLink' => 'https://docs.google.com/document/d/18SVEhciSjO99hcFLLdFR6OpC4_OtjOafTkuWPGXOhu4', 'properties' => array(
 							'repeatInProspector'                 => array('property' => 'repeatInProspector', 'type' => 'checkbox', 'label' => 'Repeat In ' . $innReachEncoreName, 'description' => 'Turn on to allow repeat search in ' . $innReachEncoreName . ' functionality.', 'hideInLists' => true, 'default' => 1),
-							'enableProspectorIntegration'         => array('property' => 'enableProspectorIntegration', 'type' => 'checkbox', 'label' => 'Enable ' . $innReachEncoreName . ' Integration', 'description' => 'Whether or not ' . $innReachEncoreName . ' Integrations should be displayed for this library.', 'hideInLists' => true, 'default' => 1),
+							'enableProspectorIntegration'        => array('property' => 'enableProspectorIntegration', 'type' => 'checkbox', 'label' => 'Enable ' . $innReachEncoreName . ' Integration', 'description' => 'Whether or not ' . $innReachEncoreName . ' Integrations should be displayed for this library.', 'hideInLists' => true, 'default' => 1),
 							'showProspectorResultsAtEndOfSearch' => array('property' => 'showProspectorResultsAtEndOfSearch', 'type' => 'checkbox', 'label' => 'Show ' . $innReachEncoreName . ' Results At End Of Search', 'description' => 'Whether or not ' . $innReachEncoreName . ' Search Results should be shown at the end of search results.', 'hideInLists' => true, 'default' => 1),
-							//'prospectorCode'                   => array('property'=>'prospectorCode', 'type'=>'text', 'label'=>'Prospector Code', 'description'=>'The code used to identify this location within Prospector. Leave blank if items for this location are not in Prospector.', 'hideInLists' => true,),
-							// No references in pika code. pascal 8-24-2018
 						),
 					),
 					'worldCatSection'   => array(
@@ -849,14 +843,6 @@ class Library extends DB_DataObject {
 							'worldCatQt'       => array('property' => 'worldCatQt', 'type' => 'text', 'label' => 'WorldCat QT', 'description' => 'A custom World Cat QT term to use while searching.', 'hideInLists' => true, 'size' => '40'),
 						),
 					),
-				),
-			),
-
-			'goldrushSection' => array(
-				'property'   => 'goldrushSection', 'type' => 'section', 'label' => 'Gold Rush', 'hideInLists' => true,
-				'helpLink'   => 'https://docs.google.com/document/d/1OfVcwdalgi8YNEqTAXXv7Oye15eQwxGGKX5IIaeuT7U',
-				'properties' => array(
-					'goldRushCode' => array('property' => 'goldRushCode', 'type' => 'text', 'label' => 'Gold Rush Inst Code', 'description' => 'The INST Code to use with Gold Rush.  Leave blank to not link to Gold Rush.', 'hideInLists' => true,),
 				),
 			),
 
@@ -1150,7 +1136,6 @@ class Library extends DB_DataObject {
 			unset($structure['fullRecordSection']);
 			unset($structure['holdingsSummarySection']);
 			unset($structure['materialsRequestSection']);
-			unset($structure['goldrushSection']);
 			unset($structure['prospectorSection']);
 			unset($structure['worldCatSection']);
 			unset($structure['overdriveSection']);
@@ -1294,7 +1279,7 @@ class Library extends DB_DataObject {
 			}
 			return $this->archiveMoreDetailsOptions;
 		}elseif ($name == "facets"){
-			if (!isset($this->facets) && $this->libraryId){
+			if (!isset($this->facets) ){
 				$this->facets = $this->getOneToManyOptions('LibraryFacetSetting', 'weight');
 			}
 			return $this->facets;
@@ -1483,6 +1468,7 @@ class Library extends DB_DataObject {
 			$this->saveBrowseCategories();
 			$this->saveMoreDetailsOptions();
 			$this->saveArchiveMoreDetailsOptions();
+			$this->saveMaterialsFormats();
 			$this->saveExploreMoreBar();
 			$this->saveCombinedResultSections();
 			$this->saveHooplaSettings();

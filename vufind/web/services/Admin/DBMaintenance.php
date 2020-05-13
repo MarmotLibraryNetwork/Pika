@@ -620,20 +620,6 @@ class DBMaintenance extends Admin_Admin {
 					),
 				),
 
-				'merged_records' => array(
-					'title'       => 'Merged Records Table',
-					'description' => 'Create Merged Records table to store ',
-					'sql'         => array(
-						"CREATE TABLE `merged_records` (
-							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-							`original_record` VARCHAR( 20 ) NOT NULL,
-							`new_record` VARCHAR( 20 ) NOT NULL,
-							UNIQUE INDEX (original_record),
-							INDEX(new_record)
-						)",
-					),
-				),
-
 				'nongrouped_records' => array(
 					'title'       => 'Non-grouped Records Table',
 					'description' => 'Create non-grouped Records table to store records that should not be grouped',
@@ -1356,6 +1342,19 @@ class DBMaintenance extends Admin_Admin {
                         "ALTER TABLE `library` ALTER COLUMN 'eContentSupportAddress' SET DEFAULT 'pika@marmot.org';",
                     )
                 ),
+
+				'remove_obsolete_tables-2020.05' => array(
+					'title'           => 'Delete Unused tables',
+					'description'     => 'Get rid of unused tables',
+					'continueOnError' => true,
+					'sql'             => array(
+						"DROP TABLE IF EXISTS `library_search_source`;",
+						"DROP TABLE IF EXISTS `location_search_source`;",
+						"DROP TABLE IF EXISTS `syndetics_data`;",
+						"DROP TABLE IF EXISTS `merged_records`;",
+						"DROP TABLE IF EXISTS `search_stats`;",
+					)
+				),
 
 			)
 		);

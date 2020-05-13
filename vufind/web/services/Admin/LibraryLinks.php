@@ -69,7 +69,11 @@ class Admin_LibraryLinks extends ObjectEditor {
 	}
 
 	function getAllowableRoles(){
-		return array('opacAdmin', 'libraryAdmin');
+		return ['opacAdmin', 'libraryAdmin'];
+	}
+
+	function showReturnToList(){
+		return false;
 	}
 
 }

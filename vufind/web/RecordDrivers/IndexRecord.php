@@ -29,7 +29,6 @@ class IndexRecord extends RecordInterface
 {
 	protected $fields;
 	protected $index = false;
-	protected $scopingEnabled = false;
 
 	/**
 	 * These Solr fields should NEVER be used for snippets.  (We exclude author
@@ -1185,10 +1184,6 @@ class IndexRecord extends RecordInterface
 
 	public function getRecordType(){
 		return 'unknown';
-	}
-
-	public function setScopingEnabled($enabled){
-		$this->scopingEnabled = $enabled;
 	}
 
 	function getRecordUrl(){

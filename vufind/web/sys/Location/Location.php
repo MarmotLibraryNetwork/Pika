@@ -54,7 +54,6 @@ class Location extends DB_DataObject {
 	public $nearbyLocation2;    //int(11)
 	public $holdingBranchLabel;     //varchar(40)
 	public $scope;
-	public $useScope;
 	public $facetLabel;
 	public $restrictSearchByLocation;
 	/* OVERDRIVE */
@@ -90,7 +89,6 @@ class Location extends DB_DataObject {
 	public $showQRCode;
 	public $showStaffView;
 	public $showGoodReadsReviews;
-	public $econtentLocationsToInclude;
 	public $availabilityToggleLabelSuperScope;
 	public $availabilityToggleLabelLocal;
 	public $availabilityToggleLabelAvailable;
@@ -232,7 +230,6 @@ class Location extends DB_DataObject {
 				'properties' => array(
 					array('property' => 'holdingBranchLabel', 'type' => 'text', 'label' => 'Holding Branch Label', 'description' => 'The label used within in the ILS'),
 					array('property' => 'scope', 'type' => 'text', 'label' => 'Scope', 'description' => 'The scope for the system in Sierra to refine holdings to the branch.  If there is no scope defined for the branch, this can be set to 0.'),
-					array('property' => 'useScope', 'type' => 'checkbox', 'label' => 'Use Scope?', 'description' => 'Whether or not the scope should be used when displaying holdings.', 'hideInLists' => true),
 					array('property' => 'defaultPType', 'type' => 'text', 'label' => 'Default P-Type', 'description' => 'The P-Type to use when accessing a subdomain if the patron is not logged in.  Use -1 to use the library default PType.', 'default' => -1),
 					array('property' => 'validHoldPickupBranch', 'type' => 'enum', 'values' => array('1' => 'Valid for all patrons', '0' => 'Valid for patrons of this branch only', '2' => 'Not Valid'), 'label' => 'Valid Hold Pickup Branch?', 'description' => 'Determines if the location can be used as a pickup location if it is not the patrons home location or the location they are in.', 'hideInLists' => true, 'default' => 1),
 					array('property' => 'showHoldButton', 'type' => 'checkbox', 'label' => 'Show Hold Button', 'description' => 'Whether or not the hold button is displayed so patrons can place holds on items', 'hideInLists' => true, 'default' => true),

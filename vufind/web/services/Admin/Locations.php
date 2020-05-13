@@ -55,6 +55,12 @@ class Locations extends ObjectEditor {
 		return $locationList;
 	}
 
+    function customListActions(){
+        return array(
+            array('label' => 'Clone Location', 'onclick' =>'Pika.Admin.cloneLocationFromSelection()'),
+        );
+    }
+
 	function getObjectStructure(){
 		return Location::getObjectStructure();
 	}
@@ -135,10 +141,7 @@ class Locations extends ObjectEditor {
 			$interface->setTemplate('../Admin/copyLocationFacets.tpl');
 		}
 	}
-    function cloneLocation(){
-        global $interface;
-        $interface->setTemplate('cloneLocation.tpl');
-    }
+
 
 
 

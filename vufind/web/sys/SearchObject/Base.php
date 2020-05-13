@@ -306,43 +306,40 @@ abstract class SearchObject_Base {
 	 *                                          complement to getCheckboxFacets()).
 	 * @return  array    Field, values and removal urls
 	 */
-	public function getFilterList($excludeCheckboxFilters = false)
-	{
+	public function getFilterList($excludeCheckboxFilters = false){
 		// Get a list of checkbox filters to skip if necessary:
-		$skipList = $excludeCheckboxFilters ? array_keys($this->checkboxFacets) : array();
+		$skipList = $excludeCheckboxFilters ? array_keys($this->checkboxFacets) : [];
 
-		$list = array();
+		$list = [];
 		// Loop through all the current filter fields
-		foreach ($this->filterList as $field => $values) {
+		foreach ($this->filterList as $field => $values){
 			// and each value currently used for that field
 			$translate = in_array($field, $this->translatedFacets);
-			foreach ($values as $value) {
+			foreach ($values as $value){
 				// Add to the list unless it's in the list of fields to skip:
-				if (!in_array($field, $skipList)) {
+				if (!in_array($field, $skipList)){
 					$facetLabel = $this->getFacetLabel($field);
 					if ($field == 'veteranOf' && $value == '[* TO *]'){
 						$display = 'Any War';
-					}elseif ($field == 'available_at' && $value == '*') {
+					}elseif ($field == 'available_at' && $value == '*'){
 						$anyLocationLabel = $this->getFacetSetting("Availability", "anyLocationLabel");
-						$display = $anyLocationLabel == '' ? "Any Marmot Location" : $anyLocationLabel;
-					}elseif ($field == 'available_at' && $value == '*') {
-						$anyLocationLabel = $this->getFacetSetting("Availability", "anyLocationLabel");
-						$display = $anyLocationLabel == '' ? "Any Marmot Location" : $anyLocationLabel;
+						$display          = empty($anyLocationLabel) ? "Any Location" : $anyLocationLabel;
 					}else{
 						$display = $translate ? translate($value) : $value;
 					}
 
-					$list[$facetLabel][] = array(
-                        'value'      => $value,     // raw value for use with Solr
-                        'display'    => $display,   // version to display to user
-                        'field'      => $field,
-                        'removalUrl' => $this->renderLinkWithoutFilter("$field:$value")
-					);
+					$list[$facetLabel][] = [
+						'value'      => $value,     // raw value for use with Solr
+						'display'    => $display,   // version to display to user
+						'field'      => $field,
+						'removalUrl' => $this->renderLinkWithoutFilter("$field:$value")
+					];
 				}
 			}
 		}
 		return $list;
 	}
+
 
 	/**
 	 * Return a url for the current search with an additional filter

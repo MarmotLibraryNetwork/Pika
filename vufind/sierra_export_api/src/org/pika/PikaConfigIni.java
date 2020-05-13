@@ -106,6 +106,9 @@ public class PikaConfigIni {
 		if (value == null) {
 			return null;
 		}
+		if (value.contains(";")){
+			value = value.substring(0, value.indexOf(";"));
+		}
 		value = value.trim();
 		if (value.startsWith("\"")) {
 			value = value.substring(1);

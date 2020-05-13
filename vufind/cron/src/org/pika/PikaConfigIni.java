@@ -1,6 +1,5 @@
 package org.pika;
 
-import org.apache.log4j.Logger;
 import org.ini4j.Ini;
 import org.ini4j.InvalidFileFormatException;
 import org.ini4j.Profile;
@@ -11,6 +10,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.apache.log4j.Logger;
 
 /**
  * Singleton Instance of Pika Config Ini settings
@@ -105,6 +106,9 @@ public class PikaConfigIni {
 		if (value == null) {
 			return null;
 		}
+		if (value.contains(";")){
+			value = value.substring(0, value.indexOf(";"));
+		}
 		value = value.trim();
 		if (value.startsWith("\"")) {
 			value = value.substring(1);
@@ -133,7 +137,7 @@ public class PikaConfigIni {
 
 	public static Integer getIntIniValue(String sectionName, String optionName) {
 		String intValueStr = cleanIniValue(ourInstance.get(sectionName, optionName));
-		if (intValueStr != null) {
+		if (intValueStr != null && !intValueStr.isEmpty()) {
 			return Integer.parseInt(intValueStr);
 		}
 		return null;
@@ -141,7 +145,7 @@ public class PikaConfigIni {
 
 	public static Long getLongIniValue(String sectionName, String optionName) {
 		String intValueStr = cleanIniValue(ourInstance.get(sectionName, optionName));
-		if (intValueStr != null) {
+		if (intValueStr != null && !intValueStr.isEmpty()) {
 			return Long.parseLong(intValueStr);
 		}
 		return null;

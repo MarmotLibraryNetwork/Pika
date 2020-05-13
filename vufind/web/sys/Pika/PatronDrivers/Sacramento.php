@@ -326,7 +326,9 @@ class Sacramento extends Sierra {
 			switch ($key) {
 				case 'email':
 					$val = trim($val);
+					$successEmail = false;
 					if(!empty($val)) {
+						$successEmail = $val;
 						$params['emails'][] = $val;
 					}
 					break;
@@ -488,6 +490,11 @@ class Sacramento extends Sierra {
 			$this->logger->warning('Failed to self register patron');
 			return ['success'=>false, 'barcode'=>''];
 		}
+
+		if($successEmail) {
+			$emailSent = $this->sendSelfRegSuccessEmail($barcode);
+		}
+
 		$this->logger->debug('Success self registering patron');
 		return ['success' => true, 'barcode' => $barcode];
 

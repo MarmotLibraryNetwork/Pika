@@ -39,7 +39,6 @@ class OverDriveRecordDriver extends RecordInterface {
 	private $upcs = null;
 	private $asins = null;
 	private $items;
-	protected $scopingEnabled = false;
 
 	/**
 	 * The Grouped Work that this record is connected to
@@ -92,9 +91,6 @@ class OverDriveRecordDriver extends RecordInterface {
 		$this->detailedRecordInfoFromIndex = $detailedRecordInfoFromIndex;
 	}
 
-	public function setScopingEnabled($enabled){
-		$this->scopingEnabled = $enabled;
-	}
 	/**
 	 * Load the grouped work that this record is connected to.
 	 */

@@ -5,7 +5,6 @@ public class ProcessToRun {
 	private String   processName;
 	private String   processClass;
 	private String[] arguments         = null;
-	private Long     lastRunVariableId = null;
 	private Long     lastRunTime       = null;
 
 	public ProcessToRun(String processName, String processClass) {
@@ -35,14 +34,6 @@ public class ProcessToRun {
 
 	public void setArguments(String[] arguments) {
 		this.arguments = arguments;
-	}
-
-	public Long getLastRunVariableId() {
-		return lastRunVariableId;
-	}
-
-	public void setLastRunVariableId(Long lastRunVariableId) {
-		this.lastRunVariableId = lastRunVariableId;
 	}
 
 	public void setLastRunTime(Long lastRunTime) {
