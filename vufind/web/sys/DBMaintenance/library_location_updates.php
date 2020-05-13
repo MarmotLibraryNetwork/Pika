@@ -445,35 +445,6 @@ function getLibraryLocationUpdates(){
 			),
 		),
 
-		'search_sources' => array(
-			'title'       => 'Search Sources',
-			'description' => 'Setup Library and Location Search Source Table',
-			'sql'         => array(
-				"CREATE TABLE library_search_source (
-					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-					libraryId INT(11) NOT NULL DEFAULT -1,
-					label VARCHAR(50) NOT NULL,
-					weight INT NOT NULL DEFAULT 0,
-					searchWhat ENUM('catalog', 'genealogy', 'overdrive', 'worldcat', 'prospector', 'goldrush', 'title_browse', 'author_browse', 'subject_browse', 'tags'),
-					defaultFilter TEXT,
-					defaultSort ENUM('relevance', 'popularity', 'newest_to_oldest', 'oldest_to_newest', 'author', 'title', 'user_rating'),
-					INDEX (libraryId)
-				)",
-				"CREATE TABLE location_search_source (
-					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-					locationId INT(11) NOT NULL DEFAULT -1,
-					label VARCHAR(50) NOT NULL,
-					weight INT NOT NULL DEFAULT 0,
-					searchWhat ENUM('catalog', 'genealogy', 'overdrive', 'worldcat', 'prospector', 'goldrush', 'title_browse', 'author_browse', 'subject_browse', 'tags'),
-					defaultFilter TEXT,
-					defaultSort ENUM('relevance', 'popularity', 'newest_to_oldest', 'oldest_to_newest', 'author', 'title', 'user_rating'),
-					INDEX (locationId)
-				)",
-				"ALTER TABLE library_search_source ADD COLUMN catalogScoping ENUM('unscoped', 'library', 'location') DEFAULT 'unscoped'",
-				"ALTER TABLE location_search_source ADD COLUMN catalogScoping ENUM('unscoped', 'library', 'location') DEFAULT 'unscoped'"
-			),
-		),
-
 		'more_details_customization' => array(
 			'title'       => 'More Details Customization',
 			'description' => 'Setup tables to allow customization of more details in full record view',
@@ -1146,44 +1117,42 @@ ADD COLUMN selfRegistrationAgencyCode INT(10) NULL;",
 			 'title'       => 'Show scannable image of patrons barcode',
 			 'description' => '',
 			 'sql'         => array(
-				"ALTER TABLE `pika`.`library` ADD COLUMN `showPatronBarcodeImage` TINYINT(1) NULL DEFAULT 0",
+				"ALTER TABLE `library` ADD COLUMN `showPatronBarcodeImage` TINYINT(1) NULL DEFAULT 0",
 			 ),
 		),
 
-        'library_location_remove_UseScope' => array(
-            'title'         => 'Remove UseScope Option',
-            'description'   => 'Remove the obsolete UseScope option',
-            'sql'           => array(
-                'ALTER TABLE `pika`.`library` REMOVE COLUMN `useScope`;',
-                'ALTER TABLE `pika`.`location` REMOVE COLUMN `useScope`;',
-            ),
-        ),
-        'library_location_remove' => array(
-            'title'         => 'Remove obsolete eContent settings',
-            'description'   => 'Remove eContentLocationstoInclude, eContentLinkRules, notesTabName, and facetFile',
-            'sql'           => array(
-                'ALTER TABLE `pika`.`library` REMOVE COLUMN `econtentLocationsToInclude`;',
-                'ALTER TABLE `pika`.`location` REMOVE COLUMN `econtentLocationsToInclude`;',
-                'ALTER TABLE `pika`.`library` REMOVE COLUMN `eContentLinkRules`;',
-                'ALTER TABLE `pika`.`library` REMOVE COLUMN `notesTabName`;',
-                'ALTER TABLE `pika`.`location` REMOVE COLUMN `facetFile`;',
-            ),
-        ),
-        'goldrush_removal' => array(
-            'title'         => 'Remove Goldrush',
-            'description'   => 'Remove all goldrush settings',
-            'sql'           => array(
-                'UPDATE `pika`.`library_search_source` SET `searchWhat` = \'\' WHERE `searchWhat` IN (\'goldrush\');',
-                'ALTER TABLE `pika`.`library_search_source` CHANGE `searchWhat` `searchWhat` ENUM(\'catalog\', \'genealogy\', \'overdrive\', \'worldcat\', \'prospector\', \'title_browse\', \'author_browse\', \'subject_browse\', \'tags\');',
-                'ALTER TABLE `pika`.`library` DROP COLUMN `goldRushCode`;'
-            ),
-        ),
-        'prospectorCode_removal' => array(
-            'title'         => 'Remove prospectorCode',
-            'description'   => 'Remove prospectorCode library setting',
-            'sql'           => array(
-                'ALTER TABLE `pika`.`library` DROP COLUMN `prospectorCode`;'
-            ),
-        ),
+		'library_location_remove_UseScope' => array(
+			'title'       => 'Remove UseScope Option',
+			'description' => 'Remove the obsolete UseScope option',
+			'sql'         => array(
+				'ALTER TABLE `library` REMOVE COLUMN `useScope`;',
+				'ALTER TABLE `location` REMOVE COLUMN `useScope`;',
+			),
+		),
+		'library_location_remove'          => array(
+			'title'       => 'Remove obsolete eContent settings',
+			'description' => 'Remove eContentLocationstoInclude, eContentLinkRules, notesTabName, and facetFile',
+			'sql'         => array(
+				'ALTER TABLE `library` REMOVE COLUMN `econtentLocationsToInclude`;',
+				'ALTER TABLE `location` REMOVE COLUMN `econtentLocationsToInclude`;',
+				'ALTER TABLE `library` REMOVE COLUMN `eContentLinkRules`;',
+				'ALTER TABLE `library` REMOVE COLUMN `notesTabName`;',
+				'ALTER TABLE `location` REMOVE COLUMN `facetFile`;',
+			),
+		),
+		'goldrush_removal'                 => array(
+			'title'       => 'Remove Goldrush',
+			'description' => 'Remove all goldrush settings',
+			'sql'         => array(
+				'ALTER TABLE `library` DROP COLUMN `goldRushCode`;'
+			),
+		),
+		'prospectorCode_removal'           => array(
+			'title'       => 'Remove prospectorCode',
+			'description' => 'Remove prospectorCode library setting',
+			'sql'         => array(
+				'ALTER TABLE `library` DROP COLUMN `prospectorCode`;'
+			),
+		),
 	);
 }

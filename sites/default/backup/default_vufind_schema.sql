@@ -486,26 +486,6 @@ CREATE TABLE IF NOT EXISTS `search` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `search_stats`
---
-
-CREATE TABLE IF NOT EXISTS `search_stats` (
-  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'The unique id of the search statistic',
-  `phrase` varchar(500) NOT NULL COMMENT 'The phrase being searched for',
-  `type` varchar(50) NOT NULL COMMENT 'The type of search being done',
-  `numResults` int(16) NOT NULL COMMENT 'The number of hits that were found.',
-  `lastSearch` int(16) NOT NULL COMMENT 'The last time this search was done',
-  `numSearches` int(16) NOT NULL COMMENT 'The number of times this search has been done.',
-  `libraryId` int(16) NOT NULL COMMENT 'The library id that this search was scoped to or -1 for unscoped.',
-  `locationId` int(16) NOT NULL COMMENT 'The location id that this search was scoped to or -1 for unscoped.',
-  PRIMARY KEY (`id`),
-  KEY `type` (`type`),
-  KEY `search_index` (`type`,`libraryId`,`locationId`,`phrase`(255),`numResults`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COMMENT='Statistical information about searches for use in reporting ' AUTO_INCREMENT=200373 ;
-
--- --------------------------------------------------------
-
---
 -- Table structure for table `session`
 --
 
