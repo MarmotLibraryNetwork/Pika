@@ -21,7 +21,7 @@ class AuthorNormalizer {
 	private static Pattern specialCharacterWhitespace = Pattern.compile("'");
 	private static Pattern specialCharacterStrip      = Pattern.compile("[^\\p{L}\\d\\s]");
 	private static Pattern consecutiveWhiteSpaceStrip = Pattern.compile("\\s{2,}");
-	private static Pattern noPublisherIdentified      = Pattern.compile("^(s n|publisher not identified|publisher name unknown|publisher unknown|unknown publisher)$");
+	private static Pattern noPublisherIdentified      = Pattern.compile("^(s n|name of publisher not identified|publisher not identified|publisher name unknown|publisher unknown|unknown publisher|producer not identified)$");
 
 	static String getNormalizedName(String rawName) {
 		String groupingAuthor = removeParentheticalInformation(rawName);
@@ -171,12 +171,13 @@ class AuthorNormalizer {
 			"(consultant|publisher editor in chief|edited by|by the editors of|editor in chief|edited and translated|" +
 			"editor-in-chief|general editor|guest editor|from the editors of|the editors of|editors|editor| + " +
 			"chosen by|translated by|prepared by|text by|" +
-			"printed and published by|published by the author|published by|" +
-			"printed for the author and sold by|printed for the editor and sold by|printed for and sold by|printed and sold by|for sale by|sold by|" +
-			"printed by and for|printed by for|printed for|reprinted by|re printed by|printed by|" + // 're printed' original text would be 're-printed'; 'printed by for' original text 'printed by & for'
+			"printed for the publisher|printed for the author|printed and published by|published by the author|published by|" +
+			"printed and sold for the author by|printed for the author and sold by|printed for the editor and sold by|printed for and sold by|printed and sold by|for sale by|sold by|" +
+			"printed by and for|printed by for|printed for|re printed for the author and sold by|reprinted by|re printed by|printed by|" + // 're printed' original text would be 're-printed'; 'printed by for' original text 'printed by & for'
 			"translated and edited by|edited and translated by|completely rev by|pictures by|selected and adapted by|" +
-			"with a foreword by|with a new foreword by|introd by|introduction by|intro by|retold by|film by|films by|licensed by|" +
-			"written produced and directed by|developed and produced by|produced by|written and directed by|directed by" +
+			"with a foreword by|with a new foreword by|introd by|introduction by|intro by|retold by|a film by |film by|films by|licensed by|" +
+			"written produced and directed by|developed and produced by|produced by|written and directed by|directed by|" +
+			"written by|written compiled and edited by|created by|" +
 			"compiled by|mixed by|dist by|concept|by),?\\s");
 
 	private static Pattern commonAuthorSuffixPattern = Pattern.compile("(?i),?\\s" +
