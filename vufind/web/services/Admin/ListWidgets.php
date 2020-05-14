@@ -100,10 +100,6 @@ class Admin_ListWidgets extends ObjectEditor {
 		return 'For more information on how to create List Widgets, please see the <a href="https://docs.google.com/document/d/1RySv7NbaYjaw_F9Gs7cP9pu3P894s_4J05o46m6z3bQ">online documentation</a>';
 	}
 
-	function getListInstructions(){
-		return $this->getInstructions();
-	}
-
 	function viewIndividualObject($structure){
 		if (!empty($_REQUEST['id'])){
 			global $interface;
