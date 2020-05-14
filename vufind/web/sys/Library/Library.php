@@ -823,15 +823,15 @@ class Library extends DB_DataObject {
 
 			'interLibraryLoanSection' => array(
 				'property'   => 'interLibraryLoanSectionSection', 'type' => 'section', 'label' => 'Interlibrary Loaning', 'hideInLists' => true,
-				'properties' => array(
+				'helpLink' => 'https://docs.google.com/document/d/1_G6Df1O8JVobGG4CTR9hY035fnRlaN1f-x4uAD1DLec', 'properties' => array(
 					'interLibraryLoanName' => array('property' => 'interLibraryLoanName', 'type' => 'text', 'label' => 'Name of Interlibrary Loan Service', 'description' => 'The name to be displayed in the link to the ILL service ', 'hideInLists' => true, 'size' => '80'),
 					'interLibraryLoanUrl'  => array('property' => 'interLibraryLoanUrl', 'type' => 'text', 'label' => 'Interlibrary Loan URL', 'description' => 'The link for the ILL Service.', 'hideInLists' => true, 'size' => '80'),
 
 					'prospectorSection' => array(
 						'property' => 'prospectorSection', 'type' => 'section', 'label' => $innReachEncoreName . ' (III INN-Reach & Encore)', 'hideInLists' => true,
-						'helpLink' => 'https://docs.google.com/document/d/18SVEhciSjO99hcFLLdFR6OpC4_OtjOafTkuWPGXOhu4', 'properties' => array(
-							'repeatInProspector'                 => array('property' => 'repeatInProspector', 'type' => 'checkbox', 'label' => 'Repeat In ' . $innReachEncoreName, 'description' => 'Turn on to allow repeat search in ' . $innReachEncoreName . ' functionality.', 'hideInLists' => true, 'default' => 1),
+						'helpLink' => 'https://docs.google.com/document/d/1nRimGRMOmpeVDgTcuQpVC2pqdA1uPBNVZKPPvBTM17', 'properties' => array(
 							'enableProspectorIntegration'        => array('property' => 'enableProspectorIntegration', 'type' => 'checkbox', 'label' => 'Enable ' . $innReachEncoreName . ' Integration', 'description' => 'Whether or not ' . $innReachEncoreName . ' Integrations should be displayed for this library.', 'hideInLists' => true, 'default' => 1),
+							'repeatInProspector'                 => array('property' => 'repeatInProspector', 'type' => 'checkbox', 'label' => 'Repeat In ' . $innReachEncoreName, 'description' => 'Turn on to allow repeat search in ' . $innReachEncoreName . ' functionality.', 'hideInLists' => true, 'default' => 1),
 							'showProspectorResultsAtEndOfSearch' => array('property' => 'showProspectorResultsAtEndOfSearch', 'type' => 'checkbox', 'label' => 'Show ' . $innReachEncoreName . ' Results At End Of Search', 'description' => 'Whether or not ' . $innReachEncoreName . ' Search Results should be shown at the end of search results.', 'hideInLists' => true, 'default' => 1),
 						),
 					),
