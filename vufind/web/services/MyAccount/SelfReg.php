@@ -24,7 +24,16 @@ class SelfReg extends Action {
 	protected $catalog;
 
 	function __construct() {
-		global $configArray;
+		global /** @var Library $library */
+		$library;
+		if (!$library->enableSelfRegistration){
+			// Do not display self-registration page or allow form-submission when the library hasn't enabled self-registration.
+			global $interface;
+			$pageTitle = 'Access Error';
+			$interface->assign('shortPageTitle', $pageTitle);
+			$this->display('../Admin/noPermission.tpl', $pageTitle);
+			die;
+		}
 		// Connect to Catalog
 		$this->catalog = CatalogFactory::getCatalogConnectionInstance();
 	}
