@@ -7,7 +7,7 @@ import java.util.regex.Pattern;
 /**
  * Class to normalize authors for use within grouped works
  *
- * VuFind-Plus
+ * Pika
  * User: Mark Noble
  * Date: 1/29/2015
  * Time: 9:36 AM
@@ -24,6 +24,10 @@ class AuthorNormalizer {
 	private static Pattern noPublisherIdentified      = Pattern.compile("^(s n|name of publisher not identified|publisher not identified|publisher name unknown|publisher unknown|unknown publisher|producer not identified)$");
 
 	static String getNormalizedName(String rawName) {
+		if (rawName.matches("[0-9]|[1-9][0-9]|[1-9][0-9][0-9]|1000")){ // (0 through 1000)
+			// Move running time
+			return rawName;
+		}
 		String groupingAuthor = removeParentheticalInformation(rawName);
 		groupingAuthor = removeDates(groupingAuthor);
 

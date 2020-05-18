@@ -156,7 +156,7 @@ class RecordGroupingProcessor {
 					}
 				} else {
 					//It's a control field
-					logger.debug("getPrimaryIdentifierFromMarcRecord - Record number field is a control field");
+//					logger.debug("getPrimaryIdentifierFromMarcRecord - Record number field is a control field");
 					ControlField curRecordNumberField = (ControlField) recordNumberFieldValue;
 					String       recordNumber         = curRecordNumberField.getData().trim();
 					identifier = new RecordIdentifier(recordType, recordNumber);
@@ -238,10 +238,8 @@ class RecordGroupingProcessor {
 		// Category
 		String    groupingCategory = setGroupingCategoryForWork(identifier, marcRecord, profile, workForTitle);
 
-		//TODO: use grouping category to set special author for movies
-
 		// Author
-		setWorkAuthorBasedOnMarcRecord(marcRecord, workForTitle, identifier);
+		setWorkAuthorBasedOnMarcRecord(marcRecord, workForTitle, identifier, groupingCategory);
 
 		// Language
 		if (workForTitle.getGroupedWorkVersion() >= 5) {
@@ -268,27 +266,56 @@ class RecordGroupingProcessor {
 		return groupingCategory;
 	}
 
-	private void setWorkAuthorBasedOnMarcRecord(Record marcRecord, GroupedWorkBase workForTitle, RecordIdentifier identifier) {
+	private void setWorkAuthorBasedOnMarcRecord(Record marcRecord, GroupedWorkBase workForTitle, RecordIdentifier identifier, String groupingCategory) {
 		String    author   = null;
-		DataField field100 = marcRecord.getDataField("100"); // Heading - Personal Name
-		if (field100 != null && field100.getSubfield('a') != null) {
-			author = field100.getSubfield('a').getData();
-		} else {
-			//110	2		|a Mixed By Yogitunes (Musical Group)
+		if (groupingCategory.equals("movie")){
+			ControlField fixedField     = (ControlField) marcRecord.getVariableField("008");
+			if (fixedField != null) {
+				String oo8Data = fixedField.getData();
+				if (oo8Data.length() > 20) {
+					String movieDuration = oo8Data.substring(18, 21);
+					if (movieDuration.equals("000")){
+						logger.info("movie 008 running time exceeds 999 minutes - " + identifier);
+					}
+					if (movieDuration.matches("^\\d+$")) {
+						// Is a numeric string
+						author = String.valueOf(roundOffTens(Integer.parseInt(movieDuration)));
+						// round to nearest tens value
 
-			DataField field110 = marcRecord.getDataField("110"); // Heading - Corporate Name
-			if (field110 != null && field110.getSubfield('a') != null) {
-				author = field110.getSubfield('a').getData();
-				if (field110.getSubfield('b') != null) {
-					author += " " + field110.getSubfield('b').getData();
+//						author = movieDuration.substring(0, 2) + "0";
+//						// Matching by 10 minute intervals, so exclude the final playtime digit and replace with a 0
+					} else {
+						logger.error("008 running time invalid : '" + oo8Data.substring(18, 21) + "' for " + identifier);
+					}
+				} else {
+					logger.error("008 not long enough to have a movie running time for " + identifier);
 				}
 			} else {
-				DataField field111 = marcRecord.getDataField("111"); // Meeting Name
-				if (field111 != null && field111.getSubfield('a') != null) {
-					author = field111.getSubfield('a').getData();
+				logger.warn("Missing 008 : " + identifier.toString());
+			}
+		} else {
+			DataField field100 = marcRecord.getDataField("100"); // Heading - Personal Name
+			if (field100 != null && field100.getSubfield('a') != null) {
+				author = field100.getSubfield('a').getData();
+				// has lastname, rest of name:
+				// 100	1		|a Schreiber, Ellen.|0 http://id.loc.gov/authorities/names/n2002036303.
+				// 100	1		|a Amen, Daniel G.,|0 http://id.loc.gov/authorities/names/n92013030|e author.
+			} else {
+				//110	2		|a Mixed By Yogitunes (Musical Group)
+
+				DataField field110 = marcRecord.getDataField("110"); // Heading - Corporate Name
+				if (field110 != null && field110.getSubfield('a') != null) {
+					author = field110.getSubfield('a').getData();
+					if (field110.getSubfield('b') != null) {
+						author += " " + field110.getSubfield('b').getData();
+					}
 				} else {
+					DataField field111 = marcRecord.getDataField("111"); // Meeting Name
+					if (field111 != null && field111.getSubfield('a') != null) {
+						author = field111.getSubfield('a').getData();
+					} else {
 						DataField field700 = marcRecord.getDataField("700"); // Added Entry Personal Name
-							//TODO: combine multiple 700s ?
+						//TODO: combine multiple 700s ?
 						if (field700 != null && field700.getSubfield('a') != null) {
 							author = field700.getSubfield('a').getData();
 						} else {
@@ -321,29 +348,45 @@ class RecordGroupingProcessor {
 										} else {
 											DataField field245 = marcRecord.getDataField("245");
 											if (field245 != null && field245.getSubfield('c') != null) {
-											//TODO: if we are using this, we should do the clean up here, trimming out prefix phrases like "editor", etc
-											author = field245.getSubfield('c').getData();
-											if (author.indexOf(';') > 0) {
-												//For Example:
-												//245	1	0	|a Pop Corn & Ma Goodness /|c Edna Mitchell Preston ; illustrated by Robert Andrew Parker.
-												author = author.substring(0, author.indexOf(';') - 1);
-											}
-											if (logger.isInfoEnabled()) {
-												logger.info("Resorting to 245c for grouping author for " + identifier + " : " + author);
+												//TODO: if we are using this, we should do the clean up here, trimming out prefix phrases like "editor", etc
+												author = field245.getSubfield('c').getData();
+												if (author.indexOf(';') > 0) {
+													//For Example:
+													//245	1	0	|a Pop Corn & Ma Goodness /|c Edna Mitchell Preston ; illustrated by Robert Andrew Parker.
+													author = author.substring(0, author.indexOf(';') - 1);
+												}
+												if (logger.isInfoEnabled()) {
+													logger.info("Resorting to 245c for grouping author for " + identifier + " : " + author);
+												}
 											}
 										}
-									}
 									}
 								}
 							}
 						}
 //					}
+					}
 				}
 			}
 		}
 		if (author != null) {
 			workForTitle.setAuthor(author);
 		}
+	}
+
+	private static int roundOffTens(int intToRound) {
+		// Get the right most digit
+		int rightMostDigit = intToRound % 10;
+
+		// If right most digit greater than 5
+		if (rightMostDigit > 5) {
+			intToRound += 10 - rightMostDigit;
+
+		// If right most digit <= 5
+		} else{
+			intToRound -= rightMostDigit;
+		}
+		return intToRound;
 	}
 
 	protected void setGroupingLanguageBasedOnMarc(Record marcRecord, GroupedWork5 workForTitle, RecordIdentifier identifier){
