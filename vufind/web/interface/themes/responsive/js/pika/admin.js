@@ -86,19 +86,18 @@ Pika.Admin = (function(){
 				var url = "/Admin/AJAX?method=" + ajaxMethod + "&from=" + from + "&name=" +name + "&code=" + code;
 
 				$.getJSON(url, function (data) {
-					Pika.showMessage(data.title, data.body, 1,1);
+					Pika.showMessageWithButtons(data.title, data.body, data.buttons);
 				}).fail(Pika.ajaxFail);
 			});
 			return false;
 		},
-		cloneLibraryHandler: function(ajaxMethod, from, displayName,subdomain, abName)
+		cloneLibraryHandler: function(ajaxMethod, from, displayName,subdomain, abName, facetLabelInput)
 		{
 			Pika.Account.ajaxLogin(function (){
 				Pika.loadingMessage();
-				var url = "/Admin/AJAX?method=" + ajaxMethod + "&from=" + from + "&displayName=" +displayName + "&subdomain=" + subdomain + "&abName=" + abName;
-
+				var url = "/Admin/AJAX?method=" + ajaxMethod + "&from=" + from + "&displayName=" +displayName + "&subdomain=" + subdomain + "&abName=" + abName + "&facetLabel=" +facetLabelInput.value;
 				$.getJSON(url, function (data) {
-					Pika.showMessage(data.title, data.body, 1,1);
+					Pika.showMessageWithButtons(data.title, data.body, data.buttons);
 				}).fail(Pika.ajaxFail);
 			});
 			return false;
@@ -141,7 +140,7 @@ Pika.Admin = (function(){
 		},
 		cloneLibrary: function(copyFromId, displayName, subdomain, abName)
 		{
-			return this.cloneLibraryHandler('cloneLibrary', copyFromId, displayName, subdomain, abName);
+			return this.cloneLibraryHandler('cloneLibrary', copyFromId, displayName, subdomain, abName, facetLabelInput);
 		}
 	};
 }(Pika.Admin || {}));
