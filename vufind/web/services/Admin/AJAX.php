@@ -646,6 +646,7 @@ class Admin_AJAX extends AJAXHandler {
                  $location->includeAllRecordsInDateAddedFacets = $copyFromLocation->includeAllRecordsInDateAddedFacets;
                  $location->includeAllRecordsInShelvingFacets = $copyFromLocation->includeAllRecordsInShelvingFacets;
                  $location->additionalLocationsToShowAvailabilityFor = $copyFromLocation->additionalLocationsToShowAvailabilityFor;
+                 $location->includeLibraryRecordsToInclude = $copyFromLocation->includeLibraryRecordsToInclude;
                  $facetsToCopy = $copyFromLocation->facets;
                  foreach ($facetsToCopy as $facetKey => $facet) {
                      $facet->locationId = $location->locationId;
