@@ -21,9 +21,6 @@ class SacramentoRecordProcessor extends IIIRecordProcessor {
 	private String kitKeeperMaterialType     = "o";
 	private String bibLevelLocationsSubfield = "a";
 
-	//TODO: These should be added to indexing profile
-	private String materialTypeSubField     = "d";
-
 	SacramentoRecordProcessor(GroupedWorkIndexer indexer, Connection pikaConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 		super(indexer, pikaConn, indexingProfileRS, logger, fullReindex);
 		availableStatus          = "-od(j";
@@ -83,39 +80,6 @@ class SacramentoRecordProcessor extends IIIRecordProcessor {
 		HashSet<String> translatedAudiences = translateCollection("target_audience", targetAudiences, identifier);
 		groupedWork.addTargetAudiences(translatedAudiences);
 		groupedWork.addTargetAudiencesFull(translatedAudiences);
-	}
-
-
-	public void loadPrintFormatInformation(RecordInfo recordInfo, Record record) {
-		String matType = MarcUtil.getFirstFieldVal(record, sierraRecordFixedFieldsTag + materialTypeSubField);
-		if (matType != null) {
-			if (!matType.equals("-") && !matType.equals(" ")) {
-				String translatedFormat = translateValue("material_type", matType, recordInfo.getRecordIdentifier());
-				if (translatedFormat != null && !translatedFormat.equals(matType)) {
-					String translatedFormatCategory = translateValue("format_category", matType, recordInfo.getRecordIdentifier());
-					recordInfo.addFormat(translatedFormat);
-					if (translatedFormatCategory != null) {
-						recordInfo.addFormatCategory(translatedFormatCategory);
-					}
-					// use translated value
-					String formatBoost = translateValue("format_boost", matType, recordInfo.getRecordIdentifier());
-					try {
-						Long tmpFormatBoostLong = Long.parseLong(formatBoost);
-						recordInfo.setFormatBoost(tmpFormatBoostLong);
-						return;
-					} catch (NumberFormatException e) {
-						logger.warn("Could not load format boost for format " + formatBoost + " profile " + profileType + "; Falling back to default format determination process");
-					}
-				} else {
-					logger.info("Material Type " + matType + " had no translation, falling back to default format determination.");
-				}
-			} else {
-				logger.info("Material Type for " + recordInfo.getRecordIdentifier() + " has empty value '" + matType + "', falling back to default format determination.");
-			}
-		} else {
-			logger.info(recordInfo.getRecordIdentifier() + " did not have a material type, falling back to default format determination.");
-		}
-		super.loadPrintFormatInformation(recordInfo, record);
 	}
 
 	@Override
