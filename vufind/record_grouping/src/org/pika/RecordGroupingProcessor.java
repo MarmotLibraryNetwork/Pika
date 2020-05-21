@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.sql.*;
 import java.util.*;
 import java.util.Date;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -50,6 +51,9 @@ class RecordGroupingProcessor {
 	private HashMap<String, String> mergedGroupedWorks = new HashMap<>();
 	private HashSet<String>         recordsToNotGroup  = new HashSet<>();
 	private Long                    updateTime         = new Date().getTime() / 1000;
+
+	private Pattern hoursMinutesPlaytimeDurationRegex = Pattern.compile("(\\d+) hrs?\\., (\\d+) min");
+	private Pattern minutesPlaytimeDurationRegex      = Pattern.compile("(\\d+) min");
 
 	/**
 	 * Default constructor for use by subclasses
@@ -274,10 +278,10 @@ class RecordGroupingProcessor {
 				String oo8Data = fixedField.getData();
 				if (oo8Data.length() > 20) {
 					String movieDuration = oo8Data.substring(18, 21);
-					if (movieDuration.equals("000")){
-						logger.info("movie 008 running time exceeds 999 minutes - " + identifier);
-					}
-					if (movieDuration.matches("^\\d+$")) {
+					if (movieDuration.equals("000")) {
+						logger.debug("movie 008 running time exceeds 999 minutes - " + identifier);
+						// We will try to parse from physical description instead
+					} else if (movieDuration.matches("^\\d+$")) {
 						// Is a numeric string
 						author = String.valueOf(roundOffTens(Integer.parseInt(movieDuration)));
 						// round to nearest tens value
@@ -285,7 +289,10 @@ class RecordGroupingProcessor {
 //						author = movieDuration.substring(0, 2) + "0";
 //						// Matching by 10 minute intervals, so exclude the final playtime digit and replace with a 0
 					} else {
-						logger.error("008 running time invalid : '" + oo8Data.substring(18, 21) + "' for " + identifier);
+						if (!movieDuration.equals("|||") && !movieDuration.equals("   ") && !movieDuration.equals("---")) {
+							// Don't log, for now, entries that are coded with these values (essentially denoting that record doesn't have the playtime info populated in 008)
+							logger.warn("008 running time invalid : '" + movieDuration + "' for " + identifier);
+						}
 					}
 				} else {
 					logger.error("008 not long enough to have a movie running time for " + identifier);
@@ -293,6 +300,25 @@ class RecordGroupingProcessor {
 			} else {
 				logger.warn("Missing 008 : " + identifier.toString());
 			}
+			// if any part of that failed, try parsing a playtime number from the physical description
+			if (author == null) {
+				DataField physicalDescriptionField = marcRecord.getDataField("300");
+				if (physicalDescriptionField != null && physicalDescriptionField.getSubfield('a') != null) {
+					final String physicalDescription = physicalDescriptionField.getSubfield('a').getData();
+					Matcher      playTimeMatcher     = hoursMinutesPlaytimeDurationRegex.matcher(physicalDescription);
+					if (playTimeMatcher.find()) {
+						int minutes = Integer.parseInt(playTimeMatcher.group(2)) + Integer.parseInt(playTimeMatcher.group(1)) * 60;
+						author = String.valueOf(roundOffTens(minutes));
+					} else {
+						playTimeMatcher = minutesPlaytimeDurationRegex.matcher(physicalDescription);
+						if (playTimeMatcher.find()) {
+							author = String.valueOf(roundOffTens(Integer.parseInt(playTimeMatcher.group(1))));
+						}
+					}
+				}
+			}
+			//TODO: ? set author to a phrase like "no playtime duration" if we found no value
+
 		} else {
 			DataField field100 = marcRecord.getDataField("100"); // Heading - Personal Name
 			if (field100 != null && field100.getSubfield('a') != null) {

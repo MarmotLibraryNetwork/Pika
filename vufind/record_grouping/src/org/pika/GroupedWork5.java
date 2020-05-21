@@ -53,7 +53,12 @@ public class GroupedWork5 extends GroupedWorkBase implements Cloneable {
 	@Override
 	void setAuthor(String author) {
 		originalAuthorName = author;
-		this.author = normalizeAuthor(author);
+		if (author.matches("\\d+")) {
+			// Movie running time as grouping author needs no normalization
+			this.author = author;
+		} else {
+			this.author = normalizeAuthor(author);
+		}
 	}
 
 	@Override
