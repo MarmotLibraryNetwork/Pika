@@ -332,16 +332,28 @@ class RecordGroupingProcessor {
 				DataField field110 = marcRecord.getDataField("110"); // Heading - Corporate Name
 				if (field110 != null && field110.getSubfield('a') != null) {
 					author = field110.getSubfield('a').getData();
-					if (field110.getSubfield('b') != null) {
-						author += " " + field110.getSubfield('b').getData();
+					for (Subfield subfield : field110.getSubfields('b')) {
+						if (subfield != null) {
+							String subordinate = subfield.getData();
+							if (subordinate != null && !subordinate.isEmpty()) {
+								author += " " + subordinate;
+							}
+						}
 					}
 				} else {
 					DataField field111 = marcRecord.getDataField("111"); // Meeting Name
 					if (field111 != null && field111.getSubfield('a') != null) {
 						author = field111.getSubfield('a').getData();
+						for (Subfield subfield : field111.getSubfields('e')) {
+							if (subfield != null) {
+								String subordinate = subfield.getData();
+								if (subordinate != null && !subordinate.isEmpty()) {
+									author += " " + subordinate;
+								}
+							}
+						}
 					} else {
 						DataField field700 = marcRecord.getDataField("700"); // Added Entry Personal Name
-						//TODO: combine multiple 700s ?
 						if (field700 != null && field700.getSubfield('a') != null) {
 							author = field700.getSubfield('a').getData();
 						} else {
@@ -349,11 +361,32 @@ class RecordGroupingProcessor {
 							if (field711 != null && field711.getSubfield('a') != null) {
 								// Check the 711 before the 710
 								author = field711.getSubfield('a').getData();
+								for (Subfield subfield : field711.getSubfields('e')) {
+									if (subfield != null) {
+										String subordinate = subfield.getData();
+										if (subordinate != null && !subordinate.isEmpty()) {
+											author += " " + subordinate;
+										}
+									}
+								}
 							} else {
 								DataField field710 = marcRecord.getDataField("710"); // Added Entry-Corporate Name
+								//First Indicator 0 - Inverted name; 2 - Name in direct order
+								// 1 - Jurisdiction name  TODO: Ignore juridiction names?
 								if (field710 != null && field710.getSubfield('a') != null) {
 									author = field710.getSubfield('a').getData();
-								} else {
+									//example : .b20599420
+									//710	1		|a United States.|b Federal Highway Administration.|0 http://id.loc.gov/authorities/names/n79032921.
+									for (Subfield subfield : field710.getSubfields('b')) {
+										if (subfield != null) {
+											String subordinate = subfield.getData();
+											if (subordinate != null && !subordinate.isEmpty()) {
+												author += " " + subordinate;
+											}
+										}
+									}
+
+									} else {
 									// 264		1	|a Washington :|b Printed by P. Force,|c 1837.
 									// 264		1	|a Alexandria, VA :|b distributed by Time Life,|c [2004, 1992]
 									DataField field264 = marcRecord.getDataField("264"); // Production, Publication, Distribution, Manufacture, and Copyright Notice.
@@ -366,6 +399,10 @@ class RecordGroupingProcessor {
 										// Another example
 										//245	0	0	|a Every Hero Tells a Story |h [videorecording] :|b Variety Show/|c Florissant Public Library.
 										//264		1	|a Colorado :|b publisher,|c 2015.
+										// another example of the 245c being a better option than the 264b
+										//245	0	0	|a Navigation rules and regulations handbook|h [electronic resource] /|c Department of Homeland Security, United States Coast Guard.
+										//264		1	|a [United States] :|b Skyhorse,|c 2018.
+
 									} else {
 										//260			|a Addison, IL :|b compiled by the Addison Public Library,|c 2004.
 										DataField field260 = marcRecord.getDataField("260"); // Publication, Distribution, etc.
