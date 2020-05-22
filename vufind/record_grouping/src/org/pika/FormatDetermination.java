@@ -341,18 +341,14 @@ public class FormatDetermination {
 	LinkedHashSet<String> getFormatsFromBib(Record record, RecordIdentifier identifier){
 		LinkedHashSet<String> printFormats = new LinkedHashSet<>();
 		String                leader       = record.getLeader().toString();
-		char                  leaderBit;
-		ControlField          fixedField   = (ControlField) record.getVariableField("008");
+		Character             leaderBit    = leader.length() >= 6 ? Character.toLowerCase(leader.charAt(6)) : null;
 
 		// check for music recordings quickly so we can figure out if it is music
 		// for category (need to do here since checking what is on the Compact
 		// Disc/Phonograph, etc is difficult).
-		if (leader.length() >= 6) {
-			leaderBit = leader.charAt(6);
-			if (Character.toUpperCase(leaderBit) == 'J') {
-				printFormats.add("MusicRecording");
-				//TODO: finish early?
-			}
+		if (leaderBit != null && leaderBit.equals('j')) {
+			printFormats.add("MusicRecording");
+			//TODO: finish early?
 		}
 		getFormatFromPublicationInfo(record, printFormats);
 		getFormatFromNotes(record, printFormats);
@@ -363,10 +359,11 @@ public class FormatDetermination {
 		getFormatFromDigitalFileCharacteristics(record, printFormats);
 		getGameFormatFrom753(record, printFormats);
 		if (printFormats.size() == 0) {
-			//Only get from fixed field information if we don't have anything yet since the catalogging of
+			//Only get from fixed field information if we don't have anything yet since the cataloging of
 			//fixed fields is not kept up to date reliably.  #D-87
 			getFormatFrom007(record, printFormats);
 			if (printFormats.size() == 0) {
+				ControlField          fixedField   = (ControlField) record.getVariableField("008");
 				getFormatFromLeader(printFormats, leader, fixedField);
 				if (printFormats.size() > 1){
 					if (logger.isDebugEnabled()) {
@@ -378,6 +375,10 @@ public class FormatDetermination {
 					logger.debug("Found more than 1 format for " + identifier + " looking at just 007");
 				}
 			}
+		}
+
+		if (leaderBit != null) {
+			accompanyingMaterialCheck(leaderBit, printFormats);
 		}
 
 		if (printFormats.size() == 0){
@@ -415,9 +416,32 @@ public class FormatDetermination {
 				printFormats.add("4KUltraBlu-Ray");
 			if (curField.equalsIgnoreCase("Blu-Ray")){
 				printFormats.add("Blu-ray");
+			}else if (curField.equalsIgnoreCase("DVD-ROM") || curField.equalsIgnoreCase("DVDROM")){
+				printFormats.add("CDROM");
 			}else if (curField.equalsIgnoreCase("DVD video")){
 				printFormats.add("DVD");
 			}
+		}
+	}
+
+	private void accompanyingMaterialCheck(char recordTypefromLeader, LinkedHashSet<String> printFormats){
+		switch (recordTypefromLeader){
+			case 'a' :
+				// Language material  (text/books generally)
+				if (printFormats.contains("CDROM")){
+					printFormats.clear();
+					printFormats.add("BookWithCDROM");
+					break;
+				}
+				if (printFormats.contains("DVD")){
+					printFormats.clear();
+					printFormats.add("BookWithDVD");
+					break;
+				}
+				if (printFormats.contains("VideoDisc")){
+					printFormats.clear();
+					printFormats.add("BookWithVideoDisc");
+				}
 		}
 	}
 
@@ -642,6 +666,8 @@ public class FormatDetermination {
 				printFormats.add("VideoCassette");
 			}else if (titleMedium.contains("blu-ray")){
 				printFormats.add("Blu-ray");
+			}else if (titleMedium.contains("dvd-rom") || titleMedium.contains("dvdrom")){
+				printFormats.add("CDROM");
 			}else if (titleMedium.contains("dvd")){
 				printFormats.add("DVD");
 			}
@@ -739,6 +765,8 @@ public class FormatDetermination {
 							result.add("4KUltraBlu-Ray");
 						} else if (physicalDescriptionData.contains("bluray") || physicalDescriptionData.contains("blu-ray")) {
 							result.add("Blu-ray");
+						} else if (physicalDescriptionData.contains("cd-rom") || physicalDescriptionData.contains("cdrom")) {
+							result.add("CDROM");
 						} else if (physicalDescriptionData.contains("computer optical disc")) {
 							result.add("Software");
 						} else if (physicalDescriptionData.contains("sound cassettes")) {
@@ -775,6 +803,8 @@ public class FormatDetermination {
 							result.add("4KUltraBlu-Ray");
 						} else if (sysDetailsValue.contains("bluray") || sysDetailsValue.contains("blu-ray")) {
 							result.add("Blu-ray");
+						} else if (sysDetailsValue.contains("dvd-rom") || sysDetailsValue.contains("dvdrom")) {
+							result.add("CDROM");
 						} else if (sysDetailsValue.contains("dvd")) {
 							result.add("DVD");
 						} else if (sysDetailsValue.contains("vertical file")) {
