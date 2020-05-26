@@ -658,6 +658,8 @@ public class FormatDetermination {
 				printFormats.add("eVideo");
 			}else if (titleMedium.contains("ejournal")){
 				printFormats.add("eJournal");
+			}else if (titleMedium.contains("playaway view")){
+				printFormats.add("PlayawayView");
 			}else if (titleMedium.contains("playaway")){
 				printFormats.add("Playaway");
 			}else if (titleMedium.contains("periodical")){
@@ -709,7 +711,9 @@ public class FormatDetermination {
 			if (sysDetailsNote.getSubfield('b') != null) {
 				String sysDetailsValue = sysDetailsNote.getSubfield('b').getData()
 						.toLowerCase();
-				if (sysDetailsValue.contains("playaway")) {
+				if (sysDetailsValue.contains("playaway view")) {
+					result.add("PlayawayView");
+				}else if (sysDetailsValue.contains("playaway")) {
 					result.add("Playaway");
 				}else if (sysDetailsValue.contains("go reader")) {
 					result.add("GoReader");
@@ -793,11 +797,13 @@ public class FormatDetermination {
 			if (sysDetailsNote2 != null) {
 				if (sysDetailsNote2.getSubfield('a') != null) {
 					String sysDetailsValue = sysDetailsNote2.getSubfield('a').getData().toLowerCase();
-					String gameFormat = getGameFormatFromValue(sysDetailsValue);
+					String gameFormat      = getGameFormatFromValue(sysDetailsValue);
 					if (gameFormat != null) {
 						result.add(gameFormat);
 					} else {
-						if (sysDetailsValue.contains("playaway")) {
+						if (sysDetailsValue.contains("playaway view")) {
+							result.add("PlayawayView");
+						} else if (sysDetailsValue.contains("playaway")) {
 							result.add("Playaway");
 						} else if (find4KUltraBluRayPhrases(sysDetailsValue)) {
 							result.add("4KUltraBlu-Ray");
@@ -816,16 +822,22 @@ public class FormatDetermination {
 		}
 
 		// Check for formats in the 500 tag
-		DataField noteField = record.getDataField("500");
-		if (noteField != null) {
-			if (noteField.getSubfield('a') != null) {
-				String noteValue = noteField.getSubfield('a').getData().toLowerCase();
-				if (noteValue.contains("vertical file")) {
-					result.add("VerticalFile");
-				}else if (noteValue.contains("vox book")) {
-					result.add("VoxBooks");
-				}else if (noteValue.contains("wonderbook")) {
-					result.add("WonderBook");
+		List<DataField> noteFields = record.getDataFields("500");
+		for (DataField noteField : noteFields) {
+			if (noteField != null) {
+				if (noteField.getSubfield('a') != null) {
+					String noteValue = noteField.getSubfield('a').getData().toLowerCase();
+					if (noteValue.contains("vox book")) {
+						result.add("VoxBooks");
+					} else if (noteValue.contains("wonderbook")) {
+						result.add("WonderBook");
+					} else if (noteValue.contains("playaway view")) {
+						result.add("PlayawayView");
+					} else if (noteValue.contains("playaway")) {
+						result.add("Playaway");
+					} else if (noteValue.contains("vertical file")) {
+						result.add("VerticalFile");
+					}
 				}
 			}
 		}
@@ -914,6 +926,8 @@ public class FormatDetermination {
 						String subfieldData = subfield.getData().toLowerCase();
 						if (subfieldData.contains("large type") || subfieldData.contains("large print")) {
 							result.add("LargePrint");
+						}else if (subfieldData.contains("playaway view")) {
+							result.add("PlayawayView");
 						}else if (subfieldData.contains("playaway")) {
 							result.add("Playaway");
 						}else if (subfieldData.contains("graphic novel")) {
@@ -950,6 +964,8 @@ public class FormatDetermination {
 						String subfieldData = subfield.getData().toLowerCase();
 						if (subfieldData.contains("large type")) {
 							result.add("LargePrint");
+						}else if (subfieldData.contains("playaway view")) {
+							result.add("PlayawayView");
 						}else if (subfieldData.contains("playaway")) {
 							result.add("Playaway");
 						}else if (subfieldData.contains("graphic novel")) {

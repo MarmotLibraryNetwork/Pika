@@ -321,6 +321,8 @@ class RecordGroupingProcessor {
 
 		} else {
 			DataField field100 = marcRecord.getDataField("100"); // Heading - Personal Name
+			//  First Indicator: 0 - Forename (direct order); 1 - Surname (inverted order);
+			//    3 - Family name (Either direct or inverted order)
 			if (field100 != null && field100.getSubfield('a') != null) {
 				author = field100.getSubfield('a').getData();
 				// has lastname, rest of name:
@@ -354,6 +356,8 @@ class RecordGroupingProcessor {
 						}
 					} else {
 						DataField field700 = marcRecord.getDataField("700"); // Added Entry Personal Name
+						//  First Indicator: 0 - Forename (direct order); 1 - Surname (inverted order);
+						//    3 - Family name (Either direct or inverted order)
 						if (field700 != null && field700.getSubfield('a') != null) {
 							author = field700.getSubfield('a').getData();
 						} else {
