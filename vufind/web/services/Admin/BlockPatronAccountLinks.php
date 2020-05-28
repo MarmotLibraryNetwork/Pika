@@ -105,4 +105,9 @@ class Admin_BlockPatronAccountLinks extends ObjectEditor {
  		If you suspect that someone has been accessing other accounts incorrectly, you should issue new cards or change PINs for the accounts they have accessed in addition to blocking them.
 		</p>';
 	}
+
+	function getListInstructions(){
+		return '';
+	}
+
 }

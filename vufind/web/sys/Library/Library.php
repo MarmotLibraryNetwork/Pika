@@ -829,7 +829,7 @@ class Library extends DB_DataObject {
 
 					'prospectorSection' => array(
 						'property' => 'prospectorSection', 'type' => 'section', 'label' => $innReachEncoreName . ' (III INN-Reach & Encore)', 'hideInLists' => true,
-						'helpLink' => 'https://docs.google.com/document/d/1nRimGRMOmpeVDgTcuQpVC2pqdA1uPBNVZKPPvBTM17', 'properties' => array(
+						'helpLink' => 'https://docs.google.com/document/d/1nRimGRMOmpeVDgTcuQpVC2pqdA1uPBNVZKPPvBTM17Y', 'properties' => array(
 							'enableProspectorIntegration'        => array('property' => 'enableProspectorIntegration', 'type' => 'checkbox', 'label' => 'Enable ' . $innReachEncoreName . ' Integration', 'description' => 'Whether or not ' . $innReachEncoreName . ' Integrations should be displayed for this library.', 'hideInLists' => true, 'default' => 1),
 							'repeatInProspector'                 => array('property' => 'repeatInProspector', 'type' => 'checkbox', 'label' => 'Repeat In ' . $innReachEncoreName, 'description' => 'Turn on to allow repeat search in ' . $innReachEncoreName . ' functionality.', 'hideInLists' => true, 'default' => 1),
 							'showProspectorResultsAtEndOfSearch' => array('property' => 'showProspectorResultsAtEndOfSearch', 'type' => 'checkbox', 'label' => 'Show ' . $innReachEncoreName . ' Results At End Of Search', 'description' => 'Whether or not ' . $innReachEncoreName . ' Search Results should be shown at the end of search results.', 'hideInLists' => true, 'default' => 1),
@@ -1279,7 +1279,7 @@ class Library extends DB_DataObject {
 			}
 			return $this->archiveMoreDetailsOptions;
 		}elseif ($name == "facets"){
-			if (!isset($this->facets) ){
+			if (!isset($this->facets) && $this->libraryId){
 				$this->facets = $this->getOneToManyOptions('LibraryFacetSetting', 'weight');
 			}
 			return $this->facets;
@@ -1468,7 +1468,7 @@ class Library extends DB_DataObject {
 			$this->saveBrowseCategories();
 			$this->saveMoreDetailsOptions();
 			$this->saveArchiveMoreDetailsOptions();
-			$this->saveMaterialsFormats();
+
 			$this->saveExploreMoreBar();
 			$this->saveCombinedResultSections();
 			$this->saveHooplaSettings();
