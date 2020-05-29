@@ -1356,6 +1356,17 @@ class DBMaintenance extends Admin_Admin {
 					)
 				),
 
+                'add_custom_covers_table' => array(
+                  'title'           => 'Add Custom Covers',
+                  'description'     => 'Database tables to support custom cover uploads',
+                  'continueOnError' => false,
+                  'sql'             => array(
+                      "CREATE TABLE IF NOT EXISTS covers (
+				    coverId INT(10) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+				    cover VARCHAR(255);"
+                  )
+                ),
+
 			)
 		);
 	}
