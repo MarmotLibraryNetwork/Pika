@@ -41,6 +41,7 @@ class Admin_AJAX extends AJAXHandler {
         'copyFacetSettingsFromLocation',
         'cloneLocation',
         'cloneLibrary',
+        'fileExists',
 
 	);
 
@@ -897,6 +898,18 @@ class Admin_AJAX extends AJAXHandler {
         }
         return $results;
     }
+
+function fileExists(){
+        $filename = trim($_REQUEST['fileName']);
+        $storagePath = trim($_REQUEST['storagePath']);
+
+        if(file_exists($storagePath . DIRECTORY_SEPARATOR . "thumbnail" . DIRECTORY_SEPARATOR . $filename))
+        {
+            return array("exists"=>"true");
+        }
+        return array("exists"=>"false");
+}
+
 	//	function markProfileForRegrouping(){
 //		$result = array(
 //			'success' => false,

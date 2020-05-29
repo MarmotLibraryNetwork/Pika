@@ -212,6 +212,10 @@ class DataObjectUtil {
 						//Filename is the name of the object + the original filename
 						global $configArray;
 						$destFileName = $propertyName . $_FILES[$propertyName]['name'];
+						if($property['customName'])
+                        {
+                            $destFileName = $_FILES[$propertyName]['name'];
+                        }
 						$destFolder   = $property['storagePath'] ?? $configArray['Site']['local'] . '/files';
 						$destFullPath = $destFolder . '/original/' . $destFileName;
 						$pathToThumbs = $destFolder . '/thumbnail';
