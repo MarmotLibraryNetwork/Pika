@@ -205,7 +205,7 @@
 			{/if}
 
 			{if $loggedIn && $userRoles && (in_array('libraryAdmin', $userRoles) || in_array('opacAdmin', $userRoles) || in_array('cataloging', $userRoles))}
-				{if in_array($action, array('IndexingStats', 'IndexingProfiles', 'TranslationMaps'))}
+				{if in_array($action, array('IndexingStats', 'IndexingProfiles', 'TranslationMaps', 'Covers'))}
 					{assign var="curSection" value=true}
 				{else}
 					{assign var="curSection" value=false}
@@ -225,6 +225,7 @@
 							<div class="adminMenuLink{if $action == "IndexingProfiles"} active{/if}"><a href="/Admin/IndexingProfiles">Indexing Profiles</a></div>
                 {/if}
 							<div class="adminMenuLink{if $action == "TranslationMaps"} active{/if}"><a href="/Admin/TranslationMaps">Translation Maps</a></div>
+							<div class="adminMenuLink{if $action == "Covers"} active{/if}"><a href="/Admin/Covers">Upload Custom Cover</a></div>
 						</div>
 					</div>
 				</div>
