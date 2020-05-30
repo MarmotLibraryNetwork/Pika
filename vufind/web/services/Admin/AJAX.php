@@ -890,7 +890,7 @@ class Admin_AJAX extends AJAXHandler {
 
                 if ($library->insert()) {
                     $editLink = "/Admin/Libraries?objectAction=edit&id=" . $library->libraryId;
-                    $results['body'] = '<div class="alert alert-success">Library Cloned.</div><div>You may need to edit the following settings:<br /><ul><li>theme name</li><li>home link</li><li>contact links</li><li>ILS code</li><li>Sierra scope</li><li>p-types</li><li>self registration</li><li>free text fields in the search facets section</li><li>browse categories</li><li>materials request settings</li><li>Hoopla info</li><li>google analytics code</li><li>sidebar links</li><li>records to include</li></ul></div>';
+                    $results['body'] = '<div class="alert alert-success">Library Cloned.</div><div>You may need to edit the following settings:<br /><ul><li>theme name</li><li>home link</li><li>contact links</li><li>ILS code</li><li>Sierra scope</li><li>p-types</li><li>self registration</li><li>free text fields in the search facets section</li><li>browse categories</li><li>materials request settings</li><li>Hoopla info</li><li>google analytics code</li><li>sidebar links</li><li>records owned</li><li>records to include</li></ul></div>';
                     $results['buttons'] = "<button class='btn btn-default' type= 'button' title='SaveReturn' onclick='location.href=\"/Admin/Libraries\";'>Return to Library List</button><button class='btn btn-primary' type= 'button' title='SaveEdit' onclick='location.href=\"" . $editLink . "\";'>Edit New Library</button>";
                 }
 
