@@ -730,7 +730,7 @@ class Admin_AJAX extends AJAXHandler {
                  if ($location->insert())
                  {
                      $editLink = "/Admin/Locations?objectAction=edit&id=" . $location->locationId;;
-                     $results['body'] = '<div class="alert alert-success">Location Cloned.</div>';
+                     $results['body'] = '<div class="alert alert-success">Location Cloned.</div><div>You may need to edit the following settings:<br /><ul><li>library</li><li>address</li><li>nearby location</li><li>valid pickup branch</li><li>free text fields in search facets</li><li>browse categories</li><li>Overdrive and Hoopla settings</li><li>hours</li><li>records owned</li></div>';
                      $results['buttons'] = "<button class='btn btn-default' type= 'button' title='SaveReturn' onclick='location.href=\"/Admin/Locations\";'>Return to Location List</button><button class='btn btn-primary' type= 'button' title='SaveEdit' onclick='location.href=\"" . $editLink . "\";'>Edit New Location</button>";
                  }
                  
