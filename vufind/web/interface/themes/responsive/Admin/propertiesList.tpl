@@ -100,6 +100,8 @@
 								{/if}
 							{elseif $property.type == 'checkbox'}
 								{if ($propValue == 1)}Yes{else}No{/if}
+							{elseif $property.type == 'image'}
+								{$propValue}
 							{else}
 								Unknown type to display {$property.type}
 							{/if}
