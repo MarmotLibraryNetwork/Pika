@@ -31,7 +31,7 @@ class Covers extends ObjectEditor
      */
     function getPageTitle()
     {
-        return 'Custom Book Covers';
+        return 'Custom Covers';
     }
 
     /**
@@ -74,6 +74,6 @@ class Covers extends ObjectEditor
     }
 
     function getInstructions(){
-        return 'For more information about records and custom book covers, see the <a href="https://docs.google.com/document/d/1bUvJcSIxDXbsFFuPR2tO7pXdlPivy8c4Cr3gBsGtJ5g">online documentation</a>.';
+        return 'For more information about records and custom covers, see the <a href="https://docs.google.com/document/d/1bUvJcSIxDXbsFFuPR2tO7pXdlPivy8c4Cr3gBsGtJ5g">online documentation</a>.';
     }
 }
