@@ -1363,7 +1363,8 @@ class DBMaintenance extends Admin_Admin {
                   'sql'             => array(
                       "CREATE TABLE IF NOT EXISTS covers (
 				    coverId INT(10) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-				    cover VARCHAR(255);"
+				    cover VARCHAR(255)
+				    )ENGINE=MYISAM  DEFAULT CHARSET=utf8;"
                   )
                 ),
 
