@@ -192,7 +192,7 @@ class Location extends DB_DataObject {
 		$hooplaSettingsStructure = LocationHooplaSettings::getObjectStructure();
 		unset($hooplaSettingsStructure['locationId']);
 
-		$browseCategoryInstructions = 'For more information on how to setup browse categories, see the <a href="https://docs.google.com/document/d/11biGMw6UDKx9UBiDCCj_GBmatx93UlJBLMESNf_RtDU">online documentation</a>.';
+		$browseCategoryInstructions = 'For more information on how to setup browse categories, see the <a href="https://docs.google.com/document/d/1ZpdQCwa27hw002bjnBQeWGF7YlIrqz0rUV-xwWe6u3k">online documentation</a>.';
 
 		$structure = array(
 			'locationId'                      => array('property' => 'locationId', 'type' => 'label', 'label' => 'Location Id', 'description' => 'The unique id of the location within the database'),
@@ -216,7 +216,7 @@ class Location extends DB_DataObject {
 
 			'displaySection' => array(
 				'property' => 'displaySection', 'type' => 'section', 'label' => 'Basic Display', 'hideInLists' => true,
-                'helpLink'   => 'https://docs.google.com/document/d/18XXYAn3m9IGbjKwDGluFhPoHDXdIFUhdgmoIEdgRVcM',
+                'helpLink'   => 'https://docs.google.com/document/d/1C7T7SYSKDCX8mzBXj8WomzG4UVukVw9OllGQmWljUrs',
 				'properties' => array(
 					array('property' => 'homeLink', 'type' => 'text', 'label' => 'Home Link', 'description' => 'The location to send the user when they click on the home button or logo.  Use default or blank to go back to the vufind home location.', 'hideInLists' => true, 'size' => '40'),
 					array('property' => 'additionalCss', 'type' => 'textarea', 'label' => 'Additional CSS', 'description' => 'Extra CSS to apply to the site.  Will apply to all pages.', 'hideInLists' => true),
@@ -226,7 +226,7 @@ class Location extends DB_DataObject {
 
 			'ilsSection' => array(
 				'property' => 'ilsSection', 'type' => 'section', 'label' => 'ILS/Account Integration', 'hideInLists' => true,
-				'helpLink' => 'https://docs.google.com/document/d/1SmCcWYIV8bnUEaGu4HYvyiF8iqOKt06ooBbJukkJdO8',
+				'helpLink' => 'https://docs.google.com/document/d/1337l_JDZAZDuSCugRWpHa4CVAfBBm8SMrAlda6hdf5o',
 				'properties' => array(
 					array('property' => 'holdingBranchLabel', 'type' => 'text', 'label' => 'Holding Branch Label', 'description' => 'The label used within in the ILS'),
 					array('property' => 'scope', 'type' => 'text', 'label' => 'Scope', 'description' => 'The scope for the system in Sierra to refine holdings to the branch.  If there is no scope defined for the branch, this can be set to 0.'),
@@ -380,7 +380,7 @@ class Location extends DB_DataObject {
 			// Browse Category Section //
 			array(
 				'property'   => 'browseCategorySection', 'type' => 'section', 'label' => 'Browse Categories', 'hideInLists' => true, 'instructions' => $browseCategoryInstructions,
-				'helpLink' => 'https://docs.google.com/document/d/11biGMw6UDKx9UBiDCCj_GBmatx93UlJBLMESNf_RtDU',
+				'helpLink' => 'https://docs.google.com/document/d/1ZpdQCwa27hw002bjnBQeWGF7YlIrqz0rUV-xwWe6u3k',
                 'properties' => array(
 					'defaultBrowseMode'         => array(
 						'property' => 'defaultBrowseMode', 'type' => 'enum', 'label' => 'Default Viewing Mode for Browse Categories', 'description' => 'Sets how browse categories will be displayed when users haven\'t chosen themselves.', 'hideInLists' => true,
