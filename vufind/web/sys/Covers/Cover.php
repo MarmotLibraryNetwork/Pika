@@ -20,7 +20,7 @@ class Cover extends DB_DataObject
     }
 
     function keys(){
-        return Array('coverId');
+        return array('coverId');
     }
 
     function getKeyOther(){
