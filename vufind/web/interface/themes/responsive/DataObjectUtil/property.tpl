@@ -110,7 +110,6 @@
 								<figcaption>{$propValue}</figcaption>
 							</figure>
 						{/if}
-			<br>
 
 			{if $propName != "cover"}
 			<div class="checkbox" ><label for="remove{$propName}">Remove {$propName}<input type="checkbox"  name='remove{$propName}' id='remove{$propName}'></label></div>
