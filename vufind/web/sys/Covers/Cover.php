@@ -41,6 +41,14 @@ class Cover extends DB_DataObject
     function getImageUrl($size = 'medium'){
         return $this->cover ? '/customcover.php?image=' . $this->cover . '&size=' . $size: 'interface/themes/default/images/noCover2.png';
     }
+
+    function delete($useWhere = false){
+        global $configArray;
+        $storagePath = $configArray['Site']['coverPath'];
+        $coverPath = $storagePath . DIRECTORY_SEPARATOR . "original" . DIRECTORY_SEPARATOR . $this->cover;
+        unlink($coverPath);
+        parent::delete($useWhere);
+    }
 }
 
 
