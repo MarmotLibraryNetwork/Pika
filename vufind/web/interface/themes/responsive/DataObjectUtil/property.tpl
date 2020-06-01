@@ -100,14 +100,15 @@
 				{if $property.type == 'image'}
 						<br />
 						{if $property.storagePath}
-							<img src='{$object->getImageUrl('medium')}'><br />{$propValue}<br />
+							<img src='{$object->getImageUrl('large')}' style="width:175px;height:auto;"><br />{$propValue}<br />
 {*							<img src='{$property.storagePath}/thumbnail/{$propValue}'>{$propValue}*}
 						{else}
 							<img src='/files/thumbnail/{$propValue}'>{$propValue}
 						{/if}
 
-
+			{if $propName != "cover"}
 			<div class="checkbox" ><label for="remove{$propName}">Remove {$propName}<input type="checkbox"  name='remove{$propName}' id='remove{$propName}'></label></div>
+				{/if}
 					<input type="hidden" name="currentName" id="currentName" value='{$propValue|escape}';
 					<br>
 				{else}
