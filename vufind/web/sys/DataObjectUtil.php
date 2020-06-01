@@ -155,7 +155,8 @@ class DataObjectUtil {
 				}
 				break;
 			case 'integer':
-				$object->$propertyName = ctype_digit($_REQUEST[$propertyName]) ? $_REQUEST[$propertyName] : 0;
+				$object->$propertyName = ctype_digit(ltrim($_REQUEST[$propertyName], '-')) ? $_REQUEST[$propertyName] : 0;
+				//the ltrim makes us allow for negative integers as well. eg. -1
 				break;
 			case 'currency':
 				if (preg_match('/\\$?\\d*\\.?\\d*/', $_REQUEST[$propertyName])){
