@@ -33,7 +33,7 @@ class Cover extends DB_DataObject
         $structure = array(
 
             'coverId'   =>  array('property' => 'coverId', 'type' => 'label', 'label' => 'Cover Id', 'description' => 'The unique id of the cover within the database', 'hideInLists'=>true),
-            'cover'     =>  array('property' => 'cover', 'type' => 'image',	'storagePath' => $storagePath, 'thumbWidth' => 65, 'mediumWidth' => 190, 'customName' => true, 'label' => 'Cover Image', 'description' => 'Image of the cover.'),
+            'cover'     =>  array('property' => 'cover', 'type' => 'image',	'storagePath' => $storagePath, 'customName' => true, 'label' => 'Cover Image', 'description' => 'Image of the cover.'),
 //            'fileName'  => array('property'=>'fileName', 'type'=>'text', 'maxLength'=>100, 'label'=>'File Name ', 'description'=>'Name of the file'),
         );
         return $structure;

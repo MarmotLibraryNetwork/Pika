@@ -903,7 +903,7 @@ function fileExists(){
         $filename = trim($_REQUEST['fileName']);
         $storagePath = trim($_REQUEST['storagePath']);
 
-        if(file_exists($storagePath . DIRECTORY_SEPARATOR . "thumbnail" . DIRECTORY_SEPARATOR . $filename))
+        if(file_exists($storagePath . DIRECTORY_SEPARATOR . "original" . DIRECTORY_SEPARATOR . $filename))
         {
             return array("exists"=>"true");
         }

@@ -205,7 +205,7 @@
 			{/if}
 
 			{if $loggedIn && $userRoles && (in_array('libraryAdmin', $userRoles) || in_array('opacAdmin', $userRoles) || in_array('cataloging', $userRoles))}
-				{if in_array($action, array('IndexingStats', 'IndexingProfiles', 'TranslationMaps', 'Covers'))}
+				{if in_array($action, array('IndexingStats', 'IndexingProfiles', 'TranslationMaps'))}
 					{assign var="curSection" value=true}
 				{else}
 					{assign var="curSection" value=false}
