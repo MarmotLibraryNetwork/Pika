@@ -10,6 +10,7 @@ Visit our catalog at https://catalog.saclibrary.org/
 Click the login button at the top of the page
 Enter your name, library card number and pin
 Click Login
+
 WHAT CAN YOU DO WITH YOUR CARD?
 
 With your library card, you can borrow physical library materials and download free ebooks, audiobooks and music [https://www.saclibrary.org/Books/Digital-Media]. Learn more about how you can access our digital collection [http://www.saclibrary.org/Books/Digital-Media/Digital-Services-Help].
