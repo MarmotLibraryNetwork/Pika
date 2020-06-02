@@ -98,18 +98,23 @@
 		{elseif $property.type == 'image' || $property.type == 'file'}
 			{if $propValue}
 				{if $property.type == 'image'}
-						<br />
+						<br>
 						{if $property.storagePath}
-							<img src='{$object->getImageUrl('large')}' style="width:175px;height:auto;"><br />{$propValue}<br />
-{*							<img src='{$property.storagePath}/thumbnail/{$propValue}'>{$propValue}*}
+							<figure>
+								<img src='{$object->getImageUrl('large')}' alt="{$propValue}" style="max-width:175px;height:auto;">
+								<figcaption>{$propValue}</figcaption>
+							</figure>
 						{else}
-							<img src='/files/thumbnail/{$propValue}'>{$propValue}
+							<figure>
+								<img src='/files/thumbnail/{$propValue}' alt="{$propValue}">
+								<figcaption>{$propValue}</figcaption>
+							</figure>
 						{/if}
 
 			{if $propName != "cover"}
 			<div class="checkbox" ><label for="remove{$propName}">Remove {$propName}<input type="checkbox"  name='remove{$propName}' id='remove{$propName}'></label></div>
-				{/if}
-					<input type="hidden" name="currentName" id="currentName" value='{$propValue|escape}';
+			{/if}
+					<input type="hidden" name="currentName" id="currentName" value='{$propValue|escape}'>
 					<br>
 				{else}
 					Existing file: {$propValue}
@@ -120,7 +125,7 @@
 			{* Display a table of the association with the ability to add and edit new values *}
 			<div class="row" >
 				<div class="col-md-12 custom-file">
-					<input type="file" name='{$propName}' id='{$propName}' value="{$propValue}" class="custom-file-input" />
+					<input type="file" name='{$propName}' id='{$propName}' value="{$propValue}" class="custom-file-input">
 					{*<label class="custom-file-label" for='{$propName}'>Choose File</label>*}
 				</div>
 			</div>
@@ -172,7 +177,7 @@
 					{
 						if (data.exists == "true")
 							{
-								$("<br /><div class='row'><div class='col-md-12'><div id='existsAlert' class='alert-danger'>Filename Already Exists - submitting will replace an existing file. <label for='overWriteOverRide'>Overwrite: </label><input type='checkbox' id='overWriteOverRide'></div></div></div>").insertAfter(prop);
+								$("<br /><div class='row'><div class='col-md-12'><div id='existsAlert' class='alert alert-danger'>Filename Already Exists - submitting will replace an existing file. <label for='overWriteOverRide'>Overwrite: </label><input type='checkbox' id='overWriteOverRide'></div></div></div>").insertAfter(prop);
 
 								$(':input[type="submit"]').prop('disabled', true);
 								$("#overWriteOverRide").change(function() {
