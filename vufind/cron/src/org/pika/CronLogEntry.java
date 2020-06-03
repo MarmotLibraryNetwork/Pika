@@ -37,7 +37,7 @@ public class CronLogEntry {
 	}
 	
 	public String getNotesHtml() {
-		StringBuffer notesText = new StringBuffer("<ol class='cronNotes'>");
+		StringBuilder notesText = new StringBuilder("<ol class='cronNotes'>");
 		for (String curNote : notes){
 			String cleanedNote = curNote;
 			cleanedNote = cleanedNote.replaceAll("<pre>", "<code>");

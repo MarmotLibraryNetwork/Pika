@@ -33,7 +33,6 @@ require_once ROOT_DIR . '/RecordDrivers/Interface.php';
 class GroupedWorkDriver extends RecordInterface {
 
 	protected $fields;
-	protected $scopingEnabled = true;
 	public $isValid = true;
 
 	/**
@@ -141,10 +140,6 @@ class GroupedWorkDriver extends RecordInterface {
 		$edition = str_replace('fifteenth', '15', $edition);
 		$edition = preg_replace('/\D/', '', $edition);
 		return $edition;
-	}
-
-	public function setScopingEnabled($enabled){
-		$this->scopingEnabled = $enabled;
 	}
 
 	public function getContributors(){

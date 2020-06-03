@@ -21,47 +21,57 @@ require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 require_once ROOT_DIR . '/sys/Network/subnet.php';
 
-class IPAddresses extends ObjectEditor
-{
+class IPAddresses extends ObjectEditor {
 	function getObjectType(){
 		return 'subnet';
 	}
+
 	function getToolName(){
 		return 'IPAddresses';
 	}
+
 	function getPageTitle(){
 		return 'Location IP Addresses';
 	}
+
 	function getAllObjects(){
 		$object = new subnet();
 		$object->orderBy('ip');
 		$object->find();
-		$objectList = array();
+		$objectList = [];
 		while ($object->fetch()){
 			$objectList[$object->id] = clone $object;
 		}
 		return $objectList;
 	}
+
 	function getObjectStructure(){
 		//Look lookup information for display in the user interface
 		$locationLookupList = Location::getLocationLookupList();
 
-		$structure = array(
-          'ip' => array('property'=>'ip', 'type'=>'text', 'label'=>'IP Address', 'description'=>'The IP Address to map to a location formatted as xxx.xxx.xxx.xxx/mask'),
-          'location' => array('property'=>'location', 'type'=>'text', 'label'=>'Display Name', 'description'=>'Descriptive information for the IP Address for internal use'),
-          'locationid' => array('property'=>'locationid', 'type'=>'enum', 'values'=>$locationLookupList, 'label'=>'Location', 'description'=>'The Location which this IP address maps to'),
-          'isOpac' => array('property' => 'isOpac', 'type' => 'checkbox', 'label' => 'Treat as a Public OPAC', 'description' => 'This IP address will be treated as a public OPAC with autologout features turned on.', 'default' => true),
-		);
+		$structure = [
+			'ip'         => ['property' => 'ip', 'type' => 'text', 'label' => 'IP Address', 'description' => 'The IP Address to map to a location formatted as xxx.xxx.xxx.xxx/mask'],
+			'location'   => ['property' => 'location', 'type' => 'text', 'label' => 'Display Name', 'description' => 'Descriptive information for the IP Address for internal use'],
+			'locationid' => ['property' => 'locationid', 'type' => 'enum', 'values' => $locationLookupList, 'label' => 'Location', 'description' => 'The Location which this IP address maps to'],
+			'isOpac'     => ['property' => 'isOpac', 'type' => 'checkbox', 'label' => 'Treat as a Public OPAC', 'description' => 'This IP address will be treated as a public OPAC with autologout features turned on.', 'default' => true],
+		];
 		return $structure;
 	}
+
 	function getPrimaryKeyColumn(){
 		return 'ip';
 	}
+
 	function getIdKeyColumn(){
 		return 'id';
 	}
+
 	function getAllowableRoles(){
-		return array('opacAdmin');
+		return ['opacAdmin'];
+	}
+
+	function getInstructions(){
+		return 'For more information on how to use IP Addresses, see the <a href="https://docs.google.com/document/d/1M9UUzFUIV9G0KrsttgGV-MZK5zL7qdDx7I0-sIu5ZYc/edit">online documentation</a>.';
 	}
 
 }

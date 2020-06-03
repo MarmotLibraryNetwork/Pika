@@ -55,6 +55,12 @@ class Locations extends ObjectEditor {
 		return $locationList;
 	}
 
+    function customListActions(){
+        return array(
+            array('label' => 'Clone Location', 'onclick' =>'Pika.Admin.cloneLocationFromSelection()'),
+        );
+    }
+
 	function getObjectStructure(){
 		return Location::getObjectStructure();
 	}
@@ -76,13 +82,10 @@ class Locations extends ObjectEditor {
 		return UserAccount::userHasRole('opacAdmin');
 	}
 
-
 	function canDelete(){
 		$user = UserAccount::getLoggedInUser();
 		return UserAccount::userHasRole('opacAdmin');
 	}
-
-
 
 	function copyDataFromLocation(){
 		$locationId = $_REQUEST['id'];
@@ -135,12 +138,6 @@ class Locations extends ObjectEditor {
 			$interface->setTemplate('../Admin/copyLocationFacets.tpl');
 		}
 	}
-    function cloneLocation(){
-        global $interface;
-        $interface->setTemplate('cloneLocation.tpl');
-    }
-
-
 
 	function getInstructions(){
 		return 'For more information about Location Setting configuration, see the <a href="https://docs.google.com/document/d/1DO7DfrslDm2DXUYul0hKAh8u5pGmjwyQABVdmb6javM/edit?ts=5696ca39">online documentation</a>.';

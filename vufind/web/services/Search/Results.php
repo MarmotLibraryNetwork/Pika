@@ -246,10 +246,10 @@ class Search_Results extends Action {
 		$interface->assign('overDriveVersion', isset($configArray['OverDrive']['interfaceVersion']) ? $configArray['OverDrive']['interfaceVersion'] : 1);
 
 		$showRatings = 1;
-		$enableProspectorIntegration = isset($configArray['Content']['Prospector']) ? $configArray['Content']['Prospector'] : false;
+		$enableProspectorIntegration = $configArray['Content']['Prospector'] ?? false;
 		if (isset($library)){
 			$enableProspectorIntegration = ($library->enableProspectorIntegration == 1);
-			$showRatings = $library->showRatings;
+			$showRatings                 = $library->showRatings;
 		}
 		if ($enableProspectorIntegration){
 			$interface->assign('showProspectorLink', true);

@@ -98,22 +98,104 @@
 		{elseif $property.type == 'image' || $property.type == 'file'}
 			{if $propValue}
 				{if $property.type == 'image'}
+						<br>
 						{if $property.storagePath}
-							<img src='{$object->getImageUrl('small')}'>{$propValue}
-{*							<img src='{$property.storagePath}/thumbnail/{$propValue}'>{$propValue}*}
+							<figure>
+								<img src='{$object->getImageUrl('large')}' alt="{$propValue}" style="max-width:175px;height:auto;">
+								<figcaption>{$propValue}</figcaption>
+							</figure>
 						{else}
-							<img src='/files/thumbnail/{$propValue}'>{$propValue}
+							<figure>
+								<img src='/files/thumbnail/{$propValue}' alt="{$propValue}">
+								<figcaption>{$propValue}</figcaption>
+							</figure>
 						{/if}
-					<input type="checkbox" name='remove{$propName}' id='remove{$propName}'> Remove image.
+
+			{if $propName != "cover"}
+			<div class="checkbox" ><label for="remove{$propName}">Remove {$propName}<input type="checkbox"  name='remove{$propName}' id='remove{$propName}'></label></div>
+			{/if}
+					<input type="hidden" name="currentName" id="currentName" value='{$propValue|escape}'>
 					<br>
 				{else}
 					Existing file: {$propValue}
 					<input type="hidden" name='{$propName}_existing' id='{$propName}_existing' value='{$propValue|escape}'>
 
 				{/if}
-			{/if}
+		{/if}
 			{* Display a table of the association with the ability to add and edit new values *}
-			<input type="file" name='{$propName}' id='{$propName}' size="80">
+			<div class="row" >
+				<div class="col-md-12 custom-file">
+					<input type="file" name='{$propName}' id='{$propName}' value="{$propValue}" class="custom-file-input">
+					{*<label class="custom-file-label" for='{$propName}'>Choose File</label>*}
+				</div>
+			</div>
+			<script>
+				var prop = "#" + "{$propName}";
+				var storagePath = "{$property.storagePath}";
+				var sendFile = "";
+				{literal}
+				$( document ).ready(function() {
+
+
+				$(prop).change(function(e){
+					var file = e.target.files[0].name;
+					var extension = file.substr((file.lastIndexOf('.') +1));
+
+
+					if($("#fileName").length > 0)
+						{
+							var fileName = $("#fileName").val();
+
+
+							if(fileName.includes("."))
+								{
+									sendFile = fileName;
+								}
+							else
+							{
+								sendFile = fileName + "." + extension;
+							}
+						}
+					else
+					{
+						sendFile = file;
+					}
+
+					checkFile(storagePath, sendFile);
+				});
+	});
+
+				function checkFile(path, file)
+				{
+					$(':input[type="submit"]').prop('disabled', false);
+					$("#existsAlert").remove();
+					$.ajax({
+						url: "/Admin/AJAX?&method=fileExists&fileName=" + file + "&storagePath=" + path
+
+					})
+					.done (function(data)
+					{
+						if (data.exists == "true")
+							{
+								$("<br /><div class='row'><div class='col-md-12'><div id='existsAlert' class='alert alert-danger'>Filename Already Exists - submitting will replace an existing file. <label for='overWriteOverRide'>Overwrite: </label><input type='checkbox' id='overWriteOverRide'></div></div></div>").insertAfter(prop);
+
+								$(':input[type="submit"]').prop('disabled', true);
+								$("#overWriteOverRide").change(function() {
+									if (this.checked) {
+										$(':input[type="submit"]').prop('disabled', false);
+									} else
+									{
+										$(':input[type="submit"]').prop('disabled', true);
+									}
+								});
+							}
+					})
+					return false;
+				}
+				{/literal}
+			</script>
+
+
 		{elseif $property.type == 'checkbox'}
 			<div class="checkbox">
 				<label for='{$propName}'{if $property.description} title="{$property.description}"{/if}>

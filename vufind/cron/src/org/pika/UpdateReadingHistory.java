@@ -25,7 +25,7 @@ public class UpdateReadingHistory implements IProcessHandler {
 	private Logger              logger;
 	private PreparedStatement   insertReadingHistoryStmt;
 
-	public void doCronProcess(String serverName, Ini configIni, Section processSettings, Connection pikaConn, Connection econtentConn, CronLogEntry cronEntry, Logger logger) {
+	public void doCronProcess(String serverName, Section processSettings, Connection pikaConn, Connection econtentConn, CronLogEntry cronEntry, Logger logger) {
 		processLog = new CronProcessLogEntry(cronEntry.getLogEntryId(), "Update Reading History");
 		processLog.saveToDatabase(pikaConn, logger);
 
@@ -33,7 +33,7 @@ public class UpdateReadingHistory implements IProcessHandler {
 		logger.info("Updating Reading History");
 		processLog.addNote("Updating Reading History");
 
-		pikaUrl = configIni.get("Site", "url");
+		pikaUrl = PikaConfigIni.getIniValue("Site", "url");
 		if (pikaUrl == null || pikaUrl.length() == 0) {
 			logger.error("Unable to get URL for Pika in ConfigIni settings.  Please add a url key to the Site section.");
 			processLog.incErrors();

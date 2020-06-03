@@ -67,10 +67,7 @@ class Admin_BrowseCategories extends ObjectEditor {
 	}
 
 	function getInstructions(){
-		return 'For more information on how to create browse categories, see the <a href="https://docs.google.com/document/d/11biGMw6UDKx9UBiDCCj_GBmatx93UlJBLMESNf_RtDU">online documentation</a>.';
+		return 'For more information on how to create browse categories, see the <a href="https://docs.google.com/document/d/1ZpdQCwa27hw002bjnBQeWGF7YlIrqz0rUV-xwWe6u3k">online documentation</a>.';
 	}
 
-	function getListInstructions(){
-		return $this->getInstructions();
-	}
 }

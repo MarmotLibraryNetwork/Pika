@@ -656,12 +656,13 @@ class UInterface extends Smarty {
 	 */
 	private function setUpLibraryLinks(Library $library){
 		$links                  = $library->libraryLinks;
-		$libraryHelpLinks       = array();
-		$libraryAccountLinks    = array();
-		$expandedLinkCategories = array();
+		$libraryHelpLinks       = [];
+		$libraryAccountLinks    = [];
+		$expandedLinkCategories = [];
 		/** @var LibraryLink $libraryLink */
 		foreach ($links as $libraryLink){
 			if ($libraryLink->showInHelp || (!$libraryLink->showInHelp && !$libraryLink->showInAccount)){
+				// Links with neither showInHelp or showInAccount checked should still show in the Help section
 				if (empty($libraryLink->category)){
 					// Links without categories should be displayed in the order they are listed
 					$libraryHelpLinks[][$libraryLink->linkText] = $libraryLink;
@@ -675,10 +676,10 @@ class UInterface extends Smarty {
 			if ($libraryLink->showInAccount){
 				if (empty($libraryLink->category)){
 					// Links without categories should be displayed in the order they are listed
-					$libraryHelpLinks[][$libraryLink->linkText] = $libraryLink;
+					$libraryAccountLinks[][$libraryLink->linkText] = $libraryLink;
 				}else{
 					if (!array_key_exists($libraryLink->category, $libraryAccountLinks)){
-						$libraryAccountLinks[$libraryLink->category] = array();
+						$libraryAccountLinks[$libraryLink->category] = [];
 					}
 					$libraryAccountLinks[$libraryLink->category][$libraryLink->linkText] = $libraryLink;
 				}

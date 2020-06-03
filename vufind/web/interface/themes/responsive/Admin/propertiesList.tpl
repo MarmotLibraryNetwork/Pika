@@ -21,12 +21,21 @@
 {/if}
 
 {foreach from=$customListActions item=customAction}
+	{if !is_null($customAction.action)}
 	<form action="" method="get">
 		<div>
-			<input type="hidden" name="objectAction" value='{$customAction.action}'>
+
+				<input type="hidden" name="objectAction" value='{$customAction.action}'>
+
 			<button type="submit" value='{$customAction.action}' class="btn btn-small btn-default">{$customAction.label}</button>
+
 		</div>
 	</form>
+	{/if}
+
+	{if is_null($customAction.action) && $customAction.onclick}
+		<a class="btn btn-default btn-sm" onclick="{$customAction.onclick}">{$customAction.label}</a>
+	{/if}
 {/foreach}
 
 <div class="adminTableRegion">
@@ -91,6 +100,8 @@
 								{/if}
 							{elseif $property.type == 'checkbox'}
 								{if ($propValue == 1)}Yes{else}No{/if}
+							{elseif $property.type == 'image'}
+								{$propValue}
 							{else}
 								Unknown type to display {$property.type}
 							{/if}

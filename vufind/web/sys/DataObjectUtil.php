@@ -155,7 +155,8 @@ class DataObjectUtil {
 				}
 				break;
 			case 'integer':
-				$object->$propertyName = ctype_digit($_REQUEST[$propertyName]) ? $_REQUEST[$propertyName] : 0;
+				$object->$propertyName = ctype_digit(ltrim($_REQUEST[$propertyName], '-')) ? $_REQUEST[$propertyName] : 0;
+				//the ltrim makes us allow for negative integers as well. eg. -1
 				break;
 			case 'currency':
 				if (preg_match('/\\$?\\d*\\.?\\d*/', $_REQUEST[$propertyName])){
@@ -212,6 +213,10 @@ class DataObjectUtil {
 						//Filename is the name of the object + the original filename
 						global $configArray;
 						$destFileName = $propertyName . $_FILES[$propertyName]['name'];
+						if($property['customName'])
+                        {
+                            $destFileName = $_FILES[$propertyName]['name'];
+                        }
 						$destFolder   = $property['storagePath'] ?? $configArray['Site']['local'] . '/files';
 						$destFullPath = $destFolder . '/original/' . $destFileName;
 						$pathToThumbs = $destFolder . '/thumbnail';

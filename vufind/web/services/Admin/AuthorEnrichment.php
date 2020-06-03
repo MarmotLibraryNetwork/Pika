@@ -57,8 +57,5 @@ class Admin_AuthorEnrichment extends ObjectEditor
 	function getInstructions(){
 		return "For more information on how to create update author enrichment information, see the <a href=\"https://docs.google.com/document/d/1aNmuuFcMHU9i9ZrnqIbuzVEFJE6xMDTS8uloPAqIli8\">online documentation</a>.";
 	}
-	function getListInstructions(){
-		return $this->getInstructions();
-	}
 
 }

@@ -39,7 +39,6 @@ function getLibraryLocationUpdates(){
 				"UPDATE library SET holdDisclaimer = 'I understand that by requesting this item, information from my library patron record, including my contact information may be made available to the lending library.' WHERE subdomain IN ('msc') ",
 				"ALTER TABLE `library` ADD `showHoldCancelDate` TINYINT(4) NOT NULL DEFAULT '0';",
 				"ALTER TABLE `library` ADD `enableProspectorIntegration` TINYINT(4) NOT NULL DEFAULT '0';",
-				"ALTER TABLE `library` ADD `prospectorCode` VARCHAR(10) NOT NULL DEFAULT '';",
 				"ALTER TABLE `library` ADD `showRatings` TINYINT(4) NOT NULL DEFAULT '1';",
 				"ALTER TABLE `library` ADD `searchesFile` VARCHAR(15) NOT NULL DEFAULT 'default';",
 				"ALTER TABLE `library` ADD `minimumFineAmount` FLOAT NOT NULL DEFAULT '0';",
@@ -443,35 +442,6 @@ function getLibraryLocationUpdates(){
 			'description' => 'Switch that is turned on for a library\'s main branch location.',
 			'sql'         => array(
 				"ALTER TABLE `location` ADD COLUMN `isMainBranch` TINYINT(1) DEFAULT 0 AFTER `showHoldButton`",
-			),
-		),
-
-		'search_sources' => array(
-			'title'       => 'Search Sources',
-			'description' => 'Setup Library and Location Search Source Table',
-			'sql'         => array(
-				"CREATE TABLE library_search_source (
-					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-					libraryId INT(11) NOT NULL DEFAULT -1,
-					label VARCHAR(50) NOT NULL,
-					weight INT NOT NULL DEFAULT 0,
-					searchWhat ENUM('catalog', 'genealogy', 'overdrive', 'worldcat', 'prospector', 'goldrush', 'title_browse', 'author_browse', 'subject_browse', 'tags'),
-					defaultFilter TEXT,
-					defaultSort ENUM('relevance', 'popularity', 'newest_to_oldest', 'oldest_to_newest', 'author', 'title', 'user_rating'),
-					INDEX (libraryId)
-				)",
-				"CREATE TABLE location_search_source (
-					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-					locationId INT(11) NOT NULL DEFAULT -1,
-					label VARCHAR(50) NOT NULL,
-					weight INT NOT NULL DEFAULT 0,
-					searchWhat ENUM('catalog', 'genealogy', 'overdrive', 'worldcat', 'prospector', 'goldrush', 'title_browse', 'author_browse', 'subject_browse', 'tags'),
-					defaultFilter TEXT,
-					defaultSort ENUM('relevance', 'popularity', 'newest_to_oldest', 'oldest_to_newest', 'author', 'title', 'user_rating'),
-					INDEX (locationId)
-				)",
-				"ALTER TABLE library_search_source ADD COLUMN catalogScoping ENUM('unscoped', 'library', 'location') DEFAULT 'unscoped'",
-				"ALTER TABLE location_search_source ADD COLUMN catalogScoping ENUM('unscoped', 'library', 'location') DEFAULT 'unscoped'"
 			),
 		),
 
@@ -1147,8 +1117,42 @@ ADD COLUMN selfRegistrationAgencyCode INT(10) NULL;",
 			 'title'       => 'Show scannable image of patrons barcode',
 			 'description' => '',
 			 'sql'         => array(
-				"ALTER TABLE `pika`.`library` ADD COLUMN `showPatronBarcodeImage` TINYINT(1) NULL DEFAULT 0",
+				"ALTER TABLE `library` ADD COLUMN `showPatronBarcodeImage` TINYINT(1) NULL DEFAULT 0",
 			 ),
+		),
+
+		'library_location_remove_UseScope' => array(
+			'title'       => 'Remove UseScope Option',
+			'description' => 'Remove the obsolete UseScope option',
+			'sql'         => array(
+				'ALTER TABLE `library` DROP COLUMN `useScope`;',
+				'ALTER TABLE `location` DROP COLUMN `useScope`;',
+			),
+		),
+		'library_location_remove'          => array(
+			'title'       => 'Remove obsolete eContent settings',
+			'description' => 'Remove eContentLocationstoInclude, eContentLinkRules, notesTabName, and facetFile',
+			'sql'         => array(
+				'ALTER TABLE `library` DROP COLUMN `econtentLocationsToInclude`;',
+				'ALTER TABLE `location` DROP COLUMN `econtentLocationsToInclude`;',
+				'ALTER TABLE `library` DROP COLUMN `eContentLinkRules`;',
+				'ALTER TABLE `library` DROP COLUMN `notesTabName`;',
+				'ALTER TABLE `location` DROP COLUMN `facetFile`;',
+			),
+		),
+		'goldrush_removal'                 => array(
+			'title'       => 'Remove Goldrush',
+			'description' => 'Remove all goldrush settings',
+			'sql'         => array(
+				'ALTER TABLE `library` DROP COLUMN `goldRushCode`;'
+			),
+		),
+		'prospectorCode_removal'           => array(
+			'title'       => 'Remove prospectorCode',
+			'description' => 'Remove prospectorCode library setting',
+			'sql'         => array(
+				'ALTER TABLE `library` DROP COLUMN `prospectorCode`;'
+			),
 		),
 	);
 }

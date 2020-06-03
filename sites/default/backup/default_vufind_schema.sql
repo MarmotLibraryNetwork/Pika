@@ -137,7 +137,6 @@ CREATE TABLE IF NOT EXISTS `library` (
   `allowInLibraryHolds` tinyint(4) NOT NULL DEFAULT '1' COMMENT 'Whether or not the user can place holds for books at other locations in their library system',
   `allowConsortiumHolds` tinyint(4) NOT NULL DEFAULT '0' COMMENT 'Whether or not the user can place holds for any book anywhere in the consortium.  ',
   `scope` smallint(6) NOT NULL COMMENT 'The scope for the system in Sierra to refine holdings for the user.',
-  `useScope` tinyint(4) NOT NULL COMMENT 'Whether or not the scope should be used when displaying holdings.  ',
   `hideCommentsWithBadWords` tinyint(4) NOT NULL COMMENT 'If set to true (1), any comments with bad words are completely removed from the user interface for everyone except the original poster.',
   `showAmazonReviews` tinyint(4) NOT NULL COMMENT 'Whether or not reviews from Amazon are displayed on the full record page.',
   `linkToAmazon` tinyint(4) NOT NULL COMMENT 'Whether or not a purchase on Amazon link should be shown.  Should generally match showAmazonReviews setting',
@@ -158,7 +157,7 @@ CREATE TABLE IF NOT EXISTS `library` (
   `suggestAPurchase` varchar(150) NOT NULL,
   `showEcommerceLink` tinyint(4) NOT NULL,
   `tabbedDetails` tinyint(4) NOT NULL,
-  `goldRushCode` varchar(10) NOT NULL,
+
   `repeatSearchOption` enum('none','librarySystem','marmot','all') NOT NULL DEFAULT 'all' COMMENT 'Where to allow repeating search.  Valid options are: none, librarySystem, marmot, all',
   `repeatInProspector` tinyint(4) NOT NULL,
   `repeatInWorldCat` tinyint(4) NOT NULL,
@@ -176,7 +175,6 @@ CREATE TABLE IF NOT EXISTS `library` (
   `enableAlphaBrowse` tinyint(4) DEFAULT '1',
   `showHoldCancelDate` tinyint(4) NOT NULL DEFAULT '0',
   `enableProspectorIntegration` tinyint(4) NOT NULL DEFAULT '0',
-  `prospectorCode` varchar(10) NOT NULL DEFAULT '',
   `showRatings` tinyint(4) NOT NULL DEFAULT '1',
   `searchesFile` varchar(15) NOT NULL DEFAULT 'default',
   `minimumFineAmount` float NOT NULL DEFAULT '0',
@@ -241,9 +239,7 @@ CREATE TABLE IF NOT EXISTS `location` (
   `nearbyLocation2` int(11) DEFAULT NULL COMMENT 'A tertiary location which is nearby and could be used for pickup of materials.',
   `holdingBranchLabel` varchar(40) NOT NULL COMMENT 'The label used within the Holdings table in Millenium.',
   `scope` smallint(6) NOT NULL COMMENT 'The scope for the system in Sierra to refine holdings to the branch.  If there is no scope defined for the branch, this can be set to 0.',
-  `useScope` tinyint(4) NOT NULL COMMENT 'Whether or not the scope should be used when displaying holdings.  ',
   `defaultLocationFacet` varchar(40) NOT NULL COMMENT 'A facet to apply during initial searches.  If left blank, no additional refinement will be done.',
-#   `facetFile` varchar(15) NOT NULL DEFAULT 'default' COMMENT 'The name of the facet file which should be used while searching use default to not override the file',
   `showHoldButton` tinyint(4) NOT NULL COMMENT 'Whether or not the hold button is displayed so patrons can place holds on items',
   `showAmazonReviews` tinyint(4) NOT NULL COMMENT 'Whether or not reviews from Amazon are displayed on the full record page.',
   `showStandardReviews` tinyint(4) NOT NULL COMMENT 'Whether or not reviews from Content Cafe/Syndetics are displayed on the full record page.',
@@ -486,26 +482,6 @@ CREATE TABLE IF NOT EXISTS `search` (
   KEY `folder_id` (`folder_id`),
   KEY `session_id` (`session_id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=3327 ;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `search_stats`
---
-
-CREATE TABLE IF NOT EXISTS `search_stats` (
-  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'The unique id of the search statistic',
-  `phrase` varchar(500) NOT NULL COMMENT 'The phrase being searched for',
-  `type` varchar(50) NOT NULL COMMENT 'The type of search being done',
-  `numResults` int(16) NOT NULL COMMENT 'The number of hits that were found.',
-  `lastSearch` int(16) NOT NULL COMMENT 'The last time this search was done',
-  `numSearches` int(16) NOT NULL COMMENT 'The number of times this search has been done.',
-  `libraryId` int(16) NOT NULL COMMENT 'The library id that this search was scoped to or -1 for unscoped.',
-  `locationId` int(16) NOT NULL COMMENT 'The location id that this search was scoped to or -1 for unscoped.',
-  PRIMARY KEY (`id`),
-  KEY `type` (`type`),
-  KEY `search_index` (`type`,`libraryId`,`locationId`,`phrase`(255),`numResults`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COMMENT='Statistical information about searches for use in reporting ' AUTO_INCREMENT=200373 ;
 
 -- --------------------------------------------------------
 

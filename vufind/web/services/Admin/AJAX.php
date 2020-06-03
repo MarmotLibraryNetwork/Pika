@@ -30,6 +30,8 @@ class Admin_AJAX extends AJAXHandler {
 		'clearLocationHooplaSettings',
 		'clearLibraryHooplaSettings',
         'displayCopyFromPrompt',
+        'displayClonePrompt',
+        'libraryClonePrompt',
         'copyHourSettingsFromLocation',
         'copyBrowseCategoriesFromLocation',
         'copyIncludedRecordsFromLocation',
@@ -37,6 +39,10 @@ class Admin_AJAX extends AJAXHandler {
         'resetFacetsToDefault',
         'resetMoreDetailsToDefault',
         'copyFacetSettingsFromLocation',
+        'cloneLocation',
+        'cloneLibrary',
+        'fileExists',
+
 	);
 
 	function getAddToWidgetForm(){
@@ -62,9 +68,6 @@ class Admin_AJAX extends AJAXHandler {
 		);
 		return $results;
 	}
-    function copyHoursFromLocation(){
-
-    }
 
     /**
      * Ajax class which calls copyLibraryHooplaSettings in order to copy the parent library's hoopla settings
@@ -173,6 +176,60 @@ class Admin_AJAX extends AJAXHandler {
 		return $results;
 	}
 
+	function displayClonePrompt()
+    {
+        $results = array(
+            'title' => 'Clone Location',
+            'body' => 'No Data available',
+        );
+        $user = UserAccount::getLoggedInUser();
+        if(UserAccount::userHasRoleFromList(['opacAdmin'])){
+            $command = trim($_REQUEST['command']);
+            $location = new Location();
+            $locationId = $user->getHomeLibrary()->getLocationIdsForLibrary()[0];
+            if($location->get($locationId))
+            {
+                $allLocations = $this->getLocationList($locationId);
+                $options = " ";
+
+                foreach($allLocations as $findKey =>$findLocation)
+                {
+                    $options .= "<option value='" . $findKey . "'>" . $findLocation->displayName . "</option>";
+                }
+                $results['body'] = "<label for='code'>New Location Code:</label> <input type='text' class='form-control' id='LocCode' name='LocCode'/><label for='name'>Display Name</label> <input type='text' class='form-control' id='name' name='name' /><label for='fromId'>Clone From</label> <select id= 'fromId' name='fromId' class='form-control'>" . $options . "</select>";
+                $results['buttons'] = "<button class='btn btn-primary' type= 'button' title='Copy' onclick='return Pika.Admin." . $command ."(document.querySelector(\"#fromId\").value, document.querySelector(\"#name\").value, document.querySelector(\"#LocCode\").value);'>Clone</button>";
+
+            }
+        }
+        return $results;
+    }
+    function libraryClonePrompt()
+    {
+        $results = array(
+            'title' => 'Clone Library',
+            'body' => 'No Data available',
+        );
+        $user = UserAccount::getLoggedInUser();
+        if(UserAccount::userHasRoleFromList(['opacAdmin'])){
+            $command = trim($_REQUEST['command']);
+            $library = new Library();
+            $libraryId = $user->getHomeLibrary()->libraryId;
+            if($library->get($libraryId))
+            {
+                $allLibraries = $this->getLibraryList($libraryId);
+                $options = " ";
+
+                foreach($allLibraries as $findKey =>$findLibrary)
+                {
+                    $options .= "<option value='" . $findKey . "'>" . $findLibrary->displayName . "</option>";
+                }
+                $results['body'] = "<label for='displayName'>Display Name:</label> <input type='text' class='form-control required' id='displayName' name='displayName'/><label for='subdomain'>Subdomain:</label> <input type='text' class='form-control required' id='subdomain' name='subdomain' /><label for='abName'>Abbreviated Name:</label> <input type='text' class='form-control' id='abName' name='abName' /><label for='facetLabelInput'>Library System Facet Label:</label> <input type='text' class='form-control' id='facetLabelInput' name='facetLabelInput' /><label for='fromId'>Clone From</label> <select id= 'fromId' name='fromId' class='form-control required'>" . $options . "</select>";
+                $results['buttons'] = "<button class='btn btn-primary' type= 'button' title='Copy' onclick='return Pika.Admin." . $command ."(document.querySelector(\"#fromId\").value, document.querySelector(\"#displayName\").value, document.querySelector(\"#subdomain\").value, document.querySelector(\"#abName\").value, document.querySelector(\"#facetLabelInput\").value );'>Clone</button>";
+
+            }
+        }
+        return $results;
+    }
     /**
      * Displays list of library locations to the user in order to select the location to copy from
      * @return string[] select box with buttons to choose copy location
@@ -200,17 +257,19 @@ class Admin_AJAX extends AJAXHandler {
                         $options .= "<option value='" . $findKey . "'>" . $findLocation->displayName . "</option>";
                     }
 
+
                     $results['body'] = "<select id= 'fromId' name='fromId' class='form-control'>" . $options . "</select>";
                     $results['buttons'] = "<button class='btn btn-primary' type= 'button' title='Copy' onclick='return Pika.Admin." . $command ."(" . $locationId . ", document.querySelector(\"#fromId\").value);'>Copy</button>";
                 }
             }
         }
-	    return $results;;
+	    return $results;
     }
 
     /**
      * Gets locations available to user to copy from for the logged in administrative user
      *
+     * @param $locationId id of homeLocation
      * @return array of available locations
      */
     function getLocationList($locationId)
@@ -252,6 +311,33 @@ class Admin_AJAX extends AJAXHandler {
 
 
         return $locationList;
+    }
+    function getLibraryList($libraryId)
+    {
+        //Look lookup information for display in the user interface
+        $user = UserAccount::getLoggedInUser();
+
+        $library = new Library();
+        $library->orderBy('displayName');
+
+        $copyTo = new Library();
+        $copyTo->libraryId = $libraryId;
+        $copyTo->find();
+
+        $library->find();
+
+        $libraryList = array();
+
+        while ($copyTo->fetch()){
+
+            $libraryList[$copyTo->libraryId] = clone $copyTo;
+
+        }
+        while ($library->fetch()){
+
+            $libraryList[$library->libraryId] = clone $library;
+        }
+        return $libraryList;
     }
     /**
      * Ajax method copies hours between library locations
@@ -501,11 +587,329 @@ class Admin_AJAX extends AJAXHandler {
                 $location->moreDetailsOptions = $defaultOptions;
                 $location->update();
                 $results['body'] = '<div class="alert alert-success">Full Record Display reset to default.</div>';
+
             }
         }
 
         return $results;
     }
+
+    function cloneLocation()
+    {
+        $results = array(
+            'title' => 'Clone Location',
+            'body' => '<div class="alert alert-danger">Clone Failed</div>',
+        );
+        $fromLocationId = trim($_REQUEST['from']);
+        $code = trim($_REQUEST['code']);
+        $name = trim($_REQUEST['name']);
+        $copyFromLocation = new Location();
+        $user = UserAccount::getLoggedInUser();
+        if(UserAccount::userHasRole("opacAdmin")) {
+            $location = new Location();
+             if($copyFromLocation->get($fromLocationId)) {
+                 $location->code = $code;
+                 $location->displayName = $name;
+                 $location->showDisplayNameInHeader = $copyFromLocation->showDisplayNameInHeader;
+                 $location->libraryId = $copyFromLocation->libraryId;
+                 $location->showInLocationsAndHoursList = $copyFromLocation->showInLocationsAndHoursList;
+                 $location->address = $copyFromLocation->address;
+                 $location->phone = $copyFromLocation->phone;
+                 $location->nearbyLocation1 = $copyFromLocation->nearbyLocation1;
+                 $location->nearbyLocation2 = $copyFromLocation->nearbyLocation2;
+                 $location->automaticTimeoutLength = $copyFromLocation->automaticTimeoutLength;
+                 $location->automaticTimeoutLengthLoggedOut = $copyFromLocation->automaticTimeoutLengthLoggedOut;
+                 $location->homeLink = $copyFromLocation->homeLink;
+                 $location->additionalCss = $copyFromLocation->additionalCss;
+                 $location->headerText = $copyFromLocation->headerText;
+                 $location->scope = $copyFromLocation->scope;
+                 $location->defaultPType = $copyFromLocation->defaultPType;
+                 $location->validHoldPickupBranch = $copyFromLocation->validHoldPickupBranch;
+                 $location->showHoldButton = $copyFromLocation->showHoldButton;
+                 $location->ptypesToAllowRenewals = $copyFromLocation->ptypesToAllowRenewals;
+                 $location->restrictSearchByLocation = $copyFromLocation->restrictSearchByLocation;
+                 $location->publicListsToInclude = $copyFromLocation->publicListsToInclude;
+                 $location->boostByLocation = $copyFromLocation->boostByLocation;
+                 $location->additionalLocalBoostFactor = $copyFromLocation->additionalLocalBoostFactor;
+                 $location->systemsToRepeatIn = $copyFromLocation->systemsToRepeatIn;
+                 $location->repeatSearchOption = $copyFromLocation->repeatSearchOption;
+                 $location->repeatInOnlineCollection = $copyFromLocation->repeatInOnlineCollection;
+                 $location->repeatInProspector = $copyFromLocation->repeatInProspector;
+                 $location->repeatInWorldCat = $copyFromLocation->repeatInWorldCat;
+                 $location->repeatInOverdrive = $copyFromLocation->repeatInOverdrive;
+                 $location->availabilityToggleLabelSuperScope = $copyFromLocation->availabilityToggleLabelSuperScope;
+                 $location->availabilityToggleLabelLocal = $copyFromLocation->availabilityToggleLabelLocal;
+                 $location->availabilityToggleLabelAvailable = $copyFromLocation->availabilityToggleLabelAvailable;
+                 $location->availabilityToggleLabelAvailableOnline = $copyFromLocation->availabilityToggleLabelAvailableOnline;
+                 $location->baseAvailabilityToggleOnLocalHoldingsOnly = $copyFromLocation->baseAvailabilityToggleOnLocalHoldingsOnly;
+                 $location->includeOnlineMaterialsInAvailableToggle = $copyFromLocation->includeOnlineMaterialsInAvailableToggle;
+                 $location->facetLabel = $copyFromLocation->facetLabel;
+                 $location->includeAllLibraryBranchesInFacets = $copyFromLocation->includeAllLibraryBranchesInFacets;
+                 $location->includeAllRecordsInDateAddedFacets = $copyFromLocation->includeAllRecordsInDateAddedFacets;
+                 $location->includeAllRecordsInShelvingFacets = $copyFromLocation->includeAllRecordsInShelvingFacets;
+                 $location->additionalLocationsToShowAvailabilityFor = $copyFromLocation->additionalLocationsToShowAvailabilityFor;
+                 $location->includeLibraryRecordsToInclude = $copyFromLocation->includeLibraryRecordsToInclude;
+                 $location->isMainBranch = false;
+                 $facetsToCopy = $copyFromLocation->facets;
+                 foreach ($facetsToCopy as $facetKey => $facet) {
+                     $facet->locationId = $location->locationId;
+                     $facet->id = null;
+                     $facetsToCopy[$facetKey] = $facet;
+                 }
+                 $location->facets = $facetsToCopy;
+                 $location->useLibraryCombinedResultsSettings = $copyFromLocation->useLibraryCombinedResultsSettings;
+                 $location->enableCombinedResults = $copyFromLocation->enableCombinedResults;
+                 $location->defaultToCombinedResults = $copyFromLocation->defaultToCombinedResults;
+                 $combinedResultsToCopy = $copyFromLocation->combinedResultSections;
+                 foreach ($combinedResultsToCopy as $key => $combinedResult) {
+                     $combinedResult->locationId = $location->locationId;
+                     $combinedResult->id = null;
+                     $combinedResultsToCopy[$key] = $combinedResult;
+                 }
+                 $location->combinedResultSections = $copyFromLocation->combinedResultSections;
+                 $location->showStandardReviews = $copyFromLocation->showStandardReviews;
+                 $location->showGoodReadsReviews = $copyFromLocation->showGoodReadsReviews;
+                 $location->showFavorites = $copyFromLocation->showFavorites;
+                 $fullRecordDisplayToCopy = $copyFromLocation->moreDetailsOptions;
+                 foreach ($fullRecordDisplayToCopy as $key => $displayItem) {
+                     $displayItem->locationId = $location->locationId;
+                     $displayItem->id = null;
+                     $fullRecordDisplayToCopy[$key] = $displayItem;
+                 }
+                 $location->moreDetailsOptions = $fullRecordDisplayToCopy;
+                 $location->showEmailThis = $copyFromLocation->showEmailThis;
+                 $location->showShareOnExternalSites = $copyFromLocation->showShareOnExternalSites;
+                 $location->showComments = $copyFromLocation->showComments;
+                 $location->showQRCode = $copyFromLocation->showQRCode;
+                 $location->showStaffView = $copyFromLocation->showStaffView;
+                 $browseCategoriesToCopy = $copyFromLocation->browseCategories;
+                 foreach ($browseCategoriesToCopy as $key => $category) {
+                     $category->locationId = $location->locationId;
+                     $category->id = null;
+                     $browseCategoriesToCopy[$key] = $category;
+                 }
+                 $location->browseCategories = $browseCategoriesToCopy;
+                 $location->defaultBrowseMode = $copyFromLocation->defaultBrowseMode;
+                 $location->browseCategoryRatingsMode = $copyFromLocation->browseCategoryRatingsMode;
+                 $location->enableOverdriveCollection = $copyFromLocation->enableOverdriveCollection;
+                 $location->includeOverDriveAdult = $copyFromLocation->includeOverDriveAdult;
+                 $location->includeOverDriveTeen = $copyFromLocation->includeOverDriveTeen;
+                 $location->includeOverDriveKids = $copyFromLocation->includeOverDriveKids;
+
+                 $hooplaSettings = $copyFromLocation->hooplaSettings;
+                 foreach ($hooplaSettings as $key => $setting) {
+                     $setting->locationId = $location->locationId;
+                     $setting->id = null;
+                     $hooplaSettings[$key] = $setting;
+                 }
+                 $location->hooplaSettings = $hooplaSettings;
+                 $copyFromLocation->getHours();
+                 $hoursToCopy = $copyFromLocation->hours;
+                 foreach ($hoursToCopy as $key => $hour) {
+
+                     $hour->locationId = $location->locationId;
+                     $hour->id = null;
+                     $hoursToCopy[$key] = $hour;
+                 }
+                 $location->hours = $hoursToCopy;
+                 $includedToCopy = $copyFromLocation->recordsToInclude;
+                 foreach ($includedToCopy as $key => $include) {
+                     $include->locationId = $location->locationId;
+                     $include->id = null;
+                     $includedToCopy[$key] = $include;
+                 }
+                 $location->recordsToInclude = $includedToCopy;
+                 $recordsOwned = $copyFromLocation->recordsOwned;
+                 foreach ($recordsOwned as $key => $owned) {
+                     $owned->locationId = $location->locationId;
+                     $owned->id = null;
+                     $recordsOwned[$key] = $owned;
+                 }
+                 $location->recordsOwned = $recordsOwned;
+
+                 if ($location->insert())
+                 {
+                     $editLink = "/Admin/Locations?objectAction=edit&id=" . $location->locationId;;
+                     $results['body'] = '<div class="alert alert-success">Location Cloned.</div><div>You may need to edit the following settings:<br /><ul><li>library</li><li>address</li><li>nearby location</li><li>valid pickup branch</li><li>free text fields in search facets</li><li>browse categories</li><li>Overdrive and Hoopla settings</li><li>hours</li><li>records owned</li></div>';
+                     $results['buttons'] = "<button class='btn btn-default' type= 'button' title='SaveReturn' onclick='location.href=\"/Admin/Locations\";'>Return to Location List</button><button class='btn btn-primary' type= 'button' title='SaveEdit' onclick='location.href=\"" . $editLink . "\";'>Edit New Location</button>";
+                 }
+                 
+             }
+        }
+
+        return $results;
+    }
+
+    function cloneLibrary()
+    {
+        $results = array(
+            'title' => 'Clone Location',
+            'body' => '<div class="alert alert-danger">Clone Failed</div>',
+        );
+        $fromLocationId = trim($_REQUEST['from']);
+        $subdomain = trim($_REQUEST['subdomain']);
+        $name = trim($_REQUEST['displayName']);
+        $abName = "";
+        $facetLabel = "";
+        if($_REQUEST['abName'])
+        {
+            $abName = trim($_REQUEST['abName']);
+        }
+        if($_REQUEST['facetLabel'])
+        {
+            $facetLabel = $_REQUEST['facetLabel'];
+        }
+        $user = UserAccount::getLoggedInUser();
+        if(UserAccount::userHasRole("opacAdmin")) {
+            $library = new Library();
+            $copyFrom = new Library();
+
+            if ($copyFrom->get($fromLocationId)) {
+                $libraryId = null;
+
+                $copyFromFacets = $copyFrom->facets;
+                foreach ($copyFromFacets as $key => $facet) {
+                    $facet->id = null;
+                    $facet->libraryId = $library->libraryId;
+                    $copyFromFacets[$key] = $facet;
+                }
+                $library->facets = $copyFromFacets;
+                $copyFromCombined = $copyFrom->combinedResultSections;
+                foreach ($copyFromCombined as $key => $combined) {
+                    $combined->id = null;
+                    $combined->libraryId = $library->libraryId;
+                    $copyFromCombined[$key] = $combined;
+                }
+                $library->combinedResultSections = $copyFromCombined;
+                $copyFromMoreDetails = $copyFrom->moreDetailsOptions;
+                foreach ($copyFromMoreDetails as $key => $moreDetail) {
+                    $moreDetail->id = null;
+                    $moreDetail->libraryId = $library->libraryId;
+                    $copyFromMoreDetails[$key] = $moreDetail;
+                }
+                $library->moreDetailsOptions = $copyFromMoreDetails;
+                $copyFromBrowseCategories = $copyFrom->browseCategories;
+                foreach ($copyFromBrowseCategories as $key => $category) {
+                    $category->id = null;
+                    $category->libraryId = $library->libraryId;
+                    $copyFromBrowseCategories[$key] = $category;
+                }
+                $library->browseCategories = $copyFromBrowseCategories;
+                $copyFromMaterialRequestFields = $copyFrom->materialsRequestFieldsToDisplay;
+                foreach ($copyFromMaterialRequestFields as $key => $requestField) {
+                    $requestField->id = null;
+                    $requestField->libraryId = $library->libraryId;
+                    $copyFromMaterialRequestFields[$key] = $requestField;
+                }
+                $library->materialsRequestFieldsToDisplay = $copyFromMaterialRequestFields;
+                $copyFromMaterialRequestFormats = $copyFrom->materialsRequestFormats;
+                foreach ($copyFromMaterialRequestFormats as $key => $requestFormat) {
+                    $requestFormat->id = null;
+                    $requestFormat->libraryId = $library->libraryId;
+                    $copyFromMaterialRequestFormats[$key] = $requestFormat;
+                }
+                $library->materialRequestFormats = $copyFromMaterialRequestFormats;
+                $copyFromMaterialRequestFormFields = $copyFrom->materialsRequestFormFields;
+                foreach ($copyFromMaterialRequestFormFields as $key => $requestFormField) {
+                    $requestFormField->id = null;
+                    $requestFormField->libraryId = $library->libraryId;
+                    $copyFromMaterialRequestFormFields[$key] = $requestFormField;
+                }
+                $library->materialsRequestFormFields = $copyFromMaterialRequestFormFields;
+                $copyFromHooplaSettings = $copyFrom->hooplaSettings;
+                foreach ($copyFromHooplaSettings as $key => $hoopla) {
+                    $hoopla->id = null;
+                    $hoopla->libraryId = $library->libraryId;
+                    $copyFromHooplaSettings[$key] = $hoopla;
+                }
+                $library->hooplaSettings = $copyFromHooplaSettings;
+                $copyFromArchiveMoreDetails = $copyFrom->archiveMoreDetailsOptions;
+                foreach ($copyFromArchiveMoreDetails as $key => $archiveDetail) {
+                    $archiveDetail->id = null;
+                    $archiveDetail->libraryId = $library->libraryId;
+                    $copyFromArchiveMoreDetails[$key] = $archiveDetail;
+                }
+                $library->archiveMoreDetailsOptions = $copyFromArchiveMoreDetails;
+                $copyFromExploreMoreBar = $copyFrom->exploreMoreBar;
+                foreach ($copyFromExploreMoreBar as $key => $explore) {
+                    $explore->id = null;
+                    $explore->libraryId = $library->libraryId;
+                    $copyFromExploreMoreBar[$key] = $explore;
+                }
+                $library->exploreMoreBar = $copyFromExploreMoreBar;
+                $copyFromArchiveSearchFacets = $copyFrom->archiveSearchFacets;
+                foreach ($copyFromArchiveSearchFacets as $key => $archiveFacet) {
+                    $archiveFacet->id = null;
+                    $archiveFacet->libraryId = $library->libraryId;
+                    $copyFromArchiveSearchFacets[$key] = $archiveFacet;
+                }
+                $library->archiveSearchFacets = $copyFromArchiveSearchFacets;
+                $copyFromHolidays = $copyFrom->holidays;
+                foreach ($copyFromHolidays as $key => $holiday) {
+                    $holiday->id = null;
+                    $holiday->libraryId = $library->libraryId;
+                    $copyFromHolidays[$key] = $holiday;
+                }
+                $library->holidays = $copyFromHolidays;
+                $copyFromLibraryLinks = $copyFrom->libraryLinks;
+                foreach ($copyFromLibraryLinks as $key => $libraryLink) {
+                    $libraryLink->id = null;
+                    $libraryLink->libraryId = $library->libraryId;
+                    $copyFromLibraryLinks[$key] = $libraryLink;
+                }
+                $library->libraryLinks = $copyFromLibraryLinks;
+                $copyFromLibraryTopLinks = $copyFrom->libraryTopLinks;
+                foreach ($copyFromLibraryTopLinks as $key => $topLink) {
+                    $topLink->id = null;
+                    $topLink->libraryId = $library->libraryId;
+                    $copyFromLibraryTopLinks[$key] = $topLink;
+                }
+                $library->libraryTopLinks = $copyFromLibraryTopLinks;
+                $copyFromRecordsOwned = $copyFrom->recordsOwned;
+                foreach ($copyFromRecordsOwned as $key => $recordOwned) {
+                    $recordOwned->id = null;
+                    $recordOwned->libraryId = $library->libraryId;
+                    $copyFromRecordsOwned[$key] = $recordOwned;
+                }
+                $library->recordsOwned = $copyFromRecordsOwned;
+                $copyFromRecordsToInclude = $copyFrom->recordsToInclude;
+                foreach ($copyFromRecordsToInclude as $key => $includedRecord) {
+                    $includedRecord->id = null;
+                    $includedRecord->libraryId = $library->libraryId;
+                    $copyFromRecordsToInclude[$key] = $includedRecord;
+                }
+                $library->recordsToInclude = $copyFromRecordsToInclude;
+
+                $library = clone $copyFrom;
+                $library->libraryId = $libraryId;
+                $library->displayName = $name;
+                $library->subdomain = $subdomain;
+                $library->abbreviatedDisplayName = $abName;
+                $library->isDefault = false;
+                $library->facetLabel = $facetLabel;
+
+                if ($library->insert()) {
+                    $editLink = "/Admin/Libraries?objectAction=edit&id=" . $library->libraryId;
+                    $results['body'] = '<div class="alert alert-success">Library Cloned.</div><div>You may need to edit the following settings:<br /><ul><li>theme name</li><li>home link</li><li>contact links</li><li>ILS code</li><li>Sierra scope</li><li>p-types</li><li>self registration</li><li>free text fields in the search facets section</li><li>browse categories</li><li>materials request settings</li><li>Hoopla info</li><li>google analytics code</li><li>sidebar links</li><li>records owned</li><li>records to include</li></ul></div>';
+                    $results['buttons'] = "<button class='btn btn-default' type= 'button' title='SaveReturn' onclick='location.href=\"/Admin/Libraries\";'>Return to Library List</button><button class='btn btn-primary' type= 'button' title='SaveEdit' onclick='location.href=\"" . $editLink . "\";'>Edit New Library</button>";
+                }
+
+            }
+        }
+        return $results;
+    }
+
+function fileExists(){
+        $filename = trim($_REQUEST['fileName']);
+        $storagePath = trim($_REQUEST['storagePath']);
+
+        if(file_exists($storagePath . DIRECTORY_SEPARATOR . "original" . DIRECTORY_SEPARATOR . $filename))
+        {
+            return array("exists"=>"true");
+        }
+        return array("exists"=>"false");
+}
+
 	//	function markProfileForRegrouping(){
 //		$result = array(
 //			'success' => false,

@@ -566,10 +566,8 @@ class SearchObject_Solr extends SearchObject_Base
 	 * @param   string $setting   The setting within the specified file to return.
 	 * @return  string    The value of the setting (blank if none).
 	 */
-	public function getFacetSetting($section, $setting)
-	{
-		return isset($this->allFacetSettings[$section][$setting]) ?
-		$this->allFacetSettings[$section][$setting] : '';
+	public function getFacetSetting($section, $setting){
+		return $this->allFacetSettings[$section][$setting] ?? '';
 	}
 
 	public function getDebugTiming() {
@@ -875,7 +873,6 @@ class SearchObject_Solr extends SearchObject_Base
 				$interface->assign('recordIndex', $x + 1);
 				$interface->assign('resultIndex', $x + 1 + (($this->page - 1) * $this->limit));
 				$record = RecordDriverFactory::initRecordDriver($current);
-				$record->setScopingEnabled($this->indexEngine->isScopingEnabled());
 				if (!PEAR_Singleton::isError($record)) {
 					$interface->assign('recordDriver', $record);
 					$html[] = $interface->fetch($record->getSearchResult($this->view));
@@ -916,7 +913,6 @@ class SearchObject_Solr extends SearchObject_Base
 				$interface->assign('resultIndex', $x + 1 + (($this->page - 1) * $this->limit));
 				/** @var GroupedWorkDriver|ListRecord $record */
 				$record = RecordDriverFactory::initRecordDriver($current);
-				$record->setScopingEnabled($this->indexEngine->isScopingEnabled());
 				if (!PEAR_Singleton::isError($record)) {
 					$interface->assign('recordDriver', $record);
 					$html[] = $interface->fetch($record->getCombinedResult($this->view));

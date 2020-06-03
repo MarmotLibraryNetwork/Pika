@@ -332,12 +332,21 @@ abstract class ObjectEditor extends Admin_Admin {
 		return array();
 	}
 
+	/** An instruction blurb displayed at the top of object view page.
+	 * @return string
+	 */
 	function getInstructions(){
 		return '';
 	}
 
+	/** An instruction blurb displayed at the top of objects listing page.
+	 *
+	 *  Default behaviour is to return the instructions from getInstructions().
+	 *  Override to change.
+	 * @return string
+	 */
 	function getListInstructions(){
-		return '';
+		return $this->getInstructions();
 	}
 
 	/**

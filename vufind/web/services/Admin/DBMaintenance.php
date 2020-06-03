@@ -620,20 +620,6 @@ class DBMaintenance extends Admin_Admin {
 					),
 				),
 
-				'merged_records' => array(
-					'title'       => 'Merged Records Table',
-					'description' => 'Create Merged Records table to store ',
-					'sql'         => array(
-						"CREATE TABLE `merged_records` (
-							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-							`original_record` VARCHAR( 20 ) NOT NULL,
-							`new_record` VARCHAR( 20 ) NOT NULL,
-							UNIQUE INDEX (original_record),
-							INDEX(new_record)
-						)",
-					),
-				),
-
 				'nongrouped_records' => array(
 					'title'       => 'Non-grouped Records Table',
 					'description' => 'Create non-grouped Records table to store records that should not be grouped',
@@ -1357,6 +1343,40 @@ class DBMaintenance extends Admin_Admin {
                     )
                 ),
 
+				'remove_obsolete_tables-2020.05' => array(
+					'title'           => 'Delete Unused tables',
+					'description'     => 'Get rid of unused tables',
+					'continueOnError' => true,
+					'sql'             => array(
+						"DROP TABLE IF EXISTS `library_search_source`;",
+						"DROP TABLE IF EXISTS `location_search_source`;",
+						"DROP TABLE IF EXISTS `syndetics_data`;",
+						"DROP TABLE IF EXISTS `merged_records`;",
+						"DROP TABLE IF EXISTS `search_stats`;",
+					)
+				),
+
+                'add_custom_covers_table' => array(
+                  'title'           => 'Add Custom Covers',
+                  'description'     => 'Database tables to support custom cover uploads',
+                  'continueOnError' => false,
+                  'sql'             => array(
+                      "CREATE TABLE IF NOT EXISTS covers (
+				    coverId INT(10) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+				    cover VARCHAR(255)
+				    )ENGINE=InnoDB  DEFAULT CHARSET=utf8;"
+                  )
+                ),
+
+                'add_current_covers'    => array(
+                    'title'             => 'Add Current Covers to Database',
+                    'description'       => 'Looks in the covers directory and adds files found to database',
+                    'continueOnError'   => false,
+                    'sql'               => array(
+                        "INSERT INTO covers (cover) VALUES " .
+                        implode(",",$this->createCoversFromDirectory()) . ";"
+                    )
+                ),
 			)
 		);
 	}
@@ -1382,6 +1402,26 @@ class DBMaintenance extends Admin_Admin {
 			}
 		}
 	}
+
+	private function createCoversFromDirectory()
+    {
+        global $configArray;
+        $storagePath = $configArray['Site']['coverPath'];
+        $files = array();
+        if($handle = opendir($storagePath . DIR_SEP . "original"))
+        {
+            while (false !== ($entry = readdir($handle))){
+                if ($entry != "." && $entry != ".."){
+                    $value = '(\'' . $entry . '\')';
+                    array_push($files, $value);
+                }
+            }
+
+            closedir($handle);
+
+        }
+        return $files;
+    }
 
 //	public function addTableListWidgetListsLinks() {
 //		set_time_limit(120);

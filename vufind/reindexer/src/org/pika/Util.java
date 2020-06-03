@@ -141,20 +141,6 @@ public class Util {
 		return true;
 	}
 
-	static String cleanIniValue(String value) {
-		if (value == null) {
-			return null;
-		}
-		value = value.trim();
-		if (value.length() > 0 && value.charAt(0) == '"') {
-			value = value.substring(1);
-		}
-		if (value.length() > 0 && value.charAt(value.length() -1) == '"') {
-			value = value.substring(0, value.length() - 1);
-		}
-		return value;
-	}
-
 	static String trimTo(int maxCharacters, String stringToTrim) {
 		if (stringToTrim == null) {
 			return null;
