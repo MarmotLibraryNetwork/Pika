@@ -710,15 +710,15 @@ class Novelist3{
 		}
 
 		//Get all of the records that could match based on ISBN
-		$allIsbns = "";
+		$allIsbnsArray     = [];
+		$limitISBNSperItem = (int)1000 / count($items);
+		// We have to limit the number of ISBNs to search for because some titles will have so many isbns associated with it
+		// that the isbn search we build will be too large for a search query.
+		// Using a 1,000 ISBNs as a safe total number; then split the total so each series entry as the same upper limit of ISBNs to use.
 		foreach ($items as $item){
-			if (count($item->isbns) > 0){
-				if (strlen($allIsbns) > 0){
-					$allIsbns .= ' OR ';
-				}
-				$allIsbns .= implode(' OR ', $item->isbns);
-			}
+			$allIsbnsArray = array_merge($allIsbnsArray, array_slice($item->isbns, 0, $limitISBNSperItem));
 		}
+		$allIsbns = implode(' OR ', $allIsbnsArray);
 		$searchObject->setBasicQuery($allIsbns, "isbn");
 		$searchObject->clearFacets();
 		$searchObject->disableSpelling();
@@ -727,8 +727,8 @@ class Novelist3{
 		$response = $searchObject->processSearch(true, false, false);
 
 		//Get all the titles from the catalog
-		$titlesFromCatalog = array();
-		if (!empty($response['response']['docs'])) {
+		$titlesFromCatalog = [];
+		if (!empty($response['response']['docs'])){
 			foreach ($response['response']['docs'] as $fields){
 				$groupedWorkDriver = new GroupedWorkDriver($fields);
 				$timer->logTime("Create driver");
@@ -737,7 +737,7 @@ class Novelist3{
 					//Load data about the record
 
 					//See if we can get the series title from the record
-					$curTitle = array(
+					$curTitle = [
 						'title'           => $groupedWorkDriver->getTitle(),
 						'title_short'     => $groupedWorkDriver->getTitle(),
 						'author'          => $groupedWorkDriver->getPrimaryAuthor(),
@@ -757,22 +757,25 @@ class Novelist3{
 						'recordDriver'    => $groupedWorkDriver,
 						'smallCover'      => $groupedWorkDriver->getBookcoverUrl('small'),
 						'mediumCover'     => $groupedWorkDriver->getBookcoverUrl('medium'),
-					);
+					];
 					$timer->logTime("Load title information");
 					$titlesOwned++;
 					$titlesFromCatalog[] = $curTitle;
 				}
 			}
+		} elseif (isset($response['error'])) {
+			global $logger;
+			$logger->log('Error while searching for series titles : ' . $response['error']['msg'], PEAR_LOG_ERR);
 		}
 
 		//Loop through items an match to records we found in the catalog.
-		$titleList = array();
+		$titleList = [];
 		foreach ($items as $index => $item){
 			$titleList[$index] = null;
 		}
 		//Do 2 passes, one to check based on primary_isbn only and one to check based on all isbns
 		foreach ($items as $index => $item){
-			$isInCatalog      = false;
+			$isInCatalog             = false;
 			$currentTitleFromCatalog = null;
 			foreach ($titlesFromCatalog as $titleIndex => $currentTitleFromCatalog){
 				if (in_array($item->primary_isbn, $currentTitleFromCatalog['allIsbns'])){
@@ -800,7 +803,7 @@ class Novelist3{
 					}
 				}
 
-				if ($isInCatalog) {
+				if ($isInCatalog){
 					$this->addTitleToTitleList($currentId, $titleList, $seriesName, $currentTitleFromCatalog, $titlesFromCatalog, $titleIndex, $item, $index);
 					// updates $titleList
 
@@ -810,7 +813,7 @@ class Novelist3{
 					$isbn     = reset($item->isbns);
 					$isbn13   = strlen($isbn) == 13 ? $isbn : ISBNConverter::convertISBN10to13($isbn);
 					$isbn10   = strlen($isbn) == 10 ? $isbn : ISBNConverter::convertISBN13to10($isbn);
-					$curTitle = array(
+					$curTitle = [
 						'title'        => $item->full_title,
 						'author'       => $item->author,
 						//'publicationDate' => (string)$item->PublicationDate,
@@ -820,7 +823,7 @@ class Novelist3{
 						'libraryOwned' => false,
 						'smallCover'   => $cover = $configArray['Site']['coverUrl'] . "/bookcover.php?size=small&isn=" . $isbn13,
 						'mediumCover'  => $cover = $configArray['Site']['coverUrl'] . "/bookcover.php?size=medium&isn=" . $isbn13,
-					);
+					];
 
 					$curTitle['isCurrent'] = $currentId == $curTitle['recordId'];
 					$curTitle['series']    = isset($seriesName) ? $seriesName : '';
