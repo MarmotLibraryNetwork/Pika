@@ -215,7 +215,7 @@ class DataObjectUtil {
 						$destFileName = $propertyName . $_FILES[$propertyName]['name'];
 						if($property['customName'])
                         {
-                            $destFileName = $_FILES[$propertyName]['name'];
+                            $destFileName = addslashes($_FILES[$propertyName]['name']);
                         }
 						$destFolder   = $property['storagePath'] ?? $configArray['Site']['local'] . '/files';
 						$destFullPath = $destFolder . '/original/' . $destFileName;

@@ -1412,7 +1412,7 @@ class DBMaintenance extends Admin_Admin {
         {
             while (false !== ($entry = readdir($handle))){
                 if ($entry != "." && $entry != ".."){
-                    $value = '(\'' . $entry . '\')';
+                    $value = '(\'' . htmlentities($entry, ENT_QUOTES) . '\')';
                     array_push($files, $value);
                 }
             }
