@@ -151,7 +151,7 @@ public class GroupedWork5 extends GroupedWorkBase implements Cloneable {
 	final private static Pattern bracketedCharacterStrip       = Pattern.compile("\\[(.*?)\\]");
 	final private static Pattern sortTrimmingPattern           = Pattern.compile("(?i)^(?:(?:a|an|the|el|la|\"|')\\s)(.*)$");
 //	final private static Pattern commonSubtitlesSimplePattern  = Pattern.compile("(by\\s\\w+\\s\\w+|a novel of .*|stories|an autobiography|a biography|a memoir in books|poems|the movie|large print|graphic novel|magazine|audio cd|book club kit|with illustrations|book \\d+|the original classic edition|classic edition|a novel)$");
-	final private static Pattern commonSubtitlesSimplePattern  = Pattern.compile("(\\sby\\s\\w+\\s\\w+|a novel of .*|stories|an autobiography|a biography|a memoir in books|poems|the movie|large print|graphic novel|magazine|audio cd|book club kit|with illustrations|book \\d+|the original classic edition|classic edition|a novel)$");
+	final private static Pattern commonSubtitlesSimplePattern  = Pattern.compile("(\\sby\\s\\w+\\s\\w+|a novel of .*|stories|an autobiography|a biography|a memoir in books|poems|the movie|large print|the graphic novel|graphic novel|magazine|audio cd|book club kit|with illustrations|book \\d+|the original classic edition|classic edition|a novel)$");
 	final private static Pattern commonSubtitlesComplexPattern = Pattern.compile("((a|una)\\s(.*)novel(a|la)?|a(.*)memoir|a(.*)mystery|a(.*)thriller|by\\s\\w+\\s\\w+|an? .* story|a .*\\s?book|[\\w\\s]+series book \\d+|the[\\w\\s]+chronicles book \\d+|[\\w\\s]+trilogy book \\d+)$");
 	final private static Pattern editionRemovalPattern         = Pattern.compile("(first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth|revised|\\d+\\S*)\\s+(edition|ed|ed\\.|update|anniversary edition|comprehensive edition|anniversary commemorative edition)");
 	final private static Pattern firstPattern                  = Pattern.compile("1st");
@@ -167,6 +167,7 @@ public class GroupedWork5 extends GroupedWorkBase implements Cloneable {
 	final private static Pattern dashPattern                   = Pattern.compile("&#8211");
 	final private static Pattern ampersandPattern              = Pattern.compile("&");
 	final private static Pattern digitPattern                  = Pattern.compile("\\p{Nd}");
+	final private static Pattern numericSeasonPattern          = Pattern.compile("season\\s\\p{Nd}");
 
 	private String normalizeAuthor(String author) {
 		return AuthorNormalizer.getNormalizedName(author);
@@ -195,6 +196,9 @@ public class GroupedWork5 extends GroupedWorkBase implements Cloneable {
 
 		//Remove editions
 		groupingTitle = removeEditionInformation(groupingTitle);
+
+		groupingTitle = normalizeMovieSeasons(groupingTitle);
+
 
 		final int titleEnd = 100;
 		if (titleEnd < groupingTitle.length()) {
@@ -226,6 +230,22 @@ public class GroupedWork5 extends GroupedWorkBase implements Cloneable {
 	private String removeEditionInformation(String groupingTitle) {
 		groupingTitle = editionRemovalPattern.matcher(groupingTitle).replaceAll("");
 		return groupingTitle;
+	}
+	private String normalizeMovieSeasons(String groupingTitle) {
+		if (numericSeasonPattern.matcher(groupingTitle).find()){
+			groupingTitle = groupingTitle.replaceAll("season 1", "season one");
+			groupingTitle = groupingTitle.replaceAll("season 2", "season two");
+			groupingTitle = groupingTitle.replaceAll("season 3", "season three");
+			groupingTitle = groupingTitle.replaceAll("season 4", "season four");
+			groupingTitle = groupingTitle.replaceAll("season 5", "season five");
+			groupingTitle = groupingTitle.replaceAll("season 6", "season six");
+			groupingTitle = groupingTitle.replaceAll("season 7", "season seven");
+			groupingTitle = groupingTitle.replaceAll("season 8", "season eight");
+			groupingTitle = groupingTitle.replaceAll("season 9", "season nine");
+			groupingTitle = groupingTitle.replaceAll("season 10", "season ten");
+		}
+		return groupingTitle;
+
 	}
 
 	private String normalizeNumericTitleText(String groupingTitle) {

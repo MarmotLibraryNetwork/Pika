@@ -485,11 +485,11 @@ class RecordGroupingProcessor {
 		// Get the right most digit
 		int rightMostDigit = intToRound % 10;
 
-		// If right most digit greater than 5
-		if (rightMostDigit > 5) {
+		// If right most digit greater than or equal to 5
+		if (rightMostDigit >= 5) {
 			intToRound += 10 - rightMostDigit;
 
-		// If right most digit <= 5
+		// If right most digit < 5
 		} else{
 			intToRound -= rightMostDigit;
 		}
