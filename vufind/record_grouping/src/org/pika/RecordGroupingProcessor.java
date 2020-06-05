@@ -1,6 +1,7 @@
 package org.pika;
 
 import org.apache.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 import org.marc4j.marc.*;
 
 import java.io.File;
@@ -270,70 +271,81 @@ class RecordGroupingProcessor {
 		return groupingCategory;
 	}
 
-	private void setWorkAuthorBasedOnMarcRecord(Record marcRecord, GroupedWorkBase workForTitle, RecordIdentifier identifier, String groupingCategory) {
-		String    author   = null;
-		if (groupingCategory.equals("movie")){
-			ControlField fixedField     = (ControlField) marcRecord.getVariableField("008");
-			if (fixedField != null) {
-				String oo8Data = fixedField.getData();
-				if (oo8Data.length() > 20) {
-					String movieDuration = oo8Data.substring(18, 21);
-					if (movieDuration.equals("000")) {
-						logger.debug("movie 008 running time exceeds 999 minutes - " + identifier);
-						// We will try to parse from physical description instead
-					} else if (movieDuration.matches("^\\d+$")) {
-						// Is a numeric string
-						author = String.valueOf(roundOffTens(Integer.parseInt(movieDuration)));
-						// round to nearest tens value
+	private String getMoviePlayTimeforGroupingAuthor(Record marcRecord, RecordIdentifier identifier) {
+		String       author     = null;
+		ControlField fixedField = (ControlField) marcRecord.getVariableField("008");
+		if (fixedField != null) {
+			String oo8Data = fixedField.getData();
+			if (oo8Data.length() > 20) {
+				String movieDuration = oo8Data.substring(18, 21);
+				if (movieDuration.equals("000")) {
+					logger.debug("movie 008 running time exceeds 999 minutes - " + identifier);
+					// We will try to parse from physical description instead
+				} else if (movieDuration.matches("^\\d+$")) {
+					// Is a numeric string
+					author = String.valueOf(roundOffTens(Integer.parseInt(movieDuration)));
+					// round to nearest tens value
 
 //						author = movieDuration.substring(0, 2) + "0";
 //						// Matching by 10 minute intervals, so exclude the final playtime digit and replace with a 0
-					} else {
-						if (!movieDuration.equals("|||") && !movieDuration.equals("   ") && !movieDuration.equals("---")) {
-							// Don't log, for now, entries that are coded with these values (essentially denoting that record doesn't have the playtime info populated in 008)
-							logger.warn("008 running time invalid : '" + movieDuration + "' for " + identifier);
-						}
-					}
 				} else {
-					logger.error("008 not long enough to have a movie running time for " + identifier);
+					if (!movieDuration.equals("|||") && !movieDuration.equals("   ") && !movieDuration.equals("---")) {
+						// Don't log, for now, entries that are coded with these values (essentially denoting that record doesn't have the playtime info populated in 008)
+						logger.warn("008 running time invalid : '" + movieDuration + "' for " + identifier);
+					}
 				}
 			} else {
-				logger.warn("Missing 008 : " + identifier.toString());
+				logger.error("008 not long enough to have a movie running time for " + identifier);
 			}
-			// if any part of that failed, try parsing a playtime number from the physical description
-			if (author == null) {
-				DataField physicalDescriptionField = marcRecord.getDataField("300");
-				if (physicalDescriptionField != null && physicalDescriptionField.getSubfield('a') != null) {
-					final String physicalDescription = physicalDescriptionField.getSubfield('a').getData();
-					Matcher      playTimeMatcher     = hoursMinutesPlaytimeDurationRegex.matcher(physicalDescription);
+		} else {
+			logger.warn("Missing 008 : " + identifier.toString());
+		}
+		// if any part of that failed, try parsing a playtime number from the physical description
+		if (author == null) {
+			DataField physicalDescriptionField = marcRecord.getDataField("300");
+			if (physicalDescriptionField != null && physicalDescriptionField.getSubfield('a') != null) {
+				final String physicalDescription = physicalDescriptionField.getSubfield('a').getData();
+				Matcher      playTimeMatcher     = hoursMinutesPlaytimeDurationRegex.matcher(physicalDescription);
+				if (playTimeMatcher.find()) {
+					int minutes = Integer.parseInt(playTimeMatcher.group(2)) + Integer.parseInt(playTimeMatcher.group(1)) * 60;
+					author = String.valueOf(roundOffTens(minutes));
+				} else {
+					playTimeMatcher = minutesPlaytimeDurationRegex.matcher(physicalDescription);
 					if (playTimeMatcher.find()) {
-						int minutes = Integer.parseInt(playTimeMatcher.group(2)) + Integer.parseInt(playTimeMatcher.group(1)) * 60;
-						author = String.valueOf(roundOffTens(minutes));
-					} else {
-						playTimeMatcher = minutesPlaytimeDurationRegex.matcher(physicalDescription);
-						if (playTimeMatcher.find()) {
-							author = String.valueOf(roundOffTens(Integer.parseInt(playTimeMatcher.group(1))));
-						}
+						author = String.valueOf(roundOffTens(Integer.parseInt(playTimeMatcher.group(1))));
 					}
 				}
 			}
-			//TODO: ? set author to a phrase like "no playtime duration" if we found no value
+		}
+		return author;
+	}
 
+	private void setWorkAuthorBasedOnMarcRecord(Record marcRecord, GroupedWorkBase workForTitle, RecordIdentifier identifier, String groupingCategory) {
+		String    author   = null;
+		if (groupingCategory.equals("movie")){
+			author = getMoviePlayTimeforGroupingAuthor(marcRecord, identifier);
 		} else {
 			DataField field100 = marcRecord.getDataField("100"); // Heading - Personal Name
 			//  First Indicator: 0 - Forename (direct order); 1 - Surname (inverted order);
 			//    3 - Family name (Either direct or inverted order)
 			if (field100 != null && field100.getSubfield('a') != null) {
 				author = field100.getSubfield('a').getData();
-				// has lastname, rest of name:
-				// 100	1		|a Schreiber, Ellen.|0 http://id.loc.gov/authorities/names/n2002036303.
-				// 100	1		|a Amen, Daniel G.,|0 http://id.loc.gov/authorities/names/n92013030|e author.
+				if (field100.getIndicator1() == '1'){
+					// has lastname, rest of name:
+					// 100	1		|a Schreiber, Ellen.|0 http://id.loc.gov/authorities/names/n2002036303.
+					// 100	1		|a Amen, Daniel G.,|0 http://id.loc.gov/authorities/names/n92013030|e author.
+					author = deInvertAuthorName(author);
+				}
 			} else {
 				//110	2		|a Mixed By Yogitunes (Musical Group)
 
 				DataField field110 = marcRecord.getDataField("110"); // Heading - Corporate Name
 				if (field110 != null && field110.getSubfield('a') != null) {
 					author = field110.getSubfield('a').getData();
+					if (field110.getIndicator1() == '0'){
+						// has inverted name order
+						author = deInvertAuthorName(author);
+					}
 					for (Subfield subfield : field110.getSubfields('b')) {
 						if (subfield != null) {
 							String subordinate = subfield.getData();
@@ -346,6 +358,10 @@ class RecordGroupingProcessor {
 					DataField field111 = marcRecord.getDataField("111"); // Meeting Name
 					if (field111 != null && field111.getSubfield('a') != null) {
 						author = field111.getSubfield('a').getData();
+						if (field111.getIndicator1() == '0'){
+							// has inverted name order
+							author = deInvertAuthorName(author);
+						}
 						for (Subfield subfield : field111.getSubfields('e')) {
 							if (subfield != null) {
 								String subordinate = subfield.getData();
@@ -360,11 +376,20 @@ class RecordGroupingProcessor {
 						//    3 - Family name (Either direct or inverted order)
 						if (field700 != null && field700.getSubfield('a') != null) {
 							author = field700.getSubfield('a').getData();
+							if (field700.getIndicator1() == '1'){
+								//  First Indicator: 0 - Forename (direct order); 1 - Surname (inverted order);
+								//    3 - Family name (Either direct or inverted order)
+								author = deInvertAuthorName(author);
+							}
 						} else {
 							DataField field711 = marcRecord.getDataField("711"); // // Added Entry Corporate Name
 							if (field711 != null && field711.getSubfield('a') != null) {
 								// Check the 711 before the 710
 								author = field711.getSubfield('a').getData();
+								if (field711.getIndicator1() == '0'){
+									// has inverted name order
+									author = deInvertAuthorName(author);
+								}
 								for (Subfield subfield : field711.getSubfields('e')) {
 									if (subfield != null) {
 										String subordinate = subfield.getData();
@@ -376,9 +401,13 @@ class RecordGroupingProcessor {
 							} else {
 								DataField field710 = marcRecord.getDataField("710"); // Added Entry-Corporate Name
 								//First Indicator 0 - Inverted name; 2 - Name in direct order
-								// 1 - Jurisdiction name  TODO: Ignore juridiction names?
+								// 1 - Jurisdiction name  TODO: Ignore juridiction names and use subordinates only?
 								if (field710 != null && field710.getSubfield('a') != null) {
 									author = field710.getSubfield('a').getData();
+									if (field710.getIndicator1() == '0'){
+										// has inverted name order
+										author = deInvertAuthorName(author);
+									}
 									//example : .b20599420
 									//710	1		|a United States.|b Federal Highway Administration.|0 http://id.loc.gov/authorities/names/n79032921.
 									for (Subfield subfield : field710.getSubfields('b')) {
@@ -439,6 +468,17 @@ class RecordGroupingProcessor {
 		if (author != null) {
 			workForTitle.setAuthor(author);
 		}
+	}
+
+	/**
+	 * @param author Inverted author name to convert, eg "Last, First M."
+	 * @return an regular ordered name "First M. Last"
+	 */
+	@NotNull
+	private String deInvertAuthorName(String author) {
+		int commaPosition = author.indexOf(',');
+		author = author.replaceAll(",$","").substring(commaPosition+2) + " "  + author.substring(0, commaPosition);
+		return author;
 	}
 
 	private static int roundOffTens(int intToRound) {
