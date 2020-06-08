@@ -1073,7 +1073,7 @@ public class RecordGrouperMain {
 			pikaConn.setAutoCommit(false);
 			try (
 					PreparedStatement deleteWorkStmt = pikaConn.prepareStatement("DELETE FROM grouped_work WHERE id = ?");
-					PreparedStatement deleteRelatedIdentifiersStmt = pikaConn.prepareStatement("DELETE FROM grouped_work_identifiers_ref WHERE grouped_work_id = ?");
+//					PreparedStatement deleteRelatedIdentifiersStmt = pikaConn.prepareStatement("DELETE FROM grouped_work_identifiers_ref WHERE grouped_work_id = ?");
 					PreparedStatement groupedWorksWithoutIdentifiersStmt = pikaConn.prepareStatement("SELECT grouped_work.id FROM grouped_work WHERE id NOT IN (SELECT DISTINCT grouped_work_id FROM grouped_work_primary_identifiers)", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 					ResultSet groupedWorksWithoutIdentifiersRS = groupedWorksWithoutIdentifiersStmt.executeQuery()
 			) {
@@ -1083,8 +1083,8 @@ public class RecordGrouperMain {
 					deleteWorkStmt.setLong(1, groupedWorkId);
 					deleteWorkStmt.executeUpdate();
 
-					deleteRelatedIdentifiersStmt.setLong(1, groupedWorkId);
-					deleteRelatedIdentifiersStmt.executeUpdate();
+//					deleteRelatedIdentifiersStmt.setLong(1, groupedWorkId);
+//					deleteRelatedIdentifiersStmt.executeUpdate();
 					numWorksNotLinkedToPrimaryIdentifier++;
 					if (numWorksNotLinkedToPrimaryIdentifier % 500 == 0) {
 						pikaConn.commit();
