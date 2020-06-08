@@ -334,7 +334,7 @@ class RecordGroupingProcessor {
 					// has lastname, rest of name:
 					// 100	1		|a Schreiber, Ellen.|0 http://id.loc.gov/authorities/names/n2002036303.
 					// 100	1		|a Amen, Daniel G.,|0 http://id.loc.gov/authorities/names/n92013030|e author.
-					author = deInvertAuthorName(author);
+					author = deInvertAuthorName(author, identifier);
 				}
 			} else {
 				//110	2		|a Mixed By Yogitunes (Musical Group)
@@ -344,7 +344,7 @@ class RecordGroupingProcessor {
 					author = field110.getSubfield('a').getData();
 					if (field110.getIndicator1() == '0'){
 						// has inverted name order
-						author = deInvertAuthorName(author);
+						author = deInvertAuthorName(author, identifier);
 					}
 					for (Subfield subfield : field110.getSubfields('b')) {
 						if (subfield != null) {
@@ -360,7 +360,7 @@ class RecordGroupingProcessor {
 						author = field111.getSubfield('a').getData();
 						if (field111.getIndicator1() == '0'){
 							// has inverted name order
-							author = deInvertAuthorName(author);
+							author = deInvertAuthorName(author, identifier);
 						}
 						for (Subfield subfield : field111.getSubfields('e')) {
 							if (subfield != null) {
@@ -379,7 +379,7 @@ class RecordGroupingProcessor {
 							if (field700.getIndicator1() == '1'){
 								//  First Indicator: 0 - Forename (direct order); 1 - Surname (inverted order);
 								//    3 - Family name (Either direct or inverted order)
-								author = deInvertAuthorName(author);
+								author = deInvertAuthorName(author, identifier);
 							}
 						} else {
 							DataField field711 = marcRecord.getDataField("711"); // // Added Entry Corporate Name
@@ -388,7 +388,7 @@ class RecordGroupingProcessor {
 								author = field711.getSubfield('a').getData();
 								if (field711.getIndicator1() == '0'){
 									// has inverted name order
-									author = deInvertAuthorName(author);
+									author = deInvertAuthorName(author, identifier);
 								}
 								for (Subfield subfield : field711.getSubfields('e')) {
 									if (subfield != null) {
@@ -406,7 +406,7 @@ class RecordGroupingProcessor {
 									author = field710.getSubfield('a').getData();
 									if (field710.getIndicator1() == '0'){
 										// has inverted name order
-										author = deInvertAuthorName(author);
+										author = deInvertAuthorName(author, identifier);
 									}
 									//example : .b20599420
 									//710	1		|a United States.|b Federal Highway Administration.|0 http://id.loc.gov/authorities/names/n79032921.
@@ -475,9 +475,14 @@ class RecordGroupingProcessor {
 	 * @return an regular ordered name "First M. Last"
 	 */
 	@NotNull
-	private String deInvertAuthorName(String author) {
+	private String deInvertAuthorName(String author, RecordIdentifier identifier) {
+		author = author.replaceAll(",$",""); // trim trailing commas
 		int commaPosition = author.indexOf(',');
-		author = author.replaceAll(",$","").substring(commaPosition+2) + " "  + author.substring(0, commaPosition);
+		if (commaPosition != -1) {
+			author = author.substring(commaPosition + 2) + " " + author.substring(0, commaPosition);
+		} else {
+			logger.warn("Passed an inverted name order with out a dividing comma: '" + author + "' - " + identifier);
+		}
 		return author;
 	}
 
