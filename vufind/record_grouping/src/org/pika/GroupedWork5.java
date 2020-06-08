@@ -35,12 +35,17 @@ public class GroupedWork5 extends GroupedWorkBase implements Cloneable {
 
 	@Override
 	public void setTitle(String title, String subtitle, int numNonFilingCharacters) {
+
+		//Process subtitles before we deal with the full title
 		if (subtitle != null && subtitle.length() > 0){
+			// When we know what the subtitle is
 			title = normalizePassedInSubtitle(title, subtitle);
 		}else{
-			//Check for a subtitle within the main title
+			//Check for a subtitle within the main title by searching for a colon character
 			title = normalizeSubtitleWithinMainTitle(title);
 		}
+
+		// Now do the main normalizations on the full title
 		title = normalizeTitle(title, numNonFilingCharacters);
 		this.fullTitle = title;
 	}
@@ -150,8 +155,7 @@ public class GroupedWork5 extends GroupedWorkBase implements Cloneable {
 	final private static Pattern consecutiveSpaceStrip         = Pattern.compile("\\s{2,}");
 	final private static Pattern bracketedCharacterStrip       = Pattern.compile("\\[(.*?)\\]");
 	final private static Pattern sortTrimmingPattern           = Pattern.compile("(?i)^(?:(?:a|an|the|el|la|\"|')\\s)(.*)$");
-//	final private static Pattern commonSubtitlesSimplePattern  = Pattern.compile("(by\\s\\w+\\s\\w+|a novel of .*|stories|an autobiography|a biography|a memoir in books|poems|the movie|large print|graphic novel|magazine|audio cd|book club kit|with illustrations|book \\d+|the original classic edition|classic edition|a novel)$");
-	final private static Pattern commonSubtitlesSimplePattern  = Pattern.compile("(\\sby\\s\\w+\\s\\w+|a novel of .*|stories|an autobiography|a biography|a memoir in books|poems|the movie|large print|the graphic novel|graphic novel|magazine|audio cd|book club kit|with illustrations|book \\d+|the original classic edition|classic edition|a novel)$");
+	final private static Pattern commonSubtitlesSimplePattern  = Pattern.compile("(\\sby\\s\\w+\\s\\w+|a novel of .*|stories|an autobiography|a biography|a memoir in books|poems|the movie|large print|the graphic novel|graphic novel|magazine|audio cd|book club kit|with illustrations|playaway view|playaway|book \\d+|the original classic edition|classic edition|a novel)$");
 	final private static Pattern commonSubtitlesComplexPattern = Pattern.compile("((a|una)\\s(.*)novel(a|la)?|a(.*)memoir|a(.*)mystery|a(.*)thriller|by\\s\\w+\\s\\w+|an? .* story|a .*\\s?book|[\\w\\s]+series book \\d+|the[\\w\\s]+chronicles book \\d+|[\\w\\s]+trilogy book \\d+)$");
 	final private static Pattern editionRemovalPattern         = Pattern.compile("(first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth|revised|\\d+\\S*)\\s+(edition|ed|ed\\.|update|anniversary edition|comprehensive edition|anniversary commemorative edition)");
 	final private static Pattern firstPattern                  = Pattern.compile("1st");
@@ -199,12 +203,13 @@ public class GroupedWork5 extends GroupedWorkBase implements Cloneable {
 
 		groupingTitle = normalizeMovieSeasons(groupingTitle);
 
-
+		//Trim before truncating
+		groupingTitle = groupingTitle.trim();
 		final int titleEnd = 100;
 		if (titleEnd < groupingTitle.length()) {
-			groupingTitle = groupingTitle.substring(0, titleEnd);
+			groupingTitle = groupingTitle.substring(0, titleEnd).trim();
 		}
-		groupingTitle = groupingTitle.trim(); //TODO: trim before the 100 character truncation
+
 		if (groupingTitle.length() == 0 && titleBeforeRemovingSubtitles.length() > 0){
 			logger.info("Title '" + fullTitle + "' was normalized to nothing, reverting to '" + titleBeforeRemovingSubtitles + "'");
 			groupingTitle = titleBeforeRemovingSubtitles.trim();
