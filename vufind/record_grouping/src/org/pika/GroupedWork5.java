@@ -172,6 +172,7 @@ public class GroupedWork5 extends GroupedWorkBase implements Cloneable {
 	final private static Pattern ampersandPattern              = Pattern.compile("&");
 	final private static Pattern digitPattern                  = Pattern.compile("\\p{Nd}");
 	final private static Pattern numericSeasonPattern          = Pattern.compile("season\\s\\p{Nd}");
+	final private static Pattern numericSeriesPattern          = Pattern.compile("series\\s\\p{Nd}");
 
 	private String normalizeAuthor(String author) {
 		return AuthorNormalizer.getNormalizedName(author);
@@ -248,6 +249,18 @@ public class GroupedWork5 extends GroupedWorkBase implements Cloneable {
 			groupingTitle = groupingTitle.replaceAll("season 8", "season eight");
 			groupingTitle = groupingTitle.replaceAll("season 9", "season nine");
 			groupingTitle = groupingTitle.replaceAll("season 10", "season ten");
+		} else
+		if (numericSeriesPattern.matcher(groupingTitle).find()){
+			groupingTitle = groupingTitle.replaceAll("series 1", "series one");
+			groupingTitle = groupingTitle.replaceAll("series 2", "series two");
+			groupingTitle = groupingTitle.replaceAll("series 3", "series three");
+			groupingTitle = groupingTitle.replaceAll("series 4", "series four");
+			groupingTitle = groupingTitle.replaceAll("series 5", "series five");
+			groupingTitle = groupingTitle.replaceAll("series 6", "series six");
+			groupingTitle = groupingTitle.replaceAll("series 7", "series seven");
+			groupingTitle = groupingTitle.replaceAll("series 8", "series eight");
+			groupingTitle = groupingTitle.replaceAll("series 9", "series nine");
+			groupingTitle = groupingTitle.replaceAll("series 10", "series ten");
 		}
 		return groupingTitle;
 
