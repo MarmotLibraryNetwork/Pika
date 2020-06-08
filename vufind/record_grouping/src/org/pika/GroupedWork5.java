@@ -194,7 +194,7 @@ public class GroupedWork5 extends GroupedWorkBase implements Cloneable {
 
 		//Remove some common subtitles that are meaningless (do again here in case they were part of the title).
 		String titleBeforeRemovingSubtitles = groupingTitle.trim();
-		groupingTitle = removeCommonSubtitles(groupingTitle);
+		groupingTitle = removeCommonSubtitlePatterns(groupingTitle);
 
 		groupingTitle = normalizeNumericTitleText(groupingTitle);
 
@@ -270,16 +270,16 @@ public class GroupedWork5 extends GroupedWorkBase implements Cloneable {
 		return groupingTitle;
 	}
 
-	private String removeCommonSubtitles(String groupingTitle) {
-		boolean changeMade = true;
-		while (changeMade){
+	private String removeCommonSubtitlePatterns(String groupingTitle) {
+		boolean changeMade;
+		do{
 			changeMade = false;
 			Matcher commonSubtitleMatcher = commonSubtitlesSimplePattern.matcher(groupingTitle);
 			if (commonSubtitleMatcher.find()) {
 				groupingTitle = commonSubtitleMatcher.replaceAll("").trim();
 				changeMade = true;
 			}
-		}
+		} while (changeMade);
 		return groupingTitle;
 	}
 
@@ -319,7 +319,8 @@ public class GroupedWork5 extends GroupedWorkBase implements Cloneable {
 	private String normalizePassedInSubtitle(@NotNull String title, String subtitle) {
 		if (!title.endsWith(subtitle)){ //TODO: remove overdrive series statements in subtitle
 			//Remove any complex subtitles since we know the beginning of the string
-			String newSubtitle = cleanTitleCharacters(subtitle);
+			String newSubtitle = removeBracketedPartOfTitle(subtitle);
+			newSubtitle = cleanTitleCharacters(newSubtitle);
 			if (newSubtitle.length() > 0) {
 				newSubtitle = removeComplexSubtitles(newSubtitle);
 				if (newSubtitle.length() > 0) {
