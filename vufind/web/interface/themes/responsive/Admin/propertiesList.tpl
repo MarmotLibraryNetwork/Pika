@@ -137,7 +137,7 @@
 	<script>
 	var storagePath = "{$structure.cover.storagePath}";
 	{literal}
-	$("#adminTableRegion").prepend("<h4>Drag covers here to upload</h4>")
+	$("#adminTableRegion").prepend("<h4>Drag covers here to upload</h4>").css("border","grey dashed 1px");
 	var coverDrop = new Dropzone("#adminTableRegion", {
 		url: "/Admin/Covers?objectAction=addNew",
 		clickable: false,
@@ -152,8 +152,8 @@
 		$("#adminTable").hide();
 		$(".btn-primary").hide();
 
-		$("#addNewFormTop").append( $("<div class='btn btn-primary start' >Process Covers</div>"));
-		$("#addNewFormBottom").append( $("<div class='btn btn-primary start' >Process Covers</div>"));
+		$("#addNewFormTop").append( $("<div class='btn btn-primary start' >Upload Covers</div>"));
+		$("#addNewFormBottom").append( $("<div class='btn btn-primary start' >Upload Covers</div>"));
 
 		$(".start").click(function(){
 			coverDrop.processQueue();
