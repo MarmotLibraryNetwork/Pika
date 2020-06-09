@@ -137,7 +137,7 @@
 	<script>
 	var storagePath = "{$structure.cover.storagePath}";
 	{literal}
-	$("#adminTableRegion").prepend("<h4>Drag covers here to upload</h4>").css("border","grey dashed 1px");
+	$("#adminTableRegion").prepend("<h4>Drag covers here to upload</h4>");
 	var coverDrop = new Dropzone("#adminTableRegion", {
 		url: "/Admin/Covers?objectAction=addNew",
 		clickable: false,
@@ -148,6 +148,7 @@
 		maxFiles: 50,
 		parallelUploads: 50
 	});
+
 	coverDrop.on("drop", function(e){
 		$("#adminTable").hide();
 		$(".btn-primary").hide();

@@ -176,7 +176,9 @@
 #adminTableRegion {
   min-height: 150px;
   background: white;
-  padding: 20px 20px; }
+  padding: 20px 20px;
+  border: 1px dashed grey;
+}
   #adminTableRegion.dz-clickable {
     cursor: pointer; }
     #adminTableRegion.dz-clickable * {
@@ -186,7 +188,7 @@
   #adminTableRegion.dz-started .dz-message {
     display: none; }
   #adminTableRegion.dz-drag-hover {
-    border-style: solid; }
+    border: 2px solid black; }
     #adminTableRegion.dz-drag-hover .dz-message {
       opacity: 0.5; }
   #adminTableRegion .dz-message {
