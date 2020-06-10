@@ -117,6 +117,9 @@ class MyAccount_MyList extends MyAccount {
 						header("Location: /MyAccount/Home");
 						die();
 						break;
+                    case 'deleteAll':
+                        $list->removeAllListEntries();
+                        break;
 					case 'bulkAddTitles':
 						$notes                 = $this->bulkAddTitles($list);
 						$_SESSION['listNotes'] = $notes;
@@ -140,9 +143,7 @@ class MyAccount_MyList extends MyAccount {
 							$list->removeListEntry($id);
 						}
 						break;
-					case 'deleteAll':
-						$list->removeAllListEntries();
-						break;
+
 				}
 				$list->update();
 			}elseif (isset($_REQUEST['delete'])){
