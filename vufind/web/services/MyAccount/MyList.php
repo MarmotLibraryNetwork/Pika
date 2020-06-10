@@ -120,6 +120,17 @@ class MyAccount_MyList extends MyAccount {
                     case 'deleteAll':
                         $list->removeAllListEntries();
                         break;
+                    case 'deleteMarked':
+                        //get a list of all titles that were selected
+                        if(isset($_REQUEST['myListActionData'])) {
+                            $itemsToRemove = explode(",",$_REQUEST['myListActionData']);
+                            foreach ($itemsToRemove as $id) {
+                                //add back the leading . to get the full bib record
+                                $list->removeListEntry($id);
+                                $list->update();
+                            }
+                        }
+                        break;
 					case 'bulkAddTitles':
 						$notes                 = $this->bulkAddTitles($list);
 						$_SESSION['listNotes'] = $notes;
@@ -135,14 +146,7 @@ class MyAccount_MyList extends MyAccount {
 			}elseif (!empty($_REQUEST['myListActionItem'])){
 				$actionToPerform = $_REQUEST['myListActionItem'];
 				switch ($actionToPerform){
-					case 'deleteMarked':
-						//get a list of all titles that were selected
-						$itemsToRemove = $_REQUEST['selected'];
-						foreach ($itemsToRemove as $id => $selected){
-							//add back the leading . to get the full bib record
-							$list->removeListEntry($id);
-						}
-						break;
+
 
 				}
 				$list->update();

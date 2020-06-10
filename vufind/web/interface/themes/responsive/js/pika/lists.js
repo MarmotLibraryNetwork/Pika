@@ -15,6 +15,12 @@ Pika.Lists = (function(){
 			$('#myListFormHead').submit();
 			return false;
 		},
+		submitListFormWithData: function(action, data){
+			$('#myListActionHead').val(action);
+			$('#myListActionData').val(data);
+			$('#myListFormHead').submit();
+			return false;
+		},
 
 		makeListPublicAction: function (){
 			return this.submitListForm('makePublic');
@@ -29,6 +35,25 @@ Pika.Lists = (function(){
 				this.submitListForm('deleteList');
 			}
 			return false;
+		},
+
+		deleteListItems: function(ids){
+			var markedTitles = new Array();
+			$.each(ids, function(key, val) {
+				markedTitles.push(val.value);
+			});
+
+			var stringReturn = markedTitles.join(",")
+			var x = ids.length;
+			var title = " title";
+			if(x != 1){title = " titles";}
+			 if(confirm("Are you sure you want to delete " + x + title + " from this list? This cannot be undone.")){
+
+
+			 	this.submitListFormWithData('deleteMarked', stringReturn);
+
+			 }
+
 		},
 
 		updateListAction: function (){
@@ -95,6 +120,8 @@ Pika.Lists = (function(){
 			window.print();
 			return false;
 		},
+
+
 
 		importListsFromClassic: function (){
 			if (confirm("This will import any lists you had defined in the old catalog.  This may take several minutes depending on the size of your lists. Are you sure you want to continue?")){

@@ -2,7 +2,7 @@
 	<form action="/MyAccount/MyList/{$favList->id}" id="myListFormHead">
 		<div>
 			<input type="hidden" name="myListActionHead" id="myListActionHead" class="form">
-
+			<input type="hidden" name="myListActionData" id="myListActionData" class="form">
 			<h3 id="listTitle">{$favList->title|escape:"html"}</h3>
 			{if $notes}
 				<div id="listNotes" class="alert alert-info">
@@ -98,7 +98,7 @@
 
 					{if $allowEdit}
 						<div class="btn-group">
-
+							<button value="deleteMarked" id="markedDelete" class="btn btn-sm btn-default" onclick='return Pika.Lists.deleteListItems({literal}$("input[name=marked]:checked"){/literal});'>Delete Selected</button>
 							<button value="clearList" id="ClearLists" class="btn btn-sm btn-default" onclick='return Pika.Lists.deleteAllListItemsAction();'>Clear List</button>
 							<button value="deleteList" id="FavDelete" class="btn btn-sm btn-danger" onclick='return Pika.Lists.deleteListAction();'>Delete List</button>
 						</div>

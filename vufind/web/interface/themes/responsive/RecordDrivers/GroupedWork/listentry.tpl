@@ -1,5 +1,8 @@
 {strip}
-	<div id="groupedRecord{$summId|escape}" class="resultsList" data-order="{$resultIndex}">
+	<div class="row">
+		<div class="col-sm-1"><input type="checkbox" name="marked" id="favorite_{$summId|escape}" class="form-control" value="{$summId|escape}" /></div>
+	<div class="col-sm-11">
+		<div id="groupedRecord{$summId|escape}" class="resultsList" data-order="{$resultIndex}">
 		<a name="record{$summId|escape:"url"}"></a>
 		<div class="row">
 		{if $showCovers}
@@ -129,5 +132,7 @@
 		</div>
 
 		</div>
+	</div>
+	</div>
 	</div>
 {/strip}
