@@ -774,10 +774,6 @@ public class RecordGrouperMain {
 				//Cleanup the data
 				removeGroupedWorksWithoutPrimaryIdentifiers(pikaConn);
 				pikaConn.commit();
-				//removeUnlinkedIdentifiers(pikaConn);
-				//pikaConn.commit();
-				//makeIdentifiersLinkingToMultipleWorksInvalidForEnrichment(pikaConn);
-				//pikaConn.commit();
 				updateLastGroupingTime();
 				pikaConn.commit();
 
@@ -918,153 +914,6 @@ public class RecordGrouperMain {
 		}
 	}
 
-	/*private static void makeIdentifiersLinkingToMultipleWorksInvalidForEnrichment(Connection vufindConn) {
-		//Mark any secondaryIdentifiers that link to more than one grouped record and therefore should not be used for enrichment
-		try{
-			boolean autoCommit = vufindConn.getAutoCommit();
-			//First mark that all are ok to use
-			PreparedStatement markAllIdentifiersAsValidStmt = vufindConn.prepareStatement("UPDATE grouped_work_identifiers SET valid_for_enrichment = 1");
-			markAllIdentifiersAsValidStmt.executeUpdate();
-
-			//Get a list of any secondaryIdentifiers that are used to load enrichment (isbn, issn, upc) that are attached to more than one grouped work
-			vufindConn.setAutoCommit(false);
-			PreparedStatement invalidIdentifiersStmt = vufindConn.prepareStatement(
-					"SELECT grouped_work_identifiers.id as secondary_identifier_id, type, identifier, COUNT(grouped_work_id) as num_related_works\n" +
-							"FROM grouped_work_identifiers\n" +
-							"INNER JOIN grouped_work_identifiers_ref ON grouped_work_identifiers.id = identifier_id\n" +
-							"WHERE type IN ('isbn', 'issn', 'upc')\n" +
-							"GROUP BY grouped_work_identifiers.id\n" +
-							"HAVING num_related_works > 1", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
-
-			ResultSet invalidIdentifiersRS = invalidIdentifiersStmt.executeQuery();
-			PreparedStatement getRelatedWorksForIdentifierStmt = vufindConn.prepareStatement("SELECT full_title, author, grouping_category\n" +
-					"FROM grouped_work_identifiers_ref\n" +
-					"INNER JOIN grouped_work ON grouped_work_id = grouped_work.id\n" +
-					"WHERE identifier_id = ?");
-			PreparedStatement updateInvalidIdentifierStmt = vufindConn.prepareStatement("UPDATE grouped_work_identifiers SET valid_for_enrichment = 0 where id = ?");
-			int numIdentifiersUpdated = 0;
-			while (invalidIdentifiersRS.next()){
-				String type = invalidIdentifiersRS.getString("type");
-				String identifier = invalidIdentifiersRS.getString("identifier");
-				Long secondaryIdentifierId = invalidIdentifiersRS.getLong("secondary_identifier_id");
-				//Get the related works for the identifier
-				getRelatedWorksForIdentifierStmt.setLong(1, secondaryIdentifierId);
-				ResultSet relatedWorksForIdentifier = getRelatedWorksForIdentifierStmt.executeQuery();
-				StringBuilder titles = new StringBuilder();
-				ArrayList<String> titlesBroken = new ArrayList<>();
-				StringBuilder authors = new StringBuilder();
-				ArrayList<String> authorsBroken = new ArrayList<>();
-				StringBuilder categories = new StringBuilder();
-				ArrayList<String> categoriesBroken = new ArrayList<>();
-
-				while (relatedWorksForIdentifier.next()){
-					titlesBroken.add(relatedWorksForIdentifier.getString("full_title"));
-					if (titles.length() > 0){
-						titles.append(", ");
-					}
-					titles.append(relatedWorksForIdentifier.getString("full_title"));
-
-					authorsBroken.add(relatedWorksForIdentifier.getString("author"));
-					if (authors.length() > 0){
-						authors.append(", ");
-					}
-					authors.append(relatedWorksForIdentifier.getString("author"));
-
-					categoriesBroken.add(relatedWorksForIdentifier.getString("grouping_category"));
-					if (categories.length() > 0){
-						categories.append(", ");
-					}
-					categories.append(relatedWorksForIdentifier.getString("grouping_category"));
-				}
-
-				boolean allTitlesSimilar = true;
-				if (titlesBroken.size() >= 2){
-					String firstTitle = titlesBroken.get(0);
-
-					for (int i = 1; i < titlesBroken.size(); i++){
-						String curTitle = titlesBroken.get(i);
-						if (!curTitle.equals(firstTitle)){
-							if (curTitle.startsWith(firstTitle) || firstTitle.startsWith(curTitle)){
-								logger.info(type + " " + identifier + " did not match on titles '" + titles + "', but the titles are similar");
-							}else{
-								allTitlesSimilar = false;
-							}
-						}
-					}
-				}
-
-				boolean allAuthorsSimilar = true;
-				if (authorsBroken.size() >= 2){
-					String firstAuthor = authorsBroken.get(0);
-					for (int i = 1; i < authorsBroken.size(); i++){
-						String curAuthor = authorsBroken.get(i);
-						if (!curAuthor.equals(firstAuthor)){
-							if (curAuthor.startsWith(firstAuthor) || firstAuthor.startsWith(curAuthor)){
-								logger.info(type + " " + identifier + " did not match on authors '" + authors + "', but the authors are similar");
-							}else{
-								allAuthorsSimilar = false;
-							}
-						}
-					}
-				}
-
-				boolean allCategoriesSimilar = true;
-				if (categoriesBroken.size() >= 2){
-					String firstCategory = categoriesBroken.get(0);
-					for (int i = 1; i < categoriesBroken.size(); i++){
-						String curCategory = categoriesBroken.get(i);
-						if (!curCategory.equals(firstCategory)){
-							allCategoriesSimilar = false;
-						}
-					}
-				}
-
-				if (!(allTitlesSimilar && allAuthorsSimilar && allCategoriesSimilar)) {
-					updateInvalidIdentifierStmt.setLong(1, invalidIdentifiersRS.getLong("secondary_identifier_id"));
-					updateInvalidIdentifierStmt.executeUpdate();
-					numIdentifiersUpdated++;
-				}else{
-					logger.info("Leaving secondary identifier as valid because the titles are similar enough");
-				}
-			}
-			logger.info("Marked " + numIdentifiersUpdated + " secondaryIdentifiers as invalid for enrichment because they link to multiple grouped records");
-			invalidIdentifiersRS.close();
-			invalidIdentifiersStmt.close();
-			vufindConn.commit();
-			vufindConn.setAutoCommit(autoCommit);
-		}catch (Exception e){
-			logger.error("Unable to mark secondary identifiers as invalid for enrichment", e);
-		}
-	}*/
-
-	/*private static void removeUnlinkedIdentifiers(Connection vufindConn) {
-		//Remove any secondary identifiers that are no longer linked to a primary identifier
-		try{
-			boolean autoCommit = vufindConn.getAutoCommit();
-			vufindConn.setAutoCommit(false);
-			PreparedStatement unlinkedIdentifiersStmt = vufindConn.prepareStatement("SELECT id FROM grouped_work_identifiers where id NOT IN " +
-					"(SELECT DISTINCT secondary_identifier_id from grouped_work_primary_to_secondary_id_ref)", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-			ResultSet unlinkedIdentifiersRS = unlinkedIdentifiersStmt.executeQuery();
-			PreparedStatement removeIdentifierStmt = vufindConn.prepareStatement("DELETE FROM grouped_work_identifiers where id = ?");
-			int numUnlinkedIdentifiersRemoved = 0;
-			while (unlinkedIdentifiersRS.next()){
-				removeIdentifierStmt.setLong(1, unlinkedIdentifiersRS.getLong(1));
-				removeIdentifierStmt.executeUpdate();
-				numUnlinkedIdentifiersRemoved++;
-				if (numUnlinkedIdentifiersRemoved % 500 == 0){
-					vufindConn.commit();
-				}
-			}
-			logger.info("Removed " + numUnlinkedIdentifiersRemoved + " identifiers that were not linked to primary identifiers");
-			unlinkedIdentifiersRS.close();
-			unlinkedIdentifiersStmt.close();
-			vufindConn.commit();
-			vufindConn.setAutoCommit(autoCommit);
-		}catch(Exception e){
-			logger.error("Error removing identifiers that are no longer linked to a primary identifier", e);
-		}
-	}*/
-
 	private static void removeGroupedWorksWithoutPrimaryIdentifiers(Connection pikaConn) {
 		//Remove any grouped works that no longer link to a primary identifier
 		Long groupedWorkId = null;
@@ -1073,7 +922,6 @@ public class RecordGrouperMain {
 			pikaConn.setAutoCommit(false);
 			try (
 					PreparedStatement deleteWorkStmt = pikaConn.prepareStatement("DELETE FROM grouped_work WHERE id = ?");
-//					PreparedStatement deleteRelatedIdentifiersStmt = pikaConn.prepareStatement("DELETE FROM grouped_work_identifiers_ref WHERE grouped_work_id = ?");
 					PreparedStatement groupedWorksWithoutIdentifiersStmt = pikaConn.prepareStatement("SELECT grouped_work.id FROM grouped_work WHERE id NOT IN (SELECT DISTINCT grouped_work_id FROM grouped_work_primary_identifiers)", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 					ResultSet groupedWorksWithoutIdentifiersRS = groupedWorksWithoutIdentifiersStmt.executeQuery()
 			) {
@@ -1083,8 +931,6 @@ public class RecordGrouperMain {
 					deleteWorkStmt.setLong(1, groupedWorkId);
 					deleteWorkStmt.executeUpdate();
 
-//					deleteRelatedIdentifiersStmt.setLong(1, groupedWorkId);
-//					deleteRelatedIdentifiersStmt.executeUpdate();
 					numWorksNotLinkedToPrimaryIdentifier++;
 					if (numWorksNotLinkedToPrimaryIdentifier % 500 == 0) {
 						pikaConn.commit();
@@ -1183,15 +1029,8 @@ public class RecordGrouperMain {
 			try {
 				addNoteToGroupingLog("Clearing out grouping related tables.");
 				pikaConn.prepareStatement("TRUNCATE ils_marc_checksums").executeUpdate();
-				String groupedWorkTableName = "grouped_work";
-				pikaConn.prepareStatement("TRUNCATE " + groupedWorkTableName).executeUpdate();
-//				String groupedWorkIdentifiersTableName = "grouped_work_identifiers";
-//				pikaConn.prepareStatement("TRUNCATE " + groupedWorkIdentifiersTableName).executeUpdate();
-//				String groupedWorkIdentifiersRefTableName = "grouped_work_identifiers_ref";
-//				pikaConn.prepareStatement("TRUNCATE " + groupedWorkIdentifiersRefTableName).executeUpdate();
-				String groupedWorkPrimaryIdentifiersTableName = "grouped_work_primary_identifiers";
-				pikaConn.prepareStatement("TRUNCATE " + groupedWorkPrimaryIdentifiersTableName).executeUpdate();
-//				pikaConn.prepareStatement("TRUNCATE grouped_work_primary_to_secondary_id_ref").executeUpdate();
+				pikaConn.prepareStatement("TRUNCATE grouped_work").executeUpdate();
+				pikaConn.prepareStatement("TRUNCATE grouped_work_primary_identifiers").executeUpdate();
 			} catch (Exception e) {
 				System.out.println("Error clearing database " + e.toString());
 				System.exit(1);
@@ -1373,22 +1212,6 @@ public class RecordGrouperMain {
 		}
 	}
 
-	/*private static void loadExistingMarcFiles(File individualMarcPath, HashSet<String> existingFiles) {
-		File[] subFiles = individualMarcPath.listFiles();
-		if (subFiles != null){
-			for (File curFile : subFiles){
-				String fileName = curFile.getName();
-				if (!fileName.equals(".") && !fileName.equals("..")){
-					if (curFile.isDirectory()){
-						loadExistingMarcFiles(curFile, existingFiles);
-					}else{
-						existingFiles.add(fileName);
-					}
-				}
-			}
-		}
-	}*/
-
 	private static void groupOverDriveRecords(Connection pikaConn, Connection econtentConnection, boolean explodeMarcsOnly) {
 		if (explodeMarcsOnly) {
 			//Nothing to do since we don't have marc records to process
@@ -1396,7 +1219,7 @@ public class RecordGrouperMain {
 		}
 		OverDriveRecordGrouper recordGroupingProcessor = new OverDriveRecordGrouper(pikaConn, serverName, logger, fullRegroupingClearGroupingTables);
 		addNoteToGroupingLog("Starting to group overdrive records");
-		loadIlsChecksums(pikaConn, "overdrive");
+//		loadIlsChecksums(pikaConn, "overdrive"); // There are no checksums for overdrive metadata
 		loadExistingPrimaryIdentifiers(pikaConn, "overdrive");
 
 		int numRecordsProcessed = 0;
@@ -1413,9 +1236,6 @@ public class RecordGrouperMain {
 			}
 			TreeSet<String> recordNumbersInExport = new TreeSet<>();
 			try (
-//					PreparedStatement overDriveIdentifiersStmt = econtentConnection.prepareStatement("SELECT * FROM overdrive_api_product_identifiers WHERE id = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-					PreparedStatement overDriveCreatorStmt = econtentConnection.prepareStatement("SELECT fileAs FROM overdrive_api_product_creators WHERE productId = ? AND role like ? ORDER BY id", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-//					getProductLanguagesStmt = econtentConn.prepareStatement("SELECT * FROM overdrive_api_product_languages INNER JOIN overdrive_api_product_languages_ref ON overdrive_api_product_languages.id = languageId WHERE productId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 					PreparedStatement overDriveSubjectsStmt = econtentConnection.prepareStatement("SELECT * FROM overdrive_api_product_subjects INNER JOIN overdrive_api_product_subjects_ref ON overdrive_api_product_subjects.id = subjectId WHERE productId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 					ResultSet overDriveRecordRS = overDriveRecordsStmt.executeQuery()
 			) {
@@ -1426,43 +1246,10 @@ public class RecordGrouperMain {
 					String mediaType           = overDriveRecordRS.getString("mediaType");
 					String title               = overDriveRecordRS.getString("title");
 					String subtitle            = overDriveRecordRS.getString("subtitle");
-					String primaryCreatorRole  = overDriveRecordRS.getString("primaryCreatorRole");
 					String author              = overDriveRecordRS.getString("primaryCreatorName");
 					String productLanguageCode = overDriveRecordRS.getString("code");
 					recordNumbersInExport.add(overdriveId);
-					//primary creator in overdrive is always first name, last name.  Therefore, we need to look in the creators table
-					if (author != null) {
-						overDriveCreatorStmt.setLong(1, id);
-						overDriveCreatorStmt.setString(2, primaryCreatorRole);
-						try (ResultSet creatorInfoRS = overDriveCreatorStmt.executeQuery()) {
-							boolean swapFirstNameLastName = false;
-							if (creatorInfoRS.next()) {
-								String tmpAuthor = creatorInfoRS.getString("fileAs");
-								if (tmpAuthor.equals(author) && (mediaType.equalsIgnoreCase("ebook") || mediaType.equalsIgnoreCase("audiobook"))) {
-									swapFirstNameLastName = true;
-								} else {
-									author = tmpAuthor;
-								}
-							} else {
-								swapFirstNameLastName = true;
-							}
-							if (swapFirstNameLastName) {
-								if (logger.isDebugEnabled()) {
-									logger.debug("Swap First Last Name for author '" + author + "' for an Overdrive title.");
-								}
-								// I suspect this never gets called anymore. pascal 7/26/2018
-								if (author.contains(" ")) {
-									String[]      authorParts = author.split("\\s+");
-									StringBuilder tmpAuthor   = new StringBuilder();
-									for (int i = 1; i < authorParts.length; i++) {
-										tmpAuthor.append(authorParts[i]).append(" ");
-									}
-									tmpAuthor.append(authorParts[0]);
-									author = tmpAuthor.toString();
-								}
-							}
-						}
-					}
+					//primary creator in overdrive is always first name, last name.
 
 					String groupingFormat;
 					if (mediaType.equalsIgnoreCase("ebook")){
@@ -1486,7 +1273,6 @@ public class RecordGrouperMain {
 					// Set Grouping Language (use ISO 639-2 Bibliographic code)
 					String groupingLanguage = recordGroupingProcessor.translationMaps.get("iso639-1TOiso639-2B").translateValue(productLanguageCode, overdriveId);
 
-//					overDriveIdentifiersStmt.setLong(1, id);
 					RecordIdentifier primaryIdentifier = new RecordIdentifier("overdrive", overdriveId);
 
 					recordGroupingProcessor.processOverDriveRecord(primaryIdentifier, title, subtitle, author, groupingFormat, groupingLanguage, true);
@@ -1495,12 +1281,13 @@ public class RecordGrouperMain {
 				}
 			}
 
-			//This is no longer needed because we do cleanup differently now (get a list of everything in the database and then cleanup anything that isn't in the API anymore
 			String dataDirPath = PikaConfigIni.getIniValue("Reindex", "marcPath");
 			if (fullRegroupingClearGroupingTables) {
 				writeExistingRecordsFile(recordNumbersInExport, "record_grouping_overdrive_records_in_export", dataDirPath);
 			}
-//			removeDeletedRecords("overdrive", dataDirPath);
+			if (fullRegroupingNoClear) { //TODO: verify this is the only time we need to do this
+				removeDeletedRecords("overdrive", dataDirPath);
+			}
 			addNoteToGroupingLog("Finished grouping " + numRecordsProcessed + " records from overdrive ");
 		} catch (Exception e) {
 			System.out.println("Error loading OverDrive records: " + e.toString());

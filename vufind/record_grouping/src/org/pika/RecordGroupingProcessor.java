@@ -42,11 +42,6 @@ class RecordGroupingProcessor {
 	private long    startTime = new Date().getTime();
 
 	HashMap<String, TranslationMap> translationMaps = new HashMap<>();
-//	HashMap<String, HashMap<String, String>> translationMaps = new HashMap<>();
-
-	//TODO: Determine if we can avoid this by simply using the ON DUPLICATE KEY UPDATE FUNCTIONALITY
-	//Would also want to mark merged works as changed (at least once) to make sure they get reindexed.
-//	private HashMap<String, Long> existingGroupedWorks = new HashMap<>();
 
 	//A list of grouped works that have been manually merged.
 	private HashMap<String, String> mergedGroupedWorks = new HashMap<>();
@@ -62,11 +57,6 @@ class RecordGroupingProcessor {
 	RecordGroupingProcessor(Logger logger, boolean fullRegrouping) {
 		this.logger         = logger;
 		this.fullRegrouping = fullRegrouping;
-
-//		String mapName = "formatsToGroupingCategory";
-//		translationMaps.put(mapName, new TranslationMap("grouping", mapName, false, false, this.logger, RecordGroupingProcessor.formatsToGroupingCategory));
-//		mapName = "category";
-//		translationMaps.put(mapName, new TranslationMap("grouping", mapName, false, false, this.logger, categoryMap));
 	}
 
 	/**
@@ -95,19 +85,6 @@ class RecordGroupingProcessor {
 			removePrimaryIdentifiersForMergedWorkStmt = pikaConn.prepareStatement("DELETE FROM grouped_work_primary_identifiers WHERE grouped_work_id = ?");
 			groupedWorkForIdentifierStmt              = pikaConn.prepareStatement("SELECT grouped_work.id, grouped_work.permanent_id FROM grouped_work INNER JOIN grouped_work_primary_identifiers ON grouped_work_primary_identifiers.grouped_work_id = grouped_work.id where type = ? AND identifier = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			loadExistingGroupedWorksStmt              = pikaConn.prepareStatement("SELECT id FROM grouped_work WHERE permanent_id = ?");
-
-//			if (!fullRegrouping) {
-//				try (
-//						PreparedStatement loadExistingGroupedWorksStmt = pikaConn.prepareStatement("SELECT id, permanent_id FROM grouped_work");
-//						ResultSet loadExistingGroupedWorksRS = loadExistingGroupedWorksStmt.executeQuery()
-//				) {
-//					while (loadExistingGroupedWorksRS.next()) {
-//						existingGroupedWorks.put(loadExistingGroupedWorksRS.getString("permanent_id"), loadExistingGroupedWorksRS.getLong("id"));
-//					}
-//				} catch (Exception e) {
-//					logger.error("Error loading all existing Works", e);
-//				}
-//			}
 
 			try (
 					PreparedStatement loadMergedWorksStmt = pikaConn.prepareStatement("SELECT * FROM merged_grouped_works");
@@ -685,13 +662,9 @@ class RecordGroupingProcessor {
 				insertGroupedWorkStmt.setString(3, groupedWork.getGroupingCategory());
 				if (groupedWork.getGroupedWorkVersion() >= 5) {
 					insertGroupedWorkStmt.setString(4, ((GroupedWork5)groupedWork).getGroupingLanguage());
-					insertGroupedWorkStmt.setString(5, groupedWorkPermanentId);
-					insertGroupedWorkStmt.setLong(6, updateTime);
-				} else {
-					//TODO: meh??
-					insertGroupedWorkStmt.setString(5, groupedWorkPermanentId);
-					insertGroupedWorkStmt.setLong(6, updateTime);
 				}
+				insertGroupedWorkStmt.setString(5, groupedWorkPermanentId);
+				insertGroupedWorkStmt.setLong(6, updateTime);
 
 				insertGroupedWorkStmt.executeUpdate();
 				try (ResultSet generatedKeysRS = insertGroupedWorkStmt.getGeneratedKeys()) {
@@ -701,8 +674,6 @@ class RecordGroupingProcessor {
 				}
 				numGroupedWorksAdded++;
 
-				//Add to the existing works so we can optimize performance later
-//				existingGroupedWorks.put(groupedWorkPermanentId, groupedWorkId);
 				updatedAndInsertedWorksThisRun.add(groupedWorkId);
 			}
 
@@ -768,148 +739,10 @@ class RecordGroupingProcessor {
 			addPrimaryIdentifierForWorkStmt.setString(2, primaryIdentifier.getSource());
 			addPrimaryIdentifierForWorkStmt.setString(3, primaryIdentifier.getIdentifier());
 			addPrimaryIdentifierForWorkStmt.executeUpdate();
-			/*ResultSet primaryIdentifierRS = addPrimaryIdentifierForWorkStmt.getGeneratedKeys();
-			primaryIdentifierRS.next();
-			primaryIdentifier.setIdentifierId(primaryIdentifierRS.getLong(1));
-			primaryIdentifierRS.close();*/
 		} catch (SQLException e) {
 			logger.error("Error adding primary identifier to grouped work " + groupedWorkId + " " + primaryIdentifier.toString(), e);
 		}
 	}
-
-/*	private static HashMap<String, String> formatsToGroupingCategory = new HashMap<>();
-
-	static {
-		// Keep entries in lower case
-		formatsToGroupingCategory.put("atlas", "other");
-		formatsToGroupingCategory.put("archival materials", "other");
-		formatsToGroupingCategory.put("map", "other");
-		formatsToGroupingCategory.put("tapecartridge", "other");
-		formatsToGroupingCategory.put("chipcartridge", "other");
-		formatsToGroupingCategory.put("disccartridge", "other");
-		formatsToGroupingCategory.put("tapecassette", "other");
-		formatsToGroupingCategory.put("tapereel", "other");
-		formatsToGroupingCategory.put("floppydisk", "other");
-		formatsToGroupingCategory.put("cdrom", "other");
-		formatsToGroupingCategory.put("software", "other");
-		formatsToGroupingCategory.put("globe", "other");
-		formatsToGroupingCategory.put("braille", "book");
-		formatsToGroupingCategory.put("filmstrip", "movie");
-		formatsToGroupingCategory.put("transparency", "other");
-		formatsToGroupingCategory.put("slide", "other");
-		formatsToGroupingCategory.put("microfilm", "other");
-		formatsToGroupingCategory.put("collage", "other");
-		formatsToGroupingCategory.put("drawing", "other");
-		formatsToGroupingCategory.put("painting", "other");
-		formatsToGroupingCategory.put("print", "other");
-		formatsToGroupingCategory.put("photonegative", "other");
-		formatsToGroupingCategory.put("flashcard", "other");
-		formatsToGroupingCategory.put("chart", "other");
-		formatsToGroupingCategory.put("photo", "other");
-		formatsToGroupingCategory.put("motionpicture", "movie");
-		formatsToGroupingCategory.put("kit", "other");
-		formatsToGroupingCategory.put("bookclubkit", "other");
-		formatsToGroupingCategory.put("sensorimage", "other");
-		formatsToGroupingCategory.put("sounddisc", "audio");
-		formatsToGroupingCategory.put("soundcassette", "audio");
-		formatsToGroupingCategory.put("soundrecording", "audio");
-		formatsToGroupingCategory.put("videocartridge", "movie");
-		formatsToGroupingCategory.put("videodisc", "movie");
-		formatsToGroupingCategory.put("videocassette", "movie");
-		formatsToGroupingCategory.put("videoreel", "movie");
-		formatsToGroupingCategory.put("video", "movie");
-		formatsToGroupingCategory.put("musicalscore", "book");
-		formatsToGroupingCategory.put("musicrecording", "music");
-		formatsToGroupingCategory.put("musiccd", "music");
-		formatsToGroupingCategory.put("electronic", "other");
-		formatsToGroupingCategory.put("physicalobject", "other");
-		formatsToGroupingCategory.put("manuscript", "book");
-		formatsToGroupingCategory.put("ebook", "ebook");
-		formatsToGroupingCategory.put("book", "book");
-		formatsToGroupingCategory.put("newspaper", "book");
-		formatsToGroupingCategory.put("journal", "book");
-		formatsToGroupingCategory.put("serial", "book");
-		formatsToGroupingCategory.put("unknown", "other");
-		formatsToGroupingCategory.put("playaway", "audio");
-		formatsToGroupingCategory.put("playawayview", "movie");
-		formatsToGroupingCategory.put("largeprint", "book");
-		formatsToGroupingCategory.put("blu-ray", "movie");
-		formatsToGroupingCategory.put("4kultrablu-ray", "movie");
-		formatsToGroupingCategory.put("dvd", "movie");
-		formatsToGroupingCategory.put("verticalfile", "other");
-		formatsToGroupingCategory.put("compactdisc", "audio");
-		formatsToGroupingCategory.put("taperecording", "audio");
-		formatsToGroupingCategory.put("phonograph", "audio");
-//		formatsToGroupingCategory.put("pdf", "ebook");
-//		formatsToGroupingCategory.put("epub", "ebook");
-//		formatsToGroupingCategory.put("jpg", "other");
-//		formatsToGroupingCategory.put("gif", "other");
-//		formatsToGroupingCategory.put("mp3", "audio");
-		formatsToGroupingCategory.put("plucker", "ebook");
-		formatsToGroupingCategory.put("kindle", "ebook");
-//		formatsToGroupingCategory.put("externallink", "ebook");
-//		formatsToGroupingCategory.put("externalmp3", "audio");
-//		formatsToGroupingCategory.put("interactivebook", "ebook");
-		formatsToGroupingCategory.put("overdrive", "ebook");
-//		formatsToGroupingCategory.put("external_web", "ebook"); //TODO: external_ values obsolete
-//		formatsToGroupingCategory.put("external_ebook", "ebook"); //TODO: external_ values obsolete
-//		formatsToGroupingCategory.put("external_eaudio", "audio"); //TODO: external_ values obsolete
-//		formatsToGroupingCategory.put("external_emusic", "music"); //TODO: external_ values obsolete
-//		formatsToGroupingCategory.put("external_evideo", "movie"); //TODO: external_ values obsolete
-		formatsToGroupingCategory.put("text", "ebook");
-//		formatsToGroupingCategory.put("gifs", "other");
-//		formatsToGroupingCategory.put("itunes", "audio");
-//		formatsToGroupingCategory.put("adobe_epub_ebook", "ebook");
-//		formatsToGroupingCategory.put("kindle_book", "ebook");
-//		formatsToGroupingCategory.put("microsoft_ebook", "ebook");
-//		formatsToGroupingCategory.put("overdrive_wma_audiobook", "audio");
-//		formatsToGroupingCategory.put("overdrive_mp3_audiobook", "audio");
-//		formatsToGroupingCategory.put("overdrive_music", "music");
-//		formatsToGroupingCategory.put("overdrive_video", "movie");
-//		formatsToGroupingCategory.put("overdrive_read", "ebook");
-//		formatsToGroupingCategory.put("overdrive_listen", "audio");
-//		formatsToGroupingCategory.put("adobe_pdf_ebook", "ebook");
-//		formatsToGroupingCategory.put("palm", "ebook");
-//		formatsToGroupingCategory.put("mobipocket_ebook", "ebook");
-//		formatsToGroupingCategory.put("disney_online_book", "ebook");
-//		formatsToGroupingCategory.put("open_pdf_ebook", "ebook");
-//		formatsToGroupingCategory.put("open_epub_ebook", "ebook");
-//		formatsToGroupingCategory.put("nook_periodicals", "ebook");
-		formatsToGroupingCategory.put("econtent", "ebook");
-		formatsToGroupingCategory.put("seedpacket", "other");
-		formatsToGroupingCategory.put("graphicnovel", "comic");
-		formatsToGroupingCategory.put("thesis", "book");
-		formatsToGroupingCategory.put("wonderbook", "other");
-		formatsToGroupingCategory.put("voxbooks", "other");
-		formatsToGroupingCategory.put("playstation", "other");
-		formatsToGroupingCategory.put("playstation3", "other");
-		formatsToGroupingCategory.put("playstation4", "other");
-		formatsToGroupingCategory.put("playstationvita", "other");
-		formatsToGroupingCategory.put("nintendods", "other");
-		formatsToGroupingCategory.put("3ds", "other");
-		formatsToGroupingCategory.put("nintendoswitch", "other");
-		formatsToGroupingCategory.put("wii", "other");
-		formatsToGroupingCategory.put("wiiu", "other");
-		formatsToGroupingCategory.put("xbox360", "other");
-		formatsToGroupingCategory.put("xboxone", "other");
-		formatsToGroupingCategory.put("kinect", "other");
-		formatsToGroupingCategory.put("windowsgame", "other");
-		formatsToGroupingCategory.put("online materials", "other");
-	}
-
-	private static HashMap<String, String> categoryMap = new HashMap<>();
-
-	static {
-		categoryMap.put("audio", "book");
-		categoryMap.put("book", "book");
-		categoryMap.put("ebook", "book");
-		categoryMap.put("other", "book"); //TODO: keep as other??
-		categoryMap.put("comic", "comic");
-		categoryMap.put("music", "music");
-		categoryMap.put("movie", "movie");
-		categoryMap.put("movies", "movie");
-	}
-*/
 
 	void dumpStats() {
 		if (logger.isDebugEnabled()) {
@@ -966,39 +799,4 @@ class RecordGroupingProcessor {
 
 	private HashSet<String> unableToTranslateWarnings = new HashSet<>();
 
-//	private String translateValue(String mapName, String value) {
-//		value = value.toLowerCase();
-//		HashMap<String, String> translationMap = translationMaps.get(mapName);
-//		String                  translatedValue;
-//		if (translationMap == null) {
-//			if (!unableToTranslateWarnings.contains("unable_to_find_" + mapName)) {
-//				logger.error("Unable to find translation map for " + mapName);
-//				unableToTranslateWarnings.add("unable_to_find_" + mapName);
-//			}
-//
-//			translatedValue = value;
-//		} else {
-//			if (translationMap.containsKey(value)) {
-//				translatedValue = translationMap.get(value);
-//			} else {
-//				if (translationMap.containsKey("*")) {
-//					translatedValue = translationMap.get("*");
-//				} else {
-//					String concatenatedValue = mapName + ":" + value;
-//					if (!unableToTranslateWarnings.contains(concatenatedValue)) {
-//						logger.warn("Could not translate '" + concatenatedValue + "'");
-//						unableToTranslateWarnings.add(concatenatedValue);
-//					}
-//					translatedValue = value;
-//				}
-//			}
-//		}
-//		if (translatedValue != null) {
-//			translatedValue = translatedValue.trim();
-//			if (translatedValue.length() == 0) {
-//				translatedValue = null;
-//			}
-//		}
-//		return translatedValue;
-//	}
 }
