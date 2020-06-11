@@ -20,6 +20,7 @@ import java.util.regex.Pattern;
  */
 class RecordGroupingProcessor {
 	protected Logger logger;
+	protected Connection pikaConn;
 	String  recordNumberTag     = "";
 	char    recordNumberField   = 'a';
 	String  recordNumberPrefix  = "";
@@ -54,7 +55,8 @@ class RecordGroupingProcessor {
 	/**
 	 * Default constructor for use by subclasses
 	 */
-	RecordGroupingProcessor(Logger logger, boolean fullRegrouping) {
+	RecordGroupingProcessor(Connection pikaConn, Logger logger, boolean fullRegrouping) {
+		this.pikaConn       = pikaConn;
 		this.logger         = logger;
 		this.fullRegrouping = fullRegrouping;
 	}
@@ -62,16 +64,16 @@ class RecordGroupingProcessor {
 	/**
 	 * Creates a record grouping processor that saves results to the database.
 	 *
-	 * @param dbConnection   - The Connection to the Pika database
+	 * @param pikaConn   - The Connection to the Pika database
 	 * @param serverName     - The server we are grouping data for
 	 * @param logger         - A logger to store debug and error messages to.
 	 * @param fullRegrouping - Whether or not we are doing full regrouping or if we are only grouping changes.
 	 *                       Determines if old works are loaded at the beginning.
 	 */
-	RecordGroupingProcessor(Connection dbConnection, String serverName, Logger logger, boolean fullRegrouping) {
-		this(logger, fullRegrouping);
+	RecordGroupingProcessor(Connection pikaConn, String serverName, Logger logger, boolean fullRegrouping) {
+		this(pikaConn, logger, fullRegrouping);
 
-		setupDatabaseStatements(dbConnection);
+		setupDatabaseStatements(pikaConn);
 		loadTranslationMaps(serverName);
 	}
 
@@ -212,7 +214,7 @@ class RecordGroupingProcessor {
 	}
 
 	GroupedWorkBase setupBasicWorkForIlsRecord(RecordIdentifier identifier, Record marcRecord, IndexingProfile profile) {
-		GroupedWorkBase workForTitle = GroupedWorkFactory.getInstance(-1);
+		GroupedWorkBase workForTitle = GroupedWorkFactory.getInstance(-1, pikaConn);
 
 		// Title
 		setWorkTitleBasedOnMarcRecord(marcRecord, workForTitle);

@@ -6,6 +6,10 @@ import org.jetbrains.annotations.NotNull;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.Normalizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -25,6 +29,11 @@ public class GroupedWork5 extends GroupedWorkBase implements Cloneable {
 	private static final Pattern validCategories = Pattern.compile("^(book|music|movie|comic)$");
 
 	GroupedWork5() {
+		version = 5;
+	}
+
+	GroupedWork5(Connection pikaConn){
+		super(pikaConn);
 		version = 5;
 	}
 

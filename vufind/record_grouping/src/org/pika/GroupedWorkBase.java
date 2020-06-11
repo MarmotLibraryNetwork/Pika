@@ -9,13 +9,17 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.HashSet;
 
 /**
  * Superclass for all Grouped Works which have different normalization rules.
  *
- * VuFind-Plus
+ * Pika
  * User: Mark Noble
  * Date: 1/26/2015
  * Time: 8:57 AM
@@ -28,17 +32,26 @@ public abstract class GroupedWorkBase {
 
 	String fullTitle          = ""; //Up to 100 chars
 	String originalAuthorName = "";
-	String groupingCategory   = "";  //Up to 25  chars
+	String groupingCategory   = "";  //Up to 5  chars
 	protected String author           = ""; //Up to 50  chars
 	protected String uniqueIdentifier = null;
-	protected int    version          = 0; // The grouped work version number
+	protected static int    version          = 0; // The grouped work version number
 
 	//Load authorities
+	private static boolean authoritiesLoaded = false;
 	private static HashMap<String, String> authorAuthorities = new HashMap<>();
 	private static HashMap<String, String> titleAuthorities  = new HashMap<>();
 
-	static {
-		loadAuthorities();
+	GroupedWorkBase(){
+		if (!authoritiesLoaded){
+			loadAuthorities();
+		}
+	}
+
+	GroupedWorkBase(Connection pikaConn){
+		if (!authoritiesLoaded){
+			loadAuthorities(pikaConn);
+		}
 	}
 
 	String getPermanentId() {
@@ -89,6 +102,7 @@ public abstract class GroupedWorkBase {
 		if (authoritativeTitle == null) {
 			if (titleAuthorities.containsKey(fullTitle)) {
 				authoritativeTitle = titleAuthorities.get(fullTitle);
+				fullTitle = authoritativeTitle; // We want to see the authoratative title saved in the db as the grouping title so that this process isn't invisible
 			} else {
 				authoritativeTitle = fullTitle;
 			}
@@ -97,6 +111,7 @@ public abstract class GroupedWorkBase {
 	}
 
 	abstract void setTitle(String title, String subtitle, int numNonFilingCharacters);
+
 	void setTitle(String title, String subtitle){
 		setTitle(title, subtitle, 0);
 	};
@@ -109,9 +124,10 @@ public abstract class GroupedWorkBase {
 		if (authoritativeAuthor == null) {
 			if (authorAuthorities.containsKey(author)) {
 				authoritativeAuthor = authorAuthorities.get(author);
-				if (logger.isInfoEnabled()){
-					logger.info("Using authoritative author '" + authoritativeAuthor + "' for normalized author '" + author + "'");
-				}
+				author = authoritativeAuthor; // We want to see the authoratative author saved in the db as the grouping author so that this process isn't invisible
+//				if (logger.isInfoEnabled()){
+//					logger.info("Using authoritative author '" + authoritativeAuthor + "' for normalized author '" + author + "'");
+//				}
 			} else {
 				authoritativeAuthor = author;
 			}
@@ -127,23 +143,47 @@ public abstract class GroupedWorkBase {
 
 	abstract String getGroupingCategory();
 
-	HashSet<String> getAlternateAuthorNames() {
-		HashSet<String> alternateNames = new HashSet<>();
-		String          displayName    = AuthorNormalizer.getDisplayName(originalAuthorName);
-		if (displayName != null && displayName.length() > 0) {
-			alternateNames.add(AuthorNormalizer.getNormalizedName(displayName));
-		}
-		String parentheticalName = AuthorNormalizer.getParentheticalName(originalAuthorName);
-		if (parentheticalName != null && parentheticalName.length() > 0) {
-			alternateNames.add(AuthorNormalizer.getNormalizedName(parentheticalName));
-			//Finally, try making the parenthetical name a display name
-			String displayName2 = AuthorNormalizer.getDisplayName(parentheticalName);
-			if (displayName2 != null && displayName2.length() > 0) {
-				alternateNames.add(AuthorNormalizer.getNormalizedName(displayName2));
-			}
-		}
+//	HashSet<String> getAlternateAuthorNames() {
+//		HashSet<String> alternateNames = new HashSet<>();
+//		String          displayName    = AuthorNormalizer.getDisplayName(originalAuthorName);
+//		if (displayName != null && displayName.length() > 0) {
+//			alternateNames.add(AuthorNormalizer.getNormalizedName(displayName));
+//		}
+//		String parentheticalName = AuthorNormalizer.getParentheticalName(originalAuthorName);
+//		if (parentheticalName != null && parentheticalName.length() > 0) {
+//			alternateNames.add(AuthorNormalizer.getNormalizedName(parentheticalName));
+//			//Finally, try making the parenthetical name a display name
+//			String displayName2 = AuthorNormalizer.getDisplayName(parentheticalName);
+//			if (displayName2 != null && displayName2.length() > 0) {
+//				alternateNames.add(AuthorNormalizer.getNormalizedName(displayName2));
+//			}
+//		}
+//
+//		return alternateNames;
+//	}
 
-		return alternateNames;
+	protected static void loadAuthorities(Connection pikaConn) {
+		try (
+				PreparedStatement preparedStatement = pikaConn.prepareStatement("SELECT normalizedAuthorVariant, preferredNormalizedAuthor FROM grouping_authors_preferred", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+				ResultSet resultSet=preparedStatement.executeQuery()
+		){
+			while (resultSet.next()) {
+				authorAuthorities.put(resultSet.getString("normalizedAuthorVariant"), resultSet.getString("preferredNormalizedAuthor"));
+			}
+		} catch (Exception e) {
+			logger.error("Error loading preferred grouping authors", e);
+		}
+		try (
+				PreparedStatement preparedStatement = pikaConn.prepareStatement("SELECT normalizedTitleVariant, preferredNormalizedTitle FROM grouping_titles_preferred", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+				ResultSet resultSet=preparedStatement.executeQuery()
+		){
+			while (resultSet.next()) {
+				titleAuthorities.put(resultSet.getString("normalizedTitleVariant"), resultSet.getString("preferredNormalizedTitle"));
+			}
+		} catch (Exception e) {
+			logger.error("Error loading preferred grouping titles", e);
+		}
+		authoritiesLoaded = true;
 	}
 
 	private static void loadAuthorities() {
@@ -169,6 +209,7 @@ public abstract class GroupedWorkBase {
 		} catch (IOException e) {
 			logger.error("Unable to load title authorities", e);
 		}
+		authoritiesLoaded = true;
 	}
 
 	String getOriginalAuthor() {

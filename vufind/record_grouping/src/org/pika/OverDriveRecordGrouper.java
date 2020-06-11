@@ -14,8 +14,7 @@ import java.sql.Connection;
 public class OverDriveRecordGrouper extends RecordGroupingProcessor {
 
 	OverDriveRecordGrouper(Connection pikaConn, String serverName, Logger logger, boolean fullRegrouping) {
-//		super(pikaConn, serverName, logger, fullRegrouping);
-		super(logger, fullRegrouping);
+		super(pikaConn, logger, fullRegrouping);
 		super.setupDatabaseStatements(pikaConn);
 		File   curFile = new File("../../sites/default/translation_maps/iso639-1TOiso639-2B_map.properties");
 		if (curFile.exists()) {
@@ -29,7 +28,7 @@ public class OverDriveRecordGrouper extends RecordGroupingProcessor {
 
 
 	void processOverDriveRecord(RecordIdentifier primaryIdentifier, String title, String subtitle, String author, String format, String language, boolean primaryDataChanged) {
-		GroupedWorkBase groupedWork = GroupedWorkFactory.getInstance(-1);
+		GroupedWorkBase groupedWork = GroupedWorkFactory.getInstance(-1, pikaConn);
 
 		//Replace & with and for better matching
 		groupedWork.setTitle(title, subtitle);

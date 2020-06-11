@@ -38,7 +38,7 @@ class MarcRecordGrouper extends RecordGroupingProcessor {
 	 *                       Determines if old works are loaded at the beginning.
 	 */
 	MarcRecordGrouper(Connection pikaConn, IndexingProfile profile, Logger logger, boolean fullRegrouping) {
-		super(logger, fullRegrouping);
+		super(pikaConn, logger, fullRegrouping);
 		this.profile = profile;
 
 		recordNumberTag     = profile.recordNumberTag;
