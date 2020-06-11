@@ -873,15 +873,6 @@ public class RecordGrouperMain {
 		systemVariables.setVariable("record_grouping_running", isRunning);
 	}
 
-	private static char getCharFromRecordSet(ResultSet indexingProfilesRS, String fieldName) throws SQLException {
-		char   result        = ' ';
-		String databaseValue = indexingProfilesRS.getString(fieldName);
-		if (!indexingProfilesRS.wasNull() && databaseValue.length() > 0) {
-			result = databaseValue.charAt(0);
-		}
-		return result;
-	}
-
 	private static SimpleDateFormat dayFormatter = new SimpleDateFormat("yyyy-MM-dd");
 
 	private static void writeExistingRecordsFile(TreeSet<String> recordNumbersInExport, String filePrefix, String dataDirPath) {

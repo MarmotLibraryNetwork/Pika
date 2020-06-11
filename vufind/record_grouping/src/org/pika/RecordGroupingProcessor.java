@@ -254,7 +254,8 @@ class RecordGroupingProcessor {
 		if (fixedField != null) {
 			String oo8Data = fixedField.getData();
 			if (oo8Data.length() > 20) {
-				String movieDuration = oo8Data.substring(18, 21);
+				String movieDuration = oo8Data.substring(18, 21)
+						.trim();  //Some records will just use 2 digit playtimes instead of 3, eg  '89 ' instead of '089'
 				if (movieDuration.equals("000")) {
 					logger.debug("movie 008 running time exceeds 999 minutes - " + identifier);
 					// We will try to parse from physical description instead
@@ -453,12 +454,14 @@ class RecordGroupingProcessor {
 	 */
 	@NotNull
 	private String deInvertAuthorName(String author, RecordIdentifier identifier) {
-		author = author.replaceAll(",$",""); // trim trailing commas
+		author = author.replaceAll(",+$",""); // trim all trailing commas
 		int commaPosition = author.indexOf(',');
 		if (commaPosition != -1) {
 			author = author.substring(commaPosition + 2) + " " + author.substring(0, commaPosition);
-		} else {
-			logger.warn("Passed an inverted name order with out a dividing comma: '" + author + "' - " + identifier);
+		} else if (logger.isDebugEnabled()) {
+			// A lot of records will not have a inverted name order despite the indicators set as surname
+			// This should be okay because the name will be in regular order at that point
+			logger.debug("Passed an inverted name order with out a dividing comma: '" + author + "' - " + identifier);
 		}
 		return author;
 	}
@@ -516,10 +519,12 @@ class RecordGroupingProcessor {
 			String basicTitle = field245.getSubfield('a').getData();
 
 			char nonFilingCharacters = field245.getIndicator2();
-			if (nonFilingCharacters == ' ') nonFilingCharacters = '0';
-			int numNonFilingCharacters = 0;
-			if (nonFilingCharacters > '0' && nonFilingCharacters <= '9') {
-				numNonFilingCharacters = Integer.parseInt(Character.toString(nonFilingCharacters));
+//			if (nonFilingCharacters == ' ') nonFilingCharacters = '0';
+			if (nonFilingCharacters > '0' && nonFilingCharacters <= '9') { // Note: Don't need to change basic title when the non file character indicator is zero
+				int numNonFilingCharacters = Integer.parseInt(Character.toString(nonFilingCharacters));
+				if (numNonFilingCharacters < basicTitle.length()){
+					basicTitle = basicTitle.substring(numNonFilingCharacters);
+				}
 			}
 
 			//Add in subtitle (subfield b as well to avoid problems with gov docs, etc)
@@ -538,7 +543,7 @@ class RecordGroupingProcessor {
 				groupingSubtitle.append(field245.getSubfield('p').getData());
 			}
 
-			workForTitle.setTitle(basicTitle, groupingSubtitle.toString(), numNonFilingCharacters);
+			workForTitle.setTitle(basicTitle, groupingSubtitle.toString());
 		}
 	}
 

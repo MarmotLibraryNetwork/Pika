@@ -146,6 +146,7 @@ public class FormatDetermination {
 							break;
 						case "ebook":
 						case "book":
+						case "bookwithcdrom":
 						case "largeprint":
 						case "manuscript":
 						case "thesis":
@@ -158,6 +159,7 @@ public class FormatDetermination {
 						case "sounddisc":
 						case "playaway":
 						case "cdrom":
+						case "chipcartridge":
 						case "soundcassette":
 						case "compactdisc":
 						case "eaudio":
@@ -180,7 +182,7 @@ public class FormatDetermination {
 							break;
 						default:
 							groupingCategories.add("book");
-							logger.warn("Could not find appropriate eContent format for " + format + " while side loading eContent " + identifier);
+							logger.warn("Could not find appropriate grouping category for " + format + " while side loading eContent " + identifier);
 					}
 				}
 			}

@@ -35,19 +35,16 @@ public class GroupedWork5 extends GroupedWorkBase implements Cloneable {
 
 	@Override
 	public void setTitle(String title, String subtitle, int numNonFilingCharacters) {
+		setTitle(title, subtitle);
+	}
 
+		@Override
+	public void setTitle(String title, String subtitle) {
 		//Process subtitles before we deal with the full title
-		if (subtitle != null && subtitle.length() > 0){
-			// When we know what the subtitle is
-			title = normalizePassedInSubtitle(title, subtitle);
-		}else{
-			//Check for a subtitle within the main title by searching for a colon character
-			title = normalizeSubtitleWithinMainTitle(title);
-		}
+		String fullTitle = (subtitle != null && !subtitle.isEmpty()) ? normalizePassedInSubtitle(title, subtitle) : normalizeSubtitleWithinMainTitle(title);
 
 		// Now do the main normalizations on the full title
-		title = normalizeTitle(title, numNonFilingCharacters);
-		this.fullTitle = title;
+		this.fullTitle = normalizeTitle(fullTitle);
 	}
 
 	@Override
@@ -139,7 +136,6 @@ public class GroupedWork5 extends GroupedWorkBase implements Cloneable {
 				System.out.println("Error generating permanent id" + e.toString());
 			}
 		}
-		//System.out.println("Permanent Id is " + this.permanentId);
 		return this.permanentId;
 	}
 
@@ -178,15 +174,10 @@ public class GroupedWork5 extends GroupedWorkBase implements Cloneable {
 		return AuthorNormalizer.getNormalizedName(author);
 	}
 
-	private String normalizeTitle(String fullTitle, int numNonFilingCharacters) {
+	private String normalizeTitle(String fullTitle) {
 		String groupingTitle;
-		if (numNonFilingCharacters > 0 && numNonFilingCharacters < fullTitle.length()){
-			groupingTitle = fullTitle.substring(numNonFilingCharacters);
-		}else{
-			groupingTitle = fullTitle;
-		}
 
-		groupingTitle = normalizeDiacritics(groupingTitle);
+		groupingTitle = normalizeDiacritics(fullTitle);
 		groupingTitle = makeValueSortable(groupingTitle);
 		groupingTitle = cleanTitleCharacters(groupingTitle);
 
@@ -218,19 +209,23 @@ public class GroupedWork5 extends GroupedWorkBase implements Cloneable {
 		return groupingTitle;
 	}
 
-	private String cleanTitleCharacters(String groupingTitle) {
+	/**
+	 * @param titleString a full title, title, or subtitle
+	 * @return a cleaned title string
+	 */
+	private String cleanTitleCharacters(String titleString) {
 		//Fix abbreviations
-		groupingTitle = initialsFix.matcher(groupingTitle).replaceAll(" ");
-		groupingTitle = dashPattern.matcher(groupingTitle).replaceAll("-"); // todo: combine with html entities decoding
-		groupingTitle = ampersandPattern.matcher(groupingTitle).replaceAll("and"); // TODO: avoid encoded sequences like &#174;
+		titleString = initialsFix.matcher(titleString).replaceAll(" ");
+		titleString = dashPattern.matcher(titleString).replaceAll("-"); // todo: combine with html entities decoding
+		titleString = ampersandPattern.matcher(titleString).replaceAll("and"); // TODO: avoid encoded sequences like &#174;
 		//Replace & with and for better matching (Note: this must happen *before* the specialCharacterStrip is applied
 
-		groupingTitle = apostropheStrip.matcher(groupingTitle).replaceAll("s");
-		groupingTitle = specialCharacterStrip.matcher(groupingTitle).replaceAll(" ").toLowerCase();
+		titleString = apostropheStrip.matcher(titleString).replaceAll("s");
+		titleString = specialCharacterStrip.matcher(titleString).replaceAll(" ").toLowerCase();
 
 		//Replace consecutive spaces
-		groupingTitle = consecutiveSpaceStrip.matcher(groupingTitle).replaceAll(" ");
-		return groupingTitle;
+		titleString = consecutiveSpaceStrip.matcher(titleString).replaceAll(" ");
+		return titleString;
 	}
 
 	private String removeEditionInformation(String groupingTitle) {
@@ -329,17 +324,31 @@ public class GroupedWork5 extends GroupedWorkBase implements Cloneable {
 		return Normalizer.isNormalized(textToNormalize, Normalizer.Form.NFKC) ? textToNormalize : Normalizer.normalize(textToNormalize, Normalizer.Form.NFKC);
 	}
 
+	private String removeComplexSubtitles(String newSubtitle) {
+		newSubtitle = commonSubtitlesComplexPattern.matcher(newSubtitle).replaceAll("");
+		//Note: This removes Overdrive series statements from the subtitle as well
+		return newSubtitle;
+	}
+
+	/**
+	 * Normalize the subtitle when we know what the subtitle is
+	 *
+	 * @param title    title that doesn't contain the subtitle
+	 * @param subtitle the separate subtitle
+	 * @return the full title with the subtitle included
+	 */
 	private String normalizePassedInSubtitle(@NotNull String title, String subtitle) {
-		if (!title.endsWith(subtitle)){ //TODO: remove overdrive series statements in subtitle
-			//Remove any complex subtitles since we know the beginning of the string
-			String newSubtitle = removeBracketedPartOfTitle(subtitle);
-			newSubtitle = cleanTitleCharacters(newSubtitle);
-			if (newSubtitle.length() > 0) {
-				newSubtitle = removeComplexSubtitles(newSubtitle);
-				if (newSubtitle.length() > 0) {
-					title += " " + newSubtitle;
-					//} else {
-					//	logger.debug("Removed subtitle " + subtitle);
+		if (!title.endsWith(subtitle)){
+			// Remove bracketed subtitles
+			String newSubtitle = bracketedCharacterStrip.matcher(subtitle).replaceAll("");
+			if (!newSubtitle.isEmpty()) {
+				newSubtitle = cleanTitleCharacters(newSubtitle);
+				if (!newSubtitle.isEmpty()) {
+					//Remove any complex subtitles since we know the beginning of the string
+					newSubtitle = removeComplexSubtitles(newSubtitle);
+					if (!newSubtitle.isEmpty()) {
+						title += " " + newSubtitle;
+					}
 				}
 			}
 		}else{
@@ -350,26 +359,22 @@ public class GroupedWork5 extends GroupedWorkBase implements Cloneable {
 		return title;
 	}
 
-	private String removeComplexSubtitles(String newSubtitle) {
-		newSubtitle = commonSubtitlesComplexPattern.matcher(newSubtitle).replaceAll("");
-		return newSubtitle;
-	}
-
+	/**
+	 * Check for a subtitle within the main title by searching for a colon character
+	 * and clean up the subtitle
+	 *
+	 * @param title a full title that may have a subtitle
+	 * @return the full title with a cleaned up subtitle
+	 */
 	private String normalizeSubtitleWithinMainTitle(String title) {
 		if (title.endsWith(":")){
 			title = title.substring(0, title.length() -1);
 		}
 		int colonIndex = title.lastIndexOf(':');
 		if (colonIndex > 0){
-			String subtitleFromTitle = title.substring(colonIndex + 1).trim();
-			String newSubtitle       = cleanTitleCharacters(subtitleFromTitle);
 			String mainTitle         = title.substring(0, colonIndex).trim();
-			newSubtitle = removeComplexSubtitles(newSubtitle);
-			if (newSubtitle.length() > 0) {
-				title =  mainTitle + " " + newSubtitle;
-				//} else{
-				//	logger.debug("Removed subtitle " + subtitleFromTitle);
-			}
+			String subtitleFromTitle = title.substring(colonIndex + 1).trim();
+			return normalizePassedInSubtitle(mainTitle, subtitleFromTitle);
 		}
 		return title;
 	}
