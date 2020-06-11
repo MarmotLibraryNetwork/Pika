@@ -173,7 +173,7 @@
 #adminTableRegion, #adminTableRegion * {
   box-sizing: border-box; }
 
-#adminTableRegion {
+#adminTableRegion.drop {
   min-height: 150px;
   background: white;
   padding: 20px 20px;

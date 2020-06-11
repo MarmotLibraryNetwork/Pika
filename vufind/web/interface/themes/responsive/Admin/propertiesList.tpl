@@ -137,7 +137,7 @@
 	<script>
 	var storagePath = "{$structure.cover.storagePath}";
 	{literal}
-	$("#adminTableRegion").prepend("<h4>Drag covers here to upload</h4>");
+	$("#adminTableRegion").addClass("drop").prepend("<h4>Drag covers here to upload</h4>");
 	var coverDrop = new Dropzone("#adminTableRegion", {
 		url: "/Admin/Covers?objectAction=addNew",
 		clickable: false,
