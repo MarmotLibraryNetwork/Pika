@@ -22,6 +22,8 @@
  *
  */
 
+use \Pika\Logger;
+
 require_once ROOT_DIR . '/sys/Grouping/CommonGroupingAlterationOperations.php';
 
 class PreferredGroupingAuthor extends CommonGroupingAlterationOperations {
@@ -41,23 +43,25 @@ class PreferredGroupingAuthor extends CommonGroupingAlterationOperations {
 				'storeDb'     => true,
 				'primaryKey'  => true,
 			], [
-				'property'    => 'normalizedAuthorVariant',
-				'type'        => 'text',
-				'size'        => 25,
-				'maxLength'   => 50,
-				'label'       => 'Normalized Author Variant',
-				'description' => 'The grouping author that should be replaced.',
-				'storeDb'     => true,
-				'required'    => true,
+				'property'         => 'normalizedAuthorVariant',
+				'type'             => 'text',
+				'size'             => 25,
+				'maxLength'        => 50,
+				'label'            => 'Normalized Author Variant',
+				'description'      => 'The grouping author that should be replaced.',
+				'serverValidation' => 'validateAuthorVariant',
+				'storeDb'          => true,
+				'required'         => true,
 			], [
-				'property'    => 'preferredNormalizedAuthor',
-				'type'        => 'text',
-				'size'        => 25,
-				'maxLength'   => 50,
-				'label'       => 'Preferred Normalized Author',
-				'description' => 'The normalized author the variant should be replaced with.',
-				'storeDb'     => true,
-				'required'    => true,
+				'property'         => 'preferredNormalizedAuthor',
+				'type'             => 'text',
+				'size'             => 25,
+				'maxLength'        => 50,
+				'label'            => 'Preferred Normalized Author',
+				'description'      => 'The normalized author the variant should be replaced with.',
+//				'serverValidation' => 'validateNormalizedAuthor',
+				'storeDb'          => true,
+				'required'         => true,
 			], [
 				'property'    => 'notes',
 				'type'        => 'textarea',
@@ -71,7 +75,45 @@ class PreferredGroupingAuthor extends CommonGroupingAlterationOperations {
 		return $structure;
 	}
 
+	function validateAuthorVariant(){
+		//Setup validation return array
+		$validationResults = [
+			'validatedOk' => true,
+			'errors'      => [],
+		];
+
+			$preferredTitle                           = new PreferredGroupingAuthor();
+			$preferredTitle->preferredNormalizedAuthor = $this->normalizedAuthorVariant;
+			if ($preferredTitle->find()){
+				$validationResults = [
+					'validatedOk' => false,
+					'errors'      => ['The author variant can not match any preferred author entry.'],
+				];
+			}
+
+		return $validationResults;
+	}
+
+//	function validateNormalizedAuthor(){
+//		//Setup validation return array
+//		$validationResults = [
+//			'validatedOk' => true,
+//			'errors'      => [],
+//		];
+//
+//		return $validationResults;
+//	}
+
 	protected function followUpActions(){
-		// TODO: Implement followUpActions() method.
+		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+		$groupedWork               = new GroupedWork();
+		$groupedWork->author = $this->normalizedAuthorVariant;
+		if ($groupedWork->find()){
+			while ($groupedWork->fetch()){
+				if (!$groupedWork->forceRegrouping()){
+					$this->logger->warn("Error while marking work {$groupedWork->permanent_id} for regrouping for author variant '{$this->normalizedAuthorVariant}'");
+				}
+			}
+		}
 	}
 }

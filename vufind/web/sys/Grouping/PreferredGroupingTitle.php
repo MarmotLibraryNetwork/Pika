@@ -47,7 +47,7 @@ class PreferredGroupingTitle extends CommonGroupingAlterationOperations {
 				'maxLength'        => 100,
 				'label'            => 'Normalized Title Variant',
 				'description'      => 'The grouping title that should be replaced.',
-//				'serverValidation' => 'validateDestination',
+				'serverValidation' => 'validateTitleVariant',
 				'storeDb'          => true,
 				'required'         => true,
 			], [
@@ -57,7 +57,7 @@ class PreferredGroupingTitle extends CommonGroupingAlterationOperations {
 				'maxLength'        => 100,
 				'label'            => 'Preferred Normalized Title',
 				'description'      => 'The normalized title the variant should be replaced with.',
-//				'serverValidation' => 'validateSource',
+//				'serverValidation' => 'validateNormalizedTitle',
 				'storeDb'          => true,
 				'required'         => true,
 			], [
@@ -75,6 +75,45 @@ class PreferredGroupingTitle extends CommonGroupingAlterationOperations {
 	}
 
 	protected function followUpActions(){
-		// TODO: Implement followUpActions() method.
+		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+		$groupedWork               = new GroupedWork();
+		$groupedWork->full_title = $this->normalizedTitleVariant;
+		if ($groupedWork->find()){
+			while ($groupedWork->fetch()){
+				if (!$groupedWork->forceRegrouping()){
+					$this->logger->warn("Error while marking work {$groupedWork->permanent_id} for regrouping for title variant '{$this->normalizedTitleVariant}'");
+				}
+			}
+		}
 	}
+
+	function validateTitleVariant(){
+		//Setup validation return array
+		$validationResults = [
+			'validatedOk' => true,
+			'errors'      => [],
+		];
+
+			$preferredTitle                           = new PreferredGroupingTitle();
+			$preferredTitle->preferredNormalizedTitle = $this->normalizedTitleVariant;
+			if ($preferredTitle->find()){
+				$validationResults = [
+					'validatedOk' => false,
+					'errors'      => ['The title variant can not match any preferred title entry.'],
+				];
+			}
+
+		return $validationResults;
+	}
+
+//	function validateNormalizedTitle(){
+//		//Setup validation return array
+//		$validationResults = [
+//			'validatedOk' => true,
+//			'errors'      => [],
+//		];
+//
+//		return $validationResults;
+//	}
+
 }

@@ -29,10 +29,16 @@
 
 abstract class CommonGroupingAlterationOperations extends DB_DataObject {
 
+	protected $logger;
+
+	public function __construct(){
+		$this->logger = new Pika\Logger(__CLASS__);
+	}
+
 
 	function update($dataObject = false){
 		$success = parent::update($dataObject);
-//		if ($success){ //May not have resulted in any changes, so $sucess may be 0
+//		if ($success){ //May not have resulted in any changes, so $success may be 0
 			$this->followUpActions();
 //		}
 		return $success;
