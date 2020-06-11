@@ -33,18 +33,19 @@ class Admin_MergedGroupedWorks extends ObjectEditor {
 		return 'Merged Grouped Works';
 	}
 
-	function getAllObjects(){
-		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
-		$object = new MergedGroupedWork();
-//		$object->joinAdd(new GroupedWork(),'LEFT');
-		$object->orderBy('destinationGroupedWorkId');
-//		$object->orderBy('sourceGroupedWorkId');
-		$object->find();
-		$objectList = array();
-		while ($object->fetch()){
-			$objectList[$object->id] = clone $object;
-		}
-		return $objectList;
+	function getAllObjects($orderBy_ignored = null){
+		return parent::getAllObjects('id DESC');
+////		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+//		$object = new MergedGroupedWork();
+////		$object->joinAdd(new GroupedWork(),'LEFT');
+//		$object->orderBy('destinationGroupedWorkId');
+////		$object->orderBy('sourceGroupedWorkId');
+//		$object->find();
+//		$objectList = array();
+//		while ($object->fetch()){
+//			$objectList[$object->id] = clone $object;
+//		}
+//		return $objectList;
 	}
 
 	function getObjectStructure(){
@@ -60,7 +61,7 @@ class Admin_MergedGroupedWorks extends ObjectEditor {
 	}
 
 	function getAllowableRoles(){
-		return array('opacAdmin', 'cataloging');
+		return ['opacAdmin', 'cataloging'];
 	}
 
 	function getInstructions(){

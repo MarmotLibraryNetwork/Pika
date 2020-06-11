@@ -242,6 +242,40 @@ function getGroupedWorkUpdates(){
 			),
 		),
 
+		'preferred_grouping_tables-2020.06' => [
+			'title'           => 'Create Preferred Grouping Author & Title tables',
+			'description'     => 'Tables for looking up an authoritative version of a grouping title or author',
+			'continueOnError' => false,
+			'sql'             => [
+				"CREATE TABLE `grouping_titles_preferred` (
+					`id` INT NOT NULL AUTO_INCREMENT,
+					`normalizedTitleVariant` VARCHAR(100) NULL,
+					`preferredNormalizedTitle` VARCHAR(100) NULL,
+					`notes` VARCHAR(250) NULL,
+					PRIMARY KEY (`id`),
+					UNIQUE INDEX `normalizedTitleVariant_UNIQUE` (`normalizedTitleVariant` ASC))
+					ENGINE = InnoDB
+					DEFAULT CHARACTER SET = utf8;",
+				"CREATE TABLE `grouping_authors_preferred` (
+					`id` INT NOT NULL AUTO_INCREMENT,
+					`normalizedAuthorVariant` VARCHAR(50) NULL,
+					`preferredNormalizedAuthor` VARCHAR(50) NULL,
+					`notes` VARCHAR(250) NULL,
+					PRIMARY KEY (`id`),
+					UNIQUE INDEX `normalizedAuthorVariant_UNIQUE` (`normalizedAuthorVariant` ASC))
+					ENGINE = InnoDB
+					DEFAULT CHARACTER SET = utf8;",
+			],
+		],
+
+		'grouping_table_sizing-2020.06' => [
+			'title'           => 'Reduce ',
+			'description'     => 'Tables for looking up an authoritative version of a grouping title or author',
+			'continueOnError' => false,
+			'sql'             => [
+				"",
+			],
+		],
 
 	);
 }

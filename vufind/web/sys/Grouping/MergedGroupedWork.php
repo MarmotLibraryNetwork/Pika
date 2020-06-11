@@ -36,16 +36,16 @@ class MergedGroupedWork extends CommonGroupingAlterationOperations {
 	public $notes;
 
 	static function getObjectStructure(){
-		$structure = array(
-			array(
+		$structure = [
+			[
 				'property'    => 'id',
 				'type'        => 'hidden',
 				'label'       => 'Id',
 				'description' => 'The unique id of the merged grouped work in the database',
 				'storeDb'     => true,
 				'primaryKey'  => true,
-			),
-			array(
+			],
+			[
 				'property'         => 'destinationGroupedWorkId',
 				'type'             => 'text',
 				'size'             => 36,
@@ -55,8 +55,8 @@ class MergedGroupedWork extends CommonGroupingAlterationOperations {
 				'serverValidation' => 'validateDestination',
 				'storeDb'          => true,
 				'required'         => true,
-			),
-			array(
+			],
+			[
 				'property'         => 'sourceGroupedWorkId',
 				'type'             => 'text',
 				'size'             => 36,
@@ -66,8 +66,8 @@ class MergedGroupedWork extends CommonGroupingAlterationOperations {
 				'serverValidation' => 'validateSource',
 				'storeDb'          => true,
 				'required'         => true,
-			),
-			array(
+			],
+			[
 				'property'    => 'notes',
 				'type'        => 'textarea',
 				'size'        => 250,
@@ -76,7 +76,7 @@ class MergedGroupedWork extends CommonGroupingAlterationOperations {
 				'description' => 'Notes related to the merged work.',
 				'storeDb'     => true,
 				'required'    => true,
-			),
+			],
 			//			// For display only
 			//			array(
 			//				'property'         => 'full_title',
@@ -84,7 +84,7 @@ class MergedGroupedWork extends CommonGroupingAlterationOperations {
 			//				'label'            => 'Grouping Title',
 			//				'storeDb'          => false,
 			//			),
-		);
+		];
 		return $structure;
 	}
 
