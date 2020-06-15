@@ -47,14 +47,24 @@ public class GroupedWork5 extends GroupedWorkBase implements Cloneable {
 		setTitle(title, subtitle);
 	}
 
-		@Override
+	@Override
 	public void setTitle(String title, String subtitle) {
+		String fullTitle;
+
+		//Normalize diacritical characters first
+		title = normalizeDiacritics(title);
+
 		//Process subtitles before we deal with the full title
-		String fullTitle = (subtitle != null && !subtitle.isEmpty()) ? normalizePassedInSubtitle(title, subtitle) : normalizeSubtitleWithinMainTitle(title);
+		if (subtitle != null && !subtitle.isEmpty()) {
+			subtitle = normalizeDiacritics(subtitle);
+			fullTitle = normalizePassedInSubtitle(title, subtitle);
+		} else {
+			fullTitle = normalizeSubtitleWithinMainTitle(title);
+		}
 
 		// Now do the main normalizations on the full title
 		this.fullTitle = normalizeTitle(fullTitle);
-	}
+		}
 
 	@Override
 	String getAuthor() {
@@ -186,8 +196,7 @@ public class GroupedWork5 extends GroupedWorkBase implements Cloneable {
 	private String normalizeTitle(String fullTitle) {
 		String groupingTitle;
 
-		groupingTitle = normalizeDiacritics(fullTitle);
-		groupingTitle = makeValueSortable(groupingTitle);
+		groupingTitle = makeValueSortable(fullTitle);
 		groupingTitle = cleanTitleCharacters(groupingTitle);
 
 		//Remove any bracketed parts of the title
@@ -231,6 +240,7 @@ public class GroupedWork5 extends GroupedWorkBase implements Cloneable {
 
 		titleString = apostropheStrip.matcher(titleString).replaceAll("s");
 		titleString = specialCharacterStrip.matcher(titleString).replaceAll(" ").toLowerCase();
+		//Note: specialCharacterStrip will remove diacritical characters
 
 		//Replace consecutive spaces
 		titleString = consecutiveSpaceStrip.matcher(titleString).replaceAll(" ");
@@ -307,6 +317,7 @@ public class GroupedWork5 extends GroupedWorkBase implements Cloneable {
 		if (tmpTitle.length() > 0){
 			//And make sure we don't have just special characters
 			tmpTitle = specialCharacterStrip.matcher(tmpTitle).replaceAll(" ").toLowerCase().trim();
+			//Note: specialCharacterStrip will remove diacritical characters
 			if (tmpTitle.length() > 0) {
 				groupingTitle = tmpTitle;
 				//}else{
