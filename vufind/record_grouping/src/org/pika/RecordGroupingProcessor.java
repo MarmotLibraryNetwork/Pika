@@ -381,7 +381,7 @@ class RecordGroupingProcessor {
 							} else {
 								DataField field710 = marcRecord.getDataField("710"); // Added Entry-Corporate Name
 								//First Indicator 0 - Inverted name; 2 - Name in direct order
-								// 1 - Jurisdiction name  TODO: Ignore juridiction names and use subordinates only?
+								// 1 - Jurisdiction name  TODO: Ignore jurisdiction names and use subordinates only?
 								if (field710 != null && field710.getSubfield('a') != null) {
 									author = field710.getSubfield('a').getData();
 									if (field710.getIndicator1() == '0'){

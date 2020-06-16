@@ -102,7 +102,7 @@ public abstract class GroupedWorkBase {
 		if (authoritativeTitle == null) {
 			if (titleAuthorities.containsKey(fullTitle)) {
 				authoritativeTitle = titleAuthorities.get(fullTitle);
-				fullTitle = authoritativeTitle; // We want to see the authoratative title saved in the db as the grouping title so that this process isn't invisible
+				fullTitle = authoritativeTitle; // We want to see the authoritative title saved in the db as the grouping title so that this process isn't invisible
 			} else {
 				authoritativeTitle = fullTitle;
 			}
