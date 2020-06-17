@@ -102,7 +102,7 @@ class AACPLRecordProcessor extends IlsRecordProcessor {
 		return available;
 	}
 
-	protected String getShelfLocationForItem(ItemInfo itemInfo, DataField itemField, String identifier) {
+	protected String getShelfLocationForItem(ItemInfo itemInfo, DataField itemField, RecordIdentifier identifier) {
 		String locationCode = getItemSubfieldData(locationSubfieldIndicator, itemField);
 		String location = translateValue("location", locationCode, identifier);
 		String shelvingLocation = itemInfo.getShelfLocationCode();
@@ -215,7 +215,7 @@ class AACPLRecordProcessor extends IlsRecordProcessor {
 	}
 
 	@Override
-	protected List<RecordInfo> loadUnsuppressedEContentItems(GroupedWorkSolr groupedWork, String identifier, Record record) {
+	protected List<RecordInfo> loadUnsuppressedEContentItems(GroupedWorkSolr groupedWork, RecordIdentifier identifier, Record record) {
 		List<RecordInfo> unsuppressedEcontentRecords = new ArrayList<>();
 		List<DataField> itemRecords = MarcUtil.getDataFields(record, itemTag);
 
@@ -235,7 +235,7 @@ class AACPLRecordProcessor extends IlsRecordProcessor {
 		return unsuppressedEcontentRecords;
 	}
 
-	RecordInfo getEContentIlsRecord(GroupedWorkSolr groupedWork, Record record, String identifier, DataField itemField){
+	RecordInfo getEContentIlsRecord(GroupedWorkSolr groupedWork, Record record, RecordIdentifier identifier, DataField itemField){
 		ItemInfo itemInfo = new ItemInfo();
 		itemInfo.setIsEContent(true);
 		RecordInfo relatedRecord = null;
@@ -271,8 +271,8 @@ class AACPLRecordProcessor extends IlsRecordProcessor {
 		//Get the url if any
 		loadEContentUrl(record, itemInfo, identifier);
 
-		relatedRecord = groupedWork.addRelatedRecord("external_econtent", identifier);
-		relatedRecord.setSubSource(profileType);
+		relatedRecord = groupedWork.addRelatedRecord("external_econtent", identifier.getIdentifier());
+		relatedRecord.setSubSource(idexingProfileSourceDisplayName);
 		relatedRecord.addItem(itemInfo);
 		loadEContentFormatInformation(record, relatedRecord, itemInfo);
 

@@ -33,7 +33,7 @@ class SideLoadedEContentProcessor extends IlsRecordProcessor{
 	}
 
 	@Override
-	protected void updateGroupedWorkSolrDataBasedOnMarc(GroupedWorkSolr groupedWork, Record record, String identifier) {
+	protected void updateGroupedWorkSolrDataBasedOnMarc(GroupedWorkSolr groupedWork, Record record, RecordIdentifier identifier) {
 		//For ILS Records, we can create multiple different records, one for print and order items,
 		//and one or more for ILS eContent items.
 		//For Sideloaded Econtent there will only be one related record
@@ -53,7 +53,7 @@ class SideLoadedEContentProcessor extends IlsRecordProcessor{
 				}
 			}
 			if (primaryFormat == null) primaryFormat = "Unknown";
-			updateGroupedWorkSolrDataBasedOnStandardMarcData(groupedWork, record, recordInfo.getRelatedItems(), identifier, primaryFormat);
+			updateGroupedWorkSolrDataBasedOnStandardMarcData(groupedWork, record, recordInfo.getRelatedItems(), identifier.getIdentifier(), primaryFormat);
 
 			//Special processing for ILS Records
 			String fullDescription = Util.getCRSeparatedString(MarcUtil.getFieldList(record, "520a"));
@@ -75,7 +75,7 @@ class SideLoadedEContentProcessor extends IlsRecordProcessor{
 			}
 
 			//Do updates based on items
-			loadPopularity(groupedWork, identifier);
+			loadPopularity(groupedWork, identifier.getIdentifier());
 
 			groupedWork.addHoldings(1);
 
@@ -85,31 +85,31 @@ class SideLoadedEContentProcessor extends IlsRecordProcessor{
 		}
 	}
 
-	private RecordInfo loadEContentRecord(GroupedWorkSolr groupedWork, String identifier, Record record){
+	private RecordInfo loadEContentRecord(GroupedWorkSolr groupedWork, RecordIdentifier identifier, Record record){
 		//We will always have a single record
 		return getEContentIlsRecord(groupedWork, record, identifier);
 	}
 
-	private RecordInfo getEContentIlsRecord(GroupedWorkSolr groupedWork, Record record, String identifier) {
+	private RecordInfo getEContentIlsRecord(GroupedWorkSolr groupedWork, Record record, RecordIdentifier identifier) {
 		ItemInfo itemInfo = new ItemInfo();
 		itemInfo.setIsEContent(true);
 
-		loadDateAdded(identifier, itemInfo);
-		itemInfo.setLocationCode(profileType);
+		loadDateAdded(identifier.getIdentifier(), itemInfo);
+		itemInfo.setLocationCode(idexingProfileSourceDisplayName);
 		//No itypes for Side loaded econtent
 		//itemInfo.setITypeCode();
 		//itemInfo.setIType();
-		itemInfo.setCallNumber("Online " + profileType);
-		itemInfo.setItemIdentifier(identifier);
-		itemInfo.setShelfLocation(profileType);
+		itemInfo.setCallNumber("Online " + idexingProfileSourceDisplayName);
+		itemInfo.setItemIdentifier(identifier.getIdentifier());
+		itemInfo.setShelfLocation(idexingProfileSourceDisplayName);
 
 		//No Collection for Side loaded eContent
 		//itemInfo.setCollection(translateValue("collection", getItemSubfieldData(collectionSubfield, itemField), identifier));
 
-		itemInfo.seteContentSource(profileType);
+		itemInfo.seteContentSource(idexingProfileSourceDisplayName);
 //		itemInfo.seteContentProtectionType("external");
 
-		RecordInfo relatedRecord = groupedWork.addRelatedRecord(profileType, identifier);
+		RecordInfo relatedRecord = groupedWork.addRelatedRecord(identifier);
 		relatedRecord.addItem(itemInfo);
 		loadEContentUrl(record, itemInfo, identifier);
 
@@ -120,9 +120,9 @@ class SideLoadedEContentProcessor extends IlsRecordProcessor{
 		return relatedRecord;
 	}
 
-	private void loadDateAdded(String identfier, ItemInfo itemInfo) {
+	private void loadDateAdded(String identifier, ItemInfo itemInfo) {
 		try {
-			getDateAddedStmt.setString(1, identfier);
+			getDateAddedStmt.setString(1, identifier);
 			ResultSet getDateAddedRS = getDateAddedStmt.executeQuery();
 			if (getDateAddedRS.next()) {
 				long timeAdded = getDateAddedRS.getLong(1);
@@ -130,10 +130,10 @@ class SideLoadedEContentProcessor extends IlsRecordProcessor{
 				itemInfo.setDateAdded(curDate);
 				getDateAddedRS.close();
 			}else{
-				logger.debug("Could not determine date added for " + identfier);
+				logger.debug("Could not determine date added for " + identifier);
 			}
 		}catch (Exception e){
-			logger.error("Unable to load date added for " + identfier);
+			logger.error("Unable to load date added for " + identifier);
 		}
 	}
 }

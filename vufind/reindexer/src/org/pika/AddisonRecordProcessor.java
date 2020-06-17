@@ -39,7 +39,7 @@ public class AddisonRecordProcessor extends IIIRecordProcessor {
 
 	// This is based on version from Sacramento Processor
 	@Override
-	protected List<RecordInfo> loadUnsuppressedEContentItems(GroupedWorkSolr groupedWork, String identifier, Record record) {
+	protected List<RecordInfo> loadUnsuppressedEContentItems(GroupedWorkSolr groupedWork, RecordIdentifier identifier, Record record) {
 		List<RecordInfo> unsuppressedEcontentRecords = new ArrayList<>();
 		//For arlington and sacramento, eContent will always have no items on the bib record.
 		List<DataField> items = MarcUtil.getDataFields(record, itemTag);
@@ -88,8 +88,8 @@ public class AddisonRecordProcessor extends IIIRecordProcessor {
 				loadDateAddedForItemlessEcontent(identifier, itemInfo);
 //                itemInfo.seteContentSource(specifiedEcontentSource == null ? "Econtent" : specifiedEcontentSource);
 //                itemInfo.setShelfLocation(econtentSource); // this sets the owning location facet.  This isn't needed for Sacramento
-				RecordInfo relatedRecord = groupedWork.addRelatedRecord("external_econtent", identifier);
-				relatedRecord.setSubSource(profileType);
+				RecordInfo relatedRecord = groupedWork.addRelatedRecord("external_econtent", identifier.getIdentifier());
+				relatedRecord.setSubSource(idexingProfileSourceDisplayName);
 				relatedRecord.addItem(itemInfo);
 
 				// Use the same format determination process for the econtent record (should just be the MatType)
@@ -138,20 +138,22 @@ public class AddisonRecordProcessor extends IIIRecordProcessor {
 	}
 
 	// to set date added for ils (itemless) econtent records
-	private void loadDateAddedForItemlessEcontent(String identfier, ItemInfo itemInfo) {
-		try {
-			getDateAddedStmt.setString(1, identfier);
-			ResultSet getDateAddedRS = getDateAddedStmt.executeQuery();
-			if (getDateAddedRS.next()) {
-				long timeAdded = getDateAddedRS.getLong(1);
-				Date curDate   = new Date(timeAdded * 1000);
-				itemInfo.setDateAdded(curDate);
-				getDateAddedRS.close();
-			} else {
-				logger.debug("Could not determine date added for " + identfier);
+	private void loadDateAddedForItemlessEcontent(RecordIdentifier identifier, ItemInfo itemInfo) {
+			try {
+				getDateAddedStmt.setString(1, identifier.getSource());
+				getDateAddedStmt.setString(2, identifier.getIdentifier());
+				try (ResultSet getDateAddedRS = getDateAddedStmt.executeQuery()) {
+					if (getDateAddedRS.next()) {
+						long timeAdded = getDateAddedRS.getLong(1);
+						Date curDate   = new Date(timeAdded * 1000);
+						itemInfo.setDateAdded(curDate);
+					} else {
+						logger.debug("Could not determine date added for " + identifier);
+					}
+				}
+			} catch (Exception e) {
+				logger.error("Unable to load date added for " + identifier);
 			}
-		} catch (Exception e) {
-			logger.error("Unable to load date added for " + identfier);
 		}
-	}
+
 }

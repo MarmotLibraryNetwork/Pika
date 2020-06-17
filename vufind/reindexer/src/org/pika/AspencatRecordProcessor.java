@@ -4,7 +4,6 @@ import au.com.bytecode.opencsv.CSVReader;
 import org.apache.log4j.Logger;
 import org.marc4j.marc.DataField;
 import org.marc4j.marc.Record;
-import org.marc4j.marc.Subfield;
 
 import java.io.File;
 import java.io.FileReader;
@@ -266,10 +265,10 @@ class AspencatRecordProcessor extends IlsRecordProcessor {
 		return null;
 	}
 
-	protected void loadUnsuppressedPrintItems(GroupedWorkSolr groupedWork, RecordInfo recordInfo, String identifier, Record record){
+	protected void loadUnsuppressedPrintItems(GroupedWorkSolr groupedWork, RecordInfo recordInfo, RecordIdentifier identifier, Record record){
 		List<DataField> itemRecords = MarcUtil.getDataFields(record, itemTag);
 		for (DataField itemField : itemRecords){
-			if (!isItemSuppressed(itemField, identifier) && !isEContent(itemField)) {
+			if (!isItemSuppressed(itemField, identifier.getIdentifier()) && !isEContent(itemField)) {
 				getPrintIlsItem(groupedWork, recordInfo, record, itemField);
 			}
 		}
@@ -283,7 +282,7 @@ class AspencatRecordProcessor extends IlsRecordProcessor {
 		return false;
 	}
 
-	protected List<RecordInfo> loadUnsuppressedEContentItems(GroupedWorkSolr groupedWork, String identifier, Record record){
+	protected List<RecordInfo> loadUnsuppressedEContentItems(GroupedWorkSolr groupedWork, RecordIdentifier identifier, Record record){
 		List<DataField>  itemRecords                 = MarcUtil.getDataFields(record, itemTag);
 		List<RecordInfo> unsuppressedEcontentRecords = new ArrayList<>();
 		for (DataField itemField : itemRecords){
@@ -394,7 +393,7 @@ class AspencatRecordProcessor extends IlsRecordProcessor {
 //		return isItemSuppressed(curItem, null);
 //	}
 
-	protected String getShelfLocationForItem(ItemInfo itemInfo, DataField itemField, String identifier) {
+	protected String getShelfLocationForItem(ItemInfo itemInfo, DataField itemField, RecordIdentifier identifier) {
 		/*String locationCode = getItemSubfieldData(locationSubfieldIndicator, itemField);
 		String location = translateValue("location", locationCode);*/
 		String location        = "";

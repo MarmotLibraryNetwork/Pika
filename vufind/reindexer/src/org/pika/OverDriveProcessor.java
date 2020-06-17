@@ -80,7 +80,6 @@ public class OverDriveProcessor {
 							} else {
 
 								RecordInfo overDriveRecord = groupedWork.addRelatedRecord("overdrive", identifier);
-								overDriveRecord.setRecordIdentifier("overdrive", identifier);
 
 								HashMap<String, String> metadata;
 								String                  formatCategory;

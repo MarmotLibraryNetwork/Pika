@@ -40,6 +40,11 @@ public class RecordInfo {
 
 	private HashSet<ItemInfo> relatedItems = new HashSet<>();
 
+	public RecordInfo(RecordIdentifier sourceAndId){
+		this.source = sourceAndId.getSource();
+		this.recordIdentifier = sourceAndId.getIdentifier();
+	}
+
 	public RecordInfo(String source, String recordIdentifier) {
 		this.source           = source;
 		this.recordIdentifier = recordIdentifier;
@@ -82,11 +87,6 @@ public class RecordInfo {
 
 	HashSet<ItemInfo> getRelatedItems() {
 		return relatedItems;
-	}
-
-	void setRecordIdentifier(String source, String recordIdentifier) {
-		this.source           = source;
-		this.recordIdentifier = recordIdentifier;
 	}
 
 	public String getRecordIdentifier() {

@@ -87,12 +87,12 @@ class HooplaProcessor extends MarcRecordProcessor {
 	}
 
 	@Override
-	public void processRecord(GroupedWorkSolr groupedWork, String identifier) {
-		Record record = loadMarcRecordFromDisk(identifier);
+	public void processRecord(GroupedWorkSolr groupedWork, RecordIdentifier identifier) {
+		Record record = loadMarcRecordFromDisk(identifier.getIdentifier());
 
 		if (record != null) {
 			try {
-				if (getHooplaExtractInfo(identifier)) {
+				if (getHooplaExtractInfo(identifier.getIdentifier())) {
 					updateGroupedWorkSolrDataBasedOnMarc(groupedWork, record, identifier);
 //					updateGroupedWorkSolrDataBasedOnHooplaExtract(groupedWork, identifier);
 				}
@@ -188,7 +188,7 @@ class HooplaProcessor extends MarcRecordProcessor {
 	}
 
 	@Override
-	protected void updateGroupedWorkSolrDataBasedOnMarc(GroupedWorkSolr groupedWork, Record record, String identifier) {
+	protected void updateGroupedWorkSolrDataBasedOnMarc(GroupedWorkSolr groupedWork, Record record, RecordIdentifier identifier) {
 		//First get format
 		String format = MarcUtil.getFirstFieldVal(record, "099a");
 		if (format != null) {
@@ -199,15 +199,15 @@ class HooplaProcessor extends MarcRecordProcessor {
 		}
 
 		//Do updates based on the overall bib (shared regardless of scoping)
-		updateGroupedWorkSolrDataBasedOnStandardMarcData(groupedWork, record, null, identifier, format);
+		updateGroupedWorkSolrDataBasedOnStandardMarcData(groupedWork, record, null, identifier.getIdentifier(), format);
 
 		//Do special processing for Hoopla which does not have individual items within the record
 		//Instead, each record has essentially unlimited items that can be used at one time.
 		//There are also not multiple formats within a record that we would need to split out.
 
-		String formatCategory = indexer.translateSystemValue("format_category_hoopla", format, identifier);
+		String formatCategory = indexer.translateSystemValue("format_category_hoopla", format, identifier.getIdentifier());
 		long   formatBoost    = 8L; // Reasonable default value
-		String formatBoostStr = indexer.translateSystemValue("format_boost_hoopla", format, identifier);
+		String formatBoostStr = indexer.translateSystemValue("format_boost_hoopla", format, identifier.getIdentifier());
 		if (formatBoostStr != null && !formatBoostStr.isEmpty()) {
 			formatBoost = Long.parseLong(formatBoostStr);
 		} else {
@@ -251,7 +251,7 @@ class HooplaProcessor extends MarcRecordProcessor {
 		groupedWork.addPhysical(physicalDescriptions);
 
 		//Setup the per Record information
-		RecordInfo recordInfo = groupedWork.addRelatedRecord("hoopla", identifier);
+		RecordInfo recordInfo = groupedWork.addRelatedRecord("hoopla", identifier.getIdentifier());
 
 		recordInfo.setFormatBoost(formatBoost);
 		recordInfo.setEdition(primaryEdition);
@@ -281,7 +281,7 @@ class HooplaProcessor extends MarcRecordProcessor {
 //		itemInfo.seteContentProtectionType("Always Available");
 		itemInfo.setDetailedStatus("Available Online");
 		loadEContentUrl(record, itemInfo, identifier);
-		Date dateAdded = indexer.getDateFirstDetected("hoopla", identifier);
+		Date dateAdded = indexer.getDateFirstDetected("hoopla", identifier.getIdentifier());
 		itemInfo.setDateAdded(dateAdded);
 
 		recordInfo.addItem(itemInfo);

@@ -38,7 +38,7 @@ abstract class MarcRecordProcessor {
 	 * @param groupedWork the work to be updated
 	 * @param identifier the identifier to load information for
 	 */
-	public abstract void processRecord(GroupedWorkSolr groupedWork, String identifier);
+	public abstract void processRecord(GroupedWorkSolr groupedWork, RecordIdentifier identifier);
 
 	protected void loadSubjects(GroupedWorkSolr groupedWork, Record record){
 		List<DataField> subjectFields = MarcUtil.getDataFields(record, new String[]{"600", "610", "611", "630", "648", "650", "651", "655", "690"});
@@ -390,7 +390,7 @@ abstract class MarcRecordProcessor {
 	}
 
 
-	protected abstract void updateGroupedWorkSolrDataBasedOnMarc(GroupedWorkSolr groupedWork, Record record, String identifier);
+	protected abstract void updateGroupedWorkSolrDataBasedOnMarc(GroupedWorkSolr groupedWork, Record record, RecordIdentifier identifier);
 
 	void loadEditions(GroupedWorkSolr groupedWork, Record record, HashSet<RecordInfo> ilsRecords) {
 		Set<String> editions = MarcUtil.getFieldList(record, "250a");
@@ -772,7 +772,7 @@ abstract class MarcRecordProcessor {
 		return publisher;
 	}
 
-	void loadLanguageDetails(GroupedWorkSolr groupedWork, Record record, HashSet<RecordInfo> ilsRecords, String identifier) {
+	void loadLanguageDetails(GroupedWorkSolr groupedWork, Record record, HashSet<RecordInfo> ilsRecords, RecordIdentifier identifier) {
 		// Note: ilsRecords are alternate manifestations for the same record, like for an order record or ILS econtent items
 
 		HashSet<String> languageNames        = new HashSet<>();
@@ -790,14 +790,14 @@ abstract class MarcRecordProcessor {
 				languageNames.add(languageName);
 				primaryLanguage = languageName;
 
-				String languageBoostStr = indexer.translateSystemValue("language_boost", languageCode, identifier);
+				String languageBoostStr = indexer.translateSystemValue("language_boost", languageCode, identifier.getSourceAndId());
 				if (languageBoostStr != null) {
 					long languageBoostVal = Long.parseLong(languageBoostStr);
 					if (languageBoostVal > languageBoost) {
 						languageBoost = languageBoostVal;
 					}
 				}
-				String languageBoostEs = indexer.translateSystemValue("language_boost_es", languageCode, identifier);
+				String languageBoostEs = indexer.translateSystemValue("language_boost_es", languageCode, identifier.getSourceAndId());
 				if (languageBoostEs != null) {
 					long languageBoostVal = Long.parseLong(languageBoostEs);
 					if (languageBoostVal > languageBoostSpanish) {
@@ -845,14 +845,14 @@ abstract class MarcRecordProcessor {
 										// Only use the first 041a language code for the primary language and boosts
 										primaryLanguage = languageName;
 
-										String languageBoostStr = indexer.translateSystemValue("language_boost", code, identifier);
+										String languageBoostStr = indexer.translateSystemValue("language_boost", code, identifier.getSourceAndId());
 										if (languageBoostStr != null) {
 											long languageBoostVal = Long.parseLong(languageBoostStr);
 											if (languageBoostVal > languageBoost) {
 												languageBoost = languageBoostVal;
 											}
 										}
-										String languageBoostEs = indexer.translateSystemValue("language_boost_es", code, identifier);
+										String languageBoostEs = indexer.translateSystemValue("language_boost_es", code, identifier.getSourceAndId());
 										if (languageBoostEs != null) {
 											long languageBoostVal = Long.parseLong(languageBoostEs);
 											if (languageBoostVal > languageBoostSpanish) {
@@ -1047,7 +1047,7 @@ abstract class MarcRecordProcessor {
 		}
 	}
 
-	void loadEContentUrl(Record record, ItemInfo itemInfo, String identifier) {
+	void loadEContentUrl(Record record, ItemInfo itemInfo, RecordIdentifier identifier) {
 		List<DataField> urlFields = MarcUtil.getDataFields(record, "856");
 		for (DataField urlField : urlFields) {
 			//load url into the item

@@ -3,7 +3,6 @@ package org.pika;
 import org.apache.log4j.Logger;
 import org.marc4j.marc.DataField;
 import org.marc4j.marc.Record;
-import org.marc4j.marc.Subfield;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -30,7 +29,7 @@ class FlatironsRecordProcessor extends IIIRecordProcessor {
 	}
 
 	@Override
-	protected void loadUnsuppressedPrintItems(GroupedWorkSolr groupedWork, RecordInfo recordInfo, String identifier, Record record) {
+	protected void loadUnsuppressedPrintItems(GroupedWorkSolr groupedWork, RecordInfo recordInfo, RecordIdentifier identifier, Record record) {
 		IsRecordEContent isRecordEContent = new IsRecordEContent(record).invoke();
 		boolean          isEContent       = isRecordEContent.isEContent();
 		List<DataField>  itemRecords      = isRecordEContent.getItemRecords();
@@ -45,7 +44,7 @@ class FlatironsRecordProcessor extends IIIRecordProcessor {
 	}
 
 	@Override
-	protected List<RecordInfo> loadUnsuppressedEContentItems(GroupedWorkSolr groupedWork, String identifier, Record record) {
+	protected List<RecordInfo> loadUnsuppressedEContentItems(GroupedWorkSolr groupedWork, RecordIdentifier identifier, Record record) {
 		IsRecordEContent isRecordEContent            = new IsRecordEContent(record).invoke();
 		boolean          isEContent                  = isRecordEContent.isEContent();
 		List<DataField>  itemRecords                 = isRecordEContent.getItemRecords();
@@ -86,8 +85,8 @@ class FlatironsRecordProcessor extends IIIRecordProcessor {
 					}
 					itemInfo.setCallNumber("Online");
 					itemInfo.setShelfLocation(itemInfo.geteContentSource());
-					RecordInfo relatedRecord = groupedWork.addRelatedRecord("external_econtent", identifier);
-					relatedRecord.setSubSource(profileType);
+					RecordInfo relatedRecord = groupedWork.addRelatedRecord("external_econtent", identifier.getIdentifier());
+					relatedRecord.setSubSource(idexingProfileSourceDisplayName);
 					relatedRecord.addItem(itemInfo);
 					//Check the 856 tag to see if there is a link there
 					loadEContentUrl(record, itemInfo, identifier);
@@ -192,7 +191,7 @@ class FlatironsRecordProcessor extends IIIRecordProcessor {
 		}
 	}
 
-	protected void loadTargetAudiences(GroupedWorkSolr groupedWork, Record record, HashSet<ItemInfo> printItems, String identifier) {
+	protected void loadTargetAudiences(GroupedWorkSolr groupedWork, Record record, HashSet<ItemInfo> printItems, RecordIdentifier identifier) {
 		//For Flatirons, load audiences based on the final character of the location codes
 		HashSet<String> targetAudiences = new HashSet<>();
 		for (ItemInfo printItem : printItems) {
@@ -203,8 +202,8 @@ class FlatironsRecordProcessor extends IIIRecordProcessor {
 			}
 		}
 
-		groupedWork.addTargetAudiences(translateCollection("target_audience", targetAudiences, identifier));
-		groupedWork.addTargetAudiencesFull(translateCollection("target_audience", targetAudiences, identifier));
+		groupedWork.addTargetAudiences(translateCollection("target_audience", targetAudiences, identifier.getSourceAndId()));
+		groupedWork.addTargetAudiencesFull(translateCollection("target_audience", targetAudiences, identifier.getSourceAndId()));
 	}
 
 	private class IsRecordEContent {

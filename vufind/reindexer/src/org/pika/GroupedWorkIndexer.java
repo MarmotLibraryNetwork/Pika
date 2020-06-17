@@ -95,12 +95,6 @@ public class GroupedWorkIndexer {
 		//Load a few statements we will need later
 		try{
 			getGroupedWorkPrimaryIdentifiers = pikaConn.prepareStatement("SELECT * FROM grouped_work_primary_identifiers WHERE grouped_work_id = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
-			//MDN 4/14 - Do not restrict by valid for enrichment since many popular titles
-			//Wind up with different work id's due to differences in cataloging.
-			//getGroupedWorkIdentifiers = pikaConn.prepareStatement("SELECT * FROM grouped_work_identifiers inner join grouped_work_identifiers_ref on identifier_id = grouped_work_identifiers.id where grouped_work_id = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
-			//TODO: Restore functionality to not include any identifiers that aren't tagged as valid for enrichment
-			//getGroupedWorkIdentifiers = pikaConn.prepareStatement("SELECT * FROM grouped_work_identifiers inner join grouped_work_identifiers_ref on identifier_id = grouped_work_identifiers.id where grouped_work_id = ? and valid_for_enrichment = 1", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
-
 			getDateFirstDetectedStmt          = pikaConn.prepareStatement("SELECT dateFirstDetected FROM ils_marc_checksums WHERE source = ? AND ilsId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 		} catch (Exception e){
 			logger.error("Could not load statements to get identifiers ", e);
@@ -1031,8 +1025,7 @@ public class GroupedWorkIndexer {
 		try (ResultSet groupedWorkPrimaryIdentifiers = getGroupedWorkPrimaryIdentifiers.executeQuery()) {
 			numPrimaryIdentifiers = 0;
 			while (groupedWorkPrimaryIdentifiers.next()) {
-				String type       = groupedWorkPrimaryIdentifiers.getString("type");
-				String identifier = groupedWorkPrimaryIdentifiers.getString("identifier");
+				RecordIdentifier identifier = new RecordIdentifier(groupedWorkPrimaryIdentifiers.getString("type"), groupedWorkPrimaryIdentifiers.getString("identifier"));
 
 				//Make a copy of the grouped work so we can revert if we don't add any records
 				GroupedWorkSolr originalWork;
@@ -1045,11 +1038,11 @@ public class GroupedWorkIndexer {
 				//Figure out how many records we had originally
 				int numRecords = groupedWork.getNumRecords();
 				if (logger.isDebugEnabled()) {
-					logger.debug("Processing " + type + ":" + identifier + " work currently has " + numRecords + " records");
+					logger.debug("Processing " + identifier + " work currently has " + numRecords + " records");
 				}
 
 				//This does the bulk of the work building fields for the solr document
-				updateGroupedWorkForPrimaryIdentifier(groupedWork, type, identifier);
+				updateGroupedWorkForPrimaryIdentifier(groupedWork, identifier);
 
 				//If we didn't add any records to the work (because they are all suppressed) revert to the original
 				if (groupedWork.getNumRecords() == numRecords) {
@@ -1153,8 +1146,7 @@ public class GroupedWorkIndexer {
 		try (ResultSet groupedWorkPrimaryIdentifiers = getGroupedWorkPrimaryIdentifiers.executeQuery()) {
 			numPrimaryIdentifiers = 0;
 			while (groupedWorkPrimaryIdentifiers.next()) {
-				String type       = groupedWorkPrimaryIdentifiers.getString("type");
-				String identifier = groupedWorkPrimaryIdentifiers.getString("identifier");
+				RecordIdentifier identifier = new RecordIdentifier(groupedWorkPrimaryIdentifiers.getString("type"), groupedWorkPrimaryIdentifiers.getString("identifier"));
 
 				//Make a copy of the grouped work so we can revert if we don't add any records
 				GroupedWorkSolr originalWork;
@@ -1167,11 +1159,11 @@ public class GroupedWorkIndexer {
 				//Figure out how many records we had originally
 				int numRecords = groupedWork.getNumRecords();
 				if (logger.isDebugEnabled()) {
-					logger.debug("Processing " + type + ":" + identifier + " work currently has " + numRecords + " records");
+					logger.debug("Processing " + identifier + " work currently has " + numRecords + " records");
 				}
 
 				//This does the bulk of the work building fields for the solr document
-				updateGroupedWorkForPrimaryIdentifier(groupedWork, type, identifier);
+				updateGroupedWorkForPrimaryIdentifier(groupedWork, identifier);
 
 				//If we didn't add any records to the work (because they are all suppressed) revert to the original
 				if (groupedWork.getNumRecords() == numRecords) {
@@ -1400,18 +1392,18 @@ public class GroupedWorkIndexer {
 		}
 	}
 
-	private void updateGroupedWorkForPrimaryIdentifier(GroupedWorkSolr groupedWork, String type, String identifier)  {
-		groupedWork.addAlternateId(identifier);
-		type = type.toLowerCase();
-		switch (type) {
+	private void updateGroupedWorkForPrimaryIdentifier(GroupedWorkSolr groupedWork, RecordIdentifier identifier)  {
+		groupedWork.addAlternateId(identifier.getIdentifier());
+		final String indexingSource = identifier.getSource().toLowerCase();
+		switch (indexingSource) {
 			case "overdrive":
-				overDriveProcessor.processRecord(groupedWork, identifier);
+				overDriveProcessor.processRecord(groupedWork, identifier.getIdentifier());
 				break;
 			default:
-				if (indexingRecordProcessors.containsKey(type)) {
-					indexingRecordProcessors.get(type).processRecord(groupedWork, identifier);
+				if (indexingRecordProcessors.containsKey(indexingSource)) {
+					indexingRecordProcessors.get(indexingSource).processRecord(groupedWork, identifier);
 				}else if (logger.isDebugEnabled()){
-					logger.debug("Could not find a record processor for type " + type);
+					logger.debug("Could not find a record processor for " + identifier);
 				}
 				break;
 		}

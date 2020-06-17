@@ -459,7 +459,7 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 		}
 	}
 
-	void loadLanguageDetails(GroupedWorkSolr groupedWork, Record record, HashSet<RecordInfo> ilsRecords, String identifier) {
+	void loadLanguageDetails(GroupedWorkSolr groupedWork, Record record, HashSet<RecordInfo> ilsRecords, RecordIdentifier identifier) {
 		// Note: ilsRecords are alternate manifestations for the same record, like for an order record or ILS econtent items
 
 		HashSet<String> languageNames        = new HashSet<>();
@@ -484,14 +484,14 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 			languageNames.add(languageName);
 			primaryLanguage = languageName;
 
-			String languageBoostStr = indexer.translateSystemValue("language_boost", languageCode, identifier);
+			String languageBoostStr = indexer.translateSystemValue("language_boost", languageCode, identifier.getSourceAndId());
 			if (languageBoostStr != null) {
 				long languageBoostVal = Long.parseLong(languageBoostStr);
 				if (languageBoostVal > languageBoost) {
 					languageBoost = languageBoostVal;
 				}
 			}
-			String languageBoostEs = indexer.translateSystemValue("language_boost_es", languageCode, identifier);
+			String languageBoostEs = indexer.translateSystemValue("language_boost_es", languageCode, identifier.getSourceAndId());
 			if (languageBoostEs != null) {
 				long languageBoostVal = Long.parseLong(languageBoostEs);
 				if (languageBoostVal > languageBoostSpanish) {
@@ -540,14 +540,14 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 										// Only use the first 041a language code for the primary language and boosts
 										primaryLanguage = languageName;
 
-										String languageBoostStr = indexer.translateSystemValue("language_boost", code, identifier);
+										String languageBoostStr = indexer.translateSystemValue("language_boost", code, identifier.getSourceAndId());
 										if (languageBoostStr != null) {
 											long languageBoostVal = Long.parseLong(languageBoostStr);
 											if (languageBoostVal > languageBoost) {
 												languageBoost = languageBoostVal;
 											}
 										}
-										String languageBoostEs = indexer.translateSystemValue("language_boost_es", code, identifier);
+										String languageBoostEs = indexer.translateSystemValue("language_boost_es", code, identifier.getSourceAndId());
 										if (languageBoostEs != null) {
 											long languageBoostVal = Long.parseLong(languageBoostEs);
 											if (languageBoostVal > languageBoostSpanish) {

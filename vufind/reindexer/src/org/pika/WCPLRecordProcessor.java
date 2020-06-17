@@ -10,7 +10,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.*;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 /**
  * Description goes here
@@ -26,7 +25,7 @@ class WCPLRecordProcessor extends IlsRecordProcessor {
 		super(indexer, pikaConn, indexingProfileRS, logger, fullReindex);
 
 		try {
-			getDateAddedStmt = pikaConn.prepareStatement("SELECT dateFirstDetected FROM ils_marc_checksums WHERE ilsId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			getDateAddedStmt = pikaConn.prepareStatement("SELECT dateFirstDetected FROM ils_marc_checksums WHERE source = ? AND ilsId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 		} catch (Exception e) {
 			logger.error("Unable to setup prepared statement for date added to catalog");
 		}
@@ -82,9 +81,10 @@ class WCPLRecordProcessor extends IlsRecordProcessor {
 	}
 
 	@Override
-	protected void loadDateAdded(String identifier, DataField itemField, ItemInfo itemInfo) {
+	protected void loadDateAdded(RecordIdentifier identifier, DataField itemField, ItemInfo itemInfo) {
 		try {
-			getDateAddedStmt.setString(1, identifier);
+			getDateAddedStmt.setString(1, identifier.getSource());
+			getDateAddedStmt.setString(2, identifier.getIdentifier());
 			try (ResultSet getDateAddedRS = getDateAddedStmt.executeQuery()) {
 				if (getDateAddedRS.next()) {
 					long timeAdded = getDateAddedRS.getLong(1);
@@ -99,7 +99,7 @@ class WCPLRecordProcessor extends IlsRecordProcessor {
 		}
 	}
 
-	protected String getShelfLocationForItem(ItemInfo itemInfo, DataField itemField, String identifier) {
+	protected String getShelfLocationForItem(ItemInfo itemInfo, DataField itemField, RecordIdentifier identifier) {
 		String locationCode     = getItemSubfieldData(locationSubfieldIndicator, itemField);
 		String location         = translateValue("location", locationCode, identifier);
 		String shelvingLocation = getItemSubfieldData(shelvingLocationSubfield, itemField);

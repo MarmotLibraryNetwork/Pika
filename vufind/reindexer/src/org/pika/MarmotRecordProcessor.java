@@ -32,7 +32,7 @@ class MarmotRecordProcessor extends IIIRecordProcessor {
 		validCheckedOutStatusCodes.add("u");
 	}
 
-	protected void loadUnsuppressedPrintItems(GroupedWorkSolr groupedWork, RecordInfo recordInfo, String identifier, Record record) {
+	protected void loadUnsuppressedPrintItems(GroupedWorkSolr groupedWork, RecordInfo recordInfo, RecordIdentifier identifier, Record record) {
 		List<DataField> itemRecords = MarcUtil.getDataFields(record, itemTag);
 		for (DataField itemField : itemRecords) {
 			if (!isItemSuppressed(itemField)) {
@@ -62,7 +62,7 @@ class MarmotRecordProcessor extends IIIRecordProcessor {
 	}
 
 	@Override
-	protected List<RecordInfo> loadUnsuppressedEContentItems(GroupedWorkSolr groupedWork, String identifier, Record record) {
+	protected List<RecordInfo> loadUnsuppressedEContentItems(GroupedWorkSolr groupedWork, RecordIdentifier identifier, Record record) {
 		List<RecordInfo> unsuppressedEcontentRecords = new ArrayList<>();
 		List<DataField>  itemRecords                 = MarcUtil.getDataFields(record, itemTag);
 		for (DataField itemField : itemRecords) {
