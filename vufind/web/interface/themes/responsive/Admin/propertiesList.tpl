@@ -221,4 +221,13 @@
 		widgets:['zebra', 'filter'] });
 	{/literal}
 </script>
+
+	<script type="text/javascript">
+		{literal}
+		$(document).ready(function(){
+			$('#adminTable').DataTable();
+		})
+
+		{/literal}
+	</script>
 {/if}
