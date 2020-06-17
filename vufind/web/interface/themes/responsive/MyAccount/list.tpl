@@ -166,7 +166,7 @@
 							update: function (e, ui){
 								var updates = [],
 										firstItemOnPage = {/literal}{$recordStart}{literal};
-								$('#UserList>div>div').each(function(currentOrder){
+								$('#UserList>div>div>div>div').each(function(currentOrder){
 									var id = this.id.replace('groupedRecord','') /* Grouped IDs for catalog items */
 																	.replace('archive',''),      /*modified Islandora PIDs for archive items*/
 													originalOrder = $(this).data('order'),
