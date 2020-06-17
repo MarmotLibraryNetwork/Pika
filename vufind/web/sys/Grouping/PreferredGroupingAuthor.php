@@ -29,8 +29,8 @@ require_once ROOT_DIR . '/sys/Grouping/CommonGroupingAlterationOperations.php';
 class PreferredGroupingAuthor extends CommonGroupingAlterationOperations {
 	public $__table = 'grouping_authors_preferred';
 	public $id;
-	public $normalizedAuthorVariant;
-	public $preferredNormalizedAuthor;
+	public $sourceGroupingAuthor;
+	public $preferredGroupingAuthor;
 	public $notes;
 
 	static function getObjectStructure(){
@@ -43,21 +43,21 @@ class PreferredGroupingAuthor extends CommonGroupingAlterationOperations {
 				'storeDb'     => true,
 				'primaryKey'  => true,
 			], [
-				'property'         => 'normalizedAuthorVariant',
+				'property'         => 'sourceGroupingAuthor',
 				'type'             => 'text',
 				'size'             => 25,
 				'maxLength'        => 50,
-				'label'            => 'Normalized Author Variant',
+				'label'            => 'Source Grouping Author',
 				'description'      => 'The grouping author that should be replaced.',
 				'serverValidation' => 'validateAuthorVariant',
 				'storeDb'          => true,
 				'required'         => true,
 			], [
-				'property'         => 'preferredNormalizedAuthor',
+				'property'         => 'preferredGroupingAuthor',
 				'type'             => 'text',
 				'size'             => 25,
 				'maxLength'        => 50,
-				'label'            => 'Preferred Normalized Author',
+				'label'            => 'Preferred Grouping Author',
 				'description'      => 'The normalized author the variant should be replaced with.',
 //				'serverValidation' => 'validateNormalizedAuthor',
 				'storeDb'          => true,
@@ -82,12 +82,12 @@ class PreferredGroupingAuthor extends CommonGroupingAlterationOperations {
 			'errors'      => [],
 		];
 
-			$preferredTitle                           = new PreferredGroupingAuthor();
-			$preferredTitle->preferredNormalizedAuthor = $this->normalizedAuthorVariant;
-			if ($preferredTitle->find()){
+			$groupingAuthor                          = new PreferredGroupingAuthor();
+			$groupingAuthor->preferredGroupingAuthor = $this->sourceGroupingAuthor;
+			if ($groupingAuthor->find()){
 				$validationResults = [
 					'validatedOk' => false,
-					'errors'      => ['The author variant can not match any preferred author entry.'],
+					'errors'      => ['The source grouping author can not match any existing preferred grouping author entry.'],
 				];
 			}
 
@@ -107,11 +107,11 @@ class PreferredGroupingAuthor extends CommonGroupingAlterationOperations {
 	protected function followUpActions(){
 		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 		$groupedWork               = new GroupedWork();
-		$groupedWork->author = $this->normalizedAuthorVariant;
+		$groupedWork->author = $this->sourceGroupingAuthor;
 		if ($groupedWork->find()){
 			while ($groupedWork->fetch()){
 				if (!$groupedWork->forceRegrouping()){
-					$this->logger->warn("Error while marking work {$groupedWork->permanent_id} for regrouping for author variant '{$this->normalizedAuthorVariant}'");
+					$this->logger->warn("Error while marking work {$groupedWork->permanent_id} for regrouping for author variant '{$this->sourceGroupingAuthor}'");
 				}
 			}
 		}

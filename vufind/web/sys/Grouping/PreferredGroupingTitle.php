@@ -27,8 +27,8 @@ require_once ROOT_DIR . '/sys/Grouping/CommonGroupingAlterationOperations.php';
 class PreferredGroupingTitle extends CommonGroupingAlterationOperations {
 	public $__table = 'grouping_titles_preferred';
 	public $id;
-	public $normalizedTitleVariant;
-	public $preferredNormalizedTitle;
+	public $sourceGroupingTitle;
+	public $preferredGroupingTitle;
 	public $notes;
 
 	static function getObjectStructure(){
@@ -41,21 +41,21 @@ class PreferredGroupingTitle extends CommonGroupingAlterationOperations {
 				'storeDb'     => true,
 				'primaryKey'  => true,
 			], [
-				'property'         => 'normalizedTitleVariant',
+				'property'         => 'sourceGroupingTitle',
 				'type'             => 'text',
 				'size'             => 50,
 				'maxLength'        => 100,
-				'label'            => 'Normalized Title Variant',
+				'label'            => 'Source Grouping Title',
 				'description'      => 'The grouping title that should be replaced.',
 				'serverValidation' => 'validateTitleVariant',
 				'storeDb'          => true,
 				'required'         => true,
 			], [
-				'property'         => 'preferredNormalizedTitle',
+				'property'         => 'preferredGroupingTitle',
 				'type'             => 'text',
 				'size'             => 50,
 				'maxLength'        => 100,
-				'label'            => 'Preferred Normalized Title',
+				'label'            => 'Preferred Grouping Title',
 				'description'      => 'The normalized title the variant should be replaced with.',
 //				'serverValidation' => 'validateNormalizedTitle',
 				'storeDb'          => true,
@@ -77,11 +77,11 @@ class PreferredGroupingTitle extends CommonGroupingAlterationOperations {
 	protected function followUpActions(){
 		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 		$groupedWork               = new GroupedWork();
-		$groupedWork->full_title = $this->normalizedTitleVariant;
+		$groupedWork->full_title = $this->sourceGroupingTitle;
 		if ($groupedWork->find()){
 			while ($groupedWork->fetch()){
 				if (!$groupedWork->forceRegrouping()){
-					$this->logger->warn("Error while marking work {$groupedWork->permanent_id} for regrouping for title variant '{$this->normalizedTitleVariant}'");
+					$this->logger->warn("Error while marking work {$groupedWork->permanent_id} for regrouping for title variant '{$this->sourceGroupingTitle}'");
 				}
 			}
 		}
@@ -94,12 +94,12 @@ class PreferredGroupingTitle extends CommonGroupingAlterationOperations {
 			'errors'      => [],
 		];
 
-			$preferredTitle                           = new PreferredGroupingTitle();
-			$preferredTitle->preferredNormalizedTitle = $this->normalizedTitleVariant;
+			$preferredTitle                         = new PreferredGroupingTitle();
+			$preferredTitle->preferredGroupingTitle = $this->sourceGroupingTitle;
 			if ($preferredTitle->find()){
 				$validationResults = [
 					'validatedOk' => false,
-					'errors'      => ['The title variant can not match any preferred title entry.'],
+					'errors'      => ['The source grouping title can not match any existing preferred grouping title entry.'],
 				];
 			}
 

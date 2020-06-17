@@ -249,28 +249,28 @@ function getGroupedWorkUpdates(){
 			'sql'             => [
 				"CREATE TABLE `grouping_titles_preferred` (
 					`id` INT NOT NULL AUTO_INCREMENT,
-					`normalizedTitleVariant` VARCHAR(100) NULL,
-					`preferredNormalizedTitle` VARCHAR(100) NULL,
+					`sourceGroupingTitle` VARCHAR(100) NULL,
+					`preferredGroupingTitle` VARCHAR(100) NULL,
 					`notes` VARCHAR(250) NULL,
 					PRIMARY KEY (`id`),
-					UNIQUE INDEX `normalizedTitleVariant_UNIQUE` (`normalizedTitleVariant` ASC))
+					UNIQUE INDEX `sourceGroupingTitle_UNIQUE` (`sourceGroupingTitle` ASC))
 					ENGINE = InnoDB
 					DEFAULT CHARACTER SET = utf8;",
 				"CREATE TABLE `grouping_authors_preferred` (
 					`id` INT NOT NULL AUTO_INCREMENT,
-					`normalizedAuthorVariant` VARCHAR(50) NULL,
-					`preferredNormalizedAuthor` VARCHAR(50) NULL,
+					`sourceGroupingAuthor` VARCHAR(50) NULL,
+					`preferredGroupingAuthor` VARCHAR(50) NULL,
 					`notes` VARCHAR(250) NULL,
 					PRIMARY KEY (`id`),
-					UNIQUE INDEX `normalizedAuthorVariant_UNIQUE` (`normalizedAuthorVariant` ASC))
+					UNIQUE INDEX `sourceGroupingAuthor_UNIQUE` (`sourceGroupingAuthor` ASC))
 					ENGINE = InnoDB
 					DEFAULT CHARACTER SET = utf8;",
 			],
 		],
 
 		'grouping_table_sizing-2020.06' => [
-			'title'           => 'Reduce ',
-			'description'     => 'Tables for looking up an authoritative version of a grouping title or author',
+			'title'           => 'Reduce column sizes',
+			'description'     => '',
 			'continueOnError' => false,
 			'sql'             => [
 				"",
