@@ -164,21 +164,21 @@ public abstract class GroupedWorkBase {
 
 	protected static void loadAuthorities(Connection pikaConn) {
 		try (
-				PreparedStatement preparedStatement = pikaConn.prepareStatement("SELECT normalizedAuthorVariant, preferredNormalizedAuthor FROM grouping_authors_preferred", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+				PreparedStatement preparedStatement = pikaConn.prepareStatement("SELECT sourceGroupingAuthor, preferredNormalizedAuthor FROM grouping_authors_preferred", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 				ResultSet resultSet=preparedStatement.executeQuery()
 		){
 			while (resultSet.next()) {
-				authorAuthorities.put(resultSet.getString("normalizedAuthorVariant"), resultSet.getString("preferredNormalizedAuthor"));
+				authorAuthorities.put(resultSet.getString("sourceGroupingAuthor"), resultSet.getString("preferredGroupingAuthor"));
 			}
 		} catch (Exception e) {
 			logger.error("Error loading preferred grouping authors", e);
 		}
 		try (
-				PreparedStatement preparedStatement = pikaConn.prepareStatement("SELECT normalizedTitleVariant, preferredNormalizedTitle FROM grouping_titles_preferred", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+				PreparedStatement preparedStatement = pikaConn.prepareStatement("SELECT sourceGroupingTitle, preferredGroupingTitle FROM grouping_titles_preferred", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 				ResultSet resultSet=preparedStatement.executeQuery()
 		){
 			while (resultSet.next()) {
-				titleAuthorities.put(resultSet.getString("normalizedTitleVariant"), resultSet.getString("preferredNormalizedTitle"));
+				titleAuthorities.put(resultSet.getString("sourceGroupingTitle"), resultSet.getString("preferredGroupingTitle"));
 			}
 		} catch (Exception e) {
 			logger.error("Error loading preferred grouping titles", e);
