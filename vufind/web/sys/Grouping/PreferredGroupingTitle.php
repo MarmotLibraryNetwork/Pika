@@ -47,7 +47,7 @@ class PreferredGroupingTitle extends CommonGroupingAlterationOperations {
 				'maxLength'        => 100,
 				'label'            => 'Source Grouping Title',
 				'description'      => 'The grouping title that should be replaced.',
-				'serverValidation' => 'validateTitleVariant',
+				'serverValidation' => 'validateSourceGroupingTitle',
 				'storeDb'          => true,
 				'required'         => true,
 			], [
@@ -87,7 +87,7 @@ class PreferredGroupingTitle extends CommonGroupingAlterationOperations {
 		}
 	}
 
-	function validateTitleVariant(){
+	function validateSourceGroupingTitle(){
 		//Setup validation return array
 		$validationResults = [
 			'validatedOk' => true,

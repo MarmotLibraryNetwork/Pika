@@ -49,7 +49,7 @@ class PreferredGroupingAuthor extends CommonGroupingAlterationOperations {
 				'maxLength'        => 50,
 				'label'            => 'Source Grouping Author',
 				'description'      => 'The grouping author that should be replaced.',
-				'serverValidation' => 'validateAuthorVariant',
+				'serverValidation' => 'validateSourceGroupingAuthor',
 				'storeDb'          => true,
 				'required'         => true,
 			], [
@@ -75,7 +75,7 @@ class PreferredGroupingAuthor extends CommonGroupingAlterationOperations {
 		return $structure;
 	}
 
-	function validateAuthorVariant(){
+	function validateSourceGroupingAuthor(){
 		//Setup validation return array
 		$validationResults = [
 			'validatedOk' => true,

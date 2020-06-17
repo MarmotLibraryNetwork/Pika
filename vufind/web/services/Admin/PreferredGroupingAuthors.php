@@ -79,4 +79,9 @@ class Admin_PreferredGroupingAuthors extends ObjectEditor {
 	function getIdKeyColumn(){
 		return 'id';
 	}
+
+	function getInstructions(){
+		return '<p class="alert alert-warning">Note: The <em>Preferred Grouping Author</em> will replace <strong>every</strong> instance of the <em>Source Grouping Author</em> for <u><strong>any</strong> grouped work</u> with that Grouping Author, not just for a single grouped work of interest.</p>';
+	}
+
 }
