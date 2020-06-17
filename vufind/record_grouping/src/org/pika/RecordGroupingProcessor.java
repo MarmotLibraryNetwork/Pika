@@ -119,7 +119,7 @@ class RecordGroupingProcessor {
 	//above pattern not strictly valid because urls don't have to contain the lib.overdrive.com
 	private static Pattern overdrivePattern = Pattern.compile("(?i)^http://.*?/ContentDetails\\.htm\\?id=[\\da-f]{8}-[\\da-f]{4}-[\\da-f]{4}-[\\da-f]{4}-[\\da-f]{12}$|^http://link\\.overdrive\\.com");
 
-	RecordIdentifier getPrimaryIdentifierFromMarcRecord(Record marcRecord, String recordType, boolean doAutomaticEcontentSuppression) {
+	RecordIdentifier getPrimaryIdentifierFromMarcRecord(Record marcRecord, String recordSource, boolean doAutomaticEcontentSuppression) {
 		RecordIdentifier    identifier         = null;
 		List<VariableField> recordNumberFields = marcRecord.getVariableFields(recordNumberTag);
 		for (VariableField recordNumberFieldValue : recordNumberFields) {
@@ -134,7 +134,7 @@ class RecordGroupingProcessor {
 					if (recordNumberSubfield != null && (recordNumberPrefix.length() == 0 || recordNumberSubfield.getData().length() > recordNumberPrefix.length())) {
 						if (recordNumberSubfield.getData().substring(0, recordNumberPrefix.length()).equals(recordNumberPrefix)) {
 							String recordNumber = recordNumberSubfield.getData().trim();
-							identifier = new RecordIdentifier(recordType, recordNumber);
+							identifier = new RecordIdentifier(recordSource, recordNumber);
 							break;
 						}
 					}
@@ -143,7 +143,7 @@ class RecordGroupingProcessor {
 //					logger.debug("getPrimaryIdentifierFromMarcRecord - Record number field is a control field");
 					ControlField curRecordNumberField = (ControlField) recordNumberFieldValue;
 					String       recordNumber         = curRecordNumberField.getData().trim();
-					identifier = new RecordIdentifier(recordType, recordNumber);
+					identifier = new RecordIdentifier(recordSource, recordNumber);
 					break;
 				}
 			}
@@ -536,14 +536,25 @@ class RecordGroupingProcessor {
 			}
 
 			//Group volumes, seasons, etc. independently
-			if (field245.getSubfield('n') != null) {
-				if (groupingSubtitle.length() > 0) groupingSubtitle.append(" ");
-				groupingSubtitle.append(field245.getSubfield('n').getData());
+			for (Subfield subfield : field245.getSubfields('n')) {
+				if (subfield != null) {
+					String subtitlePiece = subfield.getData();
+					if (subtitlePiece != null && !subtitlePiece.isEmpty()) {
+						if (groupingSubtitle.length() > 0) groupingSubtitle.append(" ");
+						groupingSubtitle.append(subtitlePiece);
+					}
+				}
 			}
-			if (field245.getSubfield('p') != null) {
-				if (groupingSubtitle.length() > 0) groupingSubtitle.append(" ");
-				groupingSubtitle.append(field245.getSubfield('p').getData());
+			for (Subfield subfield : field245.getSubfields('p')) {
+				if (subfield != null) {
+					String subtitlePiece = subfield.getData();
+					if (subtitlePiece != null && !subtitlePiece.isEmpty()) {
+						if (groupingSubtitle.length() > 0) groupingSubtitle.append(" ");
+						groupingSubtitle.append(subtitlePiece);
+					}
+				}
 			}
+
 
 			workForTitle.setTitle(basicTitle, groupingSubtitle.toString());
 		}
