@@ -94,7 +94,7 @@ class SideLoadedEContentProcessor extends IlsRecordProcessor{
 		ItemInfo itemInfo = new ItemInfo();
 		itemInfo.setIsEContent(true);
 
-		loadDateAdded(identifier.getIdentifier(), itemInfo);
+		loadDateAdded(identifier, itemInfo);
 		itemInfo.setLocationCode(idexingProfileSourceDisplayName);
 		//No itypes for Side loaded econtent
 		//itemInfo.setITypeCode();
@@ -120,19 +120,20 @@ class SideLoadedEContentProcessor extends IlsRecordProcessor{
 		return relatedRecord;
 	}
 
-	private void loadDateAdded(String identifier, ItemInfo itemInfo) {
+	private void loadDateAdded(RecordIdentifier identifier, ItemInfo itemInfo) {
 		try {
-			getDateAddedStmt.setString(1, identifier);
-			ResultSet getDateAddedRS = getDateAddedStmt.executeQuery();
-			if (getDateAddedRS.next()) {
-				long timeAdded = getDateAddedRS.getLong(1);
-				Date curDate = new Date(timeAdded * 1000);
-				itemInfo.setDateAdded(curDate);
-				getDateAddedRS.close();
-			}else{
-				logger.debug("Could not determine date added for " + identifier);
+			getDateAddedStmt.setString(1, identifier.getSource());
+			getDateAddedStmt.setString(2, identifier.getIdentifier());
+			try (ResultSet getDateAddedRS = getDateAddedStmt.executeQuery()) {
+				if (getDateAddedRS.next()) {
+					long timeAdded = getDateAddedRS.getLong(1);
+					Date curDate   = new Date(timeAdded * 1000);
+					itemInfo.setDateAdded(curDate);
+				} else {
+					logger.debug("Could not determine date added for " + identifier);
+				}
 			}
-		}catch (Exception e){
+		} catch (Exception e) {
 			logger.error("Unable to load date added for " + identifier);
 		}
 	}
