@@ -1712,22 +1712,17 @@ EOT;
 					// if the item status is "on hold shelf" (!) but the hold record status is "on hold" (0) use "on hold" status
 					// the "on hold shelf" status is for another patron.
 					if($recordItemStatus != "!" && $recordStatus != '0') {
-						// custom record status might = a hold status of "ready" so don't set and let item status display
-						if(!in_array($recordItemStatus, ["b","j",'i'])) {
-							$recordStatus = $recordItemStatus;
-						} else {
-							$recordStatus = false;
+						// check for in transit status see
+						if($recordItemStatus == 't') {
+							$recordStatus = 't';
 						}
-						// there's a good chance the item status could be a custom item status not accounted for in the switch
-						// statement below.
-						$recordItemStatusMessage = $hold->record->status->display;
-						$recordItemStatusMessage = ucfirst(strtolower($recordItemStatusMessage));
 					}
 				} else {
+					// inn-reach status
 					$recordStatus = $recordItemStatus;
 				}
 			}
-			// type hint so '0' = false
+			// type hint so '0' != false
 			switch ((string)$recordStatus) {
 				case '0':
 				case '-':
