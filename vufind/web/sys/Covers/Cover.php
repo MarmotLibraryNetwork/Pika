@@ -42,12 +42,32 @@ class Cover extends DB_DataObject
         return $this->cover ? '/customcover.php?image=' . $this->cover . '&size=' . $size: 'interface/themes/default/images/noCover2.png';
     }
 
-    function delete($useWhere = false){
+    function delete($useWhere = false, $noDelete = false){
+        if(!$noDelete) {
+            global
+            $configArray;
+            $storagePath = $configArray['Site']['coverPath'];
+            $coverPath = $storagePath . DIRECTORY_SEPARATOR . "original" . DIRECTORY_SEPARATOR . $this->cover;
+            unlink($coverPath);
+        }
+        parent::delete($useWhere);
+    }
+
+    function insert()
+    {
         global $configArray;
         $storagePath = $configArray['Site']['coverPath'];
         $coverPath = $storagePath . DIRECTORY_SEPARATOR . "original" . DIRECTORY_SEPARATOR . $this->cover;
-        unlink($coverPath);
-        parent::delete($useWhere);
+        if(file_exists($coverPath))
+        {
+            $newCover = clone $this;
+            $duplicateCover = new Cover();
+            $duplicateCover->get('cover', $newCover->cover);
+            $duplicateCover->delete(false,true);
+
+
+        }
+        return parent::insert();
     }
 }
 
