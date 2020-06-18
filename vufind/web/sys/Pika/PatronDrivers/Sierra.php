@@ -1721,14 +1721,14 @@ EOT;
 						// there's a good chance the item status could be a custom item status not accounted for in the switch
 						// statement below.
 						$recordItemStatusMessage = $hold->record->status->display;
-						$recordItemStatusMessage = ucfirst($recordItemStatusMessage);
+						$recordItemStatusMessage = ucfirst(strtolower($recordItemStatusMessage));
 					}
 				} else {
 					$recordStatus = $recordItemStatus;
 				}
 			}
-
-			switch ($recordStatus) {
+			// type hint so '0' = false
+			switch ((string)$recordStatus) {
 				case '0':
 				case '-':
 					if($hold->frozen) {
