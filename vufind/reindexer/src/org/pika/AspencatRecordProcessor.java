@@ -269,7 +269,7 @@ class AspencatRecordProcessor extends IlsRecordProcessor {
 		List<DataField> itemRecords = MarcUtil.getDataFields(record, itemTag);
 		for (DataField itemField : itemRecords){
 			if (!isItemSuppressed(itemField, identifier.getIdentifier()) && !isEContent(itemField)) {
-				getPrintIlsItem(groupedWork, recordInfo, record, itemField);
+				getPrintIlsItem(groupedWork, recordInfo, record, itemField, identifier);
 			}
 		}
 	}

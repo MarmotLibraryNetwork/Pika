@@ -297,7 +297,7 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 		}
 	}
 
-	protected void setDetailedStatus(ItemInfo itemInfo, DataField itemField, String itemStatus, String identifier) {
+	protected void setDetailedStatus(ItemInfo itemInfo, DataField itemField, String itemStatus, RecordIdentifier identifier) {
 		//See if we need to override based on the last check in date
 		String overriddenStatus = getOverriddenStatus(itemInfo, false);
 		if (overriddenStatus != null) {
@@ -320,7 +320,7 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 	}
 
 	private SimpleDateFormat displayDateFormatter = new SimpleDateFormat("MMM d, yyyy");
-	private String getDisplayDueDate(String dueDate, String identifier){
+	private String getDisplayDueDate(String dueDate, RecordIdentifier identifier){
 		try {
 			Date dateAdded = dueDateFormatter.parse(dueDate);
 			return displayDateFormatter.format(dateAdded);

@@ -400,7 +400,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			}
 			if (primaryFormat == null/* || primaryFormat.equals("Unknown")*/) {
 				primaryFormat = "Unknown";
-				//logger.info("No primary format for " + recordInfo.getRecordIdentifier() + " found setting to unknown to load standard marc data");
+				//logger.info("No primary format for " + identifier + " found setting to unknown to load standard marc data");
 			}
 			updateGroupedWorkSolrDataBasedOnStandardMarcData(groupedWork, record, recordInfo.getRelatedItems(), identifier.getIdentifier(), primaryFormat);
 
@@ -676,7 +676,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		}
 		for (DataField itemField : itemRecords){
 			if (!isItemSuppressed(itemField)){
-				getPrintIlsItem(groupedWork, recordInfo, record, itemField);
+				getPrintIlsItem(groupedWork, recordInfo, record, itemField, identifier);
 				//Can return null if the record does not have status and location
 				//This happens with secondary call numbers sometimes.
 			}else if (logger.isDebugEnabled()){
@@ -779,7 +779,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 	private SimpleDateFormat dateAddedFormatter = null;
 	private SimpleDateFormat lastCheckInFormatter = null;
-	ItemInfo getPrintIlsItem(GroupedWorkSolr groupedWork, RecordInfo recordInfo, Record record, DataField itemField) {
+	ItemInfo getPrintIlsItem(GroupedWorkSolr groupedWork, RecordInfo recordInfo, Record record, DataField itemField, RecordIdentifier identifier) {
 		if (dateAddedFormatter == null){
 			dateAddedFormatter = new SimpleDateFormat(dateAddedFormat);
 		}
@@ -790,7 +790,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		//Load base information from the Marc Record
 		itemInfo.setItemIdentifier(getItemSubfieldData(itemRecordNumberSubfieldIndicator, itemField));
 
-		String itemStatus   = getItemStatus(itemField, recordInfo.getRecordIdentifier());
+		String itemStatus   = getItemStatus(itemField, identifier.getSourceAndId());
 		String itemLocation = getItemSubfieldData(locationSubfieldIndicator, itemField);
 		itemInfo.setLocationCode(itemLocation);
 		String itemSublocation = getItemSubfieldData(subLocationSubfield, itemField);
@@ -799,7 +799,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		}
 		itemInfo.setSubLocationCode(itemSublocation);
 		if (itemSublocation.length() > 0){
-			itemInfo.setSubLocation(translateValue("sub_location", itemSublocation, recordInfo.getRecordIdentifier()));
+			itemInfo.setSubLocation(translateValue("sub_location", itemSublocation, identifier));
 		}else{
 			itemInfo.setSubLocation("");
 		}
@@ -807,26 +807,26 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		//if the status and location are null, we can assume this is not a valid item
 		if (!isItemValid(itemStatus, itemLocation)) return null;
 		if (itemStatus.isEmpty()) {
-			logger.warn("Item contained no status value for item " + itemInfo.getItemIdentifier() + " for location " + itemLocation + " in record " + recordInfo.getRecordIdentifier());
+			logger.warn("Item contained no status value for item " + itemInfo.getItemIdentifier() + " for location " + itemLocation + " in record " + identifier);
 		}
 
-		setShelfLocationCode(itemField, itemInfo, recordInfo.getRecordIdentifier());
-		itemInfo.setShelfLocation(getShelfLocationForItem(itemInfo, itemField, recordInfo.getRecordIdentifier()));
+		setShelfLocationCode(itemField, itemInfo, identifier);
+		itemInfo.setShelfLocation(getShelfLocationForItem(itemInfo, itemField, identifier));
 
-		loadDateAdded(recordInfo.getRecordIdentifier(), itemField, itemInfo);
+		loadDateAdded(identifier, itemField, itemInfo);
 		getDueDate(itemField, itemInfo);
 
 		if (iTypeSubfield != ' ') {
 			itemInfo.setITypeCode(getItemSubfieldData(iTypeSubfield, itemField));
-			itemInfo.setIType(translateValue("itype", getItemSubfieldData(iTypeSubfield, itemField), recordInfo.getRecordIdentifier()));
+			itemInfo.setIType(translateValue("itype", getItemSubfieldData(iTypeSubfield, itemField), identifier));
 		}
 
-		double itemPopularity = getItemPopularity(itemField, recordInfo.getRecordIdentifier());
+		double itemPopularity = getItemPopularity(itemField, identifier);
 		groupedWork.addPopularity(itemPopularity);
 
 		loadItemCallNumber(record, itemField, itemInfo);
 
-		itemInfo.setCollection(translateValue("collection", getItemSubfieldData(collectionSubfield, itemField), recordInfo.getRecordIdentifier()));
+		itemInfo.setCollection(translateValue("collection", getItemSubfieldData(collectionSubfield, itemField), identifier));
 
 		if (lastCheckInFormatter != null) {
 			String lastCheckInDate = getItemSubfieldData(lastCheckInSubfield, itemField);
@@ -845,15 +845,15 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		//set status towards the end so we can access date added and other things that may need to
 		itemInfo.setStatusCode(itemStatus);
 		if (itemStatus != null) {
-			setDetailedStatus(itemInfo, itemField, itemStatus, recordInfo.getRecordIdentifier());
+			setDetailedStatus(itemInfo, itemField, itemStatus, identifier);
 		}
 
 		if (formatSource.equals("item") && formatSubfield != ' '){
 			String format = getItemSubfieldData(formatSubfield, itemField);
 			if (format != null) {
-				itemInfo.setFormat(translateValue("format", format, recordInfo.getRecordIdentifier()));
-				itemInfo.setFormatCategory(translateValue("format_category", format, recordInfo.getRecordIdentifier()));
-				String formatBoost = translateValue("format_boost", format, recordInfo.getRecordIdentifier());
+				itemInfo.setFormat(translateValue("format", format, identifier));
+				itemInfo.setFormatCategory(translateValue("format_category", format, identifier));
+				String formatBoost = translateValue("format_boost", format, identifier);
 				try {
 					if (formatBoost != null && formatBoost.length() > 0) {
 						recordInfo.setFormatBoost(Integer.parseInt(formatBoost));
@@ -881,7 +881,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		itemInfo.setDueDate(dueDateStr);
 	}
 
-	protected void setShelfLocationCode(DataField itemField, ItemInfo itemInfo, String recordIdentifier) {
+	protected void setShelfLocationCode(DataField itemField, ItemInfo itemInfo, RecordIdentifier recordIdentifier) {
 		if (shelvingLocationSubfield != ' '){
 			itemInfo.setShelfLocationCode(getItemSubfieldData(shelvingLocationSubfield, itemField));
 		}else {
@@ -990,7 +990,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		return false;
 	}
 
-	protected void setDetailedStatus(ItemInfo itemInfo, DataField itemField, String itemStatus, String identifier) {
+	protected void setDetailedStatus(ItemInfo itemInfo, DataField itemField, String itemStatus, RecordIdentifier identifier) {
 		//See if we need to override based on the last check in date
 		String overriddenStatus = getOverriddenStatus(itemInfo, false);
 		if (overriddenStatus != null) {
@@ -1038,7 +1038,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		}
 	}
 
-	protected double getItemPopularity(DataField itemField, String identifier) {
+	protected double getItemPopularity(DataField itemField, RecordIdentifier identifier) {
 		String totalCheckoutsField = getItemSubfieldData(totalCheckoutSubfield, itemField);
 		int totalCheckouts = 0;
 		if (totalCheckoutsField != null){
@@ -1321,18 +1321,6 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	}
 
 	protected String getShelfLocationForItem(ItemInfo itemInfo, DataField itemField, RecordIdentifier identifier) {
-		String shelfLocation = null;
-		if (itemField != null) {
-			shelfLocation = getItemSubfieldData(locationSubfieldIndicator, itemField);
-		}
-		if (shelfLocation == null || shelfLocation.length() == 0 || shelfLocation.equals("none")){
-			return "";
-		}else {
-			return translateValue("shelf_location", shelfLocation, identifier);
-		}
-	}
-
-	protected String getShelfLocationForItem(ItemInfo itemInfo, DataField itemField, String identifier) {
 		String shelfLocation = null;
 		if (itemField != null) {
 			shelfLocation = getItemSubfieldData(locationSubfieldIndicator, itemField);

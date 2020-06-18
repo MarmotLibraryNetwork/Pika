@@ -103,8 +103,8 @@ class AACPLRecordProcessor extends IlsRecordProcessor {
 	}
 
 	protected String getShelfLocationForItem(ItemInfo itemInfo, DataField itemField, RecordIdentifier identifier) {
-		String locationCode = getItemSubfieldData(locationSubfieldIndicator, itemField);
-		String location = translateValue("location", locationCode, identifier);
+		String locationCode     = getItemSubfieldData(locationSubfieldIndicator, itemField);
+		String location         = translateValue("location", locationCode, identifier);
 		String shelvingLocation = itemInfo.getShelfLocationCode();
 		if (location == null) {
 			location = translateValue("shelf_location", shelvingLocation, identifier);
@@ -165,14 +165,14 @@ class AACPLRecordProcessor extends IlsRecordProcessor {
 		return literaryForm;
 	}
 
-	protected void setShelfLocationCode(DataField itemField, ItemInfo itemInfo, String recordIdentifier) {
+	protected void setShelfLocationCode(DataField itemField, ItemInfo itemInfo, RecordIdentifier recordIdentifier) {
 		//For Symphony the status field holds the location code unless it is currently checked out, on display, etc.
 		//In that case the location code holds the permanent location
 		String subfieldData = getItemSubfieldData(statusSubfieldIndicator, itemField);
 		boolean loadFromPermanentLocation = false;
 		if (subfieldData == null) {
 			loadFromPermanentLocation = true;
-		} else if (translateValue("item_status", subfieldData, recordIdentifier, false) != null) {
+		} else if (translateValue("item_status", subfieldData, recordIdentifier.getSourceAndId(), false) != null) {
 			loadFromPermanentLocation = true;
 		}
 		if (loadFromPermanentLocation) {

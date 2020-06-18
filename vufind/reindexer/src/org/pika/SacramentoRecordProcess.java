@@ -109,7 +109,7 @@ class SacramentoRecordProcessor extends IIIRecordProcessor {
 //					// Don't use the regular method. Just translate and set based on bib locations
 					itemInfo.setStatusCode(itemStatus);
 
-					setDetailedStatus(itemInfo, null, itemStatus, identifier.getIdentifier());
+					setDetailedStatus(itemInfo, null, itemStatus, identifier);
 					loadItemCallNumber(record, null, itemInfo);
 
 					// Get the url for the action button display

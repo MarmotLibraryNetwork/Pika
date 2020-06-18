@@ -55,7 +55,7 @@ class MarmotRecordProcessor extends IIIRecordProcessor {
 					}
 				}
 				if (!isOverDrive && !isEContent) {
-					getPrintIlsItem(groupedWork, recordInfo, record, itemField);
+					getPrintIlsItem(groupedWork, recordInfo, record, itemField, identifier);
 				}
 			}
 		}
