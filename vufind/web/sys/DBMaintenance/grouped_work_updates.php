@@ -249,8 +249,8 @@ function getGroupedWorkUpdates(){
 			'sql'             => [
 				"CREATE TABLE `grouping_titles_preferred` (
 					`id` INT NOT NULL AUTO_INCREMENT,
-					`sourceGroupingTitle` VARCHAR(160) NULL,
-					`preferredGroupingTitle` VARCHAR(160) NULL,
+					`sourceGroupingTitle` VARCHAR(200) NULL,
+					`preferredGroupingTitle` VARCHAR(200) NULL,
 					`notes` VARCHAR(250) NULL,
 					PRIMARY KEY (`id`),
 					UNIQUE INDEX `sourceGroupingTitle_UNIQUE` (`sourceGroupingTitle` ASC))

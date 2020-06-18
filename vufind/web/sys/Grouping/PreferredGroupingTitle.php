@@ -43,8 +43,8 @@ class PreferredGroupingTitle extends CommonGroupingAlterationOperations {
 			], [
 				'property'         => 'sourceGroupingTitle',
 				'type'             => 'text',
-				'size'             => 50,
-				'maxLength'        => 100,
+				'size'             => 100,
+				'maxLength'        => 200,
 				'label'            => 'Source Grouping Title',
 				'description'      => 'The grouping title that should be replaced.',
 				'serverValidation' => 'validateSourceGroupingTitle',
@@ -53,8 +53,8 @@ class PreferredGroupingTitle extends CommonGroupingAlterationOperations {
 			], [
 				'property'         => 'preferredGroupingTitle',
 				'type'             => 'text',
-				'size'             => 50,
-				'maxLength'        => 100,
+				'size'             => 100,
+				'maxLength'        => 200,
 				'label'            => 'Preferred Grouping Title',
 				'description'      => 'The normalized title the variant should be replaced with.',
 //				'serverValidation' => 'validateNormalizedTitle',
