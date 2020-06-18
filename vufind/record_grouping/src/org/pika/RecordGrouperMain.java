@@ -1225,14 +1225,14 @@ public class RecordGrouperMain {
 			//Nothing to do since we don't have marc records to process
 			return;
 		}
-		OverDriveRecordGrouper recordGroupingProcessor = new OverDriveRecordGrouper(pikaConn, serverName, logger, fullRegroupingClearGroupingTables);
+		OverDriveRecordGrouper recordGroupingProcessor = new OverDriveRecordGrouper(pikaConn, econtentConnection, logger, fullRegroupingClearGroupingTables);
 		addNoteToGroupingLog("Starting to group overdrive records");
 //		loadIlsChecksums(pikaConn, "overdrive"); // There are no checksums for overdrive metadata
 		loadExistingPrimaryIdentifiers(pikaConn, "overdrive");
 
 		int numRecordsProcessed = 0;
 		try {
-			String OverdriveRecordSQL = "SELECT overdrive_api_products.id, overdriveId, mediaType, title, subtitle, primaryCreatorRole, primaryCreatorName, code FROM overdrive_api_products INNER JOIN overdrive_api_product_metadata ON overdrive_api_product_metadata.productId = overdrive_api_products.id INNER JOIN overdrive_api_product_languages_ref ON overdrive_api_product_languages_ref.productId = overdrive_api_products.id INNER JOIN overdrive_api_product_languages ON overdrive_api_product_languages_ref.languageId = overdrive_api_product_languages.id WHERE deleted = 0 AND isOwnedByCollections = 1";
+			String OverdriveRecordSQL = "SELECT overdrive_api_products.id, overdriveId, mediaType, title, subtitle, primaryCreatorRole, primaryCreatorName, code, publisher FROM overdrive_api_products INNER JOIN overdrive_api_product_metadata ON overdrive_api_product_metadata.productId = overdrive_api_products.id INNER JOIN overdrive_api_product_languages_ref ON overdrive_api_product_languages_ref.productId = overdrive_api_products.id INNER JOIN overdrive_api_product_languages ON overdrive_api_product_languages_ref.languageId = overdrive_api_product_languages.id WHERE deleted = 0 AND isOwnedByCollections = 1";
 			PreparedStatement overDriveRecordsStmt;
 			if (lastGroupingTime != null && !fullRegroupingClearGroupingTables && !fullRegroupingNoClear) {
 				overDriveRecordsStmt = econtentConnection.prepareStatement(OverdriveRecordSQL + " AND (dateUpdated >= ? OR lastMetadataChange >= ? OR lastAvailabilityChange >= ?)", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
@@ -1244,46 +1244,15 @@ public class RecordGrouperMain {
 			}
 			TreeSet<String> recordNumbersInExport = new TreeSet<>();
 			try (
-					PreparedStatement overDriveSubjectsStmt = econtentConnection.prepareStatement("SELECT * FROM overdrive_api_product_subjects INNER JOIN overdrive_api_product_subjects_ref ON overdrive_api_product_subjects.id = subjectId WHERE productId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 					ResultSet overDriveRecordRS = overDriveRecordsStmt.executeQuery()
 			) {
 
 				while (overDriveRecordRS.next()) {
-					long   id                  = overDriveRecordRS.getLong("id");
-					String overdriveId         = overDriveRecordRS.getString("overdriveId");
-					String mediaType           = overDriveRecordRS.getString("mediaType");
-					String title               = overDriveRecordRS.getString("title");
-					String subtitle            = overDriveRecordRS.getString("subtitle");
-					String author              = overDriveRecordRS.getString("primaryCreatorName");
-					String productLanguageCode = overDriveRecordRS.getString("code");
-					recordNumbersInExport.add(overdriveId);
-					//primary creator in overdrive is always first name, last name.
-
-					String groupingFormat;
-					if (mediaType.equalsIgnoreCase("ebook")){
-						groupingFormat = "book";
-						//Overdrive Graphic Novels can be derived from having a specific subject in the metadata
-						overDriveSubjectsStmt.setLong(1, id);
-						try (ResultSet overDriveSubjectRS = overDriveSubjectsStmt.executeQuery()){
-							while (overDriveSubjectRS.next()){
-								String subject = overDriveSubjectRS.getString("name");
-								if (subject.equals("Comic and Graphic Books")){
-									groupingFormat = "comic";
-									break;
-								}
-							}
-						} catch (Exception e) {
-							logger.error("Error looking for overdrive graphic novel info", e);
-						}
-					} else {
-						groupingFormat = mediaType;
-					}
-					// Set Grouping Language (use ISO 639-2 Bibliographic code)
-					String groupingLanguage = recordGroupingProcessor.translationMaps.get("iso639-1TOiso639-2B").translateValue(productLanguageCode, overdriveId);
-
+					String           overdriveId       = overDriveRecordRS.getString("overdriveId");
 					RecordIdentifier primaryIdentifier = new RecordIdentifier("overdrive", overdriveId);
+					recordGroupingProcessor.processOverDriveRecord(primaryIdentifier, overDriveRecordRS, true);
+					recordNumbersInExport.add(overdriveId);
 
-					recordGroupingProcessor.processOverDriveRecord(primaryIdentifier, title, subtitle, author, groupingFormat, groupingLanguage, true);
 					primaryIdentifiersInDatabase.remove(primaryIdentifier.toString().toLowerCase());
 					numRecordsProcessed++;
 				}
@@ -1298,8 +1267,7 @@ public class RecordGrouperMain {
 			}
 			addNoteToGroupingLog("Finished grouping " + numRecordsProcessed + " records from overdrive ");
 		} catch (Exception e) {
-			System.out.println("Error loading OverDrive records: " + e.toString());
-			e.printStackTrace();
+			logger.error("Error processing OverDrive data", e);
 		}
 	}
 
