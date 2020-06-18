@@ -155,8 +155,22 @@ class MyAccount_MyList extends MyAccount {
 				$list->removeListEntry($recordToDelete);
 				$list->update();
 			}
-			//Redirect back to avoid having the parameters stay in the URL.
-			header("Location: /MyAccount/MyList/{$list->id}");
+			//Redirect back to avoid having the parameters stay in the URL (keeping both pagesize and current page).
+            $queryString = "";
+            if(isset($_REQUEST['myListPageSize']))
+            {
+                $queryString = "?pagesize=" . $_REQUEST['myListPageSize'];
+            }
+            if(isset($_REQUEST['myListPage']))
+            {
+                if (isset($_REQUEST['myListPageSize'])) {
+                    $queryString = "?pagesize=" . $_REQUEST['myListPageSize'] . "&page=" . $_REQUEST['myListPage'];
+                    }
+                else{
+                    $queryString = "?page=" . $_REQUEST['myListPage'];
+                }
+            }
+			header("Location: /MyAccount/MyList/{$list->id}" . $queryString);
 			die();
     //if list is public the export to excel still needs to function
 		}elseif ($list->public && (isset($_REQUEST['myListActionHead']) || isset($_REQUEST['myListActionItem']) ))
