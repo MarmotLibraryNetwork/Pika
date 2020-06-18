@@ -56,7 +56,7 @@ class Admin_PreferredGroupingTitles extends ObjectEditor {
 	 * @inheritDoc
 	 */
 	function getAllObjects($orderBy = null){
-		return parent::getAllObjects('normalizedTitleVariant');
+		return parent::getAllObjects('sourceGroupingTitle');
 	}
 
 	/**

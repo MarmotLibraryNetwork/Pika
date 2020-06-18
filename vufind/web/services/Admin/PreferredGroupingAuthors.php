@@ -56,7 +56,7 @@ class Admin_PreferredGroupingAuthors extends ObjectEditor {
 	 * @inheritDoc
 	 */
 	function getAllObjects($orderBy = null){
-		return parent::getAllObjects('normalizedAuthorVariant');
+		return parent::getAllObjects('sourceGroupingAuthor');
 	}
 
 	/**
