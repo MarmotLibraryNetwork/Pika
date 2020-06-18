@@ -1704,13 +1704,24 @@ EOT;
 
 			// status, cancelable, freezable
 			$recordStatus = $hold->status->code;
+			// check item record status
 			if ($hold->recordType == 'i') {
 				$recordItemStatus = $hold->record->status->code;
-				// item records can show "on hold shelf" (!) if they are on hold by another patron
-				// if the item status is "on hold shelf" (!) but the hold record status is "on hold" (0) use "on hold" status
+				// If this is an inn-reach exclude from check -- this comes later
 				if(! strstr($hold->record->id, "@")) {
+					// if the item status is "on hold shelf" (!) but the hold record status is "on hold" (0) use "on hold" status
+					// the "on hold shelf" status is for another patron.
 					if($recordItemStatus != "!" && $recordStatus != '0') {
-						$recordStatus = $recordItemStatus;
+						// custom record status might = a hold status of "ready" so don't set and let item status display
+						if(!in_array($recordItemStatus, ["b","j",'i'])) {
+							$recordStatus = $recordItemStatus;
+						} else {
+							$recordStatus = false;
+						}
+						// there's a good chance the item status could be a custom item status not accounted for in the switch
+						// statement below.
+						$recordItemStatusMessage = $hold->record->status->display;
+						$recordItemStatusMessage = ucfirst($recordItemStatusMessage);
 					}
 				} else {
 					$recordStatus = $recordItemStatus;
@@ -1769,7 +1780,11 @@ EOT;
 					$updatePickup = false;
 					break;
 				default:
-					$status       = 'Unknown';
+					if(isset($recordItemStatusMessage)) {
+						$status = $recordItemStatusMessage;
+					} else {
+						$status = 'Unknown';
+					}
 					$cancelable   = false;
 					$freezeable   = false;
 					$updatePickup = false;
