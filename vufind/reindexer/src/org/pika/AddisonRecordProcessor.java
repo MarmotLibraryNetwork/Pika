@@ -30,7 +30,7 @@ public class AddisonRecordProcessor extends IIIRecordProcessor {
 		validCheckedOutStatusCodes.add("d"); // Display
 
 		try {
-			getDateAddedStmt = pikaConn.prepareStatement("SELECT dateFirstDetected FROM ils_marc_checksums WHERE ilsId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			getDateAddedStmt = pikaConn.prepareStatement("SELECT dateFirstDetected FROM ils_marc_checksums WHERE source = ? AND ilsId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 		} catch (Exception e) {
 			logger.error("Unable to setup prepared statement for date added to catalog");
 		}
