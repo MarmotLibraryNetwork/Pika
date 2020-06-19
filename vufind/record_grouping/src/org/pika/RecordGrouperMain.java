@@ -531,25 +531,26 @@ public class RecordGrouperMain {
 		}
 	}
 
-	private static void removeDeletedRecords(String curProfile, String dataDirPath) {
+	private static void removeDeletedRecords(String source, String dataDirPath) {
 		if (marcRecordIdsInDatabase.size() > 0) {
-			addNoteToGroupingLog("Deleting " + marcRecordIdsInDatabase.size() + " record ids for profile " + curProfile + " from the ils_marc_checksums table since they are no longer in the export.");
+			addNoteToGroupingLog("Deleting " + marcRecordIdsInDatabase.size() + " record ids for profile " + source + " from the ils_marc_checksums table since they are no longer in the export.");
 			for (String recordNumber : marcRecordIdsInDatabase.keySet()) {
 				//Remove the record from the ils_marc_checksums table
 				try {
-					removeMarcRecordChecksum.setLong(1, marcRecordIdsInDatabase.get(recordNumber));
+					removeMarcRecordChecksum.setString(1, source);
+					removeMarcRecordChecksum.setLong(2, marcRecordIdsInDatabase.get(recordNumber));
 					int numRemoved = removeMarcRecordChecksum.executeUpdate();
 					if (numRemoved != 1) {
-						logger.warn("Could not delete " + recordNumber + " from ils_marc_checksums table");
-					} else if (curProfile.equals("ils")) {
-						//TODO: this is temporary. this is to diagnose Sierra API Extract issues
+						logger.warn("Could not delete " + source + ":" + recordNumber + " from ils_marc_checksums table");
+					} else if (source.equals("ils")) {
+						//This is to diagnose Sierra API Extract issues
 						if (logger.isDebugEnabled()) {
-							logger.debug("Deleted ils record " + recordNumber + " from the ils checksum table.");
+							logger.debug("Deleted ils record " +  source + ":" + recordNumber + " from the ils checksum table.");
 						}
 
 					}
 				} catch (SQLException e) {
-					logger.error("Error removing ILS id " + recordNumber + " from ils_marc_checksums table", e);
+					logger.error("Error removing id " +  source + ":" + recordNumber + " from ils_marc_checksums table", e);
 				}
 			}
 			marcRecordIdsInDatabase.clear();
@@ -557,7 +558,7 @@ public class RecordGrouperMain {
 
 		if (primaryIdentifiersInDatabase.size() > 0) {
 			if (logger.isInfoEnabled()) {
-				logger.info("Deleting " + primaryIdentifiersInDatabase.size() + " primary identifiers for profile " + curProfile + " from the database since they are no longer in the export.");
+				logger.info("Deleting " + primaryIdentifiersInDatabase.size() + " primary identifiers for profile " + source + " from the database since they are no longer in the export.");
 			}
 			for (String recordNumber : primaryIdentifiersInDatabase.keySet()) {
 				//Remove the record from the grouped_work_primary_identifiers table
@@ -566,7 +567,7 @@ public class RecordGrouperMain {
 					int numRemoved = removePrimaryIdentifier.executeUpdate();
 					if (numRemoved != 1) {
 						logger.warn("Could not delete " + recordNumber + " from grouped_work_primary_identifiers table");
-					} else if (curProfile.equals("ils")) {
+					} else if (source.equals("ils")) {
 						//TODO: this is temporary. this is to diagnose Sierra API Extract issues
 						if (logger.isDebugEnabled()) {
 							logger.debug("Deleting grouped work primary identifier entry for record " + recordNumber);
@@ -656,7 +657,7 @@ public class RecordGrouperMain {
 		try {
 			if (insertMarcRecordChecksum == null) {
 				insertMarcRecordChecksum = pikaConn.prepareStatement("INSERT INTO ils_marc_checksums (ilsId, source, checksum, dateFirstDetected) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE checksum = VALUES(checksum), dateFirstDetected=VALUES(dateFirstDetected), source=VALUES(source)");
-				removeMarcRecordChecksum = pikaConn.prepareStatement("DELETE FROM ils_marc_checksums WHERE id = ?");
+				removeMarcRecordChecksum = pikaConn.prepareStatement("DELETE FROM ils_marc_checksums WHERE source = ? AND id = ?");
 			}
 
 			//MDN 2/23/2015 - Always load checksums so we can optimize writing to the database
@@ -1173,9 +1174,9 @@ public class RecordGrouperMain {
 		return stringToTrim.trim();
 	}
 
-	private static boolean checkForForcedRegrouping(Connection pikaConn, String indexingProfile) {
-		try (PreparedStatement checkForRecordsMarkedForRegrouping = pikaConn.prepareStatement("SELECT COUNT(*) from ils_marc_checksums where source like ? AND checksum = 0", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY)) {
-			checkForRecordsMarkedForRegrouping.setString(1, indexingProfile);
+	private static boolean checkForForcedRegrouping(Connection pikaConn, String sourceName) {
+		try (PreparedStatement checkForRecordsMarkedForRegrouping = pikaConn.prepareStatement("SELECT COUNT(*) FROM ils_marc_checksums WHERE source = ? AND checksum = 0", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY)) {
+			checkForRecordsMarkedForRegrouping.setString(1, sourceName);
 			try (ResultSet checkForRecordsMarkedForRegroupingRS = checkForRecordsMarkedForRegrouping.executeQuery()) {
 				checkForRecordsMarkedForRegroupingRS.next();
 				long numMarkedCheckSums = checkForRecordsMarkedForRegroupingRS.getLong(1);
