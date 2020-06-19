@@ -105,6 +105,14 @@ class FlatironsRecordProcessor extends IIIRecordProcessor {
 		return unsuppressedEcontentRecords;
 	}
 
+	@Override
+	protected String getILSeContentSourceType(Record record, DataField itemField) {
+		if (itemField.getSubfield(locationSubfieldIndicator) != null && itemField.getSubfield(locationSubfieldIndicator).getData().startsWith("bc")) {
+			return "Carnegie Online";
+		}
+		return "Unknown Source";
+	}
+
 	protected boolean isBibSuppressed(Record record) {
 		if (super.isBibSuppressed(record)) {
 			return true;
@@ -166,14 +174,14 @@ class FlatironsRecordProcessor extends IIIRecordProcessor {
 			default:
 				//Check based off of other information
 				if (econtentItem == null || econtentItem.getCallNumber() == null) {
-					format = "Unknown";
+					format = "online_resource";
 				} else {
 					if (econtentItem.getCallNumber().contains("PHOTO")) {
 						format = "Photo";
 					} else if (econtentItem.getCallNumber().contains("OH")) {
 						format = "Oral History";
 					} else {
-						format = "Unknown";
+						format = "online_resource";
 					}
 				}
 		}
@@ -249,6 +257,7 @@ class FlatironsRecordProcessor extends IIIRecordProcessor {
 			} else {
 				//Check to see if this is Carnegie eContent
 				for (DataField itemField : itemRecords) {
+					// if Location code start with BC and has an 856 url or 962 urls
 					if (itemField.getSubfield(locationSubfieldIndicator) != null && itemField.getSubfield(locationSubfieldIndicator).getData().startsWith("bc")) {
 						//TODO: this will make all the items on this BIB econtent, which is not *always* the case
 						//Check to see if we have related links

@@ -743,7 +743,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		return relatedRecord;
 	}
 
-	
+
 	protected void loadDateAdded(RecordIdentifier recordIdentifier, DataField itemField, ItemInfo itemInfo) {
 		String dateAddedStr = getItemSubfieldData(dateCreatedSubfield, itemField);
 		if (dateAddedStr != null && dateAddedStr.length() > 0) {
