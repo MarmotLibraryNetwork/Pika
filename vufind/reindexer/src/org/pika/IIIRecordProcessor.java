@@ -145,7 +145,7 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 		}
 
 		HashSet<Long> pTypesNotAccountedFor = new HashSet<>(pTypesToCheck);
-		pTypesNotAccountedFor.addAll(pTypesToCheck);
+//		pTypesNotAccountedFor.addAll(pTypesToCheck);
 		Long iTypeLong;
 		if (iType == null) {
 			iTypeLong = 9999L;
