@@ -227,6 +227,7 @@ public class FormatDetermination {
 							econtentItem.setFormat("eVideo");
 							econtentItem.setFormatCategory("Movies");
 							econtentRecord.setFormatBoost(10);
+							break;
 						case "electronic":
 						case "software":
 							econtentItem.setFormat("Online Materials");
