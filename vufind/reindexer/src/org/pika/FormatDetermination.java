@@ -179,6 +179,9 @@ public class FormatDetermination {
 							break;
 						case "ebook":
 						case "book":
+						case "bookwithcdrom":
+						case "bookwithdvd":
+						case "bookwithvideodisc":
 						case "largeprint":
 						case "manuscript":
 						case "thesis":

@@ -262,7 +262,7 @@ class ArlingtonRecordProcessor extends IIIRecordProcessor {
 				itemInfo.setShelfLocation(econtentSource);
 				itemInfo.setIType("eCollection");
 				RecordInfo relatedRecord = groupedWork.addRelatedRecord("external_econtent", identifier.getIdentifier());
-				relatedRecord.setSubSource(idexingProfileSourceDisplayName);
+				relatedRecord.setSubSource(indexingProfileSourceDisplayName);
 				relatedRecord.addItem(itemInfo);
 				itemInfo.seteContentUrl(url);
 

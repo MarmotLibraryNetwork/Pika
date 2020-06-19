@@ -95,18 +95,18 @@ class SideLoadedEContentProcessor extends IlsRecordProcessor{
 		itemInfo.setIsEContent(true);
 
 		loadDateAdded(identifier, itemInfo);
-		itemInfo.setLocationCode(idexingProfileSourceDisplayName);
+		itemInfo.setLocationCode(indexingProfileSourceDisplayName);
 		//No itypes for Side loaded econtent
 		//itemInfo.setITypeCode();
 		//itemInfo.setIType();
-		itemInfo.setCallNumber("Online " + idexingProfileSourceDisplayName);
+		itemInfo.setCallNumber("Online " + indexingProfileSourceDisplayName);
 		itemInfo.setItemIdentifier(identifier.getIdentifier());
-		itemInfo.setShelfLocation(idexingProfileSourceDisplayName);
+		itemInfo.setShelfLocation(indexingProfileSourceDisplayName);
 
 		//No Collection for Side loaded eContent
 		//itemInfo.setCollection(translateValue("collection", getItemSubfieldData(collectionSubfield, itemField), identifier));
 
-		itemInfo.seteContentSource(idexingProfileSourceDisplayName);
+		itemInfo.seteContentSource(indexingProfileSourceDisplayName);
 //		itemInfo.seteContentProtectionType("external");
 
 		RecordInfo relatedRecord = groupedWork.addRelatedRecord(identifier);
