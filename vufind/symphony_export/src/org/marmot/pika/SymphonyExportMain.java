@@ -1,11 +1,7 @@
 package org.marmot.pika;
 
-import au.com.bytecode.opencsv.CSVReader;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
-import org.ini4j.Ini;
-import org.ini4j.InvalidFileFormatException;
-import org.ini4j.Profile;
 import org.marc4j.*;
 import org.marc4j.marc.*;
 
@@ -41,6 +37,7 @@ public class SymphonyExportMain {
 		} else {
 			System.out.println("Could not find log4j configuration " + log4jFile.toString());
 		}
+
 		if (logger.isInfoEnabled()) {
 			logger.info(startTime.toString() + ": Starting Symphony Extract");
 		}
@@ -361,6 +358,7 @@ public class SymphonyExportMain {
 		File sitesDirectory      = fullExportDirectory.getParentFile();
 		File updatesDirectory    = new File(sitesDirectory.getAbsolutePath() + "/marc_updates");
 		File updatesFile         = new File(updatesDirectory.getAbsolutePath() + "/Pika-hourly.mrc");
+		int recordsUpdated       = 0;
 		if (!fullExportFile.exists()) {
 			logger.error("Full export file did not exist");
 			hadErrors = true;
@@ -400,7 +398,7 @@ public class SymphonyExportMain {
 					logger.info("Marc update file has a record for " + recordNumber);
 				}
 				//Check to see if the checksum has changed
-				getChecksumStmt.setString(1, indexingProfile.name);
+				getChecksumStmt.setString(1, indexingProfile.sourceName);
 				getChecksumStmt.setString(2, recordNumber);
 				ResultSet getChecksumRS = getChecksumStmt.executeQuery();
 				if (getChecksumRS.next()) {
@@ -408,7 +406,7 @@ public class SymphonyExportMain {
 					Long oldChecksum = getChecksumRS.getLong(1);
 					Long newChecksum = getChecksum(marcRecord);
 					if (!oldChecksum.equals(newChecksum)) {
-						getGroupedWorkIdStmt.setString(1, indexingProfile.name);
+						getGroupedWorkIdStmt.setString(1, indexingProfile.sourceName);
 						getGroupedWorkIdStmt.setString(2, recordNumber);
 						ResultSet getGroupedWorkIdRS = getGroupedWorkIdStmt.executeQuery();
 						if (getGroupedWorkIdRS.next()) {
@@ -422,8 +420,10 @@ public class SymphonyExportMain {
 							writer2.close();
 							if (logger.isInfoEnabled()){
 								logger.info("Updated individual marc record for " + recordNumber);
+								recordsUpdated++;
 							}
 
+							//TODO: actually group the record instead
 							//Mark the work as changed
 							updateGroupedWorkStmt.setLong(1, new Date().getTime() / 1000);
 							updateGroupedWorkStmt.setLong(2, groupedWorkId);
@@ -431,7 +431,7 @@ public class SymphonyExportMain {
 
 							//Save the new checksum so we don't reprocess
 							updateChecksumStmt.setLong(1, newChecksum);
-							updateChecksumStmt.setString(2, indexingProfile.name);
+							updateChecksumStmt.setString(2, indexingProfile.sourceName);
 							updateChecksumStmt.setString(3, recordNumber);
 							updateChecksumStmt.executeUpdate();
 						} else {
@@ -448,12 +448,16 @@ public class SymphonyExportMain {
 				}
 
 			}
+			if (logger.isInfoEnabled()){
+				logger.info(recordsUpdated + " records were updated.");
+			}
 		} catch (Exception e) {
 			logger.error("Error loading updated marcs", e);
 			hadErrors = true;
 		}
 	}
 
+	//TODO: update to indexing profile setting for the record number subfield
 	private static String getPrimaryIdentifierFromMarcRecord(Record marcRecord) {
 		List<VariableField> recordNumberFields = marcRecord.getVariableFields(indexingProfile.recordNumberTag);
 		String              recordNumber       = null;

@@ -16,29 +16,30 @@ import java.sql.ResultSet;
  * Time: 10:38 PM
  */
 public class IndexingProfile {
-	Long id;
-	String name;
-	String marcPath;
-	String individualMarcPath;
-	int numCharsToCreateFolderFrom;
+	Long    id;
+	String  sourceName;
+	String  marcPath;
+	String  individualMarcPath;
+	int     numCharsToCreateFolderFrom;
 	boolean createFolderFromLeadingCharacters;
-	String recordNumberTag;
-	String itemTag ;
-	char itemRecordNumberSubfield;
-	String lastCheckinFormat;
-	String dateCreatedFormat;
-	String dueDateFormat;
-	char lastCheckinDateSubfield;
-	char locationSubfield;
-	char itemStatusSubfield;
-	char iTypeSubfield;
-	char shelvingLocationSubfield;
-	char yearToDateCheckoutsSubfield;
-	char totalCheckoutsSubfield;
-	char callNumberSubfield;
-	char dateCreatedSubfield;
-	char dueDateSubfield;
-	String recordNumberPrefix;
+	String  recordNumberTag;
+	char    recordNumberField;
+	String  itemTag;
+	char    itemRecordNumberSubfield;
+	String  lastCheckinFormat;
+	String  dateCreatedFormat;
+	String  dueDateFormat;
+	char    lastCheckinDateSubfield;
+	char    locationSubfield;
+	char    itemStatusSubfield;
+	char    iTypeSubfield;
+	char    shelvingLocationSubfield;
+	char    yearToDateCheckoutsSubfield;
+	char    totalCheckoutsSubfield;
+	char    callNumberSubfield;
+	char    dateCreatedSubfield;
+	char    dueDateSubfield;
+	String  recordNumberPrefix;
 
 
 	private char getCharFromString(String stringValue) {
@@ -49,6 +50,9 @@ public class IndexingProfile {
 		return result;
 	}
 
+	private void setRecordNumberField(String recordNumberField) {
+		this.recordNumberField = getCharFromString(recordNumberField);
+	}
 	private void setItemRecordNumberSubfield(String itemRecordNumberSubfield) {
 		this.itemRecordNumberSubfield = getCharFromString(itemRecordNumberSubfield);
 	}
@@ -98,63 +102,64 @@ public class IndexingProfile {
 	static IndexingProfile loadIndexingProfile(Connection vufindConn, String profileToLoad, Logger logger) {
 		//Get the Indexing Profile from the database
 		IndexingProfile indexingProfile = new IndexingProfile();
-		try {
-			PreparedStatement getIndexingProfileStmt = vufindConn.prepareStatement("SELECT * FROM indexing_profiles where name ='" + profileToLoad + "'");
-			ResultSet indexingProfileRS = getIndexingProfileStmt.executeQuery();
+		try (
+			PreparedStatement getIndexingProfileStmt = vufindConn.prepareStatement("SELECT * FROM indexing_profiles WHERE name ='" + profileToLoad + "'");
+			ResultSet indexingProfileRS = getIndexingProfileStmt.executeQuery()
+		){
 			if (indexingProfileRS.next()) {
-
-				indexingProfile.id = indexingProfileRS.getLong("id");
-
-				indexingProfile.marcPath = indexingProfileRS.getString("marcPath");
-				indexingProfile.recordNumberTag = indexingProfileRS.getString("recordNumberTag");
-				indexingProfile.recordNumberPrefix = indexingProfileRS.getString("recordNumberPrefix");
-				indexingProfile.itemTag = indexingProfileRS.getString("itemTag");
-				indexingProfile.setItemRecordNumberSubfield(indexingProfileRS.getString("itemRecordNumber"));
-				indexingProfile.setLastCheckinDateSubfield(indexingProfileRS.getString("lastCheckinDate"));
-				indexingProfile.lastCheckinFormat = indexingProfileRS.getString("lastCheckinFormat");
-				indexingProfile.setLocationSubfield(indexingProfileRS.getString("location"));
-				indexingProfile.setItemStatusSubfield(indexingProfileRS.getString("status"));
-				indexingProfile.setDueDateSubfield(indexingProfileRS.getString("dueDate"));
-				indexingProfile.dueDateFormat = indexingProfileRS.getString("dueDateFormat");
-				indexingProfile.setDateCreatedSubfield(indexingProfileRS.getString("dateCreated"));
-				indexingProfile.dateCreatedFormat = indexingProfileRS.getString("dateCreatedFormat");
-				indexingProfile.setCallNumberSubfield(indexingProfileRS.getString("callNumber"));
-				indexingProfile.setTotalCheckoutsSubfield(indexingProfileRS.getString("totalCheckouts"));
-				indexingProfile.setYearToDateCheckoutsSubfield(indexingProfileRS.getString("yearToDateCheckouts"));
-
-				indexingProfile.individualMarcPath                 = indexingProfileRS.getString("individualMarcPath");
-				indexingProfile.name                        = indexingProfileRS.getString("name");
-				indexingProfile.numCharsToCreateFolderFrom         = indexingProfileRS.getInt("numCharsToCreateFolderFrom");
-				indexingProfile.createFolderFromLeadingCharacters  = indexingProfileRS.getBoolean("createFolderFromLeadingCharacters");
+				indexingProfile.id                                = indexingProfileRS.getLong("id");
+				indexingProfile.marcPath                          = indexingProfileRS.getString("marcPath");
+				indexingProfile.recordNumberTag                   = indexingProfileRS.getString("recordNumberTag");
+				indexingProfile.recordNumberPrefix                = indexingProfileRS.getString("recordNumberPrefix");
+				indexingProfile.itemTag                           = indexingProfileRS.getString("itemTag");
+				indexingProfile.lastCheckinFormat                 = indexingProfileRS.getString("lastCheckinFormat");
+				indexingProfile.dueDateFormat                     = indexingProfileRS.getString("dueDateFormat");
+				indexingProfile.dateCreatedFormat                 = indexingProfileRS.getString("dateCreatedFormat");
+				indexingProfile.individualMarcPath                = indexingProfileRS.getString("individualMarcPath");
+				indexingProfile.sourceName                        = indexingProfileRS.getString("sourceName");
+				indexingProfile.numCharsToCreateFolderFrom        = indexingProfileRS.getInt("numCharsToCreateFolderFrom");
+				indexingProfile.createFolderFromLeadingCharacters = indexingProfileRS.getBoolean("createFolderFromLeadingCharacters");
 
 				indexingProfile.setShelvingLocationSubfield(indexingProfileRS.getString("shelvingLocation"));
 				indexingProfile.setITypeSubfield(indexingProfileRS.getString("iType"));
+				indexingProfile.setItemRecordNumberSubfield(indexingProfileRS.getString("itemRecordNumber"));
+				indexingProfile.setLastCheckinDateSubfield(indexingProfileRS.getString("lastCheckinDate"));
+				indexingProfile.setLocationSubfield(indexingProfileRS.getString("location"));
+				indexingProfile.setItemStatusSubfield(indexingProfileRS.getString("status"));
+				indexingProfile.setDueDateSubfield(indexingProfileRS.getString("dueDate"));
+				indexingProfile.setDateCreatedSubfield(indexingProfileRS.getString("dateCreated"));
+				indexingProfile.setCallNumberSubfield(indexingProfileRS.getString("callNumber"));
+				indexingProfile.setTotalCheckoutsSubfield(indexingProfileRS.getString("totalCheckouts"));
+				indexingProfile.setYearToDateCheckoutsSubfield(indexingProfileRS.getString("yearToDateCheckouts"));
+				indexingProfile.setRecordNumberField(indexingProfileRS.getString("recordNumberField"));
+
 
 			} else {
 				logger.error("Unable to find " + profileToLoad + " indexing profile, please create a profile with the name ils.");
 			}
 
 		}catch (Exception e){
-			logger.error("Error reading index profile for CarlX", e);
+			logger.error("Error reading index profile for Symphony", e);
 		}
 		return indexingProfile;
 	}
 
 	File getFileForIlsRecord(String recordNumber) {
-		String shortId = recordNumber.replace(".", "");
-		while (shortId.length() < 9){
-			shortId = "0" + shortId;
+		StringBuilder shortId = new StringBuilder(recordNumber.replace(".", ""));
+		while (shortId.length() < 9) {
+			shortId.insert(0, "0");
 		}
 
 		String subFolderName;
-		if (createFolderFromLeadingCharacters){
-			subFolderName        = shortId.substring(0, numCharsToCreateFolderFrom);
-		}else{
-			subFolderName        = shortId.substring(0, shortId.length() - numCharsToCreateFolderFrom);
+		if (createFolderFromLeadingCharacters) {
+			subFolderName = shortId.substring(0, numCharsToCreateFolderFrom);
+		} else {
+			subFolderName = shortId.substring(0, shortId.length() - numCharsToCreateFolderFrom);
 		}
 
-		String basePath           = individualMarcPath + "/" + subFolderName;
+		String basePath = individualMarcPath + "/" + subFolderName;
 		String individualFilename = basePath + "/" + shortId + ".mrc";
 		return new File(individualFilename);
 	}
+
 }
