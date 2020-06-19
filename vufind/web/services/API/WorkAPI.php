@@ -137,7 +137,12 @@ class WorkAPI extends AJAXHandler {
 		$format             = escapeshellarg($_REQUEST['format']);
 		$languageCode       = escapeshellarg($_REQUEST['languageCode'] ?? 'eng');
 		$recordGroupingPath = realpath("$localPath/../record_grouping/");
-		$commandToRun       = "java -jar $recordGroupingPath/record_grouping.jar generateWorkId $title $author $format $languageCode";
+
+		// Get site name
+		$partParts = explode("/", $configArray['Site']['coverPath']);
+		$siteName = $partParts[count($partParts)-2];
+
+		$commandToRun       = "java -jar $recordGroupingPath/record_grouping.jar $siteName generateWorkId $title $author $format $languageCode";
 		$result             = shell_exec($commandToRun);
 		return json_decode($result);
 	}

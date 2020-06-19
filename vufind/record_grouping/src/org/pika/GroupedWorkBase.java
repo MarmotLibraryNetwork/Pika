@@ -164,7 +164,7 @@ public abstract class GroupedWorkBase {
 
 	protected static void loadAuthorities(Connection pikaConn) {
 		try (
-				PreparedStatement preparedStatement = pikaConn.prepareStatement("SELECT sourceGroupingAuthor, preferredNormalizedAuthor FROM grouping_authors_preferred", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+				PreparedStatement preparedStatement = pikaConn.prepareStatement("SELECT sourceGroupingAuthor, preferredGroupingAuthor FROM grouping_authors_preferred", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 				ResultSet resultSet=preparedStatement.executeQuery()
 		){
 			while (resultSet.next()) {

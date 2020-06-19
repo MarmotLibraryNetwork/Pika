@@ -147,6 +147,8 @@ public class FormatDetermination {
 						case "ebook":
 						case "book":
 						case "bookwithcdrom":
+						case "bookwithdvd":
+						case "bookwithvideodisc":
 						case "largeprint":
 						case "manuscript":
 						case "thesis":

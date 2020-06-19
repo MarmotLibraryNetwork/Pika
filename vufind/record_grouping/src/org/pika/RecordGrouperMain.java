@@ -61,30 +61,36 @@ public class RecordGrouperMain {
 					"\n" +
 					"This application can be used in several distinct ways based on the command line parameters\n" +
 					"1) Generate a work id for an individual title/author/format\n" +
-					"   record_grouping.jar generateWorkId <title> <author> <format> <subtitle (optional)>\n" +
-					"   \n" +
-					"   format should be one of: \n" +
-					"   - book\n" +
-					"   - music\n" +
-					"   - movie\n" +
+					"   record_grouping.jar <pika_site_name> generateWorkId <title> <author> <format> <languageCode> <subtitle (optional)>\n" +
 					"   \n" +
 					"2) Generate work ids for a Pika site based on the exports for the site\n" +
 					"   record_grouping.jar <pika_site_name>\n" +
 					"   \n" +
 //					"3) benchmark the record generation and test the functionality\n" +
 //					"   record_grouping.jar benchmark\n" +
-					"5) Only run record grouping cleanup\n" +
+					"4) Only run record grouping cleanup\n" +
 					"   record_grouping.jar <pika_site_name> runPostGroupingCleanup\n" +
-					"6) Only explode records into individual records (no grouping)\n" +
+					"5) Only explode records into individual records (no grouping)\n" +
 					"   record_grouping.jar <pika_site_name> explodeMarcs\n" +
-					"7) Record Group a specific indexing profile\n" +
+					"6) Record Group a specific indexing profile\n" +
 					"   record_grouping.jar <pika_site_name> \"<profile name>\"");
 			System.exit(1);
 		}
 
 		serverName = args[0];
 
-		switch (serverName) {
+		// Initialize the logger
+		File log4jFile = new File("../../sites/" + serverName + "/conf/log4j.grouping.properties");
+		if (log4jFile.exists()) {
+			PropertyConfigurator.configure(log4jFile.getAbsolutePath());
+		} else {
+			System.out.println("Could not find log4j configuration " + log4jFile.getAbsolutePath());
+			System.exit(1);
+		}
+
+		String action = args[1];
+
+		switch (action) {
 //			case "benchmark":
 //				boolean validateNYPL = false;
 //				if (args.length > 1) {
@@ -101,12 +107,12 @@ public class RecordGrouperMain {
 				String languageCode;
 				String subtitle = null;
 				if (args.length >= 5) {
-					title  = args[1];
-					author = args[2];
-					format = args[3];
-					languageCode = args[4];
-					if (args.length >= 6) {
-						subtitle = args[5];
+					title  = args[2];
+					author = args[3];
+					format = args[4];
+					languageCode = args[5];
+					if (args.length >= 7) {
+						subtitle = args[6];
 					}
 				} else {
 					title    = getInputFromCommandLine("Enter the title");
@@ -131,7 +137,7 @@ public class RecordGrouperMain {
 				GroupedWork5 work = (GroupedWork5) GroupedWorkFactory.getInstance(5, pikaConn);
 				work.setTitle(title, subtitle);
 				work.setAuthor(author);
-				work.setGroupingCategory(format, new RecordIdentifier("n/a", "n/a"));
+				work.setGroupingCategory(format, new RecordIdentifier("generate Work ID", "n/a"));
 				work.setGroupingLanguage(languageCode);
 				JSONObject result = new JSONObject();
 				try {
@@ -156,11 +162,14 @@ public class RecordGrouperMain {
 		System.out.print(prompt + ": ");
 
 		//  open up standard input
+		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+		// surrounding with try with resource breaks on the second prompt.
+
 		String value = null;
-		try (BufferedReader br = new BufferedReader(new InputStreamReader(System.in))) {
+		try {
 				value = br.readLine().trim();
-		} catch (IOException ioe) {
-			System.out.println("IO error trying to read " + prompt);
+		} catch (IOException e) {
+			System.out.println("IO error trying to read " + prompt + " - " + e.toString());
 			System.exit(1);
 		}
 		return value;
@@ -345,14 +354,6 @@ public class RecordGrouperMain {
 	private static void doStandardRecordGrouping(String[] args) {
 		long processStartTime = new Date().getTime();
 
-		// Initialize the logger
-		File log4jFile = new File("../../sites/" + serverName + "/conf/log4j.grouping.properties");
-		if (log4jFile.exists()) {
-			PropertyConfigurator.configure(log4jFile.getAbsolutePath());
-		} else {
-			System.out.println("Could not find log4j configuration " + log4jFile.getAbsolutePath());
-			System.exit(1);
-		}
 		if (logger.isInfoEnabled()) {
 			logger.info("Starting grouping of records " + new Date().toString());
 		}
