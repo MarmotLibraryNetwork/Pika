@@ -31,8 +31,10 @@ public class HorizonExportMain {
 
 	private static IndexingProfile indexingProfile;
 
-	private static Connection vufindConn;
-	private static PreparedStatement markGroupedWorkForBibAsChangedStmt;
+	private static Connection        pikaConn;
+	private static PreparedStatement updateExtractInfoStatement;
+
+	private static MarcRecordGrouper recordGroupingProcessor;
 
 	public static void main(String[] args) {
 		serverName = args[0];
@@ -49,38 +51,42 @@ public class HorizonExportMain {
 		// Read the base INI file to get information about the server (current directory/conf/config.ini)
 		Ini ini = loadConfigFile("config.ini");
 
+		String profileToLoad = "ils";
+		if (args.length > 1){
+			profileToLoad = args[1];
+		}
+
 		//Connect to the pika database
-		vufindConn = null;
+		pikaConn = null;
 		try {
 			String databaseConnectionInfo = cleanIniValue(ini.get("Database", "database_vufind_jdbc"));
 			if (databaseConnectionInfo == null){
 				logger.error("Please provide database_vufind_jdbc within config.ini (or better config.pwd.ini) ");
 				System.exit(1);
 			}
-			vufindConn = DriverManager.getConnection(databaseConnectionInfo);
+			pikaConn                           = DriverManager.getConnection(databaseConnectionInfo);
+			updateExtractInfoStatement         = pikaConn.prepareStatement("INSERT INTO ils_extract_info (indexingProfileId, ilsId, lastExtracted) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE lastExtracted=VALUES(lastExtracted)"); // unique key is indexingProfileId and ilsId combined
 
-			markGroupedWorkForBibAsChangedStmt = vufindConn.prepareStatement("UPDATE grouped_work SET date_updated = ? where id = (SELECT grouped_work_id from grouped_work_primary_identifiers WHERE type = 'ils' and identifier = ?)") ;
 		} catch (Exception e) {
 			logger.error("Error connecting to pika database ", e);
 			System.exit(1);
 		}
 
-		String profileToLoad = "ils";
-		if (args.length > 1){
-			profileToLoad = args[1];
-		}
-		indexingProfile = IndexingProfile.loadIndexingProfile(vufindConn, profileToLoad, logger);
+		indexingProfile = IndexingProfile.loadIndexingProfile(pikaConn, profileToLoad, logger);
+
+		//Setup other systems we will use
+		initializeRecordGrouper(pikaConn);
 
 		//Look for any exports from Horizon that have not been processed
-		processChangesFromHorizon(ini);
+		processChangesFromHorizon();
 
 		//TODO: Get a list of records with holds on them?
 
 		//Cleanup
-		if (vufindConn != null){
+		if (pikaConn != null){
 			try{
 				//Close the connection
-				vufindConn.close();
+				pikaConn.close();
 			}catch(Exception e){
 				System.out.println("Error closing connection: " + e.toString());
 				e.printStackTrace();
@@ -98,21 +104,18 @@ public class HorizonExportMain {
 	 * Expects extracts to already be copied to the server and to be in the
 	 * /data/pika-plus/{sitename}/marc_changes directory
 	 *
-	 * @param ini the configuration INI file for Pika
 	 */
-	private static void processChangesFromHorizon(Ini ini) {
-		String exportPath = ini.get("Reindex", "marcChangesPath");
-		File exportFile = new File(exportPath);
+	private static void processChangesFromHorizon() {
+		File         fullExportFile      = new File(indexingProfile.marcPath + "/fullexport.mrc");
+		File         fullExportDirectory = fullExportFile.getParentFile();
+		File         sitesDirectory      = fullExportDirectory.getParentFile();
+		final String exportPath          = sitesDirectory.getAbsolutePath() + "/marc_updates";
+		File         exportFile          = new File(exportPath);
 		if(!exportFile.exists()){
 			logger.error("Export path " + exportPath + " does not exist");
 			return;
 		}
-		File[] files = exportFile.listFiles(new FilenameFilter() {
-			@Override
-			public boolean accept(File dir, String name) {
-				return name.matches(".*\\.mrc");
-			}
-		});
+		File[] files = exportFile.listFiles((dir, name) -> name.matches(".*\\.mrc"));
 		if (files == null){
 			//Nothing to process
 			return;
@@ -124,18 +127,19 @@ public class HorizonExportMain {
 		}
 		//A list of records to be updated.
 		HashMap<String, Record> recordsToUpdate = new HashMap<>();
-		Set<String> filenames = filesToProcess.keySet();
-		String[] filenamesArray = filenames.toArray(new String[filenames.size()]);
+		Set<String>             filenames       = filesToProcess.keySet();
+		String[]                filenamesArray  = filenames.toArray(new String[filenames.size()]);
 		for (String fileName: filenamesArray){
 			File file = filesToProcess.get(fileName);
 			logger.debug("Processing " + file.getName());
-			try {
-				FileInputStream marcFileStream = new FileInputStream(file);
+			try (
+				FileInputStream marcFileStream = new FileInputStream(file)
+			){
 				//Record Grouping always writes individual MARC records as UTF8
 				MarcReader updatesReader = new MarcPermissiveStreamReader(marcFileStream, true, true, "UTF8");
 				while (updatesReader.hasNext()) {
 					try {
-						Record curBib = updatesReader.next();
+						Record curBib   = updatesReader.next();
 						String recordId = getRecordIdFromMarcRecord(curBib);
 						recordsToUpdate.put(recordId, curBib);
 					}catch (MarcException me){
@@ -144,7 +148,6 @@ public class HorizonExportMain {
 						break;
 					}
 				}
-				marcFileStream.close();
 			} catch (EOFException e){
 				logger.info("File " + file + " has not been fully written", e);
 				filesToProcess.remove(fileName);
@@ -155,9 +158,9 @@ public class HorizonExportMain {
 		}
 		//Now that we have all the records, merge them and update the database.
 		boolean errorUpdatingDatabase = false;
-		int numUpdates = 0;
+		int     numUpdates            = 0;
 		try {
-			vufindConn.setAutoCommit(false);
+			pikaConn.setAutoCommit(false);
 			long updateTime = new Date().getTime() / 1000;
 			for (String recordId : recordsToUpdate.keySet()) {
 				Record recordToUpdate = recordsToUpdate.get(recordId);
@@ -167,7 +170,7 @@ public class HorizonExportMain {
 				}
 				numUpdates++;
 				if (numUpdates % 50 == 0){
-					vufindConn.commit();
+					pikaConn.commit();
 				}
 			}
 		}catch (Exception e){
@@ -176,8 +179,8 @@ public class HorizonExportMain {
 		} finally{
 			try {
 				//Turn auto commit back on
-				vufindConn.commit();
-				vufindConn.setAutoCommit(true);
+				pikaConn.commit();
+				pikaConn.setAutoCommit(true);
 			}catch (Exception e){
 				logger.error("Error committing changes");
 			}
@@ -208,26 +211,38 @@ public class HorizonExportMain {
 				return true;
 			}
 
-			FileOutputStream marcOutputStream = new FileOutputStream(marcFile);
-			MarcStreamWriter updateWriter = new MarcStreamWriter(marcOutputStream);
-			updateWriter.setAllowOversizeEntry(true);
-			updateWriter.write(recordToUpdate);
-			updateWriter.close();
-			marcOutputStream.close();
+			try (FileOutputStream marcOutputStream = new FileOutputStream(marcFile)) {
+				MarcStreamWriter updateWriter = new MarcStreamWriter(marcOutputStream);
+				updateWriter.setAllowOversizeEntry(true);
+				updateWriter.write(recordToUpdate);
+				updateWriter.close();
+				//Update the database to indicate it has changed
+
+				//Setup the grouped work for the record.  This will take care of either adding it to the proper grouped work
+				//or creating a new grouped work
+				if (!recordGroupingProcessor.processMarcRecord(recordToUpdate, true)) {
+					logger.warn(recordId + " was suppressed");
+				} else {
+					logger.debug("Finished record grouping for " + recordId);
+				}
+
+				try {
+					//Update last extract info
+					updateExtractInfoStatement.setLong(1, indexingProfile.id);
+					updateExtractInfoStatement.setString(2, recordId);
+					updateExtractInfoStatement.setLong(3, updateTime);
+					updateExtractInfoStatement.executeUpdate();
+				}catch (SQLException e){
+					logger.error("Could not mark that " + recordId + " was extracted due to error ", e);
+					return false;
+				}
+				return true;
+			}
 		}catch (Exception e){
 			logger.error("Error saving changed MARC record");
-		}
-
-		//Update the database to indicate it has changed
-		try {
-			markGroupedWorkForBibAsChangedStmt.setLong(1, updateTime);
-			markGroupedWorkForBibAsChangedStmt.setString(2, recordId);
-			markGroupedWorkForBibAsChangedStmt.executeUpdate();
-		}catch (SQLException e){
-			logger.error("Could not mark that " + recordId + " was changed due to error ", e);
 			return false;
 		}
-		return true;
+
 	}
 
 	private static String getRecordIdFromMarcRecord(Record marcRecord) {
@@ -251,6 +266,10 @@ public class HorizonExportMain {
 			}
 		}
 		return variableFieldsReturn;
+	}
+
+	private static void initializeRecordGrouper(Connection pikaConn) {
+		recordGroupingProcessor = new MarcRecordGrouper(pikaConn, indexingProfile, logger, false);
 	}
 
 	private static Ini loadConfigFile(String filename){
