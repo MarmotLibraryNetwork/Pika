@@ -13,7 +13,6 @@ import java.util.Date;
 
 import au.com.bytecode.opencsv.CSVReader;
 import au.com.bytecode.opencsv.CSVWriter;
-import netscape.javascript.JSObject;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 import org.apache.solr.client.solrj.impl.ConcurrentUpdateSolrServer;
@@ -159,7 +158,7 @@ public class SierraExportAPIMain {
 
 		String sierraUrl;
 		try (
-				PreparedStatement accountProfileStatement = pikaConn.prepareStatement("SELECT * FROM account_profiles WHERE name = '" + indexingProfile.name + "'");
+				PreparedStatement accountProfileStatement = pikaConn.prepareStatement("SELECT * FROM account_profiles WHERE name = '" + indexingProfile.sourceName + "'");
 				ResultSet accountProfileResult = accountProfileStatement.executeQuery()
 		) {
 			if (accountProfileResult.next()) {
@@ -171,7 +170,7 @@ public class SierraExportAPIMain {
 			}
 			apiBaseUrl = sierraUrl + "/iii/sierra-api/v" + apiVersion;
 		} catch (SQLException e) {
-			logger.error("Error retrieving account profile for " + indexingProfile.name, e);
+			logger.error("Error retrieving account profile for " + indexingProfile.sourceName, e);
 		}
 		if (apiBaseUrl == null || apiBaseUrl.length() == 0) {
 			logger.error("Sierra API url must be set in account profile column vendorOpacUrl.");
@@ -810,7 +809,7 @@ public class SierraExportAPIMain {
 		String bibId = getfullSierraBibId(idFromAPI);
 		try {
 			//Check to see if the identifier is in the grouped work primary identifiers table
-			getWorkForPrimaryIdentifierStmt.setString(1, indexingProfile.name);
+			getWorkForPrimaryIdentifierStmt.setString(1, indexingProfile.sourceName);
 			getWorkForPrimaryIdentifierStmt.setString(2, bibId);
 			try (ResultSet getWorkForPrimaryIdentifierRS = getWorkForPrimaryIdentifierStmt.executeQuery()) {
 				if (getWorkForPrimaryIdentifierRS.next()) { // If not true, already deleted skip this
@@ -1319,7 +1318,7 @@ public class SierraExportAPIMain {
 		if (id != null) {
 			identifier = getfullSierraBibId(id);
 		} else {
-			RecordIdentifier recordIdentifier = recordGroupingProcessor.getPrimaryIdentifierFromMarcRecord(marcRecord, indexingProfile.name, indexingProfile.doAutomaticEcontentSuppression);
+			RecordIdentifier recordIdentifier = recordGroupingProcessor.getPrimaryIdentifierFromMarcRecord(marcRecord, indexingProfile.sourceName, indexingProfile.doAutomaticEcontentSuppression);
 			if (recordIdentifier != null) {
 				identifier = recordIdentifier.getIdentifier();
 			} else {
@@ -1798,7 +1797,7 @@ public class SierraExportAPIMain {
 			allBibsToUpdate.addAll(bibsWithOrdersRemoved);
 			numBibsOrdersRemoved = bibsWithOrdersRemoved.size();
 			numBibsToProcess += numBibsOrdersRemoved;
-		} catch (SQLException e) {
+		} catch (Exception e) {
 			logger.error("Error loading active orders", e);
 		}
 		addNoteToExportLog("Finished exporting active orders");
