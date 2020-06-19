@@ -450,7 +450,7 @@ function loadModuleActionId(){
 		global $activeRecordIndexingProfile;
 		foreach ($indexingProfiles as $profile){
 			if ($profile->recordUrlComponent == $module){
-				$id          = $profile->name . ':' . $id;
+				$id          = $profile->sourceName . ':' . $id;
 				if (!file_exists(ROOT_DIR . '/services/' . $module)){
 					// When a record view doesn't have an explicitly made driver, fallback to the standard full record View
 					$module     = 'Record';

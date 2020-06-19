@@ -77,7 +77,7 @@ abstract class CommonGroupingAlterationOperations extends DB_DataObject {
 			$extractInfo->ilsId             = $sourceAndId->getRecordId();
 			if ($extractInfo->find(true)){
 				return $extractInfo->markForReExtraction();
-			} elseif ($indexingProfile->name == 'ils'){
+			} elseif ($indexingProfile->sourceName == 'ils'){
 				//TODO: the above should check against the accountProfiles
 				$extractInfo->insert();
 			}

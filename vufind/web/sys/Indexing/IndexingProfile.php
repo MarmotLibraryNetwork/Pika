@@ -33,8 +33,8 @@ class IndexingProfile extends DB_DataObject{
 	public $__table = 'indexing_profiles';    // table name
 
 	public $id;
-	public $name; //TODO: refactor to display name; the hard part is in the java, switching those things to use the sourceName
-	public $sourceName;
+	public $name;           // Name is for display to end users
+	public $sourceName;     // sourceName is used for storing in databases and ID references  (So a full record Id would be 'sourceName:recordId')
 	public $marcPath;
 	public $marcEncoding;
 	public $filenamesToInclude;
@@ -611,18 +611,22 @@ class IndexingProfile extends DB_DataObject{
 	static public function getAllIndexingProfiles(){
 		$indexingProfiles = [];
 		$indexingProfile  = new IndexingProfile();
-		$indexingProfile->orderBy('name');
+		$indexingProfile->orderBy('sourceName');
 		$indexingProfile->find();
 		while ($indexingProfile->fetch()){
-			$indexingProfiles[$indexingProfile->name] = clone($indexingProfile);
+			$indexingProfiles[$indexingProfile->sourceName] = clone($indexingProfile);
 		}
 		return $indexingProfiles;
 	}
 
+	/**
+	 * Use for display of a list/drop down of indexing profiles
+	 * @return array
+	 */
 	static public function getAllIndexingProfileNames(){
 		$indexingProfiles = [];
 		$indexingProfile  = new IndexingProfile();
-		$indexingProfile->orderBy('name');
+		$indexingProfile->orderBy('sourceName');
 		$indexingProfile->find();
 		while ($indexingProfile->fetch()){
 			$indexingProfiles[$indexingProfile->id] = $indexingProfile->name;

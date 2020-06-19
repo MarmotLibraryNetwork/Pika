@@ -51,7 +51,7 @@ class CatalogFactory {
 				// Load the account profile based on the indexing profile name.  The AccountProfile is where we determine which
 				// external system is associated with a record source
 				$accountProfile               = new AccountProfile();
-				$accountProfile->recordSource = $activeRecordIndexingProfile->name;
+				$accountProfile->recordSource = $activeRecordIndexingProfile->sourceName;
 				if (!$accountProfile->find(true)){
 					$accountProfile = null;
 				}
