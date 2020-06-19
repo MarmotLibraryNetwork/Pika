@@ -225,7 +225,11 @@
 	<script type="text/javascript">
 		{literal}
 		$(document).ready(function(){
-			$('#adminTable').DataTable();
+			$('#adminTable').DataTable({
+				searching: false,
+				ordering: false,
+				pageLength: 75
+			});
 		})
 
 		{/literal}
