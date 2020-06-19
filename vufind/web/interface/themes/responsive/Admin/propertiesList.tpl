@@ -228,7 +228,7 @@
 			$('#adminTable').DataTable({
 				searching: false,
 				ordering: false,
-				pageLength: 75
+				pageLength: 100
 			});
 		})
 

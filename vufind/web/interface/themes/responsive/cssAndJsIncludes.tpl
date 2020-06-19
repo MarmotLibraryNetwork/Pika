@@ -2,10 +2,10 @@
 	{* All CSS should be come before javascript for better browser performance *}
 	{if $debugCss}
     {css filename="main.css"}
-
+		<link rel="stylesheet" type="text/css" href="/interface/themes/responsive/css/lib/dataTables.css">
 	{else}
 		{css filename="main.min.css"}
-
+		<link rel="stylesheet" type="text/css" href="/interface/themes/responsive/css/lib/dataTables.bootstrap.min.css">
 	{/if}
 	{if $additionalCss}
 		<style type="text/css">
@@ -13,7 +13,7 @@
 		</style>
 	{/if}
 	<link rel="stylesheet" type="text/css" href="/interface/themes/responsive/css/lib/dropzone.css">
-	<link rel="stylesheet" type="text/css" href="/interface/themes/responsive/css/lib/dataTables.bootstrap.min.css">
+
 	{* Include correct all javascript *}
 	{if $ie8}
 		{* include to give responsive capability to ie8 browsers, but only on successful detection of those browsers. For that reason, don't include in pika.min.js *}
@@ -75,15 +75,15 @@
 		<script src="/interface/themes/responsive/js/pika/searches.js?v={$gitBranch|urlencode}"></script>
 		<script src="/interface/themes/responsive/js/pika/title-scroller.js?v={$gitBranch|urlencode}"></script>
 		<script src="/interface/themes/responsive/js/pika/wikipedia.js?v={$gitBranch|urlencode}"></script>
-		<script src="/interface/themes/responsive/js/lib/jquery.dataTables.min.js"></script>
-		<script src="/interface/themes/responsive/js/lib/dataTables.bootstrap.min.js"></script>
+		<script src="/interface/themes/responsive/js/lib/jquery.dataTables.js?v={$gitBranch|urlencode}"></script>
+		<script src="/interface/themes/responsive/js/lib/dataTables.bootstrap.js?v={$gitBranch|urlencode}"></script>
 	{else}
 		{* This is all merged using the merge_javascript.php file called automatically with a File Watcher*}
 		{* Code is minified using uglify.js *}
 		<script src="/interface/themes/responsive/js/pika.min.js?v={$gitBranch|urlencode}"></script>
-		<script src="/interface/themes/responsive/js/lib/dropzone.min.js"></script>
-		<script src="/interface/themes/responsive/js/lib/jquery.dataTables.min.js"></script>
-		<script src="/interface/themes/responsive/js/lib/dataTables.bootstap.min.js"></script>
+		<script src="/interface/themes/responsive/js/lib/dropzone.min.js?v={$gitBranch|urlencode}"></script>
+		<script src="/interface/themes/responsive/js/lib/jquery.dataTables.min.js?v={$gitBranch|urlencode}"></script>
+		<script src="/interface/themes/responsive/js/lib/dataTables.bootstrap.min.js?v={$gitBranch|urlencode}"></script>
 		{*<script src="/interface/themes/responsive/js/pika.min.js?v={$gitBranch|urlencode}"></script>*}
 	{/if}
 
