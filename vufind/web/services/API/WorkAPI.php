@@ -130,19 +130,20 @@ class WorkAPI extends AJAXHandler {
 	}
 
 	public function generateWorkId(){
+		$title        = escapeshellarg($_REQUEST['title']);
+		$author       = escapeshellarg($_REQUEST['author']);
+		$format       = escapeshellarg($_REQUEST['format']);
+		$languageCode = escapeshellarg($_REQUEST['languageCode'] ?? 'eng');
+		$subtitle     = !empty($_REQUEST['subtitle']) ? escapeshellarg($_REQUEST['subtitle']) : null;
+
+		// Get site name from covers directory
 		global $configArray;
-		$localPath          = $configArray['Site']['local'];
-		$title              = escapeshellarg($_REQUEST['title']);
-		$author             = escapeshellarg($_REQUEST['author']);
-		$format             = escapeshellarg($_REQUEST['format']);
-		$languageCode       = escapeshellarg($_REQUEST['languageCode'] ?? 'eng');
-		$recordGroupingPath = realpath("$localPath/../record_grouping/");
-
-		// Get site name
 		$partParts = explode("/", $configArray['Site']['coverPath']);
-		$siteName = $partParts[count($partParts)-2];
+		$siteName  = $partParts[count($partParts) - 2];
 
-		$commandToRun       = "java -jar $recordGroupingPath/record_grouping.jar $siteName generateWorkId $title $author $format $languageCode";
+		$localPath          = $configArray['Site']['local'];
+		$recordGroupingPath = realpath("$localPath/../record_grouping/");
+		$commandToRun       = "java -jar $recordGroupingPath/record_grouping.jar $siteName generateWorkId $title $author $format $languageCode $subtitle";
 		$result             = shell_exec($commandToRun);
 		return json_decode($result);
 	}
