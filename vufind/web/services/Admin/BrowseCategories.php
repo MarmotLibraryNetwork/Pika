@@ -39,15 +39,8 @@ class Admin_BrowseCategories extends ObjectEditor {
 		return UserAccount::userHasRole('opacAdmin');
 	}
 
-	function getAllObjects(){
-		$browseCategory = new BrowseCategory();
-		$browseCategory->orderBy('label');
-		$browseCategory->find();
-		$list = array();
-		while ($browseCategory->fetch()){
-			$list[$browseCategory->id] = clone $browseCategory;
-		}
-		return $list;
+	function getAllObjects($orderBy = null){
+		return parent::getAllObjects($orderBy ?? 'label');
 	}
 
 	function getObjectStructure(){

@@ -34,15 +34,8 @@ class IPAddresses extends ObjectEditor {
 		return 'Location IP Addresses';
 	}
 
-	function getAllObjects(){
-		$object = new subnet();
-		$object->orderBy('ip');
-		$object->find();
-		$objectList = [];
-		while ($object->fetch()){
-			$objectList[$object->id] = clone $object;
-		}
-		return $objectList;
+	function getAllObjects($orderBy = null){
+		return parent::getAllObjects($orderBy ?? 'ip');
 	}
 
 	function getObjectStructure(){

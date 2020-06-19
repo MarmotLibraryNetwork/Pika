@@ -41,11 +41,11 @@ class Admin_Variables extends ObjectEditor {
 		return 'System Variables';
 	}
 
-	function getAllObjects(){
+	function getAllObjects($orderBy = null){
 		$variableList = array();
 
 		$variable = new Variable();
-		$variable->orderBy('name');
+		$variable->orderBy($orderBy ?? 'name');
 		$variable->find();
 		while ($variable->fetch()){
 			// Add a human readable date time  of timestamp values in an additional column

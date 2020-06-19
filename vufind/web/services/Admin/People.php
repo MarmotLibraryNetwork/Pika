@@ -33,15 +33,8 @@ class People extends ObjectEditor {
 		return 'People';
 	}
 
-	function getAllObjects(){
-		$object = new Person();
-		$object->orderBy('lastName, firstName');
-		$object->find();
-		$objectList = array();
-		while ($object->fetch()){
-			$objectList[$object->personId] = clone $object;
-		}
-		return $objectList;
+	function getAllObjects($orderBy = null){
+		return parent::getAllObjects($orderBy ?? 'lastName, firstName');
 	}
 
 	function getObjectStructure(){

@@ -128,17 +128,8 @@ class Admin_TranslationMaps extends ObjectEditor {
 		return 'Translation Maps';
 	}
 
-	function getAllObjects(){
-		$list = array();
-
-		$object = new TranslationMap();
-		$object->orderBy('name');
-		$object->find();
-		while ($object->fetch()){
-			$list[$object->id] = clone $object;
-		}
-
-		return $list;
+	function getAllObjects($orderBy = null){
+		return parent::getAllObjects($orderBy ?? 'name');
 	}
 
 	function getObjectStructure(){

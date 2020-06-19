@@ -33,19 +33,8 @@ class Admin_MergedGroupedWorks extends ObjectEditor {
 		return 'Merged Grouped Works';
 	}
 
-	function getAllObjects($orderBy_ignored = null){
+	function getAllObjects($orderBy = null){
 		return parent::getAllObjects('id DESC');
-////		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
-//		$object = new MergedGroupedWork();
-////		$object->joinAdd(new GroupedWork(),'LEFT');
-//		$object->orderBy('destinationGroupedWorkId');
-////		$object->orderBy('sourceGroupedWorkId');
-//		$object->find();
-//		$objectList = array();
-//		while ($object->fetch()){
-//			$objectList[$object->id] = clone $object;
-//		}
-//		return $objectList;
 	}
 
 	function getObjectStructure(){

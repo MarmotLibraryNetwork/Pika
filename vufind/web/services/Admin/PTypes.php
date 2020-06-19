@@ -20,49 +20,50 @@
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 require_once ROOT_DIR . '/sys/Account/PType.php';
 
-class PTypes extends ObjectEditor
-{
+class PTypes extends ObjectEditor {
 
 	function getObjectType(){
 		return 'PType';
 	}
+
 	function getToolName(){
 		return 'PTypes';
 	}
+
 	function getPageTitle(){
 		return 'PTypes';
 	}
-	function getAllObjects(){
-		$PTypeList = array();
 
+	function getAllObjects($orderBy = null){
 		$user = UserAccount::getLoggedInUser();
 		if (UserAccount::userHasRole('opacAdmin')){
-			$PType = new PType();
-			$PType->orderBy('pType');
-			$PType->find();
-			while ($PType->fetch()){
-				$PTypeList[$PType->id] = clone $PType;
-			}
+			return parent::getAllObjects($orderBy ?? 'pType');
 		}
 
-		return $PTypeList;
+		return [];
 	}
+
 	function getObjectStructure(){
 		return PType::getObjectStructure();
 	}
+
 	function getPrimaryKeyColumn(){
 		return 'pType';
 	}
+
 	function getIdKeyColumn(){
 		return 'id';
 	}
+
 	function getAllowableRoles(){
-		return array('opacAdmin');
+		return ['opacAdmin'];
 	}
+
 	function canAddNew(){
 		$user = UserAccount::getLoggedInUser();
 		return UserAccount::userHasRole('opacAdmin');
 	}
+
 	function canDelete(){
 		$user = UserAccount::getLoggedInUser();
 		return UserAccount::userHasRole('opacAdmin');

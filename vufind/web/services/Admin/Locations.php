@@ -33,33 +33,33 @@ class Locations extends ObjectEditor {
 		return 'Locations (Branches)';
 	}
 
-	function getAllObjects(){
+	function getAllObjects($orderBy = null){
 		//Look lookup information for display in the user interface
 		$user = UserAccount::getLoggedInUser();
 
 		$location = new Location();
-		$location->orderBy('displayName');
+		$location->orderBy($orderBy ?? 'displayName');
 		if (UserAccount::userHasRole('locationManager')){
 			$location->locationId = $user->homeLocationId;
 		}elseif (!UserAccount::userHasRole('opacAdmin')){
 			//Scope to just locations for the user based on home library
-			$patronLibrary       = $user->getHomeLibrary();
+			$patronLibrary = $user->getHomeLibrary();
 //			$patronLibrary       = Library::getLibraryForLocation($user->homeLocationId);
 			$location->libraryId = $patronLibrary->libraryId;
 		}
 		$location->find();
-		$locationList = array();
+		$locationList = [];
 		while ($location->fetch()){
 			$locationList[$location->locationId] = clone $location;
 		}
 		return $locationList;
 	}
 
-    function customListActions(){
-        return array(
-            array('label' => 'Clone Location', 'onclick' =>'Pika.Admin.cloneLocationFromSelection()'),
-        );
-    }
+	function customListActions(){
+		return [
+			['label' => 'Clone Location', 'onclick' => 'Pika.Admin.cloneLocationFromSelection()'],
+		];
+	}
 
 	function getObjectStructure(){
 		return Location::getObjectStructure();

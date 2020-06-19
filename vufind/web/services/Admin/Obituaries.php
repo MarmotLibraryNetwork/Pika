@@ -33,15 +33,8 @@ class Obituaries extends ObjectEditor {
 		return 'Obituaries';
 	}
 
-	function getAllObjects(){
-		$object = new Obituary();
-		$object->orderBy('date');
-		$object->find();
-		$objectList = array();
-		while ($object->fetch()){
-			$objectList[$object->obituaryId] = clone $object;
-		}
-		return $objectList;
+	function getAllObjects($orderBy = null){
+		return parent::getAllObjects($orderBy ?? 'date');
 	}
 
 	function getObjectStructure(){

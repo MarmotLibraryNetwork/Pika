@@ -65,15 +65,8 @@ class LoanRuleDeterminers extends ObjectEditor {
 		return 'Loan Rule Determiners';
 	}
 
-	function getAllObjects(){
-		$object = new LoanRuleDeterminer();
-		$object->orderBy('rowNumber');
-		$object->find();
-		$objectList = array();
-		while ($object->fetch()){
-			$objectList[$object->rowNumber] = clone $object;
-		}
-		return $objectList;
+	function getAllObjects($orderBy = null){
+		return parent::getAllObjects($orderBy ?? 'rowNumber');
 	}
 
 	function getObjectStructure(){

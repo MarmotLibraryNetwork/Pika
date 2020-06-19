@@ -34,7 +34,7 @@ class Admin_LibraryLinks extends ObjectEditor {
 		return 'Library Links';
 	}
 
-	function getAllObjects(){
+	function getAllObjects($orderBy = null){
 		//Look lookup information for display in the user interface
 		$user = UserAccount::getLoggedInUser();
 
@@ -47,9 +47,9 @@ class Admin_LibraryLinks extends ObjectEditor {
 			$object->libraryId = $patronLibrary->libraryId;
 		}
 
-		$object->orderBy('weight');
+		$object->orderBy($orderBy ?? 'weight');
 		$object->find();
-		$list = array();
+		$list = [];
 		while ($object->fetch()){
 			$list[$object->id] = clone $object;
 		}
