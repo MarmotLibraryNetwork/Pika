@@ -23,7 +23,7 @@ import java.util.List;
  * Date: 7/1/2015
  * Time: 2:05 PM
  */
-class MarcRecordGrouper extends RecordGroupingProcessor {
+public class MarcRecordGrouper extends RecordGroupingProcessor {
 
 	private IndexingProfile profile;
 
@@ -37,7 +37,7 @@ class MarcRecordGrouper extends RecordGroupingProcessor {
 	 * @param fullRegrouping - Whether or not we are doing full regrouping or if we are only grouping changes.
 	 *                       Determines if old works are loaded at the beginning.
 	 */
-	MarcRecordGrouper(Connection pikaConn, IndexingProfile profile, Logger logger, boolean fullRegrouping) {
+	public MarcRecordGrouper(Connection pikaConn, IndexingProfile profile, Logger logger, boolean fullRegrouping) {
 		super(pikaConn, logger, fullRegrouping);
 		this.profile = profile;
 
@@ -99,7 +99,7 @@ class MarcRecordGrouper extends RecordGroupingProcessor {
 		}
 	}
 
-	boolean processMarcRecord(Record marcRecord, boolean primaryDataChanged) {
+	public boolean processMarcRecord(Record marcRecord, boolean primaryDataChanged) {
 		RecordIdentifier primaryIdentifier = getPrimaryIdentifierFromMarcRecord(marcRecord, profile.sourceName, profile.doAutomaticEcontentSuppression);
 		return processMarcRecord(marcRecord, primaryDataChanged, primaryIdentifier);
 	}

@@ -1,4 +1,4 @@
-package org.marmot.pika;
+package org.pika;
 
 import org.apache.log4j.Logger;
 

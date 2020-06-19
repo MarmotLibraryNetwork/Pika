@@ -1,16 +1,15 @@
-package org.marmot.pika;
+package org.pika;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 import org.marc4j.*;
 import org.marc4j.marc.*;
+import org.pika.MarcRecordGrouper;
 
 import java.io.*;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+import java.sql.*;
 import java.util.*;
+import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.CRC32;
@@ -25,6 +24,9 @@ public class SymphonyExportMain {
 	private static IndexingProfile     indexingProfile;
 	private static PikaSystemVariables systemVariables;
 	private static boolean             hadErrors = false;
+	private static Long                exportStartTime;
+
+	private static MarcRecordGrouper recordGroupingProcessor;
 
 	public static void main(String[] args) {
 		serverName = args[0];
@@ -57,7 +59,7 @@ public class SymphonyExportMain {
 		systemVariables = new PikaSystemVariables(logger, pikaConn);
 
 		// The time this export started
-		Long exportStartTime = startTime.getTime() / 1000;
+		exportStartTime = startTime.getTime() / 1000;
 
 		// The time the last export started
 		long lastExportTime = getLastExtractTime();
@@ -67,6 +69,9 @@ public class SymphonyExportMain {
 			profileToLoad = args[1];
 		}
 		indexingProfile = IndexingProfile.loadIndexingProfile(pikaConn, profileToLoad, logger);
+
+		//Setup other systems we will use
+		initializeRecordGrouper(pikaConn);
 
 		//Check for new marc out
 		processNewMarcExports(lastExportTime, pikaConn);
@@ -383,10 +388,11 @@ public class SymphonyExportMain {
 
 		//If we got this far we have a good updates file to process.
 		try (
-			PreparedStatement getChecksumStmt       = pikaConn.prepareStatement("SELECT checksum FROM ils_marc_checksums WHERE source = ? AND ilsId = ?");
-			PreparedStatement updateChecksumStmt    = pikaConn.prepareStatement("UPDATE ils_marc_checksums SET checksum = ? WHERE source = ? AND ilsId = ?");
-			PreparedStatement getGroupedWorkIdStmt  = pikaConn.prepareStatement("SELECT grouped_work_id FROM grouped_work_primary_identifiers WHERE type = ? AND identifier = ?");
-			PreparedStatement updateGroupedWorkStmt = pikaConn.prepareStatement("UPDATE grouped_work SET date_updated = ? WHERE id = ?");
+				PreparedStatement getChecksumStmt = pikaConn.prepareStatement("SELECT checksum FROM ils_marc_checksums WHERE source = ? AND ilsId = ?");
+				PreparedStatement updateChecksumStmt = pikaConn.prepareStatement("UPDATE ils_marc_checksums SET checksum = ? WHERE source = ? AND ilsId = ?");
+				PreparedStatement updateExtractInfoStatement = pikaConn.prepareStatement("INSERT INTO ils_extract_info (indexingProfileId, ilsId, lastExtracted) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE lastExtracted=VALUES(lastExtracted)"); // unique key is indexingProfileId and ilsId combined
+				PreparedStatement getGroupedWorkIdStmt = pikaConn.prepareStatement("SELECT grouped_work_id FROM grouped_work_primary_identifiers WHERE type = ? AND identifier = ?");
+				PreparedStatement updateGroupedWorkStmt = pikaConn.prepareStatement("UPDATE grouped_work SET date_updated = ? WHERE id = ?");
 		){
 
 			MarcReader updatedMarcReader = new MarcStreamReader(new FileInputStream(updatesFile));
@@ -423,17 +429,31 @@ public class SymphonyExportMain {
 								recordsUpdated++;
 							}
 
-							//TODO: actually group the record instead
-							//Mark the work as changed
-							updateGroupedWorkStmt.setLong(1, new Date().getTime() / 1000);
-							updateGroupedWorkStmt.setLong(2, groupedWorkId);
-							updateGroupedWorkStmt.executeUpdate();
+							//Setup the grouped work for the record.  This will take care of either adding it to the proper grouped work
+							//or creating a new grouped work
+							if (!recordGroupingProcessor.processMarcRecord(marcRecord, true)) {
+								logger.warn(recordNumber + " was suppressed");
+							} else {
+								logger.debug("Finished record grouping for " + recordNumber);
+							}
 
+							//Mark the work as changed
+//							updateGroupedWorkStmt.setLong(1, new Date().getTime() / 1000);
+//							updateGroupedWorkStmt.setLong(2, groupedWorkId);
+//							updateGroupedWorkStmt.executeUpdate();
+
+							//TODO: does grouping do this for us
 							//Save the new checksum so we don't reprocess
 							updateChecksumStmt.setLong(1, newChecksum);
 							updateChecksumStmt.setString(2, indexingProfile.sourceName);
 							updateChecksumStmt.setString(3, recordNumber);
 							updateChecksumStmt.executeUpdate();
+
+							//Update last extract info
+							updateExtractInfoStatement.setLong(1, indexingProfile.id);
+							updateExtractInfoStatement.setString(2, recordNumber);
+							updateExtractInfoStatement.setLong(3, exportStartTime);
+							updateExtractInfoStatement.executeUpdate();
 						} else {
 							logger.warn("Could not find grouped work for MARC " + recordNumber);
 						}
@@ -513,4 +533,9 @@ public class SymphonyExportMain {
 		crc32.update(marcRecordContents.getBytes());
 		return crc32.getValue();
 	}
+
+	private static void initializeRecordGrouper(Connection pikaConn) {
+		recordGroupingProcessor = new MarcRecordGrouper(pikaConn, indexingProfile, logger, false);
+	}
+
 }
