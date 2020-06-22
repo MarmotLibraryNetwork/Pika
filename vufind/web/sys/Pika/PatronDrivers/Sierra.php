@@ -1712,11 +1712,11 @@ EOT;
 					// if the item status is "on hold shelf" (!) but the hold record status is "on hold" (0) use "on hold" status
 					// the "on hold shelf" status is for another patron.
 					if($recordItemStatus != "!" && $recordStatus != '0') {
-						// custom record status might = a hold status of "ready" so don't set and let item status display
-						if(!in_array($recordItemStatus, ["b","j",'i'])) {
-							$recordStatus = $recordItemStatus;
-						} else {
-							$recordStatus = false;
+						// check for in transit status see
+						// TODO: check priority. if priority is 1 and status is t set status to t. if status is > 1
+						if($recordItemStatus == 't') {
+							if(isset($hold->priority) && (int)$hold->priority == 1)
+							$recordStatus = 't';
 						}
 						// there's a good chance the item status could be a custom item status not accounted for in the switch
 						// statement below.
@@ -1783,7 +1783,7 @@ EOT;
 					if(isset($recordItemStatusMessage)) {
 						$status = $recordItemStatusMessage;
 					} else {
-						$status = 'Unknown';
+						$status = 'On hold';
 					}
 					$cancelable   = false;
 					$freezeable   = false;
