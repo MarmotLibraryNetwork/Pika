@@ -272,7 +272,7 @@ class AACPLRecordProcessor extends IlsRecordProcessor {
 		loadEContentUrl(record, itemInfo, identifier);
 
 		relatedRecord = groupedWork.addRelatedRecord("external_econtent", identifier.getIdentifier());
-		relatedRecord.setSubSource(indexingProfileSourceDisplayName);
+		relatedRecord.setSubSource(indexingProfileSource);
 		relatedRecord.addItem(itemInfo);
 		loadEContentFormatInformation(record, relatedRecord, itemInfo);
 

@@ -367,7 +367,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			}
 
 			// Let's first look for the print/order record
-			RecordInfo recordInfo = groupedWork.addRelatedRecord(indexingProfileSource, identifier.getIdentifier());
+			RecordInfo recordInfo = groupedWork.addRelatedRecord(identifier);
 			if (logger.isDebugEnabled()) {
 				logger.debug("Added record for " + identifier + " work now has " + groupedWork.getNumRecords() + " records");
 			}
@@ -724,7 +724,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		}
 
 		RecordInfo relatedRecord = groupedWork.addRelatedRecord("external_econtent", identifier.getIdentifier());
-		relatedRecord.setSubSource(indexingProfileSourceDisplayName);
+		relatedRecord.setSubSource(indexingProfileSource);
 		relatedRecord.addItem(itemInfo);
 
 		loadEContentFormatInformation(record, relatedRecord, itemInfo);
@@ -745,21 +745,6 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 
 	protected void loadDateAdded(RecordIdentifier recordIdentifier, DataField itemField, ItemInfo itemInfo) {
-		String dateAddedStr = getItemSubfieldData(dateCreatedSubfield, itemField);
-		if (dateAddedStr != null && dateAddedStr.length() > 0) {
-			try {
-				if (dateAddedFormatter == null){
-					dateAddedFormatter = new SimpleDateFormat(dateAddedFormat);
-				}
-				Date dateAdded = dateAddedFormatter.parse(dateAddedStr);
-				itemInfo.setDateAdded(dateAdded);
-			} catch (ParseException e) {
-				logger.error("Error processing date added for record identifier " + recordIdentifier + " profile " + indexingProfileSourceDisplayName + " using format " + dateAddedFormat, e);
-			}
-		}
-	}
-
-	protected void loadDateAdded(String recordIdentifier, DataField itemField, ItemInfo itemInfo) {
 		String dateAddedStr = getItemSubfieldData(dateCreatedSubfield, itemField);
 		if (dateAddedStr != null && dateAddedStr.length() > 0) {
 			try {

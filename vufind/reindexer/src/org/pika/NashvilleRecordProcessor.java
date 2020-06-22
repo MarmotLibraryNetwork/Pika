@@ -105,7 +105,7 @@ class NashvilleRecordProcessor extends IIIRecordProcessor {
 				itemInfo.setCallNumber("Online");
 				itemInfo.setShelfLocation(itemInfo.geteContentSource());
 				RecordInfo relatedRecord = groupedWork.addRelatedRecord("external_econtent", identifier.getIdentifier());
-				relatedRecord.setSubSource(indexingProfileSourceDisplayName);
+				relatedRecord.setSubSource(indexingProfileSource);
 				relatedRecord.addItem(itemInfo);
 				itemInfo.seteContentUrl(url);
 

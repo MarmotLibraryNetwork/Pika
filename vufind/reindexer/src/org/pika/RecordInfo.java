@@ -50,7 +50,13 @@ public class RecordInfo {
 		this.recordIdentifier = recordIdentifier;
 	}
 
-	// subSource is the indexing profile of ils eContent apparently.
+	/**
+	 * When dealing with the econtent in the ils, the source is set to
+	 * external_econtent; and then the subSource will be set as the sourceName
+	 * from the indexing profile.
+	 *
+	 * @param subSource the sourceName of the indexing profile of ils eContent
+	 */
 	void setSubSource(String subSource) {
 		this.subSource = subSource;
 	}

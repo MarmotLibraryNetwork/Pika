@@ -89,7 +89,7 @@ public class AddisonRecordProcessor extends IIIRecordProcessor {
 //                itemInfo.seteContentSource(specifiedEcontentSource == null ? "Econtent" : specifiedEcontentSource);
 //                itemInfo.setShelfLocation(econtentSource); // this sets the owning location facet.  This isn't needed for Sacramento
 				RecordInfo relatedRecord = groupedWork.addRelatedRecord("external_econtent", identifier.getIdentifier());
-				relatedRecord.setSubSource(indexingProfileSourceDisplayName);
+				relatedRecord.setSubSource(indexingProfileSource);
 				relatedRecord.addItem(itemInfo);
 
 				// Use the same format determination process for the econtent record (should just be the MatType)

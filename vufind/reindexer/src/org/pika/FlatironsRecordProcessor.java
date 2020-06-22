@@ -86,7 +86,7 @@ class FlatironsRecordProcessor extends IIIRecordProcessor {
 					itemInfo.setCallNumber("Online");
 					itemInfo.setShelfLocation(itemInfo.geteContentSource());
 					RecordInfo relatedRecord = groupedWork.addRelatedRecord("external_econtent", identifier.getIdentifier());
-					relatedRecord.setSubSource(indexingProfileSourceDisplayName);
+					relatedRecord.setSubSource(indexingProfileSource);
 					relatedRecord.addItem(itemInfo);
 					//Check the 856 tag to see if there is a link there
 					loadEContentUrl(record, itemInfo, identifier);
