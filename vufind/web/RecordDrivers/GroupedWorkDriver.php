@@ -2586,13 +2586,13 @@ class GroupedWorkDriver extends RecordInterface {
 		//within the scoping details field for the scope.
 		//Each field is
 		$scopingInfoFieldName = 'scoping_details_' . $solrScope;
-		$scopingInfo          = array();
-		$validRecordIds       = array();
-		$validItemIds         = array();
+		$scopingInfo          = [];
+		$validRecordIds       = [];
+		$validItemIds         = [];
 		if (isset($this->fields[$scopingInfoFieldName])){
 			$scopingInfoRaw = $this->fields[$scopingInfoFieldName];
 			if (!is_array($scopingInfoRaw)){
-				$scopingInfoRaw = array($scopingInfoRaw);
+				$scopingInfoRaw = [$scopingInfoRaw];
 			}
 			foreach ($scopingInfoRaw as $tmpItem){
 				$scopingDetails         = explode('|', $tmpItem);
@@ -2602,7 +2602,7 @@ class GroupedWorkDriver extends RecordInterface {
 				$validItemIds[]         = $scopeKey;
 			}
 		}
-		return array($scopingInfo, $validRecordIds, $validItemIds);
+		return [$scopingInfo, $validRecordIds, $validItemIds];
 	}
 
 	/**

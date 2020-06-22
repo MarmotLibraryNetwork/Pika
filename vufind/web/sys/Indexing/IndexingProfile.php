@@ -538,11 +538,16 @@ class IndexingProfile extends DB_DataObject{
 		$sourceName = trim($_REQUEST['sourceName']);
 
 		if (!ctype_alnum($sourceName)){
-			$validationResults = [
-				'validatedOk' => false,
-				'errors'      => ['The Source Name should consist of only alpha-numeric characters and no white space characters'],
-			];
-		} else{
+			$validationResults['validatedOk'] = false;
+			$validationResults['errors'][] = 'The Source Name should consist of only alpha-numeric characters and no white space characters';
+		}
+
+		if ($sourceName != strtolower($sourceName)){
+			$validationResults['validatedOk'] = false;
+			$validationResults['errors'][] = 'The Source Name should consist of lower case characters';
+		}
+
+		if ($validationResults['validatedOk']){
 			$indexingProfile = new IndexingProfile();
 			$count           = $indexingProfile->get('sourceName', $sourceName);
 			if ($count > 0 && $this->id != $indexingProfile->id){ // include exception for editing the same profile
@@ -614,7 +619,9 @@ class IndexingProfile extends DB_DataObject{
 		$indexingProfile->orderBy('sourceName');
 		$indexingProfile->find();
 		while ($indexingProfile->fetch()){
-			$indexingProfiles[$indexingProfile->sourceName] = clone($indexingProfile);
+			$indexingProfiles[strtolower($indexingProfile->sourceName)] = clone($indexingProfile);
+			// Indexing profile sourceNames are all indexed in lower case
+			//TODO : convert all indexing profile sourceNames to lower case
 		}
 		return $indexingProfiles;
 	}
