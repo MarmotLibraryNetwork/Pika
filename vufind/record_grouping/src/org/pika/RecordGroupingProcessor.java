@@ -138,90 +138,95 @@ class RecordGroupingProcessor {
 
 	RecordIdentifier getPrimaryIdentifierFromMarcRecord(Record marcRecord, String recordType, boolean doAutomaticEcontentSuppression) {
 		RecordIdentifier    identifier         = null;
-		List<VariableField> recordNumberFields = marcRecord.getVariableFields(recordNumberTag);
-		for (VariableField recordNumberFieldValue : recordNumberFields) {
-			//Make sure we only get one ils identifier
-			logger.debug("getPrimaryIdentifierFromMarcRecord - Got record number field");
-			if (recordNumberFieldValue != null) {
-				if (recordNumberFieldValue instanceof DataField) {
-					logger.debug("getPrimaryIdentifierFromMarcRecord - Record number field is a data field");
+		try {
+			List<VariableField> recordNumberFields = marcRecord.getVariableFields(recordNumberTag);
+			for (VariableField recordNumberFieldValue : recordNumberFields) {
+				//Make sure we only get one ils identifier
+				logger.debug("getPrimaryIdentifierFromMarcRecord - Got record number field");
+				if (recordNumberFieldValue != null) {
+					if (recordNumberFieldValue instanceof DataField) {
+						logger.debug("getPrimaryIdentifierFromMarcRecord - Record number field is a data field");
 
-					DataField curRecordNumberField = (DataField) recordNumberFieldValue;
-					Subfield  recordNumberSubfield = curRecordNumberField.getSubfield(recordNumberField);
-					if (recordNumberSubfield != null && (recordNumberPrefix.length() == 0 || recordNumberSubfield.getData().length() > recordNumberPrefix.length())) {
-						if (recordNumberSubfield.getData().substring(0, recordNumberPrefix.length()).equals(recordNumberPrefix)) {
-							String recordNumber = recordNumberSubfield.getData().trim();
-							identifier = new RecordIdentifier();
-							identifier.setValue(recordType, recordNumber);
-							break;
+						DataField curRecordNumberField = (DataField) recordNumberFieldValue;
+						Subfield  recordNumberSubfield = curRecordNumberField.getSubfield(recordNumberField);
+						if (recordNumberSubfield != null && (recordNumberPrefix.length() == 0 || recordNumberSubfield.getData().length() > recordNumberPrefix.length())) {
+							if (recordNumberSubfield.getData().substring(0, recordNumberPrefix.length()).equals(recordNumberPrefix)) {
+								String recordNumber = recordNumberSubfield.getData().trim();
+								identifier = new RecordIdentifier();
+								identifier.setValue(recordType, recordNumber);
+								break;
+							}
 						}
+					} else {
+						//It's a control field
+						logger.debug("getPrimaryIdentifierFromMarcRecord - Record number field is a control field");
+						ControlField curRecordNumberField = (ControlField) recordNumberFieldValue;
+						String       recordNumber         = curRecordNumberField.getData().trim();
+						identifier = new RecordIdentifier();
+						identifier.setValue(recordType, recordNumber);
+						break;
 					}
-				} else {
-					//It's a control field
-					logger.debug("getPrimaryIdentifierFromMarcRecord - Record number field is a control field");
-					ControlField curRecordNumberField = (ControlField) recordNumberFieldValue;
-					String       recordNumber         = curRecordNumberField.getData().trim();
-					identifier = new RecordIdentifier();
-					identifier.setValue(recordType, recordNumber);
-					break;
 				}
 			}
-		}
 
-		if (doAutomaticEcontentSuppression) {
-			logger.debug("getPrimaryIdentifierFromMarcRecord - Doing automatic Econtent Suppression");
+			if (doAutomaticEcontentSuppression) {
+				logger.debug("getPrimaryIdentifierFromMarcRecord - Doing automatic Econtent Suppression");
 
-			//Check to see if the record is an overdrive record
-			if (useEContentSubfield) {
-				boolean allItemsSuppressed = true;
+				//Check to see if the record is an overdrive record
+				if (useEContentSubfield) {
+					boolean allItemsSuppressed = true;
 
-				List<DataField> itemFields = getDataFields(marcRecord, itemTag);
-				int             numItems   = itemFields.size();
-				if (numItems == 0) {
-					allItemsSuppressed = false;
-				} else {
-					for (DataField itemField : itemFields) {
-						if (itemField.getSubfield(eContentDescriptor) != null) {
-							//Check the protection types and sources
-							String   eContentData   = itemField.getSubfield(eContentDescriptor).getData();
-							String[] eContentFields = eContentData.split(":");
-							String   sourceType     = eContentFields[0].toLowerCase().trim();
-							if (!sourceType.equals("overdrive") && !sourceType.equals("hoopla")) {
+					List<DataField> itemFields = getDataFields(marcRecord, itemTag);
+					int             numItems   = itemFields.size();
+					if (numItems == 0) {
+						allItemsSuppressed = false;
+					} else {
+						for (DataField itemField : itemFields) {
+							if (itemField.getSubfield(eContentDescriptor) != null) {
+								//Check the protection types and sources
+								String   eContentData   = itemField.getSubfield(eContentDescriptor).getData();
+								String[] eContentFields = eContentData.split(":");
+								String   sourceType     = eContentFields[0].toLowerCase().trim();
+								if (!sourceType.equals("overdrive") && !sourceType.equals("hoopla")) {
+									allItemsSuppressed = false;
+									break;
+								}
+							} else {
 								allItemsSuppressed = false;
 								break;
 							}
-						} else {
-							allItemsSuppressed = false;
-							break;
 						}
 					}
-				}
-				if (allItemsSuppressed && identifier != null) {
-					//Don't return a primary identifier for this record (we will suppress the bib and just use OverDrive APIs)
-					identifier.setSuppressed(true);
-				}
-			} else {
-				//Check the 856 for an overdrive url
-				if (identifier != null) {
-					List<DataField> linkFields = getDataFields(marcRecord, "856");
-					for (DataField linkField : linkFields) {
-						if (linkField.getSubfield('u') != null) {
-							//Check the url to see if it is from OverDrive or Hoopla
-							//TODO: no actual hoopla suppression here?
-							//TODO: Would this block sideloaded hoopla?
-							String linkData = linkField.getSubfield('u').getData().trim();
-							if (overdrivePattern.matcher(linkData).matches()) {
-								identifier.setSuppressed(true);
+					if (allItemsSuppressed && identifier != null) {
+						//Don't return a primary identifier for this record (we will suppress the bib and just use OverDrive APIs)
+						identifier.setSuppressed(true);
+					}
+				} else {
+					//Check the 856 for an overdrive url
+					if (identifier != null) {
+						List<DataField> linkFields = getDataFields(marcRecord, "856");
+						for (DataField linkField : linkFields) {
+							if (linkField.getSubfield('u') != null) {
+								//Check the url to see if it is from OverDrive or Hoopla
+								//TODO: no actual hoopla suppression here?
+								//TODO: Would this block sideloaded hoopla?
+								String linkData = linkField.getSubfield('u').getData().trim();
+								if (overdrivePattern.matcher(linkData).matches()) {
+									identifier.setSuppressed(true);
+								}
 							}
 						}
 					}
 				}
 			}
-		}
 
-		if (identifier != null && identifier.isValid()) {
-			return identifier;
-		} else {
+			if (identifier != null && identifier.isValid()) {
+				return identifier;
+			} else {
+				return null;
+			}
+		} catch (Exception e) {
+			logger.error("Error getting primary identifier", e);
 			return null;
 		}
 	}
