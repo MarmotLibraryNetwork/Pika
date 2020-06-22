@@ -1713,7 +1713,6 @@ EOT;
 					// the "on hold shelf" status is for another patron.
 					if($recordItemStatus != "!" && $recordStatus != '0') {
 						// check for in transit status see
-						// TODO: check priority. if priority is 1 and status is t set status to t. if status is > 1
 						if($recordItemStatus == 't') {
 							if(isset($hold->priority) && (int)$hold->priority == 1)
 							$recordStatus = 't';
