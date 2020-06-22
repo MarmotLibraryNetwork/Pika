@@ -668,7 +668,13 @@ class GroupedWorkDriver extends RecordInterface {
 			$linkUrl     .= '?searchId=' . $interface->get_template_vars('searchId') . '&amp;recordIndex=' . $interface->get_template_vars('recordIndex') . '&amp;page=' . $interface->get_template_vars('page');
 		}else{
 			$linkUrl = '/GroupedWork/' . $id . '/Home?searchId=' . $interface->get_template_vars('searchId') . '&amp;recordIndex=' . $interface->get_template_vars('recordIndex') . '&amp;page=' . $interface->get_template_vars('page');
-			$linkUrl .= '&amp;searchSource=' . $interface->get_template_vars('searchSource');
+			// if search source is empty pass "local"
+			$searchSource = $interface->get_template_vars('searchSource');
+			if(!empty($searchSource)) {
+				$linkUrl .= '&amp;searchSource=' . $searchSource;
+			} else {
+				$linkUrl .= '&amp;searchSource=local';
+			}
 		}
 
 		$interface->assign('summUrl', $linkUrl);
