@@ -657,34 +657,14 @@ class GroupedWorkDriver extends RecordInterface {
 		$timer->logTime("Loaded related manifestations");
 		$memoryWatcher->logMemory("Loaded related manifestations for {$this->getUniqueID()}");
 
-		//Build the link URL.
-		//If there is only one record for the work we will link straight to that.
-		$relatedRecords = $this->getRelatedRecords();
-		$timer->logTime("Loaded related records");
-		$memoryWatcher->logMemory("Loaded related records");
-		if (count($relatedRecords) == 1){
-			$firstRecord = reset($relatedRecords);
-			$linkUrl     = $firstRecord['url'];
-			$linkUrl     .= '?searchId=' . $interface->get_template_vars('searchId') . '&amp;recordIndex=' . $interface->get_template_vars('recordIndex') . '&amp;page=' . $interface->get_template_vars('page');
-		}else{
-			$linkUrl = '/GroupedWork/' . $id . '/Home?searchId=' . $interface->get_template_vars('searchId') . '&amp;recordIndex=' . $interface->get_template_vars('recordIndex') . '&amp;page=' . $interface->get_template_vars('page');
-			// if search source is empty pass "local"
-			$searchSource = $interface->get_template_vars('searchSource');
-			if(!empty($searchSource)) {
-				$linkUrl .= '&amp;searchSource=' . $searchSource;
-			} else {
-				$linkUrl .= '&amp;searchSource=local';
-			}
-		}
-
-		$interface->assign('summUrl', $linkUrl);
+		$interface->assign('summUrl', $this->getMoreInfoLinkUrl());
 		$interface->assign('summTitle', $this->getTitleShort(true));
 		$interface->assign('summSubTitle', $this->getSubtitle(true));
 		$interface->assign('summAuthor', rtrim($this->getPrimaryAuthor(true), ','));
 		$isbn = $this->getCleanISBN();
 		$interface->assign('summISBN', $isbn);
 		$interface->assign('summFormats', $this->getFormats());
-		$interface->assign('numRelatedRecords', count($relatedRecords));
+		$interface->assign('numRelatedRecords', $this->getNumRelatedRecords());
 		$acceleratedReaderInfo = $this->getAcceleratedReaderDisplayString();
 		$interface->assign('summArInfo', $acceleratedReaderInfo);
 		$lexileInfo = $this->getLexileDisplayString();
@@ -704,6 +684,7 @@ class GroupedWorkDriver extends RecordInterface {
 		$isFirst          = true;
 		global $library;
 		$alwaysShowMainDetails = $library ? $library->alwaysShowSearchResultsMainDetails : false;
+		$relatedRecords = $this->getRelatedRecords();
 		foreach ($relatedRecords as $relatedRecord){
 			if ($isFirst){
 				$summPublisher    = $relatedRecord['publisher'];
@@ -1437,7 +1418,7 @@ class GroupedWorkDriver extends RecordInterface {
 			if ($library){
 				$activePTypes[$library->defaultPType] = $library->defaultPType;
 			}
-			list($scopingInfo, $validRecordIds, $validItemIds) = $this->loadScopingDetails($solrScope);
+			[$scopingInfo, $validRecordIds, $validItemIds] = $this->loadScopingDetails($solrScope);
 			$timer->logTime("Loaded Scoping Details from the index");
 			$memoryWatcher->logMemory("Loaded scoping details from the index");
 
@@ -1740,6 +1721,11 @@ class GroupedWorkDriver extends RecordInterface {
 		return $relatedManifestations;
 	}
 
+	/**
+	 * @param $a
+	 * @param $b
+	 * @return int
+	 */
 	function compareRelatedRecords($a, $b){
 		//Get literary form to determine if we should compare editions
 		$literaryForm = '';
@@ -1815,6 +1801,11 @@ class GroupedWorkDriver extends RecordInterface {
 		}
 	}
 
+	/**
+	 * @param $a
+	 * @param $b
+	 * @return int
+	 */
 	static function compareHoldability($a, $b){
 		if ($a['holdable'] == $b['holdable']){
 			return 0;
@@ -1825,6 +1816,11 @@ class GroupedWorkDriver extends RecordInterface {
 		}
 	}
 
+	/**
+	 * @param $a
+	 * @param $b
+	 * @return int
+	 */
 	static function compareLanguagesForRecords($a, $b){
 		$aHasEnglish = false;
 		if (is_array($a['language'])){
@@ -1869,6 +1865,12 @@ class GroupedWorkDriver extends RecordInterface {
 		}
 	}
 
+	/**
+	 * @param $literaryForm
+	 * @param $a
+	 * @param $b
+	 * @return int
+	 */
 	static function compareEditionsForRecords($literaryForm, $a, $b){
 		//We only want to compare editions if the work is non-fiction
 		if ($literaryForm == 'Non Fiction'){
@@ -1885,6 +1887,11 @@ class GroupedWorkDriver extends RecordInterface {
 		return 0;
 	}
 
+	/**
+	 * @param $a
+	 * @param $b
+	 * @return int
+	 */
 	static function compareAvailabilityForRecords($a, $b){
 		$availableLocallyA = isset($a['availableLocally']) && $a['availableLocally'];
 		$availableLocallyB = isset($b['availableLocally']) && $b['availableLocally'];
@@ -1905,6 +1912,11 @@ class GroupedWorkDriver extends RecordInterface {
 		}
 	}
 
+	/**
+	 * @param $a
+	 * @param $b
+	 * @return int
+	 */
 	static function compareLocalAvailableItemsForRecords($a, $b){
 		if (($a['availableHere'] || $a['availableOnline']) && ($b['availableHere'] || $b['availableOnline'])){
 			if (($a['availableLocally'] || $a['availableOnline']) && ($b['availableLocally'] || $b['availableOnline'])){
@@ -1925,6 +1937,11 @@ class GroupedWorkDriver extends RecordInterface {
 		}
 	}
 
+	/**
+	 * @param $a
+	 * @param $b
+	 * @return int
+	 */
 	static function compareLocalItemsForRecords($a, $b){
 		if ($a['hasLocalItem'] && $b['hasLocalItem']){
 			return 0;
@@ -2685,7 +2702,7 @@ class GroupedWorkDriver extends RecordInterface {
 
 		//		list($source) = explode(':', $recordDetails[0], 1); // this does not work for 'overdrive:27770ba9-9e68-410c-902b-de2de8e2b7fe', returns 'overdrive:27770ba9-9e68-410c-902b-de2de8e2b7fe'
 		// when loading book covers.
-		list($source) = explode(':', $recordDetails[0], 2);
+		[$source] = explode(':', $recordDetails[0], 2);
 		require_once ROOT_DIR . '/RecordDrivers/Factory.php';
 		$recordDriver = RecordDriverFactory::initRecordDriverById($recordDetails[0], $groupedWork);
 		$timer->logTime("Loaded Record Driver for $recordDetails[0]");
@@ -3267,7 +3284,7 @@ class GroupedWorkDriver extends RecordInterface {
 			//Now that we know that we need more detailed information, load the related record.
 			$relatedRecords = $this->getRelatedRecords(false);
 			$onlyRecord     = reset($relatedRecords);
-			$url            = $onlyRecord['url'];
+			$url            = !empty($onlyRecord['driver']) ? $onlyRecord['driver']->getlinkUrl() : $onlyRecord['url'];
 		}else{
 			$url = $this->getLinkUrl();
 		}
