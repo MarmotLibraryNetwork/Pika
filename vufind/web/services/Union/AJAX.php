@@ -101,12 +101,15 @@ class Union_AJAX extends AJAXHandler {
 		$searchObject = SearchObjectFactory::initSearchObject();
 		$searchObject->init('local', $searchTerm);
 		$searchObject->setLimit($numberOfResults);
-		$searchObject->setSearchTerms(array(
+		$searchObject->setSearchTerms([
 			'index'   => $searchType,
 			'lookfor' => $searchTerm,
-		));
+		]);
 		$result  = $searchObject->processSearch(true, false);
 		$summary = $searchObject->getResultSummary();
+		$searchObject->close(); // 'Finish' the search... complete timers and log search history.
+		$interface->assign('searchSource', 'local');
+		$interface->assign('searchId', $searchObject->getSearchId());
 		$records = $searchObject->getCombinedResultsHTML();
 		if ($summary['resultTotal'] == 0){
 			$results = '<div class="clearfix"></div><div>No results match your search.</div>';
