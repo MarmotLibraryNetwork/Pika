@@ -63,7 +63,7 @@ class Browse_AJAX extends AJAXHandler {
 		global $library;
 		global $locationSingleton;
 		$searchLocation     = $locationSingleton->getSearchLocation();
-		$categoryName       = isset($_REQUEST['categoryName']) ? $_REQUEST['categoryName'] : '';
+		$categoryName       = $_REQUEST['categoryName'] ?? '';
 		$addAsSubCategoryOf = isset($_REQUEST['addAsSubCategoryOf']) && !empty($_REQUEST['addAsSubCategoryOf']) ? $_REQUEST['addAsSubCategoryOf'] : null;
 		// value of zero means nothing was selected.
 

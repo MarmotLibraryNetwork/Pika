@@ -55,8 +55,6 @@ class MyAccount_Profile extends MyAccount
 			// these need to get to template even if linkedusers is empty array so we don't get a bunch of warnings.
 			$interface->assign('linkedUsers', $linkedUsers);
 			$interface->assign('selectedUser', $patronId);
-			/** @var Library $librarySingleton */
-			global $librarySingleton;
 			// Get Library Settings from the home library of the current user-account being displayed
 			$patronHomeLibrary = $patron->getHomeLibrary();
 			if ($patronHomeLibrary == null) {
