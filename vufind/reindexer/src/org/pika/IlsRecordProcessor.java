@@ -335,9 +335,9 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	}
 
 	private String getFileForIlsRecord(String recordNumber) {
-		String shortId = recordNumber.replace(".", "");
+		StringBuilder shortId = new StringBuilder(recordNumber.replace(".", ""));
 		while (shortId.length() < 9){
-			shortId = "0" + shortId;
+			shortId.insert(0, "0");
 		}
 
 		String subFolderName;

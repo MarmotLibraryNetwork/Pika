@@ -269,11 +269,14 @@ function getGroupedWorkUpdates(){
 		],
 
 		'grouping_table_sizing-2020.06' => [
-			'title'           => 'Reduce column sizes',
-			'description'     => '',
+			'title'           => 'Increase grouping title/author column sizes',
+			'description'     => 'Increase grouping title/author column sizes',
 			'continueOnError' => false,
 			'sql'             => [
-				"",
+				"ALTER TABLE `grouped_work` 
+					CHANGE COLUMN `author` `author` VARCHAR(100) NOT NULL ,
+					CHANGE COLUMN `grouping_category` `grouping_category` VARCHAR(5) NOT NULL ,
+					CHANGE COLUMN `full_title` `full_title` VARCHAR(400) NOT NULL ;",
 			],
 		],
 

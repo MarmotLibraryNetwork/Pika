@@ -69,8 +69,8 @@ class AuthorNormalizer {
 		//this is done once by removeCommonPrefixesAndSuffixes()
 
 		groupingAuthor = groupingAuthor.trim();
-		if (groupingAuthor.length() > 50){
-			groupingAuthor = groupingAuthor.substring(0, 50).trim();
+		if (groupingAuthor.length() > 100){
+			groupingAuthor = groupingAuthor.substring(0, 100).trim();
 		}
 
 		return groupingAuthor;
