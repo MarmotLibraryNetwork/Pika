@@ -47,7 +47,7 @@ abstract class HorizonAPI3_23 extends HorizonAPI
 		//Log the user in
 		list($userValid, $sessionToken) = $this->loginViaWebService($patron);
 		if (!$userValid){
-			return 'Sorry, it does not look like you are logged in currently.  Please login and try again';
+			return 'Sorry, it does not look like you are logged in currently.  Please log in and try again';
 		}
 
 		$updatePinUrl = $this->getBaseWebServiceUrl() . '/hzws/user/patron/changeMyPin';

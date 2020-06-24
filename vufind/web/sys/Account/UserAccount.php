@@ -85,7 +85,7 @@ class UserAccount {
 
 						}else{
 							$logger->debug("We got a valid user from CAS, getting the user from the database");
-							//We have a valid user via CAS, need to do a login to Pika
+							//We have a valid user via CAS, need to do a log into Pika
 							$_REQUEST['casLogin']    = true;
 							UserAccount::$isLoggedIn = true;
 							//Set the active user id for the user
@@ -341,7 +341,7 @@ class UserAccount {
 					UserAccount::$isLoggedIn = false;
 					return false;
 				}else{
-					//We have a valid user via CAS, need to do a login to Pika
+					//We have a valid user via CAS, need to do a log into Pika
 					$_REQUEST['casLogin']    = true;
 					$userData                = UserAccount::login();
 					UserAccount::$isLoggedIn = true;

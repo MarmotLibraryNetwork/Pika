@@ -367,7 +367,7 @@ abstract class HorizonAPI extends Horizon{
 			if (!$userValid){
 				return array(
 					'success' => false,
-					'message' => 'Sorry, it does not look like you are logged in currently.  Please login and try again');
+					'message' => 'Sorry, it does not look like you are logged in currently.  Please log in and try again');
 			}
 		}
 
@@ -460,7 +460,7 @@ abstract class HorizonAPI extends Horizon{
 		if (!$userValid){
 			return array(
 				'success' => false,
-				'message' => 'Sorry, it does not look like you are logged in currently.  Please login and try again');
+				'message' => 'Sorry, it does not look like you are logged in currently.  Please log in and try again');
 		}
 
 		if (!isset($xNum)){ //AJAX function passes IDs through $cancelID below shouldn't be needed anymore. plb 2-4-2015
@@ -732,7 +732,7 @@ abstract class HorizonAPI extends Horizon{
 		if (!$userValid){
 			return array(
 				'success' => false,
-				'message' => 'Sorry, it does not look like you are logged in currently.  Please login and try again');
+				'message' => 'Sorry, it does not look like you are logged in currently.  Please log in and try again');
 		}
 
 
@@ -794,7 +794,7 @@ abstract class HorizonAPI extends Horizon{
 		//Log the user in
 		list($userValid, $sessionToken) = $this->loginViaWebService($patron);
 		if (!$userValid){
-			return 'Sorry, it does not look like you are logged in currently.  Please login and try again';
+			return 'Sorry, it does not look like you are logged in currently.  Please log in and try again';
 		}
 
 		//create the hold using the web service

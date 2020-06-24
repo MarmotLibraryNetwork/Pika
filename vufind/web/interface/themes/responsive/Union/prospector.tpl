@@ -5,7 +5,7 @@
 				<div class="coversColumn col-xs-3 col-sm-3{if !$viewingCombinedResults} col-md-3 col-lg-2{/if} text-center">
 					{if $disableCoverArt != 1 && $prospectorResult.cover}
 						<a id="prospectorImg{$smarty.foreach.recordLoop.iteration}" href="{$prospectorResult.link}">
-							<img onerror="VuFind.Prospector.removeBlankThumbnail(this, '#prospectorImg{$smarty.foreach.recordLoop.iteration}', true);" onload="VuFind.Prospector.removeBlankThumbnail(this, '#prospectorImg{$smarty.foreach.recordLoop.iteration}');" src="{$prospectorResult.cover}" class="listResultImage img-thumbnail" alt="{translate text='Cover Image'}">
+							<img onerror="Pika.Prospector.removeBlankThumbnail(this, '#prospectorImg{$smarty.foreach.recordLoop.iteration}', true);" onload="Pika.Prospector.removeBlankThumbnail(this, '#prospectorImg{$smarty.foreach.recordLoop.iteration}');" src="{$prospectorResult.cover}" class="listResultImage img-thumbnail" alt="{translate text='Cover Image'}">
 						</a>
 					{/if}
 				</div>

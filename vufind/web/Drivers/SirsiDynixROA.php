@@ -1082,7 +1082,7 @@ abstract class SirsiDynixROA extends HorizonAPI //TODO: This class doesn't need 
 		if (!$sessionToken) {
 			return array(
 				'success' => false,
-				'message' => 'Sorry, it does not look like you are logged in currently.  Please login and try again');
+				'message' => 'Sorry, it does not look like you are logged in currently.  Please log in and try again');
 		}
 
 		// Retrieve Full Marc Record
@@ -1229,7 +1229,7 @@ abstract class SirsiDynixROA extends HorizonAPI //TODO: This class doesn't need 
 		if (!$sessionToken) {
 			return array(
 				'success' => false,
-				'message' => 'Sorry, it does not look like you are logged in currently.  Please login and try again');
+				'message' => 'Sorry, it does not look like you are logged in currently.  Please log in and try again');
 		}
 
 		//create the hold using the web service
@@ -1283,7 +1283,7 @@ abstract class SirsiDynixROA extends HorizonAPI //TODO: This class doesn't need 
 		if (!$sessionToken) {
 			return array(
 				'success' => false,
-				'message' => 'Sorry, it does not look like you are logged in currently.  Please login and try again');
+				'message' => 'Sorry, it does not look like you are logged in currently.  Please log in and try again');
 		}
 
 		//create the hold using the web service
@@ -1341,7 +1341,7 @@ abstract class SirsiDynixROA extends HorizonAPI //TODO: This class doesn't need 
 		if (!$sessionToken) {
 			return array(
 				'success' => false,
-				'message' => 'Sorry, it does not look like you are logged in currently.  Please login and try again');
+				'message' => 'Sorry, it does not look like you are logged in currently.  Please log in and try again');
 		}
 
 		//create the hold using the web service
@@ -1396,7 +1396,7 @@ abstract class SirsiDynixROA extends HorizonAPI //TODO: This class doesn't need 
 		if (!$sessionToken) {
 			return array(
 				'success' => false,
-				'message' => 'Sorry, it does not look like you are logged in currently.  Please login and try again');
+				'message' => 'Sorry, it does not look like you are logged in currently.  Please log in and try again');
 		}
 
 		//create the hold using the web service
@@ -1496,7 +1496,7 @@ abstract class SirsiDynixROA extends HorizonAPI //TODO: This class doesn't need 
 //		$sessionToken = $this->getStaffSessionToken();
 //		$sessionToken = $this->staffOrPatronSessionTokenSwitch() ? $this->getStaffSessionToken() : $this->getSessionToken($patron);
 		if (!$sessionToken) {
-			return 'Sorry, it does not look like you are logged in currently.  Please login and try again';
+			return 'Sorry, it does not look like you are logged in currently.  Please log in and try again';
 		}
 
 		$params = array(
@@ -1784,7 +1784,7 @@ abstract class SirsiDynixROA extends HorizonAPI //TODO: This class doesn't need 
 					$updateErrors[] = 'Catalog does not have the circulation system User Id';
 				}
 			}else{
-				$updateErrors[] = 'Sorry, it does not look like you are logged in currently.  Please login and try again';
+				$updateErrors[] = 'Sorry, it does not look like you are logged in currently.  Please log in and try again';
 			}
 		}else{
 			$updateErrors[] = 'You do not have permission to update profile information.';
