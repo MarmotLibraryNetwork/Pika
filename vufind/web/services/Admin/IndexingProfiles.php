@@ -125,11 +125,11 @@ class Admin_IndexingProfiles extends ObjectEditor {
 			);
 //			$actions[] = array(
 //				'text'    => 'Mark Profile Records for Regrouping',
-//				'onclick' => "return confirm('Confirm marking all profile records for regrouping?') ? VuFind.Admin.markProfileForRegrouping({$existingObject->id}) : false;",
+//				'onclick' => "return confirm('Confirm marking all profile records for regrouping?') ? Pika.Admin.markProfileForRegrouping({$existingObject->id}) : false;",
 //			);
 //			$actions[] = array(
 //				'text'    => 'Mark Profile Records for Reindexing',
-//				'onclick' => "return confirm('Confirm marking all profile records for reindexing?') ? VuFind.Admin.markProfileForReindexing({$existingObject->id}) : false;",
+//				'onclick' => "return confirm('Confirm marking all profile records for reindexing?') ? Pika.Admin.markProfileForReindexing({$existingObject->id}) : false;",
 //			);
 		}else{
 			$actions[] = array(

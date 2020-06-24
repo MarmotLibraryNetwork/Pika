@@ -960,7 +960,7 @@ class Archive_AJAX extends AJAXHandler {
 
 		if (!UserAccount::isLoggedIn()){
 			$result['success'] = false;
-			$result['message'] = 'Please login before adding a title to list.';
+			$result['message'] = 'Please log in before adding a title to list.';
 		}else{
 			require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
 			require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';

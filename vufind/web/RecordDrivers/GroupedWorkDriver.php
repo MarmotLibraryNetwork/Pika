@@ -20,7 +20,7 @@
 /**
  * GroupedWorkDriver Class
  *
- * This class handles the display of Grouped Works within VuFind.
+ * This class handles the display of Grouped Works within Pika.
  *
  * @category Pika
  * @author <pika@marmot.org>
