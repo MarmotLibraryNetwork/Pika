@@ -15,20 +15,13 @@
 }
 
 .header-login-button-mixin(@header-buttons-background-color, @header-buttons-color);
-.header-button {
+.header-button,#logoutLink > .header-button {
   text-transform: uppercase;
   border: 2px solid @scranton-medium-blue2;
   margin-top: 30px;
   &:hover {
     background-color: @scranton-green;
     border-color: @scranton-green;
-  }
-}
-#logoutLink > .header-button {
-  background-color: #fff;
-  border: 1px solid @scranton-medium-blue2;
-  &:hover {
-    background-color: @scranton-deep-blue;
   }
 }
 
