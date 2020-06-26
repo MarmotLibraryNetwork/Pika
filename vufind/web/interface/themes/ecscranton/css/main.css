@@ -10880,21 +10880,16 @@ fieldset[disabled] .btn-masquerade.active {
   border-bottom: 0;
   box-shadow: 2px 2px 5px #fff;
 }
-.header-button {
+.header-button,
+#logoutLink > .header-button {
   text-transform: uppercase;
   border: 2px solid #4CB0E3;
   margin-top: 30px;
 }
-.header-button:hover {
+.header-button:hover,
+#logoutLink > .header-button:hover {
   background-color: #A2C451;
   border-color: #A2C451;
-}
-#logoutLink > .header-button {
-  background-color: #fff;
-  border: 1px solid #4CB0E3;
-}
-#logoutLink > .header-button:hover {
-  background-color: #0A78B7;
 }
 #header-logo {
   padding-bottom: 10px;
