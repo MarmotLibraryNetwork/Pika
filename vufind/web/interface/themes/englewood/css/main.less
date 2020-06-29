@@ -7,7 +7,10 @@
 
 #header-container{
   background-image: url('/interface/themes/englewood/images/header_background.png');
-  background-repeat: no-repeat;
+  @media (min-width: 999px) {
+  background-repeat: round;
+    /* background image is only 998px long */
+}
 }
 
 #header-logo{
