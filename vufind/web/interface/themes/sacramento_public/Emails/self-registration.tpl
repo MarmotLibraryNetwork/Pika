@@ -9,7 +9,7 @@ Access our digital collection including ebooks, audio books, and music in the ca
 Learn more about the digital collection at [http://www.saclibrary.org/Books/Digital-Media/Digital-Services-Help]. You can also access a variety of online learning resources [https://www.saclibrary.org/Education/Online-Learning] including language courses, genealogy databases, resources for kids and more.
 
 Upgrade your card
-Interested in borrowing physical library material? Upgrade your card for full library access. Email us at contact@saclibrary.org with your library card number and a copy of any issued document or ID card that includes a photo with your name and proof of address. You will be mailed a library card.
+Interested in borrowing physical library material and live in the Sacramento Public Library service area? Upgrade your card for full library access. Email us at contact@saclibrary.org with your library card number and a copy of any issued document or ID card that includes a photo with your name and proof of address. Once this information is received, you will be mailed a full use library card.
 
 Stay Connected
 Sign up for our newsletter [https://mailchi.mp/saclibrary.org/stayintouch] to get the latest news and updates from Sacramento Public Library.
