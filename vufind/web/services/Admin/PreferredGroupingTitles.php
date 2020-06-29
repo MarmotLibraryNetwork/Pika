@@ -81,8 +81,8 @@ class Admin_PreferredGroupingTitles extends ObjectEditor {
 	}
 
 	function getInstructions(){
-		return 'For more information about preferred grouping titles, see the <a href="https://docs.google.com/document/d/10dlqFTtg3cROGbz9qeO0CdfxImy0g44_7AIK57HVhrg">online documentation</a>.' .
-			'<p class="alert alert-warning">Note: The <em>Preferred Grouping Title</em> will replace <strong>every</strong> instance of the <em>Source Grouping Title</em> for <u><strong>any</strong> grouped work</u> with that Grouping Title, not just for a single grouped work of interest.</p>';
+		return '<p>For more information about preferred grouping titles, see the <a href="https://docs.google.com/document/d/10dlqFTtg3cROGbz9qeO0CdfxImy0g44_7AIK57HVhrg">online documentation</a>.</p><br>' .
+			'<blockquote class="alert-warning">Note: The <em>Preferred Grouping Title</em> will replace <strong>every</strong> instance of the <em>Source Grouping Title</em> for <u><strong>any</strong> grouped work</u> with that Grouping Title, not just for a single grouped work of interest.</blockquote>';
 	}
 
 }
