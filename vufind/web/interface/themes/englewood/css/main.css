@@ -11089,8 +11089,7 @@ fieldset[disabled] .btn-masquerade.active {
   column-break-inside: avoid;
   display: table;
 }
-.btn-primary:hover,
-.btn-info:hover {
+.btn-primary:hover {
   background-color: #719f1b;
   border-color: #719f1b;
 }
