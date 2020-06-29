@@ -10861,7 +10861,12 @@ fieldset[disabled] .btn-masquerade.active {
 }
 #header-container {
   background-image: url('/interface/themes/englewood/images/header_background.png');
-  background-repeat: no-repeat;
+}
+@media (min-width: 999px) {
+  #header-container {
+    background-repeat: round;
+    /* background image is only 998px long */
+  }
 }
 #header-logo {
   background-color: rgba(255, 255, 255, 0.75);
