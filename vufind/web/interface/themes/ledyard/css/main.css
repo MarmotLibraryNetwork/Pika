@@ -2113,8 +2113,8 @@ fieldset[disabled] .btn-default.active {
 }
 .btn-primary {
   color: #24606f;
-  background-color: #b2e2ef;
-  border-color: #9ddaeb;
+  background-color: #B6D690;
+  border-color: #aacf7d;
 }
 .btn-primary:hover,
 .btn-primary:focus,
@@ -2122,8 +2122,8 @@ fieldset[disabled] .btn-default.active {
 .btn-primary.active,
 .open .dropdown-toggle.btn-primary {
   color: #24606f;
-  background-color: #90d5e8;
-  border-color: #6ac7e0;
+  background-color: #a2cb72;
+  border-color: #8cbf51;
 }
 .btn-primary:active,
 .btn-primary.active,
@@ -2145,11 +2145,11 @@ fieldset[disabled] .btn-primary:active,
 .btn-primary.disabled.active,
 .btn-primary[disabled].active,
 fieldset[disabled] .btn-primary.active {
-  background-color: #b2e2ef;
-  border-color: #9ddaeb;
+  background-color: #B6D690;
+  border-color: #aacf7d;
 }
 .btn-primary .badge {
-  color: #b2e2ef;
+  color: #B6D690;
   background-color: #fff;
 }
 .btn-warning {
@@ -7587,8 +7587,8 @@ fieldset[disabled] .datepicker table tr td.selected.disabled:hover.active {
 .datepicker table tr td.active.disabled,
 .datepicker table tr td.active.disabled:hover {
   color: #24606f;
-  background-color: #b2e2ef;
-  border-color: #9ddaeb;
+  background-color: #B6D690;
+  border-color: #aacf7d;
   text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
 }
 .datepicker table tr td.active:hover,
@@ -7612,8 +7612,8 @@ fieldset[disabled] .datepicker table tr td.selected.disabled:hover.active {
 .open .dropdown-toggle.datepicker table tr td.active.disabled,
 .open .dropdown-toggle.datepicker table tr td.active.disabled:hover {
   color: #24606f;
-  background-color: #90d5e8;
-  border-color: #6ac7e0;
+  background-color: #a2cb72;
+  border-color: #8cbf51;
 }
 .datepicker table tr td.active:active,
 .datepicker table tr td.active:hover:active,
@@ -7689,14 +7689,14 @@ fieldset[disabled] .datepicker table tr td.active.active,
 fieldset[disabled] .datepicker table tr td.active:hover.active,
 fieldset[disabled] .datepicker table tr td.active.disabled.active,
 fieldset[disabled] .datepicker table tr td.active.disabled:hover.active {
-  background-color: #b2e2ef;
-  border-color: #9ddaeb;
+  background-color: #B6D690;
+  border-color: #aacf7d;
 }
 .datepicker table tr td.active .badge,
 .datepicker table tr td.active:hover .badge,
 .datepicker table tr td.active.disabled .badge,
 .datepicker table tr td.active.disabled:hover .badge {
-  color: #b2e2ef;
+  color: #B6D690;
   background-color: #fff;
 }
 .datepicker table tr td span {
@@ -7723,8 +7723,8 @@ fieldset[disabled] .datepicker table tr td.active.disabled:hover.active {
 .datepicker table tr td span.active.disabled,
 .datepicker table tr td span.active.disabled:hover {
   color: #24606f;
-  background-color: #b2e2ef;
-  border-color: #9ddaeb;
+  background-color: #B6D690;
+  border-color: #aacf7d;
   text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
 }
 .datepicker table tr td span.active:hover,
@@ -7748,8 +7748,8 @@ fieldset[disabled] .datepicker table tr td.active.disabled:hover.active {
 .open .dropdown-toggle.datepicker table tr td span.active.disabled,
 .open .dropdown-toggle.datepicker table tr td span.active.disabled:hover {
   color: #24606f;
-  background-color: #90d5e8;
-  border-color: #6ac7e0;
+  background-color: #a2cb72;
+  border-color: #8cbf51;
 }
 .datepicker table tr td span.active:active,
 .datepicker table tr td span.active:hover:active,
@@ -7825,14 +7825,14 @@ fieldset[disabled] .datepicker table tr td span.active.active,
 fieldset[disabled] .datepicker table tr td span.active:hover.active,
 fieldset[disabled] .datepicker table tr td span.active.disabled.active,
 fieldset[disabled] .datepicker table tr td span.active.disabled:hover.active {
-  background-color: #b2e2ef;
-  border-color: #9ddaeb;
+  background-color: #B6D690;
+  border-color: #aacf7d;
 }
 .datepicker table tr td span.active .badge,
 .datepicker table tr td span.active:hover .badge,
 .datepicker table tr td span.active.disabled .badge,
 .datepicker table tr td span.active.disabled:hover .badge {
-  color: #b2e2ef;
+  color: #B6D690;
   background-color: #fff;
 }
 .datepicker table tr td span.old,
@@ -9508,7 +9508,7 @@ a.browse-thumbnail-sorted.active {
   font-size: 18px;
 }
 #contactUpdateForm .btn-group .btn-default.active {
-  background-color: #b2e2ef;
+  background-color: #B6D690;
   box-shadow: none;
   color: #24606f;
 }
