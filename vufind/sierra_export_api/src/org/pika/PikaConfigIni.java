@@ -137,8 +137,16 @@ public class PikaConfigIni {
 
 	public static Integer getIntIniValue(String sectionName, String optionName) {
 		String intValueStr = cleanIniValue(ourInstance.get(sectionName, optionName));
-		if (intValueStr != null) {
+		if (intValueStr != null && !intValueStr.isEmpty()) {
 			return Integer.parseInt(intValueStr);
+		}
+		return null;
+	}
+
+	public static Long getLongIniValue(String sectionName, String optionName) {
+		String intValueStr = cleanIniValue(ourInstance.get(sectionName, optionName));
+		if (intValueStr != null && !intValueStr.isEmpty()) {
+			return Long.parseLong(intValueStr);
 		}
 		return null;
 	}

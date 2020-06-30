@@ -898,10 +898,10 @@ class sip2
 			//$loginData = $this->parseLoginResponse($loginResponse);
 			if (strpos($initialLoginResponse, 'Login OK.  Initiating SIP') === 0){
 				$logger->log("Logged into SIP client with telnet credentials", PEAR_LOG_DEBUG);
-				$this->_debugmsg( "SIP2: --- LOGIN TO SIP SUCCEEDED ---" );
+				$this->_debugmsg( "SIP2: --- LOG INTO SIP SUCCEEDED ---" );
 			}else{
-				$logger->log("Unable to login to SIP server using telnet credentials", PEAR_LOG_ERR);
-				$this->_debugmsg( "SIP2: --- LOGIN TO SIP FAILED ---" );
+				$logger->log("Unable to log into SIP server using telnet credentials", PEAR_LOG_ERR);
+				$this->_debugmsg( "SIP2: --- LOG INTO SIP FAILED ---" );
 				$this->_debugmsg( $initialLoginResponse);
 				return false;
 			}

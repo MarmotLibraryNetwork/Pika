@@ -19,10 +19,8 @@
 
 require_once ROOT_DIR . '/sys/NovelistFactory.php';
 
-class GroupedWork_Series extends Action
-{
-	function launch()
-	{
+class GroupedWork_Series extends Action {
+	function launch(){
 		global $interface;
 		global $timer;
 		global $logger;
@@ -36,22 +34,22 @@ class GroupedWork_Series extends Action
 		$recordDriver = new GroupedWorkDriver($id);
 		if (!$recordDriver->isValid){
 			$interface->assign('id', $id);
-			$logger->log("Did not find a record for id {$id} in solr." , PEAR_LOG_DEBUG);
+			$logger->log("Did not find a record for id {$id} in solr.", PEAR_LOG_DEBUG);
 			$interface->setTemplate('../Record/invalidRecord.tpl');
 			$this->display('../Record/invalidRecord.tpl', 'Invalid Record');
 			die();
 		}
 		$timer->logTime('Initialized the Record Driver');
 
-		$novelist = NovelistFactory::getNovelist();
+		$novelist   = NovelistFactory::getNovelist();
 		$seriesData = $novelist->getSeriesTitles($id, $recordDriver->getISBNs());
 
 		//Loading the series title is not reliable.  Do not try to load it.
-		$seriesTitle = null;
-		$seriesAuthors = array();
-		$resourceList = array();
-		$seriesTitles = $seriesData->seriesTitles;
-		$recordIndex = 1;
+		$seriesTitle   = null;
+		$seriesAuthors = [];
+		$resourceList  = [];
+		$seriesTitles  = $seriesData->seriesTitles;
+		$recordIndex   = 1;
 		if (isset($seriesTitles) && is_array($seriesTitles)){
 			foreach ($seriesTitles as $key => $title){
 				if (isset($title['series']) && strlen($title['series']) > 0 && !(isset($seriesTitle))){
@@ -59,7 +57,7 @@ class GroupedWork_Series extends Action
 					$interface->assign('seriesTitle', $seriesTitle);
 				}
 				if (isset($title['author'])){
-					$author = preg_replace('/[^\w]*$/i', '', $title['author']);
+					$author                 = preg_replace('/[^\w]*$/i', '', $title['author']);
 					$seriesAuthors[$author] = $author;
 				}
 				$interface->assign('recordIndex', $recordIndex);
@@ -67,7 +65,7 @@ class GroupedWork_Series extends Action
 				if ($title['libraryOwned']){
 					/** @var GroupedWorkDriver $tmpRecordDriver */
 					$tmpRecordDriver = $title['recordDriver'];
-					$resourceList[] = $interface->fetch($tmpRecordDriver->getSearchResult('list'));
+					$resourceList[]  = $interface->fetch($tmpRecordDriver->getSearchResult('list'));
 				}else{
 					$interface->assign('record', $title);
 					$resourceList[] = $interface->fetch('RecordDrivers/Index/nonowned_result.tpl');

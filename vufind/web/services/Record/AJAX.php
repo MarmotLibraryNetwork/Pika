@@ -182,7 +182,7 @@ class Record_AJAX extends AJAXHandler {
 
 		}else{
 			$results = array(
-				'title'        => 'Please login',
+				'title'        => 'Please log in',
 				'modalBody'    => "You must be logged in.  Please close this dialog and login before placing your hold.",
 				'modalButtons' => "",
 			);
@@ -215,7 +215,7 @@ class Record_AJAX extends AJAXHandler {
 			);
 		}else{
 			$results = array(
-				'title'        => 'Please login',
+				'title'        => 'Please log in',
 				'modalBody'    => "You must be logged in.  Please close this dialog and login before placing your hold.",
 				'modalButtons' => '',
 			);
@@ -390,7 +390,7 @@ class Record_AJAX extends AJAXHandler {
 			$results = array(
 				'success' => false,
 				'message' => 'You must be logged in to place a hold.  Please close this dialog and login.',
-				'title'   => 'Please login',
+				'title'   => 'Please log in',
 			);
 		}
 		return $results;
@@ -416,7 +416,7 @@ class Record_AJAX extends AJAXHandler {
 			);
 		}else{
 			$results = array(
-				'title'        => 'Please login',
+				'title'        => 'Please log in',
 				'modalBody'    => "You must be logged in.  Please close this dialog and login before scheduling this item.",
 				'modalButtons' => ""
 			);

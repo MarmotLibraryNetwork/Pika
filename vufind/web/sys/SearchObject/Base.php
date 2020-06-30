@@ -1452,20 +1452,19 @@ abstract class SearchObject_Base {
 	 *                              false if no search to restore, returns
 	 *                              PEAR_Error object in case of trouble.
 	 */
-	public function restoreSavedSearch($searchId = null, $redirect = true, $forceReload = false)
-	{
+	public function restoreSavedSearch($searchId = null, $redirect = true, $forceReload = false){
 		// Is this is a saved search?
-		if (isset($_REQUEST['saved']) || $searchId != null) {
+		if (isset($_REQUEST['saved']) || $searchId != null){
 			// Yes, retrieve it
 			require_once ROOT_DIR . '/sys/Search/SearchEntry.php';
-			$search = new SearchEntry();
-			$search->id = strip_tags(isset($_REQUEST['saved']) ? $_REQUEST['saved'] : $searchId);
-			if ($search->find(true)) {
+			$search     = new SearchEntry();
+			$search->id = strip_tags($_REQUEST['saved'] ?? $searchId);
+			if ($search->find(true)){
 				// Found, make sure the user has the
 				//   rights to view this search
-				if ($forceReload || $search->session_id == session_id() || (UserAccount::isLoggedIn() && $search->user_id == UserAccount::getActiveUserId())) {
+				if ($forceReload || $search->session_id == session_id() || (UserAccount::isLoggedIn() && $search->user_id == UserAccount::getActiveUserId())){
 					// They do, deminify it to a new object.
-					$minSO = unserialize($search->search_object);
+					$minSO       = unserialize($search->search_object);
 					$savedSearch = SearchObjectFactory::deminify($minSO);
 
 					// Now redirect to the URL associated with the saved search;
@@ -1477,10 +1476,10 @@ abstract class SearchObject_Base {
 					if ($redirect){
 						header('Location: ' . $savedSearch->renderSearchUrl());
 						die();
-					} else {
+					}else{
 						return $savedSearch;
 					}
-				} else {
+				}else{
 					// They don't
 					// TODO : Error handling -
 					//    User is trying to view a saved search from
@@ -2081,15 +2080,13 @@ public function getNextPrevLinks(){
 		if (isset($_REQUEST['searchId']) && isset($_REQUEST['recordIndex']) && ctype_digit($_REQUEST['searchId']) && ctype_digit($_REQUEST['recordIndex'])){
 			//rerun the search
 			require_once ROOT_DIR . '/sys/Search/SearchEntry.php';
-			$s = new SearchEntry();
+			$s     = new SearchEntry();
 			$s->id = $_REQUEST['searchId'];
 			$interface->assign('searchId', $_REQUEST['searchId']);
 			$currentPage = isset($_REQUEST['page']) && ctype_digit($_REQUEST['page']) ? $_REQUEST['page'] : 1;
 			$interface->assign('page', $currentPage);
 
-			$s->find();
-			if ($s->N > 0){
-				$s->fetch();
+			if ($s->find(true)){
 				$minSO = unserialize($s->search_object);
 				/** @var SearchObject_Solr $searchObject */
 				$searchObject = SearchObjectFactory::deminify($minSO);
@@ -2098,9 +2095,9 @@ public function getNextPrevLinks(){
 				$result = $searchObject->processSearch(true, false, false);
 
 				//Check to see if we need to run a search for the next or previous page
-				$currentResultIndex = $_REQUEST['recordIndex'] - 1;
-				$recordsPerPage = $searchObject->getLimit();
-				$adjustedResultIndex = $currentResultIndex - ($recordsPerPage * ($currentPage -1));
+				$currentResultIndex  = $_REQUEST['recordIndex'] - 1;
+				$recordsPerPage      = $searchObject->getLimit();
+				$adjustedResultIndex = $currentResultIndex - ($recordsPerPage * ($currentPage - 1));
 
 				if (($currentResultIndex) % $recordsPerPage == 0 && $currentResultIndex > 0){
 					//Need to run a search for the previous page
@@ -2109,7 +2106,7 @@ public function getNextPrevLinks(){
 					$previousSearchObject->setPage($currentPage - 1);
 					$previousSearchObject->processSearch(true, false, false);
 					$previousResults = $previousSearchObject->getResultRecordSet();
-				}else if (($currentResultIndex + 1) % $recordsPerPage == 0 && ($currentResultIndex + 1) < $searchObject->getResultTotal()){
+				}elseif (($currentResultIndex + 1) % $recordsPerPage == 0 && ($currentResultIndex + 1) < $searchObject->getResultTotal()){
 					//Need to run a search for the next page
 					$nextSearchObject = clone $searchObject;
 					$interface->assign('nextPage', $currentPage + 1);
@@ -2118,91 +2115,83 @@ public function getNextPrevLinks(){
 					$nextResults = $nextSearchObject->getResultRecordSet();
 				}
 
-				if (PEAR_Singleton::isError($result)) {
-					//If we get an error excuting the search, just eat it for now.
-				}else{
-					if ($searchObject->getResultTotal() < 1) {
-						//No results found
-					}else{
-						$recordSet = $searchObject->getResultRecordSet();
-						//Record set is 0 based, but we are passed a 1 based index
-						if ($currentResultIndex > 0){
-							if (isset($previousResults)){
-								$previousRecord = $previousResults[count($previousResults) -1];
-							}else{
-								$previousId = $adjustedResultIndex - 1;
-								if (isset($recordSet[$previousId])){
-									$previousRecord = $recordSet[$previousId];
-								}
+				if (!PEAR_Singleton::isError($result) && $searchObject->getResultTotal() > 0){
+					$recordSet = $searchObject->getResultRecordSet();
+					//Record set is 0 based, but we are passed a 1 based index
+					if ($currentResultIndex > 0){
+						if (isset($previousResults)){
+							$previousRecord = $previousResults[count($previousResults) -1];
+						}else{
+							$previousId = $adjustedResultIndex - 1;
+							if (isset($recordSet[$previousId])){
+								$previousRecord = $recordSet[$previousId];
 							}
+						}
 
-							//Convert back to 1 based index
-							if (isset($previousRecord)) {
-								$interface->assign('previousIndex', $currentResultIndex - 1 + 1);
-								$interface->assign('previousTitle', $previousRecord['title_display']);
-								if ($previousRecord['recordtype'] == 'grouped_work'){
-									require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
-									$groupedWork = New GroupedWorkDriver($previousRecord);
-									$relatedRecords = $groupedWork->getRelatedRecords(true);
-									global $timer;
-									$timer->logTime('Loaded related records for previous result');
-									if (count($relatedRecords) == 1) {
-										$previousRecord = reset($relatedRecords);
-										list($previousType, $previousId) = explode('/', trim($previousRecord['url'], '/'));
-										$interface->assign('previousId', $previousId);
-										$interface->assign('previousType', $previousType);
-									} else {
-										$interface->assign('previousType', 'GroupedWork');
-										$interface->assign('previousId', $previousRecord['id']);
-									}
-								} elseif (strpos($previousRecord['id'], 'list') === 0){
-									$interface->assign('previousType', 'MyAccount/MyList');
-									$interface->assign('previousId', str_replace('list', '', $previousRecord['id']));
-								}else{
-									$interface->assign('previousType', 'Record');
+						//Convert back to 1 based index
+						if (isset($previousRecord)) {
+							$interface->assign('previousIndex', $currentResultIndex - 1 + 1);
+							$interface->assign('previousTitle', $previousRecord['title_display']);
+							if ($previousRecord['recordtype'] == 'grouped_work'){
+								require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+								$groupedWork = New GroupedWorkDriver($previousRecord);
+								$relatedRecords = $groupedWork->getRelatedRecords(true);
+								global $timer;
+								$timer->logTime('Loaded related records for previous result');
+								if (count($relatedRecords) == 1) {
+									$previousRecord = reset($relatedRecords);
+									[$previousType, $previousId] = explode('/', trim($previousRecord['url'], '/'));
+									$interface->assign('previousId', $previousId);
+									$interface->assign('previousType', $previousType);
+								} else {
+									$interface->assign('previousType', 'GroupedWork');
 									$interface->assign('previousId', $previousRecord['id']);
 								}
+							} elseif (strpos($previousRecord['id'], 'list') === 0){
+								$interface->assign('previousType', 'MyAccount/MyList');
+								$interface->assign('previousId', str_replace('list', '', $previousRecord['id']));
+							}else{
+								$interface->assign('previousType', 'Record');
+								$interface->assign('previousId', $previousRecord['id']);
 							}
 						}
-						if ($currentResultIndex + 1 < $searchObject->getResultTotal()){
-
-							if (isset($nextResults)){
-								$nextRecord = $nextResults[0];
-							}else{
-								$nextRecordIndex = $adjustedResultIndex + 1;
-								if (isset($recordSet[$nextRecordIndex])){
-									$nextRecord = $recordSet[$nextRecordIndex];
-								}
+					}
+					if ($currentResultIndex + 1 < $searchObject->getResultTotal()){
+						if (isset($nextResults)){
+							$nextRecord = $nextResults[0];
+						}else{
+							$nextRecordIndex = $adjustedResultIndex + 1;
+							if (isset($recordSet[$nextRecordIndex])){
+								$nextRecord = $recordSet[$nextRecordIndex];
 							}
-							//Convert back to 1 based index
-							$interface->assign('nextIndex', $currentResultIndex + 1 + 1);
-							if (isset($nextRecord)){
-								$interface->assign('nextTitle', $nextRecord['title_display']);
-								if ($nextRecord['recordtype'] == 'grouped_work'){
-									require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
-									$groupedWork = New GroupedWorkDriver($nextRecord);
-									$relatedRecords = $groupedWork->getRelatedRecords(true);
-									global $timer;
-									$timer->logTime('Loaded related records for next result');
-									if (count($relatedRecords) == 1) {
-										$nextRecord = reset($relatedRecords);
-										list($nextType, $nextId) = explode('/', trim($nextRecord['url'], '/'));
-										$interface->assign('nextId', $nextId);
-										$interface->assign('nextType', $nextType);
-									} else {
-										$interface->assign('nextType', 'GroupedWork');
-										$interface->assign('nextId', $nextRecord['id']);
-									}
-								} elseif (strpos($nextRecord['id'], 'list') === 0){
-									$interface->assign('nextType', 'MyAccount/MyList');
-									$interface->assign('nextId', str_replace('list', '', $nextRecord['id']));
-								}else{
-									$interface->assign('nextType', 'Record');
+						}
+						//Convert back to 1 based index
+						$interface->assign('nextIndex', $currentResultIndex + 1 + 1);
+						if (isset($nextRecord)){
+							$interface->assign('nextTitle', $nextRecord['title_display']);
+							if ($nextRecord['recordtype'] == 'grouped_work'){
+								require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+								$groupedWork    = new GroupedWorkDriver($nextRecord);
+								$relatedRecords = $groupedWork->getRelatedRecords(true);
+								global $timer;
+								$timer->logTime('Loaded related records for next result');
+								if (count($relatedRecords) == 1) {
+									$nextRecord = reset($relatedRecords);
+									[$nextType, $nextId] = explode('/', trim($nextRecord['url'], '/'));
+									$interface->assign('nextId', $nextId);
+									$interface->assign('nextType', $nextType);
+								} else {
+									$interface->assign('nextType', 'GroupedWork');
 									$interface->assign('nextId', $nextRecord['id']);
 								}
+							} elseif (strpos($nextRecord['id'], 'list') === 0){
+								$interface->assign('nextType', 'MyAccount/MyList');
+								$interface->assign('nextId', str_replace('list', '', $nextRecord['id']));
+							}else{
+								$interface->assign('nextType', 'Record');
+								$interface->assign('nextId', $nextRecord['id']);
 							}
 						}
-
 					}
 				}
 			}

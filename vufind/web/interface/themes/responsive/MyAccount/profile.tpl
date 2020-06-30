@@ -715,9 +715,7 @@
 			</script>
 		{/if}
 		{else}
-			<div class="page">
-				You must login to view this information. Click <a href="/MyResearch/Login">here</a> to login.
-			</div>
+			 {include file="MyAccount/loginRequired.tpl"}
 		{/if}
 	</div>
 {/strip}

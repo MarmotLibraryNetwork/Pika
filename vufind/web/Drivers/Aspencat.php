@@ -154,7 +154,7 @@ class Aspencat implements DriverInterface{
 		}
 		//Get transactions by screen scraping
 		$transactions = array();
-		//Login to Koha classic interface
+		//Log into Koha classic interface
 		$result = $this->loginToKoha($user);
 		if (!$result['success']){
 			return $transactions;
@@ -1044,7 +1044,7 @@ class Aspencat implements DriverInterface{
 			'unavailable' => $unavailableHolds
 		);
 		//Get transactions by screen scraping
-		//Login to Koha classic interface
+		//Log into Koha classic interface
 		$result = $this->loginToKoha($patron);
 		if (!$result['success']){
 			return $holds;

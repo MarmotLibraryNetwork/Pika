@@ -4,18 +4,12 @@ Thank you for registering for a Sacramento Public Library card.
 
 Your new library card number is {$barcode}
 
-Ready to get started?
+Discover our digital collection
+Access our digital collection including ebooks, audio books, and music in the catalog at [https://catalog.saclibrary.org]. Login to your library account using your library card number and PIN.
+Learn more about the digital collection at [http://www.saclibrary.org/Books/Digital-Media/Digital-Services-Help]. You can also access a variety of online learning resources [https://www.saclibrary.org/Education/Online-Learning] including language courses, genealogy databases, resources for kids and more.
 
-Visit our catalog at https://catalog.saclibrary.org/
-Click the login button at the top of the page
-Enter your name, library card number and pin
-Click Login
+Upgrade your card
+Interested in borrowing physical library material and live in the Sacramento Public Library service area? Upgrade your card for full library access. Email us at contact@saclibrary.org with your library card number and a copy of any issued document or ID card that includes a photo with your name and proof of address. Once this information is received, you will be mailed a full use library card.
 
-WHAT CAN YOU DO WITH YOUR CARD?
-
-With your library card, you can borrow physical library materials and download free ebooks, audiobooks and music [https://www.saclibrary.org/Books/Digital-Media]. Learn more about how you can access our digital collection [http://www.saclibrary.org/Books/Digital-Media/Digital-Services-Help].
-
-You can also access a variety of online learning resources [https://www.saclibrary.org/Education/Online-Learning] including language courses, genealogy databases, resources for kids [https://www.saclibrary.org/Education/Students-Educators], and more.
-
-STAY CONNECTED
+Stay Connected
 Sign up for our newsletter [https://mailchi.mp/saclibrary.org/stayintouch] to get the latest news and updates from Sacramento Public Library.

@@ -27,12 +27,12 @@
 				{if $anonymousLcDownload || ($loggedIn && $verifiedLcDownload)}
 					<a class="btn btn-default" href="/Archive/{$pid}/DownloadLC">Download Large Image</a>
 				{elseif (!$loggedIn && $verifiedLcDownload)}
-					<a class="btn btn-default" onclick="return Pika.Account.followLinkIfLoggedIn(this)" href="/Archive/{$pid}/DownloadLC">Login to Download Large Image</a>
+					<a class="btn btn-default" onclick="return Pika.Account.followLinkIfLoggedIn(this)" href="/Archive/{$pid}/DownloadLC">Log in to Download Large Image</a>
 				{/if}
 				{if $anonymousMasterDownload || ($loggedIn && $verifiedMasterDownload)}
 					<a class="btn btn-default" href="/Archive/{$pid}/DownloadOriginal">Download Original Image</a>
 				{elseif (!$loggedIn && $verifiedLcDownload)}
-					<a class="btn btn-default" onclick="return Pika.Account.followLinkIfLoggedIn(this)" href="/Archive/{$pid}/DownloadOriginal">Login to Download Original Image</a>
+					<a class="btn btn-default" onclick="return Pika.Account.followLinkIfLoggedIn(this)" href="/Archive/{$pid}/DownloadOriginal">Log in to Download Original Image</a>
 				{/if}
 			{/if}
 			{if $allowRequestsForArchiveMaterials}

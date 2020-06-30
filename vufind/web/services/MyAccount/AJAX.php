@@ -221,10 +221,10 @@ class MyAccount_AJAX extends AJAXHandler {
 				'message' => "Removed tag '{$tagToRemove}' from $numDeleted titles.",
 			);
 		}else{
-			$result = array(
+			$result = [
 				'result'  => false,
-				'message' => "Please login to remove a tag.",
-			);
+				'message' => "Please log in to remove a tag.",
+			];
 		}
 		return $result;
 	}
@@ -918,7 +918,7 @@ class MyAccount_AJAX extends AJAXHandler {
 			);
 		}else{
 			$results = array(
-				'title'        => 'Please login',
+				'title'        => 'Please log in',
 				'modalBody'    => "You must be logged in.  Please close this dialog and login before changing your hold's pick-up location.",
 				'modalButtons' => "",
 			);
@@ -965,11 +965,11 @@ class MyAccount_AJAX extends AJAXHandler {
 				$result = $patronOwningHold->changeHoldPickUpLocation($holdId, $newPickupLocation);
 				return $result;
 			}else{
-				return $results = array(
-					'title'        => 'Please login',
-					'modalBody'    => "You must be logged in.  Please close this dialog and login to change this hold's pick up location.",
+				return [
+					'title'        => 'Please log in',
+					'modalBody'    => "You must be logged in.  Please close this dialog and log in to change this hold's pick up location.",
 					'modalButtons' => "",
-				);
+				];
 			}
 
 		} catch (PDOException $e){
@@ -980,10 +980,10 @@ class MyAccount_AJAX extends AJAXHandler {
 				echo '</pre>';
 			}
 		}
-		return array(
+		return [
 			'result'  => false,
 			'message' => 'We could not connect to the circulation system, please try again later.',
-		);
+		];
 	}
 
 	function requestPinReset(){

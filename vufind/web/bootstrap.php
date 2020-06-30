@@ -390,10 +390,10 @@ function loadSearchInformation(){
 	global $instanceName;
 	global $configArray;
 
-	$module = (isset($_GET['module'])) ? $_GET['module'] : null;
+	$module = $_GET['module'] ?? null;
 
 	$searchSource = 'global';
-	if (isset($_GET['searchSource'])){
+	if (!empty($_GET['searchSource'])){
 		if (is_array($_GET['searchSource'])){
 			$_GET['searchSource'] = reset($_GET['searchSource']);
 		}

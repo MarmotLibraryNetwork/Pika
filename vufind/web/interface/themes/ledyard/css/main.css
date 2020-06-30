@@ -8285,7 +8285,6 @@ Test out these custom less files live
 }
 /* Preload images */
 body:after {
-  content: url(/interface/themes/responsive/images/close.png) url(/interface/themes/responsive/images/loading.gif) url(/interface/themes/responsive/images/prev.png) url(/interface/themes/responsive/images/next.png);
   display: none;
 }
 .lightboxOverlay {
@@ -8490,7 +8489,7 @@ hr.menu {
 }
 #header-container {
   padding-top: 0;
-  height: 111px;
+  height: 130px;
   background-color: #ffffff;
   background: linear-gradient(to bottom, #ffffff, #ffffff 85%, #ffffff);
   border-bottom: 8px solid #fff;
@@ -8510,7 +8509,7 @@ hr.menu {
   text-align: center;
   text-shadow: 1px 1px #fff;
   vertical-align: middle;
-  line-height: 103px !important;
+  line-height: 122px !important;
   border-bottom: 4px solid #ffffff;
   color: #8b8b8b !important;
 }
@@ -8524,7 +8523,7 @@ hr.menu {
 #library-name-header {
   font-size: 30px;
   color: #979797;
-  font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif;
+  font-family: 'Oxygen', Helvetica, Arial, sans-serif;
   font-weight: bold;
   white-space: normal;
   padding-top: 5px;
@@ -10877,7 +10876,8 @@ fieldset[disabled] .btn-masquerade.active {
 }
 #header-logo {
   padding-top: 0;
-  height: 101px;
+  margin-top: 0;
+  height: 130px;
 }
 a.btn-primary {
   color: #24606f;

@@ -101,7 +101,7 @@
 						<br>
 						{if $property.storagePath}
 							<figure>
-								<img src='{$object->getImageUrl('large')}' alt="{$propValue}" style="max-width:175px;height:auto;">
+								<img src="{$object->getImageUrl('large')}" alt="{$propValue}" style="max-width:175px;height:auto;">
 								<figcaption>{$propValue}</figcaption>
 							</figure>
 						{else}
