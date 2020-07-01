@@ -1,5 +1,10 @@
 {strip}
-	<div id="groupedRecord{$summId|escape}" class="resultsList" data-order="{$resultIndex}">
+	{if $smarty.get.page}{assign var="pageNum" value=$smarty.get.page}{else}{assign var="pageNum" value=1}{/if}
+	{if $smarty.get.pagesize}{assign var="pageSize" value=$smarty.get.pagesize}{else}{assign var="pageSize" value=20}{/if}
+	<div class="row">
+		<div class="col-md-1"><input type="checkbox" name="marked" id="favorite_{$summId|escape}" class="form-control" value="{$summId|escape}" /></div>
+	<div class="col-md-11 rslt">
+		<div id="groupedRecord{$summId|escape}" class="resultsList" data-order="{$resultIndex}">
 		<a name="record{$summId|escape:"url"}"></a>
 		<div class="row">
 		{if $showCovers}
@@ -120,14 +125,16 @@
 		<div class="col-xs-2 col-sm-2 col-md-2 col-lg-1">
 			{if $listEditAllowed}
 				<div class="btn-group-vertical" role="group">
-					<a href="/MyAccount/Edit?titleIdForListEntry={$summId|escape:"url"}{if !is_null($listSelected)}&amp;list_id={$listSelected|escape:"url"}{/if}" class="btn btn-default">{translate text='Edit'}</a>
+					<a href="/MyAccount/Edit?titleIdForListEntry={$summId|escape:"url"}{if !is_null($listSelected)}&amp;list_id={$listSelected|escape:"url"}{/if}&page={$pageNum}&pagesize={$pageSize}" class="btn btn-default">{translate text='Edit'}</a>
 					{* Use a different delete URL if we're removing from a specific list or the overall favorites: *}
-					<a href="/MyAccount/MyList/{$listSelected|escape:"url"}?delete={$summId|escape:"url"}" onclick="return confirm('Are you sure you want to delete this?');" class="btn btn-default">{translate text='Delete'}</a>
+					<a href="/MyAccount/MyList/{$listSelected|escape:"url"}?delete={$summId|escape:"url"}&myListPage={$pageNum}&myListPageSize={$pageSize}" onclick="return confirm('Are you sure you want to delete this?');" class="btn btn-default">{translate text='Delete'}</a>
 				</div>
 
 			{/if}
 		</div>
 
 		</div>
+	</div>
+	</div>
 	</div>
 {/strip}

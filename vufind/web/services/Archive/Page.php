@@ -57,7 +57,7 @@ class Archive_Page extends Archive_Object{
 		if ($pageObject->getDataStream('PDF') != null){
 			$page['pdf'] = $objectUrl . '/' . $page['pid'] . '/datastream/PDF/view';
 		}
-		$mods = $fedoraUtils->getModsData($pageObject);
+		$mods       = $fedoraUtils->getModsData($pageObject);
 		$transcript = $fedoraUtils->getModsValue('transcriptionText', 'marmot', $mods);
 
 		$parentObject = $this->recordDriver->getParentObject();
@@ -67,10 +67,10 @@ class Archive_Page extends Archive_Object{
 			$hasTranscript = false;
 			if ($parentObject != null){
 				$modsForParent = $fedoraUtils->getModsData($parentObject);
-				$transcript = $fedoraUtils->getModsValue('transcriptionText', 'marmot', $modsForParent);
-				if (strlen($transcript) > 0) {
+				$transcript    = $fedoraUtils->getModsValue('transcriptionText', 'marmot', $modsForParent);
+				if (strlen($transcript) > 0){
 					$page['transcript'] = 'mods:' . $parentObject->id;
-					$hasTranscript = true;
+					$hasTranscript      = true;
 				}
 			}
 			if (!$hasTranscript){

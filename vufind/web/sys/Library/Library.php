@@ -427,7 +427,7 @@ class Library extends DB_DataObject {
 			// Basic Display //
 			'displaySection' => array(
 				'property' => 'displaySection', 'type' => 'section', 'label' => 'Basic Display', 'hideInLists' => true,
-				'helpLink' => 'https://docs.google.com/document/d/18XXYAn3m9IGbjKwDGluFhPoHDXdIFUhdgmoIEdgRVcM', 'properties' => array(
+				'helpLink' => 'https://docs.google.com/document/d/1C7T7SYSKDCX8mzBXj8WomzG4UVukVw9OllGQmWljUrs', 'properties' => array(
 					'themeName'                        => array('property' => 'themeName', 'type' => 'text', 'label' => 'Theme Name', 'description' => 'The name of the theme which should be used for the library', 'hideInLists' => true, 'default' => 'marmot,responsive'),
 					'homeLink'                         => array('property' => 'homeLink', 'type' => 'text', 'label' => 'Home Link', 'description' => 'The location to send the user when they click on the home button or logo.  Use default or blank to go back to the Pika home location.', 'size' => '40', 'hideInLists' => true,),
 					'additionalCss'                    => array('property' => 'additionalCss', 'type' => 'textarea', 'label' => 'Additional CSS', 'description' => 'Extra CSS to apply to the site.  Will apply to all pages.', 'hideInLists' => true),
@@ -448,7 +448,7 @@ class Library extends DB_DataObject {
 			// Contact Links //
 			'contactSection' => array(
 				'property'   => 'contact', 'type' => 'section', 'label' => 'Contact Links', 'hideInLists' => true,
-				'helpLink'   => 'https://docs.google.com/document/d/1KTYDrTQAK38dxsMG0R4q5w0sNJ5mbyz5Y6YofqWWBxI',
+				'helpLink'   => 'https://docs.google.com/document/d/19TLt6KbL4LSNLAU0Ys74R3oT7AUlb4uaxKySm86TGvc',
 				'properties' => array(
 					'facebookLink'       => array('property' => 'facebookLink', 'type' => 'text', 'label' => 'Facebook Link Url', 'description' => 'The url to Facebook (leave blank if the library does not have a Facebook account', 'size' => '40', 'maxLength' => 255, 'hideInLists' => true/*, 'default' => 'Home'*/),
 					'twitterLink'        => array('property' => 'twitterLink', 'type' => 'text', 'label' => 'Twitter Link Url', 'description' => 'The url to Twitter (leave blank if the library does not have a Twitter account', 'size' => '40', 'maxLength' => 255, 'hideInLists' => true/*, 'default' => 'Home'*/),
@@ -462,7 +462,7 @@ class Library extends DB_DataObject {
 
 			// ILS/Account Integration //
 			'ilsSection' => array('property'=>'ilsSection', 'type' => 'section', 'label' =>'ILS/Account Integration', 'hideInLists' => true,
-					'helpLink'=>'https://docs.google.com/document/d/1SmCcWYIV8bnUEaGu4HYvyiF8iqOKt06ooBbJukkJdO8', 'properties' => array(
+					'helpLink'=>'https://docs.google.com/document/d/1337l_JDZAZDuSCugRWpHa4CVAfBBm8SMrAlda6hdf5o', 'properties' => array(
 				'ilsCode'                              => array('property'=>'ilsCode', 'type'=>'text', 'label'=>'ILS Code', 'description'=>'The location code that all items for this location start with.', 'size'=>'4', 'hideInLists' => false,),
 				'scope'                                => array('property'=>'scope', 'type'=>'text', 'label'=>'Sierra Scope', 'description'=>'The scope for the system in Sierra. Used for Bookings', 'size'=>'4', 'hideInLists' => true,),
 				'showExpirationWarnings'               => array('property'=>'showExpirationWarnings', 'type'=>'checkbox', 'label'=>'Show Expiration Warnings', 'description'=>'Whether or not the user should be shown expiration warnings if their card is nearly expired.', 'hideInLists' => true, 'default' => 1),
@@ -472,18 +472,18 @@ class Library extends DB_DataObject {
 				'allowLinkedAccounts'                  => array('property'=>'allowLinkedAccounts', 'type'=>'checkbox', 'label'=>'Allow Linked Accounts', 'description' => 'Whether or not users can link multiple library cards under a single Pika account.', 'hideInLists' => true, 'default' => 1),
 				'showLibraryHoursNoticeOnAccountPages' => array('property'=>'showLibraryHoursNoticeOnAccountPages', 'type'=>'checkbox', 'label'=>'Show Library Hours Notice on Account Pages', 'description'=>'Whether or not the Library Hours notice should be shown at the top of My Account\'s Checked Out, Holds and Bookings pages.', 'hideInLists' => true, 'default'=>true),
 				'pTypesSection'                        => array('property' => 'pTypesSectionSection', 'type' => 'section', 'label' => 'P-Types', 'hideInLists' => true,
-						'helpLink'=>'https://docs.google.com/document/d/1SmCcWYIV8bnUEaGu4HYvyiF8iqOKt06ooBbJukkJdO8','properties' => array(
+						'helpLink'=>'https://docs.google.com/document/d/1337l_JDZAZDuSCugRWpHa4CVAfBBm8SMrAlda6hdf5o','properties' => array(
 					'pTypes'       => array('property'=>'pTypes', 'type'=>'text', 'label'=>'P-Types', 'description'=>'A list of pTypes that are valid for the library.  Separate multiple pTypes with commas.'),
 					'defaultPType' => array('property'=>'defaultPType', 'type'=>'text', 'label'=>'Default P-Type', 'description'=>'The P-Type to use when accessing a subdomain if the patron is not logged in.'),
 				)),
 				'barcodeSection' => array('property' => 'barcodeSection', 'type' => 'section', 'label' => 'Barcode', 'hideInLists' => true,
-						'helpLink' => 'https://docs.google.com/document/d/13vk5Cx_bWRwc_XtwwzKei92ZeTGS8LcMnZadE2CxaBU', 'properties' => array(
+						'helpLink' => 'https://docs.google.com/document/d/12YnemF8l97ZbQ9kxGxhIkHBxmeD1pywAUcjNJ4mraw4', 'properties' => array(
 					'minBarcodeLength' => array('property'=>'minBarcodeLength', 'type'=>'integer', 'label'=>'Min Barcode Length', 'description'=>'A minimum length the patron barcode is expected to be. Leave as 0 to extra processing of barcodes.', 'hideInLists' => true, 'default'=>0),
 					'maxBarcodeLength' => array('property'=>'maxBarcodeLength', 'type'=>'integer', 'label'=>'Max Barcode Length', 'description'=>'The maximum length the patron barcode is expected to be. Leave as 0 to extra processing of barcodes.', 'hideInLists' => true, 'default'=>0),
 					'barcodePrefix'    => array('property'=>'barcodePrefix', 'type'=>'text', 'label'=>'Barcode Prefix', 'description'=>'A barcode prefix to apply to the barcode if it does not start with the barcode prefix or if it is not within the expected min/max range.  Multiple prefixes can be specified by separating them with commas. Leave blank to avoid additional processing of barcodes.', 'hideInLists' => true,'default'=>''),
 				)),
 				'userProfileSection' => array('property' => 'userProfileSection', 'type' => 'section', 'label' => 'User Profile', 'hideInLists' => true,
-						'helpLink'=>'https://docs.google.com/document/d/1S8s8KYPaw6x7IIcxUbzkXgCnnHXR6t8W_2CwXiQyjrE', 'properties' => array(
+						'helpLink'=>'https://docs.google.com/document/d/1801llBvRZJvqZC56AoyId_cKZVcpcsTL_68zhcdpGZc', 'properties' => array(
 					'showPatronBarcodeImage'               => array('property' => 'showPatronBarcodeImage', 'type'=>'checkbox', 'label'=>'Show a scannable barcode image in mobile menu', 'description'=>'', 'hideInLists' => true, 'default' => 0),
 					'patronNameDisplayStyle'               => array('property'=>'patronNameDisplayStyle', 'type'=>'enum', 'values'=>array('firstinitial_lastname'=>'First Initial. Last Name', 'lastinitial_firstname'=>'First Name Last Initial.'), 'label'=>'Patron Display Name Style', 'description'=>'How to generate the patron display name'),
 					'allowProfileUpdates'                  => array('property'=>'allowProfileUpdates', 'type'=>'checkbox', 'label'=>'Allow Profile Updates', 'description'=>'Whether or not the user can update their own profile.', 'hideInLists' => true, 'default' => 1),
@@ -497,28 +497,28 @@ class Library extends DB_DataObject {
 					'maxFinesToAllowAccountUpdates'        => array('property' => 'maxFinesToAllowAccountUpdates', 'type'=>'currency', 'displayFormat'=>'%0.2f', 'label'=>'Maximum Fine Amount to Allow Account Updates', 'description'=>'The maximum amount that a patron can owe and still update their account. Any value <= 0 will disable this functionality.', 'hideInLists' => true, 'default' => 10)
 				)),
 				'holdsSection' => array('property' => 'holdsSection', 'type' => 'section', 'label' => 'Holds', 'hideInLists' => true,
-					'helpLink'=>'https://docs.google.com/document/d/1tFkmGhqBrTdluS2tOzQ_xtzl3HxfjGhmFgk4r3BTVY8', 'properties' => array(
+					'helpLink'=>'https://docs.google.com/document/d/1g5wbz_rU30VeroZX0S-yFPsD5bKASPH9Ta8sIlVQ-O8', 'properties' => array(
 					'showHoldButton'                    => array('property'=>'showHoldButton', 'type'=>'checkbox', 'label'=>'Show Hold Button', 'description'=>'Whether or not the hold button is displayed so patrons can place holds on items', 'hideInLists' => true, 'default' => 1),
 					'showHoldButtonInSearchResults'     => array('property'=>'showHoldButtonInSearchResults', 'type'=>'checkbox', 'label'=>'Show Hold Button within the search results', 'description'=>'Whether or not the hold button is displayed within the search results so patrons can place holds on items', 'hideInLists' => true, 'default' => 1),
 					'showHoldButtonForUnavailableOnly'  => array('property'=>'showHoldButtonForUnavailableOnly', 'type'=>'checkbox', 'label'=>'Show Hold Button for items that are checked out only', 'description'=>'Whether or not the hold button is displayed within the search results so patrons can place holds on items', 'hideInLists' => true, 'default' => 1),
 					'showHoldCancelDate'                => array('property'=>'showHoldCancelDate', 'type'=>'checkbox', 'label'=>'Show Cancellation Date of Unavailable Holds', 'description'=>'Whether or not the patron should be able to set a cancellation date (not needed after date) when placing holds.', 'hideInLists' => true, 'default' => 1),
 					'allowFreezeHolds'                  => array('property'=>'allowFreezeHolds', 'type'=>'checkbox', 'label'=>'Allow Freezing Holds', 'description'=>'Whether or not the user can freeze their holds.', 'hideInLists' => true, 'default' => 1),
-					'defaultNotNeededAfterDays'         => array('property'=>'defaultNotNeededAfterDays', 'type'=>'integer', 'label'=>'Default Not Needed After Days', 'description'=>'Number of days to use for not needed after date by default. Use -1 for no default.', 'hideInLists' => true,),
+					'defaultNotNeededAfterDays'         => array('property'=>'defaultNotNeededAfterDays', 'type'=>'integer', 'label'=>'Default Not Needed After Days', 'description'=>'Number of days to use for not needed after date by default. Use -1 for no default.', 'hideInLists' => true, 'min' => -1),
 					'showDetailedHoldNoticeInformation' => array('property' => 'showDetailedHoldNoticeInformation', 'type' => 'checkbox', 'label' => 'Show Detailed Hold Notice Information', 'description' => 'Whether or not the user should be presented with detailed hold notification information, i.e. you will receive an e-mail/phone call to xxx when the hold is available', 'hideInLists' => true, 'default' => 1),
 					'inSystemPickupsOnly'               => array('property'=>'inSystemPickupsOnly', 'type'=>'checkbox', 'label'=>'In System Pickups Only', 'description'=>'Restrict pickup locations to only locations within this library system.', 'hideInLists' => true,),
 					'validPickupSystems'                => array('property'=>'validPickupSystems', 'type'=>'text', 'label'=>'Valid Pickup Library Systems', 'description'=>'Additional Library Systems that can be used as pickup locations if the &quot;In System Pickups Only&quot; is on. List the libraries\' subdomains separated by pipes |', 'size'=>'20', 'hideInLists' => true,),
 					'holdDisclaimer'                    => array('property'=>'holdDisclaimer', 'type'=>'textarea', 'label'=>'Hold Disclaimer', 'description'=>'A disclaimer to display to patrons when they are placing a hold on items letting them know that their information may be available to other libraries.  Leave blank to not show a disclaimer.', 'hideInLists' => true,),
 				)),
 				'loginSection' => array('property' => 'loginSection', 'type' => 'section', 'label' => 'Login', 'hideInLists' => true,
-						'helpLink' => 'https://docs.google.com/document/d/13vk5Cx_bWRwc_XtwwzKei92ZeTGS8LcMnZadE2CxaBU', 'properties' => array(
-					'showLoginButton'         => array('property'=>'showLoginButton', 'type'=>'checkbox', 'label'=>'Show Login Button', 'description'=>'Whether or not the login button is displayed so patrons can login to the site', 'hideInLists' => true, 'default' => 1),
+						'helpLink' => 'https://docs.google.com/document/d/12YnemF8l97ZbQ9kxGxhIkHBxmeD1pywAUcjNJ4mraw4', 'properties' => array(
+					'showLoginButton'         => array('property'=>'showLoginButton', 'type'=>'checkbox', 'label'=>'Show Login Button', 'description'=>'Whether or not the login button is displayed so patrons can log into the site', 'hideInLists' => true, 'default' => 1),
 					'allowPinReset'           => array('property'=>'allowPinReset', 'type'=>'checkbox', 'label'=>'Allow PIN Update', 'description'=>'Whether or not the user can update their PIN in the Account Settings page.', 'hideInLists' => true, 'default' => 0),
 					'preventExpiredCardLogin' => array('property'=>'preventExpiredCardLogin', 'type'=>'checkbox', 'label'=>'Prevent Login for Expired Cards', 'description'=>'Users with expired cards will not be allowed to login. They will recieve an expired card notice instead.', 'hideInLists' => true, 'default' => 0),
 					'loginFormUsernameLabel'  => array('property'=>'loginFormUsernameLabel', 'type'=>'text', 'label'=>'Login Form Username Label', 'description'=>'The label to show for the username when logging in', 'size'=>'100', 'hideInLists' => true, 'default'=>'Your Name'),
 					'loginFormPasswordLabel'  => array('property'=>'loginFormPasswordLabel', 'type'=>'text', 'label'=>'Login Form Password Label', 'description'=>'The label to show for the password when logging in', 'size'=>'100', 'hideInLists' => true, 'default'=>'Library Card Number'),
 				)),
 				'selfRegistrationSection' => array('property' => 'selfRegistrationSection', 'type' => 'section', 'label' => 'Self Registration', 'hideInLists' => true,
-						'helpLink' => 'https://docs.google.com/document/d/1MZAOlg3F2IEa0WKsJmDQiCFUrw-pVo_fnSNexAV4MbQ', 'properties' => array(
+						'helpLink' => 'https://docs.google.com/document/d/1MYg3yHjTezlgVDTY9V72V7MwsAwv1D881u9r2k8rmgY', 'properties' => array(
 					'enableSelfRegistration'         => array('property'=>'enableSelfRegistration', 'type'=>'checkbox', 'label'=>'Enable Self Registration', 'description'=>'Whether or not patrons can self register on the site', 'hideInLists' => true),
 						/* sierra patron api self reg */
 					'selfRegistrationAgencyCode'     => array('property'=>'selfRegistrationAgencyCode', 'type'=>'text', 'label'=>'Agency Code (Sierra Only)', 'description'=>'Sierra library agency code.', 'hideInLists' => true, 'default' => '', 'maxLength' => '3'),
@@ -540,7 +540,7 @@ class Library extends DB_DataObject {
 			)),
 
 			'ecommerceSection' => array('property'=>'ecommerceSection', 'type' => 'section', 'label' =>'Fines/e-commerce', 'hideInLists' => true,
-					'helpLink'=>'https://docs.google.com/document/d/1PNoYpn01Yn0Bnqnk9R1CkAMM3RiqBLrk-U4azb2xrZg', 'properties' => array(
+					'helpLink'=>'https://docs.google.com/document/d/18nFRFjhHozdAGt33ZpzSHI6I16exa89fgA9o8o4Zb2w', 'properties' => array(
 				'showEcommerceLink'        => array('property'=>'showEcommerceLink', 'type'=>'checkbox', 'label'=>'Show E-Commerce Link', 'description'=>'Whether or not users should be given a link to classic opac to pay fines', 'hideInLists' => true,),
 				'payFinesLink'             => array('property'=>'payFinesLink', 'type'=>'text', 'label'=>'Pay Fines Link', 'description'=>'The link to pay fines.  Leave as default to link to classic (should have eCommerce link enabled)', 'hideInLists' => true, 'default' => 'default', 'size' => 80),
 				'payFinesLinkText'         => array('property'=>'payFinesLinkText', 'type'=>'text', 'label'=>'Pay Fines Link Text', 'description'=>'The text when linking to pay fines.', 'hideInLists' => true, 'default' => 'Click to Pay Fines Online ', 'size' => 80),
@@ -716,7 +716,7 @@ class Library extends DB_DataObject {
 			// Browse Category Section //
 			'browseCategorySection' => array(
 				'property'   => 'browseCategorySection', 'type' => 'section', 'label' => 'Browse Categories', 'hideInLists' => true,
-				'helpLink'   => 'https://docs.google.com/document/d/11biGMw6UDKx9UBiDCCj_GBmatx93UlJBLMESNf_RtDU',
+				'helpLink'   => 'https://docs.google.com/document/d/1ZpdQCwa27hw002bjnBQeWGF7YlIrqz0rUV-xwWe6u3k',
 				'properties' => array(
 					'defaultBrowseMode'         => array(
 						'property' => 'defaultBrowseMode', 'type' => 'enum', 'label' => 'Default Viewing Mode for Browse Categories', 'description' => 'Sets how browse categories will be displayed when users haven\'t chosen themselves.', 'hideInLists' => true,

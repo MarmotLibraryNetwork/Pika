@@ -805,6 +805,11 @@ abstract class MarcRecordProcessor {
 					}
 				}
 			}
+		} else if (languageCode == null) {
+			ControlField ohOhEightField = (ControlField) record.getVariableField("008");
+			if (ohOhEightField == null) {
+				logger.warn("Missing 008 tag for " + identifier);
+			}
 		}
 
 		List<DataField> languageDataFields = record.getDataFields("041");

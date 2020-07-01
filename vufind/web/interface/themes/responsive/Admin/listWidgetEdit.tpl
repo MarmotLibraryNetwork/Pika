@@ -2,7 +2,7 @@
 {strip}
 	<div id="main-content">
 		<div class="alert alert-info">
-			For more information on how to create List Widgets, please see the <a href="https://docs.google.com/document/d/1RySv7NbaYjaw_F9Gs7cP9pu3P894s_4J05o46m6z3bQ">online documentation</a>
+			For more information on how to create List Widgets, please see the <a href="https://docs.google.com/document/d/1nftHL4yrUWjWeuW7qSUz3L9XHR0vs8pTU4E-Aa6LPpk">online documentation</a>
 		</div>
 		<h1>Edit List Widget</h1>
 		<div class="btn-group">

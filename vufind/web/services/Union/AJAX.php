@@ -34,7 +34,7 @@ class Union_AJAX extends AJAXHandler {
 		$source          = $_REQUEST['source'];
 		$numberOfResults = $_REQUEST['numberOfResults'];
 		$sectionId       = $_REQUEST['id'];
-		list($className, $id) = explode(':', $sectionId);
+		[$className, $id] = explode(':', $sectionId);
 		$sectionObject = null;
 		switch ($className){
 			case 'LibraryCombinedResultSection':
@@ -48,10 +48,10 @@ class Union_AJAX extends AJAXHandler {
 				$sectionObject->find(true);
 				break;
 			default:
-				return array(
+				return [
 					'success' => false,
 					'error'   => 'Invalid section id passed in',
-				);
+				];
 		}
 		$searchTerm = $_REQUEST['searchTerm'];
 		$searchType = $_REQUEST['searchType'];
@@ -82,10 +82,10 @@ class Union_AJAX extends AJAXHandler {
 		$results .= "<div><a href='" . $fullResultsLink . "' target='_blank'>Full Results from {$sectionObject->displayName}</a></div>";
 
 
-		return array(
+		return [
 			'success' => true,
 			'results' => $results,
-		);
+		];
 	}
 
 	/**
@@ -101,18 +101,22 @@ class Union_AJAX extends AJAXHandler {
 		$searchObject = SearchObjectFactory::initSearchObject();
 		$searchObject->init('local', $searchTerm);
 		$searchObject->setLimit($numberOfResults);
-		$searchObject->setSearchTerms(array(
+		$searchObject->setSearchTerms([
 			'index'   => $searchType,
 			'lookfor' => $searchTerm,
-		));
+		]);
 		$result  = $searchObject->processSearch(true, false);
 		$summary = $searchObject->getResultSummary();
+		$searchObject->close(); // 'Finish' the search... complete timers and log search history.
+		$interface->assign('searchSource', 'local');
+		$interface->assign('searchId', $searchObject->getSearchId());
 		$records = $searchObject->getCombinedResultsHTML();
 		if ($summary['resultTotal'] == 0){
 			$results = '<div class="clearfix"></div><div>No results match your search.</div>';
 		}else{
 			$results = "<a href='{$fullResultsLink}' class='btn btn-info combined-results-button' target='_blank'>&gt; See all {$summary['resultTotal']} results</a><div class='clearfix'></div>";
 
+			$_SESSION['lastSearchURL'] = $fullResultsLink;
 
 			$interface->assign('recordSet', $records);
 			$interface->assign('showExploreMoreBar', false);

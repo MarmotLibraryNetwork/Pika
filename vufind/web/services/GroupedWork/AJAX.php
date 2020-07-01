@@ -388,13 +388,13 @@ class GroupedWork_AJAX extends AJAXHandler {
 	function RateTitle(){
 		require_once(ROOT_DIR . '/sys/LocalEnrichment/UserWorkReview.php');
 		if (!UserAccount::isLoggedIn()){
-			return array('error' => 'Please login to rate this title.');
+			return ['error' => 'Please log in to rate this title.'];
 		}
 		if (empty($_REQUEST['id'])){
-			return array('error' => 'ID for the item to rate is required.');
+			return ['error' => 'ID for the item to rate is required.'];
 		}
 		if (empty($_REQUEST['rating']) || !ctype_digit($_REQUEST['rating'])){
-			return array('error' => 'Invalid value for rating.');
+			return ['error' => 'Invalid value for rating.'];
 		}
 		$rating = $_REQUEST['rating'];
 		//Save the rating
@@ -560,7 +560,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 
 		if (UserAccount::isLoggedIn() == false){
 			$result['success'] = false;
-			$result['message'] = 'Please login before adding a review.';
+			$result['message'] = 'Please log in before adding a review.';
 		}elseif (empty($_REQUEST['id'])){
 			$result['success'] = false;
 			$result['message'] = 'ID for the item to review is required.';
@@ -735,7 +735,7 @@ class GroupedWork_AJAX extends AJAXHandler {
 
 		if (!UserAccount::isLoggedIn()){
 			$result['success'] = false;
-			$result['message'] = 'Please login before adding a title to list.';
+			$result['message'] = 'Please log in before adding a title to list.';
 		}else{
 			require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
 			require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';

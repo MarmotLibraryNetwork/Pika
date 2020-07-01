@@ -500,15 +500,15 @@ public class SierraExportAPIMain {
 
 	private static void setUpSqlStatements(Connection pikaConn) {
 		try {
-			getWorkForPrimaryIdentifierStmt           = pikaConn.prepareStatement("SELECT id, grouped_work_id from grouped_work_primary_identifiers where type = ? and identifier = ?");
-			deletePrimaryIdentifierStmt               = pikaConn.prepareStatement("DELETE from grouped_work_primary_identifiers where id = ? LIMIT 1");
-			getAdditionalPrimaryIdentifierForWorkStmt = pikaConn.prepareStatement("SELECT * from grouped_work_primary_identifiers where grouped_work_id = ?");
-			markGroupedWorkAsChangedStmt              = pikaConn.prepareStatement("UPDATE grouped_work SET date_updated = ? where id = ?");
-//			deleteGroupedWorkStmt                     = pikaConn.prepareStatement("DELETE from grouped_work where id = ?");
-			getPermanentIdByWorkIdStmt      = pikaConn.prepareStatement("SELECT permanent_id from grouped_work WHERE id = ?");
-			updateExtractInfoStatement      = pikaConn.prepareStatement("INSERT INTO ils_extract_info (indexingProfileId, ilsId, lastExtracted) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE lastExtracted=VALUES(lastExtracted)"); // unique key is indexingProfileId and ilsId combined
-			markDeletedExtractInfoStatement = pikaConn.prepareStatement("INSERT INTO ils_extract_info (indexingProfileId, ilsId, lastExtracted, deleted) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE lastExtracted=VALUES(lastExtracted), deleted=VALUES(deleted)"); // unique key is indexingProfileId and ilsId combined
+			getWorkForPrimaryIdentifierStmt           = pikaConn.prepareStatement("SELECT id, grouped_work_id FROM grouped_work_primary_identifiers WHERE type = ? AND identifier = ?");
+			deletePrimaryIdentifierStmt               = pikaConn.prepareStatement("DELETE FROM grouped_work_primary_identifiers WHERE id = ? LIMIT 1");
+			getAdditionalPrimaryIdentifierForWorkStmt = pikaConn.prepareStatement("SELECT * FROM grouped_work_primary_identifiers WHERE grouped_work_id = ?");
+			markGroupedWorkAsChangedStmt              = pikaConn.prepareStatement("UPDATE grouped_work SET date_updated = ? WHERE id = ?");
+			getPermanentIdByWorkIdStmt                = pikaConn.prepareStatement("SELECT permanent_id FROM grouped_work WHERE id = ?");
+			updateExtractInfoStatement                = pikaConn.prepareStatement("INSERT INTO ils_extract_info (indexingProfileId, ilsId, lastExtracted) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE lastExtracted=VALUES(lastExtracted)"); // unique key is indexingProfileId and ilsId combined
+			markDeletedExtractInfoStatement           = pikaConn.prepareStatement("INSERT INTO ils_extract_info (indexingProfileId, ilsId, lastExtracted, deleted) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE lastExtracted=VALUES(lastExtracted), deleted=VALUES(deleted)"); // unique key is indexingProfileId and ilsId combined
 			//TODO: note Starting in MariaDB 10.3.3 function VALUES() becomes VALUE(). But documentation notes "The VALUES() function can still be used even from MariaDB 10.3.3, but only in INSERT ... ON DUPLICATE KEY UPDATE statements; it's a syntax error otherwise."
+//			deleteGroupedWorkStmt                     = pikaConn.prepareStatement("DELETE from grouped_work where id = ?");
 		} catch (Exception e) {
 			logger.error("Error setting up prepared statements for Record extraction processing", e);
 		}
@@ -1120,6 +1120,8 @@ public class SierraExportAPIMain {
 									numNewBibs++;
 								}
 							}
+						} else {
+							logger.error("Entry for items update did not contain BibIds : " + curItem);
 						}
 					}
 					if ((changedItemsJSON.has("total") && changedItemsJSON.getLong("total") >= bufferSize) || entries.length() >= bufferSize) {
@@ -1261,6 +1263,10 @@ public class SierraExportAPIMain {
 						String matType = fixedFields.getJSONObject("30").getString("value");
 						sierraFixedField.addSubfield(marcFactory.newSubfield(indexingProfile.materialTypeSubField, matType));
 					}
+					if (indexingProfile.sierraLanguageFixedField != ' ') {
+						String languageCode = fixedFields.getJSONObject("24").getString("value");
+						sierraFixedField.addSubfield(marcFactory.newSubfield(indexingProfile.sierraLanguageFixedField, languageCode));
+					}
 					if (bibLevelLocationsSubfield != ' ') { // Probably should be added to the indexing profile at some point
 						if (fixedFields.has("26")) {
 							String location = fixedFields.getJSONObject("26").getString("value");
@@ -1298,6 +1304,9 @@ public class SierraExportAPIMain {
 					logger.error("Error exporting marc record for " + id + " call for fixed fields returned an error code or null");
 					return false;
 				}
+
+				//TODO: order tags
+
 			} else {
 				logger.error("Error exporting marc record for " + id + " call returned null");
 				return false;
@@ -1624,6 +1633,7 @@ public class SierraExportAPIMain {
 			logger.warn("IO exception ", e);
 		}
 	}
+
 
 	private static PreparedStatement updateExtractInfoStatement;
 

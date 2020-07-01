@@ -1704,20 +1704,28 @@ EOT;
 
 			// status, cancelable, freezable
 			$recordStatus = $hold->status->code;
+			// check item record status
 			if ($hold->recordType == 'i') {
 				$recordItemStatus = $hold->record->status->code;
-				// item records can show "on hold shelf" (!) if they are on hold by another patron
-				// if the item status is "on hold shelf" (!) but the hold record status is "on hold" (0) use "on hold" status
+				// If this is an inn-reach exclude from check -- this comes later
 				if(! strstr($hold->record->id, "@")) {
+					// if the item status is "on hold shelf" (!) but the hold record status is "on hold" (0) use "on hold" status
+					// the "on hold shelf" status is for another patron.
 					if($recordItemStatus != "!" && $recordStatus != '0') {
-						$recordStatus = $recordItemStatus;
+						// check for in transit status see
+						// TODO: check priority. if priority is 1 and status is t set status to t. if status is > 1
+						if($recordItemStatus == 't') {
+							if(isset($hold->priority) && (int)$hold->priority == 1)
+							$recordStatus = 't';
+						}
 					}
 				} else {
+					// inn-reach status
 					$recordStatus = $recordItemStatus;
 				}
 			}
-
-			switch ($recordStatus) {
+			// type hint so '0' != false
+			switch ((string)$recordStatus) {
 				case '0':
 				case '-':
 					if($hold->frozen) {
@@ -1769,7 +1777,11 @@ EOT;
 					$updatePickup = false;
 					break;
 				default:
-					$status       = 'Unknown';
+					if(isset($recordItemStatusMessage)) {
+						$status = $recordItemStatusMessage;
+					} else {
+						$status = 'On hold';
+					}
 					$cancelable   = false;
 					$freezeable   = false;
 					$updatePickup = false;

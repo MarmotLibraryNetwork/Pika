@@ -1356,6 +1356,27 @@ class DBMaintenance extends Admin_Admin {
 					)
 				),
 
+                'add_custom_covers_table' => array(
+                  'title'           => 'Add Custom Covers',
+                  'description'     => 'Database tables to support custom cover uploads',
+                  'continueOnError' => false,
+                  'sql'             => array(
+                      "CREATE TABLE IF NOT EXISTS covers (
+				    coverId INT(10) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+				    cover VARCHAR(255)
+				    )ENGINE=InnoDB  DEFAULT CHARSET=utf8;"
+                  )
+                ),
+
+                'add_current_covers'    => array(
+                    'title'             => 'Add Current Covers to Database',
+                    'description'       => 'Looks in the covers directory and adds files found to database',
+                    'continueOnError'   => false,
+                    'sql'               => array(
+                        "INSERT INTO covers (cover) VALUES " .
+                        implode(",",$this->createCoversFromDirectory()) . ";"
+                    )
+                ),
 			)
 		);
 	}
@@ -1381,6 +1402,26 @@ class DBMaintenance extends Admin_Admin {
 			}
 		}
 	}
+
+	private function createCoversFromDirectory()
+    {
+        global $configArray;
+        $storagePath = $configArray['Site']['coverPath'];
+        $files = array();
+        if($handle = opendir($storagePath . DIR_SEP . "original"))
+        {
+            while (false !== ($entry = readdir($handle))){
+                if ($entry != "." && $entry != ".."){
+                    $value = '(\'' . htmlentities($entry, ENT_QUOTES) . '\')';
+                    array_push($files, $value);
+                }
+            }
+
+            closedir($handle);
+
+        }
+        return $files;
+    }
 
 //	public function addTableListWidgetListsLinks() {
 //		set_time_limit(120);

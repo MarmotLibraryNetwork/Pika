@@ -113,7 +113,7 @@ abstract class Horizon extends ScreenScrapingDriver{
 		curl_setopt($curl_connection, CURLOPT_POST, true);
 		$post_data = array(
       'aspect' => 'overview',
-      'button' => 'Login to Your Account',
+      'button' => 'Log into Your Account',
       'login_prompt' => 'true',
       'menu' => 'account',
       'profile' => $configArray['Catalog']['hipProfile'],
@@ -272,7 +272,7 @@ abstract class Horizon extends ScreenScrapingDriver{
 			$logger->log("Logging into user account from updatePatronInfo $curl_url", PEAR_LOG_INFO);
 			$post_data   = array(
 				'aspect' => 'overview',
-				'button' => 'Login to Your Account',
+				'button' => 'Log into Your Account',
 				//'ipp' => '20',
 				//'lastlogin' => '1299616721524',
 				'login_prompt' => 'true',
@@ -470,7 +470,7 @@ abstract class Horizon extends ScreenScrapingDriver{
 
 					$mailer = new VuFindMailer();
 					$subject = "PIN number for your Library Card";
-					$body = "The PIN number for your Library Card is $pin.  You may use this PIN number to login to your account.";
+					$body = "The PIN number for your Library Card is $pin.  You may use this PIN number to log into your account.";
 					$mailer->send($email, $configArray['Site']['email'], $subject, $body);
 					return array(
 						'success' => true,

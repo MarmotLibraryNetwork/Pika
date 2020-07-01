@@ -179,7 +179,7 @@ class UserAPI extends AJAXHandler {
 	 * <li>lastname  The last name of the patron in the ILS</li>
 	 * <li>email  The patron's e-mail address if set within Horizon.</li>
 	 * <li>college, major  not currently used</li>
-	 * <li>homeLocationId  the id of the patron's home library within VuFind.</li>
+	 * <li>homeLocationId  the id of the patron's home library within Pika.</li>
 	 * <li>MyLocation1Id, myLocation2Id  not currently used</li>
 	 * </ul>
 	 *

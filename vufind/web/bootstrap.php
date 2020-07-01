@@ -390,10 +390,10 @@ function loadSearchInformation(){
 	global $instanceName;
 	global $configArray;
 
-	$module = (isset($_GET['module'])) ? $_GET['module'] : null;
+	$module = $_GET['module'] ?? null;
 
 	$searchSource = 'global';
-	if (isset($_GET['searchSource'])){
+	if (!empty($_GET['searchSource'])){
 		if (is_array($_GET['searchSource'])){
 			$_GET['searchSource'] = reset($_GET['searchSource']);
 		}
@@ -546,7 +546,10 @@ function vufind_autoloader($class) {
 		}elseif (file_exists('services/' . $class . '.php')){
 			$className = ROOT_DIR . '/services/' . $class . '.php';
 			require_once $className;
-		}elseif (file_exists('sys/Authentication/' . $class . '.php')){
+		}elseif (file_exists('sys/Covers/' . $class . '.php')){
+            $className = ROOT_DIR . '/sys/Covers/' . $class . '.php';
+            require_once $className;
+        }elseif (file_exists('sys/Authentication/' . $class . '.php')){
 			$className = ROOT_DIR . '/sys/Authentication/' . $class . '.php';
 			require_once $className;
 		}elseif (file_exists('sys/Archive/' . $class . '.php')){

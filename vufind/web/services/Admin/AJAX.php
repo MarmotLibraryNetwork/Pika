@@ -41,6 +41,7 @@ class Admin_AJAX extends AJAXHandler {
         'copyFacetSettingsFromLocation',
         'cloneLocation',
         'cloneLibrary',
+        'fileExists',
 
 	);
 
@@ -729,7 +730,7 @@ class Admin_AJAX extends AJAXHandler {
                  if ($location->insert())
                  {
                      $editLink = "/Admin/Locations?objectAction=edit&id=" . $location->locationId;;
-                     $results['body'] = '<div class="alert alert-success">Location Cloned.</div>';
+                     $results['body'] = '<div class="alert alert-success">Location Cloned.</div><div>You may need to edit the following settings:<br /><ul><li>library</li><li>address</li><li>nearby location</li><li>valid pickup branch</li><li>free text fields in search facets</li><li>browse categories</li><li>Overdrive and Hoopla settings</li><li>hours</li><li>records owned</li></div>';
                      $results['buttons'] = "<button class='btn btn-default' type= 'button' title='SaveReturn' onclick='location.href=\"/Admin/Locations\";'>Return to Location List</button><button class='btn btn-primary' type= 'button' title='SaveEdit' onclick='location.href=\"" . $editLink . "\";'>Edit New Location</button>";
                  }
                  
@@ -889,7 +890,7 @@ class Admin_AJAX extends AJAXHandler {
 
                 if ($library->insert()) {
                     $editLink = "/Admin/Libraries?objectAction=edit&id=" . $library->libraryId;
-                    $results['body'] = '<div class="alert alert-success">Library Cloned.</div><div>You may need to edit the following settings:<br /><ul><li>theme name</li><li>home link</li><li>contact links</li><li>ILS code</li><li>Sierra scope</li><li>p-types</li><li>self registration</li><li>free text fields in the search facets section</li><li>browse categories</li><li>materials request settings</li><li>Hoopla info</li><li>google analytics code</li><li>sidebar links</li><li>records to include</li></ul></div>';
+                    $results['body'] = '<div class="alert alert-success">Library Cloned.</div><div>You may need to edit the following settings:<br /><ul><li>theme name</li><li>home link</li><li>contact links</li><li>ILS code</li><li>Sierra scope</li><li>p-types</li><li>self registration</li><li>free text fields in the search facets section</li><li>browse categories</li><li>materials request settings</li><li>Hoopla info</li><li>google analytics code</li><li>sidebar links</li><li>records owned</li><li>records to include</li></ul></div>';
                     $results['buttons'] = "<button class='btn btn-default' type= 'button' title='SaveReturn' onclick='location.href=\"/Admin/Libraries\";'>Return to Library List</button><button class='btn btn-primary' type= 'button' title='SaveEdit' onclick='location.href=\"" . $editLink . "\";'>Edit New Library</button>";
                 }
 
@@ -897,6 +898,18 @@ class Admin_AJAX extends AJAXHandler {
         }
         return $results;
     }
+
+function fileExists(){
+        $filename = trim($_REQUEST['fileName']);
+        $storagePath = trim($_REQUEST['storagePath']);
+
+        if(file_exists($storagePath . DIRECTORY_SEPARATOR . "original" . DIRECTORY_SEPARATOR . $filename))
+        {
+            return array("exists"=>"true");
+        }
+        return array("exists"=>"false");
+}
+
 	//	function markProfileForRegrouping(){
 //		$result = array(
 //			'success' => false,

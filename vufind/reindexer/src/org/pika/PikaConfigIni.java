@@ -1,6 +1,5 @@
 package org.pika;
 
-import org.apache.log4j.Logger;
 import org.ini4j.Ini;
 import org.ini4j.InvalidFileFormatException;
 import org.ini4j.Profile;
@@ -11,6 +10,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.apache.log4j.Logger;
 
 /**
  * Singleton Instance of Pika Config Ini settings
@@ -25,14 +26,10 @@ public class PikaConfigIni {
 		return ourInstance;
 	}
 
-//	private static Logger logger;
-
 	private PikaConfigIni() {
 	}
 
 	public static Ini loadConfigFile(String filename, String serverName, Logger logger) {
-//		PikaConfigIni.logger = logger;
-
 		//First load the default config file
 		String configName = "../../sites/default/conf/" + filename;
 		logger.info("Loading configuration from " + configName);
@@ -141,11 +138,15 @@ public class PikaConfigIni {
 	public static Integer getIntIniValue(String sectionName, String optionName) {
 		String intValueStr = cleanIniValue(ourInstance.get(sectionName, optionName));
 		if (intValueStr != null && !intValueStr.isEmpty()) {
-//			try {
-				return Integer.parseInt(intValueStr);
-//			} catch (NumberFormatException e) {
-//				logger.warn("Could not parse config setting '" + sectionName + "', '" + optionName + "' : " + intValueStr);
-//			}
+			return Integer.parseInt(intValueStr);
+		}
+		return null;
+	}
+
+	public static Long getLongIniValue(String sectionName, String optionName) {
+		String intValueStr = cleanIniValue(ourInstance.get(sectionName, optionName));
+		if (intValueStr != null && !intValueStr.isEmpty()) {
+			return Long.parseLong(intValueStr);
 		}
 		return null;
 	}

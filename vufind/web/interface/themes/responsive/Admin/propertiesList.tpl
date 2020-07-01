@@ -38,7 +38,7 @@
 	{/if}
 {/foreach}
 
-<div class="adminTableRegion">
+<div class="adminTableRegion" id="adminTableRegion">
 	<table class="adminTable table table-striped table-condensed smallText" id="adminTable">
 		<thead>
 			<tr>
@@ -100,6 +100,8 @@
 								{/if}
 							{elseif $property.type == 'checkbox'}
 								{if ($propValue == 1)}Yes{else}No{/if}
+							{elseif $property.type == 'image'}
+								{$propValue}
 							{else}
 								Unknown type to display {$property.type}
 							{/if}
@@ -122,6 +124,78 @@
 		</tbody>
 	</table>
 </div>
+
+
+
+
+
+
+
+
+{if $objectType == "Cover"}
+
+	<script>
+	var storagePath = "{$structure.cover.storagePath}";
+	{literal}
+	$("#adminTableRegion").addClass("drop").prepend("<h4>Drag covers here to upload</h4>");
+	var coverDrop = new Dropzone("#adminTableRegion", {
+		url: "/Admin/Covers?objectAction=addNew",
+		clickable: false,
+		paramName: "cover",
+		acceptedFiles: "image/*",
+		autoProcessQueue: false,
+		addRemoveLinks: true,
+		maxFiles: 50,
+		parallelUploads: 50
+	});
+
+	coverDrop.on("drop", function(e){
+		$("#adminTable").hide();
+		$(".btn-primary").hide();
+
+		$("#addNewFormTop").append( $("<div class='btn btn-primary start' >Upload Covers</div>"));
+		$("#addNewFormBottom").append( $("<div class='btn btn-primary start' >Upload Covers</div>"));
+
+		$(".start").click(function(){
+			coverDrop.processQueue();
+		});
+	});
+	coverDrop.on("addedfile", function(file){
+
+			var fileName = file.name;
+			$.ajax({
+				url: "/Admin/AJAX?&method=fileExists&fileName=" + fileName + "&storagePath=" + storagePath
+
+			})
+					.done (function(data)
+					{
+						if (data.exists == "true")
+						{
+							$(file.previewElement).css({"border":"solid red 2px", "background-color":"#FFC5C6", "text-align":"center"}).append("<strong style='color:darkred;'>file already exists</strong>");
+						}
+					})
+			return false;
+
+
+	});
+	coverDrop.on("sending", function(file, xhr, formData){
+		formData.append("objectAction", "save");
+		formData.append("id","");
+
+	});
+	coverDrop.on("queuecomplete", function(){
+		location.reload();
+	});
+	coverDrop.on("reset", function(){
+		$("#adminTable").show();
+		$(".btn-primary").show();
+		$(".start").remove();
+	});
+
+
+	{/literal}
+	</script>
+{/if}
 {if $canAddNew}
 	<form action="" method="get" id="addNewFormBottom">
 		<div>
@@ -147,4 +221,17 @@
 		widgets:['zebra', 'filter'] });
 	{/literal}
 </script>
+
+	<script type="text/javascript">
+		{literal}
+		$(document).ready(function(){
+			$('#adminTable').DataTable({
+				searching: false,
+				ordering: false,
+				pageLength: 100
+			});
+		})
+
+		{/literal}
+	</script>
 {/if}

@@ -2,14 +2,17 @@
 	{* All CSS should be come before javascript for better browser performance *}
 	{if $debugCss}
     {css filename="main.css"}
+		<link rel="stylesheet" type="text/css" href="/interface/themes/responsive/css/lib/dataTables.css">
 	{else}
 		{css filename="main.min.css"}
+		<link rel="stylesheet" type="text/css" href="/interface/themes/responsive/css/lib/dataTables.bootstrap.min.css">
 	{/if}
 	{if $additionalCss}
 		<style type="text/css">
 			{$additionalCss}
 		</style>
 	{/if}
+	<link rel="stylesheet" type="text/css" href="/interface/themes/responsive/css/lib/dropzone.css">
 
 	{* Include correct all javascript *}
 	{if $ie8}
@@ -25,6 +28,9 @@
 		<script src="/interface/themes/responsive/js/lib/jquery.tablesorter.pager.min.js?v={$gitBranch|urlencode}"></script>
 {*		<script src="/interface/themes/responsive/js/lib/jquery.tablesorter.widgets.js?v={$gitBranch|urlencode}"></script>*}
 		<script src="/interface/themes/responsive/js/lib/jquery.tablesorter.widgets.min.js?v={$gitBranch|urlencode}"></script>
+		{* dropzone *}
+
+		<script src="/interface/themes/responsive/js/lib/dropzone.js"></script>
 		{* Validator has two library files *}
 		{*<script src="/interface/themes/responsive/js/lib/jquery.validate.js?v={$gitBranch|urlencode}"></script>*}
 		<script src="/interface/themes/responsive/js/lib/jquery.validate.min.js?v={$gitBranch|urlencode}"></script>
@@ -69,10 +75,15 @@
 		<script src="/interface/themes/responsive/js/pika/searches.js?v={$gitBranch|urlencode}"></script>
 		<script src="/interface/themes/responsive/js/pika/title-scroller.js?v={$gitBranch|urlencode}"></script>
 		<script src="/interface/themes/responsive/js/pika/wikipedia.js?v={$gitBranch|urlencode}"></script>
+		<script src="/interface/themes/responsive/js/lib/jquery.dataTables.js?v={$gitBranch|urlencode}"></script>
+		<script src="/interface/themes/responsive/js/lib/dataTables.bootstrap.js?v={$gitBranch|urlencode}"></script>
 	{else}
 		{* This is all merged using the merge_javascript.php file called automatically with a File Watcher*}
 		{* Code is minified using uglify.js *}
 		<script src="/interface/themes/responsive/js/pika.min.js?v={$gitBranch|urlencode}"></script>
+		<script src="/interface/themes/responsive/js/lib/dropzone.min.js?v={$gitBranch|urlencode}"></script>
+		<script src="/interface/themes/responsive/js/lib/jquery.dataTables.min.js?v={$gitBranch|urlencode}"></script>
+		<script src="/interface/themes/responsive/js/lib/dataTables.bootstrap.min.js?v={$gitBranch|urlencode}"></script>
 		{*<script src="/interface/themes/responsive/js/pika.min.js?v={$gitBranch|urlencode}"></script>*}
 	{/if}
 
