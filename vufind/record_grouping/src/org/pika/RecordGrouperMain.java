@@ -844,8 +844,7 @@ public class RecordGrouperMain {
 									boolean marcUpToDate = writeIndividualMarc(curProfile, curBib, recordId, marcRecordsWritten, marcRecordsOverwritten);
 									recordNumbersInExport.add(recordIdentifier.toString());
 									if (!explodeMarcsOnly) {
-										if (true || /*TODO: temp only*/ !marcUpToDate || fullRegroupingNoClear) {
-//										if ( !marcUpToDate || fullRegroupingNoClear) {
+										if (!marcUpToDate || fullRegroupingNoClear) {
 											if (recordGroupingProcessor.processMarcRecord(curBib, !marcUpToDate, recordIdentifier)) {
 												recordNumbersToIndex.add(recordIdentifier.toString());
 											} else {

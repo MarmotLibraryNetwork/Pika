@@ -61,22 +61,25 @@ class RecordGroupingProcessor {
 		this.fullRegrouping = fullRegrouping;
 	}
 
+//	/**
+//	 * Creates a record grouping processor that saves results to the database.
+//	 *
+//	 * @param pikaConn   - The Connection to the Pika database
+//	 * @param serverName     - The server we are grouping data for
+//	 * @param logger         - A logger to store debug and error messages to.
+//	 * @param fullRegrouping - Whether or not we are doing full regrouping or if we are only grouping changes.
+//	 *                       Determines if old works are loaded at the beginning.
+//	 */
+//	RecordGroupingProcessor(Connection pikaConn, String serverName, Logger logger, boolean fullRegrouping) {
+//		this(pikaConn, logger, fullRegrouping);
+//
+//		setupDatabaseStatements(pikaConn);
+//		loadTranslationMaps(serverName);
+//	}
+
 	/**
-	 * Creates a record grouping processor that saves results to the database.
-	 *
-	 * @param pikaConn   - The Connection to the Pika database
-	 * @param serverName     - The server we are grouping data for
-	 * @param logger         - A logger to store debug and error messages to.
-	 * @param fullRegrouping - Whether or not we are doing full regrouping or if we are only grouping changes.
-	 *                       Determines if old works are loaded at the beginning.
+	 * @param pikaConn - The Connection to the Pika database
 	 */
-	RecordGroupingProcessor(Connection pikaConn, String serverName, Logger logger, boolean fullRegrouping) {
-		this(pikaConn, logger, fullRegrouping);
-
-		setupDatabaseStatements(pikaConn);
-		loadTranslationMaps(serverName);
-	}
-
 	void setupDatabaseStatements(Connection pikaConn) {
 		try {
 			insertGroupedWorkStmt                     = pikaConn.prepareStatement("INSERT INTO grouped_work (full_title, author, grouping_category, grouping_language, permanent_id, date_updated) VALUES (?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE date_updated = VALUES(date_updated), id=LAST_INSERT_ID(id) ", Statement.RETURN_GENERATED_KEYS);
@@ -381,7 +384,7 @@ class RecordGroupingProcessor {
 							} else {
 								DataField field710 = marcRecord.getDataField("710"); // Added Entry-Corporate Name
 								//First Indicator 0 - Inverted name; 2 - Name in direct order
-								// 1 - Jurisdiction name  TODO: Ignore jurisdiction names and use subordinates only?
+								// 1 - Jurisdiction name
 								if (field710 != null && field710.getSubfield('a') != null) {
 									author = field710.getSubfield('a').getData();
 									if (field710.getIndicator1() == '0'){
@@ -620,13 +623,12 @@ class RecordGroupingProcessor {
 	 * @param groupedWork       Information about the work itself
 	 */
 	void addGroupedWorkToDatabase(RecordIdentifier primaryIdentifier, GroupedWorkBase groupedWork, boolean primaryDataChanged) {
-//		if (workNotInHistoricalTable(groupedWork)){
-//			// Add grouping factors to historical table in order to track permanent Ids across grouping versions
-//			// Do this before unmerging or merging because we want to track the original factors and id
-//
-//			addToHistoricalTable(groupedWork);
-//		}
-		//TODO: undo above
+		if (workNotInHistoricalTable(groupedWork)){
+			// Add grouping factors to historical table in order to track permanent Ids across grouping versions
+			// Do this before unmerging or merging because we want to track the original factors and id
+
+			addToHistoricalTable(groupedWork);
+		}
 
 		//Check to see if we need to ungroup this
 		if (recordsToNotGroup.contains(primaryIdentifier.toString().toLowerCase())) {
@@ -773,29 +775,29 @@ class RecordGroupingProcessor {
 	}
 
 	//TODO: This only gets used by the generate Author authorities, maybe the overdrive grouper
-	private void loadTranslationMaps(String serverName) {
-		//Load all translationMaps, first from default, then from the site specific configuration
-		File   defaultTranslationMapDirectory = new File("../../sites/default/translation_maps");
-		File[] defaultTranslationMapFiles     = defaultTranslationMapDirectory.listFiles((dir, name) -> name.endsWith("properties"));
-
-		File   serverTranslationMapDirectory = new File("../../sites/" + serverName + "/translation_maps");
-		File[] serverTranslationMapFiles     = serverTranslationMapDirectory.listFiles((dir, name) -> name.endsWith("properties"));
-
-		if (defaultTranslationMapFiles != null) {
-			for (File curFile : defaultTranslationMapFiles) {
-				String mapName = curFile.getName().replace(".properties", "");
-				mapName = mapName.replace("_map", "");
-				translationMaps.put(mapName, loadTranslationMap(curFile, mapName));
-			}
-			if (serverTranslationMapFiles != null) {
-				for (File curFile : serverTranslationMapFiles) {
-					String mapName = curFile.getName().replace(".properties", "");
-					mapName = mapName.replace("_map", "");
-					translationMaps.put(mapName, loadTranslationMap(curFile, mapName));
-				}
-			}
-		}
-	}
+//	private void loadTranslationMaps(String serverName) {
+//		//Load all translationMaps, first from default, then from the site specific configuration
+//		File   defaultTranslationMapDirectory = new File("../../sites/default/translation_maps");
+//		File[] defaultTranslationMapFiles     = defaultTranslationMapDirectory.listFiles((dir, name) -> name.endsWith("properties"));
+//
+//		File   serverTranslationMapDirectory = new File("../../sites/" + serverName + "/translation_maps");
+//		File[] serverTranslationMapFiles     = serverTranslationMapDirectory.listFiles((dir, name) -> name.endsWith("properties"));
+//
+//		if (defaultTranslationMapFiles != null) {
+//			for (File curFile : defaultTranslationMapFiles) {
+//				String mapName = curFile.getName().replace(".properties", "");
+//				mapName = mapName.replace("_map", "");
+//				translationMaps.put(mapName, loadTranslationMap(curFile, mapName));
+//			}
+//			if (serverTranslationMapFiles != null) {
+//				for (File curFile : serverTranslationMapFiles) {
+//					String mapName = curFile.getName().replace(".properties", "");
+//					mapName = mapName.replace("_map", "");
+//					translationMaps.put(mapName, loadTranslationMap(curFile, mapName));
+//				}
+//			}
+//		}
+//	}
 
 	protected TranslationMap loadTranslationMap(File translationMapFile, String mapName) {
 		Properties props = new Properties();
