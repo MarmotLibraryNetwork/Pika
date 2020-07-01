@@ -258,7 +258,7 @@
 			{/if}
 
 			{if $loggedIn && $userRoles && (in_array('cataloging', $userRoles) || in_array('opacAdmin', $userRoles))}
-				{if in_array($action, array('MergedGroupedWorks', 'NonGroupedRecords', 'PreferredGroupingTitles', 'PreferredGroupingAuthors', 'AuthorEnrichment' 'Covers'))}
+				{if in_array($action, array('MergedGroupedWorks', 'NonGroupedRecords', 'PreferredGroupingTitles', 'PreferredGroupingAuthors', 'AuthorEnrichment', 'Covers'))}
 					{assign var="curSection" value=true}
 				{else}
 					{assign var="curSection" value=false}
