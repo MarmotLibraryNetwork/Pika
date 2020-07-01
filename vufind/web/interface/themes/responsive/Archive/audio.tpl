@@ -42,4 +42,9 @@
 	$().ready(function(){ldelim}
 		Pika.Archive.loadExploreMore('{$pid|urlencode}');
 		{rdelim});
+	{literal}
+	$(document).ready( function(){
+		$.idleTimer("destroy");
+	});
+	{/literal}
 </script>
