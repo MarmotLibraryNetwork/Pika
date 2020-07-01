@@ -292,6 +292,31 @@ function getGroupedWorkUpdates(){
 				"ALTER TABLE `user_not_interested` CHANGE COLUMN `groupedRecordPermanentId` `groupedWorkPermanentId` VARCHAR(36) NULL DEFAULT NULL ;",
 				"ALTER TABLE `user_tags` CHANGE COLUMN `groupedRecordPermanentId` `groupedWorkPermanentId` VARCHAR(36) NULL DEFAULT NULL ;",
 				"ALTER TABLE `novelist_data` CHANGE COLUMN `groupedRecordPermanentId` `groupedWorkPermanentId` VARCHAR(36) NULL DEFAULT NULL ;",
+				"ALTER TABLE `grouped_work` RENAME TO `grouped_work_old` ;",
+				"ALTER TABLE `grouped_work_primary_identifiers` RENAME TO `grouped_work_primary_identifiers_old` ;",
+				"CREATE TABLE `grouped_work` (
+					  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+					  `permanent_id` char(36) NOT NULL,
+					  `author` varchar(100) NOT NULL,
+					  `grouping_category` varchar(5) NOT NULL,
+					  `full_title` varchar(400) NOT NULL,
+					  `grouping_language` char(3) DEFAULT NULL,
+					  `date_updated` int(11) DEFAULT NULL,
+					  PRIMARY KEY (`id`),
+					  UNIQUE KEY `permanent_id` (`permanent_id`),
+					  KEY `date_updated` (`date_updated`)
+					) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+					",
+				"CREATE TABLE `grouped_work_primary_identifiers` (
+					  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+					  `grouped_work_id` bigint(20) NOT NULL,
+					  `type` varchar(50) NOT NULL,
+					  `identifier` varchar(36) NOT NULL,
+					  PRIMARY KEY (`id`),
+					  UNIQUE KEY `type` (`type`,`identifier`),
+					  KEY `grouped_record_id` (`grouped_work_id`)
+					) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+					",
 			],
 		],
 
