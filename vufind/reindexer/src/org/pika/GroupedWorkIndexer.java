@@ -245,8 +245,8 @@ public class GroupedWorkIndexer {
 		//Setup prepared statements to load local enrichment
 		try {
 			//No need to filter for ratings greater than 0 because the user has to rate from 1-5
-			getRatingStmt = pikaConn.prepareStatement("SELECT AVG(rating) AS averageRating, groupedRecordPermanentId FROM user_work_review WHERE groupedRecordPermanentId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-			getNovelistStmt = pikaConn.prepareStatement("SELECT * FROM novelist_data WHERE groupedRecordPermanentId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			getRatingStmt = pikaConn.prepareStatement("SELECT AVG(rating) AS averageRating, groupedWorkPermanentId FROM user_work_review WHERE groupedWorkPermanentId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			getNovelistStmt = pikaConn.prepareStatement("SELECT * FROM novelist_data WHERE groupedWorkPermanentId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 		} catch (SQLException e) {
 			logger.error("Could not prepare statements to load local enrichment", e);
 		}
@@ -950,13 +950,13 @@ public class GroupedWorkIndexer {
 	Long processGroupedWorks(String indexingProfileToProcess) {
 		long numWorksProcessed = 0L;
 		try {
-			PreparedStatement getAllGroupedWorks;
+			PreparedStatement getGroupedWorksForProfile;
 			PreparedStatement getNumWorksToIndex;
 			PreparedStatement setLastUpdatedTime = pikaConn.prepareStatement("UPDATE grouped_work SET date_updated = ? WHERE id = ?");
 
 			//Load all grouped works that have records tied to indexing profile
 
-			getAllGroupedWorks = pikaConn.prepareStatement("SELECT * FROM grouped_work WHERE id IN (SELECT grouped_work_id FROM grouped_work_primary_identifiers WHERE type = \"" + indexingProfileToProcess.toLowerCase() + "\")", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			getGroupedWorksForProfile = pikaConn.prepareStatement("SELECT * FROM grouped_work WHERE id IN (SELECT grouped_work_id FROM grouped_work_primary_identifiers WHERE type = \"" + indexingProfileToProcess.toLowerCase() + "\")", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			getNumWorksToIndex = pikaConn.prepareStatement("SELECT COUNT(*) FROM grouped_work WHERE id IN (SELECT grouped_work_id FROM grouped_work_primary_identifiers WHERE type = \"" + indexingProfileToProcess.toLowerCase() + "\")", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 
 			//Get the number of works we will be processing
@@ -965,7 +965,7 @@ public class GroupedWorkIndexer {
 			long numWorksToIndex = numWorksToIndexRS.getLong(1);
 			GroupedReindexMain.addNoteToReindexLog("Starting to process " + numWorksToIndex + " grouped works for profile " + indexingProfileToProcess);
 
-			ResultSet groupedWorks = getAllGroupedWorks.executeQuery();
+			ResultSet groupedWorks = getGroupedWorksForProfile.executeQuery();
 			while (groupedWorks.next()) {
 				long   id                = groupedWorks.getLong("id");
 				String permanentId       = groupedWorks.getString("permanent_id");

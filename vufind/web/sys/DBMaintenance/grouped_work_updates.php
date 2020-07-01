@@ -249,8 +249,8 @@ function getGroupedWorkUpdates(){
 			'sql'             => [
 				"CREATE TABLE `grouping_titles_preferred` (
 					`id` INT NOT NULL AUTO_INCREMENT,
-					`sourceGroupingTitle` VARCHAR(200) NULL,
-					`preferredGroupingTitle` VARCHAR(200) NULL,
+					`sourceGroupingTitle` VARCHAR(400) NULL,
+					`preferredGroupingTitle` VARCHAR(400) NULL,
 					`notes` VARCHAR(250) NULL,
 					PRIMARY KEY (`id`),
 					UNIQUE INDEX `sourceGroupingTitle_UNIQUE` (`sourceGroupingTitle` ASC))
@@ -258,8 +258,8 @@ function getGroupedWorkUpdates(){
 					DEFAULT CHARACTER SET = utf8;",
 				"CREATE TABLE `grouping_authors_preferred` (
 					`id` INT NOT NULL AUTO_INCREMENT,
-					`sourceGroupingAuthor` VARCHAR(50) NULL,
-					`preferredGroupingAuthor` VARCHAR(50) NULL,
+					`sourceGroupingAuthor` VARCHAR(100) NULL,
+					`preferredGroupingAuthor` VARCHAR(100) NULL,
 					`notes` VARCHAR(250) NULL,
 					PRIMARY KEY (`id`),
 					UNIQUE INDEX `sourceGroupingAuthor_UNIQUE` (`sourceGroupingAuthor` ASC))
@@ -277,6 +277,21 @@ function getGroupedWorkUpdates(){
 					CHANGE COLUMN `author` `author` VARCHAR(100) NOT NULL ,
 					CHANGE COLUMN `grouping_category` `grouping_category` VARCHAR(5) NOT NULL ,
 					CHANGE COLUMN `full_title` `full_title` VARCHAR(400) NOT NULL ;",
+			],
+		],
+
+		'grouping_migration-2020.06' => [
+			'title'           => 'Prepare for grouping migration',
+			'description'     => 'Run sql updates to do grouping migration',
+			'continueOnError' => false,
+			'sql'             => [
+				"DROP TABLE IF EXISTS `grouped_work_identifiers`;",
+				"DROP TABLE IF EXISTS `grouped_work_identifiers_ref`;",
+				"DROP TABLE IF EXISTS `grouped_work_primary_to_secondary_id_ref`;",
+				"ALTER TABLE `user_work_review` CHANGE COLUMN `groupedRecordPermanentId` `groupedWorkPermanentId` VARCHAR(36) NULL DEFAULT NULL ;",
+				"ALTER TABLE `user_not_interested` CHANGE COLUMN `groupedRecordPermanentId` `groupedWorkPermanentId` VARCHAR(36) NULL DEFAULT NULL ;",
+				"ALTER TABLE `user_tags` CHANGE COLUMN `groupedRecordPermanentId` `groupedWorkPermanentId` VARCHAR(36) NULL DEFAULT NULL ;",
+				"ALTER TABLE `novelist_data` CHANGE COLUMN `groupedRecordPermanentId` `groupedWorkPermanentId` VARCHAR(36) NULL DEFAULT NULL ;",
 			],
 		],
 

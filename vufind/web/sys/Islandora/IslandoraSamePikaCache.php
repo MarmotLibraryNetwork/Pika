@@ -28,7 +28,7 @@ class IslandoraSamePikaCache extends DB_DataObject
 {
 	public $__table = 'islandora_samepika_cache';
 	public $id;
-	public $groupedWorkId;
+	public $groupedWorkPermanentId;
 	public $pid;
 	public $archiveLink;
 }

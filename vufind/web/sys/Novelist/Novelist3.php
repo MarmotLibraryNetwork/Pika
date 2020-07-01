@@ -42,8 +42,8 @@ class Novelist3{
 
 	function doesGroupedWorkHaveCachedSeries($groupedRecordId){
 		if (!empty($groupedRecordId)){
-			$novelistData                           = new NovelistData();
-			$novelistData->groupedRecordPermanentId = $groupedRecordId;
+			$novelistData                         = new NovelistData();
+			$novelistData->groupedWorkPermanentId = $groupedRecordId;
 			if ($novelistData->count()){
 				return true;
 			}
@@ -61,8 +61,8 @@ class Novelist3{
 	 * @return array
 	 */
 	private function doUpdateOfEnrichment($groupedRecordId, $ISBNs, $allowReload = true){
-		$novelistData                           = new NovelistData();
-		$novelistData->groupedRecordPermanentId = $groupedRecordId;
+		$novelistData                         = new NovelistData();
+		$novelistData->groupedWorkPermanentId = $groupedRecordId;
 
 		//Check to see if a reload is being forced
 		if (isset($_REQUEST['reload'])){
@@ -116,7 +116,7 @@ class Novelist3{
 		global $timer;
 		$timer->logTime("Starting to load data from novelist for $groupedRecordId");
 		//Now check the database
-		list($novelistData, $doUpdate) = $this->doUpdateOfEnrichment($groupedRecordId, $ISBNs, $allowReload);
+		[$novelistData, $doUpdate] = $this->doUpdateOfEnrichment($groupedRecordId, $ISBNs, $allowReload);
 
 		$novelistData->groupedRecordHasISBN = count($ISBNs) > 0;
 
@@ -228,7 +228,7 @@ class Novelist3{
 		}
 
 		//Now check the database
-		list($novelistData, $doFullUpdate) = $this->doUpdateOfEnrichment($groupedRecordId, $ISBNs);
+		[$novelistData, $doFullUpdate] = $this->doUpdateOfEnrichment($groupedRecordId, $ISBNs);
 
 		$novelistData->groupedRecordHasISBN = count($ISBNs) > 0;
 		$novelistData->hasNovelistData      = false;
@@ -354,7 +354,7 @@ class Novelist3{
 			return $novelistData;
 		}
 
-		list($novelistData, $doFullUpdate) = $this->doUpdateOfEnrichment($groupedRecordId, $ISBNs);
+		[$novelistData, $doFullUpdate] = $this->doUpdateOfEnrichment($groupedRecordId, $ISBNs);
 
 		$novelistData->groupedRecordHasISBN = count($ISBNs) > 0;
 		$novelistData->hasNovelistData      = false;
@@ -447,7 +447,7 @@ class Novelist3{
 			return $novelistData;
 		}
 
-		list($novelistData, $doFullUpdate) = $this->doUpdateOfEnrichment($groupedRecordId, $ISBNs);
+		[$novelistData, $doFullUpdate] = $this->doUpdateOfEnrichment($groupedRecordId, $ISBNs);
 
 		$novelistData->groupedRecordHasISBN = count($ISBNs) > 0;
 		$novelistData->hasNovelistData      = false;
@@ -556,7 +556,7 @@ class Novelist3{
 		}
 
 		//Now check the database
-		list($novelistData, $doFullUpdate) = $this->doUpdateOfEnrichment($groupedRecordId, $ISBNs);
+		[$novelistData, $doFullUpdate] = $this->doUpdateOfEnrichment($groupedRecordId, $ISBNs);
 
 		$novelistData->groupedRecordHasISBN = count($ISBNs) > 0;
 		$novelistData->hasNovelistData      = false;

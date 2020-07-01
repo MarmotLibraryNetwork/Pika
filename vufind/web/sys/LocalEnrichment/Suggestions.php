@@ -40,7 +40,7 @@ class Suggestions {
 		$notInterested->userId = $userId;
 		$notInterested->find();
 		while ($notInterested->fetch()){
-			$notInterestedTitles[$notInterested->groupedRecordPermanentId] = $notInterested->groupedRecordPermanentId;
+			$notInterestedTitles[$notInterested->groupedWorkPermanentId] = $notInterested->groupedWorkPermanentId;
 		}
 		$timer->logTime("Loaded titles the patron is not interested in");
 
@@ -52,9 +52,9 @@ class Suggestions {
 		$ratings->userId = $userId;
 		$ratings->find();
 		while ($ratings->fetch()){
-			$allRatedTitles[$ratings->groupedRecordPermanentId] = $ratings->groupedRecordPermanentId;
+			$allRatedTitles[$ratings->groupedWorkPermanentId] = $ratings->groupedWorkPermanentId;
 			if ($ratings->rating >= 4){
-				$allLikedRatedTitles[] = $ratings->groupedRecordPermanentId;
+				$allLikedRatedTitles[] = $ratings->groupedWorkPermanentId;
 			}
 		}
 		$timer->logTime("Loaded titles the patron has rated");
@@ -81,9 +81,9 @@ class Suggestions {
 			$workApi = new WorkAPI();
 			if ($ratings->N > 0){
 				while ($ratings->fetch()){
-					$groupedWorkId = $ratings->groupedRecordPermanentId;
+					$groupedWorkId = $ratings->groupedWorkPermanentId;
 					//echo("Found resource for $resourceId - {$resource->title}<br/>");
-					$ratedTitles[$ratings->groupedRecordPermanentId] = clone $ratings;
+					$ratedTitles[$ratings->groupedWorkPermanentId] = clone $ratings;
 					$timer->logTime("Cloned Rating data");
 					$isbns = $workApi->getIsbnsForWork($groupedWorkId);
 					$timer->logTime("Loaded ISBNs for work");
@@ -181,14 +181,14 @@ class Suggestions {
 		//Get a list of other patrons that have rated this title and that like it as much or more than the active user..
 		$otherRaters = new UserWorkReview();
 		//Query the database to get items that other users who rated this liked.
-		$sqlStatement = ("SELECT groupedRecordPermanentId, " .
+		$sqlStatement = ("SELECT groupedWorkPermanentId, " .
 			" sum(case rating when 5 then 10 when 4 then 6 end) as rating " . //Scale the ratings similar to the above.
 			" FROM `user_work_review` WHERE userId in " .
-			" (select userId from user_work_review where groupedRecordPermanentId = " . $ratedTitle->groupedRecordPermanentId . //Get other users that have rated this title.
+			" (select userId from user_work_review where groupedWorkPermanentId = " . $ratedTitle->groupedWorkPermanentId . //Get other users that have rated this title.
 			" and rating >= 4 " . //Make sure that other users liked the book.
 			" and userid != " . $userId . ") " . //Make sure that we don't include this user in the results.
 			" and rating >= 4 " . //Only include ratings that are 4 or 5 star so we don't get books the other user didn't like.
-			" and groupedRecordPermanentId != " . $ratedTitle->groupedRecordPermanentId . //Make sure we don't get back this title as a recommendation.
+			" and groupedWorkPermanentId != " . $ratedTitle->groupedWorkPermanentId . //Make sure we don't get back this title as a recommendation.
 			" and deleted = 0 " . //Ignore deleted resources
 			" group by resourceid order by rating desc limit 10"); //Sort so the highest titles are on top and limit to 10 suggestions.
 		$otherRaters->query($sqlStatement);
@@ -198,7 +198,7 @@ class Suggestions {
 				//Process the title
 				disableErrorHandler();
 
-				if (!($ownedRecord = $db->getRecord($otherRaters->groupedRecordPermanentId))){
+				if (!($ownedRecord = $db->getRecord($otherRaters->groupedWorkPermanentId))){
 					//Old record which has been removed? Ignore for purposes of suggestions.
 					continue;
 				}

@@ -1120,8 +1120,8 @@ class GroupedWorkDriver extends RecordInterface {
 			$groupedWorkIdsToSearch = array();
 			foreach ($groupedWorkIds as $groupedWorkId){
 				//Check for cached links
-				$samePikaCache                = new IslandoraSamePikaCache();
-				$samePikaCache->groupedWorkId = $groupedWorkId;
+				$samePikaCache                         = new IslandoraSamePikaCache();
+				$samePikaCache->groupedWorkPermanentId = $groupedWorkId;
 				if ($samePikaCache->find(true)){
 					GroupedWorkDriver::$archiveLinksForWorkIds[$groupedWorkId] = $samePikaCache->archiveLink;
 				}else{
@@ -1161,8 +1161,8 @@ class GroupedWorkDriver extends RecordInterface {
 							$archiveLink = $firstObjectDriver->getRecordUrl();
 							foreach ($groupedWorkIdsToSearch as $groupedWorkId){
 								if (strpos($doc['mods_extension_marmotLocal_externalLink_samePika_link_s'], $groupedWorkId) !== false){
-									$samePikaCache                = new IslandoraSamePikaCache();
-									$samePikaCache->groupedWorkId = $groupedWorkId;
+									$samePikaCache                         = new IslandoraSamePikaCache();
+									$samePikaCache->groupedWorkPermanentId = $groupedWorkId;
 									if ($samePikaCache->find(true) && $samePikaCache->archiveLink != $archiveLink){
 										$samePikaCache->archiveLink = $archiveLink;
 										$samePikaCache->pid         = $firstObjectDriver->getUniqueID();
@@ -1198,9 +1198,9 @@ class GroupedWorkDriver extends RecordInterface {
 			}else{
 				require_once ROOT_DIR . '/sys/Islandora/IslandoraSamePikaCache.php';
 				//Check for cached links
-				$samePikaCache                = new IslandoraSamePikaCache();
-				$samePikaCache->groupedWorkId = $groupedWorkId;
-				$foundLink                    = false;
+				$samePikaCache                         = new IslandoraSamePikaCache();
+				$samePikaCache->groupedWorkPermanentId = $groupedWorkId;
+				$foundLink                             = false;
 				if ($samePikaCache->find(true)){
 					GroupedWorkDriver::$archiveLinksForWorkIds[$groupedWorkId] = $samePikaCache->archiveLink;
 					$archiveLink                                               = $samePikaCache->archiveLink;
@@ -1233,8 +1233,8 @@ class GroupedWorkDriver extends RecordInterface {
 
 							$archiveLink = $firstObjectDriver->getRecordUrl();
 
-							$samePikaCache                = new IslandoraSamePikaCache();
-							$samePikaCache->groupedWorkId = $groupedWorkId;
+							$samePikaCache                         = new IslandoraSamePikaCache();
+							$samePikaCache->groupedWorkPermanentId = $groupedWorkId;
 							if ($samePikaCache->find(true) && $samePikaCache->archiveLink != $archiveLink){
 								$samePikaCache->archiveLink = $archiveLink;
 								$samePikaCache->pid         = $firstObjectDriver->getUniqueID();
@@ -1293,8 +1293,8 @@ class GroupedWorkDriver extends RecordInterface {
 
 		//Check to see if we already have NovelistData loaded with a primary ISBN
 		require_once ROOT_DIR . '/sys/Novelist/NovelistData.php';
-		$novelistData                           = new NovelistData();
-		$novelistData->groupedRecordPermanentId = $this->getPermanentId();
+		$novelistData                         = new NovelistData();
+		$novelistData->groupedWorkPermanentId = $this->getPermanentId();
 		if (!isset($_REQUEST['reload']) && !empty($this->getPermanentId()) && $novelistData->find(true) && $novelistData->primaryISBN != null){
 			return $novelistData->primaryISBN;
 		}else{
@@ -2064,9 +2064,9 @@ class GroupedWorkDriver extends RecordInterface {
 
 		// Get the Reviews
 		require_once ROOT_DIR . '/sys/LocalEnrichment/UserWorkReview.php';
-		$userReview                           = new UserWorkReview();
-		$userReview->groupedRecordPermanentId = $this->getUniqueID();
-		$joinUser                             = new User();
+		$userReview                         = new UserWorkReview();
+		$userReview->groupedWorkPermanentId = $this->getUniqueID();
+		$joinUser                           = new User();
 		$userReview->joinAdd($joinUser);
 		$userReview->find();
 		while ($userReview->fetch()){
@@ -2170,9 +2170,9 @@ class GroupedWorkDriver extends RecordInterface {
 		if (!isset($this->userTagsForThisWork)){
 			require_once ROOT_DIR . '/sys/LocalEnrichment/UserTag.php';
 			/** @var UserTag[] $tags */
-			$tags                               = array();
-			$userTags                           = new UserTag();
-			$userTags->groupedRecordPermanentId = $this->getPermanentId();
+			$tags                             = array();
+			$userTags                         = new UserTag();
+			$userTags->groupedWorkPermanentId = $this->getPermanentId();
 			$userTags->find();
 			while ($userTags->fetch()){
 				if (!isset($tags[$userTags->tag])){

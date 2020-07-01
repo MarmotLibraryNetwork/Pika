@@ -29,7 +29,7 @@
 class NotInterested extends DB_DataObject{
 	public $id;
 	public $userId;
-	public $groupedRecordPermanentId;
+	public $groupedWorkPermanentId;
 	public $dateMarked;
 
 	public $__table = 'user_not_interested';

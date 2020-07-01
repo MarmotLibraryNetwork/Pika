@@ -60,8 +60,8 @@ class WorkAPI extends AJAXHandler {
 		}
 
 		require_once ROOT_DIR . '/sys/LocalEnrichment/UserWorkReview.php';
-		$reviewData                           = new UserWorkReview();
-		$reviewData->groupedRecordPermanentId = $permanentId;
+		$reviewData                         = new UserWorkReview();
+		$reviewData->groupedWorkPermanentId = $permanentId;
 		$reviewData->find();
 		$totalRating = 0;
 		while ($reviewData->fetch()){
