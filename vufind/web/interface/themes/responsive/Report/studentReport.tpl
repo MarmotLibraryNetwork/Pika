@@ -76,7 +76,7 @@
 				</script>
 			{/if}
 		{else}
-			You must login to view this information. Click <a href="/MyAccount/Login">here</a> to login.
+        {include file="MyAccount/loginRequired.tpl"}
 		{/if}
 	</div>
 {/strip}

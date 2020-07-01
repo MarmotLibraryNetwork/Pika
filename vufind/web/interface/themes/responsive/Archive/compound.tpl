@@ -86,7 +86,7 @@
 			{if $hasPdf && ($anonymousMasterDownload || ($loggedIn && $verifiedMasterDownload))}
 				<a class="btn btn-default" href="/Archive/{$pid}/DownloadPDF">Download PDF</a>
 			{elseif ($hasPdf && !$loggedIn && $verifiedMasterDownload)}
-				<a class="btn btn-default" onclick="return Pika.Account.followLinkIfLoggedIn(this)" href="/Archive/{$pid}/DownloadPDF">Login to Download PDF</a>
+				<a class="btn btn-default" onclick="return Pika.Account.followLinkIfLoggedIn(this)" href="/Archive/{$pid}/DownloadPDF">Log in to Download PDF</a>
 			{/if}
 			{if $allowRequestsForArchiveMaterials}
 				<a class="btn btn-default" href="/Archive/RequestCopy?pid={$pid}">Request Copy</a>

@@ -564,7 +564,7 @@ abstract class HorizonROA implements DriverInterface
 		if (!$sessionToken) {
 			return array(
 				'success' => false,
-				'message' => 'Sorry, it does not look like you are logged in currently.  Please login and try again'
+				'message' => 'Sorry, it does not look like you are logged in currently.  Please log in and try again'
 			);
 		}
 
@@ -837,7 +837,7 @@ abstract class HorizonROA implements DriverInterface
 		if (!$sessionToken) {
 			return array(
 				'success' => false,
-				'message' => 'Sorry, it does not look like you are logged in currently.  Please login and try again'
+				'message' => 'Sorry, it does not look like you are logged in currently.  Please log in and try again'
 			);
 		}
 
@@ -953,7 +953,7 @@ abstract class HorizonROA implements DriverInterface
 		if (!$sessionToken) {
 			return array(
 				'success' => false,
-				'message' => 'Sorry, it does not look like you are logged in currently.  Please login and try again'
+				'message' => 'Sorry, it does not look like you are logged in currently.  Please log in and try again'
 			);
 		}
 
@@ -1003,7 +1003,7 @@ abstract class HorizonROA implements DriverInterface
 		if (!$sessionToken) {
 			return array(
 				'success' => false,
-				'message' => 'Sorry, it does not look like you are logged in currently.  Please login and try again'
+				'message' => 'Sorry, it does not look like you are logged in currently.  Please log in and try again'
 			);
 		}
 
@@ -1052,7 +1052,7 @@ abstract class HorizonROA implements DriverInterface
 		if (!$sessionToken) {
 			return array(
 				'success' => false,
-				'message' => 'Sorry, it does not look like you are logged in currently.  Please login and try again'
+				'message' => 'Sorry, it does not look like you are logged in currently.  Please log in and try again'
 			);
 		}
 
@@ -1278,7 +1278,7 @@ abstract class HorizonROA implements DriverInterface
 		if (empty($resetToken)) {
 			$sessionToken = $this->getSessionToken($patron);
 			if (!$sessionToken) {
-				return 'Sorry, it does not look like you are logged in currently.  Please login and try again';
+				return 'Sorry, it does not look like you are logged in currently.  Please log in and try again';
 			}
 			if (!empty($newPin) && !empty($currentPin)) {
 				$jsonParameters = array(
@@ -1491,7 +1491,7 @@ abstract class HorizonROA implements DriverInterface
 				}
 
 			} else {
-				$updateErrors[] = 'Sorry, it does not look like you are logged in currently.  Please login and try again';
+				$updateErrors[] = 'Sorry, it does not look like you are logged in currently.  Please log in and try again';
 			}
 		} else {
 			$updateErrors[] = 'You do not have permission to update profile information.';

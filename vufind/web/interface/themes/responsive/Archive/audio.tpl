@@ -21,7 +21,7 @@
 				{if $anonymousMasterDownload || ($loggedIn && $verifiedMasterDownload)}
 					<a class="btn btn-default" href="/Archive/{$pid}/DownloadOriginal">Download Original</a>
 				{elseif (!$loggedIn && $verifiedMasterDownload)}
-					<a class="btn btn-default" onclick="return VuFind.Account.followLinkIfLoggedIn(this)" href="/Archive/{$pid}/DownloadOriginal">Login to Download Original</a>
+					<a class="btn btn-default" onclick="return Pika.Account.followLinkIfLoggedIn(this)" href="/Archive/{$pid}/DownloadOriginal">Log in to Download Original</a>
 				{/if}
 			{/if} *}
 			{if $allowRequestsForArchiveMaterials}

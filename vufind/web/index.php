@@ -618,7 +618,7 @@ function setUpTranslator(){
 		$language = strip_tags($_REQUEST['mylang']);
 		setcookie('language', $language, null, '/');
 	}else{
-		$language = strip_tags((isset($_COOKIE['language'])) ? $_COOKIE['language'] : $configArray['Site']['language']);
+		$language = strip_tags( $_COOKIE['language'] ?? $configArray['Site']['language']);
 	}
 
 	/** @var Memcache $memCache */

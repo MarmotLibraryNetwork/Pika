@@ -150,7 +150,7 @@ class DataObjectUtil {
 				if ($property['type'] == 'textarea' || $property['type'] == 'crSeparated'){
 					$object->$propertyName = strip_tags($object->$propertyName);
 				}else{
-					$allowableTags         = $property['allowableTags'] ?? '<p><a><b><em><ul><ol><em><li><strong><i><br>';
+					$allowableTags         = $property['allowableTags'] ?? '<p><a><b><em><ul><ol><li><strong><i><br>';
 					$object->$propertyName = strip_tags($object->$propertyName, $allowableTags);
 				}
 				break;

@@ -1,6 +1,6 @@
 {strip}
 <div id="page-content" class="col-xs-12">
-	<h2>{translate text='Login to your account'}</h2>
+	<h2>{translate text='Log into your account'}</h2>
 	<div id="loginFormWrapper">
 		{if $message}{* Errors for Full Login Page *}
 			<p class="alert alert-danger" id="loginError" >{$message|translate}</p>
@@ -25,12 +25,12 @@
 				<div class="row">
 
 					<div class="col-sm-6">
-						<p><strong>Students, Faculty, and staff</strong>, login with your Fort Lewis College Network Account.</p>
+						<p><strong>Students, Faculty, and staff</strong>, log in with your Fort Lewis College Network Account.</p>
 						<a href="/MyAccount/Home?casLogin" class="btn btn-primary">Student/Faculty/Staff Login</a>
 					</div>
 
 					<div class="col-sm-6">
-						<p><strong>Community Members</strong>, login with your name and library card number.</p>
+						<p><strong>Community Members</strong>, log in with your name and library card number.</p>
 						<div id="missingLoginPrompt" style="display: none">Please enter both {$usernameLabel} and {$passwordLabel}.</div>
 						<div id="loginFormFields">
 							<div id="loginUsernameRow" class="form-group">
@@ -45,7 +45,7 @@
 									<input type="password" name="password" id="password" size="28" onkeypress="return Pika.submitOnEnter(event, '#loginForm');" class="form-control">
 									{if $showForgotPinLink}
 										<p class="help-block">
-											<strong>Forgot PIN?</strong> <a href="/MyResearch/EmailPin">E-mail my PIN</a>
+											<strong>Forgot PIN?</strong> <a href="/MyAccount/EmailPin">E-mail my PIN</a>
 										</p>
 									{/if}
 
