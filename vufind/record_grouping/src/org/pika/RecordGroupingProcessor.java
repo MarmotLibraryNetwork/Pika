@@ -84,7 +84,7 @@ class RecordGroupingProcessor {
 		try {
 			insertGroupedWorkStmt                     = pikaConn.prepareStatement("INSERT INTO grouped_work (full_title, author, grouping_category, grouping_language, permanent_id, date_updated) VALUES (?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE date_updated = VALUES(date_updated), id=LAST_INSERT_ID(id) ", Statement.RETURN_GENERATED_KEYS);
 			insertHistoricalGroupedWorkStmt           = pikaConn.prepareStatement("INSERT INTO grouped_work_historical (permanent_id, grouping_title, grouping_author, grouping_category, grouping_language, grouping_version) VALUES (?, ?, ?, ?, ?, ?) ");
-			checkHistoricalGroupedWorkStmt            = pikaConn.prepareStatement("SELECT COUNT(*) FROM grouped_work_historical WHERE permanent_id = ? AND grouping_title = ? AND grouping_author = ? AND grouping_category = ? AND grouping_version = ?", ResultSet.CONCUR_READ_ONLY);
+			checkHistoricalGroupedWorkStmt            = pikaConn.prepareStatement("SELECT COUNT(*) FROM grouped_work_historical WHERE permanent_id = ? AND grouping_title = ? AND grouping_author = ? AND grouping_category = ? AND grouping_language = ? AND grouping_version = ?", ResultSet.CONCUR_READ_ONLY);
 			updateDateUpdatedForGroupedWorkStmt       = pikaConn.prepareStatement("UPDATE grouped_work SET date_updated = ? WHERE id = ?");
 			addPrimaryIdentifierForWorkStmt           = pikaConn.prepareStatement("INSERT INTO grouped_work_primary_identifiers (grouped_work_id, type, identifier) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE id=LAST_INSERT_ID(id), grouped_work_id = VALUES(grouped_work_id)", Statement.RETURN_GENERATED_KEYS);
 			removePrimaryIdentifiersForMergedWorkStmt = pikaConn.prepareStatement("DELETE FROM grouped_work_primary_identifiers WHERE grouped_work_id = ?");
@@ -583,7 +583,13 @@ class RecordGroupingProcessor {
 			checkHistoricalGroupedWorkStmt.setString( 2, groupedWork.fullTitle);
 			checkHistoricalGroupedWorkStmt.setString( 3, groupedWork.author);
 			checkHistoricalGroupedWorkStmt.setString( 4, groupedWork.groupingCategory);
-			checkHistoricalGroupedWorkStmt.setInt( 5, groupedWork.getGroupedWorkVersion());
+			final int groupedWorkVersion = groupedWork.getGroupedWorkVersion();
+			if (groupedWorkVersion >= 5){
+				checkHistoricalGroupedWorkStmt.setString(5, ((GroupedWork5)groupedWork).groupingLanguage);
+				checkHistoricalGroupedWorkStmt.setInt( 6, groupedWorkVersion);
+			} else {
+				checkHistoricalGroupedWorkStmt.setInt( 5, groupedWorkVersion);
+			}
 
 			try (ResultSet existingHistoricalEntryRS = checkHistoricalGroupedWorkStmt.executeQuery()){
 				existingHistoricalEntryRS.next();
@@ -591,7 +597,7 @@ class RecordGroupingProcessor {
 				return count == 0;
 			}
 		} catch (SQLException e){
-			logger.warn("Error looking up work in historical table", e);
+			logger.warn("Error looking up work in historical table for " + groupedWork.getPermanentId(), e);
 		}
 		return true;  // When things go awry, say work is not in table.  If it is, the follow-up INSERT statement will fail on unique check anyway.
 	}
@@ -611,7 +617,7 @@ class RecordGroupingProcessor {
 			}
 
 		} catch (SQLException e){
-			logger.warn("Error adding entry to historical table, query: " + insertGroupedWorkStmt, e);
+			logger.warn("Error adding entry to historical table for " + groupedWork.getPermanentId() + ", query: " + insertGroupedWorkStmt, e);
 		}
 
 	}

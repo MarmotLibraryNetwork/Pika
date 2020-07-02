@@ -842,6 +842,7 @@ public class RecordGrouperMain {
 									recordId = recordIdentifier.getIdentifier();
 
 									boolean marcUpToDate = writeIndividualMarc(curProfile, curBib, recordId, marcRecordsWritten, marcRecordsOverwritten);
+									// when fullRegroupingClearGroupingTables is true writeIndividualMarc() should return false
 									recordNumbersInExport.add(recordIdentifier.toString());
 									if (!explodeMarcsOnly) {
 										if (!marcUpToDate || fullRegroupingNoClear) {
