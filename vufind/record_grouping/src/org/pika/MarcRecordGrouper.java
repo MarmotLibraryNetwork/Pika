@@ -62,7 +62,7 @@ public class MarcRecordGrouper extends RecordGroupingProcessor {
 				String mapName                        = curFile.getName().replace(".properties", "").replace("_map", "");
 				translationMaps.put(mapName, loadTranslationMap(curFile, mapName));
 			} else {
-				logger.error("Language code converting map for OverDrive grouping not found");
+				logger.error("Language translation map for MARC grouping not found");
 			}
 		}
 
@@ -128,7 +128,7 @@ public class MarcRecordGrouper extends RecordGroupingProcessor {
 				if (hasSierraLanguageFixedField) {
 					// Use the sierra language fixed field if the 008 isn't a valid language value
 					String languageName = translationMaps.get("language").translateValue(oo8languageCode, identifier.toString());
-					if (!languageName.equals("Unknown") && !languageName.equals(oo8languageCode)) {
+					if (languageName != null && !languageName.equals("Unknown") && !languageName.equals(oo8languageCode)) {
 						languageCode = oo8languageCode;
 					}
 				} else if (!oo8languageCode.equals("") && !oo8languageCode.equals("|||")) {
