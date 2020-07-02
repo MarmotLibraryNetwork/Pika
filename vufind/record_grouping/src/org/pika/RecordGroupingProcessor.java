@@ -617,7 +617,7 @@ class RecordGroupingProcessor {
 			}
 
 		} catch (SQLException e){
-			logger.warn("Error adding entry to historical table for " + groupedWork.getPermanentId() + ", query: " + insertGroupedWorkStmt, e);
+			logger.warn("Error adding entry to historical table for " + groupedWork.getPermanentId() + ", query: " + insertHistoricalGroupedWorkStmt, e);
 		}
 
 	}

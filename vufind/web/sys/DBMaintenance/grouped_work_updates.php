@@ -252,8 +252,7 @@ function getGroupedWorkUpdates(){
 					`sourceGroupingTitle` VARCHAR(400) NULL,
 					`preferredGroupingTitle` VARCHAR(400) NULL,
 					`notes` VARCHAR(250) NULL,
-					PRIMARY KEY (`id`),
-					UNIQUE INDEX `sourceGroupingTitle_UNIQUE` (`sourceGroupingTitle` ASC))
+					PRIMARY KEY (`id`))
 					ENGINE = InnoDB
 					DEFAULT CHARACTER SET = utf8;",
 				"CREATE TABLE `grouping_authors_preferred` (
@@ -294,6 +293,10 @@ function getGroupedWorkUpdates(){
 				"ALTER TABLE `novelist_data` CHANGE COLUMN `groupedRecordPermanentId` `groupedWorkPermanentId` VARCHAR(36) NULL DEFAULT NULL ;",
 				"ALTER TABLE `grouped_work` RENAME TO `grouped_work_old` ;",
 				"ALTER TABLE `grouped_work_primary_identifiers` RENAME TO `grouped_work_primary_identifiers_old` ;",
+				"ALTER TABLE `grouped_work_historical`
+    				DROP INDEX `index1`,
+						CHANGE COLUMN `grouping_title` `grouping_title` VARCHAR(400) NOT NULL ,
+    				CHANGE COLUMN `grouping_author` `grouping_author` VARCHAR(100) NOT NULL ;",
 				"CREATE TABLE `grouped_work` (
 					  `id` bigint(20) NOT NULL AUTO_INCREMENT,
 					  `permanent_id` char(36) NOT NULL,
