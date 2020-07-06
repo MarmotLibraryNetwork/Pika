@@ -60,6 +60,15 @@ class MyAccount_Edit extends MyAccount {
                         $queryString = "?page=" . $_REQUEST['myListPage'];
                     }
                 }
+                if(isset($_REQUEST['myListSort']))
+                {
+                    if (strpos($queryString, "&") !== false)
+                    {
+                        $queryString = $queryString . "?";
+                    }else {$queryString = $queryString . "&";}
+
+                    $queryString = $queryString . "sort=" . $_REQUEST['myListSort'];
+                }
 				if (isset($listId)){
 					$nextAction = 'MyList/' . $listId . $queryString;
 				}else{

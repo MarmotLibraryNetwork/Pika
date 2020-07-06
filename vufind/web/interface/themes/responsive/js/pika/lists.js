@@ -10,38 +10,40 @@ Pika.Lists = (function(){
 			return false;
 		},
 
-		submitListForm: function(action, page, pageSize){
+		submitListForm: function(action, page, pageSize, sort){
 			$('#myListActionHead').val(action);
 			$('#myListFormHead').submit();
 			$('#myListPage').val(page);
-			$('#myListPageSize').val(pageSize)
+			$('#myListPageSize').val(pageSize);
+			$('#myListSort').val(sort);
 			return false;
 		},
-		submitListFormWithData: function(action, data,page, pageSize){
+		submitListFormWithData: function(action, data,page, pageSize, sort){
 			$('#myListActionHead').val(action);
 			$('#myListActionData').val(data);
 			$('#myListPage').val(page);
-			$('#myListPageSize').val(pageSize)
+			$('#myListPageSize').val(pageSize);
+			$('#myListSort').val(sort);
 			$('#myListFormHead').submit();
 			return false;
 		},
 
-		makeListPublicAction: function (page, pageSize){
-			return this.submitListForm('makePublic', page, pageSize);
+		makeListPublicAction: function (page, pageSize, sort){
+			return this.submitListForm('makePublic', page, pageSize, sort);
 		},
 
-		makeListPrivateAction: function (page, pageSize){
-			return this.submitListForm('makePrivate', page, pageSize);
+		makeListPrivateAction: function (page, pageSize, sort){
+			return this.submitListForm('makePrivate', page, pageSize, sort);
 		},
 
-		deleteListAction: function (page, pageSize){
+		deleteListAction: function (page, pageSize, sort){
 			if (confirm("Are you sure you want to delete this list?")){
-				this.submitListForm('deleteList', page, pageSize);
+				this.submitListForm('deleteList', page, pageSize, sort);
 			}
 			return false;
 		},
 
-		deleteListItems: function(ids, page, pageSize){
+		deleteListItems: function(ids, page, pageSize, sort){
 			var markedTitles = new Array();
 			$.each(ids, function(key, val) {
 				markedTitles.push(val.value);
@@ -54,7 +56,7 @@ Pika.Lists = (function(){
 			 if(confirm("Are you sure you want to delete " + x + title + " from this list? This cannot be undone.")){
 
 
-			 	this.submitListFormWithData('deleteMarked', stringReturn, page, pageSize);
+			 	this.submitListFormWithData('deleteMarked', stringReturn, page, pageSize, sort);
 
 			 }
 
@@ -64,9 +66,9 @@ Pika.Lists = (function(){
 			return this.submitListForm('saveList');
 		},
 
-		deleteAllListItemsAction: function (page, pageSize){
+		deleteAllListItemsAction: function (page, pageSize, sort){
 			if (confirm("Are you sure you want to delete all titles from this list?  This cannot be undone.")){
-				this.submitListForm('deleteAll', page, pageSize);
+				this.submitListForm('deleteAll', page, pageSize, sort);
 			}
 			return false;
 		},
@@ -96,8 +98,8 @@ Pika.Lists = (function(){
 			);
 		},
 		//Exports list to Excel
-		exportListAction: function (id, page, pageSize){
-			return this.submitListForm('exportToExcel', page, pageSize);
+		exportListAction: function (id, page, pageSize, sort){
+			return this.submitListForm('exportToExcel', page, pageSize, sort);
 		},
 		citeListAction: function (id) {
 			return Pika.Account.ajaxLightbox('/MyAccount/AJAX?method=getCitationFormatsForm&listId=' + id, false);

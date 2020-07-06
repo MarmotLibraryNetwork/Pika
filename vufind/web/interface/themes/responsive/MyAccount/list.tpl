@@ -1,13 +1,14 @@
 {*{strip}*}
 {if $smarty.get.page}{assign var="pageNum" value=$smarty.get.page}{else}{assign var="pageNum" value=1}{/if}
 {if $smarty.get.pagesize}{assign var="pageSize" value=$smarty.get.pagesize}{else}{assign var="pageSize" value=20}{/if}
-
+{if $smarty.get.sort}{assign var="listSort" value=$smarty.get.sort}{else}{assign var="listSort" value=""}{/if}
 	<form action="/MyAccount/MyList/{$favList->id}" id="myListFormHead">
 		<div>
 			<input type="hidden" name="myListActionHead" id="myListActionHead" class="form">
 			<input type="hidden" name="myListActionData" id="myListActionData" class="form">
 			<input type="hidden" name="myListPage" id="myListPage" class="form">
 			<input type="hidden" name="myListPageSize" id="myListPageSize" class="form">
+			<input type="hidden" name="myListSort" id="myListSort" class="form">
 			<h3 id="listTitle">{$favList->title|escape:"html"}</h3>
 			{if $notes}
 				<div id="listNotes" class="alert alert-info">
@@ -54,7 +55,7 @@
 							<ul class="dropdown-menu dropdown-menu-right" role="menu">
 								<li><a href="#" value="emailList" id="FavEmail"  onclick='return Pika.Lists.emailListAction("{$favList->id}")'>Email List</a></li>
 								<li><a href="#" value="printList" id="FavPrint"  onclick='return Pika.Lists.printListAction()'>Print List</a></li>
-								<li><a href="#" value="exportToExcel" id="FavExcel" onclick='return Pika.Lists.exportListAction("{$favList->id}", {$pageNum}, {$pageSize});'>Export to Excel</a></li>
+								<li><a href="#" value="exportToExcel" id="FavExcel" onclick='return Pika.Lists.exportListAction("{$favList->id}", {$pageNum}, {$pageSize}, {$listSort});'>Export to Excel</a></li>
 							</ul>
 						</div>
 						<div class="btn-group">
@@ -64,11 +65,11 @@
 							<button value="batchAdd" id="FavBatchAdd" class="btn btn-sm btn-default" onclick='return Pika.Lists.batchAddToListAction({$favList->id})'>Add Multiple Titles</button>
 
 							{if $favList->public == 0}
-								<button value="makePublic" id="FavPublic" class="btn btn-sm btn-default" onclick='return Pika.Lists.makeListPublicAction({$pageNum}, {$pageSize})'>Make Public</button>
+								<button value="makePublic" id="FavPublic" class="btn btn-sm btn-default" onclick='return Pika.Lists.makeListPublicAction({$pageNum}, {$pageSize}, {$listSort})'>Make Public</button>
 							{else}
 								<button value="adminOptions" id="adminOptions" class="btn btn-sm btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">Admin Options <span class="caret"></span></button>
 								<ul class="dropdown-menu dropdown-menu-right" role="menu">
-									<li><a href="#"  id="FavPrivate"  onclick='return Pika.Lists.makeListPrivateAction({$pageNum}, {$pageSize})'>Make Private</a></li>
+									<li><a href="#"  id="FavPrivate"  onclick='return Pika.Lists.makeListPrivateAction({$pageNum}, {$pageSize}, {$listSort})'>Make Private</a></li>
 								{if $loggedIn && $userRoles && (in_array('opacAdmin', $userRoles) || in_array('libraryAdmin', $userRoles) || in_array('libraryManager', $userRoles) || in_array('contentEditor', $userRoles))}
 								<li><a href="#"  id="FavCreateWidget" onclick="return Pika.ListWidgets.createWidgetFromList('{$favList->id}')">Create Widget</a></li>
 								{/if}
@@ -103,9 +104,9 @@
 
 					{if $allowEdit}
 						<div class="btn-group">
-							<button value="deleteMarked" id="markedDelete" class="btn btn-sm btn-default" onclick='return Pika.Lists.deleteListItems({literal}$("input[name=marked]:checked"){/literal},{$pageNum}, {$pageSize});'>Delete Selected</button>
-							<button value="clearList" id="ClearLists" class="btn btn-sm btn-default" onclick='return Pika.Lists.deleteAllListItemsAction({$pageNum}, {$pageSize});'>Clear List</button>
-							<button value="deleteList" id="FavDelete" class="btn btn-sm btn-danger" onclick='return Pika.Lists.deleteListAction({$pageNum}, {$pageSize});'>Delete List</button>
+							<button value="deleteMarked" id="markedDelete" class="btn btn-sm btn-default" onclick='return Pika.Lists.deleteListItems({literal}$("input[name=marked]:checked"){/literal},{$pageNum}, {$pageSize}, {$listSort});'>Delete Selected</button>
+							<button value="clearList" id="ClearLists" class="btn btn-sm btn-default" onclick='return Pika.Lists.deleteAllListItemsAction({$pageNum}, {$pageSize}, {$listSort});'>Clear List</button>
+							<button value="deleteList" id="FavDelete" class="btn btn-sm btn-danger" onclick='return Pika.Lists.deleteListAction({$pageNum}, {$pageSize}, {$listSort});'>Delete List</button>
 						</div>
 
 					{/if}

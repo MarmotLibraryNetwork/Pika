@@ -170,6 +170,14 @@ class MyAccount_MyList extends MyAccount {
                     $queryString = "?page=" . $_REQUEST['myListPage'];
                 }
             }
+            if(isset($_REQUEST['myListSort'])) {
+                if (strpos($queryString, "&") !== false)
+                {
+                    $queryString = $queryString . "?";
+                }else {$queryString = $queryString . "&";}
+
+                $queryString = $queryString . "sort=" . $_REQUEST['myListSort'];
+            }
 			header("Location: /MyAccount/MyList/{$list->id}" . $queryString);
 			die();
     //if list is public the export to excel still needs to function
