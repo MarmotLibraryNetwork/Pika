@@ -305,7 +305,7 @@ $(function () {ldelim}
 		cssAsc: 'sortAscHeader',
 		cssDesc: 'sortDescHeader',
 		cssHeader: 'unsortedHeader',
-		widgets: ['zebra', 'filter'],
+		widgets: ['zebra'],
 		headers: {ldelim}
 			0: {ldelim}sorter: false{rdelim},
 {foreach name=config from=$dateColumns item=columnNumber}
@@ -316,3 +316,14 @@ $(function () {ldelim}
 	});
 });
 </script>
+	<script type="text/javascript">
+		{literal}
+		$(document).ready(function(){
+			$('#requestedMaterials').DataTable({
+				ordering: false,
+				pageLength: 100
+			});
+		})
+
+		{/literal}
+	</script>

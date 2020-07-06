@@ -218,7 +218,7 @@
 <script type="text/javascript">
 	{literal}
 	$("#adminTable").tablesorter({cssAsc: 'sortAscHeader', cssDesc: 'sortDescHeader', cssHeader: 'unsortedHeader',
-		widgets:['zebra', 'filter'] });
+		widgets:['zebra'] });
 	{/literal}
 </script>
 
@@ -226,7 +226,6 @@
 		{literal}
 		$(document).ready(function(){
 			$('#adminTable').DataTable({
-				searching: false,
 				ordering: false,
 				pageLength: 100
 			});
