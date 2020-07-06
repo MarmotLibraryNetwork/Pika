@@ -53,6 +53,31 @@ class Cover extends DB_DataObject
         parent::delete($useWhere);
     }
 
+    function update($dataObject = false)
+    {
+        global $configArray;
+        $storagePath = $configArray['Site']['coverPath'];
+        $coverPath = $storagePath . DIRECTORY_SEPARATOR . "original" . DIRECTORY_SEPARATOR . $this->cover;
+
+            if(isset($_REQUEST['fileName']))
+            {
+                $extension = pathinfo($this->cover, PATHINFO_EXTENSION);
+
+                $newFileName = trim($_REQUEST['fileName']);
+                if(strpos($newFileName,$extension) == false)
+                {
+                    $newFileName = $newFileName . "." . $extension;
+                }
+                if($newFileName != $this->cover) {
+                    rename($coverPath, $storagePath . DIRECTORY_SEPARATOR . "original" . DIRECTORY_SEPARATOR . $newFileName);
+                }
+                $this->cover = $newFileName;
+            }
+
+
+        parent::update($dataObject);
+    }
+
     function insert()
     {
         global $configArray;
