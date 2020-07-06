@@ -43,8 +43,13 @@
 		Pika.Archive.loadExploreMore('{$pid|urlencode}');
 		{rdelim});
 	{literal}
-	$(document).ready( function(){
-		$.idleTimer("destroy");
-	});
+	$('audio').click( function() {
+		var audio = $("audio#player").get(0);
+		if (!audio.paused) {
+			$.idleTimer("destroy");
+		}else{
+			$(document).idleTimer(10000);
+		}
+		});
 	{/literal}
 </script>

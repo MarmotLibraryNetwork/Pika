@@ -42,8 +42,13 @@
 		Pika.Archive.loadExploreMore('{$pid|urlencode}');
 		{rdelim});
 	{literal}
-	$(document).ready( function(){
-		$.idleTimer("destroy");
+	$('video').click( function() {
+		var video = $("video#player").get(0);
+		if (!video.paused) {
+			$.idleTimer("destroy");
+		}else{
+			$(document).idleTimer(10000);
+		}
 	});
 	{/literal}
 </script>
