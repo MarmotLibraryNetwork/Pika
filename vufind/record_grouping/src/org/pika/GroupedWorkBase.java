@@ -103,6 +103,9 @@ public abstract class GroupedWorkBase {
 			if (titleAuthorities.containsKey(fullTitle)) {
 				authoritativeTitle = titleAuthorities.get(fullTitle);
 				fullTitle = authoritativeTitle; // We want to see the authoritative title saved in the db as the grouping title so that this process isn't invisible
+//				if (logger.isDebugEnabled()){
+//					logger.debug("Using authoritative title '" + authoritativeTitle + "' for normalized title '" + fullTitle + "'");
+//				}
 			} else {
 				authoritativeTitle = fullTitle;
 			}
@@ -125,9 +128,9 @@ public abstract class GroupedWorkBase {
 			if (authorAuthorities.containsKey(author)) {
 				authoritativeAuthor = authorAuthorities.get(author);
 				author = authoritativeAuthor; // We want to see the authoratative author saved in the db as the grouping author so that this process isn't invisible
-//				if (logger.isInfoEnabled()){
-//					logger.info("Using authoritative author '" + authoritativeAuthor + "' for normalized author '" + author + "'");
-//				}
+				if (logger.isDebugEnabled()){
+					logger.debug("Using authoritative author '" + authoritativeAuthor + "' for normalized author '" + author + "'");
+				}
 			} else {
 				authoritativeAuthor = author;
 			}

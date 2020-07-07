@@ -125,8 +125,7 @@ public class GroupedWork5 extends GroupedWorkBase implements Cloneable {
 					idGenerator.update(fullTitle.getBytes());
 				}
 
-				String author = getAuthoritativeAuthor();
-				if (author.equals("")) {
+				String author = getAuthoritativeAuthor();				if (author.equals("")) {
 					idGenerator.update("--null--".getBytes());
 				} else {
 					idGenerator.update(author.getBytes());
@@ -221,8 +220,10 @@ public class GroupedWork5 extends GroupedWorkBase implements Cloneable {
 		}
 
 		if (groupingTitle.length() == 0 && titleBeforeRemovingSubtitles.length() > 0){
-			logger.info("Title '" + fullTitle + "' was normalized to nothing, reverting to '" + titleBeforeRemovingSubtitles + "'");
-			groupingTitle = titleBeforeRemovingSubtitles.trim();
+			if (logger.isDebugEnabled()) {
+				logger.debug("Title '" + fullTitle + "' was normalized to nothing, reverting to '" + titleBeforeRemovingSubtitles + "'");
+			}
+			groupingTitle = titleBeforeRemovingSubtitles;
 		}
 		return groupingTitle;
 	}

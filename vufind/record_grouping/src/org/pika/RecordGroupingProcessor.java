@@ -52,6 +52,8 @@ class RecordGroupingProcessor {
 	private Pattern hoursMinutesPlaytimeDurationRegex = Pattern.compile("(\\d+) hrs?\\., (\\d+) min");
 	private Pattern minutesPlaytimeDurationRegex      = Pattern.compile("(\\d+) min");
 
+	private HashSet<String>         workIdsInHistoricalTable  = new HashSet<>();
+
 	/**
 	 * Default constructor for use by subclasses
 	 */
@@ -223,7 +225,7 @@ class RecordGroupingProcessor {
 		setWorkTitleBasedOnMarcRecord(marcRecord, workForTitle);
 
 		// Category
-		String    groupingCategory = setGroupingCategoryForWork(identifier, marcRecord, profile, workForTitle);
+		String groupingCategory = setGroupingCategoryForWork(identifier, marcRecord, profile, workForTitle);
 
 		// Author
 		setWorkAuthorBasedOnMarcRecord(marcRecord, workForTitle, identifier, groupingCategory);
@@ -577,27 +579,43 @@ class RecordGroupingProcessor {
 		return 0L;
 	}
 
+	/** Check if the grouping factors and version already have been added to
+	 * the historical grouping table.
+	 *
+	 * @param groupedWork The grouped work with calculated factors
+	 * @return
+	 */
 	private boolean workNotInHistoricalTable(GroupedWorkBase groupedWork){
-		try {
-			checkHistoricalGroupedWorkStmt.setString( 1, groupedWork.getPermanentId());
-			checkHistoricalGroupedWorkStmt.setString( 2, groupedWork.fullTitle);
-			checkHistoricalGroupedWorkStmt.setString( 3, groupedWork.author);
-			checkHistoricalGroupedWorkStmt.setString( 4, groupedWork.groupingCategory);
-			final int groupedWorkVersion = groupedWork.getGroupedWorkVersion();
-			if (groupedWorkVersion >= 5){
-				checkHistoricalGroupedWorkStmt.setString(5, ((GroupedWork5)groupedWork).groupingLanguage);
-				checkHistoricalGroupedWorkStmt.setInt( 6, groupedWorkVersion);
-			} else {
-				checkHistoricalGroupedWorkStmt.setInt( 5, groupedWorkVersion);
-			}
+		if (workIdsInHistoricalTable.contains(groupedWork.getPermanentId())){
+			return false;
+		} else {
+			try {
+				if (logger.isDebugEnabled()){
+					logger.debug("checking historical grouping table for existing entry for id:  " + groupedWork.permanentId);
+				}
+				checkHistoricalGroupedWorkStmt.setString(1, groupedWork.permanentId);
+				checkHistoricalGroupedWorkStmt.setString(2, groupedWork.fullTitle);
+				checkHistoricalGroupedWorkStmt.setString(3, groupedWork.author);
+				checkHistoricalGroupedWorkStmt.setString(4, groupedWork.groupingCategory);
+				final int groupedWorkVersion = groupedWork.getGroupedWorkVersion();
+				if (groupedWorkVersion >= 5) {
+					checkHistoricalGroupedWorkStmt.setString(5, ((GroupedWork5) groupedWork).groupingLanguage);
+					checkHistoricalGroupedWorkStmt.setInt(6, groupedWorkVersion);
+				} else {
+					checkHistoricalGroupedWorkStmt.setInt(5, groupedWorkVersion);
+				}
 
-			try (ResultSet existingHistoricalEntryRS = checkHistoricalGroupedWorkStmt.executeQuery()){
-				existingHistoricalEntryRS.next();
-				int count = existingHistoricalEntryRS.getInt(1);
-				return count == 0;
+				try (ResultSet existingHistoricalEntryRS = checkHistoricalGroupedWorkStmt.executeQuery()) {
+					existingHistoricalEntryRS.next();
+					int count = existingHistoricalEntryRS.getInt(1);
+					if (count > 0){
+						workIdsInHistoricalTable.add(groupedWork.permanentId);
+					}
+					return count == 0;
+				}
+			} catch (SQLException e) {
+				logger.warn("Error looking up work in historical table for " + groupedWork.getPermanentId(), e);
 			}
-		} catch (SQLException e){
-			logger.warn("Error looking up work in historical table for " + groupedWork.getPermanentId(), e);
 		}
 		return true;  // When things go awry, say work is not in table.  If it is, the follow-up INSERT statement will fail on unique check anyway.
 	}
@@ -632,6 +650,7 @@ class RecordGroupingProcessor {
 		if (workNotInHistoricalTable(groupedWork)){
 			// Add grouping factors to historical table in order to track permanent Ids across grouping versions
 			// Do this before unmerging or merging because we want to track the original factors and id
+			// Note: preferred grouping title/author will be used for the historical table
 
 			addToHistoricalTable(groupedWork);
 		}
