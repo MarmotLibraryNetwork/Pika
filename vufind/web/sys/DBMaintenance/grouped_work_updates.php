@@ -291,12 +291,14 @@ function getGroupedWorkUpdates(){
 				"ALTER TABLE `user_not_interested` CHANGE COLUMN `groupedRecordPermanentId` `groupedWorkPermanentId` VARCHAR(36) NULL DEFAULT NULL ;",
 				"ALTER TABLE `user_tags` CHANGE COLUMN `groupedRecordPermanentId` `groupedWorkPermanentId` VARCHAR(36) NULL DEFAULT NULL ;",
 				"ALTER TABLE `novelist_data` CHANGE COLUMN `groupedRecordPermanentId` `groupedWorkPermanentId` VARCHAR(36) NULL DEFAULT NULL ;",
+				"ALTER TABLE `islandora_samepika_cache` CHANGE COLUMN `groupedWorkId` `groupedWorkPermanentId` CHAR(36) NOT NULL ;",
 				"ALTER TABLE `grouped_work` RENAME TO `grouped_work_old` ;",
 				"ALTER TABLE `grouped_work_primary_identifiers` RENAME TO `grouped_work_primary_identifiers_old` ;",
 				"ALTER TABLE `grouped_work_historical`
-    				DROP INDEX `index1`,
+						DROP INDEX `index1`,
+						ADD INDEX `index2` (`permanent_id` ASC),
 						CHANGE COLUMN `grouping_title` `grouping_title` VARCHAR(400) NOT NULL ,
-    				CHANGE COLUMN `grouping_author` `grouping_author` VARCHAR(100) NOT NULL ;",
+						CHANGE COLUMN `grouping_author` `grouping_author` VARCHAR(100) NOT NULL ;",
 				"CREATE TABLE `grouped_work` (
 					  `id` bigint(20) NOT NULL AUTO_INCREMENT,
 					  `permanent_id` char(36) NOT NULL,

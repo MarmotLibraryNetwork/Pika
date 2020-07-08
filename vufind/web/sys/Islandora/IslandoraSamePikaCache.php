@@ -23,9 +23,7 @@
  * Date: 10/24/2017
  * Time: 9:36 PM
  */
-
-class IslandoraSamePikaCache extends DB_DataObject
-{
+class IslandoraSamePikaCache extends DB_DataObject {
 	public $__table = 'islandora_samepika_cache';
 	public $id;
 	public $groupedWorkPermanentId;
