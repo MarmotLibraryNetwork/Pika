@@ -196,10 +196,11 @@ public class GroupedWork5 extends GroupedWorkBase implements Cloneable {
 		String groupingTitle;
 
 		groupingTitle = makeValueSortable(fullTitle);
-		groupingTitle = cleanTitleCharacters(groupingTitle);
-
 		//Remove any bracketed parts of the title
-		groupingTitle = removeBracketedPartOfTitle(groupingTitle); // this also removes any special characters.
+		groupingTitle = removeBracketedPartOfTitle(groupingTitle);
+
+		groupingTitle = cleanTitleCharacters(groupingTitle);
+		// Note: This would remove brackets
 
 		//Remove some common subtitles that are meaningless (do again here in case they were part of the title).
 		String titleBeforeRemovingSubtitles = groupingTitle.trim();
@@ -316,13 +317,14 @@ public class GroupedWork5 extends GroupedWorkBase implements Cloneable {
 		String tmpTitle = bracketedCharacterStrip.matcher(groupingTitle).replaceAll("");
 		//Make sure we don't strip the entire title
 		if (tmpTitle.length() > 0){
+			// I Suspect this is bad idea. pascal 7/9/2020
 			//And make sure we don't have just special characters
-			tmpTitle = specialCharacterStrip.matcher(tmpTitle).replaceAll(" ").toLowerCase().trim();
+			String noSpecialCharactersTmpTitle = specialCharacterStrip.matcher(tmpTitle).replaceAll(" ").toLowerCase().trim();
 			//Note: specialCharacterStrip will remove diacritical characters
-			if (tmpTitle.length() > 0) {
+			if (noSpecialCharactersTmpTitle.length() == 0) {
+				logger.info("After removing brackets, there were only special characters: '" + groupingTitle + "' to '" + tmpTitle + "'" );
+			} else {
 				groupingTitle = tmpTitle;
-				//}else{
-				//	logger.warn("Just saved us from trimming " + groupingTitle + " to nothing");
 			}
 		}else{
 			//The entire title is in brackets, just remove the brackets

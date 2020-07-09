@@ -104,7 +104,7 @@ public class MarcRecordGrouper extends RecordGroupingProcessor {
 		return processMarcRecord(marcRecord, primaryDataChanged, primaryIdentifier);
 	}
 
-	boolean processMarcRecord(Record marcRecord, boolean primaryDataChanged, RecordIdentifier primaryIdentifier) {
+	public boolean processMarcRecord(Record marcRecord, boolean primaryDataChanged, RecordIdentifier primaryIdentifier) {
 		if (primaryIdentifier != null) {
 			//Get data for the grouped record
 			GroupedWorkBase workForTitle = setupBasicWorkForIlsRecord(primaryIdentifier, marcRecord, profile);

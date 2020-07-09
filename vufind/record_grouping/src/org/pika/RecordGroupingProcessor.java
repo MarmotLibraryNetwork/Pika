@@ -590,9 +590,9 @@ class RecordGroupingProcessor {
 			return false;
 		} else {
 			try {
-				if (logger.isDebugEnabled()){
-					logger.debug("checking historical grouping table for existing entry for id:  " + groupedWork.permanentId);
-				}
+//				if (logger.isDebugEnabled()){
+//					logger.debug("checking historical grouping table for existing entry for id:  " + groupedWork.permanentId);
+//				}
 				checkHistoricalGroupedWorkStmt.setString(1, groupedWork.permanentId);
 				checkHistoricalGroupedWorkStmt.setString(2, groupedWork.fullTitle);
 				checkHistoricalGroupedWorkStmt.setString(3, groupedWork.author);
@@ -655,7 +655,7 @@ class RecordGroupingProcessor {
 			addToHistoricalTable(groupedWork);
 		}
 
-		//Check to see if we need to ungroup this
+		//Check to see if we need to ungroup this record
 		if (recordsToNotGroup.contains(primaryIdentifier.toString().toLowerCase())) {
 			groupedWork.makeUnique(primaryIdentifier.toString());
 		}
@@ -676,7 +676,7 @@ class RecordGroupingProcessor {
 				if (groupedWorkForIdentifierRS.next()) {
 					//We have an existing grouped work
 					String existingGroupedWorkPermanentId = groupedWorkForIdentifierRS.getString("permanent_id");
-					Long   existingGroupedWorkId          = groupedWorkForIdentifierRS.getLong("id");
+					long   existingGroupedWorkId          = groupedWorkForIdentifierRS.getLong("id");
 					if (!existingGroupedWorkPermanentId.equals(groupedWorkPermanentId)) {
 						markWorkUpdated(existingGroupedWorkId);
 					}
@@ -736,7 +736,9 @@ class RecordGroupingProcessor {
 		String targetGroupedWorkPermanentId = mergedGroupedWorks.get(sourceGroupedWorkPermanentId);
 		groupedWork.overridePermanentId(targetGroupedWorkPermanentId);
 
-		logger.debug("Overriding grouped work " + sourceGroupedWorkPermanentId + " with " + targetGroupedWorkPermanentId);
+		if (logger.isDebugEnabled()) {
+			logger.debug("Overriding grouped work " + sourceGroupedWorkPermanentId + " with " + targetGroupedWorkPermanentId);
+		}
 
 		//Mark that the original was updated
 		long originalGroupedWorkId = getExistingWork(sourceGroupedWorkPermanentId);
@@ -747,7 +749,6 @@ class RecordGroupingProcessor {
 			markWorkUpdated(originalGroupedWorkId);
 
 			//Remove the identifiers for the work.
-			//TODO: If we have multiple identifiers for this work, we'll call the delete once for each work.
 			//Should we optimize to just call it once and remember that we removed it already?
 			try {
 				removePrimaryIdentifiersForMergedWorkStmt.setLong(1, originalGroupedWorkId);
