@@ -325,5 +325,17 @@ function getGroupedWorkUpdates(){
 			],
 		],
 
+		'grouping_migration_implement_source_name-2020.06' => [
+			'title'           => 'Set sourceName for old related records table',
+			'description'     => 'Change the type for grouped_work_primary_identifiers_old from the indexing profile name to the source name.',
+			'continueOnError' => false,
+			'sql'             => [
+				"UPDATE grouped_work_primary_identifiers_old
+					LEFT JOIN indexing_profiles ON (type = name)
+					SET grouped_work_primary_identifiers_old.type = indexing_profiles.sourceName
+					WHERE type != sourceName",
+			],
+		],
+
 	);
 }
