@@ -299,7 +299,7 @@ function getIndexingUpdates(){
 		),
 
 		'indexing_profile_specified_grouping_category_2020.04' => array(
-			'title'       => 'Add Specified Grouping Category',
+			'title'       => 'Step 0 : Add Specified Grouping Category',
 			'description' => 'Add a Specified Grouping Category for sideloads to indexing profiles',
 			'sql'         => array(
 				'ALTER TABLE indexing_profiles ADD COLUMN `specifiedGroupingCategory` varchar(5) DEFAULT NULL AFTER `specifiedFormatBoost`',
