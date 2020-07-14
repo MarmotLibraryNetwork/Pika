@@ -7,7 +7,7 @@ class Covers extends ObjectEditor
 
     function getAllowableRoles()
     {
-        return array('opacAdmin', 'libraryAdmin');
+        return array('opacAdmin', 'libraryAdmin', 'cataloging');
     }
 
     /**
