@@ -25,8 +25,9 @@
  * Date: 7/21/2016
  * Time: 4:04 PM
  */
+require_once ROOT_DIR . '/sys/Pika/Functions.php';
 require_once ROOT_DIR . '/sys/Archive/ArchiveRequest.php';
-require_once ROOT_DIR . '/recaptcha/recaptchalib.php';
+use function Pika\Functions\{recaptchaGetQuestion, recaptchaCheckAnswer};
 class Archive_RequestCopy extends Action{
 	function launch(){
 		global $configArray;
@@ -54,29 +55,29 @@ class Archive_RequestCopy extends Action{
 		$archiveRequestFields                   = $owningLibrary->getArchiveRequestFormStructure();
 		$archiveRequestFields['pid']['default'] = $pid; // add pid to the form
 
-		if (isset($_REQUEST['submit'])) {
-			if (isset($configArray['ReCaptcha']['privateKey'])){
-				$privatekey     = $configArray['ReCaptcha']['privateKey'];
-				$resp           = recaptcha_check_answer($privatekey,
-					$_SERVER["REMOTE_ADDR"],
-					$_POST["g-recaptcha-response"]);
-				$recaptchaValid = $resp->is_valid;
-			}else{
-				$recaptchaValid = true;
-			}
+        if (isset($_REQUEST['submit'])) {
+            if (isset($configArray['ReCaptcha']['privateKey'])){
+                try {
+                    $recaptchaValid = recaptchaCheckAnswer();
+                } catch (Exception $e) {
+                    $recaptchaValid = false;
+                }
+            }else{
+                $recaptchaValid = true;
+            }
 
-			if (!$recaptchaValid) {
-				$interface->assign('captchaMessage', 'The CAPTCHA response was incorrect, please try again.');
+            if (!$recaptchaValid) {
+                $interface->assign('captchaMessage', 'The CAPTCHA response was incorrect, please try again.');
 
-				// Pre-fill form with user supplied data
-				foreach ($archiveRequestFields as &$property) {
-					if (isset($_REQUEST[$property['property']])){
-						$uservalue = $_REQUEST[$property['property']];
-						$property['default'] = $uservalue;
-					}
-				}
+                // Pre-fill form with user supplied data
+                foreach ($archiveRequestFields as &$property) {
+                    if (isset($_REQUEST[$property['property']])){
+                        $uservalue = $_REQUEST[$property['property']];
+                        $property['default'] = $uservalue;
+                    }
+                }
 
-			} else {
+            } else {
 				$archiveRequestFields['dateRequested']['value'] = time();
 				/** @var ArchiveRequest $newObject */
 				$newObject = $this->insertObject($archiveRequestFields);
@@ -135,11 +136,10 @@ class Archive_RequestCopy extends Action{
 		$interface->assign('archiveRequestMaterialsHeader', $owningLibrary->archiveRequestMaterialsHeader);
 
 		// Set up captcha to limit spam self registrations
-		if (isset($configArray['ReCaptcha']['publicKey'])) {
-			$recaptchaPublicKey = $configArray['ReCaptcha']['publicKey'];
-			$captchaCode        = recaptcha_get_html($recaptchaPublicKey);
-			$interface->assign('captcha', $captchaCode);
-		}
+        if (isset($configArray['ReCaptcha']['publicKey'])) {
+            $captchaCode        = recaptchaGetQuestion();
+            $interface->assign('captcha', $captchaCode);
+        }
 
 		$fieldsForm = $interface->fetch('DataObjectUtil/objectEditForm.tpl');
 		$interface->assign('requestForm', $fieldsForm);
