@@ -233,7 +233,7 @@ function getGroupedWorkUpdates(){
 		),
 
 		'add_language_to_grouping_table-2020.02' => array(
-			'title'           => 'Add Grouping Language',
+			'title'           => 'Step 0 : Add Grouping Language',
 			'description'     => 'Add language to the grouped work table',
 			'continueOnError' => false,
 			'sql'             => array(
@@ -243,7 +243,7 @@ function getGroupedWorkUpdates(){
 		),
 
 		'preferred_grouping_tables-2020.06' => [
-			'title'           => 'Create Preferred Grouping Author & Title tables',
+			'title'           => 'Step 0 : Create Preferred Grouping Author & Title tables',
 			'description'     => 'Tables for looking up an authoritative version of a grouping title or author',
 			'continueOnError' => false,
 			'sql'             => [
@@ -268,7 +268,7 @@ function getGroupedWorkUpdates(){
 		],
 
 		'grouping_table_sizing-2020.06' => [
-			'title'           => 'Increase grouping title/author column sizes',
+			'title'           => 'Step 0 : Increase grouping title/author column sizes',
 			'description'     => 'Increase grouping title/author column sizes',
 			'continueOnError' => false,
 			'sql'             => [
@@ -280,7 +280,7 @@ function getGroupedWorkUpdates(){
 		],
 
 		'grouping_migration-2020.06' => [
-			'title'           => 'Prepare for grouping migration',
+			'title'           => 'Step 1 : Prepare for grouping migration ',
 			'description'     => 'Run sql updates to do grouping migration',
 			'continueOnError' => false,
 			'sql'             => [
@@ -294,6 +294,8 @@ function getGroupedWorkUpdates(){
 				"ALTER TABLE `islandora_samepika_cache` CHANGE COLUMN `groupedWorkId` `groupedWorkPermanentId` CHAR(36) NOT NULL ;",
 				"ALTER TABLE `grouped_work` RENAME TO `grouped_work_old` ;",
 				"ALTER TABLE `grouped_work_primary_identifiers` RENAME TO `grouped_work_primary_identifiers_old` ;",
+				"ALTER TABLE `merged_grouped_works` RENAME TO `merged_grouped_works_old` ;",
+				"ALTER TABLE `nongrouped_records` RENAME TO `nongrouped_records_old` ;",
 				"ALTER TABLE `grouped_work_historical`
 						DROP INDEX `index1`,
 						ADD INDEX `index2` (`permanent_id` ASC),
@@ -326,7 +328,7 @@ function getGroupedWorkUpdates(){
 		],
 
 		'grouping_migration_implement_source_name-2020.06' => [
-			'title'           => 'Set sourceName for old related records table',
+			'title'           => 'Step 1 : Set sourceName for old related records table',
 			'description'     => 'Change the type for grouped_work_primary_identifiers_old from the indexing profile name to the source name.',
 			'continueOnError' => false,
 			'sql'             => [
@@ -334,6 +336,23 @@ function getGroupedWorkUpdates(){
 					LEFT JOIN indexing_profiles ON (type = name)
 					SET grouped_work_primary_identifiers_old.type = indexing_profiles.sourceName
 					WHERE type != sourceName",
+			],
+		],
+
+		'grouping_migration_build_version_map-2020.06' => [
+			'title'           => 'Step 2 : Populate Grouped Work Version Map with version 4 Ids',
+			'description'     => 'Change the type for grouped_work_primary_identifiers_old from the indexing profile name to the source name.',
+			'continueOnError' => false,
+			'sql'             => [
+				"TRUNCATE `novelist_data`;", // This table will repopulate on its own
+				"TRUNCATE `pika`.`islandora_samepika_cache`;", // This table will repopulate on its own
+				// populate user related entries into map
+				"INSERT LOW_PRIORITY IGNORE INTO grouped_work_versions_map (version4_permanent_id) SELECT DISTINCT groupedWorkPermanentId FROM user_reading_history_work WHERE groupedWorkPermanentId IS NOT NULL;",
+				"INSERT LOW_PRIORITY IGNORE INTO grouped_work_versions_map (version4_permanent_id) SELECT DISTINCT groupedWorkPermanentId FROM user_work_review WHERE groupedWorkPermanentId IS NOT NULL;",
+				"INSERT LOW_PRIORITY IGNORE INTO grouped_work_versions_map (version4_permanent_id) SELECT DISTINCT groupedWorkPermanentId FROM user_list_entry WHERE groupedWorkPermanentId IS NOT NULL;",
+				"INSERT LOW_PRIORITY IGNORE INTO grouped_work_versions_map (version4_permanent_id) SELECT DISTINCT groupedWorkPermanentId FROM user_tags WHERE groupedWorkPermanentId IS NOT NULL;",
+				"INSERT LOW_PRIORITY IGNORE INTO grouped_work_versions_map (version4_permanent_id) SELECT DISTINCT groupedWorkPermanentId FROM user_not_interested WHERE groupedWorkPermanentId IS NOT NULL;",
+				"INSERT LOW_PRIORITY IGNORE INTO grouped_work_versions_map (version4_permanent_id) SELECT DISTINCT groupedWorkPermanentId FROM librarian_reviews WHERE groupedWorkPermanentId IS NOT NULL;",
 			],
 		],
 
