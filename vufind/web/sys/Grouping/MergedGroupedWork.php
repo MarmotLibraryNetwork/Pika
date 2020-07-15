@@ -29,11 +29,13 @@
 require_once ROOT_DIR . '/sys/Grouping/CommonGroupingAlterationOperations.php';
 
 class MergedGroupedWork extends CommonGroupingAlterationOperations {
-	public $__table = 'merged_grouped_works';
+	public $__table = 'grouped_work_merges';
 	public $id;
 	public $sourceGroupedWorkId;
 	public $destinationGroupedWorkId;
 	public $notes;
+	public $userId;
+	public $updated;
 
 	static function getObjectStructure(){
 		$structure = [
@@ -206,6 +208,16 @@ class MergedGroupedWork extends CommonGroupingAlterationOperations {
 				return $groupedWorkDriver->getTitleShort();
 			}
 		}
+	}
+
+	function insert(){
+		$this->userId = UserAccount::getActiveUserId();
+		return parent::insert();
+	}
+
+	function update($dataObject = false){
+		$this->userId = UserAccount::getActiveUserId();
+		return parent::update($dataObject);
 	}
 
 }

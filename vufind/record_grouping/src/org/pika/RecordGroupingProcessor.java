@@ -94,7 +94,7 @@ class RecordGroupingProcessor {
 			loadExistingGroupedWorksStmt              = pikaConn.prepareStatement("SELECT id FROM grouped_work WHERE permanent_id = ?");
 
 			try (
-					PreparedStatement loadMergedWorksStmt = pikaConn.prepareStatement("SELECT * FROM merged_grouped_works");
+					PreparedStatement loadMergedWorksStmt = pikaConn.prepareStatement("SELECT * FROM grouped_work_merges");
 					ResultSet mergedWorksRS = loadMergedWorksStmt.executeQuery()
 			) {
 				while (mergedWorksRS.next()) {

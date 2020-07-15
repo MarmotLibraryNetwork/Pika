@@ -317,13 +317,32 @@ function getGroupedWorkUpdates(){
 				"CREATE TABLE `grouped_work_primary_identifiers` (
 					  `id` bigint(20) NOT NULL AUTO_INCREMENT,
 					  `grouped_work_id` bigint(20) NOT NULL,
-					  `type` varchar(50) NOT NULL,
+					  `type` varchar(45) NOT NULL,
 					  `identifier` varchar(36) NOT NULL,
 					  PRIMARY KEY (`id`),
 					  UNIQUE KEY `type` (`type`,`identifier`),
 					  KEY `grouped_record_id` (`grouped_work_id`)
-					) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
-					",
+					) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;",
+				"CREATE TABLE `grouped_work_merges` (
+				  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+				  `sourceGroupedWorkId` char(36) NOT NULL,
+				  `destinationGroupedWorkId` char(36) NOT NULL,
+				  `notes` varchar(250) DEFAULT NULL,
+				  `userId` int(10) unsigned DEFAULT NULL,
+				  `updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+				  PRIMARY KEY (`id`),
+				  UNIQUE KEY `sourceGroupedWorkId` (`sourceGroupedWorkId`,`destinationGroupedWorkId`)
+				) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;",
+				"CREATE TABLE `nongrouped_records` (
+				  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+				  `source` varchar(45) NOT NULL,
+				  `recordId` varchar(36) NOT NULL,
+				  `notes` varchar(255) NOT NULL,
+				  `userId` int(10) unsigned DEFAULT NULL,
+				  `updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+				  PRIMARY KEY (`id`),
+				  UNIQUE KEY `source` (`source`,`recordId`)
+				) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;"
 			],
 		],
 
