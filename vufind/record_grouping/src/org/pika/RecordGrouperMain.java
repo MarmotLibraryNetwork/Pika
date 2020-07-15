@@ -436,10 +436,10 @@ public class RecordGrouperMain {
 				case "explodemarcs":
 					explodeMarcsOnly = true;
 					break;
+				case "fullregrouping":
 				case "fullregroupingnoclear":
 					fullRegroupingNoClear = true;
 					break;
-				case "fullregrouping":
 				case "fullregroupingclear":
 					clearDatabasePriorToGrouping = true;
 					fullRegroupingClearGroupingTables = true;
@@ -751,7 +751,7 @@ public class RecordGrouperMain {
 			String marcPath = curProfile.marcPath;
 
 			//Check to see if we should process the profile
-			boolean         processProfile = curProfile.groupUnchangedFiles;
+			boolean         processProfile = curProfile.groupUnchangedFiles || fullRegroupingClearGroupingTables;
 			ArrayList<File> filesToProcess = new ArrayList<>();
 			//Check to see if we have any new files, if so we will process all of them to be sure deletes and overlays process properly
 			Pattern filesToMatchPattern = Pattern.compile(curProfile.filenamesToInclude, Pattern.CASE_INSENSITIVE);
