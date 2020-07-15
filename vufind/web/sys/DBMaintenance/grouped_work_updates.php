@@ -342,7 +342,15 @@ function getGroupedWorkUpdates(){
 				  `updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 				  PRIMARY KEY (`id`),
 				  UNIQUE KEY `source` (`source`,`recordId`)
-				) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;"
+				) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;",
+				"CREATE TABLE `grouped_work_versions_map` (
+				  `groupedWorkPermanentIdVersion4` char(36) NOT NULL,
+				  `groupedWorkPermanentIdVersion5` char(36) DEFAULT NULL,
+				  `missingFromCatalog` tinyint(1) unsigned DEFAULT NULL,
+				  PRIMARY KEY (`groupedWorkPermanentIdVersion4`),
+				  UNIQUE KEY `version4_permanent_id_UNIQUE` (`groupedWorkPermanentIdVersion4`),
+				  KEY `version5` (`groupedWorkPermanentIdVersion5`)
+				) ENGINE=InnoDB DEFAULT CHARSET=utf8;",
 			],
 		],
 
@@ -366,12 +374,12 @@ function getGroupedWorkUpdates(){
 				"TRUNCATE `novelist_data`;", // This table will repopulate on its own
 				"TRUNCATE `pika`.`islandora_samepika_cache`;", // This table will repopulate on its own
 				// populate user related entries into map
-				"INSERT LOW_PRIORITY IGNORE INTO grouped_work_versions_map (version4_permanent_id) SELECT DISTINCT groupedWorkPermanentId FROM user_reading_history_work WHERE groupedWorkPermanentId IS NOT NULL;",
-				"INSERT LOW_PRIORITY IGNORE INTO grouped_work_versions_map (version4_permanent_id) SELECT DISTINCT groupedWorkPermanentId FROM user_work_review WHERE groupedWorkPermanentId IS NOT NULL;",
-				"INSERT LOW_PRIORITY IGNORE INTO grouped_work_versions_map (version4_permanent_id) SELECT DISTINCT groupedWorkPermanentId FROM user_list_entry WHERE groupedWorkPermanentId IS NOT NULL;",
-				"INSERT LOW_PRIORITY IGNORE INTO grouped_work_versions_map (version4_permanent_id) SELECT DISTINCT groupedWorkPermanentId FROM user_tags WHERE groupedWorkPermanentId IS NOT NULL;",
-				"INSERT LOW_PRIORITY IGNORE INTO grouped_work_versions_map (version4_permanent_id) SELECT DISTINCT groupedWorkPermanentId FROM user_not_interested WHERE groupedWorkPermanentId IS NOT NULL;",
-				"INSERT LOW_PRIORITY IGNORE INTO grouped_work_versions_map (version4_permanent_id) SELECT DISTINCT groupedWorkPermanentId FROM librarian_reviews WHERE groupedWorkPermanentId IS NOT NULL;",
+				"INSERT LOW_PRIORITY IGNORE INTO grouped_work_versions_map (groupedWorkPermanentIdVersion4) SELECT DISTINCT groupedWorkPermanentId FROM user_reading_history_work WHERE groupedWorkPermanentId IS NOT NULL;",
+				"INSERT LOW_PRIORITY IGNORE INTO grouped_work_versions_map (groupedWorkPermanentIdVersion4) SELECT DISTINCT groupedWorkPermanentId FROM user_work_review WHERE groupedWorkPermanentId IS NOT NULL;",
+				"INSERT LOW_PRIORITY IGNORE INTO grouped_work_versions_map (groupedWorkPermanentIdVersion4) SELECT DISTINCT groupedWorkPermanentId FROM user_list_entry WHERE groupedWorkPermanentId IS NOT NULL;",
+				"INSERT LOW_PRIORITY IGNORE INTO grouped_work_versions_map (groupedWorkPermanentIdVersion4) SELECT DISTINCT groupedWorkPermanentId FROM user_tags WHERE groupedWorkPermanentId IS NOT NULL;",
+				"INSERT LOW_PRIORITY IGNORE INTO grouped_work_versions_map (groupedWorkPermanentIdVersion4) SELECT DISTINCT groupedWorkPermanentId FROM user_not_interested WHERE groupedWorkPermanentId IS NOT NULL;",
+				"INSERT LOW_PRIORITY IGNORE INTO grouped_work_versions_map (groupedWorkPermanentIdVersion4) SELECT DISTINCT groupedWorkPermanentId FROM librarian_reviews WHERE groupedWorkPermanentId IS NOT NULL;",
 			],
 		],
 
