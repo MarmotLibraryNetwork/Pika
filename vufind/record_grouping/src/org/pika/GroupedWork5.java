@@ -216,17 +216,21 @@ public class GroupedWork5 extends GroupedWorkBase implements Cloneable {
 
 		//Trim before truncating
 		groupingTitle = groupingTitle.trim();
-		final int titleEnd = 400;
-		if (titleEnd < groupingTitle.length()) {
-			groupingTitle = groupingTitle.substring(0, titleEnd).trim();
-		}
 
+		//Revert when normalizating title to nothing
 		if (groupingTitle.length() == 0 && titleBeforeRemovingSubtitles.length() > 0){
 			if (logger.isDebugEnabled()) {
 				logger.debug("Title '" + fullTitle + "' was normalized to nothing, reverting to '" + titleBeforeRemovingSubtitles + "'");
 			}
 			groupingTitle = titleBeforeRemovingSubtitles;
 		}
+
+		// Reduce title to a maximum length if needed
+		final int titleEnd = 400;
+		if (titleEnd < groupingTitle.length()) {
+			groupingTitle = groupingTitle.substring(0, titleEnd).trim();
+		}
+
 		return groupingTitle;
 	}
 
