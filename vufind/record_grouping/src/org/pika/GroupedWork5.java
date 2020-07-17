@@ -169,7 +169,12 @@ public class GroupedWork5 extends GroupedWorkBase implements Cloneable {
 	final private static Pattern consecutiveSpaceStrip         = Pattern.compile("\\s{2,}");
 	final private static Pattern bracketedCharacterStrip       = Pattern.compile("\\[(.*?)\\]");
 	final private static Pattern sortTrimmingPattern           = Pattern.compile("(?i)^(?:(?:a|an|the|el|la|las|\"|')\\s)(.*)$");
-	final private static Pattern commonSubtitlesSimplePattern  = Pattern.compile("(\\s(a novel of .*|a novel|stories|an autobiography|a biography|a memoir in books|poems|the movie|large print|the graphic novel|graphic novel|magazine|audio cd|book club kit|with illustrations|playaway view|playaway|book \\d+|the original classic edition|classic edition))$");
+	final private static Pattern commonSubtitlesSimplePattern  = Pattern.compile("(\\s(" +
+			"a novel of .*|a novel|" +
+			"and other essays|essays|and other stories|and stories|stories|poems|" +
+			"an autobiography|a biography|the biography|a memoir in books|" +
+			"the movie|large print|the graphic novel|graphic novel|magazine|audio cd|book club kit|playaway view|playaway|" +
+			"with illustrations|book \\d+|the original classic edition|classic edition))$");
 	 //removed from the simple pattern the option 'by\s\w+\s\w+' because this strips common phrases that aren't author statements, like ' by the sea'
 	final private static Pattern commonSubtitlesComplexPattern = Pattern.compile("((a|una)\\s(.*)novel(a|la)?|a(.*)memoir|a(.*)mystery|a(.*)thriller|by\\s\\w+\\s\\w+|an? .* story|a .*\\s?book|[\\w\\s]+series book \\d+|the[\\w\\s]+chronicles book \\d+|[\\w\\s]+trilogy book \\d+)$");
 	final private static Pattern editionRemovalPattern         = Pattern.compile("(first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth|revised|\\d+\\S*)\\s+(edition|ed|ed\\.|update|anniversary edition|comprehensive edition|anniversary commemorative edition)");
