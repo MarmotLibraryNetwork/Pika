@@ -164,7 +164,7 @@ public class GroupedWork5 extends GroupedWorkBase implements Cloneable {
 	* */
 
 	final private static Pattern initialsFix                   = Pattern.compile("(?<=[A-Z])\\.(?=(\\s|[A-Z]|$))");
-	final private static Pattern apostropheStrip               = Pattern.compile("'s");
+	final private static Pattern apostropheStrip               = Pattern.compile("'+s"); // include typos with multiple apostrophes
 	final private static Pattern specialCharacterStrip         = Pattern.compile("[^\\p{L}\\d\\s]");
 	final private static Pattern consecutiveSpaceStrip         = Pattern.compile("\\s{2,}");
 	final private static Pattern bracketedCharacterStrip       = Pattern.compile("\\[(.*?)\\]");
