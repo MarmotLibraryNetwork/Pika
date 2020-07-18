@@ -82,11 +82,13 @@ GROUP BY grouped_work_old.permanent_id
 										//Failed to update Map
 										echo "Did not update grouped work version 4 map entry : " + $mapper->groupedWorkPermanentIdVersion4 + "\n";
 									}else{
+										echo "Mapping V4 " . $mapper->groupedWorkPermanentIdVersion4 . ' to V5 ' . $groupingID;
 										$totalMapped++;
 										break;
 									}
 								}
 							}
+							echo '<hr>';
 
 							// Multiple Languages Scenario (Use the english work)
 						}elseif (count($newGroupingCategories) == 1 && count($newGroupingLanguages) > 1){
@@ -99,11 +101,14 @@ GROUP BY grouped_work_old.permanent_id
 										//Failed to update Map
 										echo "Did not update grouped work version 4 map entry : " + $mapper->groupedWorkPermanentIdVersion4 + "\n";
 									}else{
+										echo "Mapping V4 " . $mapper->groupedWorkPermanentIdVersion4 . ' to V5 ' . $groupingID;
 										$totalMapped++;
 										break;
 									}
 								}
 							}
+							echo '<hr>';
+
 							// Multiple Languages and new comic grouping category scenario (use the english book version)
 						}elseif (in_array('comic', $newGroupingCategories) && in_array('eng', $newGroupingLanguages)){
 							foreach ($newGroupingIDs as $groupingID){
@@ -115,11 +120,14 @@ GROUP BY grouped_work_old.permanent_id
 										//Failed to update Map
 										echo "Did not update grouped work version 4 map entry : " + $mapper->groupedWorkPermanentIdVersion4 + "\n";
 									}else{
+										echo "Mapping V4 " . $mapper->groupedWorkPermanentIdVersion4 . ' to V5 ' . $groupingID;
 										$totalMapped++;
 										break;
 									}
 								}
 							}
+							echo '<hr>';
+
 						} elseif (count($newGroupingCategories) == 1 && count($newGroupingLanguages) == 1 && $newGroupingCategories != ['movie']){
 							$newGroupingAuthors = explode(',', $groupedWorkMatching->newGroupingAuthors);
 							if (count($newGroupingAuthors) == 1){
