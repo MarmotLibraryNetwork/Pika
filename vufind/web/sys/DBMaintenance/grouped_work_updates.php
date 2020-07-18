@@ -252,6 +252,8 @@ function getGroupedWorkUpdates(){
 					`sourceGroupingTitle` VARCHAR(400) NULL,
 					`preferredGroupingTitle` VARCHAR(400) NULL,
 					`notes` VARCHAR(250) NULL,
+				  `userId` int(10) unsigned DEFAULT NULL,
+				  `updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 					PRIMARY KEY (`id`))
 					ENGINE = InnoDB
 					DEFAULT CHARACTER SET = utf8;",
@@ -260,6 +262,8 @@ function getGroupedWorkUpdates(){
 					`sourceGroupingAuthor` VARCHAR(100) NULL,
 					`preferredGroupingAuthor` VARCHAR(100) NULL,
 					`notes` VARCHAR(250) NULL,
+				  `userId` int(10) unsigned DEFAULT NULL,
+				  `updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 					PRIMARY KEY (`id`),
 					UNIQUE INDEX `sourceGroupingAuthor_UNIQUE` (`sourceGroupingAuthor` ASC))
 					ENGINE = InnoDB
@@ -380,6 +384,37 @@ function getGroupedWorkUpdates(){
 				"INSERT LOW_PRIORITY IGNORE INTO grouped_work_versions_map (groupedWorkPermanentIdVersion4) SELECT DISTINCT groupedWorkPermanentId FROM user_tags WHERE groupedWorkPermanentId IS NOT NULL;",
 				"INSERT LOW_PRIORITY IGNORE INTO grouped_work_versions_map (groupedWorkPermanentIdVersion4) SELECT DISTINCT groupedWorkPermanentId FROM user_not_interested WHERE groupedWorkPermanentId IS NOT NULL;",
 				"INSERT LOW_PRIORITY IGNORE INTO grouped_work_versions_map (groupedWorkPermanentIdVersion4) SELECT DISTINCT groupedWorkPermanentId FROM librarian_reviews WHERE groupedWorkPermanentId IS NOT NULL;",
+			],
+		],
+
+		'grouping_migration_populate_version_map-2020.06' => [
+			'title'           => 'POST GROUPING STEP 1 : Populate Grouped Work Version Map with one to one matches',
+			'description'     => 'Mapping via related records that result in a single version 5 grouping Id',
+			'continueOnError' => false,
+			'sql'             => [
+				"DELETE FROM `grouped_work_versions_map` WHERE `groupedWorkPermanentIdVersion4`='';", // remove the empty entry
+				"UPDATE grouped_work_versions_map
+					INNER JOIN
+					(
+					SELECT 
+						grouped_work_old.permanent_id AS oldID
+					    , group_concat(DISTINCT grouped_work.permanent_id) AS newID
+					    
+					    FROM grouped_work_versions_map
+					    LEFT JOIN grouped_work_old ON (grouped_work_versions_map.groupedWorkPermanentIdVersion4 = grouped_work_old.permanent_id)
+					    LEFT JOIN grouped_work_primary_identifiers_old ON (grouped_work_primary_identifiers_old.grouped_work_id = grouped_work_old.id)
+					    LEFT JOIN grouped_work_primary_identifiers ON (grouped_work_primary_identifiers.identifier = grouped_work_primary_identifiers_old.identifier AND grouped_work_primary_identifiers.type = grouped_work_primary_identifiers_old.type)
+					    LEFT JOIN grouped_work ON (grouped_work_primary_identifiers.grouped_work_id = grouped_work.id)
+					    WHERE grouped_work_versions_map.groupedWorkPermanentIdVersion5 IS NULL
+					    GROUP BY grouped_work_old.permanent_id
+					    HAVING COUNT(DISTINCT grouped_work.permanent_id) = 1
+					
+					    
+					) As relatedRecordMappingOneToOneMatches
+					ON groupedWorkPermanentIdVersion4 = relatedRecordMappingOneToOneMatches.oldID
+					    
+					SET groupedWorkPermanentIdVersion5 = relatedRecordMappingOneToOneMatches.newID
+					WHERE groupedWorkPermanentIdVersion5 IS NULL",
 			],
 		],
 

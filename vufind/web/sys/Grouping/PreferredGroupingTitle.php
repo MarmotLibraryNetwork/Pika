@@ -116,4 +116,14 @@ class PreferredGroupingTitle extends CommonGroupingAlterationOperations {
 //		return $validationResults;
 //	}
 
+	function insert(){
+		$this->userId = UserAccount::getActiveUserId();
+		return parent::insert();
+	}
+
+	function update($dataObject = false){
+		$this->userId = UserAccount::getActiveUserId();
+		return parent::update($dataObject);
+	}
+
 }
