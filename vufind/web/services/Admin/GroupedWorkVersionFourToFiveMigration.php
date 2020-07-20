@@ -32,7 +32,221 @@ require_once ROOT_DIR . '/sys/Grouping/MergedGroupedWork.php';
 class Admin_GroupedWorkVersionFourToFiveMigration extends Admin_Admin {
 
 	function launch(){
+		ob_end_flush();
+		set_time_limit(1200);
+//		echo '<pre>';
 
+//		// Librarian Reviews
+//		require_once ROOT_DIR . '/sys/LocalEnrichment/LibrarianReview.php';
+//		$this->updateUserdata(new LibrarianReview());
+//
+//		// User Tags
+//		require_once ROOT_DIR . '/sys/LocalEnrichment/UserTag.php';
+//		$this->updateUserdata(new UserTag());
+//
+//		// User Not Interested
+//		require_once ROOT_DIR . '/sys/LocalEnrichment/NotInterested.php';
+//		$this->updateUserdata(new NotInterested(), true);
+//
+//		// User Rating/Reviews
+//		require_once ROOT_DIR . '/sys/LocalEnrichment/UserWorkReview.php';
+//		$this->updateUserdata(new UserWorkReview(), true);
+//
+//		// User List Entries
+//		require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
+//		$this->updateUserListEntries(new UserListEntry(), true);
+
+		//Reading History
+		require_once ROOT_DIR . '/sys/Account/ReadingHistoryEntry.php';
+		$this->updateReadingHistoryEntries(new ReadingHistoryEntry());
+
+
+		echo 'Done.';
+	}
+
+
+	//First version
+//	private function updateUserdata(DB_DataObject $userDataObject, bool $deleteNoMatches = false){
+//		$updated    = 0;
+//		$deleted    = 0;
+//		$objectName = get_class($userDataObject);
+//		if ($total = $userDataObject->find()){
+//			while ($userDataObject->fetch()){
+//				if (!empty($userDataObject->groupedWorkPermanentId)){
+//					$map                                 = new GroupedWorkVersionMap();
+//					$map->groupedWorkPermanentIdVersion4 = $userDataObject->groupedWorkPermanentId;
+//					if ($map->find(true)){
+//						if (!empty($map->groupedWorkPermanentIdVersion5)){
+//							$userDataObject->groupedWorkPermanentId = $map->groupedWorkPermanentIdVersion5;
+//							if ($userDataObject->update()){
+//								echo "<p>Updated $objectName id {$userDataObject->id}.</p>\n";
+//								$updated++;
+//							}else{
+//								echo "<p>Failed to update $objectName id {$userDataObject->id}.<br>" . $userDataObject->_lastError . "</p>\n";
+//							}
+//						}else{
+//							echo "<p>$objectName id {$userDataObject->id} grouped Work Id {$userDataObject->groupedWorkPermanentId} has no new version Id in version map.</p>\n";
+//							if ($deleteNoMatches){
+//								if ($userDataObject->delete()){
+//									echo "<p>Deleted $objectName id {$userDataObject->id}</p>\n";
+//									$deleted++;
+//								}else{
+//									echo "<p>Failed to delete $objectName id {$userDataObject->id}</p>\n";
+//								}
+//							}
+//						}
+//					}else{
+//						echo "<p>$objectName id {$userDataObject->id} grouped Work Id {$userDataObject->groupedWorkPermanentId} was not found in version map.</p>\n";
+//					}
+//				}else{
+//					echo "<p>$objectName id {$userDataObject->id} had no grouped Work Id.</p>\n";
+//				}
+//			}
+//		}
+//		echo "<p>Updated $updated of $total " . $objectName . ($deleteNoMatches ? " Deleted $deleted" : ''). "</p>";
+//	}
+
+	private function updateUserListEntries(UserListEntry $userDataObject, bool $deleteNoMatches = false){
+		$updated    = 0;
+		$deleted    = 0;
+		$objectName = get_class($userDataObject);
+		$userDataObject->selectAdd();
+		$userDataObject->selectAdd('id, groupedWorkPermanentId, groupedWorkPermanentIdVersion5');
+		$userDataObject->joinAdd(['groupedWorkPermanentId', 'grouped_work_versions_map:groupedWorkPermanentIdVersion4'], 'LEFT');
+		if ($total = $userDataObject->find()){
+			while ($userDataObject->fetch()){
+				if (!empty($userDataObject->groupedWorkPermanentId)){ //TODO: ignore archive pids
+					if (!empty($userDataObject->groupedWorkPermanentIdVersion5)){
+						$query = "UPDATE {$userDataObject->__table} SET groupedWorkPermanentId = '{$userDataObject->groupedWorkPermanentIdVersion5}' WHERE (  {$userDataObject->__table}.id = {$userDataObject->id} )";
+						if ($userDataObject->query($query)){
+//								echo "<p class='alert alert-info'>Updated $objectName id {$userDataObject->id}.</p>\n";
+							$updated++;
+						}else{
+							echo "<p class='alert alert-warning'>Failed to update $objectName id {$userDataObject->id}.<br>" . $userDataObject->_lastError . "</p>\n";
+						}
+					}else{
+//						echo "<p class='alert alert-info'>$objectName id {$userDataObject->id} grouped Work Id {$userDataObject->groupedWorkPermanentId} has no new version Id in version map.</p>\n";
+						if ($deleteNoMatches){
+							$query = "DELETE FROM {$userDataObject->__table}  WHERE (  {$userDataObject->__table}.id = {$userDataObject->id} ) LIMIT 1";
+							if ($userDataObject->query($query)){
+//								echo "<p class='alert alert-info'>Deleted $objectName id {$userDataObject->id}</p>\n";
+								$deleted++;
+							}else{
+								echo "<p class='alert alert-warning'>Failed to delete $objectName id {$userDataObject->id}</p>\n";
+							}
+						}
+					}
+				}else{
+					echo "<p class='alert alert-warning'>$objectName id {$userDataObject->id} had no grouped Work Id.</p>\n";
+				}
+			}
+		}
+		echo "<p class='alert alert-success'>Updated $updated of $total " . $objectName . ($deleteNoMatches ? " Deleted $deleted" : '') . "</p>";
+	}
+
+	private function updateUserdata(DB_DataObject $userDataObject, bool $deleteNoMatches = false){
+		$updated    = 0;
+		$deleted    = 0;
+		$objectName = get_class($userDataObject);
+		$userDataObject->selectAdd();
+		$userDataObject->selectAdd('id, groupedWorkPermanentId, groupedWorkPermanentIdVersion5');
+		$userDataObject->joinAdd(['groupedWorkPermanentId', 'grouped_work_versions_map:groupedWorkPermanentIdVersion4'], 'LEFT');
+		if ($total = $userDataObject->find()){
+			while ($userDataObject->fetch()){
+				if (!empty($userDataObject->groupedWorkPermanentId)){ //TODO: ignore archive pids
+					if (!empty($userDataObject->groupedWorkPermanentIdVersion5)){
+						$query = "UPDATE {$userDataObject->__table} SET groupedWorkPermanentId = '{$userDataObject->groupedWorkPermanentIdVersion5}' WHERE (  {$userDataObject->__table}.id = {$userDataObject->id} )";
+						if ($userDataObject->query($query)){
+//								echo "<p class='alert alert-info'>Updated $objectName id {$userDataObject->id}.</p>\n";
+							$updated++;
+						}else{
+							echo "<p class='alert alert-warning'>Failed to update $objectName id {$userDataObject->id}.<br>" . $userDataObject->_lastError . "</p>\n";
+						}
+					}else{
+//						echo "<p class='alert alert-info'>$objectName id {$userDataObject->id} grouped Work Id {$userDataObject->groupedWorkPermanentId} has no new version Id in version map.</p>\n";
+						if ($deleteNoMatches){
+							$query = "DELETE FROM {$userDataObject->__table}  WHERE (  {$userDataObject->__table}.id = {$userDataObject->id} ) LIMIT 1";
+							if ($userDataObject->query($query)){
+//								echo "<p class='alert alert-info'>Deleted $objectName id {$userDataObject->id}</p>\n";
+								$deleted++;
+							}else{
+								echo "<p class='alert alert-warning'>Failed to delete $objectName id {$userDataObject->id}</p>\n";
+							}
+						}
+					}
+				}else{
+					echo "<p class='alert alert-warning'>$objectName id {$userDataObject->id} had no grouped Work Id.</p>\n";
+				}
+			}
+		}
+		echo "<p class='alert alert-success'>Updated $updated of $total " . $objectName . ($deleteNoMatches ? " Deleted $deleted" : '') . "</p>";
+	}
+
+	private function updateReadingHistoryEntries(ReadingHistoryEntry $userDataObject){
+		$updated                          = 0;
+		$updatedByBibMatch                = 0;
+		$updatedByMapMatch                = 0;
+		$removedGroupedWorkIdDueToNoMatch = 0;
+		$noGroupedWorkId                  = 0;
+		$objectName                       = get_class($userDataObject);
+
+		$userDataObject->query("
+		SELECT 
+user_reading_history_work.id,
+groupedWorkPermanentId
+#, source
+#,if(source = 'hoopla',concat('MWT', sourceId), sourceId) AS readingHistoryEnhanceSourceId
+#,type, identifier
+,permanent_id
+,groupedWorkPermanentIdVersion5
+FROM user_reading_history_work
+LEFT JOIN grouped_work_primary_identifiers ON (source = type AND identifier = if(source = 'hoopla',concat('MWT', sourceId), sourceId))
+LEFT JOIN grouped_work ON (grouped_work_primary_identifiers.grouped_work_id = grouped_work.id)
+LEFT JOIN grouped_work_versions_map ON (groupedWorkPermanentId = groupedWorkPermanentIdVersion4)
+WHERE groupedWorkPermanentId != ''
+");
+
+
+		if ($total = $userDataObject->N){
+			while ($userDataObject->fetch()){
+				if (!empty($userDataObject->groupedWorkPermanentId)){
+					if (!empty($userDataObject->permanent_id)){
+						// Match by Bib Ids
+						$query = "UPDATE {$userDataObject->__table} SET groupedWorkPermanentId = '{$userDataObject->permanent_id}' WHERE (  {$userDataObject->__table}.id = {$userDataObject->id} )";
+						$updatedByBibMatch++;
+					}elseif (!empty($userDataObject->groupedWorkPermanentIdVersion5)){
+						// Match by Grouped Work Version Mapping
+						$query = "UPDATE {$userDataObject->__table} SET groupedWorkPermanentId = '{$userDataObject->groupedWorkPermanentIdVersion5}' WHERE (  {$userDataObject->__table}.id = {$userDataObject->id} )";
+						$updatedByMapMatch++;
+					}else{
+						$query = "UPDATE {$userDataObject->__table} SET groupedWorkPermanentId = '' WHERE (  {$userDataObject->__table}.id = {$userDataObject->id} )";
+						$removedGroupedWorkIdDueToNoMatch++;
+					}
+
+					$readingHistory = new ReadingHistoryEntry();
+					if ($readingHistory->query($query)){
+//						echo "<p class='alert alert-info'>Updated $objectName id {$userDataObject->id}.</p>\n";
+						$updated++;
+					}else{
+						echo "<p class='alert alert-warning'>Failed to update $objectName id {$userDataObject->id}.<br>$query<br>" . $userDataObject->_lastError . "</p>\n";
+					}
+
+				}else{
+					$noGroupedWorkId++;
+//					echo "<p class='alert alert-warning'>$objectName id {$userDataObject->id} had no grouped Work Id.</p>\n";
+				}
+			}
+		}
+		echo "<p class='alert alert-success'>Updated $updated of $total <br>\n"
+			. " Did not have a grouped work Id to start with: $noGroupedWorkId<br>\n"
+			. " Updated by bib: $updatedByMapMatch<br>\n"
+			. " Updated by Version map: $updatedByMapMatch<br>\n"
+			. " Removed grouped work id due to no match: $updatedByMapMatch<br>\n"
+			. "</p>";
+	}
+
+
+	private function buildMapping(){
 		$mapper = new GroupedWorkVersionMap();
 		$mapper->joinAdd(['groupedWorkPermanentIdVersion4', 'grouped_work_old:permanent_id']);
 		$mapper->whereAdd("groupedWorkPermanentIdVersion4 IS NOT NULL AND groupedWorkPermanentIdVersion5 IS NULL");
@@ -163,7 +377,7 @@ GROUP BY grouped_work_old.permanent_id
 										$mergeWorkEntry->sourceGroupedWorkId      = $workIdToMerge;
 										$mergeWorkEntry->destinationGroupedWorkId = $idForShortestTitle;
 										$mergeWorkEntry->userId                   = UserAccount::getActiveUserId();
-										$mergeWorkEntry->notes                    = "Grouped Work Version Migration\n " . implode(', ', $records) . "\nMerge title '$title' to '$shortestTitle'\n" . date('n/j/y');
+										$mergeWorkEntry->notes                    = "Merge title '$title' to '$shortestTitle'\n\n" . implode(', ', $records) ."\n\nGrouped Work Version Migration  " .date('n/j/y');
 										if (!$mergeWorkEntry->insert()){
 											echo "Failed to add grouped work merging for source ID " + $workIdToMerge;
 										}
@@ -188,8 +402,6 @@ GROUP BY grouped_work_old.permanent_id
 			}
 			echo "mapped $totalMapped out of $totalToMap\n";
 		}
-
-
 
 
 	}
