@@ -164,7 +164,10 @@ public class GroupedWork5 extends GroupedWorkBase implements Cloneable {
 	* */
 
 	final private static Pattern initialsFix                   = Pattern.compile("(?<=[A-Z])\\.(?=(\\s|[A-Z]|$))");
-	final private static Pattern apostropheStrip               = Pattern.compile("'+s"); // include typos with multiple apostrophes
+	final private static Pattern apostropheStrip               = Pattern.compile("['’]+s"); // include typos with multiple apostrophes
+	// Example of multiple apostrophe characters : Her Mother''s Daughter
+	// Example for alternate apostrophe character : God’s guide to a good life: moral theology. catholic moral theology
+	// Example for alternate apostrophe character : Alzheimer´s disease ii //TODO: never comes into play. this gets normalized treated as a diacritcal combination
 	final private static Pattern specialCharacterStrip         = Pattern.compile("[^\\p{L}\\d\\s]");
 	final private static Pattern consecutiveSpaceStrip         = Pattern.compile("\\s{2,}");
 	final private static Pattern bracketedCharacterStrip       = Pattern.compile("\\[(.*?)\\]");
@@ -178,16 +181,16 @@ public class GroupedWork5 extends GroupedWorkBase implements Cloneable {
 	 //removed from the simple pattern the option 'by\s\w+\s\w+' because this strips common phrases that aren't author statements, like ' by the sea'
 	final private static Pattern commonSubtitlesComplexPattern = Pattern.compile("((a|una)\\s(.*)novel(a|la)?|a(.*)memoir|a(.*)mystery|a(.*)thriller|by\\s\\w+\\s\\w+|an? .* story|a .*\\s?book|[\\w\\s]+series book \\d+|the[\\w\\s]+chronicles book \\d+|[\\w\\s]+trilogy book \\d+)$");
 	final private static Pattern editionRemovalPattern         = Pattern.compile("(first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth|revised|\\d+\\S*)\\s+(edition|ed|ed\\.|update|anniversary edition|comprehensive edition|anniversary commemorative edition)");
-	final private static Pattern firstPattern                  = Pattern.compile("1st");
-	final private static Pattern secondPattern                 = Pattern.compile("2nd");
-	final private static Pattern thirdPattern                  = Pattern.compile("3rd");
-	final private static Pattern fourthPattern                 = Pattern.compile("4th");
-	final private static Pattern fifthPattern                  = Pattern.compile("5th");
-	final private static Pattern sixthPattern                  = Pattern.compile("6th");
-	final private static Pattern seventhPattern                = Pattern.compile("7th");
-	final private static Pattern eighthPattern                 = Pattern.compile("8th");
-	final private static Pattern ninthPattern                  = Pattern.compile("9th");
-	final private static Pattern tenthPattern                  = Pattern.compile("10th");
+	final private static Pattern firstPattern                  = Pattern.compile("\\s1st");
+	final private static Pattern secondPattern                 = Pattern.compile("\\s2nd");
+	final private static Pattern thirdPattern                  = Pattern.compile("\\s3rd");
+	final private static Pattern fourthPattern                 = Pattern.compile("\\s4th");
+	final private static Pattern fifthPattern                  = Pattern.compile("\\s5th");
+	final private static Pattern sixthPattern                  = Pattern.compile("\\s6th");
+	final private static Pattern seventhPattern                = Pattern.compile("\\s7th");
+	final private static Pattern eighthPattern                 = Pattern.compile("\\s8th");
+	final private static Pattern ninthPattern                  = Pattern.compile("\\s9th");
+	final private static Pattern tenthPattern                  = Pattern.compile("\\s10th");
 	final private static Pattern dashPattern                   = Pattern.compile("&#8211");
 	final private static Pattern ampersandPattern              = Pattern.compile("&");
 	final private static Pattern digitPattern                  = Pattern.compile("\\p{Nd}");
@@ -245,13 +248,14 @@ public class GroupedWork5 extends GroupedWorkBase implements Cloneable {
 	 */
 	private String cleanTitleCharacters(String titleString) {
 		//Fix abbreviations
-		titleString = initialsFix.matcher(titleString).replaceAll(" ");
+		titleString = initialsFix.matcher(titleString).replaceAll(" ").toLowerCase();
+		// Set to lower case so that weird typos like " Buddhist'S " (uppercase s) get caught by the apostropheStrip
 		titleString = dashPattern.matcher(titleString).replaceAll("-"); // todo: combine with html entities decoding
 		titleString = ampersandPattern.matcher(titleString).replaceAll("and"); // TODO: avoid encoded sequences like &#174;
 		//Replace & with and for better matching (Note: this must happen *before* the specialCharacterStrip is applied
 
 		titleString = apostropheStrip.matcher(titleString).replaceAll("s");
-		titleString = specialCharacterStrip.matcher(titleString).replaceAll(" ").toLowerCase();
+		titleString = specialCharacterStrip.matcher(titleString).replaceAll(" ");
 		//Note: specialCharacterStrip will remove diacritical characters
 		// strips trailing / character but not the space before it; the trim() on consecutiveSpaceStrip below is needed to remove that.
 
@@ -296,16 +300,16 @@ public class GroupedWork5 extends GroupedWorkBase implements Cloneable {
 	private String normalizeNumericTitleText(String groupingTitle) {
 		//Normalize numeric titles
 		if (digitPattern.matcher(groupingTitle).find()) {
-			groupingTitle = firstPattern.matcher(groupingTitle).replaceAll("first");
-			groupingTitle = secondPattern.matcher(groupingTitle).replaceAll("second");
-			groupingTitle = thirdPattern.matcher(groupingTitle).replaceAll("third");
-			groupingTitle = fourthPattern.matcher(groupingTitle).replaceAll("fourth");
-			groupingTitle = fifthPattern.matcher(groupingTitle).replaceAll("fifth");
-			groupingTitle = sixthPattern.matcher(groupingTitle).replaceAll("sixth");
-			groupingTitle = seventhPattern.matcher(groupingTitle).replaceAll("seventh");
-			groupingTitle = eighthPattern.matcher(groupingTitle).replaceAll("eighth");
-			groupingTitle = ninthPattern.matcher(groupingTitle).replaceAll("ninth");
-			groupingTitle = tenthPattern.matcher(groupingTitle).replaceAll("tenth");
+			groupingTitle = firstPattern.matcher(groupingTitle).replaceAll(" first");
+			groupingTitle = secondPattern.matcher(groupingTitle).replaceAll(" second");
+			groupingTitle = thirdPattern.matcher(groupingTitle).replaceAll(" third");
+			groupingTitle = fourthPattern.matcher(groupingTitle).replaceAll(" fourth");
+			groupingTitle = fifthPattern.matcher(groupingTitle).replaceAll(" fifth");
+			groupingTitle = sixthPattern.matcher(groupingTitle).replaceAll(" sixth");
+			groupingTitle = seventhPattern.matcher(groupingTitle).replaceAll(" seventh");
+			groupingTitle = eighthPattern.matcher(groupingTitle).replaceAll(" eighth");
+			groupingTitle = ninthPattern.matcher(groupingTitle).replaceAll(" ninth");
+			groupingTitle = tenthPattern.matcher(groupingTitle).replaceAll(" tenth");
 		}
 		return groupingTitle;
 	}
