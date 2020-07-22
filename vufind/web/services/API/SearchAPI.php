@@ -49,8 +49,10 @@ class SearchAPI extends AJAXHandler {
 	const OVERDRIVE_EXTRACT_INTERVAL_CRITICAL = 18000;  // 5 Hours (in seconds)
 	const SOLR_RESTART_INTERVAL_WARN          = 86400;  // 24 Hours (in seconds)
 	const SOLR_RESTART_INTERVAL_CRITICAL      = 129600; // 36 Hours (in seconds)
-	const OVERDRIVE_DELETED_ITEMS_WARN        = 250;
+	const OVERDRIVE_DELETED_ITEMS_WARN        = 300;
 	const OVERDRIVE_DELETED_ITEMS_CRITICAL    = 1000;
+	const OVERDRIVE_UNPROCESSED_ITEMS_WARN        = 5000;
+	const OVERDRIVE_UNPROCESSED_ITEMS_CRITICAL    = 10000;
 	const SIERRA_MAX_REMAINING_ITEMS_WARN     = 5000;
 	const SIERRA_MAX_REMAINING_ITEMS_CRITICAL = 20000;
 
@@ -306,6 +308,18 @@ class SearchAPI extends AJAXHandler {
 				$notes[]  = "$deletedOverdriveItems Overdrive Items have been marked as deleted in the last 24 hours";
 				$status[] = $deletedOverdriveItems >= self::OVERDRIVE_DELETED_ITEMS_CRITICAL ? self::STATUS_CRITICAL : self::STATUS_WARN;
 			}
+
+			// Check How Many Overdrive Products need to be extracted and haven't been processed yet.
+			$overdriveProduct              = new OverDriveAPIProduct();
+			$overdriveProduct->needsUpdate = 1;
+			$overdriveProduct->deleted     = 0;
+			$numOutstandingChanges         = $overdriveProduct->count();
+			if (!empty($numOutstandingChanges) && $numOutstandingChanges >= self::OVERDRIVE_UNPROCESSED_ITEMS_WARN) {
+				$notes[]  = "$numOutstandingChanges Overdrive Items needing to be processed";
+				$status[] = $numOutstandingChanges >= self::OVERDRIVE_UNPROCESSED_ITEMS_CRITICAL ? self::STATUS_CRITICAL : self::STATUS_WARN;
+
+			}
+
 		}
 
 		// Unprocessed Offline Circs //

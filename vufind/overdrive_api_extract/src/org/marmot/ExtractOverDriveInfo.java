@@ -104,39 +104,42 @@ class ExtractOverDriveInfo {
 		extractStartTime = new Date().getTime() / 1000;
 
 		try {
-			long              maxProductsToUpdate         = 1500;
-			PreparedStatement markAllAsNeedingUpdatesStmt = econtentConn.prepareStatement("UPDATE overdrive_api_products set needsUpdate = 1");
+			Long              maxProductsToUpdate         = systemVariables.getLongValuedVariable("overdriveMaxProductsToUpdate");
+			if (maxProductsToUpdate == null){
+				maxProductsToUpdate         = 2500L;
+			}
+			PreparedStatement markAllAsNeedingUpdatesStmt = econtentConn.prepareStatement("UPDATE overdrive_api_products SET needsUpdate = 1");
 			PreparedStatement loadLanguagesStmt           = econtentConn.prepareStatement("SELECT * FROM overdrive_api_product_languages");
 			PreparedStatement loadSubjectsStmt            = econtentConn.prepareStatement("SELECT * FROM overdrive_api_product_subjects");
-			addProductStmt                               = econtentConn.prepareStatement("INSERT INTO overdrive_api_products set overdriveid = ?, crossRefId = ?, mediaType = ?, title = ?, subtitle = ?, series = ?, primaryCreatorRole = ?, primaryCreatorName = ?, cover = ?, dateAdded = ?, dateUpdated = ?, lastMetadataCheck = 0, lastMetadataChange = 0, lastAvailabilityCheck = 0, lastAvailabilityChange = 0, rawData=?", PreparedStatement.RETURN_GENERATED_KEYS);
-			setNeedsUpdateStmt                           = econtentConn.prepareStatement("UPDATE overdrive_api_products set needsUpdate = ? where overdriveid = ?");
-			getNumProductsNeedingUpdatesStmt             = econtentConn.prepareCall("SELECT count(overdrive_api_products.id) from overdrive_api_products where needsUpdate = 1 and deleted = 0 LIMIT " + maxProductsToUpdate);
-			getProductsNeedingUpdatesStmt                = econtentConn.prepareCall("SELECT overdrive_api_products.id, overdriveId, crossRefId, lastMetadataCheck, lastMetadataChange, lastAvailabilityCheck, lastAvailabilityChange from overdrive_api_products where needsUpdate = 1 and deleted = 0 LIMIT " + maxProductsToUpdate);
-			getIndividualProductStmt                     = econtentConn.prepareCall("SELECT overdrive_api_products.id, overdriveId, crossRefId, lastMetadataCheck, lastMetadataChange, lastAvailabilityCheck, lastAvailabilityChange from overdrive_api_products WHERE overdriveId = ?");
-			updateProductStmt                            = econtentConn.prepareStatement("UPDATE overdrive_api_products SET crossRefId = ?, mediaType = ?, title = ?, subtitle = ?, series = ?, primaryCreatorRole = ?, primaryCreatorName = ?, cover = ?, dateUpdated = ?, deleted = 0, rawData=? where id = ?");
-			deleteProductStmt                            = econtentConn.prepareStatement("UPDATE overdrive_api_products SET deleted = 1, dateDeleted = ? where id = ?");
-			updateProductMetadataStmt                    = econtentConn.prepareStatement("UPDATE overdrive_api_products SET lastMetadataCheck = ?, lastMetadataChange = ? where id = ?");
+			addProductStmt                               = econtentConn.prepareStatement("INSERT INTO overdrive_api_products SET overdriveid = ?, crossRefId = ?, mediaType = ?, title = ?, subtitle = ?, series = ?, primaryCreatorRole = ?, primaryCreatorName = ?, cover = ?, dateAdded = ?, dateUpdated = ?, lastMetadataCheck = 0, lastMetadataChange = 0, lastAvailabilityCheck = 0, lastAvailabilityChange = 0, rawData=?", PreparedStatement.RETURN_GENERATED_KEYS);
+			setNeedsUpdateStmt                           = econtentConn.prepareStatement("UPDATE overdrive_api_products SET needsUpdate = ? WHERE overdriveid = ?");
+			getNumProductsNeedingUpdatesStmt             = econtentConn.prepareCall("SELECT COUNT(overdrive_api_products.id) FROM overdrive_api_products WHERE needsUpdate = 1 AND deleted = 0 LIMIT " + maxProductsToUpdate);
+			getProductsNeedingUpdatesStmt                = econtentConn.prepareCall("SELECT overdrive_api_products.id, overdriveId, crossRefId, lastMetadataCheck, lastMetadataChange, lastAvailabilityCheck, lastAvailabilityChange FROM overdrive_api_products WHERE needsUpdate = 1 AND deleted = 0 LIMIT " + maxProductsToUpdate);
+			getIndividualProductStmt                     = econtentConn.prepareCall("SELECT overdrive_api_products.id, overdriveId, crossRefId, lastMetadataCheck, lastMetadataChange, lastAvailabilityCheck, lastAvailabilityChange FROM overdrive_api_products WHERE overdriveId = ?");
+			updateProductStmt                            = econtentConn.prepareStatement("UPDATE overdrive_api_products SET crossRefId = ?, mediaType = ?, title = ?, subtitle = ?, series = ?, primaryCreatorRole = ?, primaryCreatorName = ?, cover = ?, dateUpdated = ?, deleted = 0, rawData=? WHERE id = ?");
+			deleteProductStmt                            = econtentConn.prepareStatement("UPDATE overdrive_api_products SET deleted = 1, dateDeleted = ? WHERE id = ?");
+			updateProductMetadataStmt                    = econtentConn.prepareStatement("UPDATE overdrive_api_products SET lastMetadataCheck = ?, lastMetadataChange = ? WHERE id = ?");
 			loadMetaDataStmt                             = econtentConn.prepareStatement("SELECT * FROM overdrive_api_product_metadata WHERE productId = ?");
-			updateMetaDataStmt                           = econtentConn.prepareStatement("UPDATE overdrive_api_product_metadata set productId = ?, checksum = ?, sortTitle = ?, publisher = ?, publishDate = ?, isPublicDomain = ?, isPublicPerformanceAllowed = ?, shortDescription = ?, fullDescription = ?, starRating = ?, popularity =?, thumbnail=?, cover=?, isOwnedByCollections=?, rawData=? where id = ?");
-			addMetaDataStmt                              = econtentConn.prepareStatement("INSERT INTO overdrive_api_product_metadata set productId = ?, checksum = ?, sortTitle = ?, publisher = ?, publishDate = ?, isPublicDomain = ?, isPublicPerformanceAllowed = ?, shortDescription = ?, fullDescription = ?, starRating = ?, popularity =?, thumbnail=?, cover=?, isOwnedByCollections=?, rawData=?");
+			updateMetaDataStmt                           = econtentConn.prepareStatement("UPDATE overdrive_api_product_metadata SET productId = ?, checksum = ?, sortTitle = ?, publisher = ?, publishDate = ?, isPublicDomain = ?, isPublicPerformanceAllowed = ?, shortDescription = ?, fullDescription = ?, starRating = ?, popularity =?, thumbnail=?, cover=?, isOwnedByCollections=?, rawData=? WHERE id = ?");
+			addMetaDataStmt                              = econtentConn.prepareStatement("INSERT INTO overdrive_api_product_metadata SET productId = ?, checksum = ?, sortTitle = ?, publisher = ?, publishDate = ?, isPublicDomain = ?, isPublicPerformanceAllowed = ?, shortDescription = ?, fullDescription = ?, starRating = ?, popularity =?, thumbnail=?, cover=?, isOwnedByCollections=?, rawData=?");
 			clearCreatorsStmt                            = econtentConn.prepareStatement("DELETE FROM overdrive_api_product_creators WHERE productId = ?");
 			addCreatorStmt                               = econtentConn.prepareStatement("INSERT INTO overdrive_api_product_creators SET productId = ?, role = ?, name = ?, fileAs = ?");
 			addLanguageStmt                              = econtentConn.prepareStatement("INSERT INTO overdrive_api_product_languages SET code =?, name = ?", PreparedStatement.RETURN_GENERATED_KEYS);
 			clearLanguageRefStmt                         = econtentConn.prepareStatement("DELETE FROM overdrive_api_product_languages_ref WHERE productId = ?");
 			addLanguageRefStmt                           = econtentConn.prepareStatement("INSERT INTO overdrive_api_product_languages_ref SET productId = ?, languageId = ?");
-			addSubjectStmt                               = econtentConn.prepareStatement("INSERT INTO overdrive_api_product_subjects set name = ?", PreparedStatement.RETURN_GENERATED_KEYS);
-			clearSubjectRefStmt                          = econtentConn.prepareStatement("DELETE FROM overdrive_api_product_subjects_ref where productId = ?");
-			addSubjectRefStmt                            = econtentConn.prepareStatement("INSERT INTO overdrive_api_product_subjects_ref set productId = ?, subjectId = ?");
-			clearFormatsStmt                             = econtentConn.prepareStatement("DELETE FROM overdrive_api_product_formats where productId = ?");
-			addFormatStmt                                = econtentConn.prepareStatement("INSERT INTO overdrive_api_product_formats set productId = ?, textId = ?, numericId = ?, name = ?, fileName = ?, fileSize = ?, partCount = ?, sampleSource_1 = ?, sampleUrl_1 = ?, sampleSource_2 = ?, sampleUrl_2 = ?", PreparedStatement.RETURN_GENERATED_KEYS);
-			clearIdentifiersStmt                         = econtentConn.prepareStatement("DELETE FROM overdrive_api_product_identifiers where productId = ?");
-			addIdentifierStmt                            = econtentConn.prepareStatement("INSERT INTO overdrive_api_product_identifiers set productId = ?, type = ?, value = ?");
-			checkForExistingAvailabilityStmt             = econtentConn.prepareStatement("SELECT * from overdrive_api_product_availability where productId = ? and libraryId = ?");
-			updateAvailabilityStmt                       = econtentConn.prepareStatement("UPDATE overdrive_api_product_availability set available = ?, copiesOwned = ?, copiesAvailable = ?, numberOfHolds = ?, availabilityType = ? WHERE id = ?");
-			addAvailabilityStmt                          = econtentConn.prepareStatement("INSERT INTO overdrive_api_product_availability set productId = ?, libraryId = ?, available = ?, copiesOwned = ?, copiesAvailable = ?, numberOfHolds = ?, availabilityType = ?");
-			deleteAvailabilityStmt                       = econtentConn.prepareStatement("DELETE FROM overdrive_api_product_availability where id = ?");
-			updateProductAvailabilityStmt                = econtentConn.prepareStatement("UPDATE overdrive_api_products SET lastAvailabilityCheck = ?, lastAvailabilityChange = ? where id = ?");
-			markGroupedWorkForBibAsChangedStmt           = pikaConn.prepareStatement("UPDATE grouped_work SET date_updated = ? where id = (SELECT grouped_work_id from grouped_work_primary_identifiers WHERE type = 'overdrive' and identifier = ?)");
+			addSubjectStmt                               = econtentConn.prepareStatement("INSERT INTO overdrive_api_product_subjects SET name = ?", PreparedStatement.RETURN_GENERATED_KEYS);
+			clearSubjectRefStmt                          = econtentConn.prepareStatement("DELETE FROM overdrive_api_product_subjects_ref WHERE productId = ?");
+			addSubjectRefStmt                            = econtentConn.prepareStatement("INSERT INTO overdrive_api_product_subjects_ref SET productId = ?, subjectId = ?");
+			clearFormatsStmt                             = econtentConn.prepareStatement("DELETE FROM overdrive_api_product_formats WHERE productId = ?");
+			addFormatStmt                                = econtentConn.prepareStatement("INSERT INTO overdrive_api_product_formats SET productId = ?, textId = ?, numericId = ?, name = ?, fileName = ?, fileSize = ?, partCount = ?, sampleSource_1 = ?, sampleUrl_1 = ?, sampleSource_2 = ?, sampleUrl_2 = ?", PreparedStatement.RETURN_GENERATED_KEYS);
+			clearIdentifiersStmt                         = econtentConn.prepareStatement("DELETE FROM overdrive_api_product_identifiers WHERE productId = ?");
+			addIdentifierStmt                            = econtentConn.prepareStatement("INSERT INTO overdrive_api_product_identifiers SET productId = ?, type = ?, value = ?");
+			checkForExistingAvailabilityStmt             = econtentConn.prepareStatement("SELECT * FROM overdrive_api_product_availability WHERE productId = ? AND libraryId = ?");
+			updateAvailabilityStmt                       = econtentConn.prepareStatement("UPDATE overdrive_api_product_availability SET available = ?, copiesOwned = ?, copiesAvailable = ?, numberOfHolds = ?, availabilityType = ? WHERE id = ?");
+			addAvailabilityStmt                          = econtentConn.prepareStatement("INSERT INTO overdrive_api_product_availability SET productId = ?, libraryId = ?, available = ?, copiesOwned = ?, copiesAvailable = ?, numberOfHolds = ?, availabilityType = ?");
+			deleteAvailabilityStmt                       = econtentConn.prepareStatement("DELETE FROM overdrive_api_product_availability WHERE id = ?");
+			updateProductAvailabilityStmt                = econtentConn.prepareStatement("UPDATE overdrive_api_products SET lastAvailabilityCheck = ?, lastAvailabilityChange = ? WHERE id = ?");
+			markGroupedWorkForBibAsChangedStmt           = pikaConn.prepareStatement("UPDATE grouped_work SET date_updated = ? WHERE id = (SELECT grouped_work_id from grouped_work_primary_identifiers WHERE type = 'overdrive' AND identifier = ?)");
 			getSharedCollectionIdForAdvantageLibraryStmt = pikaConn.prepareStatement("SELECT sharedOverdriveCollection FROM library WHERE libraryId = ?");
 
 			//Get the last time we extracted data from OverDrive
@@ -286,9 +289,9 @@ class ExtractOverDriveInfo {
 
 					PreparedStatement updateExtractTime;
 					if (lastExtractTime == null) {
-						updateExtractTime = pikaConn.prepareStatement("INSERT INTO variables set value = ?, name = 'last_overdrive_extract_time'");
+						updateExtractTime = pikaConn.prepareStatement("INSERT INTO variables SET value = ?, name = 'last_overdrive_extract_time'");
 					} else {
-						updateExtractTime = pikaConn.prepareStatement("UPDATE variables set value = ? where name = 'last_overdrive_extract_time'");
+						updateExtractTime = pikaConn.prepareStatement("UPDATE variables SET value = ? WHERE name = 'last_overdrive_extract_time'");
 					}
 					updateExtractTime.setLong(1, extractStartTime);
 					updateExtractTime.executeUpdate();
