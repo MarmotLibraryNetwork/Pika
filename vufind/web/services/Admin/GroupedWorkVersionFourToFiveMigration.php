@@ -22,51 +22,101 @@
  *
  */
 
-require_once ROOT_DIR . '/services/Admin/Admin.php';
+require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 require_once ROOT_DIR . '/sys/Grouping/GroupedWorkVersionMap.php';
 require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 require_once ROOT_DIR . '/sys/Grouping/GroupedWorkPrimaryIdentifier.php';
 require_once ROOT_DIR . '/sys/Grouping/MergedGroupedWork.php';
 
 
-class Admin_GroupedWorkVersionFourToFiveMigration extends Admin_Admin {
+class Admin_GroupedWorkVersionFourToFiveMigration extends ObjectEditor {
 
 	function launch(){
-		ob_end_flush();
-		set_time_limit(1200);
-//		echo '<pre>';
 
-//		// Librarian Reviews
-//		require_once ROOT_DIR . '/sys/LocalEnrichment/LibrarianReview.php';
-//		$this->updateUserdata(new LibrarianReview());
-//
-//		// User Tags
-//		require_once ROOT_DIR . '/sys/LocalEnrichment/UserTag.php';
-//		$this->updateUserdata(new UserTag());
-//
-//		// User Not Interested
-//		require_once ROOT_DIR . '/sys/LocalEnrichment/NotInterested.php';
-//		$this->updateUserdata(new NotInterested(), true);
-//
-//		// User Rating/Reviews
-//		require_once ROOT_DIR . '/sys/LocalEnrichment/UserWorkReview.php';
-//		$this->updateUserdata(new UserWorkReview(), true);
-//
-//		// User List Entries
-//		require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
-//		$this->updateUserListEntries(new UserListEntry(), true);
+		$objectAction = $_REQUEST['objectAction'] ?? null;
+		switch ($objectAction){
+			case 'buildMap':
+				$this->buildMapping();
+				break;
 
-		//Reading History
-		require_once ROOT_DIR . '/sys/Account/ReadingHistoryEntry.php';
-		$this->updateReadingHistoryEntries(new ReadingHistoryEntry());
+			case 'migrateLibrarianReviews' :
+				// Librarian Reviews
+				require_once ROOT_DIR . '/sys/LocalEnrichment/LibrarianReview.php';
+				$this->updateUserData(new LibrarianReview());
+				break;
 
+			case 'migrateUserTags':
+				// User Tags
+				require_once ROOT_DIR . '/sys/LocalEnrichment/UserTag.php';
+				$this->updateUserData(new UserTag());
+				break;
 
-		echo 'Done.';
+			case 'migrateUserNotInterested':
+				// User Not Interested
+				require_once ROOT_DIR . '/sys/LocalEnrichment/NotInterested.php';
+				$this->updateUserData(new NotInterested(), true);
+				break;
+
+			case 'migrateUserReviews':
+				// User Rating/Reviews
+				require_once ROOT_DIR . '/sys/LocalEnrichment/UserWorkReview.php';
+				$this->updateUserData(new UserWorkReview(), true);
+				break;
+
+			case 'migrateUserLists':
+				// User List Entries
+				require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
+				$this->updateUserListEntries(new UserListEntry(), true);
+				break;
+
+			case 'migrateUserReadingHistory':
+				//Reading History
+				require_once ROOT_DIR . '/sys/Account/ReadingHistoryEntry.php';
+				$this->updateReadingHistoryEntries(new ReadingHistoryEntry());
+				break;
+
+			default :
+				parent::launch();
+		}
+
+	}
+
+	public function customListActions(){
+		$actions[] = [
+			'label'  => 'Build Version Mapping',
+			'action' => 'buildMap',
+		];
+		$actions[] = [
+			'label'  => 'Migrate Librarian Reviews',
+			'action' => 'migrateLibrarianReviews',
+		];
+		$actions[] = [
+			'label'  => 'Migrate User Tags',
+			'action' => 'migrateUserTags',
+		];
+		$actions[] = [
+			'label'  => 'Migrate User Not Interested',
+			'action' => 'migrateUserNotInterested',
+		];
+		$actions[] = [
+			'label'  => 'Migrate User Reviews',
+			'action' => 'migrateUserReviews',
+		];
+		$actions[] = [
+			'label'  => 'Migrate User Lists',
+			'action' => 'migrateUserLists',
+		];
+		$actions[] = [
+			'label'  => 'Migrate User Reading History',
+			'action' => 'migrateUserReadingHistory',
+		];
+
+		return $actions;
 	}
 
 
 	//First version
-//	private function updateUserdata(DB_DataObject $userDataObject, bool $deleteNoMatches = false){
+//	private function updateUserData(DB_DataObject $userDataObject, bool $deleteNoMatches = false){
 //		$updated    = 0;
 //		$deleted    = 0;
 //		$objectName = get_class($userDataObject);
@@ -79,34 +129,35 @@ class Admin_GroupedWorkVersionFourToFiveMigration extends Admin_Admin {
 //						if (!empty($map->groupedWorkPermanentIdVersion5)){
 //							$userDataObject->groupedWorkPermanentId = $map->groupedWorkPermanentIdVersion5;
 //							if ($userDataObject->update()){
-//								echo "<p>Updated $objectName id {$userDataObject->id}.</p>\n";
+//								$output .= "<p>Updated $objectName id {$userDataObject->id}.</p>\n";
 //								$updated++;
 //							}else{
-//								echo "<p>Failed to update $objectName id {$userDataObject->id}.<br>" . $userDataObject->_lastError . "</p>\n";
+//								$output .= "<p>Failed to update $objectName id {$userDataObject->id}.<br>" . $userDataObject->_lastError . "</p>\n";
 //							}
 //						}else{
-//							echo "<p>$objectName id {$userDataObject->id} grouped Work Id {$userDataObject->groupedWorkPermanentId} has no new version Id in version map.</p>\n";
+//							$output .= "<p>$objectName id {$userDataObject->id} grouped Work Id {$userDataObject->groupedWorkPermanentId} has no new version Id in version map.</p>\n";
 //							if ($deleteNoMatches){
 //								if ($userDataObject->delete()){
-//									echo "<p>Deleted $objectName id {$userDataObject->id}</p>\n";
+//									$output .= "<p>Deleted $objectName id {$userDataObject->id}</p>\n";
 //									$deleted++;
 //								}else{
-//									echo "<p>Failed to delete $objectName id {$userDataObject->id}</p>\n";
+//									$output .= "<p>Failed to delete $objectName id {$userDataObject->id}</p>\n";
 //								}
 //							}
 //						}
 //					}else{
-//						echo "<p>$objectName id {$userDataObject->id} grouped Work Id {$userDataObject->groupedWorkPermanentId} was not found in version map.</p>\n";
+//						$output .= "<p>$objectName id {$userDataObject->id} grouped Work Id {$userDataObject->groupedWorkPermanentId} was not found in version map.</p>\n";
 //					}
 //				}else{
-//					echo "<p>$objectName id {$userDataObject->id} had no grouped Work Id.</p>\n";
+//					$output .= "<p>$objectName id {$userDataObject->id} had no grouped Work Id.</p>\n";
 //				}
 //			}
 //		}
-//		echo "<p>Updated $updated of $total " . $objectName . ($deleteNoMatches ? " Deleted $deleted" : ''). "</p>";
+//		$output .= "<p>Updated $updated of $total " . $objectName . ($deleteNoMatches ? " Deleted $deleted" : ''). "</p>";
 //	}
 
-	private function updateUserListEntries(UserListEntry $userDataObject, bool $deleteNoMatches = false){
+	private function updateUserData(DB_DataObject $userDataObject, bool $deleteNoMatches = false){
+		$output     = '';
 		$updated    = 0;
 		$deleted    = 0;
 		$objectName = get_class($userDataObject);
@@ -119,32 +170,36 @@ class Admin_GroupedWorkVersionFourToFiveMigration extends Admin_Admin {
 					if (!empty($userDataObject->groupedWorkPermanentIdVersion5)){
 						$query = "UPDATE {$userDataObject->__table} SET groupedWorkPermanentId = '{$userDataObject->groupedWorkPermanentIdVersion5}' WHERE (  {$userDataObject->__table}.id = {$userDataObject->id} )";
 						if ($userDataObject->query($query)){
-//								echo "<p class='alert alert-info'>Updated $objectName id {$userDataObject->id}.</p>\n";
+//								$output .= "<p class='alert alert-info'>Updated $objectName id {$userDataObject->id}.</p>\n";
 							$updated++;
 						}else{
-							echo "<p class='alert alert-warning'>Failed to update $objectName id {$userDataObject->id}.<br>" . $userDataObject->_lastError . "</p>\n";
+							$output .= "<p class='alert alert-warning'>Failed to update $objectName id {$userDataObject->id}.<br>" . $userDataObject->_lastError . "</p>\n";
 						}
 					}else{
-//						echo "<p class='alert alert-info'>$objectName id {$userDataObject->id} grouped Work Id {$userDataObject->groupedWorkPermanentId} has no new version Id in version map.</p>\n";
+//						$output .= "<p class='alert alert-info'>$objectName id {$userDataObject->id} grouped Work Id {$userDataObject->groupedWorkPermanentId} has no new version Id in version map.</p>\n";
 						if ($deleteNoMatches){
 							$query = "DELETE FROM {$userDataObject->__table}  WHERE (  {$userDataObject->__table}.id = {$userDataObject->id} ) LIMIT 1";
 							if ($userDataObject->query($query)){
-//								echo "<p class='alert alert-info'>Deleted $objectName id {$userDataObject->id}</p>\n";
+//								$output .= "<p class='alert alert-info'>Deleted $objectName id {$userDataObject->id}</p>\n";
 								$deleted++;
 							}else{
-								echo "<p class='alert alert-warning'>Failed to delete $objectName id {$userDataObject->id}</p>\n";
+								$output .= "<p class='alert alert-warning'>Failed to delete $objectName id {$userDataObject->id}</p>\n";
 							}
 						}
 					}
 				}else{
-					echo "<p class='alert alert-warning'>$objectName id {$userDataObject->id} had no grouped Work Id.</p>\n";
+					$output .= "<p class='alert alert-warning'>$objectName id {$userDataObject->id} had no grouped Work Id.</p>\n";
 				}
 			}
 		}
-		echo "<p class='alert alert-success'>Updated $updated of $total " . $objectName . ($deleteNoMatches ? " Deleted $deleted" : '') . "</p>";
+		$output .= "<p class='alert alert-success'>Updated $updated of $total " . $objectName . ($deleteNoMatches ? " Deleted $deleted" : '') . "</p>";
+		global $interface;
+		$interface->assign('output', $output);
+		$this->display('groupedWorkMigration.tpl');
 	}
 
-	private function updateUserdata(DB_DataObject $userDataObject, bool $deleteNoMatches = false){
+	private function updateUserListEntries(UserListEntry $userDataObject, bool $deleteNoMatches = false){
+		$output     = '';
 		$updated    = 0;
 		$deleted    = 0;
 		$objectName = get_class($userDataObject);
@@ -157,32 +212,36 @@ class Admin_GroupedWorkVersionFourToFiveMigration extends Admin_Admin {
 					if (!empty($userDataObject->groupedWorkPermanentIdVersion5)){
 						$query = "UPDATE {$userDataObject->__table} SET groupedWorkPermanentId = '{$userDataObject->groupedWorkPermanentIdVersion5}' WHERE (  {$userDataObject->__table}.id = {$userDataObject->id} )";
 						if ($userDataObject->query($query)){
-//								echo "<p class='alert alert-info'>Updated $objectName id {$userDataObject->id}.</p>\n";
+//								$output .= "<p class='alert alert-info'>Updated $objectName id {$userDataObject->id}.</p>\n";
 							$updated++;
 						}else{
-							echo "<p class='alert alert-warning'>Failed to update $objectName id {$userDataObject->id}.<br>" . $userDataObject->_lastError . "</p>\n";
+							$output .= "<p class='alert alert-warning'>Failed to update $objectName id {$userDataObject->id}.<br>" . $userDataObject->_lastError . "</p>\n";
 						}
 					}else{
-//						echo "<p class='alert alert-info'>$objectName id {$userDataObject->id} grouped Work Id {$userDataObject->groupedWorkPermanentId} has no new version Id in version map.</p>\n";
+//						$output .= "<p class='alert alert-info'>$objectName id {$userDataObject->id} grouped Work Id {$userDataObject->groupedWorkPermanentId} has no new version Id in version map.</p>\n";
 						if ($deleteNoMatches){
 							$query = "DELETE FROM {$userDataObject->__table}  WHERE (  {$userDataObject->__table}.id = {$userDataObject->id} ) LIMIT 1";
 							if ($userDataObject->query($query)){
-//								echo "<p class='alert alert-info'>Deleted $objectName id {$userDataObject->id}</p>\n";
+//								$output .= "<p class='alert alert-info'>Deleted $objectName id {$userDataObject->id}</p>\n";
 								$deleted++;
 							}else{
-								echo "<p class='alert alert-warning'>Failed to delete $objectName id {$userDataObject->id}</p>\n";
+								$output .= "<p class='alert alert-warning'>Failed to delete $objectName id {$userDataObject->id}</p>\n";
 							}
 						}
 					}
 				}else{
-					echo "<p class='alert alert-warning'>$objectName id {$userDataObject->id} had no grouped Work Id.</p>\n";
+					$output .= "<p class='alert alert-warning'>$objectName id {$userDataObject->id} had no grouped Work Id.</p>\n";
 				}
 			}
 		}
-		echo "<p class='alert alert-success'>Updated $updated of $total " . $objectName . ($deleteNoMatches ? " Deleted $deleted" : '') . "</p>";
+		$output .= "<p class='alert alert-success'>Updated $updated of $total " . $objectName . ($deleteNoMatches ? " Deleted $deleted" : '') . "</p>";
+		global $interface;
+		$interface->assign('output', $output);
+		$this->display('groupedWorkMigration.tpl');
 	}
 
 	private function updateReadingHistoryEntries(ReadingHistoryEntry $userDataObject){
+		$output                           = '';
 		$updated                          = 0;
 		$updatedByBibMatch                = 0;
 		$updatedByMapMatch                = 0;
@@ -225,28 +284,32 @@ WHERE groupedWorkPermanentId != ''
 
 					$readingHistory = new ReadingHistoryEntry();
 					if ($readingHistory->query($query)){
-//						echo "<p class='alert alert-info'>Updated $objectName id {$userDataObject->id}.</p>\n";
+//						$output .= "<p class='alert alert-info'>Updated $objectName id {$userDataObject->id}.</p>\n";
 						$updated++;
 					}else{
-						echo "<p class='alert alert-warning'>Failed to update $objectName id {$userDataObject->id}.<br>$query<br>" . $userDataObject->_lastError . "</p>\n";
+						$output .= "<p class='alert alert-warning'>Failed to update $objectName id {$userDataObject->id}.<br>$query<br>" . $userDataObject->_lastError . "</p>\n";
 					}
 
 				}else{
 					$noGroupedWorkId++;
-//					echo "<p class='alert alert-warning'>$objectName id {$userDataObject->id} had no grouped Work Id.</p>\n";
+//					$output .= "<p class='alert alert-warning'>$objectName id {$userDataObject->id} had no grouped Work Id.</p>\n";
 				}
 			}
 		}
-		echo "<p class='alert alert-success'>Updated $updated of $total <br>\n"
+		$output .= "<p class='alert alert-success'>Updated $updated of $total <br>\n"
 			. " Did not have a grouped work Id to start with: $noGroupedWorkId<br>\n"
 			. " Updated by bib: $updatedByMapMatch<br>\n"
 			. " Updated by Version map: $updatedByMapMatch<br>\n"
 			. " Removed grouped work id due to no match: $updatedByMapMatch<br>\n"
 			. "</p>";
+		global $interface;
+		$interface->assign('output', $output);
+		$this->display('groupedWorkMigration.tpl');
 	}
 
 
 	private function buildMapping(){
+		$output = '';
 		$mapper = new GroupedWorkVersionMap();
 		$mapper->joinAdd(['groupedWorkPermanentIdVersion4', 'grouped_work_old:permanent_id']);
 		$mapper->whereAdd("groupedWorkPermanentIdVersion4 IS NOT NULL AND groupedWorkPermanentIdVersion5 IS NULL");
@@ -266,7 +329,7 @@ COUNT(DISTINCT grouped_work.permanent_id) AS newIDcount
 , group_concat(DISTINCT grouped_work.author ORDER BY grouped_work_primary_identifiers.identifier) AS newGroupingAuthors
 #, group_concat(DISTINCT grouped_work.full_title ORDER BY grouped_work_primary_identifiers.identifier) AS newGroupingTitles
 
-, group_concat(DISTINCT grouped_work_primary_identifiers.type, ':', grouped_work_primary_identifiers.identifier ORDER BY grouped_work_primary_identifiers.identifier) AS newPrimaryIdentifiers
+#, group_concat(DISTINCT grouped_work_primary_identifiers.type, ':', grouped_work_primary_identifiers.identifier ORDER BY grouped_work_primary_identifiers.identifier) AS newPrimaryIdentifiers
 
 FROM grouped_work_versions_map
 
@@ -294,15 +357,15 @@ GROUP BY grouped_work_old.permanent_id
 									$mapper->groupedWorkPermanentIdVersion5 = $groupingID;
 									if (!$mapper->update()){
 										//Failed to update Map
-										echo "Did not update grouped work version 4 map entry : " + $mapper->groupedWorkPermanentIdVersion4 + "\n";
+										$output .= "<p class='alert alert-warning'>Did not update grouped work version 4 map entry : " + $mapper->groupedWorkPermanentIdVersion4 + "<p>\n";
 									}else{
-										echo "Mapping V4 " . $mapper->groupedWorkPermanentIdVersion4 . ' to V5 ' . $groupingID;
+										$output .= "<p class='alert alert-success'>Mapping V4 {$mapper->groupedWorkPermanentIdVersion4} to V5 $groupingID</p>";
 										$totalMapped++;
 										break;
 									}
 								}
 							}
-							echo '<hr>';
+							$output .= '<hr>';
 
 							// Multiple Languages Scenario (Use the english work)
 						}elseif (count($newGroupingCategories) == 1 && count($newGroupingLanguages) > 1){
@@ -313,15 +376,15 @@ GROUP BY grouped_work_old.permanent_id
 									$mapper->groupedWorkPermanentIdVersion5 = $groupingID;
 									if (!$mapper->update()){
 										//Failed to update Map
-										echo "Did not update grouped work version 4 map entry : " + $mapper->groupedWorkPermanentIdVersion4 + "\n";
+										$output .= "<p class='alert alert-warning'>Did not update grouped work version 4 map entry : " + $mapper->groupedWorkPermanentIdVersion4;
 									}else{
-										echo "Mapping V4 " . $mapper->groupedWorkPermanentIdVersion4 . ' to V5 ' . $groupingID;
+										$output .= "<p class='alert alert-success'>Mapping V4 {$mapper->groupedWorkPermanentIdVersion4} to V5 $groupingID</p>";
 										$totalMapped++;
 										break;
 									}
 								}
 							}
-							echo '<hr>';
+							$output .= '<hr>';
 
 							// Multiple Languages and new comic grouping category scenario (use the english book version)
 						}elseif (in_array('comic', $newGroupingCategories) && in_array('eng', $newGroupingLanguages)){
@@ -332,19 +395,21 @@ GROUP BY grouped_work_old.permanent_id
 									$mapper->groupedWorkPermanentIdVersion5 = $groupingID;
 									if (!$mapper->update()){
 										//Failed to update Map
-										echo "Did not update grouped work version 4 map entry : " + $mapper->groupedWorkPermanentIdVersion4 + "\n";
+										$output .= "<p class='alert alert-warning'>Did not update grouped work version 4 map entry : " + $mapper->groupedWorkPermanentIdVersion4;
 									}else{
-										echo "Mapping V4 " . $mapper->groupedWorkPermanentIdVersion4 . ' to V5 ' . $groupingID;
+										$output .= "<p class='alert alert-success'>Mapping V4 {$mapper->groupedWorkPermanentIdVersion4} to V5 $groupingID</p>";
 										$totalMapped++;
 										break;
 									}
 								}
 							}
-							echo '<hr>';
+							$output .= '<hr>';
 
-						} elseif (count($newGroupingCategories) == 1 && count($newGroupingLanguages) == 1 && $newGroupingCategories != ['movie']){
+						}elseif (count($newGroupingCategories) == 1 && count($newGroupingLanguages) == 1 && $newGroupingCategories != ['movie']){
 							$newGroupingAuthors = explode(',', $groupedWorkMatching->newGroupingAuthors);
 							if (count($newGroupingAuthors) == 1){
+								$output .= "<div class='well'>";
+								$output .= '<table class="table table-bordered">';
 //								$newPrimaryIdentifiers = explode(',', $groupedWorkMatching->newPrimaryIdentifiers);
 								$groupingTitles = [];
 								foreach ($newGroupingIDs as $groupingID){
@@ -356,7 +421,9 @@ GROUP BY grouped_work_old.permanent_id
 									$relatedRecordIds->selectAdd();
 									$relatedRecordIds->selectAdd('concat(type, ":", identifier) AS fullIdentifier');
 									$records = $relatedRecordIds->fetchAll('fullIdentifier');
-									echo "<p>" . $groupedWork->full_title . " -- " . $groupedWork->author . "<span style='float: right'>" . implode(', ', $records) . ' | ' . $groupingID . "</span></p>\n";
+//									$output  .= "<p>" . $groupedWork->full_title . " -- " . $groupedWork->author . "<span style='float: right'>" . implode(', ', $records) . ' | ' . $groupingID . "</span></p>\n";
+//									$output .= "<div class='row'><div class='col-tn-7'>" . $groupedWork->full_title . " -- " . $groupedWork->author . "</div><div class='col-tn-2'>" . implode(', ', $records) . "</div><div class='col-tn-3'>$groupingID</div></div>";
+									$output .= "<tr><td>" . $groupedWork->full_title . " -- " . $groupedWork->author . "</td><td>" . implode(', ', $records) . "</td><td>$groupingID</td></tr>";
 								}
 								ksort($groupingTitles);
 								$shortestTitle      = array_key_first($groupingTitles);
@@ -369,30 +436,31 @@ GROUP BY grouped_work_old.permanent_id
 										$mergeWorks = false;
 									}
 								}
+								$output .= '</table>';
 
 								if ($mergeWorks){
-									echo "Merge " . implode(', ', array_values($groupingTitles)) . " into target work " . $idForShortestTitle;
+									$output .= "Merge " . implode(', ', array_values($groupingTitles)) . " into target work " . $idForShortestTitle;
 									foreach ($groupingTitles as $title => $workIdToMerge){
 										$mergeWorkEntry                           = new MergedGroupedWork();
 										$mergeWorkEntry->sourceGroupedWorkId      = $workIdToMerge;
 										$mergeWorkEntry->destinationGroupedWorkId = $idForShortestTitle;
 										$mergeWorkEntry->userId                   = UserAccount::getActiveUserId();
-										$mergeWorkEntry->notes                    = "Merge title '$title' to '$shortestTitle'\n\n" . implode(', ', $records) ."\n\nGrouped Work Version Migration  " .date('n/j/y');
+										$mergeWorkEntry->notes                    = "Merge title '$title' to '$shortestTitle'\n\n" . implode(', ', $records) . "\n\nGrouped Work Version Migration  " . date('n/j/y');
 										if (!$mergeWorkEntry->insert()){
-											echo "Failed to add grouped work merging for source ID " + $workIdToMerge;
+											$output .= "<p class='alert alert-warning'>Failed to add grouped work merging for source ID $workIdToMerge <p>\n";
 										}
 									}
 									$mapper->groupedWorkPermanentIdVersion5 = $idForShortestTitle;
 									if (!$mapper->update()){
 										//Failed to update Map
-										echo "Did not update grouped work version 4 map entry : " + $mapper->groupedWorkPermanentIdVersion4 + "\n";
+										$output .= "<p class='alert alert-warning'>Did not update grouped work version 4 map entry : " + $mapper->groupedWorkPermanentIdVersion4;
 									}else{
 										$totalMapped++;
 									}
-								} else {
-									echo "DO NOT MERGE";
+								}else{
+									$output .= "Did not merge";
 								}
-								echo '<hr>';
+								$output .= '</div>';
 
 							}
 						}
@@ -400,13 +468,54 @@ GROUP BY grouped_work_old.permanent_id
 				}
 
 			}
-			echo "mapped $totalMapped out of $totalToMap\n";
+			$output .= "<p class='alert alert-success'>Mapped $totalMapped out of $totalToMap</p>\n";
+			global $interface;
+			$interface->assign('output', $output);
+			$this->display('groupedWorkMigration.tpl');
 		}
 
 
 	}
 
-	function getAllowableRoles() {
+	function getAllowableRoles(){
 		return ['opacAdmin'];
 	}
+
+	function getObjectType(){
+		// TODO: Implement getObjectType() method.
+	}
+
+	function getToolName(){
+		// TODO: Implement getToolName() method.
+	}
+
+	function getPageTitle(){
+		return 'Grouped Work Version Four To Five Migration';
+	}
+
+	function getObjectStructure(){
+		return [];
+	}
+
+	function getPrimaryKeyColumn(){
+		// TODO: Implement getPrimaryKeyColumn() method.
+	}
+
+	function getIdKeyColumn(){
+		// TODO: Implement getIdKeyColumn() method.
+	}
+
+	function getAllObjects($orderBy = null){
+		return [];
+	}
+
+	public function canAddNew(){
+		return false;
+	}
+
+	public function canDelete(){
+		return false;
+	}
+
+
 }
