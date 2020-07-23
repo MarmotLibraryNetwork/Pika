@@ -91,12 +91,8 @@ class Admin_Variables extends ObjectEditor {
 		$actions = array();
 		if ($existingObject && $existingObject->id != ''){
 			$actions[] = array(
-				'text' => '<span class="glyphicon glyphicon-time" aria-hidden="true"></span> Set to Current Timestamp (seconds)',
+				'text' => '<span class="glyphicon glyphicon-time" aria-hidden="true"></span> Set to Current Timestamp',
 				'url'  => "/{$this->getModule()}/{$this->getToolName()}?objectAction=setToNow&amp;id=" . $existingObject->id,
-			);
-			$actions[] = array(
-				'text' => '<span class="glyphicon glyphicon-time" aria-hidden="true"></span> Set to Current Timestamp (milliseconds)',
-				'url'  => "/{$this->getModule()}/{$this->getToolName()}?objectAction=setToNow&amp;ms=1&amp;id=" . $existingObject->id,
 			);
 			$actions[] = array(
 				'text' => '<span class="glyphicon glyphicon-arrow-up" aria-hidden="true"></span> Increase by 10,000',
@@ -126,12 +122,11 @@ class Admin_Variables extends ObjectEditor {
 	 */
 	function setToNow(){
 		$id              = $_REQUEST['id'];
-		$useMilliseconds = isset($_REQUEST['ms']) && ($_REQUEST['ms'] == 1 || $_REQUEST['ms'] == 'true');
 		if (!empty($id) && ctype_digit($id)){
 			$variable = new Variable();
 			$variable->get($id);
 			if ($variable){
-				$variable->value = $useMilliseconds ? time() * 1000 : time();
+				$variable->value = time();
 				$variable->update();
 			}
 			header("Location: /{$this->getModule()}/{$this->getToolName()}?objectAction=edit&id=" . $id);

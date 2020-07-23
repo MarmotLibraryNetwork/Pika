@@ -274,7 +274,7 @@ class SearchAPI extends AJAXHandler {
 			$lastOverDriveExtractVariable = new Variable('last_overdrive_extract_time');
 			if ($lastOverDriveExtractVariable){
 				//Check to see if the last overdrive extract finished more than OVERDRIVE_EXTRACT_INTERVAL_WARN seconds ago
-				$lastOverDriveExtractTime = $lastOverDriveExtractVariable->value / 1000;
+				$lastOverDriveExtractTime = $lastOverDriveExtractVariable->value;
 				if ($lastOverDriveExtractTime < ($currentTime - self::OVERDRIVE_EXTRACT_INTERVAL_WARN)){
 					$status[] = ($lastOverDriveExtractTime < ($currentTime - self::OVERDRIVE_EXTRACT_INTERVAL_CRITICAL)) ? self::STATUS_CRITICAL : self::STATUS_WARN;
 					$notes[]  = 'OverDrive Extract last finished ' . date('m-d-Y H:i:s', $lastOverDriveExtractTime) . ' - ' . round(($currentTime - ($lastOverDriveExtractTime)) / 3600, 2) . ' hours ago';
