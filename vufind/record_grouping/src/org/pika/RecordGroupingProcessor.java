@@ -206,6 +206,7 @@ class RecordGroupingProcessor {
 			}
 		}
 
+		logger.debug("identifier : " + identifier);
 		if (identifier != null && identifier.isValid()) {
 			return identifier;
 		} else {
