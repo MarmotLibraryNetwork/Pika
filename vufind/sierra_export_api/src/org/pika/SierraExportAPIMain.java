@@ -188,7 +188,7 @@ public class SierraExportAPIMain {
 			logger.error("Sierra Field Mappings need to be set.");
 			System.exit(0);
 		}
-		if (indexingProfile.sierraBibLevelFieldTag == null || indexingProfile.sierraBibLevelFieldTag.isEmpty()) {
+		if (indexingProfile.sierraRecordFixedFieldsTag == null || indexingProfile.sierraRecordFixedFieldsTag.isEmpty()) {
 			logger.error("Sierra Bib level/fixed field tag needs to be set in the indexing profile.");
 			System.exit(0);
 		}
@@ -1253,7 +1253,7 @@ public class SierraExportAPIMain {
 				//Load Sierra Fixed Field / Bib Level Tag
 				JSONObject fixedFieldResults = getMarcJSONFromSierraApiURL(apiBaseUrl + "/bibs/" + id + "?fields=fixedFields,locations");
 				if (fixedFieldResults != null && !fixedFieldResults.has("code")) {
-					DataField        sierraFixedField = marcFactory.newDataField(indexingProfile.sierraBibLevelFieldTag, ' ', ' ');
+					DataField        sierraFixedField = marcFactory.newDataField(indexingProfile.sierraRecordFixedFieldsTag, ' ', ' ');
 					final JSONObject fixedFields      = fixedFieldResults.getJSONObject("fixedFields");
 					if (indexingProfile.bcode3Subfield != ' ') {
 						String bCode3 = fixedFields.getJSONObject("31").getString("value");

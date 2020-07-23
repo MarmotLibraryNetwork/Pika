@@ -56,10 +56,10 @@ public class IndexingProfile {
 	char             volume;
 	char             itemUrl;
 	char             iTypeSubfield;
-	String           sierraBibLevelFieldTag;
+	String           sierraRecordFixedFieldsTag;
 	char             bcode3Subfield;
 	char             materialTypeSubField;
-	String materialTypesToIgnore;
+	String           materialTypesToIgnore;
 	char             sierraLanguageFixedField;
 	boolean          doAutomaticEcontentSuppression;
 	String           formatSource;
@@ -246,7 +246,7 @@ public class IndexingProfile {
 		indexingProfile.recordNumberPrefix                = indexingProfileRS.getString("recordNumberPrefix");
 		indexingProfile.formatSource                      = indexingProfileRS.getString("formatSource");
 		indexingProfile.specifiedFormatCategory           = indexingProfileRS.getString("specifiedFormatCategory");
-		indexingProfile.sierraBibLevelFieldTag            = indexingProfileRS.getString("sierraRecordFixedFieldsTag");
+		indexingProfile.sierraRecordFixedFieldsTag        = indexingProfileRS.getString("sierraRecordFixedFieldsTag");
 		indexingProfile.marcEncoding                      = indexingProfileRS.getString("marcEncoding");
 
 		indexingProfile.setEContentDescriptor(indexingProfileRS.getString("eContentDescriptor"));
