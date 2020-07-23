@@ -112,7 +112,7 @@ public class MarcRecordGrouper extends RecordGroupingProcessor {
 			addGroupedWorkToDatabase(primaryIdentifier, workForTitle, primaryDataChanged);
 			return true;
 		} else {
-			//The record is suppressed
+			//The record is not grouped
 			return false;
 		}
 	}

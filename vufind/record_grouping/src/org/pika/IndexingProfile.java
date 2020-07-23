@@ -42,16 +42,16 @@ public class IndexingProfile {
 	char    eContentDescriptor;
 	boolean doAutomaticEcontentSuppression;
 	boolean groupUnchangedFiles;
-	boolean usingSierraAPIExtract    = false;
+	boolean usingSierraAPIExtract        = false;
 	String  sierraRecordFixedFieldsTag;
-	char    sierraLanguageFixedField = ' ';
+	char    sierraLanguageFixedField     = ' ';
 	char    materialTypeSubField;
 	String  materialTypesToIgnore;
 	String  specifiedFormat;
 	String  specifiedFormatCategory;
 	String  specifiedGroupingCategory;
 	int     specifiedFormatBoost;
-	char collectionSubfield;
+	char    collectionSubfield;
 	Pattern statusesToSuppressPattern    = null;
 	Pattern locationsToSuppressPattern   = null;
 	Pattern collectionsToSuppressPattern = null;
@@ -76,7 +76,6 @@ public class IndexingProfile {
 		this.specifiedGroupingCategory         = indexingProfileRS.getString("specifiedGroupingCategory");
 		this.formatDeterminationMethod         = indexingProfileRS.getString("formatDeterminationMethod");
 		this.materialTypesToIgnore             = indexingProfileRS.getString("materialTypesToIgnore");
-//		this.sierraBibLevelFieldTag            = indexingProfileRS.getString("sierraRecordFixedFieldsTag");
 		this.groupingClass                     = indexingProfileRS.getString("groupingClass");
 		this.itemTag                           = indexingProfileRS.getString("itemTag");
 		this.doAutomaticEcontentSuppression    = indexingProfileRS.getBoolean("doAutomaticEcontentSuppression");
@@ -95,6 +94,7 @@ public class IndexingProfile {
 		this.setICode2Subfield(indexingProfileRS.getString("iCode2"));
 		this.setMaterialTypeSubField(indexingProfileRS.getString("materialTypeField"));
 		this.setSierraLanguageFixedField(indexingProfileRS.getString("sierraLanguageFixedField"));
+		this.setCollectionSubfield(indexingProfileRS.getString("collection"));
 
 		String locationsToSuppress = indexingProfileRS.getString("locationsToSuppress");
 		if (locationsToSuppress != null && locationsToSuppress.length() > 0) {
@@ -287,6 +287,7 @@ public class IndexingProfile {
 	public void setSierraLanguageFixedField(String subfield) {
 		this.sierraLanguageFixedField = getCharFromString(subfield);
 	}
+
 	public void setCollectionSubfield(String collectionSubfield) {
 		this.collectionSubfield = getCharFromString(collectionSubfield);
 	}

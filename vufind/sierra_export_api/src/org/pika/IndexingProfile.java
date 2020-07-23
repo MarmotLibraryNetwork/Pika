@@ -6,6 +6,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
+import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
 
@@ -66,6 +67,24 @@ public class IndexingProfile {
 	char             format;
 	char             eContentDescriptor;
 	String           specifiedFormatCategory;
+
+
+	// Fields needed for Record Grouping
+	String           formatDeterminationMethod;
+	String           filenamesToInclude;
+	String           groupingClass;
+	boolean          useICode2Suppression;
+	boolean          groupUnchangedFiles;
+	boolean          usingSierraAPIExtract        = true;
+//	String           specifiedFormat;
+	String           specifiedGroupingCategory;
+//	int              specifiedFormatBoost;
+	char             collectionSubfield;
+	Pattern          statusesToSuppressPattern    = null;
+	Pattern          locationsToSuppressPattern   = null;
+	Pattern          collectionsToSuppressPattern = null;
+	Pattern          iTypesToSuppressPattern      = null;
+	Pattern          iCode2sToSuppressPattern     = null;
 
 	// Sierra API Field Mapping
 	String APIItemCallNumberFieldTag;
@@ -248,6 +267,36 @@ public class IndexingProfile {
 		indexingProfile.specifiedFormatCategory           = indexingProfileRS.getString("specifiedFormatCategory");
 		indexingProfile.sierraRecordFixedFieldsTag        = indexingProfileRS.getString("sierraRecordFixedFieldsTag");
 		indexingProfile.marcEncoding                      = indexingProfileRS.getString("marcEncoding");
+
+
+		// Fields for grouping
+		indexingProfile.formatDeterminationMethod         = indexingProfileRS.getString("formatDeterminationMethod");
+		indexingProfile.filenamesToInclude                = indexingProfileRS.getString("filenamesToInclude");
+		indexingProfile.groupingClass                  = indexingProfileRS.getString("groupingClass");
+		indexingProfile.useICode2Suppression           = indexingProfileRS.getBoolean("useICode2Suppression");
+		indexingProfile.specifiedGroupingCategory         = indexingProfileRS.getString("specifiedGroupingCategory");
+		String locationsToSuppress = indexingProfileRS.getString("locationsToSuppress");
+		if (locationsToSuppress != null && locationsToSuppress.length() > 0) {
+			indexingProfile.locationsToSuppressPattern = Pattern.compile(locationsToSuppress);
+		}
+		String collectionsToSuppress = indexingProfileRS.getString("collectionsToSuppress");
+		if (collectionsToSuppress != null && collectionsToSuppress.length() > 0) {
+			indexingProfile.collectionsToSuppressPattern = Pattern.compile(collectionsToSuppress);
+		}
+		String statusesToSuppress = indexingProfileRS.getString("statusesToSuppress");
+		if (statusesToSuppress != null && statusesToSuppress.length() > 0) {
+			indexingProfile.statusesToSuppressPattern = Pattern.compile(statusesToSuppress);
+		}
+		String iCode2sToSuppress = indexingProfileRS.getString("iCode2sToSuppress");
+		if (iCode2sToSuppress != null && iCode2sToSuppress.length() > 0) {
+			indexingProfile.iCode2sToSuppressPattern = Pattern.compile(iCode2sToSuppress);
+		}
+		String iTypesToSuppress = indexingProfileRS.getString("iTypesToSuppress");
+		if (iTypesToSuppress != null && iTypesToSuppress.length() > 0) {
+			indexingProfile.iTypesToSuppressPattern = Pattern.compile(iTypesToSuppress);
+		}
+
+
 
 		indexingProfile.setEContentDescriptor(indexingProfileRS.getString("eContentDescriptor"));
 		indexingProfile.setRecordNumberField(indexingProfileRS.getString("recordNumberField"));

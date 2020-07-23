@@ -1323,11 +1323,12 @@ public class SierraExportAPIMain {
 	}
 
 	private static String groupAndWriteTheMarcRecord(Record marcRecord, Long id) {
-		String identifier = null;
+		String           identifier       = null;
+		RecordIdentifier recordIdentifier = null;
 		if (id != null) {
 			identifier = getfullSierraBibId(id);
 		} else {
-			RecordIdentifier recordIdentifier = recordGroupingProcessor.getPrimaryIdentifierFromMarcRecord(marcRecord, indexingProfile.sourceName, indexingProfile.doAutomaticEcontentSuppression);
+			recordIdentifier = recordGroupingProcessor.getPrimaryIdentifierFromMarcRecord(marcRecord, indexingProfile.sourceName, indexingProfile.doAutomaticEcontentSuppression);
 			if (recordIdentifier != null) {
 				identifier = recordIdentifier.getIdentifier();
 			} else {
@@ -1344,8 +1345,9 @@ public class SierraExportAPIMain {
 
 		//Setup the grouped work for the record.  This will take care of either adding it to the proper grouped work
 		//or creating a new grouped work
-		if (!recordGroupingProcessor.processMarcRecord(marcRecord, true)) {
-			logger.warn(identifier + " was suppressed");
+		final boolean grouped = (recordIdentifier != null) ? recordGroupingProcessor.processMarcRecord(marcRecord, true, recordIdentifier) : recordGroupingProcessor.processMarcRecord(marcRecord, true);
+		if (!grouped) {
+			logger.warn(identifier + " was not grouped");
 		} else {
 			logger.debug("Finished record grouping for " + identifier);
 		}
