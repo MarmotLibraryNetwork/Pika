@@ -31,7 +31,7 @@ class SideLoadedRecordGrouper extends MarcRecordGrouper {
 	@Override
 	protected String setGroupingCategoryForWork(RecordIdentifier identifier, Record marcRecord, IndexingProfile profile, GroupedWorkBase workForTitle) {
 		String groupingCategory;
-		HashSet<String> groupingCategories = new FormatDetermination(profile, translationMaps, logger).loadEContentFormatInformation(identifier, marcRecord);
+		HashSet<String> groupingCategories = new GroupingFormatDetermination(profile, translationMaps, logger).loadEContentFormatInformation(identifier, marcRecord);
 		if (groupingCategories.size() > 1){
 			groupingCategory = "book"; // fall back option for now
 			logger.warn("More than one grouping category for " + identifier + " : " + String.join(",", groupingCategories));

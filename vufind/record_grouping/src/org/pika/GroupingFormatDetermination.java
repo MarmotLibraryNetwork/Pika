@@ -14,10 +14,13 @@ import java.util.regex.Pattern;
 /**
  * Pika
  *
+ * Format Determinations should match the indexing format determinations.
+ * Here with an additional step of using that format determination to make a grouping category determination.
+ *
  * @author pbrammeier
  * 		Date:   2/12/2020
  */
-public class FormatDetermination {
+public class GroupingFormatDetermination {
 	protected Logger logger;
 
 	HashMap<String, TranslationMap> translationMaps;
@@ -51,7 +54,7 @@ public class FormatDetermination {
 	//For Record Grouping Category
 	HashSet<String> groupingCategories = new HashSet<>();
 
-	FormatDetermination(IndexingProfile indexingProfile, HashMap<String, TranslationMap> translationMaps, Logger logger){
+	GroupingFormatDetermination(IndexingProfile indexingProfile, HashMap<String, TranslationMap> translationMaps, Logger logger){
 		this.logger = logger;
 		this.translationMaps = translationMaps;
 
