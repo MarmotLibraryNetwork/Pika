@@ -3,6 +3,7 @@ package org.pika;
 class RecordIdentifier {
 	private String  source;
 	private String  identifier;
+	private boolean suppressed;
 
 	RecordIdentifier(String source, String identifier){
 		setValue(source, identifier);
@@ -39,6 +40,10 @@ class RecordIdentifier {
 		return source;
 	}
 
+	boolean isValid() {
+		return identifier.length() > 0;
+	}
+
 	String getIdentifier() {
 		return identifier;
 	}
@@ -49,5 +54,12 @@ class RecordIdentifier {
 		this.identifier = identifier;
 	}
 
-}
+	boolean isSuppressed() {
+		return suppressed;
+	}
 
+	void setSuppressed(boolean suppressed) {
+		this.suppressed = suppressed;
+	}
+
+}

@@ -1,12 +1,5 @@
 package org.pika;
 
-/**
- * Description goes here
- * Rampart Marc Conversion
- * User: Mark Noble
- * Date: 10/18/13
- * Time: 10:27 AM
- */
 class RecordIdentifier {
 	private String  source;
 	private String  identifier;
@@ -37,6 +30,10 @@ class RecordIdentifier {
 		}else{
 			return false;
 		}
+	}
+
+	String getSourceAndId(){
+		return toString();
 	}
 
 	String getSource() {
