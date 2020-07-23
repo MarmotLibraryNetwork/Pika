@@ -137,7 +137,7 @@ class RecordGroupingProcessor {
 					DataField curRecordNumberField = (DataField) recordNumberFieldValue;
 					Subfield  recordNumberSubfield = curRecordNumberField.getSubfield(recordNumberField);
 					if (recordNumberSubfield != null && (recordNumberPrefix.length() == 0 || recordNumberSubfield.getData().length() > recordNumberPrefix.length())) {
-						if (recordNumberSubfield.getData().substring(0, recordNumberPrefix.length()).equals(recordNumberPrefix)) {
+						if (recordNumberSubfield.getData().startsWith(recordNumberPrefix)) {
 							String recordNumber = recordNumberSubfield.getData().trim();
 							identifier = new RecordIdentifier(recordSource, recordNumber);
 							break;

@@ -1328,11 +1328,16 @@ public class SierraExportAPIMain {
 		if (id != null) {
 			identifier = getfullSierraBibId(id);
 		} else {
-			recordIdentifier = recordGroupingProcessor.getPrimaryIdentifierFromMarcRecord(marcRecord, indexingProfile.sourceName, indexingProfile.doAutomaticEcontentSuppression);
-			if (recordIdentifier != null) {
-				identifier = recordIdentifier.getIdentifier();
-			} else {
-				logger.warn("Failed to set record identifier in record grouper getPrimaryIdentifierFromMarcRecord(); possible error or automatic econtent suppression trigger.");
+			try {
+				recordIdentifier = recordGroupingProcessor.getPrimaryIdentifierFromMarcRecord(marcRecord, indexingProfile.sourceName, indexingProfile.doAutomaticEcontentSuppression);
+				if (recordIdentifier != null) {
+					identifier = recordIdentifier.getIdentifier();
+				} else {
+					logger.warn("Failed to set record identifier in record grouper getPrimaryIdentifierFromMarcRecord(); possible error or automatic econtent suppression trigger.");
+				}
+			} catch (Exception e) {
+				logger.error("catch for id " + id + "or  record Identifier " + recordIdentifier, e);
+				throw e;
 			}
 		}
 		if (identifier != null && !identifier.isEmpty()) {
@@ -2059,7 +2064,7 @@ public class SierraExportAPIMain {
 	}
 
 	private static void updatePartialExtractRunning(boolean running) {
-		systemVariables.setVariable("sierra_extract_running", Boolean.toString(running));
+		systemVariables.setVariable("sierra_extract_running", running);
 	}
 
 	private static JSONObject getMarcJSONFromSierraApiURL(String sierraUrl) {
