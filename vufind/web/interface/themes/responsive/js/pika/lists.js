@@ -12,10 +12,10 @@ Pika.Lists = (function(){
 
 		submitListForm: function(action, page, pageSize, sort){
 			$('#myListActionHead').val(action);
-			$('#myListFormHead').submit();
 			$('#myListPage').val(page);
 			$('#myListPageSize').val(pageSize);
 			$('#myListSort').val(sort);
+			$('#myListFormHead').submit();
 			return false;
 		},
 		submitListFormWithData: function(action, data,page, pageSize, sort){
@@ -60,10 +60,6 @@ Pika.Lists = (function(){
 
 			 }
 
-		},
-
-		updateListAction: function (){
-			return this.submitListForm('saveList');
 		},
 
 		deleteAllListItemsAction: function (page, pageSize, sort){

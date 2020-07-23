@@ -110,6 +110,8 @@ class MyAccount_MyList extends MyAccount {
 						$list->title       = $_REQUEST['newTitle'];
 						$list->description = strip_tags($_REQUEST['newDescription']);
 						$list->defaultSort = $_REQUEST['defaultSort'];
+
+
 						$list->update();
 						break;
 					case 'deleteList':
@@ -157,20 +159,20 @@ class MyAccount_MyList extends MyAccount {
 			}
 			//Redirect back to avoid having the parameters stay in the URL (keeping both pagesize and current page).
             $queryString = "";
-            if(isset($_REQUEST['myListPageSize']))
+            if(!empty($_REQUEST['myListPageSize']))
             {
                 $queryString = "?pagesize=" . $_REQUEST['myListPageSize'];
             }
-            if(isset($_REQUEST['myListPage']))
+            if(!empty($_REQUEST['myListPage']))
             {
-                if (isset($_REQUEST['myListPageSize'])) {
+                if (!empty($_REQUEST['myListPageSize'])) {
                     $queryString = "?pagesize=" . $_REQUEST['myListPageSize'] . "&page=" . $_REQUEST['myListPage'];
                     }
                 else{
                     $queryString = "?page=" . $_REQUEST['myListPage'];
                 }
             }
-            if(isset($_REQUEST['myListSort'])) {
+            if(!empty($_REQUEST['myListSort'])) {
                 if (strpos($queryString, "&") !== false)
                 {
                     $queryString = $queryString . "?";
