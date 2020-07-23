@@ -19,7 +19,6 @@ import javax.net.ssl.SSLSession;
 import com.mysql.jdbc.exceptions.MySQLIntegrityConstraintViolationException;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.log4j.Logger;
-import org.ini4j.Ini;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -147,7 +146,7 @@ class ExtractOverDriveInfo {
 				logger.info("Updating a single record " + individualIdToProcess);
 			} else if (!doFullReload) {
 				//Check to see if a partial extract is running
-				partialExtractRunning = systemVariables.getBooleanValuedVariable("last_overdrive_extract_time");
+				partialExtractRunning = systemVariables.getBooleanValuedVariable("partial_overdrive_extract_running");
 				if (partialExtractRunning) {
 					//Oops, a overdrive extract is already running.
 					logger.warn("A partial overdrive extract is already running, verify that multiple extracts are not running for best performance.");
@@ -182,8 +181,9 @@ class ExtractOverDriveInfo {
 
 			if (individualIdToProcess == null) {
 				//Load last extract time regardless of if we are doing full index or partial index
+				String timestamp = systemVariables.getStringValuedVariable("last_overdrive_extract_time");
 				lastExtractTime = systemVariables.getLongValuedVariable("last_overdrive_extract_time");
-				Date lastExtractDate = new Date(lastExtractTime);
+				Date lastExtractDate = new Date(timestamp.length() >= 13 ? lastExtractTime : lastExtractTime * 1000); //TEMP check; converting from millisecond timestamp to second time stamp
 				if (!doFullReload) {
 					SimpleDateFormat lastUpdateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
 					logger.info("Loading all records that have changed since " + lastUpdateFormat.format(lastExtractDate));
@@ -199,7 +199,7 @@ class ExtractOverDriveInfo {
 			}
 
 			//Update the last extract time
-			Long extractStartTime = new Date().getTime();
+			long extractStartTime = new Date().getTime() / 1000;
 
 			ResultSet loadLanguagesRS = loadLanguagesStmt.executeQuery();
 			while (loadLanguagesRS.next()) {
@@ -286,15 +286,7 @@ class ExtractOverDriveInfo {
 				if (errorsWhileLoadingProducts || results.hasErrors()) {
 					logger.debug("Not setting last extract time since there were problems extracting products from the API");
 				} else {
-
-					PreparedStatement updateExtractTime;
-					if (lastExtractTime == null) {
-						updateExtractTime = pikaConn.prepareStatement("INSERT INTO variables SET value = ?, name = 'last_overdrive_extract_time'");
-					} else {
-						updateExtractTime = pikaConn.prepareStatement("UPDATE variables SET value = ? WHERE name = 'last_overdrive_extract_time'");
-					}
-					updateExtractTime.setLong(1, extractStartTime);
-					updateExtractTime.executeUpdate();
+					systemVariables.setVariable("last_overdrive_extract_time", extractStartTime);
 					logger.debug("Setting last extract time to " + extractStartTime + " " + new Date(extractStartTime).toString());
 				}
 				if (!doFullReload) {
@@ -836,7 +828,7 @@ class ExtractOverDriveInfo {
 		long   firstCollection = overDriveInfo.getCollections().iterator().next();
 		String apiKey;
 		if (firstCollection < 0L) {
-			apiKey = getProductsKeyforSharedCollection(firstCollection);
+			apiKey = getProductsKeyForSharedCollection(firstCollection);
 		} else {
 			apiKey = libToOverDriveAPIKeyMap.get(firstCollection);
 		}
@@ -1431,7 +1423,7 @@ class ExtractOverDriveInfo {
 
 				String apiKey;
 				if (curCollection < 0L) {
-					apiKey = getProductsKeyforSharedCollection(curCollection);
+					apiKey = getProductsKeyForSharedCollection(curCollection);
 				} else {
 					apiKey = libToOverDriveAPIKeyMap.get(curCollection);
 				}
@@ -2086,11 +2078,11 @@ class ExtractOverDriveInfo {
 
 	private void updatePartialExtractRunning(boolean running) {
 		//Update the last overdrive extract time in the variables table
-		systemVariables.setVariable("last_overdrive_extract_time", Boolean.toString(running));
+		systemVariables.setVariable("partial_overdrive_extract_running", running);
 	}
 
-	private String getProductsKeyforSharedCollection(Long sharedCollectionId) {
-		Integer i = (int) (Math.abs(sharedCollectionId) - 1);
+	private String getProductsKeyForSharedCollection(Long sharedCollectionId) {
+		int i = (int) (Math.abs(sharedCollectionId) - 1);
 		if (i < accountIds.size()) {
 			String accountId   = accountIds.get(i);
 			String productsKey = overDriveProductsKeys.get(accountId);

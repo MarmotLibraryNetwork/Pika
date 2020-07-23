@@ -66,7 +66,7 @@ public class PikaSystemVariables {
 	}
 
 	public String getStringValuedVariable(String name) {
-		try (PreparedStatement preparedStatement = pikaConn.prepareStatement("SELECT * from variables WHERE name = '?'", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY)) {
+		try (PreparedStatement preparedStatement = pikaConn.prepareStatement("SELECT * FROM variables WHERE name = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY)) {
 			preparedStatement.setString(1, name);
 			try (ResultSet resultSet = preparedStatement.executeQuery()) {
 				if (resultSet.next()) {
