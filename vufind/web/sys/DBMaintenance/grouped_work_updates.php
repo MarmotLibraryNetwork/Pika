@@ -371,7 +371,7 @@ function getGroupedWorkUpdates(){
 		],
 
 		'grouping_migration_build_version_map-2020.06' => [
-			'title'           => 'Step 2 : Populate Grouped Work Version Map with version 4 Ids',
+			'title'           => 'Step 3 : Populate Grouped Work Version Map with version 4 Ids',
 			'description'     => 'Add version 4 ids found in user data tables into grouped work version map',
 			'continueOnError' => false,
 			'sql'             => [
@@ -384,6 +384,8 @@ function getGroupedWorkUpdates(){
 				"INSERT LOW_PRIORITY IGNORE INTO grouped_work_versions_map (groupedWorkPermanentIdVersion4) SELECT DISTINCT groupedWorkPermanentId FROM user_tags WHERE groupedWorkPermanentId IS NOT NULL;",
 				"INSERT LOW_PRIORITY IGNORE INTO grouped_work_versions_map (groupedWorkPermanentIdVersion4) SELECT DISTINCT groupedWorkPermanentId FROM user_not_interested WHERE groupedWorkPermanentId IS NOT NULL;",
 				"INSERT LOW_PRIORITY IGNORE INTO grouped_work_versions_map (groupedWorkPermanentIdVersion4) SELECT DISTINCT groupedWorkPermanentId FROM librarian_reviews WHERE groupedWorkPermanentId IS NOT NULL;",
+				"DELETE FROM grouped_work_versions_map WHERE groupedWorkPermanentIdVersion4 LIKE \"%:%\";", // Remove Archive PIDs
+				"DELETE FROM `grouped_work_versions_map` WHERE `groupedWorkPermanentIdVersion4`='';", // remove the empty entry
 			],
 		],
 		'grouping_migration_data_clean_up-2020.06' => [
@@ -393,41 +395,39 @@ function getGroupedWorkUpdates(){
 			'sql'             => [
 				"DELETE FROM user_reading_history_work WHERE deleted = 1;", // remove any entries that have been marked as deleted to make the migration cleaner
 				"UPDATE user_reading_history_work SET source = lower(source);", // Set Reading history entries to lower case
-				"DELETE FROM grouped_work_versions_map WHERE groupedWorkPermanentIdVersion4 LIKE \"%:%\";", // Remove Archive PIDs
 				"DELETE FROM user_list_entry WHERE groupedWorkPermanentId ='' ", // Clean up user list entries with no data
 			],
 		],
 
-		'grouping_migration_populate_version_map-2020.06' => [
-			'title'           => 'POST GROUPING STEP 1 : Populate Grouped Work Version Map with one to one matches',
-			'description'     => 'Mapping via related records that result in a single version 5 grouping Id',
-			'continueOnError' => false,
-			'sql'             => [
-				"DELETE FROM `grouped_work_versions_map` WHERE `groupedWorkPermanentIdVersion4`='';", // remove the empty entry
-				"UPDATE grouped_work_versions_map
-					INNER JOIN
-					(
-					SELECT 
-						grouped_work_old.permanent_id AS oldID
-					    , group_concat(DISTINCT grouped_work.permanent_id) AS newID
-					    
-					    FROM grouped_work_versions_map
-					    LEFT JOIN grouped_work_old ON (grouped_work_versions_map.groupedWorkPermanentIdVersion4 = grouped_work_old.permanent_id)
-					    LEFT JOIN grouped_work_primary_identifiers_old ON (grouped_work_primary_identifiers_old.grouped_work_id = grouped_work_old.id)
-					    LEFT JOIN grouped_work_primary_identifiers ON (grouped_work_primary_identifiers.identifier = grouped_work_primary_identifiers_old.identifier AND grouped_work_primary_identifiers.type = grouped_work_primary_identifiers_old.type)
-					    LEFT JOIN grouped_work ON (grouped_work_primary_identifiers.grouped_work_id = grouped_work.id)
-					    WHERE grouped_work_versions_map.groupedWorkPermanentIdVersion5 IS NULL
-					    GROUP BY grouped_work_old.permanent_id
-					    HAVING COUNT(DISTINCT grouped_work.permanent_id) = 1
-					
-					    
-					) As relatedRecordMappingOneToOneMatches
-					ON groupedWorkPermanentIdVersion4 = relatedRecordMappingOneToOneMatches.oldID
-					    
-					SET groupedWorkPermanentIdVersion5 = relatedRecordMappingOneToOneMatches.newID
-					WHERE groupedWorkPermanentIdVersion5 IS NULL",
-			],
-		],
+//		'grouping_migration_populate_version_map-2020.06' => [
+//			'title'           => 'POST GROUPING STEP 1 : Populate Grouped Work Version Map with one to one matches',
+//			'description'     => 'Mapping via related records that result in a single version 5 grouping Id',
+//			'continueOnError' => false,
+//			'sql'             => [
+//				"UPDATE grouped_work_versions_map
+//					INNER JOIN
+//					(
+//					SELECT
+//						grouped_work_old.permanent_id AS oldID
+//					    , group_concat(DISTINCT grouped_work.permanent_id) AS newID
+//
+//					    FROM grouped_work_versions_map
+//					    LEFT JOIN grouped_work_old ON (grouped_work_versions_map.groupedWorkPermanentIdVersion4 = grouped_work_old.permanent_id)
+//					    LEFT JOIN grouped_work_primary_identifiers_old ON (grouped_work_primary_identifiers_old.grouped_work_id = grouped_work_old.id)
+//					    LEFT JOIN grouped_work_primary_identifiers ON (grouped_work_primary_identifiers.identifier = grouped_work_primary_identifiers_old.identifier AND grouped_work_primary_identifiers.type = grouped_work_primary_identifiers_old.type)
+//					    LEFT JOIN grouped_work ON (grouped_work_primary_identifiers.grouped_work_id = grouped_work.id)
+//					    WHERE grouped_work_versions_map.groupedWorkPermanentIdVersion5 IS NULL
+//					    GROUP BY grouped_work_old.permanent_id
+//					    HAVING COUNT(DISTINCT grouped_work.permanent_id) = 1
+//
+//
+//					) As relatedRecordMappingOneToOneMatches
+//					ON groupedWorkPermanentIdVersion4 = relatedRecordMappingOneToOneMatches.oldID
+//
+//					SET groupedWorkPermanentIdVersion5 = relatedRecordMappingOneToOneMatches.newID
+//					WHERE groupedWorkPermanentIdVersion5 IS NULL",
+//			],
+//		],
 
 	);
 }
