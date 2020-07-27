@@ -173,12 +173,9 @@ class MyAccount_MyList extends MyAccount {
                 }
             }
             if(!empty($_REQUEST['myListSort'])) {
-                if (strpos($queryString, "&") !== false)
-                {
-                    $queryString = $queryString . "?";
-                }else {$queryString = $queryString . "&";}
 
-                $queryString = $queryString . "sort=" . $_REQUEST['myListSort'];
+
+                $queryString = $queryString . "&sort=" . $_REQUEST['myListSort'];
             }
 			header("Location: /MyAccount/MyList/{$list->id}" . $queryString);
 			die();
