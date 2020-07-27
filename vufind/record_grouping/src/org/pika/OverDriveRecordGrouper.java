@@ -18,8 +18,8 @@ public class OverDriveRecordGrouper extends RecordGroupingProcessor {
 	private Connection eContentConnection;
 	PreparedStatement overDriveSubjectsStmt;
 
-	OverDriveRecordGrouper(Connection pikaConn, Connection eContentConnection, Logger logger, boolean fullRegrouping) {
-		super(pikaConn, logger, fullRegrouping);
+	OverDriveRecordGrouper(Connection pikaConn, Connection eContentConnection, Logger logger) {
+		super(pikaConn, logger);
 		super.setupDatabaseStatements(pikaConn);
 
 		this.eContentConnection = eContentConnection;

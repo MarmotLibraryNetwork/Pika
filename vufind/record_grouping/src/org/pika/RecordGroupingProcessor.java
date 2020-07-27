@@ -39,7 +39,6 @@ class RecordGroupingProcessor {
 	private int numRecordsProcessed  = 0;
 	private int numGroupedWorksAdded = 0;
 
-	private boolean fullRegrouping;
 	private long    startTime = new Date().getTime();
 
 	HashMap<String, TranslationMap> translationMaps = new HashMap<>();
@@ -56,11 +55,19 @@ class RecordGroupingProcessor {
 
 	/**
 	 * Default constructor for use by subclasses
+ * @param pikaConn
+ * @param logger
+	 */
+	RecordGroupingProcessor(Connection pikaConn, Logger logger) {
+		this(pikaConn, logger, false);
+	}
+
+	/**
+	 * Default constructor for use by subclasses
 	 */
 	RecordGroupingProcessor(Connection pikaConn, Logger logger, boolean fullRegrouping) {
 		this.pikaConn       = pikaConn;
 		this.logger         = logger;
-		this.fullRegrouping = fullRegrouping;
 	}
 
 //	/**

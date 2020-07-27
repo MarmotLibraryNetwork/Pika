@@ -170,7 +170,7 @@ class AuthorNormalizer {
 	private static Pattern commonAuthorPrefixPattern = Pattern.compile("(?i)^" +
 			"(consultant|publisher editor in chief|edited by|by the editors of|editor in chief|edited and translated|" +
 			"editor-in-chief|general editor|guest editor|from the editors of|the editors of|editors|editor| + " +
-			"chosen by|translated by|prepared by|text by|" +
+			"chosen by|translated by|prepared by|text by|drawn by|" +
 			"printed for the publisher|printed for the author|printed and published by|published by the author|published by|" +
 			"printed and sold for the author by|printed for the author and sold by|printed for the editor and sold by|printed for and sold by|printed and sold by|for sale by|sold by|" +
 			"printed by and for|printed by for|printed for|re printed for the author and sold by|reprinted by|re printed by|printed by|" + // 're printed' original text would be 're-printed'; 'printed by for' original text 'printed by & for'

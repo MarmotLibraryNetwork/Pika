@@ -309,7 +309,7 @@ public class SierraExportAPIMain {
 	}
 
 	private static void initializeRecordGrouper(Connection pikaConn) {
-		recordGroupingProcessor = new MarcRecordGrouper(pikaConn, indexingProfile, logger, false);
+		recordGroupingProcessor = new MarcRecordGrouper(pikaConn, indexingProfile, logger);
 	}
 
 	private static void retrieveDataFromSierraDNA(Connection pikaConn) {

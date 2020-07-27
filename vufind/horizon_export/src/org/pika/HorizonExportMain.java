@@ -269,7 +269,7 @@ public class HorizonExportMain {
 	}
 
 	private static void initializeRecordGrouper(Connection pikaConn) {
-		recordGroupingProcessor = new MarcRecordGrouper(pikaConn, indexingProfile, logger, false);
+		recordGroupingProcessor = new MarcRecordGrouper(pikaConn, indexingProfile, logger);
 	}
 
 	private static Ini loadConfigFile(String filename){

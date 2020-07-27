@@ -34,11 +34,9 @@ public class MarcRecordGrouper extends RecordGroupingProcessor {
 	 * @param pikaConn   - The Connection to the Pika database
 	 * @param profile        - The profile that we are grouping records for
 	 * @param logger         - A logger to store debug and error messages to.
-	 * @param fullRegrouping - Whether or not we are doing full regrouping or if we are only grouping changes.
-	 *                       Determines if old works are loaded at the beginning.
 	 */
-	public MarcRecordGrouper(Connection pikaConn, IndexingProfile profile, Logger logger, boolean fullRegrouping) {
-		super(pikaConn, logger, fullRegrouping);
+	public MarcRecordGrouper(Connection pikaConn, IndexingProfile profile, Logger logger) {
+		super(pikaConn, logger);
 		this.profile = profile;
 
 		recordNumberTag     = profile.recordNumberTag;

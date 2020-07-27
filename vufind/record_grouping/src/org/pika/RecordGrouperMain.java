@@ -1,6 +1,7 @@
 package org.pika;
 
 //import au.com.bytecode.opencsv.CSVReader;
+
 import au.com.bytecode.opencsv.CSVWriter;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
@@ -28,9 +29,11 @@ import java.util.zip.CRC32;
  * Grouping happens at 3 different levels:
  */
 public class RecordGrouperMain {
-	private static Logger              logger = Logger.getLogger(RecordGrouperMain.class);
+	private static Logger              logger             = Logger.getLogger(RecordGrouperMain.class);
 	private static String              serverName;
 	private static PikaSystemVariables systemVariables;
+	private static Connection          pikaConn           = null;
+	private static Connection          econtentConnection = null;
 
 	private static HashMap<String, Long> marcRecordChecksums           = new HashMap<>();
 	private static HashMap<String, Long> marcRecordFirstDetectionDates = new HashMap<>();
@@ -88,6 +91,22 @@ public class RecordGrouperMain {
 			System.exit(1);
 		}
 
+		// Load the configuration file
+		PikaConfigIni.loadConfigFile("config.ini", serverName, logger);
+
+		//Connect to the database
+		try {
+			String databaseConnectionInfo   = PikaConfigIni.getIniValue("Database", "database_vufind_jdbc");
+			String econtentDBConnectionInfo = PikaConfigIni.getIniValue("Database", "database_econtent_jdbc");
+			pikaConn           = DriverManager.getConnection(databaseConnectionInfo);
+			econtentConnection = DriverManager.getConnection(econtentDBConnectionInfo);
+
+		} catch (Exception e) {
+			System.out.println("Error connecting to database " + e.toString());
+			System.exit(1);
+		}
+
+
 		String action = args[1];
 
 		switch (action) {
@@ -107,33 +126,22 @@ public class RecordGrouperMain {
 				String languageCode;
 				String subtitle = null;
 				if (args.length >= 5) {
-					title  = args[2];
-					author = args[3];
-					format = args[4];
+					title        = args[2];
+					author       = args[3];
+					format       = args[4];
 					languageCode = args[5];
 					if (args.length >= 7) {
 						subtitle = args[6];
 					}
 				} else {
-					title    = getInputFromCommandLine("Enter the title");
-					subtitle = getInputFromCommandLine("Enter the subtitle");
-					author   = getInputFromCommandLine("Enter the author");
-					format   = getInputFromCommandLine("Enter the format");
+					title        = getInputFromCommandLine("Enter the title");
+					subtitle     = getInputFromCommandLine("Enter the subtitle");
+					author       = getInputFromCommandLine("Enter the author");
+					format       = getInputFromCommandLine("Enter the format");
 					languageCode = getInputFromCommandLine("Enter the language code");
 				}
-				// Load the configuration file
-				PikaConfigIni.loadConfigFile("config.ini", serverName, logger);
 
 				//Connect to the database
-				Connection pikaConn           = null;
-				try {
-					String databaseConnectionInfo   = PikaConfigIni.getIniValue("Database", "database_vufind_jdbc");
-					pikaConn           = DriverManager.getConnection(databaseConnectionInfo);
-				} catch (Exception e) {
-					System.out.println("Error connecting to database " + e.toString());
-					System.exit(1);
-				}
-
 				GroupedWork5 work = (GroupedWork5) GroupedWorkFactory.getInstance(5, pikaConn);
 				work.setTitle(title, subtitle);
 				work.setAuthor(author);
@@ -151,9 +159,136 @@ public class RecordGrouperMain {
 				}
 				System.out.print(result.toString());
 				break;
+			case "singleRecord":
+				String fullRecordId;
+				if (args.length == 3) {
+					fullRecordId = args[2];
+				} else {
+					fullRecordId = getInputFromCommandLine("Enter the full record Id (source:sourceId)");
+				}
+				String source = fullRecordId.substring(0, fullRecordId.indexOf(':'));
+				String sourceId = fullRecordId.substring(fullRecordId.indexOf(':') + 1);
+				RecordIdentifier recordIdentifier = new RecordIdentifier(source, sourceId);
+				processSingleRecord(recordIdentifier);
+
+				break;
+			case "singleWork":
+				String groupedWorkId;
+				if (args.length == 3) {
+					groupedWorkId = args[2];
+				} else {
+					groupedWorkId = getInputFromCommandLine("Enter the grouped work permanent id");
+				}
+				processSingleWork(groupedWorkId);
+				break;
+			case "processMerges":
+				processFreshMerges();
+				break;
 			default:
 				doStandardRecordGrouping(args);
 				break;
+		}
+	}
+
+	private static void processFreshMerges(){
+		String sql = "SELECT permanent_id FROM grouped_work INNER JOIN grouped_work_merges ON (permanent_id = sourceGroupedWorkId)";
+		try (
+				PreparedStatement preparedStatement = pikaConn.prepareStatement(sql);
+				ResultSet resultSet = preparedStatement.executeQuery();
+		) {
+			while (resultSet.next()) {
+				String groupedWorkId = resultSet.getString(1);
+				processSingleWork(groupedWorkId);
+			}
+			removeGroupedWorksWithoutPrimaryIdentifiers(pikaConn);
+		} catch (SQLException throwables) {
+			logger.error(throwables);
+		}
+	}
+
+	private static void processSingleWork(String groupedWorkId) {
+		String sql = "SELECT type, identifier FROM grouped_work_primary_identifiers \n" +
+				"INNER JOIN grouped_work ON (grouped_work_primary_identifiers.grouped_work_id = grouped_work.id) \n" +
+				"WHERE permanent_id = '" + groupedWorkId + "'";
+		try (
+				PreparedStatement preparedStatement = pikaConn.prepareStatement(sql);
+				ResultSet resultSet = preparedStatement.executeQuery();
+		) {
+			while (resultSet.next()) {
+				String           source           = resultSet.getString(1);
+				String           sourceId         = resultSet.getString(2);
+				processSingleRecord(new RecordIdentifier(source, sourceId));
+			}
+		} catch (SQLException throwables) {
+			logger.error(throwables);
+		}
+	}
+
+	private static void processSingleRecord(RecordIdentifier recordIdentifier) {
+		String source = recordIdentifier.getSource();
+		if (source.equalsIgnoreCase("overdrive")) {
+			OverDriveRecordGrouper recordGroupingProcessor = new OverDriveRecordGrouper(pikaConn, econtentConnection, logger);
+			try {
+				String OverdriveRecordSQL = "SELECT overdrive_api_products.id, overdriveId, mediaType, title, subtitle, primaryCreatorRole, primaryCreatorName, code, publisher " +
+						"FROM overdrive_api_products INNER JOIN overdrive_api_product_metadata ON overdrive_api_product_metadata.productId = overdrive_api_products.id " +
+						"INNER JOIN overdrive_api_product_languages_ref ON overdrive_api_product_languages_ref.productId = overdrive_api_products.id " +
+						"INNER JOIN overdrive_api_product_languages ON overdrive_api_product_languages_ref.languageId = overdrive_api_product_languages.id " +
+						"WHERE overdriveId = ?";
+
+				PreparedStatement overDriveRecordsStmt = econtentConnection.prepareStatement(OverdriveRecordSQL, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+				overDriveRecordsStmt.setString(1, recordIdentifier.getIdentifier());
+
+				try (ResultSet overDriveRecordRS = overDriveRecordsStmt.executeQuery()) {
+					if (overDriveRecordRS.next()) {
+						recordGroupingProcessor.processOverDriveRecord(recordIdentifier, overDriveRecordRS, true);
+					}
+					//TODO: missing from overdrive extract data ??
+				}
+			} catch (SQLException e) {
+				logger.error("Error processing OverDrive data", e);
+			}
+
+		} else {
+			ArrayList<IndexingProfile> indexingProfiles = loadIndexingProfiles(pikaConn, source);
+			for (IndexingProfile curProfile : indexingProfiles) {
+				MarcRecordGrouper recordGroupingProcessor;
+				switch (curProfile.groupingClass) {
+					case "MarcRecordGrouper":
+						recordGroupingProcessor = new MarcRecordGrouper(pikaConn, curProfile, logger);
+						break;
+					case "SideLoadedRecordGrouper":
+						recordGroupingProcessor = new SideLoadedRecordGrouper(pikaConn, curProfile, logger);
+						break;
+					case "HooplaRecordGrouper":
+						recordGroupingProcessor = new HooplaRecordGrouper(pikaConn, curProfile, logger);
+						break;
+					default:
+						logger.error("Unknown class for record grouping " + curProfile.groupingClass);
+						continue;
+				}
+				// Read Record
+				File curBibFile = curProfile.getFileForIlsRecord(recordIdentifier.getIdentifier());
+				try (FileInputStream marcFileStream = new FileInputStream(curBibFile)) {
+					MarcReader catalogReader = new MarcPermissiveStreamReader(marcFileStream, true, true, "UTF8");
+					//Individual Marc file should already be in UTF-8 encoding
+					if (catalogReader.hasNext()) {
+						Record curBib = catalogReader.next();
+
+						if (recordGroupingProcessor.processMarcRecord(curBib, true, recordIdentifier)) {
+							logger.info(recordIdentifier + " was successfully grouped.");
+						} else {
+							logger.error(recordIdentifier + " was not grouped.");
+						}
+
+					}
+				} catch (IOException e) {
+					logger.error("Error reading MARC file for " + recordIdentifier, e);
+//					System.out.println("Error reading MARC file for " + recordIdentifier);
+//					System.exit(1);
+				}
+
+			}
+
 		}
 	}
 
@@ -167,7 +302,7 @@ public class RecordGrouperMain {
 
 		String value = null;
 		try {
-				value = br.readLine().trim();
+			value = br.readLine().trim();
 		} catch (IOException e) {
 			System.out.println("IO error trying to read " + prompt + " - " + e.toString());
 			System.exit(1);
@@ -358,23 +493,6 @@ public class RecordGrouperMain {
 			logger.info("Starting grouping of records " + new Date().toString());
 		}
 
-		// Load the configuration file
-		PikaConfigIni.loadConfigFile("config.ini", serverName, logger);
-
-		//Connect to the database
-		Connection pikaConn           = null;
-		Connection econtentConnection = null;
-		try {
-			String databaseConnectionInfo   = PikaConfigIni.getIniValue("Database", "database_vufind_jdbc");
-			String econtentDBConnectionInfo = PikaConfigIni.getIniValue("Database", "database_econtent_jdbc");
-			pikaConn           = DriverManager.getConnection(databaseConnectionInfo);
-			econtentConnection = DriverManager.getConnection(econtentDBConnectionInfo);
-
-		} catch (Exception e) {
-			System.out.println("Error connecting to database " + e.toString());
-			System.exit(1);
-		}
-
 		systemVariables = new PikaSystemVariables(logger, pikaConn);
 
 		//Start a reindex log entry
@@ -424,7 +542,7 @@ public class RecordGrouperMain {
 		}
 
 		//Get the last grouping time
-		lastGroupingTime           = systemVariables.getLongValuedVariable("last_grouping_time");
+		lastGroupingTime = systemVariables.getLongValuedVariable("last_grouping_time");
 
 		//Check to see if we need to clear the database
 		boolean clearDatabasePriorToGrouping = false;
@@ -482,13 +600,10 @@ public class RecordGrouperMain {
 				if (logger.isInfoEnabled()) {
 					logger.info("Doing post processing of record grouping");
 				}
-				pikaConn.setAutoCommit(false);
 
 				//Cleanup the data
 				removeGroupedWorksWithoutPrimaryIdentifiers(pikaConn);
-				pikaConn.commit();
 				updateLastGroupingTime();
-				pikaConn.commit();
 
 				pikaConn.setAutoCommit(true);
 				if (logger.isInfoEnabled()) {
@@ -545,12 +660,12 @@ public class RecordGrouperMain {
 					} else if (source.equals("ils")) {
 						//This is to diagnose Sierra API Extract issues
 						if (logger.isDebugEnabled()) {
-							logger.debug("Deleted ils record " +  source + ":" + recordNumber + " from the ils checksum table.");
+							logger.debug("Deleted ils record " + source + ":" + recordNumber + " from the ils checksum table.");
 						}
 
 					}
 				} catch (SQLException e) {
-					logger.error("Error removing id " +  source + ":" + recordNumber + " from ils_marc_checksums table", e);
+					logger.error("Error removing id " + source + ":" + recordNumber + " from ils_marc_checksums table", e);
 				}
 			}
 			marcRecordIdsInDatabase.clear();
@@ -769,7 +884,7 @@ public class RecordGrouperMain {
 				}
 			}
 			if (!processProfile) {
-				if (logger.isDebugEnabled()){
+				if (logger.isDebugEnabled()) {
 					logger.debug("Checking if " + curProfile.sourceName + " has had any records marked for regrouping.");
 				}
 				if (!curProfile.usingSierraAPIExtract && checkForForcedRegrouping(pikaConn, curProfile.sourceName)) {
@@ -787,13 +902,13 @@ public class RecordGrouperMain {
 				MarcRecordGrouper recordGroupingProcessor;
 				switch (curProfile.groupingClass) {
 					case "MarcRecordGrouper":
-						recordGroupingProcessor = new MarcRecordGrouper(pikaConn, curProfile, logger, fullRegroupingClearGroupingTables);
+						recordGroupingProcessor = new MarcRecordGrouper(pikaConn, curProfile, logger);
 						break;
 					case "SideLoadedRecordGrouper":
-						recordGroupingProcessor = new SideLoadedRecordGrouper(pikaConn, curProfile, logger, fullRegroupingClearGroupingTables);
+						recordGroupingProcessor = new SideLoadedRecordGrouper(pikaConn, curProfile, logger);
 						break;
 					case "HooplaRecordGrouper":
-						recordGroupingProcessor = new HooplaRecordGrouper(pikaConn, curProfile, logger, fullRegroupingClearGroupingTables);
+						recordGroupingProcessor = new HooplaRecordGrouper(pikaConn, curProfile, logger);
 						break;
 					default:
 						logger.error("Unknown class for record grouping " + curProfile.groupingClass);
@@ -922,14 +1037,14 @@ public class RecordGrouperMain {
 			//Nothing to do since we don't have marc records to process
 			return;
 		}
-		OverDriveRecordGrouper recordGroupingProcessor = new OverDriveRecordGrouper(pikaConn, econtentConnection, logger, fullRegroupingClearGroupingTables);
+		OverDriveRecordGrouper recordGroupingProcessor = new OverDriveRecordGrouper(pikaConn, econtentConnection, logger);
 		addNoteToGroupingLog("Starting to group overdrive records");
 //		loadIlsChecksums(pikaConn, "overdrive"); // There are no checksums for overdrive metadata
 		loadExistingPrimaryIdentifiers(pikaConn, "overdrive");
 
 		int numRecordsProcessed = 0;
 		try {
-			String OverdriveRecordSQL = "SELECT overdrive_api_products.id, overdriveId, mediaType, title, subtitle, primaryCreatorRole, primaryCreatorName, code, publisher FROM overdrive_api_products INNER JOIN overdrive_api_product_metadata ON overdrive_api_product_metadata.productId = overdrive_api_products.id INNER JOIN overdrive_api_product_languages_ref ON overdrive_api_product_languages_ref.productId = overdrive_api_products.id INNER JOIN overdrive_api_product_languages ON overdrive_api_product_languages_ref.languageId = overdrive_api_product_languages.id WHERE deleted = 0 AND isOwnedByCollections = 1";
+			String            OverdriveRecordSQL = "SELECT overdrive_api_products.id, overdriveId, mediaType, title, subtitle, primaryCreatorRole, primaryCreatorName, code, publisher FROM overdrive_api_products INNER JOIN overdrive_api_product_metadata ON overdrive_api_product_metadata.productId = overdrive_api_products.id INNER JOIN overdrive_api_product_languages_ref ON overdrive_api_product_languages_ref.productId = overdrive_api_products.id INNER JOIN overdrive_api_product_languages ON overdrive_api_product_languages_ref.languageId = overdrive_api_product_languages.id WHERE deleted = 0 AND isOwnedByCollections = 1";
 			PreparedStatement overDriveRecordsStmt;
 			if (lastGroupingTime != null && !fullRegroupingClearGroupingTables && !fullRegroupingNoClear) {
 				overDriveRecordsStmt = econtentConnection.prepareStatement(OverdriveRecordSQL + " AND (dateUpdated >= ? OR lastMetadataChange >= ? OR lastAvailabilityChange >= ?)", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
