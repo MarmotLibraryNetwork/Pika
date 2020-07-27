@@ -213,11 +213,14 @@ public class BuildGroupedWorkVersion4To5Map implements IProcessHandler {
 														insertMergeStatement.setString(2, shortestTitleId);
 														insertMergeStatement.setString(3, note);
 														insertMergeStatement.executeUpdate();
-													} catch (SQLException exception){
+													} catch (SQLException exception) {
 														//Ignore duplicate warning here; rather than in the SQL statement itsefl
-														if (exception.toString().contains("Duplicate")){
+														if (exception.toString().contains("Duplicate")) {
 															logger.info(exception);
-														}else {
+														} else {
+															if (exception.toString().contains("notes")) {
+																logger.error("notes : " + note);
+															}
 															throw exception;
 														}
 													}
@@ -253,6 +256,7 @@ public class BuildGroupedWorkVersion4To5Map implements IProcessHandler {
 
 		} catch (SQLException e) {
 			logger.error("It broke!!", e);
+			processLog.incErrors();
 
 		}
 	}
