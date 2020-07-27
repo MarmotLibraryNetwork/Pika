@@ -199,7 +199,7 @@ public class BuildGroupedWorkVersion4To5Map implements IProcessHandler {
 													String       recordIds        = complexMapResults.getString("newPrimaryIdentifiers");
 													final String migrationNote    = "Grouped Work Version Migration  " + new SimpleDateFormat("M/dd/yyyy").format(new Date());
 													final String recordIdsNote    = recordIds + "\n\n" + migrationNote;
-													if (note.length() + recordIds.length() <= noteColumnLength) {
+													if (note.length() + recordIdsNote.length() <= noteColumnLength) {
 														note = note
 																+ recordIdsNote;
 													} else if (recordIdsNote.length() <= noteColumnLength) {
