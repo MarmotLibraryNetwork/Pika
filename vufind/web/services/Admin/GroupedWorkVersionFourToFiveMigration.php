@@ -48,7 +48,7 @@ class Admin_GroupedWorkVersionFourToFiveMigration extends ObjectEditor {
 			case 'migrateUserTags':
 				// User Tags
 				require_once ROOT_DIR . '/sys/LocalEnrichment/UserTag.php';
-				$this->updateUserData(new UserTag());
+				$this->updateUserData(new UserTag(), true);
 				break;
 
 			case 'migrateUserNotInterested':
