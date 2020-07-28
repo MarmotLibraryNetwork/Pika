@@ -17,10 +17,90 @@ public class GroupedWorkVersion4To5Migration implements IProcessHandler {
 		CronProcessLogEntry processLog = new CronProcessLogEntry(cronEntry.getLogEntryId(), "Grouped Work Version 4 To 5 Migration");
 		processLog.saveToDatabase(pikaConn, logger);
 
+		updateUserData(pikaConn, logger, processLog, "librarian_reviews");
+		updateUserData(pikaConn, logger, processLog, "user_tags");
+		updateUserData(pikaConn, logger, processLog, "user_not_interested");
+		updateUserData(pikaConn, logger, processLog, "user_work_review");
+		updateUserData(pikaConn, logger, processLog, "user_list_entry");
+
 		updateReadingHistoryIds(pikaConn, logger, processLog);
 
 		processLog.setFinished();
 		processLog.saveToDatabase(pikaConn, logger);
+	}
+
+	private void updateUserData(Connection pikaConn, Logger logger, CronProcessLogEntry processLog, String tableName) {
+		long   id                = -1L;
+		int    updated           = 0;
+		int    deleted           = 0;
+		int    total             = 0;
+		String userDataSQL       = "SELECT id, groupedWorkPermanentId, groupedWorkPermanentIdVersion5 FROM " + tableName + " LEFT JOIN grouped_work_versions_map ON (groupedWorkPermanentId = groupedWorkPermanentIdVersion4)";
+		String updateUserDataSQL = "UPDATE " + tableName + " SET groupedWorkPermanentId = ? WHERE (  " + tableName + ".id = ? )";
+		String deleteUserDataSQL = "DELETE FROM " + tableName + " WHERE (  " + tableName + ".id = ? ) LIMIT 1";
+		try (
+				PreparedStatement fetchUserData = pikaConn.prepareStatement(userDataSQL);
+				PreparedStatement updateUserData = pikaConn.prepareStatement(updateUserDataSQL);
+				PreparedStatement deleteUserData = pikaConn.prepareStatement(deleteUserDataSQL);
+				ResultSet userdata = fetchUserData.executeQuery()
+		) {
+			pikaConn.setAutoCommit(false);
+			int roundCount = 0;
+			while (userdata.next()) {
+
+				id = userdata.getLong("id");
+				String groupedWorkPermanentId = userdata.getString("groupedWorkPermanentId");
+				if (groupedWorkPermanentId != null && !groupedWorkPermanentId.isEmpty() && !groupedWorkPermanentId.contains(":")) {
+					//contains check to exclude archive pids from user lists
+					total++;
+					roundCount++;
+					String groupedWorkPermanentIdVersion5 = userdata.getString("groupedWorkPermanentIdVersion5");
+					if (groupedWorkPermanentIdVersion5 != null && !groupedWorkPermanentIdVersion5.isEmpty()) {
+						updateUserData.setString(1, groupedWorkPermanentIdVersion5);
+						updateUserData.setLong(2, id);
+						updateUserData.addBatch();
+						updated++;
+					} else {
+						//TODO: sloppy matching
+						logger.info("Deleting user entry " + id + "since no match for grouped work version 4 id : " + groupedWorkPermanentId);
+						deleteUserData.setLong(1, id);
+						deleteUserData.addBatch();
+						deleted++;
+					}
+				}
+				if (roundCount == 1000) {
+					updateUserData.executeBatch();
+					deleteUserData.executeBatch();
+					processLog.addUpdates(roundCount);
+					processLog.saveToDatabase(pikaConn, logger);
+					roundCount = 0; //Reset our round counting
+				}
+
+			}
+			updateUserData.executeBatch();
+			deleteUserData.executeBatch();
+			processLog.addUpdates(roundCount);
+
+
+			pikaConn.commit();
+
+			final String note = "User data for " + tableName + "\n<br>" +
+					"Total   : " + total + "\n<br>" +
+					"Updated : " + updated + "\n<br>" +
+					"Deleted : " + deleted + "\n<br>";
+			processLog.addNote(note);
+			logger.info(note);
+			processLog.saveToDatabase(pikaConn, logger);
+
+		} catch (SQLException e) {
+			logger.error("Error While updating user data. Last Id fetched " + id, e);
+			processLog.addNote(e.toString());
+			processLog.incErrors();
+			try {
+				pikaConn.rollback();
+			} catch (SQLException throwables) {
+				logger.error("Error rolling back database commit", throwables);
+			}
+		}
 	}
 
 	private void updateReadingHistoryIds(Connection pikaConn, Logger logger, CronProcessLogEntry processLog) {
@@ -72,7 +152,7 @@ public class GroupedWorkVersion4To5Migration implements IProcessHandler {
 					updateReadingHistoryWorkId.addBatch();
 					total++;
 
-					if (roundCount == 1000){
+					if (roundCount == 1000) {
 						updateReadingHistoryWorkId.executeBatch();
 						processLog.addUpdates(roundCount);
 						processLog.saveToDatabase(pikaConn, logger);
@@ -85,7 +165,8 @@ public class GroupedWorkVersion4To5Migration implements IProcessHandler {
 
 			pikaConn.commit();
 
-			final String note = "Updated a total of " + total + "\n<br>" +
+			final String note = "User Reading History" + "\n<br>" +
+					"Updated a total of " + total + "\n<br>" +
 					"Matched by Source Id :" + matchBySourceId + "\n<br>" +
 					"Matched by Version Map :" + matchByMap + "\n<br>" +
 					"Removed Id due to no matches :" + noMatch + "\n<br>";

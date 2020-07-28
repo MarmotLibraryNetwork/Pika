@@ -32,7 +32,7 @@ public class BuildGroupedWorkVersion4To5Map implements IProcessHandler {
 		String sql;
 
 		// Simple Mapping
-		sql = "UPDATE grouped_work_versions_map\n" +
+		sql = "UPDATE IGNORE grouped_work_versions_map\n" +
 				"INNER JOIN\n" +
 				"(\n" +
 				"SELECT \n" +
