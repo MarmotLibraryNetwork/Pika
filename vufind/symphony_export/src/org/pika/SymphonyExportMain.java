@@ -410,7 +410,7 @@ public class SymphonyExportMain {
 				if (getChecksumRS.next()) {
 					//If it has, write the file to disk and update the database
 					Long oldChecksum = getChecksumRS.getLong(1);
-					Long newChecksum = getChecksum(marcRecord);
+					long newChecksum = getChecksum(marcRecord);
 					if (!oldChecksum.equals(newChecksum)) {
 						getGroupedWorkIdStmt.setString(1, indexingProfile.sourceName);
 						getGroupedWorkIdStmt.setString(2, recordNumber);
@@ -477,7 +477,6 @@ public class SymphonyExportMain {
 		}
 	}
 
-	//TODO: update to indexing profile setting for the record number subfield
 	private static String getPrimaryIdentifierFromMarcRecord(Record marcRecord) {
 		List<VariableField> recordNumberFields = marcRecord.getVariableFields(indexingProfile.recordNumberTag);
 		String              recordNumber       = null;
@@ -485,10 +484,10 @@ public class SymphonyExportMain {
 		for (VariableField curVariableField : recordNumberFields) {
 			if (curVariableField instanceof DataField) {
 				DataField curRecordNumberField = (DataField) curVariableField;
-				Subfield  subfieldA            = curRecordNumberField.getSubfield('a');
+				Subfield  subfieldA            = curRecordNumberField.getSubfield(indexingProfile.recordNumberField);
 				if (subfieldA != null && (indexingProfile.recordNumberPrefix.length() == 0 || subfieldA.getData().length() > indexingProfile.recordNumberPrefix.length())) {
-					if (curRecordNumberField.getSubfield('a').getData().substring(0, indexingProfile.recordNumberPrefix.length()).equals(indexingProfile.recordNumberPrefix)) {
-						recordNumber = curRecordNumberField.getSubfield('a').getData().trim();
+					if (subfieldA.getData().startsWith(indexingProfile.recordNumberPrefix)) {
+						recordNumber = subfieldA.getData().trim();
 						break;
 					}
 				}

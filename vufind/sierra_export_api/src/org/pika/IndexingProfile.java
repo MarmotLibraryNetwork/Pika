@@ -6,6 +6,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
+import java.util.HashSet;
 import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
@@ -339,9 +340,25 @@ public class IndexingProfile {
 			subFolderName = shortId.substring(0, shortId.length() - numCharsToCreateFolderFrom);
 		}
 
-		String basePath           = individualMarcPath + "/" + subFolderName;
+		String basePath = individualMarcPath + "/" + subFolderName;
+		createBaseDirectory(basePath);
 		String individualFilename = basePath + "/" + shortId + ".mrc";
 		return new File(individualFilename);
+	}
+
+	private static HashSet<String> basePathsValidated = new HashSet<>();
+
+	private static void createBaseDirectory(String basePath) {
+		if (basePathsValidated.contains(basePath)) {
+			return;
+		}
+		File baseFile = new File(basePath);
+		if (!baseFile.exists()) {
+			if (!baseFile.mkdirs()) {
+				System.out.println("Could not create directory to store individual marc");
+			}
+		}
+		basePathsValidated.add(basePath);
 	}
 
 }
