@@ -1113,7 +1113,7 @@ ADD COLUMN selfRegistrationAgencyCode INT(10) NULL;",
 				"ALTER TABLE `library` CHANGE COLUMN `enablePospectorIntegration` `enableProspectorIntegration` TINYINT(4) NOT NULL DEFAULT '0' ;",
 			)),
 
-			'show_barcode_image_user_profile' => array(
+		'show_barcode_image_user_profile' => array(
 			 'title'       => 'Show scannable image of patrons barcode',
 			 'description' => '',
 			 'sql'         => array(
@@ -1129,6 +1129,15 @@ ADD COLUMN selfRegistrationAgencyCode INT(10) NULL;",
 				'ALTER TABLE `location` DROP COLUMN `useScope`;',
 			),
 		),
+
+		'library_location_systemMessage_5.2' => [
+			'title'       => 'Remove limits on system message',
+			'description' => 'Change column to text',
+			'sql'         => [
+				'ALTER TABLE `library` CHANGE COLUMN `systemMessage` `systemMessage` TEXT NULL;',
+			],
+		],
+
 		'library_location_remove'          => array(
 			'title'       => 'Remove obsolete eContent settings',
 			'description' => 'Remove eContentLocationstoInclude, eContentLinkRules, notesTabName, and facetFile',
