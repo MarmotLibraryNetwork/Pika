@@ -24,6 +24,7 @@
 require_once ROOT_DIR . '/AJAXHandler.php';
 //require_once ROOT_DIR . '/services/AJAX/Captcha_AJAX.php';
 require_once ROOT_DIR . '/sys/Pika/Functions.php';
+require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
 use function Pika\Functions\{recaptchaGetQuestion, recaptchaCheckAnswer};
 
 class MyAccount_AJAX extends AJAXHandler {
