@@ -5,7 +5,7 @@
 		<div class="panel-group accordion" id="account-link-accordion">
 			{* My Account *}
 			<a id="account-menu"></a>
-			{if $module == 'MyAccount' || $module == 'MyResearch' || ($module == 'Search' && $action == 'Home') || ($module == 'MaterialsRequest' && $action == 'MyRequests')}
+			{if $module == 'MyAccount' || $module == 'MyResearch' || ($module == 'Search' && $action == 'Home') || ($module == 'MaterialsRequest' && $action == 'MyRequests') || ($module == 'MyAccount' && $action == 'MyLists')}
 				{assign var="curSection" value=true}
 			{else}
 				{assign var="curSection" value=false}
@@ -55,6 +55,11 @@
 						{if $showFines}
 							<div class="myAccountLink{if $action=="Fines"} active{/if}" title="{translate text='Fines and Messages'}"><a href="/MyAccount/Fines">{translate text='Fines and Messages'}</a></div>
 						{/if}
+						<div class="myAccountLink{if $action=="MyLists"} active{/if}">
+							<a href="/MyAccount/MyLists">
+								My Lists
+							</a>
+						</div>
 						{if $enableMaterialsRequest}
 							<div class="myAccountLink{if $pageTemplate=="myMaterialRequests.tpl"} active{/if}" title="{translate text='Materials_Request_alt'}s">
 								<a href="/MaterialsRequest/MyRequests">{translate text='Materials_Request_alt'}s <span class="materialsRequests-placeholder"><img src="/images/loading.gif" alt="loading"></span></a>

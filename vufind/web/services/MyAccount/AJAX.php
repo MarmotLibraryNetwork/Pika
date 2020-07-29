@@ -47,12 +47,14 @@ class MyAccount_AJAX extends AJAXHandler {
 		'getAddAccountLinkForm', 'addAccountLink', 'removeAccountLink',
 		'cancelBooking', 'getCitationFormatsForm', 'getAddBrowseCategoryFromListForm',
 		'getMasqueradeAsForm', 'initiateMasquerade', 'endMasquerade', 'getMenuData',
+        'transferList', 'isStaffUser', 'transferListToUser',
 	);
 
 	protected $methodsThatRespondWithHTML = array(
 		'LoginForm',
 		'getBulkAddToListForm',
 		'getPinUpdateForm',
+
 	);
 
 	protected $methodsThatRespondWithJSONResultWrapper = [];
@@ -869,6 +871,72 @@ class MyAccount_AJAX extends AJAXHandler {
 		}
 		return $interface->fetch('MyAccount/ajax-login.tpl');
 	}
+
+	function transferListToUser()
+    {
+       if(UserAccount::isLoggedIn()){
+            if(UserAccount::userHasRoleFromList(['opacAdmin','libraryAdmin'])){
+                $user = UserAccount::getLoggedInUser();
+                if($user->isStaff())
+                {
+                    $listId = $_REQUEST['id'];
+                    return array('title' => 'Transfer List',
+                        'body'=>'<label for="barcode">Please enter recipient barcode</label> <input type="text" name="barcode" id="barcode" class="form-control" />' .
+                                '<div class="validation" id="validation" style="display:none; color:darkred;">Invalid Barcode</div>'.
+                                '<script>$("#barcode").on("change keyup paste", function(data){Pika.Lists.checkUser($("#barcode").val())});</script>',
+                        'buttons'=>'<button value="transfer" disabled="disabled" id="transfer" class="btn btn-danger" onclick="Pika.Lists.transferList('. $listId . ', document.getElementById(\'barcode\').value);return false;">Transfer</button>');
+                }
+            }
+        }
+        return array('error' => 'You do not have permission to transfer a list');
+    }
+
+    function transferList()
+    {
+        if(UserAccount::userHasRoleFromList(['opacAdmin','libraryAdmin'])) {
+
+            $barcodeTo = $_REQUEST['barcode'];
+            $userTo = new User();
+            $listId = $_REQUEST['id'];
+
+            $userTo->get("cat_password",$barcodeTo);
+            if ($userTo->isStaff())
+            {
+                $list = new UserList();
+                $list->id = $listId;
+                $list->get();
+
+                $list->user_id = $userTo->id;
+                if($list->update()) {
+                    return array('title' => 'Transfer List', 'body' => 'The list has been transferred');
+                }
+                else
+                {
+                    return array('title' => 'Transfer List', 'body' => 'An Error Occurred');
+                }
+            }else{
+                return array('title' => 'Transfer List', 'body'=> 'You do not have permission to transfer a list');
+            }
+        }
+    }
+
+    function isStaffUser()
+    {
+        if(UserAccount::isLoggedIn())
+        {
+            if(UserAccount::userHasRoleFromList(['opacAdmin','libraryAdmin'])) {
+                $barcode = $_REQUEST['barcode'];
+                $user = new User();
+                $user->cat_password = $barcode;
+                $user->get("cat_password",$barcode);
+                if ($user->isStaff())
+                {
+                    return array('isStaff' => true);
+                }else{ return array('isStaff' => false);}
+            }
+        }
+        return array('error' => "Permission Denied");
+    }
 
 	function getMasqueradeAsForm(){
 		global $interface;

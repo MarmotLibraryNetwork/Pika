@@ -42,6 +42,47 @@ Pika.Lists = (function(){
 			}
 			return false;
 		},
+		buttonAjaxHandler: function(ajaxMethod, id, command) {
+			Pika.Account.ajaxLogin(function (){
+				Pika.loadingMessage();
+				var url = "/MyAccount/AJAX?method=" + ajaxMethod + "&id=" + id;
+				if (command !== undefined)
+				{
+					url = url + "&command=" + command;
+				}
+				$.getJSON(url, function (data) {
+					Pika.showMessageWithButtons(data.title, data.body, data.buttons);
+				}).fail(Pika.ajaxFail);
+			});
+			return false;
+		},
+
+		checkUser: function(id){
+			var url = "/MyAccount/Ajax?method=isStaffUser&barcode=" + id;
+			$.getJSON(url, function(data){
+				if($("#barcode").val().length > 0)
+				{
+					$("#validation").show();
+					if(data.isStaff == true)
+					{
+						$("#validation").html("<span style='color:green;'>Valid Barcode</span>");
+						$("#transfer").prop('disabled', false);
+					}
+					else
+					{
+						$("#validation").html("<span style='color:darkred;'>Invalid Barcode</span>");
+						$("#transfer").prop('disabled', true);
+					}
+				}
+			});
+
+			return false;
+		},
+
+		updateListAction: function (page, pageSize, sort){
+			console.log("page:" + page + ", pageSize:" + pageSize + ", sort:" + sort);
+			return this.submitListForm('saveList', page, pageSize, sort);
+		},
 
 		deleteListItems: function(ids, page, pageSize, sort){
 			var markedTitles = new Array();
@@ -107,6 +148,22 @@ Pika.Lists = (function(){
 
 		batchAddToListAction: function (id){
 			return Pika.Account.ajaxLightbox('/MyAccount/AJAX/?method=getBulkAddToListForm&listId=' + id);
+		},
+
+		transferListToUser: function(id){
+			return this.buttonAjaxHandler('transferListToUser',id,'transferList');
+
+		},
+		transferList: function(id, user)
+		{
+			Pika.Account.ajaxLogin(function (){
+				Pika.loadingMessage();
+				var url = "/MyAccount/AJAX?method=transferList&id=" + id + "&barcode=" + user;
+				$.getJSON(url, function (data) {
+					Pika.showMessage(data.title, data.body,1,1);
+				}).fail(Pika.ajaxFail);
+			});
+			return false;
 		},
 
 		processBulkAddForm: function(){
