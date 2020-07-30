@@ -354,7 +354,7 @@ class MyAccount_MyList extends MyAccount {
             $objPHPExcel->getActiveSheet()->getColumnDimension('E')->setAutoSize(true);
 
             // Rename sheet
-            $objPHPExcel->getActiveSheet()->setTitle('Favorites -' . $list->title);
+            $objPHPExcel->getActiveSheet()->setTitle(substr ($list->title, 0, 30));
 
             // Redirect output to a client's web browser (Excel5)
             header('Content-Type: application/vnd.ms-excel');
