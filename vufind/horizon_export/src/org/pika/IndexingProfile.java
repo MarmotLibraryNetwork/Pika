@@ -9,6 +9,7 @@ import java.text.SimpleDateFormat;
 import java.util.HashSet;
 import java.util.regex.Pattern;
 
+
 import org.apache.log4j.Logger;
 
 /**
@@ -20,6 +21,7 @@ import org.apache.log4j.Logger;
  * Time: 10:38 PM
  */
 public class IndexingProfile {
+
 	Long             id;
 	String           name;
 	String           sourceName;
@@ -220,29 +222,29 @@ public class IndexingProfile {
 					setIndexingProfile(indexingProfile, indexingProfileRS);
 
 
-					// Sierra API Item Field Mapping
-					try (
-							PreparedStatement getSierraFieldMappingsStmt = pikaConn.prepareStatement("SELECT * FROM sierra_export_field_mapping where indexingProfileId =" + indexingProfile.id);
-							ResultSet getSierraFieldMappingsRS = getSierraFieldMappingsStmt.executeQuery()
-					) {
-						if (getSierraFieldMappingsRS.next()) {
-							indexingProfile.APIItemCallNumberFieldTag         = getSierraFieldMappingsRS.getString("callNumberExportFieldTag");
-							indexingProfile.APIItemCallNumberPrestampSubfield = getSierraFieldMappingsRS.getString("callNumberPrestampExportSubfield");
-							indexingProfile.APIItemCallNumberSubfield         = getSierraFieldMappingsRS.getString("callNumberExportSubfield");
-							indexingProfile.APIItemCallNumberCutterSubfield   = getSierraFieldMappingsRS.getString("callNumberCutterExportSubfield");
-							indexingProfile.APICallNumberPoststampSubfield    = getSierraFieldMappingsRS.getString("callNumberPoststampExportSubfield");
-							indexingProfile.APIItemVolumeFieldTag             = getSierraFieldMappingsRS.getString("volumeExportFieldTag");
-							indexingProfile.APIItemURLFieldTag                = getSierraFieldMappingsRS.getString("urlExportFieldTag");
-							indexingProfile.APIItemEContentExportFieldTag     = getSierraFieldMappingsRS.getString("eContentExportFieldTag");
-						}
-					}
+//					// Sierra API Item Field Mapping
+//					try (
+//							PreparedStatement getSierraFieldMappingsStmt = pikaConn.prepareStatement("SELECT * FROM sierra_export_field_mapping where indexingProfileId =" + indexingProfile.id);
+//							ResultSet getSierraFieldMappingsRS = getSierraFieldMappingsStmt.executeQuery()
+//					) {
+//						if (getSierraFieldMappingsRS.next()) {
+//							indexingProfile.APIItemCallNumberFieldTag         = getSierraFieldMappingsRS.getString("callNumberExportFieldTag");
+//							indexingProfile.APIItemCallNumberPrestampSubfield = getSierraFieldMappingsRS.getString("callNumberPrestampExportSubfield");
+//							indexingProfile.APIItemCallNumberSubfield         = getSierraFieldMappingsRS.getString("callNumberExportSubfield");
+//							indexingProfile.APIItemCallNumberCutterSubfield   = getSierraFieldMappingsRS.getString("callNumberCutterExportSubfield");
+//							indexingProfile.APICallNumberPoststampSubfield    = getSierraFieldMappingsRS.getString("callNumberPoststampExportSubfield");
+//							indexingProfile.APIItemVolumeFieldTag             = getSierraFieldMappingsRS.getString("volumeExportFieldTag");
+//							indexingProfile.APIItemURLFieldTag                = getSierraFieldMappingsRS.getString("urlExportFieldTag");
+//							indexingProfile.APIItemEContentExportFieldTag     = getSierraFieldMappingsRS.getString("eContentExportFieldTag");
+//						}
+//					}
 				} else {
 					logger.error("Unable to find " + profileToLoad + " indexing profile, please create a profile with the name ils.");
 				}
 			}
 
 		} catch (Exception e) {
-			logger.error("Error reading indexing profile for Sierra", e);
+			logger.error("Error reading indexing profile for Horizon", e);
 		}
 		return indexingProfile;
 	}
@@ -273,8 +275,8 @@ public class IndexingProfile {
 		// Fields for grouping
 		indexingProfile.formatDeterminationMethod         = indexingProfileRS.getString("formatDeterminationMethod");
 		indexingProfile.filenamesToInclude                = indexingProfileRS.getString("filenamesToInclude");
-		indexingProfile.groupingClass                  = indexingProfileRS.getString("groupingClass");
-		indexingProfile.useICode2Suppression           = indexingProfileRS.getBoolean("useICode2Suppression");
+		indexingProfile.groupingClass                     = indexingProfileRS.getString("groupingClass");
+		indexingProfile.useICode2Suppression              = indexingProfileRS.getBoolean("useICode2Suppression");
 		indexingProfile.specifiedGroupingCategory         = indexingProfileRS.getString("specifiedGroupingCategory");
 		String locationsToSuppress = indexingProfileRS.getString("locationsToSuppress");
 		if (locationsToSuppress != null && locationsToSuppress.length() > 0) {
@@ -345,6 +347,7 @@ public class IndexingProfile {
 		String individualFilename = basePath + "/" + shortId + ".mrc";
 		return new File(individualFilename);
 	}
+
 
 	private static HashSet<String> basePathsValidated = new HashSet<>();
 
