@@ -53,6 +53,11 @@ public class BookcoverCleanup implements IProcessHandler {
 				logger.warn("Invalid value for coverAgeInDaysToDelete : " + coverAge);
 				coverAge = DEFAULTAGE;
 			}
+			final String note = "Deleting covers older than " + coverAge + " days";
+			processLog.addNote(note);
+			if (logger.isInfoEnabled()){
+				logger.info(note);
+			}
 		}
 
 		try {
@@ -83,7 +88,11 @@ public class BookcoverCleanup implements IProcessHandler {
 						}
 					}
 					if (numFilesDeleted > 0) {
-						processLog.addNote("\tRemoved " + numFilesDeleted + " files from " + fullPath + ".");
+						final String note = "Removed " + numFilesDeleted + " files from " + fullPath + ".";
+						processLog.addNote("\t" + note);
+						if (logger.isInfoEnabled()){
+							logger.info(note);
+						}
 					}
 				}
 			}
