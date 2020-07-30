@@ -22,10 +22,10 @@ class CarlXRecordProcessor extends IlsRecordProcessor {
 	}
 
 	@Override
-	protected void updateGroupedWorkSolrDataBasedOnMarc(GroupedWorkSolr groupedWork, Record record, String identifier) {
+	protected void updateGroupedWorkSolrDataBasedOnMarc(GroupedWorkSolr groupedWork, Record record, RecordIdentifier identifier) {
 		super.updateGroupedWorkSolrDataBasedOnMarc(groupedWork, record, identifier);
 		//Add variations of the identifier
-		String shortIdentifier = identifier.replace("CARL", "");
+		String shortIdentifier = identifier.getIdentifier().replace("CARL", "");
 		groupedWork.addAlternateId(shortIdentifier);
 		shortIdentifier = shortIdentifier.replaceFirst("^0+", "");
 		groupedWork.addAlternateId(shortIdentifier);
@@ -77,7 +77,7 @@ class CarlXRecordProcessor extends IlsRecordProcessor {
 		return overriddenStatus;
 	}*/
 
-	protected String getShelfLocationForItem(ItemInfo itemInfo, DataField itemField, String identifier) {
+	protected String getShelfLocationForItem(ItemInfo itemInfo, DataField itemField, RecordIdentifier identifier) {
 		String locationCode = getItemSubfieldData(locationSubfieldIndicator, itemField);
 		String location = translateValue("location", locationCode, identifier);
 		String shelvingLocation = getItemSubfieldData(shelvingLocationSubfield, itemField);

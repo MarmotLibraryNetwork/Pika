@@ -82,9 +82,9 @@ class GroupedWork_AJAX extends AJAXHandler {
 			$result['message'] = 'You must be logged in to delete ratings.';
 		}else{
 			require_once ROOT_DIR . '/sys/LocalEnrichment/UserWorkReview.php';
-			$userWorkReview                           = new UserWorkReview();
-			$userWorkReview->groupedRecordPermanentId = $id;
-			$userWorkReview->userId                   = UserAccount::getActiveUserId();
+			$userWorkReview                         = new UserWorkReview();
+			$userWorkReview->groupedWorkPermanentId = $id;
+			$userWorkReview->userId                 = UserAccount::getActiveUserId();
 			if ($userWorkReview->find(true)){
 				$userWorkReview->delete();
 				$result = array('result' => true, 'message' => 'We successfully deleted the rating for you.');
@@ -398,9 +398,9 @@ class GroupedWork_AJAX extends AJAXHandler {
 		}
 		$rating = $_REQUEST['rating'];
 		//Save the rating
-		$workReview                           = new UserWorkReview();
-		$workReview->groupedRecordPermanentId = $_REQUEST['id'];
-		$workReview->userId                   = UserAccount::getActiveUserId();
+		$workReview                         = new UserWorkReview();
+		$workReview->groupedWorkPermanentId = $_REQUEST['id'];
+		$workReview->userId                 = UserAccount::getActiveUserId();
 		if ($workReview->find(true)){
 			if ($rating != $workReview->rating){ // update gives an error if the rating value is the same as stored.
 				$workReview->rating = $rating;
@@ -531,9 +531,9 @@ class GroupedWork_AJAX extends AJAXHandler {
 
 			// check if rating/review exists for user and work
 			require_once ROOT_DIR . '/sys/LocalEnrichment/UserWorkReview.php';
-			$groupedWorkReview                           = new UserWorkReview();
-			$groupedWorkReview->userId                   = UserAccount::getActiveUserId();
-			$groupedWorkReview->groupedRecordPermanentId = $id;
+			$groupedWorkReview                         = new UserWorkReview();
+			$groupedWorkReview->userId                 = UserAccount::getActiveUserId();
+			$groupedWorkReview->groupedWorkPermanentId = $id;
 			if ($groupedWorkReview->find(true)){
 				$interface->assign('userRating', $groupedWorkReview->rating);
 				$interface->assign('userReview', $groupedWorkReview->review);
@@ -571,10 +571,10 @@ class GroupedWork_AJAX extends AJAXHandler {
 			$HadReview = isset($_REQUEST['comment']); // did form have the review field turned on? (may be only ratings instead)
 			$comment   = $HadReview ? trim($_REQUEST['comment']) : ''; //avoids undefined index notice when doing only ratings.
 
-			$groupedWorkReview                           = new UserWorkReview();
-			$groupedWorkReview->userId                   = UserAccount::getActiveUserId();
-			$groupedWorkReview->groupedRecordPermanentId = $id;
-			$newReview                                   = true;
+			$groupedWorkReview                         = new UserWorkReview();
+			$groupedWorkReview->userId                 = UserAccount::getActiveUserId();
+			$groupedWorkReview->groupedWorkPermanentId = $id;
+			$newReview                                 = true;
 			if ($groupedWorkReview->find(true)){ // check for existing rating by user
 				$newReview = false;
 			}
@@ -905,9 +905,9 @@ class GroupedWork_AJAX extends AJAXHandler {
 		if (UserAccount::isLoggedIn()){
 			$id = $_REQUEST['id'];
 			require_once ROOT_DIR . '/sys/LocalEnrichment/NotInterested.php';
-			$notInterested                           = new NotInterested();
-			$notInterested->userId                   = UserAccount::getActiveUserId();
-			$notInterested->groupedRecordPermanentId = $id;
+			$notInterested                         = new NotInterested();
+			$notInterested->userId                 = UserAccount::getActiveUserId();
+			$notInterested->groupedWorkPermanentId = $id;
 
 			if (!$notInterested->find(true)){
 				$notInterested->dateMarked = time();
@@ -976,10 +976,10 @@ class GroupedWork_AJAX extends AJAXHandler {
 		foreach ($words[0] as $tag){
 			$tag = trim(strtolower(str_replace('"', '', $tag)));
 
-			$userTag                           = new UserTag();
-			$userTag->tag                      = $tag;
-			$userTag->userId                   = UserAccount::getActiveUserId();
-			$userTag->groupedRecordPermanentId = $id;
+			$userTag                         = new UserTag();
+			$userTag->tag                    = $tag;
+			$userTag->userId                 = UserAccount::getActiveUserId();
+			$userTag->groupedWorkPermanentId = $id;
 			if (!$userTag->find(true)){
 				//This is a new tag
 				$userTag->dateTagged = time();
@@ -1000,12 +1000,12 @@ class GroupedWork_AJAX extends AJAXHandler {
 
 		require_once ROOT_DIR . '/sys/LocalEnrichment/UserTag.php';
 
-		$id                                = $_REQUEST['id'];
-		$tag                               = $_REQUEST['tag'];
-		$userTag                           = new UserTag();
-		$userTag->tag                      = $tag;
-		$userTag->userId                   = UserAccount::getActiveUserId();
-		$userTag->groupedRecordPermanentId = $id;
+		$id                              = $_REQUEST['id'];
+		$tag                             = $_REQUEST['tag'];
+		$userTag                         = new UserTag();
+		$userTag->tag                    = $tag;
+		$userTag->userId                 = UserAccount::getActiveUserId();
+		$userTag->groupedWorkPermanentId = $id;
 		if ($userTag->find(true)){
 			//This is a new tag
 			if ($userTag->delete()){
@@ -1099,8 +1099,8 @@ class GroupedWork_AJAX extends AJAXHandler {
 		$cacheMessage    = '';
 		require_once ROOT_DIR . '/sys/Islandora/IslandoraSamePikaCache.php';
 		//Check for cached links
-		$samePikaCache                = new IslandoraSamePikaCache();
-		$samePikaCache->groupedWorkId = $id;
+		$samePikaCache                         = new IslandoraSamePikaCache();
+		$samePikaCache->groupedWorkPermanentId = $id;
 		if ($samePikaCache->find(true)){
 			if ($samePikaCache->delete()){
 				$samePikaCleared = true;

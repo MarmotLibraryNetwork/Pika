@@ -75,8 +75,28 @@ abstract class ObjectEditor extends Admin_Admin {
 
 	/**
 	 * Load all objects into an array keyed by the primary key
+	 * Override this method and set an order by to change how
+	 * sorting order
+	 *
+	 * @param null $orderBy optional Order by clause to use
+	 * @return DB_DataObject[]
 	 */
-	abstract function getAllObjects();
+	function getAllObjects($orderBy = null){
+		/** @var DB_DataObject $object */
+		$objectList  = [];
+		$objectClass = $this->getObjectType();
+		$objectIdCol = $this->getIdKeyColumn();
+		$object      = new $objectClass;
+		if ($orderBy){
+			$object->orderBy($orderBy);
+		}
+		if ($object->find()){
+			while ($object->fetch()){
+				$objectList[$object->$objectIdCol] = clone $object;
+			}
+		}
+		return $objectList;
+	}
 
 	/**
 	 * Define the properties which are editable for the object

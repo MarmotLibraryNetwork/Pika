@@ -73,17 +73,8 @@ class Admin_IndexingProfiles extends ObjectEditor {
 		return 'Indexing Profiles';
 	}
 
-	function getAllObjects(){
-		$list = array();
-
-		$object = new IndexingProfile();
-		$object->orderBy('name');
-		$object->find();
-		while ($object->fetch()){
-			$list[$object->id] = clone $object;
-		}
-
-		return $list;
+	function getAllObjects($orderBy = null){
+		return parent::getAllObjects($orderBy ?? 'name');
 	}
 
 	function getObjectStructure(){

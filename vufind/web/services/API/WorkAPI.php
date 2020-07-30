@@ -60,8 +60,8 @@ class WorkAPI extends AJAXHandler {
 		}
 
 		require_once ROOT_DIR . '/sys/LocalEnrichment/UserWorkReview.php';
-		$reviewData                           = new UserWorkReview();
-		$reviewData->groupedRecordPermanentId = $permanentId;
+		$reviewData                         = new UserWorkReview();
+		$reviewData->groupedWorkPermanentId = $permanentId;
 		$reviewData->find();
 		$totalRating = 0;
 		while ($reviewData->fetch()){
@@ -130,13 +130,20 @@ class WorkAPI extends AJAXHandler {
 	}
 
 	public function generateWorkId(){
+		$title        = escapeshellarg($_REQUEST['title']);
+		$author       = escapeshellarg($_REQUEST['author']);
+		$format       = escapeshellarg($_REQUEST['format']);
+		$languageCode = escapeshellarg($_REQUEST['languageCode'] ?? 'eng');
+		$subtitle     = !empty($_REQUEST['subtitle']) ? escapeshellarg($_REQUEST['subtitle']) : null;
+
+		// Get site name from covers directory
 		global $configArray;
+		$partParts = explode("/", $configArray['Site']['coverPath']);
+		$siteName  = $partParts[count($partParts) - 2];
+
 		$localPath          = $configArray['Site']['local'];
-		$title              = escapeshellarg($_REQUEST['title']);
-		$author             = escapeshellarg($_REQUEST['author']);
-		$format             = escapeshellarg($_REQUEST['format']);
 		$recordGroupingPath = realpath("$localPath/../record_grouping/");
-		$commandToRun       = "java -jar $recordGroupingPath/record_grouping.jar generateWorkId $title $author $format";
+		$commandToRun       = "java -jar $recordGroupingPath/record_grouping.jar $siteName generateWorkId $title $author $format $languageCode $subtitle";
 		$result             = shell_exec($commandToRun);
 		return json_decode($result);
 	}

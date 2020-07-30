@@ -26,7 +26,8 @@
  * Time: 3:50 PM
  */
 require_once 'DB/DataObject.php';
-class UserListEntry extends DB_DataObject{
+
+class UserListEntry extends DB_DataObject {
 	public $__table = 'user_list_entry';     // table name
 	public $id;                              // int(11)  not_null primary_key auto_increment
 	public $groupedWorkPermanentId;          // NOTE: this isn't *only* groupedWork ids anymore. This can be archive ids too.
@@ -38,10 +39,9 @@ class UserListEntry extends DB_DataObject{
 	/**
 	 * @return bool
 	 */
-	function insert()
-	{
+	function insert(){
 		$result = parent::insert();
-		if ($result) {
+		if ($result){
 			$this->flushUserListBrowseCategory();
 		}
 		return $result;
@@ -51,10 +51,9 @@ class UserListEntry extends DB_DataObject{
 	 * @param bool $dataObject
 	 * @return bool|int|mixed
 	 */
-	function update($dataObject = false)
-	{
+	function update($dataObject = false){
 		$result = parent::update($dataObject);
-		if ($result) {
+		if ($result){
 			$this->flushUserListBrowseCategory();
 		}
 		return $result;
@@ -64,23 +63,24 @@ class UserListEntry extends DB_DataObject{
 	 * @param bool $useWhere
 	 * @return bool|int|mixed
 	 */
-	function delete($useWhere = false)
-	{
+	function delete($useWhere = false){
 		$result = parent::delete($useWhere);
-		if ($result) {
+		if ($result){
 			$this->flushUserListBrowseCategory();
 		}
 		return $result;
 	}
 
 	private function flushUserListBrowseCategory(){
-		// Check if the list is a part of a browse category and clear the cache.
-		require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
-		$userListBrowseCategory = new BrowseCategory();
-		$userListBrowseCategory->sourceListId = $this->listId;
-		if ($userListBrowseCategory->find()) {
-			while ($userListBrowseCategory->fetch()) {
-				$userListBrowseCategory->deleteCachedBrowseCategoryResults();
+		if (!empty($this->listId)){
+			// Check if the list is a part of a browse category and clear the cache.
+			require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
+			$userListBrowseCategory               = new BrowseCategory();
+			$userListBrowseCategory->sourceListId = $this->listId;
+			if ($userListBrowseCategory->find()){
+				while ($userListBrowseCategory->fetch()){
+					$userListBrowseCategory->deleteCachedBrowseCategoryResults();
+				}
 			}
 		}
 	}

@@ -80,7 +80,7 @@ public class HooplaExportMain {
 		logger.info(startTime.toString() + ": Starting Hoopla Export");
 		startTimeStamp = startTime.getTime() / 1000;
 
-		// Read the base INI file to get information about the server (current directory/cron/config.ini)
+		// Read the base INI file to get information about the server (current directory/conf/config.ini)
 		PikaConfigIni.loadConfigFile("config.ini", serverName, logger);
 
 		//Connect to the pika database

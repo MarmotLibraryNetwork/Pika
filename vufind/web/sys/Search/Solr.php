@@ -1800,7 +1800,7 @@ class Solr implements IndexEngine {
 					if ($numRecords > 1){
 						$notInterestedFilter .= " OR ";
 					}
-					$notInterestedFilter .= "id:" . $notInterested->groupedRecordPermanentId;
+					$notInterestedFilter .= "id:" . $notInterested->groupedWorkPermanentId;
 				}
 				$notInterestedFilter .= ")";
 				$filter[] = $notInterestedFilter;

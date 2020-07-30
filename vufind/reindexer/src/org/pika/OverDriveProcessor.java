@@ -80,7 +80,6 @@ public class OverDriveProcessor {
 							} else {
 
 								RecordInfo overDriveRecord = groupedWork.addRelatedRecord("overdrive", identifier);
-								overDriveRecord.setRecordIdentifier("overdrive", identifier);
 
 								HashMap<String, String> metadata;
 								String                  formatCategory;
@@ -388,7 +387,6 @@ public class OverDriveProcessor {
 		//Load subject data
 		String targetAudience = "";
 		boolean isComic = false;
-
 		try {
 			getProductSubjectsStmt.setLong(1, productId);
 			try (ResultSet subjectsRS = getProductSubjectsStmt.executeQuery()) {

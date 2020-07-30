@@ -4,6 +4,11 @@ import java.io.File;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.text.SimpleDateFormat;
+import java.util.HashSet;
+import java.util.regex.Pattern;
+
 import org.apache.log4j.Logger;
 
 /**
@@ -15,35 +20,93 @@ import org.apache.log4j.Logger;
  * Time: 10:38 PM
  */
 public class IndexingProfile {
-	Long id;
-	String name;
-	String individualMarcPath;
-	int numCharsToCreateFolderFrom;
-	boolean createFolderFromLeadingCharacters;
-	String recordNumberTag;
-	String itemTag ;
-	char itemRecordNumberSubfield;
-	String lastCheckinFormat;
-	String dateCreatedFormat;
-	String dueDateFormat;
-	char lastCheckinDateSubfield;
-	char locationSubfield;
-	char itemStatusSubfield;
-	char iTypeSubfield;
-	char shelvingLocationSubfield;
-	char yearToDateCheckoutsSubfield;
-	char totalCheckoutsSubfield;
-	char callNumberSubfield;
-	char dateCreatedSubfield;
-	char dueDateSubfield;
+	Long             id;
+	String           name;
+	String           sourceName;
+	String           marcEncoding;
+	String           individualMarcPath;
+	String           marcPath;
+	int              numCharsToCreateFolderFrom;
+	boolean          createFolderFromLeadingCharacters;
+	String           recordNumberTag;
+	char             recordNumberField;
+	String           recordNumberPrefix;
+	String           itemTag;
+	char             itemRecordNumberSubfield;
+	char             barcodeSubfield;
+	char             locationSubfield;
+	char             itemStatusSubfield;
+	char             dueDateSubfield;
+	String           dueDateFormat;
+	SimpleDateFormat dueDateFormatter;
+	char             totalCheckoutsSubfield;
+	char             lastYearCheckoutsSubfield;
+	char             yearToDateCheckoutsSubfield;
+	char             totalRenewalsSubfield;
+	char             dateCreatedSubfield;
+	String           dateCreatedFormat;
+	SimpleDateFormat dateCreatedFormatter;
+	char             lastCheckinDateSubfield;
+	String           lastCheckinFormat;
+	SimpleDateFormat lastCheckinFormatter;
+	char             shelvingLocationSubfield;
+	char             iCode2Subfield;
+	char             callNumberPrestampSubfield;
+	char             callNumberSubfield;
+	char             callNumberCutterSubfield;
+	char             callNumberPoststampSubfield;
+	char             volume;
+	char             itemUrl;
+	char             iTypeSubfield;
+	String           sierraRecordFixedFieldsTag;
+	char             bcode3Subfield;
+	char             materialTypeSubField;
+	String           materialTypesToIgnore;
+	char             sierraLanguageFixedField;
+	boolean          doAutomaticEcontentSuppression;
+	String           formatSource;
+	char             format;
+	char             eContentDescriptor;
+	String           specifiedFormatCategory;
 
+
+	// Fields needed for Record Grouping
+	String           formatDeterminationMethod;
+	String           filenamesToInclude;
+	String           groupingClass;
+	boolean          useICode2Suppression;
+	boolean          groupUnchangedFiles;
+	boolean          usingSierraAPIExtract        = true;
+//	String           specifiedFormat;
+	String           specifiedGroupingCategory;
+//	int              specifiedFormatBoost;
+	char             collectionSubfield;
+	Pattern          statusesToSuppressPattern    = null;
+	Pattern          locationsToSuppressPattern   = null;
+	Pattern          collectionsToSuppressPattern = null;
+	Pattern          iTypesToSuppressPattern      = null;
+	Pattern          iCode2sToSuppressPattern     = null;
+
+	// Sierra API Field Mapping
+	String APIItemCallNumberFieldTag;
+	String APIItemCallNumberPrestampSubfield;
+	String APIItemCallNumberSubfield;
+	String APIItemCallNumberCutterSubfield;
+	String APICallNumberPoststampSubfield;
+	String APIItemVolumeFieldTag;
+	String APIItemURLFieldTag;
+	String APIItemEContentExportFieldTag;
 
 	private char getCharFromString(String stringValue) {
 		char result = ' ';
-		if (stringValue != null && stringValue.length() > 0){
+		if (stringValue != null && stringValue.length() > 0) {
 			result = stringValue.charAt(0);
 		}
 		return result;
+	}
+
+	private void setRecordNumberField(String recordNumberField) {
+		this.recordNumberField = getCharFromString(recordNumberField);
 	}
 
 	private void setItemRecordNumberSubfield(String itemRecordNumberSubfield) {
@@ -54,11 +117,9 @@ public class IndexingProfile {
 		this.lastCheckinDateSubfield = getCharFromString(lastCheckinDateSubfield);
 	}
 
-
 	private void setLocationSubfield(String locationSubfield) {
 		this.locationSubfield = getCharFromString(locationSubfield);
 	}
-
 
 	private void setItemStatusSubfield(String itemStatusSubfield) {
 		this.itemStatusSubfield = getCharFromString(itemStatusSubfield);
@@ -72,8 +133,20 @@ public class IndexingProfile {
 		this.dateCreatedSubfield = getCharFromString(dateCreatedSubfield);
 	}
 
+	private void setCallNumberPrestampSubfield(String callNumberPrestampSubfield) {
+		this.callNumberPrestampSubfield = getCharFromString(callNumberPrestampSubfield);
+	}
+
 	private void setCallNumberSubfield(String callNumberSubfield) {
 		this.callNumberSubfield = getCharFromString(callNumberSubfield);
+	}
+
+	private void setCallNumberCutterSubfield(String callNumberCutterSubfield) {
+		this.callNumberCutterSubfield = getCharFromString(callNumberCutterSubfield);
+	}
+
+	private void setCallNumberPoststampSubfield(String callNumberPoststampSubfield) {
+		this.callNumberPoststampSubfield = getCharFromString(callNumberPoststampSubfield);
 	}
 
 	private void setTotalCheckoutsSubfield(String totalCheckoutsSubfield) {
@@ -84,72 +157,208 @@ public class IndexingProfile {
 		this.yearToDateCheckoutsSubfield = getCharFromString(yearToDateCheckoutsSubfield);
 	}
 
+	private void setLastYearCheckoutsSubfield(String lastYearCheckoutsSubfield) {
+		this.lastYearCheckoutsSubfield = getCharFromString(lastYearCheckoutsSubfield);
+	}
+
+	private void setTotalRenewalsSubfield(String totalRenewalsSubfield) {
+		this.totalRenewalsSubfield = getCharFromString(totalRenewalsSubfield);
+	}
+
 	private void setShelvingLocationSubfield(String shelvingLocationSubfield) {
 		this.shelvingLocationSubfield = getCharFromString(shelvingLocationSubfield);
+	}
+
+	private void setEContentDescriptor(String eContentDescriptorSubfield) {
+		this.eContentDescriptor = getCharFromString(eContentDescriptorSubfield);
+	}
+
+	private void setVolume(String subfield) {
+		this.volume = getCharFromString(subfield);
+	}
+
+	private void setItemUrl(String subfield) {
+		this.itemUrl = getCharFromString(subfield);
+	}
+
+	private void setFormatSubfield(String formatSubfield) {
+		this.format = getCharFromString(formatSubfield);
 	}
 
 	private void setITypeSubfield(String iTypeSubfield) {
 		this.iTypeSubfield = getCharFromString(iTypeSubfield);
 	}
 
-	static IndexingProfile loadIndexingProfile(Connection vufindConn, String profileToLoad, Logger logger) {
+	private void setBcode3Subfield(String bcode3Subfield) {
+		this.bcode3Subfield = getCharFromString(bcode3Subfield);
+	}
+
+	private void setBarcodeSubfield(String barcodeSubfield) {
+		this.barcodeSubfield = getCharFromString(barcodeSubfield);
+	}
+
+	public void setICode2Subfield(String ICode2Subfield) {
+		this.iCode2Subfield = getCharFromString(ICode2Subfield);
+	}
+
+	public void setMaterialTypeSubField(String subfield) {
+		this.materialTypeSubField = getCharFromString(subfield);
+	}
+
+	public void setSierraLanguageFixedField(String subfield) {
+		this.sierraLanguageFixedField = getCharFromString(subfield);
+	}
+
+	static IndexingProfile loadIndexingProfile(Connection pikaConn, String profileToLoad, Logger logger) {
 		//Get the Indexing Profile from the database
 		IndexingProfile indexingProfile = new IndexingProfile();
 		try {
-			PreparedStatement getIndexingProfileStmt = vufindConn.prepareStatement("SELECT * FROM indexing_profiles where name ='" + profileToLoad + "'");
-			ResultSet indexingProfileRS = getIndexingProfileStmt.executeQuery();
-			if (indexingProfileRS.next()) {
+			try (PreparedStatement getIndexingProfileStmt = pikaConn.prepareStatement("SELECT * FROM indexing_profiles WHERE sourceName ='" + profileToLoad + "'");
+				 ResultSet indexingProfileRS = getIndexingProfileStmt.executeQuery()) {
+				if (indexingProfileRS.next()) {
 
-				indexingProfile.id = indexingProfileRS.getLong("id");
+					setIndexingProfile(indexingProfile, indexingProfileRS);
 
-				indexingProfile.itemTag = indexingProfileRS.getString("itemTag");
-				indexingProfile.recordNumberTag = indexingProfileRS.getString("recordNumberTag");
-				indexingProfile.setItemRecordNumberSubfield(indexingProfileRS.getString("itemRecordNumber"));
-				indexingProfile.setLastCheckinDateSubfield(indexingProfileRS.getString("lastCheckinDate"));
-				indexingProfile.lastCheckinFormat = indexingProfileRS.getString("lastCheckinFormat");
-				indexingProfile.setLocationSubfield(indexingProfileRS.getString("location"));
-				indexingProfile.setItemStatusSubfield(indexingProfileRS.getString("status"));
-				indexingProfile.setDueDateSubfield(indexingProfileRS.getString("dueDate"));
-				indexingProfile.dueDateFormat = indexingProfileRS.getString("dueDateFormat");
-				indexingProfile.setDateCreatedSubfield(indexingProfileRS.getString("dateCreated"));
-				indexingProfile.dateCreatedFormat = indexingProfileRS.getString("dateCreatedFormat");
-				indexingProfile.setCallNumberSubfield(indexingProfileRS.getString("callNumber"));
-				indexingProfile.setTotalCheckoutsSubfield(indexingProfileRS.getString("totalCheckouts"));
-				indexingProfile.setYearToDateCheckoutsSubfield(indexingProfileRS.getString("yearToDateCheckouts"));
 
-				indexingProfile.individualMarcPath                 = indexingProfileRS.getString("individualMarcPath");
-				indexingProfile.name                        = indexingProfileRS.getString("name");
-				indexingProfile.numCharsToCreateFolderFrom         = indexingProfileRS.getInt("numCharsToCreateFolderFrom");
-				indexingProfile.createFolderFromLeadingCharacters  = indexingProfileRS.getBoolean("createFolderFromLeadingCharacters");
-
-				indexingProfile.setShelvingLocationSubfield(indexingProfileRS.getString("shelvingLocation"));
-				indexingProfile.setITypeSubfield(indexingProfileRS.getString("iType"));
-
-			} else {
-				logger.error("Unable to find " + profileToLoad + " indexing profile, please create a profile with the name ils.");
+					// Sierra API Item Field Mapping
+					try (
+							PreparedStatement getSierraFieldMappingsStmt = pikaConn.prepareStatement("SELECT * FROM sierra_export_field_mapping where indexingProfileId =" + indexingProfile.id);
+							ResultSet getSierraFieldMappingsRS = getSierraFieldMappingsStmt.executeQuery()
+					) {
+						if (getSierraFieldMappingsRS.next()) {
+							indexingProfile.APIItemCallNumberFieldTag         = getSierraFieldMappingsRS.getString("callNumberExportFieldTag");
+							indexingProfile.APIItemCallNumberPrestampSubfield = getSierraFieldMappingsRS.getString("callNumberPrestampExportSubfield");
+							indexingProfile.APIItemCallNumberSubfield         = getSierraFieldMappingsRS.getString("callNumberExportSubfield");
+							indexingProfile.APIItemCallNumberCutterSubfield   = getSierraFieldMappingsRS.getString("callNumberCutterExportSubfield");
+							indexingProfile.APICallNumberPoststampSubfield    = getSierraFieldMappingsRS.getString("callNumberPoststampExportSubfield");
+							indexingProfile.APIItemVolumeFieldTag             = getSierraFieldMappingsRS.getString("volumeExportFieldTag");
+							indexingProfile.APIItemURLFieldTag                = getSierraFieldMappingsRS.getString("urlExportFieldTag");
+							indexingProfile.APIItemEContentExportFieldTag     = getSierraFieldMappingsRS.getString("eContentExportFieldTag");
+						}
+					}
+				} else {
+					logger.error("Unable to find " + profileToLoad + " indexing profile, please create a profile with the name ils.");
+				}
 			}
 
-		}catch (Exception e){
-			logger.error("Error reading index profile for CarlX", e);
+		} catch (Exception e) {
+			logger.error("Error reading indexing profile for Sierra", e);
 		}
 		return indexingProfile;
 	}
 
+	private static void setIndexingProfile(IndexingProfile indexingProfile, ResultSet indexingProfileRS) throws SQLException {
+		indexingProfile.id                                = indexingProfileRS.getLong("id");
+		indexingProfile.itemTag                           = indexingProfileRS.getString("itemTag");
+		indexingProfile.dueDateFormat                     = indexingProfileRS.getString("dueDateFormat");
+		indexingProfile.dueDateFormatter                  = new SimpleDateFormat(indexingProfile.dueDateFormat);
+		indexingProfile.dateCreatedFormat                 = indexingProfileRS.getString("dateCreatedFormat");
+		indexingProfile.dateCreatedFormatter              = new SimpleDateFormat(indexingProfile.dateCreatedFormat);
+		indexingProfile.lastCheckinFormat                 = indexingProfileRS.getString("lastCheckinFormat");
+		indexingProfile.lastCheckinFormatter              = new SimpleDateFormat(indexingProfile.lastCheckinFormat);
+		indexingProfile.individualMarcPath                = indexingProfileRS.getString("individualMarcPath");
+		indexingProfile.marcPath                          = indexingProfileRS.getString("marcPath");
+		indexingProfile.sourceName                        = indexingProfileRS.getString("sourceName");
+		indexingProfile.numCharsToCreateFolderFrom        = indexingProfileRS.getInt("numCharsToCreateFolderFrom");
+		indexingProfile.createFolderFromLeadingCharacters = indexingProfileRS.getBoolean("createFolderFromLeadingCharacters");
+		indexingProfile.doAutomaticEcontentSuppression    = indexingProfileRS.getBoolean("doAutomaticEcontentSuppression");
+		indexingProfile.recordNumberTag                   = indexingProfileRS.getString("recordNumberTag");
+		indexingProfile.recordNumberPrefix                = indexingProfileRS.getString("recordNumberPrefix");
+		indexingProfile.formatSource                      = indexingProfileRS.getString("formatSource");
+		indexingProfile.specifiedFormatCategory           = indexingProfileRS.getString("specifiedFormatCategory");
+		indexingProfile.sierraRecordFixedFieldsTag        = indexingProfileRS.getString("sierraRecordFixedFieldsTag");
+		indexingProfile.marcEncoding                      = indexingProfileRS.getString("marcEncoding");
+
+
+		// Fields for grouping
+		indexingProfile.formatDeterminationMethod         = indexingProfileRS.getString("formatDeterminationMethod");
+		indexingProfile.filenamesToInclude                = indexingProfileRS.getString("filenamesToInclude");
+		indexingProfile.groupingClass                  = indexingProfileRS.getString("groupingClass");
+		indexingProfile.useICode2Suppression           = indexingProfileRS.getBoolean("useICode2Suppression");
+		indexingProfile.specifiedGroupingCategory         = indexingProfileRS.getString("specifiedGroupingCategory");
+		String locationsToSuppress = indexingProfileRS.getString("locationsToSuppress");
+		if (locationsToSuppress != null && locationsToSuppress.length() > 0) {
+			indexingProfile.locationsToSuppressPattern = Pattern.compile(locationsToSuppress);
+		}
+		String collectionsToSuppress = indexingProfileRS.getString("collectionsToSuppress");
+		if (collectionsToSuppress != null && collectionsToSuppress.length() > 0) {
+			indexingProfile.collectionsToSuppressPattern = Pattern.compile(collectionsToSuppress);
+		}
+		String statusesToSuppress = indexingProfileRS.getString("statusesToSuppress");
+		if (statusesToSuppress != null && statusesToSuppress.length() > 0) {
+			indexingProfile.statusesToSuppressPattern = Pattern.compile(statusesToSuppress);
+		}
+		String iCode2sToSuppress = indexingProfileRS.getString("iCode2sToSuppress");
+		if (iCode2sToSuppress != null && iCode2sToSuppress.length() > 0) {
+			indexingProfile.iCode2sToSuppressPattern = Pattern.compile(iCode2sToSuppress);
+		}
+		String iTypesToSuppress = indexingProfileRS.getString("iTypesToSuppress");
+		if (iTypesToSuppress != null && iTypesToSuppress.length() > 0) {
+			indexingProfile.iTypesToSuppressPattern = Pattern.compile(iTypesToSuppress);
+		}
+
+
+
+		indexingProfile.setEContentDescriptor(indexingProfileRS.getString("eContentDescriptor"));
+		indexingProfile.setRecordNumberField(indexingProfileRS.getString("recordNumberField"));
+		indexingProfile.setFormatSubfield(indexingProfileRS.getString("format"));
+		indexingProfile.setItemRecordNumberSubfield(indexingProfileRS.getString("itemRecordNumber"));
+		indexingProfile.setBarcodeSubfield(indexingProfileRS.getString("barcode"));
+		indexingProfile.setLocationSubfield(indexingProfileRS.getString("location"));
+		indexingProfile.setShelvingLocationSubfield(indexingProfileRS.getString("shelvingLocation"));
+		indexingProfile.setCallNumberPrestampSubfield(indexingProfileRS.getString("callNumberPrestamp"));
+		indexingProfile.setCallNumberSubfield(indexingProfileRS.getString("callNumber"));
+		indexingProfile.setCallNumberCutterSubfield(indexingProfileRS.getString("callNumberCutter"));
+		indexingProfile.setCallNumberPoststampSubfield(indexingProfileRS.getString("callNumberPoststamp"));
+		indexingProfile.setItemStatusSubfield(indexingProfileRS.getString("status"));
+		indexingProfile.setDueDateSubfield(indexingProfileRS.getString("dueDate"));
+		indexingProfile.setTotalCheckoutsSubfield(indexingProfileRS.getString("totalCheckouts"));
+		indexingProfile.setLastYearCheckoutsSubfield(indexingProfileRS.getString("lastYearCheckouts"));
+		indexingProfile.setYearToDateCheckoutsSubfield(indexingProfileRS.getString("yearToDateCheckouts"));
+		indexingProfile.setTotalRenewalsSubfield(indexingProfileRS.getString("totalRenewals"));
+		indexingProfile.setITypeSubfield(indexingProfileRS.getString("iType"));
+		indexingProfile.setDateCreatedSubfield(indexingProfileRS.getString("dateCreated"));
+		indexingProfile.setLastCheckinDateSubfield(indexingProfileRS.getString("lastCheckinDate"));
+		indexingProfile.setICode2Subfield(indexingProfileRS.getString("iCode2"));
+		indexingProfile.setVolume(indexingProfileRS.getString("volume"));
+		indexingProfile.setItemUrl(indexingProfileRS.getString("itemUrl"));
+		indexingProfile.setBcode3Subfield(indexingProfileRS.getString("bCode3"));
+		indexingProfile.setMaterialTypeSubField(indexingProfileRS.getString("materialTypeField"));
+		indexingProfile.setSierraLanguageFixedField(indexingProfileRS.getString("sierraLanguageFixedField"));
+	}
+
 	File getFileForIlsRecord(String recordNumber) {
-		String shortId = recordNumber.replace(".", "");
-		while (shortId.length() < 9){
-			shortId = "0" + shortId;
+		StringBuilder shortId = new StringBuilder(recordNumber.replace(".", ""));
+		while (shortId.length() < 9) {
+			shortId.insert(0, "0");
 		}
 
 		String subFolderName;
-		if (createFolderFromLeadingCharacters){
-			subFolderName        = shortId.substring(0, numCharsToCreateFolderFrom);
-		}else{
-			subFolderName        = shortId.substring(0, shortId.length() - numCharsToCreateFolderFrom);
+		if (createFolderFromLeadingCharacters) {
+			subFolderName = shortId.substring(0, numCharsToCreateFolderFrom);
+		} else {
+			subFolderName = shortId.substring(0, shortId.length() - numCharsToCreateFolderFrom);
 		}
 
-		String basePath           = individualMarcPath + "/" + subFolderName;
+		String basePath = individualMarcPath + "/" + subFolderName;
+		createBaseDirectory(basePath);
 		String individualFilename = basePath + "/" + shortId + ".mrc";
 		return new File(individualFilename);
 	}
+
+	private static HashSet<String> basePathsValidated = new HashSet<>();
+
+	private static void createBaseDirectory(String basePath) {
+		if (basePathsValidated.contains(basePath)) {
+			return;
+		}
+		File baseFile = new File(basePath);
+		if (!baseFile.exists()) {
+			if (!baseFile.mkdirs()) {
+				System.out.println("Could not create directory to store individual marc");
+			}
+		}
+		basePathsValidated.add(basePath);
+	}
+
 }

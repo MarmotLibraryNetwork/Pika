@@ -43,17 +43,8 @@ class Admin_AccountProfiles extends ObjectEditor {
 		return 'Account Profiles';
 	}
 
-	function getAllObjects(){
-		$list = array();
-
-		$object = new AccountProfile();
-		$object->orderBy('weight, name');
-		$object->find();
-		while ($object->fetch()){
-			$list[$object->id] = clone $object;
-		}
-
-		return $list;
+	function getAllObjects($orderBy = null){
+		return parent::getAllObjects($orderBy ?? 'weight, name');
 	}
 
 	function getObjectStructure(){

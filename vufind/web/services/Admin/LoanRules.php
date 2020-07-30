@@ -66,15 +66,8 @@ class LoanRules extends ObjectEditor {
 		return 'Loan Rules';
 	}
 
-	function getAllObjects(){
-		$object = new LoanRule();
-		$object->orderBy('loanRuleId');
-		$object->find();
-		$objectList = array();
-		while ($object->fetch()){
-			$objectList[$object->loanRuleId] = clone $object;
-		}
-		return $objectList;
+	function getAllObjects($orderBy = null){
+		return parent::getAllObjects($orderBy ?? 'loanRuleId');
 	}
 
 	function getObjectStructure(){

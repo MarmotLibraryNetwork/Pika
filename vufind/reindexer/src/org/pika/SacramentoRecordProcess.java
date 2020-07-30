@@ -83,7 +83,7 @@ class SacramentoRecordProcessor extends IIIRecordProcessor {
 	}
 
 	@Override
-	protected void loadUnsuppressedPrintItems(GroupedWorkSolr groupedWork, RecordInfo recordInfo, String identifier, Record record) {
+	protected void loadUnsuppressedPrintItems(GroupedWorkSolr groupedWork, RecordInfo recordInfo, RecordIdentifier identifier, Record record) {
 		super.loadUnsuppressedPrintItems(groupedWork, recordInfo, identifier, record);
 
 		// Handle Special Itemless Print Bibs
@@ -123,7 +123,7 @@ class SacramentoRecordProcessor extends IIIRecordProcessor {
 	}
 
 	@Override
-	protected List<RecordInfo> loadUnsuppressedEContentItems(GroupedWorkSolr groupedWork, String identifier, Record record) {
+	protected List<RecordInfo> loadUnsuppressedEContentItems(GroupedWorkSolr groupedWork, RecordIdentifier identifier, Record record) {
 		List<RecordInfo> unsuppressedEcontentRecords = new ArrayList<>();
 		//For arlington and sacramento, eContent will always have no items on the bib record.
 		List<DataField> items = MarcUtil.getDataFields(record, itemTag);
@@ -162,8 +162,8 @@ class SacramentoRecordProcessor extends IIIRecordProcessor {
 //                  itemInfo.setShelfLocation(econtentSource); // this sets the owning location facet.  This isn't needed for Sacramento
 					itemInfo.setIType("eCollection");
 					itemInfo.setDetailedStatus("Available Online");
-					RecordInfo relatedRecord = groupedWork.addRelatedRecord("external_econtent", identifier);
-					relatedRecord.setSubSource(profileType);
+					RecordInfo relatedRecord = groupedWork.addRelatedRecord("external_econtent", identifier.getIdentifier());
+					relatedRecord.setSubSource(indexingProfileSource);
 					relatedRecord.addItem(itemInfo);
 					itemInfo.seteContentUrl(url);
 

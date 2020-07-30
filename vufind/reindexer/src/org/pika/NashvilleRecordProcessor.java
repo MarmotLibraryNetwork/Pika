@@ -78,7 +78,7 @@ class NashvilleRecordProcessor extends IIIRecordProcessor {
 		return locationCode.matches(".*sup") || super.isItemSuppressed(curItem);
 	}
 
-	protected List<RecordInfo> loadUnsuppressedEContentItems(GroupedWorkSolr groupedWork, String identifier, Record record){
+	protected List<RecordInfo> loadUnsuppressedEContentItems(GroupedWorkSolr groupedWork, RecordIdentifier identifier, Record record){
 		List<RecordInfo> unsuppressedEcontentRecords = new ArrayList<>();
 
 		//Check to see if we should add a supplemental record:
@@ -104,8 +104,8 @@ class NashvilleRecordProcessor extends IIIRecordProcessor {
 //				itemInfo.seteContentProtectionType("external");
 				itemInfo.setCallNumber("Online");
 				itemInfo.setShelfLocation(itemInfo.geteContentSource());
-				RecordInfo relatedRecord = groupedWork.addRelatedRecord("external_econtent", identifier);
-				relatedRecord.setSubSource(profileType);
+				RecordInfo relatedRecord = groupedWork.addRelatedRecord("external_econtent", identifier.getIdentifier());
+				relatedRecord.setSubSource(indexingProfileSource);
 				relatedRecord.addItem(itemInfo);
 				itemInfo.seteContentUrl(url);
 

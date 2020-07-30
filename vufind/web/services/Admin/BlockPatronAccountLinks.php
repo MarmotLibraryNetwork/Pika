@@ -57,15 +57,11 @@ class Admin_BlockPatronAccountLinks extends ObjectEditor {
 
 	/**
 	 * Load all objects into an array keyed by the primary key
+	 * @param null $orderBy
+	 * @return DB_DataObject[]
 	 */
-	function getAllObjects(){
-		$object = new BlockPatronAccountLink();
-		$object->find();
-		$objectList = array();
-		while ($object->fetch()){
-			$objectList[$object->id] = clone $object;
-		}
-		return $objectList;
+	function getAllObjects($orderBy = null){
+		return parent::getAllObjects($orderBy);
 	}
 
 	/**

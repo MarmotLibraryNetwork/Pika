@@ -1219,6 +1219,7 @@ public class GroupedWorkSolr implements Cloneable {
 	void addTopic(Set<String> fieldList) {
 		this.topics.addAll(Util.trimTrailingPunctuation(fieldList));
 	}
+
 //	HashSet<String> getTopics(){
 //		return this.topics;
 //	}
@@ -1687,6 +1688,17 @@ public class GroupedWorkSolr implements Cloneable {
 		}
 	}
 
+	RecordInfo addRelatedRecord(RecordIdentifier recordIdentifier){
+		String sourceAndId = recordIdentifier.getSourceAndId();
+		if (relatedRecords.containsKey(recordIdentifier.getSourceAndId())){
+			return relatedRecords.get(sourceAndId);
+		}else {
+			RecordInfo newRecord = new RecordInfo(recordIdentifier);
+			relatedRecords.put(sourceAndId, newRecord);
+			return newRecord;
+		}
+	}
+
 	RecordInfo addRelatedRecord(String source, String recordIdentifier){
 		String recordIdentifierWithType = source + ":" + recordIdentifier;
 		if (relatedRecords.containsKey(recordIdentifierWithType)){
@@ -1718,7 +1730,7 @@ public class GroupedWorkSolr implements Cloneable {
 		//Update total works
 		for (Scope scope: groupedWorkIndexer.getScopes()){
 			HashSet<RecordInfo> relatedRecordsForScope = new HashSet<>();
-			HashSet<ItemInfo> relatedItems = new HashSet<>();
+			HashSet<ItemInfo>   relatedItems           = new HashSet<>();
 			loadRelatedRecordsAndItemsForScope(scope, relatedRecordsForScope, relatedItems);
 			if (relatedRecordsForScope.size() > 0){
 				ScopedIndexingStats stats = indexingStats.get(scope.getScopeName());
@@ -1736,9 +1748,9 @@ public class GroupedWorkSolr implements Cloneable {
 
 	boolean getIsLibraryOwned(Scope scope){
 		HashSet<RecordInfo> relatedRecordsForScope = new HashSet<>();
-		HashSet<ItemInfo> relatedItems = new HashSet<>();
+		HashSet<ItemInfo>   relatedItems           = new HashSet<>();
 		loadRelatedRecordsAndItemsForScope(scope, relatedRecordsForScope, relatedItems);
-		if (relatedRecordsForScope.size() > 0){
+		if (relatedRecordsForScope.size() > 0) {
 			return isLibraryOwned(relatedItems, scope);
 		}
 		return false;

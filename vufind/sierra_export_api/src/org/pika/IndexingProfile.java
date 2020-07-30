@@ -4,7 +4,10 @@ import java.io.File;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.SimpleDateFormat;
+import java.util.HashSet;
+import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
 
@@ -17,17 +20,14 @@ import org.apache.log4j.Logger;
  * Time: 10:38 PM
  */
 public class IndexingProfile {
-	//Used in record grouping
-	Long id;
-
-	String name;
-	//String marcEncoding;
-	private String  individualMarcPath;
-	public  String  marcPath;
-	private int     numCharsToCreateFolderFrom;
-	private boolean createFolderFromLeadingCharacters;
-
-	//Used in record grouping
+	Long             id;
+	String           name;
+	String           sourceName;
+	String           marcEncoding;
+	String           individualMarcPath;
+	String           marcPath;
+	int              numCharsToCreateFolderFrom;
+	boolean          createFolderFromLeadingCharacters;
 	String           recordNumberTag;
 	char             recordNumberField;
 	String           recordNumberPrefix;
@@ -44,9 +44,8 @@ public class IndexingProfile {
 	char             yearToDateCheckoutsSubfield;
 	char             totalRenewalsSubfield;
 	char             dateCreatedSubfield;
-	private String dateCreatedFormat;
+	String           dateCreatedFormat;
 	SimpleDateFormat dateCreatedFormatter;
-
 	char             lastCheckinDateSubfield;
 	String           lastCheckinFormat;
 	SimpleDateFormat lastCheckinFormatter;
@@ -59,19 +58,34 @@ public class IndexingProfile {
 	char             volume;
 	char             itemUrl;
 	char             iTypeSubfield;
+	String           sierraRecordFixedFieldsTag;
+	char             bcode3Subfield;
+	char             materialTypeSubField;
+	String           materialTypesToIgnore;
+	char             sierraLanguageFixedField;
+	boolean          doAutomaticEcontentSuppression;
+	String           formatSource;
+	char             format;
+	char             eContentDescriptor;
+	String           specifiedFormatCategory;
 
-	String sierraBibLevelFieldTag;
-	char   bcode3Subfield;
-	char   materialTypeSubField;
-	char   sierraLanguageFixedField;
 
-	//These are used from Record Grouping and Reindexing
-	boolean doAutomaticEcontentSuppression;
-
-	String formatSource;
-	char   format;
-	char   eContentDescriptor;
-	String specifiedFormatCategory;
+	// Fields needed for Record Grouping
+	String           formatDeterminationMethod;
+	String           filenamesToInclude;
+	String           groupingClass;
+	boolean          useICode2Suppression;
+	boolean          groupUnchangedFiles;
+	boolean          usingSierraAPIExtract        = true;
+//	String           specifiedFormat;
+	String           specifiedGroupingCategory;
+//	int              specifiedFormatBoost;
+	char             collectionSubfield;
+	Pattern          statusesToSuppressPattern    = null;
+	Pattern          locationsToSuppressPattern   = null;
+	Pattern          collectionsToSuppressPattern = null;
+	Pattern          iTypesToSuppressPattern      = null;
+	Pattern          iCode2sToSuppressPattern     = null;
 
 	// Sierra API Field Mapping
 	String APIItemCallNumberFieldTag;
@@ -179,6 +193,14 @@ public class IndexingProfile {
 		this.bcode3Subfield = getCharFromString(bcode3Subfield);
 	}
 
+	private void setBarcodeSubfield(String barcodeSubfield) {
+		this.barcodeSubfield = getCharFromString(barcodeSubfield);
+	}
+
+	public void setICode2Subfield(String ICode2Subfield) {
+		this.iCode2Subfield = getCharFromString(ICode2Subfield);
+	}
+
 	public void setMaterialTypeSubField(String subfield) {
 		this.materialTypeSubField = getCharFromString(subfield);
 	}
@@ -191,57 +213,11 @@ public class IndexingProfile {
 		//Get the Indexing Profile from the database
 		IndexingProfile indexingProfile = new IndexingProfile();
 		try {
-			try (PreparedStatement getIndexingProfileStmt = pikaConn.prepareStatement("SELECT * FROM indexing_profiles WHERE name ='" + profileToLoad + "'");
+			try (PreparedStatement getIndexingProfileStmt = pikaConn.prepareStatement("SELECT * FROM indexing_profiles WHERE sourceName ='" + profileToLoad + "'");
 				 ResultSet indexingProfileRS = getIndexingProfileStmt.executeQuery()) {
 				if (indexingProfileRS.next()) {
 
-					indexingProfile.id                                = indexingProfileRS.getLong("id");
-					indexingProfile.itemTag                           = indexingProfileRS.getString("itemTag");
-					indexingProfile.dueDateFormat                     = indexingProfileRS.getString("dueDateFormat");
-					indexingProfile.dueDateFormatter                  = new SimpleDateFormat(indexingProfile.dueDateFormat);
-					indexingProfile.dateCreatedFormat                 = indexingProfileRS.getString("dateCreatedFormat");
-					indexingProfile.dateCreatedFormatter              = new SimpleDateFormat(indexingProfile.dateCreatedFormat);
-					indexingProfile.lastCheckinFormat                 = indexingProfileRS.getString("lastCheckinFormat");
-					indexingProfile.lastCheckinFormatter              = new SimpleDateFormat(indexingProfile.lastCheckinFormat);
-					indexingProfile.individualMarcPath                = indexingProfileRS.getString("individualMarcPath");
-					indexingProfile.marcPath                          = indexingProfileRS.getString("marcPath");
-					indexingProfile.name                              = indexingProfileRS.getString("name");
-					indexingProfile.numCharsToCreateFolderFrom        = indexingProfileRS.getInt("numCharsToCreateFolderFrom");
-					indexingProfile.createFolderFromLeadingCharacters = indexingProfileRS.getBoolean("createFolderFromLeadingCharacters");
-					indexingProfile.doAutomaticEcontentSuppression    = indexingProfileRS.getBoolean("doAutomaticEcontentSuppression");
-					indexingProfile.recordNumberTag                   = indexingProfileRS.getString("recordNumberTag");
-					indexingProfile.recordNumberPrefix                = indexingProfileRS.getString("recordNumberPrefix");
-					indexingProfile.formatSource                      = indexingProfileRS.getString("formatSource");
-					indexingProfile.specifiedFormatCategory           = indexingProfileRS.getString("specifiedFormatCategory");
-					indexingProfile.sierraBibLevelFieldTag            = indexingProfileRS.getString("sierraRecordFixedFieldsTag");
-//					indexingProfile.marcEncoding                      = indexingProfileRS.getString("marcEncoding");
-
-					indexingProfile.setEContentDescriptor(indexingProfileRS.getString("eContentDescriptor"));
-					indexingProfile.setRecordNumberField(indexingProfileRS.getString("recordNumberField"));
-					indexingProfile.setFormatSubfield(indexingProfileRS.getString("format"));
-					indexingProfile.setItemRecordNumberSubfield(indexingProfileRS.getString("itemRecordNumber"));
-					indexingProfile.setBarcodeSubfield(indexingProfileRS.getString("barcode"));
-					indexingProfile.setLocationSubfield(indexingProfileRS.getString("location"));
-					indexingProfile.setShelvingLocationSubfield(indexingProfileRS.getString("shelvingLocation"));
-					indexingProfile.setCallNumberPrestampSubfield(indexingProfileRS.getString("callNumberPrestamp"));
-					indexingProfile.setCallNumberSubfield(indexingProfileRS.getString("callNumber"));
-					indexingProfile.setCallNumberCutterSubfield(indexingProfileRS.getString("callNumberCutter"));
-					indexingProfile.setCallNumberPoststampSubfield(indexingProfileRS.getString("callNumberPoststamp"));
-					indexingProfile.setItemStatusSubfield(indexingProfileRS.getString("status"));
-					indexingProfile.setDueDateSubfield(indexingProfileRS.getString("dueDate"));
-					indexingProfile.setTotalCheckoutsSubfield(indexingProfileRS.getString("totalCheckouts"));
-					indexingProfile.setLastYearCheckoutsSubfield(indexingProfileRS.getString("lastYearCheckouts"));
-					indexingProfile.setYearToDateCheckoutsSubfield(indexingProfileRS.getString("yearToDateCheckouts"));
-					indexingProfile.setTotalRenewalsSubfield(indexingProfileRS.getString("totalRenewals"));
-					indexingProfile.setITypeSubfield(indexingProfileRS.getString("iType"));
-					indexingProfile.setDateCreatedSubfield(indexingProfileRS.getString("dateCreated"));
-					indexingProfile.setLastCheckinDateSubfield(indexingProfileRS.getString("lastCheckinDate"));
-					indexingProfile.setICode2Subfield(indexingProfileRS.getString("iCode2"));
-					indexingProfile.setVolume(indexingProfileRS.getString("volume"));
-					indexingProfile.setItemUrl(indexingProfileRS.getString("itemUrl"));
-					indexingProfile.setBcode3Subfield(indexingProfileRS.getString("bCode3"));
-					indexingProfile.setMaterialTypeSubField(indexingProfileRS.getString("materialTypeField"));
-					indexingProfile.setSierraLanguageFixedField(indexingProfileRS.getString("sierraLanguageFixedField"));
+					setIndexingProfile(indexingProfile, indexingProfileRS);
 
 
 					// Sierra API Item Field Mapping
@@ -266,9 +242,89 @@ public class IndexingProfile {
 			}
 
 		} catch (Exception e) {
-			logger.error("Error reading index profile for Sierra", e);
+			logger.error("Error reading indexing profile for Sierra", e);
 		}
 		return indexingProfile;
+	}
+
+	private static void setIndexingProfile(IndexingProfile indexingProfile, ResultSet indexingProfileRS) throws SQLException {
+		indexingProfile.id                                = indexingProfileRS.getLong("id");
+		indexingProfile.itemTag                           = indexingProfileRS.getString("itemTag");
+		indexingProfile.dueDateFormat                     = indexingProfileRS.getString("dueDateFormat");
+		indexingProfile.dueDateFormatter                  = new SimpleDateFormat(indexingProfile.dueDateFormat);
+		indexingProfile.dateCreatedFormat                 = indexingProfileRS.getString("dateCreatedFormat");
+		indexingProfile.dateCreatedFormatter              = new SimpleDateFormat(indexingProfile.dateCreatedFormat);
+		indexingProfile.lastCheckinFormat                 = indexingProfileRS.getString("lastCheckinFormat");
+		indexingProfile.lastCheckinFormatter              = new SimpleDateFormat(indexingProfile.lastCheckinFormat);
+		indexingProfile.individualMarcPath                = indexingProfileRS.getString("individualMarcPath");
+		indexingProfile.marcPath                          = indexingProfileRS.getString("marcPath");
+		indexingProfile.sourceName                        = indexingProfileRS.getString("sourceName");
+		indexingProfile.numCharsToCreateFolderFrom        = indexingProfileRS.getInt("numCharsToCreateFolderFrom");
+		indexingProfile.createFolderFromLeadingCharacters = indexingProfileRS.getBoolean("createFolderFromLeadingCharacters");
+		indexingProfile.doAutomaticEcontentSuppression    = indexingProfileRS.getBoolean("doAutomaticEcontentSuppression");
+		indexingProfile.recordNumberTag                   = indexingProfileRS.getString("recordNumberTag");
+		indexingProfile.recordNumberPrefix                = indexingProfileRS.getString("recordNumberPrefix");
+		indexingProfile.formatSource                      = indexingProfileRS.getString("formatSource");
+		indexingProfile.specifiedFormatCategory           = indexingProfileRS.getString("specifiedFormatCategory");
+		indexingProfile.sierraRecordFixedFieldsTag        = indexingProfileRS.getString("sierraRecordFixedFieldsTag");
+		indexingProfile.marcEncoding                      = indexingProfileRS.getString("marcEncoding");
+
+
+		// Fields for grouping
+		indexingProfile.formatDeterminationMethod         = indexingProfileRS.getString("formatDeterminationMethod");
+		indexingProfile.filenamesToInclude                = indexingProfileRS.getString("filenamesToInclude");
+		indexingProfile.groupingClass                  = indexingProfileRS.getString("groupingClass");
+		indexingProfile.useICode2Suppression           = indexingProfileRS.getBoolean("useICode2Suppression");
+		indexingProfile.specifiedGroupingCategory         = indexingProfileRS.getString("specifiedGroupingCategory");
+		String locationsToSuppress = indexingProfileRS.getString("locationsToSuppress");
+		if (locationsToSuppress != null && locationsToSuppress.length() > 0) {
+			indexingProfile.locationsToSuppressPattern = Pattern.compile(locationsToSuppress);
+		}
+		String collectionsToSuppress = indexingProfileRS.getString("collectionsToSuppress");
+		if (collectionsToSuppress != null && collectionsToSuppress.length() > 0) {
+			indexingProfile.collectionsToSuppressPattern = Pattern.compile(collectionsToSuppress);
+		}
+		String statusesToSuppress = indexingProfileRS.getString("statusesToSuppress");
+		if (statusesToSuppress != null && statusesToSuppress.length() > 0) {
+			indexingProfile.statusesToSuppressPattern = Pattern.compile(statusesToSuppress);
+		}
+		String iCode2sToSuppress = indexingProfileRS.getString("iCode2sToSuppress");
+		if (iCode2sToSuppress != null && iCode2sToSuppress.length() > 0) {
+			indexingProfile.iCode2sToSuppressPattern = Pattern.compile(iCode2sToSuppress);
+		}
+		String iTypesToSuppress = indexingProfileRS.getString("iTypesToSuppress");
+		if (iTypesToSuppress != null && iTypesToSuppress.length() > 0) {
+			indexingProfile.iTypesToSuppressPattern = Pattern.compile(iTypesToSuppress);
+		}
+
+
+
+		indexingProfile.setEContentDescriptor(indexingProfileRS.getString("eContentDescriptor"));
+		indexingProfile.setRecordNumberField(indexingProfileRS.getString("recordNumberField"));
+		indexingProfile.setFormatSubfield(indexingProfileRS.getString("format"));
+		indexingProfile.setItemRecordNumberSubfield(indexingProfileRS.getString("itemRecordNumber"));
+		indexingProfile.setBarcodeSubfield(indexingProfileRS.getString("barcode"));
+		indexingProfile.setLocationSubfield(indexingProfileRS.getString("location"));
+		indexingProfile.setShelvingLocationSubfield(indexingProfileRS.getString("shelvingLocation"));
+		indexingProfile.setCallNumberPrestampSubfield(indexingProfileRS.getString("callNumberPrestamp"));
+		indexingProfile.setCallNumberSubfield(indexingProfileRS.getString("callNumber"));
+		indexingProfile.setCallNumberCutterSubfield(indexingProfileRS.getString("callNumberCutter"));
+		indexingProfile.setCallNumberPoststampSubfield(indexingProfileRS.getString("callNumberPoststamp"));
+		indexingProfile.setItemStatusSubfield(indexingProfileRS.getString("status"));
+		indexingProfile.setDueDateSubfield(indexingProfileRS.getString("dueDate"));
+		indexingProfile.setTotalCheckoutsSubfield(indexingProfileRS.getString("totalCheckouts"));
+		indexingProfile.setLastYearCheckoutsSubfield(indexingProfileRS.getString("lastYearCheckouts"));
+		indexingProfile.setYearToDateCheckoutsSubfield(indexingProfileRS.getString("yearToDateCheckouts"));
+		indexingProfile.setTotalRenewalsSubfield(indexingProfileRS.getString("totalRenewals"));
+		indexingProfile.setITypeSubfield(indexingProfileRS.getString("iType"));
+		indexingProfile.setDateCreatedSubfield(indexingProfileRS.getString("dateCreated"));
+		indexingProfile.setLastCheckinDateSubfield(indexingProfileRS.getString("lastCheckinDate"));
+		indexingProfile.setICode2Subfield(indexingProfileRS.getString("iCode2"));
+		indexingProfile.setVolume(indexingProfileRS.getString("volume"));
+		indexingProfile.setItemUrl(indexingProfileRS.getString("itemUrl"));
+		indexingProfile.setBcode3Subfield(indexingProfileRS.getString("bCode3"));
+		indexingProfile.setMaterialTypeSubField(indexingProfileRS.getString("materialTypeField"));
+		indexingProfile.setSierraLanguageFixedField(indexingProfileRS.getString("sierraLanguageFixedField"));
 	}
 
 	File getFileForIlsRecord(String recordNumber) {
@@ -284,16 +340,25 @@ public class IndexingProfile {
 			subFolderName = shortId.substring(0, shortId.length() - numCharsToCreateFolderFrom);
 		}
 
-		String basePath           = individualMarcPath + "/" + subFolderName;
+		String basePath = individualMarcPath + "/" + subFolderName;
+		createBaseDirectory(basePath);
 		String individualFilename = basePath + "/" + shortId + ".mrc";
 		return new File(individualFilename);
 	}
 
-	private void setBarcodeSubfield(String barcodeSubfield) {
-		this.barcodeSubfield = getCharFromString(barcodeSubfield);
+	private static HashSet<String> basePathsValidated = new HashSet<>();
+
+	private static void createBaseDirectory(String basePath) {
+		if (basePathsValidated.contains(basePath)) {
+			return;
+		}
+		File baseFile = new File(basePath);
+		if (!baseFile.exists()) {
+			if (!baseFile.mkdirs()) {
+				System.out.println("Could not create directory to store individual marc");
+			}
+		}
+		basePathsValidated.add(basePath);
 	}
 
-	public void setICode2Subfield(String ICode2Subfield) {
-		this.iCode2Subfield = getCharFromString(ICode2Subfield);
-	}
 }

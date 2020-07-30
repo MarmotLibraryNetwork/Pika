@@ -20,11 +20,11 @@ import java.util.regex.Pattern;
  */
 class AnythinkRecordProcessor extends IlsRecordProcessor {
 	private PreparedStatement getDateAddedStmt;
-	AnythinkRecordProcessor(GroupedWorkIndexer indexer, Connection vufindConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
-		super(indexer, vufindConn, indexingProfileRS, logger, fullReindex);
+	AnythinkRecordProcessor(GroupedWorkIndexer indexer, Connection pikaConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
+		super(indexer, pikaConn, indexingProfileRS, logger, fullReindex);
 
 		try{
-			getDateAddedStmt = vufindConn.prepareStatement("SELECT dateFirstDetected FROM ils_marc_checksums WHERE ilsId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			getDateAddedStmt = pikaConn.prepareStatement("SELECT dateFirstDetected FROM ils_marc_checksums WHERE source = ? AND ilsId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 		}catch (Exception e){
 			logger.error("Unable to setup prepared statement for date added to catalog");
 		}
@@ -97,24 +97,25 @@ class AnythinkRecordProcessor extends IlsRecordProcessor {
 	}
 
 	@Override
-	protected void loadDateAdded(String identfier, DataField itemField, ItemInfo itemInfo) {
+	protected void loadDateAdded(RecordIdentifier identifier, DataField itemField, ItemInfo itemInfo) {
 		try {
-			getDateAddedStmt.setString(1, identfier);
-			ResultSet getDateAddedRS = getDateAddedStmt.executeQuery();
-			if (getDateAddedRS.next()) {
-				long timeAdded = getDateAddedRS.getLong(1);
-				Date curDate = new Date(timeAdded * 1000);
-				itemInfo.setDateAdded(curDate);
-				getDateAddedRS.close();
-			}else{
-				logger.debug("Could not determine date added for " + identfier);
+			getDateAddedStmt.setString(1, identifier.getSource());
+			getDateAddedStmt.setString(2, identifier.getIdentifier());
+			try (ResultSet getDateAddedRS = getDateAddedStmt.executeQuery()) {
+				if (getDateAddedRS.next()) {
+					long timeAdded = getDateAddedRS.getLong(1);
+					Date curDate   = new Date(timeAdded * 1000);
+					itemInfo.setDateAdded(curDate);
+				} else {
+					logger.debug("Could not determine date added for " + identifier);
+				}
 			}
-		}catch (Exception e){
-			logger.error("Unable to load date added for " + identfier);
+		} catch (Exception e) {
+			logger.error("Unable to load date added for " + identifier);
 		}
 	}
 
-	protected String getShelfLocationForItem(ItemInfo itemInfo, DataField itemField, String identifier) {
+	protected String getShelfLocationForItem(ItemInfo itemInfo, DataField itemField, RecordIdentifier identifier) {
 		String locationCode = getItemSubfieldData(locationSubfieldIndicator, itemField);
 		String location = translateValue("location", locationCode, identifier);
 		String shelvingLocation = getItemSubfieldData(shelvingLocationSubfield, itemField);

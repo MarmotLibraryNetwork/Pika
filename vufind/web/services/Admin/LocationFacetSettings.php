@@ -33,13 +33,13 @@ class LocationFacetSettings extends ObjectEditor {
 		return 'Location Facets';
 	}
 
-	function getAllObjects(){
-		$facetsList = array();
+	function getAllObjects($orderBy = null){
+		$facetsList = [];
 		$locationId = $_REQUEST['locationId'];
 
 		$library             = new LocationFacetSetting();
 		$library->locationId = $locationId;
-		$library->orderBy('weight');
+		$library->orderBy($orderBy ?? 'weight');
 		$library->find();
 		while ($library->fetch()){
 			$facetsList[$library->id] = clone $library;

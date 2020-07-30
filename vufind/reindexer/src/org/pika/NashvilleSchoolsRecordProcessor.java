@@ -79,7 +79,7 @@ class NashvilleSchoolsRecordProcessor extends IlsRecordProcessor {
 	}
 
 	@Override
-	protected void loadDateAdded(String recordIdentifier, DataField itemField, ItemInfo itemInfo) {
+	protected void loadDateAdded(RecordIdentifier recordIdentifier, DataField itemField, ItemInfo itemInfo) {
 		LSSItemInformation itemInformation = allItemInformation.get(itemInfo.getItemIdentifier());
 		if (itemInformation != null){
 			itemInfo.setDateAdded(itemInformation.getDateAddedToSystem());
@@ -87,7 +87,7 @@ class NashvilleSchoolsRecordProcessor extends IlsRecordProcessor {
 	}
 
 	@Override
-	protected double getItemPopularity(DataField itemField, String identifier) {
+	protected double getItemPopularity(DataField itemField, RecordIdentifier identifier) {
 		String itemBarcode = getItemSubfieldData(barcodeSubfield, itemField);
 		LSSItemInformation itemInformation = allItemInformation.get(itemBarcode);
 		if (itemInformation != null){

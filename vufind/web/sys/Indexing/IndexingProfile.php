@@ -33,8 +33,8 @@ class IndexingProfile extends DB_DataObject{
 	public $__table = 'indexing_profiles';    // table name
 
 	public $id;
-	public $name; //TODO: refactor to display name; the hard part is in the java, switching those things to use the sourceName
-	public $sourceName;
+	public $name;           // Name is for display to end users
+	public $sourceName;     // sourceName is used for storing in databases and ID references  (So a full record Id would be 'sourceName:recordId')
 	public $marcPath;
 	public $marcEncoding;
 	public $filenamesToInclude;
@@ -50,6 +50,7 @@ class IndexingProfile extends DB_DataObject{
 	public $specifiedFormat;
 	public $specifiedFormatCategory;
 	public $specifiedFormatBoost;
+	public $specifiedGroupingCategory;
 	public $recordNumberTag;
 	public $recordNumberField;
 	public $recordNumberPrefix;
@@ -118,9 +119,7 @@ class IndexingProfile extends DB_DataObject{
 			'id'                         => array('property'=>'id',                           'type'=>'label',  'label'=>'Id', 'description'=>'The unique id within the database'),
 			'name'                       => array('property' => 'name',                       'type' => 'text', 'label' => 'Display Name', 'maxLength' => 50, 'description' => 'The display name for this indexing profile', 'required' => true),
 			'sourceName'                 => array('property' => 'sourceName',                 'type' => 'text', 'label' => 'Source Name', 'maxLength' => 50, 'description' => 'The source name of this indexing profile to use internally. eg. for specifying the record source', 'required' => true
-//			                                      , 'serverValidation' => 'validateSourceName'
-			                                      //TODO: turn on once transition has been put in place
-			),
+			                                      , 'serverValidation' => 'validateSourceName'),
 			'recordUrlComponent'         => array('property' => 'recordUrlComponent',         'type' => 'text', 'label' => 'Record URL Component', 'maxLength' => 50, 'description' => 'The Module to use within the URL', 'required' => true, 'default' => 'Record', 'serverValidation' => 'validateRecordUrlComponent'),
 
 			'serverFileSection' => array('property'=>'serverFileSection', 'type' => 'section', 'label' =>'MARC File Settings ', 'hideInLists' => true, 'open' => true,
@@ -165,7 +164,8 @@ class IndexingProfile extends DB_DataObject{
 					'specifiedFormat'           => array('property' => 'specifiedFormat',           'type' => 'text',    'label' => 'Specified Format', 'maxLength' => 50, 'description' => 'The format to set when using a defined format', 'required' => false, 'default' => ''),
 					'specifiedFormatCategory'   => array('property' => 'specifiedFormatCategory',   'type' => 'enum',    'label' => 'Specified Format Category', 'values' => array('', 'Books' => 'Books', 'eBook' => 'eBook', 'Audio Books' => 'Audio Books', 'Movies' => 'Movies', 'Music' => 'Music', 'Other' => 'Other'), 'description' => 'The format category to set when using a defined format', 'required' => false, 'default' => ''),
 					'specifiedFormatBoost'      => array('property' => 'specifiedFormatBoost',      'type' => 'integer', 'label' => 'Specified Format Boost', 'maxLength' => 50, 'description' => 'The format boost to set when using a defined format', 'required' => false, 'default' => '8'),
-						)),
+					'specifiedGroupingCategory' => array('property' => 'specifiedGroupingCategory', 'type' => 'enum',    'label' => 'Specified Grouping Category', 'values' => array('', 'book' => 'Book', 'movie' => 'Movie', 'music' => 'Music', 'comic' => 'Comic'/*,'other' => 'other'*/), 'description' => 'The grouping category to set when using a defined format'),
+				)),
 					)),
 
 
@@ -536,11 +536,16 @@ class IndexingProfile extends DB_DataObject{
 		$sourceName = trim($_REQUEST['sourceName']);
 
 		if (!ctype_alnum($sourceName)){
-			$validationResults = [
-				'validatedOk' => false,
-				'errors'      => ['The Source Name should consist of only alpha-numeric characters and no white space characters'],
-			];
-		} else{
+			$validationResults['validatedOk'] = false;
+			$validationResults['errors'][] = 'The Source Name should consist of only alpha-numeric characters and no white space characters';
+		}
+
+		if ($sourceName != strtolower($sourceName)){
+			$validationResults['validatedOk'] = false;
+			$validationResults['errors'][] = 'The Source Name should consist of lower case characters';
+		}
+
+		if ($validationResults['validatedOk']){
 			$indexingProfile = new IndexingProfile();
 			$count           = $indexingProfile->get('sourceName', $sourceName);
 			if ($count > 0 && $this->id != $indexingProfile->id){ // include exception for editing the same profile
@@ -609,18 +614,24 @@ class IndexingProfile extends DB_DataObject{
 	static public function getAllIndexingProfiles(){
 		$indexingProfiles = [];
 		$indexingProfile  = new IndexingProfile();
-		$indexingProfile->orderBy('name');
+		$indexingProfile->orderBy('sourceName');
 		$indexingProfile->find();
 		while ($indexingProfile->fetch()){
-			$indexingProfiles[$indexingProfile->name] = clone($indexingProfile);
+			$indexingProfiles[strtolower($indexingProfile->sourceName)] = clone($indexingProfile);
+			// Indexing profile sourceNames are all indexed in lower case
+			//TODO : convert all indexing profile sourceNames to lower case
 		}
 		return $indexingProfiles;
 	}
 
+	/**
+	 * Use for display of a list/drop down of indexing profiles
+	 * @return array
+	 */
 	static public function getAllIndexingProfileNames(){
 		$indexingProfiles = [];
 		$indexingProfile  = new IndexingProfile();
-		$indexingProfile->orderBy('name');
+		$indexingProfile->orderBy('sourceName');
 		$indexingProfile->find();
 		while ($indexingProfile->fetch()){
 			$indexingProfiles[$indexingProfile->id] = $indexingProfile->name;

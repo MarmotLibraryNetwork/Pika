@@ -82,15 +82,6 @@ function getGroupedWorkUpdates(){
 			),
 		),
 
-		'grouped_works_remove_split_titles' => array(
-			'title'       => 'Grouped Work Remove Split Titles',
-			'description' => 'Updates grouped works to add a full title field.',
-			'sql'         => array(
-				"ALTER TABLE `grouped_work` DROP COLUMN `title`",
-				"ALTER TABLE `grouped_work` DROP COLUMN `subtitle`",
-			),
-		),
-
 		'grouped_works_primary_identifiers' => array(
 			'title'       => 'Grouped Work Primary Identifiers',
 			'description' => 'Add primary identifiers table for works.',
@@ -237,12 +228,207 @@ function getGroupedWorkUpdates(){
 				  UNIQUE INDEX `index1` (`permanent_id` ASC, `grouping_title` ASC, `grouping_author` ASC, `grouping_category` ASC, `grouping_version` ASC))
 				ENGINE = InnoDB
 				DEFAULT CHARACTER SET = utf8
-				COMMENT = 'Table to track grouping factors that lead to the unique permanent id among grouping versions. Do not remove entries even if there are no longer contributing records in the catalog. ';
-",
+				COMMENT = 'Table to track grouping factors that lead to the unique permanent id among grouping versions. Do not remove entries even if there are no longer contributing records in the catalog. ';",
 			),
-
 		),
 
+		'add_language_to_grouping_table-2020.02' => array(
+			'title'           => 'Step 0 : Add Grouping Language',
+			'description'     => 'Add language to the grouped work table',
+			'continueOnError' => false,
+			'sql'             => array(
+				"ALTER TABLE `grouped_work` ADD COLUMN `grouping_language` CHAR(3) NULL AFTER `full_title`;",
+				"ALTER TABLE `grouped_work_historical` ADD COLUMN `grouping_language` CHAR(3) NULL AFTER `grouping_category`;",
+			),
+		),
+
+		'preferred_grouping_tables-2020.06' => [
+			'title'           => 'Step 0 : Create Preferred Grouping Author & Title tables',
+			'description'     => 'Tables for looking up an authoritative version of a grouping title or author',
+			'continueOnError' => false,
+			'sql'             => [
+				"CREATE TABLE `grouping_titles_preferred` (
+					`id` INT NOT NULL AUTO_INCREMENT,
+					`sourceGroupingTitle` VARCHAR(400) NULL,
+					`preferredGroupingTitle` VARCHAR(400) NULL,
+					`notes` VARCHAR(250) NULL,
+				  `userId` int(10) unsigned DEFAULT NULL,
+				  `updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+					PRIMARY KEY (`id`))
+					ENGINE = InnoDB
+					DEFAULT CHARACTER SET = utf8;",
+				"CREATE TABLE `grouping_authors_preferred` (
+					`id` INT NOT NULL AUTO_INCREMENT,
+					`sourceGroupingAuthor` VARCHAR(100) NULL,
+					`preferredGroupingAuthor` VARCHAR(100) NULL,
+					`notes` VARCHAR(250) NULL,
+				  `userId` int(10) unsigned DEFAULT NULL,
+				  `updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+					PRIMARY KEY (`id`),
+					UNIQUE INDEX `sourceGroupingAuthor_UNIQUE` (`sourceGroupingAuthor` ASC))
+					ENGINE = InnoDB
+					DEFAULT CHARACTER SET = utf8;",
+			],
+		],
+
+		'grouping_table_sizing-2020.06' => [
+			'title'           => 'Step 0 : Increase grouping title/author column sizes',
+			'description'     => 'Increase grouping title/author column sizes',
+			'continueOnError' => false,
+			'sql'             => [
+				"ALTER TABLE `grouped_work` 
+					CHANGE COLUMN `author` `author` VARCHAR(100) NOT NULL ,
+					CHANGE COLUMN `grouping_category` `grouping_category` VARCHAR(5) NOT NULL ,
+					CHANGE COLUMN `full_title` `full_title` VARCHAR(400) NOT NULL ;",
+			],
+		],
+
+		'grouping_migration-2020.06' => [
+			'title'           => 'Step 1 : Prepare for grouping migration ',
+			'description'     => 'Run sql updates to do grouping migration',
+			'continueOnError' => false,
+			'sql'             => [
+				"DROP TABLE IF EXISTS `grouped_work_identifiers`;",
+				"DROP TABLE IF EXISTS `grouped_work_identifiers_ref`;",
+				"DROP TABLE IF EXISTS `grouped_work_primary_to_secondary_id_ref`;",
+				"ALTER TABLE `user_work_review` CHANGE COLUMN `groupedRecordPermanentId` `groupedWorkPermanentId` VARCHAR(36) NULL DEFAULT NULL ;",
+				"ALTER TABLE `user_not_interested` CHANGE COLUMN `groupedRecordPermanentId` `groupedWorkPermanentId` VARCHAR(36) NULL DEFAULT NULL ;",
+				"ALTER TABLE `user_tags` CHANGE COLUMN `groupedRecordPermanentId` `groupedWorkPermanentId` VARCHAR(36) NULL DEFAULT NULL ;",
+				"ALTER TABLE `novelist_data` CHANGE COLUMN `groupedRecordPermanentId` `groupedWorkPermanentId` VARCHAR(36) NULL DEFAULT NULL ;",
+				"ALTER TABLE `islandora_samepika_cache` CHANGE COLUMN `groupedWorkId` `groupedWorkPermanentId` CHAR(36) NOT NULL ;",
+				"ALTER TABLE `grouped_work` RENAME TO `grouped_work_old` ;",
+				"ALTER TABLE `grouped_work_primary_identifiers` RENAME TO `grouped_work_primary_identifiers_old` ;",
+				"ALTER TABLE `merged_grouped_works` RENAME TO `merged_grouped_works_old` ;",
+				"ALTER TABLE `nongrouped_records` RENAME TO `nongrouped_records_old` ;",
+				"ALTER TABLE `grouped_work_historical`
+						DROP INDEX `index1`,
+						ADD INDEX `index2` (`permanent_id` ASC),
+						CHANGE COLUMN `grouping_title` `grouping_title` VARCHAR(400) NOT NULL ,
+						CHANGE COLUMN `grouping_author` `grouping_author` VARCHAR(100) NOT NULL ;",
+				"CREATE TABLE `grouped_work` (
+					  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+					  `permanent_id` char(36) NOT NULL,
+					  `author` varchar(100) NOT NULL,
+					  `grouping_category` varchar(5) NOT NULL,
+					  `full_title` varchar(400) NOT NULL,
+					  `grouping_language` char(3) DEFAULT NULL,
+					  `date_updated` int(11) DEFAULT NULL,
+					  PRIMARY KEY (`id`),
+					  UNIQUE KEY `permanent_id` (`permanent_id`),
+					  KEY `date_updated` (`date_updated`)
+					) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+					",
+				"CREATE TABLE `grouped_work_primary_identifiers` (
+					  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+					  `grouped_work_id` bigint(20) NOT NULL,
+					  `type` varchar(45) NOT NULL,
+					  `identifier` varchar(36) NOT NULL,
+					  PRIMARY KEY (`id`),
+					  UNIQUE KEY `type` (`type`,`identifier`),
+					  KEY `grouped_record_id` (`grouped_work_id`)
+					) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;",
+				"CREATE TABLE `grouped_work_merges` (
+				  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+				  `sourceGroupedWorkId` char(36) NOT NULL,
+				  `destinationGroupedWorkId` char(36) NOT NULL,
+				  `notes` varchar(250) DEFAULT NULL,
+				  `userId` int(10) unsigned DEFAULT NULL,
+				  `updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+				  PRIMARY KEY (`id`),
+				  UNIQUE KEY `sourceGroupedWorkId` (`sourceGroupedWorkId`,`destinationGroupedWorkId`)
+				) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;",
+				"CREATE TABLE `nongrouped_records` (
+				  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+				  `source` varchar(45) NOT NULL,
+				  `recordId` varchar(36) NOT NULL,
+				  `notes` varchar(255) NOT NULL,
+				  `userId` int(10) unsigned DEFAULT NULL,
+				  `updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+				  PRIMARY KEY (`id`),
+				  UNIQUE KEY `source` (`source`,`recordId`)
+				) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;",
+				"CREATE TABLE `grouped_work_versions_map` (
+				  `groupedWorkPermanentIdVersion4` char(36) NOT NULL,
+				  `groupedWorkPermanentIdVersion5` char(36) DEFAULT NULL,
+				  `missingFromCatalog` tinyint(1) unsigned DEFAULT NULL,
+				  PRIMARY KEY (`groupedWorkPermanentIdVersion4`),
+				  UNIQUE KEY `version4_permanent_id_UNIQUE` (`groupedWorkPermanentIdVersion4`),
+				  KEY `version5` (`groupedWorkPermanentIdVersion5`)
+				) ENGINE=InnoDB DEFAULT CHARSET=utf8;",
+			],
+		],
+
+		'grouping_migration_implement_source_name-2020.06' => [
+			'title'           => 'Step 1 : Set sourceName for old related records table',
+			'description'     => 'Change the type for grouped_work_primary_identifiers_old from the indexing profile name to the source name.',
+			'continueOnError' => false,
+			'sql'             => [
+				"UPDATE grouped_work_primary_identifiers_old
+					LEFT JOIN indexing_profiles ON (type = name)
+					SET grouped_work_primary_identifiers_old.type = indexing_profiles.sourceName
+					WHERE type != sourceName",
+			],
+		],
+
+		'grouping_migration_data_clean_up-2020.06' => [
+			'title'           => 'Step 2 : Reading History Clean up',
+			'description'     => 'Delete reading history that is marked as deleted, correct reading history sources',
+			'continueOnError' => false,
+			'sql'             => [
+				"DELETE FROM user_reading_history_work WHERE deleted = 1;", // remove any entries that have been marked as deleted to make the migration cleaner
+				"UPDATE user_reading_history_work SET source = lower(source);", // Set Reading history entries to lower case
+				"DELETE FROM user_list_entry WHERE groupedWorkPermanentId ='' ", // Clean up user list entries with no data
+			],
+		],
+
+		'grouping_migration_build_version_map-2020.06' => [
+			'title'           => 'Step 3 : Populate Grouped Work Version Map with version 4 Ids',
+			'description'     => 'Add version 4 ids found in user data tables into grouped work version map',
+			'continueOnError' => false,
+			'sql'             => [
+				"TRUNCATE `novelist_data`;", // This table will repopulate on its own
+				"TRUNCATE `pika`.`islandora_samepika_cache`;", // This table will repopulate on its own
+				// populate user related entries into map
+				"INSERT LOW_PRIORITY IGNORE INTO grouped_work_versions_map (groupedWorkPermanentIdVersion4) SELECT DISTINCT groupedWorkPermanentId FROM user_reading_history_work WHERE groupedWorkPermanentId IS NOT NULL;",
+				"INSERT LOW_PRIORITY IGNORE INTO grouped_work_versions_map (groupedWorkPermanentIdVersion4) SELECT DISTINCT groupedWorkPermanentId FROM user_work_review WHERE groupedWorkPermanentId IS NOT NULL;",
+				"INSERT LOW_PRIORITY IGNORE INTO grouped_work_versions_map (groupedWorkPermanentIdVersion4) SELECT DISTINCT groupedWorkPermanentId FROM user_list_entry WHERE groupedWorkPermanentId IS NOT NULL;",
+				"INSERT LOW_PRIORITY IGNORE INTO grouped_work_versions_map (groupedWorkPermanentIdVersion4) SELECT DISTINCT groupedWorkPermanentId FROM user_tags WHERE groupedWorkPermanentId IS NOT NULL;",
+				"INSERT LOW_PRIORITY IGNORE INTO grouped_work_versions_map (groupedWorkPermanentIdVersion4) SELECT DISTINCT groupedWorkPermanentId FROM user_not_interested WHERE groupedWorkPermanentId IS NOT NULL;",
+				"INSERT LOW_PRIORITY IGNORE INTO grouped_work_versions_map (groupedWorkPermanentIdVersion4) SELECT DISTINCT groupedWorkPermanentId FROM librarian_reviews WHERE groupedWorkPermanentId IS NOT NULL;",
+				"DELETE FROM grouped_work_versions_map WHERE groupedWorkPermanentIdVersion4 LIKE \"%:%\";", // Remove Archive PIDs
+				"DELETE FROM `grouped_work_versions_map` WHERE `groupedWorkPermanentIdVersion4`='';", // remove the empty entry
+			],
+		],
+
+//		'grouping_migration_populate_version_map-2020.06' => [
+//			'title'           => 'POST GROUPING STEP 1 : Populate Grouped Work Version Map with one to one matches',
+//			'description'     => 'Mapping via related records that result in a single version 5 grouping Id',
+//			'continueOnError' => false,
+//			'sql'             => [
+//				"UPDATE grouped_work_versions_map
+//					INNER JOIN
+//					(
+//					SELECT
+//						grouped_work_old.permanent_id AS oldID
+//					    , group_concat(DISTINCT grouped_work.permanent_id) AS newID
+//
+//					    FROM grouped_work_versions_map
+//					    LEFT JOIN grouped_work_old ON (grouped_work_versions_map.groupedWorkPermanentIdVersion4 = grouped_work_old.permanent_id)
+//					    LEFT JOIN grouped_work_primary_identifiers_old ON (grouped_work_primary_identifiers_old.grouped_work_id = grouped_work_old.id)
+//					    LEFT JOIN grouped_work_primary_identifiers ON (grouped_work_primary_identifiers.identifier = grouped_work_primary_identifiers_old.identifier AND grouped_work_primary_identifiers.type = grouped_work_primary_identifiers_old.type)
+//					    LEFT JOIN grouped_work ON (grouped_work_primary_identifiers.grouped_work_id = grouped_work.id)
+//					    WHERE grouped_work_versions_map.groupedWorkPermanentIdVersion5 IS NULL
+//					    GROUP BY grouped_work_old.permanent_id
+//					    HAVING COUNT(DISTINCT grouped_work.permanent_id) = 1
+//
+//
+//					) As relatedRecordMappingOneToOneMatches
+//					ON groupedWorkPermanentIdVersion4 = relatedRecordMappingOneToOneMatches.oldID
+//
+//					SET groupedWorkPermanentIdVersion5 = relatedRecordMappingOneToOneMatches.newID
+//					WHERE groupedWorkPermanentIdVersion5 IS NULL",
+//			],
+//		],
 
 	);
 }

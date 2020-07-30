@@ -108,7 +108,9 @@ public class TranslationMap {
 				translatedCollection.add(translatedValue);
 			}
 		}
-		return  translatedCollection;
+		return translatedCollection;
+		// Stream version
+//		return values.stream().map((String values1) -> translateValue(values1, identifier)).collect(Collectors.toCollection(LinkedHashSet::new));
 	}
 
 	public String getMapName() {

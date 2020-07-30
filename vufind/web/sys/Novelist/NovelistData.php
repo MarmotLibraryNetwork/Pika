@@ -28,7 +28,7 @@
 
 class NovelistData extends DB_DataObject{
 	public $id;
-	public $groupedRecordPermanentId;
+	public $groupedWorkPermanentId;
 	public $lastUpdate;
 	public $groupedRecordHasISBN;
 	public $hasNovelistData;
@@ -47,8 +47,8 @@ class NovelistData extends DB_DataObject{
 
 	static function doesGroupedWorkHaveCachedSeries($groupedRecordId){
 		if (!empty($groupedRecordId)){
-			$novelistData                           = new NovelistData();
-			$novelistData->groupedRecordPermanentId = $groupedRecordId;
+			$novelistData                         = new NovelistData();
+			$novelistData->groupedWorkPermanentId = $groupedRecordId;
 			if ($novelistData->count()){
 				return true;
 			}

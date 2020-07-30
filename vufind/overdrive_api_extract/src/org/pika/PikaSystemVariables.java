@@ -23,7 +23,7 @@ public class PikaSystemVariables {
 	}
 
 	public Long getVariableId(String name) {
-		try (PreparedStatement preparedStatement = pikaConn.prepareStatement("SELECT * from variables WHERE name = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY)) {
+		try (PreparedStatement preparedStatement = pikaConn.prepareStatement("SELECT * FROM variables WHERE name = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY)) {
 			preparedStatement.setString(1, name);
 			try (ResultSet resultSet = preparedStatement.executeQuery()) {
 				if (resultSet.next()) {
@@ -37,7 +37,7 @@ public class PikaSystemVariables {
 	}
 
 	public Long getLongValuedVariable(String name) {
-		try (PreparedStatement preparedStatement = pikaConn.prepareStatement("SELECT * from variables WHERE name = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY)) {
+		try (PreparedStatement preparedStatement = pikaConn.prepareStatement("SELECT * FROM variables WHERE name = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY)) {
 			preparedStatement.setString(1, name);
 			try (ResultSet resultSet = preparedStatement.executeQuery()) {
 				if (resultSet.next()) {
@@ -51,7 +51,7 @@ public class PikaSystemVariables {
 	}
 
 	public Boolean getBooleanValuedVariable(String name) {
-		try (PreparedStatement preparedStatement = pikaConn.prepareStatement("SELECT * from variables WHERE name = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY)) {
+		try (PreparedStatement preparedStatement = pikaConn.prepareStatement("SELECT * FROM variables WHERE name = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY)) {
 			preparedStatement.setString(1, name);
 			try (ResultSet resultSet = preparedStatement.executeQuery()) {
 				if (resultSet.next()) {
@@ -66,7 +66,7 @@ public class PikaSystemVariables {
 	}
 
 	public String getStringValuedVariable(String name) {
-		try (PreparedStatement preparedStatement = pikaConn.prepareStatement("SELECT * from variables WHERE name = '?'", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY)) {
+		try (PreparedStatement preparedStatement = pikaConn.prepareStatement("SELECT * FROM variables WHERE name = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY)) {
 			preparedStatement.setString(1, name);
 			try (ResultSet resultSet = preparedStatement.executeQuery()) {
 				if (resultSet.next()) {
@@ -79,13 +79,21 @@ public class PikaSystemVariables {
 		return null;
 	}
 
+	public boolean setVariable(String name, Long value) {
+		return setVariable(name, value.toString());
+	}
+
+	public boolean setVariable(String name, boolean value) {
+		return setVariable(name, Boolean.toString(value));
+	}
+
 	public boolean setVariable(String name, String value) {
 		if (name != null && !name.isEmpty()) {
 			try (PreparedStatement preparedStatement = pikaConn.prepareStatement("INSERT INTO variables (name, value) VALUES (?, ?) ON DUPLICATE KEY UPDATE value=VALUES(value)")) {
 				preparedStatement.setString(1, name);
 				preparedStatement.setString(2, value);
 				int result = preparedStatement.executeUpdate();
-				return result == 1;
+				return result == 1 || result == 2;
 			} catch (SQLException e) {
 				logger.error("Unable to save variable " + name, e);
 			}
@@ -95,7 +103,7 @@ public class PikaSystemVariables {
 
 	public boolean setVariableById(Long id, String value) {
 		if (id != null) {
-			try (PreparedStatement updateVariableStmt = pikaConn.prepareStatement("UPDATE variables set value = ? WHERE id = ?")) {
+			try (PreparedStatement updateVariableStmt = pikaConn.prepareStatement("UPDATE variables SET value = ? WHERE id = ?")) {
 				updateVariableStmt.setString(1, value);
 				updateVariableStmt.setLong(2, id);
 				int result = updateVariableStmt.executeUpdate();

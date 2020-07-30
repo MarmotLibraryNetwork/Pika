@@ -7,25 +7,26 @@ import java.util.regex.Pattern;
 /**
  * Class to normalize authors for use within grouped works
  *
- * VuFind-Plus
+ * Pika
  * User: Mark Noble
  * Date: 1/29/2015
  * Time: 9:36 AM
  */
 class AuthorNormalizer {
-	private static Pattern authorExtract1 = Pattern.compile("^(.+?)\\spresents.*$");
-	private static Pattern authorExtract2 = Pattern.compile("^(?:(?:a|an)\\s)?(.+?)\\spresentation.*$");
-	private static Pattern distributedByRemoval = Pattern.compile("^distributed (?:in.*\\s)?by\\s(.+)$");
-	private static Pattern initialsFix = Pattern.compile("(?<=[A-Z])\\.(?=(\\s|[A-Z]|$))");
-	private static Pattern apostropheStrip = Pattern.compile("'s");
+	private static Pattern authorExtract1             = Pattern.compile("^(.+?)\\spresents.*$");
+	private static Pattern authorExtract2             = Pattern.compile("^(?:(?:a|an)\\s)?(.+?)\\spresentation.*$");
+	private static Pattern distributedByRemoval       = Pattern.compile("^distributed (?:in.*\\s)?by\\s(.+)$");
+	private static Pattern initialsFix                = Pattern.compile("(?<=[A-Z])\\.(?=(\\s|[A-Z]|$))");
+	private static Pattern apostropheStrip            = Pattern.compile("'s");
 	private static Pattern specialCharacterWhitespace = Pattern.compile("'");
-	private static Pattern specialCharacterStrip = Pattern.compile("[^\\p{L}\\d\\s]");
-	private static Pattern consecutiveCharacterStrip = Pattern.compile("\\s{2,}");
+	private static Pattern specialCharacterStrip      = Pattern.compile("[^\\p{L}\\d\\s]");
+	private static Pattern consecutiveWhiteSpaceStrip = Pattern.compile("\\s{2,}");
+	private static Pattern noPublisherIdentified      = Pattern.compile("^(s n|name of publisher not identified|publisher not identified|publisher name unknown|publisher unknown|unknown publisher|producer not identified)$");
 
 	static String getNormalizedName(String rawName) {
-		String groupingAuthor = normalizeDiacritics(rawName);
-		groupingAuthor = removeParentheticalInformation(groupingAuthor);
+		String groupingAuthor = removeParentheticalInformation(rawName);
 		groupingAuthor = removeDates(groupingAuthor);
+
 		groupingAuthor = initialsFix.matcher(groupingAuthor).replaceAll(" ");
 		//For authors we just want to strip the brackets, not the text within them
 		groupingAuthor = groupingAuthor.replace("[", "").replace("]", "");
@@ -33,9 +34,20 @@ class AuthorNormalizer {
 
 		//Remove special characters that should be replaced with nothing
 		groupingAuthor = apostropheStrip.matcher(groupingAuthor).replaceAll("");
-		groupingAuthor = specialCharacterWhitespace.matcher(groupingAuthor).replaceAll("");
+		groupingAuthor = specialCharacterWhitespace.matcher(groupingAuthor).replaceAll(""); //TODO: combine with the apostropheStrip
+		groupingAuthor = normalizeDiacritics(groupingAuthor); //This has to happen before the specialCharacterStrip
 		groupingAuthor = specialCharacterStrip.matcher(groupingAuthor).replaceAll(" ").trim().toLowerCase();
-		groupingAuthor = consecutiveCharacterStrip.matcher(groupingAuthor).replaceAll(" ");
+
+		// Remove no publisher identified phrases
+		groupingAuthor = noPublisherIdentified.matcher(groupingAuthor).replaceAll("");
+		// 260 & 264 tags can have these place holder phrases that we should remove
+
+		//260			|a [s.l.|b : s.n.],|c 1952.
+		//264		1	|a [Place of publication not identified]|b [Publisher not identified],|c 1996.
+		//264		1	|a [Telluride, Colorado]: |b [Publisher unknown]: |c [1996?]
+		//264		1	|a [United States] :|b [Publisher name unknown],|c [2019]
+		//264		1	|a [United States] :|b Unknown publisher ,|c 2017.
+
 		//extract common additional info (especially for movie studios)
 		Matcher authorExtract1Matcher = authorExtract1.matcher(groupingAuthor);
 		if (authorExtract1Matcher.find()){
@@ -53,21 +65,32 @@ class AuthorNormalizer {
 		if (distributedByRemovalMatcher.find()){
 			groupingAuthor = distributedByRemovalMatcher.group(1);
 		}
-		//Remove md if the author ends with md
-		if (groupingAuthor.endsWith(" md")){
-			groupingAuthor = groupingAuthor.substring(0, groupingAuthor.length() - 3);
-		}
+//		groupingAuthor = consecutiveWhiteSpaceStrip.matcher(groupingAuthor).replaceAll(" ");
+		//this is done once by removeCommonPrefixesAndSuffixes()
 
-		if (groupingAuthor.length() > 50){
-			groupingAuthor = groupingAuthor.substring(0, 50);
-		}
 		groupingAuthor = groupingAuthor.trim();
+		if (groupingAuthor.length() > 100){
+			groupingAuthor = groupingAuthor.substring(0, 100).trim();
+		}
 
 		return groupingAuthor;
 	}
 
 	private static String normalizeDiacritics(String textToNormalize){
-		return Normalizer.normalize(textToNormalize, Normalizer.Form.NFKC);
+		textToNormalize = Normalizer.normalize(textToNormalize, Normalizer.Form.NFD).replaceAll("\\p{InCombiningDiacriticalMarks}+", "");
+		// Some characters that need replaced manually. (Replacing capitalized versions with lower case equivalent)
+		textToNormalize = textToNormalize
+				.replaceAll("ø", "o").replaceAll("Ø", "o")
+				.replaceAll("Æ", "ae").replaceAll("æ", "ae")
+				.replaceAll("Ð", "d").replaceAll("ð", "d")
+				.replaceAll("Œ", "oe").replaceAll("œ", "oe")
+				.replaceAll("Þ", "th")
+				.replaceAll("ß", "ss")
+				.replaceAll("ƒ", "f");
+		return Normalizer.isNormalized(textToNormalize, Normalizer.Form.NFKC) ? textToNormalize : Normalizer.normalize(textToNormalize, Normalizer.Form.NFKC);
+
+		// another possible pattern:
+//		return Normalizer.normalize(textToNormalize, Normalizer.Form.NFD).replaceAll("[^\\p{ASCII}]", "");
 	}
 
 	private static Pattern companyIdentifierPattern = Pattern.compile("(?i)[\\s,](pty ltd|llc|co|company|inc|ltd|lp)$");
@@ -144,27 +167,41 @@ class AuthorNormalizer {
 		return parenRemoval.matcher(authorName).replaceAll("");
 	}
 
-	private static Pattern commonAuthorPrefixPattern = Pattern.compile("(?i)^(consultant|publisher & editor-in-chief|edited by|by the editors of|editor in chief||editor-in-chief|general editor|editors|editor|by|chosen by|translated by|prepared by|translated and edited by|completely rev by|pictures by|selected and adapted by|with a foreword by|with a new foreword by|introd by|introduction by|intro by|retold by|concept),?\\s");
-	private static Pattern commonAuthorSuffixPattern = Pattern.compile("(?i),?\\s(presents|general editor|editor in chief|editor-in-chief|editors|editor|etc|inc|inc\\setc|co|corporation|llc|partners|company|home entertainment|musical group|et al|concept|consultant|\\.\\.\\.\\set al)\\.?$");
+	private static Pattern commonAuthorPrefixPattern = Pattern.compile("(?i)^" +
+			"(consultant|publisher editor in chief|edited by|by the editors of|editor in chief|edited and translated|" +
+			"editor-in-chief|general editor|guest editor|from the editors of|the editors of|editors|editor| + " +
+			"chosen by|translated by|prepared by|text by|drawn by|" +
+			"printed for the publisher|printed for the author|printed and published by|published by the author|published by|" +
+			"printed and sold for the author by|printed for the author and sold by|printed for the editor and sold by|printed for and sold by|printed and sold by|for sale by|sold by|" +
+			"printed by and for|printed by for|printed for|re printed for the author and sold by|reprinted by|re printed by|printed by|" + // 're printed' original text would be 're-printed'; 'printed by for' original text 'printed by & for'
+			"translated and edited by|edited and translated by|completely rev by|pictures by|selected and adapted by|" +
+			"with a foreword by|with a new foreword by|introd by|introduction by|intro by|retold by|a film by |film by|films by|licensed by|" +
+			"written produced and directed by|developed and produced by|produced by|written and directed by|directed by|" +
+			"written by|written compiled and edited by|created by|" +
+			"compiled by|mixed by|dist by|concept|by),?\\s");
+
+	private static Pattern commonAuthorSuffixPattern = Pattern.compile("(?i),?\\s" +
+			"(presents|general editor|editor in chief|editors|editor|"+
+			"etc|inc|inc\\setc|co|corporation|llc|partners|company|home entertainment|musical group|" +
+			"et alt|et al|concept|consultant)\\.?$"); // 'r n' for 'R.N.'; 'ed d' for 'Ed.D.'
+	//TODO: current set up allows for initials R.N., M.D. to be at end of name; which would confuse with the degrees R.N., M.D
+
 	private static String removeCommonPrefixesAndSuffixes(String authorName) {
-		boolean changeMade = true;
-		while (changeMade){
-			changeMade = false;
+		boolean changeMade;
+		authorName = consecutiveWhiteSpaceStrip.matcher(authorName).replaceAll(" ");
+		//our regex requires consecutiveWhiteSpaceStrip to work
+		do {
 			Matcher commonAuthorPrefixMatcher = commonAuthorPrefixPattern.matcher(authorName);
-			if (commonAuthorPrefixMatcher.find()){
+			if (changeMade = commonAuthorPrefixMatcher.find()){
 				authorName = commonAuthorPrefixMatcher.replaceAll("");
-				changeMade = true;
 			}
-		}
-		changeMade = true;
-		while (changeMade){
-			changeMade = false;
+		} while (changeMade);
+		do{
 			Matcher commonAuthorSuffixMatcher = commonAuthorSuffixPattern.matcher(authorName);
-			if (commonAuthorSuffixMatcher.find()){
+			if (changeMade = commonAuthorSuffixMatcher.find()){
 				authorName = commonAuthorSuffixMatcher.replaceAll("");
-				changeMade = true;
 			}
-		}
+		} while (changeMade);
 		return authorName;
 	}
 	private static Pattern datePattern = Pattern.compile("(,\\s)?(\\d{4}\\sor\\s)?(\\d{4}\\??-?|\\d{4}\\??-\\d{4}|-\\d{4}|\\d{4} (Jan|January|Feb|February|Mar|March|Apr|April|May|Jun|June|Jul|July|Aug|August|Sep|September|Oct|October|Nov|November|Dec|December)(\\s\\d+-?))\\??(\\sor\\s)?(\\d{4})?(\\.+)?$");
@@ -186,6 +223,12 @@ class AuthorNormalizer {
 	private static String removeDates(String authorName) {
 		return datePattern.matcher(authorName).replaceAll("");
 	}
+	//TODO: example:
+	//264		1	|a Vernon Hills, IL :|b Learning Resources,c[20--?]
+	//260			|a [S.l.} :|b [s.n.], c[20??]
+	//260			|a [Haddam, CT]:|b [published by the author], 200?.
+	//260			|a [Guilford, CT] :|b [s.n.] ,[200?].
+
 
 	private static Pattern hasParentheticalPattern = Pattern.compile(",.*?\\([^,]*?\\)");
 	private static Pattern parentheticalPattern = Pattern.compile(".*?\\((.*?)\\)", Pattern.CANON_EQ);

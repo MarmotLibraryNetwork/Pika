@@ -228,7 +228,7 @@ public class GroupedWork3 extends GroupedWorkBase implements Cloneable {
 	}
 
 	@Override
-	public void setTitle(String title, int numNonFilingCharacters, String subtitle) {
+	public void setTitle(String title, String subtitle, int numNonFilingCharacters) {
 		//this.fullTitle = title;
 		//if (subtitle != null) title += " " + subtitle;
 		title = normalizeTitle(title, numNonFilingCharacters);
@@ -274,11 +274,12 @@ public class GroupedWork3 extends GroupedWorkBase implements Cloneable {
 	}
 
 	private static Pattern validCategories = Pattern.compile("^(book|music|movie)$");
+
 	@Override
-	public void setGroupingCategory(String groupingCategory) {
+	public void setGroupingCategory(String groupingCategory, RecordIdentifier identifier) {
 		groupingCategory = groupingCategory.toLowerCase();
 		if (!validCategories.matcher(groupingCategory).matches()) {
-			logger.error("Invalid grouping category " + groupingCategory);
+			logger.error("Invalid grouping category for " + identifier + " : " + groupingCategory);
 		}else {
 			this.groupingCategory = groupingCategory;
 		}

@@ -40,15 +40,8 @@ class LibrarianReviews extends ObjectEditor {
 	/**
 	 * @inheritDoc
 	 */
-	function getAllObjects(){
-		$object = new LibrarianReview();
-		$object->orderBy('pubDate DESC');
-		$object->find();
-		$objectList = array();
-		while ($object->fetch()){
-			$objectList[$object->id] = clone $object;
-		}
-		return $objectList;
+	function getAllObjects($orderBy = null){
+		return parent::getAllObjects($orderBy ?? 'pubDate DESC');
 	}
 
 	/**

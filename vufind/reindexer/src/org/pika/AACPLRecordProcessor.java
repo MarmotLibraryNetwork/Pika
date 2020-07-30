@@ -102,9 +102,9 @@ class AACPLRecordProcessor extends IlsRecordProcessor {
 		return available;
 	}
 
-	protected String getShelfLocationForItem(ItemInfo itemInfo, DataField itemField, String identifier) {
-		String locationCode = getItemSubfieldData(locationSubfieldIndicator, itemField);
-		String location = translateValue("location", locationCode, identifier);
+	protected String getShelfLocationForItem(ItemInfo itemInfo, DataField itemField, RecordIdentifier identifier) {
+		String locationCode     = getItemSubfieldData(locationSubfieldIndicator, itemField);
+		String location         = translateValue("location", locationCode, identifier);
 		String shelvingLocation = itemInfo.getShelfLocationCode();
 		if (location == null) {
 			location = translateValue("shelf_location", shelvingLocation, identifier);
@@ -165,14 +165,14 @@ class AACPLRecordProcessor extends IlsRecordProcessor {
 		return literaryForm;
 	}
 
-	protected void setShelfLocationCode(DataField itemField, ItemInfo itemInfo, String recordIdentifier) {
+	protected void setShelfLocationCode(DataField itemField, ItemInfo itemInfo, RecordIdentifier recordIdentifier) {
 		//For Symphony the status field holds the location code unless it is currently checked out, on display, etc.
 		//In that case the location code holds the permanent location
 		String subfieldData = getItemSubfieldData(statusSubfieldIndicator, itemField);
 		boolean loadFromPermanentLocation = false;
 		if (subfieldData == null) {
 			loadFromPermanentLocation = true;
-		} else if (translateValue("item_status", subfieldData, recordIdentifier, false) != null) {
+		} else if (translateValue("item_status", subfieldData, recordIdentifier.getSourceAndId(), false) != null) {
 			loadFromPermanentLocation = true;
 		}
 		if (loadFromPermanentLocation) {
@@ -215,7 +215,7 @@ class AACPLRecordProcessor extends IlsRecordProcessor {
 	}
 
 	@Override
-	protected List<RecordInfo> loadUnsuppressedEContentItems(GroupedWorkSolr groupedWork, String identifier, Record record) {
+	protected List<RecordInfo> loadUnsuppressedEContentItems(GroupedWorkSolr groupedWork, RecordIdentifier identifier, Record record) {
 		List<RecordInfo> unsuppressedEcontentRecords = new ArrayList<>();
 		List<DataField> itemRecords = MarcUtil.getDataFields(record, itemTag);
 
@@ -235,7 +235,7 @@ class AACPLRecordProcessor extends IlsRecordProcessor {
 		return unsuppressedEcontentRecords;
 	}
 
-	RecordInfo getEContentIlsRecord(GroupedWorkSolr groupedWork, Record record, String identifier, DataField itemField){
+	RecordInfo getEContentIlsRecord(GroupedWorkSolr groupedWork, Record record, RecordIdentifier identifier, DataField itemField){
 		ItemInfo itemInfo = new ItemInfo();
 		itemInfo.setIsEContent(true);
 		RecordInfo relatedRecord = null;
@@ -271,8 +271,8 @@ class AACPLRecordProcessor extends IlsRecordProcessor {
 		//Get the url if any
 		loadEContentUrl(record, itemInfo, identifier);
 
-		relatedRecord = groupedWork.addRelatedRecord("external_econtent", identifier);
-		relatedRecord.setSubSource(profileType);
+		relatedRecord = groupedWork.addRelatedRecord("external_econtent", identifier.getIdentifier());
+		relatedRecord.setSubSource(indexingProfileSource);
 		relatedRecord.addItem(itemInfo);
 		loadEContentFormatInformation(record, relatedRecord, itemInfo);
 

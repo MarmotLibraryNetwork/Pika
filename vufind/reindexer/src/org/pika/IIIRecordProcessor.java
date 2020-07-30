@@ -24,11 +24,10 @@ import java.util.*;
  */
 abstract class IIIRecordProcessor extends IlsRecordProcessor{
 	private HashMap<String, ArrayList<OrderInfo>> orderInfoFromExport = new HashMap<>();
-//	private HashMap<String, DueDateInfo> dueDateInfoFromExport = new HashMap<>();
-	private boolean loanRuleDataLoaded = false;
-	private HashMap<Long, LoanRule> loanRules = new HashMap<>();
-	private ArrayList<LoanRuleDeterminer> loanRuleDeterminers = new ArrayList<>();
-	private String exportPath;
+	private boolean                               loanRuleDataLoaded  = false;
+	private HashMap<Long, LoanRule>               loanRules           = new HashMap<>();
+	private ArrayList<LoanRuleDeterminer>         loanRuleDeterminers = new ArrayList<>();
+	private String                                exportPath;
 
 	// A list of status codes that are eligible to show items as checked out.
 	//TODO: These should be added to indexing profile
@@ -298,7 +297,7 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 		}
 	}
 
-	protected void setDetailedStatus(ItemInfo itemInfo, DataField itemField, String itemStatus, String identifier) {
+	protected void setDetailedStatus(ItemInfo itemInfo, DataField itemField, String itemStatus, RecordIdentifier identifier) {
 		//See if we need to override based on the last check in date
 		String overriddenStatus = getOverriddenStatus(itemInfo, false);
 		if (overriddenStatus != null) {
@@ -321,7 +320,7 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 	}
 
 	private SimpleDateFormat displayDateFormatter = new SimpleDateFormat("MMM d, yyyy");
-	private String getDisplayDueDate(String dueDate, String identifier){
+	private String getDisplayDueDate(String dueDate, RecordIdentifier identifier){
 		try {
 			Date dateAdded = dueDateFormatter.parse(dueDate);
 			return displayDateFormatter.format(dateAdded);
@@ -460,7 +459,7 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 		}
 	}
 
-	void loadLanguageDetails(GroupedWorkSolr groupedWork, Record record, HashSet<RecordInfo> ilsRecords, String identifier) {
+	void loadLanguageDetails(GroupedWorkSolr groupedWork, Record record, HashSet<RecordInfo> ilsRecords, RecordIdentifier identifier) {
 		// Note: ilsRecords are alternate manifestations for the same record, like for an order record or ILS econtent items
 
 		HashSet<String> languageNames        = new HashSet<>();
@@ -485,14 +484,14 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 			languageNames.add(languageName);
 			primaryLanguage = languageName;
 
-			String languageBoostStr = indexer.translateSystemValue("language_boost", languageCode, identifier);
+			String languageBoostStr = indexer.translateSystemValue("language_boost", languageCode, identifier.getSourceAndId());
 			if (languageBoostStr != null) {
 				long languageBoostVal = Long.parseLong(languageBoostStr);
 				if (languageBoostVal > languageBoost) {
 					languageBoost = languageBoostVal;
 				}
 			}
-			String languageBoostEs = indexer.translateSystemValue("language_boost_es", languageCode, identifier);
+			String languageBoostEs = indexer.translateSystemValue("language_boost_es", languageCode, identifier.getSourceAndId());
 			if (languageBoostEs != null) {
 				long languageBoostVal = Long.parseLong(languageBoostEs);
 				if (languageBoostVal > languageBoostSpanish) {
@@ -541,14 +540,14 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 										// Only use the first 041a language code for the primary language and boosts
 										primaryLanguage = languageName;
 
-										String languageBoostStr = indexer.translateSystemValue("language_boost", code, identifier);
+										String languageBoostStr = indexer.translateSystemValue("language_boost", code, identifier.getSourceAndId());
 										if (languageBoostStr != null) {
 											long languageBoostVal = Long.parseLong(languageBoostStr);
 											if (languageBoostVal > languageBoost) {
 												languageBoost = languageBoostVal;
 											}
 										}
-										String languageBoostEs = indexer.translateSystemValue("language_boost_es", code, identifier);
+										String languageBoostEs = indexer.translateSystemValue("language_boost_es", code, identifier.getSourceAndId());
 										if (languageBoostEs != null) {
 											long languageBoostVal = Long.parseLong(languageBoostEs);
 											if (languageBoostVal > languageBoostSpanish) {

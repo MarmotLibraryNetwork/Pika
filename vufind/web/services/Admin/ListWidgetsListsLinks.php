@@ -151,13 +151,13 @@ class ListWidgetsListsLinks extends ObjectEditor {
 	/**
 	 * @inheritDoc
 	 */
-	function getAllObjects(){
+	function getAllObjects($orderBy = null){
 		if (!empty($_REQUEST['widgetListId']) && ctype_digit($_REQUEST['widgetListId'])){
 			//Get all available links
 			$availableLinks                     = [];
 			$listWidgetLinks                    = new ListWidgetListsLinks();
 			$listWidgetLinks->listWidgetListsId = $_REQUEST['widgetListId'];
-			$listWidgetLinks->orderBy('weight ASC');
+			$listWidgetLinks->orderBy($orderBy ?? 'weight ASC');
 			if ($listWidgetLinks->find()){
 				while ($listWidgetLinks->fetch()){
 					$availableLinks[$listWidgetLinks->id] = clone($listWidgetLinks);

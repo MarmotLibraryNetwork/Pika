@@ -157,7 +157,7 @@ class ArlingtonRecordProcessor extends IIIRecordProcessor {
 //		}
 //	}
 
-	protected void loadUnsuppressedPrintItems(GroupedWorkSolr groupedWork, RecordInfo recordInfo, String identifier, Record record){
+	protected void loadUnsuppressedPrintItems(GroupedWorkSolr groupedWork, RecordInfo recordInfo, RecordIdentifier identifier, Record record){
 		super.loadUnsuppressedPrintItems(groupedWork, recordInfo, identifier, record);
 		if (recordInfo.getNumPrintCopies() == 0){
 			String matType = MarcUtil.getFirstFieldVal(record, sierraRecordFixedFieldsTag + materialTypeSubField);
@@ -180,7 +180,7 @@ class ArlingtonRecordProcessor extends IIIRecordProcessor {
 					if (!isItemValid(itemStatus, locationCode)) return;
 
 					itemInfo.setShelfLocationCode(locationCode);
-					itemInfo.setShelfLocation(getShelfLocationForItem(itemInfo, null, recordInfo.getRecordIdentifier()));
+					itemInfo.setShelfLocation(getShelfLocationForItem(itemInfo, null, identifier));
 
 					loadItemCallNumber(record, null, itemInfo);
 
@@ -199,7 +199,7 @@ class ArlingtonRecordProcessor extends IIIRecordProcessor {
 	}
 
 	@Override
-	protected List<RecordInfo> loadUnsuppressedEContentItems(GroupedWorkSolr groupedWork, String identifier, Record record){
+	protected List<RecordInfo> loadUnsuppressedEContentItems(GroupedWorkSolr groupedWork, RecordIdentifier identifier, Record record){
 		List<RecordInfo> unsuppressedEcontentRecords = new ArrayList<>();
 		//For arlington, eContent will always have no items on the bib record.
 		List<DataField> items = MarcUtil.getDataFields(record, itemTag);
@@ -261,8 +261,8 @@ class ArlingtonRecordProcessor extends IIIRecordProcessor {
 				itemInfo.seteContentSource(econtentSource);
 				itemInfo.setShelfLocation(econtentSource);
 				itemInfo.setIType("eCollection");
-				RecordInfo relatedRecord = groupedWork.addRelatedRecord("external_econtent", identifier);
-				relatedRecord.setSubSource(profileType);
+				RecordInfo relatedRecord = groupedWork.addRelatedRecord("external_econtent", identifier.getIdentifier());
+				relatedRecord.setSubSource(indexingProfileSource);
 				relatedRecord.addItem(itemInfo);
 				itemInfo.seteContentUrl(url);
 

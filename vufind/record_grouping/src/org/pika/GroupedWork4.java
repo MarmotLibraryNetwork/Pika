@@ -159,7 +159,6 @@ class GroupedWork4 extends GroupedWorkBase implements Cloneable {
 	}
 
 	public GroupedWorkBase clone() throws CloneNotSupportedException {
-
 		try {
 			return (GroupedWorkBase)super.clone();
 		} catch (CloneNotSupportedException e) {
@@ -174,7 +173,7 @@ class GroupedWork4 extends GroupedWorkBase implements Cloneable {
 	}
 
 	@Override
-	public void setTitle(String title, int numNonFilingCharacters, String subtitle) {
+	public void setTitle(String title, String subtitle, int numNonFilingCharacters) {
 		//this.fullTitle = title;
 		//if (subtitle != null) title += " " + subtitle;
 		if (subtitle != null && subtitle.length() > 0){
@@ -217,8 +216,8 @@ class GroupedWork4 extends GroupedWorkBase implements Cloneable {
 		int colonIndex = title.lastIndexOf(':');
 		if (colonIndex > 0){
 			String subtitleFromTitle = title.substring(colonIndex + 1).trim();
-			String newSubtitle = cleanTitleCharacters(subtitleFromTitle);
-			String mainTitle = title.substring(0, colonIndex).trim();
+			String newSubtitle       = cleanTitleCharacters(subtitleFromTitle);
+			String mainTitle         = title.substring(0, colonIndex).trim();
 			newSubtitle = removeComplexSubtitles(newSubtitle);
 			if (newSubtitle.length() > 0) {
 				title =  mainTitle + " " + newSubtitle;
@@ -257,12 +256,13 @@ class GroupedWork4 extends GroupedWorkBase implements Cloneable {
 		this.permanentId = groupedWorkPermanentId;
 	}
 
-	private static Pattern validCategories = Pattern.compile("^(book|music|movie)$");
+	private static final Pattern validCategories = Pattern.compile("^(book|music|movie)$");
+
 	@Override
-	public void setGroupingCategory(String groupingCategory) {
+	public void setGroupingCategory(String groupingCategory, RecordIdentifier identifier) {
 		groupingCategory = groupingCategory.toLowerCase();
 		if (!validCategories.matcher(groupingCategory).matches()) {
-			logger.error("Invalid grouping category " + groupingCategory);
+			logger.error("Invalid grouping category for " + identifier + " : " + groupingCategory);
 		}else {
 			this.groupingCategory = groupingCategory;
 		}

@@ -376,56 +376,6 @@ LOCK TABLES `grouped_work` WRITE;
 UNLOCK TABLES;
 
 --
--- Table structure for table `grouped_work_identifiers`
---
-
-DROP TABLE IF EXISTS `grouped_work_identifiers`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `grouped_work_identifiers` (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT,
-  `type` enum('asin','ils','isbn','issn','oclc','upc','order','external_econtent','acs','free','overdrive') DEFAULT NULL,
-  `identifier` varchar(36) NOT NULL,
-  `valid_for_enrichment` tinyint(1) DEFAULT '1',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `type` (`type`,`identifier`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `grouped_work_identifiers`
---
-
-LOCK TABLES `grouped_work_identifiers` WRITE;
-/*!40000 ALTER TABLE `grouped_work_identifiers` DISABLE KEYS */;
-/*!40000 ALTER TABLE `grouped_work_identifiers` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `grouped_work_identifiers_ref`
---
-
-DROP TABLE IF EXISTS `grouped_work_identifiers_ref`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `grouped_work_identifiers_ref` (
-  `grouped_work_id` bigint(20) NOT NULL,
-  `identifier_id` bigint(20) NOT NULL,
-  PRIMARY KEY (`grouped_work_id`,`identifier_id`),
-  KEY `identifier_id` (`identifier_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `grouped_work_identifiers_ref`
---
-
-LOCK TABLES `grouped_work_identifiers_ref` WRITE;
-/*!40000 ALTER TABLE `grouped_work_identifiers_ref` DISABLE KEYS */;
-/*!40000 ALTER TABLE `grouped_work_identifiers_ref` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `grouped_work_primary_identifiers`
 --
 
@@ -450,30 +400,6 @@ CREATE TABLE `grouped_work_primary_identifiers` (
 LOCK TABLES `grouped_work_primary_identifiers` WRITE;
 /*!40000 ALTER TABLE `grouped_work_primary_identifiers` DISABLE KEYS */;
 /*!40000 ALTER TABLE `grouped_work_primary_identifiers` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `grouped_work_primary_to_secondary_id_ref`
---
-
-DROP TABLE IF EXISTS `grouped_work_primary_to_secondary_id_ref`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `grouped_work_primary_to_secondary_id_ref` (
-  `primary_identifier_id` bigint(20) DEFAULT NULL,
-  `secondary_identifier_id` bigint(20) DEFAULT NULL,
-  UNIQUE KEY `primary_identifier_id` (`primary_identifier_id`,`secondary_identifier_id`),
-  KEY `secondary_identifier_id` (`secondary_identifier_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `grouped_work_primary_to_secondary_id_ref`
---
-
-LOCK TABLES `grouped_work_primary_to_secondary_id_ref` WRITE;
-/*!40000 ALTER TABLE `grouped_work_primary_to_secondary_id_ref` DISABLE KEYS */;
-/*!40000 ALTER TABLE `grouped_work_primary_to_secondary_id_ref` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -1505,32 +1431,6 @@ LOCK TABLES `location_search_source` WRITE;
 UNLOCK TABLES;
 
 --
--- Table structure for table `marc_import`
---
-
-DROP TABLE IF EXISTS `marc_import`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `marc_import` (
-  `id` varchar(50) NOT NULL DEFAULT '' COMMENT 'The id of the marc record in the ils',
-  `checksum` bigint(20) NOT NULL COMMENT 'The checksum of the id as it currently exists in the active index.',
-  `backup_checksum` bigint(20) DEFAULT NULL COMMENT 'The checksum of the id in the backup index.',
-  `eContent` tinyint(4) NOT NULL COMMENT 'Whether or not the record was detected as eContent in the active index.',
-  `backup_eContent` tinyint(4) DEFAULT NULL COMMENT 'Whether or not the record was detected as eContent in the backup index.',
-  PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `marc_import`
---
-
-LOCK TABLES `marc_import` WRITE;
-/*!40000 ALTER TABLE `marc_import` DISABLE KEYS */;
-/*!40000 ALTER TABLE `marc_import` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `marriage`
 --
 
@@ -1663,49 +1563,36 @@ UNLOCK TABLES;
 -- Table structure for table `merged_grouped_works`
 --
 
-DROP TABLE IF EXISTS `merged_grouped_works`;
+DROP TABLE IF EXISTS `grouped_work_merges`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `merged_grouped_works` (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT,
-  `sourceGroupedWorkId` char(36) NOT NULL,
-  `destinationGroupedWorkId` char(36) NOT NULL,
-  `notes` varchar(250) NOT NULL DEFAULT '',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `sourceGroupedWorkId` (`sourceGroupedWorkId`,`destinationGroupedWorkId`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+CREATE TABLE `grouped_work_merges` (
+   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+   `sourceGroupedWorkId` char(36) NOT NULL,
+   `destinationGroupedWorkId` char(36) NOT NULL,
+   `notes` varchar(250) DEFAULT NULL,
+   `userId` int(10) unsigned DEFAULT NULL,
+   `updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+   PRIMARY KEY (`id`),
+   UNIQUE KEY `sourceGroupedWorkId` (`sourceGroupedWorkId`,`destinationGroupedWorkId`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Dumping data for table `merged_grouped_works`
---
-
-LOCK TABLES `merged_grouped_works` WRITE;
-/*!40000 ALTER TABLE `merged_grouped_works` DISABLE KEYS */;
-/*!40000 ALTER TABLE `merged_grouped_works` ENABLE KEYS */;
-UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `nongrouped_records`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `nongrouped_records` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `source` varchar(50) NOT NULL,
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `source` varchar(45) NOT NULL,
   `recordId` varchar(36) NOT NULL,
   `notes` varchar(255) NOT NULL,
+  `userId` int(10) unsigned DEFAULT NULL,
+  `updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `source` (`source`,`recordId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `nongrouped_records`
---
-
-LOCK TABLES `nongrouped_records` WRITE;
-/*!40000 ALTER TABLE `nongrouped_records` DISABLE KEYS */;
-/*!40000 ALTER TABLE `nongrouped_records` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `novelist_data`
@@ -2059,43 +1946,6 @@ UNLOCK TABLES;
 -- Table structure for table `subject`
 --
 
-DROP TABLE IF EXISTS `subject`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `subject` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `subject` varchar(100) NOT NULL,
-  PRIMARY KEY (`id`),
-  KEY `subject` (`subject`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `tags`
---
-
-DROP TABLE IF EXISTS `tags`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `tags` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `tag` varchar(25) NOT NULL DEFAULT '',
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `tags`
---
-
-LOCK TABLES `tags` WRITE;
-/*!40000 ALTER TABLE `tags` DISABLE KEYS */;
-/*!40000 ALTER TABLE `tags` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `time_to_reshelve`
---
 
 DROP TABLE IF EXISTS `time_to_reshelve`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
