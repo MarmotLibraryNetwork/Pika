@@ -354,11 +354,11 @@ class MyAccount_MyList extends MyAccount {
             $objPHPExcel->getActiveSheet()->getColumnDimension('E')->setAutoSize(true);
 
             // Rename sheet
-            $objPHPExcel->getActiveSheet()->setTitle('Favorites List -' . $list->title);
+            $objPHPExcel->getActiveSheet()->setTitle('Favorites -' . $list->title);
 
             // Redirect output to a client's web browser (Excel5)
             header('Content-Type: application/vnd.ms-excel');
-            header('Content-Disposition: attachment;filename="favorites_' . $list->title . '.xls"');
+            header('Content-Disposition: attachment;filename="' . substr($list->title, 0, 27) . '.xls"');
             header('Cache-Control: max-age=0');
 
             $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
