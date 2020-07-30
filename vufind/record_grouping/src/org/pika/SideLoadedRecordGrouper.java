@@ -32,13 +32,23 @@ class SideLoadedRecordGrouper extends MarcRecordGrouper {
 
 	/**
 	 * Creates a record grouping processor that saves results to the database.
+	 *  @param pikaConn       - The Connection to the Pika database
+	 * @param profile        - The profile that we are grouping records for
+ * @param logger         - A logger to store debug and error messages to.
+	 */
+	SideLoadedRecordGrouper(Connection pikaConn, IndexingProfile profile, Logger logger) {
+		this(pikaConn, profile, logger, false);
+	}
+
+	/**
+	 * Creates a record grouping processor that saves results to the database.
 	 *
 	 * @param pikaConn       - The Connection to the Pika database
 	 * @param profile        - The profile that we are grouping records for
 	 * @param logger         - A logger to store debug and error messages to.
 	 */
-	SideLoadedRecordGrouper(Connection pikaConn, IndexingProfile profile, Logger logger) {
-		super(pikaConn, profile, logger);
+	SideLoadedRecordGrouper(Connection pikaConn, IndexingProfile profile, Logger logger, boolean fullRegrouping) {
+		super(pikaConn, profile, logger, fullRegrouping);
 	}
 
 	@Override
@@ -47,7 +57,9 @@ class SideLoadedRecordGrouper extends MarcRecordGrouper {
 		HashSet<String> groupingCategories = new GroupingFormatDetermination(profile, translationMaps, logger).loadEContentFormatInformation(identifier, marcRecord);
 		if (groupingCategories.size() > 1){
 			groupingCategory = "book"; // fall back option for now
-			logger.warn("More than one grouping category for " + identifier + " : " + String.join(",", groupingCategories));
+			if (fullRegrouping) {
+				logger.warn("More than one grouping category for " + identifier + " : " + String.join(",", groupingCategories));
+			}
 		} else if (groupingCategories.size() == 0){
 			logger.warn("No grouping category for " + identifier);
 			groupingCategory = "book"; // fall back option for now

@@ -42,6 +42,17 @@ public class MarcRecordGrouper extends RecordGroupingProcessor {
 	private IndexingProfile profile;
 
 	private boolean hasSierraLanguageFixedField;
+
+	/**
+	 * Creates a record grouping processor that saves results to the database.
+	 *  @param pikaConn   - The Connection to the Pika database
+	 * @param profile        - The profile that we are grouping records for
+ * @param logger         - A logger to store debug and error messages to.
+	 */
+	public MarcRecordGrouper(Connection pikaConn, IndexingProfile profile, Logger logger) {
+		this(pikaConn, profile, logger, false);
+	}
+
 	/**
 	 * Creates a record grouping processor that saves results to the database.
 	 *
@@ -49,8 +60,8 @@ public class MarcRecordGrouper extends RecordGroupingProcessor {
 	 * @param profile        - The profile that we are grouping records for
 	 * @param logger         - A logger to store debug and error messages to.
 	 */
-	public MarcRecordGrouper(Connection pikaConn, IndexingProfile profile, Logger logger) {
-		super(pikaConn, logger);
+	public MarcRecordGrouper(Connection pikaConn, IndexingProfile profile, Logger logger,  boolean fullRegrouping) {
+		super(pikaConn, logger, fullRegrouping);
 		this.profile = profile;
 
 		recordNumberTag     = profile.recordNumberTag;
@@ -148,7 +159,7 @@ public class MarcRecordGrouper extends RecordGroupingProcessor {
 					languageCode = oo8languageCode;
 				}
 			}
-		} else {
+		} else if (fullRegrouping){
 			logger.warn("Missing 008 : " + identifier.toString());
 		}
 		if (languageCode == null) {

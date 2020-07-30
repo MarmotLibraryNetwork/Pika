@@ -53,6 +53,7 @@ class RecordGroupingProcessor {
 	private int numRecordsProcessed  = 0;
 	private int numGroupedWorksAdded = 0;
 
+	protected boolean fullRegrouping;
 	private long    startTime = new Date().getTime();
 
 	HashMap<String, TranslationMap> translationMaps = new HashMap<>();
@@ -82,6 +83,7 @@ class RecordGroupingProcessor {
 	RecordGroupingProcessor(Connection pikaConn, Logger logger, boolean fullRegrouping) {
 		this.pikaConn       = pikaConn;
 		this.logger         = logger;
+		this.fullRegrouping = fullRegrouping;
 	}
 
 //	/**
@@ -176,7 +178,9 @@ class RecordGroupingProcessor {
 		}
 
 		if (doAutomaticEcontentSuppression) {
-			logger.debug("getPrimaryIdentifierFromMarcRecord - Doing automatic Econtent Suppression");
+			if (logger.isDebugEnabled()) {
+				logger.debug("getPrimaryIdentifierFromMarcRecord - Doing automatic Econtent Suppression");
+			}
 
 			//Check to see if the record is an overdrive record
 			//TODO: is this needed at the grouping level
@@ -227,7 +231,9 @@ class RecordGroupingProcessor {
 			}
 		}
 
-		logger.debug("identifier : " + identifier);
+		if (logger.isDebugEnabled()) {
+			logger.debug("identifier : " + identifier);
+		}
 		if (identifier != null && identifier.isValid()) {
 			return identifier;
 		} else {
@@ -265,7 +271,9 @@ class RecordGroupingProcessor {
 		HashSet<String> groupingCategories = new GroupingFormatDetermination(profile, translationMaps, logger).loadPrintFormatInformation(identifier, marcRecord);
 		if (groupingCategories.size() > 1){
 			groupingCategory = "book"; // fall back option for now
-			logger.warn("More than one grouping category for " + identifier + " : " + String.join(",", groupingCategories));
+			if (fullRegrouping) {
+				logger.warn("More than one grouping category for " + identifier + " : " + String.join(",", groupingCategories));
+			}
 		} else if (groupingCategories.size() == 0){
 			logger.warn("No grouping category for " + identifier);
 			groupingCategory = "book"; // fall back option for now
@@ -296,15 +304,15 @@ class RecordGroupingProcessor {
 //						author = movieDuration.substring(0, 2) + "0";
 //						// Matching by 10 minute intervals, so exclude the final playtime digit and replace with a 0
 				} else {
-					if (!movieDuration.equals("|||") && !movieDuration.equals("   ") && !movieDuration.equals("---")) {
-						// Don't log, for now, entries that are coded with these values (essentially denoting that record doesn't have the playtime info populated in 008)
+					if (fullRegrouping && !movieDuration.equals("|||") && !movieDuration.equals("   ") && !movieDuration.equals("---")) {
+						// entries that are coded with these values (essentially denoting that record doesn't have the playtime info populated in 008)
 						logger.warn("008 running time invalid : '" + movieDuration + "' for " + identifier);
 					}
 				}
-			} else {
+			} else if (fullRegrouping){
 				logger.error("008 not long enough to have a movie running time for " + identifier);
 			}
-		} else {
+		} else if (fullRegrouping){
 			logger.warn("Missing 008 : " + identifier.toString());
 		}
 		// if any part of that failed, try parsing a playtime number from the physical description

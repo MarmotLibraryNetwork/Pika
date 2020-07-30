@@ -1,3 +1,17 @@
+/*
+ * Copyright (C) 2020  Marmot Library Network
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 package org.pika;
 
 import org.apache.log4j.Logger;
@@ -177,8 +191,9 @@ public class GroupedWork5 extends GroupedWorkBase implements Cloneable {
 			"and other essays|essays|and other stories|and stories|stories|poems|" +
 			"an autobiography|a biography|the biography|a memoir in books|" +
 			"the movie|large print|the graphic novel|graphic novel|magazine|audio cd|book club kit|playaway view|playaway|" +
-			"with illustrations|book \\d+|the original classic edition|classic edition))$");
+			"with illustrations|the original classic edition|classic edition))$");
 	 //removed from the simple pattern the option 'by\s\w+\s\w+' because this strips common phrases that aren't author statements, like ' by the sea'
+	// removed from pattern 'book \d+' so that book series don't group, eg 'walking dead a continuing story of survival horror book 13'
 	final private static Pattern commonSubtitlesComplexPattern = Pattern.compile("((a|una)\\s(.*)novel(a|la)?|a(.*)memoir|a(.*)mystery|a(.*)thriller|by\\s\\w+\\s\\w+|an? .* story|a .*\\s?book|[\\w\\s]+series book \\d+|the[\\w\\s]+chronicles book \\d+|[\\w\\s]+trilogy book \\d+)$");
 	final private static Pattern editionRemovalPattern         = Pattern.compile("(first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth|revised|\\d+\\S*)\\s+(edition|ed|ed\\.|update|anniversary edition|comprehensive edition|anniversary commemorative edition)");
 	final private static Pattern firstPattern                  = Pattern.compile("\\s1st");

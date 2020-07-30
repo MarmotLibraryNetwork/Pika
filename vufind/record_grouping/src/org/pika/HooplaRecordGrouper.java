@@ -32,13 +32,23 @@ import java.util.*;
 class HooplaRecordGrouper extends MarcRecordGrouper {
 	/**
 	 * Creates a record grouping processor that saves results to the database.
+	 *  @param pikaConn       - The Connection to the Pika database
+	 * @param profile        - The profile that we are grouping records for
+ * @param logger         - A logger to store debug and error messages to.
+	 */
+	HooplaRecordGrouper(Connection pikaConn, IndexingProfile profile, Logger logger) {
+		this(pikaConn, profile, logger, false);
+	}
+
+	/**
+	 * Creates a record grouping processor that saves results to the database.
 	 *
 	 * @param pikaConn       - The Connection to the Pika database
 	 * @param profile        - The profile that we are grouping records for
 	 * @param logger         - A logger to store debug and error messages to.
 	 */
-	HooplaRecordGrouper(Connection pikaConn, IndexingProfile profile, Logger logger) {
-		super(pikaConn, profile, logger);
+	HooplaRecordGrouper(Connection pikaConn, IndexingProfile profile, Logger logger, boolean fullRegrouping) {
+		super(pikaConn, profile, logger, fullRegrouping);
 	}
 
 	/**

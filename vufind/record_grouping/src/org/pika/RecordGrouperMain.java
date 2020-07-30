@@ -268,13 +268,13 @@ public class RecordGrouperMain {
 				MarcRecordGrouper recordGroupingProcessor;
 				switch (curProfile.groupingClass) {
 					case "MarcRecordGrouper":
-						recordGroupingProcessor = new MarcRecordGrouper(pikaConn, curProfile, logger);
+						recordGroupingProcessor = new MarcRecordGrouper(pikaConn, curProfile, logger, fullRegroupingNoClear || fullRegroupingClearGroupingTables);
 						break;
 					case "SideLoadedRecordGrouper":
-						recordGroupingProcessor = new SideLoadedRecordGrouper(pikaConn, curProfile, logger);
+						recordGroupingProcessor = new SideLoadedRecordGrouper(pikaConn, curProfile, logger, fullRegroupingNoClear || fullRegroupingClearGroupingTables);
 						break;
 					case "HooplaRecordGrouper":
-						recordGroupingProcessor = new HooplaRecordGrouper(pikaConn, curProfile, logger);
+						recordGroupingProcessor = new HooplaRecordGrouper(pikaConn, curProfile, logger, fullRegroupingNoClear || fullRegroupingClearGroupingTables);
 						break;
 					default:
 						logger.error("Unknown class for record grouping " + curProfile.groupingClass);
