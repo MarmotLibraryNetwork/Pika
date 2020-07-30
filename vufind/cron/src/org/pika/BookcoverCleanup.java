@@ -35,13 +35,21 @@ public class BookcoverCleanup implements IProcessHandler {
 		String   coverAgeInDaysToDelete = PikaConfigIni.getIniValue("Site", "coverAgeInDaysToDelete");
 		int      coverAge               = DEFAULTAGE;
 		try {
-			if (coverAgeInDaysToDelete != null) {
+			// Config Ini setting
+			if (coverAgeInDaysToDelete != null && !coverAgeInDaysToDelete.isEmpty()) {
 				coverAge = Integer.parseInt(coverAgeInDaysToDelete);
+			}
+			// command line setting should override config ini setting
+			if (processSettings.containsKey("coverAgeInDaysToDelete")){
+				coverAgeInDaysToDelete = processSettings.get("coverAgeInDaysToDelete");
+				if (coverAgeInDaysToDelete != null && !coverAgeInDaysToDelete.isEmpty()){
+					coverAge = Integer.parseInt(coverAgeInDaysToDelete);
+				}
 			}
 		} catch (NumberFormatException e) {
 			logger.warn("Failed to parse coverAgeInDaysToDelete : " + coverAgeInDaysToDelete, e);
 		} finally {
-			if (coverAge <= 0) {
+			if (coverAge < 0) {
 				logger.warn("Invalid value for coverAgeInDaysToDelete : " + coverAge);
 				coverAge = DEFAULTAGE;
 			}
@@ -59,7 +67,7 @@ public class BookcoverCleanup implements IProcessHandler {
 				} else {
 					processLog.addNote("Cleaning up covers in " + coverDirectoryFile.getAbsolutePath());
 					processLog.saveToDatabase(pikaConn, logger);
-					File[] filesToCheck = coverDirectoryFile.listFiles((dir, name) -> name.toLowerCase().endsWith("jpg") || name.toLowerCase().endsWith("png"));
+					File[] filesToCheck = coverDirectoryFile.listFiles((dir, name) -> name.toLowerCase().endsWith("png") || name.toLowerCase().endsWith("jpg"));
 					if (filesToCheck != null) {
 						for (File curFile : filesToCheck) {
 							//Remove any files created more than 2 weeks ago.
