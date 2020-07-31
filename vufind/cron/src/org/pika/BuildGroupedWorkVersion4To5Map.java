@@ -73,7 +73,7 @@ public class BuildGroupedWorkVersion4To5Map implements IProcessHandler {
 			processLog.addNote("One to one mapping added " + updates + " entries");
 		} catch (SQLException e) {
 			logger.error("Error while populating version map with one to one matches.", e);
-			processLog.addNote(e.toString());
+			processLog.addNote("Error in simple mapping : " + e);
 			processLog.incErrors();
 		}
 
