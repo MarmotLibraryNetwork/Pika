@@ -147,18 +147,19 @@ class IndexingProfile extends DB_DataObject{
 				)),
 			//TODO: refactor catalogDriver to circulationSystemDriver
 			//TODO: this would be the hook in to tie a indexing profile to eContent driver
+			'formatSource'     => ['property' => 'formatSource', 'type' => 'enum', 'label' => 'Determine Format based on', 'values' => ['bib' => 'Bib Record', 'item' => 'Item Record', 'specified' => 'Specified Value'], 'default' => 'bib', 'hideInLists' => false],
 
 			'formatDeterminationSection' => array('property'=>'formatDeterminationSection', 'type' => 'section', 'label' =>'Format Determination Settings', 'hideInLists' => true,
 			                            'helpLink' => '', 'properties' => array(
 
-			'formatSource'              => array('property' => 'formatSource',              'type' => 'enum',    'label' => 'Determine Format based on', 'values' => array('bib' => 'Bib Record', 'item' => 'Item Record', 'specified'=> 'Specified Value'), 'default' => 'bib'),
-			'bibFormatSection' => array('property'=>'bibFormatSection', 'type' => 'section', 'label' =>'Bib Format Determination Settings', 'hideInLists' => true,
-			                                  'helpLink' => '', 'properties' => array(
-					'formatDeterminationMethod' => array('property' => 'formatDeterminationMethod', 'type' => 'enum', 'label' => 'Format Determination Method', 'values' => array('bib' => 'Bib Record', 'matType' => 'Material Type'), 'default' => 'bib'),
-					'materialTypesToIgnore'     => array('property' => 'materialTypesToIgnore',     'type' => 'text', 'label' => 'Material Type Values to Ignore (ils profile only)', 'maxLength' => 50, 'description' => 'MatType values to ignore when using the MatType format determination. The bib format determination will be used instead. " " & "-" are always ignored.', 'hideInLists' => true),
-			)),
+//					'formatSource'     => ['property' => 'formatSource', 'type' => 'enum', 'label' => 'Determine Format based on', 'values' => ['bib' => 'Bib Record', 'item' => 'Item Record', 'specified' => 'Specified Value'], 'default' => 'bib', 'hideInLists' => false],
+					'bibFormatSection' => ['property' => 'bibFormatSection', 'type' => 'section', 'label' => 'Bib Format Determination Settings', 'hideInLists' => true,
+					                       'helpLink' => '', 'properties' => [
+							'formatDeterminationMethod' => ['property' => 'formatDeterminationMethod', 'type' => 'enum', 'label' => 'Format Determination Method', 'values' => ['bib' => 'Bib Record', 'matType' => 'Material Type'], 'default' => 'bib'],
+							'materialTypesToIgnore'     => ['property' => 'materialTypesToIgnore', 'type' => 'text', 'label' => 'Material Type Values to Ignore (ils profile only)', 'maxLength' => 50, 'description' => 'MatType values to ignore when using the MatType format determination. The bib format determination will be used instead. " " & "-" are always ignored.', 'hideInLists' => true],
+						]],
 
-			'specifiedFormatSection' => array('property'=>'specifiedFormatSection', 'type' => 'section', 'label' =>'Specified Format Settings', 'hideInLists' => true,
+					'specifiedFormatSection' => array('property'=>'specifiedFormatSection', 'type' => 'section', 'label' =>'Specified Format Settings', 'hideInLists' => true,
 			                                      'helpLink' => '', 'properties' => array(
 
 					'specifiedFormat'           => array('property' => 'specifiedFormat',           'type' => 'text',    'label' => 'Specified Format', 'maxLength' => 50, 'description' => 'The format to set when using a defined format', 'required' => false, 'default' => ''),
@@ -305,6 +306,7 @@ class IndexingProfile extends DB_DataObject{
 				'storeDb'       => true,
 				'allowEdit'     => true,
 				'canEdit'       => false,
+				'hideInLists' => true,
 			);
 		}
 		return $structure;
