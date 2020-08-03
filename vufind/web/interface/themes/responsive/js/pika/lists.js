@@ -151,18 +151,22 @@ Pika.Lists = (function(){
 		},
 
 		transferListToUser: function(id){
-			return this.buttonAjaxHandler('transferListToUser',id,'transferList');
+
+				return this.buttonAjaxHandler('transferListToUser', id, 'transferList');
+
 
 		},
 		transferList: function(id, user)
 		{
-			Pika.Account.ajaxLogin(function (){
-				Pika.loadingMessage();
-				var url = "/MyAccount/AJAX?method=transferList&id=" + id + "&barcode=" + user;
-				$.getJSON(url, function (data) {
-					Pika.showMessage(data.title, data.body,1,1);
-				}).fail(Pika.ajaxFail);
-			});
+			if (confirm("Are you sure you want to transfer this list. It will no longer be accessible from this account.")) {
+				Pika.Account.ajaxLogin(function () {
+					Pika.loadingMessage();
+					var url = "/MyAccount/AJAX?method=transferList&id=" + id + "&barcode=" + user;
+					$.getJSON(url, function (data) {
+						Pika.showMessage(data.title, data.body, 1, 1);
+					}).fail(Pika.ajaxFail);
+				});
+			}
 			return false;
 		},
 
