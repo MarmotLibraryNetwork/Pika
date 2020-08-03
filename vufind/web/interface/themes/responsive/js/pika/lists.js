@@ -138,6 +138,14 @@ Pika.Lists = (function(){
 		exportListAction: function (id, page, pageSize, sort){
 			return this.submitListForm('exportToExcel', page, pageSize, sort);
 		},
+
+		exportListFromLists: function(id)
+		{
+			$('#myListActionHead').val("exportToExcel");
+			$('#myListActionData').val(id);
+			$('#myListFormHead').submit();
+			return false;
+		},
 		citeListAction: function (id) {
 			return Pika.Account.ajaxLightbox('/MyAccount/AJAX?method=getCitationFormatsForm&listId=' + id, false);
 		},

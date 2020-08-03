@@ -1,4 +1,4 @@
-<form action="/MyAccount/MyLists" id="myListsFormHead">
+<form action="/MyAccount/MyLists" id="myListFormHead">
     <h3 id="listsTitle">My Lists</h3>
 {*    <div id="listTopButtons" class="btn-toolbar">*}
 {*        <div class="btn-group">*}
@@ -8,12 +8,14 @@
 
 {*        </div>*}
 {*    </div>*}
+    <input type="hidden" name="myListActionHead" id="myListActionHead" class="form">
+    <input type="hidden" name="myListActionData" id="myListActionData" class="form">
     {foreach from=$lists item=list}
         {if $list.id != -1}
             <div class="result">
         <div class="row">
             <div class="col-md-1">
-                <label for="cb_{$list.id}"></label><input type="checkbox" name="cb_{$list.id}" id="cb_{$list.id}" >
+{*                <label for="cb_{$list.id}"></label><input type="checkbox" name="cb_{$list.id}" id="cb_{$list.id}" >*}
             </div>
             <div class="col-md-11">
                 <div class="row">
@@ -39,11 +41,18 @@
                         </div>
                         <div class="row">
 
-                            <div style="margin-top:5px;">
+                            <div style="margin:5px;">
                             {if $list.description}{$list.description}{/if}
                             </div>
                         </div>
-
+                        <div class="row">
+                            <div class="col-tn-12 col-xs-12">
+                                <div class="btn-group">
+                                    <button value="emailList" class="btn btn-sm btn-default" id="FavEmail" onclick="return Pika.Lists.emailListAction('{$list.id}');">Email List</button>
+                                    <button value="exportToExcel" class="btn btn-sm btn-default" id="FavExcel" onclick="return Pika.Lists.exportListFromLists('{$list.id}');">Export to Excel</button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <div class="col-xs-2 col-sm-2 col-md-2 col-lg-1">
                         {if $staff}
