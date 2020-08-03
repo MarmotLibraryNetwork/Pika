@@ -29,7 +29,7 @@ $timer->logTime("Loaded Module and Action Id");
 $memoryWatcher->logMemory("Loaded Module and Action Id");
 
 //  Start session
-$handler = new Pika\Session\MemcachedSession();
+$handler = new Pika\Session\FileSession();
 session_set_save_handler($handler);
 // register shutdown function needed to avoid oddities of using an object as session handler
 register_shutdown_function('session_write_close');
