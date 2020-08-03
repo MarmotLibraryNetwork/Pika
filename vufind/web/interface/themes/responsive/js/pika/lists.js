@@ -100,6 +100,7 @@ Pika.Lists = (function(){
 			 	this.submitListFormWithData('deleteMarked', stringReturn, page, pageSize, sort);
 
 			 }
+			 return false;
 
 		},
 
