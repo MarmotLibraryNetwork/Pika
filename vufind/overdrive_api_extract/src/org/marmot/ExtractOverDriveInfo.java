@@ -1591,6 +1591,9 @@ class ExtractOverDriveInfo {
 						break;
 					} catch (SocketTimeoutException e) {
 						numTries++;
+						if (numTries == 3){
+							logger.error("Socket Time out 3 time while fetching availability info : " + url);
+						}
 					}
 				}
 
