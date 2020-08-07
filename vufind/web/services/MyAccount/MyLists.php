@@ -80,7 +80,7 @@ class MyAccount_MyLists extends MyAccount{
             $interface->assign('lists', $lists);
             $interface->assign('staff', $staffUser);
 
-            $this->display('../MyAccount/MyLists.tpl', 'My Lists');
+            $this->display('../MyAccount/myLists.tpl', 'My Lists');
         }
     }
     /**
