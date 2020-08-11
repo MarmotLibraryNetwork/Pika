@@ -1595,9 +1595,6 @@ class ExtractOverDriveInfo {
 						break;
 					} catch (SocketTimeoutException e) {
 						numTries++;
-						if (numTries == 3){
-							logger.error("Socket Time out 3 times while fetching availability info : " + url);
-						}
 					}
 				}
 
@@ -1612,7 +1609,7 @@ class ExtractOverDriveInfo {
 							curProduct.hadAvailabilityErrors = true;
 						}
 					} else {
-						logger.error("Did not get availability; null response for batch " + url);
+						logger.error("Did not get availability null response for batch " + url);
 						curProduct.hadAvailabilityErrors = true;
 					}
 				} else {
