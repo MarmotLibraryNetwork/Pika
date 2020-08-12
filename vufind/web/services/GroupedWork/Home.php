@@ -25,9 +25,10 @@
  * Date: 11/27/13
  * Time: 12:14 PM
  */
-require_once ROOT_DIR  . '/Action.php';
-class GroupedWork_Home extends Action{
-	function launch() {
+require_once ROOT_DIR . '/Action.php';
+
+class GroupedWork_Home extends Action {
+	function launch(){
 		global $interface;
 		global $timer;
 		global $logger;
@@ -36,9 +37,19 @@ class GroupedWork_Home extends Action{
 
 		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 		$recordDriver = new GroupedWorkDriver($id);
-		if (!$recordDriver->isValid){
+		if (!$recordDriver->isValid()){
+			//Check Version Map and redirect to new id if needed
+			require_once ROOT_DIR . '/sys/Grouping/GroupedWorkVersionMap.php';
+			$versionCheck                                 = new GroupedWorkVersionMap();
+			$versionCheck->groupedWorkPermanentIdVersion4 = $id;
+			if ($versionCheck->find(true) && !empty($versionCheck->groupedWorkPermanentIdVersion5)){
+				// Permanent redirect
+				header("Location: /GroupedWork/{$versionCheck->groupedWorkPermanentIdVersion5}/Home", true, 301);
+				die();
+			}
+
 			$interface->assign('id', $id);
-			$logger->log("Did not find a record for id {$id} in solr." , PEAR_LOG_DEBUG);
+			$logger->log("Did not find a record for id {$id} in solr.", PEAR_LOG_DEBUG);
 			$this->display('../Record/invalidRecord.tpl', 'Invalid Record');
 			die();
 		}
@@ -48,7 +59,7 @@ class GroupedWork_Home extends Action{
 		// Set Show in Search Results Main Details Section options for template
 		// (needs to be set before moreDetailsOptions)
 		global $library;
-		foreach ($library->showInMainDetails as $detailoption) {
+		foreach ($library->showInMainDetails as $detailoption){
 			$interface->assign($detailoption, true);
 		}
 
