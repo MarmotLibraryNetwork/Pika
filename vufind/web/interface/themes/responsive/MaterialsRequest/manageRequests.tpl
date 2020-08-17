@@ -127,7 +127,7 @@
 		</div>
 		{if count($allRequests) > 0}
 			<form id="updateRequests" method="post" action="/MaterialsRequest/ManageRequests" class="form form-horizontal">
-				<table id="requestedMaterials" class="table tablesorter table-striped table-hover">
+				<table id="requestedMaterials" class="table tablesorter stripe table-hover">
 					<thead>
 						<tr>
 							<th><input type="checkbox" name="selectAll" id="selectAll" onchange="Pika.toggleCheckboxes('.select', '#selectAll');"></th>
@@ -305,7 +305,6 @@ $(function () {ldelim}
 		cssAsc: 'sortAscHeader',
 		cssDesc: 'sortDescHeader',
 		cssHeader: 'unsortedHeader',
-		widgets: ['zebra'],
 		headers: {ldelim}
 			0: {ldelim}sorter: false{rdelim},
 {foreach name=config from=$dateColumns item=columnNumber}
@@ -321,7 +320,7 @@ $(function () {ldelim}
 		$(document).ready(function(){
 			$('#requestedMaterials').DataTable({
 				ordering: false,
-				pageLength: 100
+				pageLength: 25
 			});
 		})
 
