@@ -507,9 +507,9 @@ public class FormatDetermination {
 			}
 		}
 
-		if (leaderBit != null) {
-			accompanyingMaterialCheck(leaderBit, printFormats);
-		}
+//		if (leaderBit != null) {
+//			accompanyingMaterialCheck(leaderBit, printFormats);
+//		}
 
 		if (printFormats.size() == 0){
 //			if (fullReindex) {
