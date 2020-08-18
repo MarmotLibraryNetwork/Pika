@@ -894,38 +894,41 @@ class MyAccount_AJAX extends AJAXHandler {
 
     function transferList()
     {
-        if(UserAccount::userHasRoleFromList(['opacAdmin','libraryAdmin'])) {
 
             $barcodeTo = $_REQUEST['barcode'];
             $userTo = new User();
             $listId = $_REQUEST['id'];
+            $user = UserAccount::getLoggedInUser();
+            if($user->isStaff()) {
+                $userTo->get("cat_password", $barcodeTo);
+                if ($userTo->isStaff()) {
+                    $list = new UserList();
+                    $list->id = $listId;
+                    $list->get();
 
-            $userTo->get("cat_password",$barcodeTo);
-            if ($userTo->isStaff())
-            {
-                $list = new UserList();
-                $list->id = $listId;
-                $list->get();
+                    $list->user_id = $userTo->id;
+                    if ($list->update()) {
+                        return array('title' => 'Transfer List', 'body' => 'The list has been transferred');
+                    } else {
+                        return array('title' => 'Transfer List', 'body' => 'An Error Occurred');
+                    }
+                }else{
+                    return array('title' => 'Transfer List', 'body' => 'You do not have permission to transfer a list');
+                }
 
-                $list->user_id = $userTo->id;
-                if($list->update()) {
-                    return array('title' => 'Transfer List', 'body' => 'The list has been transferred');
-                }
-                else
-                {
-                    return array('title' => 'Transfer List', 'body' => 'An Error Occurred');
-                }
+
             }else{
-                return array('title' => 'Transfer List', 'body'=> 'You do not have permission to transfer a list');
+                return array('title' => 'Transfer List', 'body' => 'You do not have permission to transfer a list');
             }
-        }
+
     }
 
     function isStaffUser()
     {
         if(UserAccount::isLoggedIn())
         {
-            if(UserAccount::userHasRoleFromList(['opacAdmin','libraryAdmin'])) {
+            $staffUser = UserAccount::getLoggedInUser();
+            if($staffUser->isStaff()) {
                 $barcode = $_REQUEST['barcode'];
                 $user = new User();
                 $user->cat_password = $barcode;
