@@ -57,7 +57,7 @@
                     <div class="col-xs-2 col-sm-2 col-md-2 col-lg-1">
                         {if $staff}
                         <div class="btn-group-vertical">
-                            <button value="transferList" onclick="Pika.Lists.transferListToUser({$list.id}); return false;" class="btn btn-danger">Transfer</button>
+                            <button value="transferList" onclick="return Pika.Lists.transferListToUser({$list.id}); " class="btn btn-danger">Transfer</button>
                         </div>
                         {/if}
                     </div>

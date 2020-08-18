@@ -58,7 +58,7 @@ Pika.Lists = (function(){
 		},
 
 		checkUser: function(id){
-			var url = "/MyAccount/Ajax?method=isStaffUser&barcode=" + id;
+			var url = "/MyAccount/AJAX?method=isStaffUser&barcode=" + id;
 			$.getJSON(url, function(data){
 				if($("#barcode").val().length > 0)
 				{
