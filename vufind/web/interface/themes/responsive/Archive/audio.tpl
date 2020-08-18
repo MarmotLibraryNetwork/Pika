@@ -43,13 +43,32 @@
 		Pika.Archive.loadExploreMore('{$pid|urlencode}');
 		{rdelim});
 	{literal}
-	$('audio').click( function() {
-		var audio = $("audio#player").get(0);
-		if (!audio.paused) {
-			$.idleTimer("destroy");
-		}else{
-			$(document).idleTimer(10000);
-		}
+	$(document).ready(function() {
+		let audio = document.getElementById("player");
+		audio.addEventListener('play', function(ev){
+
+			$.idleTimer('destroy');
 		});
+		audio.addEventListener('pause', function(ev){
+			var timeout;
+			if (Globals.loggedIn){
+				timeout = Globals.automaticTimeoutLength * 1000;
+			}else{
+				timeout = Globals.automaticTimeoutLengthLoggedOut * 1000;
+			}
+			if (timeout > 0){
+				$.idleTimer(timeout); // start the Timer
+			}
+
+			$(document).on("idle.idleTimer", function(){
+				$.idleTimer('destroy'); // turn off Timer, so that when it is re-started in will work properly
+				if (Globals.loggedIn){
+					showLogoutMessage();
+				}else{
+					showRedirectToHomeMessage();
+				}
+			});
+		});
+	});
 	{/literal}
 </script>

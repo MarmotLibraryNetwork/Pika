@@ -41,14 +41,31 @@
 	$().ready(function(){ldelim}
 		Pika.Archive.loadExploreMore('{$pid|urlencode}');
 		{rdelim});
-	{literal}
-	$('video').click( function() {
-		var video = $("video#player").get(0);
-		if (!video.paused) {
-			$.idleTimer("destroy");
-		}else{
-			$(document).idleTimer(10000);
-		}
+	$(document).ready(function() {
+		let video = document.getElementById("player");
+		video.addEventListener('play', function(ev){
+
+			$.idleTimer('destroy');
+		});
+		video.addEventListener('pause', function(ev){
+			var timeout;
+			if (Globals.loggedIn){
+				timeout = Globals.automaticTimeoutLength * 1000;
+			}else{
+				timeout = Globals.automaticTimeoutLengthLoggedOut * 1000;
+			}
+			if (timeout > 0){
+				$.idleTimer(timeout); // start the Timer
+			}
+
+			$(document).on("idle.idleTimer", function(){
+				$.idleTimer('destroy'); // turn off Timer, so that when it is re-started in will work properly
+				if (Globals.loggedIn){
+					showLogoutMessage();
+				}else{
+					showRedirectToHomeMessage();
+				}
+			});
+		});
 	});
-	{/literal}
 </script>
