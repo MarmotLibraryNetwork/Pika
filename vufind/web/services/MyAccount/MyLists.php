@@ -36,24 +36,29 @@ class MyAccount_MyLists extends MyAccount{
         $staffUser = $user->isStaff();
 
             //Load a list of lists
-            $userListData = $this->cache->get('user_list_data_' . UserAccount::getActiveUserId());
-            if ($userListData == null || isset($_REQUEST['reload'])) {
-                $lists = array();
+            $userListsData = $this->cache->get('user_lists_data_' . UserAccount::getActiveUserId());
+            if ($userListsData == null || isset($_REQUEST['reload'])) {
+                $myLists = array();
                 require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
                 $tmpList = new UserList();
                 $tmpList->user_id = UserAccount::getActiveUserId();
                 $tmpList->deleted = 0;
                 $tmpList->orderBy("title ASC");
+                $defaultSort = "Title";
+                if(!empty($tmp->defaultSort)){
+                    $defaultSort = $tmp->defaultSort;
+                }
+
                 $tmpList->find();
                 if ($tmpList->N > 0) {
                     while ($tmpList->fetch()) {
-                        $lists[$tmpList->id] = array(
+                        $myLists[$tmpList->id] = array(
                             'name' => $tmpList->title,
                             'url' => '/MyAccount/MyList/' . $tmpList->id,
                             'id' => $tmpList->id,
                             'numTitles' => $tmpList->numValidListItems(),
                             'description' => $tmpList->description,
-                            'defaultSort' => $tmpList->defaultSort,
+                            'defaultSort' => $defaultSort,
                             'isPublic' => $tmpList->public,
                         );
                     }
@@ -61,7 +66,7 @@ class MyAccount_MyLists extends MyAccount{
                 //$this->cache->set('user_list_data_' . UserAccount::getActiveUserId(), $lists, $configArray['Caching']['user']);
                 //$timer->logTime("Load Lists");
             } else {
-                $lists = $userListData;
+                $myLists = $userListsData;
                 //$timer->logTime("Load Lists from cache");
             }
             if (!empty($_REQUEST['myListActionHead'])){
@@ -77,7 +82,7 @@ class MyAccount_MyLists extends MyAccount{
                 }
             }
 
-            $interface->assign('lists', $lists);
+            $interface->assign('myLists', $myLists);
             $interface->assign('staff', $staffUser);
 
             $this->display('../MyAccount/myLists.tpl', 'My Lists');
