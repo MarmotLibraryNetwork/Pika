@@ -184,7 +184,7 @@ class Sierra {
 				$titleAndAuthor = $innReach->getCheckoutTitleAuthor($checkoutId);
 				$coverUrl = $innReach->getInnReachCover();
         
-				$checkout['checkoutSource'] =  $this->accountProfile->recordSource;
+				$checkout['checkoutSource'] =  $this->accountProfile->recordSource; //TODO: this might be a bad idea for ILL items for reading history
 				$checkout['id']             = $checkoutId;
 				$checkout['dueDate']        = strtotime($entry->dueDate);
 				$checkout['checkoutDate']   = strtotime($entry->outDate);

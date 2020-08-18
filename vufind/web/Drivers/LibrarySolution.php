@@ -262,7 +262,7 @@ class LibrarySolution extends ScreenScrapingDriver {
 
 			foreach ($loanInfo->loans as $loan){
 				$curTitle = array();
-				$curTitle['checkoutSource'] = 'ils';
+				$curTitle['checkoutSource'] = $this->accountProfile->recordSource;
 				$curTitle['itemId'] = $loan->itemId;
 				$curTitle['renewIndicator'] = $loan->itemId;
 				$curTitle['id'] = $loan->bibliographicId;
