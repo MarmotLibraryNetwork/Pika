@@ -876,7 +876,7 @@ class MyAccount_AJAX extends AJAXHandler {
 	function transferListToUser()
     {
        if(UserAccount::isLoggedIn()){
-            if(UserAccount::userHasRoleFromList(['opacAdmin','libraryAdmin'])){
+
                 $user = UserAccount::getLoggedInUser();
                 if($user->isStaff())
                 {
@@ -887,7 +887,7 @@ class MyAccount_AJAX extends AJAXHandler {
                                 '<script>$("#barcode").on("change keyup paste", function(data){Pika.Lists.checkUser($("#barcode").val())});</script>',
                         'buttons'=>'<button value="transfer" disabled="disabled" id="transfer" class="btn btn-danger" onclick="Pika.Lists.transferList('. $listId . ', document.getElementById(\'barcode\').value);return false;">Transfer</button>');
                 }
-            }
+
         }
         return array('error' => 'You do not have permission to transfer a list');
     }
