@@ -1,13 +1,16 @@
 <form action="/MyAccount/MyLists" id="myListFormHead">
     <h3 id="listsTitle">My Lists</h3>
-{*    <div id="listTopButtons" class="btn-toolbar">*}
-{*        <div class="btn-group">*}
-{*            <button value="emailSelected" class="btn btn-sm btn-default">Email</button>*}
-{*            <button value="copySelected" class="btn btn-sm btn-default">Copy Lists</button>*}
-{*            <button value="transferSelected" class="btn btn-sm btn-danger">Transfer Lists</button>*}
+    <div id="listTopButtons" class="btn-toolbar">
+        <div class="btn-group">
+            <a href="#" onclick="return Pika.Account.showCreateListForm();" class="btn btn-sm btn-primary">Create a New List</a>
+            {if $showConvertListsFromClassic}
+                <button value="copySelected" class="btn btn-sm btn-default" onclick="return Pika.Lists.importListsFromClassic();">Import Lists from Classic</button>
+            {/if}
 
-{*        </div>*}
-{*    </div>*}
+
+
+        </div>
+    </div>
     <input type="hidden" name="myListActionHead" id="myListActionHead" class="form">
     <input type="hidden" name="myListActionData" id="myListActionData" class="form">
     {foreach from=$myLists item=myList}
