@@ -262,7 +262,7 @@ class LibrarySolution extends ScreenScrapingDriver {
 
 			foreach ($loanInfo->loans as $loan){
 				$curTitle = array();
-				$curTitle['checkoutSource'] = 'ils';
+				$curTitle['checkoutSource'] = $this->accountProfile->recordSource;
 				$curTitle['itemId'] = $loan->itemId;
 				$curTitle['renewIndicator'] = $loan->itemId;
 				$curTitle['id'] = $loan->bibliographicId;
@@ -419,7 +419,7 @@ class LibrarySolution extends ScreenScrapingDriver {
 			$holdInfo = json_decode($holdInfoRaw);
 
 			$indexingProfile = new IndexingProfile();
-			$indexingProfile->name = $this->accountProfile->recordSource;
+			$indexingProfile->sourceName = $this->accountProfile->recordSource;
 			if (!$indexingProfile->find(true)){
 				$indexingProfile = null;
 			}

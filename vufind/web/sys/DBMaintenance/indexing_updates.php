@@ -306,6 +306,14 @@ function getIndexingUpdates(){
 			)
 		),
 
+		'indexing_profile_update_hoopla_name_2020.06' => [
+			'title'       => 'Update Hoopla indexing profile name',
+			'description' => 'Update Hoopla indexing profile name to Hoopla',
+			'sql'         => [
+				'UPDATE `indexing_profiles` SET `name`="Hoopla" WHERE `sourceName`="hoopla";',
+			]
+		],
+
 	);
 }
 

@@ -178,7 +178,7 @@ class Aspencat implements DriverInterface{
 			foreach ($tableData[1] as $tableRow){
 				//Each row represents a transaction
 				$transaction = array();
-				$transaction['checkoutSource'] = 'ils';
+				$transaction['checkoutSource'] = $this->accountProfile->recordSource;
 				//Go through each cell in the row
 				preg_match_all('/<td[^>]*>(.*?)<\/td>/si', $tableRow, $tableCells, PREG_PATTERN_ORDER);
 				foreach ($tableCells[1] as $col => $tableCell){
@@ -273,7 +273,7 @@ class Aspencat implements DriverInterface{
 		$results = mysqli_query($this->dbConnection, $sql);
 		while ($curRow = $results->fetch_assoc()){
 			$transaction = array();
-			$transaction['checkoutSource'] = 'ils';
+			$transaction['checkoutSource'] = $this->accountProfile->recordSource;
 
 			$transaction['id'] = $curRow['biblionumber'];
 			$transaction['recordId'] = $curRow['biblionumber'];
