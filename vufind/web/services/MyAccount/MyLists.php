@@ -63,7 +63,7 @@ class MyAccount_MyLists extends MyAccount{
                         );
                     }
                 }
-                //$this->cache->set('user_list_data_' . UserAccount::getActiveUserId(), $lists, $configArray['Caching']['user']);
+                $this->cache->set('user_lists_data_' . UserAccount::getActiveUserId(), $userListsData, $configArray['Caching']['user']);
                 //$timer->logTime("Load Lists");
             } else {
                 $myLists = $userListsData;
