@@ -380,7 +380,7 @@ class IndexingProfile extends DB_DataObject{
 		$ret = parent::update();
 		if ($ret === FALSE ){
 			global $logger;
-			$logger->log('Failed to update indexing profile for '.$this->name, PEAR_LOG_ERR);
+			$logger->log('Failed to update indexing profile for '.$this->sourceName, PEAR_LOG_ERR);
 			return $ret;
 		}else{
 			$this->saveTranslationMaps();
@@ -392,7 +392,7 @@ class IndexingProfile extends DB_DataObject{
 		global $instanceName;
 		if (!$memCache->delete("{$instanceName}_indexing_profiles")) {
 			global $logger;
-			$logger->log("Failed to delete memcache variable {$instanceName}_indexing_profiles when adding new indexing profile for {$this->name}", PEAR_LOG_ERR);
+			$logger->log("Failed to delete memcache variable {$instanceName}_indexing_profiles when adding new indexing profile for {$this->sourceName}", PEAR_LOG_ERR);
 		}
 		return true;
 	}
@@ -406,7 +406,7 @@ class IndexingProfile extends DB_DataObject{
 		$ret = parent::insert();
 		if ($ret === FALSE ){
 			global $logger;
-			$logger->log('Failed to add new indexing profile for '.$this->name, PEAR_LOG_ERR);
+			$logger->log('Failed to add new indexing profile for '.$this->sourceName, PEAR_LOG_ERR);
 			return $ret;
 		}else{
 			$this->saveTranslationMaps();
@@ -418,7 +418,7 @@ class IndexingProfile extends DB_DataObject{
 		global $instanceName;
 		if (!$memCache->delete("{$instanceName}_indexing_profiles")) {
 			global $logger;
-			$logger->log("Failed to delete memcache variable {$instanceName}_indexing_profiles when adding new indexing profile for {$this->name}", PEAR_LOG_ERR);
+			$logger->log("Failed to delete memcache variable {$instanceName}_indexing_profiles when adding new indexing profile for {$this->sourceName}", PEAR_LOG_ERR);
 		}
 		return true;
 	}

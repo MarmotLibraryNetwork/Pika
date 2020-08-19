@@ -419,7 +419,7 @@ class LibrarySolution extends ScreenScrapingDriver {
 			$holdInfo = json_decode($holdInfoRaw);
 
 			$indexingProfile = new IndexingProfile();
-			$indexingProfile->name = $this->accountProfile->recordSource;
+			$indexingProfile->sourceName = $this->accountProfile->recordSource;
 			if (!$indexingProfile->find(true)){
 				$indexingProfile = null;
 			}
