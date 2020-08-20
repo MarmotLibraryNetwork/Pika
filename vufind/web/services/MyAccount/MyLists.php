@@ -34,7 +34,8 @@ class MyAccount_MyLists extends MyAccount{
         if (UserAccount::isLoggedIn()) {
             $user = UserAccount::getLoggedInUser();
         $staffUser = $user->isStaff();
-
+            $shortPageTitle = "My Lists";
+            $interface->assign('shortPageTitle', $shortPageTitle);
             //Load a list of lists
             $userListsData = $this->cache->get('user_lists_data_' . UserAccount::getActiveUserId());
             if ($userListsData == null || isset($_REQUEST['reload'])) {
@@ -44,14 +45,31 @@ class MyAccount_MyLists extends MyAccount{
                 $tmpList->user_id = UserAccount::getActiveUserId();
                 $tmpList->deleted = 0;
                 $tmpList->orderBy("title ASC");
-                $defaultSort = "Title";
-                if(!empty($tmp->defaultSort)){
-                    $defaultSort = $tmp->defaultSort;
-                }
+
 
                 $tmpList->find();
                 if ($tmpList->N > 0) {
                     while ($tmpList->fetch()) {
+                        $defaultSort = "Title";
+                        if(!empty($tmpList->defaultSort))
+                        {
+                            switch($tmpList->defaultSort)
+                            {
+                                case "recentlyAdded":
+                                    $defaultSort = "Recently Added";
+                                    break;
+                                case "dateAdded":
+                                    $defaultSort = "Date Added";
+                                    break;
+                                case "custom":
+                                    $defaultSort = "User Defined";
+                                    break;
+                                default:
+                                    $defaultSort = "Title";
+
+                            }
+
+                        }
                         $myLists[$tmpList->id] = array(
                             'name' => $tmpList->title,
                             'url' => '/MyAccount/MyList/' . $tmpList->id,

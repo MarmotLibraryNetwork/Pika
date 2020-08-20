@@ -198,6 +198,9 @@ class MyAccount_MyList extends MyAccount {
 
 		// Send list to template so title/description can be displayed:
 		$interface->assign('favList', $list);
+        $shortTitle = $list->title;
+        $interface->assign('shortPageTitle', $shortTitle);
+
 		$interface->assign('listSelected', $list->id);
 
 		// Create a handler for displaying favorites and use it to assign
