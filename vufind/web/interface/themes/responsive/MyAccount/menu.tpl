@@ -102,14 +102,9 @@
 					</a>
 					<div id="myListsPanel" class="panel-collapse collapse{if $action == 'MyRatings' || $action == 'Suggested Titles' || $action == 'MyList'} in{/if}">
 						<div class="panel-body">
-							{if $showConvertListsFromClassic}
-								<div class="myAccountLink"><a href="/MyAccount/ImportListsFromClassic" class="btn btn-sm btn-default">Import Existing Lists</a></div>
-								<br>
-							{/if}
-
-							<div id="lists-placeholder"><img src="/images/loading.gif" alt="loading"></div>
-
-							<a href="#" onclick="return Pika.Account.showCreateListForm();" class="btn btn-sm btn-primary">Create a New List</a>
+							<div class="alert alert-info" role="alert">
+								New <a href="/MyAccount/MyLists" class="alert-link">My Lists</a> page can be found in the <a href="#" onclick="$('#myAccountPanel').prev().click()" >{translate text="My Account"}</a> menu.
+							</div>
 						</div>
 					</div>
 				</div>
