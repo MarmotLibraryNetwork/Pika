@@ -1415,34 +1415,34 @@ class MyAccount_AJAX extends AJAXHandler {
 			$interface->assign('user', $user);
 
 			//Load a list of lists
-			$userListData = $this->cache->get('user_list_data_' . UserAccount::getActiveUserId());
-			if ($userListData == null || isset($_REQUEST['reload'])){
-				$lists = array();
-				require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
-				$tmpList          = new UserList();
-				$tmpList->user_id = UserAccount::getActiveUserId();
-				$tmpList->deleted = 0;
-				$tmpList->orderBy("title ASC");
-				$tmpList->find();
-				if ($tmpList->N > 0){
-					while ($tmpList->fetch()){
-						$lists[$tmpList->id] = array(
-							'name'      => $tmpList->title,
-							'url'       => '/MyAccount/MyList/' . $tmpList->id,
-							'id'        => $tmpList->id,
-							'numTitles' => $tmpList->numValidListItems(),
-						);
-					}
-				}
-				$this->cache->set('user_list_data_' . UserAccount::getActiveUserId(), $lists, $configArray['Caching']['user']);
-				$timer->logTime("Load Lists");
-			}else{
-				$lists = $userListData;
-				$timer->logTime("Load Lists from cache");
-			}
-
-			$interface->assign('lists', $lists);
-			$result['lists'] = $interface->fetch('MyAccount/listsMenu.tpl');
+//			$userListData = $this->cache->get('user_list_data_' . UserAccount::getActiveUserId());
+//			if ($userListData == null || isset($_REQUEST['reload'])){
+//				$lists = array();
+//				require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+//				$tmpList          = new UserList();
+//				$tmpList->user_id = UserAccount::getActiveUserId();
+//				$tmpList->deleted = 0;
+//				$tmpList->orderBy("title ASC");
+//				$tmpList->find();
+//				if ($tmpList->N > 0){
+//					while ($tmpList->fetch()){
+//						$lists[$tmpList->id] = array(
+//							'name'      => $tmpList->title,
+//							'url'       => '/MyAccount/MyList/' . $tmpList->id,
+//							'id'        => $tmpList->id,
+//							'numTitles' => $tmpList->numValidListItems(),
+//						);
+//					}
+//				}
+//				$this->cache->set('user_list_data_' . UserAccount::getActiveUserId(), $lists, $configArray['Caching']['user']);
+//				$timer->logTime("Load Lists");
+//			}else{
+//				$lists = $userListData;
+//				$timer->logTime("Load Lists from cache");
+//			}
+//
+//			$interface->assign('lists', $lists);
+//			$result['lists'] = $interface->fetch('MyAccount/listsMenu.tpl');
 
 			//Count of Checkouts
 			$result['checkouts'] = '</div><span class="badge">' . $user->getNumCheckedOutTotal() . '</span>';
