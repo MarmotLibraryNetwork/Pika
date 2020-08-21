@@ -79,7 +79,7 @@ class MyAccount_MyList extends MyAccount {
 		// Perform an action on the list, but verify that the user has permission to do so.
 		// and load the User object for the owner of the list (if necessary):
 		$userCanEdit = false;
-		if ((UserAccount::isLoggedIn() && (UserAccount::getActiveUserId() == $list->user_id)) || (UserAccount::isLoggedIn() && UserAccount::userHasRoleFromList(array("opacAdmin","libraryAdmin")) && $list->public) ){
+		if (UserAccount::isLoggedIn()){
 			$listUser    = UserAccount::getActiveUserObj();
 			$userCanEdit = $listUser->canEditList($list);
 
