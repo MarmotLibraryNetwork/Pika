@@ -63,9 +63,7 @@ class MyAccount_MyList extends MyAccount {
 		}
 		if (!$list->public && $list->user_id != UserAccount::getActiveUserId()){
 			//Allow the user to view if they are admin
-			if (UserAccount::isLoggedIn() && UserAccount::userHasRole('opacAdmin')){
-				//Allow the user to view
-			}else{
+			if (!UserAccount::isLoggedIn() || !UserAccount::userHasRole('opacAdmin')){
 				$this->display('invalidList.tpl', 'Invalid List');
 				return;
 			}
@@ -116,7 +114,7 @@ class MyAccount_MyList extends MyAccount {
 						break;
 					case 'deleteList':
 						$list->delete();
-						header("Location: /MyAccount/Home");
+						header("Location: /MyAccount/MyLists");
 						die();
 						break;
                     case 'deleteAll':
