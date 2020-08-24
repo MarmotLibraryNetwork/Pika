@@ -560,59 +560,6 @@ class IndexingProfile extends DB_DataObject{
 		return $validationResults;
 	}
 
-//	function markProfileForRegrouping(){
-//		$result = array(
-//			'success' => false,
-//			'message' => 'Invalid Profile',
-//		);
-//		if (!empty($this->id) && ctype_digit($this->id) && !empty($this->name)){
-//			require_once ROOT_DIR . '/sys/Indexing/IlsMarcChecksum.php';
-//			$ilsMarcChecksum         = new IlsMarcChecksum();
-//			$ilsMarcChecksum->checksum = 0;
-//			$ilsMarcChecksum->whereAdd("source = '{$this->name}'");
-//			$success = $ilsMarcChecksum->update(DB_DATAOBJECT_WHEREADD_ONLY);
-//
-//
-//			if (PEAR_Singleton::isError($success)){
-//				/** @var PEAR_Error $success */
-//				$result = array(
-//					'success' => false,
-//					'message' => $success->getMessage(),
-//				);
-//			}else{
-//				$result = array(
-//					'success' => true,
-//					'message' => $success . ' grouped works with records from profile ' . $this->name . ' were marked for regrouping.',
-//				);
-//			}
-//		}
-//		return $result;
-//	}
-//
-//	function markProfileForReindexing(){
-//		$result = array(
-//			'success' => false,
-//			'message' => 'Invalid Profile',
-//		);
-//		if (!empty($this->id) && ctype_digit($this->id) && !empty($this->name)){
-//			/** @noinspection PhpVoidFunctionResultUsedInspection */
-//			$success = $this->query("UPDATE grouped_work LEFT JOIN grouped_work_primary_identifiers ON (grouped_work.id = grouped_work_primary_identifiers.grouped_work_id) SET grouped_work.date_updated = null WHERE grouped_work_primary_identifiers.type = '{$this->name}' AND grouped_work.date_updated IS NOT NULL");
-//			if (PEAR_Singleton::isError($success)){
-//				/** @var PEAR_Error $success */
-//				$result = array(
-//					'success' => false,
-//					'message' => $success->getMessage(),
-//				);
-//			}else{
-//				$result = array(
-//					'success' => true,
-//					'message' => $success . ' grouped works with records from profile ' . $this->name . ' were marked for reindexing.',
-//				);
-//			}
-//		}
-//		return $result;
-//	}
-
 	static public function getAllIndexingProfiles(){
 		$indexingProfiles = [];
 		$indexingProfile  = new IndexingProfile();
