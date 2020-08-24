@@ -568,7 +568,6 @@ class IndexingProfile extends DB_DataObject{
 		while ($indexingProfile->fetch()){
 			$indexingProfiles[strtolower($indexingProfile->sourceName)] = clone($indexingProfile);
 			// Indexing profile sourceNames are all indexed in lower case
-			//TODO : convert all indexing profile sourceNames to lower case
 		}
 		return $indexingProfiles;
 	}
