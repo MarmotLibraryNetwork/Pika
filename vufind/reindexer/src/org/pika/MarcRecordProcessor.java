@@ -23,7 +23,7 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 /**
- * Description goes here
+ * Base Indexer where data is derived from MARC files
  * Pika
  * User: Mark Noble
  * Date: 9/29/2014
