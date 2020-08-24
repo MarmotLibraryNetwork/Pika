@@ -59,8 +59,8 @@ class GroupedWork_Home extends Action {
 		// Set Show in Search Results Main Details Section options for template
 		// (needs to be set before moreDetailsOptions)
 		global $library;
-		foreach ($library->showInMainDetails as $detailoption){
-			$interface->assign($detailoption, true);
+		foreach ($library->showInMainDetails as $detailOption){
+			$interface->assign($detailOption, true);
 		}
 
 		$recordDriver->assignBasicTitleDetails();
