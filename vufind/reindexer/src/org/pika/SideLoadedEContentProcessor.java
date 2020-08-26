@@ -30,15 +30,8 @@ import java.util.*;
  * Time: 3:03 PM
  */
 class SideLoadedEContentProcessor extends IlsRecordProcessor{
-	private PreparedStatement getDateAddedStmt;
 	SideLoadedEContentProcessor(GroupedWorkIndexer indexer, Connection pikaConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 		super(indexer, pikaConn, indexingProfileRS, logger, fullReindex);
-
-		try{
-			getDateAddedStmt = pikaConn.prepareStatement("SELECT dateFirstDetected FROM ils_marc_checksums WHERE source = ? AND ilsId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
-		}catch (Exception e){
-			logger.error("Unable to setup prepared statement for date added to catalog");
-		}
 	}
 
 	@Override
@@ -108,7 +101,9 @@ class SideLoadedEContentProcessor extends IlsRecordProcessor{
 		ItemInfo itemInfo = new ItemInfo();
 		itemInfo.setIsEContent(true);
 
-		loadDateAdded(identifier, itemInfo);
+		Date dateAdded = indexer.getDateFirstDetected(identifier.getSource(), identifier.getIdentifier());
+		itemInfo.setDateAdded(dateAdded);
+
 		itemInfo.setLocationCode(indexingProfileSourceDisplayName);
 		//No itypes for Side loaded econtent
 		//itemInfo.setITypeCode();
@@ -134,21 +129,4 @@ class SideLoadedEContentProcessor extends IlsRecordProcessor{
 		return relatedRecord;
 	}
 
-	private void loadDateAdded(RecordIdentifier identifier, ItemInfo itemInfo) {
-		try {
-			getDateAddedStmt.setString(1, identifier.getSource());
-			getDateAddedStmt.setString(2, identifier.getIdentifier());
-			try (ResultSet getDateAddedRS = getDateAddedStmt.executeQuery()) {
-				if (getDateAddedRS.next()) {
-					long timeAdded = getDateAddedRS.getLong(1);
-					Date curDate   = new Date(timeAdded * 1000);
-					itemInfo.setDateAdded(curDate);
-				} else {
-					logger.debug("Could not determine date added for " + identifier);
-				}
-			}
-		} catch (Exception e) {
-			logger.error("Unable to load date added for " + identifier);
-		}
-	}
 }

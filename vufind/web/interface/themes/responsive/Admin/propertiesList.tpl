@@ -39,7 +39,7 @@
 {/foreach}
 
 <div class="adminTableRegion" id="adminTableRegion">
-	<table class="adminTable table table-striped table-condensed smallText" id="adminTable">
+	<table class="adminTable table stripe table-condensed smallText" id="adminTable">
 		<thead>
 			<tr>
 				{foreach from=$structure item=property key=id}
@@ -217,8 +217,7 @@
 {if isset($dataList) && is_array($dataList) && count($dataList) > 5}
 <script type="text/javascript">
 	{literal}
-	$("#adminTable").tablesorter({cssAsc: 'sortAscHeader', cssDesc: 'sortDescHeader', cssHeader: 'unsortedHeader',
-		widgets:['zebra'] });
+	$("#adminTable").tablesorter({cssAsc: 'sortAscHeader', cssDesc: 'sortDescHeader', cssHeader: 'unsortedHeader' });
 	{/literal}
 </script>
 

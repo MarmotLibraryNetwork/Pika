@@ -112,7 +112,7 @@ Pika.Account = (function(){
 		loadMenuData: function (){
 			var url = "/MyAccount/AJAX?method=getMenuData&activeModule=" + Globals.activeModule + '&activeAction=' + Globals.activeAction;
 			$.getJSON(url, function(data){
-				$("#lists-placeholder").html(data.lists);
+				// $("#lists-placeholder").html(data.lists);
 				$(".checkouts-placeholder").html(data.checkouts);
 				$(".holds-placeholder").html(data.holds);
 				$(".readingHistory-placeholder").html(data.readingHistory);

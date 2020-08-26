@@ -50,7 +50,7 @@ class ExternalEContent_Home extends Action{
 				$indexingProfile     = new IndexingProfile();
 				$indexingProfile->id = 1;
 				if ($indexingProfile->find(true)){
-					$subType = $indexingProfile->name;
+					$subType = $indexingProfile->sourceName;
 				}
 			}
 		}

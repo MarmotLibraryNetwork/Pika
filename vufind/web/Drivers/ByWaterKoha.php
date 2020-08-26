@@ -178,7 +178,7 @@ EOD;
 		$results = mysqli_query($this->dbConnection, $sql);
 		while ($curRow = $results->fetch_assoc()){
 			$transaction = array();
-			$transaction['checkoutSource'] = 'ils';
+			$transaction['checkoutSource'] = $this->accountProfile->recordSource;
 
 			$transaction['id'] = $curRow['biblionumber'];
 			$transaction['recordId'] = $curRow['biblionumber'];

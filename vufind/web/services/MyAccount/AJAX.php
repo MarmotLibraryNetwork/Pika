@@ -876,7 +876,7 @@ class MyAccount_AJAX extends AJAXHandler {
 	function transferListToUser()
     {
        if(UserAccount::isLoggedIn()){
-            if(UserAccount::userHasRoleFromList(['opacAdmin','libraryAdmin'])){
+
                 $user = UserAccount::getLoggedInUser();
                 if($user->isStaff())
                 {
@@ -887,45 +887,48 @@ class MyAccount_AJAX extends AJAXHandler {
                                 '<script>$("#barcode").on("change keyup paste", function(data){Pika.Lists.checkUser($("#barcode").val())});</script>',
                         'buttons'=>'<button value="transfer" disabled="disabled" id="transfer" class="btn btn-danger" onclick="Pika.Lists.transferList('. $listId . ', document.getElementById(\'barcode\').value);return false;">Transfer</button>');
                 }
-            }
+
         }
         return array('error' => 'You do not have permission to transfer a list');
     }
 
     function transferList()
     {
-        if(UserAccount::userHasRoleFromList(['opacAdmin','libraryAdmin'])) {
 
             $barcodeTo = $_REQUEST['barcode'];
             $userTo = new User();
             $listId = $_REQUEST['id'];
+            $user = UserAccount::getLoggedInUser();
+            if($user->isStaff()) {
+                $userTo->get("cat_password", $barcodeTo);
+                if ($userTo->isStaff()) {
+                    $list = new UserList();
+                    $list->id = $listId;
+                    $list->get();
 
-            $userTo->get("cat_password",$barcodeTo);
-            if ($userTo->isStaff())
-            {
-                $list = new UserList();
-                $list->id = $listId;
-                $list->get();
+                    $list->user_id = $userTo->id;
+                    if ($list->update()) {
+                        return array('title' => 'Transfer List', 'body' => 'The list has been transferred');
+                    } else {
+                        return array('title' => 'Transfer List', 'body' => 'An Error Occurred');
+                    }
+                }else{
+                    return array('title' => 'Transfer List', 'body' => 'You do not have permission to transfer a list');
+                }
 
-                $list->user_id = $userTo->id;
-                if($list->update()) {
-                    return array('title' => 'Transfer List', 'body' => 'The list has been transferred');
-                }
-                else
-                {
-                    return array('title' => 'Transfer List', 'body' => 'An Error Occurred');
-                }
+
             }else{
-                return array('title' => 'Transfer List', 'body'=> 'You do not have permission to transfer a list');
+                return array('title' => 'Transfer List', 'body' => 'You do not have permission to transfer a list');
             }
-        }
+
     }
 
     function isStaffUser()
     {
         if(UserAccount::isLoggedIn())
         {
-            if(UserAccount::userHasRoleFromList(['opacAdmin','libraryAdmin'])) {
+            $staffUser = UserAccount::getLoggedInUser();
+            if($staffUser->isStaff()) {
                 $barcode = $_REQUEST['barcode'];
                 $user = new User();
                 $user->cat_password = $barcode;
@@ -1412,34 +1415,34 @@ class MyAccount_AJAX extends AJAXHandler {
 			$interface->assign('user', $user);
 
 			//Load a list of lists
-			$userListData = $this->cache->get('user_list_data_' . UserAccount::getActiveUserId());
-			if ($userListData == null || isset($_REQUEST['reload'])){
-				$lists = array();
-				require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
-				$tmpList          = new UserList();
-				$tmpList->user_id = UserAccount::getActiveUserId();
-				$tmpList->deleted = 0;
-				$tmpList->orderBy("title ASC");
-				$tmpList->find();
-				if ($tmpList->N > 0){
-					while ($tmpList->fetch()){
-						$lists[$tmpList->id] = array(
-							'name'      => $tmpList->title,
-							'url'       => '/MyAccount/MyList/' . $tmpList->id,
-							'id'        => $tmpList->id,
-							'numTitles' => $tmpList->numValidListItems(),
-						);
-					}
-				}
-				$this->cache->set('user_list_data_' . UserAccount::getActiveUserId(), $lists, $configArray['Caching']['user']);
-				$timer->logTime("Load Lists");
-			}else{
-				$lists = $userListData;
-				$timer->logTime("Load Lists from cache");
-			}
-
-			$interface->assign('lists', $lists);
-			$result['lists'] = $interface->fetch('MyAccount/listsMenu.tpl');
+//			$userListData = $this->cache->get('user_list_data_' . UserAccount::getActiveUserId());
+//			if ($userListData == null || isset($_REQUEST['reload'])){
+//				$lists = array();
+//				require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+//				$tmpList          = new UserList();
+//				$tmpList->user_id = UserAccount::getActiveUserId();
+//				$tmpList->deleted = 0;
+//				$tmpList->orderBy("title ASC");
+//				$tmpList->find();
+//				if ($tmpList->N > 0){
+//					while ($tmpList->fetch()){
+//						$lists[$tmpList->id] = array(
+//							'name'      => $tmpList->title,
+//							'url'       => '/MyAccount/MyList/' . $tmpList->id,
+//							'id'        => $tmpList->id,
+//							'numTitles' => $tmpList->numValidListItems(),
+//						);
+//					}
+//				}
+//				$this->cache->set('user_list_data_' . UserAccount::getActiveUserId(), $lists, $configArray['Caching']['user']);
+//				$timer->logTime("Load Lists");
+//			}else{
+//				$lists = $userListData;
+//				$timer->logTime("Load Lists from cache");
+//			}
+//
+//			$interface->assign('lists', $lists);
+//			$result['lists'] = $interface->fetch('MyAccount/listsMenu.tpl');
 
 			//Count of Checkouts
 			$result['checkouts'] = '</div><span class="badge">' . $user->getNumCheckedOutTotal() . '</span>';

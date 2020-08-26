@@ -63,9 +63,7 @@ class MyAccount_MyList extends MyAccount {
 		}
 		if (!$list->public && $list->user_id != UserAccount::getActiveUserId()){
 			//Allow the user to view if they are admin
-			if (UserAccount::isLoggedIn() && UserAccount::userHasRole('opacAdmin')){
-				//Allow the user to view
-			}else{
+			if (!UserAccount::isLoggedIn() || !UserAccount::userHasRole('opacAdmin')){
 				$this->display('invalidList.tpl', 'Invalid List');
 				return;
 			}
@@ -79,7 +77,7 @@ class MyAccount_MyList extends MyAccount {
 		// Perform an action on the list, but verify that the user has permission to do so.
 		// and load the User object for the owner of the list (if necessary):
 		$userCanEdit = false;
-		if (UserAccount::isLoggedIn() && (UserAccount::getActiveUserId() == $list->user_id)){
+		if (UserAccount::isLoggedIn()){
 			$listUser    = UserAccount::getActiveUserObj();
 			$userCanEdit = $listUser->canEditList($list);
 
@@ -116,7 +114,7 @@ class MyAccount_MyList extends MyAccount {
 						break;
 					case 'deleteList':
 						$list->delete();
-						header("Location: /MyAccount/Home");
+						header("Location: /MyAccount/MyLists");
 						die();
 						break;
                     case 'deleteAll':
@@ -198,6 +196,9 @@ class MyAccount_MyList extends MyAccount {
 
 		// Send list to template so title/description can be displayed:
 		$interface->assign('favList', $list);
+        $shortTitle = $list->title;
+        $interface->assign('shortPageTitle', $shortTitle);
+
 		$interface->assign('listSelected', $list->id);
 
 		// Create a handler for displaying favorites and use it to assign

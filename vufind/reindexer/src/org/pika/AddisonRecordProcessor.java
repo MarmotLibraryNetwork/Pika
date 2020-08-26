@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Set;
 
 public class AddisonRecordProcessor extends IIIRecordProcessor {
-	private PreparedStatement getDateAddedStmt; // to set date added for ils (itemless) econtent records
 
 	AddisonRecordProcessor(GroupedWorkIndexer indexer, Connection pikaConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 		super(indexer, pikaConn, indexingProfileRS, logger, fullReindex);
@@ -42,12 +41,6 @@ public class AddisonRecordProcessor extends IIIRecordProcessor {
 
 		validCheckedOutStatusCodes.add("o"); // Library Use Only
 		validCheckedOutStatusCodes.add("d"); // Display
-
-		try {
-			getDateAddedStmt = pikaConn.prepareStatement("SELECT dateFirstDetected FROM ils_marc_checksums WHERE source = ? AND ilsId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
-		} catch (Exception e) {
-			logger.error("Unable to setup prepared statement for date added to catalog");
-		}
 	}
 
 
@@ -91,7 +84,6 @@ public class AddisonRecordProcessor extends IIIRecordProcessor {
 
 				ItemInfo itemInfo = new ItemInfo();
 				itemInfo.setIsEContent(true);
-//				itemInfo.seteContentProtectionType("external");
 				itemInfo.setCallNumber("Online");
 				itemInfo.setIType("eCollection");
 				itemInfo.setDetailedStatus("Available Online");
@@ -99,7 +91,10 @@ public class AddisonRecordProcessor extends IIIRecordProcessor {
 				itemInfo.seteContentUrl(url);
 				itemInfo.setLocationCode(bibLocation);
 				itemInfo.seteContentSource(specifiedEcontentSource);
-				loadDateAddedForItemlessEcontent(identifier, itemInfo);
+
+				Date dateAdded = indexer.getDateFirstDetected(identifier.getSource(), identifier.getIdentifier());
+				itemInfo.setDateAdded(dateAdded);
+
 //                itemInfo.seteContentSource(specifiedEcontentSource == null ? "Econtent" : specifiedEcontentSource);
 //                itemInfo.setShelfLocation(econtentSource); // this sets the owning location facet.  This isn't needed for Sacramento
 				RecordInfo relatedRecord = groupedWork.addRelatedRecord("external_econtent", identifier.getIdentifier());
@@ -111,12 +106,13 @@ public class AddisonRecordProcessor extends IIIRecordProcessor {
 
 
 				unsuppressedEcontentRecords.add(relatedRecord);
-			} else {
+			}
+//			else {
 //                //TODO: temporary. just for debugging econtent records
 //                if (urls.size() > 0) {
 //                    logger.warn("Itemless record " + identifier + " had 856u URLs but none had a expected econtent source.");
 //                }
-			}
+//			}
 
 		}
 		return unsuppressedEcontentRecords;
@@ -150,24 +146,5 @@ public class AddisonRecordProcessor extends IIIRecordProcessor {
 		}
 		return econtentSource;
 	}
-
-	// to set date added for ils (itemless) econtent records
-	private void loadDateAddedForItemlessEcontent(RecordIdentifier identifier, ItemInfo itemInfo) {
-			try {
-				getDateAddedStmt.setString(1, identifier.getSource());
-				getDateAddedStmt.setString(2, identifier.getIdentifier());
-				try (ResultSet getDateAddedRS = getDateAddedStmt.executeQuery()) {
-					if (getDateAddedRS.next()) {
-						long timeAdded = getDateAddedRS.getLong(1);
-						Date curDate   = new Date(timeAdded * 1000);
-						itemInfo.setDateAdded(curDate);
-					} else {
-						logger.debug("Could not determine date added for " + identifier);
-					}
-				}
-			} catch (Exception e) {
-				logger.error("Unable to load date added for " + identifier);
-			}
-		}
 
 }

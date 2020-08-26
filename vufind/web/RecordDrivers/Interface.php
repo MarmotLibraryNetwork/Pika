@@ -248,110 +248,110 @@ abstract class RecordInterface {
 		global $interface;
 		global $configArray;
 		global $timer;
-		$moreDetailsOptions = array();
+		$moreDetailsOptions = [];
 		$description        = $this->getDescription();
 		if (strlen($description) == 0){
 			$description = 'Description not provided';
 		}
 		$description = strip_tags($description, '<a><b><p><i><em><strong><ul><li><ol>');
 		$interface->assign('description', $description);
-		$moreDetailsOptions['description'] = array(
+		$moreDetailsOptions['description'] = [
 			'label'         => 'Description',
 			'body'          => $description,
 			'hideByDefault' => false,
 			'openByDefault' => true,
-		);
+		];
 		$timer->logTime('Loaded Description');
-		$moreDetailsOptions['series'] = array(
+		$moreDetailsOptions['series'] = [
 			'label'         => 'Also in This Series',
 			'body'          => $interface->fetch('GroupedWork/series.tpl'),
 			'hideByDefault' => false,
 			'openByDefault' => true,
-		);
+		];
 		$timer->logTime('Loaded Series Data');
 		if (!$configArray['Catalog']['showExploreMoreForFullRecords']){
-			$moreDetailsOptions['moreLikeThis'] = array(
+			$moreDetailsOptions['moreLikeThis'] = [
 				'label'         => 'More Like This',
 				'body'          => $interface->fetch('GroupedWork/moreLikeThis.tpl'),
 				'hideByDefault' => false,
 				'openByDefault' => true,
-			);
+			];
 		}
 		$timer->logTime('Loaded More Like This');
 		if ($interface->getVariable('enableProspectorIntegration')){
 			// enableProspectorIntegration may be set by  $configArray['Content']['Prospector'] or by library setting $library->enableProspectorIntegration
 			$innReachEncoreName               = $configArray['InterLibraryLoan']['innReachEncoreName'];
-			$moreDetailsOptions['prospector'] = array(
+			$moreDetailsOptions['prospector'] = [
 				'label'         => 'More Copies In ' . $innReachEncoreName,
 				'body'          => '<div id="inProspectorPlaceholder">Loading ' . $innReachEncoreName . ' Copies...</div>',
 				'hideByDefault' => false,
-			);
+			];
 		}
-		$moreDetailsOptions['tableOfContents'] = array(
+		$moreDetailsOptions['tableOfContents'] = [
 			'label'         => 'Table of Contents',
 			'body'          => $interface->fetch('GroupedWork/tableOfContents.tpl'),
 			'hideByDefault' => true,
-		);
+		];
 		$timer->logTime('Loaded Table of Contents');
-		$moreDetailsOptions['excerpt']     = array(
+		$moreDetailsOptions['excerpt']     = [
 			'label'         => 'Excerpt',
 			'body'          => '<div id="excerptPlaceholder">Loading Excerpt...</div>',
 			'hideByDefault' => true,
-		);
-		$moreDetailsOptions['authornotes'] = array(
+		];
+		$moreDetailsOptions['authornotes'] = [
 			'label'         => 'Author Notes',
 			'body'          => '<div id="authornotesPlaceholder">Loading Author Notes...</div>',
 			'hideByDefault' => true,
-		);
+		];
 		if ($interface->getVariable('showComments')){
-			$moreDetailsOptions['borrowerReviews'] = array(
+			$moreDetailsOptions['borrowerReviews'] = [
 				'label' => 'Borrower Reviews',
 				'body'  => "<div id='customerReviewPlaceholder'></div>",
-			);
+			];
 		}
-		$moreDetailsOptions['librarianReviews'] = array(
+		$moreDetailsOptions['librarianReviews'] = [
 			'label' => 'Librarian Reviews',
 			'body'  => "<div id='librarianReviewPlaceholder'></div>",
-		);
+		];
 		if ($interface->getVariable('showTagging')){
-			$moreDetailsOptions['tags'] = array(
+			$moreDetailsOptions['tags'] = [
 				'label' => 'Tagging',
 				'body'  => $interface->fetch('GroupedWork/view-tags.tpl'),
-			);
+			];
 		}
 		if ($isbn){
-			$moreDetailsOptions['syndicatedReviews'] = array(
+			$moreDetailsOptions['syndicatedReviews'] = [
 				'label' => 'Published Reviews',
 				'body'  => "<div id='syndicatedReviewPlaceholder'></div>",
-			);
+			];
 			if ($interface->getVariable('showGoodReadsReviews')){
-				$moreDetailsOptions['goodreadsReviews'] = array(
+				$moreDetailsOptions['goodreadsReviews'] = [
 					'label'  => 'Reviews from GoodReads',
 					'onShow' => "Pika.GroupedWork.getGoodReadsComments('$isbn');",
 					'body'   => '<div id="goodReadsPlaceHolder">Loading GoodReads Reviews.</div>',
-				);
+				];
 			}
 			if (!$configArray['Catalog']['showExploreMoreForFullRecords']){
 				if ($interface->getVariable('showSimilarTitles')){
-					$moreDetailsOptions['similarTitles'] = array(
+					$moreDetailsOptions['similarTitles'] = [
 						'label'         => 'Similar Titles From NoveList',
 						'body'          => '<div id="novelisttitlesPlaceholder"></div>',
 						'hideByDefault' => true,
-					);
+					];
 				}
 				if ($interface->getVariable('showSimilarAuthors')){
-					$moreDetailsOptions['similarAuthors'] = array(
+					$moreDetailsOptions['similarAuthors'] = [
 						'label'         => 'Similar Authors From NoveList',
 						'body'          => '<div id="novelistauthorsPlaceholder"></div>',
 						'hideByDefault' => true,
-					);
+					];
 				}
 				if ($interface->getVariable('showSimilarTitles')){
-					$moreDetailsOptions['similarSeries'] = array(
+					$moreDetailsOptions['similarSeries'] = [
 						'label'         => 'Similar Series From NoveList',
 						'body'          => '<div id="novelistseriesPlaceholder"></div>',
 						'hideByDefault' => true,
-					);
+					];
 				}
 			}
 		}

@@ -34,34 +34,57 @@ class MyAccount_MyLists extends MyAccount{
         if (UserAccount::isLoggedIn()) {
             $user = UserAccount::getLoggedInUser();
         $staffUser = $user->isStaff();
-
+            $shortPageTitle = "My Lists";
+            $interface->assign('shortPageTitle', $shortPageTitle);
             //Load a list of lists
-            $userListData = $this->cache->get('user_list_data_' . UserAccount::getActiveUserId());
-            if ($userListData == null || isset($_REQUEST['reload'])) {
-                $lists = array();
+            $userListsData = $this->cache->get('user_lists_data_' . UserAccount::getActiveUserId());
+            if ($userListsData == null || isset($_REQUEST['reload'])) {
+                $myLists = array();
                 require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
                 $tmpList = new UserList();
                 $tmpList->user_id = UserAccount::getActiveUserId();
                 $tmpList->deleted = 0;
                 $tmpList->orderBy("title ASC");
+
+
                 $tmpList->find();
                 if ($tmpList->N > 0) {
                     while ($tmpList->fetch()) {
-                        $lists[$tmpList->id] = array(
+                        $defaultSort = "Title";
+                        if(!empty($tmpList->defaultSort))
+                        {
+                            switch($tmpList->defaultSort)
+                            {
+                                case "recentlyAdded":
+                                    $defaultSort = "Recently Added";
+                                    break;
+                                case "dateAdded":
+                                    $defaultSort = "Date Added";
+                                    break;
+                                case "custom":
+                                    $defaultSort = "User Defined";
+                                    break;
+                                default:
+                                    $defaultSort = "Title";
+
+                            }
+
+                        }
+                        $myLists[$tmpList->id] = array(
                             'name' => $tmpList->title,
                             'url' => '/MyAccount/MyList/' . $tmpList->id,
                             'id' => $tmpList->id,
                             'numTitles' => $tmpList->numValidListItems(),
                             'description' => $tmpList->description,
-                            'defaultSort' => $tmpList->defaultSort,
+                            'defaultSort' => $defaultSort,
                             'isPublic' => $tmpList->public,
                         );
                     }
                 }
-                //$this->cache->set('user_list_data_' . UserAccount::getActiveUserId(), $lists, $configArray['Caching']['user']);
+                $this->cache->set('user_lists_data_' . UserAccount::getActiveUserId(), $userListsData, $configArray['Caching']['user']);
                 //$timer->logTime("Load Lists");
             } else {
-                $lists = $userListData;
+                $myLists = $userListsData;
                 //$timer->logTime("Load Lists from cache");
             }
             if (!empty($_REQUEST['myListActionHead'])){
@@ -77,10 +100,10 @@ class MyAccount_MyLists extends MyAccount{
                 }
             }
 
-            $interface->assign('lists', $lists);
+            $interface->assign('myLists', $myLists);
             $interface->assign('staff', $staffUser);
 
-            $this->display('../MyAccount/MyLists.tpl', 'My Lists');
+            $this->display('../MyAccount/myLists.tpl', 'My Lists');
         }
     }
     /**

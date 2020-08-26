@@ -142,7 +142,8 @@ class Admin_OverDriveAPIData extends Admin_Admin
 	{
 		$contents = "<a onclick='$(\"#{$section}\").toggle();return false;' href='#'>{$title}</a>";
 		$contents .=  "<pre style='display:none' id='{$section}'>";
-		$contents .= print_r($var, true);
+		$contents .= htmlspecialchars(json_encode($var, JSON_PRETTY_PRINT));  // Display as JSON
+//		$contents .= print_r($var, true);
 		$contents .= '</pre>';
 		return $contents;
 	}

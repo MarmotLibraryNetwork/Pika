@@ -185,21 +185,9 @@ public class GroupedWorkIndexer {
 							case "Marmot":
 								indexingRecordProcessors.put(sourceName, new MarmotRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
 								break;
-	//						case "Nashville":
-	//							ilsRecordProcessors.put(sourceName, new NashvilleRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
-	//							break;
-	//						case "NashvilleSchools":
-	//							ilsRecordProcessors.put(sourceName, new NashvilleSchoolsRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
-	//							break;
 							case "WCPL":
 								indexingRecordProcessors.put(sourceName, new WCPLRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
 								break;
-							case "Anythink":
-								indexingRecordProcessors.put(sourceName, new AnythinkRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
-								break;
-//							case "Aspencat":
-//								ilsRecordProcessors.put(sourceName, new AspencatRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
-//								break;
 							case "Flatirons":
 								indexingRecordProcessors.put(sourceName, new FlatironsRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
 								break;
@@ -209,12 +197,6 @@ public class GroupedWorkIndexer {
 							case "Aurora":
 								indexingRecordProcessors.put(sourceName, new AuroraRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
 								break;
-//							case "Arlington":
-//								ilsRecordProcessors.put(sourceName, new ArlingtonRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
-//								break;
-//							case "CarlX": // Currently the Nashville Processor
-//								ilsRecordProcessors.put(sourceName, new CarlXRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
-//								break;
 							case "SantaFe":
 								indexingRecordProcessors.put(sourceName, new SantaFeRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
 								break;
@@ -242,8 +224,10 @@ public class GroupedWorkIndexer {
 						//Overdrive doesn't have an indexing profile.
 						//Only load processor if there are overdrive titles
 						overDriveProcessor = new OverDriveProcessor(this, econtentConn, logger, fullReindex);
-					} else if (fullReindex){
-						logger.error("Could not find indexing profile for type " + sourceName);
+					} else if (fullReindex && logger.isInfoEnabled()){
+						logger.info("Could not find indexing profile for type " + sourceName);
+						// This indicates there are related records in the grouping primary identifiers table for a source that no
+						// longer has a corresponding indexing profile.
 					}
 				}
 			}

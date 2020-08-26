@@ -39,6 +39,8 @@ import java.util.Set;
  */
 class HooplaProcessor extends MarcRecordProcessor {
 	protected boolean                      fullReindex;
+	private   String                       sourceDisplayName;
+	private   String                       source;
 	private   String                       individualMarcPath;
 	private   int                          numCharsToCreateFolderFrom;
 	private   boolean                      createFolderFromLeadingCharacters;
@@ -52,6 +54,8 @@ class HooplaProcessor extends MarcRecordProcessor {
 		this.fullReindex = fullReindex;
 
 		try {
+			sourceDisplayName                 = indexingProfileRS.getString("name");
+			source                            = indexingProfileRS.getString("sourceName");
 			individualMarcPath                = indexingProfileRS.getString("individualMarcPath");
 			numCharsToCreateFolderFrom        = indexingProfileRS.getInt("numCharsToCreateFolderFrom");
 			createFolderFromLeadingCharacters = indexingProfileRS.getBoolean("createFolderFromLeadingCharacters");
@@ -265,7 +269,7 @@ class HooplaProcessor extends MarcRecordProcessor {
 		groupedWork.addPhysical(physicalDescriptions);
 
 		//Setup the per Record information
-		RecordInfo recordInfo = groupedWork.addRelatedRecord("hoopla", identifier.getIdentifier());
+		RecordInfo recordInfo = groupedWork.addRelatedRecord(source, identifier.getIdentifier());
 
 		recordInfo.setFormatBoost(formatBoost);
 		recordInfo.setEdition(primaryEdition);
@@ -287,15 +291,14 @@ class HooplaProcessor extends MarcRecordProcessor {
 		itemInfo.setNumCopies(1);
 		itemInfo.setFormat(format);
 		itemInfo.setFormatCategory(formatCategory);
-		itemInfo.seteContentSource("Hoopla");
+		itemInfo.seteContentSource(sourceDisplayName);
 		itemInfo.setShelfLocation("Online Hoopla Collection");
 		itemInfo.setCallNumber("Online Hoopla");
 		itemInfo.setSortableCallNumber("Online Hoopla");
-		itemInfo.seteContentSource("Hoopla");
 //		itemInfo.seteContentProtectionType("Always Available");
 		itemInfo.setDetailedStatus("Available Online");
 		loadEContentUrl(record, itemInfo, identifier);
-		Date dateAdded = indexer.getDateFirstDetected("hoopla", identifier.getIdentifier());
+		Date dateAdded = indexer.getDateFirstDetected(source, identifier.getIdentifier());
 		itemInfo.setDateAdded(dateAdded);
 
 		recordInfo.addItem(itemInfo);
@@ -316,7 +319,7 @@ class HooplaProcessor extends MarcRecordProcessor {
 				//Figure out ownership information
 				for (Scope curScope : indexer.getScopes()) {
 					String                originalUrl = itemInfo.geteContentUrl();
-					Scope.InclusionResult result      = curScope.isItemPartOfScope("hoopla", "", "", null, groupedWork.getTargetAudiences(), recordInfo.getPrimaryFormat(), false, false, true, record, originalUrl);
+					Scope.InclusionResult result      = curScope.isItemPartOfScope(source, "", "", null, groupedWork.getTargetAudiences(), recordInfo.getPrimaryFormat(), false, false, true, record, originalUrl);
 					if (result.isIncluded) {
 
 						boolean isHooplaIncluded = true;
@@ -376,13 +379,13 @@ class HooplaProcessor extends MarcRecordProcessor {
 		scopingInfo.setGroupedStatus("Available Online");
 		scopingInfo.setHoldable(false);
 		if (curScope.isLocationScope()) {
-			scopingInfo.setLocallyOwned(curScope.isItemOwnedByScope("hoopla", "", ""));
+			scopingInfo.setLocallyOwned(curScope.isItemOwnedByScope(source, "", ""));
 			if (curScope.getLibraryScope() != null) {
-				scopingInfo.setLibraryOwned(curScope.getLibraryScope().isItemOwnedByScope("hoopla", "", ""));
+				scopingInfo.setLibraryOwned(curScope.getLibraryScope().isItemOwnedByScope(source, "", ""));
 			}
 		}
 		if (curScope.isLibraryScope()) {
-			scopingInfo.setLibraryOwned(curScope.isItemOwnedByScope("hoopla", "", ""));
+			scopingInfo.setLibraryOwned(curScope.isItemOwnedByScope(source, "", ""));
 		}
 		//Check to see if we need to do url rewriting
 		if (originalUrl != null && !originalUrl.equals(result.localUrl)) {

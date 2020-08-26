@@ -33,16 +33,9 @@ import java.util.regex.Pattern;
  * Time: 11:02 AM
  */
 class WCPLRecordProcessor extends IlsRecordProcessor {
-	private PreparedStatement getDateAddedStmt;
 
 	WCPLRecordProcessor(GroupedWorkIndexer indexer, Connection pikaConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 		super(indexer, pikaConn, indexingProfileRS, logger, fullReindex);
-
-		try {
-			getDateAddedStmt = pikaConn.prepareStatement("SELECT dateFirstDetected FROM ils_marc_checksums WHERE source = ? AND ilsId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
-		} catch (Exception e) {
-			logger.error("Unable to setup prepared statement for date added to catalog");
-		}
 	}
 
 	private Pattern availableStati = Pattern.compile("^(csa|dc|fd|i|int|os|s|ref|rs|rw|st)$");
@@ -96,21 +89,8 @@ class WCPLRecordProcessor extends IlsRecordProcessor {
 
 	@Override
 	protected void loadDateAdded(RecordIdentifier identifier, DataField itemField, ItemInfo itemInfo) {
-		try {
-			getDateAddedStmt.setString(1, identifier.getSource());
-			getDateAddedStmt.setString(2, identifier.getIdentifier());
-			try (ResultSet getDateAddedRS = getDateAddedStmt.executeQuery()) {
-				if (getDateAddedRS.next()) {
-					long timeAdded = getDateAddedRS.getLong(1);
-					Date curDate   = new Date(timeAdded * 1000);
-					itemInfo.setDateAdded(curDate);
-				} else {
-					logger.debug("Could not determine date added for " + identifier);
-				}
-			}
-		} catch (Exception e) {
-			logger.error("Unable to load date added for " + identifier);
-		}
+		Date dateAdded = indexer.getDateFirstDetected(identifier.getSource(), identifier.getIdentifier());
+		itemInfo.setDateAdded(dateAdded);
 	}
 
 	protected String getShelfLocationForItem(ItemInfo itemInfo, DataField itemField, RecordIdentifier identifier) {

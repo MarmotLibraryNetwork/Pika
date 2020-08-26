@@ -2,6 +2,9 @@
 {if $smarty.get.page}{assign var="pageNum" value=$smarty.get.page}{else}{assign var="pageNum" value=1}{/if}
 {if $smarty.get.pagesize}{assign var="pageSize" value=$smarty.get.pagesize}{else}{assign var="pageSize" value=20}{/if}
 {if $smarty.get.sort}{assign var="listSort" value=$smarty.get.sort}{else}{assign var="listSort" value=null}{/if}
+{if $allowEdit}
+<a href="/MyAccount/MyLists/" title="Return to My Lists" class="btn btn-default btn-sm">Return to My Lists</a>
+{/if}
 	<form action="/MyAccount/MyList/{$favList->id}" id="myListFormHead">
 		<div>
 			<input type="hidden" name="myListActionHead" id="myListActionHead" class="form">
@@ -66,6 +69,7 @@
 
 							{if $favList->public == 0}
 								<button value="makePublic" id="FavPublic" class="btn btn-sm btn-default" onclick='return Pika.Lists.makeListPublicAction({$pageNum}, {$pageSize},"{$listSort}")'>Make Public</button>
+								
 							{else}
 								<button value="adminOptions" id="adminOptions" class="btn btn-sm btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">Admin Options <span class="caret"></span></button>
 								<ul class="dropdown-menu dropdown-menu-right" role="menu">
@@ -75,7 +79,7 @@
 								{/if}
 								{if $loggedIn && $userRoles && (in_array('opacAdmin', $userRoles) || in_array('libraryAdmin', $userRoles) || in_array('contentEditor', $userRoles) || in_array('libraryManager', $userRoles) || in_array('locationManager', $userRoles))}
 									<li><a href="#" id="FavHome"  onclick="return Pika.Lists.addToHomePage('{$favList->id}')">{translate text='Add To Home Page'}</a></li>
-									<li><a href="#" id="TransferList" onclick="return Pika.Lists.transferListToUser('{$favList->id}')">{translate text='Transfer List'}</a></a></li>
+									<li><a href="#" id="TransferList" onclick="return Pika.Lists.transferListToUser('{$favList->id}')">{translate text='Transfer List'}</a></li>
 								{/if}
 
 								</ul>

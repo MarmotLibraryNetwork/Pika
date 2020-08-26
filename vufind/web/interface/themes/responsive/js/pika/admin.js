@@ -4,7 +4,6 @@ Pika.Admin = (function(){
 			return this.basicAjaxHandler('copyHooplaSettingsFromLibrary', id);
 		},
 		copyLocationHooplaSettings: function (id) {
-
 				return this.buttonAjaxHandler('displayCopyFromPrompt', id, "copyHooplaSettings");
 		},
 		clearLocationHooplaSettings: function (id) {
@@ -14,41 +13,27 @@ Pika.Admin = (function(){
 		clearLibraryHooplaSettings: function (id) {
 			return this.basicAjaxHandler('clearLibraryHooplaSettings', id);
 		},
-		copyLocationHours: function(id)
-		{
+		copyLocationHours: function (id){
 			return this.buttonAjaxHandler('displayCopyFromPrompt', id, "copyHours");
 		},
-		copyBrowseCategories: function(id)
-		{
+		copyBrowseCategories: function (id){
 			return this.buttonAjaxHandler('displayCopyFromPrompt', id, "copyBC");
 		},
-		copyFacetsSettings: function(id)
-		{
+		copyFacetsSettings: function (id){
 			return this.buttonAjaxHandler('displayCopyFromPrompt', id, "copyFacets");
 		},
-		copyLocationIncludedRecords: function(id)
-		{
+		copyLocationIncludedRecords: function (id){
 			return this.buttonAjaxHandler('displayCopyFromPrompt', id, "copyIncluded");
 		},
-		copyFullRecordDisplay: function(id)
-		{
+		copyFullRecordDisplay: function (id){
 			return this.buttonAjaxHandler('displayCopyFromPrompt', id, "copyFullRecord");
 		},
-		cloneLocationFromSelection: function()
-		{
-			return this.buttonAjaxHandler('displayClonePrompt',null, "cloneLocation");
+		cloneLocationFromSelection: function (){
+			return this.buttonAjaxHandler('displayClonePrompt', null, "cloneLocation");
 		},
-		cloneLibraryFromSelection: function()
-		{
-			return this.buttonAjaxHandler('libraryClonePrompt',null,"cloneLibrary");
+		cloneLibraryFromSelection: function (){
+			return this.buttonAjaxHandler('libraryClonePrompt', null, "cloneLibrary");
 		},
-		// markProfileForReindexing: function (id){
-		// 	return this.basicAjaxHandler('markProfileForReindexing', id);
-		// },
-		//
-		// markProfileForRegrouping: function (id){
-		// 	return this.basicAjaxHandler('markProfileForRegrouping', id);
-		// },
 
 		basicAjaxHandler: function (ajaxMethod, id, from) {
 			Pika.Account.ajaxLogin(function (){
@@ -103,43 +88,34 @@ Pika.Admin = (function(){
 			return false;
 		},
 
-		copyHooplaSettings: function(id, copyFromId){
+		copyHooplaSettings: function (id, copyFromId){
 			return this.basicAjaxHandler('copyHooplaSettingsFromLocation', id, copyFromId);
 		},
-		copyHours: function(id, copyFromId)
-		{
+		copyHours: function (id, copyFromId){
 			return this.basicAjaxHandler('copyHourSettingsFromLocation', id, copyFromId);
 		},
-		copyBC: function(id, copyFromId)
-		{
+		copyBC: function (id, copyFromId){
 			return this.basicAjaxHandler('copyBrowseCategoriesFromLocation', id, copyFromId);
 		},
-		copyFacets: function(id, copyFromId)
-		{
+		copyFacets: function (id, copyFromId){
 			return this.basicAjaxHandler('copyFacetSettingsFromLocation', id, copyFromId);
 		},
-		copyIncluded: function(id, copyFromId)
-		{
+		copyIncluded: function (id, copyFromId){
 			return this.basicAjaxHandler('copyIncludedRecordsFromLocation', id, copyFromId);
 		},
-		copyFullRecord: function(id, copyFromId)
-		{
+		copyFullRecord: function (id, copyFromId){
 			return this.basicAjaxHandler('copyFullRecordDisplayFromLocation', id, copyFromId);
 		},
-		resetFacetsToDefault: function(id)
-		{
+		resetFacetsToDefault: function (id){
 			return this.basicAjaxHandler('resetFacetsToDefault', id);
 		},
-		resetMoreDetailsToDefault: function(id)
-		{
+		resetMoreDetailsToDefault: function (id){
 			return this.basicAjaxHandler('resetMoreDetailsToDefault', id);
 		},
-		cloneLocation: function(copyFromId, name, code)
-		{
+		cloneLocation: function (copyFromId, name, code){
 			return this.cloneAjaxHandler('cloneLocation', copyFromId, name, code);
 		},
-		cloneLibrary: function(copyFromId, displayName, subdomain, abName)
-		{
+		cloneLibrary: function (copyFromId, displayName, subdomain, abName){
 			return this.cloneLibraryHandler('cloneLibrary', copyFromId, displayName, subdomain, abName, facetLabelInput);
 		}
 	};

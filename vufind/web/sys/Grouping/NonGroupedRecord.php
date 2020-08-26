@@ -90,10 +90,10 @@ class NonGroupedRecord extends CommonGroupingAlterationOperations {
 
 	public function validateRecordId(){
 		//Setup validation return array
-		$validationResults = array(
+		$validationResults = [
 			'validatedOk' => true,
-			'errors'      => array(),
-		);
+			'errors'      => [],
+		];
 		if (!empty($this->source) && !empty($this->recordId)){
 			if (!$this->getGroupedWork()){
 				$validationResults['validatedOk'] = false;
@@ -110,10 +110,10 @@ class NonGroupedRecord extends CommonGroupingAlterationOperations {
 				}
 			}
 		}else{
-			$validationResults = array(
+			$validationResults = [
 				'validatedOk' => false,
-				'errors'      => array('No Record Id or source provided.'),
-			);
+				'errors'      => ['No Record Id or source provided.'],
+			];
 		}
 
 		return $validationResults;
