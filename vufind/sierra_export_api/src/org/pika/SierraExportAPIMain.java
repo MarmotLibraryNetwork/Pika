@@ -1779,7 +1779,7 @@ public class SierraExportAPIMain {
 				activeOrderSQL += " AND received_date_gmt IS NULL";
 			} else if (suppressOrderRecordsThatAreReceivedAndCataloged) { // Only ignore entries that have both a received and catalog date, and a catalog date more than a day old
 //				activeOrderSQL += " AND (catalog_date_gmt IS NULL or received_date_gmt IS NULL OR NOW() - catalog_date_gmt < '1 DAY'::INTERVAL) ";
-				activeOrderSQL += " AND catalog_date_gmt IS NULL or received_date_gmt IS NULL";
+				activeOrderSQL += " AND (catalog_date_gmt IS NULL OR received_date_gmt IS NULL)";
 			}
 
 		int numBibsToProcess     = 0;
