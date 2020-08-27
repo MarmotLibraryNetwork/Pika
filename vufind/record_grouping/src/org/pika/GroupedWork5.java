@@ -70,6 +70,9 @@ public class GroupedWork5 extends GroupedWorkBase implements Cloneable {
 
 		//Process subtitles before we deal with the full title
 		if (subtitle != null && !subtitle.isEmpty()) {
+			title = removeBracketedPartOfTitle(title);
+			// If the title (245a) is entirely in brackets then we want to keep the text within brackets
+			// and just remove the brackets
 			subtitle = normalizeDiacritics(subtitle);
 			fullTitle = normalizePassedInSubtitle(title, subtitle);
 		} else {
@@ -187,7 +190,7 @@ public class GroupedWork5 extends GroupedWorkBase implements Cloneable {
 	final private static Pattern bracketedCharacterStrip       = Pattern.compile("\\[(.*?)\\]");
 	final private static Pattern sortTrimmingPattern           = Pattern.compile("(?i)^(?:(?:a|an|the|el|la|las|\"|')\\s)(.*)$");
 	final private static Pattern commonSubtitlesSimplePattern  = Pattern.compile("(\\s(" +
-			"a novel of .*|a novel|" +
+			"a novel of .*|a novel|a narrative|" +
 			"and other essays|essays|and other stories|and stories|stories|poems|" +
 			"an autobiography|a biography|the biography|a memoir in books|" +
 			"the movie|large print|the graphic novel|graphic novel|magazine|audio cd|book club kit|playaway view|playaway|" +
@@ -347,14 +350,19 @@ public class GroupedWork5 extends GroupedWorkBase implements Cloneable {
 		String tmpTitle = bracketedCharacterStrip.matcher(groupingTitle).replaceAll("");
 		//Make sure we don't strip the entire title
 		if (tmpTitle.length() > 0){
-			// I Suspect this is bad idea. pascal 7/9/2020
-			//And make sure we don't have just special characters
-			String noSpecialCharactersTmpTitle = specialCharacterStrip.matcher(tmpTitle).replaceAll(" ").toLowerCase().trim();
-			//Note: specialCharacterStrip will remove diacritical characters
-			if (noSpecialCharactersTmpTitle.length() == 0) {
-				logger.info("After removing brackets, there were only special characters: '" + groupingTitle + "' to '" + tmpTitle + "'" );
-			} else {
-				groupingTitle = tmpTitle;
+			if (!tmpTitle.equals(groupingTitle)) {
+				//And make sure we don't have just special characters
+				String noSpecialCharactersTmpTitle = specialCharacterStrip.matcher(tmpTitle).replaceAll(" ").toLowerCase().trim();
+				//Note: specialCharacterStrip will remove diacritical characters
+				if (noSpecialCharactersTmpTitle.length() == 0) {
+					if (logger.isInfoEnabled()) {
+						logger.info("After removing brackets, there were only special characters: '" + groupingTitle + "' to '" + tmpTitle + "'" );
+					}
+					// Just remove the brackets, so that the text within the brackets now remains
+					groupingTitle = groupingTitle.replace("[", "").replace("]","");
+				} else {
+					groupingTitle = tmpTitle;
+				}
 			}
 		}else{
 			//The entire title is in brackets, just remove the brackets

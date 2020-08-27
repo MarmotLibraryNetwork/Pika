@@ -285,7 +285,7 @@ class RecordGroupingProcessor {
 		return groupingCategory;
 	}
 
-	private String getMoviePlayTimeforGroupingAuthor(Record marcRecord, RecordIdentifier identifier) {
+	private String getMoviePlayTimeForGroupingAuthor(Record marcRecord, RecordIdentifier identifier) {
 		String       author     = null;
 		ControlField fixedField = (ControlField) marcRecord.getVariableField("008");
 		if (fixedField != null) {
@@ -300,9 +300,6 @@ class RecordGroupingProcessor {
 					// Is a numeric string
 					author = String.valueOf(roundOffTens(Integer.parseInt(movieDuration)));
 					// round to nearest tens value
-
-//						author = movieDuration.substring(0, 2) + "0";
-//						// Matching by 10 minute intervals, so exclude the final playtime digit and replace with a 0
 				} else {
 					if (fullRegrouping && !movieDuration.equals("|||") && !movieDuration.equals("   ") && !movieDuration.equals("---")) {
 						// entries that are coded with these values (essentially denoting that record doesn't have the playtime info populated in 008)
@@ -338,7 +335,7 @@ class RecordGroupingProcessor {
 	private void setWorkAuthorBasedOnMarcRecord(Record marcRecord, GroupedWorkBase workForTitle, RecordIdentifier identifier, String groupingCategory) {
 		String    author   = null;
 		if (groupingCategory.equals("movie")){
-			author = getMoviePlayTimeforGroupingAuthor(marcRecord, identifier);
+			author = getMoviePlayTimeForGroupingAuthor(marcRecord, identifier);
 		} else {
 			DataField field100 = marcRecord.getDataField("100"); // Heading - Personal Name
 			//  First Indicator: 0 - Forename (direct order); 1 - Surname (inverted order);

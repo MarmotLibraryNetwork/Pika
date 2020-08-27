@@ -289,7 +289,9 @@ public class RecordGrouperMain {
 						Record curBib = catalogReader.next();
 
 						if (recordGroupingProcessor.processMarcRecord(curBib, true, recordIdentifier)) {
-							logger.info(recordIdentifier + " was successfully grouped.");
+							if (logger.isDebugEnabled()) {
+								logger.debug(recordIdentifier + " was successfully grouped.");
+							}
 						} else {
 							logger.error(recordIdentifier + " was not grouped.");
 						}
@@ -970,7 +972,7 @@ public class RecordGrouperMain {
 								} else {
 									recordId = recordIdentifier.getIdentifier();
 
-									boolean marcUpToDate = writeIndividualMarc(curProfile, curBib, recordId, marcRecordsWritten, marcRecordsOverwritten);
+									boolean marcUpToDate = writeIndividualMarc(curProfile, curBib, recordIdentifier, marcRecordsWritten, marcRecordsOverwritten);
 									// when fullRegroupingClearGroupingTables is true writeIndividualMarc() should return false
 									recordNumbersInExport.add(recordIdentifier.toString());
 									if (!explodeMarcsOnly) {
@@ -1100,14 +1102,13 @@ public class RecordGrouperMain {
 	private static SimpleDateFormat oo8DateFormat = new SimpleDateFormat("yyMMdd");
 	private static SimpleDateFormat oo5DateFormat = new SimpleDateFormat("yyyyMMdd");
 
-	private static boolean writeIndividualMarc(IndexingProfile indexingProfile, Record marcRecord, String recordNumber, TreeSet<String> marcRecordsWritten, TreeSet<String> marcRecordsOverwritten) {
+	private static boolean writeIndividualMarc(IndexingProfile indexingProfile, Record marcRecord, RecordIdentifier recordIdentifier, TreeSet<String> marcRecordsWritten, TreeSet<String> marcRecordsOverwritten) {
 		boolean marcRecordUpToDate = false;
 		//Copy the record to the individual marc path
-		if (recordNumber != null) {
-			String recordNumberWithSource = indexingProfile.sourceName + ":" + recordNumber;
-			Long   checksum               = getChecksum(marcRecord);
-			Long   existingChecksum       = getExistingChecksum(recordNumberWithSource);
-			File   individualFile         = indexingProfile.getFileForIlsRecord(recordNumber);
+		if (recordIdentifier != null) {
+			long checksum         = getChecksum(marcRecord);
+			Long existingChecksum = getExistingChecksum(recordIdentifier);
+			File individualFile   = indexingProfile.getFileForIlsRecord(recordIdentifier.getIdentifier());
 
 			//If we are doing partial regrouping or full regrouping without clearing the previous results,
 			//Check to see if the record needs to be written before writing it.
@@ -1116,9 +1117,9 @@ public class RecordGrouperMain {
 				boolean fileExists       = individualFile.exists();
 				marcRecordUpToDate = fileExists && checksumUpToDate;
 				if (!fileExists) {
-					marcRecordsWritten.add(recordNumber);
+					marcRecordsWritten.add(recordIdentifier.getIdentifier());
 				} else if (!checksumUpToDate) {
-					marcRecordsOverwritten.add(recordNumber);
+					marcRecordsOverwritten.add(recordIdentifier.getIdentifier());
 				}
 				//Temporary confirmation of CRC
 				if (marcRecordUpToDate && validateChecksumsFromDisk) {
@@ -1130,11 +1131,11 @@ public class RecordGrouperMain {
 						if (!actualChecksum.equals(checksum)) {
 							//checksum in the database is wrong
 							marcRecordUpToDate = false;
-							marcRecordsOverwritten.add(recordNumber);
+							marcRecordsOverwritten.add(recordIdentifier.getIdentifier());
 						}
 					} catch (FileNotFoundException e) {
 						if (logger.isDebugEnabled()) {
-							logger.debug("Individual marc record not found " + recordNumberWithSource);
+							logger.debug("Individual marc record not found " + recordIdentifier);
 						}
 						marcRecordUpToDate = false;
 					} catch (Exception e) {
@@ -1147,17 +1148,17 @@ public class RecordGrouperMain {
 			if (!marcRecordUpToDate) {
 				try {
 					outputMarcRecord(marcRecord, individualFile);
-					getDateAddedForRecord(marcRecord, recordNumberWithSource, individualFile);
-					updateMarcRecordChecksum(recordNumber, indexingProfile.sourceName, checksum);
-					//logger.debug("checksum changed for " + recordNumber + " was " + existingChecksum + " now its " + checksum);
+					getDateAddedForRecord(marcRecord, recordIdentifier, individualFile);
+					updateMarcRecordChecksum(recordIdentifier, checksum);
+					//logger.debug("checksum changed for " + recordIdentifier + " was " + existingChecksum + " now its " + checksum);
 				} catch (IOException e) {
-					logger.error("Error writing marc for record " + recordNumberWithSource, e);
+					logger.error("Error writing marc for record " + recordIdentifier, e);
 				}
 			} else {
 				//Update date first detected if needed
-				if (marcRecordFirstDetectionDates.containsKey(recordNumberWithSource) && marcRecordFirstDetectionDates.get(recordNumberWithSource) == null) {
-					getDateAddedForRecord(marcRecord, recordNumberWithSource, individualFile);
-					updateMarcRecordChecksum(recordNumber, indexingProfile.sourceName, checksum);
+				if (marcRecordFirstDetectionDates.containsKey(recordIdentifier.getIdentifier()) && marcRecordFirstDetectionDates.get(recordIdentifier.getSourceAndId()) == null) {
+					getDateAddedForRecord(marcRecord, recordIdentifier, individualFile);
+					updateMarcRecordChecksum(recordIdentifier, checksum);
 				}
 			}
 		} else {
@@ -1167,7 +1168,7 @@ public class RecordGrouperMain {
 		return marcRecordUpToDate;
 	}
 
-	private static void getDateAddedForRecord(Record marcRecord, String recordNumberWithSource, File individualFile) {
+	private static void getDateAddedForRecord(Record marcRecord, RecordIdentifier recordIdentifier, File individualFile) {
 		//Set first detection date based on the creation date of the file
 		if (individualFile.exists()) {
 			Path filePath = individualFile.toPath();
@@ -1207,7 +1208,7 @@ public class RecordGrouperMain {
 						}
 					}
 				}
-				marcRecordFirstDetectionDates.put(recordNumberWithSource, timeAdded);
+				marcRecordFirstDetectionDates.put(recordIdentifier.getSourceAndId(), timeAdded);
 			} catch (Exception e) {
 				if (logger.isDebugEnabled()) {
 					logger.debug("Error loading creation time for " + filePath, e);
@@ -1216,26 +1217,26 @@ public class RecordGrouperMain {
 		}
 	}
 
-	private static Long getExistingChecksum(String recordNumber) {
-		return marcRecordChecksums.get(recordNumber);
+	private static Long getExistingChecksum(RecordIdentifier recordNumber) {
+		return marcRecordChecksums.get(recordNumber.getSourceAndId());
 	}
 
-	private static void updateMarcRecordChecksum(String recordNumber, String source, long checksum) {
+	private static void updateMarcRecordChecksum(RecordIdentifier recordIdentifier, long checksum) {
 		long   dateFirstDetected;
-		String recordNumberWithSource = source + ":" + recordNumber;
+		String recordNumberWithSource = recordIdentifier.getSourceAndId();
 		if (marcRecordFirstDetectionDates.containsKey(recordNumberWithSource) && marcRecordFirstDetectionDates.get(recordNumberWithSource) != null) {
 			dateFirstDetected = marcRecordFirstDetectionDates.get(recordNumberWithSource);
 		} else {
 			dateFirstDetected = new Date().getTime() / 1000;
 		}
 		try {
-			insertMarcRecordChecksum.setString(1, recordNumber);
-			insertMarcRecordChecksum.setString(2, source);
+			insertMarcRecordChecksum.setString(1, recordIdentifier.getIdentifier());
+			insertMarcRecordChecksum.setString(2, recordIdentifier.getSource());
 			insertMarcRecordChecksum.setLong(3, checksum);
 			insertMarcRecordChecksum.setLong(4, dateFirstDetected);
 			insertMarcRecordChecksum.executeUpdate();
 		} catch (SQLException e) {
-			logger.error("Unable to update checksum for marc record : " + recordNumberWithSource, e);
+			logger.error("Unable to update checksum for marc record : " + recordIdentifier, e);
 		}
 	}
 

@@ -44,12 +44,12 @@ public abstract class GroupedWorkBase {
 	//The id of the work within the database.
 	String permanentId;
 
-	String fullTitle          = ""; //Up to 100 chars
+	String fullTitle          = "";  // Up to 400 chars
 	String originalAuthorName = "";
-	String groupingCategory   = "";  //Up to 5  chars
-	protected String author           = ""; //Up to 50  chars
-	protected String uniqueIdentifier = null;
-	protected static int    version          = 0; // The grouped work version number
+	String groupingCategory   = "";  // Up to 5 chars
+	protected        String author           = "";   // Up to 100 chars
+	protected        String uniqueIdentifier = null; // Used with records that should not be grouped
+	protected static int    version          = 0;    // The grouped work version number
 
 	//Load authorities
 	private static boolean authoritiesLoaded = false;
@@ -92,6 +92,7 @@ public abstract class GroupedWorkBase {
 					idGenerator.update(groupingCategory.getBytes());
 				}
 				if (uniqueIdentifier != null) {
+					// This will cause records marked for not grouping to have their own grouped work Id
 					idGenerator.update(uniqueIdentifier.getBytes());
 				}
 				permanentId = new StringBuilder(new BigInteger(1, idGenerator.digest()).toString(16));
@@ -104,7 +105,6 @@ public abstract class GroupedWorkBase {
 				System.out.println("Error generating permanent id" + e.toString());
 			}
 		}
-		//System.out.println("Permanent Id is " + this.permanentId);
 		return this.permanentId;
 	}
 
@@ -141,7 +141,7 @@ public abstract class GroupedWorkBase {
 		if (authoritativeAuthor == null) {
 			if (authorAuthorities.containsKey(author)) {
 				authoritativeAuthor = authorAuthorities.get(author);
-				author = authoritativeAuthor; // We want to see the authoratative author saved in the db as the grouping author so that this process isn't invisible
+				author = authoritativeAuthor; // We want to see the authoritative author saved in the db as the grouping author so that this process isn't invisible
 				if (logger.isDebugEnabled()){
 					logger.debug("Using authoritative author '" + authoritativeAuthor + "' for normalized author '" + author + "'");
 				}
@@ -159,25 +159,6 @@ public abstract class GroupedWorkBase {
 	abstract void setGroupingCategory(String groupingCategory, RecordIdentifier identifier);
 
 	abstract String getGroupingCategory();
-
-//	HashSet<String> getAlternateAuthorNames() {
-//		HashSet<String> alternateNames = new HashSet<>();
-//		String          displayName    = AuthorNormalizer.getDisplayName(originalAuthorName);
-//		if (displayName != null && displayName.length() > 0) {
-//			alternateNames.add(AuthorNormalizer.getNormalizedName(displayName));
-//		}
-//		String parentheticalName = AuthorNormalizer.getParentheticalName(originalAuthorName);
-//		if (parentheticalName != null && parentheticalName.length() > 0) {
-//			alternateNames.add(AuthorNormalizer.getNormalizedName(parentheticalName));
-//			//Finally, try making the parenthetical name a display name
-//			String displayName2 = AuthorNormalizer.getDisplayName(parentheticalName);
-//			if (displayName2 != null && displayName2.length() > 0) {
-//				alternateNames.add(AuthorNormalizer.getNormalizedName(displayName2));
-//			}
-//		}
-//
-//		return alternateNames;
-//	}
 
 	protected static void loadAuthorities(Connection pikaConn) {
 		try (
