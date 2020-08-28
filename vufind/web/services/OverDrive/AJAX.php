@@ -21,7 +21,7 @@ require_once ROOT_DIR . '/AJAXHandler.php';
 
 class OverDrive_AJAX extends AJAXHandler {
 
-	protected $methodsThatRespondWithJSONUnstructured = array(
+	protected $methodsThatRespondWithJSONUnstructured = [
 		'CheckoutOverDriveItem',
 		'PlaceOverDriveHold',
 		'CancelOverDriveHold',
@@ -33,7 +33,7 @@ class OverDrive_AJAX extends AJAXHandler {
 		'forceUpdateFromAPI',
 		'getSupportForm',
 		'submitSupportForm',
-	);
+	];
 
 	function forceUpdateFromAPI(){
 		require_once ROOT_DIR . '/sys/OverDrive/OverDriveAPIProduct.php';
@@ -42,18 +42,18 @@ class OverDrive_AJAX extends AJAXHandler {
 		$overDriveProduct->overdriveId = $id;
 		if ($overDriveProduct->find(true)){
 			if ($overDriveProduct->needsUpdate == true){
-				return array('success' => true, 'message' => 'This title was already marked to be updated from the API again the next time the extract is run.');
+				return ['success' => true, 'message' => 'This title was already marked to be updated from the API again the next time the extract is run.'];
 			}
 			$overDriveProduct->needsUpdate = true;
 			$numRows                       = $overDriveProduct->update();
 			if ($numRows == 1){
-				return array('success' => true, 'message' => 'This title will be updated from the API again the next time the extract is run.');
+				return ['success' => true, 'message' => 'This title will be updated from the API again the next time the extract is run.'];
 			}else{
-				return array('success' => false, 'message' => 'Unable to mark the title for needing update. Could not update the title.');
+				return ['success' => false, 'message' => 'Unable to mark the title for needing update. Could not update the title.'];
 			}
 		}else{
 
-			return array('success' => false, 'message' => 'Unable to mark the title for needing update. Could not find the title.');
+			return ['success' => false, 'message' => 'Unable to mark the title for needing update. Could not find the title.'];
 		}
 	}
 
@@ -84,10 +84,10 @@ class OverDrive_AJAX extends AJAXHandler {
 				}
 				return $holdMessage;
 			}else{
-				return array('result' => false, 'message' => 'Sorry, it looks like you don\'t have permissions to place holds for that user.');
+				return ['result' => false, 'message' => 'Sorry, it looks like you don\'t have permissions to place holds for that user.'];
 			}
 		}else{
-			return array('result' => false, 'message' => 'You must be logged in to place a hold.');
+			return ['result' => false, 'message' => 'You must be logged in to place a hold.'];
 		}
 	}
 
@@ -109,10 +109,10 @@ class OverDrive_AJAX extends AJAXHandler {
 				}
 				return $result;
 			}else{
-				return array('result' => false, 'message' => 'Sorry, it looks like you don\'t have permissions to checkout titles for that user.');
+				return ['result' => false, 'message' => 'Sorry, it looks like you don\'t have permissions to checkout titles for that user.'];
 			}
 		}else{
-			return array('result' => false, 'message' => 'You must be logged in to checkout an item.');
+			return ['result' => false, 'message' => 'You must be logged in to checkout an item.'];
 		}
 	}
 
@@ -130,10 +130,10 @@ class OverDrive_AJAX extends AJAXHandler {
 				//$logger->log("Checkout result = $result", PEAR_LOG_INFO);
 				return $result;
 			}else{
-				return array('result' => false, 'message' => 'Sorry, it looks like you don\'t have permissions to return titles for that user.');
+				return ['result' => false, 'message' => 'Sorry, it looks like you don\'t have permissions to return titles for that user.'];
 			}
 		}else{
-			return array('result' => false, 'message' => 'You must be logged in to return an item.');
+			return ['result' => false, 'message' => 'You must be logged in to return an item.'];
 		}
 	}
 
@@ -151,10 +151,10 @@ class OverDrive_AJAX extends AJAXHandler {
 				//$logger->log("Checkout result = $result", PEAR_LOG_INFO);
 				return $result;
 			}else{
-				return array('result' => false, 'message' => 'Sorry, it looks like you don\'t have permissions to download titles for that user.');
+				return ['result' => false, 'message' => 'Sorry, it looks like you don\'t have permissions to download titles for that user.'];
 			}
 		}else{
-			return array('result' => false, 'message' => 'You must be logged in to download a title.');
+			return ['result' => false, 'message' => 'You must be logged in to download a title.'];
 		}
 	}
 
@@ -172,10 +172,10 @@ class OverDrive_AJAX extends AJAXHandler {
 				//$logger->log("Checkout result = $result", PEAR_LOG_INFO);
 				return $result;
 			}else{
-				return array('result' => false, 'message' => 'Sorry, it looks like you don\'t have permissions to download titles for that user.');
+				return ['result' => false, 'message' => 'Sorry, it looks like you don\'t have permissions to download titles for that user.'];
 			}
 		}else{
-			return array('result' => false, 'message' => 'You must be logged in to download a title.');
+			return ['result' => false, 'message' => 'You must be logged in to download a title.'];
 		}
 	}
 
@@ -202,19 +202,19 @@ class OverDrive_AJAX extends AJAXHandler {
 		$interface->assign('promptForEmail', $promptForEmail);
 		if ($promptForEmail || count($overDriveUsers) > 1){
 			$promptTitle = 'OverDrive Hold Options';
-			return array(
+			return [
 				'promptNeeded' => true,
 				'promptTitle'  => $promptTitle,
 				'prompts'      => $interface->fetch('OverDrive/ajax-overdrive-hold-prompt.tpl'),
 				'buttons'      => '<input class="btn btn-primary" type="submit" name="submit" value="Place Hold" onclick="return Pika.OverDrive.processOverDriveHoldPrompts();"/>',
-			);
+			];
 		}else{
-			return array(
+			return [
 				'patronId'                => reset($overDriveUsers)->id,
 				'promptNeeded'            => false,
 				'overdriveEmail'          => $user->overdriveEmail,
 				'promptForOverdriveEmail' => $promptForEmail,
-			);
+			];
 		}
 	}
 
@@ -229,27 +229,27 @@ class OverDrive_AJAX extends AJAXHandler {
 
 		if (count($overDriveUsers) > 1){
 			$promptTitle = 'OverDrive Checkout Options';
-			return array(
+			return [
 				'promptNeeded' => true,
 				'promptTitle'  => $promptTitle,
 				'prompts'      => $interface->fetch('OverDrive/ajax-overdrive-checkout-prompt.tpl'),
 				'buttons'      => '<input class="btn btn-primary" type="submit" name="submit" value="Checkout Title" onclick="return Pika.OverDrive.processOverDriveCheckoutPrompts();">',
-			);
+			];
 		}elseif (count($overDriveUsers) == 1){
-			return array(
+			return [
 				'patronId'     => reset($overDriveUsers)->id,
 				'promptNeeded' => false,
-			);
+			];
 		}else{
 			// No Overdrive Account Found, give the user an error message
 			global $logger;
 			$logger->log('No valid Overdrive account was found to check out an Overdrive title.', PEAR_LOG_ERR);
-			return array(
+			return [
 				'promptNeeded' => true,
 				'promptTitle'  => 'Error',
 				'prompts'      => 'No valid Overdrive account was found to check this title out with.',
 				'buttons'      => '',
-			);
+			];
 		}
 
 	}
@@ -266,10 +266,10 @@ class OverDrive_AJAX extends AJAXHandler {
 				$result = $driver->cancelOverDriveHold($overDriveId, $patron);
 				return $result;
 			}else{
-				return array('result' => false, 'message' => 'Sorry, it looks like you don\'t have permissions to download cancel holds for that user.');
+				return ['result' => false, 'message' => 'Sorry, it looks like you don\'t have permissions to download cancel holds for that user.'];
 			}
 		}else{
-			return array('result' => false, 'message' => 'You must be logged in to cancel holds.');
+			return ['result' => false, 'message' => 'You must be logged in to cancel holds.'];
 		}
 	}
 
@@ -287,8 +287,8 @@ class OverDrive_AJAX extends AJAXHandler {
 
 		if (!empty($_REQUEST['id'])){
 			require_once ROOT_DIR . '/RecordDrivers/OverDriveRecordDriver.php';
-			$overDriveId    = $_REQUEST['id'];
-			$recordDriver   = new OverDriveRecordDriver($overDriveId, -1); // (Don't need to load grouped work)
+			$overDriveId  = $_REQUEST['id'];
+			$recordDriver = new OverDriveRecordDriver($overDriveId, -1); // (Don't need to load grouped work)
 			if ($recordDriver->isValid()){
 				$author         = $recordDriver->getAuthor();
 				$titleAndAuthor = $recordDriver->getTitle() . (!empty($author) ? ' by ' . $author : '');
@@ -296,11 +296,11 @@ class OverDrive_AJAX extends AJAXHandler {
 			}
 		}
 
-		$results = array(
+		$results = [
 			'title'        => 'OverDrive Support Request',
 			'modalBody'    => $interface->fetch('OverDrive/eContentSupport.tpl'),
 			'modalButtons' => '<span class="tool btn btn-primary" onclick="return $(\'#eContentSupport\').submit()">Submit</span>', // .submit() triggers form validation
-		);
+		];
 		return $results;
 	}
 
@@ -342,7 +342,7 @@ class OverDrive_AJAX extends AJAXHandler {
 			$interface->assign('name', $name);
 			$interface->assign('email', $patronEmail);
 			$interface->assign('deviceName', get_device_name()); // footer & eContent support email
-            $interface->assign('homeLibrary', $userLibrary->displayName);
+			$interface->assign('homeLibrary', $userLibrary->displayName);
 
 			$body        = $interface->fetch('OverDrive/eContentSupportEmail.tpl');
 			$emailResult = $mail->send($to, $sendingAddress, $subject, $body, $patronEmail);
@@ -363,7 +363,7 @@ class OverDrive_AJAX extends AJAXHandler {
 				];
 			}
 		}else{
-			return  $this->getSupportForm();
+			return $this->getSupportForm();
 		}
 	}
 

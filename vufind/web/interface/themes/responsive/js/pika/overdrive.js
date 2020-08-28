@@ -53,7 +53,11 @@ Pika.OverDrive = (function(){
 							Pika.OverDrive.placeOverDriveHold(overdriveId, null);
 						});
 					} else {
-						Pika.showMessage("Error Checking Out Title", data.message, false);
+						if (data.promptNeeded){
+							Pika.showMessageWithButtons("Error Checking Out Title", data.message, data.buttons);
+						} else{
+							Pika.showMessage("Error Checking Out Title", data.message, false);
+						}
 					}
 				}).fail(function(){
 					Pika.showMessage("Error Checking Out Title", "An error occurred processing your request in OverDrive.  Please try again in a few minutes.");
