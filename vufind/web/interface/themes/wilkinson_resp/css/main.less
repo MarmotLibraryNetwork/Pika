@@ -10,10 +10,39 @@
 }
 
 .facetTitle:hover, .exploreMoreTitle:hover{
-  background-color: @wilkinson-red;
-  background: -moz-linear-gradient(left center , darken(#d81f3c, 15%) 0%,@wilkinson-red 100%);
+  background-color: @wilkinson-dark-blue;
+  background: -moz-linear-gradient(left center , darken(#d81f3c, 15%) 0%, @wilkinson-dark-blue 100%);
   color: #fff;
   text-shadow: none;
 }
 
 .header-login-button-mixin;
+
+.browse-category.selected {
+  background: @wilkinson-light-blue;
+}
+
+#header-container {
+  background-image: none;
+}
+
+.btn.btn-primary {
+  background-color: @wilkinson-red;
+  border: none;
+}
+.sidebar-links div.panel-heading {
+  background-image: none;
+  background-color: @wilkinson-dark-blue;
+  background: @wilkinson-dark-blue;
+  color: white;
+  text-shadow: none;
+}
+
+div.sidebar-button{
+  padding: 5px 15px;
+  background-color: @wilkinson-dark-blue;
+  background-image: none;
+  color: #fff;
+  margin-bottom: 15px;
+  border-radius: 4px;
+}
