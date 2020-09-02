@@ -380,12 +380,17 @@ class MyAccount_MyList extends MyAccount {
             $objPHPExcel->getActiveSheet()->getColumnDimension('D')->setAutoSize(true);
             $objPHPExcel->getActiveSheet()->getColumnDimension('E')->setAutoSize(true);
 
+        $strip = array("~", "`", "!", "@", "#", "$", "%", "^", "&", "*", "(", ")", "_", "=", "+", "[", "{", "]",
+            "}", "\\", "|", ";", ":", "\"", "'", "&#8216;", "&#8217;", "&#8220;", "&#8221;", "&#8211;", "&#8212;",
+            "â€”", "â€“", ",", "<", ".", ">", "/", "?");
+        $listTitle = trim(str_replace($strip, "", strip_tags($list->title)));
             // Rename sheet
-            $objPHPExcel->getActiveSheet()->setTitle('Favorites List -' . $list->title);
+            $objPHPExcel->getActiveSheet()->setTitle(substr($listTitle,0,30));
+
 
             // Redirect output to a client's web browser (Excel5)
             header('Content-Type: application/vnd.ms-excel');
-            header('Content-Disposition: attachment;filename="favorites_' . $list->title . '.xls"');
+            header('Content-Disposition: attachment;filename="' . substr($listTitle,0,27) . '.xls"');
             header('Cache-Control: max-age=0');
 
             $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');

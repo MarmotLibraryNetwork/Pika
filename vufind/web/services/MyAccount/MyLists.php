@@ -216,11 +216,15 @@ class MyAccount_MyLists extends MyAccount{
         $objPHPExcel->getActiveSheet()->getColumnDimension('E')->setAutoSize(true);
 
         // Rename sheet
-        $objPHPExcel->getActiveSheet()->setTitle(substr($list->title,0,30));
+        $strip = array("~", "`", "!", "@", "#", "$", "%", "^", "&", "*", "(", ")", "_", "=", "+", "[", "{", "]",
+            "}", "\\", "|", ";", ":", "\"", "'", "&#8216;", "&#8217;", "&#8220;", "&#8221;", "&#8211;", "&#8212;",
+            "â€”", "â€“", ",", "<", ".", ">", "/", "?");
+        $listTitle = trim(str_replace($strip, "", strip_tags($list->title)));
+        $objPHPExcel->getActiveSheet()->setTitle(substr($listTitle,0,30));
 
         // Redirect output to a client's web browser (Excel5)
         header('Content-Type: application/vnd.ms-excel');
-        header('Content-Disposition: attachment;filename="' . substr($list->title,0,27) . '.xls"');
+        header('Content-Disposition: attachment;filename="' . substr($listTitle,0,27) . '.xls"');
         header('Cache-Control: max-age=0');
 
         $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
