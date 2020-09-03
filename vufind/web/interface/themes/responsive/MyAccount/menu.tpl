@@ -5,7 +5,7 @@
 		<div class="panel-group accordion" id="account-link-accordion">
 			{* My Account *}
 			<a id="account-menu"></a>
-			{if $module == 'MyAccount' || $module == 'MyResearch' || ($module == 'Search' && $action == 'Home') || ($module == 'MaterialsRequest' && $action == 'MyRequests')}
+			{if $module == 'MyAccount' || $module == 'MyResearch' || ($module == 'Search' && $action == 'Home') || ($module == 'MaterialsRequest' && $action == 'MyRequests') || ($module == 'MyAccount' && $action == 'MyLists')}
 				{assign var="curSection" value=true}
 			{else}
 				{assign var="curSection" value=false}
@@ -55,6 +55,11 @@
 						{if $showFines}
 							<div class="myAccountLink{if $action=="Fines"} active{/if}" title="{translate text='Fines and Messages'}"><a href="/MyAccount/Fines">{translate text='Fines and Messages'}</a></div>
 						{/if}
+						<div class="myAccountLink{if $action=="MyLists"} active{/if}">
+							<a href="/MyAccount/MyLists">
+								My Lists
+							</a>
+						</div>
 						{if $enableMaterialsRequest}
 							<div class="myAccountLink{if $pageTemplate=="myMaterialRequests.tpl"} active{/if}" title="{translate text='Materials_Request_alt'}s">
 								<a href="/MaterialsRequest/MyRequests">{translate text='Materials_Request_alt'}s <span class="materialsRequests-placeholder"><img src="/images/loading.gif" alt="loading"></span></a>
@@ -82,12 +87,8 @@
 			</div>
 
 			{* My Lists*}
-			{if $action == 'MyList'}
-				{assign var="curSection" value=true}
-			{else}
-				{assign var="curSection" value=false}
-			{/if}
-			<div class="panel{if $curSection} active{/if}">
+
+			<div class="panel{if $curSection}{/if}">
 					<a data-toggle="collapse" data-parent="#account-link-accordion" href="#myListsPanel">
 						<div class="panel-heading">
 							<div class="panel-title">
@@ -95,16 +96,11 @@
 							</div>
 						</div>
 					</a>
-					<div id="myListsPanel" class="panel-collapse collapse{if $action == 'MyRatings' || $action == 'Suggested Titles' || $action == 'MyList'} in{/if}">
+					<div id="myListsPanel" class="panel-collapse collapse{if $action == 'MyRatings' || $action == 'Suggested Titles' || $action == 'MyList'}{/if}">
 						<div class="panel-body">
-							{if $showConvertListsFromClassic}
-								<div class="myAccountLink"><a href="/MyAccount/ImportListsFromClassic" class="btn btn-sm btn-default">Import Existing Lists</a></div>
-								<br>
-							{/if}
-
-							<div id="lists-placeholder"><img src="/images/loading.gif" alt="loading"></div>
-
-							<a href="#" onclick="return Pika.Account.showCreateListForm();" class="btn btn-sm btn-primary">Create a New List</a>
+							<div class="alert alert-info" role="alert">
+								New <a href="/MyAccount/MyLists" class="alert-link">My Lists</a> page can be found in the <a href="#" onclick="$('#myAccountPanel').prev().click()" >{translate text="My Account"}</a> menu.
+							</div>
 						</div>
 					</div>
 				</div>
@@ -258,7 +254,7 @@
 			{/if}
 
 			{if $loggedIn && $userRoles && (in_array('cataloging', $userRoles) || in_array('opacAdmin', $userRoles))}
-				{if in_array($action, array('MergedGroupedWorks', 'NonGroupedRecords', 'AuthorEnrichment', 'OverDriveAPIData', 'Covers'))}
+				{if in_array($action, array('MergedGroupedWorks', 'NonGroupedRecords', 'PreferredGroupingTitles', 'PreferredGroupingAuthors', 'AuthorEnrichment', 'Covers'))}
 					{assign var="curSection" value=true}
 				{else}
 					{assign var="curSection" value=false}
@@ -275,6 +271,8 @@
 						<div class="panel-body">
 							<div class="adminMenuLink{if $action == "MergedGroupedWorks"} active{/if}"><a href="/Admin/MergedGroupedWorks">Grouped Work Merging</a></div>
 							<div class="adminMenuLink{if $action == "NonGroupedRecords"} active{/if}"><a href="/Admin/NonGroupedRecords">Records To Not Merge</a></div>
+							<div class="adminMenuLink{if $action == "PreferredGroupingAuthors"} active{/if}"><a href="/Admin/PreferredGroupingAuthors">Preferred Grouping Authors</a></div>
+							<div class="adminMenuLink{if $action == "PreferredGroupingTitles"} active{/if}"><a href="/Admin/PreferredGroupingTitles">Preferred Grouping Titles</a></div>
 							<div class="adminMenuLink{if $action == "AuthorEnrichment"} active{/if}"><a href="/Admin/AuthorEnrichment">Author Enrichment</a></div>
 							<div class="adminMenuLink{if $action == "Covers"} active{/if}"><a href="/Admin/Covers">Upload Custom Cover</a></div>
 						</div>

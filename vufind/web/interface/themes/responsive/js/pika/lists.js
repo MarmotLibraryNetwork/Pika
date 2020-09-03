@@ -10,34 +10,103 @@ Pika.Lists = (function(){
 			return false;
 		},
 
-		submitListForm: function(action){
+		submitListForm: function(action, page, pageSize, sort){
 			$('#myListActionHead').val(action);
+			$('#myListPage').val(page);
+			$('#myListPageSize').val(pageSize);
+			$('#myListSort').val(sort);
+			$('#myListFormHead').submit();
+			return false;
+		},
+		submitListFormWithData: function(action, data,page, pageSize, sort){
+			$('#myListActionHead').val(action);
+			$('#myListActionData').val(data);
+			$('#myListPage').val(page);
+			$('#myListPageSize').val(pageSize);
+			$('#myListSort').val(sort);
 			$('#myListFormHead').submit();
 			return false;
 		},
 
-		makeListPublicAction: function (){
-			return this.submitListForm('makePublic');
+		makeListPublicAction: function (page, pageSize, sort){
+			return this.submitListForm('makePublic', page, pageSize, sort);
 		},
 
-		makeListPrivateAction: function (){
-			return this.submitListForm('makePrivate');
+		makeListPrivateAction: function (page, pageSize, sort){
+			return this.submitListForm('makePrivate', page, pageSize, sort);
 		},
 
-		deleteListAction: function (){
+		deleteListAction: function (page, pageSize, sort){
 			if (confirm("Are you sure you want to delete this list?")){
-				this.submitListForm('deleteList');
+				this.submitListForm('deleteList', page, pageSize, sort);
 			}
 			return false;
 		},
-
-		updateListAction: function (){
-			return this.submitListForm('saveList');
+		buttonAjaxHandler: function(ajaxMethod, id, command) {
+			Pika.Account.ajaxLogin(function (){
+				Pika.loadingMessage();
+				var url = "/MyAccount/AJAX?method=" + ajaxMethod + "&id=" + id;
+				if (command !== undefined)
+				{
+					url = url + "&command=" + command;
+				}
+				$.getJSON(url, function (data) {
+					Pika.showMessageWithButtons(data.title, data.body, data.buttons);
+				}).fail(Pika.ajaxFail);
+			});
+			return false;
 		},
 
-		deleteAllListItemsAction: function (){
+		checkUser: function(id){
+			var url = "/MyAccount/AJAX?method=isStaffUser&barcode=" + id;
+			$.getJSON(url, function(data){
+				if($("#barcode").val().length > 0)
+				{
+					$("#validation").show();
+					if(data.isStaff == true)
+					{
+						$("#validation").html("<span style='color:green;'>Valid Barcode</span>");
+						$("#transfer").prop('disabled', false);
+					}
+					else
+					{
+						$("#validation").html("<span style='color:darkred;'>Invalid Barcode</span>");
+						$("#transfer").prop('disabled', true);
+					}
+				}
+			});
+
+			return false;
+		},
+
+		updateListAction: function (page, pageSize, sort){
+			console.log("page:" + page + ", pageSize:" + pageSize + ", sort:" + sort);
+			return this.submitListForm('saveList', page, pageSize, sort);
+		},
+
+		deleteListItems: function(ids, page, pageSize, sort){
+			var markedTitles = new Array();
+			$.each(ids, function(key, val) {
+				markedTitles.push(val.value);
+			});
+
+			var stringReturn = markedTitles.join(",")
+			var x = ids.length;
+			var title = " title";
+			if(x != 1){title = " titles";}
+			 if(confirm("Are you sure you want to delete " + x + title + " from this list? This cannot be undone.")){
+
+
+			 	this.submitListFormWithData('deleteMarked', stringReturn, page, pageSize, sort);
+
+			 }
+			 return false;
+
+		},
+
+		deleteAllListItemsAction: function (page, pageSize, sort){
 			if (confirm("Are you sure you want to delete all titles from this list?  This cannot be undone.")){
-				this.submitListForm('deleteAll');
+				this.submitListForm('deleteAll', page, pageSize, sort);
 			}
 			return false;
 		},
@@ -67,8 +136,16 @@ Pika.Lists = (function(){
 			);
 		},
 		//Exports list to Excel
-		exportListAction: function (id){
-			return this.submitListForm('exportToExcel');
+		exportListAction: function (id, page, pageSize, sort){
+			return this.submitListForm('exportToExcel', page, pageSize, sort);
+		},
+
+		exportListFromLists: function(id)
+		{
+			$('#myListActionHead').val("exportToExcel");
+			$('#myListActionData').val(id);
+			$('#myListFormHead').submit();
+			return false;
 		},
 		citeListAction: function (id) {
 			return Pika.Account.ajaxLightbox('/MyAccount/AJAX?method=getCitationFormatsForm&listId=' + id, false);
@@ -80,6 +157,26 @@ Pika.Lists = (function(){
 
 		batchAddToListAction: function (id){
 			return Pika.Account.ajaxLightbox('/MyAccount/AJAX/?method=getBulkAddToListForm&listId=' + id);
+		},
+
+		transferListToUser: function(id){
+
+				return this.buttonAjaxHandler('transferListToUser', id, 'transferList');
+
+
+		},
+		transferList: function(id, user)
+		{
+			if (confirm("Are you sure you want to transfer this list. It will no longer be accessible from this account.")) {
+				Pika.Account.ajaxLogin(function () {
+					Pika.loadingMessage();
+					var url = "/MyAccount/AJAX?method=transferList&id=" + id + "&barcode=" + user;
+					$.getJSON(url, function (data) {
+						Pika.showMessage(data.title, data.body, 1, 1);
+					}).fail(Pika.ajaxFail);
+				});
+			}
+			return false;
 		},
 
 		processBulkAddForm: function(){
@@ -95,6 +192,8 @@ Pika.Lists = (function(){
 			window.print();
 			return false;
 		},
+
+
 
 		importListsFromClassic: function (){
 			if (confirm("This will import any lists you had defined in the old catalog.  This may take several minutes depending on the size of your lists. Are you sure you want to continue?")){

@@ -42,12 +42,57 @@ class Cover extends DB_DataObject
         return $this->cover ? '/customcover.php?image=' . $this->cover . '&size=' . $size: 'interface/themes/default/images/noCover2.png';
     }
 
-    function delete($useWhere = false){
+    function delete($useWhere = false, $noDelete = false){
+        if(!$noDelete) {
+            global
+            $configArray;
+            $storagePath = $configArray['Site']['coverPath'];
+            $coverPath = $storagePath . DIRECTORY_SEPARATOR . "original" . DIRECTORY_SEPARATOR . $this->cover;
+            unlink($coverPath);
+        }
+        parent::delete($useWhere);
+    }
+
+    function update($dataObject = false)
+    {
         global $configArray;
         $storagePath = $configArray['Site']['coverPath'];
         $coverPath = $storagePath . DIRECTORY_SEPARATOR . "original" . DIRECTORY_SEPARATOR . $this->cover;
-        unlink($coverPath);
-        parent::delete($useWhere);
+
+            if(isset($_REQUEST['fileName']))
+            {
+                $extension = pathinfo($this->cover, PATHINFO_EXTENSION);
+
+                $newFileName = trim($_REQUEST['fileName']);
+                if(strpos($newFileName,$extension) == false)
+                {
+                    $newFileName = $newFileName . "." . $extension;
+                }
+                if($newFileName != $this->cover) {
+                    rename($coverPath, $storagePath . DIRECTORY_SEPARATOR . "original" . DIRECTORY_SEPARATOR . $newFileName);
+                }
+                $this->cover = $newFileName;
+            }
+
+
+        parent::update($dataObject);
+    }
+
+    function insert()
+    {
+        global $configArray;
+        $storagePath = $configArray['Site']['coverPath'];
+        $coverPath = $storagePath . DIRECTORY_SEPARATOR . "original" . DIRECTORY_SEPARATOR . $this->cover;
+        if(file_exists($coverPath))
+        {
+            $newCover = clone $this;
+            $duplicateCover = new Cover();
+            $duplicateCover->get('cover', $newCover->cover);
+            $duplicateCover->delete(false,true);
+
+
+        }
+        return parent::insert();
     }
 }
 

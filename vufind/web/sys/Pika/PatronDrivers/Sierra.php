@@ -184,7 +184,7 @@ class Sierra {
 				$titleAndAuthor = $innReach->getCheckoutTitleAuthor($checkoutId);
 				$coverUrl = $innReach->getInnReachCover();
         
-				$checkout['checkoutSource'] =  $this->accountProfile->recordSource;
+				$checkout['checkoutSource'] =  $this->accountProfile->recordSource; //TODO: this might be a bad idea for ILL items for reading history
 				$checkout['id']             = $checkoutId;
 				$checkout['dueDate']        = strtotime($entry->dueDate);
 				$checkout['checkoutDate']   = strtotime($entry->outDate);
@@ -1717,17 +1717,14 @@ EOT;
 							if(isset($hold->priority) && (int)$hold->priority == 1)
 							$recordStatus = 't';
 						}
-						// there's a good chance the item status could be a custom item status not accounted for in the switch
-						// statement below.
-						$recordItemStatusMessage = $hold->record->status->display;
-						$recordItemStatusMessage = ucfirst($recordItemStatusMessage);
 					}
 				} else {
+					// inn-reach status
 					$recordStatus = $recordItemStatus;
 				}
 			}
-
-			switch ($recordStatus) {
+			// type hint so '0' != false
+			switch ((string)$recordStatus) {
 				case '0':
 				case '-':
 					if($hold->frozen) {

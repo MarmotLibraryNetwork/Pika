@@ -37,7 +37,4 @@ class ReadingHistoryEntry extends DB_DataObject {
 	public $checkInDate;
 	public $deleted;
 
-	function keys(){
-		return array('id');
-	}
 }

@@ -126,7 +126,7 @@ class User extends DB_DataObject {
 		$tagList = array();
 
 		$escapedId = $this->escape($this->id, false);
-		$sql       = "SELECT id, groupedRecordPermanentId, tag, COUNT(groupedRecordPermanentId) AS cnt " .
+		$sql       = "SELECT id, groupedWorkPermanentId, tag, COUNT(groupedWorkPermanentId) AS cnt " .
 			"FROM user_tags WHERE " .
 			"userId = '{$escapedId}' ";
 		$sql       .= "GROUP BY tag ORDER BY tag ASC";

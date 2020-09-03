@@ -34,6 +34,9 @@ abstract class HorizonROA implements DriverInterface
 	private static $sessionIdsForUsers = array();
 	private $webServiceURL;
 
+	/** @var  AccountProfile $accountProfile */
+	public $accountProfile;
+
 	public function __construct($accountProfile){
 		$this->accountProfile = $accountProfile;
 		$this->webServiceURL  = $this->getWebServiceURL();
@@ -484,7 +487,7 @@ abstract class HorizonROA implements DriverInterface
 						}
 
 						$curTitle                   = array();
-						$curTitle['checkoutSource'] = 'ils';
+						$curTitle['checkoutSource'] = $this->accountProfile->recordSource;
 						$curTitle['recordId']       = $bibId;
 						$curTitle['shortId']        = $bibId;
 						$curTitle['id']             = $bibId;

@@ -33,6 +33,7 @@ class GroupedWork extends DB_DataObject {
 	public $full_title;
 	public $author;
 	public $grouping_category;
+	public $grouping_language;
 	public $date_updated;
 
 	public static function validGroupedWorkId($id){

@@ -29,7 +29,7 @@ $timer->logTime("Loaded Module and Action Id");
 $memoryWatcher->logMemory("Loaded Module and Action Id");
 
 //  Start session
-$handler = new Pika\Session\MemcachedSession();
+$handler = new Pika\Session\FileSession();
 session_set_save_handler($handler);
 // register shutdown function needed to avoid oddities of using an object as session handler
 register_shutdown_function('session_write_close');
@@ -450,7 +450,7 @@ function loadModuleActionId(){
 		global $activeRecordIndexingProfile;
 		foreach ($indexingProfiles as $profile){
 			if ($profile->recordUrlComponent == $module){
-				$id          = $profile->name . ':' . $id;
+				$id          = $profile->sourceName . ':' . $id;
 				if (!file_exists(ROOT_DIR . '/services/' . $module)){
 					// When a record view doesn't have an explicitly made driver, fallback to the standard full record View
 					$module     = 'Record';
@@ -618,7 +618,7 @@ function setUpTranslator(){
 		$language = strip_tags($_REQUEST['mylang']);
 		setcookie('language', $language, null, '/');
 	}else{
-		$language = strip_tags((isset($_COOKIE['language'])) ? $_COOKIE['language'] : $configArray['Site']['language']);
+		$language = strip_tags( $_COOKIE['language'] ?? $configArray['Site']['language']);
 	}
 
 	/** @var Memcache $memCache */

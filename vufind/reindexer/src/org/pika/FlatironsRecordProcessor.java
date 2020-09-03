@@ -1,9 +1,22 @@
+/*
+ * Copyright (C) 2020  Marmot Library Network
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 package org.pika;
 
 import org.apache.log4j.Logger;
 import org.marc4j.marc.DataField;
 import org.marc4j.marc.Record;
-import org.marc4j.marc.Subfield;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -30,7 +43,7 @@ class FlatironsRecordProcessor extends IIIRecordProcessor {
 	}
 
 	@Override
-	protected void loadUnsuppressedPrintItems(GroupedWorkSolr groupedWork, RecordInfo recordInfo, String identifier, Record record) {
+	protected void loadUnsuppressedPrintItems(GroupedWorkSolr groupedWork, RecordInfo recordInfo, RecordIdentifier identifier, Record record) {
 		IsRecordEContent isRecordEContent = new IsRecordEContent(record).invoke();
 		boolean          isEContent       = isRecordEContent.isEContent();
 		List<DataField>  itemRecords      = isRecordEContent.getItemRecords();
@@ -38,14 +51,14 @@ class FlatironsRecordProcessor extends IIIRecordProcessor {
 			//The record is print
 			for (DataField itemField : itemRecords) {
 				if (!isItemSuppressed(itemField)) {
-					getPrintIlsItem(groupedWork, recordInfo, record, itemField);
+					getPrintIlsItem(groupedWork, recordInfo, record, itemField, identifier);
 				}
 			}
 		}
 	}
 
 	@Override
-	protected List<RecordInfo> loadUnsuppressedEContentItems(GroupedWorkSolr groupedWork, String identifier, Record record) {
+	protected List<RecordInfo> loadUnsuppressedEContentItems(GroupedWorkSolr groupedWork, RecordIdentifier identifier, Record record) {
 		IsRecordEContent isRecordEContent            = new IsRecordEContent(record).invoke();
 		boolean          isEContent                  = isRecordEContent.isEContent();
 		List<DataField>  itemRecords                 = isRecordEContent.getItemRecords();
@@ -86,8 +99,8 @@ class FlatironsRecordProcessor extends IIIRecordProcessor {
 					}
 					itemInfo.setCallNumber("Online");
 					itemInfo.setShelfLocation(itemInfo.geteContentSource());
-					RecordInfo relatedRecord = groupedWork.addRelatedRecord("external_econtent", identifier);
-					relatedRecord.setSubSource(profileType);
+					RecordInfo relatedRecord = groupedWork.addRelatedRecord("external_econtent", identifier.getIdentifier());
+					relatedRecord.setSubSource(indexingProfileSource);
 					relatedRecord.addItem(itemInfo);
 					//Check the 856 tag to see if there is a link there
 					loadEContentUrl(record, itemInfo, identifier);
@@ -104,6 +117,14 @@ class FlatironsRecordProcessor extends IIIRecordProcessor {
 			}
 		}
 		return unsuppressedEcontentRecords;
+	}
+
+	@Override
+	protected String getILSeContentSourceType(Record record, DataField itemField) {
+		if (itemField.getSubfield(locationSubfieldIndicator) != null && itemField.getSubfield(locationSubfieldIndicator).getData().startsWith("bc")) {
+			return "Carnegie Online";
+		}
+		return "Unknown Source";
 	}
 
 	protected boolean isBibSuppressed(Record record) {
@@ -167,14 +188,14 @@ class FlatironsRecordProcessor extends IIIRecordProcessor {
 			default:
 				//Check based off of other information
 				if (econtentItem == null || econtentItem.getCallNumber() == null) {
-					format = "Unknown";
+					format = "online_resource";
 				} else {
 					if (econtentItem.getCallNumber().contains("PHOTO")) {
 						format = "Photo";
 					} else if (econtentItem.getCallNumber().contains("OH")) {
 						format = "Oral History";
 					} else {
-						format = "Unknown";
+						format = "online_resource";
 					}
 				}
 		}
@@ -192,7 +213,7 @@ class FlatironsRecordProcessor extends IIIRecordProcessor {
 		}
 	}
 
-	protected void loadTargetAudiences(GroupedWorkSolr groupedWork, Record record, HashSet<ItemInfo> printItems, String identifier) {
+	protected void loadTargetAudiences(GroupedWorkSolr groupedWork, Record record, HashSet<ItemInfo> printItems, RecordIdentifier identifier) {
 		//For Flatirons, load audiences based on the final character of the location codes
 		HashSet<String> targetAudiences = new HashSet<>();
 		for (ItemInfo printItem : printItems) {
@@ -203,8 +224,8 @@ class FlatironsRecordProcessor extends IIIRecordProcessor {
 			}
 		}
 
-		groupedWork.addTargetAudiences(translateCollection("target_audience", targetAudiences, identifier));
-		groupedWork.addTargetAudiencesFull(translateCollection("target_audience", targetAudiences, identifier));
+		groupedWork.addTargetAudiences(translateCollection("target_audience", targetAudiences, identifier.getSourceAndId()));
+		groupedWork.addTargetAudiencesFull(translateCollection("target_audience", targetAudiences, identifier.getSourceAndId()));
 	}
 
 	private class IsRecordEContent {
@@ -250,6 +271,7 @@ class FlatironsRecordProcessor extends IIIRecordProcessor {
 			} else {
 				//Check to see if this is Carnegie eContent
 				for (DataField itemField : itemRecords) {
+					// if Location code start with BC and has an 856 url or 962 urls
 					if (itemField.getSubfield(locationSubfieldIndicator) != null && itemField.getSubfield(locationSubfieldIndicator).getData().startsWith("bc")) {
 						//TODO: this will make all the items on this BIB econtent, which is not *always* the case
 						//Check to see if we have related links

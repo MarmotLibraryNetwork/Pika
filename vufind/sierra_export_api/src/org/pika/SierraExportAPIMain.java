@@ -1,3 +1,17 @@
+/*
+ * Copyright (C) 2020  Marmot Library Network
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 package org.pika;
 
 import java.io.*;
@@ -158,7 +172,7 @@ public class SierraExportAPIMain {
 
 		String sierraUrl;
 		try (
-				PreparedStatement accountProfileStatement = pikaConn.prepareStatement("SELECT * FROM account_profiles WHERE name = '" + indexingProfile.name + "'");
+				PreparedStatement accountProfileStatement = pikaConn.prepareStatement("SELECT * FROM account_profiles WHERE name = '" + indexingProfile.sourceName + "'");
 				ResultSet accountProfileResult = accountProfileStatement.executeQuery()
 		) {
 			if (accountProfileResult.next()) {
@@ -170,7 +184,7 @@ public class SierraExportAPIMain {
 			}
 			apiBaseUrl = sierraUrl + "/iii/sierra-api/v" + apiVersion;
 		} catch (SQLException e) {
-			logger.error("Error retrieving account profile for " + indexingProfile.name, e);
+			logger.error("Error retrieving account profile for " + indexingProfile.sourceName, e);
 		}
 		if (apiBaseUrl == null || apiBaseUrl.length() == 0) {
 			logger.error("Sierra API url must be set in account profile column vendorOpacUrl.");
@@ -188,7 +202,7 @@ public class SierraExportAPIMain {
 			logger.error("Sierra Field Mappings need to be set.");
 			System.exit(0);
 		}
-		if (indexingProfile.sierraBibLevelFieldTag == null || indexingProfile.sierraBibLevelFieldTag.isEmpty()) {
+		if (indexingProfile.sierraRecordFixedFieldsTag == null || indexingProfile.sierraRecordFixedFieldsTag.isEmpty()) {
 			logger.error("Sierra Bib level/fixed field tag needs to be set in the indexing profile.");
 			System.exit(0);
 		}
@@ -309,7 +323,7 @@ public class SierraExportAPIMain {
 	}
 
 	private static void initializeRecordGrouper(Connection pikaConn) {
-		recordGroupingProcessor = new MarcRecordGrouper(pikaConn, indexingProfile, logger, false);
+		recordGroupingProcessor = new MarcRecordGrouper(pikaConn, indexingProfile, logger);
 	}
 
 	private static void retrieveDataFromSierraDNA(Connection pikaConn) {
@@ -809,7 +823,7 @@ public class SierraExportAPIMain {
 		String bibId = getfullSierraBibId(idFromAPI);
 		try {
 			//Check to see if the identifier is in the grouped work primary identifiers table
-			getWorkForPrimaryIdentifierStmt.setString(1, indexingProfile.name);
+			getWorkForPrimaryIdentifierStmt.setString(1, indexingProfile.sourceName);
 			getWorkForPrimaryIdentifierStmt.setString(2, bibId);
 			try (ResultSet getWorkForPrimaryIdentifierRS = getWorkForPrimaryIdentifierStmt.executeQuery()) {
 				if (getWorkForPrimaryIdentifierRS.next()) { // If not true, already deleted skip this
@@ -1253,7 +1267,7 @@ public class SierraExportAPIMain {
 				//Load Sierra Fixed Field / Bib Level Tag
 				JSONObject fixedFieldResults = getMarcJSONFromSierraApiURL(apiBaseUrl + "/bibs/" + id + "?fields=fixedFields,locations");
 				if (fixedFieldResults != null && !fixedFieldResults.has("code")) {
-					DataField        sierraFixedField = marcFactory.newDataField(indexingProfile.sierraBibLevelFieldTag, ' ', ' ');
+					DataField        sierraFixedField = marcFactory.newDataField(indexingProfile.sierraRecordFixedFieldsTag, ' ', ' ');
 					final JSONObject fixedFields      = fixedFieldResults.getJSONObject("fixedFields");
 					if (indexingProfile.bcode3Subfield != ' ') {
 						String bCode3 = fixedFields.getJSONObject("31").getString("value");
@@ -1323,15 +1337,21 @@ public class SierraExportAPIMain {
 	}
 
 	private static String groupAndWriteTheMarcRecord(Record marcRecord, Long id) {
-		String identifier = null;
+		String           identifier       = null;
+		RecordIdentifier recordIdentifier = null;
 		if (id != null) {
 			identifier = getfullSierraBibId(id);
 		} else {
-			RecordIdentifier recordIdentifier = recordGroupingProcessor.getPrimaryIdentifierFromMarcRecord(marcRecord, indexingProfile.name, indexingProfile.doAutomaticEcontentSuppression);
-			if (recordIdentifier != null) {
-				identifier = recordIdentifier.getIdentifier();
-			} else {
-				logger.warn("Failed to set record identifier in record grouper getPrimaryIdentifierFromMarcRecord(); possible error or automatic econtent suppression trigger.");
+			try {
+				recordIdentifier = recordGroupingProcessor.getPrimaryIdentifierFromMarcRecord(marcRecord, indexingProfile.sourceName, indexingProfile.doAutomaticEcontentSuppression);
+				if (recordIdentifier != null) {
+					identifier = recordIdentifier.getIdentifier();
+				} else {
+					logger.warn("Failed to set record identifier in record grouper getPrimaryIdentifierFromMarcRecord(); possible error or automatic econtent suppression trigger.");
+				}
+			} catch (Exception e) {
+				logger.error("catch for id " + id + "or  record Identifier " + recordIdentifier, e);
+				throw e;
 			}
 		}
 		if (identifier != null && !identifier.isEmpty()) {
@@ -1344,8 +1364,9 @@ public class SierraExportAPIMain {
 
 		//Setup the grouped work for the record.  This will take care of either adding it to the proper grouped work
 		//or creating a new grouped work
-		if (!recordGroupingProcessor.processMarcRecord(marcRecord, true)) {
-			logger.warn(identifier + " was suppressed");
+		final boolean grouped = (recordIdentifier != null) ? recordGroupingProcessor.processMarcRecord(marcRecord, true, recordIdentifier) : recordGroupingProcessor.processMarcRecord(marcRecord, true);
+		if (!grouped) {
+			logger.warn(identifier + " was not grouped");
 		} else {
 			logger.debug("Finished record grouping for " + identifier);
 		}
@@ -1758,7 +1779,7 @@ public class SierraExportAPIMain {
 				activeOrderSQL += " AND received_date_gmt IS NULL";
 			} else if (suppressOrderRecordsThatAreReceivedAndCataloged) { // Only ignore entries that have both a received and catalog date, and a catalog date more than a day old
 //				activeOrderSQL += " AND (catalog_date_gmt IS NULL or received_date_gmt IS NULL OR NOW() - catalog_date_gmt < '1 DAY'::INTERVAL) ";
-				activeOrderSQL += " AND catalog_date_gmt IS NULL or received_date_gmt IS NULL";
+				activeOrderSQL += " AND (catalog_date_gmt IS NULL OR received_date_gmt IS NULL)";
 			}
 
 		int numBibsToProcess     = 0;
@@ -2057,7 +2078,7 @@ public class SierraExportAPIMain {
 	}
 
 	private static void updatePartialExtractRunning(boolean running) {
-		systemVariables.setVariable("sierra_extract_running", Boolean.toString(running));
+		systemVariables.setVariable("sierra_extract_running", running);
 	}
 
 	private static JSONObject getMarcJSONFromSierraApiURL(String sierraUrl) {

@@ -42,7 +42,7 @@ class Admin_ListWidgets extends ObjectEditor {
 		return 'List Widgets';
 	}
 
-	function getAllObjects(){
+	function getAllObjects($orderBy = null){
 		$list   = [];
 		$user   = UserAccount::getLoggedInUser();
 		$widget = new ListWidget();
@@ -50,7 +50,7 @@ class Admin_ListWidgets extends ObjectEditor {
 			$patronLibrary     = UserAccount::getUserHomeLibrary();
 			$widget->libraryId = $patronLibrary->libraryId;
 		}
-		$widget->orderBy('name');
+		$widget->orderBy($orderBy ?? 'name');
 		$widget->find();
 		while ($widget->fetch()){
 			$list[$widget->id] = clone $widget;

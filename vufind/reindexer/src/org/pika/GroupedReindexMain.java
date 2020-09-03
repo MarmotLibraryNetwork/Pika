@@ -1,3 +1,17 @@
+/*
+ * Copyright (C) 2020  Marmot Library Network
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 package org.pika;
 
 import org.apache.log4j.Logger;
@@ -24,6 +38,7 @@ public class GroupedReindexMain {
 	private static String serverName;
 	private static boolean fullReindex = false;
 	private static String individualWorkToProcess;
+	private static String profileToIndex;
 	private static String baseLogPath;
 	private static String solrPort;
 	private static String solrDir;
@@ -57,23 +72,30 @@ public class GroupedReindexMain {
 		serverName = args[0];
 		System.setProperty("reindex.process.serverName", serverName);
 		
-		if (args.length >= 2 && args[1].equalsIgnoreCase("fullReindex")){
-			fullReindex = true;
-		}else if (args.length >= 2 && args[1].equalsIgnoreCase("singleWork")){
-			//Process a specific work
-			//Prompt for the work to process
-			System.out.print("Enter the grouped work id of the work to process: ");
+		if (args.length >= 2) {
+			switch (args[1].toLowerCase()){
+				case "fullreindex" :
+					fullReindex = true;
+					break;
+				case "singlework" :
+					//Process a specific work
+					//Prompt for the work to process
+					System.out.print("Enter the grouped work id of the work to process: ");
 
-			//  open up standard input
-			BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+					//  open up standard input
+					BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
-			//  read the work from the command-line; need to use try/catch with the
-			//  readLine() method
-			try {
-				individualWorkToProcess = br.readLine().trim();
-			} catch (IOException ioe) {
-				System.out.println("IO error trying to read the work to process!");
-				System.exit(1);
+					//  read the work from the command-line; need to use try/catch with the
+					//  readLine() method
+					try {
+						individualWorkToProcess = br.readLine().trim();
+					} catch (IOException ioe) {
+						System.out.println("IO error trying to read the work to process!");
+						System.exit(1);
+					}
+					break;
+				default:
+					profileToIndex = args[1];
 			}
 		}
 
@@ -91,13 +113,13 @@ public class GroupedReindexMain {
 		long numWorksProcessed = 0;
 		long numListsProcessed = 0;
 		try {
-			GroupedWorkIndexer groupedWorkIndexer = new GroupedWorkIndexer(serverName, pikaConn, econtentConn, fullReindex, individualWorkToProcess != null, logger);
-			HashMap<Scope, ArrayList<SiteMapEntry>> siteMapsByScope = new HashMap<>();
-			HashSet<Long> uniqueGroupedWorks = new HashSet<>();
+			GroupedWorkIndexer                      groupedWorkIndexer = new GroupedWorkIndexer(serverName, pikaConn, econtentConn, fullReindex, individualWorkToProcess != null, logger);
+			HashMap<Scope, ArrayList<SiteMapEntry>> siteMapsByScope    = new HashMap<>();
+			HashSet<Long>                           uniqueGroupedWorks = new HashSet<>();
 			if (groupedWorkIndexer.isOkToIndex()) {
 				if (individualWorkToProcess != null) {
 					//Get more information about the work
-					try (PreparedStatement getInfoAboutWorkStmt = pikaConn.prepareStatement("SELECT * FROM grouped_work WHERE permanent_id = ?") ){
+					try (PreparedStatement getInfoAboutWorkStmt = pikaConn.prepareStatement("SELECT * FROM grouped_work WHERE permanent_id = ?")) {
 						getInfoAboutWorkStmt.setString(1, individualWorkToProcess);
 						try (ResultSet infoAboutWork = getInfoAboutWorkStmt.executeQuery()) {
 							if (infoAboutWork.next()) {
@@ -110,6 +132,8 @@ public class GroupedReindexMain {
 					} catch (Exception e) {
 						logger.error("Unable to process individual work " + individualWorkToProcess, e);
 					}
+				}else if(profileToIndex != null && !profileToIndex.isEmpty()){
+					numWorksProcessed = groupedWorkIndexer.processGroupedWorks(profileToIndex);
 				} else {
 					logger.info("Running Reindex");
 					numWorksProcessed = groupedWorkIndexer.processGroupedWorks(siteMapsByScope, uniqueGroupedWorks);
@@ -120,8 +144,11 @@ public class GroupedReindexMain {
 					groupedWorkIndexer.createSiteMaps(siteMapsByScope, uniqueGroupedWorks);
 
 					// Log info about missing hoopla data
-					if (hooplaRecordWithOutExtractInfo.size() > 0) {
-						logger.warn("Hoopla Records without extract info : " + String.join(", ", hooplaRecordWithOutExtractInfo));
+					if (hooplaRecordWithOutExtractInfo.size() > 200){
+						logger.warn("More than 200 Hoopla records found with out extract info (from the Hoopla API)");
+					}
+					if (logger.isInfoEnabled() && hooplaRecordWithOutExtractInfo.size() > 0) {
+						logger.info("Hoopla Records without  : " + String.join(", ", hooplaRecordWithOutExtractInfo));
 					}
 				}
 
@@ -150,7 +177,7 @@ public class GroupedReindexMain {
 		
 		addNoteToReindexLog("Finished Reindex for " + serverName);
 		logger.info("Finished Reindex for " + serverName);
-		long endTime = new Date().getTime();
+		long endTime     = new Date().getTime();
 		long elapsedTime = endTime - startTime;
 		logger.info("Elapsed Minutes " + (elapsedTime / 60000));
 	}

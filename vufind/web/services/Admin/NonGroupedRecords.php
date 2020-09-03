@@ -33,15 +33,8 @@ class Admin_NonGroupedRecords extends ObjectEditor {
 		return 'Records to Not Group';
 	}
 
-	function getAllObjects(){
-		$object = new NonGroupedRecord();
-		$object->orderBy('source, recordId');
-		$object->find();
-		$objectList = array();
-		while ($object->fetch()){
-			$objectList[$object->id] = clone $object;
-		}
-		return $objectList;
+	function getAllObjects($orderBy = null){
+		return parent::getAllObjects($orderBy ?? 'source, recordId');
 	}
 
 	function getObjectStructure(){

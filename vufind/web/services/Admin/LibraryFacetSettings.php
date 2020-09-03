@@ -33,14 +33,14 @@ class LibraryFacetSettings extends ObjectEditor {
 		return 'Library Facets';
 	}
 
-	function getAllObjects(){
-		$facetsList = array();
+	function getAllObjects($orderBy = null){
+		$facetsList = [];
 		$library    = new LibraryFacetSetting();
 		if (isset($_REQUEST['libraryId'])){
 			$libraryId          = $_REQUEST['libraryId'];
 			$library->libraryId = $libraryId;
 		}
-		$library->orderBy('weight');
+		$library->orderBy($orderBy ?? 'weight');
 		$library->find();
 		while ($library->fetch()){
 			$facetsList[$library->id] = clone $library;

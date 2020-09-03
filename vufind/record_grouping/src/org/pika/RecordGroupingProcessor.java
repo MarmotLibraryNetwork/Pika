@@ -1,6 +1,21 @@
+/*
+ * Copyright (C) 2020  Marmot Library Network
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 package org.pika;
 
 import org.apache.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 import org.marc4j.marc.*;
 
 import java.io.File;
@@ -9,6 +24,7 @@ import java.io.IOException;
 import java.sql.*;
 import java.util.*;
 import java.util.Date;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -18,6 +34,7 @@ import java.util.regex.Pattern;
  */
 class RecordGroupingProcessor {
 	protected Logger logger;
+	protected Connection pikaConn;
 	String  recordNumberTag     = "";
 	char    recordNumberField   = 'a';
 	String  recordNumberPrefix  = "";
@@ -31,82 +48,76 @@ class RecordGroupingProcessor {
 	private PreparedStatement updateDateUpdatedForGroupedWorkStmt;
 	private PreparedStatement addPrimaryIdentifierForWorkStmt;
 	private PreparedStatement removePrimaryIdentifiersForMergedWorkStmt;
+	private PreparedStatement loadExistingGroupedWorksStmt;
 
 	private int numRecordsProcessed  = 0;
 	private int numGroupedWorksAdded = 0;
 
-	private boolean fullRegrouping;
+	protected boolean fullRegrouping;
 	private long    startTime = new Date().getTime();
 
-	HashMap<String, HashMap<String, String>> translationMaps = new HashMap<>();
-
-	//TODO: Determine if we can avoid this by simply using the ON DUPLICATE KEY UPDATE FUNCTIONALITY
-	//Would also want to mark merged works as changed (at least once) to make sure they get reindexed.
-	private HashMap<String, Long> existingGroupedWorks = new HashMap<>();
+	HashMap<String, TranslationMap> translationMaps = new HashMap<>();
 
 	//A list of grouped works that have been manually merged.
 	private HashMap<String, String> mergedGroupedWorks = new HashMap<>();
 	private HashSet<String>         recordsToNotGroup  = new HashSet<>();
 	private Long                    updateTime         = new Date().getTime() / 1000;
 
+	private Pattern hoursMinutesPlaytimeDurationRegex = Pattern.compile("(\\d+) hrs?\\., (\\d+) min");
+	private Pattern minutesPlaytimeDurationRegex      = Pattern.compile("(\\d+) min");
+
+	private HashSet<String>         workIdsInHistoricalTable  = new HashSet<>();
+
+	/**
+	 * Default constructor for use by subclasses
+ * @param pikaConn
+ * @param logger
+	 */
+	RecordGroupingProcessor(Connection pikaConn, Logger logger) {
+		this(pikaConn, logger, false);
+	}
+
 	/**
 	 * Default constructor for use by subclasses
 	 */
-	RecordGroupingProcessor(Logger logger, boolean fullRegrouping) {
+	RecordGroupingProcessor(Connection pikaConn, Logger logger, boolean fullRegrouping) {
+		this.pikaConn       = pikaConn;
 		this.logger         = logger;
 		this.fullRegrouping = fullRegrouping;
 	}
+
+//	/**
+//	 * Creates a record grouping processor that saves results to the database.
+//	 *
+//	 * @param pikaConn   - The Connection to the Pika database
+//	 * @param serverName     - The server we are grouping data for
+//	 * @param logger         - A logger to store debug and error messages to.
+//	 * @param fullRegrouping - Whether or not we are doing full regrouping or if we are only grouping changes.
+//	 *                       Determines if old works are loaded at the beginning.
+//	 */
+//	RecordGroupingProcessor(Connection pikaConn, String serverName, Logger logger, boolean fullRegrouping) {
+//		this(pikaConn, logger, fullRegrouping);
+//
+//		setupDatabaseStatements(pikaConn);
+//		loadTranslationMaps(serverName);
+//	}
 
 	/**
-	 * Creates a record grouping processor that saves results to the database.
-	 *
-	 * @param dbConnection   - The Connection to the Pika database
-	 * @param serverName     - The server we are grouping data for
-	 * @param logger         - A logger to store debug and error messages to.
-	 * @param fullRegrouping - Whether or not we are doing full regrouping or if we are only grouping changes.
-	 *                       Determines if old works are loaded at the beginning.
+	 * @param pikaConn - The Connection to the Pika database
 	 */
-	RecordGroupingProcessor(Connection dbConnection, String serverName, Logger logger, boolean fullRegrouping) {
-		this.logger         = logger;
-		this.fullRegrouping = fullRegrouping;
-		//TODO: this should be obsolete in favor of an indexing profile
-//		recordNumberTag     = PikaConfigIni.getIniValue("Reindex", "recordNumberTag");
-//		recordNumberPrefix  = PikaConfigIni.getIniValue("Reindex", "recordNumberPrefix");
-//		itemTag             = PikaConfigIni.getIniValue("Reindex", "itemTag");
-//		useEContentSubfield = PikaConfigIni.getBooleanIniValue("Reindex", "useEContentSubfield");
-//		eContentDescriptor  = PikaConfigIni.getCharIniValue("Reindex", "eContentSubfield");
-
-		setupDatabaseStatements(dbConnection);
-
-		loadTranslationMaps(serverName);
-
-	}
-
-	void setupDatabaseStatements(Connection dbConnection) {
+	void setupDatabaseStatements(Connection pikaConn) {
 		try {
-			insertGroupedWorkStmt                     = dbConnection.prepareStatement("INSERT INTO " + RecordGrouperMain.groupedWorkTableName + " (full_title, author, grouping_category, permanent_id, date_updated) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE date_updated = VALUES(date_updated), id=LAST_INSERT_ID(id) ", Statement.RETURN_GENERATED_KEYS);
-			insertHistoricalGroupedWorkStmt           = dbConnection.prepareStatement("INSERT INTO grouped_work_historical (permanent_id, grouping_title, grouping_author, grouping_category, grouping_version) VALUES (?, ?, ?, ?, ?) ");
-			checkHistoricalGroupedWorkStmt            = dbConnection.prepareStatement("SELECT COUNT(*) FROM grouped_work_historical WHERE permanent_id = ? AND grouping_title = ? AND grouping_author = ? AND grouping_category = ? AND grouping_version = ?", ResultSet.CONCUR_READ_ONLY);
-			updateDateUpdatedForGroupedWorkStmt       = dbConnection.prepareStatement("UPDATE grouped_work SET date_updated = ? where id = ?");
-			addPrimaryIdentifierForWorkStmt           = dbConnection.prepareStatement("INSERT INTO grouped_work_primary_identifiers (grouped_work_id, type, identifier) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE id=LAST_INSERT_ID(id), grouped_work_id = VALUES(grouped_work_id)", Statement.RETURN_GENERATED_KEYS);
-			removePrimaryIdentifiersForMergedWorkStmt = dbConnection.prepareStatement("DELETE FROM grouped_work_primary_identifiers where grouped_work_id = ?");
-			groupedWorkForIdentifierStmt              = dbConnection.prepareStatement("SELECT grouped_work.id, grouped_work.permanent_id FROM grouped_work inner join grouped_work_primary_identifiers on grouped_work_primary_identifiers.grouped_work_id = grouped_work.id where type = ? and identifier = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-
-			if (!fullRegrouping) {
-				try (
-						PreparedStatement loadExistingGroupedWorksStmt = dbConnection.prepareStatement("SELECT id, permanent_id from grouped_work");
-						ResultSet loadExistingGroupedWorksRS = loadExistingGroupedWorksStmt.executeQuery()
-				) {
-					while (loadExistingGroupedWorksRS.next()) {
-						existingGroupedWorks.put(loadExistingGroupedWorksRS.getString("permanent_id"), loadExistingGroupedWorksRS.getLong("id"));
-					}
-				} catch (Exception e) {
-					logger.error("Error loading all existing Works", e);
-				}
-			}
+			insertGroupedWorkStmt                     = pikaConn.prepareStatement("INSERT INTO grouped_work (full_title, author, grouping_category, grouping_language, permanent_id, date_updated) VALUES (?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE date_updated = VALUES(date_updated), id=LAST_INSERT_ID(id) ", Statement.RETURN_GENERATED_KEYS);
+			insertHistoricalGroupedWorkStmt           = pikaConn.prepareStatement("INSERT INTO grouped_work_historical (permanent_id, grouping_title, grouping_author, grouping_category, grouping_language, grouping_version) VALUES (?, ?, ?, ?, ?, ?) ");
+			checkHistoricalGroupedWorkStmt            = pikaConn.prepareStatement("SELECT COUNT(*) FROM grouped_work_historical WHERE permanent_id = ? AND grouping_title = ? AND grouping_author = ? AND grouping_category = ? AND grouping_language = ? AND grouping_version = ?", ResultSet.CONCUR_READ_ONLY);
+			updateDateUpdatedForGroupedWorkStmt       = pikaConn.prepareStatement("UPDATE grouped_work SET date_updated = ? WHERE id = ?");
+			addPrimaryIdentifierForWorkStmt           = pikaConn.prepareStatement("INSERT INTO grouped_work_primary_identifiers (grouped_work_id, type, identifier) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE id=LAST_INSERT_ID(id), grouped_work_id = VALUES(grouped_work_id)", Statement.RETURN_GENERATED_KEYS);
+			removePrimaryIdentifiersForMergedWorkStmt = pikaConn.prepareStatement("DELETE FROM grouped_work_primary_identifiers WHERE grouped_work_id = ?");
+			groupedWorkForIdentifierStmt              = pikaConn.prepareStatement("SELECT grouped_work.id, grouped_work.permanent_id FROM grouped_work INNER JOIN grouped_work_primary_identifiers ON grouped_work_primary_identifiers.grouped_work_id = grouped_work.id where type = ? AND identifier = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			loadExistingGroupedWorksStmt              = pikaConn.prepareStatement("SELECT id FROM grouped_work WHERE permanent_id = ?");
 
 			try (
-					PreparedStatement loadMergedWorksStmt = dbConnection.prepareStatement("SELECT * from merged_grouped_works");
+					PreparedStatement loadMergedWorksStmt = pikaConn.prepareStatement("SELECT * FROM grouped_work_merges");
 					ResultSet mergedWorksRS = loadMergedWorksStmt.executeQuery()
 			) {
 				while (mergedWorksRS.next()) {
@@ -117,7 +128,7 @@ class RecordGroupingProcessor {
 			}
 
 			try (
-					PreparedStatement recordsToNotGroupStmt = dbConnection.prepareStatement("SELECT * from nongrouped_records");
+					PreparedStatement recordsToNotGroupStmt = pikaConn.prepareStatement("SELECT * FROM nongrouped_records");
 					ResultSet nonGroupedRecordsRS = recordsToNotGroupStmt.executeQuery()
 			) {
 				while (nonGroupedRecordsRS.next()) {
@@ -136,42 +147,43 @@ class RecordGroupingProcessor {
 	//above pattern not strictly valid because urls don't have to contain the lib.overdrive.com
 	private static Pattern overdrivePattern = Pattern.compile("(?i)^http://.*?/ContentDetails\\.htm\\?id=[\\da-f]{8}-[\\da-f]{4}-[\\da-f]{4}-[\\da-f]{4}-[\\da-f]{12}$|^http://link\\.overdrive\\.com");
 
-	RecordIdentifier getPrimaryIdentifierFromMarcRecord(Record marcRecord, String recordType, boolean doAutomaticEcontentSuppression) {
+	RecordIdentifier getPrimaryIdentifierFromMarcRecord(Record marcRecord, String recordSource, boolean doAutomaticEcontentSuppression) {
 		RecordIdentifier    identifier         = null;
 		List<VariableField> recordNumberFields = marcRecord.getVariableFields(recordNumberTag);
 		for (VariableField recordNumberFieldValue : recordNumberFields) {
 			//Make sure we only get one ils identifier
-			logger.debug("getPrimaryIdentifierFromMarcRecord - Got record number field");
+//			logger.debug("getPrimaryIdentifierFromMarcRecord - Got record number field");
 			if (recordNumberFieldValue != null) {
 				if (recordNumberFieldValue instanceof DataField) {
-					logger.debug("getPrimaryIdentifierFromMarcRecord - Record number field is a data field");
+//					logger.debug("getPrimaryIdentifierFromMarcRecord - Record number field is a data field");
 
 					DataField curRecordNumberField = (DataField) recordNumberFieldValue;
 					Subfield  recordNumberSubfield = curRecordNumberField.getSubfield(recordNumberField);
 					if (recordNumberSubfield != null && (recordNumberPrefix.length() == 0 || recordNumberSubfield.getData().length() > recordNumberPrefix.length())) {
-						if (recordNumberSubfield.getData().substring(0, recordNumberPrefix.length()).equals(recordNumberPrefix)) {
+						if (recordNumberSubfield.getData().startsWith(recordNumberPrefix)) {
 							String recordNumber = recordNumberSubfield.getData().trim();
-							identifier = new RecordIdentifier();
-							identifier.setValue(recordType, recordNumber);
+							identifier = new RecordIdentifier(recordSource, recordNumber);
 							break;
 						}
 					}
 				} else {
 					//It's a control field
-					logger.debug("getPrimaryIdentifierFromMarcRecord - Record number field is a control field");
+//					logger.debug("getPrimaryIdentifierFromMarcRecord - Record number field is a control field");
 					ControlField curRecordNumberField = (ControlField) recordNumberFieldValue;
 					String       recordNumber         = curRecordNumberField.getData().trim();
-					identifier = new RecordIdentifier();
-					identifier.setValue(recordType, recordNumber);
+					identifier = new RecordIdentifier(recordSource, recordNumber);
 					break;
 				}
 			}
 		}
 
 		if (doAutomaticEcontentSuppression) {
-			logger.debug("getPrimaryIdentifierFromMarcRecord - Doing automatic Econtent Suppression");
+			if (logger.isDebugEnabled()) {
+				logger.debug("getPrimaryIdentifierFromMarcRecord - Doing automatic Econtent Suppression");
+			}
 
 			//Check to see if the record is an overdrive record
+			//TODO: is this needed at the grouping level
 			if (useEContentSubfield) {
 				boolean allItemsSuppressed = true;
 
@@ -219,6 +231,9 @@ class RecordGroupingProcessor {
 			}
 		}
 
+		if (logger.isDebugEnabled()) {
+			logger.debug("identifier : " + identifier);
+		}
 		if (identifier != null && identifier.isValid()) {
 			return identifier;
 		} else {
@@ -231,72 +246,235 @@ class RecordGroupingProcessor {
 		return marcRecord.getDataFields(tag);
 	}
 
-	GroupedWorkBase setupBasicWorkForIlsRecord(Record marcRecord, String loadFormatFrom, char formatSubfield, String specifiedFormatCategory) {
-		GroupedWorkBase workForTitle = GroupedWorkFactory.getInstance(-1);
+	GroupedWorkBase setupBasicWorkForIlsRecord(RecordIdentifier identifier, Record marcRecord, IndexingProfile profile) {
+		GroupedWorkBase workForTitle = GroupedWorkFactory.getInstance(-1, pikaConn);
 
-		//Title
-		DataField field245       = setWorkTitleBasedOnMarcRecord(marcRecord, workForTitle);
-		String    groupingFormat = setGroupingCategoryForWork(marcRecord, loadFormatFrom, formatSubfield, specifiedFormatCategory, workForTitle);
+		// Title
+		setWorkTitleBasedOnMarcRecord(marcRecord, workForTitle);
 
+		// Category
+		String groupingCategory = setGroupingCategoryForWork(identifier, marcRecord, profile, workForTitle);
 
-		//Author
-		setWorkAuthorBasedOnMarcRecord(marcRecord, workForTitle, field245, groupingFormat);
+		// Author
+		setWorkAuthorBasedOnMarcRecord(marcRecord, workForTitle, identifier, groupingCategory);
+
+		// Language
+		if (workForTitle.getGroupedWorkVersion() >= 5) {
+			setGroupingLanguageBasedOnMarc(marcRecord, (GroupedWork5) workForTitle, identifier);
+		}
+
 		return workForTitle;
 	}
 
-	protected String setGroupingCategoryForWork(Record marcRecord, String loadFormatFrom, char formatSubfield, String specifiedFormatCategory, GroupedWorkBase workForTitle) {
-		//Format
-		String groupingFormat;
-		switch (loadFormatFrom) {
-			case "bib":
-				String format = getFormatFromBib(marcRecord);
-				groupingFormat = categoryMap.get(formatsToGroupingCategory.get(format));
-				break;
-			case "specified":
-				//Use specified format
-				groupingFormat = categoryMap.get(specifiedFormatCategory.toLowerCase());
-				if (groupingFormat == null) {
-					groupingFormat = specifiedFormatCategory;
-				}
-				break;
-			default:
-				//get format from item
-				groupingFormat = getFormatFromItems(marcRecord, formatSubfield);
-				break;
+	protected String setGroupingCategoryForWork(RecordIdentifier identifier, Record marcRecord, IndexingProfile profile, GroupedWorkBase workForTitle) {
+		String groupingCategory;
+		HashSet<String> groupingCategories = new GroupingFormatDetermination(profile, translationMaps, logger).loadPrintFormatInformation(identifier, marcRecord);
+		if (groupingCategories.size() > 1){
+			groupingCategory = "book"; // fall back option for now
+			if (fullRegrouping) {
+				logger.warn("More than one grouping category for " + identifier + " : " + String.join(",", groupingCategories));
+			}
+		} else if (groupingCategories.size() == 0){
+			logger.warn("No grouping category for " + identifier);
+			groupingCategory = "book"; // fall back option for now
+		} else {
+			groupingCategory = groupingCategories.iterator().next(); //First Format
 		}
-		workForTitle.setGroupingCategory(groupingFormat);
-		return groupingFormat;
+
+		workForTitle.setGroupingCategory(groupingCategory, identifier);
+		return groupingCategory;
 	}
 
-	private void setWorkAuthorBasedOnMarcRecord(Record marcRecord, GroupedWorkBase workForTitle, DataField field245, String groupingFormat) {
-		String    author   = null;
-		DataField field100 = marcRecord.getDataField("100"); // Heading - Personal Name
-		DataField field110 = marcRecord.getDataField("110"); // Heading - Corporate Name
-		DataField field260 = marcRecord.getDataField("260"); // Publication, Distribution, etc.
-		DataField field710 = marcRecord.getDataField("710"); // Added Entry-Corporate Name
+	private String getMoviePlayTimeForGroupingAuthor(Record marcRecord, RecordIdentifier identifier) {
+		String       author     = null;
+		ControlField fixedField = (ControlField) marcRecord.getVariableField("008");
+		if (fixedField != null) {
+			String oo8Data = fixedField.getData();
+			if (oo8Data.length() > 20) {
+				String movieDuration = oo8Data.substring(18, 21)
+						.trim();  //Some records will just use 2 digit playtimes instead of 3, eg  '89 ' instead of '089'
+				if (movieDuration.equals("000")) {
+					logger.debug("movie 008 running time exceeds 999 minutes - " + identifier);
+					// We will try to parse from physical description instead
+				} else if (movieDuration.matches("^\\d+$")) {
+					// Is a numeric string
+					author = String.valueOf(roundOffTens(Integer.parseInt(movieDuration)));
+					// round to nearest tens value
+				} else {
+					if (fullRegrouping && !movieDuration.equals("|||") && !movieDuration.equals("   ") && !movieDuration.equals("---")) {
+						// entries that are coded with these values (essentially denoting that record doesn't have the playtime info populated in 008)
+						logger.warn("008 running time invalid : '" + movieDuration + "' for " + identifier);
+					}
+				}
+			} else if (fullRegrouping){
+				logger.error("008 not long enough to have a movie running time for " + identifier);
+			}
+		} else if (fullRegrouping){
+			logger.warn("Missing 008 : " + identifier.toString());
+		}
+		// if any part of that failed, try parsing a playtime number from the physical description
+		if (author == null) {
+			DataField physicalDescriptionField = marcRecord.getDataField("300");
+			if (physicalDescriptionField != null && physicalDescriptionField.getSubfield('a') != null) {
+				final String physicalDescription = physicalDescriptionField.getSubfield('a').getData();
+				Matcher      playTimeMatcher     = hoursMinutesPlaytimeDurationRegex.matcher(physicalDescription);
+				if (playTimeMatcher.find()) {
+					int minutes = Integer.parseInt(playTimeMatcher.group(2)) + Integer.parseInt(playTimeMatcher.group(1)) * 60;
+					author = String.valueOf(roundOffTens(minutes));
+				} else {
+					playTimeMatcher = minutesPlaytimeDurationRegex.matcher(physicalDescription);
+					if (playTimeMatcher.find()) {
+						author = String.valueOf(roundOffTens(Integer.parseInt(playTimeMatcher.group(1))));
+					}
+				}
+			}
+		}
+		return author;
+	}
 
-		//Depending on the format we will promote the use of the 245c
-		if (field100 != null && field100.getSubfield('a') != null) {
-			author = field100.getSubfield('a').getData();
-		} else if (field110 != null && field110.getSubfield('a') != null) {
-			author = field110.getSubfield('a').getData();
-			if (field110.getSubfield('b') != null) {
-				author += " " + field110.getSubfield('b').getData();
-			}
-		} else if (groupingFormat.equals("book") && field245 != null && field245.getSubfield('c') != null) {
-			author = field245.getSubfield('c').getData();
-			if (author.indexOf(';') > 0) {
-				author = author.substring(0, author.indexOf(';') - 1);
-			}
-		} else if (field710 != null && field710.getSubfield('a') != null) {
-			author = field710.getSubfield('a').getData();
-		} else if (field260 != null && field260.getSubfield('b') != null) {
-			author = field260.getSubfield('b').getData();
-		} else if (!groupingFormat.equals("book") && field245 != null && field245.getSubfield('c') != null) {
-			// if not a book, check 245c as final resort
-			author = field245.getSubfield('c').getData();
-			if (author.indexOf(';') > 0) {
-				author = author.substring(0, author.indexOf(';') - 1);
+	private void setWorkAuthorBasedOnMarcRecord(Record marcRecord, GroupedWorkBase workForTitle, RecordIdentifier identifier, String groupingCategory) {
+		String    author   = null;
+		if (groupingCategory.equals("movie")){
+			author = getMoviePlayTimeForGroupingAuthor(marcRecord, identifier);
+		} else {
+			DataField field100 = marcRecord.getDataField("100"); // Heading - Personal Name
+			//  First Indicator: 0 - Forename (direct order); 1 - Surname (inverted order);
+			//    3 - Family name (Either direct or inverted order)
+			if (field100 != null && field100.getSubfield('a') != null) {
+				author = field100.getSubfield('a').getData();
+				if (field100.getIndicator1() == '1'){
+					// has lastname, rest of name:
+					// 100	1		|a Schreiber, Ellen.|0 http://id.loc.gov/authorities/names/n2002036303.
+					// 100	1		|a Amen, Daniel G.,|0 http://id.loc.gov/authorities/names/n92013030|e author.
+					author = deInvertAuthorName(author, identifier);
+				}
+			} else {
+				//110	2		|a Mixed By Yogitunes (Musical Group)
+
+				DataField field110 = marcRecord.getDataField("110"); // Heading - Corporate Name
+				if (field110 != null && field110.getSubfield('a') != null) {
+					author = field110.getSubfield('a').getData();
+					if (field110.getIndicator1() == '0'){
+						// has inverted name order
+						author = deInvertAuthorName(author, identifier);
+					}
+					for (Subfield subfield : field110.getSubfields('b')) {
+						if (subfield != null) {
+							String subordinate = subfield.getData();
+							if (subordinate != null && !subordinate.isEmpty()) {
+								author += " " + subordinate;
+							}
+						}
+					}
+				} else {
+					DataField field111 = marcRecord.getDataField("111"); // Meeting Name
+					if (field111 != null && field111.getSubfield('a') != null) {
+						author = field111.getSubfield('a').getData();
+						if (field111.getIndicator1() == '0'){
+							// has inverted name order
+							author = deInvertAuthorName(author, identifier);
+						}
+						for (Subfield subfield : field111.getSubfields('e')) {
+							if (subfield != null) {
+								String subordinate = subfield.getData();
+								if (subordinate != null && !subordinate.isEmpty()) {
+									author += " " + subordinate;
+								}
+							}
+						}
+					} else {
+						DataField field700 = marcRecord.getDataField("700"); // Added Entry Personal Name
+						//  First Indicator: 0 - Forename (direct order); 1 - Surname (inverted order);
+						//    3 - Family name (Either direct or inverted order)
+						if (field700 != null && field700.getSubfield('a') != null) {
+							author = field700.getSubfield('a').getData();
+							if (field700.getIndicator1() == '1'){
+								//  First Indicator: 0 - Forename (direct order); 1 - Surname (inverted order);
+								//    3 - Family name (Either direct or inverted order)
+								author = deInvertAuthorName(author, identifier);
+							}
+						} else {
+							DataField field711 = marcRecord.getDataField("711"); // // Added Entry Corporate Name
+							if (field711 != null && field711.getSubfield('a') != null) {
+								// Check the 711 before the 710
+								author = field711.getSubfield('a').getData();
+								if (field711.getIndicator1() == '0'){
+									// has inverted name order
+									author = deInvertAuthorName(author, identifier);
+								}
+								for (Subfield subfield : field711.getSubfields('e')) {
+									if (subfield != null) {
+										String subordinate = subfield.getData();
+										if (subordinate != null && !subordinate.isEmpty()) {
+											author += " " + subordinate;
+										}
+									}
+								}
+							} else {
+								DataField field710 = marcRecord.getDataField("710"); // Added Entry-Corporate Name
+								//First Indicator 0 - Inverted name; 2 - Name in direct order
+								// 1 - Jurisdiction name
+								if (field710 != null && field710.getSubfield('a') != null) {
+									author = field710.getSubfield('a').getData();
+									if (field710.getIndicator1() == '0'){
+										// has inverted name order
+										author = deInvertAuthorName(author, identifier);
+									}
+									//example : .b20599420
+									//710	1		|a United States.|b Federal Highway Administration.|0 http://id.loc.gov/authorities/names/n79032921.
+									for (Subfield subfield : field710.getSubfields('b')) {
+										if (subfield != null) {
+											String subordinate = subfield.getData();
+											if (subordinate != null && !subordinate.isEmpty()) {
+												author += " " + subordinate;
+											}
+										}
+									}
+
+									} else {
+									// 264		1	|a Washington :|b Printed by P. Force,|c 1837.
+									// 264		1	|a Alexandria, VA :|b distributed by Time Life,|c [2004, 1992]
+									DataField field264 = marcRecord.getDataField("264"); // Production, Publication, Distribution, Manufacture, and Copyright Notice.
+									if (field264 != null && field264.getIndicator2() == '1' && field264.getSubfield('b') != null) {
+										author = field264.getSubfield('b').getData();
+
+										//Example where the 245c would be better than the 264b
+										//245	0	0	|a Aspen Chapel with the beautiful Beatitude windows and organ /|c [design by Kenneth Endicott ; photography of the Chapel and windows by Al Pitzner ; scenes of Aspen area courtesy of Snowmass at Aspen and Robert Bishop.
+										//264		1	|a [Aspen, Colo.?] :|b [publisher not identified], [198-?]
+										// Another example
+										//245	0	0	|a Every Hero Tells a Story |h [videorecording] :|b Variety Show/|c Florissant Public Library.
+										//264		1	|a Colorado :|b publisher,|c 2015.
+										// another example of the 245c being a better option than the 264b
+										//245	0	0	|a Navigation rules and regulations handbook|h [electronic resource] /|c Department of Homeland Security, United States Coast Guard.
+										//264		1	|a [United States] :|b Skyhorse,|c 2018.
+
+									} else {
+										//260			|a Addison, IL :|b compiled by the Addison Public Library,|c 2004.
+										DataField field260 = marcRecord.getDataField("260"); // Publication, Distribution, etc.
+										if (field260 != null && field260.getSubfield('b') != null) {
+											author = field260.getSubfield('b').getData();
+										} else {
+											DataField field245 = marcRecord.getDataField("245");
+											if (field245 != null && field245.getSubfield('c') != null) {
+												//TODO: if we are using this, we should do the clean up here, trimming out prefix phrases like "editor", etc
+												author = field245.getSubfield('c').getData();
+												if (author.indexOf(';') > 0) {
+													//For Example:
+													//245	1	0	|a Pop Corn & Ma Goodness /|c Edna Mitchell Preston ; illustrated by Robert Andrew Parker.
+													author = author.substring(0, author.indexOf(';') - 1);
+												}
+												if (logger.isInfoEnabled()) {
+													logger.info("Resorting to 245c for grouping author for " + identifier + " : " + author);
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+//					}
+					}
+				}
 			}
 		}
 		if (author != null) {
@@ -304,16 +482,83 @@ class RecordGroupingProcessor {
 		}
 	}
 
-	private DataField setWorkTitleBasedOnMarcRecord(Record marcRecord, GroupedWorkBase workForTitle) {
+	/**
+	 * @param author Inverted author name to convert, eg "Last, First M."
+	 * @return an regular ordered name "First M. Last"
+	 */
+	@NotNull
+	private String deInvertAuthorName(String author, RecordIdentifier identifier) {
+		author = author.replaceAll(",+$",""); // trim all trailing commas
+		int commaPosition = author.indexOf(',');
+		if (commaPosition != -1) {
+			author = author.substring(commaPosition + 2) + " " + author.substring(0, commaPosition);
+		} else if (logger.isDebugEnabled()) {
+			// A lot of records will not have a inverted name order despite the indicators set as surname
+			// This should be okay because the name will be in regular order at that point
+			logger.debug("Passed an inverted name order with out a dividing comma: '" + author + "' - " + identifier);
+		}
+		return author;
+	}
+
+	private static int roundOffTens(int intToRound) {
+		// Get the right most digit
+		int rightMostDigit = intToRound % 10;
+
+		// If right most digit greater than or equal to 5
+		if (rightMostDigit >= 5) {
+			intToRound += 10 - rightMostDigit;
+
+		// If right most digit < 5
+		} else{
+			intToRound -= rightMostDigit;
+		}
+		return intToRound;
+	}
+
+	protected void setGroupingLanguageBasedOnMarc(Record marcRecord, GroupedWork5 workForTitle, RecordIdentifier identifier){
+		ControlField fixedField     = (ControlField) marcRecord.getVariableField("008");
+		String       languageCode = null;
+		if (fixedField != null) {
+			String       oo8Data         = fixedField.getData();
+			if (oo8Data.length() > 37) {
+				String oo8languageCode = oo8Data.substring(35, 38).toLowerCase().trim(); // (trim because some bad values will have spaces)
+				if (!oo8languageCode.equals("") && !oo8languageCode.equals("|||")){
+					//"   " (trimmed to "" & "|||" are equivalent to no language value being set
+					languageCode = oo8languageCode;
+				}
+			}
+		} else {
+				logger.warn("Missing 008 : " + identifier.toString());
+		}
+		if (languageCode == null) {
+			// If we still don't have a language, try using the first 041a if present
+			DataField languageField = marcRecord.getDataField("041");
+			if (languageField != null){
+				Subfield languageSubField = languageField.getSubfield('a');
+				if (languageSubField != null && languageField.getIndicator1() != '1' && languageField.getIndicator2() != '7'){
+					// First indicator of 1 is for translations; 2nd indicator of 2 is for other language code schemes
+					languageCode = languageSubField.getData().trim().toLowerCase().substring(0, 3);
+					//substring(0,3) because some 041 tags will have multiple language codes within a single subfield.
+					// We will just use the very first one.
+				}
+			}
+		}
+		if (languageCode == null) languageCode = "";
+		workForTitle.setGroupingLanguage(languageCode);
+	}
+
+	private void setWorkTitleBasedOnMarcRecord(Record marcRecord, GroupedWorkBase workForTitle) {
 		DataField field245 = marcRecord.getDataField("245");
 		if (field245 != null && field245.getSubfield('a') != null) {
-			String fullTitle = field245.getSubfield('a').getData();
+			String basicTitle = field245.getSubfield('a').getData();
 
 			char nonFilingCharacters = field245.getIndicator2();
-			if (nonFilingCharacters == ' ') nonFilingCharacters = '0';
-			int numNonFilingCharacters = 0;
-			if (nonFilingCharacters >= '0' && nonFilingCharacters <= '9') {
-				numNonFilingCharacters = Integer.parseInt(Character.toString(nonFilingCharacters));
+//			if (nonFilingCharacters == ' ') nonFilingCharacters = '0';
+			if (nonFilingCharacters > '0' && nonFilingCharacters <= '9') { // Note: Don't need to change basic title when the non file character indicator is zero
+				int numNonFilingCharacters = Integer.parseInt(Character.toString(nonFilingCharacters));
+				if (numNonFilingCharacters < basicTitle.length()){
+					basicTitle = basicTitle.substring(numNonFilingCharacters);
+				}
 			}
 
 			//Add in subtitle (subfield b as well to avoid problems with gov docs, etc)
@@ -323,35 +568,81 @@ class RecordGroupingProcessor {
 			}
 
 			//Group volumes, seasons, etc. independently
-			if (field245.getSubfield('n') != null) {
-				if (groupingSubtitle.length() > 0) groupingSubtitle.append(" ");
-				groupingSubtitle.append(field245.getSubfield('n').getData());
+			for (Subfield subfield : field245.getSubfields('n')) {
+				if (subfield != null) {
+					String subtitlePiece = subfield.getData();
+					if (subtitlePiece != null && !subtitlePiece.isEmpty()) {
+						if (groupingSubtitle.length() > 0) groupingSubtitle.append(" ");
+						groupingSubtitle.append(subtitlePiece);
+					}
+				}
 			}
-			if (field245.getSubfield('p') != null) {
-				if (groupingSubtitle.length() > 0) groupingSubtitle.append(" ");
-				groupingSubtitle.append(field245.getSubfield('p').getData());
+			for (Subfield subfield : field245.getSubfields('p')) {
+				if (subfield != null) {
+					String subtitlePiece = subfield.getData();
+					if (subtitlePiece != null && !subtitlePiece.isEmpty()) {
+						if (groupingSubtitle.length() > 0) groupingSubtitle.append(" ");
+						groupingSubtitle.append(subtitlePiece);
+					}
+				}
 			}
 
-			workForTitle.setTitle(fullTitle, numNonFilingCharacters, groupingSubtitle.toString());
+
+			workForTitle.setTitle(basicTitle, groupingSubtitle.toString());
 		}
-		return field245;
 	}
 
-	private boolean workNotInHistoricalTable(GroupedWorkBase groupedWork){
+	private long getExistingWork(String permanentId){
 		try {
-			checkHistoricalGroupedWorkStmt.setString( 1, groupedWork.getPermanentId());
-			checkHistoricalGroupedWorkStmt.setString( 2, groupedWork.fullTitle);
-			checkHistoricalGroupedWorkStmt.setString( 3, groupedWork.author);
-			checkHistoricalGroupedWorkStmt.setString( 4, groupedWork.groupingCategory);
-			checkHistoricalGroupedWorkStmt.setInt( 5, groupedWork.getGroupedWorkVersion());
-
-			try (ResultSet existingHistoricalEntryRS = checkHistoricalGroupedWorkStmt.executeQuery()){
-				existingHistoricalEntryRS.next();
-				int count = existingHistoricalEntryRS.getInt(1);
-				return count == 0;
+			loadExistingGroupedWorksStmt.setString(1, permanentId);
+			ResultSet loadExistingGroupedWorksRS = loadExistingGroupedWorksStmt.executeQuery();
+			if (loadExistingGroupedWorksRS.next()){
+				long groupedWorkId = loadExistingGroupedWorksRS.getLong(1);
+				return groupedWorkId;
 			}
-		} catch (SQLException e){
-			logger.warn("Error looking up work in historical table", e);
+		} catch (SQLException e) {
+			logger.warn("Error looking up work id from permanent id: " + permanentId, e);
+		}
+		return 0L;
+	}
+
+	/** Check if the grouping factors and version already have been added to
+	 * the historical grouping table.
+	 *
+	 * @param groupedWork The grouped work with calculated factors
+	 * @return
+	 */
+	private boolean workNotInHistoricalTable(GroupedWorkBase groupedWork){
+		if (workIdsInHistoricalTable.contains(groupedWork.getPermanentId())){
+			return false;
+		} else {
+			try {
+//				if (logger.isDebugEnabled()){
+//					logger.debug("checking historical grouping table for existing entry for id:  " + groupedWork.permanentId);
+//				}
+				checkHistoricalGroupedWorkStmt.setString(1, groupedWork.permanentId);
+				checkHistoricalGroupedWorkStmt.setString(2, groupedWork.fullTitle);
+				checkHistoricalGroupedWorkStmt.setString(3, groupedWork.author);
+				checkHistoricalGroupedWorkStmt.setString(4, groupedWork.groupingCategory);
+				final int groupedWorkVersion = groupedWork.getGroupedWorkVersion();
+				if (groupedWorkVersion >= 5) {
+					checkHistoricalGroupedWorkStmt.setString(5, ((GroupedWork5) groupedWork).groupingLanguage);
+					checkHistoricalGroupedWorkStmt.setInt(6, groupedWorkVersion);
+				} else {
+					checkHistoricalGroupedWorkStmt.setInt(5, groupedWorkVersion);
+				}
+
+				try (ResultSet existingHistoricalEntryRS = checkHistoricalGroupedWorkStmt.executeQuery()) {
+					existingHistoricalEntryRS.next();
+					int count = existingHistoricalEntryRS.getInt(1);
+					if (count > 0){
+						workIdsInHistoricalTable.add(groupedWork.permanentId);
+					}
+					return count == 0;
+				}
+			} catch (SQLException e) {
+				logger.warn("Error looking up work in historical table for " + groupedWork.getPermanentId(), e);
+			}
 		}
 		return true;  // When things go awry, say work is not in table.  If it is, the follow-up INSERT statement will fail on unique check anyway.
 	}
@@ -362,7 +653,8 @@ class RecordGroupingProcessor {
 			insertHistoricalGroupedWorkStmt.setString( 2, groupedWork.fullTitle);
 			insertHistoricalGroupedWorkStmt.setString( 3, groupedWork.author);
 			insertHistoricalGroupedWorkStmt.setString( 4, groupedWork.groupingCategory);
-			insertHistoricalGroupedWorkStmt.setInt( 5, groupedWork.getGroupedWorkVersion());
+			insertHistoricalGroupedWorkStmt.setString( 5, ((GroupedWork5)groupedWork).groupingLanguage);
+			insertHistoricalGroupedWorkStmt.setInt( 6, groupedWork.getGroupedWorkVersion());
 
 			int success = insertHistoricalGroupedWorkStmt.executeUpdate();
 			if (success != 1){
@@ -370,7 +662,7 @@ class RecordGroupingProcessor {
 			}
 
 		} catch (SQLException e){
-			logger.warn("Error adding entry to historical table", e);
+			logger.warn("Error adding entry to historical table for " + groupedWork.getPermanentId() + ", query: " + insertHistoricalGroupedWorkStmt, e);
 		}
 
 	}
@@ -385,11 +677,12 @@ class RecordGroupingProcessor {
 		if (workNotInHistoricalTable(groupedWork)){
 			// Add grouping factors to historical table in order to track permanent Ids across grouping versions
 			// Do this before unmerging or merging because we want to track the original factors and id
+			// Note: preferred grouping title/author will be used for the historical table
 
 			addToHistoricalTable(groupedWork);
 		}
 
-		//Check to see if we need to ungroup this
+		//Check to see if we need to ungroup this record
 		if (recordsToNotGroup.contains(primaryIdentifier.toString().toLowerCase())) {
 			groupedWork.makeUnique(primaryIdentifier.toString());
 		}
@@ -403,14 +696,14 @@ class RecordGroupingProcessor {
 
 		//Check to see if the record is already on an existing work.  If so, remove from the old work.
 		try {
-			groupedWorkForIdentifierStmt.setString(1, primaryIdentifier.getType());
+			groupedWorkForIdentifierStmt.setString(1, primaryIdentifier.getSource());
 			groupedWorkForIdentifierStmt.setString(2, primaryIdentifier.getIdentifier());
 
 			try (ResultSet groupedWorkForIdentifierRS = groupedWorkForIdentifierStmt.executeQuery()) {
 				if (groupedWorkForIdentifierRS.next()) {
 					//We have an existing grouped work
 					String existingGroupedWorkPermanentId = groupedWorkForIdentifierRS.getString("permanent_id");
-					Long   existingGroupedWorkId          = groupedWorkForIdentifierRS.getLong("id");
+					long   existingGroupedWorkId          = groupedWorkForIdentifierRS.getLong("id");
 					if (!existingGroupedWorkPermanentId.equals(groupedWorkPermanentId)) {
 						markWorkUpdated(existingGroupedWorkId);
 					}
@@ -424,9 +717,9 @@ class RecordGroupingProcessor {
 		numRecordsProcessed++;
 		long groupedWorkId = -1;
 		try {
-			if (existingGroupedWorks.containsKey(groupedWorkPermanentId)) {
+			groupedWorkId = getExistingWork(groupedWorkPermanentId); // returns the grouped work id or 0
+			if (groupedWorkId > 0) {
 				//There is an existing grouped record
-				groupedWorkId = existingGroupedWorks.get(groupedWorkPermanentId);
 
 				//Mark that the work has been updated
 				//Only mark it as updated if the data for the primary identifier has changed
@@ -439,8 +732,11 @@ class RecordGroupingProcessor {
 				insertGroupedWorkStmt.setString(1, groupedWork.getTitle());
 				insertGroupedWorkStmt.setString(2, groupedWork.getAuthor());
 				insertGroupedWorkStmt.setString(3, groupedWork.getGroupingCategory());
-				insertGroupedWorkStmt.setString(4, groupedWorkPermanentId);
-				insertGroupedWorkStmt.setLong(5, updateTime);
+				if (groupedWork.getGroupedWorkVersion() >= 5) {
+					insertGroupedWorkStmt.setString(4, ((GroupedWork5)groupedWork).getGroupingLanguage());
+				}
+				insertGroupedWorkStmt.setString(5, groupedWorkPermanentId);
+				insertGroupedWorkStmt.setLong(6, updateTime);
 
 				insertGroupedWorkStmt.executeUpdate();
 				try (ResultSet generatedKeysRS = insertGroupedWorkStmt.getGeneratedKeys()) {
@@ -450,8 +746,6 @@ class RecordGroupingProcessor {
 				}
 				numGroupedWorksAdded++;
 
-				//Add to the existing works so we can optimize performance later
-				existingGroupedWorks.put(groupedWorkPermanentId, groupedWorkId);
 				updatedAndInsertedWorksThisRun.add(groupedWorkId);
 			}
 
@@ -469,18 +763,19 @@ class RecordGroupingProcessor {
 		String targetGroupedWorkPermanentId = mergedGroupedWorks.get(sourceGroupedWorkPermanentId);
 		groupedWork.overridePermanentId(targetGroupedWorkPermanentId);
 
-		logger.debug("Overriding grouped work " + sourceGroupedWorkPermanentId + " with " + targetGroupedWorkPermanentId);
+		if (logger.isDebugEnabled()) {
+			logger.debug("Overriding grouped work " + sourceGroupedWorkPermanentId + " with " + targetGroupedWorkPermanentId);
+		}
 
 		//Mark that the original was updated
-		if (existingGroupedWorks.containsKey(sourceGroupedWorkPermanentId)) {
+		long originalGroupedWorkId = getExistingWork(sourceGroupedWorkPermanentId);
+		if (originalGroupedWorkId > 0) {
 			//There is an existing grouped record
-			long originalGroupedWorkId = existingGroupedWorks.get(sourceGroupedWorkPermanentId);
 
 			//Make sure we mark the original work as updated so it can be removed from the index next time around
 			markWorkUpdated(originalGroupedWorkId);
 
 			//Remove the identifiers for the work.
-			//TODO: If we have multiple identifiers for this work, we'll call the delete once for each work.
 			//Should we optimize to just call it once and remember that we removed it already?
 			try {
 				removePrimaryIdentifiersForMergedWorkStmt.setLong(1, originalGroupedWorkId);
@@ -514,589 +809,67 @@ class RecordGroupingProcessor {
 			//This statement will either add the primary key or update the work id if it already exists
 			//Note, we can not lower case this because we depend on the actual identifier later
 			addPrimaryIdentifierForWorkStmt.setLong(1, groupedWorkId);
-			addPrimaryIdentifierForWorkStmt.setString(2, primaryIdentifier.getType());
+			addPrimaryIdentifierForWorkStmt.setString(2, primaryIdentifier.getSource());
 			addPrimaryIdentifierForWorkStmt.setString(3, primaryIdentifier.getIdentifier());
 			addPrimaryIdentifierForWorkStmt.executeUpdate();
-			/*ResultSet primaryIdentifierRS = addPrimaryIdentifierForWorkStmt.getGeneratedKeys();
-			primaryIdentifierRS.next();
-			primaryIdentifier.setIdentifierId(primaryIdentifierRS.getLong(1));
-			primaryIdentifierRS.close();*/
 		} catch (SQLException e) {
 			logger.error("Error adding primary identifier to grouped work " + groupedWorkId + " " + primaryIdentifier.toString(), e);
 		}
 	}
 
-	void processRecord(RecordIdentifier primaryIdentifier, String title, String subtitle, String author, String format, boolean primaryDataChanged) {
-		GroupedWorkBase groupedWork = GroupedWorkFactory.getInstance(-1);
-
-		//Replace & with and for better matching
-		groupedWork.setTitle(title, 0, subtitle);
-
-		if (author != null) {
-			groupedWork.setAuthor(author);
-		}
-
-		if (format.equalsIgnoreCase("audiobook")) {
-			groupedWork.setGroupingCategory("book");
-		} else if (format.equalsIgnoreCase("ebook")) {
-			groupedWork.setGroupingCategory("book");
-		} else if (format.equalsIgnoreCase("music")) {
-			groupedWork.setGroupingCategory("music");
-		} else if (format.equalsIgnoreCase("video")) {
-			groupedWork.setGroupingCategory("movie");
-		}
-
-		addGroupedWorkToDatabase(primaryIdentifier, groupedWork, primaryDataChanged);
-	}
-
-	private String getFormatFromItems(Record record, char formatSubfield) {
-		List<DataField> itemFields = getDataFields(record, itemTag);
-		for (DataField itemField : itemFields) {
-			if (itemField.getSubfield(formatSubfield) != null) {
-				String originalFormat = itemField.getSubfield(formatSubfield).getData().toLowerCase();
-				String format         = translateValue("format_group", originalFormat);
-				if (format != null && !format.equals(originalFormat)) {
-					return format;
-				}
-			}
-		}
-		//We didn't get a format from the items, check the bib as backup
-		String format = getFormatFromBib(record);
-		format = categoryMap.get(formatsToGroupingCategory.get(format));
-		return format;
-	}
-
-	private String getFormatFromBib(Record record) {
-		//Check to see if the title is eContent based on the 989 field
-		if (useEContentSubfield) {
-			List<DataField> itemFields = getDataFields(record, itemTag);
-			for (DataField itemField : itemFields) {
-				if (itemField.getSubfield(eContentDescriptor) != null) {
-					//The record is some type of eContent.  For this purpose, we don't care what type.
-					return "eContent";
-				}
-			}
-		}
-
-		String       leader     = record.getLeader().toString();
-		char         leaderBit;
-		ControlField fixedField = (ControlField) record.getVariableField("008");
-		char         formatCode;
-
-		// check for music recordings quickly so we can figure out if it is music
-		// for category (need to do here since checking what is on the Compact
-		// Disc/Phonograph, etc is difficult).
-		if (leader.length() >= 6) {
-			leaderBit = leader.charAt(6);
-			switch (Character.toUpperCase(leaderBit)) {
-				case 'J':
-					return "MusicRecording";
-			}
-		}
-
-		// check for playaway in 260|b
-		DataField sysDetailsNote = record.getDataField("260");
-		if (sysDetailsNote != null) {
-			if (sysDetailsNote.getSubfield('b') != null) {
-				String sysDetailsValue = sysDetailsNote.getSubfield('b').getData().toLowerCase();
-				if (sysDetailsValue.contains("playaway")) {
-					return "Playaway";
-				}
-			}
-		}
-
-		// Check for formats in the 538 field
-		DataField sysDetailsNote2 = record.getDataField("538");
-		if (sysDetailsNote2 != null) {
-			if (sysDetailsNote2.getSubfield('a') != null) {
-				String sysDetailsValue = sysDetailsNote2.getSubfield('a').getData().toLowerCase();
-				if (sysDetailsValue.contains("playaway")) {
-					return "Playaway";
-				} else if (sysDetailsValue.contains("bluray")
-						|| sysDetailsValue.contains("blu-ray")) {
-					return "Blu-ray";
-				} else if (sysDetailsValue.contains("dvd")) {
-					return "DVD";
-				} else if (sysDetailsValue.contains("vertical file")) {
-					return "VerticalFile";
-				}
-			}
-		}
-
-		// Check for formats in the 500 tag
-		DataField noteField = record.getDataField("500");
-		if (noteField != null) {
-			if (noteField.getSubfield('a') != null) {
-				String noteValue = noteField.getSubfield('a').getData().toLowerCase();
-				if (noteValue.contains("vertical file")) {
-					return "VerticalFile";
-				}
-			}
-		}
-
-		// Check for large print book (large format in 650, 300, or 250 fields)
-		// Check for blu-ray in 300 fields
-		DataField edition = record.getDataField("250");
-		if (edition != null) {
-			if (edition.getSubfield('a') != null) {
-				if (edition.getSubfield('a').getData().toLowerCase().contains("large type")) {
-					return "LargePrint";
-				}
-			}
-		}
-
-		List<DataField> physicalDescription = getDataFields(record, "300");
-		if (physicalDescription != null) {
-			Iterator<DataField> fieldsIter = physicalDescription.iterator();
-			DataField           field;
-			while (fieldsIter.hasNext()) {
-				field = fieldsIter.next();
-				@SuppressWarnings("unchecked")
-				List<Subfield> subFields = field.getSubfields();
-				for (Subfield subfield : subFields) {
-					if (subfield.getData().toLowerCase().contains("large type")) {
-						return "LargePrint";
-					} else if (subfield.getData().toLowerCase().contains("bluray")
-							|| subfield.getData().toLowerCase().contains("blu-ray")) {
-						return "Blu-ray";
-					}
-				}
-			}
-		}
-		List<DataField> topicalTerm = getDataFields(record, "650");
-		if (topicalTerm != null) {
-			Iterator<DataField> fieldsIter = topicalTerm.iterator();
-			DataField           field;
-			while (fieldsIter.hasNext()) {
-				field = fieldsIter.next();
-				@SuppressWarnings("unchecked")
-				List<Subfield> subfields = field.getSubfields();
-				for (Subfield subfield : subfields) {
-					if (subfield.getData().toLowerCase().contains("large type")) {
-						return "LargePrint";
-					}
-				}
-			}
-		}
-
-		List<DataField> localTopicalTerm = getDataFields(record, "690");
-		if (localTopicalTerm != null) {
-			Iterator<DataField> fieldsIterator = localTopicalTerm.iterator();
-			DataField           field;
-			while (fieldsIterator.hasNext()) {
-				field = fieldsIterator.next();
-				Subfield subfieldA = field.getSubfield('a');
-				if (subfieldA != null) {
-					if (subfieldA.getData().toLowerCase().contains("seed library")) {
-						return "SeedPacket";
-					}
-				}
-			}
-		}
-
-		// check the 007 - this is a repeating field
-		List<DataField> fields = getDataFields(record, "007");
-		if (fields != null) {
-			Iterator<DataField> fieldsIter = fields.iterator();
-			ControlField        formatField;
-			while (fieldsIter.hasNext()) {
-				formatField = (ControlField) fieldsIter.next();
-				if (formatField.getData() == null || formatField.getData().length() < 2) {
-					continue;
-				}
-				// Check for blu-ray (s in position 4)
-				// This logic does not appear correct.
-				/*
-				 * if (formatField.getData() != null && formatField.getData().length()
-				 * >= 4){ if (formatField.getData().toUpperCase().charAt(4) == 'S'){
-				 * result.add("Blu-ray"); break; } }
-				 */
-				formatCode = formatField.getData().toUpperCase().charAt(0);
-				switch (formatCode) {
-					case 'A':
-						switch (formatField.getData().toUpperCase().charAt(1)) {
-							case 'D':
-								return "Atlas";
-							default:
-								return "Map";
-						}
-					case 'C':
-						switch (formatField.getData().toUpperCase().charAt(1)) {
-							case 'A':
-								return "TapeCartridge";
-							case 'B':
-								return "ChipCartridge";
-							case 'C':
-								return "DiscCartridge";
-							case 'F':
-								return "TapeCassette";
-							case 'H':
-								return "TapeReel";
-							case 'J':
-								return "FloppyDisk";
-							case 'M':
-							case 'O':
-								return "CDROM";
-							case 'R':
-								// Do not return - this will cause anything with an
-								// 856 field to be labeled as "Electronic"
-								break;
-							default:
-								return "Software";
-						}
-						break;
-					case 'D':
-						return "Globe";
-					case 'F':
-						return "Braille";
-					case 'G':
-						switch (formatField.getData().toUpperCase().charAt(1)) {
-							case 'C':
-							case 'D':
-								return "Filmstrip";
-							case 'T':
-								return "Transparency";
-							default:
-								return "Slide";
-						}
-					case 'H':
-						return "Microfilm";
-					case 'K':
-						switch (formatField.getData().toUpperCase().charAt(1)) {
-							case 'C':
-								return "Collage";
-							case 'D':
-								return "Drawing";
-							case 'E':
-								return "Painting";
-							case 'F':
-								return "Print";
-							case 'G':
-								return "Photonegative";
-							case 'J':
-								return "Print";
-							case 'L':
-								return "Drawing";
-							case 'O':
-								return "FlashCard";
-							case 'N':
-								return "Chart";
-							default:
-								return "Photo";
-						}
-					case 'M':
-						switch (formatField.getData().toUpperCase().charAt(1)) {
-							case 'F':
-								return "VideoCassette";
-							case 'R':
-								return "Filmstrip";
-							default:
-								return "MotionPicture";
-						}
-					case 'O':
-						return "Kit";
-					case 'Q':
-						return "MusicalScore";
-					case 'R':
-						return "SensorImage";
-					case 'S':
-						switch (formatField.getData().toUpperCase().charAt(1)) {
-							case 'D':
-								if (formatField.getData().length() >= 4) {
-									char speed = formatField.getData().toUpperCase().charAt(3);
-									if (speed >= 'A' && speed <= 'E') {
-										return "Phonograph";
-									} else if (speed == 'F') {
-										return "CompactDisc";
-									} else if (speed >= 'K' && speed <= 'R') {
-										return "TapeRecording";
-									} else {
-										return "SoundDisc";
-									}
-								} else {
-									return "SoundDisc";
-								}
-							case 'S':
-								return "SoundCassette";
-							default:
-								return "SoundRecording";
-						}
-					case 'T':
-						switch (formatField.getData().toUpperCase().charAt(1)) {
-							case 'A':
-								return "Book";
-							case 'B':
-								return "LargePrint";
-						}
-					case 'V':
-						switch (formatField.getData().toUpperCase().charAt(1)) {
-							case 'C':
-								return "VideoCartridge";
-							case 'D':
-								return "VideoDisc";
-							case 'F':
-								return "VideoCassette";
-							case 'R':
-								return "VideoReel";
-							default:
-								return "Video";
-						}
-				}
-			}
-		}
-
-		// check the Leader at position 6
-		if (leader.length() >= 6) {
-			leaderBit = leader.charAt(6);
-			switch (Character.toUpperCase(leaderBit)) {
-				case 'C':
-				case 'D':
-					return "MusicalScore";
-				case 'E':
-				case 'F':
-					return "Map";
-				case 'G':
-					// We appear to have a number of items without 007 tags marked as G's.
-					// These seem to be Videos rather than Slides.
-					// return "Slide");
-					return "Video";
-				case 'I':
-					return "SoundRecording";
-				case 'J':
-					return "MusicRecording";
-				case 'K':
-					return "Photo";
-				case 'M':
-					return "Electronic";
-				case 'O':
-				case 'P':
-					return "Kit";
-				case 'R':
-					return "PhysicalObject";
-				case 'T':
-					return "Manuscript";
-			}
-		}
-
-		if (leader.length() >= 7) {
-			// check the Leader at position 7
-			leaderBit = leader.charAt(7);
-			switch (Character.toUpperCase(leaderBit)) {
-				// Monograph
-				case 'M':
-					return "Book";
-				// Serial
-				case 'S':
-					// Look in 008 to determine what type of Continuing Resource
-					if (fixedField != null && fixedField.getData().length() >= 22) {
-						formatCode = fixedField.getData().toUpperCase().charAt(21);
-						switch (formatCode) {
-							case 'N':
-								return "Newspaper";
-							case 'P':
-								return "Journal";
-							default:
-								return "Serial";
-						}
-					}
-			}
-		}
-		// Nothing worked!
-		return "Unknown";
-	}
-
-	private static HashMap<String, String> formatsToGroupingCategory = new HashMap<>();
-
-	static {
-		formatsToGroupingCategory.put("Atlas", "other");
-		formatsToGroupingCategory.put("Map", "other");
-		formatsToGroupingCategory.put("TapeCartridge", "other");
-		formatsToGroupingCategory.put("ChipCartridge", "other");
-		formatsToGroupingCategory.put("DiscCartridge", "other");
-		formatsToGroupingCategory.put("TapeCassette", "other");
-		formatsToGroupingCategory.put("TapeReel", "other");
-		formatsToGroupingCategory.put("FloppyDisk", "other");
-		formatsToGroupingCategory.put("CDROM", "other");
-		formatsToGroupingCategory.put("Software", "other");
-		formatsToGroupingCategory.put("Globe", "other");
-		formatsToGroupingCategory.put("Braille", "book");
-		formatsToGroupingCategory.put("Filmstrip", "movie");
-		formatsToGroupingCategory.put("Transparency", "other");
-		formatsToGroupingCategory.put("Slide", "other");
-		formatsToGroupingCategory.put("Microfilm", "other");
-		formatsToGroupingCategory.put("Collage", "other");
-		formatsToGroupingCategory.put("Drawing", "other");
-		formatsToGroupingCategory.put("Painting", "other");
-		formatsToGroupingCategory.put("Print", "other");
-		formatsToGroupingCategory.put("Photonegative", "other");
-		formatsToGroupingCategory.put("FlashCard", "other");
-		formatsToGroupingCategory.put("Chart", "other");
-		formatsToGroupingCategory.put("Photo", "other");
-		formatsToGroupingCategory.put("MotionPicture", "movie");
-		formatsToGroupingCategory.put("Kit", "other");
-//		formatsToGroupingCategory.put("MusicalScore", "book");
-		formatsToGroupingCategory.put("SensorImage", "other");
-		formatsToGroupingCategory.put("SoundDisc", "audio");
-		formatsToGroupingCategory.put("SoundCassette", "audio");
-		formatsToGroupingCategory.put("SoundRecording", "audio");
-		formatsToGroupingCategory.put("VideoCartridge", "movie");
-		formatsToGroupingCategory.put("VideoDisc", "movie");
-		formatsToGroupingCategory.put("VideoCassette", "movie");
-		formatsToGroupingCategory.put("VideoReel", "movie");
-		formatsToGroupingCategory.put("Video", "movie");
-		formatsToGroupingCategory.put("MusicalScore", "book");
-		formatsToGroupingCategory.put("MusicRecording", "music");
-		formatsToGroupingCategory.put("Electronic", "other");
-		formatsToGroupingCategory.put("PhysicalObject", "other");
-		formatsToGroupingCategory.put("Manuscript", "book");
-		formatsToGroupingCategory.put("eBook", "ebook");
-		formatsToGroupingCategory.put("Book", "book");
-		formatsToGroupingCategory.put("Newspaper", "book");
-		formatsToGroupingCategory.put("Journal", "book");
-		formatsToGroupingCategory.put("Serial", "book");
-		formatsToGroupingCategory.put("Unknown", "other");
-		formatsToGroupingCategory.put("Playaway", "audio");
-		formatsToGroupingCategory.put("LargePrint", "book");
-		formatsToGroupingCategory.put("Blu-ray", "movie");
-		formatsToGroupingCategory.put("DVD", "movie");
-		formatsToGroupingCategory.put("VerticalFile", "other");
-		formatsToGroupingCategory.put("CompactDisc", "audio");
-		formatsToGroupingCategory.put("TapeRecording", "audio");
-		formatsToGroupingCategory.put("Phonograph", "audio");
-		formatsToGroupingCategory.put("pdf", "ebook");
-		formatsToGroupingCategory.put("epub", "ebook");
-		formatsToGroupingCategory.put("jpg", "other");
-		formatsToGroupingCategory.put("gif", "other");
-		formatsToGroupingCategory.put("mp3", "audio");
-		formatsToGroupingCategory.put("plucker", "ebook");
-		formatsToGroupingCategory.put("kindle", "ebook");
-		formatsToGroupingCategory.put("externalLink", "ebook");
-		formatsToGroupingCategory.put("externalMP3", "audio");
-		formatsToGroupingCategory.put("interactiveBook", "ebook");
-		formatsToGroupingCategory.put("overdrive", "ebook");
-		formatsToGroupingCategory.put("external_web", "ebook"); //TODO: external_ values obsolete
-		formatsToGroupingCategory.put("external_ebook", "ebook"); //TODO: external_ values obsolete
-		formatsToGroupingCategory.put("external_eaudio", "audio"); //TODO: external_ values obsolete
-		formatsToGroupingCategory.put("external_emusic", "music"); //TODO: external_ values obsolete
-		formatsToGroupingCategory.put("external_evideo", "movie"); //TODO: external_ values obsolete
-		formatsToGroupingCategory.put("text", "ebook");
-		formatsToGroupingCategory.put("gifs", "other");
-		formatsToGroupingCategory.put("itunes", "audio");
-		formatsToGroupingCategory.put("Adobe_EPUB_eBook", "ebook");
-		formatsToGroupingCategory.put("Kindle_Book", "ebook");
-		formatsToGroupingCategory.put("Microsoft_eBook", "ebook");
-		formatsToGroupingCategory.put("OverDrive_WMA_Audiobook", "audio");
-		formatsToGroupingCategory.put("OverDrive_MP3_Audiobook", "audio");
-		formatsToGroupingCategory.put("OverDrive_Music", "music");
-		formatsToGroupingCategory.put("OverDrive_Video", "movie");
-		formatsToGroupingCategory.put("OverDrive_Read", "ebook");
-		formatsToGroupingCategory.put("OverDrive_Listen", "audio");
-		formatsToGroupingCategory.put("Adobe_PDF_eBook", "ebook");
-		formatsToGroupingCategory.put("Palm", "ebook");
-		formatsToGroupingCategory.put("Mobipocket_eBook", "ebook");
-		formatsToGroupingCategory.put("Disney_Online_Book", "ebook");
-		formatsToGroupingCategory.put("Open_PDF_eBook", "ebook");
-		formatsToGroupingCategory.put("Open_EPUB_eBook", "ebook");
-		formatsToGroupingCategory.put("Nook_Periodicals", "ebook");
-		formatsToGroupingCategory.put("eContent", "ebook");
-		formatsToGroupingCategory.put("SeedPacket", "other");
-	}
-
-	private static HashMap<String, String> categoryMap = new HashMap<>();
-
-	static {
-		categoryMap.put("other", "book");
-		categoryMap.put("book", "book");
-		categoryMap.put("ebook", "book");
-		categoryMap.put("audio", "book");
-		categoryMap.put("music", "music");
-		categoryMap.put("movie", "movie");
-		categoryMap.put("movies", "movie");
-	}
-
-
 	void dumpStats() {
-		long totalElapsedTime    = new Date().getTime() - startTime;
-		long totalElapsedMinutes = totalElapsedTime / (60 * 1000);
-		logger.debug("-----------------------------------------------------------");
-		logger.debug("Processed " + numRecordsProcessed + " records in " + totalElapsedMinutes + " minutes");
-		logger.debug("Created a total of " + numGroupedWorksAdded + " grouped works");
-	}
-
-	private void loadTranslationMaps(String serverName) {
-		//Load all translationMaps, first from default, then from the site specific configuration
-		File   defaultTranslationMapDirectory = new File("../../sites/default/translation_maps");
-		File[] defaultTranslationMapFiles     = defaultTranslationMapDirectory.listFiles((dir, name) -> name.endsWith("properties"));
-
-		File   serverTranslationMapDirectory = new File("../../sites/" + serverName + "/translation_maps");
-		File[] serverTranslationMapFiles     = serverTranslationMapDirectory.listFiles((dir, name) -> name.endsWith("properties"));
-
-		if (defaultTranslationMapFiles != null) {
-			for (File curFile : defaultTranslationMapFiles) {
-				String mapName = curFile.getName().replace(".properties", "");
-				mapName = mapName.replace("_map", "");
-				translationMaps.put(mapName, loadTranslationMap(curFile));
-			}
-			if (serverTranslationMapFiles != null) {
-				for (File curFile : serverTranslationMapFiles) {
-					String mapName = curFile.getName().replace(".properties", "");
-					mapName = mapName.replace("_map", "");
-					translationMaps.put(mapName, loadTranslationMap(curFile));
-				}
-			}
+		if (logger.isDebugEnabled()) {
+			long totalElapsedTime    = new Date().getTime() - startTime;
+			long totalElapsedMinutes = totalElapsedTime / (60 * 1000);
+			logger.debug("-----------------------------------------------------------");
+			logger.debug("Processed " + numRecordsProcessed + " records in " + totalElapsedMinutes + " minutes");
+			logger.debug("Created a total of " + numGroupedWorksAdded + " grouped works");
 		}
 	}
 
-	private HashMap<String, String> loadTranslationMap(File translationMapFile) {
+	//TODO: This only gets used by the generate Author authorities, maybe the overdrive grouper
+//	private void loadTranslationMaps(String serverName) {
+//		//Load all translationMaps, first from default, then from the site specific configuration
+//		File   defaultTranslationMapDirectory = new File("../../sites/default/translation_maps");
+//		File[] defaultTranslationMapFiles     = defaultTranslationMapDirectory.listFiles((dir, name) -> name.endsWith("properties"));
+//
+//		File   serverTranslationMapDirectory = new File("../../sites/" + serverName + "/translation_maps");
+//		File[] serverTranslationMapFiles     = serverTranslationMapDirectory.listFiles((dir, name) -> name.endsWith("properties"));
+//
+//		if (defaultTranslationMapFiles != null) {
+//			for (File curFile : defaultTranslationMapFiles) {
+//				String mapName = curFile.getName().replace(".properties", "");
+//				mapName = mapName.replace("_map", "");
+//				translationMaps.put(mapName, loadTranslationMap(curFile, mapName));
+//			}
+//			if (serverTranslationMapFiles != null) {
+//				for (File curFile : serverTranslationMapFiles) {
+//					String mapName = curFile.getName().replace(".properties", "");
+//					mapName = mapName.replace("_map", "");
+//					translationMaps.put(mapName, loadTranslationMap(curFile, mapName));
+//				}
+//			}
+//		}
+//	}
+
+	protected TranslationMap loadTranslationMap(File translationMapFile, String mapName) {
 		Properties props = new Properties();
 		try {
 			props.load(new FileReader(translationMapFile));
 		} catch (IOException e) {
-			logger.error("Could not read translation map, " + translationMapFile.getAbsolutePath(), e);
+			logger.error("Could not read file translation map, " + translationMapFile.getAbsolutePath(), e);
 		}
-		HashMap<String, String> translationMap = new HashMap<>();
+		TranslationMap translationMap = new TranslationMap("grouping", mapName, false, false, logger);
+		//TODO: profile name
+		//TODO: use regular expression
+		//TODO: what file maps can be moved to the indexing profile
 		for (Object keyObj : props.keySet()) {
 			String key = (String) keyObj;
-			translationMap.put(key.toLowerCase(), props.getProperty(key));
+			translationMap.addValue(key.toLowerCase(), props.getProperty(key));
 		}
 		return translationMap;
 	}
 
 	private HashSet<String> unableToTranslateWarnings = new HashSet<>();
 
-	private String translateValue(String mapName, String value) {
-		value = value.toLowerCase();
-		HashMap<String, String> translationMap = translationMaps.get(mapName);
-		String                  translatedValue;
-		if (translationMap == null) {
-			if (!unableToTranslateWarnings.contains("unable_to_find_" + mapName)) {
-				logger.error("Unable to find translation map for " + mapName);
-				unableToTranslateWarnings.add("unable_to_find_" + mapName);
-			}
-
-			translatedValue = value;
-		} else {
-			if (translationMap.containsKey(value)) {
-				translatedValue = translationMap.get(value);
-			} else {
-				if (translationMap.containsKey("*")) {
-					translatedValue = translationMap.get("*");
-				} else {
-					String concatenatedValue = mapName + ":" + value;
-					if (!unableToTranslateWarnings.contains(concatenatedValue)) {
-						logger.warn("Could not translate '" + concatenatedValue + "'");
-						unableToTranslateWarnings.add(concatenatedValue);
-					}
-					translatedValue = value;
-				}
-			}
-		}
-		if (translatedValue != null) {
-			translatedValue = translatedValue.trim();
-			if (translatedValue.length() == 0) {
-				translatedValue = null;
-			}
-		}
-		return translatedValue;
-	}
 }

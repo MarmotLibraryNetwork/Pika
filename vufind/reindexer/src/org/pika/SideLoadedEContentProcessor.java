@@ -1,3 +1,17 @@
+/*
+ * Copyright (C) 2020  Marmot Library Network
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 package org.pika;
 
 import org.apache.log4j.Logger;
@@ -16,15 +30,8 @@ import java.util.*;
  * Time: 3:03 PM
  */
 class SideLoadedEContentProcessor extends IlsRecordProcessor{
-	private PreparedStatement getDateAddedStmt;
 	SideLoadedEContentProcessor(GroupedWorkIndexer indexer, Connection pikaConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 		super(indexer, pikaConn, indexingProfileRS, logger, fullReindex);
-
-		try{
-			getDateAddedStmt = pikaConn.prepareStatement("SELECT dateFirstDetected FROM ils_marc_checksums WHERE ilsId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-		}catch (Exception e){
-			logger.error("Unable to setup prepared statement for date added to catalog");
-		}
 	}
 
 	@Override
@@ -33,7 +40,7 @@ class SideLoadedEContentProcessor extends IlsRecordProcessor{
 	}
 
 	@Override
-	protected void updateGroupedWorkSolrDataBasedOnMarc(GroupedWorkSolr groupedWork, Record record, String identifier) {
+	protected void updateGroupedWorkSolrDataBasedOnMarc(GroupedWorkSolr groupedWork, Record record, RecordIdentifier identifier) {
 		//For ILS Records, we can create multiple different records, one for print and order items,
 		//and one or more for ILS eContent items.
 		//For Sideloaded Econtent there will only be one related record
@@ -53,7 +60,7 @@ class SideLoadedEContentProcessor extends IlsRecordProcessor{
 				}
 			}
 			if (primaryFormat == null) primaryFormat = "Unknown";
-			updateGroupedWorkSolrDataBasedOnStandardMarcData(groupedWork, record, recordInfo.getRelatedItems(), identifier, primaryFormat);
+			updateGroupedWorkSolrDataBasedOnStandardMarcData(groupedWork, record, recordInfo.getRelatedItems(), identifier.getIdentifier(), primaryFormat);
 
 			//Special processing for ILS Records
 			String fullDescription = Util.getCRSeparatedString(MarcUtil.getFieldList(record, "520a"));
@@ -75,7 +82,7 @@ class SideLoadedEContentProcessor extends IlsRecordProcessor{
 			}
 
 			//Do updates based on items
-			loadPopularity(groupedWork, identifier);
+			loadPopularity(groupedWork, identifier.getIdentifier());
 
 			groupedWork.addHoldings(1);
 
@@ -85,31 +92,33 @@ class SideLoadedEContentProcessor extends IlsRecordProcessor{
 		}
 	}
 
-	private RecordInfo loadEContentRecord(GroupedWorkSolr groupedWork, String identifier, Record record){
+	private RecordInfo loadEContentRecord(GroupedWorkSolr groupedWork, RecordIdentifier identifier, Record record){
 		//We will always have a single record
 		return getEContentIlsRecord(groupedWork, record, identifier);
 	}
 
-	private RecordInfo getEContentIlsRecord(GroupedWorkSolr groupedWork, Record record, String identifier) {
+	private RecordInfo getEContentIlsRecord(GroupedWorkSolr groupedWork, Record record, RecordIdentifier identifier) {
 		ItemInfo itemInfo = new ItemInfo();
 		itemInfo.setIsEContent(true);
 
-		loadDateAdded(identifier, itemInfo);
-		itemInfo.setLocationCode(profileType);
+		Date dateAdded = indexer.getDateFirstDetected(identifier.getSource(), identifier.getIdentifier());
+		itemInfo.setDateAdded(dateAdded);
+
+		itemInfo.setLocationCode(indexingProfileSourceDisplayName);
 		//No itypes for Side loaded econtent
 		//itemInfo.setITypeCode();
 		//itemInfo.setIType();
-		itemInfo.setCallNumber("Online " + profileType);
-		itemInfo.setItemIdentifier(identifier);
-		itemInfo.setShelfLocation(profileType);
+		itemInfo.setCallNumber("Online " + indexingProfileSourceDisplayName);
+		itemInfo.setItemIdentifier(identifier.getIdentifier());
+		itemInfo.setShelfLocation(indexingProfileSourceDisplayName);
 
 		//No Collection for Side loaded eContent
 		//itemInfo.setCollection(translateValue("collection", getItemSubfieldData(collectionSubfield, itemField), identifier));
 
-		itemInfo.seteContentSource(profileType);
+		itemInfo.seteContentSource(indexingProfileSourceDisplayName);
 //		itemInfo.seteContentProtectionType("external");
 
-		RecordInfo relatedRecord = groupedWork.addRelatedRecord(profileType, identifier);
+		RecordInfo relatedRecord = groupedWork.addRelatedRecord(identifier);
 		relatedRecord.addItem(itemInfo);
 		loadEContentUrl(record, itemInfo, identifier);
 
@@ -120,20 +129,4 @@ class SideLoadedEContentProcessor extends IlsRecordProcessor{
 		return relatedRecord;
 	}
 
-	private void loadDateAdded(String identfier, ItemInfo itemInfo) {
-		try {
-			getDateAddedStmt.setString(1, identfier);
-			ResultSet getDateAddedRS = getDateAddedStmt.executeQuery();
-			if (getDateAddedRS.next()) {
-				long timeAdded = getDateAddedRS.getLong(1);
-				Date curDate = new Date(timeAdded * 1000);
-				itemInfo.setDateAdded(curDate);
-				getDateAddedRS.close();
-			}else{
-				logger.debug("Could not determine date added for " + identfier);
-			}
-		}catch (Exception e){
-			logger.error("Unable to load date added for " + identfier);
-		}
-	}
 }

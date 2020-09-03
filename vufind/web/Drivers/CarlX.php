@@ -28,6 +28,7 @@
 //require_once ROOT_DIR . '/Drivers/SIP2Driver.php';
 require_once ROOT_DIR . '/sys/SIP2.php';
 class CarlX extends SIP2Driver{
+	/** @var  AccountProfile $accountProfile */
 	public $accountProfile;
 	public $patronWsdl;
 	public $catalogWsdl;
@@ -599,7 +600,7 @@ class CarlX extends SIP2Driver{
 			foreach ($itemsToLoad as $chargeItem) {
 				$carlID = $this->fullCarlIDfromBID($chargeItem->BID);
 				$dueDate = strstr($chargeItem->DueDate, 'T', true);
-				$curTitle['checkoutSource']  = 'ils';
+				$curTitle['checkoutSource']  = $this->accountProfile->recordSource;
 				$curTitle['recordId']        = $carlID;
 				$curTitle['shortId']         = $chargeItem->BID;
 				$curTitle['id']              = $chargeItem->BID;

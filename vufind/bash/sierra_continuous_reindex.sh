@@ -34,17 +34,11 @@ do
 	# reset the output file each round
 	: > $OUTPUT_FILE;
 
-	if [ $USE_SIERRA_API_EXTRACT -eq 1 ]; then
-		#export from sierra (items, holds, and orders)
-		#echo "Starting Sierra Export - `date`" >> ${OUTPUT_FILE}
-		cd /usr/local/vufind-plus/vufind/sierra_export_api/
-		nice -n -10 java -server -XX:+UseG1GC -jar sierra_export_api.jar ${PIKASERVER} >> ${OUTPUT_FILE}
-	else
-		#export from sierra (items, holds, and orders)
-		#echo "Starting Sierra Export - `date`" >> ${OUTPUT_FILE}
-		cd /usr/local/vufind-plus/vufind/sierra_export/
-		nice -n -10 java -server -XX:+UseG1GC -jar sierra_export.jar ${PIKASERVER} >> ${OUTPUT_FILE}
-	fi
+
+	#export from sierra (items, holds, and orders)
+	#echo "Starting Sierra Export - `date`" >> ${OUTPUT_FILE}
+	cd /usr/local/vufind-plus/vufind/sierra_export_api/
+	nice -n -10 java -server -XX:+UseG1GC -jar sierra_export_api.jar ${PIKASERVER} >> ${OUTPUT_FILE}
 
 	# Pause if another reindexer is running; check in 10 second intervals
 	paused=$(checkConflictingProcesses "reindexer.jar" 10)

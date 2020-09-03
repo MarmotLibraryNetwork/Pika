@@ -37,19 +37,20 @@ class ExternalEContent_Home extends Action{
 		$interface->assign('id', $this->id);
 		//$recordDriver = new ExternalEContentDriver($this->id);
 
-		global $activeRecordIndexingProfile;
+		global /** @var IndexingProfile $activeRecordIndexingProfile */
+		$activeRecordIndexingProfile;
 		if (isset($activeRecordIndexingProfile)){
-			$subType = $activeRecordIndexingProfile;
+			$subType = $activeRecordIndexingProfile->sourceName;
 		}else{
-			$indexingProfile = new IndexingProfile();
-			$indexingProfile->name = 'ils';
+			$indexingProfile             = new IndexingProfile();
+			$indexingProfile->sourceName = 'ils';
 			if ($indexingProfile->find(true)){
-				$subType = $indexingProfile->name;
+				$subType = $indexingProfile->sourceName;
 			}else{
-				$indexingProfile = new IndexingProfile();
+				$indexingProfile     = new IndexingProfile();
 				$indexingProfile->id = 1;
 				if ($indexingProfile->find(true)){
-					$subType = $indexingProfile->name;
+					$subType = $indexingProfile->sourceName;
 				}
 			}
 		}

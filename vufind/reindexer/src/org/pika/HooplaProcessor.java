@@ -1,3 +1,17 @@
+/*
+ * Copyright (C) 2020  Marmot Library Network
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 package org.pika;
 
 import org.apache.log4j.Logger;
@@ -25,6 +39,8 @@ import java.util.Set;
  */
 class HooplaProcessor extends MarcRecordProcessor {
 	protected boolean                      fullReindex;
+	private   String                       sourceDisplayName;
+	private   String                       source;
 	private   String                       individualMarcPath;
 	private   int                          numCharsToCreateFolderFrom;
 	private   boolean                      createFolderFromLeadingCharacters;
@@ -38,6 +54,8 @@ class HooplaProcessor extends MarcRecordProcessor {
 		this.fullReindex = fullReindex;
 
 		try {
+			sourceDisplayName                 = indexingProfileRS.getString("name");
+			source                            = indexingProfileRS.getString("sourceName");
 			individualMarcPath                = indexingProfileRS.getString("individualMarcPath");
 			numCharsToCreateFolderFrom        = indexingProfileRS.getInt("numCharsToCreateFolderFrom");
 			createFolderFromLeadingCharacters = indexingProfileRS.getBoolean("createFolderFromLeadingCharacters");
@@ -87,12 +105,12 @@ class HooplaProcessor extends MarcRecordProcessor {
 	}
 
 	@Override
-	public void processRecord(GroupedWorkSolr groupedWork, String identifier) {
-		Record record = loadMarcRecordFromDisk(identifier);
+	public void processRecord(GroupedWorkSolr groupedWork, RecordIdentifier identifier) {
+		Record record = loadMarcRecordFromDisk(identifier.getIdentifier());
 
 		if (record != null) {
 			try {
-				if (getHooplaExtractInfo(identifier)) {
+				if (getHooplaExtractInfo(identifier.getIdentifier())) {
 					updateGroupedWorkSolrDataBasedOnMarc(groupedWork, record, identifier);
 //					updateGroupedWorkSolrDataBasedOnHooplaExtract(groupedWork, identifier);
 				}
@@ -188,7 +206,7 @@ class HooplaProcessor extends MarcRecordProcessor {
 	}
 
 	@Override
-	protected void updateGroupedWorkSolrDataBasedOnMarc(GroupedWorkSolr groupedWork, Record record, String identifier) {
+	protected void updateGroupedWorkSolrDataBasedOnMarc(GroupedWorkSolr groupedWork, Record record, RecordIdentifier identifier) {
 		//First get format
 		String format = MarcUtil.getFirstFieldVal(record, "099a");
 		if (format != null) {
@@ -199,15 +217,15 @@ class HooplaProcessor extends MarcRecordProcessor {
 		}
 
 		//Do updates based on the overall bib (shared regardless of scoping)
-		updateGroupedWorkSolrDataBasedOnStandardMarcData(groupedWork, record, null, identifier, format);
+		updateGroupedWorkSolrDataBasedOnStandardMarcData(groupedWork, record, null, identifier.getIdentifier(), format);
 
 		//Do special processing for Hoopla which does not have individual items within the record
 		//Instead, each record has essentially unlimited items that can be used at one time.
 		//There are also not multiple formats within a record that we would need to split out.
 
-		String formatCategory = indexer.translateSystemValue("format_category_hoopla", format, identifier);
+		String formatCategory = indexer.translateSystemValue("format_category_hoopla", format, identifier.getIdentifier());
 		long   formatBoost    = 8L; // Reasonable default value
-		String formatBoostStr = indexer.translateSystemValue("format_boost_hoopla", format, identifier);
+		String formatBoostStr = indexer.translateSystemValue("format_boost_hoopla", format, identifier.getIdentifier());
 		if (formatBoostStr != null && !formatBoostStr.isEmpty()) {
 			formatBoost = Long.parseLong(formatBoostStr);
 		} else {
@@ -251,7 +269,7 @@ class HooplaProcessor extends MarcRecordProcessor {
 		groupedWork.addPhysical(physicalDescriptions);
 
 		//Setup the per Record information
-		RecordInfo recordInfo = groupedWork.addRelatedRecord("hoopla", identifier);
+		RecordInfo recordInfo = groupedWork.addRelatedRecord(source, identifier.getIdentifier());
 
 		recordInfo.setFormatBoost(formatBoost);
 		recordInfo.setEdition(primaryEdition);
@@ -273,15 +291,14 @@ class HooplaProcessor extends MarcRecordProcessor {
 		itemInfo.setNumCopies(1);
 		itemInfo.setFormat(format);
 		itemInfo.setFormatCategory(formatCategory);
-		itemInfo.seteContentSource("Hoopla");
+		itemInfo.seteContentSource(sourceDisplayName);
 		itemInfo.setShelfLocation("Online Hoopla Collection");
 		itemInfo.setCallNumber("Online Hoopla");
 		itemInfo.setSortableCallNumber("Online Hoopla");
-		itemInfo.seteContentSource("Hoopla");
 //		itemInfo.seteContentProtectionType("Always Available");
 		itemInfo.setDetailedStatus("Available Online");
 		loadEContentUrl(record, itemInfo, identifier);
-		Date dateAdded = indexer.getDateFirstDetected("hoopla", identifier);
+		Date dateAdded = indexer.getDateFirstDetected(source, identifier.getIdentifier());
 		itemInfo.setDateAdded(dateAdded);
 
 		recordInfo.addItem(itemInfo);
@@ -302,7 +319,7 @@ class HooplaProcessor extends MarcRecordProcessor {
 				//Figure out ownership information
 				for (Scope curScope : indexer.getScopes()) {
 					String                originalUrl = itemInfo.geteContentUrl();
-					Scope.InclusionResult result      = curScope.isItemPartOfScope("hoopla", "", "", null, groupedWork.getTargetAudiences(), recordInfo.getPrimaryFormat(), false, false, true, record, originalUrl);
+					Scope.InclusionResult result      = curScope.isItemPartOfScope(source, "", "", null, groupedWork.getTargetAudiences(), recordInfo.getPrimaryFormat(), false, false, true, record, originalUrl);
 					if (result.isIncluded) {
 
 						boolean isHooplaIncluded = true;
@@ -362,13 +379,13 @@ class HooplaProcessor extends MarcRecordProcessor {
 		scopingInfo.setGroupedStatus("Available Online");
 		scopingInfo.setHoldable(false);
 		if (curScope.isLocationScope()) {
-			scopingInfo.setLocallyOwned(curScope.isItemOwnedByScope("hoopla", "", ""));
+			scopingInfo.setLocallyOwned(curScope.isItemOwnedByScope(source, "", ""));
 			if (curScope.getLibraryScope() != null) {
-				scopingInfo.setLibraryOwned(curScope.getLibraryScope().isItemOwnedByScope("hoopla", "", ""));
+				scopingInfo.setLibraryOwned(curScope.getLibraryScope().isItemOwnedByScope(source, "", ""));
 			}
 		}
 		if (curScope.isLibraryScope()) {
-			scopingInfo.setLibraryOwned(curScope.isItemOwnedByScope("hoopla", "", ""));
+			scopingInfo.setLibraryOwned(curScope.isItemOwnedByScope(source, "", ""));
 		}
 		//Check to see if we need to do url rewriting
 		if (originalUrl != null && !originalUrl.equals(result.localUrl)) {

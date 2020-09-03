@@ -21,39 +21,38 @@ require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 require_once ROOT_DIR . '/sys/Location/LocationHours.php';
 
-class Hours extends ObjectEditor
-{
-	
+class Hours extends ObjectEditor {
+
 	function getObjectType(){
 		return 'LocationHours';
 	}
+
 	function getToolName(){
 		return 'Hours';
 	}
+
 	function getPageTitle(){
 		return 'Hours';
 	}
-	function getAllObjects(){
-		$hours = new LocationHours();
-		$hours->orderBy('locationId, day');
-		$hours->find();
-		$list = array();
-		while ($hours->fetch()){
-			$list[$hours->id] = clone $hours;
-		}
-		return $list;
+
+	function getAllObjects($orderBy = null){
+		return parent::getAllObjects($orderBy ?? 'locationId, day');
 	}
+
 	function getObjectStructure(){
 		return LocationHours::getObjectStructure();
 	}
+
 	function getPrimaryKeyColumn(){
 		return 'id';
 	}
+
 	function getIdKeyColumn(){
 		return 'id';
 	}
+
 	function getAllowableRoles(){
-		return array('opacAdmin');
+		return ['opacAdmin'];
 	}
 
 }

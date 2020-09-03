@@ -46,8 +46,26 @@ class MyAccount_Edit extends MyAccount {
 				// After changes are saved, send the user back to an appropriate page;
 				// either the list they were viewing when they started editing, or the
 				// overall favorites list.
+                $queryString = "";
+                if(isset($_REQUEST['myListPageSize']))
+                {
+                    $queryString = "?pagesize=" . $_REQUEST['myListPageSize'];
+                }
+                if(isset($_REQUEST['myListPage']))
+                {
+                    if (isset($_REQUEST['myListPageSize'])) {
+                        $queryString = "?pagesize=" . $_REQUEST['myListPageSize'] . "&page=" . $_REQUEST['myListPage'];
+                    }
+                    else{
+                        $queryString = "?page=" . $_REQUEST['myListPage'];
+                    }
+                }
+                if(isset($_REQUEST['myListSort']))
+                {
+                   $queryString = $queryString . "&sort=" . $_REQUEST['myListSort'];
+                }
 				if (isset($listId)){
-					$nextAction = 'MyList/' . $listId;
+					$nextAction = 'MyList/' . $listId . $queryString;
 				}else{
 					$nextAction = 'Home';
 				}

@@ -34,11 +34,11 @@ require_once ROOT_DIR . '/sys/Indexing/IndexingProfile.php';
 class Admin_IndexingProfiles extends ObjectEditor {
 	function launch(){
 		global $interface;
-		$objectAction = isset($_REQUEST['objectAction']) ? $_REQUEST['objectAction'] : null;
+		$objectAction =  $_REQUEST['objectAction'] ?? null;
 		if ($objectAction == 'viewMarcFiles'){
 			$id = $_REQUEST['id'];
 			$interface->assign('id', $id);
-			$files        = array();
+			$files        = [];
 			$indexProfile = new IndexingProfile();
 			if ($indexProfile->get($id) && !empty($indexProfile->marcPath)){
 
@@ -73,17 +73,8 @@ class Admin_IndexingProfiles extends ObjectEditor {
 		return 'Indexing Profiles';
 	}
 
-	function getAllObjects(){
-		$list = array();
-
-		$object = new IndexingProfile();
-		$object->orderBy('name');
-		$object->find();
-		while ($object->fetch()){
-			$list[$object->id] = clone $object;
-		}
-
-		return $list;
+	function getAllObjects($orderBy = null){
+		return parent::getAllObjects($orderBy ?? 'name');
 	}
 
 	function getObjectStructure(){
@@ -123,14 +114,6 @@ class Admin_IndexingProfiles extends ObjectEditor {
 				'text' => 'View MARC files',
 				'url'  => '/Admin/IndexingProfiles?objectAction=viewMarcFiles&id=' . $existingObject->id,
 			);
-//			$actions[] = array(
-//				'text'    => 'Mark Profile Records for Regrouping',
-//				'onclick' => "return confirm('Confirm marking all profile records for regrouping?') ? Pika.Admin.markProfileForRegrouping({$existingObject->id}) : false;",
-//			);
-//			$actions[] = array(
-//				'text'    => 'Mark Profile Records for Reindexing',
-//				'onclick' => "return confirm('Confirm marking all profile records for reindexing?') ? Pika.Admin.markProfileForReindexing({$existingObject->id}) : false;",
-//			);
 		}else{
 			$actions[] = array(
 				'text'    => 'Populate as a Sideload',

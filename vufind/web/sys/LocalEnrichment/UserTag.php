@@ -30,7 +30,7 @@ class UserTag extends DB_DataObject {
 	public $__table = 'user_tags';                            // table name
 	public $id;
 	public $tag;
-	public $groupedRecordPermanentId;
+	public $groupedWorkPermanentId;
 	public $userId;
 	public $dateTagged;
 

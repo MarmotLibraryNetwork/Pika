@@ -289,14 +289,30 @@ function getIndexingUpdates(){
 			'title'       => 'Indexing Profiles updates',
 			'description' => 'Better integrate for eContent, Sierra fixed field language extracting',
 			'sql'         => array(
-				'ALTER TABLE `pika`.`indexing_profiles` CHANGE COLUMN `catalogDriver` `patronDriver` VARCHAR(50) NULL DEFAULT NULL AFTER `recordDriver`, '
+				'ALTER TABLE `indexing_profiles` CHANGE COLUMN `catalogDriver` `patronDriver` VARCHAR(50) NULL DEFAULT NULL AFTER `recordDriver`, '
 					. 'CHANGE COLUMN `marcEncoding` `marcEncoding` ENUM(\'MARC8\', \'UTF8\', \'UNIMARC\', \'ISO8859_1\', \'BESTGUESS\') NOT NULL DEFAULT \'UTF8\' , '
 					. 'ADD COLUMN `sourceName` VARCHAR(45) NULL AFTER `name`, '
 					. 'ADD UNIQUE INDEX `sourceName_UNIQUE` (`sourceName` ASC); ',
-				'UPDATE `pika`.`indexing_profiles` SET `sourceName` = `name`',
-				'ALTER TABLE `pika`.`indexing_profiles` ADD COLUMN `sierraLanguageFixedField` VARCHAR(3) NULL',
+				'UPDATE `indexing_profiles` SET `sourceName` = `name`',
+				'ALTER TABLE `indexing_profiles` ADD COLUMN `sierraLanguageFixedField` VARCHAR(3) NULL',
 			)
 		),
+
+		'indexing_profile_specified_grouping_category_2020.04' => array(
+			'title'       => 'Step 0 : Add Specified Grouping Category',
+			'description' => 'Add a Specified Grouping Category for sideloads to indexing profiles',
+			'sql'         => array(
+				'ALTER TABLE indexing_profiles ADD COLUMN `specifiedGroupingCategory` varchar(5) DEFAULT NULL AFTER `specifiedFormatBoost`',
+			)
+		),
+
+		'indexing_profile_update_hoopla_name_2020.06' => [
+			'title'       => 'Update Hoopla indexing profile name',
+			'description' => 'Update Hoopla indexing profile name to Hoopla',
+			'sql'         => [
+				'UPDATE `indexing_profiles` SET `name`="Hoopla" WHERE `sourceName`="hoopla";',
+			]
+		],
 
 	);
 }

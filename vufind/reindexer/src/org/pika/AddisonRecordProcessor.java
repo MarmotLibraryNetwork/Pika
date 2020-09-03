@@ -1,3 +1,17 @@
+/*
+ * Copyright (C) 2020  Marmot Library Network
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 package org.pika;
 
 import org.apache.log4j.Logger;
@@ -13,7 +27,6 @@ import java.util.List;
 import java.util.Set;
 
 public class AddisonRecordProcessor extends IIIRecordProcessor {
-	private PreparedStatement getDateAddedStmt; // to set date added for ils (itemless) econtent records
 
 	AddisonRecordProcessor(GroupedWorkIndexer indexer, Connection pikaConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 		super(indexer, pikaConn, indexingProfileRS, logger, fullReindex);
@@ -28,18 +41,12 @@ public class AddisonRecordProcessor extends IIIRecordProcessor {
 
 		validCheckedOutStatusCodes.add("o"); // Library Use Only
 		validCheckedOutStatusCodes.add("d"); // Display
-
-		try {
-			getDateAddedStmt = pikaConn.prepareStatement("SELECT dateFirstDetected FROM ils_marc_checksums WHERE ilsId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-		} catch (Exception e) {
-			logger.error("Unable to setup prepared statement for date added to catalog");
-		}
 	}
 
 
 	// This is based on version from Sacramento Processor
 	@Override
-	protected List<RecordInfo> loadUnsuppressedEContentItems(GroupedWorkSolr groupedWork, String identifier, Record record) {
+	protected List<RecordInfo> loadUnsuppressedEContentItems(GroupedWorkSolr groupedWork, RecordIdentifier identifier, Record record) {
 		List<RecordInfo> unsuppressedEcontentRecords = new ArrayList<>();
 		//For arlington and sacramento, eContent will always have no items on the bib record.
 		List<DataField> items = MarcUtil.getDataFields(record, itemTag);
@@ -77,7 +84,6 @@ public class AddisonRecordProcessor extends IIIRecordProcessor {
 
 				ItemInfo itemInfo = new ItemInfo();
 				itemInfo.setIsEContent(true);
-//				itemInfo.seteContentProtectionType("external");
 				itemInfo.setCallNumber("Online");
 				itemInfo.setIType("eCollection");
 				itemInfo.setDetailedStatus("Available Online");
@@ -85,11 +91,14 @@ public class AddisonRecordProcessor extends IIIRecordProcessor {
 				itemInfo.seteContentUrl(url);
 				itemInfo.setLocationCode(bibLocation);
 				itemInfo.seteContentSource(specifiedEcontentSource);
-				loadDateAddedForItemlessEcontent(identifier, itemInfo);
+
+				Date dateAdded = indexer.getDateFirstDetected(identifier.getSource(), identifier.getIdentifier());
+				itemInfo.setDateAdded(dateAdded);
+
 //                itemInfo.seteContentSource(specifiedEcontentSource == null ? "Econtent" : specifiedEcontentSource);
 //                itemInfo.setShelfLocation(econtentSource); // this sets the owning location facet.  This isn't needed for Sacramento
-				RecordInfo relatedRecord = groupedWork.addRelatedRecord("external_econtent", identifier);
-				relatedRecord.setSubSource(profileType);
+				RecordInfo relatedRecord = groupedWork.addRelatedRecord("external_econtent", identifier.getIdentifier());
+				relatedRecord.setSubSource(indexingProfileSource);
 				relatedRecord.addItem(itemInfo);
 
 				// Use the same format determination process for the econtent record (should just be the MatType)
@@ -97,12 +106,13 @@ public class AddisonRecordProcessor extends IIIRecordProcessor {
 
 
 				unsuppressedEcontentRecords.add(relatedRecord);
-			} else {
+			}
+//			else {
 //                //TODO: temporary. just for debugging econtent records
 //                if (urls.size() > 0) {
 //                    logger.warn("Itemless record " + identifier + " had 856u URLs but none had a expected econtent source.");
 //                }
-			}
+//			}
 
 		}
 		return unsuppressedEcontentRecords;
@@ -137,21 +147,4 @@ public class AddisonRecordProcessor extends IIIRecordProcessor {
 		return econtentSource;
 	}
 
-	// to set date added for ils (itemless) econtent records
-	private void loadDateAddedForItemlessEcontent(String identfier, ItemInfo itemInfo) {
-		try {
-			getDateAddedStmt.setString(1, identfier);
-			ResultSet getDateAddedRS = getDateAddedStmt.executeQuery();
-			if (getDateAddedRS.next()) {
-				long timeAdded = getDateAddedRS.getLong(1);
-				Date curDate   = new Date(timeAdded * 1000);
-				itemInfo.setDateAdded(curDate);
-				getDateAddedRS.close();
-			} else {
-				logger.debug("Could not determine date added for " + identfier);
-			}
-		} catch (Exception e) {
-			logger.error("Unable to load date added for " + identfier);
-		}
-	}
 }

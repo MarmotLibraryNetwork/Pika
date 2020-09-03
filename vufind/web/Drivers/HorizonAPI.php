@@ -651,7 +651,7 @@ abstract class HorizonAPI extends Horizon{
 			foreach ($lookupMyAccountInfoResponse->ItemsOutInfo as $itemOut){
 				$sCount++;
 				$bibId = (string)$itemOut->titleKey;
-				$curTitle['checkoutSource']  = 'ils';
+				$curTitle['checkoutSource']  = $this->accountProfile->recordSource;
 				$curTitle['recordId']        = $bibId;
 				$curTitle['shortId']         = $bibId;
 				$curTitle['id']              = $bibId;

@@ -150,7 +150,7 @@ class DataObjectUtil {
 				if ($property['type'] == 'textarea' || $property['type'] == 'crSeparated'){
 					$object->$propertyName = strip_tags($object->$propertyName);
 				}else{
-					$allowableTags         = $property['allowableTags'] ?? '<p><a><b><em><ul><ol><em><li><strong><i><br>';
+					$allowableTags         = $property['allowableTags'] ?? '<p><a><b><em><ul><ol><li><strong><i><br>';
 					$object->$propertyName = strip_tags($object->$propertyName, $allowableTags);
 				}
 				break;
@@ -216,6 +216,16 @@ class DataObjectUtil {
 						if($property['customName'])
                         {
                             $destFileName = $_FILES[$propertyName]['name'];
+                            $extension = pathinfo($destFileName, PATHINFO_EXTENSION);
+                            if(isset($_REQUEST['fileName']) && $_REQUEST['fileName'] != ""){
+                                $customFileName = $_REQUEST['fileName'];
+                                if(strpos($customFileName, $extension) !== false)
+                                {
+                                    $destFileName = $customFileName;
+                                }else {
+                                    $destFileName = $customFileName . "." . $extension;
+                                }
+                            }
                         }
 						$destFolder   = $property['storagePath'] ?? $configArray['Site']['local'] . '/files';
 						$destFullPath = $destFolder . '/original/' . $destFileName;

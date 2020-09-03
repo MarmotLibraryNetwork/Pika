@@ -33,15 +33,8 @@ class Marriages extends ObjectEditor {
 		return 'Marriages';
 	}
 
-	function getAllObjects(){
-		$object = new Marriage();
-		$object->orderBy('marriageDate');
-		$object->find();
-		$objectList = array();
-		while ($object->fetch()){
-			$objectList[$object->marriageId] = clone $object;
-		}
-		return $objectList;
+	function getAllObjects($orderBy = null){
+		return parent::getAllObjects($orderBy ?? 'marriageDate');
 	}
 
 	function getObjectStructure(){

@@ -63,9 +63,7 @@ class MyAccount_MyList extends MyAccount {
 		}
 		if (!$list->public && $list->user_id != UserAccount::getActiveUserId()){
 			//Allow the user to view if they are admin
-			if (UserAccount::isLoggedIn() && UserAccount::userHasRole('opacAdmin')){
-				//Allow the user to view
-			}else{
+			if (!UserAccount::isLoggedIn() || !UserAccount::userHasRole('opacAdmin')){
 				$this->display('invalidList.tpl', 'Invalid List');
 				return;
 			}
@@ -79,7 +77,7 @@ class MyAccount_MyList extends MyAccount {
 		// Perform an action on the list, but verify that the user has permission to do so.
 		// and load the User object for the owner of the list (if necessary):
 		$userCanEdit = false;
-		if (UserAccount::isLoggedIn() && (UserAccount::getActiveUserId() == $list->user_id)){
+		if (UserAccount::isLoggedIn()){
 			$listUser    = UserAccount::getActiveUserObj();
 			$userCanEdit = $listUser->canEditList($list);
 
@@ -110,13 +108,29 @@ class MyAccount_MyList extends MyAccount {
 						$list->title       = $_REQUEST['newTitle'];
 						$list->description = strip_tags($_REQUEST['newDescription']);
 						$list->defaultSort = $_REQUEST['defaultSort'];
+
+
 						$list->update();
 						break;
 					case 'deleteList':
 						$list->delete();
-						header("Location: /MyAccount/Home");
+						header("Location: /MyAccount/MyLists");
 						die();
 						break;
+                    case 'deleteAll':
+                        $list->removeAllListEntries();
+                        break;
+                    case 'deleteMarked':
+                        //get a list of all titles that were selected
+                        if(isset($_REQUEST['myListActionData'])) {
+                            $itemsToRemove = explode(",",$_REQUEST['myListActionData']);
+                            foreach ($itemsToRemove as $id) {
+                                //add back the leading . to get the full bib record
+                                $list->removeListEntry($id);
+                                $list->update();
+                            }
+                        }
+                        break;
 					case 'bulkAddTitles':
 						$notes                 = $this->bulkAddTitles($list);
 						$_SESSION['listNotes'] = $notes;
@@ -132,17 +146,8 @@ class MyAccount_MyList extends MyAccount {
 			}elseif (!empty($_REQUEST['myListActionItem'])){
 				$actionToPerform = $_REQUEST['myListActionItem'];
 				switch ($actionToPerform){
-					case 'deleteMarked':
-						//get a list of all titles that were selected
-						$itemsToRemove = $_REQUEST['selected'];
-						foreach ($itemsToRemove as $id => $selected){
-							//add back the leading . to get the full bib record
-							$list->removeListEntry($id);
-						}
-						break;
-					case 'deleteAll':
-						$list->removeAllListEntries();
-						break;
+
+
 				}
 				$list->update();
 			}elseif (isset($_REQUEST['delete'])){
@@ -150,8 +155,27 @@ class MyAccount_MyList extends MyAccount {
 				$list->removeListEntry($recordToDelete);
 				$list->update();
 			}
-			//Redirect back to avoid having the parameters stay in the URL.
-			header("Location: /MyAccount/MyList/{$list->id}");
+			//Redirect back to avoid having the parameters stay in the URL (keeping both pagesize and current page).
+            $queryString = "";
+            if(!empty($_REQUEST['myListPageSize']))
+            {
+                $queryString = "?pagesize=" . $_REQUEST['myListPageSize'];
+            }
+            if(!empty($_REQUEST['myListPage']))
+            {
+                if (!empty($_REQUEST['myListPageSize'])) {
+                    $queryString = "?pagesize=" . $_REQUEST['myListPageSize'] . "&page=" . $_REQUEST['myListPage'];
+                    }
+                else{
+                    $queryString = "?page=" . $_REQUEST['myListPage'];
+                }
+            }
+            if(!empty($_REQUEST['myListSort'])) {
+
+
+                $queryString = $queryString . "&sort=" . $_REQUEST['myListSort'];
+            }
+			header("Location: /MyAccount/MyList/{$list->id}" . $queryString);
 			die();
     //if list is public the export to excel still needs to function
 		}elseif ($list->public && (isset($_REQUEST['myListActionHead']) || isset($_REQUEST['myListActionItem']) ))
@@ -172,6 +196,9 @@ class MyAccount_MyList extends MyAccount {
 
 		// Send list to template so title/description can be displayed:
 		$interface->assign('favList', $list);
+        $shortTitle = $list->title;
+        $interface->assign('shortPageTitle', $shortTitle);
+
 		$interface->assign('listSelected', $list->id);
 
 		// Create a handler for displaying favorites and use it to assign
@@ -353,12 +380,17 @@ class MyAccount_MyList extends MyAccount {
             $objPHPExcel->getActiveSheet()->getColumnDimension('D')->setAutoSize(true);
             $objPHPExcel->getActiveSheet()->getColumnDimension('E')->setAutoSize(true);
 
+        $strip = array("~", "`", "!", "@", "#", "$", "%", "^", "&", "*", "(", ")", "_", "=", "+", "[", "{", "]",
+            "}", "\\", "|", ";", ":", "\"", "'", "&#8216;", "&#8217;", "&#8220;", "&#8221;", "&#8211;", "&#8212;",
+            "â€”", "â€“", ",", "<", ".", ">", "/", "?");
+        $listTitle = trim(str_replace($strip, "", strip_tags($list->title)));
             // Rename sheet
-            $objPHPExcel->getActiveSheet()->setTitle('Favorites List -' . $list->title);
+            $objPHPExcel->getActiveSheet()->setTitle(substr($listTitle,0,30));
+
 
             // Redirect output to a client's web browser (Excel5)
             header('Content-Type: application/vnd.ms-excel');
-            header('Content-Disposition: attachment;filename="favorites_' . $list->title . '.xls"');
+            header('Content-Disposition: attachment;filename="' . substr($listTitle,0,27) . '.xls"');
             header('Cache-Control: max-age=0');
 
             $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');

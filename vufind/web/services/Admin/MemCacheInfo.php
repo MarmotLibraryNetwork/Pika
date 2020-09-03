@@ -42,6 +42,6 @@ class Admin_MemCacheInfo extends Admin_Admin {
 	}
 
 	function getAllowableRoles() {
-		return array('opacAdmin');
+		return ['opacAdmin'];
 	}
 }

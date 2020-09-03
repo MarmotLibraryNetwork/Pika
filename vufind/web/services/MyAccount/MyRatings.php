@@ -36,6 +36,7 @@ class MyRatings extends MyAccount {
 		require_once ROOT_DIR . '/sys/LocalEnrichment/UserWorkReview.php';
 		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+		/** @var UserWorkReview $rating */
 		$rating         = new UserWorkReview();
 		$rating->userId = UserAccount::getActiveUserId();
 		$rating->orderBy('dateRated DESC');
@@ -43,7 +44,7 @@ class MyRatings extends MyAccount {
 		$ratings  = array();
 		$ratedIds = array();
 		while ($rating->fetch()){
-			$ratedIds[$rating->groupedRecordPermanentId] = clone($rating);
+			$ratedIds[$rating->groupedWorkPermanentId] = clone($rating);
 		}
 		$timer->logTime("Loaded ids of titles the user has rated");
 
@@ -56,7 +57,7 @@ class MyRatings extends MyAccount {
 				$rating    = $ratedIds[$groupedWorkDriver->getPermanentId()];
 				$ratings[] = array(
 					'id'            => $rating->id,
-					'groupedWorkId' => $rating->groupedRecordPermanentId,
+					'groupedWorkId' => $rating->groupedWorkPermanentId,
 					'title'         => $groupedWorkDriver->getTitle(),
 					'author'        => $groupedWorkDriver->getPrimaryAuthor(),
 					'rating'        => $rating->rating,
@@ -79,7 +80,7 @@ class MyRatings extends MyAccount {
 		$notInterestedObj->find();
 		$notInterestedIds = array();
 		while ($notInterestedObj->fetch()){
-			$notInterestedIds[$notInterestedObj->groupedRecordPermanentId] = clone($notInterestedObj);
+			$notInterestedIds[$notInterestedObj->groupedWorkPermanentId] = clone($notInterestedObj);
 		}
 		$timer->logTime("Loaded ids of titles the user is not interested in");
 
@@ -88,7 +89,7 @@ class MyRatings extends MyAccount {
 		$records      = $searchObject->getRecords(array_keys($notInterestedIds));
 		foreach ($records as $record){
 			$groupedWorkDriver = new GroupedWorkDriver($record);
-			$groupedWorkId     = $notInterestedObj->groupedRecordPermanentId;
+			$groupedWorkId     = $notInterestedObj->groupedWorkPermanentId;
 			$notInterestedObj  = $notInterestedIds[$groupedWorkId];
 			if ($groupedWorkDriver->isValid){
 				$notInterested[] = array(

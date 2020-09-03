@@ -49,7 +49,7 @@ class AccountProfile extends DB_DataObject {
 			'authenticationMethod' => array('property' => 'authenticationMethod', 'type' => 'enum', 'label' => 'Authentication Method', 'values' => array('ils' => 'ILS', 'sip2' => 'SIP 2', 'db' => 'Database', 'ldap' => 'LDAP'), 'description' => 'The method of authentication to use', 'required' => true),
 			'vendorOpacUrl'        => array('property' => 'vendorOpacUrl', 'type' => 'text', 'label' => 'Vendor OPAC Url', 'maxLength' => 100, 'description' => 'A link to the url for the vendor opac', 'required' => true),
 			'patronApiUrl'         => array('property' => 'patronApiUrl', 'type' => 'text', 'label' => 'Patron API Url', 'maxLength' => 100, 'description' => 'A link to the patron api for the vendor opac if any', 'required' => false),
-			'recordSource'         => array('property' => 'recordSource', 'type' => 'text', 'label' => 'Record Source', 'maxLength' => 50, 'description' => 'The record source of checkouts holds, etc.  Should match the name of an Indexing Profile.', 'required' => false),
+			'recordSource'         => array('property' => 'recordSource', 'type' => 'text', 'label' => 'Record Source', 'maxLength' => 50, 'description' => 'The record source of checkouts holds, etc.  Should match the source name of an Indexing Profile (not the display name).', 'required' => false),
 		);
 		return $structure;
 	}

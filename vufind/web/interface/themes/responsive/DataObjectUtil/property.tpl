@@ -113,6 +113,7 @@
 
 			{if $propName != "cover"}
 			<div class="checkbox" ><label for="remove{$propName}">Remove {$propName}<input type="checkbox"  name='remove{$propName}' id='remove{$propName}'></label></div>
+
 			{/if}
 					<input type="hidden" name="currentName" id="currentName" value='{$propValue|escape}'>
 					<br>
@@ -122,6 +123,7 @@
 
 				{/if}
 		{/if}
+
 			{* Display a table of the association with the ability to add and edit new values *}
 			<div class="row" >
 				<div class="col-md-12 custom-file">
@@ -129,6 +131,14 @@
 					{*<label class="custom-file-label" for='{$propName}'>Choose File</label>*}
 				</div>
 			</div>
+			{if $propName == "cover"}
+			<div class="row">
+				<br />
+
+				<div class="col-md-2"><label for="fileName" class="label-left">File Name</label></div>
+				<div class="col-md-7"><input type="text" name="fileName" value="{$propValue}" class="form-control"></div>
+			</div>
+			{/if}
 			<script>
 				var prop = "#" + "{$propName}";
 				var storagePath = "{$property.storagePath}";
@@ -194,8 +204,6 @@
 				}
 				{/literal}
 			</script>
-
-
 		{elseif $property.type == 'checkbox'}
 			<div class="checkbox">
 				<label for='{$propName}'{if $property.description} title="{$property.description}"{/if}>

@@ -1,16 +1,27 @@
+/*
+ * Copyright (C) 2020  Marmot Library Network
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 package org.pika;
 
-/**
- * Description goes here
- * Rampart Marc Conversion
- * User: Mark Noble
- * Date: 10/18/13
- * Time: 10:27 AM
- */
 class RecordIdentifier {
-	private String type;
-	private String identifier;
+	private String  source;
+	private String  identifier;
 	private boolean suppressed;
+
+	RecordIdentifier(String source, String identifier){
+		setValue(source, identifier);
+	}
 
 	@Override
 	public int hashCode() {
@@ -19,8 +30,8 @@ class RecordIdentifier {
 
 	private String myString = null;
 	public String toString(){
-		if (myString == null && type != null && identifier != null){
-			myString = type + ":" + identifier.toUpperCase();
+		if (myString == null && source != null && identifier != null){
+			myString = source + ":" + identifier;
 		}
 		return myString;
 	}
@@ -29,14 +40,18 @@ class RecordIdentifier {
 	public boolean equals(Object obj) {
 		if (obj instanceof  RecordIdentifier){
 			RecordIdentifier tmpObj = (RecordIdentifier)obj;
-			return (tmpObj.type.equals(type) && tmpObj.identifier.equals(identifier));
+			return (tmpObj.source.equals(source) && tmpObj.identifier.equals(identifier));
 		}else{
 			return false;
 		}
 	}
 
-	String getType() {
-		return type;
+	String getSourceAndId(){
+		return toString();
+	}
+
+	String getSource() {
+		return source;
 	}
 
 	boolean isValid() {
@@ -47,9 +62,9 @@ class RecordIdentifier {
 		return identifier;
 	}
 
-	void setValue(String type, String identifier) {
-		this.type = type.toLowerCase();
-		identifier = identifier.trim();
+	void setValue(String source, String identifier) {
+		this.source     = source.toLowerCase();
+		identifier      = identifier.trim();
 		this.identifier = identifier;
 	}
 

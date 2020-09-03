@@ -1,3 +1,17 @@
+/*
+ * Copyright (C) 2020  Marmot Library Network
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 package org.pika;
 
 import java.io.File;
@@ -21,15 +35,28 @@ public class BookcoverCleanup implements IProcessHandler {
 		String   coverAgeInDaysToDelete = PikaConfigIni.getIniValue("Site", "coverAgeInDaysToDelete");
 		int      coverAge               = DEFAULTAGE;
 		try {
-			if (coverAgeInDaysToDelete != null) {
+			// Config Ini setting
+			if (coverAgeInDaysToDelete != null && !coverAgeInDaysToDelete.isEmpty()) {
 				coverAge = Integer.parseInt(coverAgeInDaysToDelete);
+			}
+			// command line setting should override config ini setting
+			if (processSettings.containsKey("coverAgeInDaysToDelete")){
+				coverAgeInDaysToDelete = processSettings.get("coverAgeInDaysToDelete");
+				if (coverAgeInDaysToDelete != null && !coverAgeInDaysToDelete.isEmpty()){
+					coverAge = Integer.parseInt(coverAgeInDaysToDelete);
+				}
 			}
 		} catch (NumberFormatException e) {
 			logger.warn("Failed to parse coverAgeInDaysToDelete : " + coverAgeInDaysToDelete, e);
 		} finally {
-			if (coverAge <= 0) {
+			if (coverAge < 0) {
 				logger.warn("Invalid value for coverAgeInDaysToDelete : " + coverAge);
 				coverAge = DEFAULTAGE;
+			}
+			final String note = "Deleting covers older than " + coverAge + " days";
+			processLog.addNote(note);
+			if (logger.isInfoEnabled()){
+				logger.info(note);
 			}
 		}
 
@@ -45,7 +72,7 @@ public class BookcoverCleanup implements IProcessHandler {
 				} else {
 					processLog.addNote("Cleaning up covers in " + coverDirectoryFile.getAbsolutePath());
 					processLog.saveToDatabase(pikaConn, logger);
-					File[] filesToCheck = coverDirectoryFile.listFiles((dir, name) -> name.toLowerCase().endsWith("jpg") || name.toLowerCase().endsWith("png"));
+					File[] filesToCheck = coverDirectoryFile.listFiles((dir, name) -> name.toLowerCase().endsWith("png") || name.toLowerCase().endsWith("jpg"));
 					if (filesToCheck != null) {
 						for (File curFile : filesToCheck) {
 							//Remove any files created more than 2 weeks ago.
@@ -61,7 +88,11 @@ public class BookcoverCleanup implements IProcessHandler {
 						}
 					}
 					if (numFilesDeleted > 0) {
-						processLog.addNote("\tRemoved " + numFilesDeleted + " files from " + fullPath + ".");
+						final String note = "Removed " + numFilesDeleted + " files from " + fullPath + ".";
+						processLog.addNote("\t" + note);
+						if (logger.isInfoEnabled()){
+							logger.info(note);
+						}
 					}
 				}
 			}

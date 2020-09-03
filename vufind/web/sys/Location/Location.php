@@ -634,12 +634,8 @@ class Location extends DB_DataObject {
 		$locationList     = array();
 		while ($this->fetch()){
 			if (($this->validHoldPickupBranch == 1) || ($this->validHoldPickupBranch == 0 && !empty($patronProfile) && $patronProfile->homeLocationId == $this->locationId)){
-				if (!empty($selectedBranchId) && $this->locationId == $selectedBranchId){
-					$selected = 'selected';
-				}else{
-					$selected = '';
-				}
-				$this->selected = $selected;
+				// Value 0 is valid for patrons of that branch only
+				$this->selected = !empty($selectedBranchId) && $this->locationId == $selectedBranchId ? 'selected' : '';
 				// Each location is prepended with a number to keep precedence for given locations when sorted by ksort below
 				if (isset($physicalLocation) && $physicalLocation->locationId == $this->locationId){
 					//If the user is in a branch, those holdings come first.

@@ -1,3 +1,17 @@
+/*
+ * Copyright (C) 2020  Marmot Library Network
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 package org.pika;
 
 import org.apache.log4j.Logger;
@@ -115,29 +129,32 @@ public class FormatDetermination {
 	public void loadPrintFormatInformation(RecordInfo recordInfo, Record record) {
 		//We should already have formats based on the items
 
-		if (formatSource.equals("specified")) {
-			if (!specifiedFormat.isEmpty()) {
-				HashSet<String> translatedFormats = new HashSet<>();
-				translatedFormats.add(specifiedFormat);
-				HashSet<String> translatedFormatCategories = new HashSet<>();
-				translatedFormatCategories.add(specifiedFormatCategory);
-				recordInfo.addFormats(translatedFormats);
-				recordInfo.addFormatCategories(translatedFormatCategories);
-				recordInfo.setFormatBoost(specifiedFormatBoost);
-			} else {
-				logger.error("Specified Format is not set in indexing profile. Can not use specified format for format determination. Fall back to bib format determination.");
-				loadPrintFormatFromBib(recordInfo, record);
-
-			}
-		} else if (formatSource.equals("item")) {
-			loadPrintFormatFromITypes(recordInfo, record);
-		} else {
-			if (formatDeterminationMethod.equalsIgnoreCase("matType")) {
-				loadPrintFormatFromMatType(recordInfo, record);
-			} else {
-				// Format source presumed to be "bib" by default
-				loadPrintFormatFromBib(recordInfo, record);
-			}
+		switch (formatSource) {
+			case "specified":
+				if (!specifiedFormat.isEmpty()) {
+					HashSet<String> translatedFormats = new HashSet<>();
+					translatedFormats.add(specifiedFormat);
+					HashSet<String> translatedFormatCategories = new HashSet<>();
+					translatedFormatCategories.add(specifiedFormatCategory);
+					recordInfo.addFormats(translatedFormats);
+					recordInfo.addFormatCategories(translatedFormatCategories);
+					recordInfo.setFormatBoost(specifiedFormatBoost);
+				} else {
+					logger.error("Specified Format is not set in indexing profile. Can not use specified format for format determination. Fall back to bib format determination.");
+					loadPrintFormatFromBib(recordInfo, record);
+				}
+				break;
+			case "item":
+				loadPrintFormatFromITypes(recordInfo, record);
+				break;
+			default:
+				if (formatDeterminationMethod.equalsIgnoreCase("matType")) {
+					loadPrintFormatFromMatType(recordInfo, record);
+				} else {
+					// Format source presumed to be "bib" by default
+					loadPrintFormatFromBib(recordInfo, record);
+				}
+				break;
 		}
 	}
 
@@ -176,6 +193,9 @@ public class FormatDetermination {
 							break;
 						case "ebook":
 						case "book":
+						case "bookwithcdrom":
+						case "bookwithdvd":
+						case "bookwithvideodisc":
 						case "largeprint":
 						case "manuscript":
 						case "thesis":
@@ -221,6 +241,7 @@ public class FormatDetermination {
 							econtentItem.setFormat("eVideo");
 							econtentItem.setFormatCategory("Movies");
 							econtentRecord.setFormatBoost(10);
+							break;
 						case "electronic":
 						case "software":
 							econtentItem.setFormat("Online Materials");
@@ -450,18 +471,14 @@ public class FormatDetermination {
 	LinkedHashSet<String> getFormatsFromBib(Record record, RecordInfo recordInfo){
 		LinkedHashSet<String> printFormats = new LinkedHashSet<>();
 		String                leader       = record.getLeader().toString();
-		char                  leaderBit;
-		ControlField          fixedField   = (ControlField) record.getVariableField("008");
+		Character             leaderBit    = leader.length() >= 6 ? Character.toLowerCase(leader.charAt(6)) : null;
 
 		// check for music recordings quickly so we can figure out if it is music
 		// for category (need to do here since checking what is on the Compact
 		// Disc/Phonograph, etc is difficult).
-		if (leader.length() >= 6) {
-			leaderBit = leader.charAt(6);
-			if (Character.toUpperCase(leaderBit) == 'J') {
-				printFormats.add("MusicRecording");
-				//TODO: finish early?
-			}
+		if (leaderBit != null && leaderBit.equals('j')) {
+			printFormats.add("MusicRecording");
+			//TODO: finish early?
 		}
 		getFormatFromPublicationInfo(record, printFormats);
 		getFormatFromNotes(record, printFormats);
@@ -472,10 +489,11 @@ public class FormatDetermination {
 		getFormatFromDigitalFileCharacteristics(record, printFormats);
 		getGameFormatFrom753(record, printFormats);
 		if (printFormats.size() == 0) {
-			//Only get from fixed field information if we don't have anything yet since the catalogging of
+			//Only get from fixed field information if we don't have anything yet since the cataloging of
 			//fixed fields is not kept up to date reliably.  #D-87
 			getFormatFrom007(record, printFormats);
 			if (printFormats.size() == 0) {
+				ControlField          fixedField   = (ControlField) record.getVariableField("008");
 				getFormatFromLeader(printFormats, leader, fixedField);
 				if (printFormats.size() > 1){
 					if (logger.isInfoEnabled()) {
@@ -489,6 +507,10 @@ public class FormatDetermination {
 			}
 		}
 
+//		if (leaderBit != null) {
+//			accompanyingMaterialCheck(leaderBit, printFormats);
+//		}
+
 		if (printFormats.size() == 0){
 //			if (fullReindex) {
 //				logger.warn("Did not get any formats for record " + recordInfo.getFullIdentifier() + ", assuming it is a book ");
@@ -501,7 +523,7 @@ public class FormatDetermination {
 		filterPrintFormats(printFormats);
 
 		if (printFormats.size() > 1){
-			String formatsString = String.join(",",printFormats);
+			String formatsString = String.join(",", printFormats);
 			if (!formatsToFilter.contains(formatsString)){
 				formatsToFilter.add(formatsString);
 				if (logger.isInfoEnabled()) {
@@ -521,9 +543,32 @@ public class FormatDetermination {
 				printFormats.add("4KUltraBlu-Ray");
 			if (curField.equalsIgnoreCase("Blu-Ray")){
 				printFormats.add("Blu-ray");
+			}else if (curField.equalsIgnoreCase("DVD-ROM") || curField.equalsIgnoreCase("DVDROM")){
+				printFormats.add("CDROM");
 			}else if (curField.equalsIgnoreCase("DVD video")){
 				printFormats.add("DVD");
 			}
+		}
+	}
+
+	private void accompanyingMaterialCheck(char recordTypefromLeader, LinkedHashSet<String> printFormats){
+		switch (recordTypefromLeader){
+			case 'a' :
+				// Language material  (text/books generally)
+				if (printFormats.contains("CDROM")){
+					printFormats.clear();
+					printFormats.add("BookWithCDROM");
+					break;
+				}
+				if (printFormats.contains("DVD")){
+					printFormats.clear();
+					printFormats.add("BookWithDVD");
+					break;
+				}
+				if (printFormats.contains("VideoDisc")){
+					printFormats.clear();
+					printFormats.add("BookWithVideoDisc");
+				}
 		}
 	}
 
@@ -750,6 +795,8 @@ public class FormatDetermination {
 				printFormats.add("VideoCassette");
 			}else if (titleMedium.contains("blu-ray")){
 				printFormats.add("Blu-ray");
+			}else if (titleMedium.contains("dvd-rom") || titleMedium.contains("dvdrom")){
+				printFormats.add("CDROM");
 			}else if (titleMedium.contains("dvd")){
 				printFormats.add("DVD");
 			}
@@ -785,7 +832,7 @@ public class FormatDetermination {
 	}
 
 	private void getFormatFromPublicationInfo(Record record, Set<String> result) {
-		// check for playaway view, playaway, go reader in 260|b
+		// check for playaway in 260|b
 		DataField sysDetailsNote = record.getDataField("260");
 		if (sysDetailsNote != null) {
 			if (sysDetailsNote.getSubfield('b') != null) {
@@ -849,6 +896,8 @@ public class FormatDetermination {
 							result.add("4KUltraBlu-Ray");
 						} else if (physicalDescriptionData.contains("bluray") || physicalDescriptionData.contains("blu-ray")) {
 							result.add("Blu-ray");
+						} else if (physicalDescriptionData.contains("cd-rom") || physicalDescriptionData.contains("cdrom")) {
+							result.add("CDROM");
 						} else if (physicalDescriptionData.contains("computer optical disc")) {
 							result.add("Software");
 						} else if (physicalDescriptionData.contains("sound cassettes")) {
@@ -887,6 +936,8 @@ public class FormatDetermination {
 							result.add("4KUltraBlu-Ray");
 						} else if (sysDetailsValue.contains("bluray") || sysDetailsValue.contains("blu-ray")) {
 							result.add("Blu-ray");
+						} else if (sysDetailsValue.contains("dvd-rom") || sysDetailsValue.contains("dvdrom")) {
+							result.add("CDROM");
 						} else if (sysDetailsValue.contains("dvd")) {
 							result.add("DVD");
 						} else if (sysDetailsValue.contains("vertical file")) {
@@ -907,9 +958,9 @@ public class FormatDetermination {
 						result.add("VoxBooks");
 					} else if (noteValue.contains("wonderbook")) {
 						result.add("WonderBook");
-					}else if (noteValue.contains("playaway view")){
+					} else if (noteValue.contains("playaway view")) {
 						result.add("PlayawayView");
-					}else if (noteValue.contains("playaway")){
+					} else if (noteValue.contains("playaway")) {
 						result.add("Playaway");
 					} else if (noteValue.contains("vertical file")) {
 						result.add("VerticalFile");

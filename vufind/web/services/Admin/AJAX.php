@@ -23,8 +23,6 @@ class Admin_AJAX extends AJAXHandler {
 
 	protected $methodsThatRespondWithJSONUnstructured = array(
 		'getAddToWidgetForm',
-		'markProfileForRegrouping',
-		'markProfileForReindexing',
 		'copyHooplaSettingsFromLibrary',
 		'copyHooplaSettingsFromLocation',
 		'clearLocationHooplaSettings',
@@ -899,50 +897,14 @@ class Admin_AJAX extends AJAXHandler {
         return $results;
     }
 
-function fileExists(){
-        $filename = trim($_REQUEST['fileName']);
-        $storagePath = trim($_REQUEST['storagePath']);
+	function fileExists(){
+		$filename    = trim($_REQUEST['fileName']);
+		$storagePath = trim($_REQUEST['storagePath']);
 
-        if(file_exists($storagePath . DIRECTORY_SEPARATOR . "original" . DIRECTORY_SEPARATOR . $filename))
-        {
-            return array("exists"=>"true");
-        }
-        return array("exists"=>"false");
-}
+		if (file_exists($storagePath . DIRECTORY_SEPARATOR . "original" . DIRECTORY_SEPARATOR . $filename)){
+			return ["exists" => "true"];
+		}
+		return ["exists" => "false"];
+	}
 
-	//	function markProfileForRegrouping(){
-//		$result = array(
-//			'success' => false,
-//			'message' => 'Invalid Action',
-//		);
-//		$user = UserAccount::getLoggedInUser();
-//		if (UserAccount::userHasRole('opacAdmin')){
-//			$id = $_REQUEST['id'];
-//			if (!empty($id) && ctype_digit($id)){
-//				$indexProfile = new IndexingProfile();
-//				if ($indexProfile->get($id)){
-//					$result = $indexProfile->markProfileForRegrouping();
-//				}
-//			}
-//		}
-//		return json_encode($result);
-//	}
-//
-//	function markProfileForReindexing(){
-//		$result = array(
-//			'success' => false,
-//			'message' => 'Invalid Action',
-//		);
-//		$user = UserAccount::getLoggedInUser();
-//		if (UserAccount::userHasRole('opacAdmin')){
-//			$id = $_REQUEST['id'];
-//			if (!empty($id) && ctype_digit($id)){
-//				$indexProfile = new IndexingProfile();
-//				if ($indexProfile->get($id)){
-//					$result = $indexProfile->markProfileForReindexing();
-//				}
-//			}
-//		}
-//		return json_encode($result);
-//	}
 }

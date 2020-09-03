@@ -33,8 +33,8 @@ class IndexingProfile extends DB_DataObject{
 	public $__table = 'indexing_profiles';    // table name
 
 	public $id;
-	public $name; //TODO: refactor to display name; the hard part is in the java, switching those things to use the sourceName
-	public $sourceName;
+	public $name;           // Name is for display to end users
+	public $sourceName;     // sourceName is used for storing in databases and ID references  (So a full record Id would be 'sourceName:recordId')
 	public $marcPath;
 	public $marcEncoding;
 	public $filenamesToInclude;
@@ -50,6 +50,7 @@ class IndexingProfile extends DB_DataObject{
 	public $specifiedFormat;
 	public $specifiedFormatCategory;
 	public $specifiedFormatBoost;
+	public $specifiedGroupingCategory;
 	public $recordNumberTag;
 	public $recordNumberField;
 	public $recordNumberPrefix;
@@ -118,9 +119,7 @@ class IndexingProfile extends DB_DataObject{
 			'id'                         => array('property'=>'id',                           'type'=>'label',  'label'=>'Id', 'description'=>'The unique id within the database'),
 			'name'                       => array('property' => 'name',                       'type' => 'text', 'label' => 'Display Name', 'maxLength' => 50, 'description' => 'The display name for this indexing profile', 'required' => true),
 			'sourceName'                 => array('property' => 'sourceName',                 'type' => 'text', 'label' => 'Source Name', 'maxLength' => 50, 'description' => 'The source name of this indexing profile to use internally. eg. for specifying the record source', 'required' => true
-//			                                      , 'serverValidation' => 'validateSourceName'
-			                                      //TODO: turn on once transition has been put in place
-			),
+			                                      , 'serverValidation' => 'validateSourceName'),
 			'recordUrlComponent'         => array('property' => 'recordUrlComponent',         'type' => 'text', 'label' => 'Record URL Component', 'maxLength' => 50, 'description' => 'The Module to use within the URL', 'required' => true, 'default' => 'Record', 'serverValidation' => 'validateRecordUrlComponent'),
 
 			'serverFileSection' => array('property'=>'serverFileSection', 'type' => 'section', 'label' =>'MARC File Settings ', 'hideInLists' => true, 'open' => true,
@@ -148,24 +147,26 @@ class IndexingProfile extends DB_DataObject{
 				)),
 			//TODO: refactor catalogDriver to circulationSystemDriver
 			//TODO: this would be the hook in to tie a indexing profile to eContent driver
+			'formatSource'     => ['property' => 'formatSource', 'type' => 'enum', 'label' => 'Determine Format based on', 'values' => ['bib' => 'Bib Record', 'item' => 'Item Record', 'specified' => 'Specified Value'], 'default' => 'bib', 'hideInLists' => false],
 
 			'formatDeterminationSection' => array('property'=>'formatDeterminationSection', 'type' => 'section', 'label' =>'Format Determination Settings', 'hideInLists' => true,
 			                            'helpLink' => '', 'properties' => array(
 
-			'formatSource'              => array('property' => 'formatSource',              'type' => 'enum',    'label' => 'Determine Format based on', 'values' => array('bib' => 'Bib Record', 'item' => 'Item Record', 'specified'=> 'Specified Value'), 'default' => 'bib'),
-			'bibFormatSection' => array('property'=>'bibFormatSection', 'type' => 'section', 'label' =>'Bib Format Determination Settings', 'hideInLists' => true,
-			                                  'helpLink' => '', 'properties' => array(
-					'formatDeterminationMethod' => array('property' => 'formatDeterminationMethod', 'type' => 'enum', 'label' => 'Format Determination Method', 'values' => array('bib' => 'Bib Record', 'matType' => 'Material Type'), 'default' => 'bib'),
-					'materialTypesToIgnore'     => array('property' => 'materialTypesToIgnore',     'type' => 'text', 'label' => 'Material Type Values to Ignore (ils profile only)', 'maxLength' => 50, 'description' => 'MatType values to ignore when using the MatType format determination. The bib format determination will be used instead. " " & "-" are always ignored.', 'hideInLists' => true),
-			)),
+//					'formatSource'     => ['property' => 'formatSource', 'type' => 'enum', 'label' => 'Determine Format based on', 'values' => ['bib' => 'Bib Record', 'item' => 'Item Record', 'specified' => 'Specified Value'], 'default' => 'bib', 'hideInLists' => false],
+					'bibFormatSection' => ['property' => 'bibFormatSection', 'type' => 'section', 'label' => 'Bib Format Determination Settings', 'hideInLists' => true,
+					                       'helpLink' => '', 'properties' => [
+							'formatDeterminationMethod' => ['property' => 'formatDeterminationMethod', 'type' => 'enum', 'label' => 'Format Determination Method', 'values' => ['bib' => 'Bib Record', 'matType' => 'Material Type'], 'default' => 'bib'],
+							'materialTypesToIgnore'     => ['property' => 'materialTypesToIgnore', 'type' => 'text', 'label' => 'Material Type Values to Ignore (ils profile only)', 'maxLength' => 50, 'description' => 'MatType values to ignore when using the MatType format determination. The bib format determination will be used instead. " " & "-" are always ignored.', 'hideInLists' => true],
+						]],
 
-			'specifiedFormatSection' => array('property'=>'specifiedFormatSection', 'type' => 'section', 'label' =>'Specified Format Settings', 'hideInLists' => true,
+					'specifiedFormatSection' => array('property'=>'specifiedFormatSection', 'type' => 'section', 'label' =>'Specified Format Settings', 'hideInLists' => true,
 			                                      'helpLink' => '', 'properties' => array(
 
 					'specifiedFormat'           => array('property' => 'specifiedFormat',           'type' => 'text',    'label' => 'Specified Format', 'maxLength' => 50, 'description' => 'The format to set when using a defined format', 'required' => false, 'default' => ''),
 					'specifiedFormatCategory'   => array('property' => 'specifiedFormatCategory',   'type' => 'enum',    'label' => 'Specified Format Category', 'values' => array('', 'Books' => 'Books', 'eBook' => 'eBook', 'Audio Books' => 'Audio Books', 'Movies' => 'Movies', 'Music' => 'Music', 'Other' => 'Other'), 'description' => 'The format category to set when using a defined format', 'required' => false, 'default' => ''),
 					'specifiedFormatBoost'      => array('property' => 'specifiedFormatBoost',      'type' => 'integer', 'label' => 'Specified Format Boost', 'maxLength' => 50, 'description' => 'The format boost to set when using a defined format', 'required' => false, 'default' => '8'),
-						)),
+					'specifiedGroupingCategory' => array('property' => 'specifiedGroupingCategory', 'type' => 'enum',    'label' => 'Specified Grouping Category', 'values' => array('', 'book' => 'Book', 'movie' => 'Movie', 'music' => 'Music', 'comic' => 'Comic'/*,'other' => 'other'*/), 'description' => 'The grouping category to set when using a defined format'),
+				)),
 					)),
 
 
@@ -305,6 +306,7 @@ class IndexingProfile extends DB_DataObject{
 				'storeDb'       => true,
 				'allowEdit'     => true,
 				'canEdit'       => false,
+				'hideInLists' => true,
 			);
 		}
 		return $structure;
@@ -378,7 +380,7 @@ class IndexingProfile extends DB_DataObject{
 		$ret = parent::update();
 		if ($ret === FALSE ){
 			global $logger;
-			$logger->log('Failed to update indexing profile for '.$this->name, PEAR_LOG_ERR);
+			$logger->log('Failed to update indexing profile for '.$this->sourceName, PEAR_LOG_ERR);
 			return $ret;
 		}else{
 			$this->saveTranslationMaps();
@@ -390,7 +392,7 @@ class IndexingProfile extends DB_DataObject{
 		global $instanceName;
 		if (!$memCache->delete("{$instanceName}_indexing_profiles")) {
 			global $logger;
-			$logger->log("Failed to delete memcache variable {$instanceName}_indexing_profiles when adding new indexing profile for {$this->name}", PEAR_LOG_ERR);
+			$logger->log("Failed to delete memcache variable {$instanceName}_indexing_profiles when adding new indexing profile for {$this->sourceName}", PEAR_LOG_ERR);
 		}
 		return true;
 	}
@@ -404,7 +406,7 @@ class IndexingProfile extends DB_DataObject{
 		$ret = parent::insert();
 		if ($ret === FALSE ){
 			global $logger;
-			$logger->log('Failed to add new indexing profile for '.$this->name, PEAR_LOG_ERR);
+			$logger->log('Failed to add new indexing profile for '.$this->sourceName, PEAR_LOG_ERR);
 			return $ret;
 		}else{
 			$this->saveTranslationMaps();
@@ -416,7 +418,7 @@ class IndexingProfile extends DB_DataObject{
 		global $instanceName;
 		if (!$memCache->delete("{$instanceName}_indexing_profiles")) {
 			global $logger;
-			$logger->log("Failed to delete memcache variable {$instanceName}_indexing_profiles when adding new indexing profile for {$this->name}", PEAR_LOG_ERR);
+			$logger->log("Failed to delete memcache variable {$instanceName}_indexing_profiles when adding new indexing profile for {$this->sourceName}", PEAR_LOG_ERR);
 		}
 		return true;
 	}
@@ -536,11 +538,16 @@ class IndexingProfile extends DB_DataObject{
 		$sourceName = trim($_REQUEST['sourceName']);
 
 		if (!ctype_alnum($sourceName)){
-			$validationResults = [
-				'validatedOk' => false,
-				'errors'      => ['The Source Name should consist of only alpha-numeric characters and no white space characters'],
-			];
-		} else{
+			$validationResults['validatedOk'] = false;
+			$validationResults['errors'][] = 'The Source Name should consist of only alpha-numeric characters and no white space characters';
+		}
+
+		if ($sourceName != strtolower($sourceName)){
+			$validationResults['validatedOk'] = false;
+			$validationResults['errors'][] = 'The Source Name should consist of lower case characters';
+		}
+
+		if ($validationResults['validatedOk']){
 			$indexingProfile = new IndexingProfile();
 			$count           = $indexingProfile->get('sourceName', $sourceName);
 			if ($count > 0 && $this->id != $indexingProfile->id){ // include exception for editing the same profile
@@ -553,74 +560,26 @@ class IndexingProfile extends DB_DataObject{
 		return $validationResults;
 	}
 
-//	function markProfileForRegrouping(){
-//		$result = array(
-//			'success' => false,
-//			'message' => 'Invalid Profile',
-//		);
-//		if (!empty($this->id) && ctype_digit($this->id) && !empty($this->name)){
-//			require_once ROOT_DIR . '/sys/Indexing/IlsMarcChecksum.php';
-//			$ilsMarcChecksum         = new IlsMarcChecksum();
-//			$ilsMarcChecksum->checksum = 0;
-//			$ilsMarcChecksum->whereAdd("source = '{$this->name}'");
-//			$success = $ilsMarcChecksum->update(DB_DATAOBJECT_WHEREADD_ONLY);
-//
-//
-//			if (PEAR_Singleton::isError($success)){
-//				/** @var PEAR_Error $success */
-//				$result = array(
-//					'success' => false,
-//					'message' => $success->getMessage(),
-//				);
-//			}else{
-//				$result = array(
-//					'success' => true,
-//					'message' => $success . ' grouped works with records from profile ' . $this->name . ' were marked for regrouping.',
-//				);
-//			}
-//		}
-//		return $result;
-//	}
-//
-//	function markProfileForReindexing(){
-//		$result = array(
-//			'success' => false,
-//			'message' => 'Invalid Profile',
-//		);
-//		if (!empty($this->id) && ctype_digit($this->id) && !empty($this->name)){
-//			/** @noinspection PhpVoidFunctionResultUsedInspection */
-//			$success = $this->query("UPDATE grouped_work LEFT JOIN grouped_work_primary_identifiers ON (grouped_work.id = grouped_work_primary_identifiers.grouped_work_id) SET grouped_work.date_updated = null WHERE grouped_work_primary_identifiers.type = '{$this->name}' AND grouped_work.date_updated IS NOT NULL");
-//			if (PEAR_Singleton::isError($success)){
-//				/** @var PEAR_Error $success */
-//				$result = array(
-//					'success' => false,
-//					'message' => $success->getMessage(),
-//				);
-//			}else{
-//				$result = array(
-//					'success' => true,
-//					'message' => $success . ' grouped works with records from profile ' . $this->name . ' were marked for reindexing.',
-//				);
-//			}
-//		}
-//		return $result;
-//	}
-
 	static public function getAllIndexingProfiles(){
 		$indexingProfiles = [];
 		$indexingProfile  = new IndexingProfile();
-		$indexingProfile->orderBy('name');
+		$indexingProfile->orderBy('sourceName');
 		$indexingProfile->find();
 		while ($indexingProfile->fetch()){
-			$indexingProfiles[$indexingProfile->name] = clone($indexingProfile);
+			$indexingProfiles[strtolower($indexingProfile->sourceName)] = clone($indexingProfile);
+			// Indexing profile sourceNames are all indexed in lower case
 		}
 		return $indexingProfiles;
 	}
 
+	/**
+	 * Use for display of a list/drop down of indexing profiles
+	 * @return array
+	 */
 	static public function getAllIndexingProfileNames(){
 		$indexingProfiles = [];
 		$indexingProfile  = new IndexingProfile();
-		$indexingProfile->orderBy('name');
+		$indexingProfile->orderBy('sourceName');
 		$indexingProfile->find();
 		while ($indexingProfile->fetch()){
 			$indexingProfiles[$indexingProfile->id] = $indexingProfile->name;

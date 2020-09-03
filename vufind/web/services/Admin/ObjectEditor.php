@@ -75,8 +75,28 @@ abstract class ObjectEditor extends Admin_Admin {
 
 	/**
 	 * Load all objects into an array keyed by the primary key
+	 * Override this method and set an order by to change how
+	 * sorting order
+	 *
+	 * @param null $orderBy optional Order by clause to use
+	 * @return DB_DataObject[]
 	 */
-	abstract function getAllObjects();
+	function getAllObjects($orderBy = null){
+		/** @var DB_DataObject $object */
+		$objectList  = [];
+		$objectClass = $this->getObjectType();
+		$objectIdCol = $this->getIdKeyColumn();
+		$object      = new $objectClass;
+		if ($orderBy){
+			$object->orderBy($orderBy);
+		}
+		if ($object->find()){
+			while ($object->fetch()){
+				$objectList[$object->$objectIdCol] = clone $object;
+			}
+		}
+		return $objectList;
+	}
 
 	/**
 	 * Define the properties which are editable for the object
@@ -229,7 +249,7 @@ abstract class ObjectEditor extends Admin_Admin {
 				$errorOccurred = true;
 			}
 		}else{
-			//Work with an existing record
+			//Work with an existing object
 			$curObject = $this->getExistingObjectById($id);
 			if (!is_null($curObject)){
 				if ($objectAction == 'save'){
@@ -254,15 +274,20 @@ abstract class ObjectEditor extends Admin_Admin {
 						$errorOccurred         = true;
 					}
 				}elseif ($objectAction == 'delete'){
-					//Delete the record
-					$ret = $curObject->delete();
-					if ($ret === false){
-						$_SESSION['lastError'] = "Unable to delete {$this->getObjectType()} with id of $id";
+					if ($this->canDelete()){
+						//Delete the object
+						$ret = $curObject->delete();
+						if ($ret === false){
+							$_SESSION['lastError'] = "Unable to delete {$this->getObjectType()} with id of $id";
+							$errorOccurred         = true;
+						}
+					} else {
+						$_SESSION['lastError'] = "Not allowed to delete {$this->getObjectType()} with id of $id";
 						$errorOccurred         = true;
 					}
 				}
 			}else{
-				//Couldn't find the record.  Something went haywire.
+				//Couldn't find the object.  Something went haywire.
 				session_start();
 				$_SESSION['lastError'] = "An error occurred, could not find {$this->getObjectType()} with id of $id";
 				$errorOccurred         = true;

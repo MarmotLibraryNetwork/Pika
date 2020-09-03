@@ -24,6 +24,7 @@
 require_once ROOT_DIR . '/AJAXHandler.php';
 //require_once ROOT_DIR . '/services/AJAX/Captcha_AJAX.php';
 require_once ROOT_DIR . '/sys/Pika/Functions.php';
+require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
 use function Pika\Functions\{recaptchaGetQuestion, recaptchaCheckAnswer};
 
 class MyAccount_AJAX extends AJAXHandler {
@@ -47,12 +48,14 @@ class MyAccount_AJAX extends AJAXHandler {
 		'getAddAccountLinkForm', 'addAccountLink', 'removeAccountLink',
 		'cancelBooking', 'getCitationFormatsForm', 'getAddBrowseCategoryFromListForm',
 		'getMasqueradeAsForm', 'initiateMasquerade', 'endMasquerade', 'getMenuData',
+        'transferList', 'isStaffUser', 'transferListToUser',
 	);
 
 	protected $methodsThatRespondWithHTML = array(
 		'LoginForm',
 		'getBulkAddToListForm',
 		'getPinUpdateForm',
+
 	);
 
 	protected $methodsThatRespondWithJSONResultWrapper = [];
@@ -870,6 +873,75 @@ class MyAccount_AJAX extends AJAXHandler {
 		return $interface->fetch('MyAccount/ajax-login.tpl');
 	}
 
+	function transferListToUser()
+    {
+       if(UserAccount::isLoggedIn()){
+
+                $user = UserAccount::getLoggedInUser();
+                if($user->isStaff())
+                {
+                    $listId = $_REQUEST['id'];
+                    return array('title' => 'Transfer List',
+                        'body'=>'<label for="barcode">Please enter recipient barcode</label> <input type="text" name="barcode" id="barcode" class="form-control" />' .
+                                '<div class="validation" id="validation" style="display:none; color:darkred;">Invalid Barcode</div>'.
+                                '<script>$("#barcode").on("change keyup paste", function(data){Pika.Lists.checkUser($("#barcode").val())});</script>',
+                        'buttons'=>'<button value="transfer" disabled="disabled" id="transfer" class="btn btn-danger" onclick="Pika.Lists.transferList('. $listId . ', document.getElementById(\'barcode\').value);return false;">Transfer</button>');
+                }
+
+        }
+        return array('error' => 'You do not have permission to transfer a list');
+    }
+
+    function transferList()
+    {
+
+            $barcodeTo = $_REQUEST['barcode'];
+            $userTo = new User();
+            $listId = $_REQUEST['id'];
+            $user = UserAccount::getLoggedInUser();
+            if($user->isStaff()) {
+                $userTo->get("cat_password", $barcodeTo);
+                if ($userTo->isStaff()) {
+                    $list = new UserList();
+                    $list->id = $listId;
+                    $list->get();
+
+                    $list->user_id = $userTo->id;
+                    if ($list->update()) {
+                        return array('title' => 'Transfer List', 'body' => 'The list has been transferred');
+                    } else {
+                        return array('title' => 'Transfer List', 'body' => 'An Error Occurred');
+                    }
+                }else{
+                    return array('title' => 'Transfer List', 'body' => 'You do not have permission to transfer a list');
+                }
+
+
+            }else{
+                return array('title' => 'Transfer List', 'body' => 'You do not have permission to transfer a list');
+            }
+
+    }
+
+    function isStaffUser()
+    {
+        if(UserAccount::isLoggedIn())
+        {
+            $staffUser = UserAccount::getLoggedInUser();
+            if($staffUser->isStaff()) {
+                $barcode = $_REQUEST['barcode'];
+                $user = new User();
+                $user->cat_password = $barcode;
+                $user->get("cat_password",$barcode);
+                if ($user->isStaff())
+                {
+                    return array('isStaff' => true);
+                }else{ return array('isStaff' => false);}
+            }
+        }
+        return array('error' => "Permission Denied");
+    }
+
 	function getMasqueradeAsForm(){
 		global $interface;
 		return array(
@@ -1343,34 +1415,34 @@ class MyAccount_AJAX extends AJAXHandler {
 			$interface->assign('user', $user);
 
 			//Load a list of lists
-			$userListData = $this->cache->get('user_list_data_' . UserAccount::getActiveUserId());
-			if ($userListData == null || isset($_REQUEST['reload'])){
-				$lists = array();
-				require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
-				$tmpList          = new UserList();
-				$tmpList->user_id = UserAccount::getActiveUserId();
-				$tmpList->deleted = 0;
-				$tmpList->orderBy("title ASC");
-				$tmpList->find();
-				if ($tmpList->N > 0){
-					while ($tmpList->fetch()){
-						$lists[$tmpList->id] = array(
-							'name'      => $tmpList->title,
-							'url'       => '/MyAccount/MyList/' . $tmpList->id,
-							'id'        => $tmpList->id,
-							'numTitles' => $tmpList->numValidListItems(),
-						);
-					}
-				}
-				$this->cache->set('user_list_data_' . UserAccount::getActiveUserId(), $lists, $configArray['Caching']['user']);
-				$timer->logTime("Load Lists");
-			}else{
-				$lists = $userListData;
-				$timer->logTime("Load Lists from cache");
-			}
-
-			$interface->assign('lists', $lists);
-			$result['lists'] = $interface->fetch('MyAccount/listsMenu.tpl');
+//			$userListData = $this->cache->get('user_list_data_' . UserAccount::getActiveUserId());
+//			if ($userListData == null || isset($_REQUEST['reload'])){
+//				$lists = array();
+//				require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+//				$tmpList          = new UserList();
+//				$tmpList->user_id = UserAccount::getActiveUserId();
+//				$tmpList->deleted = 0;
+//				$tmpList->orderBy("title ASC");
+//				$tmpList->find();
+//				if ($tmpList->N > 0){
+//					while ($tmpList->fetch()){
+//						$lists[$tmpList->id] = array(
+//							'name'      => $tmpList->title,
+//							'url'       => '/MyAccount/MyList/' . $tmpList->id,
+//							'id'        => $tmpList->id,
+//							'numTitles' => $tmpList->numValidListItems(),
+//						);
+//					}
+//				}
+//				$this->cache->set('user_list_data_' . UserAccount::getActiveUserId(), $lists, $configArray['Caching']['user']);
+//				$timer->logTime("Load Lists");
+//			}else{
+//				$lists = $userListData;
+//				$timer->logTime("Load Lists from cache");
+//			}
+//
+//			$interface->assign('lists', $lists);
+//			$result['lists'] = $interface->fetch('MyAccount/listsMenu.tpl');
 
 			//Count of Checkouts
 			$result['checkouts'] = '</div><span class="badge">' . $user->getNumCheckedOutTotal() . '</span>';

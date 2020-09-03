@@ -1206,12 +1206,12 @@ class SearchObject_Solr extends SearchObject_Base
 		$tag = new UserTag();
 		$tag->tag = $lookfor;
 		$tag->selectAdd(null);
-		$tag->selectAdd('DISTINCT(groupedRecordPermanentId) as groupedRecordPermanentId');
+		$tag->selectAdd('DISTINCT(groupedWorkPermanentId) as groupedWorkPermanentId');
 		if ($tag->find()){
 			$groupedWorkIds = array();
 			while ($tag->fetch()){
 				// Grab the list of records tagged with this tag
-				$groupedWorkIds[] = $tag->groupedRecordPermanentId;
+				$groupedWorkIds[] = $tag->groupedWorkPermanentId;
 			}
 			$this->setQueryIDs($groupedWorkIds);
 			return true;

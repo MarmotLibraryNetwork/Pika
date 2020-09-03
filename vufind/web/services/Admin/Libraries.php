@@ -35,13 +35,13 @@ class Admin_Libraries extends ObjectEditor {
 		return 'Library Systems';
 	}
 
-	function getAllObjects(){
-		$libraryList = array();
+	function getAllObjects($orderBy = null){
+		$libraryList = [];
 
 		UserAccount::getLoggedInUser();
 		if (UserAccount::userHasRole('opacAdmin')){
 			$library = new Library();
-			$library->orderBy('subdomain');
+			$library->orderBy($orderBy?? 'subdomain');
 			$library->find();
 			while ($library->fetch()){
 				$libraryList[$library->libraryId] = clone $library;

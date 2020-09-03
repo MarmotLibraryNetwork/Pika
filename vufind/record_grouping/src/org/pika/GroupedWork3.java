@@ -1,3 +1,17 @@
+/*
+ * Copyright (C) 2020  Marmot Library Network
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 package org.pika;
 
 import org.apache.log4j.Logger;
@@ -228,7 +242,7 @@ public class GroupedWork3 extends GroupedWorkBase implements Cloneable {
 	}
 
 	@Override
-	public void setTitle(String title, int numNonFilingCharacters, String subtitle) {
+	public void setTitle(String title, String subtitle, int numNonFilingCharacters) {
 		//this.fullTitle = title;
 		//if (subtitle != null) title += " " + subtitle;
 		title = normalizeTitle(title, numNonFilingCharacters);
@@ -274,11 +288,12 @@ public class GroupedWork3 extends GroupedWorkBase implements Cloneable {
 	}
 
 	private static Pattern validCategories = Pattern.compile("^(book|music|movie)$");
+
 	@Override
-	public void setGroupingCategory(String groupingCategory) {
+	public void setGroupingCategory(String groupingCategory, RecordIdentifier identifier) {
 		groupingCategory = groupingCategory.toLowerCase();
 		if (!validCategories.matcher(groupingCategory).matches()) {
-			logger.error("Invalid grouping category " + groupingCategory);
+			logger.error("Invalid grouping category for " + identifier + " : " + groupingCategory);
 		}else {
 			this.groupingCategory = groupingCategory;
 		}

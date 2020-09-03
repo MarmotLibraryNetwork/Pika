@@ -32,9 +32,9 @@ class Admin_Administrators extends ObjectEditor {
 		return 'Administrators';
 	}
 
-	function getAllObjects(){
+	function getAllObjects($orderBy = null){
 		$admin = new User();
-		$admin->query('SELECT DISTINCT user.* FROM user INNER JOIN user_roles ON user.id = user_roles.userId ORDER BY cat_password');
+		$admin->query('SELECT DISTINCT user.* FROM user INNER JOIN user_roles ON user.id = user_roles.userId ORDER BY ' . ( $orderBy ?? 'cat_password' ));
 		$adminList = array();
 		while ($admin->fetch()){
 			$homeLibrary            = Library::getLibraryForLocation($admin->homeLocationId);
@@ -68,17 +68,22 @@ class Admin_Administrators extends ObjectEditor {
 	}
 
 	function getAllowableRoles(){
-		return array('userAdmin');
+		return ['userAdmin'];
 	}
 
 	function canAddNew(){
 		return false;
 	}
 
+	function canDelete(){
+		return false;
+		// Delete action would delete User object rather than admin roles
+	}
+
 	function customListActions(){
-		return array(
-			array('label' => 'Add Administrator', 'action' => 'addAdministrator'),
-		);
+		return [
+			['label' => 'Add Administrator', 'action' => 'addAdministrator'],
+		];
 	}
 
 	function addAdministrator(){
@@ -117,7 +122,7 @@ class Admin_Administrators extends ObjectEditor {
 			if ($newAdmin->N == 0){
 				//Try searching ILS for user if no user was found
 				$newAdmin = UserAccount::findNewUser($barcode);
-				$success  = $newAdmin === false;
+				$success  = is_a($newAdmin, 'User');
 			}
 			if ($success){
 				require_once ROOT_DIR . '/sys/Administration/UserRoles.php';
@@ -134,8 +139,10 @@ class Admin_Administrators extends ObjectEditor {
 				}
 			}elseif ($newAdmin->N == 0){
 				$interface->assign('error', 'Could not find a user with that barcode. (The user needs to have logged in at least once.)');
+			}elseif ($newAdmin->N > 1){
+				$interface->assign('error', "Found multiple ({$newAdmin->N}) users with that barcode. (The database needs to be cleaned up.)");
 			}else{
-				$interface->assign('error', "Found multiple users with that barcode {$newAdmin->N}. (The database needs to be cleaned up.)");
+				$interface->assign('error', 'Unknown error while looking for administrator');
 			}
 		}else{
 			$interface->assign('error', 'No roles assigned to new administrator');

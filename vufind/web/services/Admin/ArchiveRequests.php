@@ -40,11 +40,11 @@ class Admin_ArchiveRequests extends ObjectEditor {
 	function getPageTitle(){
 		return 'Requests for Copies of Archive Materials';
 	}
-	function getAllObjects(){
-		$list = array();
+	function getAllObjects($orderBy = null){
+		$list = [];
 
 		$object = new ArchiveRequest();
-		$object->orderBy('dateRequested desc');
+		$object->orderBy($orderBy ?? 'dateRequested desc');
 		$user = UserAccount::getLoggedInUser();
 		if (!UserAccount::userHasRole('opacAdmin')){
 			$homeLibrary = $user->getHomeLibrary();

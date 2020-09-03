@@ -34,15 +34,8 @@ class Holidays extends ObjectEditor {
 		return 'Holidays';
 	}
 
-	function getAllObjects(){
-		$holiday = new Holiday();
-		$holiday->orderBy('date');
-		$holiday->find();
-		$list = array();
-		while ($holiday->fetch()){
-			$list[$holiday->id] = clone $holiday;
-		}
-		return $list;
+	function getAllObjects($orderBy = null){
+		return parent::getAllObjects($orderBy ?? 'date');
 	}
 
 	function getObjectStructure(){

@@ -1,3 +1,17 @@
+/*
+ * Copyright (C) 2020  Marmot Library Network
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 package org.pika;
 
 import org.apache.log4j.Logger;
@@ -32,7 +46,7 @@ class MarmotRecordProcessor extends IIIRecordProcessor {
 		validCheckedOutStatusCodes.add("u");
 	}
 
-	protected void loadUnsuppressedPrintItems(GroupedWorkSolr groupedWork, RecordInfo recordInfo, String identifier, Record record) {
+	protected void loadUnsuppressedPrintItems(GroupedWorkSolr groupedWork, RecordInfo recordInfo, RecordIdentifier identifier, Record record) {
 		List<DataField> itemRecords = MarcUtil.getDataFields(record, itemTag);
 		for (DataField itemField : itemRecords) {
 			if (!isItemSuppressed(itemField)) {
@@ -55,14 +69,14 @@ class MarmotRecordProcessor extends IIIRecordProcessor {
 					}
 				}
 				if (!isOverDrive && !isEContent) {
-					getPrintIlsItem(groupedWork, recordInfo, record, itemField);
+					getPrintIlsItem(groupedWork, recordInfo, record, itemField, identifier);
 				}
 			}
 		}
 	}
 
 	@Override
-	protected List<RecordInfo> loadUnsuppressedEContentItems(GroupedWorkSolr groupedWork, String identifier, Record record) {
+	protected List<RecordInfo> loadUnsuppressedEContentItems(GroupedWorkSolr groupedWork, RecordIdentifier identifier, Record record) {
 		List<RecordInfo> unsuppressedEcontentRecords = new ArrayList<>();
 		List<DataField>  itemRecords                 = MarcUtil.getDataFields(record, itemTag);
 		for (DataField itemField : itemRecords) {

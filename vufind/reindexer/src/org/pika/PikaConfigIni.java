@@ -1,6 +1,19 @@
+/*
+ * Copyright (C) 2020  Marmot Library Network
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 package org.pika;
 
-import org.apache.log4j.Logger;
 import org.ini4j.Ini;
 import org.ini4j.InvalidFileFormatException;
 import org.ini4j.Profile;
@@ -11,6 +24,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.apache.log4j.Logger;
 
 /**
  * Singleton Instance of Pika Config Ini settings
@@ -25,14 +40,10 @@ public class PikaConfigIni {
 		return ourInstance;
 	}
 
-//	private static Logger logger;
-
 	private PikaConfigIni() {
 	}
 
 	public static Ini loadConfigFile(String filename, String serverName, Logger logger) {
-//		PikaConfigIni.logger = logger;
-
 		//First load the default config file
 		String configName = "../../sites/default/conf/" + filename;
 		logger.info("Loading configuration from " + configName);
@@ -141,11 +152,15 @@ public class PikaConfigIni {
 	public static Integer getIntIniValue(String sectionName, String optionName) {
 		String intValueStr = cleanIniValue(ourInstance.get(sectionName, optionName));
 		if (intValueStr != null && !intValueStr.isEmpty()) {
-//			try {
-				return Integer.parseInt(intValueStr);
-//			} catch (NumberFormatException e) {
-//				logger.warn("Could not parse config setting '" + sectionName + "', '" + optionName + "' : " + intValueStr);
-//			}
+			return Integer.parseInt(intValueStr);
+		}
+		return null;
+	}
+
+	public static Long getLongIniValue(String sectionName, String optionName) {
+		String intValueStr = cleanIniValue(ourInstance.get(sectionName, optionName));
+		if (intValueStr != null && !intValueStr.isEmpty()) {
+			return Long.parseLong(intValueStr);
 		}
 		return null;
 	}
