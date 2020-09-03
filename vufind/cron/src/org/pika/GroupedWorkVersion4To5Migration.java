@@ -43,12 +43,12 @@ public class GroupedWorkVersion4To5Migration implements IProcessHandler {
 				logger.info(msg);
 				processLog.addNote(msg);
 				if (fractionMapped < .75) {
-					final String message = "Version mapping less than 75% populated, preventing user data migration";
+					final String message = "Version mapping less than 75% populated, but proceeding with user data migration";
 					logger.error(message);
 					processLog.addNote(message);
 					processLog.incErrors();
 					processLog.saveToDatabase(pikaConn, logger);
-					return;
+//					return;
 				}
 			}
 		} catch (SQLException e) {
