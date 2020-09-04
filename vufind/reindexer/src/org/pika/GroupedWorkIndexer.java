@@ -304,9 +304,9 @@ public class GroupedWorkIndexer {
 				"location.includeOnlineMaterialsInAvailableToggle, location.includeLibraryRecordsToInclude " +
 				"FROM location INNER JOIN library ON library.libraryId = location.libraryId ORDER BY code ASC",
 				ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
-		PreparedStatement locationOwnedRecordRulesStmt = pikaConn.prepareStatement("SELECT location_records_owned.*, indexing_profiles.name FROM location_records_owned INNER JOIN indexing_profiles ON indexingProfileId = indexing_profiles.id WHERE locationId = ?",
+		PreparedStatement locationOwnedRecordRulesStmt = pikaConn.prepareStatement("SELECT location_records_owned.*, indexing_profiles.sourceName FROM location_records_owned INNER JOIN indexing_profiles ON indexingProfileId = indexing_profiles.id WHERE locationId = ?",
 				ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-		PreparedStatement locationRecordInclusionRulesStmt = pikaConn.prepareStatement("SELECT location_records_to_include.*, indexing_profiles.name FROM location_records_to_include INNER JOIN indexing_profiles ON indexingProfileId = indexing_profiles.id WHERE locationId = ?",
+		PreparedStatement locationRecordInclusionRulesStmt = pikaConn.prepareStatement("SELECT location_records_to_include.*, indexing_profiles.sourceName FROM location_records_to_include INNER JOIN indexing_profiles ON indexingProfileId = indexing_profiles.id WHERE locationId = ?",
 				ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 
 		ResultSet locationInformationRS = locationInformationStmt.executeQuery();
@@ -361,13 +361,13 @@ public class GroupedWorkIndexer {
 			locationOwnedRecordRulesStmt.setLong(1, locationId);
 			ResultSet locationOwnedRecordRulesRS = locationOwnedRecordRulesStmt.executeQuery();
 			while (locationOwnedRecordRulesRS.next()){
-				locationScopeInfo.addOwnershipRule(new OwnershipRule(locationOwnedRecordRulesRS.getString("name"), locationOwnedRecordRulesRS.getString("location"), locationOwnedRecordRulesRS.getString("subLocation")));
+				locationScopeInfo.addOwnershipRule(new OwnershipRule(locationOwnedRecordRulesRS.getString("sourceName"), locationOwnedRecordRulesRS.getString("location"), locationOwnedRecordRulesRS.getString("subLocation")));
 			}
 
 			locationRecordInclusionRulesStmt.setLong(1, locationId);
 			ResultSet locationRecordInclusionRulesRS = locationRecordInclusionRulesStmt.executeQuery();
 			while (locationRecordInclusionRulesRS.next()){
-				locationScopeInfo.addInclusionRule(new InclusionRule(locationRecordInclusionRulesRS.getString("name"),
+				locationScopeInfo.addInclusionRule(new InclusionRule(locationRecordInclusionRulesRS.getString("sourceName"),
 						locationRecordInclusionRulesRS.getString("location"),
 						locationRecordInclusionRulesRS.getString("subLocation"),
 						locationRecordInclusionRulesRS.getString("iType"),
@@ -389,7 +389,7 @@ public class GroupedWorkIndexer {
 				libraryRecordInclusionRulesStmt.setLong(1, libraryId);
 				ResultSet libraryRecordInclusionRulesRS = libraryRecordInclusionRulesStmt.executeQuery();
 				while (libraryRecordInclusionRulesRS.next()){
-					locationScopeInfo.addInclusionRule(new InclusionRule(libraryRecordInclusionRulesRS.getString("name"),
+					locationScopeInfo.addInclusionRule(new InclusionRule(libraryRecordInclusionRulesRS.getString("sourceName"),
 							libraryRecordInclusionRulesRS.getString("location"),
 							libraryRecordInclusionRulesRS.getString("subLocation"),
 							libraryRecordInclusionRulesRS.getString("iType"),
@@ -440,8 +440,8 @@ public class GroupedWorkIndexer {
 				"includeAllRecordsInShelvingFacets, includeAllRecordsInDateAddedFacets, includeOnOrderRecordsInDateAddedFacetValues, includeOnlineMaterialsInAvailableToggle " +
 				"FROM library ORDER BY subdomain ASC",
 				ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
-		PreparedStatement libraryOwnedRecordRulesStmt = pikaConn.prepareStatement("SELECT library_records_owned.*, indexing_profiles.name from library_records_owned INNER JOIN indexing_profiles ON indexingProfileId = indexing_profiles.id WHERE libraryId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
-		libraryRecordInclusionRulesStmt = pikaConn.prepareStatement("SELECT library_records_to_include.*, indexing_profiles.name from library_records_to_include INNER JOIN indexing_profiles ON indexingProfileId = indexing_profiles.id WHERE libraryId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+		PreparedStatement libraryOwnedRecordRulesStmt = pikaConn.prepareStatement("SELECT library_records_owned.*, indexing_profiles.sourceName FROM library_records_owned INNER JOIN indexing_profiles ON indexingProfileId = indexing_profiles.id WHERE libraryId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+		libraryRecordInclusionRulesStmt = pikaConn.prepareStatement("SELECT library_records_to_include.*, indexing_profiles.sourceName FROM library_records_to_include INNER JOIN indexing_profiles ON indexingProfileId = indexing_profiles.id WHERE libraryId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 		ResultSet libraryInformationRS = libraryInformationStmt.executeQuery();
 		while (libraryInformationRS.next()){
 			String facetLabel  = libraryInformationRS.getString("facetLabel");
@@ -490,13 +490,13 @@ public class GroupedWorkIndexer {
 			libraryOwnedRecordRulesStmt.setLong(1, libraryId);
 			ResultSet libraryOwnedRecordRulesRS = libraryOwnedRecordRulesStmt.executeQuery();
 			while (libraryOwnedRecordRulesRS.next()){
-				newScope.addOwnershipRule(new OwnershipRule(libraryOwnedRecordRulesRS.getString("name"), libraryOwnedRecordRulesRS.getString("location"), libraryOwnedRecordRulesRS.getString("subLocation")));
+				newScope.addOwnershipRule(new OwnershipRule(libraryOwnedRecordRulesRS.getString("sourceName"), libraryOwnedRecordRulesRS.getString("location"), libraryOwnedRecordRulesRS.getString("subLocation")));
 			}
 
 			libraryRecordInclusionRulesStmt.setLong(1, libraryId);
 			ResultSet libraryRecordInclusionRulesRS = libraryRecordInclusionRulesStmt.executeQuery();
 			while (libraryRecordInclusionRulesRS.next()){
-				newScope.addInclusionRule(new InclusionRule(libraryRecordInclusionRulesRS.getString("name"),
+				newScope.addInclusionRule(new InclusionRule(libraryRecordInclusionRulesRS.getString("sourceName"),
 						libraryRecordInclusionRulesRS.getString("location"),
 						libraryRecordInclusionRulesRS.getString("subLocation"),
 						libraryRecordInclusionRulesRS.getString("iType"),
