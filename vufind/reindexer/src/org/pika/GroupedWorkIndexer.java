@@ -460,9 +460,6 @@ public class GroupedWorkIndexer {
 			boolean includeOverdriveTeen        = libraryInformationRS.getBoolean("includeOverdriveTeen");
 			boolean includeOverdriveKids        = libraryInformationRS.getBoolean("includeOverdriveKids");
 
-			//Determine if we need to build a scope for this library
-			//MDN 10/1/2014 always build scopes because it makes coding more consistent elsewhere.
-			//We need to build a scope
 			Scope newScope = new Scope();
 			newScope.setIsLibraryScope(true);
 			newScope.setIsLocationScope(false);
