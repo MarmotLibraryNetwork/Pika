@@ -46,36 +46,36 @@ public class BuildGroupedWorkVersion4To5Map implements IProcessHandler {
 		String sql;
 
 		// Simple Mapping
-//		sql = "UPDATE IGNORE grouped_work_versions_map\n" +
-//				"INNER JOIN\n" +
-//				"(\n" +
-//				"SELECT \n" +
-//				"grouped_work_old.permanent_id AS oldID\n" +
-//				"    , GROUP_CONCAT(DISTINCT grouped_work.permanent_id) AS newID\n" +
-//				"    \n" +
-//				"    FROM grouped_work_versions_map\n" +
-//				"    LEFT JOIN grouped_work_old ON (grouped_work_versions_map.groupedWorkPermanentIdVersion4 = grouped_work_old.permanent_id)\n" +
-//				"    LEFT JOIN grouped_work_primary_identifiers_old ON (grouped_work_primary_identifiers_old.grouped_work_id = grouped_work_old.id)\n" +
-//				"    LEFT JOIN grouped_work_primary_identifiers ON (grouped_work_primary_identifiers.identifier = grouped_work_primary_identifiers_old.identifier AND grouped_work_primary_identifiers.type = grouped_work_primary_identifiers_old.type)\n" +
-//				"    LEFT JOIN grouped_work ON (grouped_work_primary_identifiers.grouped_work_id = grouped_work.id)\n" +
-//				"    WHERE grouped_work_versions_map.groupedWorkPermanentIdVersion5 IS NULL\n" +
-//				"    GROUP BY grouped_work_old.permanent_id\n" +
-//				"    HAVING COUNT(DISTINCT grouped_work.permanent_id) = 1\n" +
-//				") As relatedRecordMappingOneToOneMatches\n" +
-//				"ON groupedWorkPermanentIdVersion4 = relatedRecordMappingOneToOneMatches.oldID\n" +
-//				"SET groupedWorkPermanentIdVersion5 = relatedRecordMappingOneToOneMatches.newID\n" +
-//				"WHERE groupedWorkPermanentIdVersion5 IS NULL";
-//		try (
-//				PreparedStatement preparedStatement = pikaConn.prepareStatement(sql);
-//		) {
-//			int updates = preparedStatement.executeUpdate();
-//			processLog.addUpdates(updates);
-//			processLog.addNote("One to one mapping added " + updates + " entries");
-//		} catch (SQLException e) {
-//			logger.error("Error while populating version map with one to one matches.", e);
-//			processLog.addNote("Error in simple mapping : " + e);
-//			processLog.incErrors();
-//		}
+		sql = "UPDATE IGNORE grouped_work_versions_map\n" +
+				"INNER JOIN\n" +
+				"(\n" +
+				"SELECT \n" +
+				"grouped_work_old.permanent_id AS oldID\n" +
+				"    , GROUP_CONCAT(DISTINCT grouped_work.permanent_id) AS newID\n" +
+				"    \n" +
+				"    FROM grouped_work_versions_map\n" +
+				"    LEFT JOIN grouped_work_old ON (grouped_work_versions_map.groupedWorkPermanentIdVersion4 = grouped_work_old.permanent_id)\n" +
+				"    LEFT JOIN grouped_work_primary_identifiers_old ON (grouped_work_primary_identifiers_old.grouped_work_id = grouped_work_old.id)\n" +
+				"    LEFT JOIN grouped_work_primary_identifiers ON (grouped_work_primary_identifiers.identifier = grouped_work_primary_identifiers_old.identifier AND grouped_work_primary_identifiers.type = grouped_work_primary_identifiers_old.type)\n" +
+				"    LEFT JOIN grouped_work ON (grouped_work_primary_identifiers.grouped_work_id = grouped_work.id)\n" +
+				"    WHERE grouped_work_versions_map.groupedWorkPermanentIdVersion5 IS NULL\n" +
+				"    GROUP BY grouped_work_old.permanent_id\n" +
+				"    HAVING COUNT(DISTINCT grouped_work.permanent_id) = 1\n" +
+				") As relatedRecordMappingOneToOneMatches\n" +
+				"ON groupedWorkPermanentIdVersion4 = relatedRecordMappingOneToOneMatches.oldID\n" +
+				"SET groupedWorkPermanentIdVersion5 = relatedRecordMappingOneToOneMatches.newID\n" +
+				"WHERE groupedWorkPermanentIdVersion5 IS NULL";
+		try (
+				PreparedStatement preparedStatement = pikaConn.prepareStatement(sql);
+		) {
+			int updates = preparedStatement.executeUpdate();
+			processLog.addUpdates(updates);
+			processLog.addNote("One to one mapping added " + updates + " entries");
+		} catch (SQLException e) {
+			logger.error("Error while populating version map with one to one matches.", e);
+			processLog.addNote("Error in simple mapping : " + e);
+			processLog.incErrors();
+		}
 
 		// Complex Mapping
 		sql = "SELECT groupedWorkPermanentIdVersion4 FROM  grouped_work_versions_map \n" +
