@@ -232,8 +232,8 @@ class IndexingProfile extends DB_DataObject{
 					                             'helpLink' => '', 'properties' => array(
 							'statusesToSuppress'    => array('property' => 'statusesToSuppress', 'type' => 'text', 'label' => 'Statuses To Suppress (use regex)', 'maxLength' => 100, 'description' => 'A regular expression for any statuses that should be suppressed'),
 							'iTypesToSuppress'      => array('property' => 'iTypesToSuppress', 'type' => 'text', 'label' => 'Itypes To Suppress (use regex)', 'maxLength' => 100, 'description' => 'A regular expression for any Itypes that should be suppressed'),
-							'locationsToSuppress'   => array('property' => 'locationsToSuppress', 'type' => 'text', 'label' => 'Locations To Suppress', 'maxLength' => 255, 'description' => 'A regular expression for any locations that should be suppressed'),
-							'collectionsToSuppress' => array('property' => 'collectionsToSuppress', 'type' => 'text', 'label' => 'Collections To Suppress', 'maxLength' => 100, 'description' => 'A regular expression for any collections that should be suppressed'),
+							'locationsToSuppress'   => array('property' => 'locationsToSuppress', 'type' => 'text', 'label' => 'Locations To Suppress (use regex)', 'maxLength' => 255, 'description' => 'A regular expression for any locations that should be suppressed'),
+							'collectionsToSuppress' => array('property' => 'collectionsToSuppress', 'type' => 'text', 'label' => 'Collections To Suppress (use regex)', 'maxLength' => 100, 'description' => 'A regular expression for any collections that should be suppressed'),
 							'useICode2Suppression'  => array('property' => 'useICode2Suppression', 'type' => 'checkbox', 'label' => 'Use Item Suppression Field suppression for items', 'description' => 'Whether or not we should suppress items based on Item Suppression Field'),
 							'iCode2sToSuppress'     => array('property' => 'iCode2sToSuppress', 'type' => 'text', 'label' => 'Item Suppression Field Values To Suppress (use regex)', 'maxLength' => 100, 'description' => 'A regular expression for any Item Suppression Field that should be suppressed'),
 

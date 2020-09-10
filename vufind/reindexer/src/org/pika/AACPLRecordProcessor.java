@@ -62,37 +62,8 @@ class AACPLRecordProcessor extends IlsRecordProcessor {
 		}
 	}
 
-	protected boolean isItemSuppressed(DataField curItem) {
-		if (statusSubfieldIndicator != ' ') {
-			Subfield statusSubfield = curItem.getSubfield(statusSubfieldIndicator);
-			//For Anne Arundel, the status is blank if the item is on shelf
-			if (statusSubfield != null) {
-				if (statusesToSuppressPattern != null && statusesToSuppressPattern.matcher(statusSubfield.getData().trim()).matches()) {
-					return true;
-				}
-			}
-		}
-		Subfield locationSubfield = curItem.getSubfield(locationSubfieldIndicator);
-		if (locationSubfield == null) {
-			return true;
-		} else {
-			if (locationsToSuppressPattern != null && locationsToSuppressPattern.matcher(locationSubfield.getData().trim()).matches()) {
-				return true;
-			}
-		}
-		if (collectionSubfield != ' ') {
-			Subfield collectionSubfieldValue = curItem.getSubfield(collectionSubfield);
-			if (collectionSubfieldValue != null) {
-				if (collectionsToSuppressPattern != null && collectionsToSuppressPattern.matcher(collectionSubfieldValue.getData().trim()).matches()) {
-					return true;
-				}
-			}
-		}
-		return false;
-	}
-
 	protected String getItemStatus(DataField itemField, String recordIdentifier) {
-		String subfieldData = getItemSubfieldData(statusSubfieldIndicator, itemField);
+		String subfieldData      = getItemSubfieldData(statusSubfieldIndicator, itemField);
 		String shelfLocationData = getItemSubfieldData(shelvingLocationSubfield, itemField);
 		if (shelfLocationData.equalsIgnoreCase("Z-ON-ORDER") || shelfLocationData.equalsIgnoreCase("ON-ORDER")) {
 			subfieldData = "On Order";

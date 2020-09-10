@@ -372,6 +372,21 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 		}
 	}
 
+	//Retaining load Sierra volume data (.j records) in case it is ever needed for indexing
+//	private void loadVolumesFromExport(Connection pikaConn){
+//		try{
+//			PreparedStatement loadVolumesStmt = pikaConn.prepareStatement("SELECT distinct(recordId) FROM ils_volume_info", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+//			ResultSet volumeInfoRS = loadVolumesStmt.executeQuery();
+//			while (volumeInfoRS.next()){
+//				String recordId = volumeInfoRS.getString(1);
+//				recordsWithVolumes.add(recordId);
+//			}
+//			volumeInfoRS.close();
+//		}catch (SQLException e){
+//			logger.error("Error loading volumes from the export", e);
+//		}
+//	}
+
 //	void loadDueDateInformation() {
 //		File dueDatesFile = new File(this.exportPath + "/due_dates.csv");
 //		if (dueDatesFile.exists()){

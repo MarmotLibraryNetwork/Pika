@@ -114,7 +114,7 @@ class ScopingInfo {
 				Util.getCleanDetailValue(holdablePTypes) + "|" +
 				Util.getCleanDetailValue(bookablePTypes) + "|" +
 				Util.getCleanDetailValue(localUrl)
-				+ "|" // no longer used for display in pika. TODO: Would like to remove, but parsing elsewhere may be dependent on final pipe
+//				+ "|" // no longer used for display in pika. TODO: Would like to remove, but parsing elsewhere may be dependent on final pipe
 				;
 	}
 

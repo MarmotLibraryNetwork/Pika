@@ -1366,7 +1366,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 							okToAdd = true;
 						}
 					}catch (Exception e){
-						logger.error("Error determining if the new value is already part of the string", e);
+						logger.error("Error determining if the new value of subfield is already part of the string", e);
 					}
 					if (okToAdd) {
 						if (subfieldData.length() > 0 && subfieldData.charAt(subfieldData.length() - 1) != ' ') {
@@ -1427,44 +1427,37 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	}
 
 	protected boolean isItemSuppressed(DataField curItem) {
-		if (statusSubfieldIndicator != ' ') {
-			Subfield statusSubfield = curItem.getSubfield(statusSubfieldIndicator);
-			if (statusSubfield == null) { // suppress if subfield is missing
+		if (statusesToSuppressPattern != null && statusSubfieldIndicator != ' ') {
+			String status = getItemStatus(curItem, "");
+			if (status == null) { // suppress if subfield is missing
 				return true;
-			} else {
-				String status = statusSubfield.getData().trim();
-				if (statusesToSuppressPattern != null && statusesToSuppressPattern.matcher(status).matches()) {
+			} else if (statusesToSuppressPattern.matcher(status).matches()) {
 					return true;
 				}
-			}
 		}
-		if (locationSubfieldIndicator != ' ') {
+		if (locationsToSuppressPattern != null && locationSubfieldIndicator != ' ') {
 			Subfield locationSubfield = curItem.getSubfield(locationSubfieldIndicator);
 			if (locationSubfield == null){ // suppress if subfield is missing
 				return true;
-			}else{
-				if (locationsToSuppressPattern != null && locationsToSuppressPattern.matcher(locationSubfield.getData().trim()).matches()){
-					return true;
-				}
+			}else if (locationsToSuppressPattern.matcher(locationSubfield.getData().trim()).matches()) {
+				return true;
 			}
 		}
-		if (collectionSubfield != ' '){
+		if (collectionsToSuppressPattern != null && collectionSubfield != ' '){
 			Subfield collectionSubfieldValue = curItem.getSubfield(collectionSubfield);
 			if (collectionSubfieldValue == null){ // suppress if subfield is missing
 				return true;
-			}else{
-				if (collectionsToSuppressPattern != null && collectionsToSuppressPattern.matcher(collectionSubfieldValue.getData().trim()).matches()){
-					return true;
-				}
+			}else if (collectionsToSuppressPattern.matcher(collectionSubfieldValue.getData().trim()).matches()) {
+				return true;
 			}
 		}
-		if (iTypeSubfield != ' '){
+		if (iTypesToSuppressPattern != null && iTypeSubfield != ' '){
 			Subfield iTypeSubfieldValue = curItem.getSubfield(iTypeSubfield);
 			if (iTypeSubfieldValue == null){ // suppress if subfield is missing
 				return true;
 			}else{
 				String iType = iTypeSubfieldValue.getData().trim();
-				if (iTypesToSuppressPattern != null && iTypesToSuppressPattern.matcher(iType).matches()){
+				if (iTypesToSuppressPattern.matcher(iType).matches()){
 					if (logger.isDebugEnabled()) {
 						logger.debug("Item record is suppressed due to Itype " + iType);
 					}
@@ -1472,13 +1465,13 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				}
 			}
 		}
-		if (useICode2Suppression && iCode2Subfield != ' ') {
+		if (useICode2Suppression && iCode2sToSuppressPattern != null && iCode2Subfield != ' ') {
 			Subfield icode2Subfield = curItem.getSubfield(iCode2Subfield);
 			if (icode2Subfield != null) {
 				String iCode2 = icode2Subfield.getData().toLowerCase().trim();
 
 				//Suppress iCode2 codes
-				if (iCode2sToSuppressPattern != null && iCode2sToSuppressPattern.matcher(iCode2).matches()) {
+				if (iCode2sToSuppressPattern.matcher(iCode2).matches()) {
 					if (logger.isDebugEnabled()) {
 						logger.debug("Item record is suppressed due to ICode2 " + iCode2);
 					}

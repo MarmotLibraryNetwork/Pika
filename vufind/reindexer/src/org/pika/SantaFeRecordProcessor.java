@@ -31,27 +31,12 @@ import java.sql.ResultSet;
  */
 class SantaFeRecordProcessor extends IIIRecordProcessor {
 
-	SantaFeRecordProcessor(GroupedWorkIndexer indexer, Connection vufindConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
-		super(indexer, vufindConn, indexingProfileRS, logger, fullReindex);
+	SantaFeRecordProcessor(GroupedWorkIndexer indexer, Connection pikaConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
+		super(indexer, pikaConn, indexingProfileRS, logger, fullReindex);
 		availableStatus = "-o";
 		validOnOrderRecordStatus = "o1a";
 
 		loadOrderInformationFromExport();
-	}
-
-	protected boolean isBibSuppressed(Record record) {
-		DataField field907 = record.getDataField("907");
-		if (field907 != null){
-			Subfield suppressionSubfield = field907.getSubfield('c');
-			if (suppressionSubfield != null){
-				String bCode3 = suppressionSubfield.getData().toLowerCase().trim();
-				if (bCode3.matches("^[dns]$")){
-					logger.debug("Bib record is suppressed due to bcode3 " + bCode3);
-					return true;
-				}
-			}
-		}
-		return false;
 	}
 
 	protected boolean isItemSuppressed(DataField curItem) {
@@ -61,7 +46,7 @@ class SantaFeRecordProcessor extends IIIRecordProcessor {
 			String status = curItem.getSubfield(statusSubfieldIndicator).getData().trim();
 
 			//Suppress based on combination of status and icode2
-			if ((icode2.equals("2") || icode2.equals("3")) && status.equals("f")){
+			if (status.equals("f") && (icode2.equals("2") || icode2.equals("3"))){
 				logger.debug("Item record is suppressed due to icode2 / status");
 				return true;
 			}else if (icode2.equals("d") && (status.equals("$") || status.equals("s") || status.equals("m") || status.equals("r") || status.equals("z"))){

@@ -76,16 +76,16 @@ class WCPLRecordProcessor extends IlsRecordProcessor {
 		groupedWork.addSystemLists(MarcUtil.getFieldList(record, "449a"));
 	}
 
-	protected boolean isItemSuppressed(DataField curItem) {
-		//Finally suppress staff items
-		Subfield staffSubfield = curItem.getSubfield('o');
-		if (staffSubfield != null) {
-			if (staffSubfield.getData().trim().equals("1")) {
-				return true;
-			}
-		}
-		return super.isItemSuppressed(curItem);
-	}
+//	protected boolean isItemSuppressed(DataField curItem) {
+//		//Finally suppress staff items
+//		Subfield staffSubfield = curItem.getSubfield('o');
+//		if (staffSubfield != null) {
+//			if (staffSubfield.getData().trim().equals("1")) {
+//				return true;
+//			}
+//		}
+//		return super.isItemSuppressed(curItem);
+//	}
 
 	@Override
 	protected void loadDateAdded(RecordIdentifier identifier, DataField itemField, ItemInfo itemInfo) {
