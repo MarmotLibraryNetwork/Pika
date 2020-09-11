@@ -54,6 +54,8 @@ public class RecordInfo {
 
 	private HashSet<ItemInfo> relatedItems = new HashSet<>();
 
+	private boolean abridged = false;
+
 	public RecordInfo(RecordIdentifier sourceAndId){
 		this.source = sourceAndId.getSource();
 		this.recordIdentifier = sourceAndId.getIdentifier();
@@ -119,13 +121,14 @@ public class RecordInfo {
 		if (recordDetails == null) {
 			//None of this changes by scope so we can just form it once and then return the previous value
 			recordDetails = this.getFullIdentifier() + "|" +
-					getPrimaryFormat() + "|" +
-					getPrimaryFormatCategory() + "|" +
-					Util.getCleanDetailValue(edition) + "|" +
-					Util.getCleanDetailValue(primaryLanguage) + "|" +
-					Util.getCleanDetailValue(publisher) + "|" +
-					Util.getCleanDetailValue(publicationDate) + "|" +
-					Util.getCleanDetailValue(physicalDescription)
+							getPrimaryFormat() + "|" +
+							getPrimaryFormatCategory() + "|" +
+							Util.getCleanDetailValue(edition) + "|" +
+							Util.getCleanDetailValue(primaryLanguage) + "|" +
+							Util.getCleanDetailValue(publisher) + "|" +
+							Util.getCleanDetailValue(publicationDate) + "|" +
+							Util.getCleanDetailValue(physicalDescription) //+ "|"
+							+ (abridged ? "|1" : "") // only add if it is abridged
 			;
 		}
 		return recordDetails;
@@ -405,4 +408,7 @@ public class RecordInfo {
 		this.translations.addAll(translations);
 	}
 
+	public void setAbridged(boolean abridged) {
+		this.abridged = abridged;
+	}
 }

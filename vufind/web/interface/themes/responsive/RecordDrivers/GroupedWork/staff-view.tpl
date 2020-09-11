@@ -87,7 +87,7 @@
 					<strong>{$field|escape}</strong>
 				<table id="record_details" class="table-striped table table-condensed table-bordered notranslate" style="overflow-x: scroll; font-size: smaller">{*TODO: style rule should go in css *}
 					<tr>
-						<th>Bib Id</th><th>Format</th><th>Format Category</th><th>Edition</th><th>Language</th><th>Publisher</th><th>Publication Date</th><th>Physical Description</th>
+						<th>Bib Id</th><th>Format</th><th>Format Category</th><th>Edition</th><th>Language</th><th>Publisher</th><th>Publication Date</th><th>Physical Description</th><th>Abridged/th>
 					</tr>
 					{foreach from=$values item="item"}
 					<tr>

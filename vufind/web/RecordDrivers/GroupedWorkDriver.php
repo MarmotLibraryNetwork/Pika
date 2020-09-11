@@ -1370,22 +1370,9 @@ class GroupedWorkDriver extends RecordInterface {
 	private function getNumRelatedRecords(){
 		if ($this->numRelatedRecords == -1){
 			if ($this->relatedRecords != null){
-				$this->numRelatedRecords = count($this->relatedRecords);
-			}else{
-				global $solrScope;
-
-				$relatedRecordFieldName = 'related_record_ids';
-				if ($solrScope){
-					if (isset($this->fields["related_record_ids_$solrScope"])){
-						$relatedRecordFieldName = "related_record_ids_$solrScope";
-					}
-				}
-				if (isset($this->fields[$relatedRecordFieldName])){
-					$this->numRelatedRecords = count($this->fields[$relatedRecordFieldName]);
-				}else{
-					$this->numRelatedRecords = 0;
-				}
+				$this->loadRelatedRecords();
 			}
+			$this->numRelatedRecords = count($this->relatedRecords);
 		}
 		return $this->numRelatedRecords;
 	}
@@ -1459,7 +1446,7 @@ class GroupedWorkDriver extends RecordInterface {
 			}
 
 			//Sort the records based on format and then edition
-			uasort($relatedRecords, array($this, "compareRelatedRecords"));
+			uasort($relatedRecords, [$this, "compareRelatedRecords"]);
 
 			$this->relatedRecords = $relatedRecords;
 			$timer->logTime("Finished loading related records {$this->getUniqueID()}");
@@ -1491,7 +1478,7 @@ class GroupedWorkDriver extends RecordInterface {
 		$relatedManifestations = array();
 		foreach ($relatedRecords as $curRecord){
 			if (!array_key_exists($curRecord['format'], $relatedManifestations)){
-				$relatedManifestations[$curRecord['format']] = array(
+				$relatedManifestations[$curRecord['format']] = [
 					'format'               => $curRecord['format'],
 					'formatCategory'       => $curRecord['formatCategory'],
 					'copies'               => 0,
@@ -1503,20 +1490,20 @@ class GroupedWorkDriver extends RecordInterface {
 					'available'            => false,
 					'hasLocalItem'         => false,
 					'isEContent'           => false,
-					'relatedRecords'       => array(),
+					'relatedRecords'       => [],
 					'preferredEdition'     => null,
 					'statusMessage'        => '',
-					'itemLocations'        => array(),
+					'itemLocations'        => [],
 					'availableLocally'     => false,
 					'availableOnline'      => false,
 					'availableHere'        => false,
 					'inLibraryUseOnly'     => false,
 					'allLibraryUseOnly'    => true,
 					'hideByDefault'        => false,
-					'itemSummary'          => array(),
-					'itemSummaryLocal'     => array(),
+					'itemSummary'          => [],
+					'itemSummaryLocal'     => [],
 					'groupedStatus'        => ''
-				);
+				];
 			}
 			if (isset($curRecord['availableLocally']) && $curRecord['availableLocally'] == true){
 				$relatedManifestations[$curRecord['format']]['availableLocally'] = true;
@@ -1761,8 +1748,10 @@ class GroupedWorkDriver extends RecordInterface {
 			$holdabilityComparison = GroupedWorkDriver::compareHoldability($a, $b);
 			if ($holdabilityComparison == 0){
 				//2) Compare by language to put english titles before spanish by default
-				$languageComparison = GroupedWorkDriver::compareLanguagesForRecords($a, $b);
-				if ($languageComparison == 0){
+//				$languageComparison = GroupedWorkDriver::compareLanguagesForRecords($a, $b);
+//				if ($languageComparison == 0){
+				$abridgedComparison = GroupedWorkDriver::compareAbridged($a, $b);
+				if ($abridgedComparison == 0){
 					//3) Compare editions for non-fiction if available
 					$editionComparisonResult = GroupedWorkDriver::compareEditionsForRecords($literaryForm, $a, $b);
 					if ($editionComparisonResult == 0){
@@ -1803,13 +1792,41 @@ class GroupedWorkDriver extends RecordInterface {
 						return $editionComparisonResult;
 					}
 				}else{
-					return $languageComparison;
+					return $abridgedComparison;
 				}
+//				}else{
+//					return $languageComparison;
+//				}
 			}else{
 				return $holdabilityComparison;
 			}
 		}else{
 			return $formatComparison;
+		}
+	}
+
+	static function eContentComparison($a, $b){
+		//TODO: build a static ranking of the sideload sources
+		global $library;
+		require_once ROOT_DIR . '/sys/Indexing/IndexingProfile.php';
+		$indexingProfiles = IndexingProfile::getAllIndexingProfileNames();
+		/** @var LibraryRecordToInclude[] $recordsToInclude */
+		$recordsToInclude = $library->recordsToInclude;
+		$sourceA          = $a['source'];
+		$sourceB          = $b['source'];
+		$rankSourceA      = 1;
+		$rankSourceB      = 1;
+		foreach ($recordsToInclude as $key => $includedSideLoad){
+			$sideLoadName = $indexingProfiles[$includedSideLoad->indexingProfileId];
+			if ($sourceA == $sideLoadName){
+				$rankSourceA = -$key;
+			}
+			if ($sourceB == $sideLoadName){
+				$rankSourceB = -$key;
+			}
+			if ($rankSourceA < 1 && $rankSourceB < 1){
+				break;
+			}
 		}
 	}
 
@@ -1833,49 +1850,64 @@ class GroupedWorkDriver extends RecordInterface {
 	 * @param $b
 	 * @return int
 	 */
-	static function compareLanguagesForRecords($a, $b){
-		$aHasEnglish = false;
-		if (is_array($a['language'])){
-			$languageA = strtolower(reset($a['language']));
-			foreach ($a['language'] as $language){
-				if (strcasecmp('english', $language) == 0){
-					$aHasEnglish = true;
-					break;
-				}
-			}
-		}else{
-			$languageA = strtolower($a['language']);
-			if (strcasecmp('english', $languageA) == 0){
-				$aHasEnglish = true;
-			}
-		}
-		$bHasEnglish = false;
-		if (is_array($b['language'])){
-			$languageB = strtolower(reset($b['language']));
-			foreach ($b['language'] as $language){
-				if (strcasecmp('english', $language) == 0){
-					$bHasEnglish = true;
-					break;
-				}
-			}
-		}else{
-			$languageB = strtolower($b['language']);
-			if (strcasecmp('english', $languageB) == 0){
-				$bHasEnglish = true;
-			}
-		}
-		if ($aHasEnglish && $bHasEnglish){
+	static function compareAbridged($a, $b){
+		if ($a['abridged'] == $b['abridged']){
 			return 0;
+		}elseif ($a['abridged']){
+			return -1;
 		}else{
-			if ($aHasEnglish){
-				return -1;
-			}elseif ($bHasEnglish){
-				return 1;
-			}else{
-				return -strcmp($languageA, $languageB);
-			}
+			return 1;
 		}
 	}
+
+//	/**
+//	 * @param $a
+//	 * @param $b
+//	 * @return int
+//	 */
+//	static function compareLanguagesForRecords($a, $b){
+//		$aHasEnglish = false;
+//		if (is_array($a['language'])){
+//			$languageA = strtolower(reset($a['language']));
+//			foreach ($a['language'] as $language){
+//				if (strcasecmp('english', $language) == 0){
+//					$aHasEnglish = true;
+//					break;
+//				}
+//			}
+//		}else{
+//			$languageA = strtolower($a['language']);
+//			if (strcasecmp('english', $languageA) == 0){
+//				$aHasEnglish = true;
+//			}
+//		}
+//		$bHasEnglish = false;
+//		if (is_array($b['language'])){
+//			$languageB = strtolower(reset($b['language']));
+//			foreach ($b['language'] as $language){
+//				if (strcasecmp('english', $language) == 0){
+//					$bHasEnglish = true;
+//					break;
+//				}
+//			}
+//		}else{
+//			$languageB = strtolower($b['language']);
+//			if (strcasecmp('english', $languageB) == 0){
+//				$bHasEnglish = true;
+//			}
+//		}
+//		if ($aHasEnglish && $bHasEnglish){
+//			return 0;
+//		}else{
+//			if ($aHasEnglish){
+//				return -1;
+//			}elseif ($bHasEnglish){
+//				return 1;
+//			}else{
+//				return -strcmp($languageA, $languageB);
+//			}
+//		}
+//	}
 
 	/**
 	 * @param $literaryForm
@@ -2569,7 +2601,7 @@ class GroupedWorkDriver extends RecordInterface {
 
 	public function getSemanticData(){
 		//Schema.org
-		$semanticData[] = array(
+		$semanticData[] = [
 			'@context'            => 'http://schema.org',
 			'@type'               => 'CreativeWork',
 			'name'                => $this->getTitle(),
@@ -2577,11 +2609,11 @@ class GroupedWorkDriver extends RecordInterface {
 			'isAccessibleForFree' => true,
 			'image'               => $this->getBookcoverUrl('medium', true),
 			'workExample'         => $this->getSemanticWorkExamples(),
-		);
+		];
 
 		//BibFrame
-		$semanticData[] = array(
-			'@context' => array(
+		$semanticData[] = [
+			'@context' => [
 				"bf"       => 'http://bibframe.org/vocab/',
 				"bf2"      => 'http://bibframe.org/vocab2/',
 				"madsrdf"  => 'http://www.loc.gov/mads/rdf/v1#',
@@ -2589,15 +2621,15 @@ class GroupedWorkDriver extends RecordInterface {
 				"rdfs"     => 'http://www.w3.org/2000/01/rdf-schema',
 				"relators" => "http://id.loc.gov/vocabulary/relators/",
 				"xsd"      => "http://www.w3.org/2001/XMLSchema#"
-			),
-			'@graph'   => array(
-				array(
+			],
+			'@graph'   => [
+				[
 					'@type'      => 'bf:Work', /* TODO: This should change to a more specific type Book/Movie as applicable */
 					'bf:title'   => $this->getTitle(),
 					'bf:creator' => $this->getPrimaryAuthor(),
-				),
-			)
-		);
+				],
+			]
+		];
 
 		//Open graph data (goes in meta tags)
 		global $interface;
@@ -2646,11 +2678,11 @@ class GroupedWorkDriver extends RecordInterface {
 	 */
 	protected function loadRecordDetailsFromIndex($validRecordIds){
 		$relatedRecordFieldName = "record_details";
-		$recordsFromIndex       = array();
+		$recordsFromIndex       = [];
 		if (isset($this->fields[$relatedRecordFieldName])){
 			$relatedRecordIdsRaw = $this->fields[$relatedRecordFieldName];
 			if (!is_array($relatedRecordIdsRaw)){
-				$relatedRecordIdsRaw = array($relatedRecordIdsRaw);
+				$relatedRecordIdsRaw = [$relatedRecordIdsRaw];
 			}
 			foreach ($relatedRecordIdsRaw as $tmpItem){
 				$recordDetails = explode('|', $tmpItem);
@@ -2692,7 +2724,7 @@ class GroupedWorkDriver extends RecordInterface {
 		return $itemsFromIndex;
 	}
 
-//	const SIERRA_ITYPE_WILDCARDS = array('999', '9999');
+	const SIERRA_PTYPE_WILDCARDS = array('999', '9999');
 	static $SIERRA_PTYPE_WILDCARDS = array('999', '9999');
 	//TODO: switch to const when php version is >= 5.6
 
@@ -2723,7 +2755,7 @@ class GroupedWorkDriver extends RecordInterface {
 //		$volumeData = $recordDriver->getVolumeInfoForRecord();
 
 		//Setup the base record
-		$relatedRecord = array(
+		$relatedRecord = [
 			'id'                     => $recordDetails[0],
 			'driver'                 => $recordDriver,
 			'url'                    => $recordDriver != null ? $recordDriver->getRecordUrl() : '',
@@ -2755,13 +2787,14 @@ class GroupedWorkDriver extends RecordInterface {
 			'shelfLocation'          => '',
 			'bookable'               => false,
 			'holdable'               => false,
-			'itemSummary'            => array(),
+			'itemSummary'            => [],
 			'groupedStatus'          => 'Currently Unavailable',
 			'source'                 => $source,
-			'actions'                => array(),
+			'actions'                => [],
 			'schemaDotOrgType'       => $this->getSchemaOrgType($recordDetails[1]),
 			'schemaDotOrgBookFormat' => $this->getSchemaOrgBookFormat($recordDetails[1]),
-		);
+			'abridged'               => !empty($recordDetails[8]),
+		];
 		$timer->logTime("Setup base related record");
 		$memoryWatcher->logMemory("Setup base related record");
 
@@ -2770,7 +2803,7 @@ class GroupedWorkDriver extends RecordInterface {
 		$libraryShelfLocation = null;
 		$localCallNumber      = null;
 		$libraryCallNumber    = null;
-		$relatedUrls          = array();
+		$relatedUrls          = [];
 
 		$recordHoldable = false;
 		$recordBookable = false;
@@ -2781,21 +2814,21 @@ class GroupedWorkDriver extends RecordInterface {
 			$itemId        = $curItem[1] == 'null' ? '' : $curItem[1];
 			$shelfLocation = $curItem[2];
 
-			if (!$forCovers){
-				if (!empty($itemId) && $recordDriver != null && $recordDriver->hasOpacFieldMessage()){
-					$opacMessage = $recordDriver->getOpacFieldMessage($itemId);
-					if ($opacMessage && $opacMessage != '-' && $opacMessage != ' '){
-						$opacMessageTranslation = translate('opacFieldMessageCode_' . $opacMessage);
-						if ($opacMessageTranslation != 'opacFieldMessageCode_'){ // Only display if the code has a translation
-							$shelfLocation = "$opacMessageTranslation $shelfLocation";
-						}
-					}
-				}
-			}
+//			if (!$forCovers){
+//				if (!empty($itemId) && $recordDriver != null && $recordDriver->hasOpacFieldMessage()){
+//					$opacMessage = $recordDriver->getOpacFieldMessage($itemId);
+//					if ($opacMessage && $opacMessage != '-' && $opacMessage != ' '){
+//						$opacMessageTranslation = translate('opacFieldMessageCode_' . $opacMessage);
+//						if ($opacMessageTranslation != 'opacFieldMessageCode_'){ // Only display if the code has a translation
+//							$shelfLocation = "$opacMessageTranslation $shelfLocation";
+//						}
+//					}
+//				}
+//			}
 
 			$scopeKey     = $curItem[0] . ':' . $itemId;
 			$callNumber   = $curItem[3];
-			$numCopies    = (int) $curItem[6];
+			$numCopies    = (int)$curItem[6];
 			$isOrderItem  = $curItem[7] == 'true';
 			$isEcontent   = $curItem[8] == 'true';
 			$locationCode = isset($curItem[15]) ? $curItem[15] : '';
@@ -2821,7 +2854,7 @@ class GroupedWorkDriver extends RecordInterface {
 				$allLibraryUseOnly = false;
 			}
 
-			if (strlen($holdablePTypes) > 0 && !in_array($holdablePTypes, self::$SIERRA_PTYPE_WILDCARDS)){
+			if (strlen($holdablePTypes) > 0 && !in_array($holdablePTypes, self::SIERRA_PTYPE_WILDCARDS)){
 				$holdablePTypes = explode(',', $holdablePTypes);
 				$matchingPTypes = array_intersect($holdablePTypes, $activePTypes);
 				if (count($matchingPTypes) == 0){
@@ -2833,7 +2866,7 @@ class GroupedWorkDriver extends RecordInterface {
 				$recordHoldable = true;
 			}
 
-			if (strlen($bookablePTypes) > 0 && !in_array($bookablePTypes, self::$SIERRA_PTYPE_WILDCARDS)){
+			if (strlen($bookablePTypes) > 0 && !in_array($bookablePTypes, self::SIERRA_PTYPE_WILDCARDS)){
 				$bookablePTypes = explode(',', $bookablePTypes);
 				$matchingPTypes = array_intersect($bookablePTypes, $activePTypes);
 				if (count($matchingPTypes) == 0){
@@ -2841,7 +2874,7 @@ class GroupedWorkDriver extends RecordInterface {
 				}
 			}
 			if ($bookable){
-				// If this item is bookable, then treat the reacord as bookable when building action buttons
+				// If this item is bookable, then treat the record as bookable when building action buttons
 				$recordBookable = true;
 			}
 
@@ -2975,7 +3008,7 @@ class GroupedWorkDriver extends RecordInterface {
 //				$callNumber = trim($callNumber . ' ' . $volumeRecordLabel);
 //			}
 			//Add the item to the item summary
-			$itemSummaryInfo = array(
+			$itemSummaryInfo = [
 				'description'        => $description,
 				'shelfLocation'      => $shelfLocation,
 				'callNumber'         => $callNumber,
@@ -3003,7 +3036,7 @@ class GroupedWorkDriver extends RecordInterface {
 				'locationCode'       => $locationCode,
 				'subLocation'        => $subLocation,
 				'itemId'             => $itemId
-			);
+			];
 			if (!$forCovers){
 				$itemSummaryInfo['actions'] = $recordDriver != null ? $recordDriver->getItemActions($itemSummaryInfo) : array();
 			}

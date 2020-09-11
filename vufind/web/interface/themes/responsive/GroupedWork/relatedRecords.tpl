@@ -17,9 +17,12 @@
 			{display_if_inconsistent array=$relatedRecords key="physical"}
 				<th>Phys Desc.</th>
 			{/display_if_inconsistent}
-			{display_if_inconsistent array=$relatedRecords key="language"}
-				<th>Language</th>
+			{display_if_inconsistent array=$relatedRecords key="abridged"}
+				<th>Abridged</th>
 			{/display_if_inconsistent}
+{*			{display_if_inconsistent array=$relatedRecords key="language"}*}
+{*				<th>Language</th>*}
+{*			{/display_if_inconsistent}*}
 			<th>Availability</th>
 			<th></th>
 		</tr>
@@ -44,9 +47,12 @@
 				{display_if_inconsistent array=$relatedRecords key="physical"}
 					<td><a href="{$relatedRecord.url}">{$relatedRecord.physical}</a></td>
 				{/display_if_inconsistent}
-				{display_if_inconsistent array=$relatedRecords key="language"}
-					<td><a href="{$relatedRecord.url}">{implode subject=$relatedRecord.language glue=","}</a></td>
+				{display_if_inconsistent array=$relatedRecords key="abridged"}
+					<td>{if $relatedRecord.language}Abridged{/if}</td>
 				{/display_if_inconsistent}
+{*				{display_if_inconsistent array=$relatedRecords key="language"}*}
+{*					<td><a href="{$relatedRecord.url}">{implode subject=$relatedRecord.language glue=","}</a></td>*}
+{*				{/display_if_inconsistent}*}
 				<td>
 					{include file='GroupedWork/statusIndicator.tpl' statusInformation=$relatedRecord viewingIndividualRecord=1}
 					{include file='GroupedWork/copySummary.tpl' summary=$relatedRecord.itemSummary totalCopies=$relatedRecord.copies itemSummaryId=$relatedRecord.id recordViewUrl=$relatedRecord.url}
