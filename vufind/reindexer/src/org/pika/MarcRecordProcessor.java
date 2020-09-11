@@ -412,8 +412,8 @@ abstract class MarcRecordProcessor {
 			String edition = editions.iterator().next();
 			for (RecordInfo ilsRecord : ilsRecords) {
 				ilsRecord.setEdition(edition);
-				if (edition.matches("(?i)(?<!un)abridged[\\s.]")){
-					// Matches "abridged " but not "unabridged " case-insensitive
+				if (edition.matches("(?i)(?<!un)abridged[\\s.\\]]")){
+					// Matches "abridged" but not "unabridged" case-insensitive, followed by word-break, period, or right bracket
 					ilsRecord.setAbridged(true);
 				}
 			}

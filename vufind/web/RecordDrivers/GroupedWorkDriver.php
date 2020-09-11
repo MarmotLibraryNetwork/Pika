@@ -1434,7 +1434,7 @@ class GroupedWorkDriver extends RecordInterface {
 			require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 			$groupedWork               = new GroupedWork();
 			$groupedWork->permanent_id = $this->getUniqueID();
-			$relatedRecords            = array();
+			$relatedRecords            = [];
 			//This will be false if the record is old
 			if ($groupedWork->find(true)){
 				//Generate record information based on the information we have in the index
@@ -1846,18 +1846,12 @@ class GroupedWorkDriver extends RecordInterface {
 	}
 
 	/**
-	 * @param $a
-	 * @param $b
+	 * @param array $a Record Details array of related record
+	 * @param array $b Record Details array of related record
 	 * @return int
 	 */
 	static function compareAbridged($a, $b){
-		if ($a['abridged'] == $b['abridged']){
-			return 0;
-		}elseif ($a['abridged']){
-			return -1;
-		}else{
-			return 1;
-		}
+		return $a['abridged'] <=> $b['abridged'];
 	}
 
 //	/**

@@ -48,7 +48,7 @@
 					<td><a href="{$relatedRecord.url}">{$relatedRecord.physical}</a></td>
 				{/display_if_inconsistent}
 				{display_if_inconsistent array=$relatedRecords key="abridged"}
-					<td>{if $relatedRecord.language}Abridged{/if}</td>
+					<td>{if $relatedRecord.abridged}Abridged{/if}</td>
 				{/display_if_inconsistent}
 {*				{display_if_inconsistent array=$relatedRecords key="language"}*}
 {*					<td><a href="{$relatedRecord.url}">{implode subject=$relatedRecord.language glue=","}</a></td>*}
