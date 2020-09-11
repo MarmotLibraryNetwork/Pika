@@ -277,6 +277,18 @@ class HooplaProcessor extends MarcRecordProcessor {
 		recordInfo.setPublicationDate(publicationDate);
 		recordInfo.setPublisher(publisher);
 
+		if (hooplaExtractInfo.abridged){
+			recordInfo.setAbridged(true);
+		}
+//		// Is this an abridged record? (check all edition statements)
+//		for (String editionCheck : editions) {
+//			if (editionCheck.matches("(?i)(?<!un)abridged[\\s.\\]]")){
+//				// Matches "abridged" but not "unabridged" case-insensitive, followed by word-break, period, or right bracket
+//				recordInfo.setAbridged(true);
+//				break;
+//			}
+//		}
+
 		//Load Languages
 		//For ILS Records, we can create multiple different records, one for print and order items,
 		//and one or more for ILS eContent items.
