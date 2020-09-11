@@ -337,7 +337,7 @@ class ExternalReviews {
 
 		} catch (Exception $e) {
 			global $logger;
-			$logger->log('Failed ContentCafe SOAP Request', PEAR_LOG_ERR);
+			$logger->log('Failed ContentCafe SOAP Request : ' . $e, PEAR_LOG_ERR);
 			return new PEAR_Error('Failed ContentCafe SOAP Request');
 		}
 		return $review;
