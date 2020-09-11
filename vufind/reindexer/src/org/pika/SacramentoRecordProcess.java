@@ -32,8 +32,8 @@ import java.util.*;
  */
 
 class SacramentoRecordProcessor extends IIIRecordProcessor {
-	private String kitKeeperMaterialType     = "o";
-	private String bibLevelLocationsSubfield = "a";
+	private final String kitKeeperMaterialType     = "o";
+	private final String bibLevelLocationsSubfield = "a";
 
 	SacramentoRecordProcessor(GroupedWorkIndexer indexer, Connection pikaConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 		super(indexer, pikaConn, indexingProfileRS, logger, fullReindex);

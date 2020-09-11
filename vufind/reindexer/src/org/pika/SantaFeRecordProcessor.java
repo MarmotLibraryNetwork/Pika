@@ -46,18 +46,12 @@ class SantaFeRecordProcessor extends IIIRecordProcessor {
 			String status = curItem.getSubfield(statusSubfieldIndicator).getData().trim();
 
 			//Suppress based on combination of status and icode2
-			if (status.equals("f") && (icode2.equals("2") || icode2.equals("3"))){
-				logger.debug("Item record is suppressed due to icode2 / status");
-				return true;
-			}else if (icode2.equals("d") && (status.equals("$") || status.equals("s") || status.equals("m") || status.equals("r") || status.equals("z"))){
-				logger.debug("Item record is suppressed due to icode2 / status");
-				return true;
-			}else if (icode2.equals("x") && status.equals("n")){
-				logger.debug("Item record is suppressed due to icode2 / status");
-				return true;
-			}else if (icode2.equals("c")){
-				logger.debug("Item record is suppressed due to icode2 / status");
-				return true;
+
+				if (icode2.equals("d") && status.equals("r")){
+					if (logger.isInfoEnabled()) {
+						logger.info("Item record is suppressed due to icode2 / status");
+					}
+					return true;
 			}
 
 		}
