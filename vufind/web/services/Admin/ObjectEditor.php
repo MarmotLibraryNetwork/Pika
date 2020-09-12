@@ -375,8 +375,8 @@ abstract class ObjectEditor extends Admin_Admin {
 	}
 
 	/**
-	 * @param string $mainContentTemplate Name of the SMARTY template file for the main content of the full pages
-	 * @param string $pageTitle What to display is the html title tag
+	 * @param string|null $mainContentTemplate Name of the SMARTY template file for the main content of the full pages
+	 * @param string|null $pageTitle What to display is the html title tag
 	 * @param bool|string $sidebarTemplate Sets the sidebar template, set to false or empty string for no sidebar
 	 */
 	function display($mainContentTemplate = null, $pageTitle = null, $sidebarTemplate = 'Search/home-sidebar.tpl'){

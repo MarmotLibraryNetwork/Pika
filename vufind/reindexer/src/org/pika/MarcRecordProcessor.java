@@ -406,6 +406,9 @@ abstract class MarcRecordProcessor {
 
 	protected abstract void updateGroupedWorkSolrDataBasedOnMarc(GroupedWorkSolr groupedWork, Record record, RecordIdentifier identifier);
 
+	protected Pattern abridgedPattern = Pattern.compile("(?i)(?<!un)abridged[\\s.\\]]");
+	// phrase "abridged" but not "unabridged" case-insensitive, followed by word-break, period, or right bracket
+
 	void loadEditions(GroupedWorkSolr groupedWork, Record record, HashSet<RecordInfo> ilsRecords) {
 		Set<String> editions = MarcUtil.getFieldList(record, "250a");
 		if (editions.size() > 0) {
@@ -415,8 +418,7 @@ abstract class MarcRecordProcessor {
 
 				// Is this an abridged record? (check all edition statements)
 				for (String editionCheck : editions) {
-					if (editionCheck.matches("(?i)(?<!un)abridged[\\s.\\]]")){
-						// Matches "abridged" but not "unabridged" case-insensitive, followed by word-break, period, or right bracket
+					if (abridgedPattern.matcher(editionCheck).find()){
 						ilsRecord.setAbridged(true);
 						break;
 					}
