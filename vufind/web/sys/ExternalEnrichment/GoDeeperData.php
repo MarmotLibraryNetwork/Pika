@@ -173,8 +173,10 @@ class GoDeeperData{
 		$SOAP_options = [
 			'features'     => SOAP_SINGLE_ELEMENT_ARRAYS, // sets how the soap responses will be handled
 			'soap_version' => SOAP_1_2,
-			//				'trace' => 1, // turns on debugging features
+//			'trace' => 1, // turns on debugging features
+			'default_socket_timeout' => 15,
 		];
+
 		$soapClient   = new SoapClient($url, $SOAP_options);
 
 		$params = [
@@ -198,6 +200,7 @@ class GoDeeperData{
 			global $logger;
 			$logger->log('Failed ContentCafe SOAP Request : '. $e->getMessage(), PEAR_LOG_ERR);
 			$logger->log('ContentCafe SOAP Request url :  '. $url, PEAR_LOG_ERR);
+			$logger->log('ContentCafe SOAP Request params :  '. var_export($params, true), PEAR_LOG_ERR);
 		}
 
 		return false;
