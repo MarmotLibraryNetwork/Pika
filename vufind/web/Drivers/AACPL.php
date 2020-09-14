@@ -61,7 +61,7 @@ class AACPL extends SirsiDynixROA {
 	}
 
 	public function getSelfRegistrationFields() {
-		header('Location: https://www.aacpl.net/virtualcard');
+		header('Location: https://www.aacpl.net/card');
 		die;
 	}
 

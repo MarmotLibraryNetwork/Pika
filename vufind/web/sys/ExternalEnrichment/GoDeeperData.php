@@ -152,51 +152,52 @@ class GoDeeperData{
 		return $goDeeperOptions;
 	}
 
-	private function getContentCafeData($isbn, $upc, $field = 'AvailableContent') {
+	private function getContentCafeData($isbn, $upc, $field = 'AvailableContent'){
 		global $configArray;
 
-		if (isset($configArray['Contentcafe']['pw']) && strlen($configArray['Contentcafe']['pw']) > 0) {
+		if (!empty($configArray['Contentcafe']['pw'])){
 			$pw = $configArray['Contentcafe']['pw'];
 		}else{
 			return false;
 		}
-		if (isset($configArray['Contentcafe']['id']) && strlen($configArray['Contentcafe']['id']) > 0){
+		if (!empty($configArray['Contentcafe']['id'])){
 			$key = $configArray['Contentcafe']['id'];
 		}else{
 			return false;
 		}
 
 
-		$url = isset($configArray['Contentcafe']['url']) ? $configArray['Contentcafe']['url'] : 'http://contentcafe2.btol.com';
+		$url = $configArray['Contentcafe']['url'] ?? 'http://contentcafe2.btol.com';
 		$url .= '/ContentCafe/ContentCafe.asmx?WSDL';
 
-		$SOAP_options = array(
-				'features' => SOAP_SINGLE_ELEMENT_ARRAYS, // sets how the soap responses will be handled
-				'soap_version' => SOAP_1_2,
-//				'trace' => 1, // turns on debugging features
-		);
+		$SOAP_options = [
+			'features'     => SOAP_SINGLE_ELEMENT_ARRAYS, // sets how the soap responses will be handled
+			'soap_version' => SOAP_1_2,
+			//				'trace' => 1, // turns on debugging features
+		];
 		$soapClient   = new SoapClient($url, $SOAP_options);
 
-		$params = array(
-				'userID'   => $key,
-				'password' => $pw,
-				'key'      => $isbn ? $isbn : $upc,
-				'content'  => $field,
-		);
+		$params = [
+			'userID'   => $key,
+			'password' => $pw,
+			'key'      => $isbn ? $isbn : $upc,
+			'content'  => $field,
+		];
 
 		try {
 			$response = $soapClient->Single($params);
-			if ($response) {
-				if (!isset($response->ContentCafe->Error)) {
+			if ($response){
+				if (!isset($response->ContentCafe->Error)){
 					return $response->ContentCafe->RequestItems->RequestItem;
-				} else {
+				}else{
 					global $logger;
-					$logger->log("Content Cafe Error Response for Content Type $field : ". $response->ContentCafe->Error, PEAR_LOG_ERR);
+					$logger->log("Content Cafe Error Response for Content Type $field : " . $response->ContentCafe->Error, PEAR_LOG_ERR);
 				}
 			}
-		} catch (Exception $e) {
+		} catch (Exception $e){
 			global $logger;
-			$logger->log('Failed ContentCafe SOAP Request', PEAR_LOG_ERR);
+			$logger->log('Failed ContentCafe SOAP Request : '. $e->getMessage(), PEAR_LOG_ERR);
+			$logger->log('ContentCafe SOAP Request url :  '. $url, PEAR_LOG_ERR);
 		}
 
 		return false;
@@ -204,33 +205,33 @@ class GoDeeperData{
 
 	static function getSummary($isbn, $upc){
 		global $configArray;
-		$summaryData = array();
-		if (!empty($configArray['Syndetics']['key'])) {
+		$summaryData = [];
+		if (!empty($configArray['Syndetics']['key'])){
 			$summaryData = self::getSyndeticsSummary($isbn, $upc);
-		} elseif (!empty($configArray['Contentcafe']['pw'])) {
+		}elseif (!empty($configArray['Contentcafe']['pw'])){
 			$summaryData = self::getContentCafeSummary($isbn, $upc);
 		}
 		return $summaryData;
 	}
 
-	private function getContentCafeSummary($isbn, $upc) {
+	private function getContentCafeSummary($isbn, $upc){
 		global $configArray;
 		/** @var Memcache $memCache */
 		global $memCache;
 		$memCacheKey = "contentcafe_summary_{$isbn}_{$upc}";
 		$summaryData = $memCache->get($memCacheKey);
 		if (!$summaryData || isset($_REQUEST['reload'])){
-			$summaryData = array();
-			$response = self::getContentCafeData($isbn, $upc, 'AnnotationDetail');
-			if ($response) {
-				$temp = array();
+			$summaryData = [];
+			$response    = self::getContentCafeData($isbn, $upc, 'AnnotationDetail');
+			if ($response){
+				$temp = [];
 				if (isset($response[0]->AnnotationItems->AnnotationItem)){
-					foreach ($response[0]->AnnotationItems->AnnotationItem as $summary) {
+					foreach ($response[0]->AnnotationItems->AnnotationItem as $summary){
 						$temp[strlen($summary->Annotation)] = $summary->Annotation;
 					}
 					$summaryData['summary'] = end($temp); // Grab the Longest Summary
 				}
-				if (!empty($summaryData['summary'])) {
+				if (!empty($summaryData['summary'])){
 					$memCache->set($memCacheKey, $summaryData, 0, $configArray['Caching']['contentcafe_sumary']);
 				}else{
 					$memCache->set($memCacheKey, 'no_summary', 0, $configArray['Caching']['contentcafe_sumary']);
@@ -238,7 +239,7 @@ class GoDeeperData{
 			}
 		}
 		if ($summaryData == 'no_summary'){
-			return array();
+			return [];
 		}else{
 			return $summaryData;
 		}

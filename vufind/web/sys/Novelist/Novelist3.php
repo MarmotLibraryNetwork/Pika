@@ -266,7 +266,7 @@ class Novelist3{
 						//We got data!
 						$novelistData->hasNovelistData = true;
 						$novelistData->lastUpdate      = time(); //Update the last update time to optimize caching
-						$novelistData->primaryISBN     = $data->TitleInfo->primary_isbn;
+						$novelistData->primaryISBN     = $data->TitleInfo->primary_isbn ?? null;
 
 						//Series Information
 						if (isset($data->FeatureContent->SeriesInfo)){
