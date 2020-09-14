@@ -245,6 +245,11 @@ public class OverDriveProcessor {
 								try (ResultSet availabilityRS = getProductAvailabilityStmt.executeQuery()) {
 
 									overDriveRecord.setEdition("");
+									String edition = metadata.get("edition");
+									if (edition != null && edition.equals("Abridged")){
+										overDriveRecord.setAbridged(true);
+									}
+
 //									if (primaryFormat.equals("eMagazine")) {
 //										String edition = metadata.get("edition");
 //										if (!edition.isEmpty()){
@@ -532,7 +537,7 @@ public class OverDriveProcessor {
 		try (ResultSet formatsRS = getProductFormatsStmt.executeQuery()) {
 			formats = new HashSet<>();
 			HashSet<String> eContentDevices = new HashSet<>();
-			Long            formatBoost     = 1L;
+			long            formatBoost     = 1L;
 			while (formatsRS.next()) {
 				String format = formatsRS.getString("name");
 				formats.add(format);
@@ -543,7 +548,7 @@ public class OverDriveProcessor {
 				}
 				String formatBoostStr = indexer.translateSystemValue("format_boost_overdrive", format.replace(' ', '_'), identifier);
 				try {
-					Long curFormatBoost = Long.parseLong(formatBoostStr);
+					long curFormatBoost = Long.parseLong(formatBoostStr);
 					if (curFormatBoost > formatBoost) {
 						formatBoost = curFormatBoost;
 					}
@@ -578,23 +583,25 @@ public class OverDriveProcessor {
 				groupedWork.addDescription(shortDescription, format);
 				String fullDescription = metadataRS.getString("fullDescription");
 				groupedWork.addDescription(fullDescription, format);
-//				String edition = metadataRS.getString("edition");
-//				returnMetadata.put("edition", edition);
 
 				//Decode JSON data to get a little more information
-				/*try {
+				try {
 					String rawMetadata = metadataRS.getString("rawData");
 					if (rawMetadata != null) {
 						JSONObject jsonData = new JSONObject(rawMetadata);
-						if (jsonData.has("ATOS")) {
-							groupedWork.setAcceleratedReaderReadingLevel(jsonData.getString("ATOS"));
+						if (jsonData.has("edition")){
+							String edition = jsonData.getString("edition");
+							returnMetadata.put("edition", edition);
 						}
+//						if (jsonData.has("ATOS")) {
+//							groupedWork.setAcceleratedReaderReadingLevel(jsonData.getString("ATOS"));
+//						}
 					}else{
-						logger.error("Overdrive product " + productId + " did not have raw metadata");
+						logger.warn("Overdrive product " + productId + " did not have raw metadata");
 					}
 				} catch (JSONException e) {
-					logger.error("Error loading raw data for OverDrive MetaData");
-				}*/
+					logger.error("Error loading raw data for OverDrive MetaData", e);
+				}
 			}
 		}
 		return returnMetadata;
