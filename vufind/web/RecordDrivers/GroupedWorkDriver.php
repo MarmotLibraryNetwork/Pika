@@ -1721,38 +1721,29 @@ class GroupedWorkDriver extends RecordInterface {
 	}
 
 	/**
-	 * @param $a
-	 * @param $b
-	 * @return int
+	 * Master sort function for ordering all the related records/editions for display in the related manifestations table
+	 * of a Grouped Work
+	 *
+	 * @param array $a Record Details array of a related record to sort
+	 * @param array $b Record Details array of a related record to sort against
+	 * @return int sort value
 	 */
 	function compareRelatedRecords($a, $b){
-		//Get literary form to determine if we should compare editions
-		$literaryForm = '';
-		if (isset($this->fields['literary_form'])){
-			$literaryForm = is_array($this->fields['literary_form']) ? reset($this->fields['literary_form']) : $this->fields['literary_form'];
-		}
-		//First sort by format
-		$format1          = $a['format'];
-		$format2          = $b['format'];
-		$formatComparison = strcasecmp($format1, $format2);
-		//Make sure that book is the very first format always
-		if ($formatComparison != 0){
-			if ($format1 == 'Book'){
-				return -1;
-			}elseif ($format2 == 'Book'){
-				return 1;
-			}
-		}
+		//0) First sort by format
+		$formatComparison = GroupedWorkDriver::compareFormat($a, $b);
 		if ($formatComparison == 0){
-			//1) Put anything that is holdable first
-			$holdabilityComparison = GroupedWorkDriver::compareHoldability($a, $b);
-			if ($holdabilityComparison == 0){
-				//2) Compare by language to put english titles before spanish by default
-//				$languageComparison = GroupedWorkDriver::compareLanguagesForRecords($a, $b);
-//				if ($languageComparison == 0){
-				$abridgedComparison = GroupedWorkDriver::compareAbridged($a, $b);
-				if ($abridgedComparison == 0){
+			//1) Put anything that is abridged *last*
+			$abridgedComparison = GroupedWorkDriver::compareAbridged($a, $b);
+			if ($abridgedComparison == 0){
+				//2) Put anything that is holdable first
+				$holdabilityComparison = GroupedWorkDriver::compareHoldability($a, $b);
+				if ($holdabilityComparison == 0){
 					//3) Compare editions for non-fiction if available
+					//Get literary form to determine if we should compare editions
+					$literaryForm = '';
+					if (isset($this->fields['literary_form'])){
+						$literaryForm = is_array($this->fields['literary_form']) ? reset($this->fields['literary_form']) : $this->fields['literary_form'];
+					}
 					$editionComparisonResult = GroupedWorkDriver::compareEditionsForRecords($literaryForm, $a, $b);
 					if ($editionComparisonResult == 0){
 						//4) Put anything with locally available items first
@@ -1765,19 +1756,11 @@ class GroupedWorkDriver extends RecordInterface {
 								$localItemComparisonResult = GroupedWorkDriver::compareLocalItemsForRecords($a, $b);
 								if ($localItemComparisonResult == 0){
 									//7) All else being equal, sort by hold ratio
-									if ($a['holdRatio'] == $b['holdRatio']){
-										//Hold Ratio is the same, last thing to check is the number of copies
-										if ($a['copies'] == $b['copies']){
-											return 0;
-										}elseif ($a['copies'] > $b['copies']){
-											return -1;
-										}else{
-											return 1;
-										}
-									}elseif ($a['holdRatio'] > $b['holdRatio']){
-										return -1;
+									$holdRatioComparison = $b['holdRatio'] <=> $a['holdRatio'];
+									if ($holdRatioComparison == 0){
+										return $b['copies'] <=> $a['copies'];
 									}else{
-										return 1;
+										return $holdRatioComparison;
 									}
 								}else{
 									return $localItemComparisonResult;
@@ -1792,19 +1775,21 @@ class GroupedWorkDriver extends RecordInterface {
 						return $editionComparisonResult;
 					}
 				}else{
-					return $abridgedComparison;
+					return $holdabilityComparison;
 				}
-//				}else{
-//					return $languageComparison;
-//				}
 			}else{
-				return $holdabilityComparison;
+				return $abridgedComparison;
 			}
 		}else{
 			return $formatComparison;
 		}
 	}
 
+	/**
+	 * @param array $a Record Details array of a related record to sort
+	 * @param array $b Record Details array of a related record to sort against
+	 * @return int sort value
+	 */
 	static function eContentComparison($a, $b){
 		//TODO: build a static ranking of the sideload sources
 		global $library;
@@ -1831,24 +1816,39 @@ class GroupedWorkDriver extends RecordInterface {
 	}
 
 	/**
-	 * @param $a
-	 * @param $b
-	 * @return int
+	 * @param array $a Record Details array of a related record to sort
+	 * @param array $b Record Details array of a related record to sort against
+	 * @return int sort value
 	 */
-	static function compareHoldability($a, $b){
-		if ($a['holdable'] == $b['holdable']){
+	static function compareFormat($a, $b){
+		$format1          = $a['format'];
+		$format2          = $b['format'];
+		$formatComparison = strcasecmp($format1, $format2);
+		//Make sure that book is the very first format always
+		if ($formatComparison == 0){
 			return 0;
-		}elseif ($a['holdable']){
+		}elseif ($format1 == 'Book'){
 			return -1;
-		}else{
+		}elseif ($format2 == 'Book'){
 			return 1;
+		} else {
+			return $formatComparison;
 		}
 	}
 
 	/**
-	 * @param array $a Record Details array of related record
-	 * @param array $b Record Details array of related record
-	 * @return int
+	 * @param array $a Record Details array of a related record to sort
+	 * @param array $b Record Details array of a related record to sort against
+	 * @return int sort value
+	 */
+	static function compareHoldability($a, $b){
+		return $b['holdable'] <=> $a['holdable'];
+	}
+
+	/**
+	 * @param array $a Record Details array of a related record to sort
+	 * @param array $b Record Details array of a related record to sort against
+	 * @return int sort value
 	 */
 	static function compareAbridged($a, $b){
 		return $a['abridged'] <=> $b['abridged'];
@@ -1904,56 +1904,43 @@ class GroupedWorkDriver extends RecordInterface {
 //	}
 
 	/**
-	 * @param $literaryForm
-	 * @param $a
-	 * @param $b
-	 * @return int
+	 * @param string $literaryForm
+	 * @param array $a Record Details array of a related record to sort
+	 * @param array $b Record Details array of a related record to sort against
+	 * @return int sort value
 	 */
 	static function compareEditionsForRecords($literaryForm, $a, $b){
 		//We only want to compare editions if the work is non-fiction
 		if ($literaryForm == 'Non Fiction'){
 			$editionA = GroupedWorkDriver::normalizeEdition($a['edition']);
 			$editionB = GroupedWorkDriver::normalizeEdition($b['edition']);
-			if ($editionA == $editionB){
-				return 0;
-			}elseif ($editionA > $editionB){
-				return -1;
-			}else{
-				return 1;
-			}
+			return $editionB <=> $editionA;
 		}
 		return 0;
 	}
 
 	/**
-	 * @param $a
-	 * @param $b
-	 * @return int
+	 * @param array $a Record Details array of a related record to sort
+	 * @param array $b Record Details array of a related record to sort against
+	 * @return int sort value
 	 */
 	static function compareAvailabilityForRecords($a, $b){
 		$availableLocallyA = isset($a['availableLocally']) && $a['availableLocally'];
 		$availableLocallyB = isset($b['availableLocally']) && $b['availableLocally'];
-		if (($availableLocallyA == $availableLocallyB)){
+		$compareAvailableLocally = $availableLocallyB <=> $availableLocallyA;
+		if ($compareAvailableLocally == 0){
 			$availableA = isset($a['available']) && $a['available'] && $a['holdable'];
 			$availableB = isset($b['available']) && $b['available'] && $b['holdable'];
-			if (($availableA == $availableB)){
-				return 0;
-			}elseif ($availableA){
-				return -1;
-			}else{
-				return 1;
-			}
-		}elseif ($availableLocallyA){
-			return -1;
+			return $availableB <=> $availableA;
 		}else{
-			return 1;
+			return $compareAvailableLocally;
 		}
 	}
 
 	/**
-	 * @param $a
-	 * @param $b
-	 * @return int
+	 * @param array $a Record Details array of a related record to sort
+	 * @param array $b Record Details array of a related record to sort against
+	 * @return int sort value
 	 */
 	static function compareLocalAvailableItemsForRecords($a, $b){
 		if (($a['availableHere'] || $a['availableOnline']) && ($b['availableHere'] || $b['availableOnline'])){
@@ -1976,20 +1963,12 @@ class GroupedWorkDriver extends RecordInterface {
 	}
 
 	/**
-	 * @param $a
-	 * @param $b
-	 * @return int
+	 * @param array $a Record Details array of a related record to sort
+	 * @param array $b Record Details array of a related record to sort against
+	 * @return int sort value
 	 */
 	static function compareLocalItemsForRecords($a, $b){
-		if ($a['hasLocalItem'] && $b['hasLocalItem']){
-			return 0;
-		}elseif ($a['hasLocalItem']){
-			return -1;
-		}elseif ($b['hasLocalItem']){
-			return 1;
-		}else{
-			return 0;
-		}
+		return $b['hasLocalItem'] <=> $a['hasLocalItem'];
 	}
 
 	public function getIndexedSeries(){
@@ -2002,14 +1981,14 @@ class GroupedWorkDriver extends RecordInterface {
 			foreach ($rawSeries as $seriesInfo){
 				if (strpos($seriesInfo, '|') > 0){
 					$seriesInfoSplit    = explode('|', $seriesInfo);
-					$seriesWithVolume[] = array(
+					$seriesWithVolume[] = [
 						'seriesTitle' => $seriesInfoSplit[0],
 						'volume'      => $seriesInfoSplit[1]
-					);
+					];
 				}else{
-					$seriesWithVolume[] = array(
+					$seriesWithVolume[] = [
 						'seriesTitle' => $seriesInfo
-					);
+					];
 				}
 			}
 		}
@@ -2027,11 +2006,11 @@ class GroupedWorkDriver extends RecordInterface {
 		$novelist     = NovelistFactory::getNovelist();
 		$novelistData = $novelist->loadBasicEnrichment($this->getPermanentId(), $relatedIsbns, $allowReload);
 		if ($novelistData != null && isset($novelistData->seriesTitle)){
-			return array(
+			return [
 				'seriesTitle'  => $novelistData->seriesTitle,
 				'volume'       => $novelistData->volume,
 				'fromNovelist' => true,
-			);
+			];
 		}
 		return null;
 	}
@@ -2042,12 +2021,12 @@ class GroupedWorkDriver extends RecordInterface {
 			$formats = $this->fields['format_' . $solrScope];
 			if (is_array($formats)){
 				natcasesort($formats);
-				return implode(", ", $formats);
+				return implode(', ', $formats);
 			}else{
 				return $formats;
 			}
 		}else{
-			return "Unknown";
+			return 'Unknown';
 		}
 	}
 
@@ -2058,10 +2037,10 @@ class GroupedWorkDriver extends RecordInterface {
 			if (is_array($formats)){
 				return $formats;
 			}else{
-				return array($formats);
+				return [$formats];
 			}
 		}else{
-			return array();
+			return [];
 		}
 	}
 
@@ -2076,7 +2055,7 @@ class GroupedWorkDriver extends RecordInterface {
 
 	public function loadEnrichment(){
 		$isbn       = $this->getCleanISBN(); // This prefers the Novelist primary ISBN
-		$enrichment = array();
+		$enrichment = [];
 		if (!empty($isbn)){
 			$novelist = NovelistFactory::getNovelist();
 			global $memoryWatcher;
@@ -2087,7 +2066,7 @@ class GroupedWorkDriver extends RecordInterface {
 	}
 
 	public function getUserReviews(){
-		$reviews = array();
+		$reviews = [];
 
 		// Determine if we should censor bad words or hide the comment completely.
 		$censorWords = true;
@@ -2224,7 +2203,7 @@ class GroupedWorkDriver extends RecordInterface {
 
 	public function getAcceleratedReaderData(){
 		$hasArData = false;
-		$arData    = array();
+		$arData    = [];
 		if (isset($this->fields['accelerated_reader_point_value'])){
 			$arData['pointValue'] = $this->fields['accelerated_reader_point_value'];
 			$hasArData            = true;
@@ -2257,10 +2236,8 @@ class GroupedWorkDriver extends RecordInterface {
 	}
 
 	public function getLexileScore(){
-		if (isset($this->fields['lexile_score'])){
-			if ($this->fields['lexile_score'] > 0){
-				return $this->fields['lexile_score'];
-			}
+		if (isset($this->fields['lexile_score']) && $this->fields['lexile_score'] > 0){
+			return $this->fields['lexile_score'];
 		}
 		return null;
 	}
@@ -2269,12 +2246,12 @@ class GroupedWorkDriver extends RecordInterface {
 		global $library,
 		       $interface;
 
-		$subjects         = array();
-		$otherSubjects    = array();
-		$lcSubjects       = array();
-		$bisacSubjects    = array();
-		$oclcFastSubjects = array();
-		$localSubjects    = array();
+		$subjects         = [];
+		$otherSubjects    = [];
+		$lcSubjects       = [];
+		$bisacSubjects    = [];
+		$oclcFastSubjects = [];
+		$localSubjects    = [];
 
 		if (!empty($this->fields['lc_subject'])){
 			$lcSubjects = $this->fields['lc_subject'];
@@ -2392,7 +2369,7 @@ class GroupedWorkDriver extends RecordInterface {
 			if (count($formats) > 0){
 				$format = $formats[0];
 			}else{
-				$format = "";
+				$format = '';
 			}
 		}
 		switch ($format){
@@ -2505,7 +2482,7 @@ class GroupedWorkDriver extends RecordInterface {
 		return $this->fields['language'] ?? [];
 	}
 
-	private static $statusRankings = array(
+	private static $statusRankings = [
 		'Currently Unavailable' => 1,
 		'Available to Order'    => 1.6,
 		'On Order'              => 2,
@@ -2516,7 +2493,7 @@ class GroupedWorkDriver extends RecordInterface {
 		'Available Online'      => 6,
 		'In Transit'            => 6.5,
 		'On Shelf'              => 7
-	);
+	];
 
 	public static function keepBestGroupedStatus($groupedStatus, $groupedStatus1){
 		if (isset(GroupedWorkDriver::$statusRankings[$groupedStatus])){
@@ -2529,19 +2506,15 @@ class GroupedWorkDriver extends RecordInterface {
 		}else{
 			$ranking2 = 1.5;
 		}
-		if ($ranking1 > $ranking2){
-			return $groupedStatus;
-		}else{
-			return $groupedStatus1;
-		}
+		return $ranking1 > $ranking2 ? $groupedStatus : $groupedStatus1;
 	}
 
 	public function getItemActions($itemInfo){
-		return array();
+		return [];
 	}
 
 	public function getRecordActions($isAvailable, $isHoldable, $isBookable, $relatedUrls = null){
-		return array();
+		return [];
 	}
 
 	/**
@@ -2552,16 +2525,16 @@ class GroupedWorkDriver extends RecordInterface {
 	 * @access protected
 	 */
 	protected function getHighlightedSnippets(){
-		$snippets = array();
+		$snippets = [];
 		// Only process snippets if the setting is enabled:
 		if ($this->snippet && isset($this->fields['_highlighting'])){
 			if (is_array($this->fields['_highlighting'])){
 				foreach ($this->fields['_highlighting'] as $key => $value){
 					if (!in_array($key, $this->forbiddenSnippetFields)){
-						$snippets[] = array(
+						$snippets[] = [
 							'snippet' => $value[0],
 							'caption' => $this->getSnippetCaption($key)
-						);
+						];
 					}
 				}
 			}
@@ -2695,13 +2668,13 @@ class GroupedWorkDriver extends RecordInterface {
 	 */
 	protected function loadItemDetailsFromIndex($validItemIdsForScope){
 		$relatedItemsFieldName = 'item_details';
-		$itemsFromIndex        = array();
+		$itemsFromIndex        = [];
 		if (isset($this->fields[$relatedItemsFieldName])){
 			$itemsFromIndexRaw = $this->fields[$relatedItemsFieldName];
 			if (!is_array($itemsFromIndexRaw)){
-				$itemsFromIndexRaw = array($itemsFromIndexRaw);
+				$itemsFromIndexRaw = [$itemsFromIndexRaw];
 			}
-			$onOrderItems = array(); // We will consolidate on order items if they are all for the same location (for display)
+			$onOrderItems = []; // We will consolidate on order items if they are all for the same location (for display)
 
 			foreach ($itemsFromIndexRaw as $tmpItem){
 				$itemDetails    = explode('|', $tmpItem);
@@ -2709,7 +2682,7 @@ class GroupedWorkDriver extends RecordInterface {
 				if (in_array($itemIdentifier, $validItemIdsForScope)){
 					$itemsFromIndex[] = $itemDetails;
 					if (!array_key_exists($itemDetails[0], $this->relatedItemsByRecordId)){
-						$this->relatedItemsByRecordId[$itemDetails[0]] = array();
+						$this->relatedItemsByRecordId[$itemDetails[0]] = [];
 					}
 					$this->relatedItemsByRecordId[$itemDetails[0]][] = $itemDetails;
 				}
@@ -3191,13 +3164,13 @@ class GroupedWorkDriver extends RecordInterface {
 
 	private function getSemanticWorkExamples(){
 		global $configArray;
-		$relatedWorkExamples = array();
+		$relatedWorkExamples = [];
 		$relatedRecords      = $this->getRelatedRecords();
 		foreach ($relatedRecords as $record){
-			$relatedWorkExample = array(
+			$relatedWorkExample = [
 				'@id'   => $configArray['Site']['url'] . $record['url'],
 				'@type' => $record['schemaDotOrgType']
-			);
+			];
 			if ($record['schemaDotOrgBookFormat']){
 				$relatedWorkExample['bookFormat'] = $record['schemaDotOrgBookFormat'];
 			}

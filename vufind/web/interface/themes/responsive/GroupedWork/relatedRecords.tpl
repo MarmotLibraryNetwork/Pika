@@ -17,13 +17,13 @@
 			{display_if_inconsistent array=$relatedRecords key="physical"}
 				<th>Phys Desc.</th>
 			{/display_if_inconsistent}
-			{display_if_inconsistent array=$relatedRecords key="abridged"}
-				<th>Abridged</th>
-			{/display_if_inconsistent}
 {*			{display_if_inconsistent array=$relatedRecords key="language"}*}
 {*				<th>Language</th>*}
 {*			{/display_if_inconsistent}*}
 			<th>Availability</th>
+			{display_if_inconsistent array=$relatedRecords key="abridged"}
+				<th>Abridged</th>
+			{/display_if_inconsistent}
 			<th></th>
 		</tr>
 		</thead>
@@ -35,7 +35,7 @@
 				{display_if_inconsistent array=$relatedRecords key="publicationDate"}
 					<td><a href="{$relatedRecord.url}">{$relatedRecord.publicationDate}</a></td>
 				{/display_if_inconsistent}
-				{if in_array(strtolower($relatedManifestation.format), array('ebook', 'eaudiobook', 'emagazine', 'evideo'))}
+				{if in_array(strtolower($relatedManifestation.format), array('ebook', 'eaudiobook', 'emagazine', 'evideo', 'ecomic'))}
 					<td><a href="{$relatedRecord.url}">{$relatedRecord.eContentSource}</a></td>
 				{/if}
 				{display_if_inconsistent array=$relatedRecords key="edition"}
@@ -46,9 +46,6 @@
 				{/display_if_inconsistent}
 				{display_if_inconsistent array=$relatedRecords key="physical"}
 					<td><a href="{$relatedRecord.url}">{$relatedRecord.physical}</a></td>
-				{/display_if_inconsistent}
-				{display_if_inconsistent array=$relatedRecords key="abridged"}
-					<td>{if $relatedRecord.abridged}Abridged{/if}</td>
 				{/display_if_inconsistent}
 {*				{display_if_inconsistent array=$relatedRecords key="language"}*}
 {*					<td><a href="{$relatedRecord.url}">{implode subject=$relatedRecord.language glue=","}</a></td>*}
@@ -61,6 +58,9 @@
 						<br>{$relatedRecord.usageRestrictions}
 					{/if}
 				</td>
+				{display_if_inconsistent array=$relatedRecords key="abridged"}
+					<td>{if $relatedRecord.abridged}Abridged{/if}</td>
+				{/display_if_inconsistent}
 				<td>
 					<div class="btn-group btn-group-vertical btn-group-sm">
 						<a href="{$relatedRecord.url}" class="btn btn-sm btn-info">More Info</a>
