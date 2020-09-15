@@ -244,20 +244,19 @@ public class OverDriveProcessor {
 								int totalCopiesOwned;
 								try (ResultSet availabilityRS = getProductAvailabilityStmt.executeQuery()) {
 
-									overDriveRecord.setEdition("");
+
 									String edition = metadata.get("edition");
-									if (edition != null && edition.equals("Abridged")){
-										overDriveRecord.setAbridged(true);
+									if (edition != null && !edition.isEmpty()) {
+										if (primaryFormat.equals("eMagazine")) {
+											overDriveRecord.setEdition(edition);
+										}
+										if (edition.equals("Abridged")) {
+											overDriveRecord.setAbridged(true);
+										}
+									} else {
+										overDriveRecord.setEdition(""); //TODO: needed?
 									}
 
-//									if (primaryFormat.equals("eMagazine")) {
-//										String edition = metadata.get("edition");
-//										if (!edition.isEmpty()){
-//											overDriveRecord.setEdition(edition);
-//										}
-//									} else {
-//										overDriveRecord.setEdition("");
-//									}
 									overDriveRecord.setPrimaryLanguage(primaryLanguage);
 									overDriveRecord.setPublisher(metadata.get("publisher"));
 									overDriveRecord.setPublicationDate(metadata.get("publicationDate"));
