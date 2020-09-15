@@ -124,7 +124,7 @@ public class RecordInfo {
 							getPrimaryFormat() + "|" +
 							getPrimaryFormatCategory() + "|" +
 							Util.getCleanDetailValue(edition) + "|" +
-							Util.getCleanDetailValue(primaryLanguage) + "|" +
+							Util.getCleanDetailValue(primaryLanguage) + "|" + //TODO: needed anymore?
 							Util.getCleanDetailValue(publisher) + "|" +
 							Util.getCleanDetailValue(publicationDate) + "|" +
 							Util.getCleanDetailValue(physicalDescription) //+ "|"

@@ -259,7 +259,7 @@ public class OverDriveProcessor {
 
 									overDriveRecord.setPrimaryLanguage(primaryLanguage);
 									overDriveRecord.setPublisher(metadata.get("publisher"));
-									overDriveRecord.setPublicationDate(metadata.get("publicationDate"));
+									overDriveRecord.setPublicationDate(primaryFormat.equals("eMagazine") ? metadata.get("publishDateMagazine") : metadata.get("publicationDate"));
 									overDriveRecord.setPhysicalDescription("");
 
 									totalCopiesOwned = 0;
@@ -572,6 +572,8 @@ public class OverDriveProcessor {
 				String publisher = metadataRS.getString("publisher");
 				groupedWork.addPublisher(publisher);
 				returnMetadata.put("publisher", publisher);
+				//Currently the overdrive extract only saves years; otherwise the date is left blank.
+				//This will be an problem for magazines
 				String publicationDate = metadataRS.getString("publishDate");
 				groupedWork.addPublicationDate(publicationDate);
 				returnMetadata.put("publicationDate", publicationDate);
@@ -591,6 +593,12 @@ public class OverDriveProcessor {
 						if (jsonData.has("edition")){
 							String edition = jsonData.getString("edition");
 							returnMetadata.put("edition", edition);
+
+							// Need to include the publication date of magazines in order to sort them
+							if (jsonData.has("publishDateText")){
+								String publishDate = jsonData.getString("publishDateText").replace(" 12:00AM", "");
+								returnMetadata.put("publishDateMagazine", publishDate);
+							}
 						}
 //						if (jsonData.has("ATOS")) {
 //							groupedWork.setAcceleratedReaderReadingLevel(jsonData.getString("ATOS"));
