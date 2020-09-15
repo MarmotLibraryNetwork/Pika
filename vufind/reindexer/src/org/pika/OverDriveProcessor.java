@@ -253,14 +253,12 @@ public class OverDriveProcessor {
 										if (edition.equals("Abridged")) {
 											overDriveRecord.setAbridged(true);
 										}
-									} else {
-										overDriveRecord.setEdition(""); //TODO: needed?
 									}
 
 									overDriveRecord.setPrimaryLanguage(primaryLanguage);
 									overDriveRecord.setPublisher(metadata.get("publisher"));
 									overDriveRecord.setPublicationDate(primaryFormat.equals("eMagazine") ? metadata.get("publishDateMagazine") : metadata.get("publicationDate"));
-									overDriveRecord.setPhysicalDescription("");
+//									overDriveRecord.setPhysicalDescription("");
 
 									totalCopiesOwned = 0;
 									//TODO: totalCopiesOwned will now have to account for multiple overdrive accounts
