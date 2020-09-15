@@ -1400,14 +1400,14 @@ class GroupedWorkDriver extends RecordInterface {
 		if ($this->relatedRecords == null || isset($_REQUEST['reload'])){
 			$timer->logTime("Starting to load related records for {$this->getUniqueID()}");
 
-			$this->relatedItemsByRecordId = array();
+			$this->relatedItemsByRecordId = [];
 
 			global $solrScope;
 			global $library;
 			$user = UserAccount::getActiveUserObj();
 
 			$searchLocation = Location::getSearchLocation();
-			$activePTypes   = array();
+			$activePTypes   = [];
 			if ($user){
 				$activePTypes = array_merge($activePTypes, $user->getRelatedPTypes());
 			}
@@ -1738,6 +1738,10 @@ class GroupedWorkDriver extends RecordInterface {
 				//2) Put anything that is holdable first
 				$holdabilityComparison = GroupedWorkDriver::compareHoldability($a, $b);
 				if ($holdabilityComparison == 0){
+					// Sort Overdrive Magazines by edition date
+					if ($a['source'] == 'overdrive' && $b['source'] == 'overdrive' && strcasecmp($a['format'], 'eMagazine') == 0 && strcasecmp($b['format'],  'eMagazine') == 0){
+						return strtotime($b['edition']) <=> strtotime($a['edition']);
+					}
 					//3) Compare editions for non-fiction if available
 					//Get literary form to determine if we should compare editions
 					$literaryForm = '';
