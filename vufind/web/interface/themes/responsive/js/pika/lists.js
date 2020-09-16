@@ -194,6 +194,20 @@ Pika.Lists = (function(){
 		},
 
 
+		copyList: function(id){
+			if (confirm("You are copying this list and all items to your lists."))
+			{
+				Pika.Account.ajaxLogin(function(){
+					Pika.loadingMessage();
+					var url = "/MyAccount/AJAX?method=copyList&copyFromId=" + id;
+					$.getJSON(url, function(data){
+						Pika.showMessage(data.title, data.body, 1,1);
+					}).fail(Pika.ajaxFail);
+				});
+			}
+			return false;
+
+		},
 
 		importListsFromClassic: function (){
 			if (confirm("This will import any lists you had defined in the old catalog.  This may take several minutes depending on the size of your lists. Are you sure you want to continue?")){

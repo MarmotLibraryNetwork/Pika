@@ -69,7 +69,7 @@
 
 							{if $favList->public == 0}
 								<button value="makePublic" id="FavPublic" class="btn btn-sm btn-default" onclick='return Pika.Lists.makeListPublicAction({$pageNum}, {$pageSize},"{$listSort}")'>Make Public</button>
-								
+
 							{else}
 								<button value="adminOptions" id="adminOptions" class="btn btn-sm btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">Admin Options <span class="caret"></span></button>
 								<ul class="dropdown-menu dropdown-menu-right" role="menu">
@@ -83,6 +83,7 @@
 								{/if}
 
 								</ul>
+								<button value="copyList" id="copyList" class="btn btn-sm btn-default" onclick="return Pika.Lists.copyList({$favList->id})">Copy List</button>
 							{/if}
 						</div>
 					{/if}

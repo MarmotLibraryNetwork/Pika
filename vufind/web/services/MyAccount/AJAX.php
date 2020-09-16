@@ -49,6 +49,7 @@ class MyAccount_AJAX extends AJAXHandler {
 		'cancelBooking', 'getCitationFormatsForm', 'getAddBrowseCategoryFromListForm',
 		'getMasqueradeAsForm', 'initiateMasquerade', 'endMasquerade', 'getMenuData',
         'transferList', 'isStaffUser', 'transferListToUser',
+        'copyListPrompt','copyList',
 	);
 
 	protected $methodsThatRespondWithHTML = array(
@@ -1499,4 +1500,101 @@ class MyAccount_AJAX extends AJAXHandler {
 
 		return $result;
 	}
+
+	function copyListPrompt()
+    {
+        global $interface;
+
+        if (isset($_REQUEST['id'])){
+            $id = $_REQUEST['id'];
+            $interface->assign('copyFromId', $id);
+        }else{
+            $id = '';
+        }
+
+        return array(
+            'title'        => 'Create new List',
+            'body'    => '<form><label for="title">Title</label><input id="title" text ="title" name="title">',
+            'buttons' => "<button class='tool btn btn-primary' onclick='return Pika.Lists.copyList({$id});'>Copy List</button></form>",
+        );
+    }
+    function copyList()
+    {
+        $copyFromId = false;
+        $return      = array();
+
+        if (UserAccount::isLoggedIn()){
+            $user = UserAccount::getLoggedInUser();
+            require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+            $title = (isset($_REQUEST['title']) && !is_array($_REQUEST['title'])) ? urldecode($_REQUEST['title']) : '';
+            $listFromItems = array();
+                //If the record is not valid, skip the whole thing since the title could be bad too
+                if (!empty($_REQUEST['copyFromId']) && !is_array($_REQUEST['copyFromId'])){
+                    $copyFromId = urldecode($_REQUEST['copyFromId']);
+
+                    $listFrom = new UserList();
+                    $listFrom->id= $copyFromId;
+                    $listFrom->find(true);
+                    if(strlen($title)==0){
+                        $title = $listFrom->title;
+                    }
+                    require_once ROOT_DIR . '/sys/LocalEnrichment/FavoriteHandler.php';
+                    $favList = new FavoriteHandler($listFrom, $user, false);
+                    $recordsToAdd = $favList->getTitles($listFrom->id);
+                    require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+
+                }
+
+                $list          = new UserList();
+                $list->title   = strip_tags($title);
+                $list->user_id = $user->id;
+                //Check to see if there is already a list with this id
+                $existingList = false;
+                if ($list->find(true)){
+                    $existingList = true;
+                }
+
+                $description = $_REQUEST['desc'] ?? '';
+                if (is_array($description)){
+                    $description = reset($description);
+                }
+
+
+                $list->description = strip_tags(urldecode($description));
+                $list->public      = isset($_REQUEST['public']) && $_REQUEST['public'] == 'true';
+                if ($existingList){
+                    $list->update();
+                }else{
+                    $list->insert();
+                }
+
+                if (isset($recordsToAdd)){
+                    require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
+                    //Check to see if the user has already added the title to the list.
+                    foreach($recordsToAdd as $item)
+                    {
+                        $userListEntry                         = new UserListEntry();
+                        $userListEntry->listId                 = $list->id;
+                        $userListEntry->groupedWorkPermanentId = $item['id'];
+                        $newUserListEntry = clone $userListEntry;
+                        if (!$newUserListEntry->find(true)){
+                            $newUserListEntry->dateAdded = time();
+                            $newUserListEntry->insert();
+                        }
+                    }
+                }
+
+                $newList = $list->id;
+
+                $return['title'] = 'Copy List';
+                $return['body']   = '<h4>The list has been successfully copied</h4>' . '<a class="btn btn-primary" href="/MyAccount/MyList/'. $newList .'" role="button">View My List</a>';
+
+
+        }else{
+            $return['Title'] = "false";
+            $return['message'] = "You must be logged in to create a list";
+        }
+
+        return $return;
+    }
 }
