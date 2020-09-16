@@ -1738,9 +1738,9 @@ class GroupedWorkDriver extends RecordInterface {
 				//2) Put anything that is holdable first
 				$holdabilityComparison = GroupedWorkDriver::compareHoldability($a, $b);
 				if ($holdabilityComparison == 0){
-					// Sort Overdrive Magazines by edition date
+					// Sort Overdrive Magazines by publication date
 					if ($a['source'] == 'overdrive' && $b['source'] == 'overdrive' && strcasecmp($a['format'], 'eMagazine') == 0 && strcasecmp($b['format'],  'eMagazine') == 0){
-						return strtotime($b['edition']) <=> strtotime($a['edition']);
+						return strtotime($b['publicationDate']) <=> strtotime($a['publicationDate']);
 					}
 					//3) Compare editions for non-fiction if available
 					//Get literary form to determine if we should compare editions
