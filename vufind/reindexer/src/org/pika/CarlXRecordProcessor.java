@@ -226,7 +226,7 @@ class CarlXRecordProcessor extends IlsRecordProcessor {
 	}
 	
 	@Override
-	protected boolean determineLibraryUseOnly(ItemInfo itemInfo, Scope curScope) {
+	protected boolean isLibraryUseOnly(ItemInfo itemInfo) {
 		return itemInfo.getStatusCode().equals("SC");
 	}
 }

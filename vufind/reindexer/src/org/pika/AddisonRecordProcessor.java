@@ -30,19 +30,9 @@ public class AddisonRecordProcessor extends IIIRecordProcessor {
 
 	AddisonRecordProcessor(GroupedWorkIndexer indexer, Connection pikaConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 		super(indexer, pikaConn, indexingProfileRS, logger, fullReindex);
-
-		availableStatus          = "-oy";
-		validOnOrderRecordStatus = "o1a";
-
-		// Note: Mat-Type "v" is video games; they are to be excluded for the better default format determination
-
-		loadOrderInformationFromExport();
-//        loadVolumesFromExport(pikaConn);
-
-		validCheckedOutStatusCodes.add("o"); // Library Use Only
-		validCheckedOutStatusCodes.add("d"); // Display
 	}
 
+	// Note: Mat-Type "v" is video games; they are to be excluded for the better default format determination
 
 	// This is based on version from Sacramento Processor
 	@Override

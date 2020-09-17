@@ -175,59 +175,69 @@ public class GroupedWorkIndexer {
 			PreparedStatement getIndexingProfile    = pikaConn.prepareStatement("SELECT * FROM indexing_profiles WHERE sourceName = ?");
 			ResultSet uniqueIdentifiersRS           = uniqueIdentifiersStmt.executeQuery();
 		){
-			while (uniqueIdentifiersRS.next()){
+			while (uniqueIdentifiersRS.next()) {
 				String sourceName = uniqueIdentifiersRS.getString("type");
-				getIndexingProfile.setString(1, sourceName);
-				try (ResultSet indexingProfileRS = getIndexingProfile.executeQuery()) {
-					if (indexingProfileRS.next()) {
-						String ilsIndexingClassString = indexingProfileRS.getString("indexingClass");
-						switch (ilsIndexingClassString) {
-							case "Marmot":
-								indexingRecordProcessors.put(sourceName, new MarmotRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
-								break;
-							case "WCPL":
-								indexingRecordProcessors.put(sourceName, new WCPLRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
-								break;
-							case "Flatirons":
-								indexingRecordProcessors.put(sourceName, new FlatironsRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
-								break;
-							case "Addison":
-								indexingRecordProcessors.put(sourceName, new AddisonRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
-								break;
-							case "Aurora":
-								indexingRecordProcessors.put(sourceName, new AuroraRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
-								break;
-							case "SantaFe":
-								indexingRecordProcessors.put(sourceName, new SantaFeRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
-								break;
-							case "Sacramento":
-								indexingRecordProcessors.put(sourceName, new SacramentoRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
-								break;
-							case "AACPL":
-								indexingRecordProcessors.put(sourceName, new AACPLRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
-								break;
-							case "Lion":
-								indexingRecordProcessors.put(sourceName, new LionRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
-								break;
-							case "SideLoadedEContent":
-								indexingRecordProcessors.put(sourceName, new SideLoadedEContentProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
-								break;
-							case "Hoopla":
-								indexingRecordProcessors.put(sourceName, new HooplaProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
-								break;
-							default:
-								logger.error("Unknown indexing class " + ilsIndexingClassString);
-								okToIndex = false;
-								return;
+				if (sourceName.equalsIgnoreCase("overdrive")) {
+					//Overdrive doesn't have an indexing profile.
+					//Only load processor if there are overdrive titles
+					overDriveProcessor = new OverDriveProcessor(this, econtentConn, logger, fullReindex);
+				} else {
+					getIndexingProfile.setString(1, sourceName);
+					try (ResultSet indexingProfileRS = getIndexingProfile.executeQuery()) {
+						if (indexingProfileRS.next()) {
+							String ilsIndexingClassString = indexingProfileRS.getString("indexingClass");
+							switch (ilsIndexingClassString) {
+								// eContent Processors
+								case "SideLoadedEContent":
+									indexingRecordProcessors.put(sourceName, new SideLoadedEContentProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
+									break;
+								case "Hoopla":
+									indexingRecordProcessors.put(sourceName, new HooplaProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
+									break;
+								// Sierra library Processors
+								case "Sierra":
+									indexingRecordProcessors.put(sourceName, new SierraRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
+									break;
+								case "Marmot":
+									indexingRecordProcessors.put(sourceName, new MarmotRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
+									break;
+								case "Flatirons":
+									indexingRecordProcessors.put(sourceName, new FlatironsRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
+									break;
+								case "Lion":
+									indexingRecordProcessors.put(sourceName, new LionRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
+									break;
+								case "Addison":
+									indexingRecordProcessors.put(sourceName, new AddisonRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
+									break;
+								case "Aurora":
+									indexingRecordProcessors.put(sourceName, new AuroraRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
+									break;
+								case "SantaFe":
+									indexingRecordProcessors.put(sourceName, new SantaFeRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
+									break;
+								case "Sacramento":
+									indexingRecordProcessors.put(sourceName, new SacramentoRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
+									break;
+								// Symphony Processors
+								case "AACPL":
+									indexingRecordProcessors.put(sourceName, new AACPLRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
+									break;
+								//Horizon Processors
+								case "WCPL":
+									indexingRecordProcessors.put(sourceName, new WCPLRecordProcessor(this, pikaConn, indexingProfileRS, logger, fullReindex));
+									break;
+								default:
+									logger.error("Unknown indexing class " + ilsIndexingClassString);
+									okToIndex = false;
+									return;
+							}
+						} else if (fullReindex && logger.isInfoEnabled()) {
+							logger.info("Could not find indexing profile for type " + sourceName);
+							// This indicates there are related records in the grouping primary identifiers table for a source that no
+							// longer has a corresponding indexing profile.
+							// Most likely cause of this is a sideload that has been removed.
 						}
-					} else if (sourceName.equalsIgnoreCase("overdrive")) {
-						//Overdrive doesn't have an indexing profile.
-						//Only load processor if there are overdrive titles
-						overDriveProcessor = new OverDriveProcessor(this, econtentConn, logger, fullReindex);
-					} else if (fullReindex && logger.isInfoEnabled()){
-						logger.info("Could not find indexing profile for type " + sourceName);
-						// This indicates there are related records in the grouping primary identifiers table for a source that no
-						// longer has a corresponding indexing profile.
 					}
 				}
 			}
@@ -942,6 +952,12 @@ public class GroupedWorkIndexer {
 		return numWorksProcessed;
 	}
 
+	/**
+	 * Index a specific indexing profile
+	 * 
+	 * @param indexingProfileToProcess
+	 * @return
+	 */
 	Long processGroupedWorks(String indexingProfileToProcess) {
 		long numWorksProcessed = 0L;
 		try {

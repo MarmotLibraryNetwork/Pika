@@ -966,7 +966,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				scopingInfo.setBookable(isBookable.isBookable());
 				scopingInfo.setBookablePTypes(isBookable.getBookablePTypes());
 
-				scopingInfo.setInLibraryUseOnly(determineLibraryUseOnly(itemInfo, curScope));
+				scopingInfo.setInLibraryUseOnly(isLibraryUseOnly(itemInfo));
 
 				scopingInfo.setStatus(displayStatus);
 				scopingInfo.setGroupedStatus(groupedDisplayStatus);
@@ -986,7 +986,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		}
 	}
 
-	protected boolean determineLibraryUseOnly(ItemInfo itemInfo, Scope curScope) {
+	protected boolean isLibraryUseOnly(ItemInfo itemInfo) {
 		return false;
 	}
 
