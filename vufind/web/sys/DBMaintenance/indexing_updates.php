@@ -314,6 +314,16 @@ function getIndexingUpdates(){
 			]
 		],
 
+			'indexing_profile_item_status_settings_2020.06' => [
+			'title'       => 'Add standard item status settings to indexing profile',
+			'description' => 'Add standard item status settings availablie, checked out, and library use only to indexing profile',
+			'sql'         => [
+				"ALTER TABLE indexing_profiles ADD COLUMN `availableStatuses` varchar(255) DEFAULT NULL",
+				"ALTER TABLE indexing_profiles ADD COLUMN `checkedOutStatuses` varchar(255) DEFAULT NULL",
+				"ALTER TABLE indexing_profiles ADD COLUMN `libraryUseOnlyStatuses` varchar(255) DEFAULT NULL",
+			]
+		],
+
 	);
 }
 

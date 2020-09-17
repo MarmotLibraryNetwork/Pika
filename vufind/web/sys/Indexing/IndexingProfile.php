@@ -73,6 +73,9 @@ class IndexingProfile extends DB_DataObject{
 	public $itemUrl;
 	public $barcode;
 	public $status;
+	public $availableStatuses;
+	public $checkedOutStatuses;
+	public $libraryUseOnlyStatuses;
 	public $nonHoldableStatuses;
 	public $statusesToSuppress;
 	public $iTypesToSuppress;
@@ -147,27 +150,57 @@ class IndexingProfile extends DB_DataObject{
 				)),
 			//TODO: refactor catalogDriver to circulationSystemDriver
 			//TODO: this would be the hook in to tie a indexing profile to eContent driver
-			'formatSource'     => ['property' => 'formatSource', 'type' => 'enum', 'label' => 'Determine Format based on', 'values' => ['bib' => 'Bib Record', 'item' => 'Item Record', 'specified' => 'Specified Value'], 'default' => 'bib', 'hideInLists' => false],
 
-			'formatDeterminationSection' => array('property'=>'formatDeterminationSection', 'type' => 'section', 'label' =>'Format Determination Settings', 'hideInLists' => true,
-			                            'helpLink' => '', 'properties' => array(
+			'formatDeterminationSection' => ['property' => 'formatDeterminationSection', 'type' => 'section', 'label' => 'Format Determination Settings', 'hideInLists' => true,
+			                                 'helpLink' => '', 'properties' => [
 
-//					'formatSource'     => ['property' => 'formatSource', 'type' => 'enum', 'label' => 'Determine Format based on', 'values' => ['bib' => 'Bib Record', 'item' => 'Item Record', 'specified' => 'Specified Value'], 'default' => 'bib', 'hideInLists' => false],
+					'formatSource'     => ['property' => 'formatSource', 'type' => 'enum', 'label' => 'Determine Format based on', 'values' => ['bib' => 'Bib Record', 'item' => 'Item Record', 'specified' => 'Specified Value'], 'default' => 'bib', 'hideInLists' => false],
 					'bibFormatSection' => ['property' => 'bibFormatSection', 'type' => 'section', 'label' => 'Bib Format Determination Settings', 'hideInLists' => true,
 					                       'helpLink' => '', 'properties' => [
-							'formatDeterminationMethod' => ['property' => 'formatDeterminationMethod', 'type' => 'enum', 'label' => 'Format Determination Method', 'values' => ['bib' => 'Bib Record', 'matType' => 'Material Type'], 'default' => 'bib'],
-							'materialTypesToIgnore'     => ['property' => 'materialTypesToIgnore', 'type' => 'text', 'label' => 'Material Type Values to Ignore (ils profile only)', 'maxLength' => 50, 'description' => 'MatType values to ignore when using the MatType format determination. The bib format determination will be used instead. " " & "-" are always ignored.', 'hideInLists' => true],
+							'formatDeterminationMethod' => ['property' => 'formatDeterminationMethod',
+							                                'type'     => 'enum',
+							                                'label'    => 'Format Determination Method',
+							                                'values'   => ['bib' => 'Bib Record', 'matType' => 'Material Type'],
+							                                'default'  => 'bib'],
+							'materialTypesToIgnore'     => ['property'    => 'materialTypesToIgnore',
+							                                'type'        => 'text',
+							                                'label'       => 'Material Type Values to Ignore (ils profile only)',
+							                                'maxLength'   => 50,
+							                                'description' => 'MatType values to ignore when using the MatType format determination. The bib format determination will be used instead. " " & "-" are always ignored.',
+							                                'hideInLists' => true],
 						]],
 
-					'specifiedFormatSection' => array('property'=>'specifiedFormatSection', 'type' => 'section', 'label' =>'Specified Format Settings', 'hideInLists' => true,
-			                                      'helpLink' => '', 'properties' => array(
+					'specifiedFormatSection' => ['property' => 'specifiedFormatSection', 'type' => 'section', 'label' => 'Specified Format Settings', 'hideInLists' => true,
+					                             'helpLink' => '', 'properties' => [
 
-					'specifiedFormat'           => array('property' => 'specifiedFormat',           'type' => 'text',    'label' => 'Specified Format', 'maxLength' => 50, 'description' => 'The format to set when using a defined format', 'required' => false, 'default' => ''),
-					'specifiedFormatCategory'   => array('property' => 'specifiedFormatCategory',   'type' => 'enum',    'label' => 'Specified Format Category', 'values' => array('', 'Books' => 'Books', 'eBook' => 'eBook', 'Audio Books' => 'Audio Books', 'Movies' => 'Movies', 'Music' => 'Music', 'Other' => 'Other'), 'description' => 'The format category to set when using a defined format', 'required' => false, 'default' => ''),
-					'specifiedFormatBoost'      => array('property' => 'specifiedFormatBoost',      'type' => 'integer', 'label' => 'Specified Format Boost', 'maxLength' => 50, 'description' => 'The format boost to set when using a defined format', 'required' => false, 'default' => '8'),
-					'specifiedGroupingCategory' => array('property' => 'specifiedGroupingCategory', 'type' => 'enum',    'label' => 'Specified Grouping Category', 'values' => array('', 'book' => 'Book', 'movie' => 'Movie', 'music' => 'Music', 'comic' => 'Comic'/*,'other' => 'other'*/), 'description' => 'The grouping category to set when using a defined format'),
-				)),
-					)),
+							'specifiedFormat'           => ['property'    => 'specifiedFormat',
+							                                'type'        => 'text',
+							                                'label'       => 'Specified Format',
+							                                'maxLength'   => 50,
+							                                'description' => 'The format to set when using a defined format',
+							                                'required'    => false,
+							                                'default'     => ''],
+							'specifiedFormatCategory'   => ['property'    => 'specifiedFormatCategory',
+							                                'type'        => 'enum',
+							                                'label'       => 'Specified Format Category',
+							                                'values'      => ['', 'Books' => 'Books', 'eBook' => 'eBook', 'Audio Books' => 'Audio Books', 'Movies' => 'Movies', 'Music' => 'Music', 'Other' => 'Other'],
+							                                'description' => 'The format category to set when using a defined format',
+							                                'required'    => false,
+							                                'default'     => ''],
+							'specifiedFormatBoost'      => ['property'    => 'specifiedFormatBoost',
+							                                'type'        => 'integer',
+							                                'label'       => 'Specified Format Boost',
+							                                'maxLength'   => 50,
+							                                'description' => 'The format boost to set when using a defined format',
+							                                'required'    => false,
+							                                'default'     => '8'],
+							'specifiedGroupingCategory' => ['property'    => 'specifiedGroupingCategory',
+							                                'type'        => 'enum',
+							                                'label'       => 'Specified Grouping Category',
+							                                'values'      => ['', 'book' => 'Book', 'movie' => 'Movie', 'music' => 'Music', 'comic' => 'Comic'/*,'other' => 'other'*/],
+							                                'description' => 'The grouping category to set when using a defined format'],
+						]],
+				]],
 
 
 			'bibRecordSection' => array('property'=>'bibRecordSection', 'type' => 'section', 'label' =>'Record Settings', 'hideInLists' => true, 'open' => true,
@@ -218,45 +251,66 @@ class IndexingProfile extends DB_DataObject{
 			'itemUrl'                 => array('property' => 'itemUrl', 'type' => 'text', 'label' => 'Item URL', 'maxLength' => 1, 'description' => 'Subfield for a URL specific to the item (For Libraries using the Marmot ILS eContent Standard)'),
 				)),
 
-			'nonholdableSection' => array('property'=>'nonholdableSection', 'type' => 'section', 'label' =>'Non-holdable Settings (ils profile only)', 'hideInLists' => true,
-			                         'helpLink' => '', 'properties' => array(
-					'nonHoldableStatuses'  => array('property' => 'nonHoldableStatuses', 'type' => 'text', 'label' => 'Non Holdable Statuses', 'maxLength' => 255, 'description' => 'A regular expression for any statuses that should not allow holds'),
-					'nonHoldableLocations' => array('property' => 'nonHoldableLocations', 'type' => 'text', 'label' => 'Non Holdable Locations', 'maxLength' => 255, 'description' => 'A regular expression for any locations that should not allow holds'),
-					'nonHoldableITypes'    => array('property' => 'nonHoldableITypes', 'type' => 'text', 'label' => 'Non Holdable ITypes', 'maxLength' => 255, 'description' => 'A regular expression for any ITypes that should not allow holds'),
+			'itemStatusSection' => ['property' =>'itemStatusSection', 'type' => 'section', 'label' =>'Item Statuses Settings (ils profile only)', 'hideInLists' => true,
+			                         'helpLink' => '', 'properties' => [
+					'availableStatuses'      => ['property'    => 'availableStatuses',
+					                             'type'        => 'text',
+					                             'label'       => 'Available Statuses',
+					                             'maxLength'   => 255,
+//					                             'default'     => "-",
+					                             'description' => 'A list of characters that are valid available item statues.'],
+					'checkedOutStatuses'     => ['property'    => 'checkedOutStatuses',
+					                             'type'        => 'text',
+					                             'label'       => 'Checked Out Statuses',
+					                             'maxLength'   => 255,
+//					                             'default'     => "-",
+					                             'description' => 'A list of characters that are valid checked out item statuses.'],
+					'libraryUseOnlyStatuses' => ['property'    => 'libraryUseOnlyStatuses',
+					                             'type'        => 'text',
+					                             'label'       => 'Library Use Only Statuses',
+					                             'maxLength'   => 255,
+//					                             'default'     => "o",
+					                             'description' => 'A list of characters that are valid checked out item statuses.'],
+				]],
 
-			)),
+			'nonholdableSection' => ['property' =>'nonholdableSection', 'type' => 'section', 'label' =>'Non-holdable Settings (ils profile only)', 'hideInLists' => true,
+			                         'helpLink' => '', 'properties' => [
+					'nonHoldableStatuses'  => ['property' => 'nonHoldableStatuses', 'type' => 'text', 'label' => 'Non Holdable Statuses', 'maxLength' => 255, 'description' => 'A regular expression for any statuses that should not allow holds'],
+					'nonHoldableLocations' => ['property' => 'nonHoldableLocations', 'type' => 'text', 'label' => 'Non Holdable Locations', 'maxLength' => 255, 'description' => 'A regular expression for any locations that should not allow holds'],
+					'nonHoldableITypes'    => ['property' => 'nonHoldableITypes', 'type' => 'text', 'label' => 'Non Holdable ITypes', 'maxLength' => 255, 'description' => 'A regular expression for any ITypes that should not allow holds'],
+				]],
 
-			'suppressionSection' => array('property'=>'suppressionSection', 'type' => 'section', 'label' =>'Suppression Settings (ils profile only)', 'hideInLists' => true,
-					'helpLink' => '', 'properties' => array(
-					'itemSuppressionSection' => array('property'=>'itemSuppressionSection', 'type' => 'section', 'label' =>'Item Level Suppression Settings', 'hideInLists' => true,
-					                             'helpLink' => '', 'properties' => array(
-							'statusesToSuppress'    => array('property' => 'statusesToSuppress', 'type' => 'text', 'label' => 'Statuses To Suppress (use regex)', 'maxLength' => 100, 'description' => 'A regular expression for any statuses that should be suppressed'),
-							'iTypesToSuppress'      => array('property' => 'iTypesToSuppress', 'type' => 'text', 'label' => 'Itypes To Suppress (use regex)', 'maxLength' => 100, 'description' => 'A regular expression for any Itypes that should be suppressed'),
-							'locationsToSuppress'   => array('property' => 'locationsToSuppress', 'type' => 'text', 'label' => 'Locations To Suppress (use regex)', 'maxLength' => 255, 'description' => 'A regular expression for any locations that should be suppressed'),
-							'collectionsToSuppress' => array('property' => 'collectionsToSuppress', 'type' => 'text', 'label' => 'Collections To Suppress (use regex)', 'maxLength' => 100, 'description' => 'A regular expression for any collections that should be suppressed'),
-							'useICode2Suppression'  => array('property' => 'useICode2Suppression', 'type' => 'checkbox', 'label' => 'Use Item Suppression Field suppression for items', 'description' => 'Whether or not we should suppress items based on Item Suppression Field'),
-							'iCode2sToSuppress'     => array('property' => 'iCode2sToSuppress', 'type' => 'text', 'label' => 'Item Suppression Field Values To Suppress (use regex)', 'maxLength' => 100, 'description' => 'A regular expression for any Item Suppression Field that should be suppressed'),
+			'suppressionSection' => ['property' =>'suppressionSection', 'type' => 'section', 'label' =>'Suppression Settings (ils profile only)', 'hideInLists' => true,
+			                         'helpLink' => '', 'properties' => [
+					'itemSuppressionSection' => ['property' =>'itemSuppressionSection', 'type' => 'section', 'label' =>'Item Level Suppression Settings', 'hideInLists' => true,
+					                             'helpLink' => '', 'properties' => [
+							'statusesToSuppress'    => ['property' => 'statusesToSuppress', 'type' => 'text', 'label' => 'Statuses To Suppress (use regex)', 'maxLength' => 100, 'description' => 'A regular expression for any statuses that should be suppressed'],
+							'iTypesToSuppress'      => ['property' => 'iTypesToSuppress', 'type' => 'text', 'label' => 'Itypes To Suppress (use regex)', 'maxLength' => 100, 'description' => 'A regular expression for any Itypes that should be suppressed'],
+							'locationsToSuppress'   => ['property' => 'locationsToSuppress', 'type' => 'text', 'label' => 'Locations To Suppress (use regex)', 'maxLength' => 255, 'description' => 'A regular expression for any locations that should be suppressed'],
+							'collectionsToSuppress' => ['property' => 'collectionsToSuppress', 'type' => 'text', 'label' => 'Collections To Suppress (use regex)', 'maxLength' => 100, 'description' => 'A regular expression for any collections that should be suppressed'],
+							'useICode2Suppression'  => ['property' => 'useICode2Suppression', 'type' => 'checkbox', 'label' => 'Use Item Suppression Field suppression for items', 'description' => 'Whether or not we should suppress items based on Item Suppression Field'],
+							'iCode2sToSuppress'     => ['property' => 'iCode2sToSuppress', 'type' => 'text', 'label' => 'Item Suppression Field Values To Suppress (use regex)', 'maxLength' => 100, 'description' => 'A regular expression for any Item Suppression Field that should be suppressed'],
 
-						)),
-					'bibSuppressionSection' =>array('property'=>'bibSuppressionSection', 'type' => 'section', 'label' =>'Bib Level Suppression Settings', 'hideInLists' => true,
-					                                 'helpLink' => '', 'properties' => array(
-							'suppressItemlessBibs'           => array('property' => 'suppressItemlessBibs', 'type' => 'checkbox', 'label' => 'Suppress Itemless Bibs', 'description' => 'Whether or not Itemless Bibs can be suppressed'),
-							'doAutomaticEcontentSuppression' => array('property' => 'doAutomaticEcontentSuppression', 'type' => 'checkbox', 'label' => 'Do Automatic eContent Suppression', 'description' => 'Whether or not eContent suppression for overdrive and hoopla records is done automatically', 'default'=>false),
-							'bCode3'                         => array('property' => 'bCode3', 'type' => 'text', 'label' => 'BCode3 Subfield', 'maxLength' => 1, 'description' => 'Subfield for BCode3'),
-							'bCode3sToSuppress'              => array('property' => 'bCode3sToSuppress', 'type' => 'text', 'label' => 'BCode3s To Suppress (use regex)', 'maxLength' => 100, 'description' => 'A regular expression for any BCode3s that should be suppressed'),
+						]],
+					'bibSuppressionSection' => ['property' =>'bibSuppressionSection', 'type' => 'section', 'label' =>'Bib Level Suppression Settings', 'hideInLists' => true,
+					                            'helpLink' => '', 'properties' => [
+							'suppressItemlessBibs'           => ['property' => 'suppressItemlessBibs', 'type' => 'checkbox', 'label' => 'Suppress Itemless Bibs', 'description' => 'Whether or not Itemless Bibs can be suppressed'],
+							'doAutomaticEcontentSuppression' => ['property' => 'doAutomaticEcontentSuppression', 'type' => 'checkbox', 'label' => 'Do Automatic eContent Suppression', 'description' => 'Whether or not eContent suppression for overdrive and hoopla records is done automatically', 'default' =>false],
+							'bCode3'                         => ['property' => 'bCode3', 'type' => 'text', 'label' => 'BCode3 Subfield', 'maxLength' => 1, 'description' => 'Subfield for BCode3'],
+							'bCode3sToSuppress'              => ['property' => 'bCode3sToSuppress', 'type' => 'text', 'label' => 'BCode3s To Suppress (use regex)', 'maxLength' => 100, 'description' => 'A regular expression for any BCode3s that should be suppressed'],
 
-						)),
-				)),
+						]],
+				]],
 
-			'orderRecordSection' => array('property'=>'orderRecordSection', 'type' => 'section', 'label' =>'Order Tag Settings (ils profile only)', 'hideInLists' => true,
-			                            'helpLink' => '', 'properties' => array(
-			'orderTag'            => array('property' => 'orderTag', 'type' => 'text', 'label' => 'Order Tag', 'maxLength' => 3, 'description' => 'The MARC tag where order records can be found'),
-			'orderStatus'         => array('property' => 'orderStatus', 'type' => 'text', 'label' => 'Order Status', 'maxLength' => 1, 'description' => 'Subfield for status of the order item'),
-			'orderLocationSingle' => array('property' => 'orderLocationSingle', 'type' => 'text', 'label' => 'Order Location Single', 'maxLength' => 1, 'description' => 'Subfield for location of the order item when the order applies to a single location'),
-			'orderLocation'       => array('property' => 'orderLocation', 'type' => 'text', 'label' => 'Order Location Multi', 'maxLength' => 1, 'description' => 'Subfield for location of the order item when the order applies to multiple locations'),
-			'orderCopies'         => array('property' => 'orderCopies', 'type' => 'text', 'label' => 'Order Copies', 'maxLength' => 1, 'description' => 'The number of copies if not shown within location'),
-			'orderCode3'          => array('property' => 'orderCode3', 'type' => 'text', 'label' => 'Order Code3', 'maxLength' => 1, 'description' => 'Code 3 for the order record'),
-				)),
+			'orderRecordSection' => ['property' =>'orderRecordSection', 'type' => 'section', 'label' =>'Order Tag Settings (ils profile only)', 'hideInLists' => true,
+			                         'helpLink' => '', 'properties' => [
+					'orderTag'            => ['property' => 'orderTag', 'type' => 'text', 'label' => 'Order Tag', 'maxLength' => 3, 'description' => 'The MARC tag where order records can be found'],
+					'orderStatus'         => ['property' => 'orderStatus', 'type' => 'text', 'label' => 'Order Status Subfield', 'maxLength' => 1, 'description' => 'Subfield for status of the order item'],
+					'orderLocationSingle' => ['property' => 'orderLocationSingle', 'type' => 'text', 'label' => 'Order Location Single Subfield', 'maxLength' => 1, 'description' => 'Subfield for location of the order item when the order applies to a single location'],
+					'orderLocation'       => ['property' => 'orderLocation', 'type' => 'text', 'label' => 'Order Location Multi Subfield', 'maxLength' => 1, 'description' => 'Subfield for location of the order item when the order applies to multiple locations'],
+					'orderCopies'         => ['property' => 'orderCopies', 'type' => 'text', 'label' => 'Order Copies Subfield', 'maxLength' => 1, 'description' => 'The number of copies if not shown within location'],
+					'orderCode3'          => ['property' => 'orderCode3', 'type' => 'text', 'label' => 'Order Code3 Subfield', 'maxLength' => 1, 'description' => 'Code 3 for the order record'],
+				]],
 
 			'translationMaps' => array(
 				'property'      => 'translationMaps',
