@@ -59,8 +59,19 @@ class ReadingHistory extends MyAccount {
 				$interface->assign('linkedUsers', $linkedUsers);
 				$interface->assign('selectedUser', $patronId); // needs to be set even when there is only one user so that the patronId hidden input gets a value in the reading history form.
 
+				// Setup history search variables
+				if(isset($_REQUEST['readingHistoryAction']) && $_REQUEST['readingHistoryAction'] == 'searchReadingHistory') {
+					$searchTerm = isset($_REQUEST['searchTerm']) ? $_REQUEST['searchTerm'] : '';
+					$searchBy   = isset($_REQUEST['searchBy']) ? $_REQUEST['searchBy'] : 'title';
+
+					$interface->assign('searchTerm', $searchTerm);
+					$interface->assign('searchBy', $searchBy);
+				}
+
 				//Check to see if there is an action to perform.
-				if (!empty($_REQUEST['readingHistoryAction']) && !is_array($_REQUEST['readingHistoryAction']) && $_REQUEST['readingHistoryAction'] != 'exportToExcel'){
+				if (!empty($_REQUEST['readingHistoryAction']) && !is_array($_REQUEST['readingHistoryAction']) &&
+				 $_REQUEST['readingHistoryAction'] != 'exportToExcel' && $_REQUEST['readingHistoryAction'] != 'searchReadingHistory'){
+
 					//Perform the requested action
 					$selectedTitles       = isset($_REQUEST['selected']) ? $_REQUEST['selected'] : array();
 					$readingHistoryAction = trim($_REQUEST['readingHistoryAction']);
@@ -128,7 +139,18 @@ class ReadingHistory extends MyAccount {
 				if (!$patron){
 					PEAR_Singleton::RaiseError(new PEAR_Error("The patron provided is invalid"));
 				}
-				$result = $patron->getReadingHistory($page, $recordsPerPage, $selectedSortOption);
+				$result = $patron->getReadingHistory($page, $recordsPerPage, $selectedSortOption, $searchTerm, $searchBy); //$searchTerm, $searchBy
+
+//				if($_REQUEST['readingHistoryAction'] == 'searchReadingHistory' && isset($searchTerm)) {
+//					$found = array_filter($result['titles'], function ($k) use ($searchTerm){
+//						return stristr($k['title'], $searchTerm) || stristr($k['author'], $searchTerm);
+//					});
+//					$foundCount = count($found);
+//					if($foundCount > 0) {
+//						$result['numTitles'] = $foundCount;
+//						$result['titles'] = $found;
+//					}
+//				}
 
 				$link = $_SERVER['REQUEST_URI'];
 				if (preg_match('/[&?]page=/', $link)){

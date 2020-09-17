@@ -34,6 +34,12 @@ Pika.Account.ReadingHistory = (function(){
 			$('#readingHistoryAction').val('exportToExcel');
 			$('#readingListForm').submit();
 			return false;
+		},
+
+		searchReadingHistoryAction: function() {
+			$('#readingHistoryAction').val('searchReadingHistory');
+			$('#readingListForm').submit();
+			return false;
 		}
 	};
 }(Pika.Account.ReadingHistory || {}));

@@ -43,6 +43,9 @@ class CatalogConnection
 
 	public $accountProfile;
 
+	private $search = false;
+	private $searchTerm = null;
+	private $searchField = null;
 	/**
 	 * The object of the appropriate driver.
 	 *
@@ -237,16 +240,21 @@ class CatalogConnection
 	// Reading History entries with groupedWorkIds
 
 	$readingHistoryDB          = new ReadingHistoryEntry();
-	$readingHistoryDB->userId  = $patron->id;
-	$readingHistoryDB->deleted = 0; //Only show titles that have not been deleted
+	$readingHistoryDB->whereAdd('userId = ' . $patron->id);
+	$readingHistoryDB->whereAdd('deleted = 0'); //Only show titles that have not been deleted
 	$readingHistoryDB->whereAdd('groupedWorkPermanentId != ""'); // Exclude entries with out a grouped work (typically ILL items)
-
 	$readingHistoryDB->selectAdd();
-	$readingHistoryDB->selectAdd('id,groupedWorkPermanentId,source,sourceId,title,author,checkInDate');
+	$readingHistoryDB->selectAdd('id, groupedWorkPermanentId, source, sourceId, title, author, checkInDate');
 	$readingHistoryDB->selectAdd('MAX(checkOutDate) as checkOutDate');
 	$readingHistoryDB->selectAdd('GROUP_CONCAT(DISTINCT(format)) as format');
 	$readingHistoryDB->groupBy('groupedWorkPermanentId');
-
+	if($this->search == true) {
+		if($this->searchField == 'title') {
+			$readingHistoryDB->whereAdd('title like "%' . $this->searchTerm . '%"');
+		} elseif($this->searchField == 'author') {
+			$readingHistoryDB->whereAdd('author like "%' . $this->searchTerm . '%"');
+		}
+	}
 
 	// InterLibrary Loan Reading History entries
 	$readingHistoryILL          = new ReadingHistoryEntry();
@@ -254,7 +262,7 @@ class CatalogConnection
 //	$readingHistoryILL->deleted = 0; //Only show titles that have not been deleted
 
 	$readingHistoryILL->selectAdd();
-	$readingHistoryILL->selectAdd('id,groupedWorkPermanentId,source,sourceId,title,author,checkInDate');
+	$readingHistoryILL->selectAdd('id, groupedWorkPermanentId, source, sourceId, title, author, checkInDate');
 	$readingHistoryILL->selectAdd('MAX(checkOutDate) as checkOutDate');
 	$readingHistoryILL->selectAdd('GROUP_CONCAT(DISTINCT(format)) as format');
 	$readingHistoryILL->groupBy('title');
@@ -262,8 +270,14 @@ class CatalogConnection
 	$readingHistoryILL->whereAdd('userId = ' . $patron->id);
 	$readingHistoryILL->whereAdd('deleted = 0');
 	$readingHistoryILL->whereAdd('groupedWorkPermanentId = ""'); // Include only entries with out a grouped work (typically ILL items
-
-	// Add both entries together with an SQL union
+		if($this->search == true) {
+			if ($this->searchField == 'title') {
+				$readingHistoryILL->whereAdd('title like "%' . $this->searchTerm . '%"');
+			} elseif ($this->searchField == 'author') {
+				$readingHistoryILL->whereAdd('author like "%' . $this->searchTerm . '%"');
+			}
+		}
+			// Add both entries together with an SQL union
 	$readingHistoryDB->unionAdd($readingHistoryILL);
 	return $readingHistoryDB;
 
@@ -434,16 +448,18 @@ class CatalogConnection
 	 * so each entry returned should contain all the information needed for display (covers, links, ratings
 	 * etc.)
 	 *
-	 * @param   User   $patron     The patron array
-	 * @param   int     $page
-	 * @param   int     $recordsPerPage
-	 * @param   string  $sortOption
+	 * @param User   $patron        The patron array
+	 * @param int    $page
+	 * @param int    $recordsPerPage
+	 * @param string $sortOption
 	 *
+	 * @param bool   $searchTerm
+	 * @param bool   $searchField
 	 * @return  array               Array of the patron's reading list
 	 *                              If an error occurs, return a PEAR_Error
 	 * @access  public
 	 */
-	function getReadingHistory($patron, $page = 1, $recordsPerPage = -1, $sortOption = "checkedOut"){
+	function getReadingHistory($patron, $page = 1, $recordsPerPage = -1, $sortOption = "checkedOut", $searchTerm = false, $searchField = false){
 		//Get reading history from the database unless we specifically want to load from the driver.
 		if (($patron->trackReadingHistory && $patron->initialReadingHistoryLoaded) || !$this->driver->hasNativeReadingHistory()){
 			if ($patron->trackReadingHistory){
@@ -460,6 +476,13 @@ class CatalogConnection
 
 				$this->updateReadingHistoryBasedOnCurrentCheckouts($patron);
 
+				// Set search query if one
+				if($searchTerm != false) {
+					$this->search = true;
+					$this->searchTerm  = trim($searchTerm);
+					$this->searchField = $searchField;
+					//$readingHistoryDB->whereAdd('title like "%'.$searchTerm.'%"'); //'title like "%'.$searchTerm.'%"'
+				}
 				$readingHistoryDB = $this->getReadingHistoryDBObject($patron);
 
 				// Get the Total number of reading history entries

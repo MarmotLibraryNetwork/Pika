@@ -1649,8 +1649,17 @@ class User extends DB_DataObject {
 		return $renewAllResults;
 	}
 
-	public function getReadingHistory($page, $recordsPerPage, $selectedSortOption){
-		return $this->getCatalogDriver()->getReadingHistory($this, $page, $recordsPerPage, $selectedSortOption);
+	public function getReadingHistory($page, $recordsPerPage, $selectedSortOption, $searchTerm, $searchFields){
+		return $this->getCatalogDriver()->getReadingHistory($this, $page, $recordsPerPage, $selectedSortOption, $searchTerm, $searchFields);
+	}
+
+	/**
+	 * Filter a patrons reading history by search term and title and/or author
+	 * @param $searchTerm
+	 * @param $searchFields
+	 */
+	public function searchReadingHistory($page, $recordsPerPage, $selectedSortOption, $searchTerm, $searchFields) {
+		return $this->getCatalogDriver()->getReadingHistory($this, $page, $recordsPerPage, $selectedSortOption, $searchTerm, $searchFields);
 	}
 
 	public function loadReadingHistoryFromILS($loadAdditional = null){
