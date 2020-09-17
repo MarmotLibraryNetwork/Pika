@@ -195,7 +195,7 @@ Pika.Lists = (function(){
 
 
 		copyList: function(id){
-			if (confirm("You are copying this list and all items to your lists."))
+			if (confirm("You are copying this list and all items to your lists. This could take a several moments depending on the size of the list. Are you sure you want to continue?"))
 			{
 				Pika.Account.ajaxLogin(function(){
 					Pika.loadingMessage();

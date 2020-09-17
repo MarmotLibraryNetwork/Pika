@@ -1527,7 +1527,8 @@ class MyAccount_AJAX extends AJAXHandler {
             $user = UserAccount::getLoggedInUser();
             require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
             $title = (isset($_REQUEST['title']) && !is_array($_REQUEST['title'])) ? urldecode($_REQUEST['title']) : '';
-            $listFromItems = array();
+
+            $description = "";
                 //If the record is not valid, skip the whole thing since the title could be bad too
                 if (!empty($_REQUEST['copyFromId']) && !is_array($_REQUEST['copyFromId'])){
                     $copyFromId = urldecode($_REQUEST['copyFromId']);
@@ -1542,31 +1543,19 @@ class MyAccount_AJAX extends AJAXHandler {
                     $favList = new FavoriteHandler($listFrom, $user, false);
                     $recordsToAdd = $favList->getTitles($listFrom->id);
                     require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
-
+                    $description = $listFrom->description . " copied from /MyAccount/MyList/" . $listFrom->id . " - List: " . $listFrom->title ;
                 }
 
                 $list          = new UserList();
-                $list->title   = strip_tags($title);
+                $list->title   = strip_tags($title) . " (copy)";
                 $list->user_id = $user->id;
+
                 //Check to see if there is already a list with this id
-                $existingList = false;
-                if ($list->find(true)){
-                    $existingList = true;
-                }
-
-                $description = $_REQUEST['desc'] ?? '';
-                if (is_array($description)){
-                    $description = reset($description);
-                }
-
 
                 $list->description = strip_tags(urldecode($description));
                 $list->public      = isset($_REQUEST['public']) && $_REQUEST['public'] == 'true';
-                if ($existingList){
-                    $list->update();
-                }else{
-                    $list->insert();
-                }
+                $list->insert();
+
 
                 if (isset($recordsToAdd)){
                     require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
