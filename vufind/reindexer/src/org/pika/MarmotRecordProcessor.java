@@ -26,7 +26,6 @@ import java.util.*;
  * ILS Indexing with customizations specific to Marmot.  Handles processing
  * - print items
  * - econtent items stored within Sierra
- * - order items
  *
  * Pika
  * User: Mark Noble
@@ -36,14 +35,6 @@ import java.util.*;
 class MarmotRecordProcessor extends IIIRecordProcessor {
 	MarmotRecordProcessor(GroupedWorkIndexer indexer, Connection pikaConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 		super(indexer, pikaConn, indexingProfileRS, logger, fullReindex);
-		availableStatus      = "-dowju(";
-		libraryUseOnlyStatus = "ohu";
-
-		loadOrderInformationFromExport();
-
-		validCheckedOutStatusCodes.add("d");
-		validCheckedOutStatusCodes.add("o");
-		validCheckedOutStatusCodes.add("u");
 	}
 
 	protected void loadUnsuppressedPrintItems(GroupedWorkSolr groupedWork, RecordInfo recordInfo, RecordIdentifier identifier, Record record) {

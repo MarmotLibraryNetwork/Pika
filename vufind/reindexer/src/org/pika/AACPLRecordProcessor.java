@@ -36,8 +36,8 @@ import java.util.regex.Pattern;
 class AACPLRecordProcessor extends IlsRecordProcessor {
 	private HashSet<String> bibsWithOrders = new HashSet<>();
 
-	AACPLRecordProcessor(GroupedWorkIndexer indexer, Connection vufindConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
-		super(indexer, vufindConn, indexingProfileRS, logger, fullReindex);
+	AACPLRecordProcessor(GroupedWorkIndexer indexer, Connection pikaConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
+		super(indexer, pikaConn, indexingProfileRS, logger, fullReindex);
 
 		//get a list of bibs that have order records on them
 		File ordersFile = new File(marcPath + "/Pika_orders.mrc");

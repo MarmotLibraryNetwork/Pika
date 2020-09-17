@@ -33,10 +33,6 @@ class SantaFeRecordProcessor extends IIIRecordProcessor {
 
 	SantaFeRecordProcessor(GroupedWorkIndexer indexer, Connection pikaConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 		super(indexer, pikaConn, indexingProfileRS, logger, fullReindex);
-		availableStatus = "-o";
-		validOnOrderRecordStatus = "o1a";
-
-		loadOrderInformationFromExport();
 	}
 
 	protected boolean isItemSuppressed(DataField curItem) {

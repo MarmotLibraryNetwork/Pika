@@ -424,8 +424,8 @@ abstract class MarcRecordProcessor {
 					}
 				}
 			}
+			groupedWork.addEditions(editions);
 		}
-		groupedWork.addEditions(editions);
 	}
 
 	void loadPhysicalDescription(GroupedWorkSolr groupedWork, Record record, HashSet<RecordInfo> ilsRecords) {

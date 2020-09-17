@@ -156,7 +156,7 @@ class NashvilleRecordProcessor extends IIIRecordProcessor {
 		return (code3 == null || !code3.equals("s")) && (status.equals("o") || status.equals("1") || status.equals("a") || status.equals("q"));
 	}
 
-	protected boolean determineLibraryUseOnly(ItemInfo itemInfo, Scope curScope) {
+	protected boolean isLibraryUseOnly(ItemInfo itemInfo) {
 		return itemInfo.getStatusCode().equals("o");
 	}
 }

@@ -37,12 +37,6 @@ class SacramentoRecordProcessor extends IIIRecordProcessor {
 
 	SacramentoRecordProcessor(GroupedWorkIndexer indexer, Connection pikaConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 		super(indexer, pikaConn, indexingProfileRS, logger, fullReindex);
-		availableStatus          = "-od(j";
-
-		validCheckedOutStatusCodes.add("o");
-		validCheckedOutStatusCodes.add("d");
-
-		loadOrderInformationFromExport();
 	}
 
 	// This version of this method has a special case for KitKeepers
@@ -50,7 +44,6 @@ class SacramentoRecordProcessor extends IIIRecordProcessor {
 	protected boolean isItemAvailable(ItemInfo itemInfo) {
 		boolean available = false;
 		String  status    = itemInfo.getStatusCode();
-		String  dueDate   = itemInfo.getDueDate() == null ? "" : itemInfo.getDueDate();
 
 		if (!status.isEmpty()) {
 			if (status.equals("KitKeeperStatus")) {
@@ -75,7 +68,7 @@ class SacramentoRecordProcessor extends IIIRecordProcessor {
 	}
 
 	protected void loadTargetAudiences(GroupedWorkSolr groupedWork, Record record, HashSet<ItemInfo> printItems, String identifier) {
-		//For Sacramento, LION, Anythink, load audiences based on collection code rather than based on the 008 and 006 fields
+		//For Sacramento, LION, load audiences based on collection code rather than based on the 008 and 006 fields
 		HashSet<String> targetAudiences = new HashSet<>();
 		for (ItemInfo printItem : printItems) {
 			String shelfLocationCode = printItem.getShelfLocationCode();
