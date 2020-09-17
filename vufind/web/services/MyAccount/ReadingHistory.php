@@ -60,6 +60,8 @@ class ReadingHistory extends MyAccount {
 				$interface->assign('selectedUser', $patronId); // needs to be set even when there is only one user so that the patronId hidden input gets a value in the reading history form.
 
 				// Setup history search variables
+				$searchBy = false;
+				$searchTerm = false;
 				if(isset($_REQUEST['readingHistoryAction']) && $_REQUEST['readingHistoryAction'] == 'searchReadingHistory') {
 					$searchTerm = isset($_REQUEST['searchTerm']) ? $_REQUEST['searchTerm'] : '';
 					$searchBy   = isset($_REQUEST['searchBy']) ? $_REQUEST['searchBy'] : 'title';
