@@ -21,9 +21,9 @@
 {*				<th>Language</th>*}
 {*			{/display_if_inconsistent}*}
 			<th>Availability</th>
-			{display_if_inconsistent array=$relatedRecords key="abridged"}
+			{display_if_set array=$relatedRecords key="abridged"}
 				<th>Abridged</th>
-			{/display_if_inconsistent}
+			{/display_if_set}
 			<th></th>
 		</tr>
 		</thead>
@@ -58,9 +58,9 @@
 						<br>{$relatedRecord.usageRestrictions}
 					{/if}
 				</td>
-				{display_if_inconsistent array=$relatedRecords key="abridged"}
+				{display_if_set array=$relatedRecords key="abridged"}
 					<td>{if $relatedRecord.abridged}Abridged{/if}</td>
-				{/display_if_inconsistent}
+				{/display_if_set}
 				<td>
 					<div class="btn-group btn-group-vertical btn-group-sm">
 						<a href="{$relatedRecord.url}" class="btn btn-sm btn-info">More Info</a>

@@ -733,19 +733,13 @@ function display_if_inconsistent($params, $content, &$smarty, &$repeat){
 		foreach ($array as $arrayValue){
 			if ($iterationNumber == 0){
 				$firstValue = $arrayValue[$key];
-			}else{
-				if ($firstValue != $arrayValue[$key]){
-					$consistent = false;
-					break;
-				}
+			}elseif ($firstValue != $arrayValue[$key]){
+				$consistent = false;
+				break;
 			}
 			$iterationNumber++;
 		}
-		if ($consistent == false){
-			return $content;
-		}else{
-			return "";
-		}
+		return $consistent == false ? $content : '';
 	}
 	return null;
 }
@@ -798,13 +792,10 @@ function display_if_set($params, $content, &$smarty, &$repeat){
 		foreach ($array as $arrayValue){
 			if (isset($arrayValue[$key]) && !empty($arrayValue[$key])){
 				$hasData = true;
+				break;
 			}
 		}
-		if ($hasData){
-			return $content;
-		}else{
-			return "";
-		}
+		return $hasData ? $content : '';
 	}
 	return null;
 }
