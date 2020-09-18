@@ -58,21 +58,7 @@
 			<input type="hidden" name="page" value="{$page}">
 			<input type="hidden" name="patronId" value="{$selectedUser}">
 			<input type="hidden" name="readingHistoryAction" id="readingHistoryAction" value="">
-			<div class="readingHistorySearchTerm col-xs-3">
-				<label for="searchTerm">Search Reading History</label>
-			</div>
-			<div class="readingHistorySearchTerm col-xs-3">
-				<input type="search" name="searchTerm" id="searchTerm" class="form-control" value="{if $searchTerm}{$searchTerm}{/if}">
-			</div>
-			<div class="readingHistorySearchTerm col-xs-6">
-				<select name="searchBy" id="searchBy" class="form-control">
-					<option value="title" {if $searchBy == 'title'}selected{/if}>by Title</option>
-					<option value="author" {if $searchBy == 'author'}selected{/if}>by Author</option>
-				</select>
-				<button class="btn btn-default" type="submit" onclick="return Pika.Account.ReadingHistory.searchReadingHistoryAction()">Search</button>
-			</div>
-		</div>
-		<div class="row">
+
 			<div id="readingListActionsTop" class="col-xs-6">
 				<div class="btn-group btn-group-sm">
 					{if $historyActive == true}
@@ -100,7 +86,24 @@
 			<hr>
 
 			{if $transList}
-
+					<hr>
+				{* Reading history search *}
+				<div class="row readingHistorySearch">
+				<div class="col-xs-3">
+					<label for="searchTerm">Search Reading History</label>
+				</div>
+				<div class="col-xs-6">
+					<input type="search" name="searchTerm" id="searchTerm" class="form-control" value="{if $searchTerm}{$searchTerm}{/if}">
+				</div>
+				<div class="col-xs-3">
+					<select name="searchBy" id="searchBy" class="form-control">
+						<option value="title" {if $searchBy == 'title'}selected{/if}>by Title</option>
+						<option value="author" {if $searchBy == 'author'}selected{/if}>by Author</option>
+					</select>
+					<button class="btn btn-default" type="submit" onclick="return Pika.Account.ReadingHistory.searchReadingHistoryAction()">Search</button>
+				</div>
+				</div>
+					<hr>
 				{* Results Page Options *}
 				<div id="pager" class="col-xs-12">
 					<div class="row">
