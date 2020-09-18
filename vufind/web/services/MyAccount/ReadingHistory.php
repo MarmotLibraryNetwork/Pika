@@ -143,17 +143,6 @@ class ReadingHistory extends MyAccount {
 				}
 				$result = $patron->getReadingHistory($page, $recordsPerPage, $selectedSortOption, $searchTerm, $searchBy); //$searchTerm, $searchBy
 
-//				if($_REQUEST['readingHistoryAction'] == 'searchReadingHistory' && isset($searchTerm)) {
-//					$found = array_filter($result['titles'], function ($k) use ($searchTerm){
-//						return stristr($k['title'], $searchTerm) || stristr($k['author'], $searchTerm);
-//					});
-//					$foundCount = count($found);
-//					if($foundCount > 0) {
-//						$result['numTitles'] = $foundCount;
-//						$result['titles'] = $found;
-//					}
-//				}
-
 				$link = $_SERVER['REQUEST_URI'];
 				if (preg_match('/[&?]page=/', $link)){
 					$link = preg_replace("/page=\\d+/", "page=%d", $link);

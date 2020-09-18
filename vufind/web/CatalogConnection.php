@@ -481,7 +481,6 @@ class CatalogConnection
 					$this->search = true;
 					$this->searchTerm  = trim($searchTerm);
 					$this->searchField = $searchField;
-					//$readingHistoryDB->whereAdd('title like "%'.$searchTerm.'%"'); //'title like "%'.$searchTerm.'%"'
 				}
 				$readingHistoryDB = $this->getReadingHistoryDBObject($patron);
 
