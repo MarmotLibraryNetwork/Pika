@@ -36,7 +36,7 @@ Pika.Account.ReadingHistory = (function(){
 			return false;
 		},
 
-		searchReadingHistoryAction: function() {
+		searchReadingHistoryAction: function() { 
 			$('#readingHistoryAction').val('searchReadingHistory');
 			$('#readingListForm').submit();
 			return false;
