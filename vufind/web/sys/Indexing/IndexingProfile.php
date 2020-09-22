@@ -251,7 +251,8 @@ class IndexingProfile extends DB_DataObject{
 			'itemUrl'                 => array('property' => 'itemUrl', 'type' => 'text', 'label' => 'Item URL', 'maxLength' => 1, 'description' => 'Subfield for a URL specific to the item (For Libraries using the Marmot ILS eContent Standard)'),
 				)),
 
-			'itemStatusSection' => ['property' =>'itemStatusSection', 'type' => 'section', 'label' =>'Item Statuses Settings (ils profile only)', 'hideInLists' => true,
+
+			'itemStatusSection' => ['property' =>'itemStatusSection', 'type' => 'section', 'label' =>'Item Statuses Settings (Sierra ils profiles only)', 'hideInLists' => true,
 			                         'helpLink' => '', 'properties' => [
 					'availableStatuses'      => ['property'    => 'availableStatuses',
 					                             'type'        => 'text',
