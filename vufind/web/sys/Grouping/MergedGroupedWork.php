@@ -211,11 +211,13 @@ class MergedGroupedWork extends CommonGroupingAlterationOperations {
 	}
 
 	function insert(){
+		UserAccount::getLoggedInUser(); // ensure active User info is populated
 		$this->userId = UserAccount::getActiveUserId();
 		return parent::insert();
 	}
 
 	function update($dataObject = false){
+		UserAccount::getLoggedInUser(); // ensure active User info is populated
 		$this->userId = UserAccount::getActiveUserId();
 		return parent::update($dataObject);
 	}
