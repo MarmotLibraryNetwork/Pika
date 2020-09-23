@@ -94,7 +94,7 @@ class GroupedWork extends DB_DataObject {
 			$commandToRun       = "java -jar $recordGroupingPath/record_grouping.jar $siteName singleWork {$this->permanent_id}";
 			$result             = shell_exec($commandToRun);
 			$result             = json_decode($result);
-			if (!empty($result['success'])){
+			if (!empty($result->success)){
 				return true;
 			}
 		}
