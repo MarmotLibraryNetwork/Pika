@@ -105,16 +105,16 @@ class GroupedWork_AJAX extends AJAXHandler {
 			$groupedWork->permanent_id = $id;
 			if ($groupedWork->find(true)){
 				$recordsMarkedForRegrouping = $groupedWork->forceRegrouping();
-				if ($recordsMarkedForRegrouping > 0){
-					return array('success' => true, 'message' => 'Marked ' . $recordsMarkedForRegrouping . ' titles for regrouping.');
+				if ($recordsMarkedForRegrouping){
+					return ['success' => true, 'message' => 'Regrouped the work.'];
 				}else{
-					return array('success' => false, 'message' => 'No titles were marked for regrouping.');
+					return ['success' => false, 'message' => 'Regrouping failed.'];
 				}
 			}else{
-				return array('success' => false, 'message' => 'Unable to mark the title for regrouping. Could not find the title.');
+				return ['success' => false, 'message' => 'Unable to regroup the work. Could not find the work.'];
 			}
 		}else{
-			return array('success' => false, 'message' => 'Unable to mark the title for regrouping. Invalid grouped work Id');
+			return ['success' => false, 'message' => 'Unable to regroup the work. Invalid grouped work Id'];
 		}
 	}
 
