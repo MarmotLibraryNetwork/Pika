@@ -1369,8 +1369,8 @@ class GroupedWorkDriver extends RecordInterface {
 
 	private function getNumRelatedRecords(){
 		if ($this->numRelatedRecords == -1){
-			if ($this->relatedRecords != null){
-				$this->loadRelatedRecords();
+			if ($this->relatedRecords == null){
+				$this->loadRelatedRecords(); // This will ensure the related Record count accounts for records excluded by scoping
 			}
 			$this->numRelatedRecords = count($this->relatedRecords);
 		}
@@ -1468,7 +1468,7 @@ class GroupedWorkDriver extends RecordInterface {
 		$memoryWatcher->logMemory("Finished loading related records");
 
 		// alter the status ranking array to use for comparison here
-		$statusRankings = array();
+		$statusRankings = [];
 		foreach (self::$statusRankings as $key => $value){
 			$key                  = strtolower($key);
 			$statusRankings[$key] = $value;
