@@ -83,9 +83,12 @@
 								{/if}
 
 								</ul>
-								<button value="copyList" id="copyList" class="btn btn-sm btn-default" onclick="return Pika.Lists.copyList({$favList->id})">Copy List</button>
+
 							{/if}
 						</div>
+					{/if}
+					{if $favList->public !=0}
+						<button value="copyList" id="copyList" class="btn btn-sm btn-default" onclick="return Pika.Lists.copyList({$favList->id})">Copy List</button>
 					{/if}
 					<div class="btn-group">
 
