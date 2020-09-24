@@ -51,7 +51,7 @@
 
 
 		{* Do not display Reading History in Masquerade Mode, unless the library has allowed it *}
-	<form id="readingListForm" action="{$fullPath}" class="form-inline">
+	<form id="readingListForm" action="{$fullPath}" class="form-inline" onkeydown="return event.key != 'Enter';">
 
 		{* Reading History Actions *}
 		<div class="row">
