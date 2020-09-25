@@ -112,25 +112,25 @@ public class OverDriveExtractLogEntry {
 	public void setFinished() {
 		this.endTime = new Date();
 	}
-	public void incErrors(){
+	public void incrementErrors(){
 		numErrors++;
 	}
-	public void incAdded(){
+	public void incrementAdded(){
 		numAdded++;
 	}
-	public void incDeleted(){
+	public void incrementDeleted(){
 		numDeleted++;
 	}
-	public void incUpdated(){
+	public void incrementUpdated(){
 		numUpdated++;
 	}
-	public void incSkipped(){
+	public void incrementSkipped(){
 		numSkipped++;
 	}
-	public void incAvailabilityChanges(){
+	public void incrementAvailabilityChanges(){
 		numAvailabilityChanges++;
 	}
-	public void incMetadataChanges(){
+	public void incrementMetadataChanges(){
 		numMetadataChanges++;
 	}
 	public void setNumProducts(int size) {
