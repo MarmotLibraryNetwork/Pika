@@ -85,7 +85,7 @@ class SubjectHeadingCorrection extends DB_DataObject
             $regexes = array();
             while($subjectHeading->fetch())
             {
-                $from = '/' . $subjectHeading->subjectFrom . '(.*)/' ;
+                $from = '/^' . $subjectHeading->subjectFrom . '(.*)/' ;
                 $to = $subjectHeading->subjectTo . '$1';
                 $regexes[$from] = $to;
             }
