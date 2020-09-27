@@ -34,6 +34,7 @@ require_once ROOT_DIR . '/sys/Browse/LibraryBrowseCategory.php';
 require_once ROOT_DIR . '/sys/MaterialsRequest/MaterialsRequestFieldsToDisplay.php';
 require_once ROOT_DIR . '/sys/MaterialsRequest/MaterialsRequestFormats.php';
 require_once ROOT_DIR . '/sys/MaterialsRequest/MaterialsRequestFormFields.php';
+require_once ROOT_DIR . '/sys/Subjects/SubjectHeadingCorrection.php';
 
 class Library extends DB_DataObject {
 
@@ -90,6 +91,9 @@ class Library extends DB_DataObject {
 	public $repeatInOnlineCollection;
 	public $repeatInProspector;
 	public $repeatInWorldCat;
+
+	public $replacementId;
+
 
 	/* Self Registration */
 	public $selfRegistrationFormMessage;
@@ -395,6 +399,9 @@ class Library extends DB_DataObject {
 		unset($combinedResultsStructure['libraryId']);
 		unset($combinedResultsStructure['weight']);
 
+		$subjectCorrectionStructure = SubjectHeadingCorrection::getObjectStructure();
+
+
 		$hooplaSettingsStructure = LibraryHooplaSettings::getObjectStructure();
 		unset($hooplaSettingsStructure['libraryId']);
 
@@ -611,8 +618,9 @@ class Library extends DB_DataObject {
 							),
 						),
 					),
-				)
+                )
 				),
+
 
 				'combinedResultsSection' => array(
 					'property'   => 'combinedResultsSection', 'type' => 'section', 'label' => 'Combined Results', 'hideInLists' => true,
@@ -638,7 +646,26 @@ class Library extends DB_DataObject {
 							'additionalOneToManyActions' => array(),
 						),
 				)),
-			)),
+                    'subjectCorrectionSection' => array('property' => 'subjectCorrectionSection', 'type'=>'section', 'label'=>'Subject Mapping', 'hideInLists' => true, 'properties' => array(
+                        'subjectCorrections' => array(
+                            'property'                  =>'subjectCorrections',
+                            'type'                      =>'oneToMany',
+                            'label'                     =>'Correct or Replace subject headings',
+                            'description'               =>'Word or phrase changes within subject headings',
+                            'helpLink'                  =>'',
+                            'keyThis'                   =>'replacementId',
+                            'keyOther'                  =>'replacementId',
+                            'subObjectType'             =>'SubjectHeadingCorrection',
+                            'structure'                 =>$subjectCorrectionStructure,
+                            'sortable'                  =>false,
+                            'storeDb'                   =>true,
+                            'allowEdit'                 =>true,
+                            'canEdit'                   =>false,
+                            'additionalOneToManyAction' =>array(),
+                        )
+                    )),
+                )),
+
 
 			// Catalog Enrichment //
 			'enrichmentSection' => array('property'=>'enrichmentSection', 'type' => 'section', 'label' =>'Catalog Enrichment', 'hideInLists' => true,
@@ -1340,18 +1367,24 @@ class Library extends DB_DataObject {
 				$this->exploreMoreBar = $this->getOneToManyOptions('ArchiveExploreMoreBar', 'weight');
 			}
 			return $this->exploreMoreBar;
-		}elseif ($name == 'combinedResultSections'){
-			if (!isset($this->combinedResultSections)){
-				$this->combinedResultSections = $this->getOneToManyOptions('LibraryCombinedResultSection', 'weight');
-			}
-			return $this->combinedResultSections;
+		}elseif ($name == 'combinedResultSections') {
+            if (!isset($this->combinedResultSections)) {
+                $this->combinedResultSections = $this->getOneToManyOptions('LibraryCombinedResultSection', 'weight');
+            }
+            return $this->combinedResultSections;
+        }elseif($name == 'subjectCorrections'){
+		    if(!isset($this->subjectCorrections)){
+		        $this->subjectCorrections = $this->getOneToManyOptions('SubjectHeadingCorrection');
+            }
+		    return $this->subjectCorrections;
 		}elseif ($name == 'hooplaSettings'){
 			if (!isset($this->hooplaSettings)){
 				$this->hooplaSettings = $this->getOneToManyOptions('LibraryHooplaSettings');
 			}
 			return $this->hooplaSettings;
-		}elseif ($name == 'patronNameDisplayStyle'){
-			return $this->patronNameDisplayStyle;
+		}elseif ($name == 'patronNameDisplayStyle') {
+            return $this->patronNameDisplayStyle;
+
 		}else{
 			return $this->data[$name];
 		}
@@ -1387,7 +1420,9 @@ class Library extends DB_DataObject {
 		}elseif ($name == 'exploreMoreBar') {
 			$this->exploreMoreBar = $value;
 		}elseif ($name == 'combinedResultSections') {
-			$this->combinedResultSections = $value;
+            $this->combinedResultSections = $value;
+        }elseif( $name == 'subjectCorrections'){
+		    $this->subjectCorrections = $value;
 		}elseif ($name == 'hooplaSettings') {
 			$this->hooplaSettings = $value;
 		}elseif ($name == 'patronNameDisplayStyle'){
@@ -1471,6 +1506,7 @@ class Library extends DB_DataObject {
 
 			$this->saveExploreMoreBar();
 			$this->saveCombinedResultSections();
+			$this->saveSubjectCorrectionSettings();
 			$this->saveHooplaSettings();
 		}
 		if ($this->patronNameDisplayStyleChanged){
@@ -1522,6 +1558,7 @@ class Library extends DB_DataObject {
 			$this->saveMoreDetailsOptions();
 			$this->saveExploreMoreBar();
 			$this->saveCombinedResultSections();
+			$this->saveSubjectCorrectionSettings();
 			$this->saveHooplaSettings();
 		}
 		return $ret;
@@ -1717,6 +1754,17 @@ class Library extends DB_DataObject {
 			unset($this->hooplaSettings);
 		}
 	}
+
+	public function saveSubjectCorrectionSettings(){
+	    if(isset($this->subjectCorrections) && is_array($this->subjectCorrections)){
+	        $this->saveOneToManyOptions($this->subjectCorrections);
+	        unset($this->subjectCorrections);
+        }
+    }
+    public function clearSubjectCorrectionSettings(){
+	    $this->clearOneToManyOptions('SubjectHeadingCorrection');
+	    $this->subjectCorrections = array();
+    }
 
 	/**
 	 * Delete any Hoopla settings there are for this library

@@ -2259,20 +2259,45 @@ class GroupedWorkDriver extends RecordInterface {
 
 		if (!empty($this->fields['lc_subject'])){
 			$lcSubjects = $this->fields['lc_subject'];
-			$subjects   = array_merge($subjects, $this->fields['lc_subject']);
+
+            foreach($lcSubjects as $i => $heading){
+                if(isset($lcSubjects[$i]['heading'][0])){
+                    $lcSubjects[$i] = $this->antiRacist($lcSubjects[$i]);
+                }
+            }
+			$subjects   = array_merge($subjects, $lcSubjects);
 		}
 
 		if (!empty($this->fields['bisac_subject'])){
 			$bisacSubjects = $this->fields['bisac_subject'];
+
+            foreach($bisacSubjects as $i => $heading){
+                if(isset($bisacSubjects[$i]['heading'][0])){
+                    $bisacSubjects[$i] = $this->antiRacist($bisacSubjects[$i]);
+                }
+            }
+
 			$subjects      = array_merge($subjects, $this->fields['bisac_subject']);
 		}
 
 		if (!empty($this->fields['topic_facet'])){
 			$subjects = array_merge($subjects, $this->fields['topic_facet']);
+
+            foreach($subjects as $i => $heading){
+                if(isset($subjects[$i]['heading'][0])){
+                    $subjects[$i] = $this->antiRacist($subjects[$i]);
+                }
+            }
+
 		}
 
 		if (!empty($this->fields['subject_facet'])){
 			$subjects = array_merge($subjects, $this->fields['subject_facet']);
+            foreach($subjects as $i => $heading){
+                if(isset($subjects[$i])){
+                    $subjects[$i] = $this->antiRacist($subjects[$i]);
+                }
+            }
 		}
 
 		// TODO: get local Subjects
@@ -3306,5 +3331,27 @@ class GroupedWorkDriver extends RecordInterface {
 		}
 		return $url;
 	}
+
+    protected function antiRacist ($heading)
+    {
+//        static $regexes = [
+//            '/Alien criminal(.*)/' => 'Noncitizen criminal$1',
+//            '/^Alien detention centers(.*)/' => 'Detention centers$1',
+//            '/^Alien labor(.*)/' => 'Noncitizen labor$1',
+//            '/^Alien property(.*)/' => 'Foreign-owned property$1',
+//            '/^Children of alien laborers(.*)/' => 'Children of noncitizen laborers$1',
+//            '/^Children of illegal aliens(.*)/' => 'Children of undocumented immigrants$1',
+//            '/^Illegal alien children(.*)/' => 'Undocumented immigrant children$1',
+//            '/^Illegal aliens(.*)/' => 'Undocumented immigrants$1',
+//            '/^Women illegal aliens(.*)/' => 'Women undocumented immigrants$1',
+//        ];
+        $subjectCorrection = new SubjectHeadingCorrection();
+        $regexes = $subjectCorrection->getRegexes();
+        foreach ($regexes as $in =>$out)
+        {
+            $heading =  preg_replace($in, $out, $heading);
+        }
+        return $heading;
+    }
 
 }

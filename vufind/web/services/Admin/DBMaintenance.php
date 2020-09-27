@@ -1377,6 +1377,20 @@ class DBMaintenance extends Admin_Admin {
                         implode(",",$this->createCoversFromDirectory()) . ";"
                     )
                 ),
+
+                'add_subject_correction_table' =>array(
+                    'title'                     =>'Add subject correction table',
+                    'description'               =>'Add table to enable subject heading correction/replacement',
+                    'continueOnError'           => false,
+                    'sql'                       => array(
+                        "CREATE TABLE IF NOT EXISTS library_subject_heading_correction (
+                        replacementId INT(10) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+                        libraryId INT(10),
+                        subjectFrom VARCHAR(255),
+                        subjectTo VARCHAR(255)
+                        ) ENGINE=InnoDB DEFAULT CHARSET=utf8;"
+                    )
+                ),
 			)
 		);
 	}
