@@ -72,11 +72,10 @@ class SubjectHeadingCorrection extends DB_DataObject
 
     public function getRegexes()
     {
-        $user = UserAccount::getLoggedInUser();
-        if(UserAccount::userHasRoleFromList(array('libraryAdmin', 'opacAdmin')))
-        {
-            $userLibrary = $user->getHomeLibrary();
-            $libraryId = $userLibrary->libraryId;
+
+        $library = Library::getSearchLibrary();
+
+            $libraryId = $library->libraryId;
 
             $subjectHeading = new SubjectHeadingCorrection();
             $subjectHeading->orderBy('replacementId');
@@ -90,7 +89,7 @@ class SubjectHeadingCorrection extends DB_DataObject
                 $regexes[$from] = $to;
             }
             return $regexes;
-        }
+
     }
 
 }
