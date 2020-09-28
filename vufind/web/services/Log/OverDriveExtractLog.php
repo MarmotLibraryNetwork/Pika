@@ -36,8 +36,8 @@ class OverDriveExtractLog extends Log_Admin {
 		$overdriveProduct->needsUpdate = 1;
 		$overdriveProduct->deleted     = 0;
 		$numOutstandingChanges         = $overdriveProduct->count();
-		if (!empty($numOutstandingChanges)) {
-			$note       = "There are {$numOutstandingChanges} changes to be processed from the OverDrive API.";
+		if (!empty($numOutstandingChanges)){
+			$note       = "There are {$numOutstandingChanges} titles with updates to be processed from the OverDrive API.";
 			$alertLevel = $numOutstandingChanges > 1000 ? 'alert-danger' : 'alert-warning';
 			$alert      = "<div class='alert $alertLevel'>$note</div>";
 			$interface->assign('alert', $alert);
