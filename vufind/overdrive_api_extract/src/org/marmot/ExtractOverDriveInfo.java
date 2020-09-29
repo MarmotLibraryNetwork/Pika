@@ -368,6 +368,8 @@ class ExtractOverDriveInfo {
 			int batchSize = 25;
 			int batchNum  = 1;
 			while (productsToUpdate.size() > 0) {
+				AvailabilityChangesMadeThisRound = 0;
+				AvailabilitiesCheckedThisRound = 0;
 				ArrayList<MetaAvailUpdateData> productsToUpdateBatch = new ArrayList<>();
 				int                            maxIndex              = Math.min(productsToUpdate.size(), batchSize);
 				for (int i = 0; i < maxIndex; i++) {
@@ -410,6 +412,7 @@ class ExtractOverDriveInfo {
 				}
 				if (logger.isDebugEnabled()) {
 					logger.debug("Processed availability and metadata batch " + batchNum + " records " + ((batchNum - 1) * batchSize) + " to " + (batchNum * batchSize));
+					logger.debug(AvailabilitiesCheckedThisRound + " availabilities checked this round. " + AvailabilityChangesMadeThisRound + " availabilities changes made this round.");
 				}
 				batchNum++;
 				results.saveResults();
@@ -473,11 +476,12 @@ class ExtractOverDriveInfo {
 			}
 
 			numProcessed++;
-			if (numProcessed % 100 == 0)
+			if (numProcessed % 100 == 0) {
 				results.saveResults();
 				if (logger.isDebugEnabled()) {
 					logger.debug("Updated database for  " + numProcessed + " products from the API");
 				}
+			}
 		}
 		results.saveResults();
 
@@ -1499,6 +1503,8 @@ class ExtractOverDriveInfo {
 		}
 	}
 
+	int AvailabilityChangesMadeThisRound;
+	int AvailabilitiesCheckedThisRound;
 	private void updateDBAvailabilityForProductV1(long libraryId, MetaAvailUpdateData curProduct, JSONObject availability, long curTime, SharedStats sharedStats) {
 		boolean availabilityChanged = false;
 		try {
@@ -1551,6 +1557,7 @@ class ExtractOverDriveInfo {
 				checkForExistingAvailabilityStmt.setLong(2, libraryId);
 				ResultSet existingAvailabilityRS  = checkForExistingAvailabilityStmt.executeQuery();
 				boolean   hasExistingAvailability = existingAvailabilityRS.next();
+				AvailabilitiesCheckedThisRound++;
 				if(updateAvailability(libraryId, existingAvailabilityRS, hasExistingAvailability, available, copiesOwned, copiesAvailable, numberOfHolds, availabilityType, curProduct.databaseId)) {
 					availabilityChanged = true;
 				}
@@ -1608,6 +1615,7 @@ class ExtractOverDriveInfo {
 				updateAvailabilityStmt.setLong(6, existingId);
 				updateAvailabilityStmt.executeUpdate();
 				availabilityChangesTracking(libraryId);
+				AvailabilityChangesMadeThisRound++;
 				return true;
 			}
 		} else {
@@ -1620,6 +1628,7 @@ class ExtractOverDriveInfo {
 			addAvailabilityStmt.setString(7, availabilityType);
 			addAvailabilityStmt.executeUpdate();
 			availabilityChangesTracking(libraryId);
+			AvailabilityChangesMadeThisRound++;
 			return true;
 		}
 		return false;
