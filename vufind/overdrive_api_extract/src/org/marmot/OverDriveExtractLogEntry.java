@@ -24,25 +24,25 @@ import java.util.Date;
 import org.apache.log4j.Logger;
 
 public class OverDriveExtractLogEntry {
-	private Long logEntryId = null;
-	private Date startTime;
-	private Date endTime;
-	private ArrayList<String> notes = new ArrayList<String>();
-	private int numProducts = 0;
-	private int numErrors = 0;
-	private int numAdded = 0;
-	private int numDeleted = 0;
-	private int numUpdated = 0;
-	private int numSkipped = 0;
-	private int numAvailabilityChanges = 0;
-	private int numMetadataChanges = 0;
-	private Logger logger;
+	private Long              logEntryId             = null;
+	private Date              startTime;
+	private Date              endTime;
+	private ArrayList<String> notes                  = new ArrayList<>();
+	private int               numProducts            = 0;
+	private int               numErrors              = 0;
+	private int               numAdded               = 0;
+	private int               numDeleted             = 0;
+	private int               numUpdated             = 0;
+	private int               numSkipped             = 0;
+	private int               numAvailabilityChanges = 0;
+	private int               numMetadataChanges     = 0;
+	private Logger            logger;
 	
 	public OverDriveExtractLogEntry(Connection econtentConn, Logger logger){
 		this.logger = logger;
 		this.startTime = new Date();
 		try {
-			insertLogEntry = econtentConn.prepareStatement("INSERT into overdrive_extract_log (startTime) VALUES (?)", PreparedStatement.RETURN_GENERATED_KEYS);
+			insertLogEntry = econtentConn.prepareStatement("INSERT INTO overdrive_extract_log (startTime) VALUES (?)", PreparedStatement.RETURN_GENERATED_KEYS);
 			updateLogEntry = econtentConn.prepareStatement("UPDATE overdrive_extract_log SET lastUpdate = ?, endTime = ?, notes = ?, numProducts = ?, numErrors = ?, numAdded = ?, numUpdated = ?, numSkipped = ?, numDeleted = ?, numAvailabilityChanges = ?, numMetadataChanges = ? WHERE id = ?", PreparedStatement.RETURN_GENERATED_KEYS);
 		} catch (SQLException e) {
 			logger.error("Error creating prepared statements to update log", e);
@@ -59,7 +59,7 @@ public class OverDriveExtractLogEntry {
 			cleanedNote = cleanedNote.replaceAll("<pre>", "<code>");
 			cleanedNote = cleanedNote.replaceAll("</pre>", "</code>");
 			//Replace multiple line breaks
-			cleanedNote = cleanedNote.replaceAll("(?:<br?>\\s*)+", "<br/>");
+			cleanedNote = cleanedNote.replaceAll("(?:<br?>\\s*)+", "<br>");
 			cleanedNote = cleanedNote.replaceAll("<meta.*?>", "");
 			cleanedNote = cleanedNote.replaceAll("<title>.*?</title>", "");
 			notesText.append("<li>").append(cleanedNote).append("</li>");

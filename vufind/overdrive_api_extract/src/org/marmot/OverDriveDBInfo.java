@@ -14,20 +14,24 @@
 
 package org.marmot;
 
+/*
+*  Information about an entry in overdrive_api_products table
+* */
+
 public class OverDriveDBInfo {
-	private long dbId;
-	private long crossRefId;
-	private String mediaType;
-	private String title;
-	private String subtitle;
-	private String series;
-	private String primaryCreatorRole;
-	private String primaryCreatorName;
-	private String cover;
-	private long lastMetadataCheck;
-	private long lastMetadataChange;
-	private long lastAvailabilityCheck;
-	private long lastAvailabilityChange;
+	private long    dbId;
+	private long    crossRefId;
+	private String  mediaType;
+	private String  title;
+	private String  subtitle;
+	private String  series;
+	private String  primaryCreatorRole;
+	private String  primaryCreatorName;
+	private String  cover;
+	private long    lastMetadataCheck;
+	private long    lastMetadataChange;
+	private long    lastAvailabilityCheck;
+	private long    lastAvailabilityChange;
 	private boolean deleted;
 	private boolean hasRawData;
 
