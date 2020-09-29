@@ -138,10 +138,12 @@ public class ExtractOverDriveInfoMain {
 		logEntry.setFinished();
 		logEntry.addNote("Finished OverDrive extraction");
 		logEntry.saveResults();
-		logger.info("Finished OverDrive extraction");
-		Date endTime     = new Date();
-		long elapsedTime = (endTime.getTime() - currentTime.getTime()) / 1000;
-		logger.info("Elapsed time " + String.format("%f2", ((float) elapsedTime / 60f)) + " minutes");
+		if (logger.isInfoEnabled()) {
+			logger.info("Finished OverDrive extraction");
+			Date endTime     = new Date();
+			long elapsedTime = (endTime.getTime() - currentTime.getTime()) / 1000;
+			logger.info("Elapsed time " + String.format("%f2", ((float) elapsedTime / 60f)) + " minutes");
+		}
 	}
 
 }
