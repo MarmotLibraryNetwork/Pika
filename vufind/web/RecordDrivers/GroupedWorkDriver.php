@@ -3334,17 +3334,7 @@ class GroupedWorkDriver extends RecordInterface {
 
     protected function antiRacist ($heading)
     {
-//        static $regexes = [
-//            '/Alien criminal(.*)/' => 'Noncitizen criminal$1',
-//            '/^Alien detention centers(.*)/' => 'Detention centers$1',
-//            '/^Alien labor(.*)/' => 'Noncitizen labor$1',
-//            '/^Alien property(.*)/' => 'Foreign-owned property$1',
-//            '/^Children of alien laborers(.*)/' => 'Children of noncitizen laborers$1',
-//            '/^Children of illegal aliens(.*)/' => 'Children of undocumented immigrants$1',
-//            '/^Illegal alien children(.*)/' => 'Undocumented immigrant children$1',
-//            '/^Illegal aliens(.*)/' => 'Undocumented immigrants$1',
-//            '/^Women illegal aliens(.*)/' => 'Women undocumented immigrants$1',
-//        ];
+
         $subjectCorrection = new SubjectHeadingCorrection();
         $regexes = $subjectCorrection->getRegexes();
         foreach ($regexes as $in =>$out)

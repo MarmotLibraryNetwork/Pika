@@ -75,21 +75,20 @@ class SubjectHeadingCorrection extends DB_DataObject
 
         $library = Library::getSearchLibrary();
 
-            $libraryId = $library->libraryId;
+        $libraryId = $library->libraryId;
 
-            $subjectHeading = new SubjectHeadingCorrection();
-            $subjectHeading->orderBy('replacementId');
-            $subjectHeading->libraryId = $libraryId;
-            $subjectHeading->find();
-            $regexes = array();
-            while($subjectHeading->fetch())
-            {
-                $from = '/^' . $subjectHeading->subjectFrom . '(.*)/' ;
-                $to = $subjectHeading->subjectTo . '$1';
-                $regexes[$from] = $to;
-            }
-            return $regexes;
-
+        $subjectHeading = new SubjectHeadingCorrection();
+        $subjectHeading->orderBy('replacementId');
+        $subjectHeading->libraryId = $libraryId;
+        $subjectHeading->find();
+        $regexes = array();
+        while($subjectHeading->fetch())
+        {
+            $from = '/^' . $subjectHeading->subjectFrom . '(.*)/' ;
+            $to = $subjectHeading->subjectTo . '$1';
+            $regexes[$from] = $to;
+        }
+        return $regexes;
     }
 
 }
