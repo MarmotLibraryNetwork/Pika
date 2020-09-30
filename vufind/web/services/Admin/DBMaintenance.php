@@ -1377,8 +1377,18 @@ class DBMaintenance extends Admin_Admin {
                         implode(",",$this->createCoversFromDirectory()) . ";"
                     )
                 ),
-			)
-		);
+				'update-overdrive-logs-2020.07' => [
+					'title'           => 'Add column to overdrive logs',
+					'description'     => '[THIS NEEDS the econtent db to named econtent]',
+					'continueOnError' => true,
+					'sql'             => [
+						'ALTER TABLE `econtent`.`overdrive_extract_log` ENGINE = InnoDB ,
+								ADD COLUMN `numTitlesProcessed` INT UNSIGNED NULL DEFAULT NULL AFTER `numMetadataChanges`;',
+						'ALTER TABLE `econtent`.`overdrive_api_products` ENGINE = InnoDB ;',
+					]
+				],
+
+			)); // End of main array
 	}
 
 	private function createDefaultIpRanges(){
