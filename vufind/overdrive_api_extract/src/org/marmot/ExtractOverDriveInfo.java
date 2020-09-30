@@ -417,6 +417,7 @@ class ExtractOverDriveInfo {
 				for (MetaAvailUpdateData productToUpdate : productsToUpdateBatch) {
 					if (!productToUpdate.hadAvailabilityErrors && !productToUpdate.hadMetadataErrors) {
 
+						results.incrementTitlesProcessed();
 						int numChanges = setNeedsUpdated(productToUpdate.overDriveId, false);
 						if (numChanges == 0) {
 							logger.warn("Did not update that " + productToUpdate.overDriveId + " no longer needs update");

@@ -6,7 +6,7 @@
 				<th></th>
 				<th colspan="4">Timing</th>
 				<th colspan="6">Collection Updates</th>
-				<th colspan="2">Title Updates</th>
+				<th colspan="3">Title Updates</th>
 				<th></th>
 			</tr>
 			<tr>
@@ -16,11 +16,12 @@
 				<th>Finished</th>
 				<th>Elapsed</th>
 				<th>Num Products</th>
+				<th>Num Updated</th>
+				<th>Num Skipped</th>
 				<th>Num Errors</th>
 				<th>Num Added</th>
 				<th>Num Deleted</th>
-				<th>Num Updated</th>
-				<th>Num Skipped</th>
+				<th>Num Titles Processed</th>
 				<th>Num Availability Changes</th>
 				<th>Num Metadata Changes</th>
 				<th>Notes</th>
@@ -35,11 +36,12 @@
 					<td>{$logEntry->endTime|date_format:"%D %T"}</td>
 					<td>{$logEntry->getElapsedTime()}</td>
 					<td>{$logEntry->numProducts}</td>
+					<td>{$logEntry->numUpdated}</td>
+					<td>{$logEntry->numSkipped}</td>
 					<td>{$logEntry->numErrors}</td>
 					<td>{$logEntry->numAdded}</td>
 					<td>{$logEntry->numDeleted}</td>
-					<td>{$logEntry->numUpdated}</td>
-					<td>{$logEntry->numSkipped}</td>
+					<td>{$logEntry->numTitlesProcessed}</td>
 					<td>{$logEntry->numAvailabilityChanges}</td>
 					<td>{$logEntry->numMetadataChanges}</td>
 					<td><a href="#" onclick="return Pika.Log.showNotes('{$logType}', '{$logEntry->id}');">Show Notes</a></td>
