@@ -23,9 +23,6 @@ import java.util.Date;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
-import org.ini4j.Ini;
-import org.ini4j.InvalidFileFormatException;
-import org.ini4j.Profile.Section;
 
 import org.pika.*;
 
@@ -51,9 +48,11 @@ public class ExtractOverDriveInfoMain {
 			String firstArg = args[0].replaceAll("\\s", "");
 			if (firstArg.matches("^fullReload(=true|1)?$")) {
 				doFullReload = true;
-			} else if (firstArg.equals("singleWork")) {
-				//Process a specific work
-				//Prompt for the work to process
+
+			}else if (firstArg.equals("singleWork")){
+				//Process a specific overdrive title
+
+				//Prompt for the overdrive Id to process
 				System.out.print("Enter the Overdrive ID of the record to update from OverDrive: ");
 
 				//  open up standard input
@@ -81,17 +80,19 @@ public class ExtractOverDriveInfoMain {
 		logger = Logger.getLogger(ExtractOverDriveInfoMain.class);
 		logger.info(currentTime.toString() + ": Starting OverDrive Extract");
 
-		// Setup the MySQL driver
-		try {
-			// The newInstance() call is a work around for some
-			// broken Java implementations
-			Class.forName("com.mysql.jdbc.Driver").newInstance();
-
-			logger.debug("Loaded driver for MySQL");
-		} catch (Exception e) {
-			logger.info("Could not load driver for MySQL, exiting.", e);
-			return;
-		}
+//		// Setup the MySQL driver
+//		try {
+//			// The newInstance() call is a work around for some
+//			// broken Java implementations
+//			Class.forName("com.mysql.jdbc.Driver").newInstance();
+//
+//			if (logger.isDebugEnabled()) {
+//				logger.debug("Loaded driver for MySQL");
+//			}
+//		} catch (Exception e) {
+//			logger.error("Could not load driver for MySQL, exiting.", e);
+//			return;
+//		}
 		// Read the base INI file to get information about the server (current directory/cron/config.ini)
 		PikaConfigIni.loadConfigFile("config.ini", serverName, logger);
 
