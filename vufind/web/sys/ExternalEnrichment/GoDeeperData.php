@@ -253,28 +253,28 @@ class GoDeeperData{
 		global $configArray;
 		/** @var Memcache $memCache */
 		global $memCache;
-		$key = "syndetics_summary_{$isbn}_{$upc}";
+		$key         = "syndetics_summary_{$isbn}_{$upc}";
 		$summaryData = $memCache->get($key);
 
 		if (!$summaryData || isset($_REQUEST['reload'])){
-			try{
+			try {
 				$clientKey = $configArray['Syndetics']['key'];
 				//Load the index page from syndetics
 				$requestUrl = "http://syndetics.com/index.aspx?isbn=$isbn/SUMMARY.XML&client=$clientKey&type=xw10&upc=$upc";
 
 				//Get the XML from the service
-				$ctx = stream_context_create(array(
-						  'http' => array(
-						  'timeout' => 2
-				)
-				));
+				$ctx = stream_context_create([
+					'http' => [
+						'timeout' => 2
+					]
+				]);
 
 				$response = @file_get_contents($requestUrl, 0, $ctx);
 				if (!preg_match('/Error in Query Selection|The page you are looking for could not be found/', $response)){
 					//Parse the XML
 					$data = new SimpleXMLElement($response);
 
-					$summaryData = array();
+					$summaryData = [];
 					if (isset($data)){
 						if (isset($data->VarFlds->VarDFlds->Notes->Fld520->a)){
 							$summaryData['summary'] = (string)$data->VarFlds->VarDFlds->Notes->Fld520->a;
@@ -289,11 +289,11 @@ class GoDeeperData{
 						$summaryData['summary'] = $avSummary['summary'];
 					}
 				}
-			}catch (Exception $e) {
+			} catch (Exception $e){
 				global $logger;
 				$logger->log("Error fetching data from Syndetics $e", PEAR_LOG_ERR);
 				$logger->log("Request URL was $requestUrl", PEAR_LOG_ERR);
-				$summaryData = array();
+				$summaryData = [];
 			}
 			if ($summaryData == false){
 				$memCache->set($key, 'no_summary', 0, $configArray['Caching']['syndetics_summary']);
@@ -302,7 +302,7 @@ class GoDeeperData{
 			}
 		}
 		if ($summaryData == 'no_summary'){
-			return array();
+			return [];
 		}else{
 			return $summaryData;
 		}

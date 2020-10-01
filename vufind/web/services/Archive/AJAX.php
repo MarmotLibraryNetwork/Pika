@@ -1147,11 +1147,11 @@ class Archive_AJAX extends AJAXHandler {
 	}
 
 	public function clearCache(){
-		if (!isset($_REQUEST['id'])){
-			return array(
+		if (empty($_REQUEST['id'])){
+			return [
 				'success' => false,
 				'message' => 'You must supply the id to clear cached data for.',
-			);
+			];
 		}
 		$id = $_REQUEST['id'];
 
@@ -1168,11 +1168,11 @@ class Archive_AJAX extends AJAXHandler {
 				$mainCacheCleared = true;
 
 			}else{
-				$cacheMessage = 'Could not delete cached data.<br/>';
+				$cacheMessage = 'Could not delete cached data.<br>';
 			}
 		}else{
 			$mainCacheCleared = true;
-			$cacheMessage     = 'Cached data does not exist for that id.<br/>';
+			$cacheMessage     = 'Cached data does not exist for that id.<br>';
 		}
 
 		$samePikaCleared = false;
@@ -1191,9 +1191,9 @@ class Archive_AJAX extends AJAXHandler {
 			$cacheMessage .= 'Data not cached for same pika link';
 		}
 
-		return array(
+		return [
 			'success' => $mainCacheCleared || $samePikaCleared,
 			'message' => $cacheMessage,
-		);
+		];
 	}
 }

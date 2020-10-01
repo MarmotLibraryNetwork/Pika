@@ -21,22 +21,22 @@ require_once ROOT_DIR . '/AJAXHandler.php';
 
 class SearchAPI extends AJAXHandler {
 
-	protected $methodsThatRespondWithHTML = array(
+	protected $methodsThatRespondWithHTML = [
 		'getSearchBar',
 		'getListWidget',
-	);
+	];
 
-	protected $methodsThatRespondWithJSONResultWrapper = array(
+	protected $methodsThatRespondWithJSONResultWrapper = [
 		'getTopSearches',
 		'getRecordIdForTitle',
 		'getRecordIdForItemBarcode',
 		'getTitleInfoForISBN',
 		'search',
-	);
+	];
 
-	protected $methodsThatRespondWithJSONUnstructured = array(
+	protected $methodsThatRespondWithJSONUnstructured = [
 		'getIndexStatus',
-	);
+	];
 
 	// The time intervals in seconds beyond which we consider the status as not current
 	const FULL_INDEX_INTERVAL_WARN            = 86400;  // 24 Hours (in seconds)
@@ -51,8 +51,8 @@ class SearchAPI extends AJAXHandler {
 	const SOLR_RESTART_INTERVAL_CRITICAL      = 129600; // 36 Hours (in seconds)
 	const OVERDRIVE_DELETED_ITEMS_WARN        = 300;
 	const OVERDRIVE_DELETED_ITEMS_CRITICAL    = 1000;
-	const OVERDRIVE_UNPROCESSED_ITEMS_WARN        = 5000;
-	const OVERDRIVE_UNPROCESSED_ITEMS_CRITICAL    = 10000;
+	const OVERDRIVE_UNPROCESSED_ITEMS_WARN    = 5000;
+	const OVERDRIVE_UNPROCESSED_ITEMS_CRITICAL= 10000;
 	const SIERRA_MAX_REMAINING_ITEMS_WARN     = 5000;
 	const SIERRA_MAX_REMAINING_ITEMS_CRITICAL = 20000;
 
@@ -133,9 +133,9 @@ class SearchAPI extends AJAXHandler {
 					// Format should be hh:mm-hh:mm;hh:mm-hh:mm (some spacing tolerated) (24 hour format; Intervals can't cross 24:00/00:00)
 					$intervals = explode(';', trim($partialIndexPauseIntervals->value));
 					foreach ($intervals as $interval){
-						list($start, $stop) = explode('-', trim($interval));
-						list($startHour, $startMin) = explode(':', trim($start));
-						list($stopHour, $stopMin) = explode(':', trim($stop));
+						[$start, $stop] = explode('-', trim($interval));
+						[$startHour, $startMin] = explode(':', trim($start));
+						[$stopHour, $stopMin] = explode(':', trim($stop));
 
 						if (is_numeric($startHour) && is_numeric($startMin) && is_numeric($stopHour) && is_numeric($startMin)){
 							$startTimeStamp = mktime($startHour, $startMin, 0);
@@ -210,10 +210,10 @@ class SearchAPI extends AJAXHandler {
 		if ($configArray['Index']['engine'] == 'Solr'){
 			$xml = @file_get_contents($configArray['Index']['url'] . '/admin/cores');
 			if ($xml){
-				$options = array(
+				$options = [
 					'parseAttributes' => 'true',
 					'keyAttribute'    => 'name',
-				);
+				];
 				$unxml   = new XML_Unserializer($options);
 				$unxml->unserialize($xml);
 				$data = $unxml->getUnserializedData();
@@ -358,26 +358,26 @@ class SearchAPI extends AJAXHandler {
 		if (isset($_REQUEST['prtg'])){
 			// Reformat $result to the structure expected by PRTG
 
-			$prtgStatusValues = array(
+			$prtgStatusValues = [
 				self::STATUS_OK       => 0,
 				self::STATUS_WARN     => 1,
 				self::STATUS_CRITICAL => 2,
-			);
+			];
 
-			$result = array(
-				'prtg' => array(
-					'result' => array(
-						0 => array(
+			$result = [
+				'prtg' => [
+					'result' => [
+						0 => [
 							'channel'         => 'Pika Status',
 							'value'           => $prtgStatusValues[$result['status']],
 							'limitmode'       => 1,
 							'limitmaxwarning' => $prtgStatusValues[self::STATUS_OK],
 							'limitmaxerror'   => $prtgStatusValues[self::STATUS_WARN],
-						),
-					),
+						],
+					],
 					'text'   => $result['message'],
-				),
-			);
+				],
+			];
 		}
 
 		return $result;
@@ -396,7 +396,7 @@ class SearchAPI extends AJAXHandler {
 		$timer->logTime('Include search engine');
 
 		//setup the results array.
-		$jsonResults = array();
+		$jsonResults = [];
 
 		// Initialise from the current search globals
 		$searchObject = SearchObjectFactory::initSearchObject();
@@ -592,10 +592,10 @@ class SearchAPI extends AJAXHandler {
 	 */
 	function getTopSearches(){
 		require_once ROOT_DIR . '/sys/Search/SearchStatNew.php';
-		$numSearchesToReturn = isset($_REQUEST['numResults']) ? $_REQUEST['numResults'] : 20;
+		$numSearchesToReturn = isset($_REQUEST['numResults']) && ctype_digit($_REQUEST['numResults']) ? $_REQUEST['numResults'] : 20;
 		$searchStats         = new SearchStatNew();
 		$searchStats->query("SELECT phrase, numSearches AS numTotalSearches FROM `search_stats_new` WHERE phrase != '' ORDER BY numTotalSearches DESC LIMIT " . $numSearchesToReturn);
-		$searches = array();
+		$searches = [];
 		while ($searchStats->fetch()){
 			$searches[] = $searchStats->phrase;
 		}

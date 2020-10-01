@@ -282,22 +282,21 @@ class ExternalReviews {
 			$key = $configArray['Contentcafe']['id'];
 		}
 
-		$url = isset($configArray['Contentcafe']['url']) ? $configArray['Contentcafe']['url'] : 'http://contentcafe2.btol.com';
+		$url = $configArray['Contentcafe']['url'] ?? 'https://contentcafe2.btol.com';
 		$url .= '/ContentCafe/ContentCafe.asmx?WSDL';
 
-		$SOAP_options = array(
-//				'trace' => 1, // turns on debugging features
-				'features' => SOAP_SINGLE_ELEMENT_ARRAYS, // sets how the soap responses will be handled
-				'soap_version' => SOAP_1_2
-		);
+		$SOAP_options = [
+//			'trace'        => 1, // turns on debugging features
+			'features'     => SOAP_SINGLE_ELEMENT_ARRAYS, // sets how the soap responses will be handled
+			'soap_version' => SOAP_1_2
+		];
 		$soapClient   = new SoapClient($url, $SOAP_options);
-
-		$params = array(
-				'userID'   => $key,
-				'password' => $pw,
-				'key'      => $this->isbn,
-				'content'  => 'ReviewDetail',
-		);
+		$params       = [
+			'userID'   => $key,
+			'password' => $pw,
+			'key'      => $this->isbn,
+			'content'  => 'ReviewDetail',
+		];
 
 		try{
 			$response = $soapClient->Single($params);

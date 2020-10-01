@@ -366,7 +366,7 @@ abstract class RecordInterface {
 
 		$useDefault = true;
 		if ($library && count($library->moreDetailsOptions) > 0){
-			$moreDetailsFilters = array();
+			$moreDetailsFilters = [];
 			$useDefault         = false;
 			/** @var LibraryMoreDetails $option */
 			foreach ($library->moreDetailsOptions as $option){
@@ -374,7 +374,7 @@ abstract class RecordInterface {
 			}
 		}
 		if ($activeLocation && count($activeLocation->moreDetailsOptions) > 0){
-			$moreDetailsFilters = array();
+			$moreDetailsFilters = [];
 			$useDefault         = false;
 			/** @var LocationMoreDetails $option */
 			foreach ($activeLocation->moreDetailsOptions as $option){
@@ -387,7 +387,7 @@ abstract class RecordInterface {
 
 		}
 
-		$filteredMoreDetailsOptions = array();
+		$filteredMoreDetailsOptions = [];
 		foreach ($moreDetailsFilters as $option => $initialState){
 			if (array_key_exists($option, $allOptions)){
 				$detailOptions                       = $allOptions[$option];

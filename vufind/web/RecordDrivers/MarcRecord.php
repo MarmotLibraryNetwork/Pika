@@ -1455,21 +1455,20 @@ class MarcRecord extends IndexRecord
 	 * @access  public
 	 * @return  array
 	 */
-	public function getPublicationDates()
-	{
-		$publicationDates = array();
-		if ($this->isValid()) {
-			$publicationDates = $this->getFieldArray('260', array('c'));
-			$marcRecord = $this->getMarcRecord();
-			if ($marcRecord != false) {
+	public function getPublicationDates(){
+		$publicationDates = [];
+		if ($this->isValid()){
+			$publicationDates = $this->getFieldArray('260', ['c']);
+			$marcRecord       = $this->getMarcRecord();
+			if ($marcRecord != false){
 				/** @var File_MARC_Data_Field[] $rdaPublisherFields */
 				$rdaPublisherFields = $marcRecord->getFields('264');
-				foreach ($rdaPublisherFields as $rdaPublisherField) {
-					if ($rdaPublisherField->getIndicator(2) == 1 && $rdaPublisherField->getSubfield('c') != null) {
+				foreach ($rdaPublisherFields as $rdaPublisherField){
+					if ($rdaPublisherField->getIndicator(2) == 1 && $rdaPublisherField->getSubfield('c') != null){
 						$publicationDates[] = $rdaPublisherField->getSubfield('c')->getData();
 					}
 				}
-				foreach ($publicationDates as $key => $publicationDate) {
+				foreach ($publicationDates as $key => $publicationDate){
 					$publicationDates[$key] = preg_replace('/[.,]$/', '', $publicationDate);
 				}
 			}
@@ -2357,7 +2356,7 @@ class MarcRecord extends IndexRecord
 			$opacMessageField = $configArray['Catalog']['OpacMessageField'];
 			// Include MarcTag and subfields with a colon to separate for easylook up: example '945:i:r'
 			// of form ItemTagNumber:ItemIdSubfield:OpacMessageSubfield
-			list($itemTag, $itemIdSubfield, $opacMessageSubfield) = explode(':', $opacMessageField, 3);
+			[$itemTag, $itemIdSubfield, $opacMessageSubfield] = explode(':', $opacMessageField, 3);
 			if ($this->getMarcRecord() && $this->isValid()){
 				$itemRecords = $this->marcRecord->getFields($itemTag);
 				foreach ($itemRecords as $itemRecord){

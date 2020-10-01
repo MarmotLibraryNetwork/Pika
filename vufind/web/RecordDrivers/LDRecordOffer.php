@@ -61,7 +61,7 @@ class LDRecordOffer {
 	}
 
 	public function getWorkType() {
-		return $this->relatedRecord['schemaDotOrgType'];
+		return $this->relatedRecord['schemaDotOrgType'] ?? null;
 	}
 
 	function getOfferLinkUrl() {

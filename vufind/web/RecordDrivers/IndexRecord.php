@@ -665,13 +665,14 @@ class IndexRecord extends RecordInterface
 	 * journal).  Use getPublicationDates for publication dates of particular
 	 * monographic items.
 	 *
+	 * The indexing of 362a Dates of Publication and/or Sequential Designation
+	 *
 	 * @access  protected
 	 * @return  array
 	 */
-	protected function getDateSpan()
-	{
-		return isset($this->fields['dateSpan']) ?
-		$this->fields['dateSpan'] : array();
+//	TODO: no references to this function
+	protected function getDateSpan(){
+		return $this->fields['dateSpan'] ?? [];
 	}
 
 	/**
@@ -680,10 +681,8 @@ class IndexRecord extends RecordInterface
 	 * @access  protected
 	 * @return  string
 	 */
-	protected function getEdition()
-	{
-		return isset($this->fields['edition']) ?
-		$this->fields['edition'] : '';
+	protected function getEdition(){
+		return 	$this->fields['edition'] ?? '';
 	}
 
 	/**
@@ -692,9 +691,8 @@ class IndexRecord extends RecordInterface
 	 * @access  public
 	 * @return  array
 	 */
-	public function getFormats()
-	{
-		return isset($this->fields['format']) ? $this->fields['format'] : array();
+	public function getFormats(){
+		return isset($this->fields['format']) ? $this->fields['format'] : [];
 	}
 
 	public function getPrimaryFormat(){
@@ -708,7 +706,7 @@ class IndexRecord extends RecordInterface
 	 * @return  array
 	 */
 	public function getFormatCategory(){
-		return isset($this->fields['format_category']) ? $this->fields['format_category'] : [];
+		return $this->fields['format_category'] ?? [];
 	}
 
 	/**
@@ -942,10 +940,9 @@ class IndexRecord extends RecordInterface
 	 * @access  protected
 	 * @return  array
 	 */
-	protected function getPlacesOfPublication()
-	{
+	protected function getPlacesOfPublication(){
 		// Not currently stored in the Solr index
-		return array();
+		return [];
 	}
 
 	/**
@@ -966,9 +963,8 @@ class IndexRecord extends RecordInterface
 	 * @access  protected
 	 * @return  string
 	 */
-	protected function getPrimaryAuthor()
-	{
-		return isset($this->fields['author']) ? $this->fields['author'] : '';
+	protected function getPrimaryAuthor(){
+		return $this->fields['author'] ?? '';
 	}
 
 	/**
@@ -977,9 +973,8 @@ class IndexRecord extends RecordInterface
 	 * @access  public
 	 * @return  array
 	 */
-	public function getPublicationDates()
-	{
-		return isset($this->fields['publishDate']) ? $this->fields['publishDate'] : array();
+	public function getPublicationDates(){
+		return $this->fields['publishDate'] ?? [];
 	}
 
 	/**
