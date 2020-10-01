@@ -18,9 +18,9 @@
 				<th>Num Products</th>
 				<th>Num Updated</th>
 				<th>Num Skipped</th>
-				<th>Num Errors</th>
 				<th>Num Added</th>
 				<th>Num Deleted</th>
+				<th>Num Errors</th>
 				<th>Num Titles Processed</th>
 				<th>Num Availability Changes</th>
 				<th>Num Metadata Changes</th>
@@ -38,9 +38,9 @@
 					<td>{$logEntry->numProducts}</td>
 					<td>{$logEntry->numUpdated}</td>
 					<td>{$logEntry->numSkipped}</td>
-					<td>{$logEntry->numErrors}</td>
 					<td>{$logEntry->numAdded}</td>
 					<td>{$logEntry->numDeleted}</td>
+					<td>{$logEntry->numErrors}</td>
 					<td>{$logEntry->numTitlesProcessed}</td>
 					<td>{$logEntry->numAvailabilityChanges}</td>
 					<td>{$logEntry->numMetadataChanges}</td>
