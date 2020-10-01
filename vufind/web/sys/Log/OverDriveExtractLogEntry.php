@@ -29,6 +29,7 @@ class OverDriveExtractLogEntry extends LogEntry {
 	public $numSkipped;
 	public $numAvailabilityChanges;
 	public $numMetadataChanges;
+	public $numTitlesProcessed;
 
 
 }

@@ -18,7 +18,7 @@ import java.util.HashSet;
 
 public class OverDriveRecordInfo {
 	//Data from base title call
-	private String id;
+	private String id; // The overdrive Id
 	private long crossRefId;
 	private String mediaType;
 	private String title;
@@ -26,9 +26,9 @@ public class OverDriveRecordInfo {
 	private String series;
 	private String primaryCreatorRole;
 	private String primaryCreatorName;
-	private HashSet<String> formats = new HashSet<String>();
+	private HashSet<String> formats = new HashSet<>();
 	private String coverImage;
-	private HashSet<Long> collections = new HashSet<Long>();
+	private HashSet<Long> collections = new HashSet<>(); // libraryIds for the collections that own this title
 	//Data from metadata call
 	private String rawData;
 
@@ -62,7 +62,7 @@ public class OverDriveRecordInfo {
 		return title;
 	}
 	public void setTitle(String title) {
-		this.title = title.replaceAll("&#174;", "�");
+		this.title = title.replaceAll("&#174;", "®");
 	}
 	public String getSeries() {
 		return series;

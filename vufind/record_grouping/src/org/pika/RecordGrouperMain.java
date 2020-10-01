@@ -19,6 +19,7 @@ package org.pika;
 import au.com.bytecode.opencsv.CSVWriter;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.marc4j.MarcException;
 import org.marc4j.MarcPermissiveStreamReader;
@@ -74,7 +75,7 @@ public class RecordGrouperMain {
 					"unique work id.  \n" +
 					"\n" +
 					"Additional information about the grouping process can be found at: \n" +
-					"TBD\n" + //TODO: marmot page
+					"https://marmot.org/content/pika-grouping-overview\n" +
 					"\n" +
 					"This application can be used in several distinct ways based on the command line parameters\n" +
 					"1) Generate a work id for an individual title/author/format\n" +
@@ -193,7 +194,9 @@ public class RecordGrouperMain {
 				} else {
 					groupedWorkId = getInputFromCommandLine("Enter the grouped work permanent id");
 				}
-				processSingleWork(groupedWorkId);
+				boolean success = processSingleWork(groupedWorkId);
+				String response = "{\"success\":" + (success ? "1" : "0") + "}";
+				System.out.print(response);
 				break;
 			case "processMerges":
 				processFreshMerges();
@@ -220,7 +223,8 @@ public class RecordGrouperMain {
 		}
 	}
 
-	private static void processSingleWork(String groupedWorkId) {
+	private static boolean processSingleWork(String groupedWorkId) {
+		boolean success = true;
 		String sql = "SELECT type, identifier FROM grouped_work_primary_identifiers \n" +
 				"INNER JOIN grouped_work ON (grouped_work_primary_identifiers.grouped_work_id = grouped_work.id) \n" +
 				"WHERE permanent_id = '" + groupedWorkId + "'";
@@ -231,14 +235,18 @@ public class RecordGrouperMain {
 			while (resultSet.next()) {
 				String           source           = resultSet.getString(1);
 				String           sourceId         = resultSet.getString(2);
-				processSingleRecord(new RecordIdentifier(source, sourceId));
+				if (!processSingleRecord(new RecordIdentifier(source, sourceId))){
+					success = false;
+				}
 			}
 		} catch (SQLException throwables) {
 			logger.error(throwables);
+			success = false;
 		}
+		return success;
 	}
 
-	private static void processSingleRecord(RecordIdentifier recordIdentifier) {
+	private static boolean processSingleRecord(RecordIdentifier recordIdentifier) {
 		String source = recordIdentifier.getSource();
 		if (source.equalsIgnoreCase("overdrive")) {
 			OverDriveRecordGrouper recordGroupingProcessor = new OverDriveRecordGrouper(pikaConn, econtentConnection, logger);
@@ -255,6 +263,7 @@ public class RecordGrouperMain {
 				try (ResultSet overDriveRecordRS = overDriveRecordsStmt.executeQuery()) {
 					if (overDriveRecordRS.next()) {
 						recordGroupingProcessor.processOverDriveRecord(recordIdentifier, overDriveRecordRS, true);
+						return true;
 					}
 					//TODO: missing from overdrive extract data ??
 				}
@@ -292,6 +301,7 @@ public class RecordGrouperMain {
 							if (logger.isDebugEnabled()) {
 								logger.debug(recordIdentifier + " was successfully grouped.");
 							}
+							return true;
 						} else {
 							logger.error(recordIdentifier + " was not grouped.");
 						}
@@ -306,6 +316,7 @@ public class RecordGrouperMain {
 			}
 
 		}
+		return false;
 	}
 
 	private static String getInputFromCommandLine(String prompt) {

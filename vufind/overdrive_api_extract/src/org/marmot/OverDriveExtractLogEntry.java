@@ -24,71 +24,74 @@ import java.util.Date;
 import org.apache.log4j.Logger;
 
 public class OverDriveExtractLogEntry {
-	private Long logEntryId = null;
-	private Date startTime;
-	private Date endTime;
-	private ArrayList<String> notes = new ArrayList<String>();
-	private int numProducts = 0;
-	private int numErrors = 0;
-	private int numAdded = 0;
-	private int numDeleted = 0;
-	private int numUpdated = 0;
-	private int numSkipped = 0;
-	private int numAvailabilityChanges = 0;
-	private int numMetadataChanges = 0;
-	private Logger logger;
-	
-	public OverDriveExtractLogEntry(Connection econtentConn, Logger logger){
-		this.logger = logger;
+	private Long              logEntryId             = null;
+	private Date              startTime;
+	private Date              endTime;
+	private ArrayList<String> notes                  = new ArrayList<>();
+	private int               numProducts            = 0;
+	private int               numErrors              = 0;
+	private int               numAdded               = 0;
+	private int               numDeleted             = 0;
+	private int               numUpdated             = 0;
+	private int               numSkipped             = 0;
+	private int               numAvailabilityChanges = 0;
+	private int               numMetadataChanges     = 0;
+	private int               numTitlesProcessed     = 0;
+	private Logger            logger;
+
+	public OverDriveExtractLogEntry(Connection econtentConn, Logger logger) {
+		this.logger    = logger;
 		this.startTime = new Date();
 		try {
-			insertLogEntry = econtentConn.prepareStatement("INSERT into overdrive_extract_log (startTime) VALUES (?)", PreparedStatement.RETURN_GENERATED_KEYS);
-			updateLogEntry = econtentConn.prepareStatement("UPDATE overdrive_extract_log SET lastUpdate = ?, endTime = ?, notes = ?, numProducts = ?, numErrors = ?, numAdded = ?, numUpdated = ?, numSkipped = ?, numDeleted = ?, numAvailabilityChanges = ?, numMetadataChanges = ? WHERE id = ?", PreparedStatement.RETURN_GENERATED_KEYS);
+			insertLogEntry = econtentConn.prepareStatement("INSERT INTO overdrive_extract_log (startTime) VALUES (?)", PreparedStatement.RETURN_GENERATED_KEYS);
+			updateLogEntry = econtentConn.prepareStatement("UPDATE overdrive_extract_log SET lastUpdate = ?, endTime = ?, notes = ?, numProducts = ?, numErrors = ?, numAdded = ?, numUpdated = ?, numSkipped = ?, numDeleted = ?, numAvailabilityChanges = ?, numMetadataChanges = ? , numTitlesProcessed = ? WHERE id = ?", PreparedStatement.RETURN_GENERATED_KEYS);
 		} catch (SQLException e) {
 			logger.error("Error creating prepared statements to update log", e);
 		}
 	}
+
 	public void addNote(String note) {
 		this.notes.add(note);
 	}
-	
+
 	public String getNotesHtml() {
 		StringBuilder notesText = new StringBuilder("<ol class='cronNotes'>");
-		for (String curNote : notes){
+		for (String curNote : notes) {
 			String cleanedNote = curNote;
 			cleanedNote = cleanedNote.replaceAll("<pre>", "<code>");
 			cleanedNote = cleanedNote.replaceAll("</pre>", "</code>");
 			//Replace multiple line breaks
-			cleanedNote = cleanedNote.replaceAll("(?:<br?>\\s*)+", "<br/>");
+			cleanedNote = cleanedNote.replaceAll("(?:<br?>\\s*)+", "<br>");
 			cleanedNote = cleanedNote.replaceAll("<meta.*?>", "");
 			cleanedNote = cleanedNote.replaceAll("<title>.*?</title>", "");
 			notesText.append("<li>").append(cleanedNote).append("</li>");
 		}
 		notesText.append("</ol>");
 		String returnText = notesText.toString();
-		if (returnText.length() > 25000){
+		if (returnText.length() > 25000) {
 			returnText = returnText.substring(0, 25000) + " more data was truncated";
 		}
 		return returnText;
 	}
-	
+
 	private static PreparedStatement insertLogEntry;
 	private static PreparedStatement updateLogEntry;
+
 	public boolean saveResults() {
 		try {
-			if (logEntryId == null){
+			if (logEntryId == null) {
 				insertLogEntry.setLong(1, startTime.getTime() / 1000);
 				insertLogEntry.executeUpdate();
 				ResultSet generatedKeys = insertLogEntry.getGeneratedKeys();
-				if (generatedKeys.next()){
+				if (generatedKeys.next()) {
 					logEntryId = generatedKeys.getLong(1);
 				}
-			}else{
+			} else {
 				int curCol = 0;
 				updateLogEntry.setLong(++curCol, new Date().getTime() / 1000);
-				if (endTime == null){
+				if (endTime == null) {
 					updateLogEntry.setNull(++curCol, java.sql.Types.INTEGER);
-				}else{
+				} else {
 					updateLogEntry.setLong(++curCol, endTime.getTime() / 1000);
 				}
 				updateLogEntry.setString(++curCol, getNotesHtml());
@@ -100,6 +103,7 @@ public class OverDriveExtractLogEntry {
 				updateLogEntry.setInt(++curCol, numDeleted);
 				updateLogEntry.setInt(++curCol, numAvailabilityChanges);
 				updateLogEntry.setInt(++curCol, numMetadataChanges);
+				updateLogEntry.setInt(++curCol, numTitlesProcessed);
 				updateLogEntry.setLong(++curCol, logEntryId);
 				updateLogEntry.executeUpdate();
 			}
@@ -109,30 +113,43 @@ public class OverDriveExtractLogEntry {
 			return false;
 		}
 	}
+
 	public void setFinished() {
 		this.endTime = new Date();
 	}
-	public void incErrors(){
+
+	public void incrementErrors() {
 		numErrors++;
 	}
-	public void incAdded(){
+
+	public void incrementAdded() {
 		numAdded++;
 	}
-	public void incDeleted(){
+
+	public void incrementDeleted() {
 		numDeleted++;
 	}
-	public void incUpdated(){
+
+	public void incrementUpdated() {
 		numUpdated++;
 	}
-	public void incSkipped(){
+
+	public void incrementSkipped() {
 		numSkipped++;
 	}
-	public void incAvailabilityChanges(){
+
+	public void incrementAvailabilityChanges() {
 		numAvailabilityChanges++;
 	}
-	public void incMetadataChanges(){
+
+	public void incrementMetadataChanges() {
 		numMetadataChanges++;
 	}
+
+	public void incrementTitlesProcessed() {
+		numTitlesProcessed++;
+	}
+
 	public void setNumProducts(int size) {
 		numProducts = size;
 	}
@@ -140,4 +157,5 @@ public class OverDriveExtractLogEntry {
 	public boolean hasErrors() {
 		return numErrors > 0;
 	}
+
 }

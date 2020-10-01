@@ -27,10 +27,11 @@
  */
 
 require_once ROOT_DIR . '/RecordDrivers/Interface.php';
+
 class OverDriveRecordDriver extends RecordInterface {
 
 	private $id;
-	/** @var OverDriveAPIProduct  */
+	/** @var OverDriveAPIProduct */
 	private $overDriveProduct;
 	/** @var  OverDriveAPIProductMetaData */
 	private $overDriveMetaData;
@@ -42,7 +43,8 @@ class OverDriveRecordDriver extends RecordInterface {
 
 	/**
 	 * The Grouped Work that this record is connected to
-	 * @var  GroupedWork */
+	 * @var  GroupedWork
+	 */
 	protected $groupedWork;
 	protected $groupedWorkDriver = null;
 
@@ -53,11 +55,11 @@ class OverDriveRecordDriver extends RecordInterface {
 	 * we will already have this data available, so we might as well
 	 * just pass it into the constructor.
 	 *
-	 * @param   string $recordId The id of the record within OverDrive.
-	 * @param  GroupedWork $groupedWork;
+	 * @param string $recordId The id of the record within OverDrive.
+	 * @param GroupedWork $groupedWork ;
 	 * @access  public
 	 */
-	public function __construct($recordId, $groupedWork = null) {
+	public function __construct($recordId, $groupedWork = null){
 		if (is_string($recordId)){
 			//The record is the identifier for the overdrive title
 			$this->id = $recordId;
@@ -82,11 +84,13 @@ class OverDriveRecordDriver extends RecordInterface {
 	}
 
 	protected $itemsFromIndex;
+
 	public function setItemsFromIndex($itemsFromIndex, $realTimeStatusNeeded){
 		$this->itemsFromIndex = $itemsFromIndex;
 	}
 
 	protected $detailedRecordInfoFromIndex;
+
 	public function setDetailedRecordInfoFromIndex($detailedRecordInfoFromIndex, $realTimeStatusNeeded){
 		$this->detailedRecordInfoFromIndex = $detailedRecordInfoFromIndex;
 	}
@@ -94,11 +98,11 @@ class OverDriveRecordDriver extends RecordInterface {
 	/**
 	 * Load the grouped work that this record is connected to.
 	 */
-	public function loadGroupedWork() {
+	public function loadGroupedWork(){
 		require_once ROOT_DIR . '/sys/Grouping/GroupedWorkPrimaryIdentifier.php';
 		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 		$groupedWork = new GroupedWork();
-		$query = "SELECT grouped_work.* FROM grouped_work INNER JOIN grouped_work_primary_identifiers ON grouped_work.id = grouped_work_id WHERE type='overdrive' AND identifier = '" . $this->getUniqueID() . "'";
+		$query       = "SELECT grouped_work.* FROM grouped_work INNER JOIN grouped_work_primary_identifiers ON grouped_work.id = grouped_work_id WHERE type='overdrive' AND identifier = '" . $this->getUniqueID() . "'";
 		$groupedWork->query($query);
 
 		if ($groupedWork->N == 1){
@@ -110,6 +114,7 @@ class OverDriveRecordDriver extends RecordInterface {
 	public function getPermanentId(){
 		return $this->getGroupedWorkId();
 	}
+
 	public function getGroupedWorkId(){
 		if (!isset($this->groupedWork)){
 			$this->loadGroupedWork();
@@ -133,7 +138,7 @@ class OverDriveRecordDriver extends RecordInterface {
 	 * @access  public
 	 * @return  string              Breadcrumb text to represent this title.
 	 */
-	public function getBreadcrumb() {
+	public function getBreadcrumb(){
 		return $this->getTitle();
 	}
 
@@ -143,40 +148,39 @@ class OverDriveRecordDriver extends RecordInterface {
 	 * For legal values, see getCitationFormats().  Returns null if
 	 * format is not supported.
 	 *
-	 * @param   string  $format     Citation format to display.
+	 * @param string $format Citation format to display.
 	 * @access  public
 	 * @return  string              Name of Smarty template file to display.
 	 */
-	public function getCitation($format)
-	{
+	public function getCitation($format){
 		require_once ROOT_DIR . '/sys/LocalEnrichment/CitationBuilder.php';
 
 		// Build author list:
-		$authors = array();
+		$authors = [];
 		$primary = $this->getAuthor();
-		if (!empty($primary)) {
+		if (!empty($primary)){
 			$authors[] = $primary;
 		}
 		$authors = array_unique(array_merge($authors, $this->getContributors()));
 
 		// Collect all details for citation builder:
 		$publishers = $this->getPublishers();
-		$pubDates = $this->getPublicationDates();
-		$pubPlaces = $this->getPlacesOfPublication();
-		$details = array(
-				'authors' => $authors,
-				'title' => $this->getTitle(),
-				'subtitle' => $this->getSubTitle(),
-				'pubPlace' => count($pubPlaces) > 0 ? $pubPlaces[0] : null,
-				'pubName' => count($publishers) > 0 ? $publishers[0] : null,
-				'pubDate' => count($pubDates) > 0 ? $pubDates[0] : null,
-				'edition' => $this->getEdition(),
-				'format' => $this->getFormats()
-		);
+		$pubDates   = $this->getPublicationDates();
+		$pubPlaces  = $this->getPlacesOfPublication();
+		$details    = [
+			'authors'  => $authors,
+			'title'    => $this->getTitle(),
+			'subtitle' => $this->getSubTitle(),
+			'pubPlace' => count($pubPlaces) > 0 ? $pubPlaces[0] : null,
+			'pubName'  => count($publishers) > 0 ? $publishers[0] : null,
+			'pubDate'  => count($pubDates) > 0 ? $pubDates[0] : null,
+			'edition'  => $this->getEdition(),
+			'format'   => $this->getFormats()
+		];
 
 		// Build the citation:
 		$citation = new CitationBuilder($details);
-		switch($format) {
+		switch ($format){
 			case 'APA':
 				return $citation->getAPA();
 			case 'AMA':
@@ -208,11 +212,11 @@ class OverDriveRecordDriver extends RecordInterface {
 	 * legal values, see getExportFormats().  Returns null if format is
 	 * not supported.
 	 *
-	 * @param   string $format Export format to display.
+	 * @param string $format Export format to display.
 	 * @access  public
 	 * @return  string              Name of Smarty template file to display.
 	 */
-	public function getExport($format) {
+	public function getExport($format){
 		// TODO: Implement getExport() method.
 	}
 
@@ -224,7 +228,7 @@ class OverDriveRecordDriver extends RecordInterface {
 	 * @access  public
 	 * @return  array               Strings representing export formats.
 	 */
-	public function getExportFormats() {
+	public function getExportFormats(){
 		// TODO: Implement getExportFormats() method.
 	}
 
@@ -239,8 +243,8 @@ class OverDriveRecordDriver extends RecordInterface {
 	 * @access  public
 	 * @return  string              Name of Smarty template file to display.
 	 */
-	public function getHoldings() {
-		require_once (ROOT_DIR . '/Drivers/OverDriveDriverFactory.php');
+	public function getHoldings(){
+		require_once ROOT_DIR . '/Drivers/OverDriveDriverFactory.php';
 		$driver = OverDriveDriverFactory::getDriver();
 
 		/** @var OverDriveAPIProductFormats[] $holdings */
@@ -253,13 +257,13 @@ class OverDriveRecordDriver extends RecordInterface {
 	 * user's favorites list.
 	 *
 	 * @access  public
-	 * @param   object $user User object owning tag/note metadata.
-	 * @param   int $listId ID of list containing desired tags/notes (or
+	 * @param object $user User object owning tag/note metadata.
+	 * @param int $listId ID of list containing desired tags/notes (or
 	 *                              null to show tags/notes from all user's lists).
-	 * @param   bool $allowEdit Should we display edit controls?
+	 * @param bool $allowEdit Should we display edit controls?
 	 * @return  string              Name of Smarty template file to display.
 	 */
-	public function getListEntry($user, $listId = null, $allowEdit = true) {
+	public function getListEntry($user, $listId = null, $allowEdit = true){
 		// TODO: Implement getListEntry() method.
 	}
 
@@ -269,7 +273,7 @@ class OverDriveRecordDriver extends RecordInterface {
 	 * @access  public
 	 * @return  mixed               XML RDF data (false if unsupported or error).
 	 */
-	public function getRDFXML() {
+	public function getRDFXML(){
 		// TODO: Implement getRDFXML() method.
 	}
 
@@ -279,10 +283,10 @@ class OverDriveRecordDriver extends RecordInterface {
 	 * search results.
 	 *
 	 * @access  public
-	 * @param string $view          The view style for this search entry.
+	 * @param string $view The view style for this search entry.
 	 * @return  string              Name of Smarty template file to display.
 	 */
-	public function getSearchResult($view = 'list') {
+	public function getSearchResult($view = 'list'){
 		// TODO: probably not needed.
 	}
 
@@ -291,10 +295,10 @@ class OverDriveRecordDriver extends RecordInterface {
 		if ($seriesData == null){
 			$seriesName = isset($this->getOverDriveMetaData()->getDecodedRawData()->series) ? $this->getOverDriveMetaData()->getDecodedRawData()->series : null;
 			if ($seriesName != null){
-				$seriesData = array(
+				$seriesData = [
 					'seriesTitle'  => $seriesName,
 					'fromNovelist' => false,
-				);
+				];
 			}
 		}
 		return $seriesData;
@@ -308,12 +312,12 @@ class OverDriveRecordDriver extends RecordInterface {
 	 * @access  public
 	 * @return  string              Name of Smarty template file to display.
 	 */
-	public function getStaffView() {
+	public function getStaffView(){
 		global $interface;
 
-		$overDriveAPIProduct = new OverDriveAPIProduct();
+		$overDriveAPIProduct              = new OverDriveAPIProduct();
 		$overDriveAPIProduct->overdriveId = strtolower($this->id);
-		$overDriveAPIProductMetaData = new OverDriveAPIProductMetaData();
+		$overDriveAPIProductMetaData      = new OverDriveAPIProductMetaData();
 		$overDriveAPIProduct->joinAdd($overDriveAPIProductMetaData, 'INNER');
 		$overDriveAPIProduct->selectAdd("overdrive_api_products.rawData as productRaw");
 		$overDriveAPIProduct->selectAdd("overdrive_api_product_metadata.rawData as metaDataRaw");
@@ -345,7 +349,7 @@ class OverDriveRecordDriver extends RecordInterface {
 	 * @access  public
 	 * @return  string[]|null              contents to display.
 	 */
-	public function getTOC() {
+	public function getTOC(){
 		return null;
 	}
 
@@ -357,11 +361,11 @@ class OverDriveRecordDriver extends RecordInterface {
 	 * @access  public
 	 * @return  string              Unique identifier.
 	 */
-	public function getUniqueID() {
+	public function getUniqueID(){
 		return $this->id;
 	}
 
-	public function getId() {
+	public function getId(){
 		return $this->id;
 	}
 
@@ -378,7 +382,7 @@ class OverDriveRecordDriver extends RecordInterface {
 	 * @access  public
 	 * @return  bool
 	 */
-	public function hasFullText() {
+	public function hasFullText(){
 		// TODO: Implement hasFullText() method.
 	}
 
@@ -389,13 +393,13 @@ class OverDriveRecordDriver extends RecordInterface {
 	 * @access  public
 	 * @return  bool
 	 */
-	public function hasRDF() {
+	public function hasRDF(){
 		// TODO: Implement hasRDF() method.
 	}
 
 	function getLanguage(){
-		$metaData = $this->getOverDriveMetaData()->getDecodedRawData();
-		$languages = array();
+		$metaData  = $this->getOverDriveMetaData()->getDecodedRawData();
+		$languages = [];
 		if (isset($metaData->languages)){
 			foreach ($metaData->languages as $language){
 				$languages[] = $language->name;
@@ -415,7 +419,7 @@ class OverDriveRecordDriver extends RecordInterface {
 	 */
 	function getAvailability(){
 		if ($this->availability == null){
-			$this->availability = array();
+			$this->availability = [];
 			if (!empty($this->overDriveProduct->id)){ // Don't do the below search when there isn't an ID to look for.
 				require_once ROOT_DIR . '/sys/OverDrive/OverDriveAPIProductAvailability.php';
 				$availability            = new OverDriveAPIProductAvailability();
@@ -463,12 +467,12 @@ class OverDriveRecordDriver extends RecordInterface {
 		}elseif (!empty($activeLocation)){
 			$activeLibrary = Library::getLibraryForLocation($activeLocation->locationId);
 			return $activeLibrary->includeOutOfSystemExternalLinks ? -1 : $activeLibrary->libraryId;
-		}elseif (!empty($activeLibrary)) {
+		}elseif (!empty($activeLibrary)){
 			return $activeLibrary->includeOutOfSystemExternalLinks ? -1 : $activeLibrary->libraryId;
 		}elseif (!empty($searchLocation)){
 			$searchLibrary = Library::getLibraryForLocation($searchLibrary->locationId);
 			return $searchLibrary->includeOutOfSystemExternalLinks ? -1 : $searchLocation->libraryId;
-		}elseif (!empty($searchLibrary)) {
+		}elseif (!empty($searchLibrary)){
 			return $searchLibrary->includeOutOfSystemExternalLinks ? -1 : $searchLibrary->libraryId;
 		}else{
 			return -1;
@@ -476,12 +480,12 @@ class OverDriveRecordDriver extends RecordInterface {
 	}
 
 	public function getDescriptionFast(){
-		$metaData =  $this->getOverDriveMetaData();
+		$metaData = $this->getOverDriveMetaData();
 		return $metaData->fullDescription;
 	}
 
 	public function getDescription(){
-		$metaData =  $this->getOverDriveMetaData();
+		$metaData = $this->getOverDriveMetaData();
 		return $metaData->fullDescription;
 	}
 
@@ -491,28 +495,27 @@ class OverDriveRecordDriver extends RecordInterface {
 	 *
 	 * @return  mixed
 	 */
-	public function getCleanISBN()
-	{
+	public function getCleanISBN(){
 		require_once ROOT_DIR . '/sys/ISBN/ISBN.php';
 
 		// Get all the ISBNs and initialize the return value:
-		$isbns = $this->getISBNs();
+		$isbns  = $this->getISBNs();
 		$isbn13 = false;
 
 		// Loop through the ISBNs:
-		foreach($isbns as $isbn) {
+		foreach ($isbns as $isbn){
 			// Strip off any unwanted notes:
-			if ($pos = strpos($isbn, ' ')) {
+			if ($pos = strpos($isbn, ' ')){
 				$isbn = substr($isbn, 0, $pos);
 			}
 
 			// If we find an ISBN-10, return it immediately; otherwise, if we find
 			// an ISBN-13, save it if it is the first one encountered.
 			$isbnObj = new ISBN($isbn);
-			if ($isbn10 = $isbnObj->get10()) {
+			if ($isbn10 = $isbnObj->get10()){
 				return $isbn10;
 			}
-			if (!$isbn13) {
+			if (!$isbn13){
 				$isbn13 = $isbnObj->get13();
 			}
 		}
@@ -520,28 +523,27 @@ class OverDriveRecordDriver extends RecordInterface {
 	}
 
 	// TODO: document
-	public function getCleanISBNs()
-	{
+	public function getCleanISBNs(){
 		require_once ROOT_DIR . '/sys/ISBN/ISBN.php';
 
 		// Get all the ISBNs and initialize the return value:
-		$isbns     = $this->getISBNs();
+		$isbns      = $this->getISBNs();
 		$cleanIsbns = [];
 		// Loop through the ISBNs:
-		foreach($isbns as $isbn) {
+		foreach ($isbns as $isbn){
 			// Strip off any unwanted notes:
-			if ($pos = strpos($isbn, ' ')) {
+			if ($pos = strpos($isbn, ' ')){
 				$isbn = substr($isbn, 0, $pos);
 			}
 
 			$isbnObj = new ISBN($isbn);
-			if ($isbn10 = $isbnObj->get10()) {
+			if ($isbn10 = $isbnObj->get10()){
 				if (!array_key_exists($isbn10, $cleanIsbns)){
 					$cleanIsbns[$isbn10] = $isbn10;
 				}
 			}
-			if ($isbn13 = $isbnObj->get13()) {
-				if (!array_key_exists($isbn13, $cleanIsbns)) {
+			if ($isbn13 = $isbnObj->get13()){
+				if (!array_key_exists($isbn13, $cleanIsbns)){
 					$cleanIsbns[$isbn13] = $isbn13;
 				}
 			}
@@ -555,15 +557,14 @@ class OverDriveRecordDriver extends RecordInterface {
 	 * @access  protected
 	 * @return  array
 	 */
-	public function getISBNs()
-	{
+	public function getISBNs(){
 		//Load ISBNs for the product
 		if ($this->isbns == null){
 			require_once ROOT_DIR . '/sys/OverDrive/OverDriveAPIProductIdentifiers.php';
-			$overDriveIdentifiers = new OverDriveAPIProductIdentifiers();
-			$overDriveIdentifiers->type = 'ISBN';
+			$overDriveIdentifiers            = new OverDriveAPIProductIdentifiers();
+			$overDriveIdentifiers->type      = 'ISBN';
 			$overDriveIdentifiers->productId = $this->overDriveProduct->id;
-			$this->isbns = array();
+			$this->isbns                     = [];
 			$overDriveIdentifiers->find();
 			while ($overDriveIdentifiers->fetch()){
 				$this->isbns[] = $overDriveIdentifiers->value;
@@ -578,15 +579,14 @@ class OverDriveRecordDriver extends RecordInterface {
 	 * @access  protected
 	 * @return  array
 	 */
-	public function getUPCs()
-	{
+	public function getUPCs(){
 		//Load UPCs for the product
 		if ($this->upcs == null){
 			require_once ROOT_DIR . '/sys/OverDrive/OverDriveAPIProductIdentifiers.php';
-			$overDriveIdentifiers = new OverDriveAPIProductIdentifiers();
-			$overDriveIdentifiers->type = 'UPC';
+			$overDriveIdentifiers            = new OverDriveAPIProductIdentifiers();
+			$overDriveIdentifiers->type      = 'UPC';
 			$overDriveIdentifiers->productId = $this->overDriveProduct->id;
-			$this->upcs = array();
+			$this->upcs                      = [];
 			$overDriveIdentifiers->find();
 			while ($overDriveIdentifiers->fetch()){
 				$this->upcs[] = $overDriveIdentifiers->value;
@@ -598,18 +598,23 @@ class OverDriveRecordDriver extends RecordInterface {
 	public function getAcceleratedReaderData(){
 		return $this->getGroupedWorkDriver()->getAcceleratedReaderData();
 	}
-	public function getAcceleratedReaderDisplayString() {
+
+	public function getAcceleratedReaderDisplayString(){
 		return $this->getGroupedWorkDriver()->getAcceleratedReaderDisplayString();
 	}
+
 	public function getLexileCode(){
 		return $this->getGroupedWorkDriver()->getLexileCode();
 	}
+
 	public function getLexileScore(){
 		return $this->getGroupedWorkDriver()->getLexileScore();
 	}
-	public function getLexileDisplayString() {
+
+	public function getLexileDisplayString(){
 		return $this->getGroupedWorkDriver()->getLexileDisplayString();
 	}
+
 	public function getFountasPinnellLevel(){
 		return $this->getGroupedWorkDriver()->getFountasPinnellLevel();
 	}
@@ -624,15 +629,14 @@ class OverDriveRecordDriver extends RecordInterface {
 	 * @access  protected
 	 * @return  array
 	 */
-	public function getASINs()
-	{
+	public function getASINs(){
 		//Load UPCs for the product
 		if ($this->asins == null){
 			require_once ROOT_DIR . '/sys/OverDrive/OverDriveAPIProductIdentifiers.php';
-			$overDriveIdentifiers = new OverDriveAPIProductIdentifiers();
-			$overDriveIdentifiers->type = 'ASIN';
+			$overDriveIdentifiers            = new OverDriveAPIProductIdentifiers();
+			$overDriveIdentifiers->type      = 'ASIN';
 			$overDriveIdentifiers->productId = $this->overDriveProduct->id;
-			$this->asins = array();
+			$this->asins                     = [];
 			$overDriveIdentifiers->find();
 			while ($overDriveIdentifiers->fetch()){
 				$this->asins[] = $overDriveIdentifiers->value;
@@ -642,6 +646,7 @@ class OverDriveRecordDriver extends RecordInterface {
 	}
 
 	private $title;
+
 	/**
 	 * Get the full title of the record.
 	 *
@@ -671,8 +676,7 @@ class OverDriveRecordDriver extends RecordInterface {
 	 *
 	 * @return  string
 	 */
-	public function getSubTitle()
-	{
+	public function getSubTitle(){
 		return $this->overDriveProduct->subtitle;
 	}
 
@@ -682,9 +686,8 @@ class OverDriveRecordDriver extends RecordInterface {
 	 * @access  protected
 	 * @return  array
 	 */
-	public function getFormats()
-	{
-		$formats = array();
+	public function getFormats(){
+		$formats = [];
 		foreach ($this->getItems() as $item){
 			$formats[] = $item->name;
 		}
@@ -695,7 +698,7 @@ class OverDriveRecordDriver extends RecordInterface {
 		if ($this->items == null){
 			require_once ROOT_DIR . '/sys/OverDrive/OverDriveAPIProductFormats.php';
 			$overDriveFormats = new OverDriveAPIProductFormats();
-			$this->items = array();
+			$this->items      = [];
 			if ($this->valid){
 				$overDriveFormats->productId = $this->overDriveProduct->id;
 				$overDriveFormats->find();
@@ -719,7 +722,7 @@ class OverDriveRecordDriver extends RecordInterface {
 	}
 
 	public function getContributors(){
-		return array();
+		return [];
 	}
 
 	public function getBookcoverUrl($size = 'small', $absolutePath = false){
@@ -739,19 +742,19 @@ class OverDriveRecordDriver extends RecordInterface {
 		return $this->getBookcoverUrl($size);
 	}
 
-	private function getOverDriveMetaData() {
+	private function getOverDriveMetaData(){
 		if ($this->overDriveMetaData == null){
 			require_once ROOT_DIR . '/sys/OverDrive/OverDriveAPIProductMetaData.php';
-			$this->overDriveMetaData = new OverDriveAPIProductMetaData();
+			$this->overDriveMetaData            = new OverDriveAPIProductMetaData();
 			$this->overDriveMetaData->productId = $this->overDriveProduct->id;
 			$this->overDriveMetaData->find(true);
 		}
 		return $this->overDriveMetaData;
 	}
 
-	public function getRatingData() {
+	public function getRatingData(){
 		require_once ROOT_DIR . '/services/API/WorkAPI.php';
-		$workAPI = new WorkAPI();
+		$workAPI       = new WorkAPI();
 		$groupedWorkId = $this->getGroupedWorkId();
 		if ($groupedWorkId == null){
 			return null;
@@ -766,11 +769,11 @@ class OverDriveRecordDriver extends RecordInterface {
 		$isbn = $this->getCleanISBN();
 
 		//Load holdings information from the driver
-		require_once (ROOT_DIR . '/Drivers/OverDriveDriverFactory.php');
+		require_once ROOT_DIR . '/Drivers/OverDriveDriverFactory.php';
 		$driver = OverDriveDriverFactory::getDriver();
 
 		/** @var OverDriveAPIProductFormats[] $holdings */
-		$holdings = $driver->getHoldings($this);
+		$holdings           = $driver->getHoldings($this);
 		$scopedAvailability = $driver->getScopedAvailability($this);
 		$interface->assign('availability', $scopedAvailability['mine']);
 		$interface->assign('availabilityOther', $scopedAvailability['other']);
@@ -782,16 +785,17 @@ class OverDriveRecordDriver extends RecordInterface {
 			}
 		}
 		$interface->assign('numberOfHolds', $numberOfHolds);
-		$showAvailability = true;
+		$showAvailability      = true;
 		$showAvailabilityOther = true;
 		$interface->assign('showAvailability', $showAvailability);
 		$interface->assign('showAvailabilityOther', $showAvailabilityOther);
-		$showOverDriveConsole = false;
+		$showOverDriveConsole     = false;
 		$showAdobeDigitalEditions = false;
 		foreach ($holdings as $item){
-			if (in_array($item->textId, array('ebook-epub-adobe', 'ebook-pdf-adobe'))){
+			if (in_array($item->textId, ['ebook-epub-adobe', 'ebook-pdf-adobe'])){
 				$showAdobeDigitalEditions = true;
-			}elseif (in_array($item->textId, array('video-wmv', 'music-wma', 'music-wma', 'audiobook-wma', 'audiobook-mp3'))){
+			}elseif (in_array($item->textId, ['audiobook-mp3', 'video-wmv', 'music-wma', 'audiobook-wma'])){
+				// 'audiobook-mp3' appears to be the only valid format any more pascal 9/25/2020
 				$showOverDriveConsole = true;
 			}
 		}
@@ -801,47 +805,47 @@ class OverDriveRecordDriver extends RecordInterface {
 		$interface->assign('holdings', $holdings);
 
 		//Load more details options
-		$moreDetailsOptions = $this->getBaseMoreDetailsOptions($isbn);
-		$moreDetailsOptions['formats'] = array(
-			'label' => 'Formats',
-			'body' => $interface->fetch('OverDrive/view-formats.tpl'),
+		$moreDetailsOptions            = $this->getBaseMoreDetailsOptions($isbn);
+		$moreDetailsOptions['formats'] = [
+			'label'         => 'Formats',
+			'body'          => $interface->fetch('OverDrive/view-formats.tpl'),
 			'openByDefault' => true
-		);
+		];
 		//Other editions if applicable (only if we aren't the only record!)
 		$relatedRecords = $this->getGroupedWorkDriver()->getRelatedRecords();
 		if (count($relatedRecords) > 1){
 			$interface->assign('relatedManifestations', $this->getGroupedWorkDriver()->getRelatedManifestations());
-			$moreDetailsOptions['otherEditions'] = array(
-					'label' => 'Other Editions and Formats',
-					'body' => $interface->fetch('GroupedWork/relatedManifestations.tpl'),
-					'hideByDefault' => false
-			);
+			$moreDetailsOptions['otherEditions'] = [
+				'label'         => 'Other Editions and Formats',
+				'body'          => $interface->fetch('GroupedWork/relatedManifestations.tpl'),
+				'hideByDefault' => false
+			];
 		}
 
-		$moreDetailsOptions['moreDetails'] = array(
+		$moreDetailsOptions['moreDetails'] = [
 			'label' => 'More Details',
-			'body' => $interface->fetch('OverDrive/view-more-details.tpl'),
-		);
-		$moreDetailsOptions['citations'] = array(
+			'body'  => $interface->fetch('OverDrive/view-more-details.tpl'),
+		];
+		$moreDetailsOptions['citations']   = [
 			'label' => 'Citations',
-			'body' => $interface->fetch('Record/cite.tpl'),
-		);
-		$moreDetailsOptions['copyDetails'] = array(
+			'body'  => $interface->fetch('Record/cite.tpl'),
+		];
+		$moreDetailsOptions['copyDetails'] = [
 			'label' => 'Copy Details',
-			'body' => $interface->fetch('OverDrive/view-copies.tpl'),
-		);
+			'body'  => $interface->fetch('OverDrive/view-copies.tpl'),
+		];
 		if ($interface->getVariable('showStaffView')){
-			$moreDetailsOptions['staff'] = array(
+			$moreDetailsOptions['staff'] = [
 				'label' => 'Staff View',
-				'body' => $interface->fetch($this->getStaffView()),
-			);
+				'body'  => $interface->fetch($this->getStaffView()),
+			];
 		}
 
 		return $this->filterAndSortMoreDetailsOptions($moreDetailsOptions);
 	}
 
-	public function getRecordUrl() {
-		$id = $this->getUniqueID();
+	public function getRecordUrl(){
+		$id      = $this->getUniqueID();
 		$linkUrl = '/OverDrive/' . $id . '/Home';
 		return $linkUrl;
 	}
@@ -859,7 +863,7 @@ class OverDriveRecordDriver extends RecordInterface {
 	 *
 	 * @return string
 	 */
-	public function getLinkUrl() {
+	public function getLinkUrl(){
 		return parent::getLinkUrl();
 	}
 
@@ -868,26 +872,26 @@ class OverDriveRecordDriver extends RecordInterface {
 		return $configArray['Site']['url'] . '/qrcode.php?type=OverDrive&id=' . $this->getPermanentId();
 	}
 
-	private function getPublishers() {
-		$publishers = array();
+	private function getPublishers(){
+		$publishers = [];
 		if (isset($this->overDriveMetaData->publisher)){
 			$publishers[] = $this->overDriveMetaData->publisher;
 		}
 		return $publishers;
 	}
 
-	private function getPublicationDates() {
-		$publicationDates = array();
+	private function getPublicationDates(){
+		$publicationDates = [];
 		if (isset($this->getOverDriveMetaData()->getDecodedRawData()->publishDateText)){
-			$publishDate = $this->getOverDriveMetaData()->getDecodedRawData()->publishDateText;
-			$publishYear = substr($publishDate, -4);
+			$publishDate        = $this->getOverDriveMetaData()->getDecodedRawData()->publishDateText;
+			$publishYear        = substr($publishDate, -4);
 			$publicationDates[] = $publishYear;
 		}
 		return $publicationDates;
 	}
 
-	private function getPlacesOfPublication() {
-		return array();
+	private function getPlacesOfPublication(){
+		return [];
 	}
 
 	/**
@@ -897,28 +901,27 @@ class OverDriveRecordDriver extends RecordInterface {
 	 * @access  public
 	 * @return  array
 	 */
-	function getPublicationDetails()
-	{
+	function getPublicationDetails(){
 		$places = $this->getPlacesOfPublication();
-		$names = $this->getPublishers();
-		$dates = $this->getPublicationDates();
+		$names  = $this->getPublishers();
+		$dates  = $this->getPublicationDates();
 
-		$i = 0;
-		$returnVal = array();
-		while (isset($places[$i]) || isset($names[$i]) || isset($dates[$i])) {
+		$i         = 0;
+		$returnVal = [];
+		while (isset($places[$i]) || isset($names[$i]) || isset($dates[$i])){
 			// Put all the pieces together, and do a little processing to clean up
 			// unwanted whitespace.
 			$publicationInfo = (isset($places[$i]) ? $places[$i] . ' ' : '') .
-					(isset($names[$i]) ? $names[$i] . ' ' : '') .
-					(isset($dates[$i]) ? $dates[$i] : '');
-			$returnVal[] = trim(str_replace('  ', ' ', $publicationInfo));
+				(isset($names[$i]) ? $names[$i] . ' ' : '') .
+				(isset($dates[$i]) ? $dates[$i] : '');
+			$returnVal[]     = trim(str_replace('  ', ' ', $publicationInfo));
 			$i++;
 		}
 
 		return $returnVal;
 	}
 
-	public function getEdition($returnFirst = false) {
+	public function getEdition($returnFirst = false){
 		$edition = $this->overDriveMetaData->getDecodedRawData()->edition ?? null;
 		if ($returnFirst || is_null($edition)){
 			return $edition;
@@ -931,7 +934,7 @@ class OverDriveRecordDriver extends RecordInterface {
 		return isset($this->overDriveMetaData->getDecodedRawData()->publishDateText) ? $this->overDriveMetaData->getDecodedRawData()->publishDateText : null;
 	}
 
-	public function getGroupedWorkDriver() {
+	public function getGroupedWorkDriver(){
 		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 		if ($this->groupedWorkDriver == null){
 			$this->groupedWorkDriver = new GroupedWorkDriver($this->getPermanentId());
@@ -942,6 +945,7 @@ class OverDriveRecordDriver extends RecordInterface {
 	public function getTags(){
 		return $this->getGroupedWorkDriver()->getTags();
 	}
+
 	/**
 	 * Get the OpenURL parameters to represent this record (useful for the
 	 * title attribute of a COinS span tag).
@@ -949,20 +953,19 @@ class OverDriveRecordDriver extends RecordInterface {
 	 * @access  public
 	 * @return  string              OpenURL parameters.
 	 */
-	public function getOpenURL()
-	{
+	public function getOpenURL(){
 		// Get the COinS ID -- it should be in the OpenURL section of config.ini,
 		// but we'll also check the COinS section for compatibility with legacy
 		// configurations (this moved between the RC2 and 1.0 releases).
 		$coinsID = 'pika';
 
 		// Start an array of OpenURL parameters:
-		$params = array(
+		$params = [
 			'ctx_ver'   => 'Z39.88-2004',
 			'ctx_enc'   => 'info:ofi/enc:UTF-8',
 			'rfr_id'    => "info:sid/{$coinsID}:generator",
 			'rft.title' => $this->getTitle(),
-		);
+		];
 
 		// Get a representative publication date:
 		$pubDate = $this->getPublicationDates();
@@ -976,34 +979,34 @@ class OverDriveRecordDriver extends RecordInterface {
 		$formats = $this->getFormats();
 
 		// If we have multiple formats, Book and Journal are most important...
-		if (in_array('Book', $formats)) {
+		if (in_array('Book', $formats)){
 			$format = 'Book';
-		} elseif (in_array('Journal', $formats)) {
+		}elseif (in_array('Journal', $formats)){
 			$format = 'Journal';
-		} else {
+		}else{
 			$format = $formats[0];
 		}
-		switch($format) {
+		switch ($format){
 			case 'Book':
 				$params['rft_val_fmt'] = 'info:ofi/fmt:kev:mtx:book';
-				$params['rft.genre'] = 'book';
-				$params['rft.btitle'] = $params['rft.title'];
+				$params['rft.genre']   = 'book';
+				$params['rft.btitle']  = $params['rft.title'];
 
 				$series = $this->getSeries(false);
-				if ($series != null) {
+				if ($series != null){
 					// Handle both possible return formats of getSeries:
 					$params['rft.series'] = $series['seriesTitle'];
 				}
 
 				$params['rft.au'] = $this->getPrimaryAuthor();
-				$publishers = $this->getPublishers();
-				if (count($publishers) == 1) {
+				$publishers       = $this->getPublishers();
+				if (count($publishers) == 1){
 					$params['rft.pub'] = $publishers[0];
-				}elseif (count($publishers) > 1) {
+				}elseif (count($publishers) > 1){
 					$params['rft.pub'] = $publishers;
 				}
 				$params['rft.edition'] = $this->getEdition();
-				$params['rft.isbn'] = $this->getCleanISBN();
+				$params['rft.isbn']    = $this->getCleanISBN();
 				break;
 			case 'Journal':
 				/* This is probably the most technically correct way to represent
@@ -1029,23 +1032,23 @@ class OverDriveRecordDriver extends RecordInterface {
 			default:
 				$params['rft_val_fmt'] = 'info:ofi/fmt:kev:mtx:dc';
 				$params['rft.creator'] = $this->getPrimaryAuthor();
-				$publishers = $this->getPublishers();
-				if (count($publishers) > 0) {
+				$publishers            = $this->getPublishers();
+				if (count($publishers) > 0){
 					$params['rft.pub'] = $publishers[0];
 				}
 				$params['rft.format'] = $format;
-				$langs = $this->getLanguages();
-				if (count($langs) > 0) {
+				$langs                = $this->getLanguages();
+				if (count($langs) > 0){
 					$params['rft.language'] = $langs[0];
 				}
 				break;
 		}
 
 		// Assemble the URL:
-		$parts = array();
-		foreach($params as $key => $value) {
+		$parts = [];
+		foreach ($params as $key => $value){
 			if (is_array($value)){
-				foreach($value as $arrVal){
+				foreach ($value as $arrVal){
 					$parts[] = $key . '[]=' . urlencode($arrVal);
 				}
 			}else{
@@ -1056,23 +1059,23 @@ class OverDriveRecordDriver extends RecordInterface {
 	}
 
 	public function getItemActions($itemInfo){
-		return array();
+		return [];
 	}
 
-	public function getRecordActions($isAvailable, $isHoldable, $isBookable, $relatedUrls = null, $volumeData = null) {
-		$actions = array();
+	public function getRecordActions($isAvailable, $isHoldable, $isBookable, $relatedUrls = null, $volumeData = null){
+		$actions = [];
 		if ($isAvailable){
-			$actions[] = array(
+			$actions[] = [
 				'title'        => 'Check Out OverDrive',
 				'onclick'      => "return Pika.OverDrive.checkOutOverDriveTitle('{$this->id}');",
 				'requireLogin' => false,
-			);
+			];
 		}else{
-			$actions[] = array(
+			$actions[] = [
 				'title'        => 'Place Hold OverDrive',
 				'onclick'      => "return Pika.OverDrive.placeOverDriveHold('{$this->id}');",
 				'requireLogin' => false,
-			);
+			];
 		}
 		return $actions;
 	}
@@ -1094,21 +1097,21 @@ class OverDriveRecordDriver extends RecordInterface {
 	}
 
 
-	public function getSemanticData() {
+	public function getSemanticData(){
 		// Schema.org
 		// Get information about the record
 		require_once ROOT_DIR . '/RecordDrivers/LDRecordOffer.php';
 		$linkedDataRecord = new LDRecordOffer($this->getRelatedRecord());
-		$semanticData [] = array(
-				'@context' => 'http://schema.org',
-				'@type' => $linkedDataRecord->getWorkType(),
-				'name' => $this->getTitle(),                             //getTitleSection(),
-				'creator' => $this->getAuthor(),
-				'bookEdition' => $this->getEdition(),
-				'isAccessibleForFree' => true,
-				'image' => $this->getBookcoverUrl('medium', true),
-				"offers" => $linkedDataRecord->getOffers()
-		);
+		$semanticData []  = [
+			'@context'            => 'http://schema.org',
+			'@type'               => $linkedDataRecord->getWorkType(),
+			'name'                => $this->getTitle(),                             //getTitleSection(),
+			'creator'             => $this->getAuthor(),
+			'bookEdition'         => $this->getEdition(),
+			'isAccessibleForFree' => true,
+			'image'               => $this->getBookcoverUrl('medium', true),
+			"offers"              => $linkedDataRecord->getOffers()
+		];
 
 		global $interface;
 		$interface->assign('og_title', $this->getTitle());
@@ -1118,7 +1121,7 @@ class OverDriveRecordDriver extends RecordInterface {
 		return $semanticData;
 	}
 
-	function getRelatedRecord() {
+	function getRelatedRecord(){
 		$id = 'overdrive:' . $this->id;
 		return $this->getGroupedWorkDriver()->getRelatedRecord($id);
 	}

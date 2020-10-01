@@ -55,7 +55,7 @@ class OverDrive_Home extends Action{
 			$interface->assign('groupedWorkDriver', $recordDriver->getGroupedWorkDriver());
 
 			//Load status summary
-			require_once(ROOT_DIR . '/Drivers/OverDriveDriverFactory.php');
+			require_once ROOT_DIR . '/Drivers/OverDriveDriverFactory.php';
 			$driver             = OverDriveDriverFactory::getDriver();
 			$holdings           = $driver->getHoldings($recordDriver);
 			$scopedAvailability = $driver->getScopedAvailability($recordDriver);

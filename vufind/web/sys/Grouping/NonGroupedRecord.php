@@ -37,23 +37,24 @@ class NonGroupedRecord extends CommonGroupingAlterationOperations {
 	private $groupedWork;
 
 	static function getObjectStructure(){
-		global $indexingProfiles;
-		$availableSources = array();
+		global /** @var IndexingProfile[] $indexingProfiles */
+		$indexingProfiles;
+		$availableSources = [];
 		foreach ($indexingProfiles as $profile){
-			$availableSources[$profile->name] = $profile->name;
+			$availableSources[$profile->sourceName] = $profile->name;
 		}
 		$availableSources['overdrive'] = 'overdrive';
 
-		$structure = array(
-			array(
+		$structure = [
+			[
 				'property'    => 'id',
 				'type'        => 'hidden',
 				'label'       => 'Id',
 				'description' => 'The unique id of the merged grouped work in the database',
 				'storeDb'     => true,
 				'primaryKey'  => true,
-			),
-			array(
+			],
+			[
 				'property'    => 'source',
 				'type'        => 'enum',
 				'values'      => $availableSources,
@@ -62,8 +63,8 @@ class NonGroupedRecord extends CommonGroupingAlterationOperations {
 				'default'     => 'ils',
 				'storeDb'     => true,
 				'required'    => true,
-			),
-			array(
+			],
+			[
 				'property'         => 'recordId',
 				'type'             => 'text',
 				'size'             => 36,
@@ -73,8 +74,8 @@ class NonGroupedRecord extends CommonGroupingAlterationOperations {
 				'storeDb'          => true,
 				'serverValidation' => 'validateRecordId',
 				'required'         => true,
-			),
-			array(
+			],
+			[
 				'property'    => 'notes',
 				'type'        => 'textarea',
 				//				'size'        => 255,
@@ -83,8 +84,8 @@ class NonGroupedRecord extends CommonGroupingAlterationOperations {
 				'description' => 'Notes related to the record.',
 				'storeDb'     => true,
 				'required'    => true,
-			),
-		);
+			],
+		];
 		return $structure;
 	}
 
@@ -179,11 +180,13 @@ class NonGroupedRecord extends CommonGroupingAlterationOperations {
 	}
 
 	function insert(){
+		UserAccount::getLoggedInUser(); // ensure active User info is populated
 		$this->userId = UserAccount::getActiveUserId();
 		return parent::insert();
 	}
 
 	function update($dataObject = false){
+		UserAccount::getLoggedInUser(); // ensure active User info is populated
 		$this->userId = UserAccount::getActiveUserId();
 		return parent::update($dataObject);
 	}
