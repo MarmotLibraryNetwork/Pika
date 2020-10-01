@@ -41,6 +41,7 @@
 	$().ready(function(){ldelim}
 		Pika.Archive.loadExploreMore('{$pid|urlencode}');
 		{rdelim});
+	{literal}
 	$(document).ready(function() {
 		let video = document.getElementById("player");
 		video.addEventListener('play', function(ev){
@@ -68,4 +69,5 @@
 			});
 		});
 	});
+	{/literal}
 </script>
