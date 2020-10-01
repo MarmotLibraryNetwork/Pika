@@ -43,8 +43,8 @@ abstract class Log_Admin extends Admin_Admin {
 		$logClass         = get_class($this);
 		$logEntryClassName = $logClass . 'Entry';
 		require_once ROOT_DIR . '/sys/Log/'. $logEntryClassName . '.php';
-		$page              = isset($_REQUEST['page']) ? $_REQUEST['page'] : 1;
-		$pageSize          = isset($_REQUEST['pagesize']) ? $_REQUEST['pagesize'] : 30; // to adjust number of items listed on a page
+		$page              = $_REQUEST['page'] ?? 1;
+		$pageSize          = $_REQUEST['pagesize'] ?? 30; // to adjust number of items listed on a page
 		$filter            = (!empty($this->columnToFilterBy) && !empty($_REQUEST['filterCount']) && ctype_digit($_REQUEST['filterCount']))
 			? $this->columnToFilterBy . ' >= ' . $_REQUEST['filterCount'] : false;
 
@@ -84,7 +84,7 @@ abstract class Log_Admin extends Admin_Admin {
 	}
 
 	function getAllowableRoles(){
-		return array('opacAdmin');
+		return ['opacAdmin'];
 	}
 
 }
