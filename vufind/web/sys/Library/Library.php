@@ -398,17 +398,17 @@ class Library extends DB_DataObject {
 		$hooplaSettingsStructure = LibraryHooplaSettings::getObjectStructure();
 		unset($hooplaSettingsStructure['libraryId']);
 
-		$sharedOverdriveCollectionChoices = array();
+		$sharedOverdriveCollectionChoices = [];
 		global $configArray;
-		if (!empty($configArray['OverDrive']['accountId'])) {
-			$overdriveAccounts = explode(',', $configArray['OverDrive']['accountId']);
+		if (!empty($configArray['OverDrive']['accountId'])){
+			$overdriveAccounts     = explode(',', $configArray['OverDrive']['accountId']);
 			$sharedCollectionIdNum = -1; // default shared libraryId for overdrive items
-			foreach ($overdriveAccounts as $overdriveAccountIgnored) {
+			foreach ($overdriveAccounts as $overdriveAccountIgnored){
 				$sharedOverdriveCollectionChoices[$sharedCollectionIdNum] = $sharedCollectionIdNum;
 				$sharedCollectionIdNum--;
 			}
-		} else {
-			$sharedOverdriveCollectionChoices = array(-1 => -1); // Have the default shared value even if accountId(s) aren't in the config
+		}else{
+			$sharedOverdriveCollectionChoices = [-1 => -1]; // Have the default shared value even if accountId(s) aren't in the config
 		}
 
 		$innReachEncoreName = $configArray['InterLibraryLoan']['innReachEncoreName'];
@@ -1814,12 +1814,6 @@ class Library extends DB_DataObject {
 
 		$facet = new LibraryFacetSetting();
 		$facet->setupSideFacet('econtent_source', 'eContent Source', true);
-		$facet->libraryId = $libraryId;
-		$facet->weight    = count($defaultFacets) + 1;
-		$defaultFacets[]  = $facet;
-
-		$facet = new LibraryFacetSetting();
-		$facet->setupAdvancedFacet('econtent_protection_type', 'eContent Protection', true);
 		$facet->libraryId = $libraryId;
 		$facet->weight    = count($defaultFacets) + 1;
 		$defaultFacets[]  = $facet;

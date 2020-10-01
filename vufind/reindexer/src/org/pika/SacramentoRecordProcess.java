@@ -163,7 +163,6 @@ class SacramentoRecordProcessor extends IIIRecordProcessor {
 					ItemInfo itemInfo = new ItemInfo();
 					itemInfo.setIsEContent(true);
 					itemInfo.setLocationCode(bibLocation);
-//					itemInfo.seteContentProtectionType("external");
 					itemInfo.setCallNumber("Online");
 					itemInfo.seteContentSource(econtentSource);
 //                  itemInfo.setShelfLocation(econtentSource); // this sets the owning location facet.  This isn't needed for Sacramento

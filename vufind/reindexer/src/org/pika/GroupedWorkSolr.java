@@ -544,7 +544,6 @@ public class GroupedWorkSolr implements Cloneable {
 					addUniqueFieldValue(doc, "itype_" + curScopeName, Util.trimTrailingPunctuation(curItem.getIType()));
 					if (curItem.isEContent()) {
 						addUniqueFieldValue(doc, "econtent_source_" + curScopeName, Util.trimTrailingPunctuation(curItem.geteContentSource()));
-//						addUniqueFieldValue(doc, "econtent_protection_type_" + curScopeName, curItem.geteContentProtectionType());
 					}
 					if (curScope.isLocallyOwned() || curScope.isLibraryOwned() || !curScopeDetails.isRestrictOwningLibraryAndLocationFacets()) {
 						addUniqueFieldValue(doc, "local_callnumber_" + curScopeName, curItem.getCallNumber());
@@ -565,11 +564,11 @@ public class GroupedWorkSolr implements Cloneable {
 	}
 
 	private void setupAvailabilityToggleAndOwnershipForItemWithinScope(SolrInputDocument doc, RecordInfo curRecord, ItemInfo curItem, String curScopeName, ScopingInfo curScope) {
-		boolean addLocationOwnership = false;
-		boolean addLibraryOwnership = false;
+		boolean         addLocationOwnership     = false;
+		boolean         addLibraryOwnership      = false;
 		HashSet<String> availabilityToggleValues = new HashSet<>();
-		Scope curScopeDetails = curScope.getScope();
-		if (curScope.isLocallyOwned() && curScopeDetails.isLocationScope()){
+		Scope           curScopeDetails          = curScope.getScope();
+		if (curScope.isLocallyOwned() && curScopeDetails.isLocationScope()) {
 			addLocationOwnership = true;
 			addLibraryOwnership = true;
 			availabilityToggleValues.add("Entire Collection");

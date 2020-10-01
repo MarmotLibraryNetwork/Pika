@@ -733,7 +733,6 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			}
 		} else {
 			//This is for a "less advanced" catalog, set some basic info
-//			itemInfo.seteContentProtectionType("external");
 			itemInfo.seteContentSource(getILSeContentSourceType(record, itemField));
 		}
 
@@ -938,6 +937,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		boolean available = isItemAvailable(itemInfo);
 
 		//Determine which scopes have access to this record
+		//TODO: redundancy: each display function calls getOverriddenStatus() itself
 		String displayStatus        = getDisplayStatus(itemInfo, recordInfo.getRecordIdentifier());
 		String groupedDisplayStatus = getDisplayGroupedStatus(itemInfo, recordInfo.getRecordIdentifier());
 		String overiddenStatus      = getOverriddenStatus(itemInfo, true);

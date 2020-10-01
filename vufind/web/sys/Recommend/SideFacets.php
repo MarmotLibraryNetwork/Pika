@@ -103,12 +103,11 @@ class SideFacets implements RecommendationInterface
 
 				//Adjust facet name for local scoping
 				if ($solrScope){
-					if (in_array($facetName, array(
+					if (in_array($facetName, [
 						'availability_toggle',
 						'format',
 						'format_category',
 						'econtent_source',
-						'econtent_protection_type', //TODO remove
 						'language',
 						'translation',
 						'detailed_location',
@@ -116,7 +115,7 @@ class SideFacets implements RecommendationInterface
 						'owning_library',
 						'available_at',
 						'collection',
-					))){
+					])){
 						$facetName .= '_' . $solrScope;
 					}
 

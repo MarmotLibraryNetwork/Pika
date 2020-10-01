@@ -1546,12 +1546,6 @@ class Location extends DB_DataObject {
 		$defaultFacets[]   = $facet;
 
 		$facet = new LocationFacetSetting();
-		$facet->setupAdvancedFacet('econtent_protection_type', 'eContent Protection', true);
-		$facet->locationId = $locationId;
-		$facet->weight     = count($defaultFacets) + 1;
-		$defaultFacets[]   = $facet;
-
-		$facet = new LocationFacetSetting();
 		$facet->setupAdvancedFacet('era', 'Era', true);
 		$facet->locationId = $locationId;
 		$facet->weight     = count($defaultFacets) + 1;

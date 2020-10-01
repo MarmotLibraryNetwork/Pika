@@ -36,7 +36,7 @@ abstract class FacetSetting extends DB_DataObject {
 	public $useMoreFacetPopup;
 
 	public function getAvailableFacets(){
-		$availableFacets = array(
+		$availableFacets = [
 			"owning_library"                    => "Library System",
 			"owning_location"                   => "Branch",
 			"available_at"                      => "Available At",
@@ -48,7 +48,6 @@ abstract class FacetSetting extends DB_DataObject {
 			"format_category"                   => "Format Category",
 			"econtent_device"                   => "Compatible Device",
 			"econtent_source"                   => "E-Content Collection",
-			"econtent_protection_type"          => "E-Content Protection",
 			"subject_facet"                     => "Subjects",
 			"topic_facet"                       => "Topics",
 			"target_audience"                   => "Audience",
@@ -75,7 +74,7 @@ abstract class FacetSetting extends DB_DataObject {
 			"accelerated_reader_reading_level"  => "AR Reading Level",
 			"accelerated_reader_point_value"    => "AR Point Value",
 			"fountas_pinnell"                   => "Fountas &amp; Pinnell",
-		);
+		];
 
 		//Add additional facets by library
 		global $configArray;

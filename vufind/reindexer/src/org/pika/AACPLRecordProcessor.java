@@ -241,7 +241,7 @@ class AACPLRecordProcessor extends IlsRecordProcessor {
 		itemInfo.setItemIdentifier(getItemSubfieldData(itemRecordNumberSubfieldIndicator, itemField));
 
 		String econtentSource = MarcUtil.getFirstFieldVal(record, "092a");
-		if (econtentSource == null || econtentSource.equals("")) {
+		if (fullReindex && econtentSource == null || econtentSource.equals("")) {
 			logger.warn("Did not find an econtent source for " + identifier);
 		}
 //		itemInfo.setShelfLocation(econtentSource);
@@ -249,7 +249,6 @@ class AACPLRecordProcessor extends IlsRecordProcessor {
 
 		itemInfo.setCollection(econtentSource);
 
-//		itemInfo.seteContentProtectionType("external"); //TODO: remove protection type
 		itemInfo.seteContentSource(econtentSource);
 		itemInfo.setDetailedStatus("Available Online");
 

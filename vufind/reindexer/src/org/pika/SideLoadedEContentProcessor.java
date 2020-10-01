@@ -116,7 +116,6 @@ class SideLoadedEContentProcessor extends IlsRecordProcessor{
 		//itemInfo.setCollection(translateValue("collection", getItemSubfieldData(collectionSubfield, itemField), identifier));
 
 		itemInfo.seteContentSource(indexingProfileSourceDisplayName);
-//		itemInfo.seteContentProtectionType("external");
 
 		RecordInfo relatedRecord = groupedWork.addRelatedRecord(identifier);
 		relatedRecord.addItem(itemInfo);
