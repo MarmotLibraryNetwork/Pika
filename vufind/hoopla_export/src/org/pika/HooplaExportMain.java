@@ -333,6 +333,7 @@ public class HooplaExportMain {
 
 	private static int updateTitlesInDB(Connection pikaConn, JSONArray responseTitles) {
 		int numUpdates = 0;
+		long titleId = -1L;
 		try {
 			if (updateHooplaTitleInDB == null) {
 				updateHooplaTitleInDB = pikaConn.prepareStatement("INSERT INTO hoopla_export (hooplaId, active, title, kind, pa, demo, profanity, rating, abridged, children, price) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY " +
@@ -341,7 +342,7 @@ public class HooplaExportMain {
 			}
 			for (int i = 0; i < responseTitles.length(); i++) {
 				JSONObject curTitle = responseTitles.getJSONObject(i);
-				long       titleId  = curTitle.getLong("titleId");
+				titleId = curTitle.getLong("titleId");
 				updateHooplaTitleInDB.setLong(1, titleId);
 				updateHooplaTitleInDB.setBoolean(2, curTitle.getBoolean("active"));
 				updateHooplaTitleInDB.setString(3, curTitle.getString("title"));
@@ -352,7 +353,13 @@ public class HooplaExportMain {
 				updateHooplaTitleInDB.setString(8, curTitle.has("rating") ? curTitle.getString("rating") : "");
 				updateHooplaTitleInDB.setBoolean(9, curTitle.getBoolean("abridged"));
 				updateHooplaTitleInDB.setBoolean(10, curTitle.getBoolean("children"));
-				updateHooplaTitleInDB.setDouble(11, curTitle.getDouble("price"));
+				double price = 0;
+				if (!curTitle.has("price")){
+					logger.warn("Hoopla title " + titleId + "has no price set.");
+				} else {
+					price = curTitle.getDouble("price");
+				}
+				updateHooplaTitleInDB.setDouble(11, price);
 
 				int updated = updateHooplaTitleInDB.executeUpdate();
 				if (updated > 0) {
@@ -362,8 +369,9 @@ public class HooplaExportMain {
 			}
 
 		} catch (Exception e) {
-			logger.error("Error updating hoopla data in Pika database", e);
-			addNoteToHooplaExportLog("Error updating hoopla data in Pika database " + e.toString());
+			final String message = "Error updating hoopla data in Pika database for title " + titleId;
+			logger.error(message, e);
+			addNoteToHooplaExportLog(message + " " + e.toString());
 			updateTitlesInDBHadErrors = true;
 		}
 		return numUpdates;
