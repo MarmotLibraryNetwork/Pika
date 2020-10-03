@@ -168,6 +168,25 @@
 					</div>
 				{/foreach}
 			</div>
+			{if $favList->public !=0}
+				<div class="result-tools-horizontal">
+					<div class="share-tools" >
+						<span>SHARE LIST</span>
+						<a herf="#" onclick="return Pika.Lists.emailListAction({$favList->id})" title="share via e-mail">
+							<img src="/interface/themes/responsive/images/email-icon.png" alt="E-mail this" style="cursor:pointer;" />
+						</a>
+						<a href="https://twitter.com/compose/tweet?text={$favList->title|escape:"html"}+{$url|escape:"html"}/MyAccount/MyList/{$favList->id}" target="_blank" title="Share on Twitter">
+							<img src="/interface/themes/responsive/images/twitter-icon.png" alt="Share on Twitter" />
+						</a>
+						<a href="http://www.facebook.com/sharer/sharer.php?u={$url|escape:"html"}/MyAccount/MyList/{$favList->id}" target="_blank" title="Share on Facebook">
+							<img src="/interface/themes/responsive/images/facebook-icon.png" alt="Share on Facebook" />
+						</a>
+						<a href="http://www.pinterest.com/pin/create/button/?url={$url|escape:"html"}/MyAccount/MyList/{$favList->id}&amp;description=Pin%20on%20Pinterest" title="Pin on Pinterest">
+							<img src="/interface/themes/responsive/images/pinterest-icon.png" alt="Pin on Pinterest"/>
+						</a>
+					</div>
+				</div>
+			{/if}
 {if $userSort}
 				<script type="text/javascript">
 					{literal}
