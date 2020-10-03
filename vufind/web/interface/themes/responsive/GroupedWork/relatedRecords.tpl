@@ -15,7 +15,13 @@
 				<th>Publisher</th>
 			{/display_if_inconsistent}
 			{display_if_inconsistent array=$relatedRecords key="physical"}
-				<th>Phys Desc.</th>
+			<th>
+				{if $relatedRecords[0].id|strstr:"ils:"}
+					Phys Desc.
+				{else}
+					Cont Desc.
+				{/if}
+				</th>
 			{/display_if_inconsistent}
 {*			{display_if_inconsistent array=$relatedRecords key="language"}*}
 {*				<th>Language</th>*}
