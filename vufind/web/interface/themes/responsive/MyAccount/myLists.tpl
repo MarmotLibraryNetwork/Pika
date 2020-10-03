@@ -58,7 +58,7 @@
                         </div>
                     </div>
                     <div class="col-xs-2 col-sm-2 col-md-2 col-lg-1">
-                        {if $staff}
+                        {if $staff && $myList.isPublic}
                         <div class="btn-group-vertical">
                             <button value="transferList" onclick="return Pika.Lists.transferListToUser({$myList.id}); " class="btn btn-danger">Transfer</button>
                         </div>

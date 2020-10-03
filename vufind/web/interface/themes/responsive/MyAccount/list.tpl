@@ -79,7 +79,9 @@
 								{/if}
 								{if $loggedIn && $userRoles && (in_array('opacAdmin', $userRoles) || in_array('libraryAdmin', $userRoles) || in_array('contentEditor', $userRoles) || in_array('libraryManager', $userRoles) || in_array('locationManager', $userRoles))}
 									<li><a href="#" id="FavHome"  onclick="return Pika.Lists.addToHomePage('{$favList->id}')">{translate text='Add To Home Page'}</a></li>
-									<li><a href="#" id="TransferList" onclick="return Pika.Lists.transferListToUser('{$favList->id}')">{translate text='Transfer List'}</a></li>
+									{if $favList->public !=0}
+										<li><a href="#" id="TransferList" onclick="return Pika.Lists.transferListToUser('{$favList->id}')">{translate text='Transfer List'}</a></li>
+									{/if}
 								{/if}
 
 								</ul>
@@ -171,6 +173,7 @@
 			{if $favList->public !=0}
 
 				<div class="result-tools-horizontal btn-toolbar">
+
 					<div class="btn-group btn-group-sm">
 						<button value="copyList" id="copyList" class="btn btn-sm btn-default" onclick="return Pika.Lists.copyList({$favList->id})">Copy List</button>
 					</div>
