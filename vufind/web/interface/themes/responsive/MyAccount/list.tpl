@@ -169,9 +169,14 @@
 				{/foreach}
 			</div>
 			{if $favList->public !=0}
-				<div class="result-tools-horizontal">
+
+				<div class="result-tools-horizontal btn-toolbar">
+					<div class="btn-group btn-group-sm">
+						<button value="copyList" id="copyList" class="btn btn-sm btn-default" onclick="return Pika.Lists.copyList({$favList->id})">Copy List</button>
+					</div>
+					<div class="btn-group btn-group-sm">
 					<div class="share-tools" >
-						<span>SHARE LIST</span>
+						<span class="share-tools-label hidden-inline-xs">SHARE LIST</span>
 						<a herf="#" onclick="return Pika.Lists.emailListAction({$favList->id})" title="share via e-mail">
 							<img src="/interface/themes/responsive/images/email-icon.png" alt="E-mail this" style="cursor:pointer;" />
 						</a>
@@ -185,6 +190,8 @@
 							<img src="/interface/themes/responsive/images/pinterest-icon.png" alt="Pin on Pinterest"/>
 						</a>
 					</div>
+				</div>
+
 				</div>
 			{/if}
 {if $userSort}
