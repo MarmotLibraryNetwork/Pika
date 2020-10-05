@@ -162,6 +162,7 @@
 						<div class="row">
 							<div class="result-label col-tn-3">{translate text='Physical Desc'}: </div>
 							<div class="result-value col-tn-8">
+
 								{if $summPhysicalDesc}
 									{$summPhysicalDesc}
 								{elseif $alwaysShowSearchResultsMainDetails}

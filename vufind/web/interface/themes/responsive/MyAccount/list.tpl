@@ -79,7 +79,9 @@
 								{/if}
 								{if $loggedIn && $userRoles && (in_array('opacAdmin', $userRoles) || in_array('libraryAdmin', $userRoles) || in_array('contentEditor', $userRoles) || in_array('libraryManager', $userRoles) || in_array('locationManager', $userRoles))}
 									<li><a href="#" id="FavHome"  onclick="return Pika.Lists.addToHomePage('{$favList->id}')">{translate text='Add To Home Page'}</a></li>
-									<li><a href="#" id="TransferList" onclick="return Pika.Lists.transferListToUser('{$favList->id}')">{translate text='Transfer List'}</a></li>
+									{if $favList->public !=0}
+										<li><a href="#" id="TransferList" onclick="return Pika.Lists.transferListToUser('{$favList->id}')">{translate text='Transfer List'}</a></li>
+									{/if}
 								{/if}
 
 								</ul>
@@ -168,6 +170,33 @@
 					</div>
 				{/foreach}
 			</div>
+			{if $favList->public !=0}
+
+				<div class="result-tools-horizontal btn-toolbar">
+
+					<div class="btn-group btn-group-sm">
+						<button value="copyList" id="copyList" class="btn btn-sm btn-default" onclick="return Pika.Lists.copyList({$favList->id})">Copy List</button>
+					</div>
+					<div class="btn-group btn-group-sm">
+					<div class="share-tools" >
+						<span class="share-tools-label hidden-inline-xs">SHARE LIST</span>
+						<a herf="#" onclick="return Pika.Lists.emailListAction({$favList->id})" title="share via e-mail">
+							<img src="/interface/themes/responsive/images/email-icon.png" alt="E-mail this" style="cursor:pointer;" />
+						</a>
+						<a href="https://twitter.com/compose/tweet?text={$favList->title|escape:"html"}+{$url|escape:"html"}/MyAccount/MyList/{$favList->id}" target="_blank" title="Share on Twitter">
+							<img src="/interface/themes/responsive/images/twitter-icon.png" alt="Share on Twitter" />
+						</a>
+						<a href="http://www.facebook.com/sharer/sharer.php?u={$url|escape:"html"}/MyAccount/MyList/{$favList->id}" target="_blank" title="Share on Facebook">
+							<img src="/interface/themes/responsive/images/facebook-icon.png" alt="Share on Facebook" />
+						</a>
+						<a href="http://www.pinterest.com/pin/create/button/?url={$url|escape:"html"}/MyAccount/MyList/{$favList->id}&amp;description=Pin%20on%20Pinterest" title="Pin on Pinterest">
+							<img src="/interface/themes/responsive/images/pinterest-icon.png" alt="Pin on Pinterest"/>
+						</a>
+					</div>
+				</div>
+
+				</div>
+			{/if}
 {if $userSort}
 				<script type="text/javascript">
 					{literal}
