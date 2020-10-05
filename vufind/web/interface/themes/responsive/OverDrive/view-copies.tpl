@@ -2,7 +2,7 @@
 {* Add availability as needed *}
 {if $showAvailability && $availability && count($availability) > 0}
 	<div>
-		<table class="holdingsTable">
+		<table class="table">
 			<thead>
 				<tr><th>Library</th><th>Owned</th><th>Available</th></tr>
 			</thead>
@@ -22,7 +22,7 @@
 {if $showAvailabilityOther && $availabilityOther && count($availabilityOther) > 0}
 	<div>
 		<h3>Other Libraries that own this title</h3>
-		<table class="holdingsTable">
+		<table class="table">
 			<thead>
 			<tr><th>Library</th><th>Owned</th><th>Available</th></tr>
 			</thead>

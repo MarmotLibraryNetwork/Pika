@@ -216,7 +216,7 @@ class OverDriveDriver3 {
 				$this->ILSName = $patronHomeLibrary->overdriveAuthenticationILSName;
 			}elseif (!empty($library->overdriveAuthenticationILSName)){
 				$this->ILSName = $library->overdriveAuthenticationILSName;
-			}elseif (isset($configArray['OverDrive']['LibraryCardILS'])){
+			}elseif (!empty($configArray['OverDrive']['LibraryCardILS'])){
 				$this->ILSName = $configArray['OverDrive']['LibraryCardILS'];
 			}
 		}
@@ -390,8 +390,8 @@ class OverDriveDriver3 {
 	}
 
 	public function getProductMetadata($overDriveId, $productsKey = null){
-		global $configArray;
 		if ($productsKey == null){
+			global $configArray;
 			$productsKey = $configArray['OverDrive']['productsKey'];
 			//TODO: the products key can be gotten through the API
 		}
@@ -402,11 +402,20 @@ class OverDriveDriver3 {
 	}
 
 	public function getProductAvailability($overDriveId, $productsKey = null){
-		global $configArray;
 		if ($productsKey == null){
+			global $configArray;
 			$productsKey = $configArray['OverDrive']['productsKey'];
 		}
 		$availabilityUrl = "https://api.overdrive.com/v2/collections/$productsKey/products/$overDriveId/availability";
+		//print_r($availabilityUrl);
+		return $this->_callUrl($availabilityUrl);
+	}
+	public function getProductAvailabilityAlt($overDriveId, $productsKey = null){
+		if ($productsKey == null){
+			global $configArray;
+			$productsKey = $configArray['OverDrive']['productsKey'];
+		}
+		$availabilityUrl = "https://api.overdrive.com/v2/collections/$productsKey/availability?products=$overDriveId";
 		//print_r($availabilityUrl);
 		return $this->_callUrl($availabilityUrl);
 	}
@@ -877,7 +886,7 @@ class OverDriveDriver3 {
 		$url      = $configArray['OverDrive']['patronApiUrl'] . '/v1/patrons/me/checkouts/' . $overDriveId . '/formats';
 		$params   = [
 			'reserveId'  => $overDriveId,
-			'formatType' => $formatId,
+			'formatType' => $formatId, //TODO : user as format textid instead of numbericid
 		];
 		$response = $this->_callPatronUrl($user, $url, $params);
 		//print_r($response);
@@ -997,8 +1006,7 @@ class OverDriveDriver3 {
 				];
 			}elseif ($addPlaceHoldLink){
 				$item->links[] = [
-					'onclick'     => "return Pika.OverDrive.placeOverDriveHold('{$overDriveRecordDriver->getUniqueID()}', '{$item->numericId}');",
-					//TODO: second parameter doesn't look to be needed any more
+					'onclick'     => "return Pika.OverDrive.placeOverDriveHold('{$overDriveRecordDriver->getUniqueID()}');",
 					'text'        => '      Place Hold OverDrive',
 					'overDriveId' => $overDriveRecordDriver->getUniqueID(),
 					'formatId'    => $item->numericId, // TODO: this doesn't appear to be used any more. pascal 8.1-2018
@@ -1011,46 +1019,20 @@ class OverDriveDriver3 {
 		return $items;
 	}
 
-	public function getLibraryScopingId(){
-		//For econtent, we need to be more specific when restricting copies
-		//since patrons can't use copies that are only available to other libraries.
-		$searchLibrary  = Library::getSearchLibrary();
-		$searchLocation = Location::getSearchLocation();
-		$activeLibrary  = Library::getActiveLibrary();
-		$activeLocation = Location::getActiveLocation();
-		$homeLibrary    = UserAccount::getUserHomeLibrary();
-
-		//Load the holding label for the branch where the user is physically.
-		if (!empty($homeLibrary)){
-			return $homeLibrary->includeOutOfSystemExternalLinks ? -1 : $homeLibrary->libraryId;
-		}elseif (!empty($activeLocation)){
-			$activeLibrary = Library::getLibraryForLocation($activeLocation->locationId);
-			return $activeLibrary->includeOutOfSystemExternalLinks ? -1 : $activeLibrary->libraryId;
-		}elseif (!empty($activeLibrary)){
-			return $activeLibrary->includeOutOfSystemExternalLinks ? -1 : $activeLibrary->libraryId;
-		}elseif (!empty($searchLocation)){
-			$searchLibrary = Library::getLibraryForLocation($searchLibrary->locationId);
-			return $searchLibrary->includeOutOfSystemExternalLinks ? -1 : $searchLocation->libraryId;
-		}elseif (!empty($searchLibrary)){
-			return $searchLibrary->includeOutOfSystemExternalLinks ? -1 : $searchLibrary->libraryId;
-		}else{
-			return -1;
-		}
-	}
-
 	/**
 	 * @param OverDriveRecordDriver $overDriveRecordDriver
-	 * @return array
+	 * @return OverDriveAPIProductAvailability[]
 	 */
 	public function getScopedAvailability($overDriveRecordDriver){
 		$availability          = [];
 		$availability['mine']  = $overDriveRecordDriver->getAvailability();
 		$availability['other'] = [];
-		$scopingId             = $this->getLibraryScopingId();
-		if ($scopingId != -1){
+		$scopingId             = $overDriveRecordDriver->getLibraryIdForOverDriveAdvantageAccount(); // pika libraryId or false
+		if ($scopingId){
+			// This library has an OverDrive Advantage account
 			foreach ($availability['mine'] as $key => $availabilityItem){
 				if ($availabilityItem->libraryId > 0 && $availabilityItem->libraryId != $scopingId){
-					// Move items not in the shared collections and not in the library's advantage collection to the "other" catagory.
+					// Move items not in the shared collections and not in the library's advantage collection to the "other" category.
 					//TODO: does this need reworked with multiple shared collections
 					$availability['other'][$key] = $availability['mine'][$key];
 					unset($availability['mine'][$key]);
@@ -1086,12 +1068,10 @@ class OverDriveDriver3 {
 		$statusSummary['totalCopies']     = $totalCopies;
 		$statusSummary['onOrderCopies']   = $onOrderCopies;
 		$statusSummary['accessType']      = 'overdrive';
-		$statusSummary['isOverDrive']     = false;
 		$statusSummary['alwaysAvailable'] = false;
 		$statusSummary['class']           = 'checkedOut';
 		$statusSummary['available']       = false;
 		$statusSummary['status']          = 'Not Available';
-
 		$statusSummary['availableCopies'] = $availableCopies;
 		$statusSummary['isOverDrive']     = true;
 		if ($totalCopies >= 999999){
@@ -1105,7 +1085,6 @@ class OverDriveDriver3 {
 			$statusSummary['status']      = 'Checked Out';
 			$statusSummary['available']   = false;
 			$statusSummary['class']       = 'checkedOut';
-			$statusSummary['isOverDrive'] = true;
 		}
 
 
