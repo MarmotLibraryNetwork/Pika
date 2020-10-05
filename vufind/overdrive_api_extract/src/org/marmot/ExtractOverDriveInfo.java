@@ -279,7 +279,7 @@ class ExtractOverDriveInfo {
 						}
 
 						//Update products in database
-						updateDatabase();
+						updateDatabase(doFullReload);
 					}
 
 					//Get a list of records to get full details for.  We don't want this to take forever so only do a few thousand
@@ -470,7 +470,7 @@ class ExtractOverDriveInfo {
 		return sharedCollectionId;
 	}
 
-	private void updateDatabase() throws SocketTimeoutException {
+	private void updateDatabase(boolean doFullReload) throws SocketTimeoutException {
 		int numProcessed = 0;
 		for (String overDriveId : overDriveTitles.keySet()) {
 			OverDriveRecordInfo overDriveInfo = overDriveTitles.get(overDriveId);
@@ -503,11 +503,10 @@ class ExtractOverDriveInfo {
 
 		//Delete any products that no longer exist, but only if we aren't only loading changes and also
 		//should not update if we had any timeouts loading products since those products would have been skipped.
-		if (lastUpdateTimeParam.length() == 0 && !hadTimeoutsFromOverDrive) {
-			for (String overDriveId : databaseProducts.keySet()) {
-				OverDriveDBInfo overDriveDBInfo = databaseProducts.get(overDriveId);
+		if (doFullReload && !hadTimeoutsFromOverDrive) {
+			for (OverDriveDBInfo overDriveDBInfo: databaseProducts.values()){
 				if (!overDriveDBInfo.isDeleted()) {
-					deleteProductInDB(databaseProducts.get(overDriveId));
+					deleteProductInDB(overDriveDBInfo);
 				}
 			}
 		}
@@ -635,7 +634,7 @@ class ExtractOverDriveInfo {
 
 	private boolean loadProductsFromDatabase() {
 		try (
-				PreparedStatement loadProductsStmt = econtentConn.prepareStatement("SELECT * FROM overdrive_api_products");
+				PreparedStatement loadProductsStmt = econtentConn.prepareStatement("SELECT * FROM overdrive_api_products WHERE deleted != 1");
 				ResultSet loadProductsRS = loadProductsStmt.executeQuery()
 		) {
 			while (loadProductsRS.next()) {
