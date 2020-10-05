@@ -59,7 +59,6 @@ class Library extends DB_DataObject {
 	public $ilsCode;
 	public $themeName; 				//varchar(15)
 	public $restrictSearchByLibrary;
-	public $includeOutOfSystemExternalLinks;
 	public $allowProfileUpdates;   //tinyint(4)
 	public $allowFreezeHolds;   //tinyint(4)
 	public $scope; 					//smallint(6) // The Sierra OPAC scope
@@ -552,7 +551,6 @@ class Library extends DB_DataObject {
 			'searchingSection' => array('property'=>'searchingSection', 'type' => 'section', 'label' =>'Searching', 'hideInLists' => true,
 					'helpLink'=>'https://docs.google.com/document/d/1QQ7bNfGx75ImTguxEOmf7eCtdrVN9vi8FpWtWY_O3OU', 'properties' => array(
 				'restrictSearchByLibrary'                  => array('property' => 'restrictSearchByLibrary', 'type'=>'checkbox', 'label'=>'Restrict Search By Library', 'description'=>'Whether or not search results should only include titles from this library', 'hideInLists' => true),
-				'includeOutOfSystemExternalLinks'          => array('property' => 'includeOutOfSystemExternalLinks', 'type'=>'checkbox', 'label'=>'Include Out Of System External Links', 'description'=>'Whether or not to include external links from other library systems.  Should only be enabled for global scope.', 'hideInLists' => true, 'default'=>0),
 				'publicListsToInclude'                     => array('property' => 'publicListsToInclude', 'type'=>'enum', 'values' => array(0 => 'No Lists', '1' => 'Lists from this library', '3'=>'Lists from library list publishers Only', '4'=>'Lists from all list publishers', '2' => 'All Lists'), 'label'=>'Public Lists To Include', 'description'=>'Which lists should be included in this scope'),
 				'boostByLibrary'                           => array('property' => 'boostByLibrary', 'type'=>'checkbox', 'label'=>'Boost By Library', 'description'=>'Whether or not boosting of titles owned by this library should be applied', 'hideInLists' => true),
 				'additionalLocalBoostFactor'               => array('property' => 'additionalLocalBoostFactor', 'type'=>'integer', 'label'=>'Additional Local Boost Factor', 'description'=>'An additional numeric boost to apply to any locally owned and locally available titles', 'hideInLists' => true),

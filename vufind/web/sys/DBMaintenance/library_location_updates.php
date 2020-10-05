@@ -75,7 +75,6 @@ function getLibraryLocationUpdates(){
 				"ALTER TABLE `library` ADD `systemMessage` VARCHAR(512) DEFAULT '';",
 				"ALTER TABLE library ADD restrictSearchByLibrary TINYINT(1) DEFAULT '0'",
 				"ALTER TABLE library ADD includeDigitalCollection TINYINT(1) DEFAULT '1'",
-				"ALTER TABLE library ADD includeOutOfSystemExternalLinks TINYINT(1) DEFAULT '0'",
 				"ALTER TABLE library ADD restrictOwningBranchesAndSystems TINYINT(1) DEFAULT '1'",
 				"ALTER TABLE library ADD showAvailableAtAnyLocation TINYINT(1) DEFAULT '1'",
 				"ALTER TABLE library ADD allowPatronAddressUpdates TINYINT(1) DEFAULT '1'",
@@ -1163,5 +1162,14 @@ ADD COLUMN selfRegistrationAgencyCode INT(10) NULL;",
 				'ALTER TABLE `library` DROP COLUMN `prospectorCode`;'
 			),
 		),
+
+		'includeOutOfSystemExternalLinks_removal_2020.07.0' => [
+			'title'       => 'Remove obsolete library setting',
+			'description' => 'Remove obsolete library setting includeOutOfSystemExternalLinks',
+			'sql'         => [
+				'ALTER TABLE `library` DROP COLUMN `includeOutOfSystemExternalLinks`;'
+			],
+		],
+
 	);
 }
