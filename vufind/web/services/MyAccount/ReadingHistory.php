@@ -62,12 +62,14 @@ class ReadingHistory extends MyAccount {
 				// Setup history search variables
 				$searchBy = false;
 				$searchTerm = false;
+				$interface->assign('isReadingHistorySearch', false);
 				if(isset($_REQUEST['readingHistoryAction']) && $_REQUEST['readingHistoryAction'] == 'searchReadingHistory') {
 					$searchTerm = isset($_REQUEST['searchTerm']) ? $_REQUEST['searchTerm'] : '';
 					$searchBy   = isset($_REQUEST['searchBy']) ? $_REQUEST['searchBy'] : 'title';
 
 					$interface->assign('searchTerm', $searchTerm);
 					$interface->assign('searchBy', $searchBy);
+					$interface->assign('isReadingHistorySearch', true);
 				}
 
 				//Check to see if there is an action to perform.

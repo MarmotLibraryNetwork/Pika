@@ -292,9 +292,12 @@
 				</div>
 
 				{if $pageLinks.all}<div class="text-center">{$pageLinks.all}</div>{/if}
-			{elseif $historyActive == true}
+			{elseif $historyActive == true && $isReadingHistorySearch == false}
 				{* No entries in the history, but the history is active *}
 				<div class="alert alert-info">There are no entries in your reading history.</div>
+      {elseif $historyActive == true && $isReadingHistorySearch == true}
+          {* History search request, No entries in the history *}
+				<div class="alert alert-warning">There are no entries in your reading history that match your search. <strong><a href="/MyAccount/ReadingHistory">Return to Reading History</a></strong></div>
 			{/if}
 			</div>
 		</form>
