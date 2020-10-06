@@ -190,8 +190,8 @@
 							<img src="{img filename='facebook-icon.png'}" alt="Share on Facebook">
 						</a>
 
-						{include file="GroupedWork/pinterest-share-button.tpl" urlToShare=$url|escape:"html"|cat:"/MyAccount/MyList/"|cat:$favList->id}
-
+						{include file="GroupedWork/pinterest-share-button.tpl" urlToShare=$url|escape:"html"|cat:"/MyAccount/MyList/"|cat:$favList->id description="See My List '"|cat:$favList->title|cat:"' at $homeLibrary"}
+{debug}
 					</div>
 				</div>
 
