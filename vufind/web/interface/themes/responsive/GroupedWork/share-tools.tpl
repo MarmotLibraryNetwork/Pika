@@ -20,7 +20,7 @@
 				<img src="{img filename='facebook-icon.png'}" alt="Share on Facebook">
 			</a>
 
-			{include file="GroupedWork/pinterest-share-button.tpl" urlToShare=$url|cat:"/"|cat:$recordDriver->getLinkUrl() coverUrl=$recordDriver->getBookcoverUrl('medium')}
+			{include file="GroupedWork/pinterest-share-button.tpl" urlToShare=$url|cat:"/"|cat:$recordDriver->getLinkUrl() coverUrl=$recordDriver->getBookcoverUrl('large', true)}
 		{/if}
 	</div>
 	{/if}

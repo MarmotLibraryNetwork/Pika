@@ -1,8 +1,10 @@
 {strip}
-	<a href="http://www.pinterest.com/pin/create/button/?url={$urlToShare}&media={$coverUrl|escape:'url'}&description=Pin%20on%20Pinterest"
+	<a href="http://www.pinterest.com/pin/create/button/?url={$urlToShare}{if $coverUrl}&media={$coverUrl|escape:'url'}{/if}&description=Pin%20on%20Pinterest"
 	   data-pin-custom="true"
+	   {if $coverUrl}
 	   data-pin-do="buttonPin"
 	   data-pin-media="{$coverUrl}"
+	   {/if}
 	   target="_blank"
 	   style="cursor:pointer;"
 	   title="Pin on Pinterest">
