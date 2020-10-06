@@ -83,18 +83,6 @@ class OverDriveRecordDriver extends RecordInterface {
 		return 'OverDrive';
 	}
 
-	protected $itemsFromIndex;
-
-	public function setItemsFromIndex($itemsFromIndex, $realTimeStatusNeeded){
-		$this->itemsFromIndex = $itemsFromIndex;
-	}
-
-	protected $detailedRecordInfoFromIndex;
-
-	public function setDetailedRecordInfoFromIndex($detailedRecordInfoFromIndex, $realTimeStatusNeeded){
-		$this->detailedRecordInfoFromIndex = $detailedRecordInfoFromIndex;
-	}
-
 	/**
 	 * Load the grouped work that this record is connected to.
 	 */
@@ -240,18 +228,48 @@ class OverDriveRecordDriver extends RecordInterface {
 	 * and displayed in the Holdings tab of the record view page.  Returns
 	 * null if no data is available.
 	 *
-	 * @access  public
-	 * @return  string              Name of Smarty template file to display.
+	 * @return  OverDriveAPIProductFormats[]  An Array of Formats with link information included
 	 */
 	public function getHoldings(){
-		require_once ROOT_DIR . '/Drivers/OverDriveDriverFactory.php';
-		$driver = OverDriveDriverFactory::getDriver();
+		/** @var OverDriveAPIProductFormats[] $items */
+		$items = $this->getItems();
+		//Add links as needed
+		$availability     = $this->getAvailability();
+		$addCheckoutLink  = false;
+		$addPlaceHoldLink = false;
+		foreach ($availability as $availableFrom){
+			if ($availableFrom->copiesAvailable > 0){
+				$addCheckoutLink = true;
+			}else{
+				$addPlaceHoldLink = true;
+			}
+		}
+		foreach ($items as $key => &$item){
+			$item->links = [];
+			if ($addCheckoutLink){
+				$checkoutLink  = "return Pika.OverDrive.checkOutOverDriveTitle('{$this->getUniqueID()}');";
+				$item->links[] = [
+					'onclick'     => $checkoutLink,
+					'text'        => 'Check Out OverDrive',
+					'overDriveId' => $this->getUniqueID(),
+					'formatId'    => $item->numericId, // TODO: this doesn't appear to be used any more. pascal 8.1-2018
+					'action'      => 'CheckOut'
+				];
+			}elseif ($addPlaceHoldLink){
+				$item->links[] = [
+					'onclick'     => "return Pika.OverDrive.placeOverDriveHold('{$this->getUniqueID()}');",
+					'text'        => '      Place Hold OverDrive',
+					'overDriveId' => $this->getUniqueID(),
+					'formatId'    => $item->numericId, // TODO: this doesn't appear to be used any more. pascal 8.1-2018
+					'action'      => 'Hold'
+				];
+			}
+		}
 
-		/** @var OverDriveAPIProductFormats[] $holdings */
-		return $driver->getHoldings($this);
+		return $items;
 	}
 
-	/**
+		/**
 	 * Assign necessary Smarty variables and return a template name to
 	 * load in order to display a summary of the item suitable for use in
 	 * user's favorites list.
@@ -450,6 +468,27 @@ class OverDriveRecordDriver extends RecordInterface {
 			}
 		}
 		return $this->availability;
+	}
+	/**
+	 * @return array
+	 */
+	public function getScopedAvailability(){
+		$availability                          = [
+			'mine'  => $this->getAvailability(),
+			'other' => []
+		];
+		$libraryIdForOverDriveAdvantageAccount = $this->getLibraryIdForOverDriveAdvantageAccount();
+		if ($libraryIdForOverDriveAdvantageAccount){
+			foreach ($availability['mine'] as $key => $availabilityItem){
+				if ($availabilityItem->libraryId > 0 && $availabilityItem->libraryId != $libraryIdForOverDriveAdvantageAccount){
+					// Move items not in the shared collections and not in the library's advantage collection to the "other" category.
+					//TODO: does this need reworked with multiple shared collections
+					$availability['other'][$key] = $availability['mine'][$key];
+					unset($availability['mine'][$key]);
+				}
+			}
+		}
+		return $availability;
 	}
 
 	public function getLibraryScopingId(){
@@ -773,8 +812,8 @@ class OverDriveRecordDriver extends RecordInterface {
 		$driver = OverDriveDriverFactory::getDriver();
 
 		/** @var OverDriveAPIProductFormats[] $holdings */
-		$holdings           = $driver->getHoldings($this);
-		$scopedAvailability = $driver->getScopedAvailability($this);
+		$holdings           = $this->getHoldings();
+		$scopedAvailability = $this->getScopedAvailability();
 		$interface->assign('availability', $scopedAvailability['mine']);
 		$interface->assign('availabilityOther', $scopedAvailability['other']);
 		$numberOfHolds = 0;
@@ -1134,4 +1173,38 @@ class OverDriveRecordDriver extends RecordInterface {
 	function getVolumeInfoForRecord(){
 		return [];
 	}
+
+	/**
+	 * An Array of basic template information. Essentially determines whether or not to show place hold or check out buttons.
+	 * @return array
+	 */
+	public function getStatusSummary(){
+		$statusSummary   = [];
+		$availableCopies = 0;
+		$totalCopies     = 0;
+		$availabilities  = $this->getAvailability();
+		$isCopies        = count($availabilities) > 0;
+		if ($isCopies){
+			foreach ($availabilities as $curAvailability){
+				$availableCopies += $curAvailability->copiesAvailable;
+				$totalCopies     += $curAvailability->copiesOwned;
+			}
+		}
+
+		//Set status summary
+		if ($availableCopies > 0){
+			$statusSummary['status'] = 'Available from OverDrive';
+			$statusSummary['class']  = 'available';
+		}else{
+			$statusSummary['status'] = 'Checked Out';
+			$statusSummary['class']  = 'checkedOut';
+		}
+
+		//Determine which buttons to show
+		$statusSummary['showPlaceHold'] = $isCopies && $availableCopies == 0;
+		$statusSummary['showCheckout']  = $isCopies && $availableCopies > 0;
+
+		return $statusSummary;
+	}
+
 }

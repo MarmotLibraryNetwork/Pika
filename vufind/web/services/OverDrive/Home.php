@@ -35,8 +35,6 @@ class OverDrive_Home extends Action{
 			$interface->assign('searchId', $_SESSION['searchId']);
 		}
 
-		$interface->assign('overDriveVersion', isset($configArray['OverDrive']['interfaceVersion']) ? $configArray['OverDrive']['interfaceVersion'] : 1);
-
 		$this->id = strip_tags($_REQUEST['id']);
 		$interface->assign('id', $this->id);
 		$recordDriver = new OverDriveRecordDriver($this->id);
@@ -55,14 +53,7 @@ class OverDrive_Home extends Action{
 			$interface->assign('groupedWorkDriver', $recordDriver->getGroupedWorkDriver());
 
 			//Load status summary
-			require_once ROOT_DIR . '/Drivers/OverDriveDriverFactory.php';
-			$driver             = OverDriveDriverFactory::getDriver();
-			$holdings           = $driver->getHoldings($recordDriver);
-			$scopedAvailability = $driver->getScopedAvailability($recordDriver);
-			$holdingsSummary    = $driver->getStatusSummary($this->id, $scopedAvailability, $holdings);
-			if (PEAR_Singleton::isError($holdingsSummary)){
-				PEAR_Singleton::raiseError($holdingsSummary);
-			}
+			$holdingsSummary = $recordDriver->getStatusSummary();
 			$interface->assign('holdingsSummary', $holdingsSummary);
 
 			//Load the citations

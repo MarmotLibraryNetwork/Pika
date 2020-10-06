@@ -22,7 +22,7 @@ require_once ROOT_DIR . '/sys/Pager.php';
 
 class Search_Results extends Action {
 
-	protected $viewOptions = array('list', 'covers');
+	protected $viewOptions = ['list', 'covers'];
 	// define the valid view modes checked in Base.php
 
 	function launch() {
@@ -76,17 +76,17 @@ class Search_Results extends Action {
 				$yearTo = preg_match('/^\d{2,4}$/', $_REQUEST[$dateFilter . 'yearto']) ? $_REQUEST[$dateFilter . 'yearto'] : '*';
 				if (strlen($yearFrom) == 2){
 					$yearFrom = '19' . $yearFrom;
-				}else if (strlen($yearFrom) == 3){
+				}elseif (strlen($yearFrom) == 3){
 					$yearFrom = '0' . $yearFrom;
 				}
 				if (strlen($yearTo) == 2){
 					$yearTo = '19' . $yearTo;
-				}else if (strlen($yearFrom) == 3){
+				}elseif (strlen($yearFrom) == 3){
 					$yearTo = '0' . $yearTo;
 				}
 				if ($yearTo != '*' && $yearFrom != '*' && $yearTo < $yearFrom){
-					$tmpYear = $yearTo;
-					$yearTo = $yearFrom;
+					$tmpYear  = $yearTo;
+					$yearTo   = $yearFrom;
 					$yearFrom = $tmpYear;
 				}
 				unset($queryParams['module']);
@@ -119,7 +119,7 @@ class Search_Results extends Action {
 			}
 		}
 
-		$rangeFilters = array('lexile_score', 'accelerated_reader_reading_level', 'accelerated_reader_point_value');
+		$rangeFilters = ['lexile_score', 'accelerated_reader_reading_level', 'accelerated_reader_point_value'];
 		foreach ($rangeFilters as $filter){
 			if ((isset($_REQUEST[$filter . 'from']) && strlen($_REQUEST[$filter . 'from']) > 0) || (isset($_REQUEST[$filter . 'to']) && strlen($_REQUEST[$filter . 'to']) > 0)){
 				$queryParams = $_GET;
@@ -243,7 +243,6 @@ class Search_Results extends Action {
 		//Enable and disable functionality based on library settings
 		//This must be done before we process each result
 		$interface->assign('showNotInterested', false);
-		$interface->assign('overDriveVersion', isset($configArray['OverDrive']['interfaceVersion']) ? $configArray['OverDrive']['interfaceVersion'] : 1);
 
 		$showRatings = 1;
 		$enableProspectorIntegration = $configArray['Content']['Prospector'] ?? false;
