@@ -63,13 +63,13 @@
 				{$statusInformation.copies} {if $statusInformation.copies == 1}copy{else}copies{/if}, {$statusInformation.numHolds} {if $statusInformation.numHolds == 1}person is{else}people are{/if} on the wait list.
 			{/if}
 			{if $statusInformation.volumeHolds}
-				<br/>
+				<br>
 				{foreach from=$statusInformation.volumeHolds item=volumeHoldInfo}
 					&nbsp;&nbsp;{$volumeHoldInfo.numHolds} waiting for {$volumeHoldInfo.label}<br>
 				{/foreach}
 			{/if}
 			{if $statusInformation.onOrderCopies > 0}
-				<br/>
+				<br>
 				{if $showOnOrderCounts}
 					{$statusInformation.onOrderCopies} {if $statusInformation.onOrderCopies == 1}copy{else}copies{/if} on order.
 				{else}

@@ -55,15 +55,15 @@
                       {if $relatedManifestation.numRelatedRecords == 1}
 											  <a href="{$curAction.url}" class="btn btn-sm btn-primary" onclick="{if $curAction.requireLogin}return Pika.Account.followLinkIfLoggedIn(this, '{$curAction.url}');{/if}" {if $curAction.alt}title="{$curAction.alt}"{/if}>{$curAction.title}</a>
 											{else}
-	                      <a href="#" class="btn btn-sm btn-primary" onclick="return Pika.ResultsList.toggleRelatedManifestations('{if $inPopUp}popup-{/if}{$id|escapeCSS}_{$relatedManifestation.format|escapeCSS}');">Available From</a>
-                      {/if}
+												<a href="#" class="btn btn-sm btn-primary" onclick="return Pika.ResultsList.toggleRelatedManifestations('{if $inPopUp}popup-{/if}{$id|escapeCSS}_{$relatedManifestation.format|escapeCSS}');">{translate text="econtent_available_from"}</a>
+											{/if}
 										{else}
-												{if $relatedManifestation.format == 'eAudiobook' || $relatedManifestation.format == 'eBook' || $relatedManifestation.format == 'eComic' || $relatedManifestation.format == 'eVideo' || $relatedManifestation.format == 'eMusic'|| $relatedManifestation.format == 'Physical Object'}
+												{if $relatedManifestation.isEContent || $relatedManifestation.format == 'Physical Object'}
 													{if $relatedManifestation.numRelatedRecords == 1}
 														<a href="#" class="btn btn-sm btn-primary" onclick="{$curAction.onclick}" {if $curAction.alt}title="{$curAction.alt}"{/if}>{$curAction.title}</a>
-		                      {else}
-	                          <a href="#" class="btn btn-sm btn-primary" onclick="return Pika.ResultsList.toggleRelatedManifestations('{if $inPopUp}popup-{/if}{$id|escapeCSS}_{$relatedManifestation.format|escapeCSS}');">{if $relatedManifestation.format == 'Physical Object'}Show Options{else}{translate text="econtent_available_from"}{/if}</a>
-                          {/if}
+													{else}
+														<a href="#" class="btn btn-sm btn-primary" onclick="return Pika.ResultsList.toggleRelatedManifestations('{if $inPopUp}popup-{/if}{$id|escapeCSS}_{$relatedManifestation.format|escapeCSS}');">{if $relatedManifestation.format == 'Physical Object'}Show Options{else}{translate text="econtent_available_from"}{/if}</a>
+													{/if}
 												{else}
 												<a href="#" class="btn btn-sm btn-primary" onclick="{$curAction.onclick}" {if $curAction.alt}title="{$curAction.alt}"{/if}>{$curAction.title}</a>{/if}
 												{/if}

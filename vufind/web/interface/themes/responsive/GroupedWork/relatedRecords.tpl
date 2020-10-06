@@ -5,7 +5,7 @@
 			{display_if_inconsistent array=$relatedRecords key="publicationDate"}
 				<th>Pub. Date</th>
 			{/display_if_inconsistent}
-			{if in_array(strtolower($relatedManifestation.format), array('ebook', 'eaudiobook', 'emagazine', 'evideo'))}
+			{if $relatedManifestation.isEContent}
 				<th>Source</th>
 			{/if}
 			{display_if_inconsistent array=$relatedRecords key="edition"}
@@ -16,10 +16,10 @@
 			{/display_if_inconsistent}
 			{display_if_inconsistent array=$relatedRecords key="physical"}
 			<th>
-				{if $relatedRecords[0].id|strstr:"ils:"}
-					Phys Desc.
+				{if $relatedManifestation.isEContent}
+					Content Desc.
 				{else}
-					Cont Desc.
+					Physical Desc.
 				{/if}
 				</th>
 			{/display_if_inconsistent}
@@ -41,7 +41,7 @@
 				{display_if_inconsistent array=$relatedRecords key="publicationDate"}
 					<td><a href="{$relatedRecord.url}">{$relatedRecord.publicationDate}</a></td>
 				{/display_if_inconsistent}
-				{if in_array(strtolower($relatedManifestation.format), array('ebook', 'eaudiobook', 'emagazine', 'evideo', 'ecomic'))}
+				{if $relatedManifestation.isEContent}
 					<td><a href="{$relatedRecord.url}">{$relatedRecord.eContentSource}</a></td>
 				{/if}
 				{display_if_inconsistent array=$relatedRecords key="edition"}
