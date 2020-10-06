@@ -111,14 +111,14 @@ abstract class RecordInterface {
 	 *
 	 * @return string
 	 */
-	public function getLinkUrl() {
+	public function getLinkUrl(){
 		global $interface;
-		$linkUrl = $this->getRecordUrl();
-		$extraParams = array();
+		$linkUrl     = $this->getRecordUrl();
+		$extraParams = [];
 		if (!empty($interface->get_template_vars('searchId'))){
 			$extraParams[] = 'searchId=' . $interface->get_template_vars('searchId');
 			$extraParams[] = 'recordIndex=' . $interface->get_template_vars('recordIndex');
-			$extraParams[] = 'page='  . $interface->get_template_vars('page');
+			$extraParams[] = 'page=' . $interface->get_template_vars('page');
 			$extraParams[] = 'searchSource=' . $interface->get_template_vars('searchSource');
 		}
 

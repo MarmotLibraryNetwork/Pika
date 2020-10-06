@@ -3,7 +3,7 @@
 	<div class="share-tools">
 		<span class="share-tools-label hidden-inline-xs">SHARE</span>
 		{if false && $showTextThis == 1}
-			<a href="#" title="Text Title" onclick="return Pika.GroupedWork.showSmsForm(this, '{$recordDriver->getPermanentId()|escape:"url"}')" title="Share via text message">
+			<a href="#" onclick="return Pika.GroupedWork.showSmsForm(this, '{$recordDriver->getPermanentId()|escape:"url"}')" title="Share via text message">
 				<img src="{img filename='sms-icon.png'}" alt="Text This">
 			</a>
 		{/if}
@@ -20,9 +20,7 @@
 				<img src="{img filename='facebook-icon.png'}" alt="Share on Facebook">
 			</a>
 
-			<a href="http://www.pinterest.com/pin/create/button/?url={$url}/{$recordDriver->getLinkUrl()}&media={$recordDriver->getBookcoverUrl('medium')|escape:'url'}&description=Pin%20on%20Pinterest" target="_blank" title="Pin on Pinterest">
-				<img src="{img filename='pinterest-icon.png'}" alt="Pin on Pinterest">
-			</a>
+			{include file="GroupedWork/pinterest-share-button.tpl" urlToShare=$url|cat:"/"|cat:$recordDriver->getLinkUrl() coverUrl=$recordDriver->getBookcoverUrl('medium')}
 		{/if}
 	</div>
 	{/if}
