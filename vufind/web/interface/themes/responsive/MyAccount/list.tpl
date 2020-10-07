@@ -59,6 +59,9 @@
 								<li><a href="#" value="emailList" id="FavEmail"  onclick='return Pika.Lists.emailListAction("{$favList->id}")'>Email List</a></li>
 								<li><a href="#" value="printList" id="FavPrint"  onclick='return Pika.Lists.printListAction()'>Print List</a></li>
 								<li><a href="#" value="exportToExcel" id="FavExcel" onclick='return Pika.Lists.exportListAction("{$favList->id}", {$pageNum}, {$pageSize},"{$listSort}");'>Export to Excel</a></li>
+								<li><a href="https://twitter.com/compose/tweet?text={$favList->title|escape:"html"}+{$url|escape:"html"}/MyAccount/MyList/{$favList->id}" id="Twitter Share">Share on Twitter <img class="pull-right" src="{img filename='twitter-icon.png'}" alt="Share on Twitter" /></a></li>
+								<li><a href="http://www.facebook.com/sharer/sharer.php?u={$url|escape:"html"}/MyAccount/MyList/{$favList->id}" id="">Share on Facebook <img src="{img filename='facebook-icon.png'}" alt="Share on Facebook" /></a></li>
+								<li>{include file="GroupedWork/pinterest-share-button.tpl" urlToShare=$url|escape:"html"|cat:"/MyAccount/MyList/"|cat:$favList->id description="See My List '"|cat:$favList->title|cat:"' at $homeLibrary" linkText="Pin on Pinterest" imgClass="pull-right"}</li>
 							</ul>
 						</div>
 						<div class="btn-group">
@@ -191,7 +194,7 @@
 						</a>
 
 						{include file="GroupedWork/pinterest-share-button.tpl" urlToShare=$url|escape:"html"|cat:"/MyAccount/MyList/"|cat:$favList->id description="See My List '"|cat:$favList->title|cat:"' at $homeLibrary"}
-{debug}
+
 					</div>
 				</div>
 

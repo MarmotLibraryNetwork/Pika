@@ -7,8 +7,11 @@
 	   {/if}
 	   target="_blank"
 	   style="cursor:pointer;"
-	   title="Pin on Pinterest">
-		<img src="{img filename='pinterest-icon.png'}" alt="Pin on Pinterest">
+	   title="Pin on Pinterest"
+
+		>
+		{if $linkText}{$linkText}{/if}
+		<img {if $imgClass}class="{$imgClass}"{/if} src="{img filename='pinterest-icon.png'}" alt="Pin on Pinterest">
 	</a>
 	{if !$pinterestJS}
 		{* load the javascript only once per page as needed *}

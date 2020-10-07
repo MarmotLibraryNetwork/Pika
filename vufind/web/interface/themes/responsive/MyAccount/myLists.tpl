@@ -50,10 +50,40 @@
                         </div>
                         <div class="row">
                             <div class="col-tn-12 col-xs-12">
-                                <div class="btn-group">
-                                    <button value="emailList" class="btn btn-sm btn-default" id="FavEmail" onclick="return Pika.Lists.emailListAction('{$myList.id}');">Email List</button>
-                                    <button value="exportToExcel" class="btn btn-sm btn-default" id="FavExcel" onclick="return Pika.Lists.exportListFromLists('{$myList.id}');">Export to Excel</button>
+
+
+                                {if $myList.isPublic}
+                                <div class="result-tools-horizontal btn-toolbar">
+
+                                    <div class="btn-group btn-group-sm">
+                                        <div class="share-tools" >
+                                            <span class="share-tools-label hidden-inline-xs">SHARE LIST</span>
+                                            <a herf="#" onclick="return Pika.Lists.emailListAction({$myList->id})" title="share via e-mail">
+                                                <img src="{img filename='email-icon.png'}" alt="E-mail this" style="cursor:pointer;">
+                                            </a>
+                                            <a href="https://twitter.com/compose/tweet?text={$myList->title|escape:"html"}+{$url|escape:"html"}/MyAccount/MyList/{$myList->id}" target="_blank" title="Share on Twitter">
+                                                <img src="{img filename='twitter-icon.png'}" alt="Share on Twitter">
+                                            </a>
+                                            <a href="http://www.facebook.com/sharer/sharer.php?u={$url|escape:"html"}/MyAccount/MyList/{$myList->id}" target="_blank" title="Share on Facebook">
+                                                <img src="{img filename='facebook-icon.png'}" alt="Share on Facebook">
+                                            </a>
+
+                                            {include file="GroupedWork/pinterest-share-button.tpl" urlToShare=$url|escape:"html"|cat:"/MyAccount/MyList/"|cat:$myList->id description="See My List '"|cat:$myList->title|cat:"' at $homeLibrary"}
+
+                                            <a href="#" id="FavExcel" onclick="return Pika.Lists.exportListFromLists('{$myList.id}');" title="Export List to Excel">
+                                                <img src="{img filename='excel.png'}" alt="Export to Excel" />
+                                            </a>
+                                        </div>
+                                    </div>
                                 </div>
+                                    {else}
+                                    <div class="btn-group btn-group-sm">
+                                        <button value="emailList" class="btn btn-sm btn-default" id="Email List" onclick="return Pika.Lists.emailListAction({$myList->id})" title="share via e-mail">Email List</button>
+                                        <button value="exportToExcel" class="btn btn-sm btn-default" id="FavExcel" onclick="return Pika.Lists.exportListFromLists('{$myList.id}');">Export to Excel</button>
+                                    </div>
+                                    {/if}
+
+
                             </div>
                         </div>
                     </div>
