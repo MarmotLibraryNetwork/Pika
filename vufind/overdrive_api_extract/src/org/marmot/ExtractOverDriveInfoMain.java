@@ -120,7 +120,7 @@ public class ExtractOverDriveInfoMain {
 		try {
 			econtentConn = DriverManager.getConnection(econtentConnectionInfo);
 		} catch (SQLException e) {
-			logger.error("Could not connect to econtent database : " + e.getMessage());
+			logger.error("Could not connect to eContent database : " + e.getMessage());
 			System.exit(2); // Exiting with a status code of 2 so that our executing bash scripts knows there has been a database communication error
 			return;
 		}

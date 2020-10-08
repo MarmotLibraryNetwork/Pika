@@ -247,21 +247,14 @@ class OverDriveRecordDriver extends RecordInterface {
 		foreach ($items as $key => &$item){
 			$item->links = [];
 			if ($addCheckoutLink){
-				$checkoutLink  = "return Pika.OverDrive.checkOutOverDriveTitle('{$this->getUniqueID()}');";
 				$item->links[] = [
-					'onclick'     => $checkoutLink,
+					'onclick'     => "return Pika.OverDrive.checkOutOverDriveTitle('{$this->getUniqueID()}');",
 					'text'        => 'Check Out OverDrive',
-					'overDriveId' => $this->getUniqueID(),
-					'formatId'    => $item->numericId, // TODO: this doesn't appear to be used any more. pascal 8.1-2018
-					'action'      => 'CheckOut'
 				];
 			}elseif ($addPlaceHoldLink){
 				$item->links[] = [
 					'onclick'     => "return Pika.OverDrive.placeOverDriveHold('{$this->getUniqueID()}');",
-					'text'        => '      Place Hold OverDrive',
-					'overDriveId' => $this->getUniqueID(),
-					'formatId'    => $item->numericId, // TODO: this doesn't appear to be used any more. pascal 8.1-2018
-					'action'      => 'Hold'
+					'text'        => 'Place Hold OverDrive',
 				];
 			}
 		}
@@ -820,13 +813,14 @@ class OverDriveRecordDriver extends RecordInterface {
 
 		$isbn = $this->getCleanISBN();
 
-		//Load holdings information from the driver
+		//Load overDrive Title Holdings information from the driver
 		require_once ROOT_DIR . '/Drivers/OverDriveDriverFactory.php';
 		$driver = OverDriveDriverFactory::getDriver();
 
-		/** @var OverDriveAPIProductFormats[] $holdings */
-		$holdings           = $this->getHoldings();
-		$scopedAvailability = $this->getScopedAvailability();
+		/** @var OverDriveAPIProductFormats[] $overDriveTitleHoldings */
+		$overDriveTitleHoldings = $this->getHoldings();
+		$scopedAvailability     = $this->getScopedAvailability();
+		$interface->assign('overDriveTitleHoldings', $overDriveTitleHoldings);
 		$interface->assign('availability', $scopedAvailability['mine']);
 		$interface->assign('availabilityOther', $scopedAvailability['other']);
 		$numberOfHolds = 0;
@@ -841,20 +835,6 @@ class OverDriveRecordDriver extends RecordInterface {
 		$showAvailabilityOther = true;
 		$interface->assign('showAvailability', $showAvailability);
 		$interface->assign('showAvailabilityOther', $showAvailabilityOther);
-		$showOverDriveConsole     = false;
-		$showAdobeDigitalEditions = false;
-		foreach ($holdings as $item){
-			if (in_array($item->textId, ['ebook-epub-adobe', 'ebook-pdf-adobe'])){
-				$showAdobeDigitalEditions = true;
-			}elseif (in_array($item->textId, ['audiobook-mp3', 'video-wmv', 'music-wma', 'audiobook-wma'])){
-				// 'audiobook-mp3' appears to be the only valid format any more pascal 9/25/2020
-				$showOverDriveConsole = true;
-			}
-		}
-		$interface->assign('showOverDriveConsole', $showOverDriveConsole);
-		$interface->assign('showAdobeDigitalEditions', $showAdobeDigitalEditions);
-
-		$interface->assign('holdings', $holdings);
 
 		//Load more details options
 		$moreDetailsOptions            = $this->getBaseMoreDetailsOptions($isbn);

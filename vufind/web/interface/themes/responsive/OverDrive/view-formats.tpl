@@ -1,6 +1,6 @@
 {strip}
 {if count($holdings) > 0}
-	{foreach from=$holdings item=overDriveFormat key=index}
+	{foreach from=$overDriveTitleHoldings item=overDriveFormat key=index}
 	<div id="itemRow{$overDriveFormat->id}" class="eContentHolding">
 		<div class="eContentHoldingHeader">
 			<div class="row">
@@ -35,7 +35,7 @@
 			{/if}
 			{* Options for the user to view online or download *}
 			{foreach from=$overDriveFormat->links item=link}
-				<a href="{if $link.url}{$link.url}{else}#{/if}" {if $link.onclick}onclick="{$link.onclick}"{/if} class="btn btn-sm btn-primary">{$link.text}</a>
+				<a href="#" {if $link.onclick}onclick="{$link.onclick}"{/if} class="btn btn-sm btn-primary">{$link.text}</a>
 			{/foreach}
 		</div>
 	</div>

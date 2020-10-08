@@ -70,7 +70,6 @@ class DBMaintenanceEContent extends DBMaintenance {
 						`id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 						productId INT,
 						textId VARCHAR(25),
-						numericId INT,
 						name VARCHAR(512),
 						fileName  VARCHAR(215),
 						fileSize INT,
@@ -80,7 +79,6 @@ class DBMaintenanceEContent extends DBMaintenance {
 	          sampleSource_2 VARCHAR(215),
 	          sampleUrl_2 VARCHAR(215),
 						INDEX(productId),
-						INDEX(numericId),
 						UNIQUE(productId, textId)
 					)",
 					"CREATE TABLE IF NOT EXISTS overdrive_api_product_metadata (
