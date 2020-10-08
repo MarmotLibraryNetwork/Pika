@@ -16,8 +16,12 @@ package org.marmot;
 
 import java.util.HashSet;
 
+/**
+ * Information about an OverDrive Title as taken from the API
+ * specifically the products call with URLs of the form:
+ * https://api.overdrive.com/v2/collections/{collectionId}/products/{productId}
+ */
 public class OverDriveRecordInfo {
-	//Data from base title call
 	private String id; // The overdrive Id
 	private long crossRefId;
 	private String mediaType;

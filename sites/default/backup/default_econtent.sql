@@ -466,7 +466,6 @@ CREATE TABLE `overdrive_api_product_formats` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `productId` int(11) DEFAULT NULL,
   `textId` varchar(25) DEFAULT NULL,
-  `numericId` int(11) DEFAULT NULL,
   `name` varchar(512) DEFAULT NULL,
   `fileName` varchar(215) DEFAULT NULL,
   `fileSize` int(11) DEFAULT NULL,
@@ -478,7 +477,6 @@ CREATE TABLE `overdrive_api_product_formats` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `productId_2` (`productId`,`textId`),
   KEY `productId` (`productId`),
-  KEY `numericId` (`numericId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 

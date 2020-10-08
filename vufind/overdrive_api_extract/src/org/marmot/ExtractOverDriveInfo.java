@@ -44,11 +44,8 @@ class ExtractOverDriveInfo {
 	private        PikaSystemVariables      systemVariables;
 	private        OverDriveExtractLogEntry results;
 
-	private Long   lastExtractTime;
 	private Long   extractStartTime;
 	private String lastUpdateTimeParam = "";
-
-	private boolean partialExtractRunning;
 
 	//Overdrive API information
 	private       String                  clientSecret;
@@ -58,9 +55,22 @@ class ExtractOverDriveInfo {
 	private       String                  overDriveAPITokenType;
 	private       long                    overDriveAPIExpiration;
 	private       boolean                 forceMetaDataUpdate;
-	private final TreeMap<String, String> overDriveProductsKeys   = new TreeMap<>(); // specifically <AccountId, overDriveProductsKey>
-	private final TreeMap<Long, String>   libToOverDriveAPIKeyMap = new TreeMap<>();
-	private final HashMap<String, Long>   overDriveFormatMap      = new HashMap<>();
+	private final TreeMap<String, String> overDriveProductsKeys      = new TreeMap<>(); // specifically <AccountId, overDriveProductsKey>
+	private final TreeMap<Long, String>   libToOverDriveAPIKeyMap    = new TreeMap<>();
+	private final TreeMap<Long, Long>     libToSharedCollectionIdMap = new TreeMap<>(); // specifically <libraryId, sharedCollectionId>
+	private final Set<String>             overDriveFormats           = new HashSet<String>() {{
+		add("audiobook-mp3");
+		add("audiobook-overdrive");
+		add("ebook-epub-adobe");
+		add("ebook-epub-open");
+		add("ebook-kindle");
+		add("ebook-mediado");
+		add("ebook-overdrive");
+		add("ebook-pdf-adobe");
+		add("ebook-pdf-open");
+		add("magazine-overdrive");
+		add("video-streaming");
+	}};
 
 	private HashMap<String, OverDriveRecordInfo> overDriveTitles             = new HashMap<>();
 	private HashMap<String, Long>                advantageCollectionToLibMap = new HashMap<>();
@@ -68,6 +78,7 @@ class ExtractOverDriveInfo {
 	private HashMap<String, Long>                existingLanguageIds         = new HashMap<>();
 	private HashMap<String, Long>                existingSubjectIds          = new HashMap<>();
 
+	private PreparedStatement loadProductStmt;
 	private PreparedStatement addProductStmt;
 	private PreparedStatement setNeedsUpdateStmt;
 	private PreparedStatement getNumProductsNeedingUpdatesStmt;
@@ -97,7 +108,6 @@ class ExtractOverDriveInfo {
 	private PreparedStatement deleteAvailabilityStmt;
 	private PreparedStatement updateProductAvailabilityStmt;
 	private PreparedStatement markGroupedWorkForBibAsChangedStmt;
-	private PreparedStatement getSharedCollectionIdForAdvantageLibraryStmt;
 	private boolean           hadTimeoutsFromOverDrive;
 
 	private CRC32   checksumCalculator = new CRC32();
@@ -116,14 +126,14 @@ class ExtractOverDriveInfo {
 			if (maxProductsToUpdate == null){
 				maxProductsToUpdate         = 2500L;
 			}
-			PreparedStatement markAllAsNeedingUpdatesStmt = econtentConn.prepareStatement("UPDATE overdrive_api_products SET needsUpdate = 1");
-			PreparedStatement loadLanguagesStmt           = econtentConn.prepareStatement("SELECT * FROM overdrive_api_product_languages");
-			PreparedStatement loadSubjectsStmt            = econtentConn.prepareStatement("SELECT * FROM overdrive_api_product_subjects");
+			PreparedStatement loadLanguagesStmt          = econtentConn.prepareStatement("SELECT * FROM overdrive_api_product_languages");
+			PreparedStatement loadSubjectsStmt           = econtentConn.prepareStatement("SELECT * FROM overdrive_api_product_subjects");
+			loadProductStmt                              = econtentConn.prepareStatement("SELECT * FROM overdrive_api_products WHERE overdriveId = ?");
 			addProductStmt                               = econtentConn.prepareStatement("INSERT INTO overdrive_api_products SET overdriveId = ?, crossRefId = ?, mediaType = ?, title = ?, subtitle = ?, series = ?, primaryCreatorRole = ?, primaryCreatorName = ?, cover = ?, dateAdded = ?, dateUpdated = ?, lastMetadataCheck = 0, lastMetadataChange = 0, lastAvailabilityCheck = 0, lastAvailabilityChange = 0, rawData=?", PreparedStatement.RETURN_GENERATED_KEYS);
 			setNeedsUpdateStmt                           = econtentConn.prepareStatement("UPDATE overdrive_api_products SET needsUpdate = ? WHERE overdriveId = ?");
-			getNumProductsNeedingUpdatesStmt             = econtentConn.prepareCall("SELECT COUNT(overdrive_api_products.id) FROM overdrive_api_products WHERE needsUpdate = 1 AND deleted = 0 LIMIT " + maxProductsToUpdate);
-			getProductsNeedingUpdatesStmt                = econtentConn.prepareCall("SELECT overdrive_api_products.id, overdriveId, crossRefId, lastMetadataCheck, lastMetadataChange, lastAvailabilityCheck, lastAvailabilityChange FROM overdrive_api_products WHERE needsUpdate = 1 AND deleted = 0 LIMIT " + maxProductsToUpdate);
-			getIndividualProductStmt                     = econtentConn.prepareCall("SELECT overdrive_api_products.id, overdriveId, crossRefId, lastMetadataCheck, lastMetadataChange, lastAvailabilityCheck, lastAvailabilityChange FROM overdrive_api_products WHERE overdriveId = ?");
+			getNumProductsNeedingUpdatesStmt             = econtentConn.prepareStatement("SELECT COUNT(overdrive_api_products.id) FROM overdrive_api_products WHERE needsUpdate = 1 AND deleted = 0");
+			getProductsNeedingUpdatesStmt                = econtentConn.prepareStatement("SELECT overdrive_api_products.id, overdriveId, crossRefId, lastMetadataCheck, lastMetadataChange, lastAvailabilityCheck, lastAvailabilityChange FROM overdrive_api_products WHERE needsUpdate = 1 AND deleted = 0 LIMIT " + maxProductsToUpdate);
+			getIndividualProductStmt                     = econtentConn.prepareStatement("SELECT overdrive_api_products.id, overdriveId, crossRefId, lastMetadataCheck, lastMetadataChange, lastAvailabilityCheck, lastAvailabilityChange FROM overdrive_api_products WHERE overdriveId = ?");
 			updateProductStmt                            = econtentConn.prepareStatement("UPDATE overdrive_api_products SET crossRefId = ?, mediaType = ?, title = ?, subtitle = ?, series = ?, primaryCreatorRole = ?, primaryCreatorName = ?, cover = ?, dateUpdated = ?, deleted = 0, rawData=? WHERE id = ?");
 			deleteProductStmt                            = econtentConn.prepareStatement("UPDATE overdrive_api_products SET deleted = 1, dateDeleted = ? WHERE id = ?");
 			updateProductMetadataStmt                    = econtentConn.prepareStatement("UPDATE overdrive_api_products SET lastMetadataCheck = ?, lastMetadataChange = ? WHERE id = ?");
@@ -139,7 +149,7 @@ class ExtractOverDriveInfo {
 			clearSubjectRefStmt                          = econtentConn.prepareStatement("DELETE FROM overdrive_api_product_subjects_ref WHERE productId = ?");
 			addSubjectRefStmt                            = econtentConn.prepareStatement("INSERT INTO overdrive_api_product_subjects_ref SET productId = ?, subjectId = ?");
 			clearFormatsStmt                             = econtentConn.prepareStatement("DELETE FROM overdrive_api_product_formats WHERE productId = ?");
-			addFormatStmt                                = econtentConn.prepareStatement("INSERT INTO overdrive_api_product_formats SET productId = ?, textId = ?, numericId = ?, name = ?, fileName = ?, fileSize = ?, partCount = ?, sampleSource_1 = ?, sampleUrl_1 = ?, sampleSource_2 = ?, sampleUrl_2 = ?", PreparedStatement.RETURN_GENERATED_KEYS);
+			addFormatStmt                                = econtentConn.prepareStatement("INSERT INTO overdrive_api_product_formats SET productId = ?, textId = ?, name = ?, fileName = ?, fileSize = ?, partCount = ?, sampleSource_1 = ?, sampleUrl_1 = ?, sampleSource_2 = ?, sampleUrl_2 = ?", PreparedStatement.RETURN_GENERATED_KEYS);
 			clearIdentifiersStmt                         = econtentConn.prepareStatement("DELETE FROM overdrive_api_product_identifiers WHERE productId = ?");
 			addIdentifierStmt                            = econtentConn.prepareStatement("INSERT INTO overdrive_api_product_identifiers SET productId = ?, type = ?, value = ?");
 			checkForExistingAvailabilityStmt             = econtentConn.prepareStatement("SELECT * FROM overdrive_api_product_availability WHERE productId = ? AND libraryId = ?");
@@ -148,14 +158,17 @@ class ExtractOverDriveInfo {
 			deleteAvailabilityStmt                       = econtentConn.prepareStatement("DELETE FROM overdrive_api_product_availability WHERE id = ?");
 			updateProductAvailabilityStmt                = econtentConn.prepareStatement("UPDATE overdrive_api_products SET lastAvailabilityCheck = ?, lastAvailabilityChange = ? WHERE id = ?");
 			markGroupedWorkForBibAsChangedStmt           = pikaConn.prepareStatement("UPDATE grouped_work SET date_updated = ? WHERE id = (SELECT grouped_work_id from grouped_work_primary_identifiers WHERE type = 'overdrive' AND identifier = ?)");
-			getSharedCollectionIdForAdvantageLibraryStmt = pikaConn.prepareStatement("SELECT sharedOverdriveCollection FROM library WHERE libraryId = ?");
 
 			//Get the last time we extracted data from OverDrive
 			if (individualIdToProcess != null) {
 				logger.info("Updating a single record " + individualIdToProcess);
-			} else if (!doFullReload) {
+			} else if (doFullReload) {
+				logger.info("Marking all records to do a full reload of all records.");
+				PreparedStatement markAllAsNeedingUpdatesStmt = econtentConn.prepareStatement("UPDATE overdrive_api_products SET needsUpdate = 1 WHERE deleted = 0");
+				markAllAsNeedingUpdatesStmt.executeUpdate();
+			} else {
 				//Check to see if a partial extract is running
-				partialExtractRunning = systemVariables.getBooleanValuedVariable("partial_overdrive_extract_running");
+				boolean partialExtractRunning = systemVariables.getBooleanValuedVariable("partial_overdrive_extract_running");
 				if (partialExtractRunning) {
 					//Oops, a overdrive extract is already running.
 					logger.warn("A partial overdrive extract is already running, verify that multiple extracts are not running for best performance.");
@@ -163,9 +176,6 @@ class ExtractOverDriveInfo {
 				} else {
 					updatePartialExtractRunning(true);
 				}
-			} else {
-				logger.info("Marking all records to do a full reload of all records.");
-				markAllAsNeedingUpdatesStmt.executeUpdate();
 			}
 
 			String[] tempAccountIds  = PikaConfigIni.getIniValue("OverDrive", "accountId").split(",");
@@ -190,10 +200,13 @@ class ExtractOverDriveInfo {
 
 			if (individualIdToProcess == null) {
 				//Load last extract time regardless of if we are doing full index or partial index
-				String timestamp = systemVariables.getStringValuedVariable("last_overdrive_extract_time");
-				lastExtractTime = systemVariables.getLongValuedVariable("last_overdrive_extract_time");
-				Date lastExtractDate = new Date(timestamp.length() >= 13 ? lastExtractTime : lastExtractTime * 1000); //TEMP check; converting from millisecond timestamp to second time stamp
-				if (!doFullReload) {
+				if (doFullReload) {
+					logger.info("Full Reload: Starting reload of all Overdrive records");
+					logEntry.addNote("Full Reload: Starting reload of all Overdrive records");
+				} else {
+					String           timestamp        = systemVariables.getStringValuedVariable("last_overdrive_extract_time");
+					Long             lastExtractTime  = systemVariables.getLongValuedVariable("last_overdrive_extract_time");
+					Date             lastExtractDate  = new Date(timestamp.length() >= 13 ? lastExtractTime : lastExtractTime * 1000); //TEMP check; converting from millisecond timestamp to second time stamp
 					SimpleDateFormat lastUpdateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
 					final String     lastUpdateDate   = lastUpdateFormat.format(lastExtractDate);
 					final String     message          = "Loading all records that have changed since " + lastUpdateDate;
@@ -202,15 +215,9 @@ class ExtractOverDriveInfo {
 					lastUpdateTimeParam = "lastupdatetime=" + lastUpdateDate;
 					//Simple Date Format doesn't give us quite the right timezone format so adjust
 					lastUpdateTimeParam = lastUpdateTimeParam.substring(0, lastUpdateTimeParam.length() - 2) + ":" + lastUpdateTimeParam.substring(lastUpdateTimeParam.length() - 2);
-				} else {
-					logger.info("Full Reload: Starting reload of all Overdrive records");
-					logEntry.addNote("Full Reload: Starting reload of all Overdrive records");
 				}
 				logEntry.saveResults();
 			}
-
-			//Update the last extract time
-			long extractStartTime = new Date().getTime() / 1000;
 
 			ResultSet loadLanguagesRS = loadLanguagesStmt.executeQuery();
 			while (loadLanguagesRS.next()) {
@@ -223,13 +230,23 @@ class ExtractOverDriveInfo {
 			}
 
 			try (
-					PreparedStatement advantageCollectionMapStmt = pikaConn.prepareStatement("SELECT libraryId, overdriveAdvantageName, overdriveAdvantageProductsKey FROM library WHERE overdriveAdvantageName > ''");
+//					PreparedStatement advantageCollectionMapStmt = pikaConn.prepareStatement("SELECT libraryId, overdriveAdvantageName, overdriveAdvantageProductsKey FROM library WHERE overdriveAdvantageName > ''");
+					PreparedStatement advantageCollectionMapStmt = pikaConn.prepareStatement("SELECT libraryId, overdriveAdvantageName, overdriveAdvantageProductsKey, sharedOverdriveCollection FROM library");
 					ResultSet advantageCollectionMapRS = advantageCollectionMapStmt.executeQuery();
 			) {
 				while (advantageCollectionMapRS.next()) {
-					//1 = (pika) libraryId, 2 = overdriveAdvantageName, 3 = overdriveAdvantageProductsKey
-					advantageCollectionToLibMap.put(advantageCollectionMapRS.getString(2), advantageCollectionMapRS.getLong(1));
-					libToOverDriveAPIKeyMap.put(advantageCollectionMapRS.getLong(1), advantageCollectionMapRS.getString(3));
+					//1 = (pika) libraryId, 2 = overDriveAdvantageName, 3 = overDriveAdvantageProductsKey
+
+					final long   pikaLibraryId          = advantageCollectionMapRS.getLong(1);
+					final String overDriveAdvantageName = advantageCollectionMapRS.getString(2);
+					if (overDriveAdvantageName != null && !overDriveAdvantageName.isEmpty()) {
+						advantageCollectionToLibMap.put(overDriveAdvantageName, pikaLibraryId);
+						libToOverDriveAPIKeyMap.put(pikaLibraryId, advantageCollectionMapRS.getString(3));
+					}
+					long sharedCollectionId = advantageCollectionMapRS.getLong(4);
+					if (sharedCollectionId < 0L) {
+						libToSharedCollectionIdMap.put(pikaLibraryId, sharedCollectionId);
+					}
 				}
 			} catch (SQLException e) {
 				logger.error("Error loading Advantage Collection names", e);
@@ -240,37 +257,17 @@ class ExtractOverDriveInfo {
 			clientKey           = PikaConfigIni.getIniValue("OverDrive", "clientKey");
 			forceMetaDataUpdate = PikaConfigIni.getBooleanIniValue("OverDrive", "forceMetaDataUpdate");
 
-			//TODO: numeric Format does not seem to be needed anymore.
-			overDriveFormatMap.put("audiobook-mp3", 425L);
-			overDriveFormatMap.put("audiobook-overdrive", 625L);
-			overDriveFormatMap.put("ebook-epub-adobe", 410L);
-			overDriveFormatMap.put("ebook-epub-open", 810L);
-			overDriveFormatMap.put("ebook-kindle", 420L);
-			overDriveFormatMap.put("ebook-mediado", 303L);
-			overDriveFormatMap.put("ebook-pdf-open", 450L);
-			overDriveFormatMap.put("ebook-overdrive", 610L);
-			overDriveFormatMap.put("magazine-overdrive", 777L); // arbitrary value assigned. pascal 8-1-2018
-			overDriveFormatMap.put("video-streaming", 635L);
-
-			//TODO: these formats appear to be obsolete or no longer offered
-			overDriveFormatMap.put("Microsoft eBook", 1L);
-			overDriveFormatMap.put("audiobook-wma", 25L);
-			overDriveFormatMap.put("music-wma", 30L);
-			overDriveFormatMap.put("video-wmv", 35L);
-			overDriveFormatMap.put("ebook-pdf-adobe", 50L);
-			overDriveFormatMap.put("Palm", 150L);
-			overDriveFormatMap.put("Mobipocket eBook", 90L);
-			overDriveFormatMap.put("Disney Online Book", 302L);
-			overDriveFormatMap.put("periodicals-nook", 304L);
-
 			try {
 				if (clientSecret == null || clientKey == null || clientSecret.length() == 0 || clientKey.length() == 0 || accountIds.isEmpty()) {
 					logEntry.addNote("Did not find correct configuration in config.ini, not loading overdrive titles");
 				} else {
 					if (individualIdToProcess == null) {
-						//Load products from database this lets us know what is new, what has been deleted, and what has been updated
-						if (!loadProductsFromDatabase()) {
-							return;
+
+						if (doFullReload) {
+							//Load products from database this lets us know what is new, what has been deleted, and what has been updated
+							if (!loadAllProductsFromDatabase()) {
+								return;
+							}
 						}
 
 						//Load products from API to figure out what is actually new, what is deleted, and what needs an update
@@ -279,7 +276,7 @@ class ExtractOverDriveInfo {
 						}
 
 						//Update products in database
-						updateDatabase();
+						updateDatabase(doFullReload);
 					}
 
 					//Get a list of records to get full details for.  We don't want this to take forever so only do a few thousand
@@ -397,7 +394,7 @@ class ExtractOverDriveInfo {
 				}
 
 				//Loop through the libraries first and then the products so we can get data as a batch.
-				for (Long libraryId : libToOverDriveAPIKeyMap.keySet()) {
+				for (long libraryId : libToOverDriveAPIKeyMap.keySet()) {
 					HashMap<String, SharedStats> sharedStatsHashMap;
 					if (libraryId < 0) {
 						sharedStatsHashMap = overdriveAccountsSharedStatsHashMaps.get(libraryId);
@@ -413,7 +410,7 @@ class ExtractOverDriveInfo {
 					logger.info("Finished availability update for batch #" + batchNum);
 				}
 
-				//Do a final update to mark that they don't need to be updated again.
+				//Do a final update to mark that the titles don't need to be updated by the extractor again.
 				for (MetaAvailUpdateData productToUpdate : productsToUpdateBatch) {
 					if (!productToUpdate.hadAvailabilityErrors && !productToUpdate.hadMetadataErrors) {
 
@@ -438,6 +435,12 @@ class ExtractOverDriveInfo {
 		}
 	}
 
+	/**
+	 * Marks the overdrive title as needing further updating by the extractor of metadata & availability
+	 * @param overdriveId  overdriveId
+	 * @param needsUpdated does the title need updated
+	 * @return number of titles that were updated (should be 1)
+	 */
 	private int setNeedsUpdated(String overdriveId, boolean needsUpdated){
 		try {
 			setNeedsUpdateStmt.setBoolean(1, needsUpdated);
@@ -452,36 +455,42 @@ class ExtractOverDriveInfo {
 	/**
 	 * @param libraryId Pika library id for the Advantage library
 	 * @return the shared collection that advantage library belongs to.  (-1L if there are no other shared accounts)
-	 * @throws SQLException
 	 */
-	private long getSharedCollectionId(Long libraryId) throws SQLException {
+	private long getSharedCollectionId(Long libraryId){
 		// Lookup Shared Collection Id for advantage library
-		long sharedCollectionId;
-		getSharedCollectionIdForAdvantageLibraryStmt.setString(1, libraryId.toString());
-		ResultSet getSharedCollectionIdForAdvantageLibraryRS = getSharedCollectionIdForAdvantageLibraryStmt.executeQuery();
-		if (getSharedCollectionIdForAdvantageLibraryRS.next()) {
-			sharedCollectionId = getSharedCollectionIdForAdvantageLibraryRS.getLong(1);
-		} else {
+		long sharedCollectionId = libToSharedCollectionIdMap.get(libraryId);
+		if (sharedCollectionId == 0L) {
+			sharedCollectionId = -1L;
 			if (logger.isDebugEnabled()) {
 				logger.debug("Failed to fetch shared collection for which the advantage library " + libraryId + " belongs to");
 			}
-			sharedCollectionId = -1L;
 		}
 		return sharedCollectionId;
 	}
 
-	private void updateDatabase() throws SocketTimeoutException {
+	private void updateDatabase(boolean doFullReload) throws SocketTimeoutException {
 		int numProcessed = 0;
 		for (String overDriveId : overDriveTitles.keySet()) {
 			OverDriveRecordInfo overDriveInfo = overDriveTitles.get(overDriveId);
 			//Check to see if the title already exists within the database.
 			try {
 				econtentConn.setAutoCommit(false);
-				if (databaseProducts.containsKey(overDriveId)) {
-					updateProductInDB(overDriveInfo, databaseProducts.get(overDriveId));
-					databaseProducts.remove(overDriveId);
+				if (doFullReload) {
+					if (databaseProducts.containsKey(overDriveId)) {
+						updateProductInDB(overDriveInfo, databaseProducts.get(overDriveId));
+						databaseProducts.remove(overDriveId);
+					} else {
+						addProductToDB(overDriveInfo);
+						//TODO: new products list?
+					}
 				} else {
-					addProductToDB(overDriveInfo);
+					OverDriveDBInfo curProduct = loadAProductFromDatabase(overDriveId);
+					if (curProduct != null){
+						updateProductInDB(overDriveInfo, curProduct);
+					} else {
+						addProductToDB(overDriveInfo);
+						//TODO: new products list?
+					}
 				}
 				econtentConn.commit();
 				econtentConn.setAutoCommit(true);
@@ -495,7 +504,7 @@ class ExtractOverDriveInfo {
 			if (numProcessed % 100 == 0) {
 				results.saveResults();
 				if (logger.isDebugEnabled()) {
-					logger.debug("Updated database for  " + numProcessed + " products from the API");
+					logger.debug("Updated database for " + numProcessed + " products from the API");
 				}
 			}
 		}
@@ -569,11 +578,12 @@ class ExtractOverDriveInfo {
 				updateMade = true;
 			}
 
+			// Mark that the title needs further metadata & availability updating from the extractor
 			setNeedsUpdated(overDriveInfo.getId(), true);
 
 			if (updateMade) {
-				//Mark that the grouped work needs to be updated
-				//TODO: updated as in re-indexed? or re-grouped?
+				//Mark that the grouped work needs to be re-indexed
+				//TODO: is this the appropriate place to do this? before the metadata and availability updates
 				markGroupedWorkForBibAsChangedStmt.setLong(1, extractStartTime);
 				markGroupedWorkForBibAsChangedStmt.setString(2, overDriveInfo.getId());
 				markGroupedWorkForBibAsChangedStmt.executeUpdate();
@@ -619,7 +629,8 @@ class ExtractOverDriveInfo {
 			//Update metadata based information
 			//Do this the first time we detect it to be certain that all the data exists on the first extract.
 			updateOverDriveMetaData(overDriveInfo, productId);
-			updateOverDriveAvailability(overDriveInfo, productId, null);
+			initialOverDriveAvailability(overDriveInfo, productId);
+			//TODO: group now
 		} catch (MySQLIntegrityConstraintViolationException e1) {
 			logger.warn("Error saving product " + overDriveInfo.getId() + " to the database, it was already added by another process");
 			results.addNote("Error saving product " + overDriveInfo.getId() + " to the database, it was already added by another process");
@@ -633,29 +644,20 @@ class ExtractOverDriveInfo {
 		}
 	}
 
-	private boolean loadProductsFromDatabase() {
+	/**
+	 * When doing a full Reload, load All the titles we have into HashMap databaseProducts.
+	 * Basically this enables us to mark as deleted any titles the API doesn't report as part of the collections
+	 *
+	 * @return Successfully loaded all products
+	 */
+	private boolean loadAllProductsFromDatabase() {
 		try (
 				PreparedStatement loadProductsStmt = econtentConn.prepareStatement("SELECT * FROM overdrive_api_products");
 				ResultSet loadProductsRS = loadProductsStmt.executeQuery()
 		) {
 			while (loadProductsRS.next()) {
 				String          overdriveId = loadProductsRS.getString("overdriveId").toLowerCase();
-				OverDriveDBInfo curProduct  = new OverDriveDBInfo();
-				String          rawData     = loadProductsRS.getString("rawData");
-				curProduct.setHasRawData(rawData != null && rawData.length() > 0);
-				curProduct.setDbId(loadProductsRS.getLong("id"));
-				curProduct.setCrossRefId(loadProductsRS.getLong("crossRefId"));
-				curProduct.setMediaType(loadProductsRS.getString("mediaType"));
-				curProduct.setSeries(loadProductsRS.getString("series"));
-				curProduct.setTitle(loadProductsRS.getString("title"));
-				curProduct.setPrimaryCreatorRole(loadProductsRS.getString("primaryCreatorRole"));
-				curProduct.setPrimaryCreatorName(loadProductsRS.getString("primaryCreatorName"));
-				curProduct.setCover(loadProductsRS.getString("cover"));
-				curProduct.setLastAvailabilityCheck(loadProductsRS.getLong("lastAvailabilityCheck"));
-				curProduct.setLastAvailabilityChange(loadProductsRS.getLong("lastAvailabilityChange"));
-				curProduct.setLastMetadataCheck(loadProductsRS.getLong("lastMetadataCheck"));
-				curProduct.setLastMetadataChange(loadProductsRS.getLong("lastMetadataChange"));
-				curProduct.setDeleted(loadProductsRS.getLong("deleted") == 1);
+				OverDriveDBInfo curProduct  = getAnOverDriveDBInfoFromAResultSet(loadProductsRS);
 				databaseProducts.put(overdriveId, curProduct);
 			}
 			results.addNote("There are " + databaseProducts.size() + " products total in the database.");
@@ -668,9 +670,55 @@ class ExtractOverDriveInfo {
 			results.saveResults();
 			return false;
 		}
-
 	}
 
+	/**
+	 * Fetch a single title from the Pika database that we are updating
+	 *
+	 * @param overDriveId The Id of the title to fetch
+	 * @return The title to be fetched
+	 */
+	private OverDriveDBInfo loadAProductFromDatabase(String overDriveId) {
+		try {
+			loadProductStmt.setString(1, overDriveId);
+			ResultSet loadProductsRS = loadProductStmt.executeQuery();
+			if (loadProductsRS.next()) {
+				return getAnOverDriveDBInfoFromAResultSet(loadProductsRS);
+			}
+		} catch (SQLException e) {
+			final String message = "Error loading product from database for " + overDriveId;
+			logger.warn(message, e);
+			results.addNote(message + " " + e.toString());
+			results.incrementErrors();
+			results.saveResults();
+		}
+		return null;
+	}
+
+	private OverDriveDBInfo getAnOverDriveDBInfoFromAResultSet(ResultSet loadProductsRS) throws SQLException {
+		OverDriveDBInfo curProduct  = new OverDriveDBInfo();
+		String          rawData     = loadProductsRS.getString("rawData");
+		curProduct.setHasRawData(rawData != null && rawData.length() > 0);
+		curProduct.setDbId(loadProductsRS.getLong("id"));
+		curProduct.setCrossRefId(loadProductsRS.getLong("crossRefId"));
+		curProduct.setMediaType(loadProductsRS.getString("mediaType"));
+		curProduct.setSeries(loadProductsRS.getString("series"));
+		curProduct.setTitle(loadProductsRS.getString("title"));
+		curProduct.setPrimaryCreatorRole(loadProductsRS.getString("primaryCreatorRole"));
+		curProduct.setPrimaryCreatorName(loadProductsRS.getString("primaryCreatorName"));
+		curProduct.setCover(loadProductsRS.getString("cover"));
+		curProduct.setLastAvailabilityCheck(loadProductsRS.getLong("lastAvailabilityCheck"));
+		curProduct.setLastAvailabilityChange(loadProductsRS.getLong("lastAvailabilityChange"));
+		curProduct.setLastMetadataCheck(loadProductsRS.getLong("lastMetadataCheck"));
+		curProduct.setLastMetadataChange(loadProductsRS.getLong("lastMetadataChange"));
+		curProduct.setDeleted(loadProductsRS.getInt("deleted") == 1);
+		return curProduct;
+	}
+
+	/**
+	 * Make calls to the Overdrive API to fetch main product information
+	 * and populate the HashMap overDriveTitles for futher processing by updateDatebase().
+	 */
 	private boolean loadProductsFromAPI() throws SocketTimeoutException {
 		long sharedCollection = 0L;
 		for (String accountId : accountIds) {
@@ -681,12 +729,9 @@ class ExtractOverDriveInfo {
 				try {
 					String mainLibraryName = libraryInfo.getString("name");
 					String mainProductUrl  = libraryInfo.getJSONObject("links").getJSONObject("products").getString("href");
-					if (lastUpdateTimeParam.length() > 0) {
-						mainProductUrl += mainProductUrl.contains("?") ? "&" + lastUpdateTimeParam : "?" + lastUpdateTimeParam;
-					}
-					loadProductsFromUrl(mainLibraryName, mainProductUrl, accountId);
+					loadProductsFromUrl(mainLibraryName, mainProductUrl, sharedCollection);
 					if (logger.isInfoEnabled()) {
-						logger.info("loaded " + overDriveTitles.size() + " overdrive titles in shared collection " + sharedCollection);
+						logger.info("Loaded " + overDriveTitles.size() + " overdrive titles in shared collection " + sharedCollection);
 					}
 					//Get a list of advantage collections
 					if (libraryInfo.getJSONObject("links").has("advantageAccounts")) {
@@ -698,7 +743,7 @@ class ExtractOverDriveInfo {
 								for (int i = 0; i < advantageAccounts.length(); i++) {
 									JSONObject curAdvantageAccount = advantageAccounts.getJSONObject(i);
 									String     advantageName       = curAdvantageAccount.getString("name");
-									Long       advantageLibraryId  = getLibraryIdForOverDriveAccount(advantageName, accountId);
+									long       advantageLibraryId  = getLibraryIdForOverDriveAccount(advantageName, accountId);
 									if (advantageLibraryId > 0L) {
 										String             advantageSelfUrl            = curAdvantageAccount.getJSONObject("links").getJSONObject("self").getString("href");
 										WebServiceResponse advantageWebServiceResponse = callOverDriveURL(advantageSelfUrl);
@@ -706,10 +751,7 @@ class ExtractOverDriveInfo {
 											JSONObject advantageSelfInfo = advantageWebServiceResponse.getResponse();
 											if (advantageSelfInfo != null) {
 												String productUrl = advantageSelfInfo.getJSONObject("links").getJSONObject("products").getString("href");
-												if (lastUpdateTimeParam.length() > 0) {
-													productUrl += productUrl.contains("?") ? "&" + lastUpdateTimeParam : "?" + lastUpdateTimeParam;
-												}
-												loadProductsFromUrl(advantageName, productUrl, accountId);
+												loadProductsFromUrl(advantageName, productUrl, advantageLibraryId);
 											}
 										} else {
 											final String note = "Unable to load advantage information for " + advantageSelfUrl;
@@ -759,15 +801,27 @@ class ExtractOverDriveInfo {
 		return true;
 	}
 
-	private void loadProductsFromUrl(String libraryName, String mainProductUrl, String accountId) throws JSONException, SocketTimeoutException {
-		WebServiceResponse productsResponse = callOverDriveURL(mainProductUrl);
+	/**
+	 * Make a call to the Overdrive API to fetch main product information and populate the HashMap overDriveTitles.
+	 *
+	 * @param libraryName Name of the collection
+	 * @param productsUrl The products Url as provided by the API for the shared or advantage account
+	 * @param libraryId   The pika library id for the Advantage collection or the shared collection id
+	 * @throws JSONException
+	 * @throws SocketTimeoutException
+	 */
+	private void loadProductsFromUrl(String libraryName, String productsUrl, long libraryId) throws JSONException, SocketTimeoutException {
+		if (lastUpdateTimeParam.length() > 0) {
+			// lastUpdateTimeParam is set when doing a partial extraction and is not set when doing a full Reload
+			productsUrl += productsUrl.contains("?") ? "&" + lastUpdateTimeParam : "?" + lastUpdateTimeParam;
+		}
+		WebServiceResponse productsResponse = callOverDriveURL(productsUrl);
 		if (productsResponse.getResponseCode() == 200) {
 			JSONObject productInfo = productsResponse.getResponse();
 			if (productInfo == null) {
 				return;
 			}
 			long numProducts = productInfo.getLong("totalItems");
-			Long libraryId   = getLibraryIdForOverDriveAccount(libraryName, accountId);
 			if (logger.isInfoEnabled()) {
 				logger.info(libraryName + " collection has " + numProducts + " products in it.  The libraryId for the collection is " + libraryId);
 			}
@@ -775,9 +829,10 @@ class ExtractOverDriveInfo {
 			results.saveResults();
 			long batchSize = 300;
 			for (int i = 0; i < numProducts; i += batchSize) {
+
 				//Just search for the specific product
-				String batchUrl = mainProductUrl;
-				batchUrl += (mainProductUrl.contains("?") ? "&" : "?") + "offset=" + i + "&limit=" + batchSize;
+				String batchUrl = productsUrl;
+				batchUrl += (productsUrl.contains("?") ? "&" : "?") + "offset=" + i + "&limit=" + batchSize;
 				if (logger.isDebugEnabled()) {
 					logger.debug("Processing " + libraryName + " batch from " + i + " to " + (i + batchSize));
 				}
@@ -792,18 +847,17 @@ class ExtractOverDriveInfo {
 							logger.debug(" Found " + products.length() + " products");
 						}
 						for (int j = 0; j < products.length(); j++) {
-							JSONObject curProduct = products.getJSONObject(j);
-							//Mark the product as updated and needing metadata and availability checks
-							setNeedsUpdated(curProduct.getString("id"), true);
-
-							OverDriveRecordInfo curRecord = loadOverDriveRecordFromJSON(libraryId, curProduct);
+							JSONObject          curProduct = products.getJSONObject(j);
+							OverDriveRecordInfo curRecord  = loadOverDriveRecordFromJSON(libraryId, curProduct);
 							if (curRecord != null) {
-								if (overDriveTitles.containsKey(curRecord.getId().toLowerCase())) {
-									OverDriveRecordInfo oldRecord = overDriveTitles.get(curRecord.getId().toLowerCase());
+								final String id = curRecord.getId();
+								if (overDriveTitles.containsKey(id)) {
+									// If the title has already been loaded, just mark that collection for libraryId owns it also
+									OverDriveRecordInfo oldRecord = overDriveTitles.get(id);
 									oldRecord.getCollections().add(libraryId);
 								} else {
 									//logger.debug("Loading record " + curRecord.getId());
-									overDriveTitles.put(curRecord.getId().toLowerCase(), curRecord);
+									overDriveTitles.put(id, curRecord);
 								}
 							} else {
 								//Could not parse the record make sure we log that there was an error
@@ -826,6 +880,14 @@ class ExtractOverDriveInfo {
 		}
 	}
 
+	/**
+	 * Load a product entry from the API into an instance of OverDriveRecordInfo
+	 *
+	 * @param libraryId  the pika library id for an Advantage collection of the shared collection id
+	 * @param curProduct The JSON Object representing the main title information from the API
+	 * @return an instance of OverDriveRecordInfo with information for curProduct
+	 * @throws JSONException
+	 */
 	private OverDriveRecordInfo loadOverDriveRecordFromJSON(Long libraryId, JSONObject curProduct) throws JSONException {
 		OverDriveRecordInfo curRecord    = new OverDriveRecordInfo();
 		String              curProductId = curProduct.getString("id");
@@ -875,7 +937,7 @@ class ExtractOverDriveInfo {
 	 * @param accountId The overall Overdrive Account Id
 	 * @return Either the pika library id for the advantage library or the negative id for a shared collection id
 	 */
-	private Long getLibraryIdForOverDriveAccount(String libraryName, String accountId) {
+	private long getLibraryIdForOverDriveAccount(String libraryName, String accountId) {
 		if (advantageCollectionToLibMap.containsKey(libraryName)) {
 			return advantageCollectionToLibMap.get(libraryName);
 		} else {
@@ -1149,23 +1211,18 @@ class ExtractOverDriveInfo {
 					for (int i = 0; i < formats.length(); i++) {
 						JSONObject format        = formats.getJSONObject(i);
 						String     textFormat    = format.getString("id");
-						Long       numericFormat = overDriveFormatMap.get(textFormat);
-						if (numericFormat == null) {
-							updateData.hadMetadataErrors = true;
-							final String note = "Could not find numeric format for format " + textFormat;
+						if (!overDriveFormats.contains(textFormat)) {
+							// Give us a heads-up that there is a new format to handle
+							final String note = "Warning: new format for OverDrive found " + textFormat;
 							logger.warn(note);
 							results.addNote(note);
-							results.incrementErrors();
-							System.out.println("Warning: new format for OverDrive found " + textFormat);
-							continue;
 						}
 						addFormatStmt.setLong(1, updateData.databaseId);
 						addFormatStmt.setString(2, textFormat);
-						addFormatStmt.setLong(3, numericFormat);
-						addFormatStmt.setString(4, format.getString("name"));
-						addFormatStmt.setString(5, format.has("filename") ? format.getString("fileName") : "");
-						addFormatStmt.setLong(6, format.has("fileSize") ? format.getLong("fileSize") : 0L);
-						addFormatStmt.setLong(7, format.has("partCount") ? format.getLong("partCount") : 0L);
+						addFormatStmt.setString(3, format.getString("name"));
+						addFormatStmt.setString(4, format.has("filename") ? format.getString("fileName") : "");
+						addFormatStmt.setLong(5, format.has("fileSize") ? format.getLong("fileSize") : 0L);
+						addFormatStmt.setLong(6, format.has("partCount") ? format.getLong("partCount") : 0L);
 
 						if (format.has("identifiers")) {
 							JSONArray identifiers = format.getJSONArray("identifiers");
@@ -1175,21 +1232,21 @@ class ExtractOverDriveInfo {
 							}
 						}
 						//Default samples to null
+						addFormatStmt.setString(7, null);
 						addFormatStmt.setString(8, null);
 						addFormatStmt.setString(9, null);
 						addFormatStmt.setString(10, null);
-						addFormatStmt.setString(11, null);
 
 						if (format.has("samples")) {
 							JSONArray samples = format.getJSONArray("samples");
 							for (int j = 0; j < samples.length(); j++) {
 								JSONObject sample = samples.getJSONObject(j);
 								if (j == 0) {
-									addFormatStmt.setString(8, sample.getString("source"));
-									addFormatStmt.setString(9, sample.getString("url"));
+									addFormatStmt.setString(7, sample.getString("source"));
+									addFormatStmt.setString(8, sample.getString("url"));
 								} else if (j == 1) {
-									addFormatStmt.setString(10, sample.getString("source"));
-									addFormatStmt.setString(11, sample.getString("url"));
+									addFormatStmt.setString(9, sample.getString("source"));
+									addFormatStmt.setString(10, sample.getString("url"));
 								}
 							}
 						}
@@ -1249,24 +1306,21 @@ class ExtractOverDriveInfo {
 		return metaData;
 	}
 
-	private boolean updateOverDriveAvailability(OverDriveRecordInfo overDriveInfo, long productId, OverDriveDBInfo dbInfo) throws SocketTimeoutException {
-		//Don't need to load availability if we already have availability and the availability was checked within the last hour
+	/**
+	 * Populate Pika table with the initial availability information from the OverDrive API
+	 * for when a new product(/title) is added to a Pika library overdrive collection.
+	 *
+	 * @param overDriveInfo Information about the title from the API
+	 * @param productId  The overdrive_api_products table id for the title
+	 * @throws SocketTimeoutException
+	 */
+	private void initialOverDriveAvailability(OverDriveRecordInfo overDriveInfo, long productId) throws SocketTimeoutException {
 		long curTime = new Date().getTime() / 1000;
-		if (dbInfo != null && dbInfo.getLastAvailabilityCheck() >= curTime - 60 * 60) {
-			return false;
-		}
 
 		//logger.debug("Loading availability, " + overDriveInfo.getId() + " is in " + overDriveInfo.getCollections().size() + " collections");
 		boolean availabilityChanged = false;
 		for (Long curCollection : overDriveInfo.getCollections()) {
 			try {
-				//Get existing availability
-				checkForExistingAvailabilityStmt.setLong(1, productId);
-				checkForExistingAvailabilityStmt.setLong(2, curCollection);
-
-				ResultSet existingAvailabilityRS  = checkForExistingAvailabilityStmt.executeQuery();
-				boolean   hasExistingAvailability = existingAvailabilityRS.next();
-
 				String apiKey;
 				if (curCollection < 0L) {
 					apiKey = getProductsKeyForSharedCollection(curCollection);
@@ -1292,11 +1346,7 @@ class ExtractOverDriveInfo {
 					results.addNote(message);
 					results.incrementErrors();
 				} else if (availabilityResponse.getResponse() == null) {
-					if (hasExistingAvailability) {
-						deleteAvailabilityStmt.setLong(1, existingAvailabilityRS.getLong("id"));
-						deleteAvailabilityStmt.executeUpdate();
-						availabilityChanged = true;
-					}
+					availabilityChanged = deleteOverDriveAvailability(productId, curCollection);
 				} else {
 					JSONObject availability = availabilityResponse.getResponse();
 					//If availability is null, it isn't available for this collection
@@ -1329,20 +1379,13 @@ class ExtractOverDriveInfo {
 								copiesAvailable = 0;
 							}
 							int numberOfHolds       = curCollection < 0 ? availability.getInt("numberOfHolds") : 0;
-							String availabilityType = availability.getString("availabilityType");
+							String availabilityType = fixAvailabilityType(copiesOwned, availability.getString("availabilityType"));
 							availabilityChecksTotal++;
-							if (updateAvailability(curCollection, existingAvailabilityRS, hasExistingAvailability, available, copiesOwned, copiesAvailable, numberOfHolds, availabilityType, productId)){
+							if (updateAvailability(curCollection, available, copiesOwned, copiesAvailable, numberOfHolds, availabilityType, productId)){
 								availabilityChanged = true;
 							}
 						} else {
-							if (hasExistingAvailability) {
-								//Delete availability from the database if it used to exist since there is none now
-
-								long existingId = existingAvailabilityRS.getLong("id");
-								deleteAvailabilityStmt.setLong(1, existingId);
-								deleteAvailabilityStmt.executeUpdate();
-								availabilityChanged = true;
-							}
+							availabilityChanged = deleteOverDriveAvailability(productId, curCollection);
 						}
 
 					} catch (JSONException e) {
@@ -1362,12 +1405,10 @@ class ExtractOverDriveInfo {
 		//Update the product to indicate that we checked availability
 		try {
 			updateProductAvailabilityStmt.setLong(1, curTime);
-			if (dbInfo == null || availabilityChanged) {
+			if (availabilityChanged) {
 				updateProductAvailabilityStmt.setLong(2, curTime);
 				results.incrementAvailabilityChanges();
 				results.saveResults();
-			} else {
-				updateProductAvailabilityStmt.setLong(2, dbInfo.getLastAvailabilityChange());
 			}
 			updateProductAvailabilityStmt.setLong(3, productId);
 			updateProductAvailabilityStmt.executeUpdate();
@@ -1376,7 +1417,13 @@ class ExtractOverDriveInfo {
 			results.addNote("Error updating product availability status " + overDriveInfo.getId() + " " + e.toString());
 			results.incrementErrors();
 		}
-		return availabilityChanged;
+	}
+
+	private ResultSet checkForExistingAvailability(long productId, Long curCollection) throws SQLException {
+		checkForExistingAvailabilityStmt.setLong(1, productId);
+		checkForExistingAvailabilityStmt.setLong(2, curCollection);
+
+		return checkForExistingAvailabilityStmt.executeQuery();
 	}
 
 	private void updateOverDriveAvailabilityBatchV1(long libraryId, List<MetaAvailUpdateData> productsToUpdateBatch, HashMap<String, SharedStats> sharedStats) {
@@ -1425,20 +1472,25 @@ class ExtractOverDriveInfo {
 		}
 	}
 
-	private void deleteOverDriveAvailability(long databaseId, long libraryId) {
+	/**
+	 * Removes entries from the pika overdrive_api_product_availability table
+	 * @param productId The id of the overdrive title in the overdrive_api_products table
+	 * @param libraryId The library id for the advantage or shared collection
+	 */
+	private boolean deleteOverDriveAvailability(long productId, long libraryId) {
 		try {
 			//No availability for this product
-			checkForExistingAvailabilityStmt.setLong(1, databaseId);
-			checkForExistingAvailabilityStmt.setLong(2, libraryId);
-			ResultSet existingAvailabilityRS  = checkForExistingAvailabilityStmt.executeQuery();
+			ResultSet existingAvailabilityRS  = checkForExistingAvailability(productId, libraryId);
 			boolean   hasExistingAvailability = existingAvailabilityRS.next();
 			if (hasExistingAvailability) {
 				deleteAvailabilityStmt.setLong(1, existingAvailabilityRS.getLong("id"));
 				deleteAvailabilityStmt.executeUpdate();
+				return true;
 			}
 		} catch (Exception e) {
-			logger.error("Error loading availability within batch", e);
+			logger.error("Error deleting an availability entry", e);
 		}
+		return false;
 	}
 
 	private void updateOverDriveAvailabilityBatchV2(long libraryId, List<MetaAvailUpdateData> productsToUpdateBatch, HashMap<String, SharedStats> sharedStats) {
@@ -1502,9 +1554,8 @@ class ExtractOverDriveInfo {
 					}
 
 					//Anything that is still left should have availability removed from the database
-					for (MetaAvailUpdateData curProduct : productsToUpdateClone) {
-						deleteOverDriveAvailability(curProduct.databaseId, libraryId);
-					}
+					productsToUpdateClone.forEach((curProduct)-> deleteOverDriveAvailability(curProduct.databaseId, libraryId));
+
 				} catch (Exception e) {
 					logger.error("Error loading availability within batch", e);
 				}
@@ -1567,7 +1618,7 @@ class ExtractOverDriveInfo {
 //						} else if (availability.has("titleId")) {
 //							logger.error("The availability call had a titleId instead of a reserveId : " + availability);
 						} else {
-							logger.error("The availability erntry did not have a reserveId : " + availability);
+							logger.error("The availability entry did not have a reserveId : " + availability);
 						}
 					}
 
@@ -1588,7 +1639,6 @@ class ExtractOverDriveInfo {
 	int availabilitiesCheckedThisRound;
 	private void updateDBAvailabilityForProductV1(long libraryId, MetaAvailUpdateData curProduct, JSONObject availability, long curTime, SharedStats sharedStats) {
 		boolean availabilityChanged = false;
-		try {
 
 			//If availability is null, it isn't available for this collection
 			try {
@@ -1633,31 +1683,20 @@ class ExtractOverDriveInfo {
 				} else {
 					numberOfHolds = 0;
 				}
-				String availabilityType = availability.getString("availabilityType");
-				checkForExistingAvailabilityStmt.setLong(1, curProduct.databaseId);
-				checkForExistingAvailabilityStmt.setLong(2, libraryId);
-				ResultSet existingAvailabilityRS  = checkForExistingAvailabilityStmt.executeQuery();
-				boolean   hasExistingAvailability = existingAvailabilityRS.next();
+				String    availabilityType        = fixAvailabilityType(copiesOwned, availability.getString("availabilityType"));
 				availabilitiesCheckedThisRound++;
 				availabilityChecksTotal++;
-				if(updateAvailability(libraryId, existingAvailabilityRS, hasExistingAvailability, available, copiesOwned, copiesAvailable, numberOfHolds, availabilityType, curProduct.databaseId)) {
+				if(updateAvailability(libraryId, available, copiesOwned, copiesAvailable, numberOfHolds, availabilityType, curProduct.databaseId)) {
 					availabilityChanged = true;
 				}
 
-			} catch (JSONException e) {
+			} catch (JSONException | SQLException e) {
 				final String message = "Error loading availability for title " + curProduct.overDriveId;
 				logger.info(message, e);
 				results.addNote(message + " " + e.toString());
 				results.incrementErrors();
 				curProduct.hadAvailabilityErrors = true;
 			}
-		} catch (SQLException e) {
-			final String message = "Error loading availability for title " + curProduct.overDriveId;
-			logger.info(message, e);
-			results.addNote(message + " " + e.toString());
-			results.incrementErrors();
-			curProduct.hadAvailabilityErrors = true;
-		}
 
 		//Update the product to indicate that we checked availability
 		try {
@@ -1678,8 +1717,41 @@ class ExtractOverDriveInfo {
 		}
 	}
 
-	private boolean updateAvailability(long libraryId, ResultSet existingAvailabilityRS, boolean hasExistingAvailability, boolean available, int copiesOwned, int copiesAvailable, int numberOfHolds, String availabilityType, long databaseId) throws SQLException {
+	/**
+	 * OverDrive Availability API bulk calls incorrectly report AlwaysAvailable copies
+	 * as Normal availabilityType (As of 10/7/2020). But we can infer AlwaysAvailable availabilityType
+	 * from the copiesOwned count of 999,999 or higher; and LimitedAvailability availabilityType from a
+	 * copiesOwned count of 500,000
+	 *
+	 * @param copiesOwned      The number of copies Owned for a title in an collection as reported by the API
+	 * @param availabilityType The availabilityType for a title as reported by the API
+	 * @return corrected availabilityType
+	 */
+	private String fixAvailabilityType(int copiesOwned, String availabilityType) {
+		if (copiesOwned >= 999999 && availabilityType.equalsIgnoreCase("Normal")) return "AlwaysAvailable";
+		if (copiesOwned == 500000 && availabilityType.equalsIgnoreCase("Normal")) return "LimitedAvailability";
+		return availabilityType;
+	}
+
+	/**
+	 * Updates the overdrive_api_product_availability table for an availability entry for a particular collection,
+	 * (shared or advantage)
+	 *
+	 * @param libraryId        the advantage collection pika library id or the (negative) shared collection id
+	 * @param available        Is this title available for this collection according to the API
+	 * @param copiesOwned      The number of copies owned for this collection according to the API
+	 * @param copiesAvailable  The number of copies available for this collection according to the API
+	 * @param numberOfHolds    The number of holds on the title.  (This should be the same for
+	 *                         shared and advantage collections for the same title)
+	 * @param availabilityType The type of availability these copied have for this collection according to the API
+	 * @param databaseId       The id for this title in the pika overdrive_api_products table
+	 * @return Whether or not an availability entry was updated
+	 * @throws SQLException
+	 */
+	private boolean updateAvailability(long libraryId, boolean available, int copiesOwned, int copiesAvailable, int numberOfHolds, String availabilityType, long databaseId) throws SQLException {
 		//Get existing availability
+		ResultSet existingAvailabilityRS  = checkForExistingAvailability(databaseId, libraryId);
+		boolean   hasExistingAvailability = existingAvailabilityRS.next();
 		if (hasExistingAvailability) {
 			//Check to see if the availability has changed
 			if (available != existingAvailabilityRS.getBoolean("available") ||
@@ -1688,12 +1760,12 @@ class ExtractOverDriveInfo {
 					numberOfHolds != existingAvailabilityRS.getInt("numberOfHolds") ||
 					!availabilityType.equals(existingAvailabilityRS.getString("availabilityType"))
 			) {
+				long existingId = existingAvailabilityRS.getLong("id");
 				updateAvailabilityStmt.setBoolean(1, available);
 				updateAvailabilityStmt.setInt(2, copiesOwned);
 				updateAvailabilityStmt.setInt(3, copiesAvailable);
 				updateAvailabilityStmt.setInt(4, numberOfHolds);
 				updateAvailabilityStmt.setString(5, availabilityType);
-				long existingId = existingAvailabilityRS.getLong("id");
 				updateAvailabilityStmt.setLong(6, existingId);
 				updateAvailabilityStmt.executeUpdate();
 				availabilityChangesTracking(libraryId);
@@ -1720,6 +1792,12 @@ class ExtractOverDriveInfo {
 
 	private HashMap<Long, Long> availabilityChangesByLibrary = new HashMap<>();
 
+	/**
+	 * Track the number of availability changes made per collection
+	 *
+	 * @param libraryId the pika library id for the advantage collection
+	 *                  or the (negative) id of the shared collection
+	 */
 	private void availabilityChangesTracking(long libraryId) {
 		if (availabilityChangesByLibrary.containsKey(libraryId)) {
 			long count = availabilityChangesByLibrary.get(libraryId);
