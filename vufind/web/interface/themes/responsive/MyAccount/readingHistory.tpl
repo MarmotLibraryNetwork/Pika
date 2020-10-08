@@ -85,7 +85,7 @@
 
 			<hr>
 
-			{if $transList}
+			{if $transList || $isReadingHistorySearch}
 					<hr>
 				{* Reading history search *}
 				<div class="row readingHistorySearch">
@@ -150,9 +150,13 @@
 						<strong>{translate text='Last Read Around'}</strong>
 					</div>
 				</div>
-
+          {if $historyActive == true && $isReadingHistorySearch == true && count($transList) lt 1}
+              {* History search request, No entries in the history *}
+						<div class="alert alert-warning text-center">There are no entries in your reading history that match your search <strong>{if $searchTerm}{$searchTerm}{/if}</strong></div>
+          {/if}
 				{* Reading History Entries *}
 				<div class="striped">
+
 					{foreach from=$transList item=record name="recordLoop" key=recordKey}
 						<div class="row">
 
@@ -295,11 +299,9 @@
 			{elseif $historyActive == true && $isReadingHistorySearch == false}
 				{* No entries in the history, but the history is active *}
 				<div class="alert alert-info">There are no entries in your reading history.</div>
-      {elseif $historyActive == true && $isReadingHistorySearch == true}
-          {* History search request, No entries in the history *}
-				<div class="alert alert-warning">There are no entries in your reading history that match your search. <strong><a href="/MyAccount/ReadingHistory">Return to Reading History</a></strong></div>
 			{/if}
-			</div>
+
+		</div>
 		</form>
 	{/if}
 
