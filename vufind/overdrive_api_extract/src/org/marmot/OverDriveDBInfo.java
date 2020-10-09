@@ -18,6 +18,9 @@ package org.marmot;
 *  Information about an entry in overdrive_api_products table
 * */
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
 public class OverDriveDBInfo {
 	private long    dbId;
 	private long    crossRefId;
@@ -34,6 +37,26 @@ public class OverDriveDBInfo {
 	private long    lastAvailabilityChange;
 	private boolean deleted;
 	private boolean hasRawData;
+
+	public OverDriveDBInfo() {}
+
+	public OverDriveDBInfo(ResultSet loadProductsRS) throws SQLException {
+		String rawData = loadProductsRS.getString("rawData");
+		hasRawData             = (rawData != null && rawData.length() > 0);
+		dbId                   = loadProductsRS.getLong("id");
+		crossRefId             = loadProductsRS.getLong("crossRefId");
+		mediaType              = loadProductsRS.getString("mediaType");
+		series                 = loadProductsRS.getString("series");
+		title                  = loadProductsRS.getString("title");
+		primaryCreatorRole     = loadProductsRS.getString("primaryCreatorRole");
+		primaryCreatorName     = loadProductsRS.getString("primaryCreatorName");
+		cover                  = loadProductsRS.getString("cover");
+		lastAvailabilityCheck  = loadProductsRS.getLong("lastAvailabilityCheck");
+		lastAvailabilityChange = loadProductsRS.getLong("lastAvailabilityChange");
+		lastMetadataCheck      = loadProductsRS.getLong("lastMetadataCheck");
+		lastMetadataChange     = loadProductsRS.getLong("lastMetadataChange");
+		deleted                = loadProductsRS.getInt("deleted") == 1;
+	}
 
 	public boolean hasRawData() {
 		return hasRawData;
