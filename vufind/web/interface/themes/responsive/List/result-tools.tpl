@@ -17,9 +17,6 @@
 						<a herf="#" onclick="return Pika.Lists.emailListAction({$summShortId})" title="share via e-mail">
 							<img src="{img filename='email-icon.png'}" alt="E-mail this" style="cursor:pointer;">
 						</a>
-						<a href="#" id="FavExcel" onclick="return Pika.Lists.exportListFromLists('{$summShortId}');" title="Export List to Excel">
-							<img src="{img filename='excel.png'}" alt="Export to Excel" />
-						</a>
 						<a href="https://twitter.com/compose/tweet?text={$recordDriver->getTitle()|urlencode}+{$url|escape:"html"}/MyAccount/MyList/{$summShortId}" target="_blank" title="Share on Twitter">
 							<img src="{img filename='twitter-icon.png'}" alt="Share on Twitter">
 						</a>
