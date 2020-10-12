@@ -70,7 +70,7 @@ class User extends DB_DataObject {
 	public $state;
 	public $zip;
 	public $workPhone;
-	public $mobileNumber;
+	public $mobileNumber; //TODO: obsolete
 	public $web_note;
 	public $expires;
 	public $expired;
@@ -949,7 +949,7 @@ class User extends DB_DataObject {
 			$overDriveDriver          = OverDriveDriverFactory::getDriver();
 			$overDriveCheckedOutItems = $overDriveDriver->getOverDriveCheckedOutItems($this);
 		}else{
-			$overDriveCheckedOutItems = array();
+			$overDriveCheckedOutItems = [];
 		}
 
 		$allCheckedOut = array_merge($ilsCheckouts, $overDriveCheckedOutItems);
@@ -1285,17 +1285,17 @@ class User extends DB_DataObject {
 
 
 		if ($offlineHold->insert()){
-			return array(
-				'title' => $title,
-				'bib' => $recordId,
+			return [
+				'title'   => $title,
+				'bib'     => $recordId,
 				'success' => true,
-				'message' => 'The circulation system is currently offline.  This hold will be entered for you automatically when the circulation system is online.');
+				'message' => 'The circulation system is currently offline.  This hold will be entered for you automatically when the circulation system is online.'];
 		}else{
-			return array(
-				'title' => $title,
-				'bib' => $recordId,
+			return [
+				'title'   => $title,
+				'bib'     => $recordId,
 				'success' => false,
-				'message' => 'The circulation system is currently offline and we could not place this hold.  Please try again later.');
+				'message' => 'The circulation system is currently offline and we could not place this hold.  Please try again later.'];
 		}
 	}
 

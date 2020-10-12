@@ -18,7 +18,7 @@
 								<select name="downloadFormat_{$supplementalTitle.overDriveId}" id="downloadFormat_{$supplementalTitle.overDriveId}" class="input-sm form-control">
 									<option value="-1">Select a Format</option>
                     {foreach from=$supplementalTitle.formats item=format}
-											<option value="{$format.id}">{$format.name}</option>
+											<option value="{$format.formatType}">{$format.name}</option>
                     {/foreach}
 								</select>
 								<a href="#" onclick="Pika.OverDrive.selectOverDriveDownloadFormat('{$supplementalTitle.userId}', '{$supplementalTitle.overDriveId}')" class="btn btn-sm btn-primary">Download</a>
