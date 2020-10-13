@@ -2727,7 +2727,6 @@ EOT;
 	 * Send oAuth token request
 	 *
 	 * @return boolean true on success, false otherwise
-	 * @throws ErrorException
 	 */
 	protected function _oAuthToken(){
 		global $offlineMode;
@@ -2779,12 +2778,12 @@ EOT;
 				$message            = 'cUrl Error: ' . $c->errorCode . ': ' . $c->errorMessage;
 				$this->apiLastError = $message;
 				$this->logger->error($message, ['oauth_url' => $url]);
-				throw new ErrorException($message);
+				return false;
 			}elseif ($cInfo['http_code'] != 200){ // check the request returned success (HTTP 200)
 				$message            = 'API Error: ' . $c->errorCode . ': ' . $c->errorMessage;
 				$this->apiLastError = $message;
 				$this->logger->error($message, ['oauth_url' => $url]);
-				throw new ErrorException($message);
+				return false;
 			}
 			// make sure to set last error to false if no errors.
 			$this->apiLastError = false;
