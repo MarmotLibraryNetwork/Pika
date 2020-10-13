@@ -2727,72 +2727,76 @@ EOT;
 	 * Send oAuth token request
 	 *
 	 * @return boolean true on success, false otherwise
-	 * @throws ErrorException
 	 */
-	protected function _oAuthToken() {
-		if (!isset($_REQUEST['reload'])){
-			// check memcache for valid token and set $this
-			if ($token = $this->cache->get("sierra_oauth_token")){
-				$this->oAuthToken = $token;
-				return true;
+	protected function _oAuthToken(){
+		global $offlineMode;
+		if (!$offlineMode){
+			if (!isset($_REQUEST['reload'])){
+				// check memcache for valid token and set $this
+				if ($token = $this->cache->get("sierra_oauth_token")){
+					$this->oAuthToken = $token;
+					return true;
+				}
 			}
+
+			// setup url
+			$url = $this->tokenUrl;
+			// $this->logger->info('oAuth URL '.$url);
+			// grab clientKey and clientSecret from configArray
+			$clientKey    = $this->configArray['Catalog']['clientKey'];
+			$clientSecret = $this->configArray['Catalog']['clientSecret'];
+			//encode key and secret
+			$requestAuth = base64_encode($clientKey . ':' . $clientSecret);
+
+			$headers = [
+				'Host'          => parse_url($url, PHP_URL_HOST),
+				'Authorization' => 'Basic ' . $requestAuth,
+				'Content-Type'  => 'application/x-www-form-urlencoded',
+				'grant_type'    => 'client_credentials'
+			];
+
+			$opts = [
+				CURLOPT_RETURNTRANSFER => true,
+				CURLOPT_HEADER         => false
+			];
+
+			// If there's an exception here, let it play out
+			$c = new Curl();
+
+			$c->setHeaders($headers);
+			$c->setOpts($opts);
+			$c->post($url);
+			### ERROR CHECKS ###
+			// for HTTP errors we'll grab the code from curl->info and the message from API.
+			// if an error does occur set the $this->apiLastError.
+			// get the info so we can check the headers for a good response.
+			$cInfo = $c->getInfo();
+			// first check for a curl error
+			// we don't want to use $c->error because it will report HTTP errors.
+			if ($c->isCurlError()){
+				// This will probably never be triggered since we have the try/catch above.
+				$message            = 'cUrl Error: ' . $c->errorCode . ': ' . $c->errorMessage;
+				$this->apiLastError = $message;
+				$this->logger->error($message, ['oauth_url' => $url]);
+				return false;
+			}elseif ($cInfo['http_code'] != 200){ // check the request returned success (HTTP 200)
+				$message            = 'API Error: ' . $c->errorCode . ': ' . $c->errorMessage;
+				$this->apiLastError = $message;
+				$this->logger->error($message, ['oauth_url' => $url]);
+				return false;
+			}
+			// make sure to set last error to false if no errors.
+			$this->apiLastError = false;
+			// setup memCache vars
+			$token   = $c->response->access_token;
+			$expires = $c->response->expires_in;
+			$c->close();
+			$this->oAuthToken = $token;
+			$this->cache->set("sierra_oauth_token", $token, $expires);
+			$this->logger->info('Got new oAuth token.');
+			return true;
 		}
-		// setup url
-		$url = $this->tokenUrl;
-		// $this->logger->info('oAuth URL '.$url);
-		// grab clientKey and clientSecret from configArray
-		$clientKey    = $this->configArray['Catalog']['clientKey'];
-		$clientSecret = $this->configArray['Catalog']['clientSecret'];
-		//encode key and secret
-		$requestAuth  = base64_encode($clientKey . ':' . $clientSecret);
-
-		$headers = [
-			'Host'          => parse_url($url, PHP_URL_HOST),
-			'Authorization' => 'Basic ' . $requestAuth,
-			'Content-Type'  => 'application/x-www-form-urlencoded',
-			'grant_type'    => 'client_credentials'
-		];
-
-		$opts = [
-			CURLOPT_RETURNTRANSFER => true,
-			CURLOPT_HEADER         => false
-		];
-
-		// If there's an exception here, let it play out
-		$c = new Curl();
-
-		$c->setHeaders($headers);
-		$c->setOpts($opts);
-		$c->post($url);
-		### ERROR CHECKS ###
-		// for HTTP errors we'll grab the code from curl->info and the message from API.
-		// if an error does occur set the $this->apiLastError.
-		// get the info so we can check the headers for a good response.
-		$cInfo = $c->getInfo();
-		// first check for a curl error
-		// we don't want to use $c->error because it will report HTTP errors.
-		if ($c->isCurlError()) {
-			// This will probably never be triggered since we have the try/catch above.
-			$message = 'cUrl Error: '.$c->errorCode.': '.$c->errorMessage;
-			$this->apiLastError = $message;
-			$this->logger->error($message, ['oauth_url'=>$url]);
-			throw new ErrorException($message);
-		} elseif ($cInfo['http_code'] != 200) { // check the request returned success (HTTP 200)
-			$message = 'API Error: '.$c->errorCode.': '.$c->errorMessage;
-			$this->apiLastError = $message;
-			$this->logger->error($message, ['oauth_url'=>$url]);
-			throw new ErrorException($message);
-		}
-		// make sure to set last error to false if no errors.
-		$this->apiLastError = false;
-		// setup memCache vars
-		$token   = $c->response->access_token;
-		$expires = $c->response->expires_in;
-		$c->close();
-		$this->oAuthToken = $token;
-		$this->cache->set("sierra_oauth_token", $token, $expires);
-		$this->logger->info('Got new oAuth token.');
-		return true;
+		return false;
 	}
 
 	/**
