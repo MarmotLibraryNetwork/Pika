@@ -140,14 +140,14 @@ class OverDrive_AJAX extends AJAXHandler {
 	function SelectOverDriveDownloadFormat(){
 		$user        = UserAccount::getLoggedInUser();
 		$overDriveId = $_REQUEST['overDriveId'];
-		$formatId    = $_REQUEST['formatId'];
+		$formatType  = $_REQUEST['formatType'];
 		if ($user){
 			$patronId = $_REQUEST['patronId'];
 			$patron   = $user->getUserReferredTo($patronId);
 			if ($patron){
 				require_once ROOT_DIR . '/Drivers/OverDriveDriverFactory.php';
 				$driver = OverDriveDriverFactory::getDriver();
-				$result = $driver->selectOverDriveDownloadFormat($overDriveId, $formatId, $patron);
+				$result = $driver->selectOverDriveDownloadFormat($overDriveId, $formatType, $patron);
 				//$logger->log("Checkout result = $result", PEAR_LOG_INFO);
 				return $result;
 			}else{
@@ -161,14 +161,14 @@ class OverDrive_AJAX extends AJAXHandler {
 	function GetDownloadLink(){
 		$user        = UserAccount::getLoggedInUser();
 		$overDriveId = $_REQUEST['overDriveId'];
-		$formatId    = $_REQUEST['formatId'];
+		$formatType  = $_REQUEST['formatType'];
 		if ($user){
 			$patronId = $_REQUEST['patronId'];
 			$patron   = $user->getUserReferredTo($patronId);
 			if ($patron){
 				require_once ROOT_DIR . '/Drivers/OverDriveDriverFactory.php';
 				$driver = OverDriveDriverFactory::getDriver();
-				$result = $driver->getDownloadLink($overDriveId, $formatId, $patron);
+				$result = $driver->getDownloadLink($overDriveId, $formatType, $patron);
 				//$logger->log("Checkout result = $result", PEAR_LOG_INFO);
 				return $result;
 			}else{

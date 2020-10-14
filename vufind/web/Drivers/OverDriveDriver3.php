@@ -28,25 +28,25 @@ class OverDriveDriver3 {
 		$ILSName;
 
 	protected $format_map = [
+		'audiobook-mp3'       => 'OverDrive MP3 Audiobook',
+		'audiobook-overdrive' => 'OverDrive Listen',
 		'ebook-epub-adobe'    => 'Adobe EPUB eBook',
 		'ebook-epub-open'     => 'Open EPUB eBook',
 		'ebook-pdf-adobe'     => 'Adobe PDF eBook',
 		'ebook-pdf-open'      => 'Open PDF eBook',
 		'ebook-kindle'        => 'Kindle Book',
-		'ebook-disney'        => 'Disney Online Book',
-		'ebook-overdrive'     => 'OverDrive Read',
-		'ebook-microsoft'     => 'Microsoft eBook',
-		'audiobook-wma'       => 'OverDrive WMA Audiobook',
-		'audiobook-mp3'       => 'OverDrive MP3 Audiobook',
-		'audiobook-streaming' => 'Streaming Audiobook',
-		'music-wma'           => 'OverDrive Music',
-		'video-wmv'           => 'OverDrive Video',
-		'video-wmv-mobile'    => 'OverDrive Video (mobile)',
-		'periodicals-nook'    => 'NOOK Periodicals',
-		'audiobook-overdrive' => 'OverDrive Listen',
-		'video-streaming'     => 'OverDrive Video',
 		'ebook-mediado'       => 'MediaDo Reader',
+		'ebook-overdrive'     => 'OverDrive Read',
 		'magazine-overdrive'  => 'OverDrive Magazine',
+		'video-streaming'     => 'OverDrive Video',
+//		'ebook-disney'        => 'Disney Online Book',
+//		'ebook-microsoft'     => 'Microsoft eBook',
+//		'audiobook-wma'       => 'OverDrive WMA Audiobook',
+//		'audiobook-streaming' => 'Streaming Audiobook',
+//		'music-wma'           => 'OverDrive Music',
+//		'video-wmv'           => 'OverDrive Video',
+//		'video-wmv-mobile'    => 'OverDrive Video (mobile)',
+//		'periodicals-nook'    => 'NOOK Periodicals',
 	];
 
 	private $logger;
@@ -132,7 +132,6 @@ class OverDriveDriver3 {
 				}else{
 					$websiteId = $configArray['OverDrive']['patronWebsiteId'];
 				}
-				//$websiteId = 100300;
 
 				$ILSName = $this->getILSName($user);
 				if (!$ILSName){
@@ -493,24 +492,22 @@ class OverDriveDriver3 {
 								];
 							}
 							$curFormat           = [];
-							$curFormat['id']     = $id;
+							$curFormat['formatType']     = $id;
 							$curFormat['format'] = $format;
 							$curFormat['name']   = $format->formatType;
 							if (isset($format->links->self)){
+								// Special cases for downloading
 								$curFormat['downloadUrl'] = $format->links->self->href . '/downloadlink';
-							}
-							if ($format->formatType != 'ebook-overdrive' && $format->formatType != 'ebook-mediado' && $format->formatType != 'audiobook-overdrive' && $format->formatType != 'video-streaming'){
-								$bookshelfItem['formats'][] = $curFormat;
-							}else{
-								if (isset($curFormat['downloadUrl'])){
-									if ($format->formatType = 'ebook-overdrive' || $format->formatType == 'ebook-mediado'){
-										$bookshelfItem['overdriveReadUrl'] = $curFormat['downloadUrl'];
-									}elseif ($format->formatType == 'video-streaming'){
-										$bookshelfItem['overdriveVideoUrl'] = $curFormat['downloadUrl'];
-									}else{
-										$bookshelfItem['overdriveListenUrl'] = $curFormat['downloadUrl'];
-									}
+								if ($format->formatType = 'ebook-overdrive' || $format->formatType == 'ebook-mediado'){
+									$bookshelfItem['overdriveReadUrl'] = $curFormat['downloadUrl'];
+								}elseif ($format->formatType == 'video-streaming'){
+									$bookshelfItem['overdriveVideoUrl'] = $curFormat['downloadUrl'];
+								}else{
+									$bookshelfItem['overdriveListenUrl'] = $curFormat['downloadUrl'];
 								}
+							} else{
+								// traditional download options
+								$bookshelfItem['formats'][] = $curFormat;
 							}
 						}
 					}
@@ -526,20 +523,20 @@ class OverDriveDriver3 {
 						if (isset($formatField->options)){
 							foreach ($formatField->options as $index => $format){
 								$curFormat                  = [];
-								$curFormat['id']            = $format;
+								$curFormat['formatType']            = $format;
 								$curFormat['name']          = $this->format_map[$format];
 								$bookshelfItem['formats'][] = $curFormat;
 							}
 						}else{
 							$curFormat                  = [];
-							$curFormat['id']            = $format->formatType;
+							$curFormat['formatType']            = $format->formatType;
 							$curFormat['name']          = $this->format_map[$format];
 							$bookshelfItem['formats'][] = $curFormat;
 						}
 					}elseif ($format->formatType == 'magazine-overdrive'){
 						//$bookshelfItem['formats'] = [];
 						//$curFormat                  = array();
-						//$curFormat['id']            = $format->formatType;
+						//$curFormat['formatType']            = $format->formatType;
 						//$curFormat['name']          = $this->format_map[$format->formatType];
 						//$bookshelfItem['formats'][] = $curFormat;
 						unset($bookshelfItem['formats']);
@@ -563,7 +560,7 @@ class OverDriveDriver3 {
 						$bookshelfItem['recordUrl']  = '/OverDrive/' . $overDriveRecord->getUniqueID() . '/Home';
 						$bookshelfItem['title']      = $overDriveRecord->getTitle();
 						$bookshelfItem['author']     = $overDriveRecord->getAuthor();
-						$bookshelfItem['linkUrl']    = $overDriveRecord->getLinkUrl(false);
+						$bookshelfItem['linkUrl']    = $overDriveRecord->getLinkUrl();
 						$bookshelfItem['ratingData'] = $overDriveRecord->getRatingData();
 					}
 				}
@@ -766,21 +763,22 @@ class OverDriveDriver3 {
 		$url      = $configArray['OverDrive']['patronApiUrl'] . '/v1/patrons/me/holds/' . $overDriveId;
 		$response = $this->_callPatronDeleteUrl($user, $url);
 
-		$cancelHoldResult            = [];
-		$cancelHoldResult['success'] = false;
-		$cancelHoldResult['message'] = '';
+		$result = [
+			'success' => false,
+			'message' => '',
+		];
 		if ($response === true){
-			$cancelHoldResult['success'] = true;
-			$cancelHoldResult['message'] = 'Your hold was cancelled successfully.';
+			$result['success'] = true;
+			$result['message'] = 'Your hold was cancelled successfully.';
 		}else{
-			$cancelHoldResult['message'] = 'There was an error cancelling your hold.';
+			$result['message'] = 'There was an error cancelling your hold.';
 			if (isset($response->message)){
-				$cancelHoldResult['message'] .= "  {$response->message}";
+				$result['message'] .= "  {$response->message}";
 			}
 		}
 		$this->cache->delete('overdrive_summary_' . $user->id);
 		$user->clearCache();
-		return $cancelHoldResult;
+		return $result;
 	}
 
 	/**
@@ -880,25 +878,26 @@ class OverDriveDriver3 {
 		return $cancelCheckOutResult;
 	}
 
-	public function selectOverDriveDownloadFormat($overDriveId, $formatId, $user){
+	public function selectOverDriveDownloadFormat($overDriveId, $formatType, $user){
 		global $configArray;
 
 		$url      = $configArray['OverDrive']['patronApiUrl'] . '/v1/patrons/me/checkouts/' . $overDriveId . '/formats';
 		$params   = [
 			'reserveId'  => $overDriveId,
-			'formatType' => $formatId, //TODO : user as format textid instead of numbericid
+			'formatType' => $formatType,
 		];
 		$response = $this->_callPatronUrl($user, $url, $params);
 		//print_r($response);
 
-		$result            = [];
-		$result['success'] = false;
-		$result['message'] = '';
+		$result = [
+			'success' => false,
+			'message' => '',
+		];
 
 		if (isset($response->linkTemplates->downloadLink)){
 			$result['success'] = true;
 			$result['message'] = 'This format was locked in';
-			$downloadLink      = $this->getDownloadLink($overDriveId, $formatId, $user);
+			$downloadLink      = $this->getDownloadLink($overDriveId, $formatType, $user);
 			$result            = $downloadLink;
 		}else{
 			$result['message'] = 'Sorry, but we could not select a format for you.';

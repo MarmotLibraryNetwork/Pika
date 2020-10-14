@@ -86,14 +86,13 @@ Pika.OverDrive = (function(){
 			});
 		},
 
-		followOverDriveDownloadLink: function(patronId, overDriveId, formatId){
-			var ajaxUrl = "/OverDrive/AJAX?method=GetDownloadLink&patronId=" + patronId + "&overDriveId=" + overDriveId + "&formatId=" + formatId;
+		followOverDriveDownloadLink: function(patronId, overDriveId, formatType){
+			var ajaxUrl = "/OverDrive/AJAX?method=GetDownloadLink&patronId=" + patronId + "&overDriveId=" + overDriveId + "&formatType=" + formatType;
 			$.getJSON(ajaxUrl, function(data){
 					if (data.success){
 						//Reload the page
 						var win = window.open(data.downloadUrl, '_blank');
 						win.focus();
-						//window.location.href = data.downloadUrl ;
 					}else{
 						Pika.showMessage("Error Getting Download Link", data.message, false);
 					}
@@ -157,13 +156,13 @@ Pika.OverDrive = (function(){
 
 		selectOverDriveDownloadFormat: function(patronId, overDriveId){
 			var selectedOption = $("#downloadFormat_" + overDriveId + " option:selected"),
-					selectedFormatId = selectedOption.val(),
+					selectedFormatType = selectedOption.val(),
 					selectedFormatText = selectedOption.text();
-			if (selectedFormatId === -1){
+			if (selectedFormatType === "-1"){
 				alert("Please select a format to download.");
 			}else{
 				Pika.confirm("Are you sure you want to download the " + selectedFormatText + " format? You cannot change format after downloading.", function () {
-					var ajaxUrl = "/OverDrive/AJAX?method=SelectOverDriveDownloadFormat&patronId=" + patronId + "&overDriveId=" + overDriveId + "&formatId=" + selectedFormatId;
+					var ajaxUrl = "/OverDrive/AJAX?method=SelectOverDriveDownloadFormat&patronId=" + patronId + "&overDriveId=" + overDriveId + "&formatType=" + selectedFormatType;
 					$.getJSON(ajaxUrl, function(data){
 							if (data.success){
 								//Reload the page
