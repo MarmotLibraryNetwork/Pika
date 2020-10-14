@@ -40,6 +40,25 @@ class UserListEntry extends DB_DataObject {
 	 * @return bool
 	 */
 	function insert(){
+        $listId = $this->listId;
+        require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+        $list = new UserList();
+        $list->id = $listId;
+        $list->find(true);
+        $listCount = $list->numValidListItems();
+        if($listCount >=2000)
+        {
+            return false;
+        } $listId = $this->listId;
+        require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+        $list = new UserList();
+        $list->id = $listId;
+        $list->find(true);
+        $listCount = $list->numValidListItems();
+        if($listCount >=2000)
+        {
+            return false;
+        }
 		$result = parent::insert();
 		if ($result){
 			$this->flushUserListBrowseCategory();
@@ -52,6 +71,7 @@ class UserListEntry extends DB_DataObject {
 	 * @return bool|int|mixed
 	 */
 	function update($dataObject = false){
+
 		$result = parent::update($dataObject);
 		if ($result){
 			$this->flushUserListBrowseCategory();

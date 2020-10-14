@@ -806,14 +806,23 @@ class GroupedWork_AJAX extends AJAXHandler {
 		//Get a list of all lists for the user
 		$containingLists    = array();
 		$nonContainingLists = array();
+		$listsTooLarge      = array();
 
 		$userLists          = new UserList();
 		$userLists->user_id = UserAccount::getActiveUserId();
 		$userLists->deleted = 0;
 		$userLists->orderBy('title');
 		$userLists->find();
+
 		while ($userLists->fetch()){
 			//Check to see if the user has already added the title to the list.
+            if($userLists->numValidListItems()>= 2000)
+            {
+                $listsTooLarge[] = array(
+                    'id'    =>  $userLists->id,
+                    'title' =>  $userLists->title,
+                );
+            }
 			$userListEntry                         = new UserListEntry();
 			$userListEntry->listId                 = $userLists->id;
 			$userListEntry->groupedWorkPermanentId = $id;
@@ -822,16 +831,18 @@ class GroupedWork_AJAX extends AJAXHandler {
 					'id'    => $userLists->id,
 					'title' => $userLists->title,
 				);
-			}else{
+			}elseif(!$userListEntry->find(true) && $userLists->numValidListItems()<2000){
 				$nonContainingLists[] = array(
 					'id'    => $userLists->id,
 					'title' => $userLists->title,
 				);
 			}
+
 		}
 
 		$interface->assign('containingLists', $containingLists);
 		$interface->assign('nonContainingLists', $nonContainingLists);
+		$interface->assign('largeLists', $listsTooLarge);
 
 		$results = array(
 			'title'        => 'Add To List',
