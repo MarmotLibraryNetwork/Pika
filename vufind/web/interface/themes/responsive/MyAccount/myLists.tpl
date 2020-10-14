@@ -58,7 +58,7 @@
                                     <div class="btn-group btn-group-sm">
                                         <div class="share-tools" >
                                             <span class="share-tools-label hidden-inline-xs">SHARE LIST</span>
-                                            <a herf="#" onclick="return Pika.Lists.emailListAction({$myList->id})" title="share via e-mail">
+                                            <a herf="#" onclick="return Pika.Lists.emailListAction({$myList.id})" title="share via e-mail">
                                                 <img src="{img filename='email-icon.png'}" alt="E-mail this" style="cursor:pointer;">
                                             </a>
                                             <a href="#" id="FavExcel" onclick="return Pika.Lists.exportListFromLists('{$myList.id}');" title="Export List to Excel">
@@ -79,7 +79,7 @@
                                 </div>
                                     {else}
                                     <div class="btn-group btn-group-sm">
-                                        <button value="emailList" class="btn btn-sm btn-default" id="Email List" onclick="return Pika.Lists.emailListAction({$myList->id})" title="share via e-mail">Email List</button>
+                                        <button value="emailList" class="btn btn-sm btn-default" id="Email List" onclick='return Pika.Lists.emailListAction("{$myList.id}")' title="share via e-mail">Email List</button>
                                         <button value="exportToExcel" class="btn btn-sm btn-default" id="FavExcel" onclick="return Pika.Lists.exportListFromLists('{$myList.id}');">Export to Excel</button>
                                     </div>
                                     {/if}
