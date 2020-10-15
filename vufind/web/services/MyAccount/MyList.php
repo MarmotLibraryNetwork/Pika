@@ -233,11 +233,13 @@ class MyAccount_MyList extends MyAccount {
 					$searchObject->init();
 					$searchObject->clearFacets();
 					$results = $searchObject->processSearch(false, false);
-					if ($results['response'] && $results['response']['numFound'] >= 1){
-						$firstDoc = $results['response']['docs'][0];
-						//Get the id of the document
-						$id = $isArchiveId ? $firstDoc['PID'] : $firstDoc['id'];
-						$numAdded++;
+					if ($results['response'] && $results['response']['numFound'] >= 1) {
+                        $firstDoc = $results['response']['docs'][0];
+                        //Get the id of the document
+                        $id = $isArchiveId ? $firstDoc['PID'] : $firstDoc['id'];
+                        if (($list->numValidListItems()+$numAdded) <= 2000) {
+                            $numAdded++;
+                        }
 						$userListEntry                         = new UserListEntry();
 						$userListEntry->listId                 = $list->id;
 						$userListEntry->groupedWorkPermanentId = $id;
