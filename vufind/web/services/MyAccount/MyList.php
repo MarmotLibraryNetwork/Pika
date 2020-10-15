@@ -218,6 +218,7 @@ class MyAccount_MyList extends MyAccount {
 	function bulkAddTitles($list){
 		$numAdded        = 0;
 		$notes           = array();
+		$listItems       = $list->numValidListItems();
 		$titlesToAdd     = $_REQUEST['titlesToAdd'];
 		$titleSearches[] = preg_split("/\\r\\n|\\r|\\n/", $titlesToAdd);
 
@@ -237,7 +238,7 @@ class MyAccount_MyList extends MyAccount {
                         $firstDoc = $results['response']['docs'][0];
                         //Get the id of the document
                         $id = $isArchiveId ? $firstDoc['PID'] : $firstDoc['id'];
-                        if (($list->numValidListItems()+$numAdded) <= 2000) {
+                        if (($listItems+$numAdded+1) <= 2000) {
                             $numAdded++;
                         }
 						$userListEntry                         = new UserListEntry();
