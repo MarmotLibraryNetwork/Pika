@@ -19,6 +19,7 @@
 
 
 require_once ROOT_DIR . '/Action.php';
+require_once ROOT_DIR . '/services/OverDrive/AJAX.php';
 
 class eContentSupport extends Action {
 	function launch(){
@@ -26,19 +27,28 @@ class eContentSupport extends Action {
 		// Submitting the form will cause the ajax popup to be run.
 
 		global $interface;
+		$overdriveAJAX  = new OverDrive_AJAX();
+
+		// Error Messaging delivered by OverDrive's Content fulfillment when there's an error
+		$errorMessage = '';
+		$logger = new Pika\Logger(__CLASS__);
+		foreach (['ErrorCode', 'ErrorDescription', 'ErrorDetails', 'reserveId', 'read_error'] as $errorUrlParameter){
+			if (!empty($_REQUEST[$errorUrlParameter])){
+				$errorInfo    = "OverDrive delivered error parameter '$errorUrlParameter' :{$_REQUEST[$errorUrlParameter]}";
+				$errorMessage .= "$errorInfo\n";
+				$logger->error($errorInfo);
+			}
+		}
+		$interface->assign('overDriveErrorMessages', $errorMessage);
 
 		if (isset($_REQUEST['submit'])){
-			require_once ROOT_DIR . 'services/OverDrive/AJAX.php';
-			$overdriveAJAX  = new OverDrive_AJAX();
 			$_GET['method'] = 'submitSupportForm';
 			$overdriveAJAX->launch();
-
 		}elseif (isset($_REQUEST['lightbox'])){
-			require_once ROOT_DIR . 'services/OverDrive/AJAX.php';
-			$overdriveAJAX  = new OverDrive_AJAX();
 			$_GET['method'] = 'getSupportForm';
 			$overdriveAJAX->launch();
 		}else{
+			$overdriveAJAX->getSupportForm(); //pre-populate form
 			$interface->assign('lightbox', false);
 			$this->display('eContentSupport.tpl', 'eContent Support');
 		}

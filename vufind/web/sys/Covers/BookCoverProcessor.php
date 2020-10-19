@@ -236,11 +236,9 @@ class BookCoverProcessor {
 	}
 
 	private function getOverDriveCover(SourceAndId $sourceAndId){
-		require_once ROOT_DIR . '/sys/OverDrive/OverDriveAPIProduct.php';
-		require_once ROOT_DIR . '/sys/OverDrive/OverDriveAPIProductMetaData.php';
-		$overDriveProduct = new OverDriveAPIProduct();
+		$overDriveProduct = new Pika\BibliographicDrivers\OverDrive\OverDriveAPIProduct();
 		if ($overDriveProduct->get('overdriveId', $sourceAndId->getRecordId())){
-			$overDriveMetadata = new OverDriveAPIProductMetaData();
+			$overDriveMetadata = new Pika\BibliographicDrivers\OverDrive\OverDriveAPIProductMetaData();
 			if ($overDriveMetadata->get('productId', $overDriveProduct->id)){
 				$coverUrl = $overDriveMetadata->cover;
 				if ($coverUrl != null){

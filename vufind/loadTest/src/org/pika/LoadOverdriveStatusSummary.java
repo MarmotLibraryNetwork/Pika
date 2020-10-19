@@ -21,6 +21,7 @@ public class LoadOverdriveStatusSummary extends TestTask{
 		TestUser testUser = getRandomTestUser();
 		
 		return this.baseUrl + "/API/UserAPI?method=getPatronOverDriveSummary&username=" + testUser.getUsername() + "&password=" + testUser.getPassword();
+		//This url is obsolete
 	}
 
 	@Override

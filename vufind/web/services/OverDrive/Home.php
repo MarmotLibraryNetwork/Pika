@@ -17,7 +17,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-require_once ROOT_DIR . '/sys/OverDrive/OverDriveAPIProduct.php';
 require_once ROOT_DIR . '/RecordDrivers/OverDriveRecordDriver.php';
 
 class OverDrive_Home extends Action{
@@ -26,7 +25,6 @@ class OverDrive_Home extends Action{
 
 	function launch(){
 		global $interface;
-		global $configArray;
 
 		if (isset($_REQUEST['searchId'])){
 			$_SESSION['searchId'] = $_REQUEST['searchId'];

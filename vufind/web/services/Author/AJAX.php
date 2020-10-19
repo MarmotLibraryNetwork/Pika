@@ -31,7 +31,7 @@ require_once ROOT_DIR . '/AJAXHandler.php';
 class Author_AJAX extends AJAXHandler {
 
 	protected $methodsThatRespondWithJSONUnstructured = array(
-		'Author_AJAX',
+		'getWikipediaData',
 	);
 
 	function getWikipediaData(){

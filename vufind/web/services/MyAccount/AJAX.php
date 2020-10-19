@@ -34,7 +34,6 @@ class MyAccount_AJAX extends AJAXHandler {
 	protected $methodsThatRespondWithJSONUnstructured = array(
 		'GetSuggestions', // not checked
 		'GetListTitles', // only used by MyAccount/ImportListsFromClassic.php && ajax.js //not checked
-		'getOverDriveSummary', //called by getOverDriveSummary() is scripts.js // not checked
 //		'GetPreferredBranches', //not checked
 		'requestPinReset', //not checked
 		'getCreateListForm', 'getBulkAddToListForm', 'AddList',
@@ -514,10 +513,10 @@ class MyAccount_AJAX extends AJAXHandler {
 
 	function thawHold(){
 		$user   = UserAccount::getLoggedInUser();
-		$result = array( // set default response
-		                 'success' => false,
-		                 'message' => 'Error thawing hold.',
-		);
+		$result = [ // set default response
+		            'success' => false,
+		            'message' => 'Error thawing hold.',
+		];
 
 		if (!$user){
 			$result['message'] = 'You must be logged in to ' . translate('thaw') . ' a hold.  Please close this dialog and login again.';
@@ -827,18 +826,6 @@ class MyAccount_AJAX extends AJAXHandler {
 		}
 
 		return $return;
-	}
-
-	function getOverDriveSummary(){
-		if (UserAccount::isLoggedIn()){
-			$user = UserAccount::getLoggedInUser();
-			require_once ROOT_DIR . '/Drivers/OverDriveDriverFactory.php';
-			$overDriveDriver = OverDriveDriverFactory::getDriver();
-			$summary         = $overDriveDriver->getOverDriveSummary($user);
-			return $summary;
-		}else{
-			return array('error' => 'There is no user currently logged in.');
-		}
 	}
 
 	function LoginForm(){

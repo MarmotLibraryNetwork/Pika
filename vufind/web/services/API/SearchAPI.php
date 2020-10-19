@@ -298,8 +298,7 @@ class SearchAPI extends AJAXHandler {
 			}
 
 			// Check How Many Overdrive Items have been deleted in the last 24 hours
-			require_once ROOT_DIR . '/sys/OverDrive/OverDriveAPIProduct.php';
-			$overdriveItems          = new OverDriveAPIProduct();
+			$overdriveItems          = new Pika\BibliographicDrivers\OverDrive\OverDriveAPIProduct();
 			$overdriveItems->deleted = true;
 			$overdriveItems->whereAdd('dateDeleted > unix_timestamp(DATE_SUB(CURDATE(),INTERVAL 1 DAY) )');
 			// where deleted = 1 and dateDeleted > unix_timestamp(DATE_SUB(CURDATE(),INTERVAL 1 DAY) )
@@ -310,7 +309,7 @@ class SearchAPI extends AJAXHandler {
 			}
 
 			// Check How Many Overdrive Products need to be extracted and haven't been processed yet.
-			$overdriveProduct              = new OverDriveAPIProduct();
+			$overdriveProduct              = new Pika\BibliographicDrivers\OverDrive\OverDriveAPIProduct();
 			$overdriveProduct->needsUpdate = 1;
 			$overdriveProduct->deleted     = 0;
 			$numOutstandingChanges         = $overdriveProduct->count();

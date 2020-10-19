@@ -2,12 +2,13 @@ Pika.OverDrive = (function(){
 	return {
 		cancelOverDriveHold: function(patronId, overdriveId){
 			Pika.confirm("Are you sure you want to cancel this hold?", function () {
-				var ajaxUrl = "/OverDrive/AJAX?method=CancelOverDriveHold&patronId=" + patronId + "&overDriveId=" + overdriveId;
+				var ajaxUrl = "/OverDrive/AJAX?method=cancelOverDriveHold&patronId=" + patronId + "&overDriveId=" + overdriveId;
 				$.getJSON(ajaxUrl, function (data) {
 					if (data.success) {
 						Pika.showMessage("Hold Cancelled", data.message, true);
 						//remove the row from the holds list
-						$("#overDriveHold_" + overdriveId).hide();
+						$("#overDriveHold_" + overdriveId).remove();
+						Pika.Account.loadMenuData(); //Update menu counts
 					} else {
 						Pika.showMessage("Error Cancelling Hold", data.message, false);
 					}
@@ -18,15 +19,39 @@ Pika.OverDrive = (function(){
 			return false;
 		},
 
-		checkOutOverDriveTitle: function(overDriveId){
+		thawOverDriveHold: function(patronId, overdriveId){
+				var ajaxUrl = "/OverDrive/AJAX?method=thawOverDriveHold&patronId=" + patronId + "&overDriveId=" + overdriveId;
+				$.getJSON(ajaxUrl, function (data) {
+					if (data.success) {
+						Pika.showMessage(data.title, data.message, true, true);
+					} else {
+						Pika.showMessage(data.title, data.message, false);
+					}
+				}).fail(function () {
+					Pika.showMessage("Error Thawing Hold", "An error occurred processing your request in OverDrive.  Please try again in a few minutes.", false);
+				})
+			return false;
+		},
+
+		checkOutOverDriveTitle: function(overDriveId, formatType){
 			Pika.Account.ajaxLogin(function(){
+				Pika.loadingMessage();
 				//Get any prompts needed for placing holds (e-mail and format depending on the interface.
-				var url = "/OverDrive/" + overDriveId + "/AJAX?method=GetOverDriveCheckoutPrompts";
+				var url = "/OverDrive/" + overDriveId + "/AJAX?method=getOverDriveCheckoutPrompts"
+				+ (formatType === undefined ? "" : "&formatType=" + formatType);
 				$.getJSON(url, function(data){
 					if (data.promptNeeded){
 						Pika.showMessageWithButtons(data.promptTitle, data.prompts, data.buttons);
 					} else {
-						Pika.OverDrive.doOverDriveCheckout(data.patronId, overDriveId);
+						if (data.success) {
+							Pika.showMessageWithButtons("Title Checked Out Successfully", data.message, data.buttons);
+						} else if (data.noCopies){
+							Pika.confirm(data.message, function (){
+								Pika.OverDrive.placeOverDriveHold(overdriveId, null);
+							});
+						} else {
+							Pika.showMessage("Error Checking Out Title", data.message);
+						}
 					}
 				}).fail(function(){
 					Pika.showMessage("Error Checking Out Title", "An error occurred processing your request in OverDrive.  Please try again in a few minutes.");
@@ -38,19 +63,25 @@ Pika.OverDrive = (function(){
 		processOverDriveCheckoutPrompts: function(){
 			var overdriveCheckoutPromptsForm = $("#overdriveCheckoutPromptsForm"),
 					patronId = $("#patronId").val(),
-					overdriveId = overdriveCheckoutPromptsForm.find("input[name=overdriveId]").val();
-			Pika.OverDrive.doOverDriveCheckout(patronId, overdriveId);
+					overdriveId = overdriveCheckoutPromptsForm.find("input[name=overdriveId]").val(),
+					lendingPeriod = $('#lendingPeriodSelect' + patronId).val(),
+					formatType = $('#formatType').val(),
+					useDefaultLendingPeriods = $('#useDefaultLendingPeriods' + patronId).is(":checked") === true; // only set if the element is found and is checked; otherwise set as false
+			Pika.OverDrive.doOverDriveCheckout(patronId, overdriveId, lendingPeriod, useDefaultLendingPeriods, formatType);
 		},
 
-		doOverDriveCheckout: function(patronId, overdriveId){
+		doOverDriveCheckout: function(patronId, overDriveId, lendingPeriod, useDefaultLendingPeriods, formatType){
 			Pika.Account.ajaxLogin(function(){
-				var ajaxUrl = "/OverDrive/AJAX?method=CheckoutOverDriveItem&patronId=" + patronId + "&overDriveId=" + overdriveId;
+				var ajaxUrl = "/OverDrive/" + overDriveId + "/AJAX?method=checkoutOverDriveTitle&patronId=" + patronId
+				+ ((lendingPeriod !== undefined) ? "&lendingPeriod=" + lendingPeriod : "")
+				+ ((formatType !== undefined && formatType != "") ? "&formatType=" + formatType : "")
+				+ (useDefaultLendingPeriods !== undefined && useDefaultLendingPeriods === true ? "&useDefaultLendingPeriods" : "");
 				$.getJSON(ajaxUrl, function(data){
 					if (data.success) {
 						Pika.showMessageWithButtons("Title Checked Out Successfully", data.message, data.buttons);
 					} else if (data.noCopies) {
 						Pika.confirm(data.message, function(){
-							Pika.OverDrive.placeOverDriveHold(overdriveId, null);
+							Pika.OverDrive.placeOverDriveHold(overDriveId, null);
 						});
 					} else {
 						if (data.promptNeeded){
@@ -66,20 +97,20 @@ Pika.OverDrive = (function(){
 			return false;
 		},
 
-		doOverDriveHold: function(patronId, overDriveId, overdriveEmail, promptForOverdriveEmail){
+		doOverDriveHold: function(patronId, overDriveId, overDriveEmail, promptForOverDriveEmail){
 			var url = "/OverDrive/AJAX",
 					params = {
-						'method': 'PlaceOverDriveHold',
+						'method': 'placeOverDriveHold',
 						patronId: patronId,
 						overDriveId: overDriveId,
-						overdriveEmail: overdriveEmail,
-						promptForOverdriveEmail: promptForOverdriveEmail
+						overDriveEmail: overDriveEmail,
+						promptForOverDriveEmail: promptForOverDriveEmail
 					};
 			$.getJSON(url, params, function(data){
 					if (data.availableForCheckout){
 						Pika.OverDrive.checkOutOverDriveTitle(overdriveId);
 					}else{
-						Pika.showMessage("Placed Hold", data.message, true);
+						Pika.showMessageWithButtons("Placed Hold", data.message, data.buttons);
 					}
 				}).fail(function(){
 					Pika.showMessage("Error Placing Hold", "An error occurred processing your request in OverDrive.  Please try again in a few minutes.");
@@ -87,7 +118,7 @@ Pika.OverDrive = (function(){
 		},
 
 		followOverDriveDownloadLink: function(patronId, overDriveId, formatType){
-			var ajaxUrl = "/OverDrive/AJAX?method=GetDownloadLink&patronId=" + patronId + "&overDriveId=" + overDriveId + "&formatType=" + formatType;
+			var ajaxUrl = "/OverDrive/AJAX?method=getDownloadLink&patronId=" + patronId + "&overDriveId=" + overDriveId + "&formatType=" + formatType;
 			$.getJSON(ajaxUrl, function(data){
 					if (data.success){
 						//Reload the page
@@ -113,12 +144,12 @@ Pika.OverDrive = (function(){
 		placeOverDriveHold: function(overDriveId){
 			Pika.Account.ajaxLogin(function(){
 				//Get any prompts needed for placing holds (e-mail and format depending on the interface.
-				var url = "/OverDrive/" + overDriveId + "/AJAX?method=GetOverDriveHoldPrompts";
+				var url = "/OverDrive/" + overDriveId + "/AJAX?method=getOverDriveHoldPrompts";
 				$.getJSON(url, function (data) {
 					if (data.promptNeeded){
 						Pika.showMessageWithButtons(data.promptTitle, data.prompts, data.buttons);
 					} else {
-						Pika.OverDrive.doOverDriveHold(data.patronId, overDriveId, data.overdriveEmail, data.promptForOverdriveEmail);
+						Pika.OverDrive.doOverDriveHold(data.patronId, overDriveId, data.overDriveEmail, data.promptForOverDriveEmail);
 					}
 				}).fail(function(){
 					Pika.showMessage("Error Placing Hold", "An error occurred processing your request in OverDrive.  Please try again in a few minutes.");
@@ -128,26 +159,78 @@ Pika.OverDrive = (function(){
 		},
 
 		processOverDriveHoldPrompts: function(){
-				var overdriveHoldPromptsForm = $("#overdriveHoldPromptsForm"),
-						overdriveEmail = overdriveHoldPromptsForm.find("input[name=overdriveEmail]").val(),
-						overdriveId = overdriveHoldPromptsForm.find("input[name=overdriveId]").val(),
+				var overDriveHoldPromptsForm = $("#overDriveHoldPromptsForm"),
+						overDriveEmail = overDriveHoldPromptsForm.find("input[name=overDriveEmail]").val(),
+						overdriveId = overDriveHoldPromptsForm.find("input[name=overdriveId]").val(),
 						patronId = $("#patronId").val(),
-						promptForOverdriveEmail;
-			if (overdriveHoldPromptsForm.find("input[name=promptForOverdriveEmail]").is(":checked")){
-				promptForOverdriveEmail = 0;
-			}else{
-				promptForOverdriveEmail = 1;
-			}
-			Pika.OverDrive.doOverDriveHold(patronId, overdriveId, overdriveEmail, promptForOverdriveEmail);
+						rememberOverdriveEmail = overDriveHoldPromptsForm.find("input[name=rememberOverdriveEmail]").is(":checked") ? 0 : 1;
+			Pika.OverDrive.doOverDriveHold(patronId, overdriveId, overDriveEmail, rememberOverdriveEmail);
 		},
 
-		returnOverDriveTitle: function (patronId, overDriveId, transactionId){
-			Pika.confirm('Are you sure you want to return this title?', function () {
-				Pika.showMessage("Returning Title", "Returning your title in OverDrive.  This may take a minute.");
-				var ajaxUrl = "/OverDrive/AJAX?method=ReturnOverDriveItem&patronId=" + patronId + "&overDriveId=" + overDriveId + "&transactionId=" + transactionId;
-				$.getJSON(ajaxUrl, function(data){
-					Pika.showMessage("Title Returned", data.message, data.success, data.success);
+		updateOverDriveHold: function(patronId, overDriveId, thawDate){
+			Pika.Account.ajaxLogin(function(){
+				var url = "/OverDrive/" + overDriveId + "/AJAX?method=getOverDriveUpdateHoldPrompts&patronId=" + patronId;
+				if (thawDate !== undefined){
+					url += '&thawDate=' + thawDate;
+				}
+				$.getJSON(url, function (data) {
+					Pika.showMessageWithButtons(data.title, data.message, data.buttons);
 				}).fail(function(){
+					Pika.showMessage("Error", "An error occurred processing your request in OverDrive.  Please try again in a few minutes.");
+				});
+			});
+			return false;
+		},
+
+		freezeOverDriveHold: function(patronId, overDriveId, thawDate){
+			Pika.Account.ajaxLogin(function(){
+				var url = "/OverDrive/" + overDriveId + "/AJAX?method=getOverDriveFreezeHoldPrompts&patronId=" + patronId;
+				if (thawDate !== undefined){
+					url += '&thawDate=' + thawDate;
+				}
+				$.getJSON(url, function (data) {
+					Pika.showMessageWithButtons(data.title, data.message, data.buttons);
+				}).fail(function(){
+					Pika.showMessage("Error", "An error occurred processing your request in OverDrive.  Please try again in a few minutes.");
+				});
+			});
+			return false;
+		},
+
+		processFreezeOverDriveHoldPrompts: function(){
+			var overDriveHoldPromptsForm = $("#overdriveFreezeHoldPromptsForm"),
+					overDriveEmail = overDriveHoldPromptsForm.find("input[name=overDriveEmail]").val(),
+					overDriveId = overDriveHoldPromptsForm.find("input[name=overDriveId]").val(),
+					patronId = $("#patronId").val(),
+					thawDate = $("#thawDate").val(),
+					rememberOverdriveEmail = overDriveHoldPromptsForm.find("input[name=rememberOverdriveEmail]").is(":checked") ? 0 : 1,
+					url = "/OverDrive/AJAX",
+					params = {
+						'method': 'freezeOverDriveHold',
+						patronId: patronId,
+						overDriveId: overDriveId,
+						overDriveEmail: overDriveEmail,
+						rememberOverdriveEmail: rememberOverdriveEmail,
+						thawDate: thawDate
+					};
+			$.getJSON(url, params, function (data){
+				Pika.showMessage(data.title, data.message, data.success, data.success);
+			}).fail(function (){
+				Pika.showMessage("Error", "An error occurred processing your request in OverDrive.  Please try again in a few minutes.");
+			});
+		},
+
+		returnOverDriveTitle: function (patronId, overDriveId){
+			Pika.confirm('Are you sure you want to return this title?', function (){
+				Pika.showMessage("Returning Title", "Returning your title in OverDrive.");
+				var ajaxUrl = "/OverDrive/AJAX?method=returnOverDriveItem&patronId=" + patronId + "&overDriveId=" + overDriveId;
+				$.getJSON(ajaxUrl, function (data){
+					Pika.showMessage("Title Returned", data.message, data.success);
+					if (data.success){
+						$('#overdrive_'+overDriveId).remove(); //hide checkout entry
+						Pika.Account.loadMenuData(); //Update menu counts
+					}
+				}).fail(function (){
 					Pika.showMessage("Error Returning Title", "An error occurred processing your request in OverDrive.  Please try again in a few minutes.");
 				});
 			});
@@ -162,7 +245,7 @@ Pika.OverDrive = (function(){
 				alert("Please select a format to download.");
 			}else{
 				Pika.confirm("Are you sure you want to download the " + selectedFormatText + " format? You cannot change format after downloading.", function () {
-					var ajaxUrl = "/OverDrive/AJAX?method=SelectOverDriveDownloadFormat&patronId=" + patronId + "&overDriveId=" + overDriveId + "&formatType=" + selectedFormatType;
+					var ajaxUrl = "/OverDrive/AJAX?method=selectOverDriveDownloadFormat&patronId=" + patronId + "&overDriveId=" + overDriveId + "&formatType=" + selectedFormatType;
 					$.getJSON(ajaxUrl, function(data){
 							if (data.success){
 								//Reload the page

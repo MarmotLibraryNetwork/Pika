@@ -28,8 +28,7 @@ class DBMaintenanceEContent extends DBMaintenance {
 
 	public function __construct(){
 		parent::__construct();
-		require_once ROOT_DIR . '/sys/OverDrive/OverDriveAPIProduct.php';
-		$overDriveProduct = new OverDriveAPIProduct();
+		$overDriveProduct = new Pika\BibliographicDrivers\OverDrive\OverDriveAPIProduct();
 		$this->db =& $overDriveProduct->getDatabaseConnection();
 		if (PEAR::isError($this->db)){
 			die($this->db->getMessage());

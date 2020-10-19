@@ -18,7 +18,8 @@
  */
 
 require_once ROOT_DIR . '/services/Log/LogAdmin.php';
-require_once ROOT_DIR . '/sys/OverDrive/OverDriveAPIProduct.php';
+
+use Pika\BibliographicDrivers\OverDrive\OverDriveAPIProduct;
 
 class OverDriveExtractLog extends Log_Admin {
 

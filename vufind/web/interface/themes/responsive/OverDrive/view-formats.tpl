@@ -1,5 +1,5 @@
 {strip}
-{if count($holdings) > 0}
+{if count($overDriveTitleHoldings) > 0}
 	{foreach from=$overDriveTitleHoldings item=overDriveFormat key=index}
 	<div id="itemRow{$overDriveFormat->id}" class="eContentHolding">
 		<div class="eContentHoldingHeader">

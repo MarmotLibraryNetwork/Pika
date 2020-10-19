@@ -153,14 +153,18 @@ class MyAccount_Profile extends MyAccount
 				$interface->assign('edit', false);
 			}
 
-//			$interface->assign('overDriveUrl', $configArray['OverDrive']['url']);
-			/** @var I18N_Translator $translator */
-			global $translator;
-			$notice         = $translator->translate('overdrive_account_preferences_notice');
-			$replacementUrl = empty($configArray['OverDrive']['url']) ? '#' : $configArray['OverDrive']['url'];
+			$cache             = new Pika\Cache();
+			$cacheKey          = $cache->makePatronKey('overdrive_settings', $patronId);
+			$overDriveSettings = $cache->get($cacheKey);
+			if (empty($overDriveSettings)){
+				$overDriveDriver   = Pika\PatronDrivers\EcontentSystem\OverDriveDriverFactory::getDriver();
+				$overDriveSettings = $overDriveDriver->getUserOverDriveAccountSettings($patron);
+			}
+			$notice         = translate('overdrive_account_preferences_notice');
+			$replacementUrl = $overDriveSettings['overDriveWebsite'] ?? '#';
 			$notice         = str_replace('{OVERDRIVEURL}', $replacementUrl, $notice); // Insert the Overdrive URL into the notice
-			$interface->assign('overdrivePreferencesNotice', $notice);
-
+			$interface->assign('overDrivePreferencesNotice', $notice);
+			$interface->assign('overDriveSettings', $overDriveSettings);
 
 			if (!empty($_SESSION['profileUpdateErrors'])) {
 				$interface->assign('profileUpdateErrors', $_SESSION['profileUpdateErrors']);
@@ -170,7 +174,7 @@ class MyAccount_Profile extends MyAccount
 			if ($showAlternateLibraryOptionsInProfile) {
 				//Get the list of locations for display in the user interface.
 
-				$locationList = array();
+				$locationList      = [];
 				$locationList['0'] = "No Alternate Location Selected";
 				foreach ($pickupLocations as $pickupLocation){
 					if (!is_string($pickupLocation)){

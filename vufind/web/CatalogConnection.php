@@ -288,14 +288,15 @@ class CatalogConnection
 	 */
 	public function updateUserWithAdditionalRuntimeInformation($user){
 		global $timer;
-		require_once ROOT_DIR . '/Drivers/OverDriveDriverFactory.php';
-		$overDriveDriver = OverDriveDriverFactory::getDriver();
-		if ($user->isValidForOverDrive() && $overDriveDriver->isUserValidForOverDrive($user)){
-			$overDriveSummary = $overDriveDriver->getOverDriveSummary($user);
-			$user->setNumCheckedOutOverDrive($overDriveSummary['numCheckedOut']);
-			$user->setNumHoldsAvailableOverDrive($overDriveSummary['numAvailableHolds']);
-			$user->setNumHoldsRequestedOverDrive($overDriveSummary['numUnavailableHolds']);
-			$timer->logTime("Updated runtime information from OverDrive");
+		if ($user->isValidForOverDrive()){
+			$overDriveDriver = Pika\PatronDrivers\EcontentSystem\OverDriveDriverFactory::getDriver();
+			if ($overDriveDriver->isUserValidForOverDrive($user)){
+				$overDriveSummary = $overDriveDriver->getOverDriveCounts($user);
+				$user->setNumCheckedOutOverDrive($overDriveSummary['numCheckedOut']);
+				$user->setNumHoldsAvailableOverDrive($overDriveSummary['numAvailableHolds']);
+				$user->setNumHoldsRequestedOverDrive($overDriveSummary['numUnavailableHolds']);
+				$timer->logTime("Updated runtime information from OverDrive");
+			}
 		}
 
 		if ($user->isValidForHoopla()){

@@ -56,12 +56,12 @@ function getUserUpdates(){
 
 		'user_overdrive_email' => array(
 			'title'           => 'User OverDrive Email',
-			'description'     => 'Add overdriveEmail field to User table to allow for patrons to use a different email fo notifications when their books are ready',
+			'description'     => 'Add overDriveEmail field to User table to allow for patrons to use a different email fo notifications when their books are ready',
 			'continueOnError' => true,
 			'sql'             => array(
-				"ALTER TABLE user ADD overdriveEmail VARCHAR( 250 ) NOT NULL DEFAULT ''",
-				"ALTER TABLE user ADD promptForOverdriveEmail TINYINT DEFAULT 1",
-				"UPDATE user SET overdriveEmail = email"
+				"ALTER TABLE user ADD overDriveEmail VARCHAR( 250 ) NOT NULL DEFAULT ''",
+				"ALTER TABLE user ADD promptForOverDriveEmail TINYINT DEFAULT 1",
+				"UPDATE user SET overDriveEmail = email"
 			),
 		),
 
@@ -197,6 +197,17 @@ function getUserUpdates(){
 				'ALTER TABLE `user` DROP INDEX `username`, DROP COLUMN `username`',
 			),
 		),
+
+		'overdrive_user_settings_2020.07' => [
+			'title'           => 'Add prompt for OverDrive lending period setting',
+			'description'     => 'Update Pika\'s OverDrive settings',
+			'continueOnError' => false,
+			'sql'             => [
+				'ALTER TABLE `user` CHANGE COLUMN `promptForOverdriveEmail` `promptForOverDriveEmail` TINYINT(1) UNSIGNED NULL DEFAULT \'1\','
+					. 'ADD COLUMN `promptForOverDriveLendingPeriods` TINYINT(1) UNSIGNED NOT NULL DEFAULT \'1\' AFTER `promptForOverDriveEmail`,'
+					. 'CHANGE COLUMN `overdriveEmail` `overDriveEmail` VARCHAR(250) NULL DEFAULT NULL ;',
+			],
+		],
 
 	);
 }

@@ -3,7 +3,6 @@
 
 	{* Cover Column *}
 	{if $showCovers}
-		{*<div class="col-xs-4">*}
 		<div class="col-xs-3 col-sm-4 col-md-3 checkedOut-covers-column">
 			<div class="row">
 				<div class="selectTitle hidden-xs col-sm-1">
@@ -45,11 +44,6 @@
 							{if !$record.title|removeTrailingPunctuation}{translate text='Title not available'}{else}{$record.title|removeTrailingPunctuation|truncate:180:"..."|highlight}{/if}
 						</span>
 				{/if}
-{*				{if $record.recordId != -1}
-				<a href="{$record.recordUrl}" class="result-title notranslate">{/if}
-					{$record.title}{if $record.recordId == -1}OverDrive Record {$record.overDriveId}{/if}{if $record.recordId != -1}
-				</a>
-				{/if}*}
 			</div>
 		</div>
 		<div class="row">
@@ -61,6 +55,11 @@
 					</div>
 				{/if}
 
+				<div class="row">
+					<div class="result-label col-tn-4 col-lg-3">{translate text='Source'}</div>
+					<div class="result-value col-tn-8 col-lg-9">{$record.checkoutSource}</div>
+				</div>
+
 				{if $record.checkoutdate}
 					<div class="row">
 						<div class="result-label col-tn-4 col-lg-3">{translate text='Checked Out'}</div>
@@ -68,10 +67,12 @@
 					</div>
 				{/if}
 
-				<div class="row">
-					<div class="result-label col-tn-4 col-lg-3">{translate text='Format'}</div>
-					<div class="result-value col-tn-8 col-lg-9">{$record.format} - Overdrive</div>
-				</div>
+				{if $record.isFormatSelected}
+					<div class="row">
+						<div class="result-label col-tn-4 col-lg-3">{translate text='Format'}</div>
+						<div class="result-value col-tn-8 col-lg-9">{$record.selectedFormat.name}</div>
+					</div>
+				{/if}
 
 				{if $showRatings && $record.groupedWorkId && $record.ratingData}
 					<div class="row">
@@ -96,29 +97,34 @@
 					<div class="result-value col-tn-8 col-lg-9">{$record.dueDate|date_format}</div>
 				</div>
 
-				<div class="row econtent-download-row">
-					<div class="result-label col-md-4 col-lg-3">{translate text='Download'}</div>
-					<div class="result-value col-md-8 col-lg-9">
-						{if $record.formatSelected}
-							You downloaded the <strong>{$record.selectedFormat.name}</strong> format of this title.
-						{elseif isset($record.formats)}
-							<div class="form-inline">
-								<label for="downloadFormat_{$record.overDriveId}">Select one format to download.</label>
-								<br>
-								<select name="downloadFormat_{$record.overDriveId}" id="downloadFormat_{$record.overDriveId}" class="input-sm form-control">
-									<option value="-1">Select a Format</option>
-									{foreach from=$record.formats item=format}
-										<option value="{$format.formatType}">{$format.name}</option>
-									{/foreach}
-								</select>
-								<a href="#" onclick="Pika.OverDrive.selectOverDriveDownloadFormat('{$record.userId}', '{$record.overDriveId}')" class="btn btn-sm btn-primary">Download</a>
-							</div>
-						{/if}
+				{if !empty($record.formats) || ($record.isFormatSelected && isset($record.selectedFormat) && $record.selectedFormat.formatType != 'magazine-overdrive')}
+					<div class="row econtent-download-row">
+						<div class="result-label col-md-4 col-lg-3">{translate text='Download'}</div>
+						<div class="result-value col-md-8 col-lg-9">
+								{if $record.isFormatSelected && isset($record.selectedFormat)}
+									You downloaded the <strong>{$record.selectedFormat.name}</strong> format of this title.
+								{elseif !empty($record.formats)}
+									<div class="form-inline">
+										<label for="downloadFormat_{$record.overDriveId}">Select one format to download.</label>
+										<br>
+										<select name="downloadFormat_{$record.overDriveId}" id="downloadFormat_{$record.overDriveId}"
+														class="input-sm form-control">
+											<option value="-1">Select a Format</option>
+												{foreach from=$record.formats item=format}
+													<option value="{$format.formatType}">{$format.name}</option>
+												{/foreach}
+										</select>
+										<a href="#"
+											 onclick="Pika.OverDrive.selectOverDriveDownloadFormat('{$record.userId}', '{$record.overDriveId}')"
+											 class="btn btn-sm btn-primary">Download</a>
+									</div>
+								{/if}
+						</div>
 					</div>
-				</div>
-			</div>
+				{/if}
+		</div>
 
-			{* Actions for Title *}
+				{* Actions for Title *}
 			<div class="col-xs-9 col-sm-8 col-md-4 col-lg-3">
 				<div class="btn-group btn-group-vertical btn-block">
 					{if $record.overdriveMagazine}
@@ -127,17 +133,20 @@
 					{if $record.overdriveRead}
 						<a href="#" onclick="return Pika.OverDrive.followOverDriveDownloadLink('{$record.userId}', '{$record.overDriveId}', 'ebook-overdrive')" class="btn btn-sm btn-primary">Read&nbsp;Online</a>
 					{/if}
+					{if $record.mediadoRead}
+						<a href="#" onclick="return Pika.OverDrive.followOverDriveDownloadLink('{$record.userId}', '{$record.overDriveId}', 'ebook-mediado')" class="btn btn-sm btn-primary">Read&nbsp;Online&nbsp;MediaDo</a>
+					{/if}
 					{if $record.overdriveListen}
 						<a href="#" onclick="return Pika.OverDrive.followOverDriveDownloadLink('{$record.userId}', '{$record.overDriveId}', 'audiobook-overdrive')" class="btn btn-sm btn-primary">Listen&nbsp;Online</a>
 					{/if}
 					{if $record.overdriveVideo}
 						<a href="#" onclick="return Pika.OverDrive.followOverDriveDownloadLink('{$record.userId}', '{$record.overDriveId}', 'video-streaming')" class="btn btn-sm btn-primary">Watch&nbsp;Online</a>
 					{/if}
-					{if $record.formatSelected && !$record.overdriveVideo}
-						<a href="#" onclick="return Pika.OverDrive.followOverDriveDownloadLink('{$record.userId}', '{$record.overDriveId}', '{$record.selectedFormat.format}')" class="btn btn-sm btn-primary">Download&nbsp;Again</a>
+					{if $record.isFormatSelected && !$record.overdriveVideo}
+						<a href="#" onclick="return Pika.OverDrive.followOverDriveDownloadLink('{$record.userId}', '{$record.overDriveId}', '{$record.selectedFormat.formatType}')" class="btn btn-sm btn-primary">Download&nbsp;Again</a>
 					{/if}
 					{if $record.earlyReturn}
-						<a href="#" onclick="return Pika.OverDrive.returnOverDriveTitle('{$record.userId}', '{$record.overDriveId}', '{$record.transactionId}');" class="btn btn-sm btn-warning">Return&nbsp;Now</a>
+						<a href="#" onclick="return Pika.OverDrive.returnOverDriveTitle('{$record.userId}', '{$record.overDriveId}');" class="btn btn-sm btn-warning">Return&nbsp;Now</a>
 					{/if}
 				</div>
 

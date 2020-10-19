@@ -342,57 +342,7 @@
 					<div id="overdrivePanel" class="panel-collapse collapse in">
 						<div class="panel-body">
 							{* Empty action attribute uses the page loaded. this keeps the selected user patronId in the parameters passed back to server *}
-							<form action="" method="post" class="form-horizontal">
-								<input type="hidden" name="updateScope" value="overdrive">
-								<div class="form-group">
-									<div class="col-xs-4"><label for="overdriveEmail" class="control-label">{translate text='OverDrive Hold e-mail'}:</label></div>
-									<div class="col-xs-8">
-										{if $edit == true}<input name="overdriveEmail" id="overdriveEmail" class="form-control" value='{$profile->overdriveEmail|escape}' size='50' maxlength='75'>{else}{$profile->overdriveEmail|escape}{/if}
-									</div>
-								</div>
-								<div class="form-group">
-									<div class="col-xs-4"><label for="promptForOverdriveEmail" class="control-label">{translate text='Prompt for OverDrive e-mail'}:</label></div>
-									<div class="col-xs-8">
-										{if $edit == true}
-											<input type="checkbox" name="promptForOverdriveEmail" id="promptForOverdriveEmail" {if $profile->promptForOverdriveEmail==1}checked='checked'{/if} data-switch="">
-										{else}
-											{if $profile->promptForOverdriveEmail==0}No{else}Yes{/if}
-										{/if}
-									</div>
-								</div>
-								{if $overDriveLendingOptions}
-									<strong>Lending Options</strong>
-									<p class="help-block">Select how long you would like to checkout each type of material from OverDrive.</p>
-									{foreach from=$overDriveLendingOptions item=lendingOption}
-										<div class="form-group">
-											<div class="col-xs-4"><label class="control-label">{$lendingOption.name}:</label></div>
-											<div class="col-xs-8">
-												<div class="btn-group btn-group-sm" data-toggle="buttons">
-													{foreach from=$lendingOption.options item=option}
-														{if $edit}
-															<label for="{$lendingOption.id}_{$option.value}" class="btn btn-sm btn-default {if $option.selected}active{/if}"><input type="radio" name="{$lendingOption.id}" value="{$option.value}" id="{$lendingOption.id}_{$option.value}" {if $option.selected}checked="checked"{/if} class="form-control">&nbsp;{$option.name}</label>
-															&nbsp; &nbsp;
-														{elseif $option.selected}
-															{$option.name}
-														{/if}
-													{/foreach}
-													</div>
-											</div>
-										</div>
-									{/foreach}
-								{else}
-									<p class="help-block alert alert-warning">
-										{$overdrivePreferencesNotice}
-									</p>
-								{/if}
-								{if !$offline && $edit == true}
-									<div class="form-group">
-										<div class="col-xs-8 col-xs-offset-4">
-											<input type="submit" value="Update OverDrive Options" name="updateOverDrive" class="btn btn-sm btn-primary">
-										</div>
-									</div>
-								{/if}
-							</form>
+							{include file="MyAccount/profile-overdrive-options.tpl"}
 						</div>
 					</div>
 				</div>
@@ -400,7 +350,7 @@
 				{*Hoopla Options*}
 				{if $profile->isValidforHoopla()}
 				<div class="panel active">
-					<a data-toggle="collapse" data-parent="#account-settings-accordion" href="#overdrivePanel">
+					<a data-toggle="collapse" data-parent="#account-settings-accordion" href="#hooplaPanel">
 						<div class="panel-heading">
 							<div class="panel-title">
 								Hoopla Options

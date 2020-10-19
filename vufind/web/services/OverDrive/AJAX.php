@@ -19,26 +19,31 @@
 
 require_once ROOT_DIR . '/AJAXHandler.php';
 
+use Pika\PatronDrivers\EcontentSystem\OverDriveDriverFactory;
+
 class OverDrive_AJAX extends AJAXHandler {
 
 	protected $methodsThatRespondWithJSONUnstructured = [
-		'CheckoutOverDriveItem',
-		'PlaceOverDriveHold',
-		'CancelOverDriveHold',
-		'GetOverDriveHoldPrompts',
-		'ReturnOverDriveItem',
-		'SelectOverDriveDownloadFormat',
-		'GetDownloadLink',
-		'GetOverDriveCheckoutPrompts',
+		'checkoutOverDriveTitle',
+		'placeOverDriveHold',
+		'freezeOverDriveHold',
+		'thawOverDriveHold',
+		'cancelOverDriveHold',
+		'getOverDriveHoldPrompts',
+		'getOverDriveFreezeHoldPrompts',
+		'getOverDriveUpdateHoldPrompts',
+		'returnOverDriveItem',
+		'selectOverDriveDownloadFormat',
+		'getDownloadLink',
+		'getOverDriveCheckoutPrompts',
 		'forceUpdateFromAPI',
 		'getSupportForm',
 		'submitSupportForm',
 	];
 
 	function forceUpdateFromAPI(){
-		require_once ROOT_DIR . '/sys/OverDrive/OverDriveAPIProduct.php';
 		$id                            = $_REQUEST['id'];
-		$overDriveProduct              = new OverDriveAPIProduct();
+		$overDriveProduct              = new Pika\BibliographicDrivers\OverDrive\OverDriveAPIProduct();
 		$overDriveProduct->overdriveId = $id;
 		if ($overDriveProduct->find(true)){
 			if ($overDriveProduct->needsUpdate == true){
@@ -57,138 +62,152 @@ class OverDrive_AJAX extends AJAXHandler {
 		}
 	}
 
-	function PlaceOverDriveHold(){
+	function placeOverDriveHold(){
 		$user = UserAccount::getLoggedInUser();
-
-		$overDriveId = $_REQUEST['overDriveId'];
 		if ($user){
 			$patronId = $_REQUEST['patronId'];
 			$patron   = $user->getUserReferredTo($patronId);
 			if ($patron){
-				if (isset($_REQUEST['overdriveEmail'])){
-					if ($_REQUEST['overdriveEmail'] != $patron->overdriveEmail){
-						$patron->overdriveEmail = $_REQUEST['overdriveEmail'];
+				$overDriveId = $_REQUEST['overDriveId'];
+				if (!empty($overDriveId)){
+					if (!empty($_REQUEST['rememberOverdriveEmail'])){
+						// Update the user's overdrive email if the remember email was checked on
+						if (!empty($_REQUEST['overDriveEmail']) && $_REQUEST['overDriveEmail'] != $patron->overDriveEmail){
+							$patron->overDriveEmail = $_REQUEST['overDriveEmail'];
+						}
 						$patron->update();
 					}
+
+					$driver      = OverDriveDriverFactory::getDriver();
+					$holdMessage = $driver->placeOverDriveHold($overDriveId, $patron, $_REQUEST['overDriveEmail']);
+					if ($holdMessage['success']){
+						$holdMessage['buttons'] = '<a class="btn btn-primary" href="/MyAccount/Holds" role="button">View My Holds</a>';
+					}
+					return $holdMessage;
 				}
-				if (isset($_REQUEST['promptForOverdriveEmail'])){
-					$patron->promptForOverdriveEmail = $_REQUEST['promptForOverdriveEmail'];
+			}else{
+				return ['success' => false, 'message' => 'Sorry, it looks like you don\'t have permissions to place holds for that user.'];
+			}
+		}else{
+			return ['success' => false, 'message' => 'You must be logged in to place a hold.'];
+		}
+	}
+
+	function checkoutOverDriveTitle(){
+		$user = UserAccount::getLoggedInUser();
+		if ($user){
+			$patronId = $_REQUEST['patronId'];
+			$patron   = $user->getUserReferredTo($patronId);
+			if ($patron){
+				if (isset($_REQUEST['useDefaultLendingPeriods'])){
+					// Turn off prompt if this checkbox was checked ( to disable prompting for future checkouts)
+					$patron->promptForOverDriveLendingPeriods = 0;
 					$patron->update();
 				}
-
-				require_once ROOT_DIR . '/Drivers/OverDriveDriverFactory.php';
-				$driver      = OverDriveDriverFactory::getDriver();
-				$holdMessage = $driver->placeOverDriveHold($overDriveId, $patron);
-				if ($holdMessage['success']){
-					$holdMessage['buttons'] = '<a class="btn btn-primary" href="/MyAccount/Holds" role="button">View My Holds</a>';
-				}
-				return $holdMessage;
-			}else{
-				return ['result' => false, 'message' => 'Sorry, it looks like you don\'t have permissions to place holds for that user.'];
-			}
-		}else{
-			return ['result' => false, 'message' => 'You must be logged in to place a hold.'];
-		}
-	}
-
-	function CheckoutOverDriveItem(){
-		$user        = UserAccount::getLoggedInUser();
-		$overDriveId = $_REQUEST['overDriveId'];
-		//global $logger;
-		//$logger->log("Lending period = $lendingPeriod", PEAR_LOG_INFO);
-		if ($user){
-			$patronId = $_REQUEST['patronId'];
-			$patron   = $user->getUserReferredTo($patronId);
-			if ($patron){
-				require_once ROOT_DIR . '/Drivers/OverDriveDriverFactory.php';
-				$driver = OverDriveDriverFactory::getDriver();
-				$result = $driver->checkoutOverDriveItem($overDriveId, $patron);
-				//$logger->log("Checkout result = $result", PEAR_LOG_INFO);
+				$driver            = OverDriveDriverFactory::getDriver();
+				$overDriveId       = $_REQUEST['id'] ?? $_REQUEST['overDriveId'];
+				$lendingPeriod     = empty($_REQUEST['lendingPeriod']) ? null : $_REQUEST['lendingPeriod'];
+				$formatType        = empty($_REQUEST['formatType']) ? null : $_REQUEST['formatType'];
+				$result            = $driver->checkoutOverDriveTitle($overDriveId, $patron, $lendingPeriod, $formatType);
+				$result['buttons'] = '';
 				if ($result['success']){
-					$result['buttons'] = '<a class="btn btn-primary" href="/MyAccount/CheckedOut" role="button">View My Check Outs</a>';
+					//TODO: there can be multiple formats; one of which could be applicable below
+					if (!empty($result['formatType'])){
+						switch ($result['formatType']){
+							case 'ebook-overdrive':
+							case 'magazine-overdrive':
+								$result['buttons']  = '<a href="#" onclick="return Pika.OverDrive.followOverDriveDownloadLink(\'' . $patronId . "', '" . $overDriveId . "', '" . $result['formatType'] . '\')" class="btn btn-warning">Read Online Now</a>';
+								break;
+							case 'ebook-mediado':
+								$result['buttons']  = '<a href="#" onclick="return Pika.OverDrive.followOverDriveDownloadLink(\'' . $patronId . "', '" . $overDriveId . "', '" . $result['formatType'] . '\')" class="btn btn-warning">Read Online MediaDo Now</a>';
+								break;
+							case 'audiobook-overdrive':
+								$result['buttons'] = '<a href="#" onclick="return Pika.OverDrive.followOverDriveDownloadLink(\'' . $patronId . "', '" . $overDriveId . "', '" . $result['formatType'] . '\')" class="btn btn-warning">Listen Online Now</a>';
+								break;
+							case 'video-streaming':
+								$result['buttons'] = '<a href="#" onclick="return Pika.OverDrive.followOverDriveDownloadLink(\'' . $patronId . "', '" . $overDriveId . "', '" . $result['formatType'] . '\')" class="btn btn-warning">Watch Online Now</a>';
+								break;
+						}
+					}
+					$result['buttons'] .= '<a class="btn btn-primary" href="/MyAccount/CheckedOut" role="button">View My Check Outs</a>';
 				}
 				return $result;
 			}else{
-				return ['result' => false, 'message' => 'Sorry, it looks like you don\'t have permissions to checkout titles for that user.'];
+				return ['success' => false, 'message' => 'Sorry, it looks like you don\'t have permissions to checkout titles for that user.'];
 			}
 		}else{
-			return ['result' => false, 'message' => 'You must be logged in to checkout an item.'];
+			return ['success' => false, 'message' => 'You must be logged in to checkout an item.'];
 		}
 	}
 
-	function ReturnOverDriveItem(){
-		$user          = UserAccount::getLoggedInUser();
-		$overDriveId   = $_REQUEST['overDriveId'];
-		$transactionId = $_REQUEST['transactionId'];
-		if ($user){
-			$patronId = $_REQUEST['patronId'];
-			$patron   = $user->getUserReferredTo($patronId);
-			if ($patron){
-				require_once ROOT_DIR . '/Drivers/OverDriveDriverFactory.php';
-				$driver = OverDriveDriverFactory::getDriver();
-				$result = $driver->returnOverDriveItem($overDriveId, $transactionId, $patron);
-				//$logger->log("Checkout result = $result", PEAR_LOG_INFO);
-				return $result;
-			}else{
-				return ['result' => false, 'message' => 'Sorry, it looks like you don\'t have permissions to return titles for that user.'];
-			}
-		}else{
-			return ['result' => false, 'message' => 'You must be logged in to return an item.'];
-		}
-	}
-
-	function SelectOverDriveDownloadFormat(){
+	function returnOverDriveItem(){
 		$user        = UserAccount::getLoggedInUser();
 		$overDriveId = $_REQUEST['overDriveId'];
-		$formatType  = $_REQUEST['formatType'];
 		if ($user){
 			$patronId = $_REQUEST['patronId'];
 			$patron   = $user->getUserReferredTo($patronId);
 			if ($patron){
-				require_once ROOT_DIR . '/Drivers/OverDriveDriverFactory.php';
 				$driver = OverDriveDriverFactory::getDriver();
-				$result = $driver->selectOverDriveDownloadFormat($overDriveId, $formatType, $patron);
+				$result = $driver->returnOverDriveItem($overDriveId, $patron);
 				//$logger->log("Checkout result = $result", PEAR_LOG_INFO);
 				return $result;
 			}else{
-				return ['result' => false, 'message' => 'Sorry, it looks like you don\'t have permissions to download titles for that user.'];
+				return ['success' => false, 'message' => 'Sorry, it looks like you don\'t have permissions to return titles for that user.'];
 			}
 		}else{
-			return ['result' => false, 'message' => 'You must be logged in to download a title.'];
+			return ['success' => false, 'message' => 'You must be logged in to return an item.'];
 		}
 	}
 
-	function GetDownloadLink(){
-		$user        = UserAccount::getLoggedInUser();
-		$overDriveId = $_REQUEST['overDriveId'];
-		$formatType  = $_REQUEST['formatType'];
+	function selectOverDriveDownloadFormat(){
+		$user = UserAccount::getLoggedInUser();
 		if ($user){
 			$patronId = $_REQUEST['patronId'];
 			$patron   = $user->getUserReferredTo($patronId);
 			if ($patron){
-				require_once ROOT_DIR . '/Drivers/OverDriveDriverFactory.php';
-				$driver = OverDriveDriverFactory::getDriver();
-				$result = $driver->getDownloadLink($overDriveId, $formatType, $patron);
+				$driver      = OverDriveDriverFactory::getDriver();
+				$overDriveId = $_REQUEST['overDriveId'];
+				$formatType  = $_REQUEST['formatType'];
+				$result      = $driver->selectOverDriveDownloadFormat($overDriveId, $formatType, $patron);
 				//$logger->log("Checkout result = $result", PEAR_LOG_INFO);
 				return $result;
 			}else{
-				return ['result' => false, 'message' => 'Sorry, it looks like you don\'t have permissions to download titles for that user.'];
+				return ['success' => false, 'message' => 'Sorry, it looks like you don\'t have permissions to download titles for that user.'];
 			}
 		}else{
-			return ['result' => false, 'message' => 'You must be logged in to download a title.'];
+			return ['success' => false, 'message' => 'You must be logged in to download a title.'];
 		}
 	}
 
-	function GetOverDriveHoldPrompts(){
+	function getDownloadLink(){
+		$user = UserAccount::getLoggedInUser();
+		if ($user){
+			$patronId = $_REQUEST['patronId'];
+			$patron   = $user->getUserReferredTo($patronId);
+			if ($patron){
+				$driver      = OverDriveDriverFactory::getDriver();
+				$overDriveId = $_REQUEST['overDriveId'];
+				$formatType  = $_REQUEST['formatType'];
+				$result      = $driver->getDownloadLink($overDriveId, $formatType, $patron);
+				return $result;
+			}else{
+				return ['success' => false, 'message' => 'Sorry, it looks like you don\'t have permissions to download titles for that user.'];
+			}
+		}else{
+			return ['success' => false, 'message' => 'You must be logged in to download a title.'];
+		}
+	}
+
+	function getOverDriveHoldPrompts(){
 		$user = UserAccount::getLoggedInUser();
 		global $interface;
 		$id = $_REQUEST['id'];
 		$interface->assign('overDriveId', $id);
-		if ($user->overdriveEmail == 'undefined'){
-			$user->overdriveEmail = '';
+		if ($user->overDriveEmail == 'undefined'){
+			$user->overDriveEmail = '';
 		}
 		$promptForEmail = false;
-		if (strlen($user->overdriveEmail) == 0 || $user->promptForOverdriveEmail == 1){
+		if (strlen($user->overDriveEmail) == 0 || $user->promptForOverDriveEmail == 1){
 			$promptForEmail = true;
 		}
 
@@ -198,7 +217,7 @@ class OverDrive_AJAX extends AJAXHandler {
 			$interface->assign('patronId', reset($overDriveUsers)->id);
 		}
 
-		$interface->assign('overdriveEmail', $user->overdriveEmail);
+		$interface->assign('overDriveEmail', $user->overDriveEmail);
 		$interface->assign('promptForEmail', $promptForEmail);
 		if ($promptForEmail || count($overDriveUsers) > 1){
 			$promptTitle = 'OverDrive Hold Options';
@@ -206,40 +225,199 @@ class OverDrive_AJAX extends AJAXHandler {
 				'promptNeeded' => true,
 				'promptTitle'  => $promptTitle,
 				'prompts'      => $interface->fetch('OverDrive/ajax-overdrive-hold-prompt.tpl'),
-				'buttons'      => '<input class="btn btn-primary" type="submit" name="submit" value="Place Hold" onclick="return Pika.OverDrive.processOverDriveHoldPrompts();"/>',
+				'buttons'      => '<input class="btn btn-primary" type="submit" name="submit" value="Place Hold" onclick="return Pika.OverDrive.processOverDriveHoldPrompts();">',
 			];
 		}else{
 			return [
 				'patronId'                => reset($overDriveUsers)->id,
 				'promptNeeded'            => false,
-				'overdriveEmail'          => $user->overdriveEmail,
-				'promptForOverdriveEmail' => $promptForEmail,
+				'overDriveEmail'          => $user->overDriveEmail,
+				'rememberOverdriveEmail' => $promptForEmail,
 			];
 		}
 	}
 
-	function GetOverDriveCheckoutPrompts(){
+	function getOverDriveFreezeHoldPrompts(){
 		$user = UserAccount::getLoggedInUser();
-		global $interface;
-		$id = $_REQUEST['id'];
-		$interface->assign('overDriveId', $id);
+		if (!empty($user)){
+			$patronId = $_REQUEST['patronId'];
+			$patron   = $user->getUserReferredTo($patronId);
+			if ($patron){
+				$id = $_REQUEST['id'];
+				if (!empty($id)){
+					global $interface;
+					$interface->assign('overDriveId', $id);
+					$interface->assign('patronId', $patronId);
+					if ($user->overDriveEmail == 'undefined'){
+						$user->overDriveEmail = '';
+					}
+					$promptForEmail = false;
+					if (strlen($user->overDriveEmail) == 0 || $user->promptForOverDriveEmail == 1){
+						$promptForEmail = true;
+					}
+					if (!empty($_REQUEST['thawDate'])){
+						$thawDate = date('m-d-Y', $_REQUEST['thawDate']);
+						if ($thawDate){
+							$interface->assign('thawDate', $thawDate);
+						}
 
+					}
+					$interface->assign('overDriveEmail', $user->overDriveEmail);
+					$interface->assign('promptForEmail', $promptForEmail);
+					$title       = translate('Freeze Hold');// language customization
+					$promptTitle = "OverDrive $title Options";
+					return [
+						'title'   => $promptTitle,
+						'message' => $interface->fetch('OverDrive/ajax-overdrive-freeze-hold-prompt.tpl'),
+						'buttons' => '<input class="btn btn-primary" type="submit" name="submit" value="' . $title . '" onclick="$(\'#overdriveFreezeHoldPromptsForm\').submit(); return false;">',
+					];
+				}
+			}else{
+				return ['success' => false, 'message' => 'Sorry, it looks like you don\'t have permissions to ' .translate("freeze"). ' titles for that user.'];
+			}
+		}else{
+			return ['success' => false, 'message' => 'You must be logged in to '.translate("freeze"). 'an item'];
+		}
+	}
+
+	function getOverDriveUpdateHoldPrompts(){
+		$user = UserAccount::getLoggedInUser();
+		if (!empty($user)){
+			$patronId = $_REQUEST['patronId'];
+			$patron   = $user->getUserReferredTo($patronId);
+			if ($patron){
+				$id = $_REQUEST['id'];
+				if (!empty($id)){
+					global $interface;
+					$interface->assign('overDriveId', $id);
+					$interface->assign('patronId', $patronId);
+					if ($user->overDriveEmail == 'undefined'){
+						$user->overDriveEmail = '';
+					}
+					$promptForEmail = false;
+					if (strlen($user->overDriveEmail) == 0 || $user->promptForOverDriveEmail == 1){
+						$promptForEmail = true;
+					}
+					if (!empty($_REQUEST['thawDate'])){
+						$thawDate = date('m-d-Y', $_REQUEST['thawDate']);
+						if ($thawDate){
+							$interface->assign('thawDate', $thawDate);
+						}
+
+					}
+					$interface->assign('overDriveEmail', $user->overDriveEmail);
+					$interface->assign('promptForEmail', $promptForEmail);
+					$title       = translate('Freeze Hold');// language customization
+					$promptTitle = "OverDrive Hold Options";
+					return [
+						'title'   => $promptTitle,
+						'message' => $interface->fetch('OverDrive/ajax-overdrive-freeze-hold-prompt.tpl'),
+						'buttons' =>  $interface->fetch('OverDrive/ajax-overdrive-freeze-hold-buttons.tpl'),
+//						'buttons' => '<input class="btn btn-primary" type="submit" name="submit" value="' . $title . '" onclick="$(\'#overdriveFreezeHoldPromptsForm\').submit(); return false;">',
+					];
+				}
+			}else{
+				return ['success' => false, 'message' => 'Sorry, it looks like you don\'t have permissions to ' .translate("freeze"). ' titles for that user.'];
+			}
+		}else{
+			return ['success' => false, 'message' => 'You must be logged in to '.translate("freeze"). 'an item'];
+		}
+	}
+
+	function freezeOverDriveHold(){
+		$user = UserAccount::getLoggedInUser();
+		if ($user){
+			$patronId = $_REQUEST['patronId'];
+			$patron   = $user->getUserReferredTo($patronId);
+			if ($patron){
+				$overDriveId = $_REQUEST['overDriveId'];
+				if (!empty($overDriveId)){
+					if (!empty($_REQUEST['rememberOverdriveEmail'])){
+						// Update the user's overdrive email if the remember email was checked on
+						if (!empty($_REQUEST['overDriveEmail']) && $_REQUEST['overDriveEmail'] != $patron->overDriveEmail){
+							$patron->overDriveEmail = $_REQUEST['overDriveEmail'];
+						}
+						$patron->update();
+					}
+
+					$daysFromNow = null;
+					if (!empty($_REQUEST['thawDate'])){
+						$thawDate = DateTime::createFromFormat('m-d-Y', $_REQUEST['thawDate']);
+						if ($thawDate){
+							$diff = $thawDate->diff(new DateTime(), true);
+							if ($diff->days !== false){ //Could be zero days
+								$daysFromNow = $diff->days;
+							}
+						}
+					}
+					$driver = OverDriveDriverFactory::getDriver();
+					$result = $driver->freezeOverDriveHold($overDriveId, $patron, $_REQUEST['overDriveEmail'], $daysFromNow);
+					return $result;
+				}
+			}else{
+				return ['success' => false, 'message' => 'Sorry, it looks like you don\'t have permissions to update holds for that user.'];
+			}
+		}else{
+			return ['success' => false, 'message' => 'You must be logged in to update a hold.'];
+		}
+	}
+
+	function getOverDriveCheckoutPrompts(){
+		global $interface;
+		$user           = UserAccount::getLoggedInUser();
 		$overDriveUsers = $user->getRelatedOverDriveUsers();
+		$id             = $_REQUEST['id'];
+		if (empty($_REQUEST['formatType'])){
+			$recordDriver   = new \OverDriveRecordDriver($id);
+			$formats        = $recordDriver->getItems();
+			$lendingPeriods = [];
+			$formatClass    = [];
+			foreach ($formats as $format){
+				$tmp  = $format->getFormatClass();
+				if ($tmp){ // avoid things with out a format class (magazine)
+					$formatClass[] = $tmp;
+				}
+			}
+			$formatClass = array_unique($formatClass);
+			$formatClass = count($formatClass) == 1 ? $formatClass[0] : null;  // can only setting lending period options for one format class (count() should be either 1 or 0 (0 for magazines)
+		}else{
+			$overDriveFormat = new Pika\BibliographicDrivers\OverDrive\OverDriveAPIProductFormats();
+			$formatClass     = $overDriveFormat->getFormatClass($_REQUEST['formatType']);
+			$interface->assign('formatType', $_REQUEST['formatType']);
+		}
+
+		$interface->assign('overDriveId', $id);
 		$interface->assign('overDriveUsers', $overDriveUsers);
 
-		if (count($overDriveUsers) > 1){
-			$promptTitle = 'OverDrive Checkout Options';
+		if ($formatClass){
+			foreach ($overDriveUsers as &$tmpUser){
+				if ($tmpUser->promptForOverDriveLendingPeriods){
+					$cache    ??= new Pika\Cache();
+					$cacheKey = $cache->makePatronKey('overdrive_settings', $tmpUser->id);
+					$settings = $cache->get($cacheKey);
+					if (empty($settings)){
+						$driver   ??= OverDriveDriverFactory::getDriver(); //PHPStorm highlights this as an error, but it *does* in fact work. pascal 10/16/20
+						$settings = $driver->getUserOverDriveAccountSettings($tmpUser);
+					}
+					if (isset($settings['lendingPeriods'][$formatClass])){
+						$tmpUser->lendingPeriod       = $settings['lendingPeriods'][$formatClass]->lendingPeriod; // Assign setting to the User Object for the template to use
+						$lendingPeriods[$tmpUser->id] = $settings['lendingPeriods'][$formatClass]->options;
+					}
+				}
+			}
+			$interface->assign('lendingPeriods', $lendingPeriods);
+		}
+
+		if (count($overDriveUsers) > 1 || $user->promptForOverDriveLendingPeriods){
 			return [
 				'promptNeeded' => true,
-				'promptTitle'  => $promptTitle,
+				'promptTitle'  => 'OverDrive Checkout Options',
 				'prompts'      => $interface->fetch('OverDrive/ajax-overdrive-checkout-prompt.tpl'),
 				'buttons'      => '<input class="btn btn-primary" type="submit" name="submit" value="Checkout Title" onclick="return Pika.OverDrive.processOverDriveCheckoutPrompts();">',
 			];
 		}elseif (count($overDriveUsers) == 1){
-			return [
-				'patronId'     => reset($overDriveUsers)->id,
-				'promptNeeded' => false,
-			];
+			$_REQUEST['patronId'] = $user->id;
+			return $this->checkoutOverDriveTitle();
 		}else{
 			// No Overdrive Account Found, give the user an error message
 			global $logger;
@@ -251,25 +429,48 @@ class OverDrive_AJAX extends AJAXHandler {
 				'buttons'      => '',
 			];
 		}
-
 	}
 
-	function CancelOverDriveHold(){
-		$user        = UserAccount::getLoggedInUser();
-		$overDriveId = $_REQUEST['overDriveId'];
+	function cancelOverDriveHold(){
+		$user = UserAccount::getLoggedInUser();
 		if ($user){
 			$patronId = $_REQUEST['patronId'];
 			$patron   = $user->getUserReferredTo($patronId);
 			if ($patron){
-				require_once ROOT_DIR . '/Drivers/OverDriveDriverFactory.php';
-				$driver = OverDriveDriverFactory::getDriver();
-				$result = $driver->cancelOverDriveHold($overDriveId, $patron);
-				return $result;
+				$overDriveId = $_REQUEST['overDriveId'];
+				if ($overDriveId){
+					$driver = OverDriveDriverFactory::getDriver();
+					$result = $driver->cancelOverDriveHold($overDriveId, $patron);
+					return $result;
+				}
 			}else{
-				return ['result' => false, 'message' => 'Sorry, it looks like you don\'t have permissions to download cancel holds for that user.'];
+				return ['success' => false, 'message' => 'Sorry, it looks like you don\'t have permissions to download cancel holds for that user.'];
 			}
 		}else{
-			return ['result' => false, 'message' => 'You must be logged in to cancel holds.'];
+			return ['success' => false, 'message' => 'You must be logged in to cancel holds.'];
+		}
+	}
+
+	function thawOverDriveHold(){
+		$thaw    = translate('thaw');
+		$Thawing = ucfirst(translate("thawing"));
+		$user    = UserAccount::getLoggedInUser();
+		if ($user){
+			$patronId = $_REQUEST['patronId'];
+			$patron   = $user->getUserReferredTo($patronId);
+			if ($patron){
+				$overDriveId = $_REQUEST['overDriveId'];
+				if (!empty($overDriveId)){
+					$driver          = OverDriveDriverFactory::getDriver();
+					$result          = $driver->thawOverDriveHold($overDriveId, $patron);
+					$result['title'] = ($result['success'] ? 'Success ': 'Error ' ) . $Thawing . ' OverDrive Hold';
+					return $result;
+				}
+			}else{
+				return ['success' => false, 'title' => 'Error ' . $Thawing . ' OverDrive Hold', 'message' => "Sorry, it looks like you don't have permissions to download $thaw holds for that user."];
+			}
+		}else{
+			return ['success' => false, 'title' => 'Error ' . $Thawing . ' OverDrive Hold', 'message' => "You must be logged in to $thaw holds."];
 		}
 	}
 
@@ -293,6 +494,11 @@ class OverDrive_AJAX extends AJAXHandler {
 				$author         = $recordDriver->getAuthor();
 				$titleAndAuthor = $recordDriver->getTitle() . (!empty($author) ? ' by ' . $author : '');
 				$interface->assign('titleAndAuthor', $titleAndAuthor);
+				$formats = [];
+				foreach ($recordDriver->getItems() as $format){
+					$formats[$format->textId] = $format->name;
+				}
+				$interface->assign('formats', $formats);
 			}
 		}
 
@@ -343,6 +549,7 @@ class OverDrive_AJAX extends AJAXHandler {
 			$interface->assign('email', $patronEmail);
 			$interface->assign('deviceName', get_device_name()); // footer & eContent support email
 			$interface->assign('homeLibrary', $userLibrary->displayName);
+			$interface->assign('overDriveErrorMessages', $_REQUEST['overDriveErrorMessages']);
 
 			$body        = $interface->fetch('OverDrive/eContentSupportEmail.tpl');
 			$emailResult = $mail->send($to, $sendingAddress, $subject, $body, $patronEmail);

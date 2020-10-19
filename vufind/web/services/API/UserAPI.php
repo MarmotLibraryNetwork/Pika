@@ -20,9 +20,11 @@
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/CatalogConnection.php';
 
+use Pika\PatronDrivers\EcontentSystem\OverDriveDriverFactory;
+
 class UserAPI extends AJAXHandler {
 
-	protected $methodsThatRespondWithJSONResultWrapper = array(
+	protected $methodsThatRespondWithJSONResultWrapper = [
 		'isLoggedIn',
 		'login',
 		'logout',
@@ -31,9 +33,7 @@ class UserAPI extends AJAXHandler {
 		'getPatronHolds',
 		'getPatronHoldsOverDrive',
 		'getPatronCheckedOutItemsOverDrive',
-		'getPatronOverDriveSummary',
 		'getPatronFines',
-		'getOverDriveLendingOptions',
 		'getPatronCheckedOutItems',
 		'renewItem',
 		'renewAll',
@@ -42,9 +42,7 @@ class UserAPI extends AJAXHandler {
 		'changeHoldPickUpLocation',
 		'placeOverDriveHold',
 		'cancelOverDriveHold',
-		'addItemToOverDriveCart',
 		'checkoutOverDriveItem',
-		'processOverDriveCart',
 		'cancelHold',
 		'freezeHold',
 		'activateHold',
@@ -55,7 +53,7 @@ class UserAPI extends AJAXHandler {
 		'deleteAllFromReadingHistory',
 		'deleteSelectedFromReadingHistory',
 		'loadUsernameAndPassword',
-	);
+	];
 	/** @var CatalogConnection */
 	private $catalog;
 
@@ -70,8 +68,8 @@ class UserAPI extends AJAXHandler {
 	/**
 	 *
 	 * Returns whether or not a user is currently logged in based on session information.
-	 * This method is only useful from VuFind itself or from files which can share cookies
-	 * with the VuFind server.
+	 * This method is only useful from Pika itself or from files which can share cookies
+	 * with the Pika server.
 	 *
 	 * Returns:
 	 * <code>
@@ -98,8 +96,8 @@ class UserAPI extends AJAXHandler {
 	/**
 	 * Logs in the user and sets a cookie indicating that the user is logged in.
 	 * Must be called by POSTing data to the API.
-	 * This method is only useful from VuFind itself or from files which can share cookies
-	 * with the VuFind server.
+	 * This method is only useful from Pika itself or from files which can share cookies
+	 * with the Pika server.
 	 *
 	 * Sample call:
 	 * <code>
@@ -123,24 +121,24 @@ class UserAPI extends AJAXHandler {
 		if (isset($_POST['username']) && isset($_POST['password'])){
 			$user = UserAccount::getLoggedInUser();
 			if ($user && !PEAR_Singleton::isError($user)){
-				return array('success' => true, 'name' => ucwords($user->firstname . ' ' . $user->lastname));
+				return ['success' => true, 'name' => ucwords($user->firstname . ' ' . $user->lastname)];
 			}else{
 				$user = UserAccount::login();
 				if ($user && !PEAR_Singleton::isError($user)){
-					return array('success' => true, 'name' => ucwords($user->firstname . ' ' . $user->lastname));
+					return ['success' => true, 'name' => ucwords($user->firstname . ' ' . $user->lastname)];
 				}else{
-					return array('success' => false);
+					return ['success' => false];
 				}
 			}
 		}else{
-			return array('success' => false, 'message' => 'This method must be called via POST.');
+			return ['success' => false, 'message' => 'This method must be called via POST.'];
 		}
 	}
 
 	/**
 	 * Logs the user out of the system and clears cookies indicating that the user is logged in.
-	 * This method is only useful from VuFind itself or from files which can share cookies
-	 * with the VuFind server.
+	 * This method is only useful from Pika itself or from files which can share cookies
+	 * with the Pika server.
 	 *
 	 * Sample call:
 	 * <code>
@@ -172,7 +170,7 @@ class UserAPI extends AJAXHandler {
 	 * Returns JSON encoded data as follows:
 	 * <ul>
 	 * <li>success - false if the username or password could not be found, or the folowing user information if the account is valid.</li>
-	 * <li>id  The id of the user within VuFind</li>
+	 * <li>id  The id of the user within Pika</li>
 	 * <li>username, cat_username  The patron's library card number</li>
 	 * <li>password, cat_password  The patron's PIN number</li>
 	 * <li>firstname  The first name of the patron in the ILS</li>
@@ -218,7 +216,7 @@ class UserAPI extends AJAXHandler {
 	 * @author Mark Noble <pika@marmot.org>
 	 */
 	function validateAccount(){
-		list($username, $password) = $this->loadUsernameAndPassword();
+		[$username, $password] = $this->loadUsernameAndPassword();
 
 		$result = UserAccount::validateAccount($username, $password);
 		if ($result != null){
@@ -237,9 +235,9 @@ class UserAPI extends AJAXHandler {
 			unset($result->_lastError);
 			unset($result->N);
 
-			return array('success' => $result);
+			return ['success' => $result];
 		}else{
-			return array('success' => false);
+			return ['success' => false];
 		}
 	}
 
@@ -273,7 +271,7 @@ class UserAPI extends AJAXHandler {
 	 * <li>zip  The zip code for the patron</li>
 	 * <li>phone  The phone number for the patron</li>
 	 * <li>email  The email for the patron</li>
-	 * <li>homeLocationId  The id of the patron's home branch within VuFind</li>
+	 * <li>homeLocationId  The id of the patron's home branch within Pika</li>
 	 * <li>homeLocationName  The full name of the patron's home branch</li>
 	 * <li>expires  The expiration date of the patron's library card</li>
 	 * <li>fines  the amount of fines on the patron's account formatted for display</li>
@@ -337,7 +335,7 @@ class UserAPI extends AJAXHandler {
 	 * @author Mark Noble <pika@marmot.org>
 	 */
 	function getPatronProfile(){
-		list($username, $password) = $this->loadUsernameAndPassword();
+		[$username, $password] = $this->loadUsernameAndPassword();
 
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !PEAR_Singleton::isError($user)){
@@ -350,9 +348,9 @@ class UserAPI extends AJAXHandler {
 				}
 			}
 
-			return array('success' => true, 'profile' => $user);
+			return ['success' => true, 'profile' => $user];
 		}else{
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return ['success' => false, 'message' => 'Login unsuccessful'];
 		}
 	}
 
@@ -456,188 +454,46 @@ class UserAPI extends AJAXHandler {
 	 * @author Mark Noble <pika@marmot.org>
 	 */
 	function getPatronHolds(){
-		list($username, $password) = $this->loadUsernameAndPassword();
+		[$username, $password] = $this->loadUsernameAndPassword();
 
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !PEAR_Singleton::isError($user)){
 			$allHolds = $user->getMyHolds();
-			return array('success' => true, 'holds' => $allHolds);
+			return ['success' => true, 'holds' => $allHolds];
 		}else{
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return ['success' => false, 'message' => 'Login unsuccessful'];
 		}
 	}
 
 	/**
 	 * Get a list of holds with details from OverDrive.
-	 * Note: OverDrive can be very slow at times.  Proper precautions should be taken to ensure the calling application
-	 * remains responsive.  VuFind does handle caching of OverDrive details so additional caching should not be needed.
 	 *
-	 * Parameters:
-	 * <ul>
-	 * <li>username - The barcode of the user.  Can be truncated to the last 7 or 9 digits.</li>
-	 * <li>password - The pin number for the user. </li>
-	 * </ul>
-	 *
-	 * Sample Call:
-	 * <code>
-	 * https://example.marmot.org/API/UserAPI?method=getPatronHoldsOverDrive&username=23025003575917&password=7604
-	 * </code>
-	 *
-	 * Sample Response:
-	 * <code>
-	 * {"result":{
-	 *   "success":true,
-	 *   "holds":{
-	 *     "available":[{
-	 *       "overDriveId":"2C32E00B-8838-4F2A-BED7-EAEF2E9249C8",
-	 *       "imageUrl":"http:\/\/images.contentreserve.com\/ImageType-200\/1523-1\/%7B2C32E00B-8838-4F2A-BED7-EAEF2E9249C8%7DImg200.jpg",
-	 *       "title":"Danger in a Red Dress",
-	 *       "subTitle":"The Fortune Hunter Series, Book 4",
-	 *       "author":"Christina Dodd",
-	 *       "recordId":"9604",
-	 *       "notificationDate":1325921790,
-	 *       "expirationDate":1326180990,
-	 *       "formats":[
-	 *         {"name":"Kindle Book",
-	 *          "overDriveId":
-	 *          "2C32E00B-8838-4F2A-BED7-EAEF2E9249C8",
-	 *          "formatId":"420"
-	 *         },
-	 *         {"name":"Adobe EPUB eBook",
-	 *          "overDriveId":"2C32E00B-8838-4F2A-BED7-EAEF2E9249C8",
-	 *          "formatId":"410"
-	 *         },
-	 *         {"name":"Adobe PDF eBook",
-	 *          "overDriveId":"2C32E00B-8838-4F2A-BED7-EAEF2E9249C8",
-	 *          "formatId":"50"
-	 *         }
-	 *       ]
-	 *     }],
-	 *     "unavailable":[{
-	 *       "overDriveId":"E750E1B6-2B11-42B5-89CB-153A286FB4A0",
-	 *       "imageUrl":"http:\/\/images.contentreserve.com\/ImageType-200\/0293-1\/%7BE750E1B6-2B11-42B5-89CB-153A286FB4A0%7DImg200.jpg",
-	 *       "title":"Sunrise",
-	 *       "subTitle":"Warriors: Power of Three Series, Book 6",
-	 *       "author":"Erin Hunter",
-	 *       "recordId":"7356",
-	 *       "formatId":"410",
-	 *       "holdQueuePosition":"1",
-	 *       "holdQueueLength":"1"
-	 *     }]
-	 *   }
-	 * }}
-	 * </code>
-	 *
-	 * @author Mark Noble <pika@marmot.org>
 	 */
 	function getPatronHoldsOverDrive(){
-		list($username, $password) = $this->loadUsernameAndPassword();
+		[$username, $password] = $this->loadUsernameAndPassword();
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !PEAR_Singleton::isError($user)){
-			require_once ROOT_DIR . '/Drivers/OverDriveDriverFactory.php';
 			$eContentDriver = OverDriveDriverFactory::getDriver();
 			$eContentHolds  = $eContentDriver->getOverDriveHolds($user);
-			return array('success' => true, 'holds' => $eContentHolds);
+			return ['success' => true, 'holds' => $eContentHolds];
 		}else{
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return ['success' => false, 'message' => 'Login unsuccessful'];
 		}
 	}
 
 	/**
 	 * Get a list of items that are currently checked out to the user within OverDrive.
-	 * Note: VuFind takes care of caching the checked out items page appropriately.  The caling application should not
-	 * do additional caching.
 	 *
-	 * Parameters:
-	 * <ul>
-	 * <li>username - The barcode of the user.  Can be truncated to the last 7 or 9 digits.</li>
-	 * <li>password - The pin number for the user. </li>
-	 * </ul>
-	 *
-	 * Sample Call:
-	 * <code>
-	 * https://example.marmot.org/API/UserAPI?method=getPatronCheckedOutItemsOverDrive&username=23025003575917&password=7604
-	 * </code>
-	 *
-	 * Sample Response:
-	 * <code>
-	 * {"result":{
-	 *   "success":true,
-	 *   "items":[
-	 *     {"imageUrl":"http:\/\/images.contentreserve.com\/ImageType-200\/1138-1\/%7BA10890DB-DDEF-4BA5-BAEC-39AAF8A67D69%7DImg200.jpg",
-	 *      "title":"An Object of Beauty",
-	 *      "overDriveId":"A10890DB-DDEF-4BA5-BAEC-39AAF8A67D69",
-	 *      "subTitle":"",
-	 *      "format":"OverDrive WMA Audiobook ",
-	 *      "downloadSize":"106251 kb",
-	 *      "downloadLink":"http:\/\/ofs.contentreserve.com\/bin\/OFSGatewayModule.dll\/AnObjectofBeauty9781607889410.odm?RetailerID=douglascounty&Expires=1326047065&Token=a17a4a46-ea2a-4d2b-b076-79044d911a46&Signature=qCCvuYGCXS16C7TkMDg98%2fQU5YY%3d",
-	 *      "checkedOutOn":"Jan 05, 2012",
-	 *      "expiresOn":"Jan 12, 2012",
-	 *      "recordId":"14955"
-	 *     }
-	 *   ]
-	 * }}
-	 * </code>
-	 *
-	 * @author Mark Noble <pika@marmot.org>
 	 */
 	function getPatronCheckedOutItemsOverDrive(){
-		list($username, $password) = $this->loadUsernameAndPassword();
+		[$username, $password] = $this->loadUsernameAndPassword();
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !PEAR_Singleton::isError($user)){
-			require_once ROOT_DIR . '/Drivers/OverDriveDriverFactory.php';
 			$eContentDriver          = OverDriveDriverFactory::getDriver();
-			$eContentCheckedOutItems = $eContentDriver->getOverDriveCheckedOutItems($user);
-			return array('success' => true, 'items' => $eContentCheckedOutItems['items']);
+			$eContentCheckedOutItems = $eContentDriver->getOverDriveCheckouts($user);
+			return ['success' => true, 'items' => $eContentCheckedOutItems];
 		}else{
-			return array('success' => false, 'message' => 'Login unsuccessful');
-		}
-	}
-
-	/**
-	 * Get a count of items in various lists within overdrive (holds, cart, wishlist, checked out).
-	 *
-	 * Usage:
-	 * <code>
-	 * {siteUrl}/API/UserAPI?method=getPatronOverDriveSummary&username=patronBarcode&password=pin
-	 * </code>
-	 *
-	 * Parameters:
-	 * <ul>
-	 * <li>username - The barcode of the user.  Can be truncated to the last 7 or 9 digits.</li>
-	 * <li>password - The pin number for the user. </li>
-	 * </ul>
-	 *
-	 * Sample Call:
-	 * <code>
-	 * https://example.marmot.org/API/UserAPI?method=getPatronOverDriveSummary&username=23025003575917&password=7604
-	 * </code>
-	 *
-	 * Sample Response:
-	 * <code>
-	 * {"result":{
-	 *   "success":true,
-	 *   "summary":{
-	 *     "numAvailableHolds":1,
-	 *     "numUnavailableHolds":4,
-	 *     "numCheckedOut":7,
-	 *     "numWishlistItems":9
-	 *   }
-	 * }}
-	 * </code>
-	 *
-	 * @author Mark Noble <pika@marmot.org>
-	 */
-	function getPatronOverDriveSummary(){
-		list($username, $password) = $this->loadUsernameAndPassword();
-		$user = UserAccount::validateAccount($username, $password);
-		if ($user && !PEAR_Singleton::isError($user)){
-			require_once ROOT_DIR . '/Drivers/OverDriveDriverFactory.php';
-			$eContentDriver   = OverDriveDriverFactory::getDriver();
-			$overDriveSummary = $eContentDriver->getOverDriveSummary($user);
-			return array('success' => true, 'summary' => $overDriveSummary);
-		}else{
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return ['success' => false, 'message' => 'Login unsuccessful'];
 		}
 	}
 
@@ -678,32 +534,14 @@ class UserAPI extends AJAXHandler {
 	 * @author Mark Noble <pika@marmot.org>
 	 */
 	function getPatronFines(){
-		list($username, $password) = $this->loadUsernameAndPassword();
+		[$username, $password] = $this->loadUsernameAndPassword();
 		$includeMessages = isset($_REQUEST['includeMessages']) ? $_REQUEST['includeMessages'] : false;
 		$user            = UserAccount::validateAccount($username, $password);
 		if ($user && !PEAR_Singleton::isError($user)){
 			$fines = $this->getCatalogConnection()->getMyFines($user, $includeMessages);
-			return array('success' => true, 'fines' => $fines);
+			return ['success' => true, 'fines' => $fines];
 		}else{
-			return array('success' => false, 'message' => 'Login unsuccessful');
-		}
-	}
-
-	/**
-	 * Returns lending options for a patron from OverDrive.
-	 *
-	 * @return array
-	 */
-	function getOverDriveLendingOptions(){
-		list($username, $password) = $this->loadUsernameAndPassword();
-		$user = UserAccount::validateAccount($username, $password);
-		if ($user && !PEAR_Singleton::isError($user)){
-			require_once ROOT_DIR . '/Drivers/OverDriveDriverFactory.php';
-			$driver         = OverDriveDriverFactory::getDriver();
-			$accountDetails = $driver->getAccountDetails($user);
-			return array('success' => true, 'lendingOptions' => $accountDetails['lendingOptions']);
-		}else{
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return ['success' => false, 'message' => 'Login unsuccessful'];
 		}
 	}
 
@@ -755,17 +593,17 @@ class UserAPI extends AJAXHandler {
 	function getPatronCheckedOutItems(){
 		global $offlineMode;
 		if ($offlineMode){
-			return array('success' => false, 'message' => 'Circulation system is offline');
+			return ['success' => false, 'message' => 'Circulation system is offline'];
 		}else{
-			list($username, $password) = $this->loadUsernameAndPassword();
+			[$username, $password] = $this->loadUsernameAndPassword();
 			/** @var User $user */
 			$user = UserAccount::validateAccount($username, $password);
 			if ($user && !PEAR_Singleton::isError($user)){
 				$allCheckedOut = $user->getMyCheckouts(false);
 
-				return array('success' => true, 'checkedOutItems' => $allCheckedOut);
+				return ['success' => true, 'checkedOutItems' => $allCheckedOut];
 			}else{
-				return array('success' => false, 'message' => 'Login unsuccessful');
+				return ['success' => false, 'message' => 'Login unsuccessful'];
 			}
 		}
 	}
@@ -812,14 +650,14 @@ class UserAPI extends AJAXHandler {
 	 * @author Mark Noble <pika@marmot.org>
 	 */
 	function renewItem(){
-		list($username, $password) = $this->loadUsernameAndPassword();
+		[$username, $password] = $this->loadUsernameAndPassword();
 		$itemBarcode = $_REQUEST['itemBarcode'];
 		$user        = UserAccount::validateAccount($username, $password);
 		if ($user && !PEAR_Singleton::isError($user)){
 			$renewalMessage = $this->getCatalogConnection()->renewItem($user, $itemBarcode);
-			return array('success' => true, 'renewalMessage' => $renewalMessage);
+			return ['success' => true, 'renewalMessage' => $renewalMessage];
 		}else{
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return ['success' => false, 'message' => 'Login unsuccessful'];
 		}
 	}
 
@@ -849,13 +687,13 @@ class UserAPI extends AJAXHandler {
 	 * @author Mark Noble <pika@marmot.org>
 	 */
 	function renewAll(){
-		list($username, $password) = $this->loadUsernameAndPassword();
+		[$username, $password] = $this->loadUsernameAndPassword();
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !PEAR_Singleton::isError($user)){
 			$renewalMessage = $this->getCatalogConnection()->renewAll($user->cat_username);
-			return array('success' => $renewalMessage['success'], 'renewalMessage' => $renewalMessage['message']);
+			return ['success' => $renewalMessage['success'], 'renewalMessage' => $renewalMessage['message']];
 		}else{
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return ['success' => false, 'message' => 'Login unsuccessful'];
 		}
 	}
 
@@ -901,7 +739,7 @@ class UserAPI extends AJAXHandler {
 	 * @author Mark Noble <pika@marmot.org>
 	 */
 	function placeHold(){
-		list($username, $password) = $this->loadUsernameAndPassword();
+		[$username, $password] = $this->loadUsernameAndPassword();
 		$bibId = $_REQUEST['bibId'];
 
 		$patron = UserAccount::validateAccount($username, $password);
@@ -914,12 +752,12 @@ class UserAPI extends AJAXHandler {
 			$holdMessage = $patron->placeHold($bibId, $pickupBranch);
 			return $holdMessage;
 		}else{
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return ['success' => false, 'message' => 'Login unsuccessful'];
 		}
 	}
 
 	function placeItemHold(){
-		list($username, $password) = $this->loadUsernameAndPassword();
+		[$username, $password] = $this->loadUsernameAndPassword();
 		$bibId  = $_REQUEST['bibId'];
 		$itemId = $_REQUEST['itemId'];
 
@@ -933,279 +771,73 @@ class UserAPI extends AJAXHandler {
 			$holdMessage = $patron->placeItemHold($bibId, $itemId, $pickupBranch);
 			return $holdMessage;
 		}else{
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return ['success' => false, 'message' => 'Login unsuccessful'];
 		}
 	}
 
 	function changeHoldPickUpLocation(){
-		list($username, $password) = $this->loadUsernameAndPassword();
-		$holdId      = $_REQUEST['holdId'];
-		$newLocation = $_REQUEST['location'];
-		$patron      = UserAccount::validateAccount($username, $password);
-		if ($patron && !PEAR_Singleton::isError($patron)){
-			$holdMessage = $patron->changeHoldPickUpLocation($holdId, $newLocation);
-			return array('success' => $holdMessage['success'], 'holdMessage' => $holdMessage['message']);
+		[$username, $password] = $this->loadUsernameAndPassword();
+		$user = UserAccount::validateAccount($username, $password);
+		if ($user && !PEAR_Singleton::isError($user)){
+			$holdId      = $_REQUEST['holdId'];
+			$newLocation = $_REQUEST['location'];
+			$holdMessage = $user->changeHoldPickUpLocation($holdId, $newLocation);
+			return ['success' => $holdMessage['success'], 'holdMessage' => $holdMessage['message']];
 		}else{
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return ['success' => false, 'message' => 'Login unsuccessful'];
 		}
 	}
 
 	/**
 	 * Place a hold within OverDrive.
-	 * You should specify either the recordId of the title within VuFind or the overdrive id.
-	 * The format is also required however when the user checks out the title they can override the format to checkout the version they want.
 	 *
-	 * Parameters:
-	 * <ul>
-	 * <li>username - The barcode of the user.  Can be truncated to the last 7 or 9 digits.</li>
-	 * <li>password - The pin number for the user. </li>
-	 * <li>recordId - The id of the record within the eContent database.</li>
-	 * <li>or overdriveId - The id of the record in OverDrive.</li>
-	 * <li>format - The format of the item to place a hold on within OverDrive.</li>
-	 * </ul>
-	 *
-	 * Returns JSON encoded data as follows:
-	 * <ul>
-	 * <li>success  true if the account is valid and the hold could be placed, false if the username or password were incorrect or the hold could not be placed.</li>
-	 * <li>message  information about the process for display to the user.</li>
-	 * </ul>
-	 *
-	 * Sample Call:
-	 * <code>
-	 * https://example.marmot.org/API/UserAPI?method=placeOverDriveHold&username=23025003575917&password=1234&overDriveId=A3365DAC-EEC3-4261-99D3-E39B7C94A90F&format=420
-	 * </code>
-	 *
-	 * Sample Response:
-	 * <code>
-	 * {"result":{
-	 *   "success":true,
-	 *   "message":"Your hold was placed successfully."
-	 * }}
-	 * </code>
-	 *
-	 * @author Mark Noble <pika@marmot.org>
 	 */
 	function placeOverDriveHold(){
-		list($username, $password) = $this->loadUsernameAndPassword();
-		$overDriveId = $_REQUEST['overDriveId'];
-		$format      = $_REQUEST['format'];
-
+		[$username, $password] = $this->loadUsernameAndPassword();
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !PEAR_Singleton::isError($user)){
-			require_once ROOT_DIR . '/Drivers/OverDriveDriverFactory.php';
+			$overDriveId = $_REQUEST['overDriveId'];
 			$driver      = OverDriveDriverFactory::getDriver();
-			$holdMessage = $driver->placeOverDriveHold($overDriveId, $format, $user);
-			return array('success' => $holdMessage['success'], 'message' => $holdMessage['message']);
+			$holdMessage = $driver->placeOverDriveHold($overDriveId, $user);
+			return ['success' => $holdMessage['success'], 'message' => $holdMessage['message']];
 		}else{
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return ['success' => false, 'message' => 'Login unsuccessful'];
 		}
 	}
 
 	/**
 	 * Cancel a hold within OverDrive
 	 *
-	 * Parameters:
-	 * <ul>
-	 * <li>username - The barcode of the user.  Can be truncated to the last 7 or 9 digits.</li>
-	 * <li>password - The pin number for the user. </li>
-	 * <li>recordId - The id of the record within the eContent database.</li>
-	 * <li>or overdriveId - The id of the record in OverDrive.</li>
-	 * <li>format - The format of the record that was used when placing the hold.</li>
-	 * </ul>
-	 *
-	 * Returns JSON encoded data as follows:
-	 * <ul>
-	 * <li>success  true if the account is valid and the hold could be cancelled, false if the username or password were incorrect or the hold could not be cancelled.</li>
-	 * <li>message  information about the process for display to the user.</li>
-	 * </ul>
-	 *
-	 * Sample Call:
-	 * <code>
-	 * https://example.marmot.org/API/UserAPI?method=cancelOverDriveHold&username=23025003575917&password=1234&overDriveId=A3365DAC-EEC3-4261-99D3-E39B7C94A90F&format=420
-	 * </code>
-	 *
-	 * Sample Response:
-	 * <code>
-	 * {"result":{
-	 *   "success":true,
-	 *   "message":"Your hold was cancelled successfully."
-	 * }}
-	 * </code>
-	 *
-	 * @author Mark Noble <pika@marmot.org>
 	 */
 	function cancelOverDriveHold(){
-		list($username, $password) = $this->loadUsernameAndPassword();
-		$overDriveId = $_REQUEST['overDriveId'];
-		$format      = $_REQUEST['format'];
-
+		[$username, $password] = $this->loadUsernameAndPassword();
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !PEAR_Singleton::isError($user)){
-			require_once ROOT_DIR . '/Drivers/OverDriveDriverFactory.php';
-			$driver = OverDriveDriverFactory::getDriver();
-			$result = $driver->cancelOverDriveHold($overDriveId, $user);
-			return array('success' => $result['success'], 'message' => $result['message']);
+			$overDriveId = $_REQUEST['overDriveId'];
+			$driver      = OverDriveDriverFactory::getDriver();
+			$result      = $driver->cancelOverDriveHold($overDriveId, $user);
+			return ['success' => $result['success'], 'message' => $result['message']];
 		}else{
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return ['success' => false, 'message' => 'Login unsuccessful'];
 		}
 	}
 
 	/**
-	 * Add an item to the cart in OverDrive.
-	 * In general, this method should not be used.  Instead you should call checkoutOverDriveItem which will first
-	 * add the title to the cart and then process the cart.
+	 * Checkout an item in OverDrive.
 	 *
-	 * Parameters:
-	 * <ul>
-	 * <li>username - The barcode of the user.  Can be truncated to the last 7 or 9 digits.</li>
-	 * <li>password - The pin number for the user. </li>
-	 * <li>recordId - The id of the record within the eContent database.</li>
-	 * <li>or overdriveId - The id of the record in OverDrive.</li>
-	 * <li>format - The format of the item to place a hold on within OverDrive.</li>
-	 * </ul>
-	 *
-	 * Returns JSON encoded data as follows:
-	 * <ul>
-	 * <li>success  true if the account is valid and the title could be removed from the wishlist, false if the username or password were incorrect or the hold could not be removed from the wishlist.</li>
-	 * <li>message  information about the process for display to the user.</li>
-	 * </ul>
-	 *
-	 * Sample Call:
-	 * <code>
-	 * https://example.marmot.org/API/UserAPI?method=addItemToOverDriveCart&username=23025003575917&password=1234&overDriveId=A3365DAC-EEC3-4261-99D3-E39B7C94A90F&format=420
-	 * </code>
-	 *
-	 * Sample Response (fail):
-	 * <code>
-	 * {"result":{
-	 *   "success":false,
-	 *   "message":"There are no copies available for checkout. You can place a hold on the item instead."
-	 * }}
-	 * </code>
-	 *
-	 * Sample Response (pass):
-	 * <code>
-	 * {"result":{
-	 *   "success":true,
-	 *   "message":"The title was added to your cart successfully. You have 30 minutes to check out the title before it is returned to the library's collection."
-	 * }}
-	 * </code>
-	 *
-	 * @author Mark Noble <pika@marmot.org>
-	 */
-//	function addItemToOverDriveCart(){
-//		list($username, $password) = $this->loadUsernameAndPassword();
-//		$overDriveId = $_REQUEST['overDriveId'];
-//		$format      = $_REQUEST['format'];
-//
-//		$user = UserAccount::validateAccount($username, $password);
-//		if ($user && !PEAR_Singleton::isError($user)){
-//			require_once ROOT_DIR . '/Drivers/OverDriveDriverFactory.php';
-//			$driver      = OverDriveDriverFactory::getDriver();
-//			$holdMessage = $driver->addItemToOverDriveCart($overDriveId, $format, $user);
-//			return array('success' => $holdMessage['success'], 'message' => $holdMessage['message']);
-//		}else{
-//			return array('success' => false, 'message' => 'Login unsuccessful');
-//		}
-//	}
-
-	/**
-	 * Checkout an item in OverDrive by first adding to the cart and then processing the cart.
-	 *
-	 * Parameters:
-	 * <ul>
-	 * <li>username - The barcode of the user.  Can be truncated to the last 7 or 9 digits.</li>
-	 * <li>password - The pin number for the user. </li>
-	 * <li>recordId - The id of the record within the eContent database.</li>
-	 * <li>or overdriveId - The id of the record in OverDrive.</li>
-	 * <li>format - The format of the item to place a hold on within OverDrive.</li>
-	 * <li>lendingPeriod - The number of days to checkout the title. (optional) </li>
-	 * </ul>
-	 *
-	 * Returns JSON encoded data as follows:
-	 * <ul>
-	 * <li>success  true if the account is valid and the title could be checked out, false if the username or password were incorrect or the hold could not be checked out.</li>
-	 * <li>message  information about the process for display to the user.</li>
-	 * </ul>
-	 *
-	 * Sample Call:
-	 * <code>
-	 * https://example.marmot.org/API/UserAPI?method=checkoutOverDriveItem&username=23025003575917&password=1234&overDriveId=A3365DAC-EEC3-4261-99D3-E39B7C94A90F&format=420
-	 * </code>
-	 *
-	 * Sample Response:
-	 * <code>
-	 * {"result":{
-	 *   "success":true,
-	 *   "message":"Your titles were checked out successfully. You may now download the titles from your Account."
-	 * }}
-	 * </code>
-	 *
-	 * @author Mark Noble <pika@marmot.org>
 	 */
 	function checkoutOverDriveItem(){
-		list($username, $password) = $this->loadUsernameAndPassword();
-		$overDriveId = $_REQUEST['overDriveId'];
-		$format      = $_REQUEST['format'];
-
+		[$username, $password] = $this->loadUsernameAndPassword();
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !PEAR_Singleton::isError($user)){
-			require_once ROOT_DIR . '/Drivers/OverDriveDriverFactory.php';
-			$driver        = OverDriveDriverFactory::getDriver();
-			$lendingPeriod = isset($_REQUEST['lendingPeriod']) ? $_REQUEST['lendingPeriod'] : -1;
-			$holdMessage   = $driver->checkoutOverDriveItem($overDriveId, $user/*, $format, $lendingPeriod*/);
-			return array('success' => $holdMessage['success'], 'message' => $holdMessage['message']);
+			$overDriveId = $_REQUEST['overDriveId'];
+			$driver      = OverDriveDriverFactory::getDriver();
+			$holdMessage = $driver->checkoutOverDriveTitle($overDriveId, $user);
+			return ['success' => $holdMessage['success'], 'message' => $holdMessage['message']];
 		}else{
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return ['success' => false, 'message' => 'Login unsuccessful'];
 		}
 	}
-
-	/**
-	 * Process the account to checkout any titles within the OverDrive cart
-	 *
-	 * Parameters:
-	 * <ul>
-	 * <li>username - The barcode of the user.  Can be truncated to the last 7 or 9 digits.</li>
-	 * <li>password - The pin number for the user. </li>
-	 * <li>lendingPeriod - The number of days to checkout the title. (optional) </li>
-	 * </ul>
-	 *
-	 * Returns JSON encoded data as follows:
-	 * <ul>
-	 * <li>success  true if the cart was processed, false if the username or password were incorrect or the hold could not be removed from the wishlist.</li>
-	 * <li>message  information about the process for display to the user.</li>
-	 * </ul>
-	 *
-	 * Sample Call:
-	 * <code>
-	 * https://example.marmot.org/API/UserAPI?method=processOverDriveCart&username=23025003575917&password=1234&lendingPeriod=14
-	 * </code>
-	 *
-	 * Sample Response:
-	 * <code>
-	 * {"result":{
-	 *   "success":true,
-	 *   "message":"Your titles were checked out successfully. You may now download the titles from your Account."
-	 * }}
-	 * </code>
-	 *
-	 * @author Mark Noble <pika@marmot.org>
-	 *
-	 */
-//	function processOverDriveCart(){
-//		list($username, $password) = $this->loadUsernameAndPassword();
-//
-//		$user = UserAccount::validateAccount($username, $password);
-//		if ($user && !PEAR_Singleton::isError($user)){
-//			require_once ROOT_DIR . '/Drivers/OverDriveDriverFactory.php';
-//			$driver            = OverDriveDriverFactory::getDriver();
-//			$lendingPeriod     = isset($_REQUEST['lendingPeriod']) ? $_REQUEST['lendingPeriod'] : -1;
-//			$processCartResult = $driver->processOverDriveCart($user, $lendingPeriod);
-//			return array('success' => $processCartResult['success'], 'message' => $processCartResult['message']);
-//		}else{
-//			return array('success' => false, 'message' => 'Login unsuccessful');
-//		}
-//	}
 
 	/**
 	 * Cancel a hold that was placed within the ILS.
@@ -1252,23 +884,22 @@ class UserAPI extends AJAXHandler {
 	 * @author Mark Noble <pika@marmot.org>
 	 */
 	function cancelHold(){
-		list($username, $password) = $this->loadUsernameAndPassword();
-
-		// Cancel Hold requires one of these, which one depends on the ILS
-		$recordId = $cancelId = null;
-		if (!empty($_REQUEST['recordId'])){
-			$recordId = $_REQUEST['recordId'];
-		}
-		if (!empty($_REQUEST['cancelId'])){
-			$cancelId = $_REQUEST['cancelId'];
-		}
-
+		[$username, $password] = $this->loadUsernameAndPassword();
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !PEAR_Singleton::isError($user)){
+			// Cancel Hold requires one of these, which one depends on the ILS
+			$recordId = $cancelId = null;
+			if (!empty($_REQUEST['recordId'])){
+				$recordId = $_REQUEST['recordId'];
+			}
+			if (!empty($_REQUEST['cancelId'])){
+				$cancelId = $_REQUEST['cancelId'];
+			}
+
 			$holdMessage = $user->cancelHold($recordId, $cancelId);
-			return array('success' => $holdMessage['success'], 'holdMessage' => $holdMessage['message']);
+			return ['success' => $holdMessage['success'], 'holdMessage' => $holdMessage['message']];
 		}else{
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return ['success' => false, 'message' => 'Login unsuccessful'];
 		}
 	}
 
@@ -1307,13 +938,13 @@ class UserAPI extends AJAXHandler {
 	 * @author Mark Noble <pika@marmot.org>
 	 */
 	function freezeHold(){
-		list($username, $password) = $this->loadUsernameAndPassword();
+		[$username, $password] = $this->loadUsernameAndPassword();
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !PEAR_Singleton::isError($user)){
 			$holdMessage = $this->getCatalogConnection()->updateHoldDetailed('', $user->cat_username, 'update', '', null, null, 'on');
-			return array('success' => $holdMessage['success'], 'holdMessage' => $holdMessage['message']);
+			return ['success' => $holdMessage['success'], 'holdMessage' => $holdMessage['message']];
 		}else{
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return ['success' => false, 'message' => 'Login unsuccessful'];
 		}
 	}
 
@@ -1351,13 +982,13 @@ class UserAPI extends AJAXHandler {
 	 * @author Mark Noble <pika@marmot.org>
 	 */
 	function activateHold(){
-		list($username, $password) = $this->loadUsernameAndPassword();
+		[$username, $password] = $this->loadUsernameAndPassword();
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !PEAR_Singleton::isError($user)){
 			$holdMessage = $this->getCatalogConnection()->updateHoldDetailed('', $user->cat_username, 'update', '', null, null, 'off');
-			return array('success' => $holdMessage['success'], 'holdMessage' => $holdMessage['message']);
+			return ['success' => $holdMessage['success'], 'holdMessage' => $holdMessage['message']];
 		}else{
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return ['success' => false, 'message' => 'Login unsuccessful'];
 		}
 	}
 
@@ -1422,16 +1053,16 @@ class UserAPI extends AJAXHandler {
 	function getPatronReadingHistory(){
 		global $offlineMode;
 		if ($offlineMode){
-			return array('success' => false, 'message' => 'Circulation system is offline');
+			return ['success' => false, 'message' => 'Circulation system is offline'];
 		}else{
-			list($username, $password) = $this->loadUsernameAndPassword();
+			[$username, $password] = $this->loadUsernameAndPassword();
 			$user = UserAccount::validateAccount($username, $password);
 			if ($user && !PEAR_Singleton::isError($user)){
 				$readingHistory = $this->getCatalogConnection()->getReadingHistory($user);
 
-				return array('success' => true, 'readingHistory' => $readingHistory['titles']);
+				return ['success' => true, 'readingHistory' => $readingHistory['titles']];
 			}else{
-				return array('success' => false, 'message' => 'Login unsuccessful');
+				return ['success' => false, 'message' => 'Login unsuccessful'];
 			}
 		}
 	}
@@ -1444,9 +1075,9 @@ class UserAPI extends AJAXHandler {
 	function loadReadingHistoryFromIls(){
 		global $offlineMode;
 		if ($offlineMode){
-			return array('success' => false, 'message' => 'Circulation system is offline');
+			return ['success' => false, 'message' => 'Circulation system is offline'];
 		}else{
-			list($username, $password) = $this->loadUsernameAndPassword();
+			[$username, $password] = $this->loadUsernameAndPassword();
 			$loadAdditional = null;
 			if (!empty($_REQUEST['nextRound']) && ctype_digit($_REQUEST['nextRound'])){
 				$loadAdditional = $_REQUEST['nextRound'];
@@ -1456,22 +1087,22 @@ class UserAPI extends AJAXHandler {
 				if ($user->trackReadingHistory){
 					$loadReadingHistoryResponse = $user->loadReadingHistoryFromIls($loadAdditional);
 					if (!$loadReadingHistoryResponse){
-						return array('success' => false, 'message' => 'Did not load reading history from ILS.');
+						return ['success' => false, 'message' => 'Did not load reading history from ILS.'];
 					}
 					if (empty($loadReadingHistoryResponse['nextRound'])){
-						return array('success' => true, 'readingHistory' => $loadReadingHistoryResponse['titles']);
+						return ['success' => true, 'readingHistory' => $loadReadingHistoryResponse['titles']];
 					}else{
-						return array(
+						return [
 							'success'        => true,
 							'nextRound'      => $loadReadingHistoryResponse['nextRound'],
 							'readingHistory' => $loadReadingHistoryResponse['titles'],
-						);
+						];
 					}
 				}else{
-					return array('success' => false, 'message' => 'User is not opted in for reading history');
+					return ['success' => false, 'message' => 'User is not opted in for reading history'];
 				}
 			}else{
-				return array('success' => false, 'message' => 'Login unsuccessful');
+				return ['success' => false, 'message' => 'Login unsuccessful'];
 			}
 		}
 	}
@@ -1505,13 +1136,13 @@ class UserAPI extends AJAXHandler {
 	 * @author Mark Noble <pika@marmot.org>
 	 */
 	function optIntoReadingHistory(){
-		list($username, $password) = $this->loadUsernameAndPassword();
+		[$username, $password] = $this->loadUsernameAndPassword();
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !PEAR_Singleton::isError($user)){
 			$result = $user->optInReadingHistory();
-			return array('success' => $result);
+			return ['success' => $result];
 		}else{
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return ['success' => false, 'message' => 'Login unsuccessful'];
 		}
 	}
 
@@ -1542,13 +1173,13 @@ class UserAPI extends AJAXHandler {
 	 * @author Mark Noble <pika@marmot.org>
 	 */
 	function optOutOfReadingHistory(){
-		list($username, $password) = $this->loadUsernameAndPassword();
+		[$username, $password] = $this->loadUsernameAndPassword();
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !PEAR_Singleton::isError($user)){
 			$result = $user->optOutReadingHistory();
-			return array('success' => $result);
+			return ['success' => $result];
 		}else{
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return ['success' => false, 'message' => 'Login unsuccessful'];
 		}
 	}
 
@@ -1579,13 +1210,13 @@ class UserAPI extends AJAXHandler {
 	 * @author Mark Noble <pika@marmot.org>
 	 */
 	function deleteAllFromReadingHistory(){
-		list($username, $password) = $this->loadUsernameAndPassword();
+		[$username, $password] = $this->loadUsernameAndPassword();
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !PEAR_Singleton::isError($user)){
 			$result = $user->deleteAllReadingHistory();
-			return array('success' => $result);
+			return ['success' => $result];
 		}else{
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return ['success' => false, 'message' => 'Login unsuccessful'];
 		}
 	}
 
@@ -1617,14 +1248,14 @@ class UserAPI extends AJAXHandler {
 	 * @author Mark Noble <pika@marmot.org>
 	 */
 	function deleteSelectedFromReadingHistory(){
-		list($username, $password) = $this->loadUsernameAndPassword();
+		[$username, $password] = $this->loadUsernameAndPassword();
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !PEAR_Singleton::isError($user)){
 			$selectedTitles = $_REQUEST['selected'];
 			$result         = $user->deleteMarkedReadingHistory($selectedTitles);
-			return array('success' => $result);
+			return ['success' => $result];
 		}else{
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return ['success' => false, 'message' => 'Login unsuccessful'];
 		}
 	}
 
@@ -1632,22 +1263,14 @@ class UserAPI extends AJAXHandler {
 	 * @return array
 	 */
 	private function loadUsernameAndPassword(){
-		if (isset($_REQUEST['username'])){
-			$username = $_REQUEST['username'];
-		}else{
-			$username = '';
-		}
-		if (isset($_REQUEST['password'])){
-			$password = $_REQUEST['password'];
-		}else{
-			$password = '';
-		}
+		$username = isset($_REQUEST['username']) ? $_REQUEST['username'] : '';
+		$password = isset($_REQUEST['password']) ? $_REQUEST['password'] : '';
 		if (is_array($username)){
 			$username = reset($username);
 		}
 		if (is_array($password)){
 			$password = reset($password);
 		}
-		return array($username, $password);
+		return [$username, $password];
 	}
 }

@@ -52,8 +52,7 @@ class GroupedWork extends DB_DataObject {
 //			while ($groupedWorkPrimaryIdentifier->fetch()) {
 //				if ($groupedWorkPrimaryIdentifier->type == 'overdrive') {
 //					//For OverDrive titles, just need to set dateUpdated to now.
-//					require_once ROOT_DIR . '/sys/OverDrive/OverDriveAPIProduct.php';
-//					$overDriveProduct              = new OverDriveAPIProduct();
+//					$overDriveProduct              = new Pika\BibliographicDrivers\OverDrive\OverDriveAPIProduct();
 //					$overDriveProduct->overdriveId = $groupedWorkPrimaryIdentifier->identifier;
 //					if ($overDriveProduct->find(true)) {
 //						$overDriveProduct->dateUpdated = time();

@@ -9,3 +9,9 @@ Operating System: {$operatingSystem}
 
 Problem Description:
 {$problem}
+
+{if !empty($overDriveErrorMessages)}
+Error information reported by the OverDrive content server:
+
+{$overDriveErrorMessages}
+{/if}

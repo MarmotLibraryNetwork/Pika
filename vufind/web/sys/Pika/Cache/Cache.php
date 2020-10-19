@@ -39,7 +39,10 @@ class Cache implements CacheInterface
 
 	private $PSR16_RESERVED_CHARACTERS = ['{','}','(',')','/','@',':'];
 
-	private $keyTypes = ['patron', 'holds', 'checkouts', 'history', 'fines'];
+	private $keyTypes = [
+		'patron', 'holds', 'checkouts', 'history', 'fines',
+		'overdrive_counts', 'overdrive_settings', 'overdrive_patron_token',
+	];
 
 	protected $handler = false;
 	private   $logger  = false;

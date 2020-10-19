@@ -1,4 +1,5 @@
 {if $showRatings == 1}
+	{strip}
 	<div{if $ratingClass} class="{$ratingClass} rate{$summId}"{/if}>
 		{*<div class="title-rating" onclick="return Pika.GroupedWork.showReviewForm(this, '{$summId}');">*}
 		<div class="title-rating rater" {*onclick="return Pika.GroupedWork.showReviewForm(this, '{$summId}');"*}
@@ -20,4 +21,5 @@
 			<button class="button notInterested" title="Select Not Interested if you don't want to see this title again." onclick="return Pika.GroupedWork.markNotInterested('{$summId}');">Not&nbsp;Interested</button>
 		{/if}
 	</div>
+  {/strip}
 {/if}

@@ -107,13 +107,21 @@
 
 					{else}
 						{* Unavailable hold *}
+						{if $record.frozen}
+							<div class="row">
+								<div class="result-label col-tn-3">{translate text='Frozen'}</div>
+								<div class="col-tn-9 result-value">
+									{if $record.thawDate}until {$record.thawDate|date_format:"%b %d, %Y"}{else}{$record.suspensionType}{/if}
+								</div>
+							</div>
+						{/if}
 						<div class="row">
-							<div class="result-label col-sm-3">{translate text='Position'}</div>
-							<div class="col-sm-9 result-value">
+							<div class="result-label col-tn-3">{translate text='Position'}</div>
+							<div class="col-tn-9 result-value">
 								{$record.holdQueuePosition} out of {$record.holdQueueLength}
 							</div>
 						</div>
-					{/if}
+				{/if}
 				</div>
 
 				{* Actions for Title *}
@@ -121,6 +129,13 @@
 					<div class="btn-group btn-group-vertical btn-block">
 						{if $section == 'available'}
 							<button onclick="return Pika.OverDrive.doOverDriveCheckout('{$record.userId}', '{$record.overDriveId}');" class="btn btn-sm btn-primary">Checkout</button>
+						{/if}
+						{if $record.frozen}
+							<button onclick="return Pika.OverDrive.updateOverDriveHold('{$record.userId}', '{$record.overDriveId}'{if $record.thawDate}, {$record.thawDate}{/if});" class="btn btn-sm btn-default">{translate text="Update Hold"}</button>
+							<button onclick="return Pika.OverDrive.thawOverDriveHold('{$record.userId}', '{$record.overDriveId}');" class="btn btn-sm btn-default">{translate text="Thaw Hold"}</button>
+						{else}
+							{*We can freeze available OverDrive holds *}
+							<button onclick="return Pika.OverDrive.freezeOverDriveHold('{$record.userId}', '{$record.overDriveId}');" class="btn btn-sm btn-default">{translate text="Freeze Hold"}</button>
 						{/if}
 						<button onclick="return Pika.OverDrive.cancelOverDriveHold('{$record.userId}', '{$record.overDriveId}');" class="btn btn-sm btn-warning">Cancel Hold</button>
 					</div>

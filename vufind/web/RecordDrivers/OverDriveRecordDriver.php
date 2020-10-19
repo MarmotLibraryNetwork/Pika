@@ -62,9 +62,8 @@ class OverDriveRecordDriver extends RecordInterface {
 	public function __construct($recordId, $groupedWork = null){
 		if (is_string($recordId)){
 			//The record is the identifier for the overdrive title
-			$this->id = $recordId;
-			require_once ROOT_DIR . '/sys/OverDrive/OverDriveAPIProduct.php';
-			$this->overDriveProduct              = new OverDriveAPIProduct();
+			$this->id                            = $recordId;
+			$this->overDriveProduct              = new Pika\BibliographicDrivers\OverDrive\OverDriveAPIProduct();
 			$this->overDriveProduct->overdriveId = $recordId;
 			if ($this->overDriveProduct->find(true)){
 				$this->valid = true;
@@ -231,9 +230,7 @@ class OverDriveRecordDriver extends RecordInterface {
 	 * @return  OverDriveAPIProductFormats[]  An Array of Formats with link information included
 	 */
 	public function getHoldings(){
-		/** @var OverDriveAPIProductFormats[] $items */
-		$items = $this->getItems();
-		//Add links as needed
+		$items            = $this->getItems();
 		$availability     = $this->getAvailability();
 		$addCheckoutLink  = false;
 		$addPlaceHoldLink = false;
@@ -244,17 +241,18 @@ class OverDriveRecordDriver extends RecordInterface {
 				$addPlaceHoldLink = true;
 			}
 		}
-		foreach ($items as $key => &$item){
+		foreach ($items as &$item){
+			//Add links as needed
 			$item->links = [];
 			if ($addCheckoutLink){
 				$item->links[] = [
-					'onclick'     => "return Pika.OverDrive.checkOutOverDriveTitle('{$this->getUniqueID()}');",
-					'text'        => 'Check Out OverDrive',
+					'onclick' => "return Pika.OverDrive.checkOutOverDriveTitle('{$this->getUniqueID()}', '{$item->textId}');",
+					'text'    => 'Check Out ' . $item->name,
 				];
 			}elseif ($addPlaceHoldLink){
 				$item->links[] = [
-					'onclick'     => "return Pika.OverDrive.placeOverDriveHold('{$this->getUniqueID()}');",
-					'text'        => 'Place Hold OverDrive',
+					'onclick' => "return Pika.OverDrive.placeOverDriveHold('{$this->getUniqueID()}');",
+					'text'    => 'Place Hold ' . $item->name,
 				];
 			}
 		}
@@ -326,9 +324,9 @@ class OverDriveRecordDriver extends RecordInterface {
 	public function getStaffView(){
 		global $interface;
 
-		$overDriveAPIProduct              = new OverDriveAPIProduct();
+		$overDriveAPIProduct              = new Pika\BibliographicDrivers\OverDrive\OverDriveAPIProduct();
 		$overDriveAPIProduct->overdriveId = strtolower($this->id);
-		$overDriveAPIProductMetaData      = new OverDriveAPIProductMetaData();
+		$overDriveAPIProductMetaData      = new Pika\BibliographicDrivers\OverDrive\OverDriveAPIProductMetaData();
 		$overDriveAPIProduct->joinAdd($overDriveAPIProductMetaData, 'INNER');
 		$overDriveAPIProduct->selectAdd("overdrive_api_products.rawData as productRaw");
 		$overDriveAPIProduct->selectAdd("overdrive_api_product_metadata.rawData as metaDataRaw");
@@ -427,14 +425,13 @@ class OverDriveRecordDriver extends RecordInterface {
 
 	/**
 	 * Get Available copy information for this OverDrive title
-	 * @return OverDriveAPIProductAvailability[]
+	 * @return Pika\BibliographicDrivers\OverDrive\OverDriveAPIProductAvailability[]
 	 */
 	function getAvailability(){
 		if ($this->availability == null){
 			$this->availability = [];
 			if (!empty($this->overDriveProduct->id)){ // Don't do the below search when there isn't an ID to look for.
-				require_once ROOT_DIR . '/sys/OverDrive/OverDriveAPIProductAvailability.php';
-				$availability            = new OverDriveAPIProductAvailability();
+				$availability            = new Pika\BibliographicDrivers\OverDrive\OverDriveAPIProductAvailability();
 				$availability->productId = $this->overDriveProduct->id;//Only include shared collection if include digital collection is on
 				$searchLibrary           = Library::getSearchLibrary();
 				$searchLocation          = Location::getSearchLocation();
@@ -605,8 +602,7 @@ class OverDriveRecordDriver extends RecordInterface {
 	public function getISBNs(){
 		//Load ISBNs for the product
 		if ($this->isbns == null){
-			require_once ROOT_DIR . '/sys/OverDrive/OverDriveAPIProductIdentifiers.php';
-			$overDriveIdentifiers            = new OverDriveAPIProductIdentifiers();
+			$overDriveIdentifiers            = new Pika\BibliographicDrivers\OverDrive\OverDriveAPIProductIdentifiers();
 			$overDriveIdentifiers->type      = 'ISBN';
 			$overDriveIdentifiers->productId = $this->overDriveProduct->id;
 			$this->isbns                     = [];
@@ -627,8 +623,7 @@ class OverDriveRecordDriver extends RecordInterface {
 	public function getUPCs(){
 		//Load UPCs for the product
 		if ($this->upcs == null){
-			require_once ROOT_DIR . '/sys/OverDrive/OverDriveAPIProductIdentifiers.php';
-			$overDriveIdentifiers            = new OverDriveAPIProductIdentifiers();
+			$overDriveIdentifiers            = new Pika\BibliographicDrivers\OverDrive\OverDriveAPIProductIdentifiers();
 			$overDriveIdentifiers->type      = 'UPC';
 			$overDriveIdentifiers->productId = $this->overDriveProduct->id;
 			$this->upcs                      = [];
@@ -677,8 +672,7 @@ class OverDriveRecordDriver extends RecordInterface {
 	public function getASINs(){
 		//Load UPCs for the product
 		if ($this->asins == null){
-			require_once ROOT_DIR . '/sys/OverDrive/OverDriveAPIProductIdentifiers.php';
-			$overDriveIdentifiers            = new OverDriveAPIProductIdentifiers();
+			$overDriveIdentifiers            = new Pika\BibliographicDrivers\OverDrive\OverDriveAPIProductIdentifiers();
 			$overDriveIdentifiers->type      = 'ASIN';
 			$overDriveIdentifiers->productId = $this->overDriveProduct->id;
 			$this->asins                     = [];
@@ -739,10 +733,12 @@ class OverDriveRecordDriver extends RecordInterface {
 		return $formats;
 	}
 
+	/**
+	 * @return Pika\BibliographicDrivers\OverDrive\OverDriveAPIProductFormats[]
+	 */
 	public function getItems(){
 		if ($this->items == null){
-			require_once ROOT_DIR . '/sys/OverDrive/OverDriveAPIProductFormats.php';
-			$overDriveFormats = new OverDriveAPIProductFormats();
+			$overDriveFormats = new Pika\BibliographicDrivers\OverDrive\OverDriveAPIProductFormats();
 			$this->items      = [];
 			if ($this->valid){
 				$overDriveFormats->productId = $this->overDriveProduct->id;
@@ -789,8 +785,7 @@ class OverDriveRecordDriver extends RecordInterface {
 
 	private function getOverDriveMetaData(){
 		if ($this->overDriveMetaData == null){
-			require_once ROOT_DIR . '/sys/OverDrive/OverDriveAPIProductMetaData.php';
-			$this->overDriveMetaData            = new OverDriveAPIProductMetaData();
+			$this->overDriveMetaData            = new Pika\BibliographicDrivers\OverDrive\OverDriveAPIProductMetaData();
 			$this->overDriveMetaData->productId = $this->overDriveProduct->id;
 			$this->overDriveMetaData->find(true);
 		}
@@ -814,8 +809,6 @@ class OverDriveRecordDriver extends RecordInterface {
 		$isbn = $this->getCleanISBN();
 
 		//Load overDrive Title Holdings information from the driver
-		require_once ROOT_DIR . '/Drivers/OverDriveDriverFactory.php';
-		$driver = OverDriveDriverFactory::getDriver();
 
 		/** @var OverDriveAPIProductFormats[] $overDriveTitleHoldings */
 		$overDriveTitleHoldings = $this->getHoldings();
@@ -1114,7 +1107,7 @@ class OverDriveRecordDriver extends RecordInterface {
 
 	function getNumHolds(){
 		$totalHolds = 0;
-		/** @var OverDriveAPIProductAvailability $availabilityInfo */
+		/** @var Pika\BibliographicDrivers\OverDrive\OverDriveAPIProductAvailability $availabilityInfo */
 		foreach ($this->getAvailability() as $availabilityInfo){
 			//Holds is set once for everyone so don't add them up.
 			if ($availabilityInfo->numberOfHolds > $totalHolds){

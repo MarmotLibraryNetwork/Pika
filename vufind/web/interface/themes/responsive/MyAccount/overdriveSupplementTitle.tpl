@@ -38,6 +38,9 @@
             {if $supplementalTitle.overdriveRead}
 							<a href="#" onclick="return Pika.OverDrive.followOverDriveDownloadLink('{$supplementalTitle.userId}', '{$supplementalTitle.overDriveId}', 'ebook-overdrive')" class="btn btn-sm btn-primary">Read&nbsp;Online</a>
             {/if}
+            {if $supplementalTitle.mediadoRead}
+							<a href="#" onclick="return Pika.OverDrive.followOverDriveDownloadLink('{$supplementalTitle.userId}', '{$supplementalTitle.overDriveId}', 'ebook-mediado')" class="btn btn-sm btn-primary">Read&nbsp;Online&nbsp;MediaDo</a>
+            {/if}
             {if $supplementalTitle.overdriveListen}
 							<a href="#" onclick="return Pika.OverDrive.followOverDriveDownloadLink('{$supplementalTitle.userId}', '{$supplementalTitle.overDriveId}', 'audiobook-overdrive')" class="btn btn-sm btn-primary">Listen&nbsp;Online</a>
             {/if}

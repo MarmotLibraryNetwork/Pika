@@ -46,8 +46,9 @@ class User extends DB_DataObject {
 	public $bypassAutoLogout;                //tinyint
 	public $disableRecommendations;          //tinyint
 	public $disableCoverArt;                 //tinyint
-	public $overdriveEmail;
-	public $promptForOverdriveEmail;
+	public $overDriveEmail;
+	public $promptForOverDriveEmail;
+	public $promptForOverDriveLendingPeriods;
 	public $hooplaCheckOutConfirmation;
 	public $preferredLibraryInterface;
 	public $noPromptForUserReviews; //tinyint(1)
@@ -451,8 +452,13 @@ class User extends DB_DataObject {
 		}
 	}
 
+	/**
+	 *  Get all linked users that are valid OverDrive Users as well
+	 *
+	 * @return User[]
+	 */
 	function getRelatedOverDriveUsers(){
-		$overDriveUsers = array();
+		$overDriveUsers = [];
 		if ($this->isValidForOverDrive()){
 			$overDriveUsers[$this->cat_username . ':' . $this->cat_password] = $this;
 		}
@@ -707,16 +713,34 @@ class User extends DB_DataObject {
 	}
 
 	function updateOverDriveOptions(){
-		if (isset($_REQUEST['promptForOverdriveEmail']) && ($_REQUEST['promptForOverdriveEmail'] == 'yes' || $_REQUEST['promptForOverdriveEmail'] == 'on')){
+		if (isset($_REQUEST['promptForOverDriveEmail']) && ($_REQUEST['promptForOverDriveEmail'] == 'yes' || $_REQUEST['promptForOverDriveEmail'] == 'on')){
 			// if set check & on check must be combined because checkboxes/radios don't report 'offs'
-			$this->promptForOverdriveEmail = 1;
+			$this->promptForOverDriveEmail = 1;
 		}else{
-			$this->promptForOverdriveEmail = 0;
+			$this->promptForOverDriveEmail = 0;
 		}
-		if (isset($_REQUEST['overdriveEmail'])){
-			$this->overdriveEmail = strip_tags($_REQUEST['overdriveEmail']);
+		if (isset($_REQUEST['promptForOverDriveLendingPeriods']) && ($_REQUEST['promptForOverDriveLendingPeriods'] == 'yes' || $_REQUEST['promptForOverDriveLendingPeriods'] == 'on')){
+			// if set check & on check must be combined because checkboxes/radios don't report 'offs'
+			$this->promptForOverDriveLendingPeriods = 1;
+		}else{
+			$this->promptForOverDriveLendingPeriods = 0;
+		}
+		if (isset($_REQUEST['overDriveEmail'])){
+			$this->overDriveEmail = strip_tags($_REQUEST['overDriveEmail']);
 		}
 		$this->update();
+		if (!empty($_REQUEST['lendingPeriods'])){
+			$cache             = new Cache();
+			$cacheKey          = $cache->makePatronKey('overdrive_settings', $this->id);
+			$overDriveSettings = $cache->get($cacheKey);
+			foreach ($_REQUEST['lendingPeriods'] as $formatClass => $lendingPeriodDays){
+				if (empty($overDriveSettings['lendingPeriods'][$formatClass]) || $lendingPeriodDays != $overDriveSettings['lendingPeriods'][$formatClass]->lendingPeriod){
+					// Only update settings if they have changed from what is cached or we don't have them cached
+					$overDriveDriver ??= Pika\PatronDrivers\EcontentSystem\OverDriveDriverFactory::getDriver();
+					$overDriveDriver->updateLendingPeriod($this, $formatClass, $lendingPeriodDays);
+				}
+			}
+		}
 	}
 
 	function updateHooplaOptions(){
@@ -945,9 +969,8 @@ class User extends DB_DataObject {
 		//Get checked out titles from OverDrive
 		//Do not load OverDrive titles if the parent barcode (if any) is the same as the current barcode
 		if ($this->isValidForOverDrive()){
-			require_once ROOT_DIR . '/Drivers/OverDriveDriverFactory.php';
-			$overDriveDriver          = OverDriveDriverFactory::getDriver();
-			$overDriveCheckedOutItems = $overDriveDriver->getOverDriveCheckedOutItems($this);
+			$overDriveDriver          = Pika\PatronDrivers\EcontentSystem\OverDriveDriverFactory::getDriver();
+			$overDriveCheckedOutItems = $overDriveDriver->getOverDriveCheckouts($this);
 		}else{
 			$overDriveCheckedOutItems = [];
 		}
@@ -992,8 +1015,7 @@ class User extends DB_DataObject {
 
 		//Get holds from OverDrive
 		if ($this->isValidForOverDrive()){
-			require_once ROOT_DIR . '/Drivers/OverDriveDriverFactory.php';
-			$overDriveDriver = OverDriveDriverFactory::getDriver();
+			$overDriveDriver = Pika\PatronDrivers\EcontentSystem\OverDriveDriverFactory::getDriver();
 			$overDriveHolds  = $overDriveDriver->getOverDriveHolds($this);
 		}else{
 			$overDriveHolds = array();

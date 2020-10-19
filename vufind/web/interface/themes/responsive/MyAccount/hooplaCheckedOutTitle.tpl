@@ -61,6 +61,11 @@
 						</div>
 					{/if}
 
+					<div class="row">
+						<div class="result-label col-tn-4 col-lg-3">{translate text='Source'}</div>
+						<div class="result-value col-tn-8 col-lg-9">{$record.checkoutSource}</div>
+					</div>
+
 					{if $record.checkoutdate}
 						<div class="row">
 							<div class="result-label col-tn-4 col-lg-3">{translate text='Checked Out'}</div>

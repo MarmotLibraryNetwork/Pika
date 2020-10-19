@@ -20,11 +20,12 @@
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/Admin.php';
 
+use Pika\PatronDrivers\EcontentSystem\OverDriveDriverFactory;
+
 class Admin_OverDriveAPIData extends Admin_Admin
 {
 	function launch()
 	{
-		require_once ROOT_DIR . '/Drivers/OverDriveDriverFactory.php';
 		$driver = OverDriveDriverFactory::getDriver();
 
 		$overdriveAccounts = $driver->getOverDriveAccountIds();
