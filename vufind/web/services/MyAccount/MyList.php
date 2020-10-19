@@ -218,6 +218,7 @@ class MyAccount_MyList extends MyAccount {
 	function bulkAddTitles($list){
 		$numAdded        = 0;
 		$notes           = array();
+		$listItems       = $list->numValidListItems();
 		$titlesToAdd     = $_REQUEST['titlesToAdd'];
 		$titleSearches[] = preg_split("/\\r\\n|\\r|\\n/", $titlesToAdd);
 
@@ -233,11 +234,13 @@ class MyAccount_MyList extends MyAccount {
 					$searchObject->init();
 					$searchObject->clearFacets();
 					$results = $searchObject->processSearch(false, false);
-					if ($results['response'] && $results['response']['numFound'] >= 1){
-						$firstDoc = $results['response']['docs'][0];
-						//Get the id of the document
-						$id = $isArchiveId ? $firstDoc['PID'] : $firstDoc['id'];
-						$numAdded++;
+					if ($results['response'] && $results['response']['numFound'] >= 1) {
+                        $firstDoc = $results['response']['docs'][0];
+                        //Get the id of the document
+                        $id = $isArchiveId ? $firstDoc['PID'] : $firstDoc['id'];
+                        if (($listItems+$numAdded+1) <= 2000) {
+                            $numAdded++;
+                        }
 						$userListEntry                         = new UserListEntry();
 						$userListEntry->listId                 = $list->id;
 						$userListEntry->groupedWorkPermanentId = $id;

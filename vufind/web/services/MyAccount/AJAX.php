@@ -184,7 +184,15 @@ class MyAccount_AJAX extends AJAXHandler {
 	function getBulkAddToListForm(){
 		global $interface;
 		// Display Page
-		$interface->assign('listId', strip_tags($_REQUEST['listId']));
+        $listId = strip_tags($_REQUEST['listId']);
+
+        $list = new UserList();
+        $list->id = $listId;
+        $list->find(true);
+
+        $listItems = $list->numValidListItems();
+        $interface->assign('itemCount', $listItems);
+		$interface->assign('listId', $listId);
 		$interface->assign('popupTitle', 'Add titles to list');
 		$formDefinition = array(
 			'title'        => 'Add titles to list',

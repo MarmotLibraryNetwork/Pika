@@ -13,6 +13,14 @@
 		  {/foreach}
 		  </p>
 		{/if}
+		{if !empty($largeLists)}
+			<p>
+				{translate text='The following lists currently have the maximum number of items in them'}:<br />
+				{foreach from=$largeLists item="list"}
+				  <a href="/MyAccount/MyList/{$list.id}">{$list.title|escape:"html"}</a><br />
+				{/foreach}
+			</p>
+		{/if}
 
 		{* Only display the list drop-down if the user has lists that do not contain
 		 this item OR if they have no lists at all and need to create a default list *}
