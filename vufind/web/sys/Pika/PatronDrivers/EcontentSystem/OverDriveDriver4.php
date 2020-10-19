@@ -478,13 +478,14 @@ class OverDriveDriver4 {
 										$bookshelfItem['overdriveListen'] = true;
 										break;
 									case 'video-streaming':
-										$bookshelfItem['overdriveVideo'] = true;
-										$bookshelfItem['selectedFormat'] = $curFormat;
+										$bookshelfItem['overdriveVideo']   = true;
+										$bookshelfItem['selectedFormat']   = $curFormat;
+										//Strangely, Video has to be locked in in order to stream
 										break;
 									case 'magazine-overdrive':
 										$bookshelfItem['overdriveMagazine'] = true;
 										$bookshelfItem['selectedFormat']    = $curFormat;
-										$bookshelfItem['isFormatSelected']  = true;  // so that the format gets displayed (had to add an exception to the download section to skip magazines)
+										$bookshelfItem['isFormatSelected']  = true;  // so that the format gets displayed (had to add an exception to the download section to skip magazines and videos)
 										break;
 									default:
 										// Download option for locked in formats (It won't be any of the above)
@@ -849,7 +850,7 @@ class OverDriveDriver4 {
 			// Successful checkout
 			$result['success'] = true;
 			$result['message'] = 'Your title was checked out successfully. You may now view the title in your account.';
-			if (count($response->formats) == 1){
+			if (!empty($response->formats) && count($response->formats) == 1){
 				//This should be the read online option
 				$result['formatType'] = $response->formats[0]->formatType;
 			}
