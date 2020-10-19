@@ -2854,26 +2854,26 @@ class GroupedWorkDriver extends RecordInterface {
 			if ($isEcontent){
 				// the scope local url should override the item url if it is set
 				if (strlen($scopingDetails[12]) > 0){
-					$relatedUrls[] = array(
+					$relatedUrls[] = [
 						'source' => $curItem[9],
 						'file'   => $curItem[10],
 						'url'    => $scopingDetails[12]
-					);
+					];
 				}else{
-					$relatedUrls[] = array(
+					$relatedUrls[] = [
 						'source' => $curItem[9],
 						'file'   => $curItem[10],
 						'url'    => $curItem[11]
-					);
+					];
 				}
 
 				$relatedRecord['eContentSource'] = $curItem[9];
 				$relatedRecord['isEContent']     = true;
 			}elseif (!empty($curItem[11])){
 				// Special Physical Records, like KitKeeper
-				$relatedUrls[] = array(
+				$relatedUrls[] = [
 					'url' => $curItem[11]
-				);
+				];
 			}
 
 			$displayByDefault = false;
@@ -3009,7 +3009,7 @@ class GroupedWorkDriver extends RecordInterface {
 				'itemId'             => $itemId
 			];
 			if (!$forCovers){
-				$itemSummaryInfo['actions'] = $recordDriver != null ? $recordDriver->getItemActions($itemSummaryInfo) : array();
+				$itemSummaryInfo['actions'] = $recordDriver != null ? $recordDriver->getItemActions($itemSummaryInfo) : [];
 			}
 
 			//Group the item based on location and call number for display in the summary
@@ -3042,7 +3042,7 @@ class GroupedWorkDriver extends RecordInterface {
 			$relatedRecord['callNumber'] = $libraryCallNumber;
 		}
 
-		ksort($relatedRecord['itemDetails']);
+		ksort($relatedRecord['itemDetails']); // ItemDetails is used in the MarcRecord driver to set up displaying the copies section. See MarcReocrd->loadCopies()
 		ksort($relatedRecord['itemSummary']);
 		$timer->logTime("Setup record items");
 		$memoryWatcher->logMemory("Setup record items");
