@@ -256,8 +256,6 @@ class SearchObject_Solr extends SearchObject_Base
 						$field = 'format_category_' . $solrScope;
 					}elseif (strcmp($field, 'econtent_source') == 0){
 						$field = 'econtent_source_' . $solrScope;
-					}elseif (strcmp($field, 'econtent_protection_type') == 0){
-						$field = 'econtent_protection_type_' . $solrScope;
 					}elseif ((strcmp($field, 'collection') == 0) || (strcmp($field, 'collection_group') == 0)){
 						$field = 'collection_' . $solrScope;
 					}elseif ((strcmp($field, 'detailed_location') == 0) || (strcmp($field, 'detailed_location') == 0)){
@@ -460,7 +458,6 @@ class SearchObject_Solr extends SearchObject_Base
 					'format',
 					'format_category',
 					'econtent_source',
-					'econtent_protection_type', //TODO remove
 					'language',
 					'translation',
 					'detailed_location',
