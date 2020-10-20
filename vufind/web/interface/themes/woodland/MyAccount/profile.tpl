@@ -332,21 +332,23 @@
 							</div>
             {/if}
 
-            {*OverDrive Options*}
-					<div class="panel active">
-						<a data-toggle="collapse" data-parent="#account-settings-accordion" href="#overdrivePanel">
-							<div class="panel-heading">
-								<div class="panel-title">
-									OverDrive Options
+						{*OverDrive Options*}
+						{if $profile->isValidForOverDrive()}
+							<div class="panel active">
+								<a data-toggle="collapse" data-parent="#account-settings-accordion" href="#overdrivePanel">
+									<div class="panel-heading">
+										<div class="panel-title">
+											OverDrive Options
+										</div>
+									</div>
+								</a>
+								<div id="overdrivePanel" class="panel-collapse collapse in">
+									<div class="panel-body">
+											{include file="MyAccount/profile-overdrive-options.tpl"}
+									</div>
 								</div>
 							</div>
-						</a>
-						<div id="overdrivePanel" class="panel-collapse collapse in">
-							<div class="panel-body">
-							{include file="MyAccount/profile-overdrive-options.tpl"}
-</div>
-						</div>
-					</div>
+						{/if}
 
             {*Hoopla Options*}
             {if $profile->isValidforHoopla()}

@@ -114,9 +114,7 @@
 													<option value="{$format.formatType}">{$format.name}</option>
 												{/foreach}
 										</select>
-										<a href="#"
-											 onclick="Pika.OverDrive.selectOverDriveDownloadFormat('{$record.userId}', '{$record.overDriveId}')"
-											 class="btn btn-sm btn-primary">Download</a>
+										<a href="#" onclick="Pika.OverDrive.selectOverDriveDownloadFormat('{$record.userId}', '{$record.overDriveId}')" class="btn btn-sm btn-primary">Download</a>
 									</div>
 								{/if}
 						</div>

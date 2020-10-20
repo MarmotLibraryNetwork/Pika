@@ -52,7 +52,7 @@
 								</div>
 								{if $showUsernameField}
 									<div class="form-group">
-										<div class="col-xs-4"><strong>Username:</strong></div>
+										<div class="col-xs-4"><label for="alternate_username">Username:</label></div>
 										<div class="col-xs-8"><input type="text" name="alternate_username" id="alternate_username" value="{if !is_numeric(trim($profile->alt_username))}{$profile->alt_username|escape}{/if}" size="25" maxlength="25" class="form-control">
 											<a href="#" onclick="$('#usernameHelp').toggle()">What is this?</a>
 											<div id="usernameHelp" style="display:none">
@@ -399,6 +399,7 @@
 				{/if}
 
 				{*OverDrive Options*}
+				{if $profile->isValidForOverDrive()}
 				<div class="panel active">
 					<a data-toggle="collapse" data-parent="#account-settings-accordion" href="#overdrivePanel">
 						<div class="panel-heading">
@@ -413,9 +414,10 @@
 						</div>
 					</div>
 				</div>
+				{/if}
 
 				{*Hoopla Options*}
-				{if $profile->isValidforHoopla()}
+				{if $profile->isValidForHoopla()}
 				<div class="panel active">
 					<a data-toggle="collapse" data-parent="#account-settings-accordion" href="#hooplaPanel">
 						<div class="panel-heading">

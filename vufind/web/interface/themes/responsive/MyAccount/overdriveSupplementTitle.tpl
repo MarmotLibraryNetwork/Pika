@@ -2,30 +2,32 @@
 	<div class="row">
 		<div class="resultDetails col-xs-12 col-md-9">
         {*		<span class="result-index">{$resultIndex})</span>&nbsp;*}
-			<span class="result-title notranslate">
+			<span class="result-title">
             {translate text='Supplemental Material'}
-				</span>
+			</span>
 
-			<div class="row econtent-download-row">
-				<div class="result-label col-md-4 col-lg-3">{translate text='Download'}</div>
-				<div class="result-value col-md-8 col-lg-9">
-            {if $supplementalTitle.formatSelected}
-							The <strong>{$supplementalTitle.selectedFormat.name}</strong> format is available.
-            {elseif isset($supplementalTitle.formats)}
-							<div class="form-inline">
-								<label for="downloadFormat_{$supplementalTitle.overDriveId}">Select one format to download.</label>
-								<br>
-								<select name="downloadFormat_{$supplementalTitle.overDriveId}" id="downloadFormat_{$supplementalTitle.overDriveId}" class="input-sm form-control">
-									<option value="-1">Select a Format</option>
-                    {foreach from=$supplementalTitle.formats item=format}
-											<option value="{$format.formatType}">{$format.name}</option>
-                    {/foreach}
-								</select>
-								<a href="#" onclick="Pika.OverDrive.selectOverDriveDownloadFormat('{$supplementalTitle.userId}', '{$supplementalTitle.overDriveId}')" class="btn btn-sm btn-primary">Download</a>
-							</div>
-            {/if}
+			{if !empty($supplementalTitle.formats) || ($supplementalTitle.isFormatSelected && isset($supplementalTitle.selectedFormat) && $supplementalTitle.selectedFormat.formatType != 'video-streaming' && $supplementalTitle.selectedFormat.formatType != 'magazine-overdrive')}
+				<div class="row econtent-download-row">
+					<div class="result-label col-md-4 col-lg-3">{translate text='Download'}</div>
+					<div class="result-value col-md-8 col-lg-9">
+							{if $supplementalTitle.isFormatSelected && isset($supplementalTitle.selectedFormat)}
+								The <strong>{$supplementalTitle.selectedFormat.name}</strong> format is available.
+							{elseif !empty($supplementalTitle.formats)}
+								<div class="form-inline">
+									<label for="downloadFormat_{$supplementalTitle.overDriveId}">Select one format to download.</label>
+									<br>
+									<select name="downloadFormat_{$supplementalTitle.overDriveId}" id="downloadFormat_{$supplementalTitle.overDriveId}" class="input-sm form-control">
+										<option value="-1">Select a Format</option>
+											{foreach from=$supplementalTitle.formats item=format}
+												<option value="{$format.formatType}">{$format.name}</option>
+											{/foreach}
+									</select>
+									<a href="#" onclick="Pika.OverDrive.selectOverDriveDownloadFormat('{$supplementalTitle.userId}', '{$supplementalTitle.overDriveId}')" class="btn btn-sm btn-primary">Download</a>
+								</div>
+							{/if}
+					</div>
 				</div>
-			</div>
+			{/if}
 
 		</div>
 
@@ -47,8 +49,8 @@
             {if $supplementalTitle.overdriveVideo}
 							<a href="#" onclick="return Pika.OverDrive.followOverDriveDownloadLink('{$supplementalTitle.userId}', '{$supplementalTitle.overDriveId}', 'video-streaming')" class="btn btn-sm btn-primary">Watch&nbsp;Online</a>
             {/if}
-            {if $supplementalTitle.formatSelected && !$supplementalTitle.overdriveVideo}
-							<a href="#" onclick="return Pika.OverDrive.followOverDriveDownloadLink('{$supplementalTitle.userId}', '{$supplementalTitle.overDriveId}', '{$supplementalTitle.selectedFormat.format}')" class="btn btn-sm btn-primary">Download</a>
+            {if $supplementalTitle.isFormatSelected && !$supplementalTitle.overdriveVideo}
+							<a href="#" onclick="return Pika.OverDrive.followOverDriveDownloadLink('{$supplementalTitle.userId}', '{$supplementalTitle.overDriveId}', '{$supplementalTitle.selectedFormat.formatType}')" class="btn btn-sm btn-primary">Download</a>
             {/if}
             {if $supplementalTitle.earlyReturn}
 							<a href="#" onclick="return Pika.OverDrive.returnOverDriveTitle('{$supplementalTitle.userId}', '{$supplementalTitle.overDriveId}', '{$supplementalTitle.transactionId}');" class="btn btn-sm btn-warning">Return&nbsp;Now</a>

@@ -533,7 +533,7 @@ class OverDriveDriver4 {
 				}
 				if (!empty($supplementalTitles)){
 					foreach ($supplementalTitles as $supplementalTitleId){
-						$key               = $bookshelfItem['checkoutSource'] . $supplementalTitleId;
+						$key               = $bookshelfItem['checkoutSource'] . $supplementalTitleId . $bookshelfItem['user'];
 						$supplementalTitle = $checkedOutTitles[$key];
 						unset($checkedOutTitles[$key]);
 						foreach ($checkedOutTitles as &$checkedOutTitle){
