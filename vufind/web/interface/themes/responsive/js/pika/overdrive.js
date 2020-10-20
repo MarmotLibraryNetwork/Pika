@@ -115,6 +115,7 @@ Pika.OverDrive = (function(){
 				}).fail(function(){
 					Pika.showMessage("Error Placing Hold", "An error occurred processing your request in OverDrive.  Please try again in a few minutes.");
 			});
+			return false;
 		},
 
 		followOverDriveDownloadLink: function(patronId, overDriveId, formatType){
@@ -130,6 +131,7 @@ Pika.OverDrive = (function(){
 				}).fail(function(){
 				Pika.showMessage("Error Getting Download Link", "An error occurred processing your request in OverDrive.  Please try again in a few minutes.");
 			});
+			return false;
 		},
 
 		forceUpdateFromAPI:function(overDriveId){
@@ -218,6 +220,7 @@ Pika.OverDrive = (function(){
 			}).fail(function (){
 				Pika.showMessage("Error", "An error occurred processing your request in OverDrive.  Please try again in a few minutes.");
 			});
+			return false;
 		},
 
 		returnOverDriveTitle: function (patronId, overDriveId){

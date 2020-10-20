@@ -36,7 +36,7 @@ class OverDriveDriver4 {
 		'ebook-pdf-adobe'     => 'Adobe PDF eBook',          // download option
 		'ebook-pdf-open'      => 'Open PDF eBook',           // download option
 		'ebook-kindle'        => 'Kindle Book',              // download option
-		'ebook-mediado'       => 'MediaDo Reader',           // download option
+		'ebook-mediado'       => 'MediaDo Reader',           // online option
 		'ebook-overdrive'     => 'OverDrive Read',           // online option
 		'magazine-overdrive'  => 'OverDrive Magazine',       // online option
 		'video-streaming'     => 'OverDrive Video',          // online option
