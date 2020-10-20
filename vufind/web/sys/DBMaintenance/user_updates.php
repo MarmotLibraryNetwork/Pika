@@ -203,6 +203,7 @@ function getUserUpdates(){
 			'description'     => 'Update Pika\'s OverDrive settings',
 			'continueOnError' => false,
 			'sql'             => [
+				'DELETE FROM `user` WHERE `id`=\'1\' AND `ilsUserId` = \'pika\';', //Remove the beginner user (It has an invalid created datetime and prevents the other sql from working)
 				'ALTER TABLE `user` CHANGE COLUMN `promptForOverdriveEmail` `promptForOverDriveEmail` TINYINT(1) UNSIGNED NULL DEFAULT \'1\','
 					. 'ADD COLUMN `promptForOverDriveLendingPeriods` TINYINT(1) UNSIGNED NOT NULL DEFAULT \'1\' AFTER `promptForOverDriveEmail`,'
 					. 'CHANGE COLUMN `overdriveEmail` `overDriveEmail` VARCHAR(250) NULL DEFAULT NULL ;',
