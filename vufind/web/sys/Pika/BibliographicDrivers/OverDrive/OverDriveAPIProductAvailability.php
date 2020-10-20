@@ -32,11 +32,11 @@ class OverDriveAPIProductAvailability extends \DB_DataObject{
 	public $numberOfHolds;
 
 	function getLibraryName(){
-		if ($this->libraryId > 0){
+		if ($this->libraryId < 0){
 			//TODO: fetch shared collection name
 			return 'Shared Digital Collection';
 		}else{
-			$library = new \Library();
+			$library            = new \Library();
 			$library->libraryId = $this->libraryId;
 			$library->find(true);
 			return $library->displayName;

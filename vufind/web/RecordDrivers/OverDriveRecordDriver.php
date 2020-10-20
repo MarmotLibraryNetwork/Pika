@@ -227,7 +227,7 @@ class OverDriveRecordDriver extends RecordInterface {
 	 * and displayed in the Holdings tab of the record view page.  Returns
 	 * null if no data is available.
 	 *
-	 * @return  OverDriveAPIProductFormats[]  An Array of Formats with link information included
+	 * @return  Pika\BibliographicDrivers\OverDrive\OverDriveAPIProductFormats[]  An Array of Formats with link information included
 	 */
 	public function getHoldings(){
 		$items            = $this->getItems();

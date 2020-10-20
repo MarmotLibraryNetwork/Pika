@@ -109,8 +109,8 @@ class OverDrive_AJAX extends AJAXHandler {
 				$lendingPeriod     = empty($_REQUEST['lendingPeriod']) ? null : $_REQUEST['lendingPeriod'];
 				$formatType        = empty($_REQUEST['formatType']) ? null : $_REQUEST['formatType'];
 				$result            = $driver->checkoutOverDriveTitle($overDriveId, $patron, $lendingPeriod, $formatType);
-				$result['buttons'] = '';
 				if ($result['success']){
+					$result['buttons'] ??= ''; // The response can return the buttons for placing a hold due to an error
 					//TODO: there can be multiple formats; one of which could be applicable below
 					if (!empty($result['formatType'])){
 						switch ($result['formatType']){
