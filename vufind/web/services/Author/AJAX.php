@@ -30,29 +30,20 @@ require_once ROOT_DIR . '/AJAXHandler.php';
 
 class Author_AJAX extends AJAXHandler {
 
-	protected $methodsThatRespondWithJSONUnstructured = array(
+	protected $methodsThatRespondWithJSONUnstructured = [
 		'getWikipediaData',
-	);
+	];
 
 	function getWikipediaData(){
 		global $configArray;
 		global $library;
-		global $interface;
-		/** @var Memcache $memCache */
-		global $memCache;
-		$returnVal = array();
+		$returnVal = ['success' => false];
 		if (isset($configArray['Content']['authors'])
 			&& stristr($configArray['Content']['authors'], 'wikipedia')
 			&& (!$library || $library->showWikipediaContent == 1)
 		){
-			// Only use first two characters of language string; Wikipedia
-			// uses language domains but doesn't break them up into regional
-			// variations like pt-br or en-gb.
-			$authorName = $_REQUEST['articleName'];
-			if (is_array($authorName)){
-				$authorName = reset($authorName);
-			}
-			$authorName = trim($authorName);
+			$authorName = is_array($_REQUEST['articleName']) ? reset($_REQUEST['articleName']) : $_REQUEST['articleName'];
+			$authorName = rtrim(trim($authorName), '.');
 
 			//Check to see if we have an override
 			require_once ROOT_DIR . '/sys/LocalEnrichment/AuthorEnrichment.php';
@@ -63,32 +54,61 @@ class Author_AJAX extends AJAXHandler {
 				if ($authorEnrichment->hideWikipedia){
 					$doLookup = false;
 				}else{
-					require_once ROOT_DIR . '/sys/WikipediaParser.php';
 					$wikipediaUrl = $authorEnrichment->wikipediaUrl;
 					$authorName   = str_replace('https://en.wikipedia.org/wiki/', '', $wikipediaUrl);
 					$authorName   = urldecode($authorName);
 				}
 			}
 			if ($doLookup){
-				$wiki_lang = substr($configArray['Site']['language'], 0, 2);
-				$interface->assign('wiki_lang', $wiki_lang);
-				$authorInfo = $memCache->get("wikipedia_article_{$authorName}_{$wiki_lang}");
-				if ($authorInfo == false){
-					require_once ROOT_DIR . '/services/Author/Wikipedia.php';
-					$wikipediaParser = new Author_Wikipedia();
-					$authorInfo      = $wikipediaParser->getWikipedia($authorName, $wiki_lang);
-					$memCache->add("wikipedia_article_{$authorName}_{$wiki_lang}", $authorInfo, false, $configArray['Caching']['wikipedia_article']);
+				/** @var Memcache $memCache */
+				global $memCache;
+				// Only use first two characters of language string; Wikipedia
+				// uses language domains but doesn't break them up into regional
+				// variations like pt-br or en-gb.
+				$wiki_lang   = substr($configArray['Site']['language'], 0, 2);
+				$memCacheKey = "wikipedia_article_{$authorName}_{$wiki_lang}";
+				$authorInfo  = $memCache->get($memCacheKey);
+				if (empty($authorInfo)){
+					$wikipediaParser = new ExternalEnrichment\WikipediaParser($wiki_lang);
+					$author          = trim(str_replace('"', '', $authorName));
+					$baseApiUrl      = "http://{$wiki_lang}.wikipedia.org/w/api.php" .
+						'?action=query&prop=revisions&rvprop=content&format=json' .
+						'&titles=';
+					$authorInfo      = $wikipediaParser->getWikipediaPage($baseApiUrl, $author);
+					if (empty($authorInfo)){
+						if (preg_match('/(.*),\s\d+(-\d+)?$/si', $author, $matches)){
+							//Parse author string that end with year information
+							$author     = $matches[1];
+							$authorInfo = $wikipediaParser->getWikipediaPage($baseApiUrl, $author);
+						}
+						if (empty($authorInfo)){
+							if (strpos($author, ',') > 0){
+								//Try reversing the name
+								$authorParts = explode(',', $author, 2);
+								$author      = trim($authorParts[1] . ' ' . $authorParts[0]);
+								$authorInfo  = $wikipediaParser->getWikipediaPage($baseApiUrl, $author);
+							}
+							if (empty($authorInfo)){
+								//Try one last time with no periods
+								$author     = str_replace('.', '', $author);
+								$authorInfo = $wikipediaParser->getWikipediaPage($baseApiUrl, $author);
+							}
+						}
+					}
+					if (!empty($authorInfo)){
+						$memCache->add($memCacheKey, $authorInfo, false, $configArray['Caching']['wikipedia_article']);
+					}
 				}
-				$returnVal['success'] = true;
-				$returnVal['article'] = $authorInfo;
-				$interface->assign('info', $authorInfo);
-				$returnVal['formatted_article'] = $interface->fetch('Author/wikipedia_article.tpl');
-			}else{
-				$returnVal['success'] = false;
+				if (!empty($authorInfo)){
+					global $interface;
+					$returnVal['success'] = true;
+					$returnVal['article'] = $authorInfo;
+					$interface->assign('wiki_lang', $wiki_lang);
+					$interface->assign('info', $authorInfo);
+					$returnVal['formatted_article'] = $interface->fetch('Author/wikipedia_article.tpl');
+				}
 			}
-		}else{
-			$returnVal['success'] = false;
 		}
-		return json_encode($returnVal);
+		return $returnVal;
 	}
 }
