@@ -160,11 +160,13 @@ class MyAccount_Profile extends MyAccount
 				$overDriveDriver   = Pika\PatronDrivers\EcontentSystem\OverDriveDriverFactory::getDriver();
 				$overDriveSettings = $overDriveDriver->getUserOverDriveAccountSettings($patron);
 			}
-			$notice         = translate('overdrive_account_preferences_notice');
-			$replacementUrl = $overDriveSettings['overDriveWebsite'] ?? '#';
-			$notice         = str_replace('{OVERDRIVEURL}', $replacementUrl, $notice); // Insert the Overdrive URL into the notice
-			$interface->assign('overDrivePreferencesNotice', $notice);
-			$interface->assign('overDriveSettings', $overDriveSettings);
+			if (!empty($overDriveSettings)){
+				$notice         = translate('overdrive_account_preferences_notice');
+				$replacementUrl = $overDriveSettings['overDriveWebsite'] ?? '#';
+				$notice         = str_replace('{OVERDRIVEURL}', $replacementUrl, $notice);// Insert the Overdrive URL into the notice
+				$interface->assign('overDrivePreferencesNotice', $notice);
+				$interface->assign('overDriveSettings', $overDriveSettings);
+			}
 
 			if (!empty($_SESSION['profileUpdateErrors'])) {
 				$interface->assign('profileUpdateErrors', $_SESSION['profileUpdateErrors']);

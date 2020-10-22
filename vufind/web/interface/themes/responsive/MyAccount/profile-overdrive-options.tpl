@@ -82,9 +82,11 @@
 				</div>
 			{/if}
 
-		<p class="help-block alert alert-info">
-				{$overDrivePreferencesNotice}
-		</p>
+			{if !empty($overDrivePreferencesNotice)}
+				<p class="help-block alert alert-info">
+						{$overDrivePreferencesNotice}
+				</p>
+			{/if}
 
 	</form>
 {/strip}
