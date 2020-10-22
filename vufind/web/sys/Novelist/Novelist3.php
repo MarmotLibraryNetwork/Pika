@@ -160,7 +160,7 @@ class Novelist3{
 							//We got data!
 							$novelistData->hasNovelistData = true;
 							$novelistData->lastUpdate      = time(); //Update the last update time to optimize caching
-							$novelistData->primaryISBN     = $data->TitleInfo->primary_isbn;
+							$novelistData->primaryISBN     = $data->TitleInfo->primary_isbn ?? null;
 
 							//Series Information
 							if (isset($data->FeatureContent->SeriesInfo)){
@@ -395,7 +395,7 @@ class Novelist3{
 						//We got data!
 						$novelistData->hasNovelistData = true;
 						$novelistData->lastUpdate      = time(); //Update the last update time to optimize caching
-						$novelistData->primaryISBN     = $data->TitleInfo->primary_isbn;
+						$novelistData->primaryISBN     = $data->TitleInfo->primary_isbn ?? null;
 
 						//Similar Titles
 						if (isset($data->FeatureContent->SimilarTitles)){
@@ -488,7 +488,7 @@ class Novelist3{
 						//We got data!
 						$novelistData->hasNovelistData = true;
 						$novelistData->lastUpdate      = time(); //Update the last update time to optimize caching
-						$novelistData->primaryISBN     = $data->TitleInfo->primary_isbn;
+						$novelistData->primaryISBN     = $data->TitleInfo->primary_isbn ?? null;
 
 						//Similar Authors
 						if (isset($data->FeatureContent->SimilarAuthors)){
@@ -594,7 +594,7 @@ class Novelist3{
 						//We got data!
 						$novelistData->hasNovelistData = true;
 						$novelistData->lastUpdate      = time(); //Update the last update time to optimize caching
-						$novelistData->primaryISBN     = $data->TitleInfo->primary_isbn;
+						$novelistData->primaryISBN     = $data->TitleInfo->primary_isbn ?? null;
 
 						//Series Information
 						if (isset($data->FeatureContent->SeriesInfo)){
