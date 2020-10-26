@@ -912,16 +912,11 @@ class ListAPI extends AJAXHandler {
 	public function getAvailableListsFromNYT(){
 		global $configArray;
 
-		$results = array(
-			'success' => false,
-			'message' => 'Unknown error',
-		);
-
-		if (!isset($configArray['NYT_API']) || empty($configArray['NYT_API']['books_API_key'])){
-			return array(
+		if (empty($configArray['NYT_API']['books_API_key'])){
+			return [
 				'success' => false,
 				'message' => 'API Key missing',
-			);
+			];
 		}
 		$api_key = $configArray['NYT_API']['books_API_key'];
 
@@ -931,9 +926,8 @@ class ListAPI extends AJAXHandler {
 		}
 
 		// Get the raw response from the API with a list of all the names
-		require_once ROOT_DIR . '/sys/ExternalEnrichment/NYTApi.php';
-		$nyt_api = new NYTApi($api_key);
-		$results = $nyt_api->get_list($listName);
+		$nyt_api = new ExternalEnrichment\NYTApi($api_key);
+		$results = $nyt_api->getList($listName);
 		return json_decode($results);
 	}
 
@@ -950,40 +944,34 @@ class ListAPI extends AJAXHandler {
 			$selectedList = $_REQUEST['listToUpdate'];
 		}
 
-		$results = array(
-			'success' => false,
-			'message' => 'Unknown error',
-		);
-
 		if (empty($configArray['NYT_API']['books_API_key'])){
-			return array(
+			return [
 				'success' => false,
 				'message' => 'API Key missing',
-			);
+			];
 		}
 		$api_key      = $configArray['NYT_API']['books_API_key'];
 		$pikaUsername = $configArray['NYT_API']['pika_username'];
 		$pikaPassword = $configArray['NYT_API']['pika_password'];
 
 		if (empty($pikaUsername) || empty($pikaPassword)){
-			return array(
+			return [
 				'success' => false,
 				'message' => 'Pika NY Times user not set',
-			);
+			];
 		}
 
 		$pikaUser = UserAccount::validateAccount($pikaUsername, $pikaPassword);
 		if (!$pikaUser || PEAR_Singleton::isError($pikaUser)){
-			return array(
+			return [
 				'success' => false,
 				'message' => 'Invalid Pika NY Times user',
-			);
+			];
 		}
 
 		//Get the raw response from the API with a list of all the names
-		require_once ROOT_DIR . '/sys/ExternalEnrichment/NYTApi.php';
-		$nyt_api           = new NYTApi($api_key);
-		$availableListsRaw = $nyt_api->get_list('names');
+		$nyt_api           = new ExternalEnrichment\NYTApi($api_key);
+		$availableListsRaw = $nyt_api->getList('names');
 		//Convert into an object that can be processed
 		$availableLists = json_decode($availableListsRaw);
 
@@ -1001,10 +989,10 @@ class ListAPI extends AJAXHandler {
 			}
 		}
 		if (empty($selectedListTitleShort)){
-			return array(
+			return [
 				'success' => false,
 				'message' => "We did not find list '{$selectedList}' in The New York Times API",
-			);
+			];
 		}
 
 		// Look for selected List
@@ -1027,23 +1015,23 @@ class ListAPI extends AJAXHandler {
 
 			if ($success){
 				$listID  = $nytList->id;
-				$results = array(
+				$results = [
 					'success' => true,
 					'message' => "Created list <a href='/MyAccount/MyList/{$listID}'>{$selectedListTitle}</a>",
-				);
+				];
 			}else{
-				return array(
+				return [
 					'success' => false,
 					'message' => 'Could not create list',
-				);
+				];
 			}
 
 		}else{
 			$listID  = $nytList->id;
-			$results = array(
+			$results = [
 				'success' => true,
 				'message' => "Updated list <a href='/MyAccount/MyList/{$listID}'>{$selectedListTitle}</a>",
-			);
+			];
 			//We already have a list, clear the contents so we don't have titles from last time
 			$nytList->removeAllListEntries();
 		}
@@ -1059,46 +1047,50 @@ class ListAPI extends AJAXHandler {
 		require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
 
 		//Get a list of titles from NYT API
-		$availableListsRaw = $nyt_api->get_list($selectedList);
+		$availableListsRaw = $nyt_api->getList($selectedList);
 		$availableLists    = json_decode($availableListsRaw);
 		$numTitlesAdded    = 0;
 		foreach ($availableLists->results as $titleResult){
 			$pikaID = null;
 			// go through each list item
 
-			if (empty($titleResult->isbns)){
-				if (!empty($titleResult->book_details)){
-					$bookDetails       = $titleResult->book_details[0];
-					$isbnEntry         = new stdClass;
-					$isbnEntry->isbn13 = empty($bookDetails->primary_isbn13) || strcasecmp($bookDetails->primary_isbn13, 'none') == 0 ? null : $bookDetails->primary_isbn13;
-					$isbnEntry->isbn10 = empty($bookDetails->primary_isbn10) || strcasecmp($bookDetails->primary_isbn10, 'none') == 0 ? null : $bookDetails->primary_isbn10;
-					$isbnsArray        = array(
-						$isbnEntry,
-					);
+			require_once ROOT_DIR . '/sys/ISBN/ISBN.php';
+			// Try fetching the primary ISBN first
+			if (!empty($titleResult->book_details)){
+				$ISBNs = [];
+				$bookDetails       = $titleResult->book_details[0];
+				if (!empty($bookDetails->primary_isbn13) && strcasecmp($bookDetails->primary_isbn13, 'none') != 0){
+					$ISBNs[] = $bookDetails->primary_isbn13;
 				}
-			}else{
-				$isbnsArray = $titleResult->isbns;
+				if (!empty($bookDetails->primary_isbn10) && strcasecmp($bookDetails->primary_isbn10, 'none') != 0){
+					$isbnObj = new ISBN($bookDetails->primary_isbn10);
+					$ISBNs[] = $isbnObj->get13();
+				}
+				if (!empty($ISBNs)){
+					$searchDocument = $searchObject->getRecordByIsbn(array_unique($ISBNs));
+					$pikaID         = $searchDocument['id'] ?? null;
+				}
 			}
-			if (!empty($isbnsArray)){
-				foreach ($isbnsArray as $isbns){
-					if (empty($isbns->isbn13)){
-						require_once ROOT_DIR . '/sys/ISBN/ISBN.php';
-						$isbnObj = new ISBN($isbns->isbn10);
-						$isbn    = $isbnObj->get13();
-					}else{
-						$isbn = $isbns->isbn13;
-					}
-					if ($isbn){
-						//look the title up in Pika by ISBN
-						$searchDocument = $searchObject->getRecordByIsbn(array($isbn));
-						$pikaID         = $searchDocument['id'];
-					}
-					//break if we found a pika id for the title
-					if ($pikaID != null){
-						break;
+			// If no luck with Primary ISBNs, or no primary ISBNs, try the rest of the ISBNs
+			if ($pikaID == null){
+				$ISBNs = [];
+				if (!empty($titleResult->isbns)){
+					//Note : each entry typically comes with an isbn10 & isbn13, which are usually equivalent; but we have seen
+					//  an example of this not being so (and the isbn10 being the one we needed [once converted to isbn13]).
+					foreach ($titleResult->isbns as $isbnEntry){
+						if (!empty($isbnEntry->isbn13)){
+							$ISBNs[] = $isbnEntry->isbn13;
+						}
+						if (!empty($isbnEntry->isbn10)){
+							$isbnObj = new ISBN($isbnEntry->isbn10);
+							$ISBNs[] = $isbnObj->get13();
+						}
 					}
 				}
-			}//Done checking ISBNs
+				$searchDocument = $searchObject->getRecordByIsbn(array_unique($ISBNs));
+				$pikaID         = $searchDocument['id'] ?? null;
+			}
+
 			if ($pikaID != null){
 				$note = "#{$titleResult->rank} on the {$titleResult->display_name} list for {$titleResult->published_date}.";
 				if ($titleResult->rank_last_week != 0){

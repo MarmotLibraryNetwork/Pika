@@ -41,11 +41,10 @@ class NYTLists extends Admin_Admin {
 			$api_key = $configArray['NYT_API']['books_API_key'];
 
 			// instantiate class with api key
-			require_once ROOT_DIR . '/sys/ExternalEnrichment/NYTApi.php';
-			$nyt_api = new NYTApi($api_key);
+			$nyt_api = new ExternalEnrichment\NYTApi($api_key);
 
 			//Get the raw response from the API with a list of all the names
-			$availableListsRaw = $nyt_api->get_list('names');
+			$availableListsRaw = $nyt_api->getList('names');
 			//Convert into an object that can be processed
 			$availableLists = json_decode($availableListsRaw);
 
@@ -92,6 +91,6 @@ class NYTLists extends Admin_Admin {
 	}
 
 	function getAllowableRoles(){
-		return array('opacAdmin', 'libraryAdmin', 'libraryManager', 'contentEditor');
+		return ['opacAdmin', 'libraryAdmin', 'libraryManager', 'contentEditor'];
 	}
 }
