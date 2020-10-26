@@ -1403,6 +1403,15 @@ class DBMaintenance extends Admin_Admin {
 					]
 				],
 
+				'overdrive-remove-numeric-formats-2020.07' => [
+					'title'           => 'Remove obsolete numeric formats column from overdrive_api_product_formats',
+					'description'     => '[THIS NEEDS the econtent db to named econtent]',
+					'continueOnError' => true,
+					'sql'             => [
+						'ALTER TABLE `econtent`.`overdrive_api_product_formats` DROP COLUMN `numericId`, DROP INDEX `numericId` ;',
+					]
+				],
+
 			)); // End of main array
 	}
 

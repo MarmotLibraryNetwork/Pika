@@ -48,6 +48,7 @@ public class OverDriveDBInfo {
 		mediaType              = loadProductsRS.getString("mediaType");
 		series                 = loadProductsRS.getString("series");
 		title                  = loadProductsRS.getString("title");
+		subtitle               = loadProductsRS.getString("subtitle");
 		primaryCreatorRole     = loadProductsRS.getString("primaryCreatorRole");
 		primaryCreatorName     = loadProductsRS.getString("primaryCreatorName");
 		cover                  = loadProductsRS.getString("cover");
