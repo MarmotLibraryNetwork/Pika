@@ -10,7 +10,7 @@
 				<input type="text" class="email form-control" name="overDriveEmail" value="{$overDriveEmail}" size="40" maxlength="250">
 				</div>
 			<div class="checkbox">
-				<label for="rememberOverdriveEmail" class="control-label"><input type="checkbox" name="rememberOverdriveEmail" id="rememberOverdriveEmail"> Remember this e-mail.</label>
+				<label for="rememberOverDriveEmail" class="control-label"><input type="checkbox" name="rememberOverDriveEmail" id="rememberOverDriveEmail"> Remember this e-mail.</label>
 			</div>
 			<div class="alert alert-info">
 				<p>To use this email address for future hold requests, click <em>Remember this e-mail</em> above.</p>

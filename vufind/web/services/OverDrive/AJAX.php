@@ -70,7 +70,7 @@ class OverDrive_AJAX extends AJAXHandler {
 			if ($patron){
 				$overDriveId = $_REQUEST['overDriveId'];
 				if (!empty($overDriveId)){
-					if (!empty($_REQUEST['rememberOverdriveEmail'])){
+					if (!empty($_REQUEST['rememberOverDriveEmail'])){
 						// Update the user's overdrive email if the remember email was checked on
 						if (!empty($_REQUEST['overDriveEmail']) && $_REQUEST['overDriveEmail'] != $patron->overDriveEmail){
 							$patron->overDriveEmail = $_REQUEST['overDriveEmail'];
@@ -232,7 +232,7 @@ class OverDrive_AJAX extends AJAXHandler {
 				'patronId'                => reset($overDriveUsers)->id,
 				'promptNeeded'            => false,
 				'overDriveEmail'          => $user->overDriveEmail,
-				'rememberOverdriveEmail' => $promptForEmail,
+//				'rememberOverdriveEmail'  => $promptForEmail,
 			];
 		}
 	}
@@ -332,7 +332,7 @@ class OverDrive_AJAX extends AJAXHandler {
 			if ($patron){
 				$overDriveId = $_REQUEST['overDriveId'];
 				if (!empty($overDriveId)){
-					if (!empty($_REQUEST['rememberOverdriveEmail'])){
+					if (!empty($_REQUEST['rememberOverDriveEmail'])){
 						// Update the user's overdrive email if the remember email was checked on
 						if (!empty($_REQUEST['overDriveEmail']) && $_REQUEST['overDriveEmail'] != $patron->overDriveEmail){
 							$patron->overDriveEmail = $_REQUEST['overDriveEmail'];

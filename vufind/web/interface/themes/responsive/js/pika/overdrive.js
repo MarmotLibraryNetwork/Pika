@@ -97,14 +97,14 @@ Pika.OverDrive = (function(){
 			return false;
 		},
 
-		doOverDriveHold: function(patronId, overDriveId, overDriveEmail, promptForOverDriveEmail){
+		doOverDriveHold: function(patronId, overDriveId, overDriveEmail, rememberOverDriveEmail){
 			var url = "/OverDrive/AJAX",
 					params = {
 						'method': 'placeOverDriveHold',
 						patronId: patronId,
 						overDriveId: overDriveId,
 						overDriveEmail: overDriveEmail,
-						promptForOverDriveEmail: promptForOverDriveEmail
+						rememberOverDriveEmail: rememberOverDriveEmail
 					};
 			$.getJSON(url, params, function(data){
 					if (data.availableForCheckout){
@@ -151,7 +151,7 @@ Pika.OverDrive = (function(){
 					if (data.promptNeeded){
 						Pika.showMessageWithButtons(data.promptTitle, data.prompts, data.buttons);
 					} else {
-						Pika.OverDrive.doOverDriveHold(data.patronId, overDriveId, data.overDriveEmail, data.promptForOverDriveEmail);
+						Pika.OverDrive.doOverDriveHold(data.patronId, overDriveId, data.overDriveEmail, false);
 					}
 				}).fail(function(){
 					Pika.showMessage("Error Placing Hold", "An error occurred processing your request in OverDrive.  Please try again in a few minutes.");
@@ -165,8 +165,8 @@ Pika.OverDrive = (function(){
 						overDriveEmail = overDriveHoldPromptsForm.find("input[name=overDriveEmail]").val(),
 						overdriveId = overDriveHoldPromptsForm.find("input[name=overdriveId]").val(),
 						patronId = $("#patronId").val(),
-						rememberOverdriveEmail = overDriveHoldPromptsForm.find("input[name=rememberOverdriveEmail]").is(":checked") ? 0 : 1;
-			Pika.OverDrive.doOverDriveHold(patronId, overdriveId, overDriveEmail, rememberOverdriveEmail);
+						rememberOverDriveEmail = overDriveHoldPromptsForm.find("input[name=rememberOverDriveEmail]").is(":checked") ? 1 : 0;
+			Pika.OverDrive.doOverDriveHold(patronId, overdriveId, overDriveEmail, rememberOverDriveEmail);
 		},
 
 		updateOverDriveHold: function(patronId, overDriveId, thawDate){
@@ -205,14 +205,14 @@ Pika.OverDrive = (function(){
 					overDriveId = overDriveHoldPromptsForm.find("input[name=overDriveId]").val(),
 					patronId = $("#patronId").val(),
 					thawDate = $("#thawDate").val(),
-					rememberOverdriveEmail = overDriveHoldPromptsForm.find("input[name=rememberOverdriveEmail]").is(":checked") ? 0 : 1,
+					rememberOverDriveEmail = overDriveHoldPromptsForm.find("input[name=rememberOverDriveEmail]").is(":checked") ? 1 : 0,
 					url = "/OverDrive/AJAX",
 					params = {
 						'method': 'freezeOverDriveHold',
 						patronId: patronId,
 						overDriveId: overDriveId,
 						overDriveEmail: overDriveEmail,
-						rememberOverdriveEmail: rememberOverdriveEmail,
+						rememberOverDriveEmail: rememberOverDriveEmail,
 						thawDate: thawDate
 					};
 			$.getJSON(url, params, function (data){
