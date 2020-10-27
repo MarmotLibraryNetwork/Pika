@@ -152,7 +152,7 @@ class GoDeeperData{
 		return $goDeeperOptions;
 	}
 
-	private function getContentCafeData($isbn, $upc, $field = 'AvailableContent'){
+	private static function getContentCafeData($isbn, $upc, $field = 'AvailableContent'){
 		global $configArray;
 
 		if (!empty($configArray['Contentcafe']['pw'])){
@@ -209,15 +209,15 @@ class GoDeeperData{
 	static function getSummary($isbn, $upc){
 		global $configArray;
 		$summaryData = [];
-		if (!empty($configArray['Syndetics']['key'])){
+		if (!empty($configArray['Syndetics']['key']) && !empty($configArray['Syndetics']['showSummary'])){
 			$summaryData = self::getSyndeticsSummary($isbn, $upc);
-		}elseif (!empty($configArray['Contentcafe']['pw'])){
+		}elseif (!empty($configArray['Contentcafe']['pw']) && !empty($configArray['Contentcafe']['showSummary'])){
 			$summaryData = self::getContentCafeSummary($isbn, $upc);
 		}
 		return $summaryData;
 	}
 
-	private function getContentCafeSummary($isbn, $upc){
+	private static function getContentCafeSummary($isbn, $upc){
 		global $configArray;
 		/** @var Memcache $memCache */
 		global $memCache;
@@ -249,7 +249,7 @@ class GoDeeperData{
 
 	}
 
-	private function getSyndeticsSummary($isbn, $upc){
+	private static function getSyndeticsSummary($isbn, $upc){
 		global $configArray;
 		/** @var Memcache $memCache */
 		global $memCache;
@@ -685,7 +685,7 @@ class GoDeeperData{
 		return $summaryData;
 	}
 
-	function getAVSummary($isbn, $upc){
+	static function getAVSummary($isbn, $upc){
 		global $configArray;
 		/** @var Memcache $memCache */
 		global $memCache;
