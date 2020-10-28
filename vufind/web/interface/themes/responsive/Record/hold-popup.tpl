@@ -1,29 +1,15 @@
-{*
-Custom themes (if upading this please check these themes)
-* csl/Record/hold-popup.tpl
-* arlington/Record/hold-popup.tpl
-*}
 {strip}
 <div id="page-content" class="content">
-	<form name="placeHoldForm" id="placeHoldForm" method="post" class="form">
-		<input type="hidden" name="id" id="id" value="{$id}">
-		<input type="hidden" name="recordSource" id="recordSource" value="{$recordSource}">
-		<input type="hidden" name="module" id="module" value="{$activeRecordProfileModule}">
-		{if $volume}
-			<input type="hidden" name="volume" id="volume" value="{$volume}">
-		{/if}
-		<fieldset>
-			<div class="holdsSummary">
-				<input type="hidden" name="holdCount" id="holdCount" value="1">
-				<div class="alert alert-warning" id="overHoldCountWarning" {if !$showOverHoldLimit}style="display:none"{/if}>Warning: You have reached the maximum of <span class='maxHolds'>{$maxHolds}</span> holds for your account.  You must cancel a hold before you can place a hold on this title.</div>
-				<div id="holdError" class="pageWarning" style="display: none"></div>
-			</div>
 
-			<p class="alert alert-info">
-				{/strip}
-				Holds allow you to request that a title be delivered to the library.
-				{if $showDetailedHoldNoticeInformation}
-					Once the title arrives at the library you will
+	{foreach from=$maxHolds item="maxHold"}
+		<blockquote class="alert-warning">{$maxHold}</blockquote>
+	{/foreach}
+
+	<p class="alert alert-info">
+			{/strip}
+		Holds allow you to request that a title be delivered to the library.
+			{if $showDetailedHoldNoticeInformation}
+				Once the title arrives at the library you will
 					{if $profile->noticePreferenceLabel eq 'Mail' && !$treatPrintNoticesAsPhoneNotices}
 						be mailed a notification
 					{elseif $profile->noticePreferenceLabel eq 'Telephone' || ($profile->noticePreferenceLabel eq 'Mail' && $treatPrintNoticesAsPhoneNotices)}
@@ -33,13 +19,22 @@ Custom themes (if upading this please check these themes)
 					{else}
 						receive a notification
 					{/if}
-					 informing you that the title is ready for you.
-				{else}
-					Once the title arrives at the library you will receive a notification informing you that the title is ready for you.
-				{/if}
-				You will then have {translate text='Hold Pickup Period'} to pick up the title from the library.
-				{strip}
-			</p>
+				informing you that the title is ready for you.
+			{else}
+				Once the title arrives at the library you will receive a notification informing you that the title is ready for you.
+			{/if}
+		You will then have {translate text='Hold Pickup Period'} to pick up the title from the library.
+			{strip}
+	</p>
+
+	<form name="placeHoldForm" id="placeHoldForm" method="post" class="form">
+		<input type="hidden" name="id" id="id" value="{$id}">
+		<input type="hidden" name="recordSource" id="recordSource" value="{$recordSource}">
+		<input type="hidden" name="module" id="module" value="{$activeRecordProfileModule}">
+		{if $volume}
+			<input type="hidden" name="volume" id="volume" value="{$volume}">
+		{/if}
+		<fieldset>
 
 			{* Responsive theme enforces that the user is always logged in before getting here*}
 			<div id="holdOptions">
@@ -96,23 +91,25 @@ Custom themes (if upading this please check these themes)
 						});
 						{/literal}
 					</script>
-				{if $showHoldCancelDate == 1}
+				{if $showHoldCancelDate}
 					<div id="cancelHoldDate" class="form-group">
 						<label class="control-label" for="canceldate">{translate text="Automatically cancel this hold if not filled by"}:</label>
 						<div class="input-group input-append date controls" id="cancelDatePicker">
-							{* TODO: defaultNotNeeded not implemented yet. plb 4-1-2015 *}
 							{* data-provide attribute loads the datepicker through bootstrap data api *}
 							{* start date sets minimum, end date sets maximum, date sets initial value: days from today, eg +8d is 8 days from now. *}
-							<input type="text" name="canceldate" id="canceldate" placeholder="mm/dd/yyyy" class="form-control" size="10" {*if $defaultNotNeededAfterDays}value="{$defaultNotNeededAfterDays}"{/if*}
-							       data-provide="datepicker" data-date-format="mm/dd/yyyy" data-date-start-date="0d"{*if $defaultNotNeededAfterDays} data-date="+{$defaultNotNeededAfterDays}d"{/if*} data-date-end-date="+1y">
+							<input type="text" name="canceldate" id="canceldate" placeholder="mm/dd/yyyy" class="form-control" size="10"
+							       data-provide="datepicker" data-date-format="mm/dd/yyyy" data-date-start-date="0d" data-date-end-date="+1y">
 							<span class="input-group-addon"><span class="glyphicon glyphicon-calendar" onclick="$('#canceldate').focus().datepicker('show')" aria-hidden="true"></span></span>
 						</div>
-						<div class="loginFormRow">
-							<i>{translate text="automatic_cancellation_notice"}</i>
-						</div>
+
+							<p><i>{translate text="automatic_cancellation_notice"}</i></p>
+							{foreach from=$autoCancels item="notice"}
+									<p><i>{$notice}</i></p>
+							{/foreach}
+
 					</div>
 				{/if}
-				{if count($holdDisclaimers) > 0}
+				{if !empty($holdDisclaimers)}
 					{foreach from=$holdDisclaimers item=holdDisclaimer key=library}
 						<div class="holdDisclaimer alert alert-warning">
 							{if count($holdDisclaimers) > 1}<div class="holdDisclaimerLibrary">{$library}</div>{/if}

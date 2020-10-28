@@ -1146,7 +1146,7 @@ class User extends DB_DataObject {
 	}
 
 	/**
-	 * Get a list of locations where a record can be picked up.  Handles liked accounts
+	 * Get a list of locations where a record can be picked up.  Handles linked accounts
 	 * and filtering to make sure that the user is able to
 	 *
 	 * @param string $recordSource          The source of the record that we are placing a hold on

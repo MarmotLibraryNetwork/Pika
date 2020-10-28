@@ -105,21 +105,7 @@ class Record_AJAX extends AJAXHandler {
 			}
 
 			//Get information to show a warning if the user does not have sufficient holds
-			require_once ROOT_DIR . '/sys/Account/PType.php';
-			$maxHolds = -1;
-			//Determine if we should show a warning
-			$pType        = new PType();
-			$pType->pType = UserAccount::getUserPType();
-			if ($pType->find(true)){
-				$maxHolds = $pType->maxHolds;
-			}
-			$currentHolds = $user->numHoldsIls;
-			//TODO: this check will need to account for linked accounts now
-			if ($maxHolds != -1 && ($currentHolds + 1 > $maxHolds)){
-				$interface->assign('showOverHoldLimit', true);
-				$interface->assign('maxHolds', $maxHolds);
-				$interface->assign('currentHolds', $currentHolds);
-			}
+			$this->getMaxHoldsWarnings($user);
 
 			//Check to see if the user has linked users that we can place holds for as well
 			//If there are linked users, we will add pickup locations for them as well
@@ -139,55 +125,101 @@ class Record_AJAX extends AJAXHandler {
 			$interface->assign('multipleUsers', $multipleAccountPickupLocations); // switch for displaying the account drop-down (used for linked accounts)
 
 			global $library;
-			$interface->assign('showHoldCancelDate', $library->showHoldCancelDate);
-			$interface->assign('defaultNotNeededAfterDays', $library->defaultNotNeededAfterDays);
 			$interface->assign('showDetailedHoldNoticeInformation', $library->showDetailedHoldNoticeInformation);
 			$interface->assign('treatPrintNoticesAsPhoneNotices', $library->treatPrintNoticesAsPhoneNotices);
 
-			$holdDisclaimers = array();
+			$holdDisclaimers = $autoCancels = [];
 			$patronLibrary   = $user->getHomeLibrary();
 			if (!empty($patronLibrary->holdDisclaimer)){
 				$holdDisclaimers[$patronLibrary->displayName] = $patronLibrary->holdDisclaimer;
 			}
+			$autoCancels = $this->getAutoCancelHoldMessages($patronLibrary);
+
 			foreach ($linkedUsers as $linkedUser){
+				$this->getMaxHoldsWarnings($linkedUser);
+
 				$linkedLibrary = $linkedUser->getHomeLibrary();
 				if (!empty($linkedLibrary->holdDisclaimer)){
 					$holdDisclaimers[$linkedLibrary->displayName] = $linkedLibrary->holdDisclaimer;
 				}
+
+				$autoCancels = $this->getAutoCancelHoldMessages($linkedLibrary, $autoCancels);
 			}
 
 			$interface->assign('holdDisclaimers', $holdDisclaimers);
+			$interface->assign('autoCancels', $autoCancels);
 
 			/** @var MarcRecord $marcRecord */
 			$marcRecord = RecordDriverFactory::initRecordDriverById($sourceAndId);
 			$title      = rtrim($marcRecord->getTitle(), ' /');
 			$interface->assign('id', $marcRecord->getId());
 			if (count($locations) == 0){
-				$results = array(
+				$results = [
 					'title'        => 'Unable to place hold',
 					'modalBody'    => '<p>Sorry, no copies of this title are available to your account.</p>',
 					'modalButtons' => "",
-				);
+				];
 			}else{
-				$results = array(
+				$results = [
 					'title'        => empty($title) ? 'Place Hold' : 'Place Hold on ' . $title,
 					'modalBody'    => $interface->fetch("Record/hold-popup.tpl"),
 					'modalButtons' => "<input type='submit' name='submit' id='requestTitleButton' value='Submit Hold Request' class='btn btn-primary' onclick=\"return Pika.Record.submitHoldForm();\">",
-				);
+				];
 			}
-			if (!empty($interface->getVariable('googleAnalyticsId'))){ // this template variable gets set in the bootstap
+			if (!empty($interface->getVariable('googleAnalyticsId'))){ // this template variable gets set in the bootstrap
 				$results['modalButtons'] = "<input type='submit' name='submit' id='requestTitleButton' value='Submit Hold Request' class='btn btn-primary' onclick=\"trackHoldTitleClick('{$sourceAndId}'); return Pika.Record.submitHoldForm();\">";
 
 			}
 
 		}else{
-			$results = array(
+			$results = [
 				'title'        => 'Please log in',
-				'modalBody'    => "You must be logged in.  Please close this dialog and login before placing your hold.",
-				'modalButtons' => "",
-			);
+				'modalBody'    => 'You must be logged in.  Please close this dialog and login before placing your hold.',
+				'modalButtons' => '',
+			];
 		}
 		return $results;
+	}
+
+	/**
+	 * Return an array of cancellation setting notices for the library of the User.
+	 *
+	 * @param Library $patronLibrary The User's library
+	 * @param string[] $autoCancels The array of notices to add to
+	 * @return string[] The array of notices
+	 */
+	private function getAutoCancelHoldMessages($patronLibrary, array $autoCancels = []){
+		if (!empty($patronLibrary->showHoldCancelDate)){
+			global $interface;
+			$interface->assign('showHoldCancelDate', true);
+			// Turn on cancel date if any users' library has the setting on
+
+			if ($patronLibrary->defaultNotNeededAfterDays > -1 && empty($autoCancels[$patronLibrary->displayName])){
+				// -1 would mean no cancel date will be set; 0 will default to 6 months (182.5 days)
+				$daysFromNow                              = $patronLibrary->defaultNotNeededAfterDays == 0 ? 182 : $patronLibrary->defaultNotNeededAfterDays;
+				$cancelMessage                            = "If not set, for {$patronLibrary->displayName}, the cancel date will automatically be set to $daysFromNow days from today.";
+				$autoCancels[$patronLibrary->displayName] = $cancelMessage;
+			}
+		}
+		return $autoCancels;
+	}
+
+	/**
+	 * Set template message for when a User has reached the maximum holds they can place with the ils
+	 *
+	 * @param User $user The User to check
+	 */
+	private function getMaxHoldsWarnings(User $user){
+		require_once ROOT_DIR . '/sys/Account/PType.php';
+		$pType        = new PType();
+		if ($pType->get('pType', $user->patronType)){
+			$maxHolds = $pType->maxHolds;
+			if ($user->numHoldsIls >= $maxHolds){
+				global $interface;
+				$message = "{$user->getNameAndLibraryLabel()}, has reached the maximum of <span class='badge'>{$maxHolds}</span> holds for their account.  You will need to cancel a hold before you can place a hold on a title with this account.";
+				$interface->append('maxHolds', $message);
+			}
+		}
 	}
 
 	function getPlaceHoldEditionsForm(){
@@ -227,7 +259,7 @@ class Record_AJAX extends AJAXHandler {
 		global $interface;
 		$recordId = $_REQUEST['id'];
 		if (strpos($recordId, ':') > 0){
-			list($source, $shortId) = explode(':', $recordId, 2);
+			[$source, $shortId] = explode(':', $recordId, 2);
 		}else{
 			$shortId = $recordId;
 		}
