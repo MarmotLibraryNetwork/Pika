@@ -1449,65 +1449,68 @@ class DBMaintenance extends Admin_Admin {
         return $files;
     }
     protected $logger;
-    private function splitLargeLists()
-    {
 
-            require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
-            require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+	private function splitLargeLists(){
 
-            $allList = new UserListEntry;
+		$this->logger = new Logger('List Splitter');
 
-            $allList->selectAdd();
-            $allList->selectAdd('listId, count(id) as num');
-            $allList->groupBy('listId');
-            $allList->having('count(id)>2000');
-            $i = 1;
-            $largeLists = array();
-           foreach($allList as $aList) {
-               $largeLists[$i] = array('id' => $aList->listId, 'num' => $aList->num);
-               $i++;
-           }
-            foreach ($largeLists as $largeList) {
-                global $logger;
+		require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
+		require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
 
-                $listId = $largeList['id'];
-                $this->logger = new Logger('List Splitter');
+		$allList = new UserListEntry;
 
-                $bigList = new UserList();
-                $bigList->id = $listId;
-                $bigList->find(true);
+		$allList->selectAdd();
+		$allList->selectAdd('listId, count(id) as num');
+		$allList->groupBy('listId');
+		$allList->having('count(id)>2000');
+		$allLists   = $allList->fetchAll();
+		$i          = 1;
+		$largeLists = [];
+		foreach ($allLists as $aList){
+			$largeLists[$i] = ['id' => $aList->listId, 'num' => $aList->num];
+			$i++;
+		}
+		foreach ($largeLists as $largeList){
 
-                $n = 2; #list iteration
-                $o = 2000; #max list size
-                $x = $largeList['num']; #large list size
-                $y = 1+$o; #recordOffset
-                $listItems = new UserListEntry;
-                $listItems->listId = $listId;
-                $allItems = $listItems->fetchAll();
-                while ($y <= $x) {
+			$listId = $largeList['id'];
 
-                    $newList = new UserList();
-                    $newList->user_id = $bigList->user_id;
-                    $newList->title = $bigList->title . " " . $n;
-                    $newList->public = $bigList->public;
-                    $newList->description = $bigList->description . " Your existing list ". $bigList->title ." has been separated into separate lists because it contained over 2000 entries. A single user list cannot have more than 2000 titles. ";
-                    $newList->defaultSort = $bigList->defaultSort;
-                    $newListId = $newList->insert();
-                    $this->logger->info('List Splitting Original list Id: '. $listId .', items: ' . $largeList['num'] . ' New List id: ' . $newListId);
-                    while ($y  >= $o * ($n -1) && ($y <= ($o * $n) || $y <= $x)) {
-                        if(!empty($allItems[$y]->listId)) {
-                            $allItems[$y]->listId = $newListId;
-                            $allItems[$y]->update();
-                        }
+			$bigList     = new UserList();
+			$bigList->id = $listId;
+			if ($bigList->find(true)){ //find check, because list entries may belong to a list that has been deleted
+				$n                 = 2;                  #list iteration
+				$o                 = 2000;               #max list size
+				$x                 = $largeList['num'];  #large list size
+				$y                 = 1 + $o;             #recordOffset
+				$listItems         = new UserListEntry;
+				$listItems->listId = $listId;
+				$allItems          = $listItems->fetchAll();
+				while ($y <= $x){
 
-                        $y++;
-                    }
+					$newList              = new UserList();
+					$newList->user_id     = $bigList->user_id;
+					$newList->title       = $bigList->title . " " . $n;
+					$newList->public      = $bigList->public;
+					$newList->description = $bigList->description . " Your existing list " . $bigList->title . " has been separated into separate lists because it contained over 2000 entries. A single user list cannot have more than 2000 titles. ";
+					$newList->defaultSort = $bigList->defaultSort;
+					$newListId            = $newList->insert();
+					$this->logger->info('List Splitting Original list Id: ' . $listId . ', items: ' . $largeList['num'] . ' New List id: ' . $newListId);
+					while ($y >= $o * ($n - 1) && ($y <= ($o * $n) || $y <= $x)){
+						if (!empty($allItems[$y]->listId)){
+							$allItems[$y]->listId = $newListId;
+							$allItems[$y]->update();
+						}
 
-                    $n++;
-                }
-            }
+						$y++;
+					}
 
-    }
+					$n++;
+				}
+			} else {
+				$this->logger->error("List $listId had more than 2000 entries but was not found in the UserList table.", $largeList);
+			}
+		}
+
+	}
 
 //	public function addTableListWidgetListsLinks() {
 //		set_time_limit(120);
