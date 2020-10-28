@@ -43,7 +43,7 @@ class Author_AJAX extends AJAXHandler {
 			&& (!$library || $library->showWikipediaContent == 1)
 		){
 			$authorName = is_array($_REQUEST['articleName']) ? reset($_REQUEST['articleName']) : $_REQUEST['articleName'];
-			$authorName = rtrim(trim($authorName), '.');
+			$authorName = trim($authorName);
 
 			//Check to see if we have an override
 			require_once ROOT_DIR . '/sys/LocalEnrichment/AuthorEnrichment.php';
@@ -58,6 +58,9 @@ class Author_AJAX extends AJAXHandler {
 					$authorName   = str_replace('https://en.wikipedia.org/wiki/', '', $wikipediaUrl);
 					$authorName   = urldecode($authorName);
 				}
+			} else{
+				// Leave the trailing . in place for the Author Enrichment lookup because the form suggests using the 100ad
+				$authorName = rtrim($authorName, '.');
 			}
 			if ($doLookup){
 				/** @var Memcache $memCache */
@@ -76,7 +79,7 @@ class Author_AJAX extends AJAXHandler {
 						'&titles=';
 					$authorInfo      = $wikipediaParser->getWikipediaPage($baseApiUrl, $author);
 					if (empty($authorInfo)){
-						if (preg_match('/(.*),\s\d+(-\d+)?$/si', $author, $matches)){
+						if (preg_match('/(.*),\s\d+-?(\d+)?$/si', $author, $matches)){
 							//Parse author string that end with year information
 							$author     = $matches[1];
 							$authorInfo = $wikipediaParser->getWikipediaPage($baseApiUrl, $author);
