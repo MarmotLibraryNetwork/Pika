@@ -34,7 +34,8 @@ class GoDeeperData{
 			return $validEnrichmentTypes;
 		}
 
-		$goDeeperOptions = $memCache->get("go_deeper_options_{$isbn}_{$upc}");
+		$memCacheKey     = "go_deeper_options_{$isbn}_{$upc}";
+		$goDeeperOptions = $memCache->get($memCacheKey);
 		if (!$goDeeperOptions || isset($_REQUEST['reload'])){
 
 			// Use Syndetics Go-Deeper Data.
@@ -118,7 +119,7 @@ class GoDeeperData{
 			}
 
 			// Use Content Cafe Data
-			elseif (!empty($configArray['Contentcafe']['pw']) && $configArray['Contentcafe']['pw'] != 'xxxxxx') {
+			elseif (!empty($configArray['Contentcafe']['pw'])) {
 				$response = self::getContentCafeData($isbn, $upc);
 				if ($response != false){
 					$availableContent = $response[0]->AvailableContent;
@@ -146,7 +147,7 @@ class GoDeeperData{
 			if (count($validEnrichmentTypes) > 0){
 				$goDeeperOptions['defaultOption'] = $defaultOption;
 			}
-			$memCache->set("go_deeper_options_{$isbn}_{$upc}", $goDeeperOptions, 0, $configArray['Caching']['go_deeper_options']);
+			$memCache->set($memCacheKey, $goDeeperOptions, 0, $configArray['Caching']['go_deeper_options']);
 		}
 
 		return $goDeeperOptions;
@@ -155,19 +156,19 @@ class GoDeeperData{
 	private static function getContentCafeData($isbn, $upc, $field = 'AvailableContent'){
 		global $configArray;
 
-		if (!empty($configArray['Contentcafe']['pw'])){
+		if (empty($configArray['Contentcafe']['pw'])){
+			return false;
+		}else{
 			$pw = $configArray['Contentcafe']['pw'];
-		}else{
-			return false;
 		}
-		if (!empty($configArray['Contentcafe']['id'])){
+		if (empty($configArray['Contentcafe']['id'])){
+			return false;
+		}else{
 			$key = $configArray['Contentcafe']['id'];
-		}else{
-			return false;
 		}
 
 
-		$url = $configArray['Contentcafe']['url'] ?? 'http://contentcafe2.btol.com';
+		$url = $configArray['Contentcafe']['url'] ?? 'https://contentcafe2.btol.com';
 		$url .= '/ContentCafe/ContentCafe.asmx?WSDL';
 
 		$SOAP_options = [
