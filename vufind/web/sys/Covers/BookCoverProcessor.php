@@ -113,19 +113,23 @@ class BookCoverProcessor {
 						return;
 					}
 				}elseif (stripos($source, 'Creative Bug') !== false) {
-                    if ($this->getCreativeBugCover($this->sourceAndId)) {
-                        return;
-                    }
-                }elseif (stripos($source, 'CreativeBug') !== false){
-				    if ($this->getCreativeBugCover($this->sourceAndId)){
-				        return;
-                    }
+					if ($this->getCreativeBugCover($this->sourceAndId)){
+						return;
+					}
+				}elseif (stripos($source, 'CreativeBug') !== false){
+					if ($this->getCreativeBugCover($this->sourceAndId)){
+						return;
+					}
+				}elseif (stripos($source, 'chnc') !== false){
+					if ($this->getCHNCCover($this->sourceAndId)){
+						return;
+					}
 				}elseif (stripos($source, 'rbdigital') !== false || stripos($source, 'zinio') !== false){
 					if ($this->getZinioCover($this->sourceAndId)){
 						return;
 					}
 					// Any Sideloaded Collection that has a cover in the 856 tag (and additional conditions)
-				}elseif ($source != 'ils'){
+				}elseif ($this->sourceAndId->getIndexingProfile()->recordDriver == 'SideLoadedRecord'){
 					if ($this->getSideLoadedCover($this->sourceAndId)){
 						return;
 					}
@@ -172,7 +176,7 @@ class BookCoverProcessor {
 	private function getSideLoadedCover($sourceAndId){
 //		require_once ROOT_DIR . '/RecordDrivers/SideLoadedRecord.php';
 		$driver = RecordDriverFactory::initRecordDriverById($sourceAndId);
-		if ($driver->isValid()){
+		if (!empty($driver) && $driver->isValid()){
 			try {
 				/** @var File_MARC_Data_Field[] $linkFields */
 				$fileMARCRecord = $driver->getMarcRecord();
@@ -351,23 +355,15 @@ class BookCoverProcessor {
 			}
 		}
 
-		$this->category = !empty($_GET['category']) ? strtolower(trim($_GET['category'])) : null;
-		$this->format   = !empty($_GET['format']) ? strtolower(trim($_GET['format'])) : null;
+		$this->category = empty($_GET['category']) ? null : strtolower(trim($_GET['category']));
+		$this->format   = empty($_GET['format']) ? null : strtolower(trim($_GET['format']));
 
-		if (isset($this->groupedWorkId)){
-			$this->cacheName = $this->groupedWorkId;
-		}elseif (isset($this->sourceAndId)){
-			$this->cacheName = $this->sourceAndId->getRecordId();
-		}elseif (!is_null($this->isn)){
-			$this->cacheName = $this->isn;
-		}elseif (!is_null($this->upc)){
-			$this->cacheName = $this->upc;
-		}elseif (!is_null($this->issn)){
-			$this->cacheName = $this->issn;
-		}else{
-			$this->error = "ISN, UPC, or id must be provided.";
+		$this->cacheName = $this->groupedWorkId ?? $this->sourceAndId->getSourceAndId() ?? $this->isn ?? $this->upc ?? $this->issn ?? false;
+		if (empty($this->cacheName)){
+			$this->error = 'ISN, UPC, or id must be provided.';
 			return false;
 		}
+
 		$this->cacheName = preg_replace('/[^a-zA-Z0-9_.-]/', '', $this->cacheName);
 		$this->cacheFile = $this->bookCoverPath . '/' . $this->size . '/' . $this->cacheName . '.png';
 		$this->logTime("load parameters");
@@ -704,6 +700,14 @@ class BookCoverProcessor {
 		}
 	}
 
+	private function getCHNCCover($sourceAndId){
+		if ($this->getSideLoadedCover($sourceAndId)){
+			return true;
+		}
+		$this->format = "Digital Newspaper";
+		return $this->getDefaultCover();
+	}
+
 	private function getGroupedWorkCover(){
 		if ($this->loadGroupedWork()){
 
@@ -761,15 +765,15 @@ class BookCoverProcessor {
 							if ($this->getEbraryCover($sourceAndId)){
 								return true;
 							}
-						}elseif (stripos($source, 'Creative Bug') !== false){
+						}elseif (stripos($source, 'Creative Bug') !== false || stripos($source, 'CreativeBug') !== false) {
 							if ($this->getCreativeBugCover($sourceAndId)){
 								return true;
 							}
-						}elseif (stripos($source, 'CreativeBug') !== false) {
-                            if ($this->getCreativeBugCover($sourceAndId)) {
-                                return true;
-                            }
-                        }elseif (stripos($source, 'rbdigital') !== false || stripos($source, 'zinio') !== false){
+						}elseif (stripos($source, 'chnc') !== false){
+							if ($this->getCHNCCover($this->sourceAndId)){
+								return true;
+							}
+						}elseif (stripos($source, 'rbdigital') !== false || stripos($source, 'zinio') !== false){
 							if ($this->getZinioCover($sourceAndId)){
 								return true;
 							}
@@ -980,7 +984,7 @@ class BookCoverProcessor {
 	 * @return bool
 	 */
 	private function getCoverFromProviderUsingRecordDriverData($driver){
-		//TODO: Would like to use the Grouped Work driver her also but get ISBN & UPC methods are named slightly differently, and may have different purposes than expected
+		//TODO: Would like to use the Grouped Work driver here also but get ISBN & UPC methods are named slightly differently, and may have different purposes than expected
 
 		// Attempt with any data already provided in the url
 		if ($this->getCoverFromProvider()){
