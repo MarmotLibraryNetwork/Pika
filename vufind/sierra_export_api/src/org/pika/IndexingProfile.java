@@ -75,7 +75,6 @@ public class IndexingProfile {
 	String           sierraRecordFixedFieldsTag;
 	char             bcode3Subfield;
 	char             materialTypeSubField;
-	String           materialTypesToIgnore;
 	char             sierraLanguageFixedField;
 	boolean          doAutomaticEcontentSuppression;
 	String           formatSource;
@@ -88,6 +87,7 @@ public class IndexingProfile {
 	String           formatDeterminationMethod;
 	String           filenamesToInclude;
 	String           groupingClass;
+	String           materialTypesToIgnore;
 	boolean          useICode2Suppression;
 	boolean          groupUnchangedFiles;
 	boolean          usingSierraAPIExtract        = true;
@@ -137,6 +137,10 @@ public class IndexingProfile {
 
 	private void setItemStatusSubfield(String itemStatusSubfield) {
 		this.itemStatusSubfield = getCharFromString(itemStatusSubfield);
+	}
+
+	private void setCollectionSubfield(String collectionSubfield) {
+		this.collectionSubfield = getCharFromString(collectionSubfield);
 	}
 
 	private void setDueDateSubfield(String dueDateSubfield) {
@@ -286,10 +290,12 @@ public class IndexingProfile {
 
 		// Fields for grouping
 		indexingProfile.formatDeterminationMethod         = indexingProfileRS.getString("formatDeterminationMethod");
+		indexingProfile.materialTypesToIgnore             = indexingProfileRS.getString("materialTypesToIgnore");
 		indexingProfile.filenamesToInclude                = indexingProfileRS.getString("filenamesToInclude");
-		indexingProfile.groupingClass                  = indexingProfileRS.getString("groupingClass");
-		indexingProfile.useICode2Suppression           = indexingProfileRS.getBoolean("useICode2Suppression");
+		indexingProfile.groupingClass                     = indexingProfileRS.getString("groupingClass");
+		indexingProfile.useICode2Suppression              = indexingProfileRS.getBoolean("useICode2Suppression");
 		indexingProfile.specifiedGroupingCategory         = indexingProfileRS.getString("specifiedGroupingCategory");
+		indexingProfile.setCollectionSubfield(indexingProfileRS.getString("collection"));
 		String locationsToSuppress = indexingProfileRS.getString("locationsToSuppress");
 		if (locationsToSuppress != null && locationsToSuppress.length() > 0) {
 			indexingProfile.locationsToSuppressPattern = Pattern.compile(locationsToSuppress);

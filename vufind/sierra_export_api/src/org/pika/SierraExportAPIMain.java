@@ -17,6 +17,7 @@ package org.pika;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import javax.net.ssl.HttpsURLConnection;
 import java.nio.charset.StandardCharsets;
 import java.sql.*;
 import java.text.SimpleDateFormat;
@@ -34,8 +35,6 @@ import org.apache.solr.client.solrj.impl.ConcurrentUpdateSolrServer;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import javax.net.ssl.HttpsURLConnection;
 
 import org.apache.commons.codec.binary.Base64;
 import org.marc4j.*;
@@ -1367,7 +1366,7 @@ public class SierraExportAPIMain {
 		final boolean grouped = (recordIdentifier != null) ? recordGroupingProcessor.processMarcRecord(marcRecord, true, recordIdentifier) : recordGroupingProcessor.processMarcRecord(marcRecord, true);
 		if (!grouped) {
 			logger.warn(identifier + " was not grouped");
-		} else {
+		} else if (logger.isDebugEnabled()) {
 			logger.debug("Finished record grouping for " + identifier);
 		}
 		return identifier;
