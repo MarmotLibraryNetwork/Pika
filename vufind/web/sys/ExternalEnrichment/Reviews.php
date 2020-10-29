@@ -73,7 +73,7 @@ class ExternalReviews {
 		}else{
 			// Fetch from provider
 			global $configArray;
-			if (isset($configArray['Content']['reviews'])){
+			if (!empty($configArray['Content']['reviews'])){
 				$providers = explode(',', $configArray['Content']['reviews']);
 				foreach ($providers as $provider){
 					$provider             = explode(':', trim($provider));
