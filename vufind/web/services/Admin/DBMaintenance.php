@@ -1525,4 +1525,35 @@ class DBMaintenance extends Admin_Admin {
 //		$this->db->query($sql);
 //	}
 
+	function setCoverSource(){
+		require_once ROOT_DIR . '/sys/Indexing/IndexingProfile.php';
+		/** @var $indexingProfiles IndexingProfile[] */
+		$indexingProfiles = IndexingProfile::getAllIndexingProfiles();
+
+		foreach ($indexingProfiles as $indexingProfile){
+			$name       = $indexingProfile->name;
+			$sourceName = $indexingProfile->sourceName;
+			if ($sourceName == "ils"){
+				$indexingProfile->coverSource = 'ILS MARC';
+			}elseif ($name == 'Colorado State Government Documents'){
+				$indexingProfile->coverSource = 'Colorado State Government Documents';
+			}elseif ($name == 'Classroom Video on Demand'){
+				$indexingProfile->coverSource = 'Classroom Video on Demand';
+			}elseif (stripos($name, 'films on demand') !== false){
+				$indexingProfile->coverSource = 'Films on Demand';
+			}elseif (stripos($name, 'proquest') !== false || stripos($name, 'ebrary') !== false){
+				$indexingProfile->coverSource = 'Proquest';
+			}elseif (stripos($name, 'Creative Bug') !== false || stripos($name, 'CreativeBug') !== false){
+				$indexingProfile->coverSource = 'CreativeBug';
+			}elseif (stripos($sourceName, 'chnc') !== false){
+				$indexingProfile->coverSource = 'CHNC';
+			}elseif (stripos($name, 'rbdigital') !== false || stripos($name, 'zinio') !== false){
+				$indexingProfile->coverSource = 'Zinio';
+			}else{
+				$indexingProfile->coverSource = 'SideLoad General';
+			}
+			$indexingProfile->update();
+		}
+	}
+
 }

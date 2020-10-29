@@ -88,57 +88,18 @@ class BookCoverProcessor {
 			// Record level cases
 
 			// Try special handling for sideloads
+			// Will exit if we find a cover
 			if (isset($this->sourceAndId)){
 				$source = $this->sourceAndId->getSource();
 				if ($source == 'overdrive'){
-					//			$this->initDatabaseConnection(); // bootstrap.php does this
-					//Will exit if we find a cover
 					if ($this->getOverDriveCover($this->sourceAndId)){
 						return;
 					}
-				}elseif ($source == 'Colorado State Government Documents'){
-					if ($this->getColoradoGovDocCover()){
+				}else{
+					$coverSource = $this->sourceAndId->getIndexingProfile()->coverSource;
+					if ($this->loadCoverBySpecifiedSource($coverSource)){
 						return;
-					}
-				}elseif ($source == 'Classroom Video on Demand'){
-					if ($this->getClassroomVideoOnDemandCover($this->sourceAndId)){
-						return;
-					}
-				}elseif (stripos($source, 'films on demand') !== false){
-					if ($this->getFilmsOnDemandCover($this->sourceAndId)){
-						return;
-					}
-				}elseif (stripos($source, 'proquest') !== false || stripos($source, 'ebrary') !== false){
-					if ($this->getEbraryCover($this->sourceAndId)){
-						return;
-					}
-				}elseif (stripos($source, 'Creative Bug') !== false) {
-					if ($this->getCreativeBugCover($this->sourceAndId)){
-						return;
-					}
-				}elseif (stripos($source, 'CreativeBug') !== false){
-					if ($this->getCreativeBugCover($this->sourceAndId)){
-						return;
-					}
-				}elseif (stripos($source, 'chnc') !== false){
-					if ($this->getCHNCCover($this->sourceAndId)){
-						return;
-					}
-				}elseif (stripos($source, 'rbdigital') !== false || stripos($source, 'zinio') !== false){
-					if ($this->getZinioCover($this->sourceAndId)){
-						return;
-					}
-					// Any Sideloaded Collection that has a cover in the 856 tag (and additional conditions)
-				}elseif ($this->sourceAndId->getIndexingProfile()->recordDriver == 'SideLoadedRecord'){
-					if ($this->getSideLoadedCover($this->sourceAndId)){
-						return;
-					}
-				}
-
-				// Now try some special cases with ILS records
-				// (Fetching a custom cover needs to take precedence over checking outside content providers)
-				if ($source == 'ils' && $this->getCoverFromMarc()){
-					return;
+					};
 				}
 			}
 
@@ -164,6 +125,60 @@ class BookCoverProcessor {
 		// Build default cover or use place holder image
 		$this->log("No image found, using die image", PEAR_LOG_INFO);
 		$this->getDefaultCover();
+	}
+
+	private function loadCoverBySpecifiedSource($coverSource){
+		switch ($coverSource){
+			case 'Zinio':
+				if ($this->getZinioCover($this->sourceAndId)){
+					return true;
+				}
+				break;
+			case 'Colorado State Government Documents' :
+				if ($this->getColoradoGovDocCover()){
+					return true;
+				}
+				break;
+			case 'Classroom Video on Demand':
+				if ($this->getClassroomVideoOnDemandCover($this->sourceAndId)){
+					return true;
+				}
+				break;
+			case 'Films on Demand':
+				if ($this->getFilmsOnDemandCover($this->sourceAndId)){
+					return true;
+				}
+				break;
+			case 'Proquest':
+				if ($this->getEbraryCover($this->sourceAndId)){
+					return true;
+				}
+				break;
+			case 'CreativeBug':
+				if ($this->getCreativeBugCover($this->sourceAndId)){
+					return true;
+				}
+				break;
+			case 'CHNC':
+				if ($this->getCHNCCover($this->sourceAndId)){
+					return true;
+				}
+				break;
+			case 'ILS MARC':
+				// Now try some special cases with ILS records
+				// (Fetching a custom cover needs to take precedence over checking outside content providers)
+				if ($this->getCoverFromMarc()){
+					return true;
+				}
+				break;
+			case 'SideLoad General':
+			default:
+				if ($this->getSideLoadedCover($this->sourceAndId)){
+					return true;
+				}
+		}
+		return false;
+
 	}
 
 	/**
@@ -202,10 +217,22 @@ class BookCoverProcessor {
 		$filename = "interface/themes/responsive/images/state_flag_of_colorado.png";
 		if ($this->processImageURL($filename)){
 			return true;
-		}else{
-			return false;
 		}
+		return false;
 	}
+
+	/**
+	 * @param SourceAndId $sourceAndId
+	 * @return bool
+	 */
+	private function getCHNCCover(SourceAndId $sourceAndId){
+		if ($this->getSideLoadedCover($sourceAndId)){
+			return true;
+		}
+		$this->format = "Digital Newspaper";
+		return $this->getDefaultCover();
+	}
+
 
 	/**
 	 * @param SourceAndId $sourceAndId
@@ -275,7 +302,7 @@ class BookCoverProcessor {
 	 *
 	 * @return bool
 	 */
-	private function getCreativeBugCover($sourceAndId){
+	private function getCreativeBugCover(SourceAndId $sourceAndId){
 		require_once ROOT_DIR . '/RecordDrivers/SideLoadedRecord.php';
 		$driver = new SideLoadedRecord($sourceAndId);
 		if ($driver->isValid()){
@@ -358,9 +385,9 @@ class BookCoverProcessor {
 		$this->category = empty($_GET['category']) ? null : strtolower(trim($_GET['category']));
 		$this->format   = empty($_GET['format']) ? null : strtolower(trim($_GET['format']));
 
-		$this->cacheName = $this->groupedWorkId ?? $this->sourceAndId->getSourceAndId() ?? $this->isn ?? $this->upc ?? $this->issn ?? false;
+		$this->cacheName = $this->groupedWorkId ?? $this->sourceAndId->getSourceAndId() /*?? $this->isn ?? $this->upc ?? $this->issn*/ ?? false;
 		if (empty($this->cacheName)){
-			$this->error = 'ISN, UPC, or id must be provided.';
+			$this->error = 'ISN, UPC, or ID must be provided.';
 			return false;
 		}
 
@@ -385,11 +412,11 @@ class BookCoverProcessor {
 		$this->log("Processing $url", PEAR_LOG_INFO);
 
 		$userAgent = empty($this->configArray['Catalog']['catalogUserAgent']) ? 'Pika' : $this->configArray['Catalog']['catalogUserAgent'];
-		$context   = stream_context_create(array(
-			'http' => array(
+		$context = stream_context_create([
+			'http' => [
 				'header' => "User-Agent: {$userAgent}\r\n",
-			),
-		));
+			],
+		]);
 
 		if ($image = @file_get_contents($url, false, $context)){
 			// Figure out file paths -- $tempFile will be used to store the downloaded
@@ -407,7 +434,7 @@ class BookCoverProcessor {
 				$this->error = "Unable to write to image directory $tempFile.";
 				return false;
 			}
-			list($width, $height, $type) = @getimagesize($tempFile);
+			[$width, $height, $type] = @getimagesize($tempFile);
 
 			// File too small -- delete it and report failure.
 			if ($width < 2 && $height < 2){
@@ -700,14 +727,6 @@ class BookCoverProcessor {
 		}
 	}
 
-	private function getCHNCCover($sourceAndId){
-		if ($this->getSideLoadedCover($sourceAndId)){
-			return true;
-		}
-		$this->format = "Digital Newspaper";
-		return $this->getDefaultCover();
-	}
-
 	private function getGroupedWorkCover(){
 		if ($this->loadGroupedWork()){
 
@@ -717,7 +736,8 @@ class BookCoverProcessor {
 				return true;
 			}
 
-			if($primaryIsbn = $this->groupedWork->getSolrField('primary_isbn')) {
+			if ($primaryIsbn = $this->groupedWork->getCleanISBN()) {
+				//This will be the novelist isbn if present, the primary isbn field in the index, or the first isbn from the isbns field in the index
 				$this->isn = $primaryIsbn;
 				if ($this->getCoverFromProvider()) {
 					return true;
@@ -737,64 +757,38 @@ class BookCoverProcessor {
 
 					// Check for a cached image for the related record
 					if (!$this->reload){
-						$fileToCheckFor = $this->bookCoverPath . '/' . $this->size . '/' . $sourceAndId->getRecordId() . '.png';
+						$fileToCheckFor = $this->bookCoverPath . '/' . $this->size . '/' .  preg_replace('/[^a-zA-Z0-9_.-]/', '',$sourceAndId->getSourceAndId()) . '.png';
 						if ($this->getCachedCover($fileToCheckFor)){
 							return true;
 						}
 					}
 
-					$source      = $sourceAndId->getSource();
-					if ($source != 'ils'){
-						if (strcasecmp($source, 'OverDrive') == 0){
-							if ($this->getOverDriveCover($sourceAndId)){
-								return true;
-							}
-						}elseif (strcasecmp($source, 'Colorado State Government Documents') == 0){
-							if ($this->getColoradoGovDocCover()){
-								return true;
-							}
-						}elseif (stripos($source, 'films on demand') !== false){
-							if ($this->getFilmsOnDemandCover($sourceAndId)){
-								return true;
-							}
-						}elseif (strcasecmp($source, 'Classroom Video on Demand') == 0){
-							if ($this->getClassroomVideoOnDemandCover($sourceAndId)){
-								return true;
-							}
-						}elseif (stripos($source, 'proquest') !== false || stripos($source, 'ebrary') !== false){
-							if ($this->getEbraryCover($sourceAndId)){
-								return true;
-							}
-						}elseif (stripos($source, 'Creative Bug') !== false || stripos($source, 'CreativeBug') !== false) {
-							if ($this->getCreativeBugCover($sourceAndId)){
-								return true;
-							}
-						}elseif (stripos($source, 'chnc') !== false){
-							if ($this->getCHNCCover($this->sourceAndId)){
-								return true;
-							}
-						}elseif (stripos($source, 'rbdigital') !== false || stripos($source, 'zinio') !== false){
-							if ($this->getZinioCover($sourceAndId)){
-								return true;
-							}
-						}else{
-							if ($this->getSideLoadedCover($sourceAndId)){
-								return true;
-							}
+					$source = $sourceAndId->getSource();
+					if ($source == 'overdrive'){
+						if ($this->getOverDriveCover($this->sourceAndId)){
+							return true;
 						}
 					}else{
-						/** @var MarcRecord $driver */
-						$driver = RecordDriverFactory::initRecordDriverById($sourceAndId, $this->groupedWork);
-						//First check to see if there is a specific record defined in an 856 etc.
-						if (method_exists($driver, 'getMarcRecord') && $this->getCoverFromMarc($driver->getMarcRecord())){
-							return true;
+						$coverSource = $sourceAndId->getIndexingProfile()->coverSource;
+						if ($coverSource == 'ILS MARC'){
+							/** @var MarcRecord $driver */
+							$driver = RecordDriverFactory::initRecordDriverById($sourceAndId, $this->groupedWork);
+							//First check to see if there is a specific record defined in an 856 etc.
+							if (method_exists($driver, 'getMarcRecord') && $this->getCoverFromMarc($driver->getMarcRecord())){
+								return true;
+							}else{
+								//Finally, check the ISBNs if we don't have an override
+								if ($this->getCoverFromProviderUsingRecordDriverData($driver)){
+									return true;
+								}
+							}
 						}else{
-							//Finally, check the ISBNs if we don't have an override
-							if ($this->getCoverFromProviderUsingRecordDriverData($driver)){
+							if ($this->loadCoverBySpecifiedSource($coverSource)){
 								return true;
 							}
 						}
 					}
+
 				}
 			}
 
@@ -869,7 +863,6 @@ class BookCoverProcessor {
 		$this->log("Looking for picture as part of 856 tag.", PEAR_LOG_INFO);
 
 		if ($marcRecord === null){
-//			$this->initDatabaseConnection(); //this is done in bootstrap.php
 			//Process the marc record
 			require_once ROOT_DIR . '/sys/MarcLoader.php';
 			if ($this->sourceAndId->getSource() != 'overdrive'){
@@ -927,11 +920,7 @@ class BookCoverProcessor {
 				//Check to see if this is a custom cover added in the record to use
 				if ($marcField->getSubfield('2')){
 					$customCoverCode = strtolower(trim($marcField->getSubfield('2')->getData()));
-					if (in_array($customCoverCode, array('pika', 'pikaimage', 'pika_image', 'image', 'vufind_image', 'vufindimage', 'vufind'))){
-						// We don't need to check *two* codes. One is really enough
-//						if ($marcField->getSubfield('3')){
-//							$customCoverCode2 = strtolower(trim($marcField->getSubfield('3')->getData()));
-//							if (in_array($customCoverCode2, array('cover image','coverimage', 'cover', 'image'))){
+					if (in_array($customCoverCode, ['pika', 'pikaimage', 'pika_image', 'image', 'vufind_image', 'vufindimage', 'vufind'])){
 						//Can use either subfield f or subfield u
 						if ($marcField->getSubfield('f')){
 							//Just references the file, add the original directory
@@ -947,8 +936,6 @@ class BookCoverProcessor {
 								return true;
 							}
 						}
-//							}
-//						}
 					}
 				}
 			}
@@ -1281,35 +1268,6 @@ class BookCoverProcessor {
 //			}
 //		}
 //		return false;
-//	}
-
-	// These two methods aren't currently needed because of initialization done in bootstap.php
-//	private function initDatabaseConnection(){
-//		// Setup Local Database Connection
-//		if (!defined('DB_DATAOBJECT_NO_OVERLOAD')){
-//			define('DB_DATAOBJECT_NO_OVERLOAD', 0);
-//		}
-//		$options =& PEAR_Singleton::getStaticProperty('DB_DataObject', 'options');
-//		$options = $this->configArray['Database'];
-//		$this->logTime("Connect to database");
-//		require_once ROOT_DIR . '/Drivers/marmot_inc/Library.php';
-//	}
-//
-//	private function initMemcache(){
-//		global $memCache;
-//		if (!isset($memCache)){
-//			// Set defaults if nothing set in config file.
-//			$host    = isset($this->configArray['Caching']['memcache_host']) ? $this->configArray['Caching']['memcache_host'] : 'localhost';
-//			$port    = isset($this->configArray['Caching']['memcache_port']) ? $this->configArray['Caching']['memcache_port'] : 11211;
-//			$timeout = isset($this->configArray['Caching']['memcache_connection_timeout']) ? $this->configArray['Caching']['memcache_connection_timeout'] : 1;
-//
-//			// Connect to Memcache:
-//			$memCache = new Memcache();
-//			if (!$memCache->pconnect($host, $port, $timeout)){
-//				PEAR_Singleton::raiseError(new PEAR_Error("Could not connect to Memcache (host = {$host}, port = {$port})."));
-//			}
-//			$this->logTime("Initialize Memcache");
-//		}
 //	}
 
 //	private function makeIsbn10And13(){
