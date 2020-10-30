@@ -34,7 +34,8 @@ class GoDeeperData{
 			return $validEnrichmentTypes;
 		}
 
-		$goDeeperOptions = $memCache->get("go_deeper_options_{$isbn}_{$upc}");
+		$memCacheKey     = "go_deeper_options_{$isbn}_{$upc}";
+		$goDeeperOptions = $memCache->get($memCacheKey);
 		if (!$goDeeperOptions || isset($_REQUEST['reload'])){
 
 			// Use Syndetics Go-Deeper Data.
@@ -118,7 +119,7 @@ class GoDeeperData{
 			}
 
 			// Use Content Cafe Data
-			elseif (!empty($configArray['Contentcafe']['pw']) && $configArray['Contentcafe']['pw'] != 'xxxxxx') {
+			elseif (!empty($configArray['Contentcafe']['pw'])) {
 				$response = self::getContentCafeData($isbn, $upc);
 				if ($response != false){
 					$availableContent = $response[0]->AvailableContent;
@@ -146,28 +147,28 @@ class GoDeeperData{
 			if (count($validEnrichmentTypes) > 0){
 				$goDeeperOptions['defaultOption'] = $defaultOption;
 			}
-			$memCache->set("go_deeper_options_{$isbn}_{$upc}", $goDeeperOptions, 0, $configArray['Caching']['go_deeper_options']);
+			$memCache->set($memCacheKey, $goDeeperOptions, 0, $configArray['Caching']['go_deeper_options']);
 		}
 
 		return $goDeeperOptions;
 	}
 
-	private function getContentCafeData($isbn, $upc, $field = 'AvailableContent'){
+	private static function getContentCafeData($isbn, $upc, $field = 'AvailableContent'){
 		global $configArray;
 
-		if (!empty($configArray['Contentcafe']['pw'])){
+		if (empty($configArray['Contentcafe']['pw'])){
+			return false;
+		}else{
 			$pw = $configArray['Contentcafe']['pw'];
-		}else{
-			return false;
 		}
-		if (!empty($configArray['Contentcafe']['id'])){
+		if (empty($configArray['Contentcafe']['id'])){
+			return false;
+		}else{
 			$key = $configArray['Contentcafe']['id'];
-		}else{
-			return false;
 		}
 
 
-		$url = $configArray['Contentcafe']['url'] ?? 'http://contentcafe2.btol.com';
+		$url = $configArray['Contentcafe']['url'] ?? 'https://contentcafe2.btol.com';
 		$url .= '/ContentCafe/ContentCafe.asmx?WSDL';
 
 		$SOAP_options = [
@@ -209,15 +210,15 @@ class GoDeeperData{
 	static function getSummary($isbn, $upc){
 		global $configArray;
 		$summaryData = [];
-		if (!empty($configArray['Syndetics']['key'])){
+		if (!empty($configArray['Syndetics']['key']) && !empty($configArray['Syndetics']['showSummary'])){
 			$summaryData = self::getSyndeticsSummary($isbn, $upc);
-		}elseif (!empty($configArray['Contentcafe']['pw'])){
+		}elseif (!empty($configArray['Contentcafe']['pw']) && !empty($configArray['Contentcafe']['showSummary'])){
 			$summaryData = self::getContentCafeSummary($isbn, $upc);
 		}
 		return $summaryData;
 	}
 
-	private function getContentCafeSummary($isbn, $upc){
+	private static function getContentCafeSummary($isbn, $upc){
 		global $configArray;
 		/** @var Memcache $memCache */
 		global $memCache;
@@ -249,7 +250,7 @@ class GoDeeperData{
 
 	}
 
-	private function getSyndeticsSummary($isbn, $upc){
+	private static function getSyndeticsSummary($isbn, $upc){
 		global $configArray;
 		/** @var Memcache $memCache */
 		global $memCache;
@@ -685,7 +686,7 @@ class GoDeeperData{
 		return $summaryData;
 	}
 
-	function getAVSummary($isbn, $upc){
+	static function getAVSummary($isbn, $upc){
 		global $configArray;
 		/** @var Memcache $memCache */
 		global $memCache;
