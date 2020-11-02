@@ -113,6 +113,7 @@ class MyAccount_MyList extends MyAccount {
 						$list->update();
 						break;
 					case 'deleteList':
+                        $list->removeAllListEntries();
 						$list->delete();
 						header("Location: /MyAccount/MyLists");
 						die();
