@@ -414,6 +414,29 @@ public class DatabaseCleanup implements IProcessHandler {
 			processLog.saveToDatabase(pikaConn, logger);
 		}
 
+		//Remove deleted reading history items if they are not currently checked out
+
+		try{
+			PreparedStatement 	readingHistoryToRemoveQuery	= pikaConn.prepareStatement("SELECT id from `user_reading_history_work` WHERE deleted = 1 AND checkInDate < now() - interval 1 year", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement 	removeReadingHistory 		= pikaConn.prepareStatement("DELETE from `user_reading_history_work` WHERE id = ?");
+			ResultSet 			readingHistoryToRemove		= readingHistoryToRemoveQuery.executeQuery();
+			int 				numDeletedRecords 			= 0;
+
+			while (readingHistoryToRemove.next())
+			{
+				removeReadingHistory.setLong(1, readingHistoryToRemove.getLong("id"));
+				removeReadingHistory.executeUpdate();
+				numDeletedRecords++;
+			}
+			processLog.addNote("Removed " + numDeletedRecords + " records that were marked as deleted");
+		}
+		catch(SQLException e){
+			processLog.incErrors();
+			processLog.addNote("Unable to delete reading history items "+ e.toString());
+			logger.error("Error deleting reading history items", e);
+			processLog.saveToDatabase(pikaConn, logger);
+		}
+
 	}
 
 }
