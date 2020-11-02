@@ -346,6 +346,191 @@ public class DatabaseCleanup implements IProcessHandler {
 		}
 	}
 
+	protected void cleanupILSExtractInfo(Connection pikaConn, Logger logger, CronProcessLogEntry processLog) {
+		//remove items from the ils_extract_info table when they were deleted over a year ago
+		try {
+			PreparedStatement removeIlsExtractInfo = pikaConn.prepareStatement("DELETE FROM ils_extract_info WHERE deleted < now() - interval 1 year");
+			removeIlsExtractInfo.executeUpdate();
+			processLog.addNote("outdated ILS extract info has been removed");
+		} catch (SQLException e) {
+			processLog.incErrors();
+			processLog.addNote("Unable to remove outdated ILS extract information " + e.toString());
+			logger.error("Error removing deleted ILS extract information", e);
+			processLog.saveToDatabase(pikaConn, logger);
+		}
+	}
+
+	protected void cleanupLogEntries(Connection pikaConn, Logger logger, CronProcessLogEntry processLog){
+		try{
+			PreparedStatement removeReindexLogEntries = pikaConn.prepareStatement("DELETE FROM `reindex_log` WHERE endTime < now() - interval 1 year");
+
+
+			removeReindexLogEntries.executeUpdate();
+		}
+		catch(SQLException e){
+			processLog.incErrors();
+			processLog.addNote("Unable to remove reindexing log entries " + e.toString());
+			logger.error("Error deleting old reindexing log entries", e);
+			processLog.saveToDatabase(pikaConn, logger);
+		}
+		try{
+			PreparedStatement removeSierraAPIExportLog = pikaConn.prepareStatement("DELETE FROM `sierra_api_export_log` WHERE lastUpdate < now() - interval 1 year ");
+			removeSierraAPIExportLog.executeUpdate();
+		}
+		catch(SQLException e){
+			processLog.incErrors();
+			processLog.addNote("Unable to remove old Sierra API Export Log items " + e.toString());
+			logger.error("Error deletin gold Sierra API Exprot Log Items", e);
+			processLog.saveToDatabase(pikaConn, logger);
+		}
+		try{
+			PreparedStatement removeCronLog = pikaConn.prepareStatement("DELETE FROM `cron_log` WHERE lastUpdate < now() - interval 1 year");
+			removeCronLog.executeUpdate();
+		}
+		catch(SQLException e){
+			processLog.incErrors();
+			processLog.addNote("Unable to remove old Cron Log items " + e.toString());
+			logger.error("Error deleting old Cron Log Items", e);
+			processLog.saveToDatabase(pikaConn, logger);
+		}
+		try{
+			PreparedStatement removeCronProcessLog = pikaConn.prepareStatement("DELETE FROM `cron_process_log` WHERE lastUpdate < now() - interval 1 year");
+			removeCronProcessLog.executeUpdate();
+
+		}
+		catch(SQLException e){
+			processLog.incErrors();
+			processLog.addNote("Unable to remove old Cron Process Log items " + e.toString());
+			logger.error("Error deleting old Cron Process Log Items", e);
+			processLog.saveToDatabase(pikaConn, logger);
+		}
+		try{
+			PreparedStatement removeRecordGroupingLog = pikaConn.prepareStatement("DELETE FROM `record_grouping_log` WHERE lastUpdate < now() - interval 1 year");
+			removeRecordGroupingLog.executeUpdate();
+		}
+		catch(SQLException e){
+			processLog.incErrors();
+			processLog.addNote("Unable to remove old record grouping log items " + e.toString());
+			logger.error("Error deleting old record grouping log Items", e);
+			processLog.saveToDatabase(pikaConn, logger);
+		}
+		try{
+			PreparedStatement removeHooplaExportLogs = pikaConn.prepareStatement("DELETE FROM `hoopla_export_log` WHERE lastUpdate < now() - interval 1 year ");
+			removeHooplaExportLogs.executeUpdate();
+		}
+		catch(SQLException e){
+			processLog.incErrors();
+			processLog.addNote("Unable to remove old hoopla export logs " + e.toString());
+			logger.error("Error deleting old hoopla export logs Items", e);
+			processLog.saveToDatabase(pikaConn, logger);
+		}
+	}
+	protected void cleanupEcontent(Connection econtentConn, Logger logger, CronProcessLogEntry processLog)
+	{
+		try{
+			PreparedStatement removeOverdriveExtractLogs = econtentConn.prepareStatement("DELETE FROM `overdrive_extract_log` WHERE lastUpdate < now() - interval 1 year");
+			removeOverdriveExtractLogs.executeUpdate();
+		}
+		catch(SQLException e)
+		{
+			processLog.incErrors();
+			processLog.addNote("Unable to remove old overdrive extract logs " + e.toString());
+			logger.error("Error deleting old overdrive extract logs", e);
+			processLog.saveToDatabase(econtentConn, logger);
+		}
+		try{
+			PreparedStatement 	removeOverdriveAPIProducts 					= econtentConn.prepareStatement("SELECT id from `overdrive_api_products` WHERE deleted = 1 AND dateDeleted < now() - interval 1 year", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement 	removeOverdriveAPIProductAvailability 		= econtentConn.prepareStatement("DELETE from `overdrive_api_product_availability` WHERE productId = ?");
+			PreparedStatement 	removeOverdriveAPIProductCreators			= econtentConn.prepareStatement("DELETE from `overdrive_api_product_creators` WHERE productId = ?");
+			PreparedStatement 	removeOverdriveAPIProductFormats			= econtentConn.prepareStatement("DELETE FROM `overdrive_api_product_formats` WHERE productId = ?");
+			PreparedStatement 	removeOverdriveAPIProductIdentifiers		= econtentConn.prepareStatement("DELETE FROM `overdrive_api_product_identifiers` WHERE productId = ?");
+			PreparedStatement 	removeOverdriveAPIProductLanguages			= econtentConn.prepareStatement("DELETE FROM `overdrive_api_product_languages_ref` WHERE productId = ?");
+			PreparedStatement 	removeOverdriveAPIProductMetadata			= econtentConn.prepareStatement("DELETE FROM `overdrive_api_product_metadata` WHERE productId = ?");
+			PreparedStatement 	removeOverdriveAPIProductSubjects			= econtentConn.prepareStatement("DELETE FROM `overdrive_api_product_subjects_ref` WHERE productId = ?");
+			PreparedStatement	removeOverdriveAPIProductItems				= econtentConn.prepareStatement("DELETE FROM `overdrive_api_products` WHERE id = ?");
+			ResultSet 			apiProduct 									= removeOverdriveAPIProducts.executeQuery();
+			int 				numDeletedRecords 							= 0;
+			while (apiProduct.next())
+			{
+				removeOverdriveAPIProductAvailability.setLong(1, apiProduct.getLong("id"));
+				removeOverdriveAPIProductCreators.setLong(1, apiProduct.getLong("id"));
+				removeOverdriveAPIProductFormats.setLong(1, apiProduct.getLong("id"));
+				removeOverdriveAPIProductIdentifiers.setLong(1, apiProduct.getLong("id"));
+				removeOverdriveAPIProductLanguages.setLong(1, apiProduct.getLong("id"));
+				removeOverdriveAPIProductMetadata.setLong(1, apiProduct.getLong("id"));
+				removeOverdriveAPIProductSubjects.setLong(1, apiProduct.getLong("id"));
+				removeOverdriveAPIProductItems.setLong(1, apiProduct.getLong("id"));
+				removeOverdriveAPIProductAvailability.executeUpdate();
+				removeOverdriveAPIProductCreators.executeUpdate();
+				removeOverdriveAPIProductFormats.executeUpdate();
+				removeOverdriveAPIProductIdentifiers.executeUpdate();
+				removeOverdriveAPIProductLanguages.executeUpdate();
+				removeOverdriveAPIProductMetadata.executeUpdate();
+				removeOverdriveAPIProductSubjects.executeUpdate();
+				removeOverdriveAPIProductItems.executeUpdate();
+				numDeletedRecords++;
+			}
+			processLog.addNote("Removed " + numDeletedRecords + " overdrive API Products that were marked as deleted");
+
+		}
+		catch(SQLException e){
+			processLog.incErrors();
+			processLog.addNote("Unable to remove deleted overdrive API products " + e.toString());
+			logger.error("Error deleting deleted overdrive API products", e);
+			processLog.saveToDatabase(econtentConn, logger);
+		}
+	}
+	protected void cleanupOfflineCircs(Connection pikaConn, Logger logger, CronProcessLogEntry processLog)
+	{
+		try{
+			PreparedStatement removeOfflineCircs = pikaConn.prepareStatement("DELETE FROM `offline_circulation` WHERE timeProcessed < now() - interval 1 year");
+			removeOfflineCircs.executeUpdate();
+		}
+		catch(SQLException e){
+			processLog.incErrors();
+			processLog.addNote("Unable to remove old offline circulation items " + e.toString());
+			logger.error("Error deleting old offline circulation Items", e);
+			processLog.saveToDatabase(pikaConn, logger);
+		}
+		try{
+			PreparedStatement removeOfflineHolds = pikaConn.prepareStatement("DELETE FROM `offline_hold` WHERE timeProcessed < now() - interval 1 year");
+			removeOfflineHolds.executeUpdate();
+		}
+		catch(SQLException e){
+			processLog.incErrors();
+			processLog.addNote("Unable to remove old offline hold items " + e.toString());
+			logger.error("Error deleting old offline hold Items", e);
+			processLog.saveToDatabase(pikaConn, logger);
+		}
+	}
+
+	protected void cleanupUserLists(Connection pikaConn, Logger logger, CronProcessLogEntry processLog)
+	{
+		try{
+			PreparedStatement removeOldLists = pikaConn.prepareStatement("DELETE FROM `user_list` WHERE deleted = 1 AND dateUpdated < now() - interval 1 year");
+			removeOldLists.executeUpdate();
+
+		}
+		catch(SQLException e)
+		{
+			processLog.incErrors();
+			processLog.addNote("Unable to remove outdated deleted lists " + e.toString());
+			logger.error("Error deleting outdated user lists", e);
+			processLog.saveToDatabase(pikaConn, logger);
+		}
+		try{
+			PreparedStatement removeDeletedListEntries = pikaConn.prepareStatement("DELETE FROM `user_list_entry` WHERE listId NOT IN (SELECT id from `user_list`)");
+			removeDeletedListEntries.executeUpdate();
+
+		}
+		catch(SQLException e)
+		{
+			processLog.incErrors();
+			processLog.addNote("Unable to remove orphaned list entries " + e.toString());
+			logger.error("Error deleting orphaned list entries", e);
+			processLog.saveToDatabase(pikaConn, logger);
+		}
+	}
 
 	protected void cleanupReadingHistory(Connection pikaConn, Logger logger, CronProcessLogEntry processLog) {
 		//Remove reading history entries that are duplicate based on being renewed
