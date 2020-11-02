@@ -324,6 +324,15 @@ function getIndexingUpdates(){
 			]
 		],
 
+			'indexing_profile_cover_source_settings_2020.07' => [
+			'title'       => 'Add cover source settings to indexing profile',
+			'description' => 'Set how the indexing profile should handle book cover images',
+			'sql'         => [
+				"ALTER TABLE indexing_profiles ADD COLUMN `coverSource` varchar(55) DEFAULT NULL",
+				'setCoverSource',
+			]
+		],
+
 	);
 }
 
@@ -522,8 +531,5 @@ function setupIndexingProfiles($update){
 			$inclusionRule->insert();
 		}
 	}
-
-	//Setup translation maps?
-
 
 }

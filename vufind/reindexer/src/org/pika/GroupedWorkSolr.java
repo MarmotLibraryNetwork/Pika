@@ -960,7 +960,7 @@ public class GroupedWorkSolr implements Cloneable {
 	}
 
 	private static Pattern removeBracketsPattern = Pattern.compile("\\[.*?\\]");
-	private static Pattern commonSubtitlePattern = Pattern.compile("(?i)((?:[(])?(?:a )?the graphic novel|graphic novel|audio cd|book club kit|large print(?:[)])?)$");
+	private static Pattern commonSubtitlePattern = Pattern.compile("(?i)((?:[(])?(?:a |the )?graphic novel|audio cd|book club kit|large print(?:[)])?)$");
 	private static Pattern punctuationPattern    = Pattern.compile("[.\\\\/()\\[\\]:;]");
 	private static Pattern multipleSpacesPattern = Pattern.compile("\\s{2,}");
 

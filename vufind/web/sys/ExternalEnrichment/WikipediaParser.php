@@ -246,8 +246,6 @@ class WikipediaParser {
 		//Clean up spaces within hrefs
 		$body = preg_replace_callback('/href="(.*?)"/si', [$this, 'fix_whitespace'], $body);
 
-		$body = str_replace('<br>', '<br/>', $body);
-
 		if (isset($imageUrl) && $imageUrl != false){
 			$info['image'] = $imageUrl;
 			if (isset($image_caption)){

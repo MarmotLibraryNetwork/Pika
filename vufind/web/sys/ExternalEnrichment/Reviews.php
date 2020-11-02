@@ -45,26 +45,35 @@ class ExternalReviews {
 	 */
 	public function __construct($isbn){
 		$this->isbn    = $isbn;
-		$this->results = array();
+		$this->results = [];
 		$this->logger  = new Logger(__CLASS__);
-
 
 		// We can't proceed without an ISBN:
 		if (empty($this->isbn)){
 			return;
 		}
 
-		/** @var Memcache $memCache */
-		global $memCache;
+		// Don't retrieve reviews if the library or location's settings have disabled use of Reviews
+		global $library;
+		if (isset($library) && ($library->showStandardReviews == 0)){
+			return;
+		}
+		global $locationSingleton;
+		$location = $locationSingleton->getActiveLocation();
+		if ($location != null && ($location->showStandardReviews == 0)){
+			return;
+		}
 
-		$memCacheKey = "reviews_{$isbn}";
+		/** @var Memcache $memCache */
+		global $memCache, $instanceName;
+		$memCacheKey = "{$instanceName}_reviews_{$isbn}";
 		$reviews     = $memCache->get($memCacheKey);
 		if ($reviews && !isset($_REQUEST['reload'])){
 			$this->results = $reviews;
 		}else{
 			// Fetch from provider
 			global $configArray;
-			if (isset($configArray['Content']['reviews'])){
+			if (!empty($configArray['Content']['reviews'])){
 				$providers = explode(',', $configArray['Content']['reviews']);
 				foreach ($providers as $provider){
 					$provider             = explode(':', trim($provider));
@@ -126,24 +135,8 @@ class ExternalReviews {
 	 */
 	private function syndetics($id)
 	{
-		global $library;
-		global $locationSingleton;
 		global $configArray;
 		global $timer;
-
-		$review = array();
-		$location = $locationSingleton->getActiveLocation();
-		if (isset($library) && $location != null){
-			if ($library->showStandardReviews == 0 || $location->showStandardReviews == 0){
-				return $review;
-			}
-		}else if ($location != null && ($location->showStandardReviews == 0)){
-			//return an empty review
-			return $review;
-		}else if (isset($library) && ($library->showStandardReviews == 0)){
-			//return an empty review
-			return $review;
-		}
 
 		//list of syndetic reviews
 		if (isset($configArray['SyndeticsReviews']['SyndeticsReviewsSources'])){
@@ -262,23 +255,10 @@ class ExternalReviews {
 	 * @return array
 	 */
 	private function contentCafe($key){
-		global $library;
-		global $locationSingleton;
 		global $configArray;
 
-		$location = $locationSingleton->getActiveLocation();
-		if (isset($library) && $location != null){
-			if ($library->showStandardReviews == 0 || $location->showStandardReviews == 0){
-				return null;
-			}
-		}elseif ($location != null && ($location->showStandardReviews == 0)){
-			return null;
-		}elseif (isset($library) && ($library->showStandardReviews == 0)){
-			return null;
-		}
-
 		$pw = $configArray['Contentcafe']['pw'];
-		if (!$key) {
+		if (!$key){
 			$key = $configArray['Contentcafe']['id'];
 		}
 
@@ -286,7 +266,7 @@ class ExternalReviews {
 		$url .= '/ContentCafe/ContentCafe.asmx?WSDL';
 
 		$SOAP_options = [
-//			'trace'        => 1, // turns on debugging features
+			//'trace'        => 1, // turns on debugging features
 			'features'     => SOAP_SINGLE_ELEMENT_ARRAYS, // sets how the soap responses will be handled
 			'soap_version' => SOAP_1_2
 		];
@@ -298,18 +278,18 @@ class ExternalReviews {
 			'content'  => 'ReviewDetail',
 		];
 
-		try{
+		try {
 			$response = $soapClient->Single($params);
 //			$request = $soapClient->__getLastRequest(); // for debugging
 
-			$review = array();
-			if ($response) {
-				if (!isset($response->ContentCafe->Error)) {
+			$review = [];
+			if ($response){
+				if (!isset($response->ContentCafe->Error)){
 					$i = 0;
-					if (isset($response->ContentCafe->RequestItems->RequestItem)) {
-						foreach ($response->ContentCafe->RequestItems->RequestItem as $requestItem) {
-							if (isset($requestItem->ReviewItems->ReviewItem)) { // if there are reviews available.
-								foreach ($requestItem->ReviewItems->ReviewItem as $reviewItem) {
+					if (isset($response->ContentCafe->RequestItems->RequestItem)){
+						foreach ($response->ContentCafe->RequestItems->RequestItem as $requestItem){
+							if (isset($requestItem->ReviewItems->ReviewItem)){ // if there are reviews available.
+								foreach ($requestItem->ReviewItems->ReviewItem as $reviewItem){
 									$review[$i]['Content'] = $reviewItem->Review;
 									$review[$i]['Source']  = $reviewItem->Publication->_;
 
@@ -323,20 +303,17 @@ class ExternalReviews {
 								}
 							}
 						}
-					} else {
-						global $logger;
-						$logger->log('Unexpected Content Cafe Response retrieving Reviews', PEAR_LOG_ERR);
+					}else{
+						$this->logger->error('Unexpected Content Cafe Response retrieving Reviews');
 
 					}
-				} else {
-					global $logger;
-					$logger->log('Content Cafe Error Response'. $response->ContentCafe->Error, PEAR_LOG_ERR);
+				}else{
+					$this->logger->error('Content Cafe Error Response ' . $response->ContentCafe->Error );
 				}
 			}
 
-		} catch (Exception $e) {
-			global $logger;
-			$logger->log('Failed ContentCafe SOAP Request : ' . $e->getMessage(), PEAR_LOG_ERR);
+		} catch (Exception $e){
+			$this->logger->error('Failed ContentCafe SOAP Request : ' . $e->getMessage());
 			return new PEAR_Error('Failed ContentCafe SOAP Request');
 		}
 		return $review;

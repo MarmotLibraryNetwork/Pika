@@ -30,6 +30,18 @@ require_once ROOT_DIR . '/sys/Indexing/TranslationMap.php';
 require_once ROOT_DIR . '/sys/Indexing/TimeToReshelve.php';
 require_once ROOT_DIR . '/sys/Extracting/SierraExportFieldMapping.php';
 class IndexingProfile extends DB_DataObject{
+	const COVER_SOURCES = [
+		'SideLoad General'                    => 'SideLoad General',
+		'ILS MARC'                            => 'ILS MARC',
+		'Zinio'                               => 'Zinio',
+		'Colorado State Government Documents' => 'Colorado State Government Documents',
+		'Classroom Video on Demand'           => 'Classroom Video on Demand',
+		'Films on Demand'                     => 'Films on Demand',
+		'Proquest'                            => 'Proquest',
+		'CreativeBug'                         => 'CreativeBug',
+		'CHNC'                                => 'CHNC',
+	];
+
 	public $__table = 'indexing_profiles';    // table name
 
 	public $id;
@@ -111,6 +123,7 @@ class IndexingProfile extends DB_DataObject{
 	public $sierraLanguageFixedField;
 	public $formatDeterminationMethod;
 	public $materialTypesToIgnore;
+	public $coverSource;
 
 	static function getObjectStructure(){
 		global $configArray;
@@ -141,13 +154,15 @@ class IndexingProfile extends DB_DataObject{
 						)),
 				)),
 
-			'DriverSection' => array('property'=>'DriverSection', 'type' => 'section', 'label' =>'Pika Driver Settings', 'hideInLists' => true,  'open' => true,
-			                                     'helpLink' => '', 'properties' => array(
-					'groupingClass' => array('property' => 'groupingClass', 'type' => 'text', 'label' => 'Grouping Class', 'maxLength' => 50, 'description' => 'The class to use while grouping the records', 'required' => true, 'default' => 'MarcRecordGrouper'),
-					'indexingClass' => array('property' => 'indexingClass', 'type' => 'text', 'label' => 'Indexing Class', 'maxLength' => 50, 'description' => 'The class to use while indexing the records', 'required' => true, 'default' => 'IlsRecord'),
-					'recordDriver'  => array('property' => 'recordDriver',  'type' => 'text', 'label' => 'Record Driver', 'maxLength' => 50, 'description' => 'The record driver to use while displaying information in Pika', 'required' => true, 'default' => 'MarcRecord'),
-					'patronDriver'  => array('property' => 'patronDriver',  'type' => 'text', 'label' => 'Patron Driver', 'maxLength' => 50, 'description' => 'The patron driver to use for ILS or eContent integration', /*'required' => true,*/ 'default' => 'DriverInterface'),
-				)),
+			'DriverSection' => ['property' => 'DriverSection', 'type' => 'section', 'label' => 'Pika Driver Settings', 'hideInLists' => true, 'open' => true,
+			                    'helpLink' => '', 'properties' => [
+					'groupingClass' => ['property' => 'groupingClass', 'type' => 'text', 'label' => 'Grouping Class', 'maxLength' => 50, 'description' => 'The class to use while grouping the records', 'required' => true, 'default' => 'MarcRecordGrouper'],
+					'indexingClass' => ['property' => 'indexingClass', 'type' => 'text', 'label' => 'Indexing Class', 'maxLength' => 50, 'description' => 'The class to use while indexing the records', 'required' => true, 'default' => 'IlsRecord'],
+					'recordDriver'  => ['property' => 'recordDriver', 'type' => 'text', 'label' => 'Record Driver', 'maxLength' => 50, 'description' => 'The record driver to use while displaying information in Pika', 'required' => true, 'default' => 'MarcRecord'],
+					'coverSource'   => ['property' => 'coverSource', 'type' => 'enum', 'label' => 'Cover Source',  'description' => 'Method to use to fetch cover images', 'required' => true, 'values' => self::COVER_SOURCES, 'default' => 'SideLoad General'],
+					'patronDriver'  => ['property' => 'patronDriver', 'type' => 'text', 'label' => 'Patron Driver', 'maxLength' => 50, 'description' => 'The patron driver to use for ILS or eContent integration', /*'required' => true,*/
+					                    'default'  => 'DriverInterface'],
+				]],
 			//TODO: refactor catalogDriver to circulationSystemDriver
 			//TODO: this would be the hook in to tie a indexing profile to eContent driver
 
