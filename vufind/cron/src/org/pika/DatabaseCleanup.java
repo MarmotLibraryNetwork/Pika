@@ -47,7 +47,11 @@ public class DatabaseCleanup implements IProcessHandler {
 		cleanupIndexingReports(pikaConn, logger, processLog);
 		removeOldMaterialsRequests(pikaConn, logger, processLog);
 		removeUserDataForDeletedUsers(pikaConn, logger, processLog);
-
+		cleanupILSExtractInfo(pikaConn, logger, processLog);
+		cleanupLogEntries(pikaConn, logger, processLog);
+		cleanupOfflineCircs(pikaConn, logger, processLog);
+		cleanupEcontent(econtentConn, logger, processLog);
+		cleanupUserLists(pikaConn, logger, processLog);
 		processLog.setFinished();
 		processLog.saveToDatabase(pikaConn, logger);
 	}
@@ -55,83 +59,83 @@ public class DatabaseCleanup implements IProcessHandler {
 	private void removeUserDataForDeletedUsers(Connection pikaConn, Logger logger, CronProcessLogEntry processLog) {
 		try {
 			int numUpdates = pikaConn.prepareStatement("DELETE FROM user_link WHERE primaryAccountId NOT IN (SELECT id FROM user)").executeUpdate();
-			if (numUpdates > 0){
+			if (numUpdates > 0) {
 				processLog.incUpdated();
 				processLog.addNote("Deleted " + numUpdates + " user links where the primary account does not exist");
 			}
 
 			numUpdates = pikaConn.prepareStatement("DELETE FROM user_link WHERE linkedAccountId NOT IN (SELECT id FROM user)").executeUpdate();
-			if (numUpdates > 0){
+			if (numUpdates > 0) {
 				processLog.incUpdated();
 				processLog.addNote("Deleted " + numUpdates + " user links where the linked account does not exist");
 			}
 
 			numUpdates = pikaConn.prepareStatement("DELETE FROM user_link_blocks WHERE primaryAccountId NOT IN (SELECT id FROM user)").executeUpdate();
-			if (numUpdates > 0){
+			if (numUpdates > 0) {
 				processLog.incUpdated();
 				processLog.addNote("Deleted " + numUpdates + " user link blocks where the primary account does not exist");
 			}
 
 			numUpdates = pikaConn.prepareStatement("DELETE FROM user_link_blocks WHERE blockedLinkAccountId NOT IN (SELECT id FROM user)").executeUpdate();
-			if (numUpdates > 0){
+			if (numUpdates > 0) {
 				processLog.incUpdated();
 				processLog.addNote("Deleted " + numUpdates + " user link blocks where the blocked account does not exist");
 			}
 
 			numUpdates = pikaConn.prepareStatement("DELETE FROM user_list WHERE public = 0 and user_id NOT IN (SELECT id FROM user)").executeUpdate();
-			if (numUpdates > 0){
+			if (numUpdates > 0) {
 				processLog.incUpdated();
 				processLog.addNote("Deleted " + numUpdates + " user_list where the user does not exist");
 			}
 
 			numUpdates = pikaConn.prepareStatement("DELETE FROM user_not_interested WHERE userId NOT IN (SELECT id FROM user)").executeUpdate();
-			if (numUpdates > 0){
+			if (numUpdates > 0) {
 				processLog.incUpdated();
 				processLog.addNote("Deleted " + numUpdates + " user_not_interested where the user does not exist");
 			}
 
 			numUpdates = pikaConn.prepareStatement("DELETE FROM user_reading_history_work WHERE userId NOT IN (SELECT id FROM user)").executeUpdate();
-			if (numUpdates > 0){
+			if (numUpdates > 0) {
 				processLog.incUpdated();
 				processLog.addNote("Deleted " + numUpdates + " user_reading_history_work where the user does not exist");
 			}
 
 			numUpdates = pikaConn.prepareStatement("DELETE FROM user_roles WHERE userId NOT IN (SELECT id FROM user)").executeUpdate();
-			if (numUpdates > 0){
+			if (numUpdates > 0) {
 				processLog.incUpdated();
 				processLog.addNote("Deleted " + numUpdates + " user_roles where the user does not exist");
 			}
 
 			numUpdates = pikaConn.prepareStatement("DELETE FROM search WHERE user_id NOT IN (SELECT id FROM user) and user_id != 0").executeUpdate();
-			if (numUpdates > 0){
+			if (numUpdates > 0) {
 				processLog.incUpdated();
 				processLog.addNote("Deleted " + numUpdates + " search where the user does not exist");
 			}
 
 			numUpdates = pikaConn.prepareStatement("DELETE FROM user_staff_settings WHERE userId NOT IN (SELECT id FROM user)").executeUpdate();
-			if (numUpdates > 0){
+			if (numUpdates > 0) {
 				processLog.incUpdated();
 				processLog.addNote("Deleted " + numUpdates + " user_staff_settings where the user does not exist");
 			}
 
 			numUpdates = pikaConn.prepareStatement("DELETE FROM user_tags WHERE userId NOT IN (SELECT id FROM user)").executeUpdate();
-			if (numUpdates > 0){
+			if (numUpdates > 0) {
 				processLog.incUpdated();
 				processLog.addNote("Deleted " + numUpdates + " user_tags where the user does not exist");
 			}
 
 			numUpdates = pikaConn.prepareStatement("DELETE FROM user_work_review WHERE userId NOT IN (SELECT id FROM user)").executeUpdate();
-			if (numUpdates > 0){
+			if (numUpdates > 0) {
 				processLog.incUpdated();
 				processLog.addNote("Deleted " + numUpdates + " user_work_review where the user does not exist");
 			}
 
 			numUpdates = pikaConn.prepareStatement("UPDATE browse_category SET userID = null WHERE userId NOT IN (SELECT id FROM user)").executeUpdate();
-			if (numUpdates > 0){
+			if (numUpdates > 0) {
 				processLog.incUpdated();
 				processLog.addNote("Deleted " + numUpdates + " browse categories where the user does not exist");
 			}
-		}catch (Exception e){
+		} catch (Exception e) {
 			processLog.incErrors();
 			processLog.addNote("Unable to cleanup user data for deleted users. " + e.toString());
 			logger.error("Error cleaning up user data for deleted users", e);
@@ -140,7 +144,7 @@ public class DatabaseCleanup implements IProcessHandler {
 	}
 
 	private void removeOldMaterialsRequests(Connection pikaConn, Logger logger, CronProcessLogEntry processLog) {
-		try{
+		try {
 			//Get a list of a libraries
 			PreparedStatement librariesListStmt = pikaConn.prepareStatement("SELECT libraryId, materialsRequestDaysToPreserve FROM library WHERE materialsRequestDaysToPreserve > 0");
 			PreparedStatement libraryLocationsStmt = pikaConn.prepareStatement("SELECT locationId FROM location WHERE libraryId = ?");
@@ -150,12 +154,12 @@ public class DatabaseCleanup implements IProcessHandler {
 
 			long numDeletions = 0;
 			//Loop through libraries
-			while (librariesListRS.next()){
+			while (librariesListRS.next()) {
 				//Get the number of days to preserve from the variables table
 				Long libraryId = librariesListRS.getLong("libraryId");
 				Long daysToPreserve = librariesListRS.getLong("materialsRequestDaysToPreserve");
 
-				if (daysToPreserve < 366){
+				if (daysToPreserve < 366) {
 					daysToPreserve = 366L;
 				}
 
@@ -164,8 +168,8 @@ public class DatabaseCleanup implements IProcessHandler {
 
 				ResultSet libraryLocationsRS = libraryLocationsStmt.executeQuery();
 				String libraryLocations = "";
-				while (libraryLocationsRS.next()){
-					if (libraryLocations.length() > 0){
+				while (libraryLocationsRS.next()) {
+					if (libraryLocations.length() > 0) {
 						libraryLocations += ", ";
 					}
 					libraryLocations += libraryLocationsRS.getString("locationId");
@@ -192,7 +196,7 @@ public class DatabaseCleanup implements IProcessHandler {
 			librariesListRS.close();
 			librariesListStmt.close();
 			processLog.addNote("Removed " + numDeletions + " old materials requests.");
-		}catch (SQLException e) {
+		} catch (SQLException e) {
 			processLog.incErrors();
 			processLog.addNote("Unable to remove old materials requests. " + e.toString());
 			logger.error("Error deleting long searches", e);
@@ -202,7 +206,7 @@ public class DatabaseCleanup implements IProcessHandler {
 
 	private void cleanupIndexingReports(Connection pikaConn, Logger logger, CronProcessLogEntry processLog) {
 		//Remove indexing reports
-		try{
+		try {
 			//Get the data directory where reports are stored
 			File dataDir = new File(PikaConfigIni.getIniValue("Reindex", "marcPath"));
 			dataDir = dataDir.getParentFile();
@@ -228,18 +232,18 @@ public class DatabaseCleanup implements IProcessHandler {
 
 			//Check to see if we should keep or delete the file
 			Pattern getDatePattern = Pattern.compile("(\\d{4}-\\d{2}-\\d{2})", Pattern.CANON_EQ);
-			for (File curFile : filesToCheck){
+			for (File curFile : filesToCheck) {
 				//Get the date from the file
 				Matcher fileMatcher = getDatePattern.matcher(curFile.getName());
 				if (fileMatcher.find()) {
 					String date = fileMatcher.group();
-					if (!validDatesToKeep.contains(date)){
+					if (!validDatesToKeep.contains(date)) {
 						curFile.delete();
 					}
 				}
 			}
 
-		} catch (Exception e){
+		} catch (Exception e) {
 			processLog.incErrors();
 			processLog.addNote("Error removing old indexing reports. " + e.toString());
 			logger.error("Error removing old indexing reports", e);
@@ -269,8 +273,8 @@ public class DatabaseCleanup implements IProcessHandler {
 	private void removeSpammySearches(Connection pikaConn, Logger logger, CronProcessLogEntry processLog) {
 		//Remove spammy searches
 		try (
-			PreparedStatement removeSearchStmt = pikaConn.prepareStatement("DELETE FROM search_stats_new WHERE phrase LIKE '%http:%' OR phrase LIKE '%https:%' OR phrase LIKE '%mailto:%'");
-		){
+				PreparedStatement removeSearchStmt = pikaConn.prepareStatement("DELETE FROM search_stats_new WHERE phrase LIKE '%http:%' OR phrase LIKE '%https:%' OR phrase LIKE '%mailto:%'");
+		) {
 			int rowsRemoved = removeSearchStmt.executeUpdate();
 
 			processLog.addNote("Removed " + rowsRemoved + " spammy searches");
@@ -297,11 +301,12 @@ public class DatabaseCleanup implements IProcessHandler {
 			long numBatches = (numSearches / batchSize) + 1;
 			processLog.addNote("Found " + numSearches + " expired searches that need to be removed.  Will process in " + numBatches + " batches");
 			processLog.saveToDatabase(pikaConn, logger);
-			for (int i = 0; i < numBatches; i++){				PreparedStatement searchesToRemove = pikaConn.prepareStatement("SELECT id FROM search WHERE created < (CURDATE() - INTERVAL 2 DAY) AND saved = 0 LIMIT 0, " + batchSize, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			for (int i = 0; i < numBatches; i++) {
+				PreparedStatement searchesToRemove = pikaConn.prepareStatement("SELECT id FROM search WHERE created < (CURDATE() - INTERVAL 2 DAY) AND saved = 0 LIMIT 0, " + batchSize, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 				PreparedStatement removeSearchStmt = pikaConn.prepareStatement("DELETE FROM search WHERE id = ?");
 
 				ResultSet searchesToRemoveRs = searchesToRemove.executeQuery();
-				while (searchesToRemoveRs.next()){
+				while (searchesToRemoveRs.next()) {
 					long curId = searchesToRemoveRs.getLong("id");
 					removeSearchStmt.setLong(1, curId);
 					rowsRemoved += removeSearchStmt.executeUpdate();
@@ -321,19 +326,19 @@ public class DatabaseCleanup implements IProcessHandler {
 
 	private void removeExpiredSessions(Connection pikaConn, Logger logger, CronProcessLogEntry processLog) {
 		//Remove expired sessions
-		try{
+		try {
 			//Make sure to normalize the time based to be milliseconds, not microseconds
-			long now                             = new Date().getTime() / 1000;
-			long defaultTimeout                  = PikaConfigIni.getLongIniValue("Session", "lifetime");
-			long earliestDefaultSessionToKeep    = now - defaultTimeout;
-			long rememberMeTimeout               = PikaConfigIni.getLongIniValue("Session", "rememberMeLifetime");
+			long now = new Date().getTime() / 1000;
+			long defaultTimeout = PikaConfigIni.getLongIniValue("Session", "lifetime");
+			long earliestDefaultSessionToKeep = now - defaultTimeout;
+			long rememberMeTimeout = PikaConfigIni.getLongIniValue("Session", "rememberMeLifetime");
 			long earliestRememberMeSessionToKeep = now - rememberMeTimeout;
-			long numStandardSessionsDeleted      = pikaConn.prepareStatement("DELETE FROM session WHERE last_used < " + earliestDefaultSessionToKeep + " and remember_me = 0").executeUpdate();
-			long numRememberMeSessionsDeleted    = pikaConn.prepareStatement("DELETE FROM session WHERE last_used < " + earliestRememberMeSessionToKeep + " and remember_me = 1").executeUpdate();
+			long numStandardSessionsDeleted = pikaConn.prepareStatement("DELETE FROM session WHERE last_used < " + earliestDefaultSessionToKeep + " and remember_me = 0").executeUpdate();
+			long numRememberMeSessionsDeleted = pikaConn.prepareStatement("DELETE FROM session WHERE last_used < " + earliestRememberMeSessionToKeep + " and remember_me = 1").executeUpdate();
 			processLog.addNote("Deleted " + numStandardSessionsDeleted + " expired Standard Sessions");
 			processLog.addNote("Deleted " + numRememberMeSessionsDeleted + " expired Remember Me Sessions");
 			processLog.saveToDatabase(pikaConn, logger);
-		}catch (SQLException e) {
+		} catch (SQLException e) {
 			processLog.incErrors();
 			processLog.addNote("Unable to delete expired sessions. " + e.toString());
 			logger.error("Error deleting expired sessions", e);
