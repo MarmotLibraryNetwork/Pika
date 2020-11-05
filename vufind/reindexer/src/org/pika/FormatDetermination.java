@@ -585,6 +585,11 @@ public class FormatDetermination {
 			printFormats.clear();
 			printFormats.add("Thesis");
 		}
+		if (printFormats.contains("Braille")){
+			printFormats.clear();
+			printFormats.add("Braille");
+			return;
+		}
 		if (printFormats.contains("Phonograph")){
 			printFormats.clear();
 			printFormats.add("Phonograph");
@@ -771,6 +776,8 @@ public class FormatDetermination {
 			titleMedium = titleMedium.toLowerCase();
 			if (titleMedium.contains("sound recording-cass")){
 				printFormats.add("SoundCassette");
+			}else if (titleMedium.contains("braille")){
+				printFormats.add("Braille");
 			}else if (titleMedium.contains("large print")){
 				printFormats.add("LargePrint");
 			}else if (titleMedium.contains("book club kit") || titleMedium.contains("bookclub kit")){
@@ -892,6 +899,8 @@ public class FormatDetermination {
 						String physicalDescriptionData = subfield.getData().toLowerCase();
 						if (physicalDescriptionData.contains("large type") || physicalDescriptionData.contains("large print")) {
 							result.add("LargePrint");
+						} else if (physicalDescriptionData.contains("braille")){
+							result.add("Braille");
 						} else if (find4KUltraBluRayPhrases(physicalDescriptionData)) {
 							result.add("4KUltraBlu-Ray");
 						} else if (physicalDescriptionData.contains("bluray") || physicalDescriptionData.contains("blu-ray")) {
