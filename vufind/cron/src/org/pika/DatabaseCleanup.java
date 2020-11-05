@@ -60,79 +60,79 @@ public class DatabaseCleanup implements IProcessHandler {
 		try {
 			int numUpdates = pikaConn.prepareStatement("DELETE FROM user_link WHERE primaryAccountId NOT IN (SELECT id FROM user)").executeUpdate();
 			if (numUpdates > 0) {
-				processLog.incUpdated();
+				processLog.addUpdates(numUpdates);
 				processLog.addNote("Deleted " + numUpdates + " user links where the primary account does not exist");
 			}
 
 			numUpdates = pikaConn.prepareStatement("DELETE FROM user_link WHERE linkedAccountId NOT IN (SELECT id FROM user)").executeUpdate();
 			if (numUpdates > 0) {
-				processLog.incUpdated();
+				processLog.addUpdates(numUpdates);
 				processLog.addNote("Deleted " + numUpdates + " user links where the linked account does not exist");
 			}
 
 			numUpdates = pikaConn.prepareStatement("DELETE FROM user_link_blocks WHERE primaryAccountId NOT IN (SELECT id FROM user)").executeUpdate();
 			if (numUpdates > 0) {
-				processLog.incUpdated();
+				processLog.addUpdates(numUpdates);
 				processLog.addNote("Deleted " + numUpdates + " user link blocks where the primary account does not exist");
 			}
 
 			numUpdates = pikaConn.prepareStatement("DELETE FROM user_link_blocks WHERE blockedLinkAccountId NOT IN (SELECT id FROM user)").executeUpdate();
 			if (numUpdates > 0) {
-				processLog.incUpdated();
+				processLog.addUpdates(numUpdates);
 				processLog.addNote("Deleted " + numUpdates + " user link blocks where the blocked account does not exist");
 			}
 
 			numUpdates = pikaConn.prepareStatement("DELETE FROM user_list WHERE public = 0 and user_id NOT IN (SELECT id FROM user)").executeUpdate();
 			if (numUpdates > 0) {
-				processLog.incUpdated();
+				processLog.addUpdates(numUpdates);
 				processLog.addNote("Deleted " + numUpdates + " user_list where the user does not exist");
 			}
 
 			numUpdates = pikaConn.prepareStatement("DELETE FROM user_not_interested WHERE userId NOT IN (SELECT id FROM user)").executeUpdate();
 			if (numUpdates > 0) {
-				processLog.incUpdated();
+				processLog.addUpdates(numUpdates);
 				processLog.addNote("Deleted " + numUpdates + " user_not_interested where the user does not exist");
 			}
 
 			numUpdates = pikaConn.prepareStatement("DELETE FROM user_reading_history_work WHERE userId NOT IN (SELECT id FROM user)").executeUpdate();
 			if (numUpdates > 0) {
-				processLog.incUpdated();
+				processLog.addUpdates(numUpdates);
 				processLog.addNote("Deleted " + numUpdates + " user_reading_history_work where the user does not exist");
 			}
 
 			numUpdates = pikaConn.prepareStatement("DELETE FROM user_roles WHERE userId NOT IN (SELECT id FROM user)").executeUpdate();
 			if (numUpdates > 0) {
-				processLog.incUpdated();
+				processLog.addUpdates(numUpdates);
 				processLog.addNote("Deleted " + numUpdates + " user_roles where the user does not exist");
 			}
 
 			numUpdates = pikaConn.prepareStatement("DELETE FROM search WHERE user_id NOT IN (SELECT id FROM user) and user_id != 0").executeUpdate();
 			if (numUpdates > 0) {
-				processLog.incUpdated();
+				processLog.addUpdates(numUpdates);
 				processLog.addNote("Deleted " + numUpdates + " search where the user does not exist");
 			}
 
 			numUpdates = pikaConn.prepareStatement("DELETE FROM user_staff_settings WHERE userId NOT IN (SELECT id FROM user)").executeUpdate();
 			if (numUpdates > 0) {
-				processLog.incUpdated();
+				processLog.addUpdates(numUpdates);
 				processLog.addNote("Deleted " + numUpdates + " user_staff_settings where the user does not exist");
 			}
 
 			numUpdates = pikaConn.prepareStatement("DELETE FROM user_tags WHERE userId NOT IN (SELECT id FROM user)").executeUpdate();
 			if (numUpdates > 0) {
-				processLog.incUpdated();
+				processLog.addUpdates(numUpdates);
 				processLog.addNote("Deleted " + numUpdates + " user_tags where the user does not exist");
 			}
 
 			numUpdates = pikaConn.prepareStatement("DELETE FROM user_work_review WHERE userId NOT IN (SELECT id FROM user)").executeUpdate();
 			if (numUpdates > 0) {
-				processLog.incUpdated();
+				processLog.addUpdates(numUpdates);
 				processLog.addNote("Deleted " + numUpdates + " user_work_review where the user does not exist");
 			}
 
 			numUpdates = pikaConn.prepareStatement("UPDATE browse_category SET userID = null WHERE userId NOT IN (SELECT id FROM user)").executeUpdate();
 			if (numUpdates > 0) {
-				processLog.incUpdated();
+				processLog.addUpdates(numUpdates);
 				processLog.addNote("Deleted " + numUpdates + " browse categories where the user does not exist");
 			}
 		} catch (Exception e) {
@@ -380,7 +380,7 @@ public class DatabaseCleanup implements IProcessHandler {
 		catch(SQLException e){
 			processLog.incErrors();
 			processLog.addNote("Unable to remove old Sierra API Export Log items " + e.toString());
-			logger.error("Error deletin gold Sierra API Exprot Log Items", e);
+			logger.error("Error deleting old Sierra API Export Log Items", e);
 			processLog.saveToDatabase(pikaConn, logger);
 		}
 		try{
@@ -425,6 +425,7 @@ public class DatabaseCleanup implements IProcessHandler {
 			processLog.saveToDatabase(pikaConn, logger);
 		}
 	}
+
 	protected void cleanupEcontent(Connection econtentConn, Logger logger, CronProcessLogEntry processLog)
 	{
 		try{
@@ -439,9 +440,9 @@ public class DatabaseCleanup implements IProcessHandler {
 			processLog.saveToDatabase(econtentConn, logger);
 		}
 		try{
-			PreparedStatement 	removeOverdriveAPIProducts 					= econtentConn.prepareStatement("SELECT id from `overdrive_api_products` WHERE deleted = 1 AND dateDeleted < now() - interval 1 year", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-			PreparedStatement 	removeOverdriveAPIProductAvailability 		= econtentConn.prepareStatement("DELETE from `overdrive_api_product_availability` WHERE productId = ?");
-			PreparedStatement 	removeOverdriveAPIProductCreators			= econtentConn.prepareStatement("DELETE from `overdrive_api_product_creators` WHERE productId = ?");
+			PreparedStatement 	removeOverdriveAPIProducts 					= econtentConn.prepareStatement("SELECT id FROM `overdrive_api_products` WHERE deleted = 1 AND dateDeleted < now() - interval 1 year", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement 	removeOverdriveAPIProductAvailability 		= econtentConn.prepareStatement("DELETE FROM `overdrive_api_product_availability` WHERE productId = ?");
+			PreparedStatement 	removeOverdriveAPIProductCreators			= econtentConn.prepareStatement("DELETE FROM `overdrive_api_product_creators` WHERE productId = ?");
 			PreparedStatement 	removeOverdriveAPIProductFormats			= econtentConn.prepareStatement("DELETE FROM `overdrive_api_product_formats` WHERE productId = ?");
 			PreparedStatement 	removeOverdriveAPIProductIdentifiers		= econtentConn.prepareStatement("DELETE FROM `overdrive_api_product_identifiers` WHERE productId = ?");
 			PreparedStatement 	removeOverdriveAPIProductLanguages			= econtentConn.prepareStatement("DELETE FROM `overdrive_api_product_languages_ref` WHERE productId = ?");
@@ -556,7 +557,7 @@ public class DatabaseCleanup implements IProcessHandler {
 				}*/
 				numDuplicateRecords++;
 			}
-			processLog.addNote("Removed " + numDuplicateRecords + " records that were duplicates (check 1)");
+			processLog.addNote("Removed " + numDuplicateRecords + " reading history entries that were duplicates (check 1)");
 
 			//Now look for additional duplicates where the check in date is within a week
 			//TODO: duplicates for entries *with out* grouped work Id
@@ -578,7 +579,7 @@ public class DatabaseCleanup implements IProcessHandler {
 				}*/
 				numDuplicateRecords++;
 			}
-			processLog.addNote("Removed " + numDuplicateRecords + " records that were duplicates (check 2)");
+			processLog.addNote("Removed " + numDuplicateRecords + " reading history entries that were duplicates (check 2)");
 		} catch (SQLException e) {
 			processLog.incErrors();
 			processLog.addNote("Unable to delete duplicate reading history entries. " + e.toString());
@@ -602,8 +603,8 @@ public class DatabaseCleanup implements IProcessHandler {
 		//Remove deleted reading history items if they are not currently checked out
 
 		try{
-			PreparedStatement 	readingHistoryToRemoveQuery	= pikaConn.prepareStatement("SELECT id from `user_reading_history_work` WHERE deleted = 1 AND checkInDate < now() - interval 1 year", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-			PreparedStatement 	removeReadingHistory 		= pikaConn.prepareStatement("DELETE from `user_reading_history_work` WHERE id = ?");
+			PreparedStatement 	readingHistoryToRemoveQuery	= pikaConn.prepareStatement("SELECT id FROM `user_reading_history_work` WHERE deleted = 1 AND checkInDate < now() - interval 1 year", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement 	removeReadingHistory 		= pikaConn.prepareStatement("DELETE FROM `user_reading_history_work` WHERE id = ?");
 			ResultSet 			readingHistoryToRemove		= readingHistoryToRemoveQuery.executeQuery();
 			int 				numDeletedRecords 			= 0;
 
