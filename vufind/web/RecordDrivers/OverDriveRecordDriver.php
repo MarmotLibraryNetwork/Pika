@@ -443,15 +443,22 @@ class OverDriveRecordDriver extends RecordInterface {
 				}elseif ($searchLibrary != null){
 					$includeSharedTitles = $searchLibrary->enableOverdriveCollection != 0;
 				}
-				$libraryScopingId = $this->getLibraryScopingId();
+				$pikaLibraryIdForOverDriveAdvantageAccount = $this->getLibraryIdForOverDriveAdvantageAccount();
 				if ($includeSharedTitles){
 					$sharedCollectionId = $searchLibrary->sharedOverdriveCollection;
-					$availability->whereAdd('libraryId = ' . $sharedCollectionId . ' OR libraryId = ' . $libraryScopingId);
+					if ($pikaLibraryIdForOverDriveAdvantageAccount){
+						// Shared collection and advantage collection
+						$availability->whereAdd('libraryId = ' . $sharedCollectionId . ' OR libraryId = ' . $pikaLibraryIdForOverDriveAdvantageAccount);
 				}else{
-					if ($libraryScopingId == -1){
-						return $this->availability;
+						// Just shared collection
+						$availability->whereAdd('libraryId = ' . $sharedCollectionId);
+					}
+				}else{
+					if ($pikaLibraryIdForOverDriveAdvantageAccount){
+						$availability->whereAdd('libraryId = ' . $pikaLibraryIdForOverDriveAdvantageAccount);
 					}else{
-						$availability->whereAdd('libraryId = ' . $libraryScopingId);
+						//Not including shared titles and no advantage account, so return empty availability info
+						return $this->availability;
 					}
 				}
 				$availability->find();
@@ -484,31 +491,36 @@ class OverDriveRecordDriver extends RecordInterface {
 		return $availability;
 	}
 
-	public function getLibraryScopingId(){
-		//For econtent, we need to be more specific when restricting copies
+	/**
+	 * Get the most appropriate library Id to use for looking up an Advantage Account's pika Library Id.
+	 * At this point, used only for calculating available copies counts
+	 * @return false|int libraryId for the appropriate OverDrive Advantage Account
+	 */
+	public function getLibraryIdForOverDriveAdvantageAccount(){
+		//For eContent, we need to be more specific when restricting copies
 		//since patrons can't use copies that are only available to other libraries.
-		$searchLibrary  = Library::getSearchLibrary();
-		$searchLocation = Location::getSearchLocation();
-		$activeLibrary  = Library::getActiveLibrary();
-		$activeLocation = Location::getActiveLocation();
-		$homeLibrary    = UserAccount::getUserHomeLibrary();
 
-		//Load the holding label for the branch where the user is physically.
+		$homeLibrary = UserAccount::getUserHomeLibrary();
 		if (!empty($homeLibrary)){
-			return $homeLibrary->includeOutOfSystemExternalLinks ? -1 : $homeLibrary->libraryId;
-		}elseif (!empty($activeLocation)){
-			$activeLibrary = Library::getLibraryForLocation($activeLocation->locationId);
-			return $activeLibrary->includeOutOfSystemExternalLinks ? -1 : $activeLibrary->libraryId;
-		}elseif (!empty($activeLibrary)){
-			return $activeLibrary->includeOutOfSystemExternalLinks ? -1 : $activeLibrary->libraryId;
-		}elseif (!empty($searchLocation)){
-			$searchLibrary = Library::getLibraryForLocation($searchLibrary->locationId);
-			return $searchLibrary->includeOutOfSystemExternalLinks ? -1 : $searchLocation->libraryId;
-		}elseif (!empty($searchLibrary)){
-			return $searchLibrary->includeOutOfSystemExternalLinks ? -1 : $searchLibrary->libraryId;
-		}else{
-			return -1;
+			return $homeLibrary->libraryId;
 		}
+		$activeLocation = Location::getActiveLocation();
+		if (!empty($activeLocation)){
+			return $activeLocation->libraryId;
+		}
+		$activeLibrary = Library::getActiveLibrary();
+		if (!empty($activeLibrary)){
+			return $activeLibrary->libraryId;
+		}
+		$searchLocation = Location::getSearchLocation();
+		if (!empty($searchLocation)){
+			return $searchLocation->libraryId;
+		}
+		$searchLibrary = Library::getSearchLibrary();
+		if (!empty($searchLibrary)){
+			return $searchLibrary->libraryId;
+		}
+		return false;
 	}
 
 	public function getDescriptionFast(){
