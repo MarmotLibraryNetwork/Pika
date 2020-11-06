@@ -127,10 +127,11 @@ class BookCoverProcessor {
 		$this->getDefaultCover();
 	}
 
-	private function loadCoverBySpecifiedSource($coverSource){
+	private function loadCoverBySpecifiedSource($coverSource, SourceAndId $sourceAndId = null){
+		$sourceAndId ??= $this->sourceAndId;
 		switch ($coverSource){
 			case 'Zinio':
-				if ($this->getZinioCover($this->sourceAndId)){
+				if ($this->getZinioCover($sourceAndId)){
 					return true;
 				}
 				break;
@@ -140,27 +141,27 @@ class BookCoverProcessor {
 				}
 				break;
 			case 'Classroom Video on Demand':
-				if ($this->getClassroomVideoOnDemandCover($this->sourceAndId)){
+				if ($this->getClassroomVideoOnDemandCover($sourceAndId)){
 					return true;
 				}
 				break;
 			case 'Films on Demand':
-				if ($this->getFilmsOnDemandCover($this->sourceAndId)){
+				if ($this->getFilmsOnDemandCover($sourceAndId)){
 					return true;
 				}
 				break;
 			case 'Proquest':
-				if ($this->getEbraryCover($this->sourceAndId)){
+				if ($this->getEbraryCover($sourceAndId)){
 					return true;
 				}
 				break;
 			case 'CreativeBug':
-				if ($this->getCreativeBugCover($this->sourceAndId)){
+				if ($this->getCreativeBugCover($sourceAndId)){
 					return true;
 				}
 				break;
 			case 'CHNC':
-				if ($this->getCHNCCover($this->sourceAndId)){
+				if ($this->getCHNCCover($sourceAndId)){
 					return true;
 				}
 				break;
@@ -173,7 +174,7 @@ class BookCoverProcessor {
 				break;
 			case 'SideLoad General':
 			default:
-				if ($this->getSideLoadedCover($this->sourceAndId)){
+				if ($this->getSideLoadedCover($sourceAndId)){
 					return true;
 				}
 		}
@@ -783,7 +784,7 @@ class BookCoverProcessor {
 								}
 							}
 						}else{
-							if ($this->loadCoverBySpecifiedSource($coverSource)){
+							if ($this->loadCoverBySpecifiedSource($coverSource, $sourceAndId)){
 								return true;
 							}
 						}
