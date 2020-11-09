@@ -366,9 +366,12 @@ public class DatabaseCleanup implements IProcessHandler {
 	protected void cleanupLogEntries(Connection pikaConn, Logger logger, CronProcessLogEntry processLog){
 		try{
 			PreparedStatement removeReindexLogEntries = pikaConn.prepareStatement("DELETE FROM `reindex_log` WHERE endTime < now() - interval 1 year");
-
-
-			removeReindexLogEntries.executeUpdate();
+			int updated = removeReindexLogEntries.executeUpdate();
+			if(updated > 0)
+			{
+				processLog.addUpdates(updated);
+				processLog.addNote("removed " + updated + " entries from the reindexing log");
+			}
 		}
 		catch(SQLException e){
 			processLog.incErrors();
@@ -378,7 +381,12 @@ public class DatabaseCleanup implements IProcessHandler {
 		}
 		try{
 			PreparedStatement removeSierraAPIExportLog = pikaConn.prepareStatement("DELETE FROM `sierra_api_export_log` WHERE lastUpdate < now() - interval 1 year ");
-			removeSierraAPIExportLog.executeUpdate();
+			int updated = removeSierraAPIExportLog.executeUpdate();
+			if(updated > 0)
+			{
+				processLog.addUpdates(updated);
+				processLog.addNote("removed " + updated + " entries from the sierra api export log");
+			}
 		}
 		catch(SQLException e){
 			processLog.incErrors();
@@ -398,7 +406,12 @@ public class DatabaseCleanup implements IProcessHandler {
 		}
 		try{
 			PreparedStatement removeCronProcessLog = pikaConn.prepareStatement("DELETE FROM `cron_process_log` WHERE lastUpdate < now() - interval 1 year");
-			removeCronProcessLog.executeUpdate();
+			int updated = removeCronProcessLog.executeUpdate();
+			if(updated > 0)
+			{
+				processLog.addUpdates(updated);
+				processLog.addNote("removed " + updated + " entries from the cron process log");
+			}
 
 		}
 		catch(SQLException e){
@@ -409,7 +422,12 @@ public class DatabaseCleanup implements IProcessHandler {
 		}
 		try{
 			PreparedStatement removeRecordGroupingLog = pikaConn.prepareStatement("DELETE FROM `record_grouping_log` WHERE lastUpdate < now() - interval 1 year");
-			removeRecordGroupingLog.executeUpdate();
+			int updated = removeRecordGroupingLog.executeUpdate();
+			if(updated > 0)
+			{
+				processLog.addUpdates(updated);
+				processLog.addNote("removed " + updated + " entries from the record grouping log");
+			}
 		}
 		catch(SQLException e){
 			processLog.incErrors();
@@ -419,7 +437,12 @@ public class DatabaseCleanup implements IProcessHandler {
 		}
 		try{
 			PreparedStatement removeHooplaExportLogs = pikaConn.prepareStatement("DELETE FROM `hoopla_export_log` WHERE lastUpdate < now() - interval 1 year ");
-			removeHooplaExportLogs.executeUpdate();
+			int updated = removeHooplaExportLogs.executeUpdate();
+			if(updated > 0)
+			{
+				processLog.addUpdates(updated);
+				processLog.addNote("removed " + updated + " entries from the hoopla export log");
+			}
 		}
 		catch(SQLException e){
 			processLog.incErrors();
@@ -433,7 +456,12 @@ public class DatabaseCleanup implements IProcessHandler {
 	{
 		try{
 			PreparedStatement removeOverdriveExtractLogs = econtentConn.prepareStatement("DELETE FROM `overdrive_extract_log` WHERE lastUpdate < now() - interval 1 year");
-			removeOverdriveExtractLogs.executeUpdate();
+			int updated = removeOverdriveExtractLogs.executeUpdate();
+			if(updated > 0)
+			{
+				processLog.addUpdates(updated);
+				processLog.addNote("removed " + updated + " entries from the overdrive extract log");
+			}
 		}
 		catch(SQLException e)
 		{
@@ -489,7 +517,12 @@ public class DatabaseCleanup implements IProcessHandler {
 	{
 		try{
 			PreparedStatement removeOfflineCircs = pikaConn.prepareStatement("DELETE FROM `offline_circulation` WHERE timeProcessed < now() - interval 1 year");
-			removeOfflineCircs.executeUpdate();
+			int updated = removeOfflineCircs.executeUpdate();
+			if(updated > 0)
+			{
+				processLog.addUpdates(updated);
+				processLog.addNote("removed " + updated + " entries from offline circulation");
+			}
 		}
 		catch(SQLException e){
 			processLog.incErrors();
@@ -499,7 +532,12 @@ public class DatabaseCleanup implements IProcessHandler {
 		}
 		try{
 			PreparedStatement removeOfflineHolds = pikaConn.prepareStatement("DELETE FROM `offline_hold` WHERE timeProcessed < now() - interval 1 year");
-			removeOfflineHolds.executeUpdate();
+			int updated = removeOfflineHolds.executeUpdate();
+			if(updated > 0)
+			{
+				processLog.addUpdates(updated);
+				processLog.addNote("removed " + updated + " offline holds");
+			}
 		}
 		catch(SQLException e){
 			processLog.incErrors();
