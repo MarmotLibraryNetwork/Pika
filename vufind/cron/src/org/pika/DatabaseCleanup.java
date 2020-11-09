@@ -350,8 +350,11 @@ public class DatabaseCleanup implements IProcessHandler {
 		//remove items from the ils_extract_info table when they were deleted over a year ago
 		try {
 			PreparedStatement removeIlsExtractInfo = pikaConn.prepareStatement("DELETE FROM ils_extract_info WHERE deleted < now() - interval 1 year");
-			removeIlsExtractInfo.executeUpdate();
-			processLog.addNote("outdated ILS extract info has been removed");
+			int numUpdates = removeIlsExtractInfo.executeUpdate();
+			if (numUpdates > 0) {
+				processLog.addUpdates(numUpdates);
+				processLog.addNote("removed " + numUpdates + " items from ILS Extract Info");
+			}
 		} catch (SQLException e) {
 			processLog.incErrors();
 			processLog.addNote("Unable to remove outdated ILS extract information " + e.toString());
