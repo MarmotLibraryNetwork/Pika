@@ -471,6 +471,7 @@ public class DatabaseCleanup implements IProcessHandler {
 				removeOverdriveAPIProductItems.executeUpdate();
 				numDeletedRecords++;
 			}
+			processLog.addUpdates(numDeletedRecords);
 			processLog.addNote("Removed " + numDeletedRecords + " overdrive API Products that were marked as deleted");
 
 		}
