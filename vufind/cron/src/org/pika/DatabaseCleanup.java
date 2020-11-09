@@ -550,7 +550,7 @@ public class DatabaseCleanup implements IProcessHandler {
 	protected void cleanupUserLists(Connection pikaConn, Logger logger, CronProcessLogEntry processLog)
 	{
 		try {
-			PreparedStatement removeOldListSelect = pikaConn.prepareStatement("SELECT FROM `user_list` WHERE deleted = 1 AND dateUpdated < now() - interval 1 year");
+			PreparedStatement removeOldListSelect = pikaConn.prepareStatement("SELECT id FROM `user_list` WHERE deleted = 1 AND dateUpdated < now() - interval 1 year");
 			PreparedStatement removeOldLists = pikaConn.prepareStatement("DELETE FROM `user_list` WHERE id = ?");
 			ResultSet removeOldListsRS = removeOldListSelect.executeQuery();
 			int removedItems = 0;
