@@ -1494,7 +1494,7 @@ class DBMaintenance extends Admin_Admin {
 					$newList->defaultSort = $bigList->defaultSort;
 					$newListId            = $newList->insert();
 					$this->logger->info('List Splitting Original list Id: ' . $listId . ', items: ' . $largeList['num'] . ' New List id: ' . $newListId);
-					while ($y >= $o * ($n - 1) && ($y <= ($o * $n) || $y <= $x)){
+					while ($y >= $o * ($n - 1) && ($y <= ($o * $n) && $y <= $x)){
 						if (!empty($allItems[$y]->listId)){
 							$allItems[$y]->listId = $newListId;
 							$allItems[$y]->update();
