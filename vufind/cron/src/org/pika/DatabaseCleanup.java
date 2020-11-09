@@ -549,10 +549,18 @@ public class DatabaseCleanup implements IProcessHandler {
 
 	protected void cleanupUserLists(Connection pikaConn, Logger logger, CronProcessLogEntry processLog)
 	{
-		try{
-			PreparedStatement removeOldLists = pikaConn.prepareStatement("DELETE FROM `user_list` WHERE deleted = 1 AND dateUpdated < now() - interval 1 year");
-			removeOldLists.executeUpdate();
-
+		try {
+			PreparedStatement removeOldListSelect = pikaConn.prepareStatement("SELECT FROM `user_list` WHERE deleted = 1 AND dateUpdated < now() - interval 1 year");
+			PreparedStatement removeOldLists = pikaConn.prepareStatement("DELETE FROM `user_list` WHERE id = ?");
+			ResultSet removeOldListsRS = removeOldListSelect.executeQuery();
+			int removedItems = 0;
+			while (removeOldListsRS.next()) {
+				removeOldLists.setLong(1, removeOldListsRS.getLong("id"));
+				removeOldLists.executeUpdate();
+				removedItems++;
+			}
+			processLog.addUpdates(removedItems);
+			processLog.addNote("Removed " + removedItems + " deleted lists");
 		}
 		catch(SQLException e)
 		{
@@ -561,10 +569,19 @@ public class DatabaseCleanup implements IProcessHandler {
 			logger.error("Error deleting outdated user lists", e);
 			processLog.saveToDatabase(pikaConn, logger);
 		}
-		try{
-			PreparedStatement removeDeletedListEntries = pikaConn.prepareStatement("DELETE FROM `user_list_entry` WHERE listId NOT IN (SELECT id from `user_list`)");
-			removeDeletedListEntries.executeUpdate();
+		try {
 
+			PreparedStatement listEntriesToClean = pikaConn.prepareStatement("SELECT id FROM `user_list_entry` WHERE listId NOT IN (SELECT id from `user_list`)");
+			PreparedStatement removeDeletedListEntries = pikaConn.prepareStatement("DELETE FROM `user_list_entry` WHERE id = ?");
+			ResultSet cleanListSelect = listEntriesToClean.executeQuery();
+			int 	numDeletedRecords = 0;
+			while (cleanListSelect.next()) {
+				removeDeletedListEntries.setLong(1, cleanListSelect.getLong("id"));
+				removeDeletedListEntries.executeUpdate();
+				numDeletedRecords++;
+			}
+			processLog.addUpdates(numDeletedRecords);
+			processLog.addNote("Removed " + numDeletedRecords + " deleted list entries");
 		}
 		catch(SQLException e)
 		{
