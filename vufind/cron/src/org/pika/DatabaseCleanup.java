@@ -516,7 +516,7 @@ public class DatabaseCleanup implements IProcessHandler {
 	protected void cleanupOfflineCircs(Connection pikaConn, Logger logger, CronProcessLogEntry processLog)
 	{
 		try{
-			PreparedStatement removeOfflineCircs = pikaConn.prepareStatement("DELETE FROM `offline_circulation` WHERE timeProcessed < now() - interval 1 year");
+			PreparedStatement removeOfflineCircs = pikaConn.prepareStatement("DELETE FROM `offline_circulation` WHERE datediff(now(), from_unixtime(timeProcessed)) > 365");
 			int updated = removeOfflineCircs.executeUpdate();
 			if(updated > 0)
 			{
@@ -531,7 +531,7 @@ public class DatabaseCleanup implements IProcessHandler {
 			processLog.saveToDatabase(pikaConn, logger);
 		}
 		try{
-			PreparedStatement removeOfflineHolds = pikaConn.prepareStatement("DELETE FROM `offline_hold` WHERE timeProcessed < now() - interval 1 year");
+			PreparedStatement removeOfflineHolds = pikaConn.prepareStatement("DELETE FROM `offline_hold` WHERE datediff(now(), from_unixtime(timeProcessed)) > 365");
 			int updated = removeOfflineHolds.executeUpdate();
 			if(updated > 0)
 			{
