@@ -471,7 +471,7 @@ public class DatabaseCleanup implements IProcessHandler {
 			processLog.saveToDatabase(econtentConn, logger);
 		}
 		try{
-			PreparedStatement 	removeOverdriveAPIProducts 					= econtentConn.prepareStatement("SELECT id FROM `overdrive_api_products` WHERE deleted = 1 AND dateDeleted < now() - interval 1 year", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement 	removeOverdriveAPIProducts 					= econtentConn.prepareStatement("SELECT id FROM `overdrive_api_products` WHERE deleted = 1 AND datediff(now(), from_unixtime(dateDeleted)) > 365", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			PreparedStatement 	removeOverdriveAPIProductAvailability 		= econtentConn.prepareStatement("DELETE FROM `overdrive_api_product_availability` WHERE productId = ?");
 			PreparedStatement 	removeOverdriveAPIProductCreators			= econtentConn.prepareStatement("DELETE FROM `overdrive_api_product_creators` WHERE productId = ?");
 			PreparedStatement 	removeOverdriveAPIProductFormats			= econtentConn.prepareStatement("DELETE FROM `overdrive_api_product_formats` WHERE productId = ?");
