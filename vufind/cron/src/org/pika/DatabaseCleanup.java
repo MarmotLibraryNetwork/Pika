@@ -349,7 +349,7 @@ public class DatabaseCleanup implements IProcessHandler {
 	protected void cleanupILSExtractInfo(Connection pikaConn, Logger logger, CronProcessLogEntry processLog) {
 		//remove items from the ils_extract_info table when they were deleted over a year ago
 		try {
-			PreparedStatement removeIlsExtractInfo = pikaConn.prepareStatement("DELETE FROM ils_extract_info WHERE deleted < now() - interval 1 year");
+			PreparedStatement removeIlsExtractInfo = pikaConn.prepareStatement("DELETE FROM ils_extract_info WHERE datediff(now(), from_unixtime(deleted)) > 365");
 			int numUpdates = removeIlsExtractInfo.executeUpdate();
 			if (numUpdates > 0) {
 				processLog.addUpdates(numUpdates);
@@ -365,7 +365,7 @@ public class DatabaseCleanup implements IProcessHandler {
 
 	protected void cleanupLogEntries(Connection pikaConn, Logger logger, CronProcessLogEntry processLog){
 		try{
-			PreparedStatement removeReindexLogEntries = pikaConn.prepareStatement("DELETE FROM `reindex_log` WHERE endTime < now() - interval 1 year");
+			PreparedStatement removeReindexLogEntries = pikaConn.prepareStatement("DELETE FROM `reindex_log` WHERE datediff(now(), from_unixtime(startTime)) > 365");
 			int updated = removeReindexLogEntries.executeUpdate();
 			if(updated > 0)
 			{
@@ -380,7 +380,7 @@ public class DatabaseCleanup implements IProcessHandler {
 			processLog.saveToDatabase(pikaConn, logger);
 		}
 		try{
-			PreparedStatement removeSierraAPIExportLog = pikaConn.prepareStatement("DELETE FROM `sierra_api_export_log` WHERE lastUpdate < now() - interval 1 year ");
+			PreparedStatement removeSierraAPIExportLog = pikaConn.prepareStatement("DELETE FROM `sierra_api_export_log` WHERE datediff(now(), from_unixtime(startTime)) > 365");
 			int updated = removeSierraAPIExportLog.executeUpdate();
 			if(updated > 0)
 			{
@@ -395,7 +395,7 @@ public class DatabaseCleanup implements IProcessHandler {
 			processLog.saveToDatabase(pikaConn, logger);
 		}
 		try{
-			PreparedStatement removeCronLog = pikaConn.prepareStatement("DELETE FROM `cron_log` WHERE lastUpdate < now() - interval 1 year");
+			PreparedStatement removeCronLog = pikaConn.prepareStatement("DELETE FROM `cron_log` WHERE datediff(now(), from_unixtime(startTime)) > 365");
 			removeCronLog.executeUpdate();
 		}
 		catch(SQLException e){
@@ -405,7 +405,7 @@ public class DatabaseCleanup implements IProcessHandler {
 			processLog.saveToDatabase(pikaConn, logger);
 		}
 		try{
-			PreparedStatement removeCronProcessLog = pikaConn.prepareStatement("DELETE FROM `cron_process_log` WHERE lastUpdate < now() - interval 1 year");
+			PreparedStatement removeCronProcessLog = pikaConn.prepareStatement("DELETE FROM `cron_process_log` WHERE datediff(now(), from_unixtime(startTime)) > 365");
 			int updated = removeCronProcessLog.executeUpdate();
 			if(updated > 0)
 			{
@@ -421,7 +421,7 @@ public class DatabaseCleanup implements IProcessHandler {
 			processLog.saveToDatabase(pikaConn, logger);
 		}
 		try{
-			PreparedStatement removeRecordGroupingLog = pikaConn.prepareStatement("DELETE FROM `record_grouping_log` WHERE lastUpdate < now() - interval 1 year");
+			PreparedStatement removeRecordGroupingLog = pikaConn.prepareStatement("DELETE FROM `record_grouping_log` WHERE datediff(now(), from_unixtime(startTime)) > 365");
 			int updated = removeRecordGroupingLog.executeUpdate();
 			if(updated > 0)
 			{
@@ -436,7 +436,7 @@ public class DatabaseCleanup implements IProcessHandler {
 			processLog.saveToDatabase(pikaConn, logger);
 		}
 		try{
-			PreparedStatement removeHooplaExportLogs = pikaConn.prepareStatement("DELETE FROM `hoopla_export_log` WHERE lastUpdate < now() - interval 1 year ");
+			PreparedStatement removeHooplaExportLogs = pikaConn.prepareStatement("DELETE FROM `hoopla_export_log` WHERE datediff(now(), from_unixtime(startTime)) > 365");
 			int updated = removeHooplaExportLogs.executeUpdate();
 			if(updated > 0)
 			{
@@ -455,7 +455,7 @@ public class DatabaseCleanup implements IProcessHandler {
 	protected void cleanupEcontent(Connection econtentConn, Logger logger, CronProcessLogEntry processLog)
 	{
 		try{
-			PreparedStatement removeOverdriveExtractLogs = econtentConn.prepareStatement("DELETE FROM `overdrive_extract_log` WHERE lastUpdate < now() - interval 1 year");
+			PreparedStatement removeOverdriveExtractLogs = econtentConn.prepareStatement("DELETE FROM `overdrive_extract_log` WHERE datediff(now(), from_unixtime(startTime)) > 365");
 			int updated = removeOverdriveExtractLogs.executeUpdate();
 			if(updated > 0)
 			{
