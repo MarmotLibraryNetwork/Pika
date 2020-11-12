@@ -662,7 +662,7 @@ public class DatabaseCleanup implements IProcessHandler {
 		//Remove deleted reading history items if they are not currently checked out
 
 		try{
-			PreparedStatement 	readingHistoryToRemoveQuery	= pikaConn.prepareStatement("SELECT id FROM `user_reading_history_work` WHERE deleted = 1 AND checkInDate < now() - interval 1 year", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement 	readingHistoryToRemoveQuery	= pikaConn.prepareStatement("SELECT id FROM `user_reading_history_work` WHERE datediff(now(), from_unixtime(startTime)) > 365", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			PreparedStatement 	removeReadingHistory 		= pikaConn.prepareStatement("DELETE FROM `user_reading_history_work` WHERE id = ?");
 			ResultSet 			readingHistoryToRemove		= readingHistoryToRemoveQuery.executeQuery();
 			int 				numDeletedRecords 			= 0;
