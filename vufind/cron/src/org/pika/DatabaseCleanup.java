@@ -396,7 +396,12 @@ public class DatabaseCleanup implements IProcessHandler {
 		}
 		try{
 			PreparedStatement removeCronLog = pikaConn.prepareStatement("DELETE FROM `cron_log` WHERE datediff(now(), from_unixtime(startTime)) > 365");
-			removeCronLog.executeUpdate();
+			int updated = removeCronLog.executeUpdate();
+			if(updated > 0)
+			{
+				processLog.addUpdates(updated);
+				processLog.addNote("removed " + updated + " entries from the cron log");
+			}
 		}
 		catch(SQLException e){
 			processLog.incErrors();
@@ -471,17 +476,17 @@ public class DatabaseCleanup implements IProcessHandler {
 			processLog.saveToDatabase(econtentConn, logger);
 		}
 		try{
-			PreparedStatement 	removeOverdriveAPIProducts 					= econtentConn.prepareStatement("SELECT id FROM `overdrive_api_products` WHERE deleted = 1 AND datediff(now(), from_unixtime(dateDeleted)) > 365", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-			PreparedStatement 	removeOverdriveAPIProductAvailability 		= econtentConn.prepareStatement("DELETE FROM `overdrive_api_product_availability` WHERE productId = ?");
-			PreparedStatement 	removeOverdriveAPIProductCreators			= econtentConn.prepareStatement("DELETE FROM `overdrive_api_product_creators` WHERE productId = ?");
-			PreparedStatement 	removeOverdriveAPIProductFormats			= econtentConn.prepareStatement("DELETE FROM `overdrive_api_product_formats` WHERE productId = ?");
-			PreparedStatement 	removeOverdriveAPIProductIdentifiers		= econtentConn.prepareStatement("DELETE FROM `overdrive_api_product_identifiers` WHERE productId = ?");
-			PreparedStatement 	removeOverdriveAPIProductLanguages			= econtentConn.prepareStatement("DELETE FROM `overdrive_api_product_languages_ref` WHERE productId = ?");
-			PreparedStatement 	removeOverdriveAPIProductMetadata			= econtentConn.prepareStatement("DELETE FROM `overdrive_api_product_metadata` WHERE productId = ?");
-			PreparedStatement 	removeOverdriveAPIProductSubjects			= econtentConn.prepareStatement("DELETE FROM `overdrive_api_product_subjects_ref` WHERE productId = ?");
-			PreparedStatement	removeOverdriveAPIProductItems				= econtentConn.prepareStatement("DELETE FROM `overdrive_api_products` WHERE id = ?");
-			ResultSet 			apiProduct 									= removeOverdriveAPIProducts.executeQuery();
-			int 				numDeletedRecords 							= 0;
+			PreparedStatement removeOverdriveAPIProducts            = econtentConn.prepareStatement("SELECT id FROM `overdrive_api_products` WHERE deleted = 1 AND datediff(now(), from_unixtime(dateDeleted)) > 365", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement removeOverdriveAPIProductAvailability = econtentConn.prepareStatement("DELETE FROM `overdrive_api_product_availability` WHERE productId = ?");
+			PreparedStatement removeOverdriveAPIProductCreators     = econtentConn.prepareStatement("DELETE FROM `overdrive_api_product_creators` WHERE productId = ?");
+			PreparedStatement removeOverdriveAPIProductFormats      = econtentConn.prepareStatement("DELETE FROM `overdrive_api_product_formats` WHERE productId = ?");
+			PreparedStatement removeOverdriveAPIProductIdentifiers  = econtentConn.prepareStatement("DELETE FROM `overdrive_api_product_identifiers` WHERE productId = ?");
+			PreparedStatement removeOverdriveAPIProductLanguages    = econtentConn.prepareStatement("DELETE FROM `overdrive_api_product_languages_ref` WHERE productId = ?");
+			PreparedStatement removeOverdriveAPIProductMetadata     = econtentConn.prepareStatement("DELETE FROM `overdrive_api_product_metadata` WHERE productId = ?");
+			PreparedStatement removeOverdriveAPIProductSubjects     = econtentConn.prepareStatement("DELETE FROM `overdrive_api_product_subjects_ref` WHERE productId = ?");
+			PreparedStatement removeOverdriveAPIProductItems        = econtentConn.prepareStatement("DELETE FROM `overdrive_api_products` WHERE id = ?");
+			ResultSet         apiProduct                            = removeOverdriveAPIProducts.executeQuery();
+			int               numDeletedRecords                     = 0;
 			while (apiProduct.next())
 			{
 				removeOverdriveAPIProductAvailability.setLong(1, apiProduct.getLong("id"));
@@ -659,21 +664,13 @@ public class DatabaseCleanup implements IProcessHandler {
 			processLog.saveToDatabase(pikaConn, logger);
 		}
 
-		//Remove deleted reading history items if they are not currently checked out
-
+		//Remove deleted reading history items if they are not currently checked out and marked as deleted
 		try{
-			PreparedStatement 	readingHistoryToRemoveQuery	= pikaConn.prepareStatement("SELECT id FROM `user_reading_history_work` WHERE datediff(now(), from_unixtime(startTime)) > 365", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-			PreparedStatement 	removeReadingHistory 		= pikaConn.prepareStatement("DELETE FROM `user_reading_history_work` WHERE id = ?");
-			ResultSet 			readingHistoryToRemove		= readingHistoryToRemoveQuery.executeQuery();
-			int 				numDeletedRecords 			= 0;
-
-			while (readingHistoryToRemove.next())
-			{
-				removeReadingHistory.setLong(1, readingHistoryToRemove.getLong("id"));
-				removeReadingHistory.executeUpdate();
-				numDeletedRecords++;
+			PreparedStatement readingHistoryToRemoveQuery = pikaConn.prepareStatement("DELETE FROM `user_reading_history_work` WHERE deleted = 1 AND datediff(now(), from_unixtime(checkInDate)) > 365", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			int               numDeletedRecords           = readingHistoryToRemoveQuery.executeUpdate();
+			if (numDeletedRecords > 0) {
+				processLog.addNote("Removed " + numDeletedRecords + " records that were marked as deleted");
 			}
-			processLog.addNote("Removed " + numDeletedRecords + " records that were marked as deleted");
 		}
 		catch(SQLException e){
 			processLog.incErrors();
