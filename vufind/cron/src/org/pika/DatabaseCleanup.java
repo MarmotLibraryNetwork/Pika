@@ -349,7 +349,7 @@ public class DatabaseCleanup implements IProcessHandler {
 	protected void cleanupILSExtractInfo(Connection pikaConn, Logger logger, CronProcessLogEntry processLog) {
 		//remove items from the ils_extract_info table when they were deleted over a year ago
 		try {
-			PreparedStatement removeIlsExtractInfo = pikaConn.prepareStatement("DELETE FROM ils_extract_info WHERE datediff(now(), from_unixtime(deleted)) > 365");
+			PreparedStatement removeIlsExtractInfo = pikaConn.prepareStatement("DELETE FROM ils_extract_info WHERE datediff(now(), deleted > 365");
 			int numUpdates = removeIlsExtractInfo.executeUpdate();
 			if (numUpdates > 0) {
 				processLog.addUpdates(numUpdates);
