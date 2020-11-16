@@ -78,16 +78,19 @@ public class OfflineCirculation implements IProcessHandler {
 	 */
 	private void processOfflineHolds(Connection pikaConn) {
 		processLog.addNote("Processing offline holds");
-		try {
-//			PreparedStatement holdsToProcessStmt = pikaConn.prepareStatement("SELECT offline_hold.*, cat_username, cat_password FROM offline_hold LEFT JOIN user ON user.id = offline_hold.patronId WHERE status='Not Processed' ORDER BY timeEntered ASC");
+		String baseUrl         = PikaConfigIni.getIniValue("Site", "url");
+//		String barcodeProperty = PikaConfigIni.getIniValue("Catalog", "barcodeProperty");
+//		String barcodeColumn   = barcodeProperty.equalsIgnoreCase("name_barcode") ? "cat_password" : "cat_username";
+		try (
+			PreparedStatement holdsToProcessStmt = pikaConn.prepareStatement("SELECT offline_hold.*, cat_username, cat_password FROM offline_hold LEFT JOIN user ON user.id = offline_hold.patronId WHERE status='Not Processed' ORDER BY timeEntered ASC");
 			// Match by Pika patron ID
 
-			PreparedStatement holdsToProcessStmt = pikaConn.prepareStatement("SELECT offline_hold.*, cat_username, cat_password FROM `offline_hold` LEFT JOIN `user` ON (user.cat_password = offline_hold.patronBarcode) WHERE status = 'Not Processed' ORDER BY timeEntered ASC");
+//			PreparedStatement holdsToProcessStmt = pikaConn.prepareStatement("SELECT offline_hold.*, cat_username, cat_password FROM `offline_hold` LEFT JOIN `user` ON (user." + barcodeColumn + " = offline_hold.patronBarcode) WHERE status = 'Not Processed' ORDER BY timeEntered ASC");
 			// This was used for a data migration of holds transactions (where the assumption that a patron has logged into Pika is invalid)
 			// This matches by patron barcode when the barcode is saved in the cat_password field
 
-			PreparedStatement updateHold = pikaConn.prepareStatement("UPDATE offline_hold set timeProcessed = ?, status = ?, notes = ? where id = ?");
-			String            baseUrl    = PikaConfigIni.getIniValue("Site", "url");
+			PreparedStatement updateHold = pikaConn.prepareStatement("UPDATE offline_hold set timeProcessed = ?, status = ?, notes = ? where id = ?")
+		){
 			try (ResultSet holdsToProcessRS = holdsToProcessStmt.executeQuery()) {
 				while (holdsToProcessRS.next()) {
 					processOfflineHold(updateHold, baseUrl, holdsToProcessRS);
@@ -108,16 +111,16 @@ public class OfflineCirculation implements IProcessHandler {
 		try {
 			String patronPassword = encode(holdsToProcessRS.getString("cat_password"));
 			String patronName     = holdsToProcessRS.getString("cat_username");
-			if (patronName == null || patronName.length() == 0){
+			if (patronName == null || patronName.length() == 0) {
 				patronName = holdsToProcessRS.getString("patronName");
 			}
-			patronName     = encode(patronName);
-			String bibId   = encode(holdsToProcessRS.getString("bibId"));
-			String itemId  = holdsToProcessRS.getString("itemId");
-			URL placeHoldUrl;
-			if (itemId != null && itemId.length() > 0){
+			patronName = encode(patronName);
+			String bibId  = encode(holdsToProcessRS.getString("bibId"));
+			String itemId = holdsToProcessRS.getString("itemId");
+			URL    placeHoldUrl;
+			if (itemId != null && itemId.length() > 0) {
 				placeHoldUrl = new URL(baseUrl + "/API/UserAPI?method=placeItemHold&username=" + patronName + "&password=" + patronPassword + "&bibId=" + bibId + "&itemId=" + itemId);
-			}else{
+			} else {
 				placeHoldUrl = new URL(baseUrl + "/API/UserAPI?method=placeHold&username=" + patronName + "&password=" + patronPassword + "&bibId=" + bibId);
 			}
 
@@ -127,14 +130,14 @@ public class OfflineCirculation implements IProcessHandler {
 				processLog.addNote("Result = " + placeHoldDataJson);
 				JSONObject placeHoldData = new JSONObject(placeHoldDataJson);
 				JSONObject result        = placeHoldData.getJSONObject("result");
-				if (result.getBoolean("success")){
+				if (result.getBoolean("success")) {
 					updateHold.setString(2, "Hold Succeeded");
-				}else{
+				} else {
 					updateHold.setString(2, "Hold Failed");
 				}
-				if (result.has("holdMessage")){
+				if (result.has("holdMessage")) {
 					updateHold.setString(3, result.getString("holdMessage"));
-				}else{
+				} else {
 					String message = result.getString("message");
 					if (message == null || message.isEmpty()) {
 						message = "Did not get valid message response from place hold attempt";
@@ -152,7 +155,7 @@ public class OfflineCirculation implements IProcessHandler {
 			updateHold.setString(2, "Hold Failed");
 			updateHold.setString(3, "Error Loading JSON response for placing hold " + holdId + " - " + e.toString());
 
-		} catch (IOException e) {
+		} catch (IOException | SQLException e) {
 			processLog.incErrors();
 			processLog.addNote("Error processing offline hold " + holdId + " - " + e.toString());
 			updateHold.setString(2, "Hold Failed");
