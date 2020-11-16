@@ -766,7 +766,7 @@ class BookCoverProcessor {
 
 					$source = $sourceAndId->getSource();
 					if ($source == 'overdrive'){
-						if ($this->getOverDriveCover($this->sourceAndId)){
+						if ($this->getOverDriveCover($sourceAndId)){
 							return true;
 						}
 					}else{
