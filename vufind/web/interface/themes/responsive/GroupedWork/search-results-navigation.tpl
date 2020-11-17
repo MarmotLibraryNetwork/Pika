@@ -1,5 +1,7 @@
 {strip}
 	{* Navigate search results from within the full record views *}
+
+<div id="results-nav-fixed" class="results-nav-fixed">
 	<div class="search-results-navigation{* text-center*}">
 		<div id="previousRecordLink" class="previous">
 			{if isset($previousId)}
@@ -21,4 +23,15 @@
 			{/if}
 		</div>
 	</div>
+</div>
+{literal}
+	<script>
+		var results = document.getElementById("results-nav-fixed");
+		var sticky = Pika.GroupedWork.getElementPosition(results);
+
+		window.onscroll = function () {
+			Pika.GroupedWork.staticPosition(sticky)
+		};
+	</script>
+{/literal}
 {/strip}
