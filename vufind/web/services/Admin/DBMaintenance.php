@@ -1404,6 +1404,15 @@ class DBMaintenance extends Admin_Admin {
 					]
 				],
 
+				'remove-econtent-protection-facet-2020.07' => [
+					'title'           => 'Remove library settings that have econtent protection set',
+					'description'     => '',
+					'continueOnError' => true,
+					'sql'             => [
+						'DELETE FROM library_facet_setting WHERE `facetName` = "econtent_protection_type";',
+					]
+				],
+
 			)); // End of main array
 	}
 
