@@ -114,14 +114,26 @@
 .results-nav-fixed .search-results-navigation{
 
 }
-.results-nav-fixed.sticky
-{
-  position: fixed;
-  top: 0;
-  width: 43%;
-  background: rgba(255,255,255, 0.9);
-  z-index: 4;
+@media only screen and (max-width: 767px) {
+  .results-nav-fixed.sticky {
+    position: fixed;
+    top: 40px;
+    width: 85%;
+    background: rgba(255, 255, 255, 0.9);
+    z-index: 4;
+  }
 }
-.results-nav-fixed .sticky + .search-results-navigation{
-  padding-top:60px;
+@media only screen and (min-width: 767px) {
+  .results-nav-fixed.sticky {
+    position: fixed;
+    top: 0;
+    width: 41%;
+    background: rgba(255, 255, 255, 0.9);
+    z-index: 4;
+  }
+
+
+}
+.results-nav-fixed.sticky + .search-results-navigation {
+  padding-top: 60px;
 }
