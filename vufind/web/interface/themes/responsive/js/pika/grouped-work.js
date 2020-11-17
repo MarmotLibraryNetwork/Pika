@@ -46,7 +46,30 @@ Pika.GroupedWork = (function(){
 			});
 			return false;
 		},
+        staticPosition: function(sticky)
+        {
+            var resultsNav = document.getElementById("results-nav-fixed");
 
+
+        	if(window.pageYOffset > sticky)
+			{
+				resultsNav.classList.add("sticky")
+			}else{
+        	    resultsNav.classList.remove("sticky");
+            }
+            
+        },
+		getElementPosition: function(elem)
+		{
+			var location = 0;
+			if(elem.offsetParent){
+				do{
+					location += elem.offsetTop;
+					elem = elem.offsetParent;
+				} while (elem);
+			}
+			return location >=0 ? location: 0;
+		},
 		getGoDeeperData: function (id, dataType){
 			var placeholder;
 			if (dataType == 'excerpt') {
