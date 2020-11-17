@@ -326,7 +326,6 @@ class Sierra {
 	 * @throws ErrorException
 	 */
 	public function patronLogin($username, $password, $validatedViaSSO = FALSE){
-		$this->logger->info("patronLogin called from ".debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]['class']);
 		// get the login configuration barcode_pin or name_barcode
 		// TODO: Need to pull login from session, db, memcache, etc, so login isn't called repeatably on each request.
 		$loginMethod = $this->accountProfile->loginConfiguration;
@@ -346,6 +345,28 @@ class Sierra {
 			$barcode = $password;
 			$this->patronBarcode = $barcode;
 			$patronId = $this->_authNameBarcode($username, $password);
+			// check last api error for duplicate barcodes
+//			if(stristr($this->apiLastError, 'Duplicate patrons found')) {
+//				// need to use the /patron/query endpoint to get user ids with barcode.
+//				$operation = 'patrons/query';
+//				$payload   = '{"target": {' .
+//											'"record": {"type": "patron"},' .
+//											'"field": {"tag": "b"}},' .
+//											'"expr": {' .
+//											'"op": "equals",' .
+//											'"operands": [ "$barcode" ]}}';
+//				$r2 = $this->_doRequest($payload, $operation);
+//				if (!$r2) {
+//					return false;
+//				}
+//				// get the sierra ids for the patron/query
+//				$sPIDs = [];
+//				foreach ($r2->entries as $entry) {
+//					$sPIDs[] = preg_match($this->urlIdRegExp, $entry->link, $m);
+//
+//				}
+//
+//			}
 		} else {
 			$msg = "Invalid loginConfiguration setting.";
 			$this->logger->error($msg);
@@ -726,6 +747,15 @@ class Sierra {
 			$patron->numHoldsIls          = $patron->numHoldsAvailableIls + $patron->numHoldsRequestedIls;
 		}
 
+		// 6.11 web notes
+		if(isset($pInfo->varFields)) {
+			$webNote = $this->_getVarField('e',$pInfo->varFields);
+			if(count($webNote) > 0) {
+				$index = array_key_first($webNote);
+				$patron->web_note = $webNote[$index]->content;
+			}
+		}
+
 		if($createPatron) {
 			$patron->created = date('Y-m-d');
 			if($patron->insert() === false) {
@@ -761,6 +791,16 @@ class Sierra {
 			$numCheckouts = 0;
 		}
 		return $numCheckouts;
+	}
+
+	private function _getVarField($key, $fields)
+	{
+
+		$found = array_filter($fields, function ($k) use ($key) {
+			return $k->fieldTag == $key;
+		});
+
+		return $found;
 	}
 
 	/**
@@ -1489,7 +1529,7 @@ EOT;
 			$mailer = new PHPMailer;
 			$mailer->setFrom($this->configArray['Site']['email']);
 			$mailer->addAddress($emailAddress);
-			$mailer->Subject = "Your new library card at " . $libraryName;
+			$mailer->Subject = "[DO NOT REPLY] Your new library card at " . $libraryName;
 			$mailer->Body    = $emailBody;
 			$mailer->send();
 		} catch (\Exception $e) {
