@@ -346,27 +346,27 @@ class Sierra {
 			$this->patronBarcode = $barcode;
 			$patronId = $this->_authNameBarcode($username, $password);
 			// check last api error for duplicate barcodes
-//			if(stristr($this->apiLastError, 'Duplicate patrons found')) {
-//				// need to use the /patron/query endpoint to get user ids with barcode.
-//				$operation = 'patrons/query';
-//				$payload   = '{"target": {' .
-//											'"record": {"type": "patron"},' .
-//											'"field": {"tag": "b"}},' .
-//											'"expr": {' .
-//											'"op": "equals",' .
-//											'"operands": [ "$barcode" ]}}';
-//				$r2 = $this->_doRequest($payload, $operation);
-//				if (!$r2) {
-//					return false;
-//				}
-//				// get the sierra ids for the patron/query
-//				$sPIDs = [];
-//				foreach ($r2->entries as $entry) {
-//					$sPIDs[] = preg_match($this->urlIdRegExp, $entry->link, $m);
-//
-//				}
-//
-//			}
+			if(stristr($this->apiLastError, 'Duplicate patrons found')) {
+				// use the /patron/query endpoint to get user ids with barcode.
+				$operation = 'patrons/query?offset=0&limit=3';
+				$payload   = '{"target": {' .
+											'"record": {"type": "patron"},' .
+											'"field": {"tag": "b"}},' .
+											'"expr": {' .
+											'"op": "equals",' .
+											'"operands": [ "' . $barcode . '" ]}}';
+				$r2 = $this->_doRequest($operation, $payload, 'POST');
+				if (!$r2) {
+					return false;
+				}
+				// get the sierra ids for the patron/query
+				foreach ($r2->entries as $entry) {
+					$sPID = preg_match($this->urlIdRegExp, $entry->link, $m);
+					if($this->_authPatronIdName($m[1], $username)) {
+						return $this->getPatron($m[1]);
+					}
+				}
+			}
 		} else {
 			$msg = "Invalid loginConfiguration setting.";
 			$this->logger->error($msg);
@@ -380,7 +380,6 @@ class Sierra {
 		}
 
 		return $this->getPatron($patronId);
-
 	}
 
 	/**
@@ -2686,6 +2685,49 @@ EOT;
 			$result = false;
 		}
 		return $result;
+	}
+
+	protected function _authPatronIdName($patronId, $username) {
+		$operation = 'patrons/' . $patronId;
+		$params    = ['fields' => 'names'];
+
+		$r = $this->_doRequest($operation, $params);
+		if(!$r) {
+			$this->logger->warn('Could not get patron name.', ['patronId'=>$patronId, 'error'=>$this->apiLastError]);
+			return false;
+		}
+		// check the username against name(s) returned from sierra
+		$patronNames = $r->names;
+		$username = trim($username);
+		// break the username into an array
+		$username = str_replace('-', ' ', $username);
+		$usernameParts = explode(' ', $username);
+		$valid = FALSE;
+
+		foreach ($patronNames as $patronName) {
+			// first check for a full string match
+			// example Doe, John == Doe, John
+			if ($patronName == $username) {
+				$valid = true;
+				break;
+			}
+			// iterate over each of usernameParts looking for a match in $patronName
+			foreach ($usernameParts as $userNamePart) {
+				if (preg_match('~\\b' . preg_quote($userNamePart) . '\\b~i', $patronName, $m)) {
+					$valid = true;
+				}
+
+				if ($valid === true) {
+					//$this->logger->info('Logging in patron: ' . $);
+					break;
+				}
+			}
+		}
+		// end for each
+		if ($valid == true) {
+			return $patronId;
+		}
+		return false;
 	}
 
 	/**
