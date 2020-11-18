@@ -375,7 +375,7 @@ class Record_AJAX extends AJAXHandler {
 						// set update permission based on active library's settings. Or allow by default.
 						$canChangeNoticePreference = $homeLibrary->showNoticeTypeInProfile == 1;
 						// when user preference isn't set, they will be shown a link to account profile. this link isn't needed if the user can not change notification preference.
-						$interface->assign('canUpdate', $canUpdateContactInfo);
+						$interface->assign('canUpdate', $canUpdateContactInfo && !isset($_REQUEST['autologout'])); //Don't allow updating if the auto log out has been set (because the user will be logged out instead).
 						$interface->assign('canChangeNoticePreference', $canChangeNoticePreference);
 						$interface->assign('showDetailedHoldNoticeInformation', $homeLibrary->showDetailedHoldNoticeInformation);
 						$interface->assign('treatPrintNoticesAsPhoneNotices', $homeLibrary->treatPrintNoticesAsPhoneNotices);
@@ -385,7 +385,7 @@ class Record_AJAX extends AJAXHandler {
 							'success' => $return['success'],
 							'message' => $interface->fetch('Record/hold-success-popup.tpl'),
 //							'title'   => isset($return['title']) ? $return['title'] : '',
-							'buttons' => '<a class="btn btn-primary" href="/MyAccount/Holds" role="button">View My Holds</a>',
+							'buttons' => '', // This removes the submit button
 						];
 						if (isset($_REQUEST['autologout'])){
 							$masqueradeMode = UserAccount::isUserMasquerading();
@@ -397,6 +397,9 @@ class Record_AJAX extends AJAXHandler {
 							}
 							$results['autologout'] = true;
 							unset($_REQUEST['autologout']); // Prevent entering the second auto log out code-block below.
+						} else {
+							// Only show View My Holds button if the user did not select the auto log out option.
+							$results['buttons'] = '<a class="btn btn-primary" href="/MyAccount/Holds" role="button">View My Holds</a>';
 						}
 					}
 				}
