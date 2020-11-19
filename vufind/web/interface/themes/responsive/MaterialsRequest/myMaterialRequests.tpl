@@ -1,10 +1,5 @@
 <script type="text/javascript" src="/MaterialsRequest/ajax.js"></script>
 <div id="main-content">
-	{if $profile->web_note}
-		<div class="row">
-			<div id="web_note" class="alert alert-info text-center col-xs-12">{$profile->web_note}</div>
-		</div>
-	{/if}
 
 	<span class='availableHoldsNoticePlaceHolder'></span>
 
