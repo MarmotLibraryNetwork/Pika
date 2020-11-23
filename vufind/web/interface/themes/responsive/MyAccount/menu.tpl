@@ -86,25 +86,6 @@
 				</div>
 			</div>
 
-			{* My Lists*}
-
-			<div class="panel{if $curSection}{/if}">
-					<a data-toggle="collapse" data-parent="#account-link-accordion" href="#myListsPanel">
-						<div class="panel-heading">
-							<div class="panel-title">
-								My Lists
-							</div>
-						</div>
-					</a>
-					<div id="myListsPanel" class="panel-collapse collapse{if $action == 'MyRatings' || $action == 'Suggested Titles' || $action == 'MyList'}{/if}">
-						<div class="panel-body">
-							<div class="alert alert-info" role="alert">
-								New <a href="/MyAccount/MyLists" class="alert-link">My Lists</a> page can be found in the <a href="#" onclick="$('#myAccountPanel').prev().click()" >{translate text="My Account"}</a> menu.
-							</div>
-						</div>
-					</div>
-				</div>
-
 			<span id="tagsMenu-placeholder"></span>
 
 			{* Admin Functionality if Available *}
