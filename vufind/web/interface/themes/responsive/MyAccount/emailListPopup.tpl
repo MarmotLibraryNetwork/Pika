@@ -1,9 +1,7 @@
 {strip}
 <div align="left">
 	{if $message}<div class="error">{$message|translate}</div>{/if}
-	<div class="alert alert-info">
-		If you share your own list with someone else, the list will <strong>need to be made public</strong> for them to access it.
-	</div>
+
 
 	<form id="emailListForm" class="form form-horizontal">
 		<div class="form-group">
