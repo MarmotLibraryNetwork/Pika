@@ -270,9 +270,9 @@ function loadLibraryAndLocation(){
 function handleCookie($cookieName, $cookieValue){
 	if (!isset($_COOKIE[$cookieName]) || $cookieValue != $_COOKIE[$cookieName]){
 		if ($cookieValue == ''){
-			setcookie($cookieName, $cookieValue, time() - 1000, '/');
+			setcookie($cookieName, $cookieValue, time() - 1000, '/', NULL, 1, 1);
 		}else{
-			setcookie($cookieName, $cookieValue, 0, '/');
+			setcookie($cookieName, $cookieValue, 0, '/', NULL, 1, 1);
 		}
 	}
 }
