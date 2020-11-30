@@ -973,7 +973,7 @@ class Location extends DB_DataObject {
 		if (isset($_GET['test_ip'])){
 			$ip = $_GET['test_ip'];
 			//Set a cookie so we don't have to transfer the ip from page to page.
-			setcookie('test_ip', $ip, 0, '/', NULL, true, true);
+			setcookie('test_ip', $ip, 0, '/', NULL, 1, 1);
 //		}elseif (isset($_COOKIE['test_ip']) && $_COOKIE['test_ip'] != '127.0.0.1' && strlen($_COOKIE['test_ip']) > 0){
 		}elseif (!empty($_COOKIE['test_ip']) && $_COOKIE['test_ip'] != '127.0.0.1'){
 			$ip = $_COOKIE['test_ip'];
