@@ -1704,9 +1704,9 @@ class Location extends DB_DataObject {
 				$this->opacStatus = $_GET['opac'] == 1 || strtolower($_GET['opac']) == 'true' || strtolower($_GET['opac']) == 'on';
 				if ($_GET['opac'] == ''){
 					//Clear any existing cookie
-					setcookie('opac', $this->opacStatus, time() - 1000, '/');
+					setcookie('opac', $this->opacStatus, time() - 1000, '/', NULL, 1, 1);
 				}elseif (!isset($_COOKIE['opac']) || $this->opacStatus != $_COOKIE['opac']){
-					setcookie('opac', $this->opacStatus ? '1' : '0', 0, '/');
+					setcookie('opac', $this->opacStatus ? '1' : '0', 0, '/', NULL, 1, 1);
 				}
 			}elseif (isset($_COOKIE['opac'])){
 				$this->opacStatus = (boolean)$_COOKIE['opac'];
