@@ -35,9 +35,9 @@ class Union_Search extends Action {
 		global $action;
 		global $interface;
 		//Get the search source and determine what to show.
-		$searchSource = empty($_REQUEST['searchSource']) ? 'local' : $_REQUEST['searchSource'];
+		$searchSource  = empty($_REQUEST['searchSource']) ? 'local' : $_REQUEST['searchSource'];
 		$searchSources = new SearchSources();
-		$searches = $searchSources->getSearchSources();
+		$searches      = $searchSources->getSearchSources();
 		if (!isset($searches[$searchSource]) && $searchSource == 'marmot'){
 			$searchSource = 'local';
 		}
@@ -46,51 +46,59 @@ class Union_Search extends Action {
 			//Reset to a local search source so the external search isn't remembered
 			$_SESSION['searchSource'] = 'local';
 			//Need to redirect to the appropriate search location with the new value for look for
-			$type = isset($_REQUEST['basicType']) ? $_REQUEST['basicType'] : $_REQUEST['type'];
+			$type    = isset($_REQUEST['basicType']) ? $_REQUEST['basicType'] : $_REQUEST['type'];
 			$lookfor = isset($_REQUEST['lookfor']) ? $_REQUEST['lookfor'] : '';
-			$link = $searchSources->getExternalLink($searchSource, $type, $lookfor);
+			$link    = $searchSources->getExternalLink($searchSource, $type, $lookfor);
 			header('Location: ' . $link);
 			die();
-		}else if ($searchSource == 'genealogy'){
-			require_once (ROOT_DIR . '/services/Genealogy/Results.php');
-			$module = 'Genealogy';
-			$interface->assign('module', $module);
-			$action = 'Results';
-			$interface->assign('action', $action);
-			$results = new Genealogy_Results();
-			$results->launch();
-		}else if ($searchSource == 'islandora'){
-			require_once (ROOT_DIR . '/services/Archive/Results.php');
-			$module = 'Archive';
-			$interface->assign('module', $module);
-			$action = 'Results';
-			$interface->assign('action', $action);
-			$results = new Archive_Results();
-			$results->launch();
-		}else if ($searchSource == 'ebsco'){
-			require_once (ROOT_DIR . '/services/EBSCO/Results.php');
-			$module = 'EBSCO';
-			$interface->assign('module', $module);
-			$action = 'Results';
-			$interface->assign('action', $action);
-			$results = new EBSCO_Results();
-			$results->launch();
-		}else if ($searchSource == 'combinedResults'){
-			require_once (ROOT_DIR . '/services/Union/CombinedResults.php');
-			$module = 'Union';
-			$interface->assign('module', $module);
-			$action = 'CombinedResults';
-			$interface->assign('action', $action);
-			$results = new Union_CombinedResults();
-			$results->launch();
 		}else{
-			require_once (ROOT_DIR . '/services/Search/Results.php');
-			$module = 'Search';
-			$interface->assign('module', $module);
-			$action = 'Results';
-			$interface->assign('action', $action);
-			$results = new Search_Results();
-			$results->launch();
+			switch ($searchSource){
+				case 'genealogy':
+					require_once ROOT_DIR . '/services/Genealogy/Results.php';
+					$module = 'Genealogy';
+					$action = 'Results';
+					$interface->assign('module', $module);
+					$interface->assign('action', $action);
+					$results = new Genealogy_Results();
+					$results->launch();
+					break;
+				case 'islandora':
+					require_once ROOT_DIR . '/services/Archive/Results.php';
+					$module = 'Archive';
+					$action = 'Results';
+					$interface->assign('module', $module);
+					$interface->assign('action', $action);
+					$results = new Archive_Results();
+					$results->launch();
+					break;
+				case 'ebsco':
+					require_once ROOT_DIR . '/services/EBSCO/Results.php';
+					$module = 'EBSCO';
+					$action = 'Results';
+					$interface->assign('module', $module);
+					$interface->assign('action', $action);
+					$results = new EBSCO_Results();
+					$results->launch();
+					break;
+				case 'combinedResults':
+					require_once ROOT_DIR . '/services/Union/CombinedResults.php';
+					$module = 'Union';
+					$action = 'CombinedResults';
+					$interface->assign('module', $module);
+					$interface->assign('action', $action);
+					$results = new Union_CombinedResults();
+					$results->launch();
+					break;
+				default:
+					require_once ROOT_DIR . '/services/Search/Results.php';
+					$module = 'Search';
+					$action = 'Results';
+					$interface->assign('module', $module);
+					$interface->assign('action', $action);
+					$results = new Search_Results();
+					$results->launch();
+					break;
+			}
 		}
 	}
 }

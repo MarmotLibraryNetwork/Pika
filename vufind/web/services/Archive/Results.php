@@ -17,12 +17,10 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-require_once ROOT_DIR . '/Action.php';
+require_once ROOT_DIR . '/services/Union/Results.php';
 require_once ROOT_DIR . '/sys/Pager.php';
 
-class Archive_Results extends Action {
-	protected $viewOptions = array('list', 'covers');
-	// define the valid view modes checked in Base.php
+class Archive_Results extends Union_Results {
 
 	function launch()
 	{
@@ -42,18 +40,8 @@ class Archive_Results extends Action {
 		$searchObject->addHiddenFilter('!RELS_EXT_isViewableByRole_literal_ms', "administrator");
 		$searchObject->addHiddenFilter('!mods_extension_marmotLocal_pikaOptions_showInSearchResults_ms', "no");
 
-		// Build RSS Feed for Results (if requested)
-		if ($searchObject->getView() == 'rss') {
-			// Throw the XML to screen
-			echo $searchObject->buildRSS();
-			// And we're done
-			exit();
-		}else if ($searchObject->getView() == 'excel'){
-			// Throw the Excel spreadsheet to screen for download
-			echo $searchObject->buildExcel();
-			// And we're done
-			exit();
-		}
+		$this->processAlternateOutputs($searchObject);
+
 		$displayMode = $searchObject->getView();
 		if ($displayMode == 'covers') {
 			$searchObject->setLimit(24); // a set of 24 covers looks better in display

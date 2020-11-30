@@ -1110,6 +1110,7 @@ class SearchObject_Solr extends SearchObject_Base
 				if ($this->searchSubType == 'search'){
 					return $this->serverUrl . "/Author/Search?";
 				}
+				break;
 			default :
 				// If none of the special cases were met, use the default from the parent:
 				return parent::getBaseUrl();
