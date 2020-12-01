@@ -34,7 +34,7 @@ class Admin_NonGroupedRecords extends ObjectEditor {
 	}
 
 	function getAllObjects($orderBy = null){
-		return parent::getAllObjects($orderBy ?? 'source, recordId');
+		return parent::getAllObjects($orderBy ?? 'updated desc, source, recordId');
 	}
 
 	function getObjectStructure(){
