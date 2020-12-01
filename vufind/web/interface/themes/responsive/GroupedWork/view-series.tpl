@@ -30,7 +30,7 @@
 				<b>{$recordStart}</b> - <b>{$recordEnd}</b>
 				{translate text='of'} <b>{$recordCount}</b>
 			{else}
-				<p>Sorry, we could not find series information for this title.</p>
+				<p class="alert alert-warning">Sorry, we could not find series information for this title.</p>
 			{/if}
 		</div>
 	</div>
