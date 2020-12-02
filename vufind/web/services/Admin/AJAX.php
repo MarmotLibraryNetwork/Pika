@@ -606,48 +606,6 @@ class Admin_AJAX extends AJAXHandler {
         if(UserAccount::userHasRole("opacAdmin")) {
             $location = new Location();
              if($copyFromLocation->get($fromLocationId)) {
-                 $location->code = $code;
-                 $location->displayName = $name;
-                 $location->showDisplayNameInHeader = $copyFromLocation->showDisplayNameInHeader;
-                 $location->libraryId = $copyFromLocation->libraryId;
-                 $location->showInLocationsAndHoursList = $copyFromLocation->showInLocationsAndHoursList;
-                 $location->address = $copyFromLocation->address;
-                 $location->phone = $copyFromLocation->phone;
-                 $location->nearbyLocation1 = $copyFromLocation->nearbyLocation1;
-                 $location->nearbyLocation2 = $copyFromLocation->nearbyLocation2;
-                 $location->automaticTimeoutLength = $copyFromLocation->automaticTimeoutLength;
-                 $location->automaticTimeoutLengthLoggedOut = $copyFromLocation->automaticTimeoutLengthLoggedOut;
-                 $location->homeLink = $copyFromLocation->homeLink;
-                 $location->additionalCss = $copyFromLocation->additionalCss;
-                 $location->headerText = $copyFromLocation->headerText;
-                 $location->scope = $copyFromLocation->scope;
-                 $location->defaultPType = $copyFromLocation->defaultPType;
-                 $location->validHoldPickupBranch = $copyFromLocation->validHoldPickupBranch;
-                 $location->showHoldButton = $copyFromLocation->showHoldButton;
-                 $location->ptypesToAllowRenewals = $copyFromLocation->ptypesToAllowRenewals;
-                 $location->restrictSearchByLocation = $copyFromLocation->restrictSearchByLocation;
-                 $location->publicListsToInclude = $copyFromLocation->publicListsToInclude;
-                 $location->boostByLocation = $copyFromLocation->boostByLocation;
-                 $location->additionalLocalBoostFactor = $copyFromLocation->additionalLocalBoostFactor;
-                 $location->systemsToRepeatIn = $copyFromLocation->systemsToRepeatIn;
-                 $location->repeatSearchOption = $copyFromLocation->repeatSearchOption;
-                 $location->repeatInOnlineCollection = $copyFromLocation->repeatInOnlineCollection;
-                 $location->repeatInProspector = $copyFromLocation->repeatInProspector;
-                 $location->repeatInWorldCat = $copyFromLocation->repeatInWorldCat;
-                 $location->repeatInOverdrive = $copyFromLocation->repeatInOverdrive;
-                 $location->availabilityToggleLabelSuperScope = $copyFromLocation->availabilityToggleLabelSuperScope;
-                 $location->availabilityToggleLabelLocal = $copyFromLocation->availabilityToggleLabelLocal;
-                 $location->availabilityToggleLabelAvailable = $copyFromLocation->availabilityToggleLabelAvailable;
-                 $location->availabilityToggleLabelAvailableOnline = $copyFromLocation->availabilityToggleLabelAvailableOnline;
-                 $location->baseAvailabilityToggleOnLocalHoldingsOnly = $copyFromLocation->baseAvailabilityToggleOnLocalHoldingsOnly;
-                 $location->includeOnlineMaterialsInAvailableToggle = $copyFromLocation->includeOnlineMaterialsInAvailableToggle;
-                 $location->facetLabel = $copyFromLocation->facetLabel;
-                 $location->includeAllLibraryBranchesInFacets = $copyFromLocation->includeAllLibraryBranchesInFacets;
-                 $location->includeAllRecordsInDateAddedFacets = $copyFromLocation->includeAllRecordsInDateAddedFacets;
-                 $location->includeAllRecordsInShelvingFacets = $copyFromLocation->includeAllRecordsInShelvingFacets;
-                 $location->additionalLocationsToShowAvailabilityFor = $copyFromLocation->additionalLocationsToShowAvailabilityFor;
-                 $location->includeLibraryRecordsToInclude = $copyFromLocation->includeLibraryRecordsToInclude;
-                 $location->isMainBranch = false;
                  $facetsToCopy = $copyFromLocation->facets;
                  foreach ($facetsToCopy as $facetKey => $facet) {
                      $facet->locationId = $location->locationId;
@@ -724,6 +682,10 @@ class Admin_AJAX extends AJAXHandler {
                      $recordsOwned[$key] = $owned;
                  }
                  $location->recordsOwned = $recordsOwned;
+	               $location = clone $copyFromLocation;
+                 $location->code = $code;
+	               $location->displayName = $name;
+
 
                  if ($location->insert())
                  {
