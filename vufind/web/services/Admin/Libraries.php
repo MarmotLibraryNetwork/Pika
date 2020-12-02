@@ -71,9 +71,11 @@ class Admin_Libraries extends ObjectEditor {
 		return 'libraryId';
 	}
     function customListActions(){
+	    if(UserAccount::userHasRole('opacAdmin')){
         return array(
             array('label' => 'Clone Library', 'onclick' =>'Pika.Admin.cloneLibraryFromSelection()'),
         );
+		    }
     }
 	function getAllowableRoles(){
 		return array('opacAdmin', 'libraryAdmin', 'libraryManager');
