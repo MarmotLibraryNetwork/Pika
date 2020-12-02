@@ -603,7 +603,7 @@ class Admin_AJAX extends AJAXHandler {
         $name = trim($_REQUEST['name']);
         $copyFromLocation = new Location();
         $user = UserAccount::getLoggedInUser();
-        if(UserAccount::userHasRole("opacAdmin") || UserAccount::userHasRole("libraryAdmin")) {
+        if(UserAccount::userHasRoleFromList(array('opacAdmin','libraryAdmin'))) {
             $location = new Location();
              if($copyFromLocation->get($fromLocationId)) {
                  $facetsToCopy = $copyFromLocation->facets;

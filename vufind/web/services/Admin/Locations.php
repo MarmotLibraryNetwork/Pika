@@ -56,9 +56,11 @@ class Locations extends ObjectEditor {
 	}
 
 	function customListActions(){
-		return [
-			['label' => 'Clone Location', 'onclick' => 'Pika.Admin.cloneLocationFromSelection()'],
-		];
+		if(UserAccount::userHasRoleFromList(array('opacAdmin','libraryAdmin'))){
+			return [
+				['label' => 'Clone Location', 'onclick' => 'Pika.Admin.cloneLocationFromSelection()'],
+			];
+		}
 	}
 
 	function getObjectStructure(){
