@@ -268,11 +268,22 @@ function loadLibraryAndLocation(){
  * @param $cookieValue
  */
 function handleCookie($cookieName, $cookieValue){
+	global $configArray;
 	if (!isset($_COOKIE[$cookieName]) || $cookieValue != $_COOKIE[$cookieName]){
 		if ($cookieValue == ''){
-			setcookie($cookieName, $cookieValue, time() - 1000, '/', NULL, 1, 1);
+			if($configArray['Site']['isProduction']){
+				setcookie($cookieName, $cookieValue, time() - 1000, '/', null, 1, 1);
+			}else{
+				setcookie($cookieName, $cookieValue, time() - 1000, '/', null, 0, 1);
+			}
 		}else{
-			setcookie($cookieName, $cookieValue, 0, '/', NULL, 1, 1);
+			if($configArray['Site']['isProduction']){
+				setcookie($cookieName, $cookieValue, 0, '/', null, 1, 1);
+			}
+			else
+			{
+				setcookie($cookieName, $cookieValue, 0, '/', null, 0, 1);
+			}
 		}
 	}
 }
@@ -416,7 +427,7 @@ function loadSearchInformation(){
 			$searchSources = new SearchSources();
 			global $locationSingleton;
 			$location = $locationSingleton->getActiveLocation();
-			list($enableCombinedResults, $showCombinedResultsFirst, $combinedResultsName) = $searchSources::getCombinedSearchSetupParameters($location, $library);
+			[$enableCombinedResults, $showCombinedResultsFirst, $combinedResultsName] = $searchSources::getCombinedSearchSetupParameters($location, $library);
 			if ($enableCombinedResults && $showCombinedResultsFirst){
 				$searchSource = 'combinedResults';
 			}else{
