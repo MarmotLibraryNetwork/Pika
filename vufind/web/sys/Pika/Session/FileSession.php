@@ -34,10 +34,13 @@ class FileSession extends \SessionHandler implements \SessionHandlerInterface {
 
 	public function __construct()
 	{
-		ini_set('session.cookie_httponly', 1);
-		ini_set('session.cookie_secure', 1);
-		ini_set('session.save_handler', 'files');
 		global $configArray;
+		ini_set('session.cookie_httponly', 1);
+		if($configArray['Site']['isProduction']){
+			ini_set('session.cookie_secure', 1);
+		}
+		ini_set('session.save_handler', 'files');
+
 		if (isset($configArray['Session']['lifetime'])) {
 			$gc_lifetime = (int)$configArray['Session']['lifetime'];
 			if ($gc_lifetime > 1) {

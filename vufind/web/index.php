@@ -41,11 +41,7 @@ $pikaLogger = new Pika\Logger('Pika', true);
 $timer->logTime("Initialized Pika\Logger");
 
 if (isset($_REQUEST['test_role'])){
-	if ($_REQUEST['test_role'] == ''){
-		setcookie('test_role', $_REQUEST['test_role'], time() - 1000, '/');
-	}else{
-		setcookie('test_role', $_REQUEST['test_role'], 0, '/');
-	}
+	handleCookie('test_role', $_REQUEST['test_role'] );
 }
 
 // Start Interface
@@ -616,7 +612,7 @@ function setUpTranslator(){
 
 	if (isset($_REQUEST['mylang'])){
 		$language = strip_tags($_REQUEST['mylang']);
-		setcookie('language', $language, null, '/');
+		handleCookie('language', $language);
 	}else{
 		$language = strip_tags( $_COOKIE['language'] ?? $configArray['Site']['language']);
 	}

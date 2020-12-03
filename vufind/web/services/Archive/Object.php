@@ -532,7 +532,7 @@ abstract class Archive_Object extends Action {
 //		$_SESSION['dateFilter']      = null;
 
 		foreach ($_COOKIE as $cookieName => $cookieValue) {
-			setcookie($cookieName, $cookieValue, time() + 3600);
+			handleCookie($cookieName, $cookieValue);
 		}
 	}
 
