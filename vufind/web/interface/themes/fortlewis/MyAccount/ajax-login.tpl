@@ -80,6 +80,11 @@
 		</form>
 	{/if}
 </div>
+	{* The modal-footer is required for any follow-on actions that would add action buttons to the modal dialog *}
+	<div class="modal-footer">
+		<button class="btn" data-dismiss="modal" id="modalClose">Close</button>
+		<span class="modal-buttons"></span>
+	</div>
 {/strip}
 {literal}
 <script type="text/javascript">
