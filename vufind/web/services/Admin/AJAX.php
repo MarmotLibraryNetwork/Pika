@@ -181,7 +181,7 @@ class Admin_AJAX extends AJAXHandler {
             'body' => 'No Data available',
         );
         $user = UserAccount::getLoggedInUser();
-        if(UserAccount::userHasRoleFromList(['opacAdmin'])){
+        if(UserAccount::userHasRoleFromList(['opacAdmin', 'libraryAdmin'])){
             $command = trim($_REQUEST['command']);
             $location = new Location();
             $locationId = $user->getHomeLibrary()->getLocationIdsForLibrary()[0];
