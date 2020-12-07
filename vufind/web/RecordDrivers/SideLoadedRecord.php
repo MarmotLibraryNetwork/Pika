@@ -45,16 +45,18 @@ class SideLoadedRecord extends BaseEContentDriver {
 		//Get copies for the record
 		$this->assignCopiesInformation();
 
-		$interface->assign('items', $recordInfo['itemSummary']);
-
 		//Load more details options
 		$moreDetailsOptions = $this->getBaseMoreDetailsOptions($isbn);
 
-		$moreDetailsOptions['copies'] = array(
-			'label'         => 'Copies',
-			'body'          => $interface->fetch('ExternalEContent/view-items.tpl'),
-			'openByDefault' => true,
-		);
+
+		if (!empty($recordInfo['itemSummary'])){
+			$interface->assign('items', $recordInfo['itemSummary']);
+			$moreDetailsOptions['copies'] = [
+				'label'         => 'Copies',
+				'body'          => $interface->fetch('ExternalEContent/view-items.tpl'),
+				'openByDefault' => true,
+			];
+		}
 
 		//TODO: verify this works
 		$notes = $this->getNotes();
@@ -62,25 +64,25 @@ class SideLoadedRecord extends BaseEContentDriver {
 			$interface->assign('notes', $notes);
 		}
 
-		$moreDetailsOptions['moreDetails'] = array(
-				'label' => 'More Details',
-				'body' => $interface->fetch('ExternalEContent/view-more-details.tpl'),
-		);
+		$moreDetailsOptions['moreDetails'] = [
+			'label' => 'More Details',
+			'body'  => $interface->fetch('ExternalEContent/view-more-details.tpl'),
+		];
 
 		$this->loadSubjects();
-		$moreDetailsOptions['subjects'] = array(
-				'label' => 'Subjects',
-				'body' => $interface->fetch('Record/view-subjects.tpl'),
-		);
-		$moreDetailsOptions['citations'] = array(
-				'label' => 'Citations',
-				'body' => $interface->fetch('Record/cite.tpl'),
-		);
+		$moreDetailsOptions['subjects']  = [
+			'label' => 'Subjects',
+			'body'  => $interface->fetch('Record/view-subjects.tpl'),
+		];
+		$moreDetailsOptions['citations'] = [
+			'label' => 'Citations',
+			'body'  => $interface->fetch('Record/cite.tpl'),
+		];
 		if ($interface->getVariable('showStaffView')){
-			$moreDetailsOptions['staff'] = array(
-					'label' => 'Staff View',
-					'body' => $interface->fetch($this->getStaffView()),
-			);
+			$moreDetailsOptions['staff'] = [
+				'label' => 'Staff View',
+				'body'  => $interface->fetch($this->getStaffView()),
+			];
 		}
 
 		return $this->filterAndSortMoreDetailsOptions($moreDetailsOptions);
