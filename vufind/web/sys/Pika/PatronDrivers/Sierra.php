@@ -1997,7 +1997,7 @@ EOT;
 		// check if error we need to do an item level hold
 		if($this->apiLastError && stristr($this->apiLastError,"Volume record selection is required to proceed")
 		   || (stristr($this->apiLastError,"This record is not available") && (integer)$this->configArray['Catalog']['api_version'] == 4)) {
-			$items = $this->getItemVolumes($recordId);
+			$items = $this->getItemVolumes($patron, $recordId);
 			$return = [
 				'message' => 'This title requires item level holds, please select an item to place a hold on.',
 				'success' => 'true',
@@ -2320,11 +2320,6 @@ EOT;
 			$count   = count($historyEntries) + 1;
 		} while ($count < $total);
 
-		// selected -> get bib
-		// format bib # for reading history search
-		// iterate entries stristr bib #
-		// if found get history id
-
 	}
 
 	public function hasNativeReadingHistory(){
@@ -2444,13 +2439,7 @@ EOT;
 			$this->logger->info("Found reading history in memcache:" . $patronReadingHistoryCacheKey);
 		}
 
-		// search test
-		//$search =  $this->searchReadingHistory($patron, 'colorado');
-		//$history['titles'] = $search;
-		//return $history;
-
 		// Let the CatalogConnection Driver sort the results if $recordsPerPage == -1
-
 		if ($recordsPerPage > -1){
 			//TODO: sorting routine
 			$historyPages      = array_chunk($history['titles'], $recordsPerPage);
@@ -2576,30 +2565,54 @@ EOT;
 	/**
 	 * Get volumes for item level holds
 	 *
+	 * Use sierra patron/$patronId/holds/requests/form endpoint to filter solr records down to item-volumes holdable by
+	 * patron.
+	 * @param $patron User
 	 * @param $bibId
 	 * @return array|false
 	 */
-	public function getItemVolumes($bibId) {
-		$record = RecordDriverFactory::initRecordDriverById($this->accountProfile->recordSource . ':' . $bibId);
+	public function getItemVolumes($patron, $bibId){
+		// get item records from solr
+		$record      = RecordDriverFactory::initRecordDriverById($this->accountProfile->recordSource . ':' . $bibId);
 		$solrRecords = $record->getGroupedWorkDriver()->getRelatedRecord($this->accountProfile->recordSource . ':' . $bibId);
+//		if (!isset($solrRecords['itemDetails']) || count($solrRecords['itemDetails']) > 1){
+//			// todo: correct error handling
+//			return false;
+//		}
+		// get holdable item ids for patron from api.
+		$recordNumber = substr($bibId, 2, -1); // remove the .x and the last check digit
+		$patronIlsId = $this->getPatronId($patron->barcode);
+		$operation = "patrons/" . $patronIlsId . "/holds/requests/form";
+		$params = ['recordNumber' => $recordNumber];
+		$res = $this->_doRequest($operation, $params);
 
-		if(!isset($solrRecords['itemDetails']) || count($solrRecords['itemDetails']) > 1) {
-			// todo: something
+		if(! $res) {
+			// error
+			return false;
+		}
+		// holdable ids
+		$holdableItemNumbers =  [];
+		foreach ($res->itemsAsVolumes as $itemAsVolume) {
+			$holdableItemNumbers[] = $itemAsVolume->id;
 		}
 
 		$items = [];
-		foreach($solrRecords['itemDetails'] as $record) {
-			// todo: is holdable?
-			$items[] = array(
+		foreach ($solrRecords['itemDetails'] as $record){
+			// is holdable? skip if not.
+			$itemNumber = substr($record['itemId'], 2, -1);
+			if(!in_array($itemNumber, $holdableItemNumbers)) {
+				continue;
+			}
+			$items[] = [
 				'itemNumber' => $record['itemId'],
 				'location'   => $record['shelfLocation'],
 				'callNumber' => $record['callNumber'],
 				'status'     => $record['status']
-			);
+			];
 		}
+
 		return $items;
 	}
-
 
 	/**
 	 * _authNameBarcode
