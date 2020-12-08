@@ -271,13 +271,13 @@ function handleCookie($cookieName, $cookieValue){
 	global $configArray;
 	if (!isset($_COOKIE[$cookieName]) || $cookieValue != $_COOKIE[$cookieName]){
 		if ($cookieValue == ''){
-			if($configArray['Site']['isProduction']){
+			if(!$configArray['Site']['isDevelopment']){
 				setcookie($cookieName, $cookieValue, time() - 1000, '/', null, 1, 1);
 			}else{
 				setcookie($cookieName, $cookieValue, time() - 1000, '/', null, 0, 1);
 			}
 		}else{
-			if($configArray['Site']['isProduction']){
+			if(!$configArray['Site']['isDevelopment']){
 				setcookie($cookieName, $cookieValue, 0, '/', null, 1, 1);
 			}
 			else

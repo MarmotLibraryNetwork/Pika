@@ -40,7 +40,7 @@ class MemcachedSession extends SessionHandler implements SessionHandlerInterface
 		global $configArray;
 		ini_set('session.save_handler', 'memcached');
 		ini_set('session.cookie_httponly', 1);
-		if($configArray['Site']['isProduction']){
+		if(!$configArray['Site']['isDevelopment']){
 			ini_set('session.cookie_secure', 1);
 		}
 		ini_set('session.save_path', '127.0.0.1:11211');

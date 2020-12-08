@@ -1699,14 +1699,26 @@ class Location extends DB_DataObject {
 	 * @return bool
 	 */
 	public function getOpacStatus(){
+		global $configArray;
 		if (is_null($this->opacStatus)){
 			if (isset($_GET['opac'])){
 				$this->opacStatus = $_GET['opac'] == 1 || strtolower($_GET['opac']) == 'true' || strtolower($_GET['opac']) == 'on';
 				if ($_GET['opac'] == ''){
 					//Clear any existing cookie
-					setcookie('opac', $this->opacStatus, time() - 1000, '/', NULL, 1, 1);
+
+					if(!$configArray['Site']['isDevelopment']){
+						setcookie('opac', $this->opacStatus, time() - 1000, '/', null, 1, 1);
+					}
+					else{
+						setcookie('opac', $this->opacStatus, time() - 1000, '/', null, 0, 1);
+					}
 				}elseif (!isset($_COOKIE['opac']) || $this->opacStatus != $_COOKIE['opac']){
+					if(!$configArray['Site']['isDevelopment']){
 					setcookie('opac', $this->opacStatus ? '1' : '0', 0, '/', NULL, 1, 1);
+				}
+					else{
+						setcookie('opac', $this->opacStatus ? '1' : '0', 0, '/', NULL, 0, 1);
+					}
 				}
 			}elseif (isset($_COOKIE['opac'])){
 				$this->opacStatus = (boolean)$_COOKIE['opac'];
