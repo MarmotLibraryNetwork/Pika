@@ -631,6 +631,12 @@ public class GroupingFormatDetermination {
 		if (printFormats.contains("NintendoDS") && printFormats.contains("3DS")){
 			printFormats.remove("NintendoDS");
 		}
+		if (printFormats.contains("PlayStation4") && printFormats.contains("PlayStation5")){
+			printFormats.remove("PlayStation4");
+		}
+		if (printFormats.contains("PlayStation") && printFormats.contains("PlayStation5")){
+			printFormats.remove("PlayStation");
+		}
 		if (printFormats.contains("PlayStation3") && printFormats.contains("PlayStation4")){
 			printFormats.remove("PlayStation3");
 		}
@@ -639,6 +645,9 @@ public class GroupingFormatDetermination {
 		}
 		if (printFormats.contains("PlayStation") && printFormats.contains("PlayStation3")){
 			printFormats.remove("PlayStation");
+		}
+		if (printFormats.contains("XboxSeriesX") && printFormats.contains("XboxOne")){
+			printFormats.remove("XboxSeriesX");  // a lot of xbox one games will say mention the XboxSeriesX in system requirements as well
 		}
 		if (printFormats.contains("Xbox360") && printFormats.contains("XboxOne")){
 			printFormats.remove("Xbox360");
@@ -650,8 +659,9 @@ public class GroupingFormatDetermination {
 			printFormats.remove("XboxOne");
 		}
 		if (printFormats.contains("Kinect") || printFormats.contains("Xbox360")
-				|| printFormats.contains("XboxOne") || printFormats.contains("PlayStation")
-				|| printFormats.contains("PlayStation3") || printFormats.contains("PlayStation4")
+				|| printFormats.contains("XboxOne") || printFormats.contains("XboxSeriesX")
+				|| printFormats.contains("PlayStation") || printFormats.contains("PlayStation3")
+				|| printFormats.contains("PlayStation4") || printFormats.contains("PlayStation5")
 				|| printFormats.contains("Wii") || printFormats.contains("WiiU")
 				|| printFormats.contains("NintendoDS") || printFormats.contains("3DS")
 				|| printFormats.contains("WindowsGame")){
@@ -912,12 +922,17 @@ public class GroupingFormatDetermination {
 	private String getGameFormatFromValue(String value) {
 		if (value.contains("kinect sensor")) {
 			return "Kinect";
+		} else if (value.contains("xbox series x") && !value.contains("compatible") && !value.contains("optimized for xbox series x")) {
+			//xbox one games can contain the phrase "optimized for Xbox Series X"
+			return "XboxSeriesX";
 		} else if (value.contains("xbox one") && !value.contains("compatible")) {
 			return "XboxOne";
 		} else if (value.contains("xbox") && !value.contains("compatible")) {
 			return "Xbox360";
 		} else if (value.contains("playstation vita") /*&& !value.contains("compatible")*/) {
 			return "PlayStationVita";
+		} else if (value.contains("playstation 5") && !value.contains("compatible")) {
+			return "PlayStation5";
 		} else if (value.contains("playstation 4") && !value.contains("compatible")) {
 			return "PlayStation4";
 		} else if (value.contains("playstation 3") && !value.contains("compatible")) {
