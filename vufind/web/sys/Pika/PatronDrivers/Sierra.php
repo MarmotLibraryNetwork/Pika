@@ -2575,10 +2575,7 @@ EOT;
 		// get item records from solr
 		$record      = RecordDriverFactory::initRecordDriverById($this->accountProfile->recordSource . ':' . $bibId);
 		$solrRecords = $record->getGroupedWorkDriver()->getRelatedRecord($this->accountProfile->recordSource . ':' . $bibId);
-//		if (!isset($solrRecords['itemDetails']) || count($solrRecords['itemDetails']) > 1){
-//			// todo: correct error handling
-//			return false;
-//		}
+
 		// get holdable item ids for patron from api.
 		$recordNumber = substr($bibId, 2, -1); // remove the .x and the last check digit
 		$patronIlsId = $this->getPatronId($patron->barcode);
@@ -2590,6 +2587,7 @@ EOT;
 			// error
 			return false;
 		}
+
 		// holdable ids
 		$holdableItemNumbers =  [];
 		foreach ($res->itemsAsVolumes as $itemAsVolume) {
