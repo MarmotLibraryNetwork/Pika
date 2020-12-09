@@ -753,7 +753,7 @@ class Sierra {
 //				$index = array_key_first($webNote);
 //				$patron->web_note = $webNote[$index]->content;
 //			}
-		}
+		//}
 
 		if($createPatron) {
 			$patron->created = date('Y-m-d');
