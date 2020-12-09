@@ -746,13 +746,13 @@ class Sierra {
 			$patron->numHoldsIls          = $patron->numHoldsAvailableIls + $patron->numHoldsRequestedIls;
 		}
 
-		// 6.11 web notes
-		if(isset($pInfo->varFields)) {
-			$webNote = $this->_getVarField('e',$pInfo->varFields);
-			if(count($webNote) > 0) {
-				$index = array_key_first($webNote);
-				$patron->web_note = $webNote[$index]->content;
-			}
+		// 6.11 web notes TODO: uncomment if it's ever safe to display web notes field
+//		if(isset($pInfo->varFields)) {
+//			$webNote = $this->_getVarField('e',$pInfo->varFields);
+//			if(count($webNote) > 0) {
+//				$index = array_key_first($webNote);
+//				$patron->web_note = $webNote[$index]->content;
+//			}
 		}
 
 		if($createPatron) {
@@ -2577,6 +2577,7 @@ EOT;
 		$solrRecords = $record->getGroupedWorkDriver()->getRelatedRecord($this->accountProfile->recordSource . ':' . $bibId);
 
 		// get holdable item ids for patron from api.
+		// TODO: check api version -- will only be available in v6+
 		$recordNumber = substr($bibId, 2, -1); // remove the .x and the last check digit
 		$patronIlsId = $this->getPatronId($patron->barcode);
 		$operation = "patrons/" . $patronIlsId . "/holds/requests/form";
@@ -2593,10 +2594,11 @@ EOT;
 		foreach ($res->itemsAsVolumes as $itemAsVolume) {
 			$holdableItemNumbers[] = $itemAsVolume->id;
 		}
-
+		// TODO: END API CHECK HERE
 		$items = [];
 		foreach ($solrRecords['itemDetails'] as $record){
 			// is holdable? skip if not.
+
 			$itemNumber = substr($record['itemId'], 2, -1);
 			if(!in_array($itemNumber, $holdableItemNumbers)) {
 				continue;
