@@ -41,6 +41,8 @@ class OverDrive_AJAX extends AJAXHandler {
 		'submitSupportForm',
 	];
 
+	protected $methodsThatRespondThemselves = [];
+
 	function forceUpdateFromAPI(){
 		$id                            = $_REQUEST['id'];
 		$overDriveProduct              = new Pika\BibliographicDrivers\OverDrive\OverDriveAPIProduct();
