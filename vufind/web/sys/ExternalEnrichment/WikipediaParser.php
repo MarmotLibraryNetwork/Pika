@@ -27,7 +27,7 @@ namespace ExternalEnrichment;
 class WikipediaParser {
 	private $lang;
 
-	public function __construct($lang){
+	public function __construct($lang = null){
 		$this->lang = $lang ?? 'en';
 	}
 
@@ -301,7 +301,7 @@ class WikipediaParser {
 		return $imageUrl ?? false;
 	}
 
-	public function getWikipediaPage($baseURL, $queryTerm){
+	public function getWikipediaPage($baseURL, $queryTerm = null){
 		$pageUrl = $baseURL . urlencode($queryTerm);
 		if (filter_var($pageUrl, FILTER_VALIDATE_URL)){
 			$result     = file_get_contents($pageUrl);

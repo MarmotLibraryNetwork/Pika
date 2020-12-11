@@ -11005,7 +11005,7 @@ fieldset[disabled] .btn-masquerade.active {
   border: 0;
   border-radius: 0.5em;
   color: #fff !important;
-  background-color: rgba(3, 60, 4, 0.7);
+  background-color: rgba(51, 51, 51, 0.6);
   margin-top: 20px;
   line-height: 60px !important;
   text-shadow: none;
@@ -11040,10 +11040,6 @@ fieldset[disabled] .btn-masquerade.active {
 }
 .sidebar-links .panel-body {
   background-color: transparent;
-}
-.sidebar-button {
-  background-color: #056608;
-  background: linear-gradient(to bottom, #056608, #044e06);
 }
 #more-details-accordion .active .panel-title {
   color: #000;
