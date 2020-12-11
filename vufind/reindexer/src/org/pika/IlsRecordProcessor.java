@@ -1445,9 +1445,8 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		}
 		if (collectionsToSuppressPattern != null && collectionSubfield != ' '){
 			Subfield collectionSubfieldValue = curItem.getSubfield(collectionSubfield);
-			if (collectionSubfieldValue == null){ // suppress if subfield is missing
-				return true;
-			}else if (collectionsToSuppressPattern.matcher(collectionSubfieldValue.getData().trim()).matches()) {
+			// Do not suppress if there isn't a collection subfield
+			if (collectionSubfieldValue != null && collectionsToSuppressPattern.matcher(collectionSubfieldValue.getData().trim()).matches()) {
 				return true;
 			}
 		}
