@@ -440,7 +440,7 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 				$requestUser = new User();
 				$requestUser->get($request->createdBy);
 				$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $requestUser->lastname . ', ' . $requestUser->firstname);
-				$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $requestUser->getAccountProfile()->loginConfiguration);
+				$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $requestUser->getBarcode());
 				$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $requestUser->email);
 				if ($configArray['MaterialsRequest']['showPlaceHoldField']){
 					if ($request->placeHoldWhenAvailable == 1){
