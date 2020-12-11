@@ -2578,30 +2578,34 @@ EOT;
 
 		// get holdable item ids for patron from api.
 		// TODO: check api version -- will only be available in v6+
-		$recordNumber = substr($bibId, 2, -1); // remove the .x and the last check digit
-		$patronIlsId = $this->getPatronId($patron->barcode);
-		$operation = "patrons/" . $patronIlsId . "/holds/requests/form";
-		$params = ['recordNumber' => $recordNumber];
-		$res = $this->_doRequest($operation, $params);
+		$apiVersion = (int)$this->configArray['Catalog']['api_version'];
+		if ($apiVersion >= 6){
+			$recordNumber = substr($bibId, 2, -1); // remove the .x and the last check digit
+			$patronIlsId  = $this->getPatronId($patron->barcode);
+			$operation    = "patrons/" . $patronIlsId . "/holds/requests/form";
+			$params       = ['recordNumber' => $recordNumber];
+			$res          = $this->_doRequest($operation, $params);
 
-		if(! $res) {
-			// error
-			return false;
-		}
+			if (!$res){
+				// error
+				return false;
+			}
 
-		// holdable ids
-		$holdableItemNumbers =  [];
-		foreach ($res->itemsAsVolumes as $itemAsVolume) {
-			$holdableItemNumbers[] = $itemAsVolume->id;
+			// holdable ids
+			$holdableItemNumbers = [];
+			foreach ($res->itemsAsVolumes as $itemAsVolume){
+				$holdableItemNumbers[] = $itemAsVolume->id;
+			}
 		}
 		// TODO: END API CHECK HERE
 		$items = [];
 		foreach ($solrRecords['itemDetails'] as $record){
 			// is holdable? skip if not.
-
-			$itemNumber = substr($record['itemId'], 2, -1);
-			if(!in_array($itemNumber, $holdableItemNumbers)) {
-				continue;
+			if ($apiVersion >= 6){
+				$itemNumber = substr($record['itemId'], 2, -1);
+				if (!in_array($itemNumber, $holdableItemNumbers)){
+					continue;
+				}
 			}
 			$items[] = [
 				'itemNumber' => $record['itemId'],
