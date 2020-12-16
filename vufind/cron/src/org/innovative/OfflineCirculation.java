@@ -80,12 +80,11 @@ public class OfflineCirculation implements IProcessHandler {
 		processLog.addNote("Processing offline holds");
 		String baseUrl         = PikaConfigIni.getIniValue("Site", "url");
 //		String barcodeProperty = PikaConfigIni.getIniValue("Catalog", "barcodeProperty");
-//		String barcodeColumn   = barcodeProperty.equalsIgnoreCase("name_barcode") ? "cat_password" : "cat_username";
 		try (
 			PreparedStatement holdsToProcessStmt = pikaConn.prepareStatement("SELECT offline_hold.*, cat_username, cat_password FROM offline_hold LEFT JOIN user ON user.id = offline_hold.patronId WHERE status='Not Processed' ORDER BY timeEntered ASC");
 			// Match by Pika patron ID
 
-//			PreparedStatement holdsToProcessStmt = pikaConn.prepareStatement("SELECT offline_hold.*, cat_username, cat_password FROM `offline_hold` LEFT JOIN `user` ON (user." + barcodeColumn + " = offline_hold.patronBarcode) WHERE status = 'Not Processed' ORDER BY timeEntered ASC");
+//			PreparedStatement holdsToProcessStmt = pikaConn.prepareStatement("SELECT offline_hold.*, cat_username, cat_password FROM `offline_hold` LEFT JOIN `user` ON (user." + barcodeProperty + " = offline_hold.patronBarcode) WHERE status = 'Not Processed' ORDER BY timeEntered ASC");
 			// This was used for a data migration of holds transactions (where the assumption that a patron has logged into Pika is invalid)
 			// This matches by patron barcode when the barcode is saved in the cat_password field
 
@@ -363,6 +362,8 @@ public class OfflineCirculation implements IProcessHandler {
 							result.setSuccess(false);
 							result.setNote("Could not process check out because the item response was not successful");
 						}
+
+//					} else if (patronBarcodeResponse.isSuccess() && patronBarcodeResponse.getMessage().contains("<h[123] class=\"error\">")) {
 					} else if (patronBarcodeResponse.isSuccess() && patronBarcodeResponse.getMessage().contains(" class=\"error\">")) {
 						lastPatronHadError = true;
 						Pattern regex = Pattern.compile("<h[123] class=\"error\">(.*?)</h[123]>");

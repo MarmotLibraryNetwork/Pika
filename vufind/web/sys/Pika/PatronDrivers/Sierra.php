@@ -432,7 +432,7 @@ class Sierra {
 
 		// does the user exist in database?
 		if(!$patron || $patron->N == 0) {
-			$this->logger->debug('Patron does not exits in Pika database.', ['barcode'=>$this->patronBarcode]);
+			$this->logger->debug('Patron does not exist in Pika database.', ['Sierra ID'=>$patronId]);
 			$createPatron = true;
 		}
 
@@ -763,7 +763,7 @@ class Sierra {
 				                                                                 'backtrace'=>$patron->_lastError->backtrace]);
 				throw new ErrorException('Error saving patron to Pika database');
 			} else {
-				$this->logger->debug('Created patron in Pika database.', ['barcode'=>$this->patronBarcode]);
+				$this->logger->debug('Created patron in Pika database.', ['barcode'=> $patron->getBarcode()]);
 			}
 		} elseif ($updatePatron && !$createPatron) {
 			$patron->update();
@@ -2039,7 +2039,6 @@ EOT;
 
 	public function placeVolumeHold($patron, $recordId, $volumeId, $pickupBranch){
 		return[];
-		$recordId = $recordId;
 	}
 
 	public function changeHoldPickupLocation($patron, $bibId, $holdId, $newPickupLocation){
