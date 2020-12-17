@@ -18,11 +18,7 @@
             <div class="result">
         <div class="row">
             <div class="col-md-2">
-							<div class="listCovers">
-	            {foreach from=$covers item=cover}
-		            <img src="{$cover}" class="coverGrid" />
-		            {/foreach}
-              </div>
+
             </div>
             <div class="col-md-9">
                 <div class="row">
@@ -75,7 +71,7 @@
                                                 <img src="{img filename='facebook-icon.png'}" alt="Share on Facebook">
                                             </a>
 
-                                            {*{include file="GroupedWork/pinterest-share-button.tpl" urlToShare=$url|cat:"/MyAccount/MyList/"|cat:$myList.id description="See My List "|cat:$myList.name|cat:" at $homeLibrary" coverUrl="https://opac.marmot.org/interface/themes/marmot/images/logo_responsive.png"}*}
+                                            {*include file="GroupedWork/pinterest-share-button.tpl" urlToShare=$url|cat:"/MyAccount/MyList/"|cat:$myList.id description="See My List "|cat:$myList.name|cat:" at $homeLibrary" coverUrl="https://opac.marmot.org/interface/themes/marmot/images/logo_responsive.png"*}
 
 
                                         </div>
