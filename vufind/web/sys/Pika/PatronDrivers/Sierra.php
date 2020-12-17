@@ -1999,10 +1999,10 @@ EOT;
 		   || (stristr($this->apiLastError,"This record is not available") && (integer)$this->configArray['Catalog']['api_version'] == 4)) {
 			$items = $this->getItemVolumes($patron, $recordId);
 			$return = [
-				'message' => 'This title requires item level holds, please select an item to place a hold on.',
-				'success' => 'true',
+				'message'    => 'This title requires item level holds, please select an item to place a hold on.',
+				'success'    => 'true',
 				'canceldate' => $neededBy,
-				'items'   => $items
+				'items'      => $items
 			];
 			return $return;
 		}

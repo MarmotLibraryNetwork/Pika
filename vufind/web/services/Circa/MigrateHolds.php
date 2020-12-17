@@ -197,33 +197,140 @@ class Circa_MigrateHolds extends Action {
 	}
 
 	function processDeltaHolds(){
-		$row = 1;
 		$userIdAndBarcode = [];
-		$userId = $itemBarcode = $holdExpires= null;
+		$userId           = $itemBarcode = $holdDate = $pickupCode = $holdExpires = null;
+		// Process All holds file
 		if (($handle = fopen("all_holds.flat", "r")) !== false){
 			echo '<pre>';
 			while (($data = fgetcsv($handle, 0, "|")) !== false){
-				$row++;
-
 				if (strpos($data[0], 'USER_ID')){
 					$userId = substr($data[1], 1);
 				}
 				if (strpos($data[0], 'ITEM_ID')){
 					$itemBarcode = substr($data[1], 1);
 				}
-				if (strpos($data[0], 'HOLD_EXPIRES_DATE')){
-					$holdExpires = substr($data[1], 1);
+				if (strpos($data[0], 'HOLD_DATE')){
+					$holdDate = substr($data[1], 1);
 				}
-				if (!empty($itemBarcode) && !empty($userId) && !empty($holdExpires)){
-					$userIdAndBarcode[$userId] = $itemBarcode;
-					echo $userId . ", $itemBarcode, Expires: $holdExpires". ( $holdExpires != 'NEVER' && (int) $holdExpires < 20201201 ? ' expired' : '') .  "\n";
-					$userId = $itemBarcode = null;
+				if (strpos($data[0], 'HOLD_PICKUP_LIBRARY')){
+					$pickupCode = substr($data[1], 1);
+				}
+//				if (strpos($data[0], 'HOLD_EXPIRES_DATE')){
+//					$holdExpires = substr($data[1], 1);
+//				}
+				if (!empty($itemBarcode) && !empty($userId) && !empty($holdDate) && !empty($pickupCode) /*&& !empty($holdExpires)*/){
+					$userIdAndBarcode[] = [$userId, $itemBarcode, $holdDate, $pickupCode];
+//					echo $userId . ", $itemBarcode\n";
+//					echo $userId . ", $itemBarcode, Expires: $holdExpires". ( $holdExpires != 'NEVER' && (int) $holdExpires < 20201201 ? ' expired' : '') .  "\n";
+					$userId = $holdDate = $pickupCode = $itemBarcode = null;
 					continue;
 				}
 			}
-			echo '</pre>';
-			fclose($handle);
 		}
+		fclose($handle);
+
+		// Remove inactive entries
+		$userId = $holdDate = $pickupCode = $itemBarcode = null;
+		if (($handle = fopen("holdinactiveav.flat", "r")) !== false){
+			echo '<pre>';
+			while (($data = fgetcsv($handle, 0, "|")) !== false){
+				if (strpos($data[0], 'USER_ID')){
+					$userId = substr($data[1], 1);
+				}
+				if (strpos($data[0], 'ITEM_ID')){
+					$itemBarcode = substr($data[1], 1);
+				}
+				if (strpos($data[0], 'HOLD_DATE')){
+					$holdDate = substr($data[1], 1);
+				}
+				if (strpos($data[0], 'HOLD_PICKUP_LIBRARY')){
+					$pickupCode = substr($data[1], 1);
+				}
+				if (!empty($itemBarcode) && !empty($userId) && !empty($holdDate) && !empty($pickupCode)){
+					$this->removeHold($userId, $itemBarcode, $holdDate, $pickupCode, $userIdAndBarcode);
+					$userId = $holdDate = $pickupCode = $itemBarcode = null;
+					continue;
+				}
+			}
+		}
+		fclose($handle);
+
+		// Remove inactive entries
+		$userId = $holdDate = $pickupCode = $itemBarcode = null;
+		if (($handle = fopen("holdinactivenotav.flat", "r")) !== false){
+			echo '<pre>';
+			while (($data = fgetcsv($handle, 0, "|")) !== false){
+				if (strpos($data[0], 'USER_ID')){
+					$userId = substr($data[1], 1);
+				}
+				if (strpos($data[0], 'ITEM_ID')){
+					$itemBarcode = substr($data[1], 1);
+				}
+				if (strpos($data[0], 'HOLD_DATE')){
+					$holdDate = substr($data[1], 1);
+				}
+				if (strpos($data[0], 'HOLD_PICKUP_LIBRARY')){
+					$pickupCode = substr($data[1], 1);
+				}
+				if (!empty($itemBarcode) && !empty($userId) && !empty($holdDate) && !empty($pickupCode) ){
+					$this->removeHold($userId, $itemBarcode, $holdDate, $pickupCode, $userIdAndBarcode);
+					$userId = $holdDate = $pickupCode = $itemBarcode = null;
+					continue;
+				}
+			}
+		}
+		fclose($handle);
+
+		$BibIdMatches = [];
+		if (($handle = fopen("temp-delta-hold-user-barcode-item-barcode-item-barcode-again-bidId-Match.csv", "r")) !== false){
+			echo '<pre>';
+			while (($data = fgetcsv($handle)) !== false){
+				$BibIdMatches[] = $data;
+			}
+		}
+		fclose($handle);
+
+		$pickupLocations = [
+			'CE' => 'dc',
+			'CR' => 'dr',
+			'DE' => 'dd',
+			'HO' => 'dh',
+			'PA' => 'dp',
+			'TS' => 'dh',
+		];
+
+//		$sortedArray = $userIdAndBarcode;
+//		usort($sortedArray, function ($a, $b){ return $a[2] <=> $b[2];});
+//		foreach ($sortedArray as $index => $anUserIdBarcode){
+		foreach ($userIdAndBarcode as $index => $anUserIdBarcode){
+			[$holdUser, $holdBarcode, $holdsHoldDate, $holdPickupCode] = $anUserIdBarcode;
+			foreach ($BibIdMatches as $data){
+				if ($holdUser == $data[0] && $holdBarcode == $data[1]){
+					echo "$holdUser, {$data[3]}, {$pickupLocations[$holdPickupCode]}\n";
+//					echo "$holdUser, {$data[3]}, $holdsHoldDate, {$pickupLocations[$holdPickupCode]}\n";
+					break;
+				}
+			}
+		}
+
+//		foreach ($userIdAndBarcode as $index => &$anUserIdBarcode){
+//			[$holdUser, $holdBarcode] = $anUserIdBarcode;
+//			echo "$holdUser, $holdBarcode\n";
+//		}
+
+		echo '</pre>';
+
+	}
+
+	private function removeHold($userId, $itemBarcode, $holdDate, $pickupCode, &$userIdAndBarcode){
+		foreach ($userIdAndBarcode as $index => &$anUserIdBarcode){
+			[$holdUser, $holdBarcode, $holdsHoldDate, $holdPickupCode] = $anUserIdBarcode;
+			if ($holdUser == $userId && $itemBarcode == $holdBarcode && $holdDate == $holdsHoldDate && $pickupCode == $holdPickupCode){
+				unset($userIdAndBarcode[$index]);
+				return;
+			}
+		}
+		echo "Error: did not find hold for $userId, $itemBarcode, $holdDate, $pickupCode\n";
 	}
 
 	function processDeltaPatrons(){

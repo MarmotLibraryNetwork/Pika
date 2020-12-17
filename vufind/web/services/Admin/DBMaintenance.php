@@ -1413,6 +1413,15 @@ class DBMaintenance extends Admin_Admin {
 					]
 				],
 
+				'add-pickup-branch-to-offline-holds-2021.01' => [
+					'title'           => 'Add pickup branch to offline holds table',
+					'description'     => '',
+					'continueOnError' => true,
+					'sql'             => [
+						'ALTER TABLE `pika`.`offline_hold` ADD COLUMN `pickupLocation` VARCHAR(5) NULL AFTER `itemId`;',
+					]
+				],
+
 			)); // End of main array
 	}
 
