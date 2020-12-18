@@ -1114,13 +1114,15 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				}
 				sortableCallNumber.append(callNumberPostStamp);
 			}
-			//ARL-203 do not create an item level call number that is just a volume
-//			if (volume != null && fullCallNumber.length() > 0){
+			//Do create an item level call number that is just a volume (contrary to ARL-203)
+			// This is needed for periodicals which may only have a volume in the call number
+			// (It is also needed for when selecting an item in item-level holds in Sierra)
+			if (volume != null && !volume.isEmpty() /*&& fullCallNumber.length() > 0*/){
 				if (fullCallNumber.length() > 0 && fullCallNumber.charAt(fullCallNumber.length() - 1) != ' '){
 					fullCallNumber.append(' ');
 				}
 				fullCallNumber.append(volume);
-//			}
+			}
 			if (fullCallNumber.length() > 0){
 				hasCallNumber = true;
 				itemInfo.setCallNumber(fullCallNumber.toString().trim());
