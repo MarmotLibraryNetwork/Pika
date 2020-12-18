@@ -197,7 +197,7 @@ class BookCoverProcessor {
 
 							$listEntryImageResource = @imagecreatefromstring($listEntryCoverImage);
 
-							$resizedResource = imagescale($listEntryImageResource, 75);
+							$resizedResource = imagescale($listEntryImageResource, -1, 100);
 
 							$imageArray[$x] = $resizedResource;
 						}
