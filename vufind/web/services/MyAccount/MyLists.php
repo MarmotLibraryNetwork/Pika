@@ -294,8 +294,4 @@ class MyAccount_MyLists extends MyAccount{
         $array=$ret;
 
     }
-    function getCoversForList($listId)
-    {
-
-    }
 }

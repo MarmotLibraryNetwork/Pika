@@ -33,6 +33,7 @@ class BookCoverProcessor {
 	/** @var null|SourceAndId */
 	private $sourceAndId;
 	private $groupedWorkId;
+	private $listId;
 
 	/** @var null|GroupedWorkDriver */
 	private $groupedWork = null;
@@ -84,6 +85,148 @@ class BookCoverProcessor {
 		// Grouped work level case
 		if (isset($this->groupedWorkId) && $this->getGroupedWorkCover()){
 			return;
+			//
+		}elseif(isset($this->listId)){
+				$currentUrl = $configArray['Site']['url'];
+				$listId = $this->listId;
+				require_once ROOT_DIR . "/sys/LocalEnrichment/UserListEntry.php";
+				require_once ROOT_DIR . "/sys/LocalEnrichment/UserList.php";
+				require_once ROOT_DIR . "/RecordDrivers/GroupedWorkDriver.php";
+				$list = new UserList;
+				$list->id = $listId;
+				$list->find(true);
+				$listCount = $list->numValidListItems();
+				$listItems = $list->getListEntries();
+				$newCover = null;
+				$refresh = null;
+				if(isset($_GET['reload'])){
+					$refresh = $_GET['reload'];
+				}
+				$imageArray = [];
+				if($listCount>=4)
+				{
+					$x        = 0;
+					$finalCover = imagecreatetruecolor(100, 100);
+
+					while($x < 4)
+					{
+						$itemId = $listItems[0][$x];
+						$bookcoverUrl = $currentUrl . "/bookcover.php?id=" . $itemId . "&size=medium&type=grouped_work";
+
+
+						if($listEntryCoverImage=@file_get_contents($bookcoverUrl, false)){
+
+							$listEntryImageResource = @imagecreatefromstring($listEntryCoverImage);
+							$resizedResource = imagescale($listEntryImageResource, 50);
+							$imageArray[$x] = $resizedResource;
+					}
+							$x++;
+
+					}
+					if(imagecopymerge($finalCover, $imageArray[0],0,0,0,0,50,50,100))
+					{
+						imagecopymerge($finalCover, $imageArray[1],0,50,0,0,50,50,100);
+						imagecopymerge($finalCover, $imageArray[2],50,0,0,0,50,50,100);
+						imagecopymerge($finalCover, $imageArray[3],50,50,0,0,50,50,100);
+					}
+					if(isset($refresh))
+					{
+						unlink($this->cacheFile);
+					}
+					if(!file_exists($this->cacheFile)){
+						imagepng($finalCover, $this->cacheFile);
+					}
+					$this->returnImage($this->cacheFile);
+
+					return;
+				}elseif($listCount==3)
+				{
+					$x        = 0;
+					$finalCover = imagecreatetruecolor(100, 100);
+					while($x < 3)
+					{
+						$itemId = $listItems[0][$x];
+						$bookcoverUrl = $currentUrl . "/bookcover.php?id=" . $itemId . "&size=medium&type=grouped_work";
+
+
+						if($listEntryCoverImage=@file_get_contents($bookcoverUrl, false)){
+
+							$listEntryImageResource = @imagecreatefromstring($listEntryCoverImage);
+							if($x==0)
+							{
+								$resizedResource = imagescale($listEntryImageResource,75);
+							}else{
+							$resizedResource = imagescale($listEntryImageResource, 50);
+							}
+							$imageArray[$x] = $resizedResource;
+						}
+						$x++;
+
+					}
+					if(imagecopymerge($finalCover, $imageArray[0],0,0,0,0,50,100,100))
+					{
+						imagecopymerge($finalCover, $imageArray[1],50,0,0,0,50,50,100);
+						imagecopymerge($finalCover, $imageArray[2],50,50,0,0,50,50,100);
+
+					}
+					if(isset($refresh))
+					{
+						if(unlink($this->cacheFile))
+						{
+							return false;
+						}
+					}
+					if(!file_exists($this->cacheFile)){
+						imagepng($finalCover, $this->cacheFile);
+					}
+					$this->returnImage($this->cacheFile);
+
+					return;
+
+				}elseif($listCount==2)
+				{
+					$x        = 0;
+					$finalCover = imagecreatetruecolor(100, 100);
+					while($x < 2)
+					{
+						$itemId = $listItems[0][$x];
+						$bookcoverUrl = $currentUrl . "/bookcover.php?id=" . $itemId . "&size=medium&type=grouped_work";
+
+
+						if($listEntryCoverImage=@file_get_contents($bookcoverUrl, false)){
+
+							$listEntryImageResource = @imagecreatefromstring($listEntryCoverImage);
+
+							$resizedResource = imagescale($listEntryImageResource, 75);
+
+							$imageArray[$x] = $resizedResource;
+						}
+						$x++;
+
+					}
+					if(imagecopymerge($finalCover, $imageArray[0],0,0,0,0,50,100,100))
+					{
+						imagecopymerge($finalCover, $imageArray[1],50,0,0,0,50,100,100);
+
+					}
+					if(isset($refresh))
+					{
+						if(unlink($this->cacheFile))
+						{
+							return false;
+						}
+					}
+					if(!file_exists($this->cacheFile)){
+						imagepng($finalCover, $this->cacheFile);
+					}
+					$this->returnImage($this->cacheFile);
+
+					return;
+				}elseif($listCount==1){
+
+				}else{
+
+				}
 		}else{
 			// Record level cases
 
@@ -126,7 +269,6 @@ class BookCoverProcessor {
 		$this->log("No image found, using die image", PEAR_LOG_INFO);
 		$this->getDefaultCover();
 	}
-
 	private function loadCoverBySpecifiedSource($coverSource, SourceAndId $sourceAndId = null){
 		$sourceAndId ??= $this->sourceAndId;
 		switch ($coverSource){
@@ -372,6 +514,8 @@ class BookCoverProcessor {
 					$type = strtolower($_GET['type']);
 					if ($type == 'grouped_work' || $type == 'groupedwork'){
 						$this->groupedWorkId = $_GET['id'];
+					}elseif($type=='userList' || $type=='userlist'){
+						$this->listId = $_GET['id'];
 					}else{
 						$this->sourceAndId = new SourceAndId($_GET['type'] . ':' . $_GET['id']);
 					}
@@ -386,7 +530,7 @@ class BookCoverProcessor {
 		$this->category = empty($_GET['category']) ? null : strtolower(trim($_GET['category']));
 		$this->format   = empty($_GET['format']) ? null : strtolower(trim($_GET['format']));
 
-		$this->cacheName = $this->groupedWorkId ?? $this->sourceAndId->getSourceAndId() /*?? $this->isn ?? $this->upc ?? $this->issn*/ ?? false;
+		$this->cacheName = $this->groupedWorkId ?? $this->listId ?? $this->sourceAndId->getSourceAndId() /*?? $this->isn ?? $this->upc ?? $this->issn*/ ?? false;
 		if (empty($this->cacheName)){
 			$this->error = 'ISN, UPC, or ID must be provided.';
 			return false;
@@ -664,6 +808,10 @@ class BookCoverProcessor {
 				$author         = ucwords($this->groupedWork->getPrimaryAuthor());
 				$this->category = 'blank';
 			}
+		}elseif(isset($this->listId)){
+
+
+
 		}else{
 			/** @var MarcRecord $driver */
 			$recordDriver = RecordDriverFactory::initRecordDriverById($this->sourceAndId, $this->groupedWork);
@@ -719,13 +867,21 @@ class BookCoverProcessor {
 						$noCoverUrl = "interface/themes/default/images/$this->category.png";
 					}
 				}else{
-					$noCoverUrl = "interface/themes/default/images/noCover2.png";
+					if(isset($this->listId)){
+						$noCoverUrl = "interface/themes/default/images/lists.png";
+					}else{
+						$noCoverUrl = "interface/themes/default/images/noCover2.png";
+					}
 				}
 			}
 
 			$this->log("Found fallback cover: $noCoverUrl", PEAR_LOG_INFO);
 			return $this->processImageURL($noCoverUrl);
 		}
+	}
+
+	private function getUserListCover(){
+
 	}
 
 	private function getGroupedWorkCover(){

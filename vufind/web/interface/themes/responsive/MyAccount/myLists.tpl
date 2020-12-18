@@ -18,9 +18,9 @@
             <div class="result">
         <div class="row">
             <div class="col-md-2">
-
+							<img src="/bookcover.php?id={$myList.id}&size=medium&type=userList" />
             </div>
-            <div class="col-md-9">
+            <div class="col-md-10">
                 <div class="row">
                     <div class="col-xs-10 col-sm-10 col-md-10 col-lg-11">
                         <div class="row">
@@ -71,7 +71,7 @@
                                                 <img src="{img filename='facebook-icon.png'}" alt="Share on Facebook">
                                             </a>
 
-                                            {*include file="GroupedWork/pinterest-share-button.tpl" urlToShare=$url|cat:"/MyAccount/MyList/"|cat:$myList.id description="See My List "|cat:$myList.name|cat:" at $homeLibrary" coverUrl="https://opac.marmot.org/interface/themes/marmot/images/logo_responsive.png"*}
+                                            {include file="GroupedWork/pinterest-share-button.tpl" urlToShare=$url|cat:"/MyAccount/MyList/"|cat:$myList.id description="See My List "|cat:$myList.name|cat:" at $homeLibrary" coverUrl=$url|cat:"/bookcover.php?id="|cat:$myList.id|cat:"&size=medium&type=userList"}
 
 
                                         </div>
