@@ -92,6 +92,8 @@ class BookCoverProcessor {
 				require_once ROOT_DIR . "/sys/LocalEnrichment/UserListEntry.php";
 				require_once ROOT_DIR . "/sys/LocalEnrichment/UserList.php";
 				require_once ROOT_DIR . "/RecordDrivers/GroupedWorkDriver.php";
+				$font = ROOT_DIR . '/fonts/DejaVuSansCondensed-Bold.ttf';
+
 				$list = new UserList;
 				$list->id = $listId;
 				$list->find(true);
@@ -129,6 +131,8 @@ class BookCoverProcessor {
 						imagecopymerge($finalCover, $imageArray[2],50,0,0,0,50,50,100);
 						imagecopymerge($finalCover, $imageArray[3],50,50,0,0,50,50,100);
 					}
+					$fontColor = imagecolorallocate($finalCover,255,255,255);
+					$this->addWrappedTextToImage($finalCover,$font,$list->title,10,12,106, $fontColor);
 					if(isset($refresh))
 					{
 						unlink($this->cacheFile);
@@ -154,7 +158,7 @@ class BookCoverProcessor {
 							$listEntryImageResource = @imagecreatefromstring($listEntryCoverImage);
 							if($x==0)
 							{
-								$resizedResource = imagescale($listEntryImageResource,-1, 100);
+								$resizedResource = imagescale($listEntryImageResource,-1, 98);
 							}else{
 							$resizedResource = imagescale($listEntryImageResource, 50);
 							}
@@ -169,6 +173,8 @@ class BookCoverProcessor {
 						imagecopymerge($finalCover, $imageArray[2],50,50,0,0,50,50,100);
 
 					}
+					$fontColor = imagecolorallocate($finalCover,255,255,255);
+					$this->addWrappedTextToImage($finalCover,$font,$list->title,10,12,106,$fontColor);
 					if(isset($refresh))
 					{
 						if(unlink($this->cacheFile))
@@ -209,6 +215,8 @@ class BookCoverProcessor {
 						imagecopymerge($finalCover, $imageArray[1],50,0,0,0,50,100,100);
 
 					}
+					$fontColor = imagecolorallocate($finalCover,255,255,255);
+					$this->addWrappedTextToImage($finalCover,$font,$list->title,10,12,106,$fontColor);
 					if(isset($refresh))
 					{
 						if(unlink($this->cacheFile))
@@ -223,8 +231,6 @@ class BookCoverProcessor {
 
 					return;
 				}elseif($listCount==1){
-
-				}else{
 
 				}
 		}else{
@@ -1443,5 +1449,47 @@ class BookCoverProcessor {
 //			$this->logTime("create isbn 10 and isbn 13");
 //		}
 //	}
+
+	/**
+	 * Add text to an image, wrapping based on number of characters.
+	 *
+	 * @param resource $imageHandle The image resource to use
+	 * @param string   $font        The font file to use to generate the text
+	 * @param string   $text        The text to write
+	 * @param int      $fontSize    The pixel size of the font to use
+	 * @param int      $lineSpacing The number of pixels between lines of text
+	 * @param int      $startY      The vertical pixel position for the text
+	 * @param int      $color       The color identifier
+	 * @return float|int  The starting vertical position for the line of text. Use to set where the next line of text should start at
+	 */
+	private function addWrappedTextToImage($imageHandle, $font, $text, $fontSize, $lineSpacing, $startY, $color){
+
+		$textBox = imageftbbox($fontSize,0,$font,$text);
+		$totalTextWidth = abs($textBox[4]-$textBox[6]);
+		$numLines = ceil((float)$totalTextWidth/100);
+		$charactersPerLine = ceil(strlen($text)/$numLines);
+		$lines = explode("\n",wordwrap($text, $charactersPerLine, "\n"));
+		if(count($lines)>4) {$numLines = 3;}
+		$startY = $startY - ($numLines*$lineSpacing)-(($numLines-1)*3);
+
+
+		$box_x           = 0;
+		$box_y           = $startY-$lineSpacing;
+		$backgroundColor = imagecolorallocatealpha($imageHandle, 0, 0, 0, 40);
+		imagefilledrectangle($imageHandle, $box_x, $box_y, 100, 100, $backgroundColor);
+		$i = 0;
+		foreach($lines as $line)
+		{
+			$lineBox     = imageftbbox($fontSize, 0, $font, $line);
+			$lineWidth   = abs($lineBox[4] - $lineBox[6]);
+			$lineHeight  = abs($lineBox[3]- $lineBox[5]);
+			$x           = (100 - $lineWidth) / 2; //Get the starting position for the text
+			imagefttext($imageHandle, $fontSize, 0, $x, $startY, $color, $font, $line); //Write the text to the image
+			$startY += $lineHeight;
+			if(++$i == 4) break;
+		}
+
+
+	}
 
 }
