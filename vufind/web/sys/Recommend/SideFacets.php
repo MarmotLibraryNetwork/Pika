@@ -275,14 +275,9 @@ class SideFacets implements RecommendationInterface
 					}
 					if ($facetSetting->useMoreFacetPopup && count($sideFacets[$facetKey]['list']) > 12) {
 						$sideFacets[$facetKey]['showMoreFacetPopup'] = true;
-						$facetsList                                  = $sideFacets[$facetKey]['list'];
-						$sideFacets[$facetKey]['list']               = array_slice($facetsList, 0, 5);
-						$sortedList                                  = array();
-						foreach ($facetsList as $key => $value) {
-							$sortedList[strtolower($key)] = $value;
-						}
-						ksort($sortedList);
-						$sideFacets[$facetKey]['sortedList'] = $sortedList;
+						$sideFacets[$facetKey]['sortedList']         = $sideFacets[$facetKey]['list'];
+						$sideFacets[$facetKey]['list']               = array_slice($sideFacets[$facetKey]['list'], 0, 5); // shorten main list to the first 5 entries
+						ksort($sideFacets[$facetKey]['sortedList'], SORT_NATURAL|SORT_FLAG_CASE); // use case-insensitive natural ordering to sort the full list of options
 					} else {
 						$sideFacets[$facetKey]['showMoreFacetPopup'] = false;
 					}
@@ -294,13 +289,13 @@ class SideFacets implements RecommendationInterface
 			foreach ($sideFacets as $facetKey => $facet){
 				if (count($sideFacets[$facetKey]['list']) > 12){
 					$sideFacets[$facetKey]['showMoreFacetPopup'] = true;
-					$facetsList = $sideFacets[$facetKey]['list'];
-					$sideFacets[$facetKey]['list'] = array_slice($facetsList, 0, 5);
-					$sortedList = array();
+					$facetsList                                  = $sideFacets[$facetKey]['list'];
+					$sideFacets[$facetKey]['list']               = array_slice($facetsList, 0, 5);
+					$sortedList                                  = [];
 					foreach ($facetsList as $key => $value){
-						$sortedList[strtolower($value['display'])] = $value;
+						$sortedList[$value['display']] = $value;
 					}
-					ksort($sortedList);
+					ksort($sortedList, SORT_NATURAL|SORT_FLAG_CASE); // use case-insensitive natural ordering
 					$sideFacets[$facetKey]['sortedList'] = $sortedList;
 				}
 			}
