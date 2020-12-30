@@ -74,8 +74,8 @@ class Marmot extends Sierra {
 			/* MESA */
 			$extraSelfRegParams['patronCodes']['pcode3'] = 84;
 			$extraSelfRegParams['varFields'][] = ["fieldTag" => "m",
-			                                      "content"  => "Temp Online Access Account. Verify ALL information, add ID,".
-			                                       " verify notice preference, then change p-type, pcode3, and expiration date."];
+			                                      "content"  => "Temp Online Acct: Verify ALL information, add Telephone Number".
+			                                       " in the Unique ID field, verify notice preference, update barcode & exp. date, then change alias & p-type"];
 			$extraSelfRegParams['varFields'][] = ["fieldTag" => "q",
 			                                      "content"  => "dig access"];
 		}

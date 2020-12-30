@@ -520,7 +520,7 @@ class BookCoverProcessor {
 					$type = strtolower($_GET['type']);
 					if ($type == 'grouped_work' || $type == 'groupedwork'){
 						$this->groupedWorkId = $_GET['id'];
-					}elseif($type=='userList' || $type=='userlist'){
+					}elseif ($type == 'userList' || $type == 'userlist'){
 						$this->listId = $_GET['id'];
 					}else{
 						$this->sourceAndId = new SourceAndId($_GET['type'] . ':' . $_GET['id']);
@@ -536,7 +536,11 @@ class BookCoverProcessor {
 		$this->category = empty($_GET['category']) ? null : strtolower(trim($_GET['category']));
 		$this->format   = empty($_GET['format']) ? null : strtolower(trim($_GET['format']));
 
-		$this->cacheName = $this->groupedWorkId ?? $this->listId ?? $this->sourceAndId->getSourceAndId() /*?? $this->isn ?? $this->upc ?? $this->issn*/ ?? false;
+		$this->cacheName = $this->groupedWorkId ?? $this->listId ?? $this->sourceAndId ?? $this->isn ?? $this->upc ?? $this->issn ?? false;
+		//Novelist Series carousels include covers for titles that are not in the index, so we must resort to using isn, upc, issn
+		// Note Using $this->sourceAndId->getSourceAndId() causes a fatal error here when sourceAndId is not set.
+		// Using just $this->sourceAndId works in this chain, because when it is set, __toString() is automagically called here.
+
 		if (empty($this->cacheName)){
 			$this->error = 'ISN, UPC, or ID must be provided.';
 			return false;
