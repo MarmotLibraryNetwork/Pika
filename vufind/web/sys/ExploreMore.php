@@ -274,7 +274,7 @@ class ExploreMore {
 				}
 			}else{
 				//Display donor and contributor information
-				$brandingResults = $archiveDriver->getBrandingInformation(false);
+				$brandingResults = $archiveDriver->getBrandingInformation();
 
 				if (count($brandingResults) > 0){
 					//Sort and filter the acknowledgements
@@ -1043,10 +1043,12 @@ class ExploreMore {
 			}
 			foreach ($bookContents as $section){
 				$firstPageInSection = reset($section['pages']);
-				$section = array(
-						'pid' => $firstPageInSection['pid'],
+				if ($firstPageInSection){
+					$section = [
+						'pid'   => $firstPageInSection['pid'],
 						'label' => $section['title'],
-				);
+					];
+				}
 				if (!$currentlyShowingBook){
 					$section['link'] = $bookDriver->getRecordUrl() . '?pagePid=' . $firstPageInSection['pid'];
 				}
