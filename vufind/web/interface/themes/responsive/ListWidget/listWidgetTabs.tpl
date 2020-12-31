@@ -102,7 +102,7 @@
 
 			{rdelim});
 
-		$(window).bind('beforeunload', function(e) {ldelim}
+		$(window).on('beforeunload', null, function(e) {ldelim}
 			{if !isset($widget->listDisplayType) || $widget->listDisplayType == 'tabs'}
 			{*//	$('#listWidget{$widget->id}').tabs({literal}{ selected: 0 }{/literal}); {* .tabs function isn't recognized as a function. No longer part of the library? tabs seem to still work. plb 7-8-2015*}
 

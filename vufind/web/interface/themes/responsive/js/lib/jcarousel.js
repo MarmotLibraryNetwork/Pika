@@ -1,12 +1,12 @@
-/*! jCarousel - v0.3.0 - 2013-11-22
- * http://sorgalla.com/jcarousel
- * Copyright (c) 2013 Jan Sorgalla; Licensed MIT */
+/*! jCarousel - v0.3.9 - 2018-07-30
+* http://sorgalla.com/jcarousel/
+* Copyright (c) 2006-2018 Jan Sorgalla; Licensed MIT */
 (function($) {
 	'use strict';
 
 	var jCarousel = $.jCarousel = {};
 
-	jCarousel.version = '0.3.0';
+	jCarousel.version = '0.3.9';
 
 	var rRelativeTarget = /^([+\-]=)?(.+)$/;
 
@@ -192,7 +192,7 @@
 					if (!instance) {
 						return $.error(
 								'Cannot call methods on ' + pluginName + ' prior to initialization; ' +
-										'attempted to call method "' + options + '"'
+								'attempted to call method "' + options + '"'
 						);
 					}
 
@@ -231,6 +231,8 @@
 (function($, window) {
 	'use strict';
 
+	var $window = $(window);
+
 	var toFloat = function(val) {
 		return parseFloat(val) || 0;
 	};
@@ -239,6 +241,7 @@
 		animating:   false,
 		tail:        0,
 		inTail:      false,
+		resizeState: null,
 		resizeTimer: null,
 		lt:          null,
 		vertical:    false,
@@ -265,13 +268,15 @@
 		// Protected, don't access directly
 		_list:         null,
 		_items:        null,
-		_target:       null,
-		_first:        null,
-		_last:         null,
-		_visible:      null,
-		_fullyvisible: null,
+		_target:       $(),
+		_first:        $(),
+		_last:         $(),
+		_visible:      $(),
+		_fullyvisible: $(),
 		_init: function() {
 			var self = this;
+
+			self.resizeState = $window.width() + 'x' + $window.height();
 
 			this.onWindowResize = function() {
 				if (self.resizeTimer) {
@@ -279,6 +284,15 @@
 				}
 
 				self.resizeTimer = setTimeout(function() {
+					var currentResizeState = $window.width() + 'x' + $window.height();
+
+					// Check if the window size actually changed.
+					// iOS might trigger resize events on page scroll.
+					if (currentResizeState === self.resizeState) {
+						return;
+					}
+
+					self.resizeState = currentResizeState;
 					self.reload();
 				}, 100);
 			};
@@ -288,16 +302,16 @@
 		_create: function() {
 			this._reload();
 
-			$(window).on('resize.jcarousel', this.onWindowResize);
+			$window.on('resize.jcarousel', this.onWindowResize);
 		},
 		_destroy: function() {
-			$(window).off('resize.jcarousel', this.onWindowResize);
+			$window.off('resize.jcarousel', this.onWindowResize);
 		},
 		_reload: function() {
 			this.vertical = this.options('vertical');
 
 			if (this.vertical == null) {
-				this.vertical = this.list().height() > this.list().width();
+				this.vertical = toFloat(this.list().height()) > toFloat(this.list().width());
 			}
 
 			this.rtl = this.options('rtl');
@@ -330,7 +344,7 @@
 			this._list  = null;
 			this._items = null;
 
-			var item = this._target && this.index(this._target) >= 0 ?
+			var item = this.index(this._target) >= 0 ?
 					this._target :
 					this.closest();
 
@@ -385,7 +399,7 @@
 					width;
 
 			if (this.rtl && this.relative && !this.vertical) {
-				pos += this.list().width() - this.clipping();
+				pos += toFloat(this.list().width()) - this.clipping();
 			}
 
 			this.items().each(function() {
@@ -434,12 +448,13 @@
 			}
 
 			var wrap = this.options('wrap'),
-					end = this.items().length - 1;
+					end = this.items().length - 1,
+					check = this.options('center') ? this._target : this._last;
 
-			return end >= 0 &&
-					((wrap && wrap !== 'first') ||
-							(this.index(this._last) < end) ||
-							(this.tail && !this.inTail)) ? true : false;
+			return end >= 0 && !this.underflow &&
+			((wrap && wrap !== 'first') ||
+					(this.index(check) < end) ||
+					(this.tail && !this.inTail)) ? true : false;
 		},
 		hasPrev: function() {
 			if (false === this._trigger('hasprev')) {
@@ -448,16 +463,16 @@
 
 			var wrap = this.options('wrap');
 
-			return this.items().length > 0 &&
-					((wrap && wrap !== 'last') ||
-							(this.index(this._first) > 0) ||
-							(this.tail && this.inTail)) ? true : false;
+			return this.items().length > 0 && !this.underflow &&
+			((wrap && wrap !== 'last') ||
+					(this.index(this._first) > 0) ||
+					(this.tail && this.inTail)) ? true : false;
 		},
 		clipping: function() {
-			return this._element['inner' + (this.vertical ? 'Height' : 'Width')]();
+			return toFloat(this._element['inner' + (this.vertical ? 'Height' : 'Width')]());
 		},
 		dimension: function(element) {
-			return element['outer' + (this.vertical ? 'Height' : 'Width')](true);
+			return toFloat(element['outer' + (this.vertical ? 'Height' : 'Width')](true));
 		},
 		scroll: function(target, animate, callback) {
 			if (this.animating) {
@@ -603,16 +618,16 @@
 				multiplier = -1;
 
 				if (this.relative) {
-					correction = this.list().width() - this.clipping();
+					correction = toFloat(this.list().width()) - this.clipping();
 				}
 			}
 
 			if (properties.left) {
-				properties.left = (position.left + correction + toFloat(properties.left) * multiplier) + 'px';
+				properties.left = (toFloat(position.left) + correction + toFloat(properties.left) * multiplier) + 'px';
 			}
 
 			if (properties.top) {
-				properties.top = (position.top + correction + toFloat(properties.top) * multiplier) + 'px';
+				properties.top = (toFloat(position.top) + correction + toFloat(properties.top) * multiplier) + 'px';
 			}
 
 			return this.move(properties, opts);
@@ -636,7 +651,11 @@
 					css = {};
 
 			if (transitions) {
-				var backup = list.css(['transitionDuration', 'transitionTimingFunction', 'transitionProperty']),
+				var backup = {
+							transitionDuration: list.css('transitionDuration'),
+							transitionTimingFunction: list.css('transitionTimingFunction'),
+							transitionProperty: list.css('transitionProperty')
+						},
 						oldComplete = complete;
 
 				complete = function() {
@@ -707,7 +726,7 @@
 			this._prepare(item);
 
 			var pos     = this._position(item),
-					currPos = this.list().position()[this.lt];
+					currPos = toFloat(this.list().position()[this.lt]);
 
 			if (pos === currPos) {
 				if ($.isFunction(callback)) {
@@ -736,7 +755,7 @@
 			var pos = this.list().position()[this.lt];
 
 			if (this.rtl && this.relative && !this.vertical) {
-				pos += this.list().width() - this.clipping();
+				pos += toFloat(this.list().width()) - this.clipping();
 			}
 
 			if (this.rtl && !this.vertical) {
@@ -786,7 +805,7 @@
 					}, this);
 
 			var opts = typeof animation === 'object' ?
-							$.extend({}, animation) :
+					$.extend({}, animation) :
 					{duration: animation},
 					oldComplete = opts.complete || $.noop;
 
@@ -945,13 +964,13 @@
 		},
 		_position: function(item) {
 			var first  = this._first,
-					pos    = first.position()[this.lt],
+					pos    = toFloat(first.position()[this.lt]),
 					center = this.options('center'),
 					centerOffset = center ? (this.clipping() / 2) - (this.dimension(first) / 2) : 0;
 
 			if (this.rtl && !this.vertical) {
 				if (this.relative) {
-					pos -= this.list().width() - this.dimension(first);
+					pos -= toFloat(this.list().width()) - this.dimension(first);
 				} else {
 					pos -= this.clipping() - this.dimension(first);
 				}
@@ -975,11 +994,11 @@
 		_update: function(update) {
 			var self = this,
 					current = {
-						target:       this._target || $(),
-						first:        this._first || $(),
-						last:         this._last || $(),
-						visible:      this._visible || $(),
-						fullyvisible: this._fullyvisible || $()
+						target:       this._target,
+						first:        this._first,
+						last:         this._last,
+						visible:      this._visible,
+						fullyvisible: this._fullyvisible
 					},
 					back = this.index(update.first || current.first) < this.index(current.first),
 					key,
@@ -1167,6 +1186,7 @@
 			event:  'click',
 			method: 'scroll'
 		},
+		_carouselItems: null,
 		_pages: {},
 		_items: {},
 		_currentPage: null,
@@ -1194,6 +1214,8 @@
 					.off('jcarousel:destroy', this.onDestroy)
 					.off('jcarousel:reloadend', this.onReload)
 					.off('jcarousel:scrollend', this.onScroll);
+
+			this._carouselItems = null;
 		},
 		_reload: function() {
 			var perPage = this.options('perPage');
@@ -1210,7 +1232,7 @@
 				this._pages = this._calculatePages();
 			} else {
 				var pp    = parseInt(perPage, 10) || 0,
-						items = this.carousel().jcarousel('items'),
+						items = this._getCarouselItems(),
 						page  = 1,
 						i     = 0,
 						curr;
@@ -1239,7 +1261,8 @@
 			var self     = this,
 					carousel = this.carousel().data('jcarousel'),
 					element  = this._element,
-					item     = this.options('item');
+					item     = this.options('item'),
+					numCarouselItems = this._getCarouselItems().length;
 
 			$.each(this._pages, function(page, carouselItems) {
 				var currItem = self._items[page] = $(item.call(self, page, carouselItems));
@@ -1254,11 +1277,11 @@
 
 						if (parseFloat(page) > parseFloat(self._currentPage)) {
 							if (newIndex < currentIndex) {
-								target = '+=' + (carousel.items().length - currentIndex + newIndex);
+								target = '+=' + (numCarouselItems - currentIndex + newIndex);
 							}
 						} else {
 							if (newIndex > currentIndex) {
-								target = '-=' + (currentIndex + (carousel.items().length - newIndex));
+								target = '-=' + (currentIndex + (numCarouselItems - newIndex));
 							}
 						}
 					}
@@ -1298,19 +1321,24 @@
 		items: function() {
 			return this._items;
 		},
+		reloadCarouselItems: function() {
+			this._carouselItems = null;
+			return this;
+		},
 		_clear: function() {
 			this._element.empty();
 			this._currentPage = null;
 		},
 		_calculatePages: function() {
 			var carousel = this.carousel().data('jcarousel'),
-					items    = carousel.items(),
+					items    = this._getCarouselItems(),
 					clip     = carousel.clipping(),
 					wh       = 0,
 					idx      = 0,
 					page     = 1,
 					pages    = {},
-					curr;
+					curr,
+					dim;
 
 			while (true) {
 				curr = items.eq(idx++);
@@ -1319,35 +1347,64 @@
 					break;
 				}
 
+				dim = carousel.dimension(curr);
+
+				if ((wh + dim) > clip) {
+					page++;
+					wh = 0;
+				}
+
+				wh += dim;
+
 				if (!pages[page]) {
 					pages[page] = curr;
 				} else {
 					pages[page] = pages[page].add(curr);
 				}
-
-				wh += carousel.dimension(curr);
-
-				if (wh >= clip) {
-					page++;
-					wh = 0;
-				}
 			}
 
 			return pages;
+		},
+		_getCarouselItems: function() {
+			if (!this._carouselItems) {
+				this._carouselItems = this.carousel().jcarousel('items');
+			}
+
+			return this._carouselItems;
 		}
 	});
 }(jQuery));
 
-(function($) {
+(function($, document) {
 	'use strict';
+
+	var hiddenProp,
+			visibilityChangeEvent,
+			visibilityChangeEventNames = {
+				hidden: 'visibilitychange',
+				mozHidden: 'mozvisibilitychange',
+				msHidden: 'msvisibilitychange',
+				webkitHidden: 'webkitvisibilitychange'
+			}
+	;
+
+	$.each(visibilityChangeEventNames, function(key, val) {
+		if (typeof document[key] !== 'undefined') {
+			hiddenProp = key;
+			visibilityChangeEvent = val;
+			return false;
+		}
+	});
 
 	$.jCarousel.plugin('jcarouselAutoscroll', {
 		_options: {
 			target:    '+=1',
 			interval:  3000,
-			autostart: true
+			autostart: true,
+			method: 'scroll'
 		},
 		_timer: null,
+		_started: false,
 		_init: function () {
 			this.onDestroy = $.proxy(function() {
 				this._destroy();
@@ -1355,34 +1412,53 @@
 						.one('jcarousel:createend', $.proxy(this._create, this));
 			}, this);
 
-			this.onAnimateEnd = $.proxy(this.start, this);
+			this.onAnimateEnd = $.proxy(this._start, this);
+
+			this.onVisibilityChange = $.proxy(function() {
+				if (document[hiddenProp]) {
+					this._stop();
+				} else {
+					this._start();
+				}
+			}, this);
 		},
 		_create: function() {
 			this.carousel()
 					.one('jcarousel:destroy', this.onDestroy);
+
+			$(document)
+					.on(visibilityChangeEvent, this.onVisibilityChange);
 
 			if (this.options('autostart')) {
 				this.start();
 			}
 		},
 		_destroy: function() {
-			this.stop();
+			this._stop();
+
 			this.carousel()
 					.off('jcarousel:destroy', this.onDestroy);
+
+			$(document)
+					.off(visibilityChangeEvent, this.onVisibilityChange);
 		},
-		start: function() {
-			this.stop();
+		_start: function() {
+			this._stop();
+
+			if (!this._started) {
+				return;
+			}
 
 			this.carousel()
 					.one('jcarousel:animateend', this.onAnimateEnd);
 
 			this._timer = setTimeout($.proxy(function() {
-				this.carousel().jcarousel('scroll', this.options('target'));
+				this.carousel().jcarousel(this.options('method'), this.options('target'));
 			}, this), this.options('interval'));
 
 			return this;
 		},
-		stop: function() {
+		_stop: function() {
 			if (this._timer) {
 				this._timer = clearTimeout(this._timer);
 			}
@@ -1391,6 +1467,18 @@
 					.off('jcarousel:animateend', this.onAnimateEnd);
 
 			return this;
+		},
+		start: function() {
+			this._started = true;
+			this._start();
+
+			return this;
+		},
+		stop: function() {
+			this._started = false;
+			this._stop();
+
+			return this;
 		}
 	});
-}(jQuery));
+}(jQuery, document));

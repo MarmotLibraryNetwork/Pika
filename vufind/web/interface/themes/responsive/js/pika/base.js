@@ -7,7 +7,7 @@ var Pika = (function(){
 
 	$(document).ready(function(){
 		Pika.initializeModalDialogs();
-		Pika.setupFieldSetToggles();
+		Pika.setupFieldSetToggles(); // appears to be only used for ManageRequests. pascal 12/29/2020
 		Pika.initCarousels();
 
 		$("#modalDialog").modal({show:false});
@@ -251,26 +251,24 @@ var Pika = (function(){
 		},
 
 		setupFieldSetToggles: function (){
-			$('legend.collapsible').each(function(){
-				$(this).siblings().hide()
-				.addClass("collapsed")
-				.click(function() {
-					$(this).toggleClass("expanded collapsed")
-					.siblings().slideToggle();
-					return false;
-				});
-			});
+			// this appears to be obsolete as of 12/29/2020
+			// $('legend.collapsible').each(function(){
+			// 	$(this).siblings().hide()
+			// 	.addClass("collapsed")
+			// 	.click(function() {
+			// 		$(this).toggleClass("expanded collapsed")
+			// 		.siblings().slideToggle();
+			// 		return false;
+			// 	});
+			// });
 
+			// appears to be only used for ManageRequests. pascal 12/29/2020
 			$('fieldset.fieldset-collapsible').each(function() {
 				var collapsible = $(this);
 				var legend = collapsible.find('legend:first');
-				legend.addClass('fieldset-collapsible-label').bind('click', {collapsible: collapsible}, function(event) {
+				legend.addClass('fieldset-collapsible-label').on('click', null, {collapsible: collapsible}, function(event) {
 					var collapsible = event.data.collapsible;
-					if (collapsible.hasClass('fieldset-collapsed')) {
-						collapsible.removeClass('fieldset-collapsed');
-					} else {
-						collapsible.addClass('fieldset-collapsed');
-					}
+					collapsible.toggleClass('fieldset-collapsed')
 				});
 				// Init.
 				collapsible.addClass('fieldset-collapsed');

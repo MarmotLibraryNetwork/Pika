@@ -1,4 +1,5 @@
-<script src="/ckeditor/ckeditor.js"></script>
+<script src="/interface/themes/responsive/js/ckeditor/ckeditor.js">
+</script>
 {if $lastError}
 	<div class="alert alert-danger">
 		{$lastError}

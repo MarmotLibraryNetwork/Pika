@@ -21,7 +21,7 @@
 	{/if}
 	{if $debugJs}
 
-		<script src="/js/jquery-1.9.1.min.js?v={$gitBranch|urlencode}"></script>
+		<script src="/js/jquery-3.5.1.min.js?v={$gitBranch|urlencode}"></script>
 		{* Load Libraries*}
 {*		<script src="/interface/themes/responsive/js/lib/jquery.tablesorter.js?v={$gitBranch|urlencode}"></script>*}
 		<script src="/interface/themes/responsive/js/lib/jquery.tablesorter.min.js?v={$gitBranch|urlencode}"></script>
@@ -43,12 +43,14 @@
 		<script src="/interface/themes/responsive/js/lib/bootstrap.min.js?v={$gitBranch|urlencode}"></script>
 		<script src="/interface/themes/responsive/js/lib/jcarousel.js?v={$gitBranch|urlencode}"></script>
 		<script src="/interface/themes/responsive/js/lib/bootstrap-datepicker.js?v={$gitBranch|urlencode}"></script>
-		<script src="/interface/themes/responsive/js/lib/jquery-ui-1.10.4.custom.min.js?v={$gitBranch|urlencode}"></script>
+		<script src="/interface/themes/responsive/js/lib/jquery-ui-1.12.1.custom.min.js?v={$gitBranch|urlencode}"></script>
+{*		<script src="/interface/themes/responsive/js/lib/jquery-ui-1.10.4.custom.min.js?v={$gitBranch|urlencode}"></script>*}
 	{* autocomplete still uses jquery=-ui*}
 		<script src="/interface/themes/responsive/js/lib/bootstrap-switch.min.js?v={$gitBranch|urlencode}"></script>
 		<script src="/interface/themes/responsive/js/lib/jquery.touchwipe.min.js?v={$gitBranch|urlencode}"></script>
 		<script src="/interface/themes/responsive/js/lib/lightbox.js?v={$gitBranch|urlencode}"></script>
 		<script src="/interface/themes/responsive/js/lib/jquery.rwdImageMaps.min.js?v={$gitBranch|urlencode}"></script>
+			{* Used for Archive Image maps on Exhibit pages *}
 
 		{* Load application specific Javascript *}
 		<script src="/interface/themes/responsive/js/pika/globals.js?v={$gitBranch|urlencode}"></script>

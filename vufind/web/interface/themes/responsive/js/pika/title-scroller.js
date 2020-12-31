@@ -133,10 +133,10 @@ TitleScroller.prototype.finishLoadingScroller = function() {
 	var curScroller = this;
 
 	// Whether we are hovering over an individual title or not.
-	$('.scrollerTitle').bind('mouseover', {scroller: curScroller}, function() {
+	$('.scrollerTitle').on('mouseover', null, {scroller: curScroller}, function() {
 		curScroller.hovered = true;
 		//console.log('over');
-	}).bind('mouseout', {scroller: curScroller}, function() {
+	}).on('mouseout', null, {scroller: curScroller}, function() {
 		curScroller.hovered = false;
 		//console.log('out');
 	});
