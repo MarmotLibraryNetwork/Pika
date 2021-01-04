@@ -1082,11 +1082,10 @@ class CatalogConnection
 	 */
 	public function getNumHoldsFromRecord($id) {
 		// these all need to live with the owning object.
-		/** @var Memcache $memCache */
-		global $memCache, $configArray;
 		$key = 'num_holds_' . $id ;
 		$cachedValue = $this->cache->get($key);
 		if ($cachedValue == false || isset($_REQUEST['reload'])){
+			global $configArray;
 			$cachedValue = $this->driver->getNumHoldsOnRecord($id);
 			$this->cache->set($key, $cachedValue, $configArray['Caching']['item_data']);
 		}
