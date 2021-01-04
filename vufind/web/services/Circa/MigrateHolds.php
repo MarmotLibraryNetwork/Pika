@@ -338,6 +338,7 @@ class Circa_MigrateHolds extends Action {
 		$userInfo = [
 			'userId'    => '',
 			'userName'  => '',
+			'gender'    => '',
 			'pobox'     => '',
 			'street1'   => '',
 			'street2'   => '',
@@ -377,6 +378,7 @@ class Circa_MigrateHolds extends Action {
 					$userInfo = [
 						'userId'    => '',
 						'userName'  => '',
+						'gender'     => '',
 						'pobox'     => '',
 						'street1'   => '',
 						'street2'   => '',
@@ -400,6 +402,11 @@ class Circa_MigrateHolds extends Action {
 				if (strpos($data[0], 'USER_NAME.') !== false){
 					$field = substr($data[1], 1);
 					$userInfo['userName'] = $field;
+					continue;
+				}
+				if (strpos($data[0], 'USER_CATEGORY1.') !== false){
+					$field = substr($data[1], 1);
+					$userInfo['gender'] = $field;
 					continue;
 				}
 				if (strpos($data[0], 'USER_ADDR1_BEGIN') !== false){
