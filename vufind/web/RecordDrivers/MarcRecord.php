@@ -1160,6 +1160,7 @@ class MarcRecord extends IndexRecord
 	}
 
 	/**
+	 * TODO: Not used any where
 	 * @param File_MARC_Record $marcRecord
 	 * @param bool $allowExternalDescription
 	 * @return array|string
@@ -2087,10 +2088,11 @@ class MarcRecord extends IndexRecord
 		return $notes;
 	}
 
-	private $holdings;
 	private $copiesInfoLoaded = false;
-	private $holdingSections;
-	private $statusSummary;
+	private $holdings = [];
+	private $holdingSections = [];
+	private $statusSummary = [];
+
 
 	private function loadCopies(){
 		if (!$this->copiesInfoLoaded) {
@@ -2099,22 +2101,22 @@ class MarcRecord extends IndexRecord
 			//Since everyone is using real-time indexing now, the delays are acceptable,
 			// but include when the last index was completed for reference
 			$groupedWorkDriver = $this->getGroupedWorkDriver();
-			if ($groupedWorkDriver->isValid) {
+			if ($groupedWorkDriver->isValid){
 				$this->recordFromIndex = $groupedWorkDriver->getRelatedRecord($this->getIdWithSource());
-				if ($this->recordFromIndex != null) {
+				if ($this->recordFromIndex != null){
 					//Divide the items into sections and create the status summary
-					$this->holdings = $this->recordFromIndex['itemDetails'];
-					$this->holdingSections = array();
-					foreach ($this->holdings as $copyInfo) {
+					$this->holdings        = $this->recordFromIndex['itemDetails'];
+					$this->holdingSections = [];
+					foreach ($this->holdings as $copyInfo){
 						$sectionName = $copyInfo['sectionId'];
-						if (!array_key_exists($sectionName, $this->holdingSections)) {
-							$this->holdingSections[$sectionName] = array(
+						if (!array_key_exists($sectionName, $this->holdingSections)){
+							$this->holdingSections[$sectionName] = [
 								'name'      => $copyInfo['section'],
 								'sectionId' => $copyInfo['sectionId'],
-								'holdings'  => array(),
-							);
+								'holdings'  => [],
+							];
 						}
-						if ($copyInfo['shelfLocation'] != '') {
+						if ($copyInfo['shelfLocation'] != ''){
 							$this->holdingSections[$sectionName]['holdings'][] = $copyInfo;
 						}
 					}
@@ -2123,15 +2125,7 @@ class MarcRecord extends IndexRecord
 
 					$this->statusSummary['driver'] = null;
 					unset($this->statusSummary['driver']);
-				} else {
-					$this->holdings        = array();
-					$this->holdingSections = array();
-					$this->statusSummary   = array();
 				}
-			} else {
-				$this->holdings        = array();
-				$this->holdingSections = array();
-				$this->statusSummary   = array();
 			}
 		}
 
