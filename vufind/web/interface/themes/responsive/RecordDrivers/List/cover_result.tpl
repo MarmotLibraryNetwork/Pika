@@ -1,11 +1,13 @@
 {strip}
+	{assign var=listId value=$summId|replace:'list':''}
 	{if $browseMode == 'grid'}
 	<div class="{*browse-title *}browse-list">
 		<a {*onclick="return alert('{$summId}'" *} href="{$summUrl}">
 			{*<div>*}
-			<img class="img-responsive" src="{img filename="lists.png"}" alt="{$summTitle} by {$summAuthor}" title="{$summTitle} by {$summAuthor}">
+
+			<img class="img-responsive" src="/bookcover.php?id={$listId}&size=medium&type=userList" alt="{$summTitle} by {$summAuthor}" title="{$summTitle} by {$summAuthor}">
 			{*</div>*}
-			<div><strong>{$summTitle}</strong><br> by {$summAuthor}</div>
+			<div><strong>{$summTitle} </strong><br> by {$summAuthor}</div>
 		</a>
 	</div>
 
@@ -17,7 +19,7 @@
 		<a {*onclick="return alert('{$summId}'" *} href="{$summUrl}">
 			{*  TODO: add pop-up for list *}
 			<div>
-				<img src="{img filename="lists.png"}{*$bookCoverUrlMedium*}" alt="{$summTitle} by {$summAuthor}" title="{$summTitle} by {$summAuthor}">
+				<img src="/bookcover.php?id={$listId}&size=medium&type=userList{*$bookCoverUrlMedium*}" alt="{$summTitle} by {$summAuthor}" title="{$summTitle} by {$summAuthor}">
 			</div>
 		</a>
 		{*{if $showComments}*}
