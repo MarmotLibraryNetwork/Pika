@@ -142,7 +142,7 @@ trait SierraPatronListOperations {
 						$results['totalLists'] += 1;
 					}
 				}else{
-					$errors[] = 'Unable to parse information for classic catalog lists.';
+					$errors[] = 'Unable to parse information for classic catalog lists or no lists in the classic catalog.';
 				}
 			}else{
 				$errors[] = 'Did not find any lists in the classic catalog.';
