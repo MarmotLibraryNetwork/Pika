@@ -203,20 +203,20 @@ class MyAccount_AJAX extends AJAXHandler {
 	}
 
 	// TODO: Clean-up: No Calls to this method were found. plb 2-1-2016
-	function getPinResetForm(){
-		global $interface;
-		$interface->assign('popupTitle', 'Reset PIN Request');
-
-		$formDefinition = array(
-			'title'        => 'Reset PIN',
-			'modalBody'    => $interface->fetch('MyAccount/resetPinPopup.tpl'),
-			'modalButtons' => "<span class='tool btn btn-primary' onclick='Pika.Account.resetPinReset(); return false;'>Add To List</span>",
-		);
-		return $formDefinition;
-//		$pageContent = $interface->fetch('MyResearch/resetPinPopup.tpl');
-//		$interface->assign('popupContent', $pageContent);
-//		return $interface->fetch('popup-wrapper.tpl');
-	}
+//	function getPinResetForm(){
+//		global $interface;
+//		$interface->assign('popupTitle', 'Reset PIN Request');
+//
+//		$formDefinition = array(
+//			'title'        => 'Reset PIN',
+//			'modalBody'    => $interface->fetch('MyAccount/resetPinPopup.tpl'),
+//			'modalButtons' => "<span class='tool btn btn-primary' onclick='Pika.Account.resetPinReset(); return false;'>Add To List</span>",
+//		);
+//		return $formDefinition;
+////		$pageContent = $interface->fetch('MyResearch/resetPinPopup.tpl');
+////		$interface->assign('popupContent', $pageContent);
+////		return $interface->fetch('popup-wrapper.tpl');
+//	}
 
 	function removeTag(){
 		if (UserAccount::isLoggedIn()){

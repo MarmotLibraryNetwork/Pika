@@ -1,3 +1,4 @@
+{* probably obsolete template. Pascal. 1/4/2021
 <div>
 	<form method="post" name="modifyPinNumber" action="/MyAccount/Home" onsubmit="return resetPinReset();">
 		<div>
@@ -10,4 +11,4 @@
 			</div>
 		</div>
 	</form>
-</div>
+</div>*}

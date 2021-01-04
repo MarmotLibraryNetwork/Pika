@@ -1,11 +1,12 @@
 {strip}
+{* lightbox references likely obsolete Pascal 1/4/2021
 {if $lightbox}
 <div onmouseup="this.style.cursor='default';" id="popupboxHeader" class="header">
 	<a onclick="hideLightbox(); return false;" href="">close</a>
 	{translate text='Title Citation'}
 </div>
 <div id="popupboxContent" class="content">
-{/if}
+{/if}*}
 {if $citationCount < 1}
 	{translate text="No citations are available for this record"}.
 {else}
@@ -51,7 +52,7 @@
 		Citation formats are based on standards as of July 2010.  Citations contain only title, author, edition, publisher, and year published. Citations should be used as a guideline and should be double checked for accuracy.
 	</div>
 {/if}
-{if $lightbox}
+{*{if $lightbox}
 </div>
-{/if}
+{/if}*}
 {/strip}
