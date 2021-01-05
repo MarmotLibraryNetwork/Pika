@@ -30,7 +30,6 @@ class AJAX_JSON extends AJAXHandler {
 	protected $methodsThatRespondWithJSONResultWrapper = array(
 		'getUserLists',
 		'loginUser',
-//		'trackEvent',
 		'getPayFinesAfterAction',
 	);
 
