@@ -48,15 +48,15 @@ class GroupedWork_Series extends Action {
 		$seriesTitle   = null;
 		$seriesAuthors = [];
 		$resourceList  = [];
-		$seriesTitles  = $seriesData->seriesTitles;
+		$seriesTitles  = $seriesData->seriesTitles ?? null;
 		$recordIndex   = 1;
-		if (isset($seriesTitles) && is_array($seriesTitles)){
+		if (!empty($seriesTitles)){
 			foreach ($seriesTitles as $key => $title){
-				if (isset($title['series']) && strlen($title['series']) > 0 && !(isset($seriesTitle))){
+				if (!empty($title['series']) && empty($seriesTitle)){
 					$seriesTitle = $title['series'];
 					$interface->assign('seriesTitle', $seriesTitle);
 				}
-				if (isset($title['author'])){
+				if (!empty($title['author'])){
 					$author                 = preg_replace('/[^\w]*$/i', '', $title['author']);
 					$seriesAuthors[$author] = $author;
 				}
