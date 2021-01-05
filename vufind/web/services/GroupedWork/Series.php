@@ -48,7 +48,7 @@ class GroupedWork_Series extends Action {
 		$seriesTitle   = null;
 		$seriesAuthors = [];
 		$resourceList  = [];
-		$seriesTitles  = $seriesData->seriesTitles ?? null;
+		$seriesTitles  = $seriesData->seriesTitles ?? [];
 		$recordIndex   = 1;
 		if (!empty($seriesTitles)){
 			foreach ($seriesTitles as $key => $title){
