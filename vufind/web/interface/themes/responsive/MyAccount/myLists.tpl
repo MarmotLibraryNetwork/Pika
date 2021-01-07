@@ -15,6 +15,12 @@
     </div>
     <input type="hidden" name="myListActionHead" id="myListActionHead" class="form">
     <input type="hidden" name="myListActionData" id="myListActionData" class="form">
+
+
+    <label for="toggleSelectBoxes">
+        <input type="checkbox" id="toggleSelectBoxes" name="toggleSelectBoxes" onclick="Pika.toggleCheckboxes('.mlcb', '#toggleSelectBoxes');">
+        <strong>Select All</strong>
+    </label>
     {foreach from=$myLists item=myList}
         {if $myList.id != -1}
             <div class="result">
@@ -121,6 +127,20 @@
 						$("#myListActionData").val(newStr);
 					}
 			});
+			$("#toggleSelectBoxes").click(function(data){
+			   if(this.checked)
+			       {
+			           var ids = Array();
+			           $(".mlcb").each(function(){
+			               ids.push(this.value.replace(",",""));
+                       });
+			           var stringId = ids.join();
+			           $("#myListActionData").val(stringId + ",");
+                   }
+			   else{
+			       $("#myListActionData").val("");
+               }
+            });
 		});
 	</script>
 	{/literal}
