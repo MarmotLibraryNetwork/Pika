@@ -107,7 +107,7 @@ class MyAccount_Login extends Action
 		if ($configArray['Catalog']['ils'] == 'Horizon' || $configArray['Catalog']['ils'] == 'Symphony'){
 			$interface->assign('showForgotPinLink', true);
 			$catalog = CatalogFactory::getCatalogConnectionInstance();
-			$useEmailResetPin = method_exists($catalog, 'emailResetPin');
+			$useEmailResetPin = method_exists($catalog->driver, 'emailResetPin');
 			$interface->assign('useEmailResetPin', $useEmailResetPin);
 		} elseif ($configArray['Catalog']['ils'] == 'Sierra') {
 			$catalog = CatalogFactory::getCatalogConnectionInstance();
