@@ -9,8 +9,8 @@
 
         </div>
 	    <div class="btn-group pull-right">
-		    <button value="clearSelected" class="btn btn-sm btn-default" onclick="return Pika.Lists.clearSelectedList();">Clear Selected</button>
-		    <button value="deleteSelected" class="btn btn-sm btn-danger" onclick="return Pika.Lists.deleteSelectedList();">Delete Selected</button>
+
+		    <button value="deleteSelected" class="btn btn-sm btn-danger" onclick="return Pika.Lists.deleteSelectedList();">Delete Selected Lists</button>
 	    </div>
     </div>
     <input type="hidden" name="myListActionHead" id="myListActionHead" class="form">
