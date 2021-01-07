@@ -37,11 +37,11 @@
 					{if $showForgotPinLink}
 						<p class="text-muted help-block">
 							<strong>Forgot PIN?</strong>&nbsp;
-							{if $useEmailResetPin}
+{*							{if $useEmailResetPin}*}
 								<a href="/MyAccount/EmailResetPin">Reset My PIN</a>
-							{else}
-								<a href="/MyAccount/EmailPin">E-mail my PIN</a>
-							{/if}
+{*							{else}*}
+{*	This functionality should be exposed for wcpl							<a href="/MyAccount/EmailPin">E-mail my PIN</a>*}
+{*							{/if}*}
 						</p>
 					{/if}
 					{if $enableSelfRegistration == 1}
