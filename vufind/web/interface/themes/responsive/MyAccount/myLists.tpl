@@ -4,12 +4,14 @@
         <div class="btn-group">
             <a href="#" onclick="return Pika.Account.showCreateListForm();" class="btn btn-sm btn-primary">Create a New List</a>
             {if $showConvertListsFromClassic}
-                <button value="copySelected" class="btn btn-sm btn-default" onclick="return Pika.Lists.importListsFromClassic();">Import Lists from Classic</button>
+                <button value="importFromClassic" class="btn btn-sm btn-default" onclick="return Pika.Lists.importListsFromClassic();">Import Lists from Classic</button>
             {/if}
 
-
-
         </div>
+	    <div class="btn-group pull-right">
+		    <button value="clearSelected" class="btn btn-sm btn-default" onclick="return Pika.Lists.clearSelectedList();">Clear Selected</button>
+		    <button value="deleteSelected" class="btn btn-sm btn-danger" onclick="return Pika.Lists.deleteSelectedList();">Delete Selected</button>
+	    </div>
     </div>
     <input type="hidden" name="myListActionHead" id="myListActionHead" class="form">
     <input type="hidden" name="myListActionData" id="myListActionData" class="form">
@@ -17,10 +19,13 @@
         {if $myList.id != -1}
             <div class="result">
         <div class="row">
+	        <div class="col-md-1">
+		        <input type="checkbox" class="form-control-static mlcb" value="{$myList.id}"/>
+	        </div>
             <div class="col-md-2">
 							<img src="/bookcover.php?id={$myList.id}&size=medium&type=userList" />
             </div>
-            <div class="col-md-10">
+            <div class="col-md-9">
                 <div class="row">
                     <div class="col-xs-10 col-sm-10 col-md-10 col-lg-11">
                         <div class="row">
@@ -101,5 +106,22 @@
             </div>
         {/if}
     {/foreach}
-
+{literal}
+	<script>
+		$(document).ready(function(){
+			$(".mlcb").click(function(data){
+				if(this.checked)
+					{
+						$("#myListActionData").val($("#myListActionData").val() + this.value + ",");
+					}
+				else
+					{
+						var str = $("#myListActionData").val();
+						var newStr = str.replace(this.value + ",", "");
+						$("#myListActionData").val(newStr);
+					}
+			});
+		});
+	</script>
+	{/literal}
 </form>

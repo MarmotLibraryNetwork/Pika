@@ -10,6 +10,13 @@ Pika.Lists = (function(){
 			return false;
 		},
 
+		submitToLists: function(action, data)
+		{
+			$('#myListActionHead').val(action);
+			//$('#myListActionData').val(data);
+			$('#myListFormHead').submit();
+		},
+
 		submitListForm: function(action, page, pageSize, sort){
 			$('#myListActionHead').val(action);
 			$('#myListPage').val(page);
@@ -82,6 +89,43 @@ Pika.Lists = (function(){
 		updateListAction: function (page, pageSize, sort){
 			console.log("page:" + page + ", pageSize:" + pageSize + ", sort:" + sort);
 			return this.submitListForm('saveList', page, pageSize, sort);
+		},
+		clearSelectedList: function(action)
+		{
+			var ids = Array();
+			var idStr = $('#myListActionData').val();
+			if(idStr.length > 2){
+				var pos = idStr.lastIndexOf(',');
+				idStr = idStr.substring(0,pos);
+				ids = idStr.split(",");
+				var x = ids.length;
+				var list = " list";
+				if (x !=1){list = " lists";}
+				if(confirm("Are you sure you want to remove all items from " + x + list + "? This cannot be undone.")){
+					this.submitToLists("clearSelectedLists");
+				}
+			}else{
+				alert("Please select a list to clear");
+			}
+		},
+		deleteSelectedList: function(action)
+		{
+			var ids = Array();
+			var idStr = $('#myListActionData').val();
+			if(idStr.length > 2){
+			var pos = idStr.lastIndexOf(',');
+			idStr = idStr.substring(0,pos);
+			ids = idStr.split(",");
+			var x = ids.length;
+			var list = " list";
+			if(x !=1){list = " lists";}
+			if(confirm("Are you sure you want to delete " + x + list + "? This cannot be undone.")){
+				this.submitToLists("deleteSelectedLists");
+			}
+
+			}else{
+				alert("Please select a list to delete");
+			}
 		},
 
 		deleteListItems: function(ids, page, pageSize, sort){

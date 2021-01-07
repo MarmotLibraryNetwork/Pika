@@ -97,6 +97,39 @@ class MyAccount_MyLists extends MyAccount{
                         $list->get('id', $listId);
                         $this->exportToExcel($list);
                         break;
+	                case 'deleteSelectedLists':
+	                	$listNumbers = $_REQUEST['myListActionData'];
+	                	$listNumbers = substr($listNumbers, 0, strrpos($listNumbers, ","));
+
+
+	                	$lists = explode(",", $listNumbers);
+	                	foreach($lists as $listId)
+		                {
+											$delId = $listId;
+											$list = new UserList;
+											$list->id = $delId;
+											$list->removeAllListEntries();
+											$list->delete();
+
+		                }
+		                header("Location: /MyAccount/MyLists");
+
+		                break;
+	                case 'clearSelectedLists':
+		                $listNumbers = $_REQUEST['myListActionData'];
+		                $listNumbers = substr($listNumbers, 0, strrpos($listNumbers, ","));
+
+
+		                $lists = explode(",", $listNumbers);
+		                foreach($lists as $listId)
+		                {
+			                $clearId = $listId;
+			                $list = new UserList;
+			                $list->id = $clearId;
+			                $list->removeAllListEntries();
+		                }
+		                header("Location: /MyAccount/MyLists");
+	                	break;
                 }
             }
 
