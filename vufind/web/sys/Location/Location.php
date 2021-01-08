@@ -220,7 +220,7 @@ class Location extends DB_DataObject {
 				'properties' => array(
 					array('property' => 'homeLink', 'type' => 'text', 'label' => 'Home Link', 'description' => 'The location to send the user when they click on the home button or logo.  Use default or blank to go back to the vufind home location.', 'hideInLists' => true, 'size' => '40'),
 					array('property' => 'additionalCss', 'type' => 'textarea', 'label' => 'Additional CSS', 'description' => 'Extra CSS to apply to the site.  Will apply to all pages.', 'hideInLists' => true),
-					array('property' => 'headerText', 'type' => 'html', 'label' => 'Header Text', 'description' => 'Optional Text to display in the header, between the logo and the log in/out buttons.  Will apply to all pages.', 'allowableTags' => '<a><b><em><div><span><p><strong><sub><sup><h1><h2><h3><h4><h5><h6><img>', 'hideInLists' => true),
+					array('property' => 'headerText', 'type' => 'html', 'label' => 'Header Text', 'description' => 'Optional Text to display in the header, between the logo and the log in/out buttons.  Will apply to all pages.', 'allowableTags' => '<p><div><span><a><strong><b><em><i><ul><ol><li><br><hr><h1><h2><h3><h4><h5><h6><img>', 'hideInLists' => true),
 				),
 			),
 

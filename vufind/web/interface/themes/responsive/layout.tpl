@@ -42,8 +42,14 @@
 		{/if}
 		{strip}
 			<div class="container">
-			{if $systemMessage}
-				<div id="system-message-header" class="row">{$systemMessage}</div>
+				{if !empty($systemMessage)}
+					{if is_array($systemMessage)}
+						{foreach from=$systemMessage item=message}
+							<div class="row system-message-header">{$message}</div>
+					{/foreach}
+					{else}
+					<div id="system-message-header" class="row system-message-header">{$systemMessage}</div>
+				{/if}
 			{/if}
 			<div class="row breadcrumbs">
 				<div class="col-xs-12 col-sm-9">

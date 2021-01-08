@@ -294,16 +294,20 @@ class UInterface extends Smarty {
 		}
 
 		//Set System Message
-		if ($configArray['System']['systemMessage']){
-			$this->assign('systemMessage', $configArray['System']['systemMessage']);
+		$systemMessage = [];
+		if (!empty($configArray['System']['systemMessage'])){
+			$systemMessage[] = $configArray['System']['systemMessage'];
 			// Note Maintenance Mode depends on this
-		}elseif ($offlineMode){
-			$this->assign('systemMessage', "<p class='alert alert-warning'><strong>The circulation system is currently offline.</strong>  Access to account information and availability is limited.</p>");
-		}elseif (!empty($library->systemMessage)){
-			$this->assign('systemMessage', $library->systemMessage);
 		}
+		if ($offlineMode){
+			$systemMessage[] = "<p class='alert alert-warning'><strong>The circulation system is currently offline.</strong>  Access to account information and availability is limited.</p>";
+		}
+		if (!empty($library->systemMessage)){
+			$systemMessage[] = $library->systemMessage;
+		}
+		$this->assign('systemMessage', $systemMessage);
 
-		// Global Sidebar settings
+			// Global Sidebar settings
 		$displaySidebarMenu = false;
 		if (isset($configArray['Site']['sidebarMenu'])){
 			// config.ini setting can disable for entire site, or the library setting can turn off for its view.
