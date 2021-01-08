@@ -69,7 +69,7 @@ class LibrarianReview extends DB_DataObject {
 			array(
 				'property'      => 'review',
 				'type'          => 'html',
-				'allowableTags' => '<p><a><b><em><ul><ol><em><li><strong><i><br><iframe><div>',
+				'allowableTags' => '<p><div><span><a><strong><b><em><i><ul><ol><li><br><hr><h1><h2><h3><h4><h5><h6><iframe><img>',
 				'rows'          => 6,
 				'cols'          => 80,
 				'label'         => 'Review Text',
