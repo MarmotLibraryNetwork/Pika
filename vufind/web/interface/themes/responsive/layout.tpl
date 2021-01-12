@@ -44,8 +44,8 @@
 			<div class="container">
 				{if !empty($systemMessage)}
 					{if is_array($systemMessage)}
-						{foreach from=$systemMessage item=message}
-							<div class="row system-message-header">{$message}</div>
+						{foreach from=$systemMessage item=aSystemMessage}
+							<div class="row system-message-header">{$aSystemMessage}</div>
 					{/foreach}
 					{else}
 					<div id="system-message-header" class="row system-message-header">{$systemMessage}</div>
