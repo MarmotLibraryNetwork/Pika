@@ -13,7 +13,7 @@
 			<div class="row related-manifestation {if $relatedManifestation.hideByDefault}hiddenManifestation_{$summId}{/if}" {if $relatedManifestation.hideByDefault}style="display: none"{/if}>
 				<div class="col-sm-12">
 				  <div class="row">
-						<div class="col-tn-3 col-xs-4{if !$viewingCombinedResults} col-md-3{/if} manifestation-format">
+						<div class="col-tn-4 col-xs-4{if !$viewingCombinedResults} col-md-4{/if} manifestation-format">
 
 								{if $relatedManifestation.numRelatedRecords == 1}
 								<a href="#" onclick="return Pika.ResultsList.toggleRelatedManifestations('{if $inPopUp}popup-{/if}{$id|escapeCSS}_{$relatedManifestation.format|escapeCSS}');">
@@ -37,7 +37,7 @@
 								</a>
 							{/if}
 						</div>
-						<div class="col-tn-9 col-xs-8{if !$viewingCombinedResults} col-md-5 col-lg-6{/if}">
+						<div class="col-tn-8 col-xs-7{if !$viewingCombinedResults} col-md-4 col-lg-5{/if}">
 							{include file='GroupedWork/statusIndicator.tpl' statusInformation=$relatedManifestation viewingIndividualRecord=0}
 
 							{if $relatedManifestation.numRelatedRecords == 1}
