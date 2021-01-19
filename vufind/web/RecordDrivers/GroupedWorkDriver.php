@@ -1521,6 +1521,9 @@ class GroupedWorkDriver extends RecordInterface {
 			}
 			if (isset($curRecord['isEContent']) && $curRecord['isEContent']){
 				$relatedManifestations[$curRecord['format']]['isEContent'] = true;
+
+				//$relatedManifestations[$curRecord['format']]['format'] = ucwords($curRecord['source']) . " " . $curRecord['format'];
+
 			}
 			if (!$relatedManifestations[$curRecord['format']]['available'] && $curRecord['available']){
 				$relatedManifestations[$curRecord['format']]['available'] = $curRecord['available'];
@@ -1540,8 +1543,12 @@ class GroupedWorkDriver extends RecordInterface {
 				$relatedManifestations[$curRecord['format']]['callNumber'][$curRecord['callNumber']] = $curRecord['callNumber'];
 			}
 			$relatedManifestations[$curRecord['format']]['relatedRecords'][] = $curRecord;
+
 			$relatedManifestations[$curRecord['format']]['copies']           += $curRecord['copies'];
 			$relatedManifestations[$curRecord['format']]['availableCopies']  += $curRecord['availableCopies'];
+
+
+
 			if ($curRecord['hasLocalItem']){
 				$relatedManifestations[$curRecord['format']]['localCopies']          += (isset($curRecord['localCopies']) ? $curRecord['localCopies'] : 0);
 				$relatedManifestations[$curRecord['format']]['localAvailableCopies'] += (isset($curRecord['localAvailableCopies']) ? $curRecord['localAvailableCopies'] : 0);
@@ -1608,6 +1615,8 @@ class GroupedWorkDriver extends RecordInterface {
 			}
 		}
 
+
+
 		//Check to see what we need to do for actions, and determine if the record should be hidden by default
 		$searchLibrary  = Library::getSearchLibrary();
 		$searchLocation = Location::getSearchLocation();
@@ -1661,6 +1670,7 @@ class GroupedWorkDriver extends RecordInterface {
 					$manifestation['hideByDefault'] = true;
 				}
 			}
+
 			if ($selectedFormatCategory && $selectedFormatCategory != $manifestation['formatCategory']){
 				if (($manifestation['format'] == 'eAudiobook') && ($selectedFormatCategory == 'eBook' || $selectedFormatCategory == 'Audio Books')){
 					//This is a special case where the format is in 2 categories
@@ -2664,6 +2674,15 @@ class GroupedWorkDriver extends RecordInterface {
 					$recordsFromIndex[$recordDetails[0]] = $recordDetails;
 				}
 			}
+		}
+		foreach($recordsFromIndex as $key => $record)
+		{
+			$source = explode(':',$key)[0];
+			if($record[1] == "eBook" || $record[1] == "eAudiobook")
+			{
+			   $recordsFromIndex[$key][1] = ucwords($source) . " " . $record[1];
+			}
+
 		}
 		return $recordsFromIndex;
 	}
