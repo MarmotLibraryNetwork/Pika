@@ -2678,9 +2678,9 @@ class GroupedWorkDriver extends RecordInterface {
 		foreach($recordsFromIndex as $key => $record)
 		{
 			$source = explode(':',$key)[0];
-			if($record[1] == "eBook" || $record[1] == "eAudiobook")
+			if($record[1] == "eBook" || $record[1] == "eAudiobook" || $record[1] = "eVideo")
 			{
-				if($source != "external_econtent"){
+				if($source != "external_econtent" && $source !="ils"){
 					$recordsFromIndex[$key][1] = ucwords($source) . " " . $record[1];
 				}
 			}
