@@ -264,6 +264,7 @@
     ],
     "QueryFields": {
       "series": [
+        ["exact", 600],
         ["onephrase", 500],
         ["and", 200],
         ["or", 100]
