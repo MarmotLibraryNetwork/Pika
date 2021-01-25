@@ -17,12 +17,13 @@ package org.pika;
 import au.com.bytecode.opencsv.CSVReader;
 import au.com.bytecode.opencsv.CSVWriter;
 import org.apache.commons.text.similarity.FuzzyScore;
-import org.apache.solr.client.solrj.SolrServer;
+import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.BinaryRequestWriter;
-import org.apache.solr.client.solrj.impl.ConcurrentUpdateSolrServer;
-import org.apache.solr.client.solrj.impl.HttpSolrServer;
+import org.apache.solr.client.solrj.impl.ConcurrentUpdateSolrClient;
 import org.apache.solr.common.SolrInputDocument;
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -43,10 +44,10 @@ import org.apache.log4j.Logger;
  */
 public class GroupedWorkIndexer {
 	private       String                                   serverName;
-	private       Logger                                   logger;
+	private       org.apache.log4j.Logger                  logger;
 	private final PikaSystemVariables                      systemVariables;
-	private       SolrServer                               solrServer;
-	private       ConcurrentUpdateSolrServer               updateServer;
+	private       HttpSolrClient                           solrServer;
+	private       ConcurrentUpdateSolrClient               updateServer;
 	private       HashMap<String, MarcRecordProcessor>     indexingRecordProcessors              = new HashMap<>();
 	private       OverDriveProcessor                       overDriveProcessor;
 	private       HashMap<String, HashMap<String, String>> translationMaps                       = new HashMap<>();
@@ -83,7 +84,7 @@ public class GroupedWorkIndexer {
 
 
 
-	public GroupedWorkIndexer(String serverName, Connection pikaConn, Connection econtentConn, boolean fullReindex, boolean singleWorkIndex, Logger logger) {
+	public GroupedWorkIndexer(String serverName, Connection pikaConn, Connection econtentConn, boolean fullReindex, boolean singleWorkIndex, org.apache.log4j.Logger logger) {
 		indexStartTime                        = new Date().getTime() / 1000;
 		this.serverName                       = serverName;
 		this.logger                           = logger;
@@ -116,14 +117,15 @@ public class GroupedWorkIndexer {
 
 		//Initialize the updateServer and solr server
 		GroupedReindexMain.addNoteToReindexLog("Setting up update server and solr server");
+		final String baseSolrUrl = "http://localhost:" + solrPort + "/solr/grouped";
 		if (fullReindex){
 			//MDN 10-21-2015 - use the grouped core since we are using replication.
-			solrServer   = new HttpSolrServer("http://localhost:" + solrPort + "/solr/grouped");
-			updateServer = new ConcurrentUpdateSolrServer("http://localhost:" + solrPort + "/solr/grouped", 500, 8);
+			solrServer   = new HttpSolrClient.Builder(baseSolrUrl).build();
+			updateServer = new ConcurrentUpdateSolrClient.Builder(baseSolrUrl).withQueueSize(500).withThreadCount(8).build();
 			updateServer.setRequestWriter(new BinaryRequestWriter());
 
 			//Stop replication from the master
-			String url                              = "http://localhost:" + solrPort + "/solr/grouped/replication?command=disablereplication";
+			String url                              = baseSolrUrl + "/replication?command=disablereplication";
 			URLPostResponse stopReplicationResponse = Util.getURL(url, logger);
 			if (!stopReplicationResponse.isSuccess()){
 				logger.error("Error restarting replication " + stopReplicationResponse.getMessage());
@@ -162,9 +164,9 @@ public class GroupedWorkIndexer {
 			}else{
 				updatePartialReindexRunning(true);
 			}
-			updateServer = new ConcurrentUpdateSolrServer("http://localhost:" + solrPort + "/solr/grouped", 500, 8);
+			updateServer = new ConcurrentUpdateSolrClient.Builder(baseSolrUrl).withQueueSize(500).withThreadCount(8).build();
 			updateServer.setRequestWriter(new BinaryRequestWriter());
-			solrServer = new HttpSolrServer("http://localhost:" + solrPort + "/solr/grouped");
+			solrServer   = new HttpSolrClient.Builder(baseSolrUrl).build();
 		}
 
 		loadScopes();
@@ -741,7 +743,7 @@ public class GroupedWorkIndexer {
 				updateServer.commit(false, false, true);
 				GroupedReindexMain.addNoteToReindexLog("Shutting down the update server");
 				updateServer.blockUntilFinished();
-				updateServer.shutdown();
+				updateServer.shutdownNow();
 			} catch (Exception e) {
 				logger.error("Error shutting down update server", e);
 			}

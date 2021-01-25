@@ -16,9 +16,9 @@ package org.pika;
 
 import org.apache.log4j.Logger;
 import org.apache.solr.client.solrj.SolrQuery;
-import org.apache.solr.client.solrj.SolrServer;
 import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.impl.ConcurrentUpdateSolrServer;
+import org.apache.solr.client.solrj.impl.HttpSolrClient;
+import org.apache.solr.client.solrj.impl.ConcurrentUpdateSolrClient;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
@@ -70,7 +70,7 @@ public class UserListProcessor {
 		}
 	}
 
-	public Long processPublicUserLists(long lastReindexTime, ConcurrentUpdateSolrServer updateServer, SolrServer solrServer) {
+	public Long processPublicUserLists(long lastReindexTime, ConcurrentUpdateSolrClient updateServer, HttpSolrClient solrServer) {
 		GroupedReindexMain.addNoteToReindexLog("Starting to process public lists");
 		Long numListsProcessed = 0L;
 		try {
@@ -90,17 +90,17 @@ public class UserListProcessor {
 			PreparedStatement getLibraryForHomeLocation = pikaConn.prepareStatement("SELECT libraryId, locationId from location");
 			PreparedStatement getCodeForHomeLocation    = pikaConn.prepareStatement("SELECT code, locationId from location");
 
-			ResultSet librariesByHomeLocationRS = getLibraryForHomeLocation.executeQuery();
-			while (librariesByHomeLocationRS.next()) {
-				librariesByHomeLocation.put(librariesByHomeLocationRS.getLong("locationId"), librariesByHomeLocationRS.getLong("libraryId"));
+			try (ResultSet librariesByHomeLocationRS = getLibraryForHomeLocation.executeQuery()) {
+				while (librariesByHomeLocationRS.next()) {
+					librariesByHomeLocation.put(librariesByHomeLocationRS.getLong("locationId"), librariesByHomeLocationRS.getLong("libraryId"));
+				}
 			}
-			librariesByHomeLocationRS.close();
 
-			ResultSet codesByHomeLocationRS = getCodeForHomeLocation.executeQuery();
-			while (codesByHomeLocationRS.next()) {
-				locationCodesByHomeLocation.put(codesByHomeLocationRS.getLong("locationId"), codesByHomeLocationRS.getString("code"));
+			try (ResultSet codesByHomeLocationRS = getCodeForHomeLocation.executeQuery()) {
+				while (codesByHomeLocationRS.next()) {
+					locationCodesByHomeLocation.put(codesByHomeLocationRS.getLong("locationId"), codesByHomeLocationRS.getString("code"));
+				}
 			}
-			codesByHomeLocationRS.close();
 
 			ResultSet allPublicListsRS = listsStmt.executeQuery();
 			while (allPublicListsRS.next()) {
@@ -119,7 +119,7 @@ public class UserListProcessor {
 		return numListsProcessed;
 	}
 
-	private void updateSolrForList(ConcurrentUpdateSolrServer updateServer, SolrServer solrServer, PreparedStatement getTitlesForListStmt, ResultSet allPublicListsRS) throws SQLException, SolrServerException, IOException {
+	private void updateSolrForList(ConcurrentUpdateSolrClient updateServer, HttpSolrClient solrServer, PreparedStatement getTitlesForListStmt, ResultSet allPublicListsRS) throws SQLException, SolrServerException, IOException {
 		UserListSolr userListSolr = new UserListSolr(indexer);
 		Long         listId       = allPublicListsRS.getLong("id");
 
@@ -168,6 +168,7 @@ public class UserListProcessor {
 			//Get information about all of the list titles.
 			getTitlesForListStmt.setLong(1, listId);
 			try (ResultSet allTitlesRS = getTitlesForListStmt.executeQuery()) {
+				//TODO: we can query all of the grouped work Ids in a single solr query and process all the results  (set the return size)
 				while (allTitlesRS.next()) {
 					String groupedWorkId = allTitlesRS.getString("groupedWorkPermanentId");
 					if (!allTitlesRS.wasNull() && groupedWorkId.length() > 0 && !groupedWorkId.contains(":")) {
