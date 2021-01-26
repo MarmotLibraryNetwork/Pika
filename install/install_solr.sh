@@ -23,6 +23,8 @@ SOLR_VERSION="8.7.0"
 SOLR_INDEXER_NAME=solr_master
 SOLR_SEARCHER_NAME=solr_searcher
 
+CURRENT_DIR="$(cd "$(dirname "$0")" && pwd -P)"
+
 
 if [[ $# = 1 ]];then
 	mkdir /var/${SOLR_INDEXER_NAME}  /data/vufind-plus/${PIKASERVER}/${SOLR_INDEXER_NAME}
@@ -37,8 +39,8 @@ if [[ $# = 1 ]];then
 	ln -s /var/log/${PIKASERVER}/${SOLR_SEARCHER_NAME}/ /var/${SOLR_SEARCHER_NAME}/logs
 
 	# Install data directories
-	cp -r ${SOLR_INDEXER_NAME} /data/vufind-plus/${PIKASERVER}
-	cp -r ${SOLR_SEARCHER_NAME} /data/vufind-plus/${PIKASERVER}
+	cp -r "${CURRENT_DIR}/../data_dir_setup/${SOLR_INDEXER_NAME}" "/data/vufind-plus/${PIKASERVER}"
+	cp -r "${CURRENT_DIR}/../data_dir_setup/${SOLR_SEARCHER_NAME}" "/data/vufind-plus/${PIKASERVER}"
 
 	# Add links to solr standard data directory to ours
 	ln -s /data/vufind-plus/${PIKASERVER}/${SOLR_INDEXER_NAME}/ /var/${SOLR_INDEXER_NAME}/data
