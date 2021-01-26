@@ -2678,10 +2678,19 @@ class GroupedWorkDriver extends RecordInterface {
 		foreach($recordsFromIndex as $key => $record)
 		{
 			$source = explode(':',$key)[0];
-			if($record[1] == "eBook" || $record[1] == "eAudiobook" || $record[1] = "eVideo")
+			if($record[1] == "eBook" || $record[1] == "eAudiobook" || $record[1] = "eVideo" || $record[1] == "eMagazine")
 			{
 				if($source != "external_econtent" && $source !="ils"){
-					$recordsFromIndex[$key][1] = ucwords($source) . " " . $record[1];
+					$type = $record[1];
+					if($type == true || $type == 1)
+					{
+						$type = "";
+					}
+					if($source=="rbdgitalmags")
+					{
+						$source = "RBdigital";
+					}
+					$recordsFromIndex[$key][1] = ucwords($source) . " " . $type;
 				}
 			}
 
