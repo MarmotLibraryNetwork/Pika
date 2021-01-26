@@ -27,9 +27,10 @@ CURRENT_DIR="$(cd "$(dirname "$0")" && pwd -P)"
 
 
 if [[ $# = 1 ]];then
-	mkdir /var/${SOLR_INDEXER_NAME}  /data/vufind-plus/${PIKASERVER}/${SOLR_INDEXER_NAME}
-	mkdir /var/${SOLR_SEARCHER_NAME} /data/vufind-plus/${PIKASERVER}/${SOLR_SEARCHER_NAME}
-	mkdir /etc/default
+#	mkdir /var/${SOLR_INDEXER_NAME} /var/${SOLR_INDEXER_NAME}/logs /data/vufind-plus/${PIKASERVER}/${SOLR_INDEXER_NAME}
+#	mkdir /var/${SOLR_SEARCHER_NAME} /var/${SOLR_SEARCHER_NAME}/logs /data/vufind-plus/${PIKASERVER}/${SOLR_SEARCHER_NAME}
+	mkdir /var/${SOLR_INDEXER_NAME} /var/${SOLR_INDEXER_NAME}/logs
+	mkdir /var/${SOLR_SEARCHER_NAME} /var/${SOLR_SEARCHER_NAME}/logs
 	# /opt/solr is the SOLR installation directory
 	# /var/solr is the SOLR data directory
 	# /etc/default SOLR environment variable file
