@@ -39,7 +39,7 @@ class SearchObject_Solr extends SearchObject_Base
 	// Index
 	private $index = null;
 	// Field List
-	public static $fields = 'auth_author2,author2-role,id,mpaaRating,title_display,title_full,title_short,title_sub,author,author_display,isbn,upc,issn,series,series_with_volume,recordtype,display_description,literary_form,literary_form_full,num_titles,record_details,item_details,publisherStr,publishDate,subject_facet,topic_facet,primary_isbn,primary_upc,accelerated_reader_point_value,accelerated_reader_reading_level,accelerated_reader_interest_level,lexile_code,lexile_score,display_description,fountas_pinnell,last_indexed';
+	public static $fields = 'auth_author2,author2-role,id,mpaaRating,title_display,title_full,title_short,title_sub,author,author_display,isbn,upc,issn,series,series_with_volume,recordtype,display_description,literary_form,literary_form_full,num_titles,record_details,item_details,publisher,publishDate,subject_facet,topic_facet,primary_isbn,primary_upc,accelerated_reader_point_value,accelerated_reader_reading_level,accelerated_reader_interest_level,lexile_code,lexile_score,display_description,fountas_pinnell,last_indexed';
 	private $fieldsFull = '*,score';
 	// HTTP Method
 	//    private $method = 'GET';
@@ -184,15 +184,14 @@ class SearchObject_Solr extends SearchObject_Base
 	 *
 	 * @access  protected
 	 */
-	protected function initFilters()
-	{
+	protected function initFilters(){
 		// Use the default behavior of the parent class, but add support for the
 		// special illustrations filter.
 		parent::initFilters();
-		if (isset($_REQUEST['illustration'])) {
-			if ($_REQUEST['illustration'] == 1) {
+		if (isset($_REQUEST['illustration'])){
+			if ($_REQUEST['illustration'] == 1){
 				$this->addFilter('illustrated:Illustrated');
-			} else if ($_REQUEST['illustration'] == 0) {
+			}elseif ($_REQUEST['illustration'] == 0){
 				$this->addFilter('illustrated:"Not Illustrated"');
 			}
 		}
@@ -211,7 +210,7 @@ class SearchObject_Solr extends SearchObject_Base
 			return;
 		}
 		// Extract field and value from URL string:
-		list($field, $value) = $this->parseFilter($newFilter);
+		[$field, $value] = $this->parseFilter($newFilter);
 		if ($field == ''){
 			$field = count($this->filterList) + 1;
 		}
@@ -258,13 +257,13 @@ class SearchObject_Solr extends SearchObject_Base
 						$field = 'econtent_source_' . $solrScope;
 					}elseif ((strcmp($field, 'collection') == 0) || (strcmp($field, 'collection_group') == 0)){
 						$field = 'collection_' . $solrScope;
-					}elseif ((strcmp($field, 'detailed_location') == 0) || (strcmp($field, 'detailed_location') == 0)){
+					}elseif ((strcmp($field, 'detailed_location') == 0)){
 						$field = 'detailed_location_' . $solrScope;
-					}elseif ((strcmp($field, 'owning_location') == 0) || (strcmp($field, 'owning_location') == 0)){
+					}elseif ((strcmp($field, 'owning_location') == 0)){
 						$field = 'owning_location_' . $solrScope;
-					}elseif ((strcmp($field, 'owning_system') == 0) || (strcmp($field, 'owning_system') == 0)){
+					}elseif ((strcmp($field, 'owning_system') == 0)){
 						$field = 'owning_system_' . $solrScope;
-					}elseif ((strcmp($field, 'available_at') == 0) || (strcmp($field, 'available_at') == 0)){
+					}elseif ((strcmp($field, 'available_at') == 0)){
 						$field = 'available_at_' . $solrScope;
 					}
 				}
@@ -295,8 +294,7 @@ class SearchObject_Solr extends SearchObject_Base
 	 * @var string $searchSource
 	 * @return  boolean
 	 */
-	public function init($searchSource = null, $searchTerm = null)
-	{
+	public function init($searchSource = null, $searchTerm = null){
 		// Call the standard initialization routine in the parent:
 		parent::init($searchSource);
 
@@ -321,7 +319,7 @@ class SearchObject_Solr extends SearchObject_Base
 		$this->initFilters();
 
 		if ($searchTerm == null){
-			$searchTerm = isset($_REQUEST['lookfor']) ? $_REQUEST['lookfor'] : null;
+			$searchTerm = $_REQUEST['lookfor'] ?? null;
 		}
 
 		global $module;
@@ -366,10 +364,10 @@ class SearchObject_Solr extends SearchObject_Base
 				if (is_array($author)){
 					$author = array_pop($author);
 				}
-				$this->searchTerms[] = array(
+				$this->searchTerms[] = [
                     'index'   => 'Author',
                     'lookfor' => trim(strip_tags($author))
-				);
+				];
 			}
 
 			// *** Author/Search
@@ -426,8 +424,7 @@ class SearchObject_Solr extends SearchObject_Base
 	 * @access  public
 	 * @return  boolean
 	 */
-	public function initAdvancedFacets()
-	{
+	public function initAdvancedFacets(){
 		// Call the standard initialization routine in the parent:
 		parent::init();
 
@@ -444,7 +441,7 @@ class SearchObject_Solr extends SearchObject_Base
 			$facets = Library::getDefaultFacets();
 		}
 
-		$this->facetConfig = array();
+		$this->facetConfig = [];
 
 		// The below block of code is common with SideFacets method _construct()
 		global $solrScope;
@@ -453,7 +450,7 @@ class SearchObject_Solr extends SearchObject_Base
 
 			//Adjust facet name for local scoping
 			if ($solrScope){
-				if (in_array($facetName, array(
+				if (in_array($facetName, [
 					'availability_toggle',
 					'format',
 					'format_category',
@@ -465,7 +462,7 @@ class SearchObject_Solr extends SearchObject_Base
 					'owning_library',
 					'available_at',
 					'collection',
-				))){
+				])){
 					$facetName .= '_' . $solrScope;
 				}
 
@@ -487,13 +484,13 @@ class SearchObject_Solr extends SearchObject_Base
 //					$facetName = 'availability_toggle_' . $userLocation->code;
 //				}
 //			}
-			if (isset($searchLocation)) {
-				if ($facet->facetName == 'time_since_added' && $searchLocation->restrictSearchByLocation) {
+			if (isset($searchLocation)){
+				if ($facet->facetName == 'time_since_added' && $searchLocation->restrictSearchByLocation){
 					$facetName = 'local_time_since_added_' . $searchLocation->code;
 				}
 			}
 
-				if ($facet->showInAdvancedSearch){
+			if ($facet->showInAdvancedSearch){
 				$this->facetConfig[$facetName] = $facet->displayName;
 			}
 		}
@@ -501,7 +498,7 @@ class SearchObject_Solr extends SearchObject_Base
 		//********************
 
 		$facetLimit = $this->getFacetSetting('Advanced_Settings', 'facet_limit');
-		if (is_numeric($facetLimit)) {
+		if (is_numeric($facetLimit)){
 			$this->facetLimit = $facetLimit;
 		}
 
@@ -510,10 +507,10 @@ class SearchObject_Solr extends SearchObject_Base
 
 		//********************
 		// Basic Search logic
-		$this->searchTerms[] = array(
-            'index'   => $this->defaultIndex,
-            'lookfor' => ""
-		);
+		$this->searchTerms[] = [
+			'index'   => $this->defaultIndex,
+			'lookfor' => ""
+		];
 
 		return true;
 	}
@@ -568,15 +565,10 @@ class SearchObject_Solr extends SearchObject_Base
 	}
 
 	public function getDebugTiming() {
-		if (!$this->debug){
-			return null;
-		}else{
-			if (!isset($this->indexResult['debug'])){
-				return null;
-			}else{
-				return json_encode($this->indexResult['debug']['timing']);
-			}
+		if ($this->debug && isset($this->indexResult['debug'])){
+				return json_encode($this->indexResult['debug']['timing'], JSON_PRETTY_PRINT);
 		}
+		return null;
 	}
 
 	/**
@@ -1258,9 +1250,8 @@ class SearchObject_Solr extends SearchObject_Base
 		// Build a recommendations module appropriate to the current search:
 		if ($recommendations) {
 			$this->initRecommendations();
+			$timer->logTime("initRecommendations");
 		}
-		$timer->logTime("initRecommendations");
-
 
 		// Tag searches need to be handled differently
 		if (count($search) == 1 && isset($search[0]['index']) && $search[0]['index'] == 'tag'){
@@ -1379,7 +1370,7 @@ class SearchObject_Solr extends SearchObject_Base
 		}
 
 		// Build a list of facets we want from the index
-		$facetSet = array();
+		$facetSet = [];
 		if (!empty($this->facetConfig)) {
 			$facetSet['limit'] = $this->facetLimit;
 			foreach ($this->facetConfig as $facetField => $facetName) {
@@ -1689,16 +1680,15 @@ class SearchObject_Solr extends SearchObject_Base
 	 *                                  the return array.
 	 * @return  array   Facets data arrays
 	 */
-	public function getFacetList($filter = null, $expandingLinks = false)
-	{
+	public function getFacetList($filter = null, $expandingLinks = false){
 		global $solrScope;
 		// If there is no filter, we'll use all facets as the filter:
-		if (is_null($filter)) {
+		if (is_null($filter)){
 			$filter = $this->facetConfig;
 		}
 
 		// Start building the facet list:
-		$list = array();
+		$list = [];
 
 		// If we have no facets to process, give up now
 		if (!isset($this->indexResult['facet_counts'])){
@@ -1731,7 +1721,7 @@ class SearchObject_Solr extends SearchObject_Base
 				$location = new Location();
 				$location->whereAddIn('code', $locationsToLookfor, 'string');
 				$location->find();
-				$additionalAvailableAtLocations = array();
+				$additionalAvailableAtLocations = [];
 				while ($location->fetch()){
 					$additionalAvailableAtLocations[] = $location->facetLabel;
 				}
@@ -1742,7 +1732,7 @@ class SearchObject_Solr extends SearchObject_Base
 			$relatedHomeLocationFacets = $locationSingleton->getLocationsFacetsForLibrary($homeLibrary->libraryId);
 		}
 
-		$allFacets = array_merge($this->indexResult['facet_counts']['facet_fields'], $this->indexResult['facet_counts']['facet_dates']);
+		$allFacets = array_merge($this->indexResult['facet_counts']['facet_fields'], $this->indexResult['facet_counts']['facet_ranges']);
 		foreach ($allFacets as $field => $data) {
 			// Skip filtered fields and empty arrays:
 			if (!in_array($field, $validFields) || count($data) < 1) {
@@ -1762,11 +1752,11 @@ class SearchObject_Solr extends SearchObject_Base
 				}
 			}
 			// Initialize the settings for the current field
-			$list[$field] = array();
+			$list[$field] = [];
 			// Add the on-screen label
 			$list[$field]['label'] = $filter[$field];
 			// Build our array of values for this field
-			$list[$field]['list']    = array();
+			$list[$field]['list']    = [];
 			$foundInstitution        = false;
 			$doInstitutionProcessing = false;
 			$foundBranch             = false;
@@ -1788,7 +1778,7 @@ class SearchObject_Solr extends SearchObject_Base
 			// Loop through values:
 			foreach ($data as $facet) {
 				// Initialize the array of data about the current facet:
-				$currentSettings              = array();
+				$currentSettings              = [];
 				$currentSettings['value']     = $facet[0];
 				$currentSettings['display']   = $translate ? translate($facet[0]) : $facet[0];
 				$currentSettings['count']     = $facet[1];
@@ -2071,7 +2061,7 @@ class SearchObject_Solr extends SearchObject_Base
 			$sheet->setCellValueByColumnAndRow($curCol++, $curRow, isset($curDoc['id']) ? $curDoc['id'] : '');
 			$sheet->setCellValueByColumnAndRow($curCol++, $curRow, isset($curDoc['title_display']) ? $curDoc['title_display'] : '');
 			$sheet->setCellValueByColumnAndRow($curCol++, $curRow, isset($curDoc['author']) ? $curDoc['author'] : '');
-			$sheet->setCellValueByColumnAndRow($curCol++, $curRow, isset($curDoc['publisherStr']) ? implode(', ', $curDoc['publisherStr']) : '');
+			$sheet->setCellValueByColumnAndRow($curCol++, $curRow, isset($curDoc['publisher']) ? implode(', ', $curDoc['publisherStr']) : '');
 			$sheet->setCellValueByColumnAndRow($curCol++, $curRow, isset($curDoc['publishDate']) ? implode(', ', $curDoc['publishDate']) : '');
 			$callNumber = '';
 			if (isset($curDoc['local_callnumber_' . $solrScope])){
@@ -2170,8 +2160,6 @@ class SearchObject_Solr extends SearchObject_Base
 			$fieldsToReturn = SearchObject_Solr::$fields;
 			global $solrScope;
 			if ($solrScope != false){
-				//$fieldsToReturn .= ',related_record_ids_' . $solrScope;
-				//$fieldsToReturn .= ',related_items_' . $solrScope;
 				$fieldsToReturn .= ',format_' . $solrScope;
 				$fieldsToReturn .= ',format_category_' . $solrScope;
 				$fieldsToReturn .= ',collection_' . $solrScope;
@@ -2184,10 +2172,10 @@ class SearchObject_Solr extends SearchObject_Base
 				$fieldsToReturn .= ',available_at_' . $solrScope;
 				$fieldsToReturn .= ',itype_' . $solrScope;
 
-			}else{
-				//$fieldsToReturn .= ',related_record_ids';
-				//$fieldsToReturn .= ',related_record_items';
-				//$fieldsToReturn .= ',related_items_related_record_ids';
+			}
+			else{
+				//TODO: this block is obsolete, since all these facets are scoped.  Likely would cause empty document returns
+				// if no scope is set
 				$fieldsToReturn .= ',format';
 				$fieldsToReturn .= ',format_category';
 				$fieldsToReturn .= ',days_since_added';
