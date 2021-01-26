@@ -208,24 +208,18 @@ class SearchAPI extends AJAXHandler {
 
 		// Solr Restart //
 		if ($configArray['Index']['engine'] == 'Solr'){
-			$xml = @file_get_contents($configArray['Index']['url'] . '/admin/cores');
-			if ($xml){
-				$options = [
-					'parseAttributes' => 'true',
-					'keyAttribute'    => 'name',
-				];
-				$unxml   = new XML_Unserializer($options);
-				$unxml->unserialize($xml);
-				$data = $unxml->getUnserializedData();
+			$json = @file_get_contents($configArray['Index']['url'] . '/admin/cores');
+			if (!empty($json)){
+				$data = json_decode($json, true);
 
-				$uptime        = $data['status']['grouped']['uptime']['_content'] / 1000;  // Grouped Index, puts uptime into seconds.
-				$solrStartTime = strtotime($data['status']['grouped']['startTime']['_content']);
+				$uptime        = $data['status']['grouped']['uptime'] / 1000;  // Grouped Index, puts uptime into seconds.
+				$solrStartTime = strtotime($data['status']['grouped']['startTime']);
 				if ($uptime >= self::SOLR_RESTART_INTERVAL_WARN){ // Grouped Index
 					$status[] = ($uptime >= self::SOLR_RESTART_INTERVAL_CRITICAL) ? self::STATUS_CRITICAL : self::STATUS_WARN;
 					$notes[]  = 'Solr Index (Grouped) last restarted ' . date('m-d-Y H:i:s', $solrStartTime) . ' - ' . round($uptime / 3600, 2) . ' hours ago';
 				}
 
-				$numRecords = $data['status']['grouped']['index']['numDocs']['_content'];
+				$numRecords = $data['status']['grouped']['index']['numDocs'];
 
 				$minNumRecordVariable = new Variable('solr_grouped_minimum_number_records');
 				if ($minNumRecordVariable){

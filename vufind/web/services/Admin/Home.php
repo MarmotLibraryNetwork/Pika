@@ -18,7 +18,6 @@
  */
 
 require_once ROOT_DIR . '/services/Admin/Admin.php';
-require_once 'XML/Unserializer.php';
 
 class Home extends Admin_Admin {
 	function launch(){
@@ -33,30 +32,18 @@ class Home extends Admin_Admin {
 
 		// Load SOLR Statistics
 		if ($configArray['Index']['engine'] == 'Solr'){
-			$xml = @file_get_contents($configArray['Index']['url'] . '/admin/cores');
+			$json = @file_get_contents($configArray['Index']['url'] . '/admin/cores');
 
-			if ($xml){
-				$options = array(
-					'parseAttributes' => 'true',
-					'keyAttribute'    => 'name'
-				);
-				$unxml   = new XML_Unserializer($options);
-				$unxml->unserialize($xml);
-				$data = $unxml->getUnserializedData();
+			if (!empty($json)){
+				$data = json_decode($json, true);
 				$interface->assign('data', $data['status']);
 			}
 
-			$masterIndexUrl = str_replace(':80', ':81', $configArray['Index']['url']) . '/admin/cores';
-			$masterXml      = @file_get_contents($masterIndexUrl);
+			$masterIndexUrl = str_replace(':8080', $configArray['Reindex']['solrPort'], $configArray['Index']['url']) . '/admin/cores';
+			$masterJson      = @file_get_contents($masterIndexUrl);
 
-			if ($masterXml){
-				$options = array(
-					'parseAttributes' => 'true',
-					'keyAttribute'    => 'name'
-				);
-				$unxml   = new XML_Unserializer($options);
-				$unxml->unserialize($masterXml);
-				$masterData = $unxml->getUnserializedData();
+			if ($masterJson){
+				$masterData = json_decode($masterJson, true);
 				$interface->assign('master_data', $masterData['status']);
 			}
 		}
@@ -65,6 +52,6 @@ class Home extends Admin_Admin {
 	}
 
 	function getAllowableRoles(){
-		return array('userAdmin', 'opacAdmin');
+		return ['userAdmin', 'opacAdmin'];
 	}
 }
