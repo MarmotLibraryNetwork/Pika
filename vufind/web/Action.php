@@ -34,6 +34,7 @@ abstract class Action extends PEAR {
 		}
 		$interface->setTemplate($mainContentTemplate);
 		$interface->setPageTitle($pageTitle);
+		$interface->assign('shortPageTitle', $pageTitle);
 		$interface->assign('moreDetailsTemplate', 'GroupedWork/moredetails-accordion.tpl');
 		$interface->display('layout.tpl');
 	}
