@@ -26,12 +26,6 @@ require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
 
 class WSJ extends MyAccount {
 
-	function __construct(){
-		global $interface;
-		$interface->assign('WSJ', true);
-		parent::__construct();
-	}
-
 	function launch(){
 		/** @var Library $library */
 		global $configArray;
@@ -44,7 +38,4 @@ class WSJ extends MyAccount {
 		}
 	}
 
-	function display($mainContentTemplate, $pageTitle = 'WSJ Login', $sidebar = 'Search/home-sidebar.tpl'){
-		parent::display($mainContentTemplate, $pageTitle, $sidebar);
-	}
 }
