@@ -81,7 +81,7 @@
 
 		<div id="main-content">
 			<h2>Offline Circulation Summary</h2>
-			<table class="table table-striped">
+			<table class="table table-striped" id="offlineCirculation">
 				<tr><th>Total Records</th><td>{$totalRecords}</td></tr>
 				<tr><th>Not Processed</th><td>{$totalNotProcessed}</td></tr>
 				<tr><th>Passed</th><td>{$totalPassed}</td></tr>
@@ -90,7 +90,7 @@
 
 			<h2>Offline Circulation</h2>
 			{if count($offlineCirculation) > 0}
-				<table class="tablesorter table table-striped" id="offlineCirculationReport">
+				<table class="table stripe" id="offlineCirculationReport">
 					<thead>
 					<tr><th>#</th><th>Login</th>{*<th>Initials</th><th>Type</th>*}<th>Item Barcode</th><th>Patron Barcode</th><th>Date Entered</th><th>Status</th><th>Notes</th></tr>
 					</thead>
@@ -105,11 +105,15 @@
 			{/if}
 		</div>
 	</div>
-	<script	type="text/javascript">
+	<script type="text/javascript">
 		{literal}
-		$(function() {
-			$("#offlineCirculationReport").tablesorter({cssAsc: 'sortAscHeader', cssDesc: 'sortDescHeader', cssHeader: 'unsortedHeader', widgets:['zebra', 'filter'] });
-		});
+		$(document).ready(function(){
+			$('#offlineCirculation').DataTable({
+				"order": [[0, "asc"]],
+				pageLength: 100
+			});
+		})
+
 		{/literal}
 	</script>
 {/strip}

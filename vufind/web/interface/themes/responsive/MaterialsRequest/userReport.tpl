@@ -33,7 +33,7 @@
 			<legend>Table</legend>
 
 			{* Display results in table*}
-			<table id="summaryTable" class="tablesorter table table-bordered">
+			<table id="summaryTable" class="table stripe table-bordered">
 				<thead>
 					<tr>
 						<th>Last Name</th>
@@ -75,6 +75,17 @@
 {literal}
 	$("#startDate").datepicker();
 	$("#endDate").datepicker();
-	$("#summaryTable").tablesorter({cssAsc: 'sortAscHeader', cssDesc: 'sortDescHeader', cssHeader: 'unsortedHeader', headers: { 0: { sorter: 'date'} } });
+
 {/literal}
+</script>
+<script type="text/javascript">
+	{literal}
+	$(document).ready(function(){
+		$('#summaryTable').DataTable({
+			"order": [[0, "asc"]],
+			pageLength: 100
+		});
+	})
+
+	{/literal}
 </script>

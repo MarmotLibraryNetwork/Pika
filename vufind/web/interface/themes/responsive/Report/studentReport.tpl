@@ -32,7 +32,7 @@
 				<p>
 					There are a total of <strong>{$reportData|@count}</strong> rows that meet your criteria.
 				</p>
-				<table id="studentReportTable" class="table table-condensed tablesorter">
+				<table id="studentReportTable" class="table table-condensed stripe">
 					{foreach from=$reportData item=dataRow name=studentData}
 						{if $smarty.foreach.studentData.index == 0}
 							<thead>
@@ -59,21 +59,18 @@
 					{/foreach}
 					</tbody>
 				</table>
-				<script type="text/javascript">
-					{literal}
-					$(document).ready(function(){
-						$('#studentReportTable').tablesorter({
-							theme: 'blue',
-							width: 'fixed',
-							widgets: ["zebra", "filter"],
-							widgetOptions: {
-								filter_hideFilters : false,
-								filter_ignoreCase: true
-							}
-						});
+
+			<script type="text/javascript">
+				{literal}
+				$(document).ready(function(){
+					$('#studentReportTable').DataTable({
+						"order": [[0, "asc"]],
+						pageLength: 100
 					});
-					{/literal}
-				</script>
+				})
+
+				{/literal}
+			</script>
 			{/if}
 		{else}
         {include file="MyAccount/loginRequired.tpl"}

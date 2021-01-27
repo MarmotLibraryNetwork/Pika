@@ -61,7 +61,7 @@
 
 			{if $notInterested}
 				<h3>{translate text='Not Interested'}</h3>
-				<table class="myAccountTable table table-striped" id="notInterestedTable">
+				<table class="myAccountTable table stripe" id="notInterestedTable">
 					<thead>
 						<tr>
 							<th>Date</th>
@@ -82,16 +82,14 @@
 					</tbody>
 				</table>
 				<script type="text/javascript">
-					$(document).ready(function () {literal} {
-						$("#notInterestedTable")
-										.tablesorter({
-											cssAsc: 'sortAscHeader',
-											cssDesc: 'sortDescHeader',
-											cssHeader: 'unsortedHeader',
-											headers: { 0: { sorter: 'date' }, 3: { sorter: false } },
-											sortList: [[0, 1]]
-										})
-					});
+					{literal}
+					$(document).ready(function(){
+						$('#notInterestedTable').DataTable({
+							"order": [[0, "asc"]],
+							pageLength: 100
+						});
+					})
+
 					{/literal}
 				</script>
 			{/if}

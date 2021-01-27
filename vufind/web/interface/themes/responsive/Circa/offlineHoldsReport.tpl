@@ -49,7 +49,7 @@
 		<div id="main-content">
 			<h2>Offline Holds</h2>
 			{if count($offlineHolds) > 0}
-				<table class="citation tablesorter" id="offlineHoldsReport" >
+				<table class="citation stripe" id="offlineHoldsReport" >
 					<thead>
 						<tr><th>Patron Barcode</th><th>Record Id</th><th>Title</th><th>Date Entered</th><th>Status</th><th>Notes</th></tr>
 					</thead>
@@ -65,11 +65,15 @@
 			{/if}
 		</div>
 	</div>
-	<script	type="text/javascript">
+	<script type="text/javascript">
 		{literal}
-		$(function() {
-			$("#offlineHoldsReport").tablesorter({cssAsc: 'sortAscHeader', cssDesc: 'sortDescHeader', cssHeader: 'unsortedHeader', widgets:['zebra', 'filter'] });
-		});
+		$(document).ready(function(){
+			$('#offlineHoldsReport').DataTable({
+				"order": [[0, "asc"]],
+				pageLength: 100
+			});
+		})
+
 		{/literal}
 	</script>
 {/strip}

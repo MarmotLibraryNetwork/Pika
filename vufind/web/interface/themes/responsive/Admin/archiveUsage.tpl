@@ -35,7 +35,13 @@
 {if isset($usageByNamespace) && is_array($usageByNamespace) && count($usageByNamespace) > 5}
 	<script type="text/javascript">
 		{literal}
-		$("#adminTable").tablesorter({cssAsc: 'sortAscHeader', cssDesc: 'sortDescHeader', cssHeader: 'unsortedHeader', widgets:['zebra', 'filter'] });
+		$(document).ready(function(){
+			$('#summaryTable').DataTable({
+				"order": [[0, "asc"]],
+				pageLength: 100
+			});
+		})
+
 		{/literal}
 	</script>
 {/if}

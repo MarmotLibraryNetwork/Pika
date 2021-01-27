@@ -10,7 +10,7 @@
 			{if $canAddNew}
 				<input type="button" class="btn btn-primary" name="addWidget" value="Add Widget" onclick="window.location = '/Admin/ListWidgets?objectAction=add';">
 			{/if}
-			<table class="table table-striped">
+			<table class="table stripe">
 		<thead><tr><th>Id</th><th>Name</th><th>Library</th><th>Description</th><th class="sorter-false filter-false ">Actions</th></tr></thead>
 		<tbody>
 			{foreach from=$availableWidgets key=id item=widget}
@@ -35,7 +35,13 @@
 	{if !empty($availableWidgets) && count($availableWidgets) > 5}
 		<script type="text/javascript">
 			{literal}
-			$("#availableWidgets>table").tablesorter({cssAsc: 'sortAscHeader', cssDesc: 'sortDescHeader', cssHeader: 'unsortedHeader', widgets:['zebra', 'filter'] });
+			$(document).ready(function(){
+				$('#offlineCirculation').DataTable({
+					"order": [[0, "asc"]],
+					pageLength: 100
+				});
+			})
+
 			{/literal}
 		</script>
 	{/if}

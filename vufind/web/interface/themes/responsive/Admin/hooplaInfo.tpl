@@ -40,7 +40,7 @@
 			<h2>Hoopla API Info</h2>
 			<div class="row">
 				<div class="col-tn-12">
-					<table class="tablesorter table table-striped" id="hooplaCheckoutsReport">
+					<table class="table stripe" id="hooplaCheckoutsReport">
 						<thead>
 						<tr>
 							<th>Library</th>
@@ -61,15 +61,14 @@
 		</div>
 	</div>
 	<script type="text/javascript">
-      {literal}
-			$(function () {
-				$("#hooplaCheckoutsReport").tablesorter({
-					cssAsc: 'sortAscHeader',
-					cssDesc: 'sortDescHeader',
-					cssHeader: 'unsortedHeader',
-					widgets: ['zebra', 'filter']
-				});
+		{literal}
+		$(document).ready(function(){
+			$('#hooplaCheckoutsReport').DataTable({
+				"order": [[0, "asc"]],
+				pageLength: 100
 			});
-      {/literal}
+		})
+
+		{/literal}
 	</script>
 {/strip}

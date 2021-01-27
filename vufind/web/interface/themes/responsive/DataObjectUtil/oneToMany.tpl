@@ -87,45 +87,6 @@
 		{/foreach}
 		</tbody>
 	</table>
-	{if !$property.sortable && isset($propValue) && is_array($propValue) && count($propValue) > 5}
-		<script type="text/javascript">
-			{* /* Custom parsers derived from: https://github.com/Mottie/tablesorter/blob/master/js/parsers/parser-input-select.js*/ *}
-			{literal}$(function(){
-				$.tablesorter.addParser({
-					id: 'text-input',
-					is: function(){return false},
-					format : function(txt, table, cell) {
-						var $input = $(cell).find('input');
-						return $input.length ? $input.val() : txt;
-					},
-					type: 'text', /*set type, either numeric or text*/
-					parsed: true,
-				});
-
-				$.tablesorter.addParser({
-					id : 'text-select',
-					is : function() {
-						return false;
-					},
-					format : function( txt, table, cell ) {
-						var $select = $( cell ).find( 'select' );
-						return $select.length ? $select.find( 'option:selected' ).text() || '' : txt;
-					},
-					parsed : true, // filter widget flag
-					type : 'text'
-				});
-
-				$("#{/literal}{$propName}{literal}").tablesorter({
-					cssAsc: 'sortAscHeader', cssDesc: 'sortDescHeader', cssHeader: 'unsortedHeader',
-					widgets:['zebra', 'filter'],
-					widgetOptions: {
-						filter_useParsedData: true,
-					},
-				})
-			});
-			{/literal}
-		</script>
-	{/if}
 
 	<div class="{$propName}Actions">
 		<a href="#" onclick="addNew{$propName}();return false;"  class="btn btn-primary btn-sm">Add New</a>

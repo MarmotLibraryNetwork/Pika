@@ -32,7 +32,7 @@
 		</div>
 		<br>
 		{if count($allRequests) > 0}
-			<table id="requestedMaterials" class="table table-striped table-condensed tablesorter">
+			<table id="requestedMaterials" class="table stripe table-condensed">
 				<thead>
 					<tr>
 						<th>Title</th>
@@ -68,7 +68,13 @@
 	{/if}
 </div>
 <script type="text/javascript">
-{literal}
-$("#requestedMaterials").tablesorter({cssAsc: 'sortAscHeader', cssDesc: 'sortDescHeader', cssHeader: 'unsortedHeader', headers: { 4: {sorter : 'date'}, 5: { sorter: false} } });
-{/literal}
+	{literal}
+	$(document).ready(function(){
+		$('#requestedMaterials').DataTable({
+			"order": [[0, "asc"]],
+			pageLength: 100
+		});
+	})
+
+	{/literal}
 </script>

@@ -18,7 +18,7 @@
 			{if $noStatsFound}
 				<div class="alert-warning">Sorry, we couldn't find any stats.</div>
 			{else}
-				<table class="table tablesorter table-condensed table-hover" id="reindexingStats">
+				<table class="table table-condensed stripe table-hover" id="reindexingStats">
 					<thead>
 						<tr>
 							{foreach from=$indexingStatHeader item=itemHeader}
@@ -42,6 +42,12 @@
 {/strip}
 <script type="text/javascript">
 	{literal}
-	$("#reindexingStats").tablesorter({cssAsc: 'sortAscHeader', cssDesc: 'sortDescHeader', cssHeader: 'unsortedHeader', widgets:['zebra', 'filter'] });
+	$(document).ready(function(){
+		$('#reindexingStats').DataTable({
+			"order": [[0, "asc"]],
+			pageLength: 100
+		});
+	})
+
 	{/literal}
 </script>

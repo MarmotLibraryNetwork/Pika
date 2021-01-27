@@ -26,7 +26,7 @@
 
 		<script src="/js/jquery-3.5.1.min.js?v={$gitBranch|urlencode}"></script>
 		{* Load Libraries*}
-{*		<script src="/interface/themes/responsive/js/lib/jquery.tablesorter.js?v={$gitBranch|urlencode}"></script>*}
+{*
 		{* dropzone *}
 
 		<script src="/interface/themes/responsive/js/lib/dropzone.js"></script>
