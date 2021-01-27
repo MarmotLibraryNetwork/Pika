@@ -894,6 +894,15 @@ class DBMaintenance extends Admin_Admin {
 					)
 				),
 
+				'add_staff_ptype_2021.01.0' => [
+					'title'       => 'Add Staff P-Type',
+					'description' => 'Add isStaffPType column to P-Types table.',
+					'sql'         => [
+						'ALTER TABLE `ptype` ADD COLUMN `isStaffPType` BOOLEAN NOT NULL DEFAULT false AFTER `maxHolds`;',
+						'setStaffPtypes'
+					]
+				],
+
 				'session_update_1' => array(
 					'title'       => 'Session Update 1',
 					'description' => 'Add a field for whether or not the session was started with remember me on.',
@@ -1327,7 +1336,7 @@ class DBMaintenance extends Admin_Admin {
 						"ALTER TABLE `librarian_reviews` CHANGE COLUMN `id` `id` INT(11) NOT NULL AUTO_INCREMENT ;",
 					]
 				),
-                'remove_selfReg_template_option' => array(
+				'remove_selfReg_template_option' => array(
                   'title'       => 'Delete selfReg template option',
                   'description' => 'Get rid of the template option',
                   'continueOnError' => false,
@@ -1335,7 +1344,7 @@ class DBMaintenance extends Admin_Admin {
                       "ALTER TABLE `library` DELETE COLUMN 'selfRegistrationTemplate';",
                   )
                 ),
-                'update_eContentSupportAddress_default_value' => array(
+				'update_eContentSupportAddress_default_value' => array(
                     'title'       => 'Update e-Content support Address default address',
                     'description' => 'Update e-Content support Address default e-mail address to pika@marmot.org',
                     'continueOnError' => false,
@@ -1357,7 +1366,7 @@ class DBMaintenance extends Admin_Admin {
 					)
 				),
 
-                'add_custom_covers_table' => array(
+				'add_custom_covers_table' => array(
                   'title'           => 'Add Custom Covers',
                   'description'     => 'Database tables to support custom cover uploads',
                   'continueOnError' => false,
@@ -1369,7 +1378,7 @@ class DBMaintenance extends Admin_Admin {
                   )
                 ),
 
-                'add_current_covers'    => array(
+				'add_current_covers'    => array(
                     'title'             => 'Add Current Covers to Database',
                     'description'       => 'Looks in the covers directory and adds files found to database',
                     'continueOnError'   => false,
@@ -1388,7 +1397,7 @@ class DBMaintenance extends Admin_Admin {
 						'ALTER TABLE `econtent`.`overdrive_api_products` ENGINE = InnoDB ;',
 					]
 				],
-                'splitLargeLists' => array(
+				'splitLargeLists' => array(
                     'title'             =>  'Split Large Lists',
                     'description'       =>  'Split Lists Over 2000 items into separate lists',
                     'continueOnError'   => false,
@@ -1542,6 +1551,23 @@ class DBMaintenance extends Admin_Admin {
 //			') ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;';
 //		$this->db->query($sql);
 //	}
+
+	function setStaffPtypes(){
+		global $configArray;
+		foreach ($configArray['Staff P-Types'] as $pTypeNumber => $label){
+			$pType        = new PType();
+			$pType->pType = $pTypeNumber;
+			if ($pType->find(true)){
+				$pType->isStaffPType = true;
+				$pType->label        = $label;
+				$pType->update();
+			}else{
+				$pType->isStaffPType = true;
+				$pType->label        = $label;
+				$pType->insert();
+			}
+		}
+	}
 
 	function setCoverSource(){
 		require_once ROOT_DIR . '/sys/Indexing/IndexingProfile.php';

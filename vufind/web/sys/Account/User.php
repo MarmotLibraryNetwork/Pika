@@ -1721,18 +1721,21 @@ class User extends DB_DataObject {
 
 	}
 
+private $staffPtypes = null;
 	/**
 	 * Used by Account Profile, to show users any additional Admin roles they may have.
 	 * @return bool
 	 */
 	public function isStaff(){
-		global $configArray;
 		if (count($this->getRoles()) > 0){
 			return true;
-		}elseif (!empty($configArray['Staff P-Types'])){
-			$staffPTypes = $configArray['Staff P-Types'];
-			$pType       = $this->patronType;
-			if ($pType && array_key_exists($pType, $staffPTypes)){
+		}else{
+			if (is_null($this->staffPtypes)){
+				$pType               = new PType();
+				$pType->isStaffPType = true;
+				$this->staffPtypes   = $pType->fetchAll('Ptype');
+			}
+			if (!empty($this->staffPtypes) && in_array($this->patronType, $this->staffPtypes)){
 				return true;
 			}
 		}
