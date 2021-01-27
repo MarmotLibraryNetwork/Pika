@@ -127,7 +127,7 @@
 		</div>
 		{if count($allRequests) > 0}
 			<form id="updateRequests" method="post" action="/MaterialsRequest/ManageRequests" class="form form-horizontal">
-				<table id="requestedMaterials" class="table tablesorter stripe table-hover">
+				<table id="requestedMaterials" class="table order-column stripe table-hover">
 					<thead>
 						<tr>
 							<th><input type="checkbox" name="selectAll" id="selectAll" onchange="Pika.toggleCheckboxes('.select', '#selectAll');"></th>
@@ -298,28 +298,11 @@
 	{/if}
 </div>
 {/strip}
-
-<script type="text/javascript">
-$(function () {ldelim}
-	$("#requestedMaterials").tablesorter({ldelim}
-		cssAsc: 'sortAscHeader',
-		cssDesc: 'sortDescHeader',
-		cssHeader: 'unsortedHeader',
-		headers: {ldelim}
-			0: {ldelim}sorter: false{rdelim},
-{foreach name=config from=$dateColumns item=columnNumber}
-	{$columnNumber+1}: {ldelim}sorter : 'date'{rdelim}{if !$smarty.foreach.config.last}, {/if}
-{/foreach}
-
-		}
-	});
-});
-</script>
 	<script type="text/javascript">
 		{literal}
 		$(document).ready(function(){
 			$('#requestedMaterials').DataTable({
-				ordering: false,
+				"order": [[0, "asc"]],
 				pageLength: 25
 			});
 		})

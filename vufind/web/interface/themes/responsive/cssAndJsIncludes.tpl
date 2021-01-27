@@ -2,10 +2,13 @@
 	{* All CSS should be come before javascript for better browser performance *}
 	{if $debugCss}
     {css filename="main.css"}
-		<link rel="stylesheet" type="text/css" href="/interface/themes/responsive/css/lib/dataTables.css">
+		<link rel="stylesheet" type="text/css" href="/interface/themes/responsive/css/lib/jquery.dataTables.min.css">
+
+
 	{else}
 		{css filename="main.min.css"}
-		<link rel="stylesheet" type="text/css" href="/interface/themes/responsive/css/lib/dataTables.bootstrap.min.css">
+		<link rel="stylesheet" type="text/css" href="/interface/themes/responsive/css/lib/jquery.dataTables.css">
+
 	{/if}
 	{if $additionalCss}
 		<style type="text/css">
@@ -24,10 +27,6 @@
 		<script src="/js/jquery-3.5.1.min.js?v={$gitBranch|urlencode}"></script>
 		{* Load Libraries*}
 {*		<script src="/interface/themes/responsive/js/lib/jquery.tablesorter.js?v={$gitBranch|urlencode}"></script>*}
-		<script src="/interface/themes/responsive/js/lib/jquery.tablesorter.min.js?v={$gitBranch|urlencode}"></script>
-		<script src="/interface/themes/responsive/js/lib/jquery.tablesorter.pager.min.js?v={$gitBranch|urlencode}"></script>
-{*		<script src="/interface/themes/responsive/js/lib/jquery.tablesorter.widgets.js?v={$gitBranch|urlencode}"></script>*}
-		<script src="/interface/themes/responsive/js/lib/jquery.tablesorter.widgets.min.js?v={$gitBranch|urlencode}"></script>
 		{* dropzone *}
 
 		<script src="/interface/themes/responsive/js/lib/dropzone.js"></script>
