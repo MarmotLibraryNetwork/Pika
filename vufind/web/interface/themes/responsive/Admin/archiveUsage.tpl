@@ -1,7 +1,7 @@
 {strip}
 	<h2 id="pageTitle">Archive Usage By Library</h2>
 	<div class='adminTableRegion'>
-		<table class="adminTable table table-striped table-condensed smallText" id="adminTable">
+		<table class="adminTable table table-striped order-column table-condensed smallText" id="adminTable">
 			<thead>
 			<tr>
 				<th><label title='Library'>Library</label></th>
@@ -36,7 +36,7 @@
 	<script type="text/javascript">
 		{literal}
 		$(document).ready(function(){
-			$('#summaryTable').DataTable({
+			$('#adminTable').DataTable({
 				"order": [[0, "asc"]],
 				pageLength: 100
 			});
