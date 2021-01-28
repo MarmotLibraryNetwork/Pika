@@ -464,10 +464,10 @@ cite {
   color: #2b542c;
 }
 .text-info {
-  color: #31708f;
+  color: #285d77;
 }
 .text-info:hover {
-  color: #245269;
+  color: #1b3f51;
 }
 .text-left {
   text-align: left;
@@ -4577,15 +4577,15 @@ a.thumbnail.active {
   color: #2b542c;
 }
 .alert-info {
-  background-color: #d9edf7;
-  border-color: #bce8f1;
-  color: #31708f;
+  background-color: #e8f4fa;
+  border-color: #cbedf4;
+  color: #285d77;
 }
 .alert-info hr {
-  border-top-color: #a6e1ec;
+  border-top-color: #b6e6ef;
 }
 .alert-info .alert-link {
-  color: #245269;
+  color: #1b3f51;
 }
 .alert-warning {
   background-color: #fcf8e3;
@@ -4989,18 +4989,18 @@ a.list-group-item.active:focus .list-group-item-text {
   border-bottom-color: #ebccd1;
 }
 .panel-info {
-  border-color: #bce8f1;
+  border-color: #cbedf4;
 }
 .panel-info > .panel-heading {
-  color: #31708f;
-  background-color: #d9edf7;
-  border-color: #bce8f1;
+  color: #285d77;
+  background-color: #e8f4fa;
+  border-color: #cbedf4;
 }
 .panel-info > .panel-heading + .panel-collapse .panel-body {
-  border-top-color: #bce8f1;
+  border-top-color: #cbedf4;
 }
 .panel-info > .panel-footer + .panel-collapse .panel-body {
-  border-bottom-color: #bce8f1;
+  border-bottom-color: #cbedf4;
 }
 .well {
   min-height: 20px;
@@ -7219,7 +7219,7 @@ thead .sortAscHeader {
   cursor: default;
 }
 .datepicker table tr td.highlighted {
-  background: #d9edf7;
+  background: #e8f4fa;
   border-radius: 0;
 }
 .datepicker table tr td.today,
