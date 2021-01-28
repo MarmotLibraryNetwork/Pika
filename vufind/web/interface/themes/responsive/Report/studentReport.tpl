@@ -52,7 +52,9 @@
 							{/if}
 							<tr>
 								{foreach from=$dataRow item=dataCell}
+
 									<td>{$dataCell}</td>
+
 								{/foreach}
 							</tr>
 						{/if}
@@ -63,7 +65,7 @@
 			<script type="text/javascript">
 				{literal}
 				$(document).ready(function(){
-					$('#studentReportTable').DataTable({
+					$('.table').DataTable({
 						"order": [[0, "asc"]],
 						pageLength: 100
 					});

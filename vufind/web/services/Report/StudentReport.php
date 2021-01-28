@@ -82,7 +82,12 @@ class Report_StudentReport extends Report_Report {
 						}
 					}
 					if ($okToInclude || count($fileData) == 0){
+						if(end($data) == NULL ){
+							array_pop($data);
 						$fileData[] = $data;
+
+
+						}
 					}
 				}
 				$interface->assign('reportData', $fileData);
