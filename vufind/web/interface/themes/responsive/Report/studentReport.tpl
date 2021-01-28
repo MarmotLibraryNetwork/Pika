@@ -30,7 +30,8 @@
 			{if $reportData}
 				<br/>
 				<p>
-					There are a total of <strong>{$reportData|@count}</strong> rows that meet your criteria.
+					{assign var=reportCount value=$reportData|@count}
+					There are a total of <strong>{$reportCount-1}</strong> rows that meet your criteria.
 				</p>
 				<table id="studentReportTable" class="table table-condensed stripe">
 					{foreach from=$reportData item=dataRow name=studentData}
