@@ -18,7 +18,18 @@
 			</div>
 			</div>
 		{elseif $property.type != 'section' && $property.type != 'checkbox'}
-			<label for='{$propName}'{if $property.description} title="{$property.description}"{/if}>{$property.label}{if $property.required}<span class="required-input">*</span>{/if}</label>
+			{if !empty($property.helpLink)}
+				<div class="row">
+					<div class="col-xs-11">
+						<label for='{$propName}'{if $property.description} title="{$property.description}"{/if}>{$property.label}{if $property.required}<span class="required-input">*</span>{/if}</label>
+					</div>
+					<div class="col-xs-1">
+						<a href="{$property.helpLink}" target="_blank"><span class="glyphicon glyphicon-question-sign" title="Help" aria-hidden="true" style="color: blue;"></span></a>
+					</div>
+				</div>
+			{else}
+				<label for='{$propName}'{if $property.description} title="{$property.description}"{/if}>{$property.label}{if $property.required}<span class="required-input">*</span>{/if}</label>
+			{/if}
 		{/if}
 		{* Output the editing control*}
 		{if $property.type == 'section'}

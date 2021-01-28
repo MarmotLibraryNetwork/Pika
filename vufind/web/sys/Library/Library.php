@@ -421,7 +421,8 @@ class Library extends DB_DataObject {
 			'displayName'             => array('property' => 'displayName', 'type' => 'text', 'label' => 'Display Name', 'description' => 'A name to identify the library within the system', 'size' => '40'),
 			'showDisplayNameInHeader' => array('property' => 'showDisplayNameInHeader', 'type' => 'checkbox', 'label' => 'Show Display Name in Header', 'description' => 'Whether or not the display name should be shown in the header next to the logo', 'hideInLists' => true, 'default' => false),
 			'abbreviatedDisplayName'  => array('property' => 'abbreviatedDisplayName', 'type' => 'text', 'label' => 'Abbreviated Display Name', 'description' => 'A short name to identify the library when space is low', 'size' => '40'),
-			'systemMessage'           => array('property' => 'systemMessage', 'type' => 'html', 'label' => 'System Message', 'description' => 'A message to be displayed at the top of the screen', 'size' => '80', 'allowableTags' => '<p><div><span><a><strong><b><em><i><ul><ol><li><br><hr><h1><h2><h3><h4><h5><h6><sub><sup><img><script>', 'hideInLists' => true),
+			'systemMessage'           => array('property' => 'systemMessage', 'type' => 'html', 'label' => 'System Message', 'description' => 'A message to be displayed at the top of the screen', 'size' => '80', 'hideInLists' => true,
+					'allowableTags' => '<p><div><span><a><strong><b><em><i><ul><ol><li><br><hr><h1><h2><h3><h4><h5><h6><sub><sup><img><script>'),
 
 			// Basic Display //
 			'displaySection' => array(
