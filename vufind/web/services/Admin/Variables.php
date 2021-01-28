@@ -71,11 +71,12 @@ class Admin_Variables extends ObjectEditor {
 	}
 
 	function getAllowableRoles(){
-		return array('opacAdmin');
+		return ['opacAdmin'];
 	}
 
 	function canAddNew(){
-		return false;
+		$user = UserAccount::getLoggedInUser();
+		return UserAccount::userHasRole('opacAdmin');
 	}
 
 	function canDelete(){
