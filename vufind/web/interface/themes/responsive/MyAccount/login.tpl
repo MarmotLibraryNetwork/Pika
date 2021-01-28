@@ -12,7 +12,11 @@
 			Logging you in now. Please wait.
 		</p>
 		{if $action == "WSJ"}
-			<p class="alert alert-info">In order for you to access the Wall Street Journal as provided by {$librarySystemName} you are required to log in on this page with your name and library card number. Once you log in with the requested credentials, you will be directed to {$librarySystemName}'s Wall Street Journal site, where you can browse and read articles and full issues of the Wall Street Journal.</p>
+			<div class="alert alert-info">
+				<p>In order for you to access the <em>Wall Street Journal</em> as provided	by <em>{$librarySystemName}</em> you are required to log in on this page with your name and library card number.</p>
+				<p>Once you log in with the requested credentials, you will be directed to the <em>Wall Street Journal</em> site for <em>{$librarySystemName}</em>, where you will set up <em>WSJ.com</em> login credentials, and then you can browse and read articles and full issues of the Wall Street Journal.</p>
+				<p>You will have access, from anywhere, for the next 10 days. After 10 days, you can return to your library's site and redeem access - with the same login credentials - for another 10 days, and repeat this process as often as you would like.</p>
+			</div>
 		{/if}
 		{if $offline && !$enableLoginWhileOffline}
 			<div class="alert alert-warning">
