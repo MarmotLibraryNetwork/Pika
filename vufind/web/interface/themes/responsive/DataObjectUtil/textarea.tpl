@@ -48,4 +48,10 @@
 		});
 		{/literal}
 	</script>
+	<div style="background-color: #FAFAFA; border: 1px lightgrey solid; border-top: none">
+		<span>&nbsp;<a href="https://docs.google.com/document/d/1X95FQzu4rXeASs1wQbos2z0zSxGX6K4j4_mhgNA7nPM" target="_blank">Editor tips</a>&nbsp;|</span>
+		{if !empty($property.allowableTags)}
+			<span class="">Allowed HTML tags : <small><code>{$property.allowableTags|replace:'>':'> '|escape}</code></small></span>
+		{/if}
+	</div>
 {/if}
