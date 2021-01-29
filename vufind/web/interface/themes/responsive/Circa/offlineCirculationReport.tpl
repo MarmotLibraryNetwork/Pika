@@ -100,20 +100,19 @@
 					{/foreach}
 					</tbody>
 				</table>
+<script type="text/javascript">
+	{literal}
+	$(document).ready(function(){
+		$('#offlineCirculation').DataTable({
+			"order": [[0, "asc"]],
+			pageLength: 100
+		});
+	})
+	{/literal}
+</script>
 			{else}
 				<p>There is no offline circulation information to display.</p>
 			{/if}
 		</div>
 	</div>
-	<script type="text/javascript">
-		{literal}
-		$(document).ready(function(){
-			$('#offlineCirculation').DataTable({
-				"order": [[0, "asc"]],
-				pageLength: 100
-			});
-		})
-
-		{/literal}
-	</script>
 {/strip}

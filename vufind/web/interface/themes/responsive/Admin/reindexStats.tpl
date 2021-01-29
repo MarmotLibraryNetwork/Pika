@@ -18,7 +18,7 @@
 			{if $noStatsFound}
 				<div class="alert-warning">Sorry, we couldn't find any stats.</div>
 			{else}
-				<table class="table table-condensed stripe table-hover" id="reindexingStats">
+				<table class="table table-condensed stripe order-column table-hover" id="reindexingStats">
 					<thead>
 						<tr>
 							{foreach from=$indexingStatHeader item=itemHeader}
