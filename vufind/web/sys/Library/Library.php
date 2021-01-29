@@ -1444,11 +1444,11 @@ class Library extends DB_DataObject {
 	 * @see DB/DB_DataObject::update()
 	 */
 	public function update($dataObject = false){
-		$this->showTextThis = null;
-		if(isset($this->selfRegistrationDefaultpType) && (int)$this->selfRegistrationDefaultpType < 0) {
+		$this->showTextThis = "null";
+		if((isset($this->selfRegistrationDefaultpType) && (int)$this->selfRegistrationDefaultpType < 0) || empty($this->selfRegistrationDefaultpType) ) {
 			$this->selfRegistrationDefaultpType = "null";
 		}
-		if(isset($this->selfRegistrationAgencyCode) && (int)$this->selfRegistrationAgencyCode < 1) {
+		if((isset($this->selfRegistrationAgencyCode) && (int)$this->selfRegistrationAgencyCode < 1) || empty($this->selfRegistrationAgencyCode)) {
 			$this->selfRegistrationAgencyCode = "null";
 		}
 		if (isset($this->showInMainDetails) && is_array($this->showInMainDetails)){
@@ -1503,11 +1503,11 @@ class Library extends DB_DataObject {
 	 * @see DB/DB_DataObject::insert()
 	 */
 	public function insert(){
-		$this->showTextThis = null;
-		if(isset($this->selfRegistrationDefaultpType) && (int)$this->selfRegistrationDefaultpType < 0) {
+		$this->showTextThis = "null";
+		if((isset($this->selfRegistrationDefaultpType) && (int)$this->selfRegistrationDefaultpType < 0) || empty($this->selfRegistrationDefaultpType) ) {
 			$this->selfRegistrationDefaultpType = "null";
 		}
-		if(isset($this->selfRegistrationAgencyCode) && (int)$this->selfRegistrationAgencyCode < 1) {
+		if((isset($this->selfRegistrationAgencyCode) && (int)$this->selfRegistrationAgencyCode < 1) || empty($this->selfRegistrationAgencyCode)) {
 			$this->selfRegistrationAgencyCode = "null";
 		}
 		if (isset($this->showInMainDetails) && is_array($this->showInMainDetails)){
