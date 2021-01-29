@@ -1,7 +1,7 @@
 {strip}
 	<h2 id="pageTitle">Archive Usage By Library</h2>
-	<div class='adminTableRegion'>
-		<table class="adminTable table table-striped order-column table-condensed smallText" id="adminTable">
+	<div class="adminTableRegion">
+		<table class="adminTable table table-striped order-column table-condensed" id="adminTable">
 			<thead>
 			<tr>
 				<th><label title='Library'>Library</label></th>
