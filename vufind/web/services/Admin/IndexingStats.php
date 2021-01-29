@@ -26,7 +26,6 @@
  * Time: 8:41 PM
  */
 
-require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/Admin.php';
 
 class IndexingStats extends Admin_Admin {
@@ -36,7 +35,7 @@ class IndexingStats extends Admin_Admin {
 
 		//Load the latest indexing stats
 		$baseDir           = dirname($configArray['Reindex']['marcPath']);
-		$indexingStatFiles = array();
+		$indexingStatFiles = [];
 		$allFilesInDir     = scandir($baseDir);
 		foreach ($allFilesInDir as $curFile){
 			if (preg_match('/reindex_stats_([\\d-]+)\\.csv/', $curFile, $matches)){
@@ -61,10 +60,49 @@ class IndexingStats extends Admin_Admin {
 				$dateToRetrieve = $matches[1];
 			}
 
+			$indexingStats      = $ilsColumns = [];
 			$indexingStatFhnd   = fopen($fileToLoad, 'r');
-			$indexingStatHeader = fgetcsv($indexingStatFhnd);
-			$indexingStats      = array();
-			while ($curRow = fgetcsv($indexingStatFhnd)){
+			$allIndexingHeaders = fgetcsv($indexingStatFhnd);
+			$j                  = 0;
+			foreach ($allIndexingHeaders as $i => $value){
+				// Majority of the columns are unneeded noise so we will filter them out for display
+				if (strpos($value, ' ils ') !== false){
+					// Keep any columns related to the ils indexing (for physical material)
+					$indexingStatHeader[] = $value;
+					$ilsColumns[]         = $i;
+				}elseif ($i < 3){
+					// Keep the first 3 columns: scope name, works owned, total works
+					$indexingStatHeader[] = $value;
+				}else{
+					// There are a total of 8 columns per indexing profile, creating a column counting cycle
+					$j++;
+					if ($j == 5){
+						// only retain the total records column for sideloads (econtent)
+						$indexingStatHeader[] = $value;
+					}elseif ($j == 8){
+						$j = 0;
+					}
+				}
+			}
+
+			// Now process data rows for each scope
+			while ($temp = fgetcsv($indexingStatFhnd)){
+				$j      = 0;
+				$curRow = [];
+				foreach ($temp as $i => $value){
+					if ($i < 3){
+						$curRow[] = $value;
+					}elseif (in_array($i, $ilsColumns)){
+						$curRow[] = $value;
+					}else{
+						$j++;
+						if ($j == 5){
+							$curRow[] = $value;
+						}elseif ($j == 8){
+							$j = 0;
+						}
+					}
+				}
 				$indexingStats[] = $curRow;
 			}
 			fclose($indexingStatFhnd);
@@ -80,6 +118,6 @@ class IndexingStats extends Admin_Admin {
 	}
 
 	function getAllowableRoles(){
-		return array('opacAdmin', 'libraryAdmin', 'cataloging');
+		return ['opacAdmin', 'libraryAdmin', 'cataloging'];
 	}
 } 

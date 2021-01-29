@@ -12,24 +12,36 @@
 				</select>
 			</div>
 			<button type="submit" class="btn btn-default btn-sm">Set Date</button>
-		</form>
-		
+
+			<h4>Toggle columns:</h4>
+
+			<div class="row">
+				{foreach from=$indexingStatHeader item=itemHeader name=indexCols}
+					{if $smarty.foreach.indexCols.index}{* Skip the first column for scope name *}
+						<div class="col-sm-4">
+							<button class="toggle-vis btn btn-default btn-primary" data-column="{$smarty.foreach.indexCols.index}"
+							        style="width: 100%">{$itemHeader}</button>
+						</div>
+					{/if}
+				{/foreach}
+			</div>
+
 		<div id="reindexingStatsContainer">
 			{if $noStatsFound}
 				<div class="alert-warning">Sorry, we couldn't find any stats.</div>
 			{else}
 				<table class="table table-condensed stripe order-column table-hover" id="reindexingStats">
 					<thead>
-						<tr>
-							{foreach from=$indexingStatHeader item=itemHeader}
-								<th>{$itemHeader}</th>
-							{/foreach}
-						</tr>
+					<tr>
+						{foreach from=$indexingStatHeader item=itemHeader}
+							<th>{$itemHeader}</th>
+						{/foreach}
+					</tr>
 					</thead>
 					<tbody>
 					{foreach from=$indexingStats item=statsRow}
 						<tr>
-							{foreach from=$statsRow item=statCell}
+							{foreach from=$statsRow item=statCell name=statsLoop}
 								<td>{$statCell}</td>
 							{/foreach}
 						</tr>
@@ -43,10 +55,33 @@
 <script type="text/javascript">
 	{literal}
 	$(document).ready(function(){
-		$('#reindexingStats').DataTable({
+/* Close side bar menu
+		$('.menu-bar-option:nth-child(2)>a', '#vertical-menu-bar').filter(':visible').click();
+*/
+
+		var table = $('#reindexingStats').DataTable({
 			"order": [[0, "asc"]],
-			pageLength: 100
+			"paging": false
 		});
+
+		$('.toggle-vis').on( 'click', function (e) {
+			e.preventDefault();
+
+			// Get the column API object
+			var column = table.column( $(this).attr('data-column') );
+
+			// Toggle the visibility
+			column.visible( ! column.visible() );
+
+			// Toggle button class
+			$(this).toggleClass("btn-primary");
+		} )
+						// Hide all but the first two columns initially
+						.slice(2).click();
+
+		$('#reindexingStats tbody').on( 'click', 'tr', function () {
+			$(this).toggleClass('selected');
+		} );
 	})
 
 	{/literal}
