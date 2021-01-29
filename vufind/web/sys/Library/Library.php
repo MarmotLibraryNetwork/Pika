@@ -1446,10 +1446,10 @@ class Library extends DB_DataObject {
 	public function update($dataObject = false){
 		$this->showTextThis = null;
 		if(isset($this->selfRegistrationDefaultpType) && (int)$this->selfRegistrationDefaultpType < 0) {
-			$this->selfRegistrationDefaultpType = null;
+			$this->selfRegistrationDefaultpType = "null";
 		}
 		if(isset($this->selfRegistrationAgencyCode) && (int)$this->selfRegistrationAgencyCode < 1) {
-			$this->selfRegistrationAgencyCode = null;
+			$this->selfRegistrationAgencyCode = "null";
 		}
 		if (isset($this->showInMainDetails) && is_array($this->showInMainDetails)){
 			// convert array to string before storing in database
@@ -1505,10 +1505,10 @@ class Library extends DB_DataObject {
 	public function insert(){
 		$this->showTextThis = null;
 		if(isset($this->selfRegistrationDefaultpType) && (int)$this->selfRegistrationDefaultpType < 0) {
-			$this->selfRegistrationDefaultpType = null;
+			$this->selfRegistrationDefaultpType = "null";
 		}
 		if(isset($this->selfRegistrationAgencyCode) && (int)$this->selfRegistrationAgencyCode < 1) {
-			$this->selfRegistrationAgencyCode = null;
+			$this->selfRegistrationAgencyCode = "null";
 		}
 		if (isset($this->showInMainDetails) && is_array($this->showInMainDetails)){
 			// convert array to string before storing in database
