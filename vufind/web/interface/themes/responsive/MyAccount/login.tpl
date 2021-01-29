@@ -1,6 +1,6 @@
 {strip}
 <div id="page-content" class="col-xs-12">
-	<h2>{translate text='Log into your account'}</h2>
+	<h2>{if $action == "WSJ"}Log into your account to access WSJ site{else}{translate text='Log into your account'}{/if}</h2>
 	<div id="loginFormWrapper">
 		{if $message}{* Errors for Full Login Page *}
 			<p class="alert alert-danger" id="loginError" >{$message|translate}</p>
@@ -11,6 +11,13 @@
 		<p class="alert alert-info" id="loading" style="display: none">
 			Logging you in now. Please wait.
 		</p>
+		{if $action == "WSJ"}
+			<div class="alert alert-info">
+				<p>In order for you to access the <em>Wall Street Journal</em> as provided	by <em>{$librarySystemName}</em> you are required to log in on this page with your name and library card number.</p>
+				<p>Once you log in with the requested credentials, you will be directed to the <em>Wall Street Journal</em> site for <em>{$librarySystemName}</em>, where you will set up <em>WSJ.com</em> login credentials, and then you can browse and read articles and full issues of the Wall Street Journal.</p>
+				<p>You will have access, from anywhere, for the next 10 days. After 10 days, you can return to your library's site and redeem access - with the same login credentials - for another 10 days, and repeat this process as often as you would like.</p>
+			</div>
+		{/if}
 		{if $offline && !$enableLoginWhileOffline}
 			<div class="alert alert-warning">
 				<p>
