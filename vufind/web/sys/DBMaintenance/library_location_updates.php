@@ -1173,10 +1173,10 @@ ADD COLUMN selfRegistrationAgencyCode INT(10) NULL;",
 
 		'update_self_registration_fields' => [
 			'title'           => 'Update self registration default values',
-			'description'     => 'Set default values for pTyoe and agencyCode to 0 rather than null.',
+			'description'     => 'Set default values for pType and agencyCode to 0 rather than null.',
 			'continueOnError' => true,
 			'sql'             => [
-				"ALTER TABLE library ALTER selfRegistrationDefaultpType SET DEFAULT 0, ALTER selfRegistrationAgencyCode SET DEFAULT 0;"
+				"ALTER TABLE library ALTER selfRegistrationDefaultpType SET DEFAULT -1, ALTER selfRegistrationAgencyCode SET DEFAULT -1;"
 				],
 			],
 
