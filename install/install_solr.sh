@@ -50,6 +50,9 @@ if [[ $# = 1 ]];then
 	ln -s /data/vufind-plus/${PIKASERVER}/${SOLR_INDEXER_NAME}/ /var/${SOLR_INDEXER_NAME}/data
 	ln -s /data/vufind-plus/${PIKASERVER}/${SOLR_SEARCHER_NAME}/ /var/${SOLR_SEARCHER_NAME}/data
 
+	chown solr /var/${SOLR_INDEXER_NAME}/logs
+	chown solr /var/${SOLR_SEARCHER_NAME}/logs
+
  	read -p "Proceed with SOLR installation?" -n 1 -r
 	echo    # (optional) move to a new line
 	if [[ $REPLY =~ ^[Yy]$ ]]; then
