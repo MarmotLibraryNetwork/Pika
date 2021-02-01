@@ -29,15 +29,18 @@ CURRENT_DIR="$(cd "$(dirname "$0")" && pwd -P)"
 if [[ $# = 1 ]];then
 #	mkdir /var/${SOLR_INDEXER_NAME} /var/${SOLR_INDEXER_NAME}/logs /data/vufind-plus/${PIKASERVER}/${SOLR_INDEXER_NAME}
 #	mkdir /var/${SOLR_SEARCHER_NAME} /var/${SOLR_SEARCHER_NAME}/logs /data/vufind-plus/${PIKASERVER}/${SOLR_SEARCHER_NAME}
-	mkdir /var/${SOLR_INDEXER_NAME} /var/${SOLR_INDEXER_NAME}/logs
-	mkdir /var/${SOLR_SEARCHER_NAME} /var/${SOLR_SEARCHER_NAME}/logs
+#	mkdir /var/${SOLR_INDEXER_NAME} /var/${SOLR_INDEXER_NAME}/logs
+#	mkdir /var/${SOLR_SEARCHER_NAME} /var/${SOLR_SEARCHER_NAME}/logs
+	mkdir /var/${SOLR_INDEXER_NAME} /data/vufind-plus/${PIKASERVER}/${SOLR_INDEXER_NAME}/
+	mkdir /var/${SOLR_SEARCHER_NAME} /data/vufind-plus/${PIKASERVER}/${SOLR_SEARCHER_NAME}/
+
 	# /opt/solr is the SOLR installation directory
 	# /var/solr is the SOLR data directory
 	# /etc/default SOLR environment variable file
 
 	#Add links for where we want data and logs to actually live
-	ln -s /var/log/${PIKASERVER}/${SOLR_INDEXER_NAME}/ /var/${SOLR_INDEXER_NAME}/logs
-	ln -s /var/log/${PIKASERVER}/${SOLR_SEARCHER_NAME}/ /var/${SOLR_SEARCHER_NAME}/logs
+	ln -s /var/log/vufind-plus/${PIKASERVER}/${SOLR_INDEXER_NAME}/ /var/${SOLR_INDEXER_NAME}/logs
+	ln -s /var/log/vufind-plus/${PIKASERVER}/${SOLR_SEARCHER_NAME}/ /var/${SOLR_SEARCHER_NAME}/logs
 
 	# Install data directories
 	cp -r "${CURRENT_DIR}/../data_dir_setup/${SOLR_INDEXER_NAME}" "/data/vufind-plus/${PIKASERVER}"
