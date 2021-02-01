@@ -25,59 +25,67 @@ SOLR_SEARCHER_NAME=solr_searcher
 
 CURRENT_DIR="$(cd "$(dirname "$0")" && pwd -P)"
 
+# NOTE:
+# /opt/solr is the SOLR installation directory
+# /var/solr is the SOLR data directory
+# /etc/default SOLR environment variable file
+
 
 if [[ $# = 1 ]];then
-#	mkdir /var/${SOLR_INDEXER_NAME} /var/${SOLR_INDEXER_NAME}/logs /data/vufind-plus/${PIKASERVER}/${SOLR_INDEXER_NAME}
-#	mkdir /var/${SOLR_SEARCHER_NAME} /var/${SOLR_SEARCHER_NAME}/logs /data/vufind-plus/${PIKASERVER}/${SOLR_SEARCHER_NAME}
-#	mkdir /var/${SOLR_INDEXER_NAME} /var/${SOLR_INDEXER_NAME}/logs
-#	mkdir /var/${SOLR_SEARCHER_NAME} /var/${SOLR_SEARCHER_NAME}/logs
-	mkdir /var/${SOLR_INDEXER_NAME} /var/log/vufind-plus/${PIKASERVER}/${SOLR_INDEXER_NAME}/
-	mkdir /var/${SOLR_SEARCHER_NAME} /var/log/vufind-plus/${PIKASERVER}/${SOLR_SEARCHER_NAME}/
-
-	# /opt/solr is the SOLR installation directory
-	# /var/solr is the SOLR data directory
-	# /etc/default SOLR environment variable file
-
-	#Add links for where we want data and logs to actually live
-	ln -s /var/log/vufind-plus/${PIKASERVER}/${SOLR_INDEXER_NAME}/ /var/${SOLR_INDEXER_NAME}/logs
-	ln -s /var/log/vufind-plus/${PIKASERVER}/${SOLR_SEARCHER_NAME}/ /var/${SOLR_SEARCHER_NAME}/logs
-
-	# Install data directories
-	cp -r "${CURRENT_DIR}/../data_dir_setup/${SOLR_INDEXER_NAME}" "/data/vufind-plus/${PIKASERVER}"
-	cp -r "${CURRENT_DIR}/../data_dir_setup/${SOLR_SEARCHER_NAME}" "/data/vufind-plus/${PIKASERVER}"
-
-	# Add links to solr standard data directory to ours
-	ln -s /data/vufind-plus/${PIKASERVER}/${SOLR_INDEXER_NAME}/ /var/${SOLR_INDEXER_NAME}/data
-	ln -s /data/vufind-plus/${PIKASERVER}/${SOLR_SEARCHER_NAME}/ /var/${SOLR_SEARCHER_NAME}/data
-
- 	read -p "Proceed with SOLR installation?" -n 1 -r
+	echo "Please turn off any existing Solr installation before proceeding.  Current indexes will be moved."
+	read -p "Proceed with SOLR installation?" -n 1 -r
 	echo    # (optional) move to a new line
 	if [[ $REPLY =~ ^[Yy]$ ]]; then
 
-		#Download SOLR library
-		cd ~
-		wget https://mirrors.sonic.net/apache/lucene/solr/${SOLR_VERSION}/solr-${SOLR_VERSION}.tgz
-		# this is a mirror site
+		# Create installation directories for Pika
+		mkdir /var/${SOLR_INDEXER_NAME} /var/log/vufind-plus/${PIKASERVER}/${SOLR_INDEXER_NAME}/
+		mkdir /var/${SOLR_SEARCHER_NAME} /var/log/vufind-plus/${PIKASERVER}/${SOLR_SEARCHER_NAME}/
+
+		#Add links for where we want data and logs to actually live
+		ln -s /var/log/vufind-plus/${PIKASERVER}/${SOLR_INDEXER_NAME}/ /var/${SOLR_INDEXER_NAME}/logs
+		ln -s /var/log/vufind-plus/${PIKASERVER}/${SOLR_SEARCHER_NAME}/ /var/${SOLR_SEARCHER_NAME}/logs
+
+		# Move old data directories
+		mv /data/vufind-plus/${PIKASERVER}/${SOLR_INDEXER_NAME} /data/vufind-plus/${PIKASERVER}/${SOLR_INDEXER_NAME}_old_delete_me
+		mv /data/vufind-plus/${PIKASERVER}/${SOLR_SEARCHER_NAME} /data/vufind-plus/${PIKASERVER}/${SOLR_SEARCHER_NAME}_old_delete_me
+
+		# Install data directories
+		cp -r "${CURRENT_DIR}/../data_dir_setup/${SOLR_INDEXER_NAME}" "/data/vufind-plus/${PIKASERVER}"
+		cp -r "${CURRENT_DIR}/../data_dir_setup/${SOLR_SEARCHER_NAME}" "/data/vufind-plus/${PIKASERVER}"
+
+		# Add links to solr standard data directory to ours
+		ln -s /data/vufind-plus/${PIKASERVER}/${SOLR_INDEXER_NAME}/ /var/${SOLR_INDEXER_NAME}/data
+		ln -s /data/vufind-plus/${PIKASERVER}/${SOLR_SEARCHER_NAME}/ /var/${SOLR_SEARCHER_NAME}/data
+
+		read -p "Proceed with SOLR installation?" -n 1 -r
+		echo    # (optional) move to a new line
+		if [[ $REPLY =~ ^[Yy]$ ]]; then
+
+			#Download SOLR library
+			cd ~
+			wget https://mirrors.sonic.net/apache/lucene/solr/${SOLR_VERSION}/solr-${SOLR_VERSION}.tgz
+			# this is a mirror site
 
 
-		#TODO: confirm hash
-		#wget https://downloads.apache.org/lucene/solr/${SOLR_VERSION}/solr-${SOLR_VERSION}-src.tgz.asc
+			#TODO: confirm hash
+			#wget https://downloads.apache.org/lucene/solr/${SOLR_VERSION}/solr-${SOLR_VERSION}-src.tgz.asc
 
-		#Extract installation script
-		tar xzf solr-${SOLR_VERSION}.tgz solr-${SOLR_VERSION}/bin/install_solr_service.sh --strip-components=2
+			#Extract installation script
+			tar xzf solr-${SOLR_VERSION}.tgz solr-${SOLR_VERSION}/bin/install_solr_service.sh --strip-components=2
 
-		# Install indexing solr core
-		./install_solr_service.sh solr-${SOLR_VERSION}.tgz -u solr -s ${SOLR_INDEXER_NAME} -p 8180 -n
+			# Install indexing solr core
+			./install_solr_service.sh solr-${SOLR_VERSION}.tgz -u solr -s ${SOLR_INDEXER_NAME} -p 8180 -n
 
-		# Install searching solr core
-		./install_solr_service.sh solr-${SOLR_VERSION}.tgz -u solr -s ${SOLR_SEARCHER_NAME} -p 8080 -n
+			# Install searching solr core
+			./install_solr_service.sh solr-${SOLR_VERSION}.tgz -u solr -s ${SOLR_SEARCHER_NAME} -p 8080 -n
 
-		chown solr /var/${SOLR_INDEXER_NAME}/logs
-		chown solr /var/${SOLR_SEARCHER_NAME}/logs
-		chown solr /data/vufind-plus/${PIKASERVER}/${SOLR_INDEXER_NAME}
-		chown solr /data/vufind-plus/${PIKASERVER}/${SOLR_SEARCHER_NAME}
+			chown solr /var/${SOLR_INDEXER_NAME}/logs
+			chown solr /var/${SOLR_SEARCHER_NAME}/logs
+			chown solr /data/vufind-plus/${PIKASERVER}/${SOLR_INDEXER_NAME}
+			chown solr /data/vufind-plus/${PIKASERVER}/${SOLR_SEARCHER_NAME}
 
-		#TODO: modify bin/solr.in.sh to set the SOLR_HEAP variable
+			#TODO: modify bin/solr.in.sh to set the SOLR_HEAP variable
+		fi
 	fi
 
 else
