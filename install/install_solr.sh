@@ -76,13 +76,17 @@ if [[ $# = 1 ]];then
 			# Install indexing solr core
 			./install_solr_service.sh solr-${SOLR_VERSION}.tgz -u solr -s ${SOLR_INDEXER_NAME} -p 8180 -n
 
+			# move environment file back to original name (undos a change made by the install_solr_service script
+			SOLR_INSTALL_DIR="/opt/solr-${SOLR_VERSION}/"
+			mv "$SOLR_INSTALL_DIR/bin/solr.in.sh.orig" "$SOLR_INSTALL_DIR/bin/solr.in.sh"
+
 			# Install searching solr core
 			./install_solr_service.sh solr-${SOLR_VERSION}.tgz -u solr -s ${SOLR_SEARCHER_NAME} -p 8080 -n
 
 			chown solr /var/${SOLR_INDEXER_NAME}/logs
 			chown solr /var/${SOLR_SEARCHER_NAME}/logs
-			chown solr /data/vufind-plus/${PIKASERVER}/${SOLR_INDEXER_NAME}
-			chown solr /data/vufind-plus/${PIKASERVER}/${SOLR_SEARCHER_NAME}
+			chown solr --recursive /data/vufind-plus/${PIKASERVER}/${SOLR_INDEXER_NAME}
+			chown solr --recursive /data/vufind-plus/${PIKASERVER}/${SOLR_SEARCHER_NAME}
 
 			#TODO: modify bin/solr.in.sh to set the SOLR_HEAP variable
 		fi
