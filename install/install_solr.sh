@@ -31,8 +31,8 @@ if [[ $# = 1 ]];then
 #	mkdir /var/${SOLR_SEARCHER_NAME} /var/${SOLR_SEARCHER_NAME}/logs /data/vufind-plus/${PIKASERVER}/${SOLR_SEARCHER_NAME}
 #	mkdir /var/${SOLR_INDEXER_NAME} /var/${SOLR_INDEXER_NAME}/logs
 #	mkdir /var/${SOLR_SEARCHER_NAME} /var/${SOLR_SEARCHER_NAME}/logs
-	mkdir /var/${SOLR_INDEXER_NAME} /data/vufind-plus/${PIKASERVER}/${SOLR_INDEXER_NAME}/
-	mkdir /var/${SOLR_SEARCHER_NAME} /data/vufind-plus/${PIKASERVER}/${SOLR_SEARCHER_NAME}/
+	mkdir /var/${SOLR_INDEXER_NAME} /var/log/vufind-plus/${PIKASERVER}/${SOLR_INDEXER_NAME}/
+	mkdir /var/${SOLR_SEARCHER_NAME} /var/log/vufind-plus/${PIKASERVER}/${SOLR_SEARCHER_NAME}/
 
 	# /opt/solr is the SOLR installation directory
 	# /var/solr is the SOLR data directory
@@ -50,25 +50,30 @@ if [[ $# = 1 ]];then
 	ln -s /data/vufind-plus/${PIKASERVER}/${SOLR_INDEXER_NAME}/ /var/${SOLR_INDEXER_NAME}/data
 	ln -s /data/vufind-plus/${PIKASERVER}/${SOLR_SEARCHER_NAME}/ /var/${SOLR_SEARCHER_NAME}/data
 
-	#Download SOLR library
-	cd ~
-	wget https://mirrors.sonic.net/apache/lucene/solr/${SOLR_VERSION}/solr-${SOLR_VERSION}.tgz
-	# this is a mirror site
+ 	read -p "Proceed with SOLR installation?" -n 1 -r
+	echo    # (optional) move to a new line
+	if [[ $REPLY =~ ^[Yy]$ ]]; then
+
+		#Download SOLR library
+		cd ~
+		wget https://mirrors.sonic.net/apache/lucene/solr/${SOLR_VERSION}/solr-${SOLR_VERSION}.tgz
+		# this is a mirror site
 
 
-	#TODO: confirm hash
-	#wget https://downloads.apache.org/lucene/solr/${SOLR_VERSION}/solr-${SOLR_VERSION}-src.tgz.asc
+		#TODO: confirm hash
+		#wget https://downloads.apache.org/lucene/solr/${SOLR_VERSION}/solr-${SOLR_VERSION}-src.tgz.asc
 
-	#Extract installation script
-	tar xzf solr-${SOLR_VERSION}.tgz solr-${SOLR_VERSION}/bin/install_solr_service.sh --strip-components=2
+		#Extract installation script
+		tar xzf solr-${SOLR_VERSION}.tgz solr-${SOLR_VERSION}/bin/install_solr_service.sh --strip-components=2
 
-	# Install indexing solr core
-	./install_solr_service.sh solr-${SOLR_VERSION}.tgz -u solr -s ${SOLR_INDEXER_NAME} -p 8180
+		# Install indexing solr core
+		./install_solr_service.sh solr-${SOLR_VERSION}.tgz -u solr -s ${SOLR_INDEXER_NAME} -p 8180
 
-	# Install searching solr core
-	./install_solr_service.sh solr-${SOLR_VERSION}.tgz -u solr -s ${SOLR_SEARCHER_NAME} -p 8080
+		# Install searching solr core
+		./install_solr_service.sh solr-${SOLR_VERSION}.tgz -u solr -s ${SOLR_SEARCHER_NAME} -p 8080
 
-	#TODO: modify bin/solr.in.sh to set the SOLR_HEAP variable
+		#TODO: modify bin/solr.in.sh to set the SOLR_HEAP variable
+	fi
 
 else
   echo ""
