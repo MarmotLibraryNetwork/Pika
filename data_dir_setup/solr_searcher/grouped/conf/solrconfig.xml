@@ -35,7 +35,7 @@
 			 that you fully re-index after changing this setting as it can
 			 affect both how text is indexed and queried.
 	-->
-	<luceneMatchVersion>8.5.2</luceneMatchVersion>
+	<luceneMatchVersion>8.7.0</luceneMatchVersion>
 
 	<!-- <lib/> directives can be used to instruct Solr to load any Jars
 	   identified and use them to resolve any "plugins" specified in
@@ -87,6 +87,7 @@
 	<!--ICU Text Analysis libraries -->
 	<lib dir="${solr.install.dir:../../../..}/contrib/analysis-extras/lib" regex=".*\.jar" />
 	<lib dir="${solr.install.dir:../../../..}/contrib/analysis-extras/lucene-libs" regex=".*\.jar" />
+    <lib dir="${solr.install.dir:../../../..}/dist/" regex="solr-analysis-\d.*\.jar" />
 
 
 	<!-- an exact 'path' can be used instead of a 'dir' to specify a
