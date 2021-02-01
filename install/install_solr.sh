@@ -50,9 +50,6 @@ if [[ $# = 1 ]];then
 	ln -s /data/vufind-plus/${PIKASERVER}/${SOLR_INDEXER_NAME}/ /var/${SOLR_INDEXER_NAME}/data
 	ln -s /data/vufind-plus/${PIKASERVER}/${SOLR_SEARCHER_NAME}/ /var/${SOLR_SEARCHER_NAME}/data
 
-	chown solr /var/${SOLR_INDEXER_NAME}/logs
-	chown solr /var/${SOLR_SEARCHER_NAME}/logs
-
  	read -p "Proceed with SOLR installation?" -n 1 -r
 	echo    # (optional) move to a new line
 	if [[ $REPLY =~ ^[Yy]$ ]]; then
@@ -70,10 +67,15 @@ if [[ $# = 1 ]];then
 		tar xzf solr-${SOLR_VERSION}.tgz solr-${SOLR_VERSION}/bin/install_solr_service.sh --strip-components=2
 
 		# Install indexing solr core
-		./install_solr_service.sh solr-${SOLR_VERSION}.tgz -u solr -s ${SOLR_INDEXER_NAME} -p 8180
+		./install_solr_service.sh solr-${SOLR_VERSION}.tgz -u solr -s ${SOLR_INDEXER_NAME} -p 8180 -n
 
 		# Install searching solr core
-		./install_solr_service.sh solr-${SOLR_VERSION}.tgz -u solr -s ${SOLR_SEARCHER_NAME} -p 8080
+		./install_solr_service.sh solr-${SOLR_VERSION}.tgz -u solr -s ${SOLR_SEARCHER_NAME} -p 8080 -n
+
+		chown solr /var/${SOLR_INDEXER_NAME}/logs
+		chown solr /var/${SOLR_SEARCHER_NAME}/logs
+		chown solr /data/vufind-plus/${PIKASERVER}/${SOLR_INDEXER_NAME}
+		chown solr /data/vufind-plus/${PIKASERVER}/${SOLR_SEARCHER_NAME}
 
 		#TODO: modify bin/solr.in.sh to set the SOLR_HEAP variable
 	fi
