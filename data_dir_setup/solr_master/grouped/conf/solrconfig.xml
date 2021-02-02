@@ -87,7 +87,7 @@
 	<!--ICU Text Analysis libraries -->
 	<lib dir="${solr.install.dir:../../../..}/contrib/analysis-extras/lib" regex=".*\.jar" />
 	<lib dir="${solr.install.dir:../../../..}/contrib/analysis-extras/lucene-libs" regex=".*\.jar" />
-    <lib dir="${solr.install.dir:../../../..}/dist/" regex="solr-analysis-extras-\d.*\.jar" />
+	<lib dir="${solr.install.dir:../../../..}/dist/" regex="solr-analysis-extras-\d.*\.jar" />
 
 
 	<!-- an exact 'path' can be used instead of a 'dir' to specify a
@@ -196,6 +196,15 @@
 		<!-- <ramBufferSizeMB>100</ramBufferSizeMB> -->
 		<!-- <maxBufferedDocs>1000</maxBufferedDocs> -->
 
+    <!-- Expert: ramPerThreadHardLimitMB sets the maximum amount of RAM that can be consumed
+         per thread before they are flushed. When limit is exceeded, this triggers a forced
+         flush even if ramBufferSizeMB has not been exceeded.
+         This is a safety limit to prevent Lucene's DocumentsWriterPerThread from address space
+         exhaustion due to its internal 32 bit signed integer based memory addressing.
+         The specified value should be greater than 0 and less than 2048MB. When not specified,
+         Solr uses Lucene's default value 1945. -->
+    <!-- <ramPerThreadHardLimitMB>1945</ramPerThreadHardLimitMB> -->
+
 		<!-- Expert: Merge Policy
 			 The Merge Policy in Lucene controls how merging of segments is done.
 			 The default since Solr/Lucene 3.3 is TieredMergePolicy.
@@ -298,11 +307,10 @@
 					indexing, this requires 8 bytes (long) * numVersionBuckets
 					of heap space per Solr core.
 		-->
-		<!--TODO: move solr logs to the standard logging directory -->
 		<updateLog>
 			<str name="dir">${solr.ulog.dir:}</str>
 			<int name="numVersionBuckets">${solr.ulog.numVersionBuckets:65536}</int>
-			<!-- NOTE: numVersionBuckets is a change from previous versions Pascal. 9/3/2020 -->
+			<!-- NOTE: numVersionBuckets is a change from previous versions. Pascal. 9/3/2020 -->
 		</updateLog>
 
 		<!-- AutoCommit
@@ -397,11 +405,16 @@
 		 Query section - these settings control query time things like caches
 		 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
 	<query>
-		<!-- Maximum number of clauses in each BooleanQuery,  an exception
-			 is thrown if exceeded.  It is safe to increase or remove this setting,
-			 since it is purely an arbitrary limit to try and catch user errors where
-			 large boolean queries may not be the best implementation choice.
-		  -->
+		<!-- Maximum number of clauses allowed when parsing a boolean query string.
+
+			 This limit only impacts boolean queries specified by a user as part of a query string,
+			 and provides per-collection controls on how complex user specified boolean queries can
+			 be.  Query strings that specify more clauses then this will result in an error.
+
+			 If this per-collection limit is greater then the global `maxBooleanClauses` limit
+			 specified in `solr.xml`, it will have no effect, as that setting also limits the size
+			 of user specified boolean queries.
+		-->
 		<maxBooleanClauses>2048</maxBooleanClauses>
 		<!--NOTE: this becomes the max number of entries in a user list. Pascal 09/03/2020-->
 

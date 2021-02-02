@@ -442,6 +442,7 @@
 				class="solr.CaffeineCache"
 				size="16384"
 				initialSize="4096"
+
 				autowarmCount="256"
 				cleanupThread="true"/>
 
