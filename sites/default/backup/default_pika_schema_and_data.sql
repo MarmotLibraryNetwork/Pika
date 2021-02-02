@@ -1,8 +1,10 @@
--- MySQL dump 10.13  Distrib 5.7.12, for Win64 (x86_64)
+CREATE DATABASE  IF NOT EXISTS `pika` /*!40100 DEFAULT CHARACTER SET utf8 */;
+USE `pika`;
+-- MySQL dump 10.13  Distrib 5.7.17, for Win64 (x86_64)
 --
 -- Host: localhost    Database: pika
 -- ------------------------------------------------------
--- Server version	5.5.47-MariaDB
+-- Server version	5.5.5-10.5.8-MariaDB
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -34,18 +36,8 @@ CREATE TABLE `account_profiles` (
   `weight` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `account_profiles`
---
-
-LOCK TABLES `account_profiles` WRITE;
-/*!40000 ALTER TABLE `account_profiles` DISABLE KEYS */;
-INSERT INTO `account_profiles` VALUES (1,'ils','Library','barcode_pin','db','defaultURL','defaultURL','ils',1);
-/*!40000 ALTER TABLE `account_profiles` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `administrators`
@@ -61,17 +53,51 @@ CREATE TABLE `administrators` (
   `name` varchar(100) NOT NULL COMMENT 'A name to use when displaying the administrator',
   PRIMARY KEY (`id`),
   UNIQUE KEY `login` (`login`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='Stores information about users who can administer the system';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Stores information about users who can administer the system';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `administrators`
+-- Table structure for table `archive_private_collections`
 --
 
-LOCK TABLES `administrators` WRITE;
-/*!40000 ALTER TABLE `administrators` DISABLE KEYS */;
-/*!40000 ALTER TABLE `administrators` ENABLE KEYS */;
-UNLOCK TABLES;
+DROP TABLE IF EXISTS `archive_private_collections`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `archive_private_collections` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `privateCollections` mediumtext DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `archive_requests`
+--
+
+DROP TABLE IF EXISTS `archive_requests`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `archive_requests` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(100) NOT NULL,
+  `address` varchar(200) DEFAULT NULL,
+  `address2` varchar(200) DEFAULT NULL,
+  `city` varchar(200) DEFAULT NULL,
+  `state` varchar(200) DEFAULT NULL,
+  `zip` varchar(12) DEFAULT NULL,
+  `country` varchar(50) DEFAULT NULL,
+  `phone` varchar(20) DEFAULT NULL,
+  `alternatePhone` varchar(20) DEFAULT NULL,
+  `email` varchar(100) DEFAULT NULL,
+  `format` mediumtext DEFAULT NULL,
+  `purpose` mediumtext DEFAULT NULL,
+  `pid` varchar(50) DEFAULT NULL,
+  `dateRequested` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `pid` (`pid`),
+  KEY `name` (`name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Table structure for table `archive_subjects`
@@ -82,20 +108,28 @@ DROP TABLE IF EXISTS `archive_subjects`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `archive_subjects` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `subjectsToIgnore` mediumtext,
-  `subjectsToRestrict` mediumtext,
+  `subjectsToIgnore` mediumtext DEFAULT NULL,
+  `subjectsToRestrict` mediumtext DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `archive_subjects`
+-- Table structure for table `author_enrichment`
 --
 
-LOCK TABLES `archive_subjects` WRITE;
-/*!40000 ALTER TABLE `archive_subjects` DISABLE KEYS */;
-/*!40000 ALTER TABLE `archive_subjects` ENABLE KEYS */;
-UNLOCK TABLES;
+DROP TABLE IF EXISTS `author_enrichment`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `author_enrichment` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `authorName` varchar(255) NOT NULL,
+  `hideWikipedia` tinyint(1) DEFAULT NULL,
+  `wikipediaUrl` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `authorName` (`authorName`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Table structure for table `bad_words`
@@ -109,17 +143,8 @@ CREATE TABLE `bad_words` (
   `word` varchar(50) NOT NULL COMMENT 'The bad word that will be replaced',
   `replacement` varchar(50) NOT NULL COMMENT 'A replacement value for the word.',
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM AUTO_INCREMENT=451 DEFAULT CHARSET=utf8 COMMENT='Stores information about bad_words that should be removed fr';
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COMMENT='Stores information about bad_words that should be removed fr';
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `bad_words`
---
-
-LOCK TABLES `bad_words` WRITE;
-/*!40000 ALTER TABLE `bad_words` DISABLE KEYS */;
-/*!40000 ALTER TABLE `bad_words` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `browse_category`
@@ -134,27 +159,18 @@ CREATE TABLE `browse_category` (
   `userId` int(11) DEFAULT NULL,
   `sharing` enum('private','location','library','everyone') DEFAULT 'everyone',
   `label` varchar(50) NOT NULL,
-  `description` mediumtext,
+  `description` mediumtext DEFAULT NULL,
   `catalogScoping` enum('unscoped','library','location') DEFAULT NULL,
-  `defaultFilter` text,
+  `defaultFilter` text DEFAULT NULL,
   `defaultSort` enum('relevance','popularity','newest_to_oldest','oldest_to_newest','author','title','user_rating') DEFAULT NULL,
   `searchTerm` varchar(500) NOT NULL DEFAULT '',
-  `numTimesShown` mediumint(9) NOT NULL DEFAULT '0',
-  `numTitlesClickedOn` mediumint(9) NOT NULL DEFAULT '0',
+  `numTimesShown` mediumint(9) NOT NULL DEFAULT 0,
+  `numTitlesClickedOn` mediumint(9) NOT NULL DEFAULT 0,
   `sourceListId` mediumint(9) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `textId` (`textId`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `browse_category`
---
-
-LOCK TABLES `browse_category` WRITE;
-/*!40000 ALTER TABLE `browse_category` DISABLE KEYS */;
-/*!40000 ALTER TABLE `browse_category` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `browse_category_library`
@@ -167,20 +183,11 @@ CREATE TABLE `browse_category_library` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `libraryId` int(11) NOT NULL,
   `browseCategoryTextId` varchar(60) NOT NULL DEFAULT '-1',
-  `weight` int(11) NOT NULL DEFAULT '0',
+  `weight` int(11) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
   UNIQUE KEY `libraryId` (`libraryId`,`browseCategoryTextId`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `browse_category_library`
---
-
-LOCK TABLES `browse_category_library` WRITE;
-/*!40000 ALTER TABLE `browse_category_library` DISABLE KEYS */;
-/*!40000 ALTER TABLE `browse_category_library` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `browse_category_location`
@@ -193,20 +200,11 @@ CREATE TABLE `browse_category_location` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `locationId` int(11) NOT NULL,
   `browseCategoryTextId` varchar(60) NOT NULL DEFAULT '-1',
-  `weight` int(11) NOT NULL DEFAULT '0',
+  `weight` int(11) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
   UNIQUE KEY `locationId` (`locationId`,`browseCategoryTextId`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `browse_category_location`
---
-
-LOCK TABLES `browse_category_location` WRITE;
-/*!40000 ALTER TABLE `browse_category_location` DISABLE KEYS */;
-/*!40000 ALTER TABLE `browse_category_location` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `browse_category_subcategories`
@@ -219,20 +217,46 @@ CREATE TABLE `browse_category_subcategories` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `browseCategoryId` int(11) NOT NULL,
   `subCategoryId` int(11) NOT NULL,
-  `weight` smallint(2) unsigned NOT NULL DEFAULT '0',
+  `weight` smallint(2) unsigned NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
   UNIQUE KEY `subCategoryId` (`subCategoryId`,`browseCategoryId`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `browse_category_subcategories`
+-- Table structure for table `claim_authorship_requests`
 --
 
-LOCK TABLES `browse_category_subcategories` WRITE;
-/*!40000 ALTER TABLE `browse_category_subcategories` DISABLE KEYS */;
-/*!40000 ALTER TABLE `browse_category_subcategories` ENABLE KEYS */;
-UNLOCK TABLES;
+DROP TABLE IF EXISTS `claim_authorship_requests`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `claim_authorship_requests` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(100) NOT NULL,
+  `phone` varchar(20) DEFAULT NULL,
+  `email` varchar(100) DEFAULT NULL,
+  `message` mediumtext DEFAULT NULL,
+  `pid` varchar(50) DEFAULT NULL,
+  `dateRequested` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `pid` (`pid`),
+  KEY `name` (`name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `covers`
+--
+
+DROP TABLE IF EXISTS `covers`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `covers` (
+  `coverId` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `cover` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`coverId`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Table structure for table `cron_log`
@@ -246,19 +270,10 @@ CREATE TABLE `cron_log` (
   `startTime` int(11) NOT NULL COMMENT 'The timestamp when the cron run started',
   `endTime` int(11) DEFAULT NULL COMMENT 'The timestamp when the cron run ended',
   `lastUpdate` int(11) DEFAULT NULL COMMENT 'The timestamp when the cron run last updated (to check for stuck processes)',
-  `notes` text COMMENT 'Additional information about the cron run',
+  `notes` text DEFAULT NULL COMMENT 'Additional information about the cron run',
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `cron_log`
---
-
-LOCK TABLES `cron_log` WRITE;
-/*!40000 ALTER TABLE `cron_log` DISABLE KEYS */;
-/*!40000 ALTER TABLE `cron_log` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `cron_process_log`
@@ -274,23 +289,14 @@ CREATE TABLE `cron_process_log` (
   `startTime` int(11) NOT NULL COMMENT 'The timestamp when the process started',
   `lastUpdate` int(11) DEFAULT NULL COMMENT 'The timestamp when the process last updated (to check for stuck processes)',
   `endTime` int(11) DEFAULT NULL COMMENT 'The timestamp when the process ended',
-  `numErrors` int(11) NOT NULL DEFAULT '0' COMMENT 'The number of errors that occurred during the process',
-  `numUpdates` int(11) NOT NULL DEFAULT '0' COMMENT 'The number of updates, additions, etc. that occurred',
-  `notes` text COMMENT 'Additional information about the process',
+  `numErrors` int(11) NOT NULL DEFAULT 0 COMMENT 'The number of errors that occurred during the process',
+  `numUpdates` int(11) NOT NULL DEFAULT 0 COMMENT 'The number of updates, additions, etc. that occurred',
+  `notes` text DEFAULT NULL COMMENT 'Additional information about the process',
   PRIMARY KEY (`id`),
   KEY `cronId` (`cronId`),
   KEY `processName` (`processName`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `cron_process_log`
---
-
-LOCK TABLES `cron_process_log` WRITE;
-/*!40000 ALTER TABLE `cron_process_log` DISABLE KEYS */;
-/*!40000 ALTER TABLE `cron_process_log` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `db_update`
@@ -301,7 +307,7 @@ DROP TABLE IF EXISTS `db_update`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `db_update` (
   `update_key` varchar(100) NOT NULL,
-  `date_run` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `date_run` timestamp /* mariadb-5.3 */ NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`update_key`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -312,38 +318,8 @@ CREATE TABLE `db_update` (
 
 LOCK TABLES `db_update` WRITE;
 /*!40000 ALTER TABLE `db_update` DISABLE KEYS */;
-INSERT INTO `db_update` VALUES ('account_profiles_1','2015-10-12 22:07:55'),('additional_library_contact_links','2015-10-12 22:01:41'),('additional_locations_for_availability','2015-10-12 22:01:42'),('addTablelistWidgetListsLinks','2015-10-12 22:07:47'),('add_indexes','2012-04-21 03:11:53'),('add_indexes2','2012-04-21 03:12:16'),('add_sms_indicator_to_phone','2015-10-12 22:03:51'),('alpha_browse_setup','2012-03-30 23:23:56'),('alpha_browse_setup_2','2015-10-12 22:07:31'),('alpha_browse_setup_3','2015-10-12 22:07:32'),('alpha_browse_setup_4','2015-10-12 22:07:32'),('alpha_browse_setup_5','2015-10-12 22:07:32'),('alpha_browse_setup_6','2015-10-12 22:07:32'),('alpha_browse_setup_7','2015-10-12 22:07:32'),('alpha_browse_setup_8','2015-10-12 22:07:33'),('alpha_browse_setup_9','2015-10-12 22:07:34'),('always_show_search_results_Main_details','2016-06-30 16:37:29'),('archivesRole','2016-06-30 16:37:31'),('archive_filtering','2016-06-30 16:37:30'),('archive_subjects','2016-06-30 16:37:31'),('authentication_profiles','2015-10-12 22:07:55'),('availability_toggle_customization','2015-10-12 22:01:41'),('boost_disabling','2015-10-12 22:07:47'),('browse_categories','2015-10-12 22:07:53'),('browse_categories_lists','2015-10-12 22:07:53'),('browse_categories_search_term_and_stats','2015-10-12 22:07:53'),('browse_categories_search_term_length','2015-10-12 22:07:53'),('browse_category_default_view_mode','2015-10-12 22:03:51'),('browse_category_ratings_mode','2015-10-12 22:03:51'),('catalogingRole','2012-03-03 18:00:27'),('collapse_facets','2015-10-12 22:00:46'),('contentEditor','2015-10-12 22:07:31'),('coverArt_suppress','2011-10-31 21:03:41'),('cronLog','2015-10-12 22:07:34'),('default_library','2015-10-12 22:03:51'),('detailed_hold_notice_configuration','2015-10-12 22:01:41'),('disable_auto_correction_of_searches','2016-06-30 16:37:29'),('dpla_integration','2015-10-12 22:01:42'),('econtent_locations_to_include','2015-10-12 21:59:43'),('editorial_review','2011-09-29 18:50:37'),('editorial_review_1','2015-10-12 22:06:41'),('editorial_review_2','2015-10-12 22:06:42'),('enable_archive','2016-06-30 16:37:30'),('epub_files_update_1','2011-09-13 20:01:41'),('epub_files_update_2','2011-09-19 16:56:22'),('epub_files_update_3','2011-09-26 23:12:16'),('epub_history_update_1','2011-09-20 17:25:30'),('epub_transactions','2011-05-28 04:44:32'),('evoke_setup','2015-10-12 22:04:57'),('external_materials_request','2015-10-12 22:03:51'),('facet_grouping_updates','2015-10-12 22:00:46'),('full_record_view_configuration_options','2015-10-12 22:01:42'),('genealogy','2012-04-21 03:07:16'),('genealogy_1','2012-04-21 03:06:18'),('genealogy_nashville_1','2015-10-12 22:06:41'),('goodreads_library_contact_link','2015-10-12 22:01:41'),('grouped_works','2015-10-12 22:04:56'),('grouped_works_1','2015-10-12 22:04:56'),('grouped_works_2','2015-10-12 22:04:56'),('grouped_works_partial_updates','2015-10-12 22:04:57'),('grouped_works_primary_identifiers','2015-10-12 22:04:57'),('grouped_works_primary_identifiers_1','2015-10-12 22:04:57'),('grouped_works_remove_split_titles','2015-10-12 22:04:57'),('grouped_work_duplicate_identifiers','2015-10-12 22:04:57'),('grouped_work_engine','2015-10-12 22:04:57'),('grouped_work_evoke','2015-10-12 22:04:57'),('grouped_work_identifiers_ref_indexing','2015-10-12 22:04:57'),('grouped_work_index_cleanup','2015-10-12 22:04:57'),('grouped_work_index_date_updated','2015-10-12 22:04:57'),('grouped_work_merging','2015-10-12 22:04:57'),('grouped_work_primary_identifiers_hoopla','2015-10-12 22:04:57'),('grouped_work_primary_identifier_types','2015-10-12 22:04:57'),('header_text','2015-10-12 22:03:51'),('holiday','2015-10-12 22:07:48'),('holiday_1','2015-10-12 22:07:48'),('hoopla_library_options','2015-10-12 22:01:41'),('hoopla_library_options_remove','2016-06-30 16:37:29'),('horizontal_search_bar','2016-06-30 16:37:29'),('hours_and_locations_control','2015-10-12 21:59:43'),('ils_code_records_owned_length','2015-10-12 22:03:51'),('ils_hold_summary','2015-10-12 22:07:54'),('ils_marc_checksums','2015-10-12 22:07:52'),('ils_marc_checksum_first_detected','2015-10-12 22:07:52'),('ils_marc_checksum_first_detected_signed','2015-10-12 22:07:52'),('ils_marc_checksum_source','2015-10-12 22:07:52'),('indexing_profile','2015-10-12 22:07:54'),('indexing_profile_catalog_driver','2015-10-12 22:07:55'),('indexing_profile_collection','2015-10-12 22:07:55'),('indexing_profile_holdability','2015-10-12 22:07:55'),('indexing_profile_last_checkin_date','2016-06-30 16:37:30'),('indexing_profile_marc_encoding','2016-06-30 16:37:30'),('indexing_profile_specific_order_location','2016-06-30 16:37:30'),('indexing_profile_speicified_formats','2016-06-30 16:37:30'),('indexLog','2012-03-31 04:05:31'),('indexUsageTracking','2012-04-21 03:11:53'),('index_resources','2012-04-21 03:11:53'),('index_search_stats','2012-01-06 15:26:59'),('index_search_stats_counts','2015-10-12 22:06:41'),('index_subsets_of_overdrive','2016-06-30 16:37:30'),('ip_lookup_1','2015-10-12 22:07:31'),('ip_lookup_2','2015-10-12 22:07:31'),('ip_lookup_3','2016-06-30 16:37:31'),('islandora_driver_cache','2016-06-30 16:37:30'),('islandora_lat_long_cache','2016-06-30 16:37:31'),('last_check_in_status_adjustments','2016-06-30 16:37:30'),('libraryAdmin','2015-10-12 22:07:31'),('library_1','2012-03-03 18:00:08'),('library_10','2015-10-12 21:58:15'),('library_11','2015-10-12 21:58:15'),('library_12','2015-10-12 21:58:15'),('library_13','2015-10-12 21:58:15'),('library_14','2015-10-12 21:58:15'),('library_15','2015-10-12 21:58:15'),('library_16','2015-10-12 21:58:16'),('library_17','2015-10-12 21:58:16'),('library_18','2015-10-12 21:58:16'),('library_19','2015-10-12 21:58:16'),('library_2','2012-03-03 18:00:08'),('library_20','2015-10-12 21:58:16'),('library_21','2015-10-12 21:58:16'),('library_23','2015-10-12 21:58:16'),('library_24','2015-10-12 21:59:03'),('library_25','2015-10-12 21:59:03'),('library_26','2015-10-12 21:59:03'),('library_28','2015-10-12 21:59:03'),('library_29','2015-10-12 21:59:03'),('library_3','2012-03-03 18:00:09'),('library_30','2015-10-12 21:59:03'),('library_31','2015-10-12 21:59:03'),('library_32','2015-10-12 21:59:03'),('library_33','2015-10-12 21:59:03'),('library_34','2015-10-12 21:59:04'),('library_35_marmot','2015-10-12 21:59:04'),('library_35_nashville','2015-10-12 21:59:04'),('library_36_nashville','2015-10-12 21:59:04'),('library_4','2012-03-03 18:00:09'),('library_5','2012-03-03 18:00:09'),('library_6','2012-04-10 22:15:00'),('library_7','2012-04-13 19:05:08'),('library_8','2015-10-12 21:58:15'),('library_9','2015-10-12 21:58:15'),('library_barcodes','2015-10-12 21:59:44'),('library_bookings','2015-10-12 21:59:43'),('library_cas_configuration','2016-06-30 16:37:30'),('library_contact_links','2015-10-12 21:59:04'),('library_css','2015-10-12 21:59:04'),('library_eds_integration','2016-06-30 16:37:30'),('library_expiration_warning','2015-10-12 21:59:43'),('library_facets','2015-10-12 21:59:44'),('library_facets_1','2015-10-12 22:00:46'),('library_facets_2','2015-10-12 22:00:46'),('library_grouping','2015-10-12 21:59:04'),('library_ils_code_expansion','2015-10-12 21:59:43'),('library_ils_code_expansion_2','2015-10-12 21:59:43'),('library_links','2015-10-12 21:59:04'),('library_links_show_html','2015-10-12 21:59:04'),('library_location_boosting','2015-10-12 21:59:43'),('library_location_display_controls','2015-10-12 21:59:44'),('library_location_repeat_online','2015-10-12 21:59:43'),('library_materials_request_limits','2015-10-12 21:59:04'),('library_max_fines_for_account_update','2016-06-30 16:37:30'),('library_order_information','2015-10-12 21:59:43'),('library_patronNameDisplayStyle','2016-06-30 16:37:30'),('library_pin_reset','2015-10-12 21:59:43'),('library_prevent_expired_card_login','2016-06-30 16:37:29'),('library_prompt_birth_date','2015-10-12 21:59:44'),('library_show_display_name','2015-10-12 21:59:44'),('library_subject_display','2016-06-30 16:37:30'),('library_subject_display_2','2016-06-30 16:37:30'),('library_top_links','2015-10-12 21:59:43'),('linked_accounts_switch','2015-10-12 22:03:51'),('listPublisherRole','2016-06-30 16:37:31'),('list_cache','2011-07-15 22:25:22'),('list_cache_2','2011-07-18 16:32:28'),('list_cache_2_update_1','2012-03-03 18:00:09'),('list_wdiget_list_update_1','2012-03-03 18:00:09'),('list_wdiget_update_1','2012-03-03 18:00:09'),('list_widgets','2011-09-01 19:34:18'),('list_widgets_home','2011-09-01 19:34:18'),('list_widgets_update_1','2015-10-12 22:04:57'),('list_widgets_update_2','2015-10-12 22:04:57'),('list_widget_style_update','2015-10-12 22:04:57'),('list_widget_update_2','2015-10-12 22:04:57'),('list_widget_update_3','2015-10-12 22:04:57'),('list_widget_update_4','2015-10-12 22:04:57'),('list_widget_update_5','2015-10-12 22:04:57'),('load_resource_info','2011-10-26 00:01:48'),('loan_rule_determiners_1','2015-10-12 22:07:48'),('loan_rule_determiners_increase_ptype_length','2016-06-30 16:37:31'),('localized_browse_categories','2015-10-12 22:07:53'),('location_1','2015-10-12 22:00:46'),('location_10','2015-10-12 22:01:40'),('location_2','2015-10-12 22:00:46'),('location_3','2015-10-12 22:00:46'),('location_4','2015-10-12 22:00:46'),('location_5','2015-10-12 22:00:46'),('location_6','2015-10-12 22:00:46'),('location_7','2015-10-12 22:00:46'),('location_8','2015-10-12 22:01:40'),('location_9','2015-10-12 22:01:40'),('location_additional_branches_to_show_in_facets','2016-06-30 16:37:30'),('location_address','2015-10-12 22:01:40'),('location_facets','2015-10-12 22:00:46'),('location_facets_1','2015-10-12 22:00:46'),('location_hours','2015-10-12 22:07:48'),('location_increase_code_column_size','2015-10-12 22:01:40'),('location_library_control_shelf_location_and_date_added_facets','2016-06-30 16:37:30'),('location_show_display_name','2015-10-12 22:01:40'),('location_sublocation','2015-10-12 22:01:40'),('location_sublocation_uniqueness','2015-10-12 22:01:41'),('login_form_labels','2015-10-12 22:01:41'),('logo_linking','2015-10-12 22:03:51'),('main_location_switch','2016-06-30 16:37:29'),('marcImport','2012-03-31 05:15:32'),('marcImport_1','2015-10-12 22:07:34'),('marcImport_2','2015-10-12 22:07:34'),('marcImport_3','2015-10-12 22:07:34'),('materialRequestsRole','2015-10-12 22:06:43'),('materialsRequest','2012-03-03 18:00:26'),('materialsRequestStatus','2012-03-20 05:17:54'),('materialsRequestStatus_update1','2015-10-12 22:06:43'),('materialsRequest_update1','2012-03-03 18:00:27'),('materialsRequest_update2','2012-03-08 23:51:37'),('materialsRequest_update3','2012-03-08 23:51:39'),('materialsRequest_update4','2012-03-19 22:10:45'),('materialsRequest_update5','2012-04-02 19:59:55'),('materialsRequest_update6','2015-10-12 22:06:43'),('more_details_customization','2015-10-12 22:01:41'),('newRolesJan2016','2016-06-30 16:37:31'),('new_search_stats','2015-10-12 22:06:41'),('nongrouped_records','2016-06-30 16:37:31'),('notInterested','2015-10-12 22:06:42'),('notInterestedWorks','2015-10-12 22:06:43'),('notInterestedWorksRemoveUserIndex','2015-10-12 22:06:43'),('novelist_data','2015-10-12 22:07:52'),('offline_circulation','2015-10-12 22:07:52'),('offline_holds','2015-10-12 22:07:52'),('offline_holds_update_1','2015-10-12 22:07:52'),('offline_holds_update_2','2016-06-30 16:37:31'),('overdrive_integration','2015-10-12 22:01:42'),('overdrive_integration_2','2015-10-12 22:01:42'),('overdrive_integration_3','2015-10-12 22:01:42'),('ptype','2015-10-12 22:07:48'),('pTypesForLibrary','2015-10-12 21:59:43'),('public_lists_to_include','2016-06-30 16:37:30'),('readingHistory','2012-03-19 22:10:44'),('readingHistoryUpdate1','2012-03-19 22:10:44'),('readingHistory_deletion','2015-10-12 22:06:42'),('readingHistory_work','2015-10-12 22:06:42'),('recommendations_optOut','2011-09-06 20:13:38'),('reindexLog','2012-04-19 21:15:02'),('reindexLog_1','2015-10-12 22:07:34'),('reindexLog_2','2015-10-12 22:07:34'),('reindexLog_grouping','2015-10-12 22:07:34'),('remove_browse_tables','2015-10-12 22:07:53'),('remove_consortial_results_in_search','2016-06-30 16:37:30'),('remove_old_resource_tables','2015-10-12 22:07:53'),('remove_old_tables','2012-03-15 16:00:16'),('remove_order_options','2016-06-30 16:37:30'),('remove_unused_enrichment_and_full_record_options','2016-06-30 16:37:30'),('remove_unused_location_options_2015_14_0','2016-06-30 16:37:30'),('remove_unused_options','2015-10-12 22:07:54'),('rename_tables','2012-04-21 00:36:00'),('resource_update3','2012-03-03 18:18:56'),('resource_update4','2012-04-21 03:10:53'),('resource_update5','2012-04-10 22:15:12'),('resource_update6','2012-04-21 03:11:04'),('resource_update7','2015-10-12 22:06:42'),('resource_update8','2015-10-12 22:06:42'),('resource_update_table','2011-10-31 21:03:40'),('resource_update_table_2','2012-01-24 22:59:51'),('right_hand_sidebar','2016-06-30 16:37:29'),('roles_1','2012-03-19 22:10:44'),('roles_2','2015-10-12 22:03:51'),('search_results_view_configuration_options','2016-06-30 16:37:29'),('search_sources','2015-10-12 22:01:41'),('search_sources_1','2015-10-12 22:01:41'),('selfreg_customization','2015-10-12 22:01:42'),('selfreg_template','2015-10-12 22:01:42'),('session_update_1','2015-10-12 22:07:52'),('setup_default_indexing_profiles','2015-10-12 22:07:55'),('setup_econtent','2011-11-06 02:51:24'),('show_catalog_options_in_profile','2015-10-12 22:01:41'),('show_library_hours_notice_on_account_pages','2016-06-30 16:37:30'),('show_place_hold_on_unavailable','2015-10-12 22:03:51'),('show_Refresh_Account_Button','2016-06-30 16:37:30'),('sip2_item_cache','2011-07-18 16:32:28'),('sip2_item_cache_1','2012-03-03 18:00:09'),('spelling_optimization','2012-04-02 06:21:47'),('sub-browse_categories','2015-10-12 22:07:53'),('theme_name_length','2015-10-12 22:03:51'),('translation_map_regex','2015-10-12 22:07:55'),('userRatings1','2015-10-12 22:06:43'),('user_account','2015-10-12 22:03:52'),('user_display_name','2011-07-06 21:58:22'),('user_epub_history_1','2011-08-17 22:29:55'),('user_ilsType','2012-03-15 16:00:16'),('user_linking','2015-10-12 22:03:52'),('user_link_blocking','2015-10-12 22:03:53'),('user_list_entry','2015-10-12 22:07:52'),('user_list_indexing','2015-10-12 22:07:53'),('user_list_sorting','2015-10-12 22:07:53'),('user_overdrive_email','2015-10-12 22:03:52'),('user_phone','2012-04-21 03:10:53'),('user_preference_review_prompt','2015-10-12 22:03:52'),('user_preferred_library_interface','2015-10-12 22:03:52'),('user_track_reading_history','2015-10-12 22:03:52'),('utf8_update','2012-03-03 18:02:08'),('variables_table','2015-10-12 22:07:31'),('variables_table_uniqueness','2015-10-12 22:07:31'),('volume_information','2016-06-30 16:37:30'),('work_level_ratings','2015-10-12 22:07:52'),('work_level_tagging','2015-10-12 22:07:52');
+INSERT INTO `db_update` VALUES ('account_profiles_1','2015-10-12 22:07:55'),('additional_library_contact_links','2015-10-12 22:01:41'),('additional_locations_for_availability','2015-10-12 22:01:42'),('addTablelistWidgetListsLinks','2015-10-12 22:07:47'),('add_admin_self_registration_fields','2019-12-11 03:51:15'),('add_current_covers','0000-00-00 00:00:00'),('add_custom_covers_table','0000-00-00 00:00:00'),('add_indexes','2012-04-21 03:11:53'),('add_indexes2','2012-04-21 03:12:16'),('add_language_to_grouping_table-2020.02','2020-09-02 02:22:33'),('add_new_format_to_maps_2020.07','2020-12-10 04:54:21'),('Add_option_for_multiple_shared_overdrive_accounts','2018-09-07 20:13:41'),('add_search_source_to_saved_searches','2018-09-07 20:13:47'),('add_sms_indicator_to_phone','2015-10-12 22:03:51'),('allow_masquerade_mode','2018-09-07 20:13:40'),('allow_reading_history_display_in_masquerade_mode','2018-09-07 20:13:40'),('alpha_browse_setup','2012-03-30 23:23:56'),('alpha_browse_setup_2','2015-10-12 22:07:31'),('alpha_browse_setup_3','2015-10-12 22:07:32'),('alpha_browse_setup_4','2015-10-12 22:07:32'),('alpha_browse_setup_5','2015-10-12 22:07:32'),('alpha_browse_setup_6','2015-10-12 22:07:32'),('alpha_browse_setup_7','2015-10-12 22:07:32'),('alpha_browse_setup_8','2015-10-12 22:07:33'),('alpha_browse_setup_9','2015-10-12 22:07:34'),('always_show_search_results_Main_details','2016-06-30 16:37:29'),('analytics','2015-10-12 22:07:49'),('analytics_1','2015-10-12 22:07:49'),('analytics_2','2015-10-12 22:07:49'),('analytics_3','2015-10-12 22:07:50'),('analytics_4','2015-10-12 22:07:50'),('analytics_5','2015-10-12 22:07:50'),('analytics_6','2015-10-12 22:07:51'),('analytics_7','2015-10-12 22:07:52'),('analytics_8','2015-10-12 22:07:52'),('archivesRole','2016-06-30 16:37:31'),('archive_collection_default_view_mode','2018-09-07 20:13:41'),('archive_filtering','2016-06-30 16:37:30'),('archive_more_details_customization','2018-09-07 20:13:40'),('archive_object_filtering','2018-09-07 20:13:41'),('archive_private_collections','2018-09-07 20:13:47'),('archive_requests','2018-09-07 20:13:47'),('archive_subjects','2016-06-30 16:37:31'),('authentication_profiles','2015-10-12 22:07:55'),('author_enrichment','2018-09-07 20:13:47'),('availability_toggle_customization','2015-10-12 22:01:41'),('book_store','2015-10-12 22:07:48'),('book_store_1','2015-10-12 22:07:48'),('boost_disabling','2015-10-12 22:07:47'),('browse_categories','2015-10-12 22:07:53'),('browse_categories_lists','2015-10-12 22:07:53'),('browse_categories_search_term_and_stats','2015-10-12 22:07:53'),('browse_categories_search_term_length','2015-10-12 22:07:53'),('browse_category_default_view_mode','2015-10-12 22:03:51'),('browse_category_ratings_mode','2015-10-12 22:03:51'),('catalogingRole','2012-03-03 18:00:27'),('claim_authorship_requests','2018-09-07 20:13:47'),('clear_analytics','2016-06-30 16:37:31'),('collapse_facets','2015-10-12 22:00:46'),('combined_results','2018-09-07 20:13:41'),('contentEditor','2015-10-12 22:07:31'),('coverArt_suppress','2011-10-31 21:03:41'),('create_extract_info_table','2019-08-13 03:02:35'),('create_pin_reset_table','2019-12-11 03:51:15'),('cronLog','2015-10-12 22:07:34'),('default_library','2015-10-12 22:03:51'),('detailed_hold_notice_configuration','2015-10-12 22:01:41'),('disable_auto_correction_of_searches','2016-06-30 16:37:29'),('display_pika_logo','2018-09-07 20:13:40'),('dpla_integration','2015-10-12 22:01:42'),('econtent_locations_to_include','2015-10-12 21:59:43'),('editorial_review','2011-09-29 18:50:37'),('editorial_review_1','2015-10-12 22:06:41'),('editorial_review_2','2015-10-12 22:06:42'),('editorial_review_update_2020_01','2020-03-04 03:09:09'),('enable_archive','2016-06-30 16:37:30'),('epub_files_update_1','2011-09-13 20:01:41'),('epub_files_update_2','2011-09-19 16:56:22'),('epub_files_update_3','2011-09-26 23:12:16'),('epub_history_update_1','2011-09-20 17:25:30'),('epub_transactions','2011-05-28 04:44:32'),('evoke_setup','2015-10-12 22:04:57'),('expiration_message','2018-09-07 20:13:41'),('explore_more_configuration','2018-09-07 20:13:41'),('externalLinkTracking','2012-01-06 15:25:54'),('external_materials_request','2015-10-12 22:03:51'),('facet_grouping_updates','2015-10-12 22:00:46'),('full_record_view_configuration_options','2015-10-12 22:01:42'),('genealogy','2012-04-21 03:07:16'),('genealogy_1','2012-04-21 03:06:18'),('genealogy_nashville_1','2015-10-12 22:06:41'),('goldrush_removal','0000-00-00 00:00:00'),('goodreads_library_contact_link','2015-10-12 22:01:41'),('grouped_works','2015-10-12 22:04:56'),('grouped_works_1','2015-10-12 22:04:56'),('grouped_works_2','2015-10-12 22:04:56'),('grouped_works_partial_updates','2015-10-12 22:04:57'),('grouped_works_primary_identifiers','2015-10-12 22:04:57'),('grouped_works_primary_identifiers_1','2015-10-12 22:04:57'),('grouped_works_remove_split_titles','2015-10-12 22:04:57'),('grouped_work_duplicate_identifiers','2015-10-12 22:04:57'),('grouped_work_engine','2015-10-12 22:04:57'),('grouped_work_evoke','2015-10-12 22:04:57'),('grouped_work_identifiers_ref_indexing','2015-10-12 22:04:57'),('grouped_work_index_cleanup','2015-10-12 22:04:57'),('grouped_work_index_date_updated','2015-10-12 22:04:57'),('grouped_work_merging','2015-10-12 22:04:57'),('grouped_work_primary_identifiers_hoopla','2015-10-12 22:04:57'),('grouped_work_primary_identifier_types','2015-10-12 22:04:57'),('grouping_migration-2020.06','2020-09-02 02:23:56'),('grouping_migration_build_version_map-2020.06','2020-09-02 02:24:22'),('grouping_migration_data_clean_up-2020.06','2020-09-02 02:24:15'),('grouping_migration_implement_source_name-2020.06','2020-09-02 02:23:57'),('grouping_table_sizing-2020.06','2020-09-02 02:22:43'),('header_text','2015-10-12 22:03:51'),('historical_grouped_works','2019-10-02 02:35:59'),('holiday','2015-10-12 22:07:48'),('holiday_1','2015-10-12 22:07:48'),('hoopla_exportLog','2018-09-07 20:13:47'),('hoopla_exportTables','2018-09-07 20:13:47'),('hoopla_export_date_cols','2019-05-08 02:32:10'),('hoopla_integration','2018-09-07 20:13:41'),('hoopla_library_options','2015-10-12 22:01:41'),('hoopla_library_options_remove','2016-06-30 16:37:29'),('hoopla_library_settings_table','2019-05-08 02:32:00'),('hoopla_max_price','2019-04-03 04:29:38'),('horizontal_search_bar','2016-06-30 16:37:29'),('hours_and_locations_control','2015-10-12 21:59:43'),('ill_link','2018-09-07 20:13:41'),('ils_code_records_owned_length','2015-10-12 22:03:51'),('ils_hold_summary','2015-10-12 22:07:54'),('ils_marc_checksums','2015-10-12 22:07:52'),('ils_marc_checksum_first_detected','2015-10-12 22:07:52'),('ils_marc_checksum_first_detected_signed','2015-10-12 22:07:52'),('ils_marc_checksum_source','2015-10-12 22:07:52'),('includeOutOfSystemExternalLinks_removal_2020.07.0','2020-12-10 04:54:20'),('increase_ilsID_size_for_ils_marc_checksums','2018-09-07 20:13:41'),('increase_login_form_labels','2018-09-07 20:13:40'),('indexing_profile','2015-10-12 22:07:54'),('indexing_profile_2020.01','2020-03-04 03:09:09'),('indexing_profile_additional_fields_bcode3','2018-09-07 20:13:44'),('indexing_profile_additional_fields_ToSuppress','2018-09-07 20:13:43'),('indexing_profile_catalog_driver','2015-10-12 22:07:55'),('indexing_profile_collection','2015-10-12 22:07:55'),('indexing_profile_collectionsToSuppress','2018-09-07 20:13:43'),('indexing_profile_cover_source_settings_2020.07','2020-12-10 04:54:21'),('indexing_profile_doAutomaticEcontentSuppression','2018-09-07 20:13:46'),('indexing_profile_dueDateFormat','2018-09-07 20:13:46'),('indexing_profile_extendLocationsToSuppress','2018-09-07 20:13:46'),('indexing_profile_filenames_to_include','2018-09-07 20:13:42'),('indexing_profile_folderCreation','2018-09-07 20:13:46'),('indexing_profile_format_determination_setting','2019-05-08 02:32:00'),('indexing_profile_groupUnchangedFiles','2018-09-07 20:13:46'),('indexing_profile_holdability','2015-10-12 22:07:55'),('indexing_profile_item_status_settings_2020.06','2020-12-10 04:54:21'),('indexing_profile_last_checkin_date','2016-06-30 16:37:30'),('indexing_profile_marc_encoding','2016-06-30 16:37:30'),('indexing_profile_material_type_field','2019-04-03 04:29:38'),('indexing_profile_record_number_subfield','2019-02-06 04:56:07'),('indexing_profile_specific_order_location','2016-06-30 16:37:30'),('indexing_profile_specified_grouping_category_2020.04','2020-09-02 02:22:43'),('indexing_profile_speicified_formats','2016-06-30 16:37:30'),('indexing_profile_update_hoopla_name_2020.06','2020-12-10 04:54:21'),('indexLog','2012-03-31 04:05:31'),('indexUsageTracking','2012-04-21 03:11:53'),('index_resources','2012-04-21 03:11:53'),('index_search_stats','2012-01-06 15:26:59'),('index_search_stats_counts','2015-10-12 22:06:41'),('index_subsets_of_overdrive','2016-06-30 16:37:30'),('ip_lookup_1','2015-10-12 22:07:31'),('ip_lookup_2','2015-10-12 22:07:31'),('ip_lookup_3','2016-06-30 16:37:31'),('islandora_cover_cache','2018-09-07 20:13:47'),('islandora_driver_cache','2016-06-30 16:37:30'),('islandora_lat_long_cache','2016-06-30 16:37:31'),('islandora_samePika_cache','2018-09-07 20:13:47'),('last_check_in_status_adjustments','2016-06-30 16:37:30'),('lexile_branding','2018-09-07 20:13:41'),('librarian_reviews-2020.02','2020-03-10 14:49:43'),('libraryAdmin','2015-10-12 22:07:31'),('library_1','2012-03-03 18:00:08'),('library_10','2015-10-12 21:58:15'),('library_11','2015-10-12 21:58:15'),('library_12','2015-10-12 21:58:15'),('library_13','2015-10-12 21:58:15'),('library_14','2015-10-12 21:58:15'),('library_15','2015-10-12 21:58:15'),('library_16','2015-10-12 21:58:16'),('library_17','2015-10-12 21:58:16'),('library_18','2015-10-12 21:58:16'),('library_19','2015-10-12 21:58:16'),('library_2','2012-03-03 18:00:08'),('library_20','2015-10-12 21:58:16'),('library_21','2015-10-12 21:58:16'),('library_23','2015-10-12 21:58:16'),('library_24','2015-10-12 21:59:03'),('library_25','2015-10-12 21:59:03'),('library_26','2015-10-12 21:59:03'),('library_28','2015-10-12 21:59:03'),('library_29','2015-10-12 21:59:03'),('library_3','2012-03-03 18:00:09'),('library_30','2015-10-12 21:59:03'),('library_31','2015-10-12 21:59:03'),('library_32','2015-10-12 21:59:03'),('library_33','2015-10-12 21:59:03'),('library_34','2015-10-12 21:59:04'),('library_35_marmot','2015-10-12 21:59:04'),('library_35_nashville','2015-10-12 21:59:04'),('library_36_nashville','2015-10-12 21:59:04'),('library_4','2012-03-03 18:00:09'),('library_5','2012-03-03 18:00:09'),('library_6','2012-04-10 22:15:00'),('library_7','2012-04-13 19:05:08'),('library_8','2015-10-12 21:58:15'),('library_9','2015-10-12 21:58:15'),('library_archive_material_requests','2018-09-07 20:13:40'),('library_archive_material_request_form_configurations','2018-09-07 20:13:40'),('library_archive_pid','2018-09-07 20:13:40'),('library_archive_related_objects_display_mode','2018-09-07 20:13:40'),('library_archive_request_customization','2018-09-07 20:13:40'),('library_archive_search_facets','2018-09-07 20:13:40'),('library_barcodes','2015-10-12 21:59:44'),('library_bookings','2015-10-12 21:59:43'),('library_cas_configuration','2016-06-30 16:37:30'),('library_claim_authorship_customization','2018-09-07 20:13:40'),('library_contact_links','2015-10-12 21:59:04'),('library_css','2015-10-12 21:59:04'),('library_eds_integration','2016-06-30 16:37:30'),('library_eds_search_integration','2018-09-07 20:13:40'),('library_expiration_warning','2015-10-12 21:59:43'),('library_facets','2015-10-12 21:59:44'),('library_facets_1','2015-10-12 22:00:46'),('library_facets_2','2015-10-12 22:00:46'),('library_ga_tracking_id','2019-09-04 04:13:45'),('library_grouping','2015-10-12 21:59:04'),('library_ils_code_expansion','2015-10-12 21:59:43'),('library_ils_code_expansion_2','2015-10-12 21:59:43'),('library_increase_abbreviated_display_name','2018-09-07 20:13:41'),('library_links','2015-10-12 21:59:04'),('library_links_display_options','2018-09-07 20:13:40'),('library_links_show_html','2015-10-12 21:59:04'),('library_location_availability_toggle_updates','2018-09-07 20:13:40'),('library_location_boosting','2015-10-12 21:59:43'),('library_location_display_controls','2015-10-12 21:59:44'),('library_location_remove','0000-00-00 00:00:00'),('library_location_remove_UseScope','0000-00-00 00:00:00'),('library_location_repeat_online','2015-10-12 21:59:43'),('library_location_systemMessage_5.2','2020-09-02 02:21:36'),('library_materials_request_limits','2015-10-12 21:59:04'),('library_materials_request_new_request_summary','2018-09-07 20:13:40'),('library_max_fines_for_account_update','2016-06-30 16:37:30'),('library_on_order_counts','2018-09-07 20:13:41'),('library_order_information','2015-10-12 21:59:43'),('library_patronNameDisplayStyle','2016-06-30 16:37:30'),('library_pin_reset','2015-10-12 21:59:43'),('library_prevent_expired_card_login','2016-06-30 16:37:29'),('library_prompt_birth_date','2015-10-12 21:59:44'),('library_show_display_name','2015-10-12 21:59:44'),('library_show_series_in_main_details','2018-09-07 20:13:41'),('library_sidebar_menu','2018-09-07 20:13:40'),('library_sidebar_menu_button_text','2018-09-07 20:13:40'),('library_subject_display','2016-06-30 16:37:30'),('library_subject_display_2','2016-06-30 16:37:30'),('library_top_links','2015-10-12 21:59:43'),('library_typo_fix','2019-09-04 04:13:45'),('linked_accounts_switch','2015-10-12 22:03:51'),('listPublisherRole','2016-06-30 16:37:31'),('list_cache','2011-07-15 22:25:22'),('list_cache_2','2011-07-18 16:32:28'),('list_cache_2_update_1','2012-03-03 18:00:09'),('list_wdiget_list_update_1','2012-03-03 18:00:09'),('list_wdiget_update_1','2012-03-03 18:00:09'),('list_widgets','2011-09-01 19:34:18'),('list_widgets_home','2011-09-01 19:34:18'),('list_widgets_update_1','2015-10-12 22:04:57'),('list_widgets_update_2','2015-10-12 22:04:57'),('list_widget_num_results','2018-09-07 20:13:41'),('list_widget_style_update','2015-10-12 22:04:57'),('list_widget_update_2','2015-10-12 22:04:57'),('list_widget_update_3','2015-10-12 22:04:57'),('list_widget_update_4','2015-10-12 22:04:57'),('list_widget_update_5','2015-10-12 22:04:57'),('load_resource_info','2011-10-26 00:01:48'),('loan_rule_determiners_1','2015-10-12 22:07:48'),('loan_rule_determiners_increase_ptype_length','2016-06-30 16:37:31'),('localized_browse_categories','2015-10-12 22:07:53'),('location_1','2015-10-12 22:00:46'),('location_10','2015-10-12 22:01:40'),('location_2','2015-10-12 22:00:46'),('location_3','2015-10-12 22:00:46'),('location_4','2015-10-12 22:00:46'),('location_5','2015-10-12 22:00:46'),('location_6','2015-10-12 22:00:46'),('location_7','2015-10-12 22:00:46'),('location_8','2015-10-12 22:01:40'),('location_9','2015-10-12 22:01:40'),('location_additional_branches_to_show_in_facets','2016-06-30 16:37:30'),('location_address','2015-10-12 22:01:40'),('location_facets','2015-10-12 22:00:46'),('location_facets_1','2015-10-12 22:00:46'),('location_hours','2015-10-12 22:07:48'),('location_include_library_records_to_include','2018-09-07 20:13:41'),('location_increase_code_column_size','2015-10-12 22:01:40'),('location_library_control_shelf_location_and_date_added_facets','2016-06-30 16:37:30'),('location_library_on_order_dates_in_date_added_facets','2019-02-06 04:56:07'),('location_show_display_name','2015-10-12 22:01:40'),('location_subdomain','2018-09-07 20:13:41'),('location_sublocation','2015-10-12 22:01:40'),('location_sublocation_uniqueness','2015-10-12 22:01:41'),('login_form_labels','2015-10-12 22:01:41'),('logo_linking','2015-10-12 22:03:51'),('main_location_switch','2016-06-30 16:37:29'),('manageMaterialsRequestFieldsToDisplay','2018-09-07 20:13:47'),('marcImport','2012-03-31 05:15:32'),('marcImport_1','2015-10-12 22:07:34'),('marcImport_2','2015-10-12 22:07:34'),('marcImport_3','2015-10-12 22:07:34'),('masquerade_automatic_timeout_length','2018-09-07 20:13:40'),('masquerade_ptypes','2018-09-07 20:13:47'),('materialRequestsRole','2015-10-12 22:06:43'),('materialsRequest','2012-03-03 18:00:26'),('materialsRequestFixColumns','2018-09-07 20:13:47'),('materialsRequestFormats','2018-09-07 20:13:47'),('materialsRequestFormFields','2018-09-07 20:13:47'),('materialsRequestLibraryId','2018-09-07 20:13:47'),('materialsRequestStatus','2012-03-20 05:17:54'),('materialsRequestStatus_update1','2015-10-12 22:06:43'),('materialsRequest_update1','2012-03-03 18:00:27'),('materialsRequest_update2','2012-03-08 23:51:37'),('materialsRequest_update3','2012-03-08 23:51:39'),('materialsRequest_update4','2012-03-19 22:10:45'),('materialsRequest_update5','2012-04-02 19:59:55'),('materialsRequest_update6','2015-10-12 22:06:43'),('materialsRequest_update7','2018-09-07 20:13:47'),('materials_request_days_to_keep','2018-09-07 20:13:41'),('merged_records','2015-10-12 22:07:31'),('millenniumTables','2015-10-12 22:07:47'),('more_details_customization','2015-10-12 22:01:41'),('nearby_book_store','2015-10-12 22:07:48'),('newRolesJan2016','2016-06-30 16:37:31'),('new_search_stats','2015-10-12 22:06:41'),('nongrouped_records','2016-06-30 16:37:31'),('non_numeric_ptypes','2018-09-07 20:13:47'),('notInterested','2015-10-12 22:06:42'),('notInterestedWorks','2015-10-12 22:06:43'),('notInterestedWorksRemoveUserIndex','2015-10-12 22:06:43'),('novelist_data','2015-10-12 22:07:52'),('offline_circulation','2015-10-12 22:07:52'),('offline_holds','2015-10-12 22:07:52'),('offline_holds_update_1','2015-10-12 22:07:52'),('offline_holds_update_2','2016-06-30 16:37:31'),('overdrive-remove-numeric-formats-2020.07','2020-12-10 04:54:22'),('overdrive_api_data','2020-12-10 04:54:54'),('overdrive_api_data_availability_type','2020-12-10 04:55:08'),('overdrive_api_data_crossRefId','2020-12-10 04:55:08'),('overdrive_api_data_metadata_isOwnedByCollections','2020-12-10 04:55:08'),('overdrive_api_data_needsUpdate','2020-12-10 04:55:08'),('overdrive_api_data_update_1','2020-12-10 04:55:01'),('overdrive_api_data_update_2','2020-12-10 04:55:06'),('overdrive_integration','2015-10-12 22:01:42'),('overdrive_integration_2','2015-10-12 22:01:42'),('overdrive_integration_3','2015-10-12 22:01:42'),('overdrive_user_settings_2020.07','2020-12-10 04:54:21'),('preferred_grouping_tables-2020.06','2020-09-02 02:22:33'),('prospectorCode_removal','0000-00-00 00:00:00'),('ptype','2015-10-12 22:07:48'),('pTypesForLibrary','2015-10-12 21:59:43'),('ptype_label','2019-05-08 02:32:01'),('public_lists_to_include','2016-06-30 16:37:30'),('purchase_link_tracking','2011-10-12 15:07:49'),('readingHistory','2012-03-19 22:10:44'),('readingHistoryUpdate1','2012-03-19 22:10:44'),('readingHistory_deletion','2015-10-12 22:06:42'),('readingHistory_work','2015-10-12 22:06:42'),('recommendations_optOut','2011-09-06 20:13:38'),('records_to_include_2017-06','2018-09-07 20:13:47'),('records_to_include_2018-03','2018-09-07 20:13:47'),('record_grouping_log','2018-09-07 20:13:47'),('refactor_hoopla_record_driver','2019-06-05 03:31:22'),('reindexLog','2012-04-19 21:15:02'),('reindexLog_1','2015-10-12 22:07:34'),('reindexLog_2','2015-10-12 22:07:34'),('reindexLog_grouping','2015-10-12 22:07:34'),('remove-econtent-protection-facet-2020.07','2020-12-10 04:54:22'),('remove_browse_tables','2015-10-12 22:07:53'),('remove_consortial_results_in_search','2016-06-30 16:37:30'),('remove_obsolete_rating_table_2020.01','0000-00-00 00:00:00'),('remove_obsolete_tables-2020.01','0000-00-00 00:00:00'),('remove_obsolete_tables-2020.05','0000-00-00 00:00:00'),('remove_old_resource_tables','2015-10-12 22:07:53'),('remove_old_tables','2012-03-15 16:00:16'),('remove_order_options','2016-06-30 16:37:30'),('remove_selfReg_template_option','0000-00-00 00:00:00'),('remove_unused_enrichment_and_full_record_options','2016-06-30 16:37:30'),('remove_unused_location_options_2015_14_0','2016-06-30 16:37:30'),('remove_unused_options','2015-10-12 22:07:54'),('rename_editorial_reviews-2020.02','2020-03-04 03:09:09'),('rename_tables','2012-04-21 00:36:00'),('resource_callnumber','2012-03-31 03:40:15'),('resource_subject','2012-03-31 05:15:24'),('resource_update3','2012-03-03 18:18:56'),('resource_update4','2012-04-21 03:10:53'),('resource_update5','2012-04-10 22:15:12'),('resource_update6','2012-04-21 03:11:04'),('resource_update7','2015-10-12 22:06:42'),('resource_update8','2015-10-12 22:06:42'),('resource_update_table','2011-10-31 21:03:40'),('resource_update_table_2','2012-01-24 22:59:51'),('right_hand_sidebar','2016-06-30 16:37:29'),('roles_1','2012-03-19 22:10:44'),('roles_2','2015-10-12 22:03:51'),('search_results_view_configuration_options','2016-06-30 16:37:29'),('search_sources','2015-10-12 22:01:41'),('search_sources_1','2015-10-12 22:01:41'),('selfreg_customization','2015-10-12 22:01:42'),('selfreg_template','2015-10-12 22:01:42'),('session_update_1','2015-10-12 22:07:52'),('setup_default_indexing_profiles','2015-10-12 22:07:55'),('setup_econtent','2011-11-06 02:51:24'),('show_barcode_image_user_profile','2020-03-04 03:09:09'),('show_catalog_options_in_profile','2015-10-12 22:01:41'),('show_grouped_hold_copies_count','2018-09-07 20:13:41'),('show_library_hours_notice_on_account_pages','2016-06-30 16:37:30'),('show_place_hold_on_unavailable','2015-10-12 22:03:51'),('show_Refresh_Account_Button','2016-06-30 16:37:30'),('sierra_exportLog','2018-09-07 20:13:47'),('sierra_exportLog_stats','2018-09-07 20:13:47'),('sierra_export_field_mapping','2018-09-07 20:13:47'),('sierra_export_field_mapping_item_fields','2018-09-07 20:13:47'),('sip2_item_cache','2011-07-18 16:32:28'),('sip2_item_cache_1','2012-03-03 18:00:09'),('spelling_optimization','2012-04-02 06:21:47'),('splitLargeLists','2020-12-10 04:54:21'),('staffSettingsTable','2018-09-07 20:13:47'),('sub-browse_categories','2015-10-12 22:07:53'),('syndetics_data','2015-10-12 22:07:52'),('theme_name_length','2015-10-12 22:03:51'),('translation_map_regex','2015-10-12 22:07:55'),('update-overdrive-logs-2020.07','2020-10-01 20:01:52'),('update_eContentSupportAddress_default_value','2020-05-06 02:55:22'),('update_self_registration_fields','2021-02-01 20:56:17'),('update_show_text_this','2021-02-01 20:56:17'),('usage_tracking','2011-10-25 19:03:16'),('userRatings1','2015-10-12 22:06:43'),('user_account','2015-10-12 22:03:52'),('user_display_name','2011-07-06 21:58:22'),('user_epub_history_1','2011-08-17 22:29:55'),('user_hoopla_confirmation_checkout','2018-09-07 20:13:41'),('user_ilsType','2012-03-15 16:00:16'),('user_linking','2015-10-12 22:03:52'),('user_linking_1','2018-09-07 20:13:41'),('user_link_blocking','2015-10-12 22:03:53'),('user_list_entry','2015-10-12 22:07:52'),('user_list_indexing','2015-10-12 22:07:53'),('user_list_sorting','2015-10-12 22:07:53'),('user_overdrive_email','2015-10-12 22:03:52'),('user_phone','2012-04-21 03:10:53'),('user_preference_review_prompt','2015-10-12 22:03:52'),('user_preferred_library_interface','2015-10-12 22:03:52'),('user_reading_history_index_source_id','2018-09-07 20:13:41'),('user_table_cleanup','0000-00-00 00:00:00'),('user_track_reading_history','2015-10-12 22:03:52'),('use_ilsUserId_2020.02','2020-03-04 03:09:09'),('utf8_update','2012-03-03 18:02:08'),('variables_full_index_warnings','2018-09-07 20:13:47'),('variables_lastHooplaExport','2018-09-07 20:13:47'),('variables_offline_mode_when_offline_login_allowed','2018-09-07 20:13:47'),('variables_overdriveMaxProductsToUpdatea_2020.06','2020-09-02 02:21:36'),('variables_table','2015-10-12 22:07:31'),('variables_table_uniqueness','2015-10-12 22:07:31'),('variables_validateChecksumsFromDisk','2018-09-07 20:13:47'),('volume_information','2016-06-30 16:37:30'),('work_level_ratings','2015-10-12 22:07:52'),('work_level_tagging','2015-10-12 22:07:52');
 /*!40000 ALTER TABLE `db_update` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `librarian_reviews`
---
-
-DROP TABLE IF EXISTS `librarian_reviews`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `librarian_reviews` (
-     `id` int(11) NOT NULL,
-     `groupedWorkPermanentId` char(36) NOT NULL,
-     `title` varchar(255) NOT NULL,
-     `review` mediumtext,
-     `source` varchar(50) NOT NULL,
-     `tabName` varchar(25) DEFAULT 'Reviews',
-     `teaser` varchar(512) DEFAULT NULL,
-     `pubDate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-     PRIMARY KEY (`id`),
-     KEY `RecordId` (`groupedWorkPermanentId`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `librarian_reviews`
---
-
-LOCK TABLES `librarian_reviews` WRITE;
-/*!40000 ALTER TABLE `librarian_reviews` DISABLE KEYS */;
-/*!40000 ALTER TABLE `librarian_reviews` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -356,24 +332,53 @@ DROP TABLE IF EXISTS `grouped_work`;
 CREATE TABLE `grouped_work` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `permanent_id` char(36) NOT NULL,
-  `author` varchar(50) DEFAULT NULL,
-  `grouping_category` varchar(25) NOT NULL,
-  `full_title` varchar(276) NOT NULL,
+  `author` varchar(100) NOT NULL,
+  `grouping_category` varchar(5) NOT NULL,
+  `full_title` varchar(400) NOT NULL,
+  `grouping_language` char(3) DEFAULT NULL,
   `date_updated` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `permanent_id` (`permanent_id`),
   KEY `date_updated` (`date_updated`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `grouped_work`
+-- Table structure for table `grouped_work_historical`
 --
 
-LOCK TABLES `grouped_work` WRITE;
-/*!40000 ALTER TABLE `grouped_work` DISABLE KEYS */;
-/*!40000 ALTER TABLE `grouped_work` ENABLE KEYS */;
-UNLOCK TABLES;
+DROP TABLE IF EXISTS `grouped_work_historical`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `grouped_work_historical` (
+  `permanent_id` char(36) NOT NULL,
+  `grouping_title` varchar(400) NOT NULL,
+  `grouping_author` varchar(100) NOT NULL,
+  `grouping_category` varchar(25) NOT NULL,
+  `grouping_language` char(3) DEFAULT NULL,
+  `grouping_version` smallint(1) unsigned NOT NULL,
+  KEY `index2` (`permanent_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Table to track grouping factors that lead to the unique permanent id among grouping versions. Do not remove entries even if there are no longer contributing records in the catalog. ';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `grouped_work_merges`
+--
+
+DROP TABLE IF EXISTS `grouped_work_merges`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `grouped_work_merges` (
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `sourceGroupedWorkId` char(36) NOT NULL,
+  `destinationGroupedWorkId` char(36) NOT NULL,
+  `notes` varchar(250) DEFAULT NULL,
+  `userId` int(10) unsigned DEFAULT NULL,
+  `updated` timestamp /* mariadb-5.3 */ NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `sourceGroupedWorkId` (`sourceGroupedWorkId`,`destinationGroupedWorkId`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Table structure for table `grouped_work_primary_identifiers`
@@ -385,22 +390,67 @@ DROP TABLE IF EXISTS `grouped_work_primary_identifiers`;
 CREATE TABLE `grouped_work_primary_identifiers` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `grouped_work_id` bigint(20) NOT NULL,
-  `type` varchar(50) NOT NULL,
+  `type` varchar(45) NOT NULL,
   `identifier` varchar(36) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `type` (`type`,`identifier`),
   KEY `grouped_record_id` (`grouped_work_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `grouped_work_primary_identifiers`
+-- Table structure for table `grouped_work_versions_map`
 --
 
-LOCK TABLES `grouped_work_primary_identifiers` WRITE;
-/*!40000 ALTER TABLE `grouped_work_primary_identifiers` DISABLE KEYS */;
-/*!40000 ALTER TABLE `grouped_work_primary_identifiers` ENABLE KEYS */;
-UNLOCK TABLES;
+DROP TABLE IF EXISTS `grouped_work_versions_map`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `grouped_work_versions_map` (
+  `groupedWorkPermanentIdVersion4` char(36) NOT NULL,
+  `groupedWorkPermanentIdVersion5` char(36) DEFAULT NULL,
+  `missingFromCatalog` tinyint(1) unsigned DEFAULT NULL,
+  PRIMARY KEY (`groupedWorkPermanentIdVersion4`),
+  UNIQUE KEY `version4_permanent_id_UNIQUE` (`groupedWorkPermanentIdVersion4`),
+  KEY `version5` (`groupedWorkPermanentIdVersion5`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `grouping_authors_preferred`
+--
+
+DROP TABLE IF EXISTS `grouping_authors_preferred`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `grouping_authors_preferred` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `sourceGroupingAuthor` varchar(100) DEFAULT NULL,
+  `preferredGroupingAuthor` varchar(100) DEFAULT NULL,
+  `notes` varchar(250) DEFAULT NULL,
+  `userId` int(10) unsigned DEFAULT NULL,
+  `updated` timestamp /* mariadb-5.3 */ NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `sourceGroupingAuthor_UNIQUE` (`sourceGroupingAuthor`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `grouping_titles_preferred`
+--
+
+DROP TABLE IF EXISTS `grouping_titles_preferred`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `grouping_titles_preferred` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `sourceGroupingTitle` varchar(400) DEFAULT NULL,
+  `preferredGroupingTitle` varchar(400) DEFAULT NULL,
+  `notes` varchar(250) DEFAULT NULL,
+  `userId` int(10) unsigned DEFAULT NULL,
+  `updated` timestamp /* mariadb-5.3 */ NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Table structure for table `holiday`
@@ -418,17 +468,69 @@ CREATE TABLE `holiday` (
   UNIQUE KEY `LibraryDate` (`date`,`libraryId`),
   KEY `Date` (`date`),
   KEY `Library` (`libraryId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `holiday`
+-- Table structure for table `hoopla_export`
 --
 
-LOCK TABLES `holiday` WRITE;
-/*!40000 ALTER TABLE `holiday` DISABLE KEYS */;
-/*!40000 ALTER TABLE `holiday` ENABLE KEYS */;
-UNLOCK TABLES;
+DROP TABLE IF EXISTS `hoopla_export`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `hoopla_export` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `hooplaId` int(11) NOT NULL,
+  `active` tinyint(4) NOT NULL DEFAULT 1,
+  `title` varchar(255) DEFAULT NULL,
+  `kind` varchar(50) DEFAULT NULL,
+  `pa` tinyint(4) NOT NULL DEFAULT 0,
+  `demo` tinyint(4) NOT NULL DEFAULT 0,
+  `profanity` tinyint(4) NOT NULL DEFAULT 0,
+  `rating` varchar(10) DEFAULT NULL,
+  `abridged` tinyint(4) NOT NULL DEFAULT 0,
+  `children` tinyint(4) NOT NULL DEFAULT 0,
+  `price` double NOT NULL DEFAULT 0,
+  `dateLastUpdated` timestamp /* mariadb-5.3 */ NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `hooplaId` (`hooplaId`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `hoopla_export_log`
+--
+
+DROP TABLE IF EXISTS `hoopla_export_log`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `hoopla_export_log` (
+  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'The id of log',
+  `startTime` int(11) NOT NULL COMMENT 'The timestamp when the run started',
+  `endTime` int(11) DEFAULT NULL COMMENT 'The timestamp when the run ended',
+  `lastUpdate` int(11) DEFAULT NULL COMMENT 'The timestamp when the run last updated (to check for stuck processes)',
+  `notes` text DEFAULT NULL COMMENT 'Additional information about the run',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `ils_extract_info`
+--
+
+DROP TABLE IF EXISTS `ils_extract_info`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ils_extract_info` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `indexingProfileId` int(11) NOT NULL,
+  `ilsId` varchar(50) NOT NULL,
+  `lastExtracted` int(11) DEFAULT NULL,
+  `deleted` date DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `ilsId_UNIQUE` (`indexingProfileId`,`ilsId`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Table structure for table `ils_hold_summary`
@@ -440,20 +542,11 @@ DROP TABLE IF EXISTS `ils_hold_summary`;
 CREATE TABLE `ils_hold_summary` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `ilsId` varchar(20) NOT NULL,
-  `numHolds` int(11) DEFAULT '0',
+  `numHolds` int(11) DEFAULT 0,
   PRIMARY KEY (`id`),
   UNIQUE KEY `ilsId` (`ilsId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `ils_hold_summary`
---
-
-LOCK TABLES `ils_hold_summary` WRITE;
-/*!40000 ALTER TABLE `ils_hold_summary` DISABLE KEYS */;
-/*!40000 ALTER TABLE `ils_hold_summary` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `ils_marc_checksums`
@@ -464,24 +557,15 @@ DROP TABLE IF EXISTS `ils_marc_checksums`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `ils_marc_checksums` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `ilsId` varchar(20) NOT NULL,
+  `ilsId` varchar(50) NOT NULL,
   `checksum` bigint(20) unsigned NOT NULL,
   `dateFirstDetected` bigint(20) DEFAULT NULL,
   `source` varchar(50) NOT NULL DEFAULT 'ils',
   PRIMARY KEY (`id`),
   UNIQUE KEY `ilsId` (`ilsId`),
   UNIQUE KEY `source` (`source`,`ilsId`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `ils_marc_checksums`
---
-
-LOCK TABLES `ils_marc_checksums` WRITE;
-/*!40000 ALTER TABLE `ils_marc_checksums` DISABLE KEYS */;
-/*!40000 ALTER TABLE `ils_marc_checksums` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `ils_volume_info`
@@ -503,15 +587,6 @@ CREATE TABLE `ils_volume_info` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `ils_volume_info`
---
-
-LOCK TABLES `ils_volume_info` WRITE;
-/*!40000 ALTER TABLE `ils_volume_info` DISABLE KEYS */;
-/*!40000 ALTER TABLE `ils_volume_info` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `indexing_profiles`
 --
 
@@ -521,26 +596,28 @@ DROP TABLE IF EXISTS `indexing_profiles`;
 CREATE TABLE `indexing_profiles` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(50) NOT NULL,
+  `sourceName` varchar(45) DEFAULT NULL,
   `marcPath` varchar(100) NOT NULL,
-  `marcEncoding` enum('MARC8','UTF8','UNIMARC','ISO8859_1','BESTGUESS') NOT NULL DEFAULT 'MARC8',
+  `marcEncoding` enum('MARC8','UTF8','UNIMARC','ISO8859_1','BESTGUESS') NOT NULL DEFAULT 'UTF8',
   `individualMarcPath` varchar(100) NOT NULL,
   `groupingClass` varchar(100) NOT NULL DEFAULT 'MarcRecordGrouper',
   `indexingClass` varchar(50) NOT NULL,
   `recordDriver` varchar(100) NOT NULL DEFAULT 'MarcRecord',
+  `patronDriver` varchar(50) DEFAULT NULL,
   `recordUrlComponent` varchar(25) NOT NULL DEFAULT 'Record',
   `formatSource` enum('bib','item','specified') NOT NULL DEFAULT 'bib',
   `recordNumberTag` char(3) NOT NULL,
   `recordNumberPrefix` varchar(10) NOT NULL,
-  `suppressItemlessBibs` tinyint(1) NOT NULL DEFAULT '1',
+  `suppressItemlessBibs` tinyint(1) NOT NULL DEFAULT 1,
   `itemTag` char(3) NOT NULL,
   `itemRecordNumber` char(1) DEFAULT NULL,
-  `useItemBasedCallNumbers` tinyint(1) NOT NULL DEFAULT '1',
+  `useItemBasedCallNumbers` tinyint(1) NOT NULL DEFAULT 1,
   `callNumberPrestamp` char(1) DEFAULT NULL,
   `callNumber` char(1) DEFAULT NULL,
   `callNumberCutter` char(1) DEFAULT NULL,
   `callNumberPoststamp` varchar(1) DEFAULT NULL,
   `location` char(1) DEFAULT NULL,
-  `locationsToSuppress` varchar(100) DEFAULT NULL,
+  `locationsToSuppress` varchar(255) DEFAULT NULL,
   `subLocation` char(1) DEFAULT NULL,
   `shelvingLocation` char(1) DEFAULT NULL,
   `volume` varchar(1) DEFAULT NULL,
@@ -557,7 +634,7 @@ CREATE TABLE `indexing_profiles` (
   `dateCreated` char(1) DEFAULT NULL,
   `dateCreatedFormat` varchar(20) DEFAULT NULL,
   `iCode2` char(1) DEFAULT NULL,
-  `useICode2Suppression` tinyint(1) NOT NULL DEFAULT '1',
+  `useICode2Suppression` tinyint(1) NOT NULL DEFAULT 1,
   `format` char(1) DEFAULT NULL,
   `eContentDescriptor` char(1) DEFAULT NULL,
   `orderTag` char(3) DEFAULT NULL,
@@ -566,7 +643,6 @@ CREATE TABLE `indexing_profiles` (
   `orderCopies` char(1) DEFAULT NULL,
   `orderCode3` char(1) DEFAULT NULL,
   `collection` char(1) DEFAULT NULL,
-  `catalogDriver` varchar(50) DEFAULT NULL,
   `nonHoldableITypes` varchar(255) DEFAULT NULL,
   `nonHoldableStatuses` varchar(255) DEFAULT NULL,
   `nonHoldableLocations` varchar(512) DEFAULT NULL,
@@ -576,19 +652,33 @@ CREATE TABLE `indexing_profiles` (
   `specifiedFormat` varchar(50) DEFAULT NULL,
   `specifiedFormatCategory` varchar(50) DEFAULT NULL,
   `specifiedFormatBoost` int(11) DEFAULT NULL,
+  `specifiedGroupingCategory` varchar(5) DEFAULT NULL,
+  `filenamesToInclude` varchar(250) DEFAULT '.*\\.ma?rc',
+  `collectionsToSuppress` varchar(100) DEFAULT '',
+  `iTypesToSuppress` varchar(100) DEFAULT NULL,
+  `iCode2sToSuppress` varchar(100) DEFAULT NULL,
+  `bCode3sToSuppress` varchar(100) DEFAULT NULL,
+  `sierraRecordFixedFieldsTag` char(3) DEFAULT NULL,
+  `bCode3` char(1) DEFAULT NULL,
+  `numCharsToCreateFolderFrom` int(11) DEFAULT 4,
+  `createFolderFromLeadingCharacters` tinyint(1) DEFAULT 1,
+  `dueDateFormat` varchar(20) DEFAULT 'yyMMdd',
+  `doAutomaticEcontentSuppression` tinyint(1) DEFAULT 1,
+  `groupUnchangedFiles` tinyint(1) DEFAULT 0,
+  `recordNumberField` char(1) DEFAULT 'a',
+  `materialTypeField` varchar(3) DEFAULT NULL,
+  `formatDeterminationMethod` varchar(20) DEFAULT 'bib',
+  `materialTypesToIgnore` varchar(50) DEFAULT NULL,
+  `sierraLanguageFixedField` varchar(3) DEFAULT NULL,
+  `availableStatuses` varchar(255) DEFAULT NULL,
+  `checkedOutStatuses` varchar(255) DEFAULT NULL,
+  `libraryUseOnlyStatuses` varchar(255) DEFAULT NULL,
+  `coverSource` varchar(55) DEFAULT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+  UNIQUE KEY `name` (`name`),
+  UNIQUE KEY `sourceName_UNIQUE` (`sourceName`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `indexing_profiles`
---
-
-LOCK TABLES `indexing_profiles` WRITE;
-/*!40000 ALTER TABLE `indexing_profiles` DISABLE KEYS */;
-/*!40000 ALTER TABLE `indexing_profiles` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `ip_lookup`
@@ -604,21 +694,12 @@ CREATE TABLE `ip_lookup` (
   `ip` varchar(255) NOT NULL,
   `startIpVal` bigint(20) DEFAULT NULL,
   `endIpVal` bigint(20) DEFAULT NULL,
-  `isOpac` tinyint(3) unsigned NOT NULL DEFAULT '1',
+  `isOpac` tinyint(3) unsigned NOT NULL DEFAULT 1,
   PRIMARY KEY (`id`),
   KEY `startIpVal` (`startIpVal`),
   KEY `endIpVal` (`endIpVal`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `ip_lookup`
---
-
-LOCK TABLES `ip_lookup` WRITE;
-/*!40000 ALTER TABLE `ip_lookup` DISABLE KEYS */;
-/*!40000 ALTER TABLE `ip_lookup` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `islandora_object_cache`
@@ -636,20 +717,51 @@ CREATE TABLE `islandora_object_cache` (
   `hasLatLong` tinyint(4) DEFAULT NULL,
   `latitude` float DEFAULT NULL,
   `longitude` float DEFAULT NULL,
-  `lastUpdate` int(11) DEFAULT '0',
+  `lastUpdate` int(11) DEFAULT 0,
+  `smallCoverUrl` varchar(255) DEFAULT '',
+  `mediumCoverUrl` varchar(255) DEFAULT '',
+  `largeCoverUrl` varchar(255) DEFAULT '',
+  `originalCoverUrl` varchar(255) DEFAULT '',
   PRIMARY KEY (`id`),
   UNIQUE KEY `pid` (`pid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `islandora_object_cache`
+-- Table structure for table `islandora_samepika_cache`
 --
 
-LOCK TABLES `islandora_object_cache` WRITE;
-/*!40000 ALTER TABLE `islandora_object_cache` DISABLE KEYS */;
-/*!40000 ALTER TABLE `islandora_object_cache` ENABLE KEYS */;
-UNLOCK TABLES;
+DROP TABLE IF EXISTS `islandora_samepika_cache`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `islandora_samepika_cache` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `groupedWorkPermanentId` char(36) NOT NULL,
+  `pid` varchar(100) DEFAULT NULL,
+  `archiveLink` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `groupedWorkId` (`groupedWorkPermanentId`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `librarian_reviews`
+--
+
+DROP TABLE IF EXISTS `librarian_reviews`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `librarian_reviews` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `groupedWorkPermanentId` char(36) NOT NULL,
+  `title` varchar(255) NOT NULL,
+  `review` text DEFAULT NULL,
+  `source` varchar(50) NOT NULL,
+  `pubDate` timestamp /* mariadb-5.3 */ NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `RecordId` (`groupedWorkPermanentId`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Table structure for table `library`
@@ -663,17 +775,17 @@ CREATE TABLE `library` (
   `subdomain` varchar(25) NOT NULL COMMENT 'The subdomain which can be used to access settings for the library',
   `displayName` varchar(50) NOT NULL COMMENT 'The name of the library which should be shown in titles.',
   `themeName` varchar(60) DEFAULT NULL,
-  `showLibraryFacet` tinyint(4) NOT NULL DEFAULT '1' COMMENT 'Whether or not the user can see and use the library facet to change to another branch in their library system.',
-  `showConsortiumFacet` tinyint(4) NOT NULL DEFAULT '0' COMMENT 'Whether or not the user can see and use the consortium facet to change to other library systems. ',
-  `allowInBranchHolds` tinyint(4) NOT NULL DEFAULT '1' COMMENT 'Whether or not the user can place holds for their branch.  If this isn''t shown, they won''t be able to place holds for books at the location they are in.  If set to false, they won''t be able to place any holds. ',
-  `allowInLibraryHolds` tinyint(4) NOT NULL DEFAULT '1' COMMENT 'Whether or not the user can place holds for books at other locations in their library system',
-  `allowConsortiumHolds` tinyint(4) NOT NULL DEFAULT '0' COMMENT 'Whether or not the user can place holds for any book anywhere in the consortium.  ',
+  `showLibraryFacet` tinyint(4) NOT NULL DEFAULT 1 COMMENT 'Whether or not the user can see and use the library facet to change to another branch in their library system.',
+  `showConsortiumFacet` tinyint(4) NOT NULL DEFAULT 0 COMMENT 'Whether or not the user can see and use the consortium facet to change to other library systems. ',
+  `allowInBranchHolds` tinyint(4) NOT NULL DEFAULT 1 COMMENT 'Whether or not the user can place holds for their branch.  If this isn''t shown, they won''t be able to place holds for books at the location they are in.  If set to false, they won''t be able to place any holds. ',
+  `allowInLibraryHolds` tinyint(4) NOT NULL DEFAULT 1 COMMENT 'Whether or not the user can place holds for books at other locations in their library system',
+  `allowConsortiumHolds` tinyint(4) NOT NULL DEFAULT 0 COMMENT 'Whether or not the user can place holds for any book anywhere in the consortium.  ',
   `scope` smallint(6) NOT NULL COMMENT 'The scope for the system in Sierra to refine holdings for the user.',
   `hideCommentsWithBadWords` tinyint(4) NOT NULL COMMENT 'If set to true (1), any comments with bad words are completely removed from the user interface for everyone except the original poster.',
   `showStandardReviews` tinyint(4) NOT NULL COMMENT 'Whether or not reviews from Content Cafe/Syndetics are displayed on the full record page.',
   `showHoldButton` tinyint(4) NOT NULL COMMENT 'Whether or not the hold button is displayed so patrons can place holds on items',
   `showLoginButton` tinyint(4) NOT NULL COMMENT 'Whether or not the login button is displayed so patrons can login to the site',
-  `showTextThis` tinyint(4) NOT NULL COMMENT 'Whether or not the Text This link is shown',
+  `showTextThis` tinyint(4) NOT NULL DEFAULT 1 COMMENT 'Whether or not the Text This link is shown',
   `showEmailThis` tinyint(4) NOT NULL COMMENT 'Whether or not the Email This link is shown',
   `showComments` tinyint(4) NOT NULL COMMENT 'Whether or not comments are shown (also disables adding comments)',
   `showTagging` tinyint(4) NOT NULL COMMENT 'Whether or not tags are shown (also disables adding tags)',
@@ -682,68 +794,67 @@ CREATE TABLE `library` (
   `defaultPType` int(11) NOT NULL,
   `facetLabel` varchar(50) NOT NULL,
   `showEcommerceLink` tinyint(4) NOT NULL,
-
   `repeatSearchOption` enum('none','librarySystem','marmot','all') NOT NULL DEFAULT 'all' COMMENT 'Where to allow repeating search.  Valid options are: none, librarySystem, marmot, all',
   `repeatInProspector` tinyint(4) NOT NULL,
   `repeatInWorldCat` tinyint(4) NOT NULL,
   `systemsToRepeatIn` varchar(255) NOT NULL,
-  `repeatInOverdrive` tinyint(4) NOT NULL DEFAULT '0',
+  `repeatInOverdrive` tinyint(4) NOT NULL DEFAULT 0,
   `overdriveAuthenticationILSName` varchar(45) DEFAULT NULL,
-  `overdriveRequirePin` tinyint(1) NOT NULL DEFAULT '0',
+  `overdriveRequirePin` tinyint(1) NOT NULL DEFAULT 0,
   `homeLink` varchar(255) NOT NULL DEFAULT 'default',
-  `showAdvancedSearchbox` tinyint(4) NOT NULL DEFAULT '1',
+  `showAdvancedSearchbox` tinyint(4) NOT NULL DEFAULT 1,
   `validPickupSystems` varchar(255) NOT NULL,
-  `allowProfileUpdates` tinyint(4) NOT NULL DEFAULT '1',
-  `allowRenewals` tinyint(4) NOT NULL DEFAULT '1',
-  `allowFreezeHolds` tinyint(4) NOT NULL DEFAULT '0',
-  `showItsHere` tinyint(4) NOT NULL DEFAULT '1',
-  `holdDisclaimer` mediumtext,
-  `showHoldCancelDate` tinyint(4) NOT NULL DEFAULT '0',
-  `enableProspectorIntegration` tinyint(4) NOT NULL DEFAULT '0',
-  `showRatings` tinyint(4) NOT NULL DEFAULT '1',
-  `minimumFineAmount` float NOT NULL DEFAULT '0',
-  `enableGenealogy` tinyint(4) NOT NULL DEFAULT '0',
-  `enableCourseReserves` tinyint(1) NOT NULL DEFAULT '0',
+  `allowProfileUpdates` tinyint(4) NOT NULL DEFAULT 1,
+  `allowRenewals` tinyint(4) NOT NULL DEFAULT 1,
+  `allowFreezeHolds` tinyint(4) NOT NULL DEFAULT 0,
+  `showItsHere` tinyint(4) NOT NULL DEFAULT 1,
+  `holdDisclaimer` mediumtext DEFAULT NULL,
+  `showHoldCancelDate` tinyint(4) NOT NULL DEFAULT 0,
+  `enableProspectorIntegration` tinyint(4) NOT NULL DEFAULT 0,
+  `showRatings` tinyint(4) NOT NULL DEFAULT 1,
+  `minimumFineAmount` float NOT NULL DEFAULT 0,
+  `enableGenealogy` tinyint(4) NOT NULL DEFAULT 0,
+  `enableCourseReserves` tinyint(1) NOT NULL DEFAULT 0,
   `exportOptions` varchar(100) NOT NULL DEFAULT 'RefWorks|EndNote',
-  `enableSelfRegistration` tinyint(4) NOT NULL DEFAULT '0',
-  `useHomeLinkInBreadcrumbs` tinyint(4) NOT NULL DEFAULT '0',
-  `enableMaterialsRequest` tinyint(4) DEFAULT '1',
-  `showHoldButtonInSearchResults` tinyint(4) DEFAULT '1',
-  `showSimilarAuthors` tinyint(4) DEFAULT '1',
-  `showSimilarTitles` tinyint(4) DEFAULT '1',
-  `show856LinksAsTab` tinyint(4) DEFAULT '0',
-  `applyNumberOfHoldingsBoost` tinyint(4) DEFAULT '1',
+  `enableSelfRegistration` tinyint(4) NOT NULL DEFAULT 0,
+  `useHomeLinkInBreadcrumbs` tinyint(4) NOT NULL DEFAULT 0,
+  `enableMaterialsRequest` tinyint(4) DEFAULT 1,
+  `showHoldButtonInSearchResults` tinyint(4) DEFAULT 1,
+  `showSimilarAuthors` tinyint(4) DEFAULT 1,
+  `showSimilarTitles` tinyint(4) DEFAULT 1,
+  `show856LinksAsTab` tinyint(4) DEFAULT 0,
+  `applyNumberOfHoldingsBoost` tinyint(4) DEFAULT 1,
   `worldCatUrl` varchar(100) DEFAULT '',
   `worldCatQt` varchar(40) DEFAULT '',
-  `preferSyndeticsSummary` tinyint(4) DEFAULT '1',
-  `abbreviatedDisplayName` varchar(20) DEFAULT '',
-  `showGoDeeper` tinyint(4) DEFAULT '1',
-  `showProspectorResultsAtEndOfSearch` tinyint(4) DEFAULT '1',
+  `preferSyndeticsSummary` tinyint(4) DEFAULT 1,
+  `abbreviatedDisplayName` varchar(30) DEFAULT '',
+  `showGoDeeper` tinyint(4) DEFAULT 1,
+  `showProspectorResultsAtEndOfSearch` tinyint(4) DEFAULT 1,
   `overdriveAdvantageName` varchar(128) DEFAULT '',
   `overdriveAdvantageProductsKey` varchar(20) DEFAULT '',
-  `defaultNotNeededAfterDays` int(11) DEFAULT '0',
-  `showCheckInGrid` int(11) DEFAULT '1',
-  `recordsToBlackList` mediumtext,
+  `defaultNotNeededAfterDays` int(11) DEFAULT 0,
+  `showCheckInGrid` int(11) DEFAULT 1,
+  `recordsToBlackList` mediumtext DEFAULT NULL,
   `homeLinkText` varchar(50) DEFAULT 'Home',
-#   `showOtherFormatCategory` tinyint(1) DEFAULT '1',
-  `showWikipediaContent` tinyint(1) DEFAULT '1',
+  `showOtherFormatCategory` tinyint(1) DEFAULT 1,
+  `showWikipediaContent` tinyint(1) DEFAULT 1,
   `payFinesLink` varchar(512) DEFAULT 'default',
   `payFinesLinkText` varchar(512) DEFAULT 'Click to Pay Fines Online',
-  `eContentSupportAddress` varchar(256) DEFAULT 'pika@marmot.org',
+  `eContentSupportAddress` varchar(256) DEFAULT 'askmarmot@marmot.org',
   `ilsCode` varchar(75) DEFAULT NULL,
-  `systemMessage` varchar(512) DEFAULT '',
-  `restrictSearchByLibrary` tinyint(1) DEFAULT '0',
-  `enableOverdriveCollection` tinyint(1) DEFAULT '1',
-  `restrictOwningBranchesAndSystems` tinyint(1) DEFAULT '1',
-  `showAvailableAtAnyLocation` tinyint(1) DEFAULT '1',
-  `accountingUnit` int(11) DEFAULT '10',
-  `allowPatronAddressUpdates` tinyint(1) DEFAULT '1',
-  `showWorkPhoneInProfile` tinyint(1) DEFAULT '0',
-  `showNoticeTypeInProfile` tinyint(1) DEFAULT '0',
-  `showPickupLocationInProfile` tinyint(1) DEFAULT '0',
-  `additionalCss` mediumtext,
-  `maxRequestsPerYear` int(11) DEFAULT '60',
-  `maxOpenRequests` int(11) DEFAULT '5',
+  `systemMessage` text DEFAULT NULL,
+  `restrictSearchByLibrary` tinyint(1) DEFAULT 0,
+  `enableOverdriveCollection` tinyint(1) DEFAULT 1,
+  `restrictOwningBranchesAndSystems` tinyint(1) DEFAULT 1,
+  `showAvailableAtAnyLocation` tinyint(1) DEFAULT 1,
+  `accountingUnit` int(11) DEFAULT 10,
+  `allowPatronAddressUpdates` tinyint(1) DEFAULT 1,
+  `showWorkPhoneInProfile` tinyint(1) DEFAULT 0,
+  `showNoticeTypeInProfile` tinyint(1) DEFAULT 0,
+  `showPickupLocationInProfile` tinyint(1) DEFAULT 0,
+  `additionalCss` mediumtext DEFAULT NULL,
+  `maxRequestsPerYear` int(11) DEFAULT 60,
+  `maxOpenRequests` int(11) DEFAULT 5,
   `twitterLink` varchar(255) DEFAULT '',
   `youtubeLink` varchar(255) DEFAULT NULL,
   `instagramLink` varchar(255) DEFAULT NULL,
@@ -751,88 +862,212 @@ CREATE TABLE `library` (
   `facebookLink` varchar(255) DEFAULT '',
   `generalContactLink` varchar(255) DEFAULT '',
   `allowPinReset` tinyint(1) DEFAULT NULL,
-  `additionalLocalBoostFactor` int(11) DEFAULT '1',
-  `repeatInOnlineCollection` int(11) DEFAULT '1',
-  `showExpirationWarnings` tinyint(1) DEFAULT '1',
+  `additionalLocalBoostFactor` int(11) DEFAULT 1,
+  `repeatInOnlineCollection` int(11) DEFAULT 1,
+  `showExpirationWarnings` tinyint(1) DEFAULT 1,
   `pTypes` varchar(255) DEFAULT NULL,
-  `enableMaterialsBooking` tinyint(4) NOT NULL DEFAULT '0',
-  `showLibraryHoursAndLocationsLink` int(11) DEFAULT '1',
-  `showLibraryHoursNoticeOnAccountPages` tinyint(1) DEFAULT '1',
-  `showShareOnExternalSites` int(11) DEFAULT '1',
-  `showQRCode` int(11) DEFAULT '1',
-  `showGoodReadsReviews` int(11) DEFAULT '1',
-  `showStaffView` int(11) DEFAULT '1',
-  `showSearchTools` int(11) DEFAULT '1',
+  `enableMaterialsBooking` tinyint(4) NOT NULL DEFAULT 0,
+  `showLibraryHoursAndLocationsLink` int(11) DEFAULT 1,
+  `showLibraryHoursNoticeOnAccountPages` tinyint(1) DEFAULT 1,
+  `showShareOnExternalSites` int(11) DEFAULT 1,
+  `showQRCode` int(11) DEFAULT 1,
+  `showGoodReadsReviews` int(11) DEFAULT 1,
+  `showStaffView` int(11) DEFAULT 1,
+  `showSearchTools` int(11) DEFAULT 1,
   `barcodePrefix` varchar(15) DEFAULT '',
-  `minBarcodeLength` int(11) DEFAULT '0',
-  `maxBarcodeLength` int(11) DEFAULT '0',
-  `showDisplayNameInHeader` tinyint(4) DEFAULT '0',
-  `headerText` mediumtext,
-  `promptForBirthDateInSelfReg` tinyint(4) DEFAULT '0',
+  `minBarcodeLength` int(11) DEFAULT 0,
+  `maxBarcodeLength` int(11) DEFAULT 0,
+  `showDisplayNameInHeader` tinyint(4) DEFAULT 0,
+  `headerText` mediumtext DEFAULT NULL,
+  `promptForBirthDateInSelfReg` tinyint(4) DEFAULT 0,
   `availabilityToggleLabelSuperScope` varchar(50) DEFAULT 'Entire Collection',
   `availabilityToggleLabelLocal` varchar(50) DEFAULT '{display name}',
   `availabilityToggleLabelAvailable` varchar(50) DEFAULT 'Available Now',
-  `loginFormUsernameLabel` varchar(50) DEFAULT 'Your Name',
-  `loginFormPasswordLabel` varchar(50) DEFAULT 'Library Card Number',
-  `showDetailedHoldNoticeInformation` tinyint(4) DEFAULT '1',
-  `treatPrintNoticesAsPhoneNotices` tinyint(4) DEFAULT '0',
-  `showAlternateLibraryOptionsInProfile` tinyint(1) DEFAULT '1',
+  `loginFormUsernameLabel` varchar(100) DEFAULT 'Your Name',
+  `loginFormPasswordLabel` varchar(100) DEFAULT 'Library Card Number',
+  `showDetailedHoldNoticeInformation` tinyint(4) DEFAULT 1,
+  `treatPrintNoticesAsPhoneNotices` tinyint(4) DEFAULT 0,
+  `showAlternateLibraryOptionsInProfile` tinyint(1) DEFAULT 1,
   `additionalLocationsToShowAvailabilityFor` varchar(255) NOT NULL DEFAULT '',
   `showInMainDetails` varchar(255) DEFAULT NULL,
-  `includeDplaResults` tinyint(1) DEFAULT '0',
-  `selfRegistrationFormMessage` text,
-  `selfRegistrationSuccessMessage` text,
+  `includeDplaResults` tinyint(1) DEFAULT 0,
+  `selfRegistrationFormMessage` text DEFAULT NULL,
+  `selfRegistrationSuccessMessage` text DEFAULT NULL,
+  `selfRegistrationTemplate` varchar(25) DEFAULT 'default',
   `defaultBrowseMode` varchar(25) DEFAULT NULL,
   `browseCategoryRatingsMode` varchar(25) DEFAULT NULL,
-  `useHomeLinkForLogo` tinyint(1) DEFAULT '0',
-  `addSMSIndicatorToPhone` tinyint(1) DEFAULT '0',
+  `useHomeLinkForLogo` tinyint(1) DEFAULT 0,
+  `addSMSIndicatorToPhone` tinyint(1) DEFAULT 0,
   `externalMaterialsRequestUrl` varchar(255) DEFAULT NULL,
   `isDefault` tinyint(1) DEFAULT NULL,
-  `showHoldButtonForUnavailableOnly` tinyint(1) DEFAULT '0',
-  `allowLinkedAccounts` tinyint(1) DEFAULT '1',
-  `boostByLibrary` tinyint(4) DEFAULT '1',
-  `preventExpiredCardLogin` tinyint(1) DEFAULT '0',
+  `showHoldButtonForUnavailableOnly` tinyint(1) DEFAULT 0,
+  `allowLinkedAccounts` tinyint(1) DEFAULT 1,
+  `boostByLibrary` tinyint(4) DEFAULT 1,
+  `preventExpiredCardLogin` tinyint(1) DEFAULT 0,
   `showInSearchResultsMainDetails` varchar(255) DEFAULT 'a:4:{i:0;s:10:"showSeries";i:1;s:13:"showPublisher";i:2;s:19:"showPublicationDate";i:3;s:13:"showLanguages";}',
-  `horizontalSearchBar` tinyint(1) DEFAULT '0',
-  `alwaysShowSearchResultsMainDetails` tinyint(1) DEFAULT '0',
-  `sideBarOnRight` tinyint(1) DEFAULT '0',
-  `allowAutomaticSearchReplacements` tinyint(1) DEFAULT '1',
-  `includeOverDriveAdult` tinyint(1) DEFAULT '1',
-  `includeOverDriveTeen` tinyint(1) DEFAULT '1',
-  `includeOverDriveKids` tinyint(1) DEFAULT '1',
+  `horizontalSearchBar` tinyint(1) DEFAULT 0,
+  `alwaysShowSearchResultsMainDetails` tinyint(1) DEFAULT 0,
+  `sideBarOnRight` tinyint(1) DEFAULT 0,
+  `allowAutomaticSearchReplacements` tinyint(1) DEFAULT 1,
+  `includeOverDriveAdult` tinyint(1) DEFAULT 1,
+  `includeOverDriveTeen` tinyint(1) DEFAULT 1,
+  `includeOverDriveKids` tinyint(1) DEFAULT 1,
   `publicListsToInclude` tinyint(1) DEFAULT NULL,
-  `enableArchive` tinyint(1) DEFAULT '0',
+  `enableArchive` tinyint(1) DEFAULT 0,
   `archiveNamespace` varchar(30) DEFAULT NULL,
-  `hideAllCollectionsFromOtherLibraries` tinyint(1) DEFAULT '0',
-  `collectionsToHide` mediumtext,
-  `showLCSubjects` tinyint(1) DEFAULT '1',
-  `showBisacSubjects` tinyint(1) DEFAULT '1',
-  `showFastAddSubjects` tinyint(1) DEFAULT '1',
-  `showOtherSubjects` tinyint(1) DEFAULT '1',
-  `maxFinesToAllowAccountUpdates` float DEFAULT '10',
-  `showRefreshAccountButton` tinyint(4) NOT NULL DEFAULT '1',
+  `hideAllCollectionsFromOtherLibraries` tinyint(1) DEFAULT 0,
+  `collectionsToHide` mediumtext DEFAULT NULL,
+  `showLCSubjects` tinyint(1) DEFAULT 1,
+  `showBisacSubjects` tinyint(1) DEFAULT 1,
+  `showFastAddSubjects` tinyint(1) DEFAULT 1,
+  `showOtherSubjects` tinyint(1) DEFAULT 1,
+  `maxFinesToAllowAccountUpdates` float DEFAULT 10,
+  `showRefreshAccountButton` tinyint(4) NOT NULL DEFAULT 1,
   `edsApiProfile` varchar(50) DEFAULT NULL,
   `edsApiUsername` varchar(50) DEFAULT NULL,
   `edsApiPassword` varchar(50) DEFAULT NULL,
   `patronNameDisplayStyle` enum('firstinitial_lastname','lastinitial_firstname') DEFAULT 'firstinitial_lastname',
-  `includeAllRecordsInShelvingFacets` tinyint(4) DEFAULT '0',
-  `includeAllRecordsInDateAddedFacets` tinyint(4) DEFAULT '0',
+  `includeAllRecordsInShelvingFacets` tinyint(4) DEFAULT 0,
+  `includeAllRecordsInDateAddedFacets` tinyint(4) DEFAULT 0,
   `casHost` varchar(50) DEFAULT NULL,
   `casPort` smallint(6) DEFAULT NULL,
   `casContext` varchar(50) DEFAULT NULL,
+  `newMaterialsRequestSummary` text DEFAULT NULL,
+  `edsSearchProfile` varchar(50) DEFAULT NULL,
+  `showSidebarMenu` tinyint(4) DEFAULT 1,
+  `sidebarMenuButtonText` varchar(40) DEFAULT 'Help',
+  `allowRequestsForArchiveMaterials` tinyint(4) DEFAULT 0,
+  `archiveRequestEmail` varchar(100) DEFAULT NULL,
+  `archiveRequestFieldName` tinyint(1) DEFAULT NULL,
+  `archiveRequestFieldAddress` tinyint(1) DEFAULT NULL,
+  `archiveRequestFieldAddress2` tinyint(1) DEFAULT NULL,
+  `archiveRequestFieldCity` tinyint(1) DEFAULT NULL,
+  `archiveRequestFieldState` tinyint(1) DEFAULT NULL,
+  `archiveRequestFieldZip` tinyint(1) DEFAULT NULL,
+  `archiveRequestFieldCountry` tinyint(1) DEFAULT NULL,
+  `archiveRequestFieldPhone` tinyint(1) DEFAULT NULL,
+  `archiveRequestFieldAlternatePhone` tinyint(1) DEFAULT NULL,
+  `archiveRequestFieldFormat` tinyint(1) DEFAULT NULL,
+  `archiveRequestFieldPurpose` tinyint(1) DEFAULT NULL,
+  `archivePid` varchar(50) DEFAULT NULL,
+  `archiveMoreDetailsRelatedObjectsOrEntitiesDisplayMode` varchar(15) DEFAULT NULL,
+  `availabilityToggleLabelAvailableOnline` varchar(50) DEFAULT '',
+  `includeOnlineMaterialsInAvailableToggle` tinyint(1) DEFAULT 1,
+  `archiveRequestMaterialsHeader` mediumtext DEFAULT NULL,
+  `claimAuthorshipHeader` mediumtext DEFAULT NULL,
+  `showPikaLogo` tinyint(4) DEFAULT 1,
+  `masqueradeAutomaticTimeoutLength` tinyint(1) unsigned DEFAULT NULL,
+  `allowMasqueradeMode` tinyint(1) DEFAULT 0,
+  `allowReadingHistoryDisplayInMasqueradeMode` tinyint(1) DEFAULT 0,
+  `materialsRequestDaysToPreserve` int(11) DEFAULT 0,
+  `objectsToHide` mediumtext DEFAULT NULL,
+  `defaultArchiveCollectionBrowseMode` varchar(25) DEFAULT NULL,
+  `showGroupedHoldCopiesCount` tinyint(1) DEFAULT 1,
+  `interLibraryLoanName` varchar(30) DEFAULT NULL,
+  `interLibraryLoanUrl` varchar(100) DEFAULT NULL,
+  `expirationNearMessage` mediumtext DEFAULT NULL,
+  `expiredMessage` mediumtext DEFAULT NULL,
+  `enableCombinedResults` tinyint(1) DEFAULT 0,
+  `combinedResultsLabel` varchar(255) DEFAULT 'Combined Results',
+  `defaultToCombinedResults` tinyint(1) DEFAULT 0,
+  `hooplaLibraryID` int(10) unsigned DEFAULT NULL,
+  `showOnOrderCounts` tinyint(1) DEFAULT 1,
+  `sharedOverdriveCollection` tinyint(1) DEFAULT -1,
+  `includeOnOrderRecordsInDateAddedFacetValues` tinyint(4) DEFAULT 1,
+  `gaTrackingId` varchar(20) DEFAULT '',
+  `selfRegistrationDefaultpType` int(6) DEFAULT -1,
+  `selfRegistrationBarcodeLength` tinyint(2) DEFAULT 6,
+  `selfRegistrationDaysUntilExpire` smallint(3) DEFAULT 90,
+  `selfRegistrationAgencyCode` int(10) DEFAULT -1,
+  `showPatronBarcodeImage` tinyint(1) DEFAULT 0,
   PRIMARY KEY (`libraryId`),
   UNIQUE KEY `subdomain` (`subdomain`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `library`
+-- Table structure for table `library_archive_explore_more_bar`
 --
 
-LOCK TABLES `library` WRITE;
-/*!40000 ALTER TABLE `library` DISABLE KEYS */;
-/*!40000 ALTER TABLE `library` ENABLE KEYS */;
-UNLOCK TABLES;
+DROP TABLE IF EXISTS `library_archive_explore_more_bar`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `library_archive_explore_more_bar` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `libraryId` int(11) NOT NULL,
+  `section` varchar(45) DEFAULT NULL,
+  `displayName` varchar(45) DEFAULT NULL,
+  `openByDefault` tinyint(1) unsigned NOT NULL DEFAULT 1,
+  `weight` int(11) NOT NULL DEFAULT 0,
+  PRIMARY KEY (`id`),
+  KEY `LibraryIdIndex` (`libraryId`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `library_archive_more_details`
+--
+
+DROP TABLE IF EXISTS `library_archive_more_details`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `library_archive_more_details` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `libraryId` int(11) NOT NULL DEFAULT -1,
+  `weight` int(11) NOT NULL DEFAULT 0,
+  `section` varchar(25) NOT NULL,
+  `collapseByDefault` tinyint(1) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `libraryId` (`libraryId`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `library_archive_search_facet_setting`
+--
+
+DROP TABLE IF EXISTS `library_archive_search_facet_setting`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `library_archive_search_facet_setting` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `libraryId` int(11) NOT NULL,
+  `displayName` varchar(50) NOT NULL,
+  `facetName` varchar(80) NOT NULL,
+  `weight` int(11) NOT NULL DEFAULT 0,
+  `numEntriesToShowByDefault` int(11) NOT NULL DEFAULT 5,
+  `showAsDropDown` tinyint(4) NOT NULL DEFAULT 0,
+  `sortMode` enum('alphabetically','num_results') NOT NULL DEFAULT 'num_results',
+  `showAboveResults` tinyint(4) NOT NULL DEFAULT 0,
+  `showInResults` tinyint(4) NOT NULL DEFAULT 1,
+  `showInAuthorResults` tinyint(4) NOT NULL DEFAULT 1,
+  `showInAdvancedSearch` tinyint(4) NOT NULL DEFAULT 1,
+  `collapseByDefault` tinyint(4) DEFAULT 0,
+  `useMoreFacetPopup` tinyint(4) DEFAULT 1,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `libraryFacet` (`libraryId`,`facetName`),
+  KEY `libraryId` (`libraryId`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `library_combined_results_section`
+--
+
+DROP TABLE IF EXISTS `library_combined_results_section`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `library_combined_results_section` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `libraryId` int(11) NOT NULL,
+  `displayName` varchar(255) DEFAULT NULL,
+  `source` varchar(45) DEFAULT NULL,
+  `numberOfResultsToShow` int(11) NOT NULL DEFAULT 5,
+  `weight` int(11) NOT NULL DEFAULT 0,
+  PRIMARY KEY (`id`),
+  KEY `LibraryIdIndex` (`libraryId`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Table structure for table `library_facet_setting`
@@ -846,30 +1081,40 @@ CREATE TABLE `library_facet_setting` (
   `libraryId` int(11) NOT NULL,
   `displayName` varchar(50) NOT NULL,
   `facetName` varchar(50) NOT NULL,
-  `weight` int(11) NOT NULL DEFAULT '0',
-  `numEntriesToShowByDefault` int(11) NOT NULL DEFAULT '5',
-  `showAsDropDown` tinyint(4) NOT NULL DEFAULT '0',
+  `weight` int(11) NOT NULL DEFAULT 0,
+  `numEntriesToShowByDefault` int(11) NOT NULL DEFAULT 5,
+  `showAsDropDown` tinyint(4) NOT NULL DEFAULT 0,
   `sortMode` enum('alphabetically','num_results') NOT NULL DEFAULT 'num_results',
-  `showAboveResults` tinyint(4) NOT NULL DEFAULT '0',
-  `showInResults` tinyint(4) NOT NULL DEFAULT '1',
-  `showInAuthorResults` tinyint(4) NOT NULL DEFAULT '1',
-  `showInAdvancedSearch` tinyint(4) NOT NULL DEFAULT '1',
-  `collapseByDefault` tinyint(4) DEFAULT '0',
-  `useMoreFacetPopup` tinyint(4) DEFAULT '1',
+  `showAboveResults` tinyint(4) NOT NULL DEFAULT 0,
+  `showInResults` tinyint(4) NOT NULL DEFAULT 1,
+  `showInAuthorResults` tinyint(4) NOT NULL DEFAULT 1,
+  `showInAdvancedSearch` tinyint(4) NOT NULL DEFAULT 1,
+  `collapseByDefault` tinyint(4) DEFAULT 0,
+  `useMoreFacetPopup` tinyint(4) DEFAULT 1,
   PRIMARY KEY (`id`),
   UNIQUE KEY `libraryFacet` (`libraryId`,`facetName`),
   KEY `libraryId` (`libraryId`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='A widget that can be displayed within VuFind or within other sites';
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COMMENT='A widget that can be displayed within VuFind or within other sites';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `library_facet_setting`
+-- Table structure for table `library_hoopla_setting`
 --
 
-LOCK TABLES `library_facet_setting` WRITE;
-/*!40000 ALTER TABLE `library_facet_setting` DISABLE KEYS */;
-/*!40000 ALTER TABLE `library_facet_setting` ENABLE KEYS */;
-UNLOCK TABLES;
+DROP TABLE IF EXISTS `library_hoopla_setting`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `library_hoopla_setting` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `libraryId` int(10) unsigned DEFAULT NULL,
+  `kind` varchar(30) DEFAULT NULL,
+  `maxPrice` decimal(3,2) DEFAULT 0.00,
+  `excludeParentalAdvisory` tinyint(4) DEFAULT 0,
+  `excludeProfanity` tinyint(4) DEFAULT 0,
+  `includeChildrenTitlesOnly` tinyint(4) DEFAULT 0,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Table structure for table `library_links`
@@ -884,21 +1129,15 @@ CREATE TABLE `library_links` (
   `category` varchar(100) NOT NULL,
   `linkText` varchar(100) NOT NULL,
   `url` varchar(255) NOT NULL,
-  `weight` int(11) NOT NULL DEFAULT '0',
-  `htmlContents` mediumtext,
+  `weight` int(11) NOT NULL DEFAULT 0,
+  `htmlContents` mediumtext DEFAULT NULL,
+  `showInAccount` tinyint(4) DEFAULT 0,
+  `showInHelp` tinyint(4) DEFAULT 1,
+  `showExpanded` tinyint(4) DEFAULT 0,
   PRIMARY KEY (`id`),
   KEY `libraryId` (`libraryId`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `library_links`
---
-
-LOCK TABLES `library_links` WRITE;
-/*!40000 ALTER TABLE `library_links` DISABLE KEYS */;
-/*!40000 ALTER TABLE `library_links` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `library_more_details`
@@ -909,23 +1148,14 @@ DROP TABLE IF EXISTS `library_more_details`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `library_more_details` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `libraryId` int(11) NOT NULL DEFAULT '-1',
-  `weight` int(11) NOT NULL DEFAULT '0',
+  `libraryId` int(11) NOT NULL DEFAULT -1,
+  `weight` int(11) NOT NULL DEFAULT 0,
   `source` varchar(25) NOT NULL,
   `collapseByDefault` tinyint(1) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `libraryId` (`libraryId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `library_more_details`
---
-
-LOCK TABLES `library_more_details` WRITE;
-/*!40000 ALTER TABLE `library_more_details` DISABLE KEYS */;
-/*!40000 ALTER TABLE `library_more_details` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `library_records_owned`
@@ -941,17 +1171,8 @@ CREATE TABLE `library_records_owned` (
   `location` varchar(100) NOT NULL,
   `subLocation` varchar(100) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `library_records_owned`
---
-
-LOCK TABLES `library_records_owned` WRITE;
-/*!40000 ALTER TABLE `library_records_owned` DISABLE KEYS */;
-/*!40000 ALTER TABLE `library_records_owned` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `library_records_to_include`
@@ -966,23 +1187,22 @@ CREATE TABLE `library_records_to_include` (
   `indexingProfileId` int(11) NOT NULL,
   `location` varchar(100) NOT NULL,
   `subLocation` varchar(100) NOT NULL,
-  `includeHoldableOnly` tinyint(4) NOT NULL DEFAULT '1',
-  `includeItemsOnOrder` tinyint(1) NOT NULL DEFAULT '0',
-  `includeEContent` tinyint(1) NOT NULL DEFAULT '0',
+  `includeHoldableOnly` tinyint(4) NOT NULL DEFAULT 1,
+  `includeItemsOnOrder` tinyint(1) NOT NULL DEFAULT 0,
+  `includeEContent` tinyint(1) NOT NULL DEFAULT 0,
   `weight` int(11) NOT NULL,
+  `iType` varchar(100) DEFAULT NULL,
+  `audience` varchar(100) DEFAULT NULL,
+  `format` varchar(100) DEFAULT NULL,
+  `marcTagToMatch` varchar(100) DEFAULT NULL,
+  `marcValueToMatch` varchar(100) DEFAULT NULL,
+  `includeExcludeMatches` tinyint(4) DEFAULT 1,
+  `urlToMatch` varchar(100) DEFAULT NULL,
+  `urlReplacement` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `libraryId` (`libraryId`,`indexingProfileId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `library_records_to_include`
---
-
-LOCK TABLES `library_records_to_include` WRITE;
-/*!40000 ALTER TABLE `library_records_to_include` DISABLE KEYS */;
-/*!40000 ALTER TABLE `library_records_to_include` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `library_top_links`
@@ -996,20 +1216,11 @@ CREATE TABLE `library_top_links` (
   `libraryId` int(11) NOT NULL,
   `linkText` varchar(100) NOT NULL,
   `url` varchar(255) NOT NULL,
-  `weight` int(11) NOT NULL DEFAULT '0',
+  `weight` int(11) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
   KEY `libraryId` (`libraryId`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `library_top_links`
---
-
-LOCK TABLES `library_top_links` WRITE;
-/*!40000 ALTER TABLE `library_top_links` DISABLE KEYS */;
-/*!40000 ALTER TABLE `library_top_links` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `list_widget_lists`
@@ -1021,24 +1232,15 @@ DROP TABLE IF EXISTS `list_widget_lists`;
 CREATE TABLE `list_widget_lists` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `listWidgetId` int(11) NOT NULL,
-  `weight` int(11) NOT NULL DEFAULT '0',
+  `weight` int(11) NOT NULL DEFAULT 0,
   `displayFor` enum('all','loggedIn','notLoggedIn') NOT NULL DEFAULT 'all',
   `name` varchar(50) NOT NULL,
   `source` varchar(500) NOT NULL,
   `fullListLink` varchar(500) DEFAULT '',
   PRIMARY KEY (`id`),
   KEY `ListWidgetId` (`listWidgetId`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='The lists that should appear within the widget';
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COMMENT='The lists that should appear within the widget';
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `list_widget_lists`
---
-
-LOCK TABLES `list_widget_lists` WRITE;
-/*!40000 ALTER TABLE `list_widget_lists` DISABLE KEYS */;
-/*!40000 ALTER TABLE `list_widget_lists` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `list_widget_lists_links`
@@ -1052,19 +1254,10 @@ CREATE TABLE `list_widget_lists_links` (
   `listWidgetListsId` int(11) NOT NULL,
   `name` varchar(50) NOT NULL,
   `link` text NOT NULL,
-  `weight` int(3) NOT NULL DEFAULT '0',
+  `weight` int(3) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `list_widget_lists_links`
---
-
-LOCK TABLES `list_widget_lists_links` WRITE;
-/*!40000 ALTER TABLE `list_widget_lists_links` DISABLE KEYS */;
-/*!40000 ALTER TABLE `list_widget_lists_links` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `list_widgets`
@@ -1076,34 +1269,26 @@ DROP TABLE IF EXISTS `list_widgets`;
 CREATE TABLE `list_widgets` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(50) NOT NULL,
-  `description` text,
-  `showTitleDescriptions` tinyint(4) DEFAULT '1',
+  `description` text DEFAULT NULL,
+  `showTitleDescriptions` tinyint(4) DEFAULT 1,
   `onSelectCallback` varchar(255) DEFAULT '',
   `customCss` varchar(500) NOT NULL,
   `listDisplayType` enum('tabs','dropdown') NOT NULL DEFAULT 'tabs',
-  `autoRotate` tinyint(4) NOT NULL DEFAULT '0',
-  `showMultipleTitles` tinyint(4) NOT NULL DEFAULT '1',
-  `libraryId` int(11) NOT NULL DEFAULT '-1',
+  `autoRotate` tinyint(4) NOT NULL DEFAULT 0,
+  `showMultipleTitles` tinyint(4) NOT NULL DEFAULT 1,
+  `libraryId` int(11) NOT NULL DEFAULT -1,
   `style` enum('vertical','horizontal','single','single-with-next','text-list') NOT NULL DEFAULT 'horizontal',
   `coverSize` enum('small','medium') NOT NULL DEFAULT 'small',
-  `showRatings` tinyint(4) NOT NULL DEFAULT '0',
-  `showTitle` tinyint(4) NOT NULL DEFAULT '1',
-  `showAuthor` tinyint(4) NOT NULL DEFAULT '1',
-  `showViewMoreLink` tinyint(4) NOT NULL DEFAULT '0',
+  `showRatings` tinyint(4) NOT NULL DEFAULT 0,
+  `showTitle` tinyint(4) NOT NULL DEFAULT 1,
+  `showAuthor` tinyint(4) NOT NULL DEFAULT 1,
+  `showViewMoreLink` tinyint(4) NOT NULL DEFAULT 0,
   `viewMoreLinkMode` enum('covers','list') NOT NULL DEFAULT 'list',
-  `showListWidgetTitle` tinyint(4) NOT NULL DEFAULT '1',
+  `showListWidgetTitle` tinyint(4) NOT NULL DEFAULT 1,
+  `numTitlesToShow` int(11) NOT NULL DEFAULT 25,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='A widget that can be displayed within Pika or within other sites';
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COMMENT='A widget that can be displayed within Pika or within other sites';
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `list_widgets`
---
-
-LOCK TABLES `list_widgets` WRITE;
-/*!40000 ALTER TABLE `list_widgets` DISABLE KEYS */;
-/*!40000 ALTER TABLE `list_widgets` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `loan_rule_determiners`
@@ -1120,21 +1305,12 @@ CREATE TABLE `loan_rule_determiners` (
   `itemType` varchar(255) NOT NULL DEFAULT '0' COMMENT 'The item types that this rule applies to',
   `ageRange` varchar(10) NOT NULL,
   `loanRuleId` varchar(10) NOT NULL COMMENT 'Close hour (24hr format) HH:MM',
-  `active` tinyint(4) NOT NULL DEFAULT '0',
+  `active` tinyint(4) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
   KEY `rowNumber` (`rowNumber`),
   KEY `active` (`active`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `loan_rule_determiners`
---
-
-LOCK TABLES `loan_rule_determiners` WRITE;
-/*!40000 ALTER TABLE `loan_rule_determiners` DISABLE KEYS */;
-/*!40000 ALTER TABLE `loan_rule_determiners` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `loan_rules`
@@ -1149,24 +1325,15 @@ CREATE TABLE `loan_rules` (
   `name` varchar(50) NOT NULL COMMENT 'The location code the rule applies to',
   `code` char(1) NOT NULL,
   `normalLoanPeriod` int(4) NOT NULL COMMENT 'Number of days the item checks out for',
-  `holdable` tinyint(4) NOT NULL DEFAULT '0',
-  `bookable` tinyint(4) NOT NULL DEFAULT '0',
-  `homePickup` tinyint(4) NOT NULL DEFAULT '0',
-  `shippable` tinyint(4) NOT NULL DEFAULT '0',
+  `holdable` tinyint(4) NOT NULL DEFAULT 0,
+  `bookable` tinyint(4) NOT NULL DEFAULT 0,
+  `homePickup` tinyint(4) NOT NULL DEFAULT 0,
+  `shippable` tinyint(4) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
   KEY `loanRuleId` (`loanRuleId`),
   KEY `holdable` (`holdable`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `loan_rules`
---
-
-LOCK TABLES `loan_rules` WRITE;
-/*!40000 ALTER TABLE `loan_rules` DISABLE KEYS */;
-/*!40000 ALTER TABLE `loan_rules` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `location`
@@ -1180,75 +1347,94 @@ CREATE TABLE `location` (
   `code` varchar(75) DEFAULT NULL,
   `displayName` varchar(60) NOT NULL COMMENT 'The full name of the location for display to the user',
   `libraryId` int(11) NOT NULL COMMENT 'A link to the library which the location belongs to',
-  `validHoldPickupBranch` tinyint(4) NOT NULL DEFAULT '1' COMMENT 'Determines if the location can be used as a pickup location if it is not the patrons home location or the location they are in.',
+  `validHoldPickupBranch` tinyint(4) NOT NULL DEFAULT 1 COMMENT 'Determines if the location can be used as a pickup location if it is not the patrons home location or the location they are in.',
   `nearbyLocation1` int(11) DEFAULT NULL COMMENT 'A secondary location which is nearby and could be used for pickup of materials.',
   `nearbyLocation2` int(11) DEFAULT NULL COMMENT 'A tertiary location which is nearby and could be used for pickup of materials.',
   `holdingBranchLabel` varchar(40) NOT NULL COMMENT 'The label used within the Holdings table in Millenium.',
-  `scope` smallint(6) NOT NULL COMMENT 'The scope for the system in Sierra to refine holdings to the branch.  If there is no scope defined for the branch, this can be set to 0.',
-#   `facetFile` varchar(15) NOT NULL DEFAULT 'default' COMMENT 'The name of the facet file which should be used while searching use default to not override the file',
+  `scope` smallint(6) NOT NULL COMMENT 'The scope for the system in Millennium to refine holdings to the branch.  If there is no scope defined for the branch, this can be set to 0.',
   `showHoldButton` tinyint(4) NOT NULL COMMENT 'Whether or not the hold button is displayed so patrons can place holds on items',
-  `isMainBranch` tinyint(1) DEFAULT '0',
+  `isMainBranch` tinyint(1) DEFAULT 0,
   `showStandardReviews` tinyint(4) NOT NULL COMMENT 'Whether or not reviews from Content Cafe/Syndetics are displayed on the full record page.',
   `repeatSearchOption` enum('none','librarySystem','marmot','all') NOT NULL DEFAULT 'all' COMMENT 'Where to allow repeating search. Valid options are: none, librarySystem, marmot, all',
   `facetLabel` varchar(50) NOT NULL COMMENT 'The Facet value used to identify this system.  If this value is changed, system_map.properties must be updated as well and the catalog must be reindexed.',
   `repeatInProspector` tinyint(4) NOT NULL,
   `repeatInWorldCat` tinyint(4) NOT NULL,
   `systemsToRepeatIn` varchar(255) NOT NULL,
-  `repeatInOverdrive` tinyint(4) NOT NULL DEFAULT '0',
+  `repeatInOverdrive` tinyint(4) NOT NULL DEFAULT 0,
   `homeLink` varchar(255) NOT NULL DEFAULT 'default',
-  `additionalCss` mediumtext,
-  `additionalLocalBoostFactor` int(11) DEFAULT '1',
-  `repeatInOnlineCollection` int(11) DEFAULT '1',
-  `showInLocationsAndHoursList` int(11) DEFAULT '1',
-  `showShareOnExternalSites` int(11) DEFAULT '1',
-  `showTextThis` int(11) DEFAULT '1',
-  `showEmailThis` int(11) DEFAULT '1',
-  `showFavorites` int(11) DEFAULT '1',
-  `showComments` int(11) DEFAULT '1',
-  `showQRCode` int(11) DEFAULT '1',
-  `showGoodReadsReviews` int(11) DEFAULT '1',
-  `showStaffView` int(11) DEFAULT '1',
-  `defaultPType` int(11) NOT NULL DEFAULT '-1',
+  `additionalCss` mediumtext DEFAULT NULL,
+  `additionalLocalBoostFactor` int(11) DEFAULT 1,
+  `repeatInOnlineCollection` int(11) DEFAULT 1,
+  `showInLocationsAndHoursList` int(11) DEFAULT 1,
+  `showShareOnExternalSites` int(11) DEFAULT 1,
+  `showTextThis` int(11) DEFAULT 1,
+  `showEmailThis` int(11) DEFAULT 1,
+  `showFavorites` int(11) DEFAULT 1,
+  `showComments` int(11) DEFAULT 1,
+  `showQRCode` int(11) DEFAULT 1,
+  `showGoodReadsReviews` int(11) DEFAULT 1,
+  `showStaffView` int(11) DEFAULT 1,
+  `defaultPType` int(11) NOT NULL DEFAULT -1,
   `ptypesToAllowRenewals` varchar(128) NOT NULL DEFAULT '*',
-  `recordsToBlackList` mediumtext,
-  `automaticTimeoutLength` int(11) DEFAULT '90',
-  `automaticTimeoutLengthLoggedOut` int(11) DEFAULT '450',
-  `restrictSearchByLocation` tinyint(1) DEFAULT '0',
-  `enableOverdriveCollection` tinyint(1) DEFAULT '1',
-  `suppressHoldings` tinyint(1) DEFAULT '0',
-  `address` mediumtext,
+  `recordsToBlackList` mediumtext DEFAULT NULL,
+  `automaticTimeoutLength` int(11) DEFAULT 90,
+  `automaticTimeoutLengthLoggedOut` int(11) DEFAULT 450,
+  `restrictSearchByLocation` tinyint(1) DEFAULT 0,
+  `enableOverdriveCollection` tinyint(1) DEFAULT 1,
+  `suppressHoldings` tinyint(1) DEFAULT 0,
+  `address` mediumtext DEFAULT NULL,
   `phone` varchar(15) DEFAULT '',
-  `showDisplayNameInHeader` tinyint(4) DEFAULT '0',
-  `headerText` mediumtext,
+  `showDisplayNameInHeader` tinyint(4) DEFAULT 0,
+  `headerText` mediumtext DEFAULT NULL,
   `subLocation` varchar(50) DEFAULT NULL,
   `availabilityToggleLabelSuperScope` varchar(50) DEFAULT 'Entire Collection',
   `availabilityToggleLabelLocal` varchar(50) DEFAULT '{display name}',
   `availabilityToggleLabelAvailable` varchar(50) DEFAULT 'Available Now',
   `defaultBrowseMode` varchar(25) DEFAULT NULL,
   `browseCategoryRatingsMode` varchar(25) DEFAULT NULL,
-  `boostByLocation` tinyint(4) DEFAULT '1',
-  `includeOverDriveAdult` tinyint(1) DEFAULT '1',
-  `includeOverDriveTeen` tinyint(1) DEFAULT '1',
-  `includeOverDriveKids` tinyint(1) DEFAULT '1',
+  `boostByLocation` tinyint(4) DEFAULT 1,
+  `includeOverDriveAdult` tinyint(1) DEFAULT 1,
+  `includeOverDriveTeen` tinyint(1) DEFAULT 1,
+  `includeOverDriveKids` tinyint(1) DEFAULT 1,
   `publicListsToInclude` tinyint(1) DEFAULT NULL,
-  `includeAllLibraryBranchesInFacets` tinyint(4) DEFAULT '1',
+  `includeAllLibraryBranchesInFacets` tinyint(4) DEFAULT 1,
   `additionalLocationsToShowAvailabilityFor` varchar(100) NOT NULL DEFAULT '',
-  `includeAllRecordsInShelvingFacets` tinyint(4) DEFAULT '0',
-  `includeAllRecordsInDateAddedFacets` tinyint(4) DEFAULT '0',
+  `includeAllRecordsInShelvingFacets` tinyint(4) DEFAULT 0,
+  `includeAllRecordsInDateAddedFacets` tinyint(4) DEFAULT 0,
+  `availabilityToggleLabelAvailableOnline` varchar(50) DEFAULT '',
+  `baseAvailabilityToggleOnLocalHoldingsOnly` tinyint(1) DEFAULT 0,
+  `includeOnlineMaterialsInAvailableToggle` tinyint(1) DEFAULT 1,
+  `subdomain` varchar(25) DEFAULT '',
+  `includeLibraryRecordsToInclude` tinyint(1) DEFAULT 0,
+  `useLibraryCombinedResultsSettings` tinyint(1) DEFAULT 1,
+  `enableCombinedResults` tinyint(1) DEFAULT 0,
+  `combinedResultsLabel` varchar(255) DEFAULT 'Combined Results',
+  `defaultToCombinedResults` tinyint(1) DEFAULT 0,
+  `includeOnOrderRecordsInDateAddedFacetValues` tinyint(4) DEFAULT 1,
   PRIMARY KEY (`locationId`),
   UNIQUE KEY `code` (`code`,`subLocation`),
   KEY `ValidHoldPickupBranch` (`validHoldPickupBranch`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='Stores information about the various locations that are part';
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COMMENT='Stores information about the various locations that are part';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `location`
+-- Table structure for table `location_combined_results_section`
 --
 
-LOCK TABLES `location` WRITE;
-/*!40000 ALTER TABLE `location` DISABLE KEYS */;
-/*!40000 ALTER TABLE `location` ENABLE KEYS */;
-UNLOCK TABLES;
+DROP TABLE IF EXISTS `location_combined_results_section`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `location_combined_results_section` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `locationId` int(11) NOT NULL,
+  `displayName` varchar(255) DEFAULT NULL,
+  `source` varchar(45) DEFAULT NULL,
+  `numberOfResultsToShow` int(11) NOT NULL DEFAULT 5,
+  `weight` int(11) NOT NULL DEFAULT 0,
+  PRIMARY KEY (`id`),
+  KEY `LocationIdIndex` (`locationId`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Table structure for table `location_facet_setting`
@@ -1262,30 +1448,40 @@ CREATE TABLE `location_facet_setting` (
   `locationId` int(11) NOT NULL,
   `displayName` varchar(50) NOT NULL,
   `facetName` varchar(50) NOT NULL,
-  `weight` int(11) NOT NULL DEFAULT '0',
-  `numEntriesToShowByDefault` int(11) NOT NULL DEFAULT '5',
-  `showAsDropDown` tinyint(4) NOT NULL DEFAULT '0',
+  `weight` int(11) NOT NULL DEFAULT 0,
+  `numEntriesToShowByDefault` int(11) NOT NULL DEFAULT 5,
+  `showAsDropDown` tinyint(4) NOT NULL DEFAULT 0,
   `sortMode` enum('alphabetically','num_results') NOT NULL DEFAULT 'num_results',
-  `showAboveResults` tinyint(4) NOT NULL DEFAULT '0',
-  `showInResults` tinyint(4) NOT NULL DEFAULT '1',
-  `showInAuthorResults` tinyint(4) NOT NULL DEFAULT '1',
-  `showInAdvancedSearch` tinyint(4) NOT NULL DEFAULT '1',
-  `collapseByDefault` tinyint(4) DEFAULT '0',
-  `useMoreFacetPopup` tinyint(4) DEFAULT '1',
+  `showAboveResults` tinyint(4) NOT NULL DEFAULT 0,
+  `showInResults` tinyint(4) NOT NULL DEFAULT 1,
+  `showInAuthorResults` tinyint(4) NOT NULL DEFAULT 1,
+  `showInAdvancedSearch` tinyint(4) NOT NULL DEFAULT 1,
+  `collapseByDefault` tinyint(4) DEFAULT 0,
+  `useMoreFacetPopup` tinyint(4) DEFAULT 1,
   PRIMARY KEY (`id`),
   UNIQUE KEY `locationFacet` (`locationId`,`facetName`),
   KEY `locationId` (`locationId`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='A widget that can be displayed within VuFind or within other sites';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='A widget that can be displayed within VuFind or within other sites';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `location_facet_setting`
+-- Table structure for table `location_hoopla_setting`
 --
 
-LOCK TABLES `location_facet_setting` WRITE;
-/*!40000 ALTER TABLE `location_facet_setting` DISABLE KEYS */;
-/*!40000 ALTER TABLE `location_facet_setting` ENABLE KEYS */;
-UNLOCK TABLES;
+DROP TABLE IF EXISTS `location_hoopla_setting`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `location_hoopla_setting` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `locationId` int(10) unsigned DEFAULT NULL,
+  `kind` varchar(30) DEFAULT NULL,
+  `maxPrice` decimal(3,2) DEFAULT 0.00,
+  `excludeParentalAdvisory` tinyint(4) DEFAULT 0,
+  `excludeProfanity` tinyint(4) DEFAULT 0,
+  `includeChildrenTitlesOnly` tinyint(4) DEFAULT 0,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Table structure for table `location_hours`
@@ -1298,22 +1494,13 @@ CREATE TABLE `location_hours` (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'The id of hours entry',
   `locationId` int(11) NOT NULL COMMENT 'The location id',
   `day` int(11) NOT NULL COMMENT 'Day of the week 0 to 7 (Sun to Monday)',
-  `closed` tinyint(4) NOT NULL DEFAULT '0' COMMENT 'Whether or not the library is closed on this day',
+  `closed` tinyint(4) NOT NULL DEFAULT 0 COMMENT 'Whether or not the library is closed on this day',
   `open` varchar(10) NOT NULL COMMENT 'Open hour (24hr format) HH:MM',
   `close` varchar(10) NOT NULL COMMENT 'Close hour (24hr format) HH:MM',
   PRIMARY KEY (`id`),
   UNIQUE KEY `locationId` (`locationId`,`day`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `location_hours`
---
-
-LOCK TABLES `location_hours` WRITE;
-/*!40000 ALTER TABLE `location_hours` DISABLE KEYS */;
-/*!40000 ALTER TABLE `location_hours` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `location_more_details`
@@ -1324,23 +1511,14 @@ DROP TABLE IF EXISTS `location_more_details`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `location_more_details` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `locationId` int(11) NOT NULL DEFAULT '-1',
-  `weight` int(11) NOT NULL DEFAULT '0',
+  `locationId` int(11) NOT NULL DEFAULT -1,
+  `weight` int(11) NOT NULL DEFAULT 0,
   `source` varchar(25) NOT NULL,
   `collapseByDefault` tinyint(1) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `locationId` (`locationId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `location_more_details`
---
-
-LOCK TABLES `location_more_details` WRITE;
-/*!40000 ALTER TABLE `location_more_details` DISABLE KEYS */;
-/*!40000 ALTER TABLE `location_more_details` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `location_records_owned`
@@ -1356,17 +1534,8 @@ CREATE TABLE `location_records_owned` (
   `location` varchar(100) NOT NULL,
   `subLocation` varchar(100) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `location_records_owned`
---
-
-LOCK TABLES `location_records_owned` WRITE;
-/*!40000 ALTER TABLE `location_records_owned` DISABLE KEYS */;
-/*!40000 ALTER TABLE `location_records_owned` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `location_records_to_include`
@@ -1381,53 +1550,22 @@ CREATE TABLE `location_records_to_include` (
   `indexingProfileId` int(11) NOT NULL,
   `location` varchar(100) NOT NULL,
   `subLocation` varchar(100) NOT NULL,
-  `includeHoldableOnly` tinyint(4) NOT NULL DEFAULT '1',
-  `includeItemsOnOrder` tinyint(1) NOT NULL DEFAULT '0',
-  `includeEContent` tinyint(1) NOT NULL DEFAULT '0',
+  `includeHoldableOnly` tinyint(4) NOT NULL DEFAULT 1,
+  `includeItemsOnOrder` tinyint(1) NOT NULL DEFAULT 0,
+  `includeEContent` tinyint(1) NOT NULL DEFAULT 0,
   `weight` int(11) NOT NULL,
+  `iType` varchar(100) DEFAULT NULL,
+  `audience` varchar(100) DEFAULT NULL,
+  `format` varchar(100) DEFAULT NULL,
+  `marcTagToMatch` varchar(100) DEFAULT NULL,
+  `marcValueToMatch` varchar(100) DEFAULT NULL,
+  `includeExcludeMatches` tinyint(4) DEFAULT 1,
+  `urlToMatch` varchar(100) DEFAULT NULL,
+  `urlReplacement` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `locationId` (`locationId`,`indexingProfileId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `location_records_to_include`
---
-
-LOCK TABLES `location_records_to_include` WRITE;
-/*!40000 ALTER TABLE `location_records_to_include` DISABLE KEYS */;
-/*!40000 ALTER TABLE `location_records_to_include` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `location_search_source`
---
-
-DROP TABLE IF EXISTS `location_search_source`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `location_search_source` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `locationId` int(11) NOT NULL DEFAULT '-1',
-  `label` varchar(50) NOT NULL,
-  `weight` int(11) NOT NULL DEFAULT '0',
-  `searchWhat` enum('catalog','genealogy','overdrive','worldcat','prospector','title_browse','author_browse','subject_browse','tags') DEFAULT NULL,
-  `defaultFilter` text,
-  `defaultSort` enum('relevance','popularity','newest_to_oldest','oldest_to_newest','author','title','user_rating') DEFAULT NULL,
-  `catalogScoping` enum('unscoped','library','location') DEFAULT 'unscoped',
-  PRIMARY KEY (`id`),
-  KEY `locationId` (`locationId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `location_search_source`
---
-
-LOCK TABLES `location_search_source` WRITE;
-/*!40000 ALTER TABLE `location_search_source` DISABLE KEYS */;
-/*!40000 ALTER TABLE `location_search_source` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `marriage`
@@ -1442,19 +1580,10 @@ CREATE TABLE `marriage` (
   `spouseName` varchar(200) DEFAULT NULL COMMENT 'The name of the other person in the marriage if they aren''t in the database',
   `spouseId` int(11) DEFAULT NULL COMMENT 'A link to the second person in the marriage if the person is in the database',
   `marriageDate` date DEFAULT NULL COMMENT 'The date of the marriage if known.',
-  `comments` mediumtext,
+  `comments` mediumtext DEFAULT NULL,
   PRIMARY KEY (`marriageId`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='Information about a marriage between two people';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Information about a marriage between two people';
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `marriage`
---
-
-LOCK TABLES `marriage` WRITE;
-/*!40000 ALTER TABLE `marriage` DISABLE KEYS */;
-/*!40000 ALTER TABLE `marriage` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `materials_request`
@@ -1465,9 +1594,11 @@ DROP TABLE IF EXISTS `materials_request`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `materials_request` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
+  `libraryId` int(10) unsigned DEFAULT NULL,
   `title` varchar(255) DEFAULT NULL,
   `author` varchar(255) DEFAULT NULL,
   `format` varchar(25) DEFAULT NULL,
+  `formatId` int(10) unsigned DEFAULT NULL,
   `ageLevel` varchar(25) DEFAULT NULL,
   `isbn` varchar(15) DEFAULT NULL,
   `oclcNumber` varchar(30) DEFAULT NULL,
@@ -1475,14 +1606,14 @@ CREATE TABLE `materials_request` (
   `publicationYear` varchar(4) DEFAULT NULL,
   `articleInfo` varchar(255) DEFAULT NULL,
   `abridged` tinyint(4) DEFAULT NULL,
-  `about` text,
-  `comments` text,
+  `about` text DEFAULT NULL,
+  `comments` text DEFAULT NULL,
   `status` int(11) DEFAULT NULL,
   `dateCreated` int(11) DEFAULT NULL,
   `createdBy` int(11) DEFAULT NULL,
   `dateUpdated` int(11) DEFAULT NULL,
-  `emailSent` tinyint(4) NOT NULL DEFAULT '0',
-  `holdsCreated` tinyint(4) NOT NULL DEFAULT '0',
+  `emailSent` tinyint(4) NOT NULL DEFAULT 0,
+  `holdsCreated` tinyint(4) NOT NULL DEFAULT 0,
   `email` varchar(80) DEFAULT NULL,
   `phone` varchar(15) DEFAULT NULL,
   `season` varchar(80) DEFAULT NULL,
@@ -1497,8 +1628,9 @@ CREATE TABLE `materials_request` (
   `placeHoldWhenAvailable` tinyint(4) DEFAULT NULL,
   `holdPickupLocation` varchar(10) DEFAULT NULL,
   `bookmobileStop` varchar(50) DEFAULT NULL,
-  `illItem` varchar(80) DEFAULT NULL,
+  `illItem` tinyint(4) DEFAULT NULL,
   `magazineNumber` varchar(80) DEFAULT NULL,
+  `assignedTo` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `status` (`status`),
   KEY `status_2` (`status`),
@@ -1513,13 +1645,63 @@ CREATE TABLE `materials_request` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `materials_request`
+-- Table structure for table `materials_request_fields_to_display`
 --
 
-LOCK TABLES `materials_request` WRITE;
-/*!40000 ALTER TABLE `materials_request` DISABLE KEYS */;
-/*!40000 ALTER TABLE `materials_request` ENABLE KEYS */;
-UNLOCK TABLES;
+DROP TABLE IF EXISTS `materials_request_fields_to_display`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `materials_request_fields_to_display` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `libraryId` int(11) NOT NULL,
+  `columnNameToDisplay` varchar(30) NOT NULL,
+  `labelForColumnToDisplay` varchar(45) NOT NULL,
+  `weight` smallint(2) unsigned NOT NULL DEFAULT 0,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `columnNameToDisplay` (`columnNameToDisplay`,`libraryId`),
+  KEY `libraryId` (`libraryId`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `materials_request_form_fields`
+--
+
+DROP TABLE IF EXISTS `materials_request_form_fields`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `materials_request_form_fields` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `libraryId` int(10) unsigned NOT NULL,
+  `formCategory` varchar(55) NOT NULL,
+  `fieldLabel` varchar(255) NOT NULL,
+  `fieldType` varchar(30) DEFAULT NULL,
+  `weight` smallint(2) unsigned NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `id_UNIQUE` (`id`),
+  KEY `libraryId` (`libraryId`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `materials_request_formats`
+--
+
+DROP TABLE IF EXISTS `materials_request_formats`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `materials_request_formats` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `libraryId` int(10) unsigned NOT NULL,
+  `format` varchar(30) NOT NULL,
+  `formatLabel` varchar(60) NOT NULL,
+  `authorLabel` varchar(45) NOT NULL,
+  `weight` smallint(2) unsigned NOT NULL DEFAULT 0,
+  `specialFields` set('Abridged/Unabridged','Article Field','Eaudio format','Ebook format','Season') DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `libraryId` (`libraryId`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Table structure for table `materials_request_status`
@@ -1531,12 +1713,12 @@ DROP TABLE IF EXISTS `materials_request_status`;
 CREATE TABLE `materials_request_status` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `description` varchar(80) DEFAULT NULL,
-  `isDefault` tinyint(4) DEFAULT '0',
+  `isDefault` tinyint(4) DEFAULT 0,
   `sendEmailToPatron` tinyint(4) DEFAULT NULL,
-  `emailTemplate` text,
+  `emailTemplate` text DEFAULT NULL,
   `isOpen` tinyint(4) DEFAULT NULL,
   `isPatronCancel` tinyint(4) DEFAULT NULL,
-  `libraryId` int(11) DEFAULT '-1',
+  `libraryId` int(11) DEFAULT -1,
   PRIMARY KEY (`id`),
   KEY `isDefault` (`isDefault`),
   KEY `isOpen` (`isOpen`),
@@ -1545,7 +1727,7 @@ CREATE TABLE `materials_request_status` (
   KEY `isOpen_2` (`isOpen`),
   KEY `isPatronCancel_2` (`isPatronCancel`),
   KEY `libraryId` (`libraryId`)
-) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1559,24 +1741,8 @@ INSERT INTO `materials_request_status` VALUES (1,'Request Pending',1,0,'',1,0,-1
 UNLOCK TABLES;
 
 --
--- Table structure for table `merged_grouped_works`
+-- Table structure for table `nongrouped_records`
 --
-
-DROP TABLE IF EXISTS `grouped_work_merges`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `grouped_work_merges` (
-   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-   `sourceGroupedWorkId` char(36) NOT NULL,
-   `destinationGroupedWorkId` char(36) NOT NULL,
-   `notes` varchar(250) DEFAULT NULL,
-   `userId` int(10) unsigned DEFAULT NULL,
-   `updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-   PRIMARY KEY (`id`),
-   UNIQUE KEY `sourceGroupedWorkId` (`sourceGroupedWorkId`,`destinationGroupedWorkId`)
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
 
 DROP TABLE IF EXISTS `nongrouped_records`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -1587,7 +1753,7 @@ CREATE TABLE `nongrouped_records` (
   `recordId` varchar(36) NOT NULL,
   `notes` varchar(255) NOT NULL,
   `userId` int(10) unsigned DEFAULT NULL,
-  `updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `updated` timestamp /* mariadb-5.3 */ NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   PRIMARY KEY (`id`),
   UNIQUE KEY `source` (`source`,`recordId`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
@@ -1602,7 +1768,7 @@ DROP TABLE IF EXISTS `novelist_data`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `novelist_data` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `groupedRecordPermanentId` varchar(36) DEFAULT NULL,
+  `groupedWorkPermanentId` varchar(36) DEFAULT NULL,
   `lastUpdate` int(11) DEFAULT NULL,
   `hasNovelistData` tinyint(1) DEFAULT NULL,
   `groupedRecordHasISBN` tinyint(1) DEFAULT NULL,
@@ -1611,18 +1777,9 @@ CREATE TABLE `novelist_data` (
   `seriesNote` varchar(255) DEFAULT NULL,
   `volume` varchar(32) DEFAULT NULL,
   PRIMARY KEY (`id`),
-  KEY `groupedRecordPermanentId` (`groupedRecordPermanentId`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+  KEY `groupedRecordPermanentId` (`groupedWorkPermanentId`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `novelist_data`
---
-
-LOCK TABLES `novelist_data` WRITE;
-/*!40000 ALTER TABLE `novelist_data` DISABLE KEYS */;
-/*!40000 ALTER TABLE `novelist_data` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `obituary`
@@ -1637,20 +1794,11 @@ CREATE TABLE `obituary` (
   `source` varchar(255) DEFAULT NULL,
   `date` date DEFAULT NULL,
   `sourcePage` varchar(25) DEFAULT NULL,
-  `contents` mediumtext,
+  `contents` mediumtext DEFAULT NULL,
   `picture` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`obituaryId`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='Information about an obituary for a person';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Information about an obituary for a person';
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `obituary`
---
-
-LOCK TABLES `obituary` WRITE;
-/*!40000 ALTER TABLE `obituary` DISABLE KEYS */;
-/*!40000 ALTER TABLE `obituary` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `offline_circulation`
@@ -1682,17 +1830,8 @@ CREATE TABLE `offline_circulation` (
   KEY `initials` (`initials`),
   KEY `type` (`type`),
   KEY `status` (`status`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `offline_circulation`
---
-
-LOCK TABLES `offline_circulation` WRITE;
-/*!40000 ALTER TABLE `offline_circulation` DISABLE KEYS */;
-/*!40000 ALTER TABLE `offline_circulation` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `offline_hold`
@@ -1719,17 +1858,8 @@ CREATE TABLE `offline_hold` (
   KEY `patronId` (`patronId`),
   KEY `bibId` (`bibId`),
   KEY `status` (`status`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `offline_hold`
---
-
-LOCK TABLES `offline_hold` WRITE;
-/*!40000 ALTER TABLE `offline_hold` DISABLE KEYS */;
-/*!40000 ALTER TABLE `offline_hold` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `person`
@@ -1748,11 +1878,11 @@ CREATE TABLE `person` (
   `nickName` varchar(100) DEFAULT NULL,
   `birthDate` date DEFAULT NULL,
   `deathDate` date DEFAULT NULL,
-  `ageAtDeath` text,
+  `ageAtDeath` text DEFAULT NULL,
   `cemeteryName` varchar(255) DEFAULT NULL,
   `cemeteryLocation` varchar(255) DEFAULT NULL,
   `mortuaryName` varchar(255) DEFAULT NULL,
-  `comments` mediumtext,
+  `comments` mediumtext DEFAULT NULL,
   `picture` varchar(255) DEFAULT NULL,
   `ledgerVolume` varchar(20) DEFAULT '',
   `ledgerYear` varchar(20) DEFAULT '',
@@ -1763,17 +1893,25 @@ CREATE TABLE `person` (
   `causeOfDeath` varchar(255) DEFAULT '',
   `cemeteryAvenue` varchar(255) DEFAULT '',
   PRIMARY KEY (`personId`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='Stores information about a particular person for use in genealogy';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Stores information about a particular person for use in genealogy';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `person`
+-- Table structure for table `pin_reset`
 --
 
-LOCK TABLES `person` WRITE;
-/*!40000 ALTER TABLE `person` DISABLE KEYS */;
-/*!40000 ALTER TABLE `person` ENABLE KEYS */;
-UNLOCK TABLES;
+DROP TABLE IF EXISTS `pin_reset`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `pin_reset` (
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `userId` varchar(255) DEFAULT NULL,
+  `selector` char(16) DEFAULT NULL,
+  `token` char(64) DEFAULT NULL,
+  `expires` bigint(20) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Table structure for table `ptype`
@@ -1784,21 +1922,31 @@ DROP TABLE IF EXISTS `ptype`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `ptype` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `pType` int(11) NOT NULL,
-  `maxHolds` int(11) NOT NULL DEFAULT '300',
+  `pType` varchar(20) NOT NULL,
+  `maxHolds` int(11) NOT NULL DEFAULT 300,
+  `masquerade` varchar(45) NOT NULL DEFAULT 'none',
+  `label` varchar(60) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `pType` (`pType`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `ptype`
+-- Table structure for table `record_grouping_log`
 --
 
-LOCK TABLES `ptype` WRITE;
-/*!40000 ALTER TABLE `ptype` DISABLE KEYS */;
-/*!40000 ALTER TABLE `ptype` ENABLE KEYS */;
-UNLOCK TABLES;
+DROP TABLE IF EXISTS `record_grouping_log`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `record_grouping_log` (
+  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'The id of log',
+  `startTime` int(11) NOT NULL COMMENT 'The timestamp when the run started',
+  `endTime` int(11) DEFAULT NULL COMMENT 'The timestamp when the run ended',
+  `lastUpdate` int(11) DEFAULT NULL COMMENT 'The timestamp when the run last updated (to check for stuck processes)',
+  `notes` text DEFAULT NULL COMMENT 'Additional information about the run includes stats per source',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Table structure for table `reindex_log`
@@ -1811,22 +1959,13 @@ CREATE TABLE `reindex_log` (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'The id of reindex log',
   `startTime` int(11) NOT NULL COMMENT 'The timestamp when the reindex started',
   `endTime` int(11) DEFAULT NULL COMMENT 'The timestamp when the reindex process ended',
-  `notes` text COMMENT 'Notes related to the overall process',
+  `notes` text DEFAULT NULL COMMENT 'Notes related to the overall process',
   `lastUpdate` int(11) DEFAULT NULL COMMENT 'The last time the log was updated',
-  `numWorksProcessed` int(11) NOT NULL DEFAULT '0',
-  `numListsProcessed` int(11) NOT NULL DEFAULT '0',
+  `numWorksProcessed` int(11) NOT NULL DEFAULT 0,
+  `numListsProcessed` int(11) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `reindex_log`
---
-
-LOCK TABLES `reindex_log` WRITE;
-/*!40000 ALTER TABLE `reindex_log` DISABLE KEYS */;
-/*!40000 ALTER TABLE `reindex_log` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `roles`
@@ -1840,7 +1979,7 @@ CREATE TABLE `roles` (
   `name` varchar(50) NOT NULL COMMENT 'The internal name of the role',
   `description` varchar(100) NOT NULL COMMENT 'A description of what the role allows',
   PRIMARY KEY (`roleId`)
-) ENGINE=MyISAM AUTO_INCREMENT=20 DEFAULT CHARSET=utf8 COMMENT='A role identifying what the user can do.';
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COMMENT='A role identifying what the user can do.';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1849,7 +1988,7 @@ CREATE TABLE `roles` (
 
 LOCK TABLES `roles` WRITE;
 /*!40000 ALTER TABLE `roles` DISABLE KEYS */;
-INSERT INTO `roles` VALUES (1,'userAdmin','Allows administration of users.'),(2,'opacAdmin','Allows administration of the opac display (libraries, locations, etc).'),(3,'genealogyContributor','Allows Genealogy data to be entered  by the user.'),(5,'cataloging','Allows user to perform cataloging activities.'),(6,'libraryAdmin','Allows user to update library configuration for their library system only for their home location.'),(7,'contentEditor','Allows entering of librarian reviews and creation of widgets.'),(8,'library_material_requests','Allows user to manage material requests for a specific library.'),(9,'locationReports','Allows the user to view reports for their location.'),(10,'libraryManager','Allows user to do basic configuration for their library.'),(11,'locationManager','Allows user to do basic configuration for their location.'),(12,'circulationReports','Allows user to view offline circulation reports.'),(13,'listPublisher','Optionally only include lists from people with this role in search results.'),(14,'archives','Control overall archives integration.'),(15,'libraryManager','Allows user to do basic configuration for their library.'),(16,'locationManager','Allows user to do basic configuration for their location.'),(17,'circulationReports','Allows user to view offline circulation reports.'),(18,'listPublisher','Optionally only include lists from people with this role in search results.'),(19,'archives','Control overall archives integration.');
+INSERT INTO `roles` VALUES (1,'userAdmin','Allows administration of users.'),(2,'opacAdmin','Allows administration of the opac display (libraries, locations, etc).'),(3,'genealogyContributor','Allows Genealogy data to be entered  by the user.'),(5,'cataloging','Allows user to perform cataloging activities.'),(6,'libraryAdmin','Allows user to update library configuration for their library system only for their home location.'),(7,'contentEditor','Allows entering of librarian reviews and creation of widgets.'),(8,'library_material_requests','Allows user to manage material requests for a specific library.'),(9,'locationReports','Allows the user to view reports for their location.'),(10,'libraryManager','Allows user to do basic configuration for their library.'),(11,'locationManager','Allows user to do basic configuration for their location.'),(12,'circulationReports','Allows user to view offline circulation reports.'),(13,'listPublisher','Optionally only include lists from people with this role in search results.'),(14,'archives','Control overall archives integration.');
 /*!40000 ALTER TABLE `roles` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1862,28 +2001,40 @@ DROP TABLE IF EXISTS `search`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `search` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `user_id` int(11) NOT NULL DEFAULT '0',
+  `user_id` int(11) NOT NULL DEFAULT 0,
   `session_id` varchar(128) DEFAULT NULL,
   `folder_id` int(11) DEFAULT NULL,
   `created` date NOT NULL DEFAULT '0000-00-00',
   `title` varchar(20) DEFAULT NULL,
-  `saved` int(1) NOT NULL DEFAULT '0',
-  `search_object` blob,
+  `saved` int(1) NOT NULL DEFAULT 0,
+  `search_object` blob DEFAULT NULL,
+  `searchSource` varchar(30) NOT NULL DEFAULT 'local',
   PRIMARY KEY (`id`),
   KEY `user_id` (`user_id`),
   KEY `folder_id` (`folder_id`),
   KEY `session_id` (`session_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `search`
+-- Table structure for table `search_stats_new`
 --
 
-LOCK TABLES `search` WRITE;
-/*!40000 ALTER TABLE `search` DISABLE KEYS */;
-/*!40000 ALTER TABLE `search` ENABLE KEYS */;
-UNLOCK TABLES;
+DROP TABLE IF EXISTS `search_stats_new`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `search_stats_new` (
+  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'The unique id of the search statistic',
+  `phrase` varchar(500) NOT NULL COMMENT 'The phrase being searched for',
+  `lastSearch` int(16) NOT NULL COMMENT 'The last time this search was done',
+  `numSearches` int(16) NOT NULL COMMENT 'The number of times this search has been done.',
+  PRIMARY KEY (`id`),
+  KEY `numSearches` (`numSearches`),
+  KEY `lastSearch` (`lastSearch`),
+  KEY `phrase` (`phrase`(333)),
+  FULLTEXT KEY `phrase_text` (`phrase`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COMMENT='Statistical information about searches for use in reporting ';
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Table structure for table `session`
@@ -1895,24 +2046,60 @@ DROP TABLE IF EXISTS `session`;
 CREATE TABLE `session` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `session_id` varchar(128) DEFAULT NULL,
-  `data` mediumtext,
-  `last_used` int(12) NOT NULL DEFAULT '0',
-  `created` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
-  `remember_me` tinyint(4) NOT NULL DEFAULT '0' COMMENT 'Whether or not the session was started with remember me on.',
+  `data` mediumtext DEFAULT NULL,
+  `last_used` int(12) NOT NULL DEFAULT 0,
+  `created` datetime /* mariadb-5.3 */ NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `remember_me` tinyint(4) NOT NULL DEFAULT 0 COMMENT 'Whether or not the session was started with remember me on.',
   PRIMARY KEY (`id`),
   UNIQUE KEY `session_id` (`session_id`),
   KEY `last_used` (`last_used`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `session`
+-- Table structure for table `sierra_api_export_log`
 --
 
-LOCK TABLES `session` WRITE;
-/*!40000 ALTER TABLE `session` DISABLE KEYS */;
-/*!40000 ALTER TABLE `session` ENABLE KEYS */;
-UNLOCK TABLES;
+DROP TABLE IF EXISTS `sierra_api_export_log`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `sierra_api_export_log` (
+  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'The id of log',
+  `startTime` int(11) NOT NULL COMMENT 'The timestamp when the run started',
+  `endTime` int(11) DEFAULT NULL COMMENT 'The timestamp when the run ended',
+  `lastUpdate` int(11) DEFAULT NULL COMMENT 'The timestamp when the run last updated (to check for stuck processes)',
+  `notes` text DEFAULT NULL COMMENT 'Additional information about the run',
+  `numRecordsToProcess` int(11) DEFAULT NULL,
+  `numRecordsProcessed` int(11) DEFAULT NULL,
+  `numErrors` int(11) DEFAULT NULL,
+  `numRemainingRecords` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `sierra_export_field_mapping`
+--
+
+DROP TABLE IF EXISTS `sierra_export_field_mapping`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `sierra_export_field_mapping` (
+  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'The id of field mapping',
+  `indexingProfileId` int(11) NOT NULL COMMENT 'The indexing profile this field mapping is associated with',
+  `bcode3DestinationField` char(3) NOT NULL COMMENT 'The field to place bcode3 into',
+  `bcode3DestinationSubfield` char(1) DEFAULT NULL COMMENT 'The subfield to place bcode3 into',
+  `callNumberExportFieldTag` char(1) DEFAULT NULL,
+  `callNumberPrestampExportSubfield` char(1) DEFAULT NULL,
+  `callNumberExportSubfield` char(1) DEFAULT NULL,
+  `callNumberCutterExportSubfield` char(1) DEFAULT NULL,
+  `callNumberPoststampExportSubfield` char(5) DEFAULT NULL,
+  `volumeExportFieldTag` char(1) DEFAULT NULL,
+  `urlExportFieldTag` char(1) DEFAULT NULL,
+  `eContentExportFieldTag` char(1) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Table structure for table `spelling_words`
@@ -1927,8 +2114,9 @@ CREATE TABLE `spelling_words` (
   `soundex` varchar(20) DEFAULT NULL,
   PRIMARY KEY (`word`),
   KEY `Soundex` (`soundex`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='Stores information about words that may be used as search su';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Stores information about words that may be used as search su';
 /*!40101 SET character_set_client = @saved_cs_client */;
+
 
 --
 -- Dumping data for table `spelling_words`
@@ -1942,9 +2130,22 @@ INSERT INTO `spelling_words` VALUES ('canopies',35,'C512'),('canopy',35,'C510'),
 UNLOCK TABLES;
 
 --
--- Table structure for table `subject`
+-- Table structure for table `tags`
 --
 
+DROP TABLE IF EXISTS `tags`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `tags` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `tag` varchar(25) NOT NULL DEFAULT '',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `time_to_reshelve`
+--
 
 DROP TABLE IF EXISTS `time_to_reshelve`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -1959,17 +2160,8 @@ CREATE TABLE `time_to_reshelve` (
   `weight` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `indexingProfileId` (`indexingProfileId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `time_to_reshelve`
---
-
-LOCK TABLES `time_to_reshelve` WRITE;
-/*!40000 ALTER TABLE `time_to_reshelve` DISABLE KEYS */;
-/*!40000 ALTER TABLE `time_to_reshelve` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `translation_map_values`
@@ -1985,17 +2177,8 @@ CREATE TABLE `translation_map_values` (
   `translation` varchar(255) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `translationMapId` (`translationMapId`,`value`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `translation_map_values`
---
-
-LOCK TABLES `translation_map_values` WRITE;
-/*!40000 ALTER TABLE `translation_map_values` DISABLE KEYS */;
-/*!40000 ALTER TABLE `translation_map_values` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `translation_maps`
@@ -2008,20 +2191,11 @@ CREATE TABLE `translation_maps` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `indexingProfileId` int(11) NOT NULL,
   `name` varchar(50) NOT NULL,
-  `usesRegularExpressions` tinyint(1) DEFAULT '0',
+  `usesRegularExpressions` tinyint(1) DEFAULT 0,
   PRIMARY KEY (`id`),
   UNIQUE KEY `profileName` (`indexingProfileId`,`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `translation_maps`
---
-
-LOCK TABLES `translation_maps` WRITE;
-/*!40000 ALTER TABLE `translation_maps` DISABLE KEYS */;
-/*!40000 ALTER TABLE `translation_maps` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `user`
@@ -2032,73 +2206,35 @@ DROP TABLE IF EXISTS `user`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `user` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `username` varchar(30) NOT NULL DEFAULT '',
-  `password` varchar(32) NOT NULL DEFAULT '',
+  `source` varchar(50) DEFAULT 'ils',
+  `ilsUserId` varchar(30) DEFAULT NULL,
+  `displayName` varchar(30) NOT NULL DEFAULT '',
   `firstname` varchar(50) NOT NULL DEFAULT '',
   `lastname` varchar(50) NOT NULL DEFAULT '',
   `email` varchar(250) NOT NULL DEFAULT '',
   `cat_username` varchar(50) DEFAULT NULL,
   `cat_password` varchar(50) DEFAULT NULL,
-  `college` varchar(100) NOT NULL DEFAULT '',
-  `major` varchar(100) NOT NULL DEFAULT '',
-  `created` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
-  `homeLocationId` int(11) NOT NULL COMMENT 'A link to the locations table for the users home location (branch) defined in the ils',
+  `created` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `homeLibraryId` int(11) DEFAULT NULL,
+  `homeLocationId` int(11) NOT NULL COMMENT 'A link to the locations table for the users home location (branch) defined in millennium',
   `myLocation1Id` int(11) NOT NULL COMMENT 'A link to the locations table representing an alternate branch the users frequents or that is close by',
   `myLocation2Id` int(11) NOT NULL COMMENT 'A link to the locations table representing an alternate branch the users frequents or that is close by',
-  `trackReadingHistory` tinyint(4) NOT NULL DEFAULT '0' COMMENT 'Whether or not Reading History should be tracked within VuFind.',
-  `bypassAutoLogout` tinyint(4) NOT NULL DEFAULT '0' COMMENT 'Whether or not the user wants to bypass the automatic logout code on public workstations.',
-  `displayName` varchar(30) NOT NULL DEFAULT '',
-  `disableCoverArt` tinyint(4) NOT NULL DEFAULT '0',
-  `disableRecommendations` tinyint(4) NOT NULL DEFAULT '0',
+  `trackReadingHistory` tinyint(4) NOT NULL DEFAULT 0 COMMENT 'Whether or not Reading History should be tracked within VuFind.',
+  `bypassAutoLogout` tinyint(4) NOT NULL DEFAULT 0 COMMENT 'Whether or not the user wants to bypass the automatic logout code on public workstations.',
+  `disableCoverArt` tinyint(4) NOT NULL DEFAULT 0,
+  `disableRecommendations` tinyint(4) NOT NULL DEFAULT 0,
   `phone` varchar(30) NOT NULL DEFAULT '',
   `patronType` varchar(30) NOT NULL DEFAULT '',
-  `overDriveEmail` varchar(250) NOT NULL DEFAULT '',
-  `promptForOverDriveEmail` tinyint(4) DEFAULT '1',
+  `overDriveEmail` varchar(250) DEFAULT NULL,
+  `promptForOverDriveEmail` tinyint(1) unsigned DEFAULT 1,
+  `promptForOverDriveLendingPeriods` tinyint(1) unsigned NOT NULL DEFAULT 1,
   `preferredLibraryInterface` int(11) DEFAULT NULL,
-  `initialReadingHistoryLoaded` tinyint(4) DEFAULT '0',
-  `noPromptForUserReviews` tinyint(1) DEFAULT '0',
-  `source` varchar(50) DEFAULT 'ils',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `username` (`source`,`username`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+  `initialReadingHistoryLoaded` tinyint(4) DEFAULT 0,
+  `noPromptForUserReviews` tinyint(1) DEFAULT 0,
+  `hooplaCheckOutConfirmation` tinyint(1) unsigned NOT NULL DEFAULT 1,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `user`
---
-
-LOCK TABLES `user` WRITE;
-/*!40000 ALTER TABLE `user` DISABLE KEYS */;
-INSERT INTO `user` VALUES (1,'pika','pika','','','','','','','','0000-00-00 00:00:00',0,0,0,0,0,'',0,0,'','','',1,NULL,0,0,'ils');
-/*!40000 ALTER TABLE `user` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `user_epub_history`
---
-
-DROP TABLE IF EXISTS `user_epub_history`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `user_epub_history` (
-  `userHistoryId` int(11) NOT NULL AUTO_INCREMENT,
-  `userId` int(11) NOT NULL COMMENT 'The id of the user who checked out the item',
-  `resourceId` int(11) NOT NULL COMMENT 'The record id of the item that was checked out',
-  `openDate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The date the record was opened',
-  `action` varchar(30) NOT NULL DEFAULT 'Read Online',
-  `accessType` tinyint(4) NOT NULL DEFAULT '0',
-  PRIMARY KEY (`userHistoryId`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='The epub reading history for patrons';
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `user_epub_history`
---
-
-LOCK TABLES `user_epub_history` WRITE;
-/*!40000 ALTER TABLE `user_epub_history` DISABLE KEYS */;
-/*!40000 ALTER TABLE `user_epub_history` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `user_link`
@@ -2109,21 +2245,12 @@ DROP TABLE IF EXISTS `user_link`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `user_link` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `primaryAccountId` int(11) DEFAULT NULL,
-  `linkedAccountId` int(11) DEFAULT NULL,
+  `primaryAccountId` int(11) NOT NULL,
+  `linkedAccountId` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `user_link` (`primaryAccountId`,`linkedAccountId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `user_link`
---
-
-LOCK TABLES `user_link` WRITE;
-/*!40000 ALTER TABLE `user_link` DISABLE KEYS */;
-/*!40000 ALTER TABLE `user_link` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `user_link_blocks`
@@ -2142,15 +2269,6 @@ CREATE TABLE `user_link_blocks` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `user_link_blocks`
---
-
-LOCK TABLES `user_link_blocks` WRITE;
-/*!40000 ALTER TABLE `user_link_blocks` DISABLE KEYS */;
-/*!40000 ALTER TABLE `user_link_blocks` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `user_list`
 --
 
@@ -2161,25 +2279,16 @@ CREATE TABLE `user_list` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `user_id` int(11) NOT NULL,
   `title` varchar(200) NOT NULL,
-  `description` mediumtext,
-  `public` int(11) NOT NULL DEFAULT '0',
+  `description` mediumtext DEFAULT NULL,
+  `public` int(11) NOT NULL DEFAULT 0,
   `dateUpdated` int(11) DEFAULT NULL,
-  `deleted` tinyint(1) DEFAULT '0',
+  `deleted` tinyint(1) DEFAULT 0,
   `created` int(11) DEFAULT NULL,
   `defaultSort` varchar(20) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `user_id` (`user_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `user_list`
---
-
-LOCK TABLES `user_list` WRITE;
-/*!40000 ALTER TABLE `user_list` DISABLE KEYS */;
-/*!40000 ALTER TABLE `user_list` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `user_list_entry`
@@ -2192,23 +2301,14 @@ CREATE TABLE `user_list_entry` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `groupedWorkPermanentId` varchar(36) DEFAULT NULL,
   `listId` int(11) DEFAULT NULL,
-  `notes` mediumtext,
+  `notes` mediumtext DEFAULT NULL,
   `dateAdded` int(11) DEFAULT NULL,
   `weight` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `groupedWorkPermanentId` (`groupedWorkPermanentId`),
   KEY `listId` (`listId`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `user_list_entry`
---
-
-LOCK TABLES `user_list_entry` WRITE;
-/*!40000 ALTER TABLE `user_list_entry` DISABLE KEYS */;
-/*!40000 ALTER TABLE `user_list_entry` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `user_not_interested`
@@ -2221,20 +2321,11 @@ CREATE TABLE `user_not_interested` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `userId` int(11) NOT NULL,
   `dateMarked` int(11) DEFAULT NULL,
-  `groupedRecordPermanentId` varchar(36) DEFAULT NULL,
+  `groupedWorkPermanentId` varchar(36) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `userId` (`userId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `user_not_interested`
---
-
-LOCK TABLES `user_not_interested` WRITE;
-/*!40000 ALTER TABLE `user_not_interested` DISABLE KEYS */;
-/*!40000 ALTER TABLE `user_not_interested` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `user_reading_history_work`
@@ -2254,23 +2345,15 @@ CREATE TABLE `user_reading_history_work` (
   `format` varchar(50) DEFAULT NULL COMMENT 'The format of the item in case this is ever deleted',
   `checkOutDate` int(11) NOT NULL COMMENT 'The first day we detected that the item was checked out to the patron',
   `checkInDate` int(11) DEFAULT NULL COMMENT 'The last day we detected that the item was checked out to the patron.',
-  `deleted` tinyint(4) NOT NULL DEFAULT '0',
+  `deleted` tinyint(4) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
   KEY `userId` (`userId`,`checkOutDate`),
   KEY `userId_2` (`userId`,`checkInDate`),
   KEY `userId_3` (`userId`,`title`),
-  KEY `userId_4` (`userId`,`author`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='The reading history for patrons';
+  KEY `userId_4` (`userId`,`author`),
+  KEY `sourceId` (`sourceId`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COMMENT='The reading history for patrons';
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `user_reading_history_work`
---
-
-LOCK TABLES `user_reading_history_work` WRITE;
-/*!40000 ALTER TABLE `user_reading_history_work` DISABLE KEYS */;
-/*!40000 ALTER TABLE `user_reading_history_work` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `user_roles`
@@ -2283,18 +2366,26 @@ CREATE TABLE `user_roles` (
   `userId` int(11) NOT NULL,
   `roleId` int(11) NOT NULL,
   PRIMARY KEY (`userId`,`roleId`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='Links users with roles so users can perform administration f';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Links users with roles so users can perform administration f';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `user_roles`
+-- Table structure for table `user_staff_settings`
 --
 
-LOCK TABLES `user_roles` WRITE;
-/*!40000 ALTER TABLE `user_roles` DISABLE KEYS */;
-INSERT INTO `user_roles` VALUES (1,1),(1,2);
-/*!40000 ALTER TABLE `user_roles` ENABLE KEYS */;
-UNLOCK TABLES;
+DROP TABLE IF EXISTS `user_staff_settings`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `user_staff_settings` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `userId` int(10) unsigned NOT NULL,
+  `materialsRequestReplyToAddress` varchar(70) DEFAULT NULL,
+  `materialsRequestEmailSignature` tinytext DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `userId_UNIQUE` (`userId`),
+  KEY `userId` (`userId`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Table structure for table `user_tags`
@@ -2305,24 +2396,15 @@ DROP TABLE IF EXISTS `user_tags`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `user_tags` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `groupedRecordPermanentId` varchar(36) DEFAULT NULL,
+  `groupedWorkPermanentId` varchar(36) DEFAULT NULL,
   `userId` int(11) DEFAULT NULL,
   `tag` varchar(50) DEFAULT NULL,
   `dateTagged` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
-  KEY `groupedRecordPermanentId` (`groupedRecordPermanentId`),
+  KEY `groupedRecordPermanentId` (`groupedWorkPermanentId`),
   KEY `userId` (`userId`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `user_tags`
---
-
-LOCK TABLES `user_tags` WRITE;
-/*!40000 ALTER TABLE `user_tags` DISABLE KEYS */;
-/*!40000 ALTER TABLE `user_tags` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `user_work_review`
@@ -2333,25 +2415,16 @@ DROP TABLE IF EXISTS `user_work_review`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `user_work_review` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `groupedRecordPermanentId` varchar(36) DEFAULT NULL,
+  `groupedWorkPermanentId` varchar(36) DEFAULT NULL,
   `userId` int(11) DEFAULT NULL,
   `rating` tinyint(1) DEFAULT NULL,
-  `review` mediumtext,
+  `review` mediumtext DEFAULT NULL,
   `dateRated` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
-  KEY `groupedRecordPermanentId` (`groupedRecordPermanentId`),
+  KEY `groupedRecordPermanentId` (`groupedWorkPermanentId`),
   KEY `userId` (`userId`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `user_work_review`
---
-
-LOCK TABLES `user_work_review` WRITE;
-/*!40000 ALTER TABLE `user_work_review` DISABLE KEYS */;
-/*!40000 ALTER TABLE `user_work_review` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `variables`
@@ -2367,17 +2440,8 @@ CREATE TABLE `variables` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `name_2` (`name`),
   KEY `name` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `variables`
---
-
-LOCK TABLES `variables` WRITE;
-/*!40000 ALTER TABLE `variables` DISABLE KEYS */;
-/*!40000 ALTER TABLE `variables` ENABLE KEYS */;
-UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -2388,4 +2452,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2016-06-30 11:13:27
+-- Dump completed on 2021-02-02 13:41:40
