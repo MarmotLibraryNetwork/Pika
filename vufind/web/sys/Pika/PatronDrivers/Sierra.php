@@ -2829,9 +2829,11 @@ EOT;
 	protected function _oAuthToken(){
 		global $offlineMode;
 		if (!$offlineMode){
+			global $instanceName;
+			$oauthTokenMemCacheKey = $instanceName . 'sierra_oauth_token';
 			if (!isset($_REQUEST['reload'])){
 				// check memcache for valid token and set $this
-				if ($token = $this->cache->get("sierra_oauth_token")){
+				if ($token = $this->cache->get($oauthTokenMemCacheKey)){
 					$this->oAuthToken = $token;
 					return true;
 				}
@@ -2890,7 +2892,7 @@ EOT;
 			$expires = $c->response->expires_in;
 			$c->close();
 			$this->oAuthToken = $token;
-			$this->cache->set("sierra_oauth_token", $token, $expires);
+			$this->cache->set($oauthTokenMemCacheKey, $token, $expires);
 			$this->logger->info('Got new oAuth token.');
 			return true;
 		}
