@@ -1554,17 +1554,19 @@ class DBMaintenance extends Admin_Admin {
 
 	function setStaffPtypes(){
 		global $configArray;
-		foreach ($configArray['Staff P-Types'] as $pTypeNumber => $label){
-			$pType        = new PType();
-			$pType->pType = $pTypeNumber;
-			if ($pType->find(true)){
-				$pType->isStaffPType = true;
-				$pType->label        = $label;
-				$pType->update();
-			}else{
-				$pType->isStaffPType = true;
-				$pType->label        = $label;
-				$pType->insert();
+		if (!empty($configArray['Staff P-Types'])){
+			foreach ($configArray['Staff P-Types'] as $pTypeNumber => $label){
+				$pType        = new PType();
+				$pType->pType = $pTypeNumber;
+				if ($pType->find(true)){
+					$pType->isStaffPType = true;
+					$pType->label        = $label;
+					$pType->update();
+				}else{
+					$pType->isStaffPType = true;
+					$pType->label        = $label;
+					$pType->insert();
+				}
 			}
 		}
 	}
