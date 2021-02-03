@@ -39,14 +39,14 @@
 							<thead>
 								<tr>
 									{foreach from=$dataRow item=dataCell name=dataCol}
-										{if in_array($smarty.foreach.dataCol.index, array('0', '1', '3', '5', '6', '11', '13')) }
-											<th class="filter-select">{$dataCell}</th>
-										{else}
+
 											<th>{$dataCell}</th>
-										{/if}
+
 									{/foreach}
 								</tr>
+
 							</thead>
+
 						{else}
 							{if $smarty.foreach.studentData.index == 1}
 								<tbody>
@@ -67,10 +67,32 @@
 				{literal}
 				$(document).ready(function(){
 					$('.table').DataTable({
-						"order": [[0, "asc"]],
-						pageLength: 100
+
+						columnDefs: [{orderable: false, targets: [0,1,3,5,6,11,13]}],
+						pageLength: 100,
+						initComplete: function(){
+
+							this.api().columns([0,1,3,5,6,11,13]).every( function(){
+
+								var column = this;
+
+								var select= $('<select><option value =""></option></select>')
+												.appendTo($(column.header()))
+												.on('change', function(){
+													var val =$.fn.dataTable.util.escapeRegex(
+																	$(this).val()
+													);
+													column
+													  .search( val ? '^'+val+'$' : '', true, false)
+													.draw();
+												});
+								column.data().unique().sort().each(function (d,j) {
+									select.append('<option value"' +d+'">'+d+'</option>')
+								});
+							});
+						}
 					});
-				})
+				});
 
 				{/literal}
 			</script>
