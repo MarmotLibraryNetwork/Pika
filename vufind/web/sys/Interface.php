@@ -295,7 +295,11 @@ class UInterface extends Smarty {
 		//Set System Message
 		$systemMessage = [];
 		if (!empty($configArray['System']['systemMessage'])){
-			$systemMessage[] = $configArray['System']['systemMessage'];
+			if (is_array($configArray['System']['systemMessage'])){
+				$systemMessage = $configArray['System']['systemMessage'];
+			} else{
+				$systemMessage[] = $configArray['System']['systemMessage'];
+			}
 			// Note Maintenance Mode depends on this
 		}
 		if ($offlineMode){
