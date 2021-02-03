@@ -22,7 +22,7 @@ require_once ROOT_DIR . '/Drivers/marmot_inc/LoanRule.php';
 
 class LoanRules extends ObjectEditor {
 	function launch(){
-		$objectAction = isset($_REQUEST['objectAction']) ? $_REQUEST['objectAction'] : null;
+		$objectAction = $_REQUEST['objectAction'] ?? null;
 		if ($objectAction == 'reloadFromCsv'){
 			$this->display('../Admin/importLoanRuleData.tpl', 'Reload Loan Rules');
 			die;
@@ -30,22 +30,24 @@ class LoanRules extends ObjectEditor {
 			$loanRuleData = $_REQUEST['loanRuleData'];
 			//Truncate the current data
 			$loanRule = new LoanRule();
-			$loanRule->query("TRUNCATE table " . $loanRule->__table);
+			$loanRule->query('TRUNCATE table ' . $loanRule->__table);
 
 			//Parse the new data
 			$data = preg_split('/\\r\\n|\\r|\\n/', $loanRuleData);
 			foreach ($data as $dataRow){
-				$dataFields                    = preg_split('/\\t/', $dataRow);
-				$loanRuleNew                   = new LoanRule();
-				$loanRuleNew->loanRuleId       = $dataFields[0];
-				$loanRuleNew->name             = trim($dataFields[1]);
-				$loanRuleNew->code             = trim($dataFields[2]);
-				$loanRuleNew->normalLoanPeriod = trim($dataFields[3]);
-				$loanRuleNew->holdable         = strcasecmp(trim($dataFields[4]), 'y') == 0;
-				$loanRuleNew->bookable         = strcasecmp(trim($dataFields[5]), 'y') == 0;
-				$loanRuleNew->homePickup       = strcasecmp(trim($dataFields[6]), 'y') == 0;
-				$loanRuleNew->shippable        = strcasecmp(trim($dataFields[7]), 'y') == 0;
-				$loanRuleNew->insert();
+				if (!empty($dataRow)){
+					$dataFields                    = preg_split('/\\t/', $dataRow);
+					$loanRuleNew                   = new LoanRule();
+					$loanRuleNew->loanRuleId       = $dataFields[0];
+					$loanRuleNew->name             = trim($dataFields[1]);
+					$loanRuleNew->code             = trim($dataFields[2]);
+					$loanRuleNew->normalLoanPeriod = trim($dataFields[3]);
+					$loanRuleNew->holdable         = strcasecmp(trim($dataFields[4]), 'y') == 0;
+					$loanRuleNew->bookable         = strcasecmp(trim($dataFields[5]), 'y') == 0;
+					$loanRuleNew->homePickup       = strcasecmp(trim($dataFields[6]), 'y') == 0;
+					$loanRuleNew->shippable        = strcasecmp(trim($dataFields[7]), 'y') == 0;
+					$loanRuleNew->insert();
+				}
 			}
 
 			//Show the results
