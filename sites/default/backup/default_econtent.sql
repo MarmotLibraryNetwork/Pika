@@ -119,7 +119,7 @@ CREATE TABLE `overdrive_api_product_formats` (
   `sampleUrl_2` varchar(215) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `productId_2` (`productId`,`textId`),
-  KEY `productId` (`productId`),
+  KEY `productId` (`productId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 

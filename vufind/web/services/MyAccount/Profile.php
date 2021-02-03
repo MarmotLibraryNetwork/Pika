@@ -67,6 +67,7 @@ class MyAccount_Profile extends MyAccount
 				$allowPinReset                        = false;
 				$showAlternateLibraryOptionsInProfile = true;
 				$allowAccountLinking                  = true;
+				$showPatronBarcodeImage               = false;
 			} else {
 				$canUpdateContactInfo                 = ($patronHomeLibrary->allowProfileUpdates == 1);
 				$canUpdateAddress                     = ($patronHomeLibrary->allowPatronAddressUpdates == 1);

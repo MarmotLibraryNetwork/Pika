@@ -22,10 +22,11 @@ class BadWord extends DB_DataObject {
 	public $__table = 'bad_words';    // table name
 	public $id;                      //int(11)
 	public $word;                    //varchar(50)
-	public $replacement;             //varchar(50)
+//	public $replacement;             //varchar(50)
+//TODO: remove replacement column. it isn't used.
 
 	function keys(){
-		return array('id', 'word');
+		return ['id', 'word'];
 	}
 
 	function getBadWordExpressions(){

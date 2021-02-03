@@ -113,7 +113,6 @@ class UInterface extends Smarty {
 			$this->assign('encodedRepositoryUrl', str_replace('/', '\/', $configArray['Islandora']['repositoryUrl']));
 		}
 
-		$this->assign('siteTitle', $configArray['Site']['title']);
 		if (isset($configArray['Site']['libraryName'])){
 			$this->assign('consortiumName', $configArray['Site']['libraryName']);
 		}

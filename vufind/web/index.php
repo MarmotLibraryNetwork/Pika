@@ -360,7 +360,7 @@ function checkMaintenanceMode(){
 		}else{
 			// Display Unavailable page and quit
 			global $library;
-			$libraryName = !empty($library->displayName) ? $library->displayName : $configArray['Site']['title'];
+			$libraryName = !empty($library->displayName) ? $library->displayName : $configArray['Site']['libraryName'];
 			$interface->assign('libraryName', $libraryName);
 			if ($configArray['MaintenanceMode']['maintenanceMessage']){
 				$interface->assign('maintenanceMessage', $configArray['MaintenanceMode']['maintenanceMessage']);

@@ -22,7 +22,7 @@ require_once ROOT_DIR . '/Drivers/marmot_inc/LoanRuleDeterminer.php';
 
 class LoanRuleDeterminers extends ObjectEditor {
 	function launch(){
-		$objectAction = isset($_REQUEST['objectAction']) ? $_REQUEST['objectAction'] : null;
+		$objectAction = $_REQUEST['objectAction'] ?? null;
 		if ($objectAction == 'reloadFromCsv'){
 			$this->display('../Admin/importLoanRuleDeterminerData.tpl', 'Reload Loan Rule Determiners');
 			die;
@@ -30,21 +30,23 @@ class LoanRuleDeterminers extends ObjectEditor {
 			$loanRuleDeterminerData = $_REQUEST['loanRuleDeterminerData'];
 			//Truncate the current data
 			$loanRuleDeterminer = new LoanRuleDeterminer();
-			$loanRuleDeterminer->query("TRUNCATE table " . $loanRuleDeterminer->__table);
+			$loanRuleDeterminer->query('TRUNCATE table ' . $loanRuleDeterminer->__table);
 
 			//Parse the new data
 			$data = preg_split('/\\r\\n|\\r|\\n/', $loanRuleDeterminerData);
 			foreach ($data as $dataRow){
-				$dataFields                        = preg_split('/\\t/', $dataRow);
-				$loanRuleDeterminerNew             = new LoanRuleDeterminer();
-				$loanRuleDeterminerNew->rowNumber  = trim($dataFields[0]);
-				$loanRuleDeterminerNew->location   = trim($dataFields[1]);
-				$loanRuleDeterminerNew->patronType = trim($dataFields[2]);
-				$loanRuleDeterminerNew->itemType   = trim($dataFields[3]);
-				$loanRuleDeterminerNew->ageRange   = trim($dataFields[4]);
-				$loanRuleDeterminerNew->loanRuleId = trim($dataFields[5]);
-				$loanRuleDeterminerNew->active     = strcasecmp(trim($dataFields[6]), 'y') == 0;
-				$loanRuleDeterminerNew->insert();
+				if (!empty($dataRow)){
+					$dataFields                        = preg_split('/\\t/', $dataRow);
+					$loanRuleDeterminerNew             = new LoanRuleDeterminer();
+					$loanRuleDeterminerNew->rowNumber  = trim($dataFields[0]);
+					$loanRuleDeterminerNew->location   = trim($dataFields[1]);
+					$loanRuleDeterminerNew->patronType = trim($dataFields[2]);
+					$loanRuleDeterminerNew->itemType   = trim($dataFields[3]);
+					$loanRuleDeterminerNew->ageRange   = trim($dataFields[4]);
+					$loanRuleDeterminerNew->loanRuleId = trim($dataFields[5]);
+					$loanRuleDeterminerNew->active     = strcasecmp(trim($dataFields[6]), 'y') == 0;
+					$loanRuleDeterminerNew->insert();
+				}
 			}
 
 			//Show the results
@@ -82,15 +84,15 @@ class LoanRuleDeterminers extends ObjectEditor {
 	}
 
 	function getAllowableRoles(){
-		return array('opacAdmin');
+		return ['opacAdmin'];
 	}
 
 	function customListActions(){
-		$actions   = array();
-		$actions[] = array(
+		$actions   = [];
+		$actions[] = [
 			'label'  => 'Reload From CSV',
 			'action' => 'reloadFromCsv',
-		);
+		];
 		return $actions;
 	}
 
