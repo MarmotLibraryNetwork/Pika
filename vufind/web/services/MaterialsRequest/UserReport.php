@@ -107,7 +107,7 @@ class MaterialsRequest_UserReport extends Admin_Admin {
 
 		//Check to see if we are exporting to Excel
 		if (isset($_REQUEST['exportToExcel'])){
-			$libraryName = !empty($userHomeLibrary->displayName) ? $userHomeLibrary->displayName : $configArray['Site']['title'];
+			$libraryName = !empty($userHomeLibrary->displayName) ? $userHomeLibrary->displayName : $configArray['Site']['libraryName'];
 			$this->exportToExcel($userData, $statuses, $libraryName);
 		}
 

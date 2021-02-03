@@ -160,7 +160,7 @@ class MaterialsRequest_SummaryReport extends Admin_Admin {
 		//Check to see if we are exporting to Excel
 		if (isset($_REQUEST['exportToExcel'])){
 			global $configArray;
-			$libraryName = !empty($userHomeLibrary->displayName) ? $userHomeLibrary->displayName : $configArray['Site']['title'];
+			$libraryName = !empty($userHomeLibrary->displayName) ? $userHomeLibrary->displayName : $configArray['Site']['libraryName'];
 			$this->exportToExcel($periodData, $statuses, $libraryName);
 		}else{
 			//Generate the graph
