@@ -225,7 +225,42 @@
 
 {if isset($dataList) && is_array($dataList) && count($dataList) > 5}
 
+	{if $objectType == "TranslationMap"}
+		<script type="text/javascript">
+			{literal}
+			$(document).ready(function(){
+				$('.table').DataTable({
 
+					columnDefs: [{orderable: false, targets: [1,2,3,4,5]}],
+					pageLength: 100,
+					initComplete: function(){
+
+						this.api().columns([1,2,3,4]).every( function(){
+
+							var column = this;
+
+							var select= $('<select><option value =""></option></select>')
+											.appendTo($(column.header()))
+											.on('change', function(){
+												var val =$.fn.dataTable.util.escapeRegex(
+																$(this).val()
+												);
+												column
+																.search( val ? '^'+val+'$' : '', true, false)
+																.draw();
+											});
+							column.data().unique().sort().each(function (d,j) {
+								select.append('<option value"' +d+'">'+d+'</option>')
+							});
+						});
+					}
+				});
+			});
+
+			{/literal}
+		</script>
+
+	{else}
 	<script type="text/javascript">
 		{literal}
 		$(document).ready(function(){
@@ -237,4 +272,5 @@
 
 		{/literal}
 	</script>
+		{/if}
 {/if}
