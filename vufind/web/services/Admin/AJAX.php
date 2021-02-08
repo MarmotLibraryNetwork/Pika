@@ -201,34 +201,33 @@ class Admin_AJAX extends AJAXHandler {
         }
         return $results;
     }
-    function libraryClonePrompt()
-    {
-        $results = array(
-            'title' => 'Clone Library',
-            'body' => 'No Data available',
-        );
-        $user = UserAccount::getLoggedInUser();
-        if(UserAccount::userHasRoleFromList(['opacAdmin'])){
-            $command = trim($_REQUEST['command']);
-            $library = new Library();
-            $libraryId = $user->getHomeLibrary()->libraryId;
-            if($library->get($libraryId))
-            {
-                $allLibraries = $this->getLibraryList($libraryId);
-                $options = " ";
 
-                foreach($allLibraries as $findKey =>$findLibrary)
-                {
-                    $options .= "<option value='" . $findKey . "'>" . $findLibrary->displayName . "</option>";
-                }
-                $results['body'] = "<label for='displayName'>Display Name:</label> <input type='text' class='form-control required' id='displayName' name='displayName'/><label for='subdomain'>Subdomain:</label> <input type='text' class='form-control required' id='subdomain' name='subdomain' /><label for='abName'>Abbreviated Name:</label> <input type='text' class='form-control' id='abName' name='abName' /><label for='facetLabelInput'>Library System Facet Label:</label> <input type='text' class='form-control' id='facetLabelInput' name='facetLabelInput' /><label for='fromId'>Clone From</label> <select id= 'fromId' name='fromId' class='form-control required'>" . $options . "</select>";
-                $results['buttons'] = "<button class='btn btn-primary' type= 'button' title='Copy' onclick='return Pika.Admin." . $command ."(document.querySelector(\"#fromId\").value, document.querySelector(\"#displayName\").value, document.querySelector(\"#subdomain\").value, document.querySelector(\"#abName\").value, document.querySelector(\"#facetLabelInput\").value );'>Clone</button>";
+	function libraryClonePrompt(){
+		$results = [
+			'title' => 'Clone Library',
+			'body'  => 'No Data available',
+		];
+		/** @var User $user */
+		$user = UserAccount::getLoggedInUser();
+		if (UserAccount::userHasRoleFromList(['opacAdmin'])){
+			$command   = trim($_REQUEST['command']);
+			$library   = $user->getHomeLibrary();
+			if ($library){
+				$allLibraries = $this->getLibraryList($library->libraryId);
+				$options      = " ";
 
-            }
-        }
-        return $results;
-    }
-    /**
+				foreach ($allLibraries as $findKey => $findLibrary){
+					$options .= "<option value='" . $findKey . "'>" . $findLibrary->displayName . "</option>";
+				}
+				$results['body']    = "<label for='displayName'>Display Name:</label> <input type='text' class='form-control required' id='displayName' name='displayName'/><label for='subdomain'>Subdomain:</label> <input type='text' class='form-control required' id='subdomain' name='subdomain' /><label for='abName'>Abbreviated Name:</label> <input type='text' class='form-control' id='abName' name='abName' /><label for='facetLabelInput'>Library System Facet Label:</label> <input type='text' class='form-control' id='facetLabelInput' name='facetLabelInput' /><label for='fromId'>Clone From</label> <select id= 'fromId' name='fromId' class='form-control required'>" . $options . "</select>";
+				$results['buttons'] = "<button class='btn btn-primary' type= 'button' title='Copy' onclick='return Pika.Admin." . $command . "(document.querySelector(\"#fromId\").value, document.querySelector(\"#displayName\").value, document.querySelector(\"#subdomain\").value, document.querySelector(\"#abName\").value, document.querySelector(\"#facetLabelInput\").value );'>Clone</button>";
+
+			}
+		}
+		return $results;
+	}
+
+	/**
      * Displays list of library locations to the user in order to select the location to copy from
      * @return string[] select box with buttons to choose copy location
      */
