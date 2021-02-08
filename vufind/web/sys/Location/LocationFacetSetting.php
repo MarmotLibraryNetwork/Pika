@@ -19,11 +19,13 @@ class LocationFacetSetting extends FacetSetting {
 	public $__table = 'location_facet_setting';    // table name
 	public $locationId;
 
-	static function getObjectStructure($availableFacets = NULL){
-		$location = new Location();
+	static function getObjectStructure($availableFacets = null){
+		$locationList = [];
+		$user         = UserAccount::getLoggedInUser();
+		$location     = new Location();
 		$location->orderBy('displayName');
 		if (UserAccount::userHasRoleFromList(['libraryAdmin', 'libraryManager'])){
-			$homeLibrary = UserAccount::getUserHomeLibrary();
+			$homeLibrary         = UserAccount::getUserHomeLibrary();
 			$location->libraryId = $homeLibrary->libraryId;
 		}
 		$location->find();
@@ -31,8 +33,14 @@ class LocationFacetSetting extends FacetSetting {
 			$locationList[$location->locationId] = $location->displayName;
 		}
 
-		$structure = parent::getObjectStructure();
-		$structure['locationId'] = array('property'=>'locationId', 'type'=>'enum', 'values'=>$locationList, 'label'=>'Location', 'description'=>'The id of a location');
+		$structure               = parent::getObjectStructure();
+		$structure['locationId'] = [
+			'property'    => 'locationId',
+			'type'        => 'enum',
+			'values'      => $locationList,
+			'label'       => 'Location',
+			'description' => 'The id of a location'
+		];
 
 		return $structure;
 	}

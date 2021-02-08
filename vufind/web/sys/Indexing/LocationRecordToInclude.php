@@ -26,16 +26,18 @@
  * Time: 10:31 AM
  */
 require_once ROOT_DIR . '/sys/Indexing/RecordToInclude.php';
-class LocationRecordToInclude extends RecordToInclude{
+
+class LocationRecordToInclude extends RecordToInclude {
 	public $__table = 'location_records_to_include';    // table name
 	public $locationId;
 
 	static function getObjectStructure(){
-		$location = new Location();
+		$locationList = [];
+		$user         = UserAccount::getLoggedInUser();
+		$location     = new Location();
 		$location->orderBy('displayName');
-		$user = UserAccount::getLoggedInUser();
 		if (UserAccount::userHasRole('libraryAdmin')){
-			$homeLibrary = UserAccount::getUserHomeLibrary();
+			$homeLibrary         = UserAccount::getUserHomeLibrary();
 			$location->libraryId = $homeLibrary->libraryId;
 		}
 		$location->find();
@@ -43,8 +45,14 @@ class LocationRecordToInclude extends RecordToInclude{
 			$locationList[$location->locationId] = $location->displayName;
 		}
 
-		$structure = parent::getObjectStructure();
-		$structure['locationId'] = array('property'=>'locationId', 'type'=>'enum', 'values'=>$locationList, 'label'=>'Location', 'description'=>'The id of a location');
+		$structure               = parent::getObjectStructure();
+		$structure['locationId'] = [
+			'property'    => 'locationId',
+			'type'        => 'enum',
+			'values'      => $locationList,
+			'label'       => 'Location',
+			'description' => 'The id of a location'
+		];
 
 		return $structure;
 	}

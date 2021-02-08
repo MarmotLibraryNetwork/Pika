@@ -21,15 +21,18 @@
  */
 
 require_once ROOT_DIR . '/sys/Search/CombinedResultSection.php';
-class LocationCombinedResultSection extends CombinedResultSection{
+
+class LocationCombinedResultSection extends CombinedResultSection {
 	public $__table = 'location_combined_results_section';    // table name
 	public $locationId;
 
 	static function getObjectStructure(){
+		$locationList = [];
+		$user         = UserAccount::getLoggedInUser();
 		$location = new Location();
 		$location->orderBy('displayName');
 		if (UserAccount::userHasRoleFromList(['libraryAdmin', 'libraryManager'])){
-			$homeLibrary = UserAccount::getUserHomeLibrary();
+			$homeLibrary         = UserAccount::getUserHomeLibrary();
 			$location->libraryId = $homeLibrary->libraryId;
 		}
 		$location->find();
@@ -37,8 +40,14 @@ class LocationCombinedResultSection extends CombinedResultSection{
 			$locationList[$location->locationId] = $location->displayName;
 		}
 
-		$structure = parent::getObjectStructure();
-		$structure['locationId'] = array('property'=>'locationId', 'type'=>'enum', 'values'=>$locationList, 'label'=>'Location', 'description'=>'The id of a location');
+		$structure               = parent::getObjectStructure();
+		$structure['locationId'] = [
+			'property'    => 'locationId',
+			'type'        => 'enum',
+			'values'      => $locationList,
+			'label'       => 'Location',
+			'description' => 'The id of a location'
+		];
 
 		return $structure;
 	}
