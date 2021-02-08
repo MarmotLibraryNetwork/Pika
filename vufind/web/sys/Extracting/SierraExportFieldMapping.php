@@ -29,8 +29,6 @@ class SierraExportFieldMapping extends DB_DataObject {
 	public $__table = 'sierra_export_field_mapping';    // table name
 	public $id;
 	public $indexingProfileId;
-//	public $bcode3DestinationField; //TODO: remove these obsolete columns from the table
-//	public $bcode3DestinationSubfield; //TODO: remove these obsolete columns from the table
 	public $callNumberExportFieldTag;
 	public $callNumberPrestampExportSubfield;
 	public $callNumberExportSubfield;
