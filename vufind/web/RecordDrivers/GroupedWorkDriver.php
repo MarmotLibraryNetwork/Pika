@@ -1705,7 +1705,11 @@ class GroupedWorkDriver extends RecordInterface {
 					$manifestationIsAvailable = true;
 				}elseif ($manifestation['available']){
 					foreach ($manifestation['itemSummary'] as $itemSummary){
-						if (strlen($itemSummary['shelfLocation']) && substr_compare($itemSummary['shelfLocation'], $selectedDetailedAvailability, 0)){
+//						if (strlen($itemSummary['shelfLocation']) && substr_compare($itemSummary['shelfLocation'], $selectedDetailedAvailability, 0)){
+						// I can not figure out the reason to use substr_compare() here;
+						// it returns 0 when two strings are equal, and we want that situation to trigger $manifestationIsAvailable
+						// TODO: determine what valid near matches, partial matches should be included.
+						if (strlen($itemSummary['shelfLocation']) && strcasecmp($itemSummary['shelfLocation'], $selectedDetailedAvailability) == 0){
 							if ($itemSummary['available']){
 								$manifestationIsAvailable = true;
 								break;
