@@ -608,7 +608,12 @@ public class RecordGrouperMain {
 			}
 
 			//Determine if we want to validateChecksumsFromDisk
-			validateChecksumsFromDisk = systemVariables.getBooleanValuedVariable("validateChecksumsFromDisk");
+			final Boolean aBoolean = systemVariables.getBooleanValuedVariable("validateChecksumsFromDisk");
+			if (aBoolean == null) {
+				systemVariables.setVariable("validateChecksumsFromDisk", validateChecksumsFromDisk);
+			} else {
+				validateChecksumsFromDisk = aBoolean;
+			}
 
 			ArrayList<IndexingProfile> indexingProfiles = loadIndexingProfiles(pikaConn, indexingProfileToRun);
 
