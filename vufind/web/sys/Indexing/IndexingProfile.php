@@ -363,8 +363,9 @@ class IndexingProfile extends DB_DataObject{
 		if ($configArray['Catalog']['ils'] == 'Sierra'){
 			$sierraMappingStructure = SierraExportFieldMapping::getObjectStructure();
 			unset($sierraMappingStructure['indexingProfileId']);
-			$structure['sierraFieldMappings'] = array(
+			$structure['sierraFieldMappings'] = [
 				'property'      => 'sierraFieldMappings',
+				'helpLink'      => 'https://docs.google.com/document/d/1keYVtc0QXugyQhHnjGTmJSetfPZJdR4jHxw27AncZ4I/',
 				'type'          => 'oneToMany',
 				'label'         => 'Sierra API Item Field Mappings (Sierra Systems only)',
 				'description'   => 'For mapping Item tags from the Sierra API to the equivalent values in the indexing profile (and Sierra\'s export profile).',
@@ -376,8 +377,8 @@ class IndexingProfile extends DB_DataObject{
 				'storeDb'       => true,
 				'allowEdit'     => true,
 				'canEdit'       => false,
-				'hideInLists' => true,
-			);
+				'hideInLists'   => true,
+			];
 		}
 		return $structure;
 	}
