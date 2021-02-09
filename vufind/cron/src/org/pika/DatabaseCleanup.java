@@ -155,7 +155,7 @@ public class DatabaseCleanup implements IProcessHandler {
 			long numDeletions = 0;
 			//Loop through libraries
 			while (librariesListRS.next()) {
-				//Get the number of days to preserve from the variables table
+				//Get the number of days to preserve from the library table
 				Long libraryId = librariesListRS.getLong("libraryId");
 				Long daysToPreserve = librariesListRS.getLong("materialsRequestDaysToPreserve");
 

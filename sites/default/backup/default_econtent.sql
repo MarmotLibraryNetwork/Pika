@@ -315,10 +315,12 @@ CREATE TABLE `overdrive_api_products` (
   `lastMetadataChange` int(11) DEFAULT NULL,
   `lastAvailabilityCheck` int(11) DEFAULT NULL,
   `lastAvailabilityChange` int(11) DEFAULT NULL,
-  `deleted` tinyint(1) DEFAULT '0',
+  `deleted` tinyint(1) DEFAULT 0,
   `dateDeleted` int(11) DEFAULT NULL,
-  `rawData` mediumtext,
+  `rawData` mediumtext DEFAULT NULL,
   `subtitle` varchar(255) DEFAULT NULL,
+  `needsUpdate` tinyint(1) DEFAULT 0,
+  `crossRefId` int(11) DEFAULT 0,
   PRIMARY KEY (`id`),
   UNIQUE KEY `overdriveId` (`overdriveId`),
   KEY `dateUpdated` (`dateUpdated`),
@@ -357,6 +359,7 @@ CREATE TABLE `overdrive_extract_log` (
   `numSkipped` int(11) DEFAULT '0',
   `numAvailabilityChanges` int(11) DEFAULT '0',
   `numMetadataChanges` int(11) DEFAULT '0',
+  `numTitlesProcessed` INT UNSIGNED NULL DEFAULT NULL,
   `notes` text,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
