@@ -149,8 +149,8 @@ class WorkAPI extends AJAXHandler {
 	}
 
 	public function getBasicWorkInfo() {
-		$recordId = $_REQUEST['id'];
-		$recordDriver = new MarcRecord($recordId);
+		$sourceAndId = $_REQUEST['id'];
+		$recordDriver = new MarcRecord($sourceAndId);
 		$work = [];
 		if ($recordDriver->isValid()) {
 			$work['coverUrl']      = $recordDriver->getBookcoverUrl('medium');

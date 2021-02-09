@@ -78,6 +78,7 @@ class MarcRecord extends IndexRecord
 				//TODO: set indexing profile
 				/** @var File_MARC_Data_Field $idField */
 				global $configArray;
+				//TODO: reference to $configArray['Reindex']['recordNumberTag'] should be considered deprecated now.
 				$idField = $this->marcRecord->getField($configArray['Reindex']['recordNumberTag']); //todo: use indexing profile
 				if ($idField){
 					$this->id = $idField->getSubfield('a')->getData();//todo: use indexing profile
