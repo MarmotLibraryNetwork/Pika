@@ -840,7 +840,7 @@ CREATE TABLE `library` (
   `showWikipediaContent` tinyint(1) DEFAULT 1,
   `payFinesLink` varchar(512) DEFAULT 'default',
   `payFinesLinkText` varchar(512) DEFAULT 'Click to Pay Fines Online',
-  `eContentSupportAddress` varchar(256) DEFAULT 'askmarmot@marmot.org',
+  `eContentSupportAddress` varchar(256) DEFAULT 'pika@marmot.org',
   `ilsCode` varchar(75) DEFAULT NULL,
   `systemMessage` text DEFAULT NULL,
   `restrictSearchByLibrary` tinyint(1) DEFAULT 0,

@@ -232,6 +232,7 @@ CREATE TABLE `overdrive_api_product_metadata` (
   `rawData` mediumtext,
   `thumbnail` varchar(255) DEFAULT NULL,
   `cover` varchar(255) DEFAULT NULL,
+  `isOwnedByCollections` tinyint(1) DEFAULT 1,
   PRIMARY KEY (`id`),
   UNIQUE KEY `productId` (`productId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
