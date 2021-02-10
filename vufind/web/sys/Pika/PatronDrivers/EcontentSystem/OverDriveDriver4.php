@@ -15,6 +15,7 @@
 
 namespace Pika\PatronDrivers\eContentSystem;
 
+use Pika\BibliographicDrivers\OverDrive\OverDriveAPIProduct;
 use Pika\Cache;
 use Pika\Logger;
 use Curl\Curl;
@@ -27,6 +28,7 @@ class OverDriveDriver4 {
 	private array $requirePin;
 	private array $ILSName;
 	private array $websiteId;
+	private array $productsKey;
 
 	const FORMAT_MAP = [
 		'audiobook-mp3'       => 'OverDrive MP3 Audiobook',  // download option
@@ -250,6 +252,46 @@ class OverDriveDriver4 {
 			}
 		}
 		return $this->websiteId[$user->id];
+	}
+
+	/**
+	 * Fetch the OverDrive Collection Id/Products Key associated with the User.
+	 * Prefer the Advantage account product key if available
+	 *
+	 * @param User $user
+	 * @return false|string
+	 */
+	private function getProductsKey(User $user){
+		if (!isset($this->productsKey[$user->id])){
+			$memCacheKey      = $this->cache->makePatronKey('overdrive_patron_productKey', $user->id);
+			$cachedProductKey = $this->cache->get($memCacheKey);
+			if (!empty($cachedProductKey) && !isset($_REQUEST['reload'])){
+				$this->productsKey[$user->id] = $cachedProductKey;
+			}else{
+				global $configArray;
+				$homeLibrary = $user->getHomeLibrary();
+				if (!empty($homeLibrary->overdriveAdvantageProductsKey)){
+					$this->productsKey[$user->id] = $homeLibrary->overdriveAdvantageProductsKey;
+				}else{
+					$patronProductsKeySetting = $configArray['OverDrive']['productsKey'];
+					if (empty($patronProductsKeySetting)){
+						$this->logger->error("No config.ini setting found for OverDrive productsKey");
+						return false;
+					}elseif (strpos($patronProductsKeySetting, ',') > 0){
+						$productKeys                 = explode(',', $patronProductsKeySetting);
+						$overdriveSharedCollectionId = $homeLibrary->sharedOverdriveCollection;
+						// Shared collection Id numbers are negative and based on the order accountIds of $configArray['OverDrive']['accountId']
+						// (product keys need to have the same matching order)
+						$indexOfSiteToUse             = abs($overdriveSharedCollectionId) - 1;
+						$this->productsKey[$user->id] = $productKeys[$indexOfSiteToUse];
+					}else{
+						$this->productsKey[$user->id] = $patronProductsKeySetting;
+					}
+				}
+				$this->cache->set($memCacheKey, $this->productsKey[$user->id], $configArray['Caching']['overdrive_settings']);
+			}
+		}
+		return $this->productsKey[$user->id];
 	}
 
 	/**
@@ -483,9 +525,25 @@ class OverDriveDriver4 {
 										//Strangely, Video has to be locked in in order to stream
 										break;
 									case 'magazine-overdrive':
+										$bookshelfItem['issueId']           = $bookshelfItem['overDriveId'];
+										$bookshelfItem['overDriveId']       = null;  // Need to get the parent Magazine Issue Id below
 										$bookshelfItem['overdriveMagazine'] = true;
 										$bookshelfItem['selectedFormat']    = $curFormat;
 										$bookshelfItem['isFormatSelected']  = true;  // so that the format gets displayed (had to add an exception to the download section to skip magazines and videos)
+
+									// Get Parent Magazine Record
+										$metaDataResponse                = $this->getProductMetadata($curTitle->reserveId, $this->getProductsKey($user));
+										if (!empty($metaDataResponse)){
+
+											//TODO: save issue data to database; and include a Database lookup above.  new table?
+											$parentIssueMetaData             = new OverDriveAPIProduct();
+											$parentIssueMetaData->crossRefId = $metaDataResponse->parentMagazineTitleId;
+											if ($parentIssueMetaData->find(true)){
+												$bookshelfItem['overDriveId'] = $parentIssueMetaData->overdriveId;
+												$bookshelfItem['edition']     = $metaDataResponse->edition;
+											}
+										}
+
 										break;
 									default:
 										// Download option for locked in formats (It won't be any of the above)
