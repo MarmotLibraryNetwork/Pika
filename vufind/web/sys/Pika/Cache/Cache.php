@@ -41,7 +41,7 @@ class Cache implements CacheInterface
 
 	private $keyTypes = [
 		'patron', 'holds', 'checkouts', 'history', 'fines',
-		'overdrive_counts', 'overdrive_settings', 'overdrive_patron_token',
+		'overdrive_counts', 'overdrive_settings', 'overdrive_patron_token', 'overdrive_patron_productKey'
 	];
 
 	protected $handler = false;

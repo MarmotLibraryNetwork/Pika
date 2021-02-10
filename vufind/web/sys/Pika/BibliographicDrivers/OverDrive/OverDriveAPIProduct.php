@@ -42,4 +42,5 @@ class OverDriveAPIProduct extends \DB_DataObject{
 	public $dateDeleted;
 	public $rawData;
 	public $needsUpdate;
+	public $crossRefId;
 }

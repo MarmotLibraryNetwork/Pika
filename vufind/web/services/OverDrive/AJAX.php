@@ -374,10 +374,16 @@ class OverDrive_AJAX extends AJAXHandler {
 			$formats        = $recordDriver->getItems();
 			$lendingPeriods = [];
 			$formatClass    = [];
+			$isMagazine     = false;
 			foreach ($formats as $format){
-				$tmp  = $format->getFormatClass();
-				if ($tmp){ // avoid things with out a format class (magazine)
-					$formatClass[] = $tmp;
+				if ($format->textId == 'magazine-overdrive'){
+					$isMagazine = true;
+					break;
+				} else{
+					$tmp = $format->getFormatClass();
+					if ($tmp){ // avoid things with out a format class (magazine)
+						$formatClass[] = $tmp;
+					}
 				}
 			}
 			$formatClass = array_unique($formatClass);
@@ -410,7 +416,7 @@ class OverDrive_AJAX extends AJAXHandler {
 			$interface->assign('lendingPeriods', $lendingPeriods);
 		}
 
-		if (count($overDriveUsers) > 1 || $user->promptForOverDriveLendingPeriods){
+		if (count($overDriveUsers) > 1 || ($user->promptForOverDriveLendingPeriods && !$isMagazine)){
 			return [
 				'promptNeeded' => true,
 				'promptTitle'  => 'OverDrive Checkout Options',
