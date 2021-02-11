@@ -117,9 +117,14 @@ class OverDrive_AJAX extends AJAXHandler {
 					if (!empty($result['formatType'])){
 						switch ($result['formatType']){
 							case 'ebook-overdrive':
-							case 'magazine-overdrive':
-								$result['buttons']  = '<a href="#" onclick="return Pika.OverDrive.followOverDriveDownloadLink(\'' . $patronId . "', '" . $overDriveId . "', '" . $result['formatType'] . '\')" class="btn btn-warning">Read Online Now</a>';
+								$result['buttons'] = '<a href="#" onclick="return Pika.OverDrive.followOverDriveDownloadLink(\'' . $patronId . "', '" . $overDriveId . "', '" . $result['formatType'] . '\')" class="btn btn-warning">Read Online Now</a>';
 								break;
+							case 'magazine-overdrive':
+							if ($result['issueId']){
+								// The checked out magazine issue will have a different id than the record we made the check out against.
+								$result['buttons'] = '<a href="#" onclick="return Pika.OverDrive.followOverDriveDownloadLink(\'' . $patronId . "', '" . $result['issueId'] . "', '" . $result['formatType'] . '\')" class="btn btn-warning">Read Online Now</a>';
+							}
+							break;
 							case 'ebook-mediado':
 								$result['buttons']  = '<a href="#" onclick="return Pika.OverDrive.followOverDriveDownloadLink(\'' . $patronId . "', '" . $overDriveId . "', '" . $result['formatType'] . '\')" class="btn btn-warning">Read Online MediaDo Now</a>';
 								break;

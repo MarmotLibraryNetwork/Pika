@@ -911,6 +911,9 @@ class OverDriveDriver4 {
 			if (!empty($response->formats) && count($response->formats) == 1){
 				//This should be the read online option
 				$result['formatType'] = $response->formats[0]->formatType;
+				if ($result['formatType'] == 'magazine-overdrive'){
+					$result['issueId'] = $response->formats[0]->reserveId;
+				}
 			}
 		}else{
 			$result['success'] = false;

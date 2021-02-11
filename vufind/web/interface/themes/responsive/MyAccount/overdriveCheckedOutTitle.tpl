@@ -1,5 +1,5 @@
 {strip}
-<div id="overdrive_{$record.recordId|escape}" class="result row">
+<div id="overdrive_{if $record.overdriveMagazine}{$record.issueId|escape}{else}{$record.overDriveId|escape}{/if}" class="result row">
 
 	{* Cover Column *}
 	{if $showCovers}
