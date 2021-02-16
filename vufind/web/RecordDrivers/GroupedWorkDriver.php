@@ -1661,7 +1661,18 @@ class GroupedWorkDriver extends RecordInterface {
 					$manifestation['actions'] = $bestRecord['actions'];
 				}
 			}
-			if ($selectedFormat && $selectedFormat != $manifestation['format']){
+
+			if ($selectedFormat && stripos($manifestation['format'],$selectedFormat) === false){
+				//Do a secondary check to see if we have a more detailed format in the facet
+				$detailedFormat = mapValue('format_by_detailed_format', $selectedFormat);
+				//Also check the reverse
+				$detailedFormat2 = mapValue('format_by_detailed_format', $manifestation['format']);
+				if ($manifestation['format'] != $detailedFormat && $detailedFormat2 != $selectedFormat){
+					$manifestation['hideByDefault'] = true;
+				}
+			}
+			if ($selectedFormat && $selectedFormat == "Book" && $manifestation['format'] != "Book")
+			{
 				//Do a secondary check to see if we have a more detailed format in the facet
 				$detailedFormat = mapValue('format_by_detailed_format', $selectedFormat);
 				//Also check the reverse
